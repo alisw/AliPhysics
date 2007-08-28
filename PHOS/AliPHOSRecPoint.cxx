@@ -164,11 +164,6 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
   case kButton1Down:{
     AliPHOSDigit * digit ;
   
-//  Accessing geometry this way is equivalent to getting from gAlice
-// to have Detector in Folder one have to load gAlice anyway
-//    AliPHOSLoader * gime = AliPHOSLoader::GetInstance();
-//    AliPHOSGeometry * phosgeom =  const_cast<AliPHOSGeometry*>(gime->PHOSGeometry());
-
     AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
 
     Int_t iDigit;
@@ -243,7 +238,7 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
   if( fPHOSMod == 0){
   Int_t relid[4] ; 
  
-  AliPHOSGeometry * phosgeom = (AliPHOSGetter::Instance())->PHOSGeometry();
+  AliPHOSGeometry * phosgeom = (AliPHOSGeometry::GetInstance());
 
   phosgeom->AbsToRelNumbering(digit->GetId(), relid) ;
   fPHOSMod = relid[0];
@@ -368,7 +363,7 @@ void AliPHOSRecPoint::EvalLocal2TrackingCSTransform()
   Double_t dy;
   Double_t crystalShift;
 
-  AliPHOSGeometry * phosgeom = (AliPHOSGetter::Instance())->PHOSGeometry();
+  AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance();
   AliPHOSEMCAGeometry* geoEMCA = phosgeom->GetEMCAGeometry(); 
 
   //Calculate offset to crystal surface.

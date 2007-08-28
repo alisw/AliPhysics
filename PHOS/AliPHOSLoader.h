@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2006/08/25 16:00:53  kharlov
+ * Compliance with Effective C++AliPHOSHit.cxx
+ *
  * Revision 1.11  2006/08/01 12:15:03  cvetan
  * Adding a constructor from TFolder. Needed by AliReconstruction plugin scheme
  *
@@ -170,19 +173,12 @@ public:
   //  AliPHOSSDigitizer*  PHOSSDigitizer(TString name = AliConfig::GetDefaultEventFolderName());
   //AliPHOSDigitizer*   PHOSDigitizer()  { return  dynamic_cast<AliPHOSDigitizer*>(Digitizer()) ;}
 
-  AliPHOSClusterizer* Clusterizer () const {return dynamic_cast<AliPHOSClusterizer*>(Reconstructioner()) ;}
-  Int_t PostClusterizer(TTask* clust) const {return PostReconstructioner(clust);}
-  Int_t LoadClusterizer(Option_t * opt="") const {return LoadReconstructioner(opt);}
-  Int_t WriteClusterizer(Option_t * opt="") const {return WriteReconstructioner(opt);}
-
   AliPHOSPID * PID () const {return dynamic_cast<AliPHOSPID*>(PIDTask()) ;}
-  Int_t PostPID(TTask* pid) const {return PostPIDTask(pid);}
   Int_t LoadPID(Option_t * opt="") const {return LoadPIDTask(opt);}
   Int_t WritePID(Option_t * opt="") const {return WritePIDTask(opt);}
 
 
   AliPHOSTrackSegmentMaker * TrackSegmentMaker () const { return dynamic_cast<AliPHOSTrackSegmentMaker *>(Tracker()) ;}
-  Int_t PostTrackSegmentMaker(TTask* segmaker) const {return PostTracker(segmaker);}
   Int_t LoadTrackSegmentMaker(Option_t * opt="") const {return LoadTracker(opt);}
   Int_t WriteTrackSegmentMaker(Option_t * opt="") const {return WriteTracker(opt);}
 

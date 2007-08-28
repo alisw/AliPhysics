@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.4  2007/08/03 13:52:16  kharlov
  * Working skeleton of matching the ESD tracks and ESD clusters (Iouri Belikov)
  *
@@ -28,14 +31,11 @@ class TTree;
 
 class AliCluster;
 class AliESDEvent;
-class AliPHOSTrackSegmentMaker ; 
-class AliPHOSPID ; 
 
 class AliPHOSTracker : public AliTracker
 {
 public:
   AliPHOSTracker();
-  AliPHOSTracker(AliRunLoader *loader);  // Bad !
   virtual ~AliPHOSTracker();
   
   Int_t LoadClusters(TTree *ct);
@@ -54,19 +54,13 @@ protected:
   AliPHOSTracker(const AliPHOSTracker & rhs): AliTracker(rhs){}
 
 private:
-  Int_t PropagateBackOld(AliESDEvent *ev); //Bad function: uses RunLoader ;(
-
   AliPHOSTracker &operator=(const AliPHOSTracker &rhs);
-
-  AliRunLoader *fRunLoader;  //! Bad !
 
   static Bool_t fgDebug ;    //! Verbosity controller
 
   TClonesArray *fModules[5];
   
-  AliPHOSTrackSegmentMaker * fTSM ; //! the track segment maker 
-  AliPHOSPID * fPID ;               //! the pid maker 
-  ClassDef(AliPHOSTracker,1)
+  ClassDef(AliPHOSTracker,2)
 };
 
 #endif

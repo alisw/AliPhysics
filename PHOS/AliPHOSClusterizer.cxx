@@ -13,49 +13,41 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //_________________________________________________________________________
 //  Base class for the clusterization algorithm (pure abstract)
 //*--
 //*-- Author: Yves Schutz  SUBATECH 
 //////////////////////////////////////////////////////////////////////////////
 
-// --- ROOT system ---
+#include <TClonesArray.h>
+#include <TTree.h>
 
-// --- Standard library ---
-
-// --- AliRoot header files ---
 #include "AliPHOSClusterizer.h"
-#include "AliPHOSGetter.h" 
-#include "AliPHOSQualAssDataMaker.h" 
-
-// --- AliRoot header files ---
 #include "AliPHOSQualAssDataMaker.h"
+#include "AliPHOSDigit.h"
 
 ClassImp(AliPHOSClusterizer)
 
 //____________________________________________________________________________
 AliPHOSClusterizer::AliPHOSClusterizer():
-  TTask("",""),
-  fEventFolderName(""),
-  fFirstEvent(0),
-  fLastEvent(-1),
-  fRawReader(0),
-  fQADM(0)
+  fGeom(NULL),
+  fQADM(0),
+  fDigitsArr(0),
+  fTreeR(0),
+  fEMCRecPoints(0),
+  fCPVRecPoints(0)
 {
- // ctor
+  // ctor
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName, 
-				       const TString eventFolderName):
-  TTask("PHOS"+AliConfig::Instance()->GetReconstructionerTaskName(), 
-	alirunFileName), fEventFolderName(eventFolderName),
-  fFirstEvent(0),
-  fLastEvent(-1),
-  fRawReader(0),
-  fQADM(0)
+AliPHOSClusterizer::AliPHOSClusterizer(AliPHOSGeometry *geom):
+  fGeom(geom),
+  fQADM(0),
+  fDigitsArr(0),
+  fTreeR(0),
+  fEMCRecPoints(0),
+  fCPVRecPoints(0)
 {
   // ctor
   fQADM = new AliPHOSQualAssDataMaker() ;  
@@ -64,25 +56,56 @@ AliPHOSClusterizer::AliPHOSClusterizer(const TString alirunFileName,
 }
 
 //____________________________________________________________________________
-AliPHOSClusterizer::AliPHOSClusterizer(const AliPHOSClusterizer & clusterizer) :
-  TTask(clusterizer),fEventFolderName(clusterizer.GetEventFolderName()),
-  fFirstEvent(clusterizer.GetFirstEvent()),fLastEvent(clusterizer.GetLastEvent()),
-  fRawReader(clusterizer.GetRawReader()),
-  fQADM(clusterizer.GetQualAssDataMaker())
-{
-  //Copy constructor
-  //initiaizes the quality assurance data maker
-  GetQualAssDataMaker()->Init(AliQualAss::kRECPOINTS) ;    
-}
-//____________________________________________________________________________
 AliPHOSClusterizer::~AliPHOSClusterizer()
 {
   // dtor
-         
- //Remove this from the parental task before destroying
-  if(AliPHOSGetter::Instance()->PhosLoader())
-    AliPHOSGetter::Instance()->PhosLoader()->CleanReconstructioner();
   delete fQADM ; 
+  if (fDigitsArr) {
+    fDigitsArr->Delete();
+    delete fDigitsArr;
+  }
+  if (fEMCRecPoints) {
+    fEMCRecPoints->Delete();
+    delete fEMCRecPoints;
+  }
+  if (fCPVRecPoints) {
+    fCPVRecPoints->Delete();
+    delete fCPVRecPoints;
+  }
 }
 
+//____________________________________________________________________________
+void AliPHOSClusterizer::SetInput(TTree * digitsTree) 
+{
+  // Get the tree with digits and sets
+  // the input array with digits for PHOS
+  TBranch *branch = digitsTree->GetBranch("PHOS");
+  if (!branch) { 
+    AliError("can't get the branch with the PHOS digits !");
+    return;
+  }
+  fDigitsArr = new TClonesArray("AliPHOSDigit",100);
+  branch->SetAddress(&fDigitsArr);
+  branch->GetEntry(0);
+}
 
+//____________________________________________________________________________
+void AliPHOSClusterizer::SetOutput(TTree * clustersTree) 
+{
+  // Set the output clusters tree,
+  // creates the arrays for EMC and CPV,
+  // and set the corresponding branch addresses
+  fTreeR = clustersTree;
+
+  AliDebug(9, "Making array for EMC clusters");
+  fEMCRecPoints = new TObjArray(100) ;
+  fEMCRecPoints->SetName("EMCRECPOINTS") ;
+  Int_t split = 0;
+  Int_t bufsize = 32000;
+  fTreeR->Branch("PHOSEmcRP", "TObjArray", &fEMCRecPoints, bufsize, split);
+
+  AliDebug(9, "Making array for CPV clusters");
+  fCPVRecPoints = new TObjArray(100) ;
+  fCPVRecPoints->SetName("CPVRECPOINTS") ;
+  fTreeR->Branch("PHOSCpvRP", "TObjArray", &fCPVRecPoints, bufsize, split);
+}

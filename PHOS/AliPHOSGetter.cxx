@@ -813,7 +813,6 @@ Int_t AliPHOSGetter::ReadTreeR() const
   // gets TreeR from the root file (PHOS.RecPoints.root)
   //if ( !IsLoaded("R") ) {
     PhosLoader()->LoadRecPoints("UPDATE") ;
-    PhosLoader()->LoadClusterizer("UPDATE") ;
     //  SetLoaded("R") ; 
     //}
 

@@ -29,13 +29,12 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliPHOSClusterizerv2.h"
-#include "AliPHOSGetter.h"
-#include "TFolder.h"
 #include "AliPHOSEvalRecPoint.h"
 #include "AliPHOSRecCpvManager.h"
 #include "AliPHOSRecEmcManager.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSQualAssDataMaker.h" 
+#include "AliPHOSDigit.h"
 
 ClassImp(AliPHOSClusterizerv2)
 
@@ -44,13 +43,8 @@ AliPHOSClusterizerv2::AliPHOSClusterizerv2() : AliPHOSClusterizerv1()
 {}
 
 //____________________________________________________________________________
-AliPHOSClusterizerv2::AliPHOSClusterizerv2(const char * headerFile, const char * name):
-AliPHOSClusterizerv1(headerFile,name)
-{}
-
-//____________________________________________________________________________
-AliPHOSClusterizerv2::AliPHOSClusterizerv2(const AliPHOSClusterizerv2 & clu):
-AliPHOSClusterizerv1(clu)
+AliPHOSClusterizerv2::AliPHOSClusterizerv2(AliPHOSGeometry *geom):
+AliPHOSClusterizerv1(geom)
 {}
 
 //____________________________________________________________________________
@@ -58,13 +52,12 @@ void AliPHOSClusterizerv2::GetNumberOfClustersFound(int* numb) const
 {
   // Returns the number of found EMC and CPV rec.points
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;   
-  numb[0] = gime->EmcRecPoints()->GetEntries();  
-  numb[1] = gime->CpvRecPoints()->GetEntries();  
+  numb[0] = fEMCRecPoints->GetEntries();  
+  numb[1] = fCPVRecPoints->GetEntries();  
 }
 
 //____________________________________________________________________________
-void AliPHOSClusterizerv2::Exec(Option_t* option)
+void AliPHOSClusterizerv2::Digits2Clusters(Option_t* option)
 {
   // Steering method
 
@@ -73,124 +66,124 @@ void AliPHOSClusterizerv2::Exec(Option_t* option)
   
   if(strstr(option,"print"))
     Print() ; 
-
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-
-  TFolder* wPoolF =  gime->PhosLoader()->GetDetectorDataFolder();
-  
-  TObjArray* wPool = new TObjArray(400);
-  wPool->SetName("SmartPoints");
-  wPoolF->Add(wPool);
-  wPoolF->Add(this);
-
-  Int_t nevents = gime->MaxEvent() ;
-  Int_t ievent ;
-
-  for(ievent = 0; ievent<nevents; ievent++) {
-    
-    gime->Event(ievent,"D") ;
-    
-    AliInfo(Form("MakeClusters invoked..")) ;
-    MakeClusters() ;
-    AliInfo(Form("MakeClusters done.")) ;
-
-
-    //SmartRecPoints will communicate with wPool.
-
-    AliPHOSEvalRecPoint* rp=0;
-
-    // CPV reconstruction
-
-    AliPHOSRecCpvManager* recCpv = new AliPHOSRecCpvManager();
-    wPoolF->Add(recCpv);
-
-    Int_t iPoint; //loop variable
-
-    for(iPoint=0; iPoint<gime->CpvRecPoints()->GetEntriesFast(); iPoint++) {
-      rp = new AliPHOSEvalRecPoint(iPoint, kTRUE);
-      rp->MakeJob();
-    }
-
-    AliPHOSEvalRecPoint pt;
-    pt.UpdateWorkingPool();
-
-    TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-    Int_t nOldCpv = cpvRecPoints->GetEntries();
-    cpvRecPoints->Delete();
-    cpvRecPoints->Compress();
-
-    Int_t i; //loop variable
-
-    for(i=0; i<wPool->GetEntries(); i++)
-      cpvRecPoints->Add(wPool->At(i));
-
-    wPool->Clear();
-    wPool->Compress();
-
-    wPoolF->Remove(recCpv);
-    delete recCpv;
-
-    AliInfo(Form("       %d", gime->CpvRecPoints()->GetEntries() )) ;
-    AliInfo(Form("       %d cpvRecPoints", cpvRecPoints->GetEntries() )) ;
-
-
-    // Now Emc reconstruction
-
-    AliPHOSRecEmcManager* recEmc = new AliPHOSRecEmcManager();
-    wPoolF->Add(recEmc);
-
-    for(iPoint=0; iPoint<gime->EmcRecPoints()->GetEntriesFast(); iPoint++) {
-      rp = new AliPHOSEvalRecPoint(iPoint, kFALSE);
-      rp->MakeJob();
-    }
-
-    pt.UpdateWorkingPool();
-
-    TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-    Int_t nOldEmc = emcRecPoints->GetEntries();
-    emcRecPoints->Delete();
-    emcRecPoints->Compress();
-
-    for(i=0; i<wPool->GetEntries(); i++)
-      emcRecPoints->Add(wPool->At(i));
-
-    wPool->Clear();
-    wPool->Compress();
-
-    wPoolF->Remove(recEmc);
-    delete recEmc;
-
-    TString message ; 
-    message  = "       %d  OLD cpvRecPoints\n" ; 
-    message += "       %d\n" ; 
-    message += "       %d cpvRecPoints\n" ; 
-
-    message += "       %d OLD emcRecPoints " ; 
-    message += "       %d\n" ;
-    message += "       %d emcRecPoints\n" ;
-
-    AliInfo(Form("%s", message.Data(), 
-	 nOldCpv, 
-	 gime->CpvRecPoints()->GetEntries(),cpvRecPoints->GetEntries(), 
-	 nOldEmc, 
-	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() )); 
-    
-    GetQualAssDataMaker()->Init(AliQualAss::kRECPOINTS) ;    
-    GetQualAssDataMaker()->SetData(gime->EmcRecPoints()) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
-    GetQualAssDataMaker()->SetData(gime->CpvRecPoints()) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
-
-    WriteRecPoints();
-
-
-  } // loop over events
-
-  if(strstr(option,"tim")) {
-    gBenchmark->Stop("PHOSClusterizer");
-    AliInfo(Form("took %f seconds for Clusterizing", gBenchmark->GetCpuTime("PHOSClusterizer") )) ;
-  }
 }
+//   AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+
+//   TFolder* wPoolF =  gime->PhosLoader()->GetDetectorDataFolder();
+  
+//   TObjArray* wPool = new TObjArray(400);
+//   wPool->SetName("SmartPoints");
+//   wPoolF->Add(wPool);
+//   wPoolF->Add(this);
+
+//   Int_t nevents = gime->MaxEvent() ;
+//   Int_t ievent ;
+
+//   for(ievent = 0; ievent<nevents; ievent++) {
+    
+//     gime->Event(ievent,"D") ;
+    
+//     AliInfo(Form("MakeClusters invoked..")) ;
+//     MakeClusters() ;
+//     AliInfo(Form("MakeClusters done.")) ;
+
+
+//     //SmartRecPoints will communicate with wPool.
+
+//     AliPHOSEvalRecPoint* rp=0;
+
+//     // CPV reconstruction
+
+//     AliPHOSRecCpvManager* recCpv = new AliPHOSRecCpvManager();
+//     wPoolF->Add(recCpv);
+
+//     Int_t iPoint; //loop variable
+
+//     for(iPoint=0; iPoint<gime->CpvRecPoints()->GetEntriesFast(); iPoint++) {
+//       rp = new AliPHOSEvalRecPoint(iPoint, kTRUE);
+//       rp->MakeJob();
+//     }
+
+//     AliPHOSEvalRecPoint pt;
+//     pt.UpdateWorkingPool();
+
+//     TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
+//     Int_t nOldCpv = cpvRecPoints->GetEntries();
+//     cpvRecPoints->Delete();
+//     cpvRecPoints->Compress();
+
+//     Int_t i; //loop variable
+
+//     for(i=0; i<wPool->GetEntries(); i++)
+//       cpvRecPoints->Add(wPool->At(i));
+
+//     wPool->Clear();
+//     wPool->Compress();
+
+//     wPoolF->Remove(recCpv);
+//     delete recCpv;
+
+//     AliInfo(Form("       %d", gime->CpvRecPoints()->GetEntries() )) ;
+//     AliInfo(Form("       %d cpvRecPoints", cpvRecPoints->GetEntries() )) ;
+
+
+//     // Now Emc reconstruction
+
+//     AliPHOSRecEmcManager* recEmc = new AliPHOSRecEmcManager();
+//     wPoolF->Add(recEmc);
+
+//     for(iPoint=0; iPoint<gime->EmcRecPoints()->GetEntriesFast(); iPoint++) {
+//       rp = new AliPHOSEvalRecPoint(iPoint, kFALSE);
+//       rp->MakeJob();
+//     }
+
+//     pt.UpdateWorkingPool();
+
+//     TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
+//     Int_t nOldEmc = emcRecPoints->GetEntries();
+//     emcRecPoints->Delete();
+//     emcRecPoints->Compress();
+
+//     for(i=0; i<wPool->GetEntries(); i++)
+//       emcRecPoints->Add(wPool->At(i));
+
+//     wPool->Clear();
+//     wPool->Compress();
+
+//     wPoolF->Remove(recEmc);
+//     delete recEmc;
+
+//     TString message ; 
+//     message  = "       %d  OLD cpvRecPoints\n" ; 
+//     message += "       %d\n" ; 
+//     message += "       %d cpvRecPoints\n" ; 
+
+//     message += "       %d OLD emcRecPoints " ; 
+//     message += "       %d\n" ;
+//     message += "       %d emcRecPoints\n" ;
+
+//     AliInfo(Form("%s", message.Data(), 
+// 	 nOldCpv, 
+// 	 gime->CpvRecPoints()->GetEntries(),cpvRecPoints->GetEntries(), 
+// 	 nOldEmc, 
+// 	 gime->EmcRecPoints()->GetEntries(), emcRecPoints->GetEntries() )); 
+    
+//     GetQualAssDataMaker()->Init(AliQualAss::kRECPOINTS) ;    
+//     GetQualAssDataMaker()->SetData(gime->EmcRecPoints()) ; 
+//     GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+//     GetQualAssDataMaker()->SetData(gime->CpvRecPoints()) ; 
+//     GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
+
+//     WriteRecPoints();
+
+
+//   } // loop over events
+
+//   if(strstr(option,"tim")) {
+//     gBenchmark->Stop("PHOSClusterizer");
+//     AliInfo(Form("took %f seconds for Clusterizing", gBenchmark->GetCpuTime("PHOSClusterizer") )) ;
+//   }
+// }
 
 //____________________________________________________________________________
 Int_t AliPHOSClusterizerv2::AreNeighbours(AliPHOSDigit* d1, AliPHOSDigit* d2) const
@@ -206,15 +199,13 @@ Int_t AliPHOSClusterizerv2::AreNeighbours(AliPHOSDigit* d1, AliPHOSDigit* d2) co
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   // which is compared to a digit (d2)  not yet in a cluster  
 
-  const AliPHOSGeometry * geom = AliPHOSGetter::Instance()->PHOSGeometry();
-
   Int_t rv = 0 ; 
 
   Int_t relid1[4] ; 
-  geom->AbsToRelNumbering(d1->GetId(), relid1) ; 
+  fGeom->AbsToRelNumbering(d1->GetId(), relid1) ; 
 
   Int_t relid2[4] ; 
-  geom->AbsToRelNumbering(d2->GetId(), relid2) ; 
+  fGeom->AbsToRelNumbering(d2->GetId(), relid2) ; 
  
   if ( (relid1[0] == relid2[0]) && (relid1[1]==relid2[1]) ) { // inside the same PHOS module and the same PPSD Module 
     Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  

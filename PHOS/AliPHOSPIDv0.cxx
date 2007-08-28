@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.15  2007/03/06 06:57:05  kharlov
+ * DP:calculation of distance to CPV done in TSM
+ *
  * Revision 1.14  2006/09/07 18:31:08  kharlov
  * Effective c++ corrections (T.Pocheptsov)
  *
@@ -72,78 +75,58 @@
 #include "TF2.h"
 #include "TFormula.h"
 #include "TCanvas.h"
+#include "TClonesArray.h"
 
 #include "TBenchmark.h"
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliRun.h"
-#include "AliGenerator.h"
 #include "AliPHOSPIDv0.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSGeometry.h"
-#include "AliPHOSLoader.h"
 
 ClassImp( AliPHOSPIDv0) 
 
 //____________________________________________________________________________
 AliPHOSPIDv0::AliPHOSPIDv0():
-  fTrackSegmentsTitle(""), 
-  fRecPointsTitle(""),
-  fRecParticlesTitle(""),
   fIDOptions("dis time"),
-  fNEvent(0),
   fClusterizer(0),
   fTSMaker(0),
   fFormula(0),
   fDispersion(0.f),
   fCpvEmcDistance(0.f),
-  fTimeGate(2.e-9f),
-  fRecParticlesInRun(0)
+  fTimeGate(2.e-9f)
 { 
   // default ctor
-  fEventFolderName = ""; 
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv0::AliPHOSPIDv0(const char * evFolderName,const char * name) : 
-  AliPHOSPID(evFolderName, name),
-  fTrackSegmentsTitle(GetName()), 
-  fRecPointsTitle(GetName()),
-  fRecParticlesTitle(GetName()),
+AliPHOSPIDv0::AliPHOSPIDv0(AliPHOSGeometry *geom) : 
+  AliPHOSPID(geom),
   fIDOptions("dis time"),
-  fNEvent(0),
   fClusterizer(0),
   fTSMaker(0),
   fFormula(new TFormula("LambdaCuts","(x>1)*(x<2.5)*(y>0)*(y<x)")),
   fDispersion(2.f),
   fCpvEmcDistance(3.f),
-  fTimeGate(2.e-9f),
-  fRecParticlesInRun(0)
+  fTimeGate(2.e-9f)
 { 
-  //ctor with the indication on where to look for the track segments
-  fEventFolderName    = GetTitle() ; 
-  Init() ;
+  //ctor
 }
 
 //____________________________________________________________________________
 AliPHOSPIDv0::AliPHOSPIDv0(const AliPHOSPIDv0 & rhs) :
   AliPHOSPID(rhs),
-  fTrackSegmentsTitle(rhs.fTrackSegmentsTitle), 
-  fRecPointsTitle(rhs.fRecPointsTitle),
-  fRecParticlesTitle(rhs.fRecParticlesTitle),
   fIDOptions(rhs.fIDOptions),
-  fNEvent(rhs.fNEvent),
   fClusterizer(rhs.fClusterizer),
   fTSMaker(rhs.fTSMaker),
   fFormula(rhs.fFormula),
   fDispersion(rhs.fDispersion),
   fCpvEmcDistance(rhs.fCpvEmcDistance),
-  fTimeGate(rhs.fTimeGate),
-  fRecParticlesInRun(rhs.fRecParticlesInRun)
+  fTimeGate(rhs.fTimeGate)
 {
   //Copy ctor, the same as compiler-generated, possibly wrong if
   //someone implements dtor correctly.
@@ -154,18 +137,13 @@ AliPHOSPIDv0 & AliPHOSPIDv0::operator = (const AliPHOSPIDv0 & rhs)
 {
   //Copy-assignment, emulates compiler generated, possibly wrong.
   AliPHOSPID::operator = (rhs);
-  fTrackSegmentsTitle = rhs.fTrackSegmentsTitle;
-  fRecPointsTitle = rhs.fRecPointsTitle;
-  fRecParticlesTitle = rhs.fRecParticlesTitle;
   fIDOptions = rhs.fIDOptions;
-  fNEvent = rhs.fNEvent;
   fClusterizer = rhs.fClusterizer;
   fTSMaker = rhs.fTSMaker;
   fFormula = rhs.fFormula;
   fDispersion = rhs.fDispersion;
   fCpvEmcDistance = rhs.fCpvEmcDistance;
   fTimeGate = rhs.fTimeGate;
-  fRecParticlesInRun = rhs.fRecParticlesInRun;
 
   return *this;
 }
@@ -206,13 +184,10 @@ AliPHOSPIDv0::~AliPHOSPIDv0()
 //}
 
 //____________________________________________________________________________
-void  AliPHOSPIDv0::Exec(Option_t * option) 
+void  AliPHOSPIDv0::TrackSegments2RecParticles(Option_t * option) 
 {
   //Steering method
-  
-  if( strcmp(GetName(), "")== 0 ) 
-    Init() ;
-  
+
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSPID");
   
@@ -221,77 +196,20 @@ void  AliPHOSPIDv0::Exec(Option_t * option)
     return ; 
   }
 
-  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
-  if(runget == 0x0) 
-   {
-     AliError(Form("Can not find run getter in event folder \"%s\"",
-		   GetTitle()));
-     return;
-   }
-  
-  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
-  if ( gime == 0 ) 
-   {
-     AliError("Could not obtain the Loader object !"); 
-     return ;
-   } 
+  AliInfo(Form("%d emc clusters, %d track segments", 
+	       fEMCRecPoints->GetEntriesFast(), 
+	       fTrackSegments->GetEntriesFast())) ;
 
-  if(gime->BranchExists("RecParticles") )
-    return ;
-
-  
-  Int_t nevents = runget->GetNumberOfEvents() ;       //(Int_t) gAlice->TreeE()->GetEntries() ;
-
-  Int_t ievent ;
-  
-  for(ievent = 0; ievent < nevents; ievent++){
-    runget->GetEvent(ievent);
-    AliInfo(Form("event %d %d %d", 
-		 ievent, gime->EmcRecPoints(), 
-		 gime->TrackSegments())) ;
-    MakeRecParticles() ;
+  MakeRecParticles() ;
     
-    WriteRecParticles();
-    
-    if(strstr(option,"deb"))
-      PrintRecParticles(option) ;
+  if(strstr(option,"deb"))
+    PrintRecParticles(option) ;
 
-    //increment the total number of rec particles per run 
-    fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
-
-  }
-  
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
-    AliInfo(Form("took %f seconds for PID %f seconds per event", 
-		 gBenchmark->GetCpuTime("PHOSPID"), 
-		 gBenchmark->GetCpuTime("PHOSPID")/nevents)) ; 
+    AliInfo(Form("took %f seconds for PID", 
+		 gBenchmark->GetCpuTime("PHOSPID"))); 
   }
-  
-}
-//____________________________________________________________________________
-void AliPHOSPIDv0::Init()
-{
-  // Make all memory allocations that are not possible in default constructor
-  // Add the PID task to the list of PHOS tasks
-  
-  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
-  if(runget == 0x0) 
-   {
-     AliError(Form("Can not find run getter in event folder \"%s\"",
-		   GetTitle()));
-     return;
-   }
-  
-  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
-  if ( gime == 0 ) 
-   {
-     AliError("Could not obtain the Loader object !"); 
-     return ;
-   } 
-   
-  gime->PostPID(this);
-  gime->LoadRecParticles("UPDATE");
   
 }
 
@@ -300,32 +218,9 @@ void  AliPHOSPIDv0::MakeRecParticles()
 {
   // Reconstructs the particles from the tracksegments
 
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-
-  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
-  if(runget == 0x0) 
-   {
-     AliError(Form("Can not find run getter in event folder \"%s\"",
-		   GetTitle()));
-     return;
-   }
+  fRecParticles->Clear();
   
-  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
-  if ( gime == 0 ) 
-   {
-     AliError("Could not obtain the Loader object !"); 
-     return ;
-   } 
-
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * trackSegments = gime->TrackSegments() ; 
-  TClonesArray * recParticles  = gime->RecParticles() ; 
-
-  recParticles->Clear();
-  
-  TIter next(trackSegments) ; 
+  TIter next(fTrackSegments) ; 
   AliPHOSTrackSegment * ts ; 
   Int_t index = 0 ; 
   AliPHOSRecParticle * rp ; 
@@ -336,18 +231,18 @@ void  AliPHOSPIDv0::MakeRecParticles()
   
   while ( (ts = (AliPHOSTrackSegment *)next()) ) {
     
-    new( (*recParticles)[index] ) AliPHOSRecParticle() ;
-    rp = (AliPHOSRecParticle *)recParticles->At(index) ; 
+    new( (*fRecParticles)[index] ) AliPHOSRecParticle() ;
+    rp = (AliPHOSRecParticle *)fRecParticles->At(index) ; 
     rp->SetTrackSegment(index) ;
     rp->SetIndexInList(index) ;
     
     AliPHOSEmcRecPoint * emc = 0 ;
     if(ts->GetEmcIndex()>=0)
-      emc = (AliPHOSEmcRecPoint *) emcRecPoints->At(ts->GetEmcIndex()) ;
+      emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
     
     AliPHOSRecPoint    * cpv = 0 ;
     if(ts->GetCpvIndex()>=0)
-      cpv = (AliPHOSRecPoint *)   cpvRecPoints->At(ts->GetCpvIndex()) ;
+      cpv = (AliPHOSRecPoint *)   fCPVRecPoints->At(ts->GetCpvIndex()) ;
     
     //set momentum and energy first
     Float_t    e = emc->GetEnergy() ;
@@ -402,17 +297,9 @@ void  AliPHOSPIDv0:: Print(const Option_t *) const
   TString message ; 
   message  = "=============== AliPHOSPIDv0 ================\n" ;
   message += "Making PID\n" ;
-  message += "    Headers file:               %s\n" ; 
-  message += "    RecPoints branch title:     %s\n" ;
-  message += "    TrackSegments Branch title: %s\n" ; 
-  message += "    RecParticles Branch title   %s\n" ;  
   message += "with parameters:\n"  ;
   message += "    Maximal EMC - CPV  distance (cm) %f\n" ;
   AliInfo(Form( message.Data(),  
-       GetTitle(), 
-       fRecPointsTitle.Data(), 
-       fTrackSegmentsTitle.Data(), 
-       fRecParticlesTitle.Data(), 
        fCpvEmcDistance ));
 
   if(fIDOptions.Contains("dis",TString::kIgnoreCase ))
@@ -432,54 +319,6 @@ void  AliPHOSPIDv0::SetShowerProfileCut(const char * formula)
   if(fFormula) 
     delete fFormula; 
   fFormula = new TFormula("Lambda Cut",formula) ;
-}
-//____________________________________________________________________________
-void  AliPHOSPIDv0::WriteRecParticles()
-{
-  // Saves the reconstructed particles too a file
- 
-  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
-  if(runget == 0x0) 
-   {
-     AliError(Form("Can not find run getter in event folder \"%s\"",
-		   GetTitle()));
-     return;
-   }
-  
-  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
-  if ( gime == 0 ) 
-   {
-     AliError("Could not obtain the Loader object !"); 
-     return ;
-   } 
-
-  TClonesArray * recParticles = gime->RecParticles() ; 
-  recParticles->Expand(recParticles->GetEntriesFast() ) ;
-
-  TTree * treeR = gime->TreeR();
-  
-  if(!treeR){
-    gime->MakeTree("R");
-    treeR = gime->TreeR() ;
-  }
-  
-  //First rp
-  Int_t bufferSize = 32000 ;    
-  TBranch * rpBranch = treeR->Branch("PHOSRP",&recParticles,bufferSize);
-  rpBranch->SetTitle(fRecParticlesTitle);
-  
-  //second, pid
-  Int_t splitlevel = 0 ; 
-  AliPHOSPIDv0 * pid = this ;
-  TBranch * pidBranch = treeR->Branch("AliPHOSPID","AliPHOSPIDv0",&pid,bufferSize,splitlevel);
-  pidBranch->SetTitle(fRecParticlesTitle.Data());
-  
-  rpBranch->Fill() ;
-  pidBranch->Fill() ;
-
-  gime->WriteRecParticles("OVERWRITE");
-  gime->WritePID("OVERWRITE");
-
 }
 
 //____________________________________________________________________________
@@ -552,11 +391,14 @@ TVector3 AliPHOSPIDv0::GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSRec
   dir.SetZ( -dir.Z() ) ;   // why ?  
   dir.SetMag(1.) ;
 
+  // One can not access MC information in the reconstruction!!
+  // PLEASE FIT IT, EITHER BY TAKING 0,0,0 OR ACCESSING THE
+  // VERTEX DIAMOND FROM CDB GRP FOLDER.
   //account correction to the position of IP
-  Float_t xo,yo,zo ; //Coordinates of the origin
-  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
-  TVector3 origin(xo,yo,zo);
-  dir = dir - origin ;
+  //  Float_t xo,yo,zo ; //Coordinates of the origin
+  //  gAlice->Generator()->GetOrigin(xo,yo,zo) ;
+  //  TVector3 origin(xo,yo,zo);
+  //  dir = dir - origin ;
 
   return dir ;  
 }
@@ -565,37 +407,17 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
 {
   // Print table of reconstructed particles
 
-  AliRunLoader* runget = AliRunLoader::GetRunLoader(GetTitle());
-  if(runget == 0x0) 
-   {
-     AliError(Form("Can not find run getter in event folder \"%s\"",
-		   GetTitle()));
-     return;
-   }
-  
-  AliPHOSLoader* gime = dynamic_cast<AliPHOSLoader*>(runget->GetLoader("PHOSLoader"));
-  if ( gime == 0 ) 
-   {
-     AliError("Could not obtain the Loader object !"); 
-     return ;
-   } 
-
-  TString taskName(GetName()) ; 
-  taskName.Remove(taskName.Index(Version())-1) ;
-  TClonesArray * recParticles = gime->RecParticles() ; 
-  
   TString message ; 
-  message  = "event %d\n" ; 
-  message += "       found %d RecParticles\n" ; 
+  message = "Found %d RecParticles\n" ; 
   AliInfo(Form(message.Data(), 
-	       gAlice->GetEvNumber(), recParticles->GetEntriesFast() )) ;   
+	       fRecParticles->GetEntriesFast() )) ;   
 
   if(strstr(option,"all")) {  // printing found TS
     AliInfo("  PARTICLE   Index"  ) ; 
    
     Int_t index ;
-    for (index = 0 ; index < recParticles->GetEntries() ; index++) {
-      AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
+    for (index = 0 ; index < fRecParticles->GetEntries() ; index++) {
+      AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) fRecParticles->At(index) ;       
       
       Text_t particle[11];
       switch(rp->GetType()) {
@@ -634,6 +456,3 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
     }
   }  
 }
-
-
-

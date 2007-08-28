@@ -149,11 +149,7 @@ public:
   virtual AliPHOSClusterizer * Clusterizer() ;
   virtual TString               GetRecPointsFileName() const { return PhosLoader()->GetRecPointsFileName() ; } 
   virtual Int_t                 LoadRecPoints(Option_t* opt="") const { return PhosLoader()->LoadRecPoints(opt) ; }
-  virtual Int_t                 LoadClusterizer(Option_t* opt="") const {
-    return  PhosLoader()->LoadClusterizer(opt) ; }
   virtual Int_t                 WriteRecPoints(Option_t* opt="") const { return PhosLoader()->WriteRecPoints(opt) ; }
-  virtual Int_t                 WriteClusterizer(Option_t* opt="") const {
-    return  PhosLoader()->WriteClusterizer(opt) ; }
   
   //========== TrackSegments   TClonesArray * TrackSegments(const char * name = 0) { 
   virtual TClonesArray *           TrackSegments() const;
@@ -185,12 +181,6 @@ public:
   virtual Int_t ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat) ; 
 
   void SetDebug(Int_t level) {fgDebug = level;} // Set debug level 
-  virtual void PostClusterizer(AliPHOSClusterizer * clu) 
-    const{PhosLoader()->PostClusterizer(clu) ; }
-  virtual void PostPID(AliPHOSPID * pid) 
-    const{PhosLoader()->PostPID(pid) ; }
-  virtual void PostTrackSegmentMaker(AliPHOSTrackSegmentMaker * tr) 
-    const{PhosLoader()->PostTrackSegmentMaker(tr) ; }
   virtual void PostSDigitizer (AliPHOSSDigitizer * sdigitizer) 
     const {PhosLoader()->PostSDigitizer(sdigitizer);}    
   virtual void PostDigitizer (AliPHOSDigitizer * digitizer)    

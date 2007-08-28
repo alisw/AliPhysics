@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.52  2007/08/07 14:16:00  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.51  2007/04/11 11:55:45  policheh
  * SetDistancesToBadChannels() added.
  *
@@ -65,8 +68,7 @@ class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
 public:
   
   AliPHOSClusterizerv1() ;
-  AliPHOSClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
-  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) ;
+  AliPHOSClusterizerv1(AliPHOSGeometry *geom);
   virtual ~AliPHOSClusterizerv1()  ;
   
   virtual Int_t   AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)const ; 
@@ -85,10 +87,9 @@ public:
   virtual Float_t GetCpvClusteringThreshold()const{ return fCpvClusteringThreshold;  } 
   virtual Float_t GetCpvLocalMaxCut()const        { return fCpvLocMaxCut;} 
   virtual Float_t GetCpvLogWeight()const          { return fW0CPV;}  
-  virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
-  virtual Int_t   GetRecPointsInRun() const       {return fRecPointsInRun ;} 
+  //  virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
 
-  virtual void    Exec(Option_t *option);   // Does the job
+  virtual void    Digits2Clusters(Option_t *option);
 
   void Print(const Option_t * = "")const ;
 
@@ -108,7 +109,7 @@ public:
                                             //class member function (not object member function)
   static void UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)  ;
                                             // Chi^2 of the fit. Should be static to be passed to MINUIT
-  void Unload() ; 
+  //  void Unload() ; 
   virtual const char * Version() const { return "clu-v1"; }  
 
   virtual void SetOldRCUFormat(Bool_t rcuFormat = kFALSE)
@@ -124,12 +125,10 @@ protected:
   void           GetCalibrationParameters(void);
   void           SetDistancesToBadChannels();
 
-  AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & obj);
- 
 private:
+  AliPHOSClusterizerv1(const AliPHOSClusterizerv1 & clu) ;
+  AliPHOSClusterizerv1 & operator = (const AliPHOSClusterizerv1 & obj);
 
-  const   TString BranchName() const ; 
-  
   Bool_t  FindFit(AliPHOSEmcRecPoint * emcRP, AliPHOSDigit ** MaxAt, Float_t * maxAtEnergy, 
 		  Int_t NPar, Float_t * FitParametres) const; //Used in UnfoldClusters, calls TMinuit
   void    Init() ;
@@ -166,13 +165,12 @@ private:
   Float_t fW0 ;                      // logarithmic weight for the cluster center of gravity calculation
   Float_t fCpvLocMaxCut ;            // minimum energy difference to distinguish local maxima in a CPV cluster
   Float_t fW0CPV ;                   // logarithmic weight for the CPV cluster center of gravity calculation
-  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
+  //  Int_t fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fEmcTimeGate ;             // Maximum time difference between the digits in ont EMC cluster
 
   Bool_t  fIsOldRCUFormat;           // assume old RCU raw data format
-  Int_t fEventCounter ;              //! counts the events processed
 
-  ClassDef(AliPHOSClusterizerv1,4)   // Clusterizer implementation version 1
+  ClassDef(AliPHOSClusterizerv1,5)   // Clusterizer implementation version 1
 
 };
 

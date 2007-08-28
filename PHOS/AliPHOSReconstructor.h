@@ -8,6 +8,10 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.11  2007/07/24 17:20:35  policheh
+ * Usage of RecoParam objects instead of hardcoded parameters in reconstruction.
+ * (See $ALICE_ROOT/PHOS/macros/BeamTest2006/RawReconstruction.C).
+ *
  * Revision 1.10  2007/07/11 13:43:30  hristov
  * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
  *
@@ -38,6 +42,7 @@ class AliPHOSSDigitizer ;
 class AliESDEvent ;
 class AliRawReader; 
 class AliPHOSRecoParam;
+class AliPHOSGeometry;
 
 // --- Standard library ---
 
@@ -48,7 +53,10 @@ class AliPHOSReconstructor : public AliReconstructor {
 public:
 
   AliPHOSReconstructor() ; //ctor            
-  AliPHOSReconstructor(const AliPHOSReconstructor & rec) : AliReconstructor(rec) {
+  AliPHOSReconstructor(const AliPHOSReconstructor & rec) :
+    AliReconstructor(rec),
+    fGeom(rec.fGeom)
+    {
     // cpy ctor: 
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
@@ -59,11 +67,16 @@ public:
   static Bool_t              Debug() { return fgDebug ; }
   AliTracker *CreateTracker(AliRunLoader* runLoader) const;
   using AliReconstructor::FillESD;
-  virtual void               FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const ;
-  virtual void FillESD(AliRunLoader* runLoader,AliRawReader* rawReader,AliESDEvent* esd) const;
+  virtual void               FillESD(TTree* digitsTree, TTree* clustersTree, 
+				     AliESDEvent* esd) const;
   using AliReconstructor::Reconstruct;
-  virtual void               Reconstruct(AliRunLoader* runLoader) const ;
-  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;
+  virtual Bool_t             HasLocalReconstruction() const {return kTRUE;};
+  virtual void               Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
+  //  virtual void               Reconstruct(AliRunLoader* runLoader) const ;
+  //  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;
+
+  virtual Bool_t             HasDigitConversion() const {return kTRUE;};
+  virtual void               ConvertDigits(AliRawReader* /*rawReader*/, TTree* /*digitsTree*/) const;
 
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
@@ -82,8 +95,9 @@ private:
   static Bool_t fgDebug ; //! verbosity controller
   static AliPHOSRecoParam*   fgkRecoParamEmc; // reconstruction parameters for EMC
   static AliPHOSRecoParam*   fgkRecoParamCpv; // reconstruction parameters for EMC
+  AliPHOSGeometry*           fGeom;           // pointer to the PHOS geometry
 
-  ClassDef(AliPHOSReconstructor,2)  // Reconstruction algorithm class (Base Class)
+  ClassDef(AliPHOSReconstructor,3)  // PHOS Reconstruction class
 
 }; 
 

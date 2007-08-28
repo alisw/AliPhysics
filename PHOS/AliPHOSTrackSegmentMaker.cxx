@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.28  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.27  2006/08/25 16:56:30  kharlov
  * Compliance with Effective C++
  *
@@ -37,12 +40,12 @@
 
 
 // --- ROOT system ---
+#include "TTree.h"
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSGetter.h"
 #include "AliPHOSQualAssDataMaker.h" 
 
 ClassImp( AliPHOSTrackSegmentMaker) 
@@ -50,25 +53,24 @@ ClassImp( AliPHOSTrackSegmentMaker)
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : 
-  TTask("",""),
-  fEventFolderName(""),
-  fFirstEvent(0),
-  fLastEvent(-1),
+  TObject(),
   fESD(0), 
-  fQADM(0x0)  
+  fQADM(0x0),
+  fGeom(0),
+  fEMCRecPoints(0),
+  fCPVRecPoints(0)
 {
  // ctor
 }
 
 //____________________________________________________________________________
-AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName, 
-						   const TString eventFolderName):
-  TTask("PHOS"+AliConfig::Instance()->GetTrackerTaskName(), alirunFileName), 
-  fEventFolderName(eventFolderName),
-  fFirstEvent(0),
-  fLastEvent(-1),
+AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(AliPHOSGeometry *geom):
+  TObject(),
   fESD(0), 
-  fQADM(0x0)
+  fQADM(0x0),
+  fGeom(geom),
+  fEMCRecPoints(0),
+  fCPVRecPoints(0)
 {
   // ctor
   fQADM = new  AliPHOSQualAssDataMaker() ; //!Quality Assurance Data Maker
@@ -77,12 +79,12 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const TString alirunFileName,
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) :
-  TTask(tsmaker),
-  fEventFolderName(tsmaker.GetEventFolderName()),
-  fFirstEvent(tsmaker.GetFirstEvent()),
-  fLastEvent(tsmaker.GetLastEvent()),
+  TObject(tsmaker),
   fESD(tsmaker.GetESD()), 
-  fQADM(tsmaker.fQADM)
+  fQADM(tsmaker.fQADM),
+  fGeom(tsmaker.fGeom),
+  fEMCRecPoints(tsmaker.fEMCRecPoints),
+  fCPVRecPoints(tsmaker.fCPVRecPoints)
 {
   //Copy constructor
 } 
@@ -91,8 +93,42 @@ AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMake
 AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
 {
  //Remove this from the parental task before destroying
-  if(AliPHOSGetter::Instance()->PhosLoader())
-    AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
+  //  if(AliPHOSGetter::Instance()->PhosLoader())
+  //    AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
   delete fQADM ; 
+  if (fEMCRecPoints) {
+    fEMCRecPoints->Delete();
+    delete fEMCRecPoints;
+  }
+  if (fCPVRecPoints) {
+    fCPVRecPoints->Delete();
+    delete fCPVRecPoints;
+  }
 }
 
+//____________________________________________________________________________
+void AliPHOSTrackSegmentMaker::SetInput(TTree *clustersTree)
+{
+  // Read the clusters tree and creates the
+  // arrays with the EMC and CPV
+  // clusters.
+  // and set the corresponding branch addresses
+
+  TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
+  if (!emcbranch) { 
+    AliError("can't get the branch with the PHOS EMC clusters !");
+    return;
+  }
+  fEMCRecPoints = new TObjArray(100) ;
+  emcbranch->SetAddress(&fEMCRecPoints);
+  emcbranch->GetEntry(0);
+
+  TBranch *cpvbranch = clustersTree->GetBranch("PHOSCpvRP");
+  if (!cpvbranch) { 
+    AliError("can't get the branch with the PHOS CPV clusters !");
+    return;
+  }
+  fCPVRecPoints = new TObjArray(100) ;
+  cpvbranch->SetAddress(&fCPVRecPoints);
+  cpvbranch->GetEntry(0);
+}

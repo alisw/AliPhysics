@@ -26,19 +26,27 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliLog.h"
+#include "AliPHOSQualAssDataMaker.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliPHOSReconstructor.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSGetter.h"
 #include "AliPHOSTracker.h"
 #include "AliRawReader.h"
 #include "AliPHOSTrigger.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSRecoParamEmc.h"
 #include "AliPHOSRecoParamCpv.h"
+#include "AliPHOSDigit.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSRecParticle.h"
+#include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawDigiProducer.h"
+#include "AliPHOSPulseGenerator.h"
 
 ClassImp(AliPHOSReconstructor)
 
@@ -47,7 +55,8 @@ AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamEmc =0;  // EMC rec. paramet
 AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. parameters
 
 //____________________________________________________________________________
-  AliPHOSReconstructor::AliPHOSReconstructor() 
+AliPHOSReconstructor::AliPHOSReconstructor() :
+  fGeom(NULL)
 {
   // ctor
 
@@ -61,85 +70,85 @@ AliPHOSRecoParam* AliPHOSReconstructor::fgkRecoParamCpv =0;  // CPV rec. paramet
     fgkRecoParamCpv = AliPHOSRecoParamCpv::GetCpvDefaultParameters();
   }
 
+  fGeom = AliPHOSGeometry::GetInstance("IHEP","");
 } 
 
 //____________________________________________________________________________
   AliPHOSReconstructor::~AliPHOSReconstructor()
 {
   // dtor
-
+  delete fGeom;
 } 
 
 //____________________________________________________________________________
-void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader) const
+void AliPHOSReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
-  // method called by AliReconstruction; 
+  // 'single-event' local reco method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
   // segment maker needs access to the AliESDEvent object to retrieve the tracks reconstructed by 
   // the global tracking.
- 
-  TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
-  
-  AliPHOSClusterizerv1 clu(headerFile, branchName);
-  clu.SetEventRange(0, -1) ; // do all the events
-  if ( Debug() ) 
-    clu.ExecuteTask("deb all") ; 
-  else 
-    clu.ExecuteTask("") ;  
 
+  AliPHOSClusterizerv1 clu(fGeom);
+  clu.SetInput(digitsTree);
+  clu.SetOutput(clustersTree);
+  if ( Debug() ) 
+    clu.Digits2Clusters("deb all") ; 
+  else 
+    clu.Digits2Clusters("") ;
 }
 
 //____________________________________________________________________________
-void AliPHOSReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawreader) const
+void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree, 
+				   AliESDEvent* esd) const
 {
-  // method called by AliReconstruction; 
-  // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
-  // segment maker needs access to the AliESDEvent object to retrieve the tracks reconstructed by 
-  // the global tracking.
-  // Here we reconstruct from Raw Data
+  // This method produces PHOS rec-particles,
+  // then it creates AliESDtracks out of them and
+  // write tracks to the ESD
 
-  rawreader->Reset() ; 
-  TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
-  
-  AliPHOSClusterizerv1 clu(headerFile, branchName);
-  clu.SetEventRange(0, -1) ; // do all the events
-  clu.SetRawReader(rawreader);
+  AliPHOSTrackSegmentMaker *tsm = new AliPHOSTrackSegmentMakerv1(fGeom);
+  tsm->GetQualAssDataMaker()->Init(AliQualAss::kTRACKSEGMENTS) ; 
+  AliPHOSPID *pid = new AliPHOSPIDv1(fGeom);
+  pid->GetQualAssDataMaker()->Init(AliQualAss::kRECPARTICLES) ;    
 
-  TString option = GetOption();
-  if (option.Contains("OldRCUFormat"))
-    clu.SetOldRCUFormat(kTRUE);
-
+  // do current event; the loop over events is done by AliReconstruction::Run()
+  tsm->SetESD(esd) ; 
+  tsm->SetInput(clustersTree);
   if ( Debug() ) 
-    clu.ExecuteTask("deb all") ; 
+    tsm->Clusters2TrackSegments("deb all") ;
   else 
-    clu.ExecuteTask("") ;
+    tsm->Clusters2TrackSegments("") ;
+  
+  tsm->GetQualAssDataMaker()->SetData(tsm->GetTrackSegments()) ; 
+  tsm->GetQualAssDataMaker()->Exec(AliQualAss::kTRACKSEGMENTS) ; 
 
-}
+  pid->SetInput(clustersTree, tsm->GetTrackSegments()) ; 
+  pid->SetESD(esd) ; 
+  if ( Debug() ) 
+    pid->TrackSegments2RecParticles("deb all") ;
+  else 
+    pid->TrackSegments2RecParticles("") ;
 
-//____________________________________________________________________________
-void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const
-{
+  pid->GetQualAssDataMaker()->SetData(pid->GetRecParticles()) ; 
+  pid->GetQualAssDataMaker()->Exec(AliQualAss::kRECPARTICLES) ; 
+  
+  // PLEASE FIX IT. SHOULD GO TO ALIRECONSTRUCTION !!
+  //  if ( eventNumber == gime->MaxEvent()-1 ) {
+  //	fTSM->GetQualAssDataMaker()->Finish(AliQualAss::kTRACKSEGMENTS) ; 
+  //	fPID->GetQualAssDataMaker()->Finish(AliQualAss::kRECPARTICLES) ; 
+  //  }
+	
   // This function creates AliESDtracks from AliPHOSRecParticles
   //         and
   // writes them to the ESD
 
-  Int_t eventNumber = runLoader->GetEventNumber() ;
-
-
-  AliPHOSGetter *gime = AliPHOSGetter::Instance();
-  gime->Event(eventNumber, "DRTP") ; 
-  TClonesArray *recParticles  = gime->RecParticles();
+  TClonesArray *recParticles  = pid->GetRecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
   
   
   esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
   esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
 
-  Int_t maxClu = esd->GetNumberOfPHOSClusters() ; 
-
-  AliDebug(2,Form("%d digits and %d rec. particles in event %d, option %s",gime->Digits()->GetEntries(),nOfRecParticles,eventNumber,GetOption()));
+  AliDebug(2,Form("%d rec. particles, option %s",nOfRecParticles,GetOption()));
 
 
   //#########Calculate trigger and set trigger info###########
@@ -152,8 +161,6 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) co
   Float_t maxAmpnxn  = tr.GetnxnMaxAmplitude();
   Float_t ampOutOfPatch2x2  = tr.Get2x2AmpOutOfPatch() ;
   Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
-
-  AliPHOSGeometry * geom = gime->PHOSGeometry();
 
   Int_t iSM2x2      = tr.Get2x2SuperModule();
   Int_t iSMnxn      = tr.GetnxnSuperModule();
@@ -171,10 +178,10 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) co
   Int_t iAbsIdnxn =-1;
   TVector3    pos2x2(-1,-1,-1);
   TVector3    posnxn(-1,-1,-1);
-  geom->RelToAbsNumbering(iRelId2x2, iAbsId2x2);
-  geom->RelToAbsNumbering(iRelIdnxn, iAbsIdnxn);
-  geom->RelPosInAlice(iAbsId2x2, pos2x2);
-  geom->RelPosInAlice(iAbsIdnxn, posnxn);
+  fGeom->RelToAbsNumbering(iRelId2x2, iAbsId2x2);
+  fGeom->RelToAbsNumbering(iRelIdnxn, iAbsIdnxn);
+  fGeom->RelPosInAlice(iAbsId2x2, pos2x2);
+  fGeom->RelPosInAlice(iAbsIdnxn, posnxn);
 
   TArrayF triggerPosition(6);
   triggerPosition[0] = pos2x2(0) ;   
@@ -206,8 +213,19 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) co
     if (Debug()) 
       rp->Print();
     // Get track segment and EMC rec.point associated with this rec.particle
-    AliPHOSTrackSegment *ts    = gime->TrackSegment(rp->GetPHOSTSIndex());
-    AliPHOSEmcRecPoint  *emcRP = gime->EmcRecPoint(ts->GetEmcIndex());
+    AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(tsm->GetTrackSegments()->At(rp->GetPHOSTSIndex()));
+
+    // Get the clusters array
+    TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
+    if (!emcbranch) { 
+      AliError("can't get the branch with the PHOS EMC clusters !");
+      return;
+    }
+    TObjArray *emcRecPoints = new TObjArray(100) ;
+    emcbranch->SetAddress(&emcRecPoints);
+    emcbranch->GetEntry(0);
+
+    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(ts->GetEmcIndex()));
     AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
         
     Float_t xyz[3];
@@ -223,9 +241,19 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) co
     Short_t *timeList  = new Short_t[digitMult];
     Short_t *digiList  = new Short_t[digitMult];
 
+    // Read digits array
+    TBranch *branch = digitsTree->GetBranch("PHOS");
+    if (!branch) { 
+      AliError("can't get the branch with the PHOS digits !");
+      return;
+    }
+    TClonesArray *digitsArr = new TClonesArray("AliPHOSDigit",100);
+    branch->SetAddress(&digitsArr);
+    branch->GetEntry(0);
+
     // Convert Float_t* and Int_t* to Short_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      AliPHOSDigit *digit = gime->Digit(digitsList[iDigit]);
+      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(digitsArr->At(digitsList[iDigit]));
       amplList[iDigit] =
 	(Short_t)(TMath::Min(digit->GetEnergy()*gev500,kBigShort)); // Energy in units of GeV/500
       timeList[iDigit] =
@@ -276,97 +304,72 @@ void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) co
     
     // add the track to the esd object
     esd->AddCaloCluster(ec);
-    delete ec;    
+    delete ec;   
+    delete [] primList;
+    delete [] amplList;
+    delete [] timeList;
+    delete [] digiList;    
   }  
 }
 
-//____________________________________________________________________________
-void AliPHOSReconstructor::FillESD(AliRunLoader* runLoader,
-				   AliRawReader* rawReader, AliESDEvent* esd) const
+AliTracker* AliPHOSReconstructor::CreateTracker(AliRunLoader* /* runLoader */) const
 {
-  //This function creates AliESDtracks from AliPHOSRecParticles 
-  //and writes them to the ESD in the case of raw data reconstruction.
+  // creates the PHOS tracker
+  return new AliPHOSTracker();
+}
 
-  Int_t eventNumber = runLoader->GetEventNumber() ;
+void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
+{
+  // Converts raw data to
+  // PHOS digits
+  // Works on a single-event basis
 
-  AliPHOSGetter *gime = AliPHOSGetter::Instance();
-  gime->Event(eventNumber, "DRTP") ; 
+  rawReader->Reset() ; 
 
-  TClonesArray *recParticles  = gime->RecParticles();
-  Int_t nOfRecParticles = recParticles->GetEntries();
+  AliPHOSRawDecoder dc(rawReader);
+  TString option = GetOption();
+  if (option.Contains("OldRCUFormat"))
+    dc.SetOldRCUFormat(kTRUE);
+  else
+    dc.SetOldRCUFormat(kFALSE);
 
-  esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
-  esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
+  dc.SubtractPedestals(kTRUE);
+
+  TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
+  digits->SetName("DIGITS");
+  Int_t bufsize = 32000;
+  digitsTree->Branch("PHOS", &digits, bufsize);
+
+  AliPHOSRawDigiProducer pr;
+  pr.MakeDigits(digits,&dc);
+
+  //ADC counts -> GeV
+  for(Int_t i=0; i<digits->GetEntries(); i++) {
+    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
+    digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
+  }
   
-  AliDebug(2,Form("%d digits and %d rec. particles in event %d, option %s",gime->Digits()->GetEntries(),nOfRecParticles,eventNumber,GetOption()));
+  //!!!!for debug!!!
+  Int_t modMax=-111;
+  Int_t colMax=-111;
+  Int_t rowMax=-111;
+  Float_t eMax=-333;
+  //!!!for debug!!!
 
-  for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
-    AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
-
-    if(rp) {
-    Float_t xyz[3];
-    for (Int_t ixyz=0; ixyz<3; ixyz++) 
-      xyz[ixyz] = rp->GetPos()[ixyz];
-
-    AliDebug(2,Form("Global position xyz=(%f,%f,%f)",xyz[0],xyz[1],xyz[2]));
-    
-    AliPHOSTrackSegment *ts    = gime->TrackSegment(rp->GetPHOSTSIndex());
-    AliPHOSEmcRecPoint  *emcRP = gime->EmcRecPoint(ts->GetEmcIndex());
-    AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
-
-    Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
-    Int_t *digitsList = emcRP->GetDigitsList();
-    Short_t *amplList  = new Short_t[digitMult];
-    Short_t *digiList  = new Short_t[digitMult];
-
-    // Convert Float_t* and Int_t* to UShort_t* to save memory
-    for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      AliPHOSDigit *digit = gime->Digit(digitsList[iDigit]);
-      if(!digit) {
-	AliFatal(Form("Digit not found at the expected position %d!",iDigit));
-      }
-      else {
-	amplList[iDigit] = (Short_t)digit->GetEnergy();
-	digiList[iDigit] = (Short_t)(digit->GetId());
-	//timeList[iDigit] = (Short_t)(digit->GetTime());
-      }
-    }
-
-    ec->SetPHOS(kTRUE);
-    ec->SetPosition(xyz);                 //rec.point position in MARS
-    ec->SetE(rp->Energy());         //total particle energy
-    ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
-    ec->SetPid          (rp->GetPID()) ;        //array of particle identification
-    ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
-    ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
-    ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
-
-    ec->SetEmcCpvDistance(-1);                  //not yet implemented
-    ec->SetClusterChi2(-1);                     //not yet implemented
-    ec->SetM11(-1) ;                            //not yet implemented
- //    TArrayS arrayAmpList(digitMult,amplList);
-//     TArrayS arrayTimeList(digitMult,timeList);
-//     TArrayS arrayIndexList(digitMult,digiList);
-//     ec->AddDigitAmplitude(arrayAmpList);
-//     ec->AddDigitTime(arrayTimeList);
-//     ec->AddDigitIndex(arrayIndexList);
-    //Distance to the nearest bad crystal
-    ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
-    
-    // add the track to the esd object
-    esd->AddCaloCluster(ec);
-    delete ec;    
-    
+  Int_t relId[4];
+  for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(iDigit);
+    if(digit->GetEnergy()>eMax) {
+      fGeom->AbsToRelNumbering(digit->GetId(),relId);
+      eMax=digit->GetEnergy();
+      modMax=relId[0];
+      rowMax=relId[2];
+      colMax=relId[3];
     }
   }
 
+  AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n\n",
+		  modMax,colMax,rowMax,eMax));
 
+  digitsTree->Fill();
 }
-
-AliTracker* AliPHOSReconstructor::CreateTracker(AliRunLoader* runLoader) const
-{
-// creates the PHOS tracker
-  if (!runLoader) return NULL; 
-  return new AliPHOSTracker(runLoader);
-}
-

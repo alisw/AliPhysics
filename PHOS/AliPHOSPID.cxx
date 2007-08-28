@@ -40,11 +40,13 @@ ClassImp(AliPHOSPID)
 
 //____________________________________________________________________________
 AliPHOSPID::AliPHOSPID():
-  TTask("",""),
-  fEventFolderName(""),
-  fFirstEvent(0),
-  fLastEvent(-1),
-  fESD(0x0), 
+  TObject(),
+  fGeom(NULL),
+  fESD(0x0),
+  fEMCRecPoints(NULL),
+  fCPVRecPoints(NULL),
+  fTrackSegments(NULL),
+  fRecParticles(NULL),
   fQADM(0x0)
 {
   // ctor
@@ -52,35 +54,78 @@ AliPHOSPID::AliPHOSPID():
 
 
 //____________________________________________________________________________
-AliPHOSPID::AliPHOSPID(const TString alirunFileName, const TString eventFolderName):
-  TTask("PHOS"+AliConfig::Instance()->GetPIDTaskName(), alirunFileName), 
-  fEventFolderName(eventFolderName),
-  fFirstEvent(0),
-  fLastEvent(-1), 
-  fESD(0x0), 
+AliPHOSPID::AliPHOSPID(AliPHOSGeometry *geom):
+  TObject(),
+  fGeom(geom),
+  fESD(0x0),
+  fEMCRecPoints(NULL),
+  fCPVRecPoints(NULL),
+  fTrackSegments(NULL),
+  fRecParticles(NULL),
   fQADM(0x0)
 {
   // ctor
+  fRecParticles = new TClonesArray("AliPHOSRecParticle",100) ;
+  fRecParticles->SetName("RECPARTICLES");
+
   fQADM = new  AliPHOSQualAssDataMaker() ; //!Quality Assurance Data Maker
   GetQualAssDataMaker()->Init(AliQualAss::kRECPARTICLES) ;    
 }
 
 //____________________________________________________________________________
 AliPHOSPID::AliPHOSPID(const AliPHOSPID & pid) :
-  TTask(pid),fEventFolderName(pid.GetEventFolderName()),
-  fFirstEvent(pid.GetFirstEvent()),fLastEvent(pid.GetLastEvent()), 
+  TObject(pid),
+  fGeom(pid.fGeom),
   fESD(pid.fESD), 
+  fEMCRecPoints(pid.fEMCRecPoints),
+  fCPVRecPoints(pid.fCPVRecPoints),
+  fTrackSegments(pid.fTrackSegments),
+  fRecParticles(pid.fRecParticles),
   fQADM(pid.fQADM)
 {
   // Copy constructor
 }
+
 //____________________________________________________________________________
 AliPHOSPID::~AliPHOSPID()
 {
   // dtor
- //Remove this from the parental task before destroying
-  if(AliPHOSGetter::Instance()->PhosLoader())
-    AliPHOSGetter::Instance()->PhosLoader()->CleanPIDTask();
+  if (fEMCRecPoints) {
+    fEMCRecPoints->Delete();
+    delete fEMCRecPoints;
+  }
+  if (fCPVRecPoints) {
+    fCPVRecPoints->Delete();
+    delete fCPVRecPoints;
+  }
   delete fQADM ; 
 }
 
+//____________________________________________________________________________
+void AliPHOSPID::SetInput(TTree *clustersTree, TClonesArray *trackSegments)
+{
+  // Read the clusters tree and creates the
+  // arrays with the EMC and CPV
+  // clusters.
+  // and set the corresponding branch addresses
+
+  fTrackSegments = trackSegments;
+
+  TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
+  if (!emcbranch) { 
+    AliError("can't get the branch with the PHOS EMC clusters !");
+    return;
+  }
+  fEMCRecPoints = new TObjArray(100) ;
+  emcbranch->SetAddress(&fEMCRecPoints);
+  emcbranch->GetEntry(0);
+
+  TBranch *cpvbranch = clustersTree->GetBranch("PHOSCpvRP");
+  if (!cpvbranch) { 
+    AliError("can't get the branch with the PHOS CPV clusters !");
+    return;
+  }
+  fCPVRecPoints = new TObjArray(100) ;
+  cpvbranch->SetAddress(&fCPVRecPoints);
+  cpvbranch->GetEntry(0);
+}

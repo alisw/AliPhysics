@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.113  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.112  2007/07/11 13:43:30  hristov
  * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
  *
@@ -135,11 +138,11 @@
 	      //#include "AliLog.h"
 #include "AliPHOS.h"
 #include "AliPHOSPIDv1.h"
-#include "AliPHOSGetter.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
-#include "AliHeader.h"
-#include "AliGenEventHeader.h"
+#include "AliPHOSTrackSegment.h"
+#include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSRecParticle.h"
 
 ClassImp( AliPHOSPIDv1) 
 
@@ -149,7 +152,6 @@ AliPHOSPIDv1::AliPHOSPIDv1() :
   fBayesian(kFALSE),
   fDefaultInit(kFALSE),
   fWrite(kFALSE),
-  fNEvent(0),
   fFileNamePrincipalPhoton(),
   fFileNamePrincipalPi0(),
   fFileNameParameters(),
@@ -158,7 +160,6 @@ AliPHOSPIDv1::AliPHOSPIDv1() :
   fX(0),
   fPPhoton(0),
   fPPi0(0),
-  fRecParticlesInRun(0),
   fParameters(0),
   fVtx(0.), 
   fTFphoton(0),
@@ -186,7 +187,6 @@ AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ) :
   fBayesian(kFALSE),
   fDefaultInit(kFALSE),
   fWrite(kFALSE),
-  fNEvent(0),
   fFileNamePrincipalPhoton(),
   fFileNamePrincipalPi0(),
   fFileNameParameters(),
@@ -195,7 +195,6 @@ AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ) :
   fX(0),
   fPPhoton(0),
   fPPi0(0),
-  fRecParticlesInRun(0),
   fParameters(0),
   fVtx(0.), 
   fTFphoton(0),
@@ -214,17 +213,15 @@ AliPHOSPIDv1::AliPHOSPIDv1(const AliPHOSPIDv1 & pid ) :
 { 
   // ctor
   InitParameters() ; 
-  Init() ;
 
 }
 
 //____________________________________________________________________________
-AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFolderName) :
-  AliPHOSPID(alirunFileName, eventFolderName),
+AliPHOSPIDv1::AliPHOSPIDv1(AliPHOSGeometry *geom):
+  AliPHOSPID(geom),
   fBayesian(kFALSE),
   fDefaultInit(kFALSE),
   fWrite(kFALSE),
-  fNEvent(0),
   fFileNamePrincipalPhoton(),
   fFileNamePrincipalPi0(),
   fFileNameParameters(),
@@ -233,7 +230,6 @@ AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFold
   fX(0),
   fPPhoton(0),
   fPPi0(0),
-  fRecParticlesInRun(0),
   fParameters(0),
   fVtx(0.), 
   fTFphoton(0),
@@ -253,7 +249,6 @@ AliPHOSPIDv1::AliPHOSPIDv1(const TString alirunFileName, const TString eventFold
   //ctor with the indication on where to look for the track segments
  
   InitParameters() ; 
-  Init() ;
   fDefaultInit = kFALSE ; 
 }
 
@@ -277,38 +272,14 @@ AliPHOSPIDv1::~AliPHOSPIDv1()
   delete fTFhhadronl;
   delete fDFmuon;
 }
-//____________________________________________________________________________
-const TString AliPHOSPIDv1::BranchName() const 
-{  
-
-  return GetName() ;
-}
  
-//____________________________________________________________________________
-void AliPHOSPIDv1::Init()
-{
-  // Make all memory allocations that are not possible in default constructor
-  // Add the PID task to the list of PHOS tasks
-
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  if(!gime)
-    gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data()) ; 
-
-  if ( !gime->PID() ) 
-    gime->PostPID(this) ;
-}
-
 //____________________________________________________________________________
 void AliPHOSPIDv1::InitParameters()
 {
   // Initialize PID parameters
   fWrite                   = kTRUE ;
-  fRecParticlesInRun = 0 ; 
-  fNEvent            = 0 ;            
-  fRecParticlesInRun = 0 ;
   fBayesian          = kTRUE ;
   SetParameters() ; // fill the parameters matrix from parameters file
-  SetEventRange(0,-1) ;
 
   // initialisation of response function parameters
   // Tof
@@ -509,12 +480,10 @@ void AliPHOSPIDv1::InitParameters()
 }
 
 //________________________________________________________________________
-void  AliPHOSPIDv1::Exec(Option_t *option)
+void  AliPHOSPIDv1::TrackSegments2RecParticles(Option_t *option)
 {
   // Steering method to perform particle reconstruction and identification
   // for the event range from fFirstEvent to fLastEvent.
-  // This range is optionally set by SetEventRange().
-  // if fLastEvent=-1 (by default), then process events until the end.
   
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSPID");
@@ -524,44 +493,26 @@ void  AliPHOSPIDv1::Exec(Option_t *option)
     return ; 
   }
 
+  if(fTrackSegments && //Skip events, where no track segments made
+     fTrackSegments->GetEntriesFast()) {
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
- 
-  if (fLastEvent == -1) 
-    fLastEvent = gime->MaxEvent() - 1 ;
-  else 
-    fLastEvent = TMath::Min(fLastEvent,gime->MaxEvent());
-  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+    GetVertex() ;
+    MakeRecParticles() ;
 
-  Int_t ievent ; 
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"TR") ;
-    if(gime->TrackSegments() && //Skip events, where no track segments made
-       gime->TrackSegments()->GetEntriesFast()) {
-
-      GetVertex() ;
-      MakeRecParticles() ;
-
-      if(fBayesian)
-	MakePID() ; 
+    if(fBayesian)
+      MakePID() ; 
       
-      WriteRecParticles();
-      if(strstr(option,"deb"))
-	PrintRecParticles(option) ;
-      //increment the total number of rec particles per run 
-      fRecParticlesInRun += gime->RecParticles()->GetEntriesFast() ; 
-    }
+    if(strstr(option,"deb"))
+      PrintRecParticles(option) ;
   }
+
   if(strstr(option,"deb"))
       PrintRecParticles(option);
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSPID");
-    AliInfo(Form("took %f seconds for PID %f seconds per event", 
-	 gBenchmark->GetCpuTime("PHOSPID"),  
-	 gBenchmark->GetCpuTime("PHOSPID")/nEvents)) ;
+    AliInfo(Form("took %f seconds for PID", 
+		 gBenchmark->GetCpuTime("PHOSPID")));  
   }
-  if(fWrite)
-    Unload();
 }
 
 //________________________________________________________________________
@@ -1043,17 +994,13 @@ void  AliPHOSPIDv1::MakePID()
   
   const Int_t kSPECIES = AliPID::kSPECIESN ;
  
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
+  Int_t nparticles = fRecParticles->GetEntriesFast() ;
 
-  Int_t nparticles = gime->RecParticles()->GetEntriesFast() ;
-
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * trackSegments = gime->TrackSegments() ;
-  if ( !emcRecPoints || !cpvRecPoints || !trackSegments ) {
+  if ( !fEMCRecPoints || !fCPVRecPoints || !fTrackSegments ) {
     AliFatal("RecPoints or TrackSegments not found !") ;  
   }
-  TIter next(trackSegments) ; 
+
+  TIter next(fTrackSegments) ; 
   AliPHOSTrackSegment * ts ; 
   Int_t index = 0 ; 
 
@@ -1077,7 +1024,7 @@ void  AliPHOSPIDv1::MakePID()
 
     AliPHOSEmcRecPoint * emc = 0 ;
     if(ts->GetEmcIndex()>=0)
-      emc = (AliPHOSEmcRecPoint *) emcRecPoints->At(ts->GetEmcIndex()) ;
+      emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
     
 //    AliPHOSCpvRecPoint * cpv = 0 ;
 //    if(ts->GetCpvIndex()>=0)
@@ -1325,7 +1272,7 @@ void  AliPHOSPIDv1::MakePID()
   
   for(index = 0 ; index < nparticles ; index ++) {
     
-    AliPHOSRecParticle * recpar = gime->RecParticle(index) ;  
+    AliPHOSRecParticle * recpar = static_cast<AliPHOSRecParticle *>(fRecParticles->At(index));
     
     //Conversion electron?
     
@@ -1384,34 +1331,29 @@ void  AliPHOSPIDv1::MakeRecParticles()
 {
   // Makes a RecParticle out of a TrackSegment
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * trackSegments = gime->TrackSegments() ; 
-  if ( !emcRecPoints || !cpvRecPoints || !trackSegments ) {
+  if ( !fEMCRecPoints || !fCPVRecPoints || !fTrackSegments ) {
     AliFatal("RecPoints or TrackSegments not found !") ;  
   }
-  TClonesArray * recParticles  = gime->RecParticles() ; 
-  recParticles->Clear();
+  fRecParticles->Clear();
 
-  TIter next(trackSegments) ; 
+  TIter next(fTrackSegments) ; 
   AliPHOSTrackSegment * ts ; 
   Int_t index = 0 ; 
   AliPHOSRecParticle * rp ; 
   while ( (ts = (AliPHOSTrackSegment *)next()) ) {
     //  cout<<">>>>>>>>>>>>>>>PCA Index "<<index<<endl;
-    new( (*recParticles)[index] ) AliPHOSRecParticle() ;
-    rp = (AliPHOSRecParticle *)recParticles->At(index) ; 
+    new( (*fRecParticles)[index] ) AliPHOSRecParticle() ;
+    rp = (AliPHOSRecParticle *)fRecParticles->At(index) ; 
     rp->SetTrackSegment(index) ;
     rp->SetIndexInList(index) ;
     	
     AliPHOSEmcRecPoint * emc = 0 ;
     if(ts->GetEmcIndex()>=0)
-      emc = (AliPHOSEmcRecPoint *) emcRecPoints->At(ts->GetEmcIndex()) ;
+      emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
     
     AliPHOSCpvRecPoint * cpv = 0 ;
     if(ts->GetCpvIndex()>=0)
-      cpv = (AliPHOSCpvRecPoint *) cpvRecPoints->At(ts->GetCpvIndex()) ;
+      cpv = (AliPHOSCpvRecPoint *) fCPVRecPoints->At(ts->GetCpvIndex()) ;
     
     Int_t track = 0 ; 
     track = ts->GetTrackIndex() ; 
@@ -1513,11 +1455,10 @@ void  AliPHOSPIDv1::MakeRecParticles()
     rp->SetLastDaughter(-1);
     rp->SetPolarisation(0,0,0);
     //Set the position in global coordinate system from the RecPoint
-    AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
-    AliPHOSTrackSegment * ts  = gime->TrackSegment(rp->GetPHOSTSIndex()) ; 
-    AliPHOSEmcRecPoint  * erp = gime->EmcRecPoint(ts->GetEmcIndex()) ; 
+    AliPHOSTrackSegment * ts  = static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(rp->GetPHOSTSIndex()));
+    AliPHOSEmcRecPoint  * erp = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(ts->GetEmcIndex()));
     TVector3 pos ; 
-    geom->GetGlobalPHOS(erp, pos) ; 
+    fGeom->GetGlobalPHOS(erp, pos) ; 
     rp->SetPos(pos);
     index++ ; 
   }
@@ -1548,23 +1489,17 @@ void AliPHOSPIDv1::PrintRecParticles(Option_t * option)
 {
   // Print table of reconstructed particles
 
-  AliPHOSGetter *gime = AliPHOSGetter::Instance() ; 
-
-  TClonesArray * recParticles = gime->RecParticles() ; 
-
   TString message ; 
-  message  = "\nevent " ;
-  message += gime->EventNumber();
-  message += "       found " ; 
-  message += recParticles->GetEntriesFast(); 
+  message  = "       found " ; 
+  message += fRecParticles->GetEntriesFast(); 
   message += " RecParticles\n" ; 
 
   if(strstr(option,"all")) {  // printing found TS
     message += "\n  PARTICLE         Index    \n" ; 
     
     Int_t index ;
-    for (index = 0 ; index < recParticles->GetEntries() ; index++) {
-      AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) recParticles->At(index) ;       
+    for (index = 0 ; index < fRecParticles->GetEntries() ; index++) {
+      AliPHOSRecParticle * rp = (AliPHOSRecParticle * ) fRecParticles->At(index) ;       
       message += "\n" ;
       message += rp->Name().Data() ;  
       message += " " ;
@@ -1725,39 +1660,6 @@ void  AliPHOSPIDv1::SetParameterToCalculateEllipse(TString particle, TString par
 } 
 
 //____________________________________________________________________________
-void AliPHOSPIDv1::Unload() 
-{
-  //Unloads RecPoints, Tracks and RecParticles
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
-  gime->PhosLoader()->UnloadRecPoints() ;
-  gime->PhosLoader()->UnloadTracks() ;
-  gime->PhosLoader()->UnloadRecParticles() ;
-}
-
-//____________________________________________________________________________
-void  AliPHOSPIDv1::WriteRecParticles()
-{
-  //It writes reconstructed particles and pid to file
-
-  AliPHOSGetter *gime = AliPHOSGetter::Instance() ; 
-
-  TClonesArray * recParticles = gime->RecParticles() ; 
-  recParticles->Expand(recParticles->GetEntriesFast() ) ;
-  if(fWrite){
-    TTree * treeP =  gime->TreeP();
-    
-    //First rp
-    Int_t bufferSize = 32000 ;
-    TBranch * rpBranch = treeP->Branch("PHOSRP",&recParticles,bufferSize);
-    rpBranch->SetTitle(BranchName());
-    
-    rpBranch->Fill() ;
-    
-    gime->WriteRecParticles("OVERWRITE");
-    gime->WritePID("OVERWRITE");
-  }
-}
-//____________________________________________________________________________
 void AliPHOSPIDv1::GetVertex(void)
 { //extract vertex either using ESD or generator
  
@@ -1769,14 +1671,9 @@ void AliPHOSPIDv1::GetVertex(void)
       return ;
     }
   }
-  if(gAlice && gAlice->GetHeader() && gAlice->GetHeader()->GenEventHeader()){
-     AliGenEventHeader *eh = gAlice->GetHeader()->GenEventHeader() ;
-     TArrayF ftx ;
-     eh->PrimaryVertex(ftx);
-     fVtx.SetXYZ(ftx[0],ftx[1],ftx[2]) ;
-     return ;
-  }
- 
+
+  // Use vertex diamond from CDB GRP folder if the one from ESD is missing
+  // PLEASE FIX IT 
   AliWarning("Can not read vertex from data, use fixed \n") ;
   fVtx.SetXYZ(0.,0.,0.) ;
  

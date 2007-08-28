@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.60  2007/04/01 15:40:15  kharlov
+ * Correction for actual vertex position implemented
+ *
  * Revision 1.59  2007/03/06 06:57:46  kharlov
  * DP:calculation of distance to CPV done in TSM
  *
@@ -54,22 +57,18 @@ class  AliPHOSPIDv1 : public AliPHOSPID {
 public:
   
   AliPHOSPIDv1() ;          // ctor   
-  AliPHOSPIDv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
+  AliPHOSPIDv1(AliPHOSGeometry *geom);
   AliPHOSPIDv1(const AliPHOSPIDv1 & pid) ;          // cpy ctor            
   
   virtual ~AliPHOSPIDv1() ; // dtor
   
-  virtual void Exec(Option_t *option);  // Does the job
+  virtual void TrackSegments2RecParticles(Option_t *option);  // Does the job
 
   //Get file name that contain the PCA
   const TString GetFileNamePrincipal(TString particle) const;
 
   //Get file name that contain PID parameters
   const TString GetFileNameParameters()      const {return fFileNameParameters ;}
-
-  // Get number of rec.particles in this run
-  virtual Int_t GetRecParticlesInRun() const {return fRecParticlesInRun ;}  
-
 
   // Get PID parameters as they are defined in fParameters
   Float_t GetParameterCalibration    (Int_t i)               const;
@@ -117,8 +116,6 @@ public:
   
 private:
   
-  const TString BranchName() const ; 
-  virtual void  Init() ;
   virtual void  InitParameters() ;
   void          MakeRecParticles(void ) ;
   void          MakePID(void) ;
@@ -136,9 +133,7 @@ private:
   Int_t   GetHardPi0Bit   (AliPHOSEmcRecPoint * emc) const;
   TVector3      GetMomentumDirection(AliPHOSEmcRecPoint * emc, AliPHOSCpvRecPoint * cpv)const ;
   void          PrintRecParticles(Option_t * option) ;
-  virtual void  WriteRecParticles() ; 
   void          SetParameters() ; //Fills the matrix of parameters
-  void          Unload(); 
 
   //PID population
   void SetInitPID(const Double_t * pid) ;
@@ -148,7 +143,6 @@ private:
   Bool_t      fBayesian ;                 //  Do PID bayesian
   Bool_t      fDefaultInit;              //! kTRUE if the task was created by defaut ctor (only parameters are initialized)
   Bool_t      fWrite ;                   //! To write result to file 
-  Int_t       fNEvent ;                  //! current event number
   TString     fFileNamePrincipalPhoton ; //  File name of the photon principals
   TString     fFileNamePrincipalPi0 ;    //  File name of the pi0 principals
   TString     fFileNameParameters ;      //  File name with PID parameters
@@ -157,7 +151,6 @@ private:
   Double_t   *fX ;                       //! Shower shape for the principal data 
   Double_t   *fPPhoton ;                 //! Principal photon eigenvalues
   Double_t   *fPPi0 ;                    //! Principal pi0 eigenvalues
-  Int_t       fRecParticlesInRun ;       //! Total number of recparticles in one run
   TMatrixF    *fParameters;               //! Matrix of identification Parameters
 
   TVector3   fVtx ;                      //! Vertex position in current event
@@ -199,7 +192,7 @@ private:
   Float_t  fDispEnThreshold;          //Minimum energy to use shower shape
   Int_t    fDispMultThreshold ;       //Minimum multiplicity to use shower shape
 
-  ClassDef( AliPHOSPIDv1,12)  // Particle identifier implementation version 1
+  ClassDef( AliPHOSPIDv1,13)  // Particle identifier implementation version 1
 
 };
 

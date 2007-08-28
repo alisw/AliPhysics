@@ -92,6 +92,7 @@ AliPHOSGeometry::AliPHOSGeometry(const Text_t* name, const Text_t* title)
 { 
   // ctor only for internal usage (singleton)
   Init() ; 
+  fgGeom = this;
 }
 
 //____________________________________________________________________________

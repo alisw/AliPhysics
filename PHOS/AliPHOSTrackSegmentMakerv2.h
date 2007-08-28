@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/04/25 19:39:42  kharlov
+ * Track extracpolation improved
+ *
  * Revision 1.2  2007/04/01 19:16:52  kharlov
  * D.P.: Produce EMCTrackSegments using TPC/ITS tracks (no CPV)
  *
@@ -53,16 +56,12 @@ class  AliPHOSTrackSegmentMakerv2 : public AliPHOSTrackSegmentMaker {
 public:
 
   AliPHOSTrackSegmentMakerv2() ;                     
-  AliPHOSTrackSegmentMakerv2(const TString & alirunFileNameFile, const TString & eventFolderName = AliConfig::GetDefaultEventFolderName());
+  AliPHOSTrackSegmentMakerv2(AliPHOSGeometry *geom);
   AliPHOSTrackSegmentMakerv2(const AliPHOSTrackSegmentMakerv2 & tsm);
 
   virtual ~ AliPHOSTrackSegmentMakerv2() ; // dtor
   
-  //  virtual char*  GetRecPointsBranch    (void)const{return (char*)fRecPointsBranchTitle.Data() ;}
-  //  virtual char*  GetTrackSegmentsBranch(void)const{return (char*)fTrackSegmentsBranchTitle.Data() ;}
-  virtual Int_t GetTrackSegmentsInRun()const {return fTrackSegmentsInRun ;}  
-
-  virtual void   Exec(Option_t *option); // Does the job
+  virtual void   Clusters2TrackSegments(Option_t *option); // Does the job
           void   FillOneModule() ;       // Finds range in which RecPoints belonging current PHOS module are
 
           void   MakeLinks() ;           //Evaluates distances(links) between EMC and CPV
@@ -72,26 +71,23 @@ public:
   void SetWriting(Bool_t toWrite = kFALSE){fWrite = toWrite;} 
   virtual void   SetMaxTPCDistance(Float_t r){ fRtpc = r ;} //Maximal distance 
                                                                //between EMCrp and extrapolation of TPC track
-  //  virtual void   SetRecPointsBranch(const char * title) { fRecPointsBranchTitle = title ;} 
-  //  virtual void   SetTrackSegmentsBranch(const char * title){ fTrackSegmentsBranchTitle = title ; }
-  virtual const char * Version() const { return "tsm-v2" ; }  
+ virtual const char * Version() const { return "tsm-v2" ; }  
 
   AliPHOSTrackSegmentMakerv2 & operator = (const AliPHOSTrackSegmentMakerv2 & )  {
     // assignement operator requested by coding convention but not needed
     Fatal("operator =", "not implemented") ;
     return *this ; 
   }
-  void Unload() ;
+
+  virtual TClonesArray * GetTrackSegments() const { return fTrackSegments; }
 
 private:
 
-  const TString BranchName() const ; 
   void  GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * EmcClu , AliESDtrack* track,
                                Float_t &dx, Float_t &dz ) const ; // see R0
   void    Init() ;
   void    InitParameters() ;
   void    PrintTrackSegments(Option_t *option) ;
-  virtual void   WriteTrackSegments() ;
 
 protected: 
   struct TrackInPHOS_t {
@@ -117,9 +113,10 @@ private:
   Int_t fEmcFirst;     //! Index of first EMC RecPoint belonging to currect PHOS module
   Int_t fEmcLast ;     //!
   Int_t fModule ;      //! number of module being processed
-  Int_t fTrackSegmentsInRun ; //! Total number of track segments in one run
 
-  ClassDef( AliPHOSTrackSegmentMakerv2,1)  // Implementation version 1 of algorithm class to make PHOS track segments 
+  TClonesArray * fTrackSegments; // Array with found track-segments
+
+  ClassDef( AliPHOSTrackSegmentMakerv2,2)  // Implementation version 1 of algorithm class to make PHOS track segments 
 
  };
 

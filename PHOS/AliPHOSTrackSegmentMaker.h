@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.42  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.41  2007/07/11 13:43:30  hristov
  * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
  *
@@ -30,57 +33,48 @@
 //*-- Author: Dmitri Peressounko (RRC Kurchatov Institute  & SUBATECH)
 
 // --- ROOT system ---
-#include "TTask.h"
-#include "AliConfig.h"
-class TFile ; 
-
-// --- Standard library ---
-//#include <iostream>
+#include <TObject.h>
+class TTree;
 
 // --- AliRoot header files ---
-class AliPHOSClusterizer ;
 class AliPHOSGeometry ;
 class AliESDEvent ;
 class AliPHOSQualAssDataMaker ; 
 
-class  AliPHOSTrackSegmentMaker : public TTask {
+class  AliPHOSTrackSegmentMaker : public TObject {
 
 public:
 
   AliPHOSTrackSegmentMaker();
-  AliPHOSTrackSegmentMaker(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;                     
+  AliPHOSTrackSegmentMaker(AliPHOSGeometry *geom);
   AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) ;
   virtual ~ AliPHOSTrackSegmentMaker() ;
   AliPHOSTrackSegmentMaker & operator = (const AliPHOSTrackSegmentMaker & /*rvalue*/)  {
     Fatal("operator =", "not implemented") ; return *this ; }
 
-  virtual Int_t GetTrackSegmentsInRun()  const {Warning("GetTrackSegmentsInRun", "Not Defined" ) ; return 0 ; } 
+  virtual void   Clusters2TrackSegments(Option_t *option) = 0;
+
+  void    SetInput(TTree *clustersTree);
 
   virtual void    Print(const Option_t * = "")const {Warning("Print", "Not Defined" ) ; }
 
-  void SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
-  void SetEventFolderName(TString name) { fEventFolderName = name ; }
   void SetESD(AliESDEvent *esd) { fESD = esd; }
 
-  TString GetEventFolderName() const {return fEventFolderName;}
-  Int_t   GetFirstEvent()      const {return fFirstEvent;     }
-  Int_t   GetLastEvent()       const {return fLastEvent;      }
   AliESDEvent *GetESD()             const {return fESD;            }
 
-  virtual void WriteTrackSegments() = 0;
-  
   AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
+
+  virtual TClonesArray * GetTrackSegments() const = 0;
 
 protected:
 
-  TString fEventFolderName ;  // event folder name
-  Int_t   fFirstEvent;        // first event to process
-  Int_t   fLastEvent;         // last  event to process
   AliESDEvent * fESD;              //! ESD object
-
   AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
+  AliPHOSGeometry *fGeom;           //! Pointer to the PHOS geometry
+  TObjArray *fEMCRecPoints;         //  Array with the EMC clusters
+  TObjArray *fCPVRecPoints;         //  Array with the CPV clusters
 
-  ClassDef( AliPHOSTrackSegmentMaker,5)  // Algorithm class to make PHOS track segments (Base Class)
+  ClassDef( AliPHOSTrackSegmentMaker,6)  // Algorithm class to make PHOS track segments (Base Class)
 };
 
 #endif // ALIPHOSTRACKSEGMENTMAKER_H

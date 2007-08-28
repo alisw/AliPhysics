@@ -626,15 +626,15 @@ void  AliPHOSOnlineMonitor::Go(){
   AliPHOSTrackSegmentMakerv1 * tsm = 0 ;
   AliPHOSPIDv1 * pid = 0 ;
   if(fReconstruct){ //We will need calibation parameters
-    clu = new AliPHOSClusterizerv1("PHOS","On Flight") ;
+    clu = new AliPHOSClusterizerv1(gime->PHOSGeometry()) ;
     clu->SetWriting(0) ; //Do not write to file
     clu->SetEmcMinE(0.05) ;  //Minimal energy of the digit
     clu->SetEmcLocalMaxCut(0.05) ; //Height of local maximum over environment
     clu->SetEmcClusteringThreshold(0.2) ; //Minimal energy to start cluster
 //    clu->SetUnfolding(kFALSE) ; //Do not unfold
-    tsm = new AliPHOSTrackSegmentMakerv1("PHOS","On Flight") ;
+    tsm = new AliPHOSTrackSegmentMakerv1(gime->PHOSGeometry());
     tsm->SetWriting(0) ; //Do not write to file
-    pid = new AliPHOSPIDv1("PHOS","On Flight") ;
+    pid = new AliPHOSPIDv1(gime->PHOSGeometry()) ;
     pid->SetWriting(0) ; //Do not write to file    
   }
   
@@ -659,9 +659,10 @@ void  AliPHOSOnlineMonitor::Go(){
 	if((rawStream->IsNELevent() || rawStream->IsWELevent()) && fScanSig){
 	  ScanEdep(digits) ;
 	  if(fReconstruct){
-	    gime->Clusterizer()->Exec("") ;
-	    gime->TrackSegmentMaker()->Exec("") ;
-	    gime->PID()->Exec("") ;
+	    // PLEASE FIX IT !!!
+	    //	    gime->Clusterizer()->Exec("") ;
+	    //	    gime->TrackSegmentMaker()->Exec("") ;
+	    //	    gime->PID()->Exec("") ;
 	    ScanRecon(recParticles) ;
 	  }
 	}

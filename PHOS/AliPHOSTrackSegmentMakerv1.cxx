@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.91  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.90  2007/07/11 13:43:30  hristov
  * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
  *
@@ -113,10 +116,11 @@
 #include "AliPHOSTrackSegmentMakerv1.h"
 #include "AliPHOSTrackSegment.h"
 #include "AliPHOSLink.h"
-#include "AliPHOSGetter.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliPHOSQualAssDataMaker.h"
+#include "AliPHOSEmcRecPoint.h"
+#include "AliPHOSCpvRecPoint.h"
 
 ClassImp( AliPHOSTrackSegmentMakerv1) 
 
@@ -136,16 +140,15 @@ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1() :
   fCpvFirst(0),
   fCpvLast(0),
   fModule(0),
-  fTrackSegmentsInRun(0)
-  
+  fTrackSegments(NULL)
 {
   // default ctor (to be used mainly by Streamer)
   InitParameters() ; 
 }
 
 //____________________________________________________________________________
-AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const TString & alirunFileName, const TString & eventFolderName) :
-  AliPHOSTrackSegmentMaker(alirunFileName, eventFolderName),
+AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(AliPHOSGeometry *geom) :
+  AliPHOSTrackSegmentMaker(geom),
   fDefaultInit(kFALSE),
   fWrite(kFALSE),
   fNTrackSegments(0),
@@ -158,7 +161,7 @@ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const TString & alirunFil
   fCpvFirst(0),
   fCpvLast(0),
   fModule(0),
-  fTrackSegmentsInRun(0)
+  fTrackSegments(NULL)
 {
   // ctor
   InitParameters() ; 
@@ -181,7 +184,7 @@ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegment
   fCpvFirst(0),
   fCpvLast(0),
   fModule(0),
-  fTrackSegmentsInRun(0)
+  fTrackSegments(NULL)
 {
   // cpy ctor: no implementation yet
   // requested by the Coding Convention
@@ -196,14 +199,10 @@ AliPHOSTrackSegmentMakerv1::AliPHOSTrackSegmentMakerv1(const AliPHOSTrackSegment
   // fDefaultInit = kTRUE if TrackSegmentMaker created by default ctor (to get just the parameters)
   if (!fDefaultInit)  
     delete fLinkUpArray ;
-}
-
-
-//____________________________________________________________________________
-const TString AliPHOSTrackSegmentMakerv1::BranchName() const 
-{  
- 
-  return GetName() ;
+  if (fTrackSegments) {
+    fTrackSegments->Delete();
+    delete fTrackSegments;
+  }
 }
 
 //____________________________________________________________________________
@@ -212,21 +211,17 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
   // Finds first and last indexes between which 
   // clusters from one PHOS module are
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-   
   //First EMC clusters
-  Int_t totalEmc = emcRecPoints->GetEntriesFast() ;
+  Int_t totalEmc = fEMCRecPoints->GetEntriesFast() ;
   for(fEmcFirst = fEmcLast; (fEmcLast < totalEmc) &&  
-	((dynamic_cast<AliPHOSRecPoint *>(emcRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
+	((dynamic_cast<AliPHOSRecPoint *>(fEMCRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
       fEmcLast ++)  ;
   
   //Now CPV clusters
-  Int_t totalCpv = cpvRecPoints->GetEntriesFast() ;
+  Int_t totalCpv = fCPVRecPoints->GetEntriesFast() ;
 
     for(fCpvFirst = fCpvLast; (fCpvLast < totalCpv) && 
-         ((dynamic_cast<AliPHOSRecPoint *>(cpvRecPoints->At(fCpvLast)))->GetPHOSMod() == fModule ); 
+         ((dynamic_cast<AliPHOSRecPoint *>(fCPVRecPoints->At(fCpvLast)))->GetPHOSMod() == fModule ); 
        fCpvLast ++) ;
       
 }
@@ -259,18 +254,15 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
 
   emcClu->GetLocalPosition(vecEmc) ;
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
-    
   Double_t xCPV,zCPV ; //EMC-projected coordinates of CPV cluster 
   TVector3 cpvGlobal; // Global position of the CPV recpoint
-  geom->GetGlobalPHOS((AliPHOSRecPoint*)cpvClu,cpvGlobal);
+  fGeom->GetGlobalPHOS((AliPHOSRecPoint*)cpvClu,cpvGlobal);
   Double_t vtxCPV[3]={cpvGlobal.X(),cpvGlobal.Y(),cpvGlobal.Z()} ;
   Int_t dummyMod ;
 
   if (fESD == 0x0) {
      //if no track information available, assume straight line from IP to emcal
-     geom->ImpactOnEmc(vtxCPV,cpvGlobal.Theta(),cpvGlobal.Phi(),dummyMod,zCPV,xCPV) ;
+     fGeom->ImpactOnEmc(vtxCPV,cpvGlobal.Theta(),cpvGlobal.Phi(),dummyMod,zCPV,xCPV) ;
      dx=xCPV - vecEmc.X() ;
      dz=zCPV - vecEmc.Z() ;
      return ;
@@ -311,7 +303,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
       if (track->GetPxPyPzAt(rCPV, fESD->GetMagneticField(), pxyz)) { // track momentum ibid.
         vecP.SetXYZ(pxyz[0],pxyz[1],pxyz[2]);
         Int_t dummyMod ;
-	geom->ImpactOnEmc(vtxCPV,vecP.Theta(),vecP.Phi(),dummyMod,zCPV,xCPV) ;
+	fGeom->ImpactOnEmc(vtxCPV,vecP.Theta(),vecP.Phi(),dummyMod,zCPV,xCPV) ;
       }
     }
     
@@ -326,7 +318,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
   }
   else{
     // If no global track was found, just take the nearest CPV point
-    geom->ImpactOnEmc(vtxCPV,cpvGlobal.Theta(),cpvGlobal.Phi(),dummyMod,zCPV,xCPV) ;
+    fGeom->ImpactOnEmc(vtxCPV,cpvGlobal.Theta(),cpvGlobal.Phi(),dummyMod,zCPV,xCPV) ;
     dx=xCPV - vecEmc.X() ;
     dz=zCPV - vecEmc.Z() ;
   }
@@ -337,14 +329,9 @@ void  AliPHOSTrackSegmentMakerv1::Init()
 {
   // Make all memory allocations that are not possible in default constructor
   
-  AliPHOSGetter* gime = AliPHOSGetter::Instance();
-  if(!gime)
-    gime = AliPHOSGetter::Instance(GetTitle(), fEventFolderName.Data());
-  
   fLinkUpArray  = new TClonesArray("AliPHOSLink", 1000); 
-  if ( !gime->TrackSegmentMaker() ) {
-    gime->PostTrackSegmentMaker(this);
-  }
+  fTrackSegments = new TClonesArray("AliPHOSTrackSegment",100);
+  fTrackSegments->SetName("TRACKS");
 }
 
 //____________________________________________________________________________
@@ -359,8 +346,6 @@ void  AliPHOSTrackSegmentMakerv1::InitParameters()
   fCpvLast   = 0 ;   
   fLinkUpArray = 0 ;
   fWrite                   = kTRUE ;
-  fTrackSegmentsInRun       = 0 ; 
-  SetEventRange(0,-1) ;
 }
 
 
@@ -371,10 +356,6 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
   // which are not further apart from each other than fRcpv 
   // and sort them in accordance with this distance
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-
   fLinkUpArray->Clear() ;    
 
   AliPHOSCpvRecPoint * cpv ;
@@ -384,13 +365,13 @@ void  AliPHOSTrackSegmentMakerv1::MakeLinks()const
   
   Int_t iEmcRP;
   for(iEmcRP = fEmcFirst; iEmcRP < fEmcLast; iEmcRP++ ) {
-    emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(iEmcRP)) ;
+    emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)) ;
 
     //Bool_t toofar ;        
     Int_t iCpv = 0 ;    
     for(iCpv = fCpvFirst; iCpv < fCpvLast;iCpv++ ) { 
       
-      cpv = dynamic_cast<AliPHOSCpvRecPoint *>(cpvRecPoints->At(iCpv)) ;
+      cpv = dynamic_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(iCpv)) ;
       Int_t track = -1 ; 
       Float_t dx,dz ;
       GetDistanceInPHOSPlane(emcclu, cpv, track,dx,dz) ;     
@@ -411,12 +392,6 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   // unassigned RecParticles. We assign these RecPoints to TrackSegment and 
   // remove them from the list of "unassigned". 
 
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ; 
-
-  TObjArray * emcRecPoints = gime->EmcRecPoints() ; 
-  TObjArray * cpvRecPoints = gime->CpvRecPoints() ; 
-  TClonesArray * trackSegments = gime->TrackSegments();
-    
   //Make arrays to mark clusters already chosen
   Int_t * emcExist = 0;
   if(fEmcLast > fEmcFirst)
@@ -447,12 +422,12 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
       if(cpvExist[linkUp->GetCpv()-fCpvFirst]){ //CPV still exist
          Float_t dx,dz ;
          linkUp->GetXZ(dx,dz) ;
-	 new ((* trackSegments)[fNTrackSegments]) 
-	   AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(linkUp->GetEmc())) , 
-			       dynamic_cast<AliPHOSCpvRecPoint *>(cpvRecPoints->At(linkUp->GetCpv())) , 
+	 new ((* fTrackSegments)[fNTrackSegments]) 
+	   AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(linkUp->GetEmc())) , 
+			       dynamic_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(linkUp->GetCpv())) , 
 			       linkUp->GetTrack(),dx,dz) ;
 	 
-       (dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+       (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++ ;
        emcExist[linkUp->GetEmc()-fEmcFirst] = -1 ; //Mark emc  that Cpv was found 
        //mark CPV recpoint as already used 
@@ -466,10 +441,10 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     Int_t iEmcRP ;
     for(iEmcRP = 0; iEmcRP < fEmcLast-fEmcFirst  ; iEmcRP++ ){
       if(emcExist[iEmcRP] > 0 ){
-       new ((*trackSegments)[fNTrackSegments])  
-         AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(iEmcRP+fEmcFirst)), 
+       new ((*fTrackSegments)[fNTrackSegments])  
+         AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP+fEmcFirst)), 
                            nullpointer) ;
-       (dynamic_cast<AliPHOSTrackSegment *>(trackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+       (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++;    
       } 
     }
@@ -479,12 +454,10 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 }
 
 //____________________________________________________________________________
-void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
+void AliPHOSTrackSegmentMakerv1::Clusters2TrackSegments(Option_t *option)
 {
-  // Steering method to perform track segment construction for events
-  // in the range from fFirstEvent to fLastEvent.
-  // This range is optionally set by SetEventRange().
-  // if fLastEvent=-1 (by default), then process events until the end.
+  // Steering method to perform track segment construction for the current event
+  // Returns an array with the found track-segments.
   
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSTSMaker");
@@ -494,62 +467,31 @@ void  AliPHOSTrackSegmentMakerv1::Exec(Option_t *option)
     return ; 
   }
   
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
- 
-  const AliPHOSGeometry * geom = gime->PHOSGeometry() ; 
+  //Make some initializations 
+  fNTrackSegments = 0 ;
+  fEmcFirst = 0 ;    
+  fEmcLast  = 0 ;   
+  fCpvFirst = 0 ;   
+  fCpvLast  = 0 ;   
 
-  if (fLastEvent == -1) 
-    fLastEvent = gime->MaxEvent() - 1 ;
-  else 
-    fLastEvent = TMath::Min(fFirstEvent,gime->MaxEvent());
-  Int_t nEvents   = fLastEvent - fFirstEvent + 1;
+  fTrackSegments->Clear();
 
-  Int_t ievent ; 
-  for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
-    gime->Event(ievent,"DR") ;
-   //Make some initializations 
-    fNTrackSegments = 0 ;
-    fEmcFirst = 0 ;    
-    fEmcLast  = 0 ;   
-    fCpvFirst = 0 ;   
-    fCpvLast  = 0 ;   
+  //   if(!ReadRecPoints(ievent))   continue; //reads RecPoints for event ievent
     
-    gime->TrackSegments()->Clear();
-
-   //   if(!ReadRecPoints(ievent))   continue; //reads RecPoints for event ievent
-    
-    for(fModule = 1; fModule <= geom->GetNModules() ; fModule++ ) {
-      FillOneModule() ; 
-      MakeLinks() ;
-      MakePairs() ;
-    }
-   
-    
-    WriteTrackSegments() ;
-
-    if(strstr(option,"deb"))
-      PrintTrackSegments(option);
-    
-    //increment the total number of track segments per run 
-    fTrackSegmentsInRun += gime->TrackSegments()->GetEntriesFast() ; 
+  for(fModule = 1; fModule <= fGeom->GetNModules() ; fModule++ ) {
+    FillOneModule() ; 
+    MakeLinks() ;
+    MakePairs() ;
   }
-  
+    
+  if(strstr(option,"deb"))
+    PrintTrackSegments(option);
+
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSTSMaker");
-    Info("Exec", "took %f seconds for making TS %f seconds per event", 
-          gBenchmark->GetCpuTime("PHOSTSMaker"), 
-          gBenchmark->GetCpuTime("PHOSTSMaker")/nEvents) ;
-   }
-  if(fWrite) //do not unload in "on flight" mode
-    Unload();
-}
-//____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::Unload() 
-{
-  // Unloads the task from the folder
-  AliPHOSGetter * gime = AliPHOSGetter::Instance() ;  
-  gime->PhosLoader()->UnloadRecPoints() ;
-  gime->PhosLoader()->UnloadTracks() ;
+    Info("Exec", "took %f seconds for making TS", 
+	 gBenchmark->GetCpuTime("PHOSTSMaker")); 
+  }
 }
 
 //____________________________________________________________________________
@@ -571,52 +513,19 @@ void AliPHOSTrackSegmentMakerv1::Print(const Option_t *)const
 }
 
 //____________________________________________________________________________
-void AliPHOSTrackSegmentMakerv1::WriteTrackSegments()
-{
-  // Writes found TrackSegments to TreeR. Creates branches 
-  // "PHOSTS" and "AliPHOSTrackSegmentMaker" with the same title.
-  // In the former branch found TrackSegments are stored, while 
-  // in the latter all parameters, with which TS were made. 
-  // ROOT does not allow overwriting existing branches, therefore
-  // first we check, if branches with the same title already exist.
-  // If yes - exits without writing.
-
-  AliPHOSGetter *gime = AliPHOSGetter::Instance() ; 
-
-  TClonesArray * trackSegments = gime->TrackSegments() ; 
-  trackSegments->Expand(trackSegments->GetEntriesFast()) ;
-
-  if(fWrite){ //We write TreeT
-    TTree * treeT = gime->TreeT();
-    
-    //First TS
-    Int_t bufferSize = 32000 ; 
-    TBranch * tsBranch = treeT->Branch("PHOSTS",&trackSegments,bufferSize);
-    tsBranch->Fill() ;  
-    
-    gime->WriteTracks("OVERWRITE");
-    gime->WriteTrackSegmentMaker("OVERWRITE");
-  }
-}
-
-
-//____________________________________________________________________________
 void AliPHOSTrackSegmentMakerv1::PrintTrackSegments(Option_t * option)
 {
   // option deb - prints # of found TrackSegments
   // option deb all - prints as well indexed of found RecParticles assigned to the TS
 
-  TClonesArray * trackSegments = AliPHOSGetter::Instance()->TrackSegments() ; 
-
   Info("PrintTrackSegments", "Results from TrackSegmentMaker:") ; 
-  printf("nevent: %d\n", AliPHOSGetter::Instance()->EventNumber()) ; 
-  printf("        Found %d TrackSegments\n", trackSegments->GetEntriesFast() ); 
+  printf("        Found %d TrackSegments\n", fTrackSegments->GetEntriesFast() ); 
   
   if(strstr(option,"all")) {  // printing found TS
     printf("TrackSegment #  EMC RP#  CPV RP#\n") ; 
     Int_t index;
-    for (index = 0 ; index <trackSegments->GetEntriesFast() ; index++) {
-      AliPHOSTrackSegment * ts = (AliPHOSTrackSegment * )trackSegments->At(index) ; 
+    for (index = 0 ; index <fTrackSegments->GetEntriesFast() ; index++) {
+      AliPHOSTrackSegment * ts = (AliPHOSTrackSegment * )fTrackSegments->At(index) ; 
       printf("   %d           %d        %d \n", ts->GetIndexInList(), ts->GetEmcIndex(), ts->GetCpvIndex() ) ; 
     }	
   }
