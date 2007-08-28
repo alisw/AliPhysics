@@ -63,7 +63,7 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   fIsCalibration=0; //By default the simulation doesn't create calib. data
   // Get calibration data
   fCalibData = GetCalibData(); 
-  if(fIsCalibration!=0) printf("\t **** AliZDCDigitizer -> Creating calibration data (pedestals)\n");
+  if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
 
 }
 
@@ -198,16 +198,17 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     specP = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
     AliDebug(2, Form("\n AliZDCDigitizer -> b = %f fm, Nspecn = %d, Nspecp = %d\n",
                      impPar, specN, specP));
-    printf("\n\t AliZDCDigitizer -> b = %f fm, NSpecn = %d, NSpecp = %d\n", impPar, specN, specP);
+    printf("\n\t AliZDCDigitizer -> b = %f fm, # generated spectator n = %d," 
+    " # generated spectator p = %d\n", impPar, specN, specP);
   }
 
   // add spectators
   if(impPar >= 0) {
     Int_t freeSpecN, freeSpecP;
     Fragmentation(impPar, specN, specP, freeSpecN, freeSpecP);
-    printf("\n\t AliZDCDigitizer ---- Adding signal for %d free spectator n\n",freeSpecN);
+    printf("\n\t AliZDCDigitizer -> Adding signal for %d free spectator n\n",freeSpecN);
     SpectatorSignal(1, freeSpecN, pm);
-    printf("\t AliZDCDigitizer ---- Adding signal for %d free spectator p\n\n",freeSpecP);
+    printf("\t AliZDCDigitizer -> Adding signal for %d free spectator p\n\n",freeSpecP);
     SpectatorSignal(2, freeSpecP, pm);
   }
 
