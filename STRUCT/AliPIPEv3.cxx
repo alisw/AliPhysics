@@ -90,6 +90,8 @@ void AliPIPEv3::CreateGeometry()
     const TGeoMedium* kMedCu      =  gGeoManager->GetMedium("PIPE_CU");        
     const TGeoMedium* kMedKapton  =  gGeoManager->GetMedium("PIPE_KAPTON");        
     const TGeoMedium* kMedAco     =  gGeoManager->GetMedium("PIPE_ANTICORODAL");        
+    const TGeoMedium* kMedNEG     =  gGeoManager->GetMedium("PIPE_NEG COATING"); 
+       
 // Top volume
     TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
 //
@@ -137,6 +139,7 @@ void AliPIPEv3::CreateGeometry()
 //      CP/1     //
 ///////////////////
 //  Inner and outer radii of the Be-section [Pos 1]
+    const Float_t kCP1NegRo                      = 2.90 + 0.0002;
     const Float_t kCP1BeRi                       = 2.90;
     const Float_t kCP1BeRo                       = 2.98;
     const Float_t kCP1KaRo                       = 2.99;    
@@ -176,9 +179,14 @@ void AliPIPEv3::CreateGeometry()
     TGeoVolume* voCp1Ka  = new TGeoVolume("CP1KA", 
 					  new TGeoTube(0., kCP1KaRo,  kCP1BeLength / 2.), 
 					  kMedKapton);
+    // Inner NEG coating
+    TGeoVolume* voCp1NEG = new TGeoVolume("CP1NEG", 
+					  new TGeoTube(kCP1BeRi, kCP1NegRo, kCP1BeLength / 2.), 
+					  kMedNEG);
 
     voCp1Ka->AddNode(voCp1Be,  1, gGeoIdentity);
     voCp1Be->AddNode(voCp1Vac, 1, gGeoIdentity);
+    voCp1Be->AddNode(voCp1NEG, 1, gGeoIdentity);
     voCp1Mo->AddNode(voCp1Ka,  1, gGeoIdentity);
 
 /////////////////////////////////////////////
@@ -2727,7 +2735,14 @@ void AliPIPEv3::CreateMaterials()
   Float_t zKapton[4]={1.,6.,7.,8.};
   Float_t wKapton[4]={0.026362,0.69113,0.07327,0.209235};
   Float_t dKapton = 1.42;
+  // NEG coating
+  //                  Ti     V      Zr
+  Float_t aNEG[4] = {47.87, 50.94, 91.24};
+  Float_t zNEG[4] = {22.00, 23.00, 40.00};
+  Float_t wNEG[4] = {1./3., 1./3., 1./3.};  
+  Float_t dNEG = 5.6; // ?
 
+  //
   //
   //     Berillium 
   AliMaterial(5, "BERILLIUM$", 9.01, 4., 1.848, 35.3, 36.7);
@@ -2764,12 +2779,17 @@ void AliPIPEv3::CreateMaterials()
   AliMixture(23, "KAPTON", aKapton, zKapton, dKapton, 4, wKapton);
   // Anticorodal 
   AliMixture(24, "ANTICORODAL", aaco, zaco, 2.66, 3, waco);
-
+  
   //
   //     Insulation powder 
    AliMixture(14, "INSULATION0$", ains, zins, 0.41, 4, wins);
    AliMixture(34, "INSULATION1$", ains, zins, 0.41, 4, wins);
    AliMixture(54, "INSULATION2$", ains, zins, 0.41, 4, wins);
+
+   //    NEG
+   AliMixture(25, "NEG COATING", aNEG, zNEG, dNEG, -3, wNEG);
+   
+   
    // **************** 
    //     Defines tracking media parameters. 
    //
@@ -2819,6 +2839,10 @@ void AliPIPEv3::CreateMaterials()
   //
   //   KAPTON
   AliMedium(23, "KAPTON", 23, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+
+  //
+  //   NEG
+  AliMedium(25, "NEG COATING", 25, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 }
 
 
