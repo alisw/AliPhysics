@@ -88,121 +88,100 @@ AliZDCReconstructor::~AliZDCReconstructor()
 
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader) const
+void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   // *** Local ZDC reconstruction for digits
+  // Works on the current event
     
   Float_t meanPed[47];
   for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fCalibData->GetMeanPed(jj);
 
-  AliLoader* loader = runLoader->GetLoader("ZDCLoader");
-  if (!loader) return;
-  loader->LoadDigits("read");
-  loader->LoadRecPoints("recreate");
+  // get digits
   AliZDCDigit digit;
   AliZDCDigit* pdigit = &digit;
+  digitsTree->SetBranchAddress("ZDC", &pdigit);
 
-  // Event loop
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
-    runLoader->GetEvent(iEvent);
+  // loop over digits
+  Float_t zn1corr=0, zp1corr=0, zn2corr=0, zp2corr=0, zemcorr=0;
+  for (Int_t iDigit = 0; iDigit < digitsTree->GetEntries(); iDigit++) {
+    digitsTree->GetEntry(iDigit);
+    if (!pdigit) continue;
 
-    // load digits
-    loader->LoadDigits();
-    TTree* treeD = loader->TreeD();
-    if (!treeD) continue;
-    treeD->SetBranchAddress("ZDC", &pdigit);
-
-    // loop over digits
-    Float_t zn1corr=0, zp1corr=0, zn2corr=0, zp2corr=0, zemcorr=0;
-    for (Int_t iDigit = 0; iDigit < treeD->GetEntries(); iDigit++) {
-      treeD->GetEntry(iDigit);
-      if (!pdigit) continue;
-
-      if(digit.GetSector(0) == 1)
-       	 zn1corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);     // high gain ZN1 ADCs
-      else if(digit.GetSector(0) == 2)
-	 zp1corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]);  // high gain ZP1 ADCs
-      else if(digit.GetSector(0) == 3){
-	 if(digit.GetSector(1)==1)      
-	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // high gain ZEM1 ADCs
-	 else if(digit.GetSector(1)==2) 
-	   zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // high gain ZEM2 ADCs
-      }
-      else if(digit.GetSector(0) == 4)
-       	 zn2corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+24]);  // high gain ZN2 ADCs
-      else if(digit.GetSector(0) == 5)
-	 zp2corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+34]);  // high gain ZP2 ADCs
+    if(digit.GetSector(0) == 1)
+      zn1corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)]);     // high gain ZN1 ADCs
+    else if(digit.GetSector(0) == 2)
+      zp1corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+10]);  // high gain ZP1 ADCs
+    else if(digit.GetSector(0) == 3){
+      if(digit.GetSector(1)==1)      
+	zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+20]); // high gain ZEM1 ADCs
+      else if(digit.GetSector(1)==2) 
+	zemcorr += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+22]); // high gain ZEM2 ADCs
     }
-    if(zn1corr<0)  zn1corr=0;
-    if(zp1corr<0)  zp1corr=0;
-    if(zn2corr<0)  zn2corr=0;
-    if(zp2corr<0)  zp2corr=0;
-    if(zemcorr<0)  zemcorr=0;
-
-    // reconstruct the event
-    //printf("\n \t ZDCReco from digits-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
-    ReconstructEvent(loader, zn1corr, zp1corr, zemcorr, zn2corr, zp2corr);
+    else if(digit.GetSector(0) == 4)
+      zn2corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+24]);  // high gain ZN2 ADCs
+    else if(digit.GetSector(0) == 5)
+      zp2corr  += (Float_t) (digit.GetADCValue(0)-meanPed[digit.GetSector(1)+34]);  // high gain ZP2 ADCs
   }
+  if(zn1corr<0)  zn1corr=0;
+  if(zp1corr<0)  zp1corr=0;
+  if(zn2corr<0)  zn2corr=0;
+  if(zp2corr<0)  zp2corr=0;
+  if(zemcorr<0)  zemcorr=0;
 
-  loader->UnloadDigits();
-  loader->UnloadRecPoints();
+  // reconstruct the event
+  //printf("\n \t ZDCReco from digits-> ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",zncorr,zpcorr,zemcorr);
+  ReconstructEvent(clustersTree, zn1corr, zp1corr, zemcorr, zn2corr, zp2corr);
+
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::Reconstruct(AliRunLoader* runLoader, 
-                                      AliRawReader* rawReader) const
+void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const
 {
-  // *** Local ZDC reconstruction for raw data
+  // *** ZDC raw data reconstruction
+  // Works on the current event
   
   Float_t meanPed[47];
   for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fCalibData->GetMeanPed(jj);
 
-  AliLoader* loader = runLoader->GetLoader("ZDCLoader");
-  if (!loader) return;
-  loader->LoadRecPoints("recreate");
-  // Event loop
-  Int_t iEvent = 0;
-  while (rawReader->NextEvent()) {
-    runLoader->GetEvent(iEvent++);
+  rawReader->Reset();
 
-    // loop over raw data digits
-    Float_t zn1corr=0, zp1corr=0,  zn2corr=0, zp2corr=0,zemcorr=0;
-    AliZDCRawStream digit(rawReader);
-    while (digit.Next()) {
-      if(digit.IsADCDataWord()){
-        if(digit.GetADCGain() == 0){
-          if(digit.GetSector(0) == 1)	   
-	    zn1corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)]); // high gain ZN1 ADCs;
-          else if(digit.GetSector(0) == 2) 
-	    zp1corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+10]); // high gain ZP1 ADCs;
-          else if(digit.GetSector(0) == 3) 
-	    if(digit.GetSector(1)==1)      
-	      zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+20]); // high gain ZEM1 ADCs
-	    else if(digit.GetSector(1)==2) 
-	      zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+22]); // high gain ZEM2 ADCs
-          else if(digit.GetSector(0) == 4)	   
-	    zn2corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+24]); // high gain ZN2 ADCs;
-          else if(digit.GetSector(0) == 5) 
-	    zp2corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+34]); // high gain ZP2 ADCs;
+  // loop over raw data digits
+  Float_t zn1corr=0, zp1corr=0,  zn2corr=0, zp2corr=0,zemcorr=0;
+  AliZDCRawStream digit(rawReader);
+  while (digit.Next()) {
+    if(digit.IsADCDataWord()){
+      if(digit.GetADCGain() == 0){
+	if(digit.GetSector(0) == 1)	   
+	  zn1corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)]); // high gain ZN1 ADCs;
+	else if(digit.GetSector(0) == 2) 
+	  zp1corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+10]); // high gain ZP1 ADCs;
+	else if(digit.GetSector(0) == 3){
+	  if(digit.GetSector(1)==1)      
+	    zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+20]); // high gain ZEM1 ADCs
+	  else if(digit.GetSector(1)==2) 
+	    zemcorr += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+22]); // high gain ZEM2 ADCs
 	}
+	else if(digit.GetSector(0) == 4)	   
+	  zn2corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+24]); // high gain ZN2 ADCs;
+	else if(digit.GetSector(0) == 5) 
+	  zp2corr  += (Float_t) (digit.GetADCValue()-meanPed[digit.GetSector(1)+34]); // high gain ZP2 ADCs;
       }
     }
-    if(zn1corr<0) zn1corr=0;
-    if(zp1corr<0) zp1corr=0;
-    if(zn2corr<0) zn2corr=0;
-    if(zp2corr<0) zp2corr=0;
-    if(zemcorr<0) zemcorr=0;
-    
-    // reconstruct the event
-    //printf("\n\t ZDCReco from raw-> Ev.#%d ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",iEvent,zncorr,zpcorr,zemcorr);
-    ReconstructEvent(loader, zn1corr, zp1corr, zemcorr, zn2corr, zp2corr);
   }
+  if(zn1corr<0) zn1corr=0;
+  if(zp1corr<0) zp1corr=0;
+  if(zn2corr<0) zn2corr=0;
+  if(zp2corr<0) zp2corr=0;
+  if(zemcorr<0) zemcorr=0;
+    
+  // reconstruct the event
+  //printf("\n\t ZDCReco from raw-> ZN = %.0f, ZP = %.0f, ZEM = %.0f\n",zncorr,zpcorr,zemcorr);
+  ReconstructEvent(clustersTree, zn1corr, zp1corr, zemcorr, zn2corr, zp2corr);
 
-  loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zn1corr, 
+void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree, Float_t zn1corr, 
 	Float_t zp1corr, Float_t zemcorr, Float_t zn2corr, Float_t zp2corr) const
 {
   // ***** Reconstruct one event
@@ -298,43 +277,31 @@ void AliZDCReconstructor::ReconstructEvent(AliLoader* loader, Float_t zn1corr,
   //printf("\t  ZDCeventReco-> ZNEn = %.0f GeV, ZPEn = %.0f GeV, ZEMEn = %.0f GeV\n",
   //	znenergy, zpenergy, zemenergy);
 
-  // create the output tree
-  loader->MakeTree("R");
-  TTree* treeR = loader->TreeR();
+  // get the output tree and store the ZDC reco object there
   AliZDCReco reco(zn1energy, zp1energy, zdc1energy, zemenergy,
   		  zn2energy, zp2energy, zdc2energy, 
                   nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight,
 		  nGenSpecN, nGenSpecP, nGenSpec,nPartTot, impPar);
   AliZDCReco* preco = &reco;
   const Int_t kBufferSize = 4000;
-  treeR->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
+  clustersTree->Branch("ZDC", "AliZDCReco", &preco, kBufferSize);
 
   // write the output tree
-  treeR->Fill();
-  loader->WriteRecPoints("OVERWRITE");
+  clustersTree->Fill();
 }
 
 //_____________________________________________________________________________
-void AliZDCReconstructor::FillESD(AliRunLoader* runLoader, 
-				  AliESDEvent* esd) const
+void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) const
 {
-// fill energies and number of participants to the ESD
+  // fill energies and number of participants to the ESD
 
-  AliLoader* loader = runLoader->GetLoader("ZDCLoader");
-  if (!loader) return;
-  loader->LoadRecPoints();
-
-  TTree* treeR = loader->TreeR();
-  if (!treeR) return;
   AliZDCReco reco;
   AliZDCReco* preco = &reco;
-  treeR->SetBranchAddress("ZDC", &preco);
+  clustersTree->SetBranchAddress("ZDC", &preco);
 
-  treeR->GetEntry(0);
+  clustersTree->GetEntry(0);
   esd->SetZDC(reco.GetZN1energy(), reco.GetZP1energy(), reco.GetZEMenergy(),
 	      reco.GetZN2energy(), reco.GetZP2energy(), reco.GetNPart());
-
-  loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________

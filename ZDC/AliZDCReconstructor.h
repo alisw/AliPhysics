@@ -15,6 +15,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliZDCCalibData.h"
+#include "AliLog.h"
 
 class TF1;
 class AliLoader;
@@ -24,21 +25,31 @@ public:
   AliZDCReconstructor();
   virtual ~AliZDCReconstructor();
 
-  virtual void Reconstruct(AliRunLoader* runLoader) const;
-  virtual void Reconstruct(AliRunLoader* runLoader,
-  	        AliRawReader* rawReader) const;
-  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const 
-  	        {AliReconstructor::Reconstruct(digitsTree,clustersTree);}
-  virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const 
-  	        {AliReconstructor::Reconstruct(rawReader,clustersTree);}
-  virtual void FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
-  virtual void FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const 
-  	        {AliReconstructor::FillESD(digitsTree,clustersTree,esd);}
-  virtual void FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESDEvent* esd) const 
-  	        {AliReconstructor::FillESD(rawReader,clustersTree,esd);}
-  virtual void FillESD(AliRunLoader* runLoader, AliRawReader* rawReader, AliESDEvent* esd) const 
-  		  {AliReconstructor::FillESD(runLoader,rawReader,esd);}
+  virtual Bool_t       HasDigitConversion() const {return kFALSE;};
+  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;};
+
+  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const; 
+  virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
+
+  // Not used
+  virtual void Reconstruct(AliRunLoader* /*runLoader*/) const
+    { AliError("Method should not be used anymore !"); }
+  virtual void Reconstruct(AliRunLoader* /*runLoader*/, 
+			   AliRawReader* /*rawReader*/) const
+    { AliError("Method should not be used anymore !"); }
+
+  virtual void FillESD(TTree* /*digitsTree*/, TTree* clustersTree, AliESDEvent* esd) const 
+  	        {FillZDCintoESD(clustersTree,esd);}
+  virtual void FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, AliESDEvent* esd) const 
+  	        {FillZDCintoESD(clustersTree,esd);}
   
+  // Not used
+  virtual void FillESD(AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/) const
+    { AliError("Method should not be used anymore !"); }
+  virtual void FillESD(AliRunLoader* /*runLoader*/, 
+		       AliRawReader* /*rawReader*/, AliESDEvent* /*esd*/) const
+    { AliError("Method should not be used anymore !"); }
+
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData() const; 
 
@@ -46,8 +57,9 @@ private:
   AliZDCReconstructor(const AliZDCReconstructor&);
   AliZDCReconstructor& operator =(const AliZDCReconstructor&);
 
-  void   ReconstructEvent(AliLoader* loader, Float_t zn1corr, Float_t zp1corr, Float_t zemcorr,
+  void   ReconstructEvent(TTree *clustersTree, Float_t zn1corr, Float_t zp1corr, Float_t zemcorr,
   		Float_t zn2corr, Float_t zp2corr) const;
+  void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
   TF1*   fZNCen;     //! Nspectator n true vs. EZN
   TF1*   fZNPer;     //! Nspectator n true vs. EZN
