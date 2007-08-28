@@ -46,8 +46,8 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     Float_t GetGainN(Int_t n) {return fGain->GetGainN(n); }
     void SetGain( AliITSGainSSD* gain) {fGain=gain;}
 
-    TArrayI GetBadPChannelsList() { fBadChannels->GetBadPChannelsList(); }
-    TArrayI GetBadNChannelsList() { fBadChannels->GetBadNChannelsList(); }
+    TArrayI GetBadPChannelsList() { return fBadChannels->GetBadPChannelsList(); } const
+    TArrayI GetBadNChannelsList() { return fBadChannels->GetBadNChannelsList(); } const
     void SetBadChannels( AliITSBadChannelsSSD* badchannels) {fBadChannels=badchannels;}
 
     void SetNoisePThreshold(Int_t threshold) { fNoisePThreshold = threshold;}
