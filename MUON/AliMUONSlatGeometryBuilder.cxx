@@ -289,69 +289,86 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	Float_t zSlat3 = (i%2 ==0)? -zSlat : zSlat; // seems not that zSlat3 = zSlat4 & 5 refering to plan PQ7EN345-6 ?
 
 	sprintf(idSlatCh5,"LA%d",i+kNslats3-1);
-	//gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
 	detElemId = 509 - (i + kNslats3-1-4);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
-				     TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+	if (detElemId % 2 == 0)
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
+						TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
+						TGeoRotation("rot1",90,angle,90,270+angle,180,0) ); 
 
 	sprintf(idSlatCh5,"LA%d",3*kNslats3-2+i);
-	//gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
 	detElemId = 500 + (i + kNslats3-1-4);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
-				     TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
-
+	if (detElemId % 2 == 0)
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+						TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+						TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
 
 	if (i > 0) { 
 	  sprintf(idSlatCh5,"LA%d",kNslats3-1-i);
-	  // gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
 	  detElemId = 509 + (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
-				       TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
-	 
+	  if (detElemId % 2 == 0 && detElemId != 510)
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
+						  TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
+	  else
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3), 
+						  TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
 
 	  sprintf(idSlatCh5,"LA%d",3*kNslats3-2-i);
-	  // gMC->Gsvolu(idSlatCh5,"BOX",kSlatMaterial,spar2,3);
 	  detElemId = 518 - (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
-				       TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) );
-
+	  if (detElemId % 2 == 1 && detElemId != 517)
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
+						  TGeoRotation("rot4",90,180+angle,90,90+angle,180,0) );
+	  else
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh5, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
+						  TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) );   
 	}
 
 	sprintf(idSlatCh6,"LB%d",kNslats3-1+i);  
-	// gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
 	detElemId = 609 - (i  + kNslats3-1-4);
   	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
+	if (detElemId % 2 == 0)
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
 				     TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, ySlat3, -zSlat3 + dzCh3),
+				     TGeoRotation("rot5",90,angle,90,270+angle,180,0) );
 
 	sprintf(idSlatCh6,"LB%d",3*kNslats3-2+i);
-	// gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
 	detElemId = 600 + (i + kNslats3-1-4);
   	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
-				     TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
-
+	if (detElemId % 2 == 0)
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+						TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, ySlat3, zSlat3 - dzCh3),
+						TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) ); 
 
 	if (i > 0) { 
 	  sprintf(idSlatCh6,"LB%d",kNslats3-1-i);
-	  //gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
 	  detElemId = 609 + (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
-				       TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
-	
-
+	  if (detElemId % 2 == 0 && detElemId != 610)
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
+						  TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
+	  else
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(xSlat3, -ySlat3, -zSlat3 + dzCh3),
+						  TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 	  sprintf(idSlatCh6,"LB%d",3*kNslats3-2-i);
-	  //gMC->Gsvolu(idSlatCh6,"BOX",kSlatMaterial,spar,3);
 	  detElemId = 618 - (i + kNslats3-1-4);
   	  moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
-				       TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
-
+	  if (detElemId % 2 == 1 && detElemId != 617)
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
+						  TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) );
+	  else
+	      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh6, detElemId, true, TGeoTranslation(-xSlat3, -ySlat3, zSlat3 - dzCh3),
+						  TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );   
 	}
       }
      
@@ -624,10 +641,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       new TGeoBBox("shCarbonBoxSt3",supporthlength/2., supportvlength/2. ,carbonthickness/2.); 
       new TGeoTubeSeg("shNomexHoleSt3",0., dMotherInner, nomexthickness/2.+carbonthickness+0.001, -90. ,90.);
       new TGeoTubeSeg("shCarbonHoleSt3",0., dMotherInner, carbonthickness/2.+0.001, -90. ,90.);
-      TGeoTranslation * trHoleSt3 = new TGeoTranslation("trHoleSt3",-supporthlength/2.,0.,0.); 
+      TGeoTranslation* trHoleSt3 = new TGeoTranslation("trHoleSt3",-supporthlength/2.,0.,0.); 
       trHoleSt3->RegisterYourself();
-      TGeoCompositeShape * shNomexSupportSt3  = new TGeoCompositeShape("shNomexSupportSt3","shNomexBoxSt3-shNomexHoleSt3:trHoleSt3");
-      TGeoCompositeShape * shCarbonSupportSt3 = new TGeoCompositeShape("shCarbonSupportSt3","shCarbonBoxSt3-shCarbonHoleSt3:trHoleSt3");
+      TGeoCompositeShape* shNomexSupportSt3  = new TGeoCompositeShape("shNomexSupportSt3","shNomexBoxSt3-shNomexHoleSt3:trHoleSt3");
+      TGeoCompositeShape* shCarbonSupportSt3 = new TGeoCompositeShape("shCarbonSupportSt3","shCarbonBoxSt3-shCarbonHoleSt3:trHoleSt3");
       
       // Generating Nomex and Carbon pannel volumes
       TGeoVolume * voNomexSupportSt3  = new TGeoVolume("S05S", shNomexSupportSt3, kMedNomex);
@@ -637,9 +654,9 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       voNomexSupportSt3->AddNode(voCarbonSupportSt3,1,trCarbon1St3);
       voNomexSupportSt3->AddNode(voCarbonSupportSt3,2,trCarbon2St3);
       Float_t dzCh5  = dzCh;
-      TGeoTranslation * trSupport1St3   = new TGeoTranslation("trSupport1St3", supporthlength/2., 0. , dzCh5);
-      TGeoRotation    * roSupportSt3    = new TGeoRotation("roSupportSt3",90.,180.,-90.);
-      TGeoCombiTrans  * coSupport2St3   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh5, roSupportSt3);       
+      TGeoTranslation* trSupport1St3   = new TGeoTranslation("trSupport1St3", supporthlength/2., 0. , dzCh5);
+      TGeoRotation*    roSupportSt3    = new TGeoRotation("roSupportSt3",90.,180.,-90.);
+      TGeoCombiTrans*  coSupport2St3   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh5, roSupportSt3);       
       GetEnvelopes(5)->AddEnvelope("S05S", 0, 1, *trSupport1St3);  
       GetEnvelopes(4)->AddEnvelope("S05S", 0, 2, *coSupport2St3);  
       GetEnvelopes(7)->AddEnvelope("S05S", 0, 3, *trSupport1St3);   
@@ -684,62 +701,84 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       Float_t zSlat4 = (i%2 ==0)? -zSlat : zSlat; 
 
       sprintf(idSlatCh7,"LC%d",kNslats4-1+i);
-      //gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
       detElemId = 713 - (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
 				   TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, ySlat41, -zSlat4 + dzCh4),
+				   TGeoRotation("rot1",90,angle,90,270+angle,180,0) );
 
       sprintf(idSlatCh7,"LC%d",3*kNslats4-2+i);
-      //gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
       detElemId = 700 + (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
+				   TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, ySlat41, zSlat4 - dzCh4),
 				   TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
- 
       if (i > 0) { 
 	sprintf(idSlatCh7,"LC%d",kNslats4-1-i);
-	//gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
 	detElemId = 713 + (i + kNslats4-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
-				     TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
-
+	if (detElemId % 2 == 0 && detElemId != 714)
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
+						TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(xSlat4, -ySlat41, -zSlat4 + dzCh4),
+						TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
 	sprintf(idSlatCh7,"LC%d",3*kNslats4-2-i);
 	detElemId = 726 - (i + kNslats4-1-6);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	//gMC->Gsvolu(idSlatCh7,"BOX",kSlatMaterial,spar,3);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, 
-				     TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
-				     TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) );
+	if (detElemId % 2 == 1 && detElemId != 725 )
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
+				     TGeoRotation("rot4",90,180+angle,90,90+angle,180,0) );
+	else
+	     GetEnvelopes(moduleId)->AddEnvelope(idSlatCh7, detElemId, true, TGeoTranslation(-xSlat4, -ySlat41, zSlat4 - dzCh4),
+				     TGeoRotation("rot4",90,180+angle,90,270+angle,0,0) ); 
       }
 
       sprintf(idSlatCh8,"LD%d",kNslats4-1+i);
-      //gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
       detElemId = 813 - (i + kNslats4-1-6);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
 				   TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, ySlat42, -zSlat4 + dzCh4),
+				   TGeoRotation("rot5",90,angle,90,270+angle,180,0) ); 
 
       sprintf(idSlatCh8,"LD%d",3*kNslats4-2+i);
       detElemId = 800 + (i + kNslats4-1-6);
-      //gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
+				   TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, ySlat42, zSlat4 - dzCh4),
 				   TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
       if (i > 0) { 
 	sprintf(idSlatCh8,"LD%d",kNslats4-1-i);
 	detElemId = 813 + (i + kNslats4-1-6);
-	//gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
-				     TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
+	if (detElemId % 2 == 0 && detElemId != 814)
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
+						TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(xSlat4, -ySlat42, -zSlat4 + dzCh4),
+						TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 	sprintf(idSlatCh8,"LD%d",3*kNslats4-2-i);
 	detElemId = 826 - (i + kNslats4-1-6);
-	//gMC->Gsvolu(idSlatCh8,"BOX",kSlatMaterial,spar,3);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
+	if (detElemId % 2 == 1 && detElemId != 825 )
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
+				     TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) ); 
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh8, detElemId, true, TGeoTranslation(-xSlat4, -ySlat42, zSlat4 - dzCh4),
 				     TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
+	  
       }
     }
      
@@ -923,22 +962,22 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     new TGeoBBox("shCarbonBoxSt4",supporthlength/2., supportvlength/2. ,carbonthickness/2.); 
     new TGeoTubeSeg("shNomexHoleSt4",0., dMotherInner, nomexthickness/2.+carbonthickness+0.001, -90. ,90.);
     new TGeoTubeSeg("shCarbonHoleSt4",0., dMotherInner, carbonthickness/2.+0.001, -90. ,90.);
-    TGeoTranslation * trHoleSt4 = new TGeoTranslation("trHoleSt4",-supporthlength/2.,0.,0.); 
+    TGeoTranslation* trHoleSt4 = new TGeoTranslation("trHoleSt4",-supporthlength/2.,0.,0.); 
     trHoleSt4->RegisterYourself();
-    TGeoCompositeShape * shNomexSupportSt4  = new TGeoCompositeShape("shNomexSupportSt4","shNomexBoxSt4-shNomexHoleSt4:trHoleSt4");
-    TGeoCompositeShape * shCarbonSupportSt4 = new TGeoCompositeShape("shCarbonSupportSt4","shCarbonBoxSt4-shCarbonHoleSt4:trHoleSt4");
+    TGeoCompositeShape* shNomexSupportSt4  = new TGeoCompositeShape("shNomexSupportSt4","shNomexBoxSt4-shNomexHoleSt4:trHoleSt4");
+    TGeoCompositeShape* shCarbonSupportSt4 = new TGeoCompositeShape("shCarbonSupportSt4","shCarbonBoxSt4-shCarbonHoleSt4:trHoleSt4");
  
    // Generating Nomex and Carbon pannel volumes
-    TGeoVolume * voNomexSupportSt4  = new TGeoVolume("S07S", shNomexSupportSt4, kMedNomex);
-    TGeoVolume * voCarbonSupportSt4 = new TGeoVolume("S07K", shCarbonSupportSt4, kMedCarbon);
-    TGeoTranslation *trCarbon1St4   = new TGeoTranslation("trCarbon1St4",0.,0., -(nomexthickness+carbonthickness)/2.);
-    TGeoTranslation *trCarbon2St4   = new TGeoTranslation("trCarbon2St4",0.,0.,  (nomexthickness+carbonthickness)/2.);
+    TGeoVolume* voNomexSupportSt4   = new TGeoVolume("S07S", shNomexSupportSt4, kMedNomex);
+    TGeoVolume* voCarbonSupportSt4  = new TGeoVolume("S07K", shCarbonSupportSt4, kMedCarbon);
+    TGeoTranslation* trCarbon1St4   = new TGeoTranslation("trCarbon1St4",0.,0., -(nomexthickness+carbonthickness)/2.);
+    TGeoTranslation* trCarbon2St4   = new TGeoTranslation("trCarbon2St4",0.,0.,  (nomexthickness+carbonthickness)/2.);
     voNomexSupportSt4->AddNode(voCarbonSupportSt4,1,trCarbon1St4);
     voNomexSupportSt4->AddNode(voCarbonSupportSt4,2,trCarbon2St4);
     Float_t dzCh7  = dzCh;
-    TGeoTranslation * trSupport1St4   = new TGeoTranslation("trSupport1St4", supporthlength/2., 0. , dzCh7);
-    TGeoRotation    * roSupportSt4    = new TGeoRotation("roSupportSt4",90.,180.,-90.);
-    TGeoCombiTrans  * coSupport2St4   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh7, roSupportSt4); 
+    TGeoTranslation* trSupport1St4   = new TGeoTranslation("trSupport1St4", supporthlength/2., 0. , dzCh7);
+    TGeoRotation*    roSupportSt4    = new TGeoRotation("roSupportSt4",90.,180.,-90.);
+    TGeoCombiTrans*  coSupport2St4   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh7, roSupportSt4); 
     GetEnvelopes(9)->AddEnvelope("S07S", 0, 1, *trSupport1St4);  
     GetEnvelopes(8)->AddEnvelope("S07S", 0, 2, *coSupport2St4);  
     GetEnvelopes(11)->AddEnvelope("S07S", 0, 3, *trSupport1St4);   
@@ -988,61 +1027,81 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
       sprintf(idSlatCh9,"LE%d",kNslats5-1+i);
       detElemId = 913 - (i + kNslats5-1-6);
-      //gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
-				   TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
-
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					      TGeoRotation("rot1",90,angle,90,90+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					      TGeoRotation("rot1",90,angle,90,270+angle,180,0) );
       sprintf(idSlatCh9,"LE%d",3*kNslats5-2+i);
       detElemId = 900 + (i + kNslats5-1-6);
-      //gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
-				   TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
- 
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot2",90,180+angle,90,270+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot2",90,180+angle,90,90+angle,180,0) );
       if (i > 0) { 
 	sprintf(idSlatCh9,"LE%d",kNslats5-1-i);
 	detElemId = 913 + (i + kNslats5-1-6);
-	//gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+      if (detElemId % 2 == 0  && detElemId != 914)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+				     TGeoRotation("rot3",90,angle,90,90+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
 				     TGeoRotation("rot3",90,angle,90,270+angle,180,0) );
-
 	sprintf(idSlatCh9,"LE%d",3*kNslats5-2-i);
 	detElemId = 926 - (i + kNslats5-1-6);
-	//gMC->Gsvolu(idSlatCh9,"BOX",kSlatMaterial,spar,3);
 	moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
-				     TGeoRotation("rot4",90,180+angle,90,270+angle,0,0)  );
+	if (detElemId % 2 == 1 && detElemId != 925 )
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+						TGeoRotation("rot4",90,180+angle,90,90+angle,180,0)  );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh9, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+						TGeoRotation("rot4",90,180+angle,90,270+angle,0,0)  );   
       }
 
       sprintf(idSlatCh10,"LF%d",kNslats5-1+i);
       detElemId = 1013 - (i + kNslats5-1-6);
-      //gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
-				   TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					      TGeoRotation("rot5",90,angle,90,90+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, ySlat5, -zSlat5 + dzCh5),
+					      TGeoRotation("rot5",90,angle,90,270+angle,180,0) );
 
       sprintf(idSlatCh10,"LF%d",3*kNslats5-2+i);
       detElemId = 1000 + (i + kNslats5-1-6);
-      //gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
       moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-      GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
-				   TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) );
-
+      if (detElemId % 2 == 0)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot6",90,180+angle,90,270+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot6",90,180+angle,90,90+angle,180,0) ); 
       if (i > 0) { 
 	sprintf(idSlatCh10,"LF%d",kNslats5-1-i);
 	detElemId = 1013 + (i + kNslats5-1-6);
-	//gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+      if (detElemId % 2 == 0  && detElemId != 1014)
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
+				     TGeoRotation("rot7",90,angle,90,90+angle,0,0) );
+      else
+	  GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(xSlat5, -ySlat5, -zSlat5 + dzCh5),
 				     TGeoRotation("rot7",90,angle,90,270+angle,180,0) );
 	sprintf(idSlatCh10,"LF%d",3*kNslats5-2-i);
 	detElemId = 1026 - (i + kNslats5-1-6);
-	//gMC->Gsvolu(idSlatCh10,"BOX",kSlatMaterial,spar,3);
         moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
-	GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
-				     TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) );
+	if (detElemId % 2 == 1 && detElemId != 1025 )
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot8",90,180+angle,90,90+angle,180,0) );
+	else
+	    GetEnvelopes(moduleId)->AddEnvelope(idSlatCh10, detElemId, true, TGeoTranslation(-xSlat5, -ySlat5, zSlat5 - dzCh5),
+					      TGeoRotation("rot8",90,180+angle,90,270+angle,0,0) ); 
       }
     }
 
@@ -1224,22 +1283,22 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     new TGeoBBox("shCarbonBoxSt5",supporthlength/2., supportvlength/2. ,carbonthickness/2.); 
     new TGeoTubeSeg("shNomexHoleSt5",0., dMotherInner, nomexthickness/2.+carbonthickness+0.001, -90. ,90.);
     new TGeoTubeSeg("shCarbonHoleSt5",0., dMotherInner, carbonthickness/2.+0.001, -90. ,90.);
-    TGeoTranslation * trHoleSt5 = new TGeoTranslation("trHoleSt5",-supporthlength/2.,0.,0.); 
+    TGeoTranslation* trHoleSt5 = new TGeoTranslation("trHoleSt5",-supporthlength/2.,0.,0.); 
     trHoleSt5->RegisterYourself();
-    TGeoCompositeShape * shNomexSupportSt5  = new TGeoCompositeShape("shNomexSupportSt5","shNomexBoxSt5-shNomexHoleSt5:trHoleSt5");
-    TGeoCompositeShape * shCarbonSupportSt5 = new TGeoCompositeShape("shCarbonSupportSt5","shCarbonBoxSt5-shCarbonHoleSt5:trHoleSt5");
+    TGeoCompositeShape* shNomexSupportSt5  = new TGeoCompositeShape("shNomexSupportSt5","shNomexBoxSt5-shNomexHoleSt5:trHoleSt5");
+    TGeoCompositeShape* shCarbonSupportSt5 = new TGeoCompositeShape("shCarbonSupportSt5","shCarbonBoxSt5-shCarbonHoleSt5:trHoleSt5");
  
    // Generating Nomex and Carbon pannel volumes
-    TGeoVolume * voNomexSupportSt5  = new TGeoVolume("S09S", shNomexSupportSt5, kMedNomex);
-    TGeoVolume * voCarbonSupportSt5 = new TGeoVolume("S09K", shCarbonSupportSt5, kMedCarbon);
-    TGeoTranslation *trCarbon1St5   = new TGeoTranslation("trCarbon1St5",0.,0., -(nomexthickness+carbonthickness)/2.);
-    TGeoTranslation *trCarbon2St5   = new TGeoTranslation("trCarbon2St5",0.,0.,  (nomexthickness+carbonthickness)/2.);
+    TGeoVolume* voNomexSupportSt5  = new TGeoVolume("S09S", shNomexSupportSt5, kMedNomex);
+    TGeoVolume* voCarbonSupportSt5 = new TGeoVolume("S09K", shCarbonSupportSt5, kMedCarbon);
+    TGeoTranslation* trCarbon1St5   = new TGeoTranslation("trCarbon1St5",0.,0., -(nomexthickness+carbonthickness)/2.);
+    TGeoTranslation* trCarbon2St5   = new TGeoTranslation("trCarbon2St5",0.,0.,  (nomexthickness+carbonthickness)/2.);
     voNomexSupportSt5->AddNode(voCarbonSupportSt5,1,trCarbon1St5);
     voNomexSupportSt5->AddNode(voCarbonSupportSt5,2,trCarbon2St5);
     Float_t dzCh9  = dzCh;
-    TGeoTranslation * trSupport1St5   = new TGeoTranslation("trSupport1St5", supporthlength/2., 0. , dzCh9);
-    TGeoRotation    * roSupportSt5    = new TGeoRotation("roSupportSt5",90.,180.,-90.);
-    TGeoCombiTrans  * coSupport2St5   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh9, roSupportSt5);
+    TGeoTranslation* trSupport1St5   = new TGeoTranslation("trSupport1St5", supporthlength/2., 0. , dzCh9);
+    TGeoRotation*    roSupportSt5    = new TGeoRotation("roSupportSt5",90.,180.,-90.);
+    TGeoCombiTrans*  coSupport2St5   = new TGeoCombiTrans(-supporthlength/2., 0., -dzCh9, roSupportSt5);
     GetEnvelopes(13)->AddEnvelope("S09S", 0, 1, *trSupport1St5);  
     GetEnvelopes(12)->AddEnvelope("S09S", 0, 2, *coSupport2St5);  
     GetEnvelopes(15)->AddEnvelope("S09S", 0, 3, *trSupport1St5);   
