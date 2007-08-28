@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2007/08/22 09:20:50  hristov
+Updated QA classes (Yves)
+
 Revision 1.14  2007/05/30 06:35:21  jgrosseo
 Adding functionality to the Shuttle/TestShuttle:
 o) Function to retrieve list of sources from a given system (GetFileSources with id=0)
@@ -314,4 +317,15 @@ const char* AliPreprocessor::GetRunType()
   // The call is delegated to AliShuttleInterface
 
   return fShuttle->GetRunType();
+}
+
+//______________________________________________________________________________________________
+Bool_t AliPreprocessor::GetHLTStatus()
+{
+  // Return HLT status (ON or OFF)
+  // Converts the HLT status from the status string read in the run logbook (not just a bool)
+  // The call is delegated to AliShuttleInterface
+
+  return fShuttle->GetHLTStatus();
+
 }
