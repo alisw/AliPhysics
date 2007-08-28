@@ -12,6 +12,8 @@
 #include <TNamed.h> 
 class TFile ; 
 
+#include "AliLog.h"
+
 class AliQualAss : public TNamed {
 public:
 
