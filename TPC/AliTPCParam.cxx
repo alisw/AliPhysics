@@ -33,7 +33,7 @@
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliLog.h"
 
 ClassImp(AliTPCParam)
@@ -615,7 +615,7 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
   if (!gGeoManager){
     AliFatal("Geo manager not initialized\n");
   }
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   //
   if (fTrackingMatrix) delete [] fTrackingMatrix;
   fTrackingMatrix = new TGeoHMatrix*[fNSector];

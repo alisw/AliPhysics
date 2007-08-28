@@ -16,16 +16,16 @@
 //-----------------------------------------------------------------
 //   Implementation of the alignment object class through
 //   the concrete representation of alignment object class
-//   AliAlignObjAngles derived from the base class AliAlignObj
+//   AliAlignObjParams derived from the base class AliAlignObj
 //-----------------------------------------------------------------
 
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 
-ClassImp(AliAlignObjAngles)
+ClassImp(AliAlignObjParams)
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles() : AliAlignObj()
+AliAlignObjParams::AliAlignObjParams() : AliAlignObj()
 {
   // default constructor
   //
@@ -34,7 +34,7 @@ AliAlignObjAngles::AliAlignObjAngles() : AliAlignObj()
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj(symname,volUId)
+AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *) : AliAlignObj(symname,volUId)
 {
   // standard constructor with 3 translation + 3 rotation parameters
   // If the user explicitly sets the global variable to kFALSE then the
@@ -50,7 +50,7 @@ AliAlignObjAngles::AliAlignObjAngles(const char* symname, UShort_t volUId, Doubl
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *) : AliAlignObj(symname,volUId)
+AliAlignObjParams::AliAlignObjParams(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *) : AliAlignObj(symname,volUId)
 {
   // standard constructor with TGeoMatrix
   // If the user explicitly sets the global variable to kFALSE then the
@@ -67,7 +67,7 @@ AliAlignObjAngles::AliAlignObjAngles(const char* symname, UShort_t volUId, TGeoM
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::AliAlignObjAngles(const AliAlignObj& theAlignObj) :
+AliAlignObjParams::AliAlignObjParams(const AliAlignObj& theAlignObj) :
   AliAlignObj(theAlignObj)
 {
   // copy constructor
@@ -81,7 +81,7 @@ AliAlignObjAngles::AliAlignObjAngles(const AliAlignObj& theAlignObj) :
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles &AliAlignObjAngles::operator =(const AliAlignObj& theAlignObj)
+AliAlignObjParams &AliAlignObjParams::operator =(const AliAlignObj& theAlignObj)
 {
   // assignment operator
   //
@@ -99,14 +99,14 @@ AliAlignObjAngles &AliAlignObjAngles::operator =(const AliAlignObj& theAlignObj)
 }
 
 //_____________________________________________________________________________
-AliAlignObjAngles::~AliAlignObjAngles()
+AliAlignObjParams::~AliAlignObjParams()
 {
   // default destructor
   //
 }
 
 //_____________________________________________________________________________
-void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
+void AliAlignObjParams::SetTranslation(const TGeoMatrix& m)
 {
   // set the translation parameters extracting them from the matrix
   // passed as argument
@@ -120,7 +120,7 @@ void AliAlignObjAngles::SetTranslation(const TGeoMatrix& m)
 }
 
 //_____________________________________________________________________________
-Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
+Bool_t AliAlignObjParams::SetRotation(const TGeoMatrix& m)
 {
   // set the rotation parameters extracting them from the matrix
   // passed as argument
@@ -135,7 +135,7 @@ Bool_t AliAlignObjAngles::SetRotation(const TGeoMatrix& m)
 }
 
 //_____________________________________________________________________________
-void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
+void AliAlignObjParams::GetMatrix(TGeoHMatrix& m) const
 {
   // get the transformation matrix from the data memebers parameters
   m.SetTranslation(&fTranslation[0]);
@@ -145,12 +145,12 @@ void AliAlignObjAngles::GetMatrix(TGeoHMatrix& m) const
 }
 
 //_____________________________________________________________________________
-AliAlignObj& AliAlignObjAngles::Inverse() const
+AliAlignObj& AliAlignObjParams::Inverse() const
 {
   // Return a temporary "inverse" of the alignment object, that is return
   // an object with inverted transformation matrix.
   //
-   static AliAlignObjAngles a;
+   static AliAlignObjParams a;
    a = *this;
 
    TGeoHMatrix m;

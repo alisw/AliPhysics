@@ -9,11 +9,11 @@ void MakeTPCResMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",100);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",100);
   TClonesArray &alobj = *array;
   
   TRandom *rnd   = new TRandom(4357);
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   Int_t j = 0;
 
@@ -34,7 +34,7 @@ void MakeTPCResMisAlignment(){
 
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char *symname = AliGeomManager::SymName(volid);
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+      new(alobj[j]) AliAlignObjParams(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
       j++;
     }
   }

@@ -11,7 +11,7 @@
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliLog.h"
 #include "AliZDCDataDCS.h"
 #include "AliZDCCalibData.h"
@@ -77,9 +77,9 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   //dcsAliasMap->Print("");
   //
   // --- Writing ZDC table positions into alignment object
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
   Double_t dx=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // Vertical table position in mm from DCS
   Double_t dyZN1 = (Double_t) (DCSValues[0]/10.);
@@ -94,10 +94,10 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
   //
-  new(alobj[0]) AliAlignObjAngles(ZDCn1, volid, dx, dyZN1, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[1]) AliAlignObjAngles(ZDCp1, volid, dx, dyZP1, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[2]) AliAlignObjAngles(ZDCn2, volid, dx, dyZN2, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[3]) AliAlignObjAngles(ZDCp2, volid, dx, dyZP2, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[0]) AliAlignObjParams(ZDCn1, volid, dx, dyZN1, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[1]) AliAlignObjParams(ZDCp1, volid, dx, dyZP1, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[2]) AliAlignObjParams(ZDCn2, volid, dx, dyZN2, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[3]) AliAlignObjParams(ZDCp2, volid, dx, dyZP2, dz, dpsi, dtheta, dphi, kTRUE);
   // save in CDB storage
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");

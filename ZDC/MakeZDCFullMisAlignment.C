@@ -9,10 +9,10 @@ void MakeZDCFullMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0., dy=2., dz=0.;
   Double_t dpsi=0., dtheta=0., dphi=0.;
@@ -24,8 +24,8 @@ void MakeZDCFullMisAlignment(){
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  new(alobj[0]) AliAlignObjAngles(ZDCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[1]) AliAlignObjAngles(ZDCp, volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
+  new(alobj[0]) AliAlignObjParams(ZDCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[1]) AliAlignObjParams(ZDCp, volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
 
   const char* macroname = "MakeZDCFullMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){

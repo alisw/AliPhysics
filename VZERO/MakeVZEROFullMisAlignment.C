@@ -9,10 +9,10 @@ void MakeVZEROFullMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
@@ -34,7 +34,7 @@ void MakeVZEROFullMisAlignment(){
   dpsi = rnd->Gaus(0.,sigmarot);
   dtheta = rnd->Gaus(0.,sigmarot);
   dphi = rnd->Gaus(0.,sigmarot);
-  new(alobj[0]) AliAlignObjAngles(V0right, volid, dx, dy, dz, dpsi, dtheta,
+  new(alobj[0]) AliAlignObjParams(V0right, volid, dx, dy, dz, dpsi, dtheta,
                                   dphi, kFALSE);
   dx = rnd->Gaus(0.,sigmatr);
   dy = rnd->Gaus(0.,sigmatr);
@@ -42,7 +42,7 @@ void MakeVZEROFullMisAlignment(){
   dpsi = rnd->Gaus(0.,sigmarot);
   dtheta = rnd->Gaus(0.,sigmarot);
   dphi = rnd->Gaus(0.,sigmarot);
-  new(alobj[1]) AliAlignObjAngles(V0left, volid, dx, dy, dz, dpsi, dtheta,
+  new(alobj[1]) AliAlignObjParams(V0left, volid, dx, dy, dz, dpsi, dtheta,
                                   dphi,kFALSE);
 
   const char* macroname = "MakeVZEROFullMisAlignment.C";

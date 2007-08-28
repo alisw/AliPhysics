@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/07/10 12:41:38  kharlov
+ * Added a new class AliPHOSSurvet1 which read survey data from EDMS files
+ *
  * Revision 1.4  2007/05/17 17:34:54  kharlov
  * Merging differences if v1.2 and 1.3
  *
@@ -30,7 +33,7 @@
  */
 
 // Objects of this class read txt file with survey (photogrammetry) data
-// and convert the data into AliAlignObjAngles of alignable PHOS volumes.
+// and convert the data into AliAlignObjParams of alignable PHOS volumes.
 // It can be used as a base class, you need to override GetStripTransformation.
 // AliPHOSSurvey inherits TObject only to use AliLog "functions".
 // Author: Timur Pocheptsov (JINR)
@@ -45,7 +48,7 @@
 #include "AliSurveyObj.h"
 
 #include "AliPHOSEMCAGeometry.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSSurvey.h"
 #include "AliLog.h"
@@ -122,9 +125,9 @@ AliPHOSSurvey::~AliPHOSSurvey()
 }
 
 //____________________________________________________________________________
-void AliPHOSSurvey::CreateAliAlignObjAngles(TClonesArray &array)
+void AliPHOSSurvey::CreateAliAlignObjParams(TClonesArray &array)
 {
-  //Create AliAlignObjAngles.
+  //Create AliAlignObjParams.
   const AliPHOSGeometry * phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
   if (!phosGeom) {
     AliError("Cannot obtain AliPHOSGeometry instance.");
@@ -148,7 +151,7 @@ void AliPHOSSurvey::CreateAliAlignObjAngles(TClonesArray &array)
         TString stripName(TString::Format("PHOS/Module%d/Strip_%d_%d", module, i, j));
         AliPHOSStripDelta t(GetStripTransformation(stripNum++, module));
         new(array[arrayInd])
-          AliAlignObjAngles(
+          AliAlignObjParams(
                             stripName.Data(), volid, 
                             t.fXShift, t.fYShift, t.fZShift, 
                             -t.fPsi, -t.fTheta, -t.fPhi, 
@@ -173,7 +176,7 @@ void AliPHOSSurvey::CreateNullObjects(TClonesArray &array, const AliPHOSGeometry
     for (Int_t i = 0; i < emcaGeom->GetNStripX(); ++i)
       for (Int_t j = 0; j < emcaGeom->GetNStripZ(); ++j) {
         TString stripName(TString::Format("PHOS/Module%d/Strip_%d_%d", module, i, j));
-        new(array[arrayInd]) AliAlignObjAngles(stripName.Data(), volid, 0., 0., 0., 0., 0., 0., true);
+        new(array[arrayInd]) AliAlignObjParams(stripName.Data(), volid, 0., 0., 0., 0., 0., 0., true);
         ++arrayInd;
       }
 }

@@ -80,7 +80,7 @@ void AliPMDAlObjRnd(Float_t max_trans=1.0, Float_t max_rot=0.1)
   
   
   //Create a TClonesArray of Align Object to store displacement Angles
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10000);
   TClonesArray &alobj = *array;
   
   // Create a File to store the alignment data
@@ -89,17 +89,17 @@ void AliPMDAlObjRnd(Float_t max_trans=1.0, Float_t max_rot=0.1)
   TFile f("PMD_rnd_alobj.root","RECREATE");
   if(!f) {cerr<<"cannot open file for output\n";}
   
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   
   UShort_t iIndex=0;
 //   AliGeomManager::ELayerID iLayer = AliGeomManager::kTOF;
 
 //   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
-  new(alobj[0]) AliAlignObjAngles(Sector1, iIndex, dx14, dy14, dz14, dpsi14, dtheta14, dphi14);
-  new(alobj[1]) AliAlignObjAngles(Sector2, iIndex, dx14, dy14, dz14, dpsi14, dtheta14, dphi14);
-  new(alobj[2]) AliAlignObjAngles(Sector3, iIndex, dx23, dy23, dz23, dpsi23, dtheta23, dphi23);
-  new(alobj[3]) AliAlignObjAngles(Sector4, iIndex, dx23, dy23, dz23, dpsi23, dtheta23, dphi23);
+  new(alobj[0]) AliAlignObjParams(Sector1, iIndex, dx14, dy14, dz14, dpsi14, dtheta14, dphi14);
+  new(alobj[1]) AliAlignObjParams(Sector2, iIndex, dx14, dy14, dz14, dpsi14, dtheta14, dphi14);
+  new(alobj[2]) AliAlignObjParams(Sector3, iIndex, dx23, dy23, dz23, dpsi23, dtheta23, dphi23);
+  new(alobj[3]) AliAlignObjParams(Sector4, iIndex, dx23, dy23, dz23, dpsi23, dtheta23, dphi23);
   
   // This part needs to be understood
   f.cd();

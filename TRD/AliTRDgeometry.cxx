@@ -29,7 +29,7 @@
 #include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliRun.h"
 
 #include "AliTRD.h"
@@ -1787,7 +1787,7 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
   fMatrixArray           = new TObjArray(kNdet); 
   fMatrixCorrectionArray = new TObjArray(kNdet);
   fMatrixGeo             = new TObjArray(kNdet);
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
 
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {

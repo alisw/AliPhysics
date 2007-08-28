@@ -45,7 +45,7 @@
 #include <AliESDFMD.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
-#include <AliAlignObjAngles.h>
+#include <AliAlignObjParams.h>
 #include <TTree.h>              // ROOT_TTree
 #include <TChain.h>             // ROOT_TChain
 #include <TParticle.h>          // ROOT_TParticle
@@ -234,7 +234,7 @@ AliFMDInput::Init()
       else {
 	Int_t nAlign = array->GetEntries();
 	for (Int_t i = 0; i < nAlign; i++) {
-	  AliAlignObjAngles* a = static_cast<AliAlignObjAngles*>(array->At(i));
+	  AliAlignObjParams* a = static_cast<AliAlignObjParams*>(array->At(i));
 	  if (!a->ApplyToGeometry()) {
 	    AliWarning(Form("Failed to apply alignment to %s", 
 			    a->GetSymName()));

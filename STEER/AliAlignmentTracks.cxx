@@ -27,7 +27,7 @@
 
 #include "AliAlignmentTracks.h"
 #include "AliTrackPointArray.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliTrackFitterRieman.h"
 #include "AliTrackResidualsChi2.h"
 #include "AliESD.h"
@@ -368,7 +368,7 @@ void AliAlignmentTracks::BuildIndex()
 
   // Dummy object is created in order
   // to initialize the volume paths
-  AliAlignObjAngles alobj;
+  AliAlignObjParams alobj;
 
   fPointsFile = TFile::Open(fPointsFilename);
   if (!fPointsFile || !fPointsFile->IsOpen()) {
@@ -499,7 +499,7 @@ void AliAlignmentTracks::InitAlignObjs()
     fAlignObjs[iLayer] = new AliAlignObj*[AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer)];
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer + AliGeomManager::kFirstLayer); iModule++) {
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer+ AliGeomManager::kFirstLayer,iModule);
-      fAlignObjs[iLayer][iModule] = new AliAlignObjAngles(AliGeomManager::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
+      fAlignObjs[iLayer][iModule] = new AliAlignObjParams(AliGeomManager::SymName(volid),volid,0,0,0,0,0,0,kTRUE);
     }
   }
 }

@@ -1,10 +1,10 @@
 void MakeTRDFullMisAlignment(){
   // Create TClonesArray of full misalignment objects for TRD
   // 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",1000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",1000);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   // sigmas for the supermodules
   Double_t smdx=0.3; // 3 mm
@@ -44,11 +44,11 @@ void MakeTRDFullMisAlignment(){
     rx*=smrx;
     ry*=smry;
     rz*=smrz;
-    new(alobj[j++]) AliAlignObjAngles(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kFALSE);
+    new(alobj[j++]) AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kFALSE);
   }
 
   for(Int_t k=0; k<18; k++){
-    AliAlignObjAngles* smobj = (AliAlignObjAngles*)array->UncheckedAt(k);
+    AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(k);
     if(!smobj->ApplyToGeometry()){
       cout<<"application of object "<<k<<" failed!"<<endl;
       return;
@@ -71,7 +71,7 @@ void MakeTRDFullMisAlignment(){
       rz*=chrz;
       volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       symname = AliGeomManager::SymName(volid);
-      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
 

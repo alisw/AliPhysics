@@ -14,6 +14,8 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TGeoMatrix.h"
+#include <Rtypes.h>
+#include <TMath.h>
 #include "AliGeomManager.h"
 
 
@@ -26,6 +28,7 @@ class AliAlignObj : public TObject {
 
   AliAlignObj();
   AliAlignObj(const char* symname, UShort_t voluid);
+  AliAlignObj(const char* symname, UShort_t voluid, Double_t* cmat);
   AliAlignObj(const char* symname, AliGeomManager::ELayerID detId, Int_t modId);
   AliAlignObj(const AliAlignObj& theAlignObj);
   AliAlignObj& operator= (const AliAlignObj& theAlignObj);
@@ -50,6 +53,7 @@ class AliAlignObj : public TObject {
   void  SetSymName(const TString& symname) {fVolPath=symname;}
   void  SetVolUID(UShort_t voluid) {fVolUID=voluid;}
   void  SetVolUID(AliGeomManager::ELayerID layerId, Int_t modId);
+  void  SetCorrMatrix(Double_t *cov);
 
   //Getters
   const char  *GetSymName()    const {return fVolPath.Data();}
@@ -63,6 +67,7 @@ class AliAlignObj : public TObject {
   virtual Bool_t GetLocalPars(Double_t transl[], Double_t angles[]) const;
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
   virtual Bool_t GetLocalMatrix(TGeoHMatrix& m) const;
+  void  GetCovMatrix(Double_t *cov) const;
 
   Bool_t   IsSortable() const {return kTRUE;}
   Int_t         GetLevel() const;
@@ -108,7 +113,10 @@ class AliAlignObj : public TObject {
       // the volume path inside TGeo geometry (for non-alignable volumes)
   UShort_t fVolUID;  // Unique volume ID
 
-  ClassDef(AliAlignObj, 2)
+  Double32_t   fDiag[6];  // diagonal elements of the correlation matrix for shifts and rotations (dx,dy,dz,dpsi,dtheta,dphi)
+  Double32_t   fODia[15]; // [-1, 1,8] off-diagonal elements (in 8 bit precision) of the correlation matrix
+	
+  ClassDef(AliAlignObj, 3)
 };
 
 #endif

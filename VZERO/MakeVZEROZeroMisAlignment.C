@@ -9,10 +9,10 @@ void MakeVZEROZeroMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
 
@@ -21,9 +21,9 @@ void MakeVZEROZeroMisAlignment(){
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
   TString V0right("VZERO/V0C");
-  new(alobj[0]) AliAlignObjAngles(V0right.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[0]) AliAlignObjParams(V0right.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   TString V0left("VZERO/V0A");
-  new(alobj[1]) AliAlignObjAngles(V0left.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
+  new(alobj[1]) AliAlignObjParams(V0left.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
 
   const char* macroname = "MakeVZEROZeroMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){

@@ -27,7 +27,7 @@ PrintAlignment()
   }
   Int_t nAlign = array->GetEntries();
   for (Int_t i = 0; i < nAlign; i++) {
-    AliAlignObjAngles* a = static_cast<AliAlignObjAngles*>(array->At(i));
+    AliAlignObjParams* a = static_cast<AliAlignObjParams*>(array->At(i));
     Double_t ang[3];
     Double_t trans[3];
     a->GetAngles(ang);

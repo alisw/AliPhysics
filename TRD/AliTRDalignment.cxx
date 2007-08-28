@@ -80,7 +80,7 @@
 
 #include "AliLog.h"
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
@@ -749,7 +749,7 @@ double AliTRDalignment::SurveyChi2(int i, double *a) {
 
   if (!IsGeoLoaded()) return 0;
   printf("Survey of supermodule %d\n",i);
-  AliAlignObjAngles al(GetSmName(i),0,a[0],a[1],a[2],a[3],a[4],a[5],0);
+  AliAlignObjParams al(GetSmName(i),0,a[0],a[1],a[2],a[3],a[4],a[5],0);
   TGeoPNEntry      *pne  = gGeoManager->GetAlignableEntry(GetSmName(i));
   if (!pne) AliError(Form("no such physical node entry: %s",GetSmName(i)));
   TGeoPhysicalNode *node = pne->GetPhysicalNode();
@@ -895,7 +895,7 @@ void AliTRDalignment::WriteRoot(char *filename)
   // store the alignment data on root file
   //
 
-  TClonesArray *ar = new TClonesArray("AliAlignObjAngles",10000);
+  TClonesArray *ar = new TClonesArray("AliAlignObjParams",10000);
   NumbersToAr(ar);
   TFile fo(filename,"RECREATE");
   if (fo.IsOpen()) {
@@ -916,7 +916,7 @@ void AliTRDalignment::WriteDB(char *filename, int run0, int run1)
   // dumping on a DB-like file
   //
 
-  TClonesArray   *ar = new TClonesArray("AliAlignObjAngles",10000);
+  TClonesArray   *ar = new TClonesArray("AliAlignObjParams",10000);
   NumbersToAr(ar);
   char *path = "TRD/Align/Data";
   AliCDBId id(path,run0,run1);
@@ -946,7 +946,7 @@ void AliTRDalignment::WriteDB(char *db, char *path, int run0, int run1)
   // store the alignment data in database
   //
 
-  TClonesArray   *ar      = new TClonesArray("AliAlignObjAngles",10000);
+  TClonesArray   *ar      = new TClonesArray("AliAlignObjParams",10000);
   NumbersToAr(ar);
   AliCDBManager  *cdb     = AliCDBManager::Instance();
   AliCDBStorage  *storLoc = cdb->GetStorage(db);
@@ -968,7 +968,7 @@ void AliTRDalignment::WriteGeo(char *filename)
   // resulting geometry on a root file
   //
 
-  TClonesArray *ar = new TClonesArray("AliAlignObjAngles",10000);
+  TClonesArray *ar = new TClonesArray("AliAlignObjParams",10000);
   NumbersToAr(ar);
   delete ar;
   gGeoManager->Export(filename);
@@ -1071,7 +1071,7 @@ void AliTRDalignment::NumbersToAr(TClonesArray *ar)
   TClonesArray &alobj = *ar;
   int nobj = 0;
   for (int i = 0; i <  18; i++) {      
-      new(alobj[nobj]) AliAlignObjAngles(GetSmName(i)
+      new(alobj[nobj]) AliAlignObjParams(GetSmName(i)
                                         ,0 
 					,fSm[i][0],fSm[i][1],fSm[i][2]
 					,fSm[i][3],fSm[i][4],fSm[i][5]
@@ -1081,7 +1081,7 @@ void AliTRDalignment::NumbersToAr(TClonesArray *ar)
   }
 
   for (int i = 0; i < 540; i++) {
-    new(alobj[nobj]) AliAlignObjAngles(GetChName(i)
+    new(alobj[nobj]) AliAlignObjParams(GetChName(i)
                                       ,GetVoi(i)
 				      ,fCh[i][0],fCh[i][1],fCh[i][2]
 				      ,fCh[i][3],fCh[i][4],fCh[i][5]

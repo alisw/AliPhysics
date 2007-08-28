@@ -1,7 +1,7 @@
 void MakeITSResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for ITS
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",4000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",4000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -23,15 +23,15 @@ void MakeITSResMisAlignment(){
   Double_t ssdZ    = 0.010;
 
   TRandom *rnd   = new TRandom(65416087);
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
 
   Int_t j = 0;
 
-  new(alobj[j++]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
-  AliAlignObjAngles* its_alobj = (AliAlignObjAngles*) array->UncheckedAt(0);
+  new(alobj[j++]) AliAlignObjParams("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
+  AliAlignObjParams* its_alobj = (AliAlignObjParams*) array->UncheckedAt(0);
   its_alobj->ApplyToGeometry();
 
 
@@ -88,7 +88,7 @@ void MakeITSResMisAlignment(){
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char *symname = AliGeomManager::SymName(volid);
 
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+      new(alobj[j]) AliAlignObjParams(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
       j++;
 
     }

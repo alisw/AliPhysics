@@ -1,7 +1,7 @@
 void MakeEMCALZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for EMCAL
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
 
   if(!AliGeomManager::GetGeometry()){
@@ -10,7 +10,7 @@ void MakeEMCALZeroMisAlignment(){
       AliCDBManager::Instance()->SetRun(0);
     AliGeomManager::LoadGeometry();
   }
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
@@ -28,13 +28,13 @@ void MakeEMCALZeroMisAlignment(){
   for(i=0; i<10; i++){
     pathstr=fbasepath;
     pathstr+=(i+1);
-    new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   for(i=0; i<2; i++){
     pathstr=hbasepath;
     pathstr+=(i+1);
-    new(alobj[j++]) AliAlignObjAngles(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   const char* macroname = "MakeEMCALZeroMisAlignment.C";

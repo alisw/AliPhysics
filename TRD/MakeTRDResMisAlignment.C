@@ -1,7 +1,7 @@
 void MakeTRDResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for TRD
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",1000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",1000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -12,7 +12,7 @@ void MakeTRDResMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   // sigmas for the chambers
   Double_t chdx=0.002; // 20 microns
@@ -43,7 +43,7 @@ void MakeTRDResMisAlignment(){
       rz*=chrz;
       volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       symname = AliGeomManager::SymName(volid);
-      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
+      new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
 

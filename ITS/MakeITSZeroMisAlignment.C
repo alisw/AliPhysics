@@ -1,7 +1,7 @@
 void MakeITSZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for ITS
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",4000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",4000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -12,14 +12,14 @@ void MakeITSZeroMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0., globalZ=0.;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
 
   Int_t j = 0;
 
-  new(alobj[j]) AliAlignObjAngles("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[j]) AliAlignObjParams("ITS", 0, dx, dy, globalZ, dpsi, dtheta, dphi, kTRUE);
   j++;
 
   for ( Int_t l = AliGeomManager::kSPD1; l <= AliGeomManager::kSSD2; l++) {
@@ -53,7 +53,7 @@ void MakeITSZeroMisAlignment(){
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char *symname = AliGeomManager::SymName(volid);
 
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+      new(alobj[j]) AliAlignObjParams(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
       j++;
 
     }

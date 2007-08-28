@@ -1,7 +1,7 @@
 void MakeTRDZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for TRD
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",1000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",1000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -12,7 +12,7 @@ void MakeTRDZeroMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
@@ -25,7 +25,7 @@ void MakeTRDZeroMisAlignment(){
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
       volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       symname = AliGeomManager::SymName(volid);
-      new(alobj[j++]) AliAlignObjAngles(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
+      new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
     }
   }
 

@@ -44,7 +44,7 @@
 #include <AliCDBStorage.h>         // ALICDBSTORAGE_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
 // #include <AliAlignObj.h>
-#include <AliAlignObjAngles.h>
+#include <AliAlignObjParams.h>
 // #include <Riostream.h>
 #include <TSystem.h>
 // #include <TMath.h>
@@ -161,7 +161,7 @@ AliFMDAlignFaker::Exec(Option_t*)
     return;
   }
   // Make container of transforms 
-  if (!fArray) fArray = new TClonesArray("AliAlignObjAngles");
+  if (!fArray) fArray = new TClonesArray("AliAlignObjParams");
   fArray->Clear();
   
   // Make an iterator
@@ -253,8 +253,8 @@ AliFMDAlignFaker::MakeAlign(const TString& path, Int_t id,
 		   path.Data(), id, transX, transY, transZ, rotX, rotY, rotZ));
   Int_t nAlign = fArray->GetEntries();
   id = 0;
-  AliAlignObjAngles* obj = 
-    new ((*fArray)[nAlign]) AliAlignObjAngles(path.Data(),
+  AliAlignObjParams* obj = 
+    new ((*fArray)[nAlign]) AliAlignObjParams(path.Data(),
 					      id,0,0,0,0,0,0,kTRUE);
   if (!obj) {
     AliError(Form("Failed to create alignment object for %s", path.Data()));

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2007/06/06 16:26:46  arcelli
+remove fall-back call to local CDB storage
+
 Revision 1.16  2007/05/15 16:25:44  cvetan
 Moving the alignment-related static methods from AliAlignObj to the new geometry steering class AliGeomManager (macro from Raffaele)
 
@@ -82,7 +85,7 @@ author: Silvia Arcelli, arcelli@bo.infn.it
 
 #include "AliLog.h"
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliAlignObjMatrix.h"
 #include "AliCDBManager.h"
 #include "AliCDBMetaData.h"
@@ -179,7 +182,7 @@ void AliTOFAlignment::Smear( Float_t *tr, Float_t *rot)
     dpsi   = rot[0];
     dtheta = rot[1];
     dphi   = rot[2];
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    AliAlignObjParams *o =new AliAlignObjParams(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
     fTOFAlignObjArray->Add(o);
   }
 
@@ -214,7 +217,7 @@ void AliTOFAlignment::Align( Float_t *tr, Float_t *rot)
     dtheta = rot[1];
     dphi   = rot[2];
     
-    AliAlignObjAngles *o =new AliAlignObjAngles(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    AliAlignObjParams *o =new AliAlignObjParams(path, dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
     fTOFAlignObjArray->Add(o);
   }
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();

@@ -1,10 +1,10 @@
 void MakeT0ZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for T0
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0, dy=0, dz=0, dpsi=0, dtheta=0, dphi=0;
 
@@ -25,7 +25,7 @@ void MakeT0ZeroMisAlignment(){
       symName = sn;
       symName += imod+1;
 
-      new(alobj[j++]) AliAlignObjAngles(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+      new(alobj[j++]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
     }
 
   const char* macroname = "MakeT0ZeroMisAlignment.C";

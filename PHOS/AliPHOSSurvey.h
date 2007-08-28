@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/07/10 12:41:38  kharlov
+ * Added a new class AliPHOSSurvet1 which read survey data from EDMS files
+ *
  * Revision 1.2  2007/05/17 17:13:32  kharlov
  * Coding convensions satisfied (T.Pocheptsov)
  *
@@ -27,7 +30,7 @@ class AliPHOSGeometry;
 
 /*
   Objects of this class read txt file with survey (photogrammetry) data
-  and convert the data into AliAlignObjAngles of alignable PHOS volumes.
+  and convert the data into AliAlignObjParams of alignable PHOS volumes.
   It can be used as a base class, you need to override GetStripTransformation.
   AliPHOSSurvey inherits TObject only to use AliLog "functions".
 */
@@ -39,9 +42,9 @@ public:
 
   virtual ~AliPHOSSurvey();
 
-  //Create AliAlignObjAngles for strips.
-  void CreateAliAlignObjAngles(TClonesArray &array);
-  //Create AliAlignObjAngles with null shifts and rotations.
+  //Create AliAlignObjParams for strips.
+  void CreateAliAlignObjParams(TClonesArray &array);
+  //Create AliAlignObjParams with null shifts and rotations.
   void CreateNullObjects(TClonesArray &alObj, const AliPHOSGeometry *geom)const;
 
 protected:

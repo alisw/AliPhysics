@@ -9,10 +9,10 @@ void MakeTPCZeroMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",100);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",100);
   TClonesArray &alobj = *array;
   
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   Int_t j = 0;
 
@@ -22,7 +22,7 @@ void MakeTPCZeroMisAlignment(){
 
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char *symname = AliGeomManager::SymName(volid);
-      new(alobj[j]) AliAlignObjAngles(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+      new(alobj[j]) AliAlignObjParams(symname, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
       j++;
     }
   }

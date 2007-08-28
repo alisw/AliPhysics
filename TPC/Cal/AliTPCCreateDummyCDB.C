@@ -7,7 +7,7 @@
 
 
 #include <AliAlignObj.h>
-#include <AliAlignObjAngles.h>
+#include <AliAlignObjParams.h>
 #include <AliCDBManager.h>
 #include <AliCDBStorage.h>
 #include <AliCDBEntry.h>
@@ -127,13 +127,13 @@ void CDBAlignmentObjectCreation(const char *fileName, const char *arrayName, con
 
 void GenerateRndTPC(Float_t sigmatrx=0., Float_t sigmatry=0, Float_t sigmatrz=0, Float_t sigmarot = 0.){
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10000);
   TClonesArray &alobj = *array;
   
   TFile f("TPC_alignment.root","RECREATE");
 
   TRandom *rnd   = new TRandom(4357);
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   Int_t j = 0;
   for (Int_t iLayer = AliGeomManager::kTPC1; iLayer <= AliGeomManager::kTPC2; iLayer++) {
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
@@ -147,7 +147,7 @@ void GenerateRndTPC(Float_t sigmatrx=0., Float_t sigmatry=0, Float_t sigmatrz=0,
 
       UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
       const char *path = AliGeomManager::GetVolPath(volid);
-      new(alobj[j]) AliAlignObjAngles(path, volid, dx, dy, dz, dpsi, dtheta, dphi);
+      new(alobj[j]) AliAlignObjParams(path, volid, dx, dy, dz, dpsi, dtheta, dphi);
       j++;
     }
   }

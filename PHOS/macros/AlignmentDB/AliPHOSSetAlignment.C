@@ -12,7 +12,7 @@
 #include "TRandom.h"
 #include "TClonesArray.h"
 
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
@@ -57,10 +57,10 @@ void IdealAlignment()
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for PHOS
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",11);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // null shifts and rotations
@@ -75,7 +75,7 @@ void IdealAlignment()
   for (Int_t iModule = 1; iModule<=nModules; iModule++) {
     TString newPath = basePath;
     newPath += iModule;
-    new(alobj[iModule-1]) AliAlignObjAngles(newPath.Data(),
+    new(alobj[iModule-1]) AliAlignObjParams(newPath.Data(),
 					    dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
@@ -101,10 +101,10 @@ void ResidualAlignment()
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for PHOS
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",11);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dpsi=0., dtheta=0., dphi=0.;
   Double_t displacement = 0.2;
@@ -114,31 +114,31 @@ void ResidualAlignment()
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   // Alignment for 5 PHOS modules
-  new(alobj[0]) AliAlignObjAngles("PHOS/Module1",
+  new(alobj[0]) AliAlignObjParams("PHOS/Module1",
 				  dvoluid, -0.20, -0.1, +0.0, dpsi, dtheta, 0.2, kTRUE);
-  new(alobj[1]) AliAlignObjAngles("PHOS/Module2",
+  new(alobj[1]) AliAlignObjParams("PHOS/Module2",
 				  dvoluid, -0.10, +0.0, -0.2, dpsi, dtheta, 0.2, kTRUE);
-  new(alobj[2]) AliAlignObjAngles("PHOS/Module3",
+  new(alobj[2]) AliAlignObjParams("PHOS/Module3",
 				  dvoluid,  0.05, -0.1,  0.2, dpsi, dtheta, 0.0, kTRUE);
-  new(alobj[3]) AliAlignObjAngles("PHOS/Module4",
+  new(alobj[3]) AliAlignObjParams("PHOS/Module4",
 				  dvoluid, +0.10, -0.0, -0.1, dpsi, dtheta, 0.1, kTRUE);
-  new(alobj[4]) AliAlignObjAngles("PHOS/Module5",
+  new(alobj[4]) AliAlignObjParams("PHOS/Module5",
 				  dvoluid, +0.20, -0.1,  0.1, dpsi, dtheta, 0.2, kTRUE);
 
   // Alignment for PHOS cradle
-  new(alobj[5]) AliAlignObjAngles("PHOS/Cradle0",
+  new(alobj[5]) AliAlignObjParams("PHOS/Cradle0",
 				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[6]) AliAlignObjAngles("PHOS/Cradle1",
+  new(alobj[6]) AliAlignObjParams("PHOS/Cradle1",
 				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // Alignment for cradle wheels
-  new(alobj[7])  AliAlignObjAngles("PHOS/Wheel0",
+  new(alobj[7])  AliAlignObjParams("PHOS/Wheel0",
 				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[8])  AliAlignObjAngles("PHOS/Wheel1",
+  new(alobj[8])  AliAlignObjParams("PHOS/Wheel1",
 				   dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[9])  AliAlignObjAngles("PHOS/Wheel2",
+  new(alobj[9])  AliAlignObjParams("PHOS/Wheel2",
 				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[10]) AliAlignObjAngles("PHOS/Wheel3",
+  new(alobj[10]) AliAlignObjParams("PHOS/Wheel3",
 				   dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // *************************    2nd step    ***************
@@ -162,10 +162,10 @@ void FullMisalignment()
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for PHOS
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",11);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",11);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dpsi=0., dtheta=0., dphi=0.;
   Double_t displacement = 10;
@@ -175,31 +175,31 @@ void FullMisalignment()
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
 
   // Alignment for 5 PHOS modules
-  new(alobj[0]) AliAlignObjAngles("PHOS/Module1",
+  new(alobj[0]) AliAlignObjParams("PHOS/Module1",
 				  dvoluid, -20., -10.,   0., dpsi, dtheta, 5, kTRUE);
-  new(alobj[1]) AliAlignObjAngles("PHOS/Module2",
+  new(alobj[1]) AliAlignObjParams("PHOS/Module2",
 				  dvoluid, -10.,   0., -10., dpsi, dtheta, 2, kTRUE);
-  new(alobj[2]) AliAlignObjAngles("PHOS/Module3",
+  new(alobj[2]) AliAlignObjParams("PHOS/Module3",
 				  dvoluid,   5., -10.,  10., dpsi, dtheta, 0, kTRUE);
-  new(alobj[3]) AliAlignObjAngles("PHOS/Module4",
+  new(alobj[3]) AliAlignObjParams("PHOS/Module4",
 				  dvoluid, +10.,  -0., -10., dpsi, dtheta, 2, kTRUE);
-  new(alobj[4]) AliAlignObjAngles("PHOS/Module5",
+  new(alobj[4]) AliAlignObjParams("PHOS/Module5",
 				  dvoluid, +20., -10.,   0., dpsi, dtheta, 5, kTRUE);
 
   // Alignment for PHOS cradle
-  new(alobj[5]) AliAlignObjAngles("PHOS/Cradle0",
+  new(alobj[5]) AliAlignObjParams("PHOS/Cradle0",
 				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[6]) AliAlignObjAngles("PHOS/Cradle1",
+  new(alobj[6]) AliAlignObjParams("PHOS/Cradle1",
 				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // Alignment for cradle wheels
-  new(alobj[7]) AliAlignObjAngles("PHOS/Wheel0",
+  new(alobj[7]) AliAlignObjParams("PHOS/Wheel0",
 				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[8]) AliAlignObjAngles("PHOS/Wheel1",
+  new(alobj[8]) AliAlignObjParams("PHOS/Wheel1",
 				  dvoluid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[9]) AliAlignObjAngles("PHOS/Wheel2",
+  new(alobj[9]) AliAlignObjParams("PHOS/Wheel2",
 				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[10]) AliAlignObjAngles("PHOS/Wheel3",
+  new(alobj[10]) AliAlignObjParams("PHOS/Wheel3",
 				  dvoluid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // *************************    2nd step    ***************

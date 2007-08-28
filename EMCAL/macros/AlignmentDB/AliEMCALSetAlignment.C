@@ -12,7 +12,7 @@
 #include "TRandom.h"
 #include "TClonesArray.h"
 
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
@@ -57,10 +57,10 @@ void IdealAlignment()
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for EMCAL
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",12);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",12);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // null shifts and rotations
@@ -75,14 +75,14 @@ void IdealAlignment()
   for (Int_t iModule = 0; iModule < nModules; iModule++) {
     TString newPath = basePath;
     newPath += iModule+1;
-    new(alobj[iModule]) AliAlignObjAngles(newPath.Data(),
+    new(alobj[iModule]) AliAlignObjParams(newPath.Data(),
 					    dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   //half SMs
-  new(alobj[10]) AliAlignObjAngles("EMCAL/HalfSupermodule1",
+  new(alobj[10]) AliAlignObjParams("EMCAL/HalfSupermodule1",
 				   dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[11]) AliAlignObjAngles("EMCAL/HalfSupermodule2",
+  new(alobj[11]) AliAlignObjParams("EMCAL/HalfSupermodule2",
                                    dvoluid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
 
 
@@ -108,10 +108,10 @@ void ResidualAlignment()
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for EMCAL
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",12);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",12);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   UShort_t iIndex=0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
@@ -128,18 +128,18 @@ void ResidualAlignment()
     dpsi = pRnd->Gaus(0,sigmaRot); dtheta = pRnd->Gaus(0,sigmaRot); dphi = pRnd->Gaus(0,sigmaRot);
     TString newPath = basePath;
     newPath += iSM + 1;
-    new(alobj[iSM]) AliAlignObjAngles(newPath.Data(),
+    new(alobj[iSM]) AliAlignObjParams(newPath.Data(),
 				     dvoluid, dx,dy,dz,dpsi,dtheta,dphi, kTRUE);
   }
   
   dx = pRnd->Gaus(0,sigmaTrans); dy = pRnd->Gaus(0,sigmaTrans); dz = pRnd->Gaus(0,sigmaTrans);
   dpsi = pRnd->Gaus(0,sigmaRot); dtheta = pRnd->Gaus(0,sigmaRot); dphi = pRnd->Gaus(0,sigmaRot);
-  new(alobj[10]) AliAlignObjAngles("EMCAL/HalfSupermodule1",
+  new(alobj[10]) AliAlignObjParams("EMCAL/HalfSupermodule1",
 				   dvoluid, dx,dy,dz,dpsi,dtheta,dphi, kTRUE);
   
   dx = pRnd->Gaus(0,sigmaTrans); dy = pRnd->Gaus(0,sigmaTrans); dz = pRnd->Gaus(0,sigmaTrans);
   dpsi = pRnd->Gaus(0,sigmaRot); dtheta = pRnd->Gaus(0,sigmaRot); dphi = pRnd->Gaus(0,sigmaRot);
-  new(alobj[11]) AliAlignObjAngles("EMCAL/HalfSupermodule2",
+  new(alobj[11]) AliAlignObjParams("EMCAL/HalfSupermodule2",
 				   dvoluid, dx,dy,dz,dpsi,dtheta,dphi, kTRUE);
 
   // *************************    2nd step    ***************
@@ -163,10 +163,10 @@ void FullMisalignment()
   // *************************    1st step    ***************
   // Create TClonesArray of alignment objects for EMCAL
 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",12);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",12);
   TClonesArray &alobj = *array;
    
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   UShort_t iIndex=0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
@@ -184,18 +184,18 @@ void FullMisalignment()
     dpsi = pRnd->Gaus(0,sigmaRot); dtheta = pRnd->Gaus(0,sigmaRot); dphi = pRnd->Gaus(0,sigmaRot);
     TString newPath = basePath;
     newPath += iSM + 1;
-    new(alobj[iSM]) AliAlignObjAngles(newPath.Data(),
+    new(alobj[iSM]) AliAlignObjParams(newPath.Data(),
 				     dvoluid, dx,dy,dz,dpsi,dtheta,dphi, kTRUE);
   }
   
   dx = pRnd->Gaus(0,sigmaTrans); dy = pRnd->Gaus(0,sigmaTrans); dz = pRnd->Gaus(0,sigmaTrans);
   dpsi = pRnd->Gaus(0,sigmaRot); dtheta = pRnd->Gaus(0,sigmaRot); dphi = pRnd->Gaus(0,sigmaRot);
-  new(alobj[10]) AliAlignObjAngles("EMCAL/HalfSupermodule1",
+  new(alobj[10]) AliAlignObjParams("EMCAL/HalfSupermodule1",
 				   dvoluid, dx,dy,dz,dpsi,dtheta,dphi, kTRUE);
   
   dx = pRnd->Gaus(0,sigmaTrans); dy = pRnd->Gaus(0,sigmaTrans); dz = pRnd->Gaus(0,sigmaTrans);
   dpsi = pRnd->Gaus(0,sigmaRot); dtheta = pRnd->Gaus(0,sigmaRot); dphi = pRnd->Gaus(0,sigmaRot);
-  new(alobj[11]) AliAlignObjAngles("EMCAL/HalfSupermodule2",
+  new(alobj[11]) AliAlignObjParams("EMCAL/HalfSupermodule2",
 				   dvoluid, dx,dy,dz,dpsi,dtheta,dphi, kTRUE);
 
   // *************************    2nd step    ***************

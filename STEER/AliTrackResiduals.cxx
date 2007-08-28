@@ -22,7 +22,7 @@
 #include "AliTrackResiduals.h"
 
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliTrackPointArray.h"
 
 ClassImp(AliTrackResiduals)
@@ -193,7 +193,7 @@ void AliTrackResiduals::InitAlignObj()
   // Create the alignment object 
   // to be updated
   if (fAlignObj) delete fAlignObj;
-  fAlignObj = new AliAlignObjAngles;
+  fAlignObj = new AliAlignObjParams;
 }
 
 

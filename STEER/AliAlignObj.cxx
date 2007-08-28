@@ -19,7 +19,7 @@
 //  Implementation of the alignment object class, holding the alignment
 //  constants for a single volume, through the abstract class AliAlignObj.
 //  From it two derived concrete representation of alignment object class
-//  (AliAlignObjAngles, AliAlignObjMatrix) are derived in separate files.
+//  (AliAlignObjParams, AliAlignObjMatrix) are derived in separate files.
 //-----------------------------------------------------------------
 
 #include <TClass.h>
@@ -31,7 +31,7 @@
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "AliLog.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
  
 ClassImp(AliAlignObj)
 
@@ -41,7 +41,8 @@ AliAlignObj::AliAlignObj():
   fVolUID(0)
 {
   // default constructor
-  // InitSymNames();
+  for(Int_t i=0; i<6; i++) fDiag[i]=-999.;
+  for(Int_t i=0; i<21; i++) fODia[i]=-999.;
 }
 
 //_____________________________________________________________________________
@@ -52,6 +53,19 @@ AliAlignObj::AliAlignObj(const char* symname, UShort_t voluid) :
 {
   // standard constructor
   //
+  for(Int_t i=0; i<6; i++) fDiag[i]=-999.;
+  for(Int_t i=0; i<21; i++) fODia[i]=-999.;
+}
+
+//_____________________________________________________________________________
+AliAlignObj::AliAlignObj(const char* symname, UShort_t voluid, Double_t* cmat) :
+  TObject(),
+  fVolPath(symname),
+  fVolUID(voluid)
+{
+  // standard constructor
+  //
+  SetCorrMatrix(cmat);
 }
 
 //_____________________________________________________________________________
@@ -61,6 +75,8 @@ AliAlignObj::AliAlignObj(const AliAlignObj& theAlignObj) :
   fVolUID(theAlignObj.GetVolUID())
 {
   //copy constructor
+  for(Int_t i=0; i<6; i++) fDiag[i]=theAlignObj.fDiag[i];
+  for(Int_t i=0; i<21; i++) fODia[i]=theAlignObj.fODia[i];
 }
 
 //_____________________________________________________________________________
@@ -70,6 +86,8 @@ AliAlignObj &AliAlignObj::operator =(const AliAlignObj& theAlignObj)
   if(this==&theAlignObj) return *this;
   fVolPath = theAlignObj.GetSymName();
   fVolUID = theAlignObj.GetVolUID();
+  for(Int_t i=0; i<6; i++) fDiag[i]=theAlignObj.fDiag[i];
+  for(Int_t i=0; i<21; i++) fODia[i]=theAlignObj.fODia[i];
   return *this;
 }
 
@@ -85,6 +103,8 @@ AliAlignObj &AliAlignObj::operator*=(const AliAlignObj& theAlignObj)
   theAlignObj.GetMatrix(m2);
   m1.MultiplyLeft(&m2);
   SetMatrix(m1);
+  // temporary solution: consider parameters indipendent 
+  for(Int_t i=0; i<6; i++)  fDiag[i] = TMath::Sqrt((fDiag[i]*fDiag[i])+(theAlignObj.fDiag[i]*theAlignObj.fDiag[i]));
   return *this;
 }
 
@@ -165,6 +185,53 @@ Int_t AliAlignObj::Compare(const TObject *obj) const
     return 0;
   else
     return ((level > level2) ? 1 : -1);
+}
+
+//______________________________________________________________________________
+void AliAlignObj::GetCovMatrix(Double_t *cmat) const
+{
+  // Fills the cmat argument with the coefficients of the external cov matrix (21 elements)
+  // calculating them from the correlation matrix data member
+  //
+
+  for(Int_t i=0; i<6; ++i) {
+    // Off diagonal elements
+    for(Int_t j=0; j<i; ++j) {
+      cmat[i*(i+1)/2+j] = (fDiag[j] >= 0. && fDiag[i] >= 0.) ? fODia[(i-1)*i/2+j]*fDiag[j]*fDiag[i]: -999.;
+    }
+
+    // Diagonal elements
+    cmat[i*(i+1)/2+i] = (fDiag[i] >= 0.) ? fDiag[i]*fDiag[i] : -999.;
+  }
+}
+
+//______________________________________________________________________________
+void AliAlignObj::SetCorrMatrix(Double_t *cmat)
+{
+  // Sets the correlation matrix data member from the coefficients of the external covariance
+  // matrix (21 elements passed as argument). 
+  //
+  if(cmat) {
+
+    // Diagonal elements first
+    for(Int_t i=0; i<6; ++i) {
+      fDiag[i] = (cmat[i*(i+1)/2+i] >= 0.) ? TMath::Sqrt(cmat[i*(i+1)/2+i]) : -999.;
+    }
+
+    // ... then the ones off diagonal
+    for(Int_t i=0; i<6; ++i)
+      // Off diagonal elements
+      for(Int_t j=0; j<i; ++j) {
+	fODia[(i-1)*i/2+j] = (fDiag[i] > 0. && fDiag[j] > 0.) ? cmat[i*(i+1)/2+j]/(fDiag[j]*fDiag[i]) : 0.;       // check for division by zero (due to diagonal element of 0) and for fDiag != -999. (due to negative input diagonal element).
+	if (fODia[(i-1)*i/2+j]>1.)  fODia[(i-1)*i/2+j] =  1.; // check upper boundary
+	if (fODia[(i-1)*i/2+j]<-1.) fODia[(i-1)*i/2+j] = -1.; // check lower boundary
+      }
+  } else {
+    for(Int_t i=0; i< 6; ++i) fDiag[i]=-999.;
+    for(Int_t i=0; i< 6*(6-1)/2; ++i) fODia[i]=0.;
+  }
+
+  return;
 }
 
 //_____________________________________________________________________________

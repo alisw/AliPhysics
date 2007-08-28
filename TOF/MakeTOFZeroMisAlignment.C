@@ -1,7 +1,7 @@
 void MakeTOFZeroMisAlignment(){
   // Create TClonesArray of zero misalignment objects for TOF
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",2000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",2000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -12,7 +12,7 @@ void MakeTOFZeroMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
   Int_t i;
@@ -20,7 +20,7 @@ void MakeTOFZeroMisAlignment(){
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
   for(i=0; i<AliGeomManager::LayerSize(idTOF); i++) {
-    new(alobj[j++]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   const char* macroname = "MakeTOFZeroMisAlignment.C";

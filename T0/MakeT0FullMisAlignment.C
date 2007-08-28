@@ -1,7 +1,7 @@
 void MakeT0FullMisAlignment(){
   // Create TClonesArray of full misalignment objects for T0
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",30);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",30);
   TClonesArray &alobj = *array;
 
   if(!AliGeomManager::GetGeometry()){
@@ -11,7 +11,7 @@ void MakeT0FullMisAlignment(){
     AliGeomManager::LoadGeometry();
   }
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
@@ -41,7 +41,7 @@ void MakeT0FullMisAlignment(){
     dtheta = rnd->Gaus(0.,sigmarot);
     dphi = rnd->Gaus(0.,sigmarot);
     
-    new(alobj[j++]) AliAlignObjAngles(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[j++]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
   
   const char* macroname = "MakeT0FullMisAlignment.C";

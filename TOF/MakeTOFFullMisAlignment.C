@@ -1,7 +1,7 @@
 void MakeTOFFullMisAlignment(){
   // Create TClonesArray of full misalignment objects for TOF
   // 
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",2000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",2000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -11,7 +11,7 @@ void MakeTOFFullMisAlignment(){
     AliGeomManager::LoadGeometry();
   }
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
   Double_t sfdpsi=0.,sfdtheta=0.,sfdphi=0.;
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
@@ -96,12 +96,12 @@ void MakeTOFFullMisAlignment(){
     segmpath+=sm;
     segmpath+="_1";
     cout<<segmpath.Data()<<"  "<<dvoluid<<"  "<<mean_dx[sm]*0.1<<"  "<<mean_dy[sm]*0.1<<"  "<<dz<<"  "<<sfdpsi<<"  "<<sfdtheta<<"  "<<sfdphi<<endl;
-    new(alobj[sm]) AliAlignObjAngles(segmpath.Data(), dvoluid, mean_dx[sm]*0.1,
+    new(alobj[sm]) AliAlignObjParams(segmpath.Data(), dvoluid, mean_dx[sm]*0.1,
 		     mean_dy[sm]*0.1, dz, sfdpsi, sfdtheta, sfdphi, kTRUE);
   }
   
   for(Int_t k=0; k<18; k++){
-    AliAlignObjAngles* smobj = (AliAlignObjAngles*)array->UncheckedAt(k);
+    AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(k);
     if(!smobj->ApplyToGeometry()){
       cout<<"application of object "<<k<<" failed!"<<endl;
       return;
@@ -128,10 +128,10 @@ void MakeTOFFullMisAlignment(){
     dpsi = 0.;
     dtheta = rnd->Gaus(0.,sigmarot);
     dphi = 0.;
-    new(alobj[j++]) AliAlignObjAngles(symname.Data(), dvoluid, tofdx, tofdy, tofdz, dpsi, dtheta, dphi, kFALSE);
+    new(alobj[j++]) AliAlignObjParams(symname.Data(), dvoluid, tofdx, tofdy, tofdz, dpsi, dtheta, dphi, kFALSE);
   }
   for(Int_t k=18; k<36; k++){
-    AliAlignObjAngles* smobj = (AliAlignObjAngles*)array->UncheckedAt(k);
+    AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(k);
     if(!smobj->ApplyToGeometry()){
       cout<<"application of object "<<k<<" failed!"<<endl;
       return;
@@ -157,7 +157,7 @@ void MakeTOFFullMisAlignment(){
     sdpsi = 0.;
     sdtheta = 0.;
     sdphi = 0.;
-    new(alobj[j++]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
+    new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
   }
 
   const char* macroname = "MakeTOFFullMisAlignment.C";

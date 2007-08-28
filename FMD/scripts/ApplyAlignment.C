@@ -26,7 +26,7 @@ ApplyAlignment()
     else {
       Int_t nAlign = array->GetEntries();
       for (Int_t i = 0; i < nAlign; i++) {
-	AliAlignObjAngles* a = static_cast<AliAlignObjAngles*>(array->At(i));
+	AliAlignObjParams* a = static_cast<AliAlignObjParams*>(array->At(i));
 	if (!a->ApplyToGeometry()) {
 	  Warning("ApplyAlignement", "Failed to apply alignment to %s", 
 		  a->GetVolPath());

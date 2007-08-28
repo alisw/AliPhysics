@@ -13,7 +13,7 @@
 
 #include "TObject.h"
 
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 
 class AliTrackPointArray;
 

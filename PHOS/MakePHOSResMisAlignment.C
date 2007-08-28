@@ -8,7 +8,7 @@ void MakePHOSResMisAlignment(){
   }
 
   AliPHOSEMCAGeometry *emca = phosGeom->GetEMCAGeometry();
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles", 16 + phosGeom->GetNModules() * 
+  TClonesArray *array = new TClonesArray("AliAlignObjParams", 16 + phosGeom->GetNModules() * 
                                          emca->GetNStripX() * emca->GetNStripZ());
   TClonesArray &alobj = *array;
    
@@ -20,49 +20,49 @@ void MakePHOSResMisAlignment(){
  
   Int_t i=0 ;
   // Alignment for 5 PHOS modules
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module1",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module1",
         volid, -0.20, -0.1, +0.0, dpsi, dtheta, 0.2, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module2",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module2",
 	volid, -0.10, +0.0, -0.2, dpsi, dtheta, 0.2, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module3",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module3",
 	volid,  0.05, -0.1,  0.2, dpsi, dtheta, 0.0, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module4",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module4",
 	volid, +0.10, -0.0, -0.1, dpsi, dtheta, 0.1, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module5",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module5",
 	volid, +0.20, -0.1,  0.1, dpsi, dtheta, 0.2, kTRUE);
  
   Double_t dx=0., dy=0., dz=0. ;
   // Alignment of CPV modules
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module1/CPV",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module1/CPV",
         volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module2/CPV",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module2/CPV",
         volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module3/CPV",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module3/CPV",
         volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module4/CPV",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module4/CPV",
         volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Module5/CPV",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Module5/CPV",
         volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
  
 
   // Alignment for PHOS cradle
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Cradle0",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Cradle0",
 	volid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Cradle1",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Cradle1",
 	volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   // Alignment for cradle wheels
-  new(alobj[i++])  AliAlignObjAngles("PHOS/Wheel0",
+  new(alobj[i++])  AliAlignObjParams("PHOS/Wheel0",
 	volid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++])  AliAlignObjAngles("PHOS/Wheel1",
+  new(alobj[i++])  AliAlignObjParams("PHOS/Wheel1",
 	volid, 0., 0., -displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++])  AliAlignObjAngles("PHOS/Wheel2",
+  new(alobj[i++])  AliAlignObjParams("PHOS/Wheel2",
 	volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[i++]) AliAlignObjAngles("PHOS/Wheel3",
+  new(alobj[i++]) AliAlignObjParams("PHOS/Wheel3",
 	volid, 0., 0., +displacement, dpsi, dtheta, dphi, kTRUE);
 
   AliPHOSSurvey geodesicData("phos_mod3_survey.txt");
-  geodesicData.CreateAliAlignObjAngles(alobj);
+  geodesicData.CreateAliAlignObjParams(alobj);
 
   const char* macroname = "MakePHOSResMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){

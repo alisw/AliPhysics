@@ -22,7 +22,7 @@ AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
 AliReconstructor.cxx TTreeStream.cxx\
 AliGeomManager.cxx \
-AliAlignObj.cxx AliAlignObjAngles.cxx AliAlignObjMatrix.cxx \
+AliAlignObj.cxx AliAlignObjParams.cxx AliAlignObjMatrix.cxx \
 AliTriggerInput.cxx \
 AliTriggerDetector.cxx \
 AliTriggerCondition.cxx \

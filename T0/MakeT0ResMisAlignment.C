@@ -1,7 +1,7 @@
 void MakeT0ResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for T0
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",30);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",30);
   TClonesArray &alobj = *array;
 
   if(!AliGeomManager::GetGeometry()){
@@ -12,7 +12,7 @@ void MakeT0ResMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   Double_t dx, dy, dz, dpsi, dtheta, dphi;
   TRandom *rnd   = new TRandom(4321);
@@ -42,7 +42,7 @@ void MakeT0ResMisAlignment(){
     dtheta = rnd->Gaus(0.,sigmarot);
     dphi = rnd->Gaus(0.,sigmarot);
     
-    new(alobj[j++]) AliAlignObjAngles(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[j++]) AliAlignObjParams(symName.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
   
   const char* macroname = "MakeT0ResMisAlignment.C";

@@ -1,7 +1,7 @@
 void MakeTOFResMisAlignment(){
   // Create TClonesArray of residual misalignment objects for TOF
   //
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",2000);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",2000);
   TClonesArray &alobj = *array;
    
   if(!AliGeomManager::GetGeometry()){
@@ -12,7 +12,7 @@ void MakeTOFResMisAlignment(){
   }
   // needed for the constructors with local coordinates not to fail
 
-  AliAlignObjAngles a;
+  AliAlignObjParams a;
 
   AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
   Int_t i;
@@ -31,7 +31,7 @@ void MakeTOFResMisAlignment(){
     dpsi = 0.;
     dtheta = 0.;
     dphi = 0.;
-    new(alobj[j]) AliAlignObjAngles(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
+    new(alobj[j]) AliAlignObjParams(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     j++;
   }
 

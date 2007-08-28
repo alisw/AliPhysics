@@ -92,19 +92,19 @@ void MakePMDResMisAlignment(){
   
   
   //Create a TClonesArray of Align Object to store displacement Angles
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
   
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   
   Int_t iIndex=0; //  let all modules have index=0 in a layer with no LUT
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  new(alobj[0]) AliAlignObjAngles(Sector1, volid, dx14, dy14, dz14, dpsi14, dtheta14, dphi14, kFALSE);
-  new(alobj[1]) AliAlignObjAngles(Sector2, volid, dx14, dy14, dz14, dpsi14, dtheta14, dphi14, kFALSE);
-  new(alobj[2]) AliAlignObjAngles(Sector3, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
-  new(alobj[3]) AliAlignObjAngles(Sector4, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
+  new(alobj[0]) AliAlignObjParams(Sector1, volid, dx14, dy14, dz14, dpsi14, dtheta14, dphi14, kFALSE);
+  new(alobj[1]) AliAlignObjParams(Sector2, volid, dx14, dy14, dz14, dpsi14, dtheta14, dphi14, kFALSE);
+  new(alobj[2]) AliAlignObjParams(Sector3, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
+  new(alobj[3]) AliAlignObjParams(Sector4, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
   
   const char* macroname = "MakePMDResMisAlignment.C";
   if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){

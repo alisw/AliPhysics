@@ -43,10 +43,10 @@ void MakePMDZeroMisAlignment(){
   // needed for the constructors with local coordinates not to fail
 
   //Create a TClonesArray of Align Object to store displacement Angles
-  TClonesArray *array = new TClonesArray("AliAlignObjAngles",10);
+  TClonesArray *array = new TClonesArray("AliAlignObjParams",10);
   TClonesArray &alobj = *array;
   
-  AliAlignObjAngles o;
+  AliAlignObjParams o;
   
   Int_t iIndex=0; //  let all modules have index=0 in a layer with no LUT
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
@@ -56,7 +56,7 @@ void MakePMDZeroMisAlignment(){
 
   for(i=1; i<=4; i++){
     TString snSector(Form("PMD/Sector%d",i));
-    new(alobj[j++]) AliAlignObjAngles(snSector.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    new(alobj[j++]) AliAlignObjParams(snSector.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
   const char* macroname = "MakePMDZeroMisAlignment.C";

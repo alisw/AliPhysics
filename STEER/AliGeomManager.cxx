@@ -32,7 +32,7 @@
 #include "AliGeomManager.h"
 #include "AliLog.h"
 #include "AliAlignObj.h"
-#include "AliAlignObjAngles.h"
+#include "AliAlignObjParams.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -414,7 +414,7 @@ void  AliGeomManager::InitAlignObjFromGeometry()
     fgAlignObjs[iLayer-kFirstLayer] = new AliAlignObj*[LayerSize(iLayer)];
     for (Int_t iModule = 0; iModule < LayerSize(iLayer); iModule++) {
       UShort_t volid = LayerToVolUID(iLayer,iModule);
-      fgAlignObjs[iLayer-kFirstLayer][iModule] = new AliAlignObjAngles("",volid,0,0,0,0,0,0,kTRUE);
+      fgAlignObjs[iLayer-kFirstLayer][iModule] = new AliAlignObjParams("",volid,0,0,0,0,0,0,kTRUE);
       const char *symname = SymName(volid);
       if (!GetFromGeometry(symname, *fgAlignObjs[iLayer-kFirstLayer][iModule]))
 	AliErrorClass(Form("Failed to extract the alignment object for the volume (ID=%d and path=%s) !",volid,symname));

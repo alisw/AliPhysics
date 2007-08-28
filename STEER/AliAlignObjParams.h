@@ -2,7 +2,7 @@
 #define ALIALIGNOBJANGLES_H
 
 /*****************************************************************************
- * AliAlignObjAngles: derived alignment class storing alignment information  *
+ * AliAlignObjParams: derived alignment class storing alignment information  *
  *   for a single volume in form of three doubles for the translation        *
  *   and three doubles for the rotation expressed with the euler angles      *
  *   in the xyz-convention (http://mathworld.wolfram.com/EulerAngles.html),  *
@@ -16,14 +16,14 @@
 
 #include "AliAlignObj.h"
 
-class AliAlignObjAngles : public AliAlignObj{
+class AliAlignObjParams : public AliAlignObj{
  public:
-  AliAlignObjAngles();
-  AliAlignObjAngles(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *);
-  AliAlignObjAngles(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *);
-  AliAlignObjAngles(const AliAlignObj& theAlignObj);
-  AliAlignObjAngles& operator= (const AliAlignObj& theAlignObj);
-  virtual ~AliAlignObjAngles();
+  AliAlignObjParams();
+  AliAlignObjParams(const char* symname, UShort_t volUId, Double_t x, Double_t y, Double_t z, Double_t psi, Double_t theta, Double_t phi, Bool_t global) throw (const Char_t *);
+  AliAlignObjParams(const char* symname, UShort_t volUId, TGeoMatrix& m, Bool_t global) throw (const Char_t *);
+  AliAlignObjParams(const AliAlignObj& theAlignObj);
+  AliAlignObjParams& operator= (const AliAlignObj& theAlignObj);
+  virtual ~AliAlignObjParams();
   
   //Setters
   virtual void SetTranslation(Double_t x, Double_t y, Double_t z){
@@ -47,7 +47,7 @@ class AliAlignObjAngles : public AliAlignObj{
   Double_t fTranslation[3]; // Translation vector
   Double_t fRotation[3]; // Roll-pitch-yaw angles
   
-  ClassDef(AliAlignObjAngles, 1)
+  ClassDef(AliAlignObjParams, 1)
 };
 
 #endif

@@ -90,7 +90,7 @@
 
     class AliGeomManager {};
     class AliAlignObj {};
-    class AliAlignObjAngles {};
+    class AliAlignObjParams {};
     class AliAlignObjMatrix {};
 
     class AliTrackFitter {};
