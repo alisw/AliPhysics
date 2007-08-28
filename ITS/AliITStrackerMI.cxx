@@ -1828,7 +1828,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
      }
 
      // Correct for material of the current layer
-     Double_t d,x0,lengthTimesMeanDensity;
+     Double_t d,x0;
      if(fUseTGeo) {
        Double_t globXYZ[3];
        t->GetXYZ(globXYZ);
@@ -2006,7 +2006,7 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
      }
 
      // Correct for material of the current layer
-     Double_t d,x0,lengthTimesMeanDensity;
+     Double_t d,x0;
      if(fUseTGeo) {
        Double_t globXYZ[3];
        t->GetXYZ(globXYZ);

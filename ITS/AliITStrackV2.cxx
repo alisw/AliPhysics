@@ -300,7 +300,8 @@ Bool_t AliITStrackV2::MeanBudgetToPrimVertex(Double_t xyz[3], Double_t step, Dou
   if (nstep<1) nstep = 1;
   step = (GetX()-vertexX)/nstep;
 
-  Double_t mparam[7], densMean=0, radLength=0, length=0;
+  //  Double_t mparam[7], densMean=0, radLength=0, length=0;
+  Double_t mparam[7];
   Double_t p1[3], p2[3], x = GetX(), bz = GetBz();
   GetXYZ(p1);
 

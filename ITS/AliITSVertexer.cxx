@@ -143,8 +143,8 @@ void AliITSVertexer::SetLaddersOnLayer2(Int_t ladwid){
   // Calculates the array of ladders on layer 2 to be used with a 
   // given ladder on layer 1
   fLadOnLay2=ladwid;
-  AliRunLoader *rl =AliRunLoader::GetRunLoader();
-  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  //  AliRunLoader *rl =AliRunLoader::GetRunLoader();
+  //  AliITSLoader* itsLoader = (AliITSLoader*)rl->GetLoader("ITSLoader");
   //  AliITSgeom* geom = itsLoader->GetITSgeom();
   Int_t ladtot1=AliITSgeomTGeo::GetNLadders(1);
   if(fLadders) delete [] fLadders;
