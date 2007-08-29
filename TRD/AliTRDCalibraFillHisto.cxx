@@ -68,7 +68,7 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"
-#include "AliTRDRawStream.h"
+#include "AliTRDRawStreamV2.h"
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
@@ -1204,10 +1204,10 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, AliTRDtrack *
   
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStreamV2 *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDRawStream
+  // Event Processing loop - AliTRDRawStreamV2
   // 0 timebin problem
   // 1 no input
   // 2 input
@@ -1253,12 +1253,14 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t
       //row[iTimeBin]   = rawStream->GetRow();                           //  current row
       //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
+      //printf("detector %d, nbtimebin %d, iTimeBin %d\n",fDetectorPreviousTrack,nbtimebin,iTimeBin);
       
       Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
 	// should extract baseline here!
 	if(signal[n]>13) phvalue[itime] = signal[n];
+	//printf("signal is %d for %d\n",signal[n],n);
 	n++;
       }
     }
@@ -1299,12 +1301,14 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t
       //row[iTimeBin]   = rawStream->GetRow();                           //  current row
       //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
-      
+      //printf("detector %d, nbtimebin %d, iTimeBin %d\n",fDetectorPreviousTrack,nbtimebin,iTimeBin);
+
       Int_t fin     = TMath::Min(nbtimebin,(iTimeBin+3));
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
 	// should extract baseline here!
 	if(signal[n]>13) phvalue[itime] = signal[n];
+	//printf("signal is %d for %d\n",signal[n],n);
 	n++;
       }
     }
@@ -1334,7 +1338,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader, Bool_t no
   //
 
 
-  AliTRDRawStream rawStream(rawReader);
+  AliTRDRawStreamV2 rawStream(rawReader);
 
   rawReader->Select("TRD");
 

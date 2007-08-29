@@ -49,7 +49,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDRawStream.h"
+#include "AliTRDRawStreamV2.h"
 #include "AliCDBManager.h"
 
 //
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
   int nevents_physics=0;
   int nevents_total=0;
 
-  //Instance of AliCDBManager: needed by AliTRDRawStream
+  //Instance of AliCDBManager: needed by AliTRDRawStreamV2
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
   man->SetRun(0);
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
     if ((eventT==PHYSICS_EVENT) && (passvdrift)) {
       //if (eventT==PHYSICS_EVENT) {
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *) rawReader);
+      AliTRDRawStreamV2 *trdRawStream = new AliTRDRawStreamV2((AliRawReader *) rawReader);
       Int_t result = calibra->ProcessEventDAQ(trdRawStream,(Bool_t)nevents_physics);
       if(!result) passvdrift = kFALSE;
       else nbvdrift += (Int_t) result/2;

@@ -17,9 +17,11 @@ class TTreeSRedirector;
 
 class AliRawReader;
 
+class AliTRDCalDet;
+class AliTRDCalPad;
 class AliTRDCalROC;
 class AliTRDCalPadStatus;
-class AliTRDRawStream;
+class AliTRDRawStreamV2;
 class AliTRDarrayF;
 class AliTRDgeometry;
 
@@ -35,7 +37,7 @@ public:
 
   AliTRDCalibPadStatus& operator = (const  AliTRDCalibPadStatus &source);
 
-  Int_t ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 
@@ -47,6 +49,8 @@ public:
   void Analyse();
   void AnalyseHisto();
   AliTRDCalPadStatus *CreateCalPadStatus();
+  AliTRDCalPad *CreateCalPad();
+  AliTRDCalDet *CreateCalDet();
 
   void SetCalRocMean(AliTRDCalROC *mean, Int_t det);
   void SetCalRocRMS(AliTRDCalROC *rms, Int_t det);  
@@ -68,8 +72,8 @@ public:
   void    SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range 
 
 
-  Bool_t TestEvent(Int_t nevent);  //test the fast approach to fill array  - used for test purposes
-  Bool_t TestEventHisto(Int_t nevent);  //test the fast approach to fill histograms  
+  Bool_t TestEvent(Int_t nevent, Int_t sm);  //test the fast approach to fill array  - used for test purposes
+  Bool_t TestEventHisto(Int_t nevent, Int_t sm);  //test the fast approach to fill histograms  
 
 private:
 

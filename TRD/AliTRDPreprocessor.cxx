@@ -283,25 +283,32 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 	
 	if(calPed){
 	  
+	  Int_t sm = -1; 
+
 	  // analyse
-	  calPed->AnalyseHisto();
-	  
+	  //calPed->AnalyseHisto();
+	    	  
+	  // Add to the calPedSum
+	  for (Int_t idet=0; idet<540; idet++) {
+	    AliTRDCalROC *rocMean  = calPed->GetCalRocMean(idet, kFALSE);
+	    if ( rocMean )  {
+	      calPedSum.SetCalRocMean(rocMean,idet);
+	      sm = (Int_t) (idet / 30);
+	    }
+	    AliTRDCalROC *rocRMS = calPed->GetCalRocRMS(idet, kFALSE);
+	    if ( rocRMS )  {
+	      calPedSum.SetCalRocRMS(rocRMS,idet);
+	    }
+	  }// det loop
+
 	  // store as reference data
 	  TString name("PadStatus");
-	  name += (Int_t)index;
+	  name += sm;
 	  if(!StoreReferenceData("DAQData",(const char *)name,(TObject *) calPed,&metaData)){
 	    Log(Form("Error storing AliTRDCalibPadStatus object %d as reference data",(Int_t)index));
 	    error = kTRUE;
 	  }
-	  
-	  
-	  // Add to the calPedSum
-	  for (Int_t idet=0; idet<540; idet++) {
-	    AliTRDCalROC *rocMean  = calPed->GetCalRocMean(idet, kFALSE);
-	    if ( rocMean )  calPedSum.SetCalRocMean(rocMean,idet);
-	    AliTRDCalROC *rocRMS = calPed->GetCalRocRMS(idet, kFALSE);
-	    if ( rocRMS )  calPedSum.SetCalRocRMS(rocRMS,idet);
-	  }// det loop
+
 	} // calPed
       } // fileNameEntry
     ++index;
@@ -328,7 +335,33 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
     delete listpad;
     return kTRUE;
   }
-  
+
+  // Create Noise 
+  //Make the AliTRDCalPad
+  AliTRDCalPad *calPad2 = calPedSum.CreateCalPad();
+  AliCDBMetaData md4; 
+  md4.SetObjectClassName("AliTRDCalPad");
+  md4.SetResponsible("Raphaelle Bailhache");
+  md4.SetBeamPeriod(1);
+  md4.SetComment("TRD calib test");
+  if(!Store("Calib","PadNoise"    ,(TObject *)calPad2, &md4, 0, kTRUE)){
+    Log("Error storing the pedestal");
+    delete listpad;
+    return kTRUE;
+  }
+  //Make the AliTRDCalDet correspondant
+  AliTRDCalDet *calDet = calPedSum.CreateCalDet();
+  AliCDBMetaData md5; 
+  md5.SetObjectClassName("AliTRDCalDet");
+  md5.SetResponsible("Raphaelle Bailhache");
+  md5.SetBeamPeriod(1);
+  md5.SetComment("TRD calib test");
+  if(!Store("Calib","DetNoise"    ,(TObject *)calDet, &md5, 0, kTRUE)){
+    Log("Error storing the pedestal");
+    delete listpad;
+    return kTRUE;
+  }  
+
   delete listpad;
   return error; 
 

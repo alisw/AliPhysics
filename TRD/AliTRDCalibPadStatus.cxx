@@ -72,12 +72,14 @@ histo->Draw();
 
 //header file
 #include "AliTRDCalibPadStatus.h"
-#include "AliTRDRawStream.h"
+#include "AliTRDRawStreamV2.h"
 #include "AliTRDarrayF.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
 #include "./Cal/AliTRDCalPadStatus.h"
+#include "./Cal/AliTRDCalDet.h"
+#include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalSingleChamberStatus.h"
 
 #ifdef ALI_DATE
@@ -245,10 +247,10 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
 }
 
 //_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStream *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDRawStream
+  // Event Processing loop - AliTRDRawStreamV2
   // 0 time bin problem or zero suppression
   // 1 no input
   // 2 input
@@ -315,7 +317,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliRawReader *rawReader, Bool_t nocheck
   //
 
 
-  AliTRDRawStream rawStream(rawReader);
+  AliTRDRawStreamV2 rawStream(rawReader);
 
   rawReader->Select("TRD");
 
@@ -350,7 +352,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(
 }
 
 //_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent) /*FOLD00*/
+Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent, Int_t sm) /*FOLD00*/
 {
   //
   //  Test event loop
@@ -359,13 +361,13 @@ Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent) /*FOLD00*/
 
   gRandom->SetSeed(0);
 
-    for (Int_t ism=0; ism<18; ism++){
+    for (Int_t ism=sm; ism<sm+1; ism++){
        	for (Int_t ich=0; ich < 5; ich++){
 	    for (Int_t ipl=0; ipl < 6; ipl++){
 	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
 		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
 		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
-		    Int_t signal=(Int_t)(ich+8+gRandom->Gaus(0,1.2));
+		    Int_t signal=(Int_t)(gRandom->Gaus(10.0,1.2));
 		    if ( signal>0 )Update((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism));
 		  }
 		}
@@ -377,7 +379,7 @@ Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent) /*FOLD00*/
 }
 
 //_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
+Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm) /*FOLD00*/
 {
   //
   //  Test event loop
@@ -386,13 +388,13 @@ Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
 
   gRandom->SetSeed(0);
 
-    for (Int_t ism=0; ism<18; ism++){
+    for (Int_t ism=sm; ism<sm+1; ism++){
        	for (Int_t ich=0; ich < 5; ich++){
 	    for (Int_t ipl=0; ipl < 6; ipl++){
 	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
 		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
 		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
-		    Int_t signal=(Int_t)(ich+8+gRandom->Gaus(0,1.2));
+		    Int_t signal=(Int_t)(gRandom->Gaus(10.0,1.2));
 		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism));
 		  }
 		}
@@ -666,6 +668,49 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
       
       }
     }
+  
+  return obj;
+  
+}
+
+//_______________________________________________________________________________________
+AliTRDCalPad* AliTRDCalibPadStatus::CreateCalPad()
+{
+  //
+  // Create Pad Noise out of RMS values
+  //
+
+  AliTRDCalPad* obj = new AliTRDCalPad("PadNoise", "PadNoise");
+  
+  
+  for (Int_t det=0; det<AliTRDgeometry::kNdet; ++det)  {
+    
+    AliTRDCalROC *calROC22 = obj->GetCalROC(det);
+
+    AliTRDCalROC *calRocRMS     = ((AliTRDCalROC *)GetCalRocRMS(det,kTRUE));
+   
+    for(Int_t k = 0; k < calROC22->GetNchannels(); k++){
+      calROC22->SetValue(k,calRocRMS->GetValue(k));
+    }
+
+  }
+  
+  return obj;
+  
+}
+
+//_______________________________________________________________________________________
+AliTRDCalDet* AliTRDCalibPadStatus::CreateCalDet()
+{
+  //
+  // Create Det Noise correction factor
+  //
+
+  AliTRDCalDet* obj = new AliTRDCalDet("DetNoise", "DetNoise (correction factor)");
+
+  for(Int_t l = 0; l < 540; l++){
+    obj->SetValue(l,10.0);
+  }
   
   return obj;
   

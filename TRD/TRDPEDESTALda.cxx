@@ -39,7 +39,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
-#include "AliTRDRawStream.h"
+#include "AliTRDRawStreamV2.h"
 #include "AliCDBManager.h"
 //
 // AliRoot TRD calib classes
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
       if(passpadstatus){
 
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-	AliTRDRawStream *trdRawStream = new AliTRDRawStream((AliRawReader *)rawReader);
+	AliTRDRawStreamV2 *trdRawStream = new AliTRDRawStreamV2((AliRawReader *)rawReader);
 	if(!calipad.ProcessEvent(trdRawStream,(Bool_t)nevents_total)) passpadstatus = kFALSE;
 	nevents++;
 	delete trdRawStream;
@@ -152,10 +152,17 @@ int main(int argc, char **argv) {
   timer.Print();
 
   /* write file in any case to see what happens in case of problems*/
+  /*see the time*/
+  TStopwatch timer1;
+  timer1.Start();
   TFile *fileTRD = new TFile(RESULT_FILE,"recreate");
+  calipad.AnalyseHisto();
   calipad.Write("calibpadstatus");
   fileTRD->Close();   
   printf("Wrote local file %s\n",RESULT_FILE);
+  /*see the time*/
+  timer1.Stop();
+  timer1.Print();
   
   /* store the result file on FES */
   status=daqDA_FES_storeFile(RESULT_FILE,RESULT_FILE);
