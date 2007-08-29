@@ -51,11 +51,9 @@ extern "C" {
   if (numsec <= npprmr) {
       for (ispr = 0; ispr <= mkbmx1 - 1; ispr++) {
 	  FLKSTK.sparek[FLKSTK.npflka][ispr] = TRACKR.spausr[ispr];
-	  TRACKR.spausr[ispr] = 0.;
       }  
       for (ispr = 0; ispr <= mkbmx2 - 1; ispr++) {
 	  FLKSTK.ispark[FLKSTK.npflka][ispr] = TRACKR.ispusr[ispr];
-	  TRACKR.ispusr[ispr] = 0;
       }  
   }
   
@@ -86,7 +84,7 @@ extern "C" {
 // Now call the PushTrack(...)
     Int_t done = 0;
 
-    Int_t parent  =  TRACKR.ispusr[mkbmx2-1];
+    Int_t parent  = TRACKR.ispusr[mkbmx2-1];
     Int_t kpart   = GENSTK.kpart[numsec-1];
     if (kpart < -6) return; // -7 to -12 = "heavy" fragment
     Int_t  pdg  = fluka->PDGFromId(kpart);
