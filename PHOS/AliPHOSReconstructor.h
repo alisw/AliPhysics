@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.12  2007/08/28 12:55:08  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.11  2007/07/24 17:20:35  policheh
  * Usage of RecoParam objects instead of hardcoded parameters in reconstruction.
  * (See $ALICE_ROOT/PHOS/macros/BeamTest2006/RawReconstruction.C).
@@ -76,7 +79,7 @@ public:
   //  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;
 
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
-  virtual void               ConvertDigits(AliRawReader* /*rawReader*/, TTree* /*digitsTree*/) const;
+  virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
 
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor & /*rvalue*/)  {
     // assignement operator requested by coding convention but not needed
