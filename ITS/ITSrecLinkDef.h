@@ -83,7 +83,7 @@
 #pragma link C++ class AliITSBeamTestDigitizer+;
 //multiplicity
 #pragma link C++ class AliITSMultReconstructor+;
-// SPD and SDD preprocessing
+// SPD, SDD and SSD preprocessing
 #pragma link C++ class AliITSBadChannelsAuxSPD+;
 #pragma link C++ class AliITSBadChannelsSPD+;
 #pragma link C++ class AliITSChannelSPD+;
@@ -109,5 +109,6 @@
 #pragma link C++ class AliITSOnlineSDDBTP+;
 #pragma link C++ class AliITSOnlineSDDCMN+;
 #pragma link C++ class AliITSOnlineSDDInjectors+;
+#pragma link C++ class AliITSPreprocessorSSD+;
 
 #endif
