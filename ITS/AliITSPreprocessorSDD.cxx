@@ -4,6 +4,8 @@
 //                                     //
 ////////////////////////////////////////
 
+/* $Id$ */
+
 #include "AliITSPreprocessorSDD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliShuttleInterface.h"
@@ -32,7 +34,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
   Int_t isgoodan,i,im,is,isgoodmod;
   Int_t numOfBadChannels[fgkNumberOfSDD];
   //TString pwd = gSystem->pwd();
-  const Char_t* tempDir=AliShuttleInterface::GetShuttleTempDir();
+//  const Char_t* tempDir=AliShuttleInterface::GetShuttleTempDir();
   
   TList* sourceList = GetFileSources(kDAQ, "SDD_Calib");
   if (!sourceList){ 
@@ -44,7 +46,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
   while (sourceList->At(ind)!=NULL) {
     TObjString* tarId = (TObjString*) sourceList->At(ind);
     TString tarName = GetFile(kDAQ, "SDD_Calib", tarId->GetString().Data());
-    gSystem->cd(tempDir);
+//    gSystem->cd(tempDir);
     Char_t command[100];
     sprintf(command,"tar -xf %s",tarName.Data());
     gSystem->Exec(command);
@@ -59,7 +61,8 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
     Int_t badch[fgkNumberOfChannels];
     for(Int_t isid=0;isid<=1;isid++){
       Char_t basFileName[100];
-      sprintf(basFileName,"%s/SDDbase_mod%03d_sid%d.data",tempDir,imod,isid);
+//      sprintf(basFileName,"%s/SDDbase_mod%03d_sid%d.data",tempDir,imod,isid);
+      sprintf(basFileName,"./SDDbase_mod%03d_sid%d.data",imod,isid);
       FILE* basFil = fopen(basFileName,"read");
       if (basFil == 0) {
 	Log(Form("File %s not found.",basFileName));
