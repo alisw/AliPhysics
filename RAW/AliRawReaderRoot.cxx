@@ -320,6 +320,27 @@ Int_t AliRawReaderRoot::GetEquipmentHeaderSize() const
   return fEquipment->GetEquipmentHeader()->HeaderSize();
 }
 
+// _________________________________________________________________________
+UInt_t AliRawReaderRoot::SwapWord(UInt_t x) const
+{
+   // Swap the endianess of the integer value 'x'
+
+   return (((x & 0x000000ffU) << 24) | ((x & 0x0000ff00U) <<  8) |
+           ((x & 0x00ff0000U) >>  8) | ((x & 0xff000000U) >> 24));
+}
+
+void AliRawReaderRoot::SwapData(const void* inbuf, const void* outbuf, UInt_t size) {
+  // The method swaps the contents of the
+  // raw-data event header
+  UInt_t  intCount = size/sizeof(UInt_t);
+
+  UInt_t* buf = (UInt_t*) inbuf;    // temporary integers buffer
+  for (UInt_t i=0; i<intCount; i++, buf++) {
+      UInt_t value = SwapWord(*buf);
+      memcpy((UInt_t*)outbuf+i, &value, sizeof(UInt_t));
+  }
+}
+// _________________________________________________________________________
 
 Bool_t AliRawReaderRoot::ReadHeader()
 {
@@ -390,6 +411,10 @@ Bool_t AliRawReaderRoot::ReadHeader()
 
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
+#ifndef R__BYTESWAP
+      SwapData((void*) fHeader, (void*) fHeaderSwapped, sizeof(AliRawDataHeader));
+      fHeader=fHeaderSwapped;
+#endif
       if ((fPosition + fHeader->fSize) != fEnd) {
 	Warning("ReadHeader",
 		"Equipment %d : raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",

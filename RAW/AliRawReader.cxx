@@ -57,9 +57,14 @@ AliRawReader::AliRawReader() :
   fSelectEventType(-1),
   fErrorCode(0),
   fEventNumber(-1),
-  fErrorLogs("AliRawDataErrorLog",100)
+  fErrorLogs("AliRawDataErrorLog",100),
+  fHeaderSwapped(NULL)
 {
 // default constructor: initialize data members
+// Allocate the swapped header in case of Mac
+#ifndef R__BYTESWAP
+  fHeaderSwapped=new AliRawDataHeader();
+#endif
 }
 
 Bool_t AliRawReader::LoadEquipmentIdsMap(const char *fileName)
@@ -108,9 +113,14 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectEventType(rawReader.fSelectEventType),
   fErrorCode(0),
   fEventNumber(-1),
-  fErrorLogs("AliRawDataErrorLog",100)
+  fErrorLogs("AliRawDataErrorLog",100),
+  fHeaderSwapped(NULL)
 {
 // copy constructor
+// Allocate the swapped header in case of Mac
+#ifndef R__BYTESWAP
+  fHeaderSwapped=new AliRawDataHeader(*rawReader.fHeaderSwapped);
+#endif
 }
 
 AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
@@ -144,6 +154,7 @@ AliRawReader::~AliRawReader()
   if (fEquipmentIdsIn) delete fEquipmentIdsIn;
   if (fEquipmentIdsOut) delete fEquipmentIdsOut;
   fErrorLogs.Delete();
+  if (fHeaderSwapped) delete fHeaderSwapped;
 }
 
 Int_t AliRawReader::GetMappedEquipmentId() const

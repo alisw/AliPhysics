@@ -72,6 +72,10 @@ class AliRawReaderRoot: public AliRawReader {
     UChar_t*         fPosition;     // current position in the raw data
     UChar_t*         fEnd;          // end position of the current subevent
 
+    UInt_t SwapWord(UInt_t x) const;
+    void SwapData(const void* inbuf, const void* outbuf, UInt_t size);
+
+
     ClassDef(AliRawReaderRoot, 0) // class for reading raw digits from a root file
 };
 
