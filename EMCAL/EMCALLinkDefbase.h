@@ -25,7 +25,8 @@
 #pragma link C++ class AliEMCALCalibHistoProducer+;
 #pragma link C++ class AliEMCALPreprocessor+;
 #pragma link C++ class AliEMCALRawUtils+;
-// Calibration staff
+#pragma link C++ class AliCaloCalibPedestal+;
+// Calibration stuff
 // #pragma link C++ class AliEMCALFolder;
 // #pragma link C++ class AliEMCALSuperModule;
 // #pragma link C++ class AliEMCALCell;

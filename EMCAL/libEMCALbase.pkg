@@ -20,6 +20,7 @@ AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
 AliEMCALPreprocessor.cxx \
 AliEMCALRawUtils.cxx \
+AliCaloCalibPedestal.cxx \
 # AliEMCALSuperModule.cxx \
 # AliEMCALCell.cxx \
 # AliEMCALFolder.cxx \
