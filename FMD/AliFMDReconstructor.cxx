@@ -35,9 +35,8 @@
 // #include <AliLog.h>                        // ALILOG_H
 // #include <AliRun.h>                        // ALIRUN_H
 #include "AliFMDDebug.h"
-#include <AliRunLoader.h>                  // ALIRUNLOADER_H
-#include <AliHeader.h>                     // ALIHEADER_H
-#include <AliGenEventHeader.h>             // ALIGENEVENTHEADER_H
+// to be removed as soon as we remove it from the base class
+#include "AliRunLoader.h"
 #include "AliFMDGeometry.h"                // ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"              // ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
@@ -70,7 +69,6 @@ AliFMDReconstructor::AliFMDReconstructor()
     fNoiseFactor(0),
     fAngleCorrect(kTRUE),
     fVertexType(kNoVertex),
-    fRunLoader(0x0),
     fESD(0x0),
     fDiagnostics(kFALSE),
     fDiagStep1(0), 
@@ -96,7 +94,6 @@ AliFMDReconstructor::AliFMDReconstructor(const AliFMDReconstructor& other)
     fNoiseFactor(other.fNoiseFactor),
     fAngleCorrect(other.fAngleCorrect),
     fVertexType(other.fVertexType),
-    fRunLoader(other.fRunLoader),
     fESD(other.fESD),
     fDiagnostics(other.fDiagnostics),
     fDiagStep1(other.fDiagStep1), 
@@ -122,7 +119,6 @@ AliFMDReconstructor::operator=(const AliFMDReconstructor& other)
   fNoiseFactor   = other.fNoiseFactor;
   fAngleCorrect  = other.fAngleCorrect;
   fVertexType    = other.fVertexType;
-  fRunLoader     = other.fRunLoader;
   fESD           = other.fESD;
   fDiagnostics   = other.fDiagnostics;
   fDiagStep1     = other.fDiagStep1;
@@ -144,10 +140,10 @@ AliFMDReconstructor::~AliFMDReconstructor()
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Init(AliRunLoader* runLoader) 
+AliFMDReconstructor::Init(AliRunLoader* /*runLoader*/) 
 {
   // Initialize the reconstructor 
-  AliFMDDebug(2, ("Init called with runloader 0x%x", runLoader));
+
   // Initialize the geometry 
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
@@ -164,9 +160,6 @@ AliFMDReconstructor::Init(AliRunLoader* runLoader)
   // Create ESD output object 
   fESDObj = new AliESDFMD;
   
-  // Check that we have a run loader
-  fRunLoader = runLoader;
-
   // Check if we need diagnostics histograms 
   if (!fDiagnostics) return;
   fDiagStep1   = new TH2I("diagStep1", "Read ADC vs. Noise surpressed ADC",
@@ -223,21 +216,6 @@ AliFMDReconstructor::GetVertex() const
       fVertexType    = kESDVertex;
       return;
     }
-  }
-  // Check if we can get the header tree 
-  AliGenEventHeader* genHeader = ((!fRunLoader || 
-				   !fRunLoader->GetHeader() || 
-				   !fRunLoader->GetHeader()->GenEventHeader())
-				  ? 0 
-				  : fRunLoader->GetHeader()->GenEventHeader());
-  if (genHeader) {
-    TArrayF vtx;
-    genHeader->PrimaryVertex(vtx);
-    fCurrentVertex = vtx[2];
-    fVertexType    = kGenVertex;
-    AliFMDDebug(2, ("Got vertex from generator: %f", fCurrentVertex));
-    AliWarning("Got vertex from generator event header");
-    return;
   }
   AliWarning("Didn't get any vertex from ESD or generator");
 }

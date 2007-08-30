@@ -58,11 +58,9 @@ public:
       manager, and finds the local to global transformations from the
       geometry.   The calibration parameter manager is also
       initialized (meaning that the calibration parameters is read
-      from CDB).   Next, we try to get some information about the run
-      from the run loader passed. 
-      @param runLoader Run loader to use to load and store data. 
+      from CDB).
   */
-  virtual void   Init(AliRunLoader* runLoader);
+  virtual void   Init(AliRunLoader* /*runLoader*/);
   /** Flag that we can convert raw data into digits. 
       @return always @c true */
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
@@ -185,7 +183,6 @@ protected:
   Float_t               fNoiseFactor;   // Factor of noise to check
   Bool_t                fAngleCorrect;  // Whether to angle correct
   mutable Vertex_t      fVertexType;    // What kind of vertex we got
-  AliRunLoader*         fRunLoader;     // Run loader passed to Init  
   AliESDEvent*          fESD;           // ESD object(?)
   Bool_t                fDiagnostics;   // Wheter to do diagnostics
   TH1*                  fDiagStep1;	// Diagnostics histogram
@@ -207,7 +204,7 @@ private:
   /** Hide base classes unused function */
   void FillESD(AliRunLoader*, AliRawReader*, AliESDEvent*) const;
   
-  ClassDef(AliFMDReconstructor, 1)  // class for the FMD reconstruction
+  ClassDef(AliFMDReconstructor, 2)  // class for the FMD reconstruction
 }; 
 #endif
 //____________________________________________________________________
