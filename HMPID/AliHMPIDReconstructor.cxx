@@ -23,7 +23,7 @@
 #include "AliHMPIDParam.h"         //FillEsd() 
 #include <AliCDBEntry.h>           //ctor
 #include <AliCDBManager.h>         //ctor
-#include <AliESD.h>                //FillEsd()
+#include <AliESDEvent.h>           //FillEsd()
 #include <AliRawReader.h>          //Reconstruct() for raw digits
 ClassImp(AliHMPIDReconstructor)
 
@@ -206,7 +206,7 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESD *pESD) const
+void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESDEvent *pESD) const
 {
 // Calculates probability to be a electron-muon-pion-kaon-proton
 // from the given Cerenkov angle and momentum assuming no initial particle composition

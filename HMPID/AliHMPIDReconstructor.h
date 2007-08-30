@@ -26,7 +26,7 @@ public:
   void         Reconstruct           (TTree* digitsTree, TTree* clustersTree) const;                                    //from AliReconstruction for digit->cluster
   void         Reconstruct           (AliRunLoader *pAL,AliRawReader* pRR)const;                                        //from AliReconstruction for raw->cluster with Digits on fly
   Bool_t       HasLocalReconstruction() const {return kTRUE;}                                                           // HMPID has local reconstruction algorithm
-  void         FillESD               (AliRunLoader* pAL,AliESD *pESD)const;                                             //calculate pid for HMPID
+  void         FillESD               (AliRunLoader* pAL,AliESDEvent *pESD)const;                                        //calculate pid for HMPID
   
   using AliReconstructor::FillESD;                                                                                      //
   using AliReconstructor::Reconstruct;                                                                                  // 
