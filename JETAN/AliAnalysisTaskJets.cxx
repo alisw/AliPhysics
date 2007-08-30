@@ -20,11 +20,12 @@
 #include <TInterpreter.h>
 #include <TChain.h>
 #include <TFile.h>
-#include <TH1.h>
+#include <TList.h>
 
 #include "AliAnalysisTaskJets.h"
 #include "AliAnalysisManager.h"
 #include "AliJetFinder.h"
+#include "AliJetHistos.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
@@ -43,7 +44,8 @@ AliAnalysisTaskJets::AliAnalysisTaskJets():
     fESD(0x0),
     fAOD(0x0),
     fTreeA(0x0),
-    fHisto(0x0)
+    fHistos(0x0),
+    fListOfHistos(0x0)
 {
   // Default constructor
 }
@@ -56,12 +58,13 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     fESD(0x0),
     fAOD(0x0),
     fTreeA(0x0),
-    fHisto(0x0)
+    fHistos(0x0),
+    fListOfHistos(0x0)
 {
   // Default constructor
     DefineInput (0, TChain::Class());
     DefineOutput(0, TTree::Class());
-    DefineOutput(1, TH1F::Class());
+    DefineOutput(1, TList::Class());
 }
 
 void AliAnalysisTaskJets::CreateOutputObjects()
@@ -76,10 +79,11 @@ void AliAnalysisTaskJets::CreateOutputObjects()
     fTreeA = handler->GetTree();
     fJetFinder->ConnectAOD(fAOD);
 //
-//  Histogram
+//  Histograms
     OpenFile(1);
-    fHisto = new TH1F("fHisto", "Jet Et", 100, 0., 100.);
-    
+    fListOfHistos = new TList();
+    fHistos       = new AliJetHistos();
+    fHistos->AddHistosToList(fListOfHistos);
 }
 
 void AliAnalysisTaskJets::Init()
@@ -129,8 +133,13 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
     Long64_t ientry = fChain->GetReadEntry();
     if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
+
+    // Fill control histos
+    fHistos->FillHistos(fAOD->GetJets());
+    
+    // Post the data
     PostData(0, fTreeA);
-    PostData(1, fHisto);
+    PostData(1, fListOfHistos);
 }
 
 void AliAnalysisTaskJets::Terminate(Option_t */*option*/)

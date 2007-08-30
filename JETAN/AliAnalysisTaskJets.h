@@ -9,6 +9,8 @@ class AliJetFinder;
 class AliESDEvent;
 class TChain;
 class AliAODEvent;
+class AliJetHistos;
+
 
 class AliAnalysisTaskJets : public AliAnalysisTask
 {
@@ -26,14 +28,16 @@ class AliAnalysisTaskJets : public AliAnalysisTask
     virtual void SetDebugLevel(Int_t level) {fDebug = level;}
     
  private:
-    Int_t         fDebug;     //  Debug flag
-    AliJetFinder* fJetFinder; //  Pointer to the jet finder 
-    TChain*       fChain;     //! chained files
-    AliESDEvent*  fESD;       //! ESD
-    AliAODEvent*  fAOD;       //! AOD
-    TTree*        fTreeA;     //  tree of reconstructed jets
-    TH1F*         fHisto;     //  Histogram
-    ClassDef(AliAnalysisTaskJets, 1); // Analysis task for standard jet analysis
+    Int_t         fDebug;        //  Debug flag
+    AliJetFinder* fJetFinder;    //  Pointer to the jet finder 
+    TChain*       fChain;        //! chained files
+    AliESDEvent*  fESD;          //! ESD
+    AliAODEvent*  fAOD;          //! AOD
+    TTree*        fTreeA;        //  tree of reconstructed jets
+    AliJetHistos* fHistos;       //  Histogram manager class
+    TList*        fListOfHistos; //  Output list of histograms
+    
+    ClassDef(AliAnalysisTaskJets, 2); // Analysis task for standard jet analysis
 };
  
 #endif
