@@ -1,0 +1,158 @@
+#ifndef ALICALOCALIBPEDESTAL_H
+#define ALICALOCALIBPEDESTAL_H
+
+/* \file AliCaloCalibPedestal.h
+   \brief Description:
+   A help class for monitoring and calibration tools: MOOD, AMORE etc.,
+   that can process events from a standard AliCaloRawStream,
+   most usually from LED/pulser runs. It stores signal info as
+   typical (highest) amplitude, and pedestal info in geometrically-binned
+   2D profiles of the detectors (EMCAL and PHOS).
+   Comparisons (ratios and differences) can be done with references.
+
+   \author: Timo Alho (Jyvaskyla), original version. 
+   [Consultant: D. Silvermyr (ORNL)]
+   Partly based on AliTPCCalibPedestal.
+   
+   \version $Revision$
+   \date $Date$
+*/
+
+#include "TProfile2D.h"
+#include "TH2.h"
+#include "TObjArray.h"
+#include "AliCaloRawStream.h"
+
+class AliCaloCalibPedestal : public TObject {
+  
+ public:
+
+  enum kDetType {kPhos, kEmCal, kNone};//The detector types
+  enum kDeadMapEntry{kAlive = 0, kDead, kResurrected, kRecentlyDeceased, kNumDeadMapStates};//The entries being put to the deadmap
+  
+  AliCaloCalibPedestal(kDetType detectorType = kPhos);
+  virtual ~AliCaloCalibPedestal();
+
+  // copy ctor, and '=' operator, are not fully tested/debugged yet
+  // at least for now; the reference info is not copied from one to the other
+  AliCaloCalibPedestal(const AliCaloCalibPedestal &ped); 
+  AliCaloCalibPedestal& operator = (const  AliCaloCalibPedestal &source);
+  
+  //Functions to ask for the constants (in case a GUI needs them, for an example
+  static const int GetSampleMax() {return fgkSampleMax;};
+  static const int GetSampleMin() {return fgkSampleMin;};
+  
+  Bool_t ProcessEvent(AliCaloRawStream    *in);
+  
+  ////////////////////////////
+  //Simple getters
+  // Main profiles:
+  TProfile2D * GetPedProfileLowGain(int i) const {return (TProfile2D*)fPedestalLowGain[i];};	// Return a pointer to the low-gain pedestal profile
+  TProfile2D * GetPedProfileHighGain(int i) const {return (TProfile2D*)fPedestalHighGain[i];};	// Return a pointer to the high-gain pedestal profile
+  TProfile2D * GetPeakProfileLowGain(int i) const {return (TProfile2D*)fPeakMinusPedLowGain[i];};	// Return a pointer to the low-gain pedestal profile
+  TProfile2D * GetPeakProfileHighGain(int i) const {return (TProfile2D*)fPeakMinusPedHighGain[i];};	// Return a pointer to the high-gain pedestal profile
+  
+  // Differences to references:
+  TProfile2D * GetPedProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainDiff[i];};	// Return a pointer to the low-gain pedestal profile difference
+  TProfile2D * GetPedProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalHighGainDiff[i];};	// Return a pointer to the high-gain pedestal profile difference
+  TProfile2D * GetPeakProfileLowGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainDiff[i];};	// Return a pointer to the low-gain pedestal profile difference
+  TProfile2D * GetPeakProfileHighGainDiff(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainDiff[i];};	// Return a pointer to the high-gain pedestal profile difference
+  
+  // Ratio to references:
+  TProfile2D * GetPedProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalLowGainRatio[i];};	// Return a pointer to the low-gain pedestal profile ratio
+  TProfile2D * GetPedProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPedestalHighGainRatio[i];};	// Return a pointer to the high-gain pedestal profile ratio
+  TProfile2D * GetPeakProfileLowGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedLowGainRatio[i];};	// Return a pointer to the low-gain pedestal profile ratio
+  TProfile2D * GetPeakProfileHighGainRatio(int i){ValidateComparisonProfiles(); return (TProfile2D*)fPeakMinusPedHighGainRatio[i];};	// Return a pointer to the high-gain pedestal profile ratio
+  
+  TH2D * GetDeadMap(int i) const {return (TH2D*)fDeadMap[i];};
+
+  // Basic info: getters  
+  kDetType GetDetectorType() const {return fDetType;};//Returns if this is a PHOS or EMCAL object
+  
+  int GetColumns() const {return fColumns;}; //The number of columns per module
+  int GetRows() const {return fRows;}; //The number of rows per module
+  int GetModules() const {return fModules;}; //The number of modules
+
+  // RunNumbers : setters and getters
+  void SetRunNumber(int runNo) {fRunNumber = runNo;};
+  int GetRunNumber() const {return fRunNumber;};
+  int GetRefRunNumber() const {if (fReference) return fReference->GetRunNumber(); else return -1;};
+  
+  /////////////////////////////
+  //Analysis functions
+  int GetDeadTowerCount() const {return fDeadTowers;};//Returns the number of dead towers, by counting the bins in peak-pedestal smaller than threshold
+  double GetDeadTowerRatio() const {return fDeadTowers/(double)(fRows*fColumns);}; //returns the percentage of dead towers, relative to a full module
+  int GetDeadTowerNew() const {return fNewDeadTowers;}; //return the new dead towers compared to the reference
+  int GetDeadTowerResurrected() const {return fResurrectedTowers;}; //The the towers resurrected since the reference run
+  void Reset();//Resets the whole class.
+  
+  //////////////////////////////////////////////////////
+  //Functions related to comparing this with another (reference) run.
+  Bool_t LoadReferenceCalib(TString fileName, TString objectName); //Loads another AliCaloCalibPedestal by name "objectName" from the file "fileName", for reference
+  void ComputeDiffAndRatio();//Actually computes the difference and ratio into the histo's in memory
+  AliCaloCalibPedestal * GetReference() const {return fReference;}; //Get the reference object. Needed for debug, will probably be removed later
+  void ComputeDeadTowers(int threshold = 5, const char * deadMapFile = 0);//Computes the dead tower values
+  
+  
+  //Saving functions
+  Bool_t SaveHistograms(TString fileName, Bool_t saveEmptyHistos = kFALSE); //Saves the histograms to a .root file
+  
+ private:
+  
+  void ValidateComparisonProfiles(); //Makes sure that fPe..Diff and fPe..Ratio profiles exist
+  
+  //The histograms. We use a TObjArray instead of a simple array,because this gives automatic streaming properties for the
+  //class. A TClonesArray would be more efficient, but it's a bit more difficult to use and it doesn't matter too much
+  //since we have only around 12 objects (maximum) in the array anyway.
+  TObjArray fPedestalLowGain;
+  TObjArray fPedestalHighGain;
+  TObjArray fPeakMinusPedLowGain;
+  TObjArray fPeakMinusPedHighGain;
+  
+  //The difference of profiles between this and the reference object
+  TObjArray fPedestalLowGainDiff; //!
+  TObjArray fPedestalHighGainDiff; //!
+  TObjArray fPeakMinusPedLowGainDiff; //!
+  TObjArray fPeakMinusPedHighGainDiff; //!
+  
+  //The ratio of profiles between this and the reference object
+  TObjArray fPedestalLowGainRatio; //!
+  TObjArray fPedestalHighGainRatio; //!
+  TObjArray fPeakMinusPedLowGainRatio; //!
+  TObjArray fPeakMinusPedHighGainRatio; //!
+  
+  TObjArray fDeadMap;//The deadmap
+  
+  //The dead tower counts
+  int fDeadTowers; //!
+  int fNewDeadTowers; //! Towers that have died since the reference run
+  int fResurrectedTowers; //! Towers that have been resurrected from the dead, compared to the reference
+  
+  AliCaloCalibPedestal * fReference; //! A reference object, for comparing the accumulated results to a previous run
+  
+  kDetType fDetType; //The detector type for this object
+  int fColumns;	//The number of columns per module
+  int fRows;	//The number of rows per module
+  int fModules;	//The number of modules
+  int fRunNumber; //The run number. Needs to be set by the user.
+  
+  //Constants needed by the class
+  static const int fgkSampleMax = 1023;
+  static const int fgkSampleMin = 0;
+  
+  static const int fgkPhosRows = 64;
+  static const int fgkPhosCols = 56;
+  static const int fgkPhosModules = 5;
+  
+  static const int fgkEmCalRows = 24;
+  static const int fgkEmCalCols = 48;
+  static const int fgkEmCalModules = 12;
+  
+  
+ public:
+  
+  ClassDef(AliCaloCalibPedestal,1)
+
+};
+    
+#endif
