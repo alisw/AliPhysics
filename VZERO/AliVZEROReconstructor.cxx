@@ -25,7 +25,7 @@
 #include "AliRawReader.h"
 #include "AliVZEROReconstructor.h"
 #include "AliVZERORawStream.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 
 ClassImp(AliVZEROReconstructor)
 
@@ -33,7 +33,6 @@ ClassImp(AliVZEROReconstructor)
 AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
    fESDVZERO(0x0),
    fESD(0x0),
-   fRunLoader(0x0),
    fCalibData(GetCalibData())
 {
   // Default constructor  
@@ -62,11 +61,10 @@ AliVZEROReconstructor::~AliVZEROReconstructor()
 }
 
 //_____________________________________________________________________________
-void AliVZEROReconstructor::Init(AliRunLoader* runLoader)
+void AliVZEROReconstructor::Init(AliRunLoader* /*runLoader*/)
 {
 // initializer
 
-  fRunLoader = runLoader;
   fESDVZERO  = new AliESDVZERO;
 }
 
@@ -99,7 +97,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
 //______________________________________________________________________
 void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
-				    AliESD* esd) const
+				    AliESDEvent* esd) const
 {
 // fills multiplicities to the ESD
 

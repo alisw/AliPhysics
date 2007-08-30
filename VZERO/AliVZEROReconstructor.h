@@ -19,14 +19,13 @@
 #include "AliLog.h"
 #include "AliESDVZERO.h"
 
-class AliLoader;
-class AliESD;
+class AliESDEvent;
 
 class AliVZEROReconstructor: public AliReconstructor {
 public:
   AliVZEROReconstructor();
   virtual ~AliVZEROReconstructor();
-  virtual void   Init(AliRunLoader* runLoader);
+  virtual void   Init(AliRunLoader* /*runLoader*/);
   virtual void   Reconstruct(AliRunLoader* /*runLoader*/) const {
     AliError("Method not implemented"); return;};
   
@@ -38,18 +37,18 @@ public:
     AliError("Method not implemented"); return;};
   virtual void   Reconstruct(TTree*, TTree*) const {return;};
   
-  virtual void   FillESD(AliRunLoader* /*runLoader*/, AliESD* /*esd*/) const {
+  virtual void   FillESD(AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/) const {
     AliInfo("Method is not used"); return;};
   
   virtual void   FillESD(TTree* digitsTree, TTree* /*clustersTree*/, 
-			 AliESD* /*esd*/) const;
+			 AliESDEvent* esd) const;
 
   virtual void   FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
-			 AliESD* /*esd*/) const {
+			 AliESDEvent* /*esd*/) const {
     AliError("Method not implemented"); return;};
   
   virtual void   FillESD(AliRunLoader* /*runLoader*/, 
-			 AliRawReader* /*rawReader*/, AliESD* /*esd*/) const {
+			 AliRawReader* /*rawReader*/, AliESDEvent* /*esd*/) const {
     AliInfo("Method is not used"); return;};
   
   virtual Bool_t HasDigitConversion() const { return kTRUE; }
@@ -62,14 +61,13 @@ public:
 
 protected:
   AliESDVZERO*        fESDVZERO;      // ESD output object  
-  AliESD*                  fESD;      // ESD object
+  AliESDEvent*                  fESD;      // ESD object
   
 private:
   AliVZEROReconstructor(const AliVZEROReconstructor& reconstructor);
   AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
 private:
-  AliRunLoader*      fRunLoader;      //! pointer to runloader    
   AliVZEROCalibData* fCalibData;      //! calibration data
  
   ClassDef(AliVZEROReconstructor, 0)  // class for the VZERO reconstruction
