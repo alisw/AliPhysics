@@ -7,7 +7,7 @@
 
 class AliPMDReconstructor: public AliReconstructor {
 public:
-  virtual void   Init(AliRunLoader* runLoader);
+  virtual void   Init(AliRunLoader* /*runLoader*/) {;}
   virtual void   Reconstruct(AliRunLoader* runLoader) const;
   virtual void   Reconstruct(AliRunLoader* runLoader,
 			     AliRawReader *rawReader) const;

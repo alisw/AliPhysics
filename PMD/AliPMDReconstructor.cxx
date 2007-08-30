@@ -33,18 +33,6 @@
 ClassImp(AliPMDReconstructor)
 
 //_____________________________________________________________________________
-void AliPMDReconstructor::Init(AliRunLoader* runLoader) 
-{
-  // Initialize the reconstructor 
-  AliDebug(1, Form("Init called with runloader 0x%x", runLoader));
-  if (!runLoader)
-    { 
-      AliWarning("Init : No run loader");
-      return;
-    }
-}
-    
-//_____________________________________________________________________________
 void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
 {
 // reconstruct clusters from digits file
