@@ -415,7 +415,8 @@ void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam
   Double_t f1 = 0.;
   Double_t f2 = 0.;
   Double_t meanRho = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pathLength,f0,f1,f2,meanRho);
+  Double_t totalELoss = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,trackParam->P(),pathLength,f0,f1,f2,meanRho,totalELoss);
   AddMCSEffectInAbsorber(trackParam,pathLength,f0,f1,f2);
   
   // finally go to the vertex
@@ -453,8 +454,8 @@ void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double
 }
 
   //__________________________________________________________________________
-void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t &pathLength,
-						    Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho)
+void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal, Double_t &pathLength,
+						    Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho, Double_t &totalELoss)
 {
   /// Parameters used to correct for Multiple Coulomb Scattering and energy loss in absorber
   /// Calculated assuming a linear propagation between track positions trackXYZIn and trackXYZOut
@@ -463,6 +464,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   // f1:         1st moment of z calculated with the inverse radiation-length distribution
   // f2:         2nd moment of z calculated with the inverse radiation-length distribution
   // meanRho:    average density of crossed material (g/cm3)
+  // totalELoss: total energy loss in absorber
   
   // Reset absorber's parameters
   pathLength = 0.;
@@ -470,6 +472,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   f1 = 0.;
   f2 = 0.;
   meanRho = 0.;
+  totalELoss = 0.;
   
   // Check whether the geometry is available
   if (!gGeoManager) {
@@ -495,6 +498,8 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   // loop over absorber slices and calculate absorber's parameters
   Double_t rho = 0.; // material density (g/cm3)
   Double_t x0 = 0.;  // radiation-length (cm-1)
+  Double_t atomicA = 0.; // A of material
+  Double_t atomicZ = 0.; // Z of material
   Double_t localPathLength = 0;
   Double_t remainingPathLength = pathLength;
   Double_t zB = trackXYZIn[2];
@@ -505,6 +510,8 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
     rho = material->GetDensity();
     x0 = material->GetRadLen();
     if (!material->IsMixture()) x0 /= rho; // different normalization in the modeler for mixture
+    atomicA = material->GetA();
+    atomicZ = material->GetZ();
     
     // Get path length within this material
     gGeoManager->FindNextBoundary(remainingPathLength);
@@ -539,6 +546,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
     f1 += (dzE*dzE - dzB*dzB) / b[2] / b[2] / x0 / 2.;
     f2 += (dzE*dzE*dzE - dzB*dzB*dzB) / b[2] / b[2] / b[2] / x0 / 3.;
     meanRho += localPathLength * rho;
+    totalELoss += BetheBloch(pTotal, localPathLength, rho, atomicA, atomicZ);
     
     // prepare next step
     zB = zE;
@@ -663,20 +671,18 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
   trackXYZIn[2] = TMath::Min(zVtx, AliMUONConstants::AbsZBeg()); // spectro. (z<0)
   trackXYZIn[0] = trackXYZOut[0] + (xVtx - trackXYZOut[0]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
   trackXYZIn[1] = trackXYZOut[1] + (yVtx - trackXYZOut[1]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
+  Double_t pTot = trackParam->P();
   Double_t pathLength = 0.;
   Double_t f0 = 0.;
   Double_t f1 = 0.;
   Double_t f2 = 0.;
   Double_t meanRho = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pathLength,f0,f1,f2,meanRho);
-  
-  // Calculate energy loss
-  Double_t pTot = trackParam->P();
-  Double_t charge = TMath::Sign(Double_t(1.0), trackParam->GetInverseBendingMomentum());      
-  Double_t deltaP = TotalMomentumEnergyLoss(pTot,pathLength,meanRho);
+  Double_t deltaP = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,deltaP);
   
   // Correct for half of energy loss
   Double_t nonBendingSlope, bendingSlope;
+  Double_t charge = TMath::Sign(Double_t(1.0), trackParam->GetInverseBendingMomentum());      
   if (CorrectForEnergyLoss) {
     pTot += 0.5 * deltaP;
     nonBendingSlope = trackParam->GetNonBendingSlope();
@@ -743,41 +749,36 @@ Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(AliMUONTrackParam* trackPar
   trackXYZIn[0] = xVtx;
   trackXYZIn[1] = yVtx;
   trackXYZIn[2] = zVtx;
+  Double_t pTot = trackParam->P();
   Double_t pathLength = 0.;
   Double_t f0 = 0.;
   Double_t f1 = 0.;
   Double_t f2 = 0.;
   Double_t meanRho = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pathLength,f0,f1,f2,meanRho);
+  Double_t totalELoss = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,totalELoss);
   
-  // Calculate energy loss
-  Double_t pTot = trackParam->P();
-  return TotalMomentumEnergyLoss(pTot,pathLength,meanRho);
+  return totalELoss;
 }
 
   //__________________________________________________________________________
-Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(Double_t pTotal, Double_t pathLength, Double_t rho)
+Double_t AliMUONTrackExtrap::BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ)
 {
-  /// Returns the total momentum energy loss in the front absorber
-  Double_t muMass = 0.105658369;
+  /// Returns the mean total momentum energy loss of muon with total momentum='pTotal'
+  /// in the absorber layer of lenght='pathLength', density='rho', A='atomicA' and Z='atomicZ'
+  Double_t muMass = 0.105658369; // GeV
+  Double_t eMass = 0.510998918e-3; // GeV
+  Double_t k = 0.307075e-3; // GeV.g^-1.cm^2
+  Double_t i = 9.5e-9; // mean exitation energy per atomic Z (GeV)
   Double_t p2=pTotal*pTotal;
   Double_t beta2=p2/(p2 + muMass*muMass);
-  Double_t dE=ApproximateBetheBloch(beta2)*pathLength*rho;
   
-  return dE;
-}
-
-  //__________________________________________________________________________
-Double_t AliMUONTrackExtrap::ApproximateBetheBloch(Double_t beta2) 
-{
-/// This is an approximation of the Bethe-Bloch formula with 
-/// the density effect taken into account at beta*gamma > 3.5
-/// (the approximation is reasonable only for solid materials) 
-
+  Double_t w = k * rho * pathLength * atomicZ / atomicA / beta2;
+  
   if (beta2/(1-beta2)>3.5*3.5)
-     return 0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2);
+     return w * (log(2.*eMass*3.5/(i*atomicZ)) + 0.5*log(beta2/(1-beta2)) - beta2);
 
-  return 0.153e-3/beta2*(log(5940*beta2/(1-beta2)) - beta2);
+  return w * (log(2.*eMass*beta2/(1-beta2)/(i*atomicZ)) - beta2);
 }
 
  //__________________________________________________________________________

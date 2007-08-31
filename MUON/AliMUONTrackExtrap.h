@@ -70,11 +70,10 @@ class AliMUONTrackExtrap : public TObject
   static void RecoverTrackParam(Double_t *v3, Double_t Charge, AliMUONTrackParam* trackParam);
   
   static void AddMCSEffectInAbsorber(AliMUONTrackParam* trackParam, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2);
-  static void GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t &pathLength,
-  					 Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho);
+  static void GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal, Double_t &pathLength,
+					 Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho, Double_t &totalELoss);
   
-  static Double_t TotalMomentumEnergyLoss(Double_t pTotal, Double_t pathLength, Double_t rho);
-  static Double_t ApproximateBetheBloch(Double_t beta2);
+  static Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
   
   static void ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout);
   static void ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout);
