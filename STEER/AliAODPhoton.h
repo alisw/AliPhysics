@@ -31,7 +31,7 @@ class AliAODPhoton : public AliVParticle {
     virtual Double_t Pt()         const { return fMomentum->Pt();      }
     virtual Double_t P()          const { return fMomentum->P();       }
     virtual Double_t OneOverPt()  const { return 1. / fMomentum->Pt(); }
-    virtual Double_t Phi()        const { return fMomentum->Phi();     }
+    virtual Double_t Phi()        const;
     virtual Double_t Theta()      const { return fMomentum->Theta();   }
     virtual Double_t E()          const { return fMomentum->E();       }
     virtual Double_t M()          const { return fMomentum->M();       }
@@ -51,5 +51,13 @@ class AliAODPhoton : public AliVParticle {
     TLorentzVector* fMomentum;           // Photon 4-momentum vector
     ClassDef(AliAODPhoton,1);
 };
+
+inline Double_t AliAODPhoton::Phi() const
+{
+    // Return phi
+    Double_t phi = fMomentum->Phi();
+    if (phi < 0.) phi += 2. * TMath::Pi();
+    return phi;
+}
 
 #endif

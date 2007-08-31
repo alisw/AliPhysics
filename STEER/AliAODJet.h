@@ -32,12 +32,14 @@ class AliAODJet : public AliVParticle {
     virtual Double_t Pt()         const { return fMomentum->Pt();      }
     virtual Double_t P()          const { return fMomentum->P();       }
     virtual Double_t OneOverPt()  const { return 1. / fMomentum->Pt(); }
-    virtual Double_t Phi()        const { return fMomentum->Phi();     }
+    virtual Double_t Phi()        const;
     virtual Double_t Theta()      const { return fMomentum->Theta();   }
     virtual Double_t E()          const { return fMomentum->E();       }
     virtual Double_t M()          const { return fMomentum->M();       }
     virtual Double_t Eta()        const { return fMomentum->Eta();     }
     virtual Double_t Y()          const { return fMomentum->Rapidity();}
+    
+
 //
     virtual void     AddTrack(TObject *tr) {fRefTracks->Add(tr);}
     TObject* GetTrack(Int_t i) {return fRefTracks->At(i);}
@@ -70,6 +72,15 @@ class AliAODJet : public AliVParticle {
     TRefArray*      fRefTracks;          // array of references to the tracks belonging to the jet
 
     ClassDef(AliAODJet,3);
+
 };
+
+inline Double_t AliAODJet::Phi() const
+{
+    // Return phi
+    Double_t phi = fMomentum->Phi();
+    if (phi < 0.) phi += 2. * TMath::Pi();
+    return phi;
+}
 
 #endif
