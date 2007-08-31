@@ -17,9 +17,6 @@ void TestPreprocessor()
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
 
-
-  printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
-
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
