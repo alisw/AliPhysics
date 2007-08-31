@@ -1,0 +1,8 @@
+# SSD config
+dn: det=SSD,o=alice,dc=cern,dc=ch
+objectClass: top
+objectClass: AliShuttleDetector
+det: SSD
+StrictRunOrder: 0
+responsible: enrico.fragiacomo@ts.infn.it
+

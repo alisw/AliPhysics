@@ -1,0 +1,9 @@
+# T00 config;
+dn: det=T00,o=alice,dc=cern,dc=ch
+objectClass: top
+objectClass: AliShuttleDetector
+det: T00
+StrictRunOrder: 0
+responsible: tomatkie@cc.jyu.fi
+responsible: moledzki@gmail.com
+
