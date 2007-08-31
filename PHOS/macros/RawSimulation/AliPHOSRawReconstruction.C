@@ -1,19 +1,26 @@
 void AliPHOSRawReconstruction(TString file="raw.root")
 {
   // Reconstruction of RAW data from the input file raw.root
-  // Boris Polichtchouk, 13 October 2006
+  // Boris Polichtchouk, 31 Aug 2007
+
+
+  //AliLog::SetGlobalDebugLevel(1);
 
   AliReconstruction rec ;
 //   rec.SetOption("PHOS","OldRCUFormat");
-  rec.SetRunTracking("PHOS") ;
+  rec.SetRunTracking("") ;
   rec.SetRunVertexFinder(kFALSE) ; 
   rec.SetRunLocalReconstruction("PHOS") ;
-  rec.SetFillESD("") ;
+  rec.SetFillESD("PHOS") ;
 
-  AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
-  AliTracker::SetFieldMap(field,kFALSE); 
+  //Set rec. parameters different from the default ones.
+  AliPHOSRecoParam* recEmc = new AliPHOSRecoParamEmc();
+  recEmc->SetSubtractPedestals(kFALSE); // do not sibtract pedestals!
+
+  AliPHOSReconstructor::SetRecoParamEmc(recEmc);
 
   rec.SetInput(file.Data());  // read RAW data
   rec.Run();
+
 
 }
