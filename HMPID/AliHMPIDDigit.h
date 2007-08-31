@@ -147,10 +147,11 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
                                     a=y2a[PadPcY()%6]+6*(PadPcX()%8);    //ADDRESS 0..47        
       
   w32=0;    
-  AliBitPacking::PackWord((UInt_t)fQ,w32, 0,11);  // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
-  AliBitPacking::PackWord(        a ,w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
-  AliBitPacking::PackWord(        d ,w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
-  AliBitPacking::PackWord(        r ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
+                                                                //Protection for charge > 4095
+  AliBitPacking::PackWord((fQ>4095)?4095:(UInt_t)fQ,w32,0,11);  // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
+  AliBitPacking::PackWord(        a ,w32,12,17);                // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
+  AliBitPacking::PackWord(        d ,w32,18,21);                // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
+  AliBitPacking::PackWord(        r ,w32,22,26);                //                                                Row number        bits (22..26) counts (1..24)  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl, AliRawReader *pRR)
