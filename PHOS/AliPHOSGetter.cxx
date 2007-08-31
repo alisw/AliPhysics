@@ -70,6 +70,8 @@
 #include "AliCDBStorage.h"
 #include "AliCDBManager.h"
 #include "AliPHOSRawDigiProducer.h"
+#include "AliPHOSReconstructor.h"
+#include "AliPHOSRecoParam.h"
 
 ClassImp(AliPHOSGetter)
   
@@ -743,7 +745,7 @@ Int_t AliPHOSGetter::ReadRaw(AliRawReader *rawReader,Bool_t isOldRCUFormat)
 
   AliPHOSRawDecoder dc(rawReader);
   dc.SetOldRCUFormat(isOldRCUFormat);
-  dc.SubtractPedestals(kTRUE);
+  dc.SubtractPedestals(AliPHOSReconstructor::GetRecoParamEmc()->SubtractPedestals());
 
   TClonesArray * digits = Digits() ;
   AliPHOSRawDigiProducer pr;
