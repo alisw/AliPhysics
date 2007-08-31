@@ -38,6 +38,7 @@
 #include "AliRawReader.h"
 #include "AliPHOSTrigger.h"
 #include "AliPHOSGeometry.h"
+#include "AliPHOSRecoParam.h"
 #include "AliPHOSRecoParamEmc.h"
 #include "AliPHOSRecoParamCpv.h"
 #include "AliPHOSDigit.h"
@@ -332,9 +333,9 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     dc.SetOldRCUFormat(kTRUE);
   else
     dc.SetOldRCUFormat(kFALSE);
-
-  dc.SubtractPedestals(kTRUE);
-
+  
+  dc.SubtractPedestals(fgkRecoParamEmc->SubtractPedestals());
+  
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName("DIGITS");
   Int_t bufsize = 32000;
