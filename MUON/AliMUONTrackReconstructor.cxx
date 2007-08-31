@@ -484,7 +484,10 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
         if (AliLog::GetGlobalDebugLevel() >= 3) newTrack->RecursiveDump();
       }
       
-    } else return kFALSE;
+    } else {
+      delete [] hitForRecCh1Used;
+      return kFALSE;
+    }
     
   } else if (foundOneHit || foundTwoHits) {
     
@@ -492,8 +495,12 @@ Bool_t AliMUONTrackReconstructor::FollowTrackInStation(AliMUONTrack &trackCandid
     fRecTracksPtr->Remove(&trackCandidate);
     fNRecTracks--;
     
-  } else return kFALSE;
+  } else {
+    delete [] hitForRecCh1Used;
+    return kFALSE;
+  }
   
+  delete [] hitForRecCh1Used;
   return kTRUE;
   
 }
