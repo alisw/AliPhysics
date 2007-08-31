@@ -24,7 +24,7 @@ public:
   Float_t GetLocalMaxCut() const { return fLocMaxCut;}
   Float_t GetMinE() const { return fMinE; }
   Float_t GetLogWeight() const { return fW0; }
-  Bool_t  SubtractPedestals() { return fSubtractPedestals; }
+  Bool_t  SubtractPedestals() const { return fSubtractPedestals; }
 
   void SetClusteringThreshold(Float_t cluth) { fClusteringThreshold=cluth; }
   void SetLocalMaxCut(Float_t cut) { fLocMaxCut=cut;}
