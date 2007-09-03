@@ -55,6 +55,9 @@
 #pragma link C++ class  AliITSBadChannelsSSD+;
 #pragma link C++ class  AliITSGainSSD+;
 #pragma link C++ class  AliITSNoiseSSD+;
+#pragma link C++ class  AliITSHandleDaSSD+;
+#pragma link C++ class  AliITSModuleDaSSD+;
+#pragma link C++ class  AliITSChannelDaSSD+;
 #pragma link C++ class  AliITSpList+;
 #pragma link C++ class  AliITSpListItem+;
 
