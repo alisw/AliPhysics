@@ -1,3 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id$ */
+
 ////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                 //
 // This class is used in the detector algorithm framework //
@@ -31,7 +48,7 @@ Double_t itsSpdErrorf(Double_t *x, Double_t *par){
 
 
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName) :
-  fType(99),fDacId(99),fFileName(fileName),fScanObj(NULL),fTriggers(NULL),
+  fType(99),fDacId(99),fRouterNr(99),fFileName(fileName),fScanObj(NULL),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(2),fMaxBaseLineLevel(10)
 {
@@ -50,7 +67,7 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName)
 }
 
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle) :
-  fType(99),fDacId(99),fFileName("."),fScanObj(NULL),fTriggers(NULL),
+  fType(99),fDacId(99),fRouterNr(99),fFileName("."),fScanObj(NULL),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
   fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(2),fMaxBaseLineLevel(10)
 {
@@ -58,8 +75,6 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDsc
   fFileName=handle.fFileName;
 
   fScanObj=NULL;
-  fType=99;
-  fDacId=99;
   for (UInt_t chipNr=0; chipNr<11; chipNr++) {
     for (UInt_t hs=0; hs<6; hs++) {
       fMeanMultiplicity[hs][chipNr]=NULL;
@@ -121,6 +136,7 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
     fScanObj=NULL;
     fType=99;
     fDacId=99;
+    fRouterNr=99;
     for (UInt_t chipNr=0; chipNr<11; chipNr++) {
       for (UInt_t hs=0; hs<6; hs++) {
 	fMeanMultiplicity[hs][chipNr]=NULL;
@@ -148,6 +164,7 @@ void AliITSOnlineSPDscanAnalyzer::Init() {
   }
   fScanObj = new AliITSOnlineSPDscan(fFileName.Data());
   fType = fScanObj->GetType();
+  fRouterNr = fScanObj->GetRouterNr();
   delete fScanObj;
 
   // init container

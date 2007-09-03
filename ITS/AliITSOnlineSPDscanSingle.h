@@ -1,5 +1,9 @@
 #ifndef ALI_ITS_ONLINESPDSCANSINGLE_H
 #define ALI_ITS_ONLINESPDSCANSINGLE_H  
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                 //
@@ -16,7 +20,6 @@ class AliITSOnlineSPDscanSingle :  public AliITSOnlineSPDscan {
   AliITSOnlineSPDscanSingle(const Char_t *fileName);
   virtual ~AliITSOnlineSPDscanSingle();
   
-  //  virtual void Clear() {AliITSOnlineSPDscan::Clear(); AddScanStep();}
   // SET METHODS ***********************************
   void     SetHits(UInt_t hs, UInt_t chipi, UInt_t coli, UInt_t rowi, UInt_t val);
   void     IncrementTriggers();
@@ -41,9 +44,6 @@ class AliITSOnlineSPDscanSingle :  public AliITSOnlineSPDscan {
   Float_t  GetAverageMultiplicityTot(UInt_t hs);
 
 
- protected:
-
-  ClassDef(AliITSOnlineSPDscanSingle,1)
-    };
+};
 
 #endif

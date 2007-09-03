@@ -1,5 +1,9 @@
 #ifndef ALIITSONLINESPDSCANANALYZER_H
 #define ALIITSONLINESPDSCANANALYZER_H
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                 //
@@ -29,6 +33,7 @@ class AliITSOnlineSPDscanAnalyzer {
 
   UInt_t     GetType() const {return fType;}
   UInt_t     GetDacId() const {return fDacId;}
+  UInt_t     GetRouterNr() const {return fRouterNr;}
 
   Int_t      GetDelay(UInt_t hs, UInt_t chipNr);
   Int_t      GetMinTh(UInt_t hs, UInt_t chipNr);
@@ -55,6 +60,7 @@ class AliITSOnlineSPDscanAnalyzer {
  private:
   UInt_t               fType;           // calib type
   UInt_t               fDacId;          // dac id
+  UInt_t               fRouterNr;       // router nr
   TString              fFileName;       // container file name
   enum                 calibvals{kMINTH,kMEANTH,kDAC,kUNIMA,kNOISE,kDELAY};  // calib types
 

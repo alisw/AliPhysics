@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   enum calib_types{MINTH,MEANTH,DAC,UNIMA,NOISE,DELAY};
 
 
-  // ********* STEP 0: Get configuration files from db (if there are any) *******************************
+  // ********* STEP 0: Get configuration files from db (if there are any) , then read parameters*********
   UInt_t nrTuningParams = 0;
   TObjArray paramNames;  paramNames.SetOwner(kTRUE);
   TObjArray paramVals;  paramVals.SetOwner(kTRUE);
@@ -465,15 +465,17 @@ int main(int argc, char **argv) {
       analyzer->SetParam(((TString*)paramNames.At(i))->Data(),((TString*)paramVals.At(i))->Data());
     }
 
-    Int_t type  = analyzer->GetType();
-    Int_t dacId = analyzer->GetDacId();
+    UInt_t type  = analyzer->GetType();
+    UInt_t dacId = analyzer->GetDacId();
+    UInt_t routerNr = analyzer->GetRouterNr();
     if (type!=99) {
       if (type==DAC) {
 	printf("SPD calibrator Step2: eqId %d, type %d, dacId %d\n",eqId,type,dacId);
       }
       else printf("SPD calibrator Step2: eqId %d type %d\n",eqId,type);  
     }
-    
+
+
 
     // algorithms for the different types of scans:
 
@@ -490,6 +492,7 @@ int main(int argc, char **argv) {
 	dcsfile << "[SPD SCAN]\n";
 	dcsfile << "RunNumber=" << runNr << "\n";
 	dcsfile << "Type=" << type << "\n";
+	dcsfile << "Router=" << routerNr << "\n";
 	dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
 	dcsfile << "[NOISY]\n";
 	nrDCSconfigFilesProduced++;
@@ -532,6 +535,7 @@ int main(int argc, char **argv) {
       dcsfile << "[SPD SCAN]\n";
       dcsfile << "RunNumber=" << runNr << "\n";
       dcsfile << "Type=" << type << "\n";
+      dcsfile << "Router=" << routerNr << "\n";
       dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
       dcsfile << "[DACvalues]\n";
       nrDCSconfigFilesProduced++;
@@ -567,6 +571,7 @@ int main(int argc, char **argv) {
       dcsfile << "[SPD SCAN]\n";
       dcsfile << "RunNumber=" << runNr << "\n";
       dcsfile << "Type=" << type << "\n";
+      dcsfile << "Router=" << routerNr << "\n";
       dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
       dcsfile << "[DACvalues]\n";
       nrDCSconfigFilesProduced++;
