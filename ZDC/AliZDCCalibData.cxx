@@ -63,7 +63,9 @@ AliZDCCalibData::AliZDCCalibData(const AliZDCCalibData& calibda) :
      fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
   }
   for(int t=0; t<6; t++)  fEnCalibration[t] = calibda.GetEnCalib(t);
-//  PrepHistos();
+  //
+  fEZEMEndValue    = calibda.GetEZEMEndValue();   
+  fEZEMCutFraction = calibda.GetEZEMCutFraction();
 }
 
 //________________________________________________________________
@@ -84,7 +86,9 @@ AliZDCCalibData &AliZDCCalibData::operator =(const AliZDCCalibData& calibda)
      fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
   }
   for(int t=0; t<6; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
-//  PrepHistos();
+  fEZEMEndValue    = calibda.GetEZEMEndValue();
+  fEZEMCutFraction = calibda.GetEZEMCutFraction();
+
   return *this;
 }
 
@@ -138,7 +142,7 @@ void  AliZDCCalibData::Print(Option_t *) const
      else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
      else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
      else if(t==23) printf("\n-------- ZEM2 LowRes --------  \n");
-     printf("ADC%d (%.1f, %.1f)\t",t,fMeanPedestal[t],fMeanPedWidth[t]);
+     printf("ADC%d (%.1f, %.1f)  ",t,fMeanPedestal[t],fMeanPedWidth[t]);
    }
    //
    printf("\n\n\n #######	Out-of-time pedestal values (mean value, sigma)	####### \n");
@@ -151,7 +155,7 @@ void  AliZDCCalibData::Print(Option_t *) const
      else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
      else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
      else if(t==23) printf("\n-------- ZEM2 LowRes --------  \n");
-     printf("ADC%d (%.1f, %.1f)\t",t,fOOTPedestal[t],fOOTPedWidth[t]);
+     printf("ADC%d (%.1f, %.1f)  ",t,fOOTPedestal[t],fOOTPedWidth[t]);
    }
  
    printf("\n\n\n #######	Energy calibration coefficients #######	\n");
@@ -161,6 +165,16 @@ void  AliZDCCalibData::Print(Option_t *) const
    printf("  ZP2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[3]);
    printf("  ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
    printf("  ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
+ 
+   printf("\n\n\n #######	Equalization coefficients #######	\n");
+   printf("  ZN1 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
+    fZN1EqualCoeff[0],fZN1EqualCoeff[1],fZN1EqualCoeff[2],fZN1EqualCoeff[3],fZN1EqualCoeff[4]);
+   printf("  ZP1 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
+    fZP1EqualCoeff[0],fZP1EqualCoeff[1],fZP1EqualCoeff[2],fZP1EqualCoeff[3],fZP1EqualCoeff[4]);
+   printf("  ZN2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
+    fZN2EqualCoeff[0],fZN2EqualCoeff[1],fZN2EqualCoeff[2],fZN2EqualCoeff[3],fZN2EqualCoeff[4]);
+   printf("  ZP2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n\n",
+    fZP2EqualCoeff[0],fZP2EqualCoeff[1],fZP2EqualCoeff[2],fZP2EqualCoeff[3],fZP2EqualCoeff[4]);
 } 
 
 //________________________________________________________________

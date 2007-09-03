@@ -80,6 +80,11 @@ class AliZDCCalibData: public TNamed {
   void 	SetZN2EqualCoeff(Float_t* EqualCoeff);
   void 	SetZP2EqualCoeff(Int_t channel, Float_t val) {fZP2EqualCoeff[channel]=val;}
   void 	SetZP2EqualCoeff(Float_t* EqualCoeff);
+  //  
+  void    SetEZEMEndValue(Float_t EZEMEndValue) {fEZEMEndValue = EZEMEndValue;}
+  void    SetEZEMCutFraction(Float_t EZEMCutFraction) {fEZEMCutFraction = EZEMCutFraction;}
+  virtual Float_t GetEZEMEndValue()     const {return fEZEMEndValue;}
+  virtual Float_t GetEZEMCutFraction()  const {return fEZEMCutFraction;}
   
   
  protected:
@@ -98,8 +103,11 @@ class AliZDCCalibData: public TNamed {
   Float_t  fZP1EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   Float_t  fZN2EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   Float_t  fZP2EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
+  // --- Coefficients for centrality selection from ZEM signal
+  Float_t fEZEMEndValue;    	 //End point value of ZEM energy spectrum
+  Float_t fEZEMCutFraction; 	 //Fraction of ZEM energy spectrum used to cut
   //
-  ClassDef(AliZDCCalibData,6)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,7)    // ZDC  Calibration data
 };
 
 #endif
