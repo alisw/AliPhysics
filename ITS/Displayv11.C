@@ -1,4 +1,11 @@
 //----------------------------------------------------------------------
+
+AliITSv11GeometrySPD *gspd;
+AliITSv11GeometrySDD *gsdd;
+AliITSv11GeometrySupport *gsupp;
+AliITSv11GeometrySSD *gssd;
+//
+//----------------------------------------------------------------------
 void Displayv11(const char* filename=""){
     // Display AliITSv11 Geometry
     // Inputs:
@@ -31,13 +38,13 @@ void Displayv11(const char* filename=""){
     its->CreateMaterials();
     its->CreateGeometry();
     */
-    AliITSv11GeometrySPD *gspd = new AliITSv11GeometrySPD(0);
-    //AliITSv11GeometrySDD *gsdd = new AliITSv11GeometrySDD();
-    AliITSv11GeometrySupport *gsupp = new AliITSv11GeometrySupport(0);
-    //AliITSv11GeometrySSD *gssd = new AliITSv11GeometrySSD();
+    gspd = new AliITSv11GeometrySPD(0);
+    //gsdd = new AliITSv11GeometrySDD();
+    gsupp = new AliITSv11GeometrySupport(0);
+    //gssd = new AliITSv11GeometrySSD();
     //
-    Int_t imat=1,imed=1;
-    gspd->CreateSPDCenteralMaterials(imed,imat);
+    Int_t imat=1,imed=1,ireturn=0;
+    ireturn = gspd->CreateSPDCentralMaterials(imed,imat);
     gspd->SPDSector(ITSspd,mgr2);
     gsupp->SPDCone(ITS,mgr2);
     gsupp->SetDebug(0);
@@ -66,6 +73,8 @@ void Displayv11(const char* filename=""){
                    "Run EngineeringSPDCenter");
     bar->AddButton("Display SPD Thermal Sheald","EngineeringSPDThS()",
                    "Run EngineeringSPDThS");
+    bar->AddButton("Display SPD Sector Cross Sections","EngineeringSPDSCS()",
+                   "Run EngineeringSPDSCS");
     bar->AddButton("Display SDD Layer 3","EngineeringSDDLayer3()",
                    "Run EngineeringSDDLayer3");
     bar->AddButton("Display SDD Layer 4","EngineeringSDDLayer4()",
@@ -252,6 +261,67 @@ void Displayit(){
     } // end if view4
     if(ISetits(5,-1)==1) ALIC->Raytrace();
     //
+}
+//----------------------------------------------------------------------
+void EngineeringSPDSCS(){
+    // Display SPD Carbon Fiber Sector Cross sections A and B
+    // Inputs:
+    //    none.
+    // Outputs:
+    //    none.
+    // Return:
+    //    none.
+    TPolyLine *a0,*a1,*b0,*b1;
+    TPolyMarker *p;
+    TCanvas *cSPDSCS=0;
+    Int_t i;
+    Double_t max=0.0;
+
+    a0 = new TPolyLine();
+    a1 = new TPolyLine();
+    b0 = new TPolyLine();
+    b1 = new TPolyLine();
+    p = new TPolyMarker();
+    a0->SetLineColor(1);
+    a1->SetLineColor(4);
+    b0->SetLineColor(3);
+    b0->SetLineStyle(2); // dashed
+    b1->SetLineColor(6);
+    b1->SetLineStyle(2); // dashed
+    p->SetMarkerColor(2);
+    p->SetMarkerStyle(5);
+    if(gspd->Make2DcrossSections(*a0,*a1,*b0,*b1,*p)==kFALSE) return;
+    for(i=0;i<a0->GetN();i++) {
+      if(TMath::Abs(a0->GetX()[i])>max) max = TMath::Abs(a0->GetX()[i]);
+      if(TMath::Abs(a0->GetY()[i])>max) max = TMath::Abs(a0->GetY()[i]);
+    } // end for i
+    for(i=0;i<a1->GetN();i++) {
+      if(TMath::Abs(a1->GetX()[i])>max) max = TMath::Abs(a0->GetX()[i]);
+      if(TMath::Abs(a1->GetY()[i])>max) max = TMath::Abs(a1->GetY()[i]);
+    } // end for i
+    for(i=0;i<b0->GetN();i++) {
+      if(TMath::Abs(b0->GetX()[i])>max) max = TMath::Abs(b0->GetX()[i]);
+      if(TMath::Abs(b0->GetY()[i])>max) max = TMath::Abs(b0->GetY()[i]);
+    } // end for i
+    for(i=0;i<b1->GetN();i++) {
+      if(TMath::Abs(b1->GetX()[i])>max) max = TMath::Abs(b1->GetX()[i]);
+      if(TMath::Abs(b1->GetY()[i])>max) max = TMath::Abs(b1->GetY()[i]);
+    } // end for i
+    max *= 1.05;
+    cSPDSCS = gROOT->FindObject("cSPDSCS");
+    if(cSPDSCS==0) delete cSPDSCS;
+    cSPDSCS = new TCanvas("cSPDSCS","SPD Carbon Fiber Sector Cross sections",2);
+    cSPDSCS->Range(-max,-max,max,max);
+    //cSPDSCS->RangeAxis();
+    cSPDSCS->SetFixedAspectRatio(kTRUE);
+    //
+    a0->Draw("");
+    a1->Draw("same");
+    p->Draw("same");
+    b0->Draw("same");
+    b1->Draw("same");
+    cSPDSCS->Update();
+    return;
 }
 //----------------------------------------------------------------------
 void EngineeringSPDSector(){
