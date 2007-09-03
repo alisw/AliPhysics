@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 //               Implementation of the ITS tracker class
@@ -29,11 +29,12 @@
 #include <TTreeStream.h>
 #include <TTree.h>
 #include <TDatabasePDG.h>
-#include <TStopwatch.h>
+#include <TString.h>
 
 
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDVertex.h"
 #include "AliV0.h"
 #include "AliHelix.h"
 #include "AliITSRecPoint.h"
@@ -340,7 +341,16 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fOriginal.Clear();
   fEsd = event;         // store pointer to the esd 
 
-  TStopwatch w; w.Start();
+  // temporary (for cosmics)
+  if(event->GetVertex()) {
+    TString title = event->GetVertex()->GetTitle();
+    if(title.Contains("cosmics")) {
+      Double_t xyz[3]={GetX(),GetY(),GetZ()};
+      Double_t exyz[3]={0.1,0.1,0.1};
+      SetVertex(xyz,exyz);
+    }
+  }
+  // temporary
 
   {/* Read ESD tracks */
     Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
@@ -465,7 +475,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fOriginal.Clear();
   delete [] fCoefficients;
   fCoefficients=0;
-  w.Stop(); w.Print();
   Info("Clusters2Tracks","Number of prolonged tracks: %d\n",ntrk);
   
   return 0;
@@ -498,7 +507,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
 
      ResetTrackToFollow(*t);
 
-     // propagete to vertex [SR, GSI 17.02.2003]
+     // propagate to vertex [SR, GSI 17.02.2003]
      // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
      if(fUseTGeo) {
        if (fTrackToFollow.PropagateToTGeo(krInsidePipe,1)) {
@@ -588,25 +597,22 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
 
        CookLabel(&fTrackToFollow,0.0); //For comparison only
 
-       if(fUseTGeo) {
-	 if (fTrackToFollow.PropagateToTGeo(krInsidePipe,1)) {//The beam pipe    
-	   AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
-	   esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
-	   Float_t r[3]={0.,0.,0.};
-	   Double_t maxD=3.;
-	   esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
-	   ntrk++;
-	 }
+       //The beam pipe
+       Bool_t okToPipe;
+       if(fUseTGeo) { 
+	 okToPipe = fTrackToFollow.PropagateToTGeo(krInsidePipe,1); 
        } else {
-	 if (fTrackToFollow.PropagateTo(krInsidePipe,kdPipe,kX0Be)) {//The beam pipe    
-	   AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
-	   esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
-	   Float_t r[3]={0.,0.,0.};
-	   Double_t maxD=3.;
-	   esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
-	   ntrk++;
-	 }
+	 okToPipe = fTrackToFollow.PropagateTo(krInsidePipe,kdPipe,kX0Be);
        }
+       if(okToPipe) {
+	 AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
+	 esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
+	 Float_t r[3]={0.,0.,0.};
+	 Double_t maxD=3.;
+	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
+	 ntrk++;
+       }
+
     }
     delete t;
   }
@@ -624,11 +630,11 @@ AliCluster *AliITStrackerMI::GetCluster(Int_t index) const {
   Int_t c=(index & 0x0fffffff) >> 00;
   return fgLayers[l].GetCluster(c);
 }
-
+//------------------------------------------------------------------------
 Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
-  //
+  //--------------------------------------------------------------------
   // Get track space point with index i
-  //
+  //--------------------------------------------------------------------
 
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 00;
@@ -639,6 +645,75 @@ Bool_t AliITStrackerMI::GetTrackPoint(Int_t index, AliTrackPoint& p) const {
   Float_t cov[6];
   cl->GetGlobalXYZ(xyz);
   cl->GetGlobalCov(cov);
+  p.SetXYZ(xyz, cov);
+
+  AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 
+  switch (l) {
+  case 0:
+    iLayer = AliGeomManager::kSPD1;
+    break;
+  case 1:
+    iLayer = AliGeomManager::kSPD2;
+    break;
+  case 2:
+    iLayer = AliGeomManager::kSDD1;
+    break;
+  case 3:
+    iLayer = AliGeomManager::kSDD2;
+    break;
+  case 4:
+    iLayer = AliGeomManager::kSSD1;
+    break;
+  case 5:
+    iLayer = AliGeomManager::kSSD2;
+    break;
+  default:
+    AliWarning(Form("Wrong layer index in ITS (%d) !",l));
+    break;
+  };
+  UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,idet);
+  p.SetVolumeID((UShort_t)volid);
+  return kTRUE;
+}
+//------------------------------------------------------------------------
+Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index, 
+			AliTrackPoint& p, const AliESDtrack *t) {
+  //--------------------------------------------------------------------
+  // Get track space point with index i
+  // (assign error estimated during the tracking)
+  //--------------------------------------------------------------------
+
+  Int_t l=(index & 0xf0000000) >> 28;
+  Int_t c=(index & 0x0fffffff) >> 00;
+  const AliITSRecPoint *cl = fgLayers[l].GetCluster(c);
+  Int_t idet = cl->GetDetectorIndex();
+  const AliITSdetector &det=fgLayers[l].GetDetector(idet);
+
+  // tgphi and tglambda of the track in tracking frame with alpha=det.GetPhi
+  Float_t detxy[2];
+  detxy[0] = det.GetR()*TMath::Cos(det.GetPhi());
+  detxy[1] = det.GetR()*TMath::Sin(det.GetPhi());
+  Double_t alpha = t->GetAlpha();
+  Double_t xdetintrackframe = detxy[0]*TMath::Cos(alpha)+detxy[1]*TMath::Sin(alpha);
+  Float_t phi = TMath::ASin(t->GetSnpAt(xdetintrackframe,AliTracker::GetBz()));
+  phi += alpha-det.GetPhi();
+  Float_t tgphi = TMath::Tan(phi);
+
+  Float_t tgl = t->GetTgl(); // tgl about const along track
+  Float_t expQ = TMath::Max(0.8*t->GetTPCsignal(),30.);
+
+  Float_t errlocalx,errlocalz;
+  GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz);
+
+
+  Float_t xyz[3];
+  Float_t cov[6];
+  cl->GetGlobalXYZ(xyz);
+  //  cl->GetGlobalCov(cov);
+  Float_t pos[3] = {0.,0.,0.};
+  AliCluster tmpcl((UShort_t)cl->GetVolumeId(),pos[0],pos[1],pos[2],errlocalx*errlocalx,errlocalz*errlocalz,0);
+  tmpcl.GetGlobalCov(cov);
+
   p.SetXYZ(xyz, cov);
 
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer; 

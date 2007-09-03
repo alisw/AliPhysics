@@ -27,6 +27,8 @@ public:
   virtual ~AliITStrackerMI();
   AliCluster *GetCluster(Int_t index) const;
   virtual Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
+  virtual Bool_t GetTrackPointTrackingError(Int_t index, 
+			AliTrackPoint& p, const AliESDtrack *t);
   AliITSRecPoint *GetClusterLayer(Int_t layn, Int_t ncl) const
                         {return fgLayers[layn].GetCluster(ncl);}
   Int_t GetNumberOfClustersLayer(Int_t layn) const 
