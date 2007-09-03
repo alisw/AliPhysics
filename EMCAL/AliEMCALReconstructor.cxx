@@ -28,11 +28,9 @@
 // --- AliRoot header files ---
 #include "AliEMCALReconstructor.h"
 
-#include "AliRun.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliESDtrack.h"
-#include "AliRunLoader.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALRawUtils.h"
 #include "AliEMCALClusterizerv1.h"
@@ -40,14 +38,23 @@
 #include "AliEMCALPID.h"
 #include "AliEMCALTrigger.h"
 #include "AliRawReader.h"
+// to be removed - it is here just because of geom
+#include "AliRun.h"
+#include "AliRunLoader.h"
 
 ClassImp(AliEMCALReconstructor)
+
+AliEMCALRecParam* AliEMCALReconstructor::fgkRecParam = 0;  // EMCAL rec. parameters
 
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
   : fDebug(kFALSE) 
 {
   // ctor
+  if (!fgkRecParam) {
+    AliWarning("The Reconstruction parameters for EMCAL nonitialized - Used default one");
+    fgkRecParam = new AliEMCALRecParam;
+  }
 } 
 
 //____________________________________________________________________________
@@ -65,82 +72,58 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 } 
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader) const 
+void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   // method called by AliReconstruction; 
   // Only the clusterization is performed,; the rest of the reconstruction is done in FillESD because the track
   // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
   // the global tracking.
+  // Works on the current event.
  
-  TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName(runLoader->GetEventFolder()->GetName() ) ;  
-  
-  AliEMCALClusterizerv1 clu(headerFile, branchName);
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));    
-
-  Int_t nEvents   = runLoader->GetNumberOfEvents();
-  runLoader->LoadDigits("EMCAL");
-  for (Int_t ievent = 0; ievent < nEvents; ievent++) {
-    runLoader->GetEvent(ievent);
-    if ( Debug() ) 
-      clu.ExecuteTask("deb all") ; 
-    else 
-      clu.ExecuteTask("pseudo") ;  
-  }   
-  // Unload the Digits and RecPoints
-  emcalLoader->UnloadDigits() ; 
-  emcalLoader->UnloadRecPoints() ; 
+  AliEMCALClusterizerv1 clu;
+  clu.SetInput(digitsTree);
+  clu.SetOutput(clustersTree);
+  if ( Debug() ) 
+    clu.Digits2Clusters("deb all") ; 
+  else 
+    clu.Digits2Clusters("pseudo") ;  
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const 
+void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 
 {
-  // Reconstruction loop for Raw Data processing
-  //
-  // Only the clusterization is performed
-  // Track-cluster matching is done in FillESD because the track
-  // segment maker needs access to the AliESD object to retrieve 
-  // the tracks reconstructed by the global tracking.
-  
-  TString headerFile(runLoader->GetFileName()) ; 
-  TString branchName(runLoader->GetEventFolder()->GetName()) ;  
+  // Conversion from raw data to
+  // EMCAL digits.
+  // Works on a single-event basis
+
+  rawReader->Reset() ; 
+
+  TClonesArray *digitsArr = new TClonesArray("AliEMCALDigit",100);
+  Int_t bufsize = 32000;
+  digitsTree->Branch("EMCAL", &digitsArr, bufsize);
 
   static AliEMCALRawUtils rawUtils;
-  AliEMCALClusterizerv1 clu(headerFile, branchName);
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));    
- 
-  Int_t iEvent = 0;
-  rawReader->Reset() ; 
-  while (rawReader->NextEvent()) {  
-    runLoader->GetEvent(iEvent++);
-
-    rawUtils.Raw2Digits(rawReader);
-
-    if ( Debug() ) 
-      clu.ExecuteTask("deb pseudo all") ; 
-    else 
-      clu.ExecuteTask("pseudo") ;  
-    // Unload the RecPoints
-    emcalLoader->UnloadRecPoints() ; 
-  }
+  rawUtils.Raw2Digits(rawReader,digitsArr);
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const
+void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree, 
+				    AliESDEvent* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertexing 
+  // Works on the current event
   const double timeScale = 1.e+11; // transition constant from sec to 0.01 ns 
 
-  Int_t eventNumber = runLoader->GetEventNumber() ;
-
   // Creates AliESDCaloCluster from AliEMCALRecPoints 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(runLoader->GetDetectorLoader("EMCAL"));
-  runLoader->LoadRecPoints("EMCAL");
-  runLoader->GetEvent(eventNumber);
-  TObjArray *clusters = emcalLoader->RecPoints();
+
+  TObjArray *clusters = new TObjArray(100);
+  TBranch *branch = clustersTree->GetBranch("EMCALECARP");
+  branch->SetAddress(&clusters);
+  clustersTree->GetEvent(0);
+
   Int_t nClusters = clusters->GetEntries(), nClustersNew=0;
-  AliDebug(1,Form("Event %d: %d clusters",eventNumber,nClusters));
+  AliDebug(1,Form("%d clusters",nClusters));
   //  Int_t nRP=0, nPC=0; // in input
   esd->SetFirstEMCALCluster(esd->GetNumberOfCaloClusters()); // Put after Phos clusters 
 
@@ -158,6 +141,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) c
   Float_t ampOutOfPatchnxn  = tr.GetnxnAmpOutOfPatch() ;
 
   AliEMCALGeometry * geom = 0;
+  AliRunLoader *runLoader = AliRunLoader::GetRunLoader();
   if (runLoader->GetAliRun() && runLoader->GetAliRun()->GetDetector("EMCAL"))
     geom = dynamic_cast<AliEMCAL*>(runLoader->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
   if (geom == 0) 
@@ -223,7 +207,7 @@ void AliEMCALReconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent* esd) c
 
 
   for (Int_t iClust = 0 ; iClust < nClusters ; iClust++) {
-    const AliEMCALRecPoint * clust = emcalLoader->RecPoint(iClust);
+    const AliEMCALRecPoint * clust = (const AliEMCALRecPoint*)clusters->At(iClust);
     //if(clust->GetClusterType()== AliESDCaloCluster::kClusterv1) nRP++; else nPC++;
     if (Debug()) clust->Print();
     // Get information from EMCAL reconstruction points

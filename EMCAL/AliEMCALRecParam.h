@@ -22,9 +22,9 @@ public:
   
   AliEMCALRecParam() ;
   virtual ~AliEMCALRecParam() {}
-  Float_t GetClusteringThreshold()      {return fClusteringThreshold;}
-  Float_t GetW0                 ()      {return fW0                 ;}
-  Float_t GetMinECut            ()      {return fMinECut            ;}
+  Float_t GetClusteringThreshold() const     {return fClusteringThreshold;}
+  Float_t GetW0                 () const     {return fW0                 ;}
+  Float_t GetMinECut            () const     {return fMinECut            ;}
   void SetClusteringThreshold(Float_t thrsh)   {fClusteringThreshold = thrsh;}
   void SetW0                 (Float_t w0)      {fW0 = w0                    ;}
   void SetMinECut            (Float_t minEcut) {fMinECut = minEcut          ;}

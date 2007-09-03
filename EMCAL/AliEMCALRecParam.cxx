@@ -28,8 +28,10 @@ ClassImp(AliEMCALRecParam)
 //-----------------------------------------------------------------------------
 
 AliEMCALRecParam::AliEMCALRecParam():
-  fClusteringThreshold(0),fW0(0),fMinECut(0)
-{}
+  fClusteringThreshold(0.5),fW0(4.5),fMinECut(0.45)
+{
+  // default reco values
+}
 
 //-----------------------------------------------------------------------------
 void AliEMCALRecParam::Print(Option_t *) const

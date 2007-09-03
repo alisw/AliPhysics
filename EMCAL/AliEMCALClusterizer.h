@@ -13,47 +13,48 @@
 //                           of new  IO (à la PHOS)
 // --- ROOT system ---
 
-#include "TTask.h" 
-#include "AliConfig.h"
+#include "TObject.h" 
+class TTree;
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 
-class AliEMCALClusterizer : public TTask {
+class AliEMCALClusterizer : public TObject {
 
 public:
 
   AliEMCALClusterizer() ;        // default ctor
-  AliEMCALClusterizer(const TString alirunFileName, const TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;
-  AliEMCALClusterizer(const AliEMCALClusterizer &); //copy ctor
   virtual ~AliEMCALClusterizer() ; // dtorEM
 
-  virtual Float_t GetTowerClusteringThreshold()const {Warning("GetTowerClusteringThreshold", "Not Defined") ; return 0. ; }
-  virtual Float_t GetTowerLocalMaxCut()const {Warning("GetTowerLocalMaxCut", "Not Defined") ; return 0. ; }
-  virtual Float_t GetTowerLogWeight()const {Warning("GetTowerLogWeight", "Not Defined") ; return 0. ; }
-  virtual Float_t GetTimeCut() const {Warning("GetTimeCut", "Not Defined") ; return 0. ; }
-  virtual const char *  GetRecPointsBranch() const {Warning("GetRecPointsBranch", "Not Defined") ; return 0 ; }
-  virtual Int_t GetRecPointsInRun()  const {Warning("GetRecPointsInRun", "Not Defined") ; return 0 ; }
-  virtual const char *  GetDigitsBranch() const  {Warning("GetDigitsBranch", "Not Defined") ; return 0 ; }
+  virtual void    Digits2Clusters(Option_t *option) = 0;
 
-  virtual void MakeClusters() = 0;
+  virtual Float_t GetTimeCut() const = 0;
 
   virtual void SetECAClusteringThreshold(Float_t) = 0;
   virtual void SetECALocalMaxCut(Float_t)         = 0;
   virtual void SetECALogWeight(Float_t)           = 0;
   virtual void SetTimeCut(Float_t)                = 0;
   virtual void SetUnfolding(Bool_t)               = 0;
-  void SetEventFolderName(TString name) { fEventFolderName = name ; }
-
-  AliEMCALClusterizer & operator = (const AliEMCALClusterizer & /*rvalue*/)  {return *this ;} 
 
   virtual const char * Version() const {Warning("Version", "Not Defined") ; return 0 ; } 
 
-protected:
-  TString fEventFolderName ;  // event folder name
+  virtual void SetInput(TTree *digitsTree);
+  virtual void SetOutput(TTree *clustersTree);
 
-  ClassDef(AliEMCALClusterizer,0)  // Clusterization algorithm class 
+protected:
+
+  virtual void MakeClusters(char* opt) = 0;
+
+  TClonesArray *fDigitsArr; // Array with EMCAL digits
+  TTree *fTreeR;            // Tree with output clusters
+  TObjArray    *fRecPoints; // Array with EMCAL clusters
+
+private:
+  AliEMCALClusterizer(const AliEMCALClusterizer &); //copy ctor
+  AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
+
+  ClassDef(AliEMCALClusterizer,1)  // Clusterization algorithm class 
 } ;
 
 #endif // AliEMCALCLUSTERIZER_H

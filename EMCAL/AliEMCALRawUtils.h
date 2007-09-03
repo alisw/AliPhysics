@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/03/17 19:56:38  mvl
+ * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
+ *
  *
  */
 //_________________________________________________________________________
@@ -33,7 +36,7 @@ class AliEMCALRawUtils : public TObject {
   virtual ~AliEMCALRawUtils();
 
   void Digits2Raw();
-  void Raw2Digits(AliRawReader *reader);
+  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr);
 
   // Signal shape parameters
   Double_t GetRawFormatHighLowGainFactor() const {return fHighLowGainFactor ;}

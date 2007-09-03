@@ -67,15 +67,15 @@ class TSystem;
 #include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliESD.h"
-#include "AliEMCALLoader.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALDigitizer.h"
 #include "AliEMCAL.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALRawUtils.h"
 #include "AliEMCALHistoUtilities.h"
+#include "AliEMCALRecParam.h"
+#include "AliEMCALReconstructor.h"
 #include "AliCDBManager.h"
 
 class AliCDBStorage;
@@ -84,27 +84,8 @@ class AliCDBStorage;
 ClassImp(AliEMCALClusterizerv1)
 
 //____________________________________________________________________________
-AliEMCALClusterizerv1::AliEMCALClusterizerv1() 
+AliEMCALClusterizerv1::AliEMCALClusterizerv1()
   : AliEMCALClusterizer(),
-    fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
-    fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
-    fMaxL1(0),fMaxL2(0),fMaxDis(0),fGeom(0),
-    fDefaultInit(kTRUE),
-    fToUnfold(kFALSE),
-    fNumberOfECAClusters(0),fNTowerInGroup(0),fCalibData(0),
-    fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-    fECAW0(0.),fRecPointsInRun(0),fTimeCut(0.),fMinECut(0.)
-{
-  // default ctor (to be used mainly by Streamer)
-  
-  InitParameters() ; 
-  fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
-  fGeom->GetTransformationForSM(); // Global <-> Local
-}
-
-//____________________________________________________________________________
-AliEMCALClusterizerv1::AliEMCALClusterizerv1(const TString alirunFileName, const TString eventFolderName)
-  : AliEMCALClusterizer(alirunFileName, eventFolderName),
     fHists(0),fPointE(0),fPointL1(0),fPointL2(0),
     fPointDis(0),fPointMult(0),fDigitAmp(0),fMaxE(0),
     fMaxL1(0),fMaxL2(0),fMaxDis(0),fGeom(0),
@@ -112,7 +93,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(const TString alirunFileName, const
     fToUnfold(kFALSE),
     fNumberOfECAClusters(0),fNTowerInGroup(0),fCalibData(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
-    fECAW0(0.),fRecPointsInRun(0),fTimeCut(0.),fMinECut(0.)
+    fECAW0(0.),fTimeCut(0.),fMinECut(0.)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
@@ -121,47 +102,9 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(const TString alirunFileName, const
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizerv1::AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus)
-  : AliEMCALClusterizer(clus),
-    fHists(clus.fHists),
-    fPointE(clus.fPointE),
-    fPointL1(clus.fPointL1),
-    fPointL2(clus.fPointL2),
-    fPointDis(clus.fPointDis),
-    fPointMult(clus.fPointMult),
-    fDigitAmp(clus.fDigitAmp),
-    fMaxE(clus.fMaxE),
-    fMaxL1(clus.fMaxL1),
-    fMaxL2(clus.fMaxL2),
-    fMaxDis(clus.fMaxDis),
-    fGeom(clus.fGeom),
-    fDefaultInit(clus.fDefaultInit),
-    fToUnfold(clus.fToUnfold),
-    fNumberOfECAClusters(clus.fNumberOfECAClusters),
-    fNTowerInGroup(clus.fNTowerInGroup),
-    fCalibData(clus.fCalibData),
-    fADCchannelECA(clus.fADCchannelECA),
-    fADCpedestalECA(clus.fADCpedestalECA),
-    fECAClusteringThreshold(clus.fECAClusteringThreshold),
-    fECALocMaxCut(clus.fECALocMaxCut),
-    fECAW0(clus.fECAW0),
-    fRecPointsInRun(clus.fRecPointsInRun),
-    fTimeCut(clus.fTimeCut),
-    fMinECut(clus.fMinECut)
-{
-  //copy ctor
-}
-
-//____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
 {
   // dtor
-}
-
-//____________________________________________________________________________
-const TString AliEMCALClusterizerv1::BranchName() const 
-{ 
-   return GetName();
 }
 
 //____________________________________________________________________________
@@ -205,7 +148,7 @@ Float_t  AliEMCALClusterizerv1::Calibrate(Int_t amp, Int_t AbsId)
 }
 
 //____________________________________________________________________________
-void AliEMCALClusterizerv1::Exec(Option_t * option)
+void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 {
   // Steering method to perform clusterization for the current event 
   // in AliEMCALLoader
@@ -216,9 +159,6 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(strstr(option,"print"))
     Print("") ; 
  
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
-
   //Get calibration parameters from file or digitizer default values.
   GetCalibrationParameters() ;
 
@@ -233,15 +173,12 @@ void AliEMCALClusterizerv1::Exec(Option_t * option)
   if(fToUnfold)
     MakeUnfolding() ;
 
-  WriteRecPoints() ;
-
+  fTreeR->Fill();
+  
   if(strstr(option,"deb") || strstr(option,"all"))  
     PrintRecPoints(option) ;
 
-  AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",emcalLoader->RecPoints()->GetEntriesFast()));
-
-  //increment the total number of recpoints per run   
-  fRecPointsInRun += emcalLoader->RecPoints()->GetEntriesFast() ;  
+  AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
@@ -258,16 +195,13 @@ Bool_t AliEMCALClusterizerv1::FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit **
   // The initial values for fitting procedure are set equal to the positions of local maxima.
   // Cluster will be fitted as a superposition of nPar/3 electromagnetic showers
 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
-  TClonesArray *digits = emcalLoader->Digits();
-
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
   gMinuit->SetFCN(AliEMCALClusterizerv1::UnfoldingChiSquare) ;  
                                          // To set the address of the minimization function 
   TList * toMinuit = new TList();
   toMinuit->AddAt(emcRP,0) ;
-  toMinuit->AddAt(digits,1) ;
+  toMinuit->AddAt(fDigitsArr,1) ;
   
   gMinuit->SetObjectFit(toMinuit) ;         // To tranfer pointer to UnfoldingChiSquare
 
@@ -353,22 +287,28 @@ void AliEMCALClusterizerv1::GetCalibrationParameters()
 
   //Check if calibration is stored in data base
 
-  AliEMCALLoader *emcalLoader = 
-    dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));  
-
-  fCalibData =emcalLoader->CalibData();
-
-   if(!fCalibData)
-     {
-       //If calibration is not available use default parameters
-       //Loader
-       if ( !emcalLoader->Digitizer() ) 
-	 emcalLoader->LoadDigitizer();
-       AliEMCALDigitizer * dig = dynamic_cast<AliEMCALDigitizer*>(emcalLoader->Digitizer());
+  if(!fCalibData && (AliCDBManager::Instance()->IsDefaultStorageSet()))
+    {
+      AliCDBEntry *entry = (AliCDBEntry*) 
+	AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+      if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
+    }
+  
+  if(!fCalibData)
+    AliFatal("Calibration parameters not found in CDB!");
+ 
+  //  Please fix it!! Or better just remove it...
+//    if(!fCalibData)
+//      {
+//        //If calibration is not available use default parameters
+//        //Loader
+//        if ( !emcalLoader->Digitizer() ) 
+// 	 emcalLoader->LoadDigitizer();
+//        AliEMCALDigitizer * dig = dynamic_cast<AliEMCALDigitizer*>(emcalLoader->Digitizer());
        
-       fADCchannelECA   = dig->GetECAchannel() ;
-       fADCpedestalECA  = dig->GetECApedestal();
-     }
+//        fADCchannelECA   = dig->GetECAchannel() ;
+//        fADCpedestalECA  = dig->GetECApedestal();
+//      }
 }
 
 //____________________________________________________________________________
@@ -400,27 +340,22 @@ void AliEMCALClusterizerv1::InitParameters()
 
   fNTowerInGroup = 36;  //Produces maximum of 80 pseudoclusters per event
 
-  fECAClusteringThreshold   = 0.5;  // Best value for 2 GeV gamma merged with Ideal HIJING. Retune later? 
   fECALocMaxCut = 0.03; // ??
 
-  fECAW0    = 4.5;
   fTimeCut = 300e-9 ; // 300 ns time cut (to be tuned) 
   fToUnfold = kFALSE ;
-  fRecPointsInRun  = 0 ;
-  fMinECut = 0.45; // Best value for 2 GeV gamma merged with Ideal HIJING. Retune later? 
 
   fCalibData               = 0 ;
 
-  // If reconstruction parameters are found in OCDB, take them from it
-
-  AliEMCALLoader *emcalLoader = 
-    dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
-  AliEMCALRecParam *recParamDB = emcalLoader->RecParam();
-  if (recParamDB != 0) {
-    fECAClusteringThreshold = recParamDB->GetClusteringThreshold();
-    fECAW0                  = recParamDB->GetW0();
-    fMinECut                = recParamDB->GetMinECut();
-    AliDebug(1,Form("Reconstruction parameters were taken from OCDB: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f",
+  const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
+  if(!recParam) {
+    AliFatal("Reconstruction parameters for EMCAL not set!");
+  }
+  else {
+    fECAClusteringThreshold = recParam->GetClusteringThreshold();
+    fECAW0                  = recParam->GetW0();
+    fMinECut                = recParam->GetMinECut();
+    AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f, fECAW=%.3f, fMinECut=%.3f",
 		 fECAClusteringThreshold,fECAW0,fMinECut));
   }
 
@@ -511,56 +446,6 @@ Int_t AliEMCALClusterizerv1::AreInGroup(AliEMCALDigit * d1, AliEMCALDigit * d2) 
 }
  
 //____________________________________________________________________________
-void AliEMCALClusterizerv1::WriteRecPoints()
-{
-
-  // Creates new branches with given title
-  // fills and writes into TreeR.
-
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
-
-  TObjArray * aECARecPoints = emcalLoader->RecPoints() ; 
-
-  TClonesArray * digits = emcalLoader->Digits() ; 
-  TTree * treeR = emcalLoader->TreeR();  
-  if ( treeR==0 ) {
-    emcalLoader->MakeRecPointsContainer();
-    treeR = emcalLoader->TreeR();  
-  }
-  else if (treeR->GetEntries() > 0) {
-    Warning("WriteRecPoints","RecPoints already exist in output file. New Recpoitns will not be visible.");
-  }
-  Int_t index ;
-
-  //Evaluate position, dispersion and other RecPoint properties for EC section
-  for(index = 0; index < aECARecPoints->GetEntries(); index++) {
-    if (dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(index))->GetClusterType() != AliESDCaloCluster::kPseudoCluster)
-       dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(index))->EvalAll(fECAW0,digits) ;
-  }
-  
-  aECARecPoints->Sort() ;
-
-  for(index = 0; index < aECARecPoints->GetEntries(); index++) {
-    (dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(index)))->SetIndexInList(index) ;
-    (dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(index)))->Print();
-  }
-
-  Int_t bufferSize = 32000 ;    
-  Int_t splitlevel = 0 ; 
-
-  //EC section branch
-  
-  TBranch * branchECA = 0;
-  if ((branchECA = treeR->GetBranch("EMCALECARP")))
-    branchECA->SetAddress(&aECARecPoints);
-  else
-    treeR->Branch("EMCALECARP","TObjArray",&aECARecPoints,bufferSize,splitlevel);
-  treeR->Fill() ;
-
-  emcalLoader->WriteRecPoints("OVERWRITE");
-}
-
-//____________________________________________________________________________
 void AliEMCALClusterizerv1::MakeClusters(char* option)
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
@@ -569,15 +454,11 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
 
   if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
 
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
-  TObjArray * aECARecPoints = emcalLoader->RecPoints() ; 
-  aECARecPoints->Clear();
-
-  TClonesArray *digits = emcalLoader->Digits();
+  fRecPoints->Clear();
 
   // Set up TObjArray with pointers to digits to work on 
   TObjArray *digitsC = new TObjArray();
-  TIter nextdigit(digits);
+  TIter nextdigit(fDigitsArr);
   AliEMCALDigit *digit;
   while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
     digitsC->AddLast(digit);
@@ -588,7 +469,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
     //
     // New algorithm : will be created one pseudo cluster per module  
     //
-    AliDebug(1,Form("Pseudo clustering #digits : %i ",digits->GetEntries()));
+    AliDebug(1,Form("Pseudo clustering #digits : %i ",fDigitsArr->GetEntries()));
 
     AliEMCALRecPoint *recPoints[12]; // max size is 12 : see fGeom->GetNumberOfSuperModules();
     for(int i=0; i<12; i++) recPoints[i] = 0;
@@ -608,7 +489,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
     }
     fNumberOfECAClusters = 0;
     for(int i=0; i<fGeom->GetNumberOfSuperModules(); i++) { // put non empty rec.points to container
-      if(recPoints[i]) aECARecPoints->AddAt(recPoints[i], fNumberOfECAClusters++);
+      if(recPoints[i]) fRecPoints->AddAt(recPoints[i], fNumberOfECAClusters++);
     }
     AliDebug(1,Form(" Number of PC %d ", fNumberOfECAClusters));
   }
@@ -630,19 +511,19 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
       ehs += e;
   } 
   AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %d\n",
-		  digits->GetEntries(),fMinECut,ehs));
+		  fDigitsArr->GetEntries(),fMinECut,ehs));
 
   nextdigitC.Reset();
 
   while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // scan over the list of digitsC
-    TArrayI clusterECAdigitslist(digits->GetEntries());
+    TArrayI clusterECAdigitslist(fDigitsArr->GetEntries());
 
     if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmp(), digit->GetId()) > fECAClusteringThreshold  ) ){
       // start a new Tower RecPoint
-      if(fNumberOfECAClusters >= aECARecPoints->GetSize()) aECARecPoints->Expand(2*fNumberOfECAClusters+1) ;
+      if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
       AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
-      aECARecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
-      recPoint = dynamic_cast<AliEMCALRecPoint *>(aECARecPoints->At(fNumberOfECAClusters)) ; 
+      fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
+      recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
       fNumberOfECAClusters++ ; 
 
       recPoint->SetClusterType(AliESDCaloCluster::kClusterv1);
@@ -675,7 +556,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
 
   delete digitsC ;
 
-  AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,digits->GetEntriesFast())); 
+  AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }
 
 void AliEMCALClusterizerv1::MakeUnfolding() const
@@ -728,18 +609,12 @@ void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
     
     // Print parameters
  
-    TString taskName(GetName()) ;
-    taskName.ReplaceAll(Version(), "") ;
+    TString taskName(Version()) ;
     
     printf("--------------- "); 
     printf(taskName.Data()) ; 
     printf(" "); 
-    printf(GetTitle()) ; 
-    printf("-----------\n");  
-    printf("Clusterizing digits from the file: "); 
-    printf(taskName.Data());  
-    printf("\n                           Branch: "); 
-    printf(GetName()); 
+    printf("Clusterizing digits: "); 
     printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 
     printf("\n                       ECA Logarithmic weight   = %f", fECAW0); 
     if(fToUnfold)
@@ -757,19 +632,13 @@ void AliEMCALClusterizerv1::Print(Option_t * /*option*/)const
 void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
 {
   // Prints list of RecPoints produced at the current pass of AliEMCALClusterizer
-  AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL"));
-  TObjArray * aECARecPoints = emcalLoader->RecPoints() ; 
-    
   if(strstr(option,"deb")) {
     printf("PrintRecPoints: Clusterization result:") ; 
   
-    printf("event # %d\n", emcalLoader->GetRunLoader()->GetEventNumber() ) ;
     printf("           Found %d ECA Rec Points\n ", 
-	 aECARecPoints->GetEntriesFast()) ; 
+	 fRecPoints->GetEntriesFast()) ; 
   }
 
-  fRecPointsInRun +=  aECARecPoints->GetEntriesFast() ; 
-  
   if(strstr(option,"all")) {
     if(strstr(option,"deb")) {
       printf("\n-----------------------------------------------------------------------\n") ;
@@ -782,10 +651,10 @@ void AliEMCALClusterizerv1::PrintRecPoints(Option_t * option)
    Float_t maxL2=0; 
    Float_t maxDis=0; 
 
-    AliEMCALHistoUtilities::FillH1(fHists, 12, double(aECARecPoints->GetEntries()));
+    AliEMCALHistoUtilities::FillH1(fHists, 12, double(fRecPoints->GetEntries()));
 
-    for (index = 0 ; index < aECARecPoints->GetEntries() ; index++) {
-      AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint * >(aECARecPoints->At(index)) ; 
+    for (index = 0 ; index < fRecPoints->GetEntries() ; index++) {
+      AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint * >(fRecPoints->At(index)) ; 
       TVector3  globalpos;  
       //rp->GetGlobalPosition(globalpos);
       TVector3  localpos;  
@@ -881,11 +750,4 @@ void AliEMCALClusterizerv1::DrawLambdasHists()
       fMaxDis->Draw("same");
     }
   }
-}
-
-void AliEMCALClusterizerv1::Browse(TBrowser* b)
-{
-  if(fHists) b->Add(fHists);
-  if(fGeom)  b->Add(fGeom);
-  TTask::Browse(b);
 }

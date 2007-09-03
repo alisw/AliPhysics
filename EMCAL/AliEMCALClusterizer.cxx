@@ -25,46 +25,64 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
+#include "TClonesArray.h"
+#include "TTree.h"
 
 // --- Standard library ---
 
 
 // --- AliRoot header files ---
 #include "AliEMCALClusterizer.h"
-#include "AliRunLoader.h"
+#include "AliLog.h"
 
 ClassImp(AliEMCALClusterizer)
 
 //____________________________________________________________________________
-AliEMCALClusterizer::AliEMCALClusterizer()
-  : TTask("",""),
-    fEventFolderName("")
+AliEMCALClusterizer::AliEMCALClusterizer():
+  fDigitsArr(NULL),
+  fTreeR(NULL),
+  fRecPoints(NULL)
 {
   // ctor
-}
-
-//____________________________________________________________________________
-AliEMCALClusterizer::AliEMCALClusterizer(const TString alirunFileName, 
-					 const TString eventFolderName)
-  : TTask("EMCAL"+AliConfig::Instance()->GetReconstructionerTaskName(), alirunFileName),
-    fEventFolderName(eventFolderName)
-{
-  // ctor
-}
-
-//____________________________________________________________________________
-AliEMCALClusterizer::AliEMCALClusterizer(const AliEMCALClusterizer& clu)
-  : TTask(clu.GetName(),clu.GetTitle()),
-    fEventFolderName(clu.fEventFolderName)
-{
-  // copy ctor
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizer::~AliEMCALClusterizer()
 {
   // dtor
- //Remove this from the parental task before destroying
-  AliRunLoader::GetRunLoader()->GetDetectorLoader("EMCAL")->CleanReconstructioner();
+  if (fDigitsArr) {
+    fDigitsArr->Delete();
+    delete fDigitsArr;
+  }
+  if (fRecPoints) {
+    fRecPoints->Delete();
+    delete fRecPoints;
+  }
 }
 
+//____________________________________________________________________________
+void AliEMCALClusterizer::SetInput(TTree *digitsTree)
+{
+  // Read the digits from the input tree
+  TBranch *branch = digitsTree->GetBranch("EMCAL");
+  if (!branch) { 
+    AliError("can't get the branch with the EMCAL digits !");
+    return;
+  }
+  fDigitsArr = new TClonesArray("AliEMCALDigit",100);
+  branch->SetAddress(&fDigitsArr);
+  branch->GetEntry(0);
+}
+
+//____________________________________________________________________________
+void AliEMCALClusterizer::SetOutput(TTree *clustersTree)
+{
+  // Read the digits from the input tree
+  fTreeR = clustersTree;
+  
+  AliDebug(9, "Making array for EMCAL clusters");
+  fRecPoints = new TObjArray(100) ;
+  Int_t split = 0;
+  Int_t bufsize = 32000;
+  fTreeR->Branch("EMCALECARP", "TObjArray", &fRecPoints, bufsize, split);
+}

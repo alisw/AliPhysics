@@ -36,17 +36,8 @@ class AliEMCALClusterizerv1 : public AliEMCALClusterizer {
 public:
   
   AliEMCALClusterizerv1() ;         
-  //cpy ctor required by coding convention
-  AliEMCALClusterizerv1(const AliEMCALClusterizerv1& clus);
 
-  AliEMCALClusterizerv1(const TString alirunFileNameFile, const TString eventFolderName = AliConfig::GetDefaultEventFolderName());
   virtual ~AliEMCALClusterizerv1()  ;
-  virtual void Browse(TBrowser* b);
-
-  AliEMCALClusterizerv1 & operator = (const AliEMCALClusterizerv1 &) {
-    Fatal("operator =", "not implemented") ;
-    return *this ;
-  }
 
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
@@ -63,10 +54,8 @@ public:
   virtual Float_t GetMinECut()const              { return fMinECut;}
 
   virtual Float_t GetTimeCut() const            { return fTimeCut ; }
-  virtual const char *  GetRecPointsBranch() const{ return GetName() ;}
-  virtual Int_t GetRecPointsInRun() const   {return fRecPointsInRun ;} 
 
-  void    Exec(Option_t *option);                // Does the job
+  virtual void    Digits2Clusters(Option_t *option);                // Does the job
 
   virtual void Print(Option_t * option)const ;
 
@@ -88,9 +77,7 @@ public:
   void   DrawLambdasHists();                     //*MENU*
 protected:
 
-  void           WriteRecPoints() ;
   virtual void   MakeClusters(char* opt );            
-  virtual void   MakeClusters() { Fatal("MakeClusters","not implemented"); }
             
 ///////////////////// 
    TList  *fHists;   //!
@@ -108,8 +95,9 @@ protected:
 
 
 private:
+  AliEMCALClusterizerv1(const AliEMCALClusterizerv1 &); //copy ctor
+  AliEMCALClusterizerv1 & operator = (const AliEMCALClusterizerv1 &);
 
-  const TString BranchName() const ; 
   void    GetCalibrationParameters(void) ;
   
   Bool_t  FindFit(AliEMCALRecPoint * emcRP, AliEMCALDigit ** MaxAt, Float_t * maxAtEnergy, 
@@ -141,11 +129,10 @@ private:
   Float_t fECAClusteringThreshold ;  // minimum energy to seed a EC digit in a cluster
   Float_t fECALocMaxCut ;            // minimum energy difference to distinguish local maxima in a cluster
   Float_t fECAW0 ;                   // logarithmic weight for the cluster center of gravity calculation
-  Int_t   fRecPointsInRun ;            //! Total number of recpoints in one run
   Float_t fTimeCut ;                // Maximum time difference between the digits in ont EMC cluster
   Float_t fMinECut;                  // Minimum energy for a digit to be a member of a cluster
 
-  ClassDef(AliEMCALClusterizerv1,5)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerv1,6)   // Clusterizer implementation version 1
 
 };
 

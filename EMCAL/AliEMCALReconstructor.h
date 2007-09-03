@@ -19,6 +19,7 @@
 class AliEMCALDigitizer ;
 class AliEMCALClusterizer ;
 class AliEMCALSDigitizer ;
+class AliEMCALRecParam;
 class AliESDEvent ;
 class AliRawReader ;
 
@@ -38,11 +39,15 @@ public:
   Bool_t       Debug() const { return fDebug ; }
 
   using AliReconstructor::FillESD;
-  virtual void FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const ;
+  virtual void FillESD(TTree* digitsTree, TTree* clustersTree, 
+		       AliESDEvent* esd) const;
   AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliEMCALTracker;} 
   using AliReconstructor::Reconstruct;
-  virtual void Reconstruct(AliRunLoader* runLoader) const ;
-  virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const ;
+  virtual Bool_t             HasLocalReconstruction() const {return kTRUE;};
+  virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
+
+  virtual Bool_t             HasDigitConversion() const {return kTRUE;};
+  virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
   
   
   AliEMCALReconstructor & operator = (const AliEMCALReconstructor & /*rvalue*/)  {
@@ -51,12 +56,16 @@ public:
     return *this ; 
   }
   
+  void SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
+
+  static const AliEMCALRecParam* GetRecParam(){ return fgkRecParam;}
 
 private:
   
   Bool_t fDebug; //! verbosity controller
- 
-  ClassDef(AliEMCALReconstructor,1)  // Reconstruction algorithm class (Base Class)
+  static AliEMCALRecParam*   fgkRecParam; // reconstruction parameters for EMCAL
+
+  ClassDef(AliEMCALReconstructor,2)  // Reconstruction algorithm class (Base Class)
 
 }; 
 

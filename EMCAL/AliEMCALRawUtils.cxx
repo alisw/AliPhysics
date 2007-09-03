@@ -16,7 +16,10 @@
 /* $Id$ */
 /* History of cvs commits:
  *
- * $Log$ */
+ * $Log$
+ * Revision 1.1  2007/03/17 19:56:38  mvl
+ * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
+ * */
 
 //*-- Author: Marco van Leeuwen (LBL)
 #include "AliEMCALRawUtils.h"
@@ -169,7 +172,7 @@ void AliEMCALRawUtils::Digits2Raw()
 }
 
 //____________________________________________________________________________
-void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader)
+void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 {
   // convert raw data of the current event to digits
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
@@ -178,14 +181,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader)
     return;
   }
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  AliEMCALLoader *loader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
+  digitsArr->Clear(); 
 
-  // get the digits
-  TClonesArray* digits = loader->Digits() ;
-  digits->Clear(); 
-
-  if (!digits) {
+  if (!digitsArr) {
     Error("Raw2Digits", "no digits found !");
     return;
   }
@@ -241,7 +239,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader)
     
     if (amp > 0) {
       AliDebug(2,Form("id %d amp %g", id, amp));
-      new((*digits)[idigit]) AliEMCALDigit( -1, -1, id, (Int_t)amp, time, idigit) ;	
+      new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, (Int_t)amp, time, idigit) ;	
 	  idigit++ ; 
     }
     Int_t index ; 
