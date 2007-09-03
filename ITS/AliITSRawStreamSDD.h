@@ -64,20 +64,15 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fReadBits[kModulesPerDDL][2];   // number of bits to read
     Int_t            fLowThreshold[2]; // low Carlos threshold
     Int_t            fNCarlos;         // number of Carlos 
-    /*
-    Int_t            fNfifo0;          // fifo n. 0
-    Int_t            fNfifo1;          // fifo n. 1
-    Int_t            fNfifo2;          // fifo n. 2
-    Int_t            fNfifo3;          // fifo n. 3
-    */
     Int_t            fNfifo[kFifoWords];
     Int_t            fTimeBin[kModulesPerDDL][2];  // current timebin [ncarlos][nchannels]
     Int_t            fAnode[kModulesPerDDL][2]; // current anode [ncarlos][nchannels]
     Int_t            fDDL;        //current ddl number
-    UInt_t           iCarlosWord[kCarlosWords];
-    UInt_t           iFifoWord[kFifoWords];
-    Int_t            iCountFoot[kModulesPerDDL];
-    ClassDef(AliITSRawStreamSDD, 4) // class for reading ITS SDD raw digits
+    UInt_t           fICarlosWord[kCarlosWords];
+    UInt_t           fIFifoWord[kFifoWords];
+    Int_t            fICountFoot[kModulesPerDDL];
+    Int_t            fIdcd;   // fifo counter, for debugging, to be removed when the code is stabilised
+    ClassDef(AliITSRawStreamSDD, 5) // class for reading ITS SDD raw digits
 };
 
 #endif
