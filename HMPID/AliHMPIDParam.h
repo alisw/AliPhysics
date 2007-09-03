@@ -21,7 +21,7 @@ public:
   virtual        ~AliHMPIDParam()                                    {for(Int_t i=0;i<7;i++) delete fM[i]; delete fgInstance; fgInstance=0;}
          void     Print(Option_t *opt="") const;                                         //print current parametrization
   static inline AliHMPIDParam* Instance();                                //pointer to AliHMPIDParam singleton
-
+  static inline AliHMPIDParam* InstanceNoGeo();                           //pointer to AliHMPIDParam singleton without geometry.root for MOOD, displays, ...
 //geo info
   enum EChamberData{kMinCh=0,kMaxCh=6,kMinPc=0,kMaxPc=5};      //Segmenation
   enum EPadxData{kPadPcX=80,kMinPx=0,kMaxPx=79,kMaxPcx=159};   //Segmentation structure along x
@@ -80,10 +80,12 @@ public:
   TVector3 Norm        (Int_t c                                             )const{Double_t n[3]; Norm(c,n); return TVector3(n);               }//norm 
   void     Norm        (Int_t c,Double_t *n                                 )const{Double_t l[3]={0,0,1};fM[c]->LocalToMasterVect(l,n);        }//norm
   void     Point       (Int_t c,Double_t *p,Int_t plane                     )const{Lors2Mars(c,0,0,p,plane);}      //point of given chamber plane
+
   enum EPlaneId {kPc,kRad,kAnod};            //3 planes in chamber 
 
   static Int_t fgSigmas;   //sigma Cut
 
+  
 protected:
   static /*const*/ Float_t fgkMinPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMinPcY[6];                                                           //limits PC
@@ -91,7 +93,7 @@ protected:
   static /*const*/ Float_t fgkMaxPcY[6]; 
 
   static Float_t fgCellX, fgCellY, fgPcX, fgPcY, fgAllX, fgAllY;
-         AliHMPIDParam();             //default ctor is protected to enforce it to be singleton
+         AliHMPIDParam(Bool_t noGeo);             //default ctor is protected to enforce it to be singleton
 
   static AliHMPIDParam *fgInstance;   //static pointer  to instance of AliHMPIDParam singleton
 
@@ -99,6 +101,8 @@ protected:
   Float_t fX;                         //x shift of LORS with respect to rotated MARS 
   Float_t fY;                         //y shift of LORS with respect to rotated MARS   
 
+  
+  
   ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
 };
 
@@ -108,7 +112,16 @@ AliHMPIDParam* AliHMPIDParam::Instance()
 // Return pointer to the AliHMPIDParam singleton. 
 // Arguments: none
 //   Returns: pointer to the instance of AliHMPIDParam or 0 if no geometry       
-  if(!fgInstance) new AliHMPIDParam; 
+  if(!fgInstance) new AliHMPIDParam(kFALSE);                                //default setting for reconstruction, if no geometry.root -> AliFatal
+  return fgInstance;  
+}//Instance()    
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDParam* AliHMPIDParam::InstanceNoGeo()
+{
+// Return pointer to the AliHMPIDParam singleton without the geometry.root. 
+// Arguments: none
+//   Returns: pointer to the instance of AliHMPIDParam or 0 if no geometry       
+  if(!fgInstance) new AliHMPIDParam(kTRUE);                               //to avoid AliFatal, for MOOD and displays, use ideal geometry parameters
   return fgInstance;  
 }//Instance()    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -45,46 +45,49 @@ Int_t AliHMPIDParam::fgSigmas=4;
 
 AliHMPIDParam* AliHMPIDParam::fgInstance=0x0;        //singleton pointer               
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDParam::AliHMPIDParam():TNamed("HmpidParam","default version") 
+AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):TNamed("HmpidParam","default version") 
 {
 // Here all the intitializition is taken place when AliHMPIDParam::Instance() is invoked for the first time.
-// In particulare, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
+// In particular, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
 // Note that TGeoManager should be already initialized from geometry.root file  
 
-if(!gGeoManager) 
-{
-  TGeoManager::Import("geometry.root");
-  if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
-}
+  if(noGeo==kTRUE){fgCellX=0.8;fgCellY=0.84;} 
+  
+  if(noGeo==kFALSE && !gGeoManager)  
+  {
+    TGeoManager::Import("geometry.root");
+    if(!gGeoManager) AliFatal("!!!!!!No geometry loaded!!!!!!!");
+  }
+  
+  Float_t dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
+  TGeoVolume *pCellVol = gGeoManager->GetVolume("Hcel");
+  
+  if(!pCellVol) {
+    fgCellX=0.8;fgCellY=0.84;
+    } else { 
+    TGeoBBox *bcell = (TGeoBBox *)pCellVol->GetShape();
+    fgCellX=2.*bcell->GetDX(); fgCellY = 2.*bcell->GetDY();
+  }
+  
+  fgPcX=80.*fgCellX; fgPcY = 48.*fgCellY;
+  fgAllX=2.*fgPcX+dead;
+  fgAllY=3.*fgPcY+2.*dead;
 
+  fgkMinPcX[1]=fgPcX+dead; fgkMinPcX[3]=fgkMinPcX[1];  fgkMinPcX[5]=fgkMinPcX[3];
+  fgkMaxPcX[0]=fgPcX; fgkMaxPcX[2]=fgkMaxPcX[0];  fgkMaxPcX[4]=fgkMaxPcX[2];
+  fgkMaxPcX[1]=fgAllX; fgkMaxPcX[3]=fgkMaxPcX[1];  fgkMaxPcX[5]=fgkMaxPcX[3];
 
-    Float_t dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
-    TGeoVolume *pCellVol = gGeoManager->GetVolume("Hcel");
-    if(!pCellVol) {
-      fgCellX=0.8;fgCellY=0.84;
-      } else { 
-      TGeoBBox *bcell = (TGeoBBox *)pCellVol->GetShape();
-      fgCellX=2.*bcell->GetDX(); fgCellY = 2.*bcell->GetDY();
-    }
-    fgPcX=80.*fgCellX; fgPcY = 48.*fgCellY;
-    fgAllX=2.*fgPcX+dead;
-    fgAllY=3.*fgPcY+2.*dead;
-
-     fgkMinPcX[1]=fgPcX+dead; fgkMinPcX[3]=fgkMinPcX[1];  fgkMinPcX[5]=fgkMinPcX[3];
-     fgkMaxPcX[0]=fgPcX; fgkMaxPcX[2]=fgkMaxPcX[0];  fgkMaxPcX[4]=fgkMaxPcX[2];
-     fgkMaxPcX[1]=fgAllX; fgkMaxPcX[3]=fgkMaxPcX[1];  fgkMaxPcX[5]=fgkMaxPcX[3];
-   
-     fgkMinPcY[2]=fgPcY+dead; fgkMinPcY[3]=fgkMinPcY[2];  
-     fgkMinPcY[4]=2.*fgPcY+2.*dead; fgkMinPcY[5]=fgkMinPcY[4];
-     fgkMaxPcY[0]=fgPcY; fgkMaxPcY[1]=fgkMaxPcY[0];  
-     fgkMaxPcY[2]=2.*fgPcY+dead; fgkMaxPcY[3]=fgkMaxPcY[2]; 
-     fgkMaxPcY[4]=fgAllY; fgkMaxPcY[5]=fgkMaxPcY[4];   
+  fgkMinPcY[2]=fgPcY+dead; fgkMinPcY[3]=fgkMinPcY[2];  
+  fgkMinPcY[4]=2.*fgPcY+2.*dead; fgkMinPcY[5]=fgkMinPcY[4];
+  fgkMaxPcY[0]=fgPcY; fgkMaxPcY[1]=fgkMaxPcY[0];  
+  fgkMaxPcY[2]=2.*fgPcY+dead; fgkMaxPcY[3]=fgkMaxPcY[2]; 
+  fgkMaxPcY[4]=fgAllY; fgkMaxPcY[5]=fgkMaxPcY[4];   
     
   fX=0.5*SizeAllX();
   fY=0.5*SizeAllY();
+  
   for(Int_t i=kMinCh;i<=kMaxCh;i++) 
     if(gGeoManager && gGeoManager->IsClosed()) {
-//      fM[i]=(TGeoHMatrix*)gGeoManager->GetVolume("ALIC")->GetNode(Form("HMPID_%i",i))->GetMatrix(); // previous style
       TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(Form("/HMPID/Chamber%i",i));
       if (!pne) {
         AliErrorClass(Form("The symbolic volume %s does not correspond to any physical entry!",Form("HMPID_%i",i)));
