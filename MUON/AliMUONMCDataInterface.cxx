@@ -259,7 +259,7 @@ AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track)
   {
     if ( treeTR->GetEvent(track) > 0 ) 
     {
-      TBranch* branch = treeTR->GetBranch("MUON");
+      TBranch* branch = treeTR->GetBranch("TrackReferences");
       branch->SetAddress(&fTrackRefs);
       branch->GetEvent(track);
       fDataX = track;  // using fDataX as track number.
