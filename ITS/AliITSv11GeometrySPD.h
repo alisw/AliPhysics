@@ -95,7 +95,7 @@ public:
 	virtual void SPDSector(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
 	// Returns the mounting location and rotation needed to mount
         // and SPD ladder.
-	virtual Bool_t AliITSv11GeometrySPD::GetSectorMountingPoints(
+	virtual Bool_t GetSectorMountingPoints(
                              Int_t index,Double_t &x0,Double_t &y0,
                              Double_t &x1,Double_t &y1,
 			     TGeoManager *mgr=gGeoManager)const;
