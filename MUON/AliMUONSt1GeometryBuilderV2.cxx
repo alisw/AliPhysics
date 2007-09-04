@@ -269,9 +269,9 @@ void AliMUONSt1GeometryBuilderV2::CreateInnerLayers()
 
 // Gas Medium
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099; 
-  //Int_t idArCO2  = idtmed[1108];  // medium 9 (ArCO2 80%) 
+  Int_t idArCO2  = idtmed[1108];  // medium 9 (ArCO2 80%) 
   //Int_t idCopper  = idtmed[1109]; // medium 10 = copper
-  Int_t idArCO2   = idtmed[1124]; // medium 25 (ArCO2 80%) 
+  //Int_t idArCO2   = idtmed[1124]; // medium 25 (ArCO2 80%) 
   Int_t idCopper  = idtmed[1121]; // medium 22 = copper
 
   Float_t par[11];
@@ -2346,14 +2346,14 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
   // --- Define mixtures for GEANT ---
   //
 
-  //     Ar-CO2 gas II (80%+20%)
-  Float_t ag1[2]   = { 39.95,  44.01};
-  Float_t zg1[2]   = { 18., 22.};
-  Float_t wg1[2]   = { .8, 0.2};
-  Float_t dg1      = .001821;
-  fMUON->AliMixture(45, "ArCO2 II 80%$", ag1, zg1, dg1, 2, wg1);  
-            // was id: 22
-            // use wg1 weighting factors (6th arg > 0)
+ //  //     Ar-CO2 gas II (80%+20%)   
+//   Float_t ag1[2]   = { 39.95,  44.01};
+//   Float_t zg1[2]   = { 18., 22.};
+//   Float_t wg1[2]   = { .8, 0.2};
+//   Float_t dg1      = .001821;
+//   fMUON->AliMixture(45, "ArCO2 II 80%$", ag1, zg1, dg1, 2, wg1);  
+//             // was id: 22
+//             // use wg1 weighting factors (6th arg > 0)
 
   // Rohacell 51  II - imide methacrylique
   Float_t aRohacell51[4] = { 12.01, 1.01, 16.00, 14.01}; 
@@ -2416,9 +2416,9 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
                    tmaxfd, maxStepAlu, maxDestepAlu, epsil, stmin);
 
 		   // was med: 20  mat: 36
-  fMUON->AliMedium(25, "ARG_CO2_II", 45, 1, iSXFLD, sXMGMX,
-                   tmaxfd, maxStepGas, maxDestepAlu, epsil, stmin);
-		   // was med: 9   mat: 22
+ //  fMUON->AliMedium(25, "ARG_CO2_II", 45, 1, iSXFLD, sXMGMX,
+//                    tmaxfd, maxStepGas, maxDestepAlu, epsil, stmin);
+// 		   // was med: 9   mat: 22
   fMUON->AliMedium(26, "FOAM_CH$",   46, 0, iSXFLD, sXMGMX,
                    10.0,  0.1, 0.1, 0.1, 0.1, 0, 0) ;
 		   // was med: 16  mat: 32
