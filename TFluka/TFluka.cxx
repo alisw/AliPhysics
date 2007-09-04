@@ -655,7 +655,8 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
        strncmp(param, "HADR",  4) == 0 ||
        strncmp(param, "LOSS",  4) == 0 ||
        strncmp(param, "MULS",  4) == 0 ||
-       strncmp(param, "RAYL",  4) == 0) 
+       strncmp(param, "RAYL",  4) == 0 ||
+       strncmp(param, "STRA",  4) == 0) 
    {
        process = kTRUE;
    } 
