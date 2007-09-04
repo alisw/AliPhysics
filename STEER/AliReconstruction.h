@@ -85,6 +85,7 @@ public:
   // CDB storage activation
   void InitCDBStorage();
   void SetDefaultStorage(const char* uri);
+  void SetRemoteStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
 
   Bool_t SetRunNumber();
@@ -174,6 +175,7 @@ private:
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
 
   TString	 fCDBUri;	      // Uri of the default CDB storage
+  TString	 fRemoteCDBUri;	      // Uri of the remote CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
   //Quality Assurance

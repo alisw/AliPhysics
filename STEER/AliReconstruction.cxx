@@ -217,6 +217,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
 
   fAlignObjArray(NULL),
   fCDBUri(cdbUri),
+  fRemoteCDBUri(""),
   fSpecCDBUri()
 {
 // create reconstruction object with default parameters
@@ -268,6 +269,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fAlignObjArray(rec.fAlignObjArray),
   fCDBUri(rec.fCDBUri),
+  fRemoteCDBUri(rec.fRemoteCDBUri),
   fSpecCDBUri()
 {
 // copy constructor
@@ -331,6 +333,23 @@ void AliReconstruction::InitCDBStorage()
     man->SetDefaultStorage(fCDBUri);
   }
 
+  // Remote storage (the Grid storage) is used if it is activated
+  // and if the object is not found in the default storage
+  if (man->IsRemoteStorageSet())
+  {
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliWarning("Remote CDB storage has been already set !");
+    AliWarning(Form("Ignoring the remote storage declared in AliReconstruction: %s",fRemoteCDBUri.Data()));
+    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    fRemoteCDBUri = "";
+  }
+  else {
+    AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    AliDebug(2, Form("Remote CDB storage is set to: %s",fRemoteCDBUri.Data()));
+    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    man->SetRemoteStorage(fRemoteCDBUri);
+  }
+
   // Now activate the detector specific CDB storage locations
   for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
     TObject* obj = fSpecCDBUri[i];
@@ -349,6 +368,17 @@ void AliReconstruction::SetDefaultStorage(const char* uri) {
 // Activate it later within the Run() method
 
   fCDBUri = uri;
+
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::SetRemoteStorage(const char* uri) {
+// Store the desired remote CDB storage location
+// Activate it later within the Run() method
+// Remote storage (the Grid storage) is used if it is activated
+// and if the object is not found in the default storage
+
+  fRemoteCDBUri = uri;
 
 }
 

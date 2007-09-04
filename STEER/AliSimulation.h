@@ -73,7 +73,8 @@ public:
   // CDB storage activation
   void InitCDBStorage();
   void SetDefaultStorage(const char* uri);
-  void SetSpecificStorage(const char* calibType, const char* uri);    
+  void SetRemoteStorage(const char* uri);
+  void SetSpecificStorage(const char* calibType, const char* uri);
 
   virtual Bool_t Run(Int_t nEvents = 0);
 
@@ -124,6 +125,7 @@ private:
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
   TString 	 fCDBUri;	      // Uri of the default CDB storage
+  TString 	 fRemoteCDBUri;	      // Uri of the remote CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
   Bool_t         fEmbeddingFlag;      // Flag for embedding
   ClassDef(AliSimulation, 4)  // class for running generation, simulation and digitization
