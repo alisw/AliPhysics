@@ -166,15 +166,19 @@ void  AliZDCCalibData::Print(Option_t *) const
    printf("  ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
    printf("  ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
  
-   printf("\n\n\n #######	Equalization coefficients #######	\n");
+   printf("\n\n #######	Equalization coefficients #######	\n");
    printf("  ZN1 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZN1EqualCoeff[0],fZN1EqualCoeff[1],fZN1EqualCoeff[2],fZN1EqualCoeff[3],fZN1EqualCoeff[4]);
    printf("  ZP1 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZP1EqualCoeff[0],fZP1EqualCoeff[1],fZP1EqualCoeff[2],fZP1EqualCoeff[3],fZP1EqualCoeff[4]);
    printf("  ZN2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZN2EqualCoeff[0],fZN2EqualCoeff[1],fZN2EqualCoeff[2],fZN2EqualCoeff[3],fZN2EqualCoeff[4]);
-   printf("  ZP2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n\n",
+   printf("  ZP2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZP2EqualCoeff[0],fZP2EqualCoeff[1],fZP2EqualCoeff[2],fZP2EqualCoeff[3],fZP2EqualCoeff[4]);
+ 
+   printf("\n\n #######	Parameters for centrality selection from ZEM #######	\n");
+   printf("  ZEM spectrum end point -> %1.0f (a.u.)\n",fEZEMEndValue);
+   printf("  ZEM cut value -> %1.2f \n\n\n",fEZEMCutFraction);
 } 
 
 //________________________________________________________________
