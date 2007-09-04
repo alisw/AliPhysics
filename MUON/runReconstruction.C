@@ -42,6 +42,7 @@ void runReconstruction(int run, int seed, const char* input, const char* recopti
   MuonRec->SetNumberOfEventsPerFile(1000);
   MuonRec->SetOption("MUON",recoptions);
   //  MuonRec->SetEventRange(319,319);
+  MuonRec->SetWriteAOD();
   MuonRec->Run();
   delete MuonRec;
   //gObjectTable->Print();
