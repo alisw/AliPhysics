@@ -30,6 +30,7 @@ public:
 protected:
 
 	virtual AliCDBEntry*	GetEntry(const AliCDBId& queryId);
+	virtual AliCDBId*	GetEntryId(const AliCDBId& queryId);
 	virtual TList* 		GetEntries(const AliCDBId& queryId);
 	virtual Bool_t          PutEntry(AliCDBEntry* entry);
 	virtual TList* 		GetIdListFromFile(const char* fileName);
@@ -49,9 +50,11 @@ private:
 	AliCDBId* GetId(const TObjArray& validFileIds, const AliCDBId& query);
 	AliCDBEntry* GetEntryFromFile(TString& filename, AliCDBId* dataId);
 
+	// TODO  use AliEnTag classes!
 	Bool_t AddTag(TString& foldername, const char* tagname);
 	Bool_t TagFileId(TString& filename, const AliCDBId* id);
 	Bool_t TagFileMetaData(TString& filename, const AliCDBMetaData* md);
+	Bool_t TagShortLived(TString& filename, Bool_t value);
 
 	void MakeQueryFilter(Int_t firstRun, Int_t lastRun, const AliCDBMetaData* md, TString& result) const;
 
@@ -62,7 +65,7 @@ private:
 	TString    fDBFolder;   // path of the DB folder
 	TString    fSE;	  	// Storage Element
 
-ClassDef(AliCDBGrid, 0)      // access class to a DataBase in an AliEn storage 
+ClassDef(AliCDBGrid, 0)      // access class to a DataBase in an AliEn storage
 };
 
 /////////////////////////////////////////////////////////////////////

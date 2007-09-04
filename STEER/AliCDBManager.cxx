@@ -65,6 +65,8 @@ void AliCDBManager::Init() {
 		fCondParam = CreateParameter(fgkCondUri);
 		fRefParam = CreateParameter(fgkRefUri);
 	}
+
+	InitShortLived();
 }
 //_____________________________________________________________________________
 void AliCDBManager::Destroy() {
@@ -86,10 +88,12 @@ AliCDBManager::AliCDBManager():
   fActiveStorages(),
   fSpecificStorages(),
   fDefaultStorage(NULL),
+  fRemoteStorage(NULL),
   fDrainStorage(NULL),
   fEntryCache(),
   fCache(kTRUE),
-  fRun(-1)
+  fRun(-1),
+  fShortLived(0)
 {
 // default constuctor
 	fFactories.SetOwner(1);
@@ -106,8 +110,10 @@ AliCDBManager::~AliCDBManager() {
 	fFactories.Delete();
 	fDrainStorage = 0x0;
 	fDefaultStorage = 0x0;
+  	fRemoteStorage = 0x0;
 	delete fCondParam;
 	delete fRefParam;
+	delete fShortLived; fShortLived = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -278,15 +284,39 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 // set default storage from AliCDBParam object
-	
+
 	fDefaultStorage = GetStorage(param);
 }
 
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 // set default storage from another active storage
-	
+
 	fDefaultStorage = storage;
+}
+//_____________________________________________________________________________
+void AliCDBManager::SetRemoteStorage(const char* dbString) {
+// sets remote storage from URI string
+// Remote storage is queried if it is activated and if object was not found in default storage
+
+	AliInfo(Form("Setting Default storage to: %s",dbString));
+	fRemoteStorage = GetStorage(dbString);
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::SetRemoteStorage(const AliCDBParam* param) {
+// set remote storage from AliCDBParam object
+// Remote storage is queried if it is activated and if object was not found in default storage
+
+	fRemoteStorage = GetStorage(param);
+}
+
+//_____________________________________________________________________________
+void AliCDBManager::SetRemoteStorage(AliCDBStorage* storage) {
+// set remote storage from another active storage
+// Remote storage is queried if it is activated and if object was not found in default storage
+
+	fRemoteStorage = storage;
 }
 
 //_____________________________________________________________________________
@@ -372,7 +402,7 @@ AliCDBParam* AliCDBManager::SelectSpecificStorage(const TString& path) {
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, Int_t runNumber, 
+AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, Int_t runNumber,
 	Int_t version, Int_t subVersion) {
 // get an AliCDBEntry object from the database
 
@@ -389,7 +419,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, Int_t runNumber,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path, 
+AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 	const AliCDBRunRange& runRange, Int_t version,
 	Int_t subVersion) {
 // get an AliCDBEntry object from the database!
@@ -398,7 +428,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {	
+AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 // get an AliCDBEntry object from the database
 	
 	if(!fDefaultStorage) {
@@ -415,12 +445,12 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 	
 	// query is not specified if path contains wildcard or run range= [-1,-1]
  	if (!query.IsSpecified()) {
-		AliError(Form("Unspecified query: %s", 
+		AliError(Form("Unspecified query: %s",
 				query.ToString().Data()));
                 return NULL;
 	}
 
-	if(fCache && query.GetFirstRun() != fRun)
+ 	if(fCache && query.GetFirstRun() != fRun)
 		AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
 
 
@@ -438,6 +468,103 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 	// Entry is not in cache -> retrieve it from CDB and cache it!!
 	AliCDBStorage *aStorage=0;
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
+	Bool_t usedDefStorage=kTRUE;
+
+	if(aPar) {
+		aStorage=GetStorage(aPar);
+		TString str = aPar->GetURI();
+		AliDebug(2,Form("Looking into storage: %s",str.Data()));
+		usedDefStorage=kFALSE;
+
+	} else {
+		aStorage=GetDefaultStorage();
+		AliDebug(2,"Looking into default storage");
+	}
+
+	entry = aStorage->Get(query);
+
+	if (!entry && usedDefStorage && IsRemoteStorageSet()) {
+		AliWarning(Form("Object not found in default storage: Looking into remote storage!"));
+		entry = fRemoteStorage->Get(query);
+	}
+
+ 	if(entry && fCache && (query.GetFirstRun() == fRun)){
+		CacheEntry(query.GetPath(), entry);
+	}
+
+  	return entry;
+
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBManager::GetId(const AliCDBPath& path, Int_t runNumber,
+	Int_t version, Int_t subVersion) {
+// get the AliCDBId of the valid object from the database (does not retrieve the object)
+// User must delete returned object!
+
+	if(runNumber < 0){
+		// RunNumber is not specified. Try with fRun
+  		if (fRun < 0){
+   	 		AliError("Run number neither specified in query nor set in AliCDBManager! Use AliCDBManager::SetRun.");
+    			return NULL;
+  		}
+		runNumber = fRun;
+	}
+
+	return GetId(AliCDBId(path, runNumber, runNumber, version, subVersion));
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBManager::GetId(const AliCDBPath& path,
+	const AliCDBRunRange& runRange, Int_t version,
+	Int_t subVersion) {
+// get the AliCDBId of the valid object from the database (does not retrieve the object)
+// User must delete returned object!
+
+	return GetId(AliCDBId(path, runRange, version, subVersion));
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBManager::GetId(const AliCDBId& query) {
+// get the AliCDBId of the valid object from the database (does not retrieve the object)
+// User must delete returned object!
+
+	if(!fDefaultStorage) {
+		AliError("No storage set!");
+		return NULL;
+	}
+
+	// check if query's path and runRange are valid
+	// query is invalid also if version is not specified and subversion is!
+	if (!query.IsValid()) {
+		AliError(Form("Invalid query: %s", query.ToString().Data()));
+		return NULL;
+	}
+	
+	// query is not specified if path contains wildcard or run range= [-1,-1]
+ 	if (!query.IsSpecified()) {
+		AliError(Form("Unspecified query: %s",
+				query.ToString().Data()));
+                return NULL;
+	}
+
+	if(fCache && query.GetFirstRun() != fRun)
+		AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
+
+	AliCDBEntry* entry = 0;
+
+  	// first look into map of cached objects
+  	if(fCache && query.GetFirstRun() == fRun)
+		entry = (AliCDBEntry*) fEntryCache.GetValue(query.GetPath());
+
+  	if(entry) {
+		AliDebug(2, Form("Object %s retrieved from cache !!",query.GetPath().Data()));
+		return dynamic_cast<AliCDBId*> (entry->GetId().Clone());
+	}
+
+	// Entry is not in cache -> retrieve it from CDB and cache it!!
+	AliCDBStorage *aStorage=0;
+	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
 
 	if(aPar) {
 		aStorage=GetStorage(aPar);
@@ -448,16 +575,9 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 		aStorage=GetDefaultStorage();
 		AliDebug(2,"Looking into default storage");
 	}
-			
-	entry = aStorage->Get(query);
-  	if (!entry) return NULL;
 
- 	if(fCache && (query.GetFirstRun() == fRun)){
-		CacheEntry(query.GetPath(), entry);
-	}
+  	return aStorage->GetId(query);
 
-  	return entry;
-		
 }
 
 //_____________________________________________________________________________
@@ -832,6 +952,61 @@ const char* AliCDBManager::GetDataTypeName(DataType type)
 	    case kPrivate: return "Private";
      }
      return 0;
+
+}
+
+//______________________________________________________________________________________________
+void AliCDBManager::InitShortLived()
+{
+  // Init the list of short-lived objects
+  // currently disabled
+
+	fShortLived=0x0;
+
+// 	fShortLived = new TList();
+// 	fShortLived->SetOwner(1);
+//
+// 	fShortLived->Add(new TObjString("EMCAL/Calib/Data"));
+// 
+// 	fShortLived->Add(new TObjString("HMPID/Calib/Nmean"));
+// 	fShortLived->Add(new TObjString("HMPID/Calib/Qthre"));
+// 
+// 	fShortLived->Add(new TObjString("ITS/Calib/CalibSPD"));
+// 
+// 	fShortLived->Add(new TObjString("MUON/Calib/Gains"));
+// 	fShortLived->Add(new TObjString("MUON/Calib/HV"));
+// 	fShortLived->Add(new TObjString("MUON/Calib/Pedestals"));
+// 
+// 	fShortLived->Add(new TObjString("PHOS/Calib/CpvGainPedestals"));
+// 	fShortLived->Add(new TObjString("PHOS/Calib/EmcGainPedestals"));
+// 
+// 	fShortLived->Add(new TObjString("PMD/Calib/Data"));
+// 
+// 	fShortLived->Add(new TObjString("TRD/Calib/ChamberGainFactor"));
+// 	fShortLived->Add(new TObjString("TRD/Calib/LocalGainFactor"));
+// 	fShortLived->Add(new TObjString("TRD/Calib/ChamberT0"));
+// 	fShortLived->Add(new TObjString("TRD/Calib/LocalT0"));
+// 	fShortLived->Add(new TObjString("TRD/Calib/ChamberVdrift"));
+// 	fShortLived->Add(new TObjString("TRD/Calib/LocalVdrift"));
+// 
+// 	fShortLived->Add(new TObjString("ZDC/Calib/Data"));
+
+}
+
+//______________________________________________________________________________________________
+Bool_t AliCDBManager::IsShortLived(const char* path)
+{
+  // returns the name (string) of the data type
+
+	if(!fShortLived) return kFALSE;
+
+	AliCDBPath aPath(path);
+	if(!aPath.IsValid()){
+		AliError(Form("Not a valid path: %s", path));
+		return kFALSE;
+	}
+
+	return fShortLived->Contains(path);
 
 }
 

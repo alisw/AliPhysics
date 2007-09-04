@@ -35,16 +35,14 @@ public:
 	virtual ~AliCDBPath();
 
 
-	const TString& GetPath() const {return fPath;};
-	void  SetPath(const char* path) {fPath=path; InitPath();};
+	const TString& GetPath() const {return fPath;}
+	void  SetPath(const char* path) {fPath=path; InitPath();}
 
-	const TString& GetLevel0() const {return fLevel0;};
-	const TString& GetLevel1() const {return fLevel1;};
-	const TString& GetLevel2() const {return fLevel2;};
+	const char* GetLevel(Int_t i) const;
 
-	Bool_t IsValid() const {return fIsValid;};
+	Bool_t IsValid() const {return fIsValid;}
 
-	Bool_t IsWildcard() const {return fIsWildcard;};
+	Bool_t IsWildcard() const {return fIsWildcard;}
 
 	Bool_t Level0Comprises(const TString& str) const;
 	Bool_t Level1Comprises(const TString& str) const;

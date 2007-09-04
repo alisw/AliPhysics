@@ -26,7 +26,7 @@
 #include <TFile.h>
 #include <TKey.h>
 #include <TROOT.h>
-//#include <TSystem.h>
+#include <TList.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TRegexp.h>
@@ -34,6 +34,7 @@
 #include "AliLog.h"
 #include "AliCDBEntry.h"
 #include "AliCDBGrid.h"
+#include "AliCDBManager.h"
 
 
 ClassImp(AliCDBGrid)
@@ -49,7 +50,7 @@ fSE(se)
 // constructor //
 
 	// if the same Grid is alreay active, skip connection
-	if (!gGrid || fGridUrl != gGrid->GridUrl()  
+	if (!gGrid || fGridUrl != gGrid->GridUrl()
 	     || (( fUser != "" ) && ( fUser != gGrid->GetUser() )) ) {
    		// connection to the Grid
 		AliInfo("Connection to the Grid...");
@@ -74,7 +75,7 @@ fSE(se)
 	if(!gGrid->Cd(fDBFolder.Data(),0)){
 		AliDebug(2,Form("Creating new folder <%s> ...",fDBFolder.Data()));
 		if(!gGrid->Mkdir(fDBFolder.Data(),"",0)){
-			AliError(Form("Cannot create folder <%s> !",fDBFolder.Data())); 
+			AliError(Form("Cannot create folder <%s> !",fDBFolder.Data()));
 		}
 	} else {
 		AliDebug(2,Form("Folder <%s> found",fDBFolder.Data()));
@@ -184,17 +185,16 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 // prepare id (version) of the object that will be stored (called by PutEntry)
 
 	TString initDir(gGrid->Pwd(0));
-	TString pathName= id.GetPath();
 
 	TString dirName(fDBFolder);
 
 	Bool_t dirExist=kFALSE;
 
+
+
 	// go to the path; if directory does not exist, create it
-	TObjArray *arrName=pathName.Tokenize("/");
-	for(int i=0;i<arrName->GetEntries();i++){
-		TString buffer((arrName->At(i))->GetName());
- 		dirName+=buffer; dirName+="/";
+	for(int i=0;i<3;i++){
+ 		dirName+=Form("%s/",id.GetPathLevel(i).Data());
 		dirExist=gGrid->Cd(dirName,0);
 		if (!dirExist) {
 			AliDebug(2,Form("Creating new folder <%s> ...",dirName.Data()));
@@ -203,9 +203,61 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 				gGrid->Cd(initDir.Data());
 			return kFALSE;
 			}
+
+			// if folders are new add tags to them
+			if(i == 1) {
+				// TODO Currently disabled
+				// AliInfo("Tagging level 1 folder with \"ShortLived\" tag");
+				// if(!AddTag(dirName,"ShortLived_try")){
+				//	AliError(Form("Could not tag folder %s !", dirName.Data()));
+				//	if(!gGrid->Rmdir(dirName.Data())){
+				//		AliError(Form("Unexpected: could not remove %s directory!", dirName.Data()));
+				//	}
+				//	return 0;
+				//}
+
+			} else if(i == 2) {
+				AliInfo("Tagging level 2 folder with \"CDB\" and \"CDB_MD\" tag");
+				if(!AddTag(dirName,"CDB")){
+					AliError(Form("Could not tag folder %s !", dirName.Data()));
+					if(!gGrid->Rmdir(dirName.Data())){
+						AliError(Form("Unexpected: could not remove %s directory!", dirName.Data()));
+					}
+					return 0;
+				}
+				if(!AddTag(dirName,"CDB_MD")){
+					AliError(Form("Could not tag folder %s !", dirName.Data()));
+					if(!gGrid->Rmdir(dirName.Data())){
+						AliError(Form("Unexpected: could not remove %s directory!", dirName.Data()));
+					}
+					return 0;
+				}
+
+				// add short lived tag!
+				// TODO Currently disabled
+				// TString path=id.GetPath();
+				// if(AliCDBManager::Instance()->IsShortLived(path.Data())) {
+				//	AliInfo(Form("Tagging %s as short lived", dirName.Data()));
+				//	if(!TagShortLived(dirName, kTRUE)){
+				//		AliError(Form("Could not tag folder %s !", dirName.Data()));
+				//		if(!gGrid->Rmdir(dirName.Data())){
+				//			AliError(Form("Unexpected: could not remove %s directory!", dirName.Data()));
+				//		}
+				//		return 0;
+				//	}
+				// } else {
+				//	AliInfo(Form("Tagging %s as long lived", dirName.Data()));
+				//	if(!TagShortLived(dirName, kFALSE)){
+				//		AliError(Form("Could not tag folder %s !", dirName.Data()));
+				//		if(!gGrid->Rmdir(dirName.Data())){
+				//			AliError(Form("Unexpected: could not remove %s directory!", dirName.Data()));
+				//		}
+				//		return 0;
+				//	}
+				// }
+			}
 		}
 	}
-	delete arrName;
 	gGrid->Cd(initDir,0);
 
 	TString filename;
@@ -252,7 +304,7 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
 	if(validFileIds.GetEntriesFast() < 1) {
 		return NULL;
 	} else if (validFileIds.GetEntriesFast() == 1) {
-		return dynamic_cast<AliCDBId*> (validFileIds.At(0));
+		return dynamic_cast<AliCDBId*> (validFileIds.At(0)->Clone());
 	}
 
 	TIter iter(&validFileIds);
@@ -268,7 +320,7 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
 		if (!query.HasVersion()){ // look for highest version
 			if(result && result->GetVersion() > anIdPtr->GetVersion()) continue;
 			if(result && result->GetVersion() == anIdPtr->GetVersion()) {
-				AliDebug(2,Form("More than one object valid for run %d, version %d!",
+				AliError(Form("More than one object valid for run %d, version %d!",
 					query.GetFirstRun(), anIdPtr->GetVersion()));
 				return NULL;
 			}
@@ -276,7 +328,7 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
 		} else { // look for specified version
 			if(query.GetVersion() != anIdPtr->GetVersion()) continue;
 			if(result && result->GetVersion() == anIdPtr->GetVersion()){
-				AliDebug(2,Form("More than one object valid for run %d, version %d!",
+				AliError(Form("More than one object valid for run %d, version %d!",
 					query.GetFirstRun(), anIdPtr->GetVersion()));
 				return NULL;
 			}
@@ -285,13 +337,13 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
 
 	}
 
-
-	return result;
+	return dynamic_cast<AliCDBId*> (result->Clone());
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
-// get AliCDBEntry from the database
+AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
+// get AliCDBId from the database
+// User must delete returned object
 
 	AliCDBId* dataId=0;
 
@@ -337,16 +389,27 @@ AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
 		dataId = GetId(validFileIds, selectedId);
 	}
 
+	return dataId;
+}
+
+//_____________________________________________________________________________
+AliCDBEntry* AliCDBGrid::GetEntry(const AliCDBId& queryId) {
+// get AliCDBEntry from the database
+
+	AliCDBId* dataId = GetEntryId(queryId);
+
 	if (!dataId) return NULL;
 
 	TString filename;
 	if (!IdToFilename(*dataId, filename)) {
 		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
+		delete dataId;
 		return NULL;
 	}
 
 	AliCDBEntry* anEntry = GetEntryFromFile(filename, dataId);
 
+	delete dataId;
 	return anEntry;
 }
 
@@ -476,7 +539,7 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
 		} else {
 			dataId = GetId(validFileIds, thisId);
 		}
-		if(dataId) selectedIds.Add(dataId->Clone());
+		if(dataId) selectedIds.Add(dataId);
 	}
 
 	delete iter; iter=0;
@@ -520,11 +583,6 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	TString folderToTag = Form("%s%s",
 					fDBFolder.Data(),
 					id.GetPath().Data());
-
-	// add CDB and CDB_MD tag to folder
-	// TODO how to check that folder has already tags?
-	AddTag(folderToTag,"CDB");
-	AddTag(folderToTag,"CDB_MD");
 
 	TDirectory* saveDir = gDirectory;
 
@@ -598,9 +656,9 @@ Bool_t AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
 					id->GetLastRun(),
 					id->GetVersion());
 	TString addTagValue3 = Form("path_level_0=\"%s\" path_level_1=\"%s\" path_level_2=\"%s\"",
-					id->GetLevel0().Data(),
-					id->GetLevel1().Data(),
-					id->GetLevel2().Data());
+					id->GetPathLevel(0).Data(),
+					id->GetPathLevel(1).Data(),
+					id->GetPathLevel(2).Data());
 	TString addTagValue = Form("%s%s%s",
 					addTagValue1.Data(),
 					addTagValue2.Data(),
@@ -613,6 +671,28 @@ Bool_t AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
 	if(resCode[0] != '1') {
 		AliError(Form("Couldn't add CDB tag value to file %s !",
 						filename.Data()));
+		result = kFALSE;
+	} else {
+		AliInfo("Object successfully tagged.");
+		result = kTRUE;
+	}
+	delete res;
+	return result;
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBGrid::TagShortLived(TString& filename, Bool_t value){
+// tag folder with ShortLived tag
+
+	TString addTagValue = Form("addTagValue %s ShortLived_try value=%d", filename.Data(), value);
+
+	Bool_t result = kFALSE;
+	AliDebug(2, Form("Tagging file. Tag command: %s", addTagValue.Data()));
+	TGridResult* res = gGrid->Command(addTagValue.Data());
+	const char* resCode = res->GetKey(0,"__result__"); // '1' if success
+	if(resCode[0] != '1') {
+		AliError(Form("Couldn't add ShortLived tag value to file %s !", filename.Data()));
 		result = kFALSE;
 	} else {
 		AliInfo("Object successfully tagged.");
@@ -778,9 +858,6 @@ void AliCDBGrid::MakeQueryFilter(Int_t firstRun, Int_t lastRun,
 Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 // get last version found in the database valid for run and path
 
-	TObjArray validFileIds;
-	validFileIds.SetOwner(1);
-
 	AliCDBPath aCDBPath(path);
 	if(!aCDBPath.IsValid() || aCDBPath.IsWildcard()) {
 		AliError(Form("Invalid path in request: %s", path));
@@ -796,12 +873,17 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 					run, path));
 		dataId = GetId(fValidFileIds, query);
 		if (!dataId) return -1;
-		return dataId->GetVersion();
+		Int_t version = dataId->GetVersion();
+		delete dataId;
+		return version;
 
 	}
 	// List of files valid for reqested run was not loaded. Looking directly into CDB
 	AliDebug(2, Form("List of files valid for run %d and for path %s was not loaded. Looking directly into CDB!",
 				run, path));
+
+	TObjArray validFileIds;
+	validFileIds.SetOwner(1);
 
 	TString filter;
 	MakeQueryFilter(run, run, 0, filter);
@@ -822,7 +904,9 @@ Int_t AliCDBGrid::GetLatestVersion(const char* path, Int_t run){
 	dataId = GetId(validFileIds, query);
 	if (!dataId) return -1;
 
-	return dataId->GetVersion();
+	Int_t version = dataId->GetVersion();
+	delete dataId;
+	return version;
 
 }
 
@@ -867,13 +951,13 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 
  	TString gridUrl 	= "alien://";
 	TString user 		= "";
-	TString dbFolder 	= "DBGrid";
+	TString dbFolder 	= "";
 	TString se		= "default";
 
 	TObjArray *arr = buffer.Tokenize('?');
 	TIter iter(arr);
 	TObjString *str = 0;
-	
+
 	while((str = (TObjString*) iter.Next())){
 		TString entry(str->String());
 		Int_t indeq = entry.Index('=');
@@ -912,6 +996,11 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	AliDebug(2, Form("user:	%s",user.Data()));
 	AliDebug(2, Form("dbFolder:	%s",dbFolder.Data()));
 	AliDebug(2, Form("s.e.:	%s",se.Data()));
+
+	if(dbFolder == ""){
+		AliError("DBFolder must be specified!");
+		return NULL;
+	}
 
 	return new AliCDBGridParam(gridUrl.Data(), user.Data(), dbFolder.Data(), se.Data());
 }

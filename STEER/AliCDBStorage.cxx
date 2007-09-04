@@ -203,7 +203,7 @@ void AliCDBStorage::PrintSelectionList(){
 //_____________________________________________________________________________
 AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 // get an AliCDBEntry object from the database
-	
+
 	// check if query's path and runRange are valid
 	// query is invalid also if version is not specified and subversion is!
 	if (!query.IsValid()) {
@@ -211,9 +211,9 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 		return NULL;
 	}
 
-	// query is not specified if path contains wildcard or runrange = [-1,-1] 
+	// query is not specified if path contains wildcard or runrange = [-1,-1]
 	if (!query.IsSpecified()) {
-		AliError(Form("Unspecified query: %s", 
+		AliError(Form("Unspecified query: %s",
 				query.ToString().Data()));
                 return NULL;
 	}
@@ -245,7 +245,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path, Int_t runNumber, 
+AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path, Int_t runNumber,
 	Int_t version, Int_t subVersion) {
 // get an AliCDBEntry object from the database
 
@@ -253,7 +253,7 @@ AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path, Int_t runNumber,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path, 
+AliCDBEntry* AliCDBStorage::Get(const AliCDBPath& path,
 	const AliCDBRunRange& runRange, Int_t version,
 	Int_t subVersion) {
 // get an AliCDBEntry object from the database
@@ -325,6 +325,45 @@ TList* AliCDBStorage::GetAll(const AliCDBPath& path,
 	return GetAll(AliCDBId(path, runRange, version, subVersion));
 }
 
+//_____________________________________________________________________________
+AliCDBId* AliCDBStorage::GetId(const AliCDBId& query) {
+// get the Id of the valid object from the database (does not open the file)
+
+	// check if query's path and runRange are valid
+	// query is invalid also if version is not specified and subversion is!
+	if (!query.IsValid()) {
+		AliError(Form("Invalid query: %s", query.ToString().Data()));
+		return NULL;
+	}
+
+	// query is not specified if path contains wildcard or runrange = [-1,-1]
+	if (!query.IsSpecified()) {
+		AliError(Form("Unspecified query: %s",
+				query.ToString().Data()));
+                return NULL;
+	}
+
+	AliCDBId* id = GetEntryId(query);
+
+	return id;
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBStorage::GetId(const AliCDBPath& path, Int_t runNumber,
+	Int_t version, Int_t subVersion) {
+// get the Id of the valid object from the database (does not open the file)
+
+	return GetId(AliCDBId(path, runNumber, runNumber, version, subVersion));
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBStorage::GetId(const AliCDBPath& path,
+	const AliCDBRunRange& runRange, Int_t version,
+	Int_t subVersion) {
+// get the Id of the valid object from the database (does not open the file)
+
+	return GetId(AliCDBId(path, runRange, version, subVersion));
+}
 
 //_____________________________________________________________________________
 Bool_t AliCDBStorage::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData, AliCDBManager::DataType type) {

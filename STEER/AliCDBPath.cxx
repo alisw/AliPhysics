@@ -251,7 +251,27 @@ Bool_t AliCDBPath::Level2Comprises(const TString& str) const {
 Bool_t AliCDBPath::Comprises(const AliCDBPath& other) const {
 // check if path is wildcard and comprises other
 
-	return Level0Comprises(other.fLevel0) 
+	return Level0Comprises(other.fLevel0)
 		&& Level1Comprises(other.fLevel1)
 		&& Level2Comprises(other.fLevel2);
+}
+
+//_____________________________________________________________________________
+const char* AliCDBPath::GetLevel(Int_t i) const {
+// return level i of the path
+
+	switch (i) {
+		case 0:
+			return fLevel0.Data();
+			break;
+		case 1:
+			return fLevel1.Data();
+			break;
+		case 2:
+			return fLevel2.Data();
+			break;
+		default:
+			return 0;
+	}
+
 }

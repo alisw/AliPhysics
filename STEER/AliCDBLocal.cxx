@@ -145,7 +145,7 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 	}
 
 	const char* filename;
-	AliCDBRunRange aRunRange; // the runRange got from filename 
+	AliCDBRunRange aRunRange; // the runRange got from filename
  	AliCDBRunRange lastRunRange(-1,-1); // highest runRange found
 	Int_t aVersion, aSubVersion; // the version subVersion got from filename
 	Int_t lastVersion = 0, lastSubVersion = -1; // highest version and subVersion found
@@ -232,9 +232,138 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
 	return kTRUE;
 }
 
+// //_____________________________________________________________________________
+// Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
+// // look for filename matching query (called by GetEntry)
+// 
+// 	TString dirName = Form("%s/%s", fBaseDirectory.Data(), query.GetPath().Data());
+// 
+// 	void* dirPtr = gSystem->OpenDirectory(dirName);
+// 	if (!dirPtr) {
+//    	 	AliDebug(2,Form("Directory <%s> not found", (query.GetPath()).Data()));
+//    	 	AliDebug(2,Form("in DB folder %s", fBaseDirectory.Data()));
+// 		return kFALSE;
+// 	}
+// 
+// 	const char* filename;
+// 
+// 	AliCDBRunRange aRunRange; // the runRange got from filename
+// 	Int_t aVersion, aSubVersion; // the version and subVersion got from filename
+// 
+// 	if (!query.HasVersion()) { // neither version and subversion specified -> look for highest version and subVersion
+// 
+// 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
+// 
+// 			TString aString(filename);
+// 			if (aString == "." || aString == "..") continue;
+// 
+// 			if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
+//                         // aRunRange, aVersion, aSubVersion filled from filename
+// 
+// 			if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
+// 			// aRunRange contains requested run!
+// 
+// 			if (result.GetVersion() < aVersion) {
+// 				result.SetVersion(aVersion);
+// 				result.SetSubVersion(aSubVersion);
+// 
+// 				result.SetFirstRun(
+// 					aRunRange.GetFirstRun());
+// 				result.SetLastRun(
+// 					aRunRange.GetLastRun());
+// 
+// 			} else if (result.GetVersion() == aVersion
+// 				&& result.GetSubVersion()
+// 					< aSubVersion) {
+// 
+// 				result.SetSubVersion(aSubVersion);
+// 
+//                         	result.SetFirstRun(
+// 					aRunRange.GetFirstRun());
+//                         	result.SetLastRun(
+// 					aRunRange.GetLastRun());
+// 			} else if (result.GetVersion() == aVersion
+// 				&& result.GetSubVersion() == aSubVersion){
+//               			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!",
+// 		       			query.GetFirstRun(), aVersion, aSubVersion));
+// 				gSystem->FreeDirectory(dirPtr);
+// 	      			return kFALSE;
+// 				}
+// 		}
+// 
+// 	} else if (!query.HasSubVersion()) { // version specified but not subversion -> look for highest subVersion
+// 
+// 		result.SetVersion(query.GetVersion());
+// 
+// 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
+// 
+//                         TString aString(filename);
+//                         if (aString == "." || aString == "..") continue;
+// 
+// 			if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
+//                         // aRunRange, aVersion, aSubVersion filled from filename
+// 
+//                         if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue; 
+// 			// aRunRange contains requested run!
+// 
+// 			if(query.GetVersion() != aVersion) continue;
+// 			// aVersion is requested version!
+// 
+// 	 		if(result.GetSubVersion() == aSubVersion){
+//               			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!",
+// 		       			query.GetFirstRun(), aVersion, aSubVersion));
+// 				gSystem->FreeDirectory(dirPtr);
+// 	     			return kFALSE; 
+// 	 		}
+// 			if( result.GetSubVersion() < aSubVersion) {
+// 
+//                                 result.SetSubVersion(aSubVersion);
+// 
+//                                 result.SetFirstRun(
+// 					aRunRange.GetFirstRun());
+//                                 result.SetLastRun(
+// 					aRunRange.GetLastRun());
+// 			} 
+//                 }
+// 
+// 	} else { // both version and subversion specified
+// 
+// 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
+// 
+//                         TString aString(filename);
+//                         if (aString == "." || aString == "..") continue;
+// 
+//                         if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
+//                         // aRunRange, aVersion, aSubVersion filled from filename
+// 
+// 			if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
+// 			// aRunRange contains requested run!
+// 
+// 			if(query.GetVersion() != aVersion || query.GetSubVersion() != aSubVersion) continue;
+// 			// aVersion and aSubVersion are requested version and subVersion!
+// 
+// 			if(result.GetVersion() == aVersion && result.GetSubVersion() == aSubVersion){
+//               			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!",
+// 		       			query.GetFirstRun(), aVersion, aSubVersion));
+// 				gSystem->FreeDirectory(dirPtr);
+// 	     			return kFALSE;
+// 			}
+// 			result.SetVersion(aVersion);
+// 		        result.SetSubVersion(aSubVersion);
+// 			result.SetFirstRun(aRunRange.GetFirstRun());
+// 			result.SetLastRun(aRunRange.GetLastRun());
+// 
+// 		}
+// 	}
+// 
+// 	gSystem->FreeDirectory(dirPtr);
+// 
+// 	return kTRUE;
+// }
+
 //_____________________________________________________________________________
-Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
-// look for filename matching query (called by GetEntry)
+AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
+// look for filename matching query (called by GetEntryId)
 
 	TString dirName = Form("%s/%s", fBaseDirectory.Data(), query.GetPath().Data());
 
@@ -242,10 +371,12 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 	if (!dirPtr) {
    	 	AliDebug(2,Form("Directory <%s> not found", (query.GetPath()).Data()));
    	 	AliDebug(2,Form("in DB folder %s", fBaseDirectory.Data()));
-		return kFALSE;
+		return NULL;
 	}
 
 	const char* filename;
+	AliCDBId *result = new AliCDBId();
+	result->SetPath(query.GetPath());
 
 	AliCDBRunRange aRunRange; // the runRange got from filename
 	Int_t aVersion, aSubVersion; // the version and subVersion got from filename
@@ -263,157 +394,154 @@ Bool_t AliCDBLocal::GetId(const AliCDBId& query, AliCDBId& result) {
 			if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
 			// aRunRange contains requested run!
 
-			if (result.GetVersion() < aVersion) {
-				result.SetVersion(aVersion);
-				result.SetSubVersion(aSubVersion);
+			if (result->GetVersion() < aVersion) {
+				result->SetVersion(aVersion);
+				result->SetSubVersion(aSubVersion);
 
-				result.SetFirstRun(
+				result->SetFirstRun(
 					aRunRange.GetFirstRun());
-				result.SetLastRun(
+				result->SetLastRun(
 					aRunRange.GetLastRun());
 
-			} else if (result.GetVersion() == aVersion 
-				&& result.GetSubVersion() 
+			} else if (result->GetVersion() == aVersion
+				&& result->GetSubVersion()
 					< aSubVersion) {
 
-				result.SetSubVersion(aSubVersion);
+				result->SetSubVersion(aSubVersion);
 
-                        	result.SetFirstRun(
+                        	result->SetFirstRun(
 					aRunRange.GetFirstRun());
-                        	result.SetLastRun(
+                        	result->SetLastRun(
 					aRunRange.GetLastRun());
-			} else if (result.GetVersion() == aVersion
-				&& result.GetSubVersion() == aSubVersion){
-              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
+			} else if (result->GetVersion() == aVersion
+				&& result->GetSubVersion() == aSubVersion){
+              			AliError(Form("More than one object valid for run %d, version %d_%d!",
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 				gSystem->FreeDirectory(dirPtr);
-	      			return kFALSE; 
+				delete result;
+	      			return NULL;
 				}
 		}
-		
+
 	} else if (!query.HasSubVersion()) { // version specified but not subversion -> look for highest subVersion
 
-		result.SetVersion(query.GetVersion());
+		result->SetVersion(query.GetVersion());
 
 		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
 
                         TString aString(filename);
                         if (aString == "." || aString == "..") continue;
 
-			if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;       
+			if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
                         // aRunRange, aVersion, aSubVersion filled from filename
 
                         if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue; 
 			// aRunRange contains requested run!
-			
+
 			if(query.GetVersion() != aVersion) continue;
 			// aVersion is requested version!
-			
-	 		if(result.GetSubVersion() == aSubVersion){
-              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
+
+	 		if(result->GetSubVersion() == aSubVersion){
+              			AliError(Form("More than one object valid for run %d, version %d_%d!",
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 				gSystem->FreeDirectory(dirPtr);
-	     			return kFALSE; 
+				delete result;
+	     			return NULL;
 	 		}
-			if( result.GetSubVersion() < aSubVersion) {
+			if( result->GetSubVersion() < aSubVersion) {
 
-                                result.SetSubVersion(aSubVersion);
+                                result->SetSubVersion(aSubVersion);
 
-                                result.SetFirstRun(
+                                result->SetFirstRun(
 					aRunRange.GetFirstRun());
-                                result.SetLastRun(
+                                result->SetLastRun(
 					aRunRange.GetLastRun());
 			} 
                 }
 
 	} else { // both version and subversion specified
 
-		while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
+		//AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
+        //Bool_t result;
+	while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
 
                         TString aString(filename);
                         if (aString == "." || aString == "..") continue;
 
                         if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
                         // aRunRange, aVersion, aSubVersion filled from filename
- 			
+
 			if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
 			// aRunRange contains requested run!
 
-			if(query.GetVersion() != aVersion || query.GetSubVersion() != aSubVersion) continue; 
+			if(query.GetVersion() != aVersion || query.GetSubVersion() != aSubVersion) continue;
 			// aVersion and aSubVersion are requested version and subVersion!
-			
-			if(result.GetVersion() == aVersion && result.GetSubVersion() == aSubVersion){
-              			AliDebug(2,Form("More than one object valid for run %d, version %d_%d!", 
+
+			if(result->GetVersion() == aVersion && result->GetSubVersion() == aSubVersion){
+              			AliError(Form("More than one object valid for run %d, version %d_%d!",
 		       			query.GetFirstRun(), aVersion, aSubVersion));
 				gSystem->FreeDirectory(dirPtr);
-	     			return kFALSE; 
+				delete result;
+	     			return NULL;
 			}
-			result.SetVersion(aVersion);
-		        result.SetSubVersion(aSubVersion);
-			result.SetFirstRun(aRunRange.GetFirstRun());
-			result.SetLastRun(aRunRange.GetLastRun());
+			result->SetVersion(aVersion);
+		        result->SetSubVersion(aSubVersion);
+			result->SetFirstRun(aRunRange.GetFirstRun());
+			result->SetLastRun(aRunRange.GetLastRun());
 			
 		}
 	}
 
 	gSystem->FreeDirectory(dirPtr);
 
-	return kTRUE;
+	return result;
 }
 
 //_____________________________________________________________________________
 AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 // get AliCDBEntry from the database
 
-	AliCDBId dataId(queryId.GetAliCDBPath(), -1, -1, -1, -1);
-        Bool_t result;
+	AliCDBId* dataId = GetEntryId(queryId);
 
-	// look for a filename matching query requests (path, runRange, version, subVersion)
-	if (!queryId.HasVersion()) {
-		// if version is not specified, first check the selection criteria list
-		AliCDBId selectedId(queryId);
-		GetSelection(&selectedId);
-		result = GetId(selectedId, dataId);
-	} else {
-		result = GetId(queryId, dataId);
-	}
-
-	if (!result || !dataId.IsSpecified()) return NULL;
+	if (!dataId || !dataId->IsSpecified()) return NULL;
 
 	TString filename;
-	if (!IdToFilename(dataId, filename)) {
+	if (!IdToFilename(*dataId, filename)) {
 
 		AliDebug(2,Form("Bad data ID encountered! Subnormal error!"));
-                return NULL;
+		delete dataId;
+		return NULL;
 	}
 
 	TFile file(filename, "READ"); // open file
 	if (!file.IsOpen()) {
 		AliDebug(2,Form("Can't open file <%s>!", filename.Data()));
-                return NULL;
+		delete dataId;
+		return NULL;
 	}
 
 	// get the only AliCDBEntry object from the file
 	// the object in the file is an AliCDBEntry entry named "AliCDBEntry"
-	
+
 	AliCDBEntry* anEntry = dynamic_cast<AliCDBEntry*> (file.Get("AliCDBEntry"));
 	if (!anEntry) {
 		AliDebug(2,Form("Bad storage data: No AliCDBEntry in file!"));
 		file.Close();
+		delete dataId;
 		return NULL;
 	}
 
- 	AliCDBId entryId = anEntry->GetId();
+ 	AliCDBId& entryId = anEntry->GetId();
 
 	// The object's Id are not reset during storage
 	// If object's Id runRange or version do not match with filename,
 	// it means that someone renamed file by hand. In this case a warning msg is issued.
 
 	anEntry-> SetLastStorage("local");
- 
- 	if(!entryId.IsEqual(&dataId)){
+
+ 	if(!entryId.IsEqual(dataId)){
 		AliWarning(Form("Mismatch between file name and object's Id!"));
-		AliWarning(Form("File name: %s", dataId.ToString().Data()));
+		AliWarning(Form("File name: %s", dataId->ToString().Data()));
 		AliWarning(Form("Object's Id: %s", entryId.ToString().Data()));
         }
 
@@ -422,7 +550,32 @@ AliCDBEntry* AliCDBLocal::GetEntry(const AliCDBId& queryId) {
 
 	// close file, return retieved entry
 	file.Close();
+	delete dataId;
 	return anEntry;
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBLocal::GetEntryId(const AliCDBId& queryId) {
+// get AliCDBId from the database
+
+	AliCDBId* dataId = 0;
+
+	// look for a filename matching query requests (path, runRange, version, subVersion)
+	if (!queryId.HasVersion()) {
+		// if version is not specified, first check the selection criteria list
+		AliCDBId selectedId(queryId);
+		GetSelection(&selectedId);
+		dataId = GetId(selectedId);
+	} else {
+		dataId = GetId(queryId);
+	}
+
+	if (dataId && !dataId->IsSpecified()) {
+		delete dataId;
+		return NULL;
+	}
+
+	return dataId;
 }
 
 //_____________________________________________________________________________
@@ -707,11 +860,14 @@ Int_t AliCDBLocal::GetLatestVersion(const char* path, Int_t run){
 	}
 
 	AliCDBId query(path, run, run, -1, -1);
-	AliCDBId dataId;
+	AliCDBId* dataId = GetId(query);
 
-	GetId(query,dataId);
+	if(!dataId) return -1;
 
-	return dataId.GetVersion();
+	Int_t version = dataId->GetVersion();
+	delete dataId;
+
+	return version;
 
 }
 
@@ -726,11 +882,14 @@ Int_t AliCDBLocal::GetLatestSubVersion(const char* path, Int_t run, Int_t versio
 	}
 
 	AliCDBId query(path, run, run, version, -1);
-	AliCDBId dataId;
+	AliCDBId *dataId = GetId(query);
 
-	GetId(query,dataId);
+	if(!dataId) return -1;
 
-	return dataId.GetSubVersion();
+	Int_t subVersion = dataId->GetSubVersion();
+
+	delete dataId;
+	return subVersion;
 
 }
 
@@ -767,7 +926,7 @@ AliCDBParam* AliCDBLocalFactory::CreateParameter(const char* dbString) {
 		pathname.Prepend(TString(gSystem->WorkingDirectory()) + '/');
 	}
 
-	return new AliCDBLocalParam(pathname);       
+	return new AliCDBLocalParam(pathname);
 }
 
 //_____________________________________________________________________________

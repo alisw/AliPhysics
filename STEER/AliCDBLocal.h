@@ -29,6 +29,7 @@ public:
 protected:
 
 	virtual AliCDBEntry*    GetEntry(const AliCDBId& queryId);
+	virtual AliCDBId* 	GetEntryId(const AliCDBId& queryId);
         virtual TList* 		GetEntries(const AliCDBId& queryId);
         virtual Bool_t 		PutEntry(AliCDBEntry* entry);
 	virtual TList* 		GetIdListFromFile(const char* fileName);
@@ -44,7 +45,8 @@ private:
 			Int_t& version, Int_t& subVersion);
 
 	Bool_t PrepareId(AliCDBId& id);
-	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
+//	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
+	AliCDBId* GetId(const AliCDBId& query);
 
 	virtual void QueryValidFiles();
 

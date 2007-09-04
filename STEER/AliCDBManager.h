@@ -45,10 +45,18 @@ class AliCDBManager: public TObject {
 	void SetDefaultStorage(const char* dbString);
 	void SetDefaultStorage(const AliCDBParam* param);
 	void SetDefaultStorage(AliCDBStorage *storage);
-	
+
 	Bool_t IsDefaultStorageSet() const {return fDefaultStorage != 0;}
 	AliCDBStorage* GetDefaultStorage() const {return fDefaultStorage;}
 	void UnsetDefaultStorage() {fDefaultStorage = 0x0;}
+
+	void SetRemoteStorage(const char* dbString);
+	void SetRemoteStorage(const AliCDBParam* param);
+	void SetRemoteStorage(AliCDBStorage *storage);
+
+	Bool_t IsRemoteStorageSet() const {return fRemoteStorage != 0;}
+	AliCDBStorage* GetRemoteStorage() const {return fRemoteStorage;}
+	void UnsetRemoteStorage() {fRemoteStorage = 0x0;}
 
 	void SetSpecificStorage(const char* calibType, const char* dbString);
 	void SetSpecificStorage(const char* calibType, AliCDBParam* param);
@@ -71,6 +79,12 @@ class AliCDBManager: public TObject {
 	AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
 
+	AliCDBId* GetId(const AliCDBId& query);
+	AliCDBId* GetId(const AliCDBPath& path, Int_t runNumber=-1,
+				Int_t version = -1, Int_t subVersion = -1);
+	AliCDBId* GetId(const AliCDBPath& path, const AliCDBRunRange& runRange,
+				 Int_t version = -1, Int_t subVersion = -1);
+
 	TList* GetAll(const AliCDBId& query);
 	TList* GetAll(const AliCDBPath& path, Int_t runNumber=-1,
 				Int_t version = -1, Int_t subVersion = -1);
@@ -87,8 +101,6 @@ class AliCDBManager: public TObject {
 	void SetRun(Int_t run);
 	Int_t GetRun() const {return fRun;}
 
-	// AliCDBEntry* Get(const char* path);
-
 	void DestroyActiveStorages();
 	void DestroyActiveStorage(AliCDBStorage* storage);
 
@@ -101,6 +113,8 @@ class AliCDBManager: public TObject {
 
   	void ClearCache();
   	void UnloadFromCache(const char* path);
+
+	Bool_t IsShortLived(const char* path);
 
 	static AliCDBManager* Instance();
 
@@ -126,18 +140,23 @@ class AliCDBManager: public TObject {
 	
 
 	void Init();
-	
+	void InitShortLived();
+
+
 	TList fFactories; 		//! list of registered storage factories
 	TMap fActiveStorages;		//! list of active storages
 	TMap fSpecificStorages;         //! list of detector-specific storages
 
 	AliCDBStorage *fDefaultStorage;	//! pointer to default storage
+	AliCDBStorage *fRemoteStorage;	//! pointer to remote storage
 	AliCDBStorage *fDrainStorage;	//! pointer to drain storage
 
   	TMap fEntryCache;    	//! cache of the retrieved objects
 
 	Bool_t fCache;			//! The cache flag
   	Int_t fRun;			//! The run number
+
+	TList* fShortLived; 	//! List of short lived objects
 
 	ClassDef(AliCDBManager, 0);
 };
