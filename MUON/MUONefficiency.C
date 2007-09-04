@@ -462,9 +462,9 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 	      
 	      //trigger info 
 	      if (ResType == 553)
-		ptTrig = 0x20;// mask for Hpt unlike sign pair
+		ptTrig = 0x08;// mask for Hpt unlike sign pair
 	      else if (ResType == 443)
-		ptTrig = 0x10;// mask for Lpt unlike sign pair
+		ptTrig = 0x04;// mask for Lpt unlike sign pair
 	      
 	      
 	      if (esd->GetTriggerMask() &  ptTrig) NbTrigger++;
