@@ -39,6 +39,7 @@ public:
   Int_t MakeHVStore(TMap& aliasMap, Bool_t defaultValues);
   Int_t MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues);
   Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues);
+  Int_t MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file);
   Int_t MakeGainStore(AliMUONVStore& gainStore, Bool_t defaultValues);
   
   Int_t MakeLocalTriggerMaskStore(AliMUONVStore& ltm) const;
@@ -55,6 +56,8 @@ public:
 
   void WriteToCDB(const char* calibpath, TObject* object, 
                   Int_t startRun, Int_t endRun, Bool_t defaultValues);
+  void WriteToCDB(const char* calibpath, TObject* object, 
+                  Int_t startRun, Int_t endRun, const char* filename);
 
   void WriteTrigger(Int_t startRun=0,Int_t endRun=ALIMUONCDBINFINITY);
   void WriteTracker(Bool_t defaultValues=kTRUE, Int_t startRun=0,Int_t endRun=ALIMUONCDBINFINITY);
@@ -64,6 +67,7 @@ public:
   void WritePedestals(Bool_t defaultValues, Int_t startRun, Int_t endRun=ALIMUONCDBINFINITY);
   void WriteGains(Bool_t defaultValues, Int_t startRun, Int_t endRun=ALIMUONCDBINFINITY);
   void WriteCapacitances(Bool_t defaultValues, Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
+  void WriteCapacitances(const char* file, Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
   
   void WriteLocalTriggerMasks(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);
   void WriteRegionalTriggerMasks(Int_t startRun=0, Int_t endRun=ALIMUONCDBINFINITY);

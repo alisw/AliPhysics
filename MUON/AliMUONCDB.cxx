@@ -47,6 +47,7 @@
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMpCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
@@ -170,6 +171,9 @@ AliMUONCDB::ManuList()
   if (!fManuList) 
   {
     AliInfo("Generating ManuList...");
+    AliCDBManager::Instance()->SetDefaultStorage(fCDBPath);
+    AliMpCDB::LoadMpSegmentation();
+    AliMpCDB::LoadDDLStore();
     fManuList = AliMpManuList::ManuList();
     AliInfo("Manu List generated.");
   }
@@ -451,6 +455,56 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
 }
 
 //_____________________________________________________________________________
+Int_t
+AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file)
+{
+  ifstream in(gSystem->ExpandPathName(file));
+  if (in.bad()) return 0;
+  
+  Int_t ngenerated(0);
+  
+  char line[1024];
+  Int_t serialNumber(-1);
+  AliMUONVCalibParam* param(0x0);
+  
+  while ( in.getline(line,1024,'\n') )
+  {
+    if ( isdigit(line[0]) ) 
+    {
+      serialNumber = atoi(line);
+      param = static_cast<AliMUONVCalibParam*>(capaStore.FindObject(serialNumber));
+      if (param)
+      {
+        AliError(Form("serialNumber %d appears several times !",serialNumber));
+        capaStore.Clear();
+        break;
+      }
+      param = new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),serialNumber,0,1.0);
+      Bool_t ok = capaStore.Add(param);
+      if (!ok)
+      {
+        AliError(Form("Could not set serialNumber=%d",serialNumber));
+        continue;
+      }      
+      continue;
+    }
+    Int_t channel;
+    Float_t capaValue;
+    Float_t injectionGain;
+    sscanf(line,"%d %f %f",&channel,&capaValue,&injectionGain);
+    AliDebug(1,Form("SerialNumber %10d Channel %3d Capa %f injectionGain %f",
+                    serialNumber,channel,capaValue,injectionGain));
+    param->SetValueAsFloat(channel,0,capaValue);
+    param->SetValueAsFloat(channel,1,injectionGain);
+    ++ngenerated;
+  }
+  
+  in.close();
+  
+  return ngenerated;
+}
+
+//_____________________________________________________________________________
 Int_t 
 AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
 {
@@ -466,8 +520,10 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
   Int_t nmanus(0);
   Int_t nmanusOK(0); // manus for which we got the serial number
     
-  const Float_t kCapaMean(1.0);
-  const Float_t kCapaSigma(0.5);
+  const Float_t kCapaMean(0.3);
+  const Float_t kCapaSigma(0.1);
+  const Float_t kInjectionGainMean(3);
+  const Float_t kInjectionGainSigma(1);
   
   while ( ( p = (AliMpIntPair*)next() ) )
   {
@@ -490,7 +546,7 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
     
     if (!capa)
     {
-      capa = new AliMUONCalibParamNF(1,AliMpConstants::ManuNofChannels(),serialNumber,0,1.0);
+      capa = new AliMUONCalibParamNF(2,AliMpConstants::ManuNofChannels(),serialNumber,0,1.0);
       Bool_t ok = capaStore.Add(capa);
       if (!ok)
       {
@@ -506,16 +562,20 @@ AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, Bool_t defaultValues)
       ++nchannels;
       
       Float_t capaValue;
+      Float_t injectionGain;
       
       if ( defaultValues ) 
       {
         capaValue = 1.0;
+        injectionGain = 1.0;
       }
       else
       {
         capaValue = GetRandom(kCapaMean,kCapaSigma,kTRUE);
+        injectionGain = GetRandom(kInjectionGainMean,kInjectionGainSigma,kTRUE);
       }
       capa->SetValueAsFloat(manuChannel,0,capaValue);
+      capa->SetValueAsFloat(manuChannel,1,injectionGain);
     }
   }
   
@@ -695,6 +755,24 @@ AliMUONCDB::MakeTriggerEfficiency(const char* file) const
   /// Make a trigger efficiency object from a file.
   
   return new AliMUONTriggerEfficiencyCells(file);
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONCDB::WriteToCDB(const char* calibpath, TObject* object, 
+                       Int_t startRun, Int_t endRun, 
+                       const char* filename)
+{
+  /// Write a given object to OCDB
+  
+  AliCDBId id(calibpath,startRun,endRun);
+  AliCDBMetaData md;
+  md.SetAliRootVersion(gROOT->GetVersion());
+  md.SetComment(gSystem->ExpandPathName(filename));
+  md.SetResponsible("Uploaded using AliMUONCDB class");
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage(fCDBPath);
+  man->Put(object,id,&md);
 }
 
 //_____________________________________________________________________________
@@ -956,6 +1034,25 @@ AliMUONCDB::WriteGains(Bool_t defaultValues,
   AliInfo(Form("Ngenerated = %d",ngenerated));  
   WriteToCDB("MUON/Calib/Gains",gainStore,startRun,endRun,defaultValues);
   delete gainStore;
+}
+
+//_____________________________________________________________________________
+void 
+AliMUONCDB::WriteCapacitances(const char* filename,
+                              Int_t startRun, Int_t endRun)
+{
+  /// read manu capacitance and injection gain values from file 
+  /// and store them into CDB located at cdbpath, with a validity period
+  /// ranging from startRun to endRun
+  
+  AliMUONVStore* capaStore = new AliMUON1DMap(16828);
+  Int_t ngenerated = MakeCapacitanceStore(*capaStore,filename);
+  AliInfo(Form("Ngenerated = %d",ngenerated));
+  if ( ngenerated > 0 ) 
+  {
+    WriteToCDB("MUON/Calib/Capacitances",capaStore,startRun,endRun,filename);
+  }
+  delete capaStore;
 }
 
 //_____________________________________________________________________________
