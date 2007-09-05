@@ -196,14 +196,14 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     
     
     delete fFileK;
-    fFileK = new TFile(Form("%sKinematics%s.root", fPathName, fExtension));
+    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName, fExtension));
     if (!fFileK) {
 	AliFatal(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName));
 	ok = kFALSE;
     }
     
     delete fFileTR;
-    fFileTR = new TFile(Form("%sTrackRefs%s.root", fPathName, fExtension));
+    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName, fExtension));
     if (!fFileTR) {
 	AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName));
 	ok = kFALSE;
