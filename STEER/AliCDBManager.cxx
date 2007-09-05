@@ -278,28 +278,49 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
 
 	AliInfo(Form("Setting Default storage to: %s",dbString));
+	AliCDBStorage* bckStorage = fDefaultStorage;
+
 	fDefaultStorage = GetStorage(dbString);
+
+	if(bckStorage && (fDefaultStorage != bckStorage)){
+		AliWarning("Existing default storage replaced: clearing cache!");
+		ClearCache();
+	}
 }
 
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 // set default storage from AliCDBParam object
 
+	AliCDBStorage* bckStorage = fDefaultStorage;
+
 	fDefaultStorage = GetStorage(param);
+
+	if(bckStorage && (fDefaultStorage != bckStorage)){
+		AliWarning("Existing default storage replaced: clearing cache!");
+		ClearCache();
+	}
 }
 
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 // set default storage from another active storage
 
+	AliCDBStorage* bckStorage = fDefaultStorage;
+
 	fDefaultStorage = storage;
+
+	if(bckStorage && (fDefaultStorage != bckStorage)){
+		AliWarning("Existing default storage replaced: clearing cache!");
+		ClearCache();
+	}
 }
 //_____________________________________________________________________________
 void AliCDBManager::SetRemoteStorage(const char* dbString) {
 // sets remote storage from URI string
 // Remote storage is queried if it is activated and if object was not found in default storage
 
-	AliInfo(Form("Setting Default storage to: %s",dbString));
+	AliInfo(Form("Setting remote storage to: %s",dbString));
 	fRemoteStorage = GetStorage(dbString);
 }
 
