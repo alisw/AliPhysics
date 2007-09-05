@@ -41,7 +41,11 @@ fDeadChips(0),
 fDeadChannels(0),
 fMinVal(fgkMinValDefault),
 fIsDead(kFALSE),
-fBadChannels()
+fBadChannels(),
+fMapAW0(0),
+fMapAW1(0),
+fMapTW0(0),
+fMapTW1(0)
 {
   // default constructor
 
@@ -60,12 +64,13 @@ fBadChannels()
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetDataType();
-  for(Int_t i=0;i<fgkChips*fgkChannels;i++){
+  /*  for(Int_t i=0;i<fgkChips*fgkChannels;i++){
     for(Int_t j=0;j<fgkMapTimeNBin;j++){
       fMapA[i][j]=0;
       fMapT[i][j]=0;
     }
   }
+  */
  }
 //______________________________________________________________________
 AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType):
@@ -74,7 +79,11 @@ fDeadChips(0),
 fDeadChannels(0),
 fMinVal(fgkMinValDefault),
 fIsDead(kFALSE),
-fBadChannels(){
+fBadChannels(),
+fMapAW0(0),
+fMapAW1(0),
+fMapTW0(0),
+fMapTW1(0){
   // constructor
 
   SetDeadChannels();
@@ -93,15 +102,24 @@ fBadChannels(){
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetDataType(dataType);
-  for(Int_t i=0;i<fgkChips*fgkChannels;i++){
+  /*for(Int_t i=0;i<fgkChips*fgkChannels;i++){
     for(Int_t j=0;j<fgkMapTimeNBin;j++){
       fMapA[i][j]=0;
       fMapT[i][j]=0;
     }
   }
-
+  */
  }
+//_____________________________________________________________________
+AliITSCalibrationSDD::~AliITSCalibrationSDD(){
 
+  //destructor
+  if(fMapAW0) delete fMapAW0;
+  if(fMapAW1) delete fMapAW1;
+  if(fMapTW0) delete fMapTW0;
+  if(fMapTW1) delete fMapTW1;
+
+}
 
 //______________________________________________________________________
 void AliITSCalibrationSDD::GiveCompressParam(Int_t  cp[8],Int_t ian) const {

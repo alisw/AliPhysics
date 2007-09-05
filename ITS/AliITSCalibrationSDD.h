@@ -9,6 +9,7 @@
 #include "AliITSresponseSDD.h"
 #include "TArrayI.h"
 
+class AliITSMapSDD;
 class AliITSresponseSDD;
 ///////////////////////////////////////////////////////
 //  Response for SDD                                 //
@@ -21,7 +22,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     //
     AliITSCalibrationSDD();
     AliITSCalibrationSDD(const char *dataType);
-    virtual ~AliITSCalibrationSDD() {;}
+    virtual ~AliITSCalibrationSDD();
     virtual void  SetNoiseParam(Double_t /*n*/, Double_t /*b*/){
       NotImplemented("SetNoiseParam");}
  
@@ -84,10 +85,22 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Int_t GetBadChannel(Int_t i) const {return fBadChannels[i];}
     Bool_t IsBadChannel(Int_t anode); 
 
-    Float_t GetMapACell(Int_t i,Int_t j) const {return fMapA[i][j];}
-    virtual void SetMapACell(Int_t i,Int_t j,Float_t dev) {fMapA[i][j]=dev;} 
-    Float_t GetMapTCell(Int_t i,Int_t j) const {return fMapT[i][j];}
-    virtual void SetMapTCell(Int_t i,Int_t j,Float_t dev) {fMapT[i][j]=dev;} 
+    Float_t GetMapACell(Int_t i,Int_t j) const {
+      if(i<256) return fMapAW0->GetCellContent(i,j);
+      else return fMapAW1->GetCellContent(i,j);
+    }
+    virtual void SetMapA(Int_t wing,AliITSMapSDD* mapA) {
+      if(wing==0) fMapAW0=mapA;
+      else fMapAW1=mapA;
+    } 
+    Float_t GetMapTCell(Int_t i,Int_t j) const {
+      if(i<256) return fMapTW0->GetCellContent(i,j);
+      else return fMapTW1->GetCellContent(i,j);
+    }
+    virtual void SetMapT(Int_t wing,AliITSMapSDD* mapT) {
+      if(wing==0) fMapTW0=mapT;
+      else fMapTW1=mapT;
+    } 
     static Int_t GetMapTimeNBin() {return fgkMapTimeNBin;} 
 
     virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
@@ -141,15 +154,20 @@ class AliITSCalibrationSDD : public AliITSCalibration {
 
     Bool_t   fIsDead;  // module is dead or alive ?
     TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
-    Float_t fMapA[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on anode coordinate
-    Float_t fMapT[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on time coordinate
+    //Float_t fMapA[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on anode coordinate
+    //Float_t fMapT[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on time coordinate
+    AliITSMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
+    AliITSMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
+    AliITSMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
+    AliITSMapSDD* fMapTW1;     //! map of residuals on time coord. wing 1
+
 
  private:
     AliITSCalibrationSDD(const AliITSCalibrationSDD &ob); // copy constructor
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,5) // SDD response 
+    ClassDef(AliITSCalibrationSDD,6) // SDD response 
     
     };
 #endif

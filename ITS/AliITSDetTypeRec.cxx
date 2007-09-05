@@ -44,6 +44,7 @@
 #include "AliITSRawClusterSSD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSMapSDD.h"
 #include "AliITSCalibrationSSD.h"
 #include "AliITSNoiseSSD.h"
 #include "AliITSGainSSD.h"
@@ -397,9 +398,11 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliCDBEntry *entry2SPD = AliCDBManager::Instance()->Get("ITS/Calib/RespSPD");
   AliCDBEntry *entry2SDD = AliCDBManager::Instance()->Get("ITS/Calib/RespSDD");
   AliCDBEntry *entry2SSD = AliCDBManager::Instance()->Get("ITS/Calib/RespSSD");
+  AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD");
+  AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD");
 
   if(!entrySPD || !entrySDD || !entryNoiseSSD || !entryGainSSD || !entryBadChannelsSSD || 
-     !entry2SPD || !entry2SDD || !entry2SSD){
+     !entry2SPD || !entry2SDD || !entry2SSD || !mapASDD || !mapTSDD){
     AliFatal("Calibration object retrieval failed! ");
     return kFALSE;
   }  	
@@ -419,6 +422,14 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
   AliITSresponseSDD *pSDD = (AliITSresponseSDD*)entry2SDD->GetObject();
   if(!cacheStatus)entry2SDD->SetObject(NULL);
   entry2SDD->SetOwner(kTRUE);
+
+  TObjArray *mapAn = (TObjArray *)mapASDD->GetObject();
+  if(!cacheStatus)mapASDD->SetObject(NULL);
+  mapASDD->SetOwner(kTRUE);
+
+  TObjArray *mapT = (TObjArray *)mapTSDD->GetObject();
+  if(!cacheStatus)mapTSDD->SetObject(NULL);
+  mapTSDD->SetOwner(kTRUE);
 
   TObjArray *noiseSSD = (TObjArray *)entryNoiseSSD->GetObject();
   if(!cacheStatus)entryNoiseSSD->SetObject(NULL);
@@ -446,10 +457,12 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     delete entry2SPD;
     delete entry2SDD;
     delete entry2SSD;
+    delete mapASDD;
+    delete mapTSDD;
   }
 
   if ((!pSPD)||(!pSDD)||(!pSSD) || (!calSPD) || (!calSDD) 
-      || (!noiseSSD)|| (!gainSSD)|| (!badchannelsSSD)) {
+      || (!mapAn) || (!mapT) || (!noiseSSD)|| (!gainSSD)|| (!badchannelsSSD)) {
     AliWarning("Can not get calibration from calibration database !");
     return kFALSE;
   }
@@ -464,13 +477,23 @@ Bool_t AliITSDetTypeRec::GetCalibration() {
     cal = (AliITSCalibration*) calSPD->At(i);
     cal->SetResponse((AliITSresponse*)pSPD);
     SetCalibrationModel(i, cal);
- }
+  }
+  Int_t nn1=0;
+  Int_t nn2=0;
   for (Int_t i=0; i<fNMod[1]; i++) {
     cal = (AliITSCalibration*) calSDD->At(i);
     cal->SetResponse((AliITSresponse*)pSDD);
+    AliITSMapSDD* m1 = (AliITSMapSDD*)mapAn->At(nn1);nn1++;
+    AliITSMapSDD* m2 = (AliITSMapSDD*)mapAn->At(nn1);nn1++;
+    AliITSMapSDD* m3 = (AliITSMapSDD*)mapT->At(nn2);nn2++;
+    AliITSMapSDD* m4 = (AliITSMapSDD*)mapT->At(nn2);nn2++; 
+    cal->SetMapA(0,m1);
+    cal->SetMapA(1,m2);
+    cal->SetMapT(0,m3);
+    cal->SetMapT(1,m4);
     Int_t iMod = i + fNMod[0];
     SetCalibrationModel(iMod, cal);
- }
+  }
   for (Int_t i=0; i<fNMod[2]; i++) {
 
     AliITSCalibrationSSD *calibSSD = new AliITSCalibrationSSD();
