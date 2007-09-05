@@ -86,7 +86,7 @@ void AliLeading::FindLeading(AliJetReader *reader)
   }
   
   // fill correlation array
-  fLeading = (TLorentzVector*) lvArray->At(idxMax);
+  *fLeading = *((TLorentzVector*) lvArray->At(idxMax));
   fFound = kTRUE;
   
   fNassoc = 0;  
