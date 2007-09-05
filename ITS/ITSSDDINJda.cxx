@@ -52,6 +52,8 @@ int main(int argc, char **argv) {
   }
 
 
+  Int_t eqOffset = 256;
+  Int_t DDLrange = 24;
   Int_t maxNEvents=10; // maximum number of events to be analyzed
   const Int_t nSDDmodules=12;  // temp for test raw data
   AliITSOnlineSDDInjectors **injan=new AliITSOnlineSDDInjectors*[2*nSDDmodules];
@@ -129,7 +131,7 @@ int main(int argc, char **argv) {
 	printf(" event number = %i \n",iev);
 	AliRawReader *rawReader = new AliRawReaderDate((void*)event);
 	rawReader->RequireHeader(kFALSE);
-	rawReader->SelectEquipment(17,101,101);  // temp for test raw data
+	rawReader->SelectEquipment(17,eqOffset+1,eqOffset+DDLrange);
 
 	UInt_t timeSt=rawReader->GetTimestamp();
 	//UInt_t timeSt=iev*5000+12;  // fake timestamp for test
@@ -147,7 +149,6 @@ int main(int argc, char **argv) {
 	  }
 	}
 	AliITSRawStreamSDD s(rawReader);
-	rawReader->SelectEquipment(17,101,101);  // temp for test raw data
 	
 	while(s.Next()){
 	  Int_t iddl=rawReader->GetDDLID();
