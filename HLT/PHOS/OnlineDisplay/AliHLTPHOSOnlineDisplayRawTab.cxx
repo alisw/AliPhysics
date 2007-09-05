@@ -170,7 +170,7 @@ AliHLTPHOSOnlineDisplayRawTab::UpdateDisplay()
       for(int x = startX; x < endX; x ++)
 	{
 	  cout << "z = "<< z << " x= " << x<<endl;
-	  //	  fgTestCanvasPtr->cd(x*N_ZROWS_RCU +z +1);
+	  //	  fgTestCanvasPtr->cd(x*N_ZROWS_RCU (tmpHistoName, tmpHistoName, 300, 0, 299);+z +1);
 	  //	  fgTestCanvasPtr->cd((z - startZ)*nCols +x +1);
 	  fgTestCanvasPtr->cd((z - startZ)*nCols +x);
 	  //	  fgTestCanvasPtr->cd( z*nCols    +x);

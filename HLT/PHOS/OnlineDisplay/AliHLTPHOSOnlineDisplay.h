@@ -22,12 +22,18 @@
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSOnlineDisplayCalibTab.h"
 #include "AliHLTPHOSOnlineDisplayRawTab.h"
+#include "AliHLTPHOSOnlineDisplayRawDataMenu.h"
+
 
 //#include "AliHLTPHOSCommonDefs.h"
 
 #include "AliHLTPHOSConstants.h"
 using namespace PhosHLTConst;
 
+#define N_SAMPLES 70
+
+//#define MAX_HISTOGRAMS 25
+#define MAX_HISTOGRAMS 320
 
 class TCanvas;
 class AliHLTPHOSRcuCellEnergyDataStruct;
@@ -42,10 +48,16 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   void InitDisplay();
   void EvaluateAverage();
   int ScanArguments(int argc, char** argv);
+
+  //  static void ShowRawData();
+
+  void ShowRawData();
+
   static AliHLTPHOSOnlineDisplay* Instance(int argc, char** argv);  
  private:
   AliHLTPHOSOnlineDisplay();
   AliHLTPHOSOnlineDisplay(int argc, char** argv);
+  static AliHLTPHOSOnlineDisplayRawDataMenu *fgRawMenuPtr;
   static AliHLTPHOSOnlineDisplayEventTab  *fgEventTabPtr;
   static AliHLTPHOSOnlineDisplayCalibTab  *fgCalibTabPtr;
   static AliHLTPHOSOnlineDisplayRawTab    *fgRawTabPtr;
@@ -59,6 +71,17 @@ class AliHLTPHOSOnlineDisplay : public  TGMainFrame
   static short unsigned    *fgPorts;
   static Bool_t fgAccumulate;
   static Bool_t fgSyncronize;
+
+
+
+  TCanvas  *fgRawDataCanvas;
+  TH1D     *fgRawDataPlotsPtr[MAX_HISTOGRAMS];
+
+  //  static TCanvas  *fgRawDataCanvas;
+  //  static TH1D     *fgRawDataPlotsPtr[MAX_HISTOGRAMS];
+
+  //  static TH1D     *fgRawDataPlotsPtr[25];
+
 };
 
 

@@ -38,21 +38,25 @@
 #include <iostream>
 #include "AliHLTPHOSOnlineDisplayEventTab.h"
 #include "AliHLTPHOSOnlineDisplayCalibTab.h"
+#include "AliHLTPHOSOnlineDisplayRawDataMenu.h"
 
-AliHLTPHOSOnlineDisplayEventTab*  AliHLTPHOSOnlineDisplay::fgEventTabPtr       = 0;
-AliHLTPHOSOnlineDisplayCalibTab*  AliHLTPHOSOnlineDisplay::fgCalibTabPtr       = 0;
-AliHLTPHOSOnlineDisplayRawTab*    AliHLTPHOSOnlineDisplay::fgRawTabPtr         = 0;
-AliHLTPHOSOnlineDisplay*          AliHLTPHOSOnlineDisplay::fgInstancePtr       = 0;          /**<The one an only instance of PhosOnlineDisplay*/
-HOMERReader*                      AliHLTPHOSOnlineDisplay::fgHomerReaderPtr    = 0;          /**<Homer reader that fetches events from the HLT online stream*/
-HOMERReader*                      AliHLTPHOSOnlineDisplay::fgHomerReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches events from the HLT online stream*/
-Bool_t                            AliHLTPHOSOnlineDisplay::fgAccumulate        = kFALSE ;    /**<If set to kFALSE reset fgLegoplot between event, kTRUE adds current energies to previous plot*/
-Bool_t                            AliHLTPHOSOnlineDisplay::fgSyncronize        = kFALSE ;
-unsigned int                      AliHLTPHOSOnlineDisplay::fgNHosts            = 0;
-unsigned int                      AliHLTPHOSOnlineDisplay::fgNPorts            = 0;
-char*                             AliHLTPHOSOnlineDisplay::fgHosts[MAX_HOSTS];
-short unsigned int*               AliHLTPHOSOnlineDisplay::fgPorts             = 0; 
-TGTab*                            AliHLTPHOSOnlineDisplay::fTab                = 0;
+AliHLTPHOSOnlineDisplayRawDataMenu*  AliHLTPHOSOnlineDisplay::fgRawMenuPtr        = 0;
+AliHLTPHOSOnlineDisplayEventTab*     AliHLTPHOSOnlineDisplay::fgEventTabPtr       = 0;
+AliHLTPHOSOnlineDisplayCalibTab*     AliHLTPHOSOnlineDisplay::fgCalibTabPtr       = 0;
+AliHLTPHOSOnlineDisplayRawTab*       AliHLTPHOSOnlineDisplay::fgRawTabPtr         = 0;
+AliHLTPHOSOnlineDisplay*             AliHLTPHOSOnlineDisplay::fgInstancePtr       = 0;          /**<The one an only instance of PhosOnlineDisplay*/
+HOMERReader*                         AliHLTPHOSOnlineDisplay::fgHomerReaderPtr    = 0;          /**<Homer reader that fetches events from the HLT online stream*/
+HOMERReader*                         AliHLTPHOSOnlineDisplay::fgHomerReadersPtr[MAX_HOSTS];     /**<Homer reader that fetches events from the HLT online stream*/
+Bool_t                               AliHLTPHOSOnlineDisplay::fgAccumulate        = kFALSE ;    /**<If set to kFALSE reset fgLegoplot between event, kTRUE adds current energies to previous plot*/
+Bool_t                               AliHLTPHOSOnlineDisplay::fgSyncronize        = kFALSE ;
+unsigned int                         AliHLTPHOSOnlineDisplay::fgNHosts            = 0;
+unsigned int                         AliHLTPHOSOnlineDisplay::fgNPorts            = 0;
+char*                                AliHLTPHOSOnlineDisplay::fgHosts[MAX_HOSTS];
+short unsigned int*                  AliHLTPHOSOnlineDisplay::fgPorts             = 0; 
+TGTab*                               AliHLTPHOSOnlineDisplay::fTab                = 0;
 
+//TCanvas*                             AliHLTPHOSOnlineDisplay::fgRawDataCanvas     = 0;
+//TH1D*                                AliHLTPHOSOnlineDisplay::fgRawDataPlotsPtr[MAX_HISTOGRAMS];
 
 using namespace std;
 
@@ -83,7 +87,7 @@ AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv)
     {
       fgHomerReadersPtr[i] =      new  HOMERReader(fgHosts[i], fgPorts[i]); 
     }
- InitDisplay();
+  InitDisplay();
 }
 
 
@@ -110,9 +114,101 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   AddFrame(fTab, fL1);
   MapSubwindows();
   Resize();
-  SetWindowName("IFRAX");
+  SetWindowName("PHOS HLT OnlineDisplay");
   MapWindow();
   MoveResize(100,100,1200,1000);
+
+  fgRawMenuPtr = new  AliHLTPHOSOnlineDisplayRawDataMenu(this);
+
+}
+
+
+void
+AliHLTPHOSOnlineDisplay::ShowRawData()
+{
+  int tmpStartZ =  fgRawMenuPtr->GetStartZ();
+  int tmpEndZ =    fgRawMenuPtr->GetEndZ();  
+  int tmpStartX =  fgRawMenuPtr->GetStartX();
+  int tmpEndX =    fgRawMenuPtr->GetEndX();
+  int tmpGain =    fgRawMenuPtr->GetGain();
+
+  int nzRows =  tmpEndZ - tmpStartZ +1;
+  int nxCols =  tmpEndX - tmpStartX +1;
+  int nHistograms = (nzRows)*(nxCols);
+
+  if(nzRows < 0)
+    {
+      cout << "ERROR, the Z end coordinate must be bigger than the start coordinat" << endl;
+    }
+  else if(nxCols < 0)
+    {
+      cout << "ERROR, the X end coordinate must be bigger than the start coordinat" << endl;
+    }
+  else if(nHistograms > MAX_HISTOGRAMS)
+    {
+      cout << "ERROR, the total number of histograms cannnot exceed " << MAX_HISTOGRAMS << endl;
+    }
+  else
+    {
+      char tmpName[256];
+      fgRawDataCanvas = new TCanvas("TEST2", "PHOS HLT Raw Data Display", 1200, 1000); ;
+      fgRawDataCanvas->Divide(nzRows,  nxCols);
+      int cnt = 0;
+      int tmpModID = 0;
+      int tmpRcuX = 0 ;
+      int tmpRcuZ = 0;
+      int tmpX = 0;
+      int tmpZ = 0;
+      //     int tmpGain = 0;
+
+      for(int zrow=0; zrow< nzRows ; zrow++)
+	{
+	  for(int xcol=0; xcol <nxCols; xcol ++)
+	    {
+	      cnt ++;
+	      tmpModID  = (xcol +  tmpStartX)/64;
+	      cout << " tmpModID  =  " <<  tmpModID  <<endl;
+	      tmpRcuZ   = (zrow + tmpStartZ%56)/28;
+	      tmpRcuX   = (xcol + tmpStartX%64)/32;
+	      tmpZ =  zrow + tmpStartZ%28; 
+	      tmpX =  xcol + tmpStartX%32;
+	      int tmpGlobalZ = tmpRcuZ*28 + tmpZ;
+	      int tmpGlobalX = tmpRcuX*32 + tmpX + tmpModID*64;
+	      sprintf(tmpName, "z%d_x%d", tmpGlobalZ, tmpGlobalX);
+	      cout << "tmpRcuZ =" << tmpRcuZ <<endl;
+	      cout << "tmpRcuX =" << tmpRcuX <<endl;
+	      cout << "tmpZ =" << tmpZ <<endl;
+	      cout << "tmpX =" << tmpX <<endl;
+	      fgRawDataPlotsPtr[cnt] = new TH1D(tmpName, tmpName, 70, 0, 79);
+	      fgRawDataPlotsPtr[cnt]->SetFillColor(1);
+	      fgRawDataPlotsPtr[cnt]->SetMaximum(1023); 
+
+	      fgRawDataPlotsPtr[cnt]->SetMaximum(100); 
+
+	      fgRawDataPlotsPtr[cnt]->Reset();
+
+	      /*
+	      for(int i= 0; i< N_SAMPLES; i ++)
+		{
+		  fgEventTabPtr->GetRawData(fgRawDataPlotsPtr[cnt], tmpModID, tmpRcuX, tmpRcuZ, tmpX, tmpZ, HIGH_GAIN); 
+		}
+	      */
+
+	      for(int i= 0; i< N_SAMPLES; i ++)
+		{
+		  fgEventTabPtr->GetRawData(fgRawDataPlotsPtr[cnt], tmpModID, tmpRcuX, tmpRcuZ, tmpX, tmpZ, tmpGain); 
+		}
+
+	      fgRawDataCanvas->cd(cnt);	  
+	      cout <<  "fgRawDataCanvas->cd("<< cnt <<") = "  <<  fgRawDataCanvas->cd(cnt) << endl;
+	      fgRawDataPlotsPtr[cnt]->Draw();
+	      cout << "cnt = "<< cnt  <<endl;
+	    }
+	}
+      
+      fgRawDataCanvas->Update();
+
+    }
 }
 
 
@@ -185,17 +281,17 @@ AliHLTPHOSOnlineDisplay::ScanArguments(int argc, char** argv)
 		{
 		  argument=argv[i+1];
 		  if(argument.CompareTo("-port")==0)
-		  {
-		    i++;
-		    if(i+1 <= argc)
-		      {
-			i++;
-			fgPorts[fgNPorts] = atoi(argv[i]);	
-			cout << "A setting port to   " << fgPorts[fgNPorts]  <<endl; 
-			fgNPorts ++;
-			portIsSet = kTRUE;
-		      }
-		  }
+		    {
+		      i++;
+		      if(i+1 <= argc)
+			{
+			  i++;
+			  fgPorts[fgNPorts] = atoi(argv[i]);	
+			  cout << "A setting port to   " << fgPorts[fgNPorts]  <<endl; 
+			  fgNPorts ++;
+			  portIsSet = kTRUE;
+			}
+		    }
 		  else
 		    {
 		      fgPorts[fgNPorts] =  DEFAULT_EVENT_PORT;	

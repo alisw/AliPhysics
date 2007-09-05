@@ -62,7 +62,21 @@ AliHLTPHOSOnlineDisplayCalibTab::ReadBlockData(HOMERReader *homerReaderPtr)
 		  tmpz = (accCellEnergiesPtr->fRcuZ)*N_ZROWS_RCU +z;
 		  
 		  fgCalibHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fAccumulatedEnergies[x][z][gain] );
-		  fgHitsHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fHits[x][z][gain] );
+
+		  //////////////////////////////////////////////////////
+		  //Added for debugging purposes, want a pure dead map//
+		  //////////////////////////////////////////////////////
+		  
+		  if(accCellEnergiesPtr->fHits[x][z][gain] > 0)
+		    {
+		      fgHitsHistPtr[gain]->SetBinContent(x, z, 10);
+		    }
+		  
+		  ////////////////////////////////////////////////////
+
+
+
+		  //fgHitsHistPtr[gain]->Fill(tmpx, tmpz, accCellEnergiesPtr->fHits[x][z][gain] );
 		  
 		  if(fgHitsHistPtr[gain]->GetBinContent(tmpx, tmpz) > 0)
 		    {
