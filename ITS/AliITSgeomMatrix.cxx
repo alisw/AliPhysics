@@ -189,7 +189,7 @@ fPath(){     // Path in geometry to this moduel
     }// end for i
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    if(fCylPhi<0.0) fCylPhi += 2.*TMath::Pi();
     this->MatrixFromAngle();
 }
 //----------------------------------------------------------------------
@@ -238,7 +238,7 @@ fPath(){     // Path in geometry to this module
     }// end for i
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    if(fCylPhi<0.0) fCylPhi += 2.*TMath::Pi();
     this->AngleFromMatrix();
 }
 //----------------------------------------------------------------------
@@ -367,7 +367,7 @@ fPath(){     // Path in geometry to this module
     }// end for i
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    if(fCylPhi<0.0) fCylPhi += 2.*TMath::Pi();
     this->MatrixFromSixAngles(rotd);
 }
 //----------------------------------------------------------------------
@@ -928,7 +928,7 @@ void AliITSgeomMatrix::Read(istream *is){
     AngleFromMatrix(); // compute angles frot[].
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    if(fCylPhi<0.0) fCylPhi += 2.*TMath::Pi();
     return;
 }
 //______________________________________________________________________
@@ -946,7 +946,7 @@ void AliITSgeomMatrix::Streamer(TBuffer &R__b){
         fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
         fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
         this->AngleFromMatrix();
-        if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+        if(fCylPhi<0.0) fCylPhi += 2.*TMath::Pi();
     } else {
         AliITSgeomMatrix::Class()->WriteBuffer(R__b, this);
     } // end if
@@ -963,7 +963,7 @@ void AliITSgeomMatrix::SetTranslation(const Double_t tran[3]){
     for(Int_t i=0;i<3;i++) ftran[i] = tran[i];
     fCylR   = TMath::Sqrt(ftran[0]*ftran[0]+ftran[1]*ftran[1]);
     fCylPhi = TMath::ATan2(ftran[1],ftran[0]);
-    if(fCylPhi<0.0) fCylPhi += TMath::Pi();
+    if(fCylPhi<0.0) fCylPhi += 2.*TMath::Pi();
 }
 //----------------------------------------------------------------------
 TPolyLine3D* AliITSgeomMatrix::CreateLocalAxis() const {
