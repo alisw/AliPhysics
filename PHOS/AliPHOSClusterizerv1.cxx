@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.113  2007/08/28 12:55:07  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.112  2007/08/22 09:20:50  hristov
  * Updated QA classes (Yves)
  *
@@ -590,7 +593,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     rp->EvalLocal2TrackingCSTransform();
   }
   fEMCRecPoints->Compress() ;
-  //  fEMCRecPoints->Sort() ; //Can not sort until position is calculated!
+  fEMCRecPoints->Sort() ; 
   //  fEMCRecPoints->Expand(fEMCRecPoints->GetEntriesFast()) ;
   for(index = 0; index < fEMCRecPoints->GetEntries(); index++){
     dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) )->SetIndexInList(index) ;
@@ -605,7 +608,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
     rp->EvalAll(fW0CPV,fDigitsArr) ;
     rp->EvalLocal2TrackingCSTransform();
   }
-//  fCPVRecPoints->Sort() ;
+  fCPVRecPoints->Sort() ;
   
   for(index = 0; index < fCPVRecPoints->GetEntries(); index++)
     dynamic_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) )->SetIndexInList(index) ;
