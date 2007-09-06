@@ -35,6 +35,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMaxSnpTracker(0.95),
   fMaxSnpTrack(0.999),
   fBYMirror(kTRUE),
+  fDumpSignal(kFALSE),
   fFirstBin(0),
   fLastBin(-1),
   fBCalcPedestal(kFALSE),
@@ -95,6 +96,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   // special setting for laser
   //
   AliTPCRecoParam *param = new AliTPCRecoParam;
+  param->fDumpSignal=kTRUE;
   param->fCtgRange = 10.05;
   param->fFirstBin = 0;
   param->fLastBin  = 1000;
@@ -114,6 +116,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetCosmicTestParam(Bool_t bPedestal){
   // special setting for cosmic 
   // 
   AliTPCRecoParam *param = new AliTPCRecoParam;
+  param->fDumpSignal=kTRUE;
   param->fCtgRange = 10.05;    // full TPC
   param->fFirstBin = 60;
   param->fLastBin  = 1000;

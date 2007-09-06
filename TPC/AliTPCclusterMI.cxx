@@ -150,3 +150,12 @@ void AliTPCclusterMI::SetDetector(Int_t detector){
   Int_t modId = (fDetector<36)?fDetector: fDetector-36;
   SetVolumeId(AliGeomManager::LayerToVolUID(id,modId));  
 }
+
+
+void AliTPCclusterMI::SetInfo(AliTPCclusterInfo * info) {
+  //
+  //
+  //
+  if (fInfo) delete fInfo;
+  fInfo = info;
+}

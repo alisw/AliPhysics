@@ -41,7 +41,7 @@ public:
   Float_t GetTimeBin() const { return fTimeBin;}
   Float_t GetPad() const { return fPad;}
   AliTPCclusterInfo * GetInfo() const { return fInfo;}
-  void SetInfo(AliTPCclusterInfo * info) { fInfo = info;}
+  void SetInfo(AliTPCclusterInfo * info);
 
 private:
   Short_t   fQ ;       //Q of cluster (in ADC counts)  

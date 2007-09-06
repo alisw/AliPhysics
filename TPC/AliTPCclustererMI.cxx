@@ -566,7 +566,7 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
 
   TClonesArray * arr = fRowCl->GetArray();
   AliTPCclusterMI * cl = new ((*arr)[fNcluster]) AliTPCclusterMI(c);
-  if (matrix ) {
+  if (fRecoParam->DumpSignal() &&matrix ) {
     Int_t nbins=0;
     Float_t *graph =0;
     if (fRecoParam->GetCalcPedestal() && cl->GetMax()>fRecoParam->GetDumpAmplitudeMin() &&fBDumpSignal){
@@ -575,6 +575,9 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
     }
     AliTPCclusterInfo * info = new AliTPCclusterInfo(matrix,nbins,graph);
     cl->SetInfo(info);
+  }
+  if (!fRecoParam->DumpSignal()) {
+    cl->SetInfo(0);
   }
 
   fNcluster++;

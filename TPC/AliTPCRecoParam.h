@@ -21,6 +21,7 @@ class AliTPCRecoParam : public TObject
   Double_t GetMaxSnpTracker() const{ return fMaxSnpTracker;}
   Double_t GetMaxSnpTrack() const  { return fMaxSnpTrack;}
   //
+  Bool_t   DumpSignal()     const  { return fDumpSignal;}
   Int_t    GetFirstBin() const     { return fFirstBin;}
   Int_t    GetLastBin() const      { return fLastBin;}
   void     SetTimeBinRange(Int_t first, Int_t last){ fFirstBin = first; fLastBin = last;}
@@ -53,6 +54,7 @@ class AliTPCRecoParam : public TObject
   //
   //   clusterer parameters
   //
+  Bool_t   fDumpSignal;      // Dump Signal information flag
   Int_t    fFirstBin;        // first time bin used by cluster finder
   Int_t    fLastBin;         // last time bin  used by cluster finder 
   Bool_t   fBCalcPedestal;   // calculate Pedestal
@@ -71,7 +73,7 @@ class AliTPCRecoParam : public TObject
   Bool_t   fBSpecialSeeding; // special seeding with big inclination angles allowed (for Cosmic and laser)
   Bool_t   fBKinkFinder;     // do kink finder reconstruction
   Int_t    fLastSeedRowSec;     // Most Inner Row to make seeding for secondaries
-  ClassDef(AliTPCRecoParam, 1)
+  ClassDef(AliTPCRecoParam, 2)
 };
 
 
