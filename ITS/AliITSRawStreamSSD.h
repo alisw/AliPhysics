@@ -8,6 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///
 /// This class provides access to ITS SSD digits in raw data.
+//  Revised by Enrico Fragiacomo
+//  Last update: 2007/09/06
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -27,13 +29,19 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     Int_t            GetStrip() const {return fCoord2;};
 
     enum {kDDLsNumber = 16};      // number of DDLs in SSD
-    enum {kModulesPerDDL = 109};  // number of modules in each DDL
+    enum {kModulesPerDDL = 108};  // number of modules in each DDL
 
     static Int_t     GetModuleNumber(UInt_t iDDL, UInt_t iModule)
       {return fgkDDLModuleMap[iDDL][iModule];}
+
     enum ESSDRawStreamError {
       kWrongModuleIdErr = 1
     };
+
+    Int_t fddl;
+    Int_t fad;
+    Int_t fadc;
+
 
   protected :
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
