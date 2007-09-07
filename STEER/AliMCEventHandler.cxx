@@ -34,6 +34,7 @@
 #include <TTree.h>
 #include <TFile.h>
 #include <TParticle.h>
+#include <TString.h>
 #include <TClonesArray.h>
 #include <TDirectoryFile.h>
 #include <TArrow.h>
@@ -60,7 +61,7 @@ AliMCEventHandler::AliMCEventHandler() :
     fEvent(-1),
     fNprimaries(-1),
     fNparticles(-1),
-    fPathName("./"),
+    fPathName(new TString("./")),
     fExtension(""),
     fFileNumber(0),
     fEventsPerFile(0)
@@ -85,7 +86,7 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fEvent(-1),
     fNprimaries(-1),
     fNparticles(-1),
-    fPathName("./"),
+    fPathName(new TString("./")),
     fExtension(""),
     fFileNumber(0),
     fEventsPerFile(0)
@@ -104,21 +105,21 @@ Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/)
 { 
     // Initialize input
     //
-    fFileE = TFile::Open(Form("%sgalice.root", fPathName));
-    if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName));
+    fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
+    if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
 
     fFileE->GetObject("TE", fTreeE);
     fTreeE->SetBranchAddress("Header", &fHeader);
     fNEvent = fTreeE->GetEntries();
     //
     // Tree K
-    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName, fExtension));
+    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
     if (!fFileK) AliFatal(Form("AliMCEventHandler:Kinematics.root not found in directory %s ! \n", fPathName));
     fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
     //
     // Tree TR
-    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName, fExtension));
-    if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName));
+    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
+    if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
     //
     // Reset the event number
     fEvent      = -1;
@@ -196,16 +197,16 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     
     
     delete fFileK;
-    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName, fExtension));
+    fFileK = TFile::Open(Form("%sKinematics%s.root", fPathName->Data(), fExtension));
     if (!fFileK) {
-	AliFatal(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName));
+	AliFatal(Form("AliMCEventHandler:Kinematics%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
 	ok = kFALSE;
     }
     
     delete fFileTR;
-    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName, fExtension));
+    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
     if (!fFileTR) {
-	AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName));
+	AliWarning(Form("AliMCEventHandler:TrackRefs%s.root not found in directory %s ! \n", fExtension, fPathName->Data()));
 	ok = kFALSE;
     }
     
@@ -299,7 +300,8 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     // Reconnect trees
 
     printf("AliMCEventHandler::Notify() file: %s\n", path);
-    fPathName = Form("%s",  path);
+    delete fPathName;
+    fPathName = new TString(path);
     ResetIO();
     InitIO("");
     return kTRUE;
@@ -528,4 +530,11 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 	printf("AliMCEventHandler:Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", 
 	       ifills, fStack->GetNtrack());
     fTreeTR = fTmpTreeTR;
+}
+
+void AliMCEventHandler::SetInputPath(char* fname)
+{
+    // Set the input path name
+    delete fPathName;
+    fPathName = new TString(fname);
 }

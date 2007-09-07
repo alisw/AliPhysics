@@ -21,6 +21,7 @@
 class TFile;
 class TTree;
 class TParticle;
+class TString;
 class TClonesArray;
 class AliHeader;
 class AliGenEventHeader;
@@ -35,8 +36,8 @@ public:
     virtual ~AliMCEventHandler();
     virtual void         SetOutputFileName(char* /* fname */) {;}
     virtual char*        GetOutputFileName() {return 0;}
-    virtual void         SetInputPath(char* fname) {fPathName = fname;}
-    virtual char*        GetInputPath() {return fPathName;}
+    virtual void         SetInputPath(char* fname); 
+    virtual TString*     GetInputPath() {return fPathName;}
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent();
     virtual Bool_t       Notify(const char* path);
@@ -72,7 +73,7 @@ private:
     Int_t             fEvent;            //! Current event
     Int_t             fNprimaries;       //! Number of primaries
     Int_t             fNparticles;       //! Number of particles
-    char             *fPathName;         //! Input file path 
+    TString          *fPathName;         //! Input file path 
     char             *fExtension;        //! File name extension 
     Int_t             fFileNumber;       //! Input file number
     Int_t             fEventsPerFile;    //! Number of events per file
