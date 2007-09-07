@@ -401,8 +401,6 @@ DIPO 49 1.e-1 1.e-1 1.e-1 1.e-1
 DIPO 10 1.e-4 1.e-4 1.e-3 1.e-4 1.e-3 1.e-3 1.e-3
 * shielded
 DIPO 30 1.e-3 1.e-2 1.e-3 1.e-3
-* very shielded
-DIPO 40 1.e-1 1.e-1 1.e-1 1.e-1
 
 * Air
 * ^^^^^^^^
@@ -558,8 +556,6 @@ MUON 22  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1    
 MUON 23  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
 * Frame of the chambers
 MUON 24  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
-* Ar+CO2 for St1
-MUON 25  1e-5  1e-5  1e-3  1e-3  1e-5  1e-5  1e-5  1e-5  1e-5  -1.   1     1     1     1     1     1     1     1     1     1     1
 * FOAM of St1
 MUON 26  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  1e-3  -1.   1     1     1     1     0     1     2     1     1     1     1 
 * Sn+Pb of St1
