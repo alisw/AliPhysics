@@ -35,14 +35,15 @@ class AliAlignmentTracks : public TObject {
   void ProcessESD(TSelector *selector);
   void ProcessESD(Bool_t onlyITS=kFALSE,Int_t minITSpts=0,
 		  Bool_t cuts=kTRUE,
-		  Float_t minMom=0.5,Float_t maxMom=1.e9,
+		  Float_t minMom=0.3,Float_t maxMom=1.e9,
 		  Float_t minAbsSinPhi=0.,Float_t maxAbsSinPhi=1.,
 		  Float_t minSinTheta=0.,Float_t maxSinTheta=1.);
   void ProcessESDCosmics(Bool_t onlyITS=kFALSE,Int_t minITSpts=0,
-		  Bool_t cuts=kTRUE,
-		  Float_t minMom=0.5,Float_t maxMom=1.e9,
-		  Float_t minAbsSinPhi=0.,Float_t maxAbsSinPhi=1.,
-		  Float_t minSinTheta=0.,Float_t maxSinTheta=1.);
+			 Float_t maxMatchingAngle=0.17, // 10 deg
+			 Bool_t cuts=kTRUE,
+			 Float_t minMom=0.3,Float_t maxMom=1.e9,
+			 Float_t minAbsSinPhi=0.,Float_t maxAbsSinPhi=1.,
+			 Float_t minSinTheta=0.,Float_t maxSinTheta=1.);
 
   void BuildIndex();
 

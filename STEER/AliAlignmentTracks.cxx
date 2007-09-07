@@ -30,7 +30,7 @@
 #include "AliAlignObjParams.h"
 #include "AliTrackFitterRieman.h"
 #include "AliTrackResidualsChi2.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliLog.h"
 
 ClassImp(AliAlignmentTracks)
@@ -157,8 +157,8 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
 
   if (!fESDChain) return;
 
-  AliESD *esd = 0;
-  fESDChain->SetBranchAddress("ESD",&esd);
+  AliESDEvent *esd = new AliESDEvent();
+  esd->ReadFromTree(fESDChain);
   AliESDfriend *esdf = 0; 
   fESDChain->SetBranchStatus("ESDfriend*",1);
   fESDChain->SetBranchAddress("ESDfriend.",&esdf);
@@ -240,7 +240,7 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
 
 //______________________________________________________________________________
 void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
-			           Int_t minITSpts,
+				   Int_t minITSpts,Float_t maxMatchingAngle,
 			           Bool_t cuts,
 				   Float_t minMom,Float_t maxMom,
 				   Float_t minAbsSinPhi,Float_t maxAbsSinPhi,
@@ -253,8 +253,8 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 
   if (!fESDChain) return;
 
-  AliESD *esd = 0;
-  fESDChain->SetBranchAddress("ESD",&esd);
+  AliESDEvent *esd = new AliESDEvent();
+  esd->ReadFromTree(fESDChain);
   AliESDfriend *esdf = 0; 
   fESDChain->SetBranchStatus("ESDfriend*",1);
   fESDChain->SetBranchAddress("ESDfriend.",&esdf);
@@ -283,28 +283,64 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
     esd->SetESDfriend(esdf); //Attach the friend to the ESD
 
     Int_t ntracks = esd->GetNumberOfTracks();
+    if(ntracks<2) continue;
+    Int_t *goodtracksArray = new Int_t[ntracks];
+    Float_t *phiArray = new Float_t[ntracks];
+    Float_t *thetaArray = new Float_t[ntracks];
     Int_t ngt=0;
-    Int_t goodtracks[10];
     for (Int_t itrack=0; itrack < ntracks; itrack++) {
       AliESDtrack * track = esd->GetTrack(itrack);
       if (!track) continue;
 
       if(track->GetNcls(0) < minITSpts) continue;
+      Float_t phi = track->GetAlpha()+TMath::ASin(track->GetSnp());
+      Float_t theta = 0.5*TMath::Pi()-TMath::ATan(track->GetTgl());
       if(cuts) {
 	if(track->GetP()<minMom || track->GetP()>maxMom) continue;
-	Float_t abssinphi = TMath::Abs(TMath::Sin(track->GetAlpha()+TMath::ASin(track->GetSnp())));
+	Float_t abssinphi = TMath::Abs(TMath::Sin(phi));
 	if(abssinphi<minAbsSinPhi || abssinphi>maxAbsSinPhi) continue;
-	Float_t sintheta = TMath::Sin(0.5*TMath::Pi()-TMath::ATan(track->GetTgl()));
+	Float_t sintheta = TMath::Sin(theta);
 	if(sintheta<minSinTheta || sintheta>maxSinTheta) continue;
       } 
-      if(ngt<10) goodtracks[ngt]=itrack;
+      goodtracksArray[ngt]=itrack;
+      phiArray[ngt]=phi;
+      thetaArray[ngt]=theta;
       ngt++;
     }
 
-    if(ngt!=2) continue; // this can be changed to check that the two tracks match
+    if(ngt<2) {
+      delete [] goodtracksArray; goodtracksArray=0;
+      delete [] phiArray; phiArray=0;
+      delete [] thetaArray; thetaArray=0;
+      continue;
+    }
 
-    AliESDtrack * track1 = esd->GetTrack(goodtracks[0]);
-    AliESDtrack * track2 = esd->GetTrack(goodtracks[1]);
+    // check matching of the two tracks from the muon
+    Float_t min = 10000000.;
+    Int_t good1 = -1, good2 = -1;
+    for(Int_t itr1=0; itr1<ngt-1; itr1++) {
+      for(Int_t itr2=itr1+1; itr2<ngt; itr2++) {
+	Float_t deltatheta = TMath::Abs(TMath::Pi()-thetaArray[itr1]-thetaArray[itr2]);
+	if(deltatheta>maxMatchingAngle) continue;
+	Float_t deltaphi = TMath::Abs(TMath::Abs(phiArray[itr1]-phiArray[itr2])-TMath::Pi());
+	if(deltaphi>maxMatchingAngle) continue;
+	printf("%f  %f     %f  %f\n",deltaphi,deltatheta,thetaArray[itr1],thetaArray[itr2]);
+	if(deltatheta+deltaphi<min) {
+	  min=deltatheta+deltaphi;
+	  good1 = goodtracksArray[itr1];
+	  good2 = goodtracksArray[itr2];
+	}
+      }
+    }
+
+    delete [] goodtracksArray; goodtracksArray=0;
+    delete [] phiArray; phiArray=0;
+    delete [] thetaArray; thetaArray=0;
+
+    if(good1<0) continue;
+
+    AliESDtrack * track1 = esd->GetTrack(good1);
+    AliESDtrack * track2 = esd->GetTrack(good2);
 
     Int_t ntotpts;
     if(onlyITS) {
