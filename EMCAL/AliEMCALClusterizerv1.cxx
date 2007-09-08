@@ -173,6 +173,21 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
   if(fToUnfold)
     MakeUnfolding() ;
 
+  Int_t index ;
+
+  //Evaluate position, dispersion and other RecPoint properties for EC section                      
+  for(index = 0; index < fRecPoints->GetEntries(); index++) {
+    if (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->GetClusterType() != AliESDCaloCluster::kPseudoCluster)
+      dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalAll(fECAW0,fDigitsArr) ;
+  }
+
+  fRecPoints->Sort() ;
+
+  for(index = 0; index < fRecPoints->GetEntries(); index++) {
+    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->SetIndexInList(index) ;
+    (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index)))->Print();
+  }
+
   fTreeR->Fill();
   
   if(strstr(option,"deb") || strstr(option,"all"))  
