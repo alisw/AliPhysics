@@ -177,11 +177,10 @@ void AliEMCALTracker::Clear(Option_t* option)
 {
 	//
 	// Clearing method
-	// Clears all specified arrays and the containers themselves.
+        // Deletes all objects in arrays and the arrays themselves
 	//
 
 	TString opt(option);
-	Bool_t doDelete = opt.Contains("DELETE");
 	Bool_t clearTracks = opt.Contains("TRACKS");
 	Bool_t clearClusters = opt.Contains("CLUSTERS");
 	Bool_t clearMatches = opt.Contains("MATCHES");
@@ -192,34 +191,19 @@ void AliEMCALTracker::Clear(Option_t* option)
 	}
 	
 	if (fTracks != 0x0 && clearTracks) {
-		if (!doDelete) {
-			fTracks->Clear();
-		}
-		else {
-			if (!fTracks->IsEmpty()) fTracks->Delete();
-			delete fTracks;
-			fTracks = 0;
-		}
+	   fTracks->Delete();
+	   delete fTracks;
+           fTracks = 0;
 	}
 	if (fClusters != 0x0 && clearClusters) {
-		if (!doDelete) {
-			fClusters->Clear();
-		}
-		else {
-			if (!fClusters->IsEmpty()) fClusters->Delete();
-			delete fClusters;
-			fClusters = 0;
-		}
+	   fClusters->Delete();
+	   delete fClusters;
+	   fClusters = 0;
 	}
 	if (fMatches != 0x0 && clearMatches) {
-		if (!doDelete) {
-			fMatches->Clear();
-		}
-		else {
-			if (!fMatches->IsEmpty()) fMatches->Delete();
-			delete fMatches;
-			fMatches = 0;
-		}
+	   fMatches->Delete();
+	   delete fMatches;
+           fMatches = 0;
 	}
 }
 //
@@ -261,7 +245,7 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
         if (fClusters->IsEmpty())
            AliWarning("No clusters collected");
 
-	AliInfo(Form("Collected %d clusters", fClusters->GetEntries()));
+	AliInfo(Form("Collected %d clusters (RecPoints)", fClusters->GetEntries()));
 
 	return 0;
 }
@@ -295,7 +279,7 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
         if (fClusters->IsEmpty())
            AliWarning("No clusters collected");
 	
-	AliInfo(Form("Collected %d clusters", fClusters->GetEntries()));
+	AliInfo(Form("Collected %d clusters from ESD", fClusters->GetEntries()));
 
 	return 0;
 }
@@ -377,7 +361,6 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
 	Int_t okLoadClusters, nClusters;
 	if (!fClusters || (fClusters && fClusters->IsEmpty())) {
 		okLoadClusters = LoadClusters(esd);
-		if (okLoadClusters) return 2;
 	}
 	nClusters = fClusters->GetEntries();
 	
@@ -1010,10 +993,12 @@ Int_t AliEMCALTracker::SolveCompetitions()
 void AliEMCALTracker::UnloadClusters() 
 {
 	//
-	// Free memory from clusters
+	// Free memory from all arrays
+        // This method is called after the local tracking step
+        // so we can safely delete everything 
 	//
 	
-  	Clear("CLUSTERS");
+  	Clear();
 }
 //
 //------------------------------------------------------------------------------
