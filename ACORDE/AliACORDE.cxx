@@ -96,20 +96,26 @@ void AliACORDE::CreateMaterials()
   //
   //     Aluminum 
   AliMaterial(9,  "ALUMINIUM0$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(29, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
-  AliMaterial(49, "ALUMINIUM2$", 26.98, 13., 2.7, 8.9, 37.2);
+  //  AliMaterial(29, "ALUMINIUM1$", 26.98, 13., 2.7, 8.9, 37.2);
+  //AliMaterial(49, "ALUMINIUM2$", 26.98, 13., 2.7, 8.9, 37.2);
   //
   //     Iron 
-  AliMaterial(10, "IRON0$    ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(30, "IRON1$    ", 55.85, 26., 7.87, 1.76, 17.1);
-  AliMaterial(50, "IRON2$    ", 55.85, 26., 7.87, 1.76, 17.1);
+  //AliMaterial(10, "IRON0$    ", 55.85, 26., 7.87, 1.76, 17.1);
+  //AliMaterial(30, "IRON1$    ", 55.85, 26., 7.87, 1.76, 17.1);
+  //AliMaterial(50, "IRON2$    ", 55.85, 26., 7.87, 1.76, 17.1);
   //
   //     Air 
-  AliMaterial(15, "AIR0$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(35, "AIR1$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(55, "AIR2$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(75, "AIR3$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
-  AliMaterial(95, "AIR4$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  Float_t as[] = { 12.0107, 14.0067,   15.9994,  39.948 };
+  Float_t zs[] = {  6.,      7.,       8.,       18. };
+  Float_t ws[] = { 0.000124, 0.755267, 0.231781, 0.012827 }; 
+  Double_t density      = .00120479;
+  AliMixture(15, "AIR0$", as, zs, density, 4, ws);
+
+  //AliMaterial(15, "AIR0$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  //AliMaterial(35, "AIR1$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  //AliMaterial(55, "AIR2$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  //AliMaterial(75, "AIR3$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
+  //AliMaterial(95, "AIR4$     ", 14.61, 7.3, .001205, 30423.24, 67500.);
 
 
   // Scintillator material polystyrene 
@@ -144,28 +150,28 @@ void AliACORDE::CreateMaterials()
   //
   //    Aluminum 
   AliMedium(9,  "ALU_C0          ",  9, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(29, "ALU_C1          ", 29, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(49, "ALU_C2          ", 49, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  // AliMedium(29, "ALU_C1          ", 29, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //AliMedium(49, "ALU_C2          ", 49, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Iron 
-  AliMedium(10, "FE_C0           ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(30, "FE_C1           ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(50, "FE_C2           ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //AliMedium(10, "FE_C0           ", 10, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //AliMedium(30, "FE_C1           ", 30, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //AliMedium(50, "FE_C2           ", 50, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //
   //    Air 
   AliMedium(15, "AIR_C0          ", 15, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
-  AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
-  AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
-  AliMedium(75, "AIR_C4          ", 75, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
-  AliMedium(95, "AIR_C5          ", 95, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  // AliMedium(35, "AIR_C1          ", 35, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  //AliMedium(55, "AIR_C2          ", 55, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  //AliMedium(75, "AIR_C4          ", 75, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
+  //AliMedium(95, "AIR_C5          ", 95, 0, isxfld, sxmgmx, atmaxfd, stemax, adeemax, aepsil, astmin);
 
 
 
   // The scintillator of the CPV made of Polystyrene 
   // scintillator -> idtmed[1112]
-  AliMedium(12 , "CPV scint.0     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  //AliMedium(12 , "CPV scint.0     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
   AliMedium(13 , "CPV scint.1     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
-  AliMedium(14 , "CPV scint.2     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
+  //AliMedium(14 , "CPV scint.2     ", 13, 1, isxfld, sxmgmx, 10., stemax, deemax, epsil, stmin);
 
   //     Molasse -> idtmed[1123]
   AliMedium(24 , "Molasse         ", 24, 0, xfield, xfieldm, tmaxfd, stemax, deemax, xepsil, stmin);
@@ -179,9 +185,9 @@ void AliACORDE::CreateMaterials()
   AliMixture(17, "CONCRETE$", aconc, zconc, 2.35, 10, wconc);
   //    Concrete 
   AliMedium(17, "CC_C0            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
-  AliMedium(27, "CC_C1            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // MX24
-  AliMedium(37, "CC_C2            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // PM25
-  AliMedium(47, "CC_C3            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // PGC2
+  //  AliMedium(27, "CC_C1            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // MX24
+  //AliMedium(37, "CC_C2            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // PM25
+  //AliMedium(47, "CC_C3            ", 17, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin); // PGC2
 
 }
 
