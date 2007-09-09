@@ -676,6 +676,9 @@ Bool_t AliReconstruction::Run(const char* input)
     qadm->Init(AliQualAss::kESDS) ; 
     }
   
+  ProcInfo_t ProcInfo;
+  gSystem->GetProcInfo(&ProcInfo);
+  AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     if (fRawReader) fRawReader->NextEvent();
     if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
@@ -846,6 +849,8 @@ Bool_t AliReconstruction::Run(const char* input)
     // delete esdf; esdf = 0;
   // ESD QA 
  
+    gSystem->GetProcInfo(&ProcInfo);
+    AliInfo(Form("Event %d -> Current memory usage %d %d",iEvent, ProcInfo.fMemResident, ProcInfo.fMemVirtual));
   }
   
   detStr = fFillESD ; 
