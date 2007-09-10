@@ -43,7 +43,6 @@ ClassImp(AliKalmanTrack)
   for(Int_t i=0; i<AliPID::kSPECIES; i++) fIntegratedTime[i] = 0;
 }
 
-//_______________________________________________________________________
 AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   AliExternalTrackParam(t),
   fLab(t.fLab),
@@ -60,6 +59,21 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   
   for (Int_t i=0; i<AliPID::kSPECIES; i++)
       fIntegratedTime[i] = t.fIntegratedTime[i];
+}
+
+AliKalmanTrack& AliKalmanTrack::operator=(const AliKalmanTrack&o){
+  if(this!=&o){
+    AliExternalTrackParam::operator=(o);
+    fLab = o.fLab;
+    fFakeRatio = o.fFakeRatio;
+    fChi2 = o.fChi2;
+    fMass = o.fMass;
+    fN = o.fN;
+    fStartTimeIntegral = o.fStartTimeIntegral;
+    for(Int_t i = 0;i<AliPID::kSPECIES;++i)fIntegratedTime[i] = o.fIntegratedTime[i];
+    fIntegratedLength = o.fIntegratedLength;
+  }
+  return *this;
 }
 
 //_______________________________________________________________________

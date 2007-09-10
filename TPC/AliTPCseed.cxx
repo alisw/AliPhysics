@@ -239,12 +239,51 @@ AliTPCseed::~AliTPCseed(){
   for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
 }
 //_________________________________________________
-AliTPCseed & AliTPCseed::operator =(const AliTPCseed & param)
+AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
 {
   //
-  // assignment operator - dummy
+  // assignment operator 
   //
-  fRow=param.fRow;
+  if(this!=&param){
+    AliTPCtrack::operator=(param);
+    fEsd =param.fEsd; 
+    for(Int_t i = 0;i<160;++i)fClusterPointer[i] = param.fClusterPointer[i]; // this is not allocated by AliTPCSeed
+    fClusterOwner = param.fClusterOwner;
+    // leave out fPoint, they are also not copied in the copy ctor...
+    // but deleted in the dtor... strange...
+    // fPoints =
+    // fEPoints =
+    fRow            = param.fRow;
+    fSector         = param.fSector;
+    fRelativeSector = param.fRelativeSector;
+    fCurrentSigmaY2 = param.fCurrentSigmaY2;
+    fCurrentSigmaZ2 = param.fCurrentSigmaZ2;
+    fErrorY2        = param.fErrorY2;
+    fErrorZ2        = param.fErrorZ2;
+    fCurrentCluster = param.fCurrentCluster; // this is not allocated by AliTPCSeed
+    fCurrentClusterIndex1 = param.fCurrentClusterIndex1; 
+    fInDead         = param.fInDead;
+    fIsSeeding      = param.fIsSeeding;
+    fNoCluster      = param.fNoCluster;
+    fSort           = param.fSort;
+    fBSigned        = param.fBSigned;
+    for(Int_t i = 0;i<4;++i){
+      fDEDX[i]   = param.fDEDX[i];
+      fSDEDX[i]  = param.fSDEDX[i];
+      fNCDEDX[i] = param.fNCDEDX[i];
+    }
+    for(Int_t i = 0;i<AliPID::kSPECIES;++i)fTPCr[i] = param.fTPCr[i];
+    
+    fSeedType = param.fSeedType;
+    fSeed1    = param.fSeed1;
+    fSeed2    = param.fSeed2;
+    for(Int_t i = 0;i<12;++i)fOverlapLabels[i] = param.fOverlapLabels[i];
+    fMAngular = param.fMAngular;
+    fCircular = param.fCircular;
+    for(int i = 0;i<160;++i)fTrackPoints[i] =  param.fTrackPoints[i];
+    fClusterMap = param.fClusterMap;
+    fSharedMap = param.fSharedMap;
+  }
   return (*this);
 }
 //____________________________________________________

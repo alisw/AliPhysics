@@ -278,14 +278,19 @@ void AliESDEvent::ResetStdContent()
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
   if(fSPDVertex){
+    fSPDVertex->~AliESDVertex();
     new (fSPDVertex) AliESDVertex();
     fSPDVertex->SetName(fESDListName[kSPDVertex]);
   }
   if(fPrimaryVertex){
+    fPrimaryVertex->~AliESDVertex();
     new (fPrimaryVertex) AliESDVertex();
     fPrimaryVertex->SetName(fESDListName[kPrimaryVertex]);
   }
-  if(fSPDMult)new (fSPDMult) AliMultiplicity();
+  if(fSPDMult){
+    fSPDMult->~AliMultiplicity();
+    new (fSPDMult) AliMultiplicity();
+  }
   if(fPHOSTrigger)fPHOSTrigger->Reset(); 
   if(fEMCALTrigger)fEMCALTrigger->Reset(); 
   if(fTracks)fTracks->Delete();
@@ -453,22 +458,21 @@ Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) {
 void  AliESDEvent::SetVertex(const AliESDVertex *vertex) {
   // use already allocated space
   if(fSPDVertex){
-    new(fSPDVertex)  AliESDVertex(*vertex);
+    *fSPDVertex = *vertex;
     fSPDVertex->SetName(fESDListName[kSPDVertex]);
   }
 }
 
 void  AliESDEvent::SetPrimaryVertex(const AliESDVertex *vertex) {
-  // use already allocated space
   if(fPrimaryVertex){
-    new(fPrimaryVertex)  AliESDVertex(*vertex);
+    *fPrimaryVertex = *vertex;
     fPrimaryVertex->SetName(fESDListName[kPrimaryVertex]);
   }
 }
 
 void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) {
   if(fSPDMult){
-    new (fSPDMult) AliMultiplicity(*mul);
+    *fSPDMult = *mul;
   }
 }
 
@@ -476,7 +480,7 @@ void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) {
 void AliESDEvent::SetFMDData(AliESDFMD * obj) { 
   // use already allocated space
   if(fESDFMD){
-    new(fESDFMD) AliESDFMD(*obj); 
+    *fESDFMD = *obj;
   }
 }
 

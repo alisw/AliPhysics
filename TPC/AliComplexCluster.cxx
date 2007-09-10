@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2006/11/06 16:07:15  kowal2
+Eff C++
+
 Revision 1.8  2004/03/30 14:09:22  kowal2
 Changes due to the coding conventions
 
@@ -102,6 +105,23 @@ Bool_t AliComplexCluster::IsSortable() const
 ClassImp(AliTPCExactPoint)
 ClassImp(AliTPCClusterPoint)
 ClassImp(AliTPCTrackerPoint)
+
+AliTPCTrackerPoint& AliTPCTrackerPoint::operator=(const AliTPCTrackerPoint& o){
+  if(this!=&o){
+    fTX = o.fTX;
+    fTY = o.fTY;
+    fTZ = o.fTZ;
+    fTAngleZ = o.fTAngleZ;
+    fTAngleY = o.fTAngleY;
+    fSigmaZ = o.fSigmaZ;
+    fSigmaY = o.fSigmaY;
+    fErrZ   = o.fErrZ;
+    fErrY   = o.fErrY;
+    fIsShared = o.fIsShared;
+  }
+  return *this;
+}
+
 ClassImp(AliTPCTrackPoint)
 ClassImp(AliTPCTrackPoint2)
 ClassImp(AliTPCTrackPointRef)

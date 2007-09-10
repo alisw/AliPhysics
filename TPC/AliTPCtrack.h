@@ -34,6 +34,7 @@ public:
               const Double_t cov[15], Int_t index); 
   AliTPCtrack(const AliESDtrack& t);
   AliTPCtrack(const AliTPCtrack& t);
+  AliTPCtrack& operator=(const AliTPCtrack& o);
   virtual ~AliTPCtrack() {}
 
   Int_t Compare(const TObject *o) const;
@@ -111,7 +112,7 @@ protected:
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
   Int_t    fV0Indexes[3];     // kink indexes - minus = mother + daughter
 
-  ClassDef(AliTPCtrack,3)   // Time Projection Chamber reconstructed tracks
+  ClassDef(AliTPCtrack,4)   // Time Projection Chamber reconstructed tracks
 };
 
 #endif

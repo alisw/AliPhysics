@@ -144,7 +144,7 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Do
     }
   }
   //delete array...
-  for(Int_t i=0;i<iNpars;i++) delete derivPart[i]; delete derivPart;
+  for(Int_t i=0;i<iNpars;i++) delete [] derivPart[i]; delete [] derivPart;
   
 }//FitFunction()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

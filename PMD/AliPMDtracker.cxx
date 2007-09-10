@@ -121,6 +121,7 @@ AliPMDtracker::~AliPMDtracker()
       delete fPMDcontout;
       fPMDcontout=0;
     }
+  delete fPMDutil;
 }
 //--------------------------------------------------------------------//
 void AliPMDtracker::LoadClusters(TTree *treein)

@@ -242,6 +242,7 @@ void AliPMDEmpDiscriminator::Discrimination(TObjArray *pmdcontin, TObjArray *pmd
       delete [] adcpre;
       delete [] ncellpre;
       delete [] radpre;
+      delete [] sortcoord;
       delete [] clupidpre;
       delete [] xpadcpv;
       delete [] ypadcpv;

@@ -23,7 +23,7 @@ public:
   AliKalmanTrack();
   AliKalmanTrack(const AliKalmanTrack &t);
   virtual ~AliKalmanTrack(){};
-
+  AliKalmanTrack& operator=(const AliKalmanTrack &o);
   void SetLabel(Int_t lab) {fLab=lab;}
 
   virtual Double_t GetPredictedChi2(const AliCluster *c) const = 0;

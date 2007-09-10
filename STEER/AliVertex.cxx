@@ -81,17 +81,18 @@ AliVertex &AliVertex::operator=(const AliVertex &source){
   //
   // assignment operator
   //
-  if(&source == this) return *this;
-  this->SetName(source.GetName());
-  this->SetTitle(source.GetTitle());
-  for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
-  fSigma = source.GetDispersion();
-  fNContributors = source.GetNContributors();
-  fNIndices = source.GetNIndices();
-  fIndices = 0x0;
-  if(source.fNIndices>0) {
-    fIndices = new UShort_t[fNIndices];
-    memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
+  if(&source != this){
+    TNamed::operator=(source);
+    for(Int_t i=0;i<3;i++)fPosition[i] = source.fPosition[i];
+    fSigma = source.GetDispersion();
+    fNContributors = source.GetNContributors();
+    fNIndices = source.GetNIndices();
+    if(fIndices)delete [] fIndices;
+    fIndices = 0;
+    if(fNIndices>0) {
+      fIndices = new UShort_t[fNIndices];
+      memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
+    }
   }
   return *this;
 }
@@ -103,6 +104,7 @@ AliVertex::~AliVertex() {
 // Default Destructor
 //
   delete [] fIndices;
+  fIndices = 0;
 }
 //--------------------------------------------------------------------------
 void AliVertex::GetXYZ(Double_t position[3]) const {

@@ -180,6 +180,33 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) :
   for (Int_t i=0; i<3;i++) fV0Indexes[i]=t.fV0Indexes[i];
 }
 
+AliTPCtrack& AliTPCtrack::operator=(const AliTPCtrack& o){
+  if(this!=&o){
+    AliKalmanTrack::operator=(o);
+    fdEdx = o.fdEdx;
+    for(Int_t i = 0;i<kMaxRow;++i)fIndex[i] = o.fIndex[i];
+    for(Int_t i = 0;i<4;++i)fPoints[i] = o.fPoints[i];
+    fSdEdx = o.fSdEdx;
+    fNFoundable = o.fNFoundable;
+    fBConstrain = o.fBConstrain;
+    fLastPoint  = o.fLastPoint;
+    fFirstPoint = o.fFirstPoint;
+    fTrackType  = o.fTrackType;
+    fLab2       = o.fLab2;
+    fNShared    = o.fNShared;
+    fReference  = o.fReference;
+    for(Int_t i = 0;i<12;++i) fKinkPoint[i] = o.fKinkPoint[i];
+
+    for(Int_t i = 0;i<3;++i){
+      fKinkIndexes[i] = o.fKinkIndexes[i];
+      fV0Indexes[i] = o.fV0Indexes[i];
+    }
+  }
+  return *this;
+
+}
+
+
 //_____________________________________________________________________________
 Int_t AliTPCtrack::Compare(const TObject *o) const {
   //-----------------------------------------------------------------

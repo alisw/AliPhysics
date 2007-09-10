@@ -121,6 +121,17 @@ AliPHOSTrigger::AliPHOSTrigger(const AliPHOSTrigger & trig) :
   // cpy ctor
 }
 
+AliPHOSTrigger::~AliPHOSTrigger() 
+{
+  // dtor
+  
+  if(fADCValuesHighnxn)delete [] fADCValuesHighnxn;
+  if(fADCValuesLownxn)delete [] fADCValuesLownxn;
+  if(fADCValuesHigh2x2)delete []  fADCValuesHigh2x2;
+  if(fADCValuesLow2x2)delete [] fADCValuesLow2x2;
+  // fDigitsList is now ours...
+}
+
 //_________________________________________________________________________
 AliPHOSTrigger & AliPHOSTrigger::operator = (const AliPHOSTrigger &)
 {
@@ -555,8 +566,9 @@ void AliPHOSTrigger::SetTriggers(const TClonesArray * ampmatrix, const Int_t iMo
     //Transform digit amplitude in Raw Samples
     if (fADCValuesLow2x2 == 0) {
       fADCValuesLow2x2  = new Int_t[nTimeBins];
-      fADCValuesHigh2x2 = new Int_t[nTimeBins];
     }
+    if(!fADCValuesHigh2x2) fADCValuesHigh2x2 = new Int_t[nTimeBins];
+
     
     pulse.SetAmplitude(f2x2MaxAmp);
     pulse.SetTZero(maxtimeR2);

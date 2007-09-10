@@ -51,19 +51,11 @@ AliESDCaloTrigger& AliESDCaloTrigger::operator=(const AliESDCaloTrigger& ctrig)
   if(this!=&ctrig) {
     TNamed::operator=(ctrig);
     // CKB dont't want to create leak if fTriggerAmp points to 
-    // somthing already, use new with placement
-    if(fTriggerAmplitudes){
-      fTriggerAmplitudes = new(fTriggerAmplitudes) TArrayF(*ctrig.fTriggerAmplitudes);
-    }
-    else{
-      fTriggerAmplitudes = new TArrayF(*ctrig.fTriggerAmplitudes);
-    }
-    if(fTriggerPosition){
-      fTriggerPosition = new(fTriggerPosition) TArrayF(*ctrig.fTriggerPosition);
-    }
-    else{
-      fTriggerPosition = new TArrayF(*ctrig.fTriggerPosition);
-    }
+    // something already 
+    delete fTriggerAmplitudes;
+    fTriggerAmplitudes = new TArrayF(*ctrig.fTriggerAmplitudes);
+    delete fTriggerPosition;    
+    fTriggerPosition = new TArrayF(*ctrig.fTriggerPosition);
   } 
   return *this;
 }

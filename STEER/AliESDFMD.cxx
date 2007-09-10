@@ -63,8 +63,11 @@ AliESDFMD&
 AliESDFMD::operator=(const AliESDFMD& other)
 {
   // Default CTOR
-  fMultiplicity = other.fMultiplicity;
-  fEta          = other.fEta;
+  if(this!=&other){
+    TObject::operator=(other);
+    fMultiplicity = other.fMultiplicity;
+    fEta          = other.fEta;
+  }
   return *this;
 }
 

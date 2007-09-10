@@ -107,7 +107,7 @@ void AliMagFMaps::ReadField()
   //    
    
 
-  char* fname;
+  char* fname = 0;
   TFile* file = 0;
   if (fMap == k2kG) {
       fSolenoid = 2.;
@@ -116,17 +116,19 @@ void AliMagFMaps::ReadField()
       fFieldMap[0] = dynamic_cast<AliFieldMap*>(file->Get("L3B02"));
       file->Close();
       delete file;
+      delete fname; // see documentation to expand filenam
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB02.root");
       file = new TFile(fname);
       fFieldMap[1] = dynamic_cast<AliFieldMap*>(file->Get("DipB02"));
       file->Close();
       delete file;;
-      
+      delete fname;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB02.root");
       file = new TFile(fname);
       fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB02"));
       file->Close();
       delete file;
+      delete fname;
   } else if (fMap == k4kG) {
       fSolenoid = 4.;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/L3B04.root");
@@ -134,16 +136,19 @@ void AliMagFMaps::ReadField()
       fFieldMap[0] = dynamic_cast<AliFieldMap*>(file->Get("L3B04"));
       file->Close();
       delete file;
+      delete fname;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB04.root");
       file = new TFile(fname);
       fFieldMap[1] = dynamic_cast<AliFieldMap*>(file->Get("DipB04"));
       file->Close();
+      delete fname;
       delete file;
       
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB04.root");
       file = new TFile(fname);
       fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB04"));
       file->Close();
+      delete fname;
       delete file;
   } else if (fMap == k5kG) {
       fSolenoid = 5.;
@@ -151,18 +156,20 @@ void AliMagFMaps::ReadField()
       file = new TFile(fname);
       fFieldMap[0] = dynamic_cast<AliFieldMap*>(file->Get("L3B05"));
       file->Close();
-      delete file;
+      delete file;      
+      delete fname;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/DipB05.root");
       file = new TFile(fname);
       fFieldMap[1] = dynamic_cast<AliFieldMap*>(file->Get("DipB05"));
       file->Close();
       delete file;
-      
+      delete fname;
       fname = gSystem->ExpandPathName("$(ALICE_ROOT)/data/maps/ExtB05.root");
       file = new TFile(fname);
       fFieldMap[2] = dynamic_cast<AliFieldMap*>(file->Get("ExtB05"));
       file->Close();
       delete file;
+      delete fname;
   }
 
   if (!fL3Option) fSolenoidUser = fSolenoid;

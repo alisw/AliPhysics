@@ -161,26 +161,16 @@ AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
   //
   // assignment operator
   //
-  if(&source == this) return *this;
-  this->SetName(source.GetName());
-  this->SetTitle(source.GetTitle());
-  for(Int_t i=0;i<3;i++) {
-    fPosition[i] = source.fPosition[i];
-    fSNR[i] = source.fSNR[i];
-  }
-  fCovXX = source.fCovXX;
-  fCovXY = source.fCovXY;
-  fCovYY = source.fCovYY;
-  fCovXZ = source.fCovXZ;
-  fCovYZ = source.fCovYZ;
-  fCovZZ = source.fCovZZ;
-  fChi2 = source.fChi2;
-  fSigma = source.GetDispersion();
-  fNContributors = source.GetNContributors();
-  fNIndices = source.GetNIndices();
-  if(source.fNIndices>0) {
-    fIndices = new UShort_t[fNIndices];
-    memcpy(fIndices,source.fIndices,fNIndices*sizeof(UShort_t));
+  if(&source != this){
+    AliVertex::operator=(source);
+    for(Int_t i=0;i<3;++i)fSNR[i] = source.fSNR[i];
+    fCovXX = source.fCovXX;
+    fCovXY = source.fCovXY;
+    fCovYY = source.fCovYY;
+    fCovXZ = source.fCovXZ;
+    fCovYZ = source.fCovYZ;
+    fCovZZ = source.fCovZZ;
+    fChi2 = source.fChi2;
   }
   return *this;
 }

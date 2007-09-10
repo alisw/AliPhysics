@@ -17,7 +17,6 @@ AliMultiplicity::AliMultiplicity():
 
 {
   // Default Constructor
-
   fFiredChips[0] = -1;
   fFiredChips[1] = -1;
 }
@@ -55,7 +54,6 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
       fPhisingle[i]=ps[i];
     }
   }
-
   fFiredChips[0] = -1;
   fFiredChips[1] = -1;
 }
@@ -73,9 +71,7 @@ AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   fPhisingle(0)
 {
   // copy constructor
-
   Duplicate(m);
-
 }
 
 //______________________________________________________________________
@@ -84,12 +80,12 @@ AliMultiplicity &AliMultiplicity::operator=(const AliMultiplicity& m){
   if(this == &m)return *this;
   ((TObject *)this)->operator=(m);
 
-  if (fTh)delete [] fTh;
-  if(fPhi)delete [] fPhi;
-  if(fDeltPhi)delete [] fDeltPhi;
-  if(fLabels)delete [] fLabels;
-  if(fThsingle)delete [] fThsingle;
-  if(fPhisingle)delete [] fPhisingle;
+  if(fTh)delete [] fTh;fTh = 0;
+  if(fPhi)delete [] fPhi;fPhi = 0; 
+  if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
+  if(fLabels)delete [] fLabels;fLabels = 0;
+  if(fThsingle)delete [] fThsingle;fThsingle = 0;
+  if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
   Duplicate(m);
 
   return *this;
@@ -100,9 +96,9 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   // used by copy constructor and assignment operator
   fNtracks = m.fNtracks;
   if(fNtracks>0){
-    fTh = new Float_t [fNtracks];
-    fPhi = new Float_t [fNtracks];
-    fDeltPhi = new Float_t [fNtracks];
+    fTh = new Float_t[fNtracks];
+    fPhi = new Float_t[fNtracks];
+    fDeltPhi = new Float_t[fNtracks];
     fLabels = new Int_t[fNtracks];
   }
   else {
@@ -113,8 +109,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   }
   fNsingle = m.fNsingle;
   if(fNsingle>0){
-    fThsingle = new Float_t [fNsingle];
-    fPhisingle = new Float_t [fNsingle];
+    fThsingle = new Float_t[fNsingle];
+    fPhisingle = new Float_t[fNsingle];
   }
   else {
     fThsingle = 0;
@@ -134,12 +130,13 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
 //______________________________________________________________________
 AliMultiplicity::~AliMultiplicity(){
   // Destructor
-  if (fTh)delete [] fTh;
-  if(fPhi)delete [] fPhi;
-  if(fDeltPhi)delete [] fDeltPhi;
-  if(fLabels)delete [] fLabels;
-  if(fThsingle)delete [] fThsingle;
-  if(fPhisingle)delete [] fPhisingle;
+  if(fTh)delete [] fTh;fTh = 0;
+  if(fPhi)delete [] fPhi;fPhi = 0; 
+  if(fDeltPhi)delete [] fDeltPhi;fDeltPhi = 0; 
+  if(fLabels)delete [] fLabels;fLabels = 0;
+  if(fThsingle)delete [] fThsingle;fThsingle = 0;
+  if(fPhisingle)delete [] fPhisingle;fPhisingle = 0;
+
 }
 
 

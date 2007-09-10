@@ -65,6 +65,7 @@ class AliTPCTrackerPoint  {
     fErrY(0),
     fIsShared(0){}
   virtual ~AliTPCTrackerPoint(){}
+  AliTPCTrackerPoint &operator=(const AliTPCTrackerPoint& o);
   Float_t  GetX() const  {return (fTX*0.01);}
   Float_t  GetZ() const {return (fTZ*0.01);}
   Float_t  GetY() const {return (fTY*0.01);}
@@ -102,7 +103,7 @@ class AliTPCTrackerPoint  {
   UShort_t  fErrY;       // y error estimate - in  mm - 50 mum precision 
   Char_t   fIsShared;     // indicate sharing of the point between several tracks
 
-  ClassDef(AliTPCTrackerPoint,1)  
+  ClassDef(AliTPCTrackerPoint,2)  
 };
 
 class AliTPCClusterPoint  {

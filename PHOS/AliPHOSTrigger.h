@@ -43,8 +43,7 @@ class AliPHOSTrigger : public AliTriggerDetector {
   
   AliPHOSTrigger() ; //  ctor
   AliPHOSTrigger(const AliPHOSTrigger & trig) ; // cpy ctor
-  virtual ~AliPHOSTrigger(){}; //virtual dtor
-
+  virtual ~AliPHOSTrigger();
 
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
   void            Print(const Option_t * opt ="") const ;  

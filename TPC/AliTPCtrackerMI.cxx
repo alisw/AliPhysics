@@ -2909,7 +2909,7 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
   Double_t x[5], c[15];
   //  Int_t di = i1-i2;
   //
-  AliTPCseed * seed = new AliTPCseed;
+  AliTPCseed * seed = new AliTPCseed();
   Double_t alpha=fSectors->GetAlpha(), shift=fSectors->GetAlphaShift();
   Double_t cs=cos(alpha), sn=sin(alpha);
   //
@@ -3119,6 +3119,7 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	//	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
 	
         UInt_t index=kr1.GetIndex(is);
+	seed->~AliTPCseed(); // this does not set the pointer to 0...
 	AliTPCseed *track=new(seed) AliTPCseed(x1, ns*alpha+shift, x, c, index);
 	
 	track->SetIsSeeding(kTRUE);
@@ -3184,7 +3185,7 @@ void AliTPCtrackerMI::MakeSeeds3(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 	    }
 	  }
 	}
-	
+      
 	track->SetSeedType(0);
 	arr->AddLast(track); 
 	seed = new AliTPCseed; 	
@@ -3407,6 +3408,7 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
       //	if (!BuildSeed(kr1[is],kcl,0,x1,x2,x3,x,c)) continue;
       
       UInt_t index=kr1.GetIndex(is);
+      seed->~AliTPCseed();
       AliTPCseed *track=new(seed) AliTPCseed(x1, sec*alpha+shift, x, c, index);
       
       track->SetIsSeeding(kTRUE);
@@ -3686,7 +3688,8 @@ void AliTPCtrackerMI::MakeSeeds2(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
 
 	UInt_t index=0;
 	//kr0.GetIndex(is);
-	AliTPCseed *track=new (seed) AliTPCseed(x1,sec*alpha+shift,x,c,index);
+	seed->~AliTPCseed();
+	AliTPCseed *track=new(seed) AliTPCseed(x1,sec*alpha+shift,x,c,index);
 	track->SetIsSeeding(kTRUE);
 	Int_t rc=FollowProlongation(*track, i2);	
 	if (constrain) track->SetBConstrain(1);
@@ -4421,7 +4424,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
       if (TMath::Abs(ktrack0->GetC())>5) continue; // cut on the curvature for mother particle
       AliExternalTrackParam paramm(*ktrack0);
       AliExternalTrackParam paramd(*ktrack1);
-      if (row0>60&&ktrack1->GetReference().GetX()>90.) new (&paramd) AliExternalTrackParam(ktrack1->GetReference()); 
+      if (row0>60&&ktrack1->GetReference().GetX()>90.)new (&paramd) AliExternalTrackParam(ktrack1->GetReference()); 
       //
       //
       kink->SetMother(paramm);
@@ -4562,8 +4565,8 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
 	if (RefitKink(*seed0,*seed1,*kink)) kink->SetStatus(1,9);
 	row0 = GetRowNumber(kink->GetR());
 	sumn = seed0->GetNumberOfClusters()+seed1->GetNumberOfClusters();
-	new (&mothers[i])   AliTPCseed(*seed0);
-	new (&daughters[i]) AliTPCseed(*seed1); 
+	mothers[i] = *seed0;
+	daughters[i] = *seed1;
       }
       else{
 	delete kinks->RemoveAt(i);
@@ -4678,8 +4681,8 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
     //
     if ( ktrack0->GetKinkIndex(0)==0 && ktrack1->GetKinkIndex(0)==0) {  //best kink
       if (mothers[indexes[i]].GetNumberOfClusters()>20 && daughters[indexes[i]].GetNumberOfClusters()>20 && (mothers[indexes[i]].GetNumberOfClusters()+daughters[indexes[i]].GetNumberOfClusters())>100){
-	new (ktrack0) AliTPCseed(mothers[indexes[i]]);
-	new (ktrack1) AliTPCseed(daughters[indexes[i]]);
+	*ktrack0 = mothers[indexes[i]];
+	*ktrack1 = daughters[indexes[i]];
       }
     }
     //
@@ -5198,8 +5201,8 @@ Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliES
   for (Int_t irow=0;irow<kNdiv;irow++){
     FollowBackProlongation(mother, rows[irow]);
     FollowProlongation(daughter,rows[kNdiv-1-irow]);       
-    new(&param0[irow])     AliTPCseed(mother);
-    new(&param1[kNdiv-1-irow])   AliTPCseed(daughter);
+    param0[irow] = mother;
+    param1[kNdiv-1-irow] = daughter;
   }
   //
   // define kinks 
@@ -5232,8 +5235,8 @@ Int_t AliTPCtrackerMI::RefitKink(AliTPCseed &mother, AliTPCseed &daughter, AliES
   param0[index].Reset(kTRUE);
   FollowProlongation(param0[index],0);
   //
-  new (&mother) AliTPCseed(param0[index]);
-  new (&daughter) AliTPCseed(param1[index]);  // daughter in vertex
+  mother = param0[index];
+  daughter = param1[index];  // daughter in vertex
   //
   kink.SetMother(mother);
   kink.SetDaughter(daughter);
@@ -5349,8 +5352,8 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   for (Int_t irow=0;irow<20;irow++){
     FollowBackProlongation(*seed0, rows[irow]);
     FollowProlongation(*seed1,rows[19-irow]);       
-    new(&param0[irow])     AliTPCseed(*seed0);
-    new(&param1[19-irow])   AliTPCseed(*seed1);
+    param0[irow] = *seed0;
+    param1[19-irow] = *seed1;
   }
   //
   // define kinks 
@@ -5386,7 +5389,7 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   seed1->ResetCovariance(10.);
   FollowProlongation(*seed0,0);
   FollowBackProlongation(*seed1,158);
-  new (&mother) AliTPCseed(*seed0);  // backup mother at position 0
+  mother = *seed0; // backup mother at position 0
   seed0->Reset(kFALSE);  
   seed1->Reset(kFALSE);
   seed0->ResetCovariance(10.);
@@ -5403,8 +5406,8 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   for (Int_t irow=0;irow<20;irow++){
     FollowBackProlongation(*seed0, rows[irow]);
     FollowProlongation(*seed1,rows[19-irow]);       
-    new(&param0[irow])     AliTPCseed(*seed0);
-    new(&param1[19-irow])   AliTPCseed(*seed1);
+    param0[irow] = *seed0;
+    param1[19-irow] = *seed1;
   }
   //
   // define kinks 
@@ -5452,11 +5455,11 @@ Int_t  AliTPCtrackerMI::CheckKinkPoint(AliTPCseed*seed,AliTPCseed &mother, AliTP
   //
   //
   //  new (&mother) AliTPCseed(param0[index]);
-  new (&daughter) AliTPCseed(param1[index]);
+  daughter = param1[index];
   daughter.SetLabel(kink.GetLabel(1));  
   param0[index].Reset(kTRUE);
   FollowProlongation(param0[index],0);  
-  new (&mother) AliTPCseed(param0[index]);
+  mother = param0[index];
   mother.SetLabel(kink.GetLabel(0));
   delete seed0;
   delete seed1;
@@ -6295,7 +6298,12 @@ void AliTPCtrackerMI::CookLabel(AliKalmanTrack *tk, Float_t wrong) const {
   //--------------------------------------------------------------------
   //This function "cooks" a track label. If label<0, this track is fake.
   //--------------------------------------------------------------------
-  AliTPCseed * t = (AliTPCseed*)tk;
+  AliTPCseed * t = dynamic_cast<AliTPCseed*>(tk);
+  if(!t){
+    printf("%s:%d wrong type \n",(char*)__FILE__,__LINE__);
+    return;
+  }
+
   Int_t noc=t->GetNumberOfClusters();
   if (noc<10){
     //printf("\nnot founded prolongation\n\n\n");
@@ -6504,6 +6512,7 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
      fPadPitchWidth=par->GetInnerPadPitchWidth();
      fPadPitchLength=par->GetInnerPadPitchLength();
      fN=par->GetNRowLow();
+     if(fRow)delete [] fRow;fRow = 0;
      fRow=new AliTPCRow[fN];
      for (Int_t i=0; i<fN; i++) {
        fRow[i].SetX(par->GetPadRowRadiiLow(i));
@@ -6516,8 +6525,8 @@ void AliTPCtrackerMI::AliTPCSector::Setup(const AliTPCParam *par, Int_t f) {
      fPadPitchLength = par->GetOuter1PadPitchLength();
      f1PadPitchLength = par->GetOuter1PadPitchLength();
      f2PadPitchLength = par->GetOuter2PadPitchLength();
-
      fN=par->GetNRowUp();
+     if(fRow)delete [] fRow;fRow = 0;
      fRow=new AliTPCRow[fN];
      for (Int_t i=0; i<fN; i++) {
        fRow[i].SetX(par->GetPadRowRadiiUp(i)); 
