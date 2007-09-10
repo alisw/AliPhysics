@@ -226,8 +226,6 @@ public:
   void    GetHMPIDpid(Double_t *p) const;  
   void    SetHMPIDchi2(Double_t chi2) {fHMPIDchi2=chi2;}
   Float_t GetHMPIDchi2() const {return fHMPIDchi2;}
-  void    SetHMPIDcluster(Int_t index) {fHMPIDcluIdx=index;}
-  Int_t   GetHMPIDcluster() const {return fHMPIDcluIdx;}
   void    SetHMPIDcluIdx(Int_t ch,Int_t idx) {fHMPIDcluIdx=ch*1000000+idx;}
   Int_t   GetHMPIDcluIdx() const {return fHMPIDcluIdx;}
   void    SetHMPIDtrk(Float_t  x, Float_t  y, Float_t  th, Float_t  ph) {
