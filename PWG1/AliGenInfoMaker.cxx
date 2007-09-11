@@ -800,7 +800,9 @@ Int_t AliGenInfoMaker::TreeTRLoop()
       new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
     }
     //
+    //
     // get dacay position
+    //
     for (Int_t iTrackRef = 0; iTrackRef < runArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)runArrayTR->At(iTrackRef);      
       //
@@ -823,6 +825,107 @@ Int_t AliGenInfoMaker::TreeTRLoop()
   delete  itsArrayTR;
   runArrayTR->Delete();
   delete  runArrayTR;
+  //
+  return TreeTRLoopNew();
+}
+
+////////////////////////////////////////////////////////////////////////
+Int_t AliGenInfoMaker::TreeTRLoopNew()
+{
+  //
+  // loop over TrackReferences and store the first one for each track
+  //  
+  TTree * treeTR = fTreeTR;
+  Int_t nPrimaries = (Int_t) treeTR->GetEntries();
+  if (fDebug > 1) cout<<"There are "<<nPrimaries<<" entries in TreeTR"<<endl;
+  //
+  //
+  //
+  TClonesArray* runArrayTR = new TClonesArray("AliTrackReference");
+  //
+  if (treeTR->GetBranch("TrackReferences")) treeTR->GetBranch("TrackReferences")->SetAddress(&runArrayTR);
+  //
+  //
+  //
+  for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) {
+    treeTR->GetEntry(iPrimPart);
+    //
+    // gettrack references
+    //
+    for (Int_t iTrackRef = 0; iTrackRef < runArrayTR->GetEntriesFast(); iTrackRef++) {
+      AliTrackReference *trackRef = (AliTrackReference*)runArrayTR->At(iTrackRef);      
+      //
+      Int_t label = trackRef->GetTrack();
+      //
+      // TPC
+      //
+      if (trackRef->DetectorId()== AliTrackReference::kTPC){
+	//
+	if (trackRef->P()<fTPCPtCut) continue;
+	Int_t label = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label);
+	if (!info) info = MakeInfo(label);
+	if (!info) continue;
+	info->fPrimPart =  iPrimPart;
+	TClonesArray & arr = *(info->fTPCReferences);
+	new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
+      }
+      //
+      // ITS
+      //
+      if (trackRef->DetectorId()== AliTrackReference::kITS){
+	//
+	if (trackRef->P()<fITSPtCut) continue;
+	Int_t label = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label);
+	if (!info) info = MakeInfo(label);
+	if (!info) continue;
+	info->fPrimPart =  iPrimPart;
+	TClonesArray & arr = *(info->fITSReferences);
+	new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
+      }
+      //
+      // TRD
+      //
+      if (trackRef->DetectorId()== AliTrackReference::kTRD){
+	//
+	if (trackRef->P()<fTRDPtCut) continue;
+	Int_t label = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label);
+	if (!info) info = MakeInfo(label);
+	if (!info) continue;
+	info->fPrimPart =  iPrimPart;
+	TClonesArray & arr = *(info->fTRDReferences);
+	new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
+      }
+      //
+      // TOF
+      //
+      if (trackRef->DetectorId()== AliTrackReference::kTOF){
+	//
+	if (trackRef->P()<fTOFPtCut) continue;
+	Int_t label = trackRef->GetTrack();      
+	AliMCInfo * info = GetInfo(label);
+	if (!info) info = MakeInfo(label);
+	if (!info) continue;
+	info->fPrimPart =  iPrimPart;
+	TClonesArray & arr = *(info->fTOFReferences);
+	new (arr[arr.GetEntriesFast()]) AliTrackReference(*trackRef);     
+      }
+      //
+      // decay case
+      //
+      if (trackRef->DetectorId()== AliTrackReference::kDisappeared){
+	//
+	if (!trackRef->TestBit(BIT(2))) continue;  //if not decay
+	AliMCInfo * info = GetInfo(label);
+	if (!info) continue;
+	info->fTRdecay = *trackRef;      	
+      }
+      
+    }
+  }
+  //
   //
   return 0;
 }

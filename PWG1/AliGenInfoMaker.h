@@ -47,6 +47,7 @@ public:
   void CloseOutputFile();
   Int_t TreeKLoop();
   Int_t TreeTRLoop();
+  Int_t TreeTRLoopNew(); 
   Int_t TreeDLoop();
   Int_t BuildKinkInfo();  // build information about MC kinks
   Int_t BuildV0Info();  // build information about MC kinks
