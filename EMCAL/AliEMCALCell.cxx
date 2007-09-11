@@ -13,11 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id:*/
+/*
+$Log$
+*/ 
 
 //_________________________________________________________________________
-// Top EMCAL folder which will keep all information about EMCAL itself,
-// super Modules (SM), modules, towers, set of hists and so on.
+// Cell folder which will keep all information about cell(tower) itself
+//  Initial version was created with TDataSet staf
+//  TObjectSet -> TFolder; Sep 6, 2007
 //
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -27,6 +30,7 @@
 #include "AliEMCALFolder.h"
 #include "AliEMCALSuperModule.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALRecPointsQaESDSelector.h"
 
 #include "AliEMCALCalibCoefs.h"
 
@@ -36,7 +40,6 @@
 #include <TH1.h>
 #include <TF1.h>
 #include <TNtuple.h>
-#include <TObjectSet.h>
 
 typedef  AliEMCALHistoUtilities u;
 
@@ -47,18 +50,19 @@ Double_t MPI0         = 0.13498; // mass of pi0
 Double_t MPI02        = MPI0*MPI0; // mass**2
 
 AliEMCALCell::AliEMCALCell() : 
-TObjectSet(), 
+TFolder(), 
+ fParent(0),fLh(0),
 fAbsId(0),fSupMod(0),fModule(0),fPhi(0),fEta(0),fPhiCell(0),fEtaCell(0),fCcIn(0),fCcOut(0),
 fFun(0)
 {
 }
 
 AliEMCALCell::AliEMCALCell(const Int_t absId, const char* title) : 
-TObjectSet(Form("Cell%4.4i",absId)), 
+  TFolder(Form("Cell%4.4i",absId),title), 
+ fParent(0),fLh(0),
 fAbsId(absId),fSupMod(0),fModule(0),fPhi(0),fEta(0),fPhiCell(0),fEtaCell(0),fCcIn(0),fCcOut(0),
 fFun(0)
 {
-  SetTitle(title);
   
   AliEMCALGeometry *g = AliEMCALGeometry::GetInstance();
   g->GetCellIndex(fAbsId, fSupMod, fModule, fPhi, fEta);
@@ -70,6 +74,7 @@ AliEMCALCell::~AliEMCALCell()
 {
   // dtor
 }
+//-------------------------------------------------------------------------------------
 
 void AliEMCALCell::SetCCfromDB(AliEMCALCalibData *ccDb)
 {
@@ -84,8 +89,14 @@ void AliEMCALCell::SetCCfromDB(AliEMCALCalibData *ccDb)
 
 void AliEMCALCell::SetCCfromCCTable(AliEMCALCalibCoefs *t)
 {
-  if(t == 0) return;
-  this->AddObject((TObject*)BookHists(), kTRUE);
+  if(t == 0) {
+    //    Dump();
+    return;
+  }
+  if(fLh == 0) {
+    fLh = BookHists();
+    Add(fLh);
+  }
 
   calibCoef *r = t->GetTable(fAbsId);
   if(r && r->absId == fAbsId) {
@@ -115,11 +126,11 @@ void AliEMCALCell::FitHist(TH1* h, const char* name, const char* opt)
   TString optFit(""), OPT(opt);
   OPT.ToUpper();
   if(h==0) return; 
-  printf("<I> AliEMCALCell::FitHist : h %p |%s| is started : opt %s\n", h, h->GetName(), opt);
+  printf("<I> AliEMCALCell::FitHist : |%s| is started : opt %s\n", h->GetName(), opt);
   TString tit(h->GetTitle());
 
   TF1 *GausPol2 = 0, *g=0, *bg=0;
-  if(h->GetListOfFunctions()->GetSize() == 0) {
+  if(h->GetListOfFunctions()->GetSize() == 0 || 1) {
     g = u::Gausi(name, 0.0, 0.4, h); // gaus estimation
 
     g->SetParLimits(0, h->Integral()/20., h->Integral());
@@ -154,6 +165,7 @@ void AliEMCALCell::FitHist(TH1* h, const char* name, const char* opt)
   } else {
     GausPol2 = (TF1*)h->GetListOfFunctions()->At(0);
     optFit = "IME+";
+    printf("<I> Function is defined alredy : %s optFit %s \n", GausPol2->GetTitle(), optFit.Data());
   }
   //  optFit = "IME+";
   h->Fit(GausPol2, optFit.Data(),"", 0.01, 0.28);
@@ -162,12 +174,12 @@ void AliEMCALCell::FitHist(TH1* h, const char* name, const char* opt)
     gStyle->SetOptFit(111);
     u::DrawHist(h,2);
   }
-  printf("<I> AliEMCALCell::FitHist : h %p |%s| is ended \n\n", h, h->GetName());
+  printf("<I> AliEMCALCell::FitHist : |%s| is ended \n\n", h->GetName());
 }
 
 void AliEMCALCell::FitEffMassHist(const char* opt)
 {
-  AliEMCALFolder* EMCAL = (AliEMCALFolder*)(GetParent()->GetParent()->GetParent()); 
+  AliEMCALFolder* EMCAL = AliEMCALRecPointsQaESDSelector::GetEmcalFolder();
   Int_t it = EMCAL->GetIterationNumber();
 
   TH1* h = (TH1*)GetHists()->At(0);
@@ -178,7 +190,7 @@ void AliEMCALCell::FitEffMassHist(const char* opt)
   if(fFun) {
     Double_t mpi = fFun->GetParameter(1), mpi2 = mpi*mpi;
     Double_t ccTmp = fCcIn * MPI02 / mpi2;
-    if(it<=6) {
+    if(it<=1) { // Jul 16, 2007
       fCcOut = ccTmp;
     } else {
       fCcOut = (ccTmp + fCcIn)/2.;
@@ -188,14 +200,15 @@ void AliEMCALCell::FitEffMassHist(const char* opt)
   printf(" %s | fCcIn %6.5f -> % 6.5f <- fCcOut \n", GetTitle(), fCcIn , fCcOut);
 }
 
-void AliEMCALCell::Print()
+void AliEMCALCell::PrintInfo()
 {
+  printf(" %s %s \n", GetName(), GetTitle());
+  if(fLh == 0 ) return;
   TH1* h = (TH1*)GetHists()->At(0);
   TF1 *f = (TF1*)h->GetListOfFunctions()->At(0);
-  printf(" %s %s \n", GetName(), GetTitle());
   if(fFun) printf(" fFun : %s | %s \n", fFun->GetName(),  fFun->GetTitle());
   else fFun = f;
-  if(f) f->Dump();
+  // if(f) f->Dump();
 }
 
 TList* AliEMCALCell::BookHists()
@@ -203,7 +216,7 @@ TList* AliEMCALCell::BookHists()
   gROOT->cd();
   TH1::AddDirectory(1);
 
-  AliEMCALFolder* EMCAL = (AliEMCALFolder*)(GetParent()->GetParent()->GetParent()); 
+  AliEMCALFolder* EMCAL = AliEMCALRecPointsQaESDSelector::GetEmcalFolder();
   Int_t it = EMCAL->GetIterationNumber();
 
   new TH1F("01_EffMass", "effective mass of #gamma,#gamma(m_{#pi^{0}}=134.98 MeV) ", 60,0.0,0.3);

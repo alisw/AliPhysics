@@ -13,11 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* 
+$Log$ 
+*/
 
 //_________________________________________________________________________
 // Top EMCAL folder which will keep all information about EMCAL itself,
 // super Modules (SM), modules, towers, set of hists and so on.
+//  TObjectSet -> TFolder; Sep 6, 2007
 //
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -39,16 +42,15 @@ typedef  AliEMCALHistoUtilities u;
 
 ClassImp(AliEMCALSuperModule)
 
-AliEMCALSuperModule::AliEMCALSuperModule() : TObjectSet(),
-fSMNumber(0)
+AliEMCALSuperModule::AliEMCALSuperModule() : TFolder()
+, fParent(0),fLh(0),fSMNumber(0)
 {
 }
 
 AliEMCALSuperModule::AliEMCALSuperModule(const Int_t m, const char* title) : 
-TObjectSet(Form("SM%2.2i",m)),
-fSMNumber(m)
-{
-  SetTitle(title);
+TFolder(Form("SM%2.2i",m), title)
+, fParent(0),fLh(0),fSMNumber(m)
+{ 
 } 
 
 AliEMCALSuperModule::~AliEMCALSuperModule()
@@ -58,15 +60,18 @@ AliEMCALSuperModule::~AliEMCALSuperModule()
 
 void AliEMCALSuperModule::Init()
 {
-  if(GetHists()==0) this->AddObject(BookHists(), kTRUE);
+  if(GetHists()==0) {
+    fLh = BookHists();
+    Add(fLh);
+  }
 }
 
 void  AliEMCALSuperModule::AddCellToEtaRow(AliEMCALCell *cell, const Int_t etaRow)
 {
-  static TDataSet *set;
-  set = FindByName(Form("ETA%2.2i",etaRow)); 
+  static TFolder *set;
+  set = dynamic_cast<TFolder*>(FindObject(Form("ETA%2.2i",etaRow))); 
   if(set==0) {
-    set = new  TDataSet(Form("ETA%2.2i",etaRow));
+    set = new  TFolder(Form("ETA%2.2i",etaRow),"eta row");
     Add(set);
   }
   set->Add(cell);
@@ -76,11 +81,14 @@ void AliEMCALSuperModule::FitForAllCells()
 {
   Int_t ncells=0;
   for(int eta=0; eta<48; eta++) { // eta row
-    TDataSet *setEta = FindByName(Form("ETA%2.2i",eta));
+    TFolder *setEta = dynamic_cast<TFolder*>(FindObject(Form("ETA%2.2i",eta)));
     if(setEta) {
-      printf(" eta %i : %s : cells %i \n", eta, setEta->GetName(), setEta->GetListSize());
-      for(int phi=0; phi<setEta->GetListSize(); phi++) { // cycle on cells (phi directions)
-        AliEMCALCell* cell = (AliEMCALCell*)setEta->At(phi);
+      TList* l = (TList*)setEta->GetListOfFolders();
+      printf(" eta %i : %s : cells %i \n", eta, setEta->GetName(), l->GetSize());
+      for(int phi=0; phi<l->GetSize(); phi++) { // cycle on cells (phi directions)
+        AliEMCALCell* cell = dynamic_cast<AliEMCALCell*>(l->At(phi));
+        if(cell == 0) continue; 
+
         cell->FitEffMassHist();
 
         u::FillH1(GetHists(), 1, cell->GetCcIn()*1.e+3);
@@ -124,9 +132,12 @@ void AliEMCALSuperModule::DrawCC(int iopt)
   TH1 *hCCIn  = (TH1*)GetHists()->At(1);
   TH1 *hCCOut = (TH1*)GetHists()->At(2);
 
+  if(hCCIn == 0)              return;
+  if(hCCIn->GetEntries()<10.) return;
+
   hCCIn->SetStats(kFALSE);
   hCCOut->SetStats(kFALSE);
-  hCCOut->SetTitle("CC in and out");
+  hCCOut->SetTitle("CC in and out; Iter 1; Jul 26; All Statistics");
   hCCOut->SetXTitle("cc in MeV");
   hCCOut->SetYTitle("  N  ");
 
@@ -137,7 +148,10 @@ void AliEMCALSuperModule::DrawCC(int iopt)
   TLegend *leg = new TLegend(0.5,0.36, 0.97,0.80);
   TLegendEntry *leIn = leg->AddEntry(hCCIn, Form("input cc : %6.2f #pm %6.2f", hCCIn->GetMean(),hCCIn->GetRMS()), "L");
   leIn->SetTextColor(hCCIn->GetLineColor());
+
+  if(hCCOut->GetEntries()>10.) 
   leg->AddEntry(hCCOut, Form("output cc : %6.2f #pm %6.2f", hCCOut->GetMean(),hCCOut->GetRMS()), "L");
+
   leg->Draw();
 
   if(c) c->Update();
@@ -146,9 +160,13 @@ void AliEMCALSuperModule::DrawCC(int iopt)
 Int_t AliEMCALSuperModule::GetNumberOfCells()
 {
   Int_t ncells=0;
-  for(int eta=0; eta<GetListSize(); eta++) { // cycle on eta row
-    TDataSet *set = At(eta);
-    ncells += set->GetListSize();
+  TList* l = (TList*)GetListOfFolders();
+  for(int eta=0; eta<l->GetSize(); eta++) { // cycle on eta row
+    TFolder *setEta = dynamic_cast<TFolder*>(l->At(eta));
+    if(setEta==0) continue;
+
+    TList* le = (TList*)setEta->GetListOfFolders();
+    ncells += le->GetSize();
   }
   return ncells;
 }

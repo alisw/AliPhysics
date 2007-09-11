@@ -13,7 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$ */
+/* $Log$co: warning: `/* $Log' is obsolescent; use ` * $Log'.
+
+ * Revision 1.1  2007/08/08 15:58:01  hristov
+ * New calibration classes. They depend on TTable, so libTable.so is added to the list of Root libraries. (Aleksei)
+ * */
 
 //_________________________________________________________________________
 //    Set of parameters for pi0 selection 
@@ -22,7 +26,40 @@
 
 #include "AliEMCALPi0SelectionParam.h"
 
-TableClassImpl(AliEMCALPi0SelectionParam,pi0SelectionParam)
+ClassImp(pi0SelectionParam)
+pi0SelectionParam::pi0SelectionParam() : 
+eOfRpMin(0.3), eOfRpMax(30.), massGGMin(0.03), massGGMax(0.28), momPi0Min(1.8), momPi0Max(12.)
+{ }
+//_________________________________________________________________________
+
+ClassImp(AliEMCALPi0SelectionParam)
+AliEMCALPi0SelectionParam::AliEMCALPi0SelectionParam() : TNamed("",""), fTable(0), fCurrentInd(0)
+{
+}
+
+AliEMCALPi0SelectionParam::AliEMCALPi0SelectionParam(const char* name, const Int_t nrow) : TNamed(name,"table of cell information") , fTable(0), fCurrentInd(0)
+{
+  fTable = new TObjArray(nrow);
+}
+
+void AliEMCALPi0SelectionParam::AddAt(pi0SelectionParam* r)
+{
+  (*fTable)[fCurrentInd] = new pi0SelectionParam(*r);
+  fCurrentInd++;
+}
+
+AliEMCALPi0SelectionParam::~AliEMCALPi0SelectionParam()
+{
+  if(fTable) {
+    fTable->Delete();
+    delete fTable;
+  }
+}
+
+pi0SelectionParam* AliEMCALPi0SelectionParam::GetTable(Int_t i) const
+{
+  return (pi0SelectionParam*)fTable->At(i);
+}
 
 void AliEMCALPi0SelectionParam::PrintTable()
 {

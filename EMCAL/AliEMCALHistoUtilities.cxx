@@ -35,6 +35,8 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
 #include <TLatex.h>
 #include <TChain.h>
 #include <TList.h>
@@ -47,6 +49,7 @@
 
 #include "AliESDCaloCluster.h"
 #include "AliEMCALRecPoint.h"
+#include "AliRunLoader.h"
 
 using namespace std;
 
@@ -85,7 +88,7 @@ void AliEMCALHistoUtilities::FillH1(TList *l, Int_t ind, Double_t x, Double_t w)
   //fill 1d histogram
   static TH1* hid=0;
   if(l == 0) return;
-  if(ind < l->GetSize()){
+  if(ind>=0 && ind < l->GetSize()){
     hid = (TH1*)l->At(ind);
     hid->Fill(x,w);
   }
@@ -96,7 +99,7 @@ void AliEMCALHistoUtilities::FillH2(TList *l, Int_t ind, Double_t x, Double_t y,
   //fill 2d histogram
   static TH2* hid=0;
   if(l == 0) return;
-  if(ind < l->GetSize()){
+  if(ind>=0 && ind < l->GetSize()){
     hid = (TH2*)l->At(ind);
     hid->Fill(x,y,w);
   }
@@ -160,7 +163,17 @@ void AliEMCALHistoUtilities::AddToNameAndTitleToList(TList *l, const char *name,
   }
 }
 
-TLatex *AliEMCALHistoUtilities::lat(const char *text, Float_t x,Float_t y, Int_t align, Float_t tsize, short tcolor)
+void AliEMCALHistoUtilities::ResetListOfHists(TList *l)
+{
+  if(l==0) return;
+
+  for(int i=0; i<l->GetSize(); i++) {
+    TH1F* h = (TH1F*)l->At(i);
+    h->Reset(); 
+  }
+}
+
+TLatex *AliEMCALHistoUtilities::Lat(const char *text, Float_t x,Float_t y, Int_t align, Float_t tsize, short tcolor)
 { 
   double y1=y;
   TLatex *latex = new TLatex;
@@ -171,6 +184,138 @@ TLatex *AliEMCALHistoUtilities::lat(const char *text, Float_t x,Float_t y, Int_t
   printf("<I> AliEMCALHistoUtilities::lat() -> %s gPad->GetLogy() %i\n", 
   text, gPad->GetLogy());
   return latex;
+}
+
+TGraph *AliEMCALHistoUtilities::DrawGraph(Int_t n, Double_t *x, Double_t *y, Int_t markerColor, 
+Int_t markerStyle, const char* opt, const char* tit, const char* xTit,const char* yTit, Int_t ifun,  
+const char *optFit, const char *fun)
+{
+  /* Drawing options 
+  chopt='L' :  A simple polyline between every points is drawn
+  chopt='F' :  A fill area is drawn ('CF' draw a smooth fill area)
+  chopt='A' :  Axis are drawn around the graph
+  chopt='C' :  A smooth Curve is drawn
+  chopt='*' :  A Star is plotted at each point
+  chopt='P' :  Idem with the current marker
+  chopt='B' :  A Bar chart is drawn at each point
+  chopt='1' :  ylow=rwymin
+  chopt='X+' : The X-axis is drawn on the top side of the plot.
+  chopt='Y+' : The Y-axis is drawn on the right side of the plot.
+
+    Fitting options
+   The list of fit options is given in parameter option.
+      option = "W"  Set all errors to 1
+             = "U" Use a User specified fitting algorithm (via SetFCN)
+             = "Q" Quiet mode (minimum printing)
+             = "V" Verbose mode (default is between Q and V)
+             = "B" Use this option when you want to fix one or more parameters
+                   and the fitting function is like "gaus","expo","poln","landau".
+             = "R" Use the Range specified in the function range
+             = "N" Do not store the graphics function, do not draw
+             = "0" Do not plot the result of the fit. By default the fitted function
+                   is drawn unless the option"N" above is specified.
+             = "+" Add this new fitted function to the list of fitted functions
+                   (by default, any previous function is deleted)
+             = "C" In case of linear fitting, not calculate the chisquare
+                    (saves time)
+             = "F" If fitting a polN, switch to minuit fitter
+             = "ROB" In case of linear fitting, compute the LTS regression
+                     coefficients (robust(resistant) regression), using
+                     the default fraction of good points
+               "ROB=0.x" - compute the LTS regression coefficients, using
+                           0.x as a fraction of good points
+
+  */
+  printf("AliEMCALHistoUtilities::drawGraph started \n");
+  printf("Drawing opt |%s| : Fitting opt |%s|\n", opt, optFit);
+
+    TGraph *gr = new TGraph(n, x, y);
+    gr->SetMarkerColor(markerColor);
+    gr->SetLineColor(markerColor);
+    gr->SetMarkerStyle(markerStyle);
+    gr->SetTitle(tit);
+    gr->Draw(opt);
+
+    TString ctmp(opt);
+    if(ctmp.Contains("A")) {
+       gr->GetHistogram()->SetXTitle(xTit);
+       gr->GetHistogram()->SetYTitle(yTit);
+    }
+    ctmp = optFit; 
+    if(ifun>=0) {
+      TString sf("pol"); sf += ifun;
+      gr->Fit(sf.Data(),optFit);
+      printf("\n ** Fit by Polynomial of degree %i : %s **\n", ifun, sf.Data());
+    } else if(!ctmp.Contains("no",TString::kIgnoreCase)){
+      printf("\n ** ifun %i : %s **\n", ifun, fun);
+      gr->Fit(fun, optFit);
+    }
+
+    return gr;
+}
+
+TGraphErrors *AliEMCALHistoUtilities::DrawGraphErrors(const Int_t n,Double_t *x,Double_t *y,Double_t *ex, 
+Double_t *ey, Int_t markerColor,  Int_t markerStyle, const char* opt, const char* tit, 
+const char* xTit,char* yTit, Int_t ifun, const char *optFit, const char *fun)
+{
+  printf("AliEMCALHistoUtilities::drawGraphErrors started \n");
+  printf("Drawing opt |%s| : ifun %i: Fitting opt |%s|, fun |%s|\n", 
+	 opt, ifun, optFit, fun);
+
+  TGraphErrors *gr = new TGraphErrors(n, x,y,ex,ey);
+  gr->SetMarkerColor(markerColor);
+  gr->SetLineColor(markerColor);
+  gr->SetMarkerStyle(markerStyle);
+  if(tit&&strlen(tit)>0) gr->SetTitle(tit);
+
+  TString ctmp(opt);
+  if(ctmp.Contains("A")) {
+     gr->GetHistogram()->SetXTitle(xTit);
+     gr->GetHistogram()->SetYTitle(yTit);
+  }
+  if(ifun>0) {
+    if(ifun != 999) {
+      TString sf("pol"); sf += ifun;
+      gr->Fit(sf.Data(),optFit);
+      printf("\n ** Fit by Polynomial of degree %i : %s **\n", ifun, sf.Data());
+    } else {
+      gr->Fit(fun, optFit);
+      printf("\n ** Fit by %s **\n", fun);
+    }
+  } else {
+    if(strlen(optFit)) {
+      printf("\n ** ifun %i : %s **\n", ifun, fun);
+      gr->Fit(fun, optFit);
+    }
+  }
+
+  gr->Draw(opt);
+
+  return gr;
+}
+
+TF1* AliEMCALHistoUtilities::GetResolutionFunction(const char *opt, TString &latexName)
+{
+  TString OPT(opt);
+  OPT.ToUpper();
+  TF1 *fres=0;
+  if      (OPT.Contains("FRES1")) {
+    fres = new TF1("fres","[0]+[1]/sqrt(x)", 0.0, 101.);
+    latexName = "#frac{#sigma_{E}}{E} = A+#frac{B}{#sqrt{E}}";
+  } else if(OPT.Contains("FRES2")) { 
+    fres = new TF1("fres","sqrt([0]*[0]+[1]*[1]/x)", 0.0, 101.);
+    latexName = "#sqrt{A^{2}+#frac{B^{2}}{E}}";
+  }
+  if(fres) {
+    fres->SetParName(0,"A");
+    fres->SetParName(1,"B");
+
+    fres->SetParameter(0, 2.0);
+    fres->SetParameter(1, 6.6);
+    fres->SetLineWidth(2);
+    fres->SetLineColor(kRed);
+  }
+  return fres;
 }
 
 void AliEMCALHistoUtilities::InitChain(TChain *chain, const char* nameListOfFiles, Int_t nFileMax)
@@ -199,6 +344,52 @@ void AliEMCALHistoUtilities::InitChain(TChain *chain, const char* nameListOfFile
   //  chain->Lookup();
 }
 
+AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char* galiceName)
+{
+  static AliRunLoader *RL = 0;
+  if(RL == 0 || nev%1000==0) {
+    if(RL)  {
+      RL->UnloadgAlice();
+      delete RL;
+    }
+    RL = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
+    RL->LoadgAlice(); // obligatory
+  }
+  if(RL) {
+    RL->GetEvent(nev%1000);
+    RL->LoadKinematics();
+    /* Get what you need after that
+      RL->LoadHits();
+      AliStack *stack=RL->Stack();
+      AliESDCaloCluster * clus = esd->GetCaloCluster(n);
+      Int_t label = clus->GetLabel(); // what is this 
+      TParticle *primary=stack->Particle(label); 
+    */
+  }
+  return RL;
+}
+
+Double_t AliEMCALHistoUtilities::GetMomentum(const char* nameListOfFiles)
+{
+  // Get momentum value from string  - like /....100GEV/.. 
+  Double_t p=-1; // negative if undefined 
+  TString st(nameListOfFiles);
+  if(st.Length()>=5) {
+    st.ToUpper();
+    Ssiz_t ind1 = st.Index("GEV"), ind2=0;
+    if(ind1>0) {
+      for(Int_t i=2; i<=10; i++) {
+        ind2 = st.Index("/",ind1-i);
+        if(ind2>0 && ind2<ind1) break;
+      }
+      TString mom  = st(ind2+1, ind1-ind2-1);
+      if(mom.IsFloat()) p = mom.Atof();
+      printf(" dir |%s| : mom |%s| : p %f : ind2,1 %i->%i\n", st.Data(), mom.Data(), p, ind2, ind1);
+    }
+  }
+  return p;
+}
+
 int AliEMCALHistoUtilities::ParseString(const TString &topt, TObjArray &Opt)
 { 
   // Moved from AliEMCALGeometry
@@ -217,6 +408,7 @@ int AliEMCALHistoUtilities::ParseString(const TString &topt, TObjArray &Opt)
   }
   return Opt.GetEntries();
 }
+
 // Analysis utilites
 Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster* cl)
 {
@@ -352,4 +544,34 @@ Double_t AliEMCALHistoUtilities::GiPol2(Double_t *x, Double_t *par)
   return f;
 }
 
+// Calibration stuff
+Double_t AliEMCALHistoUtilities::GetCorrectionCoefficientForGamma_1(const Double_t eRec)
+{
+  // Correction to rec.energy - Jul 15, 2007
+  // E(gamma) = corr * E(eRec);
+  /* corr = p0*(eRec-7.5)+p1*(eRec-7.5)*(eRec-7.5)+p2; 0.0<eRec<10.0
+   1  p0           6.07157e-05   1.15179e-04  -0.00000e+00   1.20997e-03
+   2  p1           1.50019e-04   3.13566e-05  -0.00000e+00   1.22531e-02
+   3  p2           9.99019e-01   4.08251e-04  -0.00000e+00   1.40606e-03
 
+     corr = p3 + p4*eRec + p5*eRec*eRec
+   1  p3           9.97135e-01   5.31970e-04   1.37962e-09   1.68120e-08
+   2  p4           3.15740e-04   2.53371e-05   1.11475e-11   1.74192e-04
+   3  p5          -1.35383e-06   2.19495e-07  -5.82864e-13   4.52277e-02
+  */
+  static Double_t p0=6.07157e-05, p1=1.50019e-04, p2=9.99019e-01;
+  static Double_t p3=9.97135e-01, p4=3.15740e-04, p5=-1.35383e-06;
+  static Double_t corr=1.0;
+  if(eRec>=0.0 && eRec <=10.0) {
+    corr = p0*(eRec-7.5) + p1*(eRec-7.5)*(eRec-7.5) + p2;
+  } else if(eRec>10.0 && eRec <=105.0) {
+    corr = p3 + p4*eRec + p5*eRec*eRec;
+  }
+  //printf(" eRec %f | corr %f \n", eRec, corr);
+  return corr;
+}
+
+Double_t AliEMCALHistoUtilities::GetCorrectedEnergyForGamma_1(const Double_t eRec)
+{
+  return GetCorrectionCoefficientForGamma_1(eRec) * eRec;
+}

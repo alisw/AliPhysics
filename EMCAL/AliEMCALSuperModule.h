@@ -8,16 +8,18 @@
 //_________________________________________________________________________
 //  Emcal Super Module     
 //                  
-//*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
+//*-- Author: Aleksei Pavlinov (WSU, Detroit, USA)
+//  Super Module folder
+//  Initial version was created with TDataSet staf
+//  TObjectSet -> TFolder; Sep 6, 2007
 
-// --- ROOT system ---
 
-#include <TObjectSet.h>
+#include <TFolder.h>
 
 class TList;
 class AliEMCALCell;
 
-class AliEMCALSuperModule : public TObjectSet {
+class AliEMCALSuperModule : public TFolder {
 
  public:
   
@@ -28,7 +30,9 @@ class AliEMCALSuperModule : public TObjectSet {
 
   void Init();
   void   AddCellToEtaRow(AliEMCALCell *cell, const Int_t etaRow);
-  TList* GetHists() {return (TList*)fObj;}
+  TList*   GetHists()  {return fLh;}
+  TObject* GetParent() {return fParent;}
+  void     SetParent(TObject *parent) {fParent=parent;}
   // MENU
   void FitForAllCells(); //*MENU*  
   void FitEffMassHist(); //*MENU*  
@@ -40,9 +44,11 @@ class AliEMCALSuperModule : public TObjectSet {
  protected:
   TList* BookHists();
   //
-  Int_t  fSMNumber;
+  TObject* fParent; // parent
+  TList*   fLh;     // List of hists
+  Int_t    fSMNumber;
 
-  ClassDef(AliEMCALSuperModule,1) // EMCAL SuperModule
+  ClassDef(AliEMCALSuperModule,2) // EMCAL SuperModule
     
 };
 

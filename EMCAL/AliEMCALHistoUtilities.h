@@ -1,6 +1,6 @@
-#ifndef AliEMCALHistoUtilities_H
-#define AliEMCALHistoUtilities_H
-/* Copyright(c) 1998-2002, ALICE Experiment at CERN, All rights reserved. *
+#ifndef ALIEMCALHISTOUTILITIES_H
+#define ALIEMCALHISTOUTILITIES_H
+/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
 /* $Id$ */
@@ -16,7 +16,10 @@
 #include <TNamed.h>
 
 class TList;
+class TString;
 class TH1;
+class TGraph;
+class TGraphErrors;
 class TF1;
 class TLatex;
 class TChain;
@@ -24,10 +27,10 @@ class TLorentzVector;
 
 class AliESDCaloCluster;
 class AliEMCALRecPoint;
+class AliRunLoader;
 
 class AliEMCALHistoUtilities: public TNamed {
-  public:
-  AliEMCALHistoUtilities(const char *name="emcalUtilitiesRoutines",
+  public:  AliEMCALHistoUtilities(const char *name="emcalUtilitiesRoutines",
   const char *tit="EMCAL utility routines");
   AliEMCALHistoUtilities(const  AliEMCALHistoUtilities &) : TNamed("", ""){
     Fatal("cpy ctor", "not implemented") ; }
@@ -41,10 +44,21 @@ class AliEMCALHistoUtilities: public TNamed {
   const char* opt="RECREATE");
   static void AddToNameAndTitle(TH1   *h=0, const char *name=0, const char *title=0);
   static void AddToNameAndTitleToList(TList *l=0, const char *name=0, const char *title=0);
-  static TLatex *lat(const char *text="", Float_t x=0.0,Float_t y=0.0, Int_t align=12, Float_t tsize=0.05, short tcolor = 1); 
+  static void ResetListOfHists(TList *l);
+
+  static TLatex *Lat(const char *text="", Float_t x=0.0,Float_t y=0.0, Int_t align=12, Float_t tsize=0.05, short tcolor = 1); 
+  static TGraph *DrawGraph(Int_t n=4, Double_t *x=0, Double_t *y=0, Int_t markerColor=4,  
+  Int_t markerStyle=4, const char* opt="", const char* tit="", const char* xTit="  jet E_{t}  ",
+  const char* yTit="", Int_t ifun=0, const char *optFit="W+", const char *fun="");
+  static TGraphErrors *DrawGraphErrors(const Int_t n=4,Double_t *x=0,Double_t *y=0,Double_t *ex=0, 
+  Double_t *ey=0, Int_t markerColor=4,Int_t markerStyle=4, const char* opt="", 
+  const char* tit="", const char* xTit="  jet E_{t}  ",
+  char* yTit="", Int_t ifun=0, const char *optFit="W+", const char *fun="");
   // TChain
   static void InitChain(TChain *chain=0, const char* nameListOfFiles=0, Int_t nFileMax=0); 
-  // 
+  static AliRunLoader* InitKinematics(const Int_t nev=0, const char* galiceName="galice.root");
+  //
+  static Double_t GetMomentum(const char* nameListOfFiles); 
   static int ParseString(const TString &topt, TObjArray &Opt); 
   // Analysis utilites
   static Bool_t GetLorentzVectorFromESDCluster(TLorentzVector &v, const AliESDCaloCluster *cl);
@@ -60,6 +74,10 @@ class AliEMCALHistoUtilities: public TNamed {
   //
   static Double_t Gi(Double_t *x, Double_t *par);
   static Double_t GiPol2(Double_t *x, Double_t *par);
+  // Calibration stuff
+  static Double_t GetCorrectionCoefficientForGamma_1(const Double_t eRec);
+  static Double_t GetCorrectedEnergyForGamma_1(const Double_t eRec);
+  static TF1* GetResolutionFunction(const char *opt, TString &latexName);
 
   AliEMCALHistoUtilities & operator = (const AliEMCALHistoUtilities &) {
     Fatal("operator =", "not implemented") ; return *this ; }
@@ -67,4 +85,4 @@ class AliEMCALHistoUtilities: public TNamed {
   ClassDef(AliEMCALHistoUtilities,1) // EMCAL utility routines
 };
 
-#endif // AliEMCALHistoUtilities_H
+#endif // ALIEMCALHISTOUTILITIES_H

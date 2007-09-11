@@ -7,10 +7,12 @@
 
 //_________________________________________________________________________
 //  EMCAL cell - keep everyrhing for calibration task     
+//  Initial version was created with TDataSet staf
+//  TObjectSet -> TFolder; Sep 6, 2007
 //                  
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
-#include <TObjectSet.h>
+#include <TFolder.h>
 
 class TList;
 class TH1;
@@ -20,7 +22,7 @@ class TNtuple;
 class AliEMCALCalibData;
 class AliEMCALCalibCoefs;
 
-class AliEMCALCell : public TObjectSet {
+class AliEMCALCell : public TFolder {
 
  public:
   
@@ -32,7 +34,9 @@ class AliEMCALCell : public TObjectSet {
   void SetCCfromDB(AliEMCALCalibData *ccDb);  // obsolete
   void SetCCfromCCTable(AliEMCALCalibCoefs *t);
 
-  TList*   GetHists() {return (TList*)fObj;}
+  TList*   GetHists() {return fLh;}
+  TObject* GetParent() {return fParent;}
+  void     SetParent(TObject *parent) {fParent=parent;}
   Int_t    GetAbsId()  const {return fAbsId;}
   Int_t    GetSupMod() const {return fSupMod;}
   Int_t    GetModule() const {return fModule;}
@@ -47,8 +51,11 @@ class AliEMCALCell : public TObjectSet {
   static void FitHist(TH1* h, const char* name="",const char* opt="");
   // Menu
   void FitEffMassHist(const char* opt=""); //*MENU*
-  void Print();                            //*MENU*
+  void PrintInfo();                            //*MENU*
  protected:
+  TObject* fParent; // parent
+  TList* fLh;
+  //
   Int_t fAbsId;   // abs cell id 
   Int_t fSupMod;  // super module number
   Int_t fModule;  // module number inside SM
@@ -58,7 +65,7 @@ class AliEMCALCell : public TObjectSet {
   Int_t fEtaCell; // eta number of cell SM  
   // CC staf
   Double_t fCcIn;  // input  cc in GeV (from Db or table
-  Double_t fCcOut; // output cc  in GeV (from fir now)
+  Double_t fCcOut; // output cc  in GeV (from fit now)
 
   TF1*   fFun;     //! fitting function - gaus + pol2
   //

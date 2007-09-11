@@ -3,16 +3,18 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $log:$ */
+/* $Log$ */
 
 //_________________________________________________________________________
-//  Top EMCAL folder - keep everyrhing for calibration task     
+//  Top EMCAL folder - keep everyrhing for calibration task
+//  Initial version was created with TDataSet staf
+//  TObjectSet -> TFolder; Sep 5, 2007
 //                  
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
 // --- ROOT system ---
 
-#include <TObjectSet.h>
+#include <TFolder.h>
 #include <TString.h>
 
 class AliEMCALGeometry;
@@ -28,7 +30,7 @@ class AliEMCALRecPoint;
 class TList;
 class TNtuple;
 
-class AliEMCALFolder : public TObjectSet {
+class AliEMCALFolder : public TFolder {
 
  public:
   
@@ -53,14 +55,15 @@ class AliEMCALFolder : public TObjectSet {
   void FillPi0Candidate(const Double_t mgg, Int_t absIdMax, Int_t nm);
   // Define CC
   void FitAllSMs();    // SM0 now
-  // Service routine
+  // Service routine 
   AliEMCALCalibCoefs* GetCCTable(const char* name);
   AliEMCALCalibCoefs* GetCCFirst() {return GetCCTable(fgkCCFirstName.Data());}
   AliEMCALCalibCoefs* GetCCIn() {return GetCCTable(fgkCCinName.Data());}
   AliEMCALCalibCoefs* GetCCOut(){return GetCCTable(fgkCCoutName.Data());}
   Int_t GetSMNumber(AliESDCaloCluster* cl);
   // Recalibration staf - Jun 18,2007
-  static AliEMCALRecPoint *GetRecPoint(AliESDCaloCluster *cl,AliEMCALCalibCoefs *tOld,AliEMCALCalibCoefs *tNew, TList *l=0); 
+  static AliEMCALRecPoint *GetRecPoint(AliESDCaloCluster *cl,AliEMCALCalibCoefs *tOld,AliEMCALCalibCoefs *tNew, 
+  TList *l=0, Double_t deff=-1., Double_t w0=-1., Double_t phiSlope=0.0); 
   // MENU
   void   Save(const char *fn = "EMCALFOLDER.root", const char *opt="RECREATE");  // *MENU*
   static AliEMCALFolder*  Read(const char *fn = "EMCALFOLDER.root", const char *opt="READ");
@@ -71,7 +74,7 @@ class AliEMCALFolder : public TObjectSet {
 
  protected:
   TList* BookHists();
-  Int_t fCounter; // Coonter of iteration 
+  Int_t fCounter; // Counter of iteration 
  //
   AliEMCALGeometry *fGeometry; //
   //
@@ -89,8 +92,9 @@ class AliEMCALFolder : public TObjectSet {
   static const TString fgkCCFirstName;     // name of first calib.table 
   static const TString fgkCCinName;        // name of initial calib.coefs. table 
   static const TString fgkCCoutName;       // name of out calib.coefs. table 
+  static const TString fgkDirOfRootFiles;  // name of directory for saving EMCAL folder
 
-  void TestSMStruct();  
+  void TestSMStruct();  // *MENU*
 
   ClassDef(AliEMCALFolder,2) // EMCAL folder
     
