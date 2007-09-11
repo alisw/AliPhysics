@@ -15,11 +15,13 @@
 
 #include <TObject.h>
 #include <TObjArray.h>
+#include "TLinearFitter.h"
 
 class TH1;
 class TH1F;
 class TH2F;
 class TTree;
+class TString;
 
 class AliTreeDraw: public TObject{
 public:
@@ -32,6 +34,9 @@ public:
   const TObjArray* GetPoints() const {return fPoints;}
   void  ClearHisto();
   void  ClearPoints(){if (fPoints) fPoints->Clear();}
+  TString* FitPlane(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix, Int_t start=0, Int_t stop=10000000);
+
+
   //
   TH1F * DrawXY(const char * chx, const char *chy, const char* selection, 
 		const char * quality,Int_t nbins, Float_t minx, Float_t maxx, 
