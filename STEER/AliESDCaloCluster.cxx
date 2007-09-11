@@ -193,3 +193,24 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
   p.SetPxPyPzE( fEnergy*fGlobalPos[0]/r,  fEnergy*fGlobalPos[1]/r,  fEnergy*fGlobalPos[2]/r,  fEnergy) ; 
   
 }
+// Sep 7, 2007
+Int_t AliESDCaloCluster::GetTrueDigitAmplitude(Int_t i, Double_t cc)
+{
+  static Int_t amp=0; // amp is integer now
+  amp = 0;
+  if(i>=0 && i<fDigitAmplitude->GetSize() && cc>0.0) {
+    // true formula
+    amp = Int_t(Double_t(fDigitAmplitude->At(i))/500./cc+0.5);
+  }
+  return amp;
+}
+
+Double_t AliESDCaloCluster::GetTrueDigitEnergy(Int_t i, Double_t cc)
+{
+  return Double_t(GetTrueDigitAmplitude(i,cc)) * cc;
+}
+
+Double_t AliESDCaloCluster::GetRecalibratedDigitEnergy(Int_t i, Double_t ccOld, Double_t ccNew)
+{
+  return Double_t(GetTrueDigitAmplitude(i,ccOld)) * ccNew;
+}

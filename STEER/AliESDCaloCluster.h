@@ -110,6 +110,10 @@ public:
     else return -1;}
  
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition );
+  // Sep 7, 2007
+  Int_t    GetTrueDigitAmplitude(Int_t i, Double_t cc);
+  Double_t GetTrueDigitEnergy(Int_t i, Double_t cc);
+  Double_t GetRecalibratedDigitEnergy(Int_t i, Double_t ccOld, Double_t ccNew);
 
 protected:
 
