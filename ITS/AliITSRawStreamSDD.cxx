@@ -75,7 +75,6 @@ fIdcd(0){
   fRawReader->Reset();
   fRawReader->Select("ITSSDD");
 
-  //  fNCarlos = 8; //select this for test data
   for(Short_t i=0; i<kCarlosWords; i++) fICarlosWord[i]=0x30000000 + i; // 805306368+i;
   for(Short_t i=0; i<kFifoWords; i++) fIFifoWord[i]=0x30000010 + i;  // 805306384+i;
 }

@@ -30,6 +30,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
     virtual void     SetLowCarlosThreshold(Int_t th, Int_t i) 
       {fLowThreshold[i]=th;}
+    virtual void     SetNCarlos(Int_t nC=12){fNCarlos=nC;}
     static  Int_t    GetModuleNumber(UInt_t iDDL, UInt_t iModule)
                      {return fgkDDLModuleMap[iDDL][iModule];}
     virtual void     Reset(); 
