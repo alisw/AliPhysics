@@ -36,7 +36,7 @@ private:
   static
   Double_t fgDCAmax;       // maximal allowed DCA between the daughter tracks 
   static
-  Double_t fgCPAmax;       // maximal allowed cosine of V0's pointing angle
+  Double_t fgCPAmin;       // minimal allowed cosine of V0's pointing angle
   static
   Double_t fgRmin, fgRmax; // max & min radii of the fiducial volume
   
@@ -44,10 +44,10 @@ private:
   Double_t fDNmin;        // min allowed impact parameter for the 1st daughter
   Double_t fDPmin;        // min allowed impact parameter for the 2nd daughter
   Double_t fDCAmax;       // maximal allowed DCA between the daughter tracks 
-  Double_t fCPAmax;       // maximal allowed cosine of V0's pointing angle
+  Double_t fCPAmin;       // minimal allowed cosine of V0's pointing angle
   Double_t fRmin, fRmax;  // max & min radii of the fiducial volume
   
-  ClassDef(AliV0vertexer,2)  // V0 verterxer 
+  ClassDef(AliV0vertexer,3)  // V0 verterxer 
 };
 
 inline AliV0vertexer::AliV0vertexer() :
@@ -56,7 +56,7 @@ inline AliV0vertexer::AliV0vertexer() :
   fDNmin(fgDNmin),
   fDPmin(fgDPmin),
   fDCAmax(fgDCAmax),
-  fCPAmax(fgCPAmax), 
+  fCPAmin(fgCPAmin), 
   fRmin(fgRmin),
   fRmax(fgRmax) 
 {
@@ -65,28 +65,28 @@ inline AliV0vertexer::AliV0vertexer() :
 inline void AliV0vertexer::SetCuts(const Double_t cuts[7]) {
   fChi2max=cuts[0]; 
   fDNmin=cuts[1];   fDPmin=cuts[2];
-  fDCAmax=cuts[3];  fCPAmax=cuts[4];
+  fDCAmax=cuts[3];  fCPAmin=cuts[4];
   fRmin=cuts[5];    fRmax=cuts[6]; 
 }
 
 inline void AliV0vertexer::SetDefaultCuts(const Double_t cuts[7]) {
   fgChi2max=cuts[0]; 
   fgDNmin=cuts[1];   fgDPmin=cuts[2];
-  fgDCAmax=cuts[3];  fgCPAmax=cuts[4];
+  fgDCAmax=cuts[3];  fgCPAmin=cuts[4];
   fgRmin=cuts[5];    fgRmax=cuts[6]; 
 }
 
 inline void AliV0vertexer::GetCuts(Double_t cuts[7]) const {
   cuts[0]=fChi2max; 
   cuts[1]=fDNmin;   cuts[2]=fDPmin; 
-  cuts[3]=fDCAmax;  cuts[4]=fCPAmax;
+  cuts[3]=fDCAmax;  cuts[4]=fCPAmin;
   cuts[5]=fRmin;    cuts[6]=fRmax; 
 }
 
 inline void AliV0vertexer::GetDefaultCuts(Double_t cuts[7]) {
   cuts[0]=fgChi2max; 
   cuts[1]=fgDNmin;   cuts[2]=fgDPmin; 
-  cuts[3]=fgDCAmax;  cuts[4]=fgCPAmax;
+  cuts[3]=fgDCAmax;  cuts[4]=fgCPAmin;
   cuts[5]=fgRmin;    cuts[6]=fgRmax; 
 }
 

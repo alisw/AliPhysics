@@ -38,7 +38,7 @@ Double_t AliV0vertexer::fgChi2max=33.; //max chi2
 Double_t AliV0vertexer::fgDNmin=0.05;  //min imp parameter for the 1st daughter
 Double_t AliV0vertexer::fgDPmin=0.05;  //min imp parameter for the 2nd daughter
 Double_t AliV0vertexer::fgDCAmax=0.5;  //max DCA between the daughter tracks
-Double_t AliV0vertexer::fgCPAmax=0.99; //max cosine of V0's pointing angle
+Double_t AliV0vertexer::fgCPAmin=0.99; //min cosine of V0's pointing angle
 Double_t AliV0vertexer::fgRmin=0.2;    //min radius of the fiducial volume
 Double_t AliV0vertexer::fgRmax=100.;   //max radius of the fiducial volume
 
@@ -62,12 +62,10 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
    Int_t i;
    for (i=0; i<nentr; i++) {
      AliESDtrack *esdTrack=event->GetTrack(i);
-     UInt_t status=esdTrack->GetStatus();
-     UInt_t flags=AliESDtrack::kITSin|AliESDtrack::kTPCin|
-                  AliESDtrack::kTPCpid|AliESDtrack::kESDpid;
+     ULong_t status=esdTrack->GetStatus();
 
      if ((status&AliESDtrack::kITSrefit)==0)
-        if (flags!=status) continue;
+        if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
      Double_t d=esdTrack->GetD(xv,yv,b);
      if (TMath::Abs(d)<fDPmin) continue;
@@ -117,7 +115,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
          if (vertex.GetChi2V0() > fChi2max) continue;
 	 
 	 Float_t cpa=vertex.GetV0CosineOfPointingAngle(xv,yv,zv);
-	 if (cpa < fCPAmax) continue;
+	 if (cpa < fCPAmin) continue;
 	 vertex.SetDcaV0Daughters(dca);
          vertex.SetV0CosineOfPointingAngle(cpa);
          vertex.ChangeMassHypothesis(kK0Short);
