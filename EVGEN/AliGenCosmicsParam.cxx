@@ -38,13 +38,19 @@ fMaxAngleWRTVertical(-99.),
 fBkG(0.),
 fTPC(kFALSE),
 fITS(kFALSE),
-fSPDouter(kFALSE),
 fSPDinner(kFALSE),
-fACORDE(kFALSE)
+fSPDouter(kFALSE),
+fSDDinner(kFALSE),
+fSDDouter(kFALSE),
+fSSDinner(kFALSE),
+fSSDouter(kFALSE),
+fACORDE(kFALSE),
+fACORDE4ITS(kFALSE)
 {
   //
   // Default constructor
   //
+  SetNumberParticles(1);
 }
 //-----------------------------------------------------------------------------
 void AliGenCosmicsParam::Generate()
@@ -60,101 +66,110 @@ void AliGenCosmicsParam::Generate()
   Double_t ptot=0,pt=0,angleWRTVertical=0;
   Bool_t okMom=kFALSE,okAngle=kFALSE;
   //
-  Float_t rtrigger=250.0,ztrigger=250.0; // TPC is default
+  Float_t rtrigger=1000.0,ztrigger=600.0;
+  if(fTPC)      { rtrigger=250.0; ztrigger=250.0; }
   if(fITS)      { rtrigger=50.0; ztrigger=50.0; }
-  if(fSPDouter) { rtrigger=6.5; ztrigger=14.0; }
   if(fSPDinner) { rtrigger=3.5; ztrigger=14.0; }
+  if(fSPDouter) { rtrigger=6.5; ztrigger=14.0; }
+  if(fSDDinner) { rtrigger=14.0; ztrigger=21.0; }
+  if(fSDDouter) { rtrigger=23.0; ztrigger=29.0; }
+  if(fSSDinner) { rtrigger=37.0; ztrigger=42.0; }
+  if(fSSDouter) { rtrigger=42.0; ztrigger=48.0; }
 
 
   // mu+ or mu-
   Float_t muMinusFraction = 4./9.; // mu+/mu- = 1.25
   Int_t ipart;
-  if(gRandom->Rndm()<muMinusFraction) {
-    ipart = 13; // mu-
-  } else {
-    ipart = -13; // mu+
-  }
-
-  if(fParamACORDE) { // extracted from AliGenACORDE events
-    // sample total momentum only once (to speed up)
-    TF1 *dNdpACORDE = new TF1("dNdpACORDE","x/(1.+(x/12.8)*(x/12.8))^1.96",fPMin,fPMax);
-    ptot = (Double_t)dNdpACORDE->GetRandom();
-    delete dNdpACORDE;
-    dNdpACORDE = 0;
-  }
 
   Int_t trials=0;
+  Int_t npart=0;
 
-  while(1) {
-    trials++;
-    // origin
-    origin[0]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+rtrigger)*(-1.+2.*gRandom->Rndm());
-    origin[1]  = fYOrigin;
-    origin[2]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+ztrigger)*(-1.+2.*gRandom->Rndm());
+  while (npart<fNpart) {
 
-    // momentum
+    if(gRandom->Rndm()<muMinusFraction) {
+      ipart = 13; // mu-
+    } else {
+      ipart = -13; // mu+
+    }
+
+    if(fParamACORDE) { // extracted from AliGenACORDE events
+      // sample total momentum only once (to speed up)
+      TF1 *dNdpACORDE = new TF1("dNdpACORDE","x/(1.+(x/12.8)*(x/12.8))^1.96",fPMin,fPMax);
+      ptot = (Double_t)dNdpACORDE->GetRandom();
+      delete dNdpACORDE;
+      dNdpACORDE = 0;
+    }
+
     while(1) {
-      okMom=kFALSE; okAngle=kFALSE;
+      trials++;
+      // origin
+      origin[0]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+rtrigger)*(-1.+2.*gRandom->Rndm());
+      origin[1]  = fYOrigin;
+      origin[2]  = (fYOrigin*TMath::Tan(fMaxAngleWRTVertical)+ztrigger)*(-1.+2.*gRandom->Rndm());
+      
+      // momentum
+      while(1) {
+	okMom=kFALSE; okAngle=kFALSE;
+	
+	if(fParamMI) { // parametrization by M.Ivanov of LEP cosmics data
+	  Float_t	pref  = 1. + gRandom->Exp(30.);
+	  p[1] = -pref; 
+	  p[0] = gRandom->Gaus(0.0,0.2)*pref;
+	  p[2] = gRandom->Gaus(0.0,0.2)*pref;
+	  if(gRandom->Rndm()>0.9) {
+	    p[0] = gRandom->Gaus(0.0,0.4)*pref;
+	    p[2] = gRandom->Gaus(0.0,0.4)*pref;
+	  }
+	  ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
+	  pt=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
+	} else if(fParamACORDE) { // extracted from AliGenACORDE events
+	  Float_t theta,phi;
+	  while(1) {
+	    theta = gRandom->Gaus(0.5*TMath::Pi(),0.42);
+	    if(TMath::Abs(theta-0.5*TMath::Pi())<fMaxAngleWRTVertical) break;
+	  }
+	  while(1) {
+	    phi = gRandom->Gaus(-0.5*TMath::Pi(),0.42);
+	    if(TMath::Abs(phi+0.5*TMath::Pi())<fMaxAngleWRTVertical) break;
+	  }
+	  pt = ptot*TMath::Sin(theta);
+	  p[0] = pt*TMath::Cos(phi); 
+	  p[1] = pt*TMath::Sin(phi); 
+	  p[2] = ptot*TMath::Cos(theta);
+	} else {
+	  AliFatal("Parametrization not set: use SetParamMI or SetParamACORDE");
+	}
+	
+	
+	// check kinematic cuts
+	if(TestBit(kMomentumRange)) {
+	  if(ptot>fPMin && ptot<fPMax) okMom=kTRUE;
+	} else {
+	  okMom=kTRUE;
+	}
 
-      if(fParamMI) { // parametrization by M.Ivanov of LEP cosmics data
-	Float_t	pref  = 1. + gRandom->Exp(30.);
-	p[1] = -pref; 
-	p[0] = gRandom->Gaus(0.0,0.2)*pref;
-	p[2] = gRandom->Gaus(0.0,0.2)*pref;
-	if(gRandom->Rndm()>0.9) {
-	  p[0] = gRandom->Gaus(0.0,0.4)*pref;
-	  p[2] = gRandom->Gaus(0.0,0.4)*pref;
-	}
-	ptot=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
-	pt=TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
-      } else if(fParamACORDE) { // extracted from AliGenACORDE events
-	Float_t theta,phi;
-	while(1) {
-	  theta = gRandom->Gaus(0.5*TMath::Pi(),0.42);
-	  if(TMath::Abs(theta-0.5*TMath::Pi())<fMaxAngleWRTVertical) break;
-	}
-	while(1) {
-	  phi = gRandom->Gaus(-0.5*TMath::Pi(),0.42);
-	  if(TMath::Abs(phi+0.5*TMath::Pi())<fMaxAngleWRTVertical) break;
-	}
-	pt = ptot*TMath::Sin(theta);
-	p[0] = pt*TMath::Cos(phi); 
-	p[1] = pt*TMath::Sin(phi); 
-	p[2] = ptot*TMath::Cos(theta);
-      } else {
-	AliFatal("Parametrization not set: use SetParamMI or SetParamACORDE");
+	angleWRTVertical=TMath::ACos(TMath::Abs(p[1])/ptot); // acos(|py|/ptot)
+	if(angleWRTVertical<fMaxAngleWRTVertical) okAngle=kTRUE;
+	
+	if(okAngle&&okMom) break;
       }
 
-      
-      // check kinematic cuts
-      if(TestBit(kMomentumRange)) {
-	if(ptot>fPMin && ptot<fPMax) okMom=kTRUE;
-      } else {
-	okMom=kTRUE;
-     }
-
-      angleWRTVertical=TMath::ACos(TMath::Abs(p[1])/ptot); // acos(|py|/ptot)
-      if(angleWRTVertical<fMaxAngleWRTVertical) okAngle=kTRUE;
-      
-      if(okAngle&&okMom) break;
-    }
-
-    // acceptance trigger
-    if(IntersectCylinder(rtrigger,ztrigger,ipart,origin,p)) {
-      if(!fACORDE) {
-	break; 
-      } else {
-	if(IntersectACORDE(ipart,origin,p)) break;
+      // acceptance trigger
+      if(IntersectCylinder(rtrigger,ztrigger,ipart,origin,p)) {
+	if(!fACORDE) {
+	  break; 
+	} else {
+	  if(IntersectACORDE(ipart,origin,p)) break;
+	}
       }
+      //
     }
-    //
+
+    Float_t polarization[3]= {0,0,0};
+    PushTrack(fTrackIt,-1,ipart,p,origin,polarization,0,kPPrimary,nt);
+    npart++; 
+    //printf("TRIALS %d\n",trials);
   }
-
-  Float_t polarization[3]= {0,0,0};
-  PushTrack(fTrackIt,-1,ipart,p,origin,polarization,0,kPPrimary,nt);
-
-  //printf("TRIALS %d\n",trials);
-  
 
   return;
 }
@@ -229,7 +244,8 @@ Bool_t AliGenCosmicsParam::IntersectACORDE(Int_t pdg,
   TParticle part(pdg,0,0,0,0,0,p[0],p[1],p[2],en,o[0],o[1],o[2],0);
   AliESDtrack track(&part);
 
-  Float_t rACORDE=800.0,xACORDE=750.0,zACORDE=600.0;
+  Float_t rACORDE=800.0,xACORDE=750.0,zACORDE=500.0;
+  if(fACORDE4ITS) { xACORDE=100.0; zACORDE=100.0; }
 
   Double_t xyz[3];
   track.GetXYZAt(rACORDE,fBkG,xyz);

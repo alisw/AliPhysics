@@ -26,11 +26,16 @@ public:
       if(max<0. || max>90.) AliFatal("angle must be in [0,pi/2]");
       fMaxAngleWRTVertical=max; return; }
   void SetBkG(Float_t b) { fBkG=b; return; }
-  void SetInACORDE() { fACORDE=kTRUE; return; }
+  void SetInACORDE(Bool_t onlyACORDE4ITS=kFALSE) 
+    { fACORDE=kTRUE; fACORDE4ITS=onlyACORDE4ITS; return; }
   void SetInTPC() { fTPC=kTRUE; return; }
   void SetInITS() { fITS=kTRUE; return; }
-  void SetInSPDouter() { fSPDouter=kTRUE; return; }
   void SetInSPDinner() { fSPDinner=kTRUE; return; }
+  void SetInSPDouter() { fSPDouter=kTRUE; return; }
+  void SetInSDDinner() { fSDDinner=kTRUE; return; }
+  void SetInSDDouter() { fSDDouter=kTRUE; return; }
+  void SetInSSDinner() { fSSDinner=kTRUE; return; }
+  void SetInSSDouter() { fSSDouter=kTRUE; return; }
 
 private:
 
@@ -46,11 +51,16 @@ private:
   Float_t fBkG;                 // field in kGauss
   Bool_t fTPC;                  // acceptance cuts
   Bool_t fITS;                  // acceptance cuts
-  Bool_t fSPDouter;             // acceptance cuts
   Bool_t fSPDinner;             // acceptance cuts
+  Bool_t fSPDouter;             // acceptance cuts
+  Bool_t fSDDinner;             // acceptance cuts
+  Bool_t fSDDouter;             // acceptance cuts
+  Bool_t fSSDinner;             // acceptance cuts
+  Bool_t fSSDouter;             // acceptance cuts
   Bool_t fACORDE;               // acceptance cuts
+  Bool_t fACORDE4ITS;           // acceptance cuts
 
-  ClassDef(AliGenCosmicsParam,2) // parametrized cosmics generator
+  ClassDef(AliGenCosmicsParam,3) // parametrized cosmics generator
 };
 
 #endif
