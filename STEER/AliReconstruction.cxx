@@ -831,6 +831,7 @@ Bool_t AliReconstruction::Run(const char* input)
     // write ESD
     if (fCleanESD) CleanESD(esd);
     if (fWriteESDfriend) {
+      esdf->~AliESDfriend();
       new (esdf) AliESDfriend(); // Reset...
       esd->GetESDfriend(esdf);
     }
@@ -843,6 +844,7 @@ Bool_t AliReconstruction::Run(const char* input)
     esd->Reset();
     hltesd->Reset();
     if (fWriteESDfriend) {
+      esdf->~AliESDfriend();
       new (esdf) AliESDfriend(); // Reset...
     }
     // esdf->Reset();
