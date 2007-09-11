@@ -49,6 +49,8 @@ marian.ivanov@cern.ch
 #include "TGeometry.h"
 #include "TPolyLine3D.h"
 #include "TPolyMarker3D.h"
+#include "TObjString.h"
+
 
 //ALIROOT includes
 #include "AliTrackPointArray.h"
@@ -383,5 +385,70 @@ void   AliTreeDraw::GetPoints3D(const char * label, const char * chpoints,
      marker->SetMarkerStyle(1);
      fPoints->AddLast(marker);
    }
+}
+
+
+
+
+TString* AliTreeDraw::FitPlane(const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, TVectorD &fitParam, TMatrixD &covMatrix, Int_t start, Int_t stop){
+   //
+   // fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
+   // returns chi2, fitParam and covMatrix
+   // returns TString with fitted formula
+   //
+    
+   TString formulaStr(formula); 
+   TString drawStr(drawCommand);
+   TString cutStr(cuts);
+      
+   formulaStr.ReplaceAll("++", "~");
+   TObjArray* formulaTokens = formulaStr.Tokenize("~"); 
+   Int_t dim = formulaTokens->GetEntriesFast();
+   
+   fitParam.ResizeTo(dim);
+   covMatrix.ResizeTo(dim,dim);
+   
+   TLinearFitter* fitter = new TLinearFitter(dim+1, Form("hyp%d",dim));
+   fitter->StoreData(kTRUE);   
+   fitter->ClearPoints();
+   
+   Int_t entries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t **values = new Double_t*[dim+1] ; 
+   
+   for (Int_t i = 0; i < dim + 1; i++){
+      Int_t centries = 0;
+      if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
+      else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
+      
+      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      values[i] = new Double_t[entries];
+      memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
+   }
+   
+   // add points to the fitter
+   for (Int_t i = 0; i < entries; i++){
+      Double_t x[1000];
+      for (Int_t j=0; j<dim;j++) x[j]=values[j][i];
+      fitter->AddPoint(x, values[dim][i], 1);
+   }
+
+   fitter->Eval();
+   fitter->GetParameters(fitParam);
+   fitter->GetCovarianceMatrix(covMatrix);
+   chi2 = fitter->GetChisquare();
+   chi2 = chi2;
+   
+   TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
+   
+   for (Int_t iparam = 0; iparam < dim; iparam++) {
+     returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]));
+     if (iparam < dim-1) returnFormula.Append("+");
+   }
+   returnFormula.Append(" )");
+   delete formulaTokens;
+   delete fitter;
+   delete[] values;
+   return preturnFormula;
 }
 
