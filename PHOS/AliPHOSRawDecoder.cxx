@@ -48,14 +48,14 @@ ClassImp(AliPHOSRawDecoder)
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder():
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fSamples(0),fPulseGenerator(0)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fSamples(0),fPulseGenerator(0)
 {
   //Default constructor.
 }
 
 //-----------------------------------------------------------------------------
 AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader):
-  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fSamples(0),fPulseGenerator(0)
+  fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fSamples(0),fPulseGenerator(0)
 {
   //Construct a decoder object.
   //Is is user responsibility to provide next raw event 
@@ -84,7 +84,8 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(const AliPHOSRawDecoder &phosDecoder ):
   fPedSubtract(phosDecoder.fPedSubtract),
   fEnergy(phosDecoder.fEnergy),fTime(phosDecoder.fTime),
   fModule(phosDecoder.fModule),fColumn(phosDecoder.fColumn),
-  fRow(phosDecoder.fRow),fSamples(phosDecoder.fSamples),
+  fRow(phosDecoder.fRow),fLowGainFlag(phosDecoder.fLowGainFlag),
+  fSamples(phosDecoder.fSamples),
   fPulseGenerator(phosDecoder.fPulseGenerator)
 {
   //Copy constructor.
@@ -106,7 +107,8 @@ AliPHOSRawDecoder& AliPHOSRawDecoder::operator = (const AliPHOSRawDecoder &phosD
     fModule = phosDecode.fModule;
     fColumn = phosDecode.fColumn;
     fRow = phosDecode.fRow;
-
+    fLowGainFlag = phosDecode.fLowGainFlag;
+    
     if(fSamples) delete fSamples;
     fSamples = phosDecode.fSamples;
 
@@ -127,55 +129,55 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   
   AliCaloRawStream* in = fCaloStream;
   
-  Bool_t   lowGainFlag = kFALSE ; 
   Int_t    iBin     = 0;
   Int_t    mxSmps   = fSamples->GetSize();
-  Int_t    tLength  = -1;
+  Int_t    tLength  = 0;
+  Int_t    ped      = 0;
   fEnergy = -111;
   
   fSamples->Reset();
-  
-  while ( in->Next() ) { 
 
-    tLength = in->GetTimeLength();
-    if(tLength>mxSmps) { 
-      fSamples->Set(tLength);
-      mxSmps = fSamples->GetSize();
-    }
+   while ( in->Next() ) { 
 
-    lowGainFlag = in->IsLowGain();
-    
-    // Fill array with samples
-    fSamples->AddAt(in->GetSignal(),tLength-iBin-1);
-    if((Double_t)in->GetSignal() > fEnergy) fEnergy = (Double_t)in->GetSignal();
-    iBin++;
-
-    // Fit the full sample
-    if(iBin==tLength) {
-      iBin=0;
-
-      // Temporarily we take the energy as a maximum amplitude
-      // and the pedestal from the 0th point (30 Aug 2006).
-      // Time is not evaluated for the moment (12.01.2007). 
-      // Take is as a first time bin multiplied by the sample tick time
-
-      fTime = fPulseGenerator->GetRawFormatTimeTrigger() * in->GetTime();
-
-      fModule = in->GetModule()+1;
-      fRow = in->GetRow()   +1;
-      fColumn = in->GetColumn()+1;
-
-      if(fPedSubtract) 
-	fEnergy -= (Double_t)fSamples->At(0); // "pedestal subtraction"
+     if(!tLength) {
+       tLength = in->GetTimeLength();
+       if(tLength>mxSmps) {
+	 fSamples->Set(tLength);
+       }
+     }
+     
+     // Fit the full sample
+     if(in->IsNewHWAddress() && iBin>0) {
+       
+       iBin=0;
+       
+       // Temporarily we take the energy as a maximum amplitude
+       // and the pedestal from the 0th point (30 Aug 2006).
+       // Time is not evaluated for the moment (12.01.2007). 
+       // Take is as a first time bin multiplied by the sample tick time
+       
+       if(fPedSubtract) 
+	 fEnergy -= (Double_t)ped; // "pedestal subtraction"
+       
+       if(fLowGainFlag)
+	 fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
       
-      if(lowGainFlag)
-	fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
-      
-      return kTRUE;
-    }
+       return kTRUE;
+     }
 
-  } // in.Next()
-  
-  
-  return kFALSE;
+     fLowGainFlag = in->IsLowGain();
+     fTime = fPulseGenerator->GetRawFormatTimeTrigger() * in->GetTime();
+     fModule = in->GetModule()+1;
+     fRow = in->GetRow()   +1;
+     fColumn = in->GetColumn()+1;
+
+     // Fill array with samples
+     iBin++;                                                             
+     if(iBin==1) ped=in->GetSignal();
+     fSamples->AddAt(in->GetSignal(),tLength-iBin);
+     if((Double_t)in->GetSignal() > fEnergy) fEnergy = (Double_t)in->GetSignal();
+     
+   } // in.Next()
+   
+   return kFALSE;
 }

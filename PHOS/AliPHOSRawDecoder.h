@@ -35,7 +35,7 @@ public:
   Int_t GetModule() { return fModule; }
   Int_t GetColumn() { return fColumn; }
   Int_t GetRow() { return fRow; }
-  Bool_t IsLowGain() { return fCaloStream->IsLowGain(); }
+  Bool_t IsLowGain() { return fLowGainFlag; }
 
   const AliRawReader* GetRawReader() const { return fRawReader; }
 
@@ -52,6 +52,7 @@ private:
   Int_t fModule;    // PHOS module number (1-5)
   Int_t fColumn;    // column in the module
   Int_t fRow;       // row
+  Bool_t fLowGainFlag;
   TArrayI* fSamples;// array of samples
   AliPHOSPulseGenerator* fPulseGenerator; // ALTRO pulse simulator
   
