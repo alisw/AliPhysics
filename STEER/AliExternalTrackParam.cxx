@@ -221,7 +221,6 @@ Double_t (*Bethe)(Double_t)) {
   Double_t p=GetP();
   Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
-  xOverX0*=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
 
   //Multiple scattering******************
   if (xOverX0 != 0) {
