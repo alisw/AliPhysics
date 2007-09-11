@@ -42,10 +42,18 @@ class AliEMCALRecPoint : public AliRecPoint {
   virtual Int_t   GetClusterType() const { return fClusterType; }
 
   virtual void    EvalAll(Float_t logWeight, TClonesArray * digits);
-  virtual void    EvalLocalPosition(Float_t logWeight, TClonesArray * digits) ;
-  //  void            EvalLocalPositionSimple(TClonesArray *digits); // ??
+  virtual void    EvalLocalPosition(Float_t logWeight, TClonesArray * digits);
   virtual void    EvalPrimaries(TClonesArray * digits) ;
   virtual void    EvalParents(TClonesArray * digits) ;
+
+  //  void            EvalLocalPositionSimple(TClonesArray *digits); // ??
+  void   EvalLocalPositionFit(Double_t deff, Double_t w0, Double_t phiSlope,TClonesArray * digits);
+  Bool_t EvalLocalPosition2(TClonesArray *digits, TArrayD &ed);
+
+  static  Bool_t  EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, 
+                                              TClonesArray *digits, TArrayD &ed, TVector3 &locPos);
+  static  Bool_t  EvalLocalPositionFromDigits(TClonesArray *digits, TArrayD &ed, TVector3 &locPos);
+  static  void    GetDeffW0(const Double_t esum, Double_t &deff,  Double_t &w0);
 
   using AliRecPoint::GetGlobalPosition;
   virtual void    GetGlobalPosition(TVector3 & gpos) const; // return global position (x, y, z) in ALICE
@@ -67,6 +75,9 @@ class AliEMCALRecPoint : public AliRecPoint {
   Int_t       GetMultiplicityAtLevel(Float_t level) const ;  // computes multiplicity of digits with 
   Int_t *     GetAbsId() const {return fAbsIdList;}
   Int_t       GetAbsId(int i) const {if(i>=0 && i<fMulDigit)return fAbsIdList[i]; else return -1;}
+  Int_t       GetAbsIdMaxDigit() {return GetAbsId(fDigitIndMax);}
+  Int_t       GetIndMaxDigit() {return fDigitIndMax;}
+  void        SetIndMaxDigit(const Int_t ind) {fDigitIndMax = ind;}
   // energy above relative level
   virtual Int_t GetNumberOfLocalMax(AliEMCALDigit **  maxAt, Float_t * maxAtEnergy,
                                     Float_t locMaxCut,TClonesArray * digits ) const ; 
@@ -87,6 +98,7 @@ class AliEMCALRecPoint : public AliRecPoint {
     Fatal("operator =", "not implemented") ;
     return *this ; 
   }
+  static Double_t TmaxInCm(const Double_t e=0.0, const Int_t key=0);
 
 protected:
           void  EvalCoreEnergy(Float_t logWeight,TClonesArray * digits) ;             
@@ -104,7 +116,7 @@ private:
 				   // pseudocluster or v1
 	  Float_t fCoreEnergy ;       // energy in a shower core 
 	  Float_t fLambda[2] ;        // shower ellipse axes
-	  Float_t fDispersion ;       // shower dispersio
+	  Float_t fDispersion ;       // shower dispersion
 	  Float_t *fEnergyList ;      //[fMulDigit] energy of digits
 	  Float_t *fTimeList ;        //[fMulDigit] time of digits
           Int_t   *fAbsIdList;        //[fMulDigit] absId  of digits
@@ -116,8 +128,9 @@ private:
           Int_t * fParentsList;       // [fMulParent] list of the parents of the digits
           Float_t * fDEParentsList;   // [fMulParent] list of the parents of the digits
           Int_t   fSuperModuleNumber; // number identifying supermodule containing recpoint
-
-  ClassDef(AliEMCALRecPoint,8) // RecPoint for EMCAL (Base Class)
+          // Aug 16, 2007
+          Int_t   fDigitIndMax;       // Index of digit with max energy in array fAbsIdList
+  ClassDef(AliEMCALRecPoint,9) // RecPoint for EMCAL (Base Class)
  
 };
 

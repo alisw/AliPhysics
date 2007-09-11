@@ -142,7 +142,7 @@ public:
   // TRD1 staff
   void    CreateListOfTrd1Modules();
   TList  *GetShishKebabTrd1Modules() const {return fShishKebabTrd1Modules;}
-  AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta);
+  AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta) const;
 
   void     GetTransformationForSM();
   Float_t *GetSuperModulesPars() {return fParSM;}
@@ -190,6 +190,10 @@ public:
   Bool_t   RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &yr, Double_t &zr) const;
   Bool_t   RelPosCellInSModule(Int_t absId, Double_t loc[3]) const;
   Bool_t   RelPosCellInSModule(Int_t absId, TVector3 &vloc) const;
+  //  Methods for AliEMCALRecPoint with taking into account energy of rec.point - Jul 30. 2007
+  Bool_t RelPosCellInSModule(Int_t absId,Double_t distEff,Double_t &xr,Double_t &yr,Double_t & zr) const; 
+  Bool_t RelPosCellInSModule(Int_t absId,Int_t maxAbsId,Double_t distEff,Double_t &xr,Double_t &yr,Double_t &zr) const;
+
   // ---
   Float_t AngleFromEta(Float_t eta) const { // returns theta in radians for a given pseudorapidity
     return 2.0*TMath::ATan(TMath::Exp(-eta));

@@ -73,6 +73,8 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
     if(ieta<=0) return fOB2;
     else        return fOB1;
   }  
+  // Jul 30, 2007
+  void GetPositionAtCenterCellLine(Int_t ieta, Double_t dist, TVector2 &v);
   // 
   Double_t GetTanBetta() const {return fgtanBetta;}
   Double_t Getb()        const {return fgb;}
@@ -103,14 +105,17 @@ class AliEMCALShishKebabTrd1Module : public TNamed {
   // Nov 04,2004; Feb 19,2006 
   TVector2 fOK1; // ieta=1
   TVector2 fOK2; // ieta=0
-  // May 13, 2006; local position of module (cells) face  
-  TVector2 fOB;  // module
-  TVector2 fOB1; // ieta=1
-  TVector2 fOB2; // ieta=0
+  // May 13, 2006; local position of module (cells) center face  
+  TVector2 fOB;   // module
+  TVector2 fOB1;  // ieta=1
+  TVector2 fOB2;  // ieta=0
+  // Jul 30, 2007
+  Double_t fThetaOB1; // theta of cell center line (go through OB1)
+  Double_t fThetaOB2;  // theta of cell center line (go through OB2)
   // 3X3 case - Nov 9,2006
   TVector2 fOK3X3[3];
   // public:
-  ClassDef(AliEMCALShishKebabTrd1Module,1) // TRD1 Shish-Kebab module 
+  ClassDef(AliEMCALShishKebabTrd1Module,2) // TRD1 Shish-Kebab module 
 };
 
 #endif

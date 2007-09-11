@@ -36,6 +36,8 @@ class AliEMCALv0 : public AliEMCAL {
   using AliEMCAL::AddHit;
 
   virtual void  AddAlignableVolumes() const;
+  virtual void  AddAlignableVolumesInALICE() const;
+  virtual void  AddAlignableVolumesInWSUC() const;
 
   virtual void BuildGeometry();// creates the geometry for the ROOT display
   TNode *BuildGeometryOfWSUC();  // WSUC - test environment

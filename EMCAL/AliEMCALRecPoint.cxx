@@ -61,7 +61,8 @@ AliEMCALRecPoint::AliEMCALRecPoint()
     fMaxParent(0),
     fParentsList(0),
     fDEParentsList(0),
-    fSuperModuleNumber(0)
+    fSuperModuleNumber(0),
+    fDigitIndMax(-1)
 {
   // ctor
   AliRunLoader *rl = AliRunLoader::GetRunLoader();
@@ -90,7 +91,8 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt)
     fMaxParent(1000),
     fParentsList(0),
     fDEParentsList(0),
-    fSuperModuleNumber(0)
+    fSuperModuleNumber(0),
+    fDigitIndMax(-1)
 {
   // ctor
   // Increase fMaxTrack for EMCAL.
@@ -134,7 +136,8 @@ AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp)
     fMaxParent(rp.fMaxParent),
     fParentsList(0),
     fDEParentsList(0),
-    fSuperModuleNumber(rp.fSuperModuleNumber)
+    fSuperModuleNumber(rp.fSuperModuleNumber),
+    fDigitIndMax(rp.fDigitIndMax)
 {
   //copy ctor
   fLambda[0] = rp.fLambda[0];
@@ -470,15 +473,25 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   // Calculates the center of gravity in the local EMCAL-module coordinates 
   //  Info("Print", " logWeight %f : cluster energy %f ", logWeight, fAmp); // for testing
   
+  static Double_t dist;
+
   AliEMCALDigit * digit;
-  Int_t i=0, nstat=0;
+  Int_t i=0, nstat=0, idMax=-1;
   Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.;
 
+  //printf(" dist : %f  e : %f \n", dist, fAmp);
   for(Int_t iDigit=0; iDigit<fMulDigit; iDigit++) {
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
+    if(iDigit==0) {
+      idMax = digit->GetId(); // is it correct
+      dist  = TmaxInCm(Double_t(fAmp));
+    }
+    fGeomPtr->RelPosCellInSModule(digit->GetId(), idMax, dist, xyzi[0], xyzi[1], xyzi[2]);
+    //printf(" Id %i : dist %f Local x,y,z %f %f %f \n", digit->GetId(), dist, xyzi[0], xyzi[1], xyzi[2]);
 
-    fGeomPtr->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
-    // printf(" Id %i : Local x,y,z %f %f %f \n", digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
+    //fGeomPtr->RelPosCellInSModule(digit->GetId(), xyzi[0], xyzi[1], xyzi[2]);
+    //printf(" Id %i : dist %f Local x,y,z %f %f %f \n", digit->GetId(), 0.0, xyzi[0], xyzi[1], xyzi[2]);
+    //    if(fAmp>102.) assert(0);
 
     if(logWeight > 0.0)  w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
     else  w = fEnergyList[iDigit]; // just energy
@@ -523,6 +536,163 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
 //void AliEMCALRecPoint::EvalLocalPositionSimple()
 //{ // Weight is proportional of cell energy 
 //}
+//____________________________________________________________________________
+void AliEMCALRecPoint::EvalLocalPositionFit(Double_t deff, Double_t logWeight, 
+Double_t phiSlope, TClonesArray * digits)
+{
+  // Aug 14-16, 2007 - for fit 
+  // Aug 31 - should be static ??
+  static Double_t dist, ycorr;
+  static AliEMCALDigit *digit;
+
+  Int_t i=0, nstat=0, idMax=-1;
+  Double_t clXYZ[3]={0.,0.,0.}, clRmsXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
+
+  for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+    digit = dynamic_cast<AliEMCALDigit *>(digits->At(fDigitsList[iDigit])) ;
+    if(iDigit==0) {
+      idMax = digit->GetId(); // is it correct
+      dist  = TmaxInCm(Double_t(fAmp));
+    }
+
+    dist = deff;
+    fGeomPtr->RelPosCellInSModule(digit->GetId(), idMax, dist, xyzi[0], xyzi[1], xyzi[2]);
+
+    if(logWeight > 0.0)  w = TMath::Max( 0., logWeight + TMath::Log( fEnergyList[iDigit] / fAmp ));
+    else                 w = fEnergyList[iDigit]; // just energy
+
+    if(w>0.0) {
+      wtot += w ;
+      nstat++;
+      for(i=0; i<3; i++ ) {
+        clXYZ[i]    += (w*xyzi[i]);
+        clRmsXYZ[i] += (w*xyzi[i]*xyzi[i]);
+      }
+    }
+  }
+  //  cout << " wtot " << wtot << endl;
+  if ( wtot > 0 ) { 
+    //    xRMS   = TMath::Sqrt(x2m - xMean*xMean);
+    for(i=0; i<3; i++ ) {
+      clXYZ[i] /= wtot;
+      if(nstat>1) {
+        clRmsXYZ[i] /= (wtot*wtot);  
+        clRmsXYZ[i]  =  clRmsXYZ[i] - clXYZ[i]*clXYZ[i];
+	if(clRmsXYZ[i] > 0.0) {
+          clRmsXYZ[i] =  TMath::Sqrt(clRmsXYZ[i]);
+        } else      clRmsXYZ[i] = 0;
+      } else        clRmsXYZ[i] = 0;
+    }    
+  } else {
+    for(i=0; i<3; i++ ) {
+      clXYZ[i] = clRmsXYZ[i] = -1.;
+    }
+  }
+  // clRmsXYZ[i] ??
+  if(phiSlope != 0.0 && logWeight > 0.0 && wtot) { 
+    // Correction in phi direction (y - coords here); Aug 16;
+    // May be put to global level or seperate method
+    ycorr = clXYZ[1] * (1. + phiSlope);
+    //printf(" y %f : ycorr %f : slope %f \n", clXYZ[1], ycorr, phiSlope); 
+    clXYZ[1] = ycorr;
+  }
+  fLocPos.SetX(clXYZ[0]);
+  fLocPos.SetY(clXYZ[1]);
+  fLocPos.SetZ(clXYZ[2]);
+    
+//  if (gDebug==2)
+//    printf("EvalLocalPosition: eta,phi,r = %f,%f,%f", fLocPos.X(), fLocPos.Y(), fLocPos.Z()) ; 
+  fLocPosM = 0 ; // covariance matrix
+}
+
+Bool_t AliEMCALRecPoint::EvalLocalPosition2(TClonesArray * digits, TArrayD &ed)
+{
+  // Evaluated local position of rec.point using digits 
+  // and parametrisation of w0 and deff
+  //printf(" <I> AliEMCALRecPoint::EvalLocalPosition2() \n"); 
+  return AliEMCALRecPoint::EvalLocalPositionFromDigits(digits, ed, fLocPos);
+}
+
+Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
+{
+  // Used when digits should be recalibrated
+  static Double_t deff, w0, esum;
+  static Int_t iDigit;
+  static AliEMCALDigit *digit;
+
+  if(ed.GetSize() && (digits->GetEntries()!=ed.GetSize())) return kFALSE;
+
+  // Calculate sum energy of digits
+  esum = 0.0;
+  for(iDigit=0; iDigit<ed.GetSize(); iDigit++) esum += ed[iDigit];
+
+  GetDeffW0(esum, deff, w0);
+  
+  return EvalLocalPositionFromDigits(esum, deff, w0, digits, ed, locPos); 
+}
+
+Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, 
+						     TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
+{
+  static AliEMCALDigit *digit;
+
+  Int_t i=0, nstat=0, idMax=-1;
+  Double_t clXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
+
+  AliEMCALGeometry* geo = AliEMCALGeometry::GetInstance(); // Get pointer to EMCAL geometry
+   
+  for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
+    digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit));
+
+    geo->RelPosCellInSModule(digit->GetId(), idMax, deff, xyzi[0], xyzi[1], xyzi[2]);
+
+    if(w0 > 0.0)  w = TMath::Max( 0., w0 + TMath::Log(ed[iDigit] / esum));
+    else          w = ed[iDigit]; // just energy
+
+    if(w>0.0) {
+      wtot += w ;
+      nstat++;
+      for(i=0; i<3; i++ ) {
+        clXYZ[i] += (w*xyzi[i]);
+      }
+    }
+  }
+  //  cout << " wtot " << wtot << endl;
+  if (wtot > 0) { 
+    for(i=0; i<3; i++ ) {
+      clXYZ[i] /= wtot;
+    }
+    locPos.SetX(clXYZ[0]);
+    locPos.SetY(clXYZ[1]);
+    locPos.SetZ(clXYZ[2]);
+    return kTRUE;
+  } else {
+    return kFALSE;
+  }
+
+}
+
+void AliEMCALRecPoint::GetDeffW0(const Double_t esum , Double_t &deff,  Double_t &w0)
+{
+  //
+  // Aug 31, 2001 
+  // Applied for simulation data with threshold 3 adc
+  // Calculate efective distance (deff) and weigh parameter (w0) 
+  // for coordinate calculation; 0.5 GeV < esum <100 GeV.
+  // Look to:  http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/CALIB/GEOMCORR/deffandW0VaEgamma_2.gif
+  //
+  static Double_t e=0.0;
+  const  Double_t dp0=9.25147, dp1=1.16700; // Hard coded now
+  const  Double_t wp0=4.83713, wp1=-2.77970e-01, wp2 = 4.41116;
+
+  // No extrapolation here
+  e = esum<0.5?0.5:esum;
+  e = e>100.?100.:e;
+
+  deff = dp0 + dp1*TMath::Log(e);
+  w0   = wp0 / (1. + TMath::Exp(wp1*(e+wp2)));
+  //printf("<I> AliEMCALRecPoint::GetDeffW0 esum %5.2f : deff %5.2f : w0 %5.2f \n", esum, deff, w0); 
+}
 
 //______________________________________________________________________________
 void AliEMCALRecPoint::EvalCoreEnergy(Float_t logWeight, TClonesArray * digits)
@@ -902,6 +1072,25 @@ void AliEMCALRecPoint::Paint(Option_t *)
   }
   gPad->SetAttMarkerPS(markercolor,markerstyle,markersize) ;
   gPad->PaintPolyMarker(1,&x,&y,"") ;
+}
+
+Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
+{ 
+  // e energ in in GeV)
+  // key  =  0(gamma, default)
+  //     !=  0(electron)
+  static Double_t ca = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
+  static Double_t X0 = 1.23;  // radiation lenght (cm)
+  static Double_t tmax = 0.;   // position of electromagnetic shower max in cm
+
+  tmax = 0.0;
+  if(e>0.1) {
+    tmax = TMath::Log(e) + ca;
+    if      (key==0) tmax += 0.5; 
+    else             tmax -= 0.5;
+    tmax *= X0; // convert to cm
+  }
+  return tmax;
 }
 
 //______________________________________________________________________________

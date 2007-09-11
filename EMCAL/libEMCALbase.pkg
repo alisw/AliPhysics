@@ -20,12 +20,13 @@ AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
 AliEMCALPreprocessor.cxx \
 AliEMCALRawUtils.cxx \
-AliCaloCalibPedestal.cxx \
-# AliEMCALSuperModule.cxx \
-# AliEMCALCell.cxx \
-# AliEMCALFolder.cxx \
-# AliEMCALPi0SelectionParam.cxx \
-# AliEMCALCalibCoefs.cxx
+AliEMCALFolder.cxx \
+AliEMCALSuperModule.cxx \
+AliEMCALCell.cxx \
+AliEMCALPi0SelectionParam.cxx \
+AliEMCALCalibCoefs.cxx \
+AliEMCALCellInfo.cxx\
+AliCaloCalibPedestal.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 

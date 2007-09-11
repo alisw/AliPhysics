@@ -6,7 +6,7 @@ AliEMCALTrack.cxx \
 AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
 AliEMCALRecParam.cxx \
-# AliEMCALRecPointsQaESDSelector.cxx \
+AliEMCALRecPointsQaESDSelector.cxx \
 
 HDRS= $(SRCS:.cxx=.h) 
 

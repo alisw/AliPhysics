@@ -21,7 +21,7 @@
 // Sep 20004 - Nov 2006
 // See web page with description of Shish-Kebab geometries:
 // http://pdsfweb01.nersc.gov/~pavlinov/ALICE/SHISHKEBAB/RES/shishkebabALICE.html
-// Nov 9,2006 - added cas of 3X3
+// Nov 9,2006 - added case of 3X3
 //_________________________________________________________________________
 
 #include "AliLog.h"
@@ -54,6 +54,8 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     fOB(),
     fOB1(),
     fOB2(),
+    fThetaOB1(0.),
+    fThetaOB2(0.),
     fOK3X3()
 { 
   // theta in radians ; first object shold be with theta=pi/2.
@@ -81,6 +83,8 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
     fOB(),
     fOB1(),
     fOB2(),
+    fThetaOB1(0.),
+    fThetaOB2(0.),
     fOK3X3()
 { 
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
@@ -141,7 +145,7 @@ void AliEMCALShishKebabTrd1Module::Init(Double_t A, Double_t B)
 void AliEMCALShishKebabTrd1Module::DefineAllStaff()
 {
   DefineName(fTheta);
-  // Centers of module - 2X2 case
+  // Centers of cells - 2X2 case
   Double_t kk1 = (fga+fga2)/(2.*4.); // kk1=kk2 
 
   Double_t xk1 = fOK.X() - kk1*TMath::Sin(fTheta);
@@ -152,7 +156,7 @@ void AliEMCALShishKebabTrd1Module::DefineAllStaff()
   Double_t yk2 = fOK.Y() - kk1*TMath::Cos(fTheta) - fgr;
   fOK2.Set(xk2,yk2);
 
-  // Centers of module - 3X3 case; Nov 9,2006
+  // Centers of cells - 3X3 case; Nov 9,2006
   fOK3X3[1].Set(fOK.X(), fOK.Y()-fgr); // coincide with module center
 
   kk1 = ((fga+fga2)/4. + fga/6.)/2.; 
@@ -165,11 +169,13 @@ void AliEMCALShishKebabTrd1Module::DefineAllStaff()
   yk2 = fOK.Y() - kk1*TMath::Cos(fTheta) - fgr;
   fOK3X3[2].Set(xk2,yk2);
 
-  // May 15, 2006; position of cell face of cells 
+  // May 15, 2006; position of module(cells) center face 
   fOB.Set(fOK.X()-fgb/2.*TMath::Cos(fTheta),  fOK.Y()-fgb/2.*TMath::Sin(fTheta)-fgr);
   fOB1.Set(fOB.X()-fga/4.*TMath::Sin(fTheta), fOB.Y()+fga/4.*TMath::Cos(fTheta));
   fOB2.Set(fOB.X()+fga/4.*TMath::Sin(fTheta), fOB.Y()-fga/4.*TMath::Cos(fTheta));
-
+  // Jul 30, 2007 - for taking into account a position of shower maximum
+  fThetaOB1 = fTheta - fgangle/4.; // ??
+  fThetaOB2 = fTheta + fgangle/4.;
 }
 
 //_____________________________________________________________________________
@@ -263,6 +269,26 @@ Double_t  AliEMCALShishKebabTrd1Module::GetEtaOfCenterOfModule() const
 { 
   return -TMath::Log(TMath::Tan(fOK.Phi()/2.));
 }
+
+void AliEMCALShishKebabTrd1Module::GetPositionAtCenterCellLine(Int_t ieta, Double_t dist, TVector2 &v)
+{
+  // Jul 30, 2007
+  static Double_t theta=0., x=0., y=0.;
+  if(ieta==0) {
+    v     = fOB2;
+    theta = fThetaOB2;
+  } else if(ieta==1) {
+    v     = fOB1;
+    theta = fThetaOB1;
+  } else {
+    assert(0);
+  }
+  x = v.X() + TMath::Cos(theta) * dist;
+  y = v.Y() + TMath::Sin(theta) * dist;
+  v.Set(x,y);
+  //printf(" GetPositionAtCenterCellLine() : dist %f : ieta %i : x %f | y %f \n", dist, ieta, x, y);
+}  
+
 
 //_____________________________________________________________________________
 Double_t  AliEMCALShishKebabTrd1Module::GetMaxEtaOfModule(int pri) const 

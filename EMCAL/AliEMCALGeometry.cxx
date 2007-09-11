@@ -47,6 +47,7 @@
 #include <TMatrixD.h>
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TVector2.h>
 #include <TVector3.h>
 
 // -- ALICE Headers.
@@ -334,7 +335,7 @@ void AliEMCALGeometry::Init(void){
       fECScintThick  = fECPbRadThickness = 0.5;
     }
     if(fGeoName.Contains("WSUC")){ // 18-may-05 - about common structure
-      fShellThickness = 30.; // should be change 
+      fShellThickness = 30.;       // should be change 
       fNPhi = fNZ = 4; 
     }
 
@@ -439,6 +440,9 @@ void AliEMCALGeometry::Init(void){
 					   xpos,ypos,-zpos, geoRot1);
     } // for
   }
+
+  if(fGeoName.Contains("WSUC")) fNumberOfSuperModules = 1; // Jul 12, 2007
+
   fgInit = kTRUE; 
   AliInfo(" is ended");  
 }
@@ -934,6 +938,110 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, TVector3 &vloc) const
   // Alice numbering scheme - Jun 03, 2006
 }
 
+Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Double_t &xr, Double_t &yr, Double_t &zr) const
+{
+  // Jul 30, 2007 - taking into account position of shower max
+  // Look to see what the relative
+  // position inside a given cell is
+  // for a recpoint.
+  // In:
+  // absId   - cell is as in Geant,     0<= absId   < fNCells;
+  // e       - cluster energy
+  // OUT:
+  // xr,yr,zr - x,y,z coordinates of cell with absId inside SM 
+
+  // Shift index taking into account the difference between standard SM 
+  // and SM of half size in phi direction
+  const  Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
+  static Int_t iphim, ietam;
+  static AliEMCALShishKebabTrd1Module *mod = 0;
+  static TVector2 v;
+  if(!CheckAbsCellId(absId)) return kFALSE;
+
+  GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
+  GetModulePhiEtaIndexInSModule(nSupMod, nModule, iphim, ietam);
+  GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi, ieta); 
+ 
+  mod = GetShishKebabModule(ietam);
+  mod->GetPositionAtCenterCellLine(nIeta, distEff, v); 
+  xr = v.Y() - fParSM[0];
+  zr = v.X() - fParSM[2];
+
+  if(nSupMod<10) {
+    yr = fCentersOfCellsPhiDir.At(iphi);
+  } else {
+    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
+  }
+  AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
+
+  return kTRUE;
+}
+
+Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Int_t maxAbsId, Double_t distEff, Double_t &xr, Double_t &yr, Double_t &zr) const
+{
+  // Jul 31, 2007 - taking into account position of shower max and apply coor2.
+  // Look to see what the relative
+  // position inside a given cell is
+  // for a recpoint.
+  // In:
+  // absId     - cell is as in Geant,     0<= absId   < fNCells;
+  // maxAbsId  - abs id of cell with highest energy
+  // e         - cluster energy
+  // OUT:
+  // xr,yr,zr - x,y,z coordinates of cell with absId inside SM 
+
+  // Shift index taking into account the difference between standard SM 
+  // and SM of half size in phi direction
+  const  Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
+  static Int_t iphim, ietam;
+  static AliEMCALShishKebabTrd1Module *mod = 0;
+  static TVector2 v;
+
+  static Int_t nSupModM, nModuleM, nIphiM, nIetaM, iphiM, ietaM;
+  static Int_t iphimM, ietamM, maxAbsIdCopy=-1;
+  static AliEMCALShishKebabTrd1Module *modM = 0;
+  static Double_t distCorr;
+
+  if(!CheckAbsCellId(absId)) return kFALSE;
+
+  GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
+  GetModulePhiEtaIndexInSModule(nSupMod, nModule, iphim, ietam);
+  GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta, iphi, ieta); 
+  mod = GetShishKebabModule(ietam);
+
+  if(absId != maxAbsId) {
+    distCorr = 0.;
+    if(maxAbsIdCopy != maxAbsId) {
+      GetCellIndex(maxAbsId, nSupModM, nModuleM, nIphiM, nIetaM);
+      GetModulePhiEtaIndexInSModule(nSupModM, nModuleM, iphimM, ietamM);
+      GetCellPhiEtaIndexInSModule(nSupModM,nModuleM,nIphiM,nIetaM, iphiM, ietaM); 
+      modM = GetShishKebabModule(ietamM); // do I need this ?
+      maxAbsIdCopy = maxAbsId;
+    }
+    if(ietamM !=0) {
+      distCorr = GetEtaModuleSize()*(ietam-ietamM)/TMath::Tan(modM->GetTheta()); // Stay here
+      //printf(" distCorr %f | dist %f | ietam %i -> etamM %i\n", distCorr, dist, ietam, ietamM);  
+    }
+    // distEff += distCorr;
+  }
+  // Bad resolution in this case, strong bias vs phi
+  // distEff = 0.0; 
+  mod->GetPositionAtCenterCellLine(nIeta, distEff, v); // Stay here
+  xr = v.Y() - fParSM[0];
+  zr = v.X() - fParSM[2];
+
+  if(nSupMod<10) {
+    yr = fCentersOfCellsPhiDir.At(iphi);
+  } else {
+    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
+  }
+  AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
+
+  return kTRUE;
+}
+
 void AliEMCALGeometry::CreateListOfTrd1Modules()
 {
   // Generate the list of Trd1 modules
@@ -1268,7 +1376,7 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
   return kFALSE;
 }
 
-AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta)
+AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) const
 {
   //This method was too long to be
   //included in the header file - the

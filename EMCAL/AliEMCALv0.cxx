@@ -743,7 +743,8 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       fParEMOD[2] = g->GetPhiModuleSize()/2.;;  // dy
       fParEMOD[3] = g->GetLongModuleSize()/2.;  // dz
       gMC->Gsvolu(child, "TRD1", fIdTmedArr[kIdSTEEL], fParEMOD, 4);
-      if(gn.Contains("WSUC") || gn.Contains("MAY05")){
+      //      if(gn.Contains("WSUC") || gn.Contains("MAY05")){
+      if(0){ // Jul 12 - should be checked
         parSCPA[0] = g->GetEtaModuleSize()/2. + tanTrd1*g->GetFrontSteelStrip();   // dx1
         parSCPA[1] = parSCPA[0]               + tanTrd1*g->GetPassiveScintThick(); // dx2
         parSCPA[2] = g->GetPhiModuleSize()/2.;     // dy
@@ -1300,6 +1301,17 @@ AliEMCALShishKebabTrd1Module* AliEMCALv0::GetShishKebabModule(Int_t neta)
 //_____________________________________________________________________________
 void AliEMCALv0::AddAlignableVolumes() const
 {
+  TString ntmp(GetTitle()); // name of EMCAL geometry
+
+  if(ntmp.Contains("WSUC")) {
+    AddAlignableVolumesInWSUC();  // WSUC case
+  } else {
+    AddAlignableVolumesInALICE(); // ALICE case
+  }
+}
+
+void AliEMCALv0::AddAlignableVolumesInALICE() const
+{
   //
   // Create entries for alignable volumes associating the symbolic volume
   // name with the corresponding volume path. Needs to be synchronized with
@@ -1337,3 +1349,25 @@ void AliEMCALv0::AddAlignableVolumes() const
 
 }
 
+void AliEMCALv0::AddAlignableVolumesInWSUC() const
+{
+  //
+  // Create entries for alignable volumes associating the symbolic volume
+  // name with the corresponding volume path. Needs to be synchronized with
+  // eventual changes in the geometry.
+  //
+
+  TString vpstr1 = "WSUC_1/XEN1_1/SMOD_";
+  TString snstr1 = "EMCAL/CosmicTestSupermodule";
+  TString volpath, symname;
+
+  // #SM is just one 
+  for (Int_t smodnum=0; smodnum < 1; smodnum++) {
+    symname = snstr1;
+    symname += (smodnum+1);
+    volpath = vpstr1;
+    volpath += (smodnum+1);
+    if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
+      AliFatal("Unable to set alignable entry!!");
+  }
+}
