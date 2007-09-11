@@ -1,8 +1,7 @@
 void GetValues(const char* host, Int_t port, const char* request,
-	Long_t startTime, Long_t endTime) 
+	UInt_t startTime, UInt_t endTime) 
 {
-
-	AliDCSClient client(host, port, 1000, 5);
+	AliDCSClient client(host, port, 1000, 20);
 
 	Int_t result;
 
@@ -18,8 +17,7 @@ void GetValues(const char* host, Int_t port, const char* request,
 	TStopwatch sw;
 	sw.Start();
 
-	if (requests->GetEntries() > 1) {
-
+	if (requests->GetEntries() > 0) {
 		TIter iter(requests);
 		TObjString* aString;
 		TObjArray* valueSet;
@@ -28,19 +26,10 @@ void GetValues(const char* host, Int_t port, const char* request,
 			valueSet = new TObjArray();
 			valueSet->SetOwner(1);
 
-			result = client.GetDPValues(aString->GetName(), startTime,
+			result = client.GetAliasValues(aString->GetName(), startTime,
 				endTime, valueSet);
 			values.Add(aString->Clone(), valueSet);
 		}
-
-	} else {
-		TObjArray* valueSet = new TObjArray();
-		valueSet->SetOwner(1);
-
-		values.Add(new TObjString(request), valueSet);
-
-		result = client.GetAliasValues(request, startTime,
-				endTime, valueSet);
 	}
 
 	if (result < 0) {

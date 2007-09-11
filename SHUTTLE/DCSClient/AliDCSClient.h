@@ -49,9 +49,9 @@ public:
         TMap* GetAliasValues(const TSeqCollection* aliasList, UInt_t startTime, UInt_t endTime, Int_t startIndex = 0, Int_t endIndex = -1);
 
         AliDCSMessage::ErrorCode GetServerErrorCode() const
-                { return fServerErrorCode;};
+                { return fServerErrorCode;}
 
-        const TString& GetServerError() const {return fServerError;};
+        const TString& GetServerError() const {return fServerError;}
 
 
         Bool_t IsConnected();
@@ -69,19 +69,15 @@ private:
 	static const char* fgkCommErrorString;  	// Communication error string
 	static const char* fgkServerErrorString;	// Server error string
 
-	AliDCSClient(const AliDCSClient& other);
-	AliDCSClient& operator= (const AliDCSClient& other);
-
 	TSocket* fSocket;	// Pointer to the TCP socket client
-
+	TString fHost;  	// server host
+	Int_t   fPort;		// server port
 	UInt_t fTimeout;	// timeout parameter
-
 	Int_t fRetries;		// number of retries
-
 	AliDCSMessage::ErrorCode fServerErrorCode;	// error code
-
 	TString fServerError;	// server error string
 
+	Bool_t Connect();
 
 	Int_t SendBuffer(const char* buffer, Int_t size);
 
@@ -101,6 +97,8 @@ private:
 
 	Int_t ReceiveValueSet(TObjArray* result);
 
+	AliDCSClient(const AliDCSClient& other);		// not implemented
+	AliDCSClient& operator= (const AliDCSClient& other);	// not implemented
 
 	ClassDef(AliDCSClient, 0);
 };

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/06/09 13:01:09  jgrosseo
+Switching to retrieval of several DCS DPs at a time (multiDPrequest)
+
 Revision 1.1  2006/11/06 14:22:47  jgrosseo
 major update (Alberto)
 o) reading of run parameters from the logbook
@@ -94,7 +97,7 @@ const char* AliDCSClient::fgkServerErrorString = "ServerError";
 //______________________________________________________________________
 AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 	Int_t retries):
-	fSocket(NULL), fTimeout(timeout), fRetries(retries),
+	fSocket(NULL), fHost(host), fPort(port), fTimeout(timeout), fRetries(retries),
 	fServerErrorCode(AliDCSMessage::kNoneError), fServerError("")
 {
 	// 
@@ -105,15 +108,32 @@ AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 	// retries: the number of retries after which the connection is 
 	//		is considered as invalid and error is returned.
 	//
+}
 
-	Int_t tries = 0;	
+//______________________________________________________________________
+AliDCSClient::~AliDCSClient() 
+{
+	// destructor
+
+	Close();
+}
+
+//______________________________________________________________________
+Bool_t AliDCSClient::Connect()
+{
+	//  connects to the AMANDA server
 	
-	while (tries < fRetries) {
-		fSocket = new TSocket(host, port);
-		if (fSocket->IsValid()) {
-			AliDebug(1, Form("Connected to %s:%d", host, port));
+	Close();
+	
+	Int_t tries = 0;	
+	while (tries < fRetries) 
+	{
+		fSocket = new TSocket(fHost, fPort);
+		if (fSocket->IsValid()) 
+		{
+			AliDebug(1, Form("Connected to %s:%d", fHost.Data(), fPort));
 			fSocket->SetOption(kNoBlock, 1);
-			break;
+			return kTRUE;
 		}
 
 		AliDebug(1, Form("Connection timeout! tries <%d> ...", tries));
@@ -124,35 +144,8 @@ AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 		gSystem->Sleep(fTimeout);
 		tries ++;
 	}
-}
-
-//______________________________________________________________________
-AliDCSClient::AliDCSClient(const AliDCSClient& /*other*/):
-	TObject(), fSocket(NULL), fTimeout(0), fRetries(0),
-	fServerErrorCode(AliDCSMessage::kNoneError), fServerError("")
-
-{
-// copy constructor (not implemented)
-
-}
-
-//______________________________________________________________________
-AliDCSClient &AliDCSClient::operator=(const AliDCSClient& /*other*/)
-{
-// assignment operator (not implemented)
-
-return *this;
-}
-
-//______________________________________________________________________
-AliDCSClient::~AliDCSClient() 
-{
-// destructor
-
-	if (fSocket) {
-		Close();
-		delete fSocket;
-	}
+	
+	return kFALSE;
 }
 
 //______________________________________________________________________
@@ -291,17 +284,19 @@ Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message)
 Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	const char* reqString, UInt_t startTime, UInt_t endTime, TObjArray* result)
 {
-// get array of DCS values from the DCS server
-// reqString: alias name
-// startTime, endTime: start time and end time of the query
-// result: contains the array of retrieved AliDCSValue's
+	// get array of DCS values from the DCS server
+	// reqString: alias name
+	// startTime, endTime: start time and end time of the query
+	// result: contains the array of retrieved AliDCSValue's
 
+	Connect();
+	
 	if (!IsConnected()) {
 		AliError("Not connected!");
 		return AliDCSClient::fgkBadState;
 	}
 
-	Int_t sResult;
+	Int_t sResult = -1;
 	AliDCSMessage requestMessage;
 	requestMessage.CreateRequestMessage(reqType, startTime, endTime,
 			reqString);
@@ -331,6 +326,8 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	// Result: map containing the array of alias names. It will be filled with
 	// the values retrieved for each alias
 
+	Connect();
+	
 	if (!IsConnected()) {
 		AliError("Not connected!");
 		return 0;
@@ -561,6 +558,8 @@ void AliDCSClient::Close()
 
 	if (fSocket) {
 		fSocket->Close();
+		delete fSocket;
+		fSocket = 0;
 	}
 }
 
