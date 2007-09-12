@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/09/11 19:38:15  pavlinov
+added pi0 calibration, linearity, shower profile
+
 */ 
 
 //_________________________________________________________________________
@@ -31,8 +34,9 @@ $Log$
 #include "AliEMCALSuperModule.h"
 #include "AliEMCALCalibData.h"
 #include "AliEMCALRecPointsQaESDSelector.h"
-
 #include "AliEMCALCalibCoefs.h"
+
+#include <assert.h>
 
 #include <TROOT.h>
 #include <TStyle.h>
