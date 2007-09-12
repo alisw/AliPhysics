@@ -354,25 +354,25 @@ void AliTRDSimParam::SampleTRF()
 			 , 0.0094, 0.0092, 0.0091, 0.0089, 0.0088, 0.0086, 0.0084
 			 , 0.0083, 0.0081, 0.0080, 0.0078 };
 
-	// Andronic & Bercuci parametrization
-	// define new TRF parametrization
-		// normalizing constant to Fe signal
-	const Float_t k1=1.055;
-	// time constants
-	const Float_t t1=0.04;
-	const Float_t t2=.9;
-	// the relative fraction of the long component
-	const Float_t k2=.15;
-	// time offset for Fe
-	const Float_t t0=-.29;
-	Float_t x = t0; Int_t index;
-	for(int i=0; i<kNpasa; i++) signal[i] = 0.;
-  for(int i=0; i<kNpasa; i++){
-		index = i+6;
-		if(index >= kNpasa) break;
-		x += .02;
-		signal[index]=k1*(TMath::Power((x-t0)/t1, 2.5)*(exp(-(x-t0)/t1))+k2*exp(-(x-t0)/t2));
-	}
+// 	// Andronic & Bercuci parametrization
+// 	// define new TRF parametrization
+// 		// normalizing constant to Fe signal
+// 	const Float_t k1=1.055;
+// 	// time constants
+// 	const Float_t t1=0.04;
+// 	const Float_t t2=.9;
+// 	// the relative fraction of the long component
+// 	const Float_t k2=.15;
+// 	// time offset for Fe
+// 	const Float_t t0=-.29;
+// 	Float_t x = t0; Int_t index;
+// 	for(int i=0; i<kNpasa; i++) signal[i] = 0.;
+//   for(int i=0; i<kNpasa; i++){
+// 		index = i+6;
+// 		if(index >= kNpasa) break;
+// 		x += .02;
+// 		signal[index]=k1*(TMath::Power((x-t0)/t1, 2.5)*(exp(-(x-t0)/t1))+k2*exp(-(x-t0)/t2));
+// 	}
 
 	Float_t xtalk[kNpasa];
 
