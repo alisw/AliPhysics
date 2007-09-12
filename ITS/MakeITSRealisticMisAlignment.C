@@ -33,8 +33,8 @@ void MakeITSRealisticMisAlignment() {
   
   AliCDBStorage* storage = NULL;
 
-
-  if(gSystem->Getenv("TOCDB")){
+  TString compare("kTRUE");
+  if(gSystem->Getenv("TOCDB") == compare.Data()){
     TString Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
@@ -287,7 +287,7 @@ void MakeITSRealisticMisAlignment() {
 
 
 
-  if( !gSystem->Getenv("TOCDB") ){
+  if( gSystem->Getenv("TOCDB") != compare.Data() ){
     // save on file
     const char* filename = "ITSrealisticMisalignment.root";
     TFile f(filename,"RECREATE");
