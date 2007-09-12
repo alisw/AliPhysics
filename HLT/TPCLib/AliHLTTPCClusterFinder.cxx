@@ -761,6 +761,7 @@ void AliHLTTPCClusterFinder::FindClusters(){
   }
   WriteClusters(fPadArray->fClusters.size(),clusterlist);
   delete [] clusterlist;
+  fPadArray->DataToDefault();
 }
 void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *list)//This is used when using the AliHLTTPCClusters class for cluster data
 {
