@@ -1,8 +1,31 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <Riostream.h>
+#include<TClassTable.h>
+#include <TError.h>
+#include <TInterpreter.h>
+#include <TStopwatch.h>
+#include <TString.h>
+#include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliITS.h"
+#include "AliITSInitGeometry.h"
+#include "AliITSgeom.h"
+#include "AliITSLoader.h"
+#include "AliITSsimulationFastPoints.h"
+#include "AliGeomManager.h"
+#endif
+
+/*
+$Id$ 
+*/
+
+
 void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFile = "galice.root", Int_t nsignal=25, Int_t size=-1) 
 {
   /////////////////////////////////////////////////////////////////////////
   //   
-  //   This macro creates fast recpoints, optionally on a separate file
+  //   This macro creates fast recpoints
   //   
   /////////////////////////////////////////////////////////////////////////
 
@@ -10,75 +33,78 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
   // Dynamically link some shared libs
 
   if (gClassTable->GetID("AliRun") < 0) {
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
-  } else if (gAlice){
-     delete gAlice->GetRunLoader();
-     delete gAlice; 
-     gAlice=0;
+    gInterpreter->ExecuteMacro("loadlibs.C");
+  }
+  else { 
+    if(gAlice){
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice=0;
+    }
   }
 
+
+  // Get geometry
+  AliGeomManager::LoadGeometry("geometry.root");
+
   // Connect the Root Galice file containing Geometry, Kine and Hits
-    AliRunLoader* rl = AliRunLoader::Open("galice.root");
-    if (rl == 0x0)
-     {
-       ::Error("AliITSHits2FastRecPoints.C","Can not open session RL=NULL");
-       return;
-     }
+  AliRunLoader* rl = AliRunLoader::Open(inFile.Data());
+  if (rl == 0x0)
+    {
+      Error("AliITSHits2FastRecPoints.C","Can not open session RL=NULL");
+      return;
+    }
      
-    Int_t retval = rl->LoadgAlice();
-    if (retval)
-     {
-       ::Error("AliITSHits2FastRecPoints.C","LoadgAlice returned error");
-       delete rl;
-       return;
-     }
-    gAlice=rl->GetAliRun();
-    rl->LoadHeader();
-    retval = rl->LoadKinematics();
-    if (retval)
-     {
-       ::Error("AliITSHits2FastRecPoints.C","LoadKinematics returned error");
-       delete rl;
-       return;
-     }
-    
-    AliITSLoader* gime = (AliITSLoader*)rl->GetLoader("ITSLoader");
-    if (gime == 0x0)
-     {
-       ::Error("AliITSHits2FastRecPoints.C","can not get ITS loader");
-       delete rl;
-       return;
-     }
-    retval = gime->LoadHits("read");
-    if (retval)
-     {
-       ::Error("AliITSHits2FastRecPoints.C","LoadHits returned error");
-       delete rl;
-       return;
-     }
-    gime->SetRecPointsFileName("ITS.FastRecPoints.root"); 
-    retval = gime->LoadRecPoints("update");
-    if (retval)
-     {
-       ::Error("AliITSHits2FastRecPoints.C","LoadRecPoints returned error");
-       delete rl;
-       return;
-     }
-    
-   
-    TDirectory * olddir = gDirectory;
-    rl->CdGAFile();
-    AliITSgeom* geom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
-    olddir->cd();
-    if(!geom){
-      Error("GetITSgeom","no ITS geometry available");
-      return NULL;
+  Int_t retval = rl->LoadgAlice();
+  if (retval)
+    {
+      Error("AliITSHits2FastRecPoints.C","LoadgAlice returned error");
+      delete rl;
+      return;
+    }
+  gAlice=rl->GetAliRun();
+  rl->LoadHeader();
+  retval = rl->LoadKinematics();
+  if (retval)
+    {
+      Error("AliITSHits2FastRecPoints.C","LoadKinematics returned error");
+      delete rl;
+      return;
     }
 
+  AliITSInitGeometry initgeom;
+  AliITSgeom *geom = initgeom.CreateAliITSgeom();
+  printf("Geometry name: %s \n",(initgeom.GetGeometryName()).Data());
+    
+  AliITSLoader* gime = (AliITSLoader*)rl->GetLoader("ITSLoader");
+  if (gime == 0x0)
+    {
+      ::Error("AliITSHits2FastRecPoints.C","can not get ITS loader");
+      delete rl;
+      return;
+    }
+  gime->SetITSgeom(geom);
+  retval = gime->LoadHits("read");
+  if (retval)
+    {
+      ::Error("AliITSHits2FastRecPoints.C","LoadHits returned error");
+      delete rl;
+      return;
+    }
+  gime->SetRecPointsFileName("ITS.FastRecPoints.root"); 
+  retval = gime->LoadRecPoints("update");
+  if (retval)
+    {
+      ::Error("AliITSHits2FastRecPoints.C","LoadRecPoints returned error");
+      delete rl;
+      return;
+    }
+    
+   
+
  
-   AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
-   if (!ITS) return;
+  AliITS *ITS  = (AliITS*) gAlice->GetModule("ITS");
+  if (!ITS) return;
 
   // Set the simulation model
 
@@ -88,7 +114,6 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
   // Event Loop
   //
 
-  Int_t nbgr_ev=0;
   TStopwatch timer;
 
   cout << "Creating fast reconstructed points from hits for the ITS..." << endl;
@@ -109,7 +134,7 @@ void AliITSHits2FastRecPoints (Int_t evNumber1=0,Int_t evNumber2=0, TString inFi
     rl->GetEvent(ev);
     //if(gime->TreeR() == 0x0) gime->MakeTree("R");
     
-     if (ev < evNumber1) continue;
+    if (ev < evNumber1) continue;
     if (nparticles <= 0) return;
 
     Int_t bgr_ev=Int_t(ev/nsignal);
