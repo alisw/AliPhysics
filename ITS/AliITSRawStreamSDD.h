@@ -73,7 +73,9 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fIFifoWord[kFifoWords];
     Int_t            fICountFoot[kModulesPerDDL];
     Int_t            fIdcd;   // fifo counter, for debugging, to be removed when the code is stabilised
-    ClassDef(AliITSRawStreamSDD, 5) // class for reading ITS SDD raw digits
+    Int_t            fEndWords;//number of 3f1f1f1f
+    Int_t            fResetSkip; //if it is 0, the ResetSkip Funcion is called
+    ClassDef(AliITSRawStreamSDD, 6) // class for reading ITS SDD raw digits
 };
 
 #endif
