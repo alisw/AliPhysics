@@ -98,16 +98,17 @@ public:
   
 private:
 
+  /// The various identifiers for the type of iterator constructed.
   enum IteratorType
   {
-    kNoIterator,
-    kHitIterator,
-    kSDigitIteratorByDetectorElement,
-    kSDigitIteratorByChamberAndCathode,
-    kDigitIteratorByDetectorElement,
-    kDigitIteratorByChamberAndCathode,
-    kLocalTriggerIterator,
-    kRegionalTriggerIterator
+    kNoIterator,  ///< No iterator was constructed.
+    kHitIterator,  ///< An iterator to iterate over the hits.
+    kSDigitIteratorByDetectorElement,  ///< A summable digit iterator to iterate over the detector elements.
+    kSDigitIteratorByChamberAndCathode,  ///< A summable digit iterator to iterate over chambers and cathodes.
+    kDigitIteratorByDetectorElement,  ///< An iterator for simulated digits to iterate over the detector elements.
+    kDigitIteratorByChamberAndCathode,  ///< An iterator for simulated digits to iterate over chambers and cathodes.
+    kLocalTriggerIterator,  ///< An iterator for iterating over the simulated local triggers.
+    kRegionalTriggerIterator  ///< An iterator for iterating over the simulated regional triggers.
   };
   
   /// Not implemented

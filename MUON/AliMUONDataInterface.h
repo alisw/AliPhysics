@@ -91,16 +91,17 @@ public:
   
 private:
 
+  /// The various identifiers for the type of iterator constructed.
   enum IteratorType
   {
-    kNoIterator,
-    kDigitIteratorByDetectorElement,
-    kDigitIteratorByChamberAndCathode,
-    kRawClusterIterator,
-    kTrackIterator,
-    kLocalTriggerIterator,
-    kRegionalTriggerIterator,
-    kTriggerTrackIterator
+    kNoIterator,  ///< No iterator was constructed.
+    kDigitIteratorByDetectorElement,  ///< A digit iterator for iterating over detector elements.
+    kDigitIteratorByChamberAndCathode,  ///< A digit iterator for iterating over chambers and cathodes.
+    kRawClusterIterator,  ///< A raw cluster iterator.
+    kTrackIterator,  ///< An iterator for iterating over reconstructed tracks.
+    kLocalTriggerIterator,  ///< An iterator for iterating over reconstructed local triggers.
+    kRegionalTriggerIterator,  ///< An iterator for iterating over reconstructed regional triggers.
+    kTriggerTrackIterator  ///< An iterator for iterating over reconstructed trigger tracks.
   };
     
   void DumpSorted(const AliMUONVStore& store) const;
