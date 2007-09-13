@@ -1359,13 +1359,13 @@ Double_t AliITStrackerSA::ChoosePoint(Double_t p1, Double_t p2, Double_t pp){
 
 //_________________________________________________________________
 Int_t AliITStrackerSA::FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const {
-  // returns track with lowes chi square  
+  // returns track with lowers chi square  
   if(dim==1){
     //AliITStrackV2* trk = (AliITStrackV2*)tracklist->At(0);
     //return trk;
     return 0;
   }
-  //if(dim==0) return 0;
+  if(dim==0) return 0;
   Double_t * chi2 = new Double_t[dim];
   Int_t * index = new Int_t[dim];
   for(Int_t i=0;i<dim;i++){
@@ -1389,10 +1389,10 @@ Int_t AliITStrackerSA::FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) co
     }
     w++;
   }
-
+  Int_t tmp = index[dim-1];
   delete [] chi2;
   delete [] index;
-  return index[dim-1];
+  return tmp;
 }
 
 //__________________________________________________________
