@@ -28,11 +28,12 @@
   #include "AliRunLoader.h"
   #include "AliRun.h"
   #include "AliESDEvent.h"
+  #include "AliESDcascade.h"
 #else
-const Int_t kXiMinus    = 3312;
-const Int_t kXiPlusBar  = -3312;
-const Int_t kOmegaMinus = 3334;
-const Int_t kOmegaPlusBar = -3334;
+  const Int_t kXiMinus    = 3312;
+  const Int_t kXiPlusBar  = -3312;
+  const Int_t kOmegaMinus = 3334;
+  const Int_t kOmegaPlusBar = -3334;
 #endif
 
 Int_t GoodCascades(const Char_t *dir=".");
@@ -327,8 +328,8 @@ Int_t AliCascadeComparison(Int_t code=3312, const Char_t *dir=".") {
    delete csTree;
    refFile->Close();
 
-   Stat_t ng=hgood->GetEntries(), nf=hfound->GetEntries();
-   if (ng!=0) cout<<"Integral efficiency is about "<<nf/ng*100.<<" %\n";
+   Stat_t ngg=hgood->GetEntries(), nf=hfound->GetEntries();
+   if (ngg!=0) cout<<"Integral efficiency is about "<<nf/ngg*100.<<" %\n";
    cout<<
    "Total number of found cascades: "<<allfound<<" ("<<nf<<" in the peak)\n";
    cout<<"Total number of \"good\" cascades: "<<allgood<<endl;
