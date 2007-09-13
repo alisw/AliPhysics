@@ -25,8 +25,8 @@ public:
   AliZDCReconstructor();
   virtual ~AliZDCReconstructor();
 
-  virtual Bool_t       HasDigitConversion() const {return kFALSE;};
-  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;};
+  virtual Bool_t HasDigitConversion() const {return kFALSE;}
+  virtual Bool_t HasLocalReconstruction() const {return kTRUE;}
 
   virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const; 
   virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
@@ -49,16 +49,19 @@ public:
   virtual void FillESD(AliRunLoader* /*runLoader*/, 
 		       AliRawReader* /*rawReader*/, AliESDEvent* /*esd*/) const
     { AliError("Method should not be used anymore !"); }
-
+  
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData() const; 
-
+  
 private:
   AliZDCReconstructor(const AliZDCReconstructor&);
   AliZDCReconstructor& operator =(const AliZDCReconstructor&);
 
-  void   ReconstructEvent(TTree *clustersTree, Float_t zn1corr, Float_t zp1corr, Float_t zemcorr,
-  		Float_t zn2corr, Float_t zp2corr) const;
+  void   ReconstructEvent(TTree *clustersTree, Float_t* ZN1ADCCorrHG, 
+  		Float_t* ZP1ADCCorrHG, Float_t* ZN2ADCCorrHG, 
+		Float_t* ZP2ADCCorrHG, Float_t* ZN1ADCCorrLG, 
+		Float_t* ZP1ADCCorrLG, Float_t* ZN2ADCCorrLG, 
+		Float_t* ZP2ADCCorrLG, Float_t ZEMADCCorrHG) const;
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
   TF1*   fZNCen;     //! Nspectator n true vs. EZN
@@ -76,7 +79,7 @@ private:
   
   AliZDCCalibData *fCalibData; 	//! calibration data
 
-  ClassDef(AliZDCReconstructor, 1)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 2)   // class for the ZDC reconstruction
 };
 
 #endif

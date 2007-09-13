@@ -13,55 +13,80 @@ class AliZDCReco : public TObject {
 
 public:
   AliZDCReco();
-  AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezdc1, Float_t ezem, 
-  	     Float_t ezn2, Float_t ezp2, Float_t ezdc2, Int_t detspnLeft, 
-             Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight, 
-	     Int_t trspn, Int_t trspp, Int_t trsp, Int_t part, Float_t b);
+  AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,  
+	     Float_t* ezn1tow, Float_t* ezp1tow,
+	     Float_t* ezn2tow, Float_t* ezp2tow, 
+	     Float_t ezem, 
+	     //	   
+	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,  
+	     Int_t trspnLeft, Int_t trsppLeft, Int_t trspLeft, 
+	     Int_t trspnRight, Int_t trsppRight, Int_t trspRight,
+	     Int_t partLeft, Int_t partRight,  
+	     Float_t b);
+
   AliZDCReco(const AliZDCReco &oldreco);
   virtual ~AliZDCReco() {}
 
   // Getters 
-  virtual Float_t GetZN1energy()   const  {return fZN1energy;}
-  virtual Float_t GetZP1energy()   const  {return fZP1energy;}
-  virtual Float_t GetZDC1energy()  const  {return fZDC1energy;}
-  virtual Float_t GetZN2energy()   const  {return fZN2energy;}
-  virtual Float_t GetZP2energy()   const  {return fZP2energy;}
-  virtual Float_t GetZDC2energy()  const  {return fZDC2energy;}
-  virtual Float_t GetZEMenergy()   const  {return fZEMenergy;}
-  virtual Int_t   GetNDetSpecNLeft()  const  {return fNDetSpecNLeft;}
-  virtual Int_t   GetNDetSpecPLeft()  const  {return fNDetSpecPLeft;}
-  virtual Int_t   GetNDetSpecNRight() const  {return fNDetSpecNRight;}
-  virtual Int_t   GetNDetSpecPRight() const  {return fNDetSpecPRight;}
-  virtual Int_t   GetNTrueSpecN()  const  {return fNTrueSpecN;}
-  virtual Int_t   GetNTrueSpecP()  const  {return fNTrueSpecP;}
-  virtual Int_t   GetNTrueSpec()   const  {return fNTrueSpec;}
-  virtual Int_t   GetNPart()       const  {return fNPart;}
-  virtual Float_t GetImpPar()      const  {return fImpPar;}
+  virtual Float_t GetZN1Energy()   const  {return fZN1Energy;}
+  virtual Float_t GetZP1Energy()   const  {return fZP1Energy;}
+  virtual Float_t GetZN2Energy()   const  {return fZN2Energy;}
+  virtual Float_t GetZP2Energy()   const  {return fZP2Energy;}
+  //
+  virtual Float_t GetZN1EnTow(Int_t tow)  const {return fZN1EnTow[tow];}
+  virtual Float_t GetZP1EnTow(Int_t tow)  const {return fZP1EnTow[tow];}
+  virtual Float_t GetZN2EnTow(Int_t tow)  const {return fZN2EnTow[tow];}
+  virtual Float_t GetZP2EnTow(Int_t tow)  const {return fZP2EnTow[tow];}
+  //
+  virtual Float_t GetZEMsignal()   const  {return fZEMsignal;}
+  //
+  virtual Int_t   GetNDetSpecNLeft()   const {return fNDetSpecNLeft;}
+  virtual Int_t   GetNDetSpecPLeft()   const {return fNDetSpecPLeft;}
+  virtual Int_t   GetNDetSpecNRight()  const {return fNDetSpecNRight;}
+  virtual Int_t   GetNDetSpecPRight()  const {return fNDetSpecPRight;}
+  virtual Int_t   GetNTrueSpecNLeft()  const {return fNTrueSpecNLeft;}
+  virtual Int_t   GetNTrueSpecPLeft()  const {return fNTrueSpecPLeft;}
+  virtual Int_t   GetNTrueSpecLeft()   const {return fNTrueSpecLeft;}
+  virtual Int_t   GetNTrueSpecNRight() const {return fNTrueSpecNRight;}
+  virtual Int_t   GetNTrueSpecPRight() const {return fNTrueSpecPRight;}
+  virtual Int_t   GetNTrueSpecRight()  const {return fNTrueSpecRight;}
+  virtual Int_t   GetNPartLeft()       const {return fNPartLeft;}
+  virtual Int_t   GetNPartRight()      const {return fNPartRight;}
+  virtual Float_t GetImpPar()          const {return fImpPar;}
 
   // Print method
   virtual void Print(Option_t *) const;
 
 private:
   // Data members
-  Float_t fZN1energy;	// Energy detected in neutron ZDC
-  Float_t fZP1energy;	// Energy detected in proton ZDC
-  Float_t fZDC1energy;	// Total hadronic energy detcted in ZDCs
-  Float_t fZN2energy;	// Energy detected in neutron ZDC
-  Float_t fZP2energy;	// Energy detected in proton ZDC
-  Float_t fZDC2energy;	// Total hadronic energy detcted in ZDCs
-  Float_t fZEMenergy;	// Energy detected in EM ZDC
+  Float_t fZN1Energy;	// Energy detected in ZN1 (sum of 5 tower signals)
+  Float_t fZP1Energy;	// Energy detected in ZP1 (sum of 5 tower signals)
+  Float_t fZN2Energy;	// Energy detected in ZN2 (sum of 5 tower signals)
+  Float_t fZP2Energy;	// Energy detected in ZP2 (sum of 5 tower signals)
+  //
+  Float_t fZN1EnTow[5];	// Energy in ZN1 towers
+  Float_t fZP1EnTow[5]; // Energy in ZP1 towers
+  Float_t fZN2EnTow[5];	// Energy in ZN2 towers
+  Float_t fZP2EnTow[5]; // Energy in ZP2 towers
+  //
+  Float_t fZEMsignal;	// Signal in EM ZDC
+  //
   Int_t	  fNDetSpecNLeft;  // Number of spectator neutrons detected
   Int_t	  fNDetSpecPLeft;  // Number of spectator protons detected
   Int_t	  fNDetSpecNRight; // Number of spectator neutrons detected
   Int_t	  fNDetSpecPRight; // Number of spectator protons detected
-  Int_t	  fNTrueSpecN;  // Estimate of the number of spectator neutrons generated
-  Int_t	  fNTrueSpecP;  // Estimate of the number of spectator protons generated
-  Int_t	  fNTrueSpec ;  // Estimate of the total number of spectators
-  Int_t	  fNPart;	// Estimate of the number of participants for 1 nucleus
+  Int_t	  fNTrueSpecNLeft; // Estimate of the number of spectator neutrons generated
+  Int_t	  fNTrueSpecPLeft; // Estimate of the number of spectator protons generated
+  Int_t	  fNTrueSpecLeft;  // Estimate of the total number of spectators
+  Int_t	  fNTrueSpecNRight;// Estimate of the number of spectator neutrons generated
+  Int_t	  fNTrueSpecPRight;// Estimate of the number of spectator protons generated
+  Int_t	  fNTrueSpecRight; // Estimate of the total number of spectators
+  Int_t	  fNPartLeft;	// Estimate of the number of participants for 1 nucleus
+  Int_t	  fNPartRight;	// Estimate of the number of participants for 1 nucleus
   Float_t fImpPar;	// Estimate of the impact parameter
 
 
-  ClassDef(AliZDCReco,1)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,2)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif

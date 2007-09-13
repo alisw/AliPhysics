@@ -81,11 +81,27 @@ class AliZDCCalibData: public TNamed {
   void 	SetZP2EqualCoeff(Int_t channel, Float_t val) {fZP2EqualCoeff[channel]=val;}
   void 	SetZP2EqualCoeff(Float_t* EqualCoeff);
   //  
-  void    SetEZEMEndValue(Float_t EZEMEndValue) {fEZEMEndValue = EZEMEndValue;}
-  void    SetEZEMCutFraction(Float_t EZEMCutFraction) {fEZEMCutFraction = EZEMCutFraction;}
-  virtual Float_t GetEZEMEndValue()     const {return fEZEMEndValue;}
-  virtual Float_t GetEZEMCutFraction()  const {return fEZEMCutFraction;}
-  
+  void    SetZEMEndValue(Float_t ZEMEndValue) {fZEMEndValue = ZEMEndValue;}
+  void    SetZEMCutFraction(Float_t ZEMCutFraction) {fZEMCutFraction = ZEMCutFraction;}
+  void    SetDZEMSup(Float_t DZEMSup) {fDZEMSup = DZEMSup;}
+  void    SetDZEMInf(Float_t DZEMInf) {fDZEMInf = DZEMInf;}
+  virtual Float_t GetZEMEndValue()     const {return fZEMEndValue;}
+  virtual Float_t GetZEMCutFraction()  const {return fZEMCutFraction;}
+  virtual Float_t GetDZEMSup()	       const {return fDZEMSup;}
+  virtual Float_t GetDZEMInf()	       const {return fDZEMInf;}
+  //
+  void	  SetEZN1MaxValue(Float_t value)  {fEZN1MaxValue = value;}
+  void	  SetEZP1MaxValue(Float_t value)  {fEZP1MaxValue = value;}
+  void	  SetEZDC1MaxValue(Float_t value) {fEZDC1MaxValue = value;}
+  void	  SetEZN2MaxValue(Float_t value)  {fEZN2MaxValue = value;}
+  void	  SetEZP2MaxValue(Float_t value)  {fEZP2MaxValue = value;}
+  void	  SetEZDC2MaxValue(Float_t value) {fEZDC2MaxValue = value;}
+  virtual Float_t GetEZN1MaxValue()  const {return fEZN1MaxValue;}
+  virtual Float_t GetEZP1MaxValue()  const {return fEZP1MaxValue;}
+  virtual Float_t GetEZDC1MaxValue() const {return fEZDC1MaxValue;}
+  virtual Float_t GetEZN2MaxValue()  const {return fEZN2MaxValue;}
+  virtual Float_t GetEZP2MaxValue()  const {return fEZP2MaxValue;}
+  virtual Float_t GetEZDC2MaxValue() const {return fEZDC2MaxValue;}
   
  protected:
   // --- Pedestals
@@ -104,10 +120,19 @@ class AliZDCCalibData: public TNamed {
   Float_t  fZN2EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   Float_t  fZP2EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   // --- Coefficients for centrality selection from ZEM signal
-  Float_t fEZEMEndValue;    	 //End point value of ZEM energy spectrum
-  Float_t fEZEMCutFraction; 	 //Fraction of ZEM energy spectrum used to cut
+  Float_t  fZEMEndValue;    	 // End point value of ZEM energy spectrum
+  Float_t  fZEMCutFraction; 	 // Fraction of ZEM energy spectrum used to cut
+  Float_t  fDZEMSup;// Upper value of EZDCvs.ZEM correlation where ZEM signal is used
+  Float_t  fDZEMInf;// Lower value of EZDCvs.ZEM correlation where ZEM signal is used
+  // --- Parameters from EZDC vs. Nspec correlation
+  Float_t  fEZN1MaxValue;	 // Max value of ZN1 vs. Nspec n correlation
+  Float_t  fEZP1MaxValue;	 // Max value of ZP1 vs. Nspec p correlation
+  Float_t  fEZDC1MaxValue;	 // Max value of ZDC1 vs. Nspec n+p correlation
+  Float_t  fEZN2MaxValue;	 // Max value of ZN2 vs. Nspec n correlation
+  Float_t  fEZP2MaxValue;	 // Max value of ZP2 vs. Nspec p correlation
+  Float_t  fEZDC2MaxValue;	 // Max value of ZDC2 vs. Nspec n+p correlation
   //
-  ClassDef(AliZDCCalibData,7)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,8)    // ZDC  Calibration data
 };
 
 #endif

@@ -28,7 +28,6 @@ ClassImp(AliZDCCalibData)
 //________________________________________________________________
 AliZDCCalibData::AliZDCCalibData()
 {
-//  fHistMeanPed=0;
   Reset();
 }
 
@@ -40,7 +39,6 @@ AliZDCCalibData::AliZDCCalibData(const char* name)
   namst += name;
   SetName(namst.Data());
   SetTitle(namst.Data());
-//  fHistMeanPed=0;
   Reset();
 }
 
@@ -64,8 +62,10 @@ AliZDCCalibData::AliZDCCalibData(const AliZDCCalibData& calibda) :
   }
   for(int t=0; t<6; t++)  fEnCalibration[t] = calibda.GetEnCalib(t);
   //
-  fEZEMEndValue    = calibda.GetEZEMEndValue();   
-  fEZEMCutFraction = calibda.GetEZEMCutFraction();
+  fZEMEndValue    = calibda.GetZEMEndValue();   
+  fZEMCutFraction = calibda.GetZEMCutFraction();
+  fDZEMSup	  = calibda.GetDZEMSup();
+  fDZEMInf	  = calibda.GetDZEMInf();
 }
 
 //________________________________________________________________
@@ -86,8 +86,8 @@ AliZDCCalibData &AliZDCCalibData::operator =(const AliZDCCalibData& calibda)
      fPedCorrCoeff[1][t] = calibda.GetPedCorrCoeff1(t);
   }
   for(int t=0; t<6; t++) fEnCalibration[t] = calibda.GetEnCalib(t);
-  fEZEMEndValue    = calibda.GetEZEMEndValue();
-  fEZEMCutFraction = calibda.GetEZEMCutFraction();
+  fZEMEndValue    = calibda.GetZEMEndValue();
+  fZEMCutFraction = calibda.GetZEMCutFraction();
 
   return *this;
 }
@@ -95,7 +95,6 @@ AliZDCCalibData &AliZDCCalibData::operator =(const AliZDCCalibData& calibda)
 //________________________________________________________________
 AliZDCCalibData::~AliZDCCalibData()
 {
-//  CleanHistos();
 }
 
 //________________________________________________________________
@@ -109,24 +108,6 @@ void AliZDCCalibData::Reset()
   memset(fEnCalibration,0,6*sizeof(Float_t));
 }                                                                                       
 
-/*
-//________________________________________________________________
-void AliZDCCalibData::CleanHistos()
-{
-  if (fHistMeanPed) delete fHistMeanPed; fHistMeanPed = 0;
-}
-
-//________________________________________________________________
-void AliZDCCalibData::PrepHistos()
-{
-//  CleanHistos(); // this gives a segm.viol!
-  Int_t   kNChannels = 47;
-  Float_t kMaxPedVal = 47.;
-  TString hname = GetName();  hname += "_Pedestals";
-  fHistMeanPed = new TH1F(hname.Data(),hname.Data(),kNChannels,0.,kMaxPedVal);
-  for(int i=0; i<47; i++)  fHistMeanPed->SetBinContent(i+1,GetMeanPed(i));
-}
-*/
 
 //________________________________________________________________
 void  AliZDCCalibData::Print(Option_t *) const
@@ -145,7 +126,7 @@ void  AliZDCCalibData::Print(Option_t *) const
      printf("ADC%d (%.1f, %.1f)  ",t,fMeanPedestal[t],fMeanPedWidth[t]);
    }
    //
-   printf("\n\n\n #######	Out-of-time pedestal values (mean value, sigma)	####### \n");
+   printf("\n\n #######	Out-of-time pedestal values (mean value, sigma)	####### \n");
    for(int t=0; t<44; t++){
      if(t==0 || t==24) printf("\n-------- ZN1 HighRes -------- \n");
      else if(t==5 || t==29) printf("\n-------- ZN1 LowRes -------- \n");
@@ -158,7 +139,7 @@ void  AliZDCCalibData::Print(Option_t *) const
      printf("ADC%d (%.1f, %.1f)  ",t,fOOTPedestal[t],fOOTPedWidth[t]);
    }
  
-   printf("\n\n\n #######	Energy calibration coefficients #######	\n");
+   printf("\n\n #######	Energy calibration coefficients #######	\n");
    printf("  ZN1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
    printf("  ZP1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
    printf("  ZN2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
@@ -176,9 +157,17 @@ void  AliZDCCalibData::Print(Option_t *) const
    printf("  ZP2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZP2EqualCoeff[0],fZP2EqualCoeff[1],fZP2EqualCoeff[2],fZP2EqualCoeff[3],fZP2EqualCoeff[4]);
  
-   printf("\n\n #######	Parameters for centrality selection from ZEM #######	\n");
-   printf("  ZEM spectrum end point -> %1.0f (a.u.)\n",fEZEMEndValue);
-   printf("  ZEM cut value -> %1.2f \n\n\n",fEZEMCutFraction);
+   printf("\n\n #######	Parameters from EZDC vs. ZEM correlation #######	\n");
+   printf("  ZEMEndPoint = %1.2f, ZEMCutFraction = %1.2f \n"
+     "	DZEMInf = %1.2f, DZEMSup = %1.2f\n",
+     fZEMEndValue, fZEMCutFraction, fDZEMInf, fDZEMSup);
+ 
+   printf("\n\n #######	Parameters from EZDC vs. Nspec correlation #######	\n");
+   printf("  EZN1MaxValue = %1.2f, EZP1MaxValue = %1.2f, EZDC1MaxValue = %1.2f \n"
+     "  EZN2MaxValue = %1.2f, EZP2MaxValue = %1.2f, EZDC2MaxValue = %1.2f \n\n",
+     fEZN1MaxValue, fEZP1MaxValue, fEZDC1MaxValue,
+     fEZN2MaxValue, fEZP2MaxValue, fEZDC2MaxValue);
+
 } 
 
 //________________________________________________________________
