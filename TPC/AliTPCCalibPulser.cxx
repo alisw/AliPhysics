@@ -16,7 +16,6 @@
 /* $Id$ */
 
 //Root includes
-#include <TObjArray.h>
 #include <TH1F.h>
 #include <TH2S.h>
 #include <TString.h>

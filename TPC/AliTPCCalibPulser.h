@@ -4,6 +4,9 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TVectorT.h>
+#include <TObject.h>
+#include <TObjArray.h>
+
 class TObjArray;
 class TH2S;
 class TTreeSRedirector;
