@@ -41,5 +41,6 @@
  #pragma link C++ class AliDevice+;
  #pragma link C++ class AliTimestamp+;
  #pragma link C++ class AliJob+;
+ #pragma link C++ class AliAstrolab+;
 #endif
  

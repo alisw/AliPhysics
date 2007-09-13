@@ -777,3 +777,7 @@
 23-jun-2007 NvE Support for locking introduced in AliAttrib and locked signal (and error)
                 treatment implemented in SetSignal() and SetSignalError() of AliSignal.
                 Also the AliSignal copy constructor has been updated for the new locking.  
+08-sep-2007 NvE New memberfunctions SetEpoch and GetEpoch introduced in AliTimestamp
+                for convenience.
+13-sep-2007 NvE New class AliAstrolab introduced to relate (local) measurements with
+                astrophysical phenomena.

@@ -71,6 +71,8 @@ class AliTimestamp : public TTimeStamp
   void SetLT(Double_t dt,Int_t y,Int_t m,Int_t d,Int_t hh,Int_t mm,Int_t ss,Int_t ns=0,Int_t ps=0); // Set data according to LT
   void SetLT(Double_t dt,Int_t y,Int_t d,Int_t s,Int_t ns=0,Int_t ps=0); // Set data according to LT based on elapsed days, secs etc...
   Double_t Almanac(Double_t* dpsi=0,Double_t* deps=0,Double_t* eps=0); // Provide astronomical observables
+  void SetEpoch(Double_t e,TString mode); // Set time parameters according to the specified epoch
+  Double_t GetEpoch(TString mode);        // Provide the requested epoch
 
  protected:
   Int_t fMJD;  // Modified Julian Date
@@ -83,6 +85,6 @@ class AliTimestamp : public TTimeStamp
   Int_t fCalcs;      // The TTimeStamp seconds counter value at Julian parameter calculation
   Int_t fCalcns;     // The TTimeStamp nanoseconds counter value at Julian parameter calculation
 
- ClassDef(AliTimestamp,10) // Handling of timestamps for (astro)particle physics research.
+ ClassDef(AliTimestamp,11) // Handling of timestamps for (astro)particle physics research.
 };
 #endif

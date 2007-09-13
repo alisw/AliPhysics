@@ -2099,3 +2099,30 @@ Double_t AliTimestamp::Almanac(Double_t* dpsi,Double_t* deps,Double_t* eps)
  return da;
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliTimestamp::SetEpoch(Double_t e,TString mode)
+{
+// Set the timestamp parameters according to the epoch as specified by
+// the input argument "e".
+// Via the input argument "mode" the user can specify the type of epoch
+//
+// mode = "B" ==> Besselian epoch
+//        "J" ==> Julian epoch
+
+ Double_t jd=GetJD(e,mode);
+ SetJD(jd);
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliTimestamp::GetEpoch(TString mode)
+{
+// Provide the corresponding epoch value.
+// Via the input argument "mode" the user can specify the type of epoch
+//
+// mode = "B" ==> Besselian epoch
+//        "J" ==> Julian epoch
+
+ Double_t e=0;
+ if (mode=="B" || mode=="b") e=GetBE();
+ if (mode=="J" || mode=="j") e=GetJE();
+ return e;
+}
+///////////////////////////////////////////////////////////////////////////
