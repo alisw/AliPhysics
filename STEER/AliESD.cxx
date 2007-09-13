@@ -305,8 +305,11 @@ void AliESD::GetESDfriend(AliESDfriend *ev) const {
   Int_t ntrk=GetNumberOfTracks();
 
   for (Int_t i=0; i<ntrk; i++) {
-    const AliESDtrack *t=GetTrack(i);
+    AliESDtrack *t=GetTrack(i);
     const AliESDfriendTrack *f=t->GetFriendTrack();
     ev->AddTrack(f);
+
+    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack"
+
   }
 }
