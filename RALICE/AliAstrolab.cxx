@@ -1333,6 +1333,12 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 // mode = "M" --> Input coordinates are the mean values 
 //        "T" --> Input coordinates are the true values 
 //
+// The input parameter "mode" also determines which type of time and
+// local hour angle will appear in the printout.
+//
+// mode = "M" --> Mean Siderial Time (MST) and Local Mean Hour Angle (LMHA)
+//        "T" --> Apparent Siderial Time (AST) and Local Apparent Hour Angle (LAHA)
+//
 // The input parameter "jref" allows printing of a so-called "reference" signal.
 // These reference signals may serve to check space-time event coincidences with the
 // stored measurement (e.g. coincidence of the measurement with transient phenomena).
@@ -1349,6 +1355,15 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 
  if (!sx) return;
 
+ // Local Hour Angle of the signal
+ Double_t lha=GetHourAngle("A",ts,jref);
+ TString slha="LAHA";
+ if (mode=="M" || mode=="m")
+ {
+  lha=GetHourAngle("M",ts,jref);
+  slha="LMHA";
+ }
+
  TString name=sx->GetName();
  if (name != "") cout << name.Data() << " ";
 
@@ -1359,6 +1374,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
   a=r.GetX(3,"sph","rad");
   cout << "Equatorial (" << mode.Data() <<") a : "; PrintAngle(a,"rad","hms",ndig);
   cout << " d : "; PrintAngle(d,"deg","dms",ndig);
+  cout << " " << slha.Data() << " : "; PrintAngle(lha,"deg","hms",ndig);
   return;
  }
 
@@ -1369,6 +1385,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
   l=r.GetX(3,"sph","deg");
   cout << "Galactic l : "; PrintAngle(l,"deg","deg",ndig);
   cout << " b : "; PrintAngle(b,"deg","deg",ndig); 
+  cout << " " << slha.Data() << " : "; PrintAngle(lha,"deg","hms",ndig);
   return;
  }
 
@@ -1379,6 +1396,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
   a=r.GetX(3,"sph","rad");
   cout << "ICRS l : "; PrintAngle(a,"rad","hms",ndig);
   cout << " b : "; PrintAngle(d,"deg","dms",ndig);
+  cout << " " << slha.Data() << " : "; PrintAngle(lha,"deg","hms",ndig);
   return;
  }
 
@@ -1389,6 +1407,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
   a=r.GetX(3,"sph","deg");
   cout << "Ecliptic l : "; PrintAngle(a,"deg","deg",ndig);
   cout << " b : "; PrintAngle(d,"deg","deg",ndig);
+  cout << " " << slha.Data() << " : "; PrintAngle(lha,"deg","hms",ndig);
   return;
  }
 
@@ -1406,6 +1425,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
   }
   cout << "Horizontal azi : "; PrintAngle(azi,"deg","deg",ndig);
   cout << " alt : "; PrintAngle(alt,"deg","deg",ndig);
+  cout << " " << slha.Data() << " : "; PrintAngle(lha,"deg","hms",ndig);
   return;
  }
 
@@ -1415,6 +1435,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
   Double_t phi=r.GetX(3,"sph","deg");
   cout << "Local-frame phi : "; PrintAngle(phi,"deg","deg",ndig);
   cout << " theta : "; PrintAngle(theta,"deg","deg",ndig);
+  cout << " " << slha.Data() << " : "; PrintAngle(lha,"deg","hms",ndig);
   return;
  }
 }
@@ -1463,6 +1484,12 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 // mode = "M" --> Input coordinates are the mean values 
 //        "T" --> Input coordinates are the true values 
 //
+// The input parameter "mode" also determines which type of time and
+// local hour angle will appear in the printout.
+//
+// mode = "M" --> Mean Siderial Time (MST) and Local Mean Hour Angle (LMHA)
+//        "T" --> Apparent Siderial Time (AST) and Local Apparent Hour Angle (LAHA)
+//
 // Note : In case ts=0 the current timestamp of the lab will be taken.
 
  Int_t j=GetSignalIndex(name);
@@ -1484,7 +1511,7 @@ void AliAstrolab::ListSignals(TString frame,TString mode,Int_t ndig)
 // will appear as 03.4 on the output.
 // Due to computer accuracy, precision on the pico-arcsecond level may get lost.
 //
-// The default value is ndig=1;
+// The default value is ndig=1.
 //
 // Note : The angle info is printed without additional spaces or "endline".
 //        This allows the print to be included in various composite output formats.
@@ -1517,22 +1544,31 @@ void AliAstrolab::ListSignals(TString frame,TString mode,Int_t ndig)
 // mode = "M" --> Input coordinates are the mean values 
 //        "T" --> Input coordinates are the true values 
 //
+// The input parameter "mode" also determines which type of time and
+// local hour angle will appear in the listing.
+//
+// mode = "M" --> Mean Siderial Time (MST) and Local Mean Hour Angle (LMHA)
+//        "T" --> Apparent Siderial Time (AST) and Local Apparent Hour Angle (LAHA)
+//
 // Note : In case ts=0 the current timestamp of the lab will be taken.
 
  Int_t iprint=0;
 
  AliTimestamp* tx=0;
 
+ Int_t dform=1;
+ if (mode=="T" || mode=="t") dform=-1;
+
  if (fXsig)
  {
-  AliTimestamp* tx=fXsig->GetTimestamp();
+  tx=fXsig->GetTimestamp();
   if (!tx) tx=(AliTimestamp*)this;
   cout << " *AliAstrolab::ListSignals* List of all stored signals." << endl;
-  cout << "  The measurement under investigation." << endl;
-  cout << "  --- Timestamp of the actual observation ---" << endl;
-  cout << "  "; tx->Date(1);
-  cout << "  --- Location of the actual observation ---" << endl;
-  cout << "   "; PrintSignal(frame,mode,tx,ndig); cout << endl;
+  cout << " === The measurement under investigation ===" << endl;
+  cout << " Timestamp of the actual observation" << endl;
+  tx->Date(dform,fToffset);
+  cout << " Location of the actual observation" << endl;
+  cout << " "; PrintSignal(frame,mode,tx,ndig); cout << endl;
   iprint=1;
  }
 
@@ -1547,16 +1583,16 @@ void AliAstrolab::ListSignals(TString frame,TString mode,Int_t ndig)
   {
    cout << " *AliAstrolab::ListRefSignals* List of all stored signals." << endl;
    tx=(AliTimestamp*)this;
-   cout << "  --- Current timestamp of the laboratory ---" << endl;
-   cout << "  "; tx->Date(1);
+   cout << " Current timestamp of the laboratory" << endl;
+   tx->Date(dform,fToffset);
    iprint=1;
   }
   if (iprint==1)
   {
-   cout << "  --- All stored reference signals according to the above timestamp ---" << endl;
+   cout << " === All stored reference signals according to the above timestamp ===" << endl;
    iprint=2;
   }
-  cout << "   Index : " << i << " "; PrintSignal(frame,mode,tx,ndig,i); cout << endl;
+  cout << " Index : " << i << " "; PrintSignal(frame,mode,tx,ndig,i); cout << endl;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -2041,9 +2077,9 @@ Double_t AliAstrolab::GetHourAngle(TString mode,AliTimestamp* ts,Int_t jref)
 //
 // The input parameter "jref" allows the user to specify so-called "reference" signals.
 // These reference signals may be used to check space-time event coincidences with the
-// stored regular signal (e.g. coincidence of the stored signal with transient phenomena).
+// stored measurement (e.g. coincidence of the measurement with transient phenomena).
 //
-// jref = 0 --> Use the regular signal
+// jref = 0 --> Use the stored measurement
 //        j --> Use the reference signal at the j-th position (j=1 is first)
 //
 // Default value is jref=0.
@@ -2054,7 +2090,8 @@ Double_t AliAstrolab::GetHourAngle(TString mode,AliTimestamp* ts,Int_t jref)
 
  // Get corrected right ascension and declination for the specified timestamp.
  Double_t a,d;
- GetSignal(a,d,"T",ts,jref);
+ if (mode=="M" || mode=="m") GetSignal(a,d,"M",ts,jref);
+ if (mode=="A" || mode=="a") GetSignal(a,d,"T",ts,jref);
 
  // Convert coordinates to fractional degrees.
  a=ConvertAngle(a,"hms","deg");

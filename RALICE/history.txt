@@ -781,3 +781,4 @@
                 for convenience.
 13-sep-2007 NvE New class AliAstrolab introduced to relate (local) measurements with
                 astrophysical phenomena.
+13-sep-2007 NvE Hour angle info included in printout of AliAstrolab.
