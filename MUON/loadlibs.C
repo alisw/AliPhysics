@@ -26,6 +26,7 @@ void loadlibs ()
   gSystem->Load("libMinuit");
   gSystem->Load("libTree");
   
+  gSystem->Load("libSTEERBase"); 
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
   
