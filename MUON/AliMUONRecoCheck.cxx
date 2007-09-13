@@ -238,7 +238,6 @@ AliMUONRecoCheck::MakeTrackRefs(Int_t event)
 
       trackRefStore->Add(muonTrack);
     } // end while isNewTrack
-    delete trackRefs;
   }
   
   AliMUONVTrackStore* rv = CleanMuonTrackRef(*trackRefStore);
