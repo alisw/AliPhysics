@@ -19,6 +19,8 @@
 // Author: jgcn@mda.cinvestav.mx
 //-------------------------------------------------------------------------
 
+#include <TMath.h>
+
 #include "AliJetReaderHeader.h"
 
 ClassImp(AliJetReaderHeader)
@@ -30,9 +32,12 @@ AliJetReaderHeader::AliJetReaderHeader():
  fFirst(0),
  fLast(-1),
  fOption(0),
+ fDZ(0),
  fSignalPerBg(0),
  fFiducialEtaMin(-0.9),
  fFiducialEtaMax(0.9),
+ fFiducialPhiMin(0.),
+ fFiducialPhiMax(2*TMath::Pi()),
  fPtCut(2.0),
  fComment("No comment"),
  fDir(""),
@@ -49,9 +54,12 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
  fFirst(0),
  fLast(-1),
  fOption(0),
+ fDebug(0),
  fSignalPerBg(0),
  fFiducialEtaMin(-0.9),
  fFiducialEtaMax(0.9),
+ fFiducialPhiMin(0.),
+ fFiducialPhiMax(2*TMath::Pi()),
  fPtCut(2.0),
  fComment("No comment"),
  fDir(""),

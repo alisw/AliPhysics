@@ -25,6 +25,7 @@
 #include <TVector3.h>
 #include <TLorentzVector.h>
 #include <TSystem.h>
+#include <TChain.h>
 // From AliRoot ...
 #include "AliJetMCReader.h"
 #include "AliJetMCReaderHeader.h"

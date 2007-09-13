@@ -26,6 +26,7 @@ class AliUA1JetHeaderV1 : public AliJetHeader
   Float_t GetMaxMove()   const  {return fMaxMove;}
   Float_t GetEtSeed()    const  {return fEtSeed;}
   Float_t GetMinJetEt()  const  {return fMinJetEt;}
+  Float_t GetMinCellEt() const  {return fMinCellEt;} // Added temporarily !!! To be removed if not necessary
   Int_t   GetLegoNbinEta()   const  {return fLegoNbinEta;}
   Int_t   GetLegoNbinPhi()   const  {return fLegoNbinPhi;}
   Float_t GetLegoEtaMin()    const  {return fLegoEtaMin;}
@@ -45,6 +46,7 @@ class AliUA1JetHeaderV1 : public AliJetHeader
   void SetMaxMove(Float_t f) {fMaxMove=f;}
   void SetEtSeed(Float_t f) {fEtSeed=f;}
   void SetMinJetEt(Float_t f) {fMinJetEt=f;}
+  void SetMinCellEt(Float_t f) {fMinCellEt=f;}
   void SetLegoNbinEta(Int_t f) {fLegoNbinEta=f;}
   void SetLegoNbinPhi(Int_t f) {fLegoNbinPhi=f;}
   void SetLegoEtaMin(Float_t f) {fLegoEtaMin=f;}
@@ -66,6 +68,7 @@ protected:
   Float_t fConeRadius;      //  Cone radius
   Float_t fEtSeed;          //  Min. Et for seed
   Float_t fMinJetEt;        //  Min Et of jet
+  Float_t fMinCellEt;       //  Min Et in one cell
   // parameters of backgound substraction
   Float_t fMinMove;         // min cone move
   Float_t fMaxMove;         // max cone move

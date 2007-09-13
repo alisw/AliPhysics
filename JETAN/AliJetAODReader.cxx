@@ -24,6 +24,8 @@
 #include <TSystem.h>
 #include <TLorentzVector.h>
 #include <TVector3.h>
+#include <TChain.h>
+
 #include "AliJetAODReader.h"
 #include "AliJetAODReaderHeader.h"
 #include "AliAODEvent.h"

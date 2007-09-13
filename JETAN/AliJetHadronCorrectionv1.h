@@ -11,7 +11,6 @@
 #define HCPARAMETERS    6
 #define HCPARAMETERSETS 2
 
-class AliEMCALGeometry;
 class AliJetDummyGeo;
 
 

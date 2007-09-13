@@ -253,7 +253,5 @@ void AliJetFinder::AddJet(AliAODJet p)
 void AliJetFinder::ConnectAOD(AliAODEvent* aod)
 {
 // Connect to the AOD
-    printf("Connect AOD \n");
     fAODjets = aod->GetJets();
-    printf("Connect AOD %p \n", fAODjets);
 }

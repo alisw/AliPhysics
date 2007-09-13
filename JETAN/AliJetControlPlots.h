@@ -18,6 +18,9 @@ class TFile;
 class TClonesArray;
 class TH1I;
 class TH1D;
+class TH1F;
+class TH1;
+
 class AliJetReader;
 class AliJet;
 
@@ -29,19 +32,19 @@ class AliJetControlPlots : public TObject
 
   // setter
   // getters
-  TH1I *GetNJetsH() {return fNJetsH;}
-  TH1I *GetMultH() {return fMultH;}
-  TH1D *GetPhiH() {return fPhiH;}
-  TH1D *GetFractionInJetH() {return fInJetH;}
-  TH1D *GetEneH() {return fEneH;}
-  TH1D *GetPtH() {return fPtH;}
-  TH1D *GetEtaH() {return fEtaH;}
-  TH1D *GetFragH() {return fFragH;}
-  TH1D *GetFragLnH() {return fFragLnH;}
-  TH1D *GetFragrH() {return fFragrH;}
-  TH1D *GetFragLnrH() {return fFragLnrH;}
-  TH1D *GetShapeH() {return fShapeH;}
-  TH1D *GetShaperH() {return fShaperH;}  
+  TH1I *GetNJetsH()         const {return fNJetsH;}
+  TH1I *GetMultH()          const {return fMultH;}
+  TH1D *GetPhiH()           const {return fPhiH;}
+  TH1D *GetFractionInJetH() const {return fInJetH;}
+  TH1D *GetEneH()           const {return fEneH;}
+  TH1D *GetPtH()            const {return fPtH;}
+  TH1D *GetEtaH()           const {return fEtaH;}
+  TH1D *GetFragH()          const {return fFragH;}
+  TH1D *GetFragLnH()        const {return fFragLnH;}
+  TH1D *GetFragrH()         const {return fFragrH;}
+  TH1D *GetFragLnrH()       const {return fFragLnrH;}
+  TH1D *GetShapeH()         const {return fShapeH;}
+  TH1D *GetShaperH()        const {return fShaperH;}  
   
   // others
   void FillHistos(AliJet *j);

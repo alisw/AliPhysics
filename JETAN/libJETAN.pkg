@@ -7,10 +7,10 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliLeading.cxx \
 	AliJetProductionData.cxx AliJetProductionDataPDC2004.cxx \
 	AliJetAnalysis.cxx AliJetDistributions.cxx \
-	AliUA1JetFinderV1.cxx AliUA1JetHeaderV1.cxx \
+	AliUA1JetFinderV1.cxx AliUA1JetFinderV2.cxx AliUA1JetHeaderV1.cxx \
 	AliJetGrid.cxx AliJetUnitArray.cxx AliJetHadronCorrection.cxx \
 	AliJetHadronCorrectionv0.cxx AliJetHadronCorrectionv1.cxx \
-	AliJetFillUnitArrayTracks.cxx \
+	AliJetFillUnitArrayTracks.cxx AliJetFillUnitArrayEMCalDigits.cxx\
 	AliJetDummyGeo.cxx \
 	AliJetFinderTypes.cxx \
 	AliAnalysisTaskJets.cxx \

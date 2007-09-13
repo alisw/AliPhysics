@@ -19,6 +19,7 @@
 #pragma link C++ class AliJetAnalysis+;
 #pragma link C++ class AliJetDistributions+;
 #pragma link C++ class AliUA1JetFinderV1+;
+#pragma link C++ class AliUA1JetFinderV2+;
 #pragma link C++ class AliUA1JetHeaderV1+;
 #pragma link C++ class AliJetGrid+;
 #pragma link C++ class AliJetUnitArray+;
@@ -26,6 +27,7 @@
 #pragma link C++ class AliJetHadronCorrectionv0+;
 #pragma link C++ class AliJetHadronCorrectionv1+; 
 #pragma link C++ class AliJetFillUnitArrayTracks+;
+#pragma link C++ class AliJetFillUnitArrayEMCalDigits+;
 #pragma link C++ class AliJetDummyGeo+;
 #pragma link C++ class AliAnalysisTaskJets+;
 #pragma link C++ class AliDAJetFinder+;

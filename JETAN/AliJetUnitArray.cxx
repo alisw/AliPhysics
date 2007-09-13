@@ -13,39 +13,60 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-/* $Id$ */
-
-//_________________________________________________________________________
+//------------------------------------------------------------------
 //  Unit used by UA1 algorithm
-// --
-//*-- Author: Sarah Blyth (LBL/UCT)
-// --
-// Revised Version for JETAN - 30/03/2006
-// -- Magali Estienne (IReS)
+//  Authors: Sarah Blyth (LBL/UCT)
+//           Magali Estienne (IReS) (new version for JETAN)
+//------------------------------------------------------------------
 
 #include "AliJetUnitArray.h"
 
 
 ClassImp(AliJetUnitArray)
 
-
 AliJetUnitArray::AliJetUnitArray():
-    fUnitEnergy(0.),
-    fUnitEta(0.),
-    fUnitPhi(0.),
-    fUnitDeta(0.),
-    fUnitDphi(0.),
-    fUnitID(0),
-    fUnitNum(0),
-    fUnitClusterID(0),
-    fUnitFlag(kOutJet),
-    fUnitCutFlag(kPtSmaller),
-    fUnitSignalFlag(kGood),
-    fUnitDetectorFlag(kAll)
+  fUnitEnergy(0.0),
+  fUnitEta(0.0),
+  fUnitPhi(0.0),
+  fUnitDeta(0.),
+  fUnitDphi(0.),
+  fUnitID(0),
+  fUnitTrackID(0),
+  fUnitNum(0),
+  fUnitClusterID(0),
+  fUnitFlag(kOutJet),
+  fUnitCutFlag(kPtSmaller),
+  fUnitSignalFlag(kBad), 
+  fUnitDetectorFlag(kTpc),
+  fUnitPx(0.),
+  fUnitPy(0.),
+  fUnitPz(0.),
+  fUnitMass(0.)
 {
   // Default constructor
 }  
+
+AliJetUnitArray::AliJetUnitArray(Int_t absId, Int_t esdId, Float_t eta, Float_t phi, Float_t en, Float_t px, Float_t py, Float_t pz, Float_t Deta, Float_t Dphi, AliJetFinderUnitDetectorFlagType_t det, AliJetFinderUnitFlagType_t inout, AliJetFinderUnitCutFlagType_t cut, Float_t mass, Int_t clusId):
+  fUnitEnergy(en),
+  fUnitEta(eta),
+  fUnitPhi(phi),
+  fUnitDeta(Deta),
+  fUnitDphi(Dphi),
+  fUnitID(absId),
+  fUnitTrackID(esdId),
+  fUnitNum(0),
+  fUnitClusterID(clusId),
+  fUnitFlag(inout),
+  fUnitCutFlag(cut),
+  fUnitSignalFlag(kBad), 
+  fUnitDetectorFlag(det),
+  fUnitPx(px),
+  fUnitPy(py),
+  fUnitPz(pz),
+  fUnitMass(mass)
+{
+  // Constructor 2
+}
 
 AliJetUnitArray::~AliJetUnitArray()
 {

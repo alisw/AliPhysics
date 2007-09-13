@@ -26,7 +26,6 @@
 // --- AliRoot header files ---
 //#include "../EMCAL/AliJetGeometry.h"
 #include "AliJetDummyGeo.h"
-//#include "AliEMCALGeometry.h"
 #include "AliJetHadronCorrectionv1.h"
 
 ClassImp(AliJetHadronCorrectionv1)

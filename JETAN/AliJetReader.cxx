@@ -22,9 +22,15 @@
 
 // root
 #include <TClonesArray.h>
+#include <TRefArray.h>
+#include "TTask.h"
 //AliRoot
 #include "AliJetReader.h"
 #include "AliJetReaderHeader.h"
+#include "AliESDEvent.h"
+#include "AliHeader.h"
+#include "AliJetFillUnitArrayTracks.h" 
+#include "AliJetFillUnitArrayEMCalDigits.h"
 #include "AliJetUnitArray.h"
 #include "AliJetHadronCorrectionv1.h"
 
@@ -33,15 +39,23 @@ ClassImp(AliJetReader)
 ////////////////////////////////////////////////////////////////////////
 
 AliJetReader::AliJetReader():
+  // Constructor
+  fChain(0), 
   fMomentumArray(new TClonesArray("TLorentzVector",2000)),
   fArrayMC(0),
   fFillUnitArray(new TTask("fillUnitArray","Fill unit array jet finder")),
+  fESD(0),
   fReaderHeader(0),
   fSignalFlag(0),
   fCutFlag(0),
-  fUnitArray(new AliJetUnitArray[60000]),     
-  fUnitArrayNoCuts(new AliJetUnitArray[60000]),
-  fArrayInitialised(0)
+  fUnitArray(new TClonesArray("AliJetUnitArray",60000)),
+  fRefArray(new TRefArray()),
+  fUnitArrayNoCuts(new TClonesArray("AliJetUnitArray",60000)),
+  fArrayInitialised(0),
+  fFillUAFromTracks(new AliJetFillUnitArrayTracks()), 
+  fFillUAFromEMCalDigits(new AliJetFillUnitArrayEMCalDigits())
+  //  fHadronCorrector(0),
+  //  fHCorrection(0)
 {
   // Default constructor
   fSignalFlag = TArrayI();

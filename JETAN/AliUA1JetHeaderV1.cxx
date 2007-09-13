@@ -35,6 +35,7 @@ AliUA1JetHeaderV1::AliUA1JetHeaderV1():
     fConeRadius(0.3),
     fEtSeed(3.0),
     fMinJetEt(10.),
+    fMinCellEt(0.0), // Temporarily added -> To be removed if not necessary
     fMinMove(0.05),
     fMaxMove(0.15),
     fBackgMode(1),

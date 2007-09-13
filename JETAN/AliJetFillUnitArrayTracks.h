@@ -17,41 +17,56 @@
 #include <TMatrixD.h>
 #include <TArrayD.h>
 
-class AliEMCALGeometry;
-class AliJetDummyGeo;
 class AliJetHadronCorrection;
 class AliJetReader;
 class AliJetESDReader;
 class TClonesArray;
-class AliJetUnitArray;
+class TRefArray;
+//class AliJetUnitArray;
 //class AliJetReaderHeader;
-class AliJetReader;
 class AliJetGrid;
+class AliJetDummyGeo;
+class AliESD;
+class AliESDEvent;
 
 class AliJetFillUnitArrayTracks : public TTask
 {
  public: 
   AliJetFillUnitArrayTracks();
+  AliJetFillUnitArrayTracks(AliESD *fESD);
+  AliJetFillUnitArrayTracks(AliESDEvent *fESD);
   virtual ~AliJetFillUnitArrayTracks();
   
   // Setter
   void SetReaderHeader(AliJetReaderHeader *readerHeader) {fReaderHeader = readerHeader;}
+  void SetGeom(AliJetDummyGeo *geom) {fGeom = geom;}
   void SetMomentumArray(TClonesArray *momentumArray) {fMomentumArray = momentumArray;}
-  void SetUnitArray(AliJetUnitArray *unitArray) {fUnitArray = unitArray;}
+  void SetUnitArray(TClonesArray *unitArray) {fUnitArray = unitArray;}
+  void SetRefArray(TRefArray *refArray) {fRefArray = refArray;}
   void SetHadCorrection(Int_t flag = 1) {fHCorrection = flag;}
   void SetHadCorrector(AliJetHadronCorrectionv1* corr) {fHadCorr = corr;}
   void SetTPCGrid(AliJetGrid *grid) {fTPCGrid = grid;}
   void SetEMCalGrid(AliJetGrid *grid) {fEMCalGrid = grid;}
   void SetGrid(Double_t phiMin,Double_t phiMax,Double_t etaMin,Double_t etaMax);
+  //  void SetESD(AliESD *esd) {fESD = esd;}
+  void SetESD(AliESDEvent *esd) {fESD = esd;}
+  void SetGrid0(AliJetGrid *grid0){fGrid0 = grid0;}
+  void SetGrid1(AliJetGrid *grid1){fGrid1 = grid1;}
+  void SetGrid2(AliJetGrid *grid2){fGrid2 = grid2;}
+  void SetGrid3(AliJetGrid *grid3){fGrid3 = grid3;}
+  void SetGrid4(AliJetGrid *grid4){fGrid4 = grid4;}
 
   // Getter
-  AliJetUnitArray* GetUnitArray() {return fUnitArray;}
-  //  Int_t GetIndexFromEtaPhi(Double_t eta,Double_t phi) const;
-  void  GetEtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi);
-  Int_t GetNeta() {return fNeta;}
-  Int_t GetNphi() {return fNphi;}
-
-  void Exec(Option_t*);
+  TClonesArray* GetUnitArray() {return fUnitArray;}
+  TRefArray*    GetRefArray() {return fRefArray;}
+  //  Int_t         GetIndexFromEtaPhi(Double_t eta,Double_t phi) const;
+  void          GetEtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi);
+  Int_t         GetNeta() {return fNeta;}
+  Int_t         GetNphi() {return fNphi;}
+  Int_t         GetHadCorrection() {return fHCorrection;}
+  Int_t         GetMult() {return fNTracks;}
+  Int_t         GetMultCut() {return fNTracksCut;}
+  void          Exec(Option_t*);
 
  protected:
   Int_t   fNumUnits;      // Number of units in the unit object array (same as num towers in EMCAL)
@@ -60,19 +75,27 @@ class AliJetFillUnitArrayTracks : public TTask
   Float_t fPhiMinCal;     // Define EMCal acceptance in Phi
   Float_t fPhiMaxCal;     // Define EMCal acceptance in Phi
   AliJetHadronCorrectionv1   *fHadCorr;         // Pointer to Hadron Correction Object
-  Int_t                       fHCorrection;     // Hadron correction flag
-  Int_t                       fNIn;             // Number of Array filled in UnitArray
+  Int_t                       fHCorrection;     //  Hadron correction flag
+  Int_t                       fNTracks;         // Number of tracks stored in UnitArray
+  Int_t                       fNTracksCut;      // Number of tracks stored in UnitArray with a pt cut 
   Int_t                       fOpt;             // Detector to be used for jet reconstruction
+  Bool_t                      fDZ;              // Use or not dead zones
   Int_t                       fDebug;           // Debug option
 
   AliJetReaderHeader          *fReaderHeader;   // ReaderHeader
   TClonesArray                *fMomentumArray;  // MomentumArray
-  AliJetUnitArray             *fUnitArray;      // UnitArray
+  TClonesArray                *fUnitArray;      // UnitArray
+  TRefArray                   *fRefArray;       // UnitArray
   AliJetGrid                  *fTPCGrid;        // Define filled grid
   AliJetGrid                  *fEMCalGrid;      // Define filled grid
-
-  // geometry info
-  AliJetDummyGeo              *fGeom;           //!
+  AliJetDummyGeo              *fGeom;           // Define EMCal geometry
+  //  AliESD                     *fESD;            // ESD
+  AliESDEvent                 *fESD;            // ESD
+  AliJetGrid                  *fGrid0;
+  AliJetGrid                  *fGrid1;
+  AliJetGrid                  *fGrid2;
+  AliJetGrid                  *fGrid3;
+  AliJetGrid                  *fGrid4;
 
   Int_t     fNphi;                    // number of points in the grid:   phi
   Int_t     fNeta;                    //               "                 eta
@@ -95,11 +118,9 @@ class AliJetFillUnitArrayTracks : public TTask
   Int_t     fNbinPhi;
 
  private:
-  void SetEMCALGeometry();
+  //  void SetEMCALGeometry();
   void InitParameters();
 
-  //  Int_t fEvent;
-  
   ClassDef(AliJetFillUnitArrayTracks,1) // Fill Unit Array with tpc and/or emcal information
 };
 
