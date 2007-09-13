@@ -15,7 +15,7 @@
   #include <TCanvas.h>
 
   #include "AliESDEvent.h"
-
+  #include "AliESDv0.h"
 #endif
 
 extern TROOT *gROOT;
