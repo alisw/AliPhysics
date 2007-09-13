@@ -1,4 +1,5 @@
-SRCS:=  AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPIDPreprocessor.cxx AliHMPIDQualAssDataMaker.cxx
+SRCS:=  AliHMPIDHit.cxx AliHMPIDDigit.cxx  AliHMPIDCluster.cxx AliHMPIDParam.cxx AliHMPIDPreprocessor.cxx \
+        AliHMPIDQualAssDataMaker.cxx AliHMPIDQualAssChecker.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= HMPIDbaseLinkDef.h
