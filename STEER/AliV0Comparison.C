@@ -4,6 +4,10 @@
  *                  Creates list of "findable" V0s,                         *
  *             calculates efficiency, resolutions etc.                      *
  *                                                                          *
+ *   To get the list of the "findable" V0s, you should first get the list   *
+ *   of "findable" tracks, which can be done by running                     *
+ *   TPC/AliTPCComparison.C and ITS/AliITSComparisonV2.C macros.            *
+ *                                                                          *
  *   Origin: I.Belikov, IReS, Strasbourg, Jouri.Belikov@cern.ch             *
  ****************************************************************************/
 
@@ -14,6 +18,7 @@
   #include <TH1F.h>
   #include <TTree.h>
   #include <TParticle.h>
+  #include <TPDGCode.h>
   #include <TCanvas.h>
   #include <TLine.h>
   #include <TText.h>
@@ -28,6 +33,7 @@
   #include "AliRunLoader.h"
   #include "AliRun.h"
   #include "AliESDEvent.h"
+  #include "AliESDv0.h"
 #endif
 
 Int_t GoodV0s(const Char_t *dir=".");
