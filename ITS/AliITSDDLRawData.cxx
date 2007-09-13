@@ -72,6 +72,7 @@ AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
 
 void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR,Int_t ddl,UInt_t *buf){
   //This method packs the SSD digits in a proper 32 bits structure
+  // Revised by Enrico Fragiacomo
   Int_t ix;
   Int_t iz;
   Int_t is;
@@ -86,21 +87,28 @@ void AliITSDDLRawData::GetDigitsSSD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
     }
     for (Int_t digit=0;digit<ndigits;digit++) {
       digs = (AliITSdigit*)ITSdigits->UncheckedAt(digit);
-      iz=digs->GetCoord1();  // If iz==0, N side and if iz=1 P side
-      ix=digs->GetCoord2();  // Strip Numbar
+      iz=digs->GetCoord1();  // If iz==0, O side and if iz=1 N side
+      ix=digs->GetCoord2();  // Strip Number
       is=digs->GetCompressedSignal();  // ADC Signal
       // cout<<" Module:"<<mod-500<<" N/P side:"<<iz<<" Strip Number:"<<ix<<" Amplidute:"<<is-1<<endl;
+      if(is<0) is = 4096 + is;
       if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" Mod: "<<modR<<" N/P: "<<iz<<" Strip: "<<ix<<" Value: "<<is-1<<endl;
+
       baseWord=0;
-      word=is-1;
-      AliBitPacking::PackWord(word,baseWord,0,9);//ADC data
-      word=ix;
-      AliBitPacking::PackWord(word,baseWord,10,19);//Strip Number
-      word=iz;      
-      AliBitPacking::PackWord(word,baseWord,20,20);//ADC Channel ID (N or P side)
-      word=mod;
-      AliBitPacking::PackWord(word,baseWord,21,31);//ADC module ID
+
+      word=is;
+      AliBitPacking::PackWord(word,baseWord,0,11);//ADC data
+
+      word = (iz==0) ? ix : 1535-ix ; // on N-side 1535-768 -> 0-767
+      AliBitPacking::PackWord(word,baseWord,12,22);//Strip Number
+
+      word = mod%12; // ADC-number (12 ADCs per AD module)
+      word += ( word<6 ) ? 0 : 2; // ADC range 0-5 and 8-13
+      AliBitPacking::PackWord(word,baseWord,24,27);//ADC Channel
+
+      word = mod/12+1; // AD-number (AD module index ranges 1-9)
+      AliBitPacking::PackWord(word,baseWord,28,31);//AD slot
       fIndex++;
       buf[fIndex]=baseWord;
     }//end for
@@ -532,7 +540,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
 
 Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
 
-  //This method creates the Raw data files for SSD detectors
+    //This method creates the Raw data files for SSD detectors
   const Int_t kSize=1536;//768*2 Number of stripe * number of sides(N and P)
   UInt_t buf[kSize];      
   fIndex=-1;
