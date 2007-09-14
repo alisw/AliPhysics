@@ -133,7 +133,6 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 	// the arguments in the wrong sequence
 	TList& files=*pCurrEvent; // type conversion operator defined
 	TObjLink *flnk=files.FirstLink();
-	int eventSize=0;
 	while (flnk) {
 	  FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
 	  if (pFileDesc) {
@@ -163,7 +162,6 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 	// the arguments in the wrong sequence
 	TList& files=*pCurrEvent; // type conversion operator defined
 	TObjLink *flnk=files.FirstLink();
-	int eventSize=0;
 	while (flnk) {
 	  FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
 	  if (pFileDesc) {

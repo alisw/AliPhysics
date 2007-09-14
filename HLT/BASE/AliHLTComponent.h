@@ -902,7 +902,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param eventname   name of the event (log messages)
    * @return size copied, neg. error if failed
    */
-  int CopyStruct(void* pStruct, int iStructSize, int iBlockNo,
+  int CopyStruct(void* pStruct, unsigned int iStructSize, unsigned int iBlockNo,
 		 const char* structname="", const char* eventname="");
 
  private:

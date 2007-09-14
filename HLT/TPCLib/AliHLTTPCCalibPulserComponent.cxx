@@ -228,7 +228,7 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
   
   const AliHLTComponentBlockData* iter = NULL;
 
-  AliHLTUInt8_t slice, patch;
+  AliHLTUInt8_t slice=0, patch=0;
   Int_t DDLid = 0;
     
   // ** Loop over all input blocks and specify which data format should be read - only select Raw Data

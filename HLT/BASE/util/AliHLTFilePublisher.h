@@ -151,12 +151,12 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
     /**
      * Set data type.
      */
-    int SetDataType(AliHLTComponentDataType dt) {fDataType=dt;}
+    int SetDataType(AliHLTComponentDataType dt) {fDataType=dt; return 0;}
 
     /**
      * Set data specification
      */
-    int SetSpecification(AliHLTUInt32_t spec) {fSpecification=spec;}
+    int SetSpecification(AliHLTUInt32_t spec) {fSpecification=spec; return 0;}
 
     // implicite type conversions
     operator TFile*() const   {return fpInstance;}

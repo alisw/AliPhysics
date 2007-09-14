@@ -861,11 +861,11 @@ AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity,
   // see header file for function documentation
   ALIHLTCOMPONENT_BASE_STOPWATCH();
   AliHLTMemoryFile* pFile=NULL;
-  if (capacity>=0 && capacity<=fOutputBufferSize-fOutputBufferFilled){
+  if (capacity>=0 && static_cast<unsigned int>(capacity)<=fOutputBufferSize-fOutputBufferFilled){
     AliHLTUInt8_t* pTgt=fpOutputBuffer+fOutputBufferFilled;
     pFile=new AliHLTMemoryFile((char*)pTgt, capacity);
     if (pFile) {
-      int nofBlocks=fOutputBlocks.size();
+      unsigned int nofBlocks=fOutputBlocks.size();
       if (nofBlocks+1>fMemFiles.size()) {
 	fMemFiles.resize(nofBlocks+1, NULL);
       }
@@ -1008,7 +1008,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 
   // find special events
   if (fpInputBlocks) {
-    for (int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
+    for (unsigned int i=0; i<evtData.fBlockCnt && iResult>=0; i++) {
       if (fpInputBlocks[i].fDataType==kAliHLTDataTypeSOR) {
 	// start of run
 	if (fpRunDesc==NULL) {
@@ -1218,7 +1218,7 @@ AliHLTUInt32_t AliHLTComponent::GetRunType() const
   return fpRunDesc->fRunType;
 }
 
-int AliHLTComponent::CopyStruct(void* pStruct, int iStructSize, int iBlockNo,
+int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigned int iBlockNo,
 				const char* structname, const char* eventname)
 {
   int iResult=0;

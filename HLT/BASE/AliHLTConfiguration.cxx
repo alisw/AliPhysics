@@ -815,10 +815,17 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       pSrcTask=(AliHLTTask*)lnk->GetObject();
       if (pSrcTask) {
 	int iMatchingDB=pSrcTask->GetNofMatchingDataBlocks(this);
-	if (iMatchingDB>fBlockDataArray.size()-iSourceDataBlock) {
+	if (iMatchingDB>=0 && static_cast<unsigned int>(iMatchingDB)>fBlockDataArray.size()-iSourceDataBlock) {
 	  AliHLTComponentBlockData init;
 	  memset(&init, 0, sizeof(AliHLTComponentBlockData));
 	  fBlockDataArray.resize(iSourceDataBlock+iMatchingDB, init);
+	} else {
+	  if (iMatchingDB<0) {
+	    HLTError("task %s (%p): error getting no of matching data blocks from task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+	    iResult=iMatchingDB;
+	  } else {
+	    HLTError("task %s (%p): block data array too small to get blocks from task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+	  }
 	}
 	if ((iResult=pSrcTask->Subscribe(this, &fBlockDataArray[iSourceDataBlock],fBlockDataArray.size()-iSourceDataBlock))>0) {
 	  for (int i=0; i<iResult; i++) {
@@ -1040,7 +1047,7 @@ AliHLTConfigurationHandler::~AliHLTConfigurationHandler()
 {
   // see header file for function documentation
   TObjLink* lnk=NULL;
-  while (lnk=fgListConfigurations.FirstLink()) {
+  while ((lnk=fgListConfigurations.FirstLink())!=NULL) {
     AliHLTConfiguration* pConf=(AliHLTConfiguration*)lnk->GetObject();
     HLTDebug("delete configuration \"%s\"", pConf->GetName());
     fgListConfigurations.Remove(lnk);
