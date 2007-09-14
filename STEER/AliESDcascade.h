@@ -34,8 +34,8 @@ public:
 
   Double_t ChangeMassHypothesis(Double_t &v0q, Int_t code=kXiMinus); 
 
-  Int_t    GetPdgCode() const {return fPdgCode;}
-  Double_t GetEffMass() const {return fEffMass;}
+  Int_t    GetPdgCodeXi() const {return fPdgCodeXi;}
+  Double_t GetEffMassXi() const {return fEffMassXi;}
   Double_t GetChi2Xi()  const {return fChi2Xi;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetXYZcascade(Double_t &x, Double_t &y, Double_t &z) const;
@@ -53,21 +53,21 @@ public:
   void GetPosCovXi(Double_t cov[6]) const;
 
 protected: 
-  Int_t    fPdgCode;        // reconstructed cascade type (PDG code)
-  Double32_t fEffMass;        // reconstructed cascade effective mass
+  Int_t      fPdgCodeXi;      // reconstructed cascade type (PDG code)
+  Double32_t fEffMassXi;      // reconstructed cascade effective mass
   Double32_t fChi2Xi;         // chi2 value
   Double32_t fDcaXiDaughters; // dca between Xi's daughters
   Double32_t fPosXi[3];       // cascade vertex position (global)
   Double32_t fPosCovXi[6];    // covariance matrix of the vertex position
 
-  Int_t    fBachIdx;        // label of the bachelor track
+  Int_t      fBachIdx;        // label of the bachelor track
   Double32_t fBachMom[3];     // bachelor momentum (global)
   Double32_t fBachMomCov[6];  // covariance matrix of the bachelor momentum.
 
 private:
   AliESDcascade& operator=(const AliESDcascade&);
 
-  ClassDef(AliESDcascade,3) // reconstructed cascade vertex
+  ClassDef(AliESDcascade,4) // reconstructed cascade vertex
 };
 
 inline

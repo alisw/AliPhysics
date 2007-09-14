@@ -35,8 +35,8 @@ ClassImp(AliESDcascade)
 
 AliESDcascade::AliESDcascade() : 
   AliESDv0(),
-  fPdgCode(kXiMinus),
-  fEffMass(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
+  fPdgCodeXi(kXiMinus),
+  fEffMassXi(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
   fChi2Xi(1.e+33),
   fDcaXiDaughters(999),
   fBachIdx(-1)
@@ -68,8 +68,8 @@ AliESDcascade::~AliESDcascade() {
 AliESDcascade::AliESDcascade(const AliESDv0 &v,
 			     const AliExternalTrackParam &t, Int_t i) : 
   AliESDv0(v),
-  fPdgCode(kXiMinus),
-  fEffMass(-1),
+  fPdgCodeXi(kXiMinus),
+  fEffMassXi(-1),
   fChi2Xi(1.e+33),
   fDcaXiDaughters(-1),
   fBachIdx(i)
@@ -108,7 +108,7 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   Double_t e1=TMath::Sqrt(0.13957*0.13957 + px1*px1 + py1*py1 + pz1*pz1);
   Double_t e2=TMath::Sqrt(1.11568*1.11568 + px2*px2 + py2*py2 + pz2*pz2);
   
-  fEffMass=TMath::Sqrt((e1+e2)*(e1+e2)-
+  fEffMassXi=TMath::Sqrt((e1+e2)*(e1+e2)-
     (px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
 
 
@@ -135,8 +135,8 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
 
 AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
   AliESDv0(cas),
-  fPdgCode(cas.fPdgCode),
-  fEffMass(cas.fEffMass),
+  fPdgCodeXi(cas.fPdgCodeXi),
+  fEffMassXi(cas.fEffMassXi),
   fChi2Xi(cas.fChi2Xi),
   fDcaXiDaughters(cas.fDcaXiDaughters),
   fBachIdx(cas.fBachIdx)
@@ -161,7 +161,7 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   Double_t nmass=0.13957, pmass=0.93827, ps0=0.101; 
   Double_t bmass=0.13957, mass =1.3213,  ps =0.139;
 
-  fPdgCode=code;
+  fPdgCodeXi=code;
 
   switch (code) {
   case 213: 
@@ -181,12 +181,13 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
        break;
   default:
        AliError("Invalide PDG code !  Assuming XiMinus's...");
-       fPdgCode=kXiMinus;
+       fPdgCodeXi=kXiMinus;
     break;
   }
 
   Double_t pxn=fNmom[0], pyn=fNmom[1], pzn=fNmom[2];
   Double_t pxp=fPmom[0], pyp=fPmom[1], pzp=fPmom[2];
+
   Double_t px0=pxn+pxp, py0=pyn+pyp, pz0=pzn+pzp;
   Double_t p0=TMath::Sqrt(px0*px0 + py0*py0 + pz0*pz0);
 
@@ -210,7 +211,7 @@ Double_t AliESDcascade::ChangeMassHypothesis(Double_t &v0q, Int_t code) {
   Double_t pxl=px0+pxb, pyl=py0+pyb, pzl=pz0+pzb;
   Double_t pl=TMath::Sqrt(pxl*pxl + pyl*pyl + pzl*pzl);
   
-  fEffMass=TMath::Sqrt((e0+eb)*(e0+eb) - pl*pl);
+  fEffMassXi=TMath::Sqrt((e0+eb)*(e0+eb) - pl*pl);
 
   Double_t beta=pl/(e0+eb);
   Double_t pl0=(px0*pxl + py0*pyl + pz0*pzl)/pl;
@@ -229,7 +230,7 @@ AliESDcascade::GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const {
   //--------------------------------------------------------------------
   // This function returns the cascade momentum (global)
   //--------------------------------------------------------------------
-  px=fNmom[0]+fPmom[0]+fBachMom[0]; 
+  px=fNmom[0]+fPmom[0]+fBachMom[0];
   py=fNmom[1]+fPmom[1]+fBachMom[1]; 
   pz=fNmom[2]+fPmom[2]+fBachMom[2]; 
 }
