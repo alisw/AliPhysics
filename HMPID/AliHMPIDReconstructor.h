@@ -8,6 +8,8 @@
 #include <AliReconstructor.h>        //base class
 #include "AliHMPIDTracker.h"         //CreateTracker()
 #include "AliHMPIDDigit.h"           //Dig2Clu(), UseDig()
+#include "AliHMPIDRawStream.h"       //ConvertDigits()
+
 #include <TMatrixF.h>                //UseDig()
 #include <TClonesArray.h>            //UseDig()
 #include <TObjArray.h>               //SigConv()

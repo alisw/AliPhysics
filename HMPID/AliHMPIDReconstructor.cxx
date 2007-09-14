@@ -155,27 +155,28 @@ void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)cons
   while(pRR->NextEvent()){//events loop
     pAL->GetEvent(iEvtN++);
     pRL->MakeTree("R");  pRich->MakeBranch("R");
-
-    for(Int_t iCh=0;iCh<7;iCh++){//chambers loop
-      pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber
-      UInt_t w32=0;
-      while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
-        UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-        dig.Raw(w32,ddl,pRR);
-        AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
-        if(!IsDigSurvive(&dig)) continue;                                             //sigma cut test
-        new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
-      }//raw records loop
-      pRR->Reset();
-    }//chambers loop
-
-    Dig2Clu(&digLst,pRich->CluLst());//cluster finder for all chambers
-    for(Int_t i=0;i<7;i++){digLst.At(i)->Delete(); iDigCnt[i]=0;}                    //clean up list of digits for all chambers
-
-    pRL->TreeR()->Fill();            //fill tree for current event
-    pRL->WriteRecPoints("OVERWRITE");//write out clusters for current event
-    pRich->CluReset();
-  }//events loop
+    
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      AliHMPIDRawStream stream(pRR);
+      while(stream.Next())
+       {
+         UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13  
+         if((UInt_t)(2*iCh)==ddl || (UInt_t)(2*iCh+1)==ddl) {
+         for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
+          for(Int_t dil = 1; dil <=AliHMPIDRawStream::kNDILOGICAdd; dil++){
+            for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
+              if(stream.GetCharge(ddl,row,dil,pad) < 1) continue; 
+              AliHMPIDDigit dig(stream.GetPad(ddl,row,dil,pad),stream.GetCharge(ddl,row,dil,pad));
+              if(!IsDigSurvive(&dig)) continue;
+              new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
+             }//pad
+            }//dil
+           }//row
+       }//while stream    
+    }//ch loop
+  }   
+  }
+         
   pRL->UnloadRecPoints();
 }//Reconstruct raw data
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -186,23 +187,37 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
 //           pDigTree - pointer to Digit tree
 //  Returns: none    
   AliDebug(1,"Start.");
-  AliHMPIDDigit dig; //tmp digit, raw digit will be converted to it
+//  Int_t digcnt=0;
+  
+
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-    pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]),4000,0);
-    pRR->Select("HMPID",2*iCh,2*iCh+1);//select only DDL files for the current chamber      
+    pDigTree->Branch(Form("HMPID%d",iCh),&((*fDig)[iCh]),4000,0); 
+    
     Int_t iDigCnt=0;
-    UInt_t w32=0;
-                while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
-      UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-      if(!dig.Raw(w32,ddl,pRR)) continue;  
-      AliDebug(1,Form("Ch=%i DDL=%i raw=0x%x digit=(%3i,%3i,%3i,%3i) Q=%5.2f",iCh,ddl,w32,dig.Ch(),dig.Pc(),dig.PadPcX(),dig.PadPcY(),dig.Q()));
-      if(!IsDigSurvive(&dig)) continue;                                       //sigma cut test
-      new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list
-    }//raw records loop
-    pRR->Reset();        
-  }//chambers loop
+    AliHMPIDRawStream stream(pRR);    
+    while(stream.Next())
+    {
+      
+      UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13
+      if((UInt_t)(2*iCh)==ddl || (UInt_t)(2*iCh+1)==ddl) {
+       for(Int_t row = 1; row <= AliHMPIDRawStream::kNRows; row++){
+        for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
+          for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
+            if(stream.GetCharge(ddl,row,dil,pad) < 1) continue; 
+              AliHMPIDDigit dig(stream.GetPad(ddl,row,dil,pad),stream.GetCharge(ddl,row,dil,pad));
+              if(!IsDigSurvive(&dig)) continue; 
+              new((*((TClonesArray*)fDig->At(iCh)))[iDigCnt++]) AliHMPIDDigit(dig); //add this digit to the tmp list 
+            }//pad
+          }//dil
+        }//row
+      }//while
+    }
+    stream.Delete();
+  }
   pDigTree->Fill();
+  
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)fDig->At(iCh)->Clear();
+  
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

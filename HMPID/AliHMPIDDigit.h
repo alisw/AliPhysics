@@ -24,6 +24,7 @@ public:
 //ctor&dtor    
   AliHMPIDDigit(                          ):AliDigit( ),fPad(AliHMPIDParam::Abs(-1,-1,-1,-1)),fQ(-1)  {}                         //default ctor
   AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t):AliDigit(t),fPad(pad             ),fQ(q )  {}                         //digit ctor
+  AliHMPIDDigit(Int_t pad,Int_t q         ):AliDigit( ),fPad(pad             ),fQ(q )  {}                         //digit ctor
   AliHMPIDDigit(const AliHMPIDDigit &d    ):AliDigit(d),fPad(d.fPad),fQ(d.fQ)          {}                         //copy ctor
   virtual ~AliHMPIDDigit()                                                             {}                         //dtor   
 //framework part    
@@ -50,17 +51,12 @@ public:
          Int_t   Pad         (                               )const{return fPad;}                                                      //absolute id of this pad
          Int_t   Pc          (                               )const{return AliHMPIDParam::A2P(fPad);}                                                 //PC position number
          Float_t Q           (                               )const{return fQ;}                                                        //charge, [QDC]
-  inline void    Raw         (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;                                                 //digit->(w32,ddl,r,d,a)
-  inline Bool_t  Raw         (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                               //(w32,ddl)->digit
-  inline void    Raw         (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                                      //raw->abs pad number
+  inline void    Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const;
   inline Bool_t  Set         (Int_t c,Int_t p,Int_t x,Int_t y,Int_t tid=0);                                                            //manual creation 
          void    SetQ        (Float_t q                      )     {fQ=q;}                                                             //manual creation 
          void    SetNsig     (Int_t sigmas                   )     {AliHMPIDParam::fgSigmas=sigmas;}                                                  //set n sigmas 
-  static void    WriteRaw    (TObjArray *pDigLst             );                                                                        //write as raw stream     
-  enum EHMPIDRawError {
-    kInvalidRawDataWord = 1
-  };
 
+ 
 protected:                                                                   //AliDigit has fTracks[3]
                                                                                
 
@@ -141,51 +137,25 @@ void AliHMPIDDigit::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)const
 //   Returns: none
   Int_t y2a[6]={5,3,1,0,2,4};
 
-                                  ddl=2*Ch()+Pc()%2;                     //DDL# 0..13
+                                    ddl=2*Ch()+Pc()%2;                     //DDL# 0..13
   Int_t tmp=1+Pc()/2*8+PadPcY()/6;  r=(Pc()%2)? 25-tmp:tmp;              //row r=1..24
                                     d=1+PadPcX()/8;                      //DILOGIC# 1..10
                                     a=y2a[PadPcY()%6]+6*(PadPcX()%8);    //ADDRESS 0..47        
       
-  w32=0;    
-                                                                //Protection for charge > 4095
-  AliBitPacking::PackWord((fQ>4095)?4095:(UInt_t)fQ,w32,0,11);  // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
-  AliBitPacking::PackWord(        a ,w32,12,17);                // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
-  AliBitPacking::PackWord(        d ,w32,18,21);                // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
-  AliBitPacking::PackWord(        r ,w32,22,26);                //                                                Row number        bits (22..26) counts (1..24)  
+  w32=0;   
+  //Printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+  //
+  //Printf("AliHMPIDDigit::Raw ddl: %d r: %d d: %d a: %d",ddl,r,d,a);
+  //Printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//  Bool_t isOK=kTRUE; isOK=
+  AliBitPacking::PackWord((fQ>4095)?(UInt_t)4095:(UInt_t)fQ,w32, 0,11);       // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq        Qdc               bits (00..11) counts (0..4095)
+  //Printf("isOK: %d",isOK);
+  //molnarl: Since in simulation the the charge can be > than 4095 but not in real life we need to protect. If fQ>4095 after packing we will get 0 for the charge! 
+  assert(0<=a&&a<=47);AliBitPacking::PackWord(        a ,w32,12,17);  // 3322 2222 2222 1111 1111 1000 0000 0000        DILOGIC address   bits (12..17) counts (0..47)
+  assert(1<=d&&d<=10);AliBitPacking::PackWord(        d ,w32,18,21);  // 1098 7654 3210 9876 5432 1098 7654 3210        DILOGIC number    bits (18..21) counts (1..10)
+  assert(1<=r&&r<=24);AliBitPacking::PackWord(        r ,w32,22,26);  //                                                Row number        bits (22..26) counts (1..24)  
+                      AliBitPacking::PackWord((UInt_t)0, w32,27,27);  //To make sure set the 27th bit to Zero so we can distinguis it from the EoE
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDDigit::Raw(UInt_t w32,Int_t ddl, AliRawReader *pRR)
-{
-// Converts a given raw data word to a digit
-// Arguments: w32 - 32 bits raw data word
-//            ddl - DDL idx  0 1 2 3 4 ... 13
-//   Returns: none
-  Int_t r = AliBitPacking::UnpackWord(w32,22,26); assert(1<=r&&r<=24);   //                                         Row number      (1..24)    
-  Int_t d = AliBitPacking::UnpackWord(w32,18,21); assert(1<=d&&d<=10);   // 3322 2222 2222 1111 1111 1000 0000 0000 DILOGIC number  (1..10)
-  Int_t a = AliBitPacking::UnpackWord(w32,12,17); assert(0<=a&&a<=47);   // 1098 7654 3210 9876 5432 1098 7654 3210 DILOGIC address (0..47)  
-  Int_t q = AliBitPacking::UnpackWord(w32, 0,11); assert(0<=q&&q<=4095); // 0000 0rrr rrdd ddaa aaaa qqqq qqqq qqqq Qdc             (0..4095) 
-  if (r<1 || r>24 || d<1 || d>10 || a<0 || a>47 || q<0 || q>4095) {
-    AliWarning(Form("Invalid raw data word %x",w32));
-    pRR->AddMajorErrorLog(kInvalidRawDataWord,Form("w=%x",w32));
-    return kFALSE;
-  }
-  Raw(ddl,r,d,a);
-  fQ=q;
-  return kTRUE;
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigit::Raw(Int_t ddl,Int_t r,Int_t d,Int_t a)
-{
-  assert(0<=ddl&&ddl<=13); assert(1<=r&&r<=24); assert(1<=d&&d<=10);   assert(0<=a&&a<=47);  
-  Int_t a2y[6]={3,2,4,1,5,0};//pady for a given address (for single DILOGIC chip)
-                                  Int_t ch=ddl/2;
-  Int_t tmp=(r-1)/8;              Int_t pc=(ddl%2)? 5-2*tmp:2*tmp; 
-                                  Int_t px=(d-1)*8+a/6;
-        tmp=(ddl%2)?(24-r):r-1;   Int_t py=6*(tmp%8)+a2y[a%6];
-  fPad=AliHMPIDParam::Abs(ch,pc,px,py);
-}
-
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Int_t tid)
 {
@@ -199,4 +169,6 @@ Bool_t AliHMPIDDigit::Set(Int_t ch,Int_t pc,Int_t px,Int_t py,Int_t tid)
   fQ=0;
   return kFALSE;
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 #endif

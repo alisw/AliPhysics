@@ -1,4 +1,4 @@
-SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx AliHMPIDRecon.cxx AliHMPIDRawStream.cxx
+SRCS:=  AliHMPIDReconstructor.cxx AliHMPIDTracker.cxx AliHMPIDRecon.cxx 
 
 HDRS:= $(SRCS:.cxx=.h)
 DHDR:= HMPIDrecLinkDef.h

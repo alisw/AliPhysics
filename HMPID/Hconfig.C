@@ -614,13 +614,13 @@ void HmpConfig::WriteBatch()
   FILE *fp=fopen(Form("%s.C",sBatchName),"w"); if(!fp){Info("CreateBatch","Cannot open output file: %s.C",sBatchName);return;}
   
                                                     fprintf(fp,"void %s(Int_t iNevt,Bool_t isDbg,char *sCfg)\n{\n",sBatchName);
-                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf hlt hough gphysi* fort* ZZZ*\");  //remove garbage\n"); 
+                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf hlt hough gphysi* fort* ZZZ* raw*\");  //remove garbage\n"); 
                                                     fprintf(fp,"  gBenchmark->Start(\"ALICE\"); TDatime time;      //start benchmarking\n\n");
                                                        
                                                     fprintf(fp,"  if(isDbg) AliLog::SetGlobalDebugLevel(AliLog::kDebug);\n");
 //simulation section  
-  if(fSimB->GetState()){
-                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf *.root \");               //remove previous simulation\n"); 
+  if(fSimB->GetState()){                            fprintf(fp,"  gSystem->Exec(\"rm -rf *.root \");               //remove previous simulation\n"); 
+                                                    fprintf(fp,"  gSystem->Exec(\"rm -rf *.date \");               //remove previous simulation\n"); 
                                                     fprintf(fp,"  AliSimulation *pSim=new AliSimulation(sCfg);   //init simulation\n");
                                                        
     if(fTraB->GetState())                           fprintf(fp,"  pSim->SetRunSimulation(kTRUE);                 //transport and hits creation\n");
@@ -646,7 +646,7 @@ void HmpConfig::WriteBatch()
                                                     
     if     (fInpBG->GetButton(kNo )->GetState())    fprintf(fp,"  pRec->SetInput(\"\");                       //from digits\n");   
     else if(fInpBG->GetButton(kDdl)->GetState())    fprintf(fp,"  pRec->SetInput(\"./\");                     //from raw data in DDL format\n");                                            
-    else if(fInpBG->GetButton(kDat)->GetState())    fprintf(fp,"  pRec->SetInput(\"raw.root.date\");          //from raw data in DATE format\n");                                            
+    else if(fInpBG->GetButton(kDat)->GetState())    fprintf(fp,"  pRec->SetInput(\"raw.date\");          //from raw data in DATE format\n");                                            
     else if(fInpBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pRec->SetInput(\"raw.root\");               //from raw data in ROOT format\n");                                            
     
     if     (fCluBG->GetButton(kAll) ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"%s\");   //clusters for all detectors\n",det.Data());

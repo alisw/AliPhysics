@@ -17,18 +17,23 @@ extern "C" {
 
 //AliRoot
 #include "AliHMPIDRawStream.h"
+#include "AliHMPIDCalib.h"
 #include "AliRawReaderDate.h"
 #include "AliBitPacking.h"
 #include "TMath.h"
 
 //ROOT
 #include "TFile.h"
+#include "TSystem.h"
 #include "TKey.h"
 #include "TH2S.h"
 #include "TObject.h"
 #include "TBenchmark.h"
 #include "TMath.h"
 #include "TRandom.h"
+#include "TTree.h"
+#include "TTreePlayer.h"
+
 
 int main(int argc, char **argv){ 
 
@@ -55,22 +60,10 @@ int main(int argc, char **argv){
   daqDA_progressReport(10);
 
 
-  /* init some counters */
-  Double_t SummQ[14][48][11][25], SummQ2[14][48][11][25];
-  Int_t   nEntries[14][48][11][25];
-  Bool_t  isDDLOn[14];
-  for(Int_t ddl=0;ddl<=13;ddl++) {
-    isDDLOn[ddl] = kFALSE;
-    for(Int_t row=1;row<=24;row++)
-      for(Int_t dil=1;dil<=10;dil++)
-	for(Int_t adr=0;adr<=47;adr++)
-	  {
-	    SummQ[ddl][adr][dil][row]=0;
-	    SummQ2[ddl][adr][dil][row]=0;
-	    nEntries[ddl][adr][dil][row]=0;
-	  }
-  }
-
+  /* init the pedestal calculation */
+  AliHMPIDCalib *pCal=new AliHMPIDCalib();
+  //pCal->Init();                    //Init the pedestal calculation
+  
   /* init event counter */
   Int_t iEvtNcal=0;
 
@@ -107,7 +100,7 @@ int main(int argc, char **argv){
       /* use event - here, just write event id to result file */
       eventT=event->eventType;
 
-      if (eventT==PHYSICS_EVENT) {
+      if (eventT==PHYSICS_EVENT) {                                                //we use PHYSICS_EVENT for pedestal not CALIBRATION_EVENT
 	
 	iEvtNcal++;
 
@@ -121,20 +114,14 @@ int main(int argc, char **argv){
 	AliHMPIDRawStream stream(reader);
 
 	while(stream.Next()) {
-
-	  Int_t ddl = stream.GetDDLNumber();
-
-	  for(Int_t row=1; row < 25; row++)
-	    for(Int_t dil=1; dil < 11; dil++)
-	      for(Int_t adr=0; adr < 48; adr++) {
-		Short_t q = stream.GetCharge(row,dil,adr);
-		if (q<0) continue;
-
-		SummQ[ddl][adr][dil][row] += q;
-		SummQ2[ddl][adr][dil][row] += (q*q);
-		nEntries[ddl][adr][dil][row]++;
-		isDDLOn[ddl] = kTRUE;
-	      }
+          Int_t ddl=stream.GetDDLNumber();
+            for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
+              for(Int_t dil = 1; dil <=AliHMPIDRawStream::kNDILOGICAdd; dil++){
+                for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
+                  pCal->FillPedestal(ddl,row,dil,pad,stream.GetCharge(ddl,row,dil,pad));
+                }//pad
+              }//dil
+            }//row
 	} //raw data loop
 	
 	delete reader;
@@ -165,39 +152,17 @@ int main(int argc, char **argv){
   daqDA_progressReport(90);
 
   for(Int_t ddl=0; ddl < 14; ddl++) {
-    if (!isDDLOn[ddl]) continue;
-
-    ofstream out;
-    out.open(Form("./HmpidPedDdl%02i.txt",ddl));
-
-    for(Int_t row=1; row < 25; row++)
-      for(Int_t dil=1; dil < 11; dil++)
-	for(Int_t adr=0; adr < 48; adr++) {
-
-	  Int_t n = nEntries[ddl][adr][dil][row];
-	  if (!n) {
-	    printf("No data for channel: %d %d %d %d\n",ddl,adr,dil,row);
-	    continue;
-	  }
-	  Double_t mean = SummQ[ddl][adr][dil][row]/n;
-	  if ((SummQ2[ddl][adr][dil][row]/n - (SummQ[ddl][adr][dil][row]/n)*(SummQ[ddl][adr][dil][row]/n)) < 0) {
-	    printf("Invalid sums: %d %d %d   %d  %f %f\n",row,dil,adr,n,SummQ[ddl][adr][dil][row],SummQ2[ddl][adr][dil][row]);
-	    return -1;
-	  }
-          Float_t sigma = TMath::Sqrt(SummQ2[ddl][adr][dil][row]/n - (mean*mean));
-	  Int_t inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
-
-	  out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
-	}
-
+    
+    /* Calculate pedestal for the given ddl, if there is no ddl go t next */
+    if(!pCal->CalcPedestal(ddl,Form("./HmpidPedDdl%02i.txt",ddl))) continue;
+    
     /* store the result file on FES */
     status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",ddl),Form("HMPID_DA_Pedestals_ddl=%02i",ddl));
     if (status) {
       printf("Failed to export file : %d\n",status);
       return -1;
     }
-  }
-
+  }//ddl
 
   /* report progress */
   daqDA_progressReport(100);

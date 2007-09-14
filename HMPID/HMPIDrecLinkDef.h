@@ -6,5 +6,4 @@
 #pragma link C++ class  AliHMPIDReconstructor+;
 #pragma link C++ class  AliHMPIDTracker+;
 #pragma link C++ class  AliHMPIDRecon+;
-#pragma link C++ class  AliHMPIDRawStream+;
 #endif

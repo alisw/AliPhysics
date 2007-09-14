@@ -18,6 +18,7 @@
 #include "AliHMPIDParam.h"  //StepManager()
 #include "AliHMPIDHit.h"    //Hits2SDigs(),StepManager()
 #include "AliHMPIDDigit.h"  //Digits2Raw(), Raw2SDigits()
+#include "AliHMPIDRawStream.h"  //Digits2Raw(), Raw2SDigits()
 #include "AliRawReader.h"  //Raw2SDigits()
 #include <TVirtualMC.h>    //StepManager() for gMC
 #include <TPDGCode.h>      //StepHistory() 
@@ -388,7 +389,9 @@ void AliHMPIDv1::Digits2Raw()
   }
   treeD->GetEntry(0);
   
-  AliHMPIDDigit::WriteRaw(DigLst());
+  //AliHMPIDDigit::WriteRaw(DigLst());
+   AliHMPIDRawStream *pRS;
+   pRS->WriteRaw(DigLst());
     
   GetLoader()->UnloadDigits();
   AliDebug(1,"Stop.");      
@@ -463,18 +466,26 @@ Bool_t AliHMPIDv1::Raw2SDigits(AliRawReader *pRR)
 // Interface methode ivoked from AliSimulation to create a list of sdigits from raw digits. Events loop is done in AliSimulation
 // Arguments: pRR- raw reader 
 //   Returns: kTRUE on success (currently ignored in AliSimulation::ConvertRaw2SDigits())      
-  AliHMPIDDigit sdi; //tmp sdigit, raw digit will be converted to it
+  //AliHMPIDDigit sdi; //tmp sdigit, raw digit will be converted to it
   
   if(!GetLoader()->TreeS()) {MakeTree("S");  MakeBranch("S");}
     
   TClonesArray *pSdiLst=SdiLst(); Int_t iSdiCnt=0; //tmp list of sdigits for all chambers
-  pRR->Select("HMPID",0,13);//select all HMPID DDL files
-  UInt_t w32=0;
-  while(pRR->ReadNextInt(w32)){//raw records loop (in selected DDL files)
-    UInt_t ddl=pRR->GetDDLID(); //returns 0,1,2 ... 13
-    if(!sdi.Raw(ddl,w32,pRR)) continue;  
-    new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
-  }//raw records loop
+  AliHMPIDRawStream stream(pRR);
+  while(stream.Next())
+  {
+    UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13  
+    for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
+     for(Int_t dil = 1; dil <= AliHMPIDRawStream::kNDILOGICAdd; dil++){
+      for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
+          if(stream.GetCharge(ddl,row,dil,pad)<1) continue;
+          AliHMPIDDigit sdi(stream.GetPad(ddl,row,dil,pad),stream.GetCharge(ddl,row,dil,pad));
+          new((*pSdiLst)[iSdiCnt++]) AliHMPIDDigit(sdi); //add this digit to the tmp list
+          }//pad
+      }//dil
+    }//row
+  }
+  
   GetLoader()->TreeS()->Fill(); GetLoader()->WriteSDigits("OVERWRITE");//write out sdigits
   SdiReset();
   return kTRUE;
