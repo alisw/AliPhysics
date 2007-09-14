@@ -124,7 +124,7 @@ class AliAODCluster : public AliVParticle {
   virtual Double_t Pt() const {return TMath::Sqrt(Px()*Px() + Py()*Py()); }
   virtual Double_t P() const {return TMath::Sqrt(Px()*Px() + Py()*Py() + Pz()*Pz()); }
   virtual Double_t OneOverPt() const {return Pt() ? 1./Pt(): -999.;}
-  virtual Double_t Phi() const {return (fType==AliAODCluster::kPHOSNeutral) ? TMath::ATan2(fPosition[1], fPosition[0]) : 0.;}
+  virtual Double_t Phi() const {return (fType==AliAODCluster::kPHOSNeutral) ? TMath::Pi()+TMath::ATan2(-fPosition[1], -fPosition[0]) : 0.;}
   virtual Double_t Theta() const {return (fType==AliAODCluster::kPHOSNeutral) ? TMath::ATan2(Pt(), fPosition[2]) : 0.;}
   virtual Double_t Eta() const {return (fType==AliAODCluster::kPHOSNeutral) ? -TMath::Log(TMath::Tan(0.5 * Theta())) : 0.;}
   virtual Short_t  Charge() const {return (fType==AliAODCluster::kPHOSNeutral) ? 0 : -999;}

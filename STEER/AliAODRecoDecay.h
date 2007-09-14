@@ -66,7 +66,7 @@ class AliAODRecoDecay : public AliVParticle {
   Double_t P() const {return TMath::Sqrt(Px()*Px()+Py()*Py()+Pz()*Pz());}
   Double_t Pt() const {return TMath::Sqrt(Px()*Px()+Py()*Py());}
   Double_t OneOverPt() const {return (Pt() ? 1./Pt() : 0.);}
-  Double_t Phi() const {return TMath::ATan2(Py(),Px());}
+  Double_t Phi() const {return TMath::Pi()+TMath::ATan2(-Py(),-Px());}
   Double_t Theta() const {return 0.5*TMath::Pi()-TMath::ATan(Pz()/(Pt()+1.e-13));}
   Double_t Eta() const {return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13));}
   Double_t E(UInt_t pdg) const;
