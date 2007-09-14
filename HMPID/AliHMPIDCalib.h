@@ -27,9 +27,9 @@ protected:
     Int_t   fa;                                                                   //DILOGIC address
     Int_t   fd;                                                                   //DILOGIC number
     Int_t   fr;                                                                   //DILOGIC row
-    Bool_t  faddl[11];                                                               //check is ddl is filled
+    Bool_t  faddl[11];                                                            //check is ddl is filled
     Int_t   fq;                                                                   //Qdc value
-    TH1F   *fPedHisto;                                                            //                                                      
+    TH1F   *fPedHisto;                                                            //temporary histo for mean and sigma calculation                                                      
  
     ClassDef(AliHMPIDCalib,1)                                                     //HMPID calibration and pedestal class        
 };
