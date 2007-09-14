@@ -358,7 +358,24 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
     fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTrackReferences, 4000);
 
 //
-    fTreeTR->SetBranchStatus("*",      0);
+//
+//    fTreeTR->SetBranchStatus("*",      0);
+    fTreeTR->SetBranchStatus("ABSO",  0);
+    fTreeTR->SetBranchStatus("BODY",  0);
+    fTreeTR->SetBranchStatus("DIPO",  0);
+    fTreeTR->SetBranchStatus("EMCAL", 0);
+    fTreeTR->SetBranchStatus("FMD",   0);
+    fTreeTR->SetBranchStatus("HALL",  0);
+    fTreeTR->SetBranchStatus("MAG",   0);
+    fTreeTR->SetBranchStatus("PHOS",  0);
+    fTreeTR->SetBranchStatus("PIPE",  0);
+    fTreeTR->SetBranchStatus("PMD",   0);
+    fTreeTR->SetBranchStatus("RICH",  0);
+    fTreeTR->SetBranchStatus("SHIL",  0);
+    fTreeTR->SetBranchStatus("START", 0);
+    fTreeTR->SetBranchStatus("VZERO", 0);
+    fTreeTR->SetBranchStatus("ZDC",   0);
+
     fTreeTR->SetBranchStatus("AliRun", 1);
     fTreeTR->SetBranchStatus("ITS",    1);
     fTreeTR->SetBranchStatus("TPC",    1);
