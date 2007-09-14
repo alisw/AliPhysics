@@ -1,0 +1,32 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include $(MODDIR)/hlt.conf
+
+MODULE_SRCS= 	AliHLTHOMERReader.cxx \
+		AliHLTHOMERWriter.cxx
+
+CLASS_HDRS:=  	AliHLTHOMERReader.h \
+		AliHLTHOMERWriter.h
+
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+		AliHLTHOMERData.h
+
+# as the first step of the migration of the HOMER library to
+# AliRoot we leave the class names as they are but change the
+# file names. Thats why the automatic generation of the ROOT
+# LinkDef file doesn't work for the moment
+MODULE_DHDR:= 	AliHLTHOMERLinkDef.h
+#CINTAUTOLINK:=  1
+
+SRCS:=$(patsubst %,BASE/HOMER/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,BASE/HOMER/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,BASE/HOMER/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,BASE/HOMER/%,$(MODULE_DHDR))
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := BASE/HOMER

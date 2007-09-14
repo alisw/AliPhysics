@@ -1,0 +1,846 @@
+
+\documentclass[a4paper,twoside]{article}
+
+%\sloppy
+
+%\renewcommand{\baselinestretch}{1.5}
+
+\usepackage{graphics}
+\usepackage{textcomp}
+\usepackage{times}
+%\usepackage[light]{draftcopy}
+\usepackage[english]{babel}
+
+%\usepackage[margin=20pt,head=20pt,headsep=20pt,foot=20pt]{geometry}
+%\usepackage[text={16.8cm,24.8cm}]{geometry}
+%\usepackage[text={16.9cm,24.8cm}]{geometry}
+\usepackage{geometry}
+
+
+
+
+\title{HLT Online Monitoring Environment including ROOT \\ --- \\ Reader Interface \\ --- \\ Version 0.2}
+\author{Timm M. Steinbeck, Heinz Tilsner}
+
+\begin{document}
+\maketitle
+
+\section{Preliminaries}
+\subsection{Disclaimer}
+This document is not complete. It is a design document describing an interface to be developed. We have tried to make it as complete as possible to the best of our knowledge but shortcomings of the defined subject may appear during its implementation or use.
+The document may therefore be subject to change as required, although we will try to minimize the impact of changes on existing code. 
+However, no guarantee about the described subject can be made.
+\subsection{Copyright}
+This document is copyright by the Computer Science/Computer Engineering group of the Kirchhoff Institute of Physics of the Ruprecht-Karls-University Heidelberg, Germany. It may be distributed 
+via any medium as a whole. Parts maybe quoted provided that the document with the original authors and their institute above are referenced properly. 
+\subsection{Terminology}
+As the whole interface described is a class API method, member function, and function will be used interchangeably.
+
+\section{Overview}
+
+This document defines an C++ class API to read data in an HLT Online Monitoring Environment including ROOT (HOMER). The API is structured into two parts:
+\begin{enumerate}
+\item An abstract base class defining an interface for reading via abstract functions. The functions defined here are kept generic so that they should be usable also with other monitoring environments. This class is called \texttt{Moni\-tor\-ing\-Read\-er}.
+\item A derived class with implementations for the defined abstract functions for HOMER. In addition, further functions are defined here that are considered to be too specific to the HOMER system to be included in the abstract interface definition. This class is called \texttt{HOMER\-Read\-er}.
+\end{enumerate}
+The purpose of splitting up the API into these two parts is to allow future additions in the form of other derived classes for further data sources in addition to HOMER. These classes, derived fromthe class MonitoringReader, could then read data from these other sources and provide them via an identical interface. This allows to add different data sources in to existing code (and support them in new code) with minimal code changes. Other possibilities for data sources could for example be the Mood DATE monitoring package or even offline data storage. 
+
+The purpose of the API as such is to provide an easy way to access the monitoring data from various taps in the HLT system (and as described above potentially other sources) in analysis packages and code.
+
+\section{MonitoringReader}
+
+The class \texttt{MonitoringReader} defines the abstract interface for monitoring data reader classes. It is shown in Fig. \ref{Fig:MonitoringReader}. 
+
+\begin{figure}[hbt]
+%\begin{center}
+{\footnotesize
+\begin{verbatim}
+
+class MonitoringReader
+    {
+    public:
+    MonitoringReader();
+    virtual ~MonitoringReader();
+    
+    /* Read in the next available event */
+    virtual int ReadNextEvent() = 0;
+    /* Read in the next available event, 
+       wait max. timeout microsecs. */
+    virtual int ReadNextEvent( unsigned long timeout_us ) = 0;
+
+    /* Return the ID of the current event */
+    virtual uint64 GetEventID() const = 0;
+
+    /* Return the number of data blocks in the 
+       current event */
+    virtual unsigned long GetBlockCnt() const = 0;
+
+    /* Return the size (in bytes) of the current 
+       event's data block with the given block 
+       index (starting at 0). */
+    virtual unsigned long GetBlockDataLength( unsigned long ndx ) const = 0;
+    /* Return a pointer to the start of the current
+       event's data block with the given block index
+       (starting at 0). */
+    virtual const void* GetBlockData( unsigned long ndx ) const = 0;
+    /* Return IP address or hostname of node which
+       received the current event's data block with
+       the given block index (starting at 0). */
+    virtual const char* GetBlockSendNodeID( unsigned long ndx ) const = 0;
+    /* Return byte order of the data stored in the 
+       current event's data block with the given block 
+       index (starting at 0). 
+       0 is unknown alignment, 
+       1 ist little endian, 
+       2 is big endian. */
+    virtual uint8 GetBlockByteOrder( unsigned long ndx ) const = 0;
+    /* Return the alignment (in bytes) of the given datatype 
+       in the data stored in the current event's data block
+       with the given block index (starting at 0). 
+       Possible values for the data type are
+       0: uint64
+       1: uint32
+       2: uin16
+       3: uint8
+       4: double
+       5: float
+     */
+    virtual uint8 GetBlockTypeAlignment( unsigned long ndx, uint8 dataType ) const = 0;
+    
+    };
+
+\end{verbatim}
+}
+\parbox{0.90\columnwidth}{
+\caption{\label{Fig:MonitoringReader}The API defined by the class \texttt{MonitoringReader}.}
+}
+%\end{center}
+\end{figure}
+
+The methods in the API will be discussed in the following subsections.
+
+
+\subsection{MonitoringReader()}
+
+\texttt{MonitoringReader()}
+
+The default constructor. Initializes anything required in the base class. Should not need to do much.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] None
+\item[State after completion:] The object is created
+\end{description}
+
+
+\subsection{\~{ }MonitoringReader()}
+
+\texttt{virtual \~{ }MonitoringReader()}
+
+Destructor. Cleans up anything allocated/opened/initialized in the base class. Should not need to do much.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] None
+\item[State after completion:] The object is destroyed
+\end{description}
+
+
+\subsection{ReadNextEvent()}
+\label{Subsec:MonitoringReader::ReadNextEvent}
+\texttt{virtual int ReadNextEvent()}
+
+This functions triggers reading in the next event from data sources defined by the derived class implementation. 
+The function will try indefinitely respectively until a permanent unresolvable error occurs. 
+Implementations of the function in derived classes may define an internal maximum timeout whose expiration is treated as a permanent error. After
+this function completes successfully the event's data is stored in the object and can be accessed by the class's other methods. It returns an 
+indicator signalling successful completion or the occurence of an error. 
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] An integer (\texttt{int}) signalling completion status. This is 0 on success or a non-zero integer value according to the values defined in the 
+include file \texttt{errno.h} to signal the type of error that occured. 
+\item[State after successful completion:] The event that was read in from the data sources is stored in the object and can be accessed by the class's other methods.
+\item[State after unsuccessful completion:] The state after an error occured during reading is undefined.
+\end{description}
+
+
+\subsection{ReadNextEvent( unsigned long )}
+\label{Subsec:MonitoringReader::ReadNextEvent:unsignedlong}
+\texttt{virtual int ReadNextEvent( unsigned long timeout\_us )}
+
+This function triggers reading in the next event from data sources defined by the derived class implementation. 
+The function will try until the given timeout expires or  permanent unresolvable error occurs. 
+In addition to the specified timeout implementations of the function in derived classes may 
+define an internal maximum timeout whose expiration is treated as a permanent error. After
+this function completes successfully the event's data is stored in the object and can be accessed by the class's other methods. It returns an 
+indicator signalling successful completion or the occurence of an error. 
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+	\item[\texttt{timeout\_us}:] An unsigned long integer (\texttt{unsigned long}) holding the timeout value in microseconds. When this timeout elapses the method will return 
+	even if no event has been received yet. Expiration of the timeout will be indicated by setting the return status to \texttt{ETIMEDOUT} as defined in the 
+	include file \texttt{errno.h}. 
+	\end{description}
+\item[Return value:] An integer (\texttt{int}) signalling completion status. This is 0 on success or a non-zero integer value according to the values defined in the 
+include file \texttt{errno.h} to signal the type of error that occured. \texttt{ETIMEDOUT} will be returned if the specified timeout expired before an event was received.
+\item[State after successful completion:] The event that was read in from the data sources is stored in the object and can be accessed by the class's other methods.
+\item[State after unsuccessful completion:] The state after an error occured during reading is undefined.
+\end{description}
+
+
+\subsection{GetEventID()}
+\label{Subsec:MonitoringReader::GetEventID}
+\texttt{virtual uint64 GetEventID() const}
+
+This function returns the ID of the event that was last successfully read in. If no event has yet been read in or if the last read attempt failed, 
+invalid event ID (\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) will be returned.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] A 64~bit unsigned integer (\texttt{uint64}) that holds the ID of the last event that could be successfully read in. If no event has yet been read in or if the last read attempt failed, 
+invalid event ID (\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockCnt()}
+\label{Subsec:MonitoringReader::GetBlockCnt}
+\texttt{virtual unsigned long GetBlockCnt() const}
+
+This function returns the number of data blocks in the current event. If no event has yet been read in or if the last read attempt failed 
+zero (\texttt{0}) data blocks will be reported.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] An  unsigned long integer (\texttt{unsigned long}) that holds the number of data blocks contained in the last event that could be successfully read in. 
+If no event has yet been read in or if the last read attempt failed, zero (\texttt{0}) will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockDataLength( unsigned long )}
+\label{Subsec:MonitoringReader::GetBlockDataLength}
+\texttt{virtual unsigned long GetBlockDataLength( unsigned long ndx ) const}
+
+This function returns the size in bytes of the data block in the current event with the specified index. Indexing of data blocks starts at zero.
+If no event has yet been read in or if the last read attempt failed, a size of zero (\texttt{0}) bytes will be reported.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})) a size of 
+zero (\texttt{0}) bytes will be reported.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose size is 
+		to be reported. This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})
+	\end{description}
+\item[Return value:] An  unsigned long integer (\texttt{unsigned long}) that holds the size in bytes of the data block with the specified index 
+contained in the last event that could be successfully read in. 
+If no event has yet been read in or if the last read attempt failed, a size of zero (\texttt{0}) bytes will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt})) a size of 
+zero (\texttt{0}) bytes will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockData( unsigned long )}
+\label{Subsec:MonitoringReader::GetBlockData}
+\texttt{virtual const void* GetBlockData( unsigned long ndx ) const}
+
+This function returns a pointer to the beginning of data contained in the data block in the current event with the specified index. 
+Indexing of data blocks starts at zero.
+If no event has yet been read in or if the last read attempt failed, a \texttt{NULL} pointer will be returned.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a \texttt{NULL} pointer will be returned.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose data pointer is 
+		to be returned. This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})
+	\end{description}
+\item[Return value:] An  unsigned long integer (\texttt{unsigned long}) that holds a pointer to the beginning of the data block
+with the specified index contained in the last event that could be successfully read in. 
+If no event has yet been read in or if the last read attempt failed, a \texttt{NULL} pointer will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a \texttt{NULL} pointer will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockSendNodeID( unsigned long )}
+\label{Subsec:MonitoringReader::GetBlockSendNodeID}
+\texttt{virtual const char* GetBlockSendNodeID( unsigned long ndx ) const}
+
+This functions returns a pointer to a string holding an ID of the node which as sent the data block with the specified index. 
+Indexing of data blocks starts at zero. The node ID will be given in the string either as an IP address (e.g. ``\texttt{192.168.100.1}'')
+or as a hostname (e.g. ``\texttt{hlt42.alice.cern.ch}''). The string will be suitable as a parameter for the system call \texttt{gethostbyname}.
+If no event has yet been read in or if the last read attempt failed, a \texttt{NULL} pointer will be returned.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a \texttt{NULL} pointer will be returned.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose sending node's ID is 
+		to be returned. This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})
+	\end{description}
+\item[Return value:] A pointer to a string (\texttt{char*}) holding ID of the node that sent the data block
+with the specified index contained in the last event that could be successfully read in. 
+If no event has yet been read in or if the last read attempt failed, a \texttt{NULL} pointer will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a \texttt{NULL} pointer will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+\subsection{GetBlockByteOrder( unsigned long )}
+\label{Subsec:MonitoringReader::GetBlockByteOrder}
+\texttt{virtual uint8 GetBlockByteOrder( unsigned long ndx ) const}
+
+This function returns a character stating the byte order in which the data of the data block in the current event
+with the given index is stored. 
+
+The following values are returned:
+\begin{description}
+\item[0] specifies an unknown byte order
+\item[1] specifies little endian byte order
+\item[2] specifies big endian byte order
+\end{description}
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose sending node's ID is 
+		to be returned. This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})
+	\end{description}
+\item[Return value:] An unsigned character (\texttt{uint8}) specifying the byte order of the data stored in the current event's data block with the 
+specified index. Possible values are
+\begin{description}
+\item[0] for an unknown byte order
+\item[1] for little endian byte order
+\item[2] for big endian byte order
+\end{description}
+If no event has yet been read in or if the last read attempt failed, a value of zero specifying an unknown byte order will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a value of zero specifying an unknown byte order will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockTypeAlignment( unsigned long, uint8 )}
+\label{Subsec:MonitoringReader::GetBlockTypeAlignment}
+\texttt{virtual uint8 GetBlockTypeAlignment( unsigned long ndx, uint8 dataType ) const}
+
+This functions returns an indicator for the alignment in bytes of the given data type in the data of the data block in the current event
+with the given index. 
+
+Possible values for the data type are
+\begin{description}
+\item[0]: unsigned 64 bit integer (\texttt{uint64})
+\item[1]: unsigned 32 bit integer (\texttt{uint32})
+\item[2]: unsigned 16 bit integer (\texttt{uint16})
+\item[3]: unsigned 8 bit integer (\texttt{uint8})
+\item[4]: 64 bit floating point (\texttt{double})
+\item[5]: 32 bit floating point (\texttt{float})
+\end{description}
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose sending node's ID is 
+		to be returned. This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})
+	\end{description}
+	\begin{description}
+		\item[dataType:] An unsigned character (\texttt{uint8}) specifying the type of data whose alignment is queried. Possible values are
+			\begin{description}
+				\item[0] for unsigned 64 bit integer (\texttt{uint64})
+				\item[1] for unsigned 32 bit integer (\texttt{uint32})
+				\item[2] for unsigned 16 bit integer (\texttt{uint16})
+				\item[3] for unsigned 8 bit integer (\texttt{uint8})
+				\item[4] for 64 bit floating point (\texttt{double})
+				\item[5] for 32 bit floating point (\texttt{float})
+			\end{description}
+	\end{description}
+\item[Return value:] An unsigned character (\texttt{uint8}) specifying the alignment in bytes of the given data type in the data stored in the current event's data block with the 
+specified index. 
+If no event has yet been read in or if the last read attempt failed, a value of zero will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a value of zero will be returned. If an undefined value is specified for the data type (greater than 5) a value of zero will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+
+\section{HOMERReader}
+
+The class \texttt{HOMERReader} implements the abstract interface defined by the class \texttt{MonitoringReader} for the HLT Online Monitoring Environment. 
+It is shown in Fig. \ref{Fig:HOMERReader}. 
+
+\begin{figure}[hbt]
+%\begin{center}
+{\footnotesize
+\begin{verbatim}
+
+class HOMERReader: public MonitoringReader
+    {
+    public:
+    /* Constructors & destructors */
+    /* For reading from a TCP port */
+    HOMERReader( const char* hostname, unsigned short port );
+    /* For reading from multiple TCP ports */
+    HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports );
+    /* For reading from a System V shared memory segment */
+    HOMERReader( key_t shmKey, int shmSize );
+    /* For reading from multiple System V shared memory segments */
+    HOMERReader( unsigned int shmCnt, key_t* shmKey, int* shmSize );
+    /* For reading from multiple TCP ports and multiple System V shared memory segments */
+    HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
+                 unsigned int shmCnt, key_t* shmKey, int* shmSize );
+    virtual ~HOMERReader();
+
+    /* Return the status of the connection as established by one of the constructors.
+     0 means connection is ok, non-zero specifies the type of error that occured. */
+    int GetConnectionStatus() const;
+
+    /* Return the index of the connection for which an error given by the above
+       function occured. */
+    unsigned int GetErrorConnectionNdx() const;
+
+    ...
+    Functions defined in MonitoringReader left out for clarity
+    ...
+
+    /* Return the type of the data in the current event's data
+       block with the given block index (starting at 0). */
+    uint64 GetBlockDataType( unsigned long ndx ) const;
+    /* Return the origin of the data in the current event's data
+       block with the given block index (starting at 0). */
+    uint32 GetBlockDataOrigin( unsigned long ndx ) const;
+    /* Return a specification of the data in the current event's data
+       block with the given block index (starting at 0). */
+    uint32 GetBlockDataSpec( unsigned long ndx ) const;
+
+    /* Find the next data block in the current event with the given
+       data type, origin, and specification. Returns the block's 
+       index. */
+    unsigned long FindBlockNdx( uint64 type, uint32 origin, 
+			  uint32 spec, unsigned long startNdx=0 ) const;
+
+    /* Return the ID of the node that actually produced this data block.
+       This may be different from the node which sent the data to this
+       monitoring object as returned by GetBlockSendNodeID. */
+    const char* GetBlockCreateNodeID( unsigned long ndx ) const;
+
+    };
+
+\end{verbatim}
+}
+\parbox{0.90\columnwidth}{
+\caption[The API defined by the class \texttt{HOMERReader}.]{\label{Fig:HOMERReader}The API defined by the class \texttt{HOMERReader}. Only those functions which are declared
+in addition to those inherited from the class \texttt{MonitoringReader} are shown. }
+}
+%\end{center}
+\end{figure}
+
+Objects of this class are able to read in events from one or more monitoring ``taps'' attached in a
+data flow constructed using the Publisher/Subscriber framework. These monitoring taps can provide the 
+data to be monitored either in System V Shared Memory segments or on TCP ports. The objects of the
+class \texttt{HOMERReader} can read data from both types. If multiple sources are specified for an object,
+it will only deliver events with matching event IDs for the blocks from the different sources. 
+
+The methods in the API will be discussed in the following subsections.
+
+\subsection{HOMERReader( const char*, unsigned short )}
+
+\texttt{HOMERReader( const char* hostname, unsigned short port )}
+
+This constructor connects the new object to one TCP data source specified by the given hostname and TCP port number. The status of the connection after object creation can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). 
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+	\item[hostname:] A string (\texttt{const char*}) holding a valid hostname on which the TCP monitoring source can be accessed. 
+	\item[port:] The port number (\texttt{unsigned short}) on which the TCP monitoring source waits for incoming connections/requests.
+	\end{description}
+\item[Return value:] None
+\item[State after completion:] The object is created. The connection status of the specified connection can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). 
+\end{description}
+
+
+\subsection{HOMERReader( unsigned int, const char**, unsigned short* )}
+
+\texttt{HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )}
+
+This constructor connects the new object to multiple TCP data sources specified by the given hostnames and port numbers. The status of the connection after object creation can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). The object will only deliver events with matching event IDs for the blocks from the 
+different sources. 
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+	\item[tcpCnt:] The number of data sources specified. The number of hostnames and port numbers specified in the following
+	two parameters must be equal to this number.
+	\item[hostname:] An array of strings (\texttt{const char*}s)holding valid hostnames on which the TCP monitoring sources can be accessed. The number of hostnames
+	specified must be equal to the \texttt{tcpCnt} parameter. 
+	\item[port:] An array of port numbers (\texttt{unsigned short}s) on which the TCP monitoring sources wait for incoming connections/requests. The number of port numbers
+	specified must be equal to the \texttt{tcpCnt} parameter. 
+	\end{description}
+\item[Return value:] None
+\item[State after completion:] The object is created. The connection status of the specified connection can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). 
+\end{description}
+
+
+\subsection{HOMERReader( key\_t, int )}
+
+\texttt{HOMERReader( key\_t shmKey, int shmSize )}
+
+This constructor connects the new object to one System V shared memory segment. The status of the connection after object creation can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}).
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+	\item[shmKey:] A key (\texttt{key\_t} specifying the shared memory segment to which the object should attach.
+	\item[shmSize:] An integer (\texttt{int}) specifying the size of the shared memory segment to which the object should attach.
+	\end{description}
+\item[Return value:] None
+\item[State after completion:] The object is created. The connection status of the specified connection can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). 
+\end{description}
+
+
+\subsection{HOMERReader( unsigned int, key\_t*, int* )}
+
+\texttt{HOMERReader( unsigned int shmCnt, key\_t* shmKey, int* shmSize )}
+
+This constructor connects the new object to multiple System V shared memory segments. The status of the connection after object creation can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). The object will only deliver events with matching event IDs for the blocks from the 
+different sources. 
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+	\item[shmCnt:] The number of data sources specified. The number of shared memory keys and sizes specified in the following
+	two parameters must be equal to this number.
+	\item[shmKey:] An array of keys (\texttt{key\_t} specifying the shared memory segments to which the object should attach. The number of keys
+	specified must be equal to the \texttt{shmCnt} parameter. 
+	\item[shmSize:] An array of integers (\texttt{int}) specifying the sizes of the shared memory segments to which the object should attach. 
+	The number of sizes specified must be equal to the \texttt{shmCnt} parameter. 
+	\end{description}
+\item[Return value:] None
+\item[State after completion:] The object is created. The connection status of the specified connection can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). 
+\end{description}
+
+
+\subsection{HOMERReader( unsigned int, const char**, unsigned short*, unsigned int, key\_t*, int* )}
+
+\texttt{HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, unsigned int shmCnt, key\_t* shmKey, int* shmSize )}
+
+This constructor connects the new object to multiple TCP data sources specified by the given hostnames and port numbers and 
+multiple System V shared memory segments. The status of the connection after object creation can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). The object will only deliver events with matching event IDs for the blocks from the 
+different sources. 
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+	\item[tcpCnt:] The number of TCP data sources specified. The number of hostnames and port numbers specified in the following
+	two parameters must be equal to this number.
+	\item[hostname:] An array of strings (\texttt{const char*}s)holding valid hostnames on which the TCP monitoring sources can be accessed. The number of hostnames
+	specified must be equal to the \texttt{tcpCnt} parameter. 
+	\item[port:] An array of port numbers (\texttt{unsigned short}s) on which the TCP monitoring sources wait for incoming connections/requests. The number of port numbers
+	specified must be equal to the \texttt{tcpCnt} parameter. 
+	\item[shmCnt:] The number of shared memory data sources specified. The number of shared memory keys and sizes specified in the following
+	two parameters must be equal to this number.
+	\item[shmKey:] An array of keys (\texttt{key\_t} specifying the shared memory segments to which the object should attach. The number of keys
+	specified must be equal to the \texttt{shmCnt} parameter. 
+	\item[shmSize:] An array of integers (\texttt{int}) specifying the sizes of the shared memory segments to which the object should attach. 
+	The number of sizes specified must be equal to the \texttt{shmCnt} parameter. 
+	\end{description}
+\item[Return value:] None
+\item[State after completion:] The object is created. The connection status of the specified connection can be queried
+using the function \texttt{GetConnectionStatus()} (\ref{Subsec:HOMERReader::GetConnectionStatus}). 
+\end{description}
+
+
+\subsection{\~{ }HOMERReader()}
+
+\texttt{virtual \~{ }HOMERReader()}
+
+The destructor. Cleans up anything from the established connections.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] None
+\item[State after completion:] The object is destroyed.
+\end{description}
+
+
+\subsection{GetConnectionStatus()}
+\label{Subsec:HOMERReader::GetConnectionStatus}
+\texttt{int GetConnectionStatus() const}
+
+This functions returns the status of the connection to one or more data sources as specified in one of the class's constructors. 0 means the connection(s)
+could be successfully established, non-zero specified the error that occured, according to the definitions in the system include file \texttt{errno.h}.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] An integer (\texttt{int}) given the status of the connection(s) specified to one of the constructors. A value of 0 signals no errors.
+Non-zero specifies the error that occured according to the constants defined in the system include file \texttt{errno.h}.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetErrorConnectionNdx()}
+
+\texttt{unsigned int GetErrorConnectionNdx() const}
+
+This functions returns the index of the connection that produced an error returned by the function \texttt{GetConnectionStatus()}
+(\ref{Subsec:HOMERReader::GetConnectionStatus}). If no error occured the value returned is \texttt{\~{ }(unsigned long)0} respectively \texttt{(unsigned long)-1}.
+
+Numbering is done as follows: TCP connections are numbered from zero up to the number of TCP sources minus 1. Shm connections are numbered
+starting at the number of TCP sources up to the number of TCP sources plus the number of Shm sources minus 1. If {\em tcpCnt} TCP sources and
+{\em shmCnt} shared memory sources are used then the indices for TCP and shared memory sources $ndx_{tcp}$ and $ndx_{shm}$ 
+respectively have ranges as follows:
+$$ 0 \le ndx_{tcp} < tcpCnt $$
+$$ tcpCnt \le ndx_{shm} < shmCnt $$
+For the constructors connecting only to TCP or shared memory sources the corresponding other count is assumed to be 0.
+
+\begin{description}
+\item[Parameters:] None
+\item[Return value:] An unsigned integer (\texttt{unsigned int}) given the index of the connection that produced an error reportedby the function \texttt{GetConnectionStatus()}
+(\ref{Subsec:HOMERReader::GetConnectionStatus}). If no error occured the value returned is \texttt{\~{ }(unsigned long)0} respectively \texttt{(unsigned long)-1}. The numbering scheme is defined above.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{ReadNextEvent()}
+
+\texttt{virtual int ReadNextEvent()}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::ReadNextEvent()} (\ref{Subsec:MonitoringReader::ReadNextEvent}).
+
+
+\subsection{ReadNextEvent( unsigned long )}
+
+\texttt{virtual int ReadNextEvent( unsigned long timeout\_us )}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::ReadNextEvent( unsigned long )} (\ref{Subsec:MonitoringReader::ReadNextEvent:unsignedlong}).
+
+
+\subsection{GetEventID()}
+
+\texttt{virtual uint64 GetEventID() const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetEventID()} (\ref{Subsec:MonitoringReader::GetEventID}).
+
+
+\subsection{GetBlockCnt()}
+
+\texttt{virtual unsigned long GetBlockCnt() const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}).
+
+
+\subsection{GetBlockDataLength( unsigned long )}
+
+\texttt{virtual unsigned long GetBlockDataLength( unsigned long ndx ) const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetBlockDataLength()} (\ref{Subsec:MonitoringReader::GetBlockDataLength}).
+
+
+\subsection{GetBlockData( unsigned long )}
+
+\texttt{virtual const void* GetBlockData( unsigned long ndx ) const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetBlockData()} (\ref{Subsec:MonitoringReader::GetBlockData}).
+
+
+\subsection{GetBlockSendNodeID( unsigned long )}
+
+\texttt{virtual const char* GetBlockSendNodeID( unsigned long ndx ) const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetBlockSendNodeID} (\ref{Subsec:MonitoringReader::GetBlockSendNodeID}).
+
+
+\subsection{GetBlockByteOrder( unsigned long )}
+
+\texttt{virtual uint8 GetBlockByteOrder( unsigned long ndx ) const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetBlockByteOrder} (\ref{Subsec:MonitoringReader::GetBlockByteOrder}).
+
+
+\subsection{GetBlockTypeAlignment( unsigned long, uint8 )}
+
+\texttt{virtual uint8 GetBlockTypeAlignment( unsigned long ndx, uint8 dataType ) const}
+
+This function is an implementation of the interface defined by \texttt{MonitoringReader::GetBlockTypeAlignment} (\ref{Subsec:MonitoringReader::GetBlockTypeAlignment}).
+
+
+\subsection{GetBlockDataType( unsigned long )}
+
+\texttt{uint64 GetBlockDataType( unsigned long ndx ) const}
+
+This function returns the data type of the data block in the current event with the specified index. The type of the data is returned as a 64~bit unsigned integer
+that is often also interpreted as an 8 character array. 
+Indexing of data blocks starts at zero.
+If no event has yet been read in or if the last read attempt failed, an invalid type of (\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) 
+will be returned.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})) an 
+invalid type of (\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) will be returned.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose data type is queried.
+		This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}).
+	\end{description}
+\item[Return value:] A 64~bit unsigned integer (\texttt{uint64}) holding the type of the data block with the specified index. The value is often also interpreted as an 8 
+character array.
+If no event has yet been read in or if the last read attempt failed, an invalid type of (\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) 
+will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+an invalid type of (\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockDataOrigin( unsigned long )}
+
+\texttt{uint32 GetBlockDataOrigin( unsigned long ndx ) const}
+
+This function returns the origin of the data block in the current event with the specified index. The origin of the data is returned as a 32~bit unsigned integer
+that is often also interpreted as a 4 character array. 
+Indexing of data blocks starts at zero.
+If no event has yet been read in or if the last read attempt failed, an invalid value of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) 
+will be returned.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})) an 
+invalid value of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) will be returned.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose origin is queried.
+		This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}).
+	\end{description}
+\item[Return value:] A 32~bit unsigned integer (\texttt{uint32}) holding the origin of the data block with the specified index. The value is often also interpreted as a 4
+character array.
+If no event has yet been read in or if the last read attempt failed, an invalid value of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) 
+will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+an invalid value of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockDataSpec( unsigned long )}
+
+\texttt{uint32 GetBlockDataSpec( unsigned long ndx ) const}
+
+This function returns a specification of the data block in the current event with the specified index. This specification of the data is returned as a 32~bit unsigned integer
+that is often also interpreted as a 4 character array. 
+Indexing of data blocks starts at zero.
+If no event has yet been read in or if the last read attempt failed, an invalid value of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) 
+will be returned.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})) an 
+invalid value of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) will be returned.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose specification is queried.
+		This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}).
+	\end{description}
+\item[Return value:] A 32~bit unsigned integer (\texttt{uint32}) holding the specification of the data block with the specified index. The value is often also interpreted as a 4
+character array.
+If no event has yet been read in or if the last read attempt failed, an invalid type of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) 
+will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+an invalid type of (\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{FindBlockNdx( uint64, uint32, uint32, unsigned long )}
+
+\texttt{unsigned long FindBlockNdx( uint64 type, uint32 origin, uint32 spec, unsigned long startNdx=0 ) const}
+
+This function searches for the next data block in the current event with the given data type, origin, and specification. Wildcards can be given
+for each of these parameters. An index at which the search is to be started can optionally also be specified. This parameter is 0 by default,
+starting the search at the beginning. By passing the result indices of previous searches increased by one as the start index all blocks can be searched.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[type:] A 64~bit unsigned integer (\texttt{uint64}) specifying the data type of the block to be searched. A value of
+		\texttt{0xFF\-FF\-FF\-FF\-FF\-FF\-FF\-FF} / \texttt{\~{ }(uint64)0}) is treated as a wildcard.
+		\item[origin:] A 32~bit unsigned integer (\texttt{uint32}) specifying the origin of the block to be searched. A value of
+		\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) is treated as a wildcard.
+		\item[spec:] A 32~bit unsigned integer (\texttt{uint32}) specifying the data specification of the block to be searched. A value of
+		\texttt{0xFF\-FF\-FF\-FF} / \texttt{\~{ }(uint32)0}) is treated as a wildcard.
+		\item[startNdx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block where the search is to be started.
+		If this value is greater than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}) the 
+		search immediately terminates.
+	\end{description}
+\item[Return value:] An 32~bit unsigned long integer (\texttt{unsigned long}) holding the index of a block matching the specified criteria. If no block could be found 
+an invalid index of \texttt{\~{ }(unsigned long)0} / \texttt{(unsigned long)-1} is returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+
+\subsection{GetBlockCreateNodeID( unsigned long )}
+
+\texttt{const char* GetBlockCreateNodeID( unsigned long ndx ) const}
+
+This functions returns a pointer to a string holding an ID of the node which created the data block with the specified index. 
+Indexing of data blocks starts at zero. The node ID will be given in the string either as an IP address (e.g. ``\texttt{192.168.100.1}'')
+or as a hostname (e.g. ``\texttt{hlt42.alice.cern.ch}''). The string will be suitable as a parameter for the system call \texttt{gethostbyname}.
+If no event has yet been read in or if the last read attempt failed, a \texttt{NULL} pointer will be returned.
+If the block index is out of range (larger than or equal to the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a \texttt{NULL} pointer will be returned.
+
+This node ID can be different from the one returned by GetBlockSendNodeID() (\ref{Subsec:MonitoringReader::GetBlockSendNodeID}) if the Publisher/Subscriber
+framework component that produced or created the data is running on a different node than the one the monitoring component is running on.
+
+\begin{description}
+\item[Parameters:]
+	\begin{description}
+		\item[ndx:] An unsigned long integer (\texttt{unsigned long}) specifying the index of the block whose creator node's ID is 
+		to be returned. This value must be less than the value returned by \texttt{GetBlockCnt()} (\ref{Subsec:MonitoringReader::GetBlockCnt})
+	\end{description}
+\item[Return value:] A pointer to a string (\texttt{char*}) holding ID of the node that created the data block
+with the specified index contained in the last event that could be successfully read in. 
+If no event has yet been read in or if the last read attempt failed, a \texttt{NULL} pointer will be returned.
+If the block index is out of range (larger than the value returned by \texttt{GetBlockCnt} (\ref{Subsec:MonitoringReader::GetBlockCnt}))
+a \texttt{NULL} pointer will be returned.
+\item[State after successful completion:] No change
+\item[State after unsuccessful completion:] No change
+\end{description}
+
+\section{History}
+
+\begin{description}
+\item[0.1] Initial version
+\item[0.2] Added the \texttt{GetBlockByteOrder} and \texttt{GetBlockTypeAlignment} methods; tried to clarify the reason for splitting the API into two classes
+\end{description}
+
+
+\end{document}
