@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2007/09/11 16:42:02  jgrosseo
+starting modifying AliDCSClient to transparently switch between single and multi query
+first step: same alidcsclient can be used for several queries
+
 Revision 1.2  2007/06/09 13:01:09  jgrosseo
 Switching to retrieval of several DCS DPs at a time (multiDPrequest)
 
@@ -96,8 +100,8 @@ const char* AliDCSClient::fgkServerErrorString = "ServerError";
 
 //______________________________________________________________________
 AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
-	Int_t retries):
-	fSocket(NULL), fHost(host), fPort(port), fTimeout(timeout), fRetries(retries),
+	Int_t retries, Int_t multiSplit):
+	fSocket(NULL), fHost(host), fPort(port), fTimeout(timeout), fRetries(retries), fMultiSplit(multiSplit),
 	fServerErrorCode(AliDCSMessage::kNoneError), fServerError("")
 {
 	// 
@@ -326,60 +330,88 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 	// Result: map containing the array of alias names. It will be filled with
 	// the values retrieved for each alias
 
-	Connect();
-	
-	if (!IsConnected()) {
-		AliError("Not connected!");
-		return 0;
-	}
-
-	AliDCSMessage multiRequestMessage;
-	multiRequestMessage.CreateMultiRequestMessage(reqType,
-			startTime, endTime);
-
-	if (endIndex < 0 || endIndex > list->GetEntries())
-		endIndex = list->GetEntries();
-			
-	for (Int_t i=startIndex; i<endIndex; i++)
-	{
-		TObjString* aRequest = (TObjString*) list->At(i);
-		if (!multiRequestMessage.AddRequestString(aRequest->String()))
-			return 0;
-	}
-	
-	Int_t sResult = 0;
-	if ((sResult = SendMessage(multiRequestMessage)) < 0)
-	{
-                AliError(Form("Can't send request message! Reason: %s",
-                        GetErrorString(sResult)));
-                Close();
-                return 0;
-        }
-
 	TMap* result = new TMap;
 	result->SetOwner(1);
 
-	for (Int_t i=startIndex; i<endIndex; i++)
+	if (endIndex < 0 || endIndex > list->GetEntries())
+		endIndex = list->GetEntries();
+
+	for (Int_t subsetBegin = startIndex; subsetBegin < endIndex; subsetBegin += fMultiSplit)
 	{
-		TObjString* aRequest = (TObjString*) list->At(i);
+    		Connect();
+    	
+	    	if (!IsConnected()) 
+		{
+    			AliError("Not connected!");
+            		delete result;
+	    		return 0;
+	    	}
+
+		Int_t subsetEnd = subsetBegin + fMultiSplit;
+	        if (subsetEnd > endIndex)
+        	    subsetEnd = endIndex;
+	
+		AliDCSMessage requestMessage;
+	        if (fMultiSplit == 1)
+        	{
+	            // single dp request
+            
+	    		TObjString* aRequest = (TObjString*) list->At(subsetBegin);
+        	  	requestMessage.CreateRequestMessage(reqType, startTime, endTime, aRequest->String());
+	        }
+        	else
+	        {
+        	    // multi dp request
+            
+	            requestMessage.CreateMultiRequestMessage(reqType,
+			      	startTime, endTime);
+
+	        	for (Int_t i=subsetBegin; i<subsetEnd; i++)
+        		{
+        			TObjString* aRequest = (TObjString*) list->At(i);
+        			if (!requestMessage.AddRequestString(aRequest->String()))
+        				return 0;
+	        	}
+        	}
+	
+	    	Int_t sResult = 0;
+    		if ((sResult = SendMessage(requestMessage)) < 0)
+    		{
+                    AliError(Form("Can't send request message! Reason: %s",
+                            GetErrorString(sResult)));
+                    Close();
+                    delete result;
+                    return 0;
+	        }
+    
+    		for (Int_t i=subsetBegin; i<subsetEnd; i++)
+	    	{
+    			TObjString* aRequest = (TObjString*) list->At(i);
+    		
+    			TObjArray* resultSet = new TObjArray();
+	    		resultSet->SetOwner(1);
+    
+    			if ((sResult = ReceiveValueSet(resultSet)) < 0) 
+	        	{
+    				AliError(Form("Can't get values for %s!" ,
+    				aRequest->String().Data()));
+    
+    				delete resultSet;
+	    			result->DeleteValues();
+    				delete result;
+    				return 0;
+		    	}
+
+			result->Add(aRequest, resultSet);
+		   }
+
+	       Close();
+
+ 		   AliInfo(Form("Retrieved entries %d..%d (total %d..%d); E.g. %s has %d values collected",
+					subsetBegin, subsetEnd, startIndex, endIndex, list->At(subsetBegin)->GetName(), ((TObjArray*)
+					result->GetValue(list->At(subsetBegin)->GetName()))->GetEntriesFast()));
 		
-		TObjArray* resultSet = new TObjArray();
-		resultSet->SetOwner(1);
-
-		if ((sResult = ReceiveValueSet(resultSet)) < 0) {
-			AliError(Form("Can't get values for %s!" ,
-				aRequest->String().Data()));
-
-			delete resultSet;
-			result->DeleteValues();
-			delete result;
-			return 0;
-		}
-
-		result->Add(aRequest, resultSet);
-	}
-
-	Close();
+	    }
 
 	return result;
 }

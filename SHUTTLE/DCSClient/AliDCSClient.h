@@ -31,10 +31,10 @@ public:
 		fgkServerError = -6	     // Server error
 	};
 	
-	friend class AliShuttle;
+////	friend class AliShuttle;
 
 	AliDCSClient(const char* host, Int_t port, UInt_t timeout = 5000,
-                        Int_t retries = 5);
+                        Int_t retries = 5, Int_t multiSplit = 100);
         virtual ~AliDCSClient();
 
 
@@ -74,6 +74,7 @@ private:
 	Int_t   fPort;		// server port
 	UInt_t fTimeout;	// timeout parameter
 	Int_t fRetries;		// number of retries
+  	Int_t   fMultiSplit; // number of datapoints that are queried at a time in a multi dp request, if set to 1 forces single requests 
 	AliDCSMessage::ErrorCode fServerErrorCode;	// error code
 	TString fServerError;	// server error string
 

@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.55  2007/08/06 12:26:40  acolla
+Function Bool_t GetHLTStatus added to preprocessor. It returns the status of HLT
+read from the run logbook.
+
 Revision 1.54  2007/07/12 09:51:25  jgrosseo
 removed duplicated log message in GetFile
 
@@ -1812,67 +1816,31 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	// type: kAlias or kDP
 	// returns TMap of values, 0 when failure
 
-	const Int_t kSplit = 100; // maximum number of DPs at a time
-	
-	Int_t totalEntries = entries->GetEntries();
-	
+	AliDCSClient client(host, port, fTimeout, fRetries);
+
 	TMap* result = 0;
-	
-	for (Int_t index=0; index < totalEntries; index += kSplit)
+	if (type == kAlias)
 	{
-		Int_t endIndex = index + kSplit;
-	
-		AliDCSClient client(host, port, fTimeout, fRetries);
-		if (!client.IsConnected())
-			return 0;
-
-		TMap* partialResult = 0;
-
-		if (type == kAlias)
-		{
-			partialResult = client.GetAliasValues(entries, GetCurrentStartTime(), 
-				GetCurrentEndTime(), index, endIndex);
-		} 
-		else if (type == kDP)
-		{
-			partialResult = client.GetDPValues(entries, GetCurrentStartTime(), 
-				GetCurrentEndTime(), index, endIndex);
-		}
-
-		if (partialResult == 0)
-		{
-			Log(fCurrentDetector.Data(), Form("GetValueSet - Can't get entries (%d...%d)! Reason: %s",
-				index, endIndex, client.GetServerError().Data()));
-	
-			if (result)
-				delete result;
-				
-			return 0;
-		}
-		
-		AliInfo(Form("Retrieved entries %d..%d (total %d); E.g. %s has %d values collected",
-					index, endIndex, totalEntries, entries->At(index)->GetName(), ((TObjArray*)
-					partialResult->GetValue(entries->At(index)->GetName()))->GetEntriesFast()));
-		
-		if (!result)
-		{
-			result = partialResult;
-		}
-		else
-		{		
-			TIter iter(partialResult);
-			TObjString* key = 0;
-			while ((key = (TObjString*) iter.Next()))
-				result->Add(key, partialResult->GetValue(key->String()));
-				
-			partialResult->SetOwner(kFALSE);
-			delete partialResult;
-		}
-	
+		result = client.GetAliasValues(entries, GetCurrentStartTime(), 
+			GetCurrentEndTime());
+	} 
+	else if (type == kDP)
+	{
+		result = client.GetDPValues(entries, GetCurrentStartTime(), 
+			GetCurrentEndTime());
 	}
 
+	if (result == 0)
+	{
+		Log(fCurrentDetector.Data(), Form("GetValueSet - Can't get entries! Reason: %s",
+			client.GetServerError().Data()));
+
+		return 0;
+	}
+		
 	return result;
 }
+
 //______________________________________________________________________________________________
 const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		const char* id, const char* source)
