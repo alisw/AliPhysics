@@ -1945,7 +1945,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     for (Int_t nCascade = 0; nCascade < nCascades; ++nCascade) {
       AliESDcascade *cascade = esd->GetCascade(nCascade);
       
-      cascade->GetXYZ(pos[0], pos[1], pos[2]);
+      cascade->GetXYZcascade(pos[0], pos[1], pos[2]);  // Bo: bug correction
       cascade->GetPosCovXi(covVtx);
      
       // Add the cascade vertex
@@ -1964,7 +1964,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 
       Int_t posFromV0 = cascade->GetPindex();
       Int_t negFromV0 = cascade->GetNindex();
-
 
       AliESDv0 * v0 = 0x0;
       Int_t indV0 = -1;
