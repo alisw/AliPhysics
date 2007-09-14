@@ -122,7 +122,11 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
   UInt_t hwaddr = 0;
   // Data array is approx twice the size needed. 
   UShort_t data[2048];
-  while (input.ReadChannel(ddl, hwaddr, last, data)) {
+
+  Bool_t isGood = kTRUE;
+  while (isGood) {
+    isGood = input.ReadChannel(ddl, hwaddr, last, data);
+
     AliFMDDebug(5, ("Read channel 0x%x of size %d", hwaddr, last));
     UShort_t det, sec, str;
     Char_t   ring;

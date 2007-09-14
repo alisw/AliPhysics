@@ -128,6 +128,7 @@ protected:
       fHits(0),
       fCanvas(0),
       fPad(0),
+      fButtons(0),
       fSlider(0),
       fZoomMode(0),
       fX0(0),
@@ -140,7 +141,11 @@ protected:
       fYPixel(0),
       fOldXPixel(0),
       fOldYPixel(0),
-      fLineDrawn(0)
+      fLineDrawn(0), 
+      fOnlyFMD(kTRUE),
+      fSpec(0), 
+      fSpecCut(0),
+      fAux(0)
   { } 
   /** Assignment operator 
       @return Reference to this object */

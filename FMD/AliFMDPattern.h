@@ -79,7 +79,7 @@ public:
   private:
     /** Copy constructor 
 	- Not implemented. */ 
-    AliFMDPatternDetector(const AliFMDPattern&);
+    AliFMDPatternDetector(const AliFMDPatternDetector&);
     /** Assignement operator 
 	-- Not implemented */
     AliFMDPatternDetector& operator=(const AliFMDPatternDetector&);

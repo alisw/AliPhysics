@@ -12,6 +12,7 @@ DisplayDigits()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
   gSystem->Load("libFMDutil.so");
   AliFMDDisplay* d = new AliFMDDisplay;
   d->AddLoad(AliFMDInput::kDigits);

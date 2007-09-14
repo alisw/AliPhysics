@@ -64,7 +64,13 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
     if (last > 0x3FF) {
       AliFMDDebug(30, ("Last is 0x%x, so reading a new word", last));
       next   = Next();
-      if (!next) break;
+      if(!next){
+	addr = GetPrevHWAddress();
+	ddl  = GetPrevDDLNumber();
+	len  = l+1; // Need to add one - l points to last valid index
+	last = signal;
+	break;
+      }
       signal = GetSignal();
       if (GetHWAddress() != GetPrevHWAddress() && GetPrevHWAddress() >= 0) {
 	AliFMDDebug(15, ("New hardware address, was 0x%x, now 0x%x", 

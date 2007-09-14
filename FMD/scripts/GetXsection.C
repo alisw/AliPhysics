@@ -12,6 +12,16 @@
 //
 // Note, that VMC _must_ be the TGeant3TGeo VMC. 
 //
+#ifdef __CINT__
+XSection()
+{
+  gROOT->ProcessLine(".x Compile.C(\"$(ALICE_ROOT)/FMD/scripts/XSection.C\"");
+  gAlice->InitMC("$(ALICE_ROOT)/FMD/Config.C");
+  TFile* file = TFile::Open("xsec.root", "RECREATE");
+  GetXsection("FMD_Si$", "pi+");
+  file->Close();
+}
+#else  
 #include <TArrayF.h>
 #include <TTree.h>
 #include <TMath.h>
@@ -22,6 +32,13 @@
 #include <TGeoManager.h>
 #include <TGeoMedium.h>
 #include <TGeant3.h>
+#include <TGraph.h>
+#include <TAxis.h>
+#include <cmath>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <iomanip>
 /** @defgroup xsec_script X-section script 
     @ingroup FMD_script 
 */
@@ -30,14 +47,148 @@
  */
 struct Mech 
 {
-  char*    name;
-  char*    title;
-  char*    unit;
-  TArrayF  values;
-  int      status;
+  char* fName;
+  char* fTitle;
+  char* fUnit;
 };
 
+Mech fgMechs[] = 
+  {{ "HADF","total hadronic x-section according to FLUKA",      "cm^{1}"},
+   { "INEF","hadronic inelastic x-section according to FLUKA",  "cm^{1}"},
+   { "ELAF","hadronic elastic x-section according to FLUKA",    "cm^{1}"},
+   { "HADG","total hadronic x-section according to GHEISHA",    "cm^{1}"},
+   { "INEG","hadronic inelastic x-section according to GHEISHA","cm^{1}"},
+   { "ELAG","hadronic elastic x-section according to GHEISHA",  "cm^{1}"},
+   { "FISG","nuclear fission x-section according to GHEISHA",   "cm^{1}"},
+   { "CAPG","neutron capture x-section according to GHEISHA",   "cm^{1}"},
+   { "LOSS","stopping power",                                   "cm^{1}"},
+   { "PHOT","photoelectric x-section",                          "MeV/cm"},
+   { "ANNI","positron annihilation x-section",                  "cm^{1}"},
+   { "COMP","Compton effect x-section",                         "cm^{1}"},
+   { "BREM","bremsstrahlung x-section",                         "cm^{1}"},
+   { "PAIR","photon and muon direct- pair x-section",           "cm^{1}"},
+   { "DRAY","delta-rays x-section",                             "cm^{1}"},
+   { "PFIS","photo-fission x-section",                          "cm^{1}"},
+   { "RAYL","Rayleigh scattering x-section",                    "cm^{1}"},
+   { "MUNU","muon-nuclear interaction x-section",               "cm^{1}"},
+   { "RANG","range",                                            "cm"},
+   { "STEP","maximum step",                                     "cm"},
+   { 0, 0, 0,}};
 
+//____________________________________________________________________
+/** @ingroup xsec_script
+ */
+struct MechValue 
+{
+  MechValue(const Mech& m, size_t n) 
+    : fMech(m), fValues(n), fStatus(0)
+  {}
+  bool Get(TGeant3* mc, std::vector<float>& t, 
+	   std::vector<float>& c, int medNo, int pidNo) 
+  {
+    TGraph g(t.size());
+    g.SetName(fMech.fName);
+    g.SetTitle(fMech.fTitle);
+    g.GetXaxis()->SetTitle("p [GeV]");
+    g.GetYaxis()->SetTitle(fMech.fUnit);
+    int ixst;
+    mc->Gftmat(medNo, pidNo, fMech.fName, t.size(), 
+	       &(t[0]), &(fValues[0]), &(c[0]), ixst);
+    fStatus = ixst;
+    if (!fStatus) return false;
+    for (size_t i = 0; i < t.size(); i++) g.SetPoint(i, t[i], fValues[i]);
+    g.Write();
+    return true;
+  }
+  const Mech&        fMech;
+  std::vector<float> fValues;
+  bool               fStatus;
+};
+
+//____________________________________________________________________
+/** @ingroup xsec_script
+ */
+struct XSection 
+{
+  XSection(size_t n=91, float emin=1e-5, float emax=1e4) 
+    : fTKine(n), 
+      fCuts(5)
+  {
+    float dp   = 1. / log10(emax/emin);
+    float pmin = log10(emin);
+    fTKine[0]  = emin;
+    for (size_t i = 1; i < fTKine.size(); i++) {
+      float el  = pmin + i * dp;
+      fTKine[i] = pow(10, el);
+    }
+    for (float_array::iterator i = fCuts.begin(); i != fCuts.end(); ++i) 
+      *i = 1e-4;
+    Mech* mech = &(fgMechs[0]);
+    size_t i = 0;
+    while (mech->fName) {
+      fMechs.push_back(new MechValue(*mech, n));
+      mech++;
+    }
+  }
+  void Run(const std::string& medName, const std::string& pdgName) 
+  {
+    TGeant3* mc = static_cast<TGeant3*>(gMC);
+    if (!mc) {
+      std::cerr << "Couldn't get VMC" << std::endl;
+      return;
+    }
+    TGeoMedium* medium = gGeoManager->GetMedium(medName.c_str());
+    if (!medium) {
+      std::cerr << "Couldn't find medium " << medName << std::endl;
+      return;
+    }
+    int medNo = medium->GetMaterial()->GetUniqueID();
+    TDatabasePDG* pdgDb = TDatabasePDG::Instance();
+    TParticlePDG* pdgP  = pdgDb->GetParticle(pdgName.c_str());
+    if (!pdgP) {
+      std::cerr << "Couldn't find particle " << pdgName << std::endl;
+      return;
+    }
+    int pdgNo = pdgP->PdgCode();
+    int pidNo = mc->IdFromPDG(pdgNo);
+
+    std::stringstream vars;
+    vars << "T/F";
+
+    size_t nOk   = 0;
+    // Loop over defined mechanisms 
+    for (mech_array::iterator i = fMechs.begin(); i != fMechs.end(); ++i) {
+      if (!(*i)->Get(mc, fTKine, fCuts, medNo, pidNo))continue;
+      vars << ":" << (*i)->fMech.fName;
+      nOk ++;
+    }
+    
+    std::stringstream tName;
+    tName << medName << "_" << pdgName;
+    TTree* tree = new TTree(tName.str().c_str(), tName.str().c_str());
+
+    float_array cache(nOk+1);
+    tree->Branch("xsec", &(cache[0]), vars.str().c_str());
+    for (size_t i = 0; i < fTKine.size(); i++) {
+      cache[0] = fTKine[i];
+      int k = 0;
+      for (mech_array::iterator j = fMechs.begin(); j != fMechs.end(); ++j) {
+	if (!(*j)->fStatus) continue;
+	cache[++k] = (*j)->fValues[i];
+      }
+      tree->Fill();
+    }
+    tree->Write();
+  }
+protected: 
+  typedef std::vector<float> float_array;
+  typedef std::vector<MechValue*> mech_array;
+  float_array  fTKine;
+  float_array  fCuts;
+  mech_array   fMechs;
+};
+
+#if 0
 //____________________________________________________________________
 /** @ingroup xsec_script
     @param medName 
@@ -148,6 +299,8 @@ GetXsection(const char* medName, const char* pdgName,
   }
   tree->Write();
 }
+#endif
+#endif
 //____________________________________________________________________
 //
 // EOF

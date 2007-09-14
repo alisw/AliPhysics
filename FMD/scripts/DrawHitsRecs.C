@@ -27,6 +27,7 @@
 #include <TTree.h>
 #include <AliStack.h>
 #include <AliLog.h>
+#include <TF1.h>
 
 //____________________________________________________________________
 /** @class DrawHitsRecs
@@ -48,6 +49,8 @@ private:
   TH1D* fDiffE;       // Histogram 
   TH2D* fHitsVsRecM;  // Histogram 
   TH2D* fDiffM;       // Histogram 
+  TH1*  fHitEloss;
+  TH1*  fRecEloss;
   AliFMDEdepMap  fMap;
   AliFMDFloatMap fEta;
   AliFMDFloatMap fPhi;
@@ -117,7 +120,16 @@ public:
     fDiffM->SetXTitle("M_{sim} - M_{rec}");
     fDiffM->SetYTitle("|#eta|");
     // fDiffM->SetYTitle("Detector");
+
+    fHitEloss = new TH1D("hitEloss", "#frac{#Delta E_{sim}}{#Delta x} (MeV/cm)", 
+			 100, 0, 10);
+    fHitEloss->SetFillColor(2);
+    fHitEloss->SetFillStyle(3001);
     
+    fRecEloss = new TH1D("recEloss", "#frac{#Delta E_{rec}}{#Delta x} (MeV/cm)", 
+			 100, 0, 10);
+    fRecEloss->SetFillColor(4);
+    fRecEloss->SetFillStyle(3001);
   }
   //__________________________________________________________________
   /** Begining of event
@@ -147,6 +159,7 @@ public:
       if (!kine->IsPrimary()) return kTRUE;
     }
     
+    if (hit->Edep()/hit->Length() > 0.1) fHitEloss->Fill(hit->Edep() / hit->Length());
     fMap(det, rng, sec, str).fEdep += hit->Edep();
     fMap(det, rng, sec, str).fN++;
     return kTRUE;
@@ -192,6 +205,7 @@ public:
     }
     if (nhit > 0) fHitsVsRecM->Fill(nhit, single->Particles());
     fDiffM->Fill(nhit - single->Particles(), TMath::Abs(single->Eta()));
+    if (single->Edep()/.03 > 0.1) fRecEloss->Fill(single->Edep() / 0.0300);
     return kTRUE;
   }
   //__________________________________________________________________
@@ -232,6 +246,20 @@ public:
     c->SetLogz();
     fDiffM->Draw("colz");
 
+    c = new TCanvas("c6", "Hit Eloss, Reco Eloss");
+    fRecEloss->Scale(1./fRecEloss->GetMaximum());
+    fRecEloss->Draw();
+    fRecEloss->Fit("landau", "", "SAME", 2, 4);
+    TF1* recResp = new TF1(*fRecEloss->GetFunction("landau"));
+    fHitEloss->Scale(1./fHitEloss->GetMaximum());
+    fHitEloss->Draw("same");
+    fHitEloss->Fit("landau", "", "SAME", 2, 10);
+    TF1* hitResp = new TF1(*fHitEloss->GetFunction("landau"));
+    std::cout << "Hit MPV,width: " << hitResp->GetParameter(1) << ","
+	      << hitResp->GetParameter(2) << "\n"
+	      << "Rec MPV,width: " << recResp->GetParameter(1) << ","
+	      << recResp->GetParameter(2) << std::endl;
+    c->SetLogy();
 
     return kTRUE;
   }

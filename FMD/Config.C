@@ -386,7 +386,7 @@ Config()
   gMC->SetProcess("MUNU",1);
   gMC->SetProcess("CKOV",1);
   gMC->SetProcess("HADR",1);
-  gMC->SetProcess("LOSS",2);
+  gMC->SetProcess("LOSS",2); // 0:none 1,3:dray 2:nodray 4:nofluct (def:2)
   gMC->SetProcess("MULS",1);
   gMC->SetProcess("RAYL",1);
 
