@@ -49,7 +49,7 @@ Double_t
 Double_t 
   AliCascadeVertexer::fgDCAmax=0.10;    //max DCA between the V0 and the track 
 Double_t 
-  AliCascadeVertexer::fgCPAmax=0.9985;  //max cosine of the cascade pointing angle
+  AliCascadeVertexer::fgCPAmin=0.9985;  //min cosine of the cascade pointing angle
 Double_t 
   AliCascadeVertexer::fgRmin=0.2;       //min radius of the fiducial volume
 Double_t 
@@ -83,12 +83,10 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
    TArrayI trk(nentr); Int_t ntr=0;
    for (i=0; i<nentr; i++) {
        AliESDtrack *esdtr=event->GetTrack(i);
-       UInt_t status=esdtr->GetStatus();
-       UInt_t flags=AliESDtrack::kITSin|AliESDtrack::kTPCin|
-                    AliESDtrack::kTPCpid|AliESDtrack::kESDpid;
+       ULong_t status=esdtr->GetStatus();
 
        if ((status&AliESDtrack::kITSrefit)==0)
-          if (flags!=status) continue;
+	  if ((status&AliESDtrack::kTPCrefit)==0) continue;
 
        if (TMath::Abs(esdtr->GetD(xv,yv,b))<fDBachMin) continue;
 
@@ -122,7 +120,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          AliESDcascade cascade(*pv0,*pbt,bidx);//constucts a cascade candidate
          if (cascade.GetChi2Xi() > fChi2max) continue;
 
-	 Double_t x,y,z; cascade.GetXYZ(x,y,z); 
+	 Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
          Double_t r2=x*x + y*y; 
          if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
          if (r2 < fRmin*fRmin) continue;
@@ -134,7 +132,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          Double_t x1,y1,z1; pv0->GetXYZ(x1,y1,z1);
          if (r2 > (x1*x1+y1*y1)) continue;
 
-  	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) <fCPAmax) continue; //condition on the cascade pointing angle 
+  	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) <fCPAmin) continue; //condition on the cascade pointing angle 
 	 
 	 event->AddCascade(&cascade);
          ncasc++;
@@ -164,7 +162,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
          if (cascade.GetChi2Xi() > fChi2max) continue;
 
-	 Double_t x,y,z; cascade.GetXYZ(x,y,z); 
+	 Double_t x,y,z; cascade.GetXYZcascade(x,y,z); // Bo: bug correction
          Double_t r2=x*x + y*y; 
          if (r2 > fRmax*fRmax) continue;   // condition on fiducial zone
          if (r2 < fRmin*fRmin) continue;
@@ -177,7 +175,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          if (r2 > (x1*x1+y1*y1)) continue;
          if (z*z > z1*z1) continue;
 
-	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) < fCPAmax) continue; //condition on the cascade pointing angle 
+	 if (cascade.GetCascadeCosineOfPointingAngle(xv,yv,zv) < fCPAmin) continue; //condition on the cascade pointing angle 
 	 event->AddCascade(&cascade);
          ncasc++;
 

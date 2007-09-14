@@ -41,7 +41,7 @@ private:
   static
   Double_t fgDCAmax;    // maximal allowed DCA between the V0 and the track 
   static
-  Double_t fgCPAmax;    // maximal allowed cosine of the cascade pointing angle
+  Double_t fgCPAmin;    // minimal allowed cosine of the cascade pointing angle
   static
   Double_t fgRmin, fgRmax;// max & min radii of the fiducial volume
   
@@ -50,10 +50,10 @@ private:
   Double_t fMassWin;    // window around the Lambda mass
   Double_t fDBachMin;   // min. allowed bachelor impact parameter
   Double_t fDCAmax;     // maximal allowed DCA between the V0 and the track 
-  Double_t fCPAmax;     // maximal allowed cosine of the cascade pointing angle
+  Double_t fCPAmin;     // minimal allowed cosine of the cascade pointing angle
   Double_t fRmin, fRmax;// max & min radii of the fiducial volume
   
-  ClassDef(AliCascadeVertexer,2)  // cascade verterxer 
+  ClassDef(AliCascadeVertexer,3)  // cascade verterxer 
 };
 
 inline AliCascadeVertexer::AliCascadeVertexer() :
@@ -63,7 +63,7 @@ inline AliCascadeVertexer::AliCascadeVertexer() :
   fMassWin(fgMassWin),
   fDBachMin(fgDBachMin),
   fDCAmax(fgDCAmax),
-  fCPAmax(fgCPAmax), 
+  fCPAmin(fgCPAmin), 
   fRmin(fgRmin),
   fRmax(fgRmax)
 {
@@ -72,28 +72,28 @@ inline AliCascadeVertexer::AliCascadeVertexer() :
 inline void AliCascadeVertexer::SetCuts(const Double_t cuts[8]) {
   fChi2max=cuts[0]; 
   fDV0min=cuts[1];   fMassWin=cuts[2]; fDBachMin=cuts[3];
-  fDCAmax=cuts[4];   fCPAmax=cuts[5];
+  fDCAmax=cuts[4];   fCPAmin=cuts[5];
   fRmin=cuts[6];     fRmax=cuts[7]; 
 }
 
 inline void AliCascadeVertexer::SetDefaultCuts(const Double_t cuts[8]) {
   fgChi2max=cuts[0]; 
   fgDV0min=cuts[1];   fgMassWin=cuts[2]; fgDBachMin=cuts[3];
-  fgDCAmax=cuts[4];   fgCPAmax=cuts[5];
+  fgDCAmax=cuts[4];   fgCPAmin=cuts[5];
   fgRmin=cuts[6];     fgRmax=cuts[7]; 
 }
 
 inline void AliCascadeVertexer::GetCuts(Double_t cuts[8]) const {
   cuts[0]=fChi2max; 
   cuts[1]=fDV0min;   cuts[2]=fMassWin;  cuts[3]=fDBachMin;
-  cuts[4]=fDCAmax;   cuts[5]=fCPAmax;
+  cuts[4]=fDCAmax;   cuts[5]=fCPAmin;
   cuts[6]=fRmin;     cuts[7]=fRmax; 
 }
 
 inline void AliCascadeVertexer::GetDefaultCuts(Double_t cuts[8]) {
   cuts[0]=fgChi2max; 
   cuts[1]=fgDV0min;   cuts[2]=fgMassWin;  cuts[3]=fgDBachMin;
-  cuts[4]=fgDCAmax;   cuts[5]=fgCPAmax;
+  cuts[4]=fgDCAmax;   cuts[5]=fgCPAmin;
   cuts[6]=fgRmin;     cuts[7]=fgRmax; 
 }
 
