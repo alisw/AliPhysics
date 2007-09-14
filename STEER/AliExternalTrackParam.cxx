@@ -971,27 +971,36 @@ Bool_t AliExternalTrackParam::GetPxPyPz(Double_t *p) const {
 }
 
 Double_t AliExternalTrackParam::Px() const {
-  // return x-component of momentum
+  //---------------------------------------------------------------------
+  // Returns x-component of momentum
+  // Result for (nearly) straight tracks is meaningless !
+  //---------------------------------------------------------------------
 
-  Double_t p[3];
+  Double_t p[3]={kVeryBig,kVeryBig,kVeryBig};
   GetPxPyPz(p);
 
   return p[0];
 }
 
 Double_t AliExternalTrackParam::Py() const {
-  // return y-component of momentum
+  //---------------------------------------------------------------------
+  // Returns y-component of momentum
+  // Result for (nearly) straight tracks is meaningless !
+  //---------------------------------------------------------------------
 
-  Double_t p[3];
+  Double_t p[3]={kVeryBig,kVeryBig,kVeryBig};
   GetPxPyPz(p);
 
   return p[1];
 }
 
 Double_t AliExternalTrackParam::Pz() const {
-  // return z-component of momentum
+  //---------------------------------------------------------------------
+  // Returns z-component of momentum
+  // Result for (nearly) straight tracks is meaningless !
+  //---------------------------------------------------------------------
 
-  Double_t p[3];
+  Double_t p[3]={kVeryBig,kVeryBig,kVeryBig};
   GetPxPyPz(p);
 
   return p[2];
@@ -1004,12 +1013,16 @@ Double_t AliExternalTrackParam::Theta() const {
 }
 
 Double_t AliExternalTrackParam::Phi() const {
-  // return phi angle of momentum
+  //---------------------------------------------------------------------
+  // Returns the azimuthal angle of momentum
+  // 0 <= phi < 2*pi
+  //---------------------------------------------------------------------
 
-  Double_t p[3];
-  GetPxPyPz(p);
-
-  return TMath::ATan2(p[1], p[0]);
+  Double_t phi=TMath::ASin(fP[2]) + fAlpha;
+  if (phi<0.) phi+=2.*TMath::Pi();
+  else if (phi>=2.*TMath::Pi()) phi-=2.*TMath::Pi();
+ 
+  return phi;
 }
 
 Double_t AliExternalTrackParam::M() const {
