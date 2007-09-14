@@ -353,7 +353,7 @@ template <class T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian)
       Double_t P = TMath::Sqrt(pt2 + p[2]*p[2]);
       
       fMomentum[0] = TMath::Sqrt(pt2); // pt
-      fMomentum[1] = (pt2 != 0.) ? TMath::ATan2(p[1], p[0]) : -999; // phi
+      fMomentum[1] = (pt2 != 0.) ? TMath::Pi()+TMath::ATan2(-p[1], -p[0]) : -999; // phi
       fMomentum[2] = (P != 0.) ? TMath::ACos(p[2]/P) : -999.; // theta
     } else {
       fMomentum[0] = p[0];  // pt

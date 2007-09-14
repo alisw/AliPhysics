@@ -443,7 +443,7 @@ void AliAODVertex::PhiAndThetaToVertex(AliAODVertex *vtx, P &phi, T &theta) cons
   // rotation angles around z-axis (phi) and around new y-axis (theta)
   // with which vtx is seen (used by RotatedCovMatrix... methods)
 
-  phi = TMath::ATan2(vtx->GetY()-GetY(),vtx->GetX()-GetX());
+  phi = TMath::Pi()+TMath::ATan2(-vtx->GetY()+GetY(),-vtx->GetX()+GetX());
   Double_t vtxxphi = vtx->GetX()*TMath::Cos(phi)+vtx->GetY()*TMath::Sin(phi);
   Double_t xphi = GetX()*TMath::Cos(phi)+GetY()*TMath::Sin(phi);
   theta = TMath::ATan2(vtx->GetZ()-GetZ(),vtxxphi-xphi);
