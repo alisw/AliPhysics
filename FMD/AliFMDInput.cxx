@@ -43,6 +43,7 @@
 #include "AliFMDRawReader.h"    // ALIFMDRAWREADER_H
 #include <AliESD.h>
 #include <AliESDFMD.h>
+#include <AliESDEvent.h>
 #include <AliCDBManager.h>
 #include <AliCDBEntry.h>
 #include <AliAlignObjParams.h>
@@ -73,8 +74,8 @@ AliFMDInput::AliFMDInput()
     fFMDLoader(0), 
     fReader(0),
     fFMD(0),
-    fMainESD(0),
     fESD(0),
+    fESDEvent(0),
     fTreeE(0),
     fTreeH(0),
     fTreeD(0),
@@ -92,6 +93,7 @@ AliFMDInput::AliFMDInput()
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
+
   // Constructor of an FMD input object.  Specify what data to read in
   // using the AddLoad member function.   Sub-classes should at a
   // minimum overload the member function Event.   A full job can be
@@ -109,8 +111,8 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fFMDLoader(0), 
     fReader(0),
     fFMD(0),
-    fMainESD(0),
     fESD(0),
+    fESDEvent(0),
     fTreeE(0),
     fTreeH(0),
     fTreeD(0),
@@ -128,6 +130,7 @@ AliFMDInput::AliFMDInput(const char* gAliceFile)
     fTreeMask(0), 
     fIsInit(kFALSE)
 {
+  
   // Constructor of an FMD input object.  Specify what data to read in
   // using the AddLoad member function.   Sub-classes should at a
   // minimum overload the member function Event.   A full job can be
@@ -201,7 +204,10 @@ AliFMDInput::Init()
       TString fname(file->GetName());
       if (fname.Contains("AliESDs")) fChainE->AddFile(fname.Data());
     }
-    fChainE->SetBranchAddress("ESD", &fMainESD);
+    fESDEvent = new AliESDEvent();
+    fESDEvent->ReadFromTree(fChainE);
+    //    fChainE->SetBranchAddress("ESD", &fMainESD);
+    
   }
     
   if (TESTBIT(fTreeMask, kRaw)) {
@@ -312,7 +318,7 @@ AliFMDInput::Begin(Int_t event)
     AliInfo("Getting FMD event summary data");
     Int_t read = fChainE->GetEntry(event);
     if (read <= 0) return kFALSE;
-    fESD = fMainESD->GetFMDData();
+    fESD = fESDEvent->GetFMDData();
     if (!fESD) return kFALSE;
     TFile* f = fChainE->GetFile();
     if (f) {

@@ -40,7 +40,7 @@ class AliFMDHit;
 class AliFMDDigit;
 class AliFMDSDigit;
 class AliFMDRecPoint;
-class AliESD;
+class AliESDEvent;
 class AliESDFMD;
 class TString;
 class TClonesArray;
@@ -236,8 +236,8 @@ protected:
       fFMDLoader(0),
       fReader(0),
       fFMD(0),
-      fMainESD(0),
       fESD(0),
+      fESDEvent(0),
       fTreeE(0),
       fTreeH(0),
       fTreeD(0),
@@ -266,8 +266,8 @@ protected:
   AliLoader*    fFMDLoader;  // Loader of FMD data 
   AliRawReader* fReader;     // Raw data reader 
   AliFMD*       fFMD;        // FMD object
-  AliESD*       fMainESD;    // ESD Object
   AliESDFMD*    fESD;        // FMD ESD data  
+  AliESDEvent*  fESDEvent;   // ESD Event object. 
   TTree*        fTreeE;      // Header tree 
   TTree*        fTreeH;      // Hits tree
   TTree*        fTreeD;      // Digit tree 
