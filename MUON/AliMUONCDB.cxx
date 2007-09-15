@@ -458,6 +458,8 @@ AliMUONCDB::MakePedestalStore(AliMUONVStore& pedestalStore, Bool_t defaultValues
 Int_t
 AliMUONCDB::MakeCapacitanceStore(AliMUONVStore& capaStore, const char* file)
 {
+  /// Read the capacitance values from file and append them to the capaStore
+  
   ifstream in(gSystem->ExpandPathName(file));
   if (in.bad()) return 0;
   
