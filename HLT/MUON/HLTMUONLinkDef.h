@@ -35,7 +35,8 @@
 #pragma link C++ nestedfunction;
 
 #pragma link C++ class AliHLTMUONAgent+;
-#pragma link C++ class AliHLTMUONHitReconstructorComponent+;
+#pragma link C++ class AliHLTMUONTriggerRecordsSource+;
 #pragma link C++ class AliHLTMUONRecHitsSource+;
+#pragma link C++ class AliHLTMUONHitReconstructorComponent+;
 
 #endif // __CINT__
