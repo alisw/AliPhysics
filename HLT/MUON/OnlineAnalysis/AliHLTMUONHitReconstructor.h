@@ -127,7 +127,7 @@ private:
   void RecXRecY();
   bool MergeRecHits();
 
-  ClassDef(AliHLTMUONHitReconstructor,0)
+  //ClassDef(AliHLTMUONHitReconstructor,0)
 };
 
 

@@ -56,7 +56,7 @@ const float AliHLTMUONHitReconstructor::fgkHalfPadSize[3] = {1.25, 2.50, 5.00};
 
 
 
-ClassImp(AliHLTMUONHitReconstructor)
+//ClassImp(AliHLTMUONHitReconstructor)
 
 AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor():
   fkBlockHeaderSize(8),
