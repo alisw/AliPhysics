@@ -68,8 +68,11 @@ AliTPCseed::AliTPCseed():
     fNCDEDX[i] = 0;
   }
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
-  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
-  for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
+  //  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
+  //for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
+  fClusterMap.ResetAllBits(kFALSE);
+  fSharedMap.ResetAllBits(kFALSE);
+
 }
 
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
@@ -174,8 +177,12 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
     fNCDEDX[i] = 0;
   }
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
-  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
-  for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
+  
+  //for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
+  //for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
+  fClusterMap.ResetAllBits(kFALSE);
+  fSharedMap.ResetAllBits(kFALSE);
+
 }
 
 AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
@@ -235,8 +242,7 @@ AliTPCseed::~AliTPCseed(){
       delete fClusterPointer[icluster];
     }
   }
-  for (Int_t i=0;i<160;i++) fClusterMap[i]=kFALSE;
-  for (Int_t i=0;i<160;i++) fSharedMap[i]=kFALSE;
+
 }
 //_________________________________________________
 AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
