@@ -1,15 +1,16 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
+ * Primary Authors:                                                       *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          * 
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -24,6 +25,7 @@
 
 #include "AliHLTMUONRecHitsSource.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONDataInterface.h"
@@ -32,6 +34,9 @@
 #include "AliMUONConstants.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVHitStore.h"
+#include "mapping/AliMpCDB.h"
+#include "mapping/AliMpDEManager.h"
+#include "mapping/AliMpDetElement.h"
 #include "TClonesArray.h"
 #include <cstdlib>
 #include <cstdio>
@@ -69,6 +74,9 @@ AliHLTMUONRecHitsSource::~AliHLTMUONRecHitsSource()
 
 int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 {
+	assert( fMCDataInterface == NULL );
+	assert( fDataInterface == NULL );
+	
 	// Parse the command line arguments:
 	bool simdata = false;
 	bool recdata = false;
@@ -175,15 +183,19 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 			fServeChamber[i] = true;
 	}
 	
+	// Must load the mapping data for AliMpDetElement::GetDdlId()
+	// to return useful information later on.
+	AliMpCDB::LoadDDLStore();
+		
 	// Now we can initialise the data interface objects and loaders.
 	if (simdata)
 	{
 		Logging(kHLTLogDebug,
 			"AliHLTMUONRecHitsSource::DoInit",
 			"Data interface",
-			"Loading simulated GEANT hits with AliMUONSimData."
+			"Loading simulated GEANT hits with AliMUONMCDataInterface."
 		);
-		
+
 		try
 		{
 			fMCDataInterface = new AliMUONMCDataInterface("galice.root");
@@ -203,7 +215,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 		Logging(kHLTLogDebug,
 			"AliHLTMUONRecHitsSource::DoInit",
 			"Data interface",
-			"Loading reconstructed clusters with AliMUONRecData."
+			"Loading reconstructed clusters with AliMUONDataInterface."
 		);
 		
 		try
@@ -227,10 +239,16 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 
 int AliHLTMUONRecHitsSource::DoDeinit()
 {
-  delete fMCDataInterface;
-  fMCDataInterface = NULL;
-  delete fDataInterface;
-  fDataInterface = NULL;
+	if (fMCDataInterface != NULL)
+	{
+		delete fMCDataInterface;
+		fMCDataInterface = NULL;
+	}
+	if (fDataInterface != NULL)
+	{
+		delete fDataInterface;
+		fDataInterface = NULL;
+	}
 	return 0;
 }
 
@@ -251,7 +269,8 @@ void AliHLTMUONRecHitsSource::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
-	constBase = sizeof(AliHLTMUONRecHitsBlockStruct) + 1024*4*8;
+	constBase = sizeof(AliHLTMUONRecHitsBlockStruct)
+		+ 256*16*sizeof(AliHLTMUONRecHitStruct);
 	inputMultiplier = 0;
 }
 
@@ -291,7 +310,9 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	// Use the fEventID as the event number to load, check it and load that
 	// event with the runloader.
 	UInt_t eventnumber = UInt_t(evtData.fEventID);
-  UInt_t maxevent = UInt_t(fMCDataInterface->NumberOfEvents());
+	UInt_t maxevent = fMCDataInterface != NULL ?
+		UInt_t(fMCDataInterface->NumberOfEvents())
+		: UInt_t(fDataInterface->NumberOfEvents());
 	if ( eventnumber >= maxevent )
 	{
 		Logging(kHLTLogError,
@@ -300,8 +321,8 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			"The event number (%d) is larger than the available number"
 			  " of events on file (%d).",
 			eventnumber,
-      maxevent
-    );
+			maxevent
+		);
 		size = 0; // Important to tell framework that nothing was generated.
 		return EINVAL;
 	}
@@ -322,6 +343,12 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		return ENOBUFS;
 	}
 	
+	// Initialise the DDL list containing the DDLs which contributed to the
+	// data block. These are required to create the specification word later.
+	bool ddlList[22];
+	for (Int_t i = 0; i < 22; i++)
+		ddlList[i] = false;
+	
 	if (fMCDataInterface != NULL)
 	{
 		Logging(kHLTLogDebug,
@@ -333,14 +360,14 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		
 		// Loop over all tracks, extract the hits and write them to the
 		// data block.
-    Int_t ntracks = fMCDataInterface->NumberOfTracks(eventnumber);
+		Int_t ntracks = fMCDataInterface->NumberOfTracks(eventnumber);
 		for (Int_t i = 0; i < ntracks; ++i)
 		{
-      AliMUONVHitStore* hitStore = fMCDataInterface->HitStore(eventnumber,i);
-      AliMUONHit* hit;
-      TIter next(hitStore->CreateIterator());
-      while ( ( hit = static_cast<AliMUONHit*>(next()) ) )
-      {
+			AliMUONVHitStore* hitStore = fMCDataInterface->HitStore(eventnumber,i);
+			AliMUONHit* hit;
+			TIter next(hitStore->CreateIterator());
+			while ( ( hit = static_cast<AliMUONHit*>(next()) ) )
+			{
 				// Select only hits on selected chambers.
 				Int_t chamber = hit->Chamber() - 1;
 				if (chamber > AliMUONConstants::NTrackingCh()) continue;
@@ -367,8 +394,18 @@ int AliHLTMUONRecHitsSource::GetEvent(
 				rechit->fX = hit->Xref();
 				rechit->fY = hit->Yref();
 				rechit->fZ = hit->Zref();
+				
+				// Workout which DDL this hit will be readout of.
+				AliMpDetElement* de = AliMpDEManager::GetDetElement(hit->DetElemId());
+				if (de != NULL and (0 <= de->GetDdlId() and de->GetDdlId() < 22))
+					ddlList[de->GetDdlId()] = true;
+				else
+					Logging(kHLTLogError,
+						"AliHLTMUONRecHitsSource::GetEvent",
+						"No DDL ID",
+						"Could not find the DDL ID from which readout would take place."
+					);
 			}
-      delete hitStore;
 		}
 	}
 	else if (fDataInterface != NULL)
@@ -388,11 +425,10 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			// Select only hits on selected chambers.
 			if (not fServeChamber[chamber]) continue;
 			
-      TIter next(clusterStore->CreateChamberIterator(chamber,chamber));
-      AliMUONRawCluster* cluster;
-      
+			TIter next(clusterStore->CreateChamberIterator(chamber,chamber));
+			AliMUONRawCluster* cluster;
 			while ( ( cluster = static_cast<AliMUONRawCluster*>(next()) ) )
-      {				
+			{
 				// Only select hits from the given part of the plane
 				if (fSelection == kLeftPlane and not (cluster->GetX() < 0)) continue;
 				if (fSelection == kRightPlane and not (cluster->GetX() >= 0)) continue;
@@ -414,16 +450,26 @@ int AliHLTMUONRecHitsSource::GetEvent(
 				rechit->fX = cluster->GetX();
 				rechit->fY = cluster->GetY();
 				rechit->fZ = cluster->GetZ();
+				
+				// Workout which DDL this hit will be readout of.
+				AliMpDetElement* de = AliMpDEManager::GetDetElement(cluster->DetElemId());
+				if (de != NULL and (0 <= de->GetDdlId() and de->GetDdlId() < 22))
+					ddlList[de->GetDdlId()] = true;
+				else
+					Logging(kHLTLogError,
+						"AliHLTMUONRecHitsSource::GetEvent",
+						"No DDL ID",
+						"Could not find the DDL ID from which readout would take place."
+					);
 			}
 		}
-    delete clusterStore;
 	}
 	else
 	{
 		Logging(kHLTLogError,
 			"AliHLTMUONRecHitsSource::GetEvent",
 			"Missing data interface",
-			"Neither AliMUONSimData or AliMUONRecData were created."
+			"Neither AliMUONDataInterface nor AliMUONMCDataInterface were created."
 		);
 		size = 0; // Important to tell framework that nothing was generated.
 		return EFAULT;
@@ -435,7 +481,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 	bd.fOffset = 0;
 	bd.fSize = block.BytesUsed();
 	bd.fDataType = AliHLTMUONConstants::RecHitsBlockDataType();
-	bd.fSpecification = 7;
+	bd.fSpecification = AliHLTMUONUtils::PackSpecBits(ddlList);
 	outputBlocks.push_back(bd);
 	size = block.BytesUsed();
 
@@ -470,7 +516,7 @@ int AliHLTMUONRecHitsSource::ParseChamberString(const char* str)
 				"AliHLTMUONRecHitsSource::GetEvent",
 				"Parse error",
 				"Got the chamber number %d which is outside the valid range of [1..%d].",
-				AliMUONConstants::NTrackingCh(), chamber
+				chamber, AliMUONConstants::NTrackingCh()
 			);
 			return EINVAL;
 		}

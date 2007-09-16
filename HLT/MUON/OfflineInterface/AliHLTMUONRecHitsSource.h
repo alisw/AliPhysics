@@ -1,7 +1,20 @@
 #ifndef ALIHLTMUONRECHITSSOURCE_H
 #define ALIHLTMUONRECHITSSOURCE_H
-/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors:                                                       *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 /* $Id$ */
 
