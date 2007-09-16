@@ -1,7 +1,21 @@
 #ifndef ALIHLTMUONCONSTANTS_H
 #define ALIHLTMUONCONSTANTS_H
-/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors:                                                       *
+ *   Indranil Das <indra.das@saha.ac.in>                                  *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 /* $Id$ */
 
@@ -158,9 +172,34 @@ public:
 		return fgkRecHitsSourceId;
 	}
 	
+	static const char* TriggerRecordsSourceId()
+	{
+		return fgkTriggerRecordsSourceId;
+	}
+	
+	static const char* MansoTracksSourceId()
+	{
+		return fgkMansoTracksSourceId;
+	}
+	
+	static const char* TriggerReconstructorId()
+	{
+		return fgkTriggerReconstructorId;
+	}
+	
+	static const char* HitReconstructorId()
+	{
+		return fgkHitReconstructorId;
+	}
+	
 	static const char* MansoTrackerFSMId()
 	{
 		return fgkMansoTrackerFSMId;
+	}
+	
+	static const char* DecisionComponentId()
+	{
+		return fgkDecisionComponentId;
 	}
 
 private:
@@ -199,8 +238,13 @@ private:
 	static const AliHLTComponentDataType fgkPairsDecisionBlockDataType; // Trigger decision block type for pairs of particles.
 	
 	// Component ID names:
-	static const char* fgkRecHitsSourceId; // Reconstructed hit component name.
+	static const char* fgkRecHitsSourceId; // Name of source component for reconstructed hits for debugging.
+	static const char* fgkTriggerRecordsSourceId; // Name of source component for trigger records for debugging.
+	static const char* fgkMansoTracksSourceId; // Name of source component for Manso tracks for debugging.
+	static const char* fgkTriggerReconstructorId; // Trigger record reconstructor component name.
+	static const char* fgkHitReconstructorId; // Centre of gravity cluster finder component name.
 	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
+	static const char* fgkDecisionComponentId; // dHLT decision component name.
 };
 
 #endif // ALIHLTMUONCONSTANTS_H

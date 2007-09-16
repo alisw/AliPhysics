@@ -83,5 +83,41 @@ AliHLTFloat32_t AliHLTMUONCalculateSignedPt(
 		register AliHLTFloat32_t zf, register AliHLTFloat32_t qBL,
 		AliHLTFloat32_t& p
 	);
+	
+	
+class AliHLTMUONCalculations
+{
+public:
+
+	static bool ComputeMomentum(
+			AliHLTFloat32_t x1,
+			AliHLTFloat32_t y1, AliHLTFloat32_t y2,
+			AliHLTFloat32_t z1, AliHLTFloat32_t z2
+		);
+		
+	static AliHLTFloat32_t Zf() { return fgZf; }
+	static void Zf(AliHLTFloat32_t value) { fgZf = value; }
+	static AliHLTFloat32_t QBL() { return fgQBL; }
+	static void QBL(AliHLTFloat32_t value) { fgQBL = value; }
+	
+	static AliHLTMUONParticleSign Sign() { return fgSign; }
+	static AliHLTFloat32_t Px() { return fgPx; }
+	static AliHLTFloat32_t Py() { return fgPy; }
+	static AliHLTFloat32_t Pz() { return fgPz; }
+		
+private:
+
+	// Prevent destroying or creating of this object.
+	AliHLTMUONCalculations();
+	~AliHLTMUONCalculations();
+
+	static AliHLTFloat32_t fgZf;  // The Z coordinate of the middle of the dipole magnetic field.
+	static AliHLTFloat32_t fgQBL; // The integrated field strength times unit charge (T.m.)
+	
+	static AliHLTMUONParticleSign fgSign;  // The calculated sign.
+	static AliHLTFloat32_t fgPx;  // The calculated X momentum.
+	static AliHLTFloat32_t fgPy;  // The calculated Y momentum.
+	static AliHLTFloat32_t fgPz;  // The calculated Z momentum.
+};
 
 #endif // ALIHLTMUONCALCULATIONS_H

@@ -50,7 +50,7 @@ public:
 	 * @return  Returns the 32 bit packed word.
 	 */
 	static AliHLTUInt32_t PackTriggerRecordFlags(
-			AliHLTMUONParticleSign sign, bool hitset[4]
+			AliHLTMUONParticleSign sign, const bool hitset[4]
 		);
 
 	/**
@@ -76,7 +76,7 @@ public:
 	 * @return  Returns the 32 bit packed word.
 	 */
 	static AliHLTUInt32_t PackMansoTrackFlags(
-			AliHLTMUONParticleSign sign, bool hitset[4]
+			AliHLTMUONParticleSign sign, const bool hitset[4]
 		)
 	{
 		return PackTriggerRecordFlags(sign, hitset);
@@ -161,6 +161,34 @@ public:
 			bool& unlike, // [out]
 			AliHLTUInt8_t& highPtCount, // [out]
 			AliHLTUInt8_t& lowPtCount // [out]
+		);
+	
+	/**
+	 * This packs the given parameters into the 32bit Pub/Sub specification
+	 * word in the data block descriptor.
+	 *
+	 * @param ddl  The list of DDLs forming part of the readout. ddl[0]
+	 *             indicates DDL number 2560, ddl[1] is for DDL 2561 and so
+	 *             on up to ddl[19]. ddl[20] and ddl[21] will be for the
+	 *             trigger DDLs 2816 and 2817 respectively.
+	 * @return  Returns the 32 bit packed specification word.
+	 */
+	static AliHLTUInt32_t PackSpecBits(
+			const bool ddl[22]
+		);
+	
+	/**
+	 * This unpacks the AliHLTMUONPairDecisionStruct::fTriggerBits bits into
+	 * its component fields.
+	 * @param bits  The Pub/Sub specification word from a data block descriptor.
+	 * @param ddl  The output list of DDLs forming part of the readout. ddl[0]
+	 *             indicates DDL number 2560, ddl[1] is for DDL 2561 and so
+	 *             on up to ddl[19]. ddl[20] and ddl[21] will be for the
+	 *             trigger DDLs 2816 and 2817 respectively.
+	 */
+	static void UnpackSpecBits(
+			AliHLTUInt32_t bits, // [in]
+			bool ddl[22] // [out]
 		);
 
 	/**

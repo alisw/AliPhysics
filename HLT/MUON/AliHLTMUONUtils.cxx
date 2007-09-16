@@ -38,7 +38,7 @@
 
 
 AliHLTUInt32_t AliHLTMUONUtils::PackTriggerRecordFlags(
-		AliHLTMUONParticleSign sign, bool hitset[4]
+		AliHLTMUONParticleSign sign, const bool hitset[4]
 	)
 {
 	AliHLTUInt32_t flags;
@@ -65,10 +65,10 @@ void AliHLTMUONUtils::UnpackTriggerRecordFlags(
 	case 0x40000000: sign = kSignPlus;    break;
 	default:         sign = kSignUnknown; break;
 	}
-	hitset[0] = (flags & 0x1) == 1;
-	hitset[1] = (flags & 0x2) == 1;
-	hitset[2] = (flags & 0x4) == 1;
-	hitset[3] = (flags & 0x8) == 1;
+	hitset[0] = (flags & 0x1) == 0x1;
+	hitset[1] = (flags & 0x2) == 0x2;
+	hitset[2] = (flags & 0x4) == 0x4;
+	hitset[3] = (flags & 0x8) == 0x8;
 }
 
 
@@ -111,6 +111,35 @@ void AliHLTMUONUtils::UnpackPairDecisionBits(
 	unlike   = (bits & 0x10) == 1;
 	highPtCount = (bits & 0xC) >> 2;
 	lowPtCount = bits & 0x3;
+}
+
+
+AliHLTUInt32_t AliHLTMUONUtils::PackSpecBits(
+		const bool ddl[22]
+	)
+{
+	// Pack the bits into the following format:
+	//   bit:   [        31 - 22        ][     21     ][     20     ][  19 - 0 ]
+	//   field: [ reserved, set to zero ][ TRGDDL2816 ][ TRGDDL2817 ][ TRKDDLS ]
+	// Meaning of field acronyms:
+	//   TRGDDL2816 - Trigger DDL number 2816.
+	//   TRGDDL2817 - Trigger DDL number 2817.
+	//   TRKDDLS - Tracking DDL flags where bit 0 will be for DDL number 2560,
+	//             bit 1 for DDL no. 2561 etc. up to bit 19 which is for DDL 2579.
+	AliHLTUInt32_t bits = 0;
+	for (int i = 0; i < 22; i++)
+		bits |= (ddl[i] ? 0x1 : 0x0) << i;
+	return bits;
+}
+
+
+void AliHLTMUONUtils::UnpackSpecBits(
+		AliHLTUInt32_t bits, bool ddl[22]
+	)
+{
+	// Perform the inverse operation of PackSpecBits.
+	for (int i = 0; i < 22; i++)
+		ddl[i] = ((bits >> i) & 0x1) == 1;
 }
 
 
