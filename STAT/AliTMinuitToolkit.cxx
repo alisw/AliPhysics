@@ -80,13 +80,39 @@ AliTMinuitToolkit::AliTMinuitToolkit() :
    fParam(0),
    fParamLimits(0),
    fCovar(0),
-   fChi2(0)
+   fChi2(0),
+   fMaxCalls(0),
+   fPrecision(0)
 {
  //
  // standard constructor
  //
  fMaxCalls = 500;
  fPrecision = 1;
+}
+
+
+AliTMinuitToolkit::AliTMinuitToolkit(const AliTMinuitToolkit&) :
+   TNamed(),
+   fFormula(0),
+   fWeightFunction(0),
+   fFitAlgorithm(0),
+   fPoints(0),
+   fParam(0),
+   fParamLimits(0),
+   fCovar(0),
+   fChi2(0),
+   fMaxCalls(0),
+   fPrecision(0)
+{
+
+
+}
+
+
+AliTMinuitToolkit& AliTMinuitToolkit::operator=(const AliTMinuitToolkit&) {
+
+ return *this;
 }
 
 
@@ -178,9 +204,9 @@ void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, doub
   
   // sort points for weighting
   Double_t *sortList = new Double_t[npoints];
-  Int_t *indexList   = new Int_t[npoints];
+  Int_t  *indexList = new Int_t[npoints];
   
-  TVectorD *fWeight = new TVectorD(npoints);
+  TVectorD *Weight = new TVectorD(npoints);
   
   for (Int_t ipoint=0; ipoint<npoints; ipoint++){
     Double_t x[100];
@@ -196,7 +222,7 @@ void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, doub
   Double_t t;
   for (Int_t ipoint=0; ipoint<npoints; ipoint++){
    t = indexList[ipoint]/(Double_t)npoints;
-   (*fWeight)(ipoint) = fitter->GetWeightFunction()->Eval(t);
+   (*Weight)(ipoint) = fitter->GetWeightFunction()->Eval(t);
   }
   //
   // calculate chisquare
@@ -208,13 +234,12 @@ void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, doub
     Float_t funx   = fitter->GetFormula()->EvalPar(x,gin);
     
     Double_t delta = (*fitter->GetPoints())(ipoint, nvar) - funx;
-    fchisq+= delta*delta*(*fWeight)(ipoint);
+    fchisq+= delta*delta*(*Weight)(ipoint);
 
   }
-  delete fWeight;
-  delete [] sortList;
-  delete [] indexList;
-
+  delete Weight;
+  delete sortList;
+  delete indexList;
 }
  
 

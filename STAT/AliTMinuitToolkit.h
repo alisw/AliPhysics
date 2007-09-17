@@ -46,6 +46,9 @@ public:
  
 private:
   //
+  AliTMinuitToolkit(const AliTMinuitToolkit&); // fake copy constr. to suppress warnings
+  AliTMinuitToolkit& operator=(const AliTMinuitToolkit&); // fake -- suppress warnings
+  //
   TFormula        * fFormula;            // formula of the fitted function
   TFormula        * fWeightFunction;     // weight function, must be defined between 0 and 1
   Char_t          * fFitAlgorithm;       // fit algorithm for TMinuit: migrad, simplex, ...
