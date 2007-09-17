@@ -3,8 +3,7 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
+/* $Id$  */
 //------------------------------------------------------------------------
 //
 // This class is a helper, producing ITS aligmnent objects.
@@ -55,7 +54,7 @@ public:
   TString  GetSymbName(Int_t layer) const;
   TString  GetSymbName(Int_t layer,Int_t ladd) const;
   TString  GetHalfStaveLadderSymbName(Int_t layer,Int_t ladd,Int_t halfStave) const;
-  TString  GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const;
+  //TString  GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const;
   Double_t GaussCut(Double_t mean,Double_t sigma,Double_t cutn);
   
   static Int_t GetNLayers()             {return kNLayers;}

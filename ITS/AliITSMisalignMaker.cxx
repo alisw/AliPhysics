@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id$  */
 
 //========================================================================
 //
@@ -96,37 +96,37 @@ Int_t AliITSMisalignMaker::AddAlignObj(Int_t lay,Double_t dx,Double_t dy,Double_
 				 Double_t dpsi,Double_t dtheta,Double_t dphi,Bool_t unif) {
   
   // misalignment at the level of ladders/modules
+  lay+=1; // layers are numbered from 1 to 6 in AliGeomManager
 
-  Int_t nLadd = fgkNLadders[lay];
-  Int_t nMod = fgkNDetectors[lay];
+  printf("LAYER %d  MODULES %d\n",lay,AliGeomManager::LayerSize(lay));
 
-  for (Int_t iLadd=0; iLadd<nLadd; iLadd++) {
-    for (Int_t iMod=0; iMod<nMod; iMod++) {
+  for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(lay); iModule++) {
 
-      Double_t vx,vy,vz,vpsi,vtheta,vphi;
-
-      if(!unif) {
-	vx = GaussCut(0,dx/3.,dx); // mean, sigma, max absolute value 
-	vy = GaussCut(0,dy/3.,dy);
-	vz = GaussCut(0,dz/3.,dz);
-	vpsi   = GaussCut(0,dpsi/3.,  dpsi );
-	vtheta = GaussCut(0,dtheta/3.,dtheta);
-	vphi   = GaussCut(0,dphi/3.,  dphi);
-      } else {
-	vx = fRnd.Uniform(-dx,dx);
-	vy = fRnd.Uniform(-dy,dy);
-	vz = fRnd.Uniform(-dz,dz);
-	vpsi = fRnd.Uniform(-dpsi,dpsi);
-	vtheta = fRnd.Uniform(-dtheta,dtheta);
-	vphi = fRnd.Uniform(-dphi,dphi);
-      }
-
-      TString name = GetSymbName(lay,iLadd,iMod);
-      new(fAlobj[fInd]) AliAlignObjParams(name.Data(),0,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
-      AliAlignObjParams* its_alobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
-      its_alobj->ApplyToGeometry();
-      fInd++; 
+    Double_t vx,vy,vz,vpsi,vtheta,vphi;
+    
+    if(!unif) {
+      vx = GaussCut(0,dx/3.,dx); // mean, sigma, max absolute value 
+      vy = GaussCut(0,dy/3.,dy);
+      vz = GaussCut(0,dz/3.,dz);
+      vpsi   = GaussCut(0,dpsi/3.,  dpsi );
+      vtheta = GaussCut(0,dtheta/3.,dtheta);
+      vphi   = GaussCut(0,dphi/3.,  dphi);
+    } else {
+      vx = fRnd.Uniform(-dx,dx);
+      vy = fRnd.Uniform(-dy,dy);
+      vz = fRnd.Uniform(-dz,dz);
+      vpsi = fRnd.Uniform(-dpsi,dpsi);
+      vtheta = fRnd.Uniform(-dtheta,dtheta);
+      vphi = fRnd.Uniform(-dphi,dphi);
     }
+    
+    UShort_t volid = AliGeomManager::LayerToVolUID(lay,iModule);
+    const char *symname = AliGeomManager::SymName(volid);
+    
+    new(fAlobj[fInd]) AliAlignObjParams(symname,volid,vx,vy,vz,vpsi,vtheta,vphi,kFALSE);
+    AliAlignObjParams* its_alobj = (AliAlignObjParams*) fAlobj.UncheckedAt(fInd);
+    its_alobj->ApplyToGeometry();
+    fInd++; 
   }
 
   return kTRUE;
@@ -336,7 +336,7 @@ TString AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd) const {
   }
   return name;
 }
-
+/*
 //________________________________________________________________________
 TString AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const {
 
@@ -358,3 +358,4 @@ TString AliITSMisalignMaker::GetSymbName(Int_t layer,Int_t ladd,Int_t mod) const
   }
   return name;
 }
+*/
