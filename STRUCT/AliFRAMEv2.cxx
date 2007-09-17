@@ -88,10 +88,10 @@ void AliFRAMEv2::CreateGeometry()
   const Float_t kdeg2rad = 1./krad2deg;
 
   Float_t iFrH   = 114.40;
-  Float_t ringH  =   4.00;
+  Float_t ringH  =   6.00; 
   Float_t ringW  =  10.00;
-  Float_t longH  =   5.39;
-  Float_t longW  =   6.00;  
+  Float_t longH  =   6.00; 
+  Float_t longW  =   4.00; 
   Float_t dwl    =   3.14;
   Float_t dwh    =   0.96;
 
@@ -113,7 +113,7 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[3] =   2.;
   ppgon[4] = -376.;
   ppgon[5] =  280.;
-  ppgon[6] =  421.;
+  ppgon[6] =  415.7;
   
   ppgon[7] =  -ppgon[4]; 
   ppgon[8] =   ppgon[5];
@@ -147,8 +147,9 @@ void AliFRAMEv2::CreateGeometry()
 
   ppgon[4] = -350.;
   ppgon[5] =  399.;
-  ppgon[6] =  420.7122;
-  
+//  ppgon[6] =  420.7122;
+  ppgon[6] =  415.6;
+
   ppgon[7] =  -ppgon[4]; 
   ppgon[8] =   ppgon[5];
   ppgon[9] =   ppgon[6];
@@ -537,8 +538,8 @@ void AliFRAMEv2::CreateGeometry()
   
   gMC->Gsvolu("B072", "BOX ", kSteel, pbox, 3);
 
-  pbox[1] =  pbox[1] - 0.6;
-  pbox[2] =  pbox[2] - 0.6;  
+  pbox[1] =  pbox[1] - 0.5;
+  pbox[2] =  pbox[2] - 0.5;  
   gMC->Gsvolu("B073", "BOX ", kAir, pbox, 3);
   gMC->Gspos("B073", 1, "B072", 0., 0., 0., 0, "ONLY");
 
@@ -840,7 +841,7 @@ void AliFRAMEv2::CreateGeometry()
 
   Float_t dyM  =  99.0 - 4.;
   MakeHeatScreen("M",   dyM, idrotm[2090], idrotm[2091]);
-  Float_t dyAM = 119.5 - 4.;
+  Float_t dyAM = 119.5 - 5.;
   MakeHeatScreen("AM", dyAM, idrotm[2090], idrotm[2091]);
   Float_t dyA  = 128.0 - 4.;
   MakeHeatScreen("A" ,  dyA, idrotm[2090], idrotm[2091]);
