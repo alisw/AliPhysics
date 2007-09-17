@@ -36,7 +36,7 @@ void AliHMPIDCluster::CoG()
   if(fDigs==0) return;                                      //no digits in this cluster
   fX=fY=fQRaw=0;                                            //init summable parameters
   Int_t maxQpad=-1,maxQ=-1;                                 //to calculate the pad with the highest charge
-  AliHMPIDDigit *pDig;
+  AliHMPIDDigit *pDig=0x0;
   for(Int_t iDig=0;iDig<fDigs->GetEntriesFast();iDig++){    //digits loop
     pDig=(AliHMPIDDigit*)fDigs->At(iDig);                   //get pointer to next digit
 

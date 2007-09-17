@@ -507,7 +507,7 @@ void AliHMPIDv2::Digits2Raw()
   treeD->GetEntry(0);
   
   
-  AliHMPIDRawStream *pRS;
+  AliHMPIDRawStream *pRS=0x0;
   pRS->WriteRaw(DigLst());
    
   GetLoader()->UnloadDigits();

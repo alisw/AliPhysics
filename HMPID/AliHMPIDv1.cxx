@@ -390,7 +390,7 @@ void AliHMPIDv1::Digits2Raw()
   treeD->GetEntry(0);
   
   //AliHMPIDDigit::WriteRaw(DigLst());
-   AliHMPIDRawStream *pRS;
+   AliHMPIDRawStream *pRS=0x0;
    pRS->WriteRaw(DigLst());
     
   GetLoader()->UnloadDigits();
