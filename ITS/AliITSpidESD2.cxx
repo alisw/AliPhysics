@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------------//
 // ITS PID class --- method # 2                                          //
 //                                                                       //
@@ -123,19 +125,22 @@ Int_t AliITSpidESD2::MakePID(AliESDEvent *event)
     }
     AliITSRecPoint* cluarr[12];
     Float_t qclu[8],qclucorr[8],nlay[8];
-    for(Int_t i=0;i<8;i++){
-      qclu[i]=0;
-      qclucorr[i]=0;
-      nlay[i]=0;
+    for(Int_t ii=0;ii<8;ii++){
+      qclu[ii]=0;
+      qclucorr[ii]=0;
+      nlay[ii]=0;
     }
     Int_t jj=0;
-    for(Int_t i=0;i<12;i++){
-      cluind[i]=track->GetClusterIndex(i);
-      if(cluind[i]>0){
-	cluarr[i]=(AliITSRecPoint*)fTracker->GetCluster(cluind[i]);
-	Int_t lay=cluarr[i]->GetLayer();
+    cout<<"track = "<<i<<endl;
+    for(Int_t ij=0;ij<12;ij++){
+      cluind[ij]=track->GetClusterIndex(ij);
+      cout<<cluind[ij]<<endl;
+      if(cluind[ij]>0){
+	cluarr[ij]=(AliITSRecPoint*)fTracker->GetCluster(cluind[ij]);
+	Int_t lay=cluarr[ij]->GetLayer();
+	cout<<"lay = "<<lay<<endl;
 	if(lay>1){//sdd+ssd only
-	  qclu[jj]=cluarr[i]->GetQ(); 
+	  qclu[jj]=cluarr[ij]->GetQ(); 
 	  qclucorr[jj]=qclu[jj]*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
 	  nlay[jj]=lay;
 	  jj++;
@@ -158,7 +163,7 @@ Int_t AliITSpidESD2::MakePID(AliESDEvent *event)
     esdtr->SetITSpid(condprobfun);
 
     delete track;
-   }
+  }
   fTracker->UnloadClusters();
   fLoader->UnloadRecPoints();
   return 0;

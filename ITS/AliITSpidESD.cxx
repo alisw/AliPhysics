@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------
 //           Implementation of the ITS PID class
 // Very naive one... Should be made better by the detector experts...
@@ -47,7 +49,9 @@ Double_t AliITSpidESD::Bethe(Double_t p,Double_t mass) {
   Double_t beta=mom/En;
   Double_t Tmax=2*me*beta*beta*gamma*gamma/(1+2*gamma*me/Mass+(me/Mass)*(me/Mass));
   Double_t deltaover2=28.816*1e-6*TMath::Sqrt(dens*ZovA)+TMath::Log(beta*gamma)-0.5;
-  return K*ZovA*1/(beta*beta)*(0.5*TMath::Log(2*me*beta*beta*gamma*gamma*Tmax/(I*I))-beta*beta-deltaover2)*2.33*1000*0.03-37;
+  Double_t FNor=80./105.48;
+
+  return K*ZovA*1/(beta*beta)*(0.5*TMath::Log(2*me*beta*beta*gamma*gamma*Tmax/(I*I))-beta*beta-deltaover2)*2.33*1000*0.03*FNor;
 
 
 }

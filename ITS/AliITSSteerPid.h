@@ -8,6 +8,8 @@
 //Origin: Elena Bruna bruna@to.infn.it, Massimo Masera masera@to.infn.it//
 ////////////////////////////////////////////////////////////////////////
 
+/* $Id$ */
+
 #include <TObject.h>
 #include <Riostream.h>
 #include <TF1.h>
@@ -21,7 +23,7 @@ class AliITSSteerPid : public TObject{
  public:
   AliITSSteerPid();
   virtual ~AliITSSteerPid();
-  void InitLayer(TString fileITS="$ALICE_ROOT/ITS/farrfitits_clu6_new5.root",TString fileFitPar="$ALICE_ROOT/ITS/ffitparams_new5.root");
+  void InitLayer(TString fileITS="$ALICE_ROOT/ITS/farrfitits.root",TString fileFitPar="$ALICE_ROOT/ITS/ffitparams.root");
   
   AliITSPidParItem* GetItemLayer(Int_t nolay,Float_t mom);
   void GetParFitLayer(Int_t nolay,Float_t mom,Double_t *parp,Double_t *park,Double_t *parpi);
