@@ -14,6 +14,7 @@
 
 #pragma link C++ class TKDInterpolator+;
 #pragma link C++ class TKDSpline+;
+#pragma link C++ class AliTMinuitToolkit+;
 
 
 #endif

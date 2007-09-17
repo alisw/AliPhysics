@@ -17,9 +17,9 @@ OutPutOpt = -o
 
 CXX       = g++
 LD        = g++
-CXXFLAGS  = -O -g -pg
-LDFLAGS   = -O -g -pg
-SOFLAGS   = -shared -g -pg
+CXXFLAGS  = -O -g -pg -fPIC
+LDFLAGS   = -O -g -pg -fPIC
+SOFLAGS   = -shared -g -pg -fPIC
 
 ROOTCXX  = $(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --libs) -lMinuit
