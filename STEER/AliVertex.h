@@ -24,7 +24,7 @@ class AliVertex : public TNamed {
   AliVertex &operator=(const AliVertex &source);
   virtual ~AliVertex();
 
-
+  virtual void   Clear(Option_t *option="");
   virtual void   SetXYZ(Double_t pos[3]) 
                    {for(Int_t j=0; j<3; j++) fPosition[j]=pos[j];}
   virtual void   SetXv(Double_t xVert) {fPosition[0]=xVert; }

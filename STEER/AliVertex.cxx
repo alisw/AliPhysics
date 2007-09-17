@@ -106,6 +106,15 @@ AliVertex::~AliVertex() {
   delete [] fIndices;
   fIndices = 0;
 }
+
+void AliVertex::Clear(Option_t* option) 
+{
+    // Delete allocated memory
+    delete [] fIndices;
+    fIndices = 0;
+    TNamed::Clear(option);
+}
+
 //--------------------------------------------------------------------------
 void AliVertex::GetXYZ(Double_t position[3]) const {
 //
