@@ -19,8 +19,6 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include <string>
-#include "event.h"
-#include "monitor.h"
 #include "TNamed.h"
 
 using namespace std;

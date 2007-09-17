@@ -18,9 +18,10 @@
 //       
 /////////////////////////////////////////////////////////////////////////
 
+struct eventHeaderStruct;
+struct equipmentHeaderStruct;
 
 #define long32 int
-#include "event.h"
 #include "TNamed.h"
 using namespace std;
 
@@ -85,9 +86,9 @@ class AliTPCMonitorDateFormat : public TNamed {
     Char_t*                       fdataPtr;       // pointer to data array (start, will not be changed in event) 
     Char_t*                       fsubEventPtr;   // pointer to SubEvent
     Char_t*                       fcurrentPtr;    // pointer to current data position (header or data)
-    struct eventHeaderStruct*     event;          // event and
-    struct eventHeaderStruct*     subEvent;       // subevent structure
-    struct equipmentHeaderStruct* equipment;      // equipmemnt structure
+    eventHeaderStruct*     event;          // event and
+    eventHeaderStruct*     subEvent;       // subevent structure
+    equipmentHeaderStruct* equipment;      // equipmemnt structure
   
     ClassDef(AliTPCMonitorDateFormat,1);
 };
