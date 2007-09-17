@@ -177,8 +177,8 @@ void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, doub
   Int_t npoints    = fitter->GetPoints()->GetNrows();
   
   // sort points for weighting
-  Double_t sortList[npoints];
-  Int_t indexList[npoints];
+  Double_t *sortList = new Double_t[npoints];
+  Int_t *indexList   = new Int_t[npoints];
   
   TVectorD *fWeight = new TVectorD(npoints);
   
@@ -212,6 +212,9 @@ void AliTMinuitToolkit::FitterFCN(int &npar, double *dummy, double &fchisq, doub
 
   }
   delete fWeight;
+  delete [] sortList;
+  delete [] indexList;
+
 }
  
 
