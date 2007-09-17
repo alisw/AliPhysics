@@ -301,7 +301,7 @@ void AliESDEvent::ResetStdContent()
   if(fCascades)fCascades->Clear();
   if(fKinks)fKinks->Clear();
   if(fCaloClusters)fCaloClusters->Delete();
-  if(fErrorLogs) fErrorLogs->Clear();
+  if(fErrorLogs) fErrorLogs->Delete();
 
   // don't reset fconnected fConnected ;
 
