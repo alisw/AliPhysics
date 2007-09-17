@@ -1,0 +1,37 @@
+#-*- Mode: Makefile -*-
+
+
+SRCS:=  AliTPCMonitorConfig.cxx \
+	AliTPCMonitorAltro.cxx \
+	AliTPCMonitorFFT.cxx \
+	AliTPCMonitorMappingHandler.cxx \
+	AliTPCMonitor.cxx \
+	AliTPCMonitorDateFile.cxx \
+	AliTPCMonitorDateFormat.cxx \
+	AliTPCMonitorDialog.cxx
+
+HDRS:= $(SRCS:.cxx=.h)
+HDRS:= $(filter-out AliTPCTrackHitsInterfaces.h, $(HDRS))
+
+DHDR:= TPCmonLinkDef.h
+
+EINCLUDE:= RAW STEER 
+
+
+
+ifdef DATE_ROOT
+SRCS +=  AliTPCMonitorDateMonitor.cxx  
+PACKBLIBS += $(shell date-config --monitorlibs)
+ELIBSDIR:=
+ELIBS:=
+HDRS +=  AliTPCMonitorDateMonitor.h 
+EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
+CINTFLAGS = -ISTEER -I${DATE_COMMON_DEFS} -I${DATE_MONITOR_DIR} -p
+DHDR:= TPCmondateLinkDef.h
+
+CXXFLAGS += -DDATEON 
+else
+CINTFLAGS := -ISTEER -p
+endif
+
+

@@ -1,0 +1,26 @@
+# "main window size" x  y 
+  130 750
+
+# "border size" of window manager x y  
+  6 28 
+
+# range to determine "max adc"(displayed in padplane)
+  100   900
+
+# range to determine "baseline"
+  400  800
+
+# range to determine "adc sum"
+  100  900
+
+# sampling "frequency" (hz)
+  10000000
+
+# "timebins" to store/display 
+  1024
+
+# "pedestal" scheme 0(no basel sub) 1(online calculation by truncated mean)
+  1
+
+
+ 
