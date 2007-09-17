@@ -31,6 +31,8 @@ ClassImp(AliAltroRawStreamFast)
 
 //_____________________________________________________________________________
 AliAltroRawStreamFast::AliAltroRawStreamFast(AliRawReader* rawReader) :
+  fDDLNumber(-1),
+  fPrevDDLNumber(-1),
   fDecoder(),
   fData(),
   fBunch(),
@@ -62,7 +64,16 @@ void AliAltroRawStreamFast::SelectRawData(const char *detName)
   AliDebug(1,Form("Selecting raw data for detector %s",detName));
   fRawReader->Select(detName);
 }
+//_____________________________________________________________________________
+void AliAltroRawStreamFast::Reset()
+{
+    // reset altro raw stream params
 
+    fDDLNumber = fPrevDDLNumber = -1;
+    if (fRawReader) fRawReader->Reset();
+
+}
+//_____________________________________________________________________________
 Bool_t AliAltroRawStreamFast::NextDDL()
 {
   // Read next DDL raw-data payload and
@@ -72,6 +83,8 @@ Bool_t AliAltroRawStreamFast::NextDDL()
   do {
     if (!fRawReader->ReadNextData(dataPtr)) return kFALSE;
   } while (fRawReader->GetDataSize() == 0);
+  fPrevDDLNumber = fDDLNumber;
+  fDDLNumber = fRawReader->GetDDLID();
 
   // Temporary solution while Per Thomas is
   // changing the decoder code
@@ -83,7 +96,7 @@ Bool_t AliAltroRawStreamFast::NextDDL()
 
   return kTRUE;
 }
-
+//_____________________________________________________________________________
 Bool_t AliAltroRawStreamFast::NextChannel()
 {
   // Get the data for the next altro channel
@@ -92,7 +105,7 @@ Bool_t AliAltroRawStreamFast::NextChannel()
   }  while (fData.GetDataSize() == 0);
   return kTRUE;
 }
-
+//_____________________________________________________________________________
 Bool_t AliAltroRawStreamFast::NextBunch()
 {
   // Get the data for the next altro bunch

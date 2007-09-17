@@ -22,7 +22,8 @@ AliAltroData::AliAltroData(): fData(0),
 				    fBunchData(0),
 				    fDataSize(0),
 				    fWc(0),
-				    fHadd(0),
+                                    fHadd(-1),
+                                    fPrevHadd(-1),
 				    fBunchCounter(0),
 				    fIsComplete(0)
 {
