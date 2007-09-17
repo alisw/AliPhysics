@@ -42,16 +42,15 @@ AliHMPIDRawStream::AliHMPIDRawStream(AliRawReader* rawReader) :
   fRawReader->Select("HMPID");
 }
 //-----------------------------------------------------------------------------
-/*
 AliHMPIDRawStream::AliHMPIDRawStream() :
   fDDLNumber(-1),
+  fRawReader(0x0),
   fData(NULL),
   fPosition(-1)
 {
   // Constructor
   Init();
 }
-*/
 //_____________________________________________________________________________
 AliHMPIDRawStream::~AliHMPIDRawStream()
 {
