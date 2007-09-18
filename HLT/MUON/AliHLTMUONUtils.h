@@ -293,7 +293,7 @@ private:
 //  // statements...
 //
 #ifdef DEBUG
-#	include <ostream>
+#	include <iostream>
 #	define DebugTrace(message) {std::cout << message << std::endl;}
 #else // DEBUG
 #	define DebugTrace(message)
