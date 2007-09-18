@@ -23,6 +23,7 @@ class TH1F;
 class TH1I;
 class TTreeSRedirector;
 class AliTPCcalibTracksCuts;
+class TChain;
 
 
 class AliTPCcalibTracks : public TNamed {
@@ -32,6 +33,8 @@ public :
    AliTPCcalibTracks(const Text_t *name, const Text_t *title, AliTPCClusterParam *clusterParam, AliTPCcalibTracksCuts* cuts);
    virtual ~AliTPCcalibTracks();
    
+   static void     AddInfo(TChain * chain, char* fileName);
+   static void     AddCuts(TChain * chain, char* ctype);
    void            Process(AliTPCseed *track, AliESDtrack *esd);
    
    Float_t         TPCBetheBloch(Float_t bg);
@@ -136,12 +139,13 @@ public:
    void SetMax1pt(Float_t max1pt){fMax1pt = max1pt;}
    void SetEdgeXYCutNoise(Float_t edgeCutNoise){fEdgeYXCutNoise = edgeCutNoise;}
    void SetEdgeThetaCutNoise(Float_t edgeCutNoise){fEdgeThetaCutNoise = edgeCutNoise;}
-   Int_t   GetMinClusters(){return fMinClusters;}
-   Float_t GetMinRatio(){return fMinRatio;}
-   Float_t GetMax1pt(){return fMax1pt;}
-   Float_t GetEdgeYXCutNoise(){return fEdgeYXCutNoise;}
-   Float_t GetEdgeThetaCutNoise(){return fEdgeThetaCutNoise;}
-   void Print(){
+   const Int_t   GetMinClusters(){return fMinClusters;}
+   const Float_t GetMinRatio(){return fMinRatio;}
+   const Float_t GetMax1pt(){return fMax1pt;}
+   const Float_t GetEdgeYXCutNoise(){return fEdgeYXCutNoise;}
+   const Float_t GetEdgeThetaCutNoise(){return fEdgeThetaCutNoise;}
+   virtual void Print(Option_t* option = ""){
+      option = option;  // to avoid compiler warnings
       cout << "<AliTPCcalibTracksCuts>: The following cuts are specified: " << endl;
       cout << "fMinClusters: " << fMinClusters << endl;
       cout << "fMinRatio: " << fMinRatio << endl;
@@ -150,69 +154,6 @@ public:
       cout << "fEdgeThetaCutNoise: " << fEdgeThetaCutNoise << endl;
    }  // Prints out the specified cuts
    
-private:
-   Int_t   fMinClusters;         // number of clusters
-   Float_t fMinRatio;            // kMinRratio = 0.4
-   Float_t fMax1pt;              // kMax1pt = 0.5
-   Float_t fEdgeYXCutNoise;      // kEdgeYXCutNoise = 0.13
-   Float_t fEdgeThetaCutNoise;   // kEdgeThetaCutNoise = 0.018
-
-protected:         
-   ClassDef(AliTPCcalibTracksCuts,1)
-};
-
-
-#endif
-
-
-#ifndef AliTPCCALIBTRACKSCUTS_H
-#define AliTPCCALIBTRACKSCUTS_H
-
-
-class AliTPCcalibTracksCuts: public TNamed {
-   //////////////////////////////////////////////////////
-   //                                                  //
-   //     Class to specify cuts for track analysis     //
-   //     with AliTPCcalibTracks                       //
-   //                                                  //
-   //////////////////////////////////////////////////////
-
-public:
-   AliTPCcalibTracksCuts(Int_t minClusters = 20, Float_t minRatio = 0.4, Float_t max1pt = 0.5,
-      Float_t edgeXZCutNoise = 0.13, Float_t edgeThetaCutNoise = 0.018):
-         TNamed("calibTracksCuts", "calibTracksCuts") {
-      // 
-      // Constuctor for AliTPCcalibTracksCuts
-      // specify the cuts to be set on the processed tracks
-      // 
-      fMinClusters = minClusters;
-      fMinRatio = minRatio;
-      fMax1pt = max1pt;
-      fEdgeYXCutNoise = edgeXZCutNoise;
-      fEdgeThetaCutNoise = edgeThetaCutNoise;
-   }
-   virtual ~AliTPCcalibTracksCuts(){cout << "AliTPCcalibTracksCuts destructor called, nothing happend." << endl;}
-   void SetMinClusters(Int_t minClusters){fMinClusters = minClusters;}
-   void SetMinRatio(Float_t minRatio){fMinRatio = minRatio;}
-   void SetMax1pt(Float_t max1pt){fMax1pt = max1pt;}
-   void SetEdgeXYCutNoise(Float_t edgeCutNoise){fEdgeYXCutNoise = edgeCutNoise;}
-   void SetEdgeThetaCutNoise(Float_t edgeCutNoise){fEdgeThetaCutNoise = edgeCutNoise;}
-   Int_t   GetMinClusters(){return fMinClusters;}
-   Float_t GetMinRatio(){return fMinRatio;}
-   Float_t GetMax1pt(){return fMax1pt;}
-   Float_t GetEdgeYXCutNoise(){return fEdgeYXCutNoise;}
-   Float_t GetEdgeThetaCutNoise(){return fEdgeThetaCutNoise;}
-//    void Print();  // Prints out the specified cuts
-   void Print(){
-      cout << "<AliTPCcalibTracksCuts>: The following cuts are specified: " << endl;
-      cout << "fMinClusters: " << fMinClusters << endl;
-      cout << "fMinRatio: " << fMinRatio << endl;
-      cout << "fMax1pt: " << fMax1pt << endl;
-      cout << "fEdgeYXCutNoise: " << fEdgeYXCutNoise << endl;
-      cout << "fEdgeThetaCutNoise: " << fEdgeThetaCutNoise << endl;
-   }  // Prints out the specified cuts
-
-      
 private:
    Int_t   fMinClusters;         // number of clusters
    Float_t fMinRatio;            // kMinRratio = 0.4

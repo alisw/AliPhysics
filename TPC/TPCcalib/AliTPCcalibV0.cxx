@@ -321,7 +321,7 @@ void AliTPCcalibV0::MakeV0s(){
       if (vertex.GetRr()<kMinR) continue;
       if (vertex.GetDcaV0Daughters()>1.) continue;
       if (vertex.GetDcaV0Daughters()>0.3*vertex.GetRr()) continue;
-      if (vertex.GetPointAngleFi()<0.9) continue;
+      // if (vertex.GetPointAngle()<0.9) continue;
       vertex.SetIndex(0,itrack0);
       vertex.SetIndex(1,itrack1);      
       fV0s->AddLast(new AliV0(vertex));

@@ -191,7 +191,7 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
    delete fArrayQRMSZ;
    
   delete fHclus;
-//    delete fDebugStream;
+  delete fDebugStream;
 }
 
 
@@ -321,7 +321,54 @@ AliTPCcalibTracks::AliTPCcalibTracks(const Text_t *name, const Text_t *title, Al
    } 
 }    
    
-     
+  
+void AliTPCcalibTracks::AddInfo(TChain * chain, char* fileName){
+   // 
+   // Add the neccessary information for process to the chain 
+   // (cluster parametrization)
+   // 
+   TFile clusterParamFile(fileName);
+   AliTPCClusterParam *clusterParam  =  (AliTPCClusterParam *) clusterParamFile.Get("Param");
+   chain->GetUserInfo()->AddLast((TObject*)clusterParam);
+}
+
+void AliTPCcalibTracks::AddCuts(TChain * chain, char* ctype){
+   // 
+   // add predefined cuts to the chain for processing
+   // (creates AliTPCcalibTracksCuts object)
+   // the cuts are set in the following order:
+   // fMinClusters (number of clusters)
+   // fMinRatio 
+   // fMax1pt   1  over p_t
+   // fEdgeYXCutNoise
+   // fEdgeThetaCutNoise
+   // 
+   // The following predefined sets of cuts can be selected:
+   // laser:      20, 0.4, 0.5, 0.13, 0.018
+   // cosmic:     20, 0.4, 0.5, 0.13, 0.01
+   // lowflux:    20, 0.4, 5, 0.2, 0.0001
+   // highflux:   20, 0.4, 5, 0.2, 0.0001
+   // 
+   
+   TString cutType(ctype);
+   cutType.ToUpper();
+   AliTPCcalibTracksCuts *cuts = 0;
+   if (cutType == "LASER")
+      cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
+   else if (cutType == "COSMIC")
+      cuts = new AliTPCcalibTracksCuts(20, 0.4, 0.5, 0.13, 0.018);
+   else if (cutType == "LOWFLUX")
+      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001);
+   else if (cutType == "HIGHFLUX")
+      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001);
+   else {
+      cuts = new AliTPCcalibTracksCuts(20, 0.4, 5, 0.2, 0.0001);
+      cerr << "WARNING! unknown type '" << ctype << "', cuts set to default values for cosmics." << endl;
+   }
+   chain->GetUserInfo()->AddLast(cuts);
+}
+
+   
 void AliTPCcalibTracks::Process(AliTPCseed *track, AliESDtrack *esd){
    // 
    // To be called in the selector
@@ -944,6 +991,10 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       "PZ0.="<<&parZ0<<
       "SigmaY0="<<sigmaY0<< 
       "SigmaZ0="<<sigmaZ0<< 
+      "angley="<<angley<<
+      "anglez="<<anglez<<
+      
+
       "\n";
 
 //       tracklet dubug
@@ -983,6 +1034,10 @@ void  AliTPCcalibTracks::FillResolutionHistoLocal(AliTPCseed * track){
       "SigmaZ2S="<<sigmaZ2S<< 
       "SigmaDY2S="<<sigmaDY2S<< 
       "SigmaDZ2S="<<sigmaDZ2S<< 
+	"angley="<<angley<<
+	"anglez="<<anglez<<
+      
+
       "\n";
     }  // if (useForResol && nclFound > 2 * kMinRatio * kDelta)
   }    // loop over all padrows along the track: for (Int_t irow = 0; irow < 159; irow++)
@@ -1948,7 +2003,7 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
          }
       }
    }
-   
+    
    cout << "Histograms loaded, starting to proces..." << endl;
    
    //--------------------------------------------------------------------------------------------
@@ -2025,6 +2080,7 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
             TAxis *xaxis  = hres->GetXaxis();
             TAxis *yaxis  = hres->GetYaxis();
             TAxis *zaxis  = hres->GetZaxis();
+            TAxis *zaxisrms  = hrms->GetZaxis();
             for (Int_t biny = 1; biny <= yaxis->GetNbins(); biny++) {
                // angle loop
                angleCenter = yaxis->GetBinCenter(biny);
@@ -2044,11 +2100,14 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
                   char name[200];
                   sprintf(name,"%s x %f y %f", hres->GetName(),zCenter,angleCenter);
 //                   TH1D *projectionRes = new TH1D(name, name, zaxis->GetNbins(), zaxis->GetXmin(), zaxis->GetXmax());
-                  TH1D * projectionRes = (TH1D*)(hres->ProjectionZ(name,binx,binx, biny,biny));
+//                  TH1D * projectionRes = (TH1D*)(hres->ProjectionZ(name,binx,binx, biny,biny));
+                  TH1D * projectionRes = new TH1D(name,name,zaxis->GetNbins(),zaxis->GetXmin(), zaxis->GetXmax());
                   
+
                   sprintf(name,"%s x %f y %f", hrms->GetName(),zCenter,angleCenter);
 //                   TH1D *projectionRms = new TH1D(name, name, zaxis->GetNbins(), zaxis->GetXmin(), zaxis->GetXmax());
-                  TH1D * projectionRms = (TH1D*)(hrms->ProjectionZ(name,binx,binx, biny,biny));
+//                  TH1D * projectionRms = (TH1D*)(hrms->ProjectionZ(name,binx,binx, biny,biny));
+                  TH1D * projectionRms =  new TH1D(name,name,zaxis->GetNbins(),zaxisrms->GetXmin(), zaxisrms->GetXmax());
                   
 /*                  
                   for (Int_t ibin3 = 1; ibin3 < zaxis->GetNbins(); ibin3++) {
@@ -2059,17 +2118,18 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
 */                  
                   projectionRes->SetDirectory(0);
                   projectionRms->SetDirectory(0);
-                  
+                  Double_t entries = projectionRes->GetEntries();
+		  Int_t    nbins   =0;
                   if (projectionRes->GetEntries() < minEntries){
                      // if not enough statistic
                      zMean = 0;
                      angleMean = 0;
-                     Double_t   entries =0;
-                     projectionRes->Clear();
+                     entries =0;
+                     //projectionRes->Clear();
                      projectionRms->Clear();	      
-                     for (Int_t dbin = 0; dbin <= 8; dbin++)
-                        for (Int_t dbiny2 = -4; dbiny2 <= 4; dbiny2++) {
-                           for (Int_t dbinx2 = -4; dbinx2 <= 4; dbinx2++){
+                     for (Int_t dbin = 0; dbin <= 8; dbin++){
+                        for (Int_t dbiny2 = -1; dbiny2 <= 1; dbiny2++) {
+                           for (Int_t dbinx2 = -3; dbinx2 <= 3; dbinx2++){
                               if (TMath::Abs(dbinx2) + TMath::Abs(dbiny2) != dbin) continue;
                               Int_t binx2 = binx + dbinx2;
                               Int_t biny2 = biny + dbiny2;
@@ -2077,47 +2137,46 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
                               if (biny2 < 1) continue;
                               if (binx2 >= xaxis->GetNbins()) continue;
                               if (biny2 >= yaxis->GetNbins()) continue;
-                              // Code below is to slow
-/*                              TH1D * projectionRes2 = (TH1D*)(hres->ProjectionZ("Temp",binx2,binx2, biny2,biny2));
-                              projectionRes2->SetDirectory(0);
-                              projectionRes->Add(projectionRes2);
-                              TH1D * projectionRMS2 = (TH1D*)(hrms->ProjectionZ("Temp",binx2,binx2, biny2,biny2));
-                              projectionRMS2->SetDirectory(0);
-                              projectionRms->Add(projectionRMS2);
-                              //
-                              entries   += projectionRes2->GetEntries();
-                              zMean     += projectionRes2->GetEntries() * xaxis->GetBinCenter(binx2);
-                              angleMean += projectionRes2->GetEntries() * yaxis->GetBinCenter(biny2);
-                              delete projectionRes2;
-                              delete projectionRMS2;*/
+			      nbins++;
+			      //
+			      //
+			      // Fill resolution histo
                               for (Int_t ibin3 = 1; ibin3 < zaxis->GetNbins(); ibin3++) {
-                                 projectionRes->Fill(ibin3, hres->GetBinContent(binx2, biny2, ibin3));
-                                 projectionRms->Fill(ibin3, hres->GetBinContent(binx2, biny2, ibin3));
+				Int_t content = hres->GetBinContent(binx2, biny2, ibin3);
+				
+				projectionRes->Fill(zaxis->GetBinCenter(ibin3), hres->GetBinContent(binx2, biny2, ibin3));
                                  entries   += hres->GetBinContent(binx2, biny2, ibin3);
                                  zMean     += hres->GetBinContent(binx2, biny2, ibin3) * xaxis->GetBinCenter(binx2);
                                  angleMean += hres->GetBinContent(binx2, biny2, ibin3) * yaxis->GetBinCenter(biny2);
                               }  // ibin3 loop
-                              if (entries > minEntries) break;
+			      // fill RMS histo
+			      for (Int_t ibin3 = 1; ibin3 < zaxisrms->GetNbins(); ibin3++) {
+				projectionRms->Fill(zaxisrms->GetBinCenter(ibin3), hrms->GetBinContent(binx2, biny2, ibin3));
+			      }
+
                            }  //dbinx2 loop
-                           if (entries > minEntries) break;
                         }  // dbiny2 loop
-                     if ( projectionRes->GetEntries() < minEntries) continue;
-                     if (entries == 0) continue;  
+			if (entries > minEntries) break;
+		     }
+                     if ( entries< minEntries) continue;
                      zMean /= entries;
                      angleMean /= entries;
                   }     // if (projectionRes->GetEntries() < minEntries)
                   
-                  if (projectionRes->GetEntries() > minEntries) {
+                  if (projectionRes->GetSum() > minEntries) {
                      //  when enough statistic is accumulated
-                     Float_t entries = projectionRes->GetEntries();
-                     Float_t xmin    = projectionRes->GetMean() - 2. * projectionRes->GetRMS() - 0.02;
-                     Float_t xmax    = projectionRes->GetMean() + 2. * projectionRes->GetRMS() + 0.02;
+                     Float_t entries2 = projectionRes->GetSum();
+                     Float_t xmin    = projectionRes->GetMean() - 2. * projectionRes->GetRMS() - 0.2;
+                     Float_t xmax    = projectionRes->GetMean() + 2. * projectionRes->GetRMS() + 0.2;
                      projectionRes->Fit("gaus","q","",xmin,xmax);
                      Float_t resol   = projectionRes->GetFunction("gaus")->GetParameter(2);
                      Float_t sigma   = projectionRes->GetFunction("gaus")->GetParError(2);
+		     Float_t meanR   = projectionRes->GetMean();
+		     Float_t sigmaR  = projectionRes->GetRMS();
+		     
                      //
-                     xmin = projectionRms->GetMean() - 2. * projectionRes->GetRMS() - 0.02;
-                     xmax = projectionRms->GetMean() + 2. * projectionRes->GetRMS() + 0.02;
+                     xmin = projectionRms->GetMean() - 2. * projectionRes->GetRMS() - 0.2;
+                     xmax = projectionRms->GetMean() + 2. * projectionRes->GetRMS() + 0.2;
                      projectionRms->Fit("gaus","q","",xmin,xmax);
                      Float_t rmsMean    = projectionRms->GetFunction("gaus")->GetParameter(1);
                      Float_t errorRMS   = projectionRms->GetFunction("gaus")->GetParError(1);
@@ -2130,6 +2189,8 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
                      
                      fTreeResol<<"Resol"<<
                         "Entries="<<entries<<
+		       "Entries2="<<entries2<<
+		       "nbins="<<nbins<<
                         "Dim="<<idim<<
                         "Pad="<<ipad<<
                         "Length="<<length<<
@@ -2142,11 +2203,22 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, char* pathName){
                         "AngleS="<<angleSigma<<
                         "Resol="<<resol<<
                         "Sigma="<<sigma<<
+                        "MeanR="<<meanR<<
+                        "SigmaR="<<sigmaR<<
+		        //
                         "RMSm="<<rmsMean<<
                         "RMSs="<<rmsSigma<<
                         "RMSe0="<<errorRMS<<
                         "RMSe1="<<errorSigma<<
                         "\n";
+		     /*
+		     projectionRes->SetDirectory(fTreeResol.GetFile());
+		     projectionRes->Write(projectionRes->GetName());
+		     projectionRes->SetDirectory(0);
+		     projectionRms->SetDirectory(fTreeResol.GetFile());
+		     projectionRms->Write(projectionRms->GetName());
+		     projectionRes->SetDirectory(0);
+		     */
                   }
                   delete projectionRes;
                   delete projectionRms;

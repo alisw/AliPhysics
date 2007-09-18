@@ -1,5 +1,8 @@
-SRCS = AliTPCcalibTracks.cxx
+
+SRCS = AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx  \
+        AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx
        
+# AliTPCcalibV0.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 
@@ -7,6 +10,6 @@ EINCLUDE:=RAW TPC STEER
 
 DHDR= TPCcalibLinkDef.h
 
-EXPORT:=$(SRCS:.cxx=.h)
+#EXPORT:=$(SRCS:.cxx=.h)
 
 
