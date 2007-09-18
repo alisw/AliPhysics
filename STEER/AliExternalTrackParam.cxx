@@ -1226,3 +1226,43 @@ Double_t AliExternalTrackParam::GetSnpAt(Double_t x,Double_t b) const {
   Double_t res = fP[2]+dx*crv;
   return res;
 }
+
+Bool_t AliExternalTrackParam::GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t bz){
+  //------------------------------------------------------------------------
+  // Get the distance between two tracks at the local position x 
+  // working in the local frame of this track.
+  // Origin :   Marian.Ivanov@cern.ch
+  //-----------------------------------------------------------------------
+  Double_t xyz[3];
+  Double_t xyz2[3];
+  xyz[0]=x;
+  if (!GetYAt(x,bz,xyz[1])) return kFALSE;
+  if (!GetZAt(x,bz,xyz[2])) return kFALSE;
+  //  
+  //
+  if (TMath::Abs(GetAlpha()-param2->GetAlpha())<kAlmost0){
+    xyz2[0]=x;
+    if (!param2->GetYAt(x,bz,xyz2[1])) return kFALSE;
+    if (!param2->GetZAt(x,bz,xyz2[2])) return kFALSE;
+  }else{
+    //
+    Double_t xyz1[3];
+    Double_t dfi = param2->GetAlpha()-GetAlpha();
+    Double_t ca = TMath::Cos(dfi), sa = TMath::Sin(dfi);
+    xyz2[0] =  xyz[0]*ca+xyz[1]*sa;
+    xyz2[1] = -xyz[0]*sa+xyz[1]*ca;
+    //
+    xyz1[0]=xyz2[0];
+    if (!param2->GetYAt(xyz2[0],bz,xyz1[1])) return kFALSE;
+    if (!param2->GetZAt(xyz2[0],bz,xyz1[2])) return kFALSE;
+    //
+    xyz2[0] =  xyz1[0]*ca-xyz1[1]*sa;
+    xyz2[1] = +xyz1[0]*sa+xyz1[1]*ca;
+    xyz2[2] = xyz1[2];
+  }
+  dist[0] = xyz[0]-xyz2[0];
+  dist[1] = xyz[1]-xyz2[1];
+  dist[2] = xyz[2]-xyz2[2];
+
+  return kTRUE;
+}

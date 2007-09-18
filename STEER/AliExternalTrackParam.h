@@ -146,6 +146,10 @@ class AliExternalTrackParam: public AliVParticle {
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,
 			    Double_t (*f)(Double_t)=ApproximateBetheBloch);
 
+  Bool_t GetDistance(AliExternalTrackParam *param2, Double_t x, Double_t dist[3], Double_t b);
+  Int_t GetIndex(Int_t i, Int_t j) const {return i+(j+1)*j/2;}
+
+
 protected:
   Double_t &Par(Int_t i) {return fP[i];}
   Double_t &Cov(Int_t i) {return fC[i];}
@@ -171,5 +175,8 @@ inline void AliExternalTrackParam::ResetCovariance(Double_t s2) {
     fC[6] = 0.;  fC[7] = 0.;  fC[8] = 0.;  fC[9]*= s2;
     fC[10]= 0.;  fC[11]= 0.;  fC[12]= 0.;  fC[13]= 0.;  fC[14]*=s2;
 }
+
+
+
 
 #endif
