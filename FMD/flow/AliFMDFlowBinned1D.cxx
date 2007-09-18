@@ -31,7 +31,8 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(UShort_t order,
 }
 //____________________________________________________________________
 AliFMDFlowBinned1D::AliFMDFlowBinned1D(const AliFMDFlowBinned1D& o)
-  : fXAxis(o.fXAxis)
+  : TObject(o), 
+    fXAxis(o.fXAxis)
 {
   UShort_t n = fXAxis.N();
   fBins   = new AliFMDFlowBin*[n];

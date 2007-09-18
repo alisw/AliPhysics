@@ -1,4 +1,4 @@
-qq// -*- mode: C++ -*-
+// -*- mode: C++ -*-
 /** @file 
     @brief Declaration of a 2-dimensional Flow "histogram" */
 #ifndef FLOW_BINNED2D_H

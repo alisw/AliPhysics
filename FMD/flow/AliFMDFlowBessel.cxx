@@ -141,9 +141,20 @@ AliFMDFlowBessel::Ihalf(Int_t n, Double_t x, Double_t* bi, Double_t* di)
   fun_t s = (n > 0 ? &sinh : &cosh);
   fun_t c = (n > 0 ? &cosh : &sinh);
   
+  // Temporary buffers - only grows in size. 
+  static Double_t* tbi = 0;
+  static Double_t* tdi = 0;
+  static Int_t     tn  = 0;
+  if (!tbi || tn < p*n/2+2) { 
+    if (tbi) delete [] tbi;
+    if (tdi) delete [] tdi;
+    tn = p*n/2+2;
+    tbi = new Double_t[tn];
+    tdi = new Double_t[tn];
+  }
   // Temporary buffer 
-  Double_t tbi[p*n/2+2];
-  Double_t tdi[p*n/2+2];
+  // Double_t tbi[p*n/2+2];
+  // Double_t tdi[p*n/2+2];
   
   // Calculate I(-1/2) for n>0 or I(1/2) for n<0 
   Double_t bim = sqrt(2) * (*c)(x) / sqrt(M_PI * x);
@@ -253,7 +264,20 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x, Double_t* bi, Double
     Int_t s2    = (n2 < 0 ? -1 : 1);
     Int_t l1    = (s1 < 0 ? (2*in1+1)/2 : 0);
     Int_t l2    = (s1 > 0 ? in1 : 0);
-    Double_t tbi[nt+1], tdi[nt+1];
+
+    // Temporary buffers - only grows in size. 
+    static Double_t* tbi = 0;
+    static Double_t* tdi = 0;
+    static UInt_t    tn  = 0;
+    if (!tbi || tn < nt+1) { 
+      if (tbi) delete [] tbi;
+      if (tdi) delete [] tdi;
+      tn  = nt+1;
+      tbi = new Double_t[tn];
+      tdi = new Double_t[tn];
+    }
+    // Double_t tbi[nt+1], tdi[nt+1];
+
     if (s1 < 0) { 
       Ihalf(2 * n1, x, tbi, tdi);
       for (Int_t i = 0; i < l1 && i < Int_t(nt); i++) { 
@@ -280,8 +304,18 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x, Double_t* bi, Double
   }
 
   UInt_t  n   = UInt_t(in1 > in2 ? in1 : in2);
-  Double_t  tbi[n+1];
-  Double_t  tdi[n+1];
+  static Double_t* tbi = 0;
+  static Double_t* tdi = 0;
+  static UInt_t    tn  = 0;
+  if (!tbi || tn < n+1) { 
+    if (tbi) delete [] tbi;
+    if (tdi) delete [] tdi;
+    tn  = n+1;
+    tbi = new Double_t[tn];
+    tdi = new Double_t[tn];
+  }
+  // Double_t  tbi[n+1];
+  // Double_t  tdi[n+1];
   UInt_t  r   = Iwhole(n, x, tbi, tdi);
   if (r < n) 
     std::cerr << "Only got " << r << "/" << n << " values" 
