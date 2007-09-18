@@ -8,6 +8,7 @@ include $(MODDIR)/hlt.conf
 CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OfflineInterface/AliHLTMUONTriggerRecordsSource.h \
 		OfflineInterface/AliHLTMUONRecHitsSource.h \
+		OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h
 
@@ -26,6 +27,7 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTMUONSinglesDecisionBlockStruct.cxx \
 		AliHLTMUONPairsDecisionBlockStruct.cxx \
 		OnlineAnalysis/AliHLTMUONCalculations.cxx \
+		OnlineAnalysis/AliHLTMUONTriggerReconstructor.cxx \
 		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSM.cxx
 
@@ -50,5 +52,6 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/OnlineAnalysis HLT/MUON/OfflineInterface MUON STEER RAW
+EINCLUDE := 	HLT/BASE HLT/MUON HLT/MUON/OnlineAnalysis \
+		HLT/MUON/OfflineInterface MUON MUON/mapping STEER RAW
 
