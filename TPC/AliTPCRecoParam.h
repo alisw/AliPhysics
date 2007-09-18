@@ -17,6 +17,8 @@ class AliTPCRecoParam : public TObject
  public: 
   AliTPCRecoParam();
   virtual ~AliTPCRecoParam();
+  void     SetClusterSharing(Bool_t sharing){fBClusterSharing=sharing;}
+  Bool_t   GetClusterSharing() const {return fBClusterSharing;}
   Double_t GetCtgRange() const     { return fCtgRange;}
   Double_t GetMaxSnpTracker() const{ return fMaxSnpTracker;}
   Double_t GetMaxSnpTrack() const  { return fMaxSnpTrack;}
@@ -47,6 +49,7 @@ class AliTPCRecoParam : public TObject
   static   AliTPCRecoParam *GetCosmicTestParam(Bool_t bPedestal); // special setting for cosmic  
   //
  protected:
+  Bool_t   fBClusterSharing; // allows or disable cluster sharing during tracking 
   Double_t fCtgRange;        // +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   Double_t fMaxSnpTracker;   // max sin of local angle  - for TPC tracker
   Double_t fMaxSnpTrack;     // max sin of local angle  - for track 

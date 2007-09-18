@@ -31,6 +31,7 @@ ClassImp(AliTPCRecoParam)
 
 //_____________________________________________________________________________
 AliTPCRecoParam::AliTPCRecoParam():
+  fBClusterSharing(kTRUE),
   fCtgRange(1.05),       
   fMaxSnpTracker(0.95),
   fMaxSnpTrack(0.999),
