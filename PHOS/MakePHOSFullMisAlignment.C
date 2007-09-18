@@ -69,7 +69,7 @@ void MakePHOSFullMisAlignment(){
   // *************************    2nd step    ***************
 
   const char* macroname = "MakePHOSFullMisAlignment.C";
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "PHOSfullMisalignment.root";
     TFile f(filename,"RECREATE");

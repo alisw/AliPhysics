@@ -20,7 +20,7 @@ void MakeTPCZeroMisAlignment(){
     }
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "TPCzeroMisalignment.root";
     TFile f(filename,"RECREATE");

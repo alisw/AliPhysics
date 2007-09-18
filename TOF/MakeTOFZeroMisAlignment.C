@@ -5,17 +5,58 @@ void MakeTOFZeroMisAlignment(){
   TClonesArray &alobj = *array;
   const char* macroname = "MakeTOFZeroMisAlignment.C";
 
+  // Activate CDB storage and load geometry from CDB
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetRun(0);
+  
+  AliCDBStorage* storage;
+  
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
+    TString Storage = gSystem->Getenv("STORAGE");
+    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
+      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
+      return;
+    }
+    storage = cdb->GetStorage(Storage.Data());
+    if(!storage){
+      Error(macroname,"Unable to open storage %s\n",Storage.Data());
+      return;
+    }
+    AliCDBPath path("GRP","Geometry","Data");
+    AliCDBEntry *entry = storage->Get(path.GetPath(),cdb->GetRun());
+    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
+    entry->SetOwner(0);
+    TGeoManager* geom = (TGeoManager*) entry->GetObject();
+    AliGeomManager::SetGeometry(geom);
+  }else{
+    AliGeomManager::LoadGeometry(); //load geom from default CDB storage
+  }    
+
    
   AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
-  Int_t i;
   Int_t j=0;
+  Int_t strId=-1;
   Double_t dx=0., dy=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
 
-  for(i=0; i<AliGeomManager::LayerSize(idTOF); i++) {
-    new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+
+  Int_t sActive[18]={0,1,1,0,0,0,1,1,0,1,1,1,1,0,0,1,1,1};
+
+  Int_t nstrA=15;
+  Int_t nstrB=19;
+  Int_t nstrC=19;
+  Int_t nSectors=18;
+  Int_t nStrips=nstrA+2*nstrB+2*nstrC;
+
+  for (Int_t isect = 0; isect < nSectors; isect++) {
+    for (Int_t istr = 1; istr <= nStrips; istr++) {
+      strId++;
+      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+      new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId), AliGeomManager::LayerToVolUID(idTOF,strId), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+    }
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "TOFzeroMisalignment.root";
     TFile f(filename,"RECREATE");
@@ -29,19 +70,6 @@ void MakeTOFZeroMisAlignment(){
     f.Close();
   }else{
     // save in CDB storage
-    TString Storage = gSystem->Getenv("STORAGE");
-    if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
-      Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
-      return;
-    }
-    Info(macroname,"Saving alignment objects in CDB storage %s",
-	 Storage.Data());
-    AliCDBManager* cdb = AliCDBManager::Instance();
-    AliCDBStorage* storage = cdb->GetStorage(Storage.Data());
-    if(!storage){
-      Error(macroname,"Unable to open storage %s\n",Storage.Data());
-      return;
-    }
     AliCDBMetaData* md = new AliCDBMetaData();
     md->SetResponsible("Silvia Arcelli");
     md->SetComment("Zero misalignment for TOF");

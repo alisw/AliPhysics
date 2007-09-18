@@ -19,7 +19,7 @@ void MakeZDCZeroMisAlignment(){
   new(alobj[0]) AliAlignObjParams(ZDCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   new(alobj[1]) AliAlignObjParams(ZDCp, volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save in file
     const char* filename = "ZDCzeroMisalignment.root";
     TFile f(filename,"RECREATE");

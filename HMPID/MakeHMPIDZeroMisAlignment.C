@@ -12,7 +12,7 @@ void MakeHMPIDZeroMisAlignment(){
 
 //   pCA->Print();
   const char* macroname = "MakeHMPIDZeroMisAlignment.C";  
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "HMPIDzeroMisalignment.root";
     TFile f(filename,"RECREATE");

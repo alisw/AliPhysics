@@ -1,6 +1,4 @@
-const char* GetARversion();
-
-void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
+void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/ResidualMisAlignment", Bool_t partialGeom=kFALSE){
   // Make residual misalignment objects for all detectors
   // Pass different "CDBstorage" argument if needed (e.g. to fill
   // conditions' data base on alien) or set it to null string to have
@@ -17,7 +15,13 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
   }else{  
     gSystem->Setenv("TOCDB","kTRUE");
     gSystem->Setenv("STORAGE",strStorage.Data());
+    gROOT->ProcessLine(".L $ALICE_ROOT/macros/GetARversion.C");
     gSystem->Setenv("ARVERSION",GetARversion());
+  }
+  if(partialGeom){
+    gSystem->Setenv("PARTGEOM","kTRUE");
+  }else{
+    gSystem->Setenv("PARTGEOM","kFALSE");
   }
 
   // Load geometry from CDB updating it if we are producing the
@@ -32,7 +36,11 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
     // update geometry in it
     Info(macroname,"Updating geometry in CDB storage %s",strStorage.Data());
     gROOT->ProcessLine(".L $ALICE_ROOT/GRP/UpdateCDBIdealGeom.C");
-    UpdateCDBIdealGeom(strStorage.Data());
+    if(partialGeom){
+      UpdateCDBIdealGeom(strStorage.Data(),"$ALICE_ROOT/macros/Config_PDC06.C");
+    }else{
+      UpdateCDBIdealGeom(strStorage.Data(),"$ALICE_ROOT/macros/Config.C");
+    }
     // load the same geometry from given CDB storage
     AliCDBPath path("GRP","Geometry","Data");
     AliCDBStorage* storage = cdb->GetStorage(strStorage.Data());
@@ -69,23 +77,3 @@ void MakeAllDETsResMisAlignment(Char_t* CDBstorage = "local://$HOME/Residual"){
   return;
 }
 
-const char* GetARversion(){
-  // Get AliRoot version from $ALICE_ROOT/CVS/Repository file
-  // It's the best we can do without a GetVersion() method
-  TFile *fv= TFile::Open("$ALICE_ROOT/CVS/Repository?filetype=raw","READ");
-  Int_t size = fv->GetSize();
-  char *buf = new Char_t[size];
-  memset(buf, '\0', size);
-  fv->Seek(0);
-  const char* alirootv;
-  if ( fv->ReadBuffer(buf, size) ) {
-    Printf("Error reading AliRoot version from file to buffer!");
-    alirootv = "";
-  }
-  if(buf=="AliRoot"){
-    alirootv="HEAD";
-  }else{
-    alirootv = buf;
-  }
-  return alirootv;
-}

@@ -51,7 +51,7 @@ void MakeITSZeroMisAlignment(){
     }
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "ITSzeroMisalignment.root";
     TFile f(filename,"RECREATE");

@@ -43,7 +43,7 @@ void MakePMDResMisAlignment(){
   
   AliCDBStorage* storage;
   
-  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
     TString Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
@@ -125,7 +125,7 @@ void MakePMDResMisAlignment(){
   new(alobj[2]) AliAlignObjParams(Sector3, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
   new(alobj[3]) AliAlignObjParams(Sector4, volid, dx23, dy23, dz23, dpsi23, dtheta23, dphi23, kFALSE);
   
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // Create a File to store the alignment data
     const char* filename = "PMDresidualMisalignment.root";
     TFile f(filename,"RECREATE");

@@ -20,7 +20,7 @@ void MakeHMPIDFullMisAlignment(){
 //   pCA->Print();
 
   const char* macroname = "MakeHMPIDResMisAlignment.C"; 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "HMPIDresidualMisalignment.root";
     TFile f(filename,"RECREATE");

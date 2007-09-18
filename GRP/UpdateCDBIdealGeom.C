@@ -1,43 +1,40 @@
-void UpdateCDBIdealGeom(){
-  // produce the ideal geometry with the current AliRoot and store it in the
-  // CDB
+void UpdateCDBIdealGeom(const char* cdbUri, const char* cfgFile){
+  // Produce the ideal geometry and store it in the specified CDB
+  // The second argument allows to specify the config file to be used
+  // in particular for giving the choice to generate either a full or
+  // a partial geometry.
+  //
 
-  AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetRun(0);
+  AliCDBManager* cdb = AliCDBManager::Instance();
+  // we set the default storage to the repository because some dets require
+  // already at the time of geometry creation to find calibration objects in the cdb
+  if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBStorage* storage = cdb->GetStorage(cdbUri);
+  cdb->SetRun(0);
   AliCDBId id("GRP/Geometry/Data",0,AliCDBRunRange::Infinity());
   AliCDBMetaData *md= new AliCDBMetaData();
 
-  // Get root version
+  // Get root and AliRoot versions
   const char* rootv = gROOT->GetVersion();
+  gROOT->ProcessLine(".L $ALICE_ROOT/macros/GetARversion.C");
+  TString av(GetARversion());
 
-  // Get AliRoot version from file to set it in the metadata of the entry
-  TFile *fv= TFile::Open("$ALICE_ROOT/CVS/Repository?filetype=raw","READ");
-  Int_t size = fv->GetSize();
-  char *buf = new Char_t[size];
-  memset(buf, '\0', size);
-  fv->Seek(0);
-  char* alirootv;
-  if ( fv->ReadBuffer(buf, size) ) {
-    Printf("Error reading AliRoot version from file to buffer!");
-    alirootv = "";
-  }
-  if(buf=="AliRoot"){
-    alirootv="HEAD";
-  }else{
-    alirootv = buf;
-    md->SetAliRootVersion(alirootv);
-    md->SetComment(Form("Geometry produced with root version %s and AliRoot version %s",rootv,alirootv));
-  }
+  md->SetAliRootVersion(av.Data());
+  md->SetComment(Form("Geometry produced with root version %s and AliRoot version %s",rootv,av.Data()));
   
-  gAlice->Init();
+  gAlice->Init(cfgFile);
   
   if(!gGeoManager){
     Printf("Unable to produce a valid geometry to be put in the CDB!");
     return;
   }
   
-  Printf("Storing in CDB geometry produced with root version %s and AliRoot version %s",rootv,alirootv);
-  man->Put(gGeoManager,id,md);
+  Printf("Storing in CDB geometry produced with root version %s and AliRoot version %s",rootv,av.Data());
+  storage->Put(gGeoManager,id,md);
+  // This is to allow macros lauched after this one in the same session to find the
+  // newly produced geometry.
+  storage->QueryCDB(cdb->GetRun());
 
 }
+
+

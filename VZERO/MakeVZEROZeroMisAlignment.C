@@ -17,7 +17,7 @@ void MakeVZEROZeroMisAlignment(){
   TString V0left("VZERO/V0A");
   new(alobj[1]) AliAlignObjParams(V0left.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "VZEROzeroMisalignment.root";
     TFile f(filename,"RECREATE");

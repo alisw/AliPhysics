@@ -12,7 +12,7 @@ void MakeTRDResMisAlignment(){
   
   AliCDBStorage* storage;
   
-  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
     TString Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
@@ -41,6 +41,7 @@ void MakeTRDResMisAlignment(){
   Double_t chry=0.3/1000/TMath::Pi()*180; // 0.3 mrad
   Double_t chrz=0.1/1000/TMath::Pi()*180; // 0.1 mrad
 
+  Int_t sActive[18]={0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0};
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
   Int_t j=0;
@@ -49,15 +50,19 @@ void MakeTRDResMisAlignment(){
   const char* symname; 
 
   // create the supermodules' alignment objects
-  for (int i; i<18; i++) {
-    TString sm_symname(Form("TRD/sm%02d",i));
+  for (Int_t iSect=0; iSect<18; iSect++) {
+    TString sm_symname(Form("TRD/sm%02d",iSect));
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
     new((*array)[j++])
       AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kTRUE);
   }
  
   // create the chambers' alignment objects
+  Int_t chId;
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
+    chId=-1;
+    for (Int_t iSect = 0; iSect < 18; iSect++){
+      for (Int_t iCh = 0; iCh < 5; iCh++) {
       ran->Rannor(dx,rx);
       ran->Rannor(dy,ry);
       ran->Rannor(dz,rz);
@@ -67,13 +72,16 @@ void MakeTRDResMisAlignment(){
       rx*=chrx;
       ry*=chry;
       rz*=chrz;
-      volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+	chId++;
+	volid = AliGeomManager::LayerToVolUID(iLayer,chId);
       symname = AliGeomManager::SymName(volid);
+	if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
       new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }
+  }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "TRDresidualMisalignment.root";
     TFile f(filename,"RECREATE");

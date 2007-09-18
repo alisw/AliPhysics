@@ -77,7 +77,7 @@ AliFMDAlignFaker::AliFMDAlignFaker(Int_t mask, const char* geo,
     fHalfRotMin(0,0,0),
     fHalfRotMax(0,0,0),
     fRunMin(0),
-    fRunMax(9999999), 
+    fRunMax(AliCDBRunRange::Infinity()), 
     fArray(0),
     fComment("")
 {

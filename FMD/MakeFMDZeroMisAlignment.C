@@ -11,7 +11,7 @@ void MakeFMDZeroMisAlignment()
   
   TString Storage;
   
-  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
     Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
@@ -33,7 +33,7 @@ void MakeFMDZeroMisAlignment()
   }    
   
   gSystem->Load("libFMDutil.so");
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     AliFMDAlignFaker faker(AliFMDAlignFaker::kAll, "geometry.root","FMDAlignObjs.root");
   }else{

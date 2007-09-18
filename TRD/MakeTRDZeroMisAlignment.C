@@ -5,7 +5,7 @@ void MakeTRDZeroMisAlignment(){
   TClonesArray *array = new TClonesArray("AliAlignObjParams",1000);
   TClonesArray &alobj = *array;
    
-
+  Int_t sActive[18]={0,0,1,1,1,0,1,0,0,0,0,1,1,0,1,1,0,0};
   Double_t dx=0.,dy=0.,dz=0.,rx=0.,ry=0.,rz=0.;
 
   Int_t j=0;
@@ -13,21 +13,28 @@ void MakeTRDZeroMisAlignment(){
   const char *symname;
 
   // create the supermodules' alignment objects
-  for (int i; i<18; i++) {
-    TString sm_symname(Form("TRD/sm%02d",i));
+  for (Int_t iSect; iSect<18; iSect++) {
+    TString sm_symname(Form("TRD/sm%02d",iSect));
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
     new(alobj[j++]) AliAlignObjParams(sm_symname.Data(),0,dx,dy,dz,rx,ry,rz,kTRUE);
   }
   
    // create the chambers' alignment objects
+  Int_t chId;
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
-    for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
-      volid = AliGeomManager::LayerToVolUID(iLayer,iModule);
+    chId=-1;
+    for (Int_t iSect = 0; iSect < 18; iSect++){
+      for (Int_t iCh = 0; iCh < 5; iCh++) {
+	chId++;
+	volid = AliGeomManager::LayerToVolUID(iLayer,chId);
       symname = AliGeomManager::SymName(volid);
+	if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
       new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kTRUE);
     }
   }
+  }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "TRDzeroMisalignment.root";
     TFile f(filename,"RECREATE");

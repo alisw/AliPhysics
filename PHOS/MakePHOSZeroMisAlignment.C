@@ -63,7 +63,7 @@ void MakePHOSZeroMisAlignment(){
   AliPHOSSurvey geodesicData;
   geodesicData.CreateNullObjects(alobj, phosGeom);
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "PHOSzeroMisalignment.root";
     TFile f(filename,"RECREATE");

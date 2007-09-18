@@ -12,7 +12,7 @@ void MakeEMCALResMisAlignment(){
   
   AliCDBStorage* storage;
   
-  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
     TString Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
@@ -77,7 +77,7 @@ void MakeEMCALResMisAlignment(){
     new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "EMCALresidualMisalignment.root";
     TFile f(filename,"RECREATE");

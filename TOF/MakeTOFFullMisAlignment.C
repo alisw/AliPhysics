@@ -11,9 +11,10 @@ void MakeTOFFullMisAlignment(){
   cdb->SetRun(0);
   
   AliCDBStorage* storage;
+  TString Storage;
   
-  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
-    TString Storage = gSystem->Getenv("STORAGE");
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
+    Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
       return;
@@ -35,38 +36,25 @@ void MakeTOFFullMisAlignment(){
 		  
   // load FRAME full misalignment objects (if needed, the macro
   // for FRAME has to be run in advance) and apply them to geometry
-  Info(macroname,"Loading FRAME alignment objects from CDB storage %s",
-      Storage.Data());
   AliCDBPath fpath("GRP","Align","Data");
-  if( gSystem->Getenv("TOCDB") == TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
+    Info(macroname,"Loading FRAME alignment objects from CDB storage %s",
+	Storage.Data());
     AliCDBEntry *eFrame = storage->Get(fpath.GetPath(),cdb->GetRun());
-    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
-    TClonesArray* arFrame = (TClonesArray*) eFrame->GetObject();
-    arFrame->Sort();
-    Int_t nvols = arFrame->GetEntriesFast();
-    Bool_t flag = kTRUE;
-    for(Int_t j=0; j<nvols; j++)
-      {
-	AliAlignObj* alobj = (AliAlignObj*) arFrame->UncheckedAt(j);
-	if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
-      }
-    if(!flag)
-      Fatal(macroname,"Error in the application of FRAME alignment objects");
   }else{
     AliCDBEntry *eFrame = cdb->Get(fpath.GetPath());
-    if(!entry) Fatal(macroname,"Could not get the specified CDB entry!");
-    TClonesArray* arFrame = (TClonesArray*) eFrame->GetObject();
-    arFrame->Sort();
-    Int_t nvols = arFrame->GetEntriesFast();
-    Bool_t flag = kTRUE;
-    for(Int_t j=0; j<nvols; j++)
-      {
-	AliAlignObj* alobj = (AliAlignObj*) arFrame->UncheckedAt(j);
-	if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
-      }
-    if(!flag)
-      Fatal(macroname,"Error in the application of FRAME alignment objects");
   }
+  if(!eFrame) Fatal(macroname,"Could not get the specified CDB entry!");
+  TClonesArray* arFrame = (TClonesArray*) eFrame->GetObject();
+  arFrame->Sort();
+  Int_t nvols = arFrame->GetEntriesFast();
+  Bool_t flag = kTRUE;
+  for(Int_t j=0; j<nvols; j++)
+  {
+    AliAlignObj* alobj = (AliAlignObj*) arFrame->UncheckedAt(j);
+    if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
+  }
+  if(!flag) Fatal(macroname,"Error in the application of FRAME alignment objects");
 
   //Produce objects for TOF supermodules
   Int_t iIndex=0; //let all modules have index=0 in a layer with no LUT
@@ -74,52 +62,58 @@ void MakeTOFFullMisAlignment(){
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy vol id 
 
   Int_t nSMTOF = 18;
+  Int_t sActive[18]={0,1,1,0,0,0,1,1,0,1,1,1,1,0,0,1,1,1};
   Int_t j=0;
-  Double_t smdx, smdy, smdz, dpsi, dtheta, dphi;
+  Double_t smdx, smdy, smdz=0., dpsi=0., dtheta, dphi=0.;
   TRandom *rnd   = new TRandom(2345);
   Double_t sigmatr = 0.4; // max shift in cm w.r.t. local ideal RS
   Double_t sigmarot = 0.06; // max rot in deg w.r.t. local ideal RS (~ 1 mrad)
   
-  for(Int_t i=0; i<nSMTOF; i++) {
-    TString symname(Form("TOF/sm%02d",i));
+  for(Int_t iSect=0; iSect<nSMTOF; iSect++) {
+    TString symname(Form("TOF/sm%02d",iSect));
     smdx = rnd->Gaus(0.,sigmatr);
     smdy = rnd->Gaus(0.,sigmatr);
-    smdz =0;
-    dpsi = 0.;
     dtheta = rnd->Gaus(0.,sigmarot);
-    dphi = 0.;
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
     new((*array)[j++]) AliAlignObjParams(symname.Data(), dvoluid, smdx, smdy, smdz, dpsi, dtheta, dphi, kFALSE);
   }
   // Apply objects for TOF supermodules 
-  for(Int_t i=0; i<nSMTOF; i++){
-    AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(i);
+  Int_t smCounter=0;
+  for(Int_t iSect=0; iSect<nSMTOF; iSect++){
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+    AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(smCounter++);
+    Info(macroname,Form("Applying object for sector %d ",iSect));
     if(!smobj->ApplyToGeometry()){
-      cout<<"application of object "<<i<<" failed!"<<endl;
+      Fatal(macroname,Form("application of full misalignment object for sector %d failed!",iSect));
       return;
     }
   }
 
   //Produce objects for TOF strips (same sigmas as for residual misalignment)
   AliGeomManager::ELayerID idTOF = AliGeomManager::kTOF;
+  Int_t strId=-1;
 
-  Double_t sdx=0.; 
-  Double_t sdy=0.; 
-  Double_t sdz=0.;
-  Double_t sdpsi, sdtheta, sdphi;
+  Double_t sdx=0., sdy=0., sdz=0., sdpsi=0., sdtheta=0., sdphi=0.;
   TRandom *rnds   = new TRandom(4357);
   sigmatr = 0.1; // max shift in cm w.r.t. local ideal RS
 
-  for(i=0; i<AliGeomManager::LayerSize(idTOF); i++) {
-    sdx = 0;
+  Int_t nstrA=15;
+  Int_t nstrB=19;
+  Int_t nstrC=19;
+  Int_t nSectors=18;
+  Int_t nStrips=nstrA+2*nstrB+2*nstrC;
+
+  for (Int_t iSect = 0; iSect < nSectors; iSect++) {
+    for (Int_t istr = 1; istr <= nStrips; istr++) {
     sdy = rnds->Gaus(0.,sigmatr);
     sdz = rnds->Gaus(0.,sigmatr);
-    sdpsi = 0.;
-    sdtheta = 0.;
-    sdphi = 0.;
-    new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,i), AliGeomManager::LayerToVolUID(idTOF,i), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
+      strId++;
+      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+      new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
+    }
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save in file
     const char* filename = "TOFfullMisalignment.root";
     TFile f(filename,"RECREATE");

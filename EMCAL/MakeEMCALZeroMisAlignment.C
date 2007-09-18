@@ -30,7 +30,7 @@ void MakeEMCALZeroMisAlignment(){
     new(alobj[j++]) AliAlignObjParams(pathstr, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "EMCALzeroMisalignment.root";
     TFile f(filename,"RECREATE");

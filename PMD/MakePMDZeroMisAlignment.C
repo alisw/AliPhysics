@@ -51,7 +51,7 @@ void MakePMDZeroMisAlignment(){
     new(alobj[j++]) AliAlignObjParams(snSector.Data(), volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
   }
 
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // Create a File to store the alignment data
     const char* filename = "PMDzeroMisalignment.root";
     TFile f(filename,"RECREATE");

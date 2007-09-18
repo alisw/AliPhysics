@@ -65,7 +65,7 @@ void MakePHOSResMisAlignment(){
   geodesicData.CreateAliAlignObjParams(alobj);
 
   const char* macroname = "MakePHOSResMisAlignment.C";
-  if( gSystem->Getenv("TOCDB") != TString("kTRUE") ){
+  if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save on file
     const char* filename = "PHOSresidualMisalignment.root";
     TFile f(filename,"RECREATE");
