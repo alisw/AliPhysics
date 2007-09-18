@@ -63,10 +63,7 @@
 #include "AliLog.h"
 #include "RQ_OBJECT.h"
 
-#ifdef DATEON
-#include "AliTPCMonitorDateMonitor.h"
-#endif
-
+class AliTPCMonitorDateMonitor;
 
 using namespace std;
 
@@ -173,9 +170,7 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     AliRawReaderRoot*             fReaderROOT;         // reader for ROOT format
     AliTPCMonitorDateFile*        fReaderDATE;         // reader for DATE files
 
-    #ifdef DATEON
     AliTPCMonitorDateMonitor*     fReaderDATEMon;      // reader for DATE monitoring
-    #endif
     
 
     Int_t         CheckEqId(Int_t secid, Int_t eqid);
@@ -225,9 +220,7 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     Int_t         ReadData(    Int_t secid);
     
     Int_t         ReadDataDATEFile(Int_t secid); 
-    #ifdef DATEON
     Int_t         ReadDataDATEStream(Int_t secid); 
-    #endif
     Int_t         ReadDataDATESubEventLoop(AliTPCMonitorDateFormat* DateForm, Int_t secid);
     Int_t         ReadDataROOT(Int_t secid ); 
     

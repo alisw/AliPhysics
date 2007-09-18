@@ -15,9 +15,15 @@
 
 /*
 $Log$
+Revision 1.1  2007/09/17 10:23:31  cvetan
+New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */   
 
 #include "AliTPCMonitor.h"
+#ifdef ALI_DATE
+#include "AliTPCMonitorDateMonitor.h"
+#endif
 ClassImp(AliTPCMonitor)
 
 //____________________________________________________________________________
@@ -37,7 +43,7 @@ AliTPCMonitor::AliTPCMonitor(char* name, char* title) : AliTPCMonitorConfig(name
 
   fReaderROOT                  =   0;  
   fReaderDATE                  =   0; 
-  #ifdef DATEON
+  #ifdef ALI_DATE
   fReaderDATEMon               =   0; 
   #endif
   // row and pad settings 
@@ -283,12 +289,7 @@ Int_t AliTPCMonitor::ReadData(Int_t secid)
   else if(format==1) {return  ReadDataDATEFile(secid);}
   else if(format==2) 
     {
-#ifdef  DATEON 
       return  ReadDataDATEStream(secid);
-#else
-      AliError("DATE not initialized on this system"); 
-      return  11;
-#endif
     }
   
   AliWarning("Function should already be left");
@@ -302,7 +303,7 @@ Int_t AliTPCMonitor::ReadDataDATEFile(Int_t secid)
   
   if(fReaderROOT) { delete fReaderROOT ; fReaderROOT=0;}
   
-#ifdef DATEON
+#ifdef ALI_DATE
   if(fReaderDATEMon) { delete fReaderDATEMon ; fReaderDATEMon=0;}
 #endif
   
@@ -355,7 +356,7 @@ Int_t AliTPCMonitor::ReadDataDATEFile(Int_t secid)
 }
 
 
-#ifdef DATEON
+#ifdef ALI_DATE
 //__________________________________________________________________
 Int_t AliTPCMonitor::ReadDataDATEStream(Int_t secid) 
 {
@@ -408,6 +409,18 @@ Int_t AliTPCMonitor::ReadDataDATEStream(Int_t secid)
   delete DateForm;
   if(fVerb) cout << " last rcu " << lastrcu << endl; 
   return lastrcu;
+}
+#else
+//__________________________________________________________________
+Int_t AliTPCMonitor::ReadDataDATEStream(Int_t /*secid*/) 
+{
+  // Read Data from DATE stream.
+  // Can also be used for DATE file.
+  // In case DATE is not install
+  // this method is dummy
+
+  AliError("DATE not initialized on this system"); 
+  return  11;
 }
 #endif
 

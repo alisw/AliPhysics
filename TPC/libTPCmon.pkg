@@ -26,7 +26,6 @@ ELIBSDIR:=
 ELIBS:=
 HDRS +=  AliTPCMonitorDateMonitor.h 
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
-CXXFLAGS += -DDATEON 
 endif
 
 
