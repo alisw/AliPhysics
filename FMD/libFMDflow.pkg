@@ -1,0 +1,26 @@
+#-*- Mode: Makefile -*-
+#
+# $Id$
+
+SRCS		=  flow/AliFMDFlowAxis.cxx		\
+		   flow/AliFMDFlowBessel.cxx		\
+		   flow/AliFMDFlowBin.cxx		\
+		   flow/AliFMDFlowBinned1D.cxx		\
+		   flow/AliFMDFlowBinned2D.cxx		\
+		   flow/AliFMDFlowEfficiency.cxx	\
+		   flow/AliFMDFlowEventPlane.cxx	\
+		   flow/AliFMDFlowHarmonic.cxx		\
+		   flow/AliFMDFlowResolution.cxx	\
+		   flow/AliFMDFlowTrue.cxx		
+
+#		   AliFMDAltroIO.cxx		
+
+HDRS		=  $(SRCS:.cxx=.h) 			\
+		   flow/AliFMDFlowStat.h		\
+		   flow/AliFMDFlowUtil.h		
+
+DHDR		:= flow/FMDflowLinkDef.h
+
+#
+# EOF
+#
