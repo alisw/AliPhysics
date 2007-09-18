@@ -25,8 +25,11 @@
 #include "AliHLTMUONCalculations.h"
 #include <cmath>
 
-AliHLTFloat32_t AliHLTMUONCalculations::fgZf = -975.0;
-AliHLTFloat32_t AliHLTMUONCalculations::fgQBL = 3.0;
+AliHLTFloat32_t AliHLTMUONCalculations::fgZf = -975.0;  // cm
+
+AliHLTFloat32_t AliHLTMUONCalculations::fgQBLScaled
+	= 3.0 * 2.99792458e8 / 1e9; // T.m.*c/1e9
+	
 AliHLTMUONParticleSign AliHLTMUONCalculations::fgSign = kSignUnknown;
 AliHLTFloat32_t AliHLTMUONCalculations::fgPx = 0;
 AliHLTFloat32_t AliHLTMUONCalculations::fgPy = 0;
@@ -56,9 +59,7 @@ bool AliHLTMUONCalculations::ComputeMomentum(
 		fgPx = fgPy = fgPz = 0;
 		return false;
 	}
-	// Note: 2.99792458e8/1e9 is the conversion factor for GeV.
-	// It is c/1e9, where c is the speed of light.
-	AliHLTFloat64_t pDivZf = (fgQBL * /*2.99792458e8/1e9*/0.3 / thetaTimesZf);
+	AliHLTFloat64_t pDivZf = (fgQBLScaled / thetaTimesZf);
 	AliHLTFloat64_t p = pDivZf * fgZf;
 	pDivZf = fabs(pDivZf);
 	
@@ -79,105 +80,16 @@ bool AliHLTMUONCalculations::ComputeMomentum(
 }
 
 
-AliHLTFloat32_t AliHLTMUONCalculateSignedPt(
-		register AliHLTFloat32_t x1,
-		register AliHLTFloat32_t y1, register AliHLTFloat32_t y2,
-		register AliHLTFloat32_t z1, register AliHLTFloat32_t z2,
-		AliHLTFloat32_t& p
-	)
+AliHLTFloat32_t AliHLTMUONCalculations::QBL()
 {
-	register AliHLTFloat32_t qBL = 3.0;
-	register AliHLTFloat32_t zf = 975.0;
-	AliHLTFloat32_t thetaTimesZf = - (y1*z2 - y2*z1) / (z2-z1);
-	AliHLTFloat32_t xf = x1 * zf / z1;
-	AliHLTFloat32_t yf = y2 - ((y2-y1) * (z2-zf)) / (z2-z1);
-
-	AliHLTFloat32_t pDivZf = (qBL * 0.3 / thetaTimesZf);
-	p = (AliHLTFloat32_t) fabs( pDivZf * zf );
-	
-	// Note: the 0.3 is a conversion factor to GeV. it is 1e9 / c where c is
-	// the speed of light.
-	AliHLTFloat32_t pt = pDivZf * sqrt(xf*xf+yf*yf);
-	return pt;
-};
+	// We have to convert back into Tesla metres.
+	return fgQBLScaled * 1e9 / 2.99792458e8;
+}
 
 
-AliHLTFloat32_t AliHLTMUONCalculateSignedPt(
-		register AliHLTFloat32_t x1,
-		register AliHLTFloat32_t y1, register AliHLTFloat32_t y2,
-		register AliHLTFloat32_t z1, register AliHLTFloat32_t z2,
-		register AliHLTFloat32_t zf, register AliHLTFloat32_t qBL,
-		AliHLTFloat32_t& p
-	)
+void AliHLTMUONCalculations::QBL(AliHLTFloat32_t value)
 {
-	AliHLTFloat32_t thetaTimesZf = - (y1*z2 - y2*z1) / (z2-z1);
-	AliHLTFloat32_t xf = x1 * zf / z1;
-	AliHLTFloat32_t yf = y2 - ((y2-y1) * (z2-zf)) / (z2-z1);
-
-	AliHLTFloat32_t pDivZf = (qBL * 0.3 / thetaTimesZf);
-	p = (AliHLTFloat32_t) fabs( pDivZf * zf );
-
-	// Note: the 0.3 is a conversion factor to GeV. it is 1e9 / c where c is
-	// the speed of light.
-	AliHLTFloat32_t pt = pDivZf * sqrt(xf*xf+yf*yf);
-	return pt;
-};
-
-
-AliHLTFloat32_t AliHLTMUONCalculateSignedPt(
-		register AliHLTFloat32_t x1,
-		register AliHLTFloat32_t y1, register AliHLTFloat32_t y2,
-		register AliHLTFloat32_t z1, register AliHLTFloat32_t z2
-	)
-{
-	register AliHLTFloat32_t qBL = 3.0;
-	register AliHLTFloat32_t zf = 975.0;
-	AliHLTFloat32_t thetaTimesZf = - (y1*z2 - y2*z1) / (z2-z1);
-	AliHLTFloat32_t xf = x1 * zf / z1;
-	AliHLTFloat32_t yf = y2 - ((y2-y1) * (z2-zf)) / (z2-z1);
-
-	// Note: the 0.3 is a conversion factor to GeV. it is 1e9 / c where c is
-	// the speed of light.
-	AliHLTFloat32_t pt = (qBL * 0.3 / thetaTimesZf) * sqrt(xf*xf+yf*yf);
-	return pt;
-};
-
-
-AliHLTFloat32_t AliHLTMUONCalculateSignedPt(
-		register AliHLTFloat32_t x1,
-		register AliHLTFloat32_t y1, register AliHLTFloat32_t y2,
-		register AliHLTFloat32_t z1, register AliHLTFloat32_t z2,
-		register AliHLTFloat32_t zf, register AliHLTFloat32_t qBL
-	)
-{
-	AliHLTFloat32_t thetaTimesZf = - (y1*z2 - y2*z1) / (z2-z1);
-	AliHLTFloat32_t xf = x1 * zf / z1;
-	AliHLTFloat32_t yf = y2 - ((y2-y1) * (z2-zf)) / (z2-z1);
-
-	// Note: the 0.3 is a conversion factor to GeV. it is 1e9 / c where c is
-	// the speed of light.
-	AliHLTFloat32_t pt = (qBL * 0.3 / thetaTimesZf) * sqrt(xf*xf+yf*yf);
-	return pt;
-};
-
-
-AliHLTFloat32_t AliHLTMUONCalculatePt(
-		register AliHLTFloat32_t x1,
-		register AliHLTFloat32_t y1, register AliHLTFloat32_t y2,
-		register AliHLTFloat32_t z1, register AliHLTFloat32_t z2
-	)
-{
-	return (AliHLTFloat32_t) fabs(AliHLTMUONCalculateSignedPt(x1, y1, y2, z1, z2));
-};
-
-
-AliHLTFloat32_t AliHLTMUONCalculatePt(
-		register AliHLTFloat32_t x1,
-		register AliHLTFloat32_t y1, register AliHLTFloat32_t y2,
-		register AliHLTFloat32_t z1, register AliHLTFloat32_t z2,
-		register AliHLTFloat32_t zf, register AliHLTFloat32_t qBL
-	)
-{
-	return (AliHLTFloat32_t) fabs(AliHLTMUONCalculateSignedPt(x1, y1, y2, z1, z2, zf, qBL));
-};
-
+	// Note: 2.99792458e8/1e9 is the conversion factor for GeV.
+	// It is c/1e9, where c is the speed of light.
+	fgQBLScaled = value * 2.99792458e8 / 1e9;
+}

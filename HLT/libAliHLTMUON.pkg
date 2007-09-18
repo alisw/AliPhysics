@@ -8,9 +8,10 @@ include $(MODDIR)/hlt.conf
 CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OfflineInterface/AliHLTMUONTriggerRecordsSource.h \
 		OfflineInterface/AliHLTMUONRecHitsSource.h \
-		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h
+		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
+		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h
 
-# Sources that are ROOT classes:
+# Sources that are not ROOT classes:
 MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTMUONUtils.cxx \
 		AliHLTMUONConstants.cxx \
@@ -25,14 +26,14 @@ MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
 		AliHLTMUONSinglesDecisionBlockStruct.cxx \
 		AliHLTMUONPairsDecisionBlockStruct.cxx \
 		OnlineAnalysis/AliHLTMUONCalculations.cxx \
-		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx
-
-#		OnlineAnalysis/AliHLTMUONMansoTrackerComponent.cxx
+		OnlineAnalysis/AliHLTMUONHitReconstructor.cxx \
+		OnlineAnalysis/AliHLTMUONMansoTrackerFSM.cxx
 
 MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		AliHLTMUONDataBlockReader.h \
 		AliHLTMUONDataBlockWriter.h \
-		AliHLTMUONDataTypes.h
+		AliHLTMUONDataTypes.h \
+		OnlineAnalysis/AliHLTMUONMansoTrackerFSMCallback.h
 
 # The dictionary linkdef header for rootcint:
 DICTIONARY := 	HLTMUONLinkDef.h

@@ -7,8 +7,7 @@
 
 /**
  *  @file   AliHLTMUONMansoTrackerComponent.h
- *  @author Artur Szostak <artursz@iafrica.com>,
- *          Indranil Das <indra.das@saha.ac.in>
+ *  @author Artur Szostak <artursz@iafrica.com>
  *  @date   
  *  @brief  Tracker component implementing the Manso algorithm for the dimuon HLT.
  */

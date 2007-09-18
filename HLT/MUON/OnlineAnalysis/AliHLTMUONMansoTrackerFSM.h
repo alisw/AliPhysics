@@ -1,24 +1,43 @@
 #ifndef ALIHLTMUONMANSOTRACKERFSM_H
 #define ALIHLTMUONMANSOTRACKERFSM_H
-/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors:                                                       *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// Author: Artur Szostak
-// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
-//
-////////////////////////////////////////////////////////////////////////////////
+/**
+ *  @file   AliHLTMUONMansoTrackerFSM.h
+ *  @author Artur Szostak <artursz@iafrica.com>
+ *  @date   
+ *  @brief  The AliHLTMUONMansoTrackerFSM implements the Manso tracking
+ *          algorithm as a finite state machine, which partially reconstructs
+ *          tracks in the muon spectrometer.
+ */
 
 #include "AliHLTMUONDataTypes.h"
 #include "AliHLTMUONList.h"
 #include "AliHLTMUONCountedList.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
+#include "AliHLTMUONTriggerRecordsBlockStruct.h"
+#include "AliHLTMUONMansoTracksBlockStruct.h"
+#include "AliHLTMUONMansoTrackerFSMCallback.h"
+#include <cassert>
 
 
-class AliHLTMUONMansoTrackerFSM : public AliHLTMUONCoreTracker
+class AliHLTMUONMansoTrackerFSM
 {
 public:
 
@@ -35,7 +54,7 @@ public:
 	   Note: Reset should be called for before calling FindTrack, for the
 	   second or subsequent method calls to FindTrack.
 	 */
-	virtual void FindTrack(const AliHLTMUONCoreTriggerRecord& trigger);
+	virtual void FindTrack(const AliHLTMUONTriggerRecordStruct& trigger);
 	
 	/* When requested clusters have been found by the framework they are returned
 	   to the tracker using this method.
@@ -44,7 +63,10 @@ public:
 	   made using RequestClusters. The tag parameter will be the same one as was
 	   passed to RequestClusters.
 	 */
-	virtual void ReturnClusters(void* tag, const AliHLTMUONRecHitStruct* clusters, UInt count);
+	virtual void ReturnClusters(
+			void* tag, const AliHLTMUONRecHitStruct* clusters,
+			AliHLTUInt32_t count
+		);
 	
 	/* When no more clusters are to be expected for the request with the corresponding
 	   tag value, then this method is called.
@@ -56,10 +78,10 @@ public:
 	
 	/* Called to receive track information after receiving a FoundTrack call.
 	   The tracker should fill the track data block with all relevant information.
-	   Note: the track.triggerid field need not be filled in this method. It should
-	   be overwritten by the caller. 
+	   The method will return false if the momentum could not be calculated from
+	   the hits found. The hits in the track structure will however still be filled.
 	 */
-	virtual void FillTrackData(AliHLTMUONCoreTrack& track);
+	virtual bool FillTrackData(AliHLTMUONMansoTrackStruct& track);
 	
 	/* Called when the tracker should be reset to a initial state. 
 	   All extra internal allocated data structured should be released.
@@ -68,14 +90,14 @@ public:
 	
 	/* To set the TrackerCallback callback object.
 	 */
-	inline void SetCallback(AliHLTMUONCoreTrackerCallback* callback)
+	inline void SetCallback(AliHLTMUONMansoTrackerFSMCallback* callback)
 	{
 		fCallback = callback;
 	};
 
 
 	/* Get and set methods for the a and b parameters used to build the region
-	   of interests. Refer to MansoFilter() for details about a and b parameters.
+	   of interests. Refer to AliRegionOfInterest for details about a and b parameters.
 	 */
 	static AliHLTFloat32_t GetA7()            { return fgA7; };
 	static void SetA7(AliHLTFloat32_t value)  { fgA7 = value; };
@@ -117,7 +139,7 @@ protected:
 		
 		AliRegionOfInterest() : fCentre(), fRs(0.0) {};
 
-		AliRegionOfInterest(AliHLTMUONCorePoint p, AliHLTFloat32_t a, AliHLTFloat32_t b)
+		AliRegionOfInterest(AliHLTMUONRecHitStruct p, AliHLTFloat32_t a, AliHLTFloat32_t b)
 			: fCentre(), fRs(0)
 		{
 			Create(p, a, b);
@@ -134,17 +156,17 @@ protected:
 		     Rs = a * Rp + b
 		   given on page 3 section 4.
 		 */
-		void Create(AliHLTMUONCorePoint p, AliHLTFloat32_t a, AliHLTFloat32_t b);
+		void Create(AliHLTMUONRecHitStruct p, AliHLTFloat32_t a, AliHLTFloat32_t b);
 
 		/* Returns true if the point p is within the region of interest.
 		 */
-		bool Contains(AliHLTMUONCorePoint p) const;
+		bool Contains(AliHLTMUONRecHitStruct p) const;
 
 		void GetBoundaryBox(AliHLTFloat32_t& left, AliHLTFloat32_t& right, AliHLTFloat32_t& bottom, AliHLTFloat32_t& top) const;
 
 	private:
 
-		AliHLTMUONCorePoint fCentre;  // The centre point of the region of interest.
+		AliHLTMUONRecHitStruct fCentre;  // The centre point of the region of interest.
 		AliHLTFloat32_t fRs;      // The redius of the region of interest around fcentre.
 	};
 
@@ -154,11 +176,15 @@ protected:
 	public:
 
 		AliVertex(AliHLTFloat32_t x = 0.0, AliHLTFloat32_t y = 0.0, AliHLTFloat32_t z = 0.0);
-		AliVertex(AliHLTMUONCorePoint xy, AliHLTFloat32_t z);
+		AliVertex(AliHLTMUONRecHitStruct xy, AliHLTFloat32_t z);
 
-		AliHLTMUONCorePoint AsXYPoint() const
+		AliHLTMUONRecHitStruct AsXYPoint() const
 		{
-			return AliHLTMUONCorePoint(fX, fY);
+			AliHLTMUONRecHitStruct p;
+			p.fX = fX;
+			p.fY = fY;
+			p.fZ = 0;
+			return p;
 		};
 
 		// Get/set methods:
@@ -199,7 +225,7 @@ protected:
 		   The z coordiante would be the distance of the n'th chamber to the interaction
 		   vertex.
 		 */
-		AliHLTMUONCorePoint FindIntersectWithXYPlain(AliHLTFloat32_t z) const;
+		AliHLTMUONRecHitStruct FindIntersectWithXYPlain(AliHLTFloat32_t z) const;
 
 	private:
 
@@ -210,7 +236,7 @@ protected:
 	
 	struct AliTagData
 	{
-		AliHLTMUONCoreChamberID fChamber;     // The chamber on which the region of interest lies.
+		AliHLTMUONChamberName fChamber;     // The chamber on which the region of interest lies.
 		AliRegionOfInterest fRoi;  // Region of interest on the next station.
 		AliLine fLine;             // line between a cluster point and the previous station.
 
@@ -219,17 +245,17 @@ protected:
 	
 	struct AliStation5Data
 	{
-		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 5.
+		AliHLTMUONRecHitStruct fClusterPoint;  // Cluster point found on station 5.
 		AliTagData fTag;  // Chamber, ROI and line data for station 5.
 
 		AliStation5Data() : fClusterPoint(), fTag() {};
 	};
 	
-	typedef AliHLTMUONCoreCountedList<AliStation5Data> Station5List;
+	typedef AliHLTMUONCountedList<AliStation5Data> Station5List;
 
 	struct AliStation4Data
 	{
-		AliHLTMUONCoreClusterPoint fClusterPoint;  // Cluster point found on station 4.
+		AliHLTMUONRecHitStruct fClusterPoint;  // Cluster point found on station 4.
 		const AliTagData* fSt5tag;      // Corresponding station 5 tag.
 
 		AliStation4Data() : fClusterPoint(), fSt5tag() {};
@@ -246,13 +272,13 @@ protected:
 		};
 	};
 
-	typedef AliHLTMUONCoreList<AliStation4Data> Station4List;
+	typedef AliHLTMUONList<AliStation4Data> Station4List;
 	
 	
-	void ReceiveClustersChamber7(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const AliTagData* data);
-	void ReceiveClustersChamber8(const AliHLTMUONCoreClusterPoint* clusters, UInt count, const AliTagData* data);
-	void ReceiveClustersChamber9(const AliHLTMUONCoreClusterPoint* clusters, UInt count);
-	void ReceiveClustersChamber10(const AliHLTMUONCoreClusterPoint* clusters, UInt count);
+	void ReceiveClustersChamber7(const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count, const AliTagData* data);
+	void ReceiveClustersChamber8(const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count, const AliTagData* data);
+	void ReceiveClustersChamber9(const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count);
+	void ReceiveClustersChamber10(const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count);
 	void EndOfClustersChamber7();
 	void EndOfClustersChamber8();
 	void EndOfClustersChamber9();
@@ -287,12 +313,12 @@ public:
 	
 protected:
 
-	AliHLTMUONCoreTrackerCallback* fCallback;
+	AliHLTMUONMansoTrackerFSMCallback* fCallback;
 	
 	StatesSM4 fSm4state;  // State of SM4 used for fetching clusters on chambers 7 and 8.
 	StatesSM5 fSm5state;  // State of SM5 used for fetching clusters on chambers 9 and 10.
-	UInt fRequestsCompleted;  // Number of requests for station 4 that have completed.
-	AliHLTMUONCoreChamberID fSt4chamber;     // The chamber on station 4 that data was retreived from.
+	AliHLTUInt32_t fRequestsCompleted;  // Number of requests for station 4 that have completed.
+	AliHLTMUONChamberName fSt4chamber;  // The chamber on station 4 that data was retreived from.
 	
 	AliVertex fV1;    // The impact (hit) vertex for trigger station 1.
 	AliTagData fMc1;  // Trigger station 1 data.
@@ -305,6 +331,8 @@ protected:
 	// Iterators used in the FoundTrack, FillTrackData methods.
 	Station5List::Iterator fSt5rec;      // current station 5 record
 	Station4List::Iterator fFoundPoint;  // current found point
+	AliHLTInt32_t fTriggerId;  // The current ID number of the trigger record being processed.
+	AliHLTInt32_t fTrackId;   // Track ID counter for the current track.
 	
 	
 	/* To request clusters from the boundary box specified by the 'left', 'right',
@@ -316,10 +344,10 @@ protected:
 	 */
 	inline void RequestClusters(
 			AliHLTFloat32_t left, AliHLTFloat32_t right, AliHLTFloat32_t bottom, AliHLTFloat32_t top,
-			AliHLTMUONCoreChamberID chamber, const void* tag = NULL
+			AliHLTMUONChamberName chamber, const void* tag = NULL
 		)
 	{
-		Assert( fCallback != NULL );
+		assert( fCallback != NULL );
 		fCallback->RequestClusters(this, left, right, bottom, top, chamber, tag);
 	};
 
@@ -329,7 +357,7 @@ protected:
 	 */
 	inline void EndOfClusterRequests()
 	{
-		Assert( fCallback != NULL );
+		assert( fCallback != NULL );
 		fCallback->EndOfClusterRequests(this);
 	};
 
@@ -339,7 +367,7 @@ protected:
 	 */
 	inline void FoundTrack()
 	{
-		Assert( fCallback != NULL );
+		assert( fCallback != NULL );
 		fCallback->FoundTrack(this);
 	};
 
@@ -350,7 +378,7 @@ protected:
 	 */
 	inline void NoTrackFound()
 	{
-		Assert( fCallback != NULL );
+		assert( fCallback != NULL );
 		fCallback->NoTrackFound(this);
 	};
 
@@ -358,7 +386,7 @@ private:
 
 	// Not allowed to copy this object.
 	AliHLTMUONMansoTrackerFSM(const AliHLTMUONMansoTrackerFSM& tracker);
-	AliHLTMUONCoreTracker& operator = (const AliHLTMUONCoreTracker& tracker);
+	AliHLTMUONMansoTrackerFSM& operator = (const AliHLTMUONMansoTrackerFSM& tracker);
 
 	static AliHLTFloat32_t fgA7, fgB7;    // Parameters used to create a region of interest for the 7'th chamber.
 	static AliHLTFloat32_t fgA8, fgB8;    // Parameters used to create a region of interest for the 8'th chamber.
@@ -366,42 +394,6 @@ private:
 	static AliHLTFloat32_t fgA10, fgB10;  // Parameters used to create a region of interest for the 10'th chamber.
 	static AliHLTFloat32_t fgZ7, fgZ8, fgZ9, fgZ10, fgZ11, fgZ13;  // Z coordinates of chambers 7 to 10.
 
-};
-
-
-class AliHLTMUONMansoTrackerFSMCallback
-{
-public:
-
-	virtual ~AliHLTMUONMansoTrackerFSMCallback() {};
-	
-	/* All clusters that fall within the specified boundary box on the specified
-	   chamber should be returned to the tracker, by calling the ReturnClusters
-	   method of the given tracker. The same tag parameter must be passed on the 
-	   ReturnClusters method's parameter list.
-	 */
-	virtual void RequestClusters(
-			AliHLTMUONCoreTracker* tracker,
-			AliHLTFloat32_t left, AliHLTFloat32_t right, AliHLTFloat32_t bottom, AliHLTFloat32_t top,
-			AliHLTMUONCoreChamberID chamber, const void* tag
-		) = 0;
-
-	/* When this method is called then one knows no more RequestClusters method
-	   calls are expected.
-	 */
-	virtual void EndOfClusterRequests(AliHLTMUONCoreTracker* tracker) = 0;
-
-	/* This method is called when the tracker has found a track. The FillTrackData
-	   method of the given tracker should be called to receive the track data.
-	   At this point all cluster blocks can be released.
-	 */
-	virtual void FoundTrack(AliHLTMUONCoreTracker* tracker) = 0;
-	
-	/* When the tracker is finished with its work but no track was found then
-	   this method is called. At this point no more work should be performed by
-	   the tracker and all cluster blocks can be released.
-	 */
-	virtual void NoTrackFound(AliHLTMUONCoreTracker* tracker) = 0;
 };
 
 

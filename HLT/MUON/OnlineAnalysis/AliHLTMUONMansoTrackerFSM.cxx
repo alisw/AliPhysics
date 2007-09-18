@@ -1,29 +1,31 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
+ * Primary Authors:                                                       *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          * 
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// Author: Artur Szostak
-// Email:  artur@alice.phy.uct.ac.za | artursz@iafrica.com
-//
-////////////////////////////////////////////////////////////////////////////////
+/**
+ *  @file   AliHLTMUONMansoTrackerFSM.cxx
+ *  @author Artur Szostak <artursz@iafrica.com>
+ *  @date   
+ *  @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
+ */
 
 #include "AliHLTMUONMansoTrackerFSM.h"
 #include "AliHLTMUONCalculations.h"
+#include "AliHLTMUONConstants.h"
 #include "AliHLTMUONUtils.h"
 #include <cmath>
 
@@ -42,7 +44,7 @@ std::ostream& operator << (std::ostream& os, AliHLTMUONMansoTrackerFSM::StatesSM
 	case AliHLTMUONMansoTrackerFSM::kWaitMoreChamber8: os << "kWaitMoreChamber8"; break;
 	case AliHLTMUONMansoTrackerFSM::kWaitChamber7:     os << "kWaitChamber7"; break;
 	case AliHLTMUONMansoTrackerFSM::kWaitMoreChamber7: os << "kWaitMoreChamber7"; break;
-	default:                             os << "FAULT!!"; 
+	default:                                           os << "FAULT!!"; 
 	}
 	return os;
 }
@@ -57,7 +59,7 @@ std::ostream& operator << (std::ostream& os, AliHLTMUONMansoTrackerFSM::StatesSM
 	case AliHLTMUONMansoTrackerFSM::kWaitChamber9:      os << "kWaitChamber9"; break;
 	case AliHLTMUONMansoTrackerFSM::kWaitMoreChamber9:  os << "kWaitMoreChamber9"; break;
 	case AliHLTMUONMansoTrackerFSM::kSM5Done:           os << "kSM5Done"; break;
-	default:                              os << "FAULT!!"; 
+	default:                                            os << "FAULT!!"; 
 	}
 	return os;
 }
@@ -79,22 +81,24 @@ AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgA9  = 0.020f;
 AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgB9  = 3.0f;
 AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgA10 = 0.020f;
 AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgB10 = 3.0f;
-AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ7  = 1274.5f;
-AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ8  = 1305.5f;
-AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ9  = 1408.6f;
-AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ10 = 1439.6f;
-AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ11 = 1603.5f;
-AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ13 = 1703.5f;
+AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ7  = -1274.5f;
+AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ8  = -1305.5f;
+AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ9  = -1408.6f;
+AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ10 = -1439.6f;
+AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ11 = -1603.5f;
+AliHLTFloat32_t AliHLTMUONMansoTrackerFSM::fgZ13 = -1703.5f;
 
 
-void AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Create(AliHLTMUONCorePoint p, AliHLTFloat32_t a, AliHLTFloat32_t b)
+void AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Create(
+		AliHLTMUONRecHitStruct p, AliHLTFloat32_t a, AliHLTFloat32_t b
+	)
 {
 // Creates a region of interest specific to the Manso algorithm from a point and
 // two Manso specific parameters.
 
 	fCentre = p;
 	// Compute the radius Rp
-	AliHLTFloat32_t rp = (AliHLTFloat32_t) sqrt( p.X() * p.X() + p.Y() * p.Y() );
+	AliHLTFloat32_t rp = (AliHLTFloat32_t) sqrt( p.fX * p.fX + p.fY * p.fY );
 
 	// The radius Rs for the region of interest is computed from the
 	// specification given in the document:
@@ -107,13 +111,13 @@ void AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Create(AliHLTMUONCorePoint 
 }
 
 
-bool AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Contains(AliHLTMUONCorePoint p) const
+bool AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Contains(AliHLTMUONRecHitStruct p) const
 {
 	// Compute the distance between the centre of the region of interest and
 	// the point p. This distance must be less than the radius of the region
 	// of interest for p to be contained in the region of interest.
-	register AliHLTFloat32_t lx = fCentre.X() - p.X();
-	register AliHLTFloat32_t ly = fCentre.Y() - p.Y();
+	register AliHLTFloat32_t lx = fCentre.fX - p.fX;
+	register AliHLTFloat32_t ly = fCentre.fY - p.fY;
 	register AliHLTFloat32_t r = (AliHLTFloat32_t) sqrt( lx * lx + ly * ly );
 	DebugTrace("\tAliRegionOfInterest::Contains : p = " << p
 		<< " , centre = " << fCentre << " , r = " << r << " , Rs = " << fRs
@@ -123,85 +127,77 @@ bool AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::Contains(AliHLTMUONCorePoin
 
 
 void AliHLTMUONMansoTrackerFSM::AliRegionOfInterest::GetBoundaryBox(
-		AliHLTFloat32_t& left, AliHLTFloat32_t& right, AliHLTFloat32_t& bottom, AliHLTFloat32_t& top
+		AliHLTFloat32_t& left, AliHLTFloat32_t& right,
+		AliHLTFloat32_t& bottom, AliHLTFloat32_t& top
 	) const
 {
 // Works out the smallest boundary box that will contain the region of interest.
 
-	left = fCentre.X() - fRs;
-	right = fCentre.X() + fRs;
-	bottom = fCentre.Y() - fRs;
-	top = fCentre.Y() + fRs;
+	left = fCentre.fX - fRs;
+	right = fCentre.fX + fRs;
+	bottom = fCentre.fY - fRs;
+	top = fCentre.fY + fRs;
 }
 
 
-AliHLTMUONMansoTrackerFSM::AliVertex::AliVertex(AliHLTFloat32_t x, AliHLTFloat32_t y, AliHLTFloat32_t z)
+AliHLTMUONMansoTrackerFSM::AliVertex::AliVertex(
+		AliHLTFloat32_t x, AliHLTFloat32_t y, AliHLTFloat32_t z
+	)
 	: fX(x), fY(y), fZ(z)
 {
 // Constructor for vertex.
-
-	fX = x;
-	fY = y;
-	fZ = z;
 }
 
 
-AliHLTMUONMansoTrackerFSM::AliVertex::AliVertex(AliHLTMUONCorePoint xy, AliHLTFloat32_t z)
-	: fX(xy.X()), fY(xy.Y()), fZ(z)
+AliHLTMUONMansoTrackerFSM::AliVertex::AliVertex(AliHLTMUONRecHitStruct xy, AliHLTFloat32_t z)
+	: fX(xy.fX), fY(xy.fY), fZ(z)
 {
 // Construct vertex from a point on the XY plane and z coordinate.
-
-	fX = xy.X();
-	fY = xy.Y();
-	fZ = z;
 }
 
 
 AliHLTMUONMansoTrackerFSM::AliLine::AliLine(
-        AliHLTFloat32_t ax, AliHLTFloat32_t ay, AliHLTFloat32_t az,
-        AliHLTFloat32_t bx, AliHLTFloat32_t by, AliHLTFloat32_t bz
-    ) :
-	fMx(ax - bx), fMy(ay - by), fMz(az - bz),
-	fCx(bx), fCy(by), fCz(bz)
+		AliHLTFloat32_t ax, AliHLTFloat32_t ay, AliHLTFloat32_t az,
+		AliHLTFloat32_t bx, AliHLTFloat32_t by, AliHLTFloat32_t bz
+	) :
+	fMx(ax - bx),
+	fMy(ay - by),
+	fMz(az - bz),
+	fCx(bx),
+	fCy(by),
+	fCz(bz)
 {
 // Construct a line defined by L = M*t + C = (A-B)*t + B
 // where M and C are 3D vectors and t is a free parameter.
 // A = (ax, ay, az) and B = (bx, by, bz)
-
-	fMx = ax - bx;
-	fMy = ay - by;
-	fMz = az - bz;
-	fCx = bx;
-	fCy = by;
-	fCz = bz;
 }
 
 
 AliHLTMUONMansoTrackerFSM::AliLine::AliLine(AliVertex a, AliVertex b) :
-	fMx(a.X() - b.X()), fMy(a.Y() - b.Y()), fMz(a.Z() - b.Z()),
-	fCx(b.X()), fCy(b.Y()), fCz(b.Z())
+	fMx(a.X() - b.X()),
+	fMy(a.Y() - b.Y()),
+	fMz(a.Z() - b.Z()),
+	fCx(b.X()),
+	fCy(b.Y()),
+	fCz(b.Z())
 {
 // Contruct a line to go through two vertices a and b.
-
-	fMx = a.X() - b.X();
-	fMy = a.Y() - b.Y();
-	fMz = a.Z() - b.Z();
-	fCx = b.X();
-	fCy = b.Y();
-	fCz = b.Z();
 }
 
 
-AliHLTMUONCorePoint AliHLTMUONMansoTrackerFSM::AliLine::FindIntersectWithXYPlain(AliHLTFloat32_t z) const
+AliHLTMUONRecHitStruct AliHLTMUONMansoTrackerFSM::AliLine::FindIntersectWithXYPlain(
+		AliHLTFloat32_t z
+	) const
 {
 // Find the point of intersection of the line and the XY plane at z.
 
-	Assert( fMz != 0.0 );    // Should not have a ray perpendicular to the beam axis.
+	assert( fMz != 0.0 );  // Should not have a ray perpendicular to the beam axis.
 	AliHLTFloat32_t t = (z - fCz) / fMz;
-	AliHLTFloat32_t lx = fMx*t + fCx;
-	AliHLTFloat32_t ly = fMy*t + fCy;
-
-	return AliHLTMUONCorePoint(lx, ly);
+	AliHLTMUONRecHitStruct p;
+	p.fX = fMx*t + fCx;
+	p.fY = fMy*t + fCy;
+	p.fZ = z;
+	return p;
 }
 
 
@@ -218,25 +214,78 @@ AliHLTMUONMansoTrackerFSM::AliHLTMUONMansoTrackerFSM() :
 	fSt4z(0),
 	fSt4points(),
 	fSt5rec(),
-	fFoundPoint()
+	fFoundPoint(),
+	fTriggerId(-1),
+	fTrackId(0)
 {
 // Default constructor
 }
 
 
-void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONCoreTriggerRecord& trigger)
+void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONTriggerRecordStruct& trigger)
 {
 // Tries to find the track from the trigger seed.
 
 	DebugTrace("SM5 state = " << fSm5state << " , SM4 state = " << fSm4state);
-	DebugTrace("Processing trigger with pt = " << trigger.fPt);
-	fV1 = AliVertex( trigger.fStation1impact, fgZ11 );
-	AliVertex v2 = AliVertex( trigger.fStation2impact, fgZ13 );
+	DebugTrace("Processing trigger with ID = " << trigger.fId);
+	
+	fTriggerId = trigger.fId;
+	
+	AliHLTMUONParticleSign sign;
+	bool hitset[4];
+	AliHLTMUONUtils::UnpackTriggerRecordFlags(trigger.fFlags, sign, hitset);	
+	DebugTrace("hitset = {" << hitset[0] << ", " << hitset[1] << ", "
+		<< hitset[2] << ", " << hitset[3] << "}"
+	); 
+	
+	// Find first valid hit in the trigger record from chambers 11 and 12.
+	int firstHit = -1;
+	for (int i = 0; i < 2; i++)
+	{
+		if (hitset[i])
+		{
+			firstHit = i;
+			break;
+		}
+	}
+	// Find the second valid hit in the trigger record from chambers 13 and 14.
+	int secondHit = -1;
+	for (int i = 2; i < 4; i++)
+	{
+		if (hitset[i])
+		{
+			secondHit = i;
+			break;
+		}
+	}
+	if (firstHit == -1 or secondHit == -1)
+	{
+		NoTrackFound();
+		return;
+	}
+	
+	fV1 = AliVertex(
+			trigger.fHit[firstHit].fX,
+			trigger.fHit[firstHit].fY,
+			trigger.fHit[firstHit].fZ
+		);
+	AliVertex v2 = AliVertex(
+			trigger.fHit[secondHit].fX,
+			trigger.fHit[secondHit].fY,
+			trigger.fHit[secondHit].fZ
+		);
+	
+	DebugTrace("Using fV1 = {x = " << fV1.X() << ", y = " << fV1.Y() << ", "
+		<< fV1.Z() << "}, with firstHit = " << firstHit
+	);
+	DebugTrace("Using v2 = {x = " << v2.X() << ", y = " << v2.Y() << ", "
+		<< v2.Z() << "}, with secondHit = " << secondHit
+	);
 
 	// Form the vector line between the above two impact points and
 	// find the crossing point of the line with chamber 10 (i.e. station 5).
 	fMc1.fLine = AliLine(fV1, v2);
-	AliHLTMUONCorePoint p10 = fMc1.fLine.FindIntersectWithXYPlain( fgZ10 );
+	AliHLTMUONRecHitStruct p10 = fMc1.fLine.FindIntersectWithXYPlain( fgZ10 );
 
 	// Build a region of interest for tracking station 5 (chamber 10).
 	// Remember the parameters a and b are station specific.
@@ -254,12 +303,15 @@ void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONCoreTriggerRecord& tri
 }
 
 
-void AliHLTMUONMansoTrackerFSM::ReturnClusters(void* tag, const AliHLTMUONCoreClusterPoint* clusters, UInt count)
+void AliHLTMUONMansoTrackerFSM::ReturnClusters(
+		void* tag, const AliHLTMUONRecHitStruct* clusters,
+		AliHLTUInt32_t count
+	)
 {
-// Implementation of AliHLTMUONCoreTracker::ReturnClusters.
+// Implementation of AliHLTMUONMansoTrackerFSM::ReturnClusters.
 
-	Assert( count > 0 );
-	Assert( clusters != NULL );
+	assert( count > 0 );
+	assert( clusters != NULL );
 	
 	AliTagData* data = (AliTagData*)tag;
 	DebugTrace("Got AliHLTMUONMansoTrackerFSM::ReturnClusters(tag = " << tag
@@ -283,7 +335,7 @@ void AliHLTMUONMansoTrackerFSM::ReturnClusters(void* tag, const AliHLTMUONCoreCl
 
 void AliHLTMUONMansoTrackerFSM::EndOfClusters(void* tag)
 {
-// Implementation of AliHLTMUONCoreTracker::EndOfClusters.
+// Implementation of AliHLTMUONMansoTrackerFSM::EndOfClusters.
 
 	AliTagData* data = (AliTagData*)tag;
 	DebugTrace("Got AliHLTMUONMansoTrackerFSM::EndOfClusters(chamber = " << data->fChamber << ")");
@@ -302,81 +354,84 @@ void AliHLTMUONMansoTrackerFSM::EndOfClusters(void* tag)
 }
 
 
-void AliHLTMUONMansoTrackerFSM::FillTrackData(AliHLTMUONCoreTrack& track)
+bool AliHLTMUONMansoTrackerFSM::FillTrackData(AliHLTMUONMansoTrackStruct& track)
 {
-// Implementation of AliHLTMUONCoreTracker::FillTrackData
+// Implementation of AliHLTMUONMansoTrackerFSM::FillTrackData
 
 	DebugTrace("FillTrack: st5 = " << fSt5rec->fClusterPoint << ", st4 = " << fFoundPoint->fClusterPoint);
 	
-	AliHLTFloat32_t x1 = fFoundPoint->fClusterPoint.X();
-	AliHLTFloat32_t y1 = fFoundPoint->fClusterPoint.Y();
-	AliHLTFloat32_t y2 = fSt5rec->fClusterPoint.Y();
-	AliHLTFloat32_t momentum;
-	AliHLTFloat32_t pt = AliHLTMUONCoreCalculateSignedPt(x1, y1, y2, fSt4z, fSt5z, momentum);
-	DebugTrace("Calculated Pt = " << pt);
-	DebugTrace("\tusing x1 = " << x1 << " , y1 = " << y1 << " , y2 = " << y2
-		<< " , z1 = " << fSt4z << " , z2 = " << fSt5z
-	);
-
-	if (pt < 0)
-		track.fSign = kSignMinus;
-	else if (pt > 0)
-		track.fSign = kSignPlus;
+	track.fId = fTrackId;
+	// Increment track Id and keep it positive.
+	//TODO: handle the wrapparound better.
+	if (fTrackId < 0x7FFFFFFF)
+		fTrackId++;
 	else
-		track.fSign = kUnknownSign;
-
-	track.fP = momentum;
-	track.fPt = (AliHLTFloat32_t) fabs(pt);
-	for (UInt i = 0; i < 6; i++)
-	{
-		track.fPoint[i] = AliHLTMUONCorePoint(0.0, 0.0);
-		track.fRegion[i] = kInvalidROI;
-	}
-
-	AliHLTFloat32_t left, right, bottom, top;
+		fTrackId = 0;
 	
-	// Have to create the ROI numbers from the internal region of interest structures.
-	fSt5rec->fTag.fRoi.GetBoundaryBox(left, right, bottom, top);
-	AliHLTMUONCoreRegionOfInterest region4(left, right, bottom, top, fSt4chamber);
-	fMc1.fRoi.GetBoundaryBox(left, right, bottom, top);
-	AliHLTMUONCoreRegionOfInterest region5(left, right, bottom, top, fMc1.fChamber);
+	track.fTrigRec = fTriggerId;
 	
-	// Depending on the chamber we received cluster points from, fill the appropriate
-	// point and ROI number. This is done for station 4 then 5.
+	AliHLTFloat32_t x1 = fFoundPoint->fClusterPoint.fX;
+	AliHLTFloat32_t y1 = fFoundPoint->fClusterPoint.fY;
+	AliHLTFloat32_t z1 = fFoundPoint->fClusterPoint.fZ;
+	AliHLTFloat32_t y2 = fSt5rec->fClusterPoint.fY;
+	AliHLTFloat32_t z2 = fSt5rec->fClusterPoint.fZ;
+	
+	bool calculated = AliHLTMUONCalculations::ComputeMomentum(x1, y1, y2, z1, z2);
+	
+	track.fPx = AliHLTMUONCalculations::Px();
+	track.fPy = AliHLTMUONCalculations::Py();
+	track.fPz = AliHLTMUONCalculations::Pz();
+	DebugTrace("Calculated Px = " << track.fPx << ", Py = " << track.fPy
+		<< ", Pz = " << track.fPx
+	);
+	DebugTrace("\tusing x1 = " << x1 << " , y1 = " << y1 << " , y2 = " << y2
+		<< " , z1 = " << z1 << " , z2 = " << z2
+	);
+	
+	track.fChi2 = 0;
+	
+	bool hitset[4];
+	// Depending on which chamber we found reconstructed hits, fill the hit
+	// in the appropriate location. This is done for station 4 then 5.
 	if (fSt4chamber == kChamber8)
 	{
-		track.fPoint[6] = AliHLTMUONCorePoint(0.0, 0.0);
-		track.fRegion[6] = kInvalidROI;
-		track.fPoint[7] = fFoundPoint->fClusterPoint;
-		track.fRegion[7] = region4;
+		track.fHit[0] = AliHLTMUONConstants::NilRecHitStruct();
+		hitset[0] = false;
+		track.fHit[1] = fFoundPoint->fClusterPoint;
+		hitset[1] = true;
 	}
 	else
 	{
-		track.fPoint[6] = fFoundPoint->fClusterPoint;
-		track.fRegion[6] = region4;
-		track.fPoint[7] = AliHLTMUONCorePoint(0.0, 0.0);
-		track.fRegion[7] = kInvalidROI;
+		track.fHit[0] = fFoundPoint->fClusterPoint;
+		hitset[0] = true;
+		track.fHit[1] = AliHLTMUONConstants::NilRecHitStruct();
+		hitset[1] = false;
 	}
 	if (fMc1.fChamber == kChamber10)
 	{
-		track.fPoint[8] = AliHLTMUONCorePoint(0.0, 0.0);
-		track.fRegion[8] = kInvalidROI;
-		track.fPoint[9] = fSt5rec->fClusterPoint;
-		track.fRegion[9] = region5;
+		track.fHit[2] = AliHLTMUONConstants::NilRecHitStruct();
+		hitset[2] = false;
+		track.fHit[3] = fSt5rec->fClusterPoint;
+		hitset[3] = true;
 	}
 	else
 	{
-		track.fPoint[8] = fSt5rec->fClusterPoint;
-		track.fRegion[8] = region5;
-		track.fPoint[9] = AliHLTMUONCorePoint(0.0, 0.0);
-		track.fRegion[9] = kInvalidROI;
+		track.fHit[2] = fSt5rec->fClusterPoint;
+		hitset[2] = true;
+		track.fHit[3] = AliHLTMUONConstants::NilRecHitStruct();
+		hitset[3] = false;
 	}
+	
+	track.fFlags = AliHLTMUONUtils::PackMansoTrackFlags(
+			AliHLTMUONCalculations::Sign(), hitset
+		);
+	return calculated;
 }
 
 
 void AliHLTMUONMansoTrackerFSM::Reset()
 {
-// Implementation of AliHLTMUONCoreTracker::Reset
+// Implementation of AliHLTMUONMansoTrackerFSM::Reset
 
 	DebugTrace("SM5 state = " << fSm5state << " , SM4 state = " << fSm4state);
 	fSt5data.Clear();
@@ -384,6 +439,7 @@ void AliHLTMUONMansoTrackerFSM::Reset()
 	fSm4state = kSM4Idle;
 	fSm5state = kSM5Idle;
 	fRequestsCompleted = 0;
+	fTriggerId = -1;
 }
 
 
@@ -397,7 +453,8 @@ void AliHLTMUONMansoTrackerFSM::Reset()
 // following routines.
 
 void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber7(
-		const AliHLTMUONCoreClusterPoint* clusters, UInt count, const AliTagData* data
+		const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count,
+		const AliTagData* data
 	)
 {
 // State change method for Station 4 state machine.
@@ -408,14 +465,14 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber7(
 		fSm4state = kWaitMoreChamber7;
 	
 	case kWaitMoreChamber7:
-		for (UInt j = 0; j < count; j++)
+		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
-			AliHLTMUONCoreClusterPoint cluster = clusters[j];
+			AliHLTMUONRecHitStruct cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 4.
 			if ( data->fRoi.Contains(cluster) )
 			{
-				DebugTrace("Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 7.");
-				AliStation4Data* newdata = fSt4points.New();
+				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 7.");
+				AliStation4Data* newdata = fSt4points.Add();
 				newdata->fClusterPoint = cluster;
 				newdata->fSt5tag = data;
 			}
@@ -429,7 +486,8 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber7(
 
 
 void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber8(
-		const AliHLTMUONCoreClusterPoint* clusters, UInt count, const AliTagData* data
+		const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count,
+		const AliTagData* data
 	)
 {
 // State change method for Station 4 state machine.
@@ -442,14 +500,14 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber8(
 		fSt4chamber = kChamber8;
 	
 	case kWaitMoreChamber8:
-		for (UInt j = 0; j < count; j++)
+		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
-			AliHLTMUONCoreClusterPoint cluster = clusters[j];
+			AliHLTMUONRecHitStruct cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 4.
 			if ( data->fRoi.Contains(cluster) )
 			{
-				DebugTrace("Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 8.");
-				AliStation4Data* newdata = fSt4points.New();
+				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 8.");
+				AliStation4Data* newdata = fSt4points.Add();
 				newdata->fClusterPoint = cluster;
 				newdata->fSt5tag = data;
 			}
@@ -462,7 +520,9 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber8(
 }
 
 
-void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber9(const AliHLTMUONCoreClusterPoint* clusters, UInt count)
+void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber9(
+		const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count
+	)
 {
 // State change method for Station 5 state machine.
 
@@ -473,14 +533,14 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber9(const AliHLTMUONCoreClus
 		fSm4state = kWaitChamber8;  // Start SM4.
 	
 	case kWaitMoreChamber9:
-		for (UInt j = 0; j < count; j++)
+		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
-			AliHLTMUONCoreClusterPoint cluster = clusters[j];
+			AliHLTMUONRecHitStruct cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 5.
 			if ( fMc1.fRoi.Contains(cluster) )
 			{
-				DebugTrace("Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 9.");
-				AliStation5Data* data = fSt5data.New();
+				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 9.");
+				AliStation5Data* data = fSt5data.Add();
 				data->fClusterPoint = cluster;
 				ProjectToStation4(data, fgZ9);  // This adds a new request for station 4.
 			}
@@ -493,7 +553,9 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber9(const AliHLTMUONCoreClus
 }
 
 
-void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber10(const AliHLTMUONCoreClusterPoint* clusters, UInt count)
+void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber10(
+		const AliHLTMUONRecHitStruct* clusters, AliHLTUInt32_t count
+	)
 {
 // State change method for Station 5 state machine.
 
@@ -505,14 +567,14 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber10(const AliHLTMUONCoreClu
 		fSm4state = kWaitChamber8;  // Start SM4.
 	
 	case kWaitMoreChamber10:
-		for (UInt j = 0; j < count; j++)
+		for (AliHLTUInt32_t j = 0; j < count; j++)
 		{
-			AliHLTMUONCoreClusterPoint cluster = clusters[j];
+			AliHLTMUONRecHitStruct cluster = clusters[j];
 			// Check that the cluster actually is in our region of interest on station 5.
 			if ( fMc1.fRoi.Contains(cluster) )
 			{
-				DebugTrace(4, "Adding cluster [" << cluster.X() << ", " << cluster.Y() << "] from chamber 10.");
-				AliStation5Data* data = fSt5data.New();
+				DebugTrace("Adding cluster [" << cluster.fX << ", " << cluster.fY << "] from chamber 10.");
+				AliStation5Data* data = fSt5data.Add();
 				data->fClusterPoint = cluster;
 				ProjectToStation4(data, fgZ10);  // This adds a new request for station 4.
 			}
@@ -572,20 +634,20 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber8()
 	
 		// We need to resend the requests for chamber 8, but change the request
 		// to get data for chamber 7 instead:
-		UInt reqlistsize = fSt5data.Count();
+		AliHLTUInt32_t reqlistsize = fSt5data.Count();
 		DebugTrace("Re-requesting clusters from chamber 7... reqlistsize = " << reqlistsize);
 
 		Station5List::Iterator rec = fSt5data.First();
-		for (UInt i = 0; i < reqlistsize; i++, rec++)
+		for (AliHLTUInt32_t i = 0; i < reqlistsize; i++, rec++)
 		{
 			// Need to create a new st5 data block for the request.
-			AliStation5Data* data = fSt5data.New();
+			AliStation5Data* data = fSt5data.Add();
 			data->fClusterPoint = rec->fClusterPoint;
 			data->fTag.fLine = rec->fTag.fLine;
 
 			// Rebuild a region of interest for chamber 7.
 			// Remember the parameters a and b are station specific.
-			AliHLTMUONCorePoint p7 = data->fTag.fLine.FindIntersectWithXYPlain( fgZ7 );
+			AliHLTMUONRecHitStruct p7 = data->fTag.fLine.FindIntersectWithXYPlain( fgZ7 );
 			data->fTag.fChamber = kChamber7;
 			data->fTag.fRoi.Create(p7, fgA7, fgB7);
 			
@@ -646,7 +708,7 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber10()
 		
 		// No clusters found on chamber 10 so we need to make a request for
 		// clusters from chamber 9:
-		AliHLTMUONCorePoint p9 = fMc1.fLine.FindIntersectWithXYPlain( fgZ9 );
+		AliHLTMUONRecHitStruct p9 = fMc1.fLine.FindIntersectWithXYPlain( fgZ9 );
 
 		// Build a region of interest for tracking station 5 (chamber 9).
 		// Remember the parameters a and b are station specific.
@@ -672,13 +734,15 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber10()
 }
 
 
-void AliHLTMUONMansoTrackerFSM::ProjectToStation4(AliStation5Data* data, register AliHLTFloat32_t station5z)
+void AliHLTMUONMansoTrackerFSM::ProjectToStation4(
+		AliStation5Data* data, register AliHLTFloat32_t station5z
+	)
 {
 	// Perform chamber specific operations:
 	// Since certain states of SM4 means that it is fetching for Chamber8
 	// and other states are for fetching from Chamber7. We need to make
 	// requests for the correct chamber.
-	Assert( fSm4state == kWaitChamber8 
+	assert( fSm4state == kWaitChamber8 
 		|| fSm4state == kWaitMoreChamber8
 		|| fSm4state == kWaitChamber7
 		|| fSm4state == kWaitMoreChamber7
@@ -689,7 +753,7 @@ void AliHLTMUONMansoTrackerFSM::ProjectToStation4(AliStation5Data* data, registe
 		// Form the vector line between trigger station 1 and tracking station 5,
 		// and find the intersection point of the line with station 4 (chamber8).
 		AliLine line51( AliVertex(data->fClusterPoint, station5z), fV1 );
-		AliHLTMUONCorePoint intercept = line51.FindIntersectWithXYPlain( fgZ8 );
+		AliHLTMUONRecHitStruct intercept = line51.FindIntersectWithXYPlain( fgZ8 );
 		tag->fLine = line51;
 		
 		// Build a region of interest for tracking station 4.
@@ -701,7 +765,7 @@ void AliHLTMUONMansoTrackerFSM::ProjectToStation4(AliStation5Data* data, registe
 		// Form the vector line between trigger station 1 and tracking station 5,
 		// and find the intersection point of the line with station 4 (chamber7).
 		AliLine line51( AliVertex(data->fClusterPoint, station5z), fV1 );
-		AliHLTMUONCorePoint intercept = line51.FindIntersectWithXYPlain( fgZ7 );
+		AliHLTMUONRecHitStruct intercept = line51.FindIntersectWithXYPlain( fgZ7 );
 		tag->fLine = line51;
 		
 		// Build a region of interest for tracking station 4.
