@@ -354,6 +354,7 @@ void AliTPCseed::GetClusterStatistic(Int_t first, Int_t last, Int_t &found, Int_
   for (Int_t i=first;i<last; i++){
     Int_t index = GetClusterIndex2(i);
     if (index!=-1) foundable++;
+    if (index&0x8000) continue;
     if (fClusterPointer[i]) {
       found++;
     }

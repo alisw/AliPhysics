@@ -52,6 +52,11 @@ public:
   void DeleteSeeds();
   void SetDebug(Int_t debug){ fDebug = debug;}
   void FindKinks(TObjArray * array, AliESDEvent * esd);
+  //
+  void FindCurling(TObjArray * array, AliESDEvent * esd, Int_t iter);     
+  void FindSplitted(TObjArray * array, AliESDEvent * esd, Int_t iter);       
+  void FindMultiMC(TObjArray * array, AliESDEvent * esd, Int_t iter);     
+  //
   void FindV0s(TObjArray * array, AliESDEvent * esd);
   void UpdateKinkQualityM(AliTPCseed * seed);
   void UpdateKinkQualityD(AliTPCseed * seed);
@@ -117,8 +122,7 @@ public:
      inline Int_t Find(Double_t z) const; 
      AliTPCclusterMI *  FindNearest(Double_t y, Double_t z, Double_t roady, Double_t roadz) const;
      AliTPCclusterMI *  FindNearest2(Double_t y, Double_t z, Double_t roady, Double_t roadz, UInt_t & index) const;
-     AliTPCclusterMI *  FindNearest3(Double_t y, Double_t z, Double_t roady, Double_t roadz, UInt_t & index) const;
-     
+      
      void SetX(Double_t x) {fX=x;}
      Double_t GetX() const {return fX;}
      Float_t GetDeadZone() const {return fDeadZone;}
@@ -203,9 +207,7 @@ private:
    void  SignShared(AliTPCseed * s1, AliTPCseed * s2);
    void  SignShared(TObjArray * arr);
 
-   void  RemoveUsed(TObjArray * arr, Float_t factor1, Float_t factor2,  Int_t removalindex);
    void  RemoveUsed2(TObjArray * arr, Float_t factor1, Float_t factor2, Int_t minimal);
-   void  RemoveDouble(TObjArray * arr, Float_t factor1, Float_t factor2,  Int_t removalindex);
 
    void  StopNotActive(TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
    void  StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
