@@ -69,6 +69,9 @@ public:
   virtual Double_t Correction(UShort_t k) const;
   /** Get the harmnic order */
   UShort_t Order() const { return fOrder; }
+  /** Draw this corrrection function 
+      @param option Options passed to drawing */
+  virtual void Draw(Option_t* option=""); //*MENU*
 protected:
   /** Order */
   UShort_t fOrder;
@@ -146,6 +149,9 @@ public:
       which is taken to be @f$ \delta\chi@f$  
       @return @f$\chi@f$ */
   virtual Double_t Chi(Double_t res, UShort_t k, Double_t& delta) const;
+  /** Draw this corrrection function 
+      @param option Options passed to drawing */
+  virtual void Draw(Option_t* option=""); //*MENU*
 protected:
   /** Calculate resolution 
       @param chi @f$ \chi@f$
@@ -208,7 +214,7 @@ public:
     : AliFMDFlowResolution(n), fLarge(0) {}
   /** DTOR */
   ~AliFMDFlowResolutionTDR() {}
-  virtual void Clear();
+  virtual void Clear(Option_t* option="");
   /** add a data  point */
   virtual void Add(Double_t psi_a, Double_t psi_b);
   /** Get the correction for harmonic strength of order @a k 
@@ -223,8 +229,22 @@ public:
   /** Get @f$ \chi^2/2@f$ 
       @param e2 The square error on the correction 
       @return @f$ \chi^2/2@f$ */
-  virtual Double_t Chi2Over2(Double_t& e2) const;
+  virtual Double_t Chi2Over2(Double_t r, Double_t& e2) const;
+  /** Draw this corrrection function 
+      @param option Options passed to drawing */
+  virtual void Draw(Option_t* option=""); //*MENU*
 protected:
+  /** Calculate resolution 
+      @param k    Order factor 
+      @param y    @f$ \chi^2/2@f$
+      @param echi @f$\delta\chi@f$ 
+      @param dr   On return, the derivative of @f$ R(\chi)@f$
+      @return 
+      @f[ 
+      \frac{\sqrt{\pi/2}}{2}\chi e^{-\chi^2/2}
+      (I_{\frac{(k-1)}{2}}(\chi^2/2)+ I_{\frac{(k+1)}{2}}(\chi^2/2))
+      @f] */
+  Double_t Res(UShort_t k, Double_t y, Double_t echi2, Double_t& e2) const;
   /** Number of events with large diviation */
   ULong_t fLarge;
   /** Define for ROOT I/O */

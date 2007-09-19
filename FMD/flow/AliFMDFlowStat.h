@@ -30,7 +30,7 @@
     \end{array}\right.
     @f] 
 */
-class AliFMDFlowStat
+class AliFMDFlowStat : public TObject
 {
 public:
   /** Constructor */
@@ -38,7 +38,7 @@ public:
   /** Destructor */
   virtual ~AliFMDFlowStat() {}
   /** Reset */
-  void Clear() { fAverage = fSqVar = 0; fN = 0; } 
+  void Clear(Option_t* option="");
   /** Add another data point */
   void Add(Double_t x);
   /** Get the average */
@@ -57,6 +57,14 @@ protected:
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowStat,1);
 };
+
+//__________________________________________________________________
+inline void 
+AliFMDFlowStat::Clear(Option_t*) 
+{ 
+  fAverage = fSqVar = 0; 
+  fN = 0; 
+}
 
 //__________________________________________________________________
 inline void 

@@ -8,6 +8,9 @@
 #include <flow/AliFMDFlowResolution.h>
 #include <TObject.h>
 
+//Forward declaration 
+class TBrowser;
+
 /** @defgroup c_binned Binned flow 
     @brief This group contains code for binned flow analysis.  Two
     kinds of "histograms" are defined - a 1 dimensional and a 2
@@ -100,8 +103,11 @@ public:
       @return the value of the harmonic */
   virtual Double_t Correction(Double_t& e2, CorType t=naive) const;
   /** Print summary to standard output */ 
-  virtual void Print(Option_t* option="") const;
-    
+  virtual void Print(Option_t* option="") const; //*MENU*
+  /** Return true */ 
+  virtual Bool_t IsFolder() const { return kTRUE; } 
+  /** Browse this item */ 
+  virtual void Browse(TBrowser* b); 
   /** Get the event plane angle */
   virtual Double_t Psi() const { return fPsi.Psi(); } 
   /** Get the sub-event A plane angle */

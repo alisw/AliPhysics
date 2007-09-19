@@ -2,6 +2,8 @@
     @brief Implementation of an Axis in a Flow "histogram" */
 #include "flow/AliFMDFlowAxis.h"
 #include <cmath>
+#include <iostream>
+#include <iomanip>
 
 //====================================================================
 AliFMDFlowAxis::AliFMDFlowAxis(UShort_t n, Double_t* bins) 
@@ -89,6 +91,19 @@ AliFMDFlowAxis::BinUpper(UShort_t i) const
   if (i >= fN) return 0;
   return fBins[i+1];
 }
+
+//____________________________________________________________________
+void
+AliFMDFlowAxis::Print(Option_t*) const
+{
+  std::ios_base::fmtflags old_flags = std::cout.setf(std::ios_base::fixed, 
+						     std::ios_base::floatfield);
+  for (UShort_t i = 0; i < fN; i++) 
+    std::cout << std::setw(5) << BinLower(i) << " - "
+	      << std::setw(5) << BinUpper(i) << std::endl;
+  std::cout.setf(old_flags, std::ios_base::floatfield);
+}
+
 
 //____________________________________________________________________
 //

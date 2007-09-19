@@ -57,6 +57,8 @@ public:
   Double_t* Bins() const { return fBins; }
   /** Get the number of bins */ 
   UShort_t N() const { return fN; }
+  /** Print the axis */ 
+  void Print(Option_t* option="") const; //*MENU*
 protected:
   /** Number of bins */ 
   UShort_t fN;

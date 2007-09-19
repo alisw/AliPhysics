@@ -75,7 +75,16 @@ public:
       @return The flow object in bin @a i or 0 if out of range */ 
   virtual AliFMDFlowBin* GetBin(UShort_t i) const;
   /** Print to standard out */ 
-  virtual void Print(Option_t* option="s") const;
+  virtual void Print(Option_t* option="s") const;  //*MENU*
+  /** Draw as a histogram
+      @param option Option string. 
+      - s  Draw STAR method. 
+      - t  Draw TDR method 
+      - n  Draw Naive method 
+      - b  Draw bare method 
+      - r  Draw resolution rather than harmonic. 
+  */
+  virtual void Draw(Option_t* option="stnb"); //*MENU*
   /** Whether this is to be considered a folder */
   Bool_t IsFolder() const { return kTRUE; }
   /** Browse this object */ 

@@ -49,7 +49,7 @@ struct AliFMDFlowTrueBin : public AliFMDFlowBin
       @return the value of the harmonic */
   Double_t Correction(Double_t& e2, CorType t=naive) const;
   /** Print to standard out. */ 
-  void Print(Option_t* option="") const;
+  void Print(Option_t* option="s") const;
   /** The well-known event plane */ 
   Double_t fPsiR; 
   /** True resolution */ 

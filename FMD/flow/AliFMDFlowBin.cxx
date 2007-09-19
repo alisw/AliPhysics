@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <TBrowser.h>
 
 //====================================================================
 void 
@@ -112,6 +113,19 @@ AliFMDFlowBin::Correction(Double_t& er2, CorType t) const
 void 
 AliFMDFlowBin::Finish() 
 {}
+
+//____________________________________________________________________
+void
+AliFMDFlowBin::Browse(TBrowser* b) 
+{
+  b->Add(&fPsi,      "Full event plane");
+  b->Add(&fPsiA,     "Sub-event A event plane");
+  b->Add(&fPsiB,     "Sub-event A event plane");
+  b->Add(&fRes,      "Naive resolution");
+  b->Add(&fResStar,  "STAR resolution");
+  b->Add(&fResTdr,   "TDR resolution");
+  b->Add(&fHarmonic, "Harmonic");
+}
 
 //____________________________________________________________________
 void 

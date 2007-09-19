@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <TBrowser.h>
 #include <TString.h>
+#include <TH1.h>
+#include <TH2.h>
 
 //====================================================================
 AliFMDFlowBinned1D::AliFMDFlowBinned1D(UShort_t order, 
@@ -139,6 +141,71 @@ AliFMDFlowBinned1D::Browse(TBrowser* b)
     b->Add(fBins[i], Form("bin_%03d", i));
 }
 
+//____________________________________________________________________
+void 
+AliFMDFlowBinned1D::Draw(Option_t* option)
+{
+  TString opt(option);
+  opt.ToLower();
+  const char* names[] = { "Bare", "Naive", "STAR", "TDR" };
+  const AliFMDFlowBin::CorType types[] = { AliFMDFlowBin::none, 
+					   AliFMDFlowBin::naive, 
+					   AliFMDFlowBin::star, 
+					   AliFMDFlowBin::tdr };
+  Bool_t meths[] = { opt.Contains("b"), 
+		     opt.Contains("n"),
+		     opt.Contains("s"), 
+		     opt.Contains("t") };
+  Bool_t res     = opt.Contains("r");
+  UShort_t nm = 0;
+  Short_t  sm = -1;
+  for (UShort_t i = 0; i < 4; i++) { if (meths[i]) { nm++; sm = i; } }
+  TH1* h = 0;
+  if (nm > 1) { 
+    h = new TH2D((res ? "res" : "flow"), (res ? "Resolution" : "Flow"), 
+		 fXAxis.N(), fXAxis.Bins(), nm, 0, nm);
+    h->SetXTitle("x");
+    h->SetYTitle("method");
+    h->GetYaxis()->SetNdivisions(nm+1, kFALSE);
+    h->SetZTitle((res ? "<cos(n(#Psi_{m}-#Psi_{R}))>" : "v"));
+    UInt_t j = 0;
+    for (UShort_t i = 0; i < 4; i++) 
+      if (meths[i]) h->GetYaxis()->SetBinLabel(++j, names[i]);
+  }
+  else {
+    h = new TH1D(Form("%s_%s", (res ? "res" : "flow"), names[sm]),
+		 Form("%s_%s", (res ? "Resolution" : "Flow"), names[sm]),
+		 fXAxis.N(), fXAxis.Bins());
+    h->SetXTitle("x");
+    h->SetYTitle((res ? "<cos(n(#Psi_{m}-#Psi_{R}))>" : "v"));
+  }
+
+  for (UShort_t i = 0; i < fXAxis.N(); i++) { 
+    Double_t       x   = fXAxis.BinCenter(i);
+    AliFMDFlowBin* bin = GetBin(x);
+    Double_t       v, e2;
+    if (nm == 1) { 
+      if (res) v = bin->Correction(e2, types[sm]);
+      else     v = bin->Value(e2, types[sm]);
+      h->SetBinContent(i+1, v);
+      h->SetBinError(i+1, sqrt(e2));
+      continue;
+    }
+    UInt_t j = 0;
+    for (UShort_t k = 0; k < 4; k++)  { 
+      if (!meths[k]) continue;
+      if (res) v = bin->Correction(e2, types[k]);
+      else     v = bin->Value(e2, types[k]);
+      h->SetBinContent(i+1, j+1, v);
+      h->SetBinError(i+1, j+1, sqrt(e2));
+      j++;
+    }
+  }
+  h->Draw(option);
+}
+
+  
+  
 //____________________________________________________________________
 void 
 AliFMDFlowBinned1D::Print(Option_t* option) const
