@@ -1,7 +1,8 @@
 // -*- mode: C++ -*- 
 #ifndef FLOW_STAT_H
 #define FLOW_STAT_H
-#include <cmath>
+// #include <cmath>
+#include <TMath.h>
 #include <TObject.h>
 
 //______________________________________________________
@@ -61,7 +62,7 @@ protected:
 inline void 
 AliFMDFlowStat::Add(Double_t x) 
 { 
-  if (isnan(x) || isinf(x)) return;
+  if (TMath::IsNaN(x) || !TMath::Finite(x)) return;
   fN++;
   if (fN == 1) { 
     fAverage = x;
@@ -72,7 +73,7 @@ AliFMDFlowStat::Add(Double_t x)
   fAverage  *= c;
   fAverage  += x / fN;
   fSqVar    *= c;
-  fSqVar    += pow(x - fAverage, 2) / (fN - 1);
+  fSqVar    += TMath::Power(x - fAverage, 2) / (fN - 1);
 }
 
 
