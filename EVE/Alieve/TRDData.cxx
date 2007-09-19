@@ -183,7 +183,7 @@ void TRDClusters::PointSelected(Int_t n)
 	printf("Signals              : ");
 	Short_t *cSignals = c->GetSignals();
 	for(Int_t ipad=0; ipad<7; ipad++) printf("%d ", cSignals[ipad]); printf("\n");
-	printf("Central pad          : %d\n", c->GetPad());
+	printf("Central pad          : %d\n", c->GetPadCol());
 	printf("MC track labels      : ");
 	for(Int_t itrk=0; itrk<3; itrk++) printf("%d ", c->GetLabel(itrk)); printf("\n");
 // Bool_t	AliCluster::GetGlobalCov(Float_t* cov) const
