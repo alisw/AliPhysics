@@ -194,7 +194,7 @@ void AliTRDdigitsManager::ResetArrays()
   for (Int_t i = 0; i < AliTRDgeometry::Ndet(); i++)
     {
       AliTRDSignalIndex *idx = (AliTRDSignalIndex *)fSignalIndexes->At(i);
-      idx->Reset();
+      if (idx) idx->Reset();
     }
 }
 
