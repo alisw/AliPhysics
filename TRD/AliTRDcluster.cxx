@@ -30,11 +30,13 @@ ClassImp(AliTRDcluster)
 AliTRDcluster::AliTRDcluster() 
   :AliCluster() 
   ,fDetector(0)
-  ,fTimeBin(0)
+  ,fLocalTimeBin(0)
   ,fQ(0)
   ,fNPads(0)
   ,fCenter(0)
-  ,fPad(0)
+  ,fPadCol(0)
+  ,fPadRow(0)
+  ,fPadTime(0)
 { 
   //
   // Default constructor
@@ -50,15 +52,17 @@ AliTRDcluster::AliTRDcluster()
 AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
                            , Float_t *pos, Float_t *sig
                            , Int_t *tracks, Char_t npads, Short_t *signals
-                           , UChar_t col, Char_t timebin
-			   , Float_t center, UShort_t volid)
-  :AliCluster(volid,pos[2],pos[0],pos[1],sig[0],sig[1],0.0,0x0) 
+                           , UChar_t col, UChar_t row, UChar_t time
+                           , Char_t timebin, Float_t center, UShort_t volid)
+  :AliCluster(volid,pos[0],pos[1],pos[2],sig[0],sig[1],0.0,0x0) 
   ,fDetector(det)
-  ,fTimeBin(timebin)
+  ,fLocalTimeBin(timebin)
   ,fQ(q)
   ,fNPads(npads)
   ,fCenter(center)
-  ,fPad(col)
+  ,fPadCol(col)
+  ,fPadRow(row)
+  ,fPadTime(time)
 { 
   //
   // Constructor
@@ -78,11 +82,13 @@ AliTRDcluster::AliTRDcluster(Int_t det, Float_t q
 AliTRDcluster::AliTRDcluster(const AliTRDcluster &c)
   :AliCluster(c)
   ,fDetector(c.fDetector)
-  ,fTimeBin(c.fTimeBin)
+  ,fLocalTimeBin(c.fLocalTimeBin)
   ,fQ(c.fQ)
   ,fNPads(c.fNPads)
   ,fCenter(c.fCenter)
-  ,fPad(c.fPad)
+  ,fPadCol(c.fPadCol)
+  ,fPadRow(c.fPadRow)
+  ,fPadTime(c.fPadTime)
 {
   //
   // Copy constructor 

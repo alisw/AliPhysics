@@ -424,7 +424,7 @@ void  AliTRDtrackingAnalysis::DrawRecPointResolution(int startEvent, int stopEve
 
 	AliTRDcluster *cls = (AliTRDcluster*)module->At(j);
 	if (cls->GetQ() < 10) continue;
-	fTracker->Transform(cls);
+	//fTracker->Transform(cls);
 	fClPos->Fill(cls->GetZ(), cls->GetY());
 		
 	int plane = fGeo->GetPlane(cls->GetDetector());

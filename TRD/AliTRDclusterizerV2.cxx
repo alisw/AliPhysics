@@ -38,21 +38,19 @@
 #include "AliTRDdataArrayF.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDdigitsManager.h"
-#include "AliTRDpadPlane.h"
 #include "AliTRDrawData.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDSimParam.h"
 #include "AliTRDRecParam.h"
 #include "AliTRDcluster.h"
-
-#include "Cal/AliTRDCalROC.h"
-#include "Cal/AliTRDCalDet.h"
-
+#include "AliTRDtransform.h"
 #include "AliTRDSignalIndex.h"
 #include "AliTRDRawStream.h"
 #include "AliTRDRawStreamV2.h"
-
 #include "AliTRDfeeParam.h"
+
+#include "Cal/AliTRDCalROC.h"
+#include "Cal/AliTRDCalDet.h"
 
 ClassImp(AliTRDclusterizerV2)
 
@@ -60,48 +58,49 @@ ClassImp(AliTRDclusterizerV2)
 AliTRDclusterizerV2::AliTRDclusterizerV2()
   :AliTRDclusterizer()
   ,fDigitsManager(NULL)
-  ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fIndexesOut(NULL)
   ,fIndexesMaxima(NULL)
+  ,fTransform(NULL)
 {
   //
   // AliTRDclusterizerV2 default constructor
   //
 
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
+
 }
 
 //_____________________________________________________________________________
 AliTRDclusterizerV2::AliTRDclusterizerV2(const Text_t *name, const Text_t *title)
   :AliTRDclusterizer(name,title)
   ,fDigitsManager(new AliTRDdigitsManager())
-  ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fIndexesOut(NULL)
   ,fIndexesMaxima(NULL)
+  ,fTransform(new AliTRDtransform(0))
 {
   //
   // AliTRDclusterizerV2 constructor
   //
 
   fDigitsManager->CreateArrays();
-  fGeometry = new AliTRDgeometry;
 
   fRawVersion = AliTRDfeeParam::Instance()->GetRAWversion();
+
 }
 
 //_____________________________________________________________________________
 AliTRDclusterizerV2::AliTRDclusterizerV2(const AliTRDclusterizerV2 &c)
   :AliTRDclusterizer(c)
   ,fDigitsManager(NULL)
-  ,fGeometry(NULL)
   ,fAddLabels(kTRUE)
   ,fRawVersion(2)
   ,fIndexesOut(NULL)
   ,fIndexesMaxima(NULL)
+  ,fTransform(NULL)
 {
   //
   // AliTRDclusterizerV2 copy constructor
@@ -116,21 +115,16 @@ AliTRDclusterizerV2::~AliTRDclusterizerV2()
   // AliTRDclusterizerV2 destructor
   //
 
-  if (fDigitsManager) {
-    delete fDigitsManager;
-    fDigitsManager = NULL;
-  }
-
-  if (fGeometry)
+  if (fDigitsManager) 
     {
-      delete fGeometry;
-      fGeometry = NULL;
+      delete fDigitsManager;
+      fDigitsManager = NULL;
     }
 
   if (fIndexesOut)
     {
       delete fIndexesOut;
-      fIndexesOut = NULL;
+      fIndexesOut    = NULL;
     }
 
   if (fIndexesMaxima)
@@ -138,6 +132,13 @@ AliTRDclusterizerV2::~AliTRDclusterizerV2()
       delete fIndexesMaxima;
       fIndexesMaxima = NULL;
     }
+
+  if (fTransform)
+    {
+      delete fTransform;
+      fTransform     = NULL;
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -160,11 +161,11 @@ void AliTRDclusterizerV2::Copy(TObject &c) const
   //
 
   ((AliTRDclusterizerV2 &) c).fDigitsManager = NULL;
-  ((AliTRDclusterizerV2 &) c).fGeometry = NULL;
-  ((AliTRDclusterizerV2 &) c).fAddLabels = fAddLabels;
-  ((AliTRDclusterizerV2 &) c).fRawVersion = fRawVersion;
-  ((AliTRDclusterizerV2 &) c).fIndexesOut = NULL;
+  ((AliTRDclusterizerV2 &) c).fAddLabels     = fAddLabels;
+  ((AliTRDclusterizerV2 &) c).fRawVersion    = fRawVersion;
+  ((AliTRDclusterizerV2 &) c).fIndexesOut    = NULL;
   ((AliTRDclusterizerV2 &) c).fIndexesMaxima = NULL;
+  ((AliTRDclusterizerV2 &) c).fTransform     = NULL;
   
   AliTRDclusterizer::Copy(c);
 
@@ -176,31 +177,45 @@ void AliTRDclusterizerV2::ResetHelperIndexes(AliTRDSignalIndex *indexesIn)
   // 
   // Reset the helper indexes
   //
+
   if (fIndexesOut)
     {
       // carefull here - we assume that only row number may change - most probable
       if (indexesIn->GetNrow() <= fIndexesOut->GetNrow())
  	fIndexesOut->ResetContent();
       else
-	fIndexesOut->ResetContentConditional(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+	fIndexesOut->ResetContentConditional(indexesIn->GetNrow()
+                                           , indexesIn->GetNcol()
+                                           , indexesIn->GetNtime());
     }
   else
     {
-      fIndexesOut = new AliTRDSignalIndex(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+      fIndexesOut = new AliTRDSignalIndex(indexesIn->GetNrow()
+                                        , indexesIn->GetNcol() 
+                                        , indexesIn->GetNtime());
     }
   
   if (fIndexesMaxima)
     {
       // carefull here - we assume that only row number may change - most probable
-      if (indexesIn->GetNrow() <= fIndexesMaxima->GetNrow())
- 	fIndexesMaxima->ResetContent();
+      if (indexesIn->GetNrow() <= fIndexesMaxima->GetNrow()) 
+        {
+ 	  fIndexesMaxima->ResetContent();
+	}
       else
-	fIndexesMaxima->ResetContentConditional(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+	{
+	  fIndexesMaxima->ResetContentConditional(indexesIn->GetNrow()
+                                                , indexesIn->GetNcol()
+                                                , indexesIn->GetNtime());
+	}
     }
   else
     {
-      fIndexesMaxima = new AliTRDSignalIndex(indexesIn->GetNrow(), indexesIn->GetNcol(), indexesIn->GetNtime());
+      fIndexesMaxima = new AliTRDSignalIndex(indexesIn->GetNrow()
+                                           , indexesIn->GetNcol()
+                                           , indexesIn->GetNtime());
     }
+
 }
 
 //_____________________________________________________________________________
@@ -258,19 +273,22 @@ Bool_t AliTRDclusterizerV2::MakeClusters()
   // Creates clusters from digits
   //
 
-  //propagate info from the digits manager
+  // Propagate info from the digits manager
   if (fAddLabels == kTRUE)
-    fAddLabels = fDigitsManager->UsesDictionaries();
-    
+    {
+      fAddLabels = fDigitsManager->UsesDictionaries();
+    }
+
   Bool_t fReturn = kTRUE;
   for (Int_t i = 0; i < AliTRDgeometry::kNdet; i++)
     {
+
       AliTRDdataArrayI *digitsIn = fDigitsManager->GetDigits(i);      
       // This is to take care of switched off super modules
-      if (digitsIn->GetNtime() == 0) {
-	continue;
-      }
-      //AliInfo(Form("digitsIn->Expand() 0x%x", digitsIn));
+      if (digitsIn->GetNtime() == 0) 
+        {
+	  continue;
+        }
       digitsIn->Expand();
       AliTRDSignalIndex* indexes = fDigitsManager->GetIndexes(i);
       if (indexes->IsAllocated() == kFALSE)
@@ -299,16 +317,17 @@ Bool_t AliTRDclusterizerV2::MakeClusters()
 	  WriteClusters(i);
 	  ResetRecPoints();
 	}
-      //digitsIn->Compress(1,0);
-      // no compress just remove
+
+      // No compress just remove
       fDigitsManager->RemoveDigits(i);
       fDigitsManager->RemoveDictionaries(i);      
       fDigitsManager->ClearIndexes(i);
+
     }
 
   return fReturn;
-}
 
+}
 
 //_____________________________________________________________________________
 Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
@@ -317,14 +336,13 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
   // Creates clusters from raw data
   //
 
-  //AliDebug(2, "Read all");
-
   AliTRDdataArrayI *digits = 0;
   AliTRDdataArrayI *track0 = 0;
   AliTRDdataArrayI *track1 = 0;
   AliTRDdataArrayI *track2 = 0; 
 
   AliTRDSignalIndex *indexes = 0;
+
   // Create the digits manager
   if (!fDigitsManager)
     {
@@ -332,7 +350,6 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
       fDigitsManager->CreateArrays();
     }
 
-  //AliTRDRawStream input(rawReader);
   AliTRDRawStreamV2 input(rawReader);
   input.SetRawVersion( fRawVersion );
   input.Init();
@@ -341,15 +358,16 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 
   // Loop through the digits
   Int_t lastdet = -1;
-  Int_t det    = 0;
-  Int_t it = 0;
+  Int_t det     =  0;
+  Int_t it      =  0;
   while (input.Next()) 
     {
 
-      det    = input.GetDet();
+      det = input.GetDet();
 
       if (det != lastdet) 
-	{	
+	{
+	
 	  if (lastdet != -1)
 	    {
 	      digits = fDigitsManager->GetDigits(lastdet);
@@ -394,7 +412,10 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 	  indexes->SetLayer(input.GetLayer());
 	  indexes->SetDetNumber(det);
 	  if (indexes->IsAllocated() == kFALSE)
-	    indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
+	    {
+	      indexes->Allocate(input.GetMaxRow(), input.GetMaxCol(), input.GetNumberOfTimeBins());
+	    }
+
 	}
       
       for (it = 0; it < 3; it++)
@@ -417,13 +438,16 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
 		}
 	    }
 	}
-  }
+
+    }
 
   if (lastdet != -1)
     {
       Bool_t iclusterBranch = kFALSE;
-      if (indexes->HasEntry())
-	iclusterBranch = MakeClusters(lastdet);
+      if (indexes->HasEntry()) 
+        {
+	  iclusterBranch = MakeClusters(lastdet);
+        }
       if (iclusterBranch == kFALSE)
 	{
 	  WriteClusters(lastdet);
@@ -441,6 +465,7 @@ Bool_t AliTRDclusterizerV2::Raw2Clusters(AliRawReader *rawReader)
   delete fDigitsManager;
   fDigitsManager = NULL;
   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -450,9 +475,6 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
   // Creates clusters from raw data
   //
 
-  //AliDebug(1, "Raw2ClustersChamber");
-
-  // Create the digits manager
   // Create the digits manager
   if (!fDigitsManager)
     {
@@ -462,7 +484,6 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
 
   fDigitsManager->SetUseDictionaries(fAddLabels);
 
-  //AliTRDRawStream input(rawReader);
   AliTRDRawStreamV2 input(rawReader);
   input.SetRawVersion( fRawVersion );
   input.Init();
@@ -474,7 +495,9 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
     {
       Bool_t iclusterBranch = kFALSE;
       if (fDigitsManager->GetIndexes(det)->HasEntry())
-	iclusterBranch = MakeClusters(det);
+	{
+	  iclusterBranch = MakeClusters(det);
+	}
       if (iclusterBranch == kFALSE)
 	{
 	  WriteClusters(det);
@@ -488,6 +511,7 @@ Bool_t AliTRDclusterizerV2::Raw2ClustersChamber(AliRawReader *rawReader)
   delete fDigitsManager;
   fDigitsManager = NULL;
   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -501,10 +525,10 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
   //   digits should be expanded beforehand!
   //   digitsIn->Expand();
   AliTRDdataArrayI *digitsIn = fDigitsManager->GetDigits(det);      
+
   // This is to take care of switched off super modules
   if (digitsIn->GetNtime() == 0) 
     {
-      //AliDebug(5, Form("digitsIn->GetNtime() == 0 [%d]", det));
       return kFALSE;
     }
 
@@ -515,37 +539,28 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
       return kFALSE;      
     }
     
-  AliTRDcalibDB  *calibration    = AliTRDcalibDB::Instance();
-  if (!calibration) {
-    AliFatal("No AliTRDcalibDB instance available\n");
-    return kFALSE;  
-  }
-  
-  AliTRDSimParam *simParam       = AliTRDSimParam::Instance();
-  if (!simParam) {
-    AliError("No AliTRDSimParam instance available\n");
-    return kFALSE;  
-  }
-  
-  AliTRDRecParam *recParam       = AliTRDRecParam::Instance();
-  if (!recParam) {
-    AliError("No AliTRDRecParam instance available\n");
-    return kFALSE;  
-  }
+  AliTRDcalibDB  *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) 
+    {
+      AliFatal("No AliTRDcalibDB instance available\n");
+      return kFALSE;  
+    }
+
+  AliTRDRecParam *recParam    = AliTRDRecParam::Instance();
+  if (!recParam) 
+    {
+      AliError("No AliTRDRecParam instance available\n");
+      return kFALSE;  
+    }
 
   // ADC thresholds
-  //  Float_t ADCthreshold   = simParam->GetADCthreshold();
-  Float_t ADCthreshold   = 0; // There is no ADC threshold anymore, and simParam should not be used ni clusterizer. KO
+  // There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
+  Float_t ADCthreshold   = 0; 
 
   // Threshold value for the maximum
   Float_t maxThresh      = recParam->GetClusMaxThresh();
   // Threshold value for the digit signal
   Float_t sigThresh      = recParam->GetClusSigThresh();
-
-  // Detector wise calibration object for t0
-  const AliTRDCalDet *calT0Det         = calibration->GetT0Det();
-  // Detector wise calibration object for the gain factors
-  const AliTRDCalDet *calGainFactorDet = calibration->GetGainFactorDet();
 
   // Iteration limit for unfolding procedure
   const Float_t kEpsilon = 0.01;             
@@ -558,7 +573,6 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 
   Double_t padSignal[kNsig];   
   Double_t clusterSignal[kNclus];
-  Double_t clusterPads[kNclus];   
 
   Int_t icham = indexesIn->GetChamber();
   Int_t iplan = indexesIn->GetPlane();
@@ -566,63 +580,57 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 
   // Start clustering in the chamber
 
-  Int_t    idet    = fGeometry->GetDetector(iplan,icham,isect);
+  Int_t idet  = AliTRDgeometry::GetDetector(iplan,icham,isect);
   if (idet != det)
     {
       AliError("Strange Detector number Missmatch!");
       return kFALSE;
     }
 
+  // TRD space point transformation
+  fTransform->SetDetector(det);
+
   Int_t    ilayer  = AliGeomManager::kTRD1 + iplan;
   Int_t    imodule = icham + AliTRDgeometry::Ncham() * isect;
   UShort_t volid   = AliGeomManager::LayerToVolUID(ilayer,imodule); 
 
-  //Int_t nRowMax = digitsIn->GetNrow();
-  Int_t nColMax = digitsIn->GetNcol();
+  Int_t nColMax    = digitsIn->GetNcol();
   Int_t nTimeTotal = digitsIn->GetNtime();
 
-  AliTRDpadPlane *padPlane = fGeometry->GetPadPlane(iplan,icham);
-
-  // Calibration object with pad wise values for t0
-  AliTRDCalROC *calT0ROC              = calibration->GetT0ROC(idet);
+  // Detector wise calibration object for the gain factors
+  const AliTRDCalDet *calGainFactorDet      = calibration->GetGainFactorDet();
   // Calibration object with pad wise values for the gain factors
-  AliTRDCalROC *calGainFactorROC      = calibration->GetGainFactorROC(idet);
-  // Calibration value for chamber wise t0
-  Float_t       calT0DetValue         = calT0Det->GetValue(idet);
+  AliTRDCalROC       *calGainFactorROC      = calibration->GetGainFactorROC(idet);
   // Calibration value for chamber wise gain factor
-  Float_t       calGainFactorDetValue = calGainFactorDet->GetValue(idet);
+  Float_t             calGainFactorDetValue = calGainFactorDet->GetValue(idet);
 
-  Int_t nClusters      = 0;
+  Int_t nClusters = 0;
 
-  // Apply the gain and the tail cancelation via digital filter
   AliTRDdataArrayF *digitsOut = new AliTRDdataArrayF(digitsIn->GetNrow()
-						     ,digitsIn->GetNcol()
-						     ,digitsIn->GetNtime()); 
-
-//   AliInfo(Form("nrows %d cols %d time %d", 
-// 	       digitsIn->GetNrow()
-// 	       ,digitsIn->GetNcol()
-// 	       ,digitsIn->GetNtime())); 
+                                                    ,digitsIn->GetNcol()
+			                            ,digitsIn->GetNtime()); 
 
   ResetHelperIndexes(indexesIn);
 
-  Transform(digitsIn
-	    ,digitsOut
-	    ,indexesIn
-	    ,fIndexesOut
-	    ,nTimeTotal
-	    ,ADCthreshold
-	    ,calGainFactorROC
-	    ,calGainFactorDetValue);	
+  // Apply the gain and the tail cancelation via digital filter
+  TailCancelation(digitsIn
+	         ,digitsOut  
+	         ,indexesIn
+	         ,fIndexesOut
+	         ,nTimeTotal
+                 ,ADCthreshold
+                 ,calGainFactorROC
+                 ,calGainFactorDetValue);	
 	
-  Int_t row   = 0;
-  Int_t col   = 0;
-  Int_t time  = 0;
-  Int_t iPad  = 0;
+  Int_t row  = 0;
+  Int_t col  = 0;
+  Int_t time = 0;
+  Int_t iPad = 0;
     
   fIndexesOut->ResetCounters();
   while (fIndexesOut->NextRCTbinIndex(row, col, time))
     {
+
       Float_t signalM = TMath::Abs(digitsOut->GetDataUnchecked(row,col,time));
 	    
       // Look for the maximum
@@ -632,8 +640,7 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 	  if (col + 1 >= nColMax || col-1 < 0)
 	    continue;
 
-	  Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1  ,time));
-
+	  Float_t signalL = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time));
 	  Float_t signalR = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time));
 
 	  if ((TMath::Abs(signalL) <= signalM) && 
@@ -646,8 +653,10 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
 		  digitsOut->SetDataUnchecked(row,col,time,-signalM);
 		  fIndexesMaxima->AddIndexTBin(row,col,time);
 		}
-	    }	
-	}	    
+	    }
+
+	}
+
     }
 	       
   // The index to the first cluster of a given ROC
@@ -659,181 +668,203 @@ Bool_t AliTRDclusterizerV2::MakeClusters(Int_t det)
   fIndexesMaxima->ResetCounters();
   while (fIndexesMaxima->NextRCTbinIndex(row, col, time)) 
     {
+
       // Maximum found ?             
-      if (digitsOut->GetDataUnchecked(row,col,time) < 0.0) {
+      if (digitsOut->GetDataUnchecked(row,col,time) < 0.0) 
+        {
 
-	for (iPad = 0; iPad < kNclus; iPad++) {
-	  Int_t iPadCol = col - 1 + iPad;
-	  clusterSignal[iPad] = 
-	    TMath::Abs(digitsOut->GetDataUnchecked(row,iPadCol,time));
-	}
-
-	// Count the number of pads in the cluster
-	Int_t nPadCount = 0;
-	Int_t ii;
-	// Look to the left
-	ii = 0;
-	while (TMath::Abs(digitsOut->GetDataUnchecked(row,col-ii  ,time)) >= sigThresh) {
-	  nPadCount++;
-	  ii++;
-	  if (col-ii   <        0) break;
-	}
-	// Look to the right
-	ii = 0;
-	while (TMath::Abs(digitsOut->GetDataUnchecked(row,col+ii+1,time)) >= sigThresh) {
-	  nPadCount++;
-	  ii++;
-	  if (col+ii+1 >= nColMax) break;
-	}
-	nClusters++;
-
-	// Look for 5 pad cluster with minimum in the middle
-	Bool_t fivePadCluster = kFALSE;
-	if (col < (nColMax - 3)) {
-	  if (digitsOut->GetDataUnchecked(row,col+2,time) < 0) {
-	    fivePadCluster = kTRUE;
-	  }
-	  if ((fivePadCluster) && (col < (nColMax - 5))) {
-	    if (digitsOut->GetDataUnchecked(row,col+4,time) >= sigThresh) {
-	      fivePadCluster = kFALSE;
+	  for (iPad = 0; iPad < kNclus; iPad++) 
+            {
+	      Int_t iPadCol = col - 1 + iPad;
+	      clusterSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row,iPadCol,time));
 	    }
-	  }
-	  if ((fivePadCluster) && (col >             1)) {
-	    if (digitsOut->GetDataUnchecked(row,col-2,time) >= sigThresh) {
-	      fivePadCluster = kFALSE;
+
+	  // Count the number of pads in the cluster
+	  Int_t nPadCount = 0;
+	  Int_t ii;
+	  // Look to the left
+	  ii = 0;
+	  while (TMath::Abs(digitsOut->GetDataUnchecked(row,col-ii  ,time)) >= sigThresh) 
+            {
+	      nPadCount++;
+	      ii++;
+	      if (col-ii   <        0) break;
 	    }
-	  }
-	}
+	  // Look to the right
+	  ii = 0;
+	  while (TMath::Abs(digitsOut->GetDataUnchecked(row,col+ii+1,time)) >= sigThresh) 
+            {
+	      nPadCount++;
+	      ii++;
+	      if (col+ii+1 >= nColMax) break;
+	    }
+	  nClusters++;
 
-	// 5 pad cluster
-	// Modify the signal of the overlapping pad for the left part 
-	// of the cluster which remains from a previous unfolding
-	if (iUnfold) {
-	  clusterSignal[0] *= ratioLeft;
-	  iUnfold = 0;
-	}
+	  // Look for 5 pad cluster with minimum in the middle
+	  Bool_t fivePadCluster = kFALSE;
+	  if (col < (nColMax - 3)) 
+            {
+	      if (digitsOut->GetDataUnchecked(row,col+2,time) < 0) 
+                {
+	          fivePadCluster = kTRUE;
+	        }
+	      if ((fivePadCluster) && (col < (nColMax - 5))) 
+                {
+	          if (digitsOut->GetDataUnchecked(row,col+4,time) >= sigThresh) 
+                    {
+	              fivePadCluster = kFALSE;
+	            }
+	        }
+	      if ((fivePadCluster) && (col >             1)) 
+                {
+	          if (digitsOut->GetDataUnchecked(row,col-2,time) >= sigThresh) 
+                    {
+	              fivePadCluster = kFALSE;
+	            }
+	        }
+	    }
 
-	// Unfold the 5 pad cluster
-	if (fivePadCluster) {
-	  for (iPad = 0; iPad < kNsig; iPad++) {
-	    padSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row
-								     ,col-1+iPad
-								     ,time));
-	  }
-	  // Unfold the two maxima and set the signal on 
-	  // the overlapping pad to the ratio
-	  ratioRight        = Unfold(kEpsilon,iplan,padSignal);
-	  ratioLeft         = 1.0 - ratioRight; 
-	  clusterSignal[2] *= ratioRight;
-	  iUnfold = 1;
-	}
+	  // 5 pad cluster
+	  // Modify the signal of the overlapping pad for the left part 
+	  // of the cluster which remains from a previous unfolding
+	  if (iUnfold) 
+            {
+	      clusterSignal[0] *= ratioLeft;
+	      iUnfold = 0;
+	    }
 
-	Double_t clusterCharge = clusterSignal[0]
-	  + clusterSignal[1]
-	  + clusterSignal[2];
-                
-	// The position of the cluster
-	clusterPads[0] =  row + 0.5;
-	// Take the shift of the additional time bins into account
-	clusterPads[2] = time + 0.5;
+	  // Unfold the 5 pad cluster
+	  if (fivePadCluster) 
+            {
+	      for (iPad = 0; iPad < kNsig; iPad++) 
+                {
+	          padSignal[iPad] = TMath::Abs(digitsOut->GetDataUnchecked(row
+			   					          ,col-1+iPad
+								          ,time));
+	        }
+	      // Unfold the two maxima and set the signal on 
+	      // the overlapping pad to the ratio
+	      ratioRight        = Unfold(kEpsilon,iplan,padSignal);
+	      ratioLeft         = 1.0 - ratioRight; 
+	      clusterSignal[2] *= ratioRight;
+	      iUnfold = 1;
+	    }
 
-	if (recParam->LUTOn()) {
-	  // Calculate the position of the cluster by using the
-	  // lookup table method
-	  clusterPads[1] = recParam->LUTposition(iplan,clusterSignal[0]
-						 ,clusterSignal[1]
-						 ,clusterSignal[2]);
-	}
-	else {
-	  // Calculate the position of the cluster by using the
-	  // center of gravity method
-	  for (Int_t i = 0; i < kNsig; i++) {
-	    padSignal[i] = 0.0;
-	  }
-	  padSignal[2] = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time)); // Central pad
-	  padSignal[1] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time)); // Left    pad
-	  padSignal[3] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time)); // Right   pad
-	  if ((col >           2) && 
-	      (TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time)) < padSignal[1])) {
-	    padSignal[0] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
-	  }
-	  if ((col < nColMax - 3) &&
-	      (TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time)) < padSignal[3])) {
-	    padSignal[4] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time));
-	  }		  
-	  clusterPads[1] = GetCOG(padSignal);
-	}
+	  // The position of the cluster in COL direction relative to the center pad (pad units)
+          Double_t clusterPosCol = 0.0;
+	  if (recParam->LUTOn()) 
+            {
+	      // Calculate the position of the cluster by using the
+	      // lookup table method
+	      clusterPosCol = recParam->LUTposition(iplan
+                                                   ,clusterSignal[0]
+                                                   ,clusterSignal[1]
+ 	                                           ,clusterSignal[2]);
+	    }
+	  else 
+            {
+	      // Calculate the position of the cluster by using the
+	      // center of gravity method
+	      for (Int_t i = 0; i < kNsig; i++) 
+                {
+	          padSignal[i] = 0.0;
+	        }
+	      padSignal[2] = TMath::Abs(digitsOut->GetDataUnchecked(row,col  ,time)); // Central pad
+	      padSignal[1] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-1,time)); // Left    pad
+	      padSignal[3] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+1,time)); // Right   pad
+	      if ((col >           2) && 
+	          (TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time)) < padSignal[1])) 
+                {
+	          padSignal[0] = TMath::Abs(digitsOut->GetDataUnchecked(row,col-2,time));
+	        }
+	      if ((col < nColMax - 3) &&
+	          (TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time)) < padSignal[3])) 
+                {
+	          padSignal[4] = TMath::Abs(digitsOut->GetDataUnchecked(row,col+2,time));
+	        }  
+	      clusterPosCol = GetCOG(padSignal);
+	    }
 
-	Double_t q0 = clusterSignal[0];
-	Double_t q1 = clusterSignal[1];
-	Double_t q2 = clusterSignal[2];
-	Double_t clusterSigmaY2 = (q1 * (q0 + q2) + 4.0 * q0 * q2)
-	  / (clusterCharge*clusterCharge);
+	  // Store the amplitudes of the pads in the cluster for later analysis
+	  Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
+	  for (Int_t jPad = col-3; jPad <= col+3; jPad++) 
+            {
+	      if ((jPad <          0) || 
+	          (jPad >= nColMax-1)) 
+                {
+	          continue;
+	        }
+	      signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
+	    }
 
-	//
-	// Calculate the position and the error
-	//		
+          // Transform the local cluster coordinates into calibrated 
+          // space point positions defined in the local tracking system.
+          // Here the calibration for T0, Vdrift and ExB is applied as well.
+	  Double_t clusterXYZ[6];
+	  clusterXYZ[0] = clusterPosCol;
+	  clusterXYZ[1] = clusterSignal[0];
+	  clusterXYZ[2] = clusterSignal[1];
+	  clusterXYZ[3] = clusterSignal[2];
+	  clusterXYZ[4] = 0.0;
+	  clusterXYZ[5] = 0.0;
+          Int_t    clusterRCT[3];
+          clusterRCT[0] = row;
+          clusterRCT[1] = col;
+          clusterRCT[2] = 0;
+	  fTransform->Transform(clusterXYZ,clusterRCT,((UInt_t) time),0);
 
-	// Correct for t0 (sum of chamber and pad wise values !!!)
-	Float_t  calT0ROCValue  = calT0ROC->GetValue(col,row);
-	Char_t   clusterTimeBin = ((Char_t) TMath::Nint(time - (calT0DetValue + calT0ROCValue)));
-	Double_t colSize        = padPlane->GetColSize(col);
-	Double_t rowSize        = padPlane->GetRowSize(row);
+	  // Add the cluster to the output array
+	  // The track indices will be stored later 
+          Float_t clusterPos[3];
+          clusterPos[0] = clusterXYZ[0];
+          clusterPos[1] = clusterXYZ[1];
+          clusterPos[2] = clusterXYZ[2];
+	  Float_t clusterSig[2];
+	  clusterSig[0] = clusterXYZ[4];
+	  clusterSig[1] = clusterXYZ[5];
+          Double_t clusterCharge  = clusterXYZ[3];
+	  Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
+	  AliTRDcluster *cluster = new AliTRDcluster(idet
+						    ,clusterCharge
+						    ,clusterPos
+						    ,clusterSig
+						    ,0x0
+						    ,((Char_t) nPadCount)
+						    ,signals
+						    ,((UChar_t) col)
+						    ,((UChar_t) row)
+						    ,((UChar_t) time)
+						    ,clusterTimeBin
+						    ,clusterPosCol
+						    ,volid);
 
-	Float_t clusterPos[3];
-	clusterPos[0] = padPlane->GetColPos(col) - (clusterPads[1] + 0.5) * colSize;
-	clusterPos[1] = padPlane->GetRowPos(row) - 0.5                    * rowSize;
-	clusterPos[2] = CalcXposFromTimebin(clusterPads[2],idet,col,row);
-	Float_t clusterSig[2];
-	clusterSig[0] = (clusterSigmaY2 + 1.0/12.0) * colSize*colSize;
-	clusterSig[1] = rowSize * rowSize / 12.0;                                       
-		
-	// Store the amplitudes of the pads in the cluster for later analysis
-	Short_t signals[7] = { 0, 0, 0, 0, 0, 0, 0 };
-	for (Int_t jPad = col-3; jPad <= col+3; jPad++) {
-	  if ((jPad <          0) || 
-	      (jPad >= nColMax-1)) {
-	    continue;
-	  }
-	  signals[jPad-col+3] = TMath::Nint(TMath::Abs(digitsOut->GetDataUnchecked(row,jPad,time)));
-	}
+	  // Temporarily store the row, column and time bin of the center pad
+	  // Used to later on assign the track indices
+	  cluster->SetLabel( row,0);
+	  cluster->SetLabel( col,1);
+	  cluster->SetLabel(time,2);
 
-	// Add the cluster to the output array
-	// The track indices will be stored later 
-	AliTRDcluster *cluster = new AliTRDcluster(idet
-						   ,clusterCharge
-						   ,clusterPos
-						   ,clusterSig
-						   ,0x0
-						   ,((Char_t) nPadCount)
-						   ,signals
-						   ,((UChar_t) col)
-						   ,clusterTimeBin
-						   ,clusterPads[1]
-						   ,volid);
-	// Temporarily store the row, column and time bin of the center pad
-	// Used to later on assign the track indices
-	cluster->SetLabel( row,0);
-	cluster->SetLabel( col,1);
-	cluster->SetLabel(time,2);
-	RecPoints()->Add(cluster);
+	  RecPoints()->Add(cluster);
 
-	// Store the index of the first cluster in the current ROC
-	if (firstClusterROC < 0) {
-	  firstClusterROC = RecPoints()->GetEntriesFast() - 1;
-	}
-	// Count the number of cluster in the current ROC
-	nClusterROC++;
+	  // Store the index of the first cluster in the current ROC
+	  if (firstClusterROC < 0) 
+            {
+	      firstClusterROC = RecPoints()->GetEntriesFast() - 1;
+	    }
 
-      } // if: Maximum found ?
+	  // Count the number of cluster in the current ROC
+	  nClusterROC++;
+
+        } // if: Maximum found ?
 
     }
-  delete digitsOut;
-  //delete fIndexesOut;
-  //delete fIndexesMaxima;
 
-  if (fAddLabels)
-    AddLabels(idet, firstClusterROC, nClusterROC);
+  delete digitsOut;
+
+  if (fAddLabels) 
+    {
+      AddLabels(idet, firstClusterROC, nClusterROC);
+    }
 
   // Write the cluster and reset the array
   WriteClusters(idet);
@@ -850,16 +881,16 @@ Bool_t AliTRDclusterizerV2::AddLabels(Int_t idet, Int_t firstClusterROC, Int_t n
   // Add the track indices to the found clusters
   //
   
-  const Int_t   kNclus   = 3;  
-  const Int_t   kNdict   = AliTRDdigitsManager::kNDict;
-  const Int_t   kNtrack  = kNdict * kNclus;
+  const Int_t   kNclus  = 3;  
+  const Int_t   kNdict  = AliTRDdigitsManager::kNDict;
+  const Int_t   kNtrack = kNdict * kNclus;
 
-  Int_t    iClusterROC   = 0;
+  Int_t iClusterROC = 0;
 
-  Int_t row   = 0;
-  Int_t col   = 0;
-  Int_t time  = 0;
-  Int_t iPad  = 0;
+  Int_t row  = 0;
+  Int_t col  = 0;
+  Int_t time = 0;
+  Int_t iPad = 0;
 
   // Temporary array to collect the track indices
   Int_t *idxTracks = new Int_t[kNtrack*nClusterROC];
@@ -869,8 +900,8 @@ Bool_t AliTRDclusterizerV2::AddLabels(Int_t idet, Int_t firstClusterROC, Int_t n
   AliTRDdataArrayI *tracksIn = 0;
   for (Int_t iDict = 0; iDict < kNdict; iDict++) {
 
-    tracksIn = fDigitsManager->GetDictionary(idet,iDict);
     // tracksIn should be expanded beforehand!
+    tracksIn = fDigitsManager->GetDictionary(idet,iDict);
 
     // Loop though the clusters found in this ROC
     for (iClusterROC = 0; iClusterROC < nClusterROC; iClusterROC++) {
@@ -888,10 +919,6 @@ Bool_t AliTRDclusterizerV2::AddLabels(Int_t idet, Int_t firstClusterROC, Int_t n
       }
 
     }
-
-    // Compress the arrays
-    // no do not compress - we will delete them when we are done with the detector
-    //tracksIn->Compress(1,0);
 
   }
 
@@ -912,6 +939,7 @@ Bool_t AliTRDclusterizerV2::AddLabels(Int_t idet, Int_t firstClusterROC, Int_t n
   delete [] idxTracks;
 
   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
@@ -984,8 +1012,8 @@ Double_t AliTRDclusterizerV2::Unfold(Double_t eps, Int_t plane, Double_t *padSig
     irc = calibration->PadResponse(ampRight,maxRight,plane,newRightSignal);
 
     // Calculate new overlapping ratio
-    ratio = TMath::Min((Double_t)1.0,newLeftSignal[2] / 
-                                    (newLeftSignal[2] + newRightSignal[0]));
+    ratio = TMath::Min((Double_t) 1.0
+                      ,newLeftSignal[2] / (newLeftSignal[2] + newRightSignal[0]));
 
   }
 
@@ -994,18 +1022,18 @@ Double_t AliTRDclusterizerV2::Unfold(Double_t eps, Int_t plane, Double_t *padSig
 }
 
 //_____________________________________________________________________________
-void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
-				    , AliTRDdataArrayF *digitsOut
-				    , AliTRDSignalIndex *indexesIn
-				    , AliTRDSignalIndex *indexesOut
-                                    , Int_t nTimeTotal
-				    , Float_t ADCthreshold
-				    , AliTRDCalROC *calGainFactorROC
-				    , Float_t calGainFactorDetValue)
+void AliTRDclusterizerV2::TailCancelation(AliTRDdataArrayI *digitsIn
+				        , AliTRDdataArrayF *digitsOut
+				        , AliTRDSignalIndex *indexesIn
+				        , AliTRDSignalIndex *indexesOut
+                                        , Int_t nTimeTotal
+			                , Float_t ADCthreshold
+			                , AliTRDCalROC *calGainFactorROC
+			                , Float_t calGainFactorDetValue)
 {
   //
-  // Apply gain factor
-  // Apply tail cancelation: Transform digitsIn to digitsOut
+  // Applies the tail cancelation and gain factors: 
+  // Transform digitsIn to digitsOut
   //
 
   Int_t iRow  = 0;
@@ -1013,10 +1041,11 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
   Int_t iTime = 0;
 
   AliTRDRecParam *recParam = AliTRDRecParam::Instance();
-  if (!recParam) {
-    AliError("No AliTRDRecParam instance available\n");
-    return;
-  }
+  if (!recParam) 
+    {
+      AliError("No AliTRDRecParam instance available\n");
+      return;
+    }
 
   Double_t *inADC  = new Double_t[nTimeTotal];  // ADC data before tail cancellation
   Double_t *outADC = new Double_t[nTimeTotal];  // ADC data after tail cancellation
@@ -1029,18 +1058,17 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
 
       for (iTime = 0; iTime < nTimeTotal; iTime++) 
 	{	  
-	  //
-	  // Add gain
-	  //
+	  // Apply gain gain factor
 	  inADC[iTime]   = digitsIn->GetDataUnchecked(iRow,iCol,iTime);
 	  inADC[iTime]  /= gain;
 	  outADC[iTime]  = inADC[iTime];
 	}
 
       // Apply the tail cancelation via the digital filter
-      if (recParam->TCOn()) {
-	DeConvExp(inADC,outADC,nTimeTotal,recParam->GetTCnexp());
-      }
+      if (recParam->TCOn()) 
+        {
+	  DeConvExp(inADC,outADC,nTimeTotal,recParam->GetTCnexp());
+        }
 
       indexesIn->ResetTbinCounter();
       while (indexesIn->NextTbinIndex(iTime))
@@ -1049,16 +1077,14 @@ void AliTRDclusterizerV2::Transform(AliTRDdataArrayI *digitsIn
 	  if (outADC[iTime] > ADCthreshold) 
 	    {
 	      digitsOut->SetDataUnchecked(iRow,iCol,iTime,outADC[iTime]);
-	      //AliDebug(5, Form("add index %d", indexesIn->GetDetNumber()));
 	      indexesOut->AddIndexTBin(iRow,iCol,iTime);
 	    }	  
 	} //while itime
+
     }//while irow icol
   
   delete [] inADC;
   delete [] outADC;
-
-  //AliDebug(5, Form("Stop %d", indexesIn->GetDetNumber()));
 
   return;
 
@@ -1076,55 +1102,58 @@ void AliTRDclusterizerV2::DeConvExp(Double_t *source, Double_t *target
   Double_t coefficients[2];
 
   // Initialization (coefficient = alpha, rates = lambda)
-  Double_t R1 = 1.0;
-  Double_t R2 = 1.0;
-  Double_t C1 = 0.5;
-  Double_t C2 = 0.5;
+  Double_t r1 = 1.0;
+  Double_t r2 = 1.0;
+  Double_t c1 = 0.5;
+  Double_t c2 = 0.5;
 
   if (nexp == 1) {   // 1 Exponentials
-    R1 = 1.156;
-    R2 = 0.130;
-    C1 = 0.066;
-    C2 = 0.000;
+    r1 = 1.156;
+    r2 = 0.130;
+    c1 = 0.066;
+    c2 = 0.000;
   }
   if (nexp == 2) {   // 2 Exponentials
-    R1 = 1.156;
-    R2 = 0.130;
-    C1 = 0.114;
-    C2 = 0.624;
+    r1 = 1.156;
+    r2 = 0.130;
+    c1 = 0.114;
+    c2 = 0.624;
   }
 
-  coefficients[0] = C1;
-  coefficients[1] = C2;
+  coefficients[0] = c1;
+  coefficients[1] = c2;
 
-  Double_t Dt = 0.1;
+  Double_t dt = 0.1;
 
-  rates[0] = TMath::Exp(-Dt/(R1));
-  rates[1] = TMath::Exp(-Dt/(R2));
+  rates[0] = TMath::Exp(-dt/(r1));
+  rates[1] = TMath::Exp(-dt/(r2));
   
   Int_t i = 0;
   Int_t k = 0;
 
   Double_t reminder[2];
-  Double_t correction;
-  Double_t result;
+  Double_t correction = 0.0;
+  Double_t result     = 0.0;
 
   // Attention: computation order is important
-  correction = 0.0;
   for (k = 0; k < nexp; k++) {
     reminder[k] = 0.0;
   }
+
   for (i = 0; i < n; i++) {
+
     result    = (source[i] - correction);    // No rescaling
     target[i] = result;
 
     for (k = 0; k < nexp; k++) {
       reminder[k] = rates[k] * (reminder[k] + coefficients[k] * result);
     }
+
     correction = 0.0;
     for (k = 0; k < nexp; k++) {
       correction += reminder[k];
     }
+
   }
 
 }

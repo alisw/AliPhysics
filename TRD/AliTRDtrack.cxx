@@ -69,19 +69,17 @@ AliTRDtrack::AliTRDtrack()
       fdEdxPlane[i][j] = 0.0;
     }
     fTimBinPlane[i] = -1;
-		// A.Bercuci additions
-		fMom[i] = -1.;
-		fSnp[i] = 0.;
-		fTgl[i] = 0.;
-	}
+    fMom[i]         = -1.;
+    fSnp[i]         = 0.;
+    fTgl[i]         = 0.;
+  }
 
   for (UInt_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
     fIndex[i]       = 0;
     fIndexBackup[i] = 0;
     fdQdl[i]        = 0;
-		//A.Bercuci additions
-		fClusters[i]    = 0x0;
-	}
+    fClusters[i]    = 0x0;
+  }
 
   for (Int_t i = 0; i < 3; i++) {
     fBudget[i] = 0;
@@ -114,7 +112,7 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
   // The main AliTRDtrack constructor.
   //
 
-  Double_t cnv   = 1.0/(GetBz() * kB2C);
+  Double_t cnv   = 1.0 / (GetBz() * kB2C);
 
   Double_t pp[5] = { p[0]    
                    , p[1]
@@ -122,32 +120,31 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
                    , p[3]
                    , p[4]*cnv      };
 
-  Double_t c22 = x*x*cov[14] - 2*x*cov[12] + cov[5];
-  Double_t c32 = x*cov[13] - cov[8];
-  Double_t c20 = x*cov[10] - cov[3];
-  Double_t c21 = x*cov[11] - cov[4];
-  Double_t c42 = x*cov[14] - cov[12];
+  Double_t c22 = x*x*cov[14] - 2*x*cov[12] + cov[ 5];
+  Double_t c32 =   x*cov[13] -     cov[ 8];
+  Double_t c20 =   x*cov[10] -     cov[ 3];
+  Double_t c21 =   x*cov[11] -     cov[ 4];
+  Double_t c42 =   x*cov[14] -     cov[12];
 
-  Double_t cc[15] = { cov[0 ]
-                    , cov[1 ],     cov[2 ]
+  Double_t cc[15] = { cov[ 0]
+                    , cov[ 1],     cov[ 2]
                     , c20,         c21,         c22
-                    , cov[6 ],     cov[7 ],     c32,     cov[9 ]
+                    , cov[ 6],     cov[ 7],     c32,     cov[ 9]
                     , cov[10]*cnv, cov[11]*cnv, c42*cnv, cov[13]*cnv, cov[14]*cnv*cnv };
 
   Set(x,alpha,pp,cc);
   SetNumberOfClusters(1);
-  fIndex[0] = index;
-	fClusters[0] = c; 	// A.Bercuci additions
+  fIndex[0]    = index;
+  fClusters[0] = c;
 
   for (Int_t i = 0; i < kNplane; i++) {
     for (Int_t j = 0; j < kNslice; j++) {
       fdEdxPlane[i][j] = 0.0;
     }
     fTimBinPlane[i] = -1;
-		// A.Bercuci additions
-		fMom[i] = -1.;
-		fSnp[i] = 0.;
-		fTgl[i] = 0.;
+    fMom[i]         = -1.;
+    fSnp[i]         =  0.;
+    fTgl[i]         =  0.;
   }
 
   Double_t q = TMath::Abs(c->GetQ());
@@ -157,13 +154,12 @@ AliTRDtrack::AliTRDtrack(AliTRDcluster *c, Int_t index
     q *= TMath::Sqrt((1-s*s)/(1+t*t));
   }
 
-  fdQdl[0]     = q;  	
+  fdQdl[0] = q;  	
   for (UInt_t i = 1; i < kMAXCLUSTERSPERTRACK; i++) {
     fdQdl[i]        = 0;
     fIndex[i]       = 0;
     fIndexBackup[i] = 0;
-		// A.Bercuci additions
-		fClusters[i]    = 0x0;
+    fClusters[i]    = 0x0;
   }
 
   for (Int_t i = 0; i < 3;i++) {
@@ -201,10 +197,9 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
     }
     fTimBinPlane[i] = t.fTimBinPlane[i];
     fTracklets[i]   = t.fTracklets[i];
-		// A.Bercuci additions
-		fMom[i] = t.fMom[i];
-		fSnp[i] = t.fSnp[i];
-		fTgl[i] = t.fTgl[i];
+    fMom[i]         = t.fMom[i];
+    fSnp[i]         = t.fSnp[i];
+    fTgl[i]         = t.fTgl[i];
   }
 
   Int_t n = t.GetNumberOfClusters(); 
@@ -214,17 +209,19 @@ AliTRDtrack::AliTRDtrack(const AliTRDtrack &t/*, const Bool_t owner*/)
     fIndex[i]       = t.fIndex[i];
     fIndexBackup[i] = t.fIndex[i];
     fdQdl[i]        = t.fdQdl[i];
-		// A.Bercuci additions
-		if(fClusterOwner && t.fClusters[i]) fClusters[i] = new AliTRDcluster(*(t.fClusters[i]));
-		else fClusters[i] = t.fClusters[i];
-	}
+    if (fClusterOwner && t.fClusters[i]) {
+      fClusters[i] = new AliTRDcluster(*(t.fClusters[i]));
+    }
+    else {
+      fClusters[i] = t.fClusters[i];
+    }
+  }
 
   for (UInt_t i = n; i < kMAXCLUSTERSPERTRACK; i++) {
     fdQdl[i]        = 0;
     fIndex[i]       = 0;
     fIndexBackup[i] = 0;
-		// A.Bercuci additions
-		fClusters[i]    = 0x0;
+    fClusters[i]    = 0x0;
   }
 
   for (Int_t i = 0; i < 3;i++) {
@@ -266,18 +263,16 @@ AliTRDtrack::AliTRDtrack(const AliKalmanTrack &t, Double_t /*alpha*/)
       fdEdxPlane[i][j] = 0.0;
     }
     fTimBinPlane[i] = -1;
-		// A.Bercuci additions
-		fMom[i] = -1.;
-		fSnp[i] = 0.;
-		fTgl[i] = 0.;
+    fMom[i]         = -1.;
+    fSnp[i]         =  0.;
+    fTgl[i]         =  0.;
   }
 
   for (UInt_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
     fdQdl[i]        = 0;
     fIndex[i]       = 0;
     fIndexBackup[i] = 0;
-		// A.Bercuci additions
-		fClusters[i]    = 0x0;
+    fClusters[i]    = 0x0;
   }
   
   for (Int_t i = 0; i < 3; i++) { 
@@ -325,10 +320,9 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
       fdEdxPlane[i][j] = t.GetTRDsignals(i,j);
     }
     fTimBinPlane[i] = t.GetTRDTimBin(i);
-		// A.Bercuci additions
-		fMom[i] = -1.;
-		fSnp[i] = 0.;
-		fTgl[i] = 0.;
+    fMom[i]         = -1.;
+    fSnp[i]         =  0.;
+    fTgl[i]         =  0.;
   }
 
   const AliExternalTrackParam *par = &t;
@@ -341,12 +335,10 @@ AliTRDtrack::AliTRDtrack(const AliESDtrack &t)
   }
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
 
-  
   for (UInt_t i = 0; i < kMAXCLUSTERSPERTRACK; i++) {
     fdQdl[i]     = 0;
-  	// A.Bercuci additions
-		fClusters[i] = 0x0;
-	}
+    fClusters[i] = 0x0;
+  }
 
   for (Int_t i = 0; i < 3; i++) {
     fBudget[i] = 0;
@@ -375,13 +367,13 @@ AliTRDtrack::~AliTRDtrack()
     delete fBackupTrack;
   }
   fBackupTrack = 0x0;
-  if (fClusterOwner){
-    UInt_t icluster=0;
-		while(icluster<kMAXCLUSTERSPERTRACK && fClusters[icluster]){
-			delete fClusters[icluster];
-			fClusters[icluster] = 0x0;
-			icluster++;
-		}
+  if (fClusterOwner) {
+    UInt_t icluster = 0;
+    while ((icluster < kMAXCLUSTERSPERTRACK) && fClusters[icluster]) {
+      delete fClusters[icluster];
+      fClusters[icluster] = 0x0;
+      icluster++;
+    }
   }
 
 }
@@ -401,22 +393,22 @@ Float_t AliTRDtrack::StatusForTOF()
 
   // This part of the function is never reached ????
   // What defines these parameters ????
-  Int_t status = 0;
-  if (GetNumberOfClusters()                <  20)  return 0;
-  if ((fN                                  > 110) && 
-      (fChi2/(Float_t(fN))                 <   3)) return 3; // Gold
-  if ((fNLast                              >  30) &&
-      (fChi2Last/(Float_t(fNLast))         <   3)) return 3; // Gold
-  if ((fNLast                              >  20) &&
-      (fChi2Last/(Float_t(fNLast))         <   2)) return 3; // Gold
-  if ((fNLast/(fNExpectedLast+3.0)         > 0.8) && 
-      (fChi2Last/Float_t(fNLast)           <   5) && 
-      (fNLast                              >  20)) return 2; // Silber
-  if ((fNLast                              >   5) &&
-      (((fNLast+1.0)/(fNExpectedLast+1.0)) > 0.8) && 
-      (fChi2Last/(fNLast-5.0)              <   6)) return 1; 
-  
-  return status;
+  //Int_t status = 0;
+  //if (GetNumberOfClusters()                <  20)  return 0;
+  //if ((fN                                  > 110) && 
+  //    (fChi2/(Float_t(fN))                 <   3)) return 3; // Gold
+  //if ((fNLast                              >  30) &&
+  //    (fChi2Last/(Float_t(fNLast))         <   3)) return 3; // Gold
+  //if ((fNLast                              >  20) &&
+  //    (fChi2Last/(Float_t(fNLast))         <   2)) return 3; // Gold
+  //if ((fNLast/(fNExpectedLast+3.0)         > 0.8) && 
+  //    (fChi2Last/Float_t(fNLast)           <   5) && 
+  //    (fNLast                              >  20)) return 2; // Silver
+  //if ((fNLast                              >   5) &&
+  //    (((fNLast+1.0)/(fNExpectedLast+1.0)) > 0.8) && 
+  //    (fChi2Last/(fNLast-5.0)              <   6)) return 1; 
+  //
+  //return status;
 
 }
 
@@ -450,16 +442,16 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up)
   //
 
   // Array to sort the dEdx values according to amplitude
-
-	Float_t sorted[kMAXCLUSTERSPERTRACK];
-	fdEdx = 0.;
+  Float_t sorted[kMAXCLUSTERSPERTRACK];
+  fdEdx = 0.;
 	
   // Require at least 10 clusters for a dedx measurement
   if (fNdedx < 10) return;
 
-
   // Can fdQdl be negative ????
-  for (Int_t i = 0; i < fNdedx; i++) sorted[i] = TMath::Abs(fdQdl[i]);
+  for (Int_t i = 0; i < fNdedx; i++) {
+    sorted[i] = TMath::Abs(fdQdl[i]);
+  }
   // Sort the dedx values by amplitude
   Int_t *index = new Int_t[fNdedx];
   TMath::Sort(fNdedx, sorted, index, kFALSE);
@@ -467,10 +459,13 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up)
   // Sum up the truncated charge between lower and upper bounds 
   Int_t nl = Int_t(low * fNdedx);
   Int_t nu = Int_t( up * fNdedx);
-  for (Int_t i = nl; i <= nu; i++) fdEdx += sorted[index[i]];
-	fdEdx /= (nu - nl + 1.0);
+  for (Int_t i = nl; i <= nu; i++) {
+    fdEdx += sorted[index[i]];
+  }
+  fdEdx /= (nu - nl + 1.0);
 
-	delete[] index;
+  delete[] index;
+
 }                     
 
 //_____________________________________________________________________________
@@ -479,95 +474,110 @@ void AliTRDtrack::CookdEdxTimBin()
   //
   // Set fdEdxPlane and fTimBinPlane and also get the 
   // Time bin for Max. Cluster
-	//
-	// Authors:
+  //
+  // Authors:
   // Prashant Shukla (shukla@physi.uni-heidelberg.de)
   // Alexandru Bercuci (A.Bercuci@gsi.de)
+  //
 
+  Double_t  maxcharge[AliESDtrack::kNPlane]; // max charge in chamber
+  // Number of clusters attached to track per chamber and slice
+  Int_t     nCluster[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
+  // Number of time bins in chamber
+  Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t plane;                  // Plane of current cluster
+  Int_t tb;                     // Time bin of current cluster
+  Int_t slice;                  // Current slice
+  AliTRDcluster *cluster = 0x0; // Pointer to current cluster
 
-	Double_t  maxcharge[AliESDtrack::kNPlane]; // max charge in chamber
-	// number of clusters attached to track per chamber and slice
-	Int_t     nCluster[AliESDtrack::kNPlane][AliESDtrack::kNSlice];
-	//number of time bins in chamber
-	Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-	Int_t plane;   // plane of current cluster
-	Int_t tb;      // time bin of current cluster
-	Int_t slice;   // curent slice
-	AliTRDcluster *cluster = 0x0; // pointer to current cluster
-
-	// Reset class and local contors/variables
+  // Reset class and local counters/variables
   for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
-		fTimBinPlane[iPlane] = -1;
-    maxcharge[iPlane] = 0.;
-		for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
+    fTimBinPlane[iPlane] = -1;
+    maxcharge[iPlane]    = 0.;
+    for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
       fdEdxPlane[iPlane][iSlice] = 0.;
       nCluster[iPlane][iSlice]   = 0;
     }
   }
 
-	// start looping over clusters attached to this track
-	for (Int_t iClus = 0; iClus < GetNumberOfClusters(); iClus++) {
+  // Start looping over clusters attached to this track
+  for (Int_t iClus = 0; iClus < GetNumberOfClusters(); iClus++) {
+
     cluster = fClusters[iClus]; //(AliTRDcluster*)tracker->GetCluster(fIndex[iClus]);
     if(!cluster) continue;
 
-		// Read info from current cluster
-		plane  = AliTRDgeometry::GetPlane(cluster->GetDetector());
+    // Read info from current cluster
+    plane  = AliTRDgeometry::GetPlane(cluster->GetDetector());
     if (plane < 0 || plane >= AliESDtrack::kNPlane) {
       AliError(Form("Wrong plane %d", plane));
       continue;
     }
 
-		tb     = cluster->GetLocalTimeBin();
-    if(tb == 0 || tb >= ntb){
-			AliWarning(Form("time bin 0 or > %d in cluster %d", ntb, iClus));
-			AliInfo(Form("dQ/dl %f", fdQdl[iClus]));
-			continue;
-		}
+    tb     = cluster->GetLocalTimeBin();
+    if ((tb == 0) || (tb >= ntb)) {
+      AliWarning(Form("time bin 0 or > %d in cluster %d", ntb, iClus));
+      AliInfo(Form("dQ/dl %f", fdQdl[iClus]));
+      continue;
+    }
 	
-    slice   = tb * AliESDtrack::kNSlice / ntb;
-    
-		fdEdxPlane[plane][slice] += fdQdl[iClus];
-    if(fdQdl[iClus] > maxcharge[plane]) {
-      maxcharge[plane] = fdQdl[iClus];
+    slice = tb * AliESDtrack::kNSlice / ntb;
+
+    fdEdxPlane[plane][slice] += fdQdl[iClus];
+    if (fdQdl[iClus] > maxcharge[plane]) {
+      maxcharge[plane]    = fdQdl[iClus];
       fTimBinPlane[plane] = tb;
     }
+
     nCluster[plane][slice]++;
+
   } // End of loop over cluster
-
-
 	
   // Normalize fdEdxPlane to number of clusters and set track segments
   for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++) {
     for (Int_t iSlice = 0; iSlice < AliESDtrack::kNSlice; iSlice++) {
-      if (nCluster[iPlane][iSlice]) fdEdxPlane[iPlane][iSlice] /= nCluster[iPlane][iSlice];
+      if (nCluster[iPlane][iSlice]) {
+        fdEdxPlane[iPlane][iSlice] /= nCluster[iPlane][iSlice];
+      }
     }
-	}
-}
+  }
 
+}
 
 //_____________________________________________________________________________
 void	AliTRDtrack::SetTrackSegmentDirMom(const Int_t plane)
 {
-	if(plane<0 || plane>= kNplane){
-		AliError(Form("Trying to access out of range plane (%d)", plane));
-		return;
-	}
+  //
+  // Set the momenta for a track segment in a given plane
+  //
+
+  if ((plane <       0) || 
+      (plane>= kNplane)) {
+    AliError(Form("Trying to access out of range plane (%d)", plane));
+    return;
+  }
 	
-	fSnp[plane] = GetSnp();
-	fTgl[plane] = GetTgl();
-	Double_t p[3]; GetPxPyPz(p);
-	fMom[plane] = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+  fSnp[plane] = GetSnp();
+  fTgl[plane] = GetTgl();
+  Double_t p[3]; 
+  GetPxPyPz(p);
+  fMom[plane] = TMath::Sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+
 }
 
 //_____________________________________________________________________________
 Float_t	AliTRDtrack::GetTrackLengthPlane(Int_t plane) const
 {
-	if(plane < 0 || plane >= kNplane) return 0.;
-  return (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())/TMath::Sqrt((1.
-- fSnp[plane]*fSnp[plane]) / (1. + fTgl[plane]*fTgl[plane]));
+  //
+  // Calculate the track length of a track segment in a given plane
+  //
+
+  if ((plane < 0) || (plane >= kNplane)) return 0.;
+
+  return (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())
+        / TMath::Sqrt((1.0 - fSnp[plane]*fSnp[plane]) 
+                    / (1.0 + fTgl[plane]*fTgl[plane]));
 
 }
-
 
 //_____________________________________________________________________________
 Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
@@ -583,13 +593,13 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
   //
   // Author
   // Alex Bercuci (A.Bercuci@gsi.de) 2nd May 2007
+  //
 
-
-	AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
-	if (!calibration) {
-		AliError("No access to calibration data");
-		return -1;
-	}
+  AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
+  if (!calibration) {
+    AliError("No access to calibration data");
+    return -1;
+  }
 	
 	// Retrieve the CDB container class with the probability distributions
 	const AliTRDCalPID *pd = calibration->GetPIDLQObject();
@@ -646,8 +656,6 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
 	
 	return 0;
 }
-
-
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
@@ -758,25 +766,25 @@ Bool_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, Int_t index
   //Double_t cov[3] = {c->GetSigmaY2()+errang, 0.0, c->GetSigmaZ2()*100.0 };
   Double_t sy2    = c->GetSigmaY2() * 4.0;
   Double_t sz2    = c->GetSigmaZ2() * 4.0;
-  Double_t cov[3] = {sy2 + h01*h01*sz2, h01*(sy2-sz2), sz2 + h01*h01*sy2 };
+  Double_t cov[3] = { sy2 + h01*h01*sz2, h01*(sy2-sz2), sz2 + h01*h01*sy2 };
 
   if (!AliExternalTrackParam::Update(p,cov)) {
     return kFALSE;
   }
 
-  Int_t n = GetNumberOfClusters();
+  Int_t n   = GetNumberOfClusters();
   fIndex[n] = index;
   SetNumberOfClusters(n+1);
-	
-	
+
   SetChi2(GetChi2()+chisq);
 
-  return kTRUE;     
+  return kTRUE;
 
 }        
 
 //_____________________________________________________________________________
-Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index, Double_t h01, Int_t /*plane*/)
+Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index
+                          , Double_t h01, Int_t /*plane*/)
 {
   //
   // Assignes found cluster to the track and updates track information
@@ -844,15 +852,14 @@ Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index, Doubl
     return kFALSE;
   }
 
-	// Register cluster to track
-  Int_t n = GetNumberOfClusters();
-  fIndex[n] = index;
-	fClusters[n] = c; // A.Bercuci 25.07.07
+  // Register cluster to track
+  Int_t n      = GetNumberOfClusters();
+  fIndex[n]    = index;
+  fClusters[n] = c;
   SetNumberOfClusters(n+1);
   SetChi2(GetChi2() + chisq);
 
   return kTRUE;
-
 
 }                     
 
@@ -1086,7 +1093,8 @@ Int_t AliTRDtrack::PropagateToX(Double_t xr, Double_t step)
 {
   //
   // Propagate track to given x  position 
-  // Works inside of the 20 degree segmentation (local cooordinate frame for TRD , TPC, TOF)
+  // Works inside of the 20 degree segmentation
+  // (local cooordinate frame for TRD , TPC, TOF)
   // 
   // Material budget from geo manager
   // 
@@ -1100,7 +1108,7 @@ Int_t AliTRDtrack::PropagateToX(Double_t xr, Double_t step)
   const Double_t kTalphac = TMath::Tan(kAlphac*0.5);
 
   // Critical alpha  - cross sector indication
-  Double_t dir = (GetX()>xr) ? -1.0 : 1.0;
+  Double_t dir = (GetX() > xr) ? -1.0 : 1.0;
 
   // Direction +-
   for (Double_t x = GetX()+dir*step; dir*x < dir*xr; x += dir*step) {
@@ -1148,7 +1156,7 @@ Int_t   AliTRDtrack::PropagateToR(Double_t r,Double_t step)
 
   Double_t radius = TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
   // Direction +-
-  Double_t dir    = (radius>r) ? -1.0 : 1.0;   
+  Double_t dir    = (radius > r) ? -1.0 : 1.0;   
 
   for (Double_t x = radius+dir*step; dir*x < dir*r; x += dir*step) {
 
@@ -1197,7 +1205,7 @@ Int_t AliTRDtrack::GetSector() const
   //
 
   return Int_t(TVector2::Phi_0_2pi(GetAlpha()) / AliTRDgeometry::GetAlpha())
-         % AliTRDgeometry::kNsect;
+             % AliTRDgeometry::kNsect;
 
 }
 

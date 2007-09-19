@@ -330,156 +330,6 @@ Int_t  AliTRDtracker::GlobalToLocalID(Int_t gid)
 }
 
 //_____________________________________________________________________________
-Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
-{
-  //
-  // Transform from cluster system to tracking system
-  //
-
-  // Magic constants for geo manager transformation
-  const Double_t kX0shift  = 2.52;
-
-  //
-  // Apply alignment and calibration to transform cluster
-  //
-  Int_t detector = cluster->GetDetector();
-  Int_t plane    = fGeom->GetPlane(cluster->GetDetector());
-  Int_t chamber  = fGeom->GetChamber(cluster->GetDetector());
-  Int_t sector   = fGeom->GetSector(cluster->GetDetector());
-
-  Double_t dxAmp  = (Double_t) fGeom->CamHght();               // Amplification region
-  Double_t driftX = TMath::Max(cluster->GetX()-dxAmp*0.5,0.0); // Drift distance
-
-  //
-  // ExB correction
-  //
-  Double_t vdrift = AliTRDcalibDB::Instance()->GetVdrift(cluster->GetDetector(),0,0);
-  Double_t exB    = AliTRDcalibDB::Instance()->GetOmegaTau(vdrift,-AliTracker::GetBz()*0.1);
-
-  AliTRDpadPlane    *padPlane    = fGeom->GetPadPlane(plane,chamber);
-  Double_t zshiftIdeal = 0.5*(padPlane->GetRow0()+padPlane->GetRowEnd());
-  Double_t localPos[3];
-  Double_t localPosTracker[3];
-  localPos[0] = -cluster->GetX();
-  localPos[1] =  cluster->GetY() - driftX * exB;
-  localPos[2] =  cluster->GetZ() - zshiftIdeal;
-
-  cluster->SetY(cluster->GetY() - driftX*exB);
-  Double_t xplane = (Double_t) AliTRDgeometry::GetTime0(plane); 
-  cluster->SetX(xplane - cluster->GetX());
-
-  TGeoHMatrix *matrix = fGeom->GetCorrectionMatrix(cluster->GetDetector());
-  if (!matrix) {
-    // No matrix found - if somebody used geometry with holes
-    AliError("Invalid Geometry - Default Geometry used\n");
-    return kTRUE;   
-  }
-  matrix->LocalToMaster(localPos,localPosTracker);  
-
-  if (AliTRDReconstructor::StreamLevel() > 1) {
-    (* fDebugStreamer) << "Transform"
-                       << "Cl.="      << cluster
-                       << "matrix.="  << matrix
-                       << "Detector=" << detector
-                       << "Sector="   << sector
-                       << "Plane="    << plane
-                       << "Chamber="  << chamber
-                       << "lx0="      << localPosTracker[0]
-                       << "ly0="      << localPosTracker[1]
-                       << "lz0="      << localPosTracker[2]
-                       << "\n";
-  }
-
-  cluster->SetX(localPosTracker[0]+kX0shift);
-  cluster->SetY(localPosTracker[1]);
-  cluster->SetZ(localPosTracker[2]);
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
-// Bool_t  AliTRDtracker::Transform(AliTRDcluster *cluster)
-//{
-//   //
-//   // Is this still needed ????
-//   //
-//   const Double_t kDriftCorrection  = 1.01;                 // drift coeficient correction
-//   const Double_t kTime0Cor         = 0.32;                 // time0 correction
-//   //
-//   const Double_t kX0shift           = 2.52; 
-//   const Double_t kX0shift5          = 3.05; 
-
-//   //
-//   // apply alignment and calibration to transform cluster
-//   //
-//   //
-//   Int_t detector = cluster->GetDetector();
-//   Int_t plane   = fGeom->GetPlane(cluster->GetDetector());
-//   Int_t chamber = fGeom->GetChamber(cluster->GetDetector());
-//   Int_t sector  = fGeom->GetSector(cluster->GetDetector());
-
-//   Double_t dxAmp  = (Double_t) fGeom->CamHght();          // Amplification region
-//   Double_t driftX = TMath::Max(cluster->GetX()-dxAmp*0.5,0.);  // drift distance
-//   //
-//   // ExB correction
-//   //
-//   Double_t vdrift = AliTRDcalibDB::Instance()->GetVdrift(cluster->GetDetector(),0,0);
-//   Double_t exB =   AliTRDcalibDB::Instance()->GetOmegaTau(vdrift,-AliTracker::GetBz()*0.1);
-//   //
-
-//   AliTRDCommonParam* commonParam = AliTRDCommonParam::Instance();  
-//   AliTRDpadPlane * padPlane = commonParam->GetPadPlane(plane,chamber);
-//   Double_t zshiftIdeal  = 0.5*(padPlane->GetRow0()+padPlane->GetRowEnd());
-//   Double_t localPos[3], globalPos[3], localPosTracker[3], localPosTracker2[3];
-//   localPos[2] = -cluster->GetX();
-//   localPos[0] =  cluster->GetY() - driftX*exB;
-//   localPos[1] =  cluster->GetZ() -zshiftIdeal;
-//   TGeoHMatrix * matrix =  fGeom->GetGeoMatrix(cluster->GetDetector());
-//   matrix->LocalToMaster(localPos, globalPos);
-  
-//   Double_t sectorAngle = 20.*(sector%18)+10;
-//   TGeoHMatrix  rotSector;
-//   rotSector.RotateZ(sectorAngle);
-//   rotSector.LocalToMaster(globalPos, localPosTracker);
-//   //
-//   //
-//   TGeoHMatrix  matrix2(*matrix);
-//   matrix2.MultiplyLeft(&rotSector);
-//   matrix2.LocalToMaster(localPos,localPosTracker2);
-//   //
-//   //
-//   //
-//   cluster->SetY(cluster->GetY() - driftX*exB);
-//   Double_t xplane = (Double_t) AliTRDgeometry::GetTime0(plane); 
-//   cluster->SetX(xplane- kDriftCorrection*(cluster->GetX()-kTime0Cor));
-//   (*fDebugStreamer)<<"Transform"<<
-//     "Cl.="<<cluster<<
-//     "matrix.="<<matrix<<
-//     "matrix2.="<<&matrix2<<
-//     "Detector="<<detector<<
-//     "Sector="<<sector<<
-//     "Plane="<<plane<<
-//     "Chamber="<<chamber<<
-//     "lx0="<<localPosTracker[0]<<
-//     "ly0="<<localPosTracker[1]<<
-//     "lz0="<<localPosTracker[2]<<
-//     "lx2="<<localPosTracker2[0]<<
-//     "ly2="<<localPosTracker2[1]<<
-//     "lz2="<<localPosTracker2[2]<<
-//     "\n";
-//   //
-//   if (plane==5)
-//      cluster->SetX(localPosTracker[0]+kX0shift5);
-//   else
-//     cluster->SetX(localPosTracker[0]+kX0shift);
-    
-//   cluster->SetY(localPosTracker[1]);
-//   cluster->SetZ(localPosTracker[2]);
-//   return kTRUE;
-// }
-
-//_____________________________________________________________________________
 Bool_t AliTRDtracker::AdjustSector(AliTRDtrack *track) 
 {
   //
@@ -1463,13 +1313,12 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
     Int_t plane          = fGeom->GetPlane(detector);
     Int_t trackingSector = sector;
 
-    //if (c->GetLabel(0) > 0) {
     if (c->GetQ() > 10) {
       Int_t chamber = fGeom->GetChamber(detector);
       fHoles[chamber][trackingSector] = kFALSE;
     }
 
-    Int_t gtb = fTrSec[trackingSector]->CookTimeBinIndex(plane,localTimeBin);
+    Int_t gtb   = fTrSec[trackingSector]->CookTimeBinIndex(plane,localTimeBin);
     if (gtb < 0) {
       continue; 
     }
@@ -1477,12 +1326,11 @@ Int_t AliTRDtracker::LoadClusters(TTree *cTree)
 
     index = ncl;
 
-    // Apply pos correction
-    Transform(c);  
     fHXCl->Fill(c->GetX());
 
     fTrSec[trackingSector]->GetLayer(layer)->SetX(c->GetX());
     fTrSec[trackingSector]->GetLayer(layer)->InsertCluster(c,index);
+
   }
 
   return 0;

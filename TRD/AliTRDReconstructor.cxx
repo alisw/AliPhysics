@@ -193,11 +193,8 @@ void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 				, AliESDEvent* /*esd*/) const
 {
   //
-  // Make PID
+  // Fill ESD
   //
-
-  //AliTRDpidESD trdPID;
-  //trdPID.MakePID(esd);
 
 }
 
@@ -207,11 +204,8 @@ void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
 				, AliESDEvent* /*esd*/) const
 {
   //
-  // Make PID
+  // Fill ESD
   //
-
-  //AliTRDpidESD trdPID;
-  //trdPID.MakePID(esd);
 
 }
 
@@ -221,11 +215,8 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 				, AliESDEvent* /*esd*/) const
 {
   //
-  // Make PID
+  // Fill ESD
   //
-
-  //AliTRDpidESD trdPID;
-  //trdPID.MakePID(esd);
 
 }
 
@@ -234,10 +225,7 @@ void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 				, AliESDEvent* /*esd*/) const
 {
   //
-  // Make PID
+  // Fill ESD
   //
-
-  //AliTRDpidESD trdPID;
-  //trdPID.MakePID(esd);
 
 }

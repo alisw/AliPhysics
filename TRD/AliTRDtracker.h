@@ -54,7 +54,6 @@ class AliTRDtracker : public AliTracker {
 
   TH2D *fHMinD;
   TH1D *fHDeltaX;
-
   TH1D *fHXCl;
 
   void InitLogHists();
@@ -63,53 +62,53 @@ class AliTRDtracker : public AliTracker {
  public:
 
   enum { kMaxLayersPerSector   = 1000
-	 , kMaxTimeBinIndex      = 216
-	 , kMaxClusterPerTimeBin = 2300
-	 , kZones                = 5
-	 , kTrackingSectors      = 18   };
+       , kMaxTimeBinIndex      = 216
+       , kMaxClusterPerTimeBin = 2300
+       , kZones                = 5
+       , kTrackingSectors      = 18   };
   
   AliTRDtracker();
   AliTRDtracker(const AliTRDtracker &t);
   AliTRDtracker(const TFile *in);
   virtual         ~AliTRDtracker(); 
-  AliTRDtracker   &operator=(const AliTRDtracker &/*t*/)  { return *this;                 } 
+  AliTRDtracker   &operator=(const AliTRDtracker &/*t*/) { return *this;          } 
   
-  void     SetAddTRDseeds()                       { fAddTRDseeds = kTRUE;         }
-  void     SetNoTilt()                            { fNoTilt      = kTRUE;         }
+  void             SetAddTRDseeds()               { fAddTRDseeds = kTRUE;         }
+  void             SetNoTilt()                    { fNoTilt      = kTRUE;         }
   
-  Int_t    GetTimeBinsPerPlane() const            { return fTimeBinsPerPlane;     }   
-  Double_t GetMaxChi2() const                     { return fgkMaxChi2;            }
-  Float_t  GetLabelFraction() const               { return fgkLabelFraction;      }
-  Float_t  GetMinClustersInTrack() const          { return fgkMinClustersInTrack; }
-  Int_t    GetLastPlane(AliTRDtrack *track);
-  Double_t GetTiltFactor(const AliTRDcluster *c);
-  Bool_t   GetTrackPoint(Int_t index, AliTrackPoint& p) const;
-  Double_t GetX(Int_t sec, Int_t plane, Int_t localTB) const;
-  Double_t GetX(Int_t sec, Int_t pl) const        { return fTrSec[sec]->GetLayer(pl)->GetX();            }
-  Int_t    GetGlobalTimeBin(Int_t sec, Int_t plane, Int_t localTB) const 
-    { return fTrSec[sec]->CookTimeBinIndex(plane,localTB); }
-  Double_t GetLayerNumber(Int_t sec, Double_t x) const 
-    { return fTrSec[sec]->GetLayerNumber(x);               }
-  AliCluster    *GetCluster(Int_t index) const    { if (index >= fNclusters) return NULL; 
-  return (AliCluster *) fClusters->UncheckedAt(index); }
+  Int_t            GetTimeBinsPerPlane() const    { return fTimeBinsPerPlane;     }   
+  Double_t         GetMaxChi2() const             { return fgkMaxChi2;            }
+  Float_t          GetLabelFraction() const       { return fgkLabelFraction;      }
+  Float_t          GetMinClustersInTrack() const  { return fgkMinClustersInTrack; }
+  Int_t            GetLastPlane(AliTRDtrack *track);
+  Double_t         GetTiltFactor(const AliTRDcluster *c);
+  Bool_t           GetTrackPoint(Int_t index, AliTrackPoint& p) const;
+  Double_t         GetX(Int_t sec, Int_t plane, Int_t localTB) const;
+  Double_t         GetX(Int_t sec, Int_t pl) const
+                                                  { return fTrSec[sec]->GetLayer(pl)->GetX();            }
+  Int_t            GetGlobalTimeBin(Int_t sec, Int_t plane, Int_t localTB) const 
+                                                  { return fTrSec[sec]->CookTimeBinIndex(plane,localTB); }
+  Double_t         GetLayerNumber(Int_t sec, Double_t x) const 
+                                                  { return fTrSec[sec]->GetLayerNumber(x);               }
+  AliCluster      *GetCluster(Int_t index) const  { if (index >= fNclusters) return NULL; 
+                                                    return (AliCluster *) fClusters->UncheckedAt(index); }
   
-  static  Int_t    Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down);    
-  Int_t    Clusters2Tracks(AliESDEvent *event);
-  Int_t    PropagateBack(AliESDEvent *event);
-  Int_t    RefitInward(AliESDEvent *event);
+  static Int_t     Freq(Int_t n, const Int_t *inlist, Int_t *outlist, Bool_t down);    
+  Int_t            Clusters2Tracks(AliESDEvent *event);
+  Int_t            PropagateBack(AliESDEvent *event);
+  Int_t            RefitInward(AliESDEvent *event);
   
   virtual void     CookLabel(AliKalmanTrack *t, Float_t wrong) const;
   
-  Int_t    LocalToGlobalID(Int_t lid);
-  Int_t    GlobalToLocalID(Int_t gid);
-  Bool_t   Transform(AliTRDcluster *cluster);
+  Int_t            LocalToGlobalID(Int_t lid);
+  Int_t            GlobalToLocalID(Int_t gid);
   
-  Int_t    LoadClusters(TTree *cTree);
-  void     UnloadClusters();
+  Int_t            LoadClusters(TTree *cTree);
+  void             UnloadClusters();
   virtual void     UseClusters(const AliKalmanTrack *t, Int_t from = 0) const;  
-  Int_t    ReadClusters(TObjArray *array, TTree *in) const;
-  AliTRDcluster *GetCluster(AliTRDtrack *track, Int_t plane, Int_t timebin, UInt_t &index);
-  Int_t    FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack *track
+  Int_t            ReadClusters(TObjArray *array, TTree *in) const;
+  AliTRDcluster   *GetCluster(AliTRDtrack *track, Int_t plane, Int_t timebin, UInt_t &index);
+  Int_t            FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack *track
                               , Int_t *clusters, AliTRDtracklet &tracklet);
   
  protected:
@@ -119,34 +118,29 @@ class AliTRDtracker : public AliTracker {
   public: 
     
     AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t rho
-			   , Double_t x0, Int_t tbIndex, Int_t plane); 
+			 , Double_t x0, Int_t tbIndex, Int_t plane); 
     AliTRDpropagationLayer(const AliTRDpropagationLayer &/*p*/);
-    ~AliTRDpropagationLayer() { 
-      if (fTimeBinIndex >= 0) { 
-	delete[] fClusters; 
-	delete[] fIndex; 
-      }     
-    }
+    ~AliTRDpropagationLayer() {  if (fTimeBinIndex >= 0) { 
+                                   delete[] fClusters; 
+    	                           delete[] fIndex; 
+                                 } 
+                               }
     AliTRDpropagationLayer &operator=(const AliTRDpropagationLayer &/*p*/) 
-      {return *this;}
+                                                              { return *this; }
 
-    operator Int_t() const {return fN;}
+    operator Int_t() const                                    { return fN;    }
     AliTRDcluster  *operator[](Int_t i) {return fClusters[i];}
     
-    void SetZmax(Int_t cham, Double_t center, Double_t w) { 
-      fZc[cham] = center;  
-      fZmax[cham]    = w; 
-    }
-    void SetYmax(Double_t w, Double_t wsensitive) {
-      fYmax          = w;
-      fYmaxSensitive = wsensitive;
-    }
+    void     SetZmax(Int_t cham, Double_t center, Double_t w) { fZc[cham]      = center; 
+                                                                fZmax[cham]    = w;           }
+    void     SetYmax(Double_t w, Double_t wsensitive)         { fYmax          = w;
+                                                                fYmaxSensitive = wsensitive;  }
 
-    void SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
-    void SetHoles(Bool_t* holes);
-    void SetHole(Double_t Zmax, Double_t Ymax
-		 , Double_t rho = 1.29e-3, Double_t x0 = 36.66
-		 , Double_t Yc = 0.0, Double_t Zc = 0.0);
+    void     SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
+    void     SetHoles(Bool_t* holes);
+    void     SetHole(Double_t Zmax, Double_t Ymax
+	           , Double_t rho = 1.29e-3, Double_t x0 = 36.66
+	           , Double_t Yc = 0.0, Double_t Zc = 0.0);
     
     Double_t GetYmax() const           { return fYmax;                  }
     Double_t GetZmax(Int_t c) const    { return fZmax[c];               }
@@ -168,7 +162,7 @@ class AliTRDtracker : public AliTracker {
     Int_t    Find(Float_t y) const; 
     Int_t    FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroadz) const;
  
-    void SetX(Double_t x) {fX = x;}
+    void     SetX(Double_t x)          { fX = x; }
 
     
   private:     

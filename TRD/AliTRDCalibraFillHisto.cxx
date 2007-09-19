@@ -982,7 +982,7 @@ Int_t *AliTRDCalibraFillHisto::CalculateRowCol(AliTRDcluster *cl) const
   //Double_t offsettilt      = padplane->GetTiltOffset(offsetz);
   //Int_t    col             = padplane->GetPadColNumber(pos[1] + offsettilt,offsetz);
   //Int_t    col             = padplane->GetPadColNumber(pos[1]+offsettilt);
-  Int_t    col               = cl->GetPad(); 
+  Int_t    col               = cl->GetPadCol(); 
 
   //return
   rowcol[0]     = row;
@@ -2258,7 +2258,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
     if(echec) continue;
     //if no echec: calculate with the position of the pad
     // Position of the cluster
-    Double_t       padPosition = xcenter +  cl->GetPad();
+    Double_t       padPosition = xcenter +  cl->GetPadCol();
     padPositions[k]            = padPosition;
     Nb3pc++;
     fitter.AddPoint(&time, padPosition,1);
@@ -2280,7 +2280,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
     Short_t  *signals      = cl->GetSignals();              // signal
     Double_t     time      = cl->GetLocalTimeBin();         // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
-    Float_t padPos         = cl->GetPad();                  // middle pad
+    Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 
     Float_t ycenter        = 0.0;                           // relative center charge
     Float_t ymin           = 0.0;                           // relative left charge
@@ -2703,7 +2703,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
     if(echec) continue;
     //if no echec: calculate with the position of the pad
     // Position of the cluster
-    Double_t       padPosition = xcenter +  cl->GetPad();
+    Double_t       padPosition = xcenter +  cl->GetPadCol();
     padPositions[k]            = padPosition;
     Nb3pc++;
     fitter.AddPoint(&time, padPosition,1);
@@ -2735,7 +2735,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
     Short_t  *signals      = cl->GetSignals();              // signal
     Double_t     time      = cl->GetLocalTimeBin();         // time bin
     Float_t padPosTracklet = line[0]+line[1]*time;          // reconstruct position from fit
-    Float_t padPos         = cl->GetPad();                  // middle pad
+    Float_t padPos         = cl->GetPadCol();               // middle pad
     Double_t dpad          = padPosTracklet - padPos;       // reconstruct position relative to middle pad from fit 
     Float_t ycenter        = 0.0;                           // relative center charge
     Float_t ymin           = 0.0;                           // relative left charge

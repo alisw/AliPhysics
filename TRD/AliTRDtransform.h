@@ -1,0 +1,74 @@
+#ifndef ALITRDTRANSFORM_H
+#define ALITRDTRANSFORM_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Transforms clusters into space points with calibrated positions       //
+//  defined in the local tracking system                                  //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
+#include "TObject.h"
+//#include "../TPC/AliTransform.h"
+
+class TGeoHMatrix;
+
+class AliTRDgeometry;
+class AliTRDcluster;
+class AliTRDCommonParam;
+class AliTRDcalibDB;
+class AliTRDCalROC;
+class AliTRDCalDet;
+class AliTRDpadPlane;
+
+//class AliTRDtransform : public AliTransform {
+class AliTRDtransform : public TObject {
+
+ public:
+
+  AliTRDtransform();
+  AliTRDtransform(Int_t det);
+  AliTRDtransform(const AliTRDtransform &t);
+  ~AliTRDtransform();
+  AliTRDtransform &operator=(const AliTRDtransform &t) { *(new(this) AliTRDtransform(t));
+                                                          return *this; }
+
+  virtual void     Transform(Double_t *x
+                           , Int_t    *i
+                           , UInt_t    time
+                           , Int_t     coordinateType);
+  virtual void     Recalibrate(AliTRDcluster *c, Bool_t setDet = kTRUE);
+
+          void     SetDetector(Int_t det);
+
+ protected:
+
+  AliTRDgeometry          *fGeo;                 //  TRD geometry
+  Int_t                    fDetector;            //  Detector number
+
+  AliTRDCommonParam       *fParam;               //  TRD common parameters
+
+        AliTRDcalibDB     *fCalibration;         //  TRD calibration interface object
+        AliTRDCalROC      *fCalVdriftROC;        //  Pad wise Vdrift calibration object
+        AliTRDCalROC      *fCalT0ROC;            //  Pad wise T0 calibration object
+  const AliTRDCalDet      *fCalVdriftDet;        //  ROC wise Vdrift calibration object
+  const AliTRDCalDet      *fCalT0Det;            //  ROC wise T0 calibration object
+  Double_t                 fCalVdriftDetValue;   //  ROC wise Vdrift calibration value
+  Double_t                 fCalT0DetValue;       //  ROC wise T0 calibration value
+
+  Double_t                 fSamplingFrequency;   //  ADC sampling frequency
+
+  AliTRDpadPlane          *fPadPlane;            //  The current pad plane object
+  Double_t                 fZShiftIdeal;         //  Needed to define Z-position relative to middle of chamber
+
+  TGeoHMatrix             *fMatrix;              //  Transformation matrix for a given chamber
+
+  ClassDef(AliTRDtransform,1)                    //  Transforms clusters
+
+};
+
+#endif

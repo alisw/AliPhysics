@@ -12,10 +12,11 @@
 #pragma link C++ class  AliTRDclusterMI+;
 
 #pragma link C++ class  AliTRDclusterizer+;
-#pragma link C++ class  AliTRDclusterizerV1+;
 #pragma link C++ class  AliTRDclusterizerV2+;
 
 #pragma link C++ class  AliTRDclusterCorrection+;
+
+#pragma link C++ class  AliTRDtransform+;
 
 #pragma link C++ class  AliTRDtrack+;
 #pragma link C++ class  AliTRDtracklet+;

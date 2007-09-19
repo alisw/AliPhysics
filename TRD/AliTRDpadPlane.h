@@ -102,7 +102,7 @@ class AliTRDpadPlane : public TObject {
   Double_t GetColSize(Int_t col) const       { if ((col == 0) || (col == fNcols-1))
                                                  return fWidthOPad;
                                                else
-                                                  return fWidthIPad; };
+                                                 return fWidthIPad;  };
 
   Double_t GetLengthRim() const              { return fLengthRim;    };
   Double_t GetWidthRim() const               { return fWidthRim;     };
