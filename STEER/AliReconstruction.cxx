@@ -187,6 +187,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fRunVertexFinder(kTRUE),
   fRunHLTTracking(kFALSE),
   fRunMuonTracking(kFALSE),
+  fRunV0Finder(kTRUE),
+  fRunCascadeFinder(kTRUE),
   fStopOnError(kFALSE),
   fWriteAlignmentData(kFALSE),
   fCleanESD(kTRUE),
@@ -239,6 +241,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunHLTTracking(rec.fRunHLTTracking),
   fRunMuonTracking(rec.fRunMuonTracking),
+  fRunV0Finder(rec.fRunV0Finder),
+  fRunCascadeFinder(rec.fRunCascadeFinder),
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
   fCleanESD(rec.fCleanESD),
@@ -818,14 +822,16 @@ Bool_t AliReconstruction::Run(const char* input)
        } 
     }
 
-    {
-    // V0 finding
-    AliV0vertexer vtxer;
-    vtxer.Tracks2V0vertices(esd);
+    if (fRunV0Finder) {
+       // V0 finding
+       AliV0vertexer vtxer;
+       vtxer.Tracks2V0vertices(esd);
 
-    // Cascade finding
-    AliCascadeVertexer cvtxer;
-    cvtxer.V0sTracks2CascadeVertices(esd);
+       if (fRunCascadeFinder) {
+          // Cascade finding
+          AliCascadeVertexer cvtxer;
+          cvtxer.V0sTracks2CascadeVertices(esd);
+       }
     }
  
     // write ESD
