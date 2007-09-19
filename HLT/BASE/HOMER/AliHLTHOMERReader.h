@@ -301,6 +301,11 @@ class HOMERReader: public MonitoringReader
 	unsigned fErrorConnection;
 
 	unsigned long fEventRequestAdvanceTime_us;
+    private:
+      /** copy constructor prohibited */
+      HOMERReader(const HOMERReader&);
+      /** assignment operator prohibited */
+      HOMERReader& operator=(const HOMERReader&);
 
 #ifdef USE_ROOT
         ClassDef(HOMERReader,2);

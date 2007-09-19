@@ -79,6 +79,17 @@ ClassImp(HOMERReader);
 
 #ifdef USE_ROOT
 HOMERReader::HOMERReader()
+  :
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL)
     {
     Init();
     }
@@ -87,6 +98,18 @@ HOMERReader::HOMERReader()
 
 /* For reading from a TCP port */
 HOMERReader::HOMERReader( const char* hostname, unsigned short port )
+  :
+  MonitoringReader(),
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL)
     {
     Init();
     if ( !AllocDataSources(1) )
@@ -108,6 +131,18 @@ HOMERReader::HOMERReader( const char* hostname, unsigned short port )
 
 /* For reading from multiple TCP ports */
 HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )
+  :
+  MonitoringReader(),
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL)
     {
     Init();
     if ( !AllocDataSources(tcpCnt) )
@@ -130,6 +165,18 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
 
 /* For reading from a System V shared memory segment */
 HOMERReader::HOMERReader( key_t shmKey, int shmSize )
+  :
+  MonitoringReader(),
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL)
     {
     Init();
     if ( !AllocDataSources(1) )
@@ -151,6 +198,18 @@ HOMERReader::HOMERReader( key_t shmKey, int shmSize )
 
 /* For reading from multiple System V shared memory segments */
 HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
+  :
+  MonitoringReader(),
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL)
     {
     Init();
     if ( !AllocDataSources(shmCnt) )
@@ -174,6 +233,18 @@ HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
 /* For reading from multiple TCP ports and multiple System V shared memory segments */
 HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
 			  unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
+  :
+  MonitoringReader(),
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL)
     {
     Init();
     if ( !AllocDataSources(tcpCnt+shmCnt) )
@@ -627,7 +698,7 @@ int HOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
 	if ( GetSourceEventID( fDataSources[n] ) != eventID || GetSourceEventType( fDataSources[n] ) != eventType )
 	    {
 	    fErrorConnection = n;
-	    fConnectionStatus=EBADRQC;
+	    fConnectionStatus=56;//EBADRQC;
 	    return fConnectionStatus;
 	    }
 	}
@@ -639,7 +710,7 @@ int HOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
 	if ( ret )
 	    {
 	    fErrorConnection = n;
-	    fConnectionStatus=EBADSLT;
+	    fConnectionStatus=57;//EBADSLT;
 	    return fConnectionStatus;
 	    }
 	}

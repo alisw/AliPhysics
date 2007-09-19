@@ -48,6 +48,9 @@
 
 
 HOMERWriter::HOMERWriter()
+  :
+  fDataOffset(0),
+  fBlocks()
     {
     Clear();
     }
