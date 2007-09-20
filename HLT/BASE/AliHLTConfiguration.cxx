@@ -821,10 +821,11 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	  fBlockDataArray.resize(iSourceDataBlock+iMatchingDB, init);
 	} else {
 	  if (iMatchingDB<0) {
-	    HLTError("task %s (%p): error getting no of matching data blocks from task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+	    HLTError("task %s (%p): error getting no of matching data blocks from task %s (%p), error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iMatchingDB);
 	    iResult=iMatchingDB;
-	  } else {
-	    HLTError("task %s (%p): block data array too small to get blocks from task %s (%p)", GetName(), this, pSrcTask->GetName(), pSrcTask);
+	    break;
+	  } else if (iMatchingDB==0) {
+	    HLTDebug("source task %s (%p) does not provide any matching data type for task %s (%p)", pSrcTask->GetName(), pSrcTask, GetName(), this);
 	  }
 	}
 	if ((iResult=pSrcTask->Subscribe(this, &fBlockDataArray[iSourceDataBlock],fBlockDataArray.size()-iSourceDataBlock))>0) {
