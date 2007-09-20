@@ -46,7 +46,7 @@ AliGenCocktailEventHeader::~AliGenCocktailEventHeader()
 {
 // Constructor
     if (fHeaders) {
-	fHeaders->Clear();
+	fHeaders->Delete();
 	delete fHeaders;
     }
 }

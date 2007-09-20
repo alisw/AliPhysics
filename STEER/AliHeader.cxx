@@ -129,7 +129,7 @@ void AliHeader::Reset(Int_t run, Int_t event)
   fNprimary=0;
   fNtrack=0;
   fEvent=event;
-  if (fDetHeaders) fDetHeaders->Clear();
+  if (fDetHeaders) fDetHeaders->Delete();
 }
 
 //_______________________________________________________________________
