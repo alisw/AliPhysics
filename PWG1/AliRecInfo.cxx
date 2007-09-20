@@ -140,11 +140,11 @@ void AliESDRecInfo::Reset()
 
 void AliESDRecInfo::SetESDtrack(const AliESDtrack *track){
   //
-  //
+  // 
   //
   if (fESDtrack) delete fESDtrack;
   fESDtrack = (AliESDtrack*)track->Clone();
-  if (track->GetFriendTrack()){
+  if (0 &&track->GetFriendTrack()){
     if (fTrackF) delete fTrackF;
     fTrackF = (AliESDfriendTrack*)track->GetFriendTrack()->Clone();
     if (fTrackF->GetCalibObject(0)){

@@ -50,14 +50,14 @@ public:
 	     Int_t nbins,Float_t min, Float_t max);
   //
   void   GetPoints3D(const char * label, const char * chpoints, const char* selection, TTree * tpoints, Int_t color=6, Float_t rmin=4.);
-
- private: 
+ 
   static void   AliLabelAxes(TH1* histo, const char* xAxisTitle, const char* yAxisTitle);
   static Double_t* CreateLogBins(Int_t nBins, Double_t xMin, Double_t xMax);
   static TH1F*  CreateEffHisto(TH1F* hGen, TH1F* hRec);
   static TH1F*  CreateResHisto(TH2F* hRes2, TH1F **phMean, 
 				Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
 
+private:
   AliTreeDraw(const AliTreeDraw& t):TObject(),fTree(0),fRes(0),fMean(0),fPoints(0){;}
   AliTreeDraw & operator=(const AliTreeDraw & t){return *this;}
 
