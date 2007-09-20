@@ -312,6 +312,18 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
       hLib.fName=new TString(libraryPath);
       HLTInfo("library %s loaded (%s)", libraryPath, loadtype);
       fLibraryList.insert(fLibraryList.begin(), hLib);
+      typedef void (*CompileInfo)( char*& date, char*& time);
+      CompileInfo fctInfo=(CompileInfo)FindSymbol(libraryPath, "CompileInfo");
+      if (fctInfo) {
+	char* date="";
+	char* time="";
+	(*fctInfo)(date, time);
+	if (!date) date="unknown";
+	if (!time) time="unknown";
+	HLTInfo("build on %s (%s)", date, time);
+      } else {
+	HLTInfo("no build info available (possible AliRoot embedded build)");
+      }
       iResult=RegisterScheduledComponents();
     } else {
       HLTError("can not load library %s", libraryPath);
