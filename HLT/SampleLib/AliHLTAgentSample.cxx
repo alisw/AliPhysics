@@ -70,7 +70,7 @@ int AliHLTAgentSample::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
   if (handler) {
     // the publisher configuration for the test data
-    TString arg("-datafile ");
+    TString arg("-datatype DUMMYDAT TEST -datafile ");
     arg+=fgkAliHLTAgentSampleData;
     HLTDebug(arg.Data());
     handler->CreateConfiguration("sample-fp1"  , "FilePublisher", NULL , arg.Data());
