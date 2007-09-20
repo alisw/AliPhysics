@@ -30,7 +30,7 @@
 #include "AliESDEvent.h"
 
 #include "AliTRDReconstructor.h"
-#include "AliTRDclusterizerV2.h"
+#include "AliTRDclusterizer.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
 #include "AliTRDgtuTrack.h"
@@ -86,7 +86,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
     if (!rawReader->NextEvent()) break;
 
     // New (fast) cluster finder
-    AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
+    AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
     clusterer.Open(runLoader->GetFileName(),iEvent);
     clusterer.Raw2ClustersChamber(rawReader);
 
@@ -112,7 +112,7 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   rawReader->Select("TRD");
 
   // New (fast) cluster finder
-  AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
+  AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
   clusterer.SetAddLabels(kFALSE);
   clusterer.Raw2ClustersChamber(rawReader);
@@ -128,7 +128,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
   AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
-  AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
+  AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
@@ -150,7 +150,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
+    AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
     clusterer.Open(runLoader->GetFileName(),iEvent);
     clusterer.ReadDigits();
     clusterer.MakeClusters();
