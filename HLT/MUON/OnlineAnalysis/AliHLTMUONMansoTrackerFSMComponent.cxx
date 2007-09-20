@@ -167,7 +167,16 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 				continue;
 			}
 			
-			AddRecHits(blocks[n].fSpecification, inblock.GetArray(), inblock.Nentries());
+			if (inblock.Nentries() != 0)
+				AddRecHits(blocks[n].fSpecification, inblock.GetArray(), inblock.Nentries());
+			else
+			{
+				Logging(kHLTLogWarning,
+					"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
+					"Block empty",
+					"Received a reconstructed hits data block which contains no entries."
+				);
+			}
 		}
 		else if (blocks[n].fDataType != AliHLTMUONConstants::TriggerRecordsBlockDataType())
 		{

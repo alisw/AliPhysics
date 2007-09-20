@@ -72,7 +72,11 @@ bool AliHLTMUONCalculations::ComputeMomentum(
 	
 	fgPx = AliHLTFloat32_t( pDivZf * xf );
 	fgPy = AliHLTFloat32_t( pDivZf * yf );
-	fgPz = AliHLTFloat32_t( sqrt(p*p - fgPx*fgPx - fgPy*fgPy) );
+	AliHLTFloat64_t k = p*p - fgPx*fgPx - fgPy*fgPy;
+	if (k > 0)
+		fgPz = AliHLTFloat32_t( sqrt(k) );
+	else
+		fgPz = 0;
 	// fgPz must be the same sign as fgZf else it could not have been measured.
 	if (fgZf < 0) fgPz = -fgPz;
 
