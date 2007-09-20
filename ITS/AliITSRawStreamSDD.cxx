@@ -66,7 +66,6 @@ fChannel(0),
 fJitter(0),
 fNCarlos(kModulesPerDDL),
 fDDL(0),
-fIdcd(0),
 fEndWords(0),
 fResetSkip(0)
 {
@@ -111,25 +110,25 @@ Bool_t AliITSRawStreamSDD::Next()
 {
 // read the next raw digit
 // returns kFALSE if there is no digit left
+// returns kTRUE and fCompletedModule=kFALSE when a digit is found
+// returns kTRUE and fCompletedModule=kTRUE  when a module is completed (=3x3FFFFFFF footer words)
+
   fPrevModuleID = fModuleID;
   fDDL=fRawReader->GetDDLID();
   //cout << "fDDL: " << fDDL;
   Int_t ddln = fRawReader->GetDDLID();
   //cout << ", ddln: " << ddln << endl;
   if(ddln <0) ddln=0;
-  if(fResetSkip==0){
-    Bool_t kSkip = ResetSkip(ddln);
-    fResetSkip=1;
-    if(!kSkip) return kSkip;
-  }
-
-
-  for(Int_t i=0;i<kModulesPerDDL;i++) fICountFoot[i]=0; 
+  fCompletedModule=kFALSE;
 
   while (kTRUE) {
+    if(fResetSkip==0){
+      Bool_t kSkip = ResetSkip(ddln);
+      fResetSkip=1;
+      if(!kSkip) return kSkip;
+    }
   
     if ((fChannel < 0) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel])) {
-      //cout << "fCarlosId: " << fCarlosId << ", fChannel: " << fChannel << ", fLastBit[fCarlosId][fChannel]: " << fLastBit[fCarlosId][fChannel] << ", fReadBits[fCarlosId][fChannel]: " << fReadBits[fCarlosId][fChannel] << endl;
       if (!fRawReader->ReadNextInt(fData)) {
 	//cout << "read word in Next and skip, fData: ";
 	//printf("%x\n",fData);
@@ -146,17 +145,12 @@ Bool_t AliITSRawStreamSDD::Next()
       }
       if(ddln < 0 || ddln > (kDDLsNumber-1)) ddln  = 0;
       //cout << "in the while loop, fDDL: " << fDDL << ", ddln: " << ddln << endl;
-/*
-      kSkip = ResetSkip(ddln);
-	  cout << "kSkip: " << kSkip << endl;
-      if(!kSkip) return kFALSE;  // read next word
-*/
+
       fChannel = -1;
       if(fData>=fICarlosWord[0]&&fData<=fICarlosWord[11]) { // Carlos Word
 	if(fEndWords==12) continue; // out of event
 	else if(fEndWords<12){
 	  fCarlosId = fData-fICarlosWord[0];
-	  //cout << "set fCarlosId to " << fCarlosId;
 	  Int_t iFifoIdx = fCarlosId/3;
 	  if(fNCarlos == 8) {
 	    if(fCarlosId==2) iFifoIdx = 1;
@@ -164,11 +158,9 @@ Bool_t AliITSRawStreamSDD::Next()
 	    if(fCarlosId==6 || fCarlosId==7)  iFifoIdx = 3 ;
 	  }	    
 	  fNfifo[iFifoIdx] = fCarlosId;
-	  //cout << " and fNfifo[" << iFifoIdx << "] to " << fNfifo[iFifoIdx] << endl;
+	  //cout <<  "set fCarlosId to " << fCarlosId << " and fNfifo[" << iFifoIdx << "] to " << fNfifo[iFifoIdx] << endl;
 	}
       } else if (fData>=fIFifoWord[0]&&fData<=fIFifoWord[3]){
-	//cout << "fIdcd: " << fIdcd << endl;
-	fIdcd=0;
 	if(fEndWords==12) continue; // out of event
 	else if(fEndWords<12){
 	  //cout << "fData-fIFifoWord[0]: " << fData-fIFifoWord[0] << endl;
@@ -176,13 +168,13 @@ Bool_t AliITSRawStreamSDD::Next()
 	  //cout << "fCarlosId set to " << fCarlosId << " from FIFO Word" << endl;
 	}
       }
-	  
-      if((fData >> 4) == 0xFF00000){   // jitter word
+      if((fData >> 4) == 0xFF00000){   // jitter word (to be improved !!!!)
 	for(Int_t i=0;i<kDDLsNumber;i++){fSkip[i]=0;}
 	fResetSkip=0;
 	fEndWords=0;
-	return kTRUE;
+	continue;
       }
+
       if(fData==0x3F1F1F1F){
 	fEndWords++;
 	if(fEndWords<=12) continue;
@@ -191,22 +183,19 @@ Bool_t AliITSRawStreamSDD::Next()
 			    fCarlosId ==10 || fCarlosId == 11)) continue;  // old data, fNCarlos = 8;
             
       //cout << "set module from DDLID " << fRawReader->GetDDLID() << " and fCarlosId: " << fCarlosId << endl;
-      fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()-1][fCarlosId];
+      fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][fCarlosId];	  
       //cout<<"AliITSRawStreamSDD: fModuleID: "<<fModuleID<<endl;
       
       if ((fData >> 28) == 0x02) {           // header
 	fEventId = (fData >> 3) & 0x07FF;
 	//cout<<"AliITSRawStreamSDD:fEventID: "<<fEventId<<endl;
       } else if ((fData >> 28)== 0x03) {    // footer
-	if((fData>=fIFifoWord[0]&&fData<=fIFifoWord[3])||(fData>=fICarlosWord[0]&&fData<=fICarlosWord[11]) )		{
-	  // Carlos and fifo words should not be counted as footers
-	}else{   // footer word
+	if(fData==0x3FFFFFFF){
 	  fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
-	  Bool_t exit=kTRUE;
-	  for(Int_t ic=0;ic<fNCarlos;ic++){
-	    if(fICountFoot[ic]<3) exit=kFALSE;
+	  if(fICountFoot[fCarlosId]==3){
+	    fCompletedModule=kTRUE;
+	    return kTRUE;
 	  }
-	  if(exit) return kFALSE;
 	}		
       } else if ((fData >> 29) == 0x00) {    // error
 	if ((fData & 0x00000163) != 0) {	 
@@ -235,7 +224,6 @@ Bool_t AliITSRawStreamSDD::Next()
 	fLastBit[fCarlosId][fChannel] += 30;
       }
     } else {  // decode data
-      fIdcd++;
       if (fReadCode[fCarlosId][fChannel]) {// read the next code word
 	fChannelCode[fCarlosId][fChannel] = ReadBits();
 	fReadCode[fCarlosId][fChannel] = kFALSE;
@@ -283,6 +271,7 @@ void AliITSRawStreamSDD::Reset(){
 }
 
 Bool_t AliITSRawStreamSDD::ResetSkip(Int_t ddln){
+  Bool_t startCount=kFALSE;
   while (fSkip[ddln] < 9) {
     if (!fRawReader->ReadNextInt(fData)) { 
       //cout << "read word in ResetSkip, fData: ";
@@ -290,10 +279,11 @@ Bool_t AliITSRawStreamSDD::ResetSkip(Int_t ddln){
       //cout << "return kFALSE in resetskip" << endl; 
       return kFALSE;
     }
+    if(fData==0xFFFFFFFF) startCount=kTRUE;
     //cout << "read word in ResetSkip, fData: ";
     //printf("%x\n",fData);
     if ((fData >> 30) == 0x01) continue;  // JTAG word
-    fSkip[ddln]++;
+    if(startCount) fSkip[ddln]++;
   }
   return kTRUE;
 }

@@ -85,7 +85,6 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
        else q=0;
      }
      if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
-     
      //if (q<3) continue;
 
      if (z <= fNzSDD) {
@@ -165,16 +164,20 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 	 //AliBin *bmax=&bins[s][idx[k]];
 	 //Float_t max = TMath::Max(TMath::Abs(bmax->GetQ())/5.,3.);
     
-	 for (Int_t di=-2; di<=2;di++)
+	 for (Int_t di=-2; di<=2;di++){
 	   for (Int_t dj=-3;dj<=3;dj++){
 	     Int_t index = idx[k]+di+dj*nzBins;
 	     if (index<0) continue;
 	     if (index>=nMaxBin) continue;
 	     AliBin *b=&bins[s][index];
-	     if (di>maxi) maxi=di;
-	     if (di<mini) mini=di;
-	     if (dj>maxj) maxj=dj;
-	     if (dj<minj) minj=dj;
+	     Int_t nAnode=index%nzBins-1;
+	     Int_t adcSignal=b->GetQ();
+	     if(adcSignal>cal->GetThresholdAnode(nAnode)){
+	       if (di>maxi) maxi=di;
+	       if (di<mini) mini=di;
+	       if (dj>maxj) maxj=dj;
+	       if (dj<minj) minj=dj;
+	     }
 	     //
 	     if(digits) {
 	       if (TMath::Abs(di)<2&&TMath::Abs(dj)<2){
@@ -186,9 +189,9 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
 		   }
 		 }
 	       }
-	     }   
+	     }
 	   }
-	 
+	 }
 
 
          Float_t y=c.GetY(),z=c.GetZ(), q=c.GetQ();
@@ -217,7 +220,6 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          q/=5.243;  //to have MPV 1 MIP = 86.4 KeV --> this must go to calibr.
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
-	 
 	 if (digits) {	  
 	   //	   AliBin *b=&bins[s][idx[k]];
 	   //	   AliITSdigitSDD* d=(AliITSdigitSDD*)digits->UncheckedAt(b->GetIndex());
@@ -274,10 +276,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   // read raw data input stream
   while (kTRUE) {
     Bool_t next = input->Next();
-    if (!next || input->IsNewModule()) {
-      Int_t iModule = input->GetPrevModuleID();
-
+    if (!next || input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
+      Int_t iModule = input->GetModuleID();
       if (bins[0]) { 
 	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
@@ -292,28 +293,27 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       bins[1]=binsSDD2;
       memcpy(binsSDD1,binsSDDInit,sizeof(AliBin)*kMaxBin);
       memcpy(binsSDD2,binsSDDInit,sizeof(AliBin)*kMaxBin);
-
-    }
-
+    }else{
     // fill the current digit into the bins array
-    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());
-    AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
-    const char *option=res->ZeroSuppOption();
-    Int_t q=input->GetSignal();
-    if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
-      Float_t baseline = cal->GetBaseline(input->GetCoord1());
-       if(q>baseline) q-=(Int_t)baseline;
-       else q=0;
-     }
-    if(q>=cal->GetThresholdAnode(input->GetCoord1())) {
-      Int_t iz = input->GetCoord1()+1;
-      //Int_t side = ((iz <= fNzSDD) ? 0 : 1);
-      Int_t side = ((AliITSRawStreamSDD*)input)->GetChannel();
-      //  iz -= side*fNzSDD;
-      Int_t index = (input->GetCoord2()+1) * kNzBins + iz;
-      bins[side][index].SetQ(q);
-      bins[side][index].SetMask(1);
-      bins[side][index].SetIndex(index);
+      AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());    
+      AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
+      const char *option=res->ZeroSuppOption();
+      Int_t q=input->GetSignal();
+      if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
+	Float_t baseline = cal->GetBaseline(input->GetCoord1());
+	if(q>baseline) q-=(Int_t)baseline;
+	else q=0;
+      }
+      if(q>=cal->GetThresholdAnode(input->GetCoord1())) {
+	Int_t iz = input->GetCoord1()+1;
+	//Int_t side = ((iz <= fNzSDD) ? 0 : 1);
+	Int_t side = ((AliITSRawStreamSDD*)input)->GetChannel();
+	//  iz -= side*fNzSDD;
+	Int_t index = (input->GetCoord2()+1) * kNzBins + iz;
+	bins[side][index].SetQ(q);
+	bins[side][index].SetMask(1);
+	bins[side][index].SetIndex(index);
+      }
     }
   }
   delete[] binsSDD1;

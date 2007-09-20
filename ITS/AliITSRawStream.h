@@ -31,7 +31,7 @@ class AliITSRawStream: public TObject {
     Int_t            GetCoord1() const {return fCoord1;};
     Int_t            GetCoord2() const {return fCoord2;};
     Int_t            GetSignal() const {return fSignal;};
-
+    virtual Bool_t   IsCompletedModule() const {return fCompletedModule;}; // to be implemented in derived class
   protected :
     AliRawReader*    fRawReader;    // object for reading the raw data
 
@@ -46,8 +46,9 @@ class AliITSRawStream: public TObject {
                                     //  SDD: time bin number (y)
                                     //  SSD: strip number
     Int_t            fSignal;       // signal in ADC counts
+    Bool_t           fCompletedModule; // set to kTRUE when all data from a module (SDD) are read
 
-    ClassDef(AliITSRawStream, 0) // base class for reading ITS raw digits
+    ClassDef(AliITSRawStream, 1) // base class for reading ITS raw digits
 };
 
 #endif

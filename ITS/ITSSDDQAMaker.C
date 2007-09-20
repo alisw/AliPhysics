@@ -70,9 +70,10 @@ Char_t *hisnam3 = new Char_t[50];
     Int_t moduleSDD;
     gStyle->SetPalette(1);
     while(s.Next()){                     //read the next raw digit; returns kFALSE if there is no digit left
+      if(s.IsCompletedModule()) continue;
+      iddl=rd->GetDDLID()-2; // -2 is temporary for test raw data
 
-      iddl=rd->GetDDLID(); // careful: it starts from 1!!!
-	isddmod=s.GetModuleNumber(iddl-1,s.GetCarlosId());        //this is the FEE Carlos
+	isddmod=s.GetModuleNumber(iddl,s.GetCarlosId());        //this is the FEE Carlos
        	//cout<<"DDLID= "<<iddl <<"; Module number= " <<isddmod  <<endl;
 	if(isddmod >= imodoffset) { 
 	  hModulePattern->Fill(isddmod-imodoffset);             // 0 to 259    so  240 to 499

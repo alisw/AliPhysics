@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 	  Int_t isddmod=s.GetModuleNumber(iddl,s.GetCarlosId()); 
 	  isddmod-=240;  // to have SDD modules from 0 to 259
 	  isddmod=s.GetCarlosId(); // temporary for test raw data
-	  if(isddmod<nSDDmodules){ 
+	  if(isddmod<nSDDmodules&&s.IsCompletedModule()==kFALSE){ 
 	    Int_t index=2*isddmod+s.GetChannel(); 
 	    histo[index]->Fill(s.GetCoord2(),s.GetCoord1(),s.GetSignal());
 	  }

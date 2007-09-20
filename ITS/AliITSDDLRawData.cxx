@@ -23,6 +23,7 @@
 //SSD
 
 #include <stdlib.h>
+//#include <Riostream.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include "AliITSdigit.h"
@@ -139,19 +140,7 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
     }
   }
   //word to select the 12 carlos for the 12 modules
-  UInt_t carlosid=0;
-  if(mod==0) carlosid=805306368;
-  if(mod==1) carlosid=805306369;
-  if(mod==2) carlosid=805306370;
-  if(mod==3) carlosid=805306371;
-  if(mod==4) carlosid=805306372;
-  if(mod==5) carlosid=805306373;
-  if(mod==6) carlosid=805306374;
-  if(mod==7) carlosid=805306375;
-  if(mod==8) carlosid=805306376;
-  if(mod==9) carlosid=805306377;
-  if(mod==10) carlosid=805306378;
-  if(mod==11) carlosid=805306379;
+  UInt_t carlosid=805306368+mod;
   
   fIndex++;
   buf[fIndex]=carlosid;
@@ -596,7 +585,11 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
   char fileName[15];
   AliFstream* outfile;             // logical name of the output file 
   AliRawDataHeader header;
-  UInt_t skippedword = AliBitPacking::PackWord(2,skippedword,0,31);
+  UInt_t skippedword, carlosFooterWord,fifoFooterWord,jitterWord;
+  Bool_t retcode;
+  retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);
+  retcode = AliBitPacking::PackWord(0x3F1F1F1F,fifoFooterWord,0,31);
+  retcode = AliBitPacking::PackWord(0xFF00000E,jitterWord,0,31);
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){
@@ -606,11 +599,13 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
     UInt_t dataHeaderPosition=outfile->Tellp();
     outfile->WriteBuffer((char*)(&header),sizeof(header));
 
+
     //first 9 "dummy" words to be skipped
     for(Int_t iw=0;iw<9;iw++){
+      if(iw==0 || iw==8) retcode = AliBitPacking::PackWord(0xFFFFFFFF,skippedword,0,31);
+      else retcode = AliBitPacking::PackWord(2,skippedword,0,31);
 	outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
     }
-   
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSDD::kModulesPerDDL; mod++){
       Int_t moduleNumber = AliITSRawStreamSDD::GetModuleNumber(i, mod);
@@ -623,9 +618,14 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
 	//	cout<<"MODULE NUMBER:"<<mapSDD[i][mod]<<endl;
 	GetDigitsSDD(digits,mod,moduleNumber,i,buf);
 	outfile->WriteBuffer((char *)buf,((fIndex+1)*sizeof(UInt_t)));
+	for(Int_t iw=0;iw<3;iw++) outfile->WriteBuffer((char*)(&carlosFooterWord),sizeof(carlosFooterWord));
 	fIndex=-1;
       }//end if
     }//end for
+    // 12 words with FIFO footers (=4 FIFO x 3 3F1F1F1F words per DDL)
+    for(Int_t iw=0;iw<12;iw++) outfile->WriteBuffer((char*)(&fifoFooterWord),sizeof(fifoFooterWord));
+   
+    outfile->WriteBuffer((char*)(&jitterWord),sizeof(jitterWord));      
     
     //Write REAL DATA HEADER
     UInt_t currentFilePosition=outfile->Tellp();

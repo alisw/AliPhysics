@@ -28,6 +28,7 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     virtual Int_t    GetChannel() const {return fChannel;}
     virtual Int_t    ReadJitter() const {return 0;}
     virtual Int_t    GetCarlosId() const {return fCarlosId;}
+
     virtual void     SetLowCarlosThreshold(Int_t th, Int_t i) 
       {fLowThreshold[i]=th;}
     virtual void     SetNCarlos(Int_t nC=12){fNCarlos=nC;}
@@ -72,10 +73,9 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fICarlosWord[kCarlosWords];
     UInt_t           fIFifoWord[kFifoWords];
     Int_t            fICountFoot[kModulesPerDDL];
-    Int_t            fIdcd;   // fifo counter, for debugging, to be removed when the code is stabilised
     Int_t            fEndWords;//number of 3f1f1f1f
     Int_t            fResetSkip; //if it is 0, the ResetSkip Funcion is called
-    ClassDef(AliITSRawStreamSDD, 6) // class for reading ITS SDD raw digits
+    ClassDef(AliITSRawStreamSDD, 7) // class for reading ITS SDD raw digits
 };
 
 #endif
