@@ -33,6 +33,9 @@ class AliMUONTrackParam : public TObject
   void SetParamFor(AliESDMuonTrack& esdMuonTrack) const;
   void GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack);
   void SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) const;
+  
+  void GetCovFrom(const AliESDMuonTrack& esdMuonTrack);
+  void SetCovFor(AliESDMuonTrack& esdMuonTrack) const;
 
   // Get and Set methods for data
 	/// return Z coordinate (cm)

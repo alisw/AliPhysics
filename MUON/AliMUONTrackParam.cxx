@@ -188,7 +188,7 @@ AliMUONHitForRec* AliMUONTrackParam::GetHitForRecPtr(void) const
   //_________________________________________________________________________
 void AliMUONTrackParam::GetParamFrom(const AliESDMuonTrack& esdMuonTrack)
 {
-  /// assigned value form ESD track.
+  /// Get parameters from ESD track
   fZ = esdMuonTrack.GetZ(); 
   fParameters(0,0) = esdMuonTrack.GetNonBendingCoor();
   fParameters(1,0) = TMath::Tan(esdMuonTrack.GetThetaX());
@@ -200,7 +200,7 @@ void AliMUONTrackParam::GetParamFrom(const AliESDMuonTrack& esdMuonTrack)
   //_________________________________________________________________________
 void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack) const
 {
-  /// assigned value form ESD track.
+  /// Set parameters in ESD track
   esdMuonTrack.SetZ(fZ);
   esdMuonTrack.SetNonBendingCoor(fParameters(0,0));
   esdMuonTrack.SetThetaX(TMath::ATan(fParameters(1,0)));
@@ -212,7 +212,7 @@ void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack) const
   //_________________________________________________________________________
 void AliMUONTrackParam::GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack)
 {
-  /// assigned value form ESD track.
+  /// Get parameters from ESD track
   fZ = esdMuonTrack.GetZUncorrected(); 
   fParameters(0,0) = esdMuonTrack.GetNonBendingCoorUncorrected();
   fParameters(1,0) = TMath::Tan(esdMuonTrack.GetThetaXUncorrected());
@@ -224,13 +224,72 @@ void AliMUONTrackParam::GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTr
   //_________________________________________________________________________
 void AliMUONTrackParam::SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) const
 {
-  /// assigned value form ESD track.
+  /// Set parameters in ESD track
   esdMuonTrack.SetZUncorrected(fZ);
   esdMuonTrack.SetNonBendingCoorUncorrected(fParameters(0,0));
   esdMuonTrack.SetThetaXUncorrected(TMath::ATan(fParameters(1,0)));
   esdMuonTrack.SetBendingCoorUncorrected(fParameters(2,0)); 
   esdMuonTrack.SetThetaYUncorrected(TMath::ATan(fParameters(3,0)));
   esdMuonTrack.SetInverseBendingMomentumUncorrected(fParameters(4,0));
+}
+
+  //_________________________________________________________________________
+void AliMUONTrackParam::GetCovFrom(const AliESDMuonTrack& esdMuonTrack)
+{
+  /// Get parameters covariances from ESD track
+  
+  // Get ESD covariance matrix
+  if (!fCovariances) fCovariances = new TMatrixD(5,5);
+  esdMuonTrack.GetCovariances(*fCovariances);
+
+  // compute Jacobian to change the coordinate system
+  // from (X,thetaX,Y,thetaY,c/pYZ) to (X,slopeX,Y,slopeY,c/pYZ)
+  Double_t cosThetaX = TMath::Cos(TMath::ATan(fParameters(1,0)));
+  Double_t cosThetaY = TMath::Cos(TMath::ATan(fParameters(3,0)));
+  TMatrixD jacob(5,5);
+  jacob.Zero();
+  jacob(0,0) = 1.;
+  jacob(1,1) = 1. / cosThetaX / cosThetaX;
+  jacob(2,2) = 1.;
+  jacob(3,3) = 1. / cosThetaY / cosThetaY;
+  jacob(4,4) = 1.;
+  
+  // compute covariance matrix in ESD coordinate system
+  TMatrixD tmp(*fCovariances,TMatrixD::kMultTranspose,jacob);
+  *fCovariances = TMatrixD(jacob,TMatrixD::kMult,tmp);
+  
+}
+
+  //_________________________________________________________________________
+void AliMUONTrackParam::SetCovFor(AliESDMuonTrack& esdMuonTrack) const
+{
+  /// Set parameters covariances in ESD track
+  
+  // set null matrix if covariances does not exist
+  if (!fCovariances) {
+    TMatrixD tmp(5,5);
+    tmp.Zero();
+    esdMuonTrack.SetCovariances(tmp);
+    return;
+  }
+  
+  // compute Jacobian to change the coordinate system
+  // from (X,slopeX,Y,slopeY,c/pYZ) to (X,thetaX,Y,thetaY,c/pYZ)
+  Double_t cosThetaX = TMath::Cos(TMath::ATan(fParameters(1,0)));
+  Double_t cosThetaY = TMath::Cos(TMath::ATan(fParameters(3,0)));
+  TMatrixD jacob(5,5);
+  jacob.Zero();
+  jacob(0,0) = 1.;
+  jacob(1,1) = cosThetaX * cosThetaX;
+  jacob(2,2) = 1.;
+  jacob(3,3) = cosThetaY * cosThetaY;
+  jacob(4,4) = 1.;
+  
+  // compute covariance matrix in ESD coordinate system
+  TMatrixD tmp(*fCovariances,TMatrixD::kMultTranspose,jacob);
+  TMatrixD tmp2(jacob,TMatrixD::kMult,tmp);
+  esdMuonTrack.SetCovariances(tmp2);
+
 }
 
   //__________________________________________________________________________

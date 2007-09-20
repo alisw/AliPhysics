@@ -51,9 +51,13 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fNHit(0),
   fLocalTrigger(234),
   fChi2MatchTrigger(0),
-  fHitsPatternInTrigCh(0)
+  fHitsPatternInTrigCh(0),
+  fMuonClusterMap(0)
 {
+  //
   // Default constructor
+  //
+  for (Int_t i = 0; i < 15; i++) fCovariances[i] = 0;
 }
 
 
@@ -76,12 +80,14 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
   fNHit(MUONTrack.fNHit),
   fLocalTrigger(MUONTrack.fLocalTrigger),
   fChi2MatchTrigger(MUONTrack.fChi2MatchTrigger),
-  fHitsPatternInTrigCh(MUONTrack.fHitsPatternInTrigCh)
+  fHitsPatternInTrigCh(MUONTrack.fHitsPatternInTrigCh),
+  fMuonClusterMap(MUONTrack.fMuonClusterMap)
 {
   //
   // Copy constructor
   // Deep copy implemented
   //
+  for (Int_t i = 0; i < 15; i++) fCovariances[i] = MUONTrack.fCovariances[i];
 }
 
 //_____________________________________________________________________________
@@ -109,6 +115,8 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
   fBendingCoorUncorrected            = MUONTrack.fBendingCoorUncorrected;      
   fNonBendingCoorUncorrected         = MUONTrack.fNonBendingCoorUncorrected;   
   
+  for (Int_t i = 0; i < 15; i++) fCovariances[i] = MUONTrack.fCovariances[i];
+  
   fChi2                   = MUONTrack.fChi2;             
   fNHit                   = MUONTrack.fNHit; 
 
@@ -117,7 +125,78 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
 
   fHitsPatternInTrigCh    = MUONTrack.fHitsPatternInTrigCh;
  
+  fMuonClusterMap	  = MUONTrack.fMuonClusterMap;
+  
   return *this;
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::GetCovariances(TMatrixD& cov) const
+{
+  // return covariance matrix of uncorrected parameters
+  cov.ResizeTo(5,5);
+  for (Int_t i = 0; i < 5; i++)
+    for (Int_t j = 0; j <= i; j++)
+      cov(i,j) = cov (j,i) = fCovariances[i*(i+1)/2 + j];
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::SetCovariances(const TMatrixD& cov)
+{
+  // set reduced covariance matrix of uncorrected parameters
+  for (Int_t i = 0; i < 5; i++)
+    for (Int_t j = 0; j <= i; j++)
+      fCovariances[i*(i+1)/2 + j] = cov(i,j);
+
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::GetCovarianceXYZPxPyPz(Double_t cov[21]) const
+{
+  // return reduced covariance matrix of uncorrected parameters in (X,Y,Z,Px,Py,Pz) coordinate system
+  // 
+  // Cov(x,x) ... :   cov[0]
+  // Cov(y,x) ... :   cov[1]  cov[2]
+  // Cov(z,x) ... :   cov[3]  cov[4]  cov[5]
+  // Cov(px,x)... :   cov[6]  cov[7]  cov[8]  cov[9]
+  // Cov(py,x)... :   cov[10] cov[11] cov[12] cov[13] cov[14]
+  // Cov(pz,x)... :   cov[15] cov[16] cov[17] cov[18] cov[19] cov[20]
+  //
+  // Get ESD covariance matrix into a TMatrixD
+  TMatrixD covESD(5,5);
+  GetCovariances(covESD);
+
+  // compute Jacobian to change the coordinate system
+  // from (X,thetaX,Y,thetaY,c/pYZ) to (X,Y,Z,pX,pY,pZ)
+  Double_t tanThetaX = TMath::Tan(fThetaXUncorrected);
+  Double_t tanThetaY = TMath::Tan(fThetaYUncorrected);
+  Double_t cosThetaX2 = TMath::Cos(fThetaXUncorrected) * TMath::Cos(fThetaXUncorrected);
+  Double_t cosThetaY2 = TMath::Cos(fThetaYUncorrected) * TMath::Cos(fThetaYUncorrected);
+  Double_t pZ = PzUncorrected();
+  Double_t dpZdthetaY = - fInverseBendingMomentumUncorrected * fInverseBendingMomentumUncorrected *
+			  pZ * pZ * pZ * tanThetaY / cosThetaY2;
+  Double_t dpZdinvpYZ = - pZ / fInverseBendingMomentumUncorrected;
+  TMatrixD jacob(6,5);
+  jacob.Zero();
+  jacob(0,0) = 1.;
+  jacob(1,2) = 1.;
+  jacob(3,1) = pZ / cosThetaX2;
+  jacob(3,3) = dpZdthetaY * tanThetaX;
+  jacob(3,4) = dpZdinvpYZ * tanThetaX;
+  jacob(4,3) = dpZdthetaY * tanThetaY + pZ / cosThetaY2;
+  jacob(4,4) = dpZdinvpYZ * tanThetaY;
+  jacob(5,3) = dpZdthetaY;
+  jacob(5,4) = dpZdinvpYZ;
+  
+  // compute covariance matrix in AOD coordinate system
+  TMatrixD tmp(covESD,TMatrixD::kMultTranspose,jacob);
+  TMatrixD covAOD(jacob,TMatrixD::kMult,tmp);
+  
+  // Get AOD covariance matrix into co[21]
+  for (Int_t i = 0; i < 6; i++)
+    for (Int_t j = 0; j <= i; j++)
+      cov[i*(i+1)/2 + j] = covAOD(i,j);
+  
 }
 
 //_____________________________________________________________________________
@@ -165,7 +244,7 @@ Double_t AliESDMuonTrack::P() const
 void AliESDMuonTrack::LorentzP(TLorentzVector& vP) const
 {
   // return Lorentz momentum vector from track parameters
-  Double_t muonMass = 0.105658369;
+  Double_t muonMass = M();
   Double_t nonBendingSlope = TMath::Tan(fThetaX);
   Double_t bendingSlope    = TMath::Tan(fThetaY);
   Double_t pYZ = (fInverseBendingMomentum != 0.) ? TMath::Abs(1. / fInverseBendingMomentum) : 0.;
@@ -221,7 +300,7 @@ Double_t AliESDMuonTrack::PUncorrected() const
 void AliESDMuonTrack::LorentzPUncorrected(TLorentzVector& vP) const
 {
   // return Lorentz momentum vector from track parameters
-  Double_t muonMass = 0.105658369;
+  Double_t muonMass = M();
   Double_t nonBendingSlope = TMath::Tan(fThetaXUncorrected);
   Double_t bendingSlope    = TMath::Tan(fThetaYUncorrected);
   Double_t pYZ = (fInverseBendingMomentumUncorrected != 0.) ? TMath::Abs(1. / fInverseBendingMomentumUncorrected) : 0.;
@@ -251,5 +330,27 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
     return 3;
   }
 
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::AddInMuonClusterMap(Int_t chamber)
+{
+  // Update the muon cluster map by adding this chamber(0..)
+  
+  static const UInt_t kMask[10] = {0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80, 0x100, 0x200};
+  
+  fMuonClusterMap |= kMask[chamber];
+  
+}
+
+//_____________________________________________________________________________
+Bool_t AliESDMuonTrack::IsInMuonClusterMap(Int_t chamber) const
+{
+  // return kTRUE if this chamber(0..) is in the muon cluster map
+  
+  static const UInt_t kMask[10] = {0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80, 0x100, 0x200};
+  
+  return ((fMuonClusterMap | kMask[chamber]) == fMuonClusterMap) ? kTRUE : kFALSE;
+  
 }
 

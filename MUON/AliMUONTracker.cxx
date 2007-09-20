@@ -32,6 +32,7 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackHitPattern.h"
 #include "AliMUONTrackParam.h"
+#include "AliMUONHitForRec.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackStoreV1.h"
@@ -234,25 +235,22 @@ AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
     // setting data member of ESD MUON
     
     // at first station
-    esdTrack.SetInverseBendingMomentumUncorrected(trackParam->GetInverseBendingMomentum());
-    esdTrack.SetThetaXUncorrected(TMath::ATan(trackParam->GetNonBendingSlope()));
-    esdTrack.SetThetaYUncorrected(TMath::ATan(trackParam->GetBendingSlope()));
-    esdTrack.SetZUncorrected(trackParam->GetZ());
-    esdTrack.SetBendingCoorUncorrected(trackParam->GetBendingCoor());
-    esdTrack.SetNonBendingCoorUncorrected(trackParam->GetNonBendingCoor());
+    trackParam->SetParamForUncorrected(esdTrack);
+    trackParam->SetCovFor(esdTrack);
     // at vertex
-    esdTrack.SetInverseBendingMomentum(trackParamAtVtx.GetInverseBendingMomentum());
-    esdTrack.SetThetaX(TMath::ATan(trackParamAtVtx.GetNonBendingSlope()));
-    esdTrack.SetThetaY(TMath::ATan(trackParamAtVtx.GetBendingSlope()));
-    esdTrack.SetZ(trackParamAtVtx.GetZ());
-    esdTrack.SetBendingCoor(trackParamAtVtx.GetBendingCoor());
-    esdTrack.SetNonBendingCoor(trackParamAtVtx.GetNonBendingCoor());
+    trackParamAtVtx.SetParamFor(esdTrack);
     // global info
     esdTrack.SetChi2(track->GetFitFMin());
     esdTrack.SetNHit(track->GetNTrackHits());
     esdTrack.SetLocalTrigger(track->GetLocalTrigger());
     esdTrack.SetChi2MatchTrigger(track->GetChi2MatchTrigger());
     esdTrack.SetHitsPatternInTrigCh(track->GetHitsPatternInTrigCh());
+    // muon cluster map
+    AliMUONHitForRec* cluster = static_cast<AliMUONHitForRec*>((track->GetHitForRecAtHit())->First());
+    while (cluster) {
+      esdTrack.AddInMuonClusterMap(cluster->GetChamberNumber());
+      cluster = static_cast<AliMUONHitForRec*>((track->GetHitForRecAtHit())->After(cluster));
+    }
     
     // storing ESD MUON Track into ESD Event 
     esd->AddMuonTrack(&esdTrack);

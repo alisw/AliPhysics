@@ -12,6 +12,8 @@
 
 
 #include <TMath.h>
+#include <TMatrixD.h>
+#include <TDatabasePDG.h>
 
 #include "AliVParticle.h"
 
@@ -54,7 +56,12 @@ public:
   void     SetBendingCoorUncorrected(Double_t BendingCoor) {fBendingCoorUncorrected = BendingCoor;}
   Double_t GetNonBendingCoorUncorrected(void) const {return fNonBendingCoorUncorrected;}
   void     SetNonBendingCoorUncorrected(Double_t NonBendingCoor) {fNonBendingCoorUncorrected = NonBendingCoor;}
-  
+
+ // Get and Set methods for covariance matrix of data at first station
+  void     GetCovariances(TMatrixD& cov) const;
+  void     SetCovariances(const TMatrixD& cov);
+  void     GetCovarianceXYZPxPyPz(Double_t cov[21]) const;
+
  // Get and Set methods for global tracking info
   Double_t GetChi2(void) const {return fChi2;}
   void     SetChi2(Double_t Chi2) {fChi2 = Chi2;}
@@ -76,6 +83,12 @@ public:
   Int_t    LoLpt(void)    const  { return fLocalTrigger >> 22 & 0x03; }
   Int_t    LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
   
+ // Get and Set methods for muon cluster map
+  UInt_t   GetMuonClusterMap() const {return fMuonClusterMap;}
+  void     SetMuonClusterMap(UInt_t muonClusterMap) {fMuonClusterMap = muonClusterMap;}
+  void     AddInMuonClusterMap(Int_t chamber);
+  Bool_t   IsInMuonClusterMap(Int_t chamber) const;
+  
  // Methods to compute track momentum
   Double_t Px() const;
   Double_t Py() const;
@@ -93,43 +106,49 @@ public:
   Double_t OneOverPt() const { return 1./Pt(); }
   Double_t Phi() const { return TMath::ATan2(Py(), Px()); }
   Double_t Theta() const { return TMath::ATan2(Pt(), Pz()); }
-  Double_t E() const { return -999.; }
-  Double_t M() const { return -999.; }
+  Double_t E() const { return TMath::Sqrt(M()*M() + P()*P()); }
+  Double_t M() const { return TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); }
   Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta()));}
-  Double_t Y() const { return -999.; }
-  Short_t Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
+  Double_t Y() const { return TMath::ATanH(Pz()/E()); }
+  Short_t  Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
   const Double_t *PID() const { return (Double_t*)0x0; }
     
   
 protected:
  // parameters at vertex
-  Double32_t fInverseBendingMomentum; // Inverse bending momentum (GeV/c ** -1) times the charge 
-  Double32_t fThetaX;		    // Angle of track at vertex in X direction (rad)
-  Double32_t fThetaY;		    // Angle of track at vertex in Y direction (rad)
-  Double32_t fZ;			    // Z coordinate (cm)
-  Double32_t fBendingCoor;	    // bending coordinate (cm)
-  Double32_t fNonBendingCoor;	    // non bending coordinate (cm)
+  Double32_t fInverseBendingMomentum; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
+  Double32_t fThetaX;                 ///< Angle of track at vertex in X direction (rad)
+  Double32_t fThetaY;                 ///< Angle of track at vertex in Y direction (rad)
+  Double32_t fZ;                      ///< Z coordinate (cm)
+  Double32_t fBendingCoor;            ///< bending coordinate (cm)
+  Double32_t fNonBendingCoor;         ///< non bending coordinate (cm)
   
  // parameters at first tracking station
-  Double32_t fInverseBendingMomentumUncorrected; // Inverse bending momentum (GeV/c ** -1) times the charge 
-  Double32_t fThetaXUncorrected;		       // Angle of track at vertex in X direction (rad)
-  Double32_t fThetaYUncorrected;		       // Angle of track at vertex in Y direction (rad)
-  Double32_t fZUncorrected;		       // Z coordinate (cm)
-  Double32_t fBendingCoorUncorrected;	       // bending coordinate (cm)
-  Double32_t fNonBendingCoorUncorrected;	       // non bending coordinate (cm)
+  Double32_t fInverseBendingMomentumUncorrected; ///< Inverse bending momentum (GeV/c ** -1) times the charge 
+  Double32_t fThetaXUncorrected;                 ///< Angle of track at vertex in X direction (rad)
+  Double32_t fThetaYUncorrected;                 ///< Angle of track at vertex in Y direction (rad)
+  Double32_t fZUncorrected;                      ///< Z coordinate (cm)
+  Double32_t fBendingCoorUncorrected;            ///< bending coordinate (cm)
+  Double32_t fNonBendingCoorUncorrected;         ///< non bending coordinate (cm)
+  
+ /// reduced covariance matrix of UNCORRECTED track parameters, ordered as follow:      <pre>
+ /// [0] =  <X,X>
+ /// [1] =<X,ThetaX>  [2] =<ThetaX,ThetaX>
+ /// [3] =  <X,Y>     [4] =  <Y,ThetaX>     [5] =  <Y,Y>
+ /// [6] =<X,ThetaY>  [7] =<ThetaX,ThetaY>  [8] =<Y,ThetaY>  [9] =<ThetaY,ThetaY>
+ /// [10]=<X,InvP_yz> [11]=<ThetaX,InvP_yz> [12]=<Y,InvP_yz> [13]=<ThetaY,InvP_yz> [14]=<InvP_yz,InvP_yz>  </pre>
+  Double32_t fCovariances[15]; ///< \brief reduced covariance matrix of parameters AT FIRST CHAMBER
   
  // global tracking info
-  Double32_t fChi2; // chi2 in the MUON track fit
-  UInt_t   fNHit; // number of hit in the track
-
-  Int_t fLocalTrigger;    ///< packed local trigger information
-  
-  Double32_t fChi2MatchTrigger; // chi2 of trigger/track matching
-  
-  UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
+  Double32_t fChi2;                ///< chi2 in the MUON track fit
+  UInt_t     fNHit;                ///< number of hit in the track
+  Int_t      fLocalTrigger;        ///< packed local trigger information
+  Double32_t fChi2MatchTrigger;    ///< chi2 of trigger/track matching
+  UShort_t   fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
+  UInt_t     fMuonClusterMap;      ///< Map of clusters in tracking chambers
 
 
-  ClassDef(AliESDMuonTrack,6)  //MUON ESD track class 
+  ClassDef(AliESDMuonTrack,7) // MUON ESD track class 
 };
 
 #endif 
