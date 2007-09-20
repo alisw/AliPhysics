@@ -94,10 +94,6 @@ ClassImp(AliTRDmcmSim)
 //_____________________________________________________________________________
 AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fInitialized(kFALSE)
-  ,fFeeParam(NULL)
-  ,fSimParam(NULL)
-  ,fCal(NULL)
-  ,fGeo(NULL)
   ,fChaId(-1)
   ,fSector(-1)
   ,fStack(-1)
@@ -111,9 +107,43 @@ AliTRDmcmSim::AliTRDmcmSim() :TObject()
   ,fADCF(NULL)
   ,fZSM(NULL)
   ,fZSM1Dim(NULL)
+  ,fFeeParam(NULL)
+  ,fSimParam(NULL)
+  ,fCal(NULL)
+  ,fGeo(NULL)
 {
   //
   // AliTRDmcmSim default constructor
+  //
+
+  // By default, nothing is initialized.
+  // It is necessary to issue Init before use.
+}
+
+//_____________________________________________________________________________
+AliTRDmcmSim::AliTRDmcmSim(const AliTRDmcmSim &m) 
+  :TObject(m)
+  ,fInitialized(kFALSE)
+  ,fChaId(-1)
+  ,fSector(-1)
+  ,fStack(-1)
+  ,fLayer(-1)
+  ,fRobPos(-1)
+  ,fMcmPos(-1)
+  ,fNADC(-1)
+  ,fNTimeBin(-1)
+  ,fRow(-1)
+  ,fADCR(NULL)
+  ,fADCF(NULL)
+  ,fZSM(NULL)
+  ,fZSM1Dim(NULL)
+  ,fFeeParam(NULL)
+  ,fSimParam(NULL)
+  ,fCal(NULL)
+  ,fGeo(NULL)
+{
+  //
+  // AliTRDmcmSim copy constructor
   //
 
   // By default, nothing is initialized.
@@ -138,7 +168,51 @@ AliTRDmcmSim::~AliTRDmcmSim()
     delete [] fZSM1Dim;
   }
   delete fGeo;
+
 }
+
+//_____________________________________________________________________________
+AliTRDmcmSim &AliTRDmcmSim::operator=(const AliTRDmcmSim &m)
+{
+  //
+  // Assignment operator
+  //
+
+  if (this != &m) {
+    ((AliTRDmcmSim &) m).Copy(*this);
+  }
+  return *this;
+
+}
+
+//_____________________________________________________________________________
+void AliTRDmcmSim::Copy(TObject &m) const
+{
+  //
+  // Copy function
+  //
+
+  ((AliTRDmcmSim &) m).fInitialized   = 0;
+  ((AliTRDmcmSim &) m).fChaId         = 0;
+  ((AliTRDmcmSim &) m).fSector        = 0;
+  ((AliTRDmcmSim &) m).fStack         = 0;
+  ((AliTRDmcmSim &) m).fLayer         = 0;
+  ((AliTRDmcmSim &) m).fRobPos        = 0;
+  ((AliTRDmcmSim &) m).fMcmPos        = 0;
+  ((AliTRDmcmSim &) m).fNADC          = 0;
+  ((AliTRDmcmSim &) m).fNTimeBin      = 0;
+  ((AliTRDmcmSim &) m).fRow           = 0;
+  ((AliTRDmcmSim &) m).fADCR          = 0;
+  ((AliTRDmcmSim &) m).fADCF          = 0;
+  ((AliTRDmcmSim &) m).fZSM           = 0;
+  ((AliTRDmcmSim &) m).fZSM1Dim       = 0;
+  ((AliTRDmcmSim &) m).fFeeParam      = 0;
+  ((AliTRDmcmSim &) m).fSimParam      = 0;
+  ((AliTRDmcmSim &) m).fCal           = 0;
+  ((AliTRDmcmSim &) m).fGeo           = 0;
+
+}
+
 
 //_____________________________________________________________________________
 void AliTRDmcmSim::Init( Int_t cha_id, Int_t rob_pos, Int_t mcm_pos )
@@ -355,7 +429,7 @@ void AliTRDmcmSim::FilterPedestal()
 
   Int_t ap = fSimParam->GetADCbaseline();      // ADC instrinsic pedestal
   Int_t ep = fFeeParam->GetPFeffectPedestal(); // effective pedestal
-  Int_t tc = fFeeParam->GetPFtimeConstant();   // this makes no sense yet
+  //Int_t tc = fFeeParam->GetPFtimeConstant();   // this makes no sense yet
 
   for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
     for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {

@@ -23,9 +23,11 @@ class AliTRDmcmSim : public TObject {
  public:
 
                     AliTRDmcmSim();
+                    AliTRDmcmSim(const AliTRDmcmSim &m);
   virtual          ~AliTRDmcmSim();
+  AliTRDmcmSim      &operator=(const AliTRDmcmSim &m);
 
-  //PH  virtual void      Copy(TObject &m) const;
+  virtual void      Copy(TObject &m) const;
 
           void      Init( Int_t cha, Int_t rob, Int_t mcm );   // Initialize MCM by the position parameters
           void      SetData(Int_t iadc, Int_t *adc);           // Set ADC data with array 

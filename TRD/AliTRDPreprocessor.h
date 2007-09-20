@@ -27,19 +27,20 @@ class AliTRDPreprocessor : public AliPreprocessor
  protected:
 
     virtual void   Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
-    virtual UInt_t Process(TMap* dcsAliasMap);
+    virtual UInt_t Process(TMap *dcsAliasMap);
 
     
     Bool_t  ExtractPedestals();
     Bool_t  ExtractDriftVelocityDAQ();
     Bool_t  ExtractHLT();
-    Bool_t  ProcessDCS(TMap*dcsAliasMap);
+    Bool_t  ProcessDCS() { return kFALSE; };
+    Bool_t  ProcessDCS(TMap *dcsAliasMap);
 
   private:
-    
 
     Bool_t  fVdriftHLT;             // HLT Vdrift
-    ClassDef(AliTRDPreprocessor,1) // The SHUTTLE preprocessor for TRD
+
+    ClassDef(AliTRDPreprocessor,1)  // The SHUTTLE preprocessor for TRD
 
 };
 

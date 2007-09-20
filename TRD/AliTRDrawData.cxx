@@ -422,7 +422,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
   Int_t        nCol = fGeo->GetColMax( plan );
   const Int_t nTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
   Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
-  Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
+  //Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
   UInt_t          x = 0;                       // General used number
   Int_t          rv = fFee->GetRAWversion();
 

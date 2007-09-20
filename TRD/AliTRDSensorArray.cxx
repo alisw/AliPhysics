@@ -66,6 +66,7 @@ AliTRDSensorArray::AliTRDSensorArray (const char * amanda,
 
 //_____________________________________________________________________________
 AliTRDSensorArray::AliTRDSensorArray (const AliTRDSensorArray & source) :
+                                        AliDCSSensorArray(source),
 					fAmanda 	(source.fAmanda),
 					fStoreName 	(source.fStoreName)
 					
