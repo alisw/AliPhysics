@@ -3,7 +3,23 @@
 
 #ifndef ALIHLTTPCFILEHANDLER_H
 #define ALIHLTTPCFILEHANDLER_H
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ * See cxx source for full Copyright notice                               */
 
+/** @file   AliHLTTPCFileHandler.h
+    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+            Matthias Richter
+    @date   
+    @brief  file input for the TPC tracking code before migration to the
+            HLT component framework
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+                                                                          */
 #include "AliHLTTPCMemHandler.h"
 
 class TClonesArray;
@@ -15,7 +31,6 @@ class AliTPCParam;
 class TObject;
 class TFile;
 class TTree;
-#include "AliHLTLogging.h"
 
 class AliHLTTPCSpacePointData;
 class AliHLTTPCDigitRowData;
@@ -28,15 +43,11 @@ class AliHLTTPCTrackArray;
  * the HLT component framework.
  * 
  */
-class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
+class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
 
  public:
   /** standard constructor */
   AliHLTTPCFileHandler(Bool_t b=kFALSE);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCFileHandler(const AliHLTTPCFileHandler&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCFileHandler& operator=(const AliHLTTPCFileHandler&);
   /** destructor */
   virtual ~AliHLTTPCFileHandler();
 
@@ -55,11 +66,67 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
   void CloseMCOutput();
 
   //Digit IO
-  Bool_t AliDigits2Binary(Int_t event=0,Bool_t altro=kFALSE);
-  AliHLTTPCDigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0); //Allocates Memory
+
+  /**
+   * Write AliDigits from AliRoot file to binary file.
+   * @param event      event no
+   * @param altro      use @ref AliDigits2Memory if kFALSE and @ref
+   *                   AliDigits2Memory if kTRUE
+   *
+   * Calls the @ref AliHLTTPCMemHandler::Memory2BinaryFile to write the file.
+   */
+  Bool_t AliDigits2BinaryFile(Int_t event=0,Bool_t altro=kFALSE);
+
+  /**
+   * Convert AliDigits from AliRoot file to HLT Digit data in memory.
+   * Read and convert/write digits to memory buffer. If no target buffer available,
+   * an appropriate buffer is allocated.<br>
+   * If the variable pTgtSize is prvided, the total size of the result array is
+   * returned. \b Note: the total size differs as the @ref AliHLTTPCDigitRowData
+   * structs are variable in size depending on the no of digits for that particular
+   * row.
+   * @param nrow       [OUT] number of rows
+   * @param event      the event no
+   * @param tgtBuffer  target buffer (optional)
+   * @param pTgtSize   size of target buffer (optional)
+   * @return pointer to array, size in nrow <br>
+   *         NULL in case of failure, required size in pTgtSize
+   */
+  AliHLTTPCDigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0, Byte_t* tgtBuffer=NULL, UInt_t* pTgtSize=NULL);
+
+  /**
+   * Convert and filetr AliDigits from AliRoot file to HLT Digit data in memory.
+   * This functions is the same as @ref AliDigits2Memory but in addition it
+   * filters out single timebins, which is noise. The timebins which
+   * are removed are timebins which have the 4 zero neighbours; 
+   * (pad-1,time),(pad+1,time),(pad,time-1),(pad,time+1).
+   *
+   * This is legacy code, the two function contain big portions of identical code
+   * will be merged.
+   * See @ref AliDigits2Memory for detailed description.
+   */
   AliHLTTPCDigitRowData *AliAltroDigits2Memory(UInt_t & nrow,Int_t event=0,Bool_t eventmerge=kFALSE); 
-  //Allocates Memory
+
+  /**
+   * Write AliDigits from AliRoot file to binary file.
+   * @param event      event no
+   * @param altro      use @ref AliDigits2Memory if kFALSE and @ref
+   *                   AliDigits2Memory if kTRUE
+   *
+   * \b Note: pretty much the same as @ref AliDigits2BinaryFile.
+   * Calls the @ref AliHLTTPCMemHandler::Memory2CompBinary to write the file.
+   */
   Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE);  
+
+  /**
+   * Write the data stored in rowPt, into a new AliROOT file.
+   * The data is stored in the AliROOT format 
+   * This is specially a nice thing if you have modified data, and wants to run it  
+   * through the offline reconstruction chain.
+   * The arguments is a pointer to the data, and the name of the new AliROOT file.
+   * Remember to pass the original AliROOT file (the one that contains the original
+   * simulated data) to this object, in order to retrieve the MC id's of the digits.
+  */
   void AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *newDigitsfile);
 
   //Point IO
@@ -86,6 +153,12 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler, public AliHLTLogging {
   virtual Bool_t SetAliInput();
   Bool_t GetDigitsTree(Int_t event);
   Bool_t CreateIndex();  //create the index
+
+ private:
+  /** copy constructor prohibited */
+  AliHLTTPCFileHandler(const AliHLTTPCFileHandler&);
+  /** assignment operator prohibited */
+  AliHLTTPCFileHandler& operator=(const AliHLTTPCFileHandler&);
 
   ClassDef(AliHLTTPCFileHandler,1)   //Filehandler class
 };

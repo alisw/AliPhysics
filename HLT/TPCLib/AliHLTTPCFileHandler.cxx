@@ -1,8 +1,36 @@
 // @(#) $Id$
 // Original: AliHLTFileHandler.cxx,v 1.49 2005/06/23 17:46:55 hristov 
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, C. Loizides <mailto:loizides@ikf.uni-frankfurt.de>
-//*-- Copyright &copy ALICE HLT Group 
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ *                                                                        *
+ * Primary Authors: U. Frankenfeld, A. Vestbo, C. Loizides                *
+ *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  for The ALICE HLT Project.                            *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/** @file   AliHLTTPCFileHandler.cxx
+    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+            Matthias Richter
+    @date   
+    @brief  file input for the TPC tracking code before migration to the
+            HLT component framework
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+                                                                          */
 
 #include <TClonesArray.h>
 #include <TSystem.h>
@@ -89,26 +117,6 @@ AliHLTTPCFileHandler::AliHLTTPCFileHandler(Bool_t b)
       fIndex[i][j]=-1;
 
   if(fUseStaticIndex&&!fgStaticIndexCreated) CleanStaticIndex();
-}
-
-AliHLTTPCFileHandler::AliHLTTPCFileHandler(const AliHLTTPCFileHandler& ref)
-  :
-  fInAli(NULL),
-  fUseRunLoader(kFALSE),
-  fParam(NULL),
-  fDigits(NULL),
-  fDigitsTree(NULL),
-  fMC(NULL),
-  fIndexCreated(kFALSE),
-  fUseStaticIndex(ref.fUseStaticIndex)
-{
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCFileHandler& AliHLTTPCFileHandler::operator=(const AliHLTTPCFileHandler&)
-{ 
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTTPCFileHandler::~AliHLTTPCFileHandler()
@@ -333,7 +341,7 @@ Bool_t AliHLTTPCFileHandler::IsDigit(Int_t event)
 }
 
 ///////////////////////////////////////// Digit IO  
-Bool_t AliHLTTPCFileHandler::AliDigits2Binary(Int_t event,Bool_t altro)
+Bool_t AliHLTTPCFileHandler::AliDigits2BinaryFile(Int_t event,Bool_t altro)
 {
   //save alidigits as binary
   Bool_t out = kTRUE;
@@ -343,7 +351,7 @@ Bool_t AliHLTTPCFileHandler::AliDigits2Binary(Int_t event,Bool_t altro)
     data = AliAltroDigits2Memory(nrow,event);
   else
     data = AliDigits2Memory(nrow,event);
-  out = Memory2Binary(nrow,data);
+  out = Memory2BinaryFile(nrow,data);
   Free();
   return out;
 }
@@ -413,9 +421,10 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
   return kTRUE;
 }
 
-AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event)
+AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int_t event, Byte_t* tgtBuffer, UInt_t *pTgtSize)
 {
-  //Read data from AliROOT file into memory, and store it in the HLT data format.
+  //Read data from AliROOT file into memory, and store it in the HLT data format
+  //in the provided buffer or an allocated buffer.
   //Returns a pointer to the data.
 
   AliHLTTPCDigitRowData *data = 0;
@@ -441,12 +450,22 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
       <<"No TPC digits (entries==0)!"<<ENDLOG;
     nrow = (UInt_t)(fRowMax-fRowMin+1);
     Int_t size = nrow*sizeof(AliHLTTPCDigitRowData);
-    data=(AliHLTTPCDigitRowData*) Allocate(size);
+    if (tgtBuffer!=NULL && pTgtSize!=NULL && *pTgtSize>0) {
+      if (size<=*pTgtSize) {
+	data=reinterpret_cast<AliHLTTPCDigitRowData*>(tgtBuffer);
+      } else {
+      }
+    } else {
+      data=reinterpret_cast<AliHLTTPCDigitRowData*>(Allocate(size));
+    }
     AliHLTTPCDigitRowData *tempPt = data;
+    if (data) {
+    if (pTgtSize) *pTgtSize=size;
     for(Int_t r=fRowMin;r<=fRowMax;r++){
       tempPt->fRow = r;
       tempPt->fNDigit = 0;
       tempPt++;
+    }
     }
     return data;
   }
@@ -454,9 +473,15 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   Int_t * ndigits = new Int_t[fRowMax+1];
   Float_t xyz[3];
 
+  // The digits of the current event have been indexed: all digits are organized in
+  // rows, all digits of one row are stored in a AliSimDigits object (fDigit) which
+  // are stored in the digit tree.
+  // The index map relates the AliSimDigits objects in the tree to dedicated pad rows
+  // in the TPC
+  // This loop filters the pad rows according to the slice no set via Init
   for(Int_t r=fRowMin;r<=fRowMax;r++){
     Int_t n=fIndex[fSlice][r];
-    if(n!=-1){ //data on that row
+    if(n!=-1){ // there is data on that row available
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
       AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
@@ -496,7 +521,16 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCFileHandler::AliDigits2Memory","Digits")
     <<AliHLTTPCLog::kDec<<"Found "<<ndigitcount<<" Digits"<<ENDLOG;
   
-  data=(AliHLTTPCDigitRowData*) Allocate(size);
+  if (tgtBuffer!=NULL && pTgtSize!=NULL && *pTgtSize>0) {
+    if (size<=*pTgtSize) {
+      data=reinterpret_cast<AliHLTTPCDigitRowData*>(tgtBuffer);
+    } else {
+    }
+  } else {
+    data=reinterpret_cast<AliHLTTPCDigitRowData*>(Allocate(size));
+  }
+  if (pTgtSize) *pTgtSize=size;
+  if (data==NULL) return NULL;
   nrow = (UInt_t)nrows;
   AliHLTTPCDigitRowData *tempPt = data;
 
@@ -540,11 +574,9 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	tempPt->fDigitData[localcount].fCharge=dig;
 	tempPt->fDigitData[localcount].fPad=pad;
 	tempPt->fDigitData[localcount].fTime=time;
-#ifdef do_mc
 	tempPt->fDigitData[localcount].fTrackID[0] = fDigits->GetTrackID(time,pad,0);
 	tempPt->fDigitData[localcount].fTrackID[1] = fDigits->GetTrackID(time,pad,1);
 	tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
-#endif
 	localcount++;
       } while (fDigits->Next());
     }
@@ -876,7 +908,6 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 	  tempPt->fDigitData[localcount].fCharge=dig;
 	  tempPt->fDigitData[localcount].fPad=pad;
 	  tempPt->fDigitData[localcount].fTime=time;
-#ifdef do_mc
 	  tempPt->fDigitData[localcount].fTrackID[0] = (fDigits->GetTrackIDFast(time,pad,0)-2);
 	  tempPt->fDigitData[localcount].fTrackID[1] = (fDigits->GetTrackIDFast(time,pad,1)-2);
 	  tempPt->fDigitData[localcount].fTrackID[2] = (fDigits->GetTrackIDFast(time,pad,2)-2);
@@ -889,7 +920,6 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliAltroDigits2Memory(UInt_t & nro
 	      tempPt->fDigitData[localcount].fTrackID[1] += ((event&0x3ff)<<22);
 	      tempPt->fDigitData[localcount].fTrackID[2] += ((event&0x3ff)<<22);
 	    }
-#endif
 	  localcount++;
 	}
       }

@@ -30,7 +30,6 @@ using namespace std;
 
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCDigitData.h"
-#include "AliHLTTPCRawDataFormat.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTStdIncludes.h"
 

@@ -34,7 +34,6 @@ using namespace std;
 #include "AliHLTTPCDigitReaderRaw.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCRawDataFormat.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusters.h"

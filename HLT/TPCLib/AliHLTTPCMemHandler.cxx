@@ -1,9 +1,36 @@
 // @(#) $Id$
 // Original: AliHLTMemHandler.cxx,v 1.52 2005/06/14 10:55:21 cvetan 
 
-// Author: Uli Frankenfeld <mailto:franken@fi.uib.no>, Anders Vestbo <mailto:vestbo$fi.uib.no>, Constantin Loizides <mailto:loizides@ikf.uni-frankfurt.de>
-//*-- Copyright &copy ALICE HLT Group 
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ *                                                                        *
+ * Primary Authors: U. Frankenfeld, A. Vestbo, C. Loizides                *
+ *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+ *                  for The ALICE HLT Project.                            *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
+/** @file   AliHLTTPCMemHandler.cxx
+    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+            Matthias Richter
+    @date   
+    @brief  input interface base class for the TPC tracking code before
+            migration to the HLT component framework
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+                                                                          */
 /** \class AliHLTTPCMemHandler 
 <pre>
 //_____________________________________________________________
@@ -100,32 +127,6 @@ AliHLTTPCMemHandler::AliHLTTPCMemHandler()
   //Constructor
   Init(0,0);
   ResetROI();
-}
-
-AliHLTTPCMemHandler::AliHLTTPCMemHandler(const AliHLTTPCMemHandler& src)
-  :
-  fRowMin(0),
-  fRowMax(0),
-  fSlice(0),
-  fPatch(0),
-  fInBinary(NULL),
-  fOutBinary(NULL),
-  fPt(NULL),
-  fSize(0),
-  fIsRandom(kFALSE),
-  fNRandom(0),
-  fNGenerate(0),
-  fNUsed(0),
-  fNDigits(0),
-  fDPt(NULL),
-  fRandomDigits(NULL),
-  fDummy(0)
-{
-}
-
-AliHLTTPCMemHandler& AliHLTTPCMemHandler::operator=(const AliHLTTPCMemHandler& src)
-{
-  return (*this);
 }
 
 AliHLTTPCMemHandler::~AliHLTTPCMemHandler()
@@ -472,10 +473,10 @@ void AliHLTTPCMemHandler::DigitizePoint(Int_t row, Int_t pad,
 }
 
 ///////////////////////////////////////// Digit IO  
-Bool_t AliHLTTPCMemHandler::Memory2Binary(UInt_t nrow,AliHLTTPCDigitRowData *data)
+Bool_t AliHLTTPCMemHandler::Memory2BinaryFile(UInt_t nrow,AliHLTTPCDigitRowData *data)
 {
   //Write data to the outputfile as is. No run-length encoding is done.
-  
+
   if(!fOutBinary){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2Binary","File")
       <<"No Output File"<<ENDLOG;
@@ -526,6 +527,11 @@ Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *d
   while(!feof(fInBinary)){
     Byte_t  *bytePt =(Byte_t *) rowPt;
 
+    if (sz<outsize+sizeof(AliHLTTPCDigitRowData)) {
+      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","Memory")
+	<< "target data buffer too small" <<ENDLOG;
+      return kFALSE;
+    }
     if(fread(rowPt,sizeof(AliHLTTPCDigitRowData),1,fInBinary)!=1) break;
 
     bytePt += sizeof(AliHLTTPCDigitRowData);
@@ -533,6 +539,11 @@ Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *d
 
     Int_t size = sizeof(AliHLTTPCDigitData) * rowPt->fNDigit;
 
+    if (sz<outsize+size) {
+      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","Memory")
+	<< "target data buffer too small" <<ENDLOG;
+      return kFALSE;
+    }
     //if(fread(bytePt,size,1,fInBinary)!=1) break;
     fread(bytePt,size,1,fInBinary);
     bytePt += size;

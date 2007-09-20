@@ -31,7 +31,6 @@ using namespace std;
 #include "AliTPCRawStream.h"
 #include "AliRawDataHeader.h"
 #include "AliRawReaderMemory.h"
-#include "AliHLTTPCRawDataFormat.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCTransform.h"
 #include <stdlib.h>

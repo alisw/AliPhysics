@@ -1,0 +1,10 @@
+Some files have been kept for the sake of legacy and are now 
+removed from the repository:
+- AliHLTTPCClustFinderNew.h/.cxx removed 20.09.2007
+  was the active cluster finder when the TPC HLT code was migrated to the new
+  component interface and project scheme. Unfortunately it got the name "New"
+  when it was developed. The present AliHLTTPCClusterFinder originates from it.
+- AliHLTTPC.cxx/.h  removed 20.09.2007
+  old steering class of TPC reconstruction
+- AliHLTTPCRawDataFormat.h removed 20.09.2007
+  the structure has been added to AliHLTTPCDigitData.h

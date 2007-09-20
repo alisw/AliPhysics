@@ -4,6 +4,7 @@
 include $(MODDIR)/hlt.conf
 
 MODULE_SRCS= 	AliHLTTPCLog.cxx \
+		AliHLTTPCAgent.cxx \
 		AliHLTTPCTransform.cxx \
 		AliHLTTPCMemHandler.cxx \
 		AliHLTTPCDataCompressorHelper.cxx \
@@ -31,6 +32,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		tracking/AliHLTTPCHistogram.cxx \
 		tracking/AliHLTTPCHistogram1D.cxx \
 		tracking/AliHLTTPCHistogramAdaptive.cxx \
+		offline/AliHLTTPCDigitPublisherComponent.cxx \
 		AliHLTTPCClusters.cxx \
 		AliHLTTPCConfMapFit.cxx \
 		AliHLTTPCConfMapTrack.cxx \
@@ -58,6 +60,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 # 		AliHLTTPCDDLDataFileHandler.cxx
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
+		AliHLTTPCAgent.h \
 		AliHLTTPCMemHandler.h \
 		AliHLTTPCDataCompressorHelper.h \
 		AliHLTTPCFitter.h \
@@ -84,6 +87,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		tracking/AliHLTTPCHistogram.h \
 		tracking/AliHLTTPCHistogram1D.h \
 		tracking/AliHLTTPCHistogramAdaptive.h \
+		offline/AliHLTTPCDigitPublisherComponent.h \
 		AliHLTTPCClusters.h \
 		AliHLTTPCConfMapFit.h \
 		AliHLTTPCConfMapTrack.h \
@@ -121,7 +125,6 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCTrackSegmentData.h \
 		AliHLTTPCVertexData.h \
 		AliHLTTPCTrackletDataFormat.h \
-		AliHLTTPCRawDataFormat.h \
 		AliHLTTPCClusterDataFormat.h \
 		AliHLTTPCModels.h
 

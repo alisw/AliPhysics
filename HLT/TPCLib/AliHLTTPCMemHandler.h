@@ -2,7 +2,23 @@
 // Original: AliHLTMemHandler.h,v 1.30 2004/10/06 08:51:20 cvetan 
 #ifndef ALIHLTTPC_MEMHANDLER_H
 #define ALIHLTTPC_MEMHANDLER_H
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ * See cxx source for full Copyright notice                               */
 
+/** @file   AliHLTTPCMemHandler.h
+    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+            Matthias Richter
+    @date   
+    @brief  input interface base class for the TPC tracking code before
+            migration to the HLT component framework
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+                                                                          */
 //_____________________________________________________________
 // AliHLTTPCMemHandler
 //
@@ -32,8 +48,6 @@ class AliHLTTPCMemHandler {
  public:
   AliHLTTPCMemHandler();
   virtual ~AliHLTTPCMemHandler();
-  AliHLTTPCMemHandler(const AliHLTTPCMemHandler& src);
-  AliHLTTPCMemHandler& operator=(const AliHLTTPCMemHandler& src);
    
   void Reset(){CloseBinaryInput();CloseBinaryOutput();Free();}  
   void Init(Int_t s,Int_t p, Int_t *r=0);
@@ -58,10 +72,33 @@ class AliHLTTPCMemHandler {
   void SetROI(Float_t *eta,Int_t *slice);
   void ResetROI();
 
-  //Digit IO
-  Bool_t Memory2Binary(UInt_t nrow,AliHLTTPCDigitRowData *data);
+  ////////////////////////////////////////////////////////////////////////////////////
+  //
+  // Digit IO
+
+  /**
+   * Write digit data to binary file.
+   * The function loops over the rows and dumps all data of the
+   * AliHLTTPCDigitRowData in binary format to the file.
+   * @param nrow    size of the array
+   * @param data    data array
+   * @return kTRUE if succeeded, kFALSE if error
+   */
+  Bool_t Memory2BinaryFile(UInt_t nrow,AliHLTTPCDigitRowData *data);
+
+  /**
+   * Read digit data from binary file.
+   * @param nrow    size of the array
+   * @param data    data buffer to receive the data
+   * @param sz      [IN] buffer size [OUT] total output size
+   * @return kTRUE if succeeded, kFALSE if error
+   */
   Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data, UInt_t& sz);
-  Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data){UInt_t tmp;return Binary2Memory(nrow,data,tmp);};
+
+  // Matthias 18.09.2007
+  // this function is highly error prone, no size check for data buffer
+  // depricated
+  //Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data){UInt_t tmp;return Binary2Memory(nrow,data,tmp);};
 
   Int_t Memory2CompMemory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp);
   Int_t CompMemory2Memory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp,UInt_t& sz);
@@ -176,6 +213,10 @@ class AliHLTTPCMemHandler {
   FILE *fOutBinary;//!
 
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCMemHandler(const AliHLTTPCMemHandler& src);
+  /** assignment operator prohibited */
+  AliHLTTPCMemHandler& operator=(const AliHLTTPCMemHandler& src);
   
   Byte_t *fPt;//!
   UInt_t fSize; //size of allocated data structure
