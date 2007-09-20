@@ -40,6 +40,7 @@
 #include <TArrow.h>
 #include <TMarker.h>
 #include <TH2F.h>
+#include <TDirectoryFile.h>
 
 
 ClassImp(AliMCEventHandler)
@@ -54,6 +55,8 @@ AliMCEventHandler::AliMCEventHandler() :
     fTreeK(0),
     fTreeTR(0),
     fTmpTreeTR(0),
+    fDirK(0),
+    fDirTR(0),
     fStack(0),
     fHeader(0),
     fTrackReferences(0),
@@ -79,9 +82,11 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fTreeK(0),
     fTreeTR(0),
     fTmpTreeTR(0),
+    fDirK(0),
+    fDirTR(0),
     fStack(0),
-    fHeader(new AliHeader()),
-    fTrackReferences(new TClonesArray("AliTrackReference", 200)),
+    fHeader(0),
+    fTrackReferences(0),
     fNEvent(-1),
     fEvent(-1),
     fNprimaries(-1),
@@ -150,32 +155,31 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
     fTreeE->GetEntry(iev);
     fStack = fHeader->Stack();
     // Tree K
-    TDirectoryFile* dirK  = 0;
-    fFileK->GetObject(folder, dirK);
-    if (!dirK) {
+    fFileK->GetObject(folder, fDirK);
+    if (!fDirK) {
 	AliWarning(Form("AliMCEventHandler: Event #%5d not found\n", iev));
 	return kFALSE;
     }
-    dirK->GetObject("TreeK", fTreeK);
+    fDirK ->GetObject("TreeK", fTreeK);
     fStack->ConnectTree(fTreeK);
     fStack->GetEvent();
-    
     //Tree TR 
-
     if (fFileTR) {
-	TDirectoryFile* dirTR = 0;
-	fFileTR->GetObject(folder, dirTR);
-	dirTR->GetObject("TreeTR", fTreeTR);
+	// Check which format has been read
+	fFileTR->GetObject(folder, fDirTR);
+	fDirTR->GetObject("TreeTR", fTreeTR);
 	if (fTreeTR->GetBranch("AliRun")) {
+	    if (fTmpFileTR) {
+		fTmpFileTR->Close();
+		delete fTmpFileTR;
+	    }
 	    // This is an old format with one branch per detector not in synch with TreeK
 	    ReorderAndExpandTreeTR();
-	    delete dirTR;
 	} else {
 	    // New format 
 	    fTreeTR->SetBranchAddress("TrackReferences", &fTrackReferences);
 	}
     }
-
     //
     fNparticles = fStack->GetNtrack();
     fNprimaries = fStack->GetNprimary();
@@ -309,7 +313,25 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     
 void AliMCEventHandler::ResetIO()
 {
-    // Reset files
+//  Clear header and stack
+
+    if (fHeader) {
+	delete fHeader;
+	fHeader = 0;
+    }
+
+    delete fStack;
+    delete fTreeE; fTreeE = 0;
+    
+// Clear TR
+    
+    if (fTrackReferences) {
+	fTrackReferences->Clear();
+	delete fTrackReferences;
+	fTrackReferences = 0;
+    }
+    
+// Reset files
     if (fFileE)  delete fFileE;
     if (fFileK)  delete fFileK;
     if (fFileTR) delete fFileTR;
@@ -318,9 +340,10 @@ void AliMCEventHandler::ResetIO()
 			    
 Bool_t AliMCEventHandler::FinishEvent()
 {
-    // Reset the stack 
-    Stack()->Reset();
-    
+    // Clean-up after each event
+    delete fDirTR;  fDirTR = 0;
+    delete fDirK;   fDirK  = 0;    
+    Stack()->Reset(0);
     return kTRUE;
 }
 
@@ -343,47 +366,25 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 //  Copy the information from different branches into one
 //
 //  TreeTR
-    if (fTmpTreeTR) {
-	fTmpTreeTR->Delete("all");
-    }
-    
-    if (fTmpFileTR) {
-	fTmpFileTR->Close();
-	delete fTmpFileTR;
-    }
 
     fTmpFileTR = new TFile("TrackRefsTmp.root", "recreate");
-    fTmpTreeTR = new TTree("TreeTR", "Track References");
+    fTmpTreeTR = new TTree("TreeTR", "TrackReferences");
     if (!fTrackReferences)  fTrackReferences = new TClonesArray("AliTrackReference", 100);
-    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTrackReferences, 4000);
+    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTrackReferences, 32000, 0);
+    
 
 //
+//  Activate the used branches only. Otherwisw we get a bad memory leak.
+    fTreeTR->SetBranchStatus("*",        0);
+    fTreeTR->SetBranchStatus("AliRun.*", 1);
+    fTreeTR->SetBranchStatus("ITS.*",    1);
+    fTreeTR->SetBranchStatus("TPC.*",    1);
+    fTreeTR->SetBranchStatus("TRD.*",    1);
+    fTreeTR->SetBranchStatus("TOF.*",    1);
+    fTreeTR->SetBranchStatus("FRAME.*",  1);
+    fTreeTR->SetBranchStatus("MUON.*",   1);
 //
-//    fTreeTR->SetBranchStatus("*",      0);
-    fTreeTR->SetBranchStatus("ABSO",  0);
-    fTreeTR->SetBranchStatus("BODY",  0);
-    fTreeTR->SetBranchStatus("DIPO",  0);
-    fTreeTR->SetBranchStatus("EMCAL", 0);
-    fTreeTR->SetBranchStatus("FMD",   0);
-    fTreeTR->SetBranchStatus("HALL",  0);
-    fTreeTR->SetBranchStatus("MAG",   0);
-    fTreeTR->SetBranchStatus("PHOS",  0);
-    fTreeTR->SetBranchStatus("PIPE",  0);
-    fTreeTR->SetBranchStatus("PMD",   0);
-    fTreeTR->SetBranchStatus("RICH",  0);
-    fTreeTR->SetBranchStatus("SHIL",  0);
-    fTreeTR->SetBranchStatus("START", 0);
-    fTreeTR->SetBranchStatus("VZERO", 0);
-    fTreeTR->SetBranchStatus("ZDC",   0);
-
-    fTreeTR->SetBranchStatus("AliRun", 1);
-    fTreeTR->SetBranchStatus("ITS",    1);
-    fTreeTR->SetBranchStatus("TPC",    1);
-    fTreeTR->SetBranchStatus("TRD",    1);
-    fTreeTR->SetBranchStatus("TOF",    1);
-    fTreeTR->SetBranchStatus("FRAME",  1);
-    fTreeTR->SetBranchStatus("MUON",   1);
-
+//  Connect the active branches
     TClonesArray* trefs[7];
     for (Int_t i = 0; i < 7; i++) trefs[i] = 0;
     if (fTreeTR){
@@ -399,14 +400,16 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 
     Int_t np = fStack->GetNprimary();
     Int_t nt = fTreeTR->GetEntries();
+    
     //
     // Loop over tracks and find the secondaries with the help of the kine tree
     Int_t ifills = 0;
     Int_t it     = 0;
     Int_t itlast = 0;
-    
+    TParticle* part;
+
     for (Int_t ip = np - 1; ip > -1; ip--) {
-	TParticle *part = fStack->Particle(ip);
+	part = fStack->Particle(ip);
 //	printf("Particle %5d %5d %5d %5d %5d %5d \n", 
 //	       ip, part->GetPdgCode(), part->GetFirstMother(), part->GetFirstDaughter(), 
 //	       part->GetLastDaughter(), part->TestBit(kTransportBit));
@@ -503,6 +506,7 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 	    } // daughters
 	} // has hits
     } // tracks
+
     //
     // Now loop again and write the primaries
     //
@@ -538,14 +542,24 @@ void AliMCEventHandler::ReorderAndExpandTreeTR()
 	ifills++;
     } // tracks
     // Check
-    delete fTreeTR;
+
+
+    // Clean-up
+    delete fTreeTR; fTreeTR = 0;
+    
     for (Int_t ib = 0; ib < 7; ib++) {
-	if (trefs[ib]) delete trefs[ib];
+	if (trefs[ib]) {
+	    trefs[ib]->Clear();
+	    delete trefs[ib];
+	    trefs[ib] = 0;
+	}
     }
 
     if (ifills != fStack->GetNtrack()) 
 	printf("AliMCEventHandler:Number of entries in TreeTR (%5d) unequal to TreeK (%5d) \n", 
 	       ifills, fStack->GetNtrack());
+
+    fTmpTreeTR->Write();
     fTreeTR = fTmpTreeTR;
 }
 

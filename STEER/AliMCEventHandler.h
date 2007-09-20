@@ -23,6 +23,8 @@ class TTree;
 class TParticle;
 class TString;
 class TClonesArray;
+class TDirectoryFile;
+
 class AliHeader;
 class AliGenEventHeader;
 class AliStack;
@@ -66,6 +68,8 @@ private:
     TTree            *fTreeK;            //! TreeK  (kinematics tree)
     TTree            *fTreeTR;           //! TreeTR (track references tree)
     TTree            *fTmpTreeTR;        //! Temporary tree TR to read old format
+    TDirectoryFile   *fDirK;             //! Directory for Kine Tree
+    TDirectoryFile   *fDirTR;            //! Directory for TR Tree
     AliStack         *fStack;            //! Current pointer to stack
     AliHeader        *fHeader;           //! Current pointer to header
     TClonesArray     *fTrackReferences;  //! Current list of track references
