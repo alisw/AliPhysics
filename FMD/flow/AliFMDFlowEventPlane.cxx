@@ -2,6 +2,7 @@
     @brief Implementation of an EventPlane class */
 #include "flow/AliFMDFlowEventPlane.h"
 #include "flow/AliFMDFlowUtil.h"
+#include <TMath.h>
 // #include <cmath>
 #ifndef _GNU_SOURCE
 extern "C" 
@@ -32,7 +33,8 @@ AliFMDFlowEventPlane::Add(Double_t phi, Double_t weight)
   Double_t a = NormalizeAngle(fOrder * phi);
   Double_t s, c;
   sincos(a, &s, &c);
-  if (isnan(s) || isinf(s) || isnan(c) || isinf(s)) return;
+  if (TMath::IsNaN(s) || !TMath::Finite(s) || 
+      TMath::IsNaN(c) || !TMath::Finite(s)) return;
   fSumSinMPhi += weight * s;
   fSumCosMPhi += weight * c;
 }
@@ -50,7 +52,8 @@ AliFMDFlowEventPlane::Psi(Double_t phi, Double_t w) const
   Double_t a = NormalizeAngle(fOrder * phi);
   Double_t s, c;
   sincos(a, &s, &c);
-  if (isnan(s) || isinf(s) || isnan(c) || isinf(s)) return Psi();
+  if (TMath::IsNaN(s) || !TMath::Finite(s) || 
+      TMath::IsNaN(c) || !TMath::Finite(s)) return Psi();
   Double_t psi = DoPsi(fSumSinMPhi - w * s, fSumCosMPhi - w * c);
   return psi;
 }
