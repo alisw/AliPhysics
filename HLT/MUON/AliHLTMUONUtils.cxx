@@ -120,7 +120,7 @@ AliHLTUInt32_t AliHLTMUONUtils::PackSpecBits(
 {
 	// Pack the bits into the following format:
 	//   bit:   [        31 - 22        ][     21     ][     20     ][  19 - 0 ]
-	//   field: [ reserved, set to zero ][ TRGDDL2816 ][ TRGDDL2817 ][ TRKDDLS ]
+	//   field: [ reserved, set to zero ][ TRGDDL2817 ][ TRGDDL2816 ][ TRKDDLS ]
 	// Meaning of field acronyms:
 	//   TRGDDL2816 - Trigger DDL number 2816.
 	//   TRGDDL2817 - Trigger DDL number 2817.
