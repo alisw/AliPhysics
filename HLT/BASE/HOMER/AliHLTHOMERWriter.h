@@ -33,7 +33,7 @@
 ***************************************************************************
 */
 
-/** @file   AliHLTHomerWriter.h
+/** @file   AliHLTHOMERWriter.h
     @author Timm Steinbeck
     @date   Sep 14 2007
     @brief  HLT Online Monitoring Environment including ROOT - Writer   

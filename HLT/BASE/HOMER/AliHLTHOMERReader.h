@@ -5,7 +5,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTHomerReader.h
+/** @file   AliHLTHOMERReader.h
     @author Timm Steinbeck
     @date   Sep 14 2007
     @brief  HLT Online Monitoring Environment including ROOT - Reader

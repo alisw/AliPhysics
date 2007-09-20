@@ -30,7 +30,7 @@
 ***************************************************************************
 */
 
-/** @file   AliHLTHomerReader.cxx
+/** @file   AliHLTHOMERReader.cxx
     @author Timm Steinbeck
     @date   Sep 14 2007
     @brief  HLT Online Monitoring Environment including ROOT - Reader
