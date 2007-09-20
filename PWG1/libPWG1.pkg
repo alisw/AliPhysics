@@ -1,8 +1,8 @@
 
 SRCS:= 	AliTreeDraw.cxx \
 	AliGenInfo.cxx  AliGenInfoMaker.cxx  \
-	AliRecInfo.cxx  AliRecInfoMaker.cxx  
-
+	AliRecInfo.cxx  AliRecInfoMaker.cxx  \
+	AliComparisonDraw.cxx
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= PWG1LinkDef.h

@@ -17,5 +17,6 @@
 #pragma link C++ class AliESDRecKinkInfo+;
 //
 #pragma link C++ class AliRecInfoMaker+;
+#pragma link C++ class AliComparisonDraw+;
 
 #endif
