@@ -114,7 +114,7 @@ class AliHLTLoaderPublisherComponent : public AliHLTOfflineDataSource {
    */
   TTree* GetTree();
 
-  /** max output block size, estimate during DoInit */
+  /** max output block size, estimated during DoInit */
   Int_t                   fMaxSize;                                //!transient
 
   /** loader string */

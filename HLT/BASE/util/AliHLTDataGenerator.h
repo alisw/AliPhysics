@@ -57,7 +57,7 @@ class AliHLTDataGenerator : public AliHLTDataSource  {
 
   const char* GetComponentID();
   AliHLTComponentDataType GetOutputDataType();
-  int GetOutputDataTypes(vector<AliHLTComponentDataType>& /*tgtList*/);
+  int GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList);
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 

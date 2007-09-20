@@ -50,7 +50,7 @@ class AliHLTAgentUtil : public AliHLTModuleAgent {
    * @param runloader    AliRoot runloader
    * @return number of configurations, neg. error code if failed
    */
-  const char* GetTopConfigurations(AliRunLoader* runloader=NULL) const;
+  const char* GetLocalRecConfigurations(AliRunLoader* runloader=NULL) const;
 
   /**
    * Component libraries which the configurations of this agent depend on.

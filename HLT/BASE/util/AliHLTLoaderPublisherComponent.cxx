@@ -227,6 +227,7 @@ int AliHLTLoaderPublisherComponent::GetEvent(const AliHLTComponentEventData& evt
     }
   } else {
     AliErrorStream() << "component not initialized" << endl;
+    iResult=-EFAULT;
   }
   return iResult;
 }
