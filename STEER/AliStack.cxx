@@ -620,7 +620,7 @@ void  AliStack::Reset(Int_t size)
   //
 
   Clean(size);
-  
+  delete fParticleBuffer; fParticleBuffer = 0;
   fTreeK = 0x0;
 }
 
