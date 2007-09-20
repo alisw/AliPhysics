@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////
 #include "AliITSOnlineSDD.h"
 
+/* $Id$ */
 class TH2F;
 class TGraphErrors;
 class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
@@ -42,7 +43,14 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Float_t GetTimeBinZero() const{return fTbZero;}
   Float_t GetDriftCoordinate(Float_t cAnode, Float_t cTimeBin);
   Int_t GetAnodeNumber(Int_t iInjLine) const;
-
+  Float_t GetCentroid(Int_t injnumb, Int_t injline) const {
+    if(injnumb<kNInjectors && injline<3) return fCentroid[injnumb][injline];
+    else return -9999.;
+  }
+  Bool_t IsInjectorGood(Int_t injnumb, Int_t injline) const {
+    if(injnumb<kNInjectors && injline<3) return fGoodInj[injnumb][injline];
+    else return 0;
+  }
   void PrintInjMap();
   void PrintCentroids();
   void WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend=0);
