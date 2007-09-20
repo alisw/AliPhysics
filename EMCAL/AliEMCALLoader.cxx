@@ -174,7 +174,7 @@ AliEMCALRecParam* AliEMCALLoader::RecParam()
 
   if(!fgRecParam && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
     AliCDBEntry *entry = (AliCDBEntry*) 
-      AliCDBManager::Instance()->Get("EMCAL/RecParam/Data");
+      AliCDBManager::Instance()->Get("EMCAL/Config/RecParam/");
     if (entry) fgRecParam =  (AliEMCALRecParam*) entry->GetObject();
   }
   

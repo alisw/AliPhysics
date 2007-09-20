@@ -65,7 +65,7 @@ void SetRecParam()
   md.SetBeamPeriod(beamPeriod);
   md.SetResponsible("Yuri Kharlov");
   
-  AliCDBId id("EMCAL/RecParam/Data",firstRun,lastRun);
+  AliCDBId id("EMCAL/Config/RecParam",firstRun,lastRun);
 
   AliCDBManager* man = AliCDBManager::Instance();  
   AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
@@ -86,9 +86,9 @@ void GetRecParam()
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
   AliCDBManager::Instance()->SetSpecificStorage("EMCAL/*",DBFolder.Data());
 
-  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("EMCAL/RecParam/Data",runNumber);
+  AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("EMCAL/Config/RecParam/",runNumber);
   if (cdbEntry == 0) {
-    cerr << "No CDBEntry found at path "<<DBFolder.Data()<<"/"<<"EMCAL/RecParam/Data"<<endl;
+    cerr << "No CDBEntry found at path "<<DBFolder.Data()<<"/"<<"EMCAL/Config/RecParam/"<<endl;
     return;
   }
 
