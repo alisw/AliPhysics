@@ -30,7 +30,6 @@
 #include "AliESDEvent.h"
 
 #include "AliTRDReconstructor.h"
-#include "AliTRDclusterizerV1.h"
 #include "AliTRDclusterizerV2.h"
 #include "AliTRDtracker.h"
 #include "AliTRDpidESD.h"
@@ -86,12 +85,6 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
 
     if (!rawReader->NextEvent()) break;
 
-    // Old (slow) cluster finder
-    //AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
-    //clusterer.Open(runLoader->GetFileName(),iEvent);
-    //clusterer.ReadDigits(rawReader);
-    //clusterer.MakeClusters();
-
     // New (fast) cluster finder
     AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
     clusterer.Open(runLoader->GetFileName(),iEvent);
@@ -118,17 +111,12 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   rawReader->Reset();
   rawReader->Select("TRD");
 
-  // Old (slow) cluster finder
-  //AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
-  //clusterer.OpenOutput(clusterTree);
-  //clusterer.ReadDigits(rawReader);
-  //clusterer.MakeClusters();
-
   // New (fast) cluster finder
   AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
   clusterer.SetAddLabels(kFALSE);
   clusterer.Raw2ClustersChamber(rawReader);
+
 }
 
 //_____________________________________________________________________________
@@ -140,11 +128,11 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
   AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
-  //AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
   AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
   clusterer.OpenOutput(clusterTree);
   clusterer.ReadDigits(digitsTree);
   clusterer.MakeClusters();
+
 }
 
 //_____________________________________________________________________________
@@ -162,8 +150,7 @@ void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
   Int_t nEvents = runLoader->GetNumberOfEvents();
 
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    AliTRDclusterizerV1 clusterer("clusterer","TRD clusterizer");
-    //AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
+    AliTRDclusterizerV2 clusterer("clusterer","TRD clusterizer");
     clusterer.Open(runLoader->GetFileName(),iEvent);
     clusterer.ReadDigits();
     clusterer.MakeClusters();
