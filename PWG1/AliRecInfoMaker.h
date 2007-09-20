@@ -40,6 +40,7 @@ public:
 	   const char* fnCmpRes      ="cmpTracks.root", 
 	   const char* fnGalice      ="galice.root",
 	   Int_t nEvents=1, Int_t firstEvent=0);
+  static void MakeAliases(TTree *tree); 
   virtual ~AliRecInfoMaker();
   void Reset();
   Int_t Exec();

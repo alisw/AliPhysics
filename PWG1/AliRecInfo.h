@@ -17,6 +17,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliV0.h"
+#include "AliESDkink.h"
 #include "AliESDfriendTrack.h"
 #include "AliITStrackMI.h"
 #include "AliTRDtrack.h"
@@ -42,6 +43,7 @@ public:
   AliTPCseed *GetTPCtrack() const { return fTPCtrack;}
   AliITStrackMI *GetITStrack() const { return fITStrack;}
   AliTRDtrack   *GetTRDtrack() const { return fTRDtrack;}
+  Int_t      GetStatus(Int_t i) { return fStatus[i];}
 protected:
   //
   Float_t  fTPCPoints[10]; //start , biggest end points,max density .. density at the last 30 pad-rows

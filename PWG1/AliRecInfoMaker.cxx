@@ -187,42 +187,33 @@ AliTPCParam * AliRecInfoMaker::GetTPCParam(){
 
 
 
-void MakeAliases(AliTreeDraw&comp)
+void  AliRecInfoMaker::MakeAliases(TTree * tree)
 {
   //
   // aliases definition
   //
-  comp.T()->SetAlias("radius","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)");
-  comp.T()->SetAlias("direction","MC.fParticle.fVx*MC.fParticle.fPx+MC.fParticle.fVy*MC.fParticle.fPy");
-  comp.T()->SetAlias("decaydir","MC.fTRdecay.fX*MC.fTRdecay.fPx+MC.fTRdecay.fY*MC.fTRdecay.fPy");
-  comp.T()->SetAlias("theta","MC.fTrackRef.Theta()");
-  comp.T()->SetAlias("primdca","sqrt(RC.fITStrack.fD[0]**2+RC.fITStrack.fD[1]**2)");
-  comp.T()->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
-  comp.T()->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+  tree->SetAlias("radius","TMath::Sqrt(MC.fVDist[0]**2+MC.fVDist[1]**2)");
+  tree->SetAlias("direction","MC.fParticle.fVx*MC.fParticle.fPx+MC.fParticle.fVy*MC.fParticle.fPy");
+  tree->SetAlias("decaydir","MC.fTRdecay.fX*MC.fTRdecay.fPx+MC.fTRdecay.fY*MC.fTRdecay.fPy");
+  tree->SetAlias("theta","MC.fTrackRef.Theta()");
+  tree->SetAlias("primdca","sqrt(RC.fITStrack.fD[0]**2+RC.fITStrack.fD[1]**2)");
+  tree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
+  tree->SetAlias("trdchi2","fTRDtrack.fChi2/fTRDtrack.fN");
   
-  comp.T()->SetAlias("trddedx","(RC.fESDtrack.fTRDsignals[0]+RC.fESDtrack.fTRDsignals[1]+RC.fESDtrack.fTRDsignals[2]+RC.fESDtrack.fTRDsignals[3]+RC.fESDtrack.fTRDsignals[4]+RC.fESDtrack.fTRDsignals[5])/6.");
+  tree->SetAlias("trddedx","(RC.fESDtrack.fTRDsignals[0]+RC.fESDtrack.fTRDsignals[1]+RC.fESDtrack.fTRDsignals[2]+RC.fESDtrack.fTRDsignals[3]+RC.fESDtrack.fTRDsignals[4]+RC.fESDtrack.fTRDsignals[5])/6.");
   
-  comp.T()->SetAlias("dtofmc2","fESDtrack.fTrackTime[2]-(10^12*MC.fTOFReferences[0].fTime)");
-  comp.T()->SetAlias("dtofrc2","(fESDtrack.fTrackTime[2]-fESDtrack.fTOFsignal)");
+  tree->SetAlias("dtofmc2","fESDtrack.fTrackTime[2]-(10^12*MC.fTOFReferences[0].fTime)");
+  tree->SetAlias("dtofrc2","(fESDtrack.fTrackTime[2]-fESDtrack.fTOFsignal)");
 
-  comp.T()->SetAlias("psum","fESDtrack.fTOFr[4]+fESDtrack.fTOFr[3]+fESDtrack.fTOFr[2]+fESDtrack.fTOFr[1]+fESDtrack.fTOFr[0]");
-  comp.T()->SetAlias("P0","fESDtrack.fTOFr[0]/psum");
-  comp.T()->SetAlias("P1","fESDtrack.fTOFr[1]/psum");
-  comp.T()->SetAlias("P2","fESDtrack.fTOFr[2]/psum");
-  comp.T()->SetAlias("P3","fESDtrack.fTOFr[3]/psum");
-  comp.T()->SetAlias("P4","fESDtrack.fTOFr[4]/psum");
-  comp.T()->SetAlias("MaxP","max(max(max(P0,P1),max(P2,P3)),P4)");
+  tree->SetAlias("psum","fESDtrack.fTOFr[4]+fESDtrack.fTOFr[3]+fESDtrack.fTOFr[2]+fESDtrack.fTOFr[1]+fESDtrack.fTOFr[0]");
+  tree->SetAlias("P0","fESDtrack.fTOFr[0]/psum");
+  tree->SetAlias("P1","fESDtrack.fTOFr[1]/psum");
+  tree->SetAlias("P2","fESDtrack.fTOFr[2]/psum");
+  tree->SetAlias("P3","fESDtrack.fTOFr[3]/psum");
+  tree->SetAlias("P4","fESDtrack.fTOFr[4]/psum");
+  tree->SetAlias("MaxP","max(max(max(P0,P1),max(P2,P3)),P4)");
 }
 
-
-// ////////////////////////////////////////////////////////////////////////
-// AliRecInfoMaker::AliRecInfoMaker()
-// {
-//   //
-//   // Default constructor - never used
-//   //
-//   Reset();
-// }
 
 ////////////////////////////////////////////////////////////////////////
 AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
