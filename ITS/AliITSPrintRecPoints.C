@@ -1,12 +1,38 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include<Riostream.h>
+#include<TROOT.h>
+#include<TClassTable.h>
+#include<TClonesArray.h>
+#include<TGeoManager.h>
+#include <TInterpreter.h>
+#include<TTree.h>
+#include "AliRun.h"
+#include "AliITSgeom.h"
+#include "AliGeomManager.h"
+#include "AliITSDetTypeRec.h"
+#include "AliITSRecPoint.h"
+#include "AliITSdigit.h"
+#include "AliITSdigitSSD.h"
+#include "AliITShit.h"
+#include "AliITSmodule.h" 
+#include "AliITSsegmentation.h"
+#include "AliITSsegmentationSPD.h" 
+#include "AliITSsegmentationSDD.h"
+#include "AliITSsegmentationSSD.h"
+#include "AliRunLoader.h"
+#include "AliITSLoader.h"
+#include "AliHeader.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
+#endif
 void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
                           Int_t mod=-1,Int_t evnt=-1){
   // Macro to print out the recpoints for all or a specific module
 
   // Dynamically link some shared libs
   if (gClassTable->GetID("AliRun") < 0) {
-    gROOT->LoadMacro("loadlibs.C");
-    loadlibs();
-  } 
+    gInterpreter->ExecuteMacro("loadlibs.C");
+  }
   else {
     if(gAlice){
       delete gAlice->GetRunLoader();
@@ -15,10 +41,30 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
     }
   }
 
-  gROOT->LoadMacro("$(ALICE_ROOT)/ITS/AliITSstandard.C");
+  // Set OCDB if needed
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()) {
+    printf("Setting a local default storage and run number 0\n");
+    man->SetDefaultStorage("local://$ALICE_ROOT");
+    man->SetRun(0);
+  }
+  else {
+    printf("Using deafult storage \n");
+  }
 
-  AliRunLoader *rl = AccessFile(rfn); // Set up to read in Data
-  Int_t retval = rl->LoadHeader();
+  AliRunLoader* rl = AliRunLoader::Open(rfn.Data());
+  if (rl == 0x0){
+    cerr<<"AliITSPrintRecPoints.C : Can not open session RL=NULL"<< endl;
+    return;
+  }
+  Int_t retval = rl->LoadgAlice();
+  if (retval){
+    cerr<<"AliITSPrintRecPoints.C : LoadgAlice returned error"<<endl;
+    return;
+  }
+  gAlice=rl->GetAliRun();
+
+  retval = rl->LoadHeader();
   if (retval){
     cerr<<"AliITSPrintRecPoints.C : LoadHeader returned error"<<endl;
     return;
@@ -33,35 +79,15 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
   cout <<"ITSloader ok"<<endl;
 
   if(!gGeoManager){
-      gGeoManger = new TGeoManager();
-      gGeoManager->Import("geometry.root","");
-  } // end if
+    AliGeomManager::LoadGeometry("geometry.root");
+  } 
   ITSloader->LoadHits("read");
   ITSloader->LoadDigits("read");
   ITSloader->LoadRecPoints("read");
   cout << "loaded hits, digits, and RecPoints"<< endl;
-  AliITS *ITS = 0;
-  ITS = (AliITS*)(gAlice->GetDetector("ITS"));
-  if(!ITS){
-    cout << "Error: no ITS found. Aborting"<<endl;
-    return;
-  } // end if !ITS
-  cout <<"ITS="<<ITS<<endl;
-  if(!(ITS->GetDetTypeSim())){
-      cout <<"No AliITSDetTypeSim object found in ITS"<<endl;
-      return;
-  } // end if
+ 
   AliITSgeom *gm=0;
-  gm = ITS->GetITSgeom();
-  if(!gm){
-      cout <<"No AliITSgeom object found in ITS"<<endl;
-      if(!gGeoManager){
-          cout <<"No gGeoManger. Aborting"<<endl;
-          return;
-      }else{
-          ITS->UpdateInternalGeometry(gGeoManager);
-      } // end if
-  } // end if !AliITSgeom
+  gm = ITSloader->GetITSgeom();
 
   Int_t evNumber1 = 0;
   Int_t evNumber2 = gAlice->GetEventsPerRun();
@@ -77,18 +103,19 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
   } // end if mod>=0
   TClonesArray *rpa;
   AliITSRecPoint *rp = 0;
-  AliITSDetTypeRec* rec = new AliITSDetTypeRec(ITSloader);
-  //rec->SetITSgeom(gm);
+  AliITSDetTypeRec* rec = new AliITSDetTypeRec();
+  rec->SetITSgeom(gm);
   rec->SetDefaults();
 
   Int_t event,m,i,i2;
   Float_t xyz[3];
   for(event = evNumber1; event < evNumber2; event++){
     rl->GetEvent(event);
-    rec->SetTreeAddress();
+    //    rec->SetTreeAddress();
     for(m=mod1;m<mod2;m++){
       rec->ResetRecPoints();
       TTree *TR = ITSloader->TreeR();
+      rec->SetTreeAddressR(TR);
       TR->GetEvent(m);
       rpa = rec->RecPoints();
       i2 = rpa->GetEntriesFast();
@@ -108,7 +135,7 @@ void AliITSPrintRecPoints(Int_t outtype=1,TString rfn="galice.root",
               break;
           default:
               cout << i << " ";
-              rp->Print((ostream*)cout);
+              rp->Print();
               cout << endl;
               break;
           } // end switch
