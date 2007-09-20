@@ -50,7 +50,7 @@ struct AliHLTMUONTriggerRecordStruct
 };
 
 /**
- * AliHLTMUONRecHitsBlockStruct defines the format of the internal
+ * AliHLTMUONTriggerRecordsBlockStruct defines the format of the internal
  * trigger records data block.
  */
 struct AliHLTMUONTriggerRecordsBlockStruct
