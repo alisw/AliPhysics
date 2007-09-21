@@ -30,8 +30,10 @@ struct AliHLTMUONTrigRecInfoStruct
 	AliHLTInt32_t fTrigRecId; // The corresponding trigger record ID this
 	                          // debug information corresponds to. -1 == invalid.
 
-	AliHLTInt32_t fDetElemId;  // Detector ID number from AliRoot geometry
+	AliHLTInt32_t fDetElemId[4];  // Detector ID numbers from AliRoot geometry
 	                           // on which the hit clusters were found.
+	                           // fDetElemId[0] is for chamber 11, fDetElemId[1]
+	                           // for chamber 12 etc.
 
 	// The parameters used for momentum estimation:
 	AliHLTFloat32_t fZmiddle; // Particle momentum X component in GeV/c.
@@ -60,7 +62,7 @@ struct AliHLTMUONTrigRecsDebugBlockStruct
 /**
  * Stream operator for usage with std::ostream classes which prints the trigger
  * record debug information in the following format:
- *  {fTrigRecId = xx, fDetElemId = yy, fZmiddle = zz, fBl = ww}
+ *  {fTrigRecId = xx, fDetElemId = [aa, bb, cc, dd], fZmiddle = yy, fBl = zz}
  */
 std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONTrigRecInfoStruct& info

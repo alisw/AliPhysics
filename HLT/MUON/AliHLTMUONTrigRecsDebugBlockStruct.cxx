@@ -32,8 +32,11 @@ std::ostream& operator << (
 	)
 {
 	stream	<< "{fTrigRecId = " << info.fTrigRecId
-		<< ", fDetElemId = " << info.fDetElemId
-		<< ", fZmiddle = " << info.fZmiddle
+		<< ", fDetElemId = [" << info.fDetElemId[0]
+		<< ", " << info.fDetElemId[1]
+		<< ", " << info.fDetElemId[2]
+		<< ", " << info.fDetElemId[3]
+		<< "], fZmiddle = " << info.fZmiddle
 		<< ", fBl = " << info.fBl
 		<< "}";
 	return stream;
