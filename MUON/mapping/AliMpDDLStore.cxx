@@ -404,7 +404,14 @@ Bool_t  AliMpDDLStore::ReadTriggerDDLs()
 	// add  DE for local board and DDL
 	TString detElem = &tmp[tmp.First(" ")+1];
 	AliMpHelper::DecodeName(detElem,' ',list);
+
 	for (Int_t i = 0; i < list.GetSize(); ++i) {
+
+	  if (list[i]) { // skip copy card
+	      AliMpDetElement* de = AliMpDEManager::GetDetElement(list[i]);
+	      if (de->GetDdlId() == -1)
+		  de->SetDdlId(iDDL);
+	  }
 	    board->AddDE(list[i]);
 	    if(!ddl->HasDEId(list[i]))
 		ddl->AddDE(list[i]);
