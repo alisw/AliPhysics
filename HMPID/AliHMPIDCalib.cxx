@@ -23,70 +23,76 @@ ClassImp(AliHMPIDCalib)
 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDCalib::AliHMPIDCalib():
-   fPedTree(0x0),
-   fa(-1),
-   fd(-1),
-   fr(-1),
-   fq(-1),
-   fPedHisto(0) 
+AliHMPIDCalib::AliHMPIDCalib()
 {
+  //
+  //constructor
+  //
   Init();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDCalib::~AliHMPIDCalib()
 {
+  //
   //destructor
-}
+  //
+}//ctor
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCalib::Init()
 {
-  //..
-  for(Int_t iddl=0;iddl<11;iddl++) faddl[iddl]=kFALSE;
   //
-  // Called to initialize the TTree in which the raw data words will be stored 
+  //Init the q calc.
   //
-  fPedHisto=new TH1F("fPedHisto","Temporary pedestal",4096,-0.5,4095.5);                                //init pedestal histo
-  fPedTree = new TTree("PedTree","HMPID Pedestal Tree");                                                //init pedestal tree
-  fPedTree->Branch("diladd",&fa,"diladd/I");
-  fPedTree->Branch("dilnum",&fd,"dilnum/I");
-  fPedTree->Branch("dilrow",&fr,"dilrow/I");
-  fPedTree->Branch("qdc"   ,&fq,"qdc/F   ");
-}
+    for(Int_t iDDL=0; iDDL< AliHMPIDCalib::kNDDL; iDDL++) 
+      {
+        faddl[iDDL]=kFALSE;
+        for(Int_t row = 1; row <=AliHMPIDCalib::kNRows; row++){
+          for(Int_t dil = 1; dil <=AliHMPIDCalib::kNDILOGICAdd; dil++){
+            for(Int_t pad = 0; pad < AliHMPIDCalib::kNPadAdd; pad++){
+                     fsq[iDDL][row][dil][pad]=0;
+                    fsq2[iDDL][row][dil][pad]=0;
+            }
+          }
+        }
+      }
+}//Init()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCalib::FillPedestal(Int_t ddl,Int_t row, Int_t dil,Int_t adr,Int_t q)
+void AliHMPIDCalib::FillPedestal(Int_t nDDL,Int_t row, Int_t dil,Int_t adr,Int_t q)
 {
   //
   //Called from the HMPIDda and fills the pedestal tree 
   //
-  fq=q;
-  fr=row;
-  fd=dil;
-  fa=adr;
-  faddl[ddl]=kTRUE; 
-  if(fq>-1) fPedTree->Fill();    
+    if(q>0) { 
+         fsq[nDDL][row][dil][adr]+=q;
+        fsq2[nDDL][row][dil][adr]+=(q*q);
+                       faddl[nDDL]=kTRUE;  
+        }
+
 }//FillPedestal()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDCalib::CalcPedestal(Int_t ddl, Char_t* name)    
+Bool_t AliHMPIDCalib::CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv)    
 {
   //
   //Calculate pedestal for each pad  
   //
-  
+  Float_t mean=0,sigma=0;
+  Float_t qs2m=0,qsm2=0;
   ofstream out;                                           //to write the pedestal text files
-  Double_t mean,sigma;
   Int_t inhard;
-  if(faddl[ddl]==kFALSE) return kFALSE;                   //if ddl is missing no ped file is created (and also for LDC selection). Check with Paolo what he checks for?!
-    out.open(name);
-    for(Int_t row=1; row < 25; row++){
-     for(Int_t dil=1; dil < 11; dil++){
-      for(Int_t adr=0; adr < 48; adr++){
-          fPedHisto->Reset();
-          fPedTree->Draw("fq>>fPedHisto",Form("fr==%d&&fd==%d&&fa==%d",row,dil,adr));
-          mean=fPedHisto->GetMean();
-          sigma=fPedHisto->GetRMS();
-          inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
-	  out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,adr,mean,sigma,inhard);
+  if(faddl[nDDL]==kFALSE) return kFALSE;                   //if ddl is missing no ped file is created (and also for LDC selection). Check with Paolo what he checks for?!
+  out.open(name);
+  for(Int_t row = 1; row <= AliHMPIDCalib::kNRows; row++){
+    for(Int_t dil = 1; dil <= AliHMPIDCalib::kNDILOGICAdd; dil++){
+      for(Int_t pad = 0; pad < AliHMPIDCalib::kNPadAdd; pad++){
+        
+        mean = fsq[nDDL][row][dil][pad]/1.0/nEv;
+        
+        qs2m = fsq2[nDDL][row][dil][pad]/1.0/nEv;
+        qsm2 = TMath::Power(fsq[nDDL][row][dil][pad]/1.0/nEv,2);
+        sigma= TMath::Sqrt(qs2m-qsm2);
+        
+        inhard=((Int_t(mean))<<9)+Int_t(mean+3*sigma);
+        out << Form("%2i %2i %2i %5.2f %5.2f %x\n",row,dil,pad,mean,sigma,inhard);
         }//adr
       }//dil
     }//row

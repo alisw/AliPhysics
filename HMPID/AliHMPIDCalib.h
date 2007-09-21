@@ -7,9 +7,11 @@
 //.
 //.
 //.
-#include "TTreePlayer.h"
-#include <TTree.h>
+
+//#include "TTreePlayer.h"
+//#include <TTree.h>
 #include <TH1.h>
+#include <TMath.h>
 
 class AliHMPIDCalib: public TObject { 
 
@@ -18,19 +20,20 @@ public:
   AliHMPIDCalib();
   virtual ~AliHMPIDCalib();
           void Init();
-          void FillPedestal(Int_t ddl,Int_t row, Int_t dil,Int_t adr,Int_t q);
-        Bool_t CalcPedestal(Int_t ddl, Char_t* name);
+          void FillPedestal(Int_t nDDL,Int_t row, Int_t dil,Int_t adr,Int_t q);
+        Bool_t CalcPedestal(Int_t nDDL, Char_t* name, Int_t nEv);
 
+   enum {
+      kNRows       = 24,                                    // Number of rows (starting from 1 !)//was25
+      kNDILOGICAdd = 10,                                    // Number of DILOGIC addresses in a row (starting from 1 !) //was11
+      kNPadAdd     = 48,                                    // Number of pad row
+      kNDDL = 14
+    };
         
 protected: 
-    TTree   *fPedTree;                                                            //Pedestal Tree
-    Int_t   fa;                                                                   //DILOGIC address
-    Int_t   fd;                                                                   //DILOGIC number
-    Int_t   fr;                                                                   //DILOGIC row
     Bool_t  faddl[11];                                                            //check is ddl is filled
-    Int_t   fq;                                                                   //Qdc value
-    TH1F   *fPedHisto;                                                            //temporary histo for mean and sigma calculation                                                      
- 
+    Float_t fsq[kNDDL][kNRows][kNDILOGICAdd][kNPadAdd];                           //Sum of pad Q
+    Float_t fsq2[kNDDL][kNRows][kNDILOGICAdd][kNPadAdd];                          //Sum of pad Q^2
     ClassDef(AliHMPIDCalib,1)                                                     //HMPID calibration and pedestal class        
 };
 #endif

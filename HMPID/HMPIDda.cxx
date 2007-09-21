@@ -31,8 +31,6 @@ extern "C" {
 #include "TBenchmark.h"
 #include "TMath.h"
 #include "TRandom.h"
-#include "TTree.h"
-#include "TTreePlayer.h"
 
 
 int main(int argc, char **argv){ 
@@ -62,11 +60,12 @@ int main(int argc, char **argv){
 
   /* init the pedestal calculation */
   AliHMPIDCalib *pCal=new AliHMPIDCalib();
-  //pCal->Init();                    //Init the pedestal calculation
   
   /* init event counter */
   Int_t iEvtNcal=0;
 
+  Int_t cnt=0;
+  
   int n;
   for (n=1;n<argc;n++) {
 
@@ -86,7 +85,13 @@ int main(int argc, char **argv){
 
       /* get next event */
       status=monitorGetEventDynamic((void **)&event);
-      if (status==MON_ERR_EOF) break; /* end of monitoring file has been reached */
+      if (status==MON_ERR_EOF)                                              /* end of monitoring file has been reached */
+      {
+        printf("End of monitoring file has been reached! \n");
+        break;
+        }
+      
+       
       if (status!=0) {
         printf("monitorGetEventDynamic() failed : %s\n",monitorDecodeError(status));
 	return -1;
@@ -94,7 +99,8 @@ int main(int argc, char **argv){
 
       /* retry if got no event */
       if (event==NULL) {
-        break;
+        //break;
+        continue;
       }
 
       /* use event - here, just write event id to result file */
@@ -103,7 +109,7 @@ int main(int argc, char **argv){
       if (eventT==PHYSICS_EVENT) {                                                //we use PHYSICS_EVENT for pedestal not CALIBRATION_EVENT
 	
 	iEvtNcal++;
-
+        
 	AliRawReader *reader = new AliRawReaderDate((void*)event);
 
 	// Temporary there. Shall be removed as soon as the equipment ID is set correctly
@@ -114,11 +120,11 @@ int main(int argc, char **argv){
 	AliHMPIDRawStream stream(reader);
 
 	while(stream.Next()) {
-          Int_t ddl=stream.GetDDLNumber();
+          Int_t nDDL=stream.GetDDLNumber();
             for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
               for(Int_t dil = 1; dil <=AliHMPIDRawStream::kNDILOGICAdd; dil++){
                 for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
-                  pCal->FillPedestal(ddl,row,dil,pad,stream.GetCharge(ddl,row,dil,pad));
+                  pCal->FillPedestal(nDDL,row,dil,pad,stream.GetCharge(nDDL,row,dil,pad));
                 }//pad
               }//dil
             }//row
@@ -138,7 +144,7 @@ int main(int argc, char **argv){
       free(event);
     }
 
-  }
+  }//arg
 
   /* write report */
   printf("Run #%s, received %d calibration events\n",getenv("DATE_RUN_NUMBER"),iEvtNcal);
@@ -151,19 +157,21 @@ int main(int argc, char **argv){
   /* report progress */
   daqDA_progressReport(90);
 
-  for(Int_t ddl=0; ddl < 14; ddl++) {
+  for(Int_t nDDL=0; nDDL < AliHMPIDCalib::kNDDL; nDDL++) {
     
     /* Calculate pedestal for the given ddl, if there is no ddl go t next */
-    if(!pCal->CalcPedestal(ddl,Form("./HmpidPedDdl%02i.txt",ddl))) continue;
+    if(!pCal->CalcPedestal(nDDL,Form("./HmpidPedDdl%02i.txt",nDDL),iEvtNcal)) continue;
     
     /* store the result file on FES */
-    status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",ddl),Form("HMPID_DA_Pedestals_ddl=%02i",ddl));
+    
+    status=daqDA_FES_storeFile(Form("./HmpidPedDdl%02i.txt",nDDL),Form("HMPID_DA_Pedestals_ddl=%02i",nDDL));
     if (status) {
       printf("Failed to export file : %d\n",status);
       return -1;
     }
-  }//ddl
-
+    
+  }//nDDL
+  
   /* report progress */
   daqDA_progressReport(100);
 
