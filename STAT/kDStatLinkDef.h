@@ -7,12 +7,16 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ struct TKDNode<Int_t, Float_t>+;
 #pragma link C++ class TKDTree<Int_t, Float_t>+;
-#pragma link C++ class TKDTree <Int_t, Double_t>+;
 #pragma link C++ typedef TKDTreeIF;
+
+#pragma link C++ class TKDNode<Int_t, Double_t>+;
+#pragma link C++ class TKDTree<Int_t, Double_t>+;
 #pragma link C++ typedef TKDTreeID;
 
 #pragma link C++ class TKDInterpolator+;
+#pragma link C++ class TKDInterpolator::TKDNodeInfo+;
 #pragma link C++ class TKDSpline+;
 #pragma link C++ class AliTMinuitToolkit+;
 
