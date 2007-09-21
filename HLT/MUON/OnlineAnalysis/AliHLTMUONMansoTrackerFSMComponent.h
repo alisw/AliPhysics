@@ -33,6 +33,10 @@
 #include "AliHLTMUONMansoTrackerFSMCallback.h"
 #include <vector>
 
+#if __GNUC__ < 3
+#define std
+#endif
+
 class AliHLTMUONMansoTrackerFSM;
 //class AliHLTMUONMansoTracksBlockWriter;
 extern "C" {
