@@ -136,12 +136,17 @@ bool AliHLTMUONTriggerReconstructor::LoadLookUpTable(AliHLTMUONHitReconstructor:
   return true;
 }
 
-bool AliHLTMUONTriggerReconstructor::Run(int *rawData, int *rawDataSize, AliHLTMUONTriggerRecordStruct trigRecord[], int *nofTrigRec)
+bool AliHLTMUONTriggerReconstructor::Run(
+		const AliHLTUInt32_t* rawData,
+		AliHLTUInt32_t rawDataSize,
+		AliHLTMUONTriggerRecordStruct* trigRecord,
+		AliHLTUInt32_t& nofTrigRec
+	)
 {
 
-  fRecPoints = &trigRecord[0];
-  fMaxRecPointsCount = *nofTrigRec;
-  fRecPointsCount = nofTrigRec;
+  fRecPoints = trigRecord;
+  fMaxRecPointsCount = nofTrigRec;
+  fRecPointsCount = &nofTrigRec;
   *fRecPointsCount = 0;
   fMaxFiredPerDetElem.clear();
   fDetElemToDataId.clear();
@@ -158,7 +163,7 @@ bool AliHLTMUONTriggerReconstructor::Run(int *rawData, int *rawDataSize, AliHLTM
   fPadData[0].fPcbZone = -1 ;
   fPadData[0].fCharge = 0 ;
   
-  if(!ReadDDL(rawData,rawDataSize)){
+  if(!ReadDDL(rawData, rawDataSize)){
     HLTError("Failed to read the complete DDL file\n");
     return false;
   }
@@ -172,7 +177,10 @@ bool AliHLTMUONTriggerReconstructor::Run(int *rawData, int *rawDataSize, AliHLTM
 }
 
 
-bool AliHLTMUONTriggerReconstructor::ReadDDL(int *rawData, int *rawDataSize)
+bool AliHLTMUONTriggerReconstructor::ReadDDL(
+		const AliHLTUInt32_t* rawData,
+		AliHLTUInt32_t rawDataSize
+	)
 {
 
   int idManuChannel ;

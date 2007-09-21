@@ -41,8 +41,8 @@
  * @ingroup alihlt_tutorial
  */
 class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
-    {
-    public:
+{
+public:
 	AliHLTMUONTriggerReconstructorComponent();
 	virtual ~AliHLTMUONTriggerReconstructorComponent();
 
@@ -54,16 +54,16 @@ class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 	AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	AliHLTComponent* Spawn();
-	
-    protected:
-	
+
+protected:
+
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
 	// capabilities of the component. 
 
 	int DoInit(int argc, const char** argv);
 	int DoDeinit();
-	
+
 	int DoEvent(
 			const AliHLTComponentEventData& evtData,
 			const AliHLTComponentBlockData* blocks, 
@@ -72,9 +72,9 @@ class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 			AliHLTUInt32_t& size,
 			std::vector<AliHLTComponentBlockData>& outputBlocks
 		);
-	
-    private:
-	
+
+private:
+
 	AliHLTMUONTriggerReconstructor* fTrigRec;
 
 	bool ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath);
@@ -85,6 +85,6 @@ class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0)
 
-    };
+};
     
 #endif // AliHLTMUONTRIGGERRECONSTRUCTORCOMPONENT_H

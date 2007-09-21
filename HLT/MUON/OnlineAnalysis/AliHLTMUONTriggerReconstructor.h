@@ -28,8 +28,7 @@
 
 #include <vector>
 
-#include <AliHLTLogging.h>
-
+#include "AliHLTLogging.h"
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONHitReconstructor.h"
 
@@ -58,8 +57,7 @@ class AliHLTMUONTriggerReconstructor : public AliHLTLogging
   bool LoadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookUpTableData, int lookUpTableId);
   
   bool SetRegToLocCardMap(RegToLoc* regToLoc);
-  //bool Run(int iEvent, int iDDL, AliHLTMUONTriggerRecordStruct trigRecord, int *nofTrigRec); // for Reading using rawreader
-  bool Run(int *rawData, int *rawDataSize, AliHLTMUONTriggerRecordStruct trigRecord[], int *nofTrigRec);
+  bool Run(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize, AliHLTMUONTriggerRecordStruct* trigRecord, AliHLTUInt32_t& nofTrigRec);
 
   int GetLutLine(){return fgkLutLine ;}
 
@@ -97,8 +95,8 @@ class AliHLTMUONTriggerReconstructor : public AliHLTLogging
   AliHLTMUONHitReconstructor::DHLTLut* fLookUpTableData;                  // pointer to the array of Lookuptable data
   
   AliHLTMUONTriggerRecordStruct *fRecPoints;    // Reconstructed hits
-  int *fRecPointsCount;                       // nof reconstructed hit  
-  int fMaxRecPointsCount;                    // max nof reconstructed hit  
+  AliHLTUInt32_t *fRecPointsCount;                       // nof reconstructed hit  
+  AliHLTUInt32_t fMaxRecPointsCount;                    // max nof reconstructed hit  
 
   //104 correspond to maximum nuber of x indices a nonbending side of detelem may have (i.e. 1101) 
   //and 64 corresponds to the maximum number of y indices occurs in bending side of detelem (i.e 1100)
@@ -114,7 +112,7 @@ class AliHLTMUONTriggerReconstructor : public AliHLTLogging
   bool MergeTrigHits(DataIdIndex& dataIndex);
   bool FindTrigHits() ;
 
-  bool ReadDDL(int *rawData, int *rawDataSize);
+  bool ReadDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
 };
 
 #endif // AliHLTMUONTRIGGERRECONSTRUCTOR_H

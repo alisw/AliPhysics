@@ -21,35 +21,30 @@
     @date   
     @brief  Implementation of the trigger DDL reconstructor component. */
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
-#include "AliHLTSystem.h"
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONTriggerReconstructor.h"
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONConstants.h"
-
-#include <stdlib.h>
-#include <errno.h>
+#include "AliHLTMUONDataBlockWriter.h"
+#include <cstdlib>
+#include <cerrno>
 
 namespace
 {
 	// This is a global object used for automatic component registration,
 	// do not use this for calculation.
 	AliHLTMUONTriggerReconstructorComponent gAliHLTMUONTriggerReconstructorComponent;
+
 } // end of namespace
 
 
 ClassImp(AliHLTMUONTriggerReconstructorComponent)
     
     
-AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent()
-  :
-  fTrigRec(NULL),
-  fDDLDir(""),
-  fDDL(0)
+AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent() :
+	fTrigRec(NULL),
+	fDDLDir(""),
+	fDDL(0)
 {
 }
 
@@ -61,40 +56,42 @@ AliHLTMUONTriggerReconstructorComponent::~AliHLTMUONTriggerReconstructorComponen
 
 const char* AliHLTMUONTriggerReconstructorComponent::GetComponentID()
 {
-  return "MUONTrigRec"; // The ID of this component
+	return AliHLTMUONConstants::TriggerReconstructorId();
 }
 
 
 void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
 {
-  list.clear();
-  list.push_back( AliHLTMUONConstants::TriggerDDLRawDataType() );
+	list.clear();
+	list.push_back( AliHLTMUONConstants::TriggerDDLRawDataType() );
 }
 
 
 AliHLTComponentDataType AliHLTMUONTriggerReconstructorComponent::GetOutputDataType()
 {
-  return AliHLTMUONConstants::TriggerRecordsBlockDataType();
+	return AliHLTMUONConstants::TriggerRecordsBlockDataType();
 }
 
 
-void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
+void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize(
+		unsigned long& constBase, double& inputMultiplier
+	)
 {
-  constBase = 0;
-  inputMultiplier = 1;
+	constBase = sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType);
+	inputMultiplier = 1;
 }
 
 
-// Spawn function, return new instance of this class
 AliHLTComponent* AliHLTMUONTriggerReconstructorComponent::Spawn()
 {
-  return new AliHLTMUONTriggerReconstructorComponent;
+	return new AliHLTMUONTriggerReconstructorComponent;
 }
 
 
 int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 {
-  // perform initialization. We check whether our relative output size is specified in the arguments.
+  // perform initialization. We check whether our relative output size is
+  // specified in the arguments.
   
   HLTInfo("Initialising DHLT Trigger Record Component");
 
@@ -104,7 +101,6 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
   if (argc==0 && argv==NULL) {
     HLTError("Arguments missing, no arguments" );
   }
-
 
   char lutFileName[500],reglocFileName[500];
 
@@ -204,13 +200,16 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 
 int AliHLTMUONTriggerReconstructorComponent::DoDeinit()
 {
-  if(fTrigRec)
-    delete fTrigRec;
-  
-  HLTInfo(" Deinitialising DHLT Trigger Record Component");
-  
-  return 0;
+	HLTInfo("Deinitialising DHLT Trigger Record Component");
+
+	if(fTrigRec)
+	{
+		delete fTrigRec;
+		fTrigRec = NULL;
+	}
+	return 0;
 }
+
 
 int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
@@ -221,93 +220,106 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
-  // Process an event
-  unsigned long totalSize = 0;
-  HLTDebug("Output percentage set to %lu and totalSize %lu",fOutputPercentage,totalSize );
-    
-  HLTDebug("Event : %d has : %lu  blocks",(int)evtData.fEventID,evtData.fBlockCnt);
-  // Loop over all input blocks in the event
-  for ( unsigned long n = 0; n < evtData.fBlockCnt; n++ )
-    {
+	// Process an event
+	unsigned long totalSize = 0; // Amount of memory currently consumed in bytes.
 
-      HLTDebug("block : %d, block rawData : %p, block.fSize (bytes) : %d, blocks.fDataType.fID : %s, blocks.fDataType.fOrigin  : %s, required type : %s\n",
-	       n,blocks[n].fPtr,blocks[n].fSize,(char *)(blocks[n].fDataType.fID),
-	      (char *)(blocks[n].fDataType.fOrigin,(char *)(AliHLTMUONConstants::TriggerDDLRawDataType().fID)));
-      
-
-      if(strncmp((char *)(blocks[n].fDataType.fID),(char *)(AliHLTMUONConstants::TriggerDDLRawDataType().fID),kAliHLTComponentDataTypefIDsize)) continue;
-
-      if ( totalSize > size )
-	break;
-      
-      int totalDDLSize = blocks[n].fSize/sizeof(int);
-      int  ddlRawDataSize = totalDDLSize - fTrigRec->GetkDDLHeaderSize();
-
-      int *buffer = (int *)((int *)blocks[n].fPtr + fTrigRec->GetkDDLHeaderSize()) ;
-      
-      AliHLTMUONTriggerRecordStruct trigRecord[300];
-      int nofTrigRec = 300;
+	HLTDebug("Processing event %llu with %u input data blocks.",
+		evtData.fEventID, evtData.fBlockCnt
+	);
 	
-      if(! (fTrigRec->Run(buffer,&ddlRawDataSize,&trigRecord[0],&nofTrigRec))){
-	HLTError("ERROR In Processing of TrigRec Algo ");
-	return EIO;
-      }
-      
-      // 	if(! (fTrigRec->Run((int)evtData.fEventID,fDDL,trigRecord,&nofTrigRec))){
-      // 	  HLTError("ERROR In Processing of TrigRec Algo ");
-      // 	  return EIO;
-      //	}
+	// Loop over all input blocks in the event and run the trigger DDL
+	// reconstruction algorithm on the raw data.
+	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
+	{
+		char id[kAliHLTComponentDataTypefIDsize+1];
+		for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
+			id[i] = blocks[n].fDataType.fID[i];
+		id[kAliHLTComponentDataTypefIDsize] = '\0';
+		char origin[kAliHLTComponentDataTypefOriginSize+1];
+		for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
+			origin[i] = blocks[n].fDataType.fOrigin[i];
+		origin[kAliHLTComponentDataTypefOriginSize] = '\0';
+		
+		HLTDebug("Handling block: %u, with fDataType.fID = '%s',"
+			  " fDataType.fID = '%s', fPtr = %p and fSize = %u bytes.",
+			n, static_cast<char*>(id), static_cast<char*>(origin)
+			blocks[n].fPtr, blocks[n].fSize
+		);
+
+		if (blocks[n].fDataType != AliHLTMUONConstants::TriggerDDLRawDataType())
+		{
+			// Log a message indicating that we got a data block that we
+			// do not know how to handle.
+			char id[kAliHLTComponentDataTypefIDsize+1];
+			for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
+				id[i] = blocks[n].fDataType.fID[i];
+			id[kAliHLTComponentDataTypefIDsize] = '\0';
+			char origin[kAliHLTComponentDataTypefOriginSize+1];
+			for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
+				origin[i] = blocks[n].fDataType.fOrigin[i];
+			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
+			
+			HLTError("Received a data block of an unexpected type: %s origin %s",
+				static_cast<char*>(id), static_cast<char*>(origin)
+			);
+			continue;
+		}
+		
+		// Create a new output data block and initialise the header.
+		AliHLTMUONTriggerRecordsBlockWriter block(outputPtr+totalSize, size-totalSize);
+		if (not block.InitCommonHeader())
+		{
+			HLTError("There is not enough space in the output buffer for the new data block.",
+				 " We require at least %u bytes, but have %u bytes left.",
+				sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType),
+				block.BufferSize()
+			);
+			break;
+		}
+
+		AliHLTUInt32_t totalDDLSize = blocks[n].fSize / sizeof(AliHLTUInt32_t);
+		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - fTrigRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr)
+			+ fTrigRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
+
+		if (not fTrigRec->Run(buffer, ddlRawDataSize, block.GetArray(), nofTrigRec))
+		{
+			HLTError("Error while processing of trigger DDL reconstruction algorithm.");
+			size = totalSize; // Must tell the framework how much buffer space was used.
+			return EIO;
+		}
+		
+		// nofTrigRec should now contain the number of triggers actually found
+		// and filled into the output data block, so we can set this number.
+		assert( nofTrigRec <= block.MaxNumberOfEntries() );
+		block.SetNumberOfEntries(nofTrigRec);
+		
+		HLTDebug("Number of trigger records found is %d", nofTrigRec);
+		
+		// Fill a block data structure for our output block.
+		AliHLTComponentBlockData bd;
+		FillBlockData(bd);
+		bd.fPtr = outputPtr;
+		// This block's start (offset) is after all other blocks written so far.
+		bd.fOffset = totalSize;
+		bd.fSize = block.BytesUsed();
+		bd.fDataType = AliHLTMUONConstants::TriggerRecordsBlockDataType();
+		bd.fSpecification = blocks[n].fSpecification;
+		outputBlocks.push_back(bd);
+		
+		HLTDebug("Created a new output data block at fPtr = %p,"
+			  " with fOffset = %u (0x%.X) and fSize = %u bytes.", 
+			bd.fPtr, bd.fOffset, bd.fOffset, bd.fSize
+		);
+		
+		// Increase the total amount of data written so far to our output memory.
+		totalSize += block.BytesUsed();
+	}
 	
-      unsigned long mySize = sizeof(AliHLTMUONTriggerRecordStruct)*nofTrigRec;
-    
-      HLTDebug("Number record found is %d",nofTrigRec);
-//       for(int ihit=0;ihit<nofTrigRec;ihit++)
-// 	cout<<"\tdetelem : "<<trigRecord[ihit].fId
-// 	    <<"\t"<<trigRecord[ihit].fHit[0].fX
-// 	    <<"\t"<<trigRecord[ihit].fHit[0].fY
-// 	    <<"\t"<<trigRecord[ihit].fHit[0].fZ
-// 	    <<endl;
-
-	// Check how much space we have left and adapt this output block's size accordingly.
-	if ( totalSize + mySize > size )
-	    mySize = size-totalSize;
-
-	Logging( kHLTLogDebug, "AliHLTMUONTriggerReconstructor::DoEvent", "mySize set (2)", "mySize == %lu B - totalSize == %lu - size == %lu", 
-		 mySize, totalSize, size );
-
-	if ( mySize<=0 )
-	    continue; // No room left to write a further block.
-
-	// Now copy the input block
-	unsigned long copied = 0;
-	// First copy all full multiples of the input block
-
-	// And the copy the remaining fragment of the block
-	Logging( kHLTLogDebug, "AliHLTMUONTriggerReconstructor::DoEvent", "Copying", "Copying %lu B - Copied: %lu B - totalSize: %lu B", 
-		 mySize-copied, copied, totalSize );
-	//memcpy( outputPtr+totalSize+copied, blocks[n].fPtr, mySize-copied );
-	memcpy( outputPtr+totalSize+copied, &trigRecord[0], mySize);
-	Logging( kHLTLogDebug, "AliHLTMUONTriggerReconstructor::DoEvent", "Copied", "Copied: %lu B - totalSize: %lu B", 
-		 copied, totalSize );
-	
-	// Fill a block data structure for our output block.
-	AliHLTComponentBlockData bd;
-	FillBlockData(bd);
-	bd.fPtr = outputPtr;
-	// This block's start (offset) is after all other blocks written so far.
-	bd.fOffset = totalSize;
-	bd.fSize = mySize;
-	bd.fDataType = AliHLTMUONConstants::TriggerRecordsBlockDataType();
-	bd.fSpecification = blocks[n].fSpecification;
-	outputBlocks.push_back(bd);
-	
-	// Increase the total amount of data written so far to our output memory
-	totalSize += mySize;
-    }
-    // Finally we set the total size of output memory we consumed.
-    size = totalSize;
-
-    return 0;
+	// Finally we set the total size of output memory we consumed.
+	size = totalSize;
+	return 0;
 }
 
 
