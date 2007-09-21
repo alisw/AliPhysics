@@ -4,39 +4,66 @@
 #ifndef ROOT_TKDTree
 #include "TKDTree.h"
 #endif
+#ifndef ROOT_TVectorD
+#include "TVectorD.h"
+#endif
+#ifndef ROOT_TMatrixD
+#include "TMatrixD.h"
+#endif
+
 
 class TTree;
 class TLinearFitter;
 class TKDInterpolator : public TKDTreeIF
 {
 public:
+	struct TKDNodeInfo
+	{
+
+		ClassDef(TKDNodeInfo, 1) // node info for interpolator
+	};
+public:
 	TKDInterpolator();
-	TKDInterpolator(TTree *t, const Char_t *var, const Char_t *cut = 0, UInt_t bsize = 100);
+	TKDInterpolator(TTree *t, const Char_t *var, const Char_t *cut = 0, UInt_t bsize = 100, Long64_t nentries = 1000000000, Long64_t firstentry = 0);
 	TKDInterpolator(Int_t npoints, Int_t ndim, UInt_t bsize, Float_t **data);
 	~TKDInterpolator();
 
-	        TKDTreeIF* GetHelper() {return fKDhelper;}
+	        Double_t   Eval(const Double_t *point, Double_t &result, Double_t &error);
 	inline Bool_t     GetCOGPoint(Int_t node, Float_t *coord, Float_t &val, Float_t &error) const ;
 	inline Bool_t     GetDataPoint(Int_t n, Float_t *p) const;
-	        Double_t   Eval(const Double_t *point, Int_t npoints = 12);
-	        void       DrawNodes(UInt_t ax1 = 0, UInt_t ax2 = 1, Int_t depth = -1);
+	        TKDTreeIF* GetHelper() {return fKDhelper;}
+	inline Bool_t     GetIntInterpolation() const {return fStatus&1;}
+	inline Bool_t     GetSetStore() const {return fStatus&2;}
+	inline Bool_t     GetUseWeights() const {return fStatus&4;}
+					
+					void       DrawNodes(UInt_t ax1 = 0, UInt_t ax2 = 1, Int_t depth = -1);
 	        void       DrawNode(Int_t tnode, UInt_t ax1 = 0, UInt_t ax2 = 1);
-
+	        void       GetStatus();
+	        void       SetIntInterpolation(const Bool_t on = kTRUE);
+	        void       SetSetStore(const Bool_t on = kTRUE);
+	        void       SetUseWeights(const Bool_t on = kTRUE);
+	
 private:
 	TKDInterpolator(const TKDInterpolator &);
 	TKDInterpolator& operator=(const TKDInterpolator &);	
 	        void       Build();
-	
+	        Double_t   CookPDF(const Double_t *point, const Int_t node, Double_t &result, Double_t &error);
+					
 protected:
 	Int_t     fNTNodes;        //Number of evaluation data points
-	Float_t   **fRefPoints;    //[fNDim][fNTNodes]
+	Float_t   **fRefPoints;    //[fNDim]
 	Float_t   *fRefValues;     //[fNTNodes]
+	TMatrixD  *fCov;           //[fNTNodes] cov matrix array for nodes
+	TVectorD  *fPar;           //[fNTNodes] parameters array for nodes
+	Bool_t    *fPDFstatus;     //[fNTNodes] status bit for node's PDF
 
 private:
-	Int_t			fDepth;        //! depth of the KD Tree structure used
-	Double_t	*fTmpPoint;    //! temporary storage for one data point
-	TKDTreeIF *fKDhelper;    //! kNN finder
-	TLinearFitter *fFitter;  //! linear fitter	
+	UChar_t   fStatus;         // status of the interpolator
+	Int_t     fLambda;         // number of parameters in polynom
+	Int_t			fDepth;          //! depth of the KD Tree structure used
+	Double_t	*fBuffer;        //! working space [2*fLambda]
+	TKDTreeIF *fKDhelper;      //! kNN finder
+	TLinearFitter *fFitter;    //! linear fitter	
 
 	ClassDef(TKDInterpolator, 1)   // data interpolator based on KD tree
 };
@@ -48,7 +75,7 @@ Bool_t	TKDInterpolator::GetCOGPoint(Int_t node, Float_t *coord, Float_t &val, Fl
 
 	for(int idim=0; idim<fNDim; idim++) coord[idim] = fRefPoints[idim][node];
 	val   = fRefValues[node];
-	error = fRefValues[node]; // to be implemented
+	error = fRefValues[node]/TMath::Sqrt(fBucketSize);
 	return kTRUE;
 }
 
