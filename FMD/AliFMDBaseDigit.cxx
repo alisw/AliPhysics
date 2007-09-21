@@ -65,7 +65,7 @@
 
 #include "AliFMDBaseDigit.h"	// ALIFMDDIGIT_H
 #include "Riostream.h"		// ROOT_Riostream
-#include <TString.h>
+// #include <TString.h>
 // #include <AliLog.h>
 #include "AliFMDDebug.h" // Better debug macros
 

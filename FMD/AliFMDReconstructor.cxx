@@ -206,6 +206,9 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
 void 
 AliFMDReconstructor::GetVertex() const
 {
+  // Return the vertex to use. 
+  // This is obtained from the ESD object. 
+  // If not found, a warning is issued.
   fVertexType    = kNoVertex;
   fCurrentVertex = 0;
   if (fESD) {

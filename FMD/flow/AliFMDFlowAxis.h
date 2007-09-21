@@ -1,11 +1,34 @@
 // -*- mode: C++ -*-
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Declaration of an Axis in a Flow "histogram" */
-#ifndef FLOW_AXIS_H
-#define FLOW_AXIS_H
+#ifndef ALIFMDFLOWAXIS_H
+#define ALIFMDFLOWAXIS_H
 #ifndef ROOT_TObject
 # include <TObject.h>
 #endif
+//  Axis object for the 
+//  AliFMDFlowBinned1D and 
+//  AliFMDFlowBinned2D 
+//  "histograms" of  objects 
+//  of class AliFMDFlowBin. 
+//
 
 //______________________________________________________
 /** @class AliFMDFlowAxis flow/AliFMDFlowAxis.h <flow/AliFMDFlowAxis.h>
@@ -61,9 +84,9 @@ public:
   void Print(Option_t* option="") const; //*MENU*
 protected:
   /** Number of bins */ 
-  UShort_t fN;
-  /** Borders of the bins */ 
-  Double_t* fBins; //[fN]
+  UShort_t fN; // Number of bins
+  /** Borders of the bins */  
+  Double_t* fBins; //[fN+1] Bin boundaries
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowAxis,1);
 };  

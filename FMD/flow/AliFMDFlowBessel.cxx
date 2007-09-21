@@ -1,3 +1,20 @@
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Implementation of Bessel functions */
 #include "flow/AliFMDFlowBessel.h"
@@ -15,12 +32,17 @@ namespace
       @param n Order 
       @param x Argument 
       @return @f$ envj_n(x)@f$ */
-  Double_t Envj(UInt_t n, Double_t x) { 
+  Double_t Envj(UInt_t n, Double_t x) 
+  { 
+    // Compute 
+    //   1/2 log10(6.28*n) - n log19(1.36 * x / n)
     return .5 * log10(6.28 * n) - n * log10(1.36 * x / n);
   }
   //__________________________________________________________________
   /** Utility function to do loop in Msta1 and Msta2 */ 
-  UInt_t MstaLoop(Int_t n0, Double_t a0, Float_t mp) {
+  UInt_t MstaLoop(Int_t n0, Double_t a0, Float_t mp) 
+  {
+    // Utility function to do loop in Msta1 and Msta2
     Double_t f0 = Envj(n0, a0) - mp;
     Int_t    n1 = n0 + 5;
     Double_t f1 = Envj(n1, a0) - mp;
@@ -42,19 +64,25 @@ namespace
       @param x   Argument to @f$ J_n(x)@f$ 
       @param mp  Value of magnitude @f$ mp@f$ 
       @return The starting point */
-  UInt_t Msta1(Double_t x, UInt_t mp) { 
+  UInt_t Msta1(Double_t x, UInt_t mp) 
+  { 
+    // Determine the starting point for backward recurrence such that
+    // the magnitude of J_n(x) at that point is about 10^{-mp}
     Double_t a0 = fabs(x);
     Int_t    n0 = Int_t(1.1 * a0) + 1;
     return MstaLoop(n0, a0, mp);
   }
   //__________________________________________________________________
   /** Determine the starting point for backward recurrence such that
-      all @f$ J_n(x)@f$ has @a mp significant digits.
+      all @f$J_n(x)@f$ has @a mp significant digits.
       @param x   Argument to @f$ J_n(x)@f$ 
       @param n   Order of @f$ J_n@f$
       @param mp  Number of significant digits 
       @reutnr starting point */
-  UInt_t Msta2(Double_t x, Int_t n, Int_t mp) { 
+  UInt_t Msta2(Double_t x, Int_t n, Int_t mp) 
+  { 
+    // Determine the starting point for backward recurrence such that 
+    // all J_n(x) has mp significant digits. 
     Double_t a0  = fabs(x);
     Double_t hmp = 0.5 * mp;
     Double_t ejn = Envj(n, a0);
@@ -73,8 +101,14 @@ namespace
 }
 //____________________________________________________________________
 void 
-AliFMDFlowBessel::I01(Double_t x, Double_t& bi0, Double_t& di0, Double_t& bi1, Double_t& di1)
+AliFMDFlowBessel::I01(Double_t x, Double_t& bi0, Double_t& di0, 
+		      Double_t& bi1, Double_t& di1)
 {
+  // Compute the modified Bessel functions 
+  // 
+  //   I_0(x) = \sum_{k=1}^\infty (x^2/4)^k}/(k!)^2
+  // 
+  // and I_1(x), and their first derivatives  
   Double_t       x2 =  x * x;
   if (x == 0) { 
     bi0 = 1;
@@ -136,6 +170,8 @@ AliFMDFlowBessel::I01(Double_t x, Double_t& bi0, Double_t& di0, Double_t& bi1, D
 UInt_t 
 AliFMDFlowBessel::Ihalf(Int_t n, Double_t x, Double_t* bi, Double_t* di) 
 {
+  // Compute the modified Bessel functions I_{n/2}(x) and their 
+  // derivatives.  
   typedef Double_t (*fun_t)(Double_t);
   Int_t   p = (n > 0 ? 1     : -1);
   fun_t s = (n > 0 ? &sinh : &cosh);
@@ -200,6 +236,10 @@ AliFMDFlowBessel::Ihalf(Int_t n, Double_t x, Double_t* bi, Double_t* di)
 UInt_t 
 AliFMDFlowBessel::Iwhole(UInt_t in, Double_t x, Double_t* bi, Double_t* di) 
 {
+  // Compute the modified Bessel functions I_n(x) and their
+  // derivatives.  Note, that I_{-n}(x) = I_n(x) and 
+  // dI_{-n}(x)/dx = dI_{n}(x)/dx so this function can be used 
+  // to evaluate I_n for all natural numbers  
   UInt_t mn = in;
   if (x < 1e-100) { 
     for (UInt_t k = 0; k <= in; k++) bi[k] = di[k]  = 0;
@@ -213,7 +253,7 @@ AliFMDFlowBessel::Iwhole(UInt_t in, Double_t x, Double_t* bi, Double_t* di)
 
   if (in <= 1) return 2;
     
-  if (x > 40 and Int_t(in) < Int_t(.25 * x)) { 
+  if (x > 40 && Int_t(in) < Int_t(.25 * x)) { 
     Double_t h0 = bi0;
     Double_t h1 = bi1;
     for (UInt_t k = 2; k <= in; k++) { 
@@ -247,8 +287,12 @@ AliFMDFlowBessel::Iwhole(UInt_t in, Double_t x, Double_t* bi, Double_t* di)
 
 //____________________________________________________________________
 UInt_t 
-AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x, Double_t* bi, Double_t* di)
+AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x, 
+		      Double_t* bi, Double_t* di)
 {
+  // Compute the modified Bessel functions I_{\nu}(x) and
+  // their derivatives for \nu = n_1, n_1+1, \ldots, n_2 for
+  // and integer n_1, n_2 or any half-integer n_1, n_2. 
   UInt_t  in1 = UInt_t(fabs(n1));
   UInt_t  in2 = UInt_t(fabs(n2));
   UInt_t  nt  = UInt_t(n2 - n1 + 1);
@@ -333,6 +377,11 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x, Double_t* bi, Double
 Double_t 
 AliFMDFlowBessel::I(Double_t n, Double_t x) 
 { 
+  // Compute the modified Bessel function of the first kind 
+  // 
+  //   I_n(x) = (x/2)^n \sum_{k=0}^\infty (x^2/4)^k / (k!\Gamma(n+k+1))
+  // 
+  // for arbirary integer order n 
   Double_t i[2], di[2];
   Inu(n, n, x, i, di);
   return i[0];
@@ -342,6 +391,12 @@ AliFMDFlowBessel::I(Double_t n, Double_t x)
 Double_t 
 AliFMDFlowBessel::DiffI(Double_t n, Double_t x) 
 { 
+  // Compute the derivative of the modified Bessel function of the
+  // first kind 
+  // 
+  //    dI_n(x)/dx = I_{n-1}(x) - n/x I_{n}(x)
+  // 
+  // for arbirary integer order n
   Double_t i[2], di[2];
   Inu(n, n, x, i, di);
   return di[0];

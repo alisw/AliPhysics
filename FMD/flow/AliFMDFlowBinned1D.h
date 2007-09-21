@@ -1,8 +1,33 @@
 // -*- mode: C++ -*-
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Declaration of a 1-dimensional Flow "histogram" */
-#ifndef FLOW_BINNED1D_H
-#define FLOW_BINNED1D_H
+//____________________________________________________________________ 
+//
+// A histogram of flow bins.  The axis can by anything
+// (pseudo-rapidity, transvers momentum) - there's no assumption on
+// what is the basis of the histogram.  The method Event can be used
+// to calculate everything in one go.   Alternatively, one can use the
+// methods AddToEventPlane and AddToHarmonic.  See also the example
+// TestFlow.C 
+#ifndef ALIFMDFLOWBINNED1D_H
+#define ALIFMDFLOWBINNED1D_H
 #include <flow/AliFMDFlowAxis.h>
 
 // Forward declaration 
@@ -19,13 +44,6 @@ class TBrowser;
 class AliFMDFlowBinned1D : public TObject
 {
 public:
-  /** Flags for print */
-  enum {
-    /** Show details */ 
-    details = 0x1, 
-    /** Show summary */ 
-    summary = 0x2
-  };
   /** Constructor 
       @param order    Order of the harmonic
       @param nxbins   Number of X bins.
@@ -91,9 +109,9 @@ public:
   void Browse(TBrowser* b);
 protected:
   /** X axis */ 
-  AliFMDFlowAxis fXAxis;
+  AliFMDFlowAxis fXAxis; // Axis 
   /** Array of the flow objects */ 
-  AliFMDFlowBin** fBins;
+  AliFMDFlowBin** fBins; // Bins 
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowBinned1D,1);
 };

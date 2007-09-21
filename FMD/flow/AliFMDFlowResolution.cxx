@@ -1,5 +1,30 @@
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Implementation of an Resolution class */
+//____________________________________________________________________
+// 
+// Calculate the event plane resolution. 
+// Input is the observed phis. 
+// There's a number of implementations of this. 
+// One is based on a naive interpretation of the Voloshin paper
+// Another is taken from aliroot/PWG2/FLOW 
+// An finally one is based on Ollitraut's article.
 #include "flow/AliFMDFlowResolution.h"
 #include "flow/AliFMDFlowUtil.h"
 #include "flow/AliFMDFlowBessel.h"
@@ -10,9 +35,34 @@
 //#include <cmath>
 
 //====================================================================
+AliFMDFlowResolution::AliFMDFlowResolution(const AliFMDFlowResolution& o)
+  : AliFMDFlowStat(o), 
+    fOrder(o.fOrder)
+{
+  // Copy constructor 
+  // Parameters: 
+  //   o   Object to copy from. 
+}
+//____________________________________________________________________
+AliFMDFlowResolution&
+AliFMDFlowResolution::operator=(const AliFMDFlowResolution& o)
+{
+  // Assignment operator 
+  // Parameter: 
+  //   o Object to assign from
+  // 
+  AliFMDFlowStat::operator=(o);
+  fOrder = o.fOrder;
+  return *this;
+}
+//____________________________________________________________________
 void 
 AliFMDFlowResolution::Add(Double_t psiA, Double_t psiB) 
 { 
+  // add data point 
+  // Parameters: 
+  //  psiA   A sub-event plane angle Psi_A in [0,2pi]
+  //  psiB   B sub-event plane angle Psi_B in [0,2pi]
   Double_t diff    = NormalizeAngle(fOrder * (psiA - psiB));
   Double_t contrib = cos(diff);
   AliFMDFlowStat::Add(contrib);
@@ -22,6 +72,9 @@ AliFMDFlowResolution::Add(Double_t psiA, Double_t psiB)
 Double_t 
 AliFMDFlowResolution::Correction(UShort_t k) const 
 { 
+  // Get the correction for harmonic strength of order @a k 
+  //   k  The harminic strenght order to get the correction for
+  // Returns <cos(n(psi - psi_R))>
   Double_t e;
   return Correction(k, e); 
 }
@@ -30,6 +83,11 @@ AliFMDFlowResolution::Correction(UShort_t k) const
 Double_t 
 AliFMDFlowResolution::Correction(UShort_t, Double_t& e2) const 
 { 
+  // Get the correction for harmonic strength of order k 
+  // Parameters: 
+  //  k  The harminic strenght order to get the correction for
+  //  e2 The square error on the correction 
+  // Returns <cos(n(psi - psi_R))>
   e2 = fSqVar / fN;
   return sqrt(2) * sqrt(fabs(fAverage));
 }
@@ -38,6 +96,9 @@ AliFMDFlowResolution::Correction(UShort_t, Double_t& e2) const
 void
 AliFMDFlowResolution::Draw(Option_t* option) 
 {
+  // Draw this corrrection function 
+  // Parameters: 
+  //   option   String of options. Passed to TGraph::Draw
   TGraph* g = new TGraph(100);
   for (UShort_t i = 0; i < g->GetN(); i++) { 
     Double_t x = -1. + 2. / 100 * i;
@@ -57,6 +118,11 @@ AliFMDFlowResolution::Draw(Option_t* option)
 Double_t 
 AliFMDFlowResolutionStar::Correction(UShort_t k, Double_t& e2) const 
 { 
+  // Get the correction for harmonic strength of order k 
+  // Parameters: 
+  //  k  The harminic strenght order to get the correction for
+  //  e2 The square error on the correction 
+  // Returns <cos(n(psi - psi_R))>
   if (k > 4) return 0;
   Double_t delta = 0;
   Double_t chi   = Chi(fAverage, k, delta);
@@ -69,6 +135,9 @@ AliFMDFlowResolutionStar::Correction(UShort_t k, Double_t& e2) const
 Double_t 
 AliFMDFlowResolutionStar::Correction(UShort_t k) const 
 { 
+  // Get the correction for harmonic strength of order @a k 
+  //   k  The harminic strenght order to get the correction for
+  // Returns <cos(n(psi - psi_R))>
   Double_t e;
   return Correction(k, e); 
 }
@@ -77,6 +146,13 @@ Double_t
 AliFMDFlowResolutionStar::Chi(Double_t res, UShort_t k, 
 			      Double_t& delta) const 
 {
+  // Get chi
+  // Parameters:
+  //    res    First shot at the resolution. 
+  //    k      Order 
+  //    delta  On return, the last step size in \chi -
+  //           which is taken to be delta chi  
+  // Returns chi
   delta          = 1;
   Double_t chi   = 2;
   Double_t dr    = 0;
@@ -142,6 +218,11 @@ AliFMDFlowResolutionStar::Res(Double_t chi, UShort_t k, Double_t& dr) const
 void
 AliFMDFlowResolutionStar::Draw(Option_t* option) 
 {
+  // Draw this corrrection function 
+  // Parameters: 
+  //   option   String of options. Passed to TGraph::Draw
+  // Options: 
+  //   chi      Draw chi rather than the resolution. 
   TString opt(option);
   opt.ToLower();
   Bool_t chi = opt.Contains("chi");
@@ -186,17 +267,43 @@ AliFMDFlowResolutionStar::Draw(Option_t* option)
 }
 
 //====================================================================
+AliFMDFlowResolutionTDR::AliFMDFlowResolutionTDR(const 
+						 AliFMDFlowResolutionTDR& o)
+  : AliFMDFlowResolution(o), 
+    fLarge(o.fLarge)
+{}
+//____________________________________________________________________
+AliFMDFlowResolutionTDR&
+AliFMDFlowResolutionTDR::operator=(const AliFMDFlowResolutionTDR& o)
+{
+  // Assignment operator 
+  // Parameter: 
+  //   o Object to assign from
+  // 
+  AliFMDFlowResolution::operator=(o);
+  fLarge = o.fLarge;
+  return *this;
+}
+//____________________________________________________________________
 void 
 AliFMDFlowResolutionTDR::Clear(Option_t*) 
 {
+  // Clear internal variables. 
+  // Parameters: 
+  //   options   Ignored
   fN = 0;
   fLarge = 0;
 }
 //____________________________________________________________________
 void 
-AliFMDFlowResolutionTDR::Add(Double_t psi_a, Double_t psi_b)
+AliFMDFlowResolutionTDR::Add(Double_t psiA, Double_t psiB)
 { 
-  Double_t a = fabs(psi_a - psi_b);
+  // add data point.  If |psi_a - psi_b| >= pi/2 increase large
+  // counter. 
+  // Parameters: 
+  //  psiA   A sub-event plane angle Psi_A in [0,2pi]
+  //  psiB   B sub-event plane angle Psi_B in [0,2pi]
+  Double_t a = fabs(psiA - psiB);
   if (a >= .5 * M_PI) fLarge++;
   fN++;
 }
@@ -236,6 +343,40 @@ Double_t
 AliFMDFlowResolutionTDR::Res(UShort_t k, Double_t y, Double_t echi2, 
 			     Double_t& e2) const
 {
+  // The resolution function is 
+  // 
+  //          sqrt(pi) x exp(-x/4) (f1(x^2/4) + f2(x^2/4))
+  //   r(x) = --------------------------------------------
+  //                          2 sqrt(2) 
+  // 
+  //        
+  //        = c x (f1(y) - f2(y))
+  //
+  // where f1 is the modified Bessel function first kind I_{(k-1)/2}, 
+  // and f2 is the modified Bessel function of the first kind
+  // I_{(k+1)/2}, and 
+  // 
+  //          sqrt(pi) exp(-x^2/4) 
+  //      c = --------------------,   y = x^2/4
+  //              2 sqrt(2)
+  // 
+  // The derivative of the resolution function is 
+  //
+  //            c 
+  //    r'(y) = - (4 sqrt(y) (f1'(y) - f2'(y)) - (4 y - 2)(f1(y) - f2(y)))
+  //            2
+  // 
+  //            c                                    r(y)   
+  //          = - (4 sqrt(y) (f1'(y) - f2'(y))) + --------- - sqrt(y) r(y)
+  //		2             			  2 sqrt(y)       
+  // 
+  // Since dI_n(x)/dx = I_(n-1)(x) - n / x I_n(x), and substituting 
+  // f3(y) = I_((k-3)/2)(y) 
+  // 
+  //            c  
+  //    r'(y) = - ((4 - 2 k) f1(y) - (4 y + 2 k) f2(y) + 4 y f3(y))
+  //            2   
+  // 
   // y = chi^2 / 2
   Double_t chi   = sqrt(2 * y);
   Double_t c     = sqrt(M_PI) * exp(-y) / 2;
@@ -254,6 +395,10 @@ AliFMDFlowResolutionTDR::Res(UShort_t k, Double_t y, Double_t echi2,
 Double_t 
 AliFMDFlowResolutionTDR::Correction(UShort_t k) const 
 { 
+  // Get the correction for harmonic strength of order k 
+  // Parameters: 
+  //  k  The harminic strenght order to get the correction for
+  // Returns <cos(n(psi - psi_R))>
   Double_t e;
   return Correction(k, e); 
 }
@@ -351,6 +496,11 @@ AliFMDFlowResolutionTDR::Chi2Over2(Double_t r, Double_t& e2) const
 void
 AliFMDFlowResolutionTDR::Draw(Option_t* option) 
 {
+  // Draw this corrrection function 
+  // Parameters: 
+  //   option   String of options. Passed to TGraph::Draw
+  // Options: 
+  //   chi      Draw chi rather than the resolution. 
   TString opt(option);
   opt.ToLower();
   Bool_t chi = opt.Contains("chi");

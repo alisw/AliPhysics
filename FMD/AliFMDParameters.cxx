@@ -288,24 +288,24 @@ AliFMDParameters::Print(Option_t* option) const
     size_t   i    = opt.Index("fmd",TString::kIgnoreCase);
     size_t   j    = opt.Index("]",TString::kIgnoreCase);
     enum {
-      read_det, 
-      read_ring, 
-      read_lbrack,
-      read_sector,
-      read_comma,
-      read_strip,
-      read_rbrack, 
-      end
-    } state = read_det;
+      kReadDet, 
+      kReadRing, 
+      kReadLbrack,
+      kReadSector,
+      kReadComma,
+      kReadStrip,
+      kReadRbrack, 
+      kEnd
+    } state = kReadDet;
     std::stringstream s(opt(i+4, j-i-3).Data());
-    while (state != end) {
+    while (state != kEnd) {
       Char_t tmp = s.peek();
       if (tmp == ' ' || tmp == '\t') {
 	s.get();
 	continue;
       }
       switch (state) {
-      case read_det: { // First, try to read the detector 
+      case kReadDet: { // First, try to kRead the detector 
 	if (tmp == '*') s.get();
 	else { 
 	  UShort_t det;
@@ -315,23 +315,23 @@ AliFMDParameters::Print(Option_t* option) const
 	    ds[1] = 0;
 	  }
 	}
-	state = (s.bad() ? end : read_ring);
+	state = (s.bad() ? kEnd : kReadRing);
       } break;
-      case read_ring: { // Then try to read the ring;
+      case kReadRing: { // Then try to read the ring;
 	Char_t ring;
 	s >> ring;
 	if (ring != '*' && !s.bad()) {
 	  rs[0] = ring;
 	  rs[1] = '\0';
 	}
-	state = (s.bad() ? end : read_lbrack);
+	state = (s.bad() ? kEnd : kReadLbrack);
       } break;
-      case read_lbrack: { // Try to read a left bracket 
+      case kReadLbrack: { // Try to read a left bracket 
 	Char_t lbrack;
 	s >> lbrack;
-	state = (s.bad() ? end : read_sector);
+	state = (s.bad() ? kEnd : kReadSector);
       } break;
-      case read_sector: { // Try to read a sector 
+      case kReadSector: { // Try to read a sector 
 	if (tmp == '*') s.get();
 	else {
 	  UShort_t sec;
@@ -341,14 +341,14 @@ AliFMDParameters::Print(Option_t* option) const
 	    maxSector = sec + 1;
 	  }
 	}
-	state = (s.bad() ? end : read_comma);
+	state = (s.bad() ? kEnd : kReadComma);
       } break;
-      case read_comma: { // Try to read a left bracket 
+      case kReadComma: { // Try to read a left bracket 
 	Char_t comma;
 	s >> comma;
-	state = (s.bad() ? end : read_strip);
+	state = (s.bad() ? kEnd : kReadStrip);
       } break;
-      case read_strip: { // Try to read a strip 
+      case kReadStrip: { // Try to read a strip 
 	if (tmp == '*') s.get();
 	else {
 	  UShort_t str;
@@ -358,14 +358,14 @@ AliFMDParameters::Print(Option_t* option) const
 	    maxStrip = str + 1;
 	  }
 	}
-	state = (s.bad() ? end : read_rbrack);
+	state = (s.bad() ? kEnd : kReadRbrack);
       } break;
-      case read_rbrack: { // Try to read a left bracket 
+      case kReadRbrack: { // Try to read a left bracket 
 	Char_t rbrack;
 	s >> rbrack;
-	state = end;
+	state = kEnd;
       } break;
-      case end: 
+      case kEnd: 
 	break;
       }
     }

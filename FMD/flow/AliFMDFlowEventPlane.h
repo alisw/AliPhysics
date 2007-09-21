@@ -1,8 +1,36 @@
 // -*- C++ -*- 
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Declaration of an EventPlane class */
-#ifndef FLOW_EVENTPLANE_H
-#define FLOW_EVENTPLANE_H
+//____________________________________________________________________
+//
+// Class to determine the event plane 
+// 
+// The event plane is calculated as 
+// 
+//    Psi_n = 1/n * atan((sum_i(w_i sin(n phi_i)))
+//                        sum_i(w_i cos(n phi_i))))
+//
+// where i runs over all observations of phi in an event, and 
+// w_i is the weight of the ith observation of phi
+#ifndef ALIFMDFLOWEVENTPLANE_H
+#define ALIFMDFLOWEVENTPLANE_H
 #include <TObject.h>
 
 //______________________________________________________
@@ -25,12 +53,19 @@ class AliFMDFlowEventPlane : public TObject
 public:
   /** Constructor 
       @param m Harmonic number */
-  AliFMDFlowEventPlane(UShort_t m) 
+  AliFMDFlowEventPlane(UShort_t m=0) 
     : fSumSinMPhi(0), 
       fSumCosMPhi(0),
       fOrder(m),
       fCache(0)
   { Clear(); }
+  /** Copy constructor. 
+      @param o Object to copy from */ 
+  AliFMDFlowEventPlane(const AliFMDFlowEventPlane& o);
+  /** Assignement operator. 
+      @param o Object to copy from 
+      @return Reference to this */
+  AliFMDFlowEventPlane& operator=(const AliFMDFlowEventPlane& o);
   /** Destructor */
   ~AliFMDFlowEventPlane() {} 
   /** Clear it */
@@ -61,13 +96,13 @@ protected:
       @return @f$ \Psi@f$ */
   Double_t DoPsi(Double_t sumsin, Double_t sumcos) const;
   /** @f$ \sum_i w_i \sin(k \varphi_i)@f$ */
-  Double_t fSumSinMPhi;
+  Double_t fSumSinMPhi; // Sum of contributions 
   /** @f$ \sum_i w_i \cos(k \varphi_i)@f$ */
-  Double_t fSumCosMPhi;
+  Double_t fSumCosMPhi; // Sum of contributions 
   /** Order */
-  UShort_t fOrder;
+  UShort_t fOrder; // Order 
   /** Cache of Psi */
-  mutable Double_t fCache;
+  mutable Double_t fCache; // Cache of calculated value 
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowEventPlane,1); 
 };

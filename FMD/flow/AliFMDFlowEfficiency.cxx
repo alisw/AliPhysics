@@ -1,3 +1,20 @@
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 #include <flow/AliFMDFlowEfficiency.h>
 #include <cmath>
 #include <iostream>
@@ -109,17 +126,17 @@ AliFMDFlowEfficiency::SearchUpper(Double_t low, Int_t k, Int_t n, Double_t c)
   Double_t integral = BetaAB(low, 1, k, n);
   if (integral == c) return 1; // lucky -- this is the solution
   if (integral <  c) return -1;// no solution exists
-  Double_t too_high = 1;         // upper edge estimate
-  Double_t too_low  = low;
-  Double_t test     = 0;
+  Double_t tooHigh = 1;         // upper edge estimate
+  Double_t tooLow  = low;
+  Double_t test    = 0;
 
   // Use a bracket-and-bisect search.  Loop 20 times, to end up with a
   // root guaranteed accurate to better than 0.1%.  
   for (UInt_t i = 0; i < 20; i++) { 
-    test     = 0.5 * (too_low + too_high);
+    test     = 0.5 * (tooLow + tooHigh);
     integral = BetaAB(low, test, k, n);
-    if (integral > c) too_high = test;
-    else              too_low  = test;
+    if (integral > c) tooHigh = test;
+    else              tooLow  = test;
   }
   return test;
 }
@@ -130,17 +147,17 @@ AliFMDFlowEfficiency::SearchLower(Double_t high, Int_t k, Int_t n, Double_t c)
   Double_t integral = BetaAB(0, high, k, n);
   if (integral == c) return 0; // lucky -- this is the solution
   if (integral <  c) return -1;// no solution exists
-  Double_t too_low  = 0;         // lower edge estimate
-  Double_t too_high = high;
+  Double_t tooLow  = 0;         // lower edge estimate
+  Double_t tooHigh = high;
   Double_t test     = 0;
 
   // Use a bracket-and-bisect search.  Loop 20 times, to end up with a
   // root guaranteed accurate to better than 0.1%.  
   for (UInt_t i = 0; i < 20; i++) { 
-    test     = 0.5 * (too_high + too_low);
+    test     = 0.5 * (tooHigh + tooLow);
     integral = BetaAB(test, high, k, n);
-    if (integral > c) too_low  = test;
-    else              too_high = test;
+    if (integral > c) tooLow  = test;
+    else              tooHigh = test;
   }
   return test;
 }
@@ -151,9 +168,9 @@ AliFMDFlowEfficiency::Brent(Double_t ax, Double_t bx, Double_t cx,
 			    Double_t& xmin, Int_t k, Int_t n, Double_t c, 
 			    Double_t tol)
 {
-  const Int_t    itmax = 100;
-  const Double_t gold  = 0.3819660;
-  const Double_t eps   = 1e-10;
+  const Int_t    kItMax = 100;
+  const Double_t kGold  = 0.3819660;
+  const Double_t kEps   = 1e-10;
   
   Int_t iter;
   Double_t a  = (ax < cx ? ax : cx);
@@ -167,9 +184,9 @@ AliFMDFlowEfficiency::Brent(Double_t ax, Double_t bx, Double_t cx,
   Double_t fv = fw;
   Double_t fx = fv;
   
-  for (iter = 1; iter <= itmax; iter++) { 
+  for (iter = 1; iter <= kItMax; iter++) { 
     Double_t xm   = .5 * (a + b);
-    Double_t tol1 = tol * fabs(x) + eps;
+    Double_t tol1 = tol * fabs(x) + kEps;
     Double_t tol2 = 2 * tol1;
     if (fabs(x - xm) < (tol2 - .5 * (b-a))) {
       xmin = x;
@@ -188,7 +205,7 @@ AliFMDFlowEfficiency::Brent(Double_t ax, Double_t bx, Double_t cx,
 	  p <= q * (a - x)            || 
 	  p >= q * (b - x)) {
 	e = (x > xm ? a - x : b - x);
-	d = gold * e;
+	d = kGold * e;
       }
       else {
 	d        = p / q;
@@ -199,7 +216,7 @@ AliFMDFlowEfficiency::Brent(Double_t ax, Double_t bx, Double_t cx,
     }
     else { 
       e = (x >= xm ? a - x : b - x);
-      d = gold * e;
+      d = kGold * e;
     }
     Double_t u  = (fabs(d) >= tol1 ? x + d : x + sign(tol1, d));
     Double_t fu = Length(u, k, n, c);

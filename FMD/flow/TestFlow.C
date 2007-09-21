@@ -1,3 +1,38 @@
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
+//___________________________________________________________________
+/** @file 
+    @brief Example 
+    
+    Compile and run like 
+    @verbatim 
+    Root> gSystem->Load("libFMDflow.so");
+    Root> gSystem->AddIncludePath("-I$ALICE_ROOT/FMD")
+    Root> .x FMD/flow/TestFlow.C 
+    @endverbatim 
+
+    or 
+    @verbatim 
+    $ g++ `root-config --cflags --libs` -I$ALICE_ROOT/include \
+       -I$ALICE_ROOT/FMD $ALICE_ROOT/FMD/flow/TestFlow.C -o testflow
+    $ ./testflow 
+    @endverbatim 
+*/
 #include <FMD/flow/AliFMDFlowBinned1D.h>
 #include <FMD/flow/AliFMDFlowTrue.h>
 #include <FMD/flow/AliFMDFlowUtil.h>
@@ -12,13 +47,22 @@
 #include <TStyle.h>
 
 //____________________________________________________________________
+/** Generate events */
 struct Generator 
 {
+  /** Constructor 
+      @param psi Possibly fixed event plane (if <0 -> random)
+      @param v1  value of v1 
+      @param v2  value of v2 
+      @param min Minimum number of observations
+      @param max Maximum number of observations */
   Generator(Double_t psi=-1, 
 	    Double_t v1=.05,  Double_t v2=.05, 
 	    UInt_t   min=100, UInt_t   max=1000) 
     : fPsi(psi), fV1(v1), fV2(v2), fMin(min), fMax(max) 
   {}
+  /** Prepare for the next event. 
+      @return Number of observations */
   UInt_t Prepare() 
   {
     // Generate a uniform random direction 
@@ -27,6 +71,7 @@ struct Generator
     else           fPsiR = gRandom->Uniform(0, 2 * TMath::Pi());
     return unsigned(gRandom->Uniform(fMin, fMax));
   }
+  /** Create an observation */
   Double_t operator()() 
   {
     // Generate a uniform random direction 
@@ -37,6 +82,7 @@ struct Generator
     phi           += dphi;
     return phi;
   }
+  /** Get the event plane */
   Double_t Psi() const { return fPsiR; }
   Double_t fPsi;
   Double_t fPsiR;
@@ -47,6 +93,7 @@ struct Generator
   UInt_t   fN;
 };
 
+/** Run test program */
 void
 TestFlow(UInt_t n_events=100, Int_t seg=-1, UInt_t n_max=20000)
 {
@@ -118,7 +165,7 @@ TestFlow(UInt_t n_events=100, Int_t seg=-1, UInt_t n_max=20000)
 
 #ifndef __CINT__
 #include <TApplication.h>
-
+/** Entry point for test program */
 int
 main()
 {

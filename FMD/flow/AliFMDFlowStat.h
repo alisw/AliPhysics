@@ -1,6 +1,23 @@
 // -*- mode: C++ -*- 
-#ifndef FLOW_STAT_H
-#define FLOW_STAT_H
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
+#ifndef ALIFMDFLOWSTAT_H
+#define ALIFMDFLOWSTAT_H
 // #include <cmath>
 #include <TMath.h>
 #include <TObject.h>
@@ -35,6 +52,13 @@ class AliFMDFlowStat : public TObject
 public:
   /** Constructor */
   AliFMDFlowStat() : fAverage(0), fSqVar(0), fN(0) {}
+  /** Copy constructor 
+      @param o Object to copy from. */
+  AliFMDFlowStat(const AliFMDFlowStat& o);
+  /** Assuignement operator
+      @param o Object to assign from. 
+      @return Reference to this */
+  AliFMDFlowStat& operator=(const AliFMDFlowStat& o);
   /** Destructor */
   virtual ~AliFMDFlowStat() {}
   /** Reset */
@@ -47,17 +71,64 @@ public:
   Double_t SqVar() const { return fSqVar; } 
   /** Get the number of data points */
   ULong_t N() const { return fN; }
+  /**  Given the two partial sample of the same stocastic variable, of 
+       size @f$ n_1@f$ and @f$ n_2@f$, with averages @f$ m_1@f$ and
+       @f$ m2@f$, and square variances, @f$ s_1^2@f$ and @f$ s_2^2@f$,
+       calculate the full sample average and square variance: 
+       @f[ 
+       m = \frac{n_1 m_1 + n_2 m_2}{n_1 + n_2} 
+       @f] 
+       and 
+       @f[ 
+       s^2 = \frac{n_1 * s_1^2 + n_2 s_2^2}{n_1 + n_2} 
+             + \frac{n_1 n_2 (m_1 - m_2)^2}{(n_1 + n_2)^2}
+       @f]
+       @param o Other statistics object to add 
+       @return Reference to this */
+  AliFMDFlowStat& operator+=(const AliFMDFlowStat& o);
 protected:
   /** Average */
-  Double_t        fAverage;
+  Double_t        fAverage; // Running 
   /** Square variance */
-  Double_t        fSqVar;
+  Double_t        fSqVar; // Square variance 
   /** Number of data points */
-  ULong_t fN;
+  ULong_t fN; // Number of data points
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowStat,1);
 };
 
+//__________________________________________________________________
+inline 
+AliFMDFlowStat::AliFMDFlowStat(const AliFMDFlowStat& o)
+  : TObject(o), 
+    fAverage(o.fAverage), 
+    fSqVar(o.fSqVar), 
+    fN(o.fN)
+{}
+//__________________________________________________________________
+inline AliFMDFlowStat&
+AliFMDFlowStat::operator=(const AliFMDFlowStat& o)
+{
+  fAverage = o.fAverage;
+  fSqVar   = o.fSqVar;
+  fN       = o.fN;
+  return *this;
+}
+//__________________________________________________________________
+inline AliFMDFlowStat&
+AliFMDFlowStat::operator+=(const AliFMDFlowStat& o)
+{
+  if (fN + o.fN <= 0) return *this;
+  
+  Double_t m = (fN * o.fAverage + o.fN * o.fAverage)/(fN + o.fN);
+  Double_t s = ((fN * o.fSqVar + o.fN * o.fSqVar)/(fN + o.fN)
+		+ (TMath::Power(fAverage - o.fAverage, 2) * fN * o.fN) 
+		/ TMath::Power(fN + o.fN, 2));
+  fAverage = m;
+  fSqVar   = s;
+  fN       = fN + o.fN;
+  return *this;
+}
 //__________________________________________________________________
 inline void 
 AliFMDFlowStat::Clear(Option_t*) 

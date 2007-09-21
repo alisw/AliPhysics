@@ -322,6 +322,10 @@ AliFMDDetector::InitTransformations()
 void
 AliFMDDetector::SetAlignableVolumes() const
 {
+  // Set alignable volumes. 
+  // This will define the alignable volumes. 
+  // That is currently, the modules and the half-rings. 
+  
   AliFMDDebug(10, ("Making alignable volumes for FMD%d", fId));
   if (!gGeoManager) {
     AliFatal("No TGeoManager defined");

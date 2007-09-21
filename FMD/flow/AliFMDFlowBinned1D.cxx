@@ -1,5 +1,30 @@
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Implementation of a 1-dimensional Flow "histogram" */
+//____________________________________________________________________ 
+//
+// A histogram of flow bins.  The axis can by anything
+// (pseudo-rapidity, transvers momentum) - there's no assumption on
+// what is the basis of the histogram.  The method Event can be used
+// to calculate everything in one go.   Alternatively, one can use the
+// methods AddToEventPlane and AddToHarmonic.  See also the example
+// TestFlow.C 
 #include "flow/AliFMDFlowBinned1D.h"
 #include "flow/AliFMDFlowBin.h"
 #include <cmath>
@@ -18,6 +43,11 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(UShort_t order,
   : fXAxis(nxbins, xbins),
     fBins(0)
 {
+  // Constructor 
+  // Parameters: 
+  //   Order	Order 
+  //   nxbins   Number of bins 
+  //   xbins    Bin borders 
   UShort_t n = fXAxis.N();
   fBins   = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(order);
@@ -27,6 +57,10 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(UShort_t order,
 				       const AliFMDFlowAxis& xaxis)
   : fXAxis(xaxis)
 {
+  // Constructor 
+  // Parameters: 
+  //   Order	Order 
+  //   xaxis    X axis object
   UShort_t n = fXAxis.N();
   fBins   = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(order);
@@ -36,6 +70,9 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(const AliFMDFlowBinned1D& o)
   : TObject(o), 
     fXAxis(o.fXAxis)
 {
+  // Copy constructor 
+  // Parameters: 
+  //   o   Object to copy from 
   UShort_t n = fXAxis.N();
   fBins   = new AliFMDFlowBin*[n];
   for (UInt_t i = 0; i < n; i++) fBins[i]= new AliFMDFlowBin(*(o.fBins[i]));
@@ -44,6 +81,11 @@ AliFMDFlowBinned1D::AliFMDFlowBinned1D(const AliFMDFlowBinned1D& o)
 AliFMDFlowBinned1D&
 AliFMDFlowBinned1D::operator=(const AliFMDFlowBinned1D& o)
 {
+  // Assignment operator
+  // Parameters: 
+  //   o Object to assign from 
+  // 
+  // Returns reference to this object 
   if (fBins) { 
     for (UInt_t i = 0; i < fXAxis.N(); i++) delete fBins[i];
     delete [] fBins;
@@ -58,6 +100,9 @@ AliFMDFlowBinned1D::operator=(const AliFMDFlowBinned1D& o)
 //____________________________________________________________________
 AliFMDFlowBinned1D::~AliFMDFlowBinned1D()
 {
+  // Destructor 
+  // Parameters: 
+  //    none 
   if (fBins) { 
     for (UInt_t i = 0; i < fXAxis.N(); i++) delete fBins[i];
     delete [] fBins;
@@ -68,6 +113,11 @@ AliFMDFlowBinned1D::~AliFMDFlowBinned1D()
 AliFMDFlowBin* 
 AliFMDFlowBinned1D::GetBin(UShort_t i) const
 {
+  // Get the ith bin 
+  // Parameters: 
+  //    i  Bin number 
+  // 
+  // Return pointer to bin, or null. 
   if (i >= fXAxis.N()) return 0;
   return fBins[i];
 }
@@ -75,6 +125,11 @@ AliFMDFlowBinned1D::GetBin(UShort_t i) const
 AliFMDFlowBin* 
 AliFMDFlowBinned1D::GetBin(Double_t x) const
 {
+  // Get the bin that contains x
+  // Parameters: 
+  //    x  X axis value
+  // 
+  // Return pointer to bin, or null. 
   Int_t i = fXAxis.FindBin(x);
   if (i < 0) return 0;
   UShort_t j = i;
@@ -85,24 +140,42 @@ AliFMDFlowBinned1D::GetBin(Double_t x) const
 void 
 AliFMDFlowBinned1D::Begin()
 {
+  // Called at the beginning of an event
+  // Parameters: 
+  //   none
   for (UInt_t i = 0; i < fXAxis.N(); i++) fBins[i]->Begin();
 }
 //____________________________________________________________________
 void 
 AliFMDFlowBinned1D::End()
 {
+  // Called at the end of an event
+  // Parameters: 
+  //   none
   for (UInt_t i = 0; i < fXAxis.N(); i++) fBins[i]->End();
 }
 //____________________________________________________________________
 void 
 AliFMDFlowBinned1D::Finish()
 {
+  // Called at the end of an job
+  // Parameters: 
+  //   none
   for (UInt_t i = 0; i < fXAxis.N(); i++) fBins[i]->Finish();
 }
 //____________________________________________________________________
 Bool_t 
-AliFMDFlowBinned1D::AddToEventPlane(Double_t x, Double_t phi, Double_t w, Bool_t a)
+AliFMDFlowBinned1D::AddToEventPlane(Double_t x, Double_t phi, 
+				    Double_t w, Bool_t a)
 {
+  // Called to add a contribution to the event plane 
+  // Parameters:
+  //    x   Bin to fill into 
+  //    w   Weight
+  //    phi The angle phi in radians 
+  //    a   If true, add to sub-event A, otherwise sub-event B
+  // 
+  // Return false if x falls outside the defined range, true otherwise
   AliFMDFlowBin* bin = GetBin(x);
   if (!bin) return kFALSE;
   bin->AddToEventPlane(phi, w, a);
@@ -113,6 +186,12 @@ AliFMDFlowBinned1D::AddToEventPlane(Double_t x, Double_t phi, Double_t w, Bool_t
 Bool_t 
 AliFMDFlowBinned1D::AddToHarmonic(Double_t x, Double_t phi)
 {
+  // Called to add a contribution to the harmonic
+  // Parameters: 
+  //    x   Bin to fill into 
+  //    phi The angle phi in radians
+  // 
+  // Return false if x falls outside the defined range, true otherwise
   AliFMDFlowBin* bin = GetBin(x);
   if (!bin) return kFALSE;
   bin->AddToHarmonic(phi);
@@ -123,6 +202,12 @@ AliFMDFlowBinned1D::AddToHarmonic(Double_t x, Double_t phi)
 void 
 AliFMDFlowBinned1D::Event(Double_t* phis, Double_t* xs, Double_t* ws, ULong_t n)
 {
+  // Process a full event. 
+  // Parameters: 
+  //   phis   List of n phi=[0,2pi] angles 
+  //   xs     List of n x values. 
+  //   ws     Weights
+  //   n      Size of phis and xs
   Begin();
   for (UInt_t i = 0; i < n; i++) 
     AddToEventPlane(xs[i], phis[i], (ws ? ws[i] : 1), 
@@ -136,6 +221,7 @@ AliFMDFlowBinned1D::Event(Double_t* phis, Double_t* xs, Double_t* ws, ULong_t n)
 void 
 AliFMDFlowBinned1D::Browse(TBrowser* b)
 {
+  // Browse this object. 
   b->Add(&fXAxis, "xaxis");
   for (UInt_t i = 0; i < fXAxis.N(); i++) 
     b->Add(fBins[i], Form("bin_%03d", i));
@@ -145,13 +231,27 @@ AliFMDFlowBinned1D::Browse(TBrowser* b)
 void 
 AliFMDFlowBinned1D::Draw(Option_t* option)
 {
+  // Draw the distribution of the harmonics or the event plane
+  // resolution. 
+  // Parameters: 
+  //    option     String of options 
+  // 
+  // Options:
+  //    b          Draw bare averages of cos(n(phi-Psi))
+  //    n          Draw harmonic scaled by naive correction
+  //    s          Draw harmonic scaled by STAR correction 
+  //    t          Draw harmonic scaled by TDR correction 
+  //    r          Draw resolution rather than harmonic 
+  // 
+  // If more than one of b, n, s, or t is given, a 2D histogram is
+  // drawn. 
   TString opt(option);
   opt.ToLower();
   const char* names[] = { "Bare", "Naive", "STAR", "TDR" };
-  const AliFMDFlowBin::CorType types[] = { AliFMDFlowBin::none, 
-					   AliFMDFlowBin::naive, 
-					   AliFMDFlowBin::star, 
-					   AliFMDFlowBin::tdr };
+  const AliFMDFlowBin::CorType types[] = { AliFMDFlowBin::kNone, 
+					   AliFMDFlowBin::kNaive, 
+					   AliFMDFlowBin::kStar, 
+					   AliFMDFlowBin::kTdr };
   Bool_t meths[] = { opt.Contains("b"), 
 		     opt.Contains("n"),
 		     opt.Contains("s"), 
@@ -210,6 +310,14 @@ AliFMDFlowBinned1D::Draw(Option_t* option)
 void 
 AliFMDFlowBinned1D::Print(Option_t* option) const
 {
+  // Print information to standard output. 
+  // Parameters: 
+  //     option    String of options 
+  // 
+  // Options: 
+  //     d         Print details 
+  //     s         Print summary 
+  // 
   TString opt(option);
   opt.ToLower();
   Bool_t det = opt.Contains("d");
@@ -217,23 +325,23 @@ AliFMDFlowBinned1D::Print(Option_t* option) const
   if (det) { 
     for (UShort_t i = 0; i < fXAxis.N(); i++) { 
       Double_t x = fXAxis.BinCenter(i);
-      std::streamsize         old_p = std::cout.precision(3);
-      std::ios_base::fmtflags old_f = std::cout.setf(std::ios_base::fixed, 
+      std::streamsize         oldP = std::cout.precision(3);
+      std::ios_base::fmtflags oldF = std::cout.setf(std::ios_base::fixed, 
 						     std::ios_base::floatfield);
       std::cout << "x=" << std::setw(5) << x << std::endl;
       fBins[i]->Print();
-      std::cout.precision(old_p);
-      std::cout.setf(old_f, std::ios_base::floatfield);
+      std::cout.precision(oldP);
+      std::cout.setf(oldF, std::ios_base::floatfield);
     }
   }
   
   if (sum) { 
     UInt_t       nType = 4;
     const char*  names[] = { "Bare",    "Naive",    "STAR",    "TDR" };
-    AliFMDFlowBin::CorType types[] = { AliFMDFlowBin::none, 
-				       AliFMDFlowBin::naive, 
-				       AliFMDFlowBin::star, 
-				       AliFMDFlowBin::tdr };
+    AliFMDFlowBin::CorType types[] = { AliFMDFlowBin::kNone, 
+				       AliFMDFlowBin::kNaive, 
+				       AliFMDFlowBin::kStar, 
+				       AliFMDFlowBin::kTdr };
     std::cout << "    x";
     for (UInt_t i = 0; i < nType; i++) 
       std::cout << " | " << std::setw(6+6+5) << names[i];
@@ -242,9 +350,9 @@ AliFMDFlowBinned1D::Print(Option_t* option) const
       std::cout << "-+-" <<  std::setw(6+6+5) << "-";
     std::cout << std::setfill(' ') << std::endl;
     
-    std::streamsize         old_p = std::cout.precision(2);
-    std::ios_base::fmtflags old_f = std::cout.setf(std::ios_base::fixed, 
-						   std::ios_base::floatfield);
+    std::streamsize         oldP = std::cout.precision(2);
+    std::ios_base::fmtflags oldF = std::cout.setf(std::ios_base::fixed, 
+						  std::ios_base::floatfield);
     for (UShort_t i = 0; i < fXAxis.N(); i++) { 
       Double_t x = fXAxis.BinCenter(i);
       std::cout << std::setprecision(2) << std::setw(5) << x << std::flush;
@@ -257,8 +365,8 @@ AliFMDFlowBinned1D::Print(Option_t* option) const
       }
       std::cout << std::endl;
     }
-    std::cout.precision(old_p);
-    std::cout.setf(old_f, std::ios_base::floatfield);
+    std::cout.precision(oldP);
+    std::cout.setf(oldF, std::ios_base::floatfield);
   }
 }
 

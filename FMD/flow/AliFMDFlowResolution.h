@@ -1,8 +1,30 @@
 // -*- mode: C++ -*-
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Declaration of an Resolution class */
-#ifndef FLOW_RESOLUTION_H
-#define FLOW_RESOLUTION_H
+//____________________________________________________________________
+//
+// Calculate the event plane resolution. 
+// Input is the observed phis. 
+// There's a number of implementations of this. 
+#ifndef ALIFMDFLOWRESOLUTION_H
+#define ALIFMDFLOWRESOLUTION_H
 #include <flow/AliFMDFlowStat.h>
 
 //______________________________________________________
@@ -51,9 +73,15 @@ class AliFMDFlowResolution : public AliFMDFlowStat
 public:
   /** Constructor
       @param n Harmonic order */
-  AliFMDFlowResolution(UShort_t n) : fOrder(n) {}
+  AliFMDFlowResolution(UShort_t n=0) : fOrder(n) {}
   /** Destructor */
   virtual ~AliFMDFlowResolution() {}
+  /** Copy constructor 
+      @param o Object to copy from */ 
+  AliFMDFlowResolution(const AliFMDFlowResolution& o);
+  /** Assignment operator
+      @param o Object to copy from */ 
+  AliFMDFlowResolution& operator=(const AliFMDFlowResolution& o);
   /** add data point 
       @param psiA A sub-event plane angle @f$ \Psi_A \in[0,2\pi]@f$
       @param psiB B sub-event plane angle @f$ \Psi_B \in[0,2\pi]@f$ */
@@ -74,7 +102,7 @@ public:
   virtual void Draw(Option_t* option=""); //*MENU*
 protected:
   /** Order */
-  UShort_t fOrder;
+  UShort_t fOrder; // Order 
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowResolution,1);
 };
@@ -128,10 +156,9 @@ class AliFMDFlowResolutionStar : public AliFMDFlowResolution
 public:
   /** Constructor
       @param n Harmonic order */
-  AliFMDFlowResolutionStar(UShort_t n) 
-    : AliFMDFlowResolution(n) {}
+  AliFMDFlowResolutionStar(UShort_t n=0) : AliFMDFlowResolution(n) {}
   /** Destructor */
-  ~AliFMDFlowResolutionStar() {}
+  virtual ~AliFMDFlowResolutionStar() {}
   /** Get the correction for harmonic strength of order @a k 
       @param k The harminic strenght order to get the correction for
       @return @f$ \langle\cos(n(\psi_n - \psi_R))\rangle@f$ */ 
@@ -214,9 +241,16 @@ public:
     : AliFMDFlowResolution(n), fLarge(0) {}
   /** DTOR */
   ~AliFMDFlowResolutionTDR() {}
+  /** Copy constructor 
+      @param o  Object to copy from */ 
+  AliFMDFlowResolutionTDR(const AliFMDFlowResolutionTDR& o);
+  /** Assignment operator 
+      @param o  Object to assign from 
+      @return reference to this */ 
+  AliFMDFlowResolutionTDR& operator=(const AliFMDFlowResolutionTDR& o);
   virtual void Clear(Option_t* option="");
   /** add a data  point */
-  virtual void Add(Double_t psi_a, Double_t psi_b);
+  virtual void Add(Double_t psiA, Double_t psiB);
   /** Get the correction for harmonic strength of order @a k 
       @param k The harminic strenght order to get the correction for
       @return @f$ \langle\cos(n(\psi_n - \psi_R))\rangle@f$ */ 
@@ -246,7 +280,7 @@ protected:
       @f] */
   Double_t Res(UShort_t k, Double_t y, Double_t echi2, Double_t& e2) const;
   /** Number of events with large diviation */
-  ULong_t fLarge;
+  ULong_t fLarge; // Number of events with large angle 
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowResolutionTDR,1);
 };

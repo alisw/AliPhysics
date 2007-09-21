@@ -1,8 +1,34 @@
 // -*- mode: C++ -*-
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Declaration of a Bin in a Flow "histogram" */
-#ifndef FLOW_BIN_H
-#define FLOW_BIN_H
+//____________________________________________________________________
+//
+// This contains an of class AliFMDFlowHarmonic and an object of
+// class AliFMDFlowEventPlane to calculate v_n and \Psi_k.  It contain
+// two objects of class AliFMDFlowEventPlane to calculate the
+// sub-event event planes Psi_A, \Psi_B.  It also contain 3 objects of
+// class AliFMDFlowResolution to calculate the event plane angle
+// resolution. 
+//
+#ifndef ALIFMDFLOWBIN_H
+#define ALIFMDFLOWBIN_H
 #include <flow/AliFMDFlowEventPlane.h>
 #include <flow/AliFMDFlowHarmonic.h>
 #include <flow/AliFMDFlowResolution.h>
@@ -42,16 +68,18 @@ public:
   /** Correction type */
   enum CorType {
     /** No correction */
-    none, 
+    kNone, 
     /** Naive, using the formulas in Voloshins paper */
-    naive,
+    kNaive,
     /** STARs way */
-    star, 
+    kStar, 
     /** The way used in the TDR */
-    tdr
+    kTdr
   };
-  /** Constructor */
-  AliFMDFlowBin(UShort_t order, UShort_t k=1) 
+  /** Constructor 
+      @param order Order of harmonic. 
+      @param k     Factor of event plane order=k * m */
+  AliFMDFlowBin(UShort_t order=0, UShort_t k=1) 
     : fPsi(order / k), 
       fPsiA(order / k), 
       fPsiB(order / k), 
@@ -60,6 +88,14 @@ public:
       fResTdr(order / k),
       fHarmonic(order) 
   {}
+  /** Copy constructor 
+      @param o Object top copy from */ 
+  AliFMDFlowBin(const AliFMDFlowBin& o);
+  /** Assignment operator
+      @param o Object to assign from 
+      @return Reference to this object */
+  AliFMDFlowBin& operator=(const AliFMDFlowBin& o);
+  
   /** Destructor */
   virtual ~AliFMDFlowBin() {} 
   /** Should be called at the start of an event */ 
@@ -87,21 +123,21 @@ public:
   /** Get the value in this bin 
       @param t  Which type of correction
       @return the value of the harmonic */
-  virtual Double_t Value(CorType t=naive) const;
+  virtual Double_t Value(CorType t=kTdr) const;
   /** Get the value in this bin 
       @param t  Which type of correction 
       @return the error on the value of the harmonic */
-  virtual Double_t EValue(CorType t=naive) const;
+  virtual Double_t EValue(CorType t=kTdr) const;
   /** Get the value in this bin 
       @param e2 On return, the square error. 
       @param t  Which type of correction
       @return the value of the harmonic */
-  virtual Double_t Value(Double_t& e2, CorType t=naive) const;
+  virtual Double_t Value(Double_t& e2, CorType t=kTdr) const;
   /** Get the value in this bin 
       @param e2 On return, the square error. 
       @param t  Which type  of correction
-      @return the value of the harmonic */
-  virtual Double_t Correction(Double_t& e2, CorType t=naive) const;
+      @return the value of the event plane correction */
+  virtual Double_t Correction(Double_t& e2, CorType t=kTdr) const;
   /** Print summary to standard output */ 
   virtual void Print(Option_t* option="") const; //*MENU*
   /** Return true */ 
@@ -117,21 +153,21 @@ public:
 
 protected:
   /** Major event plane */
-  AliFMDFlowEventPlane fPsi;
+  AliFMDFlowEventPlane fPsi; // Major event plane
   /** Sub-event A event plane */
-  AliFMDFlowEventPlane fPsiA;
+  AliFMDFlowEventPlane fPsiA; // Sub-event A event plane
   /** Sub-event B event plane */
-  AliFMDFlowEventPlane fPsiB;
+  AliFMDFlowEventPlane fPsiB; // Sub-event B event plane
   /** Resolution */
-  AliFMDFlowResolution fRes;
+  AliFMDFlowResolution fRes; // Resolution
   /** Resolution */
-  AliFMDFlowResolutionStar fResStar;
+  AliFMDFlowResolutionStar fResStar; // Resolution
   /** Resolution */
-  AliFMDFlowResolutionTDR fResTdr;
+  AliFMDFlowResolutionTDR fResTdr; // Resolution
   /** The harmonic */
-  AliFMDFlowHarmonic fHarmonic;
+  AliFMDFlowHarmonic fHarmonic; // Harmonic
   /** Define for ROOT I/O */
-  ClassDef(AliFMDFlowBin,1);
+  ClassDef(AliFMDFlowBin,1); // A flow analysis 
 };
 
 

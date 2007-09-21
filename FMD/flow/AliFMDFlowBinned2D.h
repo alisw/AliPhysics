@@ -1,8 +1,33 @@
 // -*- mode: C++ -*-
+/* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+ * USA
+ */
 /** @file 
     @brief Declaration of a 2-dimensional Flow "histogram" */
-#ifndef FLOW_BINNED2D_H
-#define FLOW_BINNED2D_H
+//____________________________________________________________________ 
+//
+// A histogram of flow bins.  The axis can by anything
+// (pseudo-rapidity, transvers momentum) - there's no assumption on
+// what is the basis of the histogram.  The method Event can be used
+// to calculate everything in one go.   Alternatively, one can use the
+// methods AddToEventPlane and AddToHarmonic.  See also the example
+// TestFlow.C 
+#ifndef ALIFMDFLOWBINNED2D_H
+#define ALIFMDFLOWBINNED2D_H
 #include <flow/AliFMDFlowAxis.h>
 #include <TObject.h>
 
@@ -83,11 +108,11 @@ public:
   void Browse(TBrowser* b);
 protected:
   /** X axis */ 
-  AliFMDFlowAxis fXAxis;
+  AliFMDFlowAxis fXAxis; // X axis
   /** Y axis */ 
-  AliFMDFlowAxis fYAxis;
+  AliFMDFlowAxis fYAxis; // Y axis
   /** Array of the flow objects */ 
-  AliFMDFlowBin** fBins;
+  AliFMDFlowBin** fBins;  // Bins 
   /** Define for ROOT I/O */
   ClassDef(AliFMDFlowBinned2D,1);
 };
