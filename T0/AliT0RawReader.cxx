@@ -100,7 +100,7 @@ Bool_t  AliT0RawReader::Next()
     } while (fRawReader->GetDataSize() == 0);
     
     fPosition = 0;
-    //  cout.setf( ios_base::hex, ios_base::basefield );
+     cout.setf( ios_base::hex, ios_base::basefield );
     
     //DRM header
     for (Int_t i=0; i<6; i++) {
@@ -142,11 +142,16 @@ Bool_t  AliT0RawReader::Next()
 	    tdcTime =  AliBitPacking::UnpackWord(word,31,31);   
 	    for (; tdcTime==1; tdcTime) 
 	      {
+		//	cout<<" packed "<<word<<endl;
 		itdc=AliBitPacking::UnpackWord(word,24,27);
 		ichannel=AliBitPacking::UnpackWord(word,21,23);
 		time=AliBitPacking::UnpackWord(word,0,20);
 		
 		koef = fParam->GetChannel(iTRM,itdc,ichain,ichannel);
+		/*	if (koef != 0 ) 
+		  cout<<"RawReader>> "<<"koef "<<koef<<" trm "<<iTRM<<
+		    " tdc "<<itdc<<" chain "<<ichain<<
+		    " channel "<<ichannel<<" time "<<time<<endl;*/
 		if (koef ==-1 ){
 		  AliWarning(Form("Incorrect lookup table ! "));
 		  fRawReader->AddMajorErrorLog(kIncorrectLUT);
@@ -154,6 +159,10 @@ Bool_t  AliT0RawReader::Next()
 		}
 		if(correct){
 		  hit=koefhits[koef];
+		  if(hit>5) {  
+		    AliWarning(Form("Too many hits for %i channel  ! ",koef)); 
+		    break; 
+		  }
 		  fAllData[koef][hit]=time; 
 		  koefhits[koef]++;
 		}
