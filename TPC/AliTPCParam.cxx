@@ -804,7 +804,7 @@ Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
     if (center){
       center[0] = kROCcenterIn;
       center[1] = 0; 
-      center[2] = -5.51; 
+      center[2] = -5.51-0.08; 
     }
     return kROCcenterIn;
   }
@@ -812,7 +812,7 @@ Float_t AliTPCParam::GetChamberCenter(Int_t isec, Float_t * center) const
     if (center){
       center[0] = kROCcenterOut;
       center[1] = 0; 
-      center[2] = -5.61; 
+      center[2] = -5.61-0.08; 
     }
     return kROCcenterOut;
   }

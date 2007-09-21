@@ -219,7 +219,7 @@ public:
   Int_t    GetNInnerSector() const {return fNInnerSector;}
   Int_t    GetNOuterSector() const {return fNOuterSector;}
   Int_t    GetNSector() const {return fNSector;}
-  Float_t  GetZLength(Int_t sector=0) const {return (sector<35) ? fZLength-0.275 : fZLength-0.302;}
+  Float_t  GetZLength(Int_t sector=0) const;
   Int_t    GetGeometryType() const {return fGeometryType;}
 
   //
@@ -733,5 +733,8 @@ inline void  AliTPCParam::Transform8to6(Float_t *xyz, Int_t *index) const
   }  
   index[0]=6;
 }
-
+inline Float_t AliTPCParam::GetZLength(Int_t sector) const
+{ if(sector <18 || (sector>35&&sector<54)) return   fZLength-0.275;
+  else return fZLength-0.302;
+}
 #endif  
