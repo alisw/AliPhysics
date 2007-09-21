@@ -1,7 +1,20 @@
 #ifndef ALIHLTMUONHITRECONSTRUCTORCOMPONENT_H
-#define ALIHLTMUONHITRECONSTRUCTORCOMPONENT_H
-/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+#define ALIHLTMUONHITREONSTRUCTORCCOMPONENT_H
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors:                                                       *
+ *   Indranil Das <indra.das@saha.ac.in>                                  *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 /* $Id$ */
 
@@ -12,53 +25,57 @@
 // */
 
 #include "AliHLTProcessor.h"
-#include "AliHLTMUONConstants.h"
-
+#include <TString.h>
 #include "AliHLTMUONHitReconstructor.h"
-//class AliHLTMUONHitReconstructor;
+
+#if __GNUC__ < 3
+#define std
+#endif
 
 
-class AliHLTMUONHitReconstructorComponent : public AliHLTProcessor {
+class AliHLTMUONHitReconstructorComponent : public AliHLTProcessor
+{
+    public:
+	AliHLTMUONHitReconstructorComponent();
+	virtual ~AliHLTMUONHitReconstructorComponent();
 
-public:
-  AliHLTMUONHitReconstructorComponent();
-  virtual ~AliHLTMUONHitReconstructorComponent();
+	// Public functions to implement AliHLTComponent's interface.
+	// These functions are required for the registration process
 
-  const char* GetComponentID() /*const*/ { return "MUONHitRec";}
+	const char* GetComponentID();
+	void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
+	AliHLTComponentDataType GetOutputDataType();
+	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+	AliHLTComponent* Spawn();
+	
+    protected:
+	
+	// Protected functions to implement AliHLTComponent's interface.
+	// These functions provide initialization as well as the actual processing
+	// capabilities of the component. 
 
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
-    list.clear();
-    list.push_back( AliHLTMUONConstants::TrackingDDLRawDataType() );
-  }
-  
-  AliHLTComponentDataType GetOutputDataType() /*const*/ {return AliHLTMUONConstants::RecHitsBlockDataType();}
-  virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {constBase = 0;inputMultiplier = 0;};
+	int DoInit(int argc, const char** argv);
+	int DoDeinit();
+	int DoEvent(
+			const AliHLTComponentEventData& evtData,
+			const AliHLTComponentBlockData* blocks,
+			AliHLTComponentTriggerData& trigData,
+			AliHLTUInt8_t* outputPtr, 
+			AliHLTUInt32_t& size,
+			std::vector<AliHLTComponentBlockData>& outputBlocks
+		);
+	
+    private:
+	
+	AliHLTMUONHitReconstructor* fHitRec;
+	bool ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath);
+	bool ReadBusPatchToDetElemFile(BusToDetElem& busToDetElem, BusToDDL& busToDDL, const char* buspatchmappath);
 
-  // Spawn function, return new class instance
-  AliHLTComponent* Spawn() /*const*/ {return new AliHLTMUONHitReconstructorComponent;};
+	TString fDDLDir;
+	Int_t fDDL;
+	bool fReaderType;
 
- protected:
-  
-  int DoInit( int argc, const char** argv );
-  int DoDeinit();
-  int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
-
-private:
-  
-  // Do not allow to copy these objects.
-  AliHLTMUONHitReconstructorComponent(const AliHLTMUONHitReconstructorComponent& /*object*/);
-  AliHLTMUONHitReconstructorComponent& operator = (const AliHLTMUONHitReconstructorComponent& /*object*/);
-  
-  /** array of input data types */
-
-  AliHLTMUONHitReconstructor* fHitRec;   // Class instance implementing the hit reconstruction algorithm.
-  bool ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath, int iDDL);
-  bool ReadBusPatchToDetElemFile(BusToDetElem& busToDetElem, const char* buspatchmappath);
-
-
-  ClassDef(AliHLTMUONHitReconstructorComponent, 0)
+	ClassDef(AliHLTMUONHitReconstructorComponent, 0)
 };
 
 #endif // ALIHLTMUONHITRECONSTRUCTORCOMPONENT_H

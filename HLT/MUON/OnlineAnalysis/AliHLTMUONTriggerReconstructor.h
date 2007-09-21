@@ -27,35 +27,49 @@
 **********************************************************************/
 
 #include <vector>
-#include <TArrayS.h>
 
 #include <AliHLTLogging.h>
+
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONHitReconstructor.h"
-#include "AliMUONTriggerCrateStore.h"
+
+#if __GNUC__ < 3
+#define std
+#endif
+
+typedef std::vector<int> DataIdIndex;
 
 class AliHLTMUONTriggerReconstructor : public AliHLTLogging
 {
 
  public:
 
+  struct RegToLoc{
+    int fTrigDDL;  // trigger id (0 or 1)
+    int fRegId,fLoc,fLocId;  // regeonal and local id.
+    int fSwitch;  // packed switch word of 10 bits.
+    int fDetElemId[4];  // Four detection element correspond to four detection element for each local card.
+  };
+
+
   AliHLTMUONTriggerReconstructor();
   virtual ~AliHLTMUONTriggerReconstructor();
 
   bool LoadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookUpTableData, int lookUpTableId);
-
+  
+  bool SetRegToLocCardMap(RegToLoc* regToLoc);
   //bool Run(int iEvent, int iDDL, AliHLTMUONTriggerRecordStruct trigRecord, int *nofTrigRec); // for Reading using rawreader
   bool Run(int *rawData, int *rawDataSize, AliHLTMUONTriggerRecordStruct trigRecord[], int *nofTrigRec);
 
   int GetLutLine(){return fgkLutLine ;}
 
-  static int GetkDetectorId() { return fgkDetectorId; }
-  static int GetkDDLOffSet() { return fgkDDLOffSet; }
-  static int GetkNofDDL() { return fgkNofDDL; }
-  static int GetkDDLHeaderSize() { return fgkDDLHeaderSize; }
+  static int GetkDetectorId() { return AliHLTMUONTriggerReconstructor::fgkDetectorId ; }
+  static int GetkDDLOffSet() { return AliHLTMUONTriggerReconstructor::fgkDDLOffSet; }
+  static int GetkNofDDL() { return AliHLTMUONTriggerReconstructor::fgkNofDDL; }
+  static int GetkDDLHeaderSize() { return AliHLTMUONTriggerReconstructor::fgkDDLHeaderSize; }
   
-private: 
-  static const int fgkDetectorId ;            // DDL Offset
+ private: 
+  static const int fgkDetectorId ;            // Detector ID
   static const int fgkDDLOffSet ;             // DDL Offset
   static const int fgkNofDDL ;                // Number of DDL 
   static const int fgkDDLHeaderSize  ;        // DDL header size  
@@ -71,10 +85,10 @@ private:
   static const int fgkOddLutSize ;            // Size of the LookupTable with odd DDLID
   static const int fgkLutLine;                // nof Line in LookupTable    
 
-  static const int fgkMinIdManuChannel[2];    // Minimum value of idManuChannel in LookupTable  
+  static const int fgkMinIdManuChannel[2];    // Minimum value of idManuChannel in LookupTable, 2 corresponds to two types of DDL (even/odd)  
   static const int fgkMaxIdManuChannel[2];    // Maximum value of idManuChannel in LookupTable  
-  static const float fgkHalfPadSizeXB[3];       // pad halflength for the pcb zones  
-  static const float fgkHalfPadSizeYNB[2];       // pad halflength for the pcb zones  
+  static const float fgkHalfPadSizeXB[3];       // pad halflength for the pcb zones, 3 corresponds to 3 types of pad in bending side  
+  static const float fgkHalfPadSizeYNB[2];       // pad halflength for the pcb zones, 2 corresponds to 2 types on nonbneding pad  
 
   static const int fgkDetElem;                // nof Detection element per DDL    
 
@@ -85,26 +99,22 @@ private:
   AliHLTMUONTriggerRecordStruct *fRecPoints;    // Reconstructed hits
   int *fRecPointsCount;                       // nof reconstructed hit  
   int fMaxRecPointsCount;                    // max nof reconstructed hit  
-  int fDigitPerDDL;                                    // Total nof Digits perDDL 
 
-
+  //104 correspond to maximum nuber of x indices a nonbending side of detelem may have (i.e. 1101) 
+  //and 64 corresponds to the maximum number of y indices occurs in bending side of detelem (i.e 1100)
   int fGetIdTotalData[104][64][2] ;           // an array of idManuChannel with argumrnt of centralX,centralY and  planeType
-  int fNofFiredDetElem,*fMaxFiredPerDetElem;        // counter for detector elements that are fired 
-  int *fDetManuChannelIdList;                          // pointer to an array of idManuChannel
-  int *fCentralChargeB,*fCentralChargeNB;              // pointer to an array of central hit
+  RegToLoc fRegToLocCard[128];              // 8 regional card per ddl and 16 slots per regional crate together made 16*8 = 128. 
 
-
+  map<int,int> fMaxFiredPerDetElem;                    // counter for detector elements that are fired 
+  map<int,DataIdIndex> fDetElemToDataId;              // detelem to pointer to dataId index mapping
+  
   int fDDLId ;
   int fIdOffSet ;
 
-  AliMUONTriggerCrateStore* fCrateManager;
-
-  bool MergeTrigHits(int minPadId, int maxPadId);
+  bool MergeTrigHits(DataIdIndex& dataIndex);
   bool FindTrigHits() ;
 
   bool ReadDDL(int *rawData, int *rawDataSize);
-  bool Pattern2Pad(int nBoard, TArrayS* xyPattern, vector<AliHLTMUONHitReconstructor::DHLTPad>& padList);
-
 };
 
 #endif // AliHLTMUONTRIGGERRECONSTRUCTOR_H

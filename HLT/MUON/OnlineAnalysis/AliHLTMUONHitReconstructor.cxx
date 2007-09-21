@@ -1,15 +1,16 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
+ * Primary Authors:                                                       *
+ *   Indranil Das <indra.das@saha.ac.in>                                  *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          * 
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
@@ -19,7 +20,6 @@
 //Author : Indranil Das, SINP, INDIA
 //         Sukalyan Chattopadhyay, SINP, INDIA
 //         
-//
 //Email :  indra.das@saha.ac.in
 //         sukalyan.chattopadhyay@saha.ac.in 
 //
@@ -44,19 +44,16 @@ const int AliHLTMUONHitReconstructor::fgkNofDDL = 8 ;
 
 const int AliHLTMUONHitReconstructor::fgkDDLHeaderSize = 8;
 
-const int AliHLTMUONHitReconstructor::fgkEvenLutSize = 3364287 + 1;
-const int AliHLTMUONHitReconstructor::fgkOddLutSize = 1645631 + 1;
+const int AliHLTMUONHitReconstructor::fgkEvenLutSize = 1645632 + 1;
+const int AliHLTMUONHitReconstructor::fgkOddLutSize = 3363840 + 1;
 
 const int AliHLTMUONHitReconstructor::fgkLutLine[2] = {54208, 59648};
 
-const int AliHLTMUONHitReconstructor::fgkMinIdManuChannel[2] = {64, 917696};
-const int AliHLTMUONHitReconstructor::fgkMaxIdManuChannel[2] = {3364351,2563007};
+const int AliHLTMUONHitReconstructor::fgkMinIdManuChannel[2] = {917696, 64};
+const int AliHLTMUONHitReconstructor::fgkMaxIdManuChannel[2] = {2563327, 3363903};
 
 const float AliHLTMUONHitReconstructor::fgkHalfPadSize[3] = {1.25, 2.50, 5.00};
 
-
-
-//ClassImp(AliHLTMUONHitReconstructor)
 
 AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor():
   fkBlockHeaderSize(8),
@@ -82,7 +79,8 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor():
   fAvgChargeY(NULL),
   fNofFiredDetElem(0),
   fDebugLevel(0),
-  fBusToDetElem()
+  fBusToDetElem(),
+  fBusToDDL()
 {
   // ctor 
   
@@ -92,7 +90,6 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor():
   else{
     fPadData = new DHLTPad[AliHLTMUONHitReconstructor::fgkOddLutSize];
   }
-
 
   fkBlockHeaderSize    = 8;
   fkDspHeaderSize      = 8;
@@ -106,21 +103,23 @@ AliHLTMUONHitReconstructor::~AliHLTMUONHitReconstructor()
 {
   // dtor
 
-  //printf("\nEnd of Run\n");
-
   delete []fPadData;
   delete []fLookUpTableData;
-
 }
 
-int AliHLTMUONHitReconstructor::GetLutLine(int iDDL) const { return ( iDDL<16 ) ? fgkLutLine[0] : fgkLutLine[1] ;}
+
+int AliHLTMUONHitReconstructor::GetLutLine(int iDDL) const
+{
+	return ( iDDL<16 ) ? fgkLutLine[0] : fgkLutLine[1] ;
+}
+
 
 bool AliHLTMUONHitReconstructor::LoadLookUpTable(DHLTLut* lookUpTableData, int lookUpTableId)
 {
   // function that loads LookUpTable (= position of each pad with electronic channel associated with it)
 
   if(lookUpTableId<fgkDDLOffSet || lookUpTableId>= fgkDDLOffSet + fgkNofDDL){
-    printf("DDL number is out of range (must be %d<=iDDL<%d)\n",fgkDDLOffSet,fgkDDLOffSet+fgkNofDDL);
+    HLTError("DDL number is out of range (must be %d<=iDDL<%d)\n",fgkDDLOffSet,fgkDDLOffSet+fgkNofDDL);
     return false;
   }
   
@@ -158,6 +157,7 @@ bool AliHLTMUONHitReconstructor::LoadLookUpTable(DHLTLut* lookUpTableData, int l
   return true;
 }
 
+
 bool AliHLTMUONHitReconstructor::SetBusToDetMap(BusToDetElem busToDetElem)
 {
 
@@ -167,6 +167,20 @@ bool AliHLTMUONHitReconstructor::SetBusToDetMap(BusToDetElem busToDetElem)
     return false;
   else
     fBusToDetElem = busToDetElem;
+  
+  return true;
+}
+
+
+bool AliHLTMUONHitReconstructor::SetBusToDDLMap(BusToDDL busToDDL)
+{
+
+  // function that loads BusPatch To DDL Element (DDL) map
+
+  if(busToDDL.size()==0)
+    return false;
+  else
+    fBusToDDL = busToDDL;
   
   return true;
 }
@@ -192,14 +206,15 @@ bool AliHLTMUONHitReconstructor::Run(int* rawData, int *rawDataSize, AliHLTMUONR
   fPadData[0].fPlane = -1 ;
   fPadData[0].fPcbZone = -1 ;
   fPadData[0].fCharge = 0 ;
-  
+
+
   if(!ReadDDL(rawData,rawDataSize)){
-    printf("Failed to read the complete DDL file\n");
+    HLTError("Failed to read the complete DDL file");
     return false;
   }
 
   if(!FindRecHits()){
-    printf("Failed to generate RecHits\n");
+    HLTError("Failed to generate RecHits");
     return false;
   }
     
@@ -207,16 +222,16 @@ bool AliHLTMUONHitReconstructor::Run(int* rawData, int *rawDataSize, AliHLTMUONR
 }
 
 
-
-bool AliHLTMUONHitReconstructor::ReadDDL(int* rawData, int *rawDataSize)
+bool AliHLTMUONHitReconstructor::ReadDDL(int *rawData, int *rawDataSize)
 {
   //function to read Raw Data files
 
   int ddlRawDataSize;
   ddlRawDataSize = *rawDataSize;
 
-  int *buffer = new int[ddlRawDataSize]; 
-  buffer = (int *)rawData; 
+  int *buffer = rawData ;
+  //new int[ddlRawDataSize]; 
+  //buffer = (int *)rawData; 
 
   fIdOffSet= fgkMinIdManuChannel[(fDDLId%2)];
   fDetManuChannelIdList = new int[ddlRawDataSize];
@@ -242,6 +257,7 @@ bool AliHLTMUONHitReconstructor::ReadDDL(int* rawData, int *rawDataSize)
     while(blockRawDataSize > 0){
       totalDspSize = buffer[indexDsp + 1];
       dspRawDataSize = buffer[indexDsp + 2];
+      //if(buffer[indexDsp+1] == 1)
       dspRawDataSize --;                              // temporary solution to read buspatches 
       indexBuspatch = indexDsp + fkDspHeaderSize + 2; // this extra 2 word comes from the faulty defination of Dsp header size
       while(dspRawDataSize > 0){
@@ -249,7 +265,7 @@ bool AliHLTMUONHitReconstructor::ReadDDL(int* rawData, int *rawDataSize)
 	buspatchRawDataSize = buffer[indexBuspatch + 2];
 	buspatchId = buffer[indexBuspatch + 3];
 	if((detElemId = fBusToDetElem[buspatchId])==0){
-	  printf("No Detection element found for buspatch : %d\n",buspatchId);
+	  HLTError("No Detection element found for buspatch : %d",buspatchId);
 	  return false;
 	}
 	indexRawData = indexBuspatch + fkBuspatchHeaderSize;
@@ -282,11 +298,17 @@ bool AliHLTMUONHitReconstructor::ReadDDL(int* rawData, int *rawDataSize)
 	      }
 	      fNofFiredDetElem++;
 	      prevDetElemId = detElemId ;
-		}
+	    }
+	    
+	    HLTDebug("buspatch : %d, detele : %d, id : %d, manu : %d, channel : %d, X : %f, Y: %f",
+		    fPadData[idManuChannel].fBuspatchId,fPadData[idManuChannel].fDetElemId,
+		    idManuChannel,((dataWord >> 12) & 0x7FF),((dataWord >> 23) & 0x3F),
+		    fPadData[idManuChannel].fRealX,fPadData[idManuChannel].fRealY);
+
 	    dataCount ++;
 	  }
 	  
-
+	  
 	  indexRawData++;
 	  buspatchRawDataSize --;
 	}
@@ -299,15 +321,14 @@ bool AliHLTMUONHitReconstructor::ReadDDL(int* rawData, int *rawDataSize)
     index = totalBlockSize;
   }// Block loop
   
-  delete[] buffer;
+  //delete[] buffer;
   
   fDigitPerDDL = dataCount;
   fMaxFiredPerDetElem[fNofFiredDetElem-1] = dataCount;
-  
-  
+    
   return true;
-
 }
+
 
 bool AliHLTMUONHitReconstructor::FindRecHits() 
 {
@@ -327,7 +348,7 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
     
     RecXRecY();
     if(!MergeRecHits()){
-      printf("Failed to merge hits\n");
+      HLTError("Failed to merge hits\n");
       return false;
     }
     
@@ -367,6 +388,7 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
 
   return true;
 }
+
 
 void AliHLTMUONHitReconstructor::FindCentralHits(int minPadId, int maxPadId)
 {
@@ -462,9 +484,8 @@ void AliHLTMUONHitReconstructor::FindCentralHits(int minPadId, int maxPadId)
       
     }// fill for bending and nonbending hit
   }// detElemId loop
-
-
 }
+
 
 void AliHLTMUONHitReconstructor::RecXRecY()
 {
@@ -531,8 +552,8 @@ void AliHLTMUONHitReconstructor::RecXRecY()
     fAvgChargeX[nb] = fPadData[idCentral].fCharge;
     
   }
-
 }
+
 
 bool AliHLTMUONHitReconstructor::MergeRecHits()
 {
@@ -584,8 +605,6 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
       }//j for loop
     }//if fRecY[i] != 0.0
   }// i for loop
-
-
   
   // MERGE Non Bending Plane hits, which are place side by side
   for(int i=0;i<fCentralCountNB-1;i++){
@@ -627,11 +646,7 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
     }//if fRecX[i] != 0.0
   }// i for loop
 
-
-
   // Merge bending Plane hits with Non Bending
-  
-
   for(int b=0;b<fCentralCountB;b++){
     if(fRecY[b]!=0.0){
       idCentralB = fCentralChargeB[b];
@@ -659,13 +674,14 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 
 	  if(diffX < halfPadLengthX && diffY < halfPadLengthY ){//&& fPadData[idCentralB].fIY != 0){
 
+	    //fRecPoints[(*fRecPointsCount)].fId = idCentralB;
 	    fRecPoints[(*fRecPointsCount)].fX = fRecX[nb];
 	    fRecPoints[(*fRecPointsCount)].fY = fRecY[b];
 	    fRecPoints[(*fRecPointsCount)].fZ = fPadData[idCentralB].fRealZ;
-//	    fRecPoints[(*fRecPointsCount)].fDetElemId = (AliHLTUInt32_t)fPadData[idCentralB].fDetElemId;
+	    //fRecPoints[(*fRecPointsCount)].fDetElemId = (AliHLTUInt32_t)fPadData[idCentralB].fDetElemId;
 	    (*fRecPointsCount)++;
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      printf("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
+	      HLTError("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
 	      return false;
 	    }
 	  }//if lies wihtin 5.0 mm
@@ -682,4 +698,3 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 
   return true;
 }
-

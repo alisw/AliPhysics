@@ -21,14 +21,16 @@
 /** @file   AliHLTMUONTriggerReconstructorComponent.h
     @author Timm Steinbeck, Matthias Richter
     @date   
-    @brief  Declaration of a dummy component. */
+    @brief  A processing component for the dHLT trigger DDL reconstruction. */
 
 
 #include "AliHLTProcessor.h"
-#include "AliHLTMUONConstants.h"
-
 #include "AliHLTMUONTriggerReconstructor.h"
+#include "AliHLTMUONHitReconstructor.h"
 
+#if __GNUC__ < 3
+#define std
+#endif
 
 /**
  * @class AliHLTMUONTriggerReconstructorComponent
@@ -48,9 +50,9 @@ class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 	// These functions are required for the registration process
 
 	const char* GetComponentID();
-	void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+	void GetInputDataTypes( std::vector<AliHLTComponentDataType>& list);
 	AliHLTComponentDataType GetOutputDataType();
-	virtual void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
+	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 	AliHLTComponent* Spawn();
 	
     protected:
@@ -59,20 +61,24 @@ class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 	// These functions provide initialization as well as the actual processing
 	// capabilities of the component. 
 
-	int DoInit( int argc, const char** argv );
+	int DoInit(int argc, const char** argv);
 	int DoDeinit();
-	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+	
+	int DoEvent(
+			const AliHLTComponentEventData& evtData,
+			const AliHLTComponentBlockData* blocks, 
+			AliHLTComponentTriggerData& trigData,
+			AliHLTUInt8_t* outputPtr, 
+			AliHLTUInt32_t& size,
+			std::vector<AliHLTComponentBlockData>& outputBlocks
+		);
 	
     private:
-
-	// The size of the output data produced, as a percentage of the input data's size.
-	// Can be greater than 100 (%)
-	unsigned fOutputPercentage;
 	
 	AliHLTMUONTriggerReconstructor* fTrigRec;
+
 	bool ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath);
+	bool ReadRegToLocMap(AliHLTMUONTriggerReconstructor::RegToLoc* regToLoc,const char* reglocFileName);
 
 	TString fDDLDir;
 	Int_t fDDL;
@@ -80,5 +86,5 @@ class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0)
 
     };
-
+    
 #endif // AliHLTMUONTRIGGERRECONSTRUCTORCOMPONENT_H

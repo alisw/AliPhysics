@@ -19,75 +19,53 @@
 /**********************************************************************
  Created on : 16/05/2007
  Purpose    : This class is supposed to read the tracker DDL files and 
-              give the output AliHLTMUONTriggerRecordStruct
+              give the output AliMUONCoreTriggerRecord
  Author     : Indranil Das, HEP Division, SINP
  Email      : indra.das@saha.ac.in | indra.ehep@gmail.com
 **********************************************************************/
 
 ///*
 //
-//  The TrigRec class is designed to deal the rawdata inputfiles to findout the 
-//  the reconstructed hits at the trigger DDL. The output is send to the output block for further 
-//  processing.
+//  The trigger reconstructor class is designed to deal the rawdata inputfiles
+//  to findout the the reconstructed hits at the trigger DDL. The output is send
+//  to the output block for further processing.
 //
 //  Author : Indranil Das ( indra.das@saha.ac.in || indra.ehep@gmail.com )
 // 
 //*/
 
-#if __GNUC__ >= 3
-using namespace std;
-#endif
-
-#include <vector>
-
-#include "TObjArray.h"
-
 #include "AliHLTMUONTriggerReconstructor.h"
-
-#include "AliMUONTriggerCrate.h"
-#include "AliMUONLocalTriggerBoard.h"
-#include "AliMUONTriggerCircuit.h"
-
-#include "AliMpPad.h"
-#include "AliMpVSegmentation.h"
-#include "AliMpSegmentation.h"
-#include "AliMpDDLStore.h"
-
 
 const int AliHLTMUONTriggerReconstructor::fgkDetectorId = 0xB00;
 const int AliHLTMUONTriggerReconstructor::fgkDDLOffSet = 20 ;
 const int AliHLTMUONTriggerReconstructor::fgkNofDDL = 2 ;
 
 const int AliHLTMUONTriggerReconstructor::fgkDDLHeaderSize = 8;
-
-const int AliHLTMUONTriggerReconstructor::fgkEvenLutSize =  5208448+ 1;
-const int AliHLTMUONTriggerReconstructor::fgkOddLutSize = 5058432 + 1;
+const int AliHLTMUONTriggerReconstructor::fgkEvenLutSize = 2602351 + 1; 
+const int AliHLTMUONTriggerReconstructor::fgkOddLutSize = 2528735 + 1;
 
 const int AliHLTMUONTriggerReconstructor::fgkLutLine = 10496;
 
-const int AliHLTMUONTriggerReconstructor::fgkMinIdManuChannel[2] = {1638400, 1720320};
-const int AliHLTMUONTriggerReconstructor::fgkMaxIdManuChannel[2] = {6846848, 6778752};
+const int AliHLTMUONTriggerReconstructor::fgkMinIdManuChannel[2] = {819616, 862288};
+const int AliHLTMUONTriggerReconstructor::fgkMaxIdManuChannel[2] = {3421966, 3391022};
 
 const float AliHLTMUONTriggerReconstructor::fgkHalfPadSizeXB[3] = {8.5, 17.0, 25.5};
 const float AliHLTMUONTriggerReconstructor::fgkHalfPadSizeYNB[2] = {25.5, 34.0};
 
 const int AliHLTMUONTriggerReconstructor::fgkDetElem = 9*4 ; // 9 detele per half chamber
 
-AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
+
+AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor()
+  :
   fPadData(NULL),
   fLookUpTableData(NULL),
   fRecPoints(NULL),
   fRecPointsCount(NULL),
   fMaxRecPointsCount(0),
-  fDigitPerDDL(0),
-  fNofFiredDetElem(0),
-  fMaxFiredPerDetElem(NULL),
-  fDetManuChannelIdList(NULL),
-  fCentralChargeB(NULL),
-  fCentralChargeNB(NULL),
+  fMaxFiredPerDetElem(),
+  fDetElemToDataId(),
   fDDLId(0),
-  fIdOffSet(0),
-  fCrateManager(NULL)
+  fIdOffSet(0)
 {
   // ctor 
   
@@ -98,11 +76,6 @@ AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
     fPadData = new AliHLTMUONHitReconstructor::DHLTPad[AliHLTMUONTriggerReconstructor::fgkOddLutSize];
   }
 
-  fMaxFiredPerDetElem = new int[fgkDetElem] ;
-
-  fCrateManager = new AliMUONTriggerCrateStore();   
-  fCrateManager->ReadFromFile();
-
   bzero(fGetIdTotalData,104*64*2*sizeof(int));
 }
 
@@ -110,13 +83,21 @@ AliHLTMUONTriggerReconstructor::AliHLTMUONTriggerReconstructor() :
 AliHLTMUONTriggerReconstructor::~AliHLTMUONTriggerReconstructor()
 {
   // dtor
-
-  //HLTError("\nEnd of Run\n");
-
   delete []fPadData;
   delete []fLookUpTableData;
-  delete fCrateManager ;
-  delete []fMaxFiredPerDetElem;
+}
+
+bool AliHLTMUONTriggerReconstructor::SetRegToLocCardMap(RegToLoc* regToLoc)
+{
+  if(!memcpy(fRegToLocCard,regToLoc,128*sizeof(RegToLoc)))
+    return false;
+
+  for(int i=0;i<128;i++){
+    HLTDebug("DDL : %d, reg : %d, loc : %d",fRegToLocCard[i].fTrigDDL,
+	    fRegToLocCard[i].fRegId,fRegToLocCard[i].fLocId);
+  }
+
+  return true;
 }
 
 bool AliHLTMUONTriggerReconstructor::LoadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookUpTableData, int lookUpTableId)
@@ -136,14 +117,7 @@ bool AliHLTMUONTriggerReconstructor::LoadLookUpTable(AliHLTMUONHitReconstructor:
 
   fLookUpTableData = new AliHLTMUONHitReconstructor::DHLTLut[lutSize];
 
-  fLookUpTableData[0].fIdManuChannel = 0;
-  fLookUpTableData[0].fIX = 0 ;
-  fLookUpTableData[0].fIY = 0 ;
-  fLookUpTableData[0].fRealX = 0.0 ;
-  fLookUpTableData[0].fRealY = 0.0 ;
-  fLookUpTableData[0].fRealZ = 0.0 ;
-  fLookUpTableData[0].fPlane = -1 ;
-  fLookUpTableData[0].fPcbZone = -1 ;
+  memset(fLookUpTableData,-1,lutSize*sizeof(AliHLTMUONHitReconstructor::DHLTLut));
 
   for(int i=0; i<nofLutLine; i++){
 
@@ -169,6 +143,8 @@ bool AliHLTMUONTriggerReconstructor::Run(int *rawData, int *rawDataSize, AliHLTM
   fMaxRecPointsCount = *nofTrigRec;
   fRecPointsCount = nofTrigRec;
   *fRecPointsCount = 0;
+  fMaxFiredPerDetElem.clear();
+  fDetElemToDataId.clear();
 
   fPadData[0].fDetElemId = 0;
   fPadData[0].fBuspatchId = 0;
@@ -199,17 +175,21 @@ bool AliHLTMUONTriggerReconstructor::Run(int *rawData, int *rawDataSize, AliHLTM
 bool AliHLTMUONTriggerReconstructor::ReadDDL(int *rawData, int *rawDataSize)
 {
 
-  vector<AliHLTMUONHitReconstructor::DHLTPad> padList;
   int idManuChannel ;
   
   int index = 0;
   int dataCount = 0;
-  fNofFiredDetElem = 0;
   int detElemId = 0 ;
-  int prevDetElemId = 0 ;
+  int reg_output,reg_phys_trig_occur ;
+  int iLocIndex,loc,locDec,triggY,sign,loDev,triggX;
+  int iRegLoc, locId ;
+  short pattern[2][4]; // 2 stands for two cathode planes and 4 stands for 4 chambers
 
-  fDetManuChannelIdList = new int[(*rawDataSize)];
+  Int_t offset,ithSwitch,secondLocation,idetElemId;
 
+  int shiftIndex = 10 - 6 - 1; // the one comes due to indexing from zero
+
+  DataIdIndex dataIndex;
 #ifdef DEBUG
   int globalcard_data_occurance = (rawData[index]>>10)&0x1; //Set to 1 if global info present in DDL else set to 0 
   int version = (rawData[index]>>12)&0xFF; // software version
@@ -217,15 +197,6 @@ bool AliHLTMUONTriggerReconstructor::ReadDDL(int *rawData, int *rawDataSize)
 #endif
   int phys_trig_occur = (rawData[index]>>30)&0x1; // 1 for physics trigger, 0 for software trigger
   
-  // Values not set
-//   int regional_structure = (rawData[index])&0xFF ; 
-//   int DAQ_interfaced = (rawData[index]>>8)&0x1;
-//   int central_or_LTU = (rawData[index]>>9)&0x1;
-//   int VME_trigger = (rawData[index]>>11)&0x1;
-//   int DARC_type =  (rawData[index]>>24)&0x3;
-//   int dimuon_ZDC = (rawData[index]>>27)&0x3;
-//   int MBZ = (rawData[index]>>31)&0x1;
-
   HLTDebug("globalcard_data_occurance  %d, version  %d, serial_number  %d, phys_trig_occur  %d",
 	 globalcard_data_occurance,version,serial_number,phys_trig_occur);
 
@@ -248,25 +219,21 @@ bool AliHLTMUONTriggerReconstructor::ReadDDL(int *rawData, int *rawDataSize)
     
     int pairLikeLpt = (rawData[index] >> 2)  & 0x1;
     int pairLikeHpt = (rawData[index] >> 3)  & 0x1;
-#endif // DEBUG
-
+#endif
     HLTDebug("singleLpt : %x, singleHpt : %x, pairUnlikeLpt : %x, pairUnlikeHpt : %x, pairLikeLpt : %x, pairLikeHpt : %x",
 	     singleLpt,singleHpt,pairUnlikeLpt,pairUnlikeHpt,pairLikeLpt,pairLikeHpt);
   }
 
   if(!phys_trig_occur)
     index += 10 ;// corresponds to scalar words
-  
+
   index += 1; // separator 0xDEADBEEF 
 
   for (int iReg = 0; iReg < 8; iReg++) {
     index += 1; // DARC Status Word
     index += 1; // Regeional Word
-    //int reg_output = rawData[index] & 0xFF;
-    int reg_phys_trig_occur = ( rawData[index] >> 31) & 0x1;
-//     int reg_version;// = ;
-//     int reg_Id ;//= ;
-//     int reg_serial_number;// = ;
+    reg_output = rawData[index] & 0xFF;
+    reg_phys_trig_occur = ( rawData[index] >> 31) & 0x1;
     
     index += 2; // 2 words for regional input
     
@@ -275,290 +242,207 @@ bool AliHLTMUONTriggerReconstructor::ReadDDL(int *rawData, int *rawDataSize)
     if(!reg_phys_trig_occur)
       index += 10;
     
-    index += 1 ; // end of Regeonal header
-    
-    AliMUONTriggerCrate* crate = fCrateManager->Crate((fDDLId - AliHLTMUONTriggerReconstructor::fgkDDLOffSet), iReg);
-    TObjArray *boards = crate->Boards();
-
+    index += 1 ; // end of Regeonal header 0xBEEFFACE
 
     for(int iLoc = 0; iLoc < 16 ; iLoc++){
 
-      int iLocIndex = index ;      
+      iLocIndex = index ;      
 
-      int locId = (rawData[index+5] >> 19) &  0xF ;
+      loc = (rawData[index+5] >> 19) &  0xF ;
       
-      AliMUONLocalTriggerBoard* localBoard = (AliMUONLocalTriggerBoard*)boards->At(locId + 1);
-      int iLocCard = localBoard->GetNumber();
+      locDec = (rawData[index+5] >> 15) & 0xF;
+      triggY = (rawData[index+5] >> 14) & 0x1 ;
+      sign = (rawData[index+5] >> 9) & 0x1;
+      loDev = (rawData[index+5] >> 5) & 0xF ;
+      triggX = (loDev >> 4 & 0x1 ) && !(loDev & 0xF) ;
 
-      int dec = (rawData[index+5] >> 15) & 0xF;
-      //int triggY = (rawData[index+5] >> 14) & 0x1 ;
-      //int sign = (rawData[index+5] >> 9) & 0x1;
-      //int loDev = (rawData[index+5] >> 5) & 0xF ;
-      //int triggX = (loDev >> 4 & 0x1 ) && !(loDev & 0xF) ;
-
-
-//       HLTDebug(" \n",
-// 	       iLocCard,locId);
-
-//      index += 5;
-
-      if(iLocCard > 0){
-	if( dec != 0x9 ){ // check for Dec
-
-	  index += 1;
-	  short X1_pattern = rawData[index] & 0xFFFF; 
-	  short X2_pattern = (rawData[index] >> 16) & 0xFFFF; 
-	  index += 1; 
-	  short X3_pattern = rawData[index] & 0xFFFF; 
-	  short X4_pattern = (rawData[index] >> 16) & 0xFFFF; 
-	  
-	  index += 1;
-	  short Y1_pattern = rawData[index] & 0xFFFF; 
-	  short Y2_pattern = (rawData[index] >> 16) & 0xFFFF; 
-	  index += 1; 
-	  short Y3_pattern = rawData[index] & 0xFFFF; 
-	  short Y4_pattern = (rawData[index] >> 16) & 0xFFFF; 
-	  
-	  TArrayS xyPattern[2];
-	  xyPattern[0].Set(4);
-	  xyPattern[1].Set(4);
-	  
-	  xyPattern[0].AddAt(X1_pattern,0);
-	  xyPattern[0].AddAt(X2_pattern,1);
-	  xyPattern[0].AddAt(X3_pattern,2);
-	  xyPattern[0].AddAt(X4_pattern,3);
-	  
-	  xyPattern[1].AddAt(Y1_pattern,0);
-	  xyPattern[1].AddAt(Y2_pattern,1);
-	  xyPattern[1].AddAt(Y3_pattern,2);
-	  xyPattern[1].AddAt(Y4_pattern,3);
-	  
-	  HLTDebug("iLocCard : %d, locId : %d, X : %x, %x, %x, %x .... Y : %x, %x, %x, %x\n",
-		   iLocCard,locId,X1_pattern,X2_pattern,X3_pattern,X4_pattern,
-		   Y1_pattern,Y2_pattern,Y3_pattern,Y4_pattern);
+      if( locDec != 0x9 ){ // check for Dec
 	
+	iRegLoc = iReg*16 + iLoc;
+	locId = fRegToLocCard[iRegLoc].fLocId ; 
+	
+	if(locId<=234){ // to avoid the copy locCards
+	  
+	  index += 1;
+	  pattern[0][0] = rawData[index] & 0xFFFF; // x-strip pattern for chaber 0 
+	  pattern[0][1] = (rawData[index] >> 16) & 0xFFFF; // x-strip pattern for chaber 1
+ 	  index += 1; 
+	  pattern[0][2] = rawData[index] & 0xFFFF; 
+	  pattern[0][3] = (rawData[index] >> 16) & 0xFFFF; 
+	  
+ 	  index += 1;
+	  pattern[1][0] = rawData[index] & 0xFFFF; // y-strip pattern for chaber 0
+	  pattern[1][1] = (rawData[index] >> 16) & 0xFFFF; // y-strip pattern for chaber 0 
+ 	  index += 1; 
+	  pattern[1][2] = rawData[index] & 0xFFFF; 
+	  pattern[1][3] = (rawData[index] >> 16) & 0xFFFF; 
+	  
+	  if(pattern[0][0] || pattern[0][1] || pattern[0][2] || pattern[0][3]
+	     || pattern[1][0] || pattern[1][1] || pattern[1][2] || pattern[1][3]
+	     ){
+
+	    HLTDebug("iReg: %d, iLoc :%d, locId : %d,X : %x, %x, %x, %x ...Y : %x, %x, %x, %x",
+		    iReg,iLoc,locId,pattern[0][0],pattern[0][1],pattern[0][2],pattern[0][3],
+		    pattern[1][0],pattern[1][1],pattern[1][2],pattern[1][3]);
+
+	    for(int iChamber = 0; iChamber < 4 ; iChamber++){ //4 chambers per DDL 
+	      for(int iPlane = 0; iPlane < 2 ; iPlane++){// 2 cathode plane
+		if(pattern[iPlane][iChamber]){
+		  detElemId = fRegToLocCard[iRegLoc].fDetElemId[iChamber];
+		  HLTDebug("\tdetElemId : %d\n",detElemId);
+		  for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
+		    if ((pattern[iPlane][iChamber] >> ibitxy) & 0x1) {
+	  
+		      // not quite sure about this
+		      offset = 0;
+		      ithSwitch = (fRegToLocCard[iRegLoc].fSwitch >> shiftIndex) & 0x1;
+		      if (iPlane && ithSwitch) offset = -8;
+		      
+		      secondLocation = ibitxy + offset;
+		      
+		      idetElemId = detElemId%1000;
+
+		      idetElemId &= 0x1FF ;
+		      iPlane &= 0x1 ;
+		      locId &= 0xFF ;
+		      secondLocation &= 0xF ;
+		      
+		      idManuChannel &= 0x0;
+		      idManuChannel = (idManuChannel|idetElemId)<<1;  
+		      idManuChannel = (idManuChannel|iPlane)<<8;  
+		      idManuChannel = (idManuChannel|locId)<<4 ;
+		      idManuChannel |= secondLocation  ;
+
+		      idManuChannel -= fIdOffSet ;
+		      
+		      if(fLookUpTableData[idManuChannel+1].fIdManuChannel == -1) //skip uninitialized values
+			continue;
+
+	   	      fPadData[idManuChannel].fDetElemId = detElemId;
+	   	      fPadData[idManuChannel].fIdManuChannel = idManuChannel;
+	   	      fPadData[idManuChannel].fIX = fLookUpTableData[idManuChannel+1].fIX;
+	   	      fPadData[idManuChannel].fIY = fLookUpTableData[idManuChannel+1].fIY;
+	   	      fPadData[idManuChannel].fRealX = fLookUpTableData[idManuChannel+1].fRealX;
+	   	      fPadData[idManuChannel].fRealY = fLookUpTableData[idManuChannel+1].fRealY;
+	   	      fPadData[idManuChannel].fRealZ = fLookUpTableData[idManuChannel+1].fRealZ;
+	   	      fPadData[idManuChannel].fPcbZone = fLookUpTableData[idManuChannel+1].fPcbZone;
+	   	      fPadData[idManuChannel].fPlane = fLookUpTableData[idManuChannel+1].fPlane;
+		      HLTDebug("\t Hit Found fo ich : %d, iPlane : %d, detelem %d, id : %d, at (%lf, %lf, %lf) cm"
+			      ,iChamber,fLookUpTableData[idManuChannel+1].fPlane,detElemId,fLookUpTableData[idManuChannel+1].fIdManuChannel,
+			      fPadData[idManuChannel].fRealX,
+			      fPadData[idManuChannel].fRealY,fPadData[idManuChannel].fRealZ);
+			      
+		      if(fMaxFiredPerDetElem[detElemId] == 0){
+			DataIdIndex first;
+			first.push_back(idManuChannel);
+			fDetElemToDataId[detElemId] = first;
+		      }else{
+			dataIndex =  fDetElemToDataId[detElemId];
+			dataIndex.push_back(idManuChannel);
+			fDetElemToDataId[detElemId] = dataIndex;
+		      }
+
+		      fMaxFiredPerDetElem[detElemId] = fMaxFiredPerDetElem[detElemId] + 1;
+
+	   	      dataCount ++;
+		      
+		    }//pattern maching is found 
+		  }// loop of ibitxy
+		}// if pattern
+	      }// iplane
+	    }// ichamber
+	    
+	  }// if any non zero pattern found
+
+
 	  index += 1 ; // skipping the last word though it is important
 	  
-	  padList.clear() ;
-	  if( Pattern2Pad(iLocCard, xyPattern, padList) ) {
-
-	    for (UInt_t iEntry = 0; iEntry < padList.size(); iEntry++) {
-	      
-	      AliHLTMUONHitReconstructor::DHLTPad dPad = padList[iEntry];
-	      
-	      detElemId = dPad.fDetElemId;
-	      int idetElemId = (detElemId)%1000;
-	      idetElemId &= 0x1FF ;
-	      int iPlane = dPad.fPlane & 0x1 ;
-	      int iX = dPad.fIX & 0x7F ;
-	      int iY = dPad.fIY & 0x3F ;
-	      
-	      idManuChannel &= 0x0;
-	      idManuChannel = (idManuChannel|idetElemId)<<1;  
-	      idManuChannel = (idManuChannel|iPlane)<<7;  
-	      idManuChannel = (idManuChannel|iX)<<6 ;
-	      idManuChannel |= iY ;
-	      idManuChannel -= fIdOffSet ;
-	      
-	      fPadData[idManuChannel].fDetElemId = dPad.fDetElemId;
-	      fPadData[idManuChannel].fIdManuChannel = idManuChannel;
-	      fPadData[idManuChannel].fIX = fLookUpTableData[idManuChannel+1].fIX;
-	      fPadData[idManuChannel].fIY = fLookUpTableData[idManuChannel+1].fIY;
-	      fPadData[idManuChannel].fRealX = fLookUpTableData[idManuChannel+1].fRealX;
-	      fPadData[idManuChannel].fRealY = fLookUpTableData[idManuChannel+1].fRealY;
-	      fPadData[idManuChannel].fRealZ = fLookUpTableData[idManuChannel+1].fRealZ;
-	      fPadData[idManuChannel].fPcbZone = fLookUpTableData[idManuChannel+1].fPcbZone;
-	      fPadData[idManuChannel].fPlane = fLookUpTableData[idManuChannel+1].fPlane;
-
- 	      fDetManuChannelIdList[dataCount] = idManuChannel;
-	      if(detElemId != prevDetElemId){
-		if(fNofFiredDetElem>0){
-		  fMaxFiredPerDetElem[fNofFiredDetElem-1] = dataCount;
-		}
-		fNofFiredDetElem++;
-		prevDetElemId = detElemId ;
-	      } // if detelem condn
-	      dataCount ++;
-
-// 	      printf("detelemId : %d, plane : %d, IX : %d, IY : %d realX : %f, realY : %f , realZ %f\n",
-// 		     dPad.fDetElemId,dPad.fPlane,dPad.fIX,dPad.fIY,
-// 		     fPadData[idManuChannel].fRealX,fPadData[idManuChannel].fRealY,fPadData[idManuChannel].fRealZ);
-	      
-	    }// for loop of entry
-
-	  }//pattern2pad 
-	  
+	}// if locId <=234
       }// Dec Condn
-
-      }// iLocCard > 0
-
+	
+      
       if(!reg_phys_trig_occur)
-	index += 45;
+	 index += 45;
 	
-      index += 1; // end of local Data
-      HLTDebug("iReg %d, iLoc %d, iLocCard : %d, locId : %d, trigY %x, triggX %x, loDev %x, dec %x, sign %x,rawData : %x",
-	       iReg,iLoc,iLocCard,locId,triggY,triggX,loDev,dec,sign, rawData[index]);
+      index += 1; // end of local Data 0xCAFEFADE
 
-      index = iLocIndex + 6 ;
+      HLTDebug("iReg %d, iLoc %d, locId : %d, trigY %x, triggX %x, loDev %x, dec %x, sign %x,rawData : %x",
+	       iReg,iLoc,locId,triggY,triggX,loDev,dec,sign, rawData[index]);
+
+      index = iLocIndex + 6 ; //important to reset the index counter for fake locids like 235 
       
-//       delete localBoard;
-
-    }// iLoc loop
-  
-//     delete crate;
-//     delete boards;
-    }// iReg Loop
-
-//   fDigitPerDDL = dataCount;
-//   fMaxFiredPerDetElem[fNofFiredDetElem-1] = dataCount;
-  
-
-  return true;
-}
-
-bool AliHLTMUONTriggerReconstructor::Pattern2Pad(int nBoard, TArrayS* xyPattern, vector<AliHLTMUONHitReconstructor::DHLTPad>& padList)
-{
-
-  Int_t detElemId;
-  Int_t previousDetElemId[4] = {0};
-  Int_t previousBoard[4] = {0};
-
-
-  // loop over x1-4 and y1-4
-  for(Int_t iChamber = 0; iChamber < 4; ++iChamber){
-    for(Int_t iCath = 0; iCath < 2; ++iCath){
-      //int index = 0;  
-      Int_t pattern = (Int_t)xyPattern[iCath].At(iChamber); 
-      if (!pattern) continue;
-      
-      // get detElemId
-      /*
-      AliMUONTriggerCircuit triggerCircuit;
-      AliMUONLocalTriggerBoard* localBoard = fCrateManager->LocalBoard(nBoard);
-      detElemId = triggerCircuit.DetElemId(iChamber+10, localBoard->GetName());//FIXME +/-10 (should be ok with new mapping)
-      */
-      AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
-      if (ddlStore != NULL) continue;
-      AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(nBoard);
-      if (localBoard == NULL) continue;
-      detElemId = localBoard->GetDEIdByChamber(iChamber);
-
-
-      if(iCath == 1){ // FIXME should find a more elegant way
-	// Don't save twice the same digit
-	// (since strips in non bending plane can cross several boards)
-	Int_t prevDetElemId = previousDetElemId[iChamber];
-	Int_t prevBoard = previousBoard[iChamber];
-	previousDetElemId[iChamber] = detElemId;
-	previousBoard[iChamber] = nBoard;
-
-	if(detElemId == prevDetElemId){
-	  if(nBoard-prevBoard==1) continue;
-	}
-      }
-
-      const AliMpVSegmentation* seg 
-	= AliMpSegmentation::Instance()
-	  ->GetMpSegmentation(detElemId, AliMp::GetCathodType(iCath));  
-
-      // loop over the 16 bits of pattern
-      for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
-	
-	if ((pattern >> ibitxy) & 0x1) {
-	  
-	  //Int_t temp = (pattern >> ibitxy) & 0x1 ;
-	  // not quite sure about this
-	  Int_t offset = 0;
-	  if (iCath && localBoard->GetSwitch(6)) offset = -8;
-
-	  AliMpPad pad = seg->PadByLocation(AliMpIntPair(nBoard,ibitxy+offset),kTRUE);
-
-	  AliHLTMUONHitReconstructor::DHLTPad dPad;
-	  if (!pad.IsValid()) {
-	    //AliWarning(Form("No pad for detElemId: %d, nboard %d, ibitxy: %d\n",
-	    //	    detElemId, nBoard, ibitxy));
-	    continue ;
-	  } // 
-
-	  Int_t padX = pad.GetIndices().GetFirst();
-	  Int_t padY = pad.GetIndices().GetSecond();
-	  // file digit
-	  dPad.fIX = padX ;
-	  dPad.fIY = padY ;
-	  dPad.fPlane = iCath ;
-	  dPad.fDetElemId = detElemId ;
-          //printf("nBoard : %d, detElemId : %d, chamber %d, iCath %d, ibitxy %d, pattern %d, switch %d, offset %d, temp %x, padX : %d, padY: %d\n",nBoard,detElemId,iChamber,iCath,ibitxy,pattern,localBoard->GetSwitch(6), offset, temp,padX,padY);
-	  //dPad.fDetElemId = detElemId ;
-
-	  padList.push_back(dPad);
-	
-	}// xyPattern
-      }// ibitxy
-//       delete localBoard;
-    }// cath
-  } // ichamber
+     }// iLoc loop
+     
+  }// iReg Loop
 
   return true;
 }
 
 bool AliHLTMUONTriggerReconstructor::FindTrigHits() 
 {
-  for(int iDet=0; iDet<fNofFiredDetElem ; iDet++){
-    
-    if(iDet>0)
-      MergeTrigHits(fMaxFiredPerDetElem[iDet-1],fMaxFiredPerDetElem[iDet]);
-    else
-      MergeTrigHits(0,fMaxFiredPerDetElem[iDet]);
 
-    
-//     if(iDet==0)
-//       for(int i=0;i<fMaxFiredPerDetElem[iDet];i++)
-// 	fGetIdTotalData[fPadData[fDetManuChannelIdList[i]].fIX][fPadData[fDetManuChannelIdList[i]].fIY][fPadData[fDetManuChannelIdList[i]].fPlane] = 0;
-//     else
-//       for(int i=fMaxFiredPerDetElem[iDet-1];i<fMaxFiredPerDetElem[iDet];i++)
-// 	fGetIdTotalData[fPadData[fDetManuChannelIdList[i]].fIX][fPadData[fDetManuChannelIdList[i]].fIY][fPadData[fDetManuChannelIdList[i]].fPlane] = 0;
+  map<int,DataIdIndex>::iterator it;
 
+  for(it = fDetElemToDataId.begin(); it != fDetElemToDataId.end(); it++){
+    HLTDebug("Nof data found in Detelem : %d = %d",it->first,(it->second).size());
+    if(!MergeTrigHits(it->second))
+      return false;
   }// loop over detection element
-    
-  //for(int iPad=fDataPerDetElem[i];iPad<fDataPerDetElem[i+1];iPad++){
-  for(int iPad=0;iPad<fDigitPerDDL;iPad++){
-//     fGetIdTotalData[fPadData[fDetManuChannelIdList[iPad]].fIX][fPadData[fDetManuChannelIdList[iPad]].fIY][fPadData[fDetManuChannelIdList[iPad]].fPlane] = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fDetElemId = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fBuspatchId = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fIdManuChannel = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fIX = 0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fIY = 0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fRealX = 0.0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fRealY = 0.0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fRealZ = 0.0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fPlane = -1 ;
-    fPadData[fDetManuChannelIdList[iPad]].fPcbZone = -1 ;
-    fPadData[fDetManuChannelIdList[iPad]].fCharge = 0 ;
-  }  
+
+  DataIdIndex dataIndex;
+  for(it = fDetElemToDataId.begin(); it != fDetElemToDataId.end(); it++){
+    dataIndex = it->second;
+    for(size_t i=0;i<dataIndex.size();i++){
+      fPadData[dataIndex.at(i)].fDetElemId = 0;
+      fPadData[dataIndex.at(i)].fBuspatchId = 0;
+      fPadData[dataIndex.at(i)].fIdManuChannel = 0;
+      fPadData[dataIndex.at(i)].fIX = 0 ;
+      fPadData[dataIndex.at(i)].fIY = 0 ;
+      fPadData[dataIndex.at(i)].fRealX = 0.0 ;
+      fPadData[dataIndex.at(i)].fRealY = 0.0 ;
+      fPadData[dataIndex.at(i)].fRealZ = 0.0 ;
+      fPadData[dataIndex.at(i)].fPlane = -1 ;
+      fPadData[dataIndex.at(i)].fPcbZone = -1 ;
+      fPadData[dataIndex.at(i)].fCharge = 0 ;
+    }// data per detelem loop  
+  }//detelem loop
   
-  for(int i=0;i<fgkDetElem;i++)
-    fMaxFiredPerDetElem[i] = 0;
-
-  delete []fDetManuChannelIdList;
-
   return true;
 }
 
-bool AliHLTMUONTriggerReconstructor::MergeTrigHits(int minPadId, int maxPadId)
+bool AliHLTMUONTriggerReconstructor::MergeTrigHits(DataIdIndex& dataIndex)
 {
   int idManuChannelB, idManuChannelNB;
   float halfPadLengthX,halfPadLengthY;
   float diffX,diffY;
 
-  for(int iPad=minPadId;iPad<maxPadId;iPad++){
-    idManuChannelB   = fDetManuChannelIdList[iPad];
-    //printf("idManuChannelB : %d, fPadData[idManuChannelB].fPlane : %d\n",idManuChannelB,fPadData[idManuChannelB].fPlane);
+  HLTDebug("\tThe bending plane hits are :");
+  for(size_t iPad=0;iPad<dataIndex.size();iPad++){
+    idManuChannelB   = dataIndex.at(iPad);
+    if(fPadData[idManuChannelB].fPlane == 0){
+      HLTDebug("\t detelem :%d, pcbzone : %d, (%f, %f, %f) cm",fPadData[idManuChannelB].fDetElemId,fPadData[idManuChannelB].fPcbZone,fPadData[idManuChannelB].fRealX,
+	      fPadData[idManuChannelB].fRealY,fPadData[idManuChannelB].fRealZ);
+    }
+  }
+
+  HLTDebug("\tThe non-bending plane hits are :");
+  for(size_t jPad=0;jPad<dataIndex.size();jPad++){
+    idManuChannelNB   = dataIndex.at(jPad);
+    if(fPadData[idManuChannelNB].fPlane == 1){
+      HLTDebug("\t detelem :%d, pcbzone : %d,(%f, %f, %f) cm",fPadData[idManuChannelNB].fDetElemId,fPadData[idManuChannelNB].fPcbZone,fPadData[idManuChannelNB].fRealX,
+	      fPadData[idManuChannelNB].fRealY,fPadData[idManuChannelNB].fRealZ);
+    }
+  }
+
+
+  for(size_t iPad=0;iPad<dataIndex.size();iPad++){
+    idManuChannelB   = dataIndex.at(iPad);
     if(fPadData[idManuChannelB].fPlane == 0){
       
       halfPadLengthX = AliHLTMUONTriggerReconstructor::fgkHalfPadSizeXB[fPadData[idManuChannelB].fPcbZone] ;
 
-      for(int iPad=minPadId;iPad<maxPadId;iPad++){
-	idManuChannelNB   = fDetManuChannelIdList[iPad];
+      for(size_t jPad=0;jPad<dataIndex.size();jPad++){
+	idManuChannelNB   = dataIndex.at(jPad);;
 	if(fPadData[idManuChannelNB].fPlane == 1){
 	  
 	  halfPadLengthY = AliHLTMUONTriggerReconstructor::fgkHalfPadSizeYNB[fPadData[idManuChannelNB].fPcbZone] ;
@@ -573,32 +457,28 @@ bool AliHLTMUONTriggerReconstructor::MergeTrigHits(int minPadId, int maxPadId)
 	    diffY = fabsf(fPadData[idManuChannelNB].fRealY) - fabsf(fPadData[idManuChannelB].fRealY);
 	  else
 	    diffY = fabsf(fPadData[idManuChannelB].fRealY) - fabsf(fPadData[idManuChannelNB].fRealY) ;
-	  //printf("diffX %f,  halfPadLengthX %f,  diffY  %f, halfPadLengthY  %f\n",diffX,halfPadLengthX,diffY,halfPadLengthY);
+ 	  HLTDebug("\tdiffX %f,  halfPadLengthX %f,  diffY  %f, halfPadLengthY  %f\n",diffX,halfPadLengthX,diffY,halfPadLengthY);
 
-	  if(diffX < halfPadLengthX + 1.0 && diffY < halfPadLengthY + 1.0 ){// added redundancy of 1.0 cm due to the pb of geometrical segmentation 
+ 	  if(diffX < halfPadLengthX + 1.0 && diffY < halfPadLengthY + 1.0 ){// added redundancy of 1.0 cm due to the pb of geometrical segmentation 
 
 	    AliHLTMUONRecHitStruct hit;
 	    hit.fX = fPadData[idManuChannelNB].fRealX;
-	    hit.fY = fPadData[idManuChannelNB].fRealY;
+	    hit.fY = fPadData[idManuChannelB].fRealY;
 	    hit.fZ = fPadData[idManuChannelNB].fRealZ;
 
-	    int ichamber = int((fPadData[idManuChannelB].fDetElemId - 1000)/100);
-	    ichamber--;
-	    fRecPoints[(*fRecPointsCount)].fHit[ichamber] = hit;
+	    fRecPoints[(*fRecPointsCount)].fHit[0] = hit;
+	    fRecPoints[(*fRecPointsCount)].fId = fPadData[idManuChannelB].fDetElemId ;
 	    
 	    (*fRecPointsCount)++;
 	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      printf("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
+	      HLTFatal("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
 	      return false;
 	    }
 
-	    printf("ichamber : %d, detelem : %d, x %f, y %f, z %f\n",ichamber,fPadData[idManuChannelB].fDetElemId,fPadData[idManuChannelNB].fRealX,
+	    HLTDebug("\t\t\tdetelem : %d, x %f, y %f, z %f\n",fPadData[idManuChannelB].fDetElemId,fPadData[idManuChannelNB].fRealX,
 		   fPadData[idManuChannelB].fRealY,fPadData[idManuChannelB].fRealZ);
 	  }
 	  
-	  
-	  
-
 	}//condn for non-bending plane
       }//for loop for non-bending plane
 

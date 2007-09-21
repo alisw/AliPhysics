@@ -1,7 +1,20 @@
 #ifndef ALIHLTMUONHITRECONSTRUCTOR_H
 #define ALIHLTMUONHITRECONSTRUCTOR_H
-/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors:                                                       *
+ *   Indranil Das <indra.das@saha.ac.in>                                  *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 /* $Id$ */
 
@@ -9,12 +22,9 @@
 //Author : Indranil Das, SINP, INDIA
 //         Sukalyan Chattopadhyay, SINP, INDIA
 //         
-//
 //Email :  indra.das@saha.ac.in
 //         sukalyan.chattopadhyay@saha.ac.in 
 ///////////////////////////////////////////////
-
-
 
 #include <iostream>
 #include <cstdio>
@@ -23,13 +33,24 @@
 #include <cmath>
 #include <map>
 
+#include <TString.h>
+
 #include <AliHLTLogging.h>
 
-using namespace std;
+#include "AliRawReader.h"
+#include "AliRawReaderFile.h"
+#include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
 
-typedef  map<int,int> BusToDetElem ;
+#if __GNUC__ < 3
+#define std
+#endif
 
-struct AliHLTMUONRecHitStruct;
+
+typedef std::map<int,int> BusToDetElem;
+typedef std::map<int,int> BusToDDL;
+
+extern "C" struct AliHLTMUONRecHitStruct;
 
 
 class AliHLTMUONHitReconstructor : public AliHLTLogging
@@ -53,16 +74,14 @@ public:
     int fCharge;  // The charge measured on the pad.
   };
 
-
   AliHLTMUONHitReconstructor();
   virtual ~AliHLTMUONHitReconstructor(void);
 
   bool LoadLookUpTable(DHLTLut* lookUpTableData, int lookUpTableId);
   bool SetBusToDetMap(BusToDetElem busToDetElem);
+  bool SetBusToDDLMap(BusToDDL busToDDL);
   
-  //bool Init();
   bool Run(int* rawData, int *rawDataSize, AliHLTMUONRecHitStruct recHit[], int *nofHit);
-
   void SetDCCut(int dcCut) {fDCCut = dcCut;}
   void SetDebugLevel(int debugLevel) {fDebugLevel = debugLevel;}
   int GetDebugLevel() const {return fDebugLevel;}
@@ -79,38 +98,38 @@ private:
   static const int fgkDetectorId ;            // DDL Offset
   static const int fgkDDLOffSet ;             // DDL Offset
   static const int fgkNofDDL ;                // Number of DDL 
-  static const int fgkDDLHeaderSize  ;                      // DDL header size  
+  static const int fgkDDLHeaderSize  ;        // DDL header size
+ 
 protected:
   AliHLTMUONHitReconstructor(const AliHLTMUONHitReconstructor& rhs); // copy constructor
   AliHLTMUONHitReconstructor& operator=(const AliHLTMUONHitReconstructor& rhs); // assignment operator
+  
 private:
-  
 
-  static const int fgkEvenLutSize ;           // Size of the LookupTable with event DDLID
-  static const int fgkOddLutSize ;            // Size of the LookupTable with odd DDLID
-  static const int fgkLutLine[2];             // nof Line in LookupTable    
+  static const int fgkEvenLutSize ;          // Size of the LookupTable with event DDLID
+  static const int fgkOddLutSize ;           // Size of the LookupTable with odd DDLID
+  static const int fgkLutLine[2];            // nof Line in LookupTable    
 
-  static const int fgkMinIdManuChannel[2];    // Minimum value of idManuChannel in LookupTable  
-  static const int fgkMaxIdManuChannel[2];    // Maximum value of idManuChannel in LookupTable  
-  static const float fgkHalfPadSize[3];       // pad halflength for the pcb zones  
+  static const int fgkMinIdManuChannel[2];   // Minimum value of idManuChannel in LookupTable  
+  static const int fgkMaxIdManuChannel[2];   // Maximum value of idManuChannel in LookupTable  
+  static const float fgkHalfPadSize[3];      // pad halflength for the pcb zones  
   
+  int fkBlockHeaderSize;                     // Block header size
+  int fkDspHeaderSize;                       // DSP header size
+  int fkBuspatchHeaderSize;                  // buspatch header size
+  
+  int fDCCut;                                // DC Cut value
 
-  int fkBlockHeaderSize ;                     // Block header size
-  int fkDspHeaderSize  ;                      // DSP header size
-  int fkBuspatchHeaderSize ;                  // buspatch header size
+  DHLTPad* fPadData;                         // pointer to the array containing the information of each padhits
+  DHLTLut* fLookUpTableData;                 // pointer to the array of Lookuptable data
   
-  int fDCCut;                                 // DC Cut value
-
-  DHLTPad* fPadData;                          // pointer to the array containing the information of each padhits
-  DHLTLut* fLookUpTableData;                      // pointer to the array of Lookuptable data
-  
-  AliHLTMUONRecHitStruct *fRecPoints;          // Reconstructed hits
-  int *fRecPointsCount;                       // nof reconstructed hit  
+  AliHLTMUONRecHitStruct *fRecPoints;       // Reconstructed hits
+  int *fRecPointsCount;                      // nof reconstructed hit  
   int fMaxRecPointsCount;                    // max nof reconstructed hit  
    
-  int fCentralCountB, fCentralCountNB;                 // centeral hits 
+  int fCentralCountB, fCentralCountNB;        // centeral hits 
   int fIdOffSet,fDDLId;                       // DDLId and DDL id offset
-  int fDigitPerDDL;                                    // Total nof Digits perDDL 
+  int fDigitPerDDL;                           // Total nof Digits perDDL 
   
   int *fDetManuChannelIdList;                          // pointer to an array of idManuChannel
   int *fCentralChargeB,*fCentralChargeNB;              // pointer to an array of central hit
@@ -120,6 +139,8 @@ private:
   int fNofFiredDetElem,fMaxFiredPerDetElem[13];        // counter for detector elements that are fired 
   int fDebugLevel;
   BusToDetElem fBusToDetElem;             // Mapping between bus address and detector element ID.
+  BusToDetElem fBusToDDL;                 // Mapping between bus address and DDL.
+
 
   bool ReadDDL(int* rawData, int *rawDataSize);
   void FindCentralHits(int minPadId, int maxPadId);
@@ -127,8 +148,6 @@ private:
   void RecXRecY();
   bool MergeRecHits();
 
-  //ClassDef(AliHLTMUONHitReconstructor,0)
 };
-
 
 #endif // ALIHLTMUONHITRECONSTRUCTOR_H
