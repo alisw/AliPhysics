@@ -24,6 +24,7 @@
 
 #include <TChain.h>
 #include <TFile.h>
+#include <TVector3.h>
 
 #include "AliAlignmentTracks.h"
 #include "AliTrackPointArray.h"
@@ -143,10 +144,10 @@ void AliAlignmentTracks::AddESD(const char *esdfilename, const char *esdtreename
 }
 
 //________________________________________________________________________
-
 void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
 				    Int_t minITSpts,
 				    Bool_t cuts,
+				    Float_t minAngleWrtITSModulePlanes,
 				    Float_t minMom,Float_t maxMom,
 				    Float_t minAbsSinPhi,Float_t maxAbsSinPhi,
 				    Float_t minSinTheta,Float_t maxSinTheta)
@@ -203,16 +204,13 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
 	Float_t sintheta = TMath::Sin(0.5*TMath::Pi()-TMath::ATan(track->GetTgl()));
 	if(sintheta<minSinTheta || sintheta>maxSinTheta) continue;
       } 
-      // UInt_t status = AliESDtrack::kITSpid; 
-      // status|=AliESDtrack::kTPCpid; 
-      // status|=AliESDtrack::kTRDpid; 
-      // if ((track->GetStatus() & status) != status) continue;
 
       AliTrackPoint point;
       array = track->GetTrackPointArray();
 
       if(onlyITS) {
 	array2 = new AliTrackPointArray(track->GetNcls(0));
+	Bool_t smallAngleWrtITSModulePlanes=kFALSE;
 	Int_t ipt,volId,modId,layerId;
 	Int_t jpt=0;
 	for(ipt=0; ipt<array->GetNPoints(); ipt++) {
@@ -223,7 +221,19 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
 	    array2->AddPoint(jpt,&point);
 	    jpt++;
 	  }
+	  // check minAngleWrtITSModulePlanes
+	  if(cuts) {
+	    Double_t p[3]; track->GetDirection(p);
+	    TVector3 pvec(p[0],p[1],p[2]);
+	    Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+	    TVector3 normvec(rot[1],-rot[0],0.);
+	    Double_t angle = pvec.Angle(normvec);
+	    if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
+	    angle = 0.5*TMath::Pi()-angle;
+	    if(angle<minAngleWrtITSModulePlanes) smallAngleWrtITSModulePlanes=kTRUE;
+	  }
 	}
+	if(smallAngleWrtITSModulePlanes) continue;
       } // end if(onlyITS)
  
       pointsTree->Fill();
@@ -236,12 +246,15 @@ void AliAlignmentTracks::ProcessESD(Bool_t onlyITS,
   }
 
   pointsFile->Close();
+
+  return;
 }
 
-//______________________________________________________________________________
+//_____________________________________________________________________________
 void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 				   Int_t minITSpts,Float_t maxMatchingAngle,
-			           Bool_t cuts,
+				   Bool_t cuts,
+				   Float_t minAngleWrtITSModulePlanes,
 				   Float_t minMom,Float_t maxMom,
 				   Float_t minAbsSinPhi,Float_t maxAbsSinPhi,
 			     	   Float_t minSinTheta,Float_t maxSinTheta)
@@ -324,7 +337,7 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 	if(deltatheta>maxMatchingAngle) continue;
 	Float_t deltaphi = TMath::Abs(TMath::Abs(phiArray[itr1]-phiArray[itr2])-TMath::Pi());
 	if(deltaphi>maxMatchingAngle) continue;
-	printf("%f  %f     %f  %f\n",deltaphi,deltatheta,thetaArray[itr1],thetaArray[itr2]);
+	//printf("%f  %f     %f  %f\n",deltaphi,deltatheta,thetaArray[itr1],thetaArray[itr2]);
 	if(deltatheta+deltaphi<min) {
 	  min=deltatheta+deltaphi;
 	  good1 = goodtracksArray[itr1];
@@ -353,6 +366,7 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
     AliTrackPoint point;
     Int_t ipt,volId,modId,layerId;
     Int_t jpt=0;
+    Bool_t smallAngleWrtITSModulePlanes=kFALSE;
     array = track1->GetTrackPointArray();
     for(ipt=0; ipt<array->GetNPoints(); ipt++) {
       array->GetPoint(point,ipt);
@@ -360,6 +374,17 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 	volId = point.GetVolumeID();
 	layerId = AliGeomManager::VolUIDToLayer(volId,modId);
 	if(layerId>6) continue;
+	// check minAngleWrtITSModulePlanes
+	if(cuts) {
+	  Double_t p[3]; track1->GetDirection(p);
+	  TVector3 pvec(p[0],p[1],p[2]);
+	  Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+	  TVector3 normvec(rot[1],-rot[0],0.);
+	  Double_t angle = pvec.Angle(normvec);
+	  if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
+	  angle = 0.5*TMath::Pi()-angle;
+	  if(angle<minAngleWrtITSModulePlanes) smallAngleWrtITSModulePlanes=kTRUE;
+	}
       }
       array2->AddPoint(jpt,&point);
       jpt++;
@@ -371,11 +396,23 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
 	volId = point.GetVolumeID();
 	layerId = AliGeomManager::VolUIDToLayer(volId,modId);
 	if(layerId>6) continue;
+	// check minAngleWrtITSModulePlanes
+	if(cuts) {
+	  Double_t p[3]; track2->GetDirection(p);
+	  TVector3 pvec(p[0],p[1],p[2]);
+	  Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+	  TVector3 normvec(rot[1],-rot[0],0.);
+	  Double_t angle = pvec.Angle(normvec);
+	  if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
+	  angle = 0.5*TMath::Pi()-angle;
+	  if(angle<minAngleWrtITSModulePlanes) smallAngleWrtITSModulePlanes=kTRUE;
+	}
       }
       array2->AddPoint(jpt,&point);
       jpt++;
     }
 
+    if(smallAngleWrtITSModulePlanes) continue;
     pointsTree->Fill();
   }
 
@@ -385,6 +422,7 @@ void AliAlignmentTracks::ProcessESDCosmics(Bool_t onlyITS,
   }
 
   pointsFile->Close();
+  return;
 }
 
 //______________________________________________________________________________
