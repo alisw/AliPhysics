@@ -407,7 +407,7 @@ TObjArray* THerwig6::ImportParticles(Option_t *option)
   Int_t numpart = fHepevt->NHEP;
   TClonesArray &a = *((TClonesArray*)fParticles);
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
-    for (Int_t i = 0; i<=numpart; i++) {
+    for (Int_t i = 0; i < numpart; i++) {
       if (fHepevt->ISTHEP[i] == 1) {
 //
 //  Use the common block values for the TParticle constructor
@@ -432,7 +432,7 @@ TObjArray* THerwig6::ImportParticles(Option_t *option)
      }
   }
   else if (!strcmp(option,"All")) {
-    for (Int_t i = 0; i<=numpart; i++) {
+    for (Int_t i = 0; i < numpart; i++) {
       new(a[i]) TParticle(
                                    fHepevt->IDHEP[i],
                                    fHepevt->ISTHEP[i],
@@ -473,7 +473,7 @@ Int_t THerwig6::ImportParticles(TClonesArray *particles, Option_t *option)
   refParticles.Clear();
   Int_t numpart = fHepevt->NHEP;
   if (!strcmp(option,"") || !strcmp(option,"Final")) {
-    for (Int_t i = 0; i< numpart; i++) {
+    for (Int_t i = 0; i < numpart; i++) {
       if (fHepevt->ISTHEP[i] == 1) {
 //
 //  Use the common block values for the TParticle constructor
