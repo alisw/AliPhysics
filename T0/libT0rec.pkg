@@ -1,10 +1,11 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliT0RecPoint.cxx AliT0Reconstructor.cxx AliT0RawReader.cxx AliT0Calibrator.cxx
+SRCS= AliT0RecPoint.cxx AliT0Reconstructor.cxx AliT0RawReader.cxx AliT0Calibrator.cxx AliT0CalibLaserData.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
 
 DHDR:= T0recLinkDef.h
 
+EINCLUDE:= RAW
