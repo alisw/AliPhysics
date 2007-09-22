@@ -108,6 +108,8 @@ class AliHLTMUONTriggerReconstructor : public AliHLTLogging
   
   int fDDLId ;
   int fIdOffSet ;
+  
+  AliHLTInt32_t fTrigRecId;  // A running counter for the trigger record ID.
 
   bool MergeTrigHits(DataIdIndex& dataIndex);
   bool FindTrigHits() ;
