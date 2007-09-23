@@ -1307,7 +1307,7 @@ int main(int argc, const char** argv)
 	{
 		returnCode = ParseCommandLine(argc, argv, filename, continueParse, type);
 
-		if (returnCode == EXIT_SUCCESS)
+		if (returnCode == EXIT_SUCCESS and filename != NULL)
 		{
 			unsigned long bufferSize = 0;
 			returnCode = ReadFile(filename, buffer, bufferSize);
