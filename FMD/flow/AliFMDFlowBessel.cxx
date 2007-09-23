@@ -286,6 +286,25 @@ AliFMDFlowBessel::Iwhole(UInt_t in, Double_t x, Double_t* bi, Double_t* di)
 }
 
 //____________________________________________________________________
+namespace 
+{
+  Double_t* EnsureSize(Double_t*& a, UInt_t& old, const UInt_t size)
+  {
+    if (a && old < size) { 
+      // Will delete, and reallocate. 
+      if (old != 1) delete [] a;
+      a = 0;
+    }
+    if (!a && size > 0) {
+      // const UInt_t n = (size <= 1 ? 2 : size);
+      a              = new Double_t[size];
+      old            = size; // n;
+    }
+    return a;
+  }
+}
+      
+//____________________________________________________________________
 UInt_t 
 AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x, 
 		      Double_t* bi, Double_t* di)
@@ -296,6 +315,10 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x,
   UInt_t  in1 = UInt_t(fabs(n1));
   UInt_t  in2 = UInt_t(fabs(n2));
   UInt_t  nt  = UInt_t(n2 - n1 + 1);
+  static Double_t* tbi = 0;
+  static Double_t* tdi = 0;
+  static UInt_t    tn  = 0;
+
   if (Int_t(2 * fabs(n1)) % 2 == 1) { // Half-integer argument 
     if (Int_t(2 * fabs(n2)) % 2 != 1) { 
       std::cout << "If n1 is half-integer (" << n1 << ") then n2 "
@@ -310,16 +333,8 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x,
     Int_t l2    = (s1 > 0 ? in1 : 0);
 
     // Temporary buffers - only grows in size. 
-    static Double_t* tbi = 0;
-    static Double_t* tdi = 0;
-    static UInt_t    tn  = 0;
-    if (!tbi || tn < nt+1) { 
-      if (tbi) delete [] tbi;
-      if (tdi) delete [] tdi;
-      tn  = nt+1;
-      tbi = new Double_t[tn];
-      tdi = new Double_t[tn];
-    }
+    tbi = EnsureSize(tbi, tn, nt+1);
+    tdi = EnsureSize(tdi, tn, nt+1);
     // Double_t tbi[nt+1], tdi[nt+1];
 
     if (s1 < 0) { 
@@ -348,18 +363,12 @@ AliFMDFlowBessel::Inu(Double_t n1, Double_t n2, Double_t x,
   }
 
   UInt_t  n   = UInt_t(in1 > in2 ? in1 : in2);
-  static Double_t* tbi = 0;
-  static Double_t* tdi = 0;
-  static UInt_t    tn  = 0;
-  if (!tbi || tn < n+1) { 
-    if (tbi) delete [] tbi;
-    if (tdi) delete [] tdi;
-    tn  = n+1;
-    tbi = new Double_t[tn];
-    tdi = new Double_t[tn];
-  }
+  // Temporary buffers - only grows in size. 
+  tbi = EnsureSize(tbi, tn, n+1);
+  tdi = EnsureSize(tdi, tn, n+1);
   // Double_t  tbi[n+1];
   // Double_t  tdi[n+1];
+
   UInt_t  r   = Iwhole(n, x, tbi, tdi);
   if (r < n) 
     std::cerr << "Only got " << r << "/" << n << " values" 
