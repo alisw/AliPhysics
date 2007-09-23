@@ -188,39 +188,6 @@ AliHLTUInt32_t CalculateNEntries(BlockType& block, unsigned long bufferSize)
 }
 
 
-int DumpTriggerRecordsBlock(
-		const char* buffer, unsigned long bufferSize,
-		bool continueParse
-	)
-{
-	AliHLTMUONTriggerRecordsBlockReader block(buffer, bufferSize);
-	// TODO
-	return EXIT_SUCCESS;
-}
-
-
-int DumpTrigRecsDebugBlock(
-		const char* buffer, unsigned long bufferSize,
-		bool continueParse
-	)
-{
-	AliHLTMUONTrigRecsDebugBlockReader block(buffer, bufferSize);
-	// TODO
-	return EXIT_SUCCESS;
-}
-
-
-int DumpTriggerChannelsBlock(
-		const char* buffer, unsigned long bufferSize,
-		bool continueParse
-	)
-{
-	AliHLTMUONTriggerChannelsBlockReader block(buffer, bufferSize);
-	// TODO
-	return EXIT_SUCCESS;
-}
-
-
 int DumpRecHitStruct(
 		const char* buffer, unsigned long bufferSize,
 		const AliHLTMUONRecHitStruct* hit,
@@ -274,14 +241,294 @@ int DumpRecHitsBlock(
 }
 
 
+int DumpTriggerRecordStruct(
+               const char* buffer, unsigned long bufferSize, 
+               const AliHLTMUONTriggerRecordStruct* record,
+               bool continueParse
+       )
+{
+	// Step through the fields trying to print them.
+	// At each step check if we have not overflowed the buffer. If we have
+	// not, then we can print the field, otherwise we print the left over
+	// bytes assumed to be corrupted rubbish.
+	int result = CheckField(record->fId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Trigger Record ID: " << record->fId <<endl;
+	
+	result = CheckField(record->fFlags, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Flags: " << showbase << hex << record->fFlags << dec;
+		
+	// Print the individual trigger bits.
+	AliHLTMUONParticleSign sign;
+	bool hitset[4];
+	AliHLTMUONUtils::UnpackTriggerRecordFlags(record->fFlags, sign, hitset);
+	cout << " [Sign: " << sign << ", Hits set on chambers: ";
+	bool first = true;
+	for (AliHLTUInt32_t i = 0; i < 4; i++)
+	{
+		if (hitset[i])
+		{
+			cout << (first ? "" : ", ") << i+11;
+			first = false;
+		}
+	}
+	cout << (first ? "none]" : "]") << endl;
+
+	result = CheckField(record->fPx, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "Momentum: (px = " << record->fPx << ", ";
+
+	result = CheckField(record->fPy, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "py = " << record->fPy << ", ";
+
+	result = CheckField(record->fPz, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "pz = " << record->fPz << ") GeV/c"<<endl;
+	
+	cout << "Track hits:" << endl;
+	cout << "Chamber | X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "------------------------------------------------" << endl;
+	const AliHLTMUONRecHitStruct* hit = &record->fHit[0];
+	for(AliHLTUInt32_t ch = 0; ch < 4; ch++)
+	{
+	        cout << setw(10) << left << ch + 11 << setw(0);
+		result = DumpRecHitStruct(buffer, bufferSize, hit++, continueParse);
+		if (result != EXIT_SUCCESS) return result;
+	}
+
+	return result;
+
+}
+
+
+int DumpTriggerRecordsBlock(
+		const char* buffer, unsigned long bufferSize,
+		bool continueParse
+	)
+{
+	AliHLTMUONTriggerRecordsBlockReader block(buffer, bufferSize);
+	
+	int result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS and not continueParse) return result;
+	
+	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
+	
+	// Print the data block record entries.
+	const AliHLTMUONTriggerRecordStruct* entry = block.GetArray();
+	for(AliHLTUInt32_t i = 0; i < nentries; i++)
+	{
+		cout << "============================== Trigger Record number " << i+1
+			<< " of " << nentries << " ==============================" << endl;
+		int subResult = DumpTriggerRecordStruct(buffer, bufferSize, entry++, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	}
+	
+	return EXIT_SUCCESS;
+}
+
+
+int DumpTrigRecInfoStruct(const char* buffer, unsigned long bufferSize, 
+                          const AliHLTMUONTrigRecInfoStruct* debuginfo, 
+                          bool continueParse
+                          )
+{
+	// Step through the fields trying to print them.
+	// At each step check if we have not overflowed the buffer. If we have
+	// not, then we can print the field, otherwise we print the left over
+	// bytes assumed to be corrupted rubbish.
+	int result = CheckField(debuginfo->fTrigRecId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(22) << left << debuginfo->fTrigRecId << setw(0);
+
+	result = CheckField(debuginfo->fDetElemId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(20) << left << debuginfo->fDetElemId << setw(0);
+        
+	result = CheckField(debuginfo->fZmiddle, buffer, bufferSize, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	cout << setw(30) << left << debuginfo->fZmiddle << setw(0);
+
+	result = CheckField(debuginfo->fBl, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout <<debuginfo->fBl << setw(0) << endl;
+
+	return result;
+}
+
+
+int DumpTrigRecsDebugBlock(
+		const char* buffer, unsigned long bufferSize,
+		bool continueParse
+	)
+{
+	AliHLTMUONTrigRecsDebugBlockReader block(buffer, bufferSize);
+	
+	int result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS and not continueParse) return result;
+	
+	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
+	
+	// Print the data block record entries.
+	cout << "Trigger Record ID  | Detector ID  | Momentum X Component (Gev/c) | Integrated Magnetic Field (T.m)" << endl;
+	cout << "--------------------------------------------------------------------------------------------------" << endl;
+	const AliHLTMUONTrigRecInfoStruct* entry = block.GetArray();
+	for(AliHLTUInt32_t i = 0; i < nentries; i++)
+	{
+		int subResult = DumpTrigRecInfoStruct(buffer, bufferSize, entry++, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	}
+	
+	return EXIT_SUCCESS;
+}
+
+
+int DumpTriggerChannelStruct(const char* buffer, unsigned long bufferSize, 
+                      const AliHLTMUONTriggerChannelStruct* triggerchannel, 
+                      bool continueParse
+                      )
+{
+	// Step through the fields trying to print them.
+	// At each step check if we have not overflowed the buffer. If we have
+	// not, then we can print the field, otherwise we print the left over
+	// bytes assumed to be corrupted rubbish.
+	int result = CheckField(triggerchannel->fTrigRecId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(25) << left << triggerchannel->fTrigRecId << setw(0);
+
+	result = CheckField(triggerchannel->fChamber, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(13) << left << triggerchannel->fChamber << setw(0);
+
+	result = CheckField(triggerchannel->fSignal, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(10) << left << triggerchannel->fSignal << setw(0);
+
+	result = CheckField(triggerchannel->fRawDataWord, buffer, bufferSize, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	cout << showbase << hex << triggerchannel->fRawDataWord << dec << setw(0) << endl;
+	return result;
+}
+
+
+int DumpTriggerChannelsBlock(
+		const char* buffer, unsigned long bufferSize,
+		bool continueParse
+	)
+{
+        int result = EXIT_SUCCESS;
+	AliHLTMUONTriggerChannelsBlockReader block(buffer, bufferSize);
+	
+	result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS and not continueParse) return result;
+	
+	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
+	
+	// Print the data block record entries.
+	cout << " Trigger Record ID   | Chamber    | Signal   | Raw Data Word " << endl;
+	cout << "--------------------------------------------------------------" << endl;
+	const AliHLTMUONTriggerChannelStruct* entry = block.GetArray();
+	for(AliHLTUInt32_t i = 0; i < nentries; i++)
+	{
+		int subResult = DumpTriggerChannelStruct(buffer, bufferSize, entry++, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	}
+
+	return result;
+}
+
+
+int DumpClusterStruct(
+		      const char* buffer, unsigned long bufferSize,
+                      const AliHLTMUONClusterStruct* cluster,
+                      bool continueParse
+       )
+{
+	// Step through the fields trying to print them.
+	// At each step check if we have not overflowed the buffer. If we have
+	// not, then we can print the field, otherwise we print the left over
+	// bytes assumed to be corrupted rubbish.
+	int result = CheckField(cluster->fId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "cluster->fId: " << cluster->fId << "\t";
+
+	result = CheckField(cluster->fDetElemId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << "cluster->fDetElemId: " << cluster->fDetElemId << "\t";
+
+	result = CheckField(cluster->fNchannels, buffer, bufferSize, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	cout << "cluster->fNchannels: " << cluster->fNchannels <<endl;
+
+	cout << " Corresponding Hit: "<< endl;
+	cout << " X (cm)     | Y (cm)     | Z (cm)" << endl;
+	cout << "---------------------------------------" << endl;
+	const AliHLTMUONRecHitStruct * hit = & cluster->fHit;
+	result = DumpRecHitStruct(buffer, bufferSize, hit, continueParse);
+
+	return result;
+}
+
+
 int DumpClustersBlock(
 		const char* buffer, unsigned long bufferSize,
 		bool continueParse
 	)
 {
+        int result = EXIT_SUCCESS;
 	AliHLTMUONClustersBlockReader block(buffer, bufferSize);
-	// TODO
-	return EXIT_SUCCESS;
+	
+	result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS and not continueParse) return result;
+	
+	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
+	
+	// Print the data block record entries.
+	const AliHLTMUONClusterStruct* entry = block.GetArray();
+	for(AliHLTUInt32_t i = 0; i < nentries; i++)
+	{
+		cout << " ===================================================== Cluster Number "
+			<< i+1 << "==================================================" << endl; 
+		int subResult = DumpClusterStruct(buffer, bufferSize, entry++, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	}	
+
+	return result;
+}
+
+
+int DumpChannelStruct(
+               const char* buffer, unsigned long bufferSize,
+               const AliHLTMUONChannelStruct* channel,
+               bool continueParse                 
+       )
+{
+	// Step through the fields trying to print them.
+	// At each step check if we have not overflowed the buffer. If we have
+	// not, then we can print the field, otherwise we print the left over
+	// bytes assumed to be corrupted rubbish.
+	int result = CheckField(channel->fClusterId, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(16) << left << channel->fClusterId << setw(0);
+
+	result = CheckField(channel->fManu, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(16) << left << channel->fManu << setw(0);
+
+	result = CheckField(channel->fChannelAddress, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS) return result;
+	cout << setw(19) << left << channel->fChannelAddress << setw(0);
+
+	result = CheckField(channel->fSignal, buffer, bufferSize, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	cout << setw(16) << left << channel->fSignal << setw(0);
+
+	result = CheckField(channel->fRawDataWord, buffer, bufferSize, continueParse);
+	if(result != EXIT_SUCCESS) return result;
+	cout << showbase << hex << channel->fRawDataWord << dec << setw(0) <<endl;
+
+	return result;
 }
 
 
@@ -290,8 +537,23 @@ int DumpChannelsBlock(
 		bool continueParse
 	)
 {
+        int result = EXIT_SUCCESS;
 	AliHLTMUONChannelsBlockReader block(buffer, bufferSize);
-	// TODO
+	
+	result = CheckCommonHeader(block, buffer, bufferSize, continueParse);
+	if (result != EXIT_SUCCESS and not continueParse) return result;
+	
+	AliHLTUInt32_t nentries = CalculateNEntries(block, bufferSize);
+	
+	// Print the data block record entries.
+	cout << "Cluster Id  | Manu Address  | Channel Address  | Signal Value  | Raw Data Word " <<endl;
+	cout << "-------------------------------------------------------------------------------" <<endl;
+	const AliHLTMUONChannelStruct* entry = block.GetArray();
+	for(AliHLTUInt32_t i = 0; i < nentries; i++)
+	{ 
+		int subResult = DumpChannelStruct(buffer, bufferSize, entry++, continueParse);
+		if (subResult != EXIT_SUCCESS) return subResult;
+	}
 	return EXIT_SUCCESS;
 }
 
@@ -317,7 +579,7 @@ int DumpMansoTrackStruct(
 	result = CheckField(track->fFlags, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
 	cout << "Flags: " << showbase << hex << track->fFlags << dec;
-		
+	
 	// Print the individual trigger bits.
 	AliHLTMUONParticleSign sign;
 	bool hitset[4];
@@ -356,7 +618,7 @@ int DumpMansoTrackStruct(
 	const AliHLTMUONRecHitStruct* hit = &track->fHit[0];
 	for(AliHLTUInt32_t ch = 0; ch < 4; ch++)
 	{
-		cout << setw(10) << ch + 7;
+	        cout << setw(10) << left << ch + 7 << setw(0);
 		result = DumpRecHitStruct(buffer, bufferSize, hit++, continueParse);
 		if (result != EXIT_SUCCESS) return result;
 	}
