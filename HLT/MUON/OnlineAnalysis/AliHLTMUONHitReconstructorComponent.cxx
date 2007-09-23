@@ -30,6 +30,7 @@
 #include "AliHLTMUONHitReconstructorComponent.h"
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONDataBlockWriter.h"
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
@@ -285,6 +286,17 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
       if ( mySize<=0 )
 	continue; // No room left to write a further block.
       
+	AliHLTMUONRecHitsBlockWriter block(outputPtr+totalSize, size-totalSize);
+	if (not block.InitCommonHeader())
+	{
+		HLTError("There is not enough space in the output buffer for the new data block.",
+			 " We require at least %u bytes, but have %u bytes left.",
+			sizeof(AliHLTMUONRecHitsBlockWriter::HeaderType),
+			block.BufferSize()
+		);
+		break;
+	}
+      
       // Now copy the input block
       unsigned long copied = 0;
       // First copy all full multiples of the input block
@@ -292,9 +304,11 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
       // And the copy the remaining fragment of the block
       Logging( kHLTLogDebug, "1 : HLT::MUONHitRec::DoEvent", "Copying", "Copying %lu B - Copied: %lu B - totalSize: %lu B", 
 	       mySize-copied, copied, totalSize );
-      memcpy( outputPtr+totalSize+copied, &recHit[0], mySize);
+      memcpy( block.GetArray(), &recHit[0], mySize);
       Logging( kHLTLogDebug, "HLT::MUONHitRec::DoEvent", "Copied", "Copied: %lu B - totalSize: %lu B", 
 	       copied, totalSize );
+
+	block.SetNumberOfEntries(nofHit);
 
 	// Fill a block data structure for our output block.
 	AliHLTComponentBlockData bd;
@@ -302,13 +316,13 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 	bd.fPtr = outputPtr;
 	// This block's start (offset) is after all other blocks written so far.
 	bd.fOffset = totalSize;
-	bd.fSize = mySize;
+	bd.fSize = block.BytesUsed();
 	bd.fDataType = AliHLTMUONConstants::RecHitsBlockDataType();
 	bd.fSpecification = blocks[n].fSpecification;
 	outputBlocks.push_back(bd);
 	
       // Increase the total amount of data written so far to our output memory
-      totalSize += mySize;
+      totalSize += block.BytesUsed();
     }
   // Finally we set the total size of output memory we consumed.
   size = totalSize;
