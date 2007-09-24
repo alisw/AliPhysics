@@ -242,7 +242,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		
 		HLTDebug("Handling block: %u, with fDataType.fID = '%s',"
 			  " fDataType.fID = '%s', fPtr = %p and fSize = %u bytes.",
-			n, static_cast<char*>(id), static_cast<char*>(origin)
+			n, static_cast<char*>(id), static_cast<char*>(origin),
 			blocks[n].fPtr, blocks[n].fSize
 		);
 
