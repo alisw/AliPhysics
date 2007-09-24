@@ -96,7 +96,7 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fPtr = ptr;
   fSize = size;
 
-  tmpptr = (AliHLTTPCUnpackedRawData*) fPtr;
+  tmpptr = reinterpret_cast<AliHLTTPCUnpackedRawData*>(fPtr);
   fDigitRowData = (AliHLTTPCDigitRowData*) tmpptr->fDigits;
   fActRowData = (AliHLTTPCDigitRowData*) fDigitRowData;
 
@@ -105,12 +105,12 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   fFirstRow=AliHLTTPCTransform::GetFirstRow(patch);
   fLastRow=AliHLTTPCTransform::GetLastRow(patch);
 
-  return 0;
   fRow = fFirstRow; 
 
   if ((Int_t)fActRowData->fRow != fRow){
       HLTWarning("Row number should match! fActRowData->fRow=%d fRow=%d", fActRowData->fRow, fRow);
   }
+  return 0;
 }
 
 bool AliHLTTPCDigitReaderUnpacked::Next(){
