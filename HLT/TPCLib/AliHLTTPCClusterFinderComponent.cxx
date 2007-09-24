@@ -217,7 +217,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       parameter.Remove(TString::kLeading, ' '); // remove all blanks
       if (parameter.IsDigit()) {
 	AliHLTTPCTransform::SetNTimeBins(parameter.Atoi());
-	HLTInfo("number of timebins set to %d", AliHLTTPCTransform::GetNTimeBins());
+	HLTInfo("number of timebins set to %d, zbin=%f", AliHLTTPCTransform::GetNTimeBins(), AliHLTTPCTransform::GetZWidth());
       } else {
 	HLTError("Cannot timebin specifier '%s'.", argv[i+1]);
 	return EINVAL;
@@ -402,10 +402,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       row[0] = AliHLTTPCTransform::GetFirstRow( patch );
       row[1] = AliHLTTPCTransform::GetLastRow( patch );
 	
-      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
-	       "Input: Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
-	       realPoints, slice, patch, row[0], row[1] );
-	
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 
 #ifndef KENNETH
@@ -450,9 +446,6 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       }
       realPoints = fClusterFinder->GetNumberOfClusters();
 	
-      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
-	       "Number of spacepoints found: %lu.", realPoints );
-	
       outPtr->fSpacePointCnt = realPoints;
       nSize = sizeof(AliHLTTPCSpacePointData)*realPoints;
 #ifndef KENNETH
@@ -460,8 +453,8 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 #else
       mysize += nSize+sizeof(AliHLTTPCClusters);
 #endif 
-	
-      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Input Spacepoints", 
+
+      Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
 	       "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
 	       realPoints, slice, patch, row[0], row[1] );
       AliHLTComponentBlockData bd;
