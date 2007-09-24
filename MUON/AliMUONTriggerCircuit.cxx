@@ -26,6 +26,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONTriggerCircuit.h"
+#include "AliMUONConstants.h"
 
 #include "AliMpTriggerSegmentation.h"
 #include "AliMpTrigger.h"
@@ -450,3 +451,24 @@ Int_t AliMUONTriggerCircuit::FirstStrip(AliMpLocalBoard* localBoard)
   return iFirstStrip;
 }
 
+//----------------------------------------------------------------------
+Float_t AliMUONTriggerCircuit::PtCal(Int_t localBoardId, Int_t istripX, Int_t idev, Int_t istripY) const{
+/// returns calculated pt for circuit/istripX/idev/istripY according 
+/// to the formula of the TRD. Note : idev (input) is in [0+30]
+
+  //  Int_t jdev = idev - 15;        // jdev in [-15+15]
+  Int_t istripX2=istripX+idev+1; // find istripX2 using istripX and idev
+
+  Float_t yPosX1=fYpos11[localBoardId][istripX];
+  Float_t yPosX2=fYpos21[localBoardId][istripX2];
+  Float_t xPosY1=fXpos11[localBoardId][istripY];
+
+// Z distance between IP and center of dipole
+  Float_t zf= TMath::Abs(0.5 *(AliMUONConstants::CoilZ() + AliMUONConstants::YokeZ()));
+  Float_t z1=AliMUONConstants::DefaultChamberZ(10);
+  Float_t z2=AliMUONConstants::DefaultChamberZ(12);
+  Float_t thetaDev=(1./zf)*(yPosX1*z2-yPosX2*z1)/(z2-z1);
+  Float_t xf=xPosY1*zf/z1; 
+  Float_t yf=yPosX2-((yPosX2-yPosX1)*(z2-zf))/(z2-z1);
+  return (3.*0.3/TMath::Abs(thetaDev)) * TMath::Sqrt(xf*xf+yf*yf)/zf;
+}

@@ -44,7 +44,8 @@ public:
   void  SetTransformer(const AliMUONGeometryTransformer* transformer) {fTransformer = transformer;}
   /// Get pointer to transformations
   const AliMUONGeometryTransformer* GetTransformer() const {return fTransformer;}
-
+  Float_t PtCal(Int_t localBoardId, Int_t istripX, Int_t idev, Int_t istripY) const;
+  
 private:
 
   void LoadYPos(AliMpLocalBoard* localBoard);
