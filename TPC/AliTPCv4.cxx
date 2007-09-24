@@ -41,7 +41,6 @@ TPC version for the krypton runs (Marek)
 #include <TPDGCode.h>
 #include <TString.h>
 #include "AliLog.h"
-#include "AliTrackReference.h"
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv4.h"
@@ -687,12 +686,12 @@ void AliTPCv4::CreateGeometry()
    Double_t x0,y0;
    x0=110.2*TMath::Cos(openingAngle);
    y0=110.2*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); //a-side 
-   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); //c-side
+   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); //a-side 
+   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); //c-side
    x0=188.45*TMath::Cos(openingAngle);
    y0=188.45*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); //a-side
-   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); //c-side
+   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); //a-side
+   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); //c-side
    //
    //
    // A-side
@@ -1150,7 +1149,7 @@ void AliTPCv4::Init()
 
   gMC->SetMaxNStep(30000); // max. number of steps increased
 
-  gMC->Gstpar(idtmed[20],"LOSS",5); // specific energy loss
+  gMC->Gstpar(idtmed[20],"LOSS",6); // specific energy loss
 
   AliInfo("*** TPC version 4 initialized ***");
   AliInfo(Form("Maximum number of steps = %d",gMC->GetMaxNStep()));
@@ -1232,7 +1231,7 @@ void AliTPCv4::StepManager()
   if(sector != fSecOld){
     fSecOld=sector;
     // add track reference
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kTPC);
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber());
   }  
   // track is in the sensitive strip
   if(id == fIdSens){
@@ -1281,7 +1280,7 @@ void AliTPCv4::StepManager()
   if(gMC->TrackStep() > 0){ 
 
     Int_t nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
-    nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
+    nel=TMath::Min(nel,30); // 30 electrons corresponds to 1 keV
     //
     gMC->TrackPosition(p);
     hits[0]=p[0];
