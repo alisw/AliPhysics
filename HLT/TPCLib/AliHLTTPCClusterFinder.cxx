@@ -234,6 +234,7 @@ void AliHLTTPCClusterFinder::Read(void* ptr,unsigned long size){
 
 void AliHLTTPCClusterFinder::ProcessDigits()
 {
+  int iResult=0;
   bool readValue = true;
   Int_t newRow = 0;    
   Int_t rowOffset = 0;
@@ -290,7 +291,8 @@ void AliHLTTPCClusterFinder::ProcessDigits()
     baseline.SetThreshold(fSignalThreshold);
   }
 
-  while ( readValue ){   // Reads through all digits in block
+  while ( readValue!=0 && iResult>=0){   // Reads through all digits in block
+    iResult=0;
 
     if(pad != lastpad){
       //This is a new pad
@@ -332,7 +334,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
       bLastWasFalling = 0;
     }
 
-    while(1){ //Loop over time bins of current pad
+    while(iResult>=0){ //Loop over time bins of current pad
       // read all the values for one pad at once to calculate the base line
       if (pCurrentPad) {
 	if (!pCurrentPad->IsStarted()) {
@@ -384,8 +386,8 @@ void AliHLTTPCClusterFinder::ProcessDigits()
       }
 
       if(time >= AliHLTTPCTransform::GetNTimeBins()){
-	HLTWarning("Timebin (%d) out of range (%d)", time, AliHLTTPCTransform::GetNTimeBins());
-	break;
+	HLTWarning("Pad %d: Timebin (%d) out of range (%d)", pad, time, AliHLTTPCTransform::GetNTimeBins());
+	iResult=-ERANGE;
       }
 
 
@@ -436,6 +438,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 
       if(newPad != pad)break; //new pad
       if(newTime != time+1) break; //end of sequence
+      if(iResult<0) break;
 
       // pad = newpad;    is equal
       time = newTime;
