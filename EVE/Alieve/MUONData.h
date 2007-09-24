@@ -38,6 +38,7 @@ class MUONData : public TObject, public Reve::ReferenceCount
 
   void Reset();
 
+  void LoadDigits(TTree* tree);
   void LoadRecPoints(TTree* tree);
   void LoadHits(TTree* tree);
   void LoadRaw(TString fileName);

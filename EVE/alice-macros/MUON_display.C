@@ -14,6 +14,9 @@ Bool_t g_fromRaw = kFALSE;
 void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
 {
  
+  if (!AliMpSegmentation::Instance()) AliMpCDB::LoadMpSegmentation();  
+  if (!AliMpDDLStore::Instance())     AliMpCDB::LoadDDLStore();
+
   TTree* dt = 0;
   TTree* ct = 0;
   TTree* ht = 0;
@@ -166,6 +169,8 @@ void MUON_tracks() {
 
   }
 
+  rl->UnloadTracks("MUON");
+
 }
 
 //_____________________________________________________________________________
@@ -217,12 +222,14 @@ void MUON_trigger_tracks() {
 
   }
 
+  rl->UnloadTracks("MUON");
+
 }
 
 //_____________________________________________________________________________
 void MUON_ESD_tracks() {
 
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
 
   Reve::TrackList* lt = new Reve::TrackList("ESD-Tracks"); 
   lt->SetMainColor(Color_t(6));
@@ -252,39 +259,28 @@ void MUON_ESD_tracks() {
 //_____________________________________________________________________________
 void MUON_Ref_tracks() {
 
-  AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
+  TString dataPath = TString(Alieve::gEvent->GetTitle());
+  dataPath.Append("/galice.root");
 
-  AliLoader * ml = rl->GetLoader("MUONLoader");
-  AliMUONData * mdata = new AliMUONData(ml,"MUON","MUON");
-
-  rl->LoadKinematics("READ");
-  rl->LoadTrackRefs("READ");
-
-  AliMUONRecoCheck rc(rl,mdata);
-
-  rc.ResetTracks();
-  rc.MakeTrackRef();
+  AliMUONRecoCheck recoCheck(dataPath.Data(),dataPath.Data());
+  AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(Alieve::gEvent->GetEventId());
+  TIter next(trackRefStore->CreateIterator());
+  AliMUONTrack* trackRef;
   
   Reve::TrackList* lt = new Reve::TrackList("Ref-Tracks"); 
   lt->SetMainColor(Color_t(6));
-  //lt->SetMUON();
 
   gReve->AddRenderElement(lt);
 
-  AliMUONTrack *mt;
   Reve::RecTrack rt;
-  TClonesArray * trackRefArray = rc.GetMuonTrackRef();
-  Int_t nTrackRef = trackRefArray->GetEntriesFast();
-  
-  for (Int_t i = 0; i < nTrackRef; i++) {
+  Int_t i = 0;  
+  while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) ) {
 
-    mt = (AliMUONTrack *)trackRefArray->At(i);
-
-    rt.label = i;
+    rt.label = i++;
 
     Alieve::MUONTrack* track = new Alieve::MUONTrack(&rt, lt->GetRnrStyle());
 
-    track->MakeRefTrack(mt);
+    track->MakeRefTrack(trackRef);
 
     gReve->AddRenderElement(lt, track);
 
@@ -335,6 +331,8 @@ void MUON_MC_tracks() {
     gReve->AddRenderElement(lt, track);
 
   }
+
+  rl->UnloadKinematics();
 
 }
 

@@ -25,6 +25,7 @@
 #include <AliMUONRawCluster.h>
 #include <AliMUONVDigit.h>
 #include "AliMUONDigitStoreV1.h"
+#include "AliMUONVDigitStore.h"
 #include "TTree.h"
 #include "TString.h"
 #include "TClonesArray.h"
@@ -277,6 +278,44 @@ void MUONData::LoadHits(TTree* tree)
 }
 
 //______________________________________________________________________
+void MUONData::LoadDigits(TTree* tree)
+{
+  // 
+  // load digits from the TreeD
+  //
+
+  AliMUONVDigitStore *digitStore = AliMUONVDigitStore::Create(*tree);
+  digitStore->Clear();
+  digitStore->Connect(*tree,0);
+
+  tree->GetEvent(0);
+
+  AliMUONVDigit* digit;
+  TIter next(digitStore->CreateIterator());
+  
+  Int_t cathode, detElemId, ix, iy, charge, chamber, adc;
+  
+  while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
+    {
+      cathode   = digit->Cathode();
+      ix        = digit->PadX();
+      iy        = digit->PadY();
+      detElemId = digit->DetElemId();      
+      charge    = (Int_t)digit->Charge();
+      adc       = digit->ADC();
+      chamber   = detElemId/100 - 1;
+      if (chamber > 9) {
+	fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,charge);
+      } else {
+	fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,adc);
+      }
+    }
+    
+  delete digitStore;
+
+}
+
+//______________________________________________________________________
 void MUONData::LoadRaw(TString fileName)
 {
   //
@@ -319,7 +358,7 @@ void MUONData::LoadRaw(TString fileName)
   AliMUONVDigit* digit;
   TIter next(digitStore.CreateIterator());
   
-  Int_t cathode, detElemId, ix, iy, charge, chamber;
+  Int_t cathode, detElemId, ix, iy, charge, chamber, adc;
   
   while ( ( digit = static_cast<AliMUONVDigit*>(next() ) ) )
   {
@@ -328,9 +367,15 @@ void MUONData::LoadRaw(TString fileName)
       iy        = digit->PadY();
       detElemId = digit->DetElemId();      
       charge    = (Int_t)digit->Charge();
+      adc       = digit->ADC();
       chamber   = detElemId/100 - 1;
-      fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,charge);
+      if (chamber > 9) {
+	fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,charge);
+      } else {
+	fChambers[chamber]->RegisterDigit(detElemId,cathode,ix,iy,adc);
+      }
   }
+
 }
 
 //______________________________________________________________________
