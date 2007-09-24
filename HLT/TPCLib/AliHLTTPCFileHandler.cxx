@@ -196,13 +196,9 @@ Int_t AliHLTTPCFileHandler::LoadStaticIndex(Char_t *prefix,Int_t event)
 void AliHLTTPCFileHandler::FreeDigitsTree()
 { 
   //free digits tree
-  if(!fDigitsTree)
-    {
-      LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::FreeDigitsTree()","Pointer")
-	<<"Cannot free digitstree, it is not present"<<ENDLOG;
-      return;
-    }
-  delete fDigits;
+  if (fDigits) {
+    delete fDigits;
+  }
   fDigits=0;
   fDigitsTree=0;
 
@@ -579,12 +575,12 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
 	localcount++;
       } while (fDigits->Next());
+      Byte_t *tmp = (Byte_t*)tempPt;
+      Int_t size = sizeof(AliHLTTPCDigitRowData)
+	+ ndigits[lrow]*sizeof(AliHLTTPCDigitData);
+      tmp += size;
+      tempPt = (AliHLTTPCDigitRowData*)tmp;
     }
-    Byte_t *tmp = (Byte_t*)tempPt;
-    Int_t size = sizeof(AliHLTTPCDigitRowData)
-                                      + ndigits[lrow]*sizeof(AliHLTTPCDigitData);
-    tmp += size;
-    tempPt = (AliHLTTPCDigitRowData*)tmp;
   }
   delete [] ndigits;
   return data;
