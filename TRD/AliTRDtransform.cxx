@@ -195,9 +195,6 @@ void AliTRDtransform::SetDetector(Int_t det)
 
   // Get the current transformation matrix
   fMatrix            = fGeo->GetCorrectionMatrix(det);
-  if (!fMatrix) {
-    AliError("No transformation matrix available\n");
-  }
 
 }
 
@@ -239,56 +236,71 @@ void AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
   // Parameter to adjust the X position
   const Double_t kX0shift = 2.52;
 
-  // Calibration values
-  Double_t vdrift      = fCalVdriftDetValue * fCalVdriftROC->GetValue(col,row);
-  Double_t t0          = fCalT0DetValue     + fCalT0ROC->GetValue(col,row);
+  if (!fMatrix) {
 
-  // T0 correction
-  Double_t timeT0Cal   = time - t0;
-  // Calculate the X-position,
-  Double_t xLocal      = (timeT0Cal + 0.5) / fSamplingFrequency * vdrift; 
+    x[0] = 0.0;
+    x[1] = 0.0;
+    x[2] = 0.0;
+    x[3] = 0.0;
+    x[4] = 0.0;
+    x[5] = 0.0;
+    i[2] = 0;
 
-  // Length of the amplification region
-  Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
-  // The drift distance
-  Double_t driftLength = TMath::Max(xLocal - 0.5*ampLength,0.0);
-  // ExB correction
-  Double_t exbCorr     = fCalibration->GetOmegaTau(vdrift
-                                                  ,-0.1*AliTracker::GetBz());
-
-  // Pad dimensions
-  Double_t rowSize     = fPadPlane->GetRowSize(row);
-  Double_t colSize     = fPadPlane->GetColSize(col);
-
-  // Invert the X-position,
-  // apply ExB correction to the Y-position
-  // and move to the Z-position relative to the middle of the chamber
-  posLocal[0] = -xLocal;
-  posLocal[1] =  (fPadPlane->GetColPos(col) - (x[0] + 0.5) * colSize) - driftLength * exbCorr;
-  posLocal[2] =  (fPadPlane->GetRowPos(row) -         0.5  * rowSize) - fZShiftIdeal;
-
-  // Go to tracking coordinates
-  fMatrix->LocalToMaster(posLocal,posTracking);
-
-  // The total charge of the cluster
-  Double_t q0             = x[1];
-  Double_t q1             = x[2];
-  Double_t q2             = x[3];
-  Double_t clusterCharge  = q0 + q1 + q2; 
-  Double_t clusterSigmaY2 = 0.0;
-  if (clusterCharge > 0.0) {
-    clusterSigmaY2 = (q1 * (q0 + q2) + 4.0 * q0 * q2)
-    	           / (clusterCharge*clusterCharge);
   }
+  else {
+ 
+    // Calibration values
+    Double_t vdrift      = fCalVdriftDetValue * fCalVdriftROC->GetValue(col,row);
+    Double_t t0          = fCalT0DetValue     + fCalT0ROC->GetValue(col,row);
 
-  // Output values
-  x[0] = posTracking[0] + kX0shift;
-  x[1] = posTracking[1];
-  x[2] = posTracking[2];
-  x[3] = clusterCharge;
-  x[4] = colSize*colSize * (clusterSigmaY2 + 1.0/12.0);
-  x[5] = rowSize*rowSize / 12.0;                                       
-  i[2] = TMath::Nint(timeT0Cal);
+    // T0 correction
+    Double_t timeT0Cal   = time - t0;
+    // Calculate the X-position,
+    Double_t xLocal      = (timeT0Cal + 0.5) / fSamplingFrequency * vdrift; 
+
+    // Length of the amplification region
+    Double_t ampLength   = (Double_t) AliTRDgeometry::CamHght();
+    // The drift distance
+    Double_t driftLength = TMath::Max(xLocal - 0.5*ampLength,0.0);
+    // ExB correction
+    Double_t exbCorr     = fCalibration->GetOmegaTau(vdrift
+                                                    ,-0.1*AliTracker::GetBz());
+
+    // Pad dimensions
+    Double_t rowSize     = fPadPlane->GetRowSize(row);
+    Double_t colSize     = fPadPlane->GetColSize(col);
+
+    // Invert the X-position,
+    // apply ExB correction to the Y-position
+    // and move to the Z-position relative to the middle of the chamber
+    posLocal[0] = -xLocal;
+    posLocal[1] =  (fPadPlane->GetColPos(col) - (x[0] + 0.5) * colSize) - driftLength * exbCorr;
+    posLocal[2] =  (fPadPlane->GetRowPos(row) -         0.5  * rowSize) - fZShiftIdeal;
+
+    // Go to tracking coordinates
+    fMatrix->LocalToMaster(posLocal,posTracking);
+
+    // The total charge of the cluster
+    Double_t q0             = x[1];
+    Double_t q1             = x[2];
+    Double_t q2             = x[3];
+    Double_t clusterCharge  = q0 + q1 + q2; 
+    Double_t clusterSigmaY2 = 0.0;
+    if (clusterCharge > 0.0) {
+      clusterSigmaY2 = (q1 * (q0 + q2) + 4.0 * q0 * q2)
+    	             / (clusterCharge*clusterCharge);
+    }
+
+    // Output values
+    x[0] = posTracking[0] + kX0shift;
+    x[1] = posTracking[1];
+    x[2] = posTracking[2];
+    x[3] = clusterCharge;
+    x[4] = colSize*colSize * (clusterSigmaY2 + 1.0/12.0);
+    x[5] = rowSize*rowSize / 12.0;                                       
+    i[2] = TMath::Nint(timeT0Cal);
+
+  }
 
 }
 
