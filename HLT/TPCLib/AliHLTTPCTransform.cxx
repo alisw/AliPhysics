@@ -1823,6 +1823,10 @@ Bool_t AliHLTTPCTransform::Sector2Slice(Int_t & slice, Int_t & slicerow, Int_t s
 Double_t AliHLTTPCTransform::GetMaxY(Int_t slicerow)
 {
   //get maximum y value (for slice 0)
+  if (slicerow>=fgNRow) {
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTransform::GetMaxY","Slicerow")
+      <<AliHLTTPCLog::kDec<<"slicerow out of range"<<slicerow<<ENDLOG;
+  }
  if(slicerow < fgNRowLow)
      return fgPadPitchWidthLow*fgNPads[slicerow]/2; 
  
@@ -1882,12 +1886,17 @@ void AliHLTTPCTransform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t p
   //Transformation from rawdata to local coordinate system
   
   Int_t slice,slicerow;
-  Sector2Slice(slice, slicerow, sector, row);  
+  if (Sector2Slice(slice, slicerow, sector, row)==kFALSE) return;
 
   //X-Value
   xyz[0]=Row2X(slicerow); 
 
   //Y-Value
+  if (slicerow>=fgNRow) {
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCTransform::GetMaxY","Slicerow")
+      <<AliHLTTPCLog::kDec<<"slicerow out of range"<<slicerow<<ENDLOG;
+    return;
+  }
   Int_t npads= fgNPads[slicerow];
 
   if(fgSectorLow[sector])
@@ -1897,9 +1906,9 @@ void AliHLTTPCTransform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t p
 
   //Z-Value (remember PULSA Delay)
   if(slice < 18)
-    xyz[2]=fgZLength-fgZWidth*time+fgZOffset;
+    xyz[2]=GetZLength()-GetZWidth()*time+GetZOffset();
   else
-    xyz[2]=fgZWidth*time-fgZOffset-fgZLength;
+    xyz[2]=GetZWidth()*time-GetZOffset()-GetZLength();
 }
 
 void AliHLTTPCTransform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Int_t pad,Int_t time)
@@ -1922,9 +1931,9 @@ void AliHLTTPCTransform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Int_t pad
 
   //Z-Value (remember PULSA Delay)
   if(slice < 18)
-    xyz[2]=fgZLength-fgZWidth*time+fgZOffset;
+    xyz[2]=GetZLength()-GetZWidth()*time+GetZOffset();
   else
-    xyz[2]=fgZWidth*time-fgZOffset-fgZLength;
+    xyz[2]=GetZWidth()*time-GetZOffset()-GetZLength();
 }
 
 void AliHLTTPCTransform::RawHLT2Local(Float_t *xyz,Int_t slice,
@@ -1944,9 +1953,9 @@ void AliHLTTPCTransform::RawHLT2Local(Float_t *xyz,Int_t slice,
 
   //Z-Value
   if(slice < 18)
-    xyz[2]=fgZLength-fgZWidth*time+fgZOffset;
+    xyz[2]=GetZLength()-GetZWidth()*time+GetZOffset();
   else
-    xyz[2]=fgZWidth*time-fgZOffset-fgZLength;
+    xyz[2]=GetZWidth()*time-GetZOffset()-GetZLength();
 }
 
 void AliHLTTPCTransform::RawHLT2Local(Float_t *xyz,Int_t slice,
@@ -1966,9 +1975,9 @@ void AliHLTTPCTransform::RawHLT2Local(Float_t *xyz,Int_t slice,
 
   //Z-Value
   if(slice < 18)
-    xyz[2]=fgZLength-fgZWidth*time+fgZOffset;
+    xyz[2]=GetZLength()-GetZWidth()*time+GetZOffset();
   else
-    xyz[2]=fgZWidth*time-fgZOffset-fgZLength;
+    xyz[2]=GetZWidth()*time-GetZOffset()-GetZLength();
 }
 
 void AliHLTTPCTransform::Local2Global(Float_t *xyz,Int_t sector,Int_t row)
@@ -2061,9 +2070,9 @@ void AliHLTTPCTransform::Local2Raw(Float_t *xyz,Int_t sector,Int_t row)
     xyz[1]=xyz[1]/fgPadPitchWidthUp+0.5*(fgNPads[slicerow]-1);
 
   if(slice < 18)
-    xyz[2]=(fgZLength-xyz[2]+fgZOffset)/fgZWidth;
+    xyz[2]=(GetZLength()-xyz[2]+GetZOffset())/GetZWidth();
   else
-    xyz[2]=(fgZLength+xyz[2]+fgZOffset)/fgZWidth;
+    xyz[2]=(GetZLength()+xyz[2]+GetZOffset())/GetZWidth();
 }
 
 void AliHLTTPCTransform::LocHLT2Raw(Float_t *xyz,Int_t slice,Int_t slicerow)
@@ -2078,9 +2087,9 @@ void AliHLTTPCTransform::LocHLT2Raw(Float_t *xyz,Int_t slice,Int_t slicerow)
     xyz[1]=xyz[1]/fgPadPitchWidthUp+0.5*(fgNPads[slicerow]-1);
 
   if(slice < 18)
-    xyz[2]=(fgZLength-xyz[2]+fgZOffset)/fgZWidth;
+    xyz[2]=(GetZLength()-xyz[2]+GetZOffset())/GetZWidth();
   else
-    xyz[2]=(fgZLength+xyz[2]+fgZOffset)/fgZWidth;
+    xyz[2]=(GetZLength()+xyz[2]+GetZOffset())/GetZWidth();
 }
 
 void AliHLTTPCTransform::Global2Raw(Float_t *xyz,Int_t sector,Int_t row)

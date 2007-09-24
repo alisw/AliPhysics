@@ -98,7 +98,7 @@ class AliHLTTPCTransform {
     fgSolenoidBField = f;
     fgBField=fgBFieldFactor*fgSolenoidBField*0.1;
   }
-  static void SetNTimeBins(Int_t i){fgNTimeBins = i;}
+  static void SetNTimeBins(Int_t i){fgNTimeBins = i; if (fgNTimeBins>0) {fgZWidth = fgZLength / (Double_t)fgNTimeBins;}}
   static void SetNRowLow(Int_t i){fgNRowLow = i;}
   static void SetNRowUp(Int_t i){fgNRowUp = i;}
   static void SetNRowUp1(Int_t i){fgNRowUp1 = i;}
@@ -117,7 +117,10 @@ class AliHLTTPCTransform {
   static void SetNSectorUp(Int_t i){fgNSectorUp = i;}
   static void SetPadPitchWidthLow(Double_t f){fgPadPitchWidthLow = f;}
   static void SetPadPitchWidthUp(Double_t f){fgPadPitchWidthUp = f;}
-  static void SetZWidth(Double_t f){fgZWidth = f;}
+  // Matthias 21.09.2007
+  // zwidth is given by zlength and no of timebins and should not be set
+  // otherwise. Was never used
+  //static void SetZWidth(Double_t f){fgZWidth = f;}
   static void SetZSigma(Double_t f){fgZSigma = f;}
   static void SetZLength(Double_t f){fgZLength = f;}
   static void SetZOffset(Double_t f){fgZOffset = f;}
