@@ -34,6 +34,19 @@
  *      file name base
  * \li -directory    <i> directory  </i> <br>
  *      target directory
+ * \li -subdir[=pattern] <br>
+ *      create sub dir for each event, the format patern can contain printf
+ *      specifiers to print the evntn no into the dir name, default is
+ *      'event%03d' (-subdir w/o additional pattern)
+ * \li -idfmt[=pattern] <br>
+ *      format specifier for the event id in the file name,                <br>
+ *      default: on, default pattern: '_0x%08x'
+ * \li -specfmt[=pattern] <br>
+ *      format specifier for the data specification in the file name       <br>
+ *      default: off, default pattern: '_0x%08x'
+ * \li -blocknofmt[=pattern] <br>
+ *      format specifier for the block no in the file name                 <br>
+ *      default: on, default pattern: '_0x%02x'
  * \li -enumerate <br>
  *      don't use the event number but an event counter beginning from 0
  * \li -concatenate-blocks <br>
@@ -44,14 +57,23 @@
  *      the block no, and the block data type in the file name. Currently,
  *      this implies the -concatenate-blocks option.
  *
- * The file name is built from the basename, the event number, the block
- * number and the data type in the format:
+ * By default, file name is built from the basename, the event number, the
+ * block number and the data type in the format:
  * <pre>
- * basename_eventno_blockno_dt
+ * basename_eventno_dt
  * </pre>
  * If the basename was not given, \em 'event' ist used instead. A file
  * extension after the last dot is separated from the basename and appended
  * to the final name.
+ *
+ * The naming rule can be changed by the -xxfmt options, which can contain
+ * printf format specifiers in order to print the corresponding variable. E.g.
+ * <pre>
+ * -specfmt             append specification
+ * -subdir=test_%d      store in sub folders
+ * -blcknofmt=_0x%x     format block no in hex
+ * -idfmt=_%04d         print id in 4-digits decimal number
+ * </pre>
  *
  * The class can be used as a base class for file writers. Additional
  * argument scan can be implemented in @ref ScanArgument which is called
@@ -62,10 +84,6 @@ class AliHLTFileWriter : public AliHLTDataSink  {
  public:
   /** standard constructor */
   AliHLTFileWriter();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTFileWriter(const AliHLTFileWriter&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTFileWriter& operator=(const AliHLTFileWriter&);
   /** destructor */
   virtual ~AliHLTFileWriter();
 
@@ -132,7 +150,10 @@ class AliHLTFileWriter : public AliHLTDataSink  {
    *                       no type string appanded if @ref kAliHLTVoidDataType
    * @param filename [out] string to receive the file name
    */
-  int BuildFileName(const AliHLTEventID_t eventID, const int blockID, const AliHLTComponentDataType& dataType, TString& filename);
+  int BuildFileName(const AliHLTEventID_t eventID, const int blockID,
+		    const AliHLTComponentDataType& dataType,
+		    const AliHLTUInt32_t specification,
+		    TString& filename);
 
   /**
    * Set a mode flag.
@@ -172,21 +193,35 @@ class AliHLTFileWriter : public AliHLTDataSink  {
 
     /** event enumeration flag */
     kEnumerate = 0x4
+
   };
 
  private:
+  /** copy constructor prohibited */
+  AliHLTFileWriter(const AliHLTFileWriter&);
+  /** assignment operator prohibited */
+  AliHLTFileWriter& operator=(const AliHLTFileWriter&);
+
   /** the basename of the output file */
   TString    fBaseName;                                            // see above
   /** the extension of the output file */
   TString    fExtension;                                           // see above
   /** target directory */
   TString    fDirectory;                                           // see above
+  /** base name of the event sub directories */
+  TString    fSubDirFormat;                                        // see above
+  /** event id format string (when added to file name) */
+  TString    fIdFormat;                                            // see above
+  /** specification format string (when added to file name) */
+  TString    fSpecFormat;                                          // see above
+  /** format string for block no (when added to file name) */
+  TString    fBlcknoFormat;                                        // see above
   /** enumeration format string */
   TString    fCurrentFileName;                                     // see above
 
   /** mode specifier, see @ref TWriterMode */
   Short_t    fMode;                                                // see above
 
-  ClassDef(AliHLTFileWriter, 1)
+  ClassDef(AliHLTFileWriter, 2)
 };
 #endif

@@ -28,6 +28,7 @@ using namespace std;
 #include "AliHLTFileWriter.h"
 #include <TObjArray.h>
 #include <TObjString.h>
+#include <TSystem.h>
 //#include <TMath.h>
 //#include <TFile.h>
 
@@ -43,6 +44,10 @@ AliHLTFileWriter::AliHLTFileWriter()
   fBaseName(""),
   fExtension(""),
   fDirectory(""),
+  fSubDirFormat(""),
+  fIdFormat(""),
+  fSpecFormat(""),
+  fBlcknoFormat(""),
   fCurrentFileName(""),
   fMode(0)
 {
@@ -51,26 +56,6 @@ AliHLTFileWriter::AliHLTFileWriter()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-}
-
-AliHLTFileWriter::AliHLTFileWriter(const AliHLTFileWriter&)
-  :
-  AliHLTDataSink(),
-  fBaseName(""),
-  fExtension(""),
-  fDirectory(""),
-  fCurrentFileName(""),
-  fMode(0)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTFileWriter& AliHLTFileWriter::operator=(const AliHLTFileWriter&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTFileWriter::~AliHLTFileWriter()
@@ -133,6 +118,40 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
       if ((bMissingParam=(++i>=argc))) break;
       fDirectory=argv[i];
 
+      // -subdir
+    } else if (argument.BeginsWith("-subdir")) {
+      argument.ReplaceAll("-subdir", "");
+      if (argument.BeginsWith("=")) {
+	fSubDirFormat=argument.Replace(0,1,"");
+      } else {
+	fSubDirFormat="event%03d";
+      }
+
+      // -idfmt
+    } else if (argument.BeginsWith("-idfmt")) {
+      argument.ReplaceAll("-idfmt", "");
+      if (argument.BeginsWith("=")) {
+	fIdFormat=argument.Replace(0,1,"");
+      }
+
+      // -specfmt
+    } else if (argument.BeginsWith("-specfmt")) {
+      argument.ReplaceAll("-specfmt", "");
+      if (argument.BeginsWith("=")) {
+	fSpecFormat=argument.Replace(0,1,"");
+      } else {
+	fSpecFormat="_0x%08x";
+      }
+
+      // -blcknofmt
+    } else if (argument.BeginsWith("-blcknofmt")) {
+      argument.ReplaceAll("-blcknofmt", "");
+      if (argument.BeginsWith("=")) {
+	fBlcknoFormat=argument.Replace(0,1,"");
+      } else {
+	fBlcknoFormat="_0x%02x";
+      }
+
       // -enumeration
     } else if (argument.CompareTo("-enumerate")==0) {
       SetMode(kEnumerate);
@@ -163,6 +182,11 @@ int AliHLTFileWriter::DoInit( int argc, const char** argv )
     iResult=-EINVAL;
   }
   if (iResult>=0) {
+    if (fIdFormat.IsNull() && fSubDirFormat.IsNull()) {
+      // set the default format string for the id if it is not set and
+      // no sub dirs set (the sub dir than contains the id)
+      fIdFormat="_0x%08x";
+    }
     iResult=InitWriter();
   }
 
@@ -233,7 +257,7 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
     //HLTDebug("block %d out of %d", n, evtData.fBlockCnt);
     TString filename;
     HLTDebug("dataspec 0x%x", blocks[n].fSpecification);
-    iResult=BuildFileName(evtData.fEventID, n, blocks[n].fDataType, filename);
+    iResult=BuildFileName(evtData.fEventID, n, blocks[n].fDataType, blocks[n].fSpecification, filename);
     ios::openmode filemode=(ios::openmode)0;
     if (fCurrentFileName.CompareTo(filename)==0) {
       // append to the file
@@ -260,7 +284,10 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
   return iResult;
 }
 
-int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blockID, const AliHLTComponentDataType& dataType, TString& filename)
+int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blockID,
+				    const AliHLTComponentDataType& dataType,
+				    const AliHLTUInt32_t specification,
+				    TString& filename)
 {
   // see header file for class documentation
   int iResult=0;
@@ -268,8 +295,16 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
   filename="";
   if (!fDirectory.IsNull()) {
     filename+=fDirectory;
-    if (!fDirectory.EndsWith("/"))
+    if (!filename.EndsWith("/"))
       filename+="/";
+  }
+  if (!fSubDirFormat.IsNull()) {
+    filename+=Form(fSubDirFormat, eventID);
+    if (!filename.EndsWith("/"))
+      filename+="/";
+  }
+  if (filename.EndsWith("/")) {
+    gSystem->mkdir(filename);
   }
   if (!fBaseName.IsNull())
     filename+=fBaseName;
@@ -277,19 +312,22 @@ int AliHLTFileWriter::BuildFileName(const AliHLTEventID_t eventID, const int blo
     filename+="event";
   if (!CheckMode(kConcatenateEvents)) {
     if (!CheckMode(kEnumerate)) {
-      if (eventID!=kAliHLTVoidEventID) {
-	filename+=Form("_0x%08x", eventID);
+      if (eventID!=kAliHLTVoidEventID && !fIdFormat.IsNull()) {
+	filename+=Form(fIdFormat, eventID);
       }
     } else {
       filename+=Form("_%d", GetEventCount());
     }
   }
   if (blockID>=0 && !CheckMode(kConcatenateBlocks)) {
-    filename+=Form("_0x%x", blockID);
+    if (!fBlcknoFormat.IsNull())
+      filename+=Form(fBlcknoFormat, blockID);
     if (dataType!=kAliHLTVoidDataType) {
       filename+="_";
       filename+=AliHLTComponent::DataType2Text(dataType).data();
     }
+    if (!fSpecFormat.IsNull())
+      filename+=Form(fSpecFormat, specification);
   }
   if (!fExtension.IsNull())
     filename+="." + fExtension;

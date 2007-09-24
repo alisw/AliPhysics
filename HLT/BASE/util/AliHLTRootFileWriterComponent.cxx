@@ -147,7 +147,7 @@ TFile* AliHLTRootFileWriterComponent::OpenFile(const AliHLTEventID_t eventID, co
   // see header file for class documentation
   TFile* pFile=NULL;
   TString filename("");
-  if ((BuildFileName(eventID, blockID, kAliHLTVoidDataType, filename))>=0 && filename.IsNull()==0) {
+  if ((BuildFileName(eventID, blockID, kAliHLTVoidDataType, 0, filename))>=0 && filename.IsNull()==0) {
     pFile=new TFile(filename, option);
     if (pFile) {
       if (pFile->IsZombie()) {
