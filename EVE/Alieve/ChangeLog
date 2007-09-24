@@ -1,3 +1,10 @@
+2007-09-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* MUONData.cxx:
+	* MUONData.h:
+	From Bogdan: modifications for the new structure of the data in
+	the MUON code.
+
 2007-08-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* JetPlane.cxx:

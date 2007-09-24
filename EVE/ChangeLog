@@ -1,3 +1,9 @@
+2007-09-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/MUON_display.C:
+	From Bogdan: modifications for the new structure of the data in
+	the MUON code.
+
 2007-08-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	Create branch EVE-dev.
