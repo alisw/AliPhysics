@@ -39,6 +39,7 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONCalculations.h"
 #include <vector>
+#include <cassert>
 
 const int AliHLTMUONTriggerReconstructor::fgkDetectorId = 0xB00;
 const int AliHLTMUONTriggerReconstructor::fgkDDLOffSet = 20 ;
@@ -184,7 +185,7 @@ bool AliHLTMUONTriggerReconstructor::Run(
 
 bool AliHLTMUONTriggerReconstructor::ReadDDL(
 		const AliHLTUInt32_t* rawData,
-		AliHLTUInt32_t rawDataSize
+		AliHLTUInt32_t /*rawDataSize*/
 	)
 {
 
