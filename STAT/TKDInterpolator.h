@@ -19,6 +19,16 @@ class TKDInterpolator : public TKDTreeIF
 public:
 	struct TKDNodeInfo
 	{
+		TKDNodeInfo(const Int_t ndim = 0);
+		~TKDNodeInfo();
+		void			Build(const Int_t ndim);
+
+		Int_t     fNDim;         // data dimension
+		Float_t   *fRefPoint;    //[fNDim] node's COG
+		Float_t   fRefValue;     // measured value for node 
+		TMatrixD  fCov;          // interpolator covariance matrix
+		TVectorD  fPar;          // interpolator parameters
+		Bool_t    fPDFstatus;    // status bit for node's PDF
 
 		ClassDef(TKDNodeInfo, 1) // node info for interpolator
 	};
@@ -51,16 +61,17 @@ private:
 					
 protected:
 	Int_t     fNTNodes;        //Number of evaluation data points
-	Float_t   **fRefPoints;    //[fNDim]
-	Float_t   *fRefValues;     //[fNTNodes]
-	TMatrixD  *fCov;           //[fNTNodes] cov matrix array for nodes
-	TVectorD  *fPar;           //[fNTNodes] parameters array for nodes
-	Bool_t    *fPDFstatus;     //[fNTNodes] status bit for node's PDF
+	TKDNodeInfo *fTNodes;      //[fNTNodes] interpolation node
+// 	Float_t   *fRefValues;     //[fNTNodes]
+// 	TMatrixD  *fCov;           //[fNTNodes] cov matrix array for nodes
+// 	TVectorD  *fPar;           //[fNTNodes] parameters array for nodes
+// 	Bool_t    *fPDFstatus;     //[fNTNodes] status bit for node's PDF
 
 private:
 	UChar_t   fStatus;         // status of the interpolator
 	Int_t     fLambda;         // number of parameters in polynom
 	Int_t			fDepth;          //! depth of the KD Tree structure used
+	Float_t   **fRefPoints;    //! temporary storage of COG data
 	Double_t	*fBuffer;        //! working space [2*fLambda]
 	TKDTreeIF *fKDhelper;      //! kNN finder
 	TLinearFitter *fFitter;    //! linear fitter	
@@ -69,13 +80,13 @@ private:
 };
 
 //__________________________________________________________________
-Bool_t	TKDInterpolator::GetCOGPoint(Int_t node, Float_t *coord, Float_t &val, Float_t &error) const
+Bool_t	TKDInterpolator::GetCOGPoint(Int_t node, Float_t *coord, Float_t &val, Float_t &err) const
 {
 	if(node < 0 || node > fNTNodes) return kFALSE;
 
-	for(int idim=0; idim<fNDim; idim++) coord[idim] = fRefPoints[idim][node];
-	val   = fRefValues[node];
-	error = fRefValues[node]/TMath::Sqrt(fBucketSize);
+	for(int idim=0; idim<fNDim; idim++) coord[idim] = fTNodes[node].fRefPoint[idim];
+	val = fTNodes[node].fRefValue;
+	err = fTNodes[node].fRefValue/TMath::Sqrt(fBucketSize);
 	return kTRUE;
 }
 

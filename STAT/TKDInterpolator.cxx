@@ -28,16 +28,46 @@ ClassImp(TKDInterpolator::TKDNodeInfo)
 /////////////////////////////////////////////////////////////////////
 
 //_________________________________________________________________
+TKDInterpolator::TKDNodeInfo::TKDNodeInfo(const Int_t dim): 
+	fNDim(dim)
+	,fRefPoint(0x0)
+	,fRefValue(0.)
+	,fCov()
+	,fPar()
+	,fPDFstatus(kFALSE)
+{
+	if(fNDim) Build(dim);
+}
+
+//_________________________________________________________________
+TKDInterpolator::TKDNodeInfo::~TKDNodeInfo()
+{
+	if(fRefPoint) delete [] fRefPoint;
+}
+
+//_________________________________________________________________
+void TKDInterpolator::TKDNodeInfo::Build(const Int_t dim)
+{
+	if(!dim) return;
+
+	fNDim = dim;
+	Int_t lambda = Int_t(1 + fNDim + .5*fNDim*(fNDim+1));
+	if(fRefPoint) delete [] fRefPoint;
+	fRefPoint = new Float_t[fNDim];
+	fCov.ResizeTo(lambda, lambda);
+	fPar.ResizeTo(lambda);
+	return;
+}
+
+
+//_________________________________________________________________
 TKDInterpolator::TKDInterpolator() : TKDTreeIF()
 	,fNTNodes(0)
-	,fRefPoints(0x0)
-	,fRefValues(0x0)
-	,fCov(0x0)
-	,fPar(0x0)
-	,fPDFstatus(0x0)
+	,fTNodes(0x0)
 	,fStatus(4)
 	,fLambda(0)
 	,fDepth(-1)
+	,fRefPoints(0x0)
 	,fBuffer(0x0)
 	,fKDhelper(0x0)
 	,fFitter(0x0)
@@ -49,14 +79,11 @@ TKDInterpolator::TKDInterpolator() : TKDTreeIF()
 //_________________________________________________________________
 TKDInterpolator::TKDInterpolator(Int_t npoints, Int_t ndim, UInt_t bsize, Float_t **data) : TKDTreeIF(npoints, ndim, bsize, data)
 	,fNTNodes(GetNTerminalNodes())
-	,fRefPoints(0x0)
-	,fRefValues(0x0)
-	,fCov(0x0)
-	,fPar(0x0)
-	,fPDFstatus(0x0)
+	,fTNodes(0x0)
 	,fStatus(4)
 	,fLambda(0)
 	,fDepth(-1)
+	,fRefPoints(0x0)
 	,fBuffer(0x0)
 	,fKDhelper(0x0)
 	,fFitter(0x0)
@@ -70,14 +97,11 @@ TKDInterpolator::TKDInterpolator(Int_t npoints, Int_t ndim, UInt_t bsize, Float_
 //_________________________________________________________________
 TKDInterpolator::TKDInterpolator(TTree *t, const Char_t *var, const Char_t *cut, UInt_t bsize, Long64_t nentries, Long64_t firstentry) : TKDTreeIF()
 	,fNTNodes(0)
-	,fRefPoints(0x0)
-	,fRefValues(0x0)
-	,fCov(0x0)
-	,fPar(0x0)
-	,fPDFstatus(0x0)
+	,fTNodes(0x0)
 	,fStatus(4)
 	,fLambda(0)
 	,fDepth(-1)
+	,fRefPoints(0x0)
 	,fBuffer(0x0)
 	,fKDhelper(0x0)
 	,fFitter(0x0)
@@ -121,12 +145,6 @@ TKDInterpolator::TKDInterpolator(TTree *t, const Char_t *var, const Char_t *cut,
 //_________________________________________________________________
 TKDInterpolator::~TKDInterpolator()
 {
-	if(fCov){
-		delete [] fPar;
-		delete [] fCov;
-		delete [] fPDFstatus;
-	}
-	
 	if(fFitter) delete fFitter;
 	if(fKDhelper) delete fKDhelper;
 	if(fBuffer) delete [] fBuffer;
@@ -135,7 +153,7 @@ TKDInterpolator::~TKDInterpolator()
 		for(int idim=0; idim<fNDim; idim++) delete [] fRefPoints[idim] ;
 		delete [] fRefPoints;
 	}
-	if(fRefValues) delete [] fRefValues;
+	if(fTNodes) delete [] fTNodes;
 }
 
 //_________________________________________________________________
@@ -149,25 +167,21 @@ void TKDInterpolator::Build()
 	fLambda = 1 + fNDim + fNDim*(fNDim+1)/2;
 
 	// allocate memory for data
-	fRefValues = new Float_t[fNTNodes];
-	fRefPoints = new Float_t*[fNDim];
-	for(int id=0; id<fNDim; id++){
-		fRefPoints[id] = new Float_t[fNTNodes];
-		for(int in=0; in<fNTNodes; in++) fRefPoints[id][in] = 0.;
-	}
+	fTNodes = new TKDNodeInfo[fNTNodes];
+	for(int in=0; in<fNTNodes; in++) fTNodes[in].Build(fNDim);
 
 	Float_t *bounds = 0x0;
 	Int_t *indexPoints;
 	for(int inode=0, tnode = fNnodes; inode<fNTNodes-1; inode++, tnode++){
-		fRefValues[inode] =  Float_t(fBucketSize)/fNpoints;
+		fTNodes[inode].fRefValue =  Float_t(fBucketSize)/fNpoints;
 		bounds = GetBoundary(tnode);
-		for(int idim=0; idim<fNDim; idim++) fRefValues[inode] /= (bounds[2*idim+1] - bounds[2*idim]);
+		for(int idim=0; idim<fNDim; idim++) fTNodes[inode].fRefValue /= (bounds[2*idim+1] - bounds[2*idim]);
 
 		indexPoints = GetPointsIndexes(tnode);
 		// loop points in this terminal node
 		for(int idim=0; idim<fNDim; idim++){
-			for(int ip = 0; ip<fBucketSize; ip++) fRefPoints[idim][inode] += fData[idim][indexPoints[ip]];
-			fRefPoints[idim][inode] /= fBucketSize;
+			for(int ip = 0; ip<fBucketSize; ip++) fTNodes[inode].fRefPoint[idim] += fData[idim][indexPoints[ip]];
+			fTNodes[inode].fRefPoint[idim] /= fBucketSize;
 		}
 	}
 
@@ -175,16 +189,18 @@ void TKDInterpolator::Build()
 	Int_t counts = fNpoints%fBucketSize;
 	counts = counts ? counts : fBucketSize;
 	Int_t inode = fNTNodes - 1, tnode = inode + fNnodes;
-	fRefValues[inode] =  Float_t(counts)/fNpoints;
+	fTNodes[inode].fRefValue =  Float_t(counts)/fNpoints;
 	bounds = GetBoundary(tnode);
-	for(int idim=0; idim<fNDim; idim++) fRefValues[inode] /= (bounds[2*idim+1] - bounds[2*idim]);
+	for(int idim=0; idim<fNDim; idim++) fTNodes[inode].fRefValue /= (bounds[2*idim+1] - bounds[2*idim]);
 
 	indexPoints = GetPointsIndexes(tnode);
 	// loop points in this terminal node
 	for(int idim=0; idim<fNDim; idim++){
-		for(int ip = 0; ip<counts; ip++) fRefPoints[idim][inode] += fData[idim][indexPoints[ip]];
-		fRefPoints[idim][inode] /= counts;
+		for(int ip = 0; ip<counts; ip++) fTNodes[inode].fRefPoint[idim] += fData[idim][indexPoints[ip]];
+		fTNodes[inode].fRefPoint[idim] /= counts;
 	}
+
+	//GetStatus();
 }
 
 //__________________________________________________________________
@@ -195,22 +211,15 @@ void TKDInterpolator::GetStatus()
 	printf("  Store  : %s\n", fStatus&2 ? "YES" : "NO");
 	printf("  Weights: %s\n", fStatus&4 ? "YES" : "NO");
 
-	printf("nodes %d\n", fNTNodes);        //Number of evaluation data points
-	printf("refs 0x%x\n", fRefPoints);    //[fNDim][fNTNodes]
-	printf("vals 0x%x\n", fRefValues);     //[fNTNodes]
+	printf("nnodes %d\n", fNTNodes);        //Number of evaluation data points
+	printf("nodes 0x%x\n", fTNodes);    //[fNTNodes]
 	for(int i=0; i<fNTNodes; i++){
-		for(int idim=0; idim<fNDim; idim++) printf("%f ", fRefPoints[idim][i]);
-		printf("[%f]\n", fRefValues[i]);
-	}
-
-	printf("cov 0x%x\n", fCov);           //[fNTNodes] cov matrix array for nodes
-	printf("pars 0x%x\n", fPar);           //[fNTNodes] parameters array for nodes
-	for(int i=0; i<fNTNodes; i++){
-		printf("%d ", i);
-		for(int ip=0; ip<3; ip++) printf("p%d[%f] ", ip, fPar[i](ip));
+		printf("\t%d ", i);
+		for(int idim=0; idim<fNDim; idim++) printf("%f ", fTNodes[i].fRefPoint[idim]);
+		printf("[%f] %s\n", fTNodes[i].fRefValue, fTNodes[i].fPDFstatus ? "true" : "false");
+		for(int ip=0; ip<3; ip++) printf("p%d[%f] ", ip, fTNodes[i].fPar(ip));
 		printf("\n");
 	}
-	printf("pdf 0x%x\n", fPDFstatus);     //[fNTNodes] status bit for node's PDF
 }
 
 //_________________________________________________________________
@@ -226,11 +235,18 @@ Double_t TKDInterpolator::Eval(const Double_t *point, Double_t &result, Double_t
 	Float_t pointF[50]; // local Float_t conversion for "point"
 	for(int idim=0; idim<fNDim; idim++) pointF[idim] = (Float_t)point[idim];
 	Int_t node = FindNode(pointF) - fNnodes;
-	if(fPDFstatus && (fStatus&1) && fPDFstatus[node]) return CookPDF(point, node, result, error);
+	if((fStatus&1) && fTNodes[node].fPDFstatus) return CookPDF(point, node, result, error); // maybe move to TKDNodeInfo
 
 	// Allocate memory
 	if(!fBuffer) fBuffer = new Double_t[2*fLambda];
-	if(!fKDhelper) fKDhelper = new TKDTreeIF(fNTNodes, fNDim, 30, fRefPoints);
+	if(!fKDhelper){ 
+		fRefPoints = new Float_t*[fNDim];
+		for(int id=0; id<fNDim; id++){ 
+			fRefPoints[id] = new Float_t[fNTNodes];
+			for(int in=0; in<fNTNodes; in++) fRefPoints[id][in] = fTNodes[in].fRefPoint[id];
+		}
+		fKDhelper = new TKDTreeIF(fNTNodes, fNDim, 30, fRefPoints);
+	}
 	if(!fFitter) SetIntInterpolation(kFALSE);
 	
 	// generate parabolic for nD
@@ -261,8 +277,8 @@ Double_t TKDInterpolator::Eval(const Double_t *point, Double_t &result, Double_t
 		fFitter->ClearPoints();
 		for(int in=0; in<npoints; in++){
 			if(fStatus&1){ // INT
-				for(int idim=0; idim<fNDim; idim++) pointF[idim] = fRefPoints[idim][index[in]];
-				Float_t *bounds = GetBoundary(FindNode(pointF));
+				//for(int idim=0; idim<fNDim; idim++) pointF[idim] = fRefPoints[idim][index[in]];
+				Float_t *bounds = GetBoundary(FindNode(fTNodes[index[in]].fRefPoint/*pointF*/));
 				
 				ipar = 0;
 				for(int idim=0; idim<fNDim; idim++){
@@ -271,7 +287,7 @@ Double_t TKDInterpolator::Eval(const Double_t *point, Double_t &result, Double_t
 					for(int jdim=idim+1; jdim<fNDim; jdim++) fBuffer[ipar++] = (bounds[2*idim] + bounds[2*idim+1]) * (bounds[2*jdim] + bounds[2*jdim+1]) * .25;
 				}
 			} else { // COG
-				for(int idim=0; idim<fNDim; idim++) fBuffer[idim] = fRefPoints[idim][index[in]];
+				for(int idim=0; idim<fNDim; idim++) fBuffer[idim] = fTNodes[index[in]].fRefPoint[idim];
 			}
 
 			// calculate tri-cubic weighting function
@@ -282,7 +298,7 @@ Double_t TKDInterpolator::Eval(const Double_t *point, Double_t &result, Double_t
 			 
 			//for(int idim=0; idim<fNDim; idim++) printf("%f ", fBuffer[idim]);
 			//printf("\nd[%f] w[%f] sig[%f]\n", d, w, sig);
-			fFitter->AddPoint(fBuffer, fRefValues[index[in]], fRefValues[index[in]]*sig/w);
+			fFitter->AddPoint(fBuffer, fTNodes[index[in]].fRefValue, fTNodes[index[in]].fRefValue*sig/w);
 		}
 		npoints += 4;
 	} while(fFitter->Eval());
@@ -296,9 +312,9 @@ Double_t TKDInterpolator::Eval(const Double_t *point, Double_t &result, Double_t
 
 	// store results
 	if(fStatus&2 && fStatus&1){
-		fPar[node] = par;
-		fCov[node] = cov;
-		fPDFstatus[node] = 1;
+		fTNodes[node].fPar = par;
+		fTNodes[node].fCov = cov;
+		fTNodes[node].fPDFstatus = kTRUE;
 	}
 		
 	// Build df/dpi|x values
@@ -453,7 +469,7 @@ void TKDInterpolator::DrawNodes(UInt_t ax1, UInt_t ax2, Int_t depth)
 	ref->SetMarkerStyle(3);
 	ref->SetMarkerSize(.7);
 	ref->SetMarkerColor(2);
-	for(int inode = 0; inode < GetNTerminalNodes(); inode++) ref->SetPoint(inode, fRefPoints[ax1][inode], fRefPoints[ax2][inode]);
+	for(int inode = 0; inode < GetNTerminalNodes(); inode++) ref->SetPoint(inode, fTNodes[inode].fRefPoint[ax1], fTNodes[inode].fRefPoint[ax2]);
 	ref->Draw("p");
 	return;
 }
@@ -484,7 +500,7 @@ void TKDInterpolator::DrawNode(Int_t tnode, UInt_t ax1, UInt_t ax2)
 	for(int ip = 0; ip<nPoints; ip++) g->SetPoint(ip, fData[ax1][index[ip]], fData[ax2][index[ip]]);
 
 	// draw estimation point
-	TMarker *m=new TMarker(fRefPoints[ax1][inode], fRefPoints[ax2][inode], 20);
+	TMarker *m=new TMarker(fTNodes[inode].fRefPoint[ax1], fTNodes[inode].fRefPoint[ax2], 20);
 	m->SetMarkerColor(2);
 	m->SetMarkerSize(1.7);
 	
@@ -530,7 +546,7 @@ void TKDInterpolator::SetSetStore(const Bool_t on)
 	
 	if(on){
 		fStatus += fStatus&2 ? 0 : 2;
-		if(!fCov){
+/*		if(!fCov){
 			fPDFstatus = new Bool_t[fNTNodes];
 			fCov = new TMatrixD[fNTNodes];
 			fPar = new TVectorD[fNTNodes];
@@ -539,14 +555,14 @@ void TKDInterpolator::SetSetStore(const Bool_t on)
 				fCov[i].ResizeTo(fLambda, fLambda);
 				fPar[i].ResizeTo(fLambda);
 			}
-		}
+		}*/
 	} else {
 		fStatus += fStatus&2 ? -2 : 0;
-		if(fCov){
+/*		if(fCov){
 			delete [] fPar;
 			delete [] fCov;
 			delete [] fPDFstatus;
-		}
+		}*/
 	}
 }
 
@@ -577,8 +593,8 @@ Double_t TKDInterpolator::CookPDF(const Double_t *point, const Int_t node, Doubl
 	// calculate estimation
 	result =0.; error = 0.;
 	for(int i=0; i<fLambda; i++){
-		result += fdfdp[i]*fPar[node](i);
-		for(int j=0; j<fLambda; j++) error += fdfdp[i]*fdfdp[j]*fCov[node](i,j);
+		result += fdfdp[i]*fTNodes[node].fPar(i);
+		for(int j=0; j<fLambda; j++) error += fdfdp[i]*fdfdp[j]*fTNodes[node].fCov(i,j);
 	}	
 	error = TMath::Sqrt(error);
  	printf("result[CookPDF] %6.3f +- %6.3f\n", result, error);
