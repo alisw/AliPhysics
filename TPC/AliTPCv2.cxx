@@ -681,12 +681,12 @@ void AliTPCv2::CreateGeometry()
    Double_t x0,y0;
    x0=110.2*TMath::Cos(openingAngle);
    y0=110.2*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); //a-side 
-   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); //c-side
+   TGeoCombiTrans *combi1a = new TGeoCombiTrans("combi1",x0,y0,1.09+0.195,rot); //a-side 
+   TGeoCombiTrans *combi1c = new TGeoCombiTrans("combi1",x0,y0,1.09+0.222,rot); //c-side
    x0=188.45*TMath::Cos(openingAngle);
    y0=188.45*TMath::Sin(openingAngle);
-   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); //a-side
-   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); //c-side
+   TGeoCombiTrans *combi2a = new TGeoCombiTrans("combi2",x0,y0,0.99+0.195,rot); //a-side
+   TGeoCombiTrans *combi2c = new TGeoCombiTrans("combi2",x0,y0,0.99+0.222,rot); //c-side
    //
    //
    // A-side
