@@ -39,8 +39,8 @@ ClassImp(AliHLTTPCDigitPublisherComponent)
 AliHLTTPCDigitPublisherComponent::AliHLTTPCDigitPublisherComponent()
   :
   fMaxSize(200000), // just a number to start with
-  fMinSlice(0),
-  fMinPart(0),
+  fMinSlice(-1),
+  fMinPart(-1),
   fpFileHandler(NULL)
 {
   // see header file for class documentation
@@ -126,6 +126,16 @@ int AliHLTTPCDigitPublisherComponent::DoInit( int argc, const char** argv )
     iResult=-EINVAL;
   }
 
+  if (fMinSlice<0) {
+    HLTError("slice no required");
+    iResult=-EINVAL;
+  }
+
+  if (fMinPart<0) {
+    HLTError("partition (patch) no required");
+    iResult=-EINVAL;
+  }
+
   if (iResult<0) return iResult;
 
   // fetch runLoader instance from interface
@@ -203,6 +213,7 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& e
 	bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(fMinSlice, fMinSlice, fMinPart, fMinPart);
 	outputBlocks.push_back( bd );
       }
+      fpFileHandler->FreeDigitsTree();
     }
   } else {
     AliErrorStream() << "component not initialized" << endl;
