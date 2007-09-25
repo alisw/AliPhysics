@@ -76,22 +76,26 @@ public:
 			   n, emin, emax, 1025, -.5, 1024.5);
     fHitEvsAdc->SetXTitle("#Delta E_{sim} [MeV]");
     fHitEvsAdc->SetYTitle("ADC");
+    fHitEvsAdc->Sumw2();
     
     fHitEvsRecM = new TH2D("hitEvsRecM", "#Delta E_{sim} vs. M_{rec}", 
 			   eloss.fN-1, eloss.fArray, mults.fN-1, mults.fArray);
     fHitEvsRecM->SetXTitle("#Delta E_{sim} [MeV]");
     fHitEvsRecM->SetYTitle("M_{rec}");
+    fHitEvsRecM->Sumw2();
 
     fHitEvsRecE = new TH2D("hitEvsRecE", "#Delta E_{sim} vs. #Delta E_{rec}", 
 			    n, emin, emax, n, emin, emax);
     fHitEvsRecE->SetXTitle("#Delta E_{sim} [MeV]");
     fHitEvsRecE->SetYTitle("#Delta E_{rec} [MeV]");
+    fHitEvsRecE->Sumw2();
 
 
     fDiffE = new TH1D("diffE", 
 		      "#frac{#Delta E_{sim}-#Delta E_{rec}}{#Delta E_{sim}}", 
 		      1100, -1, 1.1);
     fDiffE->SetXTitle("#frac{#Delta E_{sim}-#Delta E_{rec}}{#Delta E_{sim}}");
+    fDiffE->Sumw2();
     
     Double_t omin = mmin; // -.5;
     Double_t omax = mmax; // 7.5;
@@ -100,23 +104,27 @@ public:
 			   o, omin, omax, m, mmin, mmax);
     fHitsVsRecM->SetXTitle("# of Hits");
     fHitsVsRecM->SetYTitle("M_{rec}");
+    fHitsVsRecM->Sumw2();
 
     fDiffM = new TH2D("diffM", "M_{sim} - M_{rec}", 
 		      41, -20.5, 20.5, 70, 1.5, 5);
     // 36, -TMath::Pi(),TMath::Pi());
     fDiffM->SetXTitle("M_{sim} - M_{rec}");
     fDiffM->SetYTitle("|#eta|");
+    fDiffM->Sumw2();
     // fDiffM->SetYTitle("Detector");
 
     fHitEloss = new TH1D("hitEloss","#frac{#Delta E_{sim}}{#Delta x} (MeV/cm)", 
 			 100, 0, 10);
     fHitEloss->SetFillColor(2);
     fHitEloss->SetFillStyle(3001);
-    
+    fHitEloss->Sumw2();
+
     fRecEloss = new TH1D("recEloss","#frac{#Delta E_{rec}}{#Delta x} (MeV/cm)", 
 			 100, 0, 10);
     fRecEloss->SetFillColor(4);
     fRecEloss->SetFillStyle(3001);
+    fRecEloss->Sumw2();
   }
   //__________________________________________________________________
   /** Begining of event
@@ -235,18 +243,25 @@ public:
     fDiffM->Draw("colz");
 
     c = new TCanvas("c6", "Hit Eloss, Reco Eloss");
-    fRecEloss->Scale(1./fRecEloss->GetMaximum());
-    fRecEloss->Draw();
+    fRecEloss->Scale(1./fRecEloss->GetEntries());
+    fRecEloss->Draw("hist e");
     fRecEloss->Fit("landau", "", "SAME", 2, 4);
     TF1* recResp = new TF1(*fRecEloss->GetFunction("landau"));
-    fHitEloss->Scale(1./fHitEloss->GetMaximum());
-    fHitEloss->Draw("same");
+    fHitEloss->Scale(1./fHitEloss->GetEntries());
+    fHitEloss->Draw("same hist e");
     fHitEloss->Fit("landau", "", "SAME", 2, 10);
     TF1* hitResp = new TF1(*fHitEloss->GetFunction("landau"));
-    std::cout << "Hit MPV,width: " << hitResp->GetParameter(1) << ","
-	      << hitResp->GetParameter(2) << "\n"
-	      << "Rec MPV,width: " << recResp->GetParameter(1) << ","
-	      << recResp->GetParameter(2) << std::endl;
+    std::cout << "From hits: MPV=" 
+	      << hitResp->GetParameter(1) << "+/-"
+	      << hitResp->GetParError(1) << "  Width=" 
+	      << hitResp->GetParameter(2) << "+/-"
+	      << hitResp->GetParError(2) << "\nFrom recs: MPV=" 
+	      << recResp->GetParameter(1) << "+/-"
+	      << recResp->GetParError(1) << "  Width=" 
+	      << recResp->GetParameter(2) << "+/-"
+	      << recResp->GetParError(2) << "\nRatio: MPV(hit/rec)="
+	      << hitResp->GetParameter(1) / recResp->GetParameter(1) 
+	      << std::endl;
     c->SetLogy();
 
     return kTRUE;

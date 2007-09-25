@@ -600,7 +600,7 @@ AliFMDInput::End()
     fFMDLoader->UnloadRecPoints();
     fTreeR = 0;
   }
-  AliInfo("Now out event");
+  // AliInfo("Now out event");
   return kTRUE;
 }
 
