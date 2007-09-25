@@ -34,8 +34,9 @@
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
-#include <stdlib.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cerrno>
+#include <cassert>
 
 namespace
 {
@@ -47,12 +48,12 @@ namespace
 ClassImp(AliHLTMUONHitReconstructorComponent)
 
 
-AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent()
-  :
-  fHitRec(NULL),
-  fDDLDir(""),
-  fDDL(0),
-  fReaderType(false)
+AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
+	fHitRec(NULL),
+	fDDLDir(""),
+	fDDL(0),
+	fReaderType(false),
+	fWarnForUnexpecedBlock(false)
 {
 }
 
@@ -63,45 +64,45 @@ AliHLTMUONHitReconstructorComponent::~AliHLTMUONHitReconstructorComponent()
 
 const char* AliHLTMUONHitReconstructorComponent::GetComponentID()
 {
-  return "MUONHitRec"; // The ID of this component
+	return AliHLTMUONConstants::HitReconstructorId();
 }
 
 
 void AliHLTMUONHitReconstructorComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
 {
-  list.clear();
-  list.push_back( AliHLTMUONConstants::TrackingDDLRawDataType() );
+	list.clear();
+	list.push_back( AliHLTMUONConstants::TrackingDDLRawDataType() );
 }
 
 
 AliHLTComponentDataType AliHLTMUONHitReconstructorComponent::GetOutputDataType()
 {
-  return AliHLTMUONConstants::RecHitsBlockDataType();
+	return AliHLTMUONConstants::RecHitsBlockDataType();
 }
 
 
 void AliHLTMUONHitReconstructorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-  constBase = 0;
-  inputMultiplier = 1;
+	constBase = 0;
+	inputMultiplier = 1;
 }
 
 
 // Spawn function, return new instance of this class
 AliHLTComponent* AliHLTMUONHitReconstructorComponent::Spawn()
 {
-  return new AliHLTMUONHitReconstructorComponent;
+	return new AliHLTMUONHitReconstructorComponent;
 }
 
 
-int AliHLTMUONHitReconstructorComponent::DoInit( int argc, const char** argv )
+int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 {
   // perform initialization. We check whether our relative output size is specified in the arguments.
      
   HLTInfo("Initialising DHLT HitReconstruction Component");
 
   fHitRec = new AliHLTMUONHitReconstructor();
-  
+  fWarnForUnexpecedBlock = false;
 
   // this is to get rid of the warning "unused parameter"
   if (argc==0 && argv==NULL) {
@@ -177,6 +178,12 @@ int AliHLTMUONHitReconstructorComponent::DoInit( int argc, const char** argv )
 	i += 1;
 	continue;
       }
+	  
+      if ( !strcmp( argv[i], "-warn_on_unexpected_block" ) ) {
+        fWarnForUnexpecedBlock = true;
+	i++;
+	continue;
+      }
 
       HLTError("Unknown option '%s'", argv[i] );
       return EINVAL;
@@ -231,103 +238,112 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
-  // Process an event
-  unsigned long totalSize = 0;
-  
-  HLTDebug("Event : %d has : %lu  blocks",(int)evtData.fEventID,evtData.fBlockCnt);
-  
-  // Loop over all input blocks in the event
-  for ( unsigned long n = 0; n < evtData.fBlockCnt; n++ )
-    {
-      
-      HLTDebug("block : %d, block rawData : %p, block.fSize (bytes) : %d, blocks.fDataType.fID : %s, blocks.fDataType.fOrigin  : %s, required type : %s\n",
-	       n,blocks[n].fPtr,blocks[n].fSize,(char *)(blocks[n].fDataType.fID),
-	       (char *)(blocks[n].fDataType.fOrigin,(char *)(AliHLTMUONConstants::TrackingDDLRawDataType().fID)));
-      
+	// Process an event
+	unsigned long totalSize = 0; // Amount of memory currently consumed in bytes.
 
-      if(strncmp((char *)(blocks[n].fDataType.fID),(char *)(AliHLTMUONConstants::TrackingDDLRawDataType().fID),kAliHLTComponentDataTypefIDsize)) continue;
-      
-      
-      if ( totalSize > size )
-	break;
-	
-      int totalDDLSize = blocks[n].fSize/sizeof(int);
-      
-      if(!totalDDLSize) continue;
-      
-      int  ddlRawDataSize = totalDDLSize - fHitRec->GetkDDLHeaderSize();
-      int *buffer = (int *)blocks[n].fPtr;
-      
-      
-      for(int j=0;j<totalDDLSize;j++)
-	HLTDebug("buffer[%d] : %x\n",j,buffer[j]);
-      
-      buffer = (int *)((int *)blocks[n].fPtr + fHitRec->GetkDDLHeaderSize()) ;
-      
-      AliHLTMUONRecHitStruct recHit[300];
-      int nofHit = 300;
-      
-      if(! (fHitRec->Run(buffer,&ddlRawDataSize,recHit,&nofHit))){
-	HLTError("ERROR In Processing of HitRec Algo ");
-	return EIO;
-      }
-      
-      unsigned long mySize = sizeof(AliHLTMUONRecHitStruct) * nofHit;
-	
-      HLTDebug("Event %d and block %d has  nofHit %d\n",(int)evtData.fEventID,n,nofHit);
-      
-      // Check how much space we have left and adapt this output block's size accordingly.
-      if ( totalSize + mySize > size )
-	mySize = size-totalSize;
-      
-      Logging( kHLTLogDebug, "HLT::MUONHitRec::DoEvent", "mySize set (2)", "mySize == %lu B - totalSize == %lu - size == %lu", 
-	       mySize, totalSize, size );
-      
-      if ( mySize<=0 )
-	continue; // No room left to write a further block.
-      
-	AliHLTMUONRecHitsBlockWriter block(outputPtr+totalSize, size-totalSize);
-	if (not block.InitCommonHeader())
+	HLTDebug("Processing event %llu with %u input data blocks.",
+		evtData.fEventID, evtData.fBlockCnt
+	);
+
+	// Loop over all input blocks in the event
+	for ( unsigned long n = 0; n < evtData.fBlockCnt; n++ )
 	{
-		HLTError("There is not enough space in the output buffer for the new data block.",
-			 " We require at least %u bytes, but have %u bytes left.",
-			sizeof(AliHLTMUONRecHitsBlockWriter::HeaderType),
-			block.BufferSize()
+#ifdef __DEBUG
+		char id[kAliHLTComponentDataTypefIDsize+1];
+		for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
+			id[i] = blocks[n].fDataType.fID[i];
+		id[kAliHLTComponentDataTypefIDsize] = '\0';
+		char origin[kAliHLTComponentDataTypefOriginSize+1];
+		for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
+			origin[i] = blocks[n].fDataType.fOrigin[i];
+		origin[kAliHLTComponentDataTypefOriginSize] = '\0';
+#endif // __DEBUG
+		HLTDebug("Handling block: %u, with fDataType.fID = '%s',"
+			  " fDataType.fID = '%s', fPtr = %p and fSize = %u bytes.",
+			n, static_cast<char*>(id), static_cast<char*>(origin),
+			blocks[n].fPtr, blocks[n].fSize
 		);
-		break;
+
+		if (blocks[n].fDataType != AliHLTMUONConstants::TrackingDDLRawDataType())
+		{
+			// Log a message indicating that we got a data block that we
+			// do not know how to handle.
+			char id[kAliHLTComponentDataTypefIDsize+1];
+			for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
+				id[i] = blocks[n].fDataType.fID[i];
+			id[kAliHLTComponentDataTypefIDsize] = '\0';
+			char origin[kAliHLTComponentDataTypefOriginSize+1];
+			for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
+				origin[i] = blocks[n].fDataType.fOrigin[i];
+			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
+			
+			if (fWarnForUnexpecedBlock)
+				HLTWarning("Received a data block of a type we can not handle: %s origin %s",
+					static_cast<char*>(id), static_cast<char*>(origin)
+				);
+			else
+				HLTDebug("Received a data block of a type we can not handle: %s origin %s",
+					static_cast<char*>(id), static_cast<char*>(origin)
+				);
+			
+			continue;
+		}
+		
+		// Create a new output data block and initialise the header.
+		AliHLTMUONRecHitsBlockWriter block(outputPtr+totalSize, size-totalSize);
+		if (not block.InitCommonHeader())
+		{
+			HLTError("There is not enough space in the output buffer for the new data block.",
+				 " We require at least %u bytes, but have %u bytes left.",
+				sizeof(AliHLTMUONRecHitsBlockWriter::HeaderType),
+				block.BufferSize()
+			);
+			break;
+		}
+		
+		AliHLTUInt32_t totalDDLSize = blocks[n].fSize / sizeof(AliHLTUInt32_t);
+		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - fHitRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr)
+			+ fHitRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t nofHit = block.MaxNumberOfEntries();
+
+		HLTDebug("=========== Dumping DDL payload buffer ==========");
+		for (AliHLTUInt32_t j = 0; j < totalDDLSize; j++)
+			HLTDebug("buffer[%d] : %x",j,buffer[j]);
+		HLTDebug("================== End of dump =================");
+
+		if (not fHitRec->Run(buffer, ddlRawDataSize, block.GetArray(), nofHit))
+		{
+			HLTError("Error while processing of hit reconstruction algorithm.");
+			size = totalSize; // Must tell the framework how much buffer space was used.
+			return EIO;
+		}
+		
+		// nofHit should now contain the number of reconstructed hits actually found
+		// and filled into the output data block, so we can set this number.
+		assert( nofHit <= block.MaxNumberOfEntries() );
+		block.SetNumberOfEntries(nofHit);
+		
+		HLTDebug("Number of reconstructed hits found is %d", nofHit);
+
+		// Fill a block data structure for our output block.
+		AliHLTComponentBlockData bd;
+		FillBlockData(bd);
+		bd.fPtr = outputPtr;
+		// This block's start (offset) is after all other blocks written so far.
+		bd.fOffset = totalSize;
+		bd.fSize = block.BytesUsed();
+		bd.fDataType = AliHLTMUONConstants::RecHitsBlockDataType();
+		bd.fSpecification = blocks[n].fSpecification;
+		outputBlocks.push_back(bd);
+
+		// Increase the total amount of data written so far to our output memory
+		totalSize += block.BytesUsed();
 	}
-      
-      // Now copy the input block
-      unsigned long copied = 0;
-      // First copy all full multiples of the input block
-      
-      // And the copy the remaining fragment of the block
-      Logging( kHLTLogDebug, "1 : HLT::MUONHitRec::DoEvent", "Copying", "Copying %lu B - Copied: %lu B - totalSize: %lu B", 
-	       mySize-copied, copied, totalSize );
-      memcpy( block.GetArray(), &recHit[0], mySize);
-      Logging( kHLTLogDebug, "HLT::MUONHitRec::DoEvent", "Copied", "Copied: %lu B - totalSize: %lu B", 
-	       copied, totalSize );
+	// Finally we set the total size of output memory we consumed.
+	size = totalSize;
 
-	block.SetNumberOfEntries(nofHit);
-
-	// Fill a block data structure for our output block.
-	AliHLTComponentBlockData bd;
-	FillBlockData(bd);
-	bd.fPtr = outputPtr;
-	// This block's start (offset) is after all other blocks written so far.
-	bd.fOffset = totalSize;
-	bd.fSize = block.BytesUsed();
-	bd.fDataType = AliHLTMUONConstants::RecHitsBlockDataType();
-	bd.fSpecification = blocks[n].fSpecification;
-	outputBlocks.push_back(bd);
-	
-      // Increase the total amount of data written so far to our output memory
-      totalSize += block.BytesUsed();
-    }
-  // Finally we set the total size of output memory we consumed.
-  size = totalSize;
-  
-  return 0;
+	return 0;
 }
 
 

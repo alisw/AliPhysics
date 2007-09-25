@@ -26,6 +26,7 @@
 //         sukalyan.chattopadhyay@saha.ac.in 
 ///////////////////////////////////////////////
 
+#include "AliHLTMUONDataTypes.h"
 #include <iostream>
 #include <cstdio>
 #include <fstream>
@@ -81,7 +82,12 @@ public:
   bool SetBusToDetMap(BusToDetElem busToDetElem);
   bool SetBusToDDLMap(BusToDDL busToDDL);
   
-  bool Run(int* rawData, int *rawDataSize, AliHLTMUONRecHitStruct recHit[], int *nofHit);
+  bool Run(
+  		const AliHLTUInt32_t* rawData,
+  		AliHLTUInt32_t rawDataSize,
+  		AliHLTMUONRecHitStruct* recHit,
+  		AliHLTUInt32_t& nofHit
+  	);
   void SetDCCut(int dcCut) {fDCCut = dcCut;}
   void SetDebugLevel(int debugLevel) {fDebugLevel = debugLevel;}
   int GetDebugLevel() const {return fDebugLevel;}
@@ -124,8 +130,8 @@ private:
   DHLTLut* fLookUpTableData;                 // pointer to the array of Lookuptable data
   
   AliHLTMUONRecHitStruct *fRecPoints;       // Reconstructed hits
-  int *fRecPointsCount;                      // nof reconstructed hit  
-  int fMaxRecPointsCount;                    // max nof reconstructed hit  
+  AliHLTUInt32_t *fRecPointsCount;                      // nof reconstructed hit  
+  AliHLTUInt32_t fMaxRecPointsCount;                    // max nof reconstructed hit  
    
   int fCentralCountB, fCentralCountNB;        // centeral hits 
   int fIdOffSet,fDDLId;                       // DDLId and DDL id offset
@@ -142,7 +148,7 @@ private:
   BusToDetElem fBusToDDL;                 // Mapping between bus address and DDL.
 
 
-  bool ReadDDL(int* rawData, int *rawDataSize);
+  bool ReadDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
   void FindCentralHits(int minPadId, int maxPadId);
   bool FindRecHits() ;
   void RecXRecY();

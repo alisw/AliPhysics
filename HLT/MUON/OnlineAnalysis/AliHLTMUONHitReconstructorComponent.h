@@ -74,6 +74,7 @@ class AliHLTMUONHitReconstructorComponent : public AliHLTProcessor
 	TString fDDLDir;
 	Int_t fDDL;
 	bool fReaderType;
+	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 
 	ClassDef(AliHLTMUONHitReconstructorComponent, 0)
 };

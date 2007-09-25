@@ -186,13 +186,18 @@ bool AliHLTMUONHitReconstructor::SetBusToDDLMap(BusToDDL busToDDL)
 }
 
 
-bool AliHLTMUONHitReconstructor::Run(int* rawData, int *rawDataSize, AliHLTMUONRecHitStruct recHit[], int *nofHit) 
-{  
+bool AliHLTMUONHitReconstructor::Run(
+		const AliHLTUInt32_t* rawData,
+		AliHLTUInt32_t rawDataSize,
+		AliHLTMUONRecHitStruct* recHit,
+		AliHLTUInt32_t& nofHit
+	) 
+{
   // main function called by HLTReconstructor to perform DHLT Hitreconstruction 
 
-  fRecPoints = &recHit[0];
-  fMaxRecPointsCount = *nofHit;
-  fRecPointsCount = nofHit;
+  fRecPoints = recHit;
+  fMaxRecPointsCount = nofHit;
+  fRecPointsCount = &nofHit;
   *fRecPointsCount = 0;
 
   fPadData[0].fDetElemId = 0;
@@ -208,7 +213,7 @@ bool AliHLTMUONHitReconstructor::Run(int* rawData, int *rawDataSize, AliHLTMUONR
   fPadData[0].fCharge = 0 ;
 
 
-  if(!ReadDDL(rawData,rawDataSize)){
+  if(!ReadDDL(rawData, rawDataSize)){
     HLTError("Failed to read the complete DDL file");
     return false;
   }
@@ -222,19 +227,17 @@ bool AliHLTMUONHitReconstructor::Run(int* rawData, int *rawDataSize, AliHLTMUONR
 }
 
 
-bool AliHLTMUONHitReconstructor::ReadDDL(int *rawData, int *rawDataSize)
+bool AliHLTMUONHitReconstructor::ReadDDL(
+		const AliHLTUInt32_t* rawData,
+		AliHLTUInt32_t rawDataSize
+	)
 {
   //function to read Raw Data files
 
-  int ddlRawDataSize;
-  ddlRawDataSize = *rawDataSize;
-
-  int *buffer = rawData ;
-  //new int[ddlRawDataSize]; 
-  //buffer = (int *)rawData; 
+  const int* buffer = reinterpret_cast<const int*>(rawData);
 
   fIdOffSet= fgkMinIdManuChannel[(fDDLId%2)];
-  fDetManuChannelIdList = new int[ddlRawDataSize];
+  fDetManuChannelIdList = new int[rawDataSize];
 
   int index = 0;
   int dataCount = 0;
@@ -674,16 +677,18 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
 
 	  if(diffX < halfPadLengthX && diffY < halfPadLengthY ){//&& fPadData[idCentralB].fIY != 0){
 
+	    // First check that we have not overflowed the buffer.
+	    if((*fRecPointsCount) == fMaxRecPointsCount){
+	      HLTError("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
+	      return false;
+	    }
+	    
 	    //fRecPoints[(*fRecPointsCount)].fId = idCentralB;
 	    fRecPoints[(*fRecPointsCount)].fX = fRecX[nb];
 	    fRecPoints[(*fRecPointsCount)].fY = fRecY[b];
 	    fRecPoints[(*fRecPointsCount)].fZ = fPadData[idCentralB].fRealZ;
 	    //fRecPoints[(*fRecPointsCount)].fDetElemId = (AliHLTUInt32_t)fPadData[idCentralB].fDetElemId;
 	    (*fRecPointsCount)++;
-	    if((*fRecPointsCount) == fMaxRecPointsCount){
-	      HLTError("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
-	      return false;
-	    }
 	  }//if lies wihtin 5.0 mm
 	}// condn over fRecX ! = 0.0
       }// loop over NB side
