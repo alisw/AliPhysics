@@ -58,19 +58,6 @@ private:
   Bool_t fPrimary;
 public:
   //__________________________________________________________________
-  TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
-  {
-    TArrayF bins(n+1);
-    Float_t dp   = n / TMath::Log10(max / min);
-    Float_t pmin = TMath::Log10(min);
-    bins[0]      = min;
-    for (Int_t i = 1; i < n+1; i++) {
-      Float_t p = pmin + i / dp;
-      bins[i]   = TMath::Power(10, p);
-    }
-    return bins;
-  }
-  //__________________________________________________________________
   DrawHitsRecs(Bool_t primary=kFALSE,
 	       Int_t n=900, Double_t emin=1e-3, Double_t emax=10, 
 	       Int_t m=21, Double_t mmin=-0.5, Double_t mmax=20.5) 
@@ -106,9 +93,9 @@ public:
 		      1100, -1, 1.1);
     fDiffE->SetXTitle("#frac{#Delta E_{sim}-#Delta E_{rec}}{#Delta E_{sim}}");
     
-    Double_t omin = -.5;
-    Double_t omax = 7.5;
-    Int_t    o    = 8;
+    Double_t omin = mmin; // -.5;
+    Double_t omax = mmax; // 7.5;
+    Int_t    o    = m;    // 8;
     fHitsVsRecM = new TH2D("hitsVsStrip", "# of Hits vs. M_{rec}",
 			   o, omin, omax, m, mmin, mmax);
     fHitsVsRecM->SetXTitle("# of Hits");
@@ -121,12 +108,12 @@ public:
     fDiffM->SetYTitle("|#eta|");
     // fDiffM->SetYTitle("Detector");
 
-    fHitEloss = new TH1D("hitEloss", "#frac{#Delta E_{sim}}{#Delta x} (MeV/cm)", 
+    fHitEloss = new TH1D("hitEloss","#frac{#Delta E_{sim}}{#Delta x} (MeV/cm)", 
 			 100, 0, 10);
     fHitEloss->SetFillColor(2);
     fHitEloss->SetFillStyle(3001);
     
-    fRecEloss = new TH1D("recEloss", "#frac{#Delta E_{rec}}{#Delta x} (MeV/cm)", 
+    fRecEloss = new TH1D("recEloss","#frac{#Delta E_{rec}}{#Delta x} (MeV/cm)", 
 			 100, 0, 10);
     fRecEloss->SetFillColor(4);
     fRecEloss->SetFillStyle(3001);
@@ -159,7 +146,8 @@ public:
       if (!kine->IsPrimary()) return kTRUE;
     }
     
-    if (hit->Edep()/hit->Length() > 0.1) fHitEloss->Fill(hit->Edep() / hit->Length());
+    if (hit->Edep()/hit->Length() > 0.1) 
+      fHitEloss->Fill(hit->Edep() / hit->Length());
     fMap(det, rng, sec, str).fEdep += hit->Edep();
     fMap(det, rng, sec, str).fN++;
     return kTRUE;

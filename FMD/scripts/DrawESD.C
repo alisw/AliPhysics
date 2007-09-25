@@ -47,24 +47,12 @@ private:
   const Double_t fCorr;
 public:
   //__________________________________________________________________
-  TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
-  {
-    TArrayF bins(n+1);
-    Float_t dp   = n / TMath::Log10(max / min);
-    Float_t pmin = TMath::Log10(min);
-    bins[0]      = min;
-    for (Int_t i = 1; i < n+1; i++) {
-      Float_t p = pmin + i / dp;
-      bins[i]   = TMath::Power(10, p);
-    }
-    return bins;
-  }
-  //__________________________________________________________________
   DrawESD(Int_t n=420, Double_t mmin=-0.5, Double_t mmax=20.5) 
     : fCorr(1) // 0.68377 / 1.1)
   { 
     AddLoad(kESD);
     fMult = new TH1D("mult", " Multiplicity (strip)", n, mmin, mmax);
+    fMult->Sumw2();
     fMult->SetXTitle("Strip Multiplicity");
   }
   //__________________________________________________________________
@@ -104,6 +92,7 @@ public:
     // fMult->GetXaxis()->SetRangeUser(0.2,4);
     // fMult->Sumw2();
     // fMult->Scale(1. / fMult->GetMaximum());
+    fMult->Scale(1. / fMult->GetEntries());
     fMult->SetStats(kFALSE);
     fMult->SetFillColor(2);
     fMult->SetFillStyle(3001);

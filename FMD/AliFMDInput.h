@@ -223,7 +223,12 @@ public:
       @return  @c false on error  */
   virtual Bool_t ProcessESD(UShort_t, Char_t, UShort_t, UShort_t, 
 			    Float_t, Float_t);
-  
+  /** Service function to make a logarithmic axis. 
+      @param n    Number of bins 
+      @param min  Minimum of axis 
+      @param max  Maximum of axis. 
+      @return An array with the bin boundaries. */
+  static TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max);
 protected:
   /** Copy ctor 
       @param o Object to copy from  */
@@ -284,6 +289,7 @@ protected:
   TGeoManager*  fGeoManager; // Geometry manager
   Int_t         fTreeMask;   // Which tree's to load
   Bool_t        fIsInit;     // Have we been initialized 
+  Int_t         fEventCount; // Event counter 
   ClassDef(AliFMDInput,0)  //Hits for detector FMD
 };
 

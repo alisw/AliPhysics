@@ -47,23 +47,6 @@ private:
   const Double_t fBetaGammaMip;
 public:
   //__________________________________________________________________
-  TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
-  {
-    TArrayF bins(n+1);
-    bins[0]      = min;
-    if (n <= 20) {
-      for (Int_t i = 1; i < n+1; i++) bins[i] = bins[i-1] + (max-min)/n;
-      return bins;
-    }
-    Float_t dp   = n / TMath::Log10(max / min);
-    Float_t pmin = TMath::Log10(min);
-    for (Int_t i = 1; i < n+1; i++) {
-      Float_t p = pmin + i / dp;
-      bins[i]   = TMath::Power(10, p);
-    }
-    return bins;
-  }
-  //__________________________________________________________________
   DrawHits(const char* pdgName="pi+",
 	   Int_t m=1000, Double_t emin=1, Double_t emax=1000, 
 	   Int_t n=900, Double_t tmin=1e-2, Double_t tmax=1e3) 
@@ -87,11 +70,13 @@ public:
 			   eloss.fN-1, eloss.fArray);
     fElossVsPMQ->SetXTitle("p/(mq^{2})=#beta#gamma/q^{2}");
     fElossVsPMQ->SetYTitle("#Delta E/#Delta x / q^{2} [MeV/cm]");
+    fElossVsPMQ->SumW2();
     fEloss = new TH1D("eloss", "#Delta E/#Delta x / q^{2}", 
 		      eloss.fN-1, eloss.fArray);
     fEloss->SetFillColor(2);
     fEloss->SetFillStyle(3001);
     fEloss->SetXTitle("#Delta E/#Delta x / q^{2} [MeV/cm]");
+    fEloss->SumW2();
   }
   //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle* p) 
@@ -137,8 +122,7 @@ public:
     c->SetLogy();
     c->SetLogx();
 
-    TString title(fElossVsPMQ->GetTitle());
-    title.Append(Form(", %d events", fEventCount));
+    TString title(Form("%s, %d events", fElossVsPMQ->GetTitle(), fEventCount));
     fElossVsPMQ->SetTitle(title.Data());
     fElossVsPMQ->SetStats(kFALSE);
     fElossVsPMQ->Draw("AXIS");
@@ -172,6 +156,7 @@ public:
     c = new TCanvas("eloss", "Energy loss per unit material");
     // c->SetLogx();
     c->SetLogy();
+    fEloss->Scale(1. / fEloss->GetEntries());
     fEloss->GetXaxis()->SetRangeUser(1, 10);
     fEloss->Fit("landau", "", "", 1, 10);
     TF1* land = fEloss->GetFunction("landau");
@@ -191,7 +176,7 @@ public:
     l = new TLegend(.6, .6, .89, .89);
     l->AddEntry(fEloss, fEloss->GetTitle(), "lf");
     l->AddEntry(land,   "Landau fit", "l");
-    l->AddEntry(resp,   "f(#Delta_{p}/x) [RPP fig 27.8]");
+    l->AddEntry(resp,   "f(#Delta_{p}/x) [RPP fig 27.8]", "l");
     l->Draw("same");
 
     return kTRUE;
@@ -343,7 +328,8 @@ public:
     if (!graph) { 
       graph = new TGraph(12);
       graph->SetName("mean_eloss");
-      graph->SetTitle("Mean #Delta E/#Delta x - electronic only  [RPP fig. 27.6]");
+      graph->SetTitle("Mean #Delta E/#Delta x - "
+		      "electronic only  [RPP fig. 27.6]");
       graph->GetHistogram()->SetYTitle("(MeVcm^{2}/g)");
       graph->GetHistogram()->SetXTitle("#mu E_{kin} (GeV)");
       graph->SetFillColor(1);

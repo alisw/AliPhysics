@@ -245,6 +245,7 @@ AliFMDPattern::Init()
   // Initialize.  Get transforms and such, 
   if (!AliFMDInput::Init()) return kFALSE;
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
+  if (!geom) return kFALSE;
   geom->Init();
   geom->InitTransformations();
   

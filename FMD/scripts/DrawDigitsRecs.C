@@ -42,19 +42,6 @@ private:
   AliFMDUShortMap fMap;
 public:
   //__________________________________________________________________
-  TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
-  {
-    TArrayF bins(n+1);
-    Float_t dp   = n / TMath::Log10(max / min);
-    Float_t pmin = TMath::Log10(min);
-    bins[0]      = min;
-    for (Int_t i = 1; i < n+1; i++) {
-      Float_t p = pmin + i / dp;
-      bins[i]   = TMath::Power(10, p);
-    }
-    return bins;
-  }
-  //__________________________________________________________________
   DrawDigitsRecs(Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5,
 		 Int_t n=105, Double_t mmin=-0.5, Double_t mmax=20.5) 
   { 
@@ -62,6 +49,7 @@ public:
     AddLoad(kRecPoints);
     fAdcVsSingle = new TH2D("adcVsSingle", "ADC vs. Multiplicity (strip)", 
 			    m, amin, amax, n, mmin, mmax);
+    fAdcVsSingle->Sumw2();
     fAdcVsSingle->SetXTitle("ADC value");
     fAdcVsSingle->SetYTitle("Strip Multiplicity");
   }
@@ -114,8 +102,8 @@ public:
     gStyle->SetCanvasBorderSize(0);
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
-
-    fAdcVsSingle->SetStats(kFALSE);
+    gStyle->SetOptLogz(kTRUE);
+    fAdcVsSingle->SetStats(0);
     fAdcVsSingle->Draw("COLZ");
     return kTRUE;
   }

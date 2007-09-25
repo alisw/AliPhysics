@@ -82,6 +82,14 @@ public:
       @param digitsTree  Tree holding the digits of this event
       @param clusterTree Tree to store AliFMDRecPoint objects in. */
   virtual void   Reconstruct(TTree* digitsTree, TTree* clusterTree) const;
+  /** Reconstruct one event from the raw data, via a digits read using
+      @a reader. The member function @e does @e not create
+      AliFMDRecPoint objects, and the read AliFMDDigit objects are not
+      stored. An FMD ESD object is created in parallel. 
+      @todo Make sure we get a vertex. 
+      @param reader      Raw data reader
+      @param clusterTree Tree to store AliFMDRecPoint objects in (not used). */
+  void Reconstruct(AliRawReader* reader, TTree* clusterTree) const;
   /** Put in the ESD data, the FMD ESD data.  The object created by
       the Reconstruct member function is copied to the ESD object. 
       @param digitsTree   Tree of digits for this event - not used
@@ -91,6 +99,14 @@ public:
   */
   virtual void   FillESD(TTree* digitsTree, TTree* clusterTree, 
 			 AliESDEvent* esd) const;
+  /** Put in the ESD data, the FMD ESD data.  The object created by
+      the Reconstruct member function is copied to the ESD object. 
+      @param reader       Raw data reader - not used.
+      @param clusterTree  Tree of reconstructed points for this event
+                          - not used. 
+      @param esd          ESD object to store data in. */
+  void FillESD(AliRawReader* reader, TTree* clusterTree, 
+	       AliESDEvent* esd) const;
   /** Not used */
   virtual void   SetESD(AliESDEvent* esd) { fESD = esd; }
   /** Set the noise factor 
@@ -192,13 +208,11 @@ protected:
   TH1*                  fDiagAll;	// Diagnostics histogram
 private:
   /** Hide base classes unused function */
-  void Reconstruct(AliRawReader*, TTree*) const;
-  /** Hide base classes unused function */
   void Reconstruct(AliRunLoader*) const;
   /** Hide base classes unused function */
   void Reconstruct(AliRunLoader*, AliRawReader*) const;
-  /** Hide base classes unused function */
-  void FillESD(AliRawReader*, TTree*, AliESDEvent*) const;
+  // /** Hide base classes unused function */
+  // void FillESD(AliRawReader*, TTree*, AliESDEvent*) const;
   /** Hide base classes unused function */
   void FillESD(AliRunLoader*, AliESDEvent*) const;
   /** Hide base classes unused function */

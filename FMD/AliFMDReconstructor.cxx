@@ -306,16 +306,18 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
 		      digit->Strip(), digit->Counts(), counts, edep, mult));
     
     // Create a `RecPoint' on the output branch. 
-    AliFMDRecPoint* m = 
-      new ((*fMult)[fNMult]) AliFMDRecPoint(digit->Detector(), 
-					    digit->Ring(), 
-					    digit->Sector(),
-					    digit->Strip(),
-					    eta, phi, 
-					    edep, mult);
-    (void)m; // Suppress warnings about unused variables. 
-    fNMult++;
-
+    if (fMult) {
+      AliFMDRecPoint* m = 
+	new ((*fMult)[fNMult]) AliFMDRecPoint(digit->Detector(), 
+					      digit->Ring(), 
+					      digit->Sector(),
+					      digit->Strip(),
+					      eta, phi, 
+					      edep, mult);
+      (void)m; // Suppress warnings about unused variables. 
+      fNMult++;
+    }
+    
     fESDObj->SetMultiplicity(digit->Detector(), digit->Ring(), 
 			     digit->Sector(),  digit->Strip(), mult);
     fESDObj->SetEta(digit->Detector(), digit->Ring(), 
@@ -474,9 +476,12 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
 
   if (!fDiagnostics || !esd) return;
   static bool first = true;
-  Int_t evno = esd->GetEventNumberInFile(); // This is most likely NOT the event number you'd like to use. It has nothing to do with the 'real' event number.
-  AliFMDDebug(1, ("Writing diagnostics histograms to FMD.Diag.root/%03d",
-		   evno));
+  // This is most likely NOT the event number you'd like to use. It
+  // has nothing to do with the 'real' event number. 
+  // - That's OK.  We just use it for the name of the directory -
+  // nothing else.  Christian
+  Int_t evno = esd->GetEventNumberInFile(); 
+  AliFMDDebug(1, ("Writing diagnostics histograms to FMD.Diag.root/%03d",evno));
   TFile f("FMD.Diag.root", (first ? "RECREATE" : "UPDATE"));
   first = false;
   f.cd(); 
@@ -502,12 +507,26 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Reconstruct(AliRawReader*,TTree*) const 
+AliFMDReconstructor::Reconstruct(AliRawReader* reader,
+				 TTree* /* ctree */) const 
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
   AliFMDDebug(2, ("Calling FillESD with loader and tree"));
+#if 1
+  TClonesArray* array = new TClonesArray("AliFMDDigit");
+  // if (ctree) ctree->Branch("FMD", &array);
+  AliFMDRawReader rawRead(reader, 0);
+  rawRead.ReadAdcs(array);
+  // ctree->Fill();
+  // Question - how to get the digits in this case? 
+  ProcessDigits(array);
+  // Reconstruct(array, ctree);
+  array->Delete();
+  delete array;
+#else
   AliError("MayNotUse");
+#endif
 }
 //____________________________________________________________________
 void 
@@ -529,12 +548,16 @@ AliFMDReconstructor::Reconstruct(AliRunLoader*, AliRawReader*) const
 }
 //____________________________________________________________________
 void 
-AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESDEvent*) const 
+AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESDEvent* esd) const 
 {
   // Cannot be used.  See member function with same name but with 2
   // TTree arguments.   Make sure you do local reconstrucion 
   AliFMDDebug(2, ("Calling FillESD with raw reader, tree, and ESD"));
+#if 1
+  FillESD((TTree*)0, (TTree*)0, esd);
+#else
   AliError("MayNotUse");
+#endif
 }
 //____________________________________________________________________
 void 

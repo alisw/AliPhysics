@@ -29,7 +29,7 @@
 // Latest changes by Christian Holm Christensen
 //
 #include "AliFMDInput.h"	// ALIFMDHIT_H
-#include "AliFMDDebug.h"		// ALIFMDDEBUG_H ALILOG_H
+#include "AliFMDDebug.h"	// ALIFMDDEBUG_H ALILOG_H
 #include "AliLoader.h"          // ALILOADER_H
 #include "AliRunLoader.h"       // ALIRUNLOADER_H
 #include "AliRun.h"             // ALIRUN_H
@@ -250,7 +250,7 @@ AliFMDInput::Init()
     }
   }
 
-  
+  fEventCount = 0;
   fIsInit = kTRUE;
   return fIsInit;
 }
@@ -271,25 +271,25 @@ AliFMDInput::Begin(Int_t event)
   }
   // Get the event 
   if (fLoader->GetEvent(event)) return kFALSE;
-  AliInfo(Form("Now in event %d/%d", event, NEvents()));
+  AliInfo(Form("Now in event %8d/%8d", event, NEvents()));
 
   // Possibly load global kinematics information 
   if (TESTBIT(fTreeMask, kKinematics) || TESTBIT(fTreeMask, kTracks)) {
-    AliInfo("Getting kinematics");
+    // AliInfo("Getting kinematics");
     if (fLoader->LoadKinematics()) return kFALSE;
     fStack = fLoader->Stack();
   }
   // Possibly load FMD Hit information 
   if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
-    AliInfo("Getting FMD hits");
-    if (fFMDLoader->LoadHits()) return kFALSE;
+    // AliInfo("Getting FMD hits");
+    if (!fFMDLoader || fFMDLoader->LoadHits()) return kFALSE;
     fTreeH = fFMDLoader->TreeH();
     if (!fArrayH) fArrayH = fFMD->Hits(); 
   }
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kDigits)) {
-    AliInfo("Getting FMD digits");
-    if (fFMDLoader->LoadDigits()) return kFALSE;
+    // AliInfo("Getting FMD digits");
+    if (!fFMDLoader || fFMDLoader->LoadDigits()) return kFALSE;
     fTreeD = fFMDLoader->TreeD();
     if (fTreeD) {
       if (!fArrayD) fArrayD = fFMD->Digits();
@@ -301,21 +301,21 @@ AliFMDInput::Begin(Int_t event)
   }
   // Possibly load FMD Sdigit information 
   if (TESTBIT(fTreeMask, kSDigits)) {
-    AliInfo("Getting FMD summable digits");
-    if (fFMDLoader->LoadSDigits()) return kFALSE;
+    // AliInfo("Getting FMD summable digits");
+    if (!fFMDLoader || fFMDLoader->LoadSDigits()) return kFALSE;
     fTreeS = fFMDLoader->TreeS();
     if (!fArrayS) fArrayS = fFMD->SDigits();
   }
   // Possibly load FMD RecPoints information 
   if (TESTBIT(fTreeMask, kRecPoints)) {
-    AliInfo("Getting FMD reconstructed points");
-    if (fFMDLoader->LoadRecPoints()) return kFALSE;
+    // AliInfo("Getting FMD reconstructed points");
+    if (!fFMDLoader || fFMDLoader->LoadRecPoints()) return kFALSE;
     fTreeR = fFMDLoader->TreeR();
     if (!fArrayR) fArrayR = new TClonesArray("AliFMDRecPoint");
     fTreeR->SetBranchAddress("FMD",  &fArrayR);
   }  // Possibly load FMD ESD information 
   if (TESTBIT(fTreeMask, kESD)) {
-    AliInfo("Getting FMD event summary data");
+    // AliInfo("Getting FMD event summary data");
     Int_t read = fChainE->GetEntry(event);
     if (read <= 0) return kFALSE;
     fESD = fESDEvent->GetFMDData();
@@ -333,13 +333,13 @@ AliFMDInput::Begin(Int_t event)
   }
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw)) {
-    AliInfo("Getting FMD raw data digits");
+    // AliInfo("Getting FMD raw data digits");
     if (!fReader->NextEvent()) return kFALSE;
     AliFMDRawReader r(fReader, 0);
     fArrayA->Clear();
     r.ReadAdcs(fArrayA);
   }
-  
+  fEventCount++;
   return kTRUE;
 }
 
@@ -611,6 +611,31 @@ AliFMDInput::Run()
   retval = Finish();
   return retval;
 }
+
+//__________________________________________________________________
+TArrayF 
+AliFMDInput::MakeLogScale(Int_t n, Double_t min, Double_t max) 
+{
+  // Service function to define a logarithmic axis. 
+  // Parameters: 
+  //   n    Number of bins 
+  //   min  Minimum of axis 
+  //   max  Maximum of axis 
+  TArrayF bins(n+1);
+  bins[0]      = min;
+  if (n <= 20) {
+    for (Int_t i = 1; i < n+1; i++) bins[i] = bins[i-1] + (max-min)/n;
+    return bins;
+  }
+  Float_t dp   = n / TMath::Log10(max / min);
+  Float_t pmin = TMath::Log10(min);
+  for (Int_t i = 1; i < n+1; i++) {
+    Float_t p = pmin + i / dp;
+    bins[i]   = TMath::Power(10, p);
+  }
+  return bins;
+}
+
 
 
 //____________________________________________________________________

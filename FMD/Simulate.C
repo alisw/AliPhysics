@@ -21,7 +21,7 @@
 /** Script to do test the FMD digitization class.  
  */
 void
-Simulate()
+Simulate(Int_t n=10)
 {
   AliSimulation sim;
   // AliLog::SetModuleDebugLevel("FMD", 1);
@@ -32,7 +32,7 @@ Simulate()
   // sim.SetMakeDigitsFromHits("FMD"); 
   TStopwatch w; 
   w.Start(); 
-  sim.Run(10);  
+  sim.Run(n);  
   w.Stop(); 
   w.Print(); 
 }

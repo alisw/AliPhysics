@@ -39,19 +39,6 @@ private:
   AliFMDEdepMap fMap;
 public:
   //__________________________________________________________________
-  TArrayF MakeLogScale(Int_t n, Double_t min, Double_t max) 
-  {
-    TArrayF bins(n+1);
-    Float_t dp   = n / TMath::Log10(max / min);
-    Float_t pmin = TMath::Log10(min);
-    bins[0]      = min;
-    for (Int_t i = 1; i < n+1; i++) {
-      Float_t p = pmin + i / dp;
-      bins[i]   = TMath::Power(10, p);
-    }
-    return bins;
-  }
-  //__________________________________________________________________
   DrawHitsDigits(Int_t n=900, Double_t emin=1e-3, Double_t emax=10, 
 		 Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5) 
   { 

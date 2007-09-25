@@ -37,11 +37,12 @@ private:
   TH1D* fAdc; // Histogram 
 public:
   //__________________________________________________________________
-  DrawDigits(Int_t m=1100, Double_t amin=-0.5, Double_t amax=1099.5) 
+  DrawDigits(Int_t m=1100, Double_t amin=-0.5, Double_t amax=1023.5) 
   { 
     AddLoad(kDigits);
     fAdc = new TH1D("adc", "ADC", m, amin, amax);
     fAdc->SetXTitle("ADC value");
+    fAdc->Sumw2();
   }
   //__________________________________________________________________
   Bool_t ProcessDigit(AliFMDDigit* digit)
@@ -60,6 +61,7 @@ public:
     gStyle->SetPadColor(0);
     gStyle->SetPadBorderSize(0);
     fAdc->SetStats(kFALSE);
+    fAdc->Scale(1. / fAdc->GetEntries());
     fAdc->Draw();
     return kTRUE;
   }
