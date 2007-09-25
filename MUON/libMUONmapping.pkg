@@ -1,3 +1,5 @@
+# $Id$
+
 #
 # mapping 
 #
@@ -92,7 +94,7 @@ SRCS +=  \
          mapping/AliMpLocalBoard.cxx \
          mapping/AliMpDDL.cxx \
 	 mapping/AliMpDDLStore.cxx \
-	 mapping/AliMpCDB.cxx
+	 mapping/AliMpCDB.cxx \
 	 
 # Category graphics
 #
