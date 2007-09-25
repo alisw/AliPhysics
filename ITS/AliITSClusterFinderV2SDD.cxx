@@ -24,6 +24,7 @@
 
 
 
+#include <TClonesArray.h>
 #include "AliITSClusterFinderV2SDD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSDetTypeRec.h"
@@ -32,7 +33,6 @@
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSsegmentationSDD.h"
-#include <TClonesArray.h>
 #include "AliITSdigitSDD.h"
 #include "AliITSgeomTGeo.h"
 ClassImp(AliITSClusterFinderV2SDD)
@@ -268,10 +268,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   Int_t nClustersSDD = 0;
   Int_t kNzBins = fNzSDD + 2;
   Int_t kMaxBin = kNzBins * (fNySDD+2);
-  AliBin *binsSDDInit = new AliBin[kMaxBin];
-  AliBin *binsSDD1 = new AliBin[kMaxBin];
-  AliBin *binsSDD2 = new AliBin[kMaxBin];
-  AliBin* bins[2] = {NULL, NULL};
+  AliBin *bins[2];
+  bins[0]=new AliBin[kMaxBin];
+  bins[1]=new AliBin[kMaxBin];
 
   // read raw data input stream
   while (kTRUE) {
@@ -279,20 +278,16 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
     if (!next || input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
       Int_t iModule = input->GetModuleID();
-      if (bins[0]) { 
-	clusters[iModule] = new TClonesArray("AliITSRecPoint");
-	fModule = iModule;
-	FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
-	Int_t nClusters = clusters[iModule]->GetEntriesFast();
-	nClustersSDD += nClusters;
-	bins[0] = bins[1] = NULL;	
-      }
-
+      clusters[iModule] = new TClonesArray("AliITSRecPoint");
+      fModule = iModule;
+      FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
+      Int_t nClusters = clusters[iModule]->GetEntriesFast();
+      nClustersSDD += nClusters;
+      delete [] bins[0];
+      delete [] bins[1];
       if (!next) break;
-      bins[0]=binsSDD1;
-      bins[1]=binsSDD2;
-      memcpy(binsSDD1,binsSDDInit,sizeof(AliBin)*kMaxBin);
-      memcpy(binsSDD2,binsSDDInit,sizeof(AliBin)*kMaxBin);
+      bins[0]=new AliBin[kMaxBin];
+      bins[1]=new AliBin[kMaxBin];
     }else{
     // fill the current digit into the bins array
       AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());    
@@ -316,9 +311,6 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       }
     }
   }
-  delete[] binsSDD1;
-  delete[] binsSDD2;
-  delete[] binsSDDInit;
 
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 }
