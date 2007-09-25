@@ -37,6 +37,7 @@ AliESDZDC::AliESDZDC() :
   fZDCEMEnergy(0),
   fZDCParticipants(0)
 {
+  for(int i = 0;i<4;i++) fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
 }
 
 AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
@@ -62,6 +63,10 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     fZDCP2Energy = zdc.fZDCP2Energy;
     fZDCEMEnergy = zdc.fZDCEMEnergy;
     fZDCParticipants = zdc.fZDCParticipants;
+    for(Int_t i=0; i<4; i++){
+       fZN1TowerEnergy[i] = zdc.fZN1TowerEnergy[i];
+       fZN2TowerEnergy[i] = zdc.fZN2TowerEnergy[i];
+    }
   } 
   return *this;
 }
@@ -76,11 +81,14 @@ void AliESDZDC::Reset()
   fZDCN2Energy=0;
   fZDCP2Energy=0;
   fZDCEMEnergy=0;
-  fZDCParticipants=0;
+  fZDCParticipants=0;  
+  for(int i=0; i<24; i++) fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
+
 }
 
 //______________________________________________________________________________
 void AliESDZDC::Print(const Option_t *) const
 {
 }
+
 
