@@ -83,7 +83,7 @@ AliHLTComponentDataType AliHLTMUONHitReconstructorComponent::GetOutputDataType()
 
 void AliHLTMUONHitReconstructorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
-	constBase = 0;
+	constBase = sizeof(AliHLTMUONRecHitsBlockWriter::HeaderType);
 	inputMultiplier = 1;
 }
 

@@ -26,7 +26,6 @@
 //         sukalyan.chattopadhyay@saha.ac.in 
 ///////////////////////////////////////////////
 
-#include "AliHLTMUONDataTypes.h"
 #include <iostream>
 #include <cstdio>
 #include <fstream>
@@ -129,7 +128,7 @@ private:
   DHLTPad* fPadData;                         // pointer to the array containing the information of each padhits
   DHLTLut* fLookUpTableData;                 // pointer to the array of Lookuptable data
   
-  AliHLTMUONRecHitStruct *fRecPoints;       // Reconstructed hits
+  AliHLTMUONRecHitStruct* fRecPoints;       // Reconstructed hits
   AliHLTUInt32_t *fRecPointsCount;                      // nof reconstructed hit  
   AliHLTUInt32_t fMaxRecPointsCount;                    // max nof reconstructed hit  
    
@@ -153,7 +152,7 @@ private:
   bool FindRecHits() ;
   void RecXRecY();
   bool MergeRecHits();
-
+  void Clear();
 };
 
 #endif // ALIHLTMUONHITRECONSTRUCTOR_H

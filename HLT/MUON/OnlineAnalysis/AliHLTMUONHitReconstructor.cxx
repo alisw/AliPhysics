@@ -33,9 +33,9 @@
 // of the hit.
 /////////////////////////////////////////////////
 
-#include <strings.h>
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONRecHitsBlockStruct.h"
+#include <cstring>
 
 
 const int AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
@@ -103,8 +103,15 @@ AliHLTMUONHitReconstructor::~AliHLTMUONHitReconstructor()
 {
   // dtor
 
-  delete []fPadData;
-  delete []fLookUpTableData;
+  if(fPadData){
+    delete []fPadData;
+    fPadData = NULL;
+  }
+   
+  if(fLookUpTableData){
+    delete []fLookUpTableData;
+    fLookUpTableData = NULL;
+  }
 }
 
 
@@ -163,10 +170,12 @@ bool AliHLTMUONHitReconstructor::SetBusToDetMap(BusToDetElem busToDetElem)
 
   // function that loads BusPatch To Detection Element (SlatId) map
 
-  if(busToDetElem.size()==0)
+  if(busToDetElem.size()==0) {
+    HLTError("Empty BusToDetElem mapping");
     return false;
-  else
+  } else {
     fBusToDetElem = busToDetElem;
+  }
   
   return true;
 }
@@ -177,10 +186,12 @@ bool AliHLTMUONHitReconstructor::SetBusToDDLMap(BusToDDL busToDDL)
 
   // function that loads BusPatch To DDL Element (DDL) map
 
-  if(busToDDL.size()==0)
+  if(busToDDL.size()==0) {
+    HLTError("Empty BusToDDL mapping");
     return false;
-  else
+  } else {
     fBusToDDL = busToDDL;
+  }
   
   return true;
 }
@@ -212,14 +223,21 @@ bool AliHLTMUONHitReconstructor::Run(
   fPadData[0].fPcbZone = -1 ;
   fPadData[0].fCharge = 0 ;
 
-
-  if(!ReadDDL(rawData, rawDataSize)){
-    HLTError("Failed to read the complete DDL file");
+  if (not ReadDDL(rawData, rawDataSize)) {
+    // Dont need to log any message again. Already done so in ReadDDL.
+    Clear();
     return false;
   }
+  
+  if (fDigitPerDDL == 0)
+  {
+    // There are no digits to process so stop here.
+    return true;
+  }
 
-  if(!FindRecHits()){
+  if (not FindRecHits()) {
     HLTError("Failed to generate RecHits");
+    Clear();
     return false;
   }
     
@@ -234,7 +252,8 @@ bool AliHLTMUONHitReconstructor::ReadDDL(
 {
   //function to read Raw Data files
 
-  const int* buffer = reinterpret_cast<const int*>(rawData);
+  //const int* buffer = reinterpret_cast<const int*>(rawData);
+  const AliHLTUInt32_t* buffer = rawData;
 
   fIdOffSet= fgkMinIdManuChannel[(fDDLId%2)];
   fDetManuChannelIdList = new int[rawDataSize];
@@ -257,9 +276,11 @@ bool AliHLTMUONHitReconstructor::ReadDDL(
     totalBlockSize = buffer[index + 1];
     blockRawDataSize = buffer[index + 2];
     indexDsp = index + fkBlockHeaderSize;
+    HLTDebug("totalBlockSize : %d, blockRawDataSize : %d",totalBlockSize,blockRawDataSize);
     while(blockRawDataSize > 0){
       totalDspSize = buffer[indexDsp + 1];
       dspRawDataSize = buffer[indexDsp + 2];
+      HLTDebug("   totalDSPSize : %d, dspRawDataSize : %d",totalDspSize,dspRawDataSize);
       //if(buffer[indexDsp+1] == 1)
       dspRawDataSize --;                              // temporary solution to read buspatches 
       indexBuspatch = indexDsp + fkDspHeaderSize + 2; // this extra 2 word comes from the faulty defination of Dsp header size
@@ -271,6 +292,7 @@ bool AliHLTMUONHitReconstructor::ReadDDL(
 	  HLTError("No Detection element found for buspatch : %d",buspatchId);
 	  return false;
 	}
+	HLTDebug("\ttotalBusPatchSize : %d, buspatchRawDataSize : %d",totalBuspatchSize,buspatchRawDataSize);
 	indexRawData = indexBuspatch + fkBuspatchHeaderSize;
 	while(buspatchRawDataSize > 0){
 	  dataWord = buffer[indexRawData];
@@ -303,14 +325,13 @@ bool AliHLTMUONHitReconstructor::ReadDDL(
 	      prevDetElemId = detElemId ;
 	    }
 	    
-	    HLTDebug("buspatch : %d, detele : %d, id : %d, manu : %d, channel : %d, X : %f, Y: %f",
+	    HLTDebug("\t  buspatch : %d, detele : %d, id : %d, manu : %d, channel : %d, X : %f, Y: %f",
 		    fPadData[idManuChannel].fBuspatchId,fPadData[idManuChannel].fDetElemId,
 		    idManuChannel,((dataWord >> 12) & 0x7FF),((dataWord >> 23) & 0x3F),
 		    fPadData[idManuChannel].fRealX,fPadData[idManuChannel].fRealY);
 
 	    dataCount ++;
-	  }
-	  
+	  }// if charge is more than DC Cut limit condition
 	  
 	  indexRawData++;
 	  buspatchRawDataSize --;
@@ -324,10 +345,12 @@ bool AliHLTMUONHitReconstructor::ReadDDL(
     index = totalBlockSize;
   }// Block loop
   
-  //delete[] buffer;
-  
   fDigitPerDDL = dataCount;
   fMaxFiredPerDetElem[fNofFiredDetElem-1] = dataCount;
+    
+  if(fDigitPerDDL == 0){
+    HLTInfo("An Empty DDL File found");
+  }
     
   return true;
 }
@@ -362,32 +385,19 @@ bool AliHLTMUONHitReconstructor::FindRecHits()
       for(int i=fMaxFiredPerDetElem[iDet-1];i<fMaxFiredPerDetElem[iDet];i++)
 	fGetIdTotalData[fPadData[fDetManuChannelIdList[i]].fIX][fPadData[fDetManuChannelIdList[i]].fIY][fPadData[fDetManuChannelIdList[i]].fPlane] = 0;
 
-    //fDHLTTree->Fill();
-
-    delete []fCentralChargeB;
-    delete []fCentralChargeNB;
+    if(fCentralChargeB){
+      delete []fCentralChargeB;
+      fCentralChargeB = NULL;
+    }
+    
+    if(fCentralChargeNB){
+      delete []fCentralChargeNB;
+      fCentralChargeNB = NULL;
+    }
 
   }
     
-  //for(int iPad=fDataPerDetElem[i];iPad<fDataPerDetElem[i+1];iPad++){
-  for(int iPad=0;iPad<fDigitPerDDL;iPad++){
-    fGetIdTotalData[fPadData[fDetManuChannelIdList[iPad]].fIX][fPadData[fDetManuChannelIdList[iPad]].fIY][fPadData[fDetManuChannelIdList[iPad]].fPlane] = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fDetElemId = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fBuspatchId = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fIdManuChannel = 0;
-    fPadData[fDetManuChannelIdList[iPad]].fIX = 0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fIY = 0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fRealX = 0.0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fRealY = 0.0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fRealZ = 0.0 ;
-    fPadData[fDetManuChannelIdList[iPad]].fPlane = -1 ;
-    fPadData[fDetManuChannelIdList[iPad]].fPcbZone = -1 ;
-    fPadData[fDetManuChannelIdList[iPad]].fCharge = 0 ;
-  }  
-  
-  for(int i=0;i<13;i++)
-    fMaxFiredPerDetElem[i] = 0;
-  delete []fDetManuChannelIdList;
+  Clear();
 
   return true;
 }
@@ -695,11 +705,82 @@ bool AliHLTMUONHitReconstructor::MergeRecHits()
     }// condn on fRecY[b] !=  0.0
   }// loop over B side;
 
-  delete []fRecX;
-  delete []fRecY;
-  
-  delete []fAvgChargeX;
-  delete []fAvgChargeY;
+  if(fRecX){
+    delete []fRecX;
+    fRecX = NULL;
+  }
+
+  if(fRecY){
+    delete []fRecY;
+    fRecY = NULL;
+  }
+
+  if(fAvgChargeX){
+    delete []fAvgChargeX;
+    fAvgChargeX = NULL;
+  }
+
+  if(fAvgChargeY){
+    delete []fAvgChargeY;
+    fAvgChargeY = NULL;
+  }
 
   return true;
+}
+
+
+void AliHLTMUONHitReconstructor::Clear()
+{
+  for(int iPad=0;iPad<fDigitPerDDL;iPad++){
+    fGetIdTotalData[fPadData[fDetManuChannelIdList[iPad]].fIX][fPadData[fDetManuChannelIdList[iPad]].fIY][fPadData[fDetManuChannelIdList[iPad]].fPlane] = 0;
+    fPadData[fDetManuChannelIdList[iPad]].fDetElemId = 0;
+    fPadData[fDetManuChannelIdList[iPad]].fBuspatchId = 0;
+    fPadData[fDetManuChannelIdList[iPad]].fIdManuChannel = 0;
+    fPadData[fDetManuChannelIdList[iPad]].fIX = 0 ;
+    fPadData[fDetManuChannelIdList[iPad]].fIY = 0 ;
+    fPadData[fDetManuChannelIdList[iPad]].fRealX = 0.0 ;
+    fPadData[fDetManuChannelIdList[iPad]].fRealY = 0.0 ;
+    fPadData[fDetManuChannelIdList[iPad]].fRealZ = 0.0 ;
+    fPadData[fDetManuChannelIdList[iPad]].fPlane = -1 ;
+    fPadData[fDetManuChannelIdList[iPad]].fPcbZone = -1 ;
+    fPadData[fDetManuChannelIdList[iPad]].fCharge = 0 ;
+  }  
+  
+  for(int i=0;i<13;i++)
+    fMaxFiredPerDetElem[i] = 0;
+
+  if(fDetManuChannelIdList){
+    delete []fDetManuChannelIdList;
+    fDetManuChannelIdList = NULL;
+  }
+
+  if(fCentralChargeB){
+    delete []fCentralChargeB;
+    fCentralChargeB = NULL;
+  }
+
+  if(fCentralChargeNB){
+    delete []fCentralChargeNB;
+    fCentralChargeNB = NULL;
+  }
+
+  if(fRecX){
+    delete []fRecX;
+    fRecX = NULL;
+  }
+
+  if(fRecY){
+    delete []fRecY;
+    fRecY = NULL;
+  }
+
+  if(fAvgChargeX){
+    delete []fAvgChargeX;
+    fAvgChargeX = NULL;
+  }
+
+  if(fAvgChargeY){
+    delete []fAvgChargeY;
+    fAvgChargeY = NULL;
+  }
 }
