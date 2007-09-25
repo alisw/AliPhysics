@@ -82,6 +82,7 @@ private:
 
 	TString fDDLDir;
 	Int_t fDDL;
+	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0)
 

@@ -28,6 +28,7 @@
 #include "AliHLTMUONDataBlockWriter.h"
 #include <cstdlib>
 #include <cerrno>
+#include <cassert>
 
 namespace
 {
@@ -44,7 +45,8 @@ ClassImp(AliHLTMUONTriggerReconstructorComponent)
 AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent() :
 	fTrigRec(NULL),
 	fDDLDir(""),
-	fDDL(0)
+	fDDL(0),
+	fWarnForUnexpecedBlock(false)
 {
 }
 
@@ -95,6 +97,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
   
   HLTInfo("Initialising DHLT Trigger Record Component");
 
+  fWarnForUnexpecedBlock = false;
   fTrigRec = new AliHLTMUONTriggerReconstructor();
       
   // this is just to get rid of the warning "unused parameter"
@@ -162,6 +165,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	i += 2;
 	continue;
       }// regtolocalmap argument
+	  
+      if ( !strcmp( argv[i], "-warn_on_unexpected_block" ) ) {
+        fWarnForUnexpecedBlock = true;
+	i++;
+	continue;
+      }
 
       HLTError("Unknown option '%s'", argv[i] );
       return EINVAL;
@@ -231,6 +240,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 	// reconstruction algorithm on the raw data.
 	for (AliHLTUInt32_t n = 0; n < evtData.fBlockCnt; n++)
 	{
+#ifdef __DEBUG
 		char id[kAliHLTComponentDataTypefIDsize+1];
 		for (int i = 0; i < kAliHLTComponentDataTypefIDsize; i++)
 			id[i] = blocks[n].fDataType.fID[i];
@@ -239,7 +249,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		for (int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++)
 			origin[i] = blocks[n].fDataType.fOrigin[i];
 		origin[kAliHLTComponentDataTypefOriginSize] = '\0';
-		
+#endif // __DEBUG
 		HLTDebug("Handling block: %u, with fDataType.fID = '%s',"
 			  " fDataType.fID = '%s', fPtr = %p and fSize = %u bytes.",
 			n, static_cast<char*>(id), static_cast<char*>(origin),
@@ -259,9 +269,15 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 				origin[i] = blocks[n].fDataType.fOrigin[i];
 			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
 			
-			HLTError("Received a data block of an unexpected type: %s origin %s",
-				static_cast<char*>(id), static_cast<char*>(origin)
-			);
+			if (fWarnForUnexpecedBlock)
+				HLTWarning("Received a data block of a type we can not handle: %s origin %s",
+					static_cast<char*>(id), static_cast<char*>(origin)
+				);
+			else
+				HLTDebug("Received a data block of a type we can not handle: %s origin %s",
+					static_cast<char*>(id), static_cast<char*>(origin)
+				);
+			
 			continue;
 		}
 		
