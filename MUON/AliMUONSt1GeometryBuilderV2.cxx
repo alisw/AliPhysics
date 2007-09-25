@@ -2408,7 +2408,7 @@ void AliMUONSt1GeometryBuilderV2::CreateMaterials()
   GReal_t stmin  = -.8;
   GReal_t maxStepAlu   = fMUON->GetMaxStepAlu();
   GReal_t maxDestepAlu = fMUON->GetMaxDestepAlu();
-  GReal_t maxStepGas   = fMUON->GetMaxStepGas();
+  // GReal_t maxStepGas   = fMUON->GetMaxStepGas();
   Int_t iSXFLD   = gAlice->Field()->PrecInteg();
   Float_t sXMGMX = gAlice->Field()->Max();
 
