@@ -58,6 +58,8 @@
 #include <Riostream.h>		// ROOT_Riostream
 #include <TFile.h>              // ROOT_TFile
 #include <TStreamerInfo.h>
+#include <TArrayF.h>
+
 //____________________________________________________________________
 ClassImp(AliFMDInput)
 #if 0
@@ -269,6 +271,7 @@ AliFMDInput::Begin(Int_t event)
     AliError("Not initialized");
     return fIsInit;
   }
+
   // Get the event 
   if (fLoader->GetEvent(event)) return kFALSE;
   AliInfo(Form("Now in event %8d/%8d", event, NEvents()));
@@ -279,6 +282,7 @@ AliFMDInput::Begin(Int_t event)
     if (fLoader->LoadKinematics()) return kFALSE;
     fStack = fLoader->Stack();
   }
+
   // Possibly load FMD Hit information 
   if (TESTBIT(fTreeMask, kHits) || TESTBIT(fTreeMask, kTracks)) {
     // AliInfo("Getting FMD hits");
@@ -286,6 +290,7 @@ AliFMDInput::Begin(Int_t event)
     fTreeH = fFMDLoader->TreeH();
     if (!fArrayH) fArrayH = fFMD->Hits(); 
   }
+
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kDigits)) {
     // AliInfo("Getting FMD digits");
@@ -299,6 +304,7 @@ AliFMDInput::Begin(Int_t event)
       AliWarning(Form("Failed to load FMD Digits"));
     } 
   }
+
   // Possibly load FMD Sdigit information 
   if (TESTBIT(fTreeMask, kSDigits)) {
     // AliInfo("Getting FMD summable digits");
@@ -306,6 +312,7 @@ AliFMDInput::Begin(Int_t event)
     fTreeS = fFMDLoader->TreeS();
     if (!fArrayS) fArrayS = fFMD->SDigits();
   }
+
   // Possibly load FMD RecPoints information 
   if (TESTBIT(fTreeMask, kRecPoints)) {
     // AliInfo("Getting FMD reconstructed points");
@@ -313,13 +320,16 @@ AliFMDInput::Begin(Int_t event)
     fTreeR = fFMDLoader->TreeR();
     if (!fArrayR) fArrayR = new TClonesArray("AliFMDRecPoint");
     fTreeR->SetBranchAddress("FMD",  &fArrayR);
-  }  // Possibly load FMD ESD information 
+  }  
+
+  // Possibly load FMD ESD information 
   if (TESTBIT(fTreeMask, kESD)) {
     // AliInfo("Getting FMD event summary data");
     Int_t read = fChainE->GetEntry(event);
     if (read <= 0) return kFALSE;
     fESD = fESDEvent->GetFMDData();
     if (!fESD) return kFALSE;
+#if 0
     TFile* f = fChainE->GetFile();
     if (f) {
       TObject* o = f->GetStreamerInfoList()->FindObject("AliFMDMap");
@@ -330,7 +340,9 @@ AliFMDInput::Begin(Int_t event)
       }
     }
     // fESD->CheckNeedUShort(fChainE->GetFile());
+#endif
   }
+
   // Possibly load FMD Digit information 
   if (TESTBIT(fTreeMask, kRaw)) {
     // AliInfo("Getting FMD raw data digits");

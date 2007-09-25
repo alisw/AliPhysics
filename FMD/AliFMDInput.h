@@ -30,6 +30,9 @@
 #ifndef ROOT_TString
 # include <TString.h>
 #endif
+#ifndef ROOT_TArrayF
+# include <TArrayF.h>
+#endif
 class AliRunLoader;
 class AliLoader;
 class AliStack;
