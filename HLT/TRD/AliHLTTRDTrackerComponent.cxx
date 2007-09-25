@@ -26,19 +26,19 @@ using namespace std;
 #endif
 
 #include "TFile.h"
+#include "TChain.h"
 
 #include "AliHLTTRDTrackerComponent.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliCDBManager.h"
 
-#include "AliTRDclusterizerV1HLT.h"
 #include "AliTRDReconstructor.h"
 #include "AliESDEvent.h"
 #include "AliTRDtrackerHLT.h"
+#include "AliTRDtracker.h"
 #include "AliTRDCalibraFillHisto.h"
 #include "AliMagFMaps.h"
 #include "AliTRDcluster.h"
-#include "TObjArray.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -167,8 +167,6 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
       return EINVAL;
     }
 
-  fClusterizer = new AliTRDclusterizerV1HLT("TRCclusterizer", "TRCclusterizer");
-
   //init alifield map - temporarly fixed - should come from a DB
   fField = new AliMagFMaps("Maps","Maps", 2, 1., 10., 1);
   if (fField)
@@ -180,7 +178,9 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
   if (fGeometryFile)
     {
       fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
-      fTracker = new AliTRDtrackerHLT(fGeometryFile);
+      //fTracker = new AliTRDtrackerHLT(fGeometryFile);
+      fTracker = new AliTRDtracker(fGeometryFile);
+      //fTracker = new AliTRDtracker(fGeometryFile);
     }
   else
     {
@@ -207,9 +207,6 @@ int AliHLTTRDTrackerComponent::DoDeinit()
 {
   // Deinitialization of the component
 
-  delete fClusterizer;
-  fClusterizer = 0;
-
   delete fField;
   fField = 0;
 
@@ -228,7 +225,9 @@ int AliHLTTRDTrackerComponent::DoDeinit()
     {
       // should not write in here!
       calibra->Write2d();
+      Logging( kHLTLogInfo, "HLT::TRDTracker::DoDeinit", "CALIBRA", "before destroy");
       calibra->Destroy();
+      Logging( kHLTLogInfo, "HLT::TRDTracker::DoDeinit", "CALIBRA", "after destroy");
     }
 
   return 0;
@@ -244,6 +243,13 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 
   AliHLTUInt32_t fDblock_Specification = 0;
 
+  //implement a usage of the following
+//   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
+//   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
+//   void *triggerData = trigData.fData;
+  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Trigger data received", 
+	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+
   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
   if (dblock != 0)
     {
@@ -256,62 +262,78 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
     }
 
   int ibForce = 0;
-  TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TObjArray", ibForce);
+  TObject *tobjin = (TObject *)GetFirstInputObject( AliHLTTRDDefinitions::fgkClusterDataType, "TTree", ibForce);
   Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "1stBLOCK", "Pointer = 0x%x", tobjin);
 
-//   int iTotalClusterCounter = 0;
+  TTree *clusterTree = (TTree*)tobjin;
+  if (!clusterTree)
+    {
+      Logging( kHLTLogWarning, "HLT::TRDTracker::DoEvent", "DATAIN", "First Input Block not a tree! 0x%x", tobjin);
+      return -1;
+    }
+
+  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "1stBLOCK", "Pointer = 0x%x Name = %s", clusterTree, clusterTree->GetName());
+
   while (tobjin != 0)
     {
-      TObjArray *clusters = (TObjArray *)tobjin;
-      if (clusters != 0)
+      if (clusterTree)
 	{
-	  //put back to the clusterizers tree
-	  Int_t iSuggestedDet = -1; // take the det number from the first cluster
-	  Bool_t kInsert = kFALSE;
-	  if (clusters->GetEntries() > 0)
-	    {
-	      AliTRDcluster *cl = (AliTRDcluster*)clusters->At(0);
-	      iSuggestedDet = cl->GetDetector();
-	      kInsert = fClusterizer->InsertClusters(clusters, iSuggestedDet);      
-	      Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "TOTREE", "Result = %d", kInsert);	  
-	    }
-	    
-	  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "CLUSTERS", "Pointer = 0x%x", clusters);	  
-// 	  //dump the clusters to the log files
-// 	  for (Int_t ic = 0; ic < clusters->GetEntries(); ic++)
-// 	    {
-// 	      AliTRDcluster *cl = (AliTRDcluster*)clusters->At(ic);
-// 	      Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "CLUSTER", "%d : %d : Q = %1.2f", 
-// 		       iTotalClusterCounter, ic, cl->GetQ());	      
-// 	      iTotalClusterCounter++;
-// 	    }
-	  
-	  //Pass the data further...
-	  //PushBack(clusters, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
+	  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "CLUSTERS", "Pointer = 0x%x Name = %s", clusterTree, clusterTree->GetName());
+	  Int_t iNentries = clusterTree->GetEntries();
+	  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "COUNT", "N of tree entries = %d", iNentries);
+	  fTracker->LoadClusters(clusterTree);
 	}
       else
 	{
-	  Logging( kHLTLogError, "HLT::TRDTracker::DoEvent", "CLUSTERS", "Pointer = 0x%x", clusters);	  
+	  Logging( kHLTLogError, "HLT::TRDTracker::DoEvent", "CLUSTERS", "Tree Pointer = 0x%x", clusterTree);
 	}
 
       tobjin = (TObject *)GetNextInputObject( ibForce );
       Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "nextBLOCK", "Pointer = 0x%x", tobjin);
-
+      clusterTree = (TTree*)tobjin;
     }
-
-  Int_t iNclusters = fClusterizer->GetNclusters();
-  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "COUNT", "N of Clusters = %d", iNclusters);
-  fTracker->LoadClusters(fClusterizer->GetClusterTree());
 
   AliTRDReconstructor::SetSeedingOn(kTRUE);
 
   AliESDEvent *esd = new AliESDEvent();
   esd->CreateStdContent();
-  //fTracker->MakeSeedsMI(3, 5, esd);
   fTracker->PropagateBack(esd);
+  fTracker->RefitInward(esd);
 
   //here transport the esd tracks further
+
+  Int_t nTracks = esd->GetNumberOfTracks();
+  Int_t nTRDTracks = esd->GetNumberOfTrdTracks();
+  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Number of tracks %d Number of TRD tracks %d", nTracks, nTRDTracks);
+
+//   AliTRDCalibraFillHisto *calibra = AliTRDCalibraFillHisto::Instance();
+//   calibra->Init2Dhistostrack();
+
+  for (Int_t it = 0; it < nTracks; it++)
+    {
+      AliESDtrack* track = esd->GetTrack(it);
+      Int_t nCalibObjects = 0;
+      Int_t idx = 0;
+      while (track->GetCalibObject(idx) != 0)
+	{
+	  nCalibObjects++;
+	  idx++;
+	}
+      Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Track 0x%x NcalibObjects %d", track, nCalibObjects);
+
+      PushBack(track, AliHLTTRDDefinitions::fgkTRDSATracksDataType, fDblock_Specification);
+//       if (calibra->GetMItracking())
+//  	{
+//  	  calibra->UpdateHistograms(track);
+// 	}
+    }
+
   //no receiver defined yet(!)
+  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "now deleting");
   delete esd;
+  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "after delete esd");
+  delete clusterTree;
+
+  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "after delete clusterTree");
   return 0;
 }

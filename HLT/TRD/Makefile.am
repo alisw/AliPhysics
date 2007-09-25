@@ -13,24 +13,18 @@ AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 lib_LTLIBRARIES			=  libAliHLTTRD.la
 
 # library sources
-libAliHLTTRD_la_SOURCES		= AliTRDclusterizerV1HLT.cxx \
-				  AliTRDclusterizerV2HLT.cxx \
+libAliHLTTRD_la_SOURCES		= AliTRDclusterizerHLT.cxx \
 				  AliHLTTRDDefinitions.cxx \
 				  AliHLTTRDClusterizerComponent.cxx \
-				  AliHLTTRDClusterizerComponentV2.cxx \
 				  AliHLTTRDTrackerComponent.cxx \
-				  AliHLTTRDTrackerComponentV2.cxx \
 				  AliTRDtrackerHLT.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
-CLASS_HDRS			= AliTRDclusterizerV1HLT.h \
-				  AliTRDclusterizerV2HLT.h \
+CLASS_HDRS			= AliTRDclusterizerHLT.h \
 				  AliHLTTRDDefinitions.h \
 				  AliHLTTRDClusterizerComponent.h \
-				  AliHLTTRDClusterizerComponentV2.h \
 				  AliHLTTRDTrackerComponent.h \
-				  AliHLTTRDTrackerComponentV2.h \
 				  AliTRDtrackerHLT.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) 

@@ -25,15 +25,16 @@
 using namespace std;
 #endif
 
+#include "TTree.h"
+#include "TFile.h"
+#include "TBranch.h"
+
 #include "AliHLTTRDClusterizerComponent.h"
 #include "AliHLTTRDDefinitions.h"
 
 #include "AliCDBManager.h"
-#include "AliTRDclusterizerV1HLT.h"
+#include "AliTRDclusterizerHLT.h"
 #include "AliRawReaderMemory.h"
-
-#include "TTree.h"
-#include "TBranch.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -51,8 +52,14 @@ AliHLTTRDClusterizerComponent::AliHLTTRDClusterizerComponent()
   , fClusterizer(NULL)
   , fCDB(NULL)
   , fMemReader(NULL)
+  , fGeometryFileName("")
+  , fGeometryFile(NULL)
+  , fGeoManager(NULL)
 {
   // Default constructor
+
+  fGeometryFileName = getenv("ALICE_ROOT");
+  fGeometryFileName += "/HLT/TRD/geometry.root";
 }
 
 AliHLTTRDClusterizerComponent::~AliHLTTRDClusterizerComponent()
@@ -148,6 +155,20 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
 	  continue;
 	}      
 
+      if ( strcmp( argv[i], "-geometry" ) == 0)
+	{
+	  if ( i+1 >= argc )
+	    {
+	      Logging(kHLTLogError, "HLT::TRDTracker::DoInit", "Missing Argument", "Missing -geometry argument");
+	      return ENOTSUP;	      
+	    }
+	  fGeometryFileName = argv[i+1];
+	  Logging( kHLTLogInfo, "HLT::TRDTracker::DoInit", "GeomFile storage set", "GeomFile storage is %s", 
+		   fGeometryFileName.c_str() );	  
+	  i += 2;
+	  continue;
+	}      
+
       Logging(kHLTLogError, "HLT::TRDClusterizer::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
       return EINVAL;
     }
@@ -164,9 +185,21 @@ int AliHLTTRDClusterizerComponent::DoInit( int argc, const char** argv )
       Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
     }
 
+  fGeometryFile = TFile::Open(fGeometryFileName.c_str());
+  if (fGeometryFile)
+    {
+      fGeoManager = (TGeoManager *)fGeometryFile->Get("Geometry");
+    }
+  else
+    {
+      Logging(kHLTLogError, "HLT::TRDTracker::DoInit", "fGeometryFile", "Unable to open file. FATAL!");
+      return -1;
+    }
+
   fMemReader = new AliRawReaderMemory;
-  fClusterizer = new AliTRDclusterizerV1HLT("TRDCclusterizer", "TRDCclusterizer");
-  fClusterizer->SetRawDataVersion(fRawDataVersion);
+
+  fClusterizer = new AliTRDclusterizerHLT("TRDCclusterizer", "TRDCclusterizer");
+  fClusterizer->SetRawVersion(fRawDataVersion);
   fClusterizer->InitClusterTree();
   return 0;
 }
@@ -179,6 +212,13 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   delete fClusterizer;
   fClusterizer = 0;
   return 0;
+
+  if (fGeometryFile)
+    {
+      fGeometryFile->Close();
+      delete fGeometryFile;
+      fGeometryFile = 0;
+    }
 
   if (fCDB)
     {
@@ -193,11 +233,20 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
 					    AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks )
 {
   // Process an event
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
+//   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
+  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
   unsigned long totalSize = 0;
   AliHLTUInt32_t fDblock_Specification = 0;
+
+  //implement a usage of the following
+//   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
+//   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
+//   void *triggerData = trigData.fData;
+  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Trigger data received", 
+	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
+  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Output status", 
+	   "Output pointer at 0x%x Output vector blocks at 0x%x", outputPtr, &outputBlocks);
 
   // Loop over all input blocks in the event
   for ( unsigned long i = 0; i < evtData.fBlockCnt; i++ )
@@ -216,6 +265,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
 	  continue;
 	}
       fDblock_Specification = blocks[i].fSpecification;
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CHECKSPEC", "fDblock_Spec %d %d", i, fDblock_Specification);
       unsigned long blockSize = blocks[i].fSize;
       totalSize += blockSize;
     }
@@ -245,35 +295,26 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
       copied += blocks[i].fSize;
     }
 
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
+//   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COPY STATS", "total=%lu copied=%lu", totalSize, copied);
 
   fMemReader->Reset();
   fMemReader->SetMemory((UChar_t*)memBufIn, totalSize);
+  //fMemReader->SelectEquipment(0, 1024, 1041);
+  fMemReader->SetEquipmentID(1024);
   //fMemReader->Reset();
-  Bool_t ihead = fMemReader->ReadHeader();
-  if (ihead == kTRUE)
-    {
-      Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
-    }
-  else
-    {
-      Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
-      //return -1; -- not FATAL
-    }
+//   Bool_t ihead = fMemReader->ReadHeader();
+//   if (ihead == kTRUE)
+//     {
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
+//     }
+//   else
+//     {
+//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
+//       //return -1; -- not FATAL
+//     }
 
-  fClusterizer->ResetTree();
-  Bool_t ireadD = fClusterizer->ReadDigits(fMemReader);
-  if (ireadD == kTRUE)
-    {
-      Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DIGITS", "Digits read successfully");
-    }
-  else
-    {
-      Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "DIGITS", "Digits read ERROR");
-      return -1;
-    }
-
-  Bool_t iclustered = fClusterizer->MakeClusters();
+  fClusterizer->ResetTree();  
+  Bool_t iclustered = fClusterizer->Raw2ClustersChamber(fMemReader);
   if (iclustered == kTRUE)
     {
       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
@@ -284,29 +325,41 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
       return -1;
     }
 
+//   AliRawReaderMemory reader;
+//   reader.Reset();
+//   reader.SetMemory((UChar_t*)memBufIn, totalSize);
+//   //reader->Reset();
+//   Bool_t ihead = reader.ReadHeader();
+// //   if (ihead == kTRUE)
+// //     {
+// //       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read successfully");
+// //     }
+// //   else
+// //     {
+// //       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "HEADER", "Header read ERROR");
+// //       //return -1; -- not FATAL
+// //     }
+
+//   fClusterizer->ResetTree();
+  
+//   Bool_t iclustered = fClusterizer->Raw2ClustersChamber(&reader);
+//   if (iclustered == kTRUE)
+//     {
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustered successfully");
+//     }
+//   else
+//     {
+//       Logging( kHLTLogError, "HLT::TRDClusterizer::DoEvent", "CLUSTERS", "Clustering ERROR");
+//       return -1;
+//     }
+  
   free(memBufIn);
-
-  //UInt_t memBufOutSize = 0;
-  //   void *memBufOut = fClusterizer->WriteClustersToMemory(memBufOut, memBufOutSize);
-  Int_t iNclusters = fClusterizer->GetNclusters();
-  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "COUNT", "N of Clusters = %d", iNclusters);
-
+  
   // put the tree into output blocks of TObjArrays
   TTree *fcTree = fClusterizer->GetClusterTree();
-  TList *lt = (TList*)fcTree->GetListOfBranches();
-  TIter it(lt);
-  it.Reset();
-  TBranch *tb = 0;
-  while ((tb = (TBranch*)it.Next()) != 0)
-    {
-      TObjArray *clusters = 0;
-      tb->SetAddress(&clusters);
-      for (Int_t icb = 0; icb < tb->GetEntries(); icb++)
-	{
-	  tb->GetEntry(icb);
-	  PushBack(clusters, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
-	}
-    }
-
+  
+  PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
+  
+  Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DONE", "Output size %d", size);
   return 0;
 }

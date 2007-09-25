@@ -13,10 +13,10 @@
 
 #include "AliHLTProcessor.h"
 class AliCDBManager;
-class AliTRDclusterizerV1HLT;
 class TFile;
 class TGeoManager;
 class AliTRDtrackerHLT;
+class AliTRDtracker;
 class AliMagFMaps;
 
 /**
@@ -63,7 +63,6 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 	unsigned fOutputPercentage; // Output volume in percentage of the input
 
 	string fStrorageDBpath; // Default path for OCDB
-	AliTRDclusterizerV1HLT *fClusterizer; //! Offline derived HLT clusterizer
 	AliCDBManager *fCDB; //! Pointer to OCDB
 
 	AliMagFMaps* fField; //! magn. field settings
@@ -72,7 +71,8 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 	TFile *fGeometryFile; //! // Pointer to the geom root file
 	TGeoManager *fGeoManager; //! Pointer to geometry manager 
 
-	AliTRDtrackerHLT *fTracker;//! Offline-like/HLT tracker
+	//AliTRDtrackerHLT *fTracker;//! Offline-like/HLT tracker
+	AliTRDtracker *fTracker;//! Offline-pure/HLT tracker
 
 	ClassDef(AliHLTTRDTrackerComponent, 0)
 

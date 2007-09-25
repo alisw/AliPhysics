@@ -182,10 +182,13 @@ AliTRDtrackerHLT::AliTRDtrackerHLT(const TFile *geomfile)
   else {
     in->cd();  
     fGeom = (AliTRDgeometry *) in->Get("TRDgeometry");
+    if (!fGeom) {
+      AliWarning("Attempt to retrieve geometry from file failed!");
+    }
   }
 
   if (!fGeom) {
-    AliWarning("Cannot find TRD geometry!\n");
+    AliWarning("Cannot find TRD geometry!");
     fGeom = new AliTRDgeometry();
   } 
   fGeom->ReadGeoMatrices();
