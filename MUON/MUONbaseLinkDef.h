@@ -28,6 +28,7 @@
 #pragma link C++ class AliMUONDigitStoreV2R+;
 #pragma link C++ class AliMUONDigitStoreV2S+;
 #pragma link C++ class AliMUONTOTCAStoreIterator+;
+#pragma link C++ class AliMUONTriggerCircuit+;
 #pragma link C++ class AliMUONVTriggerStore+;
 #pragma link C++ class AliMUONTriggerStoreV1+;
 

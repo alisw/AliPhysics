@@ -20,6 +20,7 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONDigitStoreV2S.cxx \
         AliMUONTOTCAStoreIterator.cxx \
         AliMUONVDigit.cxx \
+        AliMUONTriggerCircuit.cxx \
         AliMUONVTriggerStore.cxx \
         AliMUONTriggerStoreV1.cxx \
         
