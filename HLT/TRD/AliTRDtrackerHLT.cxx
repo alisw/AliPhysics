@@ -4342,6 +4342,9 @@ Int_t AliTRDtrackerHLT::Freq(Int_t n, const Int_t *inlist
   // The size of output array has is 2*n 
   //
 
+  if (n <= 0)
+    return 0;
+
   Int_t *sindexS = new Int_t[n];   // Temporary array for sorting
   Int_t *sindexF = new Int_t[2*n];   
   for (Int_t i = 0; i < n; i++) {
