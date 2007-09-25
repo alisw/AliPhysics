@@ -34,19 +34,25 @@ public:
   void SetMaxCalls(Int_t calls) {fMaxCalls = calls;};
   void SetTolerance(Double_t tol) {fPrecision = tol;};
   void SetPoints(TMatrixD * points) {fPoints = points;};
+  void SetWeights(TVectorD * weights) {fWeights = weights;};
   void Test();
   static void FitterFCN(int &npar, double  *dummy, double &fchisq, double *gin, int iflag);
   void Fit();
+  void EnableRobust(Bool_t b) {fUseRobust = b;};
+  void EnableRobust(Bool_t b, Double_t sigma) {fUseRobust = b; fExpectedSigma = sigma;}; 
   //
   TMatrixD * GetPoints() {return fPoints;};
+  TVectorD * GetWeights() {return fWeights;};
   TFormula * GetFormula() {return fFormula;};
   TVectorD * GetParameters() {return fParam;};
   TFormula * GetWeightFunction() {return fWeightFunction;};
   TMatrixD * GetCovarianceMatrix() {return fCovar;};
+  Bool_t     GetStatus() {return fUseRobust;};
+  Double_t   GetExpectedSigma() {return fExpectedSigma;};
  
 private:
   //
-  AliTMinuitToolkit(const AliTMinuitToolkit&); // fake copy constr. to suppress warnings
+  AliTMinuitToolkit(const AliTMinuitToolkit&); // fake copy constr. -- suppress warnings
   AliTMinuitToolkit& operator=(const AliTMinuitToolkit&); // fake -- suppress warnings
   //
   TFormula        * fFormula;            // formula of the fitted function
@@ -55,12 +61,15 @@ private:
   //
   //
   TMatrixD        * fPoints;             // fitted points
+  TVectorD        * fWeights;            // weights of the points
   TVectorD        * fParam;              // parameter values
   TMatrixD        * fParamLimits;        // limits of the parameters (up, down)
   TMatrixD        * fCovar;              // covariance matrix
   Double_t        * fChi2;               // chi-square
   Int_t             fMaxCalls;           // maximum number of calls, default value depends on fit algorithm
   Double_t          fPrecision;          // normalized tolerance, default value depends on fit algorithm
+  Bool_t            fUseRobust;          // switch on/off robust option, default: kFalse
+  Double_t          fExpectedSigma;      // expected sigma to normalize robust fitting
   //  
   ClassDef(AliTMinuitToolkit,1);
 };
