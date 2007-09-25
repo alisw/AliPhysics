@@ -35,7 +35,7 @@ public:
   void SetTolerance(Double_t tol) {fPrecision = tol;};
   void SetPoints(TMatrixD * points) {fPoints = points;};
   void SetWeights(TVectorD * weights) {fWeights = weights;};
-  void Test();
+  static void Test();
   static void FitterFCN(int &npar, double  *dummy, double &fchisq, double *gin, int iflag);
   void Fit();
   void EnableRobust(Bool_t b) {fUseRobust = b;};

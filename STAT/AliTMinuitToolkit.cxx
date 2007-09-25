@@ -24,6 +24,9 @@
 //   (TH2F::Fit() only allows to fit a hyperplane).
 // - Or n points can be specified directly via a n x 2 matrix.
 // - An option for robust fitting with non-linear functions is implemented.
+//
+// A small example illustrating the usage of AliTMinuitToolkit is given in the function 
+// "AliTMinuitToolkit::Test()".
 // 
 // 
 // 1. Setting the formula:
@@ -395,15 +398,8 @@ void AliTMinuitToolkit::Test() {
  // This test function shows the basic working principles of this class 
  // and illustrates how a robust fit can improve the results
  //
- TFormula *FormExp = new TFormula("formExp", "[0]*TMath::Exp(-[1]*x)");
- SetFitFunction(FormExp);
- SetFitAlgorithm("migrad");
- // Set initial values
- TVectorD *vec1 = new TVectorD(2);
- (*vec1)(0) = 1800;
- (*vec1)(1) = 1;
- SetInitialParam(vec1);
- //provide some example histogram
+ 
+ // 1. provide some example histogram
  TH1F * hist = new TH1F("test", "with (red) and without (black) robust option", 20,0,4);
  TRandom * rand = new TRandom();
  for (Int_t i = 0; i < 10000; i++) {
@@ -418,25 +414,32 @@ void AliTMinuitToolkit::Test() {
  canv->cd(1);
  hist->Draw();
  
- // 1. fit it with the exponential decay - no robust
- FitHistogram(hist);
+ // 2. example fit without robust option
+ AliTMinuitToolkit * tool = new AliTMinuitToolkit();
+ TFormula *FormExp = new TFormula("formExp", "[0]*TMath::Exp(-[1]*x)");
+ tool->SetFitFunction(FormExp);
+ TVectorD *vec1 = new TVectorD(2); // Set initial values
+ (*vec1)(0) = 1800;
+ (*vec1)(1) = 1;
+ tool->SetInitialParam(vec1);
+ tool->FitHistogram(hist);
+ 
  // draw fit function
  TF1 *func = new TF1("test", "[0]*TMath::Exp(-[1]*x)", 0, 6);
- func->SetParameter(0, (*GetParameters())(0));
- func->SetParameter(1, (*GetParameters())(1));
+ func->SetParameters((*tool->GetParameters())(0), (*tool->GetParameters())(1));
  func->Draw("same");
  
- // 2 . robust fit 
+ // 3 . robust fit 
  TVectorD *vec2 = new TVectorD(2);
  (*vec2)(0) = 1800;
  (*vec2)(1) = 1;
- SetInitialParam(vec2);
- EnableRobust(true, 10);
- SetWeightFunction("box", 0.75);
- FitHistogram(hist);
+ tool->SetInitialParam(vec2);
+ tool->EnableRobust(true, 10);
+ tool->SetWeightFunction("box", 0.75);
+ tool->FitHistogram(hist);
  TF1 *func2 = new TF1("test2", "[0]*TMath::Exp(-[1]*x)", 0, 6);
- func2->SetParameter(0, (*GetParameters())(0));
- func2->SetParameter(1, (*GetParameters())(1));
+ func2->SetParameter(0, (*tool->GetParameters())(0));
+ func2->SetParameter(1, (*tool->GetParameters())(1));
  func2->SetLineColor(kRed);
  func2->Draw("same");
  
