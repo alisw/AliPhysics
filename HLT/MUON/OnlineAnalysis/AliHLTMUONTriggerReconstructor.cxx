@@ -443,6 +443,12 @@ bool AliHLTMUONTriggerReconstructor::FindTrigHits()
 	// and collect all the ones that belong to a given trigger record.
 	while (hitInfo.size() > 0)
 	{
+		// Must check if we have not overflowed the buffer.
+		if((*fRecPointsCount) == fMaxRecPointsCount){
+			HLTError("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
+			return false;
+		}
+	
 		bool hitset[4] = {false, false, false, false};
 		
 		// Choose the current trigger record we are collecting hits for.
@@ -491,10 +497,6 @@ bool AliHLTMUONTriggerReconstructor::FindTrigHits()
 		
 		// Increment the counter for the number of trigger records found.
 		(*fRecPointsCount)++;
-		if((*fRecPointsCount) == fMaxRecPointsCount){
-			HLTFatal("Nof RecHit (i.e. %d) exceeds the max nof RecHit limit %d\n",(*fRecPointsCount),fMaxRecPointsCount);
-			return false;
-		}
 	}
   
 	hitInfo.clear();
