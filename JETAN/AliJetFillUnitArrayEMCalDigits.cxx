@@ -178,18 +178,18 @@ void AliJetFillUnitArrayEMCalDigits::Exec(Option_t* /*option*/)
       // Get number of digits in a cluster
       Int_t nD = fClus->GetNumberOfDigits();
 
-      UShort_t *digID       = fClus->GetDigitIndex();      
-      UShort_t *digEnergy   = fClus->GetDigitAmplitude();
-      Float_t  *digitEnergy = new Float_t[nD];      
+      TArrayS *digID = fClus->GetDigitIndex();      
+      TArrayS *digEnergy = fClus->GetDigitAmplitude();
+      Float_t *digitEnergy = new Float_t[nD];      
       //      Float_t digitEn = 0.;
 	  
       // Loop over digits
       for(Int_t k=0; k<nD; k++) {
 	
 	// Convert energy in GeV
-	Int_t idF = (Int_t)digID[k];
+	Int_t idF = (Int_t)digID->At(k);
 	// Calibration for an energy in GeV
-	digitEnergy[k] = (Float_t)digEnergy[k]/500.; 
+	digitEnergy[k] = (Float_t)digEnergy->At(k)/500.; 
 
 	// Second method to extract eta, phi positions of a digit
 	//=================================================================
