@@ -130,7 +130,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 	}
 	
 	// Retrieve the CDB container class with the probability distributions
-	const AliTRDCalPID *pd = calibration->GetPIDLQObject();
+	const AliTRDCalPID *pd = calibration->GetPIDObject(1);
 	if (!pd) {
 		AliErrorGeneral("AliTRDpidESD::MakePID()"
 			,"No access to AliTRDCalPID");
@@ -180,7 +180,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 
 			// Get the probabilities for the different particle species
 			for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
-				p[iSpecies] *= pd->GetProbability(iSpecies, mom, dedx, length);
+				p[iSpecies] *= pd->GetProbability(iSpecies, mom, dedx, length, iPlan);
 				//p[iSpecies] *= pd->GetProbabilityT(iSpecies, mom, timebin);
 			}
 		}

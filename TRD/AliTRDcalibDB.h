@@ -66,7 +66,7 @@ class AliTRDcalibDB : public TObject {
   Bool_t                     IsChamberMasked(Int_t det);
 
   const AliTRDCalMonitoring *GetMonitoringObject();
-  const AliTRDCalPID        *GetPIDLQObject();
+  const AliTRDCalPID        *GetPIDObject(const Int_t method);
 
   // Related functions, these depend on calibration data
   static Float_t             GetOmegaTau(Float_t vdrift, Float_t bz);
@@ -76,7 +76,7 @@ class AliTRDcalibDB : public TObject {
  protected:
 
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
-  enum { kCDBCacheSize = 15 };   // Number of cached objects
+  enum { kCDBCacheSize = 16 };   // Number of cached objects
   enum { kIDVdriftPad = 0
        , kIDVdriftChamber
        , kIDT0Pad
@@ -88,6 +88,7 @@ class AliTRDcalibDB : public TObject {
        , kIDChamberPos
        , kIDStackPos
        , kIDSuperModulePos
+       , kIDPIDNN
        , kIDPIDLQ
        , kIDMonitoringData
        , kIDChamberStatus

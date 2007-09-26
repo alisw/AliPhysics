@@ -26,18 +26,14 @@ class AliTRDReconstructor: public AliReconstructor {
   virtual Bool_t      HasDigitConversion() const                 { return kFALSE; };
   virtual void        ConvertDigits(AliRawReader *rawReader, TTree *digitsTree) const;
 
-  virtual Bool_t      HasLocalReconstruction() const             { return kTRUE; };
-  virtual void        Reconstruct(AliRunLoader *runLoader, AliRawReader *rawReader) const;
   virtual void        Reconstruct(AliRawReader *rawReader, TTree *clusterTree) const;
   virtual void        Reconstruct(TTree *digitsTree, TTree *clusterTree) const;
-  virtual void        Reconstruct(AliRunLoader *runLoader) const;
 
-  virtual AliTracker *CreateTracker(AliRunLoader *runLoader) const;
+  virtual AliTracker *CreateTracker() const;
 
-  virtual void        FillESD(AliRunLoader *runLoader, AliRawReader *rawReader, AliESDEvent *esd) const;
-  virtual void        FillESD(AliRawReader *rawReader, TTree *clusterTree, AliESDEvent *esd) const;
+  virtual void        FillESD(AliRawReader */*rawReader*/, TTree *clusterTree, AliESDEvent *esd) const
+  {FillESD((TTree*)NULL,clusterTree,esd);}
   virtual void        FillESD(TTree *digitsTree, TTree *clusterTree, AliESDEvent *esd) const;
-  virtual void        FillESD(AliRunLoader *runLoader, AliESDEvent *esd) const;
 
   static  void        SetSeedingOn(Bool_t seeding)               { fgkSeedingOn  = seeding; }  
   static  void        SetStreamLevel(Int_t level)                { fgStreamLevel = level;   }

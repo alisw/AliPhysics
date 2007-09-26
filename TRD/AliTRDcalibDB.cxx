@@ -244,6 +244,8 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     case kIDFEE : 
       return CacheCDBEntry(kIDFEE               ,"TRD/Calib/FEE"); 
       break;
+    case kIDPIDNN : 
+      return CacheCDBEntry(kIDPIDNN             ,"TRD/Calib/PIDNN");
     case kIDPIDLQ : 
       return CacheCDBEntry(kIDPIDLQ             ,"TRD/Calib/PIDLQ"); 
       break;
@@ -798,14 +800,17 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
 }
 
 //_____________________________________________________________________________
-const AliTRDCalPID *AliTRDcalibDB::GetPIDLQObject()
+const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(const Int_t method)
 {
   //
   // Returns the object storing the distributions for PID with likelihood
   //
-
-  return dynamic_cast<const AliTRDCalPID *> 
-         (GetCachedCDBObject(kIDPIDLQ));
+	switch(method){
+	case 0: return dynamic_cast<const AliTRDCalPID *> 
+		  (GetCachedCDBObject(kIDPIDNN));
+	case 1: return dynamic_cast<const AliTRDCalPID *>
+		  (GetCachedCDBObject(kIDPIDLQ));
+	}
 
 }
 

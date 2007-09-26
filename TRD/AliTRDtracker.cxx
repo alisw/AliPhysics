@@ -567,7 +567,7 @@ Int_t AliTRDtracker::PropagateBack(AliESDEvent *event)
       Int_t foundClr = track->GetNumberOfClusters();
       if (foundClr >= foundMin) {
 	track->CookdEdx(); 
-	track->CookdEdxTimBin(); // A.Bercuci 25.07.07
+	track->CookdEdxTimBin(seed->GetID()); // A.Bercuci 25.07.07
 	CookLabel(track,1 - fgkLabelFraction);
 	if (track->GetBackupTrack()) {
           UseClusters(track->GetBackupTrack());
@@ -779,6 +779,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
   Float_t foundMin = fgkMinClustersInTrack * timeBins; 
   Int_t   nseed    = 0;
   Int_t   found    = 0;
+  Int_t   pidQ     = 0;
   //Int_t innerTB    = fTrSec[0]->GetInnerTimeBin();
   AliTRDtrack seed2;
   
@@ -830,14 +831,15 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
     //AliTRDtrack *pt = seed2;
     //AliTRDtrack &t = *pt; 
     FollowProlongation(*pt); 
-    if (pt->GetNumberOfClusters() >= foundMin) {
+    //if (pt->GetNumberOfClusters() >= foundMin) {
       //UseClusters(&t);
       //CookLabel(pt, 1-fgkLabelFraction);
       pt->CookdEdx();
-      pt->CookdEdxTimBin();
-      pt->CookPID(seed);
+      pt->CookdEdxTimBin(seed->GetID());
+      pt->SetPIDMethod(AliTRDtrack::kLQ);  //switch between TRD PID methods
+      pt->CookPID(pidQ);
       //pt->Calibrate(); // slot for calibration
-    }
+      //}
     found++;
 
     Double_t xTPC = 250.0;
@@ -862,7 +864,7 @@ Int_t AliTRDtracker::RefitInward(AliESDEvent *event)
       delete seed2;
       if (PropagateToX(*pt2,xTPC,fgkMaxStep)) { 
         pt2->CookdEdx( ); 
-        pt2->CookdEdxTimBin(); 
+        pt2->CookdEdxTimBin(seed->GetID()); 
 	seed->UpdateTrackParams(pt2,AliESDtrack::kTRDrefit);
 	fHRefit->Fill(6);
 
@@ -3981,8 +3983,9 @@ Int_t AliTRDtracker::Freq(Int_t n, const Int_t *inlist
   // The size of output array has is 2*n 
   //
 
-  if (n <= 0)
+  if (n <= 0) {
     return 0;
+  }
 
   Int_t *sindexS = new Int_t[n];   // Temporary array for sorting
   Int_t *sindexF = new Int_t[2*n];   
@@ -4085,7 +4088,7 @@ AliTRDtrack *AliTRDtracker::RegisterSeed(AliTRDseed *seeds, Double_t *params)
   }
   else {
     track->CookdEdx();
-    track->CookdEdxTimBin();
+    track->CookdEdxTimBin(-1);
     CookLabel(track,0.9);
   }
 

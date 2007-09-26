@@ -7,12 +7,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Container for the distributions of dE/dx and the time bin of the          //
-// max. cluster for electrons and pions                                      //
-//                                                                           //
 // Authors:                                                                  //
-//   Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>                    //
-//   Alex Bercuci <A.Bercuci@gsi.de>                                         //
+//                                                                           //
+//  Alex Bercuci <A.Bercuci@gsi.de>                                          //
+//  Alex Wilk <wilka@uni-muenster.de>                                        //
+//  Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de>                     //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -20,58 +19,54 @@
 #include <TNamed.h>
 #endif
 
-class TH1;
-class TObjArray;
-class AliTRDCalPID : public TNamed {
-public:
-	enum {
-		kNMom = 11,
-		kNLength = 4
-	};
+class AliTRDCalPID : public TNamed
+{
+
+ public:
+
+  enum {
+    kNMom   = 11,
+    kNPlane = 6
+  };
 
   AliTRDCalPID();
   AliTRDCalPID(const Text_t *name, const Text_t *title);
+  virtual         ~AliTRDCalPID();
+
+  virtual Bool_t   LoadReferences(Char_t *refFile) = 0;
+  static  Double_t GetMomentum(Int_t ip)            
+                                                      { return (ip<0 || ip>=kNMom) 
+                                                        ? -1.0 
+                                                        : fTrackMomentum[ip]; 
+                                                      }
+  virtual TObject *GetModel(Int_t ip, Int_t iType, Int_t iPlane) const = 0;
+  virtual Double_t GetProbability(Int_t spec, Float_t mom, Float_t *dedx
+                                , Float_t length, Int_t plane) const = 0;
+  static  Char_t  *GetPartName(Int_t i)               { return fPartName[i]; }
+  static  Char_t  *GetPartSymb(Int_t i)               { return fPartSymb[i]; }
+
+          void     SetPartName(Int_t i, Char_t *name) { fPartName[i] = name; }
+          void     SetPartSymb(Int_t i, Char_t *symb) { fPartSymb[i] = symb; }
+
+ protected:
+
+  virtual void     Init() = 0;
+  virtual Int_t    GetModelID(Int_t mom, Int_t spec, Int_t plane) const = 0;
+
+ private:
+
   AliTRDCalPID(const AliTRDCalPID& pd);
-  virtual        ~AliTRDCalPID();
-  AliTRDCalPID&   operator=(const AliTRDCalPID &c);
-  virtual void    Copy(TObject &c) const;
- 
-           Bool_t   LoadLQReferences(Char_t* refFile);
-           Bool_t   LoadNNReferences(Char_t* /*refFile*/) {return kTRUE;}
-  //void         SetMeanChargeRatio(Double_t ratio)     { fMeanChargeRatio = ratio;  }
-
-  //Double_t     GetMeanChargeRatio() const             { return fMeanChargeRatio;   }
-  static   Double_t GetMomentum(Int_t ip)            { return (ip<0 || ip>=kNMom)    ? -1. : fTrackMomentum[ip];  }
-  static   Double_t GetLength(Int_t il)              { return (il<0 || il>=kNLength) ? -1. : fTrackSegLength[il]; }
-  //Double_t   GetMean(Int_t iType, Int_t ip) const;
-  //Double_t   GetNormalization(Int_t iType, Int_t ip) const;
-
-           TH1*     GetHistogram(Int_t iType, Int_t ip/*, Int_t il*/) const;
-           TH1*     GetHistogramT(Int_t iType, Int_t ip) const;
-           Double_t GetProbability(Int_t spec, Float_t mom, Float_t *dedx, Float_t length) const;
-           Double_t GetProbabilityT(Int_t spec, Double_t mom, Int_t timbin) const;
+  AliTRDCalPID    &operator=(const AliTRDCalPID &c);
 
  protected:
 
-           void     Init();
-  inline  Int_t     GetHistID(Int_t part, Int_t mom/*, Int_t length=0*/) const { return part*kNMom + mom; }
-           void     CleanUp();
- 
- public:
-  static  Char_t   *fpartName[5];     //! Names of particle species
-  static  Char_t   *fpartSymb[5];     //! Symbols of particle species
-  
- protected:
-	static Float_t   fTrackMomentum[kNMom];     // Track momenta for which response functions are available
-        static Float_t   fTrackSegLength[kNLength]; // Track segment lengths for which response functions are available
-         Double_t  fMeanChargeRatio;  //  Ratio of mean charge from real Det. to prob. dist.
-         TObjArray *fHistdEdx;        //  Prob. of dEdx for 5 particles and for several momenta
-         TObjArray *fHistTimeBin;     //  Prob. of max time bin for 5 particles and for several momenta
+  static  Char_t   *fPartName[5];          //! Names of particle species
+  static  Char_t   *fPartSymb[5];          //! Symbols of particle species
 
-	
-  ClassDef(AliTRDCalPID, 1)           //   The TRD PID response container class
+  static  Float_t   fTrackMomentum[kNMom]; //  Track momenta for which response functions are available
+  TObjArray        *fModel;                //  Model for probability estimate
+
+  ClassDef(AliTRDCalPID, 3)                //  Base class for TRD PID methods
 
 };
-
 #endif
-

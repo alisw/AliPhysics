@@ -31,7 +31,13 @@ class AliTRDtrack : public AliKalmanTrack {
        , kNplane    =   6
        , kNcham     =   5
        , kNsect     =  18
-       , kNslice    =   3};
+       , kNslice    =   3
+       , kNMLPslice =   8};
+  
+  enum AliTRDPIDMethod {
+         kNN = 0
+       , kLQ = 1
+  };
 
    AliTRDtrack();
    AliTRDtrack(/*const */AliTRDcluster *c, Int_t index, const Double_t xx[5], const Double_t cc[15], Double_t xr, Double_t alpha);
@@ -55,6 +61,10 @@ class AliTRDtrack : public AliKalmanTrack {
            Int_t    GetClusterIndex(Int_t i) const                          { return fIndex[i];                    }
            Double_t GetC() const                                            { return AliExternalTrackParam::GetC(GetBz()); }
            Double_t GetPredictedChi2(const AliTRDcluster *c, Double_t h01) const;
+
+	   inline AliTRDPIDMethod GetPIDMethod() const {return fPIDmethod;}
+	   inline void      SetPIDMethod(AliTRDPIDMethod method) {fPIDmethod = method;}
+					// end
            Float_t  GetPIDsignals(Int_t iPlane, Int_t iSlice) const         { return fdEdxPlane[iPlane][iSlice];   }
            Int_t    GetPIDTimBin(Int_t i) const                             { return fTimBinPlane[i];              }
            Double_t GetLikelihoodElectron() const                           { return fLhElectron;                  }
@@ -94,11 +104,12 @@ class AliTRDtrack : public AliKalmanTrack {
 // A. Bercuci new functions
 					void		SetTrackSegmentDirMom(const Int_t plane);
 					void		CookdEdx(Double_t low = 0.05, Double_t up = 0.7);
-					void		CookdEdxTimBin();
-					Int_t		CookPID(AliESDtrack *p);
+					void		CookdEdxTimBin(const Int_t tid);
+					Bool_t	        CookPID(Int_t &pidQuality); 
 					void		SetCluster(AliTRDcluster* cl, Int_t index = -1) {fClusters[(index == -1) ? GetNumberOfClusters()-1 : index] = cl;}
 	inline	AliTRDcluster* GetCluster(Int_t layer){ return (layer >= 0 && layer < GetNumberOfClusters()) ?  fClusters[layer] : 0x0;}
 	inline	Float_t	GetMomentumPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fMom[plane] : 0.;}
+	inline	const Double_t*	GetPID() const {return fPID;}
 	inline	Float_t	GetSnpPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fSnp[plane] : 0.;}
 	inline	Float_t	GetTglPlane(Int_t plane) const {return (plane >= 0 && plane < kNplane) ? fTgl[plane] : 0.;}
 		Float_t	GetTrackLengthPlane(Int_t plane) const;
@@ -111,12 +122,13 @@ class AliTRDtrack : public AliKalmanTrack {
            Bool_t   Rotate(Double_t angle, Bool_t absolute = kFALSE);
            Float_t  StatusForTOF();
            Bool_t   Update(const AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01);
-           Int_t    UpdateMI(/*const */AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01, Int_t plane);
+           Int_t    UpdateMI(/*const */AliTRDcluster *c, Double_t chi2, Int_t i, Double_t h01, Int_t plane, Int_t tid=0);
  
  protected:
 
   AliTRDtrack      &operator=(const AliTRDtrack &t);
 
+	   void	    CookdEdxNN(Float_t *dedx);
            Double_t GetBz() const;
            Bool_t   Update(const AliCluster */*c*/, Double_t /*chi2*/, Int_t /*idx*/) { return 0;   }
            Double_t GetPredictedChi2(const AliCluster* /*c*/) const                   { return 0.0; }
@@ -126,6 +138,7 @@ class AliTRDtrack : public AliKalmanTrack {
            Float_t  fDE;                                //  Integrated delta energy
            Float_t  fdEdxPlane[kNplane][kNslice];       //  dE/dx from all 6 planes in 3 slices each
            Int_t    fTimBinPlane[kNplane];              //  Time bin of Max cluster from all 6 planes
+           Double_t fPID[AliPID::kSPECIES];             // PID probabilities
 
 					// A.Bercuci
 					 Float_t  fMom[kNplane];                      //  Track momentum at chamber entrance
@@ -134,7 +147,7 @@ class AliTRDtrack : public AliKalmanTrack {
            AliTRDcluster*   fClusters[kMAXCLUSTERSPERTRACK];
            Bool_t   fClusterOwner;         // indicates the track is owner of cluster
            // end A.Bercuci
-					 
+	   AliTRDPIDMethod fPIDmethod;   // switch between different PID methods					 
 					 Bool_t   fStopped;                           //  Track stop indication
            Int_t    fIndex[kMAXCLUSTERSPERTRACK];       //  Global indexes of clusters  
            Int_t    fIndexBackup[kMAXCLUSTERSPERTRACK]; //  Backup indexes of clusters - used in iterations
@@ -153,7 +166,7 @@ class AliTRDtrack : public AliKalmanTrack {
            Float_t  fBudget[3];                         //  Integrated material budget
    AliTRDtrack     *fBackupTrack;                       //! Backup track
 
-   ClassDef(AliTRDtrack,8)                              //  TRD reconstructed tracks
+   ClassDef(AliTRDtrack,9)                              //  TRD reconstructed tracks
 
 };                     
 

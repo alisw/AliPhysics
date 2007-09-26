@@ -24,7 +24,7 @@ void makePIDRefs(const char *dir = ".", const char *file="Refs.root")
 }
 
 //___________________________________________________________________
-void generatePIDDB(const char *file = "Refs.root")
+void generatePIDDB(const char *fileNN = "NN.root", const char *fileLQ = "LQ.root")
 {
 // Write TRD PID DB using the reference data from file "file"
 
@@ -34,24 +34,32 @@ void generatePIDDB(const char *file = "Refs.root")
 	man->SetRun(0);
 
 	AliCDBStorage *gStorLoc = man->GetStorage("local://$ALICE_ROOT");
-  if (!gStorLoc) return;
+	if (!gStorLoc) return;
 
   
-	AliTRDCalPID *pid = new AliTRDCalPID("pid", "TRD PID object");
-	pid->LoadLQReferences(file);
-
-	AliCDBMetaData *md= new AliCDBMetaData();
-  md->SetObjectClassName("AliTRDCalPIDLQ");
-  md->SetResponsible("Alex Bercuci");
-  md->SetBeamPeriod(1);
-  md->SetAliRootVersion("v4-06-HEAD"); //root version
-  md->SetComment("2D PID for TRD");
-
-	gStorLoc->Put(pid, AliCDBId("TRD/Calib/PIDLQ", 0, 0), md);
+	AliTRDCalPID *pidLQ = new AliTRDCalPIDLQ("pidLQ", "LQ TRD PID object");
+ 	pidLQ->LoadReferences(fileLQ);
+ 	AliCDBMetaData *md= new AliCDBMetaData();
+	md->SetObjectClassName("AliTRDCalPIDLQ");
+	md->SetResponsible("Alex Bercuci");
+	md->SetBeamPeriod(1);
+	md->SetAliRootVersion("v4-06-HEAD"); //root version
+	md->SetComment("2D PID for TRD");
+	gStorLoc->Put(pidLQ, AliCDBId("TRD/Calib/PIDLQ", 0, 999999999, 0, 1), md);
+	
+	AliTRDCalPID *pidNN = new AliTRDCalPIDNN("pidNN", "NN TRD PID object");
+	pidNN->LoadReferences(fileNN);
+	md->SetObjectClassName("AliTRDCalPIDNN");
+	md->SetResponsible("Alex Wilk");
+	md->SetBeamPeriod(1);
+	md->SetAliRootVersion("v4-06-HEAD"); //root version
+	md->SetComment("NN PID for TRD");
+	
+	gStorLoc->Put(pidNN, AliCDBId("TRD/Calib/PIDNN", 0, 999999999, 0, 1), md);
 }
 
 //___________________________________________________________________
-AliTRDCalPID* getPIDObject()
+AliTRDCalPID* getPIDObject(const char *method="NN")
 {
 // Returns PIDLQ object.
 // In order to browse histos do:
@@ -64,7 +72,7 @@ AliTRDCalPID* getPIDObject()
 	CDBManager->SetDefaultStorage("local://$ALICE_ROOT");
 	CDBManager->SetRun(0);
 
-	AliCDBEntry *wrap = CDBManager->Get("TRD/Calib/PIDLQ", 0);
+	AliCDBEntry *wrap = CDBManager->Get(Form("TRD/Calib/PID%s", method), 0);
 	AliTRDCalPID *pid = dynamic_cast<const AliTRDCalPID *>wrap->GetObject();
 	AliCDBMetaData *meta = wrap->GetMetaData();
 	if(!pid){

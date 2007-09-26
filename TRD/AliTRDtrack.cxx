@@ -469,7 +469,7 @@ void AliTRDtrack::CookdEdx(Double_t low, Double_t up)
 }                     
 
 //_____________________________________________________________________________
-void AliTRDtrack::CookdEdxTimBin()
+void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
 {
   //
   // Set fdEdxPlane and fTimBinPlane and also get the 
@@ -544,6 +544,53 @@ void AliTRDtrack::CookdEdxTimBin()
 }
 
 //_____________________________________________________________________________
+void	AliTRDtrack::CookdEdxNN(Float_t *dedx){
+
+  // This function calcuates the input for the neural networks 
+  // which are used for the PID. 
+
+	Int_t ntb = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();//number of time bins in chamber
+	Int_t plane;   // plane of current cluster
+	Int_t tb;      // time bin of current cluster
+	Int_t slice;   // curent slice
+	AliTRDcluster *cluster = 0x0; // pointer to current cluster
+	const Int_t lMLPscale = 16000; // scaling of the MLP input to be smaller than 1
+
+	// Reset class and local contors/variables
+	for (Int_t iPlane = 0; iPlane < AliESDtrack::kNPlane; iPlane++){
+	  for (Int_t iSlice = 0; iSlice < kNMLPslice; iSlice++) {
+	    *(dedx + (kNMLPslice * iPlane) + iSlice) = 0.;
+	  }
+	}
+
+	// start looping over clusters attached to this track
+	for (Int_t iClus = 0; iClus < GetNumberOfClusters(); iClus++) {
+	  cluster = fClusters[iClus]; //(AliTRDcluster*)tracker->GetCluster(fIndex[iClus]);
+	  if(!cluster) continue;
+	  
+	  // Read info from current cluster
+	  plane  = AliTRDgeometry::GetPlane(cluster->GetDetector());
+	  if (plane < 0 || plane >= AliESDtrack::kNPlane) {
+	    AliError(Form("Wrong plane %d", plane));
+	    continue;
+	  }
+
+	  tb     = cluster->GetLocalTimeBin();
+	  if(tb == 0 || tb >= ntb){
+	    AliWarning(Form("time bin 0 or > %d in cluster %d", ntb, iClus));
+	    AliInfo(Form("dQ/dl %f", fdQdl[iClus]));
+	    continue;
+	  }
+
+	  slice   = tb * kNMLPslice / ntb;
+	  
+	  *(dedx+(kNMLPslice * plane) + slice) += fdQdl[iClus]/lMLPscale;
+	} // End of loop over cluster
+	 
+}
+
+
+//_____________________________________________________________________________
 void	AliTRDtrack::SetTrackSegmentDirMom(const Int_t plane)
 {
   //
@@ -580,7 +627,7 @@ Float_t	AliTRDtrack::GetTrackLengthPlane(Int_t plane) const
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
+Bool_t AliTRDtrack::CookPID(Int_t &pidQuality)
 {
   //
   // This function calculates the PID probabilities based on TRD signals
@@ -598,64 +645,79 @@ Int_t AliTRDtrack::CookPID(AliESDtrack *esd)
   AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
   if (!calibration) {
     AliError("No access to calibration data");
-    return -1;
+    return kFALSE;
   }
 	
-	// Retrieve the CDB container class with the probability distributions
-	const AliTRDCalPID *pd = calibration->GetPIDLQObject();
-	if (!pd) {
-		AliError("No access to AliTRDCalPID");
-		return -1;
-	}
+  // Retrieve the CDB container class with the probability distributions
+  const AliTRDCalPID *pd = calibration->GetPIDObject(fPIDmethod == kNN ? 0 : 1);
+  if (!pd) {
+    AliError("No access to AliTRDCalPID");
+    return kFALSE;
+  }
+
+  // Calculate the input for the NN if fPIDmethod is kNN
+  Float_t ldEdxNN[AliTRDCalPID::kNPlane * kNMLPslice], *dedx = 0x0;
+  if(fPIDmethod == kNN) {
+    CookdEdxNN(&ldEdxNN[0]);
+  }
+
+  // Sets the a priori probabilities
+  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) {
+    fPID[ispec] = 1./AliPID::kSPECIES;	
+  }
 
 
-	Double_t p0 = 1./AliPID::kSPECIES;
-	if(AliPID::kSPECIES != 5){
-		AliError("Probabilities array defined only for 5 values. Please modify !!");
-		return -1;
-	}
-	Double_t p[] = {p0, p0, p0, p0, p0};
-	Float_t length;  // track segment length in chamber
-	Int_t nPlanePID = 0;
-	// Skip tracks which have no TRD signal at all
-	if (fdEdx == 0.) return -1;
+  if(AliPID::kSPECIES != 5){
+    AliError("Probabilities array defined only for 5 values. Please modify !!");
+    return kFALSE;
+  }
+
+
+  pidQuality = 0;
+  Float_t length;  // track segment length in chamber
+
+  // Skip tracks which have no TRD signal at all
+  if (fdEdx == 0.) return kFALSE;
 	
-	for (Int_t iPlane = 0; iPlane < AliTRDgeometry::kNplan; iPlane++) {
+  for (Int_t iPlane = 0; iPlane < AliTRDgeometry::kNplan; iPlane++) {
 
-		length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())/TMath::Sqrt((1. - fSnp[iPlane]*fSnp[iPlane]) / (1. + fTgl[iPlane]*fTgl[iPlane]));
+    length = (AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick())/TMath::Sqrt((1. - fSnp[iPlane]*fSnp[iPlane]) / (1. + fTgl[iPlane]*fTgl[iPlane]));
 
-		// check data
-		if((fdEdxPlane[iPlane][0] + fdEdxPlane[iPlane][1] + fdEdxPlane[iPlane][2]) <=  0.
-		|| fTimBinPlane[iPlane] == -1.) continue;
+    // check data
+    if((fdEdxPlane[iPlane][0] + fdEdxPlane[iPlane][1] + fdEdxPlane[iPlane][2]) <=  0.
+       || fTimBinPlane[iPlane] == -1.) continue;
 
-		// this track segment has fulfilled all requierments
-		nPlanePID++;
+    // this track segment has fulfilled all requierments
+    pidQuality++;
 
-		// Get the probabilities for the different particle species
-		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
-			p[iSpecies] *= pd->GetProbability(iSpecies, fMom[iPlane], fdEdxPlane[iPlane], length);
-			//p[iSpecies] *= pd->GetProbabilityT(iSpecies, fMom[iPlane], fTimBinPlane[iPlane]);
-		}
-	}
-	if(nPlanePID == 0) return 0;
+    // Get the probabilities for the different particle species
+    for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) {
+      switch(fPIDmethod){
+      case kLQ:
+	dedx = fdEdxPlane[iPlane];
+	break;
+      case kNN:
+	dedx = &ldEdxNN[iPlane*kNMLPslice];
+	break;
+      }
+      fPID[iSpecies] *= pd->GetProbability(iSpecies, fMom[iPlane], dedx, length, iPlane);
+    }
+  }
+  if(pidQuality == 0) return kTRUE;
 
-	// normalize probabilities
-	Double_t probTotal = 0.;
-	for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) probTotal += p[iSpecies];
+  // normalize probabilities
+  Double_t probTotal = 0.;
+  for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) probTotal += fPID[iSpecies];
 
-	if(probTotal <= 0.) {
-		AliWarning("The total probability over all species <= 0. This may be caused by some error in the reference histograms.");
-		return -1;
-	}
-	for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] /= probTotal;
-
+  if(probTotal <= 0.) {
+    AliWarning("The total probability over all species <= 0. This may be caused by some error in the reference histograms.");
+    return kFALSE;
+  }
+  for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) fPID[iSpecies] /= probTotal;
 	
-	// book PID to the ESD track
-	esd->SetTRDpid(p);
-	esd->SetTRDpidQuality(nPlanePID);
-	
-	return 0;
+  return kTRUE;
 }
+
 
 //_____________________________________________________________________________
 Bool_t AliTRDtrack::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
@@ -784,7 +846,7 @@ Bool_t AliTRDtrack::Update(const AliTRDcluster *c, Double_t chisq, Int_t index
 
 //_____________________________________________________________________________
 Int_t AliTRDtrack::UpdateMI(AliTRDcluster *c, Double_t chisq, Int_t index
-                          , Double_t h01, Int_t /*plane*/)
+                          , Double_t h01, Int_t /*plane*/, Int_t tid)
 {
   //
   // Assignes found cluster to the track and updates track information

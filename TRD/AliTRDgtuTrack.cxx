@@ -390,7 +390,7 @@ void AliTRDgtuTrack::MakePID()
     AliError("No instance of AliTRDcalibDB.");
     return;  
   }
-  const AliTRDCalPID *pd = calibration->GetPIDLQObject();
+  const AliTRDCalPID *pd = calibration->GetPIDObject(1);
   
   AliTRDltuTracklet *trk;
   Int_t   nTracklets = GetNtracklets();
@@ -455,8 +455,8 @@ void AliTRDgtuTrack::MakePID()
                 dedx[0] = dedx[1] = q*3.; dedx[2] = 0.;
                 Float_t length = 3.7;
 
-    probEle *= pd->GetProbability(0, TMath::Abs(fPt), dedx, length);
-    probPio *= pd->GetProbability(2, TMath::Abs(fPt), dedx, length);
+    probEle *= pd->GetProbability(0, TMath::Abs(fPt), dedx, length, 0);
+    probPio *= pd->GetProbability(2, TMath::Abs(fPt), dedx, length, 0);
 
   }
 

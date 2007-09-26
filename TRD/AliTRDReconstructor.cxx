@@ -63,42 +63,6 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader
-                                    , AliRawReader *rawReader) const
-{
-  //
-  // Reconstruct clusters
-  //
-
-  AliInfo("Reconstruct TRD clusters from RAW data [RunLoader, RawReader]");
-
-  AliLoader *loader = runLoader->GetLoader("TRDLoader");
-  loader->LoadRecPoints("recreate");
-
-  runLoader->CdGAFile();
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  rawReader->Reset();
-  rawReader->Select("TRD");
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-
-    if (!rawReader->NextEvent()) break;
-
-    // New (fast) cluster finder
-    AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
-    clusterer.Open(runLoader->GetFileName(),iEvent);
-    clusterer.Raw2ClustersChamber(rawReader);
-
-    clusterer.WriteClusters(-1);
-
-  }
-
-  loader->UnloadRecPoints();
-
-}
-
-//_____________________________________________________________________________
 void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
                                     , TTree *clusterTree) const
 {
@@ -136,79 +100,19 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
 }
 
 //_____________________________________________________________________________
-void AliTRDReconstructor::Reconstruct(AliRunLoader *runLoader) const
-{
-  //
-  // Reconstruct clusters
-  //
-
-  AliInfo("Reconstruct TRD clusters [AliRunLoader]");
-  AliLoader *loader = runLoader->GetLoader("TRDLoader");
-  loader->LoadRecPoints("recreate");
-
-  runLoader->CdGAFile();
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
-    clusterer.Open(runLoader->GetFileName(),iEvent);
-    clusterer.ReadDigits();
-    clusterer.MakeClusters();
-    clusterer.WriteClusters(-1);
-  }
-
-  loader->UnloadRecPoints();
-
-}
-
-//_____________________________________________________________________________
-AliTracker *AliTRDReconstructor::CreateTracker(AliRunLoader *runLoader) const
+AliTracker *AliTRDReconstructor::CreateTracker() const
 {
   //
   // Create a TRD tracker
   //
 
-  runLoader->CdGAFile();
-
-  return new AliTRDtracker(gFile);
-
-}
-
-//_____________________________________________________________________________
-void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
-				, AliRawReader* /*rawReader*/
-				, AliESDEvent* /*esd*/) const
-{
-  //
-  // Fill ESD
-  //
-
-}
-
-//_____________________________________________________________________________
-void AliTRDReconstructor::FillESD(AliRawReader* /*rawReader*/
-				, TTree* /*clusterTree*/
-				, AliESDEvent* /*esd*/) const
-{
-  //
-  // Fill ESD
-  //
+  return new AliTRDtracker(NULL);
 
 }
 
 //_____________________________________________________________________________
 void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
 				, TTree* /*clusterTree*/
-				, AliESDEvent* /*esd*/) const
-{
-  //
-  // Fill ESD
-  //
-
-}
-
-//_____________________________________________________________________________
-void AliTRDReconstructor::FillESD(AliRunLoader* /*runLoader*/
 				, AliESDEvent* /*esd*/) const
 {
   //

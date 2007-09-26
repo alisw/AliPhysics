@@ -178,7 +178,7 @@ Bool_t AliTRDCalPIDRefMaker::BuildLQReferences(Char_t *File, Char_t *dir)
 	// Print statistics header
 	Int_t nPart[AliPID::kSPECIES], nTotPart;
 	printf("P[GeV/c] ");
-	for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) printf(" %s[%%] ", AliTRDCalPID::fpartSymb[ispec]);
+	for(Int_t ispec=0; ispec<AliPID::kSPECIES; ispec++) printf(" %s[%%] ", AliTRDCalPID::GetPartSymb(ispec));
 	printf("\n-----------------------------------------------\n");
 	
 	Float_t trackMomentum[AliTRDCalPID::kNMom];
@@ -552,7 +552,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
 		// check PCA data
 		if(!fPrinc[ispec]){
-			AliError(Form("No data defined for %s.", AliTRDCalPID::fpartName[ispec]));
+			AliError(Form("No data defined for %s.", AliTRDCalPID::GetPartName(ispec)));
 			return;
 		}
 		// build reference histograms
@@ -562,7 +562,7 @@ void  AliTRDCalPIDRefMaker::Prepare2D()
 		xmin = ymin = 0.;
 		xmax = 8000.; ymax = 6000.;
 		if(!fH2dEdx[ispec]){
-			fH2dEdx[ispec] = new  TH2D(Form("h2%s", AliTRDCalPID::fpartSymb[ispec]), "", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+			fH2dEdx[ispec] = new  TH2D(Form("h2%s", AliTRDCalPID::GetPartSymb(ispec)), "", nbinsx, xmin, xmax, nbinsy, ymin, ymax);
 			fH2dEdx[ispec]->SetLineColor(color[ispec]);
 		}
 	}
@@ -876,8 +876,8 @@ void  AliTRDCalPIDRefMaker::SaveReferences(const Int_t mom, const char *fn)
 	// save dE/dx references
 	TH2 *h2 = 0x0;
 	for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-		h2 = (TH2D*)fH2dEdx[ispec]->Clone(Form("h2dEdx%s%d", AliTRDCalPID::fpartSymb[ispec], mom));
-		h2->SetTitle(Form("2D dEdx for particle %s @ %d", AliTRDCalPID::fpartName[ispec], mom));
+		h2 = (TH2D*)fH2dEdx[ispec]->Clone(Form("h2dEdx%s%d", AliTRDCalPID::GetPartSymb(ispec), mom));
+		h2->SetTitle(Form("2D dEdx for particle %s @ %d", AliTRDCalPID::GetPartName(ispec), mom));
 		h2->GetXaxis()->SetTitle("dE/dx_{TRD}^{amplif} [au]");
 		h2->GetYaxis()->SetTitle("dE/dx_{TRD}^{drift} [au]");
 		h2->GetZaxis()->SetTitle("Entries");

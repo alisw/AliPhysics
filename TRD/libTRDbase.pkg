@@ -22,6 +22,8 @@ SRCS= AliTRDarrayI.cxx \
       Cal/AliTRDCalDet.cxx \
       Cal/AliTRDCalFEE.cxx \
       Cal/AliTRDCalPID.cxx \
+      Cal/AliTRDCalPIDLQ.cxx \
+      Cal/AliTRDCalPIDNN.cxx \
       Cal/AliTRDCalPIDRefMaker.cxx \
       Cal/AliTRDCalMonitoring.cxx \
       Cal/AliTRDCalChamberStatus.cxx \
