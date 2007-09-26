@@ -80,7 +80,7 @@ void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize(
 	)
 {
 	constBase = sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType);
-	inputMultiplier = 1;
+	inputMultiplier = 100;
 }
 
 
