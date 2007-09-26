@@ -34,7 +34,8 @@
 
 #include "AliAnaGammaPhos.h" 
 #include "AliAnalysisManager.h"
-#include "AliESD.h" 
+#include "AliESDEvent.h" 
+#include "AliESDCaloCluster.h" 
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODPhoton.h"
@@ -112,14 +113,9 @@ void AliAnaGammaPhos::ConnectInputData(const Option_t*)
     return ;
   }
   
-  // One should first check if the branch address was taken by some other task
-  char ** address = (char **)GetBranchAddress(0, "ESD");
-  if (address) {
-    fESD = (AliESD*)(*address);
-  } else {
-    fESD = new AliESD();
-    SetBranchAddress(0, "ESD", &fESD);
-  }
+  fESD = new AliESDEvent();
+  fESD->ReadFromTree(fChain);
+
 }
 
 //________________________________________________________________________

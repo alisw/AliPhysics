@@ -11,7 +11,7 @@
 #include <TTree.h> 
 #include "AliAnalysisTask.h"  
 
-class AliESD ; 
+class AliESDEvent ; 
 class AliAOD ; 
 class AliAODEvent ; 
 class TNtuple ;
@@ -40,7 +40,7 @@ private:
   // input and output
   TTree        * fChain ;         //!pointer to the analyzed TTree or TChain
   Int_t          fDebug ;         // Debug flag
-  AliESD       * fESD ;           //! ESD
+  AliESDEvent       * fESD ;           //! ESD
   AliAODEvent  * fAOD ;           //! AOD
   TClonesArray * fAODPhotons ;    //! reconstructed photons
   Int_t          fPhotonsInPhos ; //! number of photons found

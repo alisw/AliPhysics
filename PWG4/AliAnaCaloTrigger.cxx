@@ -25,12 +25,28 @@
 #include <TVector3.h> 
 
 #include "AliAnaCaloTrigger.h" 
-#include "AliESD.h" 
+#include "AliAnalysisManager.h"
+#include "AliESDEvent.h" 
 #include "AliLog.h"
+#include "AliESDCaloCluster.h"
+
+//______________________________________________________________________________
+AliAnaCaloTrigger::AliAnaCaloTrigger() :  
+  fChain(0),
+  fESD(0), 
+  fOutputContainer(0),
+  fCalorimeter("PHOS"),
+  fNtTrigger22(0), 
+  fNtTriggerNN(0)
+
+{
+  // Default Constructor.
+
+}
 
 //______________________________________________________________________________
 AliAnaCaloTrigger::AliAnaCaloTrigger(const char *name) : 
-  AliAnalysisTask(name,""),  
+  AliAnalysisTask(name,"AnaCaloTrigger"),  
   fChain(0),
   fESD(0), 
   fOutputContainer(0),
@@ -101,14 +117,9 @@ void AliAnaCaloTrigger::ConnectInputData(const Option_t*)
     return ;
   }
   
-  // One should first check if the branch address was taken by some other task
-  char ** address = (char **)GetBranchAddress(0, "ESD");
-  if (address) {
-    fESD = (AliESD*)(*address);
-  } else {
-    fESD = new AliESD();
-    SetBranchAddress(0, "ESD", &fESD);
-  }
+  fESD = new AliESDEvent();
+  fESD->ReadFromTree(fChain);
+
 }
 
 //________________________________________________________________________
@@ -116,15 +127,18 @@ void AliAnaCaloTrigger::ConnectInputData(const Option_t*)
 void AliAnaCaloTrigger::CreateOutputObjects()
 {  
 
+  // Create the outputs containers
+  OpenFile(0) ;
+
   // create histograms 
   fNtTrigger22 = new TNtuple(fCalorimeter+"trigger22", "Trigger data 2x2 patch", "a22:a220:enMax:phEnMax:eta22:phi22:etaMax:phiMax:phEtaMax:phPhiMax");
   fNtTriggerNN = new TNtuple(fCalorimeter+"triggerNN", "Trigger data NxN patch", "aNN:aNN0:enMax:phEnMax:etaNN:phiNN:etaMax:phiMax:phEtaMax:phPhiMax");
-
+  
   // create output container
   
   fOutputContainer = new TObjArray(2) ; 
   fOutputContainer->SetName(GetName()) ; 
-
+  
   fOutputContainer->AddAt(fNtTrigger22,             0) ; 
   fOutputContainer->AddAt(fNtTriggerNN,             1) ; 
 
@@ -148,20 +162,15 @@ void AliAnaCaloTrigger::Exec(Option_t *)
   // Get trigger information of fCalorimeter 
   TArrayF * triggerAmplitudes = 0x0 ;
   TArrayF * triggerPosition   = 0x0 ;
-  Int_t firstCaloCluster      = 0 ;
-  Int_t numberOfCaloClusters  = 0 ;
+  Int_t numberOfCaloClusters  =  fESD->GetNumberOfCaloClusters() ;
 
   if(fCalorimeter == "PHOS"){
     triggerAmplitudes      = fESD->GetPHOSTriggerAmplitudes();
     triggerPosition        = fESD->GetPHOSTriggerPosition();
-    firstCaloCluster       = fESD->GetFirstPHOSCluster() ;
-    numberOfCaloClusters   = fESD->GetNumberOfPHOSClusters() ;
   }
   else if(fCalorimeter == "EMCAL"){
     triggerAmplitudes    = fESD->GetEMCALTriggerAmplitudes();
     triggerPosition      = fESD->GetEMCALTriggerPosition();
-    firstCaloCluster     = fESD->GetFirstEMCALCluster() ;
-    numberOfCaloClusters = fESD->GetNumberOfEMCALClusters() ;
   }
 
   if( triggerAmplitudes && triggerPosition ){
@@ -197,10 +206,13 @@ void AliAnaCaloTrigger::Exec(Option_t *)
   
   // loop over the Calorimeters Clusters
   
-  for(icaloCluster = firstCaloCluster ; icaloCluster < firstCaloCluster + numberOfCaloClusters ; icaloCluster++) {
+  for(icaloCluster = 0 ; icaloCluster < numberOfCaloClusters ; icaloCluster++) {
+    
     AliESDCaloCluster * cluster = fESD->GetCaloCluster(icaloCluster) ;
-    if (cluster) {
-      
+    
+    if (cluster && ( (fCalorimeter == "PHOS" && cluster->IsPHOS())  ||  
+		     (fCalorimeter == "EMCAL" && cluster->IsEMCAL()))) {
+	  
       Float_t cluEnergy = cluster->E() ; 
       Float_t pos[3] ;
       TVector3 vpos ;
