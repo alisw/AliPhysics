@@ -12,7 +12,7 @@
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
 //-------------------------------------------------------
 #include "AliITSpidESD.h"
-
+#include "AliLog.h"
 
 class AliITSpidESD1 : public AliITSpidESD {
 public:
@@ -20,6 +20,9 @@ public:
   AliITSpidESD1(Double_t *param);
   virtual ~AliITSpidESD1() {}
   virtual Int_t MakePID(AliESDEvent *event);
+  // This method is here because of the AliITSpidESD2 class...
+  virtual Int_t MakePID(TTree */*clustersTree*/, AliESDEvent */*event*/)
+  {AliError("Method should not be used!"); return 0;}
 
 private:
   Double_t fRes;          // relative dEdx resolution

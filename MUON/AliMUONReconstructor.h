@@ -48,17 +48,11 @@ public:
 
   virtual void ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
   
-  virtual Bool_t HasLocalReconstruction() const;
-  
-  virtual void Reconstruct(AliRunLoader* runLoader) const;
-  
-  virtual void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const;
-
   virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
   
   virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
   
-  virtual AliTracker* CreateTracker(AliRunLoader* runLoader) const;
+  virtual AliTracker* CreateTracker() const;
     
 private:
   /// Not implemented
@@ -99,7 +93,7 @@ private:
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONTriggerChamberEff* fTrigChamberEff; //!< pointer to trigger chamber efficiency class
   
-  ClassDef(AliMUONReconstructor,2) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,3) // Implementation of AliReconstructor
 };
 
 #endif

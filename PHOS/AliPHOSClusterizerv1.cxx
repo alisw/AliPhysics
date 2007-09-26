@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.114  2007/09/06 16:06:44  kharlov
+ * Absence of sorting results in loose of all unfolded clusters
+ *
  * Revision 1.113  2007/08/28 12:55:07  policheh
  * Loaders removed from the reconstruction code (C.Cheshkov)
  *
@@ -170,7 +173,6 @@
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliPHOSRecoParam.h"
-#include "AliPHOSQualAssDataMaker.h" 
 #include "AliPHOSCalibData.h"
 #include "AliPHOSReconstructor.h"
 
@@ -298,23 +300,10 @@ void AliPHOSClusterizerv1::Digits2Clusters(Option_t *option)
   if(fToUnfold)             
     MakeUnfolding();
 
-    //makes the quality assurance data
-  if (GetQualAssDataMaker()) {
-    GetQualAssDataMaker()->SetData(fEMCRecPoints) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
-    GetQualAssDataMaker()->SetData(fCPVRecPoints) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kRECPOINTS) ; 
-  }
-
   WriteRecPoints();
 
   if(strstr(option,"deb"))  
     PrintRecPoints(option) ;
-
-  // PLEASE FIX BY MOVING IT TO ALIRECONSTRUCTION !!!
-  //Write the quality assurance data only after the last event 
-  //  if (GetQualAssDataMaker() && fEventCounter == gime->MaxEvent()) 
-  //    GetQualAssDataMaker()->Finish(AliQualAss::kRECPOINTS) ;
 
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSClusterizer");

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.41  2007/08/28 12:55:08  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.40  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -45,7 +48,6 @@ class AliESDEvent ;
 class AliPHOSGeometry ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
-class AliPHOSQualAssDataMaker ; 
 
 class AliPHOSPID : public TObject {
 
@@ -69,8 +71,6 @@ class AliPHOSPID : public TObject {
 
   virtual const char * Version() const = 0;
 
-  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
-
 protected:
 
   AliPHOSGeometry * fGeom;    //! Pointer to PHOS Geometry
@@ -83,8 +83,6 @@ protected:
   TClonesArray *fRecParticles;      //!Array with reconstructed particles (PID)
 
 private: 
-
-  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
 
   ClassDef(AliPHOSPID,6)  // Particle Identifier algorithm (base class)
 

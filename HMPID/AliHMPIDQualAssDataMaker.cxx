@@ -158,80 +158,97 @@ void AliHMPIDQualAssDataMaker::InitESDs()
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeHits()
+void AliHMPIDQualAssDataMaker::MakeHits(TObject * data)
 {
   //fills QA histos for Hits
-  TClonesArray * hits = dynamic_cast<TClonesArray*>(fData) ; 
-  TIter next(hits); 
-  AliHMPIDHit * hit ; 
-  while ( hit = dynamic_cast<AliHMPIDHit *>(next()) ) {
-  if(hit->Pid()<500000) fhHitQdc->Fill(hit->Q()) ;
-  if(hit->Pid()<500000) fhHitMap[hit->Ch()]->Fill(hit->LorsX(),hit->LorsY());
-  }
-} 
- 
-//____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeDigits()
-{
-  //fills QA histos for Digits
-  TObjArray *chambers = dynamic_cast<TObjArray*>(fData);
-  for(Int_t i =0; i< chambers->GetEntries(); i++)
-  {
-   TClonesArray * digits = dynamic_cast<TClonesArray*>(chambers->At(i)); 
-   fhDigChEvt->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
-   TIter next(digits); 
-   AliHMPIDDigit * digit; 
-   while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-      fhDigPcEvt->Fill(10.*i+digit->Pc(),1./(48.*80.));
-      fhDigQ->Fill(digit->Q());
-  }  
- }
-}
-
-//____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeSDigits()
-{
-  //fills QA histos for SDigits
-  TClonesArray * sdigits = dynamic_cast<TClonesArray*>(fData) ; 
-  AliHMPIDDigit *ref = (AliHMPIDDigit *)sdigits->At(0);
-  Float_t zero = ref->GetTrack(0); 
-  TIter next(sdigits) ; 
-  AliHMPIDDigit * sdigit ; 
-   while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
-   fhSDigits->Fill(sdigit->Q()) ;
-   if(zero == sdigit->GetTrack(0)) continue;
-   else zero == sdigit->GetTrack(0);
+  TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
+  if (!hits){
+    AliError("Wrong type of hits container") ; 
+  } else {
+    TIter next(hits); 
+    AliHMPIDHit * hit ; 
+    while ( (hit = dynamic_cast<AliHMPIDHit *>(next())) ) {
+      if(hit->Pid()<500000) fhHitQdc->Fill(hit->Q()) ;
+      if(hit->Pid()<500000) fhHitMap[hit->Ch()]->Fill(hit->LorsX(),hit->LorsY());
+    }
   } 
 }
 
-void AliHMPIDQualAssDataMaker::MakeRecPoints()
+//____________________________________________________________________________
+void AliHMPIDQualAssDataMaker::MakeDigits( TObject * data)
+{
+  //fills QA histos for Digits
+  TObjArray *chambers = dynamic_cast<TObjArray*>(data);
+  if ( !chambers) {
+    AliError("Wrong type of digits container") ; 
+  } else {
+    for(Int_t i =0; i< chambers->GetEntries(); i++)
+      {
+	TClonesArray * digits = dynamic_cast<TClonesArray*>(chambers->At(i)); 
+	fhDigChEvt->Fill(i,digits->GetEntriesFast()/(48.*80.*6.));
+	TIter next(digits); 
+	AliHMPIDDigit * digit; 
+	while ( (digit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
+	  fhDigPcEvt->Fill(10.*i+digit->Pc(),1./(48.*80.));
+	  fhDigQ->Fill(digit->Q());
+	}  
+      }
+  }
+}
+
+//____________________________________________________________________________
+void AliHMPIDQualAssDataMaker::MakeSDigits( TObject * data)
+{
+  //fills QA histos for SDigits
+  TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
+  if (!sdigits) {
+    AliError("Wrong type of sdigits container") ; 
+  } else {
+    AliHMPIDDigit *ref = (AliHMPIDDigit *)sdigits->At(0);
+    Float_t zero = ref->GetTrack(0); 
+    TIter next(sdigits) ; 
+    AliHMPIDDigit * sdigit ; 
+    while ( (sdigit = dynamic_cast<AliHMPIDDigit *>(next())) ) {
+      fhSDigits->Fill(sdigit->Q()) ;
+      if(zero == sdigit->GetTrack(0)) continue;
+      else zero = sdigit->GetTrack(0);
+    } 
+  }
+}
+
+//____________________________________________________________________________
+void AliHMPIDQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
 {
   //fills QA histos for clusters
-  TObjArray *chambers = dynamic_cast<TObjArray*>(fData);
 
-   for(Int_t i =0; i< chambers->GetEntries(); i++)
-   {
-    TClonesArray * clusters = dynamic_cast<TClonesArray*>(chambers->At(i));
+  TClonesArray *clusters = new TClonesArray("AliHMPIDCluster");
+  for(int i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++){
+    TBranch *branch = clustersTree->GetBranch(Form("HMPID%d",i));
+    branch->SetAddress(&clusters);
+    branch->GetEntry(0);
+
     fhCluEvt->Fill(i,clusters->GetEntries());
     TIter next(clusters);
     AliHMPIDCluster *clu;
     while ( (clu = dynamic_cast<AliHMPIDCluster *>(next())) ) {;
-     fhCluFlg->Fill(clu->Status());  fhCluChi2->Fill(clu->Chi2());  fhCluSize->Fill(clu->Size());
-     fhCluQ->Fill(clu->Q()); 
-     Int_t qCut=100;
-     if(clu->Q()>qCut) {
-     fhMipCluSize->SetTitle(Form("Mip cluster size at a Qcut = %i ADC",qCut));
-     fhMipCluSize->Fill(clu->Size());
+      fhCluFlg->Fill(clu->Status());  fhCluChi2->Fill(clu->Chi2());  fhCluSize->Fill(clu->Size());
+      fhCluQ->Fill(clu->Q()); 
+      Int_t qCut=100;
+      if(clu->Q()>qCut) {
+	fhMipCluSize->SetTitle(Form("Mip cluster size at a Qcut = %i ADC",qCut));
+	fhMipCluSize->Fill(clu->Size());
+      }
     }
   }
- }
+
+  clusters->Delete();
+  delete clusters;
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeESDs()
+void AliHMPIDQualAssDataMaker::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
-  AliESDEvent * esd = dynamic_cast<AliESDEvent*>(fData) ;
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
     fhCkovP->Fill(pTrk->GetP(),pTrk->GetHMPIDsignal());

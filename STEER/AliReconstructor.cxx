@@ -71,24 +71,6 @@ void AliReconstructor::Reconstruct(AliRawReader* /*rawReader*/,
 }
 
 //_____________________________________________________________________________
-void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/) const
-{
-// run the local reconstruction
-
-  AliError("local reconstruction not implemented");
-}
-
-//_____________________________________________________________________________
-void AliReconstructor::Reconstruct(AliRunLoader* /*runLoader*/, 
-				   AliRawReader* /*rawReader*/) const
-{
-// run the local reconstruction with raw data input
-
-  AliError("local reconstruction not implemented for raw data input");
-}
-
-
-//_____________________________________________________________________________
 void AliReconstructor::FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/,
 			       AliESDEvent* /*esd*/) const
 {
@@ -106,26 +88,6 @@ void AliReconstructor::FillESD(AliRawReader* /*rawReader*/,
 
   FillESD((TTree*)NULL, clustersTree, esd);
 }
-
-//_____________________________________________________________________________
-void AliReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-			       AliESDEvent* /*esd*/) const
-{
-// fill the ESD.
-// by default nothing is done
-
-}
-
-//_____________________________________________________________________________
-void AliReconstructor::FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* /*rawReader*/, AliESDEvent* esd) const
-{
-// fill the ESD in case of raw data input.
-// by default the FillESD method for MC is called
-
-  FillESD(runLoader, esd);
-}
-
 
 //_____________________________________________________________________________
 const char* AliReconstructor::GetDetectorName() const

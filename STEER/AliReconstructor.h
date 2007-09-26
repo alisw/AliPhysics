@@ -15,7 +15,6 @@
 #include <TString.h>
 
 class TTree;
-class AliRunLoader;
 class AliRawReader;
 class AliVertexer;
 class AliTracker;
@@ -27,30 +26,23 @@ public:
   AliReconstructor(): TObject(), fOption() {};
   virtual ~AliReconstructor() {};
 
-  virtual void         Init(AliRunLoader* /*runLoader*/) {};
+  virtual void         Init() {};
 
   virtual Bool_t       HasDigitConversion() const {return kFALSE;};
   virtual void         ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
 
-  virtual Bool_t       HasLocalReconstruction() const {return kFALSE;};
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
-  virtual void         Reconstruct(AliRunLoader* runLoader, 
-				   AliRawReader* rawReader) const;
 
-  virtual AliVertexer* CreateVertexer(AliRunLoader* /*runLoader*/) const 
+  virtual AliVertexer* CreateVertexer() const 
     {return NULL;}
-  virtual AliTracker*  CreateTracker(AliRunLoader* /*runLoader*/) const 
+  virtual AliTracker*  CreateTracker() const 
     {return NULL;}
 
   virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
 			       AliESDEvent* esd) const;
   virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
 			       AliESDEvent* esd) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
-  virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESDEvent* esd) const;
 
   virtual const char*  GetDetectorName() const;
 

@@ -25,6 +25,7 @@
 #include <AliCDBManager.h>         //ctor
 #include <AliESDEvent.h>           //FillEsd()
 #include <AliRawReader.h>          //Reconstruct() for raw digits
+#include "AliHMPIDRawStream.h"     //ConvertDigits()
 ClassImp(AliHMPIDReconstructor)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -139,47 +140,6 @@ void AliHMPIDReconstructor::Reconstruct(TTree *pDigTree,TTree *pCluTree)const
   AliDebug(1,"Stop.");      
 }//Reconstruct(for simulated digits)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::Reconstruct(AliRunLoader *pAL,AliRawReader* pRR)const
-{
-//Invoked  by AliReconstruction to convert raw digits from DDL files to clusters
-//Arguments: pAL - ALICE run loader pointer
-//           pRR - ALICE raw reader pointer
-//  Returns: none
-  AliLoader *pRL=pAL->GetDetectorLoader("HMPID");  AliHMPID *pRich=(AliHMPID*)pAL->GetAliRun()->GetDetector("HMPID");//get pointers for HMPID and HMPID loader
-
-  AliHMPIDDigit dig; //tmp digit, raw digit will be converted to it
-
-  TObjArray digLst; Int_t iDigCnt[7]; for(Int_t i=0;i<7;i++){digLst.AddAt(new TClonesArray("AliHMPIDDigit"),i); iDigCnt[i]=0;} //tmp list of digits for allchambers
-
-  Int_t iEvtN=0;
-  while(pRR->NextEvent()){//events loop
-    pAL->GetEvent(iEvtN++);
-    pRL->MakeTree("R");  pRich->MakeBranch("R");
-    
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
-      AliHMPIDRawStream stream(pRR);
-      while(stream.Next())
-       {
-         UInt_t ddl=stream.GetDDLNumber(); //returns 0,1,2 ... 13  
-         if((UInt_t)(2*iCh)==ddl || (UInt_t)(2*iCh+1)==ddl) {
-         for(Int_t row = 1; row <=AliHMPIDRawStream::kNRows; row++){
-          for(Int_t dil = 1; dil <=AliHMPIDRawStream::kNDILOGICAdd; dil++){
-            for(Int_t pad = 0; pad < AliHMPIDRawStream::kNPadAdd; pad++){
-              if(stream.GetCharge(ddl,row,dil,pad) < 1) continue; 
-              AliHMPIDDigit dig(stream.GetPad(ddl,row,dil,pad),stream.GetCharge(ddl,row,dil,pad));
-              if(!IsDigSurvive(&dig)) continue;
-              new((*((TClonesArray*)digLst.At(iCh)))[iDigCnt[iCh]++]) AliHMPIDDigit(dig); //add this digit to the tmp list
-             }//pad
-            }//dil
-           }//row
-       }//while stream    
-    }//ch loop
-  }   
-  }
-         
-  pRL->UnloadRecPoints();
-}//Reconstruct raw data
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)const
 {
 //Invoked  by AliReconstruction to convert raw digits from DDL files to digits
@@ -221,7 +181,7 @@ void AliHMPIDReconstructor::ConvertDigits(AliRawReader *pRR,TTree *pDigTree)cons
   AliDebug(1,"Stop.");
 }//Reconstruct digits from raw digits
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESDEvent *pESD) const
+void AliHMPIDReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree*/, AliESDEvent *pESD) const
 {
 // Calculates probability to be a electron-muon-pion-kaon-proton
 // from the given Cerenkov angle and momentum assuming no initial particle composition
@@ -259,4 +219,3 @@ void AliHMPIDReconstructor::FillESD(AliRunLoader *, AliESDEvent *pESD) const
     pTrk->SetHMPIDpid(pid);
   }//ESD tracks loop
 }//FillESD()
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

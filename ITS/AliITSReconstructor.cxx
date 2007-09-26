@@ -24,7 +24,6 @@
 #include "Riostream.h"
 #include "AliITSReconstructor.h"
 #include "AliRun.h"
-#include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSgeom.h"
@@ -84,13 +83,11 @@ AliITSReconstructor& AliITSReconstructor::operator=(const AliITSReconstructor&  
 }
 
 //______________________________________________________________________
-void AliITSReconstructor::Init(AliRunLoader */*runLoader*/) {
+void AliITSReconstructor::Init() {
     // Initalize this constructor bet getting/creating the objects
     // nesseary for a proper ITS reconstruction.
     // Inputs:
-    //    AliRunLoader *runLoader   Pointer to the run loader to allow
-    //                              the getting of files/folders data
-    //                              needed to do reconstruction
+    //   none.
     // Output:
     //   none.
     // Return:
@@ -132,7 +129,7 @@ void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTr
 }
 
 //_____________________________________________________________________________
-AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
+AliTracker* AliITSReconstructor::CreateTracker() const
 {
 // create a ITS tracker
 
@@ -155,23 +152,23 @@ AliTracker* AliITSReconstructor::CreateTracker(AliRunLoader* runLoader)const
   }
 
   TString selectedPIDmethod = GetOption();
-  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
-  if (!loader) {
-    Error("CreateTracker", "ITS loader not found");
-  }
+  AliITSReconstructor* nc = const_cast<AliITSReconstructor*>(this);
   if(selectedPIDmethod.Contains("LandauFitPID")){
-    loader->AdoptITSpid(new AliITSpidESD2((AliITStrackerMI*)tracker,loader));
+    Info("FillESD","ITS LandauFitPID option has been selected\n");
+    nc->fItsPID = new AliITSpidESD2((AliITStrackerMI*)tracker);
   }
   else{
+    Info("FillESD","ITS default PID\n");
     Double_t parITS[] = {0.15, 10.}; //PH positions of the MIP peak
-    loader->AdoptITSpid(new AliITSpidESD1(parITS));
+    nc->fItsPID = new AliITSpidESD1(parITS);
   }
+
   return tracker;
   
 }
 
 //_____________________________________________________________________________
-AliVertexer* AliITSReconstructor::CreateVertexer(AliRunLoader* /*runLoader*/) const
+AliVertexer* AliITSReconstructor::CreateVertexer() const
 {
 // create a ITS vertexer
 
@@ -199,23 +196,18 @@ AliVertexer* AliITSReconstructor::CreateVertexer(AliRunLoader* /*runLoader*/) co
 }
 
 //_____________________________________________________________________________
-void AliITSReconstructor::FillESD(AliRunLoader* runLoader, 
+void AliITSReconstructor::FillESD(TTree * /*digitsTree*/, TTree *clustersTree, 
 				  AliESDEvent* esd) const
 {
 // make PID, find V0s and cascade
-  AliITSLoader *loader = (AliITSLoader*)runLoader->GetLoader("ITSLoader");
-  AliITSpidESD *pidESD = 0;
-  TString selectedPIDmethod = GetOption();
-  if(selectedPIDmethod.Contains("LandauFitPID")){
-    Info("FillESD","ITS LandauFitPID option has been selected\n");
-    pidESD=loader->GetITSpid();
-  }
-  else{
-    Info("FillESD","ITS default PID\n");
-    pidESD=loader->GetITSpid();
-  }
-  if(pidESD!=0){
-    pidESD->MakePID(esd);
+  if(fItsPID!=0) {
+    TString selectedPIDmethod = GetOption();
+    if(selectedPIDmethod.Contains("LandauFitPID")){
+      fItsPID->MakePID(clustersTree,esd);
+    }
+    else{
+      fItsPID->MakePID(esd);
+    }
   }
   else {
     Error("FillESD","!! cannot do the PID !!\n");

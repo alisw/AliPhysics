@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.13  2007/08/30 10:40:27  cvetan
+ * Minor
+ *
  * Revision 1.12  2007/08/28 12:55:08  policheh
  * Loaders removed from the reconstruction code (C.Cheshkov)
  *
@@ -68,15 +71,12 @@ public:
   static void                SetDebug()   { fgDebug = kTRUE ; }
   static void                ResetDebug() { fgDebug = kFALSE ; }
   static Bool_t              Debug() { return fgDebug ; }
-  AliTracker *CreateTracker(AliRunLoader* runLoader) const;
+  AliTracker *CreateTracker() const;
   using AliReconstructor::FillESD;
   virtual void               FillESD(TTree* digitsTree, TTree* clustersTree, 
 				     AliESDEvent* esd) const;
   using AliReconstructor::Reconstruct;
-  virtual Bool_t             HasLocalReconstruction() const {return kTRUE;};
   virtual void               Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
-  //  virtual void               Reconstruct(AliRunLoader* runLoader) const ;
-  //  virtual void               Reconstruct(AliRunLoader* runLoader, AliRawReader * rawreader) const ;
 
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};
   virtual void               ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const;
@@ -100,7 +100,7 @@ private:
   static AliPHOSRecoParam*   fgkRecoParamCpv; // reconstruction parameters for EMC
   AliPHOSGeometry*           fGeom;           // pointer to the PHOS geometry
 
-  ClassDef(AliPHOSReconstructor,3)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,4)  // PHOS Reconstruction class
 
 }; 
 

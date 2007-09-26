@@ -44,7 +44,6 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
-#include "AliLoader.h"
 #include "AliLog.h"
 
 #include <Riostream.h>
@@ -56,13 +55,11 @@ ClassImp(AliMUONTracker)
 
 
 //_____________________________________________________________________________
-AliMUONTracker::AliMUONTracker(AliLoader* loader,
-                               const AliMUONDigitMaker* digitMaker,
+AliMUONTracker::AliMUONTracker(const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
                                const AliMUONTriggerCircuit* triggerCircuit,
 			       AliMUONTriggerChamberEff* chamberEff)
 : AliTracker(),
-  fLoader(loader),
   fDigitMaker(digitMaker), // not owner
   fTransformer(transformer), // not owner
   fTriggerCircuit(triggerCircuit), // not owner
@@ -127,14 +124,9 @@ AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   /// the TreeT and the ESD
   
   Int_t rv(0);
-  
-  TTree* tracksTree = fLoader->TreeT();
-  
-  if (!tracksTree)
-  {
-    AliError("Cannot get TreeT");
-    rv=1;
-  }
+ 
+  TTree *tracksTree = new TTree;
+ 
   if (!fClusterStore)
   {
     AliError("ClusterStore is NULL");

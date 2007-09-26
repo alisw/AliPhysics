@@ -42,11 +42,11 @@ private:
   virtual void   InitSDigits() ;   //book SDigits QA histo
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
-  virtual void   MakeHits() ;      //Fill hit QA histo
-  virtual void   MakeDigits() ;    //Fill Digit QA histo
-  virtual void   MakeSDigits() ;   //Fill SDigit QA histo
-  virtual void   MakeRecPoints() ; //Fill cluster QA histo
-  virtual void   MakeESDs() ;      //Fill hit QA histo
+  virtual void   MakeHits(TObject * hits) ;       //Fill hit QA histo
+  virtual void   MakeDigits(TObject * digits) ;   //Fill Digit QA histo
+  virtual void   MakeSDigits(TObject * sdigits) ; //Fill SDigit QA histo
+  virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
+  virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
 
   TH1F *fhHitQdc;                  // Hit Q distr
   TH2F *fhHitMap[7];               // Hit Q positions

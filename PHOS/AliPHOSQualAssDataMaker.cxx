@@ -180,11 +180,10 @@ void AliPHOSQualAssDataMaker::InitTrackSegments()
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeESDs()
+void AliPHOSQualAssDataMaker::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
   
-  AliESDEvent * esd = dynamic_cast<AliESDEvent*>(fData) ; 
   Int_t maxClu = esd->GetNumberOfPHOSClusters() ; 
   Int_t index = 0, count = 0 ; 
   for ( index = 0 ; index < maxClu; index++ ) {
@@ -196,95 +195,128 @@ void AliPHOSQualAssDataMaker::MakeESDs()
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeHits()
+void AliPHOSQualAssDataMaker::MakeHits(TObject * data)
 {
   //make QA data from Hits
 
-  TClonesArray * hits = dynamic_cast<TClonesArray*>(fData) ; 
-  fhHitsMul->Fill(hits->GetEntriesFast()) ; 
-  TIter next(hits) ; 
-  AliPHOSHit * hit ; 
-  while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
-    fhHits->Fill( hit->GetEnergy()) ;
-  }
-} 
+  TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
+  if (!hits) {
+    AliError("Wrong type of hits container") ; 
+  } else {
+    fhHitsMul->Fill(hits->GetEntriesFast()) ; 
+    TIter next(hits) ; 
+    AliPHOSHit * hit ; 
+    while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
+      fhHits->Fill( hit->GetEnergy()) ;
+    }
+  } 
+}
  
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeDigits()
+void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
 {
   // makes data from Digits
 
-  TClonesArray * digits = dynamic_cast<TClonesArray*>(fData) ; 
-  fhDigitsMul->Fill(digits->GetEntriesFast()) ; 
-  TIter next(digits) ; 
-  AliPHOSDigit * digit ; 
-  while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-    fhDigits->Fill( digit->GetEnergy()) ;
-  }  
-}
-
-//____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeRecParticles()
-{
-  // makes data from RecParticles
-
-  TClonesArray * recparticles = dynamic_cast<TClonesArray*>(fData) ; 
-  fhRecParticlesMul->Fill(recparticles->GetEntriesFast()) ; 
-  TIter next(recparticles) ; 
-  AliPHOSRecParticle * recparticle ; 
-  while ( (recparticle = dynamic_cast<AliPHOSRecParticle *>(next())) ) {
-    fhRecParticles->Fill( recparticle->Energy()) ;
+  TClonesArray * digits = dynamic_cast<TClonesArray *>(data) ; 
+  if (!digits) {
+    AliError("Wrong type of digits container") ; 
+  } else {
+    fhDigitsMul->Fill(digits->GetEntriesFast()) ; 
+    TIter next(digits) ; 
+    AliPHOSDigit * digit ; 
+    while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
+      fhDigits->Fill( digit->GetEnergy()) ;
+    }  
   }
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeRecPoints()
+// void AliPHOSQualAssDataMaker::MakeRecParticles(TTree * recpar)
+// {
+//   // makes data from RecParticles
+
+//   TClonesArray * recparticles = dynamic_cast<TClonesArray*>(fData) ; 
+//   fhRecParticlesMul->Fill(recparticles->GetEntriesFast()) ; 
+//   TIter next(recparticles) ; 
+//   AliPHOSRecParticle * recparticle ; 
+//   while ( (recparticle = dynamic_cast<AliPHOSRecParticle *>(next())) ) {
+//     fhRecParticles->Fill( recparticle->Energy()) ;
+//   }
+// }
+
+//____________________________________________________________________________
+void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
 {
-  // makes data from RecPoints
-  TObjArray * recpoints = dynamic_cast<TObjArray*>(fData) ;  
-  TIter next(recpoints) ; 
-  
-  if ( strcmp(fData->GetName(), "EMCRECPOINTS") == 0 ) {
-    fhEmcRecPointsMul->Fill(recpoints->GetEntriesFast()) ; 
+  {
+    // makes data from RecPoints
+    TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
+    if (!emcbranch) { 
+      AliError("can't get the branch with the PHOS EMC clusters !");
+      return;
+    }
+    TObjArray * emcrecpoints = new TObjArray(100) ;
+    emcbranch->SetAddress(&emcrecpoints);
+    emcbranch->GetEntry(0);
+    
+    fhEmcRecPointsMul->Fill(emcrecpoints->GetEntriesFast()) ; 
+    TIter next(emcrecpoints) ; 
     AliPHOSEmcRecPoint * rp ; 
     while ( (rp = dynamic_cast<AliPHOSEmcRecPoint *>(next())) ) {
       fhEmcRecPoints->Fill( rp->GetEnergy()) ;
     }
-  } 
-  else if  ( strcmp(fData->GetName(), "CPVRECPOINTS") == 0 ) {
-    fhCpvRecPointsMul->Fill(recpoints->GetEntriesFast()) ; 
+    emcrecpoints->Delete();
+    delete emcrecpoints;
+  }
+  {
+    TBranch *cpvbranch = clustersTree->GetBranch("PHOSCpvRP");
+    if (!cpvbranch) { 
+      AliError("can't get the branch with the PHOS CPV clusters !");
+      return;
+    }
+    TObjArray *cpvrecpoints = new TObjArray(100) ;
+    cpvbranch->SetAddress(&cpvrecpoints);
+    cpvbranch->GetEntry(0);
+    
+    fhCpvRecPointsMul->Fill(cpvrecpoints->GetEntriesFast()) ; 
+    TIter next(cpvrecpoints) ; 
     AliPHOSCpvRecPoint * rp ; 
     while ( (rp = dynamic_cast<AliPHOSCpvRecPoint *>(next())) ) {
       fhCpvRecPoints->Fill( rp->GetEnergy()) ;
     }
-  }  
+    cpvrecpoints->Delete();
+    delete cpvrecpoints;
+  }
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeSDigits()
+void AliPHOSQualAssDataMaker::MakeSDigits(TObject * data)
 {
   // makes data from SDigits
-
-  TClonesArray * sdigits = dynamic_cast<TClonesArray*>(fData) ; 
-  fhSDigitsMul->Fill(sdigits->GetEntriesFast()) ; 
-  TIter next(sdigits) ; 
-  AliPHOSDigit * sdigit ; 
-  while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-    fhSDigits->Fill( sdigit->GetEnergy()) ;
-  } 
+  
+  TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
+  if (!sdigits) {
+    AliError("Wrong type of sdigits container") ; 
+  } else {
+    fhSDigitsMul->Fill(sdigits->GetEntriesFast()) ; 
+    TIter next(sdigits) ; 
+    AliPHOSDigit * sdigit ; 
+    while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
+      fhSDigits->Fill( sdigit->GetEnergy()) ;
+    } 
+  }
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeTrackSegments()
-{
-  // makes data from TrackSegments
+// void AliPHOSQualAssDataMaker::MakeTrackSegments(TTree * ts)
+// {
+//   // makes data from TrackSegments
 
-  TClonesArray * tracksegments = dynamic_cast<TClonesArray*>(fData) ;
+//   TClonesArray * tracksegments = dynamic_cast<TClonesArray*>(fData) ;
 
-  fhTrackSegmentsMul->Fill(tracksegments->GetEntriesFast()) ; 
-  TIter next(tracksegments) ; 
-  AliPHOSTrackSegment * ts ; 
-  while ( (ts = dynamic_cast<AliPHOSTrackSegment *>(next())) ) {
-    fhTrackSegments->Fill( ts->GetCpvDistance()) ;
-  } 
-}
+//   fhTrackSegmentsMul->Fill(tracksegments->GetEntriesFast()) ; 
+//   TIter next(tracksegments) ; 
+//   AliPHOSTrackSegment * ts ; 
+//   while ( (ts = dynamic_cast<AliPHOSTrackSegment *>(next())) ) {
+//     fhTrackSegments->Fill( ts->GetCpvDistance()) ;
+//   } 
+// }

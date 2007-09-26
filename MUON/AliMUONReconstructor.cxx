@@ -66,9 +66,7 @@
 #include "AliMUONReconstructor.h"
 
 #include "AliCDBManager.h"
-#include "AliLoader.h"
 #include "AliLog.h"
-#include "AliRunLoader.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderCOG.h"
 #include "AliMUONClusterFinderMLEM.h"
@@ -298,7 +296,7 @@ AliMUONReconstructor::CreateTriggerChamberEff() const
 
 //_____________________________________________________________________________
 AliTracker* 
-AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const
+AliMUONReconstructor::CreateTracker() const
 {
   /// Create the MUONTracker object
   /// The MUONTracker is passed the GetOption(), i.e. our own options
@@ -307,13 +305,7 @@ AliMUONReconstructor::CreateTracker(AliRunLoader* runLoader) const
   CreateDigitMaker();
   CreateTriggerChamberEff();
   
-  AliLoader* loader = runLoader->GetDetectorLoader("MUON");
-  if (!loader)
-  {
-    AliError("Cannot get MUONLoader, so cannot create MUONTracker");
-    return 0x0;
-  }
-  AliMUONTracker* tracker = new AliMUONTracker(loader,fDigitMaker,fTransformer,fTriggerCircuit,fTrigChamberEff);
+  AliMUONTracker* tracker = new AliMUONTracker(fDigitMaker,fTransformer,fTriggerCircuit,fTrigChamberEff);
   tracker->SetOption(GetOption());
   
   return tracker;
@@ -524,23 +516,6 @@ AliMUONReconstructor::HasDigitConversion() const
 }
 
 //_____________________________________________________________________________
-Bool_t 
-AliMUONReconstructor::HasLocalReconstruction() const
-{
-  /// Whether or not we have local reconstruction
-  TString opt(GetOption());
-  opt.ToUpper();
-  if ( opt.Contains("NOLOCALRECONSTRUCTION" ) )
-  {
-    return kFALSE;
-  }
-  else
-  {
-    return kTRUE;
-  }
-}
-
-//_____________________________________________________________________________
 void 
 AliMUONReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const
 {
@@ -557,84 +532,6 @@ AliMUONReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) 
   Clusterize(*(DigitStore()),*(ClusterStore()));
     
   FillTreeR(TriggerStore(),ClusterStore(),*clustersTree);
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader) const
-{
-  /// Reconstruct simulated data
-  
-  AliCodeTimerAuto("Reconstruct(AliRunLoader*)")
-  
-  AliLoader* loader = runLoader->GetDetectorLoader("MUON");
-  if (!loader) 
-  {
-    AliError("Could not get MUON loader");
-    return;
-  }
-  
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-  
-  for ( Int_t i = 0; i < nEvents; ++i ) 
-  {
-    runLoader->GetEvent(i);
-    
-    loader->LoadRecPoints("update");
-    loader->CleanRecPoints();
-    loader->MakeRecPointsContainer();
-    TTree* clustersTree = loader->TreeR();
-    
-    loader->LoadDigits("read");
-    TTree* digitsTree = loader->TreeD();
-
-    Reconstruct(digitsTree,clustersTree);
-    
-    loader->UnloadDigits();
-    loader->WriteRecPoints("OVERWRITE");
-    loader->UnloadRecPoints();    
-  }
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const
-{
-  /// This method is called by AliReconstruction if HasLocalReconstruction()==kFALSE
-  
-  AliCodeTimerAuto("AliMUONReconstructor::Reconstruct(AliRunLoader*, AliRawReader*)")
-  
-  AliLoader* loader = runLoader->GetDetectorLoader("MUON");
-  if (!loader) 
-  {
-    AliError("Could not get MUON loader");
-    return;
-  }
-
-  Int_t i(0);
-  
-  while (rawReader->NextEvent()) 
-  {
-    runLoader->GetEvent(i++);
-    
-    loader->LoadRecPoints("update");
-    loader->CleanRecPoints();
-    loader->MakeRecPointsContainer();
-    TTree* clustersTree = loader->TreeR();
-    
-    loader->LoadDigits("update");
-    loader->CleanDigits();
-    loader->MakeDigitsContainer();
-    TTree* digitsTree = loader->TreeD();
-    ConvertDigits(rawReader, digitsTree);
-    loader->WriteDigits("OVERWRITE");
-    
-    Reconstruct(digitsTree,clustersTree);
-    
-    loader->UnloadDigits();
-    loader->WriteRecPoints("OVERWRITE");
-    loader->UnloadRecPoints();    
-  }
 }
 
 //_____________________________________________________________________________

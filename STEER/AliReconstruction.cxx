@@ -574,7 +574,6 @@ Bool_t AliReconstruction::Run(const char* input)
     if (!gGeoManager) if (fStopOnError) return kFALSE;
   }
 
-  AliCDBManager* man = AliCDBManager::Instance();
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
 
   // local reconstruction
@@ -670,16 +669,6 @@ Bool_t AliReconstruction::Run(const char* input)
   if (fRawReader) fRawReader->RewindEvents();
    TString detStr(fFillESD) ; 
 
-// initialises quality assurance for ESDs
-   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-    if (!IsSelected(fgkDetectorName[iDet], detStr)) 
-     continue;
-    AliQualAssDataMaker * qadm = GetQualAssDataMaker(iDet);
-    if (!qadm) 
-     continue;
-    qadm->Init(AliQualAss::kESDS) ; 
-    }
-  
   ProcInfo_t ProcInfo;
   gSystem->GetProcInfo(&ProcInfo);
   AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
@@ -867,8 +856,8 @@ Bool_t AliReconstruction::Run(const char* input)
 	if (!IsSelected(fgkDetectorName[iDet], detStr)) 
 		continue;
     AliQualAssDataMaker * qadm = GetQualAssDataMaker(iDet);
-    if (!qadm) 
-		continue;
+    if (!qadm) continue;
+    qadm->Finish(AliQualAss::kRECPOINTS);
     qadm->Finish(AliQualAss::kESDS) ; 
   }
 
@@ -919,49 +908,49 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 
   AliCodeTimerAuto("")
 
-  AliCDBManager* man = AliCDBManager::Instance();
-  Bool_t origCache = man->GetCacheFlag();
+ //  AliCDBManager* man = AliCDBManager::Instance();
+//   Bool_t origCache = man->GetCacheFlag();
 
-  TString detStr = detectors;
-  for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
-    AliReconstructor* reconstructor = GetReconstructor(iDet);
-    if (!reconstructor) continue;
-    if (reconstructor->HasLocalReconstruction()) continue;
+//   TString detStr = detectors;
+//   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+//     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+//     AliReconstructor* reconstructor = GetReconstructor(iDet);
+//     if (!reconstructor) continue;
+//     if (reconstructor->HasLocalReconstruction()) continue;
 
-    AliCodeTimerStart(Form("running reconstruction for %s", fgkDetectorName[iDet]));
-    AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+//     AliCodeTimerStart(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+//     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     
-    AliCodeTimerStart(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));                          
-    AliInfo(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
+//     AliCodeTimerStart(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));                          
+//     AliInfo(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
 
-    man->SetCacheFlag(kTRUE);
-    TString calibPath = Form("%s/Calib/*", fgkDetectorName[iDet]);
-    man->GetAll(calibPath); // entries are cached!
+//     man->SetCacheFlag(kTRUE);
+//     TString calibPath = Form("%s/Calib/*", fgkDetectorName[iDet]);
+//     man->GetAll(calibPath); // entries are cached!
 
-    AliCodeTimerStop(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
+//     AliCodeTimerStop(Form("Loading calibration data from OCDB for %s", fgkDetectorName[iDet]));
      
-    if (fRawReader) {
-      fRawReader->RewindEvents();
-      reconstructor->Reconstruct(fRunLoader, fRawReader);
-    } else {
-      reconstructor->Reconstruct(fRunLoader);
-    }
+//     if (fRawReader) {
+//       fRawReader->RewindEvents();
+//       reconstructor->Reconstruct(fRunLoader, fRawReader);
+//     } else {
+//       reconstructor->Reconstruct(fRunLoader);
+//     }
      
-     AliCodeTimerStop(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+//      AliCodeTimerStop(Form("running reconstruction for %s", fgkDetectorName[iDet]));
 
-    // unload calibration data
-    man->UnloadFromCache(calibPath);
-    //man->ClearCache();
-  }
+//     // unload calibration data
+//     man->UnloadFromCache(calibPath);
+//     //man->ClearCache();
+//   }
 
-  man->SetCacheFlag(origCache);
+//   man->SetCacheFlag(origCache);
 
-  if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    AliError(Form("the following detectors were not found: %s",
-                  detStr.Data()));
-    if (fStopOnError) return kFALSE;
-  }
+//   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
+//     AliError(Form("the following detectors were not found: %s",
+//                   detStr.Data()));
+//     if (fStopOnError) return kFALSE;
+//   }
 
   return kTRUE;
 }
@@ -979,6 +968,10 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
     AliLoader* loader = fLoader[iDet];
+    if (!loader) {
+      AliWarning(Form("No loader is defined for %s!",fgkDetectorName[iDet]));
+      continue;
+    }
 
     // conversion of digits
     if (fRawReader && reconstructor->HasDigitConversion()) {
@@ -996,7 +989,6 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     }
 
     // local reconstruction
-    if (!reconstructor->HasLocalReconstruction()) continue;
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     loader->LoadRecPoints("update");
@@ -1016,6 +1008,15 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       }
       loader->UnloadDigits();
     }
+
+    AliQualAssDataMaker * qadm = GetQualAssDataMaker(iDet);
+    if (qadm) {
+      AliCodeTimerStart(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
+      AliInfo(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
+      qadm->Exec(AliQualAss::kRECPOINTS, clustersTree) ; 
+      AliCodeTimerStop(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
+    }
+
     loader->WriteRecPoints("OVERWRITE");
     loader->UnloadRecPoints();
   }
@@ -1108,7 +1109,7 @@ Bool_t AliReconstruction::RunHLTTracking(AliESDEvent*& esd)
     TString detName = fgkDetectorName[iDet];
     AliDebug(1, Form("%s HLT tracking", detName.Data()));
     reconstructor->SetOption(detName.Data());
-    AliTracker *tracker = reconstructor->CreateTracker(fRunLoader);
+    AliTracker *tracker = reconstructor->CreateTracker();
     if (!tracker) {
       AliWarning(Form("couldn't create a HLT tracker for %s", detName.Data()));
       if (fStopOnError) return kFALSE;
@@ -1163,7 +1164,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
   
   TString detName = fgkDetectorName[iDet];
   AliDebug(1, Form("%s tracking", detName.Data()));
-  AliTracker *tracker =  reconstructor->CreateTracker(fRunLoader);
+  AliTracker *tracker =  reconstructor->CreateTracker();
   if (!tracker) {
     AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
     return kFALSE;
@@ -1211,8 +1212,11 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
   AliInfo("running tracking");
 
   //Fill the ESD with the T0 info (will be used by the TOF) 
-  if (fReconstructor[11])
-      GetReconstructor(11)->FillESD(fRunLoader, esd);
+  if (fReconstructor[11] && fLoader[11]) {
+    fLoader[11]->LoadRecPoints("READ");
+    TTree *treeR = fLoader[11]->TreeR();
+    GetReconstructor(11)->FillESD((TTree *)NULL,treeR,esd);
+  }
 
   // pass 1: TPC + ITS inwards
   for (Int_t iDet = 1; iDet >= 0; iDet--) {
@@ -1238,7 +1242,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     }
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
-      GetReconstructor(1)->FillESD(fRunLoader, esd);
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
     }
@@ -1277,7 +1280,6 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     }
     // updated PID in TPC needed by the ITS tracker -MI
     if (iDet == 1) {
-      GetReconstructor(1)->FillESD(fRunLoader, esd);
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
     }
@@ -1367,7 +1369,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
     if (!ReadESD(esd, fgkDetectorName[iDet])) {
       AliDebug(1, Form("filling ESD for %s", fgkDetectorName[iDet]));
       TTree* clustersTree = NULL;
-      if (reconstructor->HasLocalReconstruction() && fLoader[iDet]) {
+      if (fLoader[iDet]) {
 	fLoader[iDet]->LoadRecPoints("read");
 	clustersTree = fLoader[iDet]->TreeR();
 	if (!clustersTree) {
@@ -1392,15 +1394,10 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
 	reconstructor->FillESD(digitsTree, clustersTree, esd);
 	if (fLoader[iDet]) fLoader[iDet]->UnloadDigits();
       }
-      if (reconstructor->HasLocalReconstruction() && fLoader[iDet]) {
+      if (fLoader[iDet]) {
 	fLoader[iDet]->UnloadRecPoints();
       }
 
-      if (fRawReader) {
-        reconstructor->FillESD(fRunLoader, fRawReader, esd);
-      } else {
-        reconstructor->FillESD(fRunLoader, esd);
-      }
       if (fCheckPointLevel > 2) WriteESD(esd, fgkDetectorName[iDet]);
     }
   }
@@ -1648,7 +1645,7 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   if (reconstructor) {
     TObject* obj = fOptions.FindObject(detName.Data());
     if (obj) reconstructor->SetOption(obj->GetTitle());
-    reconstructor->Init(fRunLoader);
+    reconstructor->Init();
     fReconstructor[iDet] = reconstructor;
   }
 
@@ -1702,7 +1699,7 @@ Bool_t AliReconstruction::CreateVertexer()
   fVertexer = NULL;
   AliReconstructor* itsReconstructor = GetReconstructor(0);
   if (itsReconstructor) {
-    fVertexer = itsReconstructor->CreateVertexer(fRunLoader);
+    fVertexer = itsReconstructor->CreateVertexer();
   }
   if (!fVertexer) {
     AliWarning("couldn't create a vertexer for ITS");
@@ -1733,7 +1730,7 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
     }
 
 
-    fTracker[iDet] = reconstructor->CreateTracker(fRunLoader);
+    fTracker[iDet] = reconstructor->CreateTracker();
     if (!fTracker[iDet] && (iDet < 7)) {
       AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
       if (fStopOnError) return kFALSE;
@@ -2700,48 +2697,12 @@ AliQualAssDataMaker * AliReconstruction::GetQualAssDataMaker(Int_t iDet)
     qadm = (AliQualAssDataMaker *) pluginHandler->ExecPlugin(0);
   }
   if (qadm) {
-    // TObject* obj = fOptions.FindObject(detName.Data());
-    //     if (obj) reconstructor->SetOption(obj->GetTitle());
+    AliInfo(Form("Initializing quality assurance data maker for %s", fgkDetectorName[iDet]));
+    qadm->Init(AliQualAss::kRECPOINTS);
+    qadm->Init(AliQualAss::kESDS) ; 
     fQualAssDataMaker[iDet] = qadm;
   }
 
-  // get or create the loader
-  fLoader[iDet] = fRunLoader->GetLoader(detName + "Loader");
-  if (!fLoader[iDet]) {
-    AliConfig::Instance()
-	->CreateDetectorFolders(fRunLoader->GetEventFolder(), 
-				detName, detName);
-    // first check if a plugin is defined for the loader
-    pluginHandler = 
-      pluginManager->FindHandler("AliLoader", detName);
-    // if not, add a plugin for it
-    if (!pluginHandler) {
-      TString loaderName = "Ali" + detName + "Loader";
-      AliDebug(1, Form("defining plugin for %s", loaderName.Data()));
-      pluginManager->AddHandler("AliLoader", detName, 
-				loaderName, detName + "base", 
-				loaderName + "(const char*, TFolder*)");
-      pluginHandler = pluginManager->FindHandler("AliLoader", detName);
-    }
-    if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
-      fLoader[iDet] = 
-	(AliLoader*) pluginHandler->ExecPlugin(2, detName.Data(), 
-					       fRunLoader->GetEventFolder());
-    }
-    if (!fLoader[iDet]) {   // use default loader
-      fLoader[iDet] = new AliLoader(detName, fRunLoader->GetEventFolder());
-    }
-    if (!fLoader[iDet]) {
-      AliWarning(Form("couldn't get loader for %s", detName.Data()));
-      if (fStopOnError) return NULL;
-    } else {
-      fRunLoader->AddLoader(fLoader[iDet]);
-      fRunLoader->CdGAFile();
-      if (gFile && !gFile->IsWritable()) gFile->ReOpen("UPDATE");
-      fRunLoader->Write(0, TObject::kOverwrite);
-    }
-  }
-      
   return qadm;
 }
 
@@ -2761,8 +2722,7 @@ Bool_t AliReconstruction::RunQualAss(const char* detectors, AliESDEvent *& esd)
    AliCodeTimerStart(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
    AliInfo(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
     
-   qadm->SetData(esd) ; 
-   qadm->Exec(AliQualAss::kESDS) ; 
+   qadm->Exec(AliQualAss::kESDS, esd) ; 
 
    AliCodeTimerStop(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
  }

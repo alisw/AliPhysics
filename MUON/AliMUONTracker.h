@@ -14,7 +14,6 @@
 
 class AliCluster;
 class AliESDEvent;
-class AliLoader;
 class AliMUONDigitMaker;
 class AliMUONGeometryTransformer;
 class AliMUONTrackHitPattern;
@@ -29,8 +28,7 @@ class AliMUONTracker : public AliTracker
 {
  public:
 
-  AliMUONTracker(AliLoader* loader,
-                 const AliMUONDigitMaker* digitMaker=0,
+  AliMUONTracker(const AliMUONDigitMaker* digitMaker=0,
                  const AliMUONGeometryTransformer* transformer=0,
                  const AliMUONTriggerCircuit* triggerCircuit=0,
 		 AliMUONTriggerChamberEff* chamberEff=0);
@@ -65,7 +63,6 @@ private:
   void FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const;
 
 private:
-  AliLoader* fLoader; //!< loader to get access to trees
   const AliMUONDigitMaker* fDigitMaker; //!< digit maker (not owner)
   const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer (not owner)
   const AliMUONTriggerCircuit* fTriggerCircuit;                //!< trigger circuit (not owner)

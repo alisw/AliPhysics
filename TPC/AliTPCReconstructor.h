@@ -16,27 +16,16 @@ public:
   AliTPCReconstructor();
   virtual ~AliTPCReconstructor();
 
-  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;}
-  virtual void         Reconstruct(AliRunLoader* runLoader) const;
-  virtual void         Reconstruct(AliRunLoader* runLoader,
-				   AliRawReader* rawReader) const;
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
 
-  virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
-  virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
-			       AliESDEvent* esd) const {
-    AliReconstructor::FillESD(digitsTree,clustersTree,esd);
-  }
-  virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
-			       AliESDEvent* esd) const {
-    AliReconstructor::FillESD(rawReader,clustersTree,esd);
-  }
-  virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESDEvent* esd) const {
-    AliReconstructor::FillESD(runLoader,rawReader,esd);
-  }
+  virtual AliTracker*  CreateTracker() const;
+
+  virtual void         FillESD(TTree* /*digitsTree*/, TTree* /*clustersTree*/, 
+			       AliESDEvent* esd) const;
+  virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* /*clustersTree*/, 
+			       AliESDEvent* esd) const
+  {FillESD((TTree*)NULL,(TTree*)NULL,esd);}
 
   void SetRecoParam(AliTPCRecoParam * param){ fgkRecoParam = param;}
   static const AliTPCRecoParam* GetRecoParam(){ return fgkRecoParam;}

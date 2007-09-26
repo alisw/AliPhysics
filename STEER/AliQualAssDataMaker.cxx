@@ -26,12 +26,15 @@
 // --- ROOT system ---
 #include <TSystem.h> 
 #include <TFile.h>
+#include <TClonesArray.h> 
+#include <TTree.h>
 
 // --- Standard library ---
 
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQualAssDataMaker.h"
+#include "AliESDEvent.h"
 
 ClassImp(AliQualAssDataMaker)
   
@@ -42,8 +45,7 @@ TString AliQualAssDataMaker::fDetectorDirName("") ;
 AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) : 
   TNamed(name, title), 
   fOutput(0x0),
-  fDetectorDir(0x0), 
-  fData(0x0)
+  fDetectorDir(0x0)
 {
   // ctor
   TString tmp(GetName()) ; 
@@ -57,8 +59,7 @@ AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) 
 AliQualAssDataMaker::AliQualAssDataMaker(const AliQualAssDataMaker& qadm) :
   TNamed(qadm.GetName(), qadm.GetTitle()),
   fOutput(qadm.fOutput),
-  fDetectorDir(qadm.fDetectorDir),
-  fData(qadm.fData)
+  fDetectorDir(qadm.fDetectorDir)
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
@@ -74,7 +75,7 @@ AliQualAssDataMaker& AliQualAssDataMaker::operator = (const AliQualAssDataMaker&
 }
 
 //____________________________________________________________________________
-void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task) 
+void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data) 
 { 
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
  
@@ -85,37 +86,54 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task)
   switch (task) { 
   case AliQualAss::kHITS:
     AliInfo("Processing Hits QA") ; 
-    MakeHits() ;
+    MakeHits(data) ;
     break ; 
 
-   case AliQualAss::kSDIGITS:
+  case AliQualAss::kSDIGITS:
     AliInfo("Processing SDigits QA") ; 
-	MakeSDigits() ;
+    MakeSDigits(data) ;
     break ; 
-
-   case AliQualAss::kDIGITS:
-    AliInfo("Processing Digits QA") ; 
-    MakeDigits() ;
+    
+  case AliQualAss::kDIGITS:
+    MakeDigits(data) ;
     break ;  
  
    case AliQualAss::kRECPOINTS:
-    AliInfo("Processing RecPoints QA") ; 
-    MakeRecPoints() ;
+     AliInfo("Processing RecPoints QA") ; 
+     {
+       TTree * recpoints = dynamic_cast<TTree *>(data) ; 
+       if (recpoints) 
+	 MakeRecPoints(recpoints) ;
+       else 
+	 AliError("Wrong type of recpoints container") ; 
+     }
     break ;  
 
    case AliQualAss::kTRACKSEGMENTS:
-    AliInfo("Processing Track Segments QA") ; 
-    MakeTrackSegments() ;
+    AliInfo("Processing Track Segments QA: not existing anymore") ; 
+//     TTree * ts = dynamic_cast<TTree *>(data) ; 
+//     if (ts) 
+//       MakeTrackSegments(ts) ;
+//     else 
+//       AliError("Wrong type of track segments container") ; 
     break ;  
   
-   case AliQualAss::kRECPARTICLES:
-	AliInfo("Processing RecParticles QA") ; 
-	MakeRecParticles() ;
-	break ;  
-     
+  case AliQualAss::kRECPARTICLES:
+    AliInfo("Processing RecParticles QA: not existing anymore") ; 
+//     TTree * recpar = dynamic_cast<TTree *>(data) ; 
+//     if (recpar) 
+//       MakeRecParticles(recpar) ;
+//     else 
+//       AliError("Wrong type of recparticles container") ; 
+    break ;  
+    
   case AliQualAss::kESDS:
     AliInfo("Processing ESDs QA") ; 
-    MakeESDs() ;
+    AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
+    if (esd) 
+      MakeESDs(esd) ;
+    else 
+      AliError("Wrong type of esd container") ; 
     break ;  
   }	
 }

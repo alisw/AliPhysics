@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.29  2007/08/28 12:55:08  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.28  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -46,7 +49,7 @@
 
 // --- AliRoot header files ---
 #include "AliPHOSTrackSegmentMaker.h"
-#include "AliPHOSQualAssDataMaker.h" 
+#include "AliLog.h"
 
 ClassImp( AliPHOSTrackSegmentMaker) 
 
@@ -55,7 +58,6 @@ ClassImp( AliPHOSTrackSegmentMaker)
 AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() : 
   TObject(),
   fESD(0), 
-  fQADM(0x0),
   fGeom(0),
   fEMCRecPoints(0),
   fCPVRecPoints(0)
@@ -67,21 +69,17 @@ AliPHOSTrackSegmentMaker:: AliPHOSTrackSegmentMaker() :
 AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(AliPHOSGeometry *geom):
   TObject(),
   fESD(0), 
-  fQADM(0x0),
   fGeom(geom),
   fEMCRecPoints(0),
   fCPVRecPoints(0)
 {
   // ctor
-  fQADM = new  AliPHOSQualAssDataMaker() ; //!Quality Assurance Data Maker
-  GetQualAssDataMaker()->Init(AliQualAss::kTRACKSEGMENTS) ; 
 }
 
 //____________________________________________________________________________
 AliPHOSTrackSegmentMaker::AliPHOSTrackSegmentMaker(const AliPHOSTrackSegmentMaker & tsmaker) :
   TObject(tsmaker),
   fESD(tsmaker.GetESD()), 
-  fQADM(tsmaker.fQADM),
   fGeom(tsmaker.fGeom),
   fEMCRecPoints(tsmaker.fEMCRecPoints),
   fCPVRecPoints(tsmaker.fCPVRecPoints)
@@ -95,7 +93,6 @@ AliPHOSTrackSegmentMaker::~AliPHOSTrackSegmentMaker()
  //Remove this from the parental task before destroying
   //  if(AliPHOSGetter::Instance()->PhosLoader())
   //    AliPHOSGetter::Instance()->PhosLoader()->CleanTracker();
-  delete fQADM ; 
   if (fEMCRecPoints) {
     fEMCRecPoints->Delete();
     delete fEMCRecPoints;

@@ -48,8 +48,11 @@
 ClassImp(AliT0Reconstructor)
 
   AliT0Reconstructor:: AliT0Reconstructor(): AliReconstructor(),
-					     fZposition(0)
-
+  fZposition(0),
+  fParam(NULL),
+  fAmpLEDrec(),
+  fdZ_A(0),
+  fdZ_C(0)
 {
  AliDebug(1,"Start reconstructor ");
   
@@ -67,8 +70,12 @@ ClassImp(AliT0Reconstructor)
 //____________________________________________________________________
 
 AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
-  fZposition(0)
-  
+  AliReconstructor(r),
+  fZposition(0),
+  fParam(NULL),
+  fAmpLEDrec(),
+  fdZ_A(0),
+  fdZ_C(0)
 {
   //
   // AliT0Reconstructor copy constructor
@@ -328,26 +335,16 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 }
 //____________________________________________________________
 
-void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent *pESD) const
+void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, AliESDEvent *pESD) const
 {
 
   /***************************************************
   Resonstruct digits to vertex position
   ****************************************************/
   
-  
-  if (!runLoader) {
-    AliError("Reconstruct >> No run loader");
-    return;
-  }
-  
   AliDebug(1,Form("Start FillESD T0"));
 
-  AliT0Loader* pStartLoader = (AliT0Loader*) runLoader->GetLoader("T0Loader");
- 
-  pStartLoader->LoadRecPoints("READ");
-
-  TTree *treeR = pStartLoader->TreeR();
+  TTree *treeR = clustersTree;
   
    AliT0RecPoint* frecpoints= new AliT0RecPoint ();
     if (!frecpoints) {
@@ -381,8 +378,6 @@ void AliT0Reconstructor::FillESD(AliRunLoader* runLoader, AliESDEvent *pESD) con
  
     AliDebug(1,Form(" Z position %f cm,  T0  %f ps",Zposition , timeStart));
 
-    pStartLoader->UnloadRecPoints();
-   
 } // vertex in 3 sigma
 
 

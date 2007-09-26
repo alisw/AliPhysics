@@ -6,6 +6,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.42  2007/08/28 12:55:07  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.41  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -33,7 +36,6 @@
 class TTree;
 
 class AliPHOSGeometry;
-class AliPHOSQualAssDataMaker ; 
 
 class AliPHOSClusterizer : public TObject {
 
@@ -70,10 +72,8 @@ public:
   virtual void SetOutput(TTree *clustersTree);
 
 protected:
-  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
 
   AliPHOSGeometry *fGeom; // Pointer to PHOS geometry
-  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
   TClonesArray *fDigitsArr; // Array with input digits
   TTree *fTreeR; // Tree with output clusters
   TObjArray *fEMCRecPoints; // Array with EMC clusters

@@ -15,26 +15,27 @@
 // Origin: Elena Bruna bruna@to.infn.it, Massimo Masera masera@to.infn.it//
 //-----------------------------------------------------------------------//
 #include "AliITSpidESD.h"
+#include "AliLog.h"
 
 class AliITStrackerMI;
-class AliITSLoader;
 class AliITSSteerPid;
 
 class AliITSpidESD2 : public AliITSpidESD {
 public:
   AliITSpidESD2();
-  AliITSpidESD2(AliITStrackerMI *tracker,AliITSLoader* loader);
+  AliITSpidESD2(AliITStrackerMI *tracker);
   virtual ~AliITSpidESD2();
-  virtual Int_t MakePID(AliESDEvent *event);
+  virtual Int_t MakePID(AliESDEvent */*event*/)
+  {AliError("Method should not be used!"); return 0;}
+  virtual Int_t MakePID(TTree *clustersTree, AliESDEvent *event);
   AliITSpidESD2(const AliITSpidESD2 &ob); // copy constructor
   AliITSpidESD2& operator=(const AliITSpidESD2 & source); // ass. op.
 
 private:
   AliITStrackerMI *fTracker; //!tracker MI
-  AliITSLoader* fLoader;     //!ITS Loader
   AliITSSteerPid* fSp;       //!pointer to AliITSSteerPid
 
-  ClassDef(AliITSpidESD2,1)   // ITS PID class
+  ClassDef(AliITSpidESD2,2)   // ITS PID class
 };
 
 #endif

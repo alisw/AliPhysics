@@ -68,88 +68,12 @@ AliTPCReconstructor::~AliTPCReconstructor()
 }
 
 //_____________________________________________________________________________
-void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader) const
-{
-// reconstruct clusters
-
-  AliLoader* loader = runLoader->GetLoader("TPCLoader");
-  if (!loader) {
-    Error("Reconstruct", "TPC loader not found");
-    return;
-  }
-  loader->LoadRecPoints("recreate");
-  loader->LoadDigits("read");
-
-  Int_t nEvents = runLoader->GetNumberOfEvents();
-
-  for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
-    runLoader->GetEvent(iEvent);
-
-    TTree* treeClusters = loader->TreeR();
-    if (!treeClusters) {
-      loader->MakeTree("R");
-      treeClusters = loader->TreeR();
-    }
-    TTree* treeDigits = loader->TreeD();
-    if (!treeDigits) {
-      Error("Reconstruct", "Can't get digits tree !");
-      return;
-    }
-
-    fClusterer->SetInput(treeDigits);
-    fClusterer->SetOutput(treeClusters);
-    fClusterer->Digits2Clusters();
-         
-    loader->WriteRecPoints("OVERWRITE");
-  }
-
-  loader->UnloadRecPoints();
-  loader->UnloadDigits();
-}
-
-//_____________________________________________________________________________
 void AliTPCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const {
   // single event local reconstruction
   // of TPC data
   fClusterer->SetInput(digitsTree);
   fClusterer->SetOutput(clustersTree);
   fClusterer->Digits2Clusters();
-}
-
-//_____________________________________________________________________________
-void AliTPCReconstructor::Reconstruct(AliRunLoader* runLoader,
-				      AliRawReader* rawReader) const
-{
-// reconstruct clusters from raw data
-
-  AliLoader* loader = runLoader->GetLoader("TPCLoader");
-  if (!loader) {
-    Error("Reconstruct", "TPC loader not found");
-    return;
-  }
-  loader->LoadRecPoints("recreate");
-
-  TString option = GetOption();
-  if (option.Contains("OldRCUFormat"))
-    fClusterer->SetOldRCUFormat(kTRUE);
- 
-  Int_t iEvent = 0;
-  while (rawReader->NextEvent()) {  
-    runLoader->GetEvent(iEvent++);
-
-    TTree* treeClusters = loader->TreeR();
-    if (!treeClusters) {
-      loader->MakeTree("R");
-      treeClusters = loader->TreeR();
-    }
-
-    fClusterer->SetOutput(treeClusters);
-    fClusterer->Digits2Clusters(rawReader);
-         
-    loader->WriteRecPoints("OVERWRITE");
-  }
-
-  loader->UnloadRecPoints();
 }
 
 //_____________________________________________________________________________
@@ -165,7 +89,7 @@ void AliTPCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 }
 
 //_____________________________________________________________________________
-AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* /* runLoader */) const
+AliTracker* AliTPCReconstructor::CreateTracker() const
 {
 // create a TPC tracker
 
@@ -179,7 +103,7 @@ AliTracker* AliTPCReconstructor::CreateTracker(AliRunLoader* /* runLoader */) co
 }
 
 //_____________________________________________________________________________
-void AliTPCReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
+void AliTPCReconstructor::FillESD(TTree */*digitsTree*/, TTree */*clustersTree*/,
 				  AliESDEvent* esd) const
 {
 // make PID

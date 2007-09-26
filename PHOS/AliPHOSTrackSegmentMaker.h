@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.43  2007/08/28 12:55:08  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.42  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -39,7 +42,6 @@ class TTree;
 // --- AliRoot header files ---
 class AliPHOSGeometry ;
 class AliESDEvent ;
-class AliPHOSQualAssDataMaker ; 
 
 class  AliPHOSTrackSegmentMaker : public TObject {
 
@@ -62,14 +64,11 @@ public:
 
   AliESDEvent *GetESD()             const {return fESD;            }
 
-  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
-
   virtual TClonesArray * GetTrackSegments() const = 0;
 
 protected:
 
   AliESDEvent * fESD;              //! ESD object
-  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
   AliPHOSGeometry *fGeom;           //! Pointer to the PHOS geometry
   TObjArray *fEMCRecPoints;         //  Array with the EMC clusters
   TObjArray *fCPVRecPoints;         //  Array with the CPV clusters

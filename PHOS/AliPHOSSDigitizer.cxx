@@ -19,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.51  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.50  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -275,10 +278,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
     // make Quality Assurance data
 
-    GetQualAssDataMaker()->SetData(hits) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kHITS) ; 
-    GetQualAssDataMaker()->SetData(sdigits) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kSDIGITS) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kHITS, hits) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kSDIGITS, sdigits) ; 
 
 
     //Now write SDigits

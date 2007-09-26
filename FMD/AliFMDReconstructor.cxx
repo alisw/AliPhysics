@@ -35,8 +35,6 @@
 // #include <AliLog.h>                        // ALILOG_H
 // #include <AliRun.h>                        // ALIRUN_H
 #include "AliFMDDebug.h"
-// to be removed as soon as we remove it from the base class
-#include "AliRunLoader.h"
 #include "AliFMDGeometry.h"                // ALIFMDGEOMETRY_H
 #include "AliFMDParameters.h"              // ALIFMDPARAMETERS_H
 #include "AliFMDDigit.h"                   // ALIFMDDIGIT_H
@@ -140,7 +138,7 @@ AliFMDReconstructor::~AliFMDReconstructor()
 
 //____________________________________________________________________
 void 
-AliFMDReconstructor::Init(AliRunLoader* /*runLoader*/) 
+AliFMDReconstructor::Init() 
 {
   // Initialize the reconstructor 
 
@@ -502,80 +500,6 @@ AliFMDReconstructor::FillESD(TTree*  /* digitsTree */,
   if (fDiagStep3) fDiagStep3->Reset();
   if (fDiagStep4) fDiagStep4->Reset();
   if (fDiagAll)   fDiagAll->Reset();
-}
-
-
-//____________________________________________________________________
-void 
-AliFMDReconstructor::Reconstruct(AliRawReader* reader,
-				 TTree* /* ctree */) const 
-{
-  // Cannot be used.  See member function with same name but with 2
-  // TTree arguments.   Make sure you do local reconstrucion 
-  AliFMDDebug(2, ("Calling FillESD with loader and tree"));
-#if 1
-  TClonesArray* array = new TClonesArray("AliFMDDigit");
-  // if (ctree) ctree->Branch("FMD", &array);
-  AliFMDRawReader rawRead(reader, 0);
-  rawRead.ReadAdcs(array);
-  // ctree->Fill();
-  // Question - how to get the digits in this case? 
-  ProcessDigits(array);
-  // Reconstruct(array, ctree);
-  array->Delete();
-  delete array;
-#else
-  AliError("MayNotUse");
-#endif
-}
-//____________________________________________________________________
-void 
-AliFMDReconstructor::Reconstruct(AliRunLoader*) const 
-{
-  // Cannot be used.  See member function with same name but with 2
-  // TTree arguments.   Make sure you do local reconstrucion 
-  AliFMDDebug(2, ("Calling FillESD with loader"));
-  AliError("MayNotUse");
-}
-//____________________________________________________________________
-void 
-AliFMDReconstructor::Reconstruct(AliRunLoader*, AliRawReader*) const 
-{
-  // Cannot be used.  See member function with same name but with 2
-  // TTree arguments.   Make sure you do local reconstrucion 
-  AliFMDDebug(2, ("Calling FillESD with loader and raw reader"));
-  AliError("MayNotUse");
-}
-//____________________________________________________________________
-void 
-AliFMDReconstructor::FillESD(AliRawReader*,TTree*,AliESDEvent* esd) const 
-{
-  // Cannot be used.  See member function with same name but with 2
-  // TTree arguments.   Make sure you do local reconstrucion 
-  AliFMDDebug(2, ("Calling FillESD with raw reader, tree, and ESD"));
-#if 1
-  FillESD((TTree*)0, (TTree*)0, esd);
-#else
-  AliError("MayNotUse");
-#endif
-}
-//____________________________________________________________________
-void 
-AliFMDReconstructor::FillESD(AliRunLoader*,AliESDEvent*) const
-{
-  // Cannot be used.  See member function with same name but with 2
-  // TTree arguments.   Make sure you do local reconstrucion 
-  AliFMDDebug(2, ("Calling FillESD with loader and ESD"));
-  AliError("MayNotUse");
-}
-//____________________________________________________________________
-void 
-AliFMDReconstructor::FillESD(AliRunLoader*,AliRawReader*,AliESDEvent*) const 
-{
-  // Cannot be used.  See member function with same name but with 2
-  // TTree arguments.   Make sure you do local reconstrucion 
-  AliFMDDebug(2, ("Calling FillESD with loader, raw reader, and ESD"));
-  AliError("MayNotUse");
 }
 
 //____________________________________________________________________

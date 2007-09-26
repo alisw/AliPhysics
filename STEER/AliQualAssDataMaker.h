@@ -18,6 +18,9 @@
 #include <TNamed.h>  
 class TFile;  
 class TDirectory;
+class TObject; 
+class TTree; 
+class AliESDEvent;
 
 // --- Standard library ---
 
@@ -33,12 +36,11 @@ public:
   AliQualAssDataMaker& operator = (const AliQualAssDataMaker& qadm) ;
   virtual ~AliQualAssDataMaker() {;} // dtor
   
-  virtual void        Exec(AliQualAss::TASKINDEX) ;
+  virtual void        Exec(AliQualAss::TASKINDEX, TObject * data) ;
   void                Finish(AliQualAss::TASKINDEX task) const ; 
   static const char * GetDetectorDirName() { return fDetectorDirName.Data() ; }
   void                Init(AliQualAss::TASKINDEX) ;
-  void                SetData(TObject * obj)     { fData = obj ; }     
-
+ 
 protected: 
 
   virtual void   InitDigits()        {AliInfo("To ne implemented by detectors");}
@@ -48,17 +50,16 @@ protected:
   virtual void   InitRecPoints()     {AliInfo("To ne implemented by detectors");}
   virtual void   InitSDigits()       {AliInfo("To ne implemented by detectors");}
   virtual void   InitTrackSegments() {AliInfo("To ne implemented by detectors");}
-  virtual void   MakeESDs()          {AliInfo("To ne implemented by detectors");} 
-  virtual void   MakeHits()          {AliInfo("To ne implemented by detectors");} 
-  virtual void   MakeDigits()        {AliInfo("To ne implemented by detectors");} 
-  virtual void   MakeRecParticles() {AliInfo("To ne implemented by detectors");} 
-  virtual void   MakeRecPoints()     {AliInfo("To ne implemented by detectors");} 
-  virtual void   MakeSDigits()       {AliInfo("To ne implemented by detectors");} 
-  virtual void   MakeTrackSegments() {AliInfo("To ne implemented by detectors");} 
+  virtual void   MakeESDs(AliESDEvent * )          {AliInfo("To ne implemented by detectors");} 
+  virtual void   MakeHits(TObject * )              {AliInfo("To ne implemented by detectors");} 
+  virtual void   MakeDigits(TObject * )            {AliInfo("To ne implemented by detectors");} 
+  //  virtual void   MakeRecParticles(TClonesArray * ) {AliInfo("To ne implemented by detectors");} 
+  virtual void   MakeRecPoints(TTree * )           {AliInfo("To ne implemented by detectors");} 
+  virtual void   MakeSDigits(TObject * )           {AliInfo("To ne implemented by detectors");} 
+  //virtual void   MakeTrackSegments(TTree * )       {AliInfo("To ne implemented by detectors");} 
 
   TFile *       fOutput ;      //! output root file
   TDirectory *  fDetectorDir ; //! directory for the given detector in the file
-  TObject *     fData ;        //! data container 
   static TString fDetectorDirName ; //! detector directory name in the quality assurance data file
   ClassDef(AliQualAssDataMaker,1)  // description 
 

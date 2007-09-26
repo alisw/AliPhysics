@@ -41,9 +41,9 @@ public:
   using AliReconstructor::FillESD;
   virtual void FillESD(TTree* digitsTree, TTree* clustersTree, 
 		       AliESDEvent* esd) const;
-  AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliEMCALTracker;} 
+  AliTracker*  CreateTracker () const 
+  {return new AliEMCALTracker;} 
   using AliReconstructor::Reconstruct;
-  virtual Bool_t             HasLocalReconstruction() const {return kTRUE;};
   virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
 
   virtual Bool_t             HasDigitConversion() const {return kTRUE;};

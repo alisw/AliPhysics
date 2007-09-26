@@ -38,13 +38,13 @@ private:
   virtual void   InitRecPoints() ; 
   virtual void   InitTrackSegments() ; 
   virtual void   InitSDigits() ; 
-  virtual void   MakeESDs() ;
-  virtual void   MakeHits() ;
-  virtual void   MakeDigits() ; 
-  virtual void   MakeRecParticles() ; 
-  virtual void   MakeRecPoints() ; 
-  virtual void   MakeSDigits() ; 
-  virtual void   MakeTrackSegments() ; 
+  virtual void   MakeESDs(AliESDEvent * esd) ;
+  virtual void   MakeHits(TObject * hits) ;
+  virtual void   MakeDigits(TObject * digits) ; 
+  // virtual void   MakeRecParticles(TTree * recpar) ; 
+  virtual void   MakeRecPoints(TTree * recpo) ; 
+  virtual void   MakeSDigits(TObject * sigits) ; 
+  //virtual void   MakeTrackSegments(TTree *ts ) ; 
   
   TH1F  * fhHits ;            //! hits energy histogram
   TH1I  * fhHitsMul ;         //! hits multiplicity histogram

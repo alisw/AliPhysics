@@ -25,7 +25,6 @@
 
 #include "AliLog.h"
 #include "AliRawReader.h"
-#include "AliRunLoader.h"
 
 #include "AliTOFClusterFinder.h"
 #include "AliTOFGeometry.h"
@@ -93,40 +92,6 @@ AliTOFReconstructor::~AliTOFReconstructor()
 }
 
 //_____________________________________________________________________________
-  void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader) const
-{
-// reconstruct clusters from digits
-
-  AliTOFClusterFinder tofClus(runLoader, fTOFcalib);
-  tofClus.Load();
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
-    {
-      AliDebug(2,Form("Local Event loop mode: Creating Recpoints from Digits, Event n. %i",iEvent)); 
-      tofClus.Digits2RecPoints(iEvent);
-    }
-  tofClus.UnLoad();
-
-}
-
-//_____________________________________________________________________________
-void AliTOFReconstructor::Reconstruct(AliRunLoader* runLoader,
-                                      AliRawReader *rawReader) const
-{
-// reconstruct clusters from Raw Data
-
-  AliTOFClusterFinder tofClus(runLoader, fTOFcalib);
-  tofClus.LoadClusters();
-  Int_t iEvent = 0;
-  while (rawReader->NextEvent()) {
-    AliDebug(2,Form("Local Event loop mode: Creating Recpoints from Raw data, Event n. %i",iEvent)); 
-    tofClus.Digits2RecPoints(iEvent,rawReader);
-    iEvent++;
-  }
-  tofClus.UnLoadClusters();
-
-}
-
-//_____________________________________________________________________________
 void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
                                       TTree *clustersTree) const
 {
@@ -160,7 +125,7 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
 }
 
 //_____________________________________________________________________________
-AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* /*runLoader*/) const
+AliTracker* AliTOFReconstructor::CreateTracker() const
 {
 // create a TOF tracker
 
@@ -171,37 +136,8 @@ AliTracker* AliTOFReconstructor::CreateTracker(AliRunLoader* /*runLoader*/) cons
 }
 
 //_____________________________________________________________________________
-void AliTOFReconstructor::FillESD(AliRunLoader* /*runLoader*/, 
-				  AliESDEvent* /*esd*/) const
+AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry() const
 {
-// nothing to be done
-
-}
-
-//_____________________________________________________________________________
-AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry(AliRunLoader* runLoader) const
-{
-// get the TOF parameters
-
-  AliTOFGeometry *tofGeom;
-
-  runLoader->CdGAFile();
-  TDirectory *savedir=gDirectory; 
-  TFile *in=(TFile*)gFile;  
-  if (!in->IsOpen()) {
-    AliWarning("Geometry file is not open default  TOF geometry will be used");
-    tofGeom = new AliTOFGeometryV5();
-  }
-  else {
-    in->cd();  
-    tofGeom = (AliTOFGeometry*) in->Get("TOFgeometry");
-  }
-
-  savedir->cd();  
-
-  if (!tofGeom) {
-    AliError("no TOF geometry available");
-    return NULL;
-  }
-  return tofGeom;
+  // get the TOF geometry
+  return fTOFGeometry;
 }

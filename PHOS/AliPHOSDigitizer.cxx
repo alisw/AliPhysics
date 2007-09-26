@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.97  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.96  2007/04/28 10:43:36  policheh
  * Dead channels simulation: digit energy sets to 0.
  *
@@ -625,8 +628,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
 
     //makes the quality assurance data
-    GetQualAssDataMaker()->SetData(gime->Digits()) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kDIGITS) ; 
+    GetQualAssDataMaker()->Exec(AliQualAss::kDIGITS, gime->Digits()) ; 
 				   
     WriteDigits() ;
 

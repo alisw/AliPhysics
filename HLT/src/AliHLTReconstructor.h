@@ -50,19 +50,11 @@ public:
   virtual ~AliHLTReconstructor();
 
   /** init the reconstructor */
-  void Init(AliRunLoader* runLoader);
-
-  /** reconstruct simulated MC data */
-  void Reconstruct(AliRunLoader* runLoader) const;
-  /** reconstruct data from RawReader */
-  void Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const;
+  void Init();
 
   /** create a tracker */
-// Deprecated and must be removed.
-//  AliTracker*  CreateTracker(AliRunLoader*) const;
-
-  /** fill esd for one event */
-  void FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
+  // Deprecated and must be removed.
+  //  AliTracker*  CreateTracker() const;
 
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
     AliReconstructor::Reconstruct(digitsTree,clustersTree);
@@ -79,10 +71,6 @@ public:
 			       AliESDEvent* esd) const {
     AliReconstructor::FillESD(rawReader,clustersTree,esd);
   }
-  virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESDEvent* esd) const {
-    AliReconstructor:: FillESD(runLoader,rawReader,esd);
-  }
   void SetDoBench(Bool_t b){fDoBench=b;}
   void SetDoCleanup(Bool_t b){fDoCleanUp=b;}
   
@@ -90,10 +78,10 @@ public:
 //  virtual void         FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEvent, Int_t dcCut) const;
 
 private:
-  void ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const;
-  void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const;
-  void FillESDforConformalMapping(AliESDEvent* esd,Int_t iEvent) const;
-  void FillESDforHoughTransform(AliESDEvent* esd,Int_t iEvent) const;
+/*   void ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const; */
+/*   void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const; */
+/*   void FillESDforConformalMapping(AliESDEvent* esd,Int_t iEvent) const; */
+/*   void FillESDforHoughTransform(AliESDEvent* esd,Int_t iEvent) const; */
 
   Bool_t fDoHough;   //do the hough transform
   Bool_t fDoTracker; //do the standard conformal tracker
@@ -101,10 +89,8 @@ private:
   Bool_t fDoCleanUp; //delete tmp tracking files
 
   AliHLTSystem* fpSystem; //! HLT steering object
-  Int_t  fRecEvents;      //! number of reconstructed events
-  Int_t  fFilled;         //! number of event filled to ESD
 
-  ClassDef(AliHLTReconstructor, 1)   // class for the TPC reconstruction
+  ClassDef(AliHLTReconstructor, 2)   // class for the HLT reconstruction
 };
 
 typedef AliHLTReconstructor AliL3Reconstructor; // for backward compatibility

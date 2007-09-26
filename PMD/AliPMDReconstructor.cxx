@@ -21,7 +21,6 @@
 
 #include "Riostream.h"
 #include "AliPMDReconstructor.h"
-#include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliPMDClusterFinder.h"
 #include "AliPMDtracker.h"
@@ -31,41 +30,6 @@
 #include "AliLog.h"
 
 ClassImp(AliPMDReconstructor)
-
-//_____________________________________________________________________________
-void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader) const
-{
-// reconstruct clusters from digits file
-
-  AliPMDClusterFinder *pmdClus = new AliPMDClusterFinder(runLoader);
-  pmdClus->Load();
-  for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++)
-    {
-      pmdClus->Digits2RecPoints(iEvent);
-    }
-  pmdClus->UnLoad();
-  delete pmdClus;
-
-}
-// ------------------------------------------------------------------------ //
-
-void AliPMDReconstructor::Reconstruct(AliRunLoader* runLoader,
-				      AliRawReader *rawReader) const
-{
-// reconstruct clusters from Raw Data
-
-  AliPMDClusterFinder pmdClus(runLoader);
-  pmdClus.LoadClusters();
-
-  Int_t iEvent = 0;
-  while (rawReader->NextEvent()) {
-    pmdClus.Digits2RecPoints(iEvent,rawReader);
-    iEvent++;
-  }
-  pmdClus.UnLoadClusters();
-  
-}
-
 
 // ------------------------------------------------------------------------ //
 
@@ -89,23 +53,6 @@ void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
   pmdClus.Digits2RecPoints(digitsTree, clustersTree);
 
 }
-
-// ------------------------------------------------------------------------ //
-
-//void AliPMDReconstructor::FillESD(AliRunLoader* runLoader,AliESDEvent* esd) const
-//{
-//  AliLoader* loader = runLoader->GetLoader("PMDLoader");
-//  if (!loader) {
-//    AliError("PMD loader not found");
-//    return;
-//  }
-//  loader->LoadRecPoints("READ");
-//  TTree *treeR = loader->TreeR();
-//  AliPMDtracker pmdtracker;
-//  pmdtracker.LoadClusters(treeR);
-//  pmdtracker.Clusters2Tracks(esd);
-//  loader->UnloadRecPoints();
-//}
 
 // ------------------------------------------------------------------------ //
 void AliPMDReconstructor::FillESD(AliRawReader* /*rawReader*/,

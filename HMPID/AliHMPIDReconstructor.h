@@ -8,7 +8,6 @@
 #include <AliReconstructor.h>        //base class
 #include "AliHMPIDTracker.h"         //CreateTracker()
 #include "AliHMPIDDigit.h"           //Dig2Clu(), UseDig()
-#include "AliHMPIDRawStream.h"       //ConvertDigits()
 
 #include <TMatrixF.h>                //UseDig()
 #include <TClonesArray.h>            //UseDig()
@@ -22,13 +21,11 @@ public:
            AliHMPIDReconstructor();              
   virtual ~AliHMPIDReconstructor()                                  {delete fDig;delete fClu;delete [] fUserCut;}//dtor  
 //framework part  
-  AliTracker*  CreateTracker         (AliRunLoader*                      )const{return new AliHMPIDTracker;}            //from AliReconstructor for clusters->PID
+  AliTracker*  CreateTracker         () const {return new AliHMPIDTracker;}            //from AliReconstructor for clusters->PID
   void         ConvertDigits         (AliRawReader *pRR, TTree *pDigTree) const;                                        //from AliReconstruction for raw->digit
   Bool_t       HasDigitConversion()   const {return kTRUE;}                                                             //HMPID digits converted with ConvertDigits 
   void         Reconstruct           (TTree* digitsTree, TTree* clustersTree) const;                                    //from AliReconstruction for digit->cluster
-  void         Reconstruct           (AliRunLoader *pAL,AliRawReader* pRR)const;                                        //from AliReconstruction for raw->cluster with Digits on fly
-  Bool_t       HasLocalReconstruction() const {return kTRUE;}                                                           // HMPID has local reconstruction algorithm
-  void         FillESD               (AliRunLoader* pAL,AliESDEvent *pESD)const;                                        //calculate pid for HMPID
+  void         FillESD               (TTree* /*digitsTree*/, TTree* /*clustersTree*/, AliESDEvent *pESD)const;                                        //calculate pid for HMPID
   
   using AliReconstructor::FillESD;                                                                                      //
   using AliReconstructor::Reconstruct;                                                                                  // 

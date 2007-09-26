@@ -40,20 +40,16 @@ ClassImp(AliITSpidESD2)
 //_________________________________________________________________________
   AliITSpidESD2::AliITSpidESD2():AliITSpidESD(),
 fTracker(0),
-fLoader(0),
 fSp(0)
 { //
   //  The main constructor
 }
 //_________________________________________________________________________
-AliITSpidESD2::AliITSpidESD2(AliITStrackerMI* tracker,AliITSLoader* loader):AliITSpidESD(),
-fTracker(0),
-fLoader(0),
+AliITSpidESD2::AliITSpidESD2(AliITStrackerMI* tracker):AliITSpidESD(),
+fTracker(tracker),
 fSp(0)
 { //
   //  The main constructor
-  fTracker=tracker;
-  fLoader=loader;
   fSp=new AliITSSteerPid();
   fSp->InitLayer();
 }
@@ -67,7 +63,6 @@ AliITSpidESD2::~AliITSpidESD2(){
 //______________________________________________________________________
 AliITSpidESD2::AliITSpidESD2(const AliITSpidESD2 &ob) :AliITSpidESD(ob),
 fTracker(ob.fTracker),
-fLoader(ob.fLoader),
 fSp(ob.fSp) 
 {
   // Copy constructor
@@ -83,7 +78,7 @@ AliITSpidESD2& AliITSpidESD2::operator=(const AliITSpidESD2& ob ){
 }
 
 //_________________________________________________________________________
-Int_t AliITSpidESD2::MakePID(AliESDEvent *event)
+Int_t AliITSpidESD2::MakePID(TTree *clustersTree, AliESDEvent *event)
 {
 
   //
@@ -91,9 +86,7 @@ Int_t AliITSpidESD2::MakePID(AliESDEvent *event)
   //
   Double_t xr,par[5];
   AliITStrackV2* track=0;
-  fLoader->LoadRecPoints();
-  TTree *cTree=fLoader->TreeR();
-  fTracker->LoadClusters(cTree);
+  fTracker->LoadClusters(clustersTree);
   printf("==== Landau Fit PID ITS ====== \n");
   Int_t ntrk=event->GetNumberOfTracks();
   Double_t momits;
@@ -165,6 +158,5 @@ Int_t AliITSpidESD2::MakePID(AliESDEvent *event)
     delete track;
   }
   fTracker->UnloadClusters();
-  fLoader->UnloadRecPoints();
   return 0;
 }

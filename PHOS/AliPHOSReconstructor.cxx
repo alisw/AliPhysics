@@ -27,7 +27,6 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliPHOSQualAssDataMaker.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
 #include "AliPHOSReconstructor.h"
@@ -107,10 +106,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // write tracks to the ESD
 
   AliPHOSTrackSegmentMaker *tsm = new AliPHOSTrackSegmentMakerv1(fGeom);
-  tsm->GetQualAssDataMaker()->Init(AliQualAss::kTRACKSEGMENTS) ; 
   AliPHOSPID *pid = new AliPHOSPIDv1(fGeom);
-  pid->GetQualAssDataMaker()->Init(AliQualAss::kRECPARTICLES) ;    
-
+ 
   // do current event; the loop over events is done by AliReconstruction::Run()
   tsm->SetESD(esd) ; 
   tsm->SetInput(clustersTree);
@@ -119,9 +116,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   else 
     tsm->Clusters2TrackSegments("") ;
   
-  tsm->GetQualAssDataMaker()->SetData(tsm->GetTrackSegments()) ; 
-  tsm->GetQualAssDataMaker()->Exec(AliQualAss::kTRACKSEGMENTS) ; 
-
   pid->SetInput(clustersTree, tsm->GetTrackSegments()) ; 
   pid->SetESD(esd) ; 
   if ( Debug() ) 
@@ -129,14 +123,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   else 
     pid->TrackSegments2RecParticles("") ;
 
-  pid->GetQualAssDataMaker()->SetData(pid->GetRecParticles()) ; 
-  pid->GetQualAssDataMaker()->Exec(AliQualAss::kRECPARTICLES) ; 
-  
-  // PLEASE FIX IT. SHOULD GO TO ALIRECONSTRUCTION !!
-  //  if ( eventNumber == gime->MaxEvent()-1 ) {
-  //	fTSM->GetQualAssDataMaker()->Finish(AliQualAss::kTRACKSEGMENTS) ; 
-  //	fPID->GetQualAssDataMaker()->Finish(AliQualAss::kRECPARTICLES) ; 
-  //  }
 	
   // This function creates AliESDtracks from AliPHOSRecParticles
   //         and
@@ -313,7 +299,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   }  
 }
 
-AliTracker* AliPHOSReconstructor::CreateTracker(AliRunLoader* /* runLoader */) const
+AliTracker* AliPHOSReconstructor::CreateTracker() const
 {
   // creates the PHOS tracker
   return new AliPHOSTracker();

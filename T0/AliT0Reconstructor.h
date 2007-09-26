@@ -8,7 +8,6 @@
 #include "AliReconstructor.h"
 #include "AliT0digit.h"
 #include "AliT0.h"
-class AliRunLoader;
 
 class AliT0Reconstructor: public AliReconstructor {
  public:
@@ -18,20 +17,13 @@ class AliT0Reconstructor: public AliReconstructor {
   AliT0Reconstructor& operator=(const AliT0Reconstructor&); 
 
 
-   virtual  void   Reconstruct(TTree* fdigits, TTree * frecpoints) const;
-  //   virtual  void   Reconstruct(TTree* , TTree * ) const {};
-//  virtual  void   Reconstruct(TTree* , TTree * ) const {};
- 
-  virtual  void   Reconstruct(AliRunLoader* , AliRawReader*   ) const {};
-  virtual  void   Reconstruct(AliRawReader* ) const {};
+  virtual  void   Reconstruct(TTree* fdigits, TTree * frecpoints) const;
   virtual  void   Reconstruct(AliRawReader*rawReader , TTree* recTree) const;
-  virtual  void   Reconstruct(AliRunLoader* ) const  {};
   
-  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
-  virtual void         FillESD(AliRunLoader* , AliRawReader*, AliESDEvent* ) const  {};
-  virtual void         FillESD(  AliRawReader*,  TTree*, AliESDEvent* ) const  {};
-  virtual void         FillESD( TTree*,  TTree*, AliESDEvent* ) const  {};
-  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;}
+  virtual void         FillESD( AliRawReader*,  TTree*clustersTree, AliESDEvent*esd ) const
+  {FillESD((TTree*)NULL,clustersTree,esd);}
+  virtual void         FillESD( TTree*,  TTree*, AliESDEvent* ) const;
+
   virtual Bool_t       HasDigitConversion() const {return kFALSE;}
  public:
  

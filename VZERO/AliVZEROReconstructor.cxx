@@ -61,7 +61,7 @@ AliVZEROReconstructor::~AliVZEROReconstructor()
 }
 
 //_____________________________________________________________________________
-void AliVZEROReconstructor::Init(AliRunLoader* /*runLoader*/)
+void AliVZEROReconstructor::Init()
 {
 // initializer
 

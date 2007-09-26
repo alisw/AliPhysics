@@ -34,7 +34,6 @@
 #include "AliConfig.h"
 #include "AliPHOSPID.h"
 #include "AliPHOSGetter.h"
-#include "AliPHOSQualAssDataMaker.h" 
 
 ClassImp(AliPHOSPID)
 
@@ -46,8 +45,7 @@ AliPHOSPID::AliPHOSPID():
   fEMCRecPoints(NULL),
   fCPVRecPoints(NULL),
   fTrackSegments(NULL),
-  fRecParticles(NULL),
-  fQADM(0x0)
+  fRecParticles(NULL)
 {
   // ctor
 }
@@ -61,15 +59,12 @@ AliPHOSPID::AliPHOSPID(AliPHOSGeometry *geom):
   fEMCRecPoints(NULL),
   fCPVRecPoints(NULL),
   fTrackSegments(NULL),
-  fRecParticles(NULL),
-  fQADM(0x0)
+  fRecParticles(NULL)
 {
   // ctor
   fRecParticles = new TClonesArray("AliPHOSRecParticle",100) ;
   fRecParticles->SetName("RECPARTICLES");
 
-  fQADM = new  AliPHOSQualAssDataMaker() ; //!Quality Assurance Data Maker
-  GetQualAssDataMaker()->Init(AliQualAss::kRECPARTICLES) ;    
 }
 
 //____________________________________________________________________________
@@ -80,8 +75,7 @@ AliPHOSPID::AliPHOSPID(const AliPHOSPID & pid) :
   fEMCRecPoints(pid.fEMCRecPoints),
   fCPVRecPoints(pid.fCPVRecPoints),
   fTrackSegments(pid.fTrackSegments),
-  fRecParticles(pid.fRecParticles),
-  fQADM(pid.fQADM)
+  fRecParticles(pid.fRecParticles)
 {
   // Copy constructor
 }
@@ -98,7 +92,6 @@ AliPHOSPID::~AliPHOSPID()
     fCPVRecPoints->Delete();
     delete fCPVRecPoints;
   }
-  delete fQADM ; 
 }
 
 //____________________________________________________________________________

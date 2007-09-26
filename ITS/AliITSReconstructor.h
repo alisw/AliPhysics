@@ -25,31 +25,19 @@ public:
   virtual ~AliITSReconstructor();
   AliITSReconstructor(const AliITSReconstructor &ob); // copy constructor
   AliITSReconstructor& operator=(const AliITSReconstructor & ob); // ass. op.
-  virtual void Init(AliRunLoader* runLoader);
+  virtual void         Init();
   
-  virtual Bool_t       HasLocalReconstruction() const {return kTRUE;};
-
-  virtual void         Reconstruct(AliRunLoader* runLoader) const
-    {AliReconstructor::Reconstruct(runLoader);}
-  virtual void         Reconstruct(AliRunLoader* runLoader,
-				   AliRawReader* rawReader) const
-    {AliReconstructor::Reconstruct(runLoader,rawReader);}
   virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
   virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
 
-  virtual AliTracker*  CreateTracker(AliRunLoader* runLoader) const;
-  virtual AliVertexer* CreateVertexer(AliRunLoader* runLoader) const;
-  virtual void         FillESD(AliRunLoader* runLoader, AliESDEvent* esd) const;
+  virtual AliTracker*  CreateTracker() const;
+  virtual AliVertexer* CreateVertexer() const;
 
-  virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
-				 AliESDEvent* esd) const 
-    {AliReconstructor::FillESD(digitsTree, clustersTree, esd);}
-  virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
+  virtual void         FillESD(TTree* /*digitsTree*/, TTree* clustersTree, 
+			       AliESDEvent* esd) const; 
+  virtual void         FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, 
 			       AliESDEvent* esd) const
-    {AliReconstructor::FillESD(rawReader, clustersTree, esd);}
-  virtual void         FillESD(AliRunLoader* runLoader, 
-			       AliRawReader* rawReader, AliESDEvent* esd) const
-    {AliReconstructor::FillESD(runLoader,rawReader, esd);}
+  {FillESD((TTree*)NULL, clustersTree, esd);}
 
   void SetRecoParam(AliITSRecoParam * param){ fgkRecoParam = param;}
   static const AliITSRecoParam* GetRecoParam(){ return fgkRecoParam;}
@@ -59,7 +47,8 @@ private:
   static AliITSRecoParam *fgkRecoParam; // reconstruction parameters
   AliITSpidESD           *fItsPID;      // Pid for ITS
   AliITSDetTypeRec       *fDetTypeRec;  // reconstructor
-  ClassDef(AliITSReconstructor, 2)   // class for the ITS reconstruction
+
+  ClassDef(AliITSReconstructor, 3)   // class for the ITS reconstruction
 };
 
 #endif

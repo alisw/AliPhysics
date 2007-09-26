@@ -23,15 +23,14 @@
 #include <TTree.h>
 
 #include "AliPHOSClusterizer.h"
-#include "AliPHOSQualAssDataMaker.h"
 #include "AliPHOSDigit.h"
+#include "AliLog.h"
 
 ClassImp(AliPHOSClusterizer)
 
 //____________________________________________________________________________
 AliPHOSClusterizer::AliPHOSClusterizer():
   fGeom(NULL),
-  fQADM(0),
   fDigitsArr(0),
   fTreeR(0),
   fEMCRecPoints(0),
@@ -43,23 +42,19 @@ AliPHOSClusterizer::AliPHOSClusterizer():
 //____________________________________________________________________________
 AliPHOSClusterizer::AliPHOSClusterizer(AliPHOSGeometry *geom):
   fGeom(geom),
-  fQADM(0),
   fDigitsArr(0),
   fTreeR(0),
   fEMCRecPoints(0),
   fCPVRecPoints(0)
 {
   // ctor
-  fQADM = new AliPHOSQualAssDataMaker() ;  
-  //initiaizes the quality assurance data maker
-  fQADM ->Init(AliQualAss::kRECPOINTS) ;    
+ 
 }
 
 //____________________________________________________________________________
 AliPHOSClusterizer::~AliPHOSClusterizer()
 {
   // dtor
-  delete fQADM ; 
   if (fDigitsArr) {
     fDigitsArr->Delete();
     delete fDigitsArr;
