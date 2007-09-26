@@ -123,15 +123,15 @@ void RunChain(
 	}
 	
 	TString logOpt = logLevel;
-	if (logOpt.CompareTo("normal", TString::kIgnoreCase) != 0)
+	if (logOpt.CompareTo("normal", TString::kIgnoreCase) == 0)
 	{
 		// nothing to do.
 	}
-	else if (logOpt.CompareTo("max", TString::kIgnoreCase) != 0)
+	else if (logOpt.CompareTo("max", TString::kIgnoreCase) == 0)
 	{
 		maxLogging = true;
 	}
-	else if (logOpt.CompareTo("min", TString::kIgnoreCase) != 0)
+	else if (logOpt.CompareTo("min", TString::kIgnoreCase) == 0)
 	{
 		minLogging = true;
 	}
@@ -143,7 +143,6 @@ void RunChain(
 	
 	// Now we can initialise the AliHLTSystem...
 	AliHLTSystem sys;
-	sys.LoadComponentLibraries("libAliHLTMUON.so");
 	
 	// Start by setting up the logging.
 	if (maxLogging)
@@ -155,6 +154,8 @@ void RunChain(
 	{
 		sys.SetGlobalLoggingLevel(kHLTLogError);
 	}
+	
+	sys.LoadComponentLibraries("libAliHLTMUON.so");
 
 	// The DDL file publishers are only needed if we create the ddlreco or
 	// full chains. The filename lists are built assuming the aliroot rawXX/
