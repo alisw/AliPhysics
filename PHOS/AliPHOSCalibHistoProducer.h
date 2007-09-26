@@ -20,6 +20,7 @@ class AliPHOSCalibHistoProducer : public TObject {
 public:
 
   AliPHOSCalibHistoProducer();
+  AliPHOSCalibHistoProducer(Int_t nbinsx, Double_t xlow, Double_t xup);
   AliPHOSCalibHistoProducer(const AliPHOSCalibHistoProducer &histoproducer);
   AliPHOSCalibHistoProducer& operator= (const AliPHOSCalibHistoProducer &histoproducer);
   virtual ~AliPHOSCalibHistoProducer();
@@ -38,6 +39,9 @@ protected:
   Int_t fUpdatingRate;        // update rate
   Bool_t fIsOldRCUFormat;     // Old RCU format flag.
   Int_t fEvents;
+  Int_t fNbins;               // Number of bins in histograms.
+  Double_t fXlow;             // Low X in histograms.
+  Double_t fXup;              // High X in histograms.
 
   ClassDef(AliPHOSCalibHistoProducer,1)
 

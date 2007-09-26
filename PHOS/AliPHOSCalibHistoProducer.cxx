@@ -37,7 +37,7 @@ ClassImp(AliPHOSCalibHistoProducer)
 //-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() : 
   fRawDecoder(0),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE),
-  fEvents(0)
+  fEvents(0),fNbins(100),fXlow(0.),fXup(1000.)
 {
   // Constructor: initializes data members
   // Checks existence of histograms which might have been left
@@ -60,6 +60,33 @@ AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer() :
   }
 }
 
+//-----------------------------------------------------------------------------            
+AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(Int_t nbinsx, Double_t xlow, Double_t xup) :
+  fRawDecoder(0),fHistoFile(0),fUpdatingRate(100),fIsOldRCUFormat(kFALSE),
+  fEvents(0),fNbins(nbinsx),fXlow(xlow),fXup(xup)
+{
+  // Constructor: initializes data members.
+  // Checks existence of histograms which might have been left
+  // from the previous runs to continues their filling.
+  // In addition sets number of bins, low and upper limits common for all histograms.
+
+  fHistoFile =  new TFile("calibHisto.root","update");
+
+  for(Int_t module=0; module<5; module++) {
+    for(Int_t column=0; column<56; column++) {
+      for(Int_t row=0; row<64; row++) {
+        char hname[128];
+        sprintf(hname,"mod%dcol%drow%d",module,column,row);
+        TH1F* hist = (TH1F*)fHistoFile->Get(hname);
+        if(hist)
+          fAmpHisto[module][column][row]=hist;
+        else
+          fAmpHisto[module][column][row] = 0;
+      }
+    }
+  }
+}
+
 //-----------------------------------------------------------------------------
 AliPHOSCalibHistoProducer::~AliPHOSCalibHistoProducer()
 {
@@ -74,7 +101,7 @@ AliPHOSCalibHistoProducer::~AliPHOSCalibHistoProducer()
 AliPHOSCalibHistoProducer::AliPHOSCalibHistoProducer(const AliPHOSCalibHistoProducer &histoproducer) :
   TObject(histoproducer),fRawDecoder(histoproducer.fRawDecoder),fHistoFile(histoproducer.fHistoFile),
   fUpdatingRate(histoproducer.fUpdatingRate),fIsOldRCUFormat(histoproducer.fIsOldRCUFormat),
-  fEvents(histoproducer.fEvents)
+  fEvents(histoproducer.fEvents),fNbins(histoproducer.fNbins),fXlow(histoproducer.fXlow),fXup(histoproducer.fXup)
 {
   //Copy constructor.
 
@@ -106,7 +133,11 @@ AliPHOSCalibHistoProducer& AliPHOSCalibHistoProducer::operator=
     fUpdatingRate = histoproducer.fUpdatingRate;
     fIsOldRCUFormat = histoproducer.fIsOldRCUFormat;
     fEvents = histoproducer.fEvents;
-
+    fEvents = histoproducer.fEvents;
+    fNbins = histoproducer.fNbins;
+    fXlow = histoproducer.fXlow;
+    fXup = histoproducer.fXup;   
+    
     for(Int_t module=0; module<5; module++) {
       for(Int_t column=0; column<56; column++) {
 	for(Int_t row=0; row<64; row++) {
@@ -144,7 +175,7 @@ void AliPHOSCalibHistoProducer::Run()
     if(fRawDecoder->IsLowGain()) continue; 
 
     energy = fRawDecoder->GetEnergy();
-    if(energy<10) continue; // noise
+    if(energy<5) continue; // noise
     
     mod = fRawDecoder->GetModule()-1;
     col = fRawDecoder->GetColumn()-1;
@@ -156,7 +187,7 @@ void AliPHOSCalibHistoProducer::Run()
     else {
       char hname[128];
       sprintf(hname,"mod%dcol%drow%d",mod,col,row);
-      fAmpHisto[mod][col][row] = new TH1F(hname,hname,100,0.,1000.);
+      fAmpHisto[mod][col][row] = new TH1F(hname,hname,fNbins,fXlow,fXup);
       fAmpHisto[mod][col][row]->Fill(energy);
     }
     
