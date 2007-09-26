@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////
 #include "AliITSOnlineSDD.h"
 
+class TH1F;
 class TH2F;
 class TGraph;
 class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
@@ -37,6 +38,14 @@ class AliITSOnlineSDDCMN : public AliITSOnlineSDD {
 
   Float_t CalcMeanNoise() const;
   Int_t GetNEvents() const {return fNEvents;}
+  
+  TH1F* GetBaselineAnodeHisto() const;
+  TH1F* GetRawNoiseAnodeHisto() const;
+  TH1F* GetCorrNoiseAnodeHisto() const;
+  TH1F* GetBaselineHisto() const;
+  TH1F* GetRawNoiseHisto() const;
+  TH1F* GetCorrNoiseHisto() const;
+
   void WriteToASCII();
   Bool_t WriteToROOT(TFile *fil);
 

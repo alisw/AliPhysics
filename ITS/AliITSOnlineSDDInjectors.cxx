@@ -29,10 +29,9 @@
 ClassImp(AliITSOnlineSDDInjectors)
 
 const Float_t AliITSOnlineSDDInjectors::fgkSaturation = 1008.;
-const Float_t AliITSOnlineSDDInjectors::fgkJitterTB = 8.;
 
 //______________________________________________________________________
-  AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.)
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.),fTimeDiffTB()
 {
   // default constructor
   SetMinDriftVel();
@@ -43,9 +42,10 @@ const Float_t AliITSOnlineSDDInjectors::fgkJitterTB = 8.;
   SetPositions();
   SetPolOrder();
   SetThreshold();
+  SetTimeDiffTB();
 }
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t mod, Int_t sid):AliITSOnlineSDD(mod,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.)
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t mod, Int_t sid):AliITSOnlineSDD(mod,sid),fHisto(),fTbZero(0.),fParam(),fPolOrder(0),fMinDriftVel(0.),fMaxDriftVel(0.),fThreshold(0.),fTimeDiffTB()
 { 
 // standard constructor
   SetMinDriftVel();
@@ -56,6 +56,7 @@ AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t mod, Int_t sid):AliITSO
   SetPositions();
   SetPolOrder();
   SetThreshold();
+  SetTimeDiffTB();
 }
 //______________________________________________________________________
 AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
@@ -100,7 +101,7 @@ void AliITSOnlineSDDInjectors::AnalyzeEvent(TH2F* his){
   FitDriftVelocityVsAnode();
 }
 //______________________________________________________________________
-TGraphErrors* AliITSOnlineSDDInjectors::GetLineGraph(Int_t jlin){
+TGraphErrors* AliITSOnlineSDDInjectors::GetLineGraph(Int_t jlin) const{
   // 
   Float_t x[4],y[4],ex[4],ey[4];
   x[0]=0.;
@@ -121,7 +122,7 @@ Float_t AliITSOnlineSDDInjectors::GetDriftCoordinate(Float_t cAnode, Float_t cTi
   //
   Float_t vel=0;
   for(Int_t i=0;i<=fPolOrder;i++) vel+=fParam[i]*TMath::Power(cAnode,(Float_t)i);
-  return vel*(cTimeBin-(fTbZero-fgkJitterTB))*25/1000.; 
+  return vel*(cTimeBin-(fTbZero-fTimeDiffTB))*25/1000.; 
 }
 //______________________________________________________________________
 TGraphErrors* AliITSOnlineSDDInjectors::GetDriftVelocityGraph() const{
@@ -154,13 +155,14 @@ void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
-  const Int_t nn=fPolOrder+1;
-  Float_t **mat = new Float_t*[nn];
-  for(Int_t i=0; i < nn; i++) mat[i] = new Float_t[nn];
-  Float_t *vect = new Float_t[nn];
-  for(Int_t k1=0;k1<nn;k1++){
+  // fits the anode dependence of drift velocity with a polynomial
+  const Int_t kNn=fPolOrder+1;
+  Float_t **mat = new Float_t*[kNn];
+  for(Int_t i=0; i < kNn; i++) mat[i] = new Float_t[kNn];
+  Float_t *vect = new Float_t[kNn];
+  for(Int_t k1=0;k1<kNn;k1++){
     vect[k1]=0;
-    for(Int_t k2=0;k2<nn;k2++){
+    for(Int_t k2=0;k2<kNn;k2++){
       mat[k1][k2]=0;
       for(Int_t n=0; n<kNInjectors;n++){
 	Float_t x=(Float_t)GetAnodeNumber(n);
@@ -168,22 +170,22 @@ void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
       }
     }
   }
-  for(Int_t k1=0;k1<nn;k1++){
+  for(Int_t k1=0;k1<kNn;k1++){
     for(Int_t n=0; n<kNInjectors;n++){
       Float_t x=(Float_t)GetAnodeNumber(n);
       if(fDriftVel[n]>0) vect[k1]+=fDriftVel[n]*TMath::Power(x,k1)/TMath::Power(fSigmaDriftVel[n],2);
     }
   }
-  Int_t *iPivot = new Int_t[nn];
-  Int_t *indxR = new Int_t[nn];
-  Int_t *indxC = new Int_t[nn];
-  for(Int_t i=0;i<nn;i++) iPivot[i]=0;
+  Int_t *iPivot = new Int_t[kNn];
+  Int_t *indxR = new Int_t[kNn];
+  Int_t *indxC = new Int_t[kNn];
+  for(Int_t i=0;i<kNn;i++) iPivot[i]=0;
   Int_t iCol=-1,iRow=-1;
-  for(Int_t i=0;i<nn;i++){
+  for(Int_t i=0;i<kNn;i++){
     Float_t big=0.;
-    for(Int_t j=0;j<nn;j++){
+    for(Int_t j=0;j<kNn;j++){
       if(iPivot[j]!=1){
-	for(Int_t k=0;k<nn;k++){
+	for(Int_t k=0;k<kNn;k++){
 	   if(iPivot[k]==0){
 	     if(TMath::Abs(mat[j][k])>=big){
 	       big=TMath::Abs(mat[j][k]);
@@ -197,7 +199,7 @@ void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
     iPivot[iCol]++;
     Float_t aux;
     if(iRow!=iCol){
-      for(Int_t l=0;l<nn;l++){
+      for(Int_t l=0;l<kNn;l++){
 	aux=mat[iRow][l];
 	mat[iRow][l]=mat[iCol][l];
 	mat[iCol][l]=aux;
@@ -211,13 +213,13 @@ void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
     if(mat[iCol][iCol]==0) break;
     Float_t pivinv=1./mat[iCol][iCol];
     mat[iCol][iCol]=1;
-    for(Int_t l=0;l<nn;l++) mat[iCol][l]*=pivinv;
+    for(Int_t l=0;l<kNn;l++) mat[iCol][l]*=pivinv;
     vect[iCol]*=pivinv;
-    for(Int_t m=0;m<nn;m++){
+    for(Int_t m=0;m<kNn;m++){
       if(m!=iCol){
 	aux=mat[m][iCol];
 	mat[m][iCol]=0;
-	for(Int_t n=0;n<nn;n++) mat[m][n]-=mat[iCol][n]*aux;
+	for(Int_t n=0;n<kNn;n++) mat[m][n]-=mat[iCol][n]*aux;
 	vect[m]-=vect[iCol]*aux;
       }
     }    
@@ -227,10 +229,10 @@ void AliITSOnlineSDDInjectors::FitDriftVelocityVsAnode(){
   delete [] indxC;
 
   if(fParam) delete [] fParam;
-  fParam=new Float_t[nn];
-  for(Int_t i=0; i<nn;i++)fParam[i]=vect[i];
+  fParam=new Float_t[kNn];
+  for(Int_t i=0; i<kNn;i++)fParam[i]=vect[i];
 
-  for(Int_t i=0; i < nn; i++) delete [] mat[i];
+  for(Int_t i=0; i < kNn; i++) delete [] mat[i];
   delete [] mat;
   delete [] vect;
 }

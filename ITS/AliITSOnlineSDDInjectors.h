@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////
 #include "AliITSOnlineSDD.h"
 
-/* $Id$ */
+/* $Id: */
 class TH2F;
 class TGraphErrors;
 class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
@@ -34,8 +34,9 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   void SetPolOrder(Int_t n=3){fPolOrder=n;}
   void SetMinDriftVel(Float_t vmin=4.){fMinDriftVel=vmin;}
   void SetMaxDriftVel(Float_t vmax=9.){fMaxDriftVel=vmax;}
+  void SetTimeDiffTB(Float_t tbDiff=8.){fTimeDiffTB=tbDiff;}
 
-  TGraphErrors* GetLineGraph(Int_t jlin);
+  TGraphErrors* GetLineGraph(Int_t jlin) const;
   TGraphErrors* GetDriftVelocityGraph() const;
   Float_t* GetDriftVelFitParam()const{ return fParam;}
   Float_t GetDriftVelocity(Int_t jlin) const{return fDriftVel[jlin];}
@@ -73,8 +74,7 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
 
   AliITSOnlineSDDInjectors(const AliITSOnlineSDDInjectors& source);
   AliITSOnlineSDDInjectors& operator = (const AliITSOnlineSDDInjectors& source);
-  static const Float_t fgkSaturation;
-  static const Float_t fgkJitterTB;
+  static const Float_t fgkSaturation;   // ADC saturation value (1008)
 
   TH2F* fHisto;                         // histogram of module channel counts
   Float_t fTbZero;                      // Time zero for injector event
@@ -93,6 +93,8 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Float_t fMaxDriftVel;                 // Cut value for maximum drift speed
   Float_t fThreshold;                   // Threshold for injector signal
 
-  ClassDef(AliITSOnlineSDDInjectors,1)
+  Float_t fTimeDiffTB;                  // time difference (in TB) between injector trigger and particle trigger
+
+  ClassDef(AliITSOnlineSDDInjectors,2)
 };
 #endif
