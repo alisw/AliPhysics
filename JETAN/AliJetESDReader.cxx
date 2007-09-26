@@ -208,8 +208,11 @@ Bool_t AliJetESDReader::FillMomentumArray(Int_t /*event*/)
   // set the signal flags
   fSignalFlag.Set(goodTrack,sflag);
   fCutFlag.Set(goodTrack,cflag);
-  return kTRUE;
 
+  delete[] sflag;
+  delete[] cflag;
+
+  return kTRUE;
 }
 
 //____________________________________________________________________________
