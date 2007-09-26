@@ -83,13 +83,13 @@ class HOMERWriter
 
 	struct TBlockData
 	    {
-		homer_uint64 fDescriptor[kCount_64b_Words];
-		const void* fData;
+	      homer_uint64 fDescriptor[kCount_64b_Words]; //!transient
+	      const void* fData; //!transient
 	    };
 
-	unsigned long fDataOffset;
+        unsigned long fDataOffset; //!transient
 
-	std::vector<TBlockData> fBlocks;
+        std::vector<TBlockData> fBlocks; //!transient
 #ifdef USE_ROOT
       ClassDef(HOMERWriter,0);
 #endif

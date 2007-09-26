@@ -91,31 +91,22 @@ void AliHLTModuleAgent::PrintStatus(const char* agent)
   }
 }
 
-int AliHLTModuleAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					    AliRunLoader* runloader) const
+int AliHLTModuleAgent::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
+					    AliRunLoader* /*runloader*/) const
 {
   // default method, nothing to be done, child classes can overload
-  if (handler==NULL && runloader==NULL) {
-    // get rid of 'unused parameter' warning
-  }
   return 0;
 }
 
-const char* AliHLTModuleAgent::GetLocalRecConfigurations(AliRunLoader* runloader) const
+const char* AliHLTModuleAgent::GetLocalRecConfigurations(AliRunLoader* /*runloader*/) const
 {
   // default method, nothing to be done, child classes can overload
-  if (runloader==NULL) {
-    // get rid of 'unused parameter' warning
-  }
   return NULL;
 }
 
-const char* AliHLTModuleAgent::GetEventRecConfigurations(AliRunLoader* runloader) const
+const char* AliHLTModuleAgent::GetEventRecConfigurations(AliRunLoader* /*runloader*/) const
 {
   // default method, nothing to be done, child classes can overload
-  if (runloader==NULL) {
-    // get rid of 'unused parameter' warning
-  }
   return NULL;
 }
 
@@ -125,11 +116,8 @@ const char* AliHLTModuleAgent::GetRequiredComponentLibraries() const
   return NULL;
 }
 
-int AliHLTModuleAgent::RegisterComponents(AliRunLoader* runloader) const
+int AliHLTModuleAgent::RegisterComponents(AliRunLoader* /*runloader*/) const
 {
-  if (runloader==NULL) {
-    // get rid of 'unused parameter' warning
-  }
   // default method, nothing to be done, child classes can overload
   return 0;
 }

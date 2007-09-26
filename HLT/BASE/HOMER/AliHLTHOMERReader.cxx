@@ -36,7 +36,7 @@
     @brief  HLT Online Monitoring Environment including ROOT - Reader
     @note   migrated from PubSub HLT-stable-20070905.141318 (rev 2375)    */
 
-// see below for class documentation
+// see header file for class documentation
 // or
 // refer to README to build package
 // or
@@ -89,14 +89,21 @@ HOMERReader::HOMERReader()
   fTCPDataSourceCnt(0),
   fShmDataSourceCnt(0),
   fDataSourceMaxCnt(0),
-  fDataSources(NULL)
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
     {
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
     Init();
     }
 #endif
 
 
-/* For reading from a TCP port */
 HOMERReader::HOMERReader( const char* hostname, unsigned short port )
   :
   MonitoringReader(),
@@ -109,8 +116,13 @@ HOMERReader::HOMERReader( const char* hostname, unsigned short port )
   fTCPDataSourceCnt(0),
   fShmDataSourceCnt(0),
   fDataSourceMaxCnt(0),
-  fDataSources(NULL)
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
     {
+// see header file for class documentation
+// For reading from a TCP port
     Init();
     if ( !AllocDataSources(1) )
 	{
@@ -129,7 +141,6 @@ HOMERReader::HOMERReader( const char* hostname, unsigned short port )
 	}
     }
 
-/* For reading from multiple TCP ports */
 HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )
   :
   MonitoringReader(),
@@ -142,8 +153,13 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
   fTCPDataSourceCnt(0),
   fShmDataSourceCnt(0),
   fDataSourceMaxCnt(0),
-  fDataSources(NULL)
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
     {
+// see header file for class documentation
+// For reading from multiple TCP ports
     Init();
     if ( !AllocDataSources(tcpCnt) )
 	{
@@ -163,7 +179,6 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
 	}
     }
 
-/* For reading from a System V shared memory segment */
 HOMERReader::HOMERReader( key_t shmKey, int shmSize )
   :
   MonitoringReader(),
@@ -176,8 +191,13 @@ HOMERReader::HOMERReader( key_t shmKey, int shmSize )
   fTCPDataSourceCnt(0),
   fShmDataSourceCnt(0),
   fDataSourceMaxCnt(0),
-  fDataSources(NULL)
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
     {
+// see header file for class documentation
+// For reading from a System V shared memory segment
     Init();
     if ( !AllocDataSources(1) )
 	{
@@ -196,7 +216,6 @@ HOMERReader::HOMERReader( key_t shmKey, int shmSize )
 	}
     }
 
-/* For reading from multiple System V shared memory segments */
 HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   :
   MonitoringReader(),
@@ -209,8 +228,13 @@ HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   fTCPDataSourceCnt(0),
   fShmDataSourceCnt(0),
   fDataSourceMaxCnt(0),
-  fDataSources(NULL)
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
     {
+// see header file for class documentation
+// For reading from multiple System V shared memory segments
     Init();
     if ( !AllocDataSources(shmCnt) )
 	{
@@ -230,7 +254,6 @@ HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
 	}
     }
 
-/* For reading from multiple TCP ports and multiple System V shared memory segments */
 HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
 			  unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   :
@@ -244,8 +267,13 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
   fTCPDataSourceCnt(0),
   fShmDataSourceCnt(0),
   fDataSourceMaxCnt(0),
-  fDataSources(NULL)
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
     {
+// see header file for class documentation
+// For reading from multiple TCP ports and multiple System V shared memory segments
     Init();
     if ( !AllocDataSources(tcpCnt+shmCnt) )
 	{
@@ -276,47 +304,53 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
     }
 HOMERReader::~HOMERReader()
     {
+// see header file for class documentation
     ReleaseCurrentEvent();
     FreeDataSources();
     }
 
-/* Read in the next available event */
 int  HOMERReader::ReadNextEvent()
     {
+// see header file for class documentation
+// Read in the next available event
     return ReadNextEvent( false, 0 );
     }
 
-/* Read in the next available event */
 int HOMERReader::ReadNextEvent( unsigned long timeout )
     {
+// see header file for class documentation
+// Read in the next available event
     return ReadNextEvent( true, timeout );
     }
 
-/* Return the size (in bytes) of the current event's data
-   block with the given block index (starting at 0). */
 unsigned long HOMERReader::GetBlockDataLength( unsigned long ndx ) const
     {
+// see header file for class documentation
+// Return the size (in bytes) of the current event's data
+// block with the given block index (starting at 0).
     if ( ndx >= fBlockCnt )
 	return 0;
     return fBlocks[ndx].fLength;
     }
 
-    /* Return a pointer to the start of the current event's data
-       block with the given block index (starting at 0). */
 const void* HOMERReader::GetBlockData( unsigned long ndx ) const
     {
+// see header file for class documentation
+// Return a pointer to the start of the current event's data
+// block with the given block index (starting at 0).
     if ( ndx >= fBlockCnt )
 	return NULL;
     return fBlocks[ndx].fData;
     }
 
-/* Return IP address or hostname of node which sent the 
-   current event's data block with the given block index 
-   (starting at 0).
-   For HOMER this is the ID of the node on which the subscriber 
-   that provided this data runs/ran. */
 const char* HOMERReader::GetBlockSendNodeID( unsigned long ndx ) const
     {
+// see header file for class documentation
+// Return IP address or hostname of node which sent the 
+// current event's data block with the given block index 
+// (starting at 0).
+// For HOMER this is the ID of the node on which the subscriber 
+// that provided this data runs/ran.
     if ( ndx >= fBlockCnt )
 	return NULL;
 #ifdef DEBUG
@@ -331,32 +365,33 @@ const char* HOMERReader::GetBlockSendNodeID( unsigned long ndx ) const
     //return fBlocks[ndx].fOriginatingNodeID;
     }
 
-	/* Return byte order of the data stored in the 
-	   current event's data block with the given block 
-	   index (starting at 0). 
-	   0 is unknown alignment, 
-	   1 ist little endian, 
-	   2 is big endian. */
 homer_uint8 HOMERReader::GetBlockByteOrder( unsigned long ndx ) const
     {
+// see header file for class documentation
+// Return byte order of the data stored in the 
+// current event's data block with the given block index (starting at 0). 
+//	   0 is unknown alignment, 
+//	   1 ist little endian, 
+//	   2 is big endian. */
     if ( ndx >= fBlockCnt )
 	return 0;
     //return ((AliHLTRIBlockDescriptorV1*)fBlocks[ndx].fMetaData)->fType.fID;
     return *(((homer_uint8*)fBlocks[ndx].fMetaData)+kByteOrderAttribute_8b_Offset);
     }
-	/* Return the alignment (in bytes) of the given datatype 
-	   in the data stored in the current event's data block
-	   with the given block index (starting at 0). 
-	   Possible values for the data type are
-	   0: homer_uint64
-	   1: homer_uint32
-	   2: uin16
-	   3: homer_uint8
-	   4: double
-	   5: float
-	*/
+
 homer_uint8 HOMERReader::GetBlockTypeAlignment( unsigned long ndx, homer_uint8 dataType ) const
     {
+// see header file for class documentation
+// Return the alignment (in bytes) of the given datatype 
+// in the data stored in the current event's data block
+// with the given block index (starting at 0). 
+// Possible values for the data type are
+//	   0: homer_uint64
+//	   1: homer_uint32
+//	   2: uin16
+//	   3: homer_uint8
+//	   4: double
+//	   5: float
     if ( ndx >= fBlockCnt )
 	return 0;
     if ( dataType > (kFloatAlignment_8b_Offset-kAlignment_8b_StartOffset) )
@@ -367,6 +402,7 @@ homer_uint8 HOMERReader::GetBlockTypeAlignment( unsigned long ndx, homer_uint8 d
 
 homer_uint64 HOMERReader::GetBlockStatusFlags( unsigned long ndx ) const
     {
+// see header file for class documentation
     if ( ndx >= fBlockCnt )
 	return 0;
     return *(((homer_uint64*)fBlocks[ndx].fMetaData)+kStatusFlags_64b_Offset);
@@ -377,6 +413,7 @@ homer_uint64 HOMERReader::GetBlockStatusFlags( unsigned long ndx ) const
    block with the given block index (starting at 0). */
 homer_uint64 HOMERReader::GetBlockDataType( unsigned long ndx ) const
     {
+// see header file for class documentation
     if ( ndx >= fBlockCnt )
 	return ~(homer_uint64)0;
     //return ((AliHLTRIBlockDescriptorV1*)fBlocks[ndx].fMetaData)->fType.fID;
@@ -387,6 +424,7 @@ homer_uint64 HOMERReader::GetBlockDataType( unsigned long ndx ) const
    block with the given block index (starting at 0). */
 homer_uint32 HOMERReader::GetBlockDataOrigin( unsigned long ndx ) const
     {
+// see header file for class documentation
     if ( ndx >= fBlockCnt )
 	return ~(homer_uint32)0;
     //return (homer_uint32)( ((AliHLTRIBlockDescriptorV1*)fBlocks[ndx].fMetaData)->fSubType1.fID );
@@ -397,6 +435,7 @@ homer_uint32 HOMERReader::GetBlockDataOrigin( unsigned long ndx ) const
    block with the given block index (starting at 0). */
 homer_uint32 HOMERReader::GetBlockDataSpec( unsigned long ndx ) const
     {
+// see header file for class documentation
     if ( ndx >= fBlockCnt )
 	return ~(homer_uint32)0;
     //return (homer_uint32)( ((AliHLTRIBlockDescriptorV1*)fBlocks[ndx].fMetaData)->fSubType2.fID );
@@ -409,6 +448,7 @@ homer_uint32 HOMERReader::GetBlockDataSpec( unsigned long ndx ) const
 unsigned long HOMERReader::FindBlockNdx( homer_uint64 type, homer_uint32 origin, 
 					 homer_uint32 spec, unsigned long startNdx ) const
     {
+// see header file for class documentation
     for ( unsigned long n=startNdx; n < fBlockCnt; n++ )
 	{
 	if ( ( type == 0xFFFFFFFFFFFFFFFFULL || *(((homer_uint64*)fBlocks[n].fMetaData)+kType_64b_Offset)==type ) &&
@@ -425,6 +465,7 @@ unsigned long HOMERReader::FindBlockNdx( homer_uint64 type, homer_uint32 origin,
 unsigned long HOMERReader::FindBlockNdx( char type[8], char origin[4], 
 					 homer_uint32 spec, unsigned long startNdx ) const
     {
+// see header file for class documentation
     for ( unsigned long n=startNdx; n < fBlockCnt; n++ )
 	{
 	bool found1=true, found2=true;
@@ -483,6 +524,7 @@ unsigned long HOMERReader::FindBlockNdx( char type[8], char origin[4],
    monitoring object as returned by GetBlockSendNodeID. */
 const char* HOMERReader::GetBlockCreateNodeID( unsigned long ndx ) const
     {
+// see header file for class documentation
     if ( ndx >= fBlockCnt )
 	return NULL;
     return fBlocks[ndx].fOriginatingNodeID;
@@ -491,6 +533,7 @@ const char* HOMERReader::GetBlockCreateNodeID( unsigned long ndx ) const
 
 void HOMERReader::Init()
     {
+// see header file for class documentation
     fCurrentEventType = ~(homer_uint64)0;
     fCurrentEventID = ~(homer_uint64)0;
     fMaxBlockCnt = fBlockCnt = 0;
@@ -503,11 +546,12 @@ void HOMERReader::Init()
     fConnectionStatus = 0;
     fErrorConnection = ~(unsigned int)0;
 
-    fEventRequestAdvanceTime_us = 0;
+    fEventRequestAdvanceTime = 0;
     }
 	
 bool HOMERReader::AllocDataSources( unsigned int sourceCnt )
     {
+// see header file for class documentation
     fDataSources = new DataSource[ sourceCnt ];
     if ( !fDataSources )
 	return false;
@@ -518,6 +562,7 @@ bool HOMERReader::AllocDataSources( unsigned int sourceCnt )
 
 int HOMERReader::AddDataSource( const char* hostname, unsigned short port, DataSource& source )
     {
+// see header file for class documentation
     struct hostent* he;
     he = gethostbyname( hostname );
     if ( he == NULL )
@@ -576,6 +621,7 @@ int HOMERReader::AddDataSource( const char* hostname, unsigned short port, DataS
 
 int HOMERReader::AddDataSource( key_t shmKey, int shmSize, DataSource& source )
     {
+// see header file for class documentation
     int ret;
     char* tmpchar = new char[ MAXHOSTNAMELEN+1 ];
     if ( !tmpchar )
@@ -614,6 +660,7 @@ int HOMERReader::AddDataSource( key_t shmKey, int shmSize, DataSource& source )
 
 void HOMERReader::FreeDataSources()
     {
+// see header file for class documentation
     for ( unsigned n=0; n < fDataSourceCnt; n++ )
 	{
 	if ( fDataSources[n].fType == kTCP )
@@ -625,6 +672,7 @@ void HOMERReader::FreeDataSources()
 
 int HOMERReader::FreeShmDataSource( DataSource& source )
     {
+// see header file for class documentation
     if ( source.fShmPtr )
 	shmdt( source.fShmPtr );
 //     if ( source.fShmID != -1 )
@@ -636,6 +684,7 @@ int HOMERReader::FreeShmDataSource( DataSource& source )
 
 int HOMERReader::FreeTCPDataSource( DataSource& source )
     {
+// see header file for class documentation
     if ( source.fTCPConnection )
 	close( source.fTCPConnection );
     if ( source.fHostname )
@@ -645,6 +694,7 @@ int HOMERReader::FreeTCPDataSource( DataSource& source )
 
 int HOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
     {
+// see header file for class documentation
     if ( fDataSourceCnt<=0 )
 	return ENXIO;
     // Clean up currently active event.
@@ -721,6 +771,7 @@ int HOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
 
 void HOMERReader::ReleaseCurrentEvent()
     {
+// see header file for class documentation
     // sources.fDataRead = 0;
     // fMaxBlockCnt
     fCurrentEventID = ~(homer_uint64)0;
@@ -751,6 +802,7 @@ void HOMERReader::ReleaseCurrentEvent()
 
 int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeout_us )
     {
+// see header file for class documentation
     int ret;
     struct timeval oldSndTO, newSndTO;
     if ( useTimeout )
@@ -774,7 +826,7 @@ int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned
 	    }
 	}
     // Send one event request
-    if ( !fEventRequestAdvanceTime_us )
+    if ( !fEventRequestAdvanceTime )
 	{
 	ret = write( source.fTCPConnection, GET_ONE, strlen(GET_ONE) );
 	
@@ -789,7 +841,7 @@ int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned
 	{
 	char tmpCmd[ 128 ];
 
-	int len = snprintf( tmpCmd, 128, "FIRST ORBIT EVENT 0x%Lu\n", (unsigned long long)fEventRequestAdvanceTime_us );
+	int len = snprintf( tmpCmd, 128, "FIRST ORBIT EVENT 0x%Lu\n", (unsigned long long)fEventRequestAdvanceTime );
 	if ( len>128 || len<0 )
 	    {
 	    ret=EMSGSIZE;
@@ -812,6 +864,7 @@ int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned
 
 int HOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long )
     {
+// see header file for class documentation
     if ( source.fShmPtr )
 	{
 	*(homer_uint32*)( source.fShmPtr ) = 0;
@@ -1014,6 +1067,7 @@ int HOMERReader::ReadDataFromShmSource( DataSource& source, bool useTimeout, uns
 
 int HOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout )
     {
+// see header file for class documentation
     struct timeval tv1, tv2;
     bool found=false;
     bool all=true;
@@ -1055,6 +1109,7 @@ int HOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources
 
 int HOMERReader::ParseSourceData( DataSource& source )
     {
+// see header file for class documentation
     if ( source.fData )
 	{
 	homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
@@ -1088,6 +1143,7 @@ int HOMERReader::ParseSourceData( DataSource& source )
 	
 int HOMERReader::ReAllocBlocks( unsigned long newCnt )
     {
+// see header file for class documentation
     DataBlock* newBlocks;
     newBlocks = new DataBlock[ newCnt ];
     if ( !newBlocks )
@@ -1105,12 +1161,14 @@ int HOMERReader::ReAllocBlocks( unsigned long newCnt )
 
 homer_uint64 HOMERReader::GetSourceEventID( DataSource& source )
     {
+// see header file for class documentation
     homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
     return Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kSubType1_64b_Offset ] );
     }
 
 homer_uint64 HOMERReader::GetSourceEventType( DataSource& source )
     {
+// see header file for class documentation
     homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
     return Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kType_64b_Offset ] );
     }

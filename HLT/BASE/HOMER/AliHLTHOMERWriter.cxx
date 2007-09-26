@@ -36,7 +36,7 @@
     @brief  HLT Online Monitoring Environment including ROOT - Writer   
     @note   migrated from PubSub HLT-stable-20070905.141318 (rev 2375)    */
 
-// see below for class documentation
+// see header file for class documentation
 // or
 // refer to README to build package
 // or
@@ -52,21 +52,29 @@ HOMERWriter::HOMERWriter()
   fDataOffset(0),
   fBlocks()
     {
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
     Clear();
     }
 
 HOMERWriter::~HOMERWriter()
     {
+// see header file for class documentation
     }
 
 void HOMERWriter::Clear()
     {
+// see header file for class documentation
     fDataOffset = 0;
     fBlocks.clear();
     }
 
 void HOMERWriter::AddBlock( const void* descriptor, const void* data )
     {
+// see header file for class documentation
     TBlockData bd;
     memcpy( bd.fDescriptor, descriptor, HOMERBlockDescriptor::GetHOMERBlockDescriptorSize() );
     bd.fData = data;
@@ -78,6 +86,7 @@ void HOMERWriter::AddBlock( const void* descriptor, const void* data )
 
 homer_uint32 HOMERWriter::GetTotalMemorySize( bool includeData )
     {
+// see header file for class documentation
     if ( includeData )
 	return fDataOffset + HOMERBlockDescriptor::GetHOMERBlockDescriptorSize()*(fBlocks.size()+1);
     else
@@ -86,6 +95,7 @@ homer_uint32 HOMERWriter::GetTotalMemorySize( bool includeData )
 
 void HOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 eventNr, homer_uint64 statusFlags, homer_uint64 nodeID, bool includeData )
     {
+// see header file for class documentation
     HOMERBlockDescriptor homerBlock;
     homer_uint8* bd = reinterpret_cast<homer_uint8*>( destination );
     struct timeval now;
@@ -200,6 +210,7 @@ void HOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 
 
 homer_uint8 HOMERWriter::DetermineUInt64Alignment()
     {
+// see header file for class documentation
     HOMERWriterAlignment64TestStructure test;
     if ( (unsigned long)(&test.f64Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -229,6 +240,7 @@ homer_uint8 HOMERWriter::DetermineUInt64Alignment()
 
 homer_uint8 HOMERWriter::DetermineUInt32Alignment()
     {
+// see header file for class documentation
     HOMERWriterAlignment32TestStructure test;
     if ( (unsigned long)(&test.f32Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -258,6 +270,7 @@ homer_uint8 HOMERWriter::DetermineUInt32Alignment()
 
 homer_uint8 HOMERWriter::DetermineUInt16Alignment()
     {
+// see header file for class documentation
     HOMERWriterAlignment16TestStructure test;
     if ( (unsigned long)(&test.f16Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -287,6 +300,7 @@ homer_uint8 HOMERWriter::DetermineUInt16Alignment()
 
 homer_uint8 HOMERWriter::DetermineUInt8Alignment()
     {
+// see header file for class documentation
     HOMERWriterAlignment8TestStructure test;
     if ( (unsigned long)(&test.f8Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -316,6 +330,7 @@ homer_uint8 HOMERWriter::DetermineUInt8Alignment()
 
 homer_uint8 HOMERWriter::DetermineDoubleAlignment()
     {
+// see header file for class documentation
     HOMERWriterAlignmentDoubleTestStructure test;
     if ( (unsigned long)(&test.fDoubleTest64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -345,6 +360,7 @@ homer_uint8 HOMERWriter::DetermineDoubleAlignment()
 
 homer_uint8 HOMERWriter::DetermineFloatAlignment()
     {
+// see header file for class documentation
     HOMERWriterAlignmentFloatTestStructure test;
     if ( (unsigned long)(&test.fFloatTest64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{

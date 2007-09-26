@@ -120,9 +120,9 @@ class HOMERReader: public MonitoringReader
 		return fErrorConnection;
 		}
 
-	void SetEventRequestAdvanceTime( unsigned long time_us )
+	void SetEventRequestAdvanceTime( unsigned long time )
 		{
-		fEventRequestAdvanceTime_us = time_us;
+		fEventRequestAdvanceTime = time;
 		}
 
 	/* Defined in MonitoringReader */
@@ -217,12 +217,12 @@ class HOMERReader: public MonitoringReader
 	struct DataSource
 	    {
 		DataSource() { fType = kUndef; };
-		DataSourceType fType;
+	        DataSourceType fType; // source type (TCP or Shm)
 		unsigned fNdx; // This source's index
 		const char* fHostname; // Filled for both Shm and TCP
-		unsigned short fTCPPort;
-		key_t fShmKey;
-		int fShmSize;
+	        unsigned short fTCPPort; // port if type TCP
+	        key_t fShmKey; // shm key if type Shm
+	        int fShmSize; // shm size if type Shm
 		int fTCPConnection; // File descriptor for the TCP connection
 		int fShmID; // ID of the shared memory area
 		void* fShmPtr; // Pointer to shared memory area
@@ -278,29 +278,41 @@ class HOMERReader: public MonitoringReader
 	struct DataBlock
 	    {
 		unsigned int fSource; // Index of originating data source
-		void* fData;
-		unsigned long fLength;
+	        void* fData; // pointer to data
+	        unsigned long fLength; // buffer length
 		homer_uint64* fMetaData; // Pointer to meta data describing data itself.
-		const char* fOriginatingNodeID;
+	        const char* fOriginatingNodeID; // node id from which the data originates
 	    };
 
-	homer_uint64 fCurrentEventType;
-	homer_uint64 fCurrentEventID;
-	unsigned long fBlockCnt;
-	unsigned long fMaxBlockCnt;
-	DataBlock* fBlocks;
+      /** type of the current event */
+      homer_uint64 fCurrentEventType;                             //!transient
+      /** ID of the current event */
+      homer_uint64 fCurrentEventID;                               //!transient
+      /** no of blocks currently used */
+      unsigned long fBlockCnt;                                    //!transient
+      /** available space in the block array */
+      unsigned long fMaxBlockCnt;                                 //!transient
+      /** block array */
+      DataBlock* fBlocks;                                         //!transient
 	
-	unsigned int fDataSourceCnt;
-	unsigned int fTCPDataSourceCnt;
-	unsigned int fShmDataSourceCnt;
-	unsigned int fDataSourceMaxCnt;
-	DataSource* fDataSources;
+      /** total no of data sources */
+      unsigned int fDataSourceCnt;                                //!transient
+      /** no of TCP data sources */
+      unsigned int fTCPDataSourceCnt;                             //!transient
+      /** no of Shm data sources */
+      unsigned int fShmDataSourceCnt;                             //!transient
+      /** available space in the sources array */
+      unsigned int fDataSourceMaxCnt;                             //!transient
+      /** array of data source descriptions */
+      DataSource* fDataSources;                                   //!transient
 
-	
-	int fConnectionStatus;
-	unsigned fErrorConnection;
+      /** status of the connection */
+      int fConnectionStatus;                                      //!transient
+      /** flag an error for */
+      unsigned fErrorConnection;                                  //!transient
 
-	unsigned long fEventRequestAdvanceTime_us;
+      /** */
+      unsigned long fEventRequestAdvanceTime;                     //!transient
     private:
       /** copy constructor prohibited */
       HOMERReader(const HOMERReader&);
