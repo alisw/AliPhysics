@@ -37,8 +37,9 @@ using namespace std;
 #include "AliHLTOfflineInterface.h"
 #include <TObjArray.h>
 #include <TObjString.h>
-#include <TString.h>
 #include <TStopwatch.h>
+#include <TROOT.h>
+#include <TInterpreter.h>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
@@ -48,7 +49,8 @@ AliHLTSystem::AliHLTSystem()
   fpComponentHandler(new AliHLTComponentHandler()),
   fpConfigurationHandler(new AliHLTConfigurationHandler()),
   fTaskList(),
-  fState(0)
+  fState(0),
+  fLocalRec()
 {
   // see header file for class documentation
   // or
@@ -83,28 +85,6 @@ AliHLTSystem::AliHLTSystem()
   } else {
     HLTFatal("can not create Configuration Handler");
   }
-}
-
-AliHLTSystem::AliHLTSystem(const AliHLTSystem&)
-  :
-  AliHLTLogging(),
-  fpComponentHandler(NULL),
-  fpConfigurationHandler(NULL),
-  fTaskList(),
-  fState(0)
-{
-  // see header file for class documentation
-  if (fgNofInstances++>0)
-    HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
-
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTSystem& AliHLTSystem::operator=(const AliHLTSystem&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTSystem::~AliHLTSystem()
@@ -194,8 +174,9 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
       if (pTask->GetConf()!=pConf) {
 	HLTError("configuration missmatch, there is already a task with configuration name \"%s\", but it is different. Most likely configuration %p is not registered properly", pConf->GetName(), pConf);
 	iResult=-EEXIST;
-	pTask=NULL;
       }
+      // task for this configuration exists, terminate
+      pTask=NULL;
     } else if (pConf->SourcesResolved(1)!=1) {
 	HLTError("configuration \"%s\" has unresolved sources, aborting ...", pConf->GetName());
 	iResult=-ENOLINK;
@@ -205,7 +186,8 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 	iResult=-ENOMEM;
       }
     }
-    if (pTask) {
+    static int iterationLevel=0;
+    if (pTask && iResult>=0) {
       // check for circular dependencies
       if ((iResult=pConf->FollowDependency(pConf->GetName()))>0) {
 	HLTError("detected circular dependency for configuration \"%s\"", pTask->GetName());
@@ -224,8 +206,12 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 	fTaskList.Add(pTask);
 	AliHLTConfiguration* pDep=pConf->GetFirstSource();
 	while (pDep!=NULL && iResult>=0) {
+	  HLTDebug("iteration %d: checking dependency %s (%p)", iterationLevel, pDep->GetName(), pDep);
 	  if (FindTask(pDep->GetName())==NULL) {
+	    HLTDebug("iteration %d: building task list for configuration %s (%p)", iterationLevel, pDep->GetName(), pDep);
+	    iterationLevel++;
 	    iResult=BuildTaskList(pDep);
+	    iterationLevel--;
 	  }
 	  pDep=pConf->GetNextSource();
 	}
@@ -234,6 +220,7 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
 
 	// insert the task and set the cross-links
 	if (iResult>=0) {
+	  HLTDebug("iteration %d: inserting task %s (%p)", iterationLevel, pTask->GetName(), pTask);
 	  iResult=InsertTask(pTask);
 	}
       } else {
@@ -526,13 +513,18 @@ int AliHLTSystem::DeinitTasks()
   return iResult;
 }
 
-void* AliHLTSystem::AllocMemory( void* param, unsigned long size )
+void* AliHLTSystem::AllocMemory( void* /*param*/, unsigned long size )
 {
   // see header file for class documentation
-  if (param==NULL) {
-    // get rid of 'unused parameter' warning
+  void* p=NULL;
+  try {
+    p=(void*)new char[size];
   }
-  return (void*)new char[size];
+  catch (...) {
+    AliHLTLogging log;
+    log.LoggingVarargs(kHLTLogError, "AliHLTSystem" , "AllocMemory" , __FILE__ , __LINE__ , "exeption during memory allocation" );
+  }
+  return p;
 }
 
 int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader, 
@@ -610,12 +602,21 @@ int AliHLTSystem::Configure(AliRunLoader* runloader)
     HLTError("HLT system in running state, can not configure");
     return -EBUSY;
   }
+  ClearStatusFlags(kConfigurationLoaded|kTaskListCreated);
   if (CheckFilter(kHLTLogDebug))
     AliHLTModuleAgent::PrintStatus();
-  ClearStatusFlags(kConfigurationLoaded|kTaskListCreated);
-  iResult=LoadConfigurations(runloader);
+  if (CheckStatus(kConfigurationLoaded)==0) {
+    iResult=LoadConfigurations(runloader);
+  } else {
+    if (fLocalRec.Length()==0) {
+      HLTError("custom configuration(s) specified, but no configuration to run in local reconstruction, use \'localrec=<conf>\' option");
+      iResult=-ENOENT;
+    }
+  }
   if (iResult>=0) {
     SetStatusFlags(kConfigurationLoaded);
+    if (CheckFilter(kHLTLogDebug))
+      fpConfigurationHandler->PrintConfigurations();
     iResult=BuildTaskListsFromTopConfigurations(runloader);
     if (iResult>=0) {
       SetStatusFlags(kTaskListCreated);
@@ -623,6 +624,54 @@ int AliHLTSystem::Configure(AliRunLoader* runloader)
   }
   if (iResult<0) SetStatusFlags(kError);
   
+  return iResult;
+}
+
+int AliHLTSystem::ScanOptions(const char* options)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (options) {
+    TString alloptions(options);
+    TObjArray* pTokens=alloptions.Tokenize(" ");
+    if (pTokens) {
+      int iEntries=pTokens->GetEntries();
+      for (int i=0; i<iEntries; i++) {
+	TString token=(((TObjString*)pTokens->At(i))->GetString());
+	if (token.Contains("loglevel=")) {
+	  TString param=token.ReplaceAll("loglevel=", "");
+	  if (param.IsDigit()) {
+	    SetGlobalLoggingLevel((AliHLTComponentLogSeverity)param.Atoi());
+	  } else if (param.BeginsWith("0x") &&
+		     param.Replace(0,2,"",0).IsHex()) {
+	    int severity=0;
+	    sscanf(param.Data(),"%x", &severity);
+	    SetGlobalLoggingLevel((AliHLTComponentLogSeverity)severity);
+	  } else {
+	    HLTWarning("wrong parameter for option \'loglevel=\', (hex) number expected");
+	  }
+	} else if (token.Contains("alilog=off")) {
+	  SwitchAliLog(0);
+	} else if (token.Contains("config=")) {
+	  TString param=token.ReplaceAll("config=", "");
+	  Int_t error=0;
+	  gROOT->Macro(param.Data(), &error);
+	  if (error==0) {
+	    SetStatusFlags(kConfigurationLoaded);
+	  } else {
+	    HLTError("can not execute macro \'%s\'", param.Data());
+	    iResult=-EBADF;
+	  }
+	} else if (token.Contains("localrec=")) {
+	  TString param=token.ReplaceAll("localrec=", "");
+	  fLocalRec=param.ReplaceAll(",", " ");
+	} else {
+	  HLTWarning("unknown option \'%s\'", token.Data());
+	}
+      }
+      delete pTokens;
+    }
+  }
   return iResult;
 }
 
@@ -677,9 +726,15 @@ int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
 
   int iResult=0;
   AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-  while (pAgent && iResult>=0) {
-    TString tops=pAgent->GetLocalRecConfigurations(runloader);
-    HLTDebug("top configurations for agent %s (%p): %s", pAgent->GetName(), pAgent, tops.Data());
+  while ((pAgent || fLocalRec.Length()>0) && iResult>=0) {
+    TString tops;
+    if (fLocalRec.Length()>0) {
+      tops=fLocalRec;
+      HLTInfo("custom local reconstruction configurations: %s", tops.Data());
+    } else {
+      tops=pAgent->GetLocalRecConfigurations(runloader);
+      HLTInfo("local reconstruction configurations for agent %s (%p): %s", pAgent->GetName(), pAgent, tops.Data());
+    }
     TObjArray* pTokens=tops.Tokenize(" ");
     if (pTokens) {
       int iEntries=pTokens->GetEntries();
@@ -695,6 +750,9 @@ int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
       delete pTokens;
     }
     
+    if (fLocalRec.Length()>0) {
+      break; // ignore the agents
+    }
     pAgent=AliHLTModuleAgent::GetNextAgent();
   }
   if (iResult>=0) SetStatusFlags(kTaskListCreated);
@@ -732,6 +790,7 @@ int AliHLTSystem::ClearStatusFlags(int flags)
 
 void* AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol)
 {
+  // see header file for class documentation
   if (fpComponentHandler==NULL) return NULL;
   return fpComponentHandler->FindSymbol(library, symbol);
 }

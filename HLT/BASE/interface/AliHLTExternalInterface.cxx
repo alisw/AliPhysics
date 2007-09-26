@@ -27,10 +27,11 @@
 using namespace std;
 #endif
 
-#include "AliHLT_C_Component_WrapperInterface.h"
+#include "AliHLTExternalInterface.h"
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
-#include <errno.h>
+#include "AliHLTSystem.h"
+#include <cerrno>
 
 static AliHLTComponentHandler *gComponentHandler_C = NULL;
 
@@ -121,4 +122,21 @@ int AliHLT_C_GetOutputSize( AliHLTComponentHandle handle, unsigned long* constBa
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
   comp->GetOutputDataSize( *constBase, *inputMultiplier );
   return 0;
+}
+
+
+int AliHLTSystemSetOptions(AliHLTSystem* pInstance, const char* options)
+{
+  int iResult=0;
+  if (pInstance) {
+    AliHLTSystem* pSystem=reinterpret_cast<AliHLTSystem*>(pInstance);
+    if (pSystem) {
+      iResult=pSystem->ScanOptions(options);
+    } else {
+      iResult=-EFAULT;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  return iResult;
 }

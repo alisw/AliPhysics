@@ -26,6 +26,7 @@
 
 #include "AliHLTLogging.h"
 #include <TList.h>
+#include <TString.h>
 
 class AliHLTComponentHandler;
 class AliHLTConfiguration;
@@ -51,10 +52,6 @@ class AliHLTSystem : public AliHLTLogging {
  public:
   /** default constructor */
   AliHLTSystem();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTSystem(const AliHLTSystem&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTSystem& operator=(const AliHLTSystem&);
   /** destructor */
   virtual ~AliHLTSystem();
 
@@ -254,10 +251,29 @@ class AliHLTSystem : public AliHLTLogging {
    * Prepare the HLT system for running.
    * - module agents are requested to register configurations
    * - task lists are built from the top configurations of the modules
+   *
+   * @param runloader    optional instance of the run loader
    * @return neg. error code if failed <br>
    *         -EBUSY      system is in kRunning state <br>
    */
   int Configure(AliRunLoader* runloader=NULL);
+
+
+  /**
+   * Scan options.
+   * Known options
+   * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+   * \li loglevel=<i>level</i> <br>
+   *     logging level for this processing
+   * \li alilog=off
+   *     disable redirection of log messages to AliLog class
+   * \li config=<i>macro</i>
+   *     configuration macro
+   * \li localrec=<i>configuration</i>
+   *     comma separated list of configurations to be run during local
+   *     reconstruction
+   */
+  int ScanOptions(const char* options);
 
   /**
    * Reset the HLT system.
@@ -308,6 +324,11 @@ class AliHLTSystem : public AliHLTLogging {
  protected:
  
  private:
+  /** copy constructor prohibited */
+  AliHLTSystem(const AliHLTSystem&);
+  /** assignment operator prohibited */
+  AliHLTSystem& operator=(const AliHLTSystem&);
+
   /**
    * Set status flags.
    */
@@ -317,6 +338,7 @@ class AliHLTSystem : public AliHLTLogging {
    * clear status flags.
    */
   int ClearStatusFlags(int flags);
+
 
 /*   TList fConfList; */
 /*   int fbListChanged; */
@@ -330,8 +352,11 @@ class AliHLTSystem : public AliHLTLogging {
   /** state of the object */
   int fState;                                                      // see above
 
- private:
-  ClassDef(AliHLTSystem, 2);
-};
-#endif
+  /** configurations to be run during local reconstruction */
+  TString fLocalRec;                                               //!transient
 
+ private:
+  ClassDef(AliHLTSystem, 3);
+};
+
+#endif
