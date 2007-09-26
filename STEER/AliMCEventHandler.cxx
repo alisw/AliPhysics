@@ -299,13 +299,21 @@ void AliMCEventHandler::DrawCheck(Int_t i, Int_t search)
 
 Bool_t AliMCEventHandler::Notify(const char *path)
 {
-    // Notify about directory change
-    // The directory is taken from the 'path' argument
-    // Reconnect trees
-
-    printf("AliMCEventHandler::Notify() file: %s\n", path);
-    delete fPathName;
-    fPathName = new TString(path);
+  // Notify about directory change
+  // The directory is taken from the 'path' argument
+  // Reconnect trees
+    TString fileName(path);
+    if(fileName.Contains("AliESDs.root")){
+	fileName.ReplaceAll("AliESDs.root", "");
+    }
+    else if(fileName.Contains("galice.root")){
+	// for running with galice and kinematics alone...
+	fileName.ReplaceAll("galice.root", "");
+    }
+    
+    *fPathName = fileName;
+    printf("AliMCEventHandler::Notify() Path: %s\n", fPathName->Data());
+    
     ResetIO();
     InitIO("");
     return kTRUE;

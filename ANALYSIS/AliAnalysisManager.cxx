@@ -247,20 +247,18 @@ Bool_t AliAnalysisManager::Notify()
    // is started when using PROOF. It is normaly not necessary to make changes
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
-   if (fTree) {
-      TFile *curfile = fTree->GetCurrentFile();
+    if (fTree) {
+       TFile *curfile = fTree->GetCurrentFile();
       if (curfile && fDebug>1) printf("AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
       TIter next(fTasks);
       AliAnalysisTask *task;
       // Call Notify for all tasks
       while ((task=(AliAnalysisTask*)next())) 
-         task->Notify();
+	  task->Notify();
 
       // Call Notify of the MC truth handler
       if (fMCtruthEventHandler) {
-	TString fileName(curfile->GetName());
-	fileName.ReplaceAll("AliESDs.root", "");
-	fMCtruthEventHandler->Notify(fileName.Data());
+	  fMCtruthEventHandler->Notify(curfile->GetName());
       }
    }
    return kTRUE;
