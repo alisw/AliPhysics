@@ -82,7 +82,7 @@ void AliESDZDC::Reset()
   fZDCP2Energy=0;
   fZDCEMEnergy=0;
   fZDCParticipants=0;  
-  for(int i=0; i<24; i++) fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
+  for(int i=0; i<4; i++) fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
 
 }
 
