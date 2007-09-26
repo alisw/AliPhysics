@@ -8,17 +8,19 @@
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h> 
+
 #include "AliAnalysisTask.h"  
 
-class AliESD ; 
+class AliESDEvent ; 
 class TNtuple ;
 class TH1D ; 
 class TH1I ; 
+class TChain;
 
 class AliAnaCaloTrigger : public AliAnalysisTask {
 
 public:
+  AliAnaCaloTrigger() ;
   AliAnaCaloTrigger(const char *name) ;
   AliAnaCaloTrigger(const AliAnaCaloTrigger & trig) ;
   AliAnaCaloTrigger & operator=(const AliAnaCaloTrigger& source);
@@ -33,8 +35,8 @@ public:
   void    SetCalorimeter(TString calo) {fCalorimeter = calo ; }
 
 private:
-  TTree   * fChain ;            //!pointer to the analyzed TTree or TChain
-  AliESD  * fESD ;              //! Declaration of leave types
+  TChain   * fChain ;            //!pointer to the analyzed TTree or TChain
+  AliESDEvent  * fESD ;              //! Declaration of leave types
 
   TObjArray * fOutputContainer ; //! output data container
 
