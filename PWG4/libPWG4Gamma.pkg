@@ -1,6 +1,6 @@
 SRCS = AliAnaCaloTrigger.cxx AliAnaCaloTriggerMC.cxx \
        AliAnaGammaPhos.cxx AliNeutralMesonSelection.cxx \
-       AliAnaScale.cxx AliMCScale.cxx \
+       AliAnaScale.cxx \
        AliAnaGamma.cxx  AliAnaGammaDirect.cxx  \
        AliAnaGammaCorrelation.cxx  AliAnaGammaParton.cxx AliAnaGammaHadron.cxx AliAnaGammaJetLeadCone.cxx  AliAnaGammaJetFinder.cxx \
        AliAnalysisTaskGamma.cxx \
