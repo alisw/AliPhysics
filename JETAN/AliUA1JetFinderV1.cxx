@@ -215,22 +215,22 @@ void AliUA1JetFinderV1::FindJets()
 
 
   //delete
-  delete ptT;
-  delete etaT;
-  delete phiT;
-  delete injet;
+  delete [] ptT;
+  delete [] etaT;
+  delete [] phiT;
+  delete [] injet;
   delete hPtTotal;
-  delete etaJet;
-  delete phiJet;
-  delete etJet;
-  delete etsigJet;
-  delete etallJet;
-  delete ncellsJet;
-  delete multJet;
-  delete idxjets;
-  delete percentage;
-  delete ncells;
-  delete mult;
+  delete [] etaJet;
+  delete [] phiJet;
+  delete [] etJet;
+  delete [] etsigJet;
+  delete [] etallJet;
+  delete [] ncellsJet;
+  delete [] multJet;
+  delete [] idxjets;
+  delete [] percentage;
+  delete [] ncells;
+  delete [] mult;
 
 
 }
@@ -245,10 +245,15 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
    //dump lego
   // check enough space! *to be done*
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
-  Float_t etCell[60000];   //! Cell Energy
-  Float_t etaCell[60000];  //! Cell eta
-  Float_t phiCell[60000];  //! Cell phi
-  Int_t   flagCell[60000]; //! Cell flag
+  const Int_t nBinsMax = 70000;
+  if(header->GetLegoNbinEta()*header->GetLegoNbinPhi()>nBinsMax){
+    printf("%s:%d \n >> Too Large Eta-Phi Grid Canceling Jet search \n",(char*)__FILE__,__LINE__);
+    return;
+  }
+  Float_t etCell[nBinsMax];   //! Cell Energy
+  Float_t etaCell[nBinsMax];  //! Cell eta
+  Float_t phiCell[nBinsMax];  //! Cell phi
+  Int_t   flagCell[nBinsMax]; //! Cell flag
 
   Int_t nCell = 0;
   TAxis* xaxis = fLego->GetXaxis();
@@ -263,7 +268,7 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 	       etCell[nCell]  = e;
 	       etaCell[nCell] = eta;
 	       phiCell[nCell] = phi;
-          flagCell[nCell] = 0; //default
+	       flagCell[nCell] = 0; //default
 	       nCell++;
       }
   }
@@ -338,7 +343,7 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
                deta = etaCell[lcell] - eta0;
                dphi = phiCell[lcell] - phi0;
                if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	            if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+	       if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
                etas = etas + etCell[lcell]*deta;
                phis = phis + etCell[lcell]*dphi;
                ets = ets + etCell[lcell];
@@ -428,8 +433,8 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 
 
   //delete
-  delete index;
-  delete idx;
+  delete [] index;
+  delete [] idx;
 
 }
 ////////////////////////////////////////////////////////////////////////

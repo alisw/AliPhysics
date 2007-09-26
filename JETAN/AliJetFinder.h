@@ -32,6 +32,7 @@ class AliJetFinder : public TObject
 
   // getters
   virtual AliJetReader *GetReader() {return fReader;}
+  virtual AliJetHeader *GetHeader() {return fHeader;}
   virtual AliJet *GetJets() {return fJets;}
   virtual Bool_t GetPlotMode() const {return fPlotMode;}
   virtual TFile* GetOutputFile() {return fOut;}
