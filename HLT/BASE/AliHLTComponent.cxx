@@ -1092,7 +1092,9 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     outputBlocks=NULL;
   }
   CleanupInputObjects();
-  IncrementEventCounter();
+  if (iResult>=0) {
+    IncrementEventCounter();
+  }
   return iResult;
 }
 
