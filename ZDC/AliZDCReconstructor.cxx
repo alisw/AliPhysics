@@ -105,10 +105,12 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   digitsTree->SetBranchAddress("ZDC", &pdigit);
 
   // loop over digits
-    Float_t ZN1TowCorrHG[5], ZP1TowCorrHG[5], ZEMCorrHG=0., 
-    	    ZN2TowCorrHG[5], ZP2TowCorrHG[5];
-    Float_t ZN1TowCorrLG[5], ZP1TowCorrLG[5], ZEMCorrLG=0., 
-            ZN2TowCorrLG[5], ZP2TowCorrLG[5];
+    Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.}; 
+    Float_t dZEMCorrHG=0.; 
+    Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
+    Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
+    Float_t dZEMCorrLG=0.; 
+    Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
     
   for (Int_t iDigit = 0; iDigit < digitsTree->GetEntries(); iDigit++) {
     digitsTree->GetEntry(iDigit);
@@ -120,42 +122,42 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
     //
     if(det == 1){ // *** ZN1
        pedindex = quad;
-       ZN1TowCorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
-       ZN1TowCorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZN1CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       tZN1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
     }
     else if(det == 2){ // *** ZP1
        pedindex = quad+10;
-       ZP1TowCorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
-       ZP1TowCorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZP1CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       tZP1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
     }
     else if(det == 3){
        if(quad == 1){	    // *** ZEM1  
     	 pedindex = quad+20;
-         ZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
-         ZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
+         dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
        }
        else if(quad == 2){  // *** ZEM1
     	 pedindex = quad+21;
-         ZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
-         ZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
+         dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
        }
     }
     else if(det == 4){  // *** ZN2
        pedindex = quad+24;
-       ZN2TowCorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
-       ZN2TowCorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZN2CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       tZN2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
     }
     else if(det == 5){  // *** ZP2 
        pedindex = quad+34;
-       ZP2TowCorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
-       ZP2TowCorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZP2CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       tZP2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
     }
   }
 
   // reconstruct the event
-    ReconstructEvent(clustersTree, ZN1TowCorrHG, ZP1TowCorrHG, ZN2TowCorrHG, 
-    	ZP2TowCorrHG, ZN1TowCorrLG, ZP1TowCorrLG, ZN2TowCorrLG, 
-    	ZP2TowCorrLG, ZEMCorrHG);
+    ReconstructEvent(clustersTree, tZN1CorrHG, tZP1CorrHG, tZN2CorrHG, 
+    	tZP2CorrHG, tZN1CorrLG, tZP1CorrLG, tZN2CorrLG, 
+    	tZP2CorrLG, dZEMCorrHG);
 
 }
 
@@ -172,10 +174,12 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   rawReader->Reset();
 
   // loop over raw data rawDatas
-  Float_t ZN1TowCorrHG[5], ZP1TowCorrHG[5], ZEMCorrHG=0., 
-  	  ZN2TowCorrHG[5], ZP2TowCorrHG[5];
-  Float_t ZN1TowCorrLG[5], ZP1TowCorrLG[5], ZEMCorrLG=0., 
-  	  ZN2TowCorrLG[5], ZP2TowCorrLG[5];
+  Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.};
+  Float_t dZEMCorrHG=0.;
+  Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
+  Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
+  Float_t dZEMCorrLG=0.; 
+  Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
   //
   AliZDCRawStream rawData(rawReader);
   while (rawData.Next()) {
@@ -187,43 +191,43 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       //
       if(det == 1){    
         pedindex = quad;
-        if(gain == 0) ZN1TowCorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else ZN1TowCorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
+        if(gain == 0) tZN1CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+        else tZN1CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
       }
       else if(det == 2){ 
         pedindex = quad+10;
-        if(gain == 0) ZP1TowCorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else ZP1TowCorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
+        if(gain == 0) tZP1CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+        else tZP1CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
       }
       else if(det == 3){ 
         if(quad==1){	 
           pedindex = quad+20;
-          if(gain == 0) ZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-          else ZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+          if(gain == 0) dZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+          else dZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
         }
         else if(quad==2){ 
           pedindex = rawData.GetSector(1)+21;
-          if(gain == 0) ZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-          else ZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+          if(gain == 0) dZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+          else dZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
         }
       }
       else if(det == 4){       
         pedindex = rawData.GetSector(1)+24;
-        if(gain == 0) ZN2TowCorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else ZN2TowCorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+        if(gain == 0) tZN2CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+        else tZN2CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
       }
       else if(det == 5){
         pedindex = rawData.GetSector(1)+34;
-        if(gain == 0) ZP2TowCorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else ZP2TowCorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
+        if(gain == 0) tZP2CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+        else tZP2CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
       }
     }
   }
     
   // reconstruct the event
-    ReconstructEvent(clustersTree, ZN1TowCorrHG, ZP1TowCorrHG, ZN2TowCorrHG, 
-    	ZP2TowCorrHG, ZN1TowCorrLG, ZP1TowCorrLG, ZN2TowCorrLG, 
-    	ZP2TowCorrLG, ZEMCorrHG);
+    ReconstructEvent(clustersTree, tZN1CorrHG, tZP1CorrHG, tZN2CorrHG, 
+    	tZP2CorrHG, tZN1CorrLG, tZP1CorrLG, tZN2CorrLG, 
+    	tZP2CorrLG, dZEMCorrHG);
 
 }
 
@@ -233,7 +237,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
 		Float_t* ZN2ADCCorrHG, Float_t* ZP2ADCCorrHG, 
 		Float_t* ZN1ADCCorrLG, Float_t* ZP1ADCCorrLG, 
 		Float_t* ZN2ADCCorrLG, Float_t* ZP2ADCCorrLG, 
-		Float_t ZEMADCCorrHG) const
+		Float_t corrADCZEMHG) const
 {
   // ***** Reconstruct one event
   
@@ -279,80 +283,80 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   // *** RECONSTRUCTION FROM "REAL" DATA
   //
   // Retrieving calibration data
-  Float_t ZN1EqualCoeff[5], ZP1EqualCoeff[5], ZN2EqualCoeff[5], ZP2EqualCoeff[5];
+  Float_t equalCoeffZN1[5], equalCoeffZP1[5], equalCoeffZN2[5], equalCoeffZP2[5];
   for(Int_t ji=0; ji<5; ji++){
-     ZN1EqualCoeff[ji] = fCalibData->GetZN1EqualCoeff(ji);
-     ZP1EqualCoeff[ji] = fCalibData->GetZP1EqualCoeff(ji); 
-     ZN2EqualCoeff[ji] = fCalibData->GetZN2EqualCoeff(ji); 
-     ZP2EqualCoeff[ji] = fCalibData->GetZP2EqualCoeff(ji); 
+     equalCoeffZN1[ji] = fCalibData->GetZN1EqualCoeff(ji);
+     equalCoeffZP1[ji] = fCalibData->GetZP1EqualCoeff(ji); 
+     equalCoeffZN2[ji] = fCalibData->GetZN2EqualCoeff(ji); 
+     equalCoeffZP2[ji] = fCalibData->GetZP2EqualCoeff(ji); 
   }
   //
-  Float_t CalibEne[4];
-  for(Int_t ij=0; ij<4; ij++) CalibEne[ij] = fCalibData->GetEnCalib(ij);
+  Float_t calibEne[4];
+  for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fCalibData->GetEnCalib(ij);
   //
-  Float_t ZEMEndPoint = fCalibData->GetZEMEndValue();
-  Float_t ZEMCutFraction = fCalibData->GetZEMCutFraction();
-  Float_t DZEMSup = fCalibData->GetDZEMSup();
-  Float_t DZEMInf = fCalibData->GetDZEMInf();
+  Float_t endPointZEM = fCalibData->GetZEMEndValue();
+  Float_t cutFractionZEM = fCalibData->GetZEMCutFraction();
+  Float_t dZEMSup = fCalibData->GetDZEMSup();
+  Float_t dZEMInf = fCalibData->GetDZEMInf();
   //
-  Float_t ZEMCutValue = ZEMEndPoint*ZEMCutFraction;
-  Float_t ZEMSupValue = ZEMCutValue+(ZEMEndPoint*DZEMSup);
-  Float_t ZEMInfValue = ZEMCutValue-(ZEMEndPoint*DZEMInf);
+  Float_t cutValueZEM = endPointZEM*cutFractionZEM;
+  Float_t supValueZEM = cutValueZEM+(endPointZEM*dZEMSup);
+  Float_t infValueZEM = cutValueZEM-(endPointZEM*dZEMInf);
   //
-  Float_t EZN1MaxVal = fCalibData->GetEZN1MaxValue();
-  Float_t EZP1MaxVal = fCalibData->GetEZP1MaxValue();
-  Float_t EZDC1MaxVal = fCalibData->GetEZDC1MaxValue();
-  Float_t EZN2MaxVal = fCalibData->GetEZN1MaxValue();
-  Float_t EZP2MaxVal = fCalibData->GetEZP1MaxValue();
-  Float_t EZDC2MaxVal = fCalibData->GetEZDC1MaxValue();
+  Float_t maxValEZN1 = fCalibData->GetEZN1MaxValue();
+  Float_t maxValEZP1 = fCalibData->GetEZP1MaxValue();
+  Float_t maxValEZDC1 = fCalibData->GetEZDC1MaxValue();
+  Float_t maxValEZN2 = fCalibData->GetEZN1MaxValue();
+  Float_t maxValEZP2 = fCalibData->GetEZP1MaxValue();
+  Float_t maxValEZDC2 = fCalibData->GetEZDC1MaxValue();
   
   // Equalization of detector responses
-  Float_t ZN1EqualTowHG[5], ZN2EqualTowHG[5], ZP1EqualTowHG[5], ZP2EqualTowHG[5];
-  Float_t ZN1EqualTowLG[5], ZN2EqualTowLG[5], ZP1EqualTowLG[5], ZP2EqualTowLG[5];
+  Float_t equalTowZN1HG[5], equalTowZN2HG[5], equalTowZP1HG[5], equalTowZP2HG[5];
+  Float_t equalTowZN1LG[5], equalTowZN2LG[5], equalTowZP1LG[5], equalTowZP2LG[5];
   for(Int_t gi=0; gi<5; gi++){
-     ZN1EqualTowHG[gi] = ZN1ADCCorrHG[gi]*ZN1EqualCoeff[gi];
-     ZP1EqualTowHG[gi] = ZP1ADCCorrHG[gi]*ZP1EqualCoeff[gi];
-     ZN2EqualTowHG[gi] = ZN2ADCCorrHG[gi]*ZN2EqualCoeff[gi];
-     ZP2EqualTowHG[gi] = ZP2ADCCorrHG[gi]*ZP2EqualCoeff[gi];
+     equalTowZN1HG[gi] = ZN1ADCCorrHG[gi]*equalCoeffZN1[gi];
+     equalTowZP1HG[gi] = ZP1ADCCorrHG[gi]*equalCoeffZP1[gi];
+     equalTowZN2HG[gi] = ZN2ADCCorrHG[gi]*equalCoeffZN2[gi];
+     equalTowZP2HG[gi] = ZP2ADCCorrHG[gi]*equalCoeffZP2[gi];
      //
-     ZN1EqualTowLG[gi] = ZN1ADCCorrLG[gi]*ZN1EqualCoeff[gi];
-     ZP1EqualTowLG[gi] = ZP1ADCCorrLG[gi]*ZP1EqualCoeff[gi];
-     ZN2EqualTowLG[gi] = ZN2ADCCorrLG[gi]*ZN2EqualCoeff[gi];
-     ZP2EqualTowLG[gi] = ZP2ADCCorrLG[gi]*ZP2EqualCoeff[gi];
+     equalTowZN1LG[gi] = ZN1ADCCorrLG[gi]*equalCoeffZN1[gi];
+     equalTowZP1LG[gi] = ZP1ADCCorrLG[gi]*equalCoeffZP1[gi];
+     equalTowZN2LG[gi] = ZN2ADCCorrLG[gi]*equalCoeffZN2[gi];
+     equalTowZP2LG[gi] = ZP2ADCCorrLG[gi]*equalCoeffZP2[gi];
   }
   
   // Energy calibration of detector responses
-  Float_t ZN1CalibTowHG[5], ZN2CalibTowHG[5], ZP1CalibTowHG[5], ZP2CalibTowHG[5];
-  Float_t ZN1CalibSumHG=0., ZN2CalibSumHG=0., ZP1CalibSumHG=0., ZP2CalibSumHG=0.;
-  Float_t ZN1CalibTowLG[5], ZN2CalibTowLG[5], ZP1CalibTowLG[5], ZP2CalibTowLG[5];
-  Float_t ZN1CalibSumLG=0., ZN2CalibSumLG=0., ZP1CalibSumLG=0., ZP2CalibSumLG=0.;
+  Float_t calibTowZN1HG[5], calibTowZN2HG[5], calibTowZP1HG[5], calibTowZP2HG[5];
+  Float_t calibSumZN1HG=0., calibSumZN2HG=0., calibSumZP1HG=0., calibSumZP2HG=0.;
+  Float_t calibTowZN1LG[5], calibTowZN2LG[5], calibTowZP1LG[5], calibTowZP2LG[5];
+  Float_t calibSumZN1LG=0., calibSumZN2LG=0., calibSumZ12LG=0., calibSumZP2LG=0.;
   for(Int_t gi=0; gi<5; gi++){
-     ZN1CalibTowHG[gi] = ZN1EqualTowHG[gi]*CalibEne[0];
-     ZP1CalibTowHG[gi] = ZP1EqualTowHG[gi]*CalibEne[1];
-     ZN2CalibTowHG[gi] = ZN2EqualTowHG[gi]*CalibEne[2];
-     ZP2CalibTowHG[gi] = ZP2EqualTowHG[gi]*CalibEne[3];
-     ZN1CalibSumHG += ZN1CalibTowHG[gi];
-     ZP1CalibSumHG += ZP1CalibTowHG[gi];
-     ZN2CalibSumHG += ZN2CalibTowHG[gi];
-     ZP2CalibSumHG += ZP2CalibTowHG[gi];
+     calibTowZN1HG[gi] = equalTowZN1HG[gi]*calibEne[0];
+     calibTowZP1HG[gi] = equalTowZP1HG[gi]*calibEne[1];
+     calibTowZN2HG[gi] = equalTowZN2HG[gi]*calibEne[2];
+     calibTowZP2HG[gi] = equalTowZP2HG[gi]*calibEne[3];
+     calibSumZN1HG += calibTowZN1HG[gi];
+     calibSumZP1HG += calibTowZP1HG[gi];
+     calibSumZN2HG += calibTowZN2HG[gi];
+     calibSumZP2HG += calibTowZP2HG[gi];
      //
-     ZN1CalibTowLG[gi] = ZN1EqualTowLG[gi]*CalibEne[0];
-     ZP1CalibTowLG[gi] = ZP1EqualTowLG[gi]*CalibEne[1];
-     ZN2CalibTowLG[gi] = ZN2EqualTowLG[gi]*CalibEne[2];
-     ZP2CalibTowLG[gi] = ZP2EqualTowLG[gi]*CalibEne[3];
-     ZN1CalibSumLG += ZN1CalibTowLG[gi];
-     ZP1CalibSumLG += ZP1CalibTowLG[gi];
-     ZN2CalibSumLG += ZN2CalibTowLG[gi];
-     ZP2CalibSumLG += ZP2CalibTowLG[gi];
+     calibTowZN1LG[gi] = equalTowZN1LG[gi]*calibEne[0];
+     calibTowZP1LG[gi] = equalTowZP1LG[gi]*calibEne[1];
+     calibTowZN2LG[gi] = equalTowZN2LG[gi]*calibEne[2];
+     calibTowZP2LG[gi] = equalTowZP2LG[gi]*calibEne[3];
+     calibSumZN1LG += calibTowZN1LG[gi];
+     calibSumZ12LG += calibTowZP1LG[gi];
+     calibSumZN2LG += calibTowZN2LG[gi];
+     calibSumZP2LG += calibTowZP2LG[gi];
   }
   
   //  ---      Number of detected spectator nucleons
   //  *** N.B. -> It works only in Pb-Pb
   Int_t nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight;
-  nDetSpecNLeft = (Int_t) (ZN1CalibSumHG/2.760);
-  nDetSpecPLeft = (Int_t) (ZP1CalibSumHG/2.760);
-  nDetSpecNRight = (Int_t) (ZN2CalibSumHG/2.760);
-  nDetSpecPRight = (Int_t) (ZP2CalibSumHG/2.760);
+  nDetSpecNLeft = (Int_t) (calibSumZN1HG/2.760);
+  nDetSpecPLeft = (Int_t) (calibSumZP1HG/2.760);
+  nDetSpecNRight = (Int_t) (calibSumZN2HG/2.760);
+  nDetSpecPRight = (Int_t) (calibSumZP2HG/2.760);
 
   //  ---      Number of generated spectator nucleons (from HIJING parameterization)
   Int_t nGenSpecNLeft=0, nGenSpecPLeft=0, nGenSpecLeft=0;
@@ -396,37 +400,37 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   //
   // *** RECONSTRUCTION FROM REAL DATA
   //
-  if(ZEMADCCorrHG > ZEMSupValue){
-    nGenSpecNLeft  = (Int_t) (fZNCen->Eval(ZN1CalibSumHG));
-    nGenSpecPLeft  = (Int_t) (fZPCen->Eval(ZP1CalibSumHG));
-    nGenSpecLeft   = (Int_t) (fZDCCen->Eval(ZN1CalibSumHG+ZP1CalibSumHG));
-    nGenSpecNRight = (Int_t) (fZNCen->Eval(ZN2CalibSumHG));
-    nGenSpecPRight = (Int_t) (fZNCen->Eval(ZP2CalibSumHG));
-    nGenSpecRight  = (Int_t) (fZNCen->Eval(ZN2CalibSumHG+ZP2CalibSumHG));
-    impPar  = fbCen->Eval(ZN1CalibSumHG+ZP1CalibSumHG);
+  if(corrADCZEMHG > supValueZEM){
+    nGenSpecNLeft  = (Int_t) (fZNCen->Eval(calibSumZN1HG));
+    nGenSpecPLeft  = (Int_t) (fZPCen->Eval(calibSumZP1HG));
+    nGenSpecLeft   = (Int_t) (fZDCCen->Eval(calibSumZN1HG+calibSumZP1HG));
+    nGenSpecNRight = (Int_t) (fZNCen->Eval(calibSumZN2HG));
+    nGenSpecPRight = (Int_t) (fZNCen->Eval(calibSumZP2HG));
+    nGenSpecRight  = (Int_t) (fZNCen->Eval(calibSumZN2HG+calibSumZP2HG));
+    impPar  = fbCen->Eval(calibSumZN1HG+calibSumZP1HG);
   }
-  else if(ZEMADCCorrHG < ZEMInfValue){
-    nGenSpecNLeft = (Int_t) (fZNPer->Eval(ZN1CalibSumHG)); 
-    nGenSpecPLeft = (Int_t) (fZPPer->Eval(ZP1CalibSumHG));
-    nGenSpecLeft  = (Int_t) (fZDCPer->Eval(ZN1CalibSumHG+ZP1CalibSumHG));
-    impPar   = fbPer->Eval(ZN1CalibSumHG+ZP1CalibSumHG);
+  else if(corrADCZEMHG < infValueZEM){
+    nGenSpecNLeft = (Int_t) (fZNPer->Eval(calibSumZN1HG)); 
+    nGenSpecPLeft = (Int_t) (fZPPer->Eval(calibSumZP1HG));
+    nGenSpecLeft  = (Int_t) (fZDCPer->Eval(calibSumZN1HG+calibSumZP1HG));
+    impPar   = fbPer->Eval(calibSumZN1HG+calibSumZP1HG);
   }
-  else if(ZEMADCCorrHG >= ZEMInfValue && ZEMADCCorrHG <= ZEMSupValue){
-    nGenSpecNLeft = (Int_t) (fZEMn->Eval(ZEMADCCorrHG));
-    nGenSpecPLeft = (Int_t) (fZEMp->Eval(ZEMADCCorrHG));
-    nGenSpecLeft  = (Int_t)(fZEMsp->Eval(ZEMADCCorrHG));
-    impPar   =  fZEMb->Eval(ZEMADCCorrHG);
+  else if(corrADCZEMHG >= infValueZEM && corrADCZEMHG <= supValueZEM){
+    nGenSpecNLeft = (Int_t) (fZEMn->Eval(corrADCZEMHG));
+    nGenSpecPLeft = (Int_t) (fZEMp->Eval(corrADCZEMHG));
+    nGenSpecLeft  = (Int_t)(fZEMsp->Eval(corrADCZEMHG));
+    impPar   =  fZEMb->Eval(corrADCZEMHG);
   }
   // 
-  if(ZN1CalibSumHG/EZN1MaxVal>1.)  nGenSpecNLeft = (Int_t) (fZEMn->Eval(ZEMADCCorrHG));
-  if(ZP1CalibSumHG/EZP1MaxVal>1.)  nGenSpecPLeft = (Int_t) (fZEMp->Eval(ZEMADCCorrHG));
-  if((ZN1CalibSumHG+ZP1CalibSumHG/EZDC1MaxVal)>1.){
-     nGenSpecLeft = (Int_t)(fZEMsp->Eval(ZEMADCCorrHG));
-     impPar = fZEMb->Eval(ZEMADCCorrHG);
+  if(calibSumZN1HG/maxValEZN1>1.)  nGenSpecNLeft = (Int_t) (fZEMn->Eval(corrADCZEMHG));
+  if(calibSumZP1HG/maxValEZP1>1.)  nGenSpecPLeft = (Int_t) (fZEMp->Eval(corrADCZEMHG));
+  if((calibSumZN1HG+calibSumZP1HG/maxValEZDC1)>1.){
+     nGenSpecLeft = (Int_t)(fZEMsp->Eval(corrADCZEMHG));
+     impPar = fZEMb->Eval(corrADCZEMHG);
   }
-  if(ZN2CalibSumHG/EZN2MaxVal>1.)  nGenSpecNRight = (Int_t) (fZEMn->Eval(ZEMADCCorrHG));
-  if(ZP2CalibSumHG/EZP2MaxVal>1.)  nGenSpecPRight = (Int_t) (fZEMp->Eval(ZEMADCCorrHG));
-  if((ZN2CalibSumHG+ZP2CalibSumHG/EZDC2MaxVal)>1.) nGenSpecRight = (Int_t)(fZEMsp->Eval(ZEMADCCorrHG));
+  if(calibSumZN2HG/maxValEZN2>1.)  nGenSpecNRight = (Int_t) (fZEMn->Eval(corrADCZEMHG));
+  if(calibSumZP2HG/maxValEZP2>1.)  nGenSpecPRight = (Int_t) (fZEMp->Eval(corrADCZEMHG));
+  if((calibSumZN2HG+calibSumZP2HG/maxValEZDC2)>1.) nGenSpecRight = (Int_t)(fZEMsp->Eval(corrADCZEMHG));
   //
   if(nGenSpecNLeft>125)    nGenSpecNLeft=125;
   else if(nGenSpecNLeft<0) nGenSpecNLeft=0;
@@ -442,9 +446,9 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   nPartTotRight = 207-nGenSpecRight;
 
   // create the output tree
-  AliZDCReco reco(ZN1CalibSumHG, ZP1CalibSumHG, ZN2CalibSumHG, ZP2CalibSumHG, 
-  		  ZN1CalibTowLG, ZN2CalibTowLG, ZP1CalibTowLG, ZP2CalibTowLG, 
-		  ZEMADCCorrHG, 
+  AliZDCReco reco(calibSumZN1HG, calibSumZP1HG, calibSumZN2HG, calibSumZP2HG, 
+  		  calibTowZN1LG, calibTowZN2LG, calibTowZP1LG, calibTowZP2LG, 
+		  corrADCZEMHG, 
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
 		  nGenSpecPRight, nGenSpecRight,
@@ -471,6 +475,15 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
+  //
+  /*Double_t tZN1Ene[4], tZN2Ene[4];
+  for(Int_t i=0; i<4; i++){
+     tZN1Ene[i] = reco.GetZN1EnTow(i);
+     tZN2Ene[i] = reco.GetZN2EnTow(i);
+  }*/
+  //esd->SetZN1TowerEnergy(tZN1Ene);
+  //esd->SetZN2TowerEnergy(tZN2Ene);
+  
 }
 
 //_____________________________________________________________________________

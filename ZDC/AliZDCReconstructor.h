@@ -25,31 +25,16 @@ public:
   AliZDCReconstructor();
   virtual ~AliZDCReconstructor();
 
-  virtual Bool_t HasDigitConversion() const {return kFALSE;}
-  virtual Bool_t HasLocalReconstruction() const {return kTRUE;}
+  virtual Bool_t HasDigitConversion() const {return kFALSE;};
 
   virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const; 
   virtual void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
-
-  // Not used
-  virtual void Reconstruct(AliRunLoader* /*runLoader*/) const
-    { AliError("Method should not be used anymore !"); }
-  virtual void Reconstruct(AliRunLoader* /*runLoader*/, 
-			   AliRawReader* /*rawReader*/) const
-    { AliError("Method should not be used anymore !"); }
 
   virtual void FillESD(TTree* /*digitsTree*/, TTree* clustersTree, AliESDEvent* esd) const 
   	        {FillZDCintoESD(clustersTree,esd);}
   virtual void FillESD(AliRawReader* /*rawReader*/, TTree* clustersTree, AliESDEvent* esd) const 
   	        {FillZDCintoESD(clustersTree,esd);}
-  
-  // Not used
-  virtual void FillESD(AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/) const
-    { AliError("Method should not be used anymore !"); }
-  virtual void FillESD(AliRunLoader* /*runLoader*/, 
-		       AliRawReader* /*rawReader*/, AliESDEvent* /*esd*/) const
-    { AliError("Method should not be used anymore !"); }
-  
+    
   AliCDBStorage   *SetStorage(const char* uri);
   AliZDCCalibData *GetCalibData() const; 
   
