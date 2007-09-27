@@ -788,6 +788,8 @@ Bool_t AliReconstruction::Run(const char* input)
       }
     }
 
+    file->cd();
+
     //Try to improve the reconstructed primary vertex position using the tracks
     AliESDVertex *pvtx=0;
     Bool_t dovertex=kTRUE;
