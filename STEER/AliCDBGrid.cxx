@@ -40,12 +40,18 @@
 ClassImp(AliCDBGrid)
 
 //_____________________________________________________________________________
-AliCDBGrid::AliCDBGrid(const char *gridUrl, const char *user, const char *dbFolder, const char *se) :
+AliCDBGrid::AliCDBGrid(const char *gridUrl, const char *user, const char *dbFolder,
+                       const char *se, const char* cacheFolder, Bool_t operateDisconnected,
+		       Long64_t cacheSize, Long_t cleanupInterval) :
 AliCDBStorage(),
 fGridUrl(gridUrl),
 fUser(user),
 fDBFolder(dbFolder),
-fSE(se)
+fSE(se),
+fCacheFolder(cacheFolder),
+fOperateDisconnected(operateDisconnected),
+fCacheSize(cacheSize),
+fCleanupInterval(cleanupInterval)
 {
 // constructor //
 
@@ -87,6 +93,36 @@ fSE(se)
 
 	fType="alien";
 	fBaseFolder = fDBFolder;
+
+	// Setting the cache
+
+	// Check if local cache folder is already defined
+	TString origCache(TFile::GetCacheFileDir());
+	if(fCacheFolder.Length() > 0) {
+		if(origCache.Length() == 0) {
+			AliInfo(Form("Setting local cache to: %s", fCacheFolder.Data()));
+		} else if(fCacheFolder != origCache) {
+			AliWarning(Form("Local cache folder was already defined, changing it to: %s",
+					fCacheFolder.Data()));
+		}
+
+		// default settings are: operateDisconnected=kTRUE, forceCacheread = kFALSE
+		if(!TFile::SetCacheFileDir(fCacheFolder.Data(), fOperateDisconnected)) {
+			AliError(Form("Could not set cache folder %s !", fCacheFolder.Data()));
+			fCacheFolder = "";
+		} else {
+			// reset fCacheFolder because the function may have
+			// slightly changed the folder name (e.g. '/' added)
+			fCacheFolder = TFile::GetCacheFileDir();
+		}
+
+		// default settings are: cacheSize=1GB, cleanupInterval = 0
+		if(!TFile::ShrinkCacheFileDir(fCacheSize, fCleanupInterval)) {
+			AliError(Form("Could not set following values "
+				"to ShrinkCacheFileDir: cacheSize = %d, cleanupInterval = %d !",
+				fCacheSize, fCleanupInterval));
+		}
+	}
 
 	// return to the initial directory
 	gGrid->Cd(initDir.Data(),0);
@@ -207,6 +243,7 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 			// if folders are new add tags to them
 			if(i == 1) {
 				// TODO Currently disabled
+				// add short lived tag!
 				// AliInfo("Tagging level 1 folder with \"ShortLived\" tag");
 				// if(!AddTag(dirName,"ShortLived_try")){
 				//	AliError(Form("Could not tag folder %s !", dirName.Data()));
@@ -217,7 +254,7 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 				//}
 
 			} else if(i == 2) {
-				AliInfo("Tagging level 2 folder with \"CDB\" and \"CDB_MD\" tag");
+				AliDebug(2,"Tagging level 2 folder with \"CDB\" and \"CDB_MD\" tag");
 				if(!AddTag(dirName,"CDB")){
 					AliError(Form("Could not tag folder %s !", dirName.Data()));
 					if(!gGrid->Rmdir(dirName.Data())){
@@ -233,8 +270,8 @@ Bool_t AliCDBGrid::PrepareId(AliCDBId& id) {
 					return 0;
 				}
 
-				// add short lived tag!
 				// TODO Currently disabled
+				// add short lived tag!
 				// TString path=id.GetPath();
 				// if(AliCDBManager::Instance()->IsShortLived(path.Data())) {
 				//	AliInfo(Form("Tagging %s as short lived", dirName.Data()));
@@ -336,6 +373,8 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
 		}
 
 	}
+	
+	if (!result) return NULL;
 
 	return dynamic_cast<AliCDBId*> (result->Clone());
 }
@@ -420,7 +459,26 @@ AliCDBEntry* AliCDBGrid::GetEntryFromFile(TString& filename, AliCDBId* dataId){
 	AliDebug(2,Form("Opening file: %s",filename.Data()));
 
 	filename.Prepend("/alien");
-	TFile *file = TFile::Open(filename);
+
+	// if option="CACHEREAD" TFile will use the local caching facility!
+	TString option="READ";
+	if(fCacheFolder != ""){
+
+		// Check if local cache folder was changed in the meanwhile
+		TString origCache(TFile::GetCacheFileDir());
+		if(fCacheFolder != origCache) {
+			AliWarning(Form("Local cache folder has been overwritten!! fCacheFolder = %s origCache = %s",
+					fCacheFolder.Data(), origCache.Data()));
+			TFile::SetCacheFileDir(fCacheFolder.Data(), fOperateDisconnected);
+			TFile::ShrinkCacheFileDir(fCacheSize, fCleanupInterval);
+		}
+
+		option.Prepend("CACHE");
+        }
+
+	AliDebug(2, Form("Option: %s", option.Data()));
+
+	TFile *file = TFile::Open(filename, option);
 	if (!file) {
 		AliDebug(2,Form("Can't open file <%s>!", filename.Data()));
 		return NULL;
@@ -613,9 +671,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	file->Close(); delete file; file=0;
 
 	if(result) {
-		AliInfo(Form("CDB object stored into file %s", filename.Data()));
-		AliInfo(Form("using S.E.: %s", fSE.Data()));
-
+	
 		if(!TagFileId(filename, &id)){
 			AliInfo(Form("CDB tagging failed. Deleting file %s!",filename.Data()));
 			if(!gGrid->Rm(filename.Data()))
@@ -626,6 +682,8 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 		TagFileMetaData(filename, entry->GetMetaData());
 	}
 
+	AliInfo(Form("CDB object stored into file %s", filename.Data()));
+	AliInfo(Form("Storage Element: %s", fSE.Data()));
 	return result;
 }
 //_____________________________________________________________________________
@@ -673,7 +731,7 @@ Bool_t AliCDBGrid::TagFileId(TString& filename, const AliCDBId* id){
 						filename.Data()));
 		result = kFALSE;
 	} else {
-		AliInfo("Object successfully tagged.");
+		AliDebug(2, "Object successfully tagged.");
 		result = kTRUE;
 	}
 	delete res;
@@ -695,7 +753,7 @@ Bool_t AliCDBGrid::TagShortLived(TString& filename, Bool_t value){
 		AliError(Form("Couldn't add ShortLived tag value to file %s !", filename.Data()));
 		result = kFALSE;
 	} else {
-		AliInfo("Object successfully tagged.");
+		AliDebug(2,"Object successfully tagged.");
 		result = kTRUE;
 	}
 	delete res;
@@ -729,7 +787,7 @@ Bool_t AliCDBGrid::TagFileMetaData(TString& filename, const AliCDBMetaData* md){
 						filename.Data()));
 		result = kFALSE;
 	} else {
-		AliInfo("Object successfully tagged.");
+		AliDebug(2,"Object successfully tagged.");
 		result = kTRUE;
 	}
 	return result;
@@ -930,10 +988,6 @@ ClassImp(AliCDBGridFactory)
 Bool_t AliCDBGridFactory::Validate(const char* gridString) {
 // check if the string is valid Grid URI
 
-	// pattern: alien://hostName:Port;user;dbPath;SE
-	// example of a valid pattern:
-	// "alien://aliendb4.cern.ch:9000;colla;DBTest;ALICE::CERN::Server"
-//        TRegexp gridPattern("^alien://.+:[0-9]+;[a-zA-Z0-9_-.]+;.+;.+$");
         TRegexp gridPattern("^alien://.+$");
 
         return TString(gridString).Contains(gridPattern);
@@ -946,13 +1000,17 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 	if (!Validate(gridString)) {
 		return NULL;
 	}
-	//TString buffer(gridString + sizeof("alien://") - 1);
+
 	TString buffer(gridString);
 
  	TString gridUrl 	= "alien://";
 	TString user 		= "";
 	TString dbFolder 	= "";
 	TString se		= "default";
+	TString cacheFolder	= "";
+	Bool_t  operateDisconnected = kTRUE;
+	Long64_t cacheSize          = (UInt_t) 1024*1024*1024; // 1GB
+	Long_t cleanupInterval      = 0;
 
 	TObjArray *arr = buffer.Tokenize('?');
 	TIter iter(arr);
@@ -976,7 +1034,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 
 		if(key.Contains("grid",TString::kIgnoreCase)) {
 			gridUrl += value;
-		} 
+		}
 		else if (key.Contains("user",TString::kIgnoreCase)){
 			user = value;
 		}
@@ -986,23 +1044,63 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 		else if (key.Contains("se",TString::kIgnoreCase)){
 			se = value;
 		}
+		else if (key.Contains("cacheFold",TString::kIgnoreCase)){
+			cacheFolder = value;
+   			if (!cacheFolder.EndsWith("/"))
+      				cacheFolder += "/";
+		}
+		else if (key.Contains("operateDisc",TString::kIgnoreCase)){
+			if(value == "kTRUE") {
+				operateDisconnected = kTRUE;
+			} else if (value == "kFALSE") {
+   				operateDisconnected = kFALSE;
+			} else if (value == "0" || value == "1") {
+				operateDisconnected = (Bool_t) value.Atoi();
+			} else {
+				AliError(Form("Invalid entry! %s",entry.Data()));
+				return NULL;
+			}
+		}
+		else if (key.Contains("cacheSiz",TString::kIgnoreCase)){
+			if(value.IsDigit()) {
+				cacheSize = value.Atoi();
+			} else {
+				AliError(Form("Invalid entry! %s",entry.Data()));
+				return NULL;
+			}
+		}
+		else if (key.Contains("cleanupInt",TString::kIgnoreCase)){
+			if(value.IsDigit()) {
+				cleanupInterval = value.Atoi();
+			} else {
+				AliError(Form("Invalid entry! %s",entry.Data()));
+				return NULL;
+			}
+		}
 		else{
 			AliError(Form("Invalid entry! %s",entry.Data()));
+			return NULL;
 		}
 	}
 	delete arr; arr=0;
-		
-	AliDebug(2, Form("gridUrl:	%s",gridUrl.Data()));
-	AliDebug(2, Form("user:	%s",user.Data()));
-	AliDebug(2, Form("dbFolder:	%s",dbFolder.Data()));
-	AliDebug(2, Form("s.e.:	%s",se.Data()));
+
+	AliDebug(2, Form("gridUrl:	%s", gridUrl.Data()));
+	AliDebug(2, Form("user:	%s", user.Data()));
+	AliDebug(2, Form("dbFolder:	%s", dbFolder.Data()));
+	AliDebug(2, Form("s.e.:	%s", se.Data()));
+	AliDebug(2, Form("local cache folder: %s", cacheFolder.Data()));
+	AliDebug(2, Form("local cache operate disconnected: %d", operateDisconnected));
+	AliDebug(2, Form("local cache size: %d", cacheSize));
+	AliDebug(2, Form("local cache cleanup interval: %d", cleanupInterval));
 
 	if(dbFolder == ""){
-		AliError("DBFolder must be specified!");
+		AliError("Base folder must be specified!");
 		return NULL;
 	}
 
-	return new AliCDBGridParam(gridUrl.Data(), user.Data(), dbFolder.Data(), se.Data());
+	return new AliCDBGridParam(gridUrl.Data(), user.Data(),
+	                  dbFolder.Data(), se.Data(), cacheFolder.Data(),
+			  operateDisconnected, cacheSize, cleanupInterval);
 }
 
 //_____________________________________________________________________________
@@ -1016,7 +1114,11 @@ AliCDBStorage* AliCDBGridFactory::Create(const AliCDBParam* param) {
 		grid = new AliCDBGrid(gridParam->GridUrl().Data(),
 				      gridParam->GetUser().Data(),
 				      gridParam->GetDBFolder().Data(),
-				      gridParam->GetSE().Data());
+				      gridParam->GetSE().Data(),
+				      gridParam->GetCacheFolder().Data(),
+				      gridParam->GetOperateDisconnected(),
+				      gridParam->GetCacheSize(),
+				      gridParam->GetCleanupInterval());
 
 	}
 
@@ -1029,7 +1131,7 @@ AliCDBStorage* AliCDBGridFactory::Create(const AliCDBParam* param) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                             //
-// AliCDBGrid Parameter class  			                                               //                                          //
+// AliCDBGrid Parameter class  			                                               //                                         //
 //                                                                                             //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1041,30 +1143,40 @@ AliCDBGridParam::AliCDBGridParam():
  fGridUrl(),
  fUser(),
  fDBFolder(),
- fSE()
+ fSE(),
+ fCacheFolder(),
+ fOperateDisconnected(),
+ fCacheSize(),
+ fCleanupInterval()
+
  {
 // default constructor
 
 }
 
 //_____________________________________________________________________________
-AliCDBGridParam::AliCDBGridParam(const char* gridUrl, 
-				const char* user,
-			        const char* dbFolder, 
-				const char* se):
+AliCDBGridParam::AliCDBGridParam(const char* gridUrl, const char* user, const char* dbFolder,
+				const char* se, const char* cacheFolder, Bool_t operateDisconnected,
+				Long64_t cacheSize, Long_t cleanupInterval):
  AliCDBParam(),
  fGridUrl(gridUrl),
  fUser(user),
  fDBFolder(dbFolder),
- fSE(se)
+ fSE(se),
+ fCacheFolder(cacheFolder),
+ fOperateDisconnected(operateDisconnected),
+ fCacheSize(cacheSize),
+ fCleanupInterval(cleanupInterval)
 {
 // constructor
-	
+
 	SetType("alien");
 
-	TString uri = Form("%s?User=%s?DBFolder=%s?SE=%s",
+	TString uri = Form("%s?User=%s?DBFolder=%s?SE=%s?CacheFolder=%s"
+			"?OperateDisconnected=%d?CacheSize=%d?CleanupInterval=%d",
 			fGridUrl.Data(), fUser.Data(),
-			fDBFolder.Data(), fSE.Data());
+			fDBFolder.Data(), fSE.Data(), fCacheFolder.Data(),
+			fOperateDisconnected, fCacheSize, fCleanupInterval);
 
 	SetURI(uri.Data());
 }
@@ -1080,14 +1192,15 @@ AliCDBParam* AliCDBGridParam::CloneParam() const {
 // clone parameter
 
         return new AliCDBGridParam(fGridUrl.Data(), fUser.Data(),
-					fDBFolder.Data(), fSE.Data());
+					fDBFolder.Data(), fSE.Data(), fCacheFolder.Data(),
+					fOperateDisconnected, fCacheSize, fCleanupInterval);
 }
 
 //_____________________________________________________________________________
 ULong_t AliCDBGridParam::Hash() const {
 // return Hash function
 
-        return fGridUrl.Hash()+fUser.Hash()+fDBFolder.Hash()+fSE.Hash();
+        return fGridUrl.Hash()+fUser.Hash()+fDBFolder.Hash()+fSE.Hash()+fCacheFolder.Hash();
 }
 
 //_____________________________________________________________________________
@@ -1108,6 +1221,10 @@ Bool_t AliCDBGridParam::IsEqual(const TObject* obj) const {
         if(fUser != other->fUser) return kFALSE;
         if(fDBFolder != other->fDBFolder) return kFALSE;
         if(fSE != other->fSE) return kFALSE;
+        if(fCacheFolder != other->fCacheFolder) return kFALSE;
+        if(fOperateDisconnected != other->fOperateDisconnected) return kFALSE;
+        if(fCacheSize != other->fCacheSize) return kFALSE;
+        if(fCleanupInterval != other->fCleanupInterval) return kFALSE;
 	return kTRUE;
 }
 

@@ -291,20 +291,21 @@ void AliSimulation::InitCDBStorage()
 
   // Remote storage (the Grid storage) is used if it is activated
   // and if the object is not found in the default storage
-  if (man->IsRemoteStorageSet())
-  {
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliWarning("Remote CDB storage has been already set !");
-    AliWarning(Form("Ignoring the remote storage declared in AliSimulation: %s",fRemoteCDBUri.Data()));
-    AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    fRemoteCDBUri = "";
-  }
-  else {
-    AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliDebug(2, Form("Remote CDB storage is set to: %s",fRemoteCDBUri.Data()));
-    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    man->SetRemoteStorage(fRemoteCDBUri);
-  }
+  // OBSOLETE: Removed
+  //   if (man->IsRemoteStorageSet())
+  //   {
+  //     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  //     AliWarning("Remote CDB storage has been already set !");
+  //     AliWarning(Form("Ignoring the remote storage declared in AliSimulation: %s",fRemoteCDBUri.Data()));
+  //     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  //     fRemoteCDBUri = "";
+  //   }
+  //   else {
+  //     AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  //     AliDebug(2, Form("Remote CDB storage is set to: %s",fRemoteCDBUri.Data()));
+  //     AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  //     man->SetRemoteStorage(fRemoteCDBUri);
+  //   }
 
   // Now activate the detector specific CDB storage locations
   for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {

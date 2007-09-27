@@ -36,8 +36,10 @@ protected:
 	virtual TList* 		GetIdListFromFile(const char* fileName);
 
 private:
- 
-	AliCDBGrid(const char *gridUrl, const char *user, const char* dbFolder, const char *se);
+
+	AliCDBGrid(const char *gridUrl, const char *user, const char* dbFolder,
+	           const char *se, const char* cacheFolder, Bool_t operateDisconnected,
+		   Long64_t cacheSize, Long_t cleanupInterval);
 
 	virtual ~AliCDBGrid();
 
@@ -60,10 +62,14 @@ private:
 
 	virtual void QueryValidFiles();
 
-	TString    fGridUrl;	// Grid Url ("alien://aliendb4.cern.ch:9000")
-	TString    fUser;	// User
-	TString    fDBFolder;   // path of the DB folder
-	TString    fSE;	  	// Storage Element
+	TString    fGridUrl;	 // Grid Url ("alien://aliendb4.cern.ch:9000")
+	TString    fUser;	 // User
+	TString    fDBFolder;    // path of the DB folder
+	TString    fSE;	  	 // Storage Element
+	TString    fCacheFolder; // local cache folder
+	Bool_t     fOperateDisconnected; // Operate disconnected flag
+	Long64_t   fCacheSize;           // local cache size (in bytes)
+	Long_t     fCleanupInterval;     // local cache cleanup interval
 
 ClassDef(AliCDBGrid, 0)      // access class to a DataBase in an AliEn storage
 };
@@ -99,14 +105,20 @@ class AliCDBGridParam: public AliCDBParam {
 public:
 	AliCDBGridParam();
 	AliCDBGridParam(const char* gridUrl, const char* user,
-			const char* dbFolder, const char* se);
+			const char* dbFolder, const char* se,
+			const char* cacheFolder, Bool_t operateDisconnected,
+			Long64_t cacheSize, Long_t cleanupInterval);
 	
 	virtual ~AliCDBGridParam();
 
-	const TString& GridUrl() const {return fGridUrl;};
-	const TString& GetUser() const {return fUser;};
-	const TString& GetDBFolder() const {return fDBFolder;};
-	const TString& GetSE() 	 const {return fSE;};
+	const TString& GridUrl() const {return fGridUrl;}
+	const TString& GetUser() const {return fUser;}
+	const TString& GetDBFolder() const {return fDBFolder;}
+	const TString& GetSE() 	 const {return fSE;}
+	const TString& GetCacheFolder() const {return fCacheFolder;}
+	Bool_t  GetOperateDisconnected() const {return fOperateDisconnected;}
+	Long64_t  GetCacheSize() const {return fCacheSize;}
+	Long_t  GetCleanupInterval() const {return fCleanupInterval;}
 
 	virtual AliCDBParam* CloneParam() const;
 
@@ -114,10 +126,14 @@ public:
         virtual Bool_t IsEqual(const TObject* obj) const;
 
 private:
-	TString fGridUrl;    // Grid url "Host:port"
-	TString fUser;	     // User
-	TString fDBFolder;   // path of the DB folder
-	TString fSE;	     // Storage Element
+	TString  fGridUrl;     // Grid url "Host:port"
+	TString  fUser;	      // User
+	TString  fDBFolder;    // path of the DB folder
+	TString  fSE;	      // Storage Element
+	TString  fCacheFolder; // Cache folder
+	Bool_t   fOperateDisconnected; // Operate disconnected flag
+	Long64_t fCacheSize;           // local cache size (in bytes)
+	Long_t   fCleanupInterval;     // local cache cleanup interval
 
 	ClassDef(AliCDBGridParam, 0);
 };
