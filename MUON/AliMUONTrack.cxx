@@ -504,7 +504,7 @@ Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
   if (accountForMCS) { // Compute local chi2 taking into account multiple scattering effects
       
     // Compute MCS covariance matrix only once
-    TMatrixD mcsCovariances(AliMUONConstants::NTrackingCh(),AliMUONConstants::NTrackingCh());
+    TMatrixD mcsCovariances(fNTrackHits,fNTrackHits);
     ComputeMCSCovariances(mcsCovariances);
     
     // Make sure hit weights are consistent with following calculations
@@ -600,7 +600,6 @@ Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
   
   }
   
-  
   return kTRUE;
   
 }
@@ -624,14 +623,12 @@ Double_t AliMUONTrack::ComputeGlobalChi2(Bool_t accountForMCS)
   
   if (accountForMCS) {
     
-    // Check the weight matrices
-    Bool_t weightsAvailable = kTRUE;
-    if (!fHitWeightsNonBending || !fHitWeightsBending) weightsAvailable = kFALSE;
-    else if (fHitWeightsNonBending->GetNrows() != fNTrackHits || fHitWeightsNonBending->GetNcols() != fNTrackHits ||
-  	     fHitWeightsBending->GetNrows()    != fNTrackHits || fHitWeightsBending->GetNcols()    != fNTrackHits) weightsAvailable = kFALSE;
-    
-    // if weight matrices are not available compute chi2 without MCS
-    if (!weightsAvailable) {
+    // Check the weight matrices. If weight matrices are not available compute chi2 without MCS
+    if (!fHitWeightsNonBending || !fHitWeightsBending) {
+      AliWarning("hit weights including multiple scattering effects are not available\n\t\t --> compute chi2 WITHOUT multiple scattering");
+      return ComputeGlobalChi2(kFALSE);
+    }
+    if (fHitWeightsNonBending->GetNrows() != fNTrackHits || fHitWeightsBending->GetNcols() != fNTrackHits) {
       AliWarning("hit weights including multiple scattering effects are not available\n\t\t --> compute chi2 WITHOUT multiple scattering");
       return ComputeGlobalChi2(kFALSE);
     }
@@ -714,19 +711,9 @@ Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeig
   // Check MCS covariance matrix and recompute it if need
   Bool_t deleteMCSCov = kFALSE;
   if (!mcsCovariances) {
-    
-    // build MCS covariance matrix
-    mcsCovariances = new TMatrixD(AliMUONConstants::NTrackingCh(),AliMUONConstants::NTrackingCh());
+    mcsCovariances = new TMatrixD(fNTrackHits,fNTrackHits);
     deleteMCSCov = kTRUE;
     ComputeMCSCovariances(*mcsCovariances);
-    
-  } else {
-    
-    // check MCS covariance matrix size
-    if (mcsCovariances->GetNrows() != AliMUONConstants::NTrackingCh() || mcsCovariances->GetNcols() != AliMUONConstants::NTrackingCh()) {
-      ComputeMCSCovariances(*mcsCovariances);
-    }
-    
   }
   
   // Resize the weights matrices; alocate memory
@@ -740,7 +727,7 @@ Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeig
   
   // Define variables
   AliMUONHitForRec *hitForRec1, *hitForRec2;
-  Int_t chamber1, chamber2, currentHitNumber1, currentHitNumber2;
+  Int_t currentHitNumber1, currentHitNumber2;
   
   // Compute the covariance matrices
   currentHitNumber1 = 0;
@@ -749,8 +736,6 @@ Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeig
     
     if (hitForRec1 == discardedHit) continue;
     
-    chamber1 = hitForRec1->GetChamberNumber();
-    
     // Loop over next hits
     currentHitNumber2 = currentHitNumber1;
     for (Int_t hitNumber2 = hitNumber1; hitNumber2 < fNTrackHits; hitNumber2++) {
@@ -758,10 +743,8 @@ Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeig
       
       if (hitForRec2 == discardedHit) continue;
       
-      chamber2 = hitForRec2->GetChamberNumber();
-    
       // Fill with MCS covariances
-      hitWeightsNB(currentHitNumber1, currentHitNumber2) = (*mcsCovariances)(chamber1,chamber2);
+      hitWeightsNB(currentHitNumber1, currentHitNumber2) = (*mcsCovariances)(hitNumber1,hitNumber2);
       
       // Equal contribution from multiple scattering in non bending and bending directions
       hitWeightsB(currentHitNumber1, currentHitNumber2) = hitWeightsNB(currentHitNumber1, currentHitNumber2);
@@ -811,32 +794,23 @@ Bool_t AliMUONTrack::ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeig
 void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
 {
   /// Compute the multiple scattering covariance matrix
-  /// - Assume that track parameters at each hit are corrects
-  /// - Return kFALSE if computation failed
+  /// (assume that track parameters at each hit are corrects)
   
-  // Make sure the size of the covariance matrix is correct
-  Int_t nChambers = AliMUONConstants::NTrackingCh();
-  mcsCovariances.ResizeTo(nChambers,nChambers);
-  
-  // check for too many track hits
-  if (fNTrackHits > nChambers) {
-    AliWarning("more than 1 hit per chamber!!");
-    mcsCovariances.Zero();
-    return;
-  }
+  // Reset the size of the covariance matrix if needed
+  if (mcsCovariances.GetNrows() != fNTrackHits) mcsCovariances.ResizeTo(fNTrackHits,fNTrackHits);
   
   // Define variables
+  Int_t nChambers = AliMUONConstants::NTrackingCh();
   AliMUONTrackParam* trackParamAtHit;
   AliMUONHitForRec *hitForRec;
   AliMUONTrackParam extrapTrackParam;
-  Int_t currentChamber, expectedChamber;
-  Double_t *mcsAngle2 = new Double_t[nChambers];
-  Double_t *zMCS = new Double_t[nChambers];
+  Int_t currentChamber = 0, expectedChamber = 0, size = 0;
+  Double_t *mcsAngle2 = new Double_t[2*nChambers];
+  Double_t *zMCS = new Double_t[2*nChambers];
+  Int_t *indices = new Int_t[2*fNTrackHits];
   
   // Compute multiple scattering dispersion angle at each chamber
   // and save the z position where it is calculated
-  currentChamber = 0;
-  expectedChamber = 0;
   for (Int_t hitNumber = 0; hitNumber < fNTrackHits; hitNumber++) {
     trackParamAtHit = (AliMUONTrackParam*) fTrackParamAtHit->UncheckedAt(hitNumber);
     hitForRec = trackParamAtHit->GetHitForRecPtr();
@@ -846,7 +820,7 @@ void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
     while (currentChamber > expectedChamber) {
       
       // Save the z position where MCS dispersion is calculated
-      zMCS[expectedChamber] = AliMUONConstants::DefaultChamberZ(expectedChamber);
+      zMCS[size] = AliMUONConstants::DefaultChamberZ(expectedChamber);
       
       // Do not take into account MCS in chambers prior the first hit
       if (hitNumber > 0) {
@@ -856,47 +830,52 @@ void AliMUONTrack::ComputeMCSCovariances(TMatrixD& mcsCovariances) const
         AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, zMCS[expectedChamber]);
         
         // Save multiple scattering dispersion angle in missing chamber
-        mcsAngle2[expectedChamber] = AliMUONTrackExtrap::GetMCSAngle2(extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
+        mcsAngle2[size] = AliMUONTrackExtrap::GetMCSAngle2(extrapTrackParam,AliMUONConstants::ChamberThicknessInX0(),1.);
         
-      } else mcsAngle2[expectedChamber] = 0.;
+      } else mcsAngle2[size] = 0.;
       
       expectedChamber++;
+      size++;
     }
     
     // Save z position where MCS dispersion is calculated
-    zMCS[currentChamber] = trackParamAtHit->GetZ();
+    zMCS[size] = trackParamAtHit->GetZ();
     
     // Save multiple scattering dispersion angle in current chamber
-    mcsAngle2[currentChamber] = AliMUONTrackExtrap::GetMCSAngle2(*trackParamAtHit,AliMUONConstants::ChamberThicknessInX0(),1.);
+    mcsAngle2[size] = AliMUONTrackExtrap::GetMCSAngle2(*trackParamAtHit,AliMUONConstants::ChamberThicknessInX0(),1.);
     
-    expectedChamber++;
+    // Save indice in zMCS array corresponding to the current cluster
+    indices[hitNumber] = size;
+    
+    expectedChamber = currentChamber + 1;
+    size++;
   }
   
   // complete array of z if last hit is on the last but one chamber
-  if (currentChamber != nChambers-1) zMCS[nChambers-1] = AliMUONConstants::DefaultChamberZ(nChambers-1);
-  
+  if (currentChamber != nChambers-1) zMCS[size++] = AliMUONConstants::DefaultChamberZ(nChambers-1);
   
   // Compute the covariance matrix
-  for (Int_t chamber1 = 0; chamber1 < nChambers; chamber1++) { 
+  for (Int_t hitNumber1 = 0; hitNumber1 < fNTrackHits; hitNumber1++) { 
     
-    for (Int_t chamber2 = chamber1; chamber2 < nChambers; chamber2++) {
+    for (Int_t hitNumber2 = hitNumber1; hitNumber2 < fNTrackHits; hitNumber2++) {
       
       // Initialization to 0 (diagonal plus upper triangular part)
-      mcsCovariances(chamber1, chamber2) = 0.;
+      mcsCovariances(hitNumber1,hitNumber2) = 0.;
       
       // Compute contribution from multiple scattering in upstream chambers
-      for (currentChamber = 0; currentChamber < chamber1; currentChamber++) { 	
-	mcsCovariances(chamber1, chamber2) += (zMCS[chamber1] - zMCS[currentChamber]) * (zMCS[chamber2] - zMCS[currentChamber]) * mcsAngle2[currentChamber];
+      for (Int_t k = 0; k < indices[hitNumber1]; k++) { 	
+	mcsCovariances(hitNumber1,hitNumber2) += (zMCS[indices[hitNumber1]] - zMCS[k]) * (zMCS[indices[hitNumber2]] - zMCS[k]) * mcsAngle2[k];
       }
       
       // Symetrize the matrix
-      mcsCovariances(chamber2, chamber1) = mcsCovariances(chamber1, chamber2);
+      mcsCovariances(hitNumber2,hitNumber1) = mcsCovariances(hitNumber1,hitNumber2);
     }
     
   }
     
   delete [] mcsAngle2;
   delete [] zMCS;
+  delete [] indices;
   
 }
 

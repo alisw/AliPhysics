@@ -71,6 +71,7 @@
 #include "AliMpDEManager.h"
 
 #include "AliLog.h"
+#include "AliCodeTimer.h"
 #include "AliTracker.h"
 
 #include <TClonesArray.h>
@@ -95,8 +96,9 @@ const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForTracking = 6.0;
 const Bool_t   AliMUONVTrackReconstructor::fgkMakeTrackCandidatesFast = kFALSE;
 const Bool_t   AliMUONVTrackReconstructor::fgkTrackAllTracks = kTRUE;
 const Bool_t   AliMUONVTrackReconstructor::fgkRecoverTracks = kTRUE;
+const Bool_t   AliMUONVTrackReconstructor::fgkComplementTracks = kTRUE;
 const Bool_t   AliMUONVTrackReconstructor::fgkImproveTracks = kTRUE;
-const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForImprovement = 4.0;
+const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForImprovement = 5.0;
 
 
   //__________________________________________________________________________
@@ -166,6 +168,7 @@ void AliMUONVTrackReconstructor::EventReconstruct(const AliMUONVClusterStore& cl
 {
   /// To reconstruct one event
   AliDebug(1,"");
+  AliCodeTimerAuto("");
   
   ResetTracks();
   ResetHitsForRec();
@@ -203,7 +206,7 @@ void AliMUONVTrackReconstructor::AddHitsForRecFromRawClusters(const AliMUONVClus
     hitForRec->SetChamberNumber(ch);
     hitForRec->SetHitNumber(iclus);
     // Z coordinate of the raw cluster (cm)
-    hitForRec->SetZ(clus->GetZ(0));
+    hitForRec->SetZ(clus->GetZ());
     if (AliLog::GetDebugLevel("MUON","AliMUONTrackReconstructor") >= 3) {
       cout << "Chamber " << ch <<" raw cluster  " << iclus << " : " << endl;
       clus->Print("full");
@@ -275,6 +278,8 @@ void AliMUONVTrackReconstructor::MakeTracks()
   if (fRecTracksPtr->GetEntriesFast() == 0) return;
   // Follow tracks in stations(1..) 3, 2 and 1
   FollowTracks();
+  // Complement the reconstructed tracks
+  if (fgkComplementTracks) ComplementTracks();
   // Improve the reconstructed tracks
   if (fgkImproveTracks) ImproveTracks();
   // Remove double tracks
@@ -816,6 +821,8 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
                                                            const AliMUONTrackHitPattern& trackHitPattern)
 {
   /// Try to match track from tracking system with trigger track
+  AliCodeTimerAuto("");
+  
   static const Double_t kDistSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
   
   Int_t matchTrigger;
@@ -917,6 +924,7 @@ void AliMUONVTrackReconstructor::EventReconstructTrigger(const AliMUONTriggerCir
 {
   /// To make the trigger tracks from Local Trigger
   AliDebug(1, "");
+  AliCodeTimerAuto("");
   
   AliMUONGlobalTrigger* globalTrigger = triggerStore.Global();
   

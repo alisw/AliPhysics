@@ -70,6 +70,7 @@ void AliMUONTrackReconstructorK::MakeTrackCandidates()
   /// Start with segments station(1..) 4 or 5 then follow track in station 5 or 4.
   /// Good candidates are made of at least three hitForRec's.
   /// Keep only best candidates or all of them according to the flag fgkTrackAllTracks.
+  
   TClonesArray *segments;
   AliMUONTrack *track;
   Int_t iCandidate = 0;
@@ -925,6 +926,95 @@ Bool_t AliMUONTrackReconstructorK::RunSmoother(AliMUONTrack &track)
 }
 
   //__________________________________________________________________________
+void AliMUONTrackReconstructorK::ComplementTracks()
+{
+  /// Complete tracks by adding missing clusters (if there is an overlap between
+  /// two detection elements, the track may have two clusters in the same chamber)
+  /// Recompute track parameters and covariances at each clusters
+  AliDebug(1,"Enter ComplementTracks");
+  
+  Int_t chamberId, detElemId;
+  Double_t chi2OfHitForRec, addChi2TrackAtHit, bestAddChi2TrackAtHit;
+  Double_t maxChi2OfHitForRec = 2. * fgkSigmaToCutForTracking * fgkSigmaToCutForTracking; // 2 because 2 quantities in chi2
+  Bool_t foundOneHit, trackModified;
+  AliMUONHitForRec *hitForRec;
+  AliMUONTrackParam *trackParam, *previousTrackParam, *nextTrackParam;
+  AliMUONTrackParam trackParamAtHit;
+  AliMUONTrackParam bestTrackParamAtHit;
+  
+  // Remove double track to complete only "good" tracks
+  RemoveDoubleTracks();
+  
+  AliMUONTrack *track = (AliMUONTrack*) fRecTracksPtr->First();
+  while (track) {
+    trackModified = kFALSE;
+    
+    trackParam = (AliMUONTrackParam*)track->GetTrackParamAtHit()->First();
+    previousTrackParam = trackParam;
+    while (trackParam) {
+      foundOneHit = kFALSE;
+      bestAddChi2TrackAtHit = 1.e10;
+      
+      // prepare nextTrackParam before adding new cluster because of the sorting
+      nextTrackParam = (AliMUONTrackParam*)track->GetTrackParamAtHit()->After(trackParam);
+      
+      chamberId = trackParam->GetHitForRecPtr()->GetChamberNumber();
+      detElemId = trackParam->GetHitForRecPtr()->GetDetElemId();
+      
+      // look for one second candidate in the same chamber
+      for (Int_t hit = 0; hit < fNHitsForRecPerChamber[chamberId]; hit++) {
+	
+	hitForRec = (AliMUONHitForRec*) fHitsForRecPtr->UncheckedAt(fIndexOfFirstHitForRecPerChamber[chamberId]+hit);
+        
+	// look for a cluster in another detection element
+	if (hitForRec->GetDetElemId() == detElemId) continue;
+	
+	// try to add the current hit fast
+	if (!TryOneHitForRecFast(*trackParam, hitForRec)) continue;
+	
+	// try to add the current hit accurately
+	// never use track parameters at last cluster because the covariance matrix is meaningless
+	if (nextTrackParam) chi2OfHitForRec = TryOneHitForRec(*trackParam, hitForRec, trackParamAtHit);
+	else chi2OfHitForRec = TryOneHitForRec(*previousTrackParam, hitForRec, trackParamAtHit);
+	
+	// if good chi2 then consider to add this cluster to the track
+	if (chi2OfHitForRec < maxChi2OfHitForRec) {
+          
+	  // Compute local track parameters including "hitForRec" using kalman filter
+          addChi2TrackAtHit = RunKalmanFilter(trackParamAtHit);
+          
+	  // keep track of the best cluster
+	  if (addChi2TrackAtHit < bestAddChi2TrackAtHit) {
+	    bestAddChi2TrackAtHit = addChi2TrackAtHit;
+	    bestTrackParamAtHit = trackParamAtHit;
+	    foundOneHit = kTRUE;
+	  }
+	  
+	}
+	
+      }
+      
+      // add new cluster if any
+      if (foundOneHit) {
+	UpdateTrack(*track,bestTrackParamAtHit,bestAddChi2TrackAtHit);
+	bestTrackParamAtHit.SetAloneInChamber(kFALSE);
+	trackParam->SetAloneInChamber(kFALSE);
+	trackModified = kTRUE;
+      }
+      
+      previousTrackParam = trackParam;
+      trackParam = nextTrackParam;
+    }
+    
+    // re-compute track parameters using kalman filter if needed
+    if (trackModified) RetraceTrack(*track,kTRUE);
+    
+    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+  }
+  
+}
+
+//__________________________________________________________________________
 void AliMUONTrackReconstructorK::ImproveTracks()
 {
   /// Improve tracks by removing clusters with local chi2 highter than the defined cut
@@ -932,15 +1022,19 @@ void AliMUONTrackReconstructorK::ImproveTracks()
   AliDebug(1,"Enter ImproveTracks");
   
   Double_t localChi2, worstLocalChi2;
-  Int_t worstChamber;
-  AliMUONTrackParam *trackParamAtHit, *worstTrackParamAtHit;
+  Int_t worstChamber, previousChamber;
+  AliMUONTrack *track, *nextTrack;
+  AliMUONTrackParam *trackParamAtHit, *worstTrackParamAtHit, *previousTrackParam, *nextTrackParam;
   Bool_t smoothed;
   
   // Remove double track to improve only "good" tracks
   RemoveDoubleTracks();
   
-  AliMUONTrack *track = (AliMUONTrack*) fRecTracksPtr->First();
+  track = (AliMUONTrack*) fRecTracksPtr->First();
   while (track) {
+    
+    // prepare next track in case the actual track is suppressed
+    nextTrack = (AliMUONTrack*) fRecTracksPtr->After(track);
     
     while (!track->IsImproved()) {
       
@@ -971,17 +1065,11 @@ void AliMUONTrackReconstructorK::ImproveTracks()
           worstTrackParamAtHit = trackParamAtHit;
         }
         
-      trackParamAtHit = (AliMUONTrackParam*)track->GetTrackParamAtHit()->After(trackParamAtHit);
+	trackParamAtHit = (AliMUONTrackParam*)track->GetTrackParamAtHit()->After(trackParamAtHit);
       }
       
       // Check if bad removable hit found
       if (!worstTrackParamAtHit) {
-        track->SetImproved(kTRUE);
-        break;
-      }
-      
-      // check whether the worst hit is removable or not
-      if (!worstTrackParamAtHit->IsRemovable()) {
         track->SetImproved(kTRUE);
         break;
       }
@@ -992,13 +1080,54 @@ void AliMUONTrackReconstructorK::ImproveTracks()
         break;
       }
       
-      // Reset the second hit in the same station as the bad one as being NOT removable
-      worstChamber = worstTrackParamAtHit->GetHitForRecPtr()->GetChamberNumber();
-      if (worstChamber%2 == 0) ((AliMUONTrackParam*)track->GetTrackParamAtHit()->After(worstTrackParamAtHit))->SetRemovable(kFALSE);
-      else ((AliMUONTrackParam*)track->GetTrackParamAtHit()->Before(worstTrackParamAtHit))->SetRemovable(kFALSE);
+      // if the worst hit is not removable then remove the entire track
+      if (!worstTrackParamAtHit->IsRemovable() && worstTrackParamAtHit->IsAloneInChamber()) {
+	fRecTracksPtr->Remove(track);
+  	fNRecTracks--;
+        break;
+      }
       
-      // Save pointer to the trackParamAtHit next to the one to be removed
-      trackParamAtHit = (AliMUONTrackParam*)track->GetTrackParamAtHit()->After(worstTrackParamAtHit);
+      // Reset the second hit in the same station as being not removable
+      // or reset the second hit in the same chamber as being alone
+      worstChamber = worstTrackParamAtHit->GetHitForRecPtr()->GetChamberNumber();
+      previousTrackParam = (AliMUONTrackParam*) track->GetTrackParamAtHit()->Before(worstTrackParamAtHit);
+      nextTrackParam = (AliMUONTrackParam*) track->GetTrackParamAtHit()->After(worstTrackParamAtHit);
+      if (worstTrackParamAtHit->IsAloneInChamber()) { // Worst hit removable and alone in chamber
+	
+	if (worstChamber%2 == 0) { // Modify flags in next chamber
+	  
+	  nextTrackParam->SetRemovable(kFALSE);
+	  if (!nextTrackParam->IsAloneInChamber()) // Make sure both hits in second chamber are not removable anymore
+	    ((AliMUONTrackParam*) track->GetTrackParamAtHit()->After(nextTrackParam))->SetRemovable(kFALSE);
+	  
+	} else { // Modify flags in previous chamber
+	  
+	  previousTrackParam->SetRemovable(kFALSE);
+	  if (!previousTrackParam->IsAloneInChamber()) // Make sure both hits in second chamber are not removable anymore
+	    ((AliMUONTrackParam*) track->GetTrackParamAtHit()->Before(previousTrackParam))->SetRemovable(kFALSE);
+	  
+	}
+	
+      } else { // Worst hit not alone in its chamber
+        
+	if (previousTrackParam) previousChamber = previousTrackParam->GetHitForRecPtr()->GetChamberNumber();
+	else previousChamber = -1;
+	
+	if (previousChamber == worstChamber) { // the second hit on the same chamber is the previous one
+	  
+	  previousTrackParam->SetAloneInChamber(kTRUE);
+	  // transfert the removability to the second hit
+	  if (worstTrackParamAtHit->IsRemovable()) previousTrackParam->SetRemovable(kTRUE);
+	  
+	} else { // the second hit on the same chamber is the next one
+	  
+	  nextTrackParam->SetAloneInChamber(kTRUE);
+	  // transfert the removability to the second hit
+	  if (worstTrackParamAtHit->IsRemovable()) nextTrackParam->SetRemovable(kTRUE);
+	  
+	}
+	
+      }
       
       // Remove the worst hit
       track->RemoveTrackParamAtHit(worstTrackParamAtHit);
@@ -1007,7 +1136,7 @@ void AliMUONTrackReconstructorK::ImproveTracks()
       // - from the hit immediately downstream the one suppressed
       // - or from the begining - if parameters have been re-computed using the standard method (kalman parameters have been lost)
       //			- or if the removed hit was the last one
-      if (smoothed && trackParamAtHit) RetracePartialTrack(*track,trackParamAtHit);
+      if (smoothed && nextTrackParam) RetracePartialTrack(*track,nextTrackParam);
       else RetraceTrack(*track,kTRUE);
       
       // Printout for debuging
@@ -1017,8 +1146,11 @@ void AliMUONTrackReconstructorK::ImproveTracks()
       
     }
     
-    track = (AliMUONTrack*) fRecTracksPtr->After(track);
+    track = nextTrack;
   }
+  
+  // compress the array in case of some tracks have been removed
+  fRecTracksPtr->Compress();
   
 }
 
@@ -1026,6 +1158,7 @@ void AliMUONTrackReconstructorK::ImproveTracks()
 void AliMUONTrackReconstructorK::Finalize()
 {
   /// Fill AliMUONTrack's fHitForRecAtHit array
+  
   AliMUONTrack *track;
   AliMUONTrackParam *trackParamAtHit;
   Bool_t smoothed = kFALSE;

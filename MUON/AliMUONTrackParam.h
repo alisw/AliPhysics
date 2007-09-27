@@ -113,7 +113,12 @@ class AliMUONTrackParam : public TObject
   	/// set the flag telling whether the associated hit can be removed from the track it belongs to or not
   void   SetRemovable(Bool_t removable) {fRemovable = removable;}
   
-  	/// return the chi2 of the track when the associated HitForRec was attached
+	/// return kTRUE if the associated hit alone in its chamber
+  Bool_t IsAloneInChamber() const {return fAloneInChamber;}
+	/// set the flag telling whether the associated hi alone in its chamber or not
+  void   SetAloneInChamber(Bool_t aloneInChamber) {fAloneInChamber = aloneInChamber;}
+  
+  /// return the chi2 of the track when the associated HitForRec was attached
   Double_t GetTrackChi2() const {return fTrackChi2;}
   	/// set the chi2 of the track when the associated HitForRec was attached
   void     SetTrackChi2(Double_t chi2) {fTrackChi2 = chi2;}
@@ -161,6 +166,8 @@ class AliMUONTrackParam : public TObject
   
   Bool_t fRemovable; //!< kTRUE if the associated hit can be removed from the track it belongs to
   
+  Bool_t fAloneInChamber; //!< kTRUE if the associated hit is alone in its chamber
+
   Double_t fTrackChi2; //!< Chi2 of the track when the associated HitForRec was attached
   Double_t fLocalChi2; //!< Local chi2 of the associated HitForRec with respect to the track
   

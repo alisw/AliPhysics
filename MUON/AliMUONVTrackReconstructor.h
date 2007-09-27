@@ -75,7 +75,8 @@ class AliMUONVTrackReconstructor : public TObject {
   static const Double_t fgkMaxTrackingDistanceBending;    ///< Maximum distance to the track to search for compatible hitForRec(s) in bending direction
   static const Double_t fgkMaxTrackingDistanceNonBending; ///< Maximum distance to the track to search for compatible hitForRec(s) in non bending direction
   static const Bool_t   fgkRecoverTracks; ///< kTRUE to try to recover the tracks being lost during reconstruction
-  static const Bool_t   fgkImproveTracks; ///< kTRUE to try to improve the reconstructed tracks
+  static const Bool_t   fgkComplementTracks; ///< kTRUE to try to complete the reconstructed tracks by adding missing clusters
+  static const Bool_t   fgkImproveTracks; ///< kTRUE to try to improve the reconstructed tracks by removing bad clusters
   
   // Parameters for track reconstruction
   Double_t fMinBendingMomentum; ///< minimum value (GeV/c) of momentum in bending plane
@@ -100,6 +101,8 @@ class AliMUONVTrackReconstructor : public TObject {
   virtual void MakeTrackCandidates() = 0;
   /// Follow tracks in stations(1..) 3, 2 and 1
   virtual void FollowTracks() = 0;
+  /// Complement the reconstructed tracks
+  virtual void ComplementTracks() = 0;
   /// Improve the reconstructed tracks
   virtual void ImproveTracks() = 0;
   /// Finalize the tracking results

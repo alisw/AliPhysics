@@ -48,6 +48,7 @@ AliMUONTrackParam::AliMUONTrackParam()
     fSmoothCovariances(0x0),
     fHitForRecPtr(0x0),
     fRemovable(kFALSE),
+    fAloneInChamber(kTRUE),
     fTrackChi2(0.),
     fLocalChi2(0.)
 {
@@ -67,6 +68,7 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
     fSmoothCovariances(0x0),
     fHitForRecPtr(theMUONTrackParam.fHitForRecPtr),
     fRemovable(theMUONTrackParam.fRemovable),
+    fAloneInChamber(theMUONTrackParam.fAloneInChamber),
     fTrackChi2(theMUONTrackParam.fTrackChi2),
     fLocalChi2(theMUONTrackParam.fLocalChi2)
 {
@@ -144,6 +146,8 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   fHitForRecPtr = theMUONTrackParam.fHitForRecPtr;
   
   fRemovable = theMUONTrackParam.fRemovable;
+  
+  fAloneInChamber = theMUONTrackParam.fAloneInChamber;
   
   fTrackChi2 = theMUONTrackParam.fTrackChi2;
   fLocalChi2 = theMUONTrackParam.fLocalChi2;

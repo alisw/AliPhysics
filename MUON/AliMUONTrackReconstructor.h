@@ -29,6 +29,7 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor
   // Functions
   virtual void MakeTrackCandidates();
   virtual void FollowTracks();
+  virtual void ComplementTracks();
   virtual void ImproveTracks();
   virtual void Finalize();
   
