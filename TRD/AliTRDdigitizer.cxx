@@ -772,7 +772,6 @@ Bool_t AliTRDdigitizer::MakeDigits()
     AliError("No geometry defined");
     return kFALSE;
   }
-  fGeo->ReadGeoMatrices();
 
   AliTRDSimParam    *simParam    = AliTRDSimParam::Instance();
   if (!simParam) {
@@ -877,7 +876,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
       // Find the current volume with the geo manager
       gGeoManager->SetCurrentPoint(pos);
-      gGeoManager->FindNode();
+      gGeoManager->FindNode();      
       if (strstr(gGeoManager->GetPath(),"/UK")) {
 	inDrift = 0;
       }

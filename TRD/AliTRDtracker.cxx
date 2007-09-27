@@ -176,7 +176,6 @@ AliTRDtracker::AliTRDtracker(const TFile */*geomfile*/)
   TDirectory *savedir = gDirectory; 
 
   fGeom = new AliTRDgeometry();
-  fGeom->ReadGeoMatrices();
 
   for (Int_t geomS = 0; geomS < kTrackingSectors; geomS++) {
     Int_t trS   = geomS;

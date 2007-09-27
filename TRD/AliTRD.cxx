@@ -142,7 +142,7 @@ void AliTRD::Hits2Digits()
 
   AliTRDdigitizer digitizer("TRDdigitizer","TRD digitizer class");
   AliLog::SetClassDebugLevel("TRDdigitizer",AliDebugLevel());
-  
+
   // Initialization
   digitizer.InitDetector();
     

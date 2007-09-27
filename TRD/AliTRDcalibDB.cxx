@@ -805,12 +805,15 @@ const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(const Int_t method)
   //
   // Returns the object storing the distributions for PID with likelihood
   //
-	switch(method){
-	case 0: return dynamic_cast<const AliTRDCalPID *> 
-		  (GetCachedCDBObject(kIDPIDNN));
-	case 1: return dynamic_cast<const AliTRDCalPID *>
-		  (GetCachedCDBObject(kIDPIDLQ));
-	}
+
+  switch(method) {
+    case 0: return dynamic_cast<const AliTRDCalPID *> 
+		               (GetCachedCDBObject(kIDPIDNN));
+    case 1: return dynamic_cast<const AliTRDCalPID *>
+		               (GetCachedCDBObject(kIDPIDLQ));
+  }
+
+  return 0;
 
 }
 

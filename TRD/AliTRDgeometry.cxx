@@ -160,9 +160,7 @@ ClassImp(AliTRDgeometry)
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry()
   :AliGeometry()
-  ,fMatrixArray(0)
-  ,fMatrixCorrectionArray(0)
-  ,fMatrixGeo(0)
+  ,fClusterMatrixArray(0)
   ,fPadPlaneArray(0)
 {
   //
@@ -176,9 +174,7 @@ AliTRDgeometry::AliTRDgeometry()
 //_____________________________________________________________________________
 AliTRDgeometry::AliTRDgeometry(const AliTRDgeometry &g)
   :AliGeometry(g)
-  ,fMatrixArray(0)
-  ,fMatrixCorrectionArray(0)
-  ,fMatrixGeo(0)
+  ,fClusterMatrixArray(0)
   ,fPadPlaneArray(0)
 {
   //
@@ -196,22 +192,10 @@ AliTRDgeometry::~AliTRDgeometry()
   // AliTRDgeometry destructor
   //
 
-  if (fMatrixArray) {
-    fMatrixArray->Delete();
-    delete fMatrixArray;
-    fMatrixArray = 0;
-  }
-
-  if (fMatrixCorrectionArray) {
-    fMatrixCorrectionArray->Delete();
-    delete fMatrixCorrectionArray;
-    fMatrixCorrectionArray = 0;
-  }
-
-  if (fMatrixGeo) {
-    fMatrixGeo->Delete();
-    delete fMatrixGeo;
-    fMatrixGeo = 0;
+  if (fClusterMatrixArray) {
+    fClusterMatrixArray->Delete();
+    delete fClusterMatrixArray;
+    fClusterMatrixArray = 0;
   }
 
   if (fPadPlaneArray) {
@@ -1774,19 +1758,18 @@ Double_t AliTRDgeometry::GetCol0(Int_t p)
 //}
 
 //_____________________________________________________________________________
-Bool_t AliTRDgeometry::ReadGeoMatrices()
+Bool_t AliTRDgeometry::CreateClusterMatrixArray()
 {
   //
-  // Read geo matrices from current gGeoManager for each TRD sector
+  // Create the matrices to transform cluster coordinates from the 
+  // local chamber system to the tracking coordinate system
   //
 
   if (!gGeoManager) {
     return kFALSE;
   }
 
-  fMatrixArray           = new TObjArray(kNdet); 
-  fMatrixCorrectionArray = new TObjArray(kNdet);
-  fMatrixGeo             = new TObjArray(kNdet);
+  fClusterMatrixArray = new TObjArray(kNdet);
   AliAlignObjParams o;
 
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
@@ -1799,27 +1782,22 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       if (pne) {
         path = pne->GetTitle();
       }
+      if (!strstr(path,"ALIC")) {
+        AliDebug(1,Form("Not a valid path: %s\n",path));
+        continue;
+      }
       if (!gGeoManager->cd(path)) {
-        return kFALSE;
+        continue;
       }
       TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
       Int_t        iLayerTRD = iLayer - AliGeomManager::kTRD1;
       Int_t        isector   = iModule/Ncham();
       Int_t        ichamber  = iModule%Ncham();
       Int_t        lid       = GetDetector(iLayerTRD,ichamber,isector);    
-
-      //
-      // Local geo system z-x-y  to x-y--z 
-      //
-      fMatrixGeo->AddAt(new TGeoHMatrix(*m),lid);
       
       TGeoRotation mchange; 
       mchange.RotateY(90); 
       mchange.RotateX(90);
-
-      TGeoHMatrix gMatrix(mchange.Inverse());
-      gMatrix.MultiplyLeft(m);
-      fMatrixArray->AddAt(new TGeoHMatrix(gMatrix),lid); 
 
       //
       // Cluster transformation matrix
@@ -1831,7 +1809,7 @@ Bool_t AliTRDgeometry::ReadGeoMatrices()
       rotSector.RotateZ(sectorAngle);
       rotMatrix.MultiplyLeft(&rotSector.Inverse());
 
-      fMatrixCorrectionArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
+      fClusterMatrixArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
 
     }    
   }

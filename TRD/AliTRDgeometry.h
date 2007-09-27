@@ -48,7 +48,9 @@ class AliTRDgeometry : public AliGeometry {
           void     CreateFrame(Int_t *idtmed);
           void     CreateServices(Int_t *idtmed);
 
-          Bool_t   ReadGeoMatrices();  
+          Bool_t   CreateClusterMatrixArray();  
+  TGeoHMatrix     *GetClusterMatrix(Int_t det)                         { return (TGeoHMatrix *) 
+                                                                           fClusterMatrixArray->At(det); }
 
           void     SetSMstatus(Int_t sm, Char_t status)                { fSMstatus[sm] = status; }
 
@@ -82,7 +84,7 @@ class AliTRDgeometry : public AliGeometry {
 
   virtual void     GetGlobal(const AliRecPoint*, TVector3&, TMatrixF& ) const { }; 
   virtual void     GetGlobal(const AliRecPoint*, TVector3& ) const            { };
- 
+
   static  Double_t GetAlpha()                                          { return 2.0 
                                                                            * 3.14159265358979324 
                                                                            / fgkNsect;           } 
@@ -120,13 +122,6 @@ class AliTRDgeometry : public AliGeometry {
   static  Int_t    Colmax()                                            { return fgkColmax;       }
   static  Int_t    RowmaxC0()                                          { return fgkRowmaxC0;     }
   static  Int_t    RowmaxC1()                                          { return fgkRowmaxC1;     }
-
-  TGeoHMatrix     *GetGeoMatrix(Int_t det)                             { return (TGeoHMatrix *) 
-                                                                           fMatrixGeo->At(det);             }
-  TGeoHMatrix     *GetMatrix(Int_t det)                                { return (TGeoHMatrix *) 
-                                                                           fMatrixArray->At(det);           }
-  TGeoHMatrix     *GetCorrectionMatrix(Int_t det)                      { return (TGeoHMatrix *) 
-                                                                           fMatrixCorrectionArray->At(det); }
 
  protected:
 
@@ -222,13 +217,10 @@ class AliTRDgeometry : public AliGeometry {
   Float_t               fChamberUFboxd[3*kNdets][3];         //  [3] = x, y, z
   Float_t               fChamberUUboxd[3*kNdets][3];         // 
 
-  TObjArray            *fMatrixArray;                        //! Transformation Global to Local
-  TObjArray            *fMatrixCorrectionArray;              //! Transformation Cluster to  Tracking systerm
-  TObjArray            *fMatrixGeo;                          //! Geo matrices
-
+  TObjArray            *fClusterMatrixArray;                 //! Transformation matrices loc. cluster to tracking cs
   TObjArray            *fPadPlaneArray;                      //! Array of pad plane objects
 
-  ClassDef(AliTRDgeometry,14)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,15)                                //  TRD geometry class
 
 };
 

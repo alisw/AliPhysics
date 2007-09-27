@@ -90,7 +90,7 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   //
 
   fGeo               = new AliTRDgeometry();
-  fGeo->ReadGeoMatrices();
+  fGeo->CreateClusterMatrixArray();
 
   fParam             = AliTRDCommonParam::Instance();
   if (!fParam) {
@@ -139,7 +139,7 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
     delete fGeo;
   }
   fGeo               = new AliTRDgeometry();
-  fGeo->ReadGeoMatrices();
+  fGeo->CreateClusterMatrixArray();
 
   fParam             = AliTRDCommonParam::Instance();
   if (!fParam) {
@@ -194,7 +194,7 @@ void AliTRDtransform::SetDetector(Int_t det)
   fZShiftIdeal       = 0.5 * (fPadPlane->GetRow0() + fPadPlane->GetRowEnd());
 
   // Get the current transformation matrix
-  fMatrix            = fGeo->GetCorrectionMatrix(det);
+  fMatrix            = fGeo->GetClusterMatrix(det);
 
 }
 
