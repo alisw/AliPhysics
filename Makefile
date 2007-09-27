@@ -160,7 +160,7 @@ DEPINC     += $(GENINC)
 # Libraries will be linked against SHLIB
 # ROOT libraries 
 
-ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer
+ROOTCLIBS     := $(shell root-config --glibs) -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof -lProofPlayer -lMLP
 
 ROOTPLIBS     := -lEGPythia6
 
