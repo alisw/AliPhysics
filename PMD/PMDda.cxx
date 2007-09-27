@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
   
   AliPMDCalibPedestal calibped;
 
+  TTree *ped  = new TTree("ped","PMD Pedestal tree");
+  TTree *gain = new TTree("gain","PMD Gain tree");
+
   TH1F::AddDirectory(0);
   
       
@@ -135,7 +138,9 @@ int main(int argc, char **argv) {
       printf(" event number = %i \n",iev);
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
       calibped.ProcessEvent(rawReader);
-      
+
+      calibgain.ProcessEvent(rawReader);
+
       delete rawReader;
       rawReader = 0x0;
 
@@ -147,9 +152,8 @@ int main(int argc, char **argv) {
     /* exit when last event received, no need to wait for TERM signal */
     if (eventT==END_OF_RUN) {
       printf("EOR event detected\n");
-      calibped.Analyse();
-
-
+      calibped.Analyse(ped);
+      calibgain.Analyse(gain);
 
       break;
     }
@@ -165,6 +169,17 @@ int main(int argc, char **argv) {
 
   /* write report */
   fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
+
+
+  TFile * pedRun = new TFile ("pmd_ped.root","RECREATE"); 
+  ped->Write();
+  pedRun->Close();
+
+  TFile * gainRun = new TFile ("pmd_calib.root","RECREATE"); 
+  gain->Write();
+  gainRun->Close();
+
+
 
   /* close result file */
   fclose(fp);
