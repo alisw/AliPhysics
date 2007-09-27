@@ -387,9 +387,9 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
   TString fsystem = system;
   Int_t iAccepted = 0;
 
-  TChain *fAnalysisChain = new TChain();
-  if(fAnalysisType == "ESD") fAnalysisChain->SetName("esdTree");
-  else if(fAnalysisType == "AOD") fAnalysisChain->SetName("aodTree");
+  TChain *fAnalysisChain = 0;
+  if(fAnalysisType == "ESD") fAnalysisChain = new TChain("esdTree");
+  else if(fAnalysisType == "AOD") fAnalysisChain = new TChain("aodTree");
   else AliFatal("Only ESD and AOD type is implemented!!!");
   
   //Event list
@@ -419,9 +419,9 @@ TChain *AliTagAnalysis::GetChainFromCollection(const char* collectionname, const
   //returns the TChain+TEntryList object- used in batch sessions
   TString fAliceFile = treename;
   Int_t iAccepted = 0;
-  TChain *fAnalysisChain = new TChain();
-  if(fAliceFile == "esdTree") fAnalysisChain->SetName("esdTree");
-  else if(fAliceFile == "aodTree") fAnalysisChain->SetName("aodTree");
+  TChain *fAnalysisChain = 0;
+  if(fAliceFile == "esdTree") fAnalysisChain = new TChain("esdTree");
+  else if(fAliceFile == "aodTree") fAnalysisChain = new TChain("aodTree");
   else AliFatal("Inconsistent tree name - use esdTree or aodTree!");
 
   //Event list
