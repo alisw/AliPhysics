@@ -17,14 +17,14 @@ public:
   virtual ~AliPMDCalibPedestal();
 
   Bool_t ProcessEvent(AliRawReader  *rawReader);
-  void   Analyse();
+  void   Analyse(TTree *pedtree);
 
 private:
 
-  TH1F *fPedHisto[2][24][96][96];
+  TH1F *fPedHisto[2][24][48][96];
 
 
-  ClassDef(AliPMDCalibPedestal,1)
+  ClassDef(AliPMDCalibPedestal,2)
 };
 
 

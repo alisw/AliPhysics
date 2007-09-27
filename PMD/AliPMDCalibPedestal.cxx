@@ -26,6 +26,8 @@
 #include "TTreeStream.h"
 
 //AliRoot includes
+#include "AliDAQ.h"
+#include "AliLog.h"
 #include "AliRawReader.h"
 #include "AliPMDRawStream.h"
 #include "AliPMDddldata.h"
@@ -72,7 +74,7 @@ AliPMDCalibPedestal::AliPMDCalibPedestal(const AliPMDCalibPedestal &ped) :
     {
 	for (int j = 0; j < 24; j++)
 	{
-	    for (int k = 0; k < 96; k++)
+	    for (int k = 0; k < 48; k++)
 	    {
 		for (int l = 0; l < 96; l++)
 		{
@@ -109,12 +111,15 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
+
+    const Int_t kDDL = AliDAQ::NumberOfDdls("PMD");
+
     AliPMDRawStream rawStream(rawReader);
 
     TObjArray pmdddlcont;
     Bool_t streamout = kTRUE;
 
-    for (Int_t iddl = 0; iddl < 6; iddl++)
+    for (Int_t iddl = 0; iddl < kDDL; iddl++)
     {
 	
 	rawReader->Select("PMD", iddl, iddl);
@@ -142,22 +147,35 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 }
 //_____________________________________________________________________
 
-void AliPMDCalibPedestal::Analyse()
+void AliPMDCalibPedestal::Analyse(TTree *pedtree)
 {
     //
     //  Calculate pedestal Mean and RMS
     //
-    for (int i = 0; i < 2; i++)
-    {
-	for (int j = 0; j < 24; j++)
-	{
-	    for (int k = 0; k < 96; k++)
-	    {
-		for (int l = 0; l < 96; l++)
-		{
+    Int_t   DET, SM, ROW, COL;
+    Float_t MEAN, RMS;
+    pedtree->Branch("DET",&DET,"DET/I");
+    pedtree->Branch("SM",&SM,"SM/I");
+    pedtree->Branch("ROW",&ROW,"ROW/I");
+    pedtree->Branch("COL",&COL,"COL/I");
+    pedtree->Branch("MEAN",&MEAN,"MEAN/F");
+    pedtree->Branch("RMS",&RMS,"RMS/F");
 
-		    Float_t mean = fPedHisto[i][j][k][l]->GetMean();
-		    Float_t rms  = fPedHisto[i][j][k][l]->GetRMS();
+    for (int idet = 0; idet < 2; idet++)
+    {
+	for (int ism = 0; ism < 24; ism++)
+	{
+	    for (int irow = 0; irow < 48; irow++)
+	    {
+		for (int icol = 0; icol < 96; icol++)
+		{
+		    DET  = idet;
+		    SM   = ism;
+		    ROW  = irow;
+		    COL  = icol;
+		    MEAN = fPedHisto[idet][ism][irow][icol]->GetMean();
+		    RMS  = fPedHisto[idet][ism][irow][icol]->GetRMS();
+		    pedtree->Fill();
 		}
 	    }
 	}
