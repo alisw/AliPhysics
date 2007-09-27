@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.56  2007/09/14 16:46:14  jgrosseo
+1) Connect and Close are called before and after each query, so one can
+keep the same AliDCSClient object.
+2) The splitting of a query is moved to GetDPValues/GetAliasValues.
+3) Splitting interval can be specified in constructor
+
 Revision 1.55  2007/08/06 12:26:40  acolla
 Function Bool_t GetHLTStatus added to preprocessor. It returns the status of HLT
 read from the run logbook.
@@ -274,7 +280,6 @@ some docs added
 #include <TSystemDirectory.h>
 #include <TSystemFile.h>
 #include <TFile.h>
-#include <TFileMerger.h>
 #include <TGrid.h>
 #include <TGridResult.h>
 
@@ -868,7 +873,6 @@ Bool_t AliShuttle::StoreRefFilesToGrid()
 		TString fullGridPath;
 		fullGridPath.Form("alien://%s/%s", alienDir.Data(), fileName.Data());
 
-		TFileMerger fileMerger;
 		Bool_t result = TFile::Cp(fullLocalPath, fullGridPath);
 		
 		if (result)
@@ -1531,12 +1535,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
         // Makes data retrieval just for a specific detector (fCurrentDetector).
 	// Threre should be a configuration for this detector.
 
-	AliInfo(Form("Retrieving values for %s, run %d", fCurrentDetector.Data(), GetCurrentRun()));
+	Log("SHUTTLE", Form("ProcessCurrentDetector - Retrieving values for %s, run %d", 
+						fCurrentDetector.Data(), GetCurrentRun()));
 
 	if (!CleanReferenceStorage(fCurrentDetector.Data()))
 		return kFALSE;
 
-	TMap* dcsMap = 0;
+	TMap* dcsMap = new TMap();
 
 	// call preprocessor
 	AliPreprocessor* aPreprocessor =
@@ -1548,69 +1553,93 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 
 	if (!processDCS)
 	{
-		Log(fCurrentDetector, "The preprocessor requested to skip the retrieval of DCS values");
+		Log(fCurrentDetector, "ProcessCurrentDetector -"
+			" The preprocessor requested to skip the retrieval of DCS values");
 	}
 	else if (fTestMode & kSkipDCS)
 	{
-		Log(fCurrentDetector, "In TESTMODE - Skipping DCS processing!");
+		Log(fCurrentDetector, "ProcessCurrentDetector - In TESTMODE: Skipping DCS processing");
 	} 
 	else if (fTestMode & kErrorDCS)
 	{
-		Log(fCurrentDetector, "In TESTMODE - Simulating DCS error");
+		Log(fCurrentDetector, "ProcessCurrentDetector - In TESTMODE: Simulating DCS error");
 		UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
 		UpdateShuttleStatus(AliShuttleStatus::kDCSError);
+		delete dcsMap;
 		return kFALSE;
 	} else {
 
 		UpdateShuttleStatus(AliShuttleStatus::kDCSStarted);
 
-		TString host(fConfig->GetDCSHost(fCurrentDetector));
-		Int_t port = fConfig->GetDCSPort(fCurrentDetector);
-
-		if (fConfig->GetDCSAliases(fCurrentDetector)->GetEntries() > 0)
-		{
-			dcsMap = GetValueSet(host, port, fConfig->GetDCSAliases(fCurrentDetector), kAlias);
-			if (!dcsMap)
-			{
-				Log(fCurrentDetector, "ProcessCurrentDetector - Error while retrieving DCS aliases");
-				UpdateShuttleStatus(AliShuttleStatus::kDCSError);
-				return kFALSE;
-			}
-		}
+		// Query DCS archive
+		Int_t nServers = fConfig->GetNServers(fCurrentDetector);
+		Log("SHUTTLE", Form("ProcessCurrentDetector -"
+				" found %d Amanda servers for %s", nServers, fCurrentDetector.Data()));
 		
-		if (fConfig->GetDCSDataPoints(fCurrentDetector)->GetEntries() > 0)
+		for (int iServ=0; iServ<nServers; iServ++)
 		{
-			TMap* dcsMap2 = GetValueSet(host, port, fConfig->GetDCSDataPoints(fCurrentDetector), kDP);
-			if (!dcsMap2)
+		
+			TString host(fConfig->GetDCSHost(fCurrentDetector, iServ));
+			Int_t port = fConfig->GetDCSPort(fCurrentDetector, iServ);
+			
+			TMap* aliasMap = 0;
+			TMap* dpMap = 0;
+	
+			if (fConfig->GetDCSAliases(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
-				Log(fCurrentDetector, "ProcessCurrentDetector - Error while retrieving DCS data points");
-				UpdateShuttleStatus(AliShuttleStatus::kDCSError);
-				if (dcsMap)
+				aliasMap = GetValueSet(host, port, 
+						fConfig->GetDCSAliases(fCurrentDetector, iServ), kAlias);
+				if (!aliasMap)
+				{
+					Log(fCurrentDetector, 
+						Form("ProcessCurrentDetector -"
+							" Error retrieving DCS aliases from server %s", 
+								host.Data()));
+					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
 					delete dcsMap;
-				return kFALSE;
+					return kFALSE;
+				}
 			}
 			
-			if (!dcsMap)
+			if (fConfig->GetDCSDataPoints(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
-				dcsMap = dcsMap2;
+				dpMap = GetValueSet(host, port, 
+						fConfig->GetDCSDataPoints(fCurrentDetector, iServ), kDP);
+				if (!dpMap)
+				{
+					Log(fCurrentDetector, 
+						Form("ProcessCurrentDetector -"
+							" Error retrieving DCS data points from server %s", 
+								host.Data()));
+					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
+					if (aliasMap) delete aliasMap;
+					delete dcsMap;
+					return kFALSE;
+				}				
 			}
-			else // merge
-			{
-				TIter iter(dcsMap2);
+			
+			// merge aliasMap and dpMap into dcsMap
+			if(aliasMap) {
+				TIter iter(aliasMap);
 				TObjString* key = 0;
 				while ((key = (TObjString*) iter.Next()))
-					dcsMap->Add(key, dcsMap2->GetValue(key->String()));
-					
-				dcsMap2->SetOwner(kFALSE);
-				delete dcsMap2;
+					dcsMap->Add(key, aliasMap->GetValue(key->String()));
+				
+				aliasMap->SetOwner(kFALSE);
+				delete aliasMap;
+			}	
+			
+			if(dpMap) {
+				TIter iter(dpMap);
+				TObjString* key = 0;
+				while ((key = (TObjString*) iter.Next()))
+					dcsMap->Add(key, dpMap->GetValue(key->String()));
+				
+				dpMap->SetOwner(kFALSE);
+				delete dpMap;
 			}
 		}
-		
 	}
-
-	// still no map?
-	if (!dcsMap)
-		dcsMap = new TMap;
 	
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
@@ -1770,7 +1799,8 @@ Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* entry,
 	// valueSet: array of retrieved AliDCSValue's
 	// type: kAlias or kDP
 
-	AliDCSClient client(host, port, fTimeout, fRetries);
+	// TODO The last parameter switches from single query to multy query!
+	AliDCSClient client(host, port, fTimeout, fRetries, 1);
 	if (!client.IsConnected())
 	{
 		return kFALSE;

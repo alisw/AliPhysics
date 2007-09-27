@@ -17,7 +17,8 @@
 
 // Shuttle classes ...
 #pragma link C++ class  AliShuttleConfig;
-#pragma link C++ class  AliShuttleConfig::AliShuttleConfigHolder;
+#pragma link C++ class  AliShuttleConfig::AliShuttleDCSConfigHolder;
+#pragma link C++ class  AliShuttleConfig::AliShuttleDetConfigHolder;
 #pragma link C++ class  AliShuttle;
 #pragma link C++ class  AliShuttleTrigger;
 #pragma link C++ class  TerminateSignalHandler;

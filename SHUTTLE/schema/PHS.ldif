@@ -1,14 +1,17 @@
 # PHS config
 dn: det=PHS,o=alice,dc=cern,dc=ch
-objectClass: AliShuttleDetector
+objectClass: detectorConfig
 det: PHS
-StrictRunOrder: 0
+strictRunOrder: 0
 responsible: Boris.Polichtchouk@cern.ch
-DCSHost: aldcs052.cern.ch
-DCSPort: 4242
-DCSalias: phs_hvIsegMeasVoltage[0..4]
-DCSalias: phs_hvIsegMeasCurrent[0..4]
-DCSalias: phs_hvIsegMeasAlarm[0..4]
-DCSalias: phs_lvWienerMeasCurrent[00..19]
-DCSalias: phs_lvWienerMeasAlarm[00..19]
-DCSalias: phs_temperatureCold[00..24]
+
+dn: dcsHost=aldcs052.cern.ch,det=PHS,o=alice,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 4242
+dcsAlias: phs_hvIsegMeasVoltage[0..4]
+dcsAlias: phs_hvIsegMeasCurrent[0..4]
+dcsAlias: phs_hvIsegMeasAlarm[0..4]
+dcsAlias: phs_lvWienerMeasCurrent[00..19]
+dcsAlias: phs_lvWienerMeasAlarm[00..19]
+dcsAlias: phs_temperatureCold[00..24]

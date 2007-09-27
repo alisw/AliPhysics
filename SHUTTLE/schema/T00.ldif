@@ -1,9 +1,13 @@
 # T00 config;
 dn: det=T00,o=alice,dc=cern,dc=ch
 objectClass: top
-objectClass: AliShuttleDetector
+objectClass: detectorConfig
 det: T00
-StrictRunOrder: 0
+strictRunOrder: 0
 responsible: tomatkie@cc.jyu.fi
 responsible: moledzki@gmail.com
 
+dn: dcsHost=aldcs052.cern.ch,det=T00,o=alice,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 4242

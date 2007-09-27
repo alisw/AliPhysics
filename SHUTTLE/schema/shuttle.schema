@@ -2,76 +2,84 @@ objectidentifier SHUTTLE_BASE 1.1.1
 
 objectidentifier DETECTOR_CONFIG SHUTTLE_BASE:1
 
-attributetype ( DETECTOR_CONFIG:1 NAME 'det'         DESC 'Detector name'         EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( DETECTOR_CONFIG:2 NAME 'DCSHost'     DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( DETECTOR_CONFIG:3 NAME 'DCSPort'     DESC ''                                                  SUP ipServicePort )
-attributetype ( DETECTOR_CONFIG:4 NAME 'DCSalias'    DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( DETECTOR_CONFIG:5 NAME 'DCSdatapoint' DESC ''                      EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( DETECTOR_CONFIG:6 NAME 'StrictRunOrder' DESC 'Strict run ordering flag' EQUALITY caseIgnoreMatch SUP name )
-attributetype ( DETECTOR_CONFIG:7 NAME 'responsible' DESC 'responsible email address' EQUALITY caseIgnoreIA5Match SUP mail )
+attributetype ( DETECTOR_CONFIG:1 NAME 'det'            DESC 'Detector name'             EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( DETECTOR_CONFIG:6 NAME 'strictRunOrder' DESC 'Strict run ordering flag'  EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( DETECTOR_CONFIG:7 NAME 'responsible'    DESC 'responsible email address' EQUALITY caseIgnoreIA5Match SUP mail )
 
 objectclass ( DETECTOR_CONFIG
-        NAME 'AliShuttleDetector'
+        NAME 'detectorConfig'
         DESC 'ALICE: Shuttle configuration object.'
         SUP top
-        MUST (det $ StrictRunOrder)
-        MAY  (DCSHost $ DCSPort $ DCSalias $ DCSdatapoint $ responsible) )
+        MUST (det $ strictRunOrder)
+        MAY  (responsible) )
 
+objectidentifier DCS_CONFIG SHUTTLE_BASE:2
 
-objectidentifier SYS_CONFIG SHUTTLE_BASE:2
+attributetype ( DCS_CONFIG:1 NAME 'dcsHost'     DESC 'DCS host'            EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( DCS_CONFIG:2 NAME 'dcsPort'     DESC 'DCS port'     			            SUP ipServicePort SINGLE-VALUE )
+attributetype ( DCS_CONFIG:3 NAME 'dcsAlias'    DESC 'alias name(s)'       EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DCS_CONFIG:4 NAME 'dcsDP' 	DESC 'Data Point name(s)'  EQUALITY caseIgnoreMatch    SUP name )
 
-attributetype ( SYS_CONFIG:1 NAME 'system' 	     DESC 'System name (DAQ, DCS, HLT)'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:2 NAME 'DBHost'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:3 NAME 'DBPort'      DESC ''				    SUP ipServicePort )
-attributetype ( SYS_CONFIG:4 NAME 'DBUser'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:5 NAME 'DBPassword'  DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:6 NAME 'DBName'      DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:7 NAME 'DBTable'     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:8 NAME 'FSHost'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:9 NAME 'FSPort'	     DESC ''				    SUP ipServicePort )
-attributetype ( SYS_CONFIG:10 NAME 'FSUser'	     DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( SYS_CONFIG:11 NAME 'FSPassword'       DESC ''	EQUALITY caseIgnoreMatch    SUP name )
-
-objectclass ( SYS_CONFIG
-        NAME 'AliShuttleSYSConfig'
-        DESC 'ALICE: Configuration of the Shuttle for access to online network'
+objectclass ( DCS_CONFIG
+        NAME 'dcsConfig'
+        DESC 'ALICE: Shuttle configuration of the DCS Amanda server(s).'
         SUP top
-        MUST (system $ DBHost $ DBUser $ DBPassword $ DBName $ DBTable $ FSHost $ FSUser )
-        MAY ( FSPassword $ DBPort $ FSPort) )
+	MUST (dcsHost $ dcsPort)
+        MAY  (dcsAlias $ dcsDP) )
+
+objectidentifier FXS_CONFIG SHUTTLE_BASE:3
+
+attributetype ( FXS_CONFIG:1  NAME 'system'	 DESC 'System name (DAQ, DCS, HLT)'  EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:2  NAME 'dbHost'	 DESC 'FXS MySQL DB host'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:3  NAME 'dbPort'	 DESC 'FXS MySQL DB port'				       SUP ipServicePort SINGLE-VALUE )
+attributetype ( FXS_CONFIG:4  NAME 'dbUser'	 DESC 'FXS MySQL DB user'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:5  NAME 'dbPasswd'    DESC 'FXS MySQL DB passwd'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:6  NAME 'dbName'	 DESC 'FXS MySQL DB name'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:7  NAME 'dbTable'	 DESC 'FXS MySQL DB table'	     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:8  NAME 'fxsHost'	 DESC 'FXS host' 		     EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:9  NAME 'fxsPort'	 DESC 'FXS port' 					       SUP ipServicePort SINGLE-VALUE )
+attributetype ( FXS_CONFIG:10 NAME 'fxsUser'	 DESC 'FXS user'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+attributetype ( FXS_CONFIG:11 NAME 'fxsPasswd'   DESC 'FXS Password'	             EQUALITY caseIgnoreMatch  SUP name SINGLE-VALUE )
+
+objectclass ( FXS_CONFIG
+        NAME 'fxsConfig'
+        DESC 'ALICE: Configuration of the Shuttle for access to the File Exchange Servers'
+        SUP top
+        MUST (system $ dbHost $ dbUser $ dbPasswd $ dbName $ dbTable $ fxsHost $ fxsUser )
+        MAY ( dbPort $ fxsPasswd $ fxsPort) )
 
 
-objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:3
+objectidentifier GLOBAL_CONFIG SHUTTLE_BASE:4
 
-attributetype ( GLOBAL_CONFIG:1 NAME 'DAQLogbookHost'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:2 NAME 'DAQLogbookPort'      DESC ''    				  SUP ipServicePort )
-attributetype ( GLOBAL_CONFIG:3 NAME 'DAQLogbookUser'      DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:4 NAME 'DAQLogbookPassword'  DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:5 NAME 'DAQLogbookDB'        DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:6 NAME 'DAQLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:7 NAME 'ShuttleLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:8 NAME 'RunTypeLogbookTable'     DESC ''    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:9 NAME 'MaxRetries'          DESC 'number of retries for failures of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:10 NAME 'PPTimeOut'           DESC 'number of seconds until preprocessor is aborted'    EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( GLOBAL_CONFIG:11 NAME 'PPMaxMem'           DESC 'Max. mem consumption in KB of a preprocessor'    EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( GLOBAL_CONFIG:1  NAME 'daqLbHost'      DESC 'DAQ Logbook host'             EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:2  NAME 'daqLbPort'      DESC 'DAQ Logbook port' 		    			       SUP ipServicePort SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:3  NAME 'daqLbUser'      DESC 'DAQ Logbook user'             EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:4  NAME 'daqLbPasswd'    DESC 'DAQ Logbook passwd'           EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:5  NAME 'daqLbDB'	       DESC 'DAQ Logbook DB'               EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:6  NAME 'daqLbTable'     DESC 'DAQ Logbook table'            EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:7  NAME 'shuttleLbTable' DESC 'SHUTTLE Logbook table'        EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:8  NAME 'runTypeLbTable' DESC 'RunType Logbook table'        EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:9  NAME 'ppmaxRetries'   DESC 'retries before pp fail'	   EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:10 NAME 'ppTimeOut'      DESC 'seconds before pp abort'	   EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:11 NAME 'ppMaxMem'       DESC 'max pp mem consumption (KB)'  EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 
 objectclass ( GLOBAL_CONFIG
-        NAME 'AliShuttleGlobalConfig'
-        DESC 'ALICE: Access to DAQ logbook settings'
+        NAME 'globalConfig'
+        DESC 'ALICE: settings for DAQ logbook access'
         SUP top
-        MUST (name $ DAQLogbookHost $ DAQLogbookUser $ DAQLogbookPassword $ DAQLogbookDB $ DAQLogbookTable $
-	ShuttleLogbookTable $ RunTypeLogbookTable $ MaxRetries $ PPTimeOut $ PPMaxMem)
-        MAY ( DAQLogbookPort ) )
+        MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem)
+        MAY ( daqLbPort ) )
 
 
-objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:4
+objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:5
 
-attributetype ( INSTANCE_CONFIG:1 NAME 'ShuttleHost' DESC 'Host that is running the Shuttle'  EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( INSTANCE_CONFIG:1 NAME 'shuttleHost' DESC 'Host that is running the Shuttle'  EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 attributetype ( INSTANCE_CONFIG:2 NAME 'detectors'   DESC 'Detector list'                     EQUALITY caseIgnoreMatch    SUP name )
 
 objectclass ( INSTANCE_CONFIG
-        NAME 'AliShuttleInstance'
+        NAME 'ShuttleInstance'
         DESC 'ALICE: Shuttle instance configuration.'
         SUP top
-        MUST (name $ ShuttleHost)
+        MUST (name $ shuttleHost)
         MAY (detectors)
         )

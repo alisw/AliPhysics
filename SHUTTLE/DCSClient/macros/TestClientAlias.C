@@ -1,12 +1,13 @@
-void GetValues(const char* host, Int_t port, const char* request,
+TMap* GetValues(const char* host, Int_t port, const char* request,
 	UInt_t startTime, UInt_t endTime) 
 {
-	AliDCSClient client(host, port, 1000, 20);
+	AliDCSClient client(host, port, 1000, 20, 1);
+	// The last parameter switches from single alias to multi aliases!
 
-	Int_t result;
+	//Int_t result;
 
 	TTimeStamp currentTime;
-	TMap values;
+	//TMap values;
 
 	TString rString(request);
 
@@ -14,47 +15,48 @@ void GetValues(const char* host, Int_t port, const char* request,
 
 	cout<<"Requests: "<<requests->GetEntries()<<endl;
 
+	TMap* values=0;
+	
 	TStopwatch sw;
 	sw.Start();
+	
+	if(requests->GetEntries() == 0) return NULL;
 
-	if (requests->GetEntries() > 0) {
-		TIter iter(requests);
-		TObjString* aString;
-		TObjArray* valueSet;
-		while ((aString = (TObjString*) iter.Next())) {
-			cout<<"  Querying: "<<aString->GetName()<<endl;
-			valueSet = new TObjArray();
-			valueSet->SetOwner(1);
+// 		TIter iter(requests);
+// 		TObjString* aString;
+// 		TObjArray* valueSet;
+// 		while ((aString = (TObjString*) iter.Next())) {
+// 		      cout<<"  Querying: "<<aString->GetName()<<endl;
+// 		      valueSet = new TObjArray();
+// 		      valueSet->SetOwner(1);
+// 
+// 			result = client.GetAliasValues(aString->GetName(), startTime,
+// 				endTime, valueSet);
+// 			values.Add(aString->Clone(), valueSet);
+// 		}
+ 
+	values = client.GetAliasValues(requests, startTime, endTime);
 
-			result = client.GetAliasValues(aString->GetName(), startTime,
-				endTime, valueSet);
-			values.Add(aString->Clone(), valueSet);
-		}
-	}
-
-	if (result < 0) {
+	if (!values) {
 		cout<<"Communication failure: "<<
-			AliDCSClient::GetErrorString(result)<<endl;
-
-		if (result == AliDCSClient::fgkServerError) {
-			cout<<"Server error code: "<<
-				client.GetServerErrorCode()<<endl;
-			cout<<client.GetServerError()<<endl;
-		}
+			client.GetServerError().Data() <<endl;
+		return NULL;
 	}
 	
 	sw.Stop();
 	cout<<"Elapsed time: "<<sw.RealTime()<<endl;
-	if (result > 0) {
-		cout<<"Time per value: "<<sw.RealTime()/result<<endl;
-	}
-	cout<<"Received values: "<<result<<endl;
 
-	TIter iter(&values);
+	cout<<"Time per alias: "<<sw.RealTime()/requests->GetEntries()<<endl;
+
+	cout<<"Received values: "<<endl;
+
+	Int_t nValues=0;
+
+	TIter iter(values);
 	TObjString* aRequest;
 	while ((aRequest = (TObjString*) iter.Next())) {
 
-		TObjArray* valueSet = (TObjArray*) values.GetValue(aRequest);
+		TObjArray* valueSet = (TObjArray*) values->GetValue(aRequest);
 		
 		cout<<" '"<<aRequest->String()<<"' values: " 
 			<<valueSet->GetEntriesFast()<<endl;
@@ -63,8 +65,12 @@ void GetValues(const char* host, Int_t port, const char* request,
 		AliDCSValue* aValue;
 		while ((aValue = (AliDCSValue*) valIter.Next())) {
 			cout<<aValue->ToString()<<endl;
+			nValues++;
 		} 
 	}
+	
+	cout<<"Number of received values: "<< nValues <<endl;
+	
 
 /*
 	TFile file("dump.root", "UPDATE");
@@ -73,15 +79,17 @@ void GetValues(const char* host, Int_t port, const char* request,
 	file.Close(); 
 */
 
-	values.DeleteAll();
-	delete requests;
+	//values.DeleteAll();
+	//delete requests;
 
 	cout<<"All values returned in runrange:  "<<endl;
 	cout<<"StartTime: "<<TTimeStamp(startTime).AsString()<<endl;
 	cout<<"EndTime: "<<TTimeStamp(endTime).AsString()<<endl;
+	
+	return values;
 }
 
-void TestClientAlias(const char* host, Int_t port, const char* request,
+TMap* TestClientAlias(const char* host, Int_t port, const char* request,
 	UInt_t startShift, UInt_t endShift) {
 
 	gSystem->Load("$ALICE_ROOT/SHUTTLE/DCSClient/AliDCSClient");
@@ -91,9 +99,14 @@ void TestClientAlias(const char* host, Int_t port, const char* request,
 
 	TTimeStamp currentTime;
 
-	GetValues(host, port, request,
+	TMap* values = GetValues(host, port, request,
 		currentTime.GetSec() - startShift, 
 		currentTime.GetSec() - endShift);
 
-	cout<<"Client done"<<endl;
+	if(values) values->Print();
+
+	cout << endl;
+	cout <<"Client done"<<endl;
+	
+	return values;
 }

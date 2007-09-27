@@ -1,9 +1,13 @@
 # SDD config
 dn: det=SDD,o=alice,dc=cern,dc=ch
 objectClass: top
-objectClass: AliShuttleDetector
+objectClass: detectorConfig
 det: SDD
-StrictRunOrder: 0
+strictRunOrder: 0
 responsible: francesco.prino@cern.ch
 responsible: elisabetta.crescio@to.infn.it
 
+dn: dcsHost=aldcs052.cern.ch,det=SDD,o=alice,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 4242

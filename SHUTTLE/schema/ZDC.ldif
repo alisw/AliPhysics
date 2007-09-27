@@ -1,17 +1,20 @@
 # ZDC config
 dn: det=ZDC,o=alice,dc=cern,dc=ch
-objectClass: AliShuttleDetector
+objectClass: detectorConfig
 det: ZDC
-StrictRunOrder: 0
+strictRunOrder: 0
 responsible: chiara.oppedisano@to.infn.it
-DCSHost: aldcs052.cern.ch
-DCSPort: 4242
-DCSalias: ZDC_ZPA_HV[0..4].actual.vMon
-DCSalias: ZDC_ZNA_HV[0..4].actual.vMon
-DCSalias: ZDC_ZNC_HV[0..4].actual.vMon
-DCSalias: ZDC_ZPC_HV[0..4].actual.vMon
-DCSalias: ZDC_ZEM_HV[0..1].actual.vMon
-DCSalias: ZDC_ZNA_POS.actual.position
-DCSalias: ZDC_ZPA_POS.actual.position
-DCSalias: ZDC_ZNC_POS.actual.position
-DCSalias: ZDC_ZPC_POS.actual.position
+
+dn: dcsHost=aldcs052.cern.ch,det=ZDC,o=alice,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 4242
+dcsAlias: ZDC_ZPA_HV[0..4].actual.vMon
+dcsAlias: ZDC_ZNA_HV[0..4].actual.vMon
+dcsAlias: ZDC_ZNC_HV[0..4].actual.vMon
+dcsAlias: ZDC_ZPC_HV[0..4].actual.vMon
+dcsAlias: ZDC_ZEM_HV[0..1].actual.vMon
+dcsAlias: ZDC_ZNA_POS.actual.position
+dcsAlias: ZDC_ZPA_POS.actual.position
+dcsAlias: ZDC_ZNC_POS.actual.position
+dcsAlias: ZDC_ZPC_POS.actual.position

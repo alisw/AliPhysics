@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.21  2007/04/27 07:06:48  jgrosseo
+GetFileSources returns empty list in case of no files, but successful query
+No mails sent in testmode
+
 Revision 1.20  2007/04/04 10:33:36  jgrosseo
 1) Storing of files to the Grid is now done _after_ your preprocessors succeeded. This is transparent, which means that you can still use the same functions (Store, StoreReferenceData) to store files to the Grid. However, the Shuttle first stores them locally and transfers them after the preprocessor finished. The return code of these two functions has changed from UInt_t to Bool_t which gives you the success of the storing.
 In case of an error with the Grid, the Shuttle will retry the storing later, the preprocessor does not need to be run again.
@@ -150,20 +154,16 @@ some docs added
 #include <TLDAPAttribute.h>
 
 
-AliShuttleConfig::AliShuttleConfigHolder::AliShuttleConfigHolder(const TLDAPEntry* entry):
-fDetector(""),
+AliShuttleConfig::AliShuttleDCSConfigHolder::AliShuttleDCSConfigHolder(const TLDAPEntry* entry):
 fDCSHost(""),
 fDCSPort(0),
 fDCSAliases(0),
 fDCSDataPoints(0),
 fDCSAliasesComp(0),
 fDCSDataPointsComp(0),
-fResponsibles(0),
-fIsValid(kFALSE),
-fSkipDCSQuery(kFALSE),
-fStrictRunOrder(kFALSE)
+fIsValid(kFALSE)
 {
-// constructor of the shuttle configuration holder
+// constructor of the shuttle DCS configuration holder
 
 	TLDAPAttribute* anAttribute;
 	fDCSAliases = new TObjArray();
@@ -174,70 +174,27 @@ fStrictRunOrder(kFALSE)
 	fDCSAliasesComp->SetOwner(1);
 	fDCSDataPointsComp = new TObjArray();
 	fDCSDataPointsComp->SetOwner(1);
-	fResponsibles = new TObjArray();
-	fResponsibles->SetOwner(1);
 
-	anAttribute = entry->GetAttribute("det"); // MUST
-        if (!anAttribute)
-	{
-		AliError(Form("Invalid configuration! No \"det\" attribute!"));
-		return;
-        }
-	fDetector = anAttribute->GetValue();
-
-	anAttribute = entry->GetAttribute("StrictRunOrder"); // MAY
-        if (!anAttribute)
-	{
-		AliWarning(Form("%s did not set StrictRunOrder flag - the default is FALSE",
-				fDetector.Data()));
-        } else {
-		TString strictRunStr = anAttribute->GetValue();
-		if (!(strictRunStr == "0" || strictRunStr == "1"))
-		{
-			AliError("Invalid configuration! StrictRunOrder flag must be 0 or 1!");
-			return;
-		}
-		fStrictRunOrder = (Bool_t) strictRunStr.Atoi();
-	}
-
-	anAttribute = entry->GetAttribute("responsible"); // MAY
-        if (!anAttribute)
-	{
-		AliDebug(2, "Warning! No \"responsible\" attribute!");
-        }
-	else
-	{
-		const char* aResponsible;
-		while ((aResponsible = anAttribute->GetValue()))
-		{
-			fResponsibles->AddLast(new TObjString(aResponsible));
-		}
-	}
 	
-	anAttribute = entry->GetAttribute("DCSHost"); // MAY
+	anAttribute = entry->GetAttribute("dcsHost"); 
 	if (!anAttribute)
 	{
-		AliDebug(2,
-			Form("%s has not DCS host entry - Shuttle will skip DCS data query!",
-				fDetector.Data()));
-		fIsValid = kTRUE;
-		fSkipDCSQuery = kTRUE;
+		AliError("Unexpected: no DCS host!");
 		return;
 	}
 
 	fDCSHost = anAttribute->GetValue();
 
-	anAttribute = entry->GetAttribute("DCSPort"); // MAY
+	anAttribute = entry->GetAttribute("dcsPort");
         if (!anAttribute)
 	{
-		AliError(Form("Invalid configuration! %s has DCS Host but no port number!",
-				fDetector.Data()));
+		AliError("Unexpected: no DCS port!");
 		return;
         }
 	TString portStr = anAttribute->GetValue();
 	fDCSPort = portStr.Atoi();
 
-	anAttribute = entry->GetAttribute("DCSalias"); // MAY
+	anAttribute = entry->GetAttribute("dcsAlias"); // MAY
         if (anAttribute)
 	{
 		const char* anAlias;
@@ -248,7 +205,7 @@ fStrictRunOrder(kFALSE)
 		}
 	}
 
-	anAttribute = entry->GetAttribute("DCSdatapoint"); // MAY
+	anAttribute = entry->GetAttribute("dcsDP"); // MAY
         if (anAttribute)
 	{
 		const char* aDataPoint;
@@ -263,7 +220,7 @@ fStrictRunOrder(kFALSE)
 }
 
 //______________________________________________________________________________________________
-void AliShuttleConfig::AliShuttleConfigHolder::ExpandAndAdd(TObjArray* target, const char* entry)
+void AliShuttleConfig::AliShuttleDCSConfigHolder::ExpandAndAdd(TObjArray* target, const char* entry)
 {
 	//
 	// adds <entry> to <target> applying expanding of the name
@@ -320,13 +277,186 @@ void AliShuttleConfig::AliShuttleConfigHolder::ExpandAndAdd(TObjArray* target, c
 }
 
 //______________________________________________________________________________________________
-AliShuttleConfig::AliShuttleConfigHolder::~AliShuttleConfigHolder()
+AliShuttleConfig::AliShuttleDCSConfigHolder::~AliShuttleDCSConfigHolder()
 {
 // destructor of the shuttle configuration holder
 
 	delete fDCSAliases;
 	delete fDCSDataPoints;
+	delete fDCSAliasesComp;
+	delete fDCSDataPointsComp;	
+}
+
+//______________________________________________________________________________________________
+AliShuttleConfig::AliShuttleDetConfigHolder::AliShuttleDetConfigHolder(const TLDAPEntry* entry):
+fDetector(""),
+fDCSConfig(),
+fResponsibles(0),
+fIsValid(kFALSE),
+fSkipDCSQuery(kFALSE),
+fStrictRunOrder(kFALSE)
+{
+// constructor of the shuttle configuration holder
+
+	TLDAPAttribute* anAttribute;
+	
+	fResponsibles = new TObjArray();
+	fResponsibles->SetOwner(1);
+	fDCSConfig = new TObjArray();
+	fDCSConfig->SetOwner(1);
+
+	anAttribute = entry->GetAttribute("det"); // MUST
+        if (!anAttribute)
+	{
+		AliError(Form("No \"det\" attribute!"));
+		return;
+        }
+	fDetector = anAttribute->GetValue();
+
+	anAttribute = entry->GetAttribute("strictRunOrder"); // MAY
+        if (!anAttribute)
+	{
+		AliWarning(Form("%s did not set strictRunOrder flag - the default is FALSE",
+				fDetector.Data()));
+        } else {
+		TString strictRunStr = anAttribute->GetValue();
+		if (!(strictRunStr == "0" || strictRunStr == "1"))
+		{
+			AliError("strictRunOrder flag must be 0 or 1!");
+			return;
+		}
+		fStrictRunOrder = (Bool_t) strictRunStr.Atoi();
+	}
+
+	anAttribute = entry->GetAttribute("responsible"); // MAY
+        if (!anAttribute)
+	{
+		AliDebug(2, "Warning! No \"responsible\" attribute!");
+        }
+	else
+	{
+		const char* aResponsible;
+		while ((aResponsible = anAttribute->GetValue()))
+		{
+			fResponsibles->AddLast(new TObjString(aResponsible));
+		}
+	}
+
+	fIsValid = kTRUE;
+}
+
+//______________________________________________________________________________________________
+AliShuttleConfig::AliShuttleDetConfigHolder::~AliShuttleDetConfigHolder()
+{
+// destructor of the shuttle configuration holder
+
 	delete fResponsibles;
+	delete fDCSConfig;
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttleConfig::AliShuttleDetConfigHolder::GetDCSHost(Int_t iServ) const
+{
+	//
+	// returns DCS server host 
+	//
+	
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+	
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetDCSHost();
+}
+
+//______________________________________________________________________________________________
+Int_t AliShuttleConfig::AliShuttleDetConfigHolder::GetDCSPort(Int_t iServ) const
+{
+	//
+	// returns DCS server port 
+	//
+	
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+	
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetDCSPort();
+}
+
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::AliShuttleDetConfigHolder::GetDCSAliases(Int_t iServ) const
+{
+	//
+	// returns collection of TObjString which represents the set of aliases
+	// which used for data retrieval for particular detector
+	//
+	
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+	
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetDCSAliases();
+}
+
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::AliShuttleDetConfigHolder::GetDCSDataPoints(Int_t iServ) const
+{
+	//
+	// returns collection of TObjString which represents the set of aliases
+	// which used for data retrieval for particular detector
+	//
+
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetDCSDataPoints();
+}
+
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::AliShuttleDetConfigHolder::GetCompactDCSAliases(Int_t iServ) const
+{
+	//
+	// returns collection of TObjString which represents the set of aliases
+	// which used for data retrieval for particular detector (Compact style)
+	//
+
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetCompactDCSAliases();
+}
+
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::AliShuttleDetConfigHolder::GetCompactDCSDataPoints(Int_t iServ) const
+{
+	//
+	// returns collection of TObjString which represents the set of aliases
+	// which used for data retrieval for particular detector (Compact style)
+	//
+
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetCompactDCSDataPoints();
+}
+
+//______________________________________________________________________________________________
+void AliShuttleConfig::AliShuttleDetConfigHolder::AddDCSConfig(AliShuttleDCSConfigHolder* holder)
+{
+	//
+	// adds a DCS configuration set in the array of DCS configurations
+	// 
+	
+	if(!holder) return;
+	fDCSConfig->AddLast(holder);
 }
 
 ClassImp(AliShuttleConfig)
@@ -334,11 +464,24 @@ ClassImp(AliShuttleConfig)
 //______________________________________________________________________________________________
 AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	const char* binddn, const char* password, const char* basedn):
-	fIsValid(kFALSE), fConfigHost(host),
-	fDAQlbHost(""), fDAQlbPort(), fDAQlbUser(""), fDAQlbPass(""),
-	fDAQlbDB(""), fDAQlbTable(""), fShuttlelbTable(""), fRunTypelbTable(""),
-	fMaxRetries(0), fPPTimeOut(0), fPPMaxMem(0), fDetectorMap(), fDetectorList(),
-	fShuttleInstanceHost(""), fProcessedDetectors(), fProcessAll(kFALSE)
+	fConfigHost(host), 
+	fDAQlbHost(""), 
+	fDAQlbPort(), 
+	fDAQlbUser(""), 
+	fDAQlbPass(""),
+	fDAQlbDB(""), 
+	fDAQlbTable(""), 
+	fShuttlelbTable(""), 
+	fRunTypelbTable(""),
+	fMaxRetries(0), 
+	fPPTimeOut(0), 
+	fPPMaxMem(0), 
+	fDetectorMap(), 
+	fDetectorList(),
+	fShuttleInstanceHost(""), 
+	fProcessedDetectors(), 
+	fProcessAll(kFALSE), 
+	fIsValid(kFALSE)
 {
 	//
 	// host: ldap server host
@@ -346,10 +489,9 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	// binddn: binddn used for ldap binding (simple bind is used!).
 	// password: password for binddn
 	// basedn: this is basedn whose childeren entries which have
-	// (objectClass=shuttleConfig) will be used as detector configurations.
 	//
 
-	fDetectorMap.SetOwner();
+	fDetectorMap.SetOwner(1);
 	fDetectorList.SetOwner(0); //fDetectorList and fDetectorMap share the same object!
 	fProcessedDetectors.SetOwner();
 
@@ -362,296 +504,76 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	}
 
 	// reads configuration for the shuttle running on this machine
-
-	fShuttleInstanceHost = gSystem->HostName();
-	TString queryFilter = Form("(ShuttleHost=%s)", fShuttleInstanceHost.Data());
-
-	TLDAPResult* aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, queryFilter.Data());
-
-	if (!aResult) {
-		AliError(Form("Can't find configuration with base DN: %s",
-				basedn));
-		return;
-	}
-
-	if (aResult->GetCount() == 0) {
-		AliError(Form("No Shuttle instance for host = %s!",
-					fShuttleInstanceHost.Data()));
-		AliError(Form("All detectors will be processed."));
-		fProcessAll=kTRUE;
-	}
-
-	if (aResult->GetCount() > 1) {
-		AliError(Form("More than one Shuttle instance for host %s!",
-					fShuttleInstanceHost.Data()));
-		delete aResult;
-		return;
-	}
-
-	TLDAPEntry* anEntry = 0;
-	TLDAPAttribute* anAttribute = 0;
-
-	if(!fProcessAll){
-		anEntry = aResult->GetNext();
-		anAttribute = anEntry->GetAttribute("detectors");
-		const char *detName;
-		while((detName = anAttribute->GetValue())){
-			TObjString *objDet= new TObjString(detName);
-			fProcessedDetectors.Add(objDet);
-		}
-	}
-
-	delete anEntry; delete aResult;
-
-	// Detector configuration (DCS Archive DB settings)
-
-	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, "(objectClass=AliShuttleDetector)");
-	if (!aResult) {
-		AliError(Form("Can't find configuration with base DN: %s", basedn));
-		return;
-	}
-
-
-	while ((anEntry = aResult->GetNext())) {
-		AliShuttleConfigHolder* aHolder = new AliShuttleConfigHolder(anEntry);
-		delete anEntry;
-
-		if (!aHolder->IsValid()) {
-			AliError("Detector configuration error!");
-			delete aHolder;
-			delete aResult;
-			return;
-		}
-
-		TObjString* detStr = new TObjString(aHolder->GetDetector());
-		fDetectorMap.Add(detStr, aHolder);
-		fDetectorList.AddLast(detStr);
-	}
-
-	delete aResult;
-
-	// Global configuration (DAQ logbook)
-
-	aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL,
-			"(objectClass=AliShuttleGlobalConfig)");
-	if (!aResult) {
-		AliError(Form("Can't find configuration with base DN: %s",
-				basedn));
-		return;
-	}
-
-	if (aResult->GetCount() == 0) {
-		AliError("Can't find DAQ logbook configuration!");
-		delete aResult;
-		return;
-	}
-
-	if (aResult->GetCount() > 1) {
-		AliError("More than one DAQ logbook configuration found!");
-		delete aResult;
-		return;
-	}
-
-	anEntry = aResult->GetNext();
-
-	anAttribute = anEntry->GetAttribute("DAQLogbookHost");
-	if (!anAttribute) {
-		AliError("Can't find DAQLogbookHost attribute!");
-		delete anEntry; delete aResult;
-		return;
-	}
-	fDAQlbHost = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("DAQLogbookPort"); // MAY
-	if (anAttribute)
-	{
-		fDAQlbPort = ((TString) anAttribute->GetValue()).Atoi();
-	} else {
-		fDAQlbPort = 3306; // mysql
-	}
-
-	anAttribute = anEntry->GetAttribute("DAQLogbookUser");
-	if (!anAttribute) {
-		AliError("Can't find DAQLogbookUser attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	fDAQlbUser = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("DAQLogbookPassword");
-	if (!anAttribute) {
-		AliError("Can't find DAQLogbookPassword attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	fDAQlbPass = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("DAQLogbookDB");
-	if (!anAttribute) {
-		AliError("Can't find DAQLogbookDB attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	fDAQlbDB = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("DAQLogbookTable");
-	if (!anAttribute) {
-		AliError("Can't find DAQLogbookTable attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	fDAQlbTable = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("ShuttleLogbookTable");
-	if (!anAttribute) {
-		AliError("Can't find ShuttleLogbookTable attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	fShuttlelbTable = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("RunTypeLogbookTable");
-	if (!anAttribute) {
-		AliError("Can't find RunTypeLogbookTable attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	fRunTypelbTable = anAttribute->GetValue();
-
-	anAttribute = anEntry->GetAttribute("MaxRetries");
-	if (!anAttribute) {
-		AliError("Can't find MaxRetries attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	TString tmpStr = anAttribute->GetValue();
-	fMaxRetries = tmpStr.Atoi();
-
-	anAttribute = anEntry->GetAttribute("PPTimeOut");
-	if (!anAttribute) {
-		AliError("Can't find PPTimeOut attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	tmpStr = anAttribute->GetValue();
-	fPPTimeOut = tmpStr.Atoi();
-
-	anAttribute = anEntry->GetAttribute("PPMaxMem");
-	if (!anAttribute) {
-		AliError("Can't find PPMaxMem attribute!");
-		delete aResult; delete anEntry;
-		return;
-	}
-	tmpStr = anAttribute->GetValue();
-	fPPMaxMem = tmpStr.Atoi();
 	
-	delete aResult; delete anEntry;
-
-	// FXS configuration (FXS logbook and hosts)
-
-	for(int iSys=0;iSys<3;iSys++){
-		queryFilter = Form("(system=%s)", AliShuttleInterface::GetSystemName(iSys));
-		aResult = aServer.Search(basedn, LDAP_SCOPE_ONELEVEL, queryFilter.Data());
-		if (!aResult) {
-			AliError(Form("Can't find configuration for system: %s",
-					AliShuttleInterface::GetSystemName(iSys)));
-			return;
-		}
-
-		if (aResult->GetCount() != 1 ) {
-			AliError("Error in FXS configuration!");
-			delete aResult;
-			return;
-		}
-
-		anEntry = aResult->GetNext();
-
-		anAttribute = anEntry->GetAttribute("DBHost");
-		if (!anAttribute) {
-			AliError(Form ("Can't find DBHost attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-		fFXSdbHost[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("DBPort"); // MAY
-		if (anAttribute)
-		{
-			fFXSdbPort[iSys] = ((TString) anAttribute->GetValue()).Atoi();
-		} else {
-			fFXSdbPort[iSys] = 3306; // mysql
-		}
-
-		anAttribute = anEntry->GetAttribute("DBUser");
-		if (!anAttribute) {
-			AliError(Form ("Can't find DBUser attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-		fFXSdbUser[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("DBPassword");
-		if (!anAttribute) {
-			AliError(Form ("Can't find DBPassword attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-		fFXSdbPass[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("DBName");
-		if (!anAttribute) {
-			AliError(Form ("Can't find DBName attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-
-		fFXSdbName[iSys] = anAttribute->GetValue();
-		anAttribute = anEntry->GetAttribute("DBTable");
-		if (!anAttribute) {
-			AliError(Form ("Can't find DBTable attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-		fFXSdbTable[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("FSHost");
-		if (!anAttribute) {
-			AliError(Form ("Can't find FSHost attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-		fFXSHost[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("FSPort"); // MAY
-		if (anAttribute)
-		{
-			fFXSPort[iSys] = ((TString) anAttribute->GetValue()).Atoi();
-		} else {
-			fFXSPort[iSys] = 22; // scp port number
-		}
-
-		anAttribute = anEntry->GetAttribute("FSUser");
-		if (!anAttribute) {
-			AliError(Form ("Can't find FSUser attribute for %s!!",
-						AliShuttleInterface::GetSystemName(iSys)));
-			delete aResult; delete anEntry;
-			return;
-		}
-		fFXSUser[iSys] = anAttribute->GetValue();
-
-		anAttribute = anEntry->GetAttribute("FSPassword");
-		if (anAttribute) fFXSPass[iSys] = anAttribute->GetValue();
-
-		delete aResult; delete anEntry;
+	TLDAPResult* aResult = 0;
+	TLDAPEntry* anEntry = 0;
+	
+	TList dcsList;
+	dcsList.SetOwner(1);
+	TList detList;
+	detList.SetOwner(1);
+	TList globalList;
+	globalList.SetOwner(1);
+	TList sysList;
+	sysList.SetOwner(1);
+	TList hostList;
+	hostList.SetOwner(1);
+	
+	aResult = aServer.Search(basedn, LDAP_SCOPE_SUBTREE, 0, 0);
+	
+	if (!aResult) 
+	{
+		AliError(Form("Can't find configuration with base DN: %s !", basedn));
+		return;
 	}
-
-	fIsValid = kTRUE;
+	
+	while ((anEntry = aResult->GetNext())) 
+	{
+		TString dn = anEntry->GetDn();
+		
+		if (dn.BeginsWith("dcsHost=")) 
+		{
+			dcsList.Add(anEntry);
+		} 
+		else if (dn.BeginsWith("det="))
+		{
+			detList.Add(anEntry);
+		}
+		else if (dn.BeginsWith("name=globalConfig"))
+		{
+			globalList.Add(anEntry);
+		}
+		else if (dn.BeginsWith("system="))
+		{
+			sysList.Add(anEntry);
+		}
+		else if (dn.BeginsWith("shuttleHost="))
+		{
+			hostList.Add(anEntry);
+		}
+		else 
+		{
+			delete anEntry;
+		}
+	
+	}
+	delete aResult;
+	
+	Int_t result=0;
+	
+	result += SetGlobalConfig(&globalList);
+	result += SetSysConfig(&sysList);
+	result += SetDetConfig(&detList,&dcsList);
+	result += SetHostConfig(&hostList);
+	
+	if(result) 
+	{
+		AliError("Configuration is INVALID!");
+	}
+	else 
+	{
+		fIsValid = kTRUE;
+	}
 }
 
 //______________________________________________________________________________________________
@@ -685,74 +607,128 @@ Bool_t AliShuttleConfig::HasDetector(const char* detector) const
 }
 
 //______________________________________________________________________________________________
-const char* AliShuttleConfig::GetDCSHost(const char* detector) const
+Int_t AliShuttleConfig::GetNServers(const char* detector) const
 {
 	//
-	// returns DCS server host used by particular detector
+	// returns number of DCS servers for detector
 	//
 	
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
+	if (!aHolder) {
+		AliError(Form("There isn't configuration for detector: %s",
+			detector));
+		return 0;
+	}
+
+	return aHolder->GetNServers();
+}
+
+
+//______________________________________________________________________________________________
+const char* AliShuttleConfig::GetDCSHost(const char* detector, Int_t iServ) const
+{
+	//
+	// returns i-th DCS server host used by particular detector
+	//
+	
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
 	if (!aHolder) {
 		AliError(Form("There isn't configuration for detector: %s",
 			detector));
 		return NULL;
 	}
 
-	return aHolder->GetDCSHost();
+	return aHolder->GetDCSHost(iServ);
 }
 
 //______________________________________________________________________________________________
-Int_t AliShuttleConfig::GetDCSPort(const char* detector) const
+Int_t AliShuttleConfig::GetDCSPort(const char* detector, Int_t iServ) const
 {
 	//
-        // returns DCS server port used by particular detector
+        // returns i-th DCS server port used by particular detector
         //
 
 
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
                 return 0;
         }
 
-	return aHolder->GetDCSPort();
+	return aHolder->GetDCSPort(iServ);
 }
 
 //______________________________________________________________________________________________
-const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector) const
+const TObjArray* AliShuttleConfig::GetDCSAliases(const char* detector, Int_t iServ) const
 {
 	//
-	// returns collection of TObjString which represents the set of aliases
+	// returns collection of TObjString which represents the i-th set of aliases
 	// which used for data retrieval for particular detector
 	//
 
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
                 return NULL;
         }
 
-	return aHolder->GetDCSAliases();
+	return aHolder->GetDCSAliases(iServ);
 }
 
 //______________________________________________________________________________________________
-const TObjArray* AliShuttleConfig::GetDCSDataPoints(const char* detector) const
+const TObjArray* AliShuttleConfig::GetDCSDataPoints(const char* detector, Int_t iServ) const
 {
 	//
 	// returns collection of TObjString which represents the set of aliases
 	// which used for data retrieval for particular detector
 	//
 
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
                 return NULL;
         }
 
-	return aHolder->GetDCSDataPoints();
+	return aHolder->GetDCSDataPoints(iServ);
+}
+
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetCompactDCSAliases(const char* detector, Int_t iServ) const
+{
+	//
+	// returns collection of TObjString which represents the i-th set of aliases
+	// which used for data retrieval for particular detector (Compact style)
+	//
+
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
+        if (!aHolder) {
+                AliError(Form("There isn't configuration for detector: %s",
+                        detector));
+                return NULL;
+        }
+
+	return aHolder->GetCompactDCSAliases(iServ);
+}
+
+//______________________________________________________________________________________________
+const TObjArray* AliShuttleConfig::GetCompactDCSDataPoints(const char* detector, Int_t iServ) const
+{
+	//
+	// returns collection of TObjString which represents the set of aliases
+	// which used for data retrieval for particular detector (Compact style)
+	//
+
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
+        if (!aHolder) {
+                AliError(Form("There isn't configuration for detector: %s",
+                        detector));
+                return NULL;
+        }
+
+	return aHolder->GetCompactDCSDataPoints(iServ);
 }
 
 //______________________________________________________________________________________________
@@ -763,7 +739,7 @@ const TObjArray* AliShuttleConfig::GetResponsibles(const char* detector) const
 	// of the detector's responsible(s)
 	//
 
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder) {
                 AliError(Form("There isn't configuration for detector: %s",
                         detector));
@@ -792,7 +768,7 @@ Bool_t AliShuttleConfig::StrictRunOrder(const char* detector) const
 {
 	// return TRUE if detector wants strict run ordering of stored data
 
-	AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) fDetectorMap.GetValue(detector);
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
         if (!aHolder)
 	{
                 AliError(Form("There isn't configuration for detector: %s",
@@ -802,6 +778,321 @@ Bool_t AliShuttleConfig::StrictRunOrder(const char* detector) const
 
 	return aHolder->StrictRunOrder();
 }
+
+//______________________________________________________________________________________________
+UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
+{
+	// Set the global configuration (DAQ Logbook + preprocessor monitoring settings)
+
+	TLDAPEntry* anEntry = 0;
+	TLDAPAttribute* anAttribute = 0;
+	
+	if (list->GetEntries() == 0) 
+	{
+		AliError("Global configuration not found!");
+		return 1;
+	} 
+	else if (list->GetEntries() > 1)
+	{
+		AliError("More than one global configuration found!");
+		return 2;
+	}
+	
+	anEntry = dynamic_cast<TLDAPEntry*> (list->At(0));
+	
+	if (!anEntry)
+	{
+		AliError("Unexpected! Global list does not contain a TLDAPEntry");
+		return 3;
+	} 
+	
+	
+	anAttribute = anEntry->GetAttribute("daqLbHost");
+	if (!anAttribute) {
+		AliError("Can't find daqLbHost attribute!");
+		return 4;
+	}
+	fDAQlbHost = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("daqLbPort"); // MAY
+	if (anAttribute)
+	{
+		fDAQlbPort = ((TString) anAttribute->GetValue()).Atoi();
+	} else {
+		fDAQlbPort = 3306; // mysql
+	}
+
+	anAttribute = anEntry->GetAttribute("daqLbUser");
+	if (!anAttribute) {
+		AliError("Can't find daqLbUser attribute!");
+		return 4;
+	}
+	fDAQlbUser = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("daqLbPasswd");
+	if (!anAttribute) {
+		AliError("Can't find daqLbPasswd attribute!");
+		return 4;
+	}
+	fDAQlbPass = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("daqLbDB");
+	if (!anAttribute) {
+		AliError("Can't find daqLbDB attribute!");
+		return 4;
+	}
+	fDAQlbDB = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("daqLbTable");
+	if (!anAttribute) {
+		AliError("Can't find daqLbTable attribute!");
+		return 4;
+	}
+	fDAQlbTable = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("shuttleLbTable");
+	if (!anAttribute) {
+		AliError("Can't find shuttleLbTable attribute!");
+		return 4;
+	}
+	fShuttlelbTable = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("runTypeLbTable");
+	if (!anAttribute) {
+		AliError("Can't find runTypeLbTable attribute!");
+		return 4;
+	}
+	fRunTypelbTable = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("ppmaxRetries");
+	if (!anAttribute) {
+		AliError("Can't find ppmaxRetries attribute!");
+		return 4;
+	}
+	TString tmpStr = anAttribute->GetValue();
+	fMaxRetries = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("ppTimeOut");
+	if (!anAttribute) {
+		AliError("Can't find ppTimeOut attribute!");
+		return 4;
+	}
+	tmpStr = anAttribute->GetValue();
+	fPPTimeOut = tmpStr.Atoi();
+
+	anAttribute = anEntry->GetAttribute("ppMaxMem");
+	if (!anAttribute) {
+		AliError("Can't find ppMaxMem attribute!");
+		return 4;
+	}
+	tmpStr = anAttribute->GetValue();
+	fPPMaxMem = tmpStr.Atoi();
+	
+	return 0;
+	
+	
+}
+
+//______________________________________________________________________________________________
+UInt_t AliShuttleConfig::SetSysConfig(TList* list)
+{
+	// Set the online FXS configuration (DAQ + DCS + HLT)
+	
+	TLDAPEntry* anEntry = 0;
+	TLDAPAttribute* anAttribute = 0;
+	
+	if (list->GetEntries() != 3) 
+	{
+		AliError(Form("Wrong number of online systems found: %d !", list->GetEntries()));
+		return 1;
+	} 
+
+	TIter iter(list);
+	Int_t iSys=0, count = 0;
+	while ((anEntry = dynamic_cast<TLDAPEntry*> (iter.Next())))
+	{
+		anAttribute = anEntry->GetAttribute("system");
+		TString sysName = anAttribute->GetValue();
+		
+		if (sysName == "DAQ") 
+		{
+			iSys = 0;
+			count += 1;
+		}
+		else if (sysName == "DCS")
+		{
+			iSys = 1;
+			count += 10;
+		}
+		else if (sysName == "HLT")
+		{
+			iSys = 2;
+			count += 100;
+		}
+		
+		anAttribute = anEntry->GetAttribute("dbHost");
+		if (!anAttribute) {
+			AliError(Form ("Can't find dbHost attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+		fFXSdbHost[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("dbPort"); // MAY
+		if (anAttribute)
+		{
+			fFXSdbPort[iSys] = ((TString) anAttribute->GetValue()).Atoi();
+		} else {
+			fFXSdbPort[iSys] = 3306; // mysql
+		}
+
+		anAttribute = anEntry->GetAttribute("dbUser");
+		if (!anAttribute) {
+			AliError(Form ("Can't find dbUser attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+		fFXSdbUser[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("dbPasswd");
+		if (!anAttribute) {
+			AliError(Form ("Can't find dbPasswd attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+		fFXSdbPass[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("dbName");
+		if (!anAttribute) {
+			AliError(Form ("Can't find dbName attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+
+		fFXSdbName[iSys] = anAttribute->GetValue();
+		anAttribute = anEntry->GetAttribute("dbTable");
+		if (!anAttribute) {
+			AliError(Form ("Can't find dbTable attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+		fFXSdbTable[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("fxsHost");
+		if (!anAttribute) {
+			AliError(Form ("Can't find fxsHost attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+		fFXSHost[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("fxsPort"); // MAY
+		if (anAttribute)
+		{
+			fFXSPort[iSys] = ((TString) anAttribute->GetValue()).Atoi();
+		} else {
+			fFXSPort[iSys] = 22; // scp port number
+		}
+
+		anAttribute = anEntry->GetAttribute("fxsUser");
+		if (!anAttribute) {
+			AliError(Form ("Can't find fxsUser attribute for %s!!",
+						AliShuttleInterface::GetSystemName(iSys)));
+			return 5;
+		}
+		fFXSUser[iSys] = anAttribute->GetValue();
+
+		anAttribute = anEntry->GetAttribute("fxsPasswd");
+		if (anAttribute) fFXSPass[iSys] = anAttribute->GetValue();
+	}
+	
+	if(count != 111) {
+		AliError(Form("Wrong system configuration! (code = %d)", count));
+		return 6;
+	}
+	
+	return 0;
+}
+
+//______________________________________________________________________________________________
+UInt_t AliShuttleConfig::SetDetConfig(TList* detList, TList* dcsList)
+{
+	// Set the detector configuration (general settings + DCS amanda server and alias/DP lists)
+
+	TLDAPEntry* anEntry = 0;
+	
+	TIter iter(detList);
+	while ((anEntry = dynamic_cast<TLDAPEntry*> (iter.Next())))
+	{
+		
+		AliShuttleDetConfigHolder* detHolder = new AliShuttleDetConfigHolder(anEntry);
+
+		if (!detHolder->IsValid()) {
+			AliError("Detector configuration error!");
+			delete detHolder;
+			return 7;
+		}
+
+		TObjString* detStr = new TObjString(detHolder->GetDetector());
+		
+		// Look for DCS Configuration
+		TIter dcsIter(dcsList);
+		TLDAPEntry *dcsEntry = 0;
+		while ((dcsEntry = dynamic_cast<TLDAPEntry*> (dcsIter.Next())))
+		{
+			TString dn = dcsEntry->GetDn();
+			if(dn.Contains(detStr->GetName())) {
+				AliDebug(2, Form("Found DCS configuration: dn = %s",dn.Data()));
+				AliShuttleDCSConfigHolder* dcsHolder = new AliShuttleDCSConfigHolder(dcsEntry);
+				if (!dcsHolder->IsValid()) {
+					AliError("DCS configuration error!");
+					delete detHolder;
+					delete dcsHolder;
+					return 7;
+				}
+				detHolder->AddDCSConfig(dcsHolder);
+			}
+		}
+		
+		
+		fDetectorMap.Add(detStr, detHolder);
+		fDetectorList.AddLast(detStr);
+	}
+	
+	return 0;
+}
+
+//______________________________________________________________________________________________
+UInt_t AliShuttleConfig::SetHostConfig(TList* list)
+{
+	// Set the Shuttle machines configuration (which detectors processes each machine)
+	
+	TLDAPEntry* anEntry = 0;
+	TLDAPAttribute* anAttribute = 0;
+	
+	fShuttleInstanceHost = gSystem->HostName();
+	
+	TIter iter(list);
+	while ((anEntry = dynamic_cast<TLDAPEntry*> (iter.Next())))
+	{
+	
+		TString dn(anEntry->GetDn());
+		if (!dn.Contains(Form("shuttleHost=%s", fShuttleInstanceHost.Data()))) continue;
+		
+		if (!fProcessAll)
+		{
+			anAttribute = anEntry->GetAttribute("detectors");
+			const char *detName;
+			while((detName = anAttribute->GetValue())){
+				TObjString *objDet= new TObjString(detName);
+				fProcessedDetectors.Add(objDet);
+			}
+		}
+	}	
+	
+	return 0;
+}
+
 
 //______________________________________________________________________________________________
 void AliShuttleConfig::Print(Option_t* option) const
@@ -832,7 +1123,8 @@ void AliShuttleConfig::Print(Option_t* option) const
 		result += "\n";
 	}
 
-	result += Form("PP time out = %d - Max PP memsize = %d KB - Max total retries = %d\n\n", fPPTimeOut, fPPMaxMem, fMaxRetries);
+	result += Form("PP time out = %d - max PP mem size = %d KB - max retries = %d\n\n", 
+				fPPTimeOut, fPPMaxMem, fMaxRetries);
 	result += "------------------------------------------------------\n";
 
 	result += Form("Logbook Configuration \n\n \tHost: %s:%d; \tUser: %s; ",
@@ -863,12 +1155,18 @@ void AliShuttleConfig::Print(Option_t* option) const
 
 	result += "------------------------------------------------------\n";
 	result += "Detector-specific configuration\n\n";
+	
 	TIter iter(fDetectorMap.GetTable());
-	TPair* aPair;
+	TPair* aPair = 0;
+	
+	AliInfo(Form("Option = %s", option));
+	
 	while ((aPair = (TPair*) iter.Next())) {
-		AliShuttleConfigHolder* aHolder = (AliShuttleConfigHolder*) aPair->Value();
-		if (option != 0 && !optStr.Contains(aHolder->GetDetector()) && optStr.CompareTo("uncompact",TString::kIgnoreCase) != 0 )
+		AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) aPair->Value();
+		if (optStr != "" && !optStr.Contains(aHolder->GetDetector()) && 
+				optStr.CompareTo("uncompact",TString::kIgnoreCase) != 0 )
 				continue;
+		
 		result += Form("*** %s *** \n", aHolder->GetDetector());
 
 		const TObjArray* responsibles = aHolder->GetResponsibles();
@@ -884,54 +1182,59 @@ void AliShuttleConfig::Print(Option_t* option) const
 			result += "\n";
 		}
 
-		result += Form("\tStrict run ordering: %s \n", aHolder->StrictRunOrder() ? "YES" : "NO");
-		if(aHolder->SkipDCSQuery())
+		result += Form("\tStrict run ordering: %s \n\n", aHolder->StrictRunOrder() ? "YES" : "NO");
+		
+		const TObjArray* dcsConfig = aHolder->GetDCSConfig();
+		
+		AliShuttleDCSConfigHolder* dcsHolder = 0;
+		TIter dcsIter(dcsConfig);
+		Int_t count=0;
+		while ((dcsHolder = dynamic_cast<AliShuttleDCSConfigHolder*> (dcsIter.Next())))
 		{
-			result += "\n";
-			continue;
-		}
-		result += Form("\tAmanda server: %s:%d \n", aHolder->GetDCSHost(), aHolder->GetDCSPort());
+			result += Form("\tAmanda server [%d]: %s:%d \n", count,
+				dcsHolder->GetDCSHost(), dcsHolder->GetDCSPort());
 
-		const TObjArray* aliases = 0;
-		if (optStr.Contains("uncompact",TString::kIgnoreCase))
-		{
-			aliases = aHolder->GetDCSAliases();
-		} else {
-			aliases = aHolder->GetCompactDCSAliases();
-		}
-
-		if (aliases->GetEntries() != 0)
-		{
-			result += "\tDCS Aliases: ";
-			TIter it(aliases);
-			TObjString* anAlias;
-			while ((anAlias = (TObjString*) it.Next()))
+			const TObjArray* aliases = 0;
+			if (optStr.Contains("uncompact",TString::kIgnoreCase))
 			{
-				result += Form("%s ", anAlias->String().Data());
+				aliases = dcsHolder->GetDCSAliases();
+			} else {
+				aliases = dcsHolder->GetCompactDCSAliases();
 			}
+
+			if (aliases->GetEntries() != 0)
+			{
+				result += Form("\tDCS Aliases [%d]: ", count);
+				TIter it(aliases);
+				TObjString* anAlias;
+				while ((anAlias = (TObjString*) it.Next()))
+				{
+					result += Form("%s ", anAlias->String().Data());
+				}
+				result += "\n";
+			}
+
+			const TObjArray* dataPoints = 0;
+			if (optStr.Contains("uncompact",TString::kIgnoreCase))
+			{
+				dataPoints = dcsHolder->GetDCSDataPoints();
+			} else {
+				dataPoints = dcsHolder->GetCompactDCSDataPoints();
+			}
+			if (dataPoints->GetEntries() != 0)
+			{
+				result += Form("\tDCS Data Points [%d]: ", count);
+				TIter it(dataPoints);
+				TObjString* aDataPoint;
+				while ((aDataPoint = (TObjString*) it.Next())) {
+					result += Form("%s ", aDataPoint->String().Data());
+				}
+				result += "\n";
+			}
+			count++;
 			result += "\n";
 		}
-
-		const TObjArray* dataPoints = 0;
-		if (optStr.Contains("uncompact",TString::kIgnoreCase))
-		{
-			dataPoints = aHolder->GetDCSDataPoints();
-		} else {
-			dataPoints = aHolder->GetCompactDCSDataPoints();
-		}
-		if (dataPoints->GetEntries() != 0)
-		{
-			result += "\tDCS Data Points: ";
-			TIter it(dataPoints);
-			TObjString* aDataPoint;
-			while ((aDataPoint = (TObjString*) it.Next())) {
-				result += Form("%s ", aDataPoint->String().Data());
-			}
-				result += "\n";
-		}
-		result += "\n";
 	}
-
 	if(!fIsValid) result += "\n\n********** !!!!! Configuration is INVALID !!!!! **********\n";
 
 	AliInfo(result);

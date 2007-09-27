@@ -1,18 +1,21 @@
 # GRP config
 dn: det=GRP,o=alice,dc=cern,dc=ch
-objectClass: AliShuttleDetector
+objectClass: detectorConfig
 det: GRP
-StrictRunOrder: 0
-responsible: not_yet_set
-DCSHost: aldcs052.cern.ch
-DCSPort: 4242
-DCSalias: LHCState
-DCSalias: LHCPeriod
-DCSalias: LHCLuminosity
-DCSalias: BeamIntensity
-DCSalias: L3Current
-DCSalias: DipoleCurrent
-DCSalias: L3Polarity
-DCSalias: DipolePolarity
-DCSalias: CavernTemperature
-DCSalias: CavernAtmosPressure
+strictRunOrder: 0
+responsible: Panos.Christakoglou@cern.ch
+
+dn: dcsHost=aldcs052.cern.ch,det=GRP,o=alice,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 4242
+dcsAlias: LHCState
+dcsAlias: LHCPeriod
+dcsAlias: LHCLuminosity
+dcsAlias: BeamIntensity
+dcsAlias: L3Current
+dcsAlias: DipoleCurrent
+dcsAlias: L3Polarity
+dcsAlias: DipolePolarity
+dcsAlias: CavernTemperature
+dcsAlias: CavernAtmosPressure

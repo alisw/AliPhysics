@@ -1,17 +1,17 @@
 # Global config
-dn: name=GlobalConfig,o=alice,dc=cern,dc=ch
+dn: name=globalConfig,o=alice,dc=cern,dc=ch
 objectClass: top
-objectClass: AliShuttleGlobalConfig
-name: GlobalConfig
-DAQLogbookPassword: alice
-DAQLogbookHost: aldaqgw01-gpn.cern.ch
-DAQLogbookUser: shuttle
-DAQLogbookDB: SHUTTLE_TEST
-DAQLogbookPort: 1434
-DAQLogbookTable: logbook
-ShuttleLogbookTable: logbook_shuttle
-RunTypeLogbookTable: logbook_detectors
-PPTimeOut: 3600
-PPMaxMem: 2097152
-MaxRetries: 2
+objectClass: globalConfig
+name: globalConfig
+daqLbHost: aldaqgw01-gpn.cern.ch
+daqLbUser: shuttle
+daqLbPasswd: alice
+daqLbDB: SHUTTLE_TEST
+daqLbPort: 1434
+daqLbTable: logbook
+shuttleLbTable: logbook_shuttle
+runTypeLbTable: logbook_detectors
+ppTimeOut: 3600
+ppMaxMem: 2097152
+ppMaxRetries: 2
 

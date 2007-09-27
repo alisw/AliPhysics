@@ -1,9 +1,8 @@
 void TestMultialiases(){
 // Simple test for the multi request query
 
-gSystem->Load("AliDCSClient.so");
- AliDCSClient client("aldcs053.cern.ch",4242,1000,5);
-
+gSystem->Load("$ALICE_ROOT/SHUTTLE/DCSClient/AliDCSClient.so");
+ AliDCSClient client("aldcs053.cern.ch",4242,1000,5,100);
 
 //TObjArray *arr = new TObjArray();
 //arr->SetOwner(1);
@@ -12,18 +11,13 @@ gSystem->Load("AliDCSClient.so");
 
 
 TList list;
-list.Add(new TObjString("tpc_PT_322.Temperature"));
-list.Add(new TObjString("tpc_PT_323.Temperature"));
-list.Add(new TObjString("tpc_PT_324.Temperature"));
-list.Add(new TObjString("tpc_PT_325.Temperature"));
-list.Add(new TObjString("tpc_PT_326.Temperature"));
-list.Add(new TObjString("tpc_PT_327.Temperature"));
-list.Add(new TObjString("tpc_PT_328.Temperature"));
-list.Add(new TObjString("tpc_PT_329.Temperature"));
-list.Add(new TObjString("tpc_PT_330.Temperature"));
-list.Add(new TObjString("tpc_PT_331.Temperature"));
+list.Add(new TObjString("tof_hv_vp_00"));
+list.Add(new TObjString("tof_hv_vp_01"));
+list.Add(new TObjString("tof_hv_vp_02"));
+list.Add(new TObjString("tof_hv_vp_03"));
+list.Add(new TObjString("tof_hv_vp_04"));
 
-TMap *map = client.GetAliasValues(&list, 1180586575, 1180686575, 2, 4);
+TMap *map = client.GetAliasValues(&list, 1180586575, 1180686575, 0, 5);
 
 TIter iter(map);
 TObjString *objstr=0;

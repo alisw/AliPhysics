@@ -58,12 +58,17 @@ public:
 	const TObjArray* GetDetectors() const;
 
 	Bool_t HasDetector(const char* detector) const;
-	const char* GetDCSHost(const char* detector) const;
-	Int_t GetDCSPort(const char* detector) const;
-	const TObjArray* GetDCSAliases(const char* detector) const;
-	const TObjArray* GetDCSDataPoints(const char* detector) const;
-	const TObjArray* GetCompactDCSAliases(const char* detector) const;
-	const TObjArray* GetCompactDCSDataPoints(const char* detector) const;
+	
+	Int_t GetNServers(const char* detector) const;
+	
+	const char* GetDCSHost(const char* detector, Int_t iServ) const;
+	Int_t GetDCSPort(const char* detector, Int_t iServ) const;
+	
+	const TObjArray* GetDCSAliases(const char* detector, Int_t iServ) const;
+	const TObjArray* GetDCSDataPoints(const char* detector, Int_t iServ) const;
+	const TObjArray* GetCompactDCSAliases(const char* detector, Int_t iServ) const;
+	const TObjArray* GetCompactDCSDataPoints(const char* detector, Int_t iServ) const;
+	
 	const TObjArray* GetResponsibles(const char* detector) const;
 	Bool_t StrictRunOrder(const char* detector) const;
 
@@ -76,49 +81,79 @@ public:
 
 private:
 
-	class AliShuttleConfigHolder: public TObject {
+	class AliShuttleDCSConfigHolder: public TObject {
 	public:
-		AliShuttleConfigHolder(const TLDAPEntry* entry);
-		~AliShuttleConfigHolder();
-
-		const char* GetDetector() const {return fDetector.Data();}
-		const char* GetDCSHost() const {return fDCSHost.Data();}
+		AliShuttleDCSConfigHolder(const TLDAPEntry* entry);
+		~AliShuttleDCSConfigHolder();
+		
+		const char* GetDCSHost() const {return fDCSHost;}
 		Int_t GetDCSPort() const {return fDCSPort;}
 		const TObjArray* GetDCSAliases() const {return fDCSAliases;}
 		const TObjArray* GetDCSDataPoints() const {return fDCSDataPoints;}
 		const TObjArray* GetCompactDCSAliases() const {return fDCSAliasesComp;}
 		const TObjArray* GetCompactDCSDataPoints() const {return fDCSDataPointsComp;}
-		const TObjArray* GetResponsibles() const {return fResponsibles;}
+		
+		void ExpandAndAdd(TObjArray* target, const char* entry);
+		Bool_t IsValid() const {return fIsValid;}
 
+	private:
+		AliShuttleDCSConfigHolder(const AliShuttleDCSConfigHolder& other);  // not implemented
+		AliShuttleDCSConfigHolder& operator= (const AliShuttleDCSConfigHolder& other);  // not implemented
+
+		TString fDCSHost; 	// Host name of the DCS server
+		Int_t 	fDCSPort; 	// port of the DCS server
+		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
+		TObjArray* fDCSDataPoints;     // List of DCS data points to be retrieved
+		TObjArray* fDCSAliasesComp;    // Compact list of DCS aliases to be printed
+		TObjArray* fDCSDataPointsComp; // Compact list of DCS data points to be printed
+		Bool_t  fIsValid;  	       // flag for the validity of the configuration
+
+		ClassDef(AliShuttleDCSConfigHolder, 0);
+	};
+
+	class AliShuttleDetConfigHolder: public TObject {
+	public:
+		AliShuttleDetConfigHolder(const TLDAPEntry* entry);
+		~AliShuttleDetConfigHolder();
+
+		const char* GetDetector() const {return fDetector.Data();}
+		const TObjArray* GetDCSConfig() const {return fDCSConfig;}
+		void AddDCSConfig(AliShuttleDCSConfigHolder* holder);
+
+		Int_t GetNServers() const {return fDCSConfig ? fDCSConfig->GetEntries() : 0;}
+		
+		const char* GetDCSHost(Int_t iServ) const;
+		Int_t GetDCSPort(Int_t iServ) const;
+		const TObjArray* GetDCSAliases(Int_t iServ) const;
+		const TObjArray* GetDCSDataPoints(Int_t iServ) const;
+		const TObjArray* GetCompactDCSAliases(Int_t iServ) const;
+		const TObjArray* GetCompactDCSDataPoints(Int_t iServ) const;
+		
+		const TObjArray* GetResponsibles() const {return fResponsibles;}		
 		Bool_t IsValid() const {return fIsValid;}
 		Bool_t SkipDCSQuery() const {return fSkipDCSQuery;}
 		Bool_t StrictRunOrder() const {return fStrictRunOrder;}
 
-		void ExpandAndAdd(TObjArray* target, const char* entry);
-
 	private:
-		AliShuttleConfigHolder(const AliShuttleConfigHolder& other);  // not implemented
-		AliShuttleConfigHolder& operator= (const AliShuttleConfigHolder& other);  // not implemented
+		AliShuttleDetConfigHolder(const AliShuttleDetConfigHolder& other);  // not implemented
+		AliShuttleDetConfigHolder& operator= (const AliShuttleDetConfigHolder& other);  // not implemented
 
 		TString fDetector;  	// Detector name
-		TString fDCSHost; 	// Host name of the DCS server
-		Int_t 	fDCSPort; 	// port of the DCS server
-		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
-		TObjArray* fDCSDataPoints; // List of DCS data points to be retrieved
-		TObjArray* fDCSAliasesComp; // Compact list of DCS aliases to be printed
-		TObjArray* fDCSDataPointsComp; // Compact list of DCS data points to be printed
+		TObjArray* fDCSConfig;  // Array of DCS configuration objects (AliShuttleDCSConfigHolder)
 		TObjArray* fResponsibles; // List of email addresses of the detector's responsible(s)
 		Bool_t fIsValid;  	// flag for the validity of the configuration
 		Bool_t fSkipDCSQuery; 	// flag - if TRUE (-> DCS config empty) skip DCS archive data query
 		Bool_t fStrictRunOrder; // flag - if TRUE connect data in a strict run ordering
 
-
-		ClassDef(AliShuttleConfigHolder, 0);
+		ClassDef(AliShuttleDetConfigHolder, 0);
 	};
 
 
-	Bool_t fIsValid;  		//! flag for the validity of the configuration
-
+	UInt_t SetGlobalConfig(TList* globalList);
+	UInt_t SetSysConfig(TList* sysList);
+	UInt_t SetDetConfig(TList* detList, TList* dcsList);
+	UInt_t SetHostConfig(TList* hostList);
+	
 	TString fConfigHost;  		//! Host of the Shuttle configuration LDAP server
 
 	TString fDAQlbHost;		//! Host of the DAQ logbook MySQL Server
@@ -153,6 +188,7 @@ private:
 	TString fShuttleInstanceHost; 	//! Instance of the SHUTTLE
 	TObjArray fProcessedDetectors; 	//! list of the detector to be processed by this machine
 	Bool_t fProcessAll; 		//! flag indicating that all detectors will be processed
+	Bool_t fIsValid;  		//! flag for the validity of the configuration
 
 	ClassDef(AliShuttleConfig, 0);
 };
