@@ -33,6 +33,8 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkClusterDataType = { sizeo
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDSATracksDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','S','S','A'},{'T','R','D',' '}};;
 
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDSAEsdDataType = { sizeof(AliHLTComponentDataType), {'S','A','E','S','D','T','R','D'},{'T','R','D',' '}};;
+
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkMCMtrackletDataType = { sizeof(AliHLTComponentDataType), {'M','C','M','T','R','L','E','T'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkMCMcalibrationDataType = { sizeof(AliHLTComponentDataType), {'M','C','M','C','A','L','I','H'},{'T','R','D',' '}};;

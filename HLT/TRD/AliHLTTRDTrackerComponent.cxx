@@ -34,12 +34,12 @@ using namespace std;
 
 #include "AliTRDReconstructor.h"
 #include "AliESDEvent.h"
-#include "AliTRDtrackerHLT.h"
+//#include "AliTRDtrackerHLT.h"
 #include "AliTRDtracker.h"
 #include "AliTRDCalibraFillHisto.h"
 #include "AliMagFMaps.h"
 #include "AliTRDcluster.h"
-
+#include "AliESDfriend.h"
 #include <cstdlib>
 #include <cerrno>
 #include <string>
@@ -247,7 +247,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
 //   AliHLTUInt32_t triggerDataSize = trigData.fDataSize;
 //   void *triggerData = trigData.fData;
-  Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "Trigger data received", 
+  Logging( kHLTLogDebug, "HLT::TRDTracker::DoEvent", "Trigger data received", 
 	   "Struct size %d Data size %d Data location 0x%x", trigData.fStructSize, trigData.fDataSize, (UInt_t*)trigData.fData);
 
   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
@@ -295,11 +295,17 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 
   AliTRDReconstructor::SetSeedingOn(kTRUE);
 
+  fTracker->SetAddTRDseeds();
+
+  AliESDfriend *esdFriend = new AliESDfriend();
+
   AliESDEvent *esd = new AliESDEvent();
   esd->CreateStdContent();
   fTracker->PropagateBack(esd);
   fTracker->RefitInward(esd);
+  fTracker->Clusters2Tracks(esd);
 
+  esd->GetESDfriend(esdFriend);
   //here transport the esd tracks further
 
   Int_t nTracks = esd->GetNumberOfTracks();
@@ -312,28 +318,35 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
   for (Int_t it = 0; it < nTracks; it++)
     {
       AliESDtrack* track = esd->GetTrack(it);
-      Int_t nCalibObjects = 0;
-      Int_t idx = 0;
-      while (track->GetCalibObject(idx) != 0)
-	{
-	  nCalibObjects++;
-	  idx++;
-	}
-      Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Track 0x%x NcalibObjects %d", track, nCalibObjects);
 
-      PushBack(track, AliHLTTRDDefinitions::fgkTRDSATracksDataType, fDblock_Specification);
+//       Int_t nCalibObjects = 0;
+//       Int_t idx = 0;
+//       while (track->GetCalibObject(idx) != 0)
+// 	{
+// 	  nCalibObjects++;
+// 	  idx++;
+// 	}
+//       Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Track 0x%x NcalibObjects %d", track, nCalibObjects);
+
+      Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Track %d 0x%x Pt %1.2f", it, track, track->Pt());
+      PushBack(track, AliHLTTRDDefinitions::fgkTRDSATracksDataType, ++fDblock_Specification);
 //       if (calibra->GetMItracking())
 //  	{
 //  	  calibra->UpdateHistograms(track);
 // 	}
     }
 
+  //PushBack(esd, AliHLTTRDDefinitions::fgkTRDSAEsdDataType, fDblock_Specification);
+  //PushBack(esdFriend, AliHLTTRDDefinitions::fgkTRDSAEsdDataType, fDblock_Specification);
+
   //no receiver defined yet(!)
-  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "now deleting");
+  //Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "now deleting");
   delete esd;
-  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "after delete esd");
+  delete esdFriend;
+
+  //Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "after delete esd");
   delete clusterTree;
 
-  Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "after delete clusterTree");
+  //Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "after delete clusterTree");
   return 0;
 }

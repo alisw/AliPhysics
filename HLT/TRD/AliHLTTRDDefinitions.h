@@ -29,6 +29,7 @@ class AliHLTTRDDefinitions
       static const AliHLTComponentDataType fgkDDLRawDataType;
       static const AliHLTComponentDataType fgkClusterDataType;
       static const AliHLTComponentDataType fgkTRDSATracksDataType; // Stand Alone tracks
+      static const AliHLTComponentDataType fgkTRDSAEsdDataType; // Stand Alone tracks
       static const AliHLTComponentDataType fgkMCMtrackletDataType;
       static const AliHLTComponentDataType fgkMCMcalibrationDataType;
       

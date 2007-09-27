@@ -7,17 +7,21 @@ EXTRA_DIST			= AliHLTTRDLinkDef.h
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 				  -I$(top_srcdir)/BASE \
+				  -I$(top_srcdir)/BASE/util \
 				  -I$(ALICE_ROOT)/TRD
 
 # library definition
 lib_LTLIBRARIES			=  libAliHLTTRD.la
+
+# version info for the library
+LIBRARY_VERSION			= '1:0:0'
 
 # library sources
 libAliHLTTRD_la_SOURCES		= AliTRDclusterizerHLT.cxx \
 				  AliHLTTRDDefinitions.cxx \
 				  AliHLTTRDClusterizerComponent.cxx \
 				  AliHLTTRDTrackerComponent.cxx \
-				  AliTRDtrackerHLT.cxx
+				  AliHLTTRDEsdWriterComponent.cxx
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
@@ -25,16 +29,17 @@ CLASS_HDRS			= AliTRDclusterizerHLT.h \
 				  AliHLTTRDDefinitions.h \
 				  AliHLTTRDClusterizerComponent.h \
 				  AliHLTTRDTrackerComponent.h \
-				  AliTRDtrackerHLT.h
+				  AliHLTTRDEsdWriterComponent.h
 
 pkginclude_HEADERS		= $(CLASS_HDRS) 
 
+libAliHLTTRD_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
 # version info for the library
 libAliHLTTRD_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
-				  -version-info 1:0:0
+				  -version-info  $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  AliHLTTRDCompileInfo.cxx
@@ -47,6 +52,8 @@ nodist_libAliHLTTRD_la_SOURCES  =  $(COMPILE_INFO) \
 CLEANFILES			= $(COMPILE_INFO)
 
 include $(top_srcdir)/make.dict
+
+SUBDIRS 			= . 
 
 $(COMPILE_INFO): $(libAliHLTTPC_la_SOURCES) $(pkginclude_HEADERS) $(noinst_HEADERS) Makefile.am
 	@echo '//automatically generated compilation info' > $@

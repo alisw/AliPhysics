@@ -15,7 +15,7 @@
 class AliCDBManager;
 class TFile;
 class TGeoManager;
-class AliTRDtrackerHLT;
+//class AliTRDtrackerHLT;
 class AliTRDtracker;
 class AliMagFMaps;
 
