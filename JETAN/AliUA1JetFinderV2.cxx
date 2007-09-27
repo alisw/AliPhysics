@@ -331,64 +331,67 @@ void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* etaCell
   TMath::Sort(nCell, etCell, index);
 
   // variable used in centroide loop
-  Float_t eta = 0.0;
-  Float_t phi = 0.0;
-  Float_t eta0 = 0.0;
-  Float_t phi0 = 0.0;
-  Float_t etab = 0.0;
-  Float_t phib = 0.0;
-  Float_t etas = 0.0;
-  Float_t phis = 0.0;
-  Float_t ets = 0.0;
-  Float_t deta = 0.0;
-  Float_t dphi = 0.0;
-  Float_t dr = 0.0;
-  Float_t etsb = 0.0;
+  Float_t eta   = 0.0;
+  Float_t phi   = 0.0;
+  Float_t eta0  = 0.0;
+  Float_t phi0  = 0.0;
+  Float_t etab  = 0.0;
+  Float_t phib  = 0.0;
+  Float_t etas  = 0.0;
+  Float_t phis  = 0.0;
+  Float_t ets   = 0.0;
+  Float_t deta  = 0.0;
+  Float_t dphi  = 0.0;
+  Float_t dr    = 0.0;
+  Float_t etsb  = 0.0;
   Float_t etasb = 0.0;
   Float_t phisb = 0.0;
+  Float_t dphib = 0.0;
 
 
   for(Int_t icell = 0; icell < nCell; icell++){
-        Int_t jcell = index[icell];
-        if(etCell[jcell] <= etseed) continue; // if cell energy is low et seed
-        if(flagCell[jcell] != 0) continue; // if cell was used before
-        eta  = etaCell[jcell];
-        phi  = phiCell[jcell];
-        eta0 = eta;
-        phi0 = phi;
-        etab = eta;
-        phib = phi;
-        ets  = etCell[jcell];
-        etas = 0.0;
-        phis = 0.0;
-        etsb = ets;
-        etasb = 0.0;
-        phisb = 0.0;
-        for(Int_t kcell =0; kcell < nCell; kcell++){
-            Int_t lcell = index[kcell];
-            if(lcell == jcell) continue; // cell itself
-            if(flagCell[lcell] != 0) continue; // cell used before
-            if(etCell[lcell] > etCell[jcell]) continue;
-            //calculate dr
-            deta = etaCell[lcell] - eta;
-	         dphi = phiCell[lcell] - phi;
-	         if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	         if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-	         dr = TMath::Sqrt(deta * deta + dphi * dphi);
-            if(dr <= rc){
-               // calculate offset from initiate cell
-               deta = etaCell[lcell] - eta0;
-               dphi = phiCell[lcell] - phi0;
-               if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
-	            if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
-               etas = etas + etCell[lcell]*deta;
-               phis = phis + etCell[lcell]*dphi;
-               ets = ets + etCell[lcell];
+      Int_t jcell = index[icell];
+      if(etCell[jcell] <= etseed) continue; // if cell energy is low et seed
+      if(flagCell[jcell] != 0) continue; // if cell was used before
+      eta  = etaCell[jcell];
+      phi  = phiCell[jcell];
+      eta0 = eta;
+      phi0 = phi;
+      etab = eta;
+      phib = phi;
+      ets  = etCell[jcell];
+      etas = 0.0;
+      phis = 0.0;
+      etsb = ets;
+      etasb = 0.0;
+      phisb = 0.0;
+      for(Int_t kcell =0; kcell < nCell; kcell++){
+	  Int_t lcell = index[kcell];
+	  if(lcell == jcell) continue; // cell itself
+	  if(flagCell[lcell] != 0) continue; // cell used before
+	  if(etCell[lcell] > etCell[jcell]) continue;
+	  //calculate dr
+	  deta = etaCell[lcell] - eta;
+	  dphi = phiCell[lcell] - phi;
+	  if (dphi < -TMath::Pi()) dphi= -dphi - 2.0 * TMath::Pi();
+	  if (dphi > TMath::Pi()) dphi = 2.0 * TMath::Pi() - dphi;
+	  dr = TMath::Sqrt(deta * deta + dphi * dphi);
+	  if(dr <= rc){
+	      // calculate offset from initiate cell
+	      deta = etaCell[lcell] - eta0;
+	      dphi = phiCell[lcell] - phi0;
+	      if (dphi < -TMath::Pi()) dphi = dphi + 2.0 * TMath::Pi();
+	      if (dphi >  TMath::Pi()) dphi = dphi - 2.0 * TMath::Pi();
+	      etas = etas + etCell[lcell]*deta;
+	      phis = phis + etCell[lcell]*dphi;
+	      ets = ets + etCell[lcell];
                //new weighted eta and phi including this cell
                eta = eta0 + etas/ets;
                phi = phi0 + phis/ets;
                // if cone does not move much, just go to next step
-               dr = TMath::Sqrt((eta-etab)*(eta-etab) + (phi-phib)*(phi-phib));
+	       dphib = TMath::Abs(phi - phib);
+	       if (dphib > TMath::Pi()) dphib = 2. * TMath::Pi() - dphib;
+	       dr = TMath::Sqrt((eta-etab)*(eta-etab) + dphib * dphib);
                if(dr <= minmove) break;
                // cone should not move more than max_mov
                dr = TMath::Sqrt((etas/ets)*(etas/ets) + (phis/ets)*(phis/ets));
