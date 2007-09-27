@@ -61,6 +61,8 @@ public:
     SetRunLocalReconstruction(detectors); 
     SetRunTracking(detectors);
     SetFillESD(detectors);};
+  void           SetUseTrackingErrorsForAlignment(const char* detectors) 
+    {fUseTrackingErrorsForAlignment = detectors;};
   void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
   void           SetLoadAlignData(const char* detectors) 
     {fLoadAlignData = detectors;};
@@ -152,6 +154,7 @@ private:
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
+  TString        fUseTrackingErrorsForAlignment; // for these detectors
   TString        fGAliceFileName;     // name of the galice file
   TString        fInput;              // name of input file or directory
   TString        fEquipIdMap;         // name of file with equipment id map

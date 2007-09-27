@@ -199,6 +199,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fRunLocalReconstruction("ALL"),
   fRunTracking("ALL"),
   fFillESD("ALL"),
+  fUseTrackingErrorsForAlignment(""),
   fGAliceFileName(gAliceFilename),
   fInput(""),
   fEquipIdMap(""),
@@ -253,6 +254,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
+  fUseTrackingErrorsForAlignment(rec.fUseTrackingErrorsForAlignment),
   fGAliceFileName(rec.fGAliceFileName),
   fInput(rec.fInput),
   fEquipIdMap(rec.fEquipIdMap),
@@ -2579,7 +2581,13 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	  Int_t isp = 0;
 	  Int_t isp2 = 0;
 	  while (isp < nspdet) {
-	    Bool_t isvalid = tracker->GetTrackPoint(idx[isp2],p); isp2++;
+	    Bool_t isvalid;
+	    if(IsSelected(fgkDetectorName[iDet],fUseTrackingErrorsForAlignment)) {
+	      isvalid = tracker->GetTrackPointTrackingError(idx[isp2],p,track);
+	    } else {
+	      isvalid = tracker->GetTrackPoint(idx[isp2],p); 
+	    } 
+	    isp2++;
 	    const Int_t kNTPCmax = 159;
 	    if (iDet==1 && isp2>kNTPCmax) break;   // to be fixed
 	    if (!isvalid) continue;
