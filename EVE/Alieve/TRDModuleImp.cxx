@@ -293,16 +293,15 @@ void TRDChamber::LoadClusters(TObjArray *clusters)
 		fRecPoints->SetOwnIds(kTRUE);
 	} else fRecPoints->Reset();
 
-	Float_t q, z0;
-  Double_t cloc[3], cglo[3];
+	Float_t q;
+        Double_t cloc[3], cglo[3];
 	
-	z0 = fGeo->GetTime0(fPla);	
 	AliTRDcluster *c=0x0;
 	for(int iclus=0; iclus<clusters->GetEntriesFast(); iclus++){
 		c = (AliTRDcluster*)clusters->UncheckedAt(iclus);
-		cloc[2] = c->GetZ(); //x
-		cloc[1] = c->GetY(); //y
-		cloc[0] = z0 - c->GetX(); //z
+		cloc[0] = c->GetX();
+		cloc[1] = c->GetY();
+		cloc[2] = c->GetZ();
 		q = c->GetQ();
 		fGeo->RotateBack(fDet,cloc,cglo);
 		fRecPoints->SetNextPoint(cglo[0], cglo[1], cglo[2]);
