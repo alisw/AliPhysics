@@ -44,6 +44,7 @@ protected:
     void SetIndex(UInt_t idx) {fIndex=idx;}
     void SetQ(UShort_t q)  {fQ=q;}
     void SetMask(UInt_t m) {fMask=m;}
+    void Reset() {fIndex=0; fMask=0xFFFFFFFE; fQ=0;}
 
     void Use() {fMask&=0xFFFFFFFE;}
     Bool_t IsNotUsed() const {return (fMask&1);}

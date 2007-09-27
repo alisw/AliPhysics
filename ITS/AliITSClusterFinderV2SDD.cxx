@@ -283,11 +283,11 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
       Int_t nClusters = clusters[iModule]->GetEntriesFast();
       nClustersSDD += nClusters;
-      delete [] bins[0];
-      delete [] bins[1];
+      for(Int_t iBin=0;iBin<kMaxBin; iBin++){
+	bins[0][iBin].Reset();
+	bins[1][iBin].Reset();
+      }
       if (!next) break;
-      bins[0]=new AliBin[kMaxBin];
-      bins[1]=new AliBin[kMaxBin];
     }else{
     // fill the current digit into the bins array
       AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());    
@@ -311,6 +311,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       }
     }
   }
+  delete [] bins[0];
+  delete [] bins[1];
 
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 }
