@@ -7,6 +7,7 @@
 
 class TH1F;
 class AliRawReader;
+class TTree;
 
 class AliPMDCalibPedestal : public TObject {
 

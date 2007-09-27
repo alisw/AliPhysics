@@ -29,12 +29,13 @@ extern "C" {
 //AliRoot
 #include "AliRawReaderDate.h"
 #include "AliPMDCalibPedestal.h"
+#include "AliPMDCalibGain.h"
 
 //ROOT
 #include "TFile.h"
 #include "TH1F.h"
 #include "TBenchmark.h"
-
+#include "TTree.h"
 
 /* Main routine
       Arguments: 
@@ -43,6 +44,7 @@ extern "C" {
 int main(int argc, char **argv) {
   
   AliPMDCalibPedestal calibped;
+  AliPMDCalibGain calibgain;
 
   TTree *ped  = new TTree("ped","PMD Pedestal tree");
   TTree *gain = new TTree("gain","PMD Gain tree");

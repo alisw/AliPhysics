@@ -44,12 +44,12 @@ AliPMDCalibGain::AliPMDCalibGain(): TObject()
     {
 	for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
-	    fHsmIso[idet][ismn] = new TH1F("","",100,0.,1000.);
+	    fHsmIso[idet][ismn] = new TH1F(Form("HmsIso_%d_%d",idet,ismn),"",100,0.,1000.);
 	    for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
 	    {
 		for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		{
-		    fHadcIso[idet][ismn][jrow][kcol]  = new TH1F("","",100,0.,1000.);
+		    fHadcIso[idet][ismn][jrow][kcol]  = new TH1F(Form("HadcIso_%d_%d_%d_%d",idet,ismn,jrow,kcol),"",100,0.,1000.);
 		}
 	    }
 	}
@@ -102,8 +102,20 @@ AliPMDCalibGain &AliPMDCalibGain::operator=(const AliPMDCalibGain &pmdcalibgain)
 AliPMDCalibGain::~AliPMDCalibGain()
 {
     // dtor
-    if(fHsmIso)  delete fHsmIso ;
-    if(fHadcIso) delete fHadcIso ;
+    for(Int_t idet = 0; idet < kDet; idet++)
+    {
+	for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
+	{
+	  delete fHsmIso[idet][ismn];
+	    for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
+	    {
+		for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
+		{
+		  delete fHadcIso[idet][ismn][jrow][kcol];
+		}
+	    }
+	}
+    }
 }
 // ------------------------------------------------------------------------ //
 Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)

@@ -55,7 +55,7 @@ AliPMDCalibPedestal::AliPMDCalibPedestal() :
 		for (int l = 0; l < 96; l++)
 		{
 
-		    fPedHisto[i][j][k][l] = new TH1F("","",300,0.,300.);
+		    fPedHisto[i][j][k][l] = new TH1F(Form("PedHisto_%d_%d_%d_%d",i,j,k,l),"",300,0.,300.);
 		}
 	    }
 	}
@@ -103,7 +103,20 @@ AliPMDCalibPedestal::~AliPMDCalibPedestal()
     //
     // destructor
     //
-    delete fPedHisto;
+    for (int i = 0; i < 2; i++)
+    {
+	for (int j = 0; j < 24; j++)
+	{
+	    for (int k = 0; k < 96; k++)
+	    {
+		for (int l = 0; l < 96; l++)
+		{
+
+		  delete fPedHisto[i][j][k][l];
+		}
+	    }
+	}
+    }
 }
 //_____________________________________________________________________
 Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
