@@ -278,11 +278,11 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
 			
 			if (fWarnForUnexpecedBlock)
-				HLTWarning("Received a data block of a type we can not handle: %s origin %s",
+				HLTWarning("Received a data block of a type we cannot handle: '%s' origin: '%s'",
 					static_cast<char*>(id), static_cast<char*>(origin)
 				);
 			else
-				HLTDebug("Received a data block of a type we can not handle: %s origin %s",
+				HLTDebug("Received a data block of a type we cannot handle: '%s' origin: '%s'",
 					static_cast<char*>(id), static_cast<char*>(origin)
 				);
 			

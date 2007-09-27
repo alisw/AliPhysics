@@ -32,6 +32,7 @@
 #include "AliHLTMUONDataBlockReader.h"
 #include "AliHLTMUONDataBlockWriter.h"
 #include <cstdlib>
+#include <cstring>
 #include <cerrno>
 
 namespace
@@ -51,7 +52,8 @@ AliHLTMUONMansoTrackerFSMComponent::AliHLTMUONMansoTrackerFSMComponent() :
 	AliHLTMUONMansoTrackerFSMCallback(),
 	fTracker(NULL),
 	fTrackCount(0),
-	fBlock(NULL)
+	fBlock(NULL),
+	fWarnForUnexpecedBlock(false)
 {
 }
 
@@ -103,6 +105,15 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 {
 	fTracker = new AliHLTMUONMansoTrackerFSM();
 	fTracker->SetCallback(this);
+	
+	fWarnForUnexpecedBlock = false;
+	
+	for (int i = 0; i < argc; i++)
+	{
+		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
+			fWarnForUnexpecedBlock = true;
+	}
+	
 	return 0;
 }
 
@@ -157,12 +168,32 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			AliHLTMUONRecHitsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
 			if (not inblock.BufferSizeOk())
 			{
-				Logging(kHLTLogError,
-					"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
-					"Invalid block",
-					"Received a reconstructed hits data block with an incorrect size: %d,"
-					  " it might be corrupt.",
-					blocks[n].fSize
+				size_t headerSize = sizeof(AliHLTMUONRecHitsBlockReader::HeaderType);
+				if (blocks[n].fSize < headerSize)
+				{
+					HLTError("Received a reconstructed hits data block with a size of %d bytes,"
+						" which is smaller than the minimum valid header size of %d bytes."
+						" The block must be corrupt.",
+						blocks[n].fSize, headerSize
+					);
+					continue;
+				}
+				
+				size_t expectedWidth = sizeof(AliHLTMUONRecHitsBlockReader::ElementType);
+				if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
+				{
+					HLTError("Received a reconstructed hits data block with a record"
+						" width of %d bytes, but the expected value is %d bytes."
+						" The block might be corrupt.",
+						blocks[n].fSize, headerSize
+					);
+					continue;
+				}
+				
+				HLTError("Received a reconstructed hits data block with a size of %d bytes,"
+					" but the block header claims the block should be %d bytes."
+					" The block might be corrupt.",
+					blocks[n].fSize, inblock.BytesUsed()
 				);
 				continue;
 			}
@@ -171,7 +202,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 				AddRecHits(blocks[n].fSpecification, inblock.GetArray(), inblock.Nentries());
 			else
 			{
-				Logging(kHLTLogWarning,
+				Logging(kHLTLogDebug,
 					"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
 					"Block empty",
 					"Received a reconstructed hits data block which contains no entries."
@@ -191,12 +222,14 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 				origin[i] = blocks[n].fDataType.fOrigin[i];
 			origin[kAliHLTComponentDataTypefOriginSize] = '\0';
 			
-			Logging(kHLTLogError,
-				"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
-				"Unexpected data",
-				"Received a data block of an unexpected type: %s origin %s",
-				static_cast<char*>(id), static_cast<char*>(origin)
-			);
+			if (fWarnForUnexpecedBlock)
+				HLTWarning("Received a data block of a type we cannot handle: %s origin: %s",
+					static_cast<char*>(id), static_cast<char*>(origin)
+				);
+			else
+				HLTDebug("Received a data block of a type we cannot handle: %s origin: %s",
+					static_cast<char*>(id), static_cast<char*>(origin)
+				);
 		}
 	}
   
@@ -210,12 +243,32 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 		AliHLTMUONTriggerRecordsBlockReader inblock(blocks[n].fPtr, blocks[n].fSize);
 		if (not inblock.BufferSizeOk())
 		{
-			Logging(kHLTLogError,
-				"AliHLTMUONMansoTrackerFSMComponent::DoEvent",
-				"Invalid block",
-				"Received a trigger record data block with an incorrect size: %d,"
-				  " it might be corrupt.",
-				blocks[n].fSize
+			size_t headerSize = sizeof(AliHLTMUONTriggerRecordsBlockReader::HeaderType);
+			if (blocks[n].fSize < headerSize)
+			{
+				HLTError("Received a trigger records data block with a size of %d bytes,"
+					" which is smaller than the minimum valid header size of %d bytes."
+					" The block must be corrupt.",
+					blocks[n].fSize, headerSize
+				);
+				continue;
+			}
+			
+			size_t expectedWidth = sizeof(AliHLTMUONTriggerRecordsBlockReader::ElementType);
+			if (inblock.CommonBlockHeader().fRecordWidth != expectedWidth)
+			{
+				HLTError("Received a trigger records data block with a record"
+					" width of %d bytes, but the expected value is %d bytes."
+					" The block might be corrupt.",
+					blocks[n].fSize, headerSize
+				);
+				continue;
+			}
+			
+			HLTError("Received a trigger records data block with a size of %d bytes,"
+				" but the block header claims the block should be %d bytes."
+				" The block might be corrupt.",
+				blocks[n].fSize, inblock.BytesUsed()
 			);
 			continue;
 		}
@@ -326,8 +379,8 @@ void AliHLTMUONMansoTrackerFSMComponent::AddRecHits(
 	}
 	
 	DebugTrace("Added " << count << " reconstructed hits from chamber "
-		<< (int)chamber	<< " to the internal arrays.")
-	;
+		<< (int)chamber	<< " to the internal arrays."
+	);
 	
 	RecHitBlockInfo info;
 	info.fCount = count;
@@ -424,4 +477,3 @@ void AliHLTMUONMansoTrackerFSMComponent::NoTrackFound(AliHLTMUONMansoTrackerFSM*
 {
 	DebugTrace("No track found.");
 }
-

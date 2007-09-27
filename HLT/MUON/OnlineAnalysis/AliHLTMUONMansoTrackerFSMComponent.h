@@ -114,6 +114,8 @@ private:
 	
 	std::vector<RecHitBlockInfo> fRecHitBlock[4];  //! Arrays of rec hit block data.
 
+	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
+	
 	ClassDef(AliHLTMUONMansoTrackerFSMComponent, 0);  // Manso tracker component implemented as a finite state machine (FSM).
 };
 
