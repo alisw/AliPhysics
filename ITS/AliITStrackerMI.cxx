@@ -3558,6 +3558,7 @@ Int_t AliITStrackerMI::GetError(Int_t layer, const AliITSRecPoint*cl, Float_t th
   //DRIFTS
   Float_t normq = cl->GetQ()/(TMath::Sqrt(1+theta*theta+phi*phi));
   Float_t chargematch = normq/expQ;
+  chargematch/=2.4; // F. Prino Sept. 2007: SDD charge conversion keV->ADC
   Float_t factorz=1;
   Int_t   cnz = cl->GetNz()%10;
   //charge match
