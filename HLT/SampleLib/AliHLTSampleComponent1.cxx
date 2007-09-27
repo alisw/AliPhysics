@@ -36,9 +36,6 @@ AliHLTSampleComponent1 gAliHLTSampleComponent1;
 
 ClassImp(AliHLTSampleComponent1)
 
-const AliHLTComponentDataType AliHLTSampleComponent1::fgInputDataTypes[]={kAliHLTVoidDataType,
-									{0,"",""}}; //'zero' terminated array
-
 AliHLTSampleComponent1::AliHLTSampleComponent1()
 {
   // see header file for class documentation
