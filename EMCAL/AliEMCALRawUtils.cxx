@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/09/03 20:55:35  jklay
+ * EMCAL e-by-e reconstruction methods from Cvetan
+ *
  * Revision 1.1  2007/03/17 19:56:38  mvl
  * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
  * */
@@ -267,24 +270,45 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Double_t & amp, Doubl
   amp = time = 0. ; 
 
   timezero1 = signalmax = timemax = 0. ;
-  timezero2 = GetRawFormatTimeMax();
-  Int_t index ; 
-  for (index = 0; index < GetRawFormatTimeBins(); index++) {
+  timezero1 = GetRawFormatTimeMax();
+  timezero2 = 0;
+
+  //  Find the time,the value and the index of the maximum
+
+  Int_t indexmax = 0;
+  for (Int_t index = 0; index < GetRawFormatTimeBins(); index++) {
     gSig->GetPoint(index, time, signal) ; 
-    if (signal > kNoiseThreshold && timezero1 == 0.) 
-      timezero1 = time ;
-    if (signal <= kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
-      timezero2 = time ; 
-    if (signal > signalmax) {
+    if (signal >= signalmax) {
       signalmax = signal ; 
-      timemax   = time ; 
+      timemax   = time ;
+      indexmax = index;
     }
   }
 
   if ( timemax < GetRawFormatTimeMax() * 0.4 ) { // else its noise 
+
+    // Find the start time of the signal;
+    for (Int_t index = indexmax; index >= 0; index--) {    
+      gSig->GetPoint(index, time, signal) ; 
+      
+      if (signal>kNoiseThreshold) {
+	timezero1 = time;
+      }
+      else break;
+    }
+    // Find the end time of the signal;
+    for (Int_t index = indexmax; index < GetRawFormatTimeBins(); index++) {    
+      gSig->GetPoint(index, time, signal) ; 
+      if (signal>kNoiseThreshold) {
+	timezero2 = time;
+      }
+      else break;
+    }
+
     signalF->SetParameter(0, signalmax) ; 
-    signalF->SetParameter(1, timemax) ; 
-    gSig->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
+    //    signalF->SetParameter(1, timemax) ; 
+    signalF->SetParameter(1, 0.5*(timezero1+timezero2)) ; 
+    gSig->Fit(signalF, "QRON", "", timezero1, timezero2); //, "QRON") ; 
     amp = signalF->GetParameter(0) ; 
     time = signalF->GetParameter(1) - fgTimeTrigger;
   }
@@ -309,7 +333,7 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   Double_t signal ;
   Double_t xx = ( x[0] - par[1] + fgTau ) / fgTau ; 
 
-  if (xx < 0) 
+  if (xx <= 0) 
     signal = 0. ;  
   else {  
     signal = par[0] * TMath::Power(xx , fgOrder) * TMath::Exp(fgOrder * (1 - xx )) ; 
