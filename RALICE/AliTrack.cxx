@@ -840,6 +840,21 @@ Int_t AliTrack::GetNsignals() const
  return nsig;
 }
 ///////////////////////////////////////////////////////////////////////////
+Int_t AliTrack::GetNsignals(const char* classname) const
+{
+// Provide the number of stored signals of the specified class.
+
+ Int_t nsigs=0;
+ for (Int_t isig=1; isig<=GetNsignals(); isig++)
+ {
+  TObject* obj=GetSignal(isig);
+  if (!obj) continue;
+
+  if (obj->InheritsFrom(classname)) nsigs++;
+ }
+ return nsigs;
+} 
+///////////////////////////////////////////////////////////////////////////
 AliSignal* AliTrack::GetSignal(Int_t j) const
 {
 // Provide the related AliSignal number j.

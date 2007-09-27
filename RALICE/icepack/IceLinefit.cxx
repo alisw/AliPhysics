@@ -18,6 +18,10 @@
 ///////////////////////////////////////////////////////////////////////////
 // Class IceLinefit
 // TTask derived class to perform a linefit track reconstruction.
+//
+// In case an event has been rejected by an AliEventSelector (based) processor,
+// this task (and its sub-tasks) is not executed.
+//
 // The procedure is based on the method described in the Amanda publication
 // in Nuclear Instruments and Methods A524 (2004) 179-180.
 // To prevent waisting CPU time in trying to reconstruct (high-energy) cascade
@@ -158,6 +162,13 @@ void IceLinefit::Exec(Option_t* opt)
 
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
+
+ // Only process accepted events
+ AliDevice* seldev=(AliDevice*)evt->GetDevice("AliEventSelector");
+ if (seldev)
+ {
+  if (seldev->GetSignal("Select") < 0.1) return;
+ }
 
  // Enter the reco parameters as a device in the event
  AliSignal params;

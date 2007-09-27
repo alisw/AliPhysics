@@ -120,4 +120,7 @@
                 for more sophisticated reconstruction algorithms.
                 Also expression for "ksi" corrected to correctly represent the traveled
                 distance of the cherenkov photon in IcePandel.cxx.
+27-sep-2007 NvE Check for event selection/rejection flag introduced in IceCalibrate.cxx,
+                IceChi2.cxx, IceCleanHits.cxx, IceDwalk.cxx, IceDwalkx.cxx, IceLinefit.cxx,
+                IceMakeHits.cxx, IcePandel.cxx and IceXtalk.cxx.
                  

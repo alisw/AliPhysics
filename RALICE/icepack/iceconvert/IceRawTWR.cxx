@@ -38,6 +38,8 @@
 // with the raw TWR data and before the final structures are written out.
 // Note that the data structures are only written out if an outputfile has
 // been specified via the SetOutputFile memberfunction.
+// In case an AliEventSelector (based) task has been invoked, the data structures
+// are only written out for events that fulfilled the selection criteria.
 // In case no outputfile has been specified, this class provides a facility
 // to investigate/analyse raw TWR data using the Ralice/IcePack analysis tools.
 //
@@ -284,6 +286,7 @@ void IceRawTWR::Exec(Option_t* opt)
 
  Int_t nevt=0;
  fHeader=0;
+ Int_t evtsel=0;
  for (Int_t ifile=0; ifile<ninfiles; ifile++)
  {
   TObjString* sx=(TObjString*)fInfiles->At(ifile);
@@ -393,8 +396,14 @@ void IceRawTWR::Exec(Option_t* opt)
     if (!(nevt%fPrintfreq)) evt->HeaderData();
    }
 
-   // Write the complete structure to the output Tree
-   if (otree) otree->Fill();
+   // Write the complete structure to the output Tree for accepted events
+   evtsel=1;
+   AliDevice* seldev=(AliDevice*)evt->GetDevice("AliEventSelector");
+   if (seldev)
+   {
+    if (seldev->GetSignal("Select") < 0.1) evtsel=-1;
+   }
+   if (otree && evtsel==1) otree->Fill();
 
    // Update event counter
    nevt++;

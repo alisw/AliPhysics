@@ -19,6 +19,9 @@
 // Class IceMakeHits
 // TTask derived class to perform hit extraction from waveforms.
 //
+// In case an event has been rejected by an AliEventSelector (based) processor,
+// this task (and its sub-tasks) is not executed.
+//
 // The code in this processor is based on the algorithms as developed by
 // Nick van Eijndhoven and Garmt de Vries-Uiterweerd (Utrecht University, The Netherlands).
 //
@@ -149,6 +152,13 @@ void IceMakeHits::Exec(Option_t* opt)
 
  fEvt=(IceEvent*)parent->GetObject("IceEvent");
  if (!fEvt) return;
+
+ // Only process accepted events
+ AliDevice* seldev=(AliDevice*)fEvt->GetDevice("AliEventSelector");
+ if (seldev)
+ {
+  if (seldev->GetSignal("Select") < 0.1) return;
+ }
 
  fDaq=(AliDevice*)fEvt->GetDevice("Daq");
  if (!fDaq) return;

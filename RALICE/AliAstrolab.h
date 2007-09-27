@@ -8,7 +8,7 @@
 
 #include <math.h>
 
-#include "TNamed.h"
+#include "TTask.h"
 #include "TString.h"
 #include "TRotMatrix.h"
 #include "TObjArray.h"
@@ -18,10 +18,10 @@
 #include "AliPosition.h"
 #include "AliSignal.h"
  
-class AliAstrolab : public TNamed,public AliTimestamp
+class AliAstrolab : public TTask,public AliTimestamp
 {
  public:
-  AliAstrolab(const char* name="",const char* title="");       // Constructor
+  AliAstrolab(const char* name="AliAstrolab",const char* title="Generic lab"); // Constructor
   virtual ~AliAstrolab();                                      // Destructor
   AliAstrolab(const AliAstrolab& t);                           // Copy constructor
   virtual TObject* Clone(const char* name="") const;           // Make a deep copy and provide its pointer
@@ -89,6 +89,6 @@ class AliAstrolab : public TNamed,public AliTimestamp
   void Precess(Ali3Vector& r,AliTimestamp* ts1,AliTimestamp* ts2); // Correct RA and decl. for earth's precession
   void Nutate(Ali3Vector& r,AliTimestamp* ts); // Correct RA and decl. for earth's nutation
  
- ClassDef(AliAstrolab,1) // Virtual lab to relate measurements with astrophysical phenomena
+ ClassDef(AliAstrolab,2) // Virtual lab to relate measurements with astrophysical phenomena
 };
 #endif

@@ -736,6 +736,20 @@ void AliEvent::AddDevice(TObject& d)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+void AliEvent::RemoveDevice(TObject* d)
+{
+// Remove the specified device from the event.
+
+ if (!fDevices || !d) return;
+
+ TObject* obj=fDevices->Remove(d);
+ if (obj)
+ {
+  if (fDevCopy) delete obj;
+  fDevices->Compress();
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 void AliEvent::SetDevCopy(Int_t j)
 {
 // (De)activate the creation of private copies of the added devices.

@@ -18,6 +18,10 @@
 ///////////////////////////////////////////////////////////////////////////
 // Class IceDwalk
 // TTask derived class to perform direct walk track reconstruction.
+//
+// In case an event has been rejected by an AliEventSelector (based) processor,
+// this task (and its sub-tasks) is not executed.
+//
 // The procedure is based on the method described in the Amanda publication
 // in Nuclear Instruments and Methods A524 (2004) 179-180.
 // However, the Amanda method has been extended with the intention to
@@ -465,6 +469,13 @@ void IceDwalk::Exec(Option_t* opt)
 
  fEvt=(IceEvent*)parent->GetObject("IceEvent");
  if (!fEvt) return;
+
+ // Only process accepted events
+ AliDevice* seldev=(AliDevice*)fEvt->GetDevice("AliEventSelector");
+ if (seldev)
+ {
+  if (seldev->GetSignal("Select") < 0.1) return;
+ }
 
  // Enter the reco parameters as a device in the event
  AliSignal params;

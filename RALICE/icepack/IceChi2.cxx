@@ -19,6 +19,9 @@
 // Class IceChi2
 // TTask derived class to perform track fitting via chi-squared minimisation.
 //
+// In case an event has been rejected by an AliEventSelector (based) processor,
+// this task (and its sub-tasks) is not executed.
+//
 // For the minimisation process the TFitter facility, which is basically Minuit,
 // is used. Minimisation is performed by invokation of the SIMPLEX method,
 // followed by an invokation of HESSE to determine the uncertainties on the results.
@@ -220,6 +223,13 @@ void IceChi2::Exec(Option_t* opt)
 
  fEvt=(IceEvent*)parent->GetObject("IceEvent");
  if (!fEvt) return;
+
+ // Only process accepted events
+ AliDevice* seldev=(AliDevice*)fEvt->GetDevice("AliEventSelector");
+ if (seldev)
+ {
+  if (seldev->GetSignal("Select") < 0.1) return;
+ }
 
  // Storage of the used parameters in the IceChi2 device
  AliSignal params;

@@ -37,3 +37,4 @@
 #include "AliTimestamp.h"
 #include "AliJob.h"
 #include "AliAstrolab.h"
+#include "AliEventSelector.h"

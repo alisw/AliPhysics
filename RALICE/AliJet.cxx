@@ -455,9 +455,26 @@ Int_t AliJet::GetNtracks(Int_t idmode,Int_t chmode,Int_t pcode)
  else
  {
   TObjArray* arr=GetTracks(idmode,chmode,pcode);
-  n=arr->GetEntries();
+  if (arr) n=arr->GetEntries();
   return n;
  }
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t AliJet::GetNtracks(TString name)
+{
+// Provide the number of tracks with the specified name.
+//
+// Note :
+// ------
+// This facility invokes the corresponding GetTracks memberfunction
+// and as such may result in overwriting existing track selection
+// arrays. Please refer to the docs of GetTracks for further details.
+  
+ Int_t n=0;
+
+ TObjArray* arr=GetTracks(name);
+ if (arr) n=arr->GetEntries();
+ return n;
 }
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliJet::GetEnergy(Float_t scale)

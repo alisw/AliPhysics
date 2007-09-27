@@ -20,6 +20,9 @@
 // TTask derived class to perform track fitting via minimisation of a
 // convoluted Pandel pdf.
 //
+// In case an event has been rejected by an AliEventSelector (based) processor,
+// this task (and its sub-tasks) is not executed.
+//
 // The code in this processor is based on the algorithms as developed
 // by Oladipo Fadiran, George Japaridze (Clark Atlanta University, USA)
 // and Nick van Eijndhoven (Utrecht University, The Netherlands).
@@ -224,6 +227,13 @@ void IcePandel::Exec(Option_t* opt)
 
  fEvt=(IceEvent*)parent->GetObject("IceEvent");
  if (!fEvt) return;
+
+ // Only process accepted events
+ AliDevice* seldev=(AliDevice*)fEvt->GetDevice("AliEventSelector");
+ if (seldev)
+ {
+  if (seldev->GetSignal("Select") < 0.1) return;
+ }
 
  // Storage of the used parameters in the IcePandel device
  AliSignal params;

@@ -782,3 +782,10 @@
 13-sep-2007 NvE New class AliAstrolab introduced to relate (local) measurements with
                 astrophysical phenomena.
 13-sep-2007 NvE Hour angle info included in printout of AliAstrolab.
+26-sep-2007 NvE AliTrack extended with GetNsignals for a specific signal class.
+                Also AliJet extended with GetNtracks for a specified track name.
+27-sep-2007 NvE New memberfunction RemoveDevice() introduced in AliEvent.
+                AliAstrolab derived from TTask, to provide a base class for TTask
+                based processors.
+                New class AliEventSelector introduced.
+

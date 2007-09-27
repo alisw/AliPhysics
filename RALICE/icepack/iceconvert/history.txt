@@ -133,4 +133,6 @@
                 of AliAttrib and AliSignal.
                 Also all slots in IceCal2Root now created via the "AddSlotName" facility
                 and slot access exclusively via the slotname, to enhance flexibility.
+27-sep-2007 NvE Check for event selection flag introduced in IceF2k.cxx and IceRawTWR.cxx
+                to provide selected event output.
    

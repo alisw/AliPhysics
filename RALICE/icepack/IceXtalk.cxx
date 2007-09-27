@@ -19,6 +19,9 @@
 // Class IceXtalk
 // TTask derived class to perform cross talk hit correction.
 //
+// In case an event has been rejected by an AliEventSelector (based) processor,
+// this task (and its sub-tasks) is not executed.
+//
 // Note : This processor only acts on MuDaq data.
 //
 // This task takes the current event in memory and uses the attached
@@ -143,6 +146,13 @@ void IceXtalk::Exec(Option_t* opt)
 
  IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
  if (!evt) return;
+
+ // Only process accepted events
+ AliDevice* seldev=(AliDevice*)evt->GetDevice("AliEventSelector");
+ if (seldev)
+ {
+  if (seldev->GetSignal("Select") < 0.1) return;
+ }
 
  Int_t mudaq=0;
  Int_t twrdaq=0;

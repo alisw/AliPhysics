@@ -19,6 +19,13 @@
 // Class AliAstrolab
 // Virtual lab to correlate measurements with astrophysical phenomena.
 //
+// This class is derived from TTask, but the only reason for this
+// is to enable this class to serve as a base class for other TTask
+// derived classes (e.g. AliEventSelector) without the need for
+// multiple virtual inheritance.
+// So, this AliAstrolab class itself does not provide any TTask
+// related functionality.
+//
 // The lab can be given a terrestrial location via the usual longitude
 // and latitude specifications.
 // Since this class is derived from AliTimestamp, a lab can also be
@@ -81,7 +88,7 @@
 // Float_t pos[3]={1,90.-b,l};
 // r.SetVector(pos,"sph","deg");
 // lab.SetUT(1989,7,30,8,14,16,0,0);
-// lab->SetSignal(&r,"gal","M",0,-1,"GRB890730");
+// lab.SetSignal(&r,"gal","M",0,-1,"GRB890730");
 //
 // // List all stored objects
 // lab.ListSignals("equ","M",5);
@@ -120,7 +127,7 @@
  
 ClassImp(AliAstrolab) // Class implementation to enable ROOT I/O
  
-AliAstrolab::AliAstrolab(const char* name,const char* title) : TNamed(name,title),AliTimestamp()
+AliAstrolab::AliAstrolab(const char* name,const char* title) : TTask(name,title),AliTimestamp()
 {
 // Default constructor
 
@@ -153,7 +160,7 @@ AliAstrolab::~AliAstrolab()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-AliAstrolab::AliAstrolab(const AliAstrolab& t) : TNamed(t),AliTimestamp(t)
+AliAstrolab::AliAstrolab(const AliAstrolab& t) : TTask(t),AliTimestamp(t)
 {
 // Copy constructor
 
@@ -1336,8 +1343,8 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 // The input parameter "mode" also determines which type of time and
 // local hour angle will appear in the printout.
 //
-// mode = "M" --> Mean Siderial Time (MST) and Local Mean Hour Angle (LMHA)
-//        "T" --> Apparent Siderial Time (AST) and Local Apparent Hour Angle (LAHA)
+// mode = "M" --> Mean Sidereal Time (MST) and Local Mean Hour Angle (LMHA)
+//        "T" --> Apparent Sidereal Time (AST) and Local Apparent Hour Angle (LAHA)
 //
 // The input parameter "jref" allows printing of a so-called "reference" signal.
 // These reference signals may serve to check space-time event coincidences with the
@@ -1487,8 +1494,8 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 // The input parameter "mode" also determines which type of time and
 // local hour angle will appear in the printout.
 //
-// mode = "M" --> Mean Siderial Time (MST) and Local Mean Hour Angle (LMHA)
-//        "T" --> Apparent Siderial Time (AST) and Local Apparent Hour Angle (LAHA)
+// mode = "M" --> Mean Sidereal Time (MST) and Local Mean Hour Angle (LMHA)
+//        "T" --> Apparent Sidereal Time (AST) and Local Apparent Hour Angle (LAHA)
 //
 // Note : In case ts=0 the current timestamp of the lab will be taken.
 
@@ -1547,10 +1554,8 @@ void AliAstrolab::ListSignals(TString frame,TString mode,Int_t ndig)
 // The input parameter "mode" also determines which type of time and
 // local hour angle will appear in the listing.
 //
-// mode = "M" --> Mean Siderial Time (MST) and Local Mean Hour Angle (LMHA)
-//        "T" --> Apparent Siderial Time (AST) and Local Apparent Hour Angle (LAHA)
-//
-// Note : In case ts=0 the current timestamp of the lab will be taken.
+// mode = "M" --> Mean Sidereal Time (MST) and Local Mean Hour Angle (LMHA)
+//        "T" --> Apparent Sidereal Time (AST) and Local Apparent Hour Angle (LAHA)
 
  Int_t iprint=0;
 
