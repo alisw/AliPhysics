@@ -83,6 +83,7 @@ private:
 	TString fDDLDir;
 	Int_t fDDL;
 	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
+	bool fSuppressPartialTrigs;   // Flag indicating if we should suppress triggers that did not trigger the L0
 
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0)
 

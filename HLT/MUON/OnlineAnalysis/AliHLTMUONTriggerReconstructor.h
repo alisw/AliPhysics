@@ -26,95 +26,83 @@
  Email      : indra.das@saha.ac.in | indra.ehep@gmail.com
 **********************************************************************/
 
-#include <vector>
-
 #include "AliHLTLogging.h"
 #include "AliHLTMUONTriggerRecordsBlockStruct.h"
 #include "AliHLTMUONHitReconstructor.h"
 
-#if __GNUC__ < 3
-#define std
-#endif
-
-typedef std::vector<int> DataIdIndex;
 
 class AliHLTMUONTriggerReconstructor : public AliHLTLogging
 {
+public:
 
- public:
+	struct RegToLoc
+	{
+		int fTrigDDL;  // trigger id (0 or 1)
+		int fRegId,fLoc,fLocId;  // regeonal and local id.
+		int fSwitch;  // packed switch word of 10 bits.
+		int fDetElemId[4];  // Four detection element correspond to four detection element for each local card.
+	};
 
-  struct RegToLoc{
-    int fTrigDDL;  // trigger id (0 or 1)
-    int fRegId,fLoc,fLocId;  // regeonal and local id.
-    int fSwitch;  // packed switch word of 10 bits.
-    int fDetElemId[4];  // Four detection element correspond to four detection element for each local card.
-  };
+	AliHLTMUONTriggerReconstructor();
+	virtual ~AliHLTMUONTriggerReconstructor();
 
+	bool LoadLookUpTable(
+			AliHLTMUONHitReconstructor::DHLTLut* lookUpTableData,
+			int lookUpTableId
+		);
 
-  AliHLTMUONTriggerReconstructor();
-  virtual ~AliHLTMUONTriggerReconstructor();
+	bool SetRegToLocCardMap(RegToLoc* regToLoc);
 
-  bool LoadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookUpTableData, int lookUpTableId);
-  
-  bool SetRegToLocCardMap(RegToLoc* regToLoc);
-  bool Run(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize, AliHLTMUONTriggerRecordStruct* trigRecord, AliHLTUInt32_t& nofTrigRec);
+	bool Run(
+			const AliHLTUInt32_t* rawData,
+			AliHLTUInt32_t rawDataSize,
+			AliHLTMUONTriggerRecordStruct* trigRecord,
+			AliHLTUInt32_t& nofTrigRec,
+			bool suppressPartialTrigs = false
+		);
 
-  int GetLutLine(){return fgkLutLine ;}
+	int GetLutLine() { return fgkLutLine; }
 
-  static int GetkDetectorId() { return AliHLTMUONTriggerReconstructor::fgkDetectorId ; }
-  static int GetkDDLOffSet() { return AliHLTMUONTriggerReconstructor::fgkDDLOffSet; }
-  static int GetkNofDDL() { return AliHLTMUONTriggerReconstructor::fgkNofDDL; }
-  static int GetkDDLHeaderSize() { return AliHLTMUONTriggerReconstructor::fgkDDLHeaderSize; }
-  
- private: 
-  static const int fgkDetectorId ;            // Detector ID
-  static const int fgkDDLOffSet ;             // DDL Offset
-  static const int fgkNofDDL ;                // Number of DDL 
-  static const int fgkDDLHeaderSize  ;        // DDL header size  
+	static int GetkDetectorId() { return AliHLTMUONTriggerReconstructor::fgkDetectorId; }
+	static int GetkDDLOffSet() { return AliHLTMUONTriggerReconstructor::fgkDDLOffSet; }
+	static int GetkNofDDL() { return AliHLTMUONTriggerReconstructor::fgkNofDDL; }
+	static int GetkDDLHeaderSize() { return AliHLTMUONTriggerReconstructor::fgkDDLHeaderSize; } 
 
- protected:
+protected:
 
-  AliHLTMUONTriggerReconstructor(const AliHLTMUONTriggerReconstructor& rhs); // copy constructor
-  AliHLTMUONTriggerReconstructor& operator=(const AliHLTMUONTriggerReconstructor& rhs); // assignment operator
-  
- private:
+	AliHLTMUONTriggerReconstructor(const AliHLTMUONTriggerReconstructor& rhs); // copy constructor
+	AliHLTMUONTriggerReconstructor& operator=(const AliHLTMUONTriggerReconstructor& rhs); // assignment operator
 
-  static const int fgkEvenLutSize ;           // Size of the LookupTable with event DDLID
-  static const int fgkOddLutSize ;            // Size of the LookupTable with odd DDLID
-  static const int fgkLutLine;                // nof Line in LookupTable    
+private:
 
-  static const int fgkMinIdManuChannel[2];    // Minimum value of idManuChannel in LookupTable, 2 corresponds to two types of DDL (even/odd)  
-  static const int fgkMaxIdManuChannel[2];    // Maximum value of idManuChannel in LookupTable  
-  static const float fgkHalfPadSizeXB[3];       // pad halflength for the pcb zones, 3 corresponds to 3 types of pad in bending side  
-  static const float fgkHalfPadSizeYNB[2];       // pad halflength for the pcb zones, 2 corresponds to 2 types on nonbneding pad  
+	static const int fgkDetectorId;            // Detector ID
+	static const int fgkDDLOffSet;             // DDL Offset
+	static const int fgkNofDDL;                // Number of DDL 
+	static const int fgkDDLHeaderSize;         // DDL header size  
 
-  static const int fgkDetElem;                // nof Detection element per DDL    
+	static const int fgkEvenLutSize;           // Size of the LookupTable with event DDLID
+	static const int fgkOddLutSize;            // Size of the LookupTable with odd DDLID
+	static const int fgkLutLine;               // nof Line in LookupTable    
 
-  
-  AliHLTMUONHitReconstructor::DHLTPad* fPadData;                          // pointer to the array containing the information of each padhits
-  AliHLTMUONHitReconstructor::DHLTLut* fLookUpTableData;                  // pointer to the array of Lookuptable data
-  
-  AliHLTMUONTriggerRecordStruct *fRecPoints;    // Reconstructed hits
-  AliHLTUInt32_t *fRecPointsCount;                       // nof reconstructed hit  
-  AliHLTUInt32_t fMaxRecPointsCount;                    // max nof reconstructed hit  
+	static const int fgkMinIdUnique[2];   // Minimum value of idUnique in LookupTable, 2 corresponds to two types of DDL (even/odd)  
+	static const int fgkMaxIdUnique[2];   // Maximum value of idUnique in LookupTable  
+	static const float fgkHalfPadSizeXB[3];    // pad halflength for the pcb zones, 3 corresponds to 3 types of pad in bending side  
+	static const float fgkHalfPadSizeYNB[2];   // pad halflength for the pcb zones, 2 corresponds to 2 types on nonbneding pad  
 
-  //104 correspond to maximum nuber of x indices a nonbending side of detelem may have (i.e. 1101) 
-  //and 64 corresponds to the maximum number of y indices occurs in bending side of detelem (i.e 1100)
-  int fGetIdTotalData[104][64][2] ;           // an array of idManuChannel with argumrnt of centralX,centralY and  planeType
-  RegToLoc fRegToLocCard[128];              // 8 regional card per ddl and 16 slots per regional crate together made 16*8 = 128. 
+	static const int fgkDetElem;               // nof Detection element per DDL    
 
-  map<int,int> fMaxFiredPerDetElem;                    // counter for detector elements that are fired 
-  map<int,DataIdIndex> fDetElemToDataId;              // detelem to pointer to dataId index mapping
-  
-  int fDDLId ;
-  int fIdOffSet ;
-  
-  AliHLTInt32_t fTrigRecId;  // A running counter for the trigger record ID.
+	AliHLTMUONHitReconstructor::DHLTLut* fLookUpTableData; // pointer to the array of Lookuptable data
+	AliHLTUInt32_t fMaxRecPointsCount;            // max nof reconstructed hit  
 
-  bool MergeTrigHits(DataIdIndex& dataIndex);
-  bool FindTrigHits() ;
+	//104 correspond to maximum nuber of x indices a nonbending side of detelem may have (i.e. 1101) 
+	//and 64 corresponds to the maximum number of y indices occurs in bending side of detelem (i.e 1100)
+	int fGetIdTotalData[104][64][2];  // an array of idUnique with argumrnt of centralX,centralY and  planeType
+	RegToLoc fRegToLocCard[128];      // 8 regional card per ddl and 16 slots per regional crate together made 16*8 = 128.
 
-  bool ReadDDL(const AliHLTUInt32_t* rawData, AliHLTUInt32_t rawDataSize);
+	int fDDLId;
+	int fIdOffSet;
+
+	AliHLTInt32_t fTrigRecId;  // A running counter for the trigger record ID.
 };
 
 #endif // AliHLTMUONTRIGGERRECONSTRUCTOR_H

@@ -46,7 +46,8 @@ AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent
 	fTrigRec(NULL),
 	fDDLDir(""),
 	fDDL(0),
-	fWarnForUnexpecedBlock(false)
+	fWarnForUnexpecedBlock(false),
+	fSuppressPartialTrigs(false)
 {
 }
 
@@ -80,7 +81,7 @@ void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize(
 	)
 {
 	constBase = sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType);
-	inputMultiplier = 100;
+	inputMultiplier = 1;
 }
 
 
@@ -98,6 +99,7 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
   HLTInfo("Initialising DHLT Trigger Record Component");
 
   fWarnForUnexpecedBlock = false;
+  fSuppressPartialTrigs = false;
   fTrigRec = new AliHLTMUONTriggerReconstructor();
       
   // this is just to get rid of the warning "unused parameter"
@@ -168,6 +170,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 	  
       if ( !strcmp( argv[i], "-warn_on_unexpected_block" ) ) {
         fWarnForUnexpecedBlock = true;
+	i++;
+	continue;
+      }
+	  
+      if ( !strcmp( argv[i], "-suppress_partial_triggers" ) ) {
+        fSuppressPartialTrigs = true;
 	i++;
 	continue;
       }
@@ -299,7 +307,12 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			+ fTrigRec->GetkDDLHeaderSize();
 		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
 
-		if (not fTrigRec->Run(buffer, ddlRawDataSize, block.GetArray(), nofTrigRec))
+		bool runOk = fTrigRec->Run(
+				buffer, ddlRawDataSize,
+				block.GetArray(), nofTrigRec,
+				fSuppressPartialTrigs
+			);
+		if (not runOk)
 		{
 			HLTError("Error while processing of trigger DDL reconstruction algorithm.");
 			size = totalSize; // Must tell the framework how much buffer space was used.
