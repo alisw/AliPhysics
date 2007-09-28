@@ -81,29 +81,6 @@ AliHLTReconstructor::AliHLTReconstructor(Bool_t doTracker, Bool_t doHough)
 #endif
 }
 
-AliHLTReconstructor::AliHLTReconstructor(const AliHLTReconstructor&)
-  :
-  AliReconstructor(),
-  fDoHough(0),
-  fDoTracker(0),
-  fDoBench(0),
-  fDoCleanUp(0),
-  fpSystem(NULL)
-{
-  // not a valid copy constructor
-}
-
-AliHLTReconstructor& AliHLTReconstructor::operator=(const AliHLTReconstructor&)
-{
-  // not a valid assignment operator
-  fDoHough=0;
-  fDoTracker=0;
-  fDoBench=0;
-  fDoCleanUp=0;
-  fpSystem=NULL;
-  return *this;
-}
-
 AliHLTReconstructor::~AliHLTReconstructor()
 { 
   //destructor
@@ -138,6 +115,7 @@ void AliHLTReconstructor::Init()
   TString libs("");
   TString option = GetOption();
   TObjArray* pTokens=option.Tokenize(" ");
+  option="";
   if (pTokens) {
     int iEntries=pTokens->GetEntries();
     for (int i=0; i<iEntries; i++) {
@@ -160,7 +138,8 @@ void AliHLTReconstructor::Init()
 	libs+=token;
 	libs+=" ";
       } else {
-	AliWarning(Form("unknown option: %s", token.Data()));
+	if (option.Length()>0) option+=" ";
+	option+=token;
       }
     }
     delete pTokens;
@@ -179,12 +158,25 @@ void AliHLTReconstructor::Init()
     AliError("error while loading HLT libraries");
     return;
   }
-  // No run-loaders anymore...needs a fix
-//   if (!fpSystem->CheckStatus(AliHLTSystem::kReady) &&
-//       (fpSystem->Configure(runLoader))<0) {
-//     AliError("error during HLT system configuration");
-//     return;
-//   }
+
+  if (!fpSystem->CheckStatus(AliHLTSystem::kReady)) {
+    typedef int (*AliHLTSystemSetOptions)(AliHLTSystem* pInstance, const char* options);
+    gSystem->Load("libHLTinterface.so");
+    AliHLTSystemSetOptions pFunc=(AliHLTSystemSetOptions)(gSystem->DynFindSymbol("libHLTinterface.so", "AliHLTSystemSetOptions"));
+    if (pFunc) {
+      if ((pFunc)(fpSystem, option.Data())<0) {
+      AliError("error setting options for HLT system");
+      return;	
+      }
+    } else if (option.Length()>0) {
+      AliError(Form("version of HLT system does not support the options \'%s\'", option.Data()));
+      return;
+    }
+    if ((fpSystem->Configure())<0) {
+      AliError("error during HLT system configuration");
+      return;
+    }
+  }
 }
 
 // void AliHLTReconstructor::Reconstruct(AliRunLoader* runLoader, AliRawReader* rawReader) const 

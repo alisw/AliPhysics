@@ -42,10 +42,6 @@ class AliHLTReconstructor: public AliReconstructor {
 public:
   AliHLTReconstructor();
   AliHLTReconstructor(Bool_t doTracker, Bool_t doHough);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTReconstructor(const AliHLTReconstructor& src);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
   /** destructor */
   virtual ~AliHLTReconstructor();
 
@@ -78,6 +74,11 @@ public:
 //  virtual void         FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEvent, Int_t dcCut) const;
 
 private:
+  /** copy constructor prohibited */
+  AliHLTReconstructor(const AliHLTReconstructor& src);
+  /** assignment operator prohibited */
+  AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
+
 /*   void ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const; */
 /*   void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const; */
 /*   void FillESDforConformalMapping(AliESDEvent* esd,Int_t iEvent) const; */
