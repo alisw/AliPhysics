@@ -185,6 +185,8 @@ int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, cons
 	ob.fOffset = totalSize;
 	// the size of this block's data.
 	ob.fSize = mySize;
+	// the data type of this block
+	ob.fDataType=blocks[n].fDataType;
 	// The specification of the data is copied from the input block.
 	ob.fSpecification = blocks[n].fSpecification;
 	// The data type is set automatically to the component's specified output data type.
