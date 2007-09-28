@@ -105,52 +105,85 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   digitsTree->SetBranchAddress("ZDC", &pdigit);
 
   // loop over digits
-    Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.}; 
-    Float_t dZEMCorrHG=0.; 
-    Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
-    Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
-    Float_t dZEMCorrLG=0.; 
-    Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
-    
-  for (Int_t iDigit = 0; iDigit < digitsTree->GetEntries(); iDigit++) {
+  Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.}; 
+  Float_t dZEMCorrHG=0.; 
+  Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
+  Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
+  Float_t dZEMCorrLG=0.; 
+  Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
+  
+  //printf("\n\t # of digits in tree: %d\n",(Int_t) digitsTree->GetEntries());
+  for (Int_t iDigit = 0; iDigit < (digitsTree->GetEntries()/2); iDigit++) {
     digitsTree->GetEntry(iDigit);
     if (!pdigit) continue;
-      
+    //pdigit->Print("");
+    //  
     Int_t det = digit.GetSector(0);
     Int_t quad = digit.GetSector(1);
-    Int_t pedindex;
+    Int_t pedindex = -1;
+    //printf("\n\t #%d det %d quad %d", iDigit, det, quad);
     //
     if(det == 1){ // *** ZN1
        pedindex = quad;
        tZN1CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       if(tZN1CorrHG[quad]<0.) tZN1CorrHG[quad] = 0.;
        tZN1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       if(tZN1CorrLG[quad]<0.) tZN1CorrLG[quad] = 0.;
+       //printf("\t pedindex %d tZN1CorrHG[%d] = %1.0f tZN1CorrLG[%d] = %1.0f", 
+       //	pedindex, quad, tZN1CorrHG[quad], quad, tZN1CorrLG[quad]);
     }
     else if(det == 2){ // *** ZP1
        pedindex = quad+10;
        tZP1CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       if(tZP1CorrLG[quad]<0.) tZP1CorrLG[quad] = 0.;
        tZP1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       if(tZP1CorrHG[quad]<0.) tZP1CorrHG[quad] = 0.;
+       //printf("\t pedindex %d tZP1CorrHG[%d] = %1.0f tZP1CorrLG[%d] = %1.0f", 
+       //	pedindex, quad, tZP1CorrHG[quad], quad, tZP1CorrLG[quad]);
     }
     else if(det == 3){
        if(quad == 1){	    // *** ZEM1  
-    	 pedindex = quad+20;
+    	 pedindex = quad+19;
          dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         if(dZEMCorrHG<0.) dZEMCorrHG = 0.;
          dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
+         if(dZEMCorrLG<0.) dZEMCorrLG = 0.;
+         //printf("\t pedindex %d ADC(0) = %d ped = %1.0f ADCCorr = %1.0f\n", 
+	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEMCorrHG);
+         //printf("\t pedindex %d ADC(1) = %d ped = %1.0f ADCCorr = %1.0f\n", 
+	 //	pedindex+2, digit.GetADCValue(1), meanPed[pedindex+2], dZEMCorrLG);
+         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEMCorrHG, dZEMCorrLG);
        }
        else if(quad == 2){  // *** ZEM1
-    	 pedindex = quad+21;
+    	 pedindex = quad+19;
          dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         if(dZEMCorrHG<0.) dZEMCorrHG = 0.;
          dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
+         if(dZEMCorrLG<0.) dZEMCorrLG = 0.;
+         //printf("\t pedindex %d ADC(0) = %d ped = %1.0f ADCCorr = %1.0f\n", 
+	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEMCorrHG);
+         //printf("\t pedindex %d ADC(1) = %d ped = %1.0f ADCCorr = %1.0f\n", 
+	 //	pedindex+2, digit.GetADCValue(1),meanPed[pedindex+2], dZEMCorrLG);
+         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEMCorrHG, dZEMCorrLG);
        }
     }
     else if(det == 4){  // *** ZN2
        pedindex = quad+24;
        tZN2CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       if(tZN2CorrHG[quad]<0.) tZN2CorrHG[quad] = 0.;
        tZN2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       if(tZN2CorrLG[quad]<0.) tZN2CorrLG[quad] = 0.;
+       //printf("\t pedindex %d tZN2CorrHG[%d] = %1.0f tZN2CorrLG[%d] = %1.0f\n", 
+       //	pedindex, quad, tZN2CorrHG[quad], quad, tZN2CorrLG[quad]);
     }
     else if(det == 5){  // *** ZP2 
        pedindex = quad+34;
        tZP2CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
+       if(tZP2CorrHG[quad]<0.) tZP2CorrHG[quad] = 0.;
        tZP2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       if(tZP2CorrLG[quad]<0.) tZP2CorrLG[quad] = 0.;
+       //printf("\t pedindex %d tZP2CorrHG[%d] = %1.0f tZP2CorrLG[%d] = %1.0f\n", 
+       //	pedindex, quad, tZP2CorrHG[quad], quad, tZP2CorrLG[quad]);
     }
   }
 
@@ -309,6 +342,9 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   Float_t maxValEZN2 = fCalibData->GetEZN1MaxValue();
   Float_t maxValEZP2 = fCalibData->GetEZP1MaxValue();
   Float_t maxValEZDC2 = fCalibData->GetEZDC1MaxValue();
+  //
+  //printf("\n\t AliZDCReconstructor -> ZEMEndPoint %1.0f, ZEMCutValue %1.0f,"
+  //   " ZEMSupValue %1.0f, ZEMInfValue %1.0f\n",endPointZEM,cutValueZEM,supValueZEM,infValueZEM);
   
   // Equalization of detector responses
   Float_t equalTowZN1HG[5], equalTowZN2HG[5], equalTowZP1HG[5], equalTowZP2HG[5];
@@ -357,6 +393,9 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   nDetSpecPLeft = (Int_t) (calibSumZP1HG/2.760);
   nDetSpecNRight = (Int_t) (calibSumZN2HG/2.760);
   nDetSpecPRight = (Int_t) (calibSumZP2HG/2.760);
+  /*printf("\n\t AliZDCReconstructor -> nDetSpecNLeft %d, nDetSpecPLeft %d,"
+    " nDetSpecNRight %d, nDetSpecPRight %d\n",nDetSpecNLeft, nDetSpecPLeft, 
+    nDetSpecNRight, nDetSpecPRight);*/
 
   //  ---      Number of generated spectator nucleons (from HIJING parameterization)
   Int_t nGenSpecNLeft=0, nGenSpecPLeft=0, nGenSpecLeft=0;
@@ -444,6 +483,11 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   nPart = 207-nGenSpecNLeft-nGenSpecPLeft;
   nPartTotLeft = 207-nGenSpecLeft;
   nPartTotRight = 207-nGenSpecRight;
+  //
+  /*printf("\n\t AliZDCReconstructor -> nGenSpecNLeft %d, nGenSpecPLeft %d, nGenSpecLeft %d,"
+      " nGenSpecNRight %d, nGenSpecPRight %d, nGenSpecRight %d\n", 
+      nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
+      nGenSpecPRight, nGenSpecRight);*/
 
   // create the output tree
   AliZDCReco reco(calibSumZN1HG, calibSumZP1HG, calibSumZN2HG, calibSumZP2HG, 
