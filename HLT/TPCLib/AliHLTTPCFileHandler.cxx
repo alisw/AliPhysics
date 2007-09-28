@@ -281,13 +281,18 @@ Bool_t AliHLTTPCFileHandler::SetAliInput(Char_t *name)
 Bool_t AliHLTTPCFileHandler::SetAliInput(AliRunLoader *runLoader)
 { 
   //set ali input as runloader
-  fInAli=runLoader;
-  fUseRunLoader = kTRUE;
-  if(!fInAli){
+  if(!runLoader){
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::SetAliInput","File Open")
-    <<"Pointer to AliRunLoader = 0x0 "<<ENDLOG;
+      <<"invalid agument: pointer to AliRunLoader NULL "<<ENDLOG;
     return kFALSE;
   }
+  if (fInAli!=NULL && fInAli!=runLoader) {
+    LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::SetAliInput","File Open")
+    <<"Pointer to AliRunLoader already set"<<ENDLOG;
+    return kFALSE;
+  }
+  fInAli=runLoader;
+  fUseRunLoader = kTRUE;
   return SetAliInput();
 }
 

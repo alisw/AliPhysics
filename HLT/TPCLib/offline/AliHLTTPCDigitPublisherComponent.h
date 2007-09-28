@@ -119,7 +119,13 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
   int                     fMinPart;                                //!transient
 
   /** instance of the file handler */
-  AliHLTTPCFileHandler*   fpFileHandler;                           //!transient
+  static AliHLTTPCFileHandler*   fpFileHandler;                    //!transient
+
+  /** no of file handler instances */
+  static int              fFileHandlerInstances;                   //!transient
+
+  /** event no the file handler is currently initialized for */
+  static int              fCurrEvent;                              //!transient
 
   ClassDef(AliHLTTPCDigitPublisherComponent, 0);
 };
