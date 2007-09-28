@@ -149,7 +149,7 @@ bool AliHLTMUONTriggerReconstructor::Run(
   int detElemId = 0 ;
   int reg_output,reg_phys_trig_occur ;
   int iLocIndex,loc,locDec,triggY,sign,loDev,triggX;
-  int iRegLoc, locId ;
+  int iRegLoc = 0, locId = 0;
   short pattern[2][4]; // 2 stands for two cathode planes and 4 stands for 4 chambers
 
   Int_t offset,ithSwitch,secondLocation,idetElemId;
@@ -305,7 +305,7 @@ bool AliHLTMUONTriggerReconstructor::Run(
 		      trigRecord[nofTrigRec].fHit[iChamber].fZ = fLookUpTableData[lutAddress+1].fRealZ;
 
 		      HLTDebug("\t Hit Found fo ich : %d, iPlane : %d, detelem %d, id : %d, at (%lf, %lf, %lf) cm",
-			       iChamber,fLookUpTableData[lutAddress+1].fPlane,detElemId,fLookUpTableData[lutAddress+1].fIdUnique,
+			       iChamber,fLookUpTableData[lutAddress+1].fPlane,detElemId,fLookUpTableData[lutAddress+1].fIdManuChannel,
 			       fLookUpTableData[lutAddress+1].fRealX,
 			       fLookUpTableData[lutAddress+1].fRealY,
 			       fLookUpTableData[lutAddress+1].fRealZ
