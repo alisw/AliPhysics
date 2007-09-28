@@ -276,7 +276,7 @@ Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponent
 } // Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
 
 
-Int_t AliHLTTPCCalibPedestalComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCCalibPedestalComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
     
   if ( fEnableAnalysis )

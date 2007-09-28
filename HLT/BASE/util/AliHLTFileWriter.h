@@ -148,6 +148,7 @@ class AliHLTFileWriter : public AliHLTDataSink  {
    *                       no block string appended if -1
    * @param dataType [in]  the data type of the data block
    *                       no type string appanded if @ref kAliHLTVoidDataType
+   * @param specification  data specification of the block
    * @param filename [out] string to receive the file name
    */
   int BuildFileName(const AliHLTEventID_t eventID, const int blockID,

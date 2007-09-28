@@ -292,7 +292,7 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
 } // Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
 
 
-Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
     
 #ifndef HAVE_NOT_ALITPCCALIBPULSER
