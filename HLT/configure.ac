@@ -157,6 +157,7 @@ if test ! "x$have_aliroot" = "xno" ; then
   CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
   
+  # check for certain AliRoot libraries/files/features
   # libSTEERBase present since Aug 7 2007
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEERBase
@@ -171,7 +172,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   CHECKLIB=CDB
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
-  # check for certain AliRoot libraries/files/features
   # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
   have_alirawdata=no
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
@@ -359,6 +359,11 @@ AC_SUBST([HLTBASE_LDFLAGS])
 
 dnl ------------------------------------------------------------------
 dnl check for the HLT PubSub Framework
+dnl namely for the existence of the HOMER library
+dnl from Sep 2007, the HOMER lib has been incorporated into the alice-hlt
+dnl package. It os though possible to choose an external. library
+dnl In order to make the origni of the HOMER lib clear, the one in AliRoot
+dnl got the name libAliHLTHOMER
 AC_MSG_CHECKING([for HLT PubSub Framework])
 AC_ARG_WITH(pubsub, [installation path of the HLT PubSub framework],
 		    [],
@@ -367,7 +372,7 @@ if test -z $with_pubsub || ! test -d $with_pubsub ; then
   with_pubsub=no
 fi
 AC_MSG_RESULT([$with_pubsub])
-HOMER_VERSION=1
+HOMER_VERSION=2
 HOMER_LIBS=
 
 AH_TEMPLATE([HAVE_HOMERREADER],[the HLT PubSub Homer Reader interface])
@@ -407,6 +412,7 @@ if test "x$with_pubsub" != "xno" ; then
     HOMER_TARGET="${HOMER_TARGET}-debug"
   fi
   AC_MSG_RESULT([${homer_type}])
+  HOMERREADER_HEADER=HOMERReader.h
   HOMER_BINDIR="${with_pubsub}/bin/${HOMER_TARGET}"
   HOMER_LIBDIR="${with_pubsub}/lib/${HOMER_TARGET}"
   HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
@@ -415,7 +421,7 @@ if test "x$with_pubsub" != "xno" ; then
   LIBS="$save_LIBS "
   with_homer=no
   AC_LANG_PUSH(C++)
-  AC_CHECK_HEADER([HOMERReader.h],
+  AC_CHECK_HEADER([$HOMERREADER_HEADER],
     [ AC_CHECK_LIB([HOMER],[_init],
       [with_homer=yes
        HOMER_LIBS="-lHOMER"],
@@ -432,11 +438,24 @@ if test "x$with_pubsub" != "xno" ; then
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <HOMERReader.h>],
                                       [HOMERReader reader("dummy", 0);
  				       reader.GetBlockStatusFlags(0);])],
-                                      [if test $HOMER_VERSION -lt 2 ; then HOMER_VERSION=2; fi],
- 				      [])
+                                      [],
+ 				      [HOMER_VERSION=1])
       AC_MSG_RESULT([$HOMER_VERSION])
-  ]) #AC_CHECK_HEADER([HOMERReader.h])
+  ],
+  [HOMERREADER_HEADER=]) #AC_CHECK_HEADER([$HOMERREADER_HEADER])
   AC_LANG_POP(C++)
+  HOMER_INBUILT_LIB=
+else
+dnl no pubsub version defined, check if the HOMER lib is available in AliRoot
+  topdir=`dirname $0`
+  HOMER_CPPFLAGS="-I`(cd $topdir; pwd)`/BASE/HOMER"
+  HOMERREADER_HEADER=AliHLTHOMERReader.h
+  HOMER_INBUILT_LIB=`pwd`/BASE/HOMER/libAliHLTHOMER.la
+  HOMER_BINDIR=
+  HOMER_LIBDIR=
+  HOMER_LDFLAGS=
+fi
+
   if test "x$with_homer" = "xno" ; then
     HOMER_CPPFLAGS=
     HOMER_LDFLAGS=
@@ -448,7 +467,9 @@ if test "x$with_pubsub" != "xno" ; then
   CPPFLAGS="$save_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS"
   LIBS="$save_LIBS"  
-fi
+
+AC_SUBST([HOMERREADER_HEADER])
+AC_SUBST([HOMER_INBUILT_LIB])
 AC_SUBST([HOMER_CPPFLAGS])
 AC_SUBST([HOMER_LDFLAGS])
 AC_SUBST([HOMER_LIBDIR])

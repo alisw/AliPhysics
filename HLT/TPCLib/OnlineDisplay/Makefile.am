@@ -26,7 +26,8 @@ libAliHLTTPCDisplay_la_SOURCES	= AliHLTTPCDisplayMain.cxx \
 DEFAULT_GEOMETRY		= alice.geom
 libAliHLTTPCDisplay_la_DATA	= $(srcdir)/$(DEFAULT_GEOMETRY)
 libAliHLTTPCDisplay_ladir	= $(pkgdatadir)
-AM_CPPFLAGS			+= -DDEFAULT_GEOMETRY=\"$(libAliHLTTPCDisplay_ladir)/$(DEFAULT_GEOMETRY)\"
+AM_CPPFLAGS			+= -DDEFAULT_GEOMETRY=\"$(libAliHLTTPCDisplay_ladir)/$(DEFAULT_GEOMETRY)\" \
+				   -DHOMERREADER_HEADER=\"@HOMERREADER_HEADER@\"
 
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
@@ -44,6 +45,7 @@ CLASS_HDRS			= AliHLTTPCDisplayMain.h  \
 pkginclude_HEADERS		= $(CLASS_HDRS)
 
 # version info for the library
+libAliHLTTPCDisplay_la_LIBADD	= @HOMER_INBUILT_LIB@
 libAliHLTTPCDisplay_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

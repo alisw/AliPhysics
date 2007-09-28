@@ -25,7 +25,7 @@
 #define TRACKHELIXCOLOR 6
 
 #if defined(HAVE_HOMERREADER) 
-#include "HOMERReader.h"
+#include HOMERREADER_HEADER
 #endif // defined(HAVE_HOMERREADER) 
 
 #include "AliHLTTPCDisplay3D.h"
