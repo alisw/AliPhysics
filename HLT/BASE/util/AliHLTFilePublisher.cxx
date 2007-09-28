@@ -26,6 +26,7 @@ using namespace std;
 #endif
 
 #include "AliHLTFilePublisher.h"
+#include "AliLog.h"
 #include <TObjString.h>
 #include <TMath.h>
 #include <TFile.h>
@@ -41,7 +42,8 @@ AliHLTFilePublisher::AliHLTFilePublisher()
   AliHLTDataSource(),
   fpCurrent(NULL),
   fEvents(),
-  fMaxSize(0)
+  fMaxSize(0),
+  fOpenFilesAtStart(false)
 {
   // see header file for class documentation
   // or
@@ -97,6 +99,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
   int bMissingParam=0;
   int bHaveDatatype=0;
   int bHaveSpecification=0;
+  fOpenFilesAtStart = false;
   AliHLTComponentDataType currDataType=kAliHLTVoidDataType;
   AliHLTUInt32_t          currSpecification=kAliHLTVoidDataSpec;
   EventFiles*             pCurrEvent=NULL;
@@ -174,6 +177,8 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       // -nextevent
     } else if (argument.CompareTo("-nextevent")==0) {
       InsertEvent(pCurrEvent);
+    } else if (argument.CompareTo("-open_files_at_start")==0) {
+      fOpenFilesAtStart = true;
     } else {
       if ((iResult=ScanArgument(argc-i, &argv[i]))==-EINVAL) {
 	HLTError("unknown argument %s", argument.Data());
@@ -197,7 +202,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
     HLTError("the publisher needs at least one file argument");
     iResult=-EINVAL;
   }
-  if (iResult>=0) iResult=OpenFiles();
+  if (iResult>=0) iResult=OpenFiles(fOpenFilesAtStart);
   if (iResult<0) {
     fEvents.Clear();
   }
@@ -244,10 +249,10 @@ int AliHLTFilePublisher::ScanArgument(int argc, const char** argv)
   if (argc==0 && argv==NULL) {
     // this is just to get rid of the warning "unused parameter"
   }
-  return -EPROTO;
+  return -EINVAL;
 }
 
-int AliHLTFilePublisher::OpenFiles()
+int AliHLTFilePublisher::OpenFiles(bool keepOpen)
 {
   // see header file for class documentation
   int iResult=0;
@@ -263,6 +268,7 @@ int AliHLTFilePublisher::OpenFiles()
 	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
 	if (pFileDesc) {
 	  int size=pFileDesc->OpenFile();
+	  if (not keepOpen) pFileDesc->CloseFile();
 	  if (size<0) {
 	    iResult=size;
 	    HLTError("can not open file %s", pFileDesc->GetName());
@@ -310,6 +316,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
       int iTotalSize=0;
       while (flnk && iResult>=0) {
 	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	if (not fOpenFilesAtStart) pFileDesc->OpenFile();
 	TFile* pFile=NULL;
 	if (pFileDesc && (pFile=*pFileDesc)!=NULL) {
 	  int iCopy=pFile->GetSize();
@@ -334,6 +341,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 	    fMaxSize=iCopy;
 	    iResult=-ENOSPC;
 	  }
+	  if (not fOpenFilesAtStart) pFileDesc->CloseFile();
 	} else {
 	  HLTError("no file available");
 	  iResult=-EFAULT;
@@ -372,9 +380,26 @@ AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataTyp
   fSpecification(spec)
 {
 }
+
 AliHLTFilePublisher::FileDesc::~FileDesc()
 {
-  if (fpInstance) delete fpInstance;
+  CloseFile();
+}
+
+void AliHLTFilePublisher::FileDesc::CloseFile()
+{
+  if (fpInstance)
+  {
+    // Unfortunately had to use AliLog mechanisms rather that AliHLTLogging because
+    // AliHLTFilePublisher::FileDesc does not derive from AliHLTLogging. It would
+    // become a rather heavy class if it did.
+#ifdef __DEBUG
+    AliDebugGeneral("AliHLTFilePublisher::FileDesc",
+      2, Form("File %s has been closed.", fName.Data())
+    );
+#endif
+    delete fpInstance;
+  }
   fpInstance=NULL;
 }
 
@@ -386,6 +411,11 @@ int AliHLTFilePublisher::FileDesc::OpenFile()
   if (fpInstance) {
     if (fpInstance->IsZombie()==0) {
       iResult=fpInstance->GetSize();
+#ifdef __DEBUG
+      AliDebugGeneral("AliHLTFilePublisher::FileDesc",
+        2, Form("File %s has been opened.", fName.Data())
+      );
+#endif
     } else {
       iResult=-ENOENT;
     }

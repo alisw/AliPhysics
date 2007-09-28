@@ -40,6 +40,10 @@
  *      indicate files published by the next event
  *
  * Optional arguments:<br>
+ * \li -open_files_at_start
+ *      Opens all files during component initialisation rather than as needed
+ *      during event processing. Note: this feature may result in the system
+ *      running out of file handles if a large number of files was specified.
  *
  * The component needs at least one argument \em -datafile or \em -datafilelist.
  * Both can occur multiple times. The \em -datatype and \em -dataspec
@@ -64,9 +68,11 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /**
    * Open all files.
    * Opens all files for all events from the event list @ref fEvents and adds TFile
-   * opjects to the internal list.
+   * objects to the internal list. It also calculates the maximum event size required.
+   * @param keepOpen  If this flag is true then the files are kept open, otherwise
+   *                  this method will close the files afterwards.
    */
-  int OpenFiles();
+  int OpenFiles(bool keepOpen);
 
  protected:
   /**
@@ -142,6 +148,11 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
      * @return size of the file, neg. error code if failed
      */
     int OpenFile();
+
+    /**
+     * Close the file handle.
+     */
+    void CloseFile();
 
     /**
      * Get name of the file.
@@ -229,6 +240,9 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 
   /** the maximum buffer size i.e. size of the biggest file */
   Int_t                   fMaxSize;                                //! transient
+  
+  /** Flag specifying if all the files should be opened during initialisation.  */
+  bool fOpenFilesAtStart;                                          //! transient
 
   ClassDef(AliHLTFilePublisher, 1)
 };
