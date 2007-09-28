@@ -63,28 +63,6 @@ AliHLTDataBuffer::AliHLTDataBuffer()
   fgNofInstances++;
 }
 
-AliHLTDataBuffer::AliHLTDataBuffer(const AliHLTDataBuffer&)
-  :
-  TObject(),
-  AliHLTLogging(),
-  fSegments(),
-  fConsumers(),
-  fActiveConsumers(),
-  fReleasedConsumers(),
-  fpBuffer(NULL),
-  fFlags(0)
-{
-  // see header file for function documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTDataBuffer& AliHLTDataBuffer::operator=(const AliHLTDataBuffer&)
-{ 
-  // see header file for function documentation
-  HLTFatal("assignment operator untested");
-  return *this;
-}
-
 int AliHLTDataBuffer::fgNofInstances=0;
 vector<AliHLTDataBuffer::AliHLTRawBuffer*> AliHLTDataBuffer::fgFreeBuffers;
 vector<AliHLTDataBuffer::AliHLTRawBuffer*> AliHLTDataBuffer::fgActiveBuffers;
@@ -273,7 +251,7 @@ int AliHLTDataBuffer::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLT
       }
       if (pDesc->GetNofActiveSegments()==0) {
 	if ((iResult=ChangeConsumerState(pDesc, fActiveConsumers, fReleasedConsumers))>=0) {
-	  if (GetNofActiveConsumers()==0) {
+	  if (GetNofActiveConsumers()==0 && GetNofPendingConsumers()==0) {
 	    // this is the last consumer, reset the consumer list and release the raw buffer
 	    ResetDataBuffer();
 	  }
@@ -377,6 +355,13 @@ int AliHLTDataBuffer::GetNofConsumers()
 {
   // see header file for function documentation
   int iResult=fConsumers.size() + GetNofActiveConsumers() + fReleasedConsumers.size();
+  return iResult;
+}
+
+int AliHLTDataBuffer::GetNofPendingConsumers()
+{
+  // see header file for function documentation
+  int iResult=fConsumers.size();
   return iResult;
 }
 
@@ -506,7 +491,16 @@ int AliHLTDataBuffer::ResetDataBuffer()
   fpBuffer=NULL;
 
   // cleanup consumer states
-  vector<AliHLTConsumerDescriptor*>::iterator desc=fReleasedConsumers.begin();
+  vector<AliHLTConsumerDescriptor*>::iterator desc;
+//   if (GetNofPendingConsumers()>0) {
+//     desc=fConsumers.begin();
+//     while (desc!=fConsumers.end()) {
+//       AliHLTComponent* pComp=(*desc)->GetComponent();
+//       HLTError("internal error: consumer %p (%s %p) did not get data from data buffer %p", *desc, pComp?pComp->GetComponentID():"", pComp, this);
+//       desc++;
+//     }
+//   }
+  desc=fReleasedConsumers.begin();
   while (desc!=fReleasedConsumers.end()) {
     AliHLTConsumerDescriptor* pDesc=*desc;
     fReleasedConsumers.erase(desc);

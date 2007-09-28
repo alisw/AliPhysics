@@ -53,10 +53,6 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   /* standard constructor
    */
   AliHLTDataBuffer();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTDataBuffer(const AliHLTDataBuffer&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTDataBuffer& operator=(const AliHLTDataBuffer&);
   /** destructor */
   virtual ~AliHLTDataBuffer();
 
@@ -165,13 +161,21 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   int GetNofSegments();
 
   /**
-   * Get the number of consumers
+   * Get the total number of consumers.
+   * This gives the number of consumers regardless of their state.
    * @return number of consumers
    */
   int GetNofConsumers();
 
   /**
-   * Get the number of active consumers
+   * Get the number of consumers which still need to be processed during
+   * the current event.
+   * @return number of consumers
+   */
+  int GetNofPendingConsumers();
+
+  /**
+   * Get the number of consumers currently under processing.
    * @return number of active consumers
    */
   int GetNofActiveConsumers();
@@ -264,6 +268,11 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   };
 
  private:
+  /** copy constructor prohibited */
+  AliHLTDataBuffer(const AliHLTDataBuffer&);
+  /** assignment operator prohibited */
+  AliHLTDataBuffer& operator=(const AliHLTDataBuffer&);
+
   /* lets see if this is needed
      AliHLTDataSegment* FindDataSegment(AliHLTComponentDataType datatype);
   */

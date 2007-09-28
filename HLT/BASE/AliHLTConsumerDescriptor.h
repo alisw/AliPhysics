@@ -35,10 +35,6 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
    * @param pConsumer pointer to the consumer component
    */
   AliHLTConsumerDescriptor(AliHLTComponent* pConsumer);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTConsumerDescriptor& operator=(const AliHLTConsumerDescriptor&);
   /** destructor */
   ~AliHLTConsumerDescriptor();
 
@@ -85,6 +81,11 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
   int ReleaseActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
 
  private:
+  /** copy constructor prohibited */
+  AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor&);
+  /** assignment operator prohibited */
+  AliHLTConsumerDescriptor& operator=(const AliHLTConsumerDescriptor&);
+
   /** consumer object */
   AliHLTComponent* fpConsumer;                                     //! transient
 

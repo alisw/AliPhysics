@@ -134,6 +134,22 @@ class AliHLTMemoryFile;
  * framework will allocate a buffer of appropriate size and call the processing
  * again.
  *
+ * @subsection alihltcomponent-error-codes Data processing
+ * For return codes, the following scheme applies:
+ * - The data processing methods have to indicate error conditions by a negative
+ * error/return code. Preferably the system error codes are used like
+ * e.g. -EINVAL. This requires to include the header
+ * <pre>
+ * #include <cerrno>
+ * </pre>
+ * - If no suitable input block could be found (e.g. no clusters for the TPC cluster
+ * finder) set size to 0, block list is empty, return 0
+ * - If no ususable or significant signal could be found in the input blocks
+ * return an empty output block, set size accordingly, and return 0. An empty output
+ * block here could be either a real empty one of size 0 (in which case size also
+ * would have to be set to zero) or a block filled with just the minimum necessary
+ * accounting/meta-structures. E.g. in the TPC
+ *
  * @subsection alihltcomponent-high-level-interface High-level interface
  * The high-level component interface provides functionality to exchange ROOT
  * structures between components. In contrast to the 
@@ -906,9 +922,9 @@ class AliHLTComponent : public AliHLTLogging {
 		 const char* structname="", const char* eventname="");
 
  private:
-  /** not a valid copy constructor, defined according to effective C++ style */
+  /** copy constructor prohibited */
   AliHLTComponent(const AliHLTComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
+  /** assignment operator prohibited */
   AliHLTComponent& operator=(const AliHLTComponent&);
 
   /**

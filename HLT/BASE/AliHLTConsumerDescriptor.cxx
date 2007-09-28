@@ -53,29 +53,6 @@ AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(AliHLTComponent* pConsumer)
   fSegments.clear();
 }
 
-AliHLTConsumerDescriptor::AliHLTConsumerDescriptor(const AliHLTConsumerDescriptor& desc)
-  :
-  TObject(),
-  AliHLTLogging(),
-  fpConsumer(desc.fpConsumer),
-  fSegments()
-{
-  // see header file for function documentation
-
-  // we can simply transfer the pointer to th new object since there are no
-  // release actions in the destructor
-}
-
-AliHLTConsumerDescriptor& AliHLTConsumerDescriptor::operator=(const AliHLTConsumerDescriptor& desc)
-{ 
-  // see header file for function documentation
-
-  // we can simply transfer the pointer to th new object since there are no
-  // release actions in the destructor
-  fpConsumer=desc.fpConsumer;
-  return *this;
-}
-
 AliHLTConsumerDescriptor::~AliHLTConsumerDescriptor()
 {
   // see header file for function documentation

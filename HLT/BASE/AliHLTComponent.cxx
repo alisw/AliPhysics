@@ -82,37 +82,6 @@ AliHLTComponent::AliHLTComponent()
   //SetLocalLoggingLevel(kHLTLogDefault);
 }
 
-AliHLTComponent::AliHLTComponent(const AliHLTComponent&)
-  :
-  AliHLTLogging(),
-  fEnvironment(),
-  fCurrentEvent(0),
-  fEventCount(-1),
-  fFailedEvents(0),
-  fCurrentEventData(),
-  fpInputBlocks(NULL),
-  fCurrentInputBlock(-1),
-  fSearchDataType(kAliHLTVoidDataType),
-  fClassName(),
-  fpInputObjects(NULL),
-  fpOutputBuffer(NULL),
-  fOutputBufferSize(0),
-  fOutputBufferFilled(0),
-  fOutputBlocks(),
-  fpStopwatches(NULL),
-  fMemFiles(),
-  fpRunDesc(NULL),
-  fpDDLList(NULL)
-{
-  // see header file for class documentation
-}
-
-AliHLTComponent& AliHLTComponent::operator=(const AliHLTComponent&)
-{ 
-  // see header file for class documentation
-  return *this;
-}
-
 AliHLTComponent::~AliHLTComponent()
 {
   // see header file for function documentation
