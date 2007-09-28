@@ -151,6 +151,14 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
 {
   // see header file for function documentation
   int iResult=0;
+
+  // Matthias 26.09.2007 relax the restriction to matching data blocks
+  // all blocks are passed to the consumer, which is the policy also in
+  // PubSub
+  tgtList.assign(fSegments.begin(), fSegments.end());
+  iResult=tgtList.size();
+  return iResult;
+  
   if (pConsumer) {
     vector<AliHLTComponentDataType> dtlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(dtlist);
@@ -183,11 +191,10 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
       AliHLTConsumerDescriptor* pDesc=FindConsumer(pConsumer, fConsumers);
       if (pDesc) {
 	vector<AliHLTDataBuffer::AliHLTDataSegment> tgtList;
-	/* TODO: think about a good policy for this check
-	 * is it enough that at least one segment is available, or have all to be available?
-	 * or is it possible to have optional segments?
-	 */
-	if ((iResult=FindMatchingDataSegments(pConsumer, tgtList))>0) {
+	// Matthias 26.07.2007 AliHLTSystem should behave the same way as PubSub
+	// so it does not matter if there are matching data types or not, unless
+	// we implement such a check in PubSub
+	if ((iResult=FindMatchingDataSegments(pConsumer, tgtList))>=0) {
 	  int i =0;
 	  vector<AliHLTDataBuffer::AliHLTDataSegment>::iterator segment=tgtList.begin();
 	  while (segment!=tgtList.end() && i<iArraySize) {
@@ -210,6 +217,11 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	    i++;
 	    segment++;
 	  }
+	  // check whether there was enough space for the segments
+	  if (i!=tgtList.size()) {
+	    HLTError("too little space in block descriptor array: required %d, available %d", tgtList.size(), iArraySize);
+	    iResult=-ENOSPC;
+	  } else {
 	  // move this consumer to the active list
 	  if (ChangeConsumerState(pDesc, fConsumers, fActiveConsumers)>=0) {
 	    HLTDebug("component %p (%s) subscribed to data buffer %p", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), this);
@@ -218,6 +230,7 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	    memset(arrayBlockDesc, 0, iArraySize*sizeof(AliHLTComponentBlockData));
 	    HLTError("can not activate consumer %p for data buffer %p", pConsumer, this);
 	    iResult=-EACCES;
+	  }
 	  }
 	} else {
 	  HLTError("unresolved data segment(s) for component %p (%s)", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID());
@@ -228,8 +241,11 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	iResult=-ENOENT;
       }
     } else {
-      HLTError("data buffer %p is empty", this);
-      iResult=-ENODATA;
+      // Matthias 26.07.2007 until now, data had to be present for successful subscription
+      // in order to be consistent with the PubSub framework, this restiction has been
+      // removed
+      //HLTError("data buffer %p is empty", this);
+      //iResult=-ENODATA;
     }
   } else {
     HLTError("invalid parameter");

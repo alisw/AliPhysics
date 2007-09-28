@@ -828,7 +828,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	    HLTDebug("source task %s (%p) does not provide any matching data type for task %s (%p)", pSrcTask->GetName(), pSrcTask, GetName(), this);
 	  }
 	}
-	if ((iResult=pSrcTask->Subscribe(this, &fBlockDataArray[iSourceDataBlock],fBlockDataArray.size()-iSourceDataBlock))>0) {
+	if ((iResult=pSrcTask->Subscribe(this, &fBlockDataArray[iSourceDataBlock],fBlockDataArray.size()-iSourceDataBlock))>=0) {
 	  for (int i=0; i<iResult; i++) {
 	    iInputDataVolume+=fBlockDataArray[i+iSourceDataBlock].fSize;
 	    // put the source task as many times into the list as it provides data blocks
@@ -884,7 +884,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
 	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);
-	if (iResult>=0 && pTgtBuffer) {
+	if (iResult>=0 && pTgtBuffer && outputBlocks) {
 	  iResult=fpDataBuffer->SetSegments(pTgtBuffer, outputBlocks, outputBlockCnt);
 	  delete [] outputBlocks; outputBlocks=NULL; outputBlockCnt=0;
 	} else {
