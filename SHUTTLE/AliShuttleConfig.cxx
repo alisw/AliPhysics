@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.22  2007/09/27 16:53:13  acolla
+Detectors can have more than one AMANDA server. SHUTTLE queries the servers sequentially,
+merges the dcs aliases/DPs in one TMap and sends it to the preprocessor.
+
 Revision 1.21  2007/04/27 07:06:48  jgrosseo
 GetFileSources returns empty list in case of no files, but successful query
 No mails sent in testmode
@@ -157,6 +161,7 @@ some docs added
 AliShuttleConfig::AliShuttleDCSConfigHolder::AliShuttleDCSConfigHolder(const TLDAPEntry* entry):
 fDCSHost(""),
 fDCSPort(0),
+fMultiSplit(100),
 fDCSAliases(0),
 fDCSDataPoints(0),
 fDCSAliasesComp(0),
@@ -194,6 +199,18 @@ fIsValid(kFALSE)
 	TString portStr = anAttribute->GetValue();
 	fDCSPort = portStr.Atoi();
 
+	anAttribute = entry->GetAttribute("multiSplit"); // MAY
+        if (anAttribute)
+	{
+		TString multiSplitStr = anAttribute->GetValue();
+		fMultiSplit = multiSplitStr.Atoi();
+		if(fMultiSplit == 0) {
+			AliError("MultiSplit must be a positive integer!");
+			return;
+		}
+		
+	}
+	
 	anAttribute = entry->GetAttribute("dcsAlias"); // MAY
         if (anAttribute)
 	{
@@ -382,6 +399,21 @@ Int_t AliShuttleConfig::AliShuttleDetConfigHolder::GetDCSPort(Int_t iServ) const
 							(fDCSConfig->At(iServ));
 	
 	return aHolder->GetDCSPort();
+}
+
+//______________________________________________________________________________________________
+Int_t AliShuttleConfig::AliShuttleDetConfigHolder::GetMultiSplit(Int_t iServ) const
+{
+	//
+	// returns DCS "multi split" value
+	//
+	
+	if (iServ < 0 || iServ >= GetNServers()) return 0;
+	
+	AliShuttleDCSConfigHolder *aHolder = dynamic_cast<AliShuttleDCSConfigHolder *> 
+							(fDCSConfig->At(iServ));
+	
+	return aHolder->GetMultiSplit();
 }
 
 //______________________________________________________________________________________________
@@ -657,6 +689,24 @@ Int_t AliShuttleConfig::GetDCSPort(const char* detector, Int_t iServ) const
         }
 
 	return aHolder->GetDCSPort(iServ);
+}
+
+//______________________________________________________________________________________________
+Int_t AliShuttleConfig::GetMultiSplit(const char* detector, Int_t iServ) const
+{
+	//
+        // returns i-th DCS "multi split" value
+        //
+
+
+	AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) fDetectorMap.GetValue(detector);
+        if (!aHolder) {
+                AliError(Form("There isn't configuration for detector: %s",
+                        detector));
+                return 0;
+        }
+
+	return aHolder->GetMultiSplit(iServ);
 }
 
 //______________________________________________________________________________________________
@@ -1191,8 +1241,8 @@ void AliShuttleConfig::Print(Option_t* option) const
 		Int_t count=0;
 		while ((dcsHolder = dynamic_cast<AliShuttleDCSConfigHolder*> (dcsIter.Next())))
 		{
-			result += Form("\tAmanda server [%d]: %s:%d \n", count,
-				dcsHolder->GetDCSHost(), dcsHolder->GetDCSPort());
+			result += Form("\tAmanda server [%d]: %s:%d - MultiSplit = %d\n", count,
+				dcsHolder->GetDCSHost(), dcsHolder->GetDCSPort(), dcsHolder->GetMultiSplit());
 
 			const TObjArray* aliases = 0;
 			if (optStr.Contains("uncompact",TString::kIgnoreCase))

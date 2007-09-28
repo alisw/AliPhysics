@@ -64,6 +64,8 @@ public:
 	const char* GetDCSHost(const char* detector, Int_t iServ) const;
 	Int_t GetDCSPort(const char* detector, Int_t iServ) const;
 	
+	Int_t GetMultiSplit(const char* detector, Int_t iServ) const;
+	
 	const TObjArray* GetDCSAliases(const char* detector, Int_t iServ) const;
 	const TObjArray* GetDCSDataPoints(const char* detector, Int_t iServ) const;
 	const TObjArray* GetCompactDCSAliases(const char* detector, Int_t iServ) const;
@@ -88,6 +90,8 @@ private:
 		
 		const char* GetDCSHost() const {return fDCSHost;}
 		Int_t GetDCSPort() const {return fDCSPort;}
+		Int_t GetMultiSplit() const {return fMultiSplit;}
+		
 		const TObjArray* GetDCSAliases() const {return fDCSAliases;}
 		const TObjArray* GetDCSDataPoints() const {return fDCSDataPoints;}
 		const TObjArray* GetCompactDCSAliases() const {return fDCSAliasesComp;}
@@ -102,6 +106,7 @@ private:
 
 		TString fDCSHost; 	// Host name of the DCS server
 		Int_t 	fDCSPort; 	// port of the DCS server
+		Int_t   fMultiSplit;     // N. of DPs to be queried in each query chunk
 		TObjArray* fDCSAliases; // List of DCS aliases to be retrieved
 		TObjArray* fDCSDataPoints;     // List of DCS data points to be retrieved
 		TObjArray* fDCSAliasesComp;    // Compact list of DCS aliases to be printed
@@ -124,6 +129,8 @@ private:
 		
 		const char* GetDCSHost(Int_t iServ) const;
 		Int_t GetDCSPort(Int_t iServ) const;
+		Int_t GetMultiSplit(Int_t iServ) const;
+		
 		const TObjArray* GetDCSAliases(Int_t iServ) const;
 		const TObjArray* GetDCSDataPoints(Int_t iServ) const;
 		const TObjArray* GetCompactDCSAliases(Int_t iServ) const;

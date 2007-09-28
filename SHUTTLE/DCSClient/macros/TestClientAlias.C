@@ -1,8 +1,8 @@
 TMap* GetValues(const char* host, Int_t port, const char* request,
 	UInt_t startTime, UInt_t endTime) 
 {
-	AliDCSClient client(host, port, 1000, 20, 1);
-	// The last parameter switches from single alias to multi aliases!
+	AliDCSClient client(host, port, 1000, 20, 100);
+	// The 5th parameter switches from single alias to multi aliases!
 
 	//Int_t result;
 
@@ -99,10 +99,18 @@ TMap* TestClientAlias(const char* host, Int_t port, const char* request,
 
 	TTimeStamp currentTime;
 
+	
 	TMap* values = GetValues(host, port, request,
 		currentTime.GetSec() - startShift, 
 		currentTime.GetSec() - endShift);
 
+		
+// SHUTTLE query interval 
+/*	
+	TMap* values = GetValues(host, port, request,
+		1181300060, 
+		1181307260);
+*/
 	if(values) values->Print();
 
 	cout << endl;

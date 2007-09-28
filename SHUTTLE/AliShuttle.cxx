@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.57  2007/09/27 16:53:13  acolla
+Detectors can have more than one AMANDA server. SHUTTLE queries the servers sequentially,
+merges the dcs aliases/DPs in one TMap and sends it to the preprocessor.
+
 Revision 1.56  2007/09/14 16:46:14  jgrosseo
 1) Connect and Close are called before and after each query, so one can
 keep the same AliDCSClient object.
@@ -1581,6 +1585,8 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 		
 			TString host(fConfig->GetDCSHost(fCurrentDetector, iServ));
 			Int_t port = fConfig->GetDCSPort(fCurrentDetector, iServ);
+			Int_t multiSplit = fConfig->GetMultiSplit(fCurrentDetector, iServ);
+
 			
 			TMap* aliasMap = 0;
 			TMap* dpMap = 0;
@@ -1588,7 +1594,8 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			if (fConfig->GetDCSAliases(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
 				aliasMap = GetValueSet(host, port, 
-						fConfig->GetDCSAliases(fCurrentDetector, iServ), kAlias);
+						fConfig->GetDCSAliases(fCurrentDetector, iServ), 
+						kAlias, multiSplit);
 				if (!aliasMap)
 				{
 					Log(fCurrentDetector, 
@@ -1604,7 +1611,8 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			if (fConfig->GetDCSDataPoints(fCurrentDetector, iServ)->GetEntries() > 0)
 			{
 				dpMap = GetValueSet(host, port, 
-						fConfig->GetDCSDataPoints(fCurrentDetector, iServ), kDP);
+						fConfig->GetDCSDataPoints(fCurrentDetector, iServ), 
+						kDP, multiSplit);
 				if (!dpMap)
 				{
 					Log(fCurrentDetector, 
@@ -1790,63 +1798,16 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::GetValueSet(const char* host, Int_t port, const char* entry,
-				TObjArray* valueSet, DCSType type)
-{
-	// Retrieve all "entry" data points from the DCS server
-	// host, port: TSocket connection parameters
-	// entry: name of the alias or data point
-	// valueSet: array of retrieved AliDCSValue's
-	// type: kAlias or kDP
-
-	// TODO The last parameter switches from single query to multy query!
-	AliDCSClient client(host, port, fTimeout, fRetries, 1);
-	if (!client.IsConnected())
-	{
-		return kFALSE;
-	}
-
-	Int_t result=0;
-
-	if (type == kAlias)
-	{
-		result = client.GetAliasValues(entry,
-			GetCurrentStartTime(), GetCurrentEndTime(), valueSet);
-	} else
-	if (type == kDP)
-	{
-		result = client.GetDPValues(entry,
-			GetCurrentStartTime(), GetCurrentEndTime(), valueSet);
-	}
-
-	if (result < 0)
-	{
-		Log(fCurrentDetector.Data(), Form("GetValueSet - Can't get '%s'! Reason: %s",
-			entry, AliDCSClient::GetErrorString(result)));
-
-		if (result == AliDCSClient::fgkServerError)
-		{
-			Log(fCurrentDetector.Data(), Form("GetValueSet - Server error: %s",
-				client.GetServerError().Data()));
-		}
-
-		return kFALSE;
-	}
-
-	return kTRUE;
-}
-
-//______________________________________________________________________________________________
 TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection* entries,
-			      DCSType type)
+			      DCSType type, Int_t multiSplit)
 {
 	// Retrieve all "entry" data points from the DCS server
 	// host, port: TSocket connection parameters
 	// entries: list of name of the alias or data point
 	// type: kAlias or kDP
 	// returns TMap of values, 0 when failure
-
-	AliDCSClient client(host, port, fTimeout, fRetries);
+	
+	AliDCSClient client(host, port, fTimeout, fRetries, multiSplit);
 
 	TMap* result = 0;
 	if (type == kAlias)

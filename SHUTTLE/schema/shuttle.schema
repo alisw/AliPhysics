@@ -15,17 +15,18 @@ objectclass ( DETECTOR_CONFIG
 
 objectidentifier DCS_CONFIG SHUTTLE_BASE:2
 
-attributetype ( DCS_CONFIG:1 NAME 'dcsHost'     DESC 'DCS host'            EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
-attributetype ( DCS_CONFIG:2 NAME 'dcsPort'     DESC 'DCS port'     			            SUP ipServicePort SINGLE-VALUE )
-attributetype ( DCS_CONFIG:3 NAME 'dcsAlias'    DESC 'alias name(s)'       EQUALITY caseIgnoreMatch    SUP name )
-attributetype ( DCS_CONFIG:4 NAME 'dcsDP' 	DESC 'Data Point name(s)'  EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DCS_CONFIG:1 NAME 'dcsHost'     DESC 'DCS host'                   EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( DCS_CONFIG:2 NAME 'dcsPort'     DESC 'DCS port'     			                      SUP ipServicePort SINGLE-VALUE )
+attributetype ( DCS_CONFIG:3 NAME 'dcsAlias'    DESC 'alias name(s)'              EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DCS_CONFIG:4 NAME 'dcsDP' 	DESC 'Data Point name(s)'         EQUALITY caseIgnoreMatch    SUP name )
+attributetype ( DCS_CONFIG:5 NAME 'multiSplit' 	DESC 'N. of DPs in multiRequest'  EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
 
 objectclass ( DCS_CONFIG
         NAME 'dcsConfig'
         DESC 'ALICE: Shuttle configuration of the DCS Amanda server(s).'
         SUP top
 	MUST (dcsHost $ dcsPort)
-        MAY  (dcsAlias $ dcsDP) )
+        MAY  (dcsAlias $ dcsDP $ multiSplit) )
 
 objectidentifier FXS_CONFIG SHUTTLE_BASE:3
 

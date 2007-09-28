@@ -91,10 +91,8 @@ private:
 	Bool_t QueryShuttleLogbook(const char* whereClause, TObjArray& entries);
 	Bool_t RetrieveConditionsData(const TObjArray& shuttleLogbookEntries);
 
-	Bool_t GetValueSet(const char* host, Int_t port, const char* alias,
-				TObjArray* result, DCSType type);
 	TMap* GetValueSet(const char* host, Int_t port, const TSeqCollection* entries,
-			      DCSType type);
+			      DCSType type, Int_t valueSet);
 
 	Bool_t RetrieveFile(UInt_t system, const char* daqFileName, const char* localFileName);
 
