@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 #include <Riostream.h>
 #include <TRandom.h>
@@ -64,13 +65,12 @@ fMapTW1(0)
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetDataType();
-  /*  for(Int_t i=0;i<fgkChips*fgkChannels;i++){
-    for(Int_t j=0;j<fgkMapTimeNBin;j++){
-      fMapA[i][j]=0;
-      fMapT[i][j]=0;
-    }
+  fDriftVelParW0[0]= AliITSresponseSDD::DefaultDriftSpeed();
+  fDriftVelParW1[0]= AliITSresponseSDD::DefaultDriftSpeed();
+  for(Int_t i=1;i<4;i++){
+    fDriftVelParW0[i]=0.;
+    fDriftVelParW1[i]=0.;
   }
-  */
  }
 //______________________________________________________________________
 AliITSCalibrationSDD::AliITSCalibrationSDD(const char *dataType):
@@ -102,13 +102,12 @@ fMapTW1(0){
   SetThresholds(fgkMinValDefault,0.);
   SetTemperature(fgkTemperatureDefault);
   SetDataType(dataType);
-  /*for(Int_t i=0;i<fgkChips*fgkChannels;i++){
-    for(Int_t j=0;j<fgkMapTimeNBin;j++){
-      fMapA[i][j]=0;
-      fMapT[i][j]=0;
-    }
+  fDriftVelParW0[0]= AliITSresponseSDD::DefaultDriftSpeed();
+  fDriftVelParW1[0]= AliITSresponseSDD::DefaultDriftSpeed();
+  for(Int_t i=1;i<4;i++){
+    fDriftVelParW0[i]=0.;
+    fDriftVelParW1[i]=0.;
   }
-  */
  }
 //_____________________________________________________________________
 AliITSCalibrationSDD::~AliITSCalibrationSDD(){
@@ -148,6 +147,18 @@ void AliITSCalibrationSDD::SetBadChannel(Int_t i,Int_t anode){
   fBadChannels[i]=anode;
   fGain[wing][chip][channel]=0;
 }
+//_____________________________________________________________________
+void AliITSCalibrationSDD::SetDriftSpeedParam(Int_t iWing, Float_t* p){
+  // Sets coefficients of pol3 fit to drift speed vs. anode
+  if(iWing==0){
+    for(Int_t i=0;i<4;i++) fDriftVelParW0[i]=p[i];
+  }else{
+    for(Int_t i=0;i<4;i++) fDriftVelParW1[i]=p[i];
+  }
+}
+
+
+
 //_____________________________________________________________________
 Bool_t AliITSCalibrationSDD::IsBadChannel(Int_t anode){
   //returns kTRUE if the anode i (0-512) has fGain=0

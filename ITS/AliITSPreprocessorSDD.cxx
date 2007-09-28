@@ -43,11 +43,27 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
   }
 
   Int_t ind = 0;
+  Char_t command[100];
   while (sourceList->At(ind)!=NULL) {
     TObjString* tarId = (TObjString*) sourceList->At(ind);
     TString tarName = GetFile(kDAQ, "SDD_Calib", tarId->GetString().Data());
 //    gSystem->cd(tempDir);
-    Char_t command[100];
+    sprintf(command,"tar -xf %s",tarName.Data());
+    gSystem->Exec(command);
+    ind++;
+  }
+   
+  sourceList = GetFileSources(kDAQ, "SDD_Injec");
+  if (!sourceList){ 
+    Log("Error: no sources found for SDD_Injec");
+    return 2;
+  }
+
+  ind = 0;
+  while (sourceList->At(ind)!=NULL) {
+   TObjString* tarId = (TObjString*) sourceList->At(ind);
+     TString tarName = GetFile(kDAQ, "SDD_Injec", tarId->GetString().Data());
+//    gSystem->cd(tempDir);
     sprintf(command,"tar -xf %s",tarName.Data());
     gSystem->Exec(command);
     ind++;
@@ -90,6 +106,23 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
 	cal->SetBadChannel(ibad,badch[ibad]);
       }
       fclose(basFil);
+
+      Char_t injFileName[100];
+      Int_t evNumb; 
+      UInt_t timeStamp;
+      Float_t param[4];
+      sprintf(injFileName,"./SDDinj_mod%03d_sid%d.data",imod,isid);
+      FILE* injFil = fopen(injFileName,"read");
+      if (injFil == 0) {
+	Log(Form("File %s not found.",basFileName));
+	return 2;
+      }      
+      while (!feof(injFil)){
+	fscanf(injFil,"%d %d %",&evNumb,&timeStamp);
+	if(feof(injFil)) break;
+	for(Int_t ic=0;ic<4;ic++) fscanf(injFil,"%f",&param[ic]);
+	cal->SetDriftSpeedParam(isid,param);
+      }
     }
     respSDD.Add(cal);
   }

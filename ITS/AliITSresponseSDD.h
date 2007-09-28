@@ -1,12 +1,14 @@
 #ifndef ALIITSRESPONSESDD_H
 #define ALIITSRESPONSESDD_H
  
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
 
 #include <AliITSresponse.h>
 #include <TArrayF.h>
+
+/* $Id$ */
 
 /////////////////////////////////////////////////////////////
 //  Base settings for the ITS response classes.            //  
@@ -38,9 +40,10 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual Float_t DynamicRange() const {// Get Dynamic Range
 	return fDynamicRange;}
     virtual void    SetDriftSpeed(Double_t p1) {// Drift velocity
-	fDriftSpeed=p1;}
+	fDriftSpeed=p1;}    
     virtual Float_t DriftSpeed() const {// drift speed
 	return fDriftSpeed;}
+    static Float_t DefaultDriftSpeed() {return fgkDriftSpeedDefault;}
     virtual void SetParamOptions(const char *opt1,const char *opt2) {
 	// Parameters: "same" or read from "file" 
 	fParam1=opt1; fParam2=opt2;}
@@ -115,7 +118,7 @@ class AliITSresponseSDD : public AliITSresponse {
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,7) // Base response class 
+    ClassDef(AliITSresponseSDD,8) // Base response class 
     
     };
 #endif

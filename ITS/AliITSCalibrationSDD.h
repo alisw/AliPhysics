@@ -1,9 +1,10 @@
 #ifndef ALIITSCALIBRATIONSDD_H
 #define ALIITSCALIBRATIONSDD_H
  
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
  
+/* $Id$ */
 
 #include "AliITSCalibration.h"
 #include "AliITSresponseSDD.h"
@@ -112,7 +113,16 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetDynamicRange(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDynamicRange(p1);}
     virtual Float_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
     virtual void SetDriftSpeed(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDriftSpeed(p1);}
+    virtual void SetDriftSpeedParam(Int_t iWing, Float_t* p);
     virtual Float_t GetDriftSpeed() const {return ((AliITSresponseSDD*)fResponse)->DriftSpeed();}
+    virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const {
+      if(nAnode<256){
+	return fDriftVelParW0[0]+fDriftVelParW0[1]*nAnode+fDriftVelParW0[2]*nAnode*nAnode+fDriftVelParW0[3]*nAnode*nAnode*nAnode;
+      }else{
+	nAnode-=256;
+	return fDriftVelParW1[0]+fDriftVelParW1[1]*nAnode+fDriftVelParW1[2]*nAnode*nAnode+fDriftVelParW1[3]*nAnode*nAnode*nAnode;
+      }
+    }
     virtual void SetParamOptions(const char *opt1,const char *opt2) {((AliITSresponseSDD*)fResponse)->SetParamOptions(opt1,opt2);}
     virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSDD*)fResponse)->ParamOptions(opt1,opt2);}
     virtual Bool_t Do10to8() const {return ((AliITSresponseSDD*)fResponse)->Do10to8();}
@@ -154,8 +164,10 @@ class AliITSCalibrationSDD : public AliITSCalibration {
 
     Bool_t   fIsDead;  // module is dead or alive ?
     TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
-    //Float_t fMapA[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on anode coordinate
-    //Float_t fMapT[fgkChips*fgkChannels][fgkMapTimeNBin]; //array with deviations on time coordinate
+
+    Float_t fDriftVelParW0[4];  // Coeff. of pol3 fit to drift speed vs. anode (wing0)
+    Float_t fDriftVelParW1[4];  // Coeff. of pol3 fit to drift speed vs. anode (wing1)
+    
     AliITSMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
     AliITSMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
     AliITSMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
@@ -167,7 +179,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,6) // SDD response 
+    ClassDef(AliITSCalibrationSDD,7) // SDD response 
     
     };
 #endif
