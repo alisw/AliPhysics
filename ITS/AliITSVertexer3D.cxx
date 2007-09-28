@@ -12,20 +12,20 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <AliESDVertex.h>
-#include <AliITSVertexer3D.h>
-#include <AliStrLine.h>
-#include <AliVertexerTracks.h>
-#include <Riostream.h>
 #include <TH3F.h>
 #include <TTree.h>
-#include<TClonesArray.h>
+#include <TClonesArray.h>
+#include "AliESDVertex.h"
 #include "AliLog.h"
+#include "AliStrLine.h"
+#include "AliTracker.h"
 #include "AliRunLoader.h"
 #include "AliITSLoader.h"
 #include "AliITSDetTypeRec.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
+#include "AliVertexerTracks.h"
+#include "AliITSVertexer3D.h"
 /////////////////////////////////////////////////////////////////
 // this class implements a method to determine
 // the 3 coordinates of the primary vertex
@@ -34,6 +34,8 @@
 ////////////////////////////////////////////////////////////////
 
 ClassImp(AliITSVertexer3D)
+
+/* $Id$ */
 
 //______________________________________________________________________
 AliITSVertexer3D::AliITSVertexer3D():AliITSVertexer(),
@@ -45,8 +47,10 @@ fMaxRCut(0.),
 fZCutDiamond(0.),
 fMaxZCut(0.),
 fDCAcut(0.),
-fDiffPhiMax(0.)			    
- {
+fDiffPhiMax(0.),
+fMeanPSelTrk(0.),
+fMeanPtSelTrk(0.)
+{
   // Default constructor
   SetCoarseDiffPhiCut();
   SetCoarseMaxRCut();
@@ -55,6 +59,8 @@ fDiffPhiMax(0.)
   SetMaxZCut();
   SetDCAcut();
   SetDiffPhiMax();
+  SetMeanPSelTracks();
+  SetMeanPtSelTracks();
 }
 
 //______________________________________________________________________
@@ -67,7 +73,9 @@ fMaxRCut(0.),
 fZCutDiamond(0.),
 fMaxZCut(0.),
 fDCAcut(0.),
-fDiffPhiMax(0.)				    
+fDiffPhiMax(0.),
+fMeanPSelTrk(0.),
+fMeanPtSelTrk(0.)
 {
   // Standard constructor
   fLines = new TClonesArray("AliStrLine",1000);
@@ -78,6 +86,8 @@ fDiffPhiMax(0.)
   SetMaxZCut();
   SetDCAcut();
   SetDiffPhiMax();
+  SetMeanPSelTracks();
+  SetMeanPtSelTracks();
 }
 
 //______________________________________________________________________
@@ -130,14 +140,15 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(Int_t evnumber){
  
   Float_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
   if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
-    fCurrentVertex = new AliESDVertex();
+    Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
+    Double_t covmatrix[6];
+    fVert3D.GetCovMatrix(covmatrix);
+    Double_t chi2=99999.;
+    Int_t    nContr=fVert3D.GetNContributors();
+    fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nContr);    
     fCurrentVertex->SetTitle("vertexer: 3D");
     fCurrentVertex->SetName("Vertex");
-    fCurrentVertex->SetXv(fVert3D.GetXv());
-    fCurrentVertex->SetYv(fVert3D.GetYv());
-    fCurrentVertex->SetZv(fVert3D.GetZv());
     fCurrentVertex->SetDispersion(fVert3D.GetDispersion());
-    fCurrentVertex->SetNContributors(fVert3D.GetNContributors());
   }
   FindMultiplicity(evnumber);
   return fCurrentVertex;
@@ -159,12 +170,12 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   TTree *tR = itsLoader->TreeR();
   detTypeRec.SetTreeAddressR(tR);
   TClonesArray *itsRec  = 0;
-  // lc and gc are local and global coordinates for layer 1
-  Float_t lc[3]; for(Int_t ii=0; ii<3; ii++) lc[ii]=0.;
-  Float_t gc[3]; for(Int_t ii=0; ii<3; ii++) gc[ii]=0.;
+  // lc1 and gc1 are local and global coordinates for layer 1
+  //  Float_t lc1[3]={0.,0.,0.};
+  Float_t gc1[3]={0.,0.,0.};
   // lc2 and gc2 are local and global coordinates for layer 2
-  Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
-  Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
+  //  Float_t lc2[3]={0.,0.,0.};
+  Float_t gc2[3]={0.,0.,0.};
 
   itsRec = detTypeRec.RecPoints();
   TBranch *branch;
@@ -188,17 +199,17 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   Int_t nrpL2 = 0;    // number of rec points on layer 2
 
   // By default irstL1=0 and lastL1=79
-  Int_t irstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
+  Int_t firstL1 = AliITSgeomTGeo::GetModuleIndex(1,1,1);
   Int_t lastL1 = AliITSgeomTGeo::GetModuleIndex(2,1,1)-1;
-  for(Int_t module= irstL1; module<=lastL1;module++){  // count number of recopints on layer 1
+  for(Int_t module= firstL1; module<=lastL1;module++){  // count number of recopints on layer 1
     branch->GetEvent(module);
     nrpL1+= itsRec->GetEntries();
     detTypeRec.ResetRecPoints();
   }
-  //By default irstL2=80 and lastL2=239
-  Int_t irstL2 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
+  //By default firstL2=80 and lastL2=239
+  Int_t firstL2 = AliITSgeomTGeo::GetModuleIndex(2,1,1);
   Int_t lastL2 = AliITSgeomTGeo::GetModuleIndex(3,1,1)-1;
-  for(Int_t module= irstL2; module<=lastL2;module++){  // count number of recopints on layer 2
+  for(Int_t module= firstL2; module<=lastL2;module++){  // count number of recopints on layer 2
     branch->GetEvent(module);
     nrpL2+= itsRec->GetEntries();
     detTypeRec.ResetRecPoints();
@@ -212,10 +223,12 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
   Double_t a[3]={xbeam,ybeam,0.}; 
   Double_t b[3]={xbeam,ybeam,10.};
   AliStrLine zeta(a,b,kTRUE);
+  Float_t bField=AliTracker::GetBz()/10.; //T
+  SetMeanPPtSelTracks(bField);
 
   Int_t nolines = 0;
   // Loop on modules of layer 1
-  for(Int_t modul1= irstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
+  for(Int_t modul1= firstL1; modul1<=lastL1;modul1++){   // Loop on modules of layer 1
     UShort_t ladder=int(modul1/4)+1; // ladders are numbered starting from 1
     branch->GetEvent(modul1);
     Int_t nrecp1 = itsRec->GetEntries();
@@ -228,15 +241,14 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
     }
     detTypeRec.ResetRecPoints();
     for(Int_t j=0;j<nrecp1;j++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)prpl1->At(j);
+      AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1->At(j);
       // Local coordinates of this recpoint
       /*
-      lc[0]=recp->GetDetLocalX();
-      lc[2]=recp->GetDetLocalZ();
-      geom->LtoG(modul1,lc,gc); // global coordinates
+      lc[0]=recp1->GetDetLocalX();
+      lc[2]=recp1->GetDetLocalZ();
       */
-      recp->GetGlobalXYZ(gc);
-      Double_t phi1 = TMath::ATan2(gc[1]-ybeam,gc[0]-xbeam);
+      recp1->GetGlobalXYZ(gc1);
+      Double_t phi1 = TMath::ATan2(gc1[1]-ybeam,gc1[0]-xbeam);
       if(phi1<0)phi1=2*TMath::Pi()+phi1;
       for(Int_t ladl2=0 ; ladl2<fLadOnLay2*2+1;ladl2++){
 	for(Int_t k=0;k<4;k++){
@@ -246,19 +258,18 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
 	  branch->GetEvent(modul2);
 	  Int_t nrecp2 = itsRec->GetEntries();
 	  for(Int_t j2=0;j2<nrecp2;j2++){
-	    recp = (AliITSRecPoint*)itsRec->At(j2);
+	    AliITSRecPoint *recp2 = (AliITSRecPoint*)itsRec->At(j2);
 	    /*
-	    lc2[0]=recp->GetDetLocalX();
-	    lc2[2]=recp->GetDetLocalZ();
-	    geom->LtoG(modul2,lc2,gc2);
+	    lc2[0]=recp2->GetDetLocalX();
+	    lc2[2]=recp2->GetDetLocalZ();
 	    */
-	    recp->GetGlobalXYZ(gc2);
+	    recp2->GetGlobalXYZ(gc2);
 	    Double_t phi2 = TMath::ATan2(gc2[1]-ybeam,gc2[0]-xbeam);
 	    if(phi2<0)phi2=2*TMath::Pi()+phi2;
 	    Double_t diff = TMath::Abs(phi2-phi1); 
 	    if(diff>TMath::Pi())diff=2.*TMath::Pi()-diff; 
 	    if(diff>deltaPhi)continue;
-	    AliStrLine line(gc,gc2,kTRUE);
+	    AliStrLine line(gc1,gc2,kTRUE);
 	    Double_t cp[3];
 	    Int_t retcode = line.Cross(&zeta,cp);
 	    if(retcode<0)continue;
@@ -267,7 +278,68 @@ Int_t AliITSVertexer3D::FindTracklets(Int_t evnumber, Int_t optCuts){
 	    if(dca>deltaR)continue;
 	    Double_t deltaZ=cp[2]-zvert;
 	    if(TMath::Abs(deltaZ)>dZmax)continue;
-	    MakeTracklet(gc,gc2,nolines);
+
+	    TClonesArray &lines = *fLines;
+	    if(nolines == 0){
+	      if(fLines->GetEntriesFast()>0)fLines->Clear();
+	    }
+	    if(fLines->GetEntriesFast()==fLines->GetSize()){
+	      Int_t newsize=(Int_t) 1.5*fLines->GetEntriesFast();
+	      fLines->Expand(newsize);
+	    }
+	    Float_t cov[6];
+	    recp2->GetGlobalCov(cov);
+
+	    
+	    Float_t rad1=TMath::Sqrt(gc1[0]*gc1[0]+gc1[1]*gc1[1]);
+	    Float_t rad2=TMath::Sqrt(gc2[0]*gc2[0]+gc2[1]*gc2[1]);
+	    Float_t factor=(rad1+rad2)/(rad2-rad1); //factor to account for error on tracklet direction 
+
+	    Float_t curvErr=0;
+	    if(bField>0.00001){
+	      Float_t curvRadius=fMeanPtSelTrk/(0.3*bField)*100; //cm 
+	      Float_t dRad=TMath::Sqrt(TMath::Power((gc1[0]-gc2[0]),2)+TMath::Power((gc1[1]-gc2[1]),2));
+	      Float_t aux=dRad/2.+rad1;
+	      curvErr=TMath::Sqrt(curvRadius*curvRadius-dRad*dRad/4.)-TMath::Sqrt(curvRadius*curvRadius-aux*aux); //cm
+	    }
+
+	    Float_t sigmasq[3];
+	    sigmasq[0]=(cov[0]+curvErr*curvErr/2.)*factor*factor;
+	    sigmasq[1]=(cov[3]+curvErr*curvErr/2.)*factor*factor;
+	    sigmasq[2]=cov[5]*factor*factor;
+
+	    // Multiple scattering
+ 	    Float_t beta=1.;
+ 	    Float_t beta2=beta*beta;
+ 	    Float_t p2=fMeanPSelTrk*fMeanPSelTrk;
+ 	    Float_t rBP=GetPipeRadius();
+ 	    Float_t dBP=0.08/35.3; // 800 um of Be
+ 	    Float_t dL1=0.01; //approx. 1% of radiation length  
+ 	    Float_t theta2BP=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dBP);
+ 	    Float_t theta2L1=14.1*14.1/(beta2*p2*1e6)*TMath::Abs(dL1);
+ 	    Float_t thetaBP=TMath::Sqrt(theta2BP);
+ 	    Float_t thetaL1=TMath::Sqrt(theta2L1);
+//  	    Float_t geomfac[3];
+//  	    geomfac[0]=sin(phi1)*sin(phi1);
+//  	    geomfac[1]=cos(phi1)*cos(phi1);
+//  	    Float_t tgth=(gc2[2]-gc1[2])/(rad2-rad1);	    
+//  	    geomfac[2]=1+tgth*tgth;
+ 	    for(Int_t ico=0; ico<3;ico++){    
+// 	      printf("Error on coord. %d due to cov matrix+curvErr=%f\n",ico,sigmasq[ico]);
+// 	      //	      sigmasq[ico]+=rad1*rad1*geomfac[ico]*theta2L1/2; // multiple scattering in layer 1
+// 	      //  sigmasq[ico]+=rBP*rBP*geomfac[ico]*theta2BP/2; // multiple scattering in beam pipe
+ 	      sigmasq[ico]+=TMath::Power(rad1*TMath::Tan(thetaL1),2)/3.;
+ 	      sigmasq[ico]+=TMath::Power(rBP*TMath::Tan(thetaBP),2)/3.;
+
+// 	      printf("Multipl. scatt. contr %d = %f (LAY1), %f (BP)\n",ico,rad1*rad1*geomfac[ico]*theta2L1/2,rBP*rBP*geomfac[ico]*theta2BP/2);
+// 	      printf("Total error on coord %d = %f\n",ico,sigmasq[ico]);
+ 	    }
+	    Float_t wmat[9]={1.,0.,0.,0.,1.,0.,0.,0.,1.};
+	    if(sigmasq[0]!=0.) wmat[0]=1./sigmasq[0];
+	    if(sigmasq[1]!=0.) wmat[4]=1./sigmasq[1];
+	    if(sigmasq[2]!=0.) wmat[8]=1./sigmasq[2];
+	    new(lines[nolines++])AliStrLine(gc1,sigmasq,wmat,gc2,kTRUE);
+
 	  }
 	  detTypeRec.ResetRecPoints();
 	}
@@ -336,13 +408,13 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       Double_t point[3];
       Int_t retc = l1->Cross(l2,point);
       if(retc<0)continue;
+      Double_t deltaZ=point[2]-zvert;
+     if(TMath::Abs(deltaZ)>dZmax)continue;
       Double_t rad=TMath::Sqrt(point[0]*point[0]+point[1]*point[1]);
       if(rad>fCoarseMaxRCut)continue;
       Double_t deltaX=point[0]-xbeam;
       Double_t deltaY=point[1]-ybeam;
-      Double_t deltaZ=point[2]-zvert;
       Double_t raddist=TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
-      if(TMath::Abs(deltaZ)>dZmax)continue;
       if(raddist>deltaR)continue;
       validate[i]=1;
       validate[j]=1;
@@ -418,43 +490,38 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   return retcode;  
 }
 
- //______________________________________________________________________
-void  AliITSVertexer3D::MakeTracklet(Double_t *pA, Double_t *pB, Int_t &nolines) {
-  // makes a tracklet
-  TClonesArray &lines = *fLines;
-  if(nolines == 0){
-    if(fLines->GetEntriesFast()>0)fLines->Clear();
+//________________________________________________________
+void AliITSVertexer3D::SetMeanPPtSelTracks(Float_t fieldTesla){
+  // Sets mean values of P and Pt based on the field
+  if(TMath::Abs(fieldTesla-0.5)<0.01){
+    SetMeanPSelTracks(0.885);
+    SetMeanPtSelTracks(0.630);
+  }else if(TMath::Abs(fieldTesla-0.4)<0.01){
+    SetMeanPSelTracks(0.805);
+    SetMeanPtSelTracks(0.580);
+  }else if(TMath::Abs(fieldTesla-0.2)<0.01){
+    SetMeanPSelTracks(0.740);
+    SetMeanPtSelTracks(0.530);
+  }else if(fieldTesla<0.00001){
+    SetMeanPSelTracks(0.730);
+    SetMeanPtSelTracks(0.510);
+  }else{
+    SetMeanPSelTracks();
+    SetMeanPtSelTracks();
   }
-  if(fLines->GetEntriesFast()==fLines->GetSize()){
-    Int_t newsize=(Int_t) 1.5*fLines->GetEntriesFast();
-    fLines->Expand(newsize);
-  }
-
-  new(lines[nolines++])AliStrLine(pA,pB,kTRUE);
 }
 
- //______________________________________________________________________
-void  AliITSVertexer3D::MakeTracklet(Float_t *pA, Float_t *pB, Int_t &nolines) {// Makes a tracklet
-  //
-  Double_t a[3],b[3];
-  for(Int_t i=0;i<3;i++){
-    a[i] = pA[i];
-    b[i] = pB[i];
-  }
-  MakeTracklet(a,b,nolines);
-}
 
 //________________________________________________________
 void AliITSVertexer3D::PrintStatus() const {
   // Print current status
-  cout <<"=======================================================\n";
-  cout << "Loose cut on Delta Phi "<<fCoarseDiffPhiCut<<endl;
-  cout << "Cut on tracklet DCA to Z axis "<<fCoarseMaxRCut<<endl;
-  cout << "Cut on tracklet DCA to beam axis "<<fMaxRCut<<endl;
-  cout << "Cut on diamond (Z) "<<fZCutDiamond<<endl;
-  cout << "Cut on DCA - tracklet to tracklet and to vertex "<<fDCAcut<<endl;
-  cout <<" Max Phi difference: "<<fDiffPhiMax<<endl;
+  printf("=======================================================\n");
+  printf("Loose cut on Delta Phi %f\n",fCoarseDiffPhiCut);
+  printf("Cut on tracklet DCA to Z axis %f\n",fCoarseMaxRCut);
+  printf("Cut on tracklet DCA to beam axis %f\n",fMaxRCut);
+  printf("Cut on diamond (Z) %f\n",fZCutDiamond);
+  printf("Cut on DCA - tracklet to tracklet and to vertex %f\n",fDCAcut);
+  printf(" Max Phi difference: %f\n",fDiffPhiMax);
+  printf("=======================================================\n");
 
- 
-  cout <<"=======================================================\n";
 }
