@@ -50,13 +50,46 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 {
   // see header file for class documentation
   if (handler) {
-    // digit publisher configuration
-    TString arg("-slice 0 -partition 0");
-    HLTDebug(arg.Data());
-    handler->CreateConfiguration("digit-publisher"  , "TPCDigitPublisher", NULL , arg.Data());
+    int iMinSlice=0; 
+    int iMaxSlice=1;
+    int iMinPart=0;
+    int iMaxPart=1;
+    TString fileWriterInput;
+    TString esdWriterInput;
+    for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
+      TString trackerInput;
+      for (int part=iMinPart; part<=iMaxPart; part++) {
+	TString arg, publisher, cf;
+
+	// digit publisher components
+	arg.Form("-slice %d -partition %d", slice, part);
+	publisher.Form("DP_%02d_%d", slice, part);
+	handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
+
+	// cluster finder components
+	cf.Form("CF_%02d_%d", slice, part);
+	handler->CreateConfiguration(cf.Data(), "TPCClusterFinderUnpacked", publisher.Data(), "pp-run timebins 446");
+	if (trackerInput.Length()>0) trackerInput+=" ";
+	trackerInput+=cf;
+      }
+      TString tracker;
+      // tracker finder components
+      tracker.Form("TR_%02d", slice);
+      handler->CreateConfiguration(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "pp-run bfield 0.5");
+
+      // input for the global file writer
+      if (fileWriterInput.Length()>0) fileWriterInput+=" ";
+      fileWriterInput+=trackerInput;
+
+      // input for the esd writer
+      if (esdWriterInput.Length()>0) esdWriterInput+=" ";
+      esdWriterInput+=tracker;
+    }
 
     // the writer configuration
-    handler->CreateConfiguration("sink1", "FileWriter"   , "digit-publisher" , NULL);
+    handler->CreateConfiguration("sink1", "FileWriter"   , fileWriterInput.Data(), "-specfmt -subdir=test_%d -blcknofmt=_0x%x -idfmt=_0x%08x");
+    // the esd writer configuration
+    handler->CreateConfiguration("esd-writer", "TPCEsdWriter"   , esdWriterInput.Data(), "-datafile AliESDs.root");
   }
   return 0;
 }
@@ -66,6 +99,7 @@ const char* AliHLTTPCAgent::GetLocalRecConfigurations(AliRunLoader* runloader) c
   // see header file for class documentation
   return NULL;
   //return "sink1";
+  //return "esd-writer";
 }
 
 const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
