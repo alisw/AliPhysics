@@ -41,5 +41,13 @@
 #pragma link C++ class AliHLTMUONTriggerReconstructorComponent+;
 #pragma link C++ class AliHLTMUONHitReconstructorComponent+;
 #pragma link C++ class AliHLTMUONMansoTrackerFSMComponent+;
+#pragma link C++ class AliHLTMUONRecHit+;
+#pragma link C++ class AliHLTMUONRecHit::Channel+;
+#pragma link C++ class AliHLTMUONTriggerRecord+;
+#pragma link C++ class AliHLTMUONMansoTrack+;
+#pragma link C++ class AliHLTMUONRootifierComponent+;
+
+// The following is temporary:
+#pragma link C++ class AliHLTMUONEvent+;
 
 #endif // __CINT__

@@ -8,9 +8,13 @@ include $(MODDIR)/hlt.conf
 CLASS_HDRS := 	OfflineInterface/AliHLTMUONAgent.h \
 		OfflineInterface/AliHLTMUONTriggerRecordsSource.h \
 		OfflineInterface/AliHLTMUONRecHitsSource.h \
+		OfflineInterface/AliHLTMUONRootifierComponent.h \
 		OnlineAnalysis/AliHLTMUONTriggerReconstructorComponent.h \
 		OnlineAnalysis/AliHLTMUONHitReconstructorComponent.h \
-		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h
+		OnlineAnalysis/AliHLTMUONMansoTrackerFSMComponent.h \
+		AliHLTMUONRecHit.h \
+		AliHLTMUONTriggerRecord.h \
+		AliHLTMUONMansoTrack.h
 
 # Sources that are not ROOT classes:
 MODULE_SRCS :=	$(CLASS_HDRS:.h=.cxx) \
