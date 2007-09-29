@@ -19,6 +19,8 @@
  * To run this macro you must be in the same directory as the galice.root
  * files or in the directory containing the rawXX/ directories produced from
  * AliRoot simulations.
+ * Also make sure the LUTs are in the same directory or specify the directory
+ * with the lutDir parameter option.
  */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
@@ -41,6 +43,18 @@ using std::endl;
  * @param firstEvent  The event number of the first event to process. (default = 0)
  * @param lastEvent  The event number of the last event to process. If this is
  *     less than firstEvent then it is set to firstEvent automatically. (default = -1)
+ * @param output  Specifies the kind of output to generate. The options can be one
+ *     of the following:
+ *       "bin" - Generates all possible output and dumps it to binary files
+ *                  using the FileWriter component.
+ *       "root" - Generates all possible output and writes it to a ROOT file
+ *                  using the ROOTFileWriter component.
+ *       "tracks_bin" - Generates only track data and dumps it to binary files
+ *                  using the FileWriter component. This option is equivalent to
+ *                  'bin' if the chain type is 'ddlreco'.
+ *       "tracks_root" - Generates only track data and writes it to a ROOT file
+ *                  using the ROOTFileWriter component. This option is equivalent
+ *                  to 'bin' if the chain type is 'ddlreco'.
  * @param dataSource  This is the data source from which to use hits and trigger
  *     records when we are running the tracker only chain. Note this parameter
  *     only makes sense if chainType = "tracker". The possible options are:
@@ -52,13 +66,16 @@ using std::endl;
  *       "normal" - Shows warnings, errors and information.
  *       "max" - Shows everything including debug messages if they were compiled in.
  *       "min" - Shows only error messages.
+ * @param lutDir  This is the directory in which the LUTs can be found.
  */
 void RunChain(
 		const char* chainType = "full",
 		Int_t firstEvent = 0,
 		Int_t lastEvent = -1,
+		const char* output = "bin",
 		const char* dataSource = "sim",
-		const char* logLevel = "normal"
+		const char* logLevel = "normal",
+		const char* lutDir = "."
 	)
 {
 	// Make sure that the lastEvent is greater than firstEvent.
@@ -70,42 +87,54 @@ void RunChain(
 	bool buildDDLRecoComps = false;
 	bool buildSimDataPubs = false;
 	bool buildRecDataPubs = false;
-	bool trackerOnly = false;
 	bool buildTrackerComp = false;
-	bool buildDDLRecoSink = false;
-	bool buildTrackerSink = false;
 	bool maxLogging = false;
 	bool minLogging = false;
+	bool useRootWriter = false;
+	bool makeTracksOnly = false;
 	
-	// Parse the chainType, dataSource and logLevel option strings:
+	// Parse the chainType, output, dataSource and logLevel option strings:
+	TString outOpt = output;
+	if (outOpt.CompareTo("bin", TString::kIgnoreCase) == 0)
+	{
+		useRootWriter = false;
+	}
+	else if (outOpt.CompareTo("root", TString::kIgnoreCase) == 0)
+	{
+		useRootWriter = true;
+	}
+	else if (outOpt.CompareTo("tracks_bin", TString::kIgnoreCase) == 0)
+	{
+		useRootWriter = false;
+		makeTracksOnly = true;
+	}
+	else if (outOpt.CompareTo("tracks_root", TString::kIgnoreCase) == 0)
+	{
+		useRootWriter = true;
+		makeTracksOnly = true;
+	}
+	else
+	{
+		cerr << "ERROR: Unknown option for output: " << output << endl;
+		return;
+	}
+	
 	TString chainOpt = chainType;
 	if (chainOpt.CompareTo("full", TString::kIgnoreCase) == 0)
 	{
 		buildDDLFilePubs = true;
 		buildDDLRecoComps = true;
 		buildTrackerComp = true;
-		buildTrackerSink = true;
 	}
-	else if (chainOpt.CompareTo("DDLreco", TString::kIgnoreCase) == 0)
+	else if (chainOpt.CompareTo("ddlreco", TString::kIgnoreCase) == 0)
 	{
 		buildDDLFilePubs = true;
 		buildDDLRecoComps = true;
-		buildDDLRecoSink = true;
 	}
 	else if (chainOpt.CompareTo("tracker", TString::kIgnoreCase) == 0)
 	{
-		trackerOnly = true;
 		buildTrackerComp = true;
-		buildTrackerSink = true;
-	}
-	else
-	{
-		cerr << "ERROR: Unknown option for chainType: " << chainType << endl;
-		return;
-	}
-	
-	if (trackerOnly)
-	{
+		
 		TString dataOpt = dataSource;
 		if (dataOpt.CompareTo("sim", TString::kIgnoreCase) == 0)
 		{
@@ -120,6 +149,11 @@ void RunChain(
 			cerr << "ERROR: Unknown option for dataSource: " << dataSource << endl;
 			return;
 		}
+	}
+	else
+	{
+		cerr << "ERROR: Unknown option for chainType: " << chainType << endl;
+		return;
 	}
 	
 	TString logOpt = logLevel;
@@ -139,6 +173,13 @@ void RunChain(
 	{
 		cerr << "ERROR: Unknown option for logLevel: " << logLevel << endl;
 		return;
+	}
+	
+	// If we are supposed to make tracks only but are in a ddlreco chain
+	// then we clearly can only generate the DDL reconstructed data, so do that.
+	if (makeTracksOnly && ! buildTrackerComp)
+	{
+		makeTracksOnly = false;
 	}
 	
 	// Now we can initialise the AliHLTSystem...
@@ -218,48 +259,51 @@ void RunChain(
 	// these components if we are are building the ddlreco or full chains.
 	if (buildDDLRecoComps)
 	{
-		AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", "ddl 12 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut12.dat");
-		AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", "ddl 13 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut13.dat");
-		AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", "ddl 14 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut14.dat");
-		AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", "ddl 15 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut15.dat");
-		AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", "ddl 16 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut16.dat");
-		AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", "ddl 17 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut17.dat");
-		AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", "ddl 18 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut18.dat");
-		AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", "ddl 19 buspatchmap /afsuser/indranildas/Lut/BusToDetElem.dat lut /afsuser/indranildas/Lut/Lut19.dat");	
-		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", "ddl 0 lut /afsuser/indranildas/Lut/Lut20.dat reglocmap /afsuser/indranildas/Lut/RegionalToLocalCard.dat");
-		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", "ddl 1 lut /afsuser/indranildas/Lut/Lut21.dat reglocmap /afsuser/indranildas/Lut/RegionalToLocalCard.dat");
-        }
+		AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("ddl 12 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut12.dat"));
+		AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("ddl 13 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut13.dat"));
+		AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("ddl 14 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut14.dat"));
+		AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("ddl 15 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut15.dat"));
+		AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("ddl 16 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut16.dat"));
+		AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("ddl 17 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut17.dat"));
+		AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("ddl 18 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut18.dat"));
+		AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("ddl 19 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut19.dat"));	
+		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("ddl 0 lut ") + lutDir + TString("/Lut20.dat reglocmap ") + lutDir + TString("/RegionalToLocalCard.dat"));
+		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("ddl 1 lut ") + lutDir + TString("/Lut21.dat reglocmap ") + lutDir + TString("/RegionalToLocalCard.dat"));
+	}
+
+	TString startEventStr = "-firstevent ";
+	startEventStr += firstEvent;
         
-        // Build the data source components to take data from simulated hits if
-        // we are building the tracker only chain with the 'sim' data source.
+	// Build the data source components to take data from simulated hits if
+	// we are building the tracker only chain with the 'sim' data source.
 	if (buildSimDataPubs)
 	{
-		AliHLTConfiguration recDDL13("recDDL13", "MUONRecHitsSource", NULL, "-simdata -plane left  -chamber 7");
-		AliHLTConfiguration recDDL14("recDDL14", "MUONRecHitsSource", NULL, "-simdata -plane right -chamber 7");
-		AliHLTConfiguration recDDL15("recDDL15", "MUONRecHitsSource", NULL, "-simdata -plane left  -chamber 8");
-		AliHLTConfiguration recDDL16("recDDL16", "MUONRecHitsSource", NULL, "-simdata -plane right -chamber 8");
-		AliHLTConfiguration recDDL17("recDDL17", "MUONRecHitsSource", NULL, "-simdata -plane left  -chamber 9");
-		AliHLTConfiguration recDDL18("recDDL18", "MUONRecHitsSource", NULL, "-simdata -plane right -chamber 9");
-		AliHLTConfiguration recDDL19("recDDL19", "MUONRecHitsSource", NULL, "-simdata -plane left  -chamber 10");
-		AliHLTConfiguration recDDL20("recDDL20", "MUONRecHitsSource", NULL, "-simdata -plane right -chamber 10");
-		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerRecordsSource", NULL, "-hitdata -plane left");
-		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerRecordsSource", NULL, "-hitdata -plane right");
+		AliHLTConfiguration recDDL13("recDDL13", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 7");
+		AliHLTConfiguration recDDL14("recDDL14", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 7");
+		AliHLTConfiguration recDDL15("recDDL15", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 8");
+		AliHLTConfiguration recDDL16("recDDL16", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 8");
+		AliHLTConfiguration recDDL17("recDDL17", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 9");
+		AliHLTConfiguration recDDL18("recDDL18", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 9");
+		AliHLTConfiguration recDDL19("recDDL19", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane left  -chamber 10");
+		AliHLTConfiguration recDDL20("recDDL20", "MUONRecHitsSource", NULL, startEventStr + " -simdata -plane right -chamber 10");
+		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerRecordsSource", NULL, startEventStr + " -hitdata -plane left");
+		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerRecordsSource", NULL, startEventStr + " -hitdata -plane right");
 	}
 	
         // Build the data source components to take data from offline reconstructed
         // objects if we are building the tracker only chain with the 'rec' data source.
 	if (buildRecDataPubs)
 	{
-		AliHLTConfiguration recDDL13("recDDL13", "MUONRecHitsSource", NULL, "-recdata -plane left  -chamber 7");
-		AliHLTConfiguration recDDL14("recDDL14", "MUONRecHitsSource", NULL, "-recdata -plane right -chamber 7");
-		AliHLTConfiguration recDDL15("recDDL15", "MUONRecHitsSource", NULL, "-recdata -plane left  -chamber 8");
-		AliHLTConfiguration recDDL16("recDDL16", "MUONRecHitsSource", NULL, "-recdata -plane right -chamber 8");
-		AliHLTConfiguration recDDL17("recDDL17", "MUONRecHitsSource", NULL, "-recdata -plane left  -chamber 9");
-		AliHLTConfiguration recDDL18("recDDL18", "MUONRecHitsSource", NULL, "-recdata -plane right -chamber 9");
-		AliHLTConfiguration recDDL19("recDDL19", "MUONRecHitsSource", NULL, "-recdata -plane left  -chamber 10");
-		AliHLTConfiguration recDDL20("recDDL20", "MUONRecHitsSource", NULL, "-recdata -plane right -chamber 10");
-		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerRecordsSource", NULL, "-recdata -plane left");
-		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerRecordsSource", NULL, "-recdata -plane right");
+		AliHLTConfiguration recDDL13("recDDL13", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 7");
+		AliHLTConfiguration recDDL14("recDDL14", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 7");
+		AliHLTConfiguration recDDL15("recDDL15", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 8");
+		AliHLTConfiguration recDDL16("recDDL16", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 8");
+		AliHLTConfiguration recDDL17("recDDL17", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 9");
+		AliHLTConfiguration recDDL18("recDDL18", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 9");
+		AliHLTConfiguration recDDL19("recDDL19", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane left  -chamber 10");
+		AliHLTConfiguration recDDL20("recDDL20", "MUONRecHitsSource", NULL, startEventStr + " -recdata -plane right -chamber 10");
+		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerRecordsSource", NULL, startEventStr + " -recdata -plane left");
+		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerRecordsSource", NULL, startEventStr + " -recdata -plane right");
 	}
 	
 	// Build the tracker component if we are building the tracker only or
@@ -269,21 +313,30 @@ void RunChain(
 		AliHLTConfiguration tracker("tracker", "MUONMansoTrackerFSM", "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22", "");
 	}
 
-	// Build the data sink to subscribe to the DDL reconstructor objects if
-	// we are building the 'ddlreco' chain.
-	if (buildTrackerSink)
+	// Build the data sink to subscribe only to what has been created and
+	// to the data source we actaully want.
+	TString sources = "";
+	if (makeTracksOnly)
 	{
-		AliHLTConfiguration sink("sink", "FileWriter", "tracker", "-datafile output.dat -specfmt=_0x%08x");
-		sys.BuildTaskList("sink");
+		sources += "tracker ";
+	}
+	else
+	{
+		if (buildTrackerComp)
+			sources += "tracker ";
+		sources += "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22";
+	}
+	if (useRootWriter)
+	{
+		AliHLTConfiguration convert("convert", "MUONRootifier", sources, "");
+		AliHLTConfiguration sink("sink", "ROOTFileWriter", "convert", "-datafile output.root -specfmt");
+	}
+	else
+	{
+		AliHLTConfiguration sink("sink", "FileWriter", sources, "-datafile output.dat -specfmt");
 	}
 	
-	// Build the data sink to subscribe only to the tracker if we are building
-	// the 'tracker' or 'full' chains.
-	if (buildDDLRecoSink)
-	{
-		AliHLTConfiguration sinkDDL("sinkDDL", "FileWriter", "recDDL13 recDDL14 recDDL15 recDDL16 recDDL17 recDDL18 recDDL19 recDDL20 recDDL21 recDDL22", "-datafile output.dat -specfmt=_0x%08x");
-		sys.BuildTaskList("sinkDDL");
-	}
-	
+	// Build and run the chain's tasks.
+	sys.BuildTaskList("sink");
 	sys.Run(eventCount);
 }
