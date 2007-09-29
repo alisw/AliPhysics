@@ -49,6 +49,16 @@ class AliMUONDataInterface;
  *      in the range [1..10]. The string after '-chamber' is a comma separated
  *      list of numbers or ranges. Some examples of strings:
  *      1  1-2  1,2,3  1,3-5,7 etc...
+ *  -firstevent <number>
+ *      Indicates the first event number to fetch from AliRoot. The default is to
+ *      start from zero and increment the event number after every GetEvent call.
+ *      This mode causes the component to ignore the event number passed to it by
+ *      the system and rather use an internal counter. This mode can be overriden
+ *      with the -event_number_literal flag.
+ *  -event_number_literal
+ *      This flag indicates to use the event numbers as literal indices into the
+ *      AliRoot trees. This option will cause the component to ignore the -firstevent
+ *      flag.
  */
 class AliHLTMUONRecHitsSource : public AliHLTOfflineDataSource
 {
@@ -107,6 +117,10 @@ private:
 
 	SelectionType fSelection; //! Indicates if we should publish from the left, right or whole XY plane.
 	bool fServeChamber[10]; //! Flag to indicate if hits from a given chamber should be published.
+	
+	Int_t fCurrentEvent;  //! The current event index that is loaded.
+	                      //  -1 indicates that we should rather use the event
+	                      // numbers as given by the system.
 
 	ClassDef(AliHLTMUONRecHitsSource, 0); // dHLT data source for reconstructed hit data blocks.
 };

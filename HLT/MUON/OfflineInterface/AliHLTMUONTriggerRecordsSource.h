@@ -49,6 +49,16 @@ class AliMUONDataInterface;
  *  -plane left|right|all
  *      Specifies if data from the left (x < 0), right (x >= 0) or the whole XY
  *      plane should be published.
+ *  -firstevent <number>
+ *      Indicates the first event number to fetch from AliRoot. The default is to
+ *      start from zero and increment the event number after every GetEvent call.
+ *      This mode causes the component to ignore the event number passed to it by
+ *      the system and rather use an internal counter. This mode can be overriden
+ *      with the -event_number_literal flag.
+ *  -event_number_literal
+ *      This flag indicates to use the event numbers as literal indices into the
+ *      AliRoot trees. This option will cause the component to ignore the -firstevent
+ *      flag.
  */
 class AliHLTMUONTriggerRecordsSource : public AliHLTOfflineDataSource
 {
@@ -96,7 +106,11 @@ private:
 	};
 
 	SelectionType fSelection; //! Indicates if we should publish from the left, right or whole XY plane.
-
+	
+	Int_t fCurrentEvent;  //! The current event index that is loaded.
+	                      //  -1 indicates that we should rather use the event
+	                      // numbers as given by the system.
+	
 	ClassDef(AliHLTMUONTriggerRecordsSource, 0); // dHLT data source for trigger record data blocks.
 };
 

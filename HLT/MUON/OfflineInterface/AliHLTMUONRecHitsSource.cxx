@@ -57,8 +57,10 @@ ClassImp(AliHLTMUONRecHitsSource);
 
 AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 	AliHLTOfflineDataSource(),
-	fMCDataInterface(NULL), fDataInterface(NULL),
-	fSelection(kWholePlane)
+	fMCDataInterface(NULL),
+	fDataInterface(NULL),
+	fSelection(kWholePlane),
+	fCurrentEvent(0)
 {
 	for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++)
 		fServeChamber[i] = false;
@@ -81,6 +83,9 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 	bool simdata = false;
 	bool recdata = false;
 	bool chamberWasSet = false;
+	fCurrentEvent = 0;
+	bool firstEventSet = false;
+	bool eventNumLitSet = false;
 	
 	for (int i = 0; i < argc; i++)
 	{
@@ -138,6 +143,44 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 			int result = ParseChamberString(argv[i]);
 			if (result != 0) return result;
 			chamberWasSet = true;
+		}
+		else if (strcmp(argv[i], "-firstevent") == 0)
+		{
+			if (eventNumLitSet)
+			{
+				HLTWarning("The -firstevent flag is overridden by a"
+					" previous use of -event_number_literal."
+				);
+			}
+			i++;
+			if (i >= argc)
+			{
+				HLTError("Expected a positive number after -firstevent.");
+				return EINVAL;
+			}
+			char* end = "";
+			long num = strtol(argv[i], &end, 0);
+			if (*end != '\0' or num < 0) // Check if the conversion is OK.
+			{
+				HLTError(Form(
+					"Expected a positive number after -firstevent"
+					" but got: %s", argv[i]
+				));
+				return EINVAL;
+			}
+			fCurrentEvent = Int_t(num);
+			firstEventSet = true;
+		}
+		else if (strcmp(argv[i], "-event_number_literal") == 0)
+		{
+			if (firstEventSet)
+			{
+				HLTWarning("The -event_number_literal option will"
+					" override -firstevent."
+				);
+			}
+			fCurrentEvent = -1;
+			eventNumLitSet = true;
 		}
 		else
 		{
@@ -233,6 +276,21 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 		}
 	}
 	
+	// Check that the fCurrentEvent number falls within the correct range.
+	UInt_t maxevent = 0;
+	if (fMCDataInterface != NULL)
+		maxevent = UInt_t(fMCDataInterface->NumberOfEvents());
+	else if (fDataInterface != NULL)
+		maxevent = UInt_t(fDataInterface->NumberOfEvents());
+	if (fCurrentEvent != -1 and UInt_t(fCurrentEvent) >= maxevent and maxevent != 0)
+	{
+		fCurrentEvent = 0;
+		HLTWarning(Form("The selected first event number (%d) was larger than"
+			" the available number of events (%d). Resetting the event"
+			" counter to zero.", fCurrentEvent, maxevent
+		));
+	}
+	
 	return 0;
 }
 
@@ -307,12 +365,21 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		return EINVAL;
 	}
 	
-	// Use the fEventID as the event number to load, check it and load that
-	// event with the runloader.
+	// Use the fEventID as the event number to load if fCurrentEvent == -1,
+	// check it and load that event with the runloader.
+	// If fCurrentEvent is a positive number then us it instead and
+	// increment it.
 	UInt_t eventnumber = UInt_t(evtData.fEventID);
 	UInt_t maxevent = fMCDataInterface != NULL ?
 		UInt_t(fMCDataInterface->NumberOfEvents())
 		: UInt_t(fDataInterface->NumberOfEvents());
+	if (fCurrentEvent != -1)
+	{
+		eventnumber = UInt_t(fCurrentEvent);
+		fCurrentEvent++;
+		if (UInt_t(fCurrentEvent) >= maxevent)
+			fCurrentEvent = 0;
+	}
 	if ( eventnumber >= maxevent )
 	{
 		Logging(kHLTLogError,
