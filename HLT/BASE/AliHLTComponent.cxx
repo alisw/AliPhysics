@@ -36,6 +36,7 @@ using namespace std;
 #include "TClass.h"
 #include "TStopwatch.h"
 #include "AliHLTMemoryFile.h"
+#include <cassert>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponent);
@@ -653,6 +654,14 @@ const AliHLTComponentBlockData* AliHLTComponent::GetFirstInputBlock(const char* 
   AliHLTComponentDataType dt;
   SetDataType(dt, dtID, dtOrigin);
   return GetFirstInputBlock(dt);
+}
+
+const AliHLTComponentBlockData* AliHLTComponent::GetInputBlock(int index)
+{
+  // see header file for function documentation
+  ALIHLTCOMPONENT_BASE_STOPWATCH();
+  assert( 0 <= index and index < fCurrentEventData.fBlockCnt );
+  return &fpInputBlocks[index];
 }
 
 const AliHLTComponentBlockData* AliHLTComponent::GetNextInputBlock()
