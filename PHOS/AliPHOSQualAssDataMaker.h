@@ -34,35 +34,20 @@ private:
   virtual void   InitHits() ; 
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 
-  virtual void   InitRecParticles() ; 
+  //virtual void   InitRecParticles() ; 
   virtual void   InitRecPoints() ; 
-  virtual void   InitTrackSegments() ; 
+  virtual void   InitRaws() ; 
+  //virtual void   InitTrackSegments() ; 
   virtual void   InitSDigits() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
   virtual void   MakeHits(TObject * hits) ;
   virtual void   MakeDigits(TObject * digits) ; 
   // virtual void   MakeRecParticles(TTree * recpar) ; 
   virtual void   MakeRecPoints(TTree * recpo) ; 
+  virtual void   MakeRaws(TTree * recpo) ; 
   virtual void   MakeSDigits(TObject * sigits) ; 
   //virtual void   MakeTrackSegments(TTree *ts ) ; 
   
-  TH1F  * fhHits ;            //! hits energy histogram
-  TH1I  * fhHitsMul ;         //! hits multiplicity histogram
-  TH1I  * fhDigits ;          //! digits energy histogram
-  TH1I  * fhDigitsMul ;       //! digits multiplicity histogram
-  TH1F  * fhSDigits ;         //! sdigits energy histogram
-  TH1I  * fhSDigitsMul ;      //! sdigits multiplicity histogram
-  TH1F  * fhEmcRecPoints ;    //! Emc recpoints energy histogram
-  TH1I  * fhEmcRecPointsMul ; //! emc recpoints multiplicity histogram
-  TH1F  * fhCpvRecPoints ;    //! cpv recpoints energy histogram
-  TH1I  * fhCpvRecPointsMul ; //! cpv recpoints multiplicity histogram
-  TH1F  * fhTrackSegments ;   //! tracksegments energy histogram
-  TH1I  * fhTrackSegmentsMul ;//! tracksegments multiplicity histogram
-  TH1F  * fhRecParticles ;    //! recparticles energy histogram
-  TH1I  * fhRecParticlesMul ; //! recparticles multiplicity histogram
-  TH1F  * fhESDs ;            //! ESDs energy histogram
-  TH1I  * fhESDsMul ;         //! ESDs multiplicity histogram
-
   ClassDef(AliPHOSQualAssDataMaker,1)  // description 
 
 };

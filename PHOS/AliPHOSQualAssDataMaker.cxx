@@ -46,23 +46,7 @@ ClassImp(AliPHOSQualAssDataMaker)
            
 //____________________________________________________________________________ 
   AliPHOSQualAssDataMaker::AliPHOSQualAssDataMaker() : 
-  AliQualAssDataMaker(AliQualAss::GetDetName(AliQualAss::kPHOS), "PHOS Quality Assurance Data Maker"),
-  fhHits(0x0), 
-  fhHitsMul(0x0), 
-  fhDigits(0x0),
-  fhDigitsMul(0x0),
-  fhSDigits(0x0),
-  fhSDigitsMul(0x0),
-  fhEmcRecPoints(0x0),
-  fhEmcRecPointsMul(0x0),
-  fhCpvRecPoints(0x0),
-  fhCpvRecPointsMul(0x0),
-  fhTrackSegments(0x0),
-  fhTrackSegmentsMul(0x0),
-  fhRecParticles(0x0),
-  fhRecParticlesMul(0x0),
-  fhESDs(0x0),
-  fhESDsMul(0x0) 
+  AliQualAssDataMaker(AliQualAss::GetDetName(AliQualAss::kPHOS), "PHOS Quality Assurance Data Maker")
 {
   // ctor
   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
@@ -72,23 +56,7 @@ ClassImp(AliPHOSQualAssDataMaker)
 
 //____________________________________________________________________________ 
 AliPHOSQualAssDataMaker::AliPHOSQualAssDataMaker(const AliPHOSQualAssDataMaker& qadm) :
-  AliQualAssDataMaker(), 
-  fhHits(qadm.fhHits), 
-  fhHitsMul(qadm.fhHitsMul), 
-  fhDigits(qadm.fhDigits),
-  fhDigitsMul(qadm.fhDigitsMul),
-  fhSDigits(qadm.fhSDigits),
-  fhSDigitsMul(qadm.fhSDigitsMul), 
-  fhEmcRecPoints(qadm.fhEmcRecPoints),
-  fhEmcRecPointsMul(qadm.fhEmcRecPointsMul), 
-  fhCpvRecPoints(qadm.fhCpvRecPoints),
-  fhCpvRecPointsMul(qadm.fhCpvRecPointsMul), 
-  fhTrackSegments(qadm.fhTrackSegments),
-  fhTrackSegmentsMul(qadm.fhTrackSegmentsMul), 
-  fhRecParticles(qadm.fhRecParticles),
-  fhRecParticlesMul(qadm.fhRecParticlesMul), 
-  fhESDs(qadm.fhESDs), 
-  fhESDsMul(qadm.fhESDsMul) 
+  AliQualAssDataMaker()
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -108,76 +76,97 @@ AliPHOSQualAssDataMaker& AliPHOSQualAssDataMaker::operator = (const AliPHOSQualA
 void AliPHOSQualAssDataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
-  fhESDs     = new TH1F("hPhosESDs",    "ESDs energy distribution in PHOS",       100, 0., 100.) ; 
-  fhESDs->Sumw2() ; 
-  fhESDsMul  = new TH1I("hPhosESDsMul", "ESDs multiplicity distribution in PHOS", 100, 0., 100) ; 
-  fhESDsMul->Sumw2() ;
+  TH1F * h0 = new TH1F("hPhosESDs",    "ESDs energy distribution in PHOS",       100, 0., 100.) ;  
+  h0->Sumw2() ; 
+  Add2ESDsList(h0, 0) ;
+  TH1I * h1  = new TH1I("hPhosESDsMul", "ESDs multiplicity distribution in PHOS", 100, 0., 100) ; 
+  h1->Sumw2() ;
+  Add2ESDsList(h1, 1) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQualAssDataMaker::InitHits()
 {
   // create Hits histograms in Hits subdir
-  fhHits     = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
-  fhHits->Sumw2() ;
-  fhHitsMul  = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
-  fhHitsMul->Sumw2() ;
+  TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
+  h0->Sumw2() ;
+  Add2HitsList(h0, 0) ;
+  TH1I * h1  = new TH1I("hPhosHitsMul", "Hits multiplicity distribution in PHOS", 500, 0., 10000) ; 
+  h1->Sumw2() ;
+  Add2HitsList(h1, 1) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQualAssDataMaker::InitDigits()
 {
   // create Digits histograms in Digits subdir
-  fhDigits     = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 5000) ; 
-  fhDigits->Sumw2() ;
-  fhDigitsMul  = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 500, 0, 1000) ; 
-  fhDigitsMul->Sumw2() ;
+  TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 5000) ; 
+  h0->Sumw2() ;
+  Add2DigitsList(h0, 0) ;
+  TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 500, 0, 1000) ; 
+  h1->Sumw2() ;
+  Add2DigitsList(h1, 0) ;
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitRecParticles()
-{
-  // create Reconstructed particles histograms in RecParticles subdir
-  fhRecParticles     = new TH1F("hPhosRecParticles",    "RecParticles energy distribution in PHOS",       100, 0., 100.) ; 
-  fhRecParticles->Sumw2() ;
-  fhRecParticlesMul  = new TH1I("hPhosRecParticlesMul", "RecParticles multiplicity distribution in PHOS", 100, 0,  100) ; 
-  fhRecParticlesMul->Sumw2() ;
-}
+//void AliPHOSQualAssDataMaker::InitRecParticles()
+//{
+//  // create Reconstructed particles histograms in RecParticles subdir
+//  fhRecParticles     = new TH1F("hPhosRecParticles",    "RecParticles energy distribution in PHOS",       100, 0., 100.) ; 
+//  fhRecParticles->Sumw2() ;
+//  fhRecParticlesMul  = new TH1I("hPhosRecParticlesMul", "RecParticles multiplicity distribution in PHOS", 100, 0,  100) ; 
+//  fhRecParticlesMul->Sumw2() ;
+//}
 
 //____________________________________________________________________________ 
 void AliPHOSQualAssDataMaker::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
-  fhEmcRecPoints     = new TH1F("hEmcPhosRecPoints",    "EMCA RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
-  fhEmcRecPoints->Sumw2() ;
-  fhEmcRecPointsMul  = new TH1I("hEmcPhosRecPointsMul", "EMCA RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
-  fhEmcRecPointsMul->Sumw2() ;
+  TH1F * h0 = new TH1F("hEmcPhosRecPoints",    "EMCA RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
+  h0->Sumw2() ;
+  Add2RecPointsList(h0, 0) ;
+  TH1I * h1 = new TH1I("hEmcPhosRecPointsMul", "EMCA RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
+  h1->Sumw2() ;
+  Add2RecPointsList(h1, 1) ;
 
-  fhCpvRecPoints     = new TH1F("hCpvPhosRecPoints",    "CPV RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
-  fhCpvRecPoints->Sumw2() ;
-  fhCpvRecPointsMul  = new TH1I("hCpvPhosRecPointsMul", "CPV RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
-  fhCpvRecPointsMul->Sumw2() ;
+  TH1F * h2 = new TH1F("hCpvPhosRecPoints",    "CPV RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
+  h2->Sumw2() ;
+  Add2RecPointsList(h2, 2) ;
+  TH1I * h3 = new TH1I("hCpvPhosRecPointsMul", "CPV RecPoints multiplicity distribution in PHOS", 100, 0,  100) ; 
+  h3->Sumw2() ;
+  Add2RecPointsList(h3, 3) ;
+}
+
+//____________________________________________________________________________ 
+void AliPHOSQualAssDataMaker::InitRaws()
+{
+  // create Raws histograms in Raws subdir
+  TH1F * h0 = new TH1F("hEmcPhosRaws",    "EMCA Raws in PHOS",       100, 0., 100.) ; 
+  h0->Sumw2() ;
+  Add2RawsList(h0, 0) ;
 }
 
 //____________________________________________________________________________ 
 void AliPHOSQualAssDataMaker::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
-  fhSDigits     = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       100, 0., 100.) ; 
-  fhSDigits->Sumw2() ;
-  fhSDigitsMul  = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  10000) ; 
-  fhSDigitsMul->Sumw2() ;
+  TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       100, 0., 100.) ; 
+  h0->Sumw2() ;
+  Add2SDigitsList(h0, 0) ;
+  TH1I * h1 = new TH1I("hPhosSDigitsMul", "SDigits multiplicity distribution in PHOS", 500, 0,  10000) ; 
+  h1->Sumw2() ;
+  Add2SDigitsList(h1, 1) ;
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitTrackSegments()
-{
-  // create Track Segments histograms in TrackSegments subdir
-  fhTrackSegments     = new TH1F("hPhosTrackSegments",    "TrackSegments EMC-CPV distance in PHOS",       500, 0., 5000.) ; 
-  fhTrackSegments->Sumw2() ;
-  fhTrackSegmentsMul  = new TH1I("hPhosTrackSegmentsMul", "TrackSegments multiplicity distribution in PHOS", 100, 0,  100) ; 
-  fhTrackSegmentsMul->Sumw2() ;
-}
+//void AliPHOSQualAssDataMaker::InitTrackSegments()
+//{
+//  // create Track Segments histograms in TrackSegments subdir
+//  fhTrackSegments     = new TH1F("hPhosTrackSegments",    "TrackSegments EMC-CPV distance in PHOS",       500, 0., 5000.) ; 
+//  fhTrackSegments->Sumw2() ;
+//  fhTrackSegmentsMul  = new TH1I("hPhosTrackSegmentsMul", "TrackSegments multiplicity distribution in PHOS", 100, 0,  100) ; 
+//  fhTrackSegmentsMul->Sumw2() ;
+//}
 
 //____________________________________________________________________________
 void AliPHOSQualAssDataMaker::MakeESDs(AliESDEvent * esd)
@@ -188,10 +177,10 @@ void AliPHOSQualAssDataMaker::MakeESDs(AliESDEvent * esd)
   Int_t index = 0, count = 0 ; 
   for ( index = 0 ; index < maxClu; index++ ) {
     AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
-    fhESDs->Fill(clu->E()) ;
+    GetESDsData(0)->Fill(clu->E()) ;
     count++ ; 
   }
-  fhESDsMul->Fill(count) ;
+  GetESDsData(1)->Fill(count) ;
 }
 
 //____________________________________________________________________________
@@ -203,15 +192,14 @@ void AliPHOSQualAssDataMaker::MakeHits(TObject * data)
   if (!hits) {
     AliError("Wrong type of hits container") ; 
   } else {
-    fhHitsMul->Fill(hits->GetEntriesFast()) ; 
+    GetHitsData(1)->Fill(hits->GetEntriesFast()) ; 
     TIter next(hits) ; 
     AliPHOSHit * hit ; 
     while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
-      fhHits->Fill( hit->GetEnergy()) ;
+      GetHitsData(0)->Fill( hit->GetEnergy()) ;
     }
   } 
 }
- 
 //____________________________________________________________________________
 void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
 {
@@ -221,11 +209,11 @@ void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
   if (!digits) {
     AliError("Wrong type of digits container") ; 
   } else {
-    fhDigitsMul->Fill(digits->GetEntriesFast()) ; 
+    GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
     TIter next(digits) ; 
     AliPHOSDigit * digit ; 
     while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-      fhDigits->Fill( digit->GetEnergy()) ;
+      GetDigitsData(0)->Fill( digit->GetEnergy()) ;
     }  
   }
 }
@@ -245,6 +233,12 @@ void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
 // }
 
 //____________________________________________________________________________
+void AliPHOSQualAssDataMaker::MakeRaws(TTree * clustersTree)
+{
+    GetRawsData(1)->Fill(99) ; 
+}
+
+//____________________________________________________________________________
 void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
 {
   {
@@ -258,11 +252,11 @@ void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
     emcbranch->SetAddress(&emcrecpoints);
     emcbranch->GetEntry(0);
     
-    fhEmcRecPointsMul->Fill(emcrecpoints->GetEntriesFast()) ; 
+    GetRecPointsData(1)->Fill(emcrecpoints->GetEntriesFast()) ; 
     TIter next(emcrecpoints) ; 
     AliPHOSEmcRecPoint * rp ; 
     while ( (rp = dynamic_cast<AliPHOSEmcRecPoint *>(next())) ) {
-      fhEmcRecPoints->Fill( rp->GetEnergy()) ;
+      GetRecPointsData(0)->Fill( rp->GetEnergy()) ;
     }
     emcrecpoints->Delete();
     delete emcrecpoints;
@@ -277,11 +271,11 @@ void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
     cpvbranch->SetAddress(&cpvrecpoints);
     cpvbranch->GetEntry(0);
     
-    fhCpvRecPointsMul->Fill(cpvrecpoints->GetEntriesFast()) ; 
+    GetRecPointsData(1)->Fill(cpvrecpoints->GetEntriesFast()) ; 
     TIter next(cpvrecpoints) ; 
     AliPHOSCpvRecPoint * rp ; 
     while ( (rp = dynamic_cast<AliPHOSCpvRecPoint *>(next())) ) {
-      fhCpvRecPoints->Fill( rp->GetEnergy()) ;
+      GetRecPointsData(0)->Fill( rp->GetEnergy()) ;
     }
     cpvrecpoints->Delete();
     delete cpvrecpoints;
@@ -297,11 +291,11 @@ void AliPHOSQualAssDataMaker::MakeSDigits(TObject * data)
   if (!sdigits) {
     AliError("Wrong type of sdigits container") ; 
   } else {
-    fhSDigitsMul->Fill(sdigits->GetEntriesFast()) ; 
+    GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
     TIter next(sdigits) ; 
     AliPHOSDigit * sdigit ; 
     while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
-      fhSDigits->Fill( sdigit->GetEnergy()) ;
+      GetSDigitsData(0)->Fill( sdigit->GetEnergy()) ;
     } 
   }
 }
