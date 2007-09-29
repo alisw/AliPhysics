@@ -26,7 +26,7 @@
 // --- ROOT system ---
 #include <TSystem.h> 
 #include <TFile.h>
-#include <TClonesArray.h> 
+#include <TList.h> 
 #include <TTree.h>
 
 // --- Standard library ---
@@ -45,7 +45,13 @@ TString AliQualAssDataMaker::fDetectorDirName("") ;
 AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) : 
   TNamed(name, title), 
   fOutput(0x0),
-  fDetectorDir(0x0)
+  fDetectorDir(0x0),
+  fDigitsQAList(0x0), 
+  fESDsQAList(0x0), 
+  fHitsQAList(0x0),
+  fRawsQAList(0x0), 
+  fRecPointsQAList(0x0), 
+  fSDigitsQAList(0x0)
 {
   // ctor
   TString tmp(GetName()) ; 
@@ -59,7 +65,13 @@ AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) 
 AliQualAssDataMaker::AliQualAssDataMaker(const AliQualAssDataMaker& qadm) :
   TNamed(qadm.GetName(), qadm.GetTitle()),
   fOutput(qadm.fOutput),
-  fDetectorDir(qadm.fDetectorDir)
+  fDetectorDir(qadm.fDetectorDir),
+  fDigitsQAList(qadm.fDigitsQAList),
+  fESDsQAList(qadm.fESDsQAList),
+  fHitsQAList(qadm.fHitsQAList),
+  fRawsQAList(qadm.fRecPointsQAList),
+  fRecPointsQAList(qadm.fRecPointsQAList),
+  fSDigitsQAList(qadm.fSDigitsQAList)
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
@@ -84,6 +96,12 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
    fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
    
   switch (task) { 
+  
+  case AliQualAss::kRAWS:
+    AliInfo("Processing Raws QA") ; 
+    MakeRaws(data) ;
+    break ; 
+
   case AliQualAss::kHITS:
     AliInfo("Processing Hits QA") ; 
     MakeHits(data) ;
@@ -100,13 +118,11 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
  
    case AliQualAss::kRECPOINTS:
      AliInfo("Processing RecPoints QA") ; 
-     {
-       TTree * recpoints = dynamic_cast<TTree *>(data) ; 
-       if (recpoints) 
-	 MakeRecPoints(recpoints) ;
-       else 
-	 AliError("Wrong type of recpoints container") ; 
-     }
+     TTree * recpoints = dynamic_cast<TTree *>(data) ; 
+    if (recpoints) 
+      MakeRecPoints(recpoints) ;
+    else 
+      AliError("Wrong type of recpoints container") ; 
     break ;  
 
    case AliQualAss::kTRACKSEGMENTS:
@@ -179,19 +195,30 @@ void AliQualAssDataMaker::Finish(AliQualAss::TASKINDEX task) const
 } 
 
 //____________________________________________________________________________ 
-void AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task)
+TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task)
 {
   // general intialisation
-  
   TDirectory * subDir = 0x0 ; 
   
   switch (task) { 
+  case AliQualAss::kRAWS: 
+    subDir = fDetectorDir->GetDirectory("Raws") ; 
+	if (!subDir)
+      subDir = fDetectorDir->mkdir("Raws") ; 
+	subDir->cd() ; 
+	fRawsQAList = new TList() ;	 
+    InitRaws() ;
+	return fRawsQAList ;
+    break ; 
+
   case AliQualAss::kHITS: 
     subDir = fDetectorDir->GetDirectory("Hits") ; 
 	if (!subDir)
       subDir = fDetectorDir->mkdir("Hits") ; 
 	subDir->cd() ; 
+	fHitsQAList = new TList() ;	 
     InitHits() ;
+	return fHitsQAList ;
     break ; 
   
   case AliQualAss::kSDIGITS: 
@@ -199,15 +226,19 @@ void AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task)
 	if (!subDir)
 		subDir = fDetectorDir->mkdir("SDigits") ; 
 	subDir->cd() ; 
+	fSDigitsQAList = new TList() ; 
     InitSDigits() ;
+	return fSDigitsQAList ;
     break ; 
 
   case AliQualAss::kDIGITS: 
 	subDir = fDetectorDir->GetDirectory("Digits") ; 
 	if (!subDir)
 		subDir = fDetectorDir->mkdir("Digits") ; 
-	subDir->cd() ; 
+	subDir->cd() ;
+	fDigitsQAList = new TList(); 
 	InitDigits() ;
+	return fDigitsQAList ;
 	break ; 
 	  
   case AliQualAss::kRECPOINTS: 
@@ -215,23 +246,25 @@ void AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task)
 	if(!subDir)
 		subDir = fDetectorDir->mkdir("RecPoints") ; 
 	subDir->cd() ; 
+	fRecPointsQAList = new TList ; 
     InitRecPoints() ;
+	return fRecPointsQAList ;
     break ; 
 
   case AliQualAss::kTRACKSEGMENTS: 
-	subDir = fDetectorDir->GetDirectory("TrackSegments") ; 
-	if (!subDir)
-		subDir = fDetectorDir->mkdir("TrackSegments") ; 
-	subDir->cd() ; 
-    InitTrackSegments() ;
+//	subDir = fDetectorDir->GetDirectory("TrackSegments") ; 
+//	if (!subDir)
+//		subDir = fDetectorDir->mkdir("TrackSegments") ; 
+//	subDir->cd() ; 
+//  InitTrackSegments() ;
     break ; 
     
   case AliQualAss::kRECPARTICLES: 
-	subDir = fDetectorDir->GetDirectory("RecParticles") ; 
-	if (!subDir)
-		subDir = fDetectorDir->mkdir("RecParticles") ; 
-	subDir->cd() ; 
-    InitRecParticles() ;
+//	subDir = fDetectorDir->GetDirectory("RecParticles") ; 
+//	if (!subDir)
+//		subDir = fDetectorDir->mkdir("RecParticles") ; 
+//	subDir->cd() ; 
+//    InitRecParticles() ;
     break ; 
     
   case AliQualAss::kESDS: 
@@ -239,7 +272,10 @@ void AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task)
 	if (!subDir) 
 		subDir = fDetectorDir->mkdir("ESDs") ;
 	subDir->cd() ; 
-    InitESDs() ;
+  	fESDsQAList = new TList() ; 
+	InitESDs() ;
+	return fRecPointsQAList ;
     break ; 
   }  
+  return 0x0 ; 
 }

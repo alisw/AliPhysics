@@ -143,7 +143,7 @@ const Bool_t AliQualAss::CheckRange(DETECTORINDEX det) const
 const Bool_t AliQualAss::CheckRange(ALITASK task) const
 { 
   // check if task is given taskk range: 0:kNTASK
-  Bool_t rv = ( task < kSIM || task > kNTASK )  ? kFALSE : kTRUE ;
+  Bool_t rv = ( task < kRAW || task > kNTASK )  ? kFALSE : kTRUE ;
   if (!rv)
     AliFatal(Form("Module index %d is out of range: 0 <= index <= %d", task, kNTASK)) ;
   return rv ;
@@ -197,6 +197,9 @@ const char * AliQualAss::GetAliTaskName(ALITASK tsk)
   switch (tsk) {
   case kNULLTASK:
     break ; 
+  case kRAW:
+    tskName = "RAW" ;
+    break ;  
   case kSIM:
     tskName = "SIM" ;
     break ;
@@ -272,7 +275,10 @@ AliQualAss * AliQualAss::Instance(const ALITASK tsk)
     switch (tsk) {
     case kNULLTASK:
       break ;
-    case kSIM:
+	case kRAW:
+      fgQA = new AliQualAss(tsk) ;
+      break ;
+	case kSIM:
       fgQA = new AliQualAss(tsk) ;
       break ;
     case kREC:
@@ -303,17 +309,20 @@ const ULong_t AliQualAss::Offset(ALITASK tsk) const
   switch (tsk) {
   case kNULLTASK:
     break ;
-  case kSIM:
+  case kRAW:
     offset+= 0 ;
     break ;
-  case kREC:
+  case kSIM:
     offset+= 4 ;
     break ;
-  case kESD:
+  case kREC:
     offset+= 8 ;
     break ;
-  case kANA:
+  case kESD:
     offset+= 12 ;
+    break ;
+  case kANA:
+    offset+= 16 ;
     break ;
   case kNTASK:
     break ;

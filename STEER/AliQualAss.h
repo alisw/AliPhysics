@@ -22,14 +22,14 @@ public:
     kZDC, kPMD, kT0, kVZERO, kACORDE, kHLT, kNDET
   };
   enum ALITASK {
-    kNULLTASK=-1, kSIM, kREC, kESD, kANA, kNTASK
+    kNULLTASK=-1, kRAW, kSIM, kREC, kESD, kANA, kNTASK
   };
   enum QABIT {
     kNULLBit=-1, kINFO, kWARNING, kERROR, kFATAL, kNBIT
   };
   
   enum TASKINDEX {
-    kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS
+    kRAWS, kHITS, kSDIGITS, kDIGITS, kRECPOINTS, kTRACKSEGMENTS, kRECPARTICLES, kESDS
   };
   
  // Creators - destructors
