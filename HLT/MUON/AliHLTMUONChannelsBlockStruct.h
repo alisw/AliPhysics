@@ -34,7 +34,7 @@ struct AliHLTMUONChannelStruct
 
 	AliHLTUInt16_t fManu;        // The MANU address on electronics.
 	AliHLTUInt16_t fChannelAddress; // The channel address on electronics.
-	AliHLTUInt16_t fSignal;      // ADC value of signal.
+	AliHLTUInt32_t fSignal;      // ADC value of signal.
 	AliHLTUInt32_t fRawDataWord; // The raw data word as found in the DDL stream.
 };
 
