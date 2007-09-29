@@ -96,7 +96,7 @@ int AliHLTRootFileWriterComponent::DumpEvent( const AliHLTComponentEventData& ev
   int count=0;
   while (pObj && iResult>=0) {
     iResult=WriteObject(evtData.fEventID, pObj);
-    if (iResult) {
+    if (iResult == 0) {
       count++;
       HLTDebug("wrote object of class %s, data type %s", pObj->ClassName(), (DataType2Text(GetDataType(pObj)).c_str())); 
     }
