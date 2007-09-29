@@ -31,12 +31,15 @@
 #undef NDEBUG
 #include "AliHLTMUONUtils.h"
 
+/*TODO: fix this. Need a platform independant way of checking the endian encoding.
+ * This does not want to work on Apple Mac OS compiler: i686-apple-darw
 #include <endian.h>
 #ifndef LITTLE_ENDIAN
 #error Handling of internal data for non little endian machines not yet implemented.
 #endif
+*/
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cassert>
 #include <new>
 #include <fstream>
