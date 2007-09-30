@@ -49,7 +49,7 @@ public:
   static const TString   GetDetName(DETECTORINDEX det) { return fgDetNames[det] ; }
   static const TString   GetTaskName(TASKINDEX tsk) { return fgTaskNames[tsk] ; }
   static const char *    GetDetName(Int_t det) ;
-  static TFile *         GetQADMOutFile() ; 
+  static TFile *         GetQADMOutFile(Int_t run, Int_t cycle) ; 
   void                   Set(QABIT bit) ;
   void                   Show() const { ShowStatus(fDet) ; }
   void                   ShowAll() const ;

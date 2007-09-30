@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.27  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.26  2006/08/28 10:01:56  kharlov
  * Effective C++ warnings fixed (Timur Pocheptsov)
  *
@@ -79,9 +82,11 @@ private:
   Int_t   fSDigitsInRun ;   //! Total number of sdigits in one run
   Int_t   fFirstEvent;      // first event to process
   Int_t   fLastEvent;       // last  event to process
-  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
 
-  ClassDef(AliPHOSSDigitizer,3)  // description 
+  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
+  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
+
+  ClassDef(AliPHOSSDigitizer,4)  // description 
 
 };
 

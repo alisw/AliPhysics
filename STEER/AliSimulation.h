@@ -93,7 +93,12 @@ public:
   virtual Bool_t ConvertDateToRoot(const char* dateFileName = "raw.date",
 				   const char* rootFileName = "raw.root");
   virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "");
-  
+
+  //Quality Assurance
+  Int_t       GetDetIndex(const char * detector);
+  const Int_t GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
+  void        SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+
 private:
   AliRunLoader*  LoadRun(const char* mode = "UPDATE") const;
   Int_t          GetNSignalPerBkgrd(Int_t nEvents = 0) const;
@@ -128,7 +133,14 @@ private:
   TString 	 fRemoteCDBUri;	      // Uri of the remote CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
   Bool_t         fEmbeddingFlag;      // Flag for embedding
-  ClassDef(AliSimulation, 4)  // class for running generation, simulation and digitization
+  
+  //QA stuff
+  static const Int_t  fgkNDetectors = 15 ;            // number of detectors
+  static const char * fgkDetectorName[fgkNDetectors] ; // names of detectors
+  Int_t               fQACycles[fgkNDetectors] ;      // cycle length (# events) over which QA data are accumulated
+
+  
+  ClassDef(AliSimulation, 5)  // class for running generation, simulation and digitization
 };
 
 #endif

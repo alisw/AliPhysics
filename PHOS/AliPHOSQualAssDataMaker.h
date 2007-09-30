@@ -31,6 +31,7 @@ public:
   virtual ~AliPHOSQualAssDataMaker() {;} // dtor
   
 private:
+  virtual void   EndOfDetectorCycle() ;
   virtual void   InitHits() ; 
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 
@@ -44,10 +45,11 @@ private:
   virtual void   MakeDigits(TObject * digits) ; 
   // virtual void   MakeRecParticles(TTree * recpar) ; 
   virtual void   MakeRecPoints(TTree * recpo) ; 
-  virtual void   MakeRaws(TTree * recpo) ; 
+  virtual void   MakeRaws(TObject * data) ; 
   virtual void   MakeSDigits(TObject * sigits) ; 
   //virtual void   MakeTrackSegments(TTree *ts ) ; 
-  
+  virtual void   StartOfDetectorCycle() ; 
+
   ClassDef(AliPHOSQualAssDataMaker,1)  // description 
 
 };

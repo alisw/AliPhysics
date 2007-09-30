@@ -141,6 +141,7 @@
 ClassImp(AliSimulation)
 
 AliSimulation *AliSimulation::fgInstance = 0;
+const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"};
 
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
@@ -176,6 +177,10 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
 // create simulation object with default parameters
   fgInstance = this;
   SetGAliceFile("galice.root");
+  
+// for QA
+   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) 
+	fQACycles[iDet] = 999999;
 }
 
 //_____________________________________________________________________________
@@ -225,6 +230,10 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
     if (sim.fSpecCDBUri[i]) fSpecCDBUri.Add(sim.fSpecCDBUri[i]->Clone());
   }
   fgInstance = this;
+
+// for QA
+   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) 
+	fQACycles[iDet] = sim.fQACycles[iDet];
 }
 
 //_____________________________________________________________________________
@@ -762,6 +771,7 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
     if (IsSelected(det->GetName(), detStr)) {
       AliInfo(Form("creating summable digits for %s", det->GetName()));
       AliCodeTimerAuto(Form("creating summable digits for %s", det->GetName()));
+	  
       det->Hits2SDigits();
     }
   }
@@ -1285,6 +1295,7 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
 	    }
 	} // detectors
 
+
 	//
 	//  If ESD information available obtain reconstructed vertex and store in header.
 	if (esdOK) {
@@ -1316,4 +1327,16 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     runLoader->WriteRunLoader();
 
     return kTRUE;
+}
+
+//_____________________________________________________________________________
+Int_t AliSimulation::GetDetIndex(const char* detector)
+{
+  // return the detector index corresponding to detector
+  Int_t index = -1 ; 
+  for (index = 0; index < fgkNDetectors ; index++) {
+    if ( strcmp(detector, fgkDetectorName[index]) == 0 )
+	  break ; 
+  }	
+  return index ; 
 }

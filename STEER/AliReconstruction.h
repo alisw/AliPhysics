@@ -104,6 +104,7 @@ public:
 
   // Quality Assurance 
   virtual Bool_t RunQualAss(const char* detectors, AliESDEvent *& esd);
+  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
 
 private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
@@ -135,7 +136,9 @@ private:
   void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);
 
   //Quality Assurance
+  Int_t                GetDetIndex(const char * detector);
   AliQualAssDataMaker* GetQualAssDataMaker(Int_t iDet);
+  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -187,8 +190,9 @@ private:
 
   //Quality Assurance
   AliQualAssDataMaker * fQualAssDataMaker[fgkNDetectors];  //! array of QA data maker objects
+  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
 
-  ClassDef(AliReconstruction, 13)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 14)      // class for running the reconstruction
 };
 
 #endif

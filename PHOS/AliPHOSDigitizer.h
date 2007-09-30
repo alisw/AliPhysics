@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.35  2007/08/07 14:12:03  kharlov
+ * Quality assurance added (Yves Schutz)
+ *
  * Revision 1.34  2006/04/29 20:25:30  hristov
  * Decalibration is implemented (Yu.Kharlov)
  *
@@ -145,8 +148,11 @@ private:
   Int_t   fLastEvent;               // last  event to process 
   AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
   Int_t fEventCounter ;             //! counts the events processed
+  
+  //QA stuff
+  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
 
-  ClassDef(AliPHOSDigitizer,3)  // description 
+  ClassDef(AliPHOSDigitizer,4)  // description 
 
 };
 

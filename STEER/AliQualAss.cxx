@@ -45,10 +45,10 @@ ClassImp(AliQualAss)
 
   AliQualAss * AliQualAss::fgQA        = 0x0 ;
   TFile      * AliQualAss::fgDataFile  = 0x0 ;   
-  TString      AliQualAss::fgDataName  = "QA.root" ;   
+  TString      AliQualAss::fgDataName  = "QAData" ;   
   TString      AliQualAss::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
 					"ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
-  TString      AliQualAss::fgTaskNames[]  = {"Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+  TString      AliQualAss::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 
 //____________________________________________________________________________
 AliQualAss::AliQualAss() : 
@@ -162,18 +162,26 @@ const Bool_t AliQualAss::CheckRange(QABIT bit) const
 
 
 //_______________________________________________________________
-TFile * AliQualAss::GetQADMOutFile() 
+TFile * AliQualAss::GetQADMOutFile(Int_t run, Int_t cycle) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
-
+  char temp[100] ; 
+  sprintf(temp, "%s_%d_%d.root", fgDataName.Data(), run, cycle) ; 
+  TString opt ; 
   if (! fgDataFile ) {     
-    TString opt ; 
-    if  (gSystem->AccessPathName(fgDataName.Data()))
+    if  (gSystem->AccessPathName(temp))
       opt = "NEW" ;
     else 
       opt = "UPDATE" ; 
-    
-    fgDataFile = TFile::Open(fgDataName.Data(), opt.Data()) ;
+    fgDataFile = TFile::Open(temp, opt.Data()) ;
+  } else {
+   if ( (strcmp(temp, fgDataFile->GetName()) != 0) ) {
+     if  (gSystem->AccessPathName(temp))
+      opt = "NEW" ;
+    else 
+      opt = "UPDATE" ; 
+    fgDataFile = TFile::Open(temp, opt.Data()) ;
+   }
   }
   return fgDataFile ; 
 } 

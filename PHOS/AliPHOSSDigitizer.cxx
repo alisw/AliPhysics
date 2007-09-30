@@ -7,8 +7,7 @@
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
+ * copies and that both the copyright notice and this permission notice   *ÄQual * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
@@ -19,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.52  2007/09/26 14:22:18  cvetan
+ * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
+ *
  * Revision 1.51  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -123,9 +125,14 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName,
   InitParameters() ; 
   Init();
   fDefaultInit = kFALSE ; 
-  // Intialize the quality assurance data maker 	
-  GetQualAssDataMaker()->Init(AliQualAss::kHITS) ;
-  GetQualAssDataMaker()->Init(AliQualAss::kSDIGITS) ; 
+  // Intialize the quality assurance data maker 
+  //FIXME: get the run number
+  Int_t run = 0 ;
+  //EMXIF 	
+  GetQualAssDataMaker()->Init(AliQualAss::kHITS, run, fgkCycles) ;
+  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kHITS) ;
+  GetQualAssDataMaker()->Init(AliQualAss::kSDIGITS, run) ; 
+  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kSDIGITS, "same") ;
 }
 
 //____________________________________________________________________________
@@ -143,10 +150,14 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer& sd) :
 { 
   // cpy ctor
   // Intialize the quality assurance data maker 	
-  GetQualAssDataMaker()->Init(AliQualAss::kHITS) ;
-  GetQualAssDataMaker()->Init(AliQualAss::kSDIGITS) ; 
+  //FIXME: get the run number
+  Int_t run = 0 ;
+  //EMXIF 	
+  GetQualAssDataMaker()->Init(AliQualAss::kHITS, run, fgkCycles) ;
+  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kHITS) ;
+  GetQualAssDataMaker()->Init(AliQualAss::kSDIGITS, run) ; 
+  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kSDIGITS, "same") ;
 }
-
 
 //_____________________________________________________________________________
 AliPHOSSDigitizer& AliPHOSSDigitizer::operator = (const AliPHOSSDigitizer& qa)
@@ -278,10 +289,16 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
     // make Quality Assurance data
 
+    if (GetQualAssDataMaker()->IsCycleDone() ) {
+      GetQualAssDataMaker()->EndOfCycle(AliQualAss::kHITS) ; 
+	  GetQualAssDataMaker()->EndOfCycle(AliQualAss::kSDIGITS) ; 
+      GetQualAssDataMaker()->StartOfCycle(AliQualAss::kHITS) ; 
+	  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kSDIGITS, "same") ; 
+   }
     GetQualAssDataMaker()->Exec(AliQualAss::kHITS, hits) ; 
     GetQualAssDataMaker()->Exec(AliQualAss::kSDIGITS, sdigits) ; 
-
-
+    GetQualAssDataMaker()->Increment() ;
+	
     //Now write SDigits
 
     
@@ -306,6 +323,8 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   }// event loop
   
   //Write the quality assurance data 
+  GetQualAssDataMaker()->EndOfCycle(AliQualAss::kHITS) ;    
+  GetQualAssDataMaker()->EndOfCycle(AliQualAss::kSDIGITS) ;    
   GetQualAssDataMaker()->Finish(AliQualAss::kHITS) ;
   GetQualAssDataMaker()->Finish(AliQualAss::kSDIGITS) ;
 

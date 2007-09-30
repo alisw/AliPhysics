@@ -49,9 +49,6 @@ ClassImp(AliPHOSQualAssDataMaker)
   AliQualAssDataMaker(AliQualAss::GetDetName(AliQualAss::kPHOS), "PHOS Quality Assurance Data Maker")
 {
   // ctor
-  fDetectorDir = fOutput->GetDirectory(GetName()) ;  
-  if (!fDetectorDir) 
-    fDetectorDir = fOutput->mkdir(GetName()) ;  
 }
 
 //____________________________________________________________________________ 
@@ -72,6 +69,12 @@ AliPHOSQualAssDataMaker& AliPHOSQualAssDataMaker::operator = (const AliPHOSQualA
   return *this;
 }
  
+//____________________________________________________________________________ 
+void AliPHOSQualAssDataMaker::EndOfDetectorCycle()
+{
+  //Detector specific actions at end of cycle
+}
+
 //____________________________________________________________________________ 
 void AliPHOSQualAssDataMaker::InitESDs()
 {
@@ -233,7 +236,7 @@ void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
 // }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeRaws(TTree * clustersTree)
+void AliPHOSQualAssDataMaker::MakeRaws(TObject * data)
 {
     GetRawsData(1)->Fill(99) ; 
 }
@@ -314,3 +317,10 @@ void AliPHOSQualAssDataMaker::MakeSDigits(TObject * data)
 //     fhTrackSegments->Fill( ts->GetCpvDistance()) ;
 //   } 
 // }
+
+//____________________________________________________________________________ 
+void AliPHOSQualAssDataMaker::StartOfDetectorCycle()
+{
+  //Detector specific actions at start of cycle
+  
+}
