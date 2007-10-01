@@ -297,7 +297,10 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     delete [] timeList;
     delete [] digiList;    
   }
-
+  fDigitsArr   ->Delete();
+  delete fDigitsArr;
+  fEmcRecPoints->Delete();
+  delete fEmcRecPoints;
   delete tsm;
   delete pid;
 }
