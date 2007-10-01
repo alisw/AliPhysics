@@ -62,6 +62,6 @@
 #pragma link C++ class AliTransform+;
 #pragma link C++ class AliTPCTransform+;
 
-
+#pragma link C++ class AliTPCAlign;
 #endif
 
