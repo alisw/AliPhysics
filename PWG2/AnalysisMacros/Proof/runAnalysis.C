@@ -1,10 +1,5 @@
 void runAnalysis() {
-  TStopwatch timer;
-  timer.Start();
-  
-  gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
-  printf("****** Connect to PROOF *******\n");
-  TProof::Open("proof://<username>@lxb6046.cern.ch"); 
+  TProof::Open("lxb6046.cern.ch");
 
   // Enable the Analysis Package
   gProof->UploadPackage("ESD.par");
@@ -14,22 +9,31 @@ void runAnalysis() {
   gProof->UploadPackage("ANALYSIS.par");
   gProof->EnablePackage("ANALYSIS");
 
-  gProof->GetManager()->ShowROOTVersions();
-  gProof->ShowEnabledPackages();
-
-  // You should get this macro and the txt file from:
-  // http://aliceinfo.cern.ch/Offline/Analysis/CAF/
   gROOT->LoadMacro("CreateESDChain.C");
-  TChain* chain = 0x0;
-  chain = CreateESDChain("ESD1.txt",100);
+  TChain* chain = CreateESDChain("ESD100_110_v4.txt", 100);
 
-  gROOT->LoadMacro("AliAnalysisTaskPt.cxx+");
   gProof->Load("AliAnalysisTaskPt.cxx+");
-  gROOT->LoadMacro("demoCAF.C");
-  demoCAF(chain,"proof");
- 
-  gSystem->Exec("rm -rf ESD ANALYSIS");
 
-  timer.Stop();
-  timer.Print();
+  // Make the analysis manager
+  AliAnalysisManager *mgr = new AliAnalysisManager("testAnalysis");
+
+  // Add Pt task
+  AliAnalysisTask *task1 = new AliAnalysisTaskPt("TaskPt");
+  mgr->AddTask(task1);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1 = mgr->CreateContainer("cchain1", TChain::Class(), AliAnalysisManager::kInputContainer);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("chist2", TH1::Class(),    AliAnalysisManager::kOutputContainer, "Pt.ESD.1.root");
+
+  mgr->ConnectInput(task1,0,cinput1);
+  mgr->ConnectOutput(task1,0,coutput1);
+
+  mgr->SetDebugLevel(2);
+
+  if (!mgr->InitAnalysis())
+    return;
+
+  mgr->PrintStatus();
+
+  mgr->StartAnalysis("proof",chain);
 }
