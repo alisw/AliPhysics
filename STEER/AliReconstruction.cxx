@@ -191,10 +191,13 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fRunCascadeFinder(kTRUE),
   fStopOnError(kFALSE),
   fWriteAlignmentData(kFALSE),
-  fCleanESD(kTRUE),
   fWriteESDfriend(kFALSE),
   fWriteAOD(kFALSE),
   fFillTriggerESD(kTRUE),
+
+  fCleanESD(kTRUE),
+  fDmax(50.),
+  fZmax(50.),
 
   fRunLocalReconstruction("ALL"),
   fRunTracking("ALL"),
@@ -247,10 +250,13 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunCascadeFinder(rec.fRunCascadeFinder),
   fStopOnError(rec.fStopOnError),
   fWriteAlignmentData(rec.fWriteAlignmentData),
-  fCleanESD(rec.fCleanESD),
   fWriteESDfriend(rec.fWriteESDfriend),
   fWriteAOD(rec.fWriteAOD),
   fFillTriggerESD(rec.fFillTriggerESD),
+
+  fCleanESD(rec.fCleanESD),
+  fDmax(rec.fDmax),
+  fZmax(rec.fZmax),
 
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fRunTracking(rec.fRunTracking),
@@ -1350,23 +1356,16 @@ Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
   //
 
   AliInfo("Cleaning the ESD...");
-
-  const AliESDVertex *vertex=esd->GetVertex();
-  Double_t vz=vertex->GetZv();
-  
   Int_t nTracks=esd->GetNumberOfTracks();
-  for (Int_t i=0; i<nTracks; i++) {
-    AliESDtrack *track=esd->GetTrack(i);
+  AliInfo(Form("Number of ESD tracks before cleaning %d",nTracks));
 
-    Float_t xy,z; track->GetImpactParameters(xy,z);
-    if (TMath::Abs(xy) < 50.)    continue;  
-    if (vertex->GetStatus())
-      if (TMath::Abs(vz-z) < 5.) continue;  
+  Float_t cleanPars[]={fDmax,fZmax};
+  Bool_t rc=esd->Clean(cleanPars);
 
-    esd->RemoveTrack(i);
-  }
+  nTracks=esd->GetNumberOfTracks();
+  AliInfo(Form("Number of ESD tracks after cleaning %d",nTracks));
 
-  return kTRUE;
+  return rc;
 }
 
 //_____________________________________________________________________________

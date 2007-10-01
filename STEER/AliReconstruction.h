@@ -78,12 +78,17 @@ public:
   void SetRunCascadeFinder(Bool_t flag=kTRUE) {fRunCascadeFinder=flag;};
   void SetStopOnError(Bool_t flag=kTRUE) {fStopOnError=flag;}
   void SetWriteAlignmentData(Bool_t flag=kTRUE){fWriteAlignmentData=flag;}
-  void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
   void SetWriteESDfriend(Bool_t flag=kTRUE){fWriteESDfriend=flag;}
   void SetWriteAOD(Bool_t flag=kTRUE){fWriteAOD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
 		   
+  void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
+  void SetDmax(Float_t d) {fDmax=d;}
+  void SetZmax(Float_t z) {fZmax=z;}
+  Float_t GetDmax() const {return fDmax;}
+  Float_t GetZmax() const {return fZmax;}
+
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
   // CDB storage activation
@@ -149,10 +154,14 @@ private:
   Bool_t         fRunCascadeFinder;   // run the ESD cascade finder
   Bool_t         fStopOnError;        // stop or continue on errors
   Bool_t         fWriteAlignmentData; // write track space-points flag
-  Bool_t         fCleanESD;           // clean ESD flag
   Bool_t         fWriteESDfriend;     // write ESD friend flag
   Bool_t         fWriteAOD;           // write AOD flag
   Bool_t         fFillTriggerESD;     // fill trigger info into ESD
+
+  //*** Clean ESD flag and parameters *******************
+  Bool_t         fCleanESD;      // clean ESD flag
+  Float_t        fDmax;          // max. allowed transverse impact parameter 
+  Float_t        fZmax;          // max. allowed longitudinal impact parameter 
 
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors
@@ -192,7 +201,7 @@ private:
   AliQualAssDataMaker * fQualAssDataMaker[fgkNDetectors];  //! array of QA data maker objects
   Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
 
-  ClassDef(AliReconstruction, 14)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 15)      // class for running the reconstruction
 };
 
 #endif

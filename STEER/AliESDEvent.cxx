@@ -380,25 +380,138 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) {
   }
 }
 
-Bool_t  AliESDEvent::RemoveTrack(Int_t /*i*/) {
+Bool_t  AliESDEvent::RemoveTrack(Int_t rm) {
   // ---------------------------------------------------------
-  // Remove track
+  // Remove a track and references to it from ESD,
+  // if this track does not come from a reconstructed decay
   // ---------------------------------------------------------
+  Int_t last=GetNumberOfTracks()-1;
+  if ((rm<0)||(rm>last)) return kFALSE;
+
+  Int_t used=0;
 
   // Check if this track comes from a reconstructed decay
-  // if (yes) return kFALSE
+  Int_t nv0=GetNumberOfV0s();
+  for (Int_t n=0; n<nv0; n++) {
+    AliESDv0 *v0=GetV0(n);
 
-  // Remap the indices of the daughters of recosntructed decays
+    Int_t idx=v0->GetNindex();
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
 
-  // Remove the track
-  // delete fTracks->RemoveAt(i);
+    idx=v0->GetPindex();
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
+  }
 
-  // Compress the array with tracks
-  // fTracks->Compress();
+  Int_t ncs=GetNumberOfCascades();
+  for (Int_t n=0; n<ncs; n++) {
+    AliESDcascade *cs=GetCascade(n);
+
+    Int_t idx=cs->GetIndex();
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
+  }
+
+  Int_t nkn=GetNumberOfKinks();
+  for (Int_t n=0; n<nkn; n++) {
+    AliESDkink *kn=GetKink(n);
+
+    Int_t idx=kn->GetIndex(0);
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
+
+    idx=kn->GetIndex(1);
+    if (rm==idx) return kFALSE;
+    if (idx==last) used++;
+  }
+
+
+  //Replace the removed track with the last track 
+  TClonesArray &a=*fTracks;
+  delete a.RemoveAt(rm);
+
+  if (rm==last) return kTRUE;
+
+  AliESDtrack *t=GetTrack(last);
+  t->SetID(rm);
+  new (a[rm]) AliESDtrack(*t);
+  delete a.RemoveAt(last);
+
+  if (!used) return kTRUE;
+  
+
+  // Remap the indices of the daughters of reconstructed decays
+  for (Int_t n=0; n<nv0; n++) {
+    AliESDv0 *v0=GetV0(n);
+    if (v0->GetIndex(0)==last) {
+       v0->SetIndex(0,rm);
+       used--;
+       if (!used) return kTRUE;
+    }
+    if (v0->GetIndex(1)==last) {
+       v0->SetIndex(1,rm);
+       used--;
+       if (!used) return kTRUE;
+    }
+  }
+
+  for (Int_t n=0; n<ncs; n++) {
+    AliESDcascade *cs=GetCascade(n);
+    if (cs->GetIndex()==last) {
+       cs->SetIndex(rm);
+       used--;
+       if (!used) return kTRUE;
+    }
+  }
+
+  for (Int_t n=0; n<nkn; n++) {
+    AliESDkink *kn=GetKink(n);
+    if (kn->GetIndex(0)==last) {
+       kn->SetIndex(rm,0);
+       used--;
+       if (!used) return kTRUE;
+    }
+    if (kn->GetIndex(1)==last) {
+       kn->SetIndex(rm,1);
+       used--;
+       if (!used) return kTRUE;
+    }
+  }
 
   return kTRUE;
 }
 
+
+Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
+  //
+  // Remove the data which are not needed for the physics analysis.
+  //
+  // If track's transverse parameter is larger than fDmax
+  //                       OR
+  //    track's longitudinal parameter is larger than fZmax
+  // an attempt to remove this track from ESD is made.
+  //
+  // The track gets removed if it does not come 
+  // from a reconstructed decay
+  //
+
+  Float_t dmax=cleanPars[0], zmax=cleanPars[1];
+
+  const AliESDVertex *vertex=GetVertex();
+  Bool_t vtxOK=vertex->GetStatus(), rc=kFALSE;
+  
+  Int_t nTracks=GetNumberOfTracks();
+  for (Int_t i=nTracks-1; i>=0; i--) {
+    AliESDtrack *track=GetTrack(i);
+    Float_t xy,z; track->GetImpactParameters(xy,z);
+    if ((TMath::Abs(xy) > dmax) || (vtxOK && (TMath::Abs(z) > zmax))) {
+      if (RemoveTrack(i)) rc=kTRUE;
+    }
+  }
+
+  return rc;
+}
 
 Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) {
     // Add track

@@ -46,6 +46,8 @@ public:
   }
 
   Int_t    GetBindex() const {return fBachIdx;}
+  void     SetIndex(Int_t i) {fBachIdx=i;}        //for the consistensy with V0
+  Int_t    GetIndex() const {return GetBindex();} //for the consistensy with V0
   void     SetDcaXiDaughters(Double_t rDcaXiDaughters=0.);
   Double_t GetDcaXiDaughters() const {return fDcaXiDaughters;}
   Double_t GetCascadeCosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;

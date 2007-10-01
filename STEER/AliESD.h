@@ -75,7 +75,8 @@ public:
     return (AliESDTrdTrack *)fTrdTracks.UncheckedAt(i);
   }
 
-  Bool_t  RemoveTrack(Int_t i);
+  Bool_t Clean(Float_t *cleanPars);
+  Bool_t RemoveTrack(Int_t i);
 
   Int_t  AddTrack(const AliESDtrack *t) {
     AliESDtrack * track = new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
