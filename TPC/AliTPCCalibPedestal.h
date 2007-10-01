@@ -5,9 +5,9 @@
 
 
 
+#include <TObject.h>
+#include <TObjArray.h>
 
-
-class TObjArray;
 class TH2F;
 class TTreeSRedirector;
 class AliTPCROC;
