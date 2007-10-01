@@ -4414,7 +4414,7 @@ void  AliTPCtrackerMI::FindSplitted(TObjArray * array, AliESDEvent */*esd*/, Int
 	"mdist2="<<mdist[2]<<   //distance z
 
 	"\n";
-      delete array->RemoveAt(is1);
+      delete array->RemoveAt(i1);
     }
   }    
   delete [] helixes;
