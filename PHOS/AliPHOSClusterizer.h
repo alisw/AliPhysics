@@ -6,6 +6,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.43  2007/09/26 14:22:17  cvetan
+ * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
+ *
  * Revision 1.42  2007/08/28 12:55:07  policheh
  * Loaders removed from the reconstruction code (C.Cheshkov)
  *
@@ -36,6 +39,7 @@
 class TTree;
 
 class AliPHOSGeometry;
+class AliPHOSCalibData ;
 
 class AliPHOSClusterizer : public TObject {
 
@@ -73,6 +77,7 @@ public:
 
 protected:
 
+  static AliPHOSCalibData * fgCalibData ;   //! Calibration database if aval.
   AliPHOSGeometry *fGeom; // Pointer to PHOS geometry
   TClonesArray *fDigitsArr; // Array with input digits
   TTree *fTreeR; // Tree with output clusters

@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.14  2007/09/26 14:22:18  cvetan
+ * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
+ *
  * Revision 1.13  2007/08/30 10:40:27  cvetan
  * Minor
  *
@@ -31,8 +34,8 @@
 
 //_________________________________________________________________________
 //  Wrapping class for reconstruction
-//*--
-//*-- Author: Yves Schutz (SUBATECH) 
+//--
+//-- Author: Yves Schutz (SUBATECH) 
 // Reconstruction class. Redesigned from the old AliReconstructionner class and 
 // derived from STEER/AliReconstructor. 
 //_________________________________________________________________________
@@ -67,7 +70,8 @@ public:
     // requested by the Coding Convention
     Fatal("cpy ctor", "not implemented") ;
   }
-  ~AliPHOSReconstructor() ; //dtor            
+  virtual ~AliPHOSReconstructor() ; //dtor            
+
   static void                SetDebug()   { fgDebug = kTRUE ; }
   static void                ResetDebug() { fgDebug = kFALSE ; }
   static Bool_t              Debug() { return fgDebug ; }
@@ -96,9 +100,9 @@ public:
 private:
   
   static Bool_t fgDebug ; //! verbosity controller
-  static AliPHOSRecoParam*   fgkRecoParamEmc; // reconstruction parameters for EMC
-  static AliPHOSRecoParam*   fgkRecoParamCpv; // reconstruction parameters for EMC
-  AliPHOSGeometry*           fGeom;           // pointer to the PHOS geometry
+  static AliPHOSRecoParam *fgkRecoParamEmc; // reconstruction parameters for EMC
+  static AliPHOSRecoParam *fgkRecoParamCpv; // reconstruction parameters for EMC
+  AliPHOSGeometry         *fGeom;           // pointer to the PHOS geometry
 
   ClassDef(AliPHOSReconstructor,4)  // PHOS Reconstruction class
 

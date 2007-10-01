@@ -71,7 +71,7 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   }
 
   fGeom = AliPHOSGeometry::GetInstance("IHEP","");
-} 
+}
 
 //____________________________________________________________________________
   AliPHOSReconstructor::~AliPHOSReconstructor()
@@ -106,8 +106,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // write tracks to the ESD
 
   AliPHOSTrackSegmentMaker *tsm = new AliPHOSTrackSegmentMakerv1(fGeom);
-  AliPHOSPID *pid = new AliPHOSPIDv1(fGeom);
- 
+  AliPHOSPID               *pid = new AliPHOSPIDv1              (fGeom);
+
   // do current event; the loop over events is done by AliReconstruction::Run()
   tsm->SetESD(esd) ; 
   tsm->SetInput(clustersTree);
@@ -130,7 +130,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
   TClonesArray *recParticles  = pid->GetRecParticles();
   Int_t nOfRecParticles = recParticles->GetEntries();
-  
   
   esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
   esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
@@ -190,6 +189,27 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   //######################################
   
+  // Read digits array
+  TBranch *branch = digitsTree->GetBranch("PHOS");
+  if (!branch) { 
+    AliError("can't get the branch with the PHOS digits !");
+    return;
+  }
+  TClonesArray *fDigitsArr    = new TClonesArray("AliPHOSDigit",100);
+  branch->SetAddress(&fDigitsArr);
+  branch->GetEntry(0);
+
+  // Get the clusters array
+  TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
+  if (!emcbranch) { 
+    AliError("can't get the branch with the PHOS EMC clusters !");
+    return;
+  }
+
+  TObjArray *fEmcRecPoints = new TObjArray(100) ;
+  emcbranch->SetAddress(&fEmcRecPoints);
+  emcbranch->GetEntry(0);
+
   //Fill CaloClusters 
   const Float_t kBigShort = std::numeric_limits<short int>::max() - 1;
   const Float_t nsec100   = 1e9*100.; // units of 0.01 ns
@@ -202,19 +222,9 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     // Get track segment and EMC rec.point associated with this rec.particle
     AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(tsm->GetTrackSegments()->At(rp->GetPHOSTSIndex()));
 
-    // Get the clusters array
-    TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
-    if (!emcbranch) { 
-      AliError("can't get the branch with the PHOS EMC clusters !");
-      return;
-    }
-    TObjArray *emcRecPoints = new TObjArray(100) ;
-    emcbranch->SetAddress(&emcRecPoints);
-    emcbranch->GetEntry(0);
-
-    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(ts->GetEmcIndex()));
+    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(fEmcRecPoints->At(ts->GetEmcIndex()));
     AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
-        
+    
     Float_t xyz[3];
     for (Int_t ixyz=0; ixyz<3; ixyz++) 
       xyz[ixyz] = rp->GetPos()[ixyz];
@@ -228,19 +238,9 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     Short_t *timeList  = new Short_t[digitMult];
     Short_t *digiList  = new Short_t[digitMult];
 
-    // Read digits array
-    TBranch *branch = digitsTree->GetBranch("PHOS");
-    if (!branch) { 
-      AliError("can't get the branch with the PHOS digits !");
-      return;
-    }
-    TClonesArray *digitsArr = new TClonesArray("AliPHOSDigit",100);
-    branch->SetAddress(&digitsArr);
-    branch->GetEntry(0);
-
     // Convert Float_t* and Int_t* to Short_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(digitsArr->At(digitsList[iDigit]));
+      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(fDigitsArr->At(digitsList[iDigit]));
       amplList[iDigit] =
 	(Short_t)(TMath::Min(digit->GetEnergy()*gev500,kBigShort)); // Energy in units of GeV/500
       timeList[iDigit] =
@@ -258,10 +258,10 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     // fills the ESDCaloCluster
  
     ec->SetPHOS(kTRUE);
-    ec->SetPosition(xyz);                 //rec.point position in MARS
-    ec->SetE(rp->Energy());         //total particle energy
+    ec->SetPosition(xyz);                       //rec.point position in MARS
+    ec->SetE(rp->Energy());                     //total particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
-    ec->SetPid          (rp->GetPID()) ;        //array of particle identification
+    ec->SetPid(rp->GetPID()) ;                  //array of particle identification
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
@@ -296,9 +296,13 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     delete [] amplList;
     delete [] timeList;
     delete [] digiList;    
-  }  
+  }
+
+  delete tsm;
+  delete pid;
 }
 
+//____________________________________________________________________________
 AliTracker* AliPHOSReconstructor::CreateTracker() const
 {
   // creates the PHOS tracker
@@ -359,4 +363,6 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 		  modMax,colMax,rowMax,eMax));
 
   digitsTree->Fill();
+  digits->Delete();
+  delete digits;
 }

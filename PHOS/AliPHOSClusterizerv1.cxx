@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.115  2007/09/26 14:22:17  cvetan
+ * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
+ *
  * Revision 1.114  2007/09/06 16:06:44  kharlov
  * Absence of sorting results in loose of all unfolded clusters
  *
@@ -183,7 +186,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1() :
   AliPHOSClusterizer(),
   fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
   fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
-  fCalibData(0),              fADCchanelEmc(0),         fADCpedestalEmc(0),
+  fADCchanelEmc(0),         fADCpedestalEmc(0),
   fADCchanelCpv(0),           fADCpedestalCpv(0),       fEmcClusteringThreshold(0),
   fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
@@ -201,7 +204,7 @@ AliPHOSClusterizerv1::AliPHOSClusterizerv1(AliPHOSGeometry *geom) :
   AliPHOSClusterizer(geom),
   fDefaultInit(0),            fEmcCrystals(0),          fToUnfold(0),
   fWrite(0),                  fNumberOfEmcClusters(0),  fNumberOfCpvClusters(0),
-  fCalibData(0),              fADCchanelEmc(0),         fADCpedestalEmc(0),
+  fADCchanelEmc(0),         fADCpedestalEmc(0),
   fADCchanelCpv(0),           fADCpedestalCpv(0),       fEmcClusteringThreshold(0),
   fCpvClusteringThreshold(0), fEmcMinE(0),              fCpvMinE(0),
   fEmcLocMaxCut(0),           fW0(0),                   fCpvLocMaxCut(0),
@@ -229,14 +232,14 @@ Float_t  AliPHOSClusterizerv1::CalibrateEMC(Float_t amp, Int_t absId)
   // Calibration parameters are taken from calibration data base for raw data,
   // or from digitizer parameters for simulated data.
 
-  if(fCalibData){
+  if(fgCalibData){
     Int_t relId[4];
     fGeom->AbsToRelNumbering(absId,relId) ;
     Int_t   module = relId[0];
     Int_t   column = relId[3];
     Int_t   row    = relId[2];
     if(absId <= fEmcCrystals) { // this is EMC 
-      fADCchanelEmc   = fCalibData->GetADCchannelEmc (module,column,row);
+      fADCchanelEmc   = fgCalibData->GetADCchannelEmc (module,column,row);
       return amp*fADCchanelEmc ;        
     }
   }
@@ -254,15 +257,15 @@ Float_t  AliPHOSClusterizerv1::CalibrateCPV(Int_t amp, Int_t absId)
   // Calibration parameters are taken from calibration data base for raw data,
   // or from digitizer parameters for simulated data.
 
-  if(fCalibData){
+  if(fgCalibData){
     Int_t relId[4];
     fGeom->AbsToRelNumbering(absId,relId) ;
     Int_t   module = relId[0];
     Int_t   column = relId[3];
     Int_t   row    = relId[2];
     if(absId > fEmcCrystals) { // this is CPV
-      fADCchanelCpv   = fCalibData->GetADCchannelCpv (module,column,row);
-      fADCpedestalCpv = fCalibData->GetADCpedestalCpv(module,column,row);
+      fADCchanelCpv   = fgCalibData->GetADCchannelCpv (module,column,row);
+      fADCpedestalCpv = fgCalibData->GetADCpedestalCpv(module,column,row);
       return fADCpedestalCpv + amp*fADCchanelCpv ;              
     }     
   }
@@ -287,8 +290,6 @@ void AliPHOSClusterizerv1::Digits2Clusters(Option_t *option)
     Print() ; 
     return ;
   }
-
-  GetCalibrationParameters() ;
 
   MakeClusters() ;
     
@@ -411,10 +412,11 @@ void AliPHOSClusterizerv1::GetCalibrationParameters()
   // It is a user responsilibity to open CDB before reconstruction, for example: 
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
 
-  fCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
-  if (fCalibData->GetCalibDataEmc() == 0)
+  if (!fgCalibData) 
+    fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
+  if (fgCalibData->GetCalibDataEmc() == 0)
     AliFatal("Calibration parameters for PHOS EMC not found. Stop reconstruction.\n");
-  if (fCalibData->GetCalibDataCpv() == 0)
+  if (fgCalibData->GetCalibDataCpv() == 0)
     AliFatal("Calibration parameters for PHOS CPV not found. Stop reconstruction.\n");
 
 }
@@ -429,6 +431,8 @@ void AliPHOSClusterizerv1::Init()
 
   if(!gMinuit) 
     gMinuit = new TMinuit(100);
+
+  GetCalibrationParameters() ;
 
 }
 
@@ -462,8 +466,6 @@ void AliPHOSClusterizerv1::InitParameters()
   fToUnfold                = kTRUE ;
     
   fWrite                   = kTRUE ;
-
-  fCalibData               = 0 ;
 
   fIsOldRCUFormat          = kFALSE;
 }
@@ -1076,27 +1078,6 @@ void AliPHOSClusterizerv1::Print(const Option_t *)const
        fW0CPV )) ; 
 }
 //____________________________________________________________________________
-//void AliPHOSClusterizerv1::GetVertex(void)
-//{ //Extracts vertex posisition
-//  
-  //ESD
-//DP - todo  if(){
-//
-//  }
-
-//  //MC Generator
-//  if(gAlice && gAlice->GetMCApp() && gAlice->Generator()){
-//    Float_t x,y,z ;
-//    gAlice->Generator()->GetOrigin(x,y,z) ;
-//    fVtx.SetXYZ(x,y,z) ;
-//    return ; 
-//  }
-//
-//  //No any source
-//  fVtx[0]=fVtx[1]=fVtx[2]=0. ;
-//
-//}
-//____________________________________________________________________________
 void AliPHOSClusterizerv1::PrintRecPoints(Option_t * option)
 {
   // Prints list of RecPoints produced at the current pass of AliPHOSClusterizer
@@ -1151,11 +1132,11 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
   //For each EMC rec. point set the distance to the nearest bad crystal.
   //Author: Boris Polichtchouk 
 
-  if(!fCalibData->GetNumOfEmcBadChannels()) return;
-  AliInfo(Form("%d bad channel(s) found.\n",fCalibData->GetNumOfEmcBadChannels()));
+  if(!fgCalibData->GetNumOfEmcBadChannels()) return;
+  AliInfo(Form("%d bad channel(s) found.\n",fgCalibData->GetNumOfEmcBadChannels()));
 
   Int_t badIds[8000];
-  fCalibData->EmcBadChannelIds(badIds);
+  fgCalibData->EmcBadChannelIds(badIds);
 
   AliPHOSEmcRecPoint* rp;
 
@@ -1170,7 +1151,7 @@ void AliPHOSClusterizerv1::SetDistancesToBadChannels()
     rp = (AliPHOSEmcRecPoint*)fEMCRecPoints->At(iRP);
     minDist = 1.e+07;
 
-    for(Int_t iBad=0; iBad<fCalibData->GetNumOfEmcBadChannels(); iBad++) {
+    for(Int_t iBad=0; iBad<fgCalibData->GetNumOfEmcBadChannels(); iBad++) {
       rp->GetGlobalPosition(gposRecPoint,gmat);
       fGeom->RelPosInAlice(badIds[iBad],gposBadChannel);
       AliDebug(2,Form("BC position:[%.3f,%.3f,%.3f], RP position:[%.3f,%.3f,%.3f]. E=%.3f\n",

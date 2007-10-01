@@ -28,6 +28,8 @@
 
 ClassImp(AliPHOSClusterizer)
 
+AliPHOSCalibData * AliPHOSClusterizer::fgCalibData  = 0 ; 
+
 //____________________________________________________________________________
 AliPHOSClusterizer::AliPHOSClusterizer():
   fGeom(NULL),

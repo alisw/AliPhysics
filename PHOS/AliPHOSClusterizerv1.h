@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.53  2007/08/28 12:55:07  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.52  2007/08/07 14:16:00  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -61,7 +64,6 @@ class AliPHOSEmcRecPoint ;
 class AliPHOSDigit ;
 class AliPHOSDigitizer ;
 class AliPHOSGeometry ;
-class AliPHOSCalibData ;
 
 class AliPHOSClusterizerv1 : public AliPHOSClusterizer {
   
@@ -151,7 +153,6 @@ private:
   Int_t   fNumberOfCpvClusters ;     // number of CPV clusters found
  
   //Calibration parameters
-  AliPHOSCalibData * fCalibData ;   //! Calibration database if aval.
   Float_t fADCchanelEmc ;           // width of one ADC channel in GeV
   Float_t fADCpedestalEmc ;         //
   Float_t fADCchanelCpv ;           // width of one ADC channel in CPV 'popugais'
