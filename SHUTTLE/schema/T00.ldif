@@ -11,3 +11,4 @@ dn: dcsHost=aldcs052.cern.ch,det=T00,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1

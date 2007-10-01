@@ -2,7 +2,7 @@
 dn: det=TOF,o=alice,dc=cern,dc=ch
 objectClass: detectorConfig
 det: TOF
-strictRunOrder: 1
+strictRunOrder: 0
 responsible: Chiara.Zampolli@bo.infn.it
 responsible: arcelli@bo.infn.it
 
@@ -10,6 +10,7 @@ dn: dcsHost=aldcs052.cern.ch,det=TOF,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1
 dcsAlias: tof_hv_vp_[00..89]
 dcsAlias: tof_hv_vn_[00..89]
 dcsAlias: tof_hv_ip_[00..89]

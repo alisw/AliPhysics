@@ -2,7 +2,7 @@
 dn: det=MCH,o=alice,dc=cern,dc=ch
 objectClass: detectorConfig
 det: MCH
-strictRunOrder: 1
+strictRunOrder: 0
 responsible: aphecetc@in2p3.fr
 
 
@@ -10,6 +10,7 @@ dn: dcsHost=aldcs052.cern.ch,det=MCH,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1
 dcsAlias: MchHvLvRight/Chamber[00..03]Right/Quad0Sect[0..2].actual.vMon
 dcsAlias: MchHvLvLeft/Chamber[00..03]Left/Quad1Sect[0..2].actual.vMon
 dcsAlias: MchHvLvLeft/Chamber[00..03]Left/Quad2Sect[0..2].actual.vMon

@@ -9,6 +9,7 @@ dn: dcsHost=aldcs052.cern.ch,det=ZDC,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1
 dcsAlias: ZDC_ZPA_HV[0..4].actual.vMon
 dcsAlias: ZDC_ZNA_HV[0..4].actual.vMon
 dcsAlias: ZDC_ZNC_HV[0..4].actual.vMon

@@ -10,6 +10,7 @@ dn: dcsHost=aldcs052.cern.ch,det=HMP,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC0/HMP_MP0_SEC0_HV.actual.vMon
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC1/HMP_MP0_SEC1_HV.actual.vMon
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC2/HMP_MP0_SEC2_HV.actual.vMon

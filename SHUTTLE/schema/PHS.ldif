@@ -9,6 +9,7 @@ dn: dcsHost=aldcs052.cern.ch,det=PHS,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1
 dcsAlias: phs_hvIsegMeasVoltage[0..4]
 dcsAlias: phs_hvIsegMeasCurrent[0..4]
 dcsAlias: phs_hvIsegMeasAlarm[0..4]

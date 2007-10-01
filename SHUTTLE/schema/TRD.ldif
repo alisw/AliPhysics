@@ -9,6 +9,7 @@ dn: dcsHost=aldcs052.cern.ch,det=TRD,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
 dcsPort: 4242
+multiSplit: 1
 dcsAlias: trd_chamberStatus[000..539]
 dcsAlias: trd_goofieHv
 dcsAlias: trd_goofiePeakPos00
