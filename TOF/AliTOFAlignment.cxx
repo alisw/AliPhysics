@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2007/10/02 09:46:08  arcelli
+add methods to retrieve real survey data, and make some analysis (by B. Guerzoni)
+
 Revision 1.17  2007/06/06 16:26:46  arcelli
 remove fall-back call to local CDB storage
 
@@ -555,9 +558,10 @@ void AliTOFAlignment::MakeDefData(const Int_t nf,TString namefiles[])
   Int_t nfm=0;
   Int_t nsm=0;
   Long64_t totdata[72]={0};
-  AliSurveyObj *so = new AliSurveyObj();
+
   for (Int_t i=0;i<nf; i++)
     {
+      AliSurveyObj *so = new AliSurveyObj();
       const Char_t *nome=namefiles[i];
       so->FillFromLocalFile(nome);
       TObjArray *points = so->GetData();
@@ -574,9 +578,10 @@ void AliTOFAlignment::MakeDefData(const Int_t nf,TString namefiles[])
         data[nsm*4+nfm][5][totdata[nsm*4+nfm]]=((AliSurveyPoint *) points->At(i))->GetPrecisionZ();
         totdata[nsm*4+nfm]=totdata[nsm*4+nfm]+1;
       } 
+      delete so;
     }
 
-  //  delete so;
+  
 
   for(Int_t i=0; i<72 ;i++){
     Float_t numx=0, numy=0,numz=0, comodox=0, comodoy=0, comodoz=0,denx=0, deny=0, denz=0;
@@ -687,6 +692,7 @@ void AliTOFAlignment::ReadSurveyDataAndAlign(){
   f.cd();
   f.WriteObject(fTOFAlignObjArray,"TOFAlignObjs","kSingleKey");
   f.Close();
+  
 
 }
 
