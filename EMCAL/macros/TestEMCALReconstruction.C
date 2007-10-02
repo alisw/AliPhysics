@@ -19,8 +19,8 @@ void TestEMCALReconstruction(Int_t nev =3) {
   //calls local reconstruction of EMCAL and filling of ESD
   rec.SetRunLocalReconstruction("EMCAL");  //only do emcal
   rec.SetFillESD("EMCAL");
-  //Start at event 1, not event 0, and do all the rest...
-  rec.Run(0,-1);
+  rec.SetEventRange(0,nev);
+  rec.Run();
   timer.Stop();
   timer.Print();
 
