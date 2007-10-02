@@ -140,7 +140,7 @@ class AliHLTMemoryFile;
  * error/return code. Preferably the system error codes are used like
  * e.g. -EINVAL. This requires to include the header
  * <pre>
- * #include <cerrno>
+ * \#include \<cerrno\>
  * </pre>
  * - If no suitable input block could be found (e.g. no clusters for the TPC cluster
  * finder) set size to 0, block list is empty, return 0
