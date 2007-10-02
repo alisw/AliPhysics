@@ -46,9 +46,9 @@ void AliAODTracklets::CreateContainer(Int_t nTracks)
   if (fNTracks <= 0)
     return;
 
-  fTheta = new Float_t[fNTracks];
-  fPhi = new Float_t[fNTracks];
-  fDeltaPhi = new Float_t[fNTracks];
+  fTheta = new Double32_t[fNTracks];
+  fPhi = new Double32_t[fNTracks];
+  fDeltaPhi = new Double32_t[fNTracks];
   fLabels = new Int_t[fNTracks];
 }
 
@@ -90,7 +90,7 @@ void AliAODTracklets::DeleteContainer()
   fNTracks = 0;
 }
 
-Bool_t AliAODTracklets::SetTracklet(Int_t pos, Float_t theta, Float_t phi, Float_t deltaPhi, Int_t label)
+Bool_t AliAODTracklets::SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t label)
 {
   // Sets a tracklet at the given position
 

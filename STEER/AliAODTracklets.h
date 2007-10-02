@@ -25,19 +25,19 @@ class AliAODTracklets : public TNamed
   void CreateContainer(Int_t nTracks);
   void DeleteContainer();
 
-  Bool_t SetTracklet(Int_t pos, Float_t theta, Float_t phi, Float_t deltaPhi, Int_t label);
+  Bool_t SetTracklet(Int_t pos, Double32_t theta, Double32_t phi, Double32_t deltaPhi, Int_t label);
 
   Int_t GetNumberOfTracklets() const { return fNTracks; }
-  inline Float_t GetTheta(Int_t i) const;
-  inline Float_t GetPhi(Int_t i) const;
-  inline Float_t GetDeltaPhi(Int_t i) const;
+  inline Double32_t GetTheta(Int_t i) const;
+  inline Double32_t GetPhi(Int_t i) const;
+  inline Double32_t GetDeltaPhi(Int_t i) const;
   inline Int_t   GetLabel(Int_t i) const;
 
  protected:
   Int_t    fNTracks;      // Number of tracklets
-  Float_t *fTheta;        //[fNTracks] array with theta values
-  Float_t *fPhi;          //[fNTracks] array with phi values
-  Float_t *fDeltaPhi;     //[fNTracks] array with delta phi values
+  Double32_t *fTheta;        //[fNTracks] array with theta values
+  Double32_t *fPhi;          //[fNTracks] array with phi values
+  Double32_t *fDeltaPhi;     //[fNTracks] array with delta phi values
   Int_t   *fLabels;       //[fNTracks] array with labels of tracklets
 
  private:
@@ -47,7 +47,7 @@ class AliAODTracklets : public TNamed
   ClassDef(AliAODTracklets, 1);
 };
 
-Float_t AliAODTracklets::GetTheta(Int_t i) const 
+Double32_t AliAODTracklets::GetTheta(Int_t i) const 
 { 
   if (i>=0 && i<fNTracks) 
   {
@@ -57,7 +57,7 @@ Float_t AliAODTracklets::GetTheta(Int_t i) const
     Error("GetTheta","Invalid track number %d",i); return -9999.;
 }
 
-Float_t AliAODTracklets::GetPhi(Int_t i) const 
+Double32_t AliAODTracklets::GetPhi(Int_t i) const 
 { 
   if (i>=0 && i<fNTracks) 
   {
@@ -67,7 +67,7 @@ Float_t AliAODTracklets::GetPhi(Int_t i) const
     Error("GetPhi","Invalid track number %d",i); return -9999.;
 }
 
-Float_t AliAODTracklets::GetDeltaPhi(Int_t i) const 
+Double32_t AliAODTracklets::GetDeltaPhi(Int_t i) const 
 {
   if (i>=0 && i<fNTracks) 
   {
