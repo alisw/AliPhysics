@@ -10,6 +10,8 @@ MODULE				= HLTinterface
 
 SUBDIRS 			= 
 
+EXTRA_DIST			=
+
 AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 				  -I$(top_srcdir)/BASE
 
