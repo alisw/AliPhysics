@@ -199,7 +199,7 @@ public:
 	{
 		kNoReason,
 		kHeaderContainsWrongType,
-		kHeaderContainsWrongRecordWidth,
+		kHeaderContainsWrongRecordWidth
 	};
 
 	/**

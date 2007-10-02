@@ -26,13 +26,19 @@
 // We define NDEBUG for the AliHLTMUONDataBlockReader.h header file since this
 // program by definition handles corrupt data. So we do not need the assertions
 // in the AliHLTMUONDataBlockReader class to be checked.
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #include "AliHLTMUONDataBlockReader.h"
+#if defined(DEBUG) && defined(NDEBUG)
 #undef NDEBUG
+#endif
+
 #include "AliHLTMUONUtils.h"
 
 /*TODO: fix this. Need a platform independant way of checking the endian encoding.
  * This does not want to work on Apple Mac OS compiler: i686-apple-darw
+ * Handle this with #ifdef __APPLE__ ?
 #include <endian.h>
 #ifndef LITTLE_ENDIAN
 #error Handling of internal data for non little endian machines not yet implemented.

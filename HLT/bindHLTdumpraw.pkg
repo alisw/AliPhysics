@@ -24,3 +24,9 @@ ELIBS := STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim \
 	CDB STEER HLTbase MUONevaluation MUONsim MUONrec \
 	MUONbase MUONtrigger MUONgeometry MUONraw MUONcalib MUONmapping \
 	AliHLTMUON
+
+include $(MODDIR)/hlt.conf
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
