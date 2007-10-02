@@ -39,17 +39,20 @@ MODULE_HDRS := 	$(MODULE_SRCS:.cxx=.h) \
 		AliHLTMUONDataBlockReader.h \
 		AliHLTMUONDataBlockWriter.h \
 		AliHLTMUONDataTypes.h \
+		AliHLTMUONList.h \
+		AliHLTMUONCountedList.h \
 		OnlineAnalysis/AliHLTMUONMansoTrackerFSMCallback.h
 
 # The dictionary linkdef header for rootcint:
-DICTIONARY := 	HLTMUONLinkDef.h
+MODULE_DHDR := 	HLTMUONLinkDef.h
 
 ###############################################################################
 
 CINTHDRS:= 	$(patsubst %,MUON/%,$(CLASS_HDRS))
 SRCS := 	$(patsubst %,MUON/%,$(MODULE_SRCS))
 HDRS := 	$(patsubst %,MUON/%,$(MODULE_HDRS))
-DHDR:= 		$(patsubst %,MUON/%,$(DICTIONARY))
+DHDR:= 		$(patsubst %,MUON/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
