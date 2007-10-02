@@ -244,14 +244,6 @@ void AliZDCCalibData::SetEnCalib(Float_t* EnCalib)
 }
 
 //________________________________________________________________
-void AliZDCCalibData::SetPMTHVVal(Float_t* HVVal)
-{
-  // Set PMTs HV values
-  if(HVVal) for(int t=0; t<22; t++) fPMTHVVal[t] = HVVal[t];
-  else for(int t=0; t<22; t++) fPMTHVVal[t] = 0.;
-}
- 
-//________________________________________________________________
 void AliZDCCalibData::SetZN1EqualCoeff(Float_t* EqualCoeff)
 {
   // Set ZN1 equalization coefficients

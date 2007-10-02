@@ -105,11 +105,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   Bool_t resultAl = kFALSE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
-  // --- Writing ZDC PTMs HV values into calibration object
   AliZDCCalibData *calibdata = new AliZDCCalibData("ZDC");
-  for(Int_t j=0; j<22; j++)
-     calibdata->SetPMTHVVal(j,DCSValues[j+4]);
-
   
   // *************** From DAQ ******************
   // [a] PEDESTALS

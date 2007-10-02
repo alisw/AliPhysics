@@ -40,9 +40,6 @@ class AliZDCCalibData: public TNamed {
   Float_t  GetEnCalib(Int_t channel)	const {return fEnCalibration[channel];}
   Float_t* GetEnCalib()   		const {return (float*)fEnCalibration;}
   //
-  Float_t  GetPMTHVVal(Int_t channel)   const {return fPMTHVVal[channel];}
-  Float_t* GetPMTHVVal()		  const {return (float*)fPMTHVVal;}
-  //
   Float_t  GetZN1EqualCoeff(Int_t channel) const {return fZN1EqualCoeff[channel];}
   Float_t* GetZN1EqualCoeffs()		   const {return (float*)fZN1EqualCoeff;}
   Float_t  GetZP1EqualCoeff(Int_t channel) const {return fZP1EqualCoeff[channel];}
@@ -68,9 +65,6 @@ class AliZDCCalibData: public TNamed {
   //
   void 	SetEnCalib(Int_t channel, Float_t val) {fEnCalibration[channel]=val;}
   void 	SetEnCalib(Float_t* EnCalib);
-  //
-  void 	SetPMTHVVal(Int_t channel, Float_t val) {fPMTHVVal[channel]=val;}
-  void 	SetPMTHVVal(Float_t* HVVal);
   //
   void 	SetZN1EqualCoeff(Int_t channel, Float_t val) {fZN1EqualCoeff[channel]=val;}
   void 	SetZN1EqualCoeff(Float_t* EqualCoeff);
@@ -112,8 +106,6 @@ class AliZDCCalibData: public TNamed {
   Float_t  fPedCorrCoeff[2][44]; // Fit of correlation in-time vs. out-of-time
   // --- E calibration
   Float_t  fEnCalibration[6];	 // Coeff. for energy calibration
-  // --- PMTs HV values
-  Float_t  fPMTHVVal[22];	 // PMTs HV values
   // --- Coefficients for tower calibration
   Float_t  fZN1EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
   Float_t  fZP1EqualCoeff[5];	 // Equalization coefficients for ZN1 PTMs
@@ -132,7 +124,7 @@ class AliZDCCalibData: public TNamed {
   Float_t  fEZP2MaxValue;	 // Max value of ZP2 vs. Nspec p correlation
   Float_t  fEZDC2MaxValue;	 // Max value of ZDC2 vs. Nspec n+p correlation
   //
-  ClassDef(AliZDCCalibData,8)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,9)    // ZDC  Calibration data
 };
 
 #endif
