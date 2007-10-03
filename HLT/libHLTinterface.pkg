@@ -1,6 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
+include $(MODDIR)/hlt.conf
+
 MODULE_SRCS= 	AliHLTExternalInterface.cxx
 
 CLASS_HDRS:=  	
@@ -17,9 +19,9 @@ DHDR:=$(patsubst %,BASE/interface/%,$(MODULE_DHDR))
 #CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 CINTAUTOLINK:=
 
-EDEFINE      :=
-PACKCXXFLAGS :=
-PACKCFLAGS   :=
-PACKDCXXFLAGS:=
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
 EINCLUDE := HLT/BASE/interface HLT/BASE
