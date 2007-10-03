@@ -22,7 +22,7 @@
  *  @date   
  *  @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
  */
-#define DEBUG
+
 #include "AliHLTMUONMansoTrackerFSM.h"
 #include "AliHLTMUONCalculations.h"
 #include "AliHLTMUONConstants.h"
