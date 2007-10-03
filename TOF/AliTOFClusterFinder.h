@@ -32,7 +32,6 @@ class AliTOFClusterFinder : public TObject
   AliTOFClusterFinder(const AliTOFClusterFinder &source); // copy constructor
   AliTOFClusterFinder& operator=(const AliTOFClusterFinder &source); // ass. op.
   virtual ~AliTOFClusterFinder();
-
   void Digits2RecPoints(TTree* digitsTree, TTree* clusterTree);
   void Digits2RecPoints(Int_t ievt);
   void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
@@ -48,6 +47,8 @@ class AliTOFClusterFinder : public TObject
   void SetVerbose(Int_t Verbose){fVerbose=Verbose;} // To set the verbose level
   void SetDecoderVersion(Int_t version){fDecoderVersion=version;} // To set the decoder version
   Bool_t GetDecoderVersion() const {return fDecoderVersion;} // To get the decoder version
+  UShort_t  GetClusterVolIndex(Int_t *ind) const; //Volume Id getter
+  void GetClusterPars(Int_t *ind, Double_t *pos, Double_t *cov) const; //cluster par getter
 
  protected:
   AliRunLoader *fRunLoader;      // Pointer to Run Loader
@@ -78,7 +79,7 @@ class AliTOFClusterFinder : public TObject
                             // -false ->old version  (default value!!)
   AliTOFcalib *fTOFcalib;       // pointer to the TOF calibration info
 
-  ClassDef(AliTOFClusterFinder,3) // To run TOF clustering
+  ClassDef(AliTOFClusterFinder,4) // To run TOF clustering
 };
 #endif
 

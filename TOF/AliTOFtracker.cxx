@@ -241,7 +241,6 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent* event) {
     AliESDtrack *t=event->GetTrack(i);
     AliESDtrack *seed =(AliESDtrack*)fSeeds->UncheckedAt(i);
     if(seed->GetTOFsignal()>0){
-      Float_t info[10];
       t->SetTOFsignal(seed->GetTOFsignal());
       t->SetTOFcluster(seed->GetTOFcluster());
       t->SetTOFsignalToT(seed->GetTOFsignalToT());
@@ -363,7 +362,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   Float_t dyMax=fRecoParam->GetWindowSizeMaxY(); 
   Float_t dzMax=fRecoParam->GetWindowSizeMaxZ();
   Float_t dCut=fRecoParam->GetDistanceCut();
-  Double_t maxChi2=fRecoParam->GetMaxChi2();
+  Double_t maxChi2=fRecoParam->GetMaxChi2TRD();
   Bool_t timeWalkCorr    = fRecoParam->GetTimeWalkCorr();
   if(!mLastStep){
     AliDebug(1,"++++++++++++++TOF Reconstruction Parameters:++++++++++++ \n");
@@ -448,7 +447,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
       if (TMath::Abs(dph)>dphi) continue;
-
       Double_t yc=(c->GetPhi() - trackTOFin->GetAlpha())*c->GetR();
       Double_t p[2]={yc, c->GetZ()};
       Double_t cov[3]= {dY*dY/12., 0., dZ*dZ/12.};
@@ -472,6 +470,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       global[nc] = *gGeoManager->GetCurrentMatrix();
       nc++;
     }
+
 
     //start fine propagation 
 

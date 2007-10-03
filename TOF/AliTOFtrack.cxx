@@ -168,6 +168,36 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
 }     
 
 //_________________________________________________________________________
+Double_t AliTOFtrack::GetPredictedChi2(const AliCluster3D *c) const {
+  //
+  //
+  //
+  Double_t p[3]={c->GetX(), c->GetY(), c->GetZ()};
+  Double_t covyz[3]={c->GetSigmaY2(), c->GetSigmaYZ(), c->GetSigmaZ2()};
+  Double_t covxyz[3]={c->GetSigmaX2(), c->GetSigmaXY(), c->GetSigmaXZ()};
+  return AliExternalTrackParam::GetPredictedChi2(p, covyz, covxyz);
+}
+//_________________________________________________________________________
+Bool_t AliTOFtrack::PropagateTo(const AliCluster3D *c) {
+  //
+  //
+  //
+  Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
+  Double_t p[3]={c->GetX(), c->GetY(), c->GetZ()};
+  Double_t covyz[3]={c->GetSigmaY2(), c->GetSigmaYZ(), c->GetSigmaZ2()};
+  Double_t covxyz[3]={c->GetSigmaX2(), c->GetSigmaXY(), c->GetSigmaXZ()};
+  Double_t bz=GetBz();
+  if (!AliExternalTrackParam::PropagateTo(p, covyz, covxyz, bz)) return kFALSE;
+  if (IsStartedTimeIntegral()) {
+    Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) +
+			     (GetY()-oldY)*(GetY()-oldY) +
+			     (GetZ()-oldZ)*(GetZ()-oldZ));
+    if (GetX()<oldX) d=-d;
+    AddTimeStep(d);
+  }
+  return kTRUE;
+}
+//_________________________________________________________________________
 Double_t AliTOFtrack::GetYat(Double_t xk, Bool_t & skip) const {     
 //-----------------------------------------------------------------
 // This function calculates the Y-coordinate of a track at the plane x=xk.
@@ -191,6 +221,7 @@ Int_t AliTOFtrack::Compare(const TObject *o) const {
   return 0;
 }
 
+//_____________________________________________________________________________
 Double_t AliTOFtrack::GetBz() const {
   //
   // returns Bz component of the magnetic field (kG)

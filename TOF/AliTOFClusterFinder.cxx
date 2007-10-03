@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.28  2007/05/31 16:06:05  arcelli
+move instance of AliRawStream outside loop on DDL
+
 Revision 1.27  2007/05/02 16:31:49  arcelli
 Add methods to handle single event reconstruction. retrieval of Calib info moved to AliTOFReconstructor ctor, and passed via a pointer to AliTOFcalib
 
@@ -89,9 +92,13 @@ Revision 0.01  2005/07/25 A. De Caro
 
 
 #include "TClonesArray.h"
-//#include "TFile.h"
 #include "TStopwatch.h"
 #include "TTree.h"
+#include <TGeoManager.h>
+#include <AliGeomManager.h>
+#include <TGeoMatrix.h>
+#include <TGeoPhysicalNode.h>
+#include "AliAlignObj.h"
 
 #include "AliDAQ.h"
 #include "AliLoader.h"
@@ -262,10 +269,8 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   Int_t nDigits = digits->GetEntriesFast();
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
-  Int_t ii, jj;
+  Int_t ii;
   Int_t dig[5]; //cluster detector indeces
-  Float_t g[3]; //cluster cartesian coord
-  Double_t h[3]; // the cluster spatial cyl. coordinates
   Int_t  parTOF[5]; //The TOF signal parameters
   Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
@@ -278,19 +283,16 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
 
     //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
-    for (jj=0; jj<3; jj++) g[jj] = 0.;
-    fTOFGeometry->GetPos(dig,g);
-
-    h[0] = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
-    h[1] = TMath::ATan2(g[1],g[0]);
-    h[2] = g[2];
-
     parTOF[0] = d->GetTdc(); //the TDC signal
     parTOF[1] = d->GetToT(); //the ToT signal
     parTOF[2] = d->GetAdc(); // the adc charge
     parTOF[3] = d->GetTdcND(); // non decalibrated sim time
     parTOF[4] = d->GetTdc(); // raw time, == Tdc time for the moment
-    AliTOFcluster *tofCluster = new AliTOFcluster(h,dig,parTOF,status,d->GetTracks(),ii);
+    Double_t posClus[3];
+    Double_t covClus[6];
+    UShort_t volIdClus=GetClusterVolIndex(dig);
+    GetClusterPars(dig, posClus,covClus);
+    AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],d->GetTracks(),dig,parTOF,status,ii);
     InsertCluster(tofCluster);
 
   }
@@ -350,10 +352,8 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
   Int_t nDigits = digits->GetEntriesFast();
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
-  Int_t ii, jj;
+  Int_t ii;
   Int_t dig[5]; //cluster detector indeces
-  Float_t g[3]; //cluster cartesian coord
-  Double_t h[3]; // the cluster spatial cyl. coordinates
   Int_t  parTOF[5]; //The TOF signal parameters
   Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
@@ -366,19 +366,17 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
 
     //    AliDebug(2,Form(" %2i  %1i  %2i  %1i  %2i ",dig[0],dig[1],dig[2],dig[3],dig[4]));
 
-    for (jj=0; jj<3; jj++) g[jj] = 0.;
-    fTOFGeometry->GetPos(dig,g);
-
-    h[0] = TMath::Sqrt(g[0]*g[0]+g[1]*g[1]);
-    h[1] = TMath::ATan2(g[1],g[0]);
-    h[2] = g[2];
-
     parTOF[0] = d->GetTdc(); //the TDC signal
     parTOF[1] = d->GetToT(); //the ToT signal
     parTOF[2] = d->GetAdc(); // the adc charge
     parTOF[3] = d->GetTdcND(); // non decalibrated sim time
     parTOF[4] = d->GetTdc(); // raw time, == Tdc time for the moment
-    AliTOFcluster *tofCluster = new AliTOFcluster(h,dig,parTOF,status,d->GetTracks(),ii);
+    
+    Double_t posClus[3];
+    Double_t covClus[6];
+    UShort_t volIdClus=GetClusterVolIndex(dig);
+    GetClusterPars(dig,posClus,covClus);
+   AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],d->GetTracks(),dig,parTOF,status,ii);
     InsertCluster(tofCluster);
 
   }
@@ -419,12 +417,9 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
   TClonesArray * clonesRawData;
 
-  Int_t ii = 0;
   Int_t dummy = -1;
 
   Int_t detectorIndex[5];
-  Float_t position[3];
-  Double_t cylindricalPosition[3];
   Int_t parTOF[5];
 
   ofstream ftxt;
@@ -478,19 +473,18 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	else              ftxt << " " << detectorIndex[4];
       }
 
-      for (ii=0; ii<3; ii++) position[ii] =  0.;
-      fTOFGeometry->GetPos(detectorIndex, position);
-
-      cylindricalPosition[0] = TMath::Sqrt(position[0]*position[0] + position[1]*position[1]);
-      cylindricalPosition[1] = TMath::ATan2(position[1], position[0]);
-      cylindricalPosition[2] = position[2];
-
       parTOF[0] = tofRawDatum->GetTOF(); //TDC
       parTOF[1] = tofRawDatum->GetTOT(); // TOT
       parTOF[2] = tofRawDatum->GetTOT(); //ADC==TOF
       parTOF[3] = -1;//raw data: no track of undecalib sim time
       parTOF[4] = tofRawDatum->GetTOF(); // RAW time
-      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex, parTOF);
+      Double_t posClus[3];
+      Double_t covClus[6];
+      UShort_t volIdClus=GetClusterVolIndex(detectorIndex);
+      Int_t lab[3]={-1,-1,-1};
+      Bool_t status=kTRUE;
+      GetClusterPars(detectorIndex,posClus,covClus);
+     AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],lab,detectorIndex,parTOF,status,-1);
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
@@ -554,12 +548,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
   TClonesArray * clonesRawData;
 
-  Int_t ii = 0;
   Int_t dummy = -1;
 
   Int_t detectorIndex[5] = {-1, -1, -1, -1, -1};
-  Float_t position[3];
-  Double_t cylindricalPosition[5];
   Int_t parTOF[5];
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
@@ -612,18 +603,18 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 	else              ftxt << " " << detectorIndex[4];
       }
 
-      for (ii=0; ii<3; ii++) position[ii] =  0.;
-      fTOFGeometry->GetPos(detectorIndex, position);
-
-      cylindricalPosition[0] = TMath::Sqrt(position[0]*position[0] + position[1]*position[1]);
-      cylindricalPosition[1] = TMath::ATan2(position[1], position[0]);
-      cylindricalPosition[2] = position[2];
       parTOF[0] = tofRawDatum->GetTOF(); // TDC
       parTOF[1] = tofRawDatum->GetTOT(); // TOT
       parTOF[2] = tofRawDatum->GetTOT(); // raw data have ADC=TOT
       parTOF[3] = -1; //raw data: no track of the undecalib sim time
       parTOF[4] = tofRawDatum->GetTOF(); // Raw time == TDC
-      AliTOFcluster *tofCluster = new AliTOFcluster(cylindricalPosition, detectorIndex, parTOF);
+      Double_t posClus[3];
+      Double_t covClus[6];
+      UShort_t volIdClus=GetClusterVolIndex(detectorIndex);
+      Int_t lab[3]={-1,-1,-1};
+      Bool_t status=kTRUE;
+      GetClusterPars(detectorIndex,posClus,covClus);
+      AliTOFcluster *tofCluster = new AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],lab,detectorIndex,parTOF,status,-1);
       InsertCluster(tofCluster);
 
       if (fVerbose==2) {
@@ -867,7 +858,7 @@ Int_t AliTOFClusterFinder::InsertCluster(AliTOFcluster *tofCluster) {
 
 Int_t AliTOFClusterFinder::FindClusterIndex(Double_t z) const {
   //--------------------------------------------------------------------
-  // This function returns the index of the nearest cluster 
+  // This function returns the index of the nearest cluster in z
   //--------------------------------------------------------------------
   if (fNumberOfTofClusters==0) return 0;
   if (z <= fTofClusters[0]->GetZ()) return 0;
@@ -894,7 +885,6 @@ void AliTOFClusterFinder::FillRecPoint()
   Int_t ii, jj;
 
   Int_t detectorIndex[5];
-  Double_t cylindricalPosition[3];
   Int_t parTOF[5];
   Int_t trackLabels[3];
   Int_t digitIndex = -1;
@@ -907,16 +897,17 @@ void AliTOFClusterFinder::FillRecPoint()
     digitIndex = fTofClusters[ii]->GetIndex();
     for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
     for(jj=0; jj<3; jj++) trackLabels[jj] = fTofClusters[ii]->GetLabel(jj);
-    cylindricalPosition[0] = fTofClusters[ii]->GetR();
-    cylindricalPosition[1] = fTofClusters[ii]->GetPhi();
-    cylindricalPosition[2] = fTofClusters[ii]->GetZ();
     parTOF[0] = fTofClusters[ii]->GetTDC(); // TDC
     parTOF[1] = fTofClusters[ii]->GetToT(); // TOT
     parTOF[2] = fTofClusters[ii]->GetADC(); // ADC=TOT
     parTOF[3] = fTofClusters[ii]->GetTDCND(); // TDCND
     parTOF[4] = fTofClusters[ii]->GetTDCRAW();//RAW
     status=fTofClusters[ii]->GetStatus();
-    new(lRecPoints[ii]) AliTOFcluster(cylindricalPosition, detectorIndex, parTOF,status,trackLabels,digitIndex);
+    Double_t posClus[3];
+    Double_t covClus[6];
+    UShort_t volIdClus=GetClusterVolIndex(detectorIndex);
+    GetClusterPars(detectorIndex,posClus,covClus);
+    new(lRecPoints[ii]) AliTOFcluster(volIdClus,posClus[0],posClus[1],posClus[2],covClus[0],covClus[1],covClus[2],covClus[3],covClus[4],covClus[5],trackLabels,detectorIndex, parTOF,status,digitIndex);
 
   } // loop on clusters
 
@@ -1035,4 +1026,122 @@ void AliTOFClusterFinder::UnLoadClusters()
   fTOFLoader->UnloadRecPoints();
 
 }
-//______________________________________________________________________________
+//-------------------------------------------------------------------------
+UShort_t AliTOFClusterFinder::GetClusterVolIndex(Int_t *ind) const {
+
+  //First of all get the volume ID to retrieve the l2t transformation...
+  //
+  // Detector numbering scheme
+  Int_t nSector = 18;
+  Int_t nPlate  = 5;
+  Int_t nStripA = 15;
+  Int_t nStripB = 19;
+  Int_t nStripC = 19;
+
+  Int_t isector =ind[0];
+  if (isector >= nSector)
+    AliError(Form("Wrong sector number in TOF (%d) !",isector));
+  Int_t iplate = ind[1];
+  if (iplate >= nPlate)
+    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+  Int_t istrip = ind[2];
+
+  Int_t stripOffset = 0;
+  switch (iplate) {
+  case 0:
+    stripOffset = 0;
+    break;
+  case 1:
+    stripOffset = nStripC;
+    break;
+  case 2:
+    stripOffset = nStripC+nStripB;
+    break;
+  case 3:
+    stripOffset = nStripC+nStripB+nStripA;
+    break;
+  case 4:
+    stripOffset = nStripC+nStripB+nStripA+nStripB;
+    break;
+  default:
+    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
+    break;
+  };
+
+  Int_t index= (2*(nStripC+nStripB)+nStripA)*isector +
+               stripOffset +
+               istrip;
+
+  UShort_t volIndex = AliGeomManager::LayerToVolUID(AliGeomManager::kTOF,index);
+  return volIndex;
+}
+//
+//-------------------------------------------------------------------------
+void AliTOFClusterFinder::GetClusterPars(Int_t *ind, Double_t* pos,Double_t* cov) const {
+
+  //First of all get the volume ID to retrieve the l2t transformation...
+  //
+  UShort_t volIndex = GetClusterVolIndex(ind);
+  //
+  //
+  //we now go in the system of the strip: determine the local coordinates
+  //
+  //
+  // 47---------------------------------------------------0  ^ z
+  // | | | | | | | | | | | | | | | | | | | | | | | | | | | 1 |
+  // -----------------------------------------------------   | y going outwards
+  // | | | | | | | | | | | | | | | | | | | | | | | | | | | 0 |  par[0]=0;
+
+  // -----------------------------------------------------   |
+  // x <-----------------------------------------------------
+
+  Float_t localX=(ind[4]-23.5)*2.5; 
+  Float_t localY=0; 
+  Float_t localZ=(ind[3]-0.5)*3.5; 
+
+  //move to the tracking ref system
+
+  Double_t lpos[3];
+  lpos[0]=localX;
+  lpos[1]=localY;
+  lpos[2]=localZ; 
+
+  const TGeoHMatrix *l2t= AliGeomManager::GetTracking2LocalMatrix(volIndex);
+  // Get The position in the track ref system
+  Double_t tpos[3];
+  l2t->MasterToLocal(lpos,tpos);
+  pos[0]=tpos[0];
+  pos[1]=tpos[1];
+  pos[2]=tpos[2];
+
+  //Get The cluster covariance in the track ref system
+  Double_t lcov[9];
+
+  //cluster covariance in the local system:
+  // sx2   0   0
+  // 0     0   0
+  // 0     0   sz2
+
+  lcov[0]=2.5*2.5/12.;
+  lcov[1]=0;
+  lcov[2]=0;
+  lcov[3]=0;
+  lcov[4]=0;
+  lcov[5]=0;
+  lcov[6]=0;
+  lcov[7]=0;
+  lcov[8]=3.5*3.5/12.;
+
+  //cluster covariance in the tracking system:
+  TGeoHMatrix m;
+  m.SetRotation(lcov);
+  m.Multiply(l2t);
+  m.MultiplyLeft(&l2t->Inverse());
+  Double_t *tcov = m.GetRotationMatrix();
+  cov[0] = tcov[0]; cov[1] = tcov[1]; cov[2] = tcov[2];
+  cov[3] = tcov[4]; cov[4] = tcov[5];
+  cov[5] = tcov[8];
+
+  return;
+
+}
