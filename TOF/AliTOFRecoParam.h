@@ -16,6 +16,8 @@ class AliTOFRecoParam : public TObject
 {
  public: 
   AliTOFRecoParam();
+  AliTOFRecoParam(const AliTOFRecoParam &p); //Copy Ctor 
+  AliTOFRecoParam& operator=(const AliTOFRecoParam &p); // ass. op.
   virtual ~AliTOFRecoParam();
   //Getters
   Bool_t   UseTimeZero()           const  { return fTimeZero;}
@@ -31,6 +33,7 @@ class AliTOFRecoParam : public TObject
   Float_t  GetSensRadius()         const  { return fSensRadius;}
   Float_t  GetStepSize()           const  { return fStepSize;}
   Double_t  GetMaxChi2()           const  { return fMaxChi2;}
+  Double_t  GetMaxChi2TRD()           const  { return fMaxChi2TRD;}
   Double_t  GetTimeResolution()    const  { return fTimeResolution;}
   Double_t  GetTimeNSigma()        const  { return fTimeNSigma;}
 
@@ -49,6 +52,7 @@ class AliTOFRecoParam : public TObject
   void  SetSensRadius(Float_t in)  {fSensRadius=in;}
   void  SetStepSize(Float_t in)  {fStepSize=in;}
   void  SetMaxChi2(Double_t in)  {fMaxChi2=in;}
+  void  SetMaxChi2TRD(Double_t in)  {fMaxChi2TRD=in;}
   void  SetTimeResolution(Double_t in)  {fTimeResolution=in;}
   void  SetTimeNSigma(Double_t in)  {fTimeNSigma=in;}
 
@@ -68,7 +72,8 @@ class AliTOFRecoParam : public TObject
   Float_t fDistanceCut;  // cut on the closest approach distance
   Float_t fSensRadius;  // Average radius of sensitive volumes (cm)
   Float_t fStepSize;  // Propagation step size (cm)
-  Double_t fMaxChi2;  // maximum X2 out of the TRD
+  Double_t fMaxChi2;  // maximum X2 track-tof clusters
+  Double_t fMaxChi2TRD;  // maximum X2 track-tof clusters
   Double_t fTimeResolution;  // Time resolution for resp. function in PID (ps)
   Double_t fTimeNSigma;  // N-Sigma Range used for resp. function in PID 
 

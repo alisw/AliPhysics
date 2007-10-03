@@ -28,6 +28,7 @@ ClassImp(AliTOFRecoParam)
 
 //_____________________________________________________________________________
 AliTOFRecoParam::AliTOFRecoParam():
+  TObject(),       
   fTimeZero(kFALSE),       
   fTimeZerofromT0(kFALSE),       
   fTimeZerofromTOF(kFALSE),       
@@ -35,11 +36,12 @@ AliTOFRecoParam::AliTOFRecoParam():
   fApplyPbPbCuts(kFALSE),       
   fWindowSizeMaxY(50.),
   fWindowSizeMaxZ(35.),
-  fWindowScaleFact(3.),
+  fWindowScaleFact(5.),
   fDistanceCut(3.),
-  fSensRadius(378.),
+  fSensRadius(378.5),
   fStepSize(0.1),
-  fMaxChi2(150.),
+  fMaxChi2(10.),
+  fMaxChi2TRD(150.),
   fTimeResolution(80.),
   fTimeNSigma(5.)
 {
@@ -47,7 +49,66 @@ AliTOFRecoParam::AliTOFRecoParam():
   // constructor
   //
 }
+//_____________________________________________________________________________
+AliTOFRecoParam::AliTOFRecoParam(const AliTOFRecoParam &p):
+  TObject(),       
+  fTimeZero(kFALSE),       
+  fTimeZerofromT0(kFALSE),       
+  fTimeZerofromTOF(kFALSE),       
+  fTimeWalkCorr(kFALSE),       
+  fApplyPbPbCuts(kFALSE),       
+  fWindowSizeMaxY(50.),
+  fWindowSizeMaxZ(35.),
+  fWindowScaleFact(5.),
+  fDistanceCut(3.),
+  fSensRadius(378.5),
+  fStepSize(0.1),
+  fMaxChi2(10.),
+  fMaxChi2TRD(150.),
+  fTimeResolution(80.),
+  fTimeNSigma(5.)
+ { 
+  //copy Ctor
 
+   fTimeZero=p.fTimeZero;       
+   fTimeZerofromT0=p.fTimeZerofromT0;
+   fTimeZerofromTOF=p.fTimeZerofromTOF;       
+   fTimeWalkCorr=p.fTimeWalkCorr;       
+   fApplyPbPbCuts=p.fApplyPbPbCuts;       
+   fWindowSizeMaxY=p.fWindowSizeMaxY;
+   fWindowSizeMaxZ=p.fWindowSizeMaxZ;
+   fWindowScaleFact=p.fWindowScaleFact;
+   fDistanceCut=p.fDistanceCut;
+   fSensRadius=p.fSensRadius;
+   fStepSize=p.fStepSize;
+   fMaxChi2=p.fMaxChi2;
+   fMaxChi2TRD=p.fMaxChi2TRD;
+   fTimeResolution=p.fTimeResolution;
+   fTimeNSigma=p.fTimeNSigma;   
+}
+//_____________________________________________________________________________
+AliTOFRecoParam& AliTOFRecoParam::operator=(const AliTOFRecoParam &p)
+{
+  //
+  // assign. operator
+  //
+   this->fTimeZero=p.fTimeZero;       
+   this->fTimeZerofromT0=p.fTimeZerofromT0;
+   this->fTimeZerofromTOF=p.fTimeZerofromTOF;       
+   this->fTimeWalkCorr=p.fTimeWalkCorr;       
+   this->fApplyPbPbCuts=p.fApplyPbPbCuts;       
+   this->fWindowSizeMaxY=p.fWindowSizeMaxY;
+   this->fWindowSizeMaxZ=p.fWindowSizeMaxZ;
+   this->fDistanceCut=p.fDistanceCut;
+   this->fWindowScaleFact=p.fWindowScaleFact;
+   this->fStepSize=p.fStepSize;
+   this->fSensRadius=p.fSensRadius;
+   this->fMaxChi2=p.fMaxChi2;
+   this->fMaxChi2TRD=p.fMaxChi2TRD;
+   this->fTimeResolution=p.fTimeResolution;
+   this->fTimeNSigma=p.fTimeNSigma;   
+   return *this;
+}
 //_____________________________________________________________________________
 AliTOFRecoParam::~AliTOFRecoParam() 
 {
@@ -63,7 +124,7 @@ AliTOFRecoParam *AliTOFRecoParam::GetPbPbparam(){
   //
   AliTOFRecoParam *param = new AliTOFRecoParam();
   param->fApplyPbPbCuts = kTRUE;
-  param->fWindowScaleFact = 3.;
+  param->fWindowScaleFact = 5.;
   param->fDistanceCut = 3.;
   return param;
 }
