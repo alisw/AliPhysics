@@ -34,7 +34,8 @@ class AliMpDEStore : public  TObject {
     virtual ~AliMpDEStore();
     
     // static access method
-    static AliMpDEStore* Instance(); 
+    static AliMpDEStore* Instance(Bool_t warn = true); 
+    static AliMpDEStore* ReadData(Bool_t warn = true);
     
     // methods
     AliMpDetElement* GetDetElement(Int_t detElemId, Bool_t warn = true) const;

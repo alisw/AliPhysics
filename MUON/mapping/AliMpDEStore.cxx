@@ -55,14 +55,33 @@ const char    AliMpDEStore::fgkCommentPrefix = '#';
 //
 
 //______________________________________________________________________________
-AliMpDEStore* AliMpDEStore::Instance()
+AliMpDEStore* AliMpDEStore::Instance(Bool_t warn)
 {
 /// Create the DE store if it does not yet exist
 /// and return its instance
 
-  if ( ! fgInstance )
-    fgInstance = new AliMpDEStore();
-    
+  if ( ! fgInstance && warn  ) {
+    AliWarningClass("DE Store has not been loaded");
+  }  
+     
+  return fgInstance;
+}    
+
+//______________________________________________________________________________
+AliMpDEStore* AliMpDEStore::ReadData(Bool_t warn)
+{
+/// Load the DE store data from ASCII data files
+/// and return its instance
+
+  if ( fgInstance ) {
+    if ( warn )
+      AliWarningClass("DE Store has been already loaded");
+    return fgInstance;
+  }  
+  
+  AliInfoClass("Reading DE Store from ASCII files.");
+
+  fgInstance = new AliMpDEStore();
   return fgInstance;
 }    
 
