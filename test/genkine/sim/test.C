@@ -15,7 +15,7 @@
 #include <TParticle.h>
 
 // AliRoot include files
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
 #include "AliStack.h"
