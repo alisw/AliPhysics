@@ -1425,3 +1425,371 @@ Double_t AliMath::LogNfac(Int_t n,Int_t mode) const
  return val;
 }
 ///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::PsiValue(Int_t m,Int_t* n,Double_t* p,Int_t f) const
+{
+// Provide the Bayesian Psi value of observations of a counting experiment
+// w.r.t. a Bernoulli class hypothesis B_m.
+// The hypothesis B_m represents a counting experiment with m different
+// possible outcomes and is completely defined by the probabilities
+// of the various outcomes (and the requirement that the sum of all these
+// probabilities equals 1).
+//
+// The Psi value provides (in dB scale) the amount of support that the
+// data can maximally give to any Bernoulli class hypothesis different
+// from the currently specified B_m.
+//
+// To be specific : Psi=-10*log[p(D|B_m I)]
+//
+// where p(D|B_m I) represents the likelihood of the data D under the condition
+// that B_m and some prior I are true.
+//
+// A Psi value of zero indicates a perfect match between the observations
+// and the specified hypothesis.
+// Further mathematical details can be found in astro-ph/0702029.
+//
+// m : The number of different possible outcomes of the counting experiment
+// n : The observed number of different outcomes
+// p : The probabilities of the different outcomes according to the hypothesis
+// f : Flag to indicate the use of a frequentist (Stirling) approximation (f=1)
+//     or the exact Bayesian expression (f=0).
+//
+// In case no probabilities are given (i.e. pk=0), a uniform distribution
+// is assumed.
+//
+// The default values are pk=0 and f=0.
+//
+// In the case of inconsistent input, a Psi value of -1 is returned.
+//
+//--- NvE 03-oct-2007 Utrecht University
+
+ Double_t psi=-1;
+
+ if (m<=0 || !n) return psi;
+
+ Int_t ntot=0;
+ for (Int_t j=0; j<m; j++)
+ {
+  if (n[j]>0) ntot+=n[j];
+ }
+
+ psi=0;
+ Double_t pk=1./float(m); // Prob. of getting outcome k for a uniform distr.
+ for (Int_t i=0; i<m; i++)
+ {
+  if (p) pk=p[i]; // Probabilities from a specific B_m hypothesis
+  if (n[i]>0 && pk>0)
+  {
+   if (!f) // Exact Bayesian expression
+   {
+    psi+=double(n[i])*log10(pk)-LogNfac(n[i]);
+   }
+   else // Frequentist (Stirling) approximation
+   {
+    if (ntot>0) psi+=double(n[i])*log10(n[i]/(ntot*pk));
+   }
+  }
+ }
+
+ if (!f) // Exact Bayesian expression
+ {
+  psi+=LogNfac(ntot);
+  psi*=-10.;
+ }
+ else // Frequentist (Stirling) approximation
+ {
+  psi*=10.;
+ }
+
+ return psi;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::PsiValue(TH1F* his,TH1F* hyp,TF1* pdf,Int_t f) const
+{
+// Provide the Bayesian Psi value of observations of a counting experiment
+// (in histogram format) w.r.t. a Bernoulli class hypothesis B_m.
+// The hypothesis B_m represents a counting experiment with m different
+// possible outcomes and is completely defined by the probabilities
+// of the various outcomes (and the requirement that the sum of all these
+// probabilities equals 1).
+// The specification of a hypothesis B_m can be provided either in
+// histogram format (hyp) or via a probability distribution function (pdf),
+// as outlined below.
+// Note : The pdf does not need to be normalised.
+//
+// The Psi value provides (in dB scale) the amount of support that the
+// data can maximally give to any Bernoulli class hypothesis different
+// from the currently specified B_m.
+//
+// To be specific : Psi=-10*log[p(D|B_m I)]
+//
+// where p(D|B_m I) represents the likelihood of the data D under the condition
+// that B_m and some prior I are true.
+//
+// A Psi value of zero indicates a perfect match between the observations
+// and the specified hypothesis.
+// Further mathematical details can be found in astro-ph/0702029.
+//
+// his : The experimental observations in histogram format
+// hyp : Hypothetical observations according to some hypothesis
+// pdf : Probability distribution function for the hypothesis
+// f   : Flag to indicate the use of a frequentist (Stirling) approximation (f=1)
+//       or the exact Bayesian expression (f=0).
+//
+// In case no hypothesis is specified (i.e. hyp=0 and pdf=0), a uniform
+// background distribution is assumed.
+//
+// Default values are : hyp=0, pdf=0 and f=0.
+//
+// In the case of inconsistent input, a Psi value of -1 is returned.
+//
+//--- NvE 03-oct-2007 Utrecht University
+
+ Double_t psi=-1;
+
+ if (!his) return psi;
+
+ TAxis* xaxis=his->GetXaxis();
+ Double_t xmin=xaxis->GetXmin();
+ Double_t xmax=xaxis->GetXmax();
+ Double_t range=xmax-xmin;
+ Int_t nbins=his->GetNbinsX();
+ Double_t nensig=his->GetEntries();
+
+ if (nbins<=0 || nensig<=0 || range<=0) return psi;
+
+ Int_t* n=new Int_t[nbins];
+ Double_t* p=new Double_t[nbins]; 
+ Int_t nk;
+ Double_t pk;
+
+ // Uniform hypothesis distribution
+ if (!hyp && !pdf)
+ {
+  for (Int_t i=1; i<=nbins; i++)
+  {
+   nk=int(his->GetBinContent(i));
+   pk=his->GetBinWidth(i)/range;
+   n[i-1]=0;
+   p[i-1]=0;
+   if (nk>0) n[i-1]=nk;
+   if (pk>0) p[i-1]=pk;
+  }
+  psi=PsiValue(nbins,n,p,f);
+ }
+
+ // Hypothesis specified via a pdf
+ if (pdf && !hyp)
+ {
+  pdf->SetRange(xmin,xmax);
+  Double_t ftot=pdf->Integral(xmin,xmax);
+  if (ftot>0)
+  {
+   Double_t x1,x2;
+   for (Int_t ipdf=1; ipdf<=nbins; ipdf++)
+   {
+    nk=int(his->GetBinContent(ipdf));
+    x1=his->GetBinLowEdge(ipdf);
+    x2=x1+his->GetBinWidth(ipdf);
+    pk=pdf->Integral(x1,x2)/ftot;
+    n[ipdf-1]=0;
+    p[ipdf-1]=0;
+    if (nk>0) n[ipdf-1]=nk;
+    if (pk>0) p[ipdf-1]=pk;
+   }
+   psi=PsiValue(nbins,n,p,f);
+  }
+ }
+
+ // Hypothesis specified via a histogram
+ if (hyp && !pdf)
+ {
+  TH1F* href=new TH1F(*his);
+  href->Reset();
+  Double_t nenhyp=hyp->GetEntries();
+  Float_t x,y;
+  for (Int_t ihyp=1; ihyp<=hyp->GetNbinsX(); ihyp++)
+  {
+   x=hyp->GetBinCenter(ihyp);
+   y=hyp->GetBinContent(ihyp);
+   href->Fill(x,y);
+  }
+  for (Int_t j=1; j<=nbins; j++)
+  {
+   nk=int(his->GetBinContent(j));
+   pk=href->GetBinContent(j)/nenhyp;
+   n[j-1]=0;
+   p[j-1]=0;
+   if (nk>0) n[j-1]=nk;
+   if (pk>0) p[j-1]=pk;
+  }
+  psi=PsiValue(nbins,n,p,f);
+  delete href;
+ }
+
+ delete [] n;
+ delete [] p;
+
+ return psi;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::Chi2Value(Int_t m,Int_t* n,Double_t* p) const
+{
+// Provide the frequentist chi-squared value of observations of a counting
+// experiment w.r.t. a Bernoulli class hypothesis B_m.
+// The hypothesis B_m represents a counting experiment with m different
+// possible outcomes and is completely defined by the probabilities
+// of the various outcomes (and the requirement that the sum of all these
+// probabilities equals 1).
+//
+// Further mathematical details can be found in astro-ph/0702029.
+//
+// m : The number of different possible outcomes of the counting experiment
+// n : The observed number of different outcomes
+// p : The probabilities of the different outcomes according to the hypothesis
+//
+// In case no probabilities are given (i.e. pk=0), a uniform distribution
+// is assumed.
+//
+// The default value is pk=0.
+//
+// In the case of inconsistent input, a chi-squared  value of -1 is returned.
+//
+//--- NvE 03-oct-2007 Utrecht University
+
+ Double_t chi=-1;
+
+ if (m<=0 || !n) return chi;
+
+ Int_t ntot=0;
+ for (Int_t j=0; j<m; j++)
+ {
+  if (n[j]>0) ntot+=n[j];
+ }
+
+ chi=0;
+ Double_t pk=1./float(m); // Prob. of getting outcome k for a uniform distr.
+ for (Int_t i=0; i<m; i++)
+ {
+  if (p) pk=p[i]; // Probabilities from a specific B_m hypothesis
+  if (n[i]>0 && pk>0 && ntot>0) chi+=pow(double(n[i])-double(ntot)*pk,2)/(ntot*pk);
+ }
+
+ return chi;
+}
+///////////////////////////////////////////////////////////////////////////
+Double_t AliMath::Chi2Value(TH1F* his,TH1F* hyp,TF1* pdf) const
+{
+// Provide the frequentist chi-squared value of observations of a counting
+// experiment (in histogram format) w.r.t. a Bernoulli class hypothesis B_m.
+// The hypothesis B_m represents a counting experiment with m different
+// possible outcomes and is completely defined by the probabilities
+// of the various outcomes (and the requirement that the sum of all these
+// probabilities equals 1).
+// The specification of a hypothesis B_m can be provided either in
+// histogram format (hyp) or via a probability distribution function (pdf),
+// as outlined below.
+// Note : The pdf does not need to be normalised.
+//
+// Further mathematical details can be found in astro-ph/0702029.
+//
+// his : The experimental observations in histogram format
+// hyp : Hypothetical observations according to some hypothesis
+// pdf : Probability distribution function for the hypothesis
+//
+// In case no hypothesis is specified (i.e. hyp=0 and pdf=0), a uniform
+// background distribution is assumed.
+//
+// Default values are : hyp=0, pdf=0 and f=0.
+//
+// In the case of inconsistent input, a chi-squared value of -1 is returned.
+//
+//--- NvE 03-oct-2007 Utrecht University
+
+ Double_t chi=-1;
+
+ if (!his) return chi;
+
+ TAxis* xaxis=his->GetXaxis();
+ Double_t xmin=xaxis->GetXmin();
+ Double_t xmax=xaxis->GetXmax();
+ Double_t range=xmax-xmin;
+ Int_t nbins=his->GetNbinsX();
+ Double_t nensig=his->GetEntries();
+
+ if (nbins<=0 || nensig<=0 || range<=0) return chi;
+
+ Int_t* n=new Int_t[nbins];
+ Double_t* p=new Double_t[nbins]; 
+ Int_t nk;
+ Double_t pk;
+
+ // Uniform hypothesis distribution
+ if (!hyp && !pdf)
+ {
+  for (Int_t i=1; i<=nbins; i++)
+  {
+   nk=int(his->GetBinContent(i));
+   pk=his->GetBinWidth(i)/range;
+   n[i-1]=0;
+   p[i-1]=0;
+   if (nk>0) n[i-1]=nk;
+   if (pk>0) p[i-1]=pk;
+  }
+  chi=Chi2Value(nbins,n,p);
+ }
+
+ // Hypothesis specified via a pdf
+ if (pdf && !hyp)
+ {
+  pdf->SetRange(xmin,xmax);
+  Double_t ftot=pdf->Integral(xmin,xmax);
+  if (ftot>0)
+  {
+   Double_t x1,x2;
+   for (Int_t ipdf=1; ipdf<=nbins; ipdf++)
+   {
+    nk=int(his->GetBinContent(ipdf));
+    x1=his->GetBinLowEdge(ipdf);
+    x2=x1+his->GetBinWidth(ipdf);
+    pk=pdf->Integral(x1,x2)/ftot;
+    n[ipdf-1]=0;
+    p[ipdf-1]=0;
+    if (nk>0) n[ipdf-1]=nk;
+    if (pk>0) p[ipdf-1]=pk;
+   }
+   chi=Chi2Value(nbins,n,p);
+  }
+ }
+
+ // Hypothesis specified via a histogram
+ if (hyp && !pdf)
+ {
+  TH1F* href=new TH1F(*his);
+  href->Reset();
+  Double_t nenhyp=hyp->GetEntries();
+  Float_t x,y;
+  for (Int_t ihyp=1; ihyp<=hyp->GetNbinsX(); ihyp++)
+  {
+   x=hyp->GetBinCenter(ihyp);
+   y=hyp->GetBinContent(ihyp);
+   href->Fill(x,y);
+  }
+  for (Int_t j=1; j<=nbins; j++)
+  {
+   nk=int(his->GetBinContent(j));
+   pk=href->GetBinContent(j)/nenhyp;
+   n[j-1]=0;
+   p[j-1]=0;
+   if (nk>0) n[j-1]=nk;
+   if (pk>0) p[j-1]=pk;
+  }
+  chi=Chi2Value(nbins,n,p);
+  delete href;
+ }
+
+ delete [] n;
+ delete [] p;
+
+ return chi;
+}
+///////////////////////////////////////////////////////////////////////////

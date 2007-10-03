@@ -11,6 +11,7 @@
 #include "TF1.h"
 #include "TString.h"
 #include "TMath.h"
+#include "TH1F.h"
  
 class AliMath : public TObject
 {
@@ -41,6 +42,10 @@ class AliMath : public TObject
   Double_t Nfac(Int_t n,Int_t mode=0) const;    // Compute n!
   Double_t LnNfac(Int_t n,Int_t mode=2) const;  // Compute ln(n!) 
   Double_t LogNfac(Int_t n,Int_t mode=2) const; // Compute log_10(n!) 
+  Double_t PsiValue(Int_t m,Int_t* n,Double_t* p=0,Int_t f=0) const;   // Bayesian Psi value of a counting exp. w.r.t. hypothesis
+  Double_t PsiValue(TH1F* his,TH1F* hyp=0,TF1* pdf=0,Int_t f=0) const; // Bayesian Psi value of a counting exp. w.r.t. hypothesis
+  Double_t Chi2Value(Int_t m,Int_t* n,Double_t* p=0) const;   // Frequentist Chi2 value of a counting exp. w.r.t. hypothesis
+  Double_t Chi2Value(TH1F* his,TH1F* hyp=0,TF1* pdf=0) const; // Frequentist Chi2 value of a counting exp. w.r.t. hypothesis
 
  protected:
   Double_t GamSer(Double_t a,Double_t x) const; // Compute P(a,x) via serial representation
@@ -50,7 +55,7 @@ class AliMath : public TObject
   Double_t BesselI1(Double_t x) const;          // Compute modified Bessel function I_1(x)
   Double_t BesselK1(Double_t x) const;          // Compute modified Bessel function K_1(x)
  
- ClassDef(AliMath,5) // Various mathematical tools for physics analysis.
+ ClassDef(AliMath,6) // Various mathematical tools for physics analysis.
  
 };
 #endif

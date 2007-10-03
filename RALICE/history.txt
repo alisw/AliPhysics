@@ -788,4 +788,7 @@
                 AliAstrolab derived from TTask, to provide a base class for TTask
                 based processors.
                 New class AliEventSelector introduced.
+03-oct-2007 NvE Class AliMath extended with statistical analysis facilities
+                PsiValue and Chi2Value to investigate statistical significance
+                of observations in counting experiments.
 
