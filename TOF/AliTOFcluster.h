@@ -13,29 +13,31 @@
 //////////////////////////////////////////////
 
 #include "TMath.h"
-#include "TObject.h"
+#include "AliCluster3D.h"
 
-class AliTOFcluster : public TObject {
+class AliTOFcluster : public AliCluster3D {
  public:
   AliTOFcluster(); // default ctor
-  AliTOFcluster(Double_t *h, Int_t *ind, Int_t *par, Bool_t status,Int_t *l, Int_t idx); // ctor
-  AliTOFcluster(Double_t *h, Int_t *ind, Int_t *par); // ctor
+  AliTOFcluster(UShort_t volId, 
+     Float_t x,   Float_t y,   Float_t z,
+     Float_t sx2, Float_t sxy, Float_t sxz,
+                  Float_t sy2, Float_t syz, 
+                               Float_t sz2, Int_t *lab, Int_t *ind, Int_t *par, Bool_t status, Int_t idx); // ctor
   AliTOFcluster(const AliTOFcluster & cluster); // copy ctor
   virtual ~AliTOFcluster(); // dtor
 
+  // Getters and Setters
   Double_t GetR() const   {return fR;}   // Cluster Radius
   Double_t GetPhi() const {return fPhi;} // Cluster Phi
-  Double_t GetZ()   const {return fZ;}   // Cluster Z
   Int_t GetTDC() const {return fTDC;} // Cluster ToF
   Int_t GetTDCND() const {return fTdcND;} // Cluster ToF
   Int_t GetTDCRAW() const {return fTdcRAW;} // Cluster Raw time
   Int_t GetADC() const {return TMath::Abs(fADC);}  // Cluster Charge
   Int_t GetToT() const {return fToT;}  // Cluster Charge
   Int_t IsUsed() const {return (fADC<0) ? 1 : 0;}  // Flagging
-  Int_t GetLabel(Int_t n) const  {return fLab[n];} // Labels of tracks in Cluster
   Int_t GetDetInd(Int_t n) const {return fdetIndex[n];} // Cluster Detector Indeces
   Int_t GetIndex() const         {return fIdx;}         // Cluster Index
-  void     Use() {fADC=-fADC;}
+  void     Use(Int_t = 0) {fADC=-fADC;}
   Double_t GetQuality() const {return fQuality;}
   void     SetQuality(Double_t quality) {fQuality = quality;}
   Bool_t   GetStatus() const {return fStatus;}
@@ -47,14 +49,14 @@ class AliTOFcluster : public TObject {
 
  private:
 
-  Int_t fLab[3];      // track labels
   Int_t fIdx;         // index of this cluster
   Int_t fdetIndex[5]; // Cluster detector Indeces (sector,plate,strip,padz,padx)
-  // Cluster Position
+  // Cluster Quality
+  Double_t fQuality;  // quality of the best track 
+
+  // Cluster Global Position
   Double_t fR;        // r-coordinate
   Double_t fPhi;      // phi-coordinate
-  Double_t fZ;        // z-coordinate
-  Double_t fQuality;  // quality of the best track 
 
   // TOF Signal parameters
   Int_t  fTDC;      // TDC count
@@ -64,7 +66,7 @@ class AliTOFcluster : public TObject {
   Int_t  fTdcRAW;      // RAW TDC count
   Bool_t fStatus;      // cluster online status 
 
-  ClassDef(AliTOFcluster, 5) // TOF cluster
+  ClassDef(AliTOFcluster, 6) // TOF cluster
 };
 
 #endif

@@ -31,15 +31,18 @@ Revision 0.01 2005/07/25 A. De Caro
 ////////////////////////////////////////////////////////
 
 #include "AliTOFcluster.h"
+#include "AliLog.h"
+#include "AliGeomManager.h"
+#include "TGeoMatrix.h"
 
 ClassImp(AliTOFcluster)
 
 AliTOFcluster::AliTOFcluster():
+  AliCluster3D(),
   fIdx(-1),
+  fQuality(-100), 
   fR(0),
   fPhi(0),
-  fZ(0),
-  fQuality(-100), 
   fTDC(0),
   fToT(0),
   fADC(0),
@@ -52,18 +55,20 @@ AliTOFcluster::AliTOFcluster():
   //
 
   Int_t ii;
-  for (ii=0; ii<3; ii++) fLab[ii]      = -1;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = -1;
 }
 //-------------------------------------------------------------------------
 
-AliTOFcluster::AliTOFcluster(Double_t *h,  Int_t *ind, Int_t *par, Bool_t status,Int_t *l, Int_t idx):
-  TObject(),
+AliTOFcluster::AliTOFcluster(UShort_t volId, 
+   Float_t x,   Float_t y,   Float_t z,
+   Float_t sx2, Float_t sxy, Float_t sxz,
+                Float_t sy2, Float_t syz, 
+                             Float_t sz2, Int_t *lab, Int_t *ind, Int_t *par, Bool_t status, Int_t idx):
+  AliCluster3D(volId,x,y,z,sx2,sxy,sxz,sy2,syz,sz2,lab),
   fIdx(idx),
-  fR(h[0]),
-  fPhi(h[1]),
-  fZ(h[2]),
   fQuality(-100), 
+  fR(0),
+  fPhi(0),
   fTDC(par[0]),
   fToT(par[1]),
   fADC(par[2]),
@@ -74,78 +79,45 @@ AliTOFcluster::AliTOFcluster(Double_t *h,  Int_t *ind, Int_t *par, Bool_t status
   //
   // constructor
   //
+   Int_t ii;
+   for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
+   
+   Float_t xyz[3];
+   GetGlobalXYZ(xyz);
+   fR=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);   
+   fPhi=TMath::ATan2(xyz[1], xyz[0]);
 
-  Int_t ii;
-  for (ii=0; ii<3; ii++) fLab[ii]      = l[ii];
-  for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
-}
-//-------------------------------------------------------------------------
-
-AliTOFcluster::AliTOFcluster(Double_t *h, Int_t *ind, Int_t *par):
-  TObject(),
-  fIdx(-1),
-  fR(h[0]),
-  fPhi(h[1]),
-  fZ(h[2]),
-  fQuality(-100), 
-  fTDC(par[0]),
-  fToT(par[1]),
-  fADC(par[2]),
-  fTdcND(par[3]),
-  fTdcRAW(par[4]),
-  fStatus(kTRUE) 
- {
-  //
-  // constructor
-  //
-
-  Int_t ii;
-  for (ii=0; ii<3; ii++) fLab[ii]      = -1;
-  for (ii=0; ii<5; ii++) fdetIndex[ii] = ind[ii];
 }
 //-------------------------------------------------------------------------
 
 AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster):
-  TObject(),
-  fIdx(-1),
-  fR(0),
-  fPhi(0),
-  fZ(0),
-  fQuality(-100), 
-  fTDC(0),
-  fToT(0),
-  fADC(0),
-  fTdcND(0),
-  fTdcRAW(0),
-  fStatus(kTRUE) 
+  AliCluster3D(cluster),
+  fIdx(cluster.fIdx),
+  fQuality(cluster.fQuality), 
+  fR(cluster.fR),
+  fPhi(cluster.fPhi),
+  fTDC(cluster.fTDC),
+  fToT(cluster.fToT),
+  fADC(cluster.fADC),
+  fTdcND(cluster.fTdcND),
+  fTdcRAW(cluster.fTdcRAW),
+  fStatus(cluster.fStatus) 
  {
   //
   // copy ctor for AliTOFcluster object
   //
 
   Int_t ii;
-  fR        = cluster.fR;
-  fPhi      = cluster.fPhi;
-  fZ        = cluster.fZ;
-  fQuality    = cluster.fQuality; 
-  for (ii=0; ii<3; ii++) fLab[ii]      = cluster.fLab[ii];
-  fIdx      = cluster.fIdx;
   for (ii=0; ii<5; ii++) fdetIndex[ii] = cluster.fdetIndex[ii];
-  fTDC      = cluster.fTDC;
-  fToT    = cluster.fToT; 
-  fADC      = cluster.fADC;
-  fTdcND    = cluster.fTdcND; 
-  fTdcRAW    = cluster.fTdcRAW; 
-  fStatus    = cluster.fStatus; 
 }
 //-------------------------------------------------------------------------
 
 AliTOFcluster::~AliTOFcluster() {
+
   //
   // dtor
   //
 
-  //delete fLab;
-  //delete fdetIndex;
-
 }
+
+
