@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2007/10/01 14:12:45  kowal2
+Class creating the aligmnent object fro the surveyor measurements.
+
 */ 
 
 //
@@ -36,7 +39,7 @@ $Log$
 #include "AliLog.h"
 #include "AliCDBManager.h"
 
-ClassImp(AliTPCAlign);
+ClassImp(AliTPCAlign)
 
 AliTPCAlign::AliTPCAlign() :
   TObject(),
