@@ -197,11 +197,15 @@ Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
    
   const Int_t kN=100;
   Double_t area=0;
-  for(Int_t i=0;i<kN;i++){
-    TVector2 pos1=TracePhot(ckovAng,Double_t(TMath::TwoPi()*i    /kN));//trace this photon 
-    TVector2 pos2=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon 
-    area+=(pos1-fTrkPos)*(pos2-fTrkPos);                               //add area of the triangle... 
+  
+  TVector2 pos1=TracePhot(ckovAng,0);//trace the first photon 
+  for(Int_t i=1;i<kN;i++){
+    TVector2 pos2=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon
+    if(pos1.X()==-999||pos2.X()==-999) return 0;                       //no area: open ring
+    area+=TMath::Abs((pos1-fTrkPos).X()*(pos2-fTrkPos).Y()-(pos1-fTrkPos).Y()*(pos2-fTrkPos).X()); //add area of the triangle... 
+    pos1=pos2; // actual photon becomes the first one
   }
+  area*=0.5;
   return area;
 }//FindRingArea()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
