@@ -194,7 +194,7 @@ affected by any external parameters, while influence of methane temperature to i
 In the rest, the only changeable parameter is refractive index of freon. Temperature influence on freon refractive index was measured experimentally. The parametrization 
 found to be:
   n=n0-0.0005(T-20)                        where T is freon temperature in degrees Celsius
-  n0=Sqrt(1+ 0.554*lamda^2/(lamda^2-5796)) where lamda is photon wavelength in nm taken at 20 degrees Celsius
+  n0=Sqrt(1+ 0.554*lamda^2/(lamda^2-5769)) where lamda is photon wavelength in nm taken at 20 degrees Celsius
 Preliminary, the parametrization of refractive index versus temperature and photon energy is considered to be permanent. 
 As the reconstruction itself is only interested in mean refractive index Nmean C6F14, the most elegant solution is to store in OCDB this value, prcalculated in 
 AliHMPIDPrecprocessor. 2 measurements of temperature is avaiable from DCS: for inlet and outlet. They come in form of TObjArray of AliDCSValue, where AliDCSValue

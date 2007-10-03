@@ -321,7 +321,7 @@ void AliHMPIDv2::DefineOpticalProperties()
   Float_t                                                    aQeAll [kNbins], aQePc [kNbins];
   Double_t dReflMet[kNbins], dQePc[kNbins];
 
-  TF2 *pRaIF=new TF2("HidxRad","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5796)-0.0005*(y-20))"                                       ,emin,emax,0,50); //DiMauro mail temp 0-50 degrees C
+  TF2 *pRaIF=new TF2("HidxRad","sqrt(1+0.554*(1239.84/x)^2/((1239.84/x)^2-5769)-0.0005*(y-20))"                                       ,emin,emax,0,50); //DiMauro mail temp 0-50 degrees C
   TF1 *pWiIF=new TF1("HidxWin","sqrt(1+46.411/(10.666*10.666-x*x)+228.71/(18.125*18.125-x*x))"                                        ,emin,emax);      //SiO2 idx TDR p.35
   TF1 *pGaIF=new TF1("HidxGap","1+0.12489e-6/(2.62e-4 - x*x/1239.84/1239.84)"                                                         ,emin,emax);      //?????? from where  
 
