@@ -138,8 +138,7 @@ TMap* CreateDCSAliasMap()
   ///     <valueList> is a TObjArray of AliDCSValue
   ///     An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
   
-  // Load mapping from CDB
-  AliMpCDB::LoadMpSegmentation();
+  // Load mapping
   AliMpCDB::LoadDDLStore();
 
   TMap* aliasMap = new TMap;

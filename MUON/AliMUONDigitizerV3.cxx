@@ -18,9 +18,6 @@
 
 #include "AliMUONDigitizerV3.h"
 
-#include "AliCDBManager.h"
-#include "AliCodeTimer.h"
-#include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONConstants.h"
@@ -30,19 +27,26 @@
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONGeometryTransformer.h" //ADDED for trigger noise
+
 #include "AliMpCDB.h"
+#include "AliMpSegmentation.h"
 #include "AliMpCathodType.h"
 #include "AliMpConstants.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpIntPair.h"
 #include "AliMpPad.h"
-#include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+
+#include "AliCDBManager.h"
+#include "AliCodeTimer.h"
+#include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliRunLoader.h"
+
 #include <Riostream.h>
 #include <TF1.h>
 #include <TFile.h>
@@ -50,8 +54,6 @@
 #include <TRandom.h>
 #include <TString.h>
 #include <TSystem.h>
-
-#include "AliMUONGeometryTransformer.h" //ADDED for trigger noise
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDigitizerV3
@@ -696,14 +698,9 @@ AliMUONDigitizerV3::Init()
   
   Int_t runnumber = AliCDBManager::Instance()->GetRun();
   
-  if ( ! AliMpCDB::LoadMpSegmentation()  ) 
-  {
+  // Load mapping
+  if ( ! AliMpCDB::LoadDDLStore() ) {
     AliFatal("Could not access mapping from OCDB !");
-  }
-  
-  if ( ! AliMpCDB::LoadDDLStore() ) 
-  {
-    AliFatal("Could not access DDL Store from OCDB !");
   }
   
   fCalibrationData = new AliMUONCalibrationData(runnumber);

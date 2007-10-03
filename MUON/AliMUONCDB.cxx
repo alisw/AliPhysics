@@ -172,8 +172,12 @@ AliMUONCDB::ManuList()
   {
     AliInfo("Generating ManuList...");
     AliCDBManager::Instance()->SetDefaultStorage(fCDBPath);
-    AliMpCDB::LoadMpSegmentation();
-    AliMpCDB::LoadDDLStore();
+
+    // Load mapping
+    if ( ! AliMpCDB::LoadDDLStore() ) {
+      AliFatal("Could not access mapping from OCDB !");
+    }
+
     fManuList = AliMpManuList::ManuList();
     AliInfo("Manu List generated.");
   }

@@ -96,15 +96,8 @@ AliMpDEVisu::AliMpDEVisu(UInt_t w, UInt_t h)
 /// Standard constructor
 
   // Load mapping
-  if ( ! AliMpCDB::LoadMpSegmentation() ) 
-  {
+  if ( ! AliMpCDB::LoadDDLStore() ) {
     AliFatal("Could not access mapping from OCDB !");
-  }
-  
-  // Load DDL store
-  if ( ! AliMpCDB::LoadDDLStore() ) 
-  {
-    AliFatal("Could not access DDL Store from OCDB !");
   }
 
   fDDLStore = AliMpDDLStore::Instance();

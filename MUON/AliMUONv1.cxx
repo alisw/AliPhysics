@@ -33,6 +33,7 @@
 #include "AliMUONStringIntMap.h"	
 #include "AliMUONGeometryDetElement.h"	
 
+#include "AliMpCDB.h"
 #include "AliMpDEManager.h"
 
 #include "AliConst.h" 
@@ -92,6 +93,11 @@ AliMUONv1::AliMUONv1(const char *name, const char* title)
 
     AliDebug(1,Form("ctor this=%p",this));	
 	
+    // Load mapping
+    if ( ! AliMpCDB::LoadMpSegmentation() ) {
+      AliFatal("Could not access mapping from OCDB !");
+    }
+       
     // By default include all stations
 
     fStepSum   = new Float_t [AliMUONConstants::NCh()];

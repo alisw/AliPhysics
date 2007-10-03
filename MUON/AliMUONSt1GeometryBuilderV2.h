@@ -136,7 +136,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     void CreateFrame(Int_t chamber);
 
     void PlaceInnerLayers(Int_t chamber);
-    void PlaceSector(AliMpSector* sector, SpecialMap specialMap,
+    void PlaceSector(const AliMpSector* sector, SpecialMap specialMap,
                      const TVector3& where, Bool_t reflectZ, Int_t chamber);
 		     
     TString QuadrantEnvelopeName(Int_t chamber, Int_t quadrant) const;

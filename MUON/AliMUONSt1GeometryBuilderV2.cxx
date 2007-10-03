@@ -31,10 +31,12 @@
 #include "AliMUONGeometryModule.h"
 #include "AliMUONGeometryEnvelopeStore.h"
 
+#include "AliMpSegmentation.h"
+#include "AliMpDEManager.h"
 #include "AliMpContainers.h"
 #include "AliMpConstants.h"
-#include "AliMpFiles.h"
-#include "AliMpSectorReader.h"
+#include "AliMpCDB.h"
+#include "AliMpSectorSegmentation.h"
 #include "AliMpSector.h"
 #include "AliMpRow.h"
 #include "AliMpVRowSegment.h"
@@ -135,17 +137,6 @@ AliMUONSt1GeometryBuilderV2::AliMUONSt1GeometryBuilderV2(AliMUON* muon)
     fMUON(muon)
 {
 /// Standard constructor
-
-   // set path to mapping data files
-   if (! gSystem->Getenv("MINSTALL")) {    
-     TString dirPath = gSystem->Getenv("ALICE_ROOT");
-     dirPath += "/MUON/mapping"; 
-     AliMpFiles::SetTopPath(dirPath);
-     gSystem->Setenv("MINSTALL", dirPath.Data());
-     //cout << "AliMpFiles top path set to " << dirPath << endl;	  
-   }
-   //else
-   //  cout << gSystem->Getenv("MINSTALL") << endl;	    	  
 }
  
 //______________________________________________________________________________
@@ -500,15 +491,30 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   specialMap.Add(47, (Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01, 0.36)));
 #endif
 
+  // Load mapping from OCDB
+  if ( ! AliMpSegmentation::Instance() ) {
+    AliFatal("Mapping has to be loaded first !");
+  }
+       
+  const AliMpSectorSegmentation* kSegmentation1 
+    = dynamic_cast<const AliMpSectorSegmentation*>(
+        AliMpSegmentation::Instance()
+          ->GetMpSegmentation(100, AliMpDEManager::GetCathod(100, AliMp::kBendingPlane))); 
+  if ( ! kSegmentation1 ) {
+    AliFatal("Could not access sector segmentation !");
+  }
+    
+  const AliMpSector* kSector1 = kSegmentation1->GetSector();
+/*
   AliMpSectorReader reader1(AliMp::kStation1, AliMp::kBendingPlane);
-  AliMpSector* sector1 = reader1.BuildSector();
-
+  AliMpSector* kSector1 = reader1.BuildSector();
+*/
   //Bool_t reflectZ = true;
   Bool_t reflectZ = false;
   //TVector3 where = TVector3(2.5+0.1+0.56+0.001, 2.5+0.1+0.001, 0.);
   TVector3 where = TVector3(fgkDeltaQuadLHC + fgkPadXOffsetBP, 
                             fgkDeltaQuadLHC + fgkPadYOffsetBP, 0.);
-  PlaceSector(sector1, specialMap, where, reflectZ, chamber);
+  PlaceSector(kSector1, specialMap, where, reflectZ, chamber);
   
 #ifdef WITH_STL
   specialMap.clear();
@@ -536,18 +542,28 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
       // in the true position)   
       // Was: specialMap.Add(47,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.61,-1.18)));
 #endif
-
+/*
   AliMpSectorReader reader2(AliMp::kStation1, AliMp::kNonBendingPlane);
   AliMpSector* sector2 = reader2.BuildSector();
-  
+*/  
+  const AliMpSectorSegmentation* kSegmentation2 
+    = dynamic_cast<const AliMpSectorSegmentation*>(
+        AliMpSegmentation::Instance()
+          ->GetMpSegmentation(100, AliMpDEManager::GetCathod(100, AliMp::kNonBendingPlane))); 
+  if ( ! kSegmentation2 ) {
+    AliFatal("Could not access sector segmentation !");
+  }
+    
+  const AliMpSector* kSector2 = kSegmentation2->GetSector();
+
   //reflectZ = false;
   reflectZ = true;
-  TVector2 offset = sector2->Position();
+  TVector2 offset = kSector2->Position();
   where = TVector3(where.X()+offset.X(), where.Y()+offset.Y(), 0.); 
       // Add the half-pad shift of the non-bending plane wrt bending plane
       // (The shift is defined in the mapping as sector offset)
       // Fix (4) - was TVector3(where.X()+0.63/2, ... - now it is -0.63/2
-  PlaceSector(sector2, specialMap, where, reflectZ, chamber);
+  PlaceSector(kSector2, specialMap, where, reflectZ, chamber);
 
 #ifdef WITH_ROOT
   specialMap.Delete();
@@ -2135,7 +2151,8 @@ void AliMUONSt1GeometryBuilderV2::PlaceInnerLayers(Int_t chamber)
 }
 
 //______________________________________________________________________________
-void AliMUONSt1GeometryBuilderV2::PlaceSector(AliMpSector* sector,SpecialMap specialMap, 
+void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
+                            SpecialMap specialMap, 
                             const TVector3& where, Bool_t reflectZ, Int_t chamber)
 {
 /// Place all the segments in the mother volume, at the position defined
