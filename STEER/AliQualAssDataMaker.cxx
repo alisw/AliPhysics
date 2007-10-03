@@ -168,6 +168,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
     break ;  
  
    case AliQualAss::kRECPOINTS:
+    {
      AliInfo("Processing RecPoints QA") ; 
      TTree * recpoints = dynamic_cast<TTree *>(data) ; 
     if (recpoints) 
@@ -175,7 +176,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
     else 
       AliError("Wrong type of recpoints container") ; 
     break ;  
-
+    }
    case AliQualAss::kTRACKSEGMENTS:
     AliInfo("Processing Track Segments QA: not existing anymore") ; 
 //     TTree * ts = dynamic_cast<TTree *>(data) ; 
@@ -185,7 +186,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
 //       AliError("Wrong type of track segments container") ; 
     break ;  
   
-  case AliQualAss::kRECPARTICLES:
+    case AliQualAss::kRECPARTICLES:
     AliInfo("Processing RecParticles QA: not existing anymore") ; 
 //     TTree * recpar = dynamic_cast<TTree *>(data) ; 
 //     if (recpar) 
@@ -195,13 +196,15 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
     break ;  
     
   case AliQualAss::kESDS:
+   {
     AliInfo("Processing ESDs QA") ; 
     AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
     if (esd) 
       MakeESDs(esd) ;
     else 
       AliError("Wrong type of esd container") ; 
-    break ;  
+    break ;
+   }  
   }	  
 }
 
@@ -222,35 +225,40 @@ TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task, Int_t run, Int_t 
 	
   switch (task) { 
   case AliQualAss::kRAWS: 
+   {
 	fRawsQAList = new TList() ;	 
     InitRaws() ;
 	return fRawsQAList ;
     break ; 
-
+   }
   case AliQualAss::kHITS: 
+   {
 	fHitsQAList = new TList() ;	 
     InitHits() ;
 	return fHitsQAList ;
     break ; 
-  
+   }
   case AliQualAss::kSDIGITS: 
+   {
 	fSDigitsQAList = new TList() ; 
     InitSDigits() ;
 	return fSDigitsQAList ;
     break ; 
-
+   }
   case AliQualAss::kDIGITS: 
+   {
 	fDigitsQAList = new TList(); 
 	InitDigits() ;
 	return fDigitsQAList ;
 	break ; 
-	  
+   }	  
   case AliQualAss::kRECPOINTS: 
+   {
 	fRecPointsQAList = new TList ; 
     InitRecPoints() ;
 	return fRecPointsQAList ;
     break ; 
-
+  }
   case AliQualAss::kTRACKSEGMENTS: 
 //  InitTrackSegments() ;
     break ; 
@@ -260,10 +268,12 @@ TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task, Int_t run, Int_t 
     break ; 
     
   case AliQualAss::kESDS: 
-  	fESDsQAList = new TList() ; 
+   {
+	fESDsQAList = new TList() ; 
 	InitESDs() ;
 	return fRecPointsQAList ;
     break ; 
+   }
   }  
   return 0x0 ; 
 }
