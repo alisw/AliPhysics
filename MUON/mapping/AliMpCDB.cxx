@@ -40,12 +40,10 @@
 ClassImp(AliMpCDB)
 /// \endcond
 
-
 //
 // static methods
 //
-#include "AliMpSegmentation.h"
-#include <Riostream.h>
+
 //______________________________________________________________________________
 Bool_t AliMpCDB::LoadMpSegmentation(Bool_t warn)
 {
@@ -90,6 +88,12 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
     return true;
   }  
   
+  // Load segmentation
+  //
+  LoadMpSegmentation(warn); 
+  
+  // Load DDL store
+  //
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
     cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
