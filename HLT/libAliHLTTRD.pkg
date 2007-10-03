@@ -3,11 +3,6 @@
 
 include $(MODDIR)/hlt.conf
 
-# This files defines the source and header files for the
-# libAliHLTSample library and additional flags for the compilation
-# and linking process. For further information refer to the 
-# README.
-
 # library sources
 MODULE_SRCS= \
         AliHLTTRDClusterizerComponent.cxx \
@@ -32,16 +27,15 @@ CLASS_HDRS:= \
 # ROOT dictionary support
 MODULE_HDRS:= 	$(CLASS_HDRS)
 
-# The autotools-based stand-alone built system creates  the LinkDef
-# file required by the ROOT dictionary generation for the all header
-# files specified in CLASS_HDRS.  
-# When creating a ROOT dictionary in AliRoot you must eventually
-# provide a *LinkDef.h file which tells rootcint what to do with the
-# classes. The *LinkDef.h must be added to DHDR in that case.
-# There might be an extension also in ALIROOT which allows to 
-# generate the LinkDef automatically.
-DHDR:= 		TRD/AliHLTTRDLinkDef.h		
-CINTAUTOLINK:=
+# The LinkDef file required by the ROOT dictionary generation can be
+# generated automatically. For the all header files specified in
+# CLASS_HDRS an entry will be generated
+# pragma link C++ class <class-name>+;
+#
+# If the default behavior is not enough, you can provide a custom
+# *LinkDef.h to the MODULE_DHDR variable. Leave MODULE_DHDR empty to
+# enable automatic generation. 
+MODULE_DHDR:= 	AliHLTTRDLinkDef.h		
 
 # extra defines and flags for the AliRoot build system. NOTE: include
 # directories and linking flags/options must be specified in 
@@ -60,3 +54,5 @@ EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD RAW
 SRCS:=$(patsubst %,TRD/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,TRD/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,TRD/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,TRD/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)

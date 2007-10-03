@@ -24,12 +24,13 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
 
-DHDR:= 		
-CINTAUTOLINK:=  1
+MODULE_DHDR:= 		
 
 SRCS:=$(patsubst %,BASE/util/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,BASE/util/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,BASE/util/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,BASE/util/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

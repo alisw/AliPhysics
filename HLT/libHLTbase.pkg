@@ -49,13 +49,13 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDefinitions.h \
 		AliHLTStdIncludes.h
 
-#DHDR:= 		BASE/HLTbaseLinkDef.h
-DHDR:= 		
-CINTAUTOLINK:=  1
+MODULE_DHDR:=
 
 SRCS:=$(patsubst %,BASE/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,BASE/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,BASE/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,BASE/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

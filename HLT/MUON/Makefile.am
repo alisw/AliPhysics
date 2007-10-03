@@ -3,7 +3,7 @@
 
 MODULE 				= AliHLTMUON
 
-EXTRA_DIST			= HLTMUONLinkDef.h
+EXTRA_DIST			= 
 
 MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libAliHLTMUON.pkg

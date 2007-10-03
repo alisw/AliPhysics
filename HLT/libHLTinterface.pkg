@@ -5,14 +5,17 @@ MODULE_SRCS= 	AliHLTExternalInterface.cxx
 
 CLASS_HDRS:=  	
 
-MODULE_HDRS:= 	$(CLASS_HDRS)
+MODULE_HDRS:= 	$(CLASS_HDRS) \
+		$(MODULE_SRCS:.cxx=.h)
 
-DHDR:= 		
-CINTAUTOLINK:=  1
+MODULE_DHDR:= 		
 
-# SRCS:=$(patsubst %,BASE/interface/%,$(MODULE_SRCS))
-# CINTHDRS:=$(patsubst %,BASE/interface/%,$(CLASS_HDRS))
-# HDRS:=$(patsubst %,BASE/interface/%,$(MODULE_HDRS))
+SRCS:=$(patsubst %,BASE/interface/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,BASE/interface/%,$(CLASS_HDRS))
+#HDRS:=$(patsubst %,BASE/interface/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,BASE/interface/%,$(MODULE_DHDR))
+#CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+CINTAUTOLINK:=
 
 EDEFINE      :=
 PACKCXXFLAGS :=

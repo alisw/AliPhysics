@@ -128,12 +128,13 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCClusterDataFormat.h \
 		AliHLTTPCModels.h
 
-DHDR:= 		
-CINTAUTOLINK:=  1
+MODULE_DHDR:=
 
 SRCS:=$(patsubst %,TPCLib/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,TPCLib/%,$(CLASS_HDRS))
 HDRS:=$(patsubst %,TPCLib/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,TPCLib/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

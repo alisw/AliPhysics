@@ -17,12 +17,12 @@ MODULE_HDRS:= 	$(CLASS_HDRS) \
 # file names. Thats why the automatic generation of the ROOT
 # LinkDef file doesn't work for the moment
 MODULE_DHDR:= 	AliHLTHOMERLinkDef.h
-#CINTAUTOLINK:=  1
 
 SRCS:=$(patsubst %,BASE/HOMER/%,$(MODULE_SRCS))
 CINTHDRS:=$(patsubst %,BASE/HOMER/%,$(CLASS_HDRS))
-HDRS:=$(patsubst %,BASE/HOMER/%,$(MODULE_HDRS))
+HDRS:=$(patsubst %,BASE/HOMER/%,$(CLASS_HDRS))
 DHDR:=$(patsubst %,BASE/HOMER/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}

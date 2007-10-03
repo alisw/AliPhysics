@@ -14,7 +14,7 @@ endif
 
 SUBDIRS 			= . $(UTIL_DIR) interface HOMER
 
-EXTRA_DIST			= HLTbaseLinkDef.h
+EXTRA_DIST			= 
 
 AM_CPPFLAGS			= -DMODULE=$(MODULE)
 

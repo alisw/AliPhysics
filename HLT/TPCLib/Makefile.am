@@ -3,7 +3,7 @@
 
 MODULE 				= AliHLTTPC
 
-EXTRA_DIST			= AliHLTTPCLinkDef.h
+EXTRA_DIST			= 
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 				  -I$(srcdir)                \

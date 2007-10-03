@@ -35,8 +35,7 @@ NOROOT_SRC			= $(MODULE_SRCS:.cxx=_noRoot.cxx)
 #
 HOMER_DOC			= HOMERReader.tex
 
-EXTRA_DIST			= $(MODULE_DHDR) \
-				  $(HOMER_DOC)
+EXTRA_DIST			= $(HOMER_DOC)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  AliHLTHOMERCompileInfo.cxx

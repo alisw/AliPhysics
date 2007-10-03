@@ -8,8 +8,7 @@
 
 MODULE 				= AliHLTSample
 
-EXTRA_DIST			= AliHLTSampleLinkDef.h \
-				  tutorial.c
+EXTRA_DIST			= tutorial.c
 
 # include the pkg definition which actually contains the source
 # file definitions
