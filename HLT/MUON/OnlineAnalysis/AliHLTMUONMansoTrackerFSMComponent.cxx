@@ -391,8 +391,8 @@ void AliHLTMUONMansoTrackerFSMComponent::AddRecHits(
 
 void AliHLTMUONMansoTrackerFSMComponent::RequestClusters(
 		AliHLTMUONMansoTrackerFSM* tracker,
-		AliHLTFloat32_t /*left*/, AliHLTFloat32_t /*right*/,
-		AliHLTFloat32_t /*bottom*/, AliHLTFloat32_t /*top*/,
+		AliHLTFloat32_t left, AliHLTFloat32_t right,
+		AliHLTFloat32_t bottom, AliHLTFloat32_t top,
 		AliHLTMUONChamberName chamber, const void* tag
 	)
 {
@@ -427,12 +427,11 @@ void AliHLTMUONMansoTrackerFSMComponent::RequestClusters(
 	
 	DebugTrace("Returning requested hits for chamber " << chNo << ":");
 	for (AliHLTUInt32_t i = 0; i < recHitsBlock->size(); i++)
+	for (AliHLTUInt32_t j = 0; j < (*recHitsBlock)[i].fCount; j++)
 	{
-		tracker->ReturnClusters(
-				ctag,
-				(*recHitsBlock)[i].fData,
-				(*recHitsBlock)[i].fCount
-			);
+		const AliHLTMUONRecHitStruct* hit = &((*recHitsBlock)[i].fData[j]);
+		if (left < hit->fX and hit->fX < right and bottom < hit->fY and hit->fY < top)
+			tracker->ReturnClusters(ctag, hit, 1);
 	}
 	DebugTrace("Done returning hits from chamber " << chNo << ".");
 	tracker->EndOfClusters(ctag);
