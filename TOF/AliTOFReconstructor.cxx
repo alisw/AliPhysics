@@ -32,6 +32,7 @@
 #include "AliTOFcalib.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
+#include "AliTOFtrackerV1.h"
 #include "AliTOFReconstructor.h"
 
 class TTree;
@@ -132,6 +133,7 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
   TString selectedTracker = GetOption();
   // use MI tracker if selected
   if (selectedTracker.Contains("MI")) return new AliTOFtrackerMI();
+  if (selectedTracker.Contains("V1")) return new AliTOFtrackerV1();
   return new AliTOFtracker();
 }
 
