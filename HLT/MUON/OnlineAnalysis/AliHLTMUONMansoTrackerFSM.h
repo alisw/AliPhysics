@@ -323,9 +323,7 @@ protected:
 	AliVertex fV1;    // The impact (hit) vertex for trigger station 1.
 	AliTagData fMc1;  // Trigger station 1 data.
 
-	AliHLTFloat32_t fSt5z;   // The z coordinate to use for station 5.
 	Station5List fSt5data;  // List of found cluster points for station 5 and their tag data.
-	AliHLTFloat32_t fSt4z;   // The z coordinate to use for station 4.
 	Station4List fSt4points;  // The found cluster points for station 4.
 
 	// Iterators used in the FoundTrack, FillTrackData methods.

@@ -22,7 +22,7 @@
  *  @date   
  *  @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
  */
-
+#define DEBUG
 #include "AliHLTMUONMansoTrackerFSM.h"
 #include "AliHLTMUONCalculations.h"
 #include "AliHLTMUONConstants.h"
@@ -209,9 +209,7 @@ AliHLTMUONMansoTrackerFSM::AliHLTMUONMansoTrackerFSM() :
 	fSt4chamber(kChamber1),
 	fV1(),
 	fMc1(),
-	fSt5z(0),
 	fSt5data(),
-	fSt4z(0),
 	fSt4points(),
 	fSt5rec(),
 	fFoundPoint(),
@@ -496,7 +494,6 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber8(
 	{
 	case kWaitChamber8:
 		fSm4state = kWaitMoreChamber8;
-		fSt4z = fgZ8;
 		fSt4chamber = kChamber8;
 	
 	case kWaitMoreChamber8:
@@ -563,7 +560,6 @@ void AliHLTMUONMansoTrackerFSM::ReceiveClustersChamber10(
 	{
 	case kWaitChamber10:
 		fSm5state = kWaitMoreChamber10;
-		fSt5z = fgZ10;
 		fSm4state = kWaitChamber8;  // Start SM4.
 	
 	case kWaitMoreChamber10:
@@ -629,7 +625,6 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber8()
 	case kWaitChamber8:
 		{
 		fSm4state = kWaitChamber7;
-		fSt4z = fgZ7;
 		fSt4chamber = kChamber7;
 	
 		// We need to resend the requests for chamber 8, but change the request
@@ -704,7 +699,6 @@ void AliHLTMUONMansoTrackerFSM::EndOfClustersChamber10()
 	case kWaitChamber10:
 		{
 		fSm5state = kWaitChamber9;
-		fSt5z = fgZ9;
 		
 		// No clusters found on chamber 10 so we need to make a request for
 		// clusters from chamber 9:
