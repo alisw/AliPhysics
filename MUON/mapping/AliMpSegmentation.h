@@ -40,6 +40,7 @@
 #  include "AliMpSlatMotifMap.h"
 #endif
 
+class AliMpDEStore;
 class AliMpVSegmentation;
 class AliMpSegmentation;
 class TRootIOCtor;
@@ -80,6 +81,7 @@ class AliMpSegmentation : public  TObject {
     static AliMpSegmentation* fgInstance; ///< Singleton instance
 
     // data members
+    AliMpDEStore*      fDetElements;    ///< Detection element store
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations
     AliMpSlatMotifMap  fSlatMotifMap; ///< Map of motif, motifTypes to avoid duplications and allow proper deletion

@@ -30,7 +30,6 @@ class AliMpDetElement;
 class AliMpBusPatch;
 class AliMpLocalBoard;
 class AliMpTriggerCrate;
-class AliMpDEStore;
 class TArrayI;
 
 class AliMpDDLStore : public  TObject {
@@ -90,7 +89,6 @@ class AliMpDDLStore : public  TObject {
 
     // data members	
     TObjArray     fDDLs;           ///< Array of DDL objects
-    AliMpDEStore* fDetElements;    ///< Detection element store
     AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
     AliMpExMap    fTriggerCrates;  ///< The map of trigger crate per their ID
     AliMpExMap    fLocalBoards;    ///< The map of local board per their ID

@@ -28,6 +28,7 @@
 #include "AliMpSegmentation.h"
 
 #include "AliMpDetElement.h"
+#include "AliMpDEStore.h"
 #include "AliMpDEManager.h"
 #include "AliMpDEIterator.h"
 #include "AliMpExMap.h"
@@ -99,6 +100,7 @@ AliMpSegmentation* AliMpSegmentation::ReadData(Bool_t warn)
 //______________________________________________________________________________
 AliMpSegmentation::AliMpSegmentation()
 : TObject(),
+  fDetElements(0),
   fMpSegmentations(true),
   fElCardsMap(true),
   fSlatMotifMap()
@@ -107,6 +109,11 @@ AliMpSegmentation::AliMpSegmentation()
 
   AliDebug(1,"");
   fElCardsMap.SetOwner(true);
+  
+  // Load DE data
+  if ( ! AliMpDEStore::Instance(false) )  
+    AliMpDEStore::ReadData();
+  fDetElements = AliMpDEStore::Instance();  
 
   // Create mapping segmentations for all detection elements
   for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; cath ++ ) { 
@@ -129,6 +136,7 @@ AliMpSegmentation::AliMpSegmentation()
 //______________________________________________________________________________
 AliMpSegmentation::AliMpSegmentation(TRootIOCtor* /*ioCtor*/)
 : TObject(),
+  fDetElements(0),
   fMpSegmentations(),
   fElCardsMap(),
   fSlatMotifMap()
@@ -146,6 +154,8 @@ AliMpSegmentation::~AliMpSegmentation()
 /// Destructor
 
   AliDebug(1,"");
+
+  delete fDetElements;
 
   // Segmentations are deleted with fMpSegmentations 
   // El cards arrays are deleted with fElCardsMap

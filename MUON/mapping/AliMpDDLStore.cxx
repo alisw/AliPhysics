@@ -69,7 +69,7 @@ AliMpDDLStore* AliMpDDLStore::Instance(Bool_t warn)
 /// and return its instance
 
   if ( ! fgInstance && warn  ) {
-    AliWarningClass("DDL Store has not beenloaded");
+    AliWarningClass("DDL Store has not been loaded");
   }  
      
   return fgInstance;
@@ -78,7 +78,7 @@ AliMpDDLStore* AliMpDDLStore::Instance(Bool_t warn)
 //______________________________________________________________________________
 AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
 {
-/// Load the DDL store rom ASCII data files
+/// Load the DDL store from ASCII data files
 /// and return its instance
 
   if ( fgInstance ) {
@@ -101,7 +101,6 @@ AliMpDDLStore* AliMpDDLStore::ReadData(Bool_t warn)
 AliMpDDLStore::AliMpDDLStore()
 : TObject(),
   fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
-  fDetElements(AliMpDEStore::Instance()),
   fBusPatches(true),
   fTriggerCrates(true),
   fLocalBoards(true),
@@ -121,6 +120,11 @@ AliMpDDLStore::AliMpDDLStore()
   fLocalBoards.SetOwner(true);
   fLocalBoards.SetSize(242); // included non-identied board
 
+
+  // Load segmentation & DE store data
+  if ( ! AliMpSegmentation::Instance(false) )
+    AliMpSegmentation::ReadData(true);
+
   // Create all detection elements
   ReadDDLs();
   ReadTriggerDDLs();
@@ -133,7 +137,6 @@ AliMpDDLStore::AliMpDDLStore()
 AliMpDDLStore::AliMpDDLStore(TRootIOCtor* /*ioCtor*/)
 : TObject(),
   fDDLs(),
-  fDetElements(0),
   fBusPatches(),
   fTriggerCrates(true),
   fLocalBoards(true)
@@ -152,8 +155,6 @@ AliMpDDLStore::~AliMpDDLStore()
 /// Destructor
 
   AliDebug(1,"");
-
-  delete fDetElements;
 
   // DDL objects are deleted with fDDLs 
   // Bus patches objects are deleted with fBusPatches 
@@ -748,7 +749,12 @@ AliMpDetElement*  AliMpDDLStore::GetDetElement(Int_t detElemId, Bool_t warn) con
 {
 /// Return detection element with given detElemId
 
-  return fDetElements->GetDetElement(detElemId, warn);
+  if ( ! AliMpDEStore::Instance() ) {
+    AliFatal("DE Store has not been loaded.");
+    return 0; 
+  }  
+
+  return AliMpDEStore::Instance()->GetDetElement(detElemId, warn);
 }  
 
 //______________________________________________________________________________
@@ -894,7 +900,12 @@ AliMpIntPair  AliMpDDLStore::GetDetElemIdManu(Int_t manuSerial) const
 {
 /// Return the detElemId and manuId for given serial manu number
 
-  return fDetElements->GetDetElemIdManu(manuSerial);
+  if ( ! AliMpDEStore::Instance() ) {
+    AliFatal("DE Store has not been loaded.");
+    return AliMpIntPair::Invalid(); 
+  }  
+
+  return AliMpDEStore::Instance()->GetDetElemIdManu(manuSerial);
 }  
 
 //______________________________________________________________________________
