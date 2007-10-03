@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2007/10/03 10:41:12  arcelli
+adding tracking-to-local matrices for new AliTOFcluster
+
 Revision 1.18  2007/07/27 08:14:48  morsch
 Write all track references into the same branch.
 
@@ -228,7 +231,23 @@ void AliTOFv5T0::AddAlignableVolumes() const
 
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
-      
+
+      if (fTOFHoles && (isect==11 || isect==12)) {
+	if (istr<39) {
+	  vpL3 = "/FTOB_0";
+	  vpL4 = "/FLTB_0/FSTR_";
+	}
+	else if (istr>53) {
+	  vpL3 = "/FTOC_0";
+	  vpL4 = "/FLTC_0/FSTR_";
+	}
+	else continue;
+      }
+      else {
+	vpL3 = "/FTOA_0";
+	vpL4 = "/FLTA_0/FSTR_";
+      }
+
       volPath  = vpL0;
       volPath += isect;
       volPath += vpL1;
