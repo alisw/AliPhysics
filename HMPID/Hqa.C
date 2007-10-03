@@ -83,7 +83,7 @@ void Clus(Int_t mode, TTree *pTree=0x0)
       break;
     case 3:
       TCanvas *c1=new TCanvas("CluComCan","Clusters in common",1280,800); c1->Divide(3,3);
-      c1->cd(1); hCluEvt->->SetFillColor(5);    hCluEvt->Draw();
+      c1->cd(1); hCluEvt->SetFillColor(5);    hCluEvt->Draw();
       c1->cd(2); hCluChi2->SetFillColor(5);     hCluChi2->Draw(); 
       c1->cd(3); hCluFlg->SetFillColor(5);      hCluFlg->Draw(); 
       c1->cd(4); hCluSize->SetFillColor(5);     hCluSize->Draw(); 
