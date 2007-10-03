@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2007/07/27 08:14:48  morsch
+Write all track references into the same branch.
+
 Revision 1.4  2007/05/29 16:51:05  decaro
 Update of the front-end electronics and cooling system description
 
@@ -74,6 +77,9 @@ Revision 0.1 2007 March G. Cara Romeo and A. De Caro
 #include "TNode.h"
 #include "TVirtualMC.h"
 #include "TGeoManager.h"
+#include <TGeoMatrix.h>
+#include <TGeoPhysicalNode.h>
+#include <TGeoVolume.h>
 
 #include "AliConst.h"
 #include "AliLog.h"
@@ -216,6 +222,25 @@ void AliTOFv6T0::AddAlignableVolumes() const
       AliDebug(2,"--------------------------------------------"); 
 	      
       gGeoManager->SetAlignableEntry(symName.Data(),volPath.Data());
+
+      //T2L matrices for alignment
+      TGeoPNEntry *e = gGeoManager->GetAlignableEntry(symName.Data());
+      if (e) {
+	const char *path = e->GetTitle();
+	if (!gGeoManager->cd(path)) {
+	  AliFatal(Form("Volume path %s not valid!",path));
+	}
+	TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
+	Double_t phi = 20.0 * (isect % 18) + 10.0;
+	TGeoHMatrix *t2l  = new TGeoHMatrix();
+	t2l->RotateZ(phi);
+	t2l->MultiplyLeft(&(globMatrix->Inverse()));
+	e->SetMatrix(t2l);
+      }
+      else {
+	AliError(Form("Alignable entry %s is not valid!",symName.Data()));
+      }
+
       imod++;
     }
   }
