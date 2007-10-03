@@ -19,22 +19,23 @@
 
 #include "AliMUONSDigitizerV2.h"
 
-#include "AliLog.h"
 #include "AliMUON.h"
 #include "AliMUONChamber.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONHit.h"
-#include "AliMpDEManager.h"
+#include "AliMUONVDigitStore.h"
+#include "AliMUONVHitStore.h"
+#include "AliMUONCalibrationData.h"
+#include "AliMUONResponseTrigger.h"
+
 #include "AliMpCDB.h"
+#include "AliMpDEManager.h"
+
+#include "AliLog.h"
+#include "AliCDBManager.h"
 #include "AliLoader.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliMUONVDigitStore.h"
-#include "AliMUONVHitStore.h"
-
-#include "AliCDBManager.h"
-#include "AliMUONCalibrationData.h"
-#include "AliMUONResponseTrigger.h"
 
 //-----------------------------------------------------------------------------
 /// The sdigitizer performs the transformation from hits (energy deposits by
@@ -61,8 +62,9 @@ AliMUONSDigitizerV2::AliMUONSDigitizerV2()
   ///
   /// ctor.
   ///
-  if ( ! AliMpCDB::LoadMpSegmentation() ) 
-  {
+
+  // Load mapping
+  if ( ! AliMpCDB::LoadMpSegmentation() ) {
     AliFatal("Could not access mapping from OCDB !");
   }
 }

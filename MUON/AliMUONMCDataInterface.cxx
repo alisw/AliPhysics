@@ -39,7 +39,7 @@
 #include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
-#include "AliMpSegmentation.h"
+#include "AliMpCDB.h"
 
 #include "AliLog.h"
 #include "AliRunLoader.h"
@@ -81,6 +81,11 @@ fIterator(0x0)
   ++fgInstanceCounter;
   
   Open(filename);
+
+  // Load mapping
+  if ( ! AliMpCDB::LoadMpSegmentation() ) {
+    AliFatal("Could not access mapping from OCDB !");
+  }
 }
 
 //_____________________________________________________________________________
@@ -895,7 +900,6 @@ TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t
       Int_t detElem = x;
       AliMUONVDigitStore* store = SDigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
       fIterator = store->CreateIterator(detElem, detElem, 2);
       if (fIterator == 0x0) return 0x0;
       fCurrentIteratorType = kSDigitIteratorByDetectorElement;
@@ -924,7 +928,6 @@ TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t
       
       AliMUONVDigitStore* store = SDigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
       AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
       fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
       if (fIterator == 0x0) return 0x0;
@@ -939,7 +942,6 @@ TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t
       Int_t detElem = x;
       AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
       fIterator = store->CreateIterator(detElem, detElem, 2);
       if (fIterator == 0x0) return 0x0;
       fCurrentIteratorType = kDigitIteratorByDetectorElement;
@@ -968,7 +970,6 @@ TIterator* AliMUONMCDataInterface::GetIterator(IteratorType type, Int_t x, Int_t
       
       AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
       AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
       fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
       if (fIterator == 0x0) return 0x0;

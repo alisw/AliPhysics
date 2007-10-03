@@ -120,20 +120,13 @@ fTrigChamberEff(0x0)
 {
   /// normal ctor
 
-  // Load geometry data
-  fTransformer->LoadGeometryData();
-  
   // Load mapping
-  if ( ! AliMpCDB::LoadMpSegmentation() ) 
-  {
+  if ( ! AliMpCDB::LoadDDLStore() ) {
     AliFatal("Could not access mapping from OCDB !");
   }
   
-  // Load DDL store
-  if ( ! AliMpCDB::LoadDDLStore() ) 
-  {
-    AliFatal("Could not access DDL Store from OCDB !");
-  }
+  // Load geometry data
+  fTransformer->LoadGeometryData();
   
   
 }

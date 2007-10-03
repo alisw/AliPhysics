@@ -35,7 +35,7 @@
 #include "AliMpIntPair.h"
 #include "AliMpDEManager.h"
 #include "AliMpConstants.h"
-#include "AliMpSegmentation.h"
+#include "AliMpCDB.h"
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -98,6 +98,11 @@ fIterator(0x0)
   ++fgInstanceCounter;
   
   Open(filename);
+
+  // Load mapping
+  if ( ! AliMpCDB::LoadDDLStore() ) {
+    AliFatal("Could not access mapping from OCDB !");
+  }
 }
 
 //______________________________________________________________________________
@@ -470,20 +475,7 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
   AliMUONGeometryTransformer transformer;
   transformer.LoadGeometryData(Form("%s/geometry.root",
                                     gSystem->DirName(fLoader->GetRunLoader()->GetFileName())));
-  
-  // Load mapping
-  if ( ! AliMpCDB::LoadMpSegmentation() ) 
-  {
-    AliFatal("Could not access mapping from OCDB !");
-  }
-  
-  // Load DDL store
-  if ( ! AliMpCDB::LoadDDLStore() ) 
-  {
-    AliFatal("Could not access DDL Store from OCDB !");
-  }
-
-  AliMUONTriggerCircuit triggerCircuit(&transformer);
+    AliMUONTriggerCircuit triggerCircuit(&transformer);
 
   // select output file name from selected Tree
   Char_t fileNameOut[30];
@@ -895,7 +887,6 @@ TIterator* AliMUONDataInterface::GetIterator(IteratorType type, Int_t x, Int_t y
       Int_t detElem = x;
       AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
       fIterator = store->CreateIterator(detElem, detElem, 2);
       if (fIterator == 0x0) return 0x0;
       fCurrentIteratorType = kDigitIteratorByDetectorElement;
@@ -924,7 +915,6 @@ TIterator* AliMUONDataInterface::GetIterator(IteratorType type, Int_t x, Int_t y
       
       AliMUONVDigitStore* store = DigitStore(fCurrentEvent);
       if (store == 0x0) return 0x0;
-      AliMpSegmentation::ReadData(kFALSE); // kFALSE so that we do not get warning message.
       AliMpIntPair pair = AliMpDEManager::GetDetElemIdRange(chamber);
       fIterator = store->CreateIterator(pair.GetFirst(), pair.GetSecond(), cathode);
       if (fIterator == 0x0) return 0x0;
