@@ -338,7 +338,6 @@ void AliEMCALClusterizerv1::Init()
   else 
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
-  fGeom->GetTransformationForSM(); // Global <-> Local
   AliInfo(Form("geom 0x%x",fGeom));
 
   if(!gMinuit) 

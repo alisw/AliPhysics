@@ -238,7 +238,6 @@ void AliEMCALGeometry::Init(void){
   fArm1EtaMax     = +0.7;	// pseudorapidity, Ending EMCAL Eta position
   fIPDistance     = 454.0;      // cm, Radial distance to inner surface of EMCAL
   fPhiGapForSM    = 0.;         // cm, only for final TRD1 geometry
-  for(int i=0; i<12; i++) fMatrixOfSM[i] = 0;
 
   // geometry
   if(fGeoName.Contains("SHISH")){ // Only shahslyk now
@@ -410,37 +409,6 @@ void AliEMCALGeometry::Init(void){
   fNCellsInTRUEta = 16 ;
   fNCellsInTRUPhi = 24 ;
 
-      // Define TGeoMatrix of SM - Jan 19, 2007 (just fro TRD1)
-  if(fGeoName.Contains("TRD1")) { // copy code from  AliEMCALv0::CreateSmod()
-    int nphism  = GetNumberOfSuperModules()/2;
-    double dphi = (GetArm1PhiMax() - GetArm1PhiMin())/nphism;
-    double rpos = (GetEnvelop(0) + GetEnvelop(1))/2.;
-    double phi, phiRad, xpos, ypos, zpos;
-    for(int i=0; i<nphism; i++){
-       phi    = GetArm1PhiMin() + dphi*(2*i+1)/2.; // phi= 90, 110, 130, 150, 170, 190
-       phiRad = phi*TMath::Pi()/180.;
-       xpos = rpos * TMath::Cos(phiRad);
-       ypos = rpos * TMath::Sin(phiRad);
-       zpos = fParSM[2];
-       if(i==5) {
-         xpos += (fParSM[1]/2. * TMath::Sin(phiRad)); 
-         ypos -= (fParSM[1]/2. * TMath::Cos(phiRad));
-       }
-       // pozitive z
-       int ind = 2*i;
-       TGeoRotation *geoRot0 = new TGeoRotation("geoRot0", 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
-       fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
-						 xpos,ypos, zpos, geoRot0);
-       // negaive z
-       ind++;
-       double phiy = 90. + phi + 180.;
-       if(phiy>=360.) phiy -= 360.;
-       TGeoRotation *geoRot1 = new TGeoRotation("geoRot1", 90.0, phi, 90.0, phiy, 180.0, 0.0);
-       fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
-					   xpos,ypos,-zpos, geoRot1);
-    } // for
-  }
-
   if(fGeoName.Contains("WSUC")) fNumberOfSuperModules = 1; // Jul 12, 2007
 
   fgInit = kTRUE; 
@@ -522,14 +490,6 @@ void AliEMCALGeometry::PrintGeometry()
 	}
         printf("\n");
 
-      }
-      printf(" Matrix transformation\n");
-      for(Int_t i=0; i<12; i++) {
-        TGeoMatrix *m = fMatrixOfSM[i];
-        if(m==0) continue;
-        const double *xyz = m->GetTranslation();
-        printf(" %2.2i %s %s x %7.2f y %7.2f z %7.2f\n", 
-	       i, m->GetName(), m->ClassName(), xyz[0],xyz[1],xyz[2]); 
       }
 
       printf("\n Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize());
@@ -1154,57 +1114,32 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
 
 }
 
-void  AliEMCALGeometry::GetTransformationForSM()
-{
-  //Uses the geometry manager to
-  //load the transformation matrix
-  //for the supermodules
-  // Unused after 19 Jan, 2007 - keep for compatibility; 
-
-  return;
-  static Bool_t transInit=kFALSE;
-  if(transInit) return;
-
-  int i=0;
-  if(gGeoManager == 0) {
-    Info("CreateTransformationForSM() "," Load geometry : TGeoManager::Import()");
-    assert(0);
-  }
-  TGeoNode *tn = gGeoManager->GetTopNode();
-  TGeoNode *node=0, *xen1 = 0;
-  for(i=0; i<tn->GetNdaughters(); i++) {
-    node = tn->GetDaughter(i);
-    TString ns(node->GetName());
-    if(ns.Contains(GetNameOfEMCALEnvelope())) {
-      xen1 = node;
-      break;
-    }
-  }
-  if(!xen1) {
-    Info("CreateTransformationForSM() "," geometry has not EMCAL envelope with name %s", 
-    GetNameOfEMCALEnvelope());
-    assert(0);
-  }
-  printf(" i %i : EMCAL Envelope is %s : #SM %i \n", i, xen1->GetName(), xen1->GetNdaughters());
-  for(i=0; i<xen1->GetNdaughters(); i++) {
-    TGeoNodeMatrix *sm = (TGeoNodeMatrix*)xen1->GetDaughter(i);
-    fMatrixOfSM[i] = sm->GetMatrix();
-    //Compiler doesn't like this syntax...
-    //    printf(" %i : matrix %x \n", i, fMatrixOfSM[i]);
-  }
-  transInit = kTRUE;
-}
-
 void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) const
 {
   // Figure out the global numbering
   // of a given supermodule from the
-  // local numbering
-  // Alice numbering - Jun 03,2006
-  //  if(fMatrixOfSM[0] == 0) GetTransformationForSM();
+  // local numbering and the transformation
+  // matrix stored by the geometry manager (allows for misaligned
+  // geometry)
 
   if(ind>=0 && ind < GetNumberOfSuperModules()) {
-    fMatrixOfSM[ind]->LocalToMaster(loc, glob);
+    TString volpath = "ALIC_1/XEN1_1/SMOD_";
+    volpath += (ind+1);
+
+    if(GetKey110DEG() && ind>=10) {
+      volpath = "ALIC_1/XEN1_1/SM10_";
+      volpath += (ind-10+1);
+    }
+
+    if(!gGeoManager->cd(volpath.Data()))
+      AliFatal(Form("GeoManager cannot find path %s!",volpath.Data()));
+
+    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+    if(m) {
+      m->LocalToMaster(loc, glob);
+    } else {
+      AliFatal("Geo matrixes are not loaded \n") ;
+    }
   }
 }
 
@@ -1229,7 +1164,23 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
   glob[0]=glob[1]=glob[2]=0.0; // bad case
   if(RelPosCellInSModule(absId, loc)) {
     GetCellIndex(absId, nSupMod, nModule, nIphi, nIeta);
-    fMatrixOfSM[nSupMod]->LocalToMaster(loc, glob);
+
+    TString volpath = "ALIC_1/XEN1_1/SMOD_";
+    volpath += (nSupMod+1);
+
+    if(GetKey110DEG() && nSupMod>=10) {
+      volpath = "ALIC_1/XEN1_1/SM10_";
+      volpath += (nSupMod-10+1);
+    }
+    if(!gGeoManager->cd(volpath.Data()))
+      AliFatal(Form("GeoManager cannot find path %s!",volpath.Data()));
+
+    TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
+    if(m) {
+      m->LocalToMaster(loc, glob);
+    } else {
+      AliFatal("Geo matrixes are not loaded \n") ;
+    }
   }
 }
 
@@ -1394,9 +1345,6 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) 
 void AliEMCALGeometry::Browse(TBrowser* b)
 {
   if(fShishKebabTrd1Modules) b->Add(fShishKebabTrd1Modules);
-  for(int i=0; i<fNumberOfSuperModules; i++) {
-    if(fMatrixOfSM[i])  b->Add(fMatrixOfSM[i]);
-  }
 }
 
 Bool_t AliEMCALGeometry::IsFolder() const

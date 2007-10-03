@@ -146,9 +146,7 @@ public:
 
   void     GetTransformationForSM();
   Float_t *GetSuperModulesPars() {return fParSM;}
-  TGeoMatrix *GetTransformationForSM(int i) {
-  if(i>=0 && i<GetNumberOfSuperModules()) return fMatrixOfSM[i]; 
-                                        else return 0;}
+
   // May 31, 2006; ALICE numbering scheme: 
   // see ALICE-INT-2003-038: ALICE Coordinate System and Software Numbering Convention
   // All indexes are stared from zero now.
@@ -304,7 +302,6 @@ private:
   TList *fShishKebabTrd1Modules; //! list of modules
   // Local coordinates of SM for TRD1
   Float_t     fParSM[3];       // SM sizes as in GEANT (TRD1)
-  TGeoMatrix* fMatrixOfSM[12]; //![fNumberOfSuperModules]; get from gGeoManager;
 
   char *fAdditionalOpts[6];  //! some additional options for the geometry type and name
   int  fNAdditionalOpts;     //! size of additional options parameter
@@ -313,7 +310,7 @@ private:
   Int_t fILOSS;
   Int_t fIHADR;
 
-  ClassDef(AliEMCALGeometry, 12) // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry, 13) // EMCAL geometry class 
 };
 
 #endif // AliEMCALGEOMETRY_H
