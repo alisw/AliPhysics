@@ -57,23 +57,6 @@ AliHLTTPCFitter::AliHLTTPCFitter()
   memset(fNcl,0,36*6*sizeof(UInt_t));
 }
 
-AliHLTTPCFitter::AliHLTTPCFitter(const AliHLTTPCFitter& src)
-  :
-  fTrack(NULL),
-  fVertex(NULL),
-  fVertexConstraint(0)
-{
-  // dummy copy constructor according to eff C++
-  memset(fClusters,0,36*6*sizeof(AliHLTTPCSpacePointData*));
-  memset(fNcl,0,36*6*sizeof(UInt_t));
-}
-
-AliHLTTPCFitter& AliHLTTPCFitter::operator=(const AliHLTTPCFitter& src)
-{ 
-  // dummy assignment operator according to eff C++
-  return *this;
-}
-
 AliHLTTPCFitter::AliHLTTPCFitter(AliHLTTPCVertex *vertex,Bool_t vertexconstraint)
   :
   fTrack(NULL),

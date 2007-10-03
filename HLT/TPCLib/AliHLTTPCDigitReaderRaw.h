@@ -66,10 +66,6 @@ public:
    *  - 5: As 1, but RCU trailer is 2 32 bit words.
    */
   AliHLTTPCDigitReaderRaw( unsigned formatVersion );
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& src);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCDigitReaderRaw& operator=(const AliHLTTPCDigitReaderRaw& src);
   /** destructor */
   virtual ~AliHLTTPCDigitReaderRaw();
     
@@ -250,6 +246,10 @@ protected:
   bool fVerify;                                                    // see above
 
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& src);
+  /** assignment operator prohibited */
+  AliHLTTPCDigitReaderRaw& operator=(const AliHLTTPCDigitReaderRaw& src);
   /** number of patches */ 
   static const Int_t fgkNofPatches=6;                              // see above
   /** dimension of each mapping array */ 

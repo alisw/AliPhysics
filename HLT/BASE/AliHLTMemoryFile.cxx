@@ -109,7 +109,7 @@ int AliHLTMemoryFile::Close(int bFlush)
   return -fErrno;
 }
 
-Int_t    AliHLTMemoryFile::SysOpen(const char *pathname, Int_t flags, UInt_t mode)
+Int_t    AliHLTMemoryFile::SysOpen(const char* /*pathname*/, Int_t /*flags*/, UInt_t /*mode*/)
 {
   // see header file for function documentation
   if (fpBuffer==NULL || fSize==0) return 1;
@@ -119,14 +119,14 @@ Int_t    AliHLTMemoryFile::SysOpen(const char *pathname, Int_t flags, UInt_t mod
   return -1;
 }
 
-Int_t    AliHLTMemoryFile::SysClose(Int_t fd)
+Int_t    AliHLTMemoryFile::SysClose(Int_t /*fd*/)
 {
   // see header file for function documentation
   //HLTDebug("closing file %p size %d", this, fSize);
   return 0;
 }
 
-Int_t    AliHLTMemoryFile::SysRead(Int_t fd, void *buf, Int_t len)
+Int_t    AliHLTMemoryFile::SysRead(Int_t /*fd*/, void *buf, Int_t len)
 {
   // see header file for function documentation
   if (buf==NULL) return 0;
@@ -140,7 +140,7 @@ Int_t    AliHLTMemoryFile::SysRead(Int_t fd, void *buf, Int_t len)
   return read;
 }
 
-Int_t    AliHLTMemoryFile::SysWrite(Int_t fd, const void *buf, Int_t len)
+Int_t    AliHLTMemoryFile::SysWrite(Int_t /*fd*/, const void *buf, Int_t len)
 {
   // see header file for function documentation
   if (buf==NULL) return 0;
@@ -156,7 +156,7 @@ Int_t    AliHLTMemoryFile::SysWrite(Int_t fd, const void *buf, Int_t len)
   return -1;
 }
 
-Long64_t AliHLTMemoryFile::SysSeek(Int_t fd, Long64_t offset, Int_t whence)
+Long64_t AliHLTMemoryFile::SysSeek(Int_t /*fd*/, Long64_t offset, Int_t whence)
 {
   // see header file for function documentation
   //HLTDebug("seek %d from %d", offset, whence);
@@ -186,14 +186,14 @@ Long64_t AliHLTMemoryFile::SysSeek(Int_t fd, Long64_t offset, Int_t whence)
   return position;
 }
 
-Int_t    AliHLTMemoryFile::SysStat(Int_t fd, Long_t *id, Long64_t *size, Long_t *flags, Long_t *modtime)
+Int_t    AliHLTMemoryFile::SysStat(Int_t /*fd*/, Long_t */*id*/, Long64_t *size, Long_t */*flags*/, Long_t */*modtime*/)
 {
   // see header file for function documentation
   if (size) *size=fSize;
   return 0;
 }
 
-Int_t    AliHLTMemoryFile::SysSync(Int_t fd)
+Int_t    AliHLTMemoryFile::SysSync(Int_t /*fd*/)
 {
   // see header file for function documentation
   return 0;

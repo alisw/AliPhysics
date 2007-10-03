@@ -523,7 +523,7 @@ Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *d
   rewind(fInBinary);
   AliHLTTPCDigitRowData *rowPt = data;
   UInt_t rowcount = 0;
-  Int_t outsize =0;
+  UInt_t outsize =0;
   while(!feof(fInBinary)){
     Byte_t  *bytePt =(Byte_t *) rowPt;
 
@@ -537,7 +537,7 @@ Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *d
     bytePt += sizeof(AliHLTTPCDigitRowData);
     outsize += sizeof(AliHLTTPCDigitRowData);
 
-    Int_t size = sizeof(AliHLTTPCDigitData) * rowPt->fNDigit;
+    UInt_t size = sizeof(AliHLTTPCDigitData) * rowPt->fNDigit;
 
     if (sz<outsize+size) {
       LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","Memory")

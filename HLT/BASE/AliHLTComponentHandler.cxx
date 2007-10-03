@@ -67,6 +67,7 @@ AliHLTComponentHandler::AliHLTComponentHandler()
 
 AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   :
+  AliHLTLogging(),
   fComponentList(),
   fScheduleList(),
   fLibraryList(),
@@ -86,25 +87,6 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   }  else
     memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
   AddStandardComponents();
-}
-
-AliHLTComponentHandler::AliHLTComponentHandler(const AliHLTComponentHandler&)
-  :
-  fComponentList(),
-  fScheduleList(),
-  fLibraryList(),
-  fEnvironment(),
-  fStandardList()
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTComponentHandler& AliHLTComponentHandler::operator=(const AliHLTComponentHandler&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTComponentHandler::~AliHLTComponentHandler()

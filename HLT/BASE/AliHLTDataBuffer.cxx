@@ -196,7 +196,7 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	    segment++;
 	  }
 	  // check whether there was enough space for the segments
-	  if (i!=tgtList.size()) {
+	  if (i!=(int)tgtList.size()) {
 	    HLTError("too little space in block descriptor array: required %d, available %d", tgtList.size(), iArraySize);
 	    iResult=-ENOSPC;
 	  } else {

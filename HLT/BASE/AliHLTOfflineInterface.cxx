@@ -90,7 +90,7 @@ AliRawReader* AliHLTOfflineInterface::GetRawReader() const
   return fpRawReader!=NULL?fpRawReader:fgpRawReader;
 }
 
-int AliHLTOfflineInterface::SetESD(Int_t eventNo, AliESDEvent* pESD)
+int AliHLTOfflineInterface::SetESD(Int_t /*eventNo*/, AliESDEvent* pESD)
 {
   fpESD=pESD;
   return 0;

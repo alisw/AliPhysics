@@ -210,8 +210,8 @@ int AliHLTLoaderPublisherComponent::DoDeinit()
   return iResult;
 }
 
-int AliHLTLoaderPublisherComponent::GetEvent(const AliHLTComponentEventData& evtData,
-						 AliHLTComponentTriggerData& trigData)
+int AliHLTLoaderPublisherComponent::GetEvent(const AliHLTComponentEventData& /*evtData*/,
+					     AliHLTComponentTriggerData& /*trigData*/)
 {
   // see header file for class documentation
   int iResult=0;

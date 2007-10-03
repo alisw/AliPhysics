@@ -50,11 +50,11 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
   fAltroBlock10BitWordCnt(0),
   fAltroBlock10BitFillWordCnt(0),
   fDataFormatVersion(formatVersion),
-  fVerify(false),
   fBunchPosition(0xFFFFU),
   fBunchTimebinStart(~0U),
   fBunchLength(0),
   fWordInBunch((unsigned)-1),
+  fVerify(false),
   
   fCurrentRow(0),
   fCurrentPad(0),
@@ -103,84 +103,6 @@ AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw( unsigned formatVersion )
 	// init Data array
 	fData = new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
       }
-}
-
-AliHLTTPCDigitReaderRaw::AliHLTTPCDigitReaderRaw(const AliHLTTPCDigitReaderRaw& src)
-  :
-  fBuffer(NULL),
-  fBufferSize(0),
-  fPatch(-1),
-  fSlice(-1),
-  fRow(-1),
-  fPad(-1),
-  fAltroBlockPositionBytes(0),
-  fAltroBlockLengthBytes(0),
-  fAltroBlockHWAddress(0),
-  fAltroBlock10BitWordCnt(0),
-  fAltroBlock10BitFillWordCnt(0),
-  fDataFormatVersion(src.fDataFormatVersion),
-  fVerify(false),
-  fBunchPosition(0xFFFFU),
-  fBunchTimebinStart(~0U),
-  fBunchLength(0),
-  fWordInBunch((unsigned)-1),
-  
-  fCurrentRow(0),
-  fCurrentPad(0),
-  fCurrentBin(-1),
-  fRowOffset(0),
-  fNRows(0),
-  fNMaxRows(0),
-  fNMaxPads(0),
-  fNTimeBins(0),
-  fData(NULL),
-  fMapErrThrown(0)
-{
-  // see header file for class documentation
-#ifndef HAVE_TPC_MAPPING
-  memset(fgMapping0, 0, fgkMapping0Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping1, 0, fgkMapping1Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping2, 0, fgkMapping2Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping3, 0, fgkMapping3Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping4, 0, fgkMapping4Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping5, 0, fgkMapping5Size*fgkMappingDimension*sizeof(Int_t));
-#endif //#ifndef HAVE_TPC_MAPPING
-  HLTFatal("copy constructor not for use");
-}
-
-AliHLTTPCDigitReaderRaw& AliHLTTPCDigitReaderRaw::operator=(const AliHLTTPCDigitReaderRaw& src)
-{
-  // see header file for class documentation
-#ifndef HAVE_TPC_MAPPING
-  memset(fgMapping0, 0, fgkMapping0Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping1, 0, fgkMapping1Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping2, 0, fgkMapping2Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping3, 0, fgkMapping3Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping4, 0, fgkMapping4Size*fgkMappingDimension*sizeof(Int_t));
-  memset(fgMapping5, 0, fgkMapping5Size*fgkMappingDimension*sizeof(Int_t));
-#endif //#ifndef HAVE_TPC_MAPPING
-  fBuffer=NULL;
-  fBufferSize=0;
-  fPatch=-1;
-  fSlice=-1;
-  fRow=-1;
-  fPad=-1;
-  fDataFormatVersion=src.fDataFormatVersion;
-  fCurrentRow=0;
-  fCurrentPad=0;
-  fCurrentBin=-1;
-  fVerify=false;
-  
-  // For sorting
-  fNRows=0;
-  fRowOffset=0;
-  fNMaxRows=0;
-  fNMaxPads=0;
-  fNTimeBins=0;
-  fData=NULL;
-  fMapErrThrown=0;
-  HLTFatal("assignment operator not for use");
-  return (*this);
 }
 
 AliHLTTPCDigitReaderRaw::~AliHLTTPCDigitReaderRaw()

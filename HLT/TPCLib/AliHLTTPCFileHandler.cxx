@@ -450,7 +450,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
     LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2Memory","ndigits")
       <<"No TPC digits (entries==0)!"<<ENDLOG;
     nrow = (UInt_t)(fRowMax-fRowMin+1);
-    Int_t size = nrow*sizeof(AliHLTTPCDigitRowData);
+    UInt_t size = nrow*sizeof(AliHLTTPCDigitRowData);
     if (tgtBuffer!=NULL && pTgtSize!=NULL && *pTgtSize>0) {
       if (size<=*pTgtSize) {
 	data=reinterpret_cast<AliHLTTPCDigitRowData*>(tgtBuffer);
@@ -516,7 +516,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
     nrows++;
   }
 
-  Int_t size = sizeof(AliHLTTPCDigitData)*ndigitcount
+  UInt_t size = sizeof(AliHLTTPCDigitData)*ndigitcount
     + nrows*sizeof(AliHLTTPCDigitRowData);
 
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCFileHandler::AliDigits2Memory","Digits")

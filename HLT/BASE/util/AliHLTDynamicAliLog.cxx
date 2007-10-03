@@ -31,7 +31,7 @@
 /**
  * Notification callback for AliRoot logging methods
  */
-void LogNotification(AliLog::EType_t level, const char* message)
+void LogNotification(AliLog::EType_t /*level*/, const char* /*message*/)
 {
   // Notification callback for AliRoot logging methods
 

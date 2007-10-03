@@ -130,7 +130,7 @@ int AliHLTRootFileStreamerComponent::DoInit( int argc, const char** argv )
   return iResult;
 }
 
-int AliHLTRootFileStreamerComponent::DoEvent( const AliHLTComponentEventData& evtData,
+int AliHLTRootFileStreamerComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
 					    AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation

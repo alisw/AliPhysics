@@ -46,7 +46,7 @@ AliHLTAgentUtil::~AliHLTAgentUtil()
 }
 
 int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					  AliRunLoader* runloader) const
+					  AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
   if (handler) {
@@ -54,7 +54,7 @@ int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* handler,
   return 0;
 }
 
-const char* AliHLTAgentUtil::GetLocalRecConfigurations(AliRunLoader* runloader) const
+const char* AliHLTAgentUtil::GetLocalRecConfigurations(AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
   return NULL;

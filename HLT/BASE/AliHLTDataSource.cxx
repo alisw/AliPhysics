@@ -74,17 +74,17 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
 }
 
 int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& evtData,
-				   AliHLTComponentTriggerData& trigData,
-				   AliHLTUInt8_t* outputPtr, 
-				   AliHLTUInt32_t& size,
-				   vector<AliHLTComponentBlockData>& outputBlocks )
+				AliHLTComponentTriggerData& trigData,
+				AliHLTUInt8_t* /*outputPtr*/, 
+				AliHLTUInt32_t& /*size*/,
+				vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
 {
   // we just forward to the high level method, all other parameters already
   // have been stored internally
   return GetEvent(evtData, trigData);
 }
 
-int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   HLTFatal("no processing method implemented");
   return -ENOSYS;

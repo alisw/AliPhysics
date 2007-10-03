@@ -547,7 +547,7 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
   return pObj;
 }
 
-TObject* AliHLTComponent::GetInputObject(int idx, const char* classname, int bForce)
+TObject* AliHLTComponent::GetInputObject(int idx, const char* /*classname*/, int bForce)
 {
   // see header file for function documentation
   if (fpInputObjects==NULL) {

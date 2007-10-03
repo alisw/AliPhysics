@@ -24,10 +24,6 @@ class AliHLTTPCFitter {
 
   public:
   AliHLTTPCFitter();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCFitter(const AliHLTTPCFitter& src);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCFitter& operator=(const AliHLTTPCFitter& src);
   AliHLTTPCFitter(AliHLTTPCVertex *vertex,Bool_t vertexconstraint=kTRUE);
   virtual ~AliHLTTPCFitter();
   
@@ -39,6 +35,11 @@ class AliHLTTPCFitter {
   void NoVertex() {fVertexConstraint=kFALSE;}
  
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCFitter(const AliHLTTPCFitter& src);
+  /** assignment operator prohibited */
+  AliHLTTPCFitter& operator=(const AliHLTTPCFitter& src);
+
   AliHLTTPCTrack *fTrack; //!                    actual track
   AliHLTTPCVertex *fVertex; //!                  vertex info
   Bool_t fVertexConstraint; //               include vertex constraint

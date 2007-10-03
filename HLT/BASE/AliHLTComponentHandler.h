@@ -41,10 +41,6 @@ class AliHLTComponentHandler : public AliHLTLogging {
   AliHLTComponentHandler();
   /** constructor */
   AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTComponentHandler(const AliHLTComponentHandler&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTComponentHandler& operator=(const AliHLTComponentHandler&);
   /** destructor */
   virtual ~AliHLTComponentHandler();
 
@@ -189,6 +185,11 @@ class AliHLTComponentHandler : public AliHLTLogging {
  protected:
 
  private:
+  /** copy constructor prohibited */
+  AliHLTComponentHandler(const AliHLTComponentHandler&);
+  /** assignment operator prohibited */
+  AliHLTComponentHandler& operator=(const AliHLTComponentHandler&);
+
   /**
    * Find a component.
    * @param componentID  ID of the component to find

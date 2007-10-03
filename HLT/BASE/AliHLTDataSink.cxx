@@ -82,7 +82,7 @@ int AliHLTDataSink::DoProcessing( const AliHLTComponentEventData& evtData,
 }
 
 int AliHLTDataSink::DumpEvent( const AliHLTComponentEventData& evtData,
-			       const AliHLTComponentBlockData* blocks, 
+			       const AliHLTComponentBlockData* /*blocks*/, 
 			       AliHLTComponentTriggerData& trigData )
 {
   // we just forward to the high level method, all other parameters already
@@ -90,7 +90,7 @@ int AliHLTDataSink::DumpEvent( const AliHLTComponentEventData& evtData,
   return DumpEvent(evtData, trigData);
 }
 
-int AliHLTDataSink::DumpEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+int AliHLTDataSink::DumpEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   HLTFatal("no processing method implemented");
   return -ENOSYS;
