@@ -28,13 +28,13 @@ ClassImp(AliVZEROCalibData)
 //________________________________________________________________
 AliVZEROCalibData::AliVZEROCalibData()
 {
-  
+  // 
 }
 
 //________________________________________________________________
 void AliVZEROCalibData::Reset()
 {
-  
+  // reset 
 }
 
 //________________________________________________________________
@@ -63,7 +63,9 @@ AliVZEROCalibData::AliVZEROCalibData(const AliVZEROCalibData& calibda) :
       
   for(int t=0; t<64; t++) { 
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
-      fTimeGain[t]     = calibda.GetTimeGain(t); }   
+      fTimeGain[t]     = calibda.GetTimeGain(t); 
+      fMeanHV[t]       = calibda.GetMeanHV(t);
+      fWidthHV[t]      = calibda.GetWidthHV(t); }   
   
 }
 
@@ -82,7 +84,9 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
       
   for(int t=0; t<64; t++) { 
       fTimeOffset[t]   = calibda.GetTimeOffset(t);
-      fTimeGain[t]     = calibda.GetTimeGain(t); }     
+      fTimeGain[t]     = calibda.GetTimeGain(t); 
+      fMeanHV[t]       = calibda.GetMeanHV(t);
+      fWidthHV[t]      = calibda.GetWidthHV(t); }     
   
   return *this;
   
@@ -91,7 +95,7 @@ AliVZEROCalibData &AliVZEROCalibData::operator =(const AliVZEROCalibData& calibd
 //________________________________________________________________
 AliVZEROCalibData::~AliVZEROCalibData()
 {
-  
+  // destructor
 }
 
                                                                                    
@@ -129,4 +133,18 @@ void AliVZEROCalibData::SetTimeGain(Float_t* TimeGain)
 {
   if(TimeGain) for(int t=0; t<64; t++) fTimeGain[t] = TimeGain[t];
   else for(int t=0; t<64; t++) fTimeGain[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetMeanHV(Float_t* MeanHVs) 
+{
+  if(MeanHVs) for(int t=0; t<64; t++) fMeanHV[t] = MeanHVs[t];
+  else for(int t=0; t<64; t++) fMeanHV[t] = 0.0;
+}
+
+//________________________________________________________________
+void AliVZEROCalibData::SetWidthHV(Float_t* WidthHVs) 
+{
+  if(WidthHVs) for(int t=0; t<64; t++) fWidthHV[t] = WidthHVs[t];
+  else for(int t=0; t<64; t++) fWidthHV[t] = 0.0;
 }

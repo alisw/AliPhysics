@@ -35,6 +35,13 @@ class AliVZEROCalibData: public TNamed {
   Float_t  GetTimeGain(Int_t channel)	const {return fTimeGain[channel];}
   Float_t* GetTimeGain()   const {return (float*)fTimeGain;}
   
+  Float_t  GetMeanHV(Int_t channel)	const {return fMeanHV[channel];}
+  Float_t* GetMeanHV()   const {return (float*)fMeanHV;}
+ 
+  Float_t  GetWidthHV(Int_t channel)	const {return fWidthHV[channel];}
+  Float_t* GetWidthHV()   const {return (float*)fWidthHV;}
+ 
+  
   void     SetPedestal(Float_t val, Int_t channel) {fPedestal[channel]=val;}
   void     SetPedestal(Float_t* Pedestal);
   void     SetSigma(Float_t val, Int_t channel) {fSigma[channel]=val;}
@@ -46,6 +53,14 @@ class AliVZEROCalibData: public TNamed {
   void     SetTimeOffset(Float_t* TimeOffset);
   void     SetTimeGain(Float_t val, Int_t channel) {fTimeGain[channel]=val;}
   void     SetTimeGain(Float_t* TimeGain);
+  
+  void     SetMeanHV(Float_t val, Int_t channel) {fMeanHV[channel]=val;}
+  void     SetMeanHV(Float_t* MeanHVs);
+  
+  void     SetWidthHV(Float_t val, Int_t channel) {fWidthHV[channel]=val;}
+  void     SetWidthHV(Float_t* WidthHVs);
+
+  
 
  protected:
   Float_t  fPedestal[128];     // Mean pedestal values
@@ -54,6 +69,9 @@ class AliVZEROCalibData: public TNamed {
   
   Float_t  fTimeOffset[64];
   Float_t  fTimeGain[64];
+
+  Float_t  fMeanHV[64];    		// Mean PMT HV
+  Float_t  fWidthHV[64];		// Width of the PMT HV
 
   ClassDef(AliVZEROCalibData,1)    // VZERO Calibration data
 };
