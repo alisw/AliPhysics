@@ -12,4 +12,5 @@
 #include "IceCal2Root.h"
 #include "IceRawTWR.h"
 #include "IceRoot.h"
+#include "IceDB2Root.h"
 

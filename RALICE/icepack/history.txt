@@ -123,4 +123,7 @@
 27-sep-2007 NvE Check for event selection/rejection flag introduced in IceCalibrate.cxx,
                 IceChi2.cxx, IceCleanHits.cxx, IceDwalk.cxx, IceDwalkx.cxx, IceLinefit.cxx,
                 IceMakeHits.cxx, IcePandel.cxx and IceXtalk.cxx.
+04-oct-2007 NvE New memberfunctions GetLevel and GetOMId introduced in class IceGOM
+                to enable retrieval and conversion of various (D)OM numbering schemes.
+
                  

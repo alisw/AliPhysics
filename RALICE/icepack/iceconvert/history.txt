@@ -135,4 +135,5 @@
                 and slot access exclusively via the slotname, to enhance flexibility.
 27-sep-2007 NvE Check for event selection flag introduced in IceF2k.cxx and IceRawTWR.cxx
                 to provide selected event output.
+04-oct-2007 NvE New class IceDB2Root of Garmt de Vries-Uiterweerd introduced.
    

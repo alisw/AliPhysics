@@ -130,15 +130,23 @@ IceGOM::IceGOM(const IceGOM& m) : AliDevice(m)
 // Copy constructor.
 }
 ///////////////////////////////////////////////////////////////////////////
-Int_t IceGOM::GetString() const
+Int_t IceGOM::GetString(Int_t id) const
 {
 // Provide the corresponding string number for this module.
 // Note : Amanda string numbers will have negative values.
+//
+// In case the user has specified the input argument id>0,
+// the string number corresponding to this id for the current module class
+// will be returned.
+// Otherwise the string number corresponding with the current
+// module will be returned.
+//
+// The default value is id=0;
 
  Int_t omid=GetUniqueID();
+ if (id>0) omid=id;
 
  if (omid<=0) return 0;
- if (omid==681) return -18;
 
  Int_t string=0;
  if (InheritsFrom("IceAOM"))
@@ -162,6 +170,9 @@ Int_t IceGOM::GetString() const
   if (omid>=555 && omid<=596) return -17;
   if (omid>=597 && omid<=638) return -18;
   if (omid>=639 && omid<=680) return -19;
+
+  // OM681 is a special case on string 18
+  if (omid==681) return -18;
  }
  else
  {
@@ -169,6 +180,88 @@ Int_t IceGOM::GetString() const
  }
 
  return string;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t IceGOM::GetLevel(Int_t id) const
+{
+// Provide the corresponding level on the string for this module.
+// Level=j indicates the j-th module on the string, where j=1
+// corresponds to the module at the top of the string.
+//
+// In case the user has specified the input argument id>0,
+// the string number corresponding to this id for the current module class
+// will be returned.
+// Otherwise the string number corresponding with the current
+// module will be returned.
+//
+// The default value is id=0;
+//              
+// Note : level 61,62,63,64 indicates IceTop DOM's.
+
+ Int_t omid=GetUniqueID();
+ if (id>0) omid=id;
+
+ if (omid<=0) return 0;
+
+ Int_t level=0;
+ if (InheritsFrom("IceAOM"))
+ {
+  if (omid<=20) return omid;
+  if (omid>=21 && omid<=40) return (omid-20);
+  if (omid>=41 && omid<=60) return (omid-40);
+  if (omid>=61 && omid<=86) return (omid-60);
+  if (omid>=87 && omid<=122) return (omid-86);
+  if (omid>=123 && omid<=158) return (omid-122);
+  if (omid>=159 && omid<=194) return (omid-158);
+  if (omid>=195 && omid<=230) return (omid-194);
+  if (omid>=231 && omid<=266) return (omid-230);
+  if (omid>=267 && omid<=302) return (omid-266);
+  if (omid>=303 && omid<=344) return (omid-302);
+  if (omid>=345 && omid<=386) return (omid-344);
+  if (omid>=387 && omid<=428) return (omid-386);
+  if (omid>=429 && omid<=470) return (omid-428);
+  if (omid>=471 && omid<=512) return (omid-470);
+  if (omid>=513 && omid<=554) return (omid-512);
+  if (omid>=555 && omid<=596) return (omid-554);
+  if (omid>=597 && omid<=638) return (omid-596);
+  if (omid>=639 && omid<=680) return (omid-638);
+
+  // OM681 is physically the 4th module on string 18
+  // but the database convention is to regard it as
+  // a module at the bottom of string 18
+  if (omid==681) return 43;
+ }
+ else
+ {
+  level=omid%100;
+ }
+
+ return level;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t IceGOM::GetOMId(Int_t string,Int_t level) const
+{
+// Provide OM identifier based on the string and level indicators.
+// This memberfunction makes use of the inheritance info, which means
+// that for Amanda OM's one may either use negative or positive string numbers.
+
+ Int_t omid=0;
+ Int_t s=0,l=0;
+ if (InheritsFrom("IceAOM"))
+ {
+  for (Int_t i=1; i<=681; i++)
+  {
+   s=GetString(i);
+   l=GetLevel(i);
+   if (abs(s)==abs(string) && l==level) return i;
+  }
+ }
+ else
+ {
+  omid=100*string+level;
+ }
+
+ return omid;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* IceGOM::Clone(const char* name) const

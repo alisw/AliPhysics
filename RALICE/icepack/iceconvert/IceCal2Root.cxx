@@ -19,6 +19,11 @@
 // Class IceCal2Root
 // Conversion of Amanda (ascii) calibration data into a AliObjMatrix objects
 // containing the complete OM position, calibration, Xtalk etc... database.
+//
+// This facility will become obsolete soon and is only kept for
+// backward compatibility and testing purposes.
+// Please use the more recent IceDB2Root facility instead.
+//
 // Via specification of the various input files, various AliObjMatrix objects
 // are created and (optionally) stored in a single output file.
 // The names of the AliObjMatrix objects indicate the type of database they

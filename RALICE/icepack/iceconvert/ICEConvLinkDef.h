@@ -17,5 +17,6 @@
  #pragma link C++ class IceCal2Root+;
  #pragma link C++ class IceRawTWR+;
  #pragma link C++ class IceRoot+;
+ #pragma link C++ class IceDB2Root+;
 #endif
  
