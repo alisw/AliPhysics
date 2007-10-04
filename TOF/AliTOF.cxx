@@ -710,12 +710,13 @@ void AliTOF::Digits2Raw()
     return;
   }
   
+  /*
   fRunLoader->CdGAFile();
   TFile *in=(TFile*)gFile;
   in->cd();
   AliTOFGeometry *geometry  = (AliTOFGeometry*)in->Get("TOFgeometry");
-
-  AliTOFDDLRawData rawWriter(geometry);
+  */
+  AliTOFDDLRawData rawWriter;
   //AliTOFDDLRawData rawWriter;
   rawWriter.SetVerbose(0);
   //rawWriter.SetFakeOrphaneProduction(kTRUE);
