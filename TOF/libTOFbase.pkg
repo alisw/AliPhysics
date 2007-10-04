@@ -2,7 +2,6 @@
 # $Id$
 
 SRCS  = AliTOFGeometry.cxx  \
-	AliTOFGeometryV5.cxx  \
         AliTOFdigit.cxx  \
         AliTOFRawMap.cxx\
         AliTOFrawData.cxx\
@@ -10,16 +9,9 @@ SRCS  = AliTOFGeometry.cxx  \
         AliTOFHitData.cxx\
         AliTOFHitDataBuffer.cxx\
         AliTOFDecoder.cxx\
-	AliTOFChannel.cxx  \
+	AliTOFChannelOffline.cxx  \
 	AliTOFChannelOnline.cxx  \
-	AliTOFChSim.cxx  \
-	AliTOFcalibESD.cxx AliTOFcalib.cxx \
-	AliTOFCalPadZ.cxx \
-        AliTOFCalStrip.cxx  AliTOFCalPlateA.cxx \
-	AliTOFCalPlateB.cxx AliTOFCalPlateC.cxx \
-	AliTOFCalSector.cxx \
-	AliTOFCal.cxx \
-	AliTOFCalOnline.cxx \
+	AliTOFcalib.cxx \
 	AliTOFAlignment.cxx \
 	AliTOFPreprocessor.cxx \
         AliTOFDataDCS.cxx \

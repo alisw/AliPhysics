@@ -9,7 +9,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  AliTOFGeometry+;
-#pragma link C++ class  AliTOFGeometryV5+;
 #pragma link C++ class  AliTOFdigit+;
 #pragma link C++ class  AliTOFRawMap+;
 #pragma link C++ class  AliTOFrawData+;
@@ -17,19 +16,9 @@
 #pragma link C++ class  AliTOFHitData+;
 #pragma link C++ class  AliTOFHitDataBuffer+;
 #pragma link C++ class  AliTOFDecoder+;
-#pragma link C++ class  AliTOFChannel+;
+#pragma link C++ class  AliTOFChannelOffline+;
 #pragma link C++ class  AliTOFChannelOnline+;
-#pragma link C++ class  AliTOFChSim+;
-#pragma link C++ class  AliTOFcalibESD+;
 #pragma link C++ class  AliTOFcalib+;
-#pragma link C++ class  AliTOFCalPadZ+;
-#pragma link C++ class  AliTOFCalStrip+;
-#pragma link C++ class  AliTOFCalPlateA+;
-#pragma link C++ class  AliTOFCalPlateB+;
-#pragma link C++ class  AliTOFCalPlateC+;
-#pragma link C++ class  AliTOFCalSector+;
-#pragma link C++ class  AliTOFCal+;
-#pragma link C++ class  AliTOFCalOnline+;
 #pragma link C++ class  AliTOFAlignment+;
 #pragma link C++ class  AliTOFPreprocessor+;
 #pragma link C++ class  AliTOFDataDCS+;
