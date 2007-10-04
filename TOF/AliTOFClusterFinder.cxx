@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.29  2007/10/03 10:42:33  arcelli
+updates to handle new AliTOFcluster, inheriting form AliCluster3D
+
 Revision 1.28  2007/05/31 16:06:05  arcelli
 move instance of AliRawStream outside loop on DDL
 
@@ -106,14 +109,13 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "AliRawReader.h"
 #include "AliRunLoader.h"
 
-#include "AliTOFCal.h"
 #include "AliTOFcalib.h"
-#include "AliTOFChannel.h"
+#include "AliTOFChannelOnline.h"
+#include "AliTOFChannelOffline.h"
 #include "AliTOFClusterFinder.h"
 #include "AliTOFcluster.h"
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
-#include "AliTOFGeometryV5.h"
 #include "AliTOFrawData.h"
 #include "AliTOFRawStream.h"
 #include "Riostream.h"
@@ -127,7 +129,6 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
   fTOFLoader(0),
   fTreeD(0),
   fTreeR(0),
-  fTOFGeometry(new AliTOFGeometryV5()),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
@@ -139,8 +140,6 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
 // Constructor
 //
 
-  AliInfo("V5 TOF Geometry is taken as the default");
-
 }
 //______________________________________________________________________________
 
@@ -149,7 +148,6 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
   fTOFLoader(runLoader->GetLoader("TOFLoader")),
   fTreeD(0),
   fTreeR(0),
-  fTOFGeometry(new AliTOFGeometryV5()),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
@@ -170,7 +168,6 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
   fTOFLoader(0),
   fTreeD(0),
   fTreeR(0),
-  fTOFGeometry(new AliTOFGeometryV5()),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
   fNumberOfTofClusters(0),
@@ -181,7 +178,6 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
   // copy constructor
   this->fDigits=source.fDigits;
   this->fRecPoints=source.fRecPoints;
-  this->fTOFGeometry=source.fTOFGeometry;
   this->fDecoderVersion=source.fDecoderVersion;
   this->fTOFcalib=source.fTOFcalib;
 
@@ -193,7 +189,6 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   // ass. op.
   this->fDigits=source.fDigits;
   this->fRecPoints=source.fRecPoints;
-  this->fTOFGeometry=source.fTOFGeometry;
   this->fVerbose=source.fVerbose;
   this->fDecoderVersion=source.fDecoderVersion;
   this->fTOFcalib=source.fTOFcalib;
@@ -221,8 +216,6 @@ AliTOFClusterFinder::~AliTOFClusterFinder()
       delete fRecPoints;
       fRecPoints=0;
     }
-
-  delete fTOFGeometry;
 
 }
 //______________________________________________________________________________
@@ -664,7 +657,7 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   stopwatch.Start();
 
   //const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
-  const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+  const Int_t kDDL = AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors();
 
   fRunLoader->GetEvent(iEvent);
 
@@ -757,7 +750,7 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
   TStopwatch stopwatch;
   stopwatch.Start();
 
-  const Int_t kDDL = fTOFGeometry->NDDL()*fTOFGeometry->NSectors();
+  const Int_t kDDL = AliTOFGeometry::NDDL()*AliTOFGeometry::NSectors();
 
   if (!digitsTree)
     {
@@ -931,40 +924,57 @@ void AliTOFClusterFinder::CalibrateRecPoint()
   Int_t   tdcCorr;
   AliInfo(" Calibrating TOF Clusters: ")
   
-  AliTOFCal *calTOFArray = fTOFcalib->GetTOFCalArray();  
-
+  TObjArray *calTOFArrayOnline = fTOFcalib->GetTOFCalArrayOnline();  
+  TObjArray *calTOFArrayOffline = fTOFcalib->GetTOFCalArrayOffline();
+  TString validity = (TString)fTOFcalib->GetOfflineValidity();
+  AliInfo(Form(" validity = %s",validity.Data()));
+  Int_t calibration = -1;
+  if (validity.CompareTo("valid")==0) {
+    AliInfo(" Using offline calibration parameters");
+    calibration = 1;
+  }
+  else {
+    AliInfo(" Using online calibration parameters");
+    calibration = 0 ;
+  }
   for (ii=0; ii<fNumberOfTofClusters; ii++) {
     digitIndex = fTofClusters[ii]->GetIndex();
     for(jj=0; jj<5; jj++) detectorIndex[jj] = fTofClusters[ii]->GetDetInd(jj);
 
-    Int_t index = fTOFcalib->GetIndex(detectorIndex);
+    Int_t index = AliTOFGeometry::GetIndex(detectorIndex);
      
-    AliTOFChannel * calChannel = calTOFArray->GetChannel(index);
+    AliTOFChannelOnline * calChannelOnline = (AliTOFChannelOnline* )calTOFArrayOnline->At(index);
 
     // Get channel status 
-    Bool_t status=calChannel->GetStatus();
+    Bool_t status=calChannelOnline->GetStatus();
     if(status)fTofClusters[ii]->SetStatus(!status); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     // Get Rough channel online equalization 
-    Float_t roughDelay=calChannel->GetDelay();
-    AliDebug(2,Form(" channel delay = %f", roughDelay));
+    Double_t roughDelay=(Double_t)calChannelOnline->GetDelay();  // in ns
+    AliDebug(2,Form(" channel delay (ns) = %f", roughDelay));
     // Get Refined channel offline calibration parameters
-    Float_t par[6];
-    for (Int_t j = 0; j<6; j++){
-      par[j]=calChannel->GetSlewPar(j);
+    if (calibration ==1){
+      AliTOFChannelOffline * calChannelOffline = (AliTOFChannelOffline*)calTOFArrayOffline->At(index);
+      Double_t par[6];
+      for (Int_t j = 0; j<6; j++){
+	par[j]=(Double_t)calChannelOffline->GetSlewPar(j);
+     } 
       AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
-     }
-    AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %i , %i", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
-    tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());    tToT*=1.E-3; //ToT in ns
-    AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
-    timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT+roughDelay; // the time correction
+      AliDebug(2,Form(" The ToT and Time, uncorr (counts) = %i , %i", fTofClusters[ii]->GetToT(),fTofClusters[ii]->GetTDC()));
+      tToT = (Double_t)(fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth());    
+      tToT*=1.E-3; //ToT in ns
+      AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,tToT));
+      timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT; // the time correction (ns)
+    }
+    else {
+      timeCorr = roughDelay; // correction in ns
+    }
+    AliDebug(2,Form(" The ToT and Time, uncorr (ns)= %e, %e",fTofClusters[ii]->GetTDC()*AliTOFGeometry::TdcBinWidth()*1.E-3,fTofClusters[ii]->GetToT()*AliTOFGeometry::ToTBinWidth()));
     AliDebug(2,Form(" The time correction (ns) = %f", timeCorr));
     timeCorr=(Double_t)(fTofClusters[ii]->GetTDC())*AliTOFGeometry::TdcBinWidth()*1.E-3-timeCorr;//redefine the time
     timeCorr*=1.E3;
     AliDebug(2,Form(" The channel time, corr (ps)= %e",timeCorr ));
     tdcCorr=(Int_t)(timeCorr/AliTOFGeometry::TdcBinWidth()); //the corrected time (tdc counts)
     fTofClusters[ii]->SetTDC(tdcCorr);
-    AliDebug(2,Form(" The channel time, corr (counts) = %i",fTofClusters[ii]->GetTDC()));
-
   } // loop on clusters
 
 }

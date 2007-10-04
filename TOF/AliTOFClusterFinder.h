@@ -32,6 +32,7 @@ class AliTOFClusterFinder : public TObject
   AliTOFClusterFinder(const AliTOFClusterFinder &source); // copy constructor
   AliTOFClusterFinder& operator=(const AliTOFClusterFinder &source); // ass. op.
   virtual ~AliTOFClusterFinder();
+
   void Digits2RecPoints(TTree* digitsTree, TTree* clusterTree);
   void Digits2RecPoints(Int_t ievt);
   void Digits2RecPoints(AliRawReader *rawReader, TTree *clustersTree);
@@ -59,7 +60,6 @@ class AliTOFClusterFinder : public TObject
 
   AliTOFcluster *fTofClusters[kTofMaxCluster];  // pointers to the TOF clusters
 
-  AliTOFGeometry  *fTOFGeometry; // Pointer to TOF geometry
   TClonesArray *fDigits;         // List of digits
   TClonesArray *fRecPoints;      // List of reconstructed points
 

@@ -27,8 +27,6 @@
 #include "AliRawReader.h"
 
 #include "AliTOFClusterFinder.h"
-#include "AliTOFGeometry.h"
-#include "AliTOFGeometryV5.h"
 #include "AliTOFcalib.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtracker.h"
@@ -47,28 +45,26 @@ ClassImp(AliTOFReconstructor)
  //____________________________________________________________________
 AliTOFReconstructor::AliTOFReconstructor() 
   : AliReconstructor(),
-    fTOFGeometry(0),
     fTOFcalib(0)
 {
 //
 // ctor
 //
   //Retrieving the TOF calibration info  
-  fTOFGeometry = new AliTOFGeometryV5();
-  fTOFcalib    = new AliTOFcalib(fTOFGeometry);
-  if(!fTOFcalib->ReadParFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+  fTOFcalib    = new AliTOFcalib();
+  fTOFcalib->CreateCalArrays();
+  if(!fTOFcalib->ReadParOnlineFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
+  if(!fTOFcalib->ReadParOfflineFromCDB("TOF/Calib",-1)) {AliFatal("Exiting, no CDB object found!!!");exit(0);}  
 }
 
 //------------------------------------------------------------------------
 AliTOFReconstructor::AliTOFReconstructor(const AliTOFReconstructor &source)
   : AliReconstructor(),
-    fTOFGeometry(0),
     fTOFcalib(0)
 {
 //
 // copy ctor
 //
-  this->fTOFGeometry=source.fTOFGeometry;
   this->fTOFcalib=source.fTOFcalib;
 }
 
@@ -78,7 +74,6 @@ AliTOFReconstructor & AliTOFReconstructor::operator=(const AliTOFReconstructor &
 //
 // assignment op.
 //
-  this->fTOFGeometry=source.fTOFGeometry;
   this->fTOFcalib=source.fTOFcalib;
   return *this;
 }
@@ -88,7 +83,6 @@ AliTOFReconstructor::~AliTOFReconstructor()
 //
 // dtor
 //
-  delete fTOFGeometry;
   delete fTOFcalib;
 }
 
@@ -137,9 +131,3 @@ AliTracker* AliTOFReconstructor::CreateTracker() const
   return new AliTOFtracker();
 }
 
-//_____________________________________________________________________________
-AliTOFGeometry* AliTOFReconstructor::GetTOFGeometry() const
-{
-  // get the TOF geometry
-  return fTOFGeometry;
-}

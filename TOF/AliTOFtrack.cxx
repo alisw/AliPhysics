@@ -28,7 +28,6 @@
 #include "AliESDtrack.h" 
 #include "AliTracker.h" 
 
-#include "AliTOFGeometryV5.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFtrack.h" 
 
@@ -38,8 +37,7 @@ ClassImp(AliTOFtrack)
 AliTOFtrack::AliTOFtrack() : 
   AliKalmanTrack(),
   fSeedInd(-1),
-  fSeedLab(-1),
-  fTOFgeometry(0)
+  fSeedLab(-1)
 {
   //
   // Default constructor.
@@ -50,8 +48,7 @@ AliTOFtrack::AliTOFtrack() :
 AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) : 
   AliKalmanTrack(t),
   fSeedInd(t.fSeedInd),
-  fSeedLab(t.fSeedLab),
-  fTOFgeometry(new AliTOFGeometryV5()) 
+  fSeedLab(t.fSeedLab) 
 {
   //
   // Copy constructor.
@@ -62,8 +59,7 @@ AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) :
 AliTOFtrack::AliTOFtrack(const AliESDtrack& t) :
   AliKalmanTrack(), 
   fSeedInd(-1),
-  fSeedLab(-1),
-  fTOFgeometry(new AliTOFGeometryV5()) 
+  fSeedLab(-1) 
 {
   //
   // Constructor from AliESDtrack
@@ -86,7 +82,6 @@ AliTOFtrack& AliTOFtrack::operator=(const AliTOFtrack &source)
 {
   // ass. op.
 
-  this->fTOFgeometry=source.fTOFgeometry;
   return *this;
 
 }
@@ -134,9 +129,9 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
   // defined by x=xk through media of density=rho and radiationLength=x0
 
 
-  Double_t ymax=fTOFgeometry->RinTOF()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+  Double_t ymax=AliTOFGeometry::RinTOF()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
   Bool_t skip = kFALSE;
-  Double_t y=GetYat(fTOFgeometry->RinTOF(),skip);
+  Double_t y=GetYat(AliTOFGeometry::RinTOF(),skip);
   if (skip) {
     return kFALSE;
   }
@@ -161,7 +156,7 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
     
   }
   
-  if(!PropagateTo(fTOFgeometry->RinTOF()))return 0;
+  if(!PropagateTo(AliTOFGeometry::RinTOF()))return 0;
   
   return kTRUE;
   

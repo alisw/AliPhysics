@@ -19,7 +19,6 @@ class TTree;
 class AliESDEvent;
 class AliRawReader;
 
-class AliTOFGeometry;
 class AliTOFcalib;
 
 class AliTOFReconstructor: public AliReconstructor {
@@ -42,11 +41,9 @@ public:
   virtual void         FillESD(TTree*, TTree*, AliESDEvent*) const {}
 
 private:
-  AliTOFGeometry *fTOFGeometry; // pointer to TOF geometry
   AliTOFcalib    *fTOFcalib;    // pointer to TOF calib class
-  AliTOFGeometry*      GetTOFGeometry() const;
 
-  ClassDef(AliTOFReconstructor, 2)   // class for the TOF reconstruction
+  ClassDef(AliTOFReconstructor, 3)   // class for the TOF reconstruction
 };
 
 #endif

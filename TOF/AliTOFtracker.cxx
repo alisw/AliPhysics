@@ -44,7 +44,7 @@
 #include "AliTOFcalib.h"
 #include "AliTOFRecoParam.h"
 #include "AliTOFcluster.h"
-#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFtracker.h"
 #include "AliTOFtrack.h"
 
@@ -88,9 +88,9 @@ AliTOFtracker::AliTOFtracker():
   //AliTOFtracker main Ctor
    
    // Gettimg the geometry 
-   fGeom=new AliTOFGeometryV5();
+   fGeom= new AliTOFGeometry();
    // Read the reconstruction parameters from the OCDB
-   AliTOFcalib *calib = new AliTOFcalib(fGeom);
+   AliTOFcalib* calib=new AliTOFcalib();
    fRecoParam = (AliTOFRecoParam*)calib->ReadRecParFromCDB("TOF/Calib",-1);
    if(fRecoParam->GetApplyPbPbCuts())fRecoParam=fRecoParam->GetPbPbparam();
    Double_t parPID[2];   
@@ -98,7 +98,7 @@ AliTOFtracker::AliTOFtracker():
    parPID[1]=fRecoParam->GetTimeNSigma();
    fPid=new AliTOFpidESD(parPID);
    InitCheckHists();
-
+   delete calib;
 }
 //_____________________________________________________________________________
 AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):
@@ -143,7 +143,6 @@ AliTOFtracker::AliTOFtracker(const AliTOFtracker &t):
   fnunmatch=t.fnunmatch;
   fnmatch=t.fnmatch;
   fRecoParam=t.fRecoParam;
-  fGeom=t.fGeom;
   fPid=t.fPid;
   fSeeds=t.fSeeds;
   fTracks=t.fTracks;
@@ -162,7 +161,7 @@ AliTOFtracker& AliTOFtracker::operator=(const AliTOFtracker &t)
   this->fnunmatch=t.fnunmatch;
   this->fnmatch=t.fnmatch;
   this->fRecoParam = t.fRecoParam;
-  this->fGeom = t.fGeom;
+  this->fGeom=t.fGeom;
   this->fPid = t.fPid;
   this->fSeeds=t.fSeeds;
   this->fTracks=t.fTracks;
@@ -310,9 +309,8 @@ void AliTOFtracker::CollectESD() {
 
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Double_t x = track->GetX(); //New
-
     if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= fGeom->RinTOF()) ){
+	 ( x >= AliTOFGeometry::RinTOF()) ){
       track->SetSeedIndex(i);
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -353,8 +351,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   static Float_t detDepth=15.3;
   static Float_t padDepth=0.5;
 
-  Float_t dY=fGeom->XPad(); 
-  Float_t dZ=fGeom->ZPad(); 
+  Float_t dY=AliTOFGeometry::XPad(); 
+  Float_t dZ=AliTOFGeometry::ZPad(); 
 
   Float_t sensRadius = fRecoParam->GetSensRadius();
   Float_t stepSize   = fRecoParam->GetStepSize();
@@ -381,8 +379,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   // Get the number of propagation steps
 
   Int_t nSteps=(Int_t)(detDepth/stepSize);
-
-  AliTOFcalib *calib = new AliTOFcalib(fGeom);
 
   //PH Arrays (moved outside of the loop)
 
@@ -447,6 +443,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       Double_t dph=TMath::Abs(c->GetPhi()-phi);
       if (dph>TMath::Pi()) dph-=2.*TMath::Pi();
       if (TMath::Abs(dph)>dphi) continue;
+
       Double_t yc=(c->GetPhi() - trackTOFin->GetAlpha())*c->GetR();
       Double_t p[2]={yc, c->GetZ()};
       Double_t cov[3]= {dY*dY/12., 0., dZ*dZ/12.};
@@ -471,24 +468,23 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       nc++;
     }
 
-
     //start fine propagation 
 
     Int_t nStepsDone = 0;
     for( Int_t istep=0; istep<nSteps; istep++){ 
 
-      Float_t xs=fGeom->RinTOF()+istep*0.1;
-      Double_t ymax=xs*TMath::Tan(0.5*fGeom->GetAlpha());
+      Float_t xs=AliTOFGeometry::RinTOF()+istep*0.1;
+      Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
 
       Bool_t skip=kFALSE;
       Double_t ysect=trackTOFin->GetYat(xs,skip);
       if (skip) break;
       if (ysect > ymax) {
-	if (!trackTOFin->Rotate(fGeom->GetAlpha())) {
+	if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
 	  break;
 	}
       } else if (ysect <-ymax) {
-	if (!trackTOFin->Rotate(fGeom->GetAlpha())) {
+	if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
 	  break;
 	}
       }
@@ -547,7 +543,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	  distZ[nfound]=dist3d[2];
 	  crecL[nfound]=trackPos[3][istep];
 	  index[nfound]=clind[5][i]; // store cluster id 	    
-	  cxpos[nfound]=fGeom->RinTOF()+istep*0.1; //store prop.radius
+	  cxpos[nfound]=AliTOFGeometry::RinTOF()+istep*0.1; //store prop.radius
 	  nfound++;
 	  if(accept &&!mLastStep)break;
 	}//end if accept
@@ -619,19 +615,19 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     delete trackTOFin;
 
     //  Store quantities to be used in the TOF Calibration
-    Float_t tToT=fGeom->ToTBinWidth()*c->GetToT()*1E-3; // in ns
+    Float_t tToT=AliTOFGeometry::ToTBinWidth()*c->GetToT()*1E-3; // in ns
     t->SetTOFsignalToT(tToT);
-    Float_t rawTime=fGeom->TdcBinWidth()*c->GetTDCRAW()+32; // RAW time,in ps
+    Float_t rawTime=AliTOFGeometry::TdcBinWidth()*c->GetTDCRAW()+32; // RAW time,in ps
     t->SetTOFsignalRaw(rawTime);
     t->SetTOFsignalDz(mindistZ);
-    AliDebug(2,Form(" Setting TOF raw time: %f  z distance: %f time: %f = ",rawTime,mindistZ));    
+    AliDebug(2,Form(" Setting TOF raw time: %f, z distance: %f time: %f = ",rawTime,mindistZ));    
     Int_t ind[5];
     ind[0]=c->GetDetInd(0);
     ind[1]=c->GetDetInd(1);
     ind[2]=c->GetDetInd(2);
     ind[3]=c->GetDetInd(3);
     ind[4]=c->GetDetInd(4);
-    Int_t calindex = calib->GetIndex(ind);
+    Int_t calindex = AliTOFGeometry::GetIndex(ind);
     t->SetTOFCalChannel(calindex);
 
     // keep track of the track labels in the matched cluster
@@ -640,7 +636,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     tlab[1]=c->GetLabel(1);
     tlab[2]=c->GetLabel(2);
     AliDebug(2,Form(" tdc time of the matched track %i = ",c->GetTDC()));    
-    Double_t tof=fGeom->TdcBinWidth()*c->GetTDC()+32; // in ps
+    Double_t tof=AliTOFGeometry::TdcBinWidth()*c->GetTDC()+32; // in ps
     AliDebug(2,Form(" tof time of the matched track: %f = ",tof));    
     Double_t tofcorr=tof;
     if(timeWalkCorr)tofcorr=CorrectTimeWalk(mindistZ,tof);
@@ -688,7 +684,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   }
   for (Int_t ii=0; ii<4; ii++) delete [] trackPos[ii];
   for (Int_t ii=0;ii<6;ii++) delete [] clind[ii];
-  delete calib;
+ 
 }
 //_________________________________________________________________________
 Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
@@ -696,11 +692,11 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
   //This function loads the TOF clusters
   //--------------------------------------------------------------------
 
-  Int_t npadX = fGeom->NpadX();
-  Int_t npadZ = fGeom->NpadZ();
-  Int_t nStripA = fGeom->NStripA();
-  Int_t nStripB = fGeom->NStripB();
-  Int_t nStripC = fGeom->NStripC();
+  Int_t npadX = AliTOFGeometry::NpadX();
+  Int_t npadZ = AliTOFGeometry::NpadZ();
+  Int_t nStripA = AliTOFGeometry::NStripA();
+  Int_t nStripB = AliTOFGeometry::NStripB();
+  Int_t nStripC = AliTOFGeometry::NStripC();
 
   TBranch *branch=cTree->GetBranch("TOF");
   if (!branch) { 
@@ -729,8 +725,8 @@ Int_t AliTOFtracker::LoadClusters(TTree *cTree) {
     Int_t ipadX = c->GetDetInd(4);
     Int_t ipadZ = c->GetDetInd(3);
 
-    Float_t time =(fGeom->TdcBinWidth()*c->GetTDC())*1E-3; // in ns
-    Float_t tot = (fGeom->TdcBinWidth()*c->GetToT())*1E-3;//in ns
+    Float_t time =(AliTOFGeometry::TdcBinWidth()*c->GetTDC())*1E-3; // in ns
+    Float_t tot = (AliTOFGeometry::TdcBinWidth()*c->GetToT())*1E-3;//in ns
  
     Int_t stripOffset = 0;
     switch (iplate) {
@@ -804,10 +800,10 @@ Bool_t AliTOFtracker::GetTrackPoint(Int_t index, AliTrackPoint& p) const
   xyz[2] = cl->GetZ();
   Float_t phiangle = (Int_t(cl->GetPhi()*TMath::RadToDeg()/20.)+0.5)*20.*TMath::DegToRad();
   Float_t sinphi = TMath::Sin(phiangle), cosphi = TMath::Cos(phiangle);
-  Float_t tiltangle = fGeom->GetAngles(cl->GetDetInd(1),cl->GetDetInd(2))*TMath::DegToRad();
+  Float_t tiltangle = AliTOFGeometry::GetAngles(cl->GetDetInd(1),cl->GetDetInd(2))*TMath::DegToRad();
   Float_t sinth = TMath::Sin(tiltangle), costh = TMath::Cos(tiltangle);
-  Float_t sigmay2 = fGeom->XPad()*fGeom->XPad()/12.;
-  Float_t sigmaz2 = fGeom->ZPad()*fGeom->ZPad()/12.;
+  Float_t sigmay2 = AliTOFGeometry::XPad()*AliTOFGeometry::XPad()/12.;
+  Float_t sigmaz2 = AliTOFGeometry::ZPad()*AliTOFGeometry::ZPad()/12.;
   Float_t cov[6];
   cov[0] = sinphi*sinphi*sigmay2 + cosphi*cosphi*sinth*sinth*sigmaz2;
   cov[1] = -sinphi*cosphi*sigmay2 + sinphi*cosphi*sinth*sinth*sigmaz2;
@@ -818,11 +814,11 @@ Bool_t AliTOFtracker::GetTrackPoint(Int_t index, AliTrackPoint& p) const
   p.SetXYZ(xyz[0],xyz[1],xyz[2],cov);
 
   // Detector numbering scheme
-  Int_t nSector = fGeom->NSectors();
-  Int_t nPlate  = fGeom->NPlates();
-  Int_t nStripA = fGeom->NStripA();
-  Int_t nStripB = fGeom->NStripB();
-  Int_t nStripC = fGeom->NStripC();
+  Int_t nSector = AliTOFGeometry::NSectors();
+  Int_t nPlate  = AliTOFGeometry::NPlates();
+  Int_t nStripA = AliTOFGeometry::NStripA();
+  Int_t nStripB = AliTOFGeometry::NStripB();
+  Int_t nStripC = AliTOFGeometry::NStripC();
 
   Int_t isector = cl->GetDetInd(0);
   if (isector >= nSector)
@@ -951,7 +947,7 @@ Float_t AliTOFtracker::CorrectTimeWalk( Float_t dist, Float_t tof) {
 
   //dummy, for the moment
   Float_t tofcorr=0.;
-  if(dist<fGeom->ZPad()*0.5){
+  if(dist<AliTOFGeometry::ZPad()*0.5){
     tofcorr=tof;
     //place here the actual correction
   }else{

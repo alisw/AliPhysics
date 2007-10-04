@@ -15,8 +15,8 @@
 
 #include "AliKalmanTrack.h"
 
-#include "AliTOFGeometry.h"
 #include "AliCluster3D.h"
+#include "AliTOFGeometry.h"
 
 class TObject;
 
@@ -59,13 +59,12 @@ protected:
    
    Int_t    fSeedInd;     // ESD seed track index  
    Int_t    fSeedLab;     // track label taken from seeding  
-   AliTOFGeometry *fTOFgeometry; // pointer to the TOF geometry
 
  private:
 
    void GetPropagationParameters(Double_t *param);
    
-   ClassDef(AliTOFtrack,1) // TOF reconstructed tracks
+   ClassDef(AliTOFtrack,2) // TOF reconstructed tracks
 
 };                     
 

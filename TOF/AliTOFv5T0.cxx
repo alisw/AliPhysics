@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2007/10/03 18:07:22  arcelli
+right handling of l2t matrices and alignable entries in case of TOF holes (Annalisa)
+
 Revision 1.19  2007/10/03 10:41:12  arcelli
 adding tracking-to-local matrices for new AliTOFcluster
 
@@ -121,7 +124,6 @@ Revision 0.1 2004 November G. Cara Romeo and A. De Caro
 #include "AliTrackReference.h"
 
 #include "AliTOFGeometry.h"
-#include "AliTOFGeometryV5.h"
 #include "AliTOFv5T0.h"
 
 extern TDirectory *gDirectory;
@@ -172,7 +174,7 @@ AliTOFv5T0::AliTOFv5T0(const char *name, const char *title):
   } else{
     
     if (fTOFGeometry) delete fTOFGeometry;
-    fTOFGeometry = new AliTOFGeometryV5();
+    fTOFGeometry = new AliTOFGeometry();
 
     if(frame->IsVersion()==1) {
       AliDebug(1,Form("Frame version %d", frame->IsVersion())); 
