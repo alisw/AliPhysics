@@ -1,11 +1,10 @@
 void CreateCalibPars_Miscalibrated_Scaled(){
   // Create TOF Calibration Object for miscalibrated detector
   // and write it on CDB
-  AliTOFGeometry *geom = new AliTOFGeometryV5(); 
-  AliTOFcalib *tofcalib = new AliTOFcalib(geom);
-  AliTOFCal *tofCal= new AliTOFCal(geom);
-  tofCal->CreateArray();
-
+  AliTOFcalib *tofcalib = new AliTOFcalib();
+  tofcalib->CreateSimCalArrays();
+  TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFSimCalArrayOnline(); 
+  TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFSimCalArrayOffline(); 
   // Input data for decalibration
 
   TFile f("$ALICE_ROOT/TOF/data/spectrumScaled.root","READ");  
@@ -36,13 +35,16 @@ void CreateCalibPars_Miscalibrated_Scaled(){
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE");
   TRandom *rnd   = new TRandom(4357);
-  for (Int_t ipad = 0 ; ipad<tofCal->NPads(); ipad++){
-    AliTOFChannel *calChannel = tofCal->GetChannel(ipad);
-    calChannel->SetSlewPar(par);
+  Int_t nChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
+  for (Int_t ipad = 0 ; ipad<nChannels; ipad++){
+    AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline*)tofCalOnline->At(ipad);
+    AliTOFChannelOffline *calChannelOffline = (AliTOFChannelOffline*)tofCalOffline->At(ipad);
     delay=rnd->Gaus(meanDelay,sigmaDelay);
-    calChannel->SetDelay(delay);
+    calChannelOnline->SetDelay(delay);
+    calChannelOffline->SetSlewPar(par);
   }
-  tofcalib->WriteSimParOnCDB("TOF/Calib",0,0,tofCal,hToT);
+  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,0,tofCalOnline);
+  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,0,tofCalOffline,hToT);
   f.Close();
 }
 
