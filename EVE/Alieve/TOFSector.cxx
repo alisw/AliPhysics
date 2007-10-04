@@ -3,7 +3,7 @@
 #include <Reve/RGTopFrame.h>
 
 #include <AliTOFdigit.h>
-#include <AliTOFGeometryV5.h>
+#include <AliTOFGeometry.h>
 
 #include <TStyle.h>
 
@@ -22,7 +22,7 @@ ClassImp(TOFSector)
 
 TOFSector::TOFSector(const Text_t* n, const Text_t* t) :
   QuadSet(n, t),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(0x0),
   fSector(-1),
@@ -50,7 +50,7 @@ TOFSector::TOFSector(TGeoManager *localGeoManager,
 		     Int_t nSector)
   :
   QuadSet(Form("Sector%i",nSector)),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(0x0),
   fSector(nSector),
@@ -81,7 +81,7 @@ TOFSector::TOFSector(TGeoManager *localGeoManager,
 		     TClonesArray *tofArray)
   :
   QuadSet(Form("Sector%i",nSector)),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(tofArray),
   fTOFtree(0x0),
   fSector(nSector),
@@ -106,7 +106,7 @@ TOFSector::TOFSector(TGeoManager *localGeoManager,
 		     TTree *tofTree)
   :
   QuadSet(Form("Sector%i",nSector)),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0x0),
   fTOFtree(tofTree),
   fSector(nSector),

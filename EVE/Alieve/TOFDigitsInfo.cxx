@@ -6,7 +6,7 @@
 
 #include "TOFDigitsInfo.h"
 #include <AliTOFdigit.h>
-#include <AliTOFGeometryV5.h>
+#include <AliTOFGeometry.h>
 //#include <AliTOFDigitMap.h>
 
 using namespace Reve;
@@ -43,7 +43,7 @@ void TOFDigitsInfo::SetTree(TTree* tree)
   static const Exc_t eH("TOFDigitsInfo::SetTree ");
   
   if(fGeom == 0) {
-    fGeom = new AliTOFGeometryV5();
+    fGeom = new AliTOFGeometry();
   }
   
   fTree = tree;

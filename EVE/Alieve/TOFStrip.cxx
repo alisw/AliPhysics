@@ -3,7 +3,7 @@
 #include <Reve/RGTopFrame.h>
 
 #include <AliTOFdigit.h>
-#include <AliTOFGeometryV5.h>
+#include <AliTOFGeometry.h>
 
 #include <TStyle.h>
 
@@ -22,7 +22,7 @@ ClassImp(TOFStrip)
 
 TOFStrip::TOFStrip(const Text_t* n, const Text_t* t) :
   QuadSet(n, t),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
   fSector(-1), fPlate(-1), fStrip(-1),
   fDx(0), fDz(0)
@@ -38,7 +38,7 @@ TOFStrip::TOFStrip(TGeoManager *localGeoManager,
 		   Int_t nSector, Int_t nPlate, Int_t nStrip)
   :
   QuadSet(Form("Strip%i",nStrip)),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(0),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
   fDx(0), fDz(0),
@@ -57,7 +57,7 @@ TOFStrip::TOFStrip(TGeoManager *localGeoManager,
 		   TClonesArray *tofArray)
   :
   QuadSet(Form("Strip%i",nStrip)),
-  fTOFgeometry(new AliTOFGeometryV5()),
+  fTOFgeometry(new AliTOFGeometry()),
   fTOFarray(tofArray),
   fSector(nSector), fPlate(nPlate), fStrip(nStrip),
   fDx(0), fDz(0),

@@ -11,7 +11,6 @@
 #include <TClonesArray.h>
 
 #include <AliTOFGeometry.h>
-#include <AliTOFGeometryV5.h>
 
 namespace Alieve {
 
