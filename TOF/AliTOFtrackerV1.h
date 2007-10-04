@@ -28,7 +28,6 @@ class AliESDEvent;
 
 class AliTOFcluster;
 class AliTOFRecoParam;
-class AliTOFGeometry;
 class TH1F;
 class TH2F;
 
@@ -63,7 +62,6 @@ private:
   Float_t  CorrectTimeWalk(Float_t dist,Float_t tof); // Time Walk correction
 
   AliTOFRecoParam* fRecoParam;           // Pointer to TOF Recon. Pars
-  AliTOFGeometry*  fGeom;                 // Pointer to TOF geometry
   AliTOFpidESD*    fPid;               // Pointer to TOF PID
   AliTOFcluster *fClusters[kMaxCluster];  // pointers to the TOF clusters
 
