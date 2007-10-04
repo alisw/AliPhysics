@@ -91,8 +91,8 @@ void AliHLTMUONRootifierComponent::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
-	constBase = 10000;
-	inputMultiplier = 5;
+	constBase = 1024*1024;
+	inputMultiplier = 100;
 }
 
 
