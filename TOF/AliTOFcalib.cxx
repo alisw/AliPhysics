@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.14  2007/06/06 16:26:30  arcelli
+remove fall-back call to local CDB storage
+
 Revision 1.13  2007/04/20 13:59:40  arcelli
 make protections agains failed retrieval of the CDB object in a proper way
 
@@ -70,20 +73,22 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TList.h"
 #include "TROOT.h"
 #include "TStyle.h"
+#include "TTree.h"
+#include "TProfile.h"
+#include "TGrid.h"
 
 #include "AliCDBEntry.h"
 #include "AliCDBId.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliCDBMetaData.h"
 #include "AliESDtrack.h"
 #include "AliESD.h"
 #include "AliLog.h"
 
-#include "AliTOFCal.h"
-#include "AliTOFcalibESD.h"
 #include "AliTOFcalib.h"
-#include "AliTOFChannel.h"
-#include "AliTOFGeometryV5.h"
+#include "AliTOFChannelOnline.h"
+#include "AliTOFChannelOffline.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFRecoParam.h"
 
@@ -92,114 +97,48 @@ extern TStyle *gStyle;
 
 ClassImp(AliTOFcalib)
 
-const Int_t AliTOFcalib::fgkchannel = 5000;
 //_______________________________________________________________________
 AliTOFcalib::AliTOFcalib():
   TTask("AliTOFcalib",""),
   fNChannels(-1),
-  fNSector(-1),
-  fNPlate(-1),
-  fNStripA(-1),
-  fNStripB(-1),
-  fNStripC(-1),
-  fNpadZ(-1),
-  fNpadX(-1),
-  fNevents(0),
-  fESDsel(0x0),
-  fArrayToT(0x0),
-  fArrayTime(0x0),
-  fTOFCal(0x0),
-  fTOFSimCal(0x0),
-  fTOFSimToT(0x0)
+  fTOFCalOnline(0x0),
+  fTOFCalOffline(0x0),
+  fTOFSimCalOnline(0x0),
+  fTOFSimCalOffline(0x0),
+  fTOFSimToT(0x0),
+  fkValidity(0x0),
+  fTree(0x0),
+  fNruns(0)
 { 
   //TOF Calibration Class ctor
-  fArrayToT = 0x0;
-  fArrayTime = 0x0;
-  fESDsel = 0x0;
-  AliTOFGeometry *geom=new AliTOFGeometryV5();
-  AliInfo("V5 TOF Geometry is taken as the default");
-  fNSector = geom->NSectors();
-  fNPlate  = geom->NPlates();
-  fNStripA = geom->NStripA();
-  fNStripB = geom->NStripB();
-  fNStripC = geom->NStripC();
-  fNpadZ = geom->NpadZ();
-  fNpadX = geom->NpadX();
-  fNChannels = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX; //generalized version
-  fTOFCal = 0x0;
-  fTOFSimCal = 0x0;
-  fTOFSimToT = 0x0;
-  delete geom;
-}
-//_______________________________________________________________________
-AliTOFcalib::AliTOFcalib(AliTOFGeometry *geom):
-  TTask("AliTOFcalib",""),
-  fNChannels(-1),
-  fNSector(-1),
-  fNPlate(-1),
-  fNStripA(-1),
-  fNStripB(-1),
-  fNStripC(-1),
-  fNpadZ(-1),
-  fNpadX(-1),
-  fNevents(0),
-  fESDsel(0x0),
-  fArrayToT(0x0),
-  fArrayTime(0x0),
-  fTOFCal(0x0),
-  fTOFSimCal(0x0),
-  fTOFSimToT(0x0)
-{ 
-  //TOF Calibration Class ctor, taking the TOF geometry as input
-  fArrayToT = 0x0;
-  fArrayTime = 0x0;
-  fESDsel = 0x0;
-  fNSector = geom->NSectors();
-  fNPlate  = geom->NPlates();
-  fNStripA = geom->NStripA();
-  fNStripB = geom->NStripB();
-  fNStripC = geom->NStripC();
-  fNpadZ = geom->NpadZ();
-  fNpadX = geom->NpadX();
-  fNChannels = fNSector*(2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX; //generalized version
-  fTOFCal = 0x0;
-  fTOFSimCal = 0x0;
-  fTOFSimToT = 0x0;
+  fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
 }
 //____________________________________________________________________________ 
 
 AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   TTask("AliTOFcalib",""),
-  fNChannels(-1),
-  fNSector(-1),
-  fNPlate(-1),
-  fNStripA(-1),
-  fNStripB(-1),
-  fNStripC(-1),
-  fNpadZ(-1),
-  fNpadX(-1),
-  fNevents(0),
-  fESDsel(0x0),
-  fArrayToT(0x0),
-  fArrayTime(0x0),
-  fTOFCal(0x0),
-  fTOFSimCal(0x0),
-  fTOFSimToT(0x0)
+  fNChannels(calib.fNChannels),
+  fTOFCalOnline(0x0),
+  fTOFCalOffline(0x0),
+  fTOFSimCalOnline(0x0),
+  fTOFSimCalOffline(0x0),
+  fTOFSimToT(calib.fTOFSimToT),
+  fkValidity(calib.fkValidity),
+  fTree(calib.fTree),
+  fNruns(calib.fNruns)
 {
   //TOF Calibration Class copy ctor
-  fNSector = calib.fNSector;
-  fNPlate = calib.fNPlate;
-  fNStripA = calib.fNStripA;
-  fNStripB = calib.fNStripB;
-  fNStripC = calib.fNStripC;
-  fNpadZ = calib.fNpadZ;
-  fNpadX = calib.fNpadX;
-  fNChannels = calib.fNChannels;
-  fArrayToT = calib.fArrayToT;
-  fArrayTime = calib.fArrayTime;
-  fTOFCal=calib.fTOFCal;
-  fTOFSimCal = calib.fTOFSimCal;
-  fTOFSimToT=calib.fTOFSimToT;
+  for (Int_t iarray = 0; iarray<fNChannels; iarray++){
+    AliTOFChannelOnline * calChOnline = (AliTOFChannelOnline*)calib.fTOFCalOnline->At(iarray);
+    AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
+    fTOFCalOnline->AddAt(calChOnline,iarray);
+    fTOFCalOffline->AddAt(calChOffline,iarray);
+
+    AliTOFChannelOnline * simCalChOnline = (AliTOFChannelOnline*)calib.fTOFSimCalOnline->At(iarray);
+    AliTOFChannelOffline * simCalChOffline = (AliTOFChannelOffline*)calib.fTOFSimCalOffline->At(iarray);
+    fTOFSimCalOnline->AddAt(simCalChOnline,iarray);
+    fTOFSimCalOffline->AddAt(simCalChOffline,iarray);
+  }
 }
 
 //____________________________________________________________________________ 
@@ -207,19 +146,21 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
 AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
 {
   //TOF Calibration Class assignment operator
-  this->fNSector = calib.fNSector;
-  this->fNPlate = calib.fNPlate;
-  this->fNStripA = calib.fNStripA;
-  this->fNStripB = calib.fNStripB;
-  this->fNStripC = calib.fNStripC;
-  this->fNpadZ = calib.fNpadZ;
-  this->fNpadX = calib.fNpadX;
   this->fNChannels = calib.fNChannels;
-  this->fArrayToT = calib.fArrayToT;
-  this->fArrayTime = calib.fArrayTime;
-  this->fTOFCal=calib.fTOFCal;
-  this->fTOFSimCal = calib.fTOFSimCal;
-  this->fTOFSimToT=calib.fTOFSimToT;
+  this->fTOFSimToT = calib.fTOFSimToT;
+  this->fkValidity = calib.fkValidity;
+  this->fTree = calib.fTree;
+  this->fNruns = calib.fNruns;
+  for (Int_t iarray = 0; iarray<fNChannels; iarray++){
+    AliTOFChannelOnline * calChOnline = (AliTOFChannelOnline*)calib.fTOFCalOnline->At(iarray);
+    AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
+    this->fTOFCalOnline->AddAt(calChOnline,iarray);
+    this->fTOFCalOffline->AddAt(calChOffline,iarray);
+    AliTOFChannelOnline * simCalChOnline = (AliTOFChannelOnline*)calib.fTOFSimCalOnline->At(iarray);
+    AliTOFChannelOffline * simCalChOffline = (AliTOFChannelOffline*)calib.fTOFSimCalOffline->At(iarray);
+    this->fTOFSimCalOnline->AddAt(simCalChOnline,iarray);
+    this->fTOFSimCalOffline->AddAt(simCalChOffline,iarray);
+  }
   return *this;
 }
 
@@ -228,569 +169,99 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
 AliTOFcalib::~AliTOFcalib()
 {
   //TOF Calibration Class dtor
-  delete fArrayToT;
-  delete fArrayTime;
-
   if(!(AliCDBManager::Instance()->GetCacheFlag())){ // CDB objects must NOT be deleted if cache is active!
-  	delete fTOFCal;
-  	delete fTOFSimCal;
-  }
-  
-  delete fESDsel;
-}
-//__________________________________________________________________________
-
-TF1* AliTOFcalib::SetFitFunctions(TH1F *histo)
-{
-  //Define Fit Functions for Slewing Correction
-  TF1 * fpol[3];
-  const Int_t knbins = histo->GetNbinsX();
-  Float_t delta = histo->GetBinWidth(1);  //all the bins have the same width
-  Double_t max = histo->GetBinLowEdge(knbins)+delta;
-  max = 15;
-  fpol[0]=new TF1("poly3","pol3",5,max);
-  fpol[1]=new TF1("poly4","pol4",5,max);
-  fpol[2]=new TF1("poly5","pol5",5,max);
-  char npoly[10];
-  Double_t chi[3]={1E6,1E6,1E6};
-  Int_t ndf[3]={-1,-1,-1};
-  Double_t nchi[3]={1E6,1E6,1E6};
-  Double_t bestchi=1E6;
-  TF1 * fGold=0x0;
-  Int_t nonzero =0;
-  Int_t numberOfpar =0;
-  for (Int_t j=0; j<knbins; j++){
-    if (histo->GetBinContent(j)!=0) {
-      nonzero++;
+    if (fTOFCalOnline){
+      fTOFCalOnline->Clear();
+      delete fTOFCalOnline;
+    }
+    if (fTOFCalOffline){
+      fTOFCalOffline->Clear();
+      delete fTOFCalOffline;
+    }
+    if (fTOFSimCalOnline){
+      fTOFSimCalOnline->Clear();
+      delete fTOFSimCalOnline;
+    }
+    if (fTOFSimCalOffline){
+      fTOFSimCalOffline->Clear();
+      delete fTOFSimCalOffline;
     }
   }
-  Int_t norderfit = 0;
-  if (nonzero<=4) {
-    AliError(" Too few points in the histo. No fit performed.");
-    return 0x0;
-  }
-  else if (nonzero<=5) {
-    norderfit = 3;
-    AliInfo(" Only 3rd order polynomial fit possible.");
-  }
-  else if (nonzero<=6) {
-    norderfit = 4;
-    AliInfo(" Only 3rd and 4th order polynomial fit possible.");
-  }
-  else {
-    norderfit = 5;
-    AliInfo(" All 3rd, 4th and 5th order polynomial fit possible.");
-  }
-  for (Int_t ifun=norderfit-3;ifun<norderfit-2;ifun++){
-    sprintf(npoly,"poly%i",ifun+3);
-    histo->Fit(npoly, "ERN", " ", 5.,14.);
-    chi[ifun] = fpol[ifun]->GetChisquare();
-    ndf[ifun] = fpol[ifun]->GetNDF();
-    nchi[ifun] = (Double_t)chi[ifun]/ndf[ifun];
-    if (nchi[ifun]<bestchi) {
-      bestchi=nchi[ifun];
-      fGold = fpol[ifun];
-      numberOfpar = fGold->GetNpar();
-    }
-  }
-  fGold=fpol[2];  //Gold fit function set to pol5 in any case
-  histo->Fit(fGold,"ER " ," ",5.,15.);
-  return fGold;
-}
-//____________________________________________________________________________
-
-void AliTOFcalib::SelectESD(AliESD *event) 
-{
-  //track selection for Calibration
-  Float_t lowerMomBound=0.8; // [GeV/c] default value Pb-Pb
-  Float_t upperMomBound=1.8 ; // [GeV/c] default value Pb-Pb
-  Int_t ntrk =0;
-  Int_t ngoodtrkfinalToT = 0;
-  ntrk=event->GetNumberOfTracks();
-  fESDsel = new TObjArray(ntrk);
-  fESDsel->SetOwner();
-  TObjArray  uCdatatemp(ntrk);
-  Int_t ngoodtrk = 0;
-  Int_t ngoodtrkfinal = 0;
-  Float_t mintime =1E6;
-  for (Int_t itrk=0; itrk<ntrk; itrk++) {
-    AliESDtrack *t=event->GetTrack(itrk);
-    //track selection: reconstrution to TOF:
-    if ((t->GetStatus()&AliESDtrack::kTOFout)==0) {
-      continue;
-    }
-    //IsStartedTimeIntegral
-    if ((t->GetStatus()&AliESDtrack::kTIME)==0) {
-      continue;
-    }
-    Double_t time=t->GetTOFsignal();	
-    time*=1.E-3; // tof given in nanoseconds
-    if(time <= mintime)mintime=time;
-    Double_t mom=t->GetP();
-    if (!(mom<=upperMomBound && mom>=lowerMomBound))continue;
-    UInt_t assignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
-    if(assignedTOFcluster==0){ // not matched
-      continue;
-    }
-    AliTOFcalibESD *unc = new AliTOFcalibESD;
-    unc->CopyFromAliESD(t);
-    Double_t c1[15]; 
-    unc->GetExternalCovariance(c1);
-    uCdatatemp.Add(unc);
-    ngoodtrk++;
-  }
-  for (Int_t i = 0; i < ngoodtrk ; i ++){
-    AliTOFcalibESD *unc = (AliTOFcalibESD*)uCdatatemp.At(i);
-    if((unc->GetTOFsignal()-mintime*1.E3)<5.E3){
-      fESDsel->Add(unc);
-      ngoodtrkfinal++;
-      ngoodtrkfinalToT++;
-    }
-  }
-  fESDsel->Sort();
+  if (fTree!=0x0) delete fTree;
 }
 //_____________________________________________________________________________
+void AliTOFcalib::CreateCalArrays(){
 
-void AliTOFcalib::CombESDId()
-{
-  //track PID for calibration
-  Float_t t0offset=0;
-  Float_t loffset=0;
-  Int_t   ntracksinset=6;
-  Float_t exptof[6][3];
-  Float_t momentum[6]={0.,0.,0.,0.,0.,0.};
-  Int_t   assparticle[6]={3,3,3,3,3,3};
-  Float_t massarray[3]={0.13957,0.493677,0.9382723};
-  Float_t timeofflight[6]={0.,0.,0.,0.,0.,0.};
-  Float_t beta[6]={0.,0.,0.,0.,0.,0.};
-  Float_t texp[6]={0.,0.,0.,0.,0.,0.};
-  Float_t sqMomError[6]={0.,0.,0.,0.,0.,0.};
-  Float_t sqTrackError[6]={0.,0.,0.,0.,0.,0.};
-  Float_t tracktoflen[6]={0.,0.,0.,0.,0.,0.};
-  Float_t timeResolution   = 0.90e-10; // 90 ps by default	
-  Float_t timeresolutioninns=timeResolution*(1.e+9); // convert in [ns]
-  Float_t timezero[6]={0.,0.,0.,0.,0.,0.};
-  Float_t weightedtimezero[6]={0.,0.,0.,0.,0.,0.};
-  Float_t besttimezero[6]={0.,0.,0.,0.,0.,0.};
-  Float_t bestchisquare[6]={0.,0.,0.,0.,0.,0.};
-  Float_t bestweightedtimezero[6]={0.,0.,0.,0.,0.,0.};
-  Float_t bestsqTrackError[6]={0.,0.,0.,0.,0.,0.};
+  // creating arrays for online/offline calibration objs
 
-  Int_t nelements = fESDsel->GetEntries();
-  Int_t nset= (Int_t)(nelements/ntracksinset);
-  for (Int_t i=0; i< nset; i++) {   
-
-    AliTOFcalibESD **unc=new AliTOFcalibESD*[ntracksinset];
-    for (Int_t itrk=0; itrk<ntracksinset; itrk++) {
-      Int_t index = itrk+i*ntracksinset;
-      AliTOFcalibESD *element=(AliTOFcalibESD*)fESDsel->At(index);
-      unc[itrk]=element;
-    }
-    
-    for (Int_t j=0; j<ntracksinset; j++) {
-      AliTOFcalibESD *element=unc[j];
-      Double_t mom=element->GetP();
-      Double_t time=element->GetTOFsignal()*1.E-3; // in ns	
-      Double_t exptime[10]; 
-      element->GetIntegratedTimes(exptime);
-      Double_t toflen=element->GetIntegratedLength()/100.;  // in m
-      timeofflight[j]=time+t0offset;
-      tracktoflen[j]=toflen+loffset;
-      exptof[j][0]=exptime[2]*1.E-3+0.005;
-      exptof[j][1]=exptime[3]*1.E-3+0.005;
-      exptof[j][2]=exptime[4]*1.E-3+0.005;
-      momentum[j]=mom;
-    }
-    Float_t t0best=999.;
-    Float_t et0best=999.;
-    Float_t chisquarebest=999.;
-    for (Int_t i1=0; i1<3;i1++) {
-      beta[0]=momentum[0]/sqrt(massarray[i1]*massarray[i1]+momentum[0]*momentum[0]);
-      texp[0]=exptof[0][i1];
-      for (Int_t i2=0; i2<3;i2++) { 
-	beta[1]=momentum[1]/sqrt(massarray[i2]*massarray[i2]+momentum[1]*momentum[1]);
-	texp[1]=exptof[1][i2];
-	for (Int_t i3=0; i3<3;i3++) {
-	  beta[2]=momentum[2]/sqrt(massarray[i3]*massarray[i3]+momentum[2]*momentum[2]);
-	  texp[2]=exptof[2][i3];
-	  for (Int_t i4=0; i4<3;i4++) {
-	    beta[3]=momentum[3]/sqrt(massarray[i4]*massarray[i4]+momentum[3]*momentum[3]);
-	    texp[3]=exptof[3][i4];
-	    
-	    for (Int_t i5=0; i5<3;i5++) {
-	      beta[4]=momentum[4]/sqrt(massarray[i5]*massarray[i5]+momentum[4]*momentum[4]);
-	      texp[4]=exptof[4][i5];
-	      for (Int_t i6=0; i6<3;i6++) {
-		beta[5]=momentum[5]/sqrt(massarray[i6]*massarray[i6]+momentum[5]*momentum[5]);
-		texp[5]=exptof[5][i6];
-	
-		Float_t sumAllweights=0.;
-		Float_t meantzero=0.;
-		Float_t emeantzero=0.;
-		
-		for (Int_t itz=0; itz<ntracksinset;itz++) {
-		  sqMomError[itz]=
-		    ((1.-beta[itz]*beta[itz])*0.025)*
-		    ((1.-beta[itz]*beta[itz])*0.025)*
-		    (tracktoflen[itz]/
-		     (0.299792*beta[itz]))*
-		    (tracktoflen[itz]/
-		     (0.299792*beta[itz])); 
-		  sqTrackError[itz]=
-		    (timeresolutioninns*
-		     timeresolutioninns
-		     +sqMomError[itz]); 
-		  
-		  timezero[itz]=texp[itz]-timeofflight[itz];		    
-		  weightedtimezero[itz]=timezero[itz]/sqTrackError[itz];
-		  sumAllweights+=1./sqTrackError[itz];
-		  meantzero+=weightedtimezero[itz];
-		  
-		} // end loop for (Int_t itz=0; itz<15;itz++)
-		
-		meantzero=meantzero/sumAllweights; // it is given in [ns]
-		emeantzero=sqrt(1./sumAllweights); // it is given in [ns]
-		
-		// calculate chisquare
-		
-		Float_t chisquare=0.;		
-		for (Int_t icsq=0; icsq<ntracksinset;icsq++) {
-		  chisquare+=(timezero[icsq]-meantzero)*(timezero[icsq]-meantzero)/sqTrackError[icsq];
-		} // end loop for (Int_t icsq=0; icsq<15;icsq++) 
-		//		cout << " chisquare " << chisquare << endl;
-		
-		Int_t npion=0;
-		if(i1==0)npion++;
-		if(i2==0)npion++;
-		if(i3==0)npion++;
-		if(i4==0)npion++;
-		if(i5==0)npion++;
-		if(i6==0)npion++;
-		
-	     	if(chisquare<=chisquarebest  && ((Float_t) npion/ ((Float_t) ntracksinset)>0.3)){
-		  //  if(chisquare<=chisquarebest){
-		  
-		  for(Int_t iqsq = 0; iqsq<ntracksinset; iqsq++) {
-		    bestsqTrackError[iqsq]=sqTrackError[iqsq]; 
-		    besttimezero[iqsq]=timezero[iqsq]; 
-		    bestweightedtimezero[iqsq]=weightedtimezero[iqsq]; 
-		    bestchisquare[iqsq]=(timezero[iqsq]-meantzero)*(timezero[iqsq]-meantzero)/sqTrackError[iqsq]; 
-		  }
-		  
-		  assparticle[0]=i1;
-		  assparticle[1]=i2;
-		  assparticle[2]=i3;
-		  assparticle[3]=i4;
-		  assparticle[4]=i5;
-		  assparticle[5]=i6;
-		  
-		  chisquarebest=chisquare;
-     		  t0best=meantzero;
-		  et0best=emeantzero;
-		} // close if(dummychisquare<=chisquare)
-	      } // end loop on i6
-	    } // end loop on i5
-	  } // end loop on i4
-	} // end loop on i3
-      } // end loop on i2
-    } // end loop on i1
-
-
-    Float_t confLevel=999;
-    if(chisquarebest<999.){
-      Double_t dblechisquare=(Double_t)chisquarebest;
-      confLevel=(Float_t)TMath::Prob(dblechisquare,ntracksinset-1); 
-    }
-    // assume they are all pions for fake sets
-    if(confLevel<0.01 || confLevel==999. ){
-      for (Int_t itrk=0; itrk<ntracksinset; itrk++)assparticle[itrk]=0;
-    }
-    for (Int_t itrk=0; itrk<ntracksinset; itrk++) {
-      Int_t index = itrk+i*ntracksinset;
-      AliTOFcalibESD *element=(AliTOFcalibESD*)fESDsel->At(index);
-      element->SetCombID(assparticle[itrk]);
-    }
+  fTOFCalOnline = new TObjArray(fNChannels);
+  fTOFCalOffline = new TObjArray(fNChannels);
+  fTOFCalOnline->SetOwner();
+  fTOFCalOffline->SetOwner();
+  for (Int_t iarray = 0; iarray<fNChannels; iarray++){
+    AliTOFChannelOnline * calChOnline = new AliTOFChannelOnline();
+    AliTOFChannelOffline * calChOffline = new AliTOFChannelOffline();
+    fTOFCalOnline->AddAt(calChOnline,iarray);
+    fTOFCalOffline->AddAt(calChOffline,iarray);
   }
-}
-
-//_____________________________________________________________________________
-
-void AliTOFcalib::CalibrateESD(){
-  //Calibrate selected ESD times
-  Int_t nelements = fESDsel->GetEntries();
-  Int_t *number=new Int_t[fNChannels];
-  fArrayToT = new AliTOFArray(fNChannels);
-  fArrayTime = new AliTOFArray(fNChannels);
-  for (Int_t i=0; i<fNChannels; i++){
-    number[i]=0;
-    fArrayToT->AddArray(i, new TArrayF(fgkchannel));
-    TArrayF * parrToT = fArrayToT->GetArray(i);
-    TArrayF & refaToT = * parrToT;
-    fArrayTime->AddArray(i, new TArrayF(fgkchannel));
-    TArrayF * parrTime = fArrayToT->GetArray(i);
-    TArrayF & refaTime = * parrTime;
-    for (Int_t j = 0;j<AliTOFcalib::fgkchannel;j++){
-      refaToT[j]=0.;      //ToT[i][j]=j;
-      refaTime[j]=0.;      //Time[i][j]=j;
-    }
-  }
-  
-  for (Int_t i=0; i< nelements; i++) {
-    AliTOFcalibESD *element=(AliTOFcalibESD*)fESDsel->At(i);
-    Int_t ipid = element->GetCombID();
-    Double_t etime = 0;   //expected time
-    Double_t expTime[10]; 
-    element->GetIntegratedTimes(expTime);
-    if (ipid == 0) etime = expTime[2]*1E-3; //ns
-    else if (ipid == 1) etime = expTime[3]*1E-3; //ns
-    else if (ipid == 2) etime = expTime[4]*1E-3; //ns
-    else AliError("No pid from combinatorial algo for this track");
-    Double_t mtime = (Double_t)element->GetTOFsignal()*1E-3;  //measured time
-    Double_t mToT = (Double_t) element->GetToT();  //measured ToT, ns
-    //select the correspondent channel with its simulated ToT spectrum
-    //summing up everything, index = 0 for all channels:
-    Int_t index = element->GetTOFCalChannel();
-    Int_t index2 = number[index];
-    TArrayF * parrToT = fArrayToT->GetArray(index);
-    TArrayF & refaToT = * parrToT;
-    refaToT[index2] = (Float_t)mToT;
-    TArrayF * parrTime = fArrayTime->GetArray(index);
-    TArrayF & refaTime = * parrTime;
-    refaTime[index2] = (Float_t)(mtime-etime);
-    number[index]++;
-  }
-
-  for (Int_t i=0;i<1;i++){
-    TH1F * hProf = Profile(i);
-    TF1* fGold = SetFitFunctions(hProf);
-    Int_t nfpar = fGold->GetNpar();
-    Float_t par[6];    
-    for(Int_t kk=0;kk<6;kk++){
-      par[kk]=0;
-    }
-    for (Int_t kk = 0; kk< nfpar; kk++){
-      par[kk]=fGold->GetParameter(kk);
-    }
-    if (!fTOFCal) {
-      AliTOFGeometry *geom=new AliTOFGeometryV5();
-      fTOFCal = new AliTOFCal(geom);
-      fTOFCal->CreateArray();
-      delete geom;
-    }
-    AliTOFChannel * calChannel = fTOFCal->GetChannel(i);
-    calChannel->SetSlewPar(par);
-  }
-  delete[] number;
-}
-
-//___________________________________________________________________________
-
-TH1F* AliTOFcalib::Profile(Int_t ich)
-{
-  //Prepare histograms for Slewing Correction
-  const Int_t knbinToT = 650;
-  Int_t nbinTime = 400;
-  Float_t minTime = -10.5; //ns
-  Float_t maxTime = 10.5; //ns
-  Float_t minToT = 7.5; //ns
-  Float_t maxToT = 40.; //ns
-  Float_t deltaToT = (maxToT-minToT)/knbinToT;
-  Double_t mTime[knbinToT+1],mToT[knbinToT+1],meanTime[knbinToT+1], meanTime2[knbinToT+1],vToT[knbinToT+1], vToT2[knbinToT+1],meanToT[knbinToT+1],meanToT2[knbinToT+1],vTime[knbinToT+1],vTime2[knbinToT+1],xlow[knbinToT+1],sigmaTime[knbinToT+1];
-  Int_t n[knbinToT+1], nentrx[knbinToT+1];
-  Double_t sigmaToT[knbinToT+1];
-  for (Int_t i = 0; i < knbinToT+1 ; i++){
-    mTime[i]=0;
-    mToT[i]=0;
-    n[i]=0;
-    meanTime[i]=0;
-    meanTime2[i]=0;
-    vToT[i]=0;
-    vToT2[i]=0;
-    meanToT[i]=0;
-    meanToT2[i]=0;
-    vTime[i]=0;
-    vTime2[i]=0;
-    xlow[i]=0;
-    sigmaTime[i]=0;
-    sigmaToT[i]=0;
-    n[i]=0;
-    nentrx[i]=0;
-  }
-  TH2F* hSlewing = new TH2F("hSlewing", "hSlewing", knbinToT, minToT, maxToT, nbinTime, minTime, maxTime);
-  TArrayF * parrToT = fArrayToT->GetArray(ich);
-  TArrayF & refaToT = * parrToT;
-  TArrayF * parrTime = fArrayTime->GetArray(ich);
-  TArrayF & refaTime = * parrTime;
-  for (Int_t j = 0; j < AliTOFcalib::fgkchannel; j++){
-    if (refaToT[j] == 0) continue; 
-    Int_t nx = (Int_t)((refaToT[j]-minToT)/deltaToT)+1;
-    if ((refaToT[j] != 0) && (refaTime[j] != 0)){
-      vTime[nx]+=refaTime[j];
-      vTime2[nx]+=(refaTime[j])*(refaTime[j]);
-      vToT[nx]+=refaToT[j];
-      vToT2[nx]+=refaToT[j]*refaToT[j];
-      nentrx[nx]++;
-      hSlewing->Fill(refaToT[j],refaTime[j]);
-    }
-  }
-  Int_t nbinsToT=hSlewing->GetNbinsX();
-  if (nbinsToT != knbinToT) {
-    AliError("Profile :: incompatible numbers of bins");
-    return 0x0;
-  }
-
-  Int_t usefulBins=0;
-  TH1F *histo = new TH1F("histo", "1D Time vs ToT", nbinsToT, minToT, maxToT);
-  for (Int_t i=1;i<=nbinsToT;i++){
-    if (nentrx[i]!=0){
-    n[usefulBins]+=nentrx[i];
-    if (n[usefulBins]==0 && i == nbinsToT) {
-      break;
-    }
-    meanTime[usefulBins]+=vTime[i];
-    meanTime2[usefulBins]+=vTime2[i];
-    meanToT[usefulBins]+=vToT[i];
-    meanToT2[usefulBins]+=vToT2[i];
-    if (n[usefulBins]<20 && i!=nbinsToT) continue; 
-    mTime[usefulBins]=meanTime[usefulBins]/n[usefulBins];
-    mToT[usefulBins]=meanToT[usefulBins]/n[usefulBins];
-    sigmaTime[usefulBins]=TMath::Sqrt(1./n[usefulBins]/n[usefulBins]
-				   *(meanTime2[usefulBins]-meanTime[usefulBins]
-				     *meanTime[usefulBins]/n[usefulBins]));
-    if ((1./n[usefulBins]/n[usefulBins]
-	 *(meanToT2[usefulBins]-meanToT[usefulBins]
-	   *meanToT[usefulBins]/n[usefulBins]))< 0) {
-      AliError(" too small radical" );
-      sigmaToT[usefulBins]=0;
-    }
-    else{       
-      sigmaToT[usefulBins]=TMath::Sqrt(1./n[usefulBins]/n[usefulBins]
-				     *(meanToT2[usefulBins]-meanToT[usefulBins]
-				       *meanToT[usefulBins]/n[usefulBins]));
-    }
-    usefulBins++;
-    }
-  }
-  for (Int_t i=0;i<usefulBins;i++){
-    Int_t binN = (Int_t)((mToT[i]-minToT)/deltaToT)+1;
-    histo->Fill(mToT[i],mTime[i]);
-    histo->SetBinError(binN,sigmaTime[i]);
-  } 
-  return histo;
 }
 //_____________________________________________________________________________
+void AliTOFcalib::CreateSimCalArrays(){
 
-void AliTOFcalib::CorrectESDTime()
-{
-  //Calculate the corrected TOF time
-  Int_t nelements = fESDsel->GetEntries();
-  for (Int_t i=0; i< nelements; i++) {
-    AliTOFcalibESD *element=(AliTOFcalibESD*)fESDsel->At(i);
-    Int_t index = element->GetTOFCalChannel();
-    Float_t tToT = element->GetToT();
-    //select the correspondent channel with its simulated ToT spectrum
-    //summing up everything, index = 0 for all channels:
-    Int_t ipid = element->GetCombID();
-    Double_t etime = 0;   //expected time
-    Double_t expTime[10]; 
-    element->GetIntegratedTimes(expTime);
-    if (ipid == 0) etime = expTime[2]*1E-3; //ns
-    else if (ipid == 1) etime = expTime[3]*1E-3; //ns
-    else if (ipid == 2) etime = expTime[4]*1E-3; //ns
-    Float_t par[6];
-    if (!fTOFCal) {
-      AliTOFGeometry *geom=new AliTOFGeometryV5();
-      fTOFCal = new AliTOFCal(geom);
-      fTOFCal->CreateArray();
-      delete geom;
-    }
-    AliTOFChannel * calChannel = fTOFCal->GetChannel(index);
-    for (Int_t j = 0; j<6; j++){
-      par[j]=calChannel->GetSlewPar(j);
-    }
-    Float_t timeCorr=0;
-    timeCorr= par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT;
+  // creating arrays for simulation online/offline calibration objs
+
+  fTOFSimCalOnline = new TObjArray(fNChannels);
+  fTOFSimCalOffline = new TObjArray(fNChannels);
+  fTOFSimCalOnline->SetOwner();
+  fTOFSimCalOffline->SetOwner();
+  for (Int_t iarray = 0; iarray<fNChannels; iarray++){
+    AliTOFChannelOnline * simCalChOnline = new AliTOFChannelOnline();
+    AliTOFChannelOffline * simCalChOffline = new AliTOFChannelOffline();
+    fTOFSimCalOnline->AddAt(simCalChOnline,iarray);
+    fTOFSimCalOffline->AddAt(simCalChOffline,iarray);
   }
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::CorrectESDTime(AliESD *event){
-  //Calculate the corrected TOF time
-
-  Int_t ntrk =0;
-  ntrk=event->GetNumberOfTracks();
-  for (Int_t itrk=0; itrk<ntrk; itrk++) {
-    AliESDtrack *t=event->GetTrack(itrk);
-    if ((t->GetStatus()&AliESDtrack::kTOFout)==0) {
-      continue;
-    }
-    //IsStartedTimeIntegral
-    if ((t->GetStatus()&AliESDtrack::kTIME)==0) {
-      continue;
-    }
-    UInt_t assignedTOFcluster=t->GetTOFcluster();//index of the assigned TOF cluster, >0 ?
-    if(assignedTOFcluster==0){ // not matched
-      continue;
-    }
-    Int_t index = t->GetTOFCalChannel();
-    if (!fTOFCal) {
-      AliTOFGeometry *geom=new AliTOFGeometryV5();
-      fTOFCal = new AliTOFCal(geom);
-      fTOFCal->CreateArray();
-      delete geom;
-    }
-    AliTOFChannel * calChannel = fTOFCal->GetChannel(index);
-    Float_t par[6];
-    for (Int_t j = 0; j<6; j++){
-      par[j]=calChannel->GetSlewPar(j);
-    }
-    Float_t tToT = t->GetTOFsignalToT();
-    Float_t timeCorr =0; 
-    timeCorr=par[0]+par[1]*tToT+par[2]*tToT*tToT+par[3]*tToT*tToT*tToT+par[4]*tToT*tToT*tToT*tToT+par[5]*tToT*tToT*tToT*tToT*tToT;
-  }
-}
-//_____________________________________________________________________________
-
-void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Par" ;
+  Char_t *sel1 = "OnlineDelay" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id(out,minrun,maxrun);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  if (!fTOFCal) {
-    AliTOFGeometry *geom=new AliTOFGeometryV5();
-    fTOFCal = new AliTOFCal(geom);
-    fTOFCal->CreateArray();
-    delete geom;
+  if (!fTOFCalOnline) {
+    // deve uscire!!
   }
-  man->Put(fTOFCal,id,md);
+  man->Put(fTOFCalOnline,id,md);
   delete md;
 }
 //_____________________________________________________________________________
 
-void AliTOFcalib::WriteParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal){
+void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun)
+{
   //Write calibration parameters to the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Par" ;
+  Char_t *sel1 = "ParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id(out,minrun,maxrun);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  man->Put(cal,id,md);
+  md->SetComment(validity);
+  man->Put(fTOFCalOffline,id,md);
   delete md;
 }
 //_____________________________________________________________________________
 
-Bool_t AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadParOnlineFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "Par" ;
+  Char_t *sel1 = "OnlineDelay" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   if (!man->Get(out,nrun)) { 
@@ -801,92 +272,82 @@ Bool_t AliTOFcalib::ReadParFromCDB(Char_t *sel, Int_t nrun)
     return kFALSE;
   }  
   
-  AliTOFCal *cal =(AliTOFCal*)entry->GetObject();
-  fTOFCal = cal;
+  fTOFCalOnline =(TObjArray*)entry->GetObject();
+
   return kTRUE; 
    
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
+
+Bool_t AliTOFcalib::ReadParOfflineFromCDB(Char_t *sel, Int_t nrun)
 {
+  //Read calibration parameters from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "ParOffline" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    return kFALSE;
+  }
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
+    return kFALSE;
+  }  
+  AliCDBMetaData * md = entry->GetMetaData();
+  fkValidity = md->GetComment();  
+  fTOFCalOffline =(TObjArray*)entry->GetObject();
+
+  return kTRUE; 
+   
+}
+//_____________________________________________________________________________
+void AliTOFcalib::WriteSimParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TObjArray *calOnline){
   //Write Sim miscalibration parameters to the CDB
 
-
-  //for the time being, only one spectrum is used
-  TFile *spFile = new TFile("$ALICE_ROOT/TOF/data/spectrum.root","read");
-  TH1F * hToT;
-  // Retrieve ToT Spectrum
-  spFile->GetObject("ToT",hToT);
-
-  fTOFSimToT=hToT;
-  
-  // Retrieve Time over TOT dependence 
-  
-  TH1F * h = (TH1F*)spFile->Get("TimeToTFit");
-  TList * list = (TList*)h->GetListOfFunctions();
-  TF1* f = (TF1*)list->At(0);
-  Float_t par[6] = {0,0,0,0,0,0};
-  Int_t npar=f->GetNpar();
-  for (Int_t ipar=0;ipar<npar;ipar++){
-    par[ipar]=f->GetParameter(ipar);
-  }
-  if (!fTOFSimCal) {
-    AliTOFGeometry *geom=new AliTOFGeometryV5();
-    fTOFSimCal = new AliTOFCal(geom);
-    fTOFSimCal->CreateArray();
-    delete geom;
-  }
-  for(Int_t iTOFch=0; iTOFch<fTOFSimCal->NPads();iTOFch++){
-    AliTOFChannel * calChannel = fTOFSimCal->GetChannel(iTOFch);
-    calChannel->SetSlewPar(par);
-  }
-
-  // Store them in the CDB
-
+  fTOFSimCalOnline=calOnline;  
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  Char_t *sel1 = "SimPar" ;
+  Char_t *sel1 = "SimParOnline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id1(out,minrun,maxrun);
-  man->Put(fTOFSimCal,id1,md);
-  Char_t *sel2 = "SimHisto" ;
-  sprintf(out,"%s/%s",sel,sel2); 
-  AliCDBId id2(out,minrun,maxrun);
-  man->Put(fTOFSimToT,id2,md);
+  man->Put(fTOFSimCalOnline,id1,md);
   delete md;
 }
-
 //_____________________________________________________________________________
-void AliTOFcalib::WriteSimParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFCal *cal, TH1F * histo){
+void AliTOFcalib::WriteSimParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun, TObjArray *calOffline, TH1F *histo){
   //Write Sim miscalibration parameters to the CDB
 
   fTOFSimToT=histo;
-  fTOFSimCal=cal;  
+  fTOFSimCalOffline=calOffline;  
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
-  Char_t *sel1 = "SimPar" ;
+  md->SetComment(validity);
+  Char_t *sel1 = "SimParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBId id1(out,minrun,maxrun);
-  man->Put(fTOFSimCal,id1,md);
+  man->Put(fTOFSimCalOffline,id1,md);
   Char_t *sel2 = "SimHisto" ;
   sprintf(out,"%s/%s",sel,sel2); 
+  AliCDBMetaData *mdhisto = new AliCDBMetaData();
+  mdhisto->SetResponsible("Chiara Zampolli");
   AliCDBId id2(out,minrun,maxrun);
-  man->Put(fTOFSimToT,id2,md);
+  man->Put(fTOFSimToT,id2,mdhisto);
   delete md;
+  delete mdhisto;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
+void AliTOFcalib::ReadSimParOnlineFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
 
   // The Slewing Pars
 
-  Char_t *sel1 = "SimPar" ;
+  Char_t *sel1 = "SimParOnline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   if (!man->Get(out,nrun)) { 
@@ -898,8 +359,34 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
     AliFatal("Exiting, no CDB object (SimPar) found!!!");
     exit(0);  
   }  
-  AliTOFCal *cal =(AliTOFCal*)entry1->GetObject();
-  fTOFSimCal=cal;
+  TObjArray *cal =(TObjArray*)entry1->GetObject();
+  fTOFSimCalOnline=cal;
+
+}
+//_____________________________________________________________________________
+void AliTOFcalib::ReadSimParOfflineFromCDB(Char_t *sel, Int_t nrun)
+{
+  //Read miscalibration parameters from the CDB
+  AliCDBManager *man = AliCDBManager::Instance();
+
+  // The Slewing Pars
+
+  Char_t *sel1 = "SimParOffline" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  if (!man->Get(out,nrun)) { 
+    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    exit(0);  
+  }
+  AliCDBEntry *entry1 = man->Get(out,nrun);
+  if(!entry1->GetObject()){
+    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    exit(0);  
+  }  
+  TObjArray *cal =(TObjArray*)entry1->GetObject();
+  AliCDBMetaData *md = (AliCDBMetaData*)entry1->GetMetaData();
+  fkValidity = md->GetComment();
+  fTOFSimCalOffline=cal;
 
   // The Tot Histo
 
@@ -917,8 +404,6 @@ void AliTOFcalib::ReadSimParFromCDB(Char_t *sel, Int_t nrun)
   TH1F *histo =(TH1F*)entry2->GetObject();
   fTOFSimToT=histo;
 }
-//_____________________________________________________________________________
-
 //_____________________________________________________________________________
 void AliTOFcalib::WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param){
   //Write reconstruction parameters to the CDB
@@ -954,47 +439,870 @@ AliTOFRecoParam * AliTOFcalib::ReadRecParFromCDB(Char_t *sel, Int_t nrun)
   AliTOFRecoParam *param=(AliTOFRecoParam*)entry->GetObject();
   return param;
 }
-//_____________________________________________________________________________
+//-----------------------------------------------------------------------------
+// Calibration methods
+//-----------------------------------------------------------------------------
+void AliTOFcalib::CreateTreeFromCDB(Int_t minrun, Int_t maxrun){
 
-Int_t AliTOFcalib::GetIndex(Int_t *detId)
-{
-  //Retrieve calibration channel index 
-  Int_t isector = detId[0];
-  if (isector >= fNSector)
-    AliError(Form("Wrong sector number in TOF (%d) !",isector));
-  Int_t iplate = detId[1];
-  if (iplate >= fNPlate)
-    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
-  Int_t istrip = detId[2];
-  Int_t ipadz = detId[3];
-  Int_t ipadx = detId[4];
-  Int_t stripOffset = 0;
-  switch (iplate) {
-  case 0:
-    stripOffset = 0;
-    break;
-  case 1:
-    stripOffset = fNStripC;
-    break;
-  case 2:
-    stripOffset = fNStripC+fNStripB;
-    break;
-  case 3:
-    stripOffset = fNStripC+fNStripB+fNStripA;
-    break;
-  case 4:
-    stripOffset = fNStripC+fNStripB+fNStripA+fNStripB;
-    break;
-  default:
-    AliError(Form("Wrong plate number in TOF (%d) !",iplate));
-    break;
-  };
+  // creating the chain with the trees for calibration
+  // collecting them from reference data 
+  // from minrun to maxrun
 
-  Int_t idet = ((2*(fNStripC+fNStripB)+fNStripA)*fNpadZ*fNpadX)*isector +
-               (stripOffset*fNpadZ*fNpadX)+
-               (fNpadZ*fNpadX)*istrip+
-	       (fNpadX)*ipadz+
-	        ipadx;
-  return idet;
+  Float_t p[CHENTRIESSMALL];
+  Int_t nentries;
+  fTree = new TTree("TOFCalib","Tree for TOF Calibration");
+  fTree->Branch("nentries",&nentries,"nentries/I");
+  fTree->Branch("TOFentries",p,"TOFentries[nentries]/F");
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBStorage *aStorage = man->GetStorage("local://$ALICE_ROOT");
+  for (Int_t irun = minrun;irun<=maxrun;irun++){
+    AliCDBEntry *entry = aStorage->Get("TOF/RefData/TreeForCalib",irun);
+    if (!entry){
+      AliInfo(Form("No entry found for run %i",irun));
+    }
+    else{
+      TTree *tree = new TTree();
+      tree = (TTree*)entry->GetObject();
+      tree->SetBranchAddress("nentries",&nentries);
+      tree->SetBranchAddress("TOFentries",p);      
+      fTree->CopyEntries(tree);
+      delete tree;
+      fNruns++;
+    }
+  }
+  AliInfo(Form("Number of runs being analyzed %i",fNruns));
+}
+//-----------------------------------------------------------------------------
+void AliTOFcalib::CreateTreeFromGrid(Int_t minrun, Int_t maxrun){
+
+  // creating the chain with the trees for calibration
+  // collecting them from the Grid 
+  // from minrun to maxrun
+
+  Float_t p[CHENTRIESSMALL];
+  Int_t nentries;
+  fTree = new TTree("TOFCalib","Tree for TOF Calibration");
+  fTree->SetDirectory(0);
+  fTree->Branch("nentries",&nentries,"nentries/I");
+  fTree->Branch("TOFentries",p,"TOFentries[nentries]/F");
+  AliInfo("connected to alien");
+  TGrid::Connect("alien://");
+  
+  Char_t filename[100];
+  for (Int_t irun = minrun;irun<=maxrun;irun++){
+    sprintf(filename,"alien:///alice/cern.ch/user/c/czampolli/TOFCalibReference_%i.root",irun);
+    TFile *filegrid = TFile::Open(filename,"READ");
+    TTree *tree = (TTree*)filegrid->Get("T");
+    tree->SetBranchAddress("nentries",&nentries);
+    tree->SetBranchAddress("TOFentries",p);      
+    fTree->CopyEntries(tree);
+    delete tree;
+    fNruns++;    
+  }
+  
+  AliInfo(Form("Number of runs being analyzed %i",fNruns));
+}
+//-----------------------------------------------------------------------------
+void AliTOFcalib::CreateTreeFromFile(Int_t minrun, Int_t maxrun){
+
+  // creating the tree with the trees for calibration
+  // collecting them from reference data (from file)
+  // from minrun to maxrun
+
+  Float_t p[CHENTRIESSMALL];
+  Int_t nentries;
+  fTree = new TTree("TOFCalib","Tree for TOF Calibration");
+  fTree->SetDirectory(0);
+  fTree->Branch("nentries",&nentries,"nentries/I");
+  fTree->Branch("TOFentries",p,"TOFentries[nentries]/F");
+  Char_t filename[100];
+  for (Int_t irun = minrun;irun<=maxrun;irun++){
+    sprintf(filename,"$ALICE_ROOT/TOF/RefData/TreeForCalib/fileout_%i.root",irun);
+    TFile *file = new TFile(filename,"READ");
+    TTree *tree = (TTree*)file->Get("T");
+    tree->SetBranchAddress("nentries",&nentries);
+    tree->SetBranchAddress("TOFentries",p);      
+    fTree->CopyEntries(tree);
+    delete tree;
+    delete file;
+    file = 0x0;
+    fNruns++;
+  }
+
+  AliInfo(Form("Number of runs being analyzed %i",fNruns));
+}
+//-----------------------------------------------------------------------------
+Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, Option_t *optionFit){
+
+  // calibrating summing more than one channels
+  // computing calibration parameters
+  // Returning codes:
+  // 0 -> everything was ok
+  // 1 -> no tree for calibration found
+  // 2 -> not enough statistics to perform calibration
+  // 3 -> problems with arrays
+  
+  TH1::AddDirectory(0);
+
+  AliInfo(Form("*** Calibrating Histograms %s, summing more channels, from channel %i, to channel %i, storing Calib Pars in channel %i", GetName(),ichmin,ichmax,ichmin)) ; 
+  AliInfo(Form("Option for Saving histos = %s",optionSave )) ; 
+  AliInfo(Form("Option for Fitting Profile histos = %s",optionFit )) ; 
+
+  Float_t p[CHENTRIESSMALL];
+  Int_t nentries;
+  fTree->SetBranchAddress("nentries",&nentries);
+  fTree->SetBranchAddress("TOFentries",p);
+
+  Float_t ntracksTotalmean =0;
+  for (Int_t i=ichmin; i<ichmax; i++){
+    Int_t ientry = -1;
+    for (Int_t irun=0;irun<fNruns;irun++){
+      ientry = i+irun*fNChannels;
+      fTree->GetEntry(ientry);
+      Int_t ntracksRun=nentries/3;
+      ntracksTotalmean+=ntracksRun;
+    }
+  }
+  
+  if (ntracksTotalmean < MEANENTRIES) {
+    AliInfo(Form(" Too small mean number of entires per channel (mean number = %f) not calibrating and exiting.....",ntracksTotalmean));
+    return 2;
+  }
+
+  //filling ToT and Time arrays
+
+  Int_t nbinToT = 100;  // ToT bin width in Profile = 48.8 ps 
+  Float_t minToT = 0;   // ns
+  Float_t maxToT = 4.88;  // ns
+
+  TH1F *hToT = new TH1F("htot","htot",nbinToT, minToT, maxToT);
+  TH1F *hdeltaTime = new TH1F("hdeltaTime","hdeltaTime",200,2,4);
+  Int_t ntracksTotal = 0;
+  Int_t ntracksRun = 0;
+  Double_t binsProfile[101]; // sized larger than necessary, the correct 
+                             // dim being set in the booking of the profile
+  Int_t nusefulbins=0;
+  Float_t meantime=0;
+  for (Int_t i = ichmin;i<ichmax;i++){
+    Int_t ientry = -1;
+    for (Int_t irun=0;irun<fNruns;irun++){
+      ientry = i+irun*fNChannels;
+      fTree->GetEntry(ientry);
+      ntracksTotal+=nentries/3;
+      ntracksRun=nentries/3;
+      AliDebug(2,Form("run %i, channel %i, nentries = %i, ntracks = %i",irun,i,nentries, ntracksRun));
+      for (Int_t j=0;j<ntracksRun;j++){
+	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+	Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+	Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+	Float_t tot = p[idxexToT];
+	hdeltaTime->Fill(p[idxexTime]-p[idxexExTime]);
+	meantime+=p[idxexTime]-p[idxexExTime];
+	hToT->Fill(tot);
+      }
+    }
+  }
+  nusefulbins = FindBins(hToT,&binsProfile[0]);
+  meantime/=ntracksTotal;
+  AliDebug(2, Form("meantime = %f",meantime));
+  
+  for (Int_t j=1;j<=nusefulbins;j++) {
+    AliDebug(2,Form(" summing channels from %i to %i, nusefulbins = %i, bin %i = %f",ichmin,ichmax,nusefulbins,j,binsProfile[j])); 
+  }
+
+  TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
+  TH2F * htimetot = new TH2F("htimetot","htimetot",nbinToT, minToT, maxToT,600,-5,10);
+
+  for (Int_t irun=0;irun<fNruns;irun++){
+    Int_t ientry = -1;
+    for (Int_t i=ichmin; i<ichmax; i++){
+      ientry = i+irun*fNChannels;
+      fTree->GetEntry(ientry);
+      ntracksRun=nentries/3;
+      for (Int_t j=0;j<ntracksRun;j++){
+	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+	Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+	Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+	Float_t tot = p[idxexToT];
+	Float_t time = p[idxexTime]-p[idxexExTime];
+	AliDebug (2, Form("track = %i, time = %f, tot = %f, time-meantime = %f",j,time, tot, time-meantime));
+	hSlewingProf->Fill(tot,time);  // if meantime is not used, the fill may be moved in the loop above
+	htimetot->Fill(tot,time-meantime);  // if meantime is not used, the fill may be moved in the loop above
+      }
+    }
+  }
+
+  hSlewingProf->Fit("pol5",optionFit,"",0,4);
+  TF1 * calibfunc = (TF1*)hSlewingProf->GetFunction("pol5");
+  Float_t par[6];    
+  for(Int_t kk=0;kk<6;kk++){
+    par[kk]=calibfunc->GetParameter(kk);
+    AliDebug(2,Form("parameter %i = %f",kk,par[kk]));
+  }
+
+  if(strstr(optionSave,"save")){
+    TFile * fileProf = new TFile("TOFCalibSave.root","recreate");
+    fileProf->cd(); 
+    TString profName=Form("Profile%06i_%06i",ichmin,ichmax);
+    TString timeTotName=Form("TimeTot%06i_%06i",ichmin,ichmax);
+    TString totName=Form("Tot%06i_%06i",ichmin,ichmax);
+    TString deltaName=Form("Delta%06i_%06i",ichmin,ichmax);
+    hSlewingProf->Write(profName);
+    htimetot->Write(timeTotName);
+    hToT->Write(totName);
+    hdeltaTime->Write(deltaName);
+    fileProf->Close();
+    delete fileProf;
+    fileProf=0x0;
+  }
+
+  delete hToT;
+  hToT=0x0;
+  delete hSlewingProf;
+  hSlewingProf=0x0;
+  delete htimetot;
+  htimetot=0x0;
+  delete hdeltaTime;
+  hdeltaTime=0x0;
+
+  AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(ichmin);
+  calChannel->SetSlewPar(par);
+  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  return 0;
+}
+//----------------------------------------------------------------------------
+Int_t AliTOFcalib::Calibrate(Int_t i, Option_t *optionSave, Option_t *optionFit){
+
+  // computing calibration parameters for channel i
+  // Returning codes:
+  // 0 -> everything was ok
+  // 1 -> no tree for calibration found
+  // 2 -> not enough statistics to perform calibration
+  // 3 -> problems with arrays
+
+  TH1::AddDirectory(0);
+  
+  AliInfo(Form("*** Calibrating Histograms (one channel) %s", GetName())) ; 
+  AliInfo(Form("Option for Saving histos = %s",optionSave )) ; 
+  AliInfo(Form("Option for Fitting Profile histos = %s",optionFit )) ; 
+
+  Float_t p[MAXCHENTRIESSMALL];
+  Int_t nentries;
+  fTree->SetBranchAddress("nentries",&nentries);
+  fTree->SetBranchAddress("TOFentries",p);
+
+  Float_t ntracksTotal =0;
+  for (Int_t irun=0;irun<fNruns;irun++){
+    Int_t ientry = -1;
+    ientry = i+irun*fNChannels;
+    fTree->GetEntry(ientry);
+    ntracksTotal+=nentries/3;    
+  }
+  
+  if (ntracksTotal < MEANENTRIES) {  
+    AliInfo(Form(" Too small mean number of entires per channel (mean number = %f) not calibrating and exiting.....",ntracksTotal));
+    return 2;
+  }
+
+  //filling ToT and Time arrays
+
+  Int_t nbinToT = 100;  // ToT bin width in Profile = 48.8 ps 
+  Float_t minToT = 0;   // ns
+  Float_t maxToT = 4.88;  // ns
+
+  TH1F *hToT = new TH1F("htot","htot",nbinToT, minToT, maxToT);
+  TH1F *hdeltaTime = new TH1F("hdeltaTime","hdeltaTime",200,2,4);
+  Int_t ntracksRun = 0;
+  Double_t binsProfile[101]; // sized larger than necessary, the correct 
+                             // dim being set in the booking of the profile
+  Int_t nusefulbins=0;
+  Float_t meantime=0;
+  for (Int_t irun=0;irun<fNruns;irun++){
+    Int_t ientry = -1;
+    ientry = i+irun*fNChannels;
+    fTree->GetEntry(ientry);
+    ntracksRun=nentries/3;
+    AliDebug(2,Form("run %i, channel %i, nentries = %i, ntracksRun = %i",irun, i ,nentries, ntracksRun));
+    for (Int_t j=0;j<ntracksRun;j++){
+      Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+      Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+      Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+      Float_t tot = p[idxexToT];
+      meantime+=p[idxexTime]-p[idxexExTime];
+      hdeltaTime->Fill(p[idxexTime]-p[idxexExTime]);
+      hToT->Fill(tot);
+    }
+  }
+
+  nusefulbins = FindBins(hToT,&binsProfile[0]);
+  meantime/=ntracksTotal;
+  AliDebug(2,Form("meantime = %f",meantime));
+  
+  for (Int_t j=1;j<=nusefulbins;j++) {
+    AliDebug(2,Form(" channel %i, nusefulbins = %i, bin %i = %f",i,nusefulbins,j,binsProfile[j])); 
+  }
+
+  TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
+  TH2F * htimetot = new TH2F("htimetot","htimetot",nbinToT, minToT, maxToT,600,-5,10);
+  for (Int_t irun=0;irun<fNruns;irun++){
+    Int_t ientry = -1;
+    ientry = i+irun*fNChannels;
+    fTree->GetEntry(ientry);
+    ntracksRun=nentries/3;
+    for (Int_t j=0;j<ntracksRun;j++){
+      Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+      Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+      Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+      Float_t tot = p[idxexToT];
+      Float_t time = p[idxexTime]-p[idxexExTime];
+      AliDebug (2,Form("track = %i, time = %f, tot = %f, time-meantime = %f",j,time, tot, time-meantime));
+      hSlewingProf->Fill(tot,time);  // if meantime is not used, the fill may be moved in the loop above
+      htimetot->Fill(tot,time-meantime);  // if meantime is not used, the fill may be moved in the loop above
+    }
+  }
+
+  hSlewingProf->Fit("pol5",optionFit,"",0,4);
+  TF1 * calibfunc = (TF1*)hSlewingProf->GetFunction("pol5");
+  Float_t par[6];    
+  for(Int_t kk=0;kk<6;kk++){
+    par[kk]=calibfunc->GetParameter(kk);
+    AliDebug(2,Form("parameter %i = %f",kk,par[kk]));
+  }
+
+
+  if(strstr(optionSave,"save")){
+    TFile * fileProf = new TFile("TOFCalibSave.root","recreate");
+    fileProf->cd();   
+    TString profName=Form("Profile%06i",i);
+    TString timeTotName=Form("TimeTot%06i",i);
+    TString totName=Form("Tot%06i",i);
+    TString deltaName=Form("Delta%06i",i);
+    hSlewingProf->Write(profName);
+    htimetot->Write(timeTotName);
+    hToT->Write(totName);
+    hdeltaTime->Write(deltaName);
+    fileProf->Close();
+    delete fileProf;
+    fileProf=0x0;
+  }
+
+  delete hToT;
+  hToT=0x0; 
+  delete hSlewingProf;
+  hSlewingProf=0x0;
+  delete htimetot;
+  htimetot=0x0;
+  delete hdeltaTime;
+  hdeltaTime=0x0;
+
+  AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(i);
+  calChannel->SetSlewPar(par);
+  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  return 0;
+}
+//----------------------------------------------------------------------------
+Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_t *optionFit){
+
+  // calibrating an array of channels
+  // computing calibration parameters
+  // Returning codes:
+  // 0 -> everything was ok
+  // 1 -> no tree for calibration found
+  // 2 -> not enough statistics to perform calibration
+  // 3 -> problems with arrays
+  
+  TH1::AddDirectory(0);
+
+  AliInfo(Form("*** Calibrating Histograms %s, number of channels = %i", GetName(),nch)) ; 
+  AliInfo(Form("Option for Saving histos = %s",optionSave )) ; 
+  AliInfo(Form("Option for Fitting Profile histos = %s",optionFit )) ; 
+  for (Int_t ich=0; ich<nch; ich++){
+    Int_t i = ch[ich];
+    AliInfo(Form("Calibrating channel = %i",i )) ; 
+  }
+  Float_t p[MAXCHENTRIESSMALL];
+  Int_t nentries;
+  fTree->SetBranchAddress("nentries",&nentries);
+  fTree->SetBranchAddress("TOFentries",p);
+
+  Float_t ntracksTotalmean =0;
+  for (Int_t ich=0; ich<nch; ich++){
+    Int_t ientry = -1;
+      Int_t i = ch[ich];
+      for (Int_t irun=0;irun<fNruns;irun++){
+      ientry = i+irun*fNChannels;
+      fTree->GetEntry(ientry);
+      ntracksTotalmean+=nentries/3;
+    }
+  }
+
+  ntracksTotalmean/=nch;
+  if (ntracksTotalmean < MEANENTRIES) { 
+    AliInfo(Form(" Too small mean number of entires per channel (mean number = %f) not calibrating and exiting.....",ntracksTotalmean));
+    return 2;
+  }
+
+  //filling ToT and Time arrays
+
+  Int_t nbinToT = 100;  // ToT bin width in Profile = 48.8 ps 
+  Float_t minToT = 0;   // ns
+  Float_t maxToT = 4.88;  // ns
+  TFile * fileProf=0x0;
+  if(strstr(optionSave,"save")){
+    fileProf = new TFile("TOFCalibSave.root","recreate");
+  }
+  for (Int_t ich=0; ich<nch; ich++) {
+    TH1F *hToT = new TH1F("htot","htot",nbinToT, minToT, maxToT);
+    TH1F *hdeltaTime = new TH1F("hdeltaTime","hdeltaTime",200,2,4);
+    Double_t binsProfile[101]; // sized larger than necessary, the correct 
+    // dim being set in the booking of the profile
+    TH2F * htimetot = new TH2F("htimetot","htimetot",nbinToT, minToT, maxToT,600,-5,10);
+    Int_t ntracksTotal = 0;
+    Int_t ntracksRun = 0;
+    Int_t nusefulbins=0;
+    Float_t meantime=0;
+    Int_t i=-1;
+    for (Int_t irun=0;irun<fNruns;irun++){
+      i = ch[ich]+irun*fNChannels;
+      AliDebug(2,Form("Calibrating channel %i",i));
+      fTree->GetEntry(i);
+      ntracksTotal+=nentries/3;
+    }
+    if (ntracksTotal < MEANENTRIES) {
+      AliInfo(Form(" Too small mean number of entires in channel %i (number of tracks = %f), not calibrating channel and continuing.....",i,ntracksTotal));
+      continue;
+    }
+  
+    for (Int_t irun=0;irun<fNruns;irun++){
+      Int_t i = ch[ich]+irun*fNChannels;
+      fTree->GetEntry(i);
+      ntracksRun=nentries/3;
+      for (Int_t j=0;j<ntracksRun;j++){
+	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+	Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+	Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+	Float_t tot = p[idxexToT];
+	hdeltaTime->Fill(p[idxexTime]-p[idxexExTime]);
+	meantime+=p[idxexTime]-p[idxexExTime];
+	hToT->Fill(tot);
+      }
+    }
+
+    nusefulbins = FindBins(hToT,&binsProfile[0]);
+    meantime/=ntracksTotal;
+    for (Int_t j=1;j<=nusefulbins;j++) {
+      AliDebug(2,Form(" channel %i, nusefulbins = %i, bin %i = %f",i,nusefulbins,j,binsProfile[j])); 
+    }
+
+    TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
+    for (Int_t irun=0;irun<fNruns;irun++){
+      Int_t i = ch[ich]+irun*fNChannels;
+      fTree->GetEntry(i);
+      ntracksRun=nentries/3;
+      for (Int_t j=0;j<ntracksRun;j++){
+	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+	Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+	Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+	Float_t tot = p[idxexToT];
+	Float_t time = p[idxexTime]-p[idxexExTime];
+	AliDebug(2,Form("track = %i, time = %f, tot = %f, time-meantime = %f",j,time, tot, time-meantime));
+	hSlewingProf->Fill(tot,time);  // if meantime is not used, the fill may be moved in the loop above
+	htimetot->Fill(tot,time-meantime);  // if meantime is not used, the fill may be moved in the loop above
+      }
+    }
+    
+    hSlewingProf->Fit("pol5",optionFit,"",1,4);
+    TF1 * calibfunc = (TF1*)hSlewingProf->GetFunction("pol5");
+    Float_t par[6];    
+    for(Int_t kk=0;kk<6;kk++){
+      par[kk]=calibfunc->GetParameter(kk);
+      AliDebug(2,Form("parameter %i = %f",kk,par[kk]));
+    }
+    
+    if(strstr(optionSave,"save") && fileProf){
+      TString profName=Form("Profile%06i",i);
+      TString timeTotName=Form("TimeTot%06i",i);
+      TString totName=Form("Tot%06i",i);
+      TString deltaName=Form("Delta%06i",i);
+      fileProf->cd();
+      hSlewingProf->Write(profName);
+      htimetot->Write(timeTotName);
+      hToT->Write(totName);
+      hdeltaTime->Write(deltaName);
+    }
+
+    AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(i);
+    calChannel->SetSlewPar(par);
+    delete hToT;
+    hToT=0x0;
+    delete hSlewingProf;
+    hSlewingProf=0x0;
+    delete htimetot;
+    htimetot=0x0;
+    delete hdeltaTime;
+    hdeltaTime=0x0;
+  }
+
+  if(strstr(optionSave,"save") && fileProf){
+    fileProf->Close();
+    delete fileProf;
+    fileProf=0x0;
+  }
+  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+
+  return 0;
+}
+//----------------------------------------------------------------------------
+Int_t AliTOFcalib::CalibrateFromProfile(Int_t ich, Option_t *optionSave, Option_t *optionFit){
+
+  // computing calibration parameters using the old profiling algo
+  // Returning codes:
+  // 0 -> everything was ok
+  // 1 -> no tree for calibration found
+  // 2 -> not enough statistics to perform calibration
+  // 3 -> problems with arrays
+
+  TH1::AddDirectory(0);
+
+  AliInfo(Form("*** Calibrating Histograms From Profile %s", GetName())) ; 
+  AliInfo(Form("Option for Saving histos = %s",optionSave )) ; 
+  AliInfo(Form("Option for Fitting Profile histos = %s",optionFit )) ; 
+  Float_t p[MAXCHENTRIESSMALL];
+  Int_t nentries;
+  Int_t ntracksTotal=0;
+  fTree->SetBranchAddress("nentries",&nentries);
+  fTree->SetBranchAddress("TOFentries",p);
+
+  for (Int_t irun=0;irun<fNruns;irun++){
+    Int_t i = ich+irun*fNChannels;
+    fTree->GetEntry(i);
+    ntracksTotal+=nentries/3;
+  }
+
+  if (ntracksTotal < MEANENTRIES) {  
+    AliInfo(Form(" Too small mean number of entires per channel (mean number = %f) not calibrating and exiting.....",ntracksTotal));
+    return 2;
+  }
+
+  TH1F * hProf = new TH1F();
+  hProf = Profile(ich);
+  hProf->Fit("pol5",optionFit,"",0,4);
+  TF1 * calibfunc = (TF1*)hProf->GetFunction("pol5");
+  Float_t par[6];    
+  for(Int_t kk=0;kk<6;kk++){
+    par[kk]=calibfunc->GetParameter(kk);
+    AliDebug(2,Form("parameter %i = %f",kk,par[kk]));
+  }
+
+  if(strstr(optionSave,"save")){
+    TFile * fileProf = new TFile("TOFCalibSave.root","recreate");
+    fileProf->cd(); 
+    TString profName=Form("Profile%06i",ich);
+    hProf->Write(profName);
+    fileProf->Close();
+    delete fileProf;
+    fileProf=0x0;
+  }
+
+  delete hProf;
+  hProf=0x0;
+  AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(ich);
+  calChannel->SetSlewPar(par);
+  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  return 0;
+}
+//----------------------------------------------------------------------------
+Int_t AliTOFcalib::Calibrate(Option_t *optionSave, Option_t *optionFit){
+
+  // calibrating the whole TOF
+  // computing calibration parameters
+  // Returning codes:
+  // 0 -> everything was ok
+  // 1 -> no tree for calibration found
+  // 2 -> not enough statistics to perform calibration
+  // 3 -> problems with arrays
+
+  TH1::AddDirectory(0);
+
+  AliInfo(Form("*** Calibrating Histograms %s, all channels", GetName())) ; 
+  AliInfo(Form("Option for Saving histos = %s",optionSave )) ; 
+  AliInfo(Form("Option for Fitting Profile histos = %s",optionFit )) ; 
+
+  TFile * fileProf=0x0;
+  if(strstr(optionSave,"save")){
+    fileProf = new TFile("TOFCalibSave.root","recreate");
+  }
+
+  Float_t p[MAXCHENTRIESSMALL];
+  Int_t nentries;
+  fTree->SetBranchAddress("nentries",&nentries);
+  fTree->SetBranchAddress("TOFentries",p);
+
+  Float_t ntracksTotalmean =0;
+  for (Int_t ii=0; ii<fNChannels; ii++){
+    for (Int_t irun=0;irun<fNruns;irun++){
+      Int_t i = ii+irun*fNChannels;
+      fTree->GetEntry(i);
+      ntracksTotalmean+=nentries/3;
+    }
+  }
+
+  ntracksTotalmean/=fNChannels;
+  if (ntracksTotalmean < MEANENTRIES) {
+    AliInfo(Form(" Too small mean number of entires per channel (mean number = %f) not calibrating and exiting.....",ntracksTotalmean));
+    return 2;
+  }
+
+  //filling ToT and Time arrays
+
+  Int_t nbinToT = 100;  // ToT bin width in Profile = 50.0 ps 
+  Float_t minToT = 0;   // ns
+  Float_t maxToT = 4.88;// ns
+  for (Int_t ii=0; ii<fNChannels; ii++) {
+    TH1F *hToT = new TH1F("htot","htot",nbinToT, minToT, maxToT);
+    TH1F *hdeltaTime = new TH1F("hdeltaTime","hdeltaTime",200,2,4);
+    TH2F * htimetot = new TH2F("htimetot","htimetot",nbinToT, minToT, maxToT,600,-5,10);
+    if (ii%1000 == 0) AliDebug(1,Form("Calibrating channel %i ",ii));
+    //Int_t i = 3;
+    Int_t nusefulbins=0;
+    Double_t binsProfile[101]; // sized larger than necessary, the correct 
+                              // dim being set in the booking of the profile
+    Int_t ntracksRun = 0;
+    Int_t ntracksTotal = 0;
+    for (Int_t irun=0;irun<fNruns;irun++){
+      Int_t i = ii+irun*fNChannels;
+      fTree->GetEntry(i);
+      ntracksTotal+=nentries/3;
+    }
+    if (ntracksTotal < MEANENTRIES) {
+      AliInfo(Form(" Too small mean number of entires in channel %i (number of tracks = %f), not calibrating channel and continuing.....",ii,ntracksTotal));
+      continue;
+    }
+    Float_t meantime=0;
+    for (Int_t irun=0;irun<fNruns;irun++){
+      Int_t i = ii+irun*fNChannels;
+      fTree->GetEntry(i);
+      ntracksRun=nentries/3;
+      for (Int_t j=0;j<ntracksRun;j++){
+	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+	Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+	Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+	Float_t tot = p[idxexToT];
+	hdeltaTime->Fill(p[idxexTime]-p[idxexExTime]);
+	meantime+=p[idxexTime]-p[idxexExTime];
+	hToT->Fill(tot);
+      }
+    }
+    nusefulbins = FindBins(hToT,&binsProfile[0]);
+    meantime/=ntracksTotal;
+    for (Int_t j=0;j<nusefulbins;j++) {
+      AliDebug(2,Form(" channel %i, usefulbin = %i, low edge = %f",ii,j,binsProfile[j])); 
+    }
+    TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
+    for (Int_t irun=0;irun<fNruns;irun++){
+      Int_t i = ii+irun*fNChannels;
+      fTree->GetEntry(i);
+      ntracksRun=nentries/3;
+      for (Int_t j=0;j<ntracksRun;j++){
+	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+	Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+	Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+	Float_t tot = p[idxexToT];
+	Float_t time = p[idxexTime]-p[idxexExTime];
+	AliDebug (2,Form("track = %i, time = %f, tot = %f, time-meantime = %f",j,time, tot, time-meantime));
+	hSlewingProf->Fill(tot,time);  // if meantime is not used, the fill may be moved in the loop above
+	htimetot->Fill(tot,time-meantime);  // if meantime is not used, the fill may be moved in the loop above
+      }
+    }
+    hSlewingProf->Fit("pol5",optionFit,"",1,4);
+    TF1 * calibfunc = (TF1*)hSlewingProf->GetFunction("pol5");
+    Float_t par[6];    
+    for(Int_t kk=0;kk<6;kk++){
+      par[kk]=calibfunc->GetParameter(kk);
+      AliDebug(2,Form("parameter %i = %f",kk,par[kk]));
+    }
+
+    if(strstr(optionSave,"save") && fileProf){
+      TString profName=Form("Profile%06i",ii);
+      TString timeTotName=Form("TimeTot%06i",ii);
+      TString totName=Form("Tot%06i",ii);
+      TString deltaName=Form("Delta%06i",ii);
+      fileProf->cd();
+      hSlewingProf->Write(profName);
+      htimetot->Write(timeTotName);
+      hToT->Write(totName);
+      hdeltaTime->Write(deltaName);
+    }
+    AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(ii);
+    calChannel->SetSlewPar(par);
+
+    delete hToT;
+    hToT=0x0;
+    delete hSlewingProf;
+    hSlewingProf=0x0;
+    delete htimetot;
+    htimetot=0x0;
+    delete hdeltaTime;
+    hdeltaTime=0x0;
+  }
+
+  if(strstr(optionSave,"save")){
+    fileProf->Close();
+    delete fileProf;
+    fileProf=0x0;
+  }
+  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  return 0;
 }
 
+//-----------------------------------------------------------------------
+TH1F* AliTOFcalib::Profile(Int_t ich)
+{
+  // profiling algo
+
+  Float_t p[MAXCHENTRIESSMALL];
+  Int_t nentries;
+  fTree->SetBranchAddress("nentries",&nentries);
+  fTree->SetBranchAddress("TOFentries",p);
+
+  //Prepare histograms for Slewing Correction
+  const Int_t knbinToT = 100;
+  Int_t nbinTime = 200;
+  Float_t minTime = -5.5; //ns
+  Float_t maxTime = 5.5; //ns
+  Float_t minToT = 0; //ns
+  Float_t maxToT = 5.; //ns
+  Float_t deltaToT = (maxToT-minToT)/knbinToT;
+  Double_t mTime[knbinToT+1],mToT[knbinToT+1],meanTime[knbinToT+1], meanTime2[knbinToT+1],vToT[knbinToT+1], vToT2[knbinToT+1],meanToT[knbinToT+1],meanToT2[knbinToT+1],vTime[knbinToT+1],vTime2[knbinToT+1],xlow[knbinToT+1],sigmaTime[knbinToT+1];
+  Int_t n[knbinToT+1], nentrx[knbinToT+1];
+  Double_t sigmaToT[knbinToT+1];
+  for (Int_t i = 0; i < knbinToT+1 ; i++){
+    mTime[i]=0;
+    mToT[i]=0;
+    n[i]=0;
+    meanTime[i]=0;
+    meanTime2[i]=0;
+    vToT[i]=0;
+    vToT2[i]=0;
+    meanToT[i]=0;
+    meanToT2[i]=0;
+    vTime[i]=0;
+    vTime2[i]=0;
+    xlow[i]=0;
+    sigmaTime[i]=0;
+    sigmaToT[i]=0;
+    n[i]=0;
+    nentrx[i]=0;
+  }
+  TH2F* hSlewing = new TH2F("hSlewing", "hSlewing", knbinToT, minToT, maxToT, nbinTime, minTime, maxTime);
+  Int_t ntracksRun = 0;
+  TH1F *histo = new TH1F("histo", "1D Time vs ToT", knbinToT, minToT, maxToT);
+  for (Int_t irun=0;irun<fNruns;irun++){
+    Int_t i = ich+irun*fNChannels;
+    fTree->GetEntry(i);
+    ntracksRun=nentries/3;
+    for (Int_t j=0;j<ntracksRun;j++){
+      Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
+      Int_t idxexTime = (j* NIDXSMALL)+DELTAIDXTIME; 
+      Int_t idxexExTime = (j* NIDXSMALL)+DELTAIDXPID; 
+      Float_t tot = p[idxexToT];
+      Float_t time = p[idxexTime]-p[idxexExTime];
+      Int_t nx = (Int_t)((tot-minToT)/deltaToT)+1;
+      if ((tot != 0) && ( time!= 0)){
+	vTime[nx]+=time;
+	vTime2[nx]+=time*time;
+	vToT[nx]+=tot;
+	vToT2[nx]+=tot*tot;
+	nentrx[nx]++;
+	hSlewing->Fill(tot,time);
+      }
+    }
+  }
+  Int_t nbinsToT=hSlewing->GetNbinsX();
+  if (nbinsToT != knbinToT) {
+    AliError("Profile :: incompatible numbers of bins");
+    return 0x0;
+  }
+  
+  Int_t usefulBins=0;
+  for (Int_t i=1;i<=nbinsToT;i++){
+    if (nentrx[i]!=0){
+      n[usefulBins]+=nentrx[i];
+      if (n[usefulBins]==0 && i == nbinsToT) {
+	break;
+      }
+      meanTime[usefulBins]+=vTime[i];
+      meanTime2[usefulBins]+=vTime2[i];
+      meanToT[usefulBins]+=vToT[i];
+      meanToT2[usefulBins]+=vToT2[i];
+      if (n[usefulBins]<10 && i!=nbinsToT) continue; 
+      mTime[usefulBins]=meanTime[usefulBins]/n[usefulBins];
+      mToT[usefulBins]=meanToT[usefulBins]/n[usefulBins];
+      sigmaTime[usefulBins]=TMath::Sqrt(1./n[usefulBins]/n[usefulBins]
+			    *(meanTime2[usefulBins]-meanTime[usefulBins]
+			    *meanTime[usefulBins]/n[usefulBins]));
+      if ((1./n[usefulBins]/n[usefulBins]
+	   *(meanToT2[usefulBins]-meanToT[usefulBins]
+	     *meanToT[usefulBins]/n[usefulBins]))< 0) {
+	AliError(" too small radical" );
+	sigmaToT[usefulBins]=0;
+      }
+      else{       
+	sigmaToT[usefulBins]=TMath::Sqrt(1./n[usefulBins]/n[usefulBins]
+			     *(meanToT2[usefulBins]-meanToT[usefulBins]
+			     *meanToT[usefulBins]/n[usefulBins]));
+      }
+      usefulBins++;
+    }
+  }
+  for (Int_t i=0;i<usefulBins;i++){
+    Int_t binN = (Int_t)((mToT[i]-minToT)/deltaToT)+1;
+    histo->Fill(mToT[i],mTime[i]);
+    histo->SetBinError(binN,sigmaTime[i]);
+  } 
+  delete hSlewing;
+  hSlewing=0x0;
+
+  return histo;
+}
+//----------------------------------------------------------------------------
+Int_t AliTOFcalib::FindBins(TH1F* h, Double_t *binsProfile) const{
+
+  // to determine the bins for ToT histo
+
+  Int_t cont = 0;
+  Int_t startBin = 1;
+  Int_t nbin = h->GetNbinsX();
+  Int_t nentries = (Int_t)h->GetEntries();
+  Float_t max = h->GetBinLowEdge(nbin);
+  Int_t nusefulbins=0;
+  Int_t maxcont=0;
+  // setting maxvalue of entries per bin
+  if (nentries <= 60) maxcont = 2;
+  else  if (nentries <= 100) maxcont = 5;
+  else  if (nentries <= 500) maxcont = 10;
+  else  maxcont = 20;
+  for (Int_t j=1;j<=nbin;j++) {
+    cont += (Int_t)h->GetBinContent(j);
+    if (j<nbin){
+      if (cont>=maxcont){
+	nusefulbins++;
+	binsProfile[nusefulbins-1]=h->GetBinLowEdge(startBin);
+	cont=0;
+	startBin=j+1;
+	continue;
+      }
+    }
+    else{
+      if (cont>=maxcont){
+	nusefulbins++;
+	binsProfile[nusefulbins-1]=h->GetBinLowEdge(startBin);
+	binsProfile[nusefulbins]=max;
+      }
+      else {
+	binsProfile[nusefulbins]=h->GetBinLowEdge(startBin);
+      }
+    }
+  }
+  return nusefulbins;
+}
