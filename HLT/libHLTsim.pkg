@@ -1,0 +1,27 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include $(MODDIR)/hlt.conf
+
+LIBHLTSIM_VERSION := 0
+
+MODULE_SRCS= 	AliHLTSimulation.cxx
+
+CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+SRCS:=$(patsubst %,sim/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,sim/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,sim/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,sim/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTSIM_VERSION=$(LIBHLTSIM_VERSION)
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/sim HLT/BASE STEER

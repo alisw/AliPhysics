@@ -23,6 +23,8 @@ MUON_DIR=MUON
 endif
 
 SUBDIRS 		= BASE \
+			  sim \
+			  rec \
 			  $(SAMPLE_DIR) \
 			  $(TPC_DIR) \
 			  $(PHOS_DIR) \
@@ -32,6 +34,9 @@ SUBDIRS 		= BASE \
 
 EXTRA_DIST		= libHLTbase.pkg \
 			  libHLTinterface.pkg \
+			  libHLTsim.pkg \
+			  libHLTrec.pkg \
+			  libAliHLTHOMER.pkg \
 			  libAliHLTUtil.pkg \
 			  libAliHLTSample.pkg \
 			  libAliHLTPHOS.pkg \

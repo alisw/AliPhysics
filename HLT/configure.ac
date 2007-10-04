@@ -708,6 +708,8 @@ AC_CONFIG_FILES([Makefile
 		 BASE/HOMER/Makefile
 		 BASE/util/Makefile
 		 BASE/interface/Makefile
+		 sim/Makefile
+		 rec/Makefile
 		 SampleLib/Makefile
 		 TPCLib/Makefile
 		 TPCLib/mapping2array.cxx

@@ -1,0 +1,27 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+include $(MODDIR)/hlt.conf
+
+LIBHLTREC_VERSION := 0
+
+MODULE_SRCS:= 	AliHLTReconstructor.cxx
+
+CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
+
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+MODULE_DHDR:= 		
+
+SRCS:=$(patsubst %,rec/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,rec/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,rec/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,rec/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS} -DLIBHLTREC_VERSION=$(LIBHLTREC_VERSION)
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
+
+EINCLUDE := HLT/rec HLT/BASE STEER
