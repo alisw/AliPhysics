@@ -23,21 +23,21 @@ class AliTOFGeometry: public TObject{
 
   static  Int_t NStripA()     { return kNStripA;};
   static  Int_t NStripB()     { return kNStripB;};
-  virtual Int_t NStripC() const { return fNStripC;};
+  static  Int_t NStripC()     { return kNStripC;};
   static  Int_t NMaxNstrip()  { return kMaxNstrip;};
   static  Int_t NpadX()       { return kNpadX;};
   static  Int_t NpadZ()       { return kNpadZ;};
   static  Int_t NpadXStrip()  { return kNpadX*kNpadZ;};
   static  Int_t NSectors()    { return kNSectors;};
   static  Int_t NPlates()     { return kNPlates;};
-  virtual Int_t NStripXSector() const { return (kNStripA + 2*kNStripB +
-						2*fNStripC);};
-  virtual Int_t NPadXSector() const { return (kNStripA + 2*kNStripB +
-					2*fNStripC)*kNpadX*kNpadZ;};
+  static Int_t NStripXSector() { return (kNStripA + 2*kNStripB +
+						2*kNStripC);};
+  static Int_t NPadXSector() { return (kNStripA + 2*kNStripB +
+					2*kNStripC)*kNpadX*kNpadZ;};
 
-  virtual Float_t RinTOF() const   { return fxTOF;};
-  virtual Float_t Rmin() const     { return fRmin;};
-  virtual Float_t Rmax() const     { return fRmax;};
+  static Float_t RinTOF()  { return fgkxTOF;};
+  static Float_t Rmin()      { return fgkRmin;};
+  static Float_t Rmax()      { return fgkRmax;};
 
   static  Float_t XPad()     { return fgkXPad;};
   static  Float_t ZPad()     { return fgkZPad;};
@@ -54,10 +54,10 @@ class AliTOFGeometry: public TObject{
   static  Int_t NCh()         { return kNCh;};
   static  Int_t NPadXTRM()    { return kNCh*kNTdc*kNChain;};
 
-  virtual  Float_t ZlenA() const      { return fZlenA;};
-  virtual  Float_t ZlenB() const      { return fZlenB;};
-  virtual  Float_t ZlenC() const      { return fZlenC;};
-  virtual  Float_t MaxhZtof() const   { return fMaxhZtof;};
+  static  Float_t ZlenA()       { return fgkZlenA;};
+  static  Float_t ZlenB()       { return fgkZlenB;};
+  static  Float_t ZlenC()       { return fgkZlenC;};
+  static  Float_t MaxhZtof()    { return fgkMaxhZtof;};
 
   static  Float_t SigmaForTail1() { return fgkSigmaForTail1;};
   static  Float_t SigmaForTail2() { return fgkSigmaForTail2;};
@@ -67,41 +67,48 @@ class AliTOFGeometry: public TObject{
   static Float_t TdcBinWidth() {return fgkTdcBin;};
   static Float_t ToTBinWidth() {return fgkToTBin;};
 
-  virtual void    Init();
-  virtual void    ImportGeometry() {};
+  virtual void    ImportGeometry();
   virtual void    SetHoles(Bool_t holes) {fHoles = holes;};
   virtual Bool_t  GetHoles() const {return fHoles;};
-  virtual Bool_t  IsInsideThePadPar(Int_t */*det*/, Float_t */*pos*/) const {return kFALSE;};
-  virtual Float_t DistanceToPadPar(Int_t */*det*/, Float_t */*pos*/, Float_t *dist3d=0) const {return dist3d[0];};
-  virtual Bool_t  IsInsideThePad(TGeoHMatrix /*mat*/, Float_t */*pos*/, Float_t *dist3d=0) const {dist3d[0]=0;return kFALSE;};
-  virtual void    GetVolumePath(Int_t */*ind*/, Char_t */*path*/ ){};
-  virtual void    GetVolumePath(Int_t /*sector*/, Char_t */*path*/ ){};
-  virtual void    GetVolumePath(Int_t /*sector*/, Int_t /*plate*/, Int_t /*strip*/, Char_t */*path*/ ){};
-  virtual void    GetPos(Int_t */*det*/,Float_t */*pos*/){};
+  virtual Float_t DistanceToPadPar(Int_t *det, Float_t *pos, Float_t *dist3d=0) const;
+  virtual Bool_t  IsInsideThePadPar(Int_t *det, Float_t *pos) const;
+  virtual Bool_t  IsInsideThePad(TGeoHMatrix mat, Float_t *pos, Float_t *dist3d=0) const;
+  virtual void    GetVolumePath(Int_t *ind, Char_t *path );
+  virtual void    GetVolumePath(Int_t sector, Char_t *path );
+  virtual void    GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_t *path );
+  virtual void    GetPos(Int_t *det,Float_t *pos);
   virtual void    GetPosPar(Int_t *det,Float_t *pos) const;
   virtual void    GetDetID(Float_t *pos,Int_t *det) const;
-  virtual Int_t   GetPlate(Float_t */*pos*/) const {return -1;};
-  virtual Int_t   GetStrip(Float_t */*pos*/) const {return -1;};
-  virtual Int_t   GetSector(Float_t */*pos*/) const {return -1;};
-  virtual Int_t   GetPadX(Float_t */*pos*/) const {return -1;};
-  virtual Int_t   GetPadZ(Float_t */*pos*/) const {return -1;};
-  virtual Float_t GetX(Int_t */*det*/) const {return -500.;};
-  virtual Float_t GetY(Int_t */*det*/) const {return -500.;};
-  virtual Float_t GetZ(Int_t */*det*/) const {return -500.;};
+  virtual Int_t   GetPlate(Float_t *pos) const;
+  virtual Int_t   GetStrip(Float_t *pos) const;
+  virtual Int_t   GetSector(Float_t *pos) const;
+  virtual Int_t   GetPadX(Float_t *pos) const;
+  virtual Int_t   GetPadZ(Float_t *pos) const;
+  virtual Float_t GetX(Int_t *det) const ;
+  virtual Float_t GetY(Int_t *det) const ;
+  virtual Float_t GetZ(Int_t *det) const ;
   virtual void    DetToStripRF(Int_t nPadX, Int_t nPadZ,
 			       Float_t &x,  Float_t &z) const;
-  virtual void    DetToSectorRF(Int_t /*vol*/[5], Double_t ** /*coord*/) { };
+  virtual void    DetToSectorRF(Int_t vol[5], Double_t ** coord);
+  virtual Float_t GetPadDx(Float_t *pos);
+  virtual Float_t GetPadDy(Float_t *pos);
+  virtual Float_t GetPadDz(Float_t *pos);
+  virtual void Translation(Float_t *xyz, Float_t translationVector[3]) const;
+  virtual void Rotation(Float_t *xyz, Double_t rotationAngles[6]) const;
+  virtual void InverseRotation(Float_t *xyz, Double_t rotationAngles[6]) const;
 
-  Float_t GetAngles(Int_t iplate, Int_t istrip)  const {return fAngles[iplate][istrip];};
-  Float_t GetHeights(Int_t iplate, Int_t istrip) const {return fHeights[iplate][istrip];};
-  Float_t GetDistances(Int_t iplate, Int_t istrip) const {return fDistances[iplate][istrip];};
+  static Float_t GetAngles(Int_t iplate, Int_t istrip)  {return fgkAngles[iplate][istrip];};
+  static Float_t GetHeights(Int_t iplate, Int_t istrip)  {return fgkHeights[iplate][istrip];};
+  static Float_t GetDistances(Int_t iplate, Int_t istrip)  {return fgkDistances[iplate][istrip];};
 
-  //private:
-  protected:
+  static Int_t GetIndex(Int_t *detId); // Get channel index from det Id (for calibration mainly)
+
+  private:
 
   enum {
     kNStripA    = 15, // number of strips in A type module 
     kNStripB    = 19, // number of strips in B type module 
+    kNStripC    = 19, // number of strips in C type module 
     kNpadX      = 48, // Number of pads along X 
     kNpadZ      = 2,  // Number of pads along Z
     kNSectors   = 18, // Number of Sectors
@@ -123,16 +130,14 @@ class AliTOFGeometry: public TObject{
 
   static const Int_t fgkTimeDiff;      // Min signal separation (ps)
 
-  mutable Int_t fNStripC;       // number of strips in C type module 
+  static const Float_t fgkZlenA;       // length (cm) of the A module
+  static const Float_t fgkZlenB;       // length (cm) of the B module
+  static const Float_t fgkZlenC;       // length (cm) of the C module
+  static const Float_t fgkMaxhZtof;    // Max half z-size of TOF (cm)
 
-  mutable Float_t fZlenA;       // length (cm) of the A module
-  mutable Float_t fZlenB;       // length (cm) of the B module
-  mutable Float_t fZlenC;       // length (cm) of the C module
-  mutable Float_t fMaxhZtof;    // Max half z-size of TOF (cm)
-
-  mutable Float_t fRmin;       // Inner radius of the TOF (cm)
-  mutable Float_t fRmax;       // Outer radius of the TOF (cm)
-  mutable Float_t fxTOF;       // Inner TOF Radius used in Reconstruction (cm)
+  static const Float_t fgkRmin;        // Inner radius of the TOF (cm)
+  static const Float_t fgkRmax;        // Outer radius of the TOF (cm)
+  static const Float_t fgkxTOF;        // Inner TOF Radius used in Reconstruction (cm)
 
   static const Float_t fgkStripLength; // Strip Length (rho X phi direction) (cm)
 
@@ -142,18 +147,19 @@ class AliTOFGeometry: public TObject{
   static const Float_t fgkSigmaForTail1;//Sig1 for simulation of TDC tails 
   static const Float_t fgkSigmaForTail2;//Sig2 for simulation of TDC tails
 
+  static const Float_t fgkPhiSec; //sector Phi width (deg)
+
   Bool_t fHoles; //logical for geometry version (w/wo holes)
 
-  Float_t fAngles[kNPlates][kMaxNstrip];   //Strip Tilt Angles
-  Float_t fHeights[kNPlates][kMaxNstrip];  //Strip heights
-  Float_t fDistances[kNPlates][kMaxNstrip];//Strip distances
+  static const Float_t fgkAngles[kNPlates][kMaxNstrip];   //Strip Tilt Angles
+  static const Float_t fgkHeights[kNPlates][kMaxNstrip];  //Strip heights
+  static const Float_t fgkDistances[kNPlates][kMaxNstrip];//Strip distances
 
-  Float_t fPhiSec; //sector Phi width (deg)
 
   static const Float_t fgkTdcBin;   // time-of-flight bin width [ps]
   static const Float_t fgkToTBin;   // time-over-threshold bin width [ps]
 
-  ClassDef(AliTOFGeometry,4) // TOF Geometry base class
+  ClassDef(AliTOFGeometry,5) // TOF Geometry base class
 };
 
 #endif
