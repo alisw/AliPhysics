@@ -114,7 +114,7 @@ public:
     kTPCin=0x0010,kTPCout=0x0020,kTPCrefit=0x0040,kTPCpid=0x0080,
     kTRDin=0x0100,kTRDout=0x0200,kTRDrefit=0x0400,kTRDpid=0x0800,
     kTOFin=0x1000,kTOFout=0x2000,kTOFrefit=0x4000,kTOFpid=0x8000,
-    kRICHpid=0x20000,
+    kHMPIDpid=0x20000,
     kTRDbackup=0x80000,
     kTRDStop=0x20000000,
     kESDpid=0x40000000,

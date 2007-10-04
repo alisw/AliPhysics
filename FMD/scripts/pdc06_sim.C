@@ -1,6 +1,6 @@
 void sim(Int_t nev=100) {
   AliSimulation simulator;
-  simulator.SetMakeSDigits("TRD TOF PHOS RICH EMCAL MUON FMD ZDC PMD START VZERO");
+  simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD START VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
   simulator.SetWriteRawData("ALL","raw.root",kTRUE);
   simulator.SetDefaultStorage("alien://Folder=/alice/data/2006/LHC06a/CDB");

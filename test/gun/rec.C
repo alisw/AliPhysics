@@ -7,7 +7,6 @@ void rec() {
   //  AliTPCReconstructor::SetRecoParam(AliTPCRecoParam::GetLowFluxParam());
   //  reco.SetInput("raw.root");
   //  reco.SetRunReconstruction("ITS TPC TRD TOF HMPID PHOS EMCAL MUON T0 VZERO FMD PMD ZDC");
-  //reco.SetRunReconstruction("ITS TPC TRD TOF RICH PHOS EMCAL START VZERO FMD PMD ZDC");
  
   AliCDBManager::Instance()->SetCacheFlag(kFALSE);
  

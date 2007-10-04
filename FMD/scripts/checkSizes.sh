@@ -45,7 +45,7 @@ base="  ALIFAST		\
 	PWG3		\
         RALICE		\
 	RAW		\
-	RICH		\
+	HMPID		\
 	SHUTTLE		\
         START		\
 	STEER		\

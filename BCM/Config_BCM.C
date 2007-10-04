@@ -28,7 +28,7 @@
 #include "ITS/AliITSvPPRasymmFMD.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv5T0.h"
-#include "RICH/AliRICHv1.h"
+#include "HMPID/AliHMPIDv1.h"
 #include "ZDC/AliZDCv2.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"

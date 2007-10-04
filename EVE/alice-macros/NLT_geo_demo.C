@@ -135,5 +135,5 @@ void make_geo(Reve::NLTProjector* nlt)
     if(ps) gReve->AddGlobalRenderElement(ps);
   }
   project_nodes( nlt, "/ALIC_1/FMD_holder_1", useBuffPols);  
-  project_nodes( nlt, "/ALIC_1/RICH_holder_1", useBuffPols);
+  project_nodes( nlt, "/ALIC_1/HMPID_holder_1", useBuffPols);
 }
