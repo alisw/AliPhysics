@@ -31,10 +31,9 @@
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
-#include "AliTOFCalOnline.h"
 #include "AliTOFChannelOnline.h"
 #include "AliTOFDataDCS.h"
-#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFPreprocessor.h"
 
 class TF1;
@@ -61,10 +60,11 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
   fData(0),
   fh2(0),
   fCal(0),
-  fTOFGeometry(0),
+  fNChannels(0),
   fStoreRefData(kTRUE)
 {
   // constructor
+
 }
 
 //_____________________________________________________________________________
@@ -76,10 +76,9 @@ AliTOFPreprocessor::~AliTOFPreprocessor()
   fData = 0;
   delete fh2;
   fh2 = 0;
+  fCal->Clear();
   delete fCal;
   fCal = 0;
-  delete fTOFGeometry;
-  fTOFGeometry = 0;
 }
 
 //______________________________________________________________________________
@@ -96,9 +95,13 @@ void AliTOFPreprocessor::Initialize(Int_t run, UInt_t startTime,
 
 	fData = new AliTOFDataDCS(fRun, fStartTime, fEndTime);
 	fh2 = 0x0;
-	fTOFGeometry = new AliTOFGeometryV5();
-	fCal = new AliTOFCalOnline(fTOFGeometry);
-	fCal->CreateArray();
+	fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
+	fCal = new TObjArray(fNChannels);
+	fCal->SetOwner();
+	for (Int_t ich = 0; ich<fNChannels; ich ++){
+	  AliTOFChannelOnline * calChOnline = new AliTOFChannelOnline();
+	  fCal->AddAt(calChOnline,ich);
+	}
 }
 
 //_____________________________________________________________________________
@@ -226,8 +229,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	    static const Int_t kSize=fh2->GetNbinsX();
 	    static const Int_t kNBins=fh2->GetNbinsY();
 	    static const Double_t kXBinmin=fh2->GetYaxis()->GetBinLowEdge(1);
-	    Int_t npads = fCal->NPads();
-	    if (kSize != npads){
+	    if (kSize != fNChannels){
 	      Log(" number of bins along x different from number of pads, found only a subset of the histograms, TOF exiting from Shuttle");
 	      delete daqFile;
               return 7; //return error code for histograms not existing/junky
@@ -266,9 +268,9 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	      sumw2=sumw2/nent; //<x^2>
 	      Double_t rmsmean= 0;
 	      rmsmean = TMath::Sqrt((sumw2-mean*mean)/nent);
-	      if (ich<npads) {
-		AliTOFChannelOnline * ch = fCal->GetChannel(ich);
-		ch->SetDelay(mean);
+	      if (ich<fNChannels) {
+		AliTOFChannelOnline * ch = (AliTOFChannelOnline *)fCal->At(ich);
+		ch->SetDelay((Double_t)mean*AliTOFGeometry::TdcBinWidth()*1.E-3);  // delay in ns
 	      }
 	    delete h1;
 	    h1=0x0;

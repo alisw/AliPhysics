@@ -31,6 +31,7 @@
 #include "TH1F.h"
 #include "TTree.h"
 #include "TRandom.h"
+#include "TObjArray.h"
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -38,13 +39,13 @@
 #include "AliRunLoader.h"
 #include "AliRun.h"
 
-#include "AliTOFCal.h"
 #include "AliTOFcalib.h"
-#include "AliTOFChannel.h"
+#include "AliTOFChannelOnline.h"
+#include "AliTOFChannelOffline.h"
 #include "AliTOFDigitizer.h"
 #include "AliTOFdigit.h"
 #include "AliTOFHitMap.h"
-#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
 
@@ -60,7 +61,6 @@ ClassImp(AliTOFDigitizer)
 //___________________________________________
   AliTOFDigitizer::AliTOFDigitizer()  :
     AliDigitizer(),
-    fGeom(0x0),
     fDigits(0x0),
     fSDigitsArray(0x0),
     fhitMap(0x0)
@@ -71,7 +71,6 @@ ClassImp(AliTOFDigitizer)
 //___________________________________________
 AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager): 
   AliDigitizer(manager), 
-  fGeom(0x0),
   fDigits(0x0),
   fSDigitsArray(0x0),
   fhitMap(0x0)
@@ -82,7 +81,6 @@ AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager):
 //------------------------------------------------------------------------
 AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   AliDigitizer(source),
-  fGeom(0x0), 
   fDigits(0),
   fSDigitsArray(0),
   fhitMap(0)
@@ -91,7 +89,6 @@ AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   this->fDigits=source.fDigits;
   this->fSDigitsArray=source.fSDigitsArray;
   this->fhitMap=source.fhitMap;
-  this->fGeom=source.fGeom; 
 
 }
 
@@ -102,7 +99,6 @@ AliTOFDigitizer::AliTOFDigitizer(const AliTOFDigitizer &source):
   this->fDigits=source.fDigits;
   this->fSDigitsArray=source.fSDigitsArray;
   this->fhitMap=source.fhitMap;
-  this->fGeom=source.fGeom; 
   return *this;
 
 }
@@ -146,21 +142,25 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
      return;
    }
    
+  /*
   outrl->CdGAFile();
   TFile *in=(TFile*)gFile;
   TDirectory *savedir=gDirectory;
 
+   
+  //when fGeom was needed
+
   if (!in->IsOpen()) {
     AliWarning("Geometry file is not open default  TOF geometry will be used");
-    fGeom = new AliTOFGeometryV5();
+    fGeom = new AliTOFGeometry();
   }
   else {
     in->cd();
     fGeom = (AliTOFGeometry*)in->Get("TOFgeometry");
   }
-
+  
   savedir->cd();
-
+  */
   AliLoader* outgime = outrl->GetLoader("TOFLoader");
   if (outgime == 0x0)
    {
@@ -181,7 +181,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   fSDigitsArray=new TClonesArray("AliTOFSDigit",1000);
   
   // create hit map (to be created in Init())
-  fhitMap = new AliTOFHitMap(fSDigitsArray, fGeom);
+  fhitMap = new AliTOFHitMap(fSDigitsArray);
   
   // Loop over files to digitize
 
@@ -284,8 +284,8 @@ void AliTOFDigitizer::CreateDigits()
   } // end loop on sdigits - end digitizing all collected sdigits
 
   //Insert Decalibration 
-
-  AliTOFcalib * calib = new AliTOFcalib(fGeom);
+  AliInfo("in digitizer, create digits");
+  AliTOFcalib * calib = new AliTOFcalib();
   InitDecalibration(calib);
   DecalibrateTOFSignal(calib);
   delete calib;
@@ -406,16 +406,20 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 
 //_____________________________________________________________________________
 void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
-  calib->ReadSimParFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  calib->CreateSimCalArrays();
+  calib->ReadSimParOnlineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  calib->ReadSimParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
 }
 //---------------------------------------------------------------------
 void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 
   // Read Calibration parameters from the CDB
 
-  AliTOFCal * cal= calib->GetTOFCalSimArray();
+  TObjArray * calOnline= calib->GetTOFSimCalArrayOnline();
+  TObjArray * calOffline= calib->GetTOFSimCalArrayOffline();
 
-  AliDebug(2,Form("Size of AliTOFCal = %i",cal->NPads()));
+  AliDebug(2,Form("Size of array for Online Calibration = %i",calOnline->GetEntries()));
+  AliDebug(2,Form("Size of array for Offline Calibration = %i",calOffline->GetEntries()));
 
   // Initialize Quantities to Simulate ToT Spectra
 
@@ -454,7 +458,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
   Bool_t isToTSimulated=kFALSE;
   Bool_t misCalibPars=kFALSE;
   if(hToT->GetEntries()>0)isToTSimulated=kTRUE;  
-  Int_t ndigits = fDigits->GetEntriesFast();    
+  Int_t ndigits = fDigits->GetEntriesFast();
   for (Int_t i=0;i<ndigits;i++){
     AliTOFdigit * dig = (AliTOFdigit*)fDigits->At(i);
     Int_t detId[5];
@@ -469,16 +473,17 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       //A realistic ToT Spectrum was found in input, 
       //decalibrated TOF Digits likely to be simulated....
  
-      Int_t index = calib->GetIndex(detId); // The channel index    
-      AliTOFChannel *calChannel = cal->GetChannel(index); //retrieve the info
-      Float_t timedelay = calChannel->GetDelay(); //The global channel delay
-      Float_t par[6];  // time slewing parameters
+      Int_t index = AliTOFGeometry::GetIndex(detId); // The channel index    
+      AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline *)calOnline->At(index); //retrieve the info for time delay
+      AliTOFChannelOffline *calChannelOffline = (AliTOFChannelOffline *)calOffline->At(index); //retrieve the info for time slewing 
+      Double_t timedelay = (Double_t)calChannelOnline->GetDelay(); //The global channel delay, ns
+      Double_t par[6];  // time slewing parameters
   
       //check whether we actually ask for miscalibration
 
       if(timedelay!=0)misCalibPars=kTRUE;
       for (Int_t j = 0; j<6; j++){
-	par[j]=calChannel->GetSlewPar(j);
+	par[j]=(Double_t)calChannelOffline->GetSlewPar(j);
 	if(par[j]!=0)misCalibPars=kTRUE;
       }
       AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
@@ -502,16 +507,17 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       tToT= (Double_t) trix; // to apply slewing we start from ns..
       // transform TOF signal in ns
       AliDebug(2,Form(" The Initial Time (counts): %i: ",dig->GetTdc()));
-      AliDebug(2,Form(" Time before miscalibration (ps) %e: ",dig->GetTdc()*AliTOFGeometry::TdcBinWidth()));
+      AliDebug(2,Form(" Time before miscalibration (ps) %e: ",dig->GetTdc()*(Double_t)AliTOFGeometry::TdcBinWidth()));
       // add slewing effect
       timeCorr=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
       AliDebug(2,Form(" The Time slewing (ns): %f: ",timeCorr));
+      AliDebug(2,Form(" The Time delay (ns): %f: ",timedelay));
       // add global time shift
       timeCorr = timeCorr + timedelay;
-      AliDebug(2,Form(" The Time Slewing+ delay (ns): %f: ",timeCorr));
+      AliDebug(2,Form(" The Time Slewing + delay (ns): %f: ",timeCorr));
       //convert to ps
       timeCorr*=1E3;
-      Double_t timeMis = (Double_t)(dig->GetTdc())*AliTOFGeometry::TdcBinWidth();
+      Double_t timeMis = (Double_t)(dig->GetTdc())*(Double_t)AliTOFGeometry::TdcBinWidth();
       timeMis = timeMis+timeCorr;
       AliDebug(2,Form(" The Miscalibrated time (ps): %e: ",timeMis));
 
@@ -525,7 +531,7 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       tToT*=1E3; //back to ps  
       Int_t tot=(Int_t)(tToT/AliTOFGeometry::ToTBinWidth());//(factor 1E3 as input ToT is in ns)
       dig->SetToT(tot); 
-      AliDebug(2,Form(" Final Time and ToT (counts): %i: ",dig->GetTdc(),dig->GetToT()));
+      AliDebug(2,Form(" Final Time and ToT (counts): %i: , %i:",dig->GetTdc(),dig->GetToT()));
       if(tdcCorr<0){
 	AliWarning (Form(" The bad Slewed Time(TDC counts)= %i ", tdcCorr)); 
 	AliWarning(Form(" The bad ToT (TDC counts)= %i ", tot)); 

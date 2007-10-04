@@ -23,7 +23,6 @@ class AliRunDigitizer;
 class AliTOFHitMap;
 class AliTOFSDigit;
 class AliTOFcalib;
-class AliTOFGeometry;
 
 class AliTOFDigitizer : public AliDigitizer {
  public:
@@ -49,13 +48,12 @@ class AliTOFDigitizer : public AliDigitizer {
 						     // due to the low
 						     // noise expected
 						     // level
-  AliTOFGeometry *fGeom;       // Pointer to the TOF geometry
   TClonesArray *fDigits;       //! array with digits
   TClonesArray *fSDigitsArray; //! List of summable digits; used as a
 			       //container for all sdigits to be
 			       //merged
   AliTOFHitMap *fhitMap ;      //! hit map used to perform the merging
   
-  ClassDef(AliTOFDigitizer,0)  // TOF/Merging/Digitization
+  ClassDef(AliTOFDigitizer,1)  // TOF/Merging/Digitization
 };    
 #endif

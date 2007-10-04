@@ -21,8 +21,6 @@
 
 #include "AliHitMap.h"
 
-class AliTOFGeometry;
-
 class AliTOFDigitMap : public TObject
 {
  public:
@@ -66,8 +64,6 @@ class AliTOFDigitMap : public TObject
     Int_t fMaxIndex;                      // maximum index in hit map
     Int_t **fDigitMap;                    // ! [fMaxIndex][kMaxDigitsPerPad]
 
-    AliTOFGeometry *fTOFGeometry;         // Pointer to the TOF geometry
-
-    ClassDef(AliTOFDigitMap,1) // Implements DigitMap as a 1-dim array
+    ClassDef(AliTOFDigitMap,2) // Implements DigitMap as a 1-dim array
 };
 #endif	

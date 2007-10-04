@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.12  2007/02/20 15:57:00  decaro
+Raw data update: to read the TOF raw data defined in UNPACKED mode
+
 */
 
 ////////////////////////////////////////////////////////////////////////
@@ -52,8 +55,7 @@ AliTOFDigitMap::AliTOFDigitMap():
   fNpx(-1),
   fNpz(-1),
   fMaxIndex(-1),
-  fDigitMap(0x0),
-  fTOFGeometry(new AliTOFGeometry())
+  fDigitMap(0x0)
 {
 //
 // Default ctor
@@ -61,7 +63,7 @@ AliTOFDigitMap::AliTOFDigitMap():
 
   fNSector = AliTOFGeometry::NSectors();
   fNplate = AliTOFGeometry::NPlates();
-  fNstrip = fTOFGeometry->NStripC();//fTOFGeometry->NMaxNstrip();
+  fNstrip = AliTOFGeometry::NStripC();
   fNpx  = AliTOFGeometry::NpadX();
   fNpz  = AliTOFGeometry::NpadZ();
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
@@ -80,8 +82,7 @@ AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & /*digitMap*/):
   fNpx(-1),
   fNpz(-1),
   fMaxIndex(-1),
-  fDigitMap(0x0),
-  fTOFGeometry(new AliTOFGeometry())
+  fDigitMap(0x0)
 {
 //
 // Dummy copy constructor
@@ -101,7 +102,6 @@ AliTOFDigitMap::~AliTOFDigitMap()
     for (Int_t i=0; i<fMaxIndex; i++)  delete[] fDigitMap[i];
   }
 
-  fTOFGeometry = 0;
 
 }
 

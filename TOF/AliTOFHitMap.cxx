@@ -50,8 +50,7 @@ AliTOFHitMap::AliTOFHitMap():
   fNpz(-1),
   fSDigits(0x0),
   fMaxIndex(-1),
-  fHitMap(0x0),
-  fTOFGeometry(0x0)
+  fHitMap(0x0)
 {
 //
 // Default ctor
@@ -59,7 +58,7 @@ AliTOFHitMap::AliTOFHitMap():
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFHitMap::AliTOFHitMap(TClonesArray *dig, AliTOFGeometry *tofGeom):
+AliTOFHitMap::AliTOFHitMap(TClonesArray *dig):
   fNSector(-1),
   fNplate(-1),
   fNstrip(-1),
@@ -67,8 +66,7 @@ AliTOFHitMap::AliTOFHitMap(TClonesArray *dig, AliTOFGeometry *tofGeom):
   fNpz(-1),
   fSDigits(dig),
   fMaxIndex(-1),
-  fHitMap(0x0),
-  fTOFGeometry(tofGeom)
+  fHitMap(0x0)
 {
 //
 // ctor
@@ -79,7 +77,7 @@ AliTOFHitMap::AliTOFHitMap(TClonesArray *dig, AliTOFGeometry *tofGeom):
 
   fNSector = AliTOFGeometry::NSectors();
   fNplate = AliTOFGeometry::NPlates();
-  fNstrip = fTOFGeometry->NStripC();//fTOFGeometry->NMaxNstrip();
+  fNstrip = AliTOFGeometry::NStripC();//fTOFGeometry->NMaxNstrip();
   fNpx  = AliTOFGeometry::NpadX();
   fNpz  = AliTOFGeometry::NpadZ();
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
@@ -97,8 +95,7 @@ AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & /*hitMap*/)
   fNpz(-1),
   fSDigits(0x0),
   fMaxIndex(-1),
-  fHitMap(0x0),
-  fTOFGeometry(0x0)
+  fHitMap(0x0)
 {
 //
 // Dummy copy constructor
@@ -114,8 +111,6 @@ AliTOFHitMap::~AliTOFHitMap()
 // Destructor
 //
   delete[] fHitMap;
-
-  fTOFGeometry = 0x0;
 
 }
 

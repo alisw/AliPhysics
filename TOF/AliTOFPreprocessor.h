@@ -14,9 +14,6 @@
 
 class AliTOFDataDCS;
 class TObjArray;
-class AliTOFCalOnline;
-class AliTOFGeometryV5;
-class AliTOFGeometry;
 class TH2S;
 
 class AliTOFPreprocessor : public AliPreprocessor
@@ -38,12 +35,13 @@ class AliTOFPreprocessor : public AliPreprocessor
     static const Int_t fgkBinRangeAve;   // number of bins where to 
                                          // calculate the mean
     static const Double_t fgkThrPar;     // parameter used to trigger the 
-                                         //calculation of the delay
-    AliTOFDataDCS *fData;    // CDB class that stores the data
-    TH2S *fh2;       // TH2S from DAQ for histograms for delays  
-    AliTOFCalOnline *fCal;         // TOF Calibration object
-    AliTOFGeometry *fTOFGeometry;  // TOF Geometry version
-    Bool_t fStoreRefData;  // Flag to decide storage of Ref Data
-    ClassDef(AliTOFPreprocessor, 1);
+                                         // calculation of the delay
+    AliTOFDataDCS *fData;                // CDB class that stores the data
+    TH2S *fh2;                           // TH2S from DAQ for histograms 
+                                         // for delays  
+    TObjArray *fCal;                     // TOF Calibration object
+    Int_t fNChannels;                    // number of TOF channels
+    Bool_t fStoreRefData;                // Flag to decide storage of Ref Data
+    ClassDef(AliTOFPreprocessor, 2);
 };
 #endif
