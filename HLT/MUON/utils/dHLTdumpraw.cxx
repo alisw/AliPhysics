@@ -141,7 +141,7 @@ int CheckField(
 
 template <typename BlockType>
 int CheckCommonHeader(
-		BlockType& block, const char* buffer, unsigned long bufferSize,
+		BlockType& block, const char* /*buffer*/, unsigned long bufferSize,
 		bool continueParse
 	)
 {
