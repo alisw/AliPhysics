@@ -86,19 +86,17 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TList* list = GetFileSources(kDAQ);
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
-  while ((obj = iter->Next()))
-  {
-	TObjString* objStr = dynamic_cast<TObjString*> (obj);
-	if (objStr)
-	{
-		Log(Form("Found source %s", objStr->String().Data()));
-		TList* list2 = GetFileIDs(kDAQ, objStr->String());
-		list2->Print();
-		delete list2;
-	}
-   }
-   delete iter;
-   delete list;  
+  while ((obj = iter->Next())) {
+    TObjString* objStr = dynamic_cast<TObjString*> (obj);
+    if (objStr) {
+      Log(Form("Found source %s", objStr->String().Data()));
+      TList* list2 = GetFileIDs(kDAQ, objStr->String());
+      list2->Print();
+      delete list2;
+    }
+  }
+  delete iter;
+  delete list;  
   
   //===========//
   //DCS data points
@@ -108,6 +106,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("LHCState not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========LHCState==========="));
   AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,iStartTime,iStopTime);
   TString sLHCState = dcs1->ProcessDCS(3);  
   if (sLHCState) {
@@ -121,6 +120,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("LHCPeriod not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========LHCPeriod==========="));
   AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod,iStartTime,iStopTime);
   TString sLHCPeriod = dcs2->ProcessDCS(3);  
   if (sLHCPeriod) {
@@ -134,6 +134,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("LHCLuminosity not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========LHCLuminosity==========="));
   AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,iStartTime,iStopTime);
   TString sMeanLHCLuminosity = dcs3->ProcessDCS(2);  
   if (sMeanLHCLuminosity) {
@@ -147,6 +148,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("BeamIntensity not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========BeamIntensity==========="));
   AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,iStartTime,iStopTime);
   TString sMeanBeamIntensity = dcs4->ProcessDCS(2);  
   if (sMeanBeamIntensity) {
@@ -160,6 +162,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("L3Current not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========L3Current==========="));
   AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,iStartTime,iStopTime);
   TString sMeanL3Current = dcs5->ProcessDCS(2);  
   if (sMeanL3Current) {
@@ -173,6 +176,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("L3Polarity not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========L3Polarity==========="));
   AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,iStartTime,iStopTime);
   TString sL3Polarity = dcs6->ProcessDCS(4);  
   if (sL3Polarity) {
@@ -186,6 +190,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("DipoleCurrent not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========DipoleCurrent==========="));
   AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,iStartTime,iStopTime);
   TString sMeanDipoleCurrent = dcs7->ProcessDCS(2);  
   if (sMeanDipoleCurrent) {
@@ -199,6 +204,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("DipolePolarity not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========DipolePolarity==========="));
   AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,iStartTime,iStopTime);
   TString sDipolePolarity = dcs8->ProcessDCS(4);  
   if (sDipolePolarity) {
@@ -212,6 +218,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("CavernTemperature not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========CavernTemperature==========="));
   AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,iStartTime,iStopTime);
   TString sMeanCavernTemperature = dcs9->ProcessDCS(2);  
   if (sMeanCavernTemperature) {
@@ -225,6 +232,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("CavernPressure not found!!!"));
     return 1;
   }
+  AliInfo(Form("==========CavernPressure==========="));
   AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,iStartTime,iStopTime);
   TString sMeanCavernPressure = dcs10->ProcessDCS(2);  
   if (sMeanCavernPressure) {
