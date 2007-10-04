@@ -80,7 +80,7 @@ void AliHLTReconstructor::Init()
     }
     delete pTokens;
   }
-  
+
   if (!libs.IsNull() &&
       (!fpSystem->CheckStatus(AliHLTSystem::kLibrariesLoaded)) &&
       (fpSystem->LoadComponentLibraries(libs.Data())<0)) {
@@ -142,4 +142,35 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
       fpSystem->FillESD(-1, NULL, esd);
     }
   }
+}
+
+void AliHLTReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
+{
+  // reconstruct simulated data
+
+  // all reconstruction has been moved to FillESD
+  //AliReconstructor::Reconstruct(digitsTree,clustersTree);
+}
+
+void AliHLTReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const
+{
+  // reconstruct simulated data and fill ESD
+
+  // later this is the place to extract the simulated HLT data
+  // for now it's only an user failure condition as he tries to run HLT reconstruction
+  // on simulated data 
+  TString option = GetOption();
+  if (!option.IsNull()) {
+    AliWarning(Form("HLT reconstruction of simulated data takes place in AliSimulation\n"
+		    "        /***  run macro *****************************************/\n"
+		    "        AliSimulation sim;\n"
+		    "        sim.SetRunHLT(\"%s\");\n"
+		    "        sim.SetRunGeneration(kFALSE);\n"
+		    "        sim.SetMakeDigits(\"\");\n"
+		    "        sim.SetMakeSDigits(\"\");\n"
+		    "        sim.SetMakeDigitsFromHits(\"\");\n"
+		    "        sim.Run();\n"
+		    "        /*********************************************************/", option.Data()));
+  }
+  AliReconstructor::FillESD(digitsTree,clustersTree,esd);
 }

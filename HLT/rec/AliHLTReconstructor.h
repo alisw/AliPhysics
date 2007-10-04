@@ -52,11 +52,12 @@ public:
   /**
    * This Reconstructor function is not applicable for the AliHLTReconstructor
    * as it gets a detector specific digits tree. But HLT processes all detectors.
-   * Furthermore it's purely simulated data.
+   * Furthermore it's purely simulated data. <br>
+   * The function forwards to the default bahavior of AliReconstructor but gives
+   * a warning if there were options set, i.e. the user runs customized
+   * reconstruction.
    */
-  void Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
-    AliReconstructor::Reconstruct(digitsTree,clustersTree);
-  }
+  void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
 
   /**
    * Reconstruction from RAW data.
@@ -68,11 +69,12 @@ public:
   /**
    * This function is purely for simulated data and not applicable for HLT.
    * HLT reconstruction on simulated data is processed at the end of
-   * simulation.
+   * simulation. <br>
+   * The function forwards to the default bahavior of AliReconstructor but gives
+   * a warning if there were options set, i.e. the user runs customized
+   * reconstruction.
    */
-  void FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const {
-    AliReconstructor::FillESD(digitsTree,clustersTree,esd);
-  }
+  void FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const;
 
   /**
    * Fill the ESD from RAW data.
