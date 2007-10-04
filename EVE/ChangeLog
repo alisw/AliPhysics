@@ -1,3 +1,9 @@
+2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/acorde_hits.C:
+	* alice-macros/geom_acorde.C:
+	New files from Eleazar: geometry and hits for ACORDE.
+
 2007-09-24  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/MUON_display.C:
