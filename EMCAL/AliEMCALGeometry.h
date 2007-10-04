@@ -52,7 +52,6 @@ public:
 
   void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
   
-  // Have to call GetTransformationForSM() before calculation global charachteristics 
   void GetGlobal(const Double_t *loc, Double_t *glob, int ind) const;
   void GetGlobal(const TVector3 &vloc, TVector3 &vglob, int ind) const;
   void GetGlobal(Int_t absId, Double_t glob[3]) const;
@@ -144,7 +143,6 @@ public:
   TList  *GetShishKebabTrd1Modules() const {return fShishKebabTrd1Modules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta) const;
 
-  void     GetTransformationForSM();
   Float_t *GetSuperModulesPars() {return fParSM;}
 
   // May 31, 2006; ALICE numbering scheme: 
