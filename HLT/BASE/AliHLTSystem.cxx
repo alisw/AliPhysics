@@ -41,6 +41,17 @@ using namespace std;
 #include <TROOT.h>
 #include <TInterpreter.h>
 
+/** HLT default component libraries */
+const char* kHLTDefaultLibs[]= {
+  "libAliHLTUtil.so", 
+  "libAliHLTTPC.so", 
+  //  "libAliHLTSample.so",
+  "libAliHLTPHOS.so",
+  //"libAliHLTMUON.so",
+  "libAliHLTTRD.so",
+  NULL
+};
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTSystem)
 
@@ -363,6 +374,8 @@ int AliHLTSystem::Run(Int_t iNofEvents)
 	    , StopwatchInput.RealTime(),StopwatchInput.CpuTime()
 	    , StopwatchOutput.RealTime(),StopwatchOutput.CpuTime()
 	    , StopwatchDA.RealTime(),StopwatchDA.CpuTime());
+  } else  if (iResult==-ENOENT) {
+    iResult=0; // do not propagate the error
   }
   ClearStatusFlags(kRunning);
   return iResult;
@@ -632,6 +645,7 @@ int AliHLTSystem::ScanOptions(const char* options)
   // see header file for class documentation
   int iResult=0;
   if (options) {
+    TString libs("");
     TString alloptions(options);
     TObjArray* pTokens=alloptions.Tokenize(" ");
     if (pTokens) {
@@ -665,11 +679,29 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.Contains("localrec=")) {
 	  TString param=token.ReplaceAll("localrec=", "");
 	  fLocalRec=param.ReplaceAll(",", " ");
+	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
+	  libs+=token;
+	  libs+=" ";
 	} else {
 	  HLTWarning("unknown option \'%s\'", token.Data());
 	}
       }
       delete pTokens;
+    }
+
+    if (iResult>=0) {
+      if (libs.IsNull()) {
+	const char** deflib=kHLTDefaultLibs;
+	while (*deflib) {
+	  libs+=*deflib++;
+	  libs+=" ";
+	}
+      }
+      if ((!CheckStatus(AliHLTSystem::kLibrariesLoaded)) &&
+	  (LoadComponentLibraries(libs.Data())<0)) {
+	HLTError("error while loading HLT libraries");
+	iResult=-EFAULT;
+      }
     }
   }
   return iResult;

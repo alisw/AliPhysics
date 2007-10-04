@@ -8,6 +8,8 @@
 #include "AliReconstructor.h"
 
 class AliHLTSystem;
+class AliRawReader;
+class AliESDEvent;
 
 /**
  * @class AliHLTReconstructor
@@ -41,37 +43,43 @@ class AliHLTSystem;
 class AliHLTReconstructor: public AliReconstructor {
 public:
   AliHLTReconstructor();
-  AliHLTReconstructor(Bool_t doTracker, Bool_t doHough);
   /** destructor */
   virtual ~AliHLTReconstructor();
 
   /** init the reconstructor */
   void Init();
 
-  /** create a tracker */
-  // Deprecated and must be removed.
-  //  AliTracker*  CreateTracker() const;
-
-  virtual void         Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
+  /**
+   * This Reconstructor function is not applicable for the AliHLTReconstructor
+   * as it gets a detector specific digits tree. But HLT processes all detectors.
+   * Furthermore it's purely simulated data.
+   */
+  void Reconstruct(TTree* digitsTree, TTree* clustersTree) const{
     AliReconstructor::Reconstruct(digitsTree,clustersTree);
   }
-  virtual void         Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const {
-    AliReconstructor::Reconstruct(rawReader,clustersTree);
-  }
 
-  virtual void         FillESD(TTree* digitsTree, TTree* clustersTree, 
-			       AliESDEvent* esd) const {
+  /**
+   * Reconstruction from RAW data.
+   * The rawReader holds data for all detectors and this version of Reconstruct
+   * is thus applicable for the HLT. The clustersTree is just ignored.
+   */
+  void Reconstruct(AliRawReader* rawReader, TTree* clustersTree) const;
+
+  /**
+   * This function is purely for simulated data and not applicable for HLT.
+   * HLT reconstruction on simulated data is processed at the end of
+   * simulation.
+   */
+  void FillESD(TTree* digitsTree, TTree* clustersTree, AliESDEvent* esd) const {
     AliReconstructor::FillESD(digitsTree,clustersTree,esd);
   }
-  virtual void         FillESD(AliRawReader* rawReader, TTree* clustersTree, 
-			       AliESDEvent* esd) const {
-    AliReconstructor::FillESD(rawReader,clustersTree,esd);
-  }
-  void SetDoBench(Bool_t b){fDoBench=b;}
-  void SetDoCleanup(Bool_t b){fDoCleanUp=b;}
-  
-  // Deprecated and must be removed.
-//  virtual void         FillDHLTRecPoint(AliRawReader* rawReader, Int_t nofEvent, Int_t dcCut) const;
+
+  /**
+   * Fill the ESD from RAW data.
+   * This is the main entry for HLT reconstruction of RAW data. It performs both
+   * the analysis by the defined chains and the filling of the ESD.
+   */
+  void FillESD(AliRawReader* rawReader, TTree* clustersTree, AliESDEvent* esd) const;
 
 private:
   /** copy constructor prohibited */
@@ -79,19 +87,9 @@ private:
   /** assignment operator prohibited */
   AliHLTReconstructor& operator=(const AliHLTReconstructor& src);
 
-/*   void ReconstructWithConformalMapping(AliRunLoader* runLoader,Int_t iEvent) const; */
-/*   void ReconstructWithHoughTransform(AliRunLoader* runLoader,Int_t iEvent) const; */
-/*   void FillESDforConformalMapping(AliESDEvent* esd,Int_t iEvent) const; */
-/*   void FillESDforHoughTransform(AliESDEvent* esd,Int_t iEvent) const; */
-
-  Bool_t fDoHough;   //do the hough transform
-  Bool_t fDoTracker; //do the standard conformal tracker
-  Bool_t fDoBench;   //store the benchmark results
-  Bool_t fDoCleanUp; //delete tmp tracking files
-
   AliHLTSystem* fpSystem; //! HLT steering object
 
-  ClassDef(AliHLTReconstructor, 2)   // class for the HLT reconstruction
+  ClassDef(AliHLTReconstructor, 3)   // class for the HLT reconstruction
 };
 
 typedef AliHLTReconstructor AliL3Reconstructor; // for backward compatibility
