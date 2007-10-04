@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2007/06/22 11:37:47  cvetan
+Fixes in order to write correct raw-data on big-endian platforms (Marco)
+
 Revision 1.18  2007/05/21 13:26:19  decaro
 Correction on matching_window control and bug fixing (R.Preghenella)
 
@@ -96,30 +99,12 @@ AliTOFDDLRawData::AliTOFDDLRawData():
   fPackedAcquisition(kTRUE),
   fFakeOrphaneProduction(kFALSE),
   fMatchingWindow(8192),
-  fTOFgeometry(0),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
   fTOFrawStream(new AliTOFRawStream())
 {
   //Default constructor
 }
-
-//----------------------------------------------------------------------------
-AliTOFDDLRawData::AliTOFDDLRawData(AliTOFGeometry *tofGeom):
-  fVerbose(0),
-  fIndex(-1),
-  fPackedAcquisition(kTRUE),
-  fFakeOrphaneProduction(kFALSE),
-  fMatchingWindow(8192),
-  fTOFgeometry(tofGeom),
-  fTOFdigitMap(new AliTOFDigitMap()),
-  fTOFdigitArray(0x0),
-  fTOFrawStream(new AliTOFRawStream())
-{
-  //Constructor
-
-}
-
 //----------------------------------------------------------------------------
 AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   TObject(source),
@@ -128,7 +113,6 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   fPackedAcquisition(kTRUE),
   fFakeOrphaneProduction(kFALSE),
   fMatchingWindow(8192),
-  fTOFgeometry(0),
   fTOFdigitMap(new AliTOFDigitMap()),
   fTOFdigitArray(0x0),
   fTOFrawStream(new AliTOFRawStream())
@@ -139,7 +123,6 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   this->fPackedAcquisition=source.fPackedAcquisition;
   this->fFakeOrphaneProduction=source.fFakeOrphaneProduction;
   this->fMatchingWindow=source.fMatchingWindow;
-  this->fTOFgeometry=source.fTOFgeometry;
   this->fTOFdigitMap=source.fTOFdigitMap;
   this->fTOFdigitArray=source.fTOFdigitArray;
   this->fTOFrawStream=source.fTOFrawStream;
@@ -154,7 +137,6 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   this->fPackedAcquisition=source.fPackedAcquisition;
   this->fFakeOrphaneProduction=source.fFakeOrphaneProduction;
   this->fMatchingWindow=source.fMatchingWindow;
-  this->fTOFgeometry=source.fTOFgeometry;
   this->fTOFdigitMap=source.fTOFdigitMap;
   this->fTOFdigitArray=source.fTOFdigitArray;
   this->fTOFrawStream=source.fTOFrawStream;
@@ -878,8 +860,8 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
   // TRM TDC digit
   //
 
-  const Double_t kOneMoreFilledCell = 1./(fTOFgeometry->NPadXSector()*fTOFgeometry->NSectors());
-  Double_t percentFilledCells = Double_t(fTOFdigitMap->GetFilledCellNumber())/(fTOFgeometry->NPadXSector()*fTOFgeometry->NSectors());
+  const Double_t kOneMoreFilledCell = 1./(AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors());
+  Double_t percentFilledCells = Double_t(fTOFdigitMap->GetFilledCellNumber())/(AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors());
 
   if (nDDL<0 || nDDL>71) {
     AliWarning(Form(" DDL number is out of the right range [0;71] (nDDL = %3i", nDDL));

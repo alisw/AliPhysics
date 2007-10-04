@@ -16,8 +16,6 @@
 #include "TArrayF.h"
 #include "TArrayI.h"
 
-class AliTOFGeometry;
-
 class AliTOFSDigit : public TObject {
 
   //overloading of the streamer << operator
@@ -33,7 +31,7 @@ class AliTOFSDigit : public TObject {
   AliTOFSDigit& operator=(const AliTOFSDigit & digit) ;
   virtual ~AliTOFSDigit();
   void            GetLocation(Int_t* Loc) const;
-  Int_t           GetTotPad(AliTOFGeometry *tofGeom) const;
+  Int_t           GetTotPad() const;
 
   void Update(Float_t tdcbin, Int_t tdc, Int_t adc, Int_t track);
   void Update(AliTOFSDigit* sdig);

@@ -16,8 +16,6 @@
 
 #include "AliDigit.h"
 
-class AliTOFGeometry;
-
 class AliTOFdigit : public AliDigit {
 
   //overloading of the streamer << operator
@@ -32,7 +30,7 @@ friend ostream& operator << ( ostream& , const AliTOFdigit&) ;
   AliTOFdigit(const AliTOFdigit & digit) ;
   virtual ~AliTOFdigit(){}
   void            GetLocation(Int_t* Loc) const;
-  Int_t           GetTotPad(AliTOFGeometry *tofGeom) const;
+  Int_t           GetTotPad() const;
   void            AddTrack(Int_t track);
   // getters for AliTOFdigit object 
   Int_t   GetTdc()    const     {return fTdc;}
@@ -72,7 +70,7 @@ protected:
 		    // 'charge' measurement
   Int_t   fToT;     // simulated ToT
 
-  ClassDef(AliTOFdigit,4)  // Digit for Time Of Flight
+  ClassDef(AliTOFdigit,5)  // Digit for Time Of Flight
 };
 
 #endif /* ALITOFDIGIT_H */

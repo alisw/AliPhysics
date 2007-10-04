@@ -17,7 +17,6 @@ TOF DA for online calibration
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
 #include <AliTOFGeometry.h>
-#include <AliTOFGeometryV5.h>
 #include <AliT0RawReader.h>
 #include <AliDAQ.h>
 #include <AliTOFHitData.h>
@@ -39,10 +38,9 @@ TOF DA for online calibration
 
 int main(int argc, char **argv) {
   
-  AliTOFGeometry * geomV5 = new AliTOFGeometryV5();
   AliTOFGeometry * geom = new AliTOFGeometry();
 
-  static const Int_t size = geomV5->NPadXSector()*geomV5->NSectors();
+  static const Int_t size = AliTOFgeometry::NPadXSector()*AliTOFGeometry::NSectors();
   static const Int_t nbins = 500;
   static const Int_t binmin = -20;
   const Float_t c = 2.99792458E10; //speed of light
@@ -196,9 +194,9 @@ int main(int argc, char **argv) {
 	    Volume[3] = Volume[4];
 	    Volume[4] = dummy;
 	    Int_t tof = (Int_t)((Double_t)HitData->GetTime()*1E3/AliTOFGeometry::TdcBinWidth());
-	    Int_t index = rawStreamTOF->GetIndex(Volume);
+	    Int_t index = geom->GetIndex(Volume);
 	    Float_t pos[3];
-	    geomV5->GetPosPar(Volume,pos);
+	    geom->GetPosPar(Volume,pos);
 	    Float_t texp=TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2])/c*1E9; //expected time in ns
 	    Float_t texpBin=(texp*1E3-32)/AliTOFGeometry::TdcBinWidth(); //expected time in number of TDC bin
 	    Int_t deltabin = tof-TMath::Nint(texpBin);   //to be used with real data; rounding expected time to Int_t
@@ -236,8 +234,6 @@ int main(int argc, char **argv) {
     }
   }
   
-  delete geomV5;
-  geomV5 = 0x0;
   delete geom;
   geom = 0x0;
 

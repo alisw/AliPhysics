@@ -341,7 +341,6 @@ LTM DATA FORMAT
 
 class TClonesArray;
 class AliRawReader;
-class AliTOFGeometry;
 class AliTOFrawData;
 
 class AliTOFRawStream: public TObject {
@@ -366,7 +365,6 @@ class AliTOFRawStream: public TObject {
   Int_t GetStrip()  const {return fStrip;};
   Int_t GetPadZ()   const {return fPadZ;};
   Int_t GetPadX()   const {return fPadX;};
-  Int_t GetIndex(Int_t *detId); // Get channel index for Online Calibration 
   
   Int_t GetTofBin() const {return fTime;};
   Int_t GetToTbin() const {return fToT;};
@@ -459,8 +457,6 @@ class AliTOFRawStream: public TObject {
   Int_t         fPadX;       // pad number along the strip [0;47]
   Int_t         fPadZ;       // pad-row number [0;1]
 
-  AliTOFGeometry *fTOFGeometry; // pointer to the TOF geometry
-
   Int_t fPackedDigits;       // counter for packed digits
 
   Int_t fWordType;           // word type
@@ -477,7 +473,7 @@ class AliTOFRawStream: public TObject {
   AliTOFHitDataBuffer *fDataBuffer[72]; // pointer to AliTOFHitDataBuffer
   AliTOFHitDataBuffer *fPackedDataBuffer[72]; // pointer to AliTOFHitDataBuffer
 
-  ClassDef(AliTOFRawStream, 2)  // class for reading TOF raw digits
+  ClassDef(AliTOFRawStream, 3)  // class for reading TOF raw digits
 };
 
 #endif

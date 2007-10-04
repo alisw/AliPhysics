@@ -35,7 +35,7 @@
 #include "AliTOFRecoParam.h"
 #include "AliTOFcalib.h"
 #include "AliTOFcluster.h"
-#include "AliTOFGeometryV5.h"
+#include "AliTOFGeometry.h"
 #include "AliTOFtrackerMI.h"
 #include "AliTOFtrack.h"
 
@@ -68,13 +68,13 @@ AliTOFtrackerMI::AliTOFtrackerMI():
   //AliTOFtrackerMI main Ctor
 
    fRecoParam=new AliTOFRecoParam();
-   fGeom=new AliTOFGeometryV5();
+   fGeom=new AliTOFGeometry();
    Double_t parPID[2];   
    parPID[0]=fRecoParam->GetTimeResolution();
    parPID[1]=fRecoParam->GetTimeNSigma();
    fPid=new AliTOFpidESD(parPID);
-   fDy=fGeom->XPad(); 
-   fDz=fGeom->ZPad(); 
+   fDy=AliTOFGeometry::XPad(); 
+   fDz=AliTOFGeometry::ZPad(); 
    fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
 }
 //_____________________________________________________________________________
@@ -109,7 +109,7 @@ AliTOFtrackerMI::AliTOFtrackerMI(const AliTOFtrackerMI &t):
   fnunmatch=t.fnunmatch;
   fnmatch=t.fnmatch;
   fRecoParam = t.fRecoParam;
-  fGeom = t.fGeom;
+  fGeom=t.fGeom;
   fPid = t.fPid;
   fR=t.fR; 
   fTOFHeigth=t.fTOFHeigth;  
@@ -270,7 +270,7 @@ void AliTOFtrackerMI::CollectESD() {
     Double_t x = track->GetX(); //New
 
     if (((t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= fGeom->RinTOF()) ){
+	 ( x >= AliTOFGeometry::RinTOF()) ){
       track->SetSeedIndex(i);
       t->UpdateTrackParams(track,AliESDtrack::kTOFout);    
       new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
@@ -330,7 +330,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   
   Int_t nSteps=(Int_t)(fTOFHeigth/0.1);
 
-  AliTOFcalib *calib = new AliTOFcalib(fGeom);
+  AliTOFcalib *calib = new AliTOFcalib();
 
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
@@ -378,20 +378,20 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //propagat track to the middle of TOF
     //
     Float_t xs = 378.2;  // should be defined in the TOF geometry
-    Double_t ymax=xs*TMath::Tan(0.5*fGeom->GetAlpha());  
+    Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());  
     Bool_t skip=kFALSE;
     Double_t ysect=trackTOFin->GetYat(xs,skip);
     if (skip){
       xs = 372.;
-      ymax=xs*TMath::Tan(0.5*fGeom->GetAlpha());
+      ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
       ysect=trackTOFin->GetYat(xs,skip);
     }
     if (ysect > ymax) {
-      if (!trackTOFin->Rotate(fGeom->GetAlpha())) {
+      if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
 	continue;
       }
     } else if (ysect <-ymax) {
-      if (!trackTOFin->Rotate(-fGeom->GetAlpha())) {
+      if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
 	continue;
       }
     }    
@@ -470,7 +470,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       length[nfound] = trackTOFin->GetIntegratedLength();
       length[nfound]+=distances[4];
       mintimedist[nfound]=1000; 
-      Double_t tof2=fGeom->TdcBinWidth()*cluster->GetTDC()+kTofOffset; // in ps
+      Double_t tof2=AliTOFGeometry::TdcBinWidth()*cluster->GetTDC()+kTofOffset; // in ps
       // Float_t tgamma = TMath::Sqrt(cluster->GetR()*cluster->GetR()+cluster->GetZ()*cluster->GetZ())/0.03;  //time for "primary" gamma
       //if (trackTOFin->GetPt()<0.7 && TMath::Abs(tgamma-tof2)<350) continue;  // gamma conversion candidate - TEMPORARY
       for(Int_t j=0;j<=5;j++){
@@ -555,7 +555,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     tlab[1]=cgold->GetLabel(1);
     tlab[2]=cgold->GetLabel(2);
     //    Double_t tof2=25.*cgold->GetTDC()-350; // in ps
-    Double_t tof2=fGeom->TdcBinWidth()*cgold->GetTDC()+kTofOffset; // in ps
+    Double_t tof2=AliTOFGeometry::TdcBinWidth()*cgold->GetTDC()+kTofOffset; // in ps
     Float_t tgamma = TMath::Sqrt(cgold->GetR()*cgold->GetR()+cgold->GetZ()*cgold->GetZ())/0.03;
     Float_t info[11]={dist3D[igold][0],dist3D[igold][1],dist3D[igold][2],dist3D[igold][3],dist3D[igold][4],mintimedist[igold],
 		      -1,tgamma, qualityGold,cgold->GetQuality(),0};
@@ -574,7 +574,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     ind[2]=cgold->GetDetInd(2);
     ind[3]=cgold->GetDetInd(3);
     ind[4]=cgold->GetDetInd(4);
-    Int_t calindex = calib->GetIndex(ind);
+    Int_t calindex = AliTOFGeometry::GetIndex(ind);
     t->SetTOFCalChannel(calindex);
 
     t->SetTOFInfo(info);
@@ -768,7 +768,7 @@ Float_t AliTOFtrackerMI::GetLinearDistances(AliTOFtrack * track, AliTOFcluster *
   cind[2]= cluster->GetDetInd(2);
   cind[3]= cluster->GetDetInd(3);
   cind[4]= cluster->GetDetInd(4);
-  Float_t tiltangle  = fGeom->GetAngles(cluster->GetDetInd(1),cluster->GetDetInd(2))/kRaddeg;  //tiltangle  
+  Float_t tiltangle  = AliTOFGeometry::GetAngles(cluster->GetDetInd(1),cluster->GetDetInd(2))/kRaddeg;  //tiltangle  
 
   Float_t cpos[3];  //cluster position
   Float_t cpos0[3];  //cluster position

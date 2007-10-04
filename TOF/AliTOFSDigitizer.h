@@ -21,9 +21,6 @@ class TString;
 
 class AliLoader;
 class AliRunLoader;
-
-class AliTOFGeometry;
-
 class AliTOFSDigitizer: public TTask {
 
 public:
@@ -129,8 +126,6 @@ private:
   AliRunLoader* fRunLoader; //! Run Loader
   AliLoader* fTOFLoader;    //! Loader
 
-  AliTOFGeometry* fTOFGeometry;  // Pointer to the TOF geometry
-
   Int_t fSelectedSector;    // sector number for sdigitization
   Int_t fSelectedPlate ;    // plate  number for sdigitization
 
@@ -177,7 +172,7 @@ private:
   Float_t fAdcMean;     // mean value for the ADC spectrum [bins]
   Float_t fAdcRms;      // rms value for the ADC spectrum [bins]
 
-  ClassDef(AliTOFSDigitizer,2)  // creates TOF SDigits
+  ClassDef(AliTOFSDigitizer,3)  // creates TOF SDigits
 
 };
 

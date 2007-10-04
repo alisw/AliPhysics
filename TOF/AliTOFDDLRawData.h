@@ -17,7 +17,6 @@ class TBranch;
 class TClonesArray;
 
 class AliTOFDigitMap;
-class AliTOFGeometry;
 class AliTOFRawStream;
 
 class AliTOFDDLRawData:public TObject {
@@ -25,7 +24,6 @@ class AliTOFDDLRawData:public TObject {
  public:
 
   AliTOFDDLRawData();                               // default constructor
-  AliTOFDDLRawData(AliTOFGeometry *tofGeom);        // constructor
   virtual ~AliTOFDDLRawData();                              // destructor
   AliTOFDDLRawData(const AliTOFDDLRawData &source); // copy constructor
   AliTOFDDLRawData& operator=(const AliTOFDDLRawData &source); // ass. op.
@@ -74,15 +72,13 @@ class AliTOFDDLRawData:public TObject {
 				  //search time-of-flight measurements
 				  //for the current event
 
-  AliTOFGeometry *fTOFgeometry;   //Pointer to the TOF geometry
-
   AliTOFDigitMap *fTOFdigitMap;   //Pointer to the channel-TOF map
 
   TClonesArray *fTOFdigitArray;   //Pointer to the TOF digits
 
   AliTOFRawStream *fTOFrawStream; //Pointer to the AliTOFRawStream class
 
-  ClassDef(AliTOFDDLRawData,1)
+  ClassDef(AliTOFDDLRawData,2)
 
 };
     

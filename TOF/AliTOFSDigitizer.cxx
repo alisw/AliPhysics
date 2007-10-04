@@ -61,7 +61,6 @@ AliTOFSDigitizer::AliTOFSDigitizer():
   fHeadersFile(""),
   fRunLoader(0x0),
   fTOFLoader(0x0),
-  fTOFGeometry(new AliTOFGeometry()),
   fSelectedSector(-1), 
   fSelectedPlate(-1),
   fTimeResolution(0),
@@ -107,7 +106,6 @@ AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
   fHeadersFile(""),
   fRunLoader(0x0),
   fTOFLoader(0x0),
-  fTOFGeometry(0x0),
   fSelectedSector(-1), 
   fSelectedPlate(-1),
   fTimeResolution(0),
@@ -142,7 +140,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
   fAdcRms(0)
 {
   // copy constructor
-  this->fTOFGeometry=source.fTOFGeometry;
+  //this->fTOFGeometry=source.fTOFGeometry;
 
 }
 
@@ -150,7 +148,6 @@ AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
 AliTOFSDigitizer& AliTOFSDigitizer::operator=(const AliTOFSDigitizer &source)
 {
   // ass. op.
-  this->fTOFGeometry=source.fTOFGeometry;
   return *this;
 
 }
@@ -164,7 +161,6 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
   fHeadersFile(HeaderFile), // input filename (with hits)
   fRunLoader(0x0),
   fTOFLoader(0x0),
-  fTOFGeometry(0x0),
   fSelectedSector(-1), // by default we sdigitize all sectors
   fSelectedPlate(-1),  // by default we sdigitize all plates in all sectors
   fTimeResolution(0),
@@ -219,10 +215,13 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
       return;
     }
 
+  /*
   fRunLoader->CdGAFile();
   TDirectory *savedir=gDirectory;
   TFile *in=(TFile*)gFile;
 
+   
+// when fTOFGeometry was needed
   if (!in->IsOpen()) {
     AliWarning("Geometry file is not open default TOF geometry will be used");
     fTOFGeometry = new AliTOFGeometry();
@@ -231,9 +230,9 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
     in->cd();
     fTOFGeometry = (AliTOFGeometry*)in->Get("TOFgeometry");
   }
-
+  
   savedir->cd();
-
+  */
   if (fRunLoader->TreeE() == 0x0) fRunLoader->LoadHeader();
   
   if (evNumber1>=0) fEvent1 = evNumber1;
@@ -267,8 +266,6 @@ AliTOFSDigitizer::~AliTOFSDigitizer()
 {
   // dtor
   fTOFLoader->CleanSDigitizer();
-
-  delete fTOFGeometry;
 
 }
 
@@ -401,7 +398,8 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
     TClonesArray *tofHitArray = tof->Hits();
 
     // create hit map
-    AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits(), fTOFGeometry);
+    //    AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits(), fTOFGeometry);
+    AliTOFHitMap *hitMap = new AliTOFHitMap(tof->SDigits());
 
     TBranch * tofHitsBranch = hitTree->GetBranch("TOF");
 

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2007/05/18 13:07:53  decaro
+Error messages stored in the global raw-reader error log (Cvetan, Chiara)
+
 Revision 1.18  2007/05/08 11:53:29  arcelli
 Improved class flexibility for further use (R.Preghenella)
 
@@ -93,7 +96,6 @@ Revision 0.01  2005/07/22 A. De Caro
 #include "AliRawReader.h"
 
 #include "AliTOFGeometry.h"
-#include "AliTOFGeometryV5.h"
 #include "AliTOFrawData.h"
 #include "AliTOFRawMap.h"
 #include "AliTOFRawStream.h"
@@ -123,7 +125,6 @@ AliTOFRawStream::AliTOFRawStream(AliRawReader* rawReader):
   fStrip(-1),
   fPadX(-1),
   fPadZ(-1),
-  fTOFGeometry(new AliTOFGeometryV5()),
   fPackedDigits(0),
   fWordType(-1),
   fSlotID(-1),
@@ -173,7 +174,6 @@ AliTOFRawStream::AliTOFRawStream():
   fStrip(-1),
   fPadX(-1),
   fPadZ(-1),
-  fTOFGeometry(new AliTOFGeometryV5()),
   fPackedDigits(0),
   fWordType(-1),
   fSlotID(-1),
@@ -220,7 +220,6 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fStrip(-1),
   fPadX(-1),
   fPadZ(-1),
-  fTOFGeometry(new AliTOFGeometryV5()),
   fPackedDigits(0),
   fWordType(-1),
   fSlotID(-1),
@@ -258,8 +257,6 @@ AliTOFRawStream::AliTOFRawStream(const AliTOFRawStream& stream) :
   fStrip = stream.fStrip;
   fPadX = stream.fPadX;
   fPadZ = stream.fPadZ;
-
-  fTOFGeometry = stream.fTOFGeometry;
 
   fPackedDigits = stream.fPackedDigits;
 
@@ -311,8 +308,6 @@ AliTOFRawStream& AliTOFRawStream::operator = (const AliTOFRawStream& stream)
   fPadX = stream.fPadX;
   fPadZ = stream.fPadZ;
 
-  fTOFGeometry = stream.fTOFGeometry;
-
   fPackedDigits = stream.fPackedDigits;
 
   fWordType = stream.fWordType;
@@ -344,8 +339,6 @@ AliTOFRawStream::~AliTOFRawStream()
 
   fPackedDigits = 0;
 
-  delete fTOFGeometry;
- 
   for (Int_t i=0;i<72;i++){ 
     delete fDataBuffer[i];
     delete fPackedDataBuffer[i];
@@ -1129,63 +1122,6 @@ void AliTOFRawStream::EquipmentId2VolumeId(Int_t nDDL, Int_t nTRM, Int_t iChain,
   volume[3] = iPadX;
   volume[4] = iPadZ;
 
-}
-//_____________________________________________________________________________
-
-Int_t AliTOFRawStream::GetIndex(Int_t *detId)
-{
-  //Retrieve calibration channel index
-  const Int_t kSectors = fTOFGeometry->NSectors();
-  const Int_t kPlates = fTOFGeometry->NPlates();
-  const Int_t kStripA = fTOFGeometry->NStripA();
-  const Int_t kStripB = fTOFGeometry->NStripB();
-  const Int_t kStripC = fTOFGeometry->NStripC();
-  const Int_t kPadX = fTOFGeometry->NpadX();
-  const Int_t kPadZ = fTOFGeometry->NpadZ();
-
-
-  Int_t isector = detId[0];
-  if (isector >= kSectors){
-    fRawReader->AddMajorErrorLog(kSectorError, Form("sector = %i",isector));
-    AliWarning(Form("Wrong sector number in TOF (%d) !",isector));
-  }
-  Int_t iplate = detId[1];
-  if (iplate >= kPlates){
-    fRawReader->AddMajorErrorLog(kPlateError, Form("plate = %i",iplate));
-    AliWarning(Form("Wrong plate number in TOF (%d) !",iplate));
-  }
-  Int_t istrip = detId[2];
-  Int_t ipadz = detId[3];
-  Int_t ipadx = detId[4];
-  Int_t stripOffset = 0;
-  switch (iplate) {
-  case 0:
-    stripOffset = 0;
-    break;
-  case 1:
-    stripOffset = kStripC;
-    break;
-  case 2:
-    stripOffset = kStripC+kStripB;
-    break;
-  case 3:
-    stripOffset = kStripC+kStripB+kStripA;
-    break;
-  case 4:
-    stripOffset = kStripC+kStripB+kStripA+kStripB;
-    break;
-  default:
-    fRawReader->AddMajorErrorLog(kPlateError, Form("plate = %i",iplate));
-    AliWarning(Form("Wrong plate number in TOF (%d) !",iplate));
-    break;
-  };
-
-  Int_t idet = ((2*(kStripC+kStripB)+kStripA)*kPadZ*kPadX)*isector +
-               (stripOffset*kPadZ*kPadX)+
-               (kPadZ*kPadX)*istrip+
-	       (kPadX)*ipadz+
-	        ipadx;
-  return idet;
 }
 //-----------------------------------------------------------------------------
 Bool_t AliTOFRawStream::DecodeDDL(Int_t nDDLMin, Int_t nDDLMax, Int_t verbose = 0) {

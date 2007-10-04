@@ -157,7 +157,7 @@ void AliTOFdigit::GetLocation(Int_t *Loc) const
 }
 
 //______________________________________________________________________________
-Int_t AliTOFdigit::GetTotPad(AliTOFGeometry *tofGeom) const
+Int_t AliTOFdigit::GetTotPad() const
 {
 //
 // Get the "total" index of the pad inside a Sector
@@ -171,16 +171,16 @@ Int_t AliTOFdigit::GetTotPad(AliTOFGeometry *tofGeom) const
     //before = 0;
     break;
   case 1:
-    before = tofGeom->NStripC();
+    before = AliTOFGeometry::NStripC();
     break;
   case 2:
-    before = tofGeom->NStripC() +   AliTOFGeometry::NStripB();
+    before = AliTOFGeometry::NStripC() +   AliTOFGeometry::NStripB();
     break;
   case 3:
-    before = tofGeom->NStripC() +   AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
+    before = AliTOFGeometry::NStripC() +   AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
     break;
   case 4:
-    before = tofGeom->NStripC() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
+    before = AliTOFGeometry::NStripC() + 2*AliTOFGeometry::NStripB() + AliTOFGeometry::NStripA();
     break;
   }
   
