@@ -65,7 +65,6 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
    // set the number of DDL reg & local that are PRESENT in the rawdata file
    // it's NOT the number to be read.
    // default wise set to 2, 8, 16 respectively.
-   //    rawStream->SetMaxDDL(xx);
    rawStream->SetMaxReg(2);
    //    rawStream->SetMaxLoc(xx);
 

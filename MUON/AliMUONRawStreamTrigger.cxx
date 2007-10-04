@@ -40,6 +40,9 @@
 ClassImp(AliMUONRawStreamTrigger)
 /// \endcond
 
+const Int_t AliMUONRawStreamTrigger::fMaxDDL = 2;
+
+//___________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
   : TObject(),
     fRawReader(0x0),
@@ -47,7 +50,6 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
     fDDL(0),
     fSubEntries(0),
     fNextDDL(kTRUE),
-    fMaxDDL(2),
     fEnableErrorLogger(kFALSE)
 {
   ///
@@ -66,7 +68,6 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
     fDDL(0),
     fSubEntries(0),
     fNextDDL(kTRUE),
-    fMaxDDL(2),
     fEnableErrorLogger(kFALSE)
 {
   ///
@@ -123,17 +124,24 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
 
   // loop over the two ddl's
+
+  while ( fDDL < fMaxDDL ) {
+    fRawReader->Reset();
+    fRawReader->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
+    if (fRawReader->ReadHeader()) break;
+    AliDebug(3,Form("Skipping DDL %d which does not seem to be there",fDDL));
+    ++fDDL;
+  }
+
   if (fDDL >= fMaxDDL) {
     fDDL = 0;
     return kFALSE;
   }
 
-  fRawReader->Reset();
-  fRawReader->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
-
-  if (!fRawReader->ReadHeader()) return kFALSE;
+  AliDebug(3, Form("DDL Number %d\n", fDDL ));
 
   Int_t totalDataWord = fRawReader->GetDataSize(); // in bytes
+
   UInt_t *buffer = new UInt_t[totalDataWord/4];
 
   // check not necessary yet, but for future developments
@@ -148,15 +156,6 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
 
   return kTRUE;
-}
-
-
-//______________________________________________________
-void AliMUONRawStreamTrigger::SetMaxDDL(Int_t ddl) 
-{
-  /// set DDL number
-  if (ddl > 2) ddl = 2;
-  fMaxDDL = ddl;
 }
 
 //______________________________________________________
