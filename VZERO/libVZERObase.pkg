@@ -2,7 +2,7 @@
 # $Id$
 
 SRCS= \
-AliVZEROLoader.cxx AliVZEROdigit.cxx AliVZEROCalibData.cxx
+AliVZEROLoader.cxx AliVZEROdigit.cxx AliVZEROCalibData.cxx AliVZEROPreprocessor.cxx AliVZERODataDCS.cxx 
 
 HDRS:= $(SRCS:.cxx=.h)
 
