@@ -20,6 +20,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Int_t   GetNGenerated()        const {return fNGenerated;}
     Int_t   GetMuonMultiplicity()  const {return fMuonMultiplicity;}
     Float_t GetMuonPtCut()         const {return fMuonPtCut;}
+    Float_t GetMuonPCut()          const {return fMuonPCut;}    
     Float_t GetMuonThetaMin()      const {return fMuonThetaMinCut;}
     Float_t GetMuonThetaMax()      const {return fMuonThetaMaxCut;}	    
     Float_t GetMuonOriginCut()     const {return fMuonOriginCut;}	    
@@ -28,6 +29,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     
     void    SetMuonMultiplicity(Int_t MuonMultiplicity) { fMuonMultiplicity = MuonMultiplicity;}
     void    SetMuonPtCut(Float_t PtCut) { fMuonPtCut = PtCut;}
+    void    SetMuonPCut(Float_t PCut) { fMuonPCut = PCut;}    
     void    SetMuonOriginCut(Float_t originCut) { fMuonOriginCut = originCut;}
     void    SetMuonThetaRange(Float_t ThetaMin, Float_t ThetaMax){
 	fMuonThetaMinCut=ThetaMin;
@@ -47,6 +49,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t fTotalRate;// Total rate of the full cocktail processes
     Int_t   fMuonMultiplicity; // Muon multiplicity for the primordial trigger
     Float_t fMuonPtCut;// Transverse momentum cut for muons
+    Float_t fMuonPCut;// Momentum cut for muons    
     Float_t fMuonThetaMinCut;// Minimum theta cut for muons
     Float_t fMuonThetaMaxCut; // Maximum theta cut for muons
     Float_t fMuonOriginCut; //use only muons whose "part->Vz()" value is larger than fMuonOrigin
@@ -54,7 +57,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Int_t   fNGenerated;// Number of generated cocktails
     
 
-    ClassDef(AliGenMUONCocktailpp,1)  //  cocktail for physics in the Alice
+    ClassDef(AliGenMUONCocktailpp,2)  //  cocktail for physics in the Alice
 };
 
 #endif
