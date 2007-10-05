@@ -300,10 +300,16 @@ bool AliHLTMUONTriggerReconstructor::Run(
 			continue;
 			
 		      hitset[iChamber] = true;
-		      trigRecord[nofTrigRec].fHit[iChamber].fX = fLookUpTableData[lutAddress+1].fRealX;
-		      trigRecord[nofTrigRec].fHit[iChamber].fY = fLookUpTableData[lutAddress+1].fRealY;
-		      trigRecord[nofTrigRec].fHit[iChamber].fZ = fLookUpTableData[lutAddress+1].fRealZ;
-
+		      if (iPlane == 0)
+		      {      
+		        trigRecord[nofTrigRec].fHit[iChamber].fX = fLookUpTableData[lutAddress+1].fRealX;
+		      }
+		      else
+		      {
+		        trigRecord[nofTrigRec].fHit[iChamber].fY = fLookUpTableData[lutAddress+1].fRealY;
+		        trigRecord[nofTrigRec].fHit[iChamber].fZ = fLookUpTableData[lutAddress+1].fRealZ;
+		      }	
+			
 		      HLTDebug("\t Hit Found fo ich : %d, iPlane : %d, detelem %d, id : %d, at (%lf, %lf, %lf) cm",
 			       iChamber,fLookUpTableData[lutAddress+1].fPlane,detElemId,fLookUpTableData[lutAddress+1].fIdManuChannel,
 			       fLookUpTableData[lutAddress+1].fRealX,
