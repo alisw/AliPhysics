@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.5  2007/10/05 10:38:10  zampolli
+Oversight fixed
+
 Revision 1.4  2007/10/04 15:36:44  zampolli
 Updates to new TOF offline calibration schema
 
@@ -437,7 +440,7 @@ void AliTOFCalibTask::Exec(Option_t * opt)
     nselected++;
     Int_t ich = Int_t(t->GetTOFCalChannel()); 
     fhch->Fill(ich);
-    ich=3;
+    //    ich=3; //only for debug purpose
     AliDebug(2,Form(" ESD in channel %i, filling array %i",t->GetTOFCalChannel(),ich));
     Float_t tot = t->GetTOFsignalToT();
     Float_t time = t->GetTOFsignalRaw();
