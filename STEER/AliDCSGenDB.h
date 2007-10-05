@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////
 // Class to generate temperature sensor data base entries.
 //
@@ -31,6 +32,7 @@ public:
 // Constructors
 
   AliDCSGenDB();
+  AliDCSGenDB(const char* defaultStorage, const char* specificStorage);
   ~AliDCSGenDB();
 
 // Functionality
@@ -39,10 +41,13 @@ public:
                             const TTimeStamp& startTime,
 			    const TTimeStamp& endTime,
 			    Int_t firstRun, Int_t lastRun, const char *calibDir);
-  void            MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, const char *confDir);
+  void            MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, 
+                             const char *confDir);
   AliCDBMetaData* CreateMetaObject(const char *objectClassName);
   void            StoreObject(const char* cdbPath, TObject* object, AliCDBMetaData* metaData);
-  void            Init(Int_t run, const char *configDir, const char *specificDir);
+  void            Init(Int_t run, const char *configDir, 
+                       const char *specificDir, 
+		       const char *sensorClass="AliDCSSensorArray");
   static TClonesArray *  ReadList(const char* fname, const char *title="dcsConf");
   static TTree        *  ReadListTree(const char* fname, const char *title="dcsConf");
 

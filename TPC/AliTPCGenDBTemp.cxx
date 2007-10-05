@@ -9,6 +9,7 @@
 
 
 #include "AliTPCGenDBTemp.h"
+#include "AliLog.h"
 
 ClassImp(AliTPCGenDBTemp)
 
@@ -24,15 +25,21 @@ AliTPCGenDBTemp::AliTPCGenDBTemp():
 
 //______________________________________________________________________________________________
 
-AliTPCGenDBTemp::AliTPCGenDBTemp(const AliTPCGenDBTemp& org):
-  AliDCSGenDB(org)
+AliTPCGenDBTemp::AliTPCGenDBTemp(const char *defaultStorage, const char *specificStorage) :
+   AliDCSGenDB(defaultStorage,specificStorage)
+{
+}
+
+//______________________________________________________________________________________________
+
+AliTPCGenDBTemp::AliTPCGenDBTemp(const AliTPCGenDBTemp& org) : AliDCSGenDB(org)
 {
 
 //
 //  Copy constructor
 //
+ AliError("copy constructor not implemented");
 
- ((AliTPCGenDBTemp &) org).Copy(*this);
 }
 
 //______________________________________________________________________________________________
@@ -48,9 +55,7 @@ AliTPCGenDBTemp& AliTPCGenDBTemp::operator= (const AliTPCGenDBTemp& org )
  //
  // assignment operator
  //
- if (&org == this) return *this;
-
- new (this) AliTPCGenDBTemp(org);
+ AliError("assignment operator not implemented");
  return *this;
 }
 

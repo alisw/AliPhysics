@@ -25,6 +25,8 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalibPedestal.h"
+#include "AliTPCCalibPulser.h"
+#include "AliTPCCalibCE.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TEnv.h"
@@ -34,6 +36,7 @@
 const Int_t kValCutTemp = 100;               // discard temperatures > 100 degrees
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
 const TString kPedestalRunType = "PEDESTAL_RUN";  // pedestal run identifier
+const TString kPulserRunType = "PULSER_RUN";   // pulser run identifier
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
@@ -163,17 +166,44 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   //    TList* fileSourcesHLT = GetFile(AliShuttleInterface::kHLT, "calib");
   //    const char* fileNameHLT = GetFile(AliShuttleInterface::kHLT, "calib", "LDC1");
 
+  // pedestal entries
 
   if(runType == kPedestalRunType) {
     Int_t pedestalSource = AliShuttleInterface::kDAQ;
     TString source = fConfEnv->GetValue("Pedestal","DAQ");
     source.ToUpper();
     if ( source == "HLT" ) pedestalSource = AliShuttleInterface::kHLT;
+    if (!GetHLTStatus()) pedestalSource = AliShuttleInterface::kDAQ;
     UInt_t pedestalResult = ExtractPedestals(pedestalSource);
     result += pedestalResult;
 
   }
 
+  // pulser trigger processing
+
+  if( runType == kPulserRunType ) {
+    Int_t pulserSource = AliShuttleInterface::kDAQ;
+    TString source = fConfEnv->GetValue("Pulser","DAQ");
+    source.ToUpper();
+    if ( source == "HLT" ) pulserSource = AliShuttleInterface::kHLT;
+    if (!GetHLTStatus()) pulserSource = AliShuttleInterface::kDAQ;
+    UInt_t pulserResult = ExtractPulser(pulserSource);
+    result += pulserResult;
+
+  }
+
+  // Central Electrode processing
+
+  if( false ) {    // CE input file not generated yet
+    Int_t ceSource = AliShuttleInterface::kDAQ;
+    TString source = fConfEnv->GetValue("CE","DAQ");
+    source.ToUpper();
+    if ( source == "HLT" ) ceSource = AliShuttleInterface::kHLT;
+    if (!GetHLTStatus()) ceSource = AliShuttleInterface::kDAQ;
+    UInt_t ceResult = ExtractCE(ceSource);
+    result += ceResult;
+
+  }
 
   return result;
 }
@@ -273,7 +303,8 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 
  Int_t nSectors = fROC->GetNSectors();
  TList* list = GetFileSources(sourceFXS,"pedestals");
- if (list) {
+ 
+ if (list && list->GetEntries()>0) {
 
 //  loop through all files from LDCs
 
@@ -284,6 +315,11 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
         TString fileName = GetFile(sourceFXS, "pedestals",
 	                                 fileNameEntry->GetString().Data());
         TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening pedestal file.");
+	  result =2;
+	  break;
+	}
         AliTPCCalibPedestal *calPed;
 	f->GetObject("AliTPCCalibPedestal",calPed);
 
@@ -311,6 +347,9 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
     storeOK = Store("Calib", "PadNoise", calPadRMS, &metaData, 0, kTRUE);
     if ( !storeOK ) ++result;
 
+  } else {
+    Log ("Error: no entries!");
+    result = 1;
   }
 
   return result;
@@ -319,3 +358,182 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 //______________________________________________________________________________________________
 
 
+UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
+{
+ //
+ //  Read pulser calibration file from file exchage server
+ //  Keep original entry from OCDB in case no new pulser calibration is available
+ //
+ TObjArray    *pulserObjects=0;
+ AliTPCCalPad *pulserTmean=0;
+ AliTPCCalPad *pulserTrms=0;
+ AliTPCCalPad *pulserQmean=0;
+ AliCDBEntry* entry = GetFromOCDB("Calib", "Pulser");
+ if (entry) pulserObjects = (TObjArray*)entry->GetObject();
+ if ( pulserObjects==NULL ) {
+     Log("AliTPCPreprocsessor: No previous TPC pulser entry available.\n");
+     pulserObjects = new TObjArray;    
+ }
+
+ pulserTmean = (AliTPCCalPad*)pulserObjects->FindObject("PulserTmean");
+ if ( !pulserTmean ) {
+    pulserTmean = new AliTPCCalPad("PulserTmean","PulserTmean");
+    pulserObjects->Add(pulserTmean);
+ }
+ pulserTrms = (AliTPCCalPad*)pulserObjects->FindObject("PulserTrms");
+ if ( !pulserTrms )  { 
+    pulserTrms = new AliTPCCalPad("PulserTrms","PulserTrms");
+    pulserObjects->Add(pulserTrms);
+ }
+ pulserQmean = (AliTPCCalPad*)pulserObjects->FindObject("PulserQmean");
+ if ( !pulserQmean )  { 
+    pulserQmean = new AliTPCCalPad("PulserQmean","PulserQmean");
+    pulserObjects->Add(pulserQmean);
+ }
+
+
+ UInt_t result=0;
+
+ Int_t nSectors = fROC->GetNSectors();
+ TList* list = GetFileSources(sourceFXS,"pulser");
+ 
+ if (list && list->GetEntries()>0) {
+
+//  loop through all files from LDCs
+
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+     TObjString* fileNameEntry = (TObjString*) list->At(index);
+     if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, "pulser",
+	                                 fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening pulser file.");
+	  result =2;
+	  break;
+	}
+        AliTPCCalibPulser *calPulser;
+	f->GetObject("AliTPCCalibPulser",calPulser);
+
+        //  replace entries for the sectors available in the present file
+
+        for (Int_t sector=0; sector<nSectors; sector++) {
+           AliTPCCalROC *rocTmean=calPulser->GetCalRocT0(sector);
+           if ( rocTmean )  pulserTmean->SetCalROC(rocTmean,sector);
+           AliTPCCalROC *rocTrms=calPulser->GetCalRocRMS(sector);
+           if ( rocTrms )  pulserTrms->SetCalROC(rocTrms,sector);
+           AliTPCCalROC *rocQmean=calPulser->GetCalRocQ(sector);
+           if ( rocQmean )  pulserQmean->SetCalROC(rocQmean,sector);
+        }
+      }
+     ++index;
+    }  // while(list)
+//
+//  Store updated pedestal entry to OCDB
+//
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Haavard Helstrup");
+    metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+    Bool_t storeOK = Store("Calib", "Pulser", pulserObjects, &metaData, 0, kTRUE);
+    if ( !storeOK ) ++result;
+    
+  } else {
+    Log ("Error: no entries!");
+    result = 1;
+  }
+
+  return result;
+}
+
+UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
+{
+ //
+ //  Read Central Electrode file from file exchage server
+ //  Keep original entry from OCDB in case no new CE calibration is available
+ //
+ TObjArray    *ceObjects=0;
+ AliTPCCalPad *ceTmean=0;
+ AliTPCCalPad *ceTrms=0;
+ AliTPCCalPad *ceQmean=0;
+ AliCDBEntry* entry = GetFromOCDB("Calib", "CE");
+ if (entry) ceObjects = (TObjArray*)entry->GetObject();
+ if ( ceObjects==NULL ) {
+     Log("AliTPCPreprocsessor: No previous TPC central electrode entry available.\n");
+     ceObjects = new TObjArray;    
+ }
+
+ ceTmean = (AliTPCCalPad*)ceObjects->FindObject("CETmean");
+ if ( !ceTmean ) {
+    ceTmean = new AliTPCCalPad("CETmean","CETmean");
+    ceObjects->Add(ceTmean);
+ }
+ ceTrms = (AliTPCCalPad*)ceObjects->FindObject("CETrms");
+ if ( !ceTrms )  { 
+    ceTrms = new AliTPCCalPad("CETrms","CETrms");
+    ceObjects->Add(ceTrms);
+ }
+ ceQmean = (AliTPCCalPad*)ceObjects->FindObject("CEQmean");
+ if ( !ceQmean )  { 
+    ceQmean = new AliTPCCalPad("CEQmean","CEQmean");
+    ceObjects->Add(ceQmean);
+ }
+
+
+ UInt_t result=0;
+
+ Int_t nSectors = fROC->GetNSectors();
+ TList* list = GetFileSources(sourceFXS,"CE");
+ 
+ if (list && list->GetEntries()>0) {
+
+//  loop through all files from LDCs
+
+    UInt_t index = 0;
+    while (list->At(index)!=NULL) {
+     TObjString* fileNameEntry = (TObjString*) list->At(index);
+     if (fileNameEntry!=NULL) {
+        TString fileName = GetFile(sourceFXS, "CE",
+	                                 fileNameEntry->GetString().Data());
+        TFile *f = TFile::Open(fileName);
+        if (!f) {
+	  Log ("Error opening central electrode file.");
+	  result =2;
+	  break;
+	}
+        AliTPCCalibCE *calCE;
+	f->GetObject("AliTPCCalibCE",calCE);
+
+        //  replace entries for the sectors available in the present file
+
+        for (Int_t sector=0; sector<nSectors; sector++) {
+           AliTPCCalROC *rocTmean=calCE->GetCalRocT0(sector);
+           if ( rocTmean )  ceTmean->SetCalROC(rocTmean,sector);
+           AliTPCCalROC *rocTrms=calCE->GetCalRocRMS(sector);
+           if ( rocTrms )  ceTrms->SetCalROC(rocTrms,sector);
+           AliTPCCalROC *rocQmean=calCE->GetCalRocQ(sector);
+           if ( rocQmean )  ceQmean->SetCalROC(rocQmean,sector);
+        }
+      }
+     ++index;
+    }  // while(list)
+//
+//  Store updated pedestal entry to OCDB
+//
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Haavard Helstrup");
+    metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+    Bool_t storeOK = Store("Calib", "CE", ceObjects, &metaData, 0, kTRUE);
+    if ( !storeOK ) ++result;
+    
+  } else {
+    Log ("Error: no entries!");
+    result = 1;
+  }
+
+  return result;
+}

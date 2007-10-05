@@ -24,9 +24,8 @@ public:
 // constructors
 
   AliTPCGenDBTemp();
-  AliTPCGenDBTemp(const AliTPCGenDBTemp& org);
+  AliTPCGenDBTemp(const char *defaultStorage, const char *specificStorage);
   ~AliTPCGenDBTemp();
-  AliTPCGenDBTemp& operator= (const AliTPCGenDBTemp& org);
   void            MakeCalib(const char *file, const char *fMap,
                             const TTimeStamp& startTime,
 			    const TTimeStamp& endTime, Int_t run);
@@ -40,6 +39,8 @@ public:
 
 
 private:
+  AliTPCGenDBTemp(const AliTPCGenDBTemp& org);
+  AliTPCGenDBTemp& operator= (const AliTPCGenDBTemp& org);
 
    ClassDef(AliTPCGenDBTemp,1)
 };

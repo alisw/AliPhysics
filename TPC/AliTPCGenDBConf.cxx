@@ -9,6 +9,7 @@
 
 
 #include "AliTPCGenDBConf.h"
+#include "AliLog.h"
 
 ClassImp(AliTPCGenDBConf)
 
@@ -22,15 +23,20 @@ AliTPCGenDBConf::AliTPCGenDBConf():
 
 //______________________________________________________________________________________________
 
-AliTPCGenDBConf::AliTPCGenDBConf(const AliTPCGenDBConf& org):
-  AliDCSGenDB(org)
+AliTPCGenDBConf::AliTPCGenDBConf(const char *defaultStorage, const char *specificStorage):
+   AliDCSGenDB(defaultStorage, specificStorage)
+{
+}
+
+//______________________________________________________________________________________________
+
+AliTPCGenDBConf::AliTPCGenDBConf(const AliTPCGenDBConf& org) : AliDCSGenDB(org)
 {
 
 //
 //  Copy constructor
 //
-
- ((AliTPCGenDBConf &) org).Copy(*this);
+ AliError("copy constructor not implemented");
 }
 
 //______________________________________________________________________________________________
@@ -46,9 +52,7 @@ AliTPCGenDBConf& AliTPCGenDBConf::operator= (const AliTPCGenDBConf& org )
  //
  // assignment operator
  //
- if (&org == this) return *this;
-
- new (this) AliTPCGenDBConf(org);
+ AliError("assignment operator not implemented");
  return *this;
 }
 

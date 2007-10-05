@@ -25,9 +25,8 @@ public:
 // constructors
 
   AliTPCGenDBConf();
-  AliTPCGenDBConf(const AliTPCGenDBConf& org);
+  AliTPCGenDBConf(const char *defaultStorage, const char *specificStorage);
   ~AliTPCGenDBConf();
-  AliTPCGenDBConf& operator= (const AliTPCGenDBConf& org);
 
 // functionality
 
@@ -37,6 +36,8 @@ public:
 
 
 private:
+  AliTPCGenDBConf(const AliTPCGenDBConf& org);
+  AliTPCGenDBConf& operator= (const AliTPCGenDBConf& org);
 
    ClassDef(AliTPCGenDBConf,1)
 };

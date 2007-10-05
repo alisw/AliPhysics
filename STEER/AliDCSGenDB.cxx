@@ -29,6 +29,8 @@
 // TTimeStamp endTime(2006,10,19,0,0,0,0,kFALSE)
 // Int_t run=2546
 // AliDCSGenDB db
+// db->SetDefaultStorage("local:///afs/cern.ch/alice/tpctest/AliRoot/HEAD");
+// db->SetSpecificStorage("local:///afs/cern.ch/alice/tpctest/Calib/");
 // db->Init(run,"TPC/Config/Pressure","TPC/*/*")
 // db->MakeCalib("PressureSensor.txt","DCSMap.root",startTime,endTime,firstRun,lastRun,"TPC/Calib/Pressure")
 
@@ -36,9 +38,6 @@
 #include "AliDCSGenDB.h"
 #include "AliLog.h"
 
-const char *kDefaultStorage="local:///afs/cern.ch/alice/tpctest/AliRoot/HEAD";
-const char *kSpecificStorage="local:///afs/cern.ch/alice/tpctest/Calib/";
-const char *kSensorClass = "AliDCSSensorArray";
 const Int_t kBeamPeriod=2;
 
 ClassImp(AliDCSGenDB)
@@ -48,14 +47,30 @@ ClassImp(AliDCSGenDB)
 AliDCSGenDB::AliDCSGenDB():
    fFirstRun(0),
    fLastRun(0),
-   fSpecificStorage(kSpecificStorage),
-   fDefaultStorage(kDefaultStorage),
+   fSpecificStorage(0),
+   fDefaultStorage(0),
    fSensor(0),
    fStorLoc(0),
    fMetaData(0),
    fConfTree(0)
 //
 //  standard constructor
+//
+{}
+
+//______________________________________________________________________________________________
+
+AliDCSGenDB::AliDCSGenDB(const char* defaultStorage, const char* specificStorage):
+   fFirstRun(0),
+   fLastRun(0),
+   fSpecificStorage(specificStorage),
+   fDefaultStorage(defaultStorage),
+   fSensor(0),
+   fStorLoc(0),
+   fMetaData(0),
+   fConfTree(0)
+//
+//  special constructor
 //
 {}
 
@@ -98,6 +113,7 @@ AliDCSGenDB& AliDCSGenDB::operator= (const AliDCSGenDB& org )
  //
  AliError("assignment operator not implemented");
  return *this;
+
 }
 
 //______________________________________________________________________________________________
@@ -107,10 +123,10 @@ void AliDCSGenDB::MakeCalib(const char *list, const char *mapDCS,
 			     const TTimeStamp& endTime,
 			     Int_t firstRun, Int_t lastRun, const char *calibDir )
 {
-   // The Terminate() function is the last function to be called during
-   // a query. It always runs on the client, it can be used to present
-   // the results graphically or save the results to file.
 
+   // Generate calibration entry from DCS map
+   // Configuration read from ASCII file specified by list
+   
    TClonesArray *arr = ReadList(list);
    AliDCSSensorArray *fSensor = new AliDCSSensorArray(arr);
    fSensor->SetStartTime(startTime);
@@ -168,10 +184,12 @@ void AliDCSGenDB::StoreObject(const char* cdbPath, TObject* object, AliCDBMetaDa
 }
 
 //______________________________________________________________________________________________
-void AliDCSGenDB::Init(Int_t run, const char *configDir, const char *specificDir)
+void AliDCSGenDB::Init(Int_t run, const char *configDir, 
+                                  const char *specificDir,
+				  const char *sensorClass)
 {
 
-   fMetaData = CreateMetaObject(kSensorClass);
+   fMetaData = CreateMetaObject(sensorClass);
    AliCDBManager *man = AliCDBManager::Instance();
    man->SetDefaultStorage(fDefaultStorage);
    man->SetRun(run);

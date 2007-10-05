@@ -25,6 +25,8 @@ class AliTPCPreprocessor : public AliPreprocessor
     UInt_t  MapTemperature(TMap* dcsAliasMap);
     UInt_t  MapPressure(TMap* dcsAliasMap);
     UInt_t  ExtractPedestals(Int_t sourceFXS);
+    UInt_t  ExtractPulser(Int_t sourceFXS);
+    UInt_t  ExtractCE(Int_t sourceFXS);
     AliTPCPreprocessor& operator = (const AliTPCPreprocessor& rhs);
 
   private:
