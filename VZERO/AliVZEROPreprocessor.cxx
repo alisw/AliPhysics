@@ -37,17 +37,18 @@ void AliVZEROPreprocessor::Initialize(Int_t run, UInt_t startTime,
 {
   // Creates AliZDCDataDCS object
 
-  AliPreprocessor::Initialize(run, startTime, endTime);
-
-	Log(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
+   AliPreprocessor::Initialize(run, startTime, endTime);
+  
+   Log(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString()));
 
- 	fRun = run;
-        fStartTime = startTime;
-        fEndTime = endTime;
+   fRun       = run;
+   fStartTime = startTime;
+   fEndTime   = endTime;
 
-	fData = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
+   fData      = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
+   
 }
 
 //______________________________________________________________________________________________
@@ -86,9 +87,9 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 
 	TList* sourceList = GetFileSources(kDAQ, SourcesId.Data());
   	if (!sourceList)  {
-		AliError(Form("No sources found for id %s", SourcesId.Data()));      		
+		Log(Form("No sources found for id %s", SourcesId.Data()));      		
       		return 1; }
-	AliInfo(Form("The following sources produced files with the id %s",SourcesId.Data()));
+	Log(Form("The following sources produced files with the id %s",SourcesId.Data()));
 	sourceList->Print();    
 
   	TIter iter(sourceList);
@@ -97,10 +98,10 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	while((source=dynamic_cast<TObjString*> (iter.Next()))){
   		fileName = GetFile(kDAQ, SourcesId.Data(), source->GetName());
   		if (fileName.Length() > 0)
-    		AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+    		Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
 		FILE *file;
 		if((file = fopen(fileName.Data(),"r")) == NULL){
-            	                   AliError(Form("Cannot open file %s",fileName.Data()));
+            	                   Log(Form("Cannot open file %s",fileName.Data()));
 	    	  	           return 1;}
 		Float_t Pedestals[128], Sigmas[128], Gains[128];
 		for(Int_t j=0; j<128; j++)fscanf(file,"%f %f %f ",
@@ -122,7 +123,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 //   for(Int_t j=0; j<64; j++){printf("MeanHV[%d] -> %f \n",j,calibData->GetMeanHV(j));}
 //   for(Int_t j=0; j<64; j++){printf("WidthHV[%d] -> %f \n",j,calibData->GetWidthHV(j));}
   
-  // Now we  store the VZERO Calibration Object into CalibrationDB
+  // Now we store the VZERO Calibration Object into CalibrationDB
   
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
