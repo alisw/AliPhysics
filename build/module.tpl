@@ -272,7 +272,7 @@ endif
 	$(MUTE)echo '#pragma link off all classes;' >> $@
 	$(MUTE)echo '#pragma link off all functions;' >> $@
 	$(MUTE)$(foreach i, $(@PACKAGE@CINTCLASSES), \
-	   echo "#pragma link C++ class $(i);" >> $@ ;)
+	   echo "#pragma link C++ class $(i)+;" >> $@ ;)
 	$(MUTE)echo '#endif' >> $@
 
 $(@PACKAGE@DS): $(@PACKAGE@CINTHDRS) $(@PACKAGE@DH) @MODULE@/module.mk @MODULE@/tgt_$(ALICE_TARGET)/@PACKAGE@_srcslist
