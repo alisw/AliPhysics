@@ -263,6 +263,8 @@ bool AliHLTMUONTriggerReconstructor::Run(
 
 	    // hitset indicates which hits on chambers 7 to 10 have been found and filled.
 	    bool hitset[4] = {false, false, false, false};
+	    bool Xset[4] = {false, false, false, false};
+	    bool Yset[4] = {false, false, false, false};
 
 	    for(int iChamber = 0; iChamber < 4 ; iChamber++){ //4 chambers per DDL 
 	      for(int iPlane = 0; iPlane < 2 ; iPlane++){// 2 cathode plane
@@ -299,15 +301,16 @@ bool AliHLTMUONTriggerReconstructor::Run(
 		      if(fLookUpTableData[lutAddress+1].fIdManuChannel == -1) //skip uninitialized values
 			continue;
 			
-		      hitset[iChamber] = true;
-		      if (iPlane == 0)
+		      if (iPlane == 1)
 		      {      
 		        trigRecord[nofTrigRec].fHit[iChamber].fX = fLookUpTableData[lutAddress+1].fRealX;
+		        Xset[iChamber] = true;
 		      }
 		      else
 		      {
 		        trigRecord[nofTrigRec].fHit[iChamber].fY = fLookUpTableData[lutAddress+1].fRealY;
 		        trigRecord[nofTrigRec].fHit[iChamber].fZ = fLookUpTableData[lutAddress+1].fRealZ;
+		        Yset[iChamber] = true;
 		      }	
 			
 		      HLTDebug("\t Hit Found fo ich : %d, iPlane : %d, detelem %d, id : %d, at (%lf, %lf, %lf) cm",
@@ -326,9 +329,13 @@ bool AliHLTMUONTriggerReconstructor::Run(
 	    }// ichamber
 	    
 	      {
-		// Make sure the hits that are not set, get set to a nil value.
+	      
+		// Fill the hitset flags and make sure the hit structures that were not
+		// filled (set) get set to a nil value.
 		for (int i = 0; i < 4; i++)
 		{
+			if (Xset[i] and Yset[i]) hitset[i] = true;
+			
 			if (not hitset[i])
 			{
 				trigRecord[nofTrigRec].fHit[i]
