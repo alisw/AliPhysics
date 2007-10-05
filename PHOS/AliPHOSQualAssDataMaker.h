@@ -41,12 +41,12 @@ private:
   //virtual void   InitTrackSegments() ; 
   virtual void   InitSDigits() ; 
   virtual void   MakeESDs(AliESDEvent * esd) ;
-  virtual void   MakeHits(TObject * hits) ;
-  virtual void   MakeDigits(TObject * digits) ; 
+  virtual void   MakeHits(TClonesArray * hits) ;
+  virtual void   MakeDigits(TClonesArray * digits) ; 
   // virtual void   MakeRecParticles(TTree * recpar) ; 
   virtual void   MakeRecPoints(TTree * recpo) ; 
-  virtual void   MakeRaws(TObject * data) ; 
-  virtual void   MakeSDigits(TObject * sigits) ; 
+  virtual void   MakeRaws(AliRawReader* rawReader) ; 
+  virtual void   MakeSDigits(TClonesArray * sigits) ; 
   //virtual void   MakeTrackSegments(TTree *ts ) ; 
   virtual void   StartOfDetectorCycle() ; 
 

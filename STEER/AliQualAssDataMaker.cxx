@@ -28,6 +28,7 @@
 #include <TFile.h>
 #include <TList.h> 
 #include <TTree.h>
+#include <TClonesArray.h>
 
 // --- Standard library ---
 
@@ -35,6 +36,7 @@
 #include "AliLog.h"
 #include "AliQualAssDataMaker.h"
 #include "AliESDEvent.h"
+#include "AliRawReader.h"
 
 ClassImp(AliQualAssDataMaker)
   
@@ -149,26 +151,46 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
   switch (task) { 
   
   case AliQualAss::kRAWS:
+  {
     AliInfo("Processing Raws QA") ; 
-    MakeRaws(data) ;
+	AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
+    if (rawReader) 
+	  MakeRaws(rawReader) ;
+	 else
+	  AliError("Wrong data type") ;     
     break ; 
-
+  }
   case AliQualAss::kHITS:
-    AliInfo("Processing Hits QA") ; 
-    MakeHits(data) ;
+  {  
+	AliInfo("Processing Hits QA") ; 
+	TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
+    if (hits) 
+     MakeHits(hits) ;
+	else 
+     AliError("Wrong type of hits container") ;
     break ; 
-
+  }
   case AliQualAss::kSDIGITS:
+  {
     AliInfo("Processing SDigits QA") ; 
-    MakeSDigits(data) ;
+    TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
+	if (sdigits) 
+      MakeSDigits(sdigits) ;
+	 else    
+      AliError("Wrong type of sdigits container") ; 
     break ; 
-    
+  }  
   case AliQualAss::kDIGITS:
-    MakeDigits(data) ;
+  {
+    TClonesArray * digits = dynamic_cast<TClonesArray *>(data) ; 
+    if (digits) 
+	  MakeDigits(digits) ;
+	 else 
+      AliError("Wrong type of digits container") ; 
     break ;  
- 
-   case AliQualAss::kRECPOINTS:
-    {
+  }
+  case AliQualAss::kRECPOINTS:
+  {
      AliInfo("Processing RecPoints QA") ; 
      TTree * recpoints = dynamic_cast<TTree *>(data) ; 
     if (recpoints) 
@@ -176,7 +198,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
     else 
       AliError("Wrong type of recpoints container") ; 
     break ;  
-    }
+  }
    case AliQualAss::kTRACKSEGMENTS:
     AliInfo("Processing Track Segments QA: not existing anymore") ; 
 //     TTree * ts = dynamic_cast<TTree *>(data) ; 

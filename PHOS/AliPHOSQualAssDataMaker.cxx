@@ -27,6 +27,7 @@
 #include <TFile.h> 
 #include <TH1F.h> 
 #include <TH1I.h> 
+#include <TH2F.h> 
 
 // --- Standard library ---
 
@@ -41,6 +42,7 @@
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSRecParticle.h" 
 #include "AliPHOSTrackSegment.h" 
+#include "AliPHOSRawDecoder.h"
 
 ClassImp(AliPHOSQualAssDataMaker)
            
@@ -144,9 +146,26 @@ void AliPHOSQualAssDataMaker::InitRecPoints()
 void AliPHOSQualAssDataMaker::InitRaws()
 {
   // create Raws histograms in Raws subdir
-  TH1F * h0 = new TH1F("hEmcPhosRaws",    "EMCA Raws in PHOS",       100, 0., 100.) ; 
+  TH1I * h0 = new TH1I("hPhosModules",    "Hits in EMCA PHOS modules",       6, 0, 6) ; 
   h0->Sumw2() ;
   Add2RawsList(h0, 0) ;
+  const Int_t modMax = 5 ; 
+  TH2I * h1[modMax] ; 
+  for (Int_t mod = 0; modMax < 5; mod++) {
+   char name[16] ; 
+   sprintf(name, "hPHOSMod%d", mod) ; 
+   char title[32] ; 
+   sprintf(title, "Raws x Columns for PHOS module %d", mod) ;  
+   h1[mod] = new TH2I(name, title, 64, -5, 59, 76, -5, 71) ; 
+   Add2RawsList(h1[mod], mod+1) ;
+  }
+  TH1F * h6 = new TH1F("hPhosRawtime", "Time of raw hits in PHOS", 100, 0, 100.) ; 
+  h6->Sumw2() ;
+  Add2RawsList(h6, 6) ;
+  TH1F * h7 = new TH1F("hPhosRawEnergy", "Energy of raw hits in PHOS", 1100, 0, 1023) ; 
+  h7->Sumw2() ;
+  Add2RawsList(h7, 7) ;
+ 
 }
 
 //____________________________________________________________________________ 
@@ -187,38 +206,28 @@ void AliPHOSQualAssDataMaker::MakeESDs(AliESDEvent * esd)
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeHits(TObject * data)
+void AliPHOSQualAssDataMaker::MakeHits(TClonesArray * hits)
 {
   //make QA data from Hits
 
-  TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
-  if (!hits) {
-    AliError("Wrong type of hits container") ; 
-  } else {
     GetHitsData(1)->Fill(hits->GetEntriesFast()) ; 
     TIter next(hits) ; 
     AliPHOSHit * hit ; 
     while ( (hit = dynamic_cast<AliPHOSHit *>(next())) ) {
       GetHitsData(0)->Fill( hit->GetEnergy()) ;
     }
-  } 
 }
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
+void AliPHOSQualAssDataMaker::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
 
-  TClonesArray * digits = dynamic_cast<TClonesArray *>(data) ; 
-  if (!digits) {
-    AliError("Wrong type of digits container") ; 
-  } else {
     GetDigitsData(1)->Fill(digits->GetEntriesFast()) ; 
     TIter next(digits) ; 
     AliPHOSDigit * digit ; 
     while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
       GetDigitsData(0)->Fill( digit->GetEnergy()) ;
     }  
-  }
 }
 
 //____________________________________________________________________________
@@ -236,9 +245,21 @@ void AliPHOSQualAssDataMaker::MakeDigits(TObject * data)
 // }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeRaws(TObject * data)
+void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
 {
-    GetRawsData(1)->Fill(99) ; 
+  rawReader->Reset() ; 
+  AliPHOSRawDecoder decoder(rawReader);
+  while (decoder.NextDigit()) {
+   Int_t module  = decoder.GetModule() ;
+   Int_t row     = decoder.GetRow() ;
+   Int_t col     = decoder.GetColumn() ;
+   Double_t time = decoder.GetTime() ;
+   Double_t energy  = decoder.GetEnergy() ;          
+   GetRawsData(0)->Fill(module) ; 
+   GetRawsData(module+1)->Fill(row, col) ; 
+   GetRawsData(6)->Fill(time) ; 
+   GetRawsData(7)->Fill(energy) ; 
+  } 
 }
 
 //____________________________________________________________________________
@@ -286,21 +307,16 @@ void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeSDigits(TObject * data)
+void AliPHOSQualAssDataMaker::MakeSDigits(TClonesArray * sdigits)
 {
   // makes data from SDigits
   
-  TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
-  if (!sdigits) {
-    AliError("Wrong type of sdigits container") ; 
-  } else {
-    GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
+	GetSDigitsData(1)->Fill(sdigits->GetEntriesFast()) ; 
     TIter next(sdigits) ; 
     AliPHOSDigit * sdigit ; 
     while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
       GetSDigitsData(0)->Fill( sdigit->GetEnergy()) ;
     } 
-  }
 }
 
 //____________________________________________________________________________

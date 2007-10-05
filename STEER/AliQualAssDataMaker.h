@@ -23,6 +23,8 @@ class TDirectory;
 class TObject; 
 class TTree; 
 class AliESDEvent;
+class AliRawReader;
+class TClonesArray;
 
 // --- Standard library ---
 
@@ -74,12 +76,12 @@ protected:
   virtual void   InitSDigits()       {AliInfo("To be implemented by detectors");}
   //virtual void   InitTrackSegments() {AliInfo("To ne implemented by detectors");}
   virtual void   MakeESDs(AliESDEvent * )          {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeHits(TObject * )              {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeDigits(TObject * )            {AliInfo("To be implemented by detectors");} 
+  virtual void   MakeHits(TClonesArray * )         {AliInfo("To be implemented by detectors");} 
+  virtual void   MakeDigits(TClonesArray * )       {AliInfo("To be implemented by detectors");} 
   //  virtual void   MakeRecParticles(TClonesArray * ) {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeRaws(TObject * )              {AliInfo("To be implemented by detectors");} 
+  virtual void   MakeRaws(AliRawReader *)          {AliInfo("To be implemented by detectors");} 
   virtual void   MakeRecPoints(TTree * )           {AliInfo("To be implemented by detectors");} 
-  virtual void   MakeSDigits(TObject * )           {AliInfo("To be implemented by detectors");} 
+  virtual void   MakeSDigits(TClonesArray * )      {AliInfo("To be implemented by detectors");} 
   //virtual void   MakeTrackSegments(TTree * )       {AliInfo("To be implemented by detectors");} 
   void           ResetCycle() { fCycleCounter = 0 ; } 
   virtual void   StartOfDetectorCycle() {AliInfo("To be implemented by detectors");} 
