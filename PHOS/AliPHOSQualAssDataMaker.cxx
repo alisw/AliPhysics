@@ -151,18 +151,18 @@ void AliPHOSQualAssDataMaker::InitRaws()
   Add2RawsList(h0, 0) ;
   const Int_t modMax = 5 ; 
   TH2I * h1[modMax] ; 
-  for (Int_t mod = 0; modMax < 5; mod++) {
+  for (Int_t mod = 0; mod < modMax; mod++) {
    char name[16] ; 
    sprintf(name, "hPHOSMod%d", mod) ; 
    char title[32] ; 
-   sprintf(title, "Raws x Columns for PHOS module %d", mod) ;  
-   h1[mod] = new TH2I(name, title, 64, -5, 59, 76, -5, 71) ; 
+   sprintf(title, "Raws x Columns for PHOS module %d", mod+1) ;  
+   h1[mod] = new TH2I(name, title, 64, 0, 63, 56, 0, 55) ; 
    Add2RawsList(h1[mod], mod+1) ;
   }
   TH1F * h6 = new TH1F("hPhosRawtime", "Time of raw hits in PHOS", 100, 0, 100.) ; 
   h6->Sumw2() ;
   Add2RawsList(h6, 6) ;
-  TH1F * h7 = new TH1F("hPhosRawEnergy", "Energy of raw hits in PHOS", 1100, 0, 1023) ; 
+  TH1F * h7 = new TH1F("hPhosRawEnergy", "Energy of raw hits in PHOS", 1000, 0., 1200.) ; 
   h7->Sumw2() ;
   Add2RawsList(h7, 7) ;
  
@@ -249,6 +249,8 @@ void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
 {
   rawReader->Reset() ; 
   AliPHOSRawDecoder decoder(rawReader);
+  decoder.SetOldRCUFormat(kTRUE);
+  Int_t count = 0 ; 
   while (decoder.NextDigit()) {
    Int_t module  = decoder.GetModule() ;
    Int_t row     = decoder.GetRow() ;
@@ -256,9 +258,11 @@ void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
    Double_t time = decoder.GetTime() ;
    Double_t energy  = decoder.GetEnergy() ;          
    GetRawsData(0)->Fill(module) ; 
-   GetRawsData(module+1)->Fill(row, col) ; 
+   GetRawsData(module)->Fill(row, col) ; 
    GetRawsData(6)->Fill(time) ; 
    GetRawsData(7)->Fill(energy) ; 
+   AliInfo(Form(" %d %d %d %d %f %f\n", count, module, row, col, time, energy)) ;
+   count++ ; 
   } 
 }
 
