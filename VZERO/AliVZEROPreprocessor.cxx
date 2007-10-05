@@ -50,8 +50,6 @@ void AliVZEROPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	fData = new AliVZERODataDCS(fRun, fStartTime, fEndTime);
 }
 
-
-
 //______________________________________________________________________________________________
 UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 {
@@ -75,60 +73,46 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
  	// The processing of the DCS input data is forwarded to AliVZERODataDCS
 
 	fData->ProcessData(*dcsAliasMap);
-	//fData->Draw(""); 		// Draw the HV values as a function of time
-	//dcsAliasMap->Print("");	// Print out the HV values
+	//fData->Draw(""); 		// Draws the HV values as a function of time
+	//dcsAliasMap->Print("");	// Prints out the HV values
 
-	// Writing VZERO PMs HV values into calibration object
+	// Writes VZERO PMs HV values into VZERO calibration object
 	calibData->SetMeanHV(fData->GetMeanHV());
 	calibData->SetWidthHV(fData->GetWidthHV());
-  
-  
+    
    // *************** From DAQ ******************
-	TString SourcesId[3];
-	SourcesId[0] = "PEDESTALS";
-	SourcesId[1] = "GAINS";
-	SourcesId[2] = "SIGMAS";
+   
+	TString SourcesId = "CALIB";
 
-	for(int iSource=0;iSource<3;iSource++){
-  		TList* sourceList = GetFileSources(kDAQ, SourcesId[iSource].Data());
-  		if (!sourceList){
-			AliError(Form("No sources found for id %s", SourcesId[iSource].Data()));      		
-      		return 1;   
-		}
-		AliInfo(Form("The following sources produced files with the id %s",SourcesId[iSource].Data()));
-	        sourceList->Print();    
+	TList* sourceList = GetFileSources(kDAQ, SourcesId.Data());
+  	if (!sourceList)  {
+		AliError(Form("No sources found for id %s", SourcesId.Data()));      		
+      		return 1; }
+	AliInfo(Form("The following sources produced files with the id %s",SourcesId.Data()));
+	sourceList->Print();    
 
-  		TIter iter(sourceList);
-  		TObjString *source = 0;
+  	TIter iter(sourceList);
+  	TObjString *source = 0;
 		
-		while((source=dynamic_cast<TObjString*> (iter.Next()))){
-  			fileName = GetFile(kDAQ, SourcesId[iSource].Data(), source->GetName());
-  		  	if (fileName.Length() > 0)
-    			AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
-		  	FILE *file;
-			if((file = fopen(fileName.Data(),"r")) == NULL){
-            	AliError(Form("Cannot open file %s",fileName.Data()));
-	    	  	return 1;
-			}
-		  	Float_t Values[128];
-		  	for(Int_t j=0; j<128; j++)fscanf(file,"%f",&Values[j]);
-			fclose(file);
-	    	switch(iSource){
-				case 0:
-					calibData->SetPedestal(Values);
-					break;
-				case 1:
-	    			        calibData->SetGain(Values);
-					break;
-				case 2:
-	    			        calibData->SetSigma(Values);
-					break;
-			        }
-		}
-		delete sourceList;
-
-	}
-      
+	while((source=dynamic_cast<TObjString*> (iter.Next()))){
+  		fileName = GetFile(kDAQ, SourcesId.Data(), source->GetName());
+  		if (fileName.Length() > 0)
+    		AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+		FILE *file;
+		if((file = fopen(fileName.Data(),"r")) == NULL){
+            	                   AliError(Form("Cannot open file %s",fileName.Data()));
+	    	  	           return 1;}
+		Float_t Pedestals[128], Sigmas[128], Gains[128];
+		for(Int_t j=0; j<128; j++)fscanf(file,"%f %f %f ",
+			                  &Pedestals[j], &Sigmas[j], &Gains[j]);
+		fclose(file);
+	    	
+		calibData->SetPedestal(Pedestals);
+		calibData->SetSigma(Sigmas);			
+		calibData->SetGain(Gains); }				
+		
+	delete sourceList; 
+	delete source;      
   
   // Check that everything was properly transmitted
 
@@ -137,7 +121,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 //   for(Int_t j=0; j<128; j++){printf("ADCSigma[%d] -> %f \n",j,calibData->GetSigma(j));}
 //   for(Int_t j=0; j<64; j++){printf("MeanHV[%d] -> %f \n",j,calibData->GetMeanHV(j));}
 //   for(Int_t j=0; j<64; j++){printf("WidthHV[%d] -> %f \n",j,calibData->GetWidthHV(j));}
-//   
+  
   // Now we  store the VZERO Calibration Object into CalibrationDB
   
   AliCDBMetaData metaData;
