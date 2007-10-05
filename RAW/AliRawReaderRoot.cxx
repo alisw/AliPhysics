@@ -332,12 +332,15 @@ UInt_t AliRawReaderRoot::SwapWord(UInt_t x) const
 void AliRawReaderRoot::SwapData(const void* inbuf, const void* outbuf, UInt_t size) {
   // The method swaps the contents of the
   // raw-data event header
-  UInt_t  intCount = size/sizeof(UInt_t);
+  UInt_t  intCount = (size+sizeof(UInt_t)-1)/sizeof(UInt_t);
 
   UInt_t* buf = (UInt_t*) inbuf;    // temporary integers buffer
   for (UInt_t i=0; i<intCount; i++, buf++) {
       UInt_t value = SwapWord(*buf);
-      memcpy((UInt_t*)outbuf+i, &value, sizeof(UInt_t));
+      if (i==(intCount-1))
+         memcpy((UInt_t*)outbuf+i, &value, size%sizeof(UInt_t));
+      else
+         memcpy((UInt_t*)outbuf+i, &value, sizeof(UInt_t));
   }
 }
 // _________________________________________________________________________
@@ -473,7 +476,63 @@ Bool_t AliRawReaderRoot::ReadNext(UChar_t* data, Int_t size)
     fErrorCode = kErrOutOfBounds;
     return kFALSE;
   }
+#ifndef R__BYTESWAP
+  // relative position in the raw data buffer
+  UInt_t pos  = (UInt_t) (fPosition-(UChar_t*)fRawData->GetBuffer());  
+
+  UInt_t gapL = pos%sizeof(UInt_t);
+  UInt_t gapR = (pos+size)%sizeof(UInt_t);
+  if ( gapR > 0 ) gapR = sizeof(UInt_t) - gapR;
+
+  if (gapL>0 || gapR>0) printf("AliRawReaderRoot::ReadNext: relative pos in buffer=%d, buffer size=%d, gapLeft=%d, gapRight=%d\n", pos, size, gapL, gapR);
+
+  UChar_t* firstWord = fPosition - gapL;          // pointer to the begin of the 1st word
+  UChar_t* lastWord  = fPosition + size + gapR;   // pointer to the begin of the 1st word following the buffer and not included
+
+  // Loop through the all words and write each of them swapped
+  UInt_t   bytesRead = 0;
+  while (firstWord < lastWord) 
+  {
+      UInt_t* value   = (UInt_t*) firstWord;
+      UInt_t valueInv = SwapWord( *value );
+
+      if ( (pos/sizeof(UInt_t)) == ((pos+size)/sizeof(UInt_t)) ) 
+      {
+         // invert only byte(s) within the 1st (and unique) read word 
+         bytesRead += size;
+         memcpy((UInt_t*)(data+bytesRead), &valueInv+gapL, size);
+      }
+      else 
+      {
+         if ( gapL>0 ) 
+         {
+            // 1st word unaligned
+            bytesRead += sizeof(UInt_t) - gapL;
+            memcpy((UInt_t*)(data+bytesRead), &valueInv+gapL, sizeof(UInt_t)-gapL);
+         }
+         else 
+         {
+            if ( gapR>0 ) 
+            {
+               // last word unaligned
+               bytesRead += sizeof(UInt_t) - gapR;
+               memcpy((UInt_t*)(data+bytesRead), &valueInv, sizeof(UInt_t)-gapR);
+            }
+            else
+            { 
+               // no unalignements
+               bytesRead += sizeof(UInt_t);
+               memcpy((UInt_t*)(data+bytesRead), &valueInv, sizeof(UInt_t));
+            }            
+         }
+      }
+
+      firstWord += sizeof(UInt_t);
+  }
+#else
   memcpy(data, fPosition, size);
+#endif
+
   fPosition += size;
   fCount -= size;
   return kTRUE;
