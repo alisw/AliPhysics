@@ -66,7 +66,7 @@ class AliGenCorrHF : public AliGenMC
     static Double_t fgpt[33];            // pt bin coordinates
     static Double_t fgptbmin[12];        // min & max coordinates of pt bins for
     static Double_t fgptbmax[12];        // the fragm. function
-    
+
     ClassDef(AliGenCorrHF,1)  // Generator using parameterized QQbar & fragm. functions
 };
 #endif

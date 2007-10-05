@@ -224,16 +224,10 @@ void AliGenCorrHF::Init()
 void AliGenCorrHF::Generate()
 {
 //
-// Generate 'npart' of light and heavy mesons (J/Psi, upsilon or phi, Pion,
-// Kaons, Etas, Omegas) and Baryons (proton, antiprotons, neutrons and 
-// antineutrons in the the desired theta, phi and momentum windows; 
-// Gaussian smearing on the vertex is done if selected. 
-// The decay of heavy mesons is done using lujet, 
-//    and the childern particle are tracked by GEANT
-// However, light mesons are directly tracked by GEANT 
-// setting fForceDecay = nodecay (SetForceDecay(nodecay)) 
+// Generate fNpart of correlated HF hadron pairs per event
+// in the the desired theta and momentum windows (phi = 0 - 2pi).
 //
-//
+
 //  Reinitialize decayer
 
   fDecayer->SetForceDecay(fForceDecay);
@@ -249,7 +243,7 @@ void AliGenCorrHF::Generate()
   Float_t  wgtp, wgtch, random[6];
   Float_t pq[2][3];           // Momenta of the two quarks
   Int_t ntq[2] = {-1, -1};
-  Float_t tanhy, qm;
+  Double_t tanhy2, qm = 0;
 
   Double_t dphi=0, ptq[2], yq[2], pth[2], plh[2], ph[2], phih[2], phiq[2];
   for (i=0; i<2; i++) { 
@@ -262,6 +256,10 @@ void AliGenCorrHF::Generate()
     ihadron[i] =0; 
     iquark[i]  =0;
   }
+
+  // same quarks mass as in the fragmentation functions
+  if (fQuark == 4) qm = 1.20;
+  else             qm = 4.75;
 
   static TClonesArray *particles;
   //
@@ -328,20 +326,14 @@ void AliGenCorrHF::Generate()
     pq[1][1] = qvect2.Py();
 
     // pz
-    tanhy = TMath::TanH(yq[0]);
-    qm = pDataBase->GetParticle(iquark[0])->Mass();
-    pq[0][2] = TMath::Sqrt((ptq[0]*ptq[0]+qm*qm)*tanhy/(1-tanhy));
-    tanhy = TMath::TanH(yq[1]);
-    qm = pDataBase->GetParticle(iquark[1])->Mass();
-    pq[1][2] = TMath::Sqrt((ptq[1]*ptq[1]+qm*qm)*tanhy/(1-tanhy));
-
-    // set special value shift to have a signature of this generator
-    pq[0][0] += 1000000.0;
-    pq[0][1] += 1000000.0;
-    pq[0][2] += 1000000.0;
-    pq[1][0] += 1000000.0;
-    pq[1][1] += 1000000.0;
-    pq[1][2] += 1000000.0;
+    tanhy2 = TMath::TanH(yq[0]);
+    tanhy2 *= tanhy2;
+    pq[0][2] = TMath::Sqrt((ptq[0]*ptq[0]+qm*qm)*tanhy2/(1-tanhy2));
+    pq[0][2] = TMath::Sign((Double_t)pq[0][2],yq[0]);
+    tanhy2 = TMath::TanH(yq[1]);
+    tanhy2 *= tanhy2;
+    pq[1][2] = TMath::Sqrt((ptq[1]*ptq[1]+qm*qm)*tanhy2/(1-tanhy2));
+    pq[1][2] = TMath::Sign((Double_t)pq[1][2],yq[1]);
 
     // Here we assume that  |phi_H1 - phi_H2| = |phi_Q1 - phi_Q2| = dphi
     // which is a good approximation for heavy flavors in Pythia
@@ -478,13 +470,11 @@ void AliGenCorrHF::Generate()
 	  PushTrack(0, -1, iquark[ihad], pq[ihad], origin0, polar, 0, kPPrimary, nt, wgtp);
 	  KeepTrack(nt);
 	  ntq[ihad] = nt;
-	  //printf("PushTrack: Q \t%5d   trackit %1d part %8d name %10s \t from %3d \n",nt,0,iquark[ihad],pDataBase->GetParticle(iquark[ihad])->GetName(),-1);
 	  // hadron
 	  PushTrack(0, ntq[ihad], iPart, p, origin0, polar, 0, kPDecay, nt, wgtp);
 	  pParent[0] = nt;
 	  KeepTrack(nt); 
 	  fNprimaries++;
-	  //printf("PushTrack: P \t%5d   trackit %1d part %8d name %10s \t from %3d \n",nt,0,iPart,pDataBase->GetParticle(iPart)->GetName(),ntq[ihad]);
 	  
 	  //
 	  // Decay Products
@@ -511,7 +501,6 @@ void AliGenCorrHF::Generate()
 	      PushTrack(fTrackIt*trackIt[i], iparent, kf,
 			pc, och, polar,
 			0, kPDecay, nt, wgtch);
-	      //printf("PushTrack: DD \t%5d   trackit %1d part %8d name %10s \t from %3d \n",nt,fTrackIt*trackIt[i],kf,pDataBase->GetParticle(kf)->GetName(),iparent);
 	      pParent[i] = nt;
 	      KeepTrack(nt); 
 	      fNprimaries++;
@@ -538,7 +527,7 @@ void AliGenCorrHF::Generate()
   
   SetHighWaterMark(nt);
   
-  AliGenEventHeader* header = new AliGenEventHeader("PARAM");
+  AliGenEventHeader* header = new AliGenEventHeader("CorrHF");
   header->SetPrimaryVertex(fVertex);
   header->SetNProduced(fNprimaries);
   AddHeader(header);
