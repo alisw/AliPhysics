@@ -52,7 +52,7 @@ AliGDCInterruptHandler::AliGDCInterruptHandler() :
   TSignalHandler(kSigInterrupt, kFALSE) 
 {
   fStop = kFALSE;
-};
+}
 
 
 //_____________________________________________________________________________

@@ -1,13 +1,8 @@
 #-*- Mode: Makefile -*-
 
-include HLT/hlt.conf
-
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
-SRCS:=  AliHoughFilter.cxx
+# Matthias 2007-10-03 HLT legacy code disabled
+#SRCS:=  AliHoughFilter.cxx
+SRCS:=  
 
 HDRS:= $(SRCS:.cxx=.h)
 
@@ -15,7 +10,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 #EDEFINE+= -DUSE_EB
 
-EINCLUDE+= TPC ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
+EINCLUDE+= TPC ITS RAW
 
 DHDR:= MDCFilterLinkDef.h 
 

@@ -39,8 +39,13 @@
 #include "AliITSgeom.h"
 #include "AliITStrackerV2.h"
 #include "AliLoader.h"
+// Matthias 2007-10-03 HLT legacy code disabled
+// everything encapsulated by ENABLE_ALIMONITORPROCESS_HLT
+// set the define in the header file to include the code
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
 #include "AliMonitorHLT.h"
 #include "AliMonitorHLTHough.h"
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 #include "AliMonitorITS.h"
 #include "AliMonitorProcess.h"
 #include "AliMonitorTPC.h"
@@ -52,6 +57,7 @@
 #include "AliTPCtrackerMI.h"
 #include "AliV0vertexer.h"
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
 #include <AliHLTStandardIncludes.h>
 #include <AliHLTMemHandler.h>
 #include <AliHLTClusterFitter.h>
@@ -64,6 +70,7 @@
 #include <AliHLTTransform.h>
 #include <AliHLTVertex.h>
 #include <AliLevel3.h>
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
 ClassImp(AliMonitorProcess)
 
@@ -143,11 +150,13 @@ AliMonitorProcess::AliMonitorProcess(
   fITSgeom = (AliITSgeom*)gDirectory->Get("AliITSgeom");
   if (!fITSgeom) AliFatal("could not load ITS geometry");
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
   // Init TPC parameters for HLT
   Bool_t isinit=AliHLTTransform::Init(const_cast<char*>(fileNameGalice),kTRUE);
   if(!isinit){
     AliFatal("Could not create transform settings, please check log for error messages!");
   }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
   fTopFolder = new TFolder("Monitor", "monitor histograms");
   fTopFolder->SetOwner(kTRUE);
@@ -155,8 +164,10 @@ AliMonitorProcess::AliMonitorProcess(
   if (IsSelected("TPC")) fMonitors.Add(new AliMonitorTPC(fTPCParam));
   if (IsSelected("ITS")) fMonitors.Add(new AliMonitorITS(fITSgeom));
   if (IsSelected("V0s")) fMonitors.Add(new AliMonitorV0s);
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
   if (IsSelected("HLTConfMap")) fMonitors.Add(new AliMonitorHLT(fTPCParam));
   if (IsSelected("HLTHough")) fMonitors.Add(new AliMonitorHLTHough(fTPCParam));
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
   for (Int_t iMonitor = 0; iMonitor < fMonitors.GetEntriesFast(); iMonitor++) {
     ((AliMonitor*) fMonitors[iMonitor])->CreateHistos(fTopFolder);
@@ -253,8 +264,10 @@ AliMonitorProcess::~AliMonitorProcess()
   delete fFile;
   gSystem->Unlink("monitor_tree.root");
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
   delete fHLT;
   delete fHLTHough;
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
   gSystem->RemoveSignalHandler(fInterruptHandler);
   delete fInterruptHandler;
@@ -432,8 +445,10 @@ Bool_t AliMonitorProcess::ProcessFile()
   if (nEvents <= 0) return kFALSE;
   AliDebug(1, Form("found %d event(s) in file %s",
 		   nEvents, fFileName.Data()));
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
   if (IsSelected("HLTConfMap")) CreateHLT(fFileName);
   if (IsSelected("HLTHough")) CreateHLTHough(fFileName);
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
   // loop over the events
   for (Int_t iEvent = 0; iEvent < nEvents; iEvent++) {
@@ -474,6 +489,7 @@ Bool_t AliMonitorProcess::ProcessFile()
       if (!ReconstructV0s(&esd)) return kFALSE;
       if (fStopping) break;
     }
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
     if (IsSelected("HLTConfMap")) {
       CheckForConnections();
       if (!ReconstructHLT(iEvent)) return kFALSE;
@@ -484,6 +500,7 @@ Bool_t AliMonitorProcess::ProcessFile()
       if (!ReconstructHLTHough(iEvent)) return kFALSE;
       if (fStopping) break;
     }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
     if (fDisplaySocket) fDisplaySocket->Send("new event");
 
@@ -522,6 +539,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     if (fStopping) break;
   }
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
   if (fHLT) {
     delete fHLT;
     fHLT = NULL;
@@ -530,6 +548,7 @@ Bool_t AliMonitorProcess::ProcessFile()
     delete fHLTHough;
     fHLTHough = NULL;
   }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
   return kTRUE;
 }
@@ -677,6 +696,7 @@ Bool_t AliMonitorProcess::ReconstructV0s(AliESDEvent* esd)
   return kTRUE;
 }
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
 //_____________________________________________________________________________
 void AliMonitorProcess::CreateHLT(const char* fileName)
 {
@@ -714,7 +734,9 @@ void AliMonitorProcess::CreateHLT(const char* fileName)
 
   fHLT->WriteFiles("./hlt/");
 }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
 //_____________________________________________________________________________
 void AliMonitorProcess::CreateHLTHough(const char* fileName)
 {
@@ -735,7 +757,9 @@ void AliMonitorProcess::CreateHLTHough(const char* fileName)
   //  fHLTHough->GetMaxFinder()->SetThreshold(14000);
 
 }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
 //_____________________________________________________________________________
 Bool_t AliMonitorProcess::ReconstructHLT(Int_t iEvent)
 {
@@ -761,7 +785,9 @@ Bool_t AliMonitorProcess::ReconstructHLT(Int_t iEvent)
   gSystem->Exec(command);
   return kTRUE;
 }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
 //_____________________________________________________________________________
 Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
 {
@@ -858,6 +884,7 @@ Bool_t AliMonitorProcess::ReconstructHLTHough(Int_t iEvent)
   gSystem->Exec(command);
   return kTRUE;
 }
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
 //_____________________________________________________________________________
 Bool_t AliMonitorProcess::WriteHistos()

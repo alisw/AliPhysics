@@ -1,20 +1,13 @@
 #-*- Mode: Makefile -*-
 # $Id$ 
-include HLT/hlt.conf
-
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
 SRCS:= alimdc_main.cxx ${ESRCS}
 
-EINCLUDE+= TPC ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
+EINCLUDE+= TPC ITS RAW
 # -DUSE_DEBUG for alimdc debug printout
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
-ELIBS:=STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim MDC MDCFilter CDB STEER TPCbase TPCsim TPCrec HLTbase AliHLTSrc AliHLTMisc AliHLTHough AliHLTComp AliHLTITS ITSbase ITSsim ITSrec MUONevaluation MUONsim MUONrec MUONbase MUONtrigger MUONgeometry MUONraw MUONcalib MUONmapping
+ELIBS:=STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim MDC MDCFilter CDB STEER TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONevaluation MUONsim MUONrec MUONbase MUONtrigger MUONgeometry MUONraw MUONcalib MUONmapping
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)

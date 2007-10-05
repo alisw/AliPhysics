@@ -137,6 +137,7 @@
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliMC.h"
+#include "AliHLTSimulation.h"
 
 ClassImp(AliSimulation)
 
@@ -172,7 +173,8 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fCDBUri(cdbUri),
   fRemoteCDBUri(""),
   fSpecCDBUri(),
-  fEmbeddingFlag(kFALSE)
+  fEmbeddingFlag(kFALSE),
+  fRunHLT("default")
 {
 // create simulation object with default parameters
   fgInstance = this;
@@ -576,6 +578,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!fWriteRawData.IsNull()) {
     if (!WriteRawData(fWriteRawData, fRawDataFileName, 
 		      fDeleteIntermediateFiles)) {
+      if (fStopOnError) return kFALSE;
+    }
+  }
+
+  // run HLT simulation
+  if (!fRunHLT.IsNull()) {
+    if (!RunHLT()) {
       if (fStopOnError) return kFALSE;
     }
   }
@@ -1339,4 +1348,96 @@ Int_t AliSimulation::GetDetIndex(const char* detector)
 	  break ; 
   }	
   return index ; 
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::RunHLT()
+{
+  // Run the HLT simulation
+  // HLT simulation is implemented in HLT/sim/AliHLTSimulation
+  // Disabled if fRunHLT is empty, default vaule is "default".
+  // AliSimulation::SetRunHLT can be used to set the options for HLT simulation
+  // The default simulation depends on the HLT component libraries and their
+  // corresponding agents which define components and chains to run. See
+  // http://web.ift.uib.no/~kjeks/doc/alice-hlt/
+  // http://web.ift.uib.no/~kjeks/doc/alice-hlt/classAliHLTModuleAgent.html
+  //
+  // The libraries to be loaded can be specified as an option.
+  // <pre>
+  // AliSimulation sim;
+  // sim.SetRunHLT("libAliHLTSample.so");
+  // </pre>
+  // will only load <tt>libAliHLTSample.so</tt>
+
+  // Other available options:
+  // \li loglevel=<i>level</i> <br>
+  //     logging level for this processing
+  // \li alilog=off
+  //     disable redirection of log messages to AliLog class
+  // \li config=<i>macro</i>
+  //     configuration macro
+  // \li localrec=<i>configuration</i>
+  //     comma separated list of configurations to be run during simulation
+
+  int iResult=0;
+  AliRunLoader* pRunLoader = LoadRun("READ");
+  if (!pRunLoader) return kFALSE;
+
+  // load the library dynamically
+  gSystem->Load(ALIHLTSIMULATION_LIBRARY);
+
+  // check for the library version
+  AliHLTSimulationGetLibraryVersion_t fctVersion=(AliHLTSimulationGetLibraryVersion_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_GET_LIBRARY_VERSION));
+  if (!fctVersion) {
+    AliError(Form("can not load library %s", ALIHLTSIMULATION_LIBRARY));
+    return kFALSE;
+  }
+  if (fctVersion()!= ALIHLTSIMULATION_LIBRARY_VERSION) {
+    AliError(Form("%s version does not match: compiled for version %d, loaded %d", ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_LIBRARY_VERSION, fctVersion()));
+    return kFALSE;
+  }
+
+  // print compile info
+  typedef void (*CompileInfo)( char*& date, char*& time);
+  CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, "CompileInfo");
+  if (fctInfo) {
+    char* date="";
+    char* time="";
+    (*fctInfo)(date, time);
+    if (!date) date="unknown";
+    if (!time) time="unknown";
+    AliInfo(Form("%s build on %s (%s)", ALIHLTSIMULATION_LIBRARY, date, time));
+  } else {
+    AliInfo(Form("no build info available for %s", ALIHLTSIMULATION_LIBRARY));
+  }
+
+  // create instance of the HLT simulation
+  AliHLTSimulationCreateInstance_t fctCreate=(AliHLTSimulationCreateInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_CREATE_INSTANCE));
+  AliHLTSimulation* pHLT=NULL;
+  if (fctCreate==NULL || (pHLT=(fctCreate()))==NULL) {
+    AliError(Form("can not create instance of HLT simulation (creator %p)", fctCreate));
+    return kFALSE;    
+  }
+
+  // init the HLT simulation
+  if (fRunHLT.CompareTo("default")==0) fRunHLT="";
+  AliHLTSimulationInit_t fctInit=(AliHLTSimulationInit_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_INIT));
+  if (fctInit==NULL || (iResult=(fctInit(pHLT, pRunLoader, fRunHLT.Data())))<0) {
+    AliError(Form("can not init HLT simulation: error %d (init %p)", iResult, fctInit));
+  } else {
+    // run the HLT simulation
+    AliHLTSimulationRun_t fctRun=(AliHLTSimulationRun_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_RUN));
+    if (fctRun==NULL || (iResult=(fctRun(pHLT, pRunLoader)))<0) {
+      AliError(Form("can not run HLT simulation: error %d (run %p)", iResult, fctRun));
+    }
+  }
+
+  // delete the instance
+  AliHLTSimulationDeleteInstance_t fctDelete=(AliHLTSimulationDeleteInstance_t)(gSystem->DynFindSymbol(ALIHLTSIMULATION_LIBRARY, ALIHLTSIMULATION_DELETE_INSTANCE));
+  if (fctDelete==NULL || fctDelete(pHLT)<0) {
+    AliError(Form("can not delete instance of HLT simulation (creator %p)", fctDelete));
+  }
+  pHLT=NULL;
+
+  return iResult>=0?kTRUE:kFALSE;
 }

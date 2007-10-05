@@ -77,10 +77,12 @@ private:
   Bool_t           ReconstructTPC(AliRawReader* rawReader, AliESDEvent* esd);
   Bool_t           ReconstructITS(AliRawReader* rawReader, AliESDEvent* esd);
   Bool_t           ReconstructV0s(AliESDEvent* esd);
+#ifdef ENABLE_ALIMONITORPROCESS_HLT
   void             CreateHLT(const char* fileName);
   void             CreateHLTHough(const char* fileName);
   Bool_t           ReconstructHLT(Int_t iEvent);
   Bool_t           ReconstructHLTHough(Int_t iEvent);
+#endif // ENABLE_ALIMONITORPROCESS_HLT
 
   Bool_t           WriteHistos();
   void             StartNewRun();
@@ -103,6 +105,7 @@ private:
   TString          fFileName;           // physical file name
   AliLevel3*       fHLT;                // the HLT tracker
   AliHLTHough*      fHLTHough;           // the HLT hough transformer
+
 
   UInt_t           fRunNumber;          // current run number
   UInt_t           fSubRunNumber;       // current part (=resets per run)

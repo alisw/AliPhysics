@@ -1,15 +1,8 @@
 #-*- Mode: Makefile -*-
 
-include HLT/hlt.conf
-
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
 SRCS:=deroot.cxx
 
-EINCLUDE+= TPC ITS RAW HLT/src HLT/hough HLT/comp HLT/ITS
+EINCLUDE+= TPC ITS RAW
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
@@ -18,7 +11,7 @@ ifdef DATE_ROOT
 SRCS += root2date.cxx
 PACKBLIBS += $(shell date-config --monitorlibs)
 ELIBSDIR:=
-ELIBS:=STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec HLTbase AliHLTSrc AliHLTMisc AliHLTHough AliHLTComp AliHLTITS ITSbase ITSsim ITSrec MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation
+ELIBS:=STEERBase ESD AOD CDB STEER RAWDatabase RAWDatarec RAWDatasim TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONsim MUONrec MUONbase MUONgeometry MUONraw MUONcalib MUONmapping MUONtrigger MUONevaluation
 EINCLUDE+= ${DATE_COMMON_DEFS} ${DATE_MONITOR_DIR}
 
 endif

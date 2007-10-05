@@ -18,8 +18,7 @@ ELIBS    := Aliengui \
   hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
   FASTSIM microcern \
   RAWDatabase RAWDatarec RAWDatasim \
-  HLTbase AliHLTSrc AliHLTComp AliHLTMisc \
-  AliHLTHough AliHLTITS \
+  HLTbase \
   ANALYSIS
 
 CHECKXML = $(shell root-config --has-xml)

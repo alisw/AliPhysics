@@ -1627,15 +1627,6 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   TString recName = "Ali" + detName + "Reconstructor";
   if (gAlice && !gAlice->GetDetector(detName) && (detName != "HLT")) return NULL;
 
-  if (detName == "HLT") {
-    if (!gROOT->GetClass("AliLevel3")) {
-      gSystem->Load("libAliHLTSrc.so");
-      gSystem->Load("libAliHLTMisc.so");
-      gSystem->Load("libAliHLTHough.so");
-      gSystem->Load("libAliHLTComp.so");
-    }
-  }
-
   AliReconstructor* reconstructor = NULL;
   // first check if a plugin is defined for the reconstructor
   TPluginHandler* pluginHandler = 

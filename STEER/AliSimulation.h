@@ -94,6 +94,10 @@ public:
 				   const char* rootFileName = "raw.root");
   virtual Bool_t ConvertRaw2SDigits(const char* rawDirectory, const char* esdFile = "");
 
+  // HLT
+  void SetRunHLT(const char* options) {fRunHLT=options;}
+  virtual Bool_t RunHLT();
+
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
   const Int_t GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
@@ -139,8 +143,10 @@ private:
   static const char * fgkDetectorName[fgkNDetectors] ; // names of detectors
   Int_t               fQACycles[fgkNDetectors] ;      // cycle length (# events) over which QA data are accumulated
 
-  
-  ClassDef(AliSimulation, 5)  // class for running generation, simulation and digitization
+  //HLT
+  TString        fRunHLT;             // HLT options, HLT is disabled if empty, default='default'
+
+  ClassDef(AliSimulation, 6)  // class for running generation, simulation and digitization
 };
 
 #endif

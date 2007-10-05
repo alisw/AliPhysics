@@ -1,23 +1,18 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include HLT/hlt.conf
-
-EDEFINE      := ${HLTDEFS}
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
-
 SRCS:=  AliMonitorPlot.cxx AliMonitorHisto.cxx AliMonitorTrend.cxx \
 	AliMonitor.cxx \
 	AliMonitorTPC.cxx AliMonitorITS.cxx AliMonitorV0s.cxx \
-	AliMonitorHLT.cxx AliMonitorHLTHough.cxx \
 	AliMonitorDataTPC.cxx \
 	AliMonitorProcess.cxx AliMonitorControl.cxx \
 	AliMonitorDialog.cxx AliMonitorClient.cxx
+
+# Matthias 2007-10-03 HLT legacy code disabled
+#	AliMonitorHLT.cxx AliMonitorHLTHough.cxx \
 
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR:= MONITORLinkDef.h
 
-EINCLUDE:= TPC ITS RAW HLT/src HLT/hough HLT/comp
+EINCLUDE:= TPC ITS RAW

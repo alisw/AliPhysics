@@ -56,7 +56,7 @@ HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= STEERLinkDef.h
 
-EINCLUDE:= RAW
+EINCLUDE:= RAW HLT/sim
 #ifeq (macosx,$(ALICE_TARGET))
 EINCLUDE+= TPC
 #endif

@@ -21,8 +21,7 @@ ELIBS:= MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUON
         hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
-	HLTbase AliHLTSrc AliHLTComp AliHLTMisc MUONevaluation \
-	AliHLTHough AliHLTITS\
+	HLTbase MUONevaluation \
 #	THerwig herwig TPHIC
 
 ifeq (macosx,$(ALICE_TARGET))

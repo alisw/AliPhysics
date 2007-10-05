@@ -17,8 +17,9 @@
 #pragma link C++ class  AliMonitorDataTPC+;
 #pragma link C++ class  AliMonitorITS+;
 #pragma link C++ class  AliMonitorV0s+;
-#pragma link C++ class  AliMonitorHLT+;
-#pragma link C++ class  AliMonitorHLTHough+;
+// Matthias 2007-10-03 HLT legacy code disabled
+//#pragma link C++ class  AliMonitorHLT+;
+//#pragma link C++ class  AliMonitorHLTHough+;
 #pragma link C++ class  AliMonitorProcess+;
 #pragma link C++ class  AliMonitorControl+;
 #pragma link C++ class  AliMonitorDialog+;
