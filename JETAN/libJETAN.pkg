@@ -24,7 +24,17 @@ SRCS = 	AliJet.cxx AliJetHeader.cxx \
 	AliJetMCReaderHeader.cxx \
 	AliJetHistos.cxx
 
+ifneq ($(FASTJET),)
+	SRCS+= AliFastJetFinder.cxx AliFastJetHeader.cxx 
+endif
+
 
 HDRS:= $(SRCS:.cxx=.h) 
 DHDR= JETANLinkDef.h
+
+ifneq ($(FASTJET),)
+	EINCLUDE:= $(FASTJET)/include
+	CINTFLAGS += -DWITHFASTJET
+endif
+
 

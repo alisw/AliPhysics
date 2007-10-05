@@ -39,4 +39,9 @@
 #pragma	link C++ class AliJetMCReader;
 #pragma	link C++ class AliJetMCReaderHeader;
 #pragma	link C++ class AliJetHistos+;
+#ifdef WITHFASTJET
+#pragma	link C++ class AliFastJetFinder+;
+#pragma	link C++ class AliFastJetHeader+;
+#endif
+
 #endif
