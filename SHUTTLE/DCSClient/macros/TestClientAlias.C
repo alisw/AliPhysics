@@ -1,7 +1,7 @@
 TMap* GetValues(const char* host, Int_t port, const char* request,
-	UInt_t startTime, UInt_t endTime) 
+	UInt_t startTime, UInt_t endTime, Int_t multiSplit) 
 {
-	AliDCSClient client(host, port, 1000, 20, 100);
+	AliDCSClient client(host, port, 1000, 20, multiSplit);
 	// The 5th parameter switches from single alias to multi aliases!
 
 	//Int_t result;
@@ -38,8 +38,11 @@ TMap* GetValues(const char* host, Int_t port, const char* request,
 	values = client.GetAliasValues(requests, startTime, endTime);
 
 	if (!values) {
-		cout<<"Communication failure: "<<
-			client.GetServerError().Data() <<endl;
+		cout<<"Query failed! Result error: "<<
+			client.GetErrorString(client.GetResultErrorCode()) <<endl;
+		if(client.GetResultErrorCode() == AliDCSClient::fgkServerError)	
+			cout<<"Server error: "<<
+				client.GetServerError().Data() <<endl;
 		return NULL;
 	}
 	
@@ -90,7 +93,7 @@ TMap* GetValues(const char* host, Int_t port, const char* request,
 }
 
 TMap* TestClientAlias(const char* host, Int_t port, const char* request,
-	UInt_t startShift, UInt_t endShift) {
+	UInt_t startShift, UInt_t endShift, UInt_t multiSplit) {
 
 	gSystem->Load("$ALICE_ROOT/SHUTTLE/DCSClient/AliDCSClient");
 
@@ -100,17 +103,17 @@ TMap* TestClientAlias(const char* host, Int_t port, const char* request,
 	TTimeStamp currentTime;
 
 	
-	TMap* values = GetValues(host, port, request,
-		currentTime.GetSec() - startShift, 
-		currentTime.GetSec() - endShift);
-
-		
-// SHUTTLE query interval 
 /*	
 	TMap* values = GetValues(host, port, request,
-		1181300060, 
-		1181307260);
+		currentTime.GetSec() - startShift, 
+		currentTime.GetSec() - endShift, multiSplit);
 */
+		
+// SHUTTLE query interval 
+	
+	TMap* values = GetValues(host, port, request,
+		1181300060, 1181307260, multiSplit);
+
 	if(values) values->Print();
 
 	cout << endl;

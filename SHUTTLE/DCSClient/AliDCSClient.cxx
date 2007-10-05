@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.4  2007/09/14 16:46:14  jgrosseo
+1) Connect and Close are called before and after each query, so one can
+keep the same AliDCSClient object.
+2) The splitting of a query is moved to GetDPValues/GetAliasValues.
+3) Splitting interval can be specified in constructor
+
 Revision 1.3  2007/09/11 16:42:02  jgrosseo
 starting modifying AliDCSClient to transparently switch between single and multi query
 first step: same alidcsclient can be used for several queries
@@ -102,7 +108,7 @@ const char* AliDCSClient::fgkServerErrorString = "ServerError";
 AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
 	Int_t retries, Int_t multiSplit):
 	fSocket(NULL), fHost(host), fPort(port), fTimeout(timeout), fRetries(retries), fMultiSplit(multiSplit),
-	fServerErrorCode(AliDCSMessage::kNoneError), fServerError("")
+	fServerErrorCode(AliDCSMessage::kNoneError), fServerError(""), fResultErrorCode(0)
 {
 	// 
 	// host: DCS server host
@@ -344,6 +350,7 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 		{
     			AliError("Not connected!");
             		delete result;
+			fResultErrorCode = fgkBadState;
 	    		return 0;
 	    	}
 
@@ -370,15 +377,18 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
         		{
         			TObjString* aRequest = (TObjString*) list->At(i);
         			if (!requestMessage.AddRequestString(aRequest->String()))
+				{
+					delete result;
+					fResultErrorCode = fgkBadMessage;
         				return 0;
+				}
 	        	}
         	}
 	
-	    	Int_t sResult = 0;
-    		if ((sResult = SendMessage(requestMessage)) < 0)
+    		if ((fResultErrorCode = SendMessage(requestMessage)) < 0)
     		{
                     AliError(Form("Can't send request message! Reason: %s",
-                            GetErrorString(sResult)));
+                            GetErrorString(fResultErrorCode)));
                     Close();
                     delete result;
                     return 0;
@@ -391,7 +401,7 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
     			TObjArray* resultSet = new TObjArray();
 	    		resultSet->SetOwner(1);
     
-    			if ((sResult = ReceiveValueSet(resultSet)) < 0) 
+    			if ((fResultErrorCode = ReceiveValueSet(resultSet)) < 0) 
 	        	{
     				AliError(Form("Can't get values for %s!" ,
     				aRequest->String().Data()));

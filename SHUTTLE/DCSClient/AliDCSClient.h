@@ -51,6 +51,7 @@ public:
         AliDCSMessage::ErrorCode GetServerErrorCode() const
                 { return fServerErrorCode;}
 
+	Int_t GetResultErrorCode() const {return fResultErrorCode;}
         const TString& GetServerError() const {return fServerError;}
 
 
@@ -75,8 +76,10 @@ private:
 	UInt_t fTimeout;	// timeout parameter
 	Int_t fRetries;		// number of retries
   	Int_t   fMultiSplit; // number of datapoints that are queried at a time in a multi dp request, if set to 1 forces single requests 
-	AliDCSMessage::ErrorCode fServerErrorCode;	// error code
+	AliDCSMessage::ErrorCode fServerErrorCode;	// server error code
 	TString fServerError;	// server error string
+	
+	Int_t fResultErrorCode;	// result error code
 
 	Bool_t Connect();
 

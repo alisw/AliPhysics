@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.58  2007/09/28 15:27:40  acolla
+
+AliDCSClient "multiSplit" option added in the DCS configuration
+in AliDCSMessage: variable MAX_BODY_SIZE set to 500000
+
 Revision 1.57  2007/09/27 16:53:13  acolla
 Detectors can have more than one AMANDA server. SHUTTLE queries the servers sequentially,
 merges the dcs aliases/DPs in one TMap and sends it to the preprocessor.
@@ -1577,8 +1582,6 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 
 		// Query DCS archive
 		Int_t nServers = fConfig->GetNServers(fCurrentDetector);
-		Log("SHUTTLE", Form("ProcessCurrentDetector -"
-				" found %d Amanda servers for %s", nServers, fCurrentDetector.Data()));
 		
 		for (int iServ=0; iServ<nServers; iServ++)
 		{
@@ -1587,6 +1590,9 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			Int_t port = fConfig->GetDCSPort(fCurrentDetector, iServ);
 			Int_t multiSplit = fConfig->GetMultiSplit(fCurrentDetector, iServ);
 
+			Log(fCurrentDetector, Form("ProcessCurrentDetector -"
+					" Querying DCS Amanda server %s:%d (%d of %d)", 
+					host.Data(), port, iServ+1, nServers));
 			
 			TMap* aliasMap = 0;
 			TMap* dpMap = 0;
@@ -1824,7 +1830,10 @@ TMap* AliShuttle::GetValueSet(const char* host, Int_t port, const TSeqCollection
 	if (result == 0)
 	{
 		Log(fCurrentDetector.Data(), Form("GetValueSet - Can't get entries! Reason: %s",
-			client.GetServerError().Data()));
+			client.GetErrorString(client.GetResultErrorCode())));
+		if (client.GetResultErrorCode() == AliDCSClient::fgkServerError)	
+			Log(fCurrentDetector.Data(), Form("GetValueSet - Server error code: %s",
+				client.GetServerError().Data()));
 
 		return 0;
 	}
