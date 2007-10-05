@@ -1033,3 +1033,32 @@ Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 {
   return fSharedMap[ibit];
 }
+
+
+Float_t  AliTPCseed::CookShape(Int_t type){
+  //
+  //
+  //
+ //-----------------------------------------------------------------
+  // This funtion calculates dE/dX within the "low" and "up" cuts.
+  //-----------------------------------------------------------------
+  Float_t means=0;
+  Float_t meanc=0;
+  for (Int_t i =0; i<160;i++)    {
+    AliTPCTrackerPoint * point = GetTrackPoint(i);
+    if (point==0) continue;
+
+    AliTPCclusterMI * cl = fClusterPointer[i];
+    if (cl==0) continue;	
+    
+    Float_t rsigmay =  TMath::Sqrt(point->GetSigmaY());
+    Float_t rsigmaz =  TMath::Sqrt(point->GetSigmaZ());
+    Float_t rsigma =   (rsigmay+rsigmaz)*0.5;
+    if (type==0) means+=rsigma;
+    if (type==1) means+=rsigmay;
+    if (type==2) means+=rsigmaz;
+    meanc++;
+  }
+  Float_t mean = (meanc>0)? means/meanc:0;
+  return mean;
+}

@@ -72,6 +72,7 @@ class AliTPCseed : public AliTPCtrack {
      void SetErrorY2(Float_t sy2){fErrorY2=sy2;}
      void SetErrorZ2(Float_t sz2){fErrorZ2=sz2;}
      Float_t  CookdEdx(Double_t low=0.05, Double_t up=0.70, Int_t i1=0, Int_t i2=159, Bool_t onlyused = kFALSE);
+     Float_t  CookShape(Int_t type);
      void CookPID();
      Double_t Bethe(Double_t bg);     // return bethe-bloch
      //     void CookdEdx2(Double_t low=0.05, Double_t up=0.70);
