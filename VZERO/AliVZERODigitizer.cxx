@@ -116,7 +116,7 @@ Bool_t AliVZERODigitizer::Init()
   fDigits = new TClonesArray ("AliVZEROdigit", 1000);
   
   TGeoHMatrix *im = AliGeomManager::GetMatrix("VZERO/V0C");
-  im->Print();
+//  im->Print();
   
   return kTRUE;
 }
