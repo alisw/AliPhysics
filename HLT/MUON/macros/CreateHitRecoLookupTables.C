@@ -164,9 +164,6 @@ Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
 	      }// HasPad Condn
 	      
 	    }
-	    else{
-	      cout<<"pad not found for iX :"<<iX<<", iY:"<<iY<<endl;
-	    }
 	  }// iY loop
 	}// iX loop
 	
