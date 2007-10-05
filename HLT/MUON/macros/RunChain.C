@@ -259,16 +259,16 @@ void RunChain(
 	// these components if we are are building the ddlreco or full chains.
 	if (buildDDLRecoComps)
 	{
-		AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("ddl 12 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut12.dat"));
-		AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("ddl 13 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut13.dat"));
-		AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("ddl 14 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut14.dat"));
-		AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("ddl 15 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut15.dat"));
-		AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("ddl 16 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut16.dat"));
-		AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("ddl 17 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut17.dat"));
-		AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("ddl 18 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut18.dat"));
-		AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("ddl 19 buspatchmap ") + lutDir + TString("/BusToDetElem.dat lut ") + lutDir + TString("/Lut19.dat"));	
-		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("ddl 0 lut ") + lutDir + TString("/Lut20.dat reglocmap ") + lutDir + TString("/RegionalToLocalCard.dat"));
-		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("ddl 1 lut ") + lutDir + TString("/Lut21.dat reglocmap ") + lutDir + TString("/RegionalToLocalCard.dat"));
+		AliHLTConfiguration recDDL13("recDDL13", "MUONHitReconstructor", "pubDDL13", TString("-ddl 13 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut13.dat"));
+		AliHLTConfiguration recDDL14("recDDL14", "MUONHitReconstructor", "pubDDL14", TString("-ddl 14 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut14.dat"));
+		AliHLTConfiguration recDDL15("recDDL15", "MUONHitReconstructor", "pubDDL15", TString("-ddl 15 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut15.dat"));
+		AliHLTConfiguration recDDL16("recDDL16", "MUONHitReconstructor", "pubDDL16", TString("-ddl 16 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut16.dat"));
+		AliHLTConfiguration recDDL17("recDDL17", "MUONHitReconstructor", "pubDDL17", TString("-ddl 17 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut17.dat"));
+		AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut18.dat"));
+		AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut19.dat"));
+		AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut20.dat"));	
+		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -lut ") + lutDir + TString("/Lut21.dat"));
+		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -lut ") + lutDir + TString("/Lut22.dat"));
 	}
 
 	TString startEventStr = "-firstevent ";

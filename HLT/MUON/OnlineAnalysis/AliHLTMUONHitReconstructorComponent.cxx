@@ -117,7 +117,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
     {
       HLTDebug("argv[%d] == %s", i, argv[i] );
       
-      if ( !strcmp( argv[i], "lut" ) ) {
+      if ( !strcmp( argv[i], "-lut" ) ) {
 	if ( argc <= i+1 ) {
 	  HLTError("LookupTable filename not specified" );
 	  return EINVAL; /* Invalid argument */ 
@@ -130,25 +130,31 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
       }// lut argument
 	  
 	  
-      if ( !strcmp( argv[i], "ddl" ) ) {
+      if ( !strcmp( argv[i], "-ddl" ) ) {
 	if ( argc <= i+1 ) {
 	  HLTError("DDL number not specified" );
 	  return EINVAL;  /* Invalid argument */
 	}
 	    
-	fDDL = strtoul( argv[i+1], &cpErr, 0 );
-	if ( *cpErr )
+	unsigned long num = strtoul( argv[i+1], &cpErr, 0 );
+	if (cpErr == NULL or *cpErr != '\0')
 	  {
 	    HLTError("Cannot convert '%s' to DDL Number ", argv[i+1] );
 	    return EINVAL;
 	  }
+	if (num < 13 or 20 < num)
+	{
+		HLTError("The DDL number must be in the range [13..20].");
+		return EINVAL;
+	}
+	fDDL = num - 1;
 	
 	i += 2;
 	continue;
       }// ddl argument
       
 
-      if ( !strcmp( argv[i], "rawdir" ) ) {
+      if ( !strcmp( argv[i], "-rawdir" ) ) {
 	if ( argc <= i+1 ) {
 	  HLTError("DDL directory not specified" );
 	  return EINVAL;  /* Invalid argument */
@@ -161,7 +167,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
       }// ddl directory argument
 	  
 	  
-      if ( !strcmp( argv[i], "buspatchmap" ) ) {
+      if ( !strcmp( argv[i], "-buspatchmap" ) ) {
 	if ( argc <= i+1 ) {
 	  HLTError("Buspatch filename not specified" );
 	  return EINVAL; /* Invalid argument */
@@ -173,7 +179,7 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 	continue;
       }// buspatch argument
 
-      if ( !strcmp( argv[i], "rawreader" ) ) {
+      if ( !strcmp( argv[i], "-rawreader" ) ) {
 	fReaderType = true; // true when using rawreader for standalone it is set to false.
 	i += 1;
 	continue;
@@ -231,9 +237,9 @@ int AliHLTMUONHitReconstructorComponent::DoDeinit()
 
 int AliHLTMUONHitReconstructorComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
-		const AliHLTComponentBlockData* blocks, 
-		AliHLTComponentTriggerData& trigData,
-		AliHLTUInt8_t* outputPtr, 
+		const AliHLTComponentBlockData* blocks,
+		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)

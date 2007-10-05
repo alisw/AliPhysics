@@ -71,10 +71,10 @@ Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
   
   for(Int_t iCh = 0; iCh < 4; iCh++){ // max 4
     
-    sprintf(filename1,"Lut%d.dat",2*(6+iCh));
+    sprintf(filename1,"Lut%d.dat",2*(6+iCh)+1);
     FILE *fout1 = fopen(filename1,"w");
 
-    sprintf(filename2,"Lut%d.dat",2*(6+iCh)+1);
+    sprintf(filename2,"Lut%d.dat",2*(6+iCh)+2);
     FILE *fout2 = fopen(filename2,"w");
 
     chamberId = iCh + 6;
