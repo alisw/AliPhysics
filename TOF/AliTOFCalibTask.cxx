@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.6  2007/10/05 10:44:11  zampolli
+Oversight for debugging purpose fixed
+
 Revision 1.5  2007/10/05 10:38:10  zampolli
 Oversight fixed
 
@@ -191,7 +194,7 @@ AliTOFCalibTask:: ~AliTOFCalibTask()
 
   AliInfo("TOF Calib Task: Deleting");
   delete[] fbigarray;
-  delete findexarray;
+  delete[] findexarray;
   delete fOutputContainer;
   delete fhToT;
   delete fhTime;
@@ -501,7 +504,6 @@ void AliTOFCalibTask::Terminate(Option_t *)
 
   for (Int_t i = 0;i<TOFCHANNELS;i++){
     Int_t size=findexarray[i]*NIDX;
-    if (i==3) AliInfo(Form(" entries %i in channel %i ",findexarray[i],i));
     AliDebug(2, Form(" entries %i in channel %i ",findexarray[i],i));
     if (findexarray[i]<=2) {
       AliDebug(1, Form(" not enough statistics for combined PID for channel %i, putting all the tracks as if they were pions",i));
@@ -741,6 +743,10 @@ Bool_t AliTOFCalibTask::CombPID(Float_t *smallarray, Int_t size){
 	smallarray[idxextimePr]=-1;
       }
     }
+    delete[] exptof; 
+    delete[] timeofflight;
+    delete[] texp;
+    delete[] index;
     
   }
   return 1;
@@ -801,6 +807,11 @@ Float_t  AliTOFCalibTask::LoopCombPID(Int_t itrkinset, Int_t ntrkinset, Float_t 
 	
 	chisquarebest=chisquare;
       }
+      delete[] besttimezero;
+      delete[] bestchisquare;
+      delete[] bestweightedtimezero;
+      delete[] weightedtimezero;
+      delete[] timezero;
     }
   }
   return chisquarebest;
