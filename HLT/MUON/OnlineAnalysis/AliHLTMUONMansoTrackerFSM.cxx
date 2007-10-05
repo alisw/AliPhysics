@@ -191,8 +191,11 @@ AliHLTMUONRecHitStruct AliHLTMUONMansoTrackerFSM::AliLine::FindIntersectWithXYPl
 {
 // Find the point of intersection of the line and the XY plane at z.
 
-	assert( fMz != 0.0 );  // Should not have a ray perpendicular to the beam axis.
-	AliHLTFloat32_t t = (z - fCz) / fMz;
+	AliHLTFloat32_t t;
+	if (fMz != 0)  // Should not have a ray perpendicular to the beam axis.
+		t = (z - fCz) / fMz;
+	else
+		t = 0;
 	AliHLTMUONRecHitStruct p;
 	p.fX = fMx*t + fCx;
 	p.fY = fMy*t + fCy;
