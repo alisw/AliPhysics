@@ -14,6 +14,9 @@
  **************************************************************************/
 /*
 $Log$
+Revision 1.4  2007/10/04 15:36:44  zampolli
+Updates to new TOF offline calibration schema
+
 Revision 1.3  2007/07/31 07:26:16  zampolli
 Bug fixed in the $ field
 
@@ -362,10 +365,8 @@ void AliTOFCalibTask::ConnectInputData(const Option_t*)
     fESD = (AliESDEvent*)(*address);
   } else {
     fESD = new AliESDEvent();
-    AliInfo(" qui ok ");
-    //    fESD = (AliESDEvent*)fChain->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
-    fESD->ReadFromTree(fChain) ;  
   }
+  fESD->ReadFromTree(fChain) ;  
 
   BookHistos();
 
@@ -384,6 +385,12 @@ Bool_t AliTOFCalibTask::Notify()
     return kFALSE;
   }
   
+  char ** address = (char **)GetBranchAddress(0, "ESD");
+  if (address) {
+    fESD = (AliESDEvent*)(*address);
+  } else {
+    fESD = new AliESDEvent();
+  }
   fESD->ReadFromTree(fChain) ;  
 
   return kTRUE;
