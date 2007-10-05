@@ -3,7 +3,7 @@
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
- *   Indranil Das <indra.das@saha.ac.in>                                  *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -14,169 +14,215 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/**********************************************
-Purpose:  A modified macro to generate MappingTable
-          in the following form
+/**
+ * This macro is used to generate the lookup tables for the trigger reconstructor
+ * component. All alignment and geometry data is taken from the CDB.
+ */
 
-detElemId+iPlane+iX+iY  Ix  IY  X  Y  B/NB pcbtype
+#include <iostream>
+#include <fstream>
 
-          for the trigger stations.
-
-Created:  13/05/2007
-Modified: 31/08/2007 (Adopted to AliRoot v4-06-Release)
-Modified: 08/09/2007 (To produce mapping on the basis of uniqueID as detElemId+iPlane+localCard+ibitXY )
-Author:   Indranil Das, HEP, SINP, Kolkata
-Email:    indra.das@saha.ac.in | indra.ehep@gmail.com
-***********************************************/
-
-#include <iostream> 
-
-//STEER 
 #include "AliCDBManager.h"
-
-//MUON
+#include "AliGeomManager.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryDetElement.h"
-#include "AliMUONCalibrationData.h"
-#include "AliMUONVCalibParam.h"
-
-//MUON/mapping 
+#include "AliMpCDB.h"
+#include "AliMpDDLStore.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpDEIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpDEManager.h"
-
+#include "AliMpLocalBoard.h"
+#include "AliMpTriggerCrate.h"
 
 using namespace std;
 
 
-Bool_t CreateTriggerRecoLookupTables(TString transformFileName = "geometry.root")
+struct TriggerRecoLookupTableRow
 {
+	float fX, fY, fZ;
+};
 
-  Char_t filename1[20], filename2[20];
-  Int_t chamberId;
+struct TriggerRecoLookupTable
+{
+	// [regional header index][local board ID][chamber][cathode - X/Y][bit set in bit pattern]
+	TriggerRecoLookupTableRow fRow[8][16][4][2][16];
+};
 
-  Int_t runNumber = 0;
-  
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliMUONCalibrationData cd(runNumber);
 
-  AliMpSegmentation *mpSegFactory = AliMpSegmentation::ReadData(); 
-
-  AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
-  chamberGeometryTransformer->LoadGeometryData(transformFileName);
-  
-    sprintf(filename1,"Lut%d.dat",2*(10+0));
-    //ofstream fout1(filename1);
-    FILE *fout1 = fopen(filename1,"w");
-
-    sprintf(filename2,"Lut%d.dat",2*(10+0)+1);
-    //ofstream fout2(filename2);
-    FILE *fout2 = fopen(filename2,"w");
-
-  for(Int_t iCh = 0; iCh < 4; iCh++){ // max 4
-
-    chamberId = iCh + 10;
-    
-    cout<<"Running for Chamber : "<<chamberId<<endl;
-
-    AliMpDEIterator it;
-    for ( it.First(chamberId); ! it.IsDone(); it.Next() ) {
-    
-      Int_t detElemId = it.CurrentDEId();
-      
-      Double_t globPos[3] = {0.0, 0.0, 0.0};
-      Double_t locPos[3] = {0.0, 0.0, 0.0};
-
-      chamberGeometryTransformer->GetDetElement(detElemId)->Local2Global(locPos[0],locPos[1],locPos[2],globPos[0],globPos[1],globPos[2]);
-       
-      for(Int_t iPlane = 0 ; iPlane <= 1 ; iPlane++){
+void CreateTriggerRecoLookupTables(const char* CDBpath = "local://$ALICE_ROOT")
+{
+	AliCDBManager* cdbManager = AliCDBManager::Instance();
+	cdbManager->SetDefaultStorage(CDBpath);
+	cdbManager->SetRun(0);
+	AliGeomManager::LoadGeometry();
 	
-	AliMp::CathodType cath;
+	AliMUONGeometryTransformer transformer;
+	if (! transformer.LoadGeometryData())
+	{
+		cerr << "ERROR: Could not load geometry into transformer." << endl;
+		return;
+	}
+	
+	if (! AliMpCDB::LoadMpSegmentation())
+	{
+		cerr << "ERROR: Could not load segmentation mapping." << endl;
+		return;
+	}
+	AliMpSegmentation* segmentation = AliMpSegmentation::Instance();
+	if (segmentation == NULL)
+	{
+		cerr << "ERROR: AliMpSegmentation::Instance() was NULL." << endl;
+		return;
+	}
+	if (! AliMpCDB::LoadDDLStore())
+	{
+		cerr << "ERROR: Could not load DDL mapping." << endl;
+		return;
+	}
+	AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
+	if (ddlStore == NULL)
+	{
+		cerr << "ERROR: AliMpDDLStore::Instance() was NULL." << endl;
+		return;
+	}
+	
+	cout << "Building LUTs..." << endl;
+	
+	TriggerRecoLookupTable* lookupTable21 = new TriggerRecoLookupTable;
+	TriggerRecoLookupTable* lookupTable22 = new TriggerRecoLookupTable;
+	
+	for (Int_t i = 0; i < 8; i++)
+	for (Int_t j = 0; j < 16; j++)
+	for (Int_t k = 0; k < 4; k++)
+	for (Int_t n = 0; n < 2; n++)
+	for (Int_t m = 0; m < 16; m++)
+	{
+		lookupTable21->fRow[i][j][k][n][m].fX = 0;
+		lookupTable21->fRow[i][j][k][n][m].fY = 0;
+		lookupTable21->fRow[i][j][k][n][m].fZ = 0;
+		lookupTable22->fRow[i][j][k][n][m].fX = 0;
+		lookupTable22->fRow[i][j][k][n][m].fY = 0;
+		lookupTable22->fRow[i][j][k][n][m].fZ = 0;
+	}
+	
+	AliMpDEIterator detElemIter;
+	for (Int_t iDDL = 20; iDDL <= 21; iDDL++)
+	{
+		for (Int_t iReg = 0; iReg < 8; iReg++)
+		{
+			AliMpTriggerCrate* crate = ddlStore->GetTriggerCrate(iDDL, iReg);
+			if (crate == NULL)
+			{
+				cerr << "ERROR: Could not get crate for regional header = " << iReg
+					<< ", and DDL ID = " << iDDL << endl;
+				continue;
+			}
+			
+			for (Int_t iLocBoard = 0; iLocBoard < 16; iLocBoard++)
+			{
+				Int_t boardId = crate->GetLocalBoardId(iLocBoard);
+				if (boardId == 0) continue;
+				
+				AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(boardId);
+				if (localBoard == NULL)
+				{
+					cerr << "ERROR: Could not get loacl board: " << boardId << endl;
+					continue;
+				}
 
-	if(iPlane == 0)
-	  cath = AliMp::kCath0 ;
+				// skip copy cards
+				if (! localBoard->IsNotified()) continue;
+			
+				for (Int_t iChamber = 0; iChamber < 4; iChamber++)
+				{
+					Int_t detElemId = ddlStore->GetDEfromLocalBoard(boardId, iChamber);
+					
+					const AliMUONGeometryDetElement* detElemTransform = transformer.GetDetElement(detElemId);
+					if (detElemTransform == NULL)
+					{
+						cerr << "ERROR: Got NULL pointer for geometry transformer for detection element ID = "
+							<< detElemId << endl;
+						continue;
+					}
+					
+					for (Int_t iCathode = 0; iCathode <= 1; iCathode++)
+					{
+						const AliMpVSegmentation* seg = segmentation->GetMpSegmentation(
+								detElemId, AliMp::GetCathodType(iCathode)
+							);
+						
+						for (Int_t bitxy = 0; bitxy < 16; bitxy++)
+						{
+							Int_t offset = 0;
+							if (iCathode && localBoard->GetSwitch(6)) offset = -8;
+							
+							AliMpPad pad = seg->PadByLocation(AliMpIntPair(boardId, bitxy+offset), kFALSE);
+						
+							if (! pad.IsValid())
+							{
+								// There is no pad associated with the given local board and bit pattern.
+								continue;
+							}
+							
+							// Get the global coodinates of the pad.
+							Float_t lx = pad.Position().X();
+							Float_t ly = pad.Position().Y();
+							Float_t gx, gy, gz;
+							detElemTransform->Local2Global(lx, ly, 0, gx, gy, gz);
+							
+							// Fill the LUT
+							if (crate->GetDdlId() == 20)
+							{
+								lookupTable21->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fX = gx;
+								lookupTable21->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fY = gy;
+								lookupTable21->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fZ = gz;
+							}
+							else
+							{
+								lookupTable22->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fX = gx;
+								lookupTable22->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fY = gy;
+								lookupTable22->fRow[iReg][iLocBoard][iChamber][iCathode][bitxy].fZ = gz;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	fstream file;
+	file.open("Lut21.dat", fstream::out | fstream::binary | fstream::trunc);
+	if (file)
+	{
+		file.write((char*)lookupTable21, sizeof(TriggerRecoLookupTable));
+		if (! file)
+		{
+			cerr << "ERROR: There was a problem writing to file Lut21.dat" << endl;
+		}
+		file.close();
+	}
 	else
-	  cath = AliMp::kCath1 ;
-
-	AliMpVSegmentation* seg = mpSegFactory->CreateMpSegmentation(detElemId, cath);
-
-	Int_t maxIX = seg->MaxPadIndexX();  
-	Int_t maxIY = seg->MaxPadIndexY(); 
-	Int_t idManuChannel,idetElemId;
-
-	Double_t realX, realY, realZ;
-	Double_t localX, localY, localZ;
-	Double_t padSizeX, padSizeY;
-	Int_t pcbType;
-	Int_t locCard, ibitxy;
-
-	//Pad Info of a segment
-	for(Int_t iX = 0; iX<= maxIX ; iX++){
-	  for(Int_t iY = 0; iY<= maxIY ; iY++){
-	    if(seg->HasPad(AliMpIntPair(iX,iY))){
-	      AliMpPad pad = seg->PadByIndices(AliMpIntPair(iX,iY),kFALSE);
-	      
-	      locCard = pad.GetLocation(0).GetFirst();
-	      ibitxy = pad.GetLocation(0).GetSecond();
-
- 	      idetElemId = detElemId%1000;
-	      idetElemId &= 0x1FF ;
-	      iPlane &= 0x1 ;
-	      locCard &= 0xFF ;
-	      ibitxy &= 0xF ;
-	      
-	      idManuChannel &= 0x0;
-	      idManuChannel = (idManuChannel|idetElemId)<<1;  
- 	      idManuChannel = (idManuChannel|iPlane)<<8;  
-	      idManuChannel = (idManuChannel|locCard)<<4 ;
-	      idManuChannel |= ibitxy;
-	      
-	      localX = pad.Position().X();
-	      localY = pad.Position().Y();
-	      localZ = 0.0;
-
-	      chamberGeometryTransformer->Local2Global(detElemId,localX,localY,localZ,
-						       realX,realY,realZ);
-	      padSizeX = 2.0*pad.Dimensions().X();
-	      padSizeY = 2.0*pad.Dimensions().Y();
-
-	      if(iPlane == 0 ){
-		if(padSizeX==17.0)
-		  pcbType = 0;
-		else if(padSizeX==34.0)
-		  pcbType = 1;
-		else
-		  pcbType = 2;
-	      }
-	      else{
-		if(padSizeY==51.0)
-		  pcbType = 0;
-		else
-		  pcbType = 1;
-	      }
-	      
-	      idetElemId %= 100;
-
-	      if(idetElemId<5 || idetElemId > 13){
- 		fprintf(fout1,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,iPlane);
-	      }
-	      else{
-		fprintf(fout2,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,iPlane);
-	      }// HasPad Condn
-	      
-	    }
-	  }// iY loop
-	}// iX loop
+	{
+		cerr << "ERROR: Could not open file Lut21.dat for writing." << endl;
+	}
 	
-      }// iPlane
-    } // detElemId loop
-
-  }// ichamber loop
-
-  fclose(fout1);
-  fclose(fout2);
-  
-  return kTRUE;
+	file.open("Lut22.dat", fstream::out | fstream::binary | fstream::trunc);
+	if (file)
+	{
+		file.write((char*)lookupTable22, sizeof(TriggerRecoLookupTable));
+		if (! file)
+		{
+			cerr << "ERROR: There was a problem writing to file Lut22.dat" << endl;
+		}
+		file.close();
+	}
+	else
+	{
+		cerr << "ERROR: Could not open file Lut22.dat for writing." << endl;
+	}
+	
+	delete lookupTable21;
+	delete lookupTable22;
 }

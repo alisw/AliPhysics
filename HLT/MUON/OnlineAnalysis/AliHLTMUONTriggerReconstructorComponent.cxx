@@ -1,34 +1,39 @@
 /**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
+ * This file is property of and copyright by the ALICE HLT Project        *
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors:                                                       *
  *   Indranil Das <indra.das@saha.ac.in>                                  *
+ *   Artur Szostak <artursz@iafrica.com>                                  *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
+ * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 /* $Id$ */
 
-/** @file   AliHLTMUONTriggerReconstructorComponent.cxx
-    @author Indranil Das
-    @date   
-    @brief  Implementation of the trigger DDL reconstructor component. */
+/**
+ * @file   AliHLTMUONTriggerReconstructorComponent.cxx
+ * @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
+ * @date
+ * @brief  Implementation of the trigger DDL reconstructor component.
+ */
 
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONTriggerReconstructor.h"
 #include "AliHLTMUONHitReconstructor.h"
 #include "AliHLTMUONConstants.h"
+#include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
 #include <cstdlib>
 #include <cerrno>
 #include <cassert>
+#include <fstream>
 
 namespace
 {
@@ -40,12 +45,11 @@ namespace
 
 
 ClassImp(AliHLTMUONTriggerReconstructorComponent)
-    
-    
+
+
 AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent() :
 	fTrigRec(NULL),
-	fDDLDir(""),
-	fDDL(0),
+	fDDL(-1),
 	fWarnForUnexpecedBlock(false),
 	fSuppressPartialTrigs(false)
 {
@@ -93,133 +97,103 @@ AliHLTComponent* AliHLTMUONTriggerReconstructorComponent::Spawn()
 
 int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 {
-  // perform initialization. We check whether our relative output size is
-  // specified in the arguments.
-  
-  HLTInfo("Initialising DHLT Trigger Record Component");
-
-  fWarnForUnexpecedBlock = false;
-  fSuppressPartialTrigs = false;
-  fTrigRec = new AliHLTMUONTriggerReconstructor();
-      
-  // this is just to get rid of the warning "unused parameter"
-  if (argc==0 && argv==NULL) {
-    HLTError("Arguments missing, no arguments" );
-  }
-
-  char lutFileName[500],reglocFileName[500];
-
-  int i = 0;
-  char* cpErr;
-  while ( i < argc )
-    {
-      HLTDebug("argv[%d] == %s", i, argv[i] );
-      
-      if ( !strcmp( argv[i], "lut" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("LookupTable filename not specified" );
-	  return EINVAL; /* Invalid argument */ 
+	// perform initialization.
+	
+	HLTInfo("Initialising dHLT trigger reconstructor component.");
+	
+	fWarnForUnexpecedBlock = false;
+	fSuppressPartialTrigs = false;
+	assert(fTrigRec == NULL);
+	fTrigRec = new AliHLTMUONTriggerReconstructor();
+	
+	const char* lutFileName = NULL;
+	
+	for (int i = 0; i < argc; i++)
+	{
+		if ( !strcmp( argv[i], "-lut" ) )
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("LookupTable filename not specified." );
+				return EINVAL; /* Invalid argument */ 
+			}
+			
+			lutFileName = argv[i+1];
+			
+			i++;
+			continue;
+		}
+		
+		if ( !strcmp( argv[i], "-ddl" ) )
+		{
+			if ( argc <= i+1 )
+			{
+				HLTError("DDL number not specified." );
+				return EINVAL;  /* Invalid argument */
+			}
+		
+			char* cpErr = NULL;
+			unsigned long num = strtoul(argv[i+1], &cpErr, 0);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert '%s' to a DDL Number.", argv[i+1] );
+				return EINVAL;
+			}
+			if (num < 21 or 22 < num)
+			{
+				HLTError("The DDL number must be in the range [21..22].");
+				return EINVAL;
+			}
+			fDDL = num - 1; // Convert to DDL number in the range 0..21
+			
+			i++;
+			continue;
+		}
+			
+		if (not strcmp( argv[i], "-warn_on_unexpected_block" ))
+		{
+			fWarnForUnexpecedBlock = true;
+			continue;
+		}
+			
+		if (not strcmp( argv[i], "-suppress_partial_triggers" ))
+		{
+			fSuppressPartialTrigs = true;
+			continue;
+		}
+		
+		HLTError("Unknown option '%s'.", argv[i] );
+		return EINVAL;
+			
+	}//while loop
+	
+	if (fDDL == -1)
+	{
+		HLTWarning("DDL number not specified. Cannot check if incomming data is valid.");
 	}
 	
-	sprintf(lutFileName,"%s",argv[i+1]);
+	if (lutFileName != NULL)
+	{
+		if (not ReadLookUpTable(lutFileName))
+		{
+			HLTError("Failed to read lut, lut cannot be read");
+			return ENOENT ; /* No such file or directory */
+		}
+	}
+	else
+	{
+		HLTWarning("The lookup table has not been specified. Output results will be invalid.");
+	}
 	
-	i += 2;
-	continue;
-      }// lut argument
-      
-      if ( !strcmp( argv[i], "ddl" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("DDL number not specified" );
-	  return EINVAL;  /* Invalid argument */
-	}
-
-	fDDL = strtoul( argv[i+1], &cpErr, 0 );
-	if ( *cpErr )
-	  {
-	    HLTError("Cannot convert '%s' to DDL Number ", argv[i+1] );
-	    return EINVAL;
-	  }
-	//fDDL = atoi(argv[i+1]);
-	
-	i += 2;
-	continue;
-      }// ddl argument
-	  
-      if ( !strcmp( argv[i], "rawdir" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("DDL directory not specified" );
-	  return EINVAL;  /* Invalid argument */
-	}
-
-	fDDLDir = argv[i+1] ;
-	i += 2;
-	continue;
-      }// ddl directory argument
-
-      if ( !strcmp( argv[i], "reglocmap" ) ) {
-	if ( argc <= i+1 ) {
-	  HLTError("Regional to Local Card mapping  filename not specified" );
-	  return EINVAL; /* Invalid argument */
-	}
-
-	sprintf(reglocFileName,"%s",argv[i+1]);
-
-	i += 2;
-	continue;
-      }// regtolocalmap argument
-	  
-      if ( !strcmp( argv[i], "-warn_on_unexpected_block" ) ) {
-        fWarnForUnexpecedBlock = true;
-	i++;
-	continue;
-      }
-	  
-      if ( !strcmp( argv[i], "-suppress_partial_triggers" ) ) {
-        fSuppressPartialTrigs = true;
-	i++;
-	continue;
-      }
-
-      HLTError("Unknown option '%s'", argv[i] );
-      return EINVAL;
-	  
-    }//while loop
-
-    int lutline = fTrigRec->GetLutLine();
-    AliHLTMUONHitReconstructor::DHLTLut* lookupTable = new AliHLTMUONHitReconstructor::DHLTLut[lutline];
-    if(!ReadLookUpTable(lookupTable,lutFileName)){
-      HLTError("Failed to read lut, lut cannot be read");
-      return ENOENT ; /* No such file or directory */
-    }else{
-      
-      fTrigRec->LoadLookUpTable(lookupTable,fDDL+AliHLTMUONTriggerReconstructor::GetkDDLOffSet());
-
-      AliHLTMUONTriggerReconstructor::RegToLoc regToLocMap[128]; // 16(locCard)*8(regCard)
-      if(!ReadRegToLocMap(regToLocMap,reglocFileName)){
-	HLTError("Failed to read RegToLocMap file");
-	return ENOENT ; /* No such file or directory */
-      }
-
-      if(!(fTrigRec->SetRegToLocCardMap(regToLocMap))){
-	HLTError("Failed to assign RegToLocMap to TrigRec Class due to memory problem");
-	return ENOMEM ; /*cannot allocate memory*/
-      }
-      
-    }// reading lut
-
-    delete []lookupTable;
-
-    HLTInfo("Initialisation of DHLT Trigger Record Component is done");
-
-    return 0;
+	return 0;
 }
 
 
 int AliHLTMUONTriggerReconstructorComponent::DoDeinit()
 {
-	HLTInfo("Deinitialising DHLT Trigger Record Component");
+	HLTInfo("Deinitialising dHLT trigger reconstructor component.");
 
-	if(fTrigRec)
+	if (fTrigRec != NULL)
 	{
 		delete fTrigRec;
 		fTrigRec = NULL;
@@ -230,9 +204,9 @@ int AliHLTMUONTriggerReconstructorComponent::DoDeinit()
 
 int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
-		const AliHLTComponentBlockData* blocks, 
-		AliHLTComponentTriggerData& trigData,
-		AliHLTUInt8_t* outputPtr, 
+		const AliHLTComponentBlockData* blocks,
+		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
@@ -289,12 +263,19 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 			continue;
 		}
 		
+		bool ddl[22];
+		AliHLTMUONUtils::UnpackSpecBits(blocks[n].fSpecification, ddl);
+		if (not ddl[fDDL])
+		{
+			HLTWarning("Received trigger DDL raw data from a DDL which we did not expect.");
+		}
+		
 		// Create a new output data block and initialise the header.
 		AliHLTMUONTriggerRecordsBlockWriter block(outputPtr+totalSize, size-totalSize);
 		if (not block.InitCommonHeader())
 		{
 			HLTError("There is not enough space in the output buffer for the new data block.",
-				 " We require at least %u bytes, but have %u bytes left.",
+				 " We require at least %ufTrigRec->GetkDDLHeaderSize() bytes, but have %u bytes left.",
 				sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType),
 				block.BufferSize()
 			);
@@ -302,9 +283,8 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		}
 
 		AliHLTUInt32_t totalDDLSize = blocks[n].fSize / sizeof(AliHLTUInt32_t);
-		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - fTrigRec->GetkDDLHeaderSize();
-		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr)
-			+ fTrigRec->GetkDDLHeaderSize();
+		AliHLTUInt32_t ddlRawDataSize = totalDDLSize - 8;
+		AliHLTUInt32_t* buffer = reinterpret_cast<AliHLTUInt32_t*>(blocks[n].fPtr) + 8;
 		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
 
 		bool runOk = fTrigRec->Run(
@@ -352,71 +332,32 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 }
 
 
-bool AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath)
+bool AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath)
 {
-  if (fDDL < 0 || fDDL >= 2){
-    HLTError("DDL number is out of range");
-    return false;
-  }
-  
-  int lutLine = fTrigRec->GetLutLine();
-  
-  FILE* fin = fopen(lutpath, "r");
-  if (fin == NULL){
-    HLTError("Failed to open file: %s",lutpath);
-    return false;
-  }
-  
-  for(int i=0;i<lutLine;i++){
-    fscanf(
-	   fin,
-	   "%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",
-	   &lookupTable[i].fIdManuChannel,
-	   &lookupTable[i].fIX,
-	   &lookupTable[i].fIY,
-	   &lookupTable[i].fRealX,
-	   &lookupTable[i].fRealY,
-	   &lookupTable[i].fRealZ,
-	   &lookupTable[i].fPcbZone,
-	   &lookupTable[i].fPlane
-	   );
-  }
-  
-  fclose(fin);
-  return true;
-}
+	assert(fTrigRec != NULL);
 
-
-bool AliHLTMUONTriggerReconstructorComponent::ReadRegToLocMap(AliHLTMUONTriggerReconstructor::RegToLoc* regToLocMap,const char* reglocFileName)
-{
-  int iTrigDDL,iReg,iLoc,locId,switchWord,detElemId[4];
-  int index;
-
-  memset(regToLocMap,-1,128*sizeof(AliHLTMUONTriggerReconstructor::RegToLoc));
-
-  char s[100];
-  ifstream fin(reglocFileName);
-  
-  if(!fin){
-    HLTError("Failed to open file %s",reglocFileName);
-    return false;
-  }
-
-  while(fin.getline(s,100)){
-    sscanf(s,"%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
-	   &iTrigDDL,&iReg,&iLoc,&locId,&switchWord,&detElemId[0],&detElemId[1],&detElemId[2],&detElemId[3]);
-    if(iTrigDDL==fDDL){
-      index = iReg*16 + iLoc;
-      regToLocMap[index].fTrigDDL = iTrigDDL ; 
-      regToLocMap[index].fRegId = iReg ;
-      regToLocMap[index].fLoc = iLoc ;
-      regToLocMap[index].fLocId = locId ;  
-      regToLocMap[index].fSwitch = switchWord ;
-      for(int idet = 0; idet<4; idet++)
-	regToLocMap[index].fDetElemId[idet] = detElemId[idet] ;
-    }// if matches with fDDL
-  }//file loop
-  
-  fin.close();
-  return true;
+	fstream file;
+	file.open(lutpath, fstream::binary | fstream::in);
+	if (not file)
+	{
+		HLTError("Could not open file: %s", lutpath);
+		return false;
+	}
+	
+	file.read(reinterpret_cast<char*>(fTrigRec->LookupTableBuffer()), fTrigRec->LookupTableSize());
+	if (file.eof())
+	{
+		HLTError("The file %s was too short to contain a valid lookup table for this component.", lutpath);
+		file.close();
+		return false;
+	}
+	if (file.bad())
+	{
+		HLTError("Could not read from file: %s", lutpath);
+		file.close();
+		return false;
+	}
+	
+	file.close();
+	return true;
 }

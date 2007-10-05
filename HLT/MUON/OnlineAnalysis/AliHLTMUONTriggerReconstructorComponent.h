@@ -1,44 +1,30 @@
 #ifndef AliHLTMUONTRIGGERRECONSTRUCTORCOMPONENT_H
 #define AliHLTMUONTRIGGERRECONSTRUCTORCOMPONENT_H
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * All rights reserved.                                                   *
- *                                                                        *
- * Primary Authors:                                                       *
- *   Indranil Das <indra.das@saha.ac.in>                                  *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          * 
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/* This file is property of and copyright by the ALICE HLT Project        *
+ * ALICE Experiment at CERN, All rights reserved.                         *
+ * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
 
-/** @file   AliHLTMUONTriggerReconstructorComponent.h
-    @author Timm Steinbeck, Matthias Richter
-    @date   
-    @brief  A processing component for the dHLT trigger DDL reconstruction. */
-
+/**
+ * @file   AliHLTMUONTriggerReconstructorComponent.h
+ * @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
+ * @date
+ * @brief  A processing component for the dHLT trigger DDL reconstruction.
+ */
 
 #include "AliHLTProcessor.h"
-#include "AliHLTMUONTriggerReconstructor.h"
-#include "AliHLTMUONHitReconstructor.h"
+#include "AliHLTMUONDataTypes.h"
 
 #if __GNUC__ < 3
 #define std
 #endif
 
+class AliHLTMUONTriggerReconstructor;
+
 /**
  * @class AliHLTMUONTriggerReconstructorComponent
- * @brief A dummy HLT processing component. 
- *
- * An implementiation of a dummy component that just copies its input data
- * as a test, demonstration, and example of the HLT component scheme.
- * @ingroup alihlt_tutorial
+ * @brief A processing component for the dHLT trigger DDL reconstruction.
  */
 class AliHLTMUONTriggerReconstructorComponent : public AliHLTProcessor
 {
@@ -59,34 +45,31 @@ protected:
 
 	// Protected functions to implement AliHLTComponent's interface.
 	// These functions provide initialization as well as the actual processing
-	// capabilities of the component. 
+	// capabilities of the component.
+	
+	virtual int DoInit(int argc, const char** argv);
+	virtual int DoDeinit();
 
-	int DoInit(int argc, const char** argv);
-	int DoDeinit();
-
-	int DoEvent(
+	virtual int DoEvent(
 			const AliHLTComponentEventData& evtData,
-			const AliHLTComponentBlockData* blocks, 
+			const AliHLTComponentBlockData* blocks,
 			AliHLTComponentTriggerData& trigData,
-			AliHLTUInt8_t* outputPtr, 
+			AliHLTUInt8_t* outputPtr,
 			AliHLTUInt32_t& size,
 			std::vector<AliHLTComponentBlockData>& outputBlocks
 		);
 
 private:
 
-	AliHLTMUONTriggerReconstructor* fTrigRec;
-
-	bool ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath);
-	bool ReadRegToLocMap(AliHLTMUONTriggerReconstructor::RegToLoc* regToLoc,const char* reglocFileName);
-
-	TString fDDLDir;
-	Int_t fDDL;
+	bool ReadLookUpTable(const char* lutpath);
+	
+	AliHLTMUONTriggerReconstructor* fTrigRec; // The trigger reconstructor class implementing the algorithm.
+	AliHLTInt32_t fDDL;   // The DDL number in the range 20..21 from which to expect input.
 	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 	bool fSuppressPartialTrigs;   // Flag indicating if we should suppress triggers that did not trigger the L0
 
 	ClassDef(AliHLTMUONTriggerReconstructorComponent, 0)
 
 };
-    
+
 #endif // AliHLTMUONTRIGGERRECONSTRUCTORCOMPONENT_H
