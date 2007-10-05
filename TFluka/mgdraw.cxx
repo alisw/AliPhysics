@@ -104,32 +104,16 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 //
 // Primary ionsiations
 	    Int_t nprim = ALLDLT.nalldl;
-// Protection against nprim > mxalld
 	    if (nprim >= mxalld) {
 		nprim = mxalld;
 		Warning("mgdraw", "nprim > mxalld, nprim: %6d  pdg: %6d mreg %6d p %13.3f step %13.3f\n", 
-		       ALLDLT.nalldl, 
-		       fluka->PDGFromId(TRACKR.jtrack), 
-		       mreg, 
-		       TRACKR.ptrack, 
-		       TRACKR.ctrack);
-		
+			ALLDLT.nalldl, 
+			fluka->PDGFromId(TRACKR.jtrack), 
+			mreg, 
+			TRACKR.ptrack, 
+			TRACKR.ctrack);
 	    }
-// Multiple steps for nprim > 0
-	    if (nprim > 0) {
-		for (Int_t i = 0; i < nprim; i++) {
-		    fluka->SetCurrentPrimaryElectronIndex(i);
-		    (TVirtualMCApplication::Instance())->Stepping();
-		    if (i == 0) fluka->SetTrackIsNew(kFALSE);
-		}
-	    } else {
-		// No primary electron ionisation
-		// Call Stepping anyway but flag nprim = 0 as index = -2
-		fluka->SetCurrentPrimaryElectronIndex(-2);
-		(TVirtualMCApplication::Instance())->Stepping();
-	    }
-	    // Reset the index
-	    fluka->SetCurrentPrimaryElectronIndex(-1);
+	    fluka->PrimaryIonisationStepping(nprim);
 	} else {
 	    // Single step
 	    (TVirtualMCApplication::Instance())->Stepping();
@@ -160,10 +144,23 @@ void mgdraw(Int_t& icode, Int_t& mreg)
 
         fluka->SetTrackIsNew(kFALSE);
         fluka->SetCaller(kMGDRAW);
-	if (msd > 0) fluka->SetCurrentPrimaryElectronIndex(-2);
-        (TVirtualMCApplication::Instance())->Stepping();
-	if (msd > 0) fluka->SetCurrentPrimaryElectronIndex(-1);
-    }
+	if (msd == 0) {
+	    (TVirtualMCApplication::Instance())->Stepping();
+	} else {
+	    Int_t nprim = ALLDLT.nalldl;
+// Protection against nprim > mxalld
+	    if (nprim >= mxalld) {
+		nprim = mxalld;
+		Warning("mgdraw", "nprim > mxalld, nprim: %6d  pdg: %6d mreg %6d p %13.3f step %13.3f\n", 
+			ALLDLT.nalldl, 
+			fluka->PDGFromId(TRACKR.jtrack), 
+			mreg, 
+			TRACKR.ptrack, 
+			TRACKR.ctrack);
+	    }
+	    fluka->PrimaryIonisationStepping(nprim);
+	} // primary ionisation switched on
+    } // tracking resumed
 } // end of mgdraw
 } // end of extern "C"
 

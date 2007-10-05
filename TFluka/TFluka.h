@@ -400,7 +400,7 @@ class TFluka : public TVirtualMC {
   Double_t GetPrimaryElectronKineticEnergy(Int_t i) const;
   void     GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z) const;
   void     SetCurrentPrimaryElectronIndex(Int_t i)  {fPrimaryElectronIndex = i;}
-
+  void     PrimaryIonisationStepping(Int_t nprim);  
  private:
    
   // Copy constructor and operator= declared but not implemented (-Weff++ flag)
@@ -410,9 +410,8 @@ class TFluka : public TVirtualMC {
   void  PrintHeader();
   void  AddParticlesToPdgDataBase() const;
   Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
-  
-  //
 
+  //
   Int_t   fVerbosityLevel; //Verbosity level (0 lowest - 3 highest)
   Int_t   fNEvent;         //Current event number
   TString fInputFileName;     //Name of the real input file 
