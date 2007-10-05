@@ -99,22 +99,18 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
     return 0;
   } 
 
-  //
-  // DCS
-  //
-  
-  if(ProcessDCS(dcsAliasMap)) return 1;
-
-  //
-  // Process the calibration data for the HLT and DAQ part
-  //
+ 
   
   if (runType=="PHYSICS"){
-    //TString runPar = GetRunParameter("HLTStatus")
+    // DCS
+    if(ProcessDCS(dcsAliasMap)) return 1;
+    // HLT if On
+    //TString runPar = GetRunParameter("HLTStatus");
     //if(runPar=="1") {
-    if(ExtractHLT()) return 1;
-    //if (fResult > 0) return fResult;
-    //} 
+    if(GetHLTStatus()) {
+      if(ExtractHLT()) return 1;
+    } 
+    // DAQ if HLT failed
     if(!fVdriftHLT) {
       if(ExtractDriftVelocityDAQ()) return 1;
     }
@@ -122,6 +118,16 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   
   return 0;  
   
+}
+//______________________________________________________________________________
+Bool_t AliTRDPreprocessor::ProcessDCS()
+{
+
+  TString runType = GetRunType();
+  if(runType == "PHYSICS") return kTRUE;
+
+  return kFALSE;
+
 }
 
 //______________________________________________________________________________
@@ -484,7 +490,7 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
 {
   //
   // Gain, vdrift and PRF calibration running on HLT
-  // return kFALSE if NULL pointer to the list
+  // return kTRUE if NULL pointer to the list
   //
 
   Bool_t error = kFALSE;

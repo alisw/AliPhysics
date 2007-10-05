@@ -33,7 +33,7 @@ class AliTRDPreprocessor : public AliPreprocessor
     Bool_t  ExtractPedestals();
     Bool_t  ExtractDriftVelocityDAQ();
     Bool_t  ExtractHLT();
-    Bool_t  ProcessDCS() { return kFALSE; };
+    Bool_t  ProcessDCS();
     Bool_t  ProcessDCS(TMap *dcsAliasMap);
 
   private:
