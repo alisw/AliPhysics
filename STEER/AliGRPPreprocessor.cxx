@@ -227,7 +227,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     Log(Form("CavernTemperature not put in TMap!"));
   }
 
-  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue("CavernPressure");
+  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue("CavernAtmosPressure");
   if(!aliasCavernPressure) {
     Log(Form("CavernPressure not found!!!"));
     return 1;
