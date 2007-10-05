@@ -201,8 +201,8 @@ Double_t AliExternalTrackParam::GetLinearD(Double_t xv,Double_t yv) const {
 }
 
 Bool_t AliExternalTrackParam::CorrectForMeanMaterial
-(Double_t xOverX0,  Double_t xTimesRho, Double_t mass, 
-Double_t (*Bethe)(Double_t)) {
+(Double_t xOverX0,  Double_t xTimesRho, Double_t mass, Bool_t anglecorr, 
+ Double_t (*Bethe)(Double_t)) {
   //------------------------------------------------------------------
   // This function corrects the track parameters for the crossed material.
   // "xOverX0"   - X/X0, the thickness in units of the radiation length.
@@ -217,6 +217,13 @@ Double_t (*Bethe)(Double_t)) {
   Double_t &fC33=fC[9];
   Double_t &fC43=fC[13];
   Double_t &fC44=fC[14];
+
+  //Apply angle correction, if requested
+  if(anglecorr) {
+    Double_t angle=TMath::Sqrt((1.+ fP3*fP3)/(1.- fP2*fP2));
+    xOverX0 *=angle;
+    xTimesRho *=angle;
+  } 
 
   Double_t p=GetP();
   Double_t p2=p*p;

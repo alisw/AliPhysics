@@ -106,7 +106,8 @@ class AliExternalTrackParam: public AliVParticle {
   Double_t GetD(Double_t xv, Double_t yv, Double_t b) const; 
   Double_t GetLinearD(Double_t xv, Double_t yv) const; 
   Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho, 
-        Double_t mass, Double_t (*f)(Double_t)=ApproximateBetheBloch);
+        Double_t mass,  Bool_t anglecorr=kFALSE,
+	Double_t (*f)(Double_t)=ApproximateBetheBloch);
   Double_t GetPredictedChi2(Double_t p[2],Double_t cov[3]) const;
 
   Double_t 
