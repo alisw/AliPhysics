@@ -47,21 +47,6 @@ AliHLTRootFilePublisherComponent::AliHLTRootFilePublisherComponent()
 
 }
 
-AliHLTRootFilePublisherComponent::AliHLTRootFilePublisherComponent(const AliHLTRootFilePublisherComponent&)
-  :
-  AliHLTFilePublisher()
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTRootFilePublisherComponent& AliHLTRootFilePublisherComponent::operator=(const AliHLTRootFilePublisherComponent&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTRootFilePublisherComponent::~AliHLTRootFilePublisherComponent()
 {
   // see header file for class documentation
@@ -118,11 +103,8 @@ int AliHLTRootFilePublisherComponent::OpenFiles()
   return iResult;
 }
 
-int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& evtData,
-	      AliHLTComponentTriggerData& trigData,
-	      AliHLTUInt8_t* outputPtr, 
-	      AliHLTUInt32_t& size,
-	      vector<AliHLTComponentBlockData>& outputBlocks )
+int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& /*evtData*/,
+						AliHLTComponentTriggerData& /*trigData*/)
 {
   int iResult=0;
   if (GetEventCount()%2==0) {

@@ -144,7 +144,7 @@ void AliHLTReconstructor::FillESD(AliRawReader* rawReader, TTree* /*clustersTree
   }
 }
 
-void AliHLTReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
+void AliHLTReconstructor::Reconstruct(TTree* /*digitsTree*/, TTree* /*clustersTree*/) const
 {
   // reconstruct simulated data
 

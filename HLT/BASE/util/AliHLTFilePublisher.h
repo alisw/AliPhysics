@@ -157,7 +157,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
     /**
      * Get name of the file.
      */
-    const char* GetName() {return fName.Data();}
+    const char* GetName() const {return fName.Data();}
 
     /**
      * Set data type.

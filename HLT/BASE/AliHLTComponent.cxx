@@ -95,7 +95,7 @@ AliHLTComponent::~AliHLTComponent()
       if ((*element)->IsClosed()==0) {
 	HLTWarning("memory file has not been closed, possible data loss or incomplete buffer");
 	// close but do not flush as we dont know whether the buffer is still valid
-	(*element)->Close(0);
+	(*element)->CloseMemoryFile(0);
       }
       delete *element;
       *element=NULL;
@@ -860,7 +860,7 @@ AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity,
 	fOutputBlocks.push_back( bd );
       } else {
 	HLTError("can not allocate/grow object array");
-	pFile->Close(0);
+	pFile->CloseMemoryFile(0);
 	delete pFile;
 	pFile=NULL;
       }
@@ -933,7 +933,7 @@ int AliHLTComponent::CloseMemoryFile(AliHLTMemoryFile* pFile)
     int i=0;
     while (element!=fMemFiles.end() && iResult>=0) {
       if (*element && *element==pFile) {
-	iResult=pFile->Close();
+	iResult=pFile->CloseMemoryFile();
 	
 	// sync memory files and descriptors
 	if (iResult>=0) {
@@ -953,7 +953,7 @@ int AliHLTComponent::CloseMemoryFile(AliHLTMemoryFile* pFile)
   return iResult;
 }
 
-int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
+int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData /*edd*/)
 {
   // see header file for function documentation
   int iResult=-ENOSYS;
@@ -1188,12 +1188,14 @@ int AliHLTComponent::SetStopwatches(TObjArray* pStopwatches)
 
 AliHLTUInt32_t AliHLTComponent::GetRunNo() const
 {
+  // see header file for function documentation
   if (fpRunDesc==NULL) return 0;
   return fpRunDesc->fRunNo;
 }
 
 AliHLTUInt32_t AliHLTComponent::GetRunType() const
 {
+  // see header file for function documentation
   if (fpRunDesc==NULL) return 0;
   return fpRunDesc->fRunType;
 }
@@ -1201,6 +1203,7 @@ AliHLTUInt32_t AliHLTComponent::GetRunType() const
 int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigned int iBlockNo,
 				const char* structname, const char* eventname)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pStruct!=NULL && iStructSize>sizeof(AliHLTUInt32_t)) {
     if (fpInputBlocks!=NULL && iBlockNo<fCurrentEventData.fBlockCnt) {

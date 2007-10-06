@@ -42,10 +42,6 @@ class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
  public:
   /** standard constructor */
   AliHLTRootFilePublisherComponent();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTRootFilePublisherComponent(const AliHLTRootFilePublisherComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTRootFilePublisherComponent& operator=(const AliHLTRootFilePublisherComponent&);
   /** destructor */
   virtual ~AliHLTRootFilePublisherComponent();
 
@@ -70,17 +66,10 @@ class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
    * to use the low-level method.
    * @param evtData       event data structure
    * @param trigData	  trigger data structure
-   * @param outputPtr	  pointer to target buffer
-   * @param size	  <i>input</i>: size of target buffer
-   *            	  <i>output</i>:size of produced data
-   * @param outputBlocks  list to receive output block descriptors
    * @return
    */
   int GetEvent( const AliHLTComponentEventData& evtData,
-		AliHLTComponentTriggerData& trigData,
-		AliHLTUInt8_t* outputPtr, 
-		AliHLTUInt32_t& size,
-		vector<AliHLTComponentBlockData>& outputBlocks );
+		AliHLTComponentTriggerData& trigData);
 
   /**
    * Scan one argument and adjacent parameters.
@@ -96,6 +85,10 @@ class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
   virtual int ScanArgument(int argc, const char** argv);
 
  private:
+  /** copy constructor prohibited */
+  AliHLTRootFilePublisherComponent(const AliHLTRootFilePublisherComponent&);
+  /** assignment operator prohibited */
+  AliHLTRootFilePublisherComponent& operator=(const AliHLTRootFilePublisherComponent&);
 
   ClassDef(AliHLTRootFilePublisherComponent, 0)
 };

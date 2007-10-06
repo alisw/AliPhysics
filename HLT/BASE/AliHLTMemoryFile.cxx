@@ -62,26 +62,6 @@ AliHLTMemoryFile::AliHLTMemoryFile(void* pBuffer, int iSize)
   //HLTDebug("created memory file %p, capacity %d, ROOT version %d", this, fBufferSize, fVersion);
 }
 
-AliHLTMemoryFile::AliHLTMemoryFile(const AliHLTMemoryFile&)
-  :
-  fpBuffer(NULL),
-  fBufferSize(0),
-  fPosition(0),
-  fSize(0),
-  fErrno(0),
-  fbClosed(0),
-  fHeaderSize(0),
-  fTrailerSize(0)
-{
-  // see header file for class documentation
-}
-
-AliHLTMemoryFile& AliHLTMemoryFile::operator=(const AliHLTMemoryFile&)
-{ 
-  // see header file for class documentation
-  return *this;
-}
-
 AliHLTMemoryFile::~AliHLTMemoryFile()
 {
   // see header file for function documentation
@@ -91,7 +71,12 @@ AliHLTMemoryFile::~AliHLTMemoryFile()
   }
 }
 
-int AliHLTMemoryFile::Close(int bFlush)
+void AliHLTMemoryFile::Close(const Option_t*)
+{
+  CloseMemoryFile();
+}
+
+int AliHLTMemoryFile::CloseMemoryFile(int bFlush)
 {
   fErrno=0;
   if (fbClosed) return 0;
@@ -199,7 +184,7 @@ Int_t    AliHLTMemoryFile::SysSync(Int_t /*fd*/)
   return 0;
 }
 
-int AliHLTMemoryFile::WriteHeader(const char* pHeader, int size)
+int AliHLTMemoryFile::WriteHeaderBuffer(const char* pHeader, int size)
 {
   // see header file for function documentation
   fErrno=0;
@@ -225,7 +210,7 @@ int AliHLTMemoryFile::WriteHeader(const char* pHeader, int size)
   return -fErrno;
 }
 
-// int AliHLTMemoryFile::WriteTrailer(const char* pTrailer, int size)
+// int AliHLTMemoryFile::WriteTrailerBuffer(const char* pTrailer, int size)
 // {
 //   // see header file for function documentation
 //   fErrno=0;

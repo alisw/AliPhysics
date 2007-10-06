@@ -239,11 +239,11 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
  */
 
 Int_t AliHLTCalibrationProcessor::ProcessCalibration( const AliHLTComponentEventData& evtData,
-					     const AliHLTComponentBlockData* blocks, 
-					     AliHLTComponentTriggerData& trigData,
-					     AliHLTUInt8_t* outputPtr, 
-					     AliHLTUInt32_t& size,
-					     vector<AliHLTComponentBlockData>& outputBlocks ) {
+						      const AliHLTComponentBlockData* /*blocks*/, 
+						      AliHLTComponentTriggerData& trigData,
+						      AliHLTUInt8_t* /*outputPtr*/, 
+						      AliHLTUInt32_t& /*size*/,
+						      vector<AliHLTComponentBlockData>& /*outputBlocks*/ ) {
   // see header file for class documentation
 
   // we just forward to the high level method, all other parameters already
@@ -251,8 +251,8 @@ Int_t AliHLTCalibrationProcessor::ProcessCalibration( const AliHLTComponentEvent
   return ProcessCalibration( evtData, trigData );
 }
 
-Int_t AliHLTCalibrationProcessor::ProcessCalibration( const AliHLTComponentEventData& evtData, 
-					       AliHLTComponentTriggerData& trigData) {
+Int_t AliHLTCalibrationProcessor::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, 
+						      AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
   HLTFatal( "no processing method implemented" );
@@ -264,11 +264,11 @@ Int_t AliHLTCalibrationProcessor::ProcessCalibration( const AliHLTComponentEvent
  */
 
 Int_t AliHLTCalibrationProcessor::ShipDataToFXS( const AliHLTComponentEventData& evtData,
-					     const AliHLTComponentBlockData* blocks, 
-					     AliHLTComponentTriggerData& trigData,
-					     AliHLTUInt8_t* outputPtr, 
-					     AliHLTUInt32_t& size,
-					     vector<AliHLTComponentBlockData>& outputBlocks ) {
+						 const AliHLTComponentBlockData* /*blocks*/, 
+						 AliHLTComponentTriggerData& trigData,
+						 AliHLTUInt8_t* /*outputPtr*/, 
+						 AliHLTUInt32_t& /*size*/,
+						 vector<AliHLTComponentBlockData>& /*outputBlocks*/ ) {
   // see header file for class documentation
 
   // we just forward to the high level method, all other parameters already
@@ -277,7 +277,8 @@ Int_t AliHLTCalibrationProcessor::ShipDataToFXS( const AliHLTComponentEventData&
 }
 
 
-Int_t AliHLTCalibrationProcessor::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData) {
+Int_t AliHLTCalibrationProcessor::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, 
+						 AliHLTComponentTriggerData& /*trigData*/) {
   // see header file for class documentation
 
   HLTFatal( "no processing method implemented" );
@@ -359,7 +360,7 @@ Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetec
     AliHLTMemoryFile* pMemFile = CreateMemoryFile( kAliHLTDataTypeFXSCalib, kAliHLTVoidDataSpec );
     if ( pMemFile ) {
       
-      iResult = pMemFile->WriteHeader( (const char*) &pHeader, AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize );
+      iResult = pMemFile->WriteHeaderBuffer( (const char*) &pHeader, AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize );
 
       if ( iResult ) {
 	HLTError( "Buffer size to small - for header!" ); 

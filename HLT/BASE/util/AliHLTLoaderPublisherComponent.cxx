@@ -51,25 +51,6 @@ AliHLTLoaderPublisherComponent::AliHLTLoaderPublisherComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTLoaderPublisherComponent::AliHLTLoaderPublisherComponent(const AliHLTLoaderPublisherComponent&)
-  :
-  fMaxSize(0),
-  fLoaderType(),
-  fTreeType("digits"),
-  fVerbose(kFALSE),
-  fDataType(kAliHLTAnyDataType),
-  fSpecification(0),
-  fpLoader(NULL)
-{
-  // see header file for class documentation
-}
-
-AliHLTLoaderPublisherComponent& AliHLTLoaderPublisherComponent::operator=(const AliHLTLoaderPublisherComponent&)
-{
-  // see header file for class documentation
-  return *this;
-}
-
 AliHLTLoaderPublisherComponent::~AliHLTLoaderPublisherComponent()
 {
   // see header file for class documentation

@@ -104,9 +104,9 @@ class AliHLTLoaderPublisherComponent : public AliHLTOfflineDataSource {
 	       AliHLTComponentTriggerData& trigData);
 
  private:
-  /** not a valid copy constructor, defined according to effective C++ style */
+  /** copy constructor prohibited */
   AliHLTLoaderPublisherComponent(const AliHLTLoaderPublisherComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
+  /** assignment operator prohibited */
   AliHLTLoaderPublisherComponent& operator=(const AliHLTLoaderPublisherComponent&);
 
   /**

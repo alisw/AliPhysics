@@ -49,7 +49,7 @@ class AliHLTMemoryFile : public TFile, public AliHLTLogging {
    * @return neg. error code if failed
    *         - -ENOSPC    buffer size too small
    */
-  int WriteHeader(const char* pHeader, int iSize);
+  int WriteHeaderBuffer(const char* pHeader, int iSize);
 
   /**
    * Write a header at the beginning of the file.
@@ -61,7 +61,14 @@ class AliHLTMemoryFile : public TFile, public AliHLTLogging {
    *         - -ENOSPC    buffer size too small
    */
   // not yet stable
-  //int WriteTrailer(const char* pTrailer, int size);
+  //int WriteTrailerBuffer(const char* pTrailer, int size);
+
+  /**
+   * Close file and flush output.
+   * Forwards to @ref CloseMemoryFile and is introduced to avoid
+   * compilation warnings about hidden virtual functions in the base class.
+   */
+  void Close(const Option_t*);
 
   /**
    * Close file and flush output.
@@ -69,24 +76,24 @@ class AliHLTMemoryFile : public TFile, public AliHLTLogging {
    * @return neg. error code if failed
    *         - -ENOSPC    buffer size too small
    */
-  int Close(int bFlush=1);
+  int CloseMemoryFile(int bFlush=1);
 
   /**
    * Check if file has been closed.
    * @return 1 if closed
    */
-  int IsClosed() {return fbClosed;}
+  int IsClosed() const {return fbClosed;}
 
   /**
    * Get the last error code.
    * @return error code
    */
-  int GetErrno() {return fErrno;}
+  int GetErrno() const {return fErrno;}
 
   /**
    * Get header size.
    */
-  int GetHeaderSize() {return fHeaderSize;}
+  int GetHeaderSize() const {return fHeaderSize;}
 
  protected:
   // Interface to basic system I/O routines
@@ -99,9 +106,9 @@ class AliHLTMemoryFile : public TFile, public AliHLTLogging {
   Int_t    SysSync(Int_t fd);
 
  private:
-  /** not a valid copy constructor, defined according to effective C++ style */
+  /** copy constructor prohibited */
   AliHLTMemoryFile(const AliHLTMemoryFile&);
-  /** not a valid assignment op, but defined according to effective C++ style */
+  /** assignment operator prohibited */
   AliHLTMemoryFile& operator=(const AliHLTMemoryFile&);
 
   /** target buffer */
