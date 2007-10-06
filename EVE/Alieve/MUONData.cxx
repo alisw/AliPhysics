@@ -22,7 +22,8 @@
 
 #include <AliMUONDigitMaker.h>
 #include <AliMUONHit.h>
-#include <AliMUONRawCluster.h>
+#include <AliMUONVCluster.h>
+#include "AliMUONVClusterStore.h"
 #include <AliMUONVDigit.h>
 #include "AliMUONDigitStoreV1.h"
 #include "AliMUONVDigitStore.h"
@@ -204,39 +205,40 @@ void MUONData::LoadRecPoints(TTree* tree)
   // load local trigger information
   //
 
-  Char_t branchname[30];
-  TClonesArray *clusters = 0;
-  Int_t nclusters;
-  AliMUONRawCluster  *mcls;
+  AliMUONVClusterStore *clusterStore = AliMUONVClusterStore::Create(*tree);
+  clusterStore->Clear();
+  clusterStore->Connect(*tree,kFALSE);
+  
+  tree->GetEvent(0);
+  
+  AliMUONVCluster *cluster;
   Int_t detElemId;
-  Float_t clsX, clsY, clsZ, charge;
+  Double_t clsX, clsY, clsZ, charge;
 
-  for (Int_t c = 0; c < 10; ++c) {
+  for (Int_t ch = 0; ch < 10; ++ch) {
 
-    if (fChambers[c] == 0) continue;
-    sprintf(branchname,"MUONRawClusters%d",c+1);
-    tree->SetBranchAddress(branchname,&clusters);
-    tree->GetEntry(0);
+    if (fChambers[ch] == 0) continue;
+    
+    TIter next(clusterStore->CreateChamberIterator(ch,ch));
+    
+    while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) ) {
 
-    nclusters = clusters->GetEntriesFast(); 
+      detElemId = cluster->GetDetElemId();
+      
+      clsX   = cluster->GetX();
+      clsY   = cluster->GetY();
+      clsZ   = cluster->GetZ();
+      charge = cluster->GetCharge();
 
-    for (Int_t ic = 0; ic < nclusters; ic++) {
-      mcls  = (AliMUONRawCluster*)clusters->UncheckedAt(ic);
-
-      detElemId = mcls->GetDetElemId();
-      for (Int_t icath = 0; icath < 2; icath++) {
-	clsX   = mcls->GetX(icath);
-	clsY   = mcls->GetY(icath);
-	clsZ   = mcls->GetZ(icath);
-	charge = mcls->GetCharge(icath);
-
-	fChambers[c]->RegisterCluster(detElemId,icath,clsX,clsY,clsZ,charge);
-      }
+      fChambers[ch]->RegisterCluster(detElemId,0,clsX,clsY,clsZ,charge);
+      fChambers[ch]->RegisterCluster(detElemId,1,clsX,clsY,clsZ,charge);
 
     }
 
   }
 
+  delete clusterStore;
+  
 }
 
 //______________________________________________________________________

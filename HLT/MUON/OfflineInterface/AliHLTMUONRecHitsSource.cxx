@@ -30,7 +30,7 @@
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONDataInterface.h"
 #include "AliMUONHit.h"
-#include "AliMUONRawCluster.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONConstants.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVHitStore.h"
@@ -493,8 +493,8 @@ int AliHLTMUONRecHitsSource::GetEvent(
 			if (not fServeChamber[chamber]) continue;
 			
 			TIter next(clusterStore->CreateChamberIterator(chamber,chamber));
-			AliMUONRawCluster* cluster;
-			while ( ( cluster = static_cast<AliMUONRawCluster*>(next()) ) )
+			AliMUONVCluster* cluster;
+			while ( ( cluster = static_cast<AliMUONVCluster*>(next()) ) )
 			{
 				// Only select hits from the given part of the plane
 				if (fSelection == kLeftPlane and not (cluster->GetX() < 0)) continue;
@@ -519,7 +519,7 @@ int AliHLTMUONRecHitsSource::GetEvent(
 				rechit->fZ = cluster->GetZ();
 				
 				// Workout which DDL this hit will be readout of.
-				AliMpDetElement* de = AliMpDEManager::GetDetElement(cluster->DetElemId());
+				AliMpDetElement* de = AliMpDEManager::GetDetElement(cluster->GetDetElemId());
 				if (de != NULL and (0 <= de->GetDdlId() and de->GetDdlId() < 22))
 					ddlList[de->GetDdlId()] = true;
 				else
