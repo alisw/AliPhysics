@@ -22,7 +22,6 @@
 
 // MUON includes
 #include "AliMUONCDB.h"
-#include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 
 #include "Riostream.h"
@@ -41,15 +40,11 @@
 //
 // inputDir (default "."):
 //    path to AliESDs.root
-// outDir (default 0x0)
-//    directory where to store output file "MUON.TriggerEfficiencyMap.root"
-//    (if not set outDir=inputDir is assumed)
 
 void MUONTriggerChamberEfficiency(Bool_t addMapInSimulation=kFALSE,
-				  const char *inputDir=".",
-				  const char *outDir=0x0)
+				  const char *inputDir=".")
 {
-    char filename[150], outfileDir[150];
+    Char_t filename[150], *className = "AliMUONTriggerEfficiencyCells";
     sprintf(filename,"%s/AliESDs.root",inputDir);
 
     TFile *file = new TFile(filename,"read");
@@ -64,24 +59,17 @@ void MUONTriggerChamberEfficiency(Bool_t addMapInSimulation=kFALSE,
 	return;
     }
     
-    AliMUONTriggerChamberEff *chEff = (AliMUONTriggerChamberEff*)esdTree->GetUserInfo()->FindObject("AliMUONTriggerChamberEff");
-    if(!chEff){
-	cerr << "Cannot find AliMUONTriggerChamberEff in esdTree.\nExit!" << endl;
+    AliMUONTriggerEfficiencyCells *effMap = 
+      (AliMUONTriggerEfficiencyCells*)esdTree->GetUserInfo()->FindObject(className);
+    if(!effMap){
+	cerr << "Cannot find " << className << " in esdTree.\nExit!" << endl;
 	return;
     }
 
-    if(!outDir) sprintf(outfileDir,"%s",inputDir);
-    else sprintf(outfileDir,"%s",outDir);
-
-    chEff->WriteEfficiencyMap(outfileDir);
-    chEff->DisplayEfficiency();
+    effMap->DisplayEfficiency();
 
     if(!addMapInSimulation) return;
 
-    char outFileName[150];
-    sprintf(outFileName,"%s/MUON.TriggerEfficiencyMap.root",outfileDir);
-    
-    AliMUONTriggerEfficiencyCells *effCells = new AliMUONTriggerEfficiencyCells(outFileName);
     AliMUONCDB muonCDB;
-    muonCDB.WriteToCDB("MUON/Calib/TriggerEfficiency",effCells,0,99999999,true);
+    muonCDB.WriteToCDB("MUON/Calib/TriggerEfficiency",effMap,0,99999999,true);
 }

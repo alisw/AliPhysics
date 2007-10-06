@@ -14,14 +14,19 @@
 #include "TArrayF.h"
 #include "TArrayI.h"
 #include "TVector2.h"
-#include "TString.h"
 #include "TMatrix.h"
+#include "TH1F.h"
+#include "TList.h"
 
 class AliMUONTriggerEfficiencyCells : public TObject
 {
 public:
   AliMUONTriggerEfficiencyCells();
   AliMUONTriggerEfficiencyCells(const char* filename);
+  AliMUONTriggerEfficiencyCells(TList *countHistoList, TList *noCountHistoList);
+
+  AliMUONTriggerEfficiencyCells(const AliMUONTriggerEfficiencyCells& other); // copy constructor
+  AliMUONTriggerEfficiencyCells& operator=(const AliMUONTriggerEfficiencyCells& other); // assignment operator
 
   virtual ~AliMUONTriggerEfficiencyCells();
 
@@ -31,13 +36,19 @@ public:
   void IsTriggered(Int_t detElemId, Float_t x, Float_t y, Bool_t &trig1, Bool_t &trig2) const;
   void IsTriggered(Int_t detElemId, Int_t localBoard, Bool_t &trig1, Bool_t &trig2) const;
 
-  TVector2 ChangeReferenceFrame(Float_t x, Float_t y, Float_t x0, Float_t y0);
+  void DisplayEfficiency(Bool_t perSlat=kFALSE);
+  Bool_t SumRunEfficiency(const AliMUONTriggerEfficiencyCells &other);
 
   void Reset();
     
 protected:
     TArrayI CellByCoord(Int_t detElemId, Float_t x, Float_t y) const;
+    TVector2 ChangeReferenceFrame(Float_t x, Float_t y, Float_t x0, Float_t y0);
     void ReadFile(const char* filename="$ALICE_ROOT/MUON/data/efficiencyCells.dat");
+    void CalculateEfficiency(Int_t trigger44, Int_t trigger34,
+			     Float_t &efficiency, Float_t &error,
+			     Bool_t failuresAsInput);
+
 
 private:
     void CheckConstants() const;
@@ -46,6 +57,8 @@ private:
     void ReadFileXY(ifstream &file);
     void ReadFileBoards(ifstream &file);
     void ReadHistoBoards(const char* filename="MUON.TriggerEfficiencyMap.root");
+    void InitHistos();
+    void FillHistosFromList();
     
     static const Int_t fgkNcells=80;   ///< Number of cells
     static const Int_t fgkNcathodes=2; ///<Number of cathodes
@@ -57,8 +70,13 @@ private:
     TMatrixF fCellContent[fgkNplanes][fgkNslats]; ///< the cells content
     TArrayF  fCellSize[fgkNplanes];    ///< the size of the cells
     TArrayI  fCellNumber[fgkNplanes];  ///< id of the cells
-    TArrayF  fBoardContent[fgkNplanes];///< the boards content
+    
+    TH1F *fBoardEfficiency[fgkNplanes];///< the boards content
+    TH1F *fSlatEfficiency[fgkNplanes];///< the slats content
 
-    ClassDef(AliMUONTriggerEfficiencyCells,3) // Trigger efficiency store
+    TList *fCountHistoList; ///<list of efficiency numerators
+    TList *fNoCountHistoList; ///<list of efficiency denominators
+
+    ClassDef(AliMUONTriggerEfficiencyCells,4) // Trigger efficiency store
 };
 #endif

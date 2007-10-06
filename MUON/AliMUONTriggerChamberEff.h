@@ -48,10 +48,6 @@ public:
     void EventChamberEff(const AliMUONVTriggerStore& triggerStore,
 			 const AliMUONVTriggerTrackStore& trigTrackStore,
 			 const AliMUONVTrackStore& trackStore);
-    void WriteEfficiencyMap(const char* outputDir);
-    void WriteEfficiencyMapTxt(const char* outputDir);
-    void DisplayEfficiency(Bool_t perSlat=kFALSE);
-
 
 protected:
     Int_t MatchingPad(AliMUONVDigitStore& digitStore, Int_t &detElemId, Float_t coor[2],
@@ -71,6 +67,7 @@ protected:
     Bool_t IsCleanTrack(AliMUONTriggerTrack *triggerTrack,
 			const AliMUONVTrackStore& trackStore);
     void SaveInESDFile();
+    void GetEfficiencyHistos(TList &countList, TList &noCountList);
 
     
 private:
