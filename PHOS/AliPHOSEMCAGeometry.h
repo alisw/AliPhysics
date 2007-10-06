@@ -30,7 +30,7 @@ public:
 
   Float_t * GetStripHalfSize() {return fStripHalfSize ;}
   Float_t   GetStripWallWidthOut() const {return fStripWallWidthOut ;}
-  Float_t * GetSteelCellHalfSize() {return fSteelCellHalfSize ;}
+  Float_t * GetAirCellHalfSize() {return fAirCellHalfSize ;}
   Float_t * GetWrappedHalfSize() {return fWrappedHalfSize ;}
   Float_t   GetAirGapLed() const {return fAirGapLed ;}
   Float_t * GetCrystalHalfSize() {return fCrystalHalfSize ;}
@@ -86,7 +86,7 @@ public:
 private:
 
   Float_t fStripHalfSize[3]   ;        // Strip unit size/2
-  Float_t fSteelCellHalfSize[3] ;        // geometry parameter
+  Float_t fAirCellHalfSize[3] ;        // geometry parameter
   Float_t fWrappedHalfSize[3] ;        // geometry parameter
   Float_t fSupportPlateHalfSize[3] ;   // geometry parameter
   Float_t fSupportPlateInHalfSize[3] ; // geometry parameter

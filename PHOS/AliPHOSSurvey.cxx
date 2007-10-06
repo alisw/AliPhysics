@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2007/08/28 13:12:18  hristov
+ * AliAlignObjAngles becomes AliAlignObjParams (Raffaele)
+ *
  * Revision 1.5  2007/07/10 12:41:38  kharlov
  * Added a new class AliPHOSSurvet1 which read survey data from EDMS files
  *
@@ -197,7 +200,7 @@ void AliPHOSSurvey::InitStripData(const Double_t *xReal, const Double_t *zReal)
   const AliPHOSGeometry *phosGeom = AliPHOSGeometry::GetInstance("IHEP", "IHEP");
   AliPHOSEMCAGeometry * emcaGeom = phosGeom->GetEMCAGeometry();
   const Float_t *strip = emcaGeom->GetStripHalfSize();
-  const Float_t *cell = emcaGeom->GetSteelCellHalfSize(); 
+  const Float_t *cell  = emcaGeom->GetAirCellHalfSize(); 
 
   AliPHOSStripCoords *idealStrips = new AliPHOSStripCoords[fStrNum];//1
   for (Int_t ix = 0, stripNumber = 0; ix < emcaGeom->GetNStripX(); ++ix) {

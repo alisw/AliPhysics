@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.92  2007/07/04 16:38:19  policheh
+ * Tracking2LocalCS matrices corrected for CPV.
+ *
  * Revision 1.91  2007/07/02 14:50:49  policheh
  * Tracking2LocalCS matrices corrected.
  *
@@ -420,10 +423,11 @@ void AliPHOSv0::CreateGeometryforEMC()
 
   // ======= Define the strip ===============
 
-  gMC->Gsvolu("PSTR", "BOX ", idtmed[716], emcg->GetStripHalfSize(), 3) ;  //Made of stell
+  gMC->Gsvolu("PSTR", "BOX ", idtmed[716], emcg->GetStripHalfSize(), 3) ;  //Made of steel
    
       // --- define steel volume (cell of the strip unit)
-      gMC->Gsvolu("PCEL", "BOX ", idtmed[716], emcg->GetSteelCellHalfSize(), 3);
+//       gMC->Gsvolu("PCEL", "BOX ", idtmed[798], emcg->GetSteelCellHalfSize(), 3);
+      gMC->Gsvolu("PCEL", "BOX ", idtmed[798], emcg->GetAirCellHalfSize(), 3);
 
       // --- define wrapped crystal and put it into steel cell
 
@@ -454,7 +458,8 @@ void AliPHOSv0::CreateGeometryforEMC()
 
       Float_t* splate = emcg->GetSupportPlateHalfSize();  
       y = -splate[1] ;
-      Float_t* acel = emcg->GetSteelCellHalfSize() ;
+//       Float_t* acel = emcg->GetSteelCellHalfSize() ;
+      Float_t* acel = emcg->GetAirCellHalfSize() ;
 
       for(Int_t lev = 2, icel = 1; icel <= emcg->GetNCellsXInStrip()*emcg->GetNCellsZInStrip(); icel += 2, lev += 2){
          Float_t x = (2*(lev / 2) - 1 - emcg->GetNCellsXInStrip())* acel[0] ;

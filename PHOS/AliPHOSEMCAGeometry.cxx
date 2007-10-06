@@ -135,10 +135,10 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
   fWrappedHalfSize[1] = fCrystalHalfSize[1] ;                             //wrapped into tyvec
   fWrappedHalfSize[2] = (2*fTyvecThickness + 2*fCrystalHalfSize[2])/2 ;   //
 
-  fSteelCellHalfSize[0] = fWrappedHalfSize[0] + 0.01;
-  fSteelCellHalfSize[1] = (fAirGapLed + 2*fPreampHalfSize[1] + 
+  fAirCellHalfSize[0] = fWrappedHalfSize[0] + 0.01;
+  fAirCellHalfSize[1] = (fAirGapLed + 2*fPreampHalfSize[1] + 
                        2*fPinDiodeHalfSize[1] + 2*fWrappedHalfSize[1])/2 ;  //in strip
-  fSteelCellHalfSize[2] = fWrappedHalfSize[2] + 0.01;
+  fAirCellHalfSize[2] = fWrappedHalfSize[2] + 0.01;
 
   //  fSupportPlateHalfSize[0] = ( (fNCellsXInStrip-1)*fStripWallWidthIn + 2*fStripWallWidthOut + 
   //			       fNCellsXInStrip * (2*fTyvecThickness + 2*fCrystalHalfSize[0]) )/2 ;
@@ -153,7 +153,7 @@ AliPHOSEMCAGeometry::AliPHOSEMCAGeometry():
   fSupportPlateInHalfSize[2] = fSupportPlateHalfSize[2]-fSupportPlateThickness/2 ;
 
   fStripHalfSize[0]= fSupportPlateHalfSize[0] ;  
-  fStripHalfSize[1]= ( 2*fSupportPlateHalfSize[1] + 2*fSteelCellHalfSize[1] )/2;      
+  fStripHalfSize[1]= ( 2*fSupportPlateHalfSize[1] + 2*fAirCellHalfSize[1] )/2;      
   fStripHalfSize[2]= fSupportPlateHalfSize[2] ;
 
   // ------- Inner hermoinsulation ---------------
