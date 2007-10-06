@@ -389,6 +389,7 @@ void AliStack::PurifyKine()
   fHgwmk=nkeep-1;
 }
 
+
 void AliStack::ReorderKine()
 {
 //
@@ -423,7 +424,7 @@ void AliStack::ReorderKine()
       //
       // Reset  LoadPoint 
       // 
-      fLoadPoint = fHgwmk + 1;
+      Int_t loadPoint = fHgwmk + 1;
       //
       // Re-Push particles into stack 
       // The outer loop is over parents, the inner over children.
@@ -457,18 +458,18 @@ void AliStack::ReorderKine()
 	      Int_t jpa = tmp[j]->GetFirstMother();
               // Check if daughter of current parent
 	      if (jpa == ipa) {
-		  particles[fLoadPoint] = tmp[j];
+		  particles[loadPoint] = tmp[j];
 		  // Re-establish daughter information
-		  parP->SetLastDaughter(fLoadPoint);
-		  if (parP->GetFirstDaughter() == -1) parP->SetFirstDaughter(fLoadPoint);
+		  parP->SetLastDaughter(loadPoint);
+		  if (parP->GetFirstDaughter() == -1) parP->SetFirstDaughter(loadPoint);
 		  // Set Mother information
 		  if (i != -1) {
 		      tmp[j]->SetFirstMother(map1[i]);
 		  } 
 		  // Build the map
-		  map1[j] = fLoadPoint;
+		  map1[j] = loadPoint;
 		  // Increase load point
-		  fLoadPoint++;
+		  loadPoint++;
 	      }
 	  } // children
       } // parents
