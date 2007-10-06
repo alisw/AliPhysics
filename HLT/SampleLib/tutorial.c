@@ -81,18 +81,18 @@ directory.
   gHLT.LoadComponentLibraries("libAliHLTUtil.so libAliHLTTPC.so");
 
   // data source components
-  AliHLTConfiguration fp0("fp0", "FilePublisher", NULL, "-datafile TPC_768.ddl -datatype DDL_RWPK 'TPC '"
-			                                "-dataspec 0x00000000");
-  AliHLTConfiguration fp1("fp1", "FilePublisher", NULL, "-datafile TPC_769.ddl -datatype DDL_RWPK 'TPC '"
-                                                        "-dataspec 0x00000101");
-  AliHLTConfiguration fp2("fp2", "FilePublisher", NULL, "-datafile TPC_840.ddl -datatype DDL_RWPK 'TPC '"
-                                                        "-dataspec 0x00000202");
-  AliHLTConfiguration fp3("fp3", "FilePublisher", NULL, "-datafile TPC_841.ddl -datatype DDL_RWPK 'TPC '"
-			                                "-dataspec 0x00000303");
-  AliHLTConfiguration fp4("fp4", "FilePublisher", NULL, "-datafile TPC_842.ddl -datatype DDL_RWPK 'TPC '"
-			                                "-dataspec 0x00000404");
-  AliHLTConfiguration fp5("fp5", "FilePublisher", NULL, "-datafile TPC_843.ddl -datatype DDL_RWPK 'TPC '"
-			                                "-dataspec 0x00000505");
+  AliHLTConfiguration fp0("fp0", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000000"
+			                                "-datafile TPC_768.ddl");
+  AliHLTConfiguration fp1("fp1", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000101"
+                                                        "-datafile TPC_769.ddl");
+  AliHLTConfiguration fp2("fp2", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000202"
+                                                        "-datafile TPC_840.ddl");
+  AliHLTConfiguration fp3("fp3", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000303"
+			                                "-datafile TPC_841.ddl");
+  AliHLTConfiguration fp4("fp4", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000404"
+			                                "-datafile TPC_842.ddl");
+  AliHLTConfiguration fp5("fp5", "FilePublisher", NULL, "-datatype DDL_RWPK 'TPC ' -dataspec 0x00000505"
+			                                "-datafile TPC_843.ddl");
 
   // cluster finders
   AliHLTConfiguration cf0("cf0", "TPCClusterFinderPacked", "fp0", "pp-run rawreadermode 4 timebins 446");
@@ -108,7 +108,7 @@ directory.
   // the data sink component
   AliHLTConfiguration writer("writer", "TPCEsdWriter", "tracker", "-datafile AliESDs.root");
 
-  gHLT.BuildTaskList(&writer);
+  gHLT.BuildTaskList("writer");
   gHLT.Run();
 }
 </pre>
