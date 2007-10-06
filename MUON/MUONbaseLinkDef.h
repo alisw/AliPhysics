@@ -16,7 +16,9 @@
 #pragma link C++ class AliMUONLogger+;
 
 // containers
+#pragma link C++ class AliMUONVCluster+;
 #pragma link C++ class AliMUONRawCluster+;
+#pragma link C++ class AliMUONRawClusterV2+;
 #pragma link C++ class AliMUONDigit+; 
 #pragma link C++ class AliMUONVDigit+; 
 #pragma link C++ class AliMUONRealDigit+; 

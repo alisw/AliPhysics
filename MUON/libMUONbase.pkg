@@ -4,7 +4,9 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONMathieson.cxx \
         AliMUONDigit.cxx \
         AliMUONRealDigit.cxx \
+        AliMUONVCluster.cxx \
         AliMUONRawCluster.cxx \
+        AliMUONRawClusterV2.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONDigitMaker.cxx \
         AliMUONRawWriter.cxx \
