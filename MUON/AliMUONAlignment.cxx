@@ -29,7 +29,6 @@
 
 #include "AliMUONAlignment.h"
 #include "AliMUONTrack.h"
-#include "AliMUONRawCluster.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONGeometryTransformer.h"
@@ -43,6 +42,7 @@
 
 #include "AliLog.h"
 
+#include "TMath.h"
 #include "TSystem.h"
 
 /// \cond CLASSIMP

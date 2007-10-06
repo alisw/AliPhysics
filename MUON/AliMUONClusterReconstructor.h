@@ -16,7 +16,6 @@ class AliMUONVClusterFinder;
 class AliMUONGeometryTransformer;
 class AliMUONVClusterStore;
 class AliMUONVDigitStore;
-class AliMUONRawCluster;
 
 class AliMUONClusterReconstructor : public TObject 
 {
@@ -45,6 +44,8 @@ private:
   const AliMUONGeometryTransformer* fTransformer; //!< to go from local to global (not owner)
   
   AliMUONVClusterStore* fClusterStore; //!< not owner
+  
+  Int_t fNCluster; //!< number of clusters in the cluster store (used to define the cluster ID)
   
   ClassDef(AliMUONClusterReconstructor,0) // Clustering steering
 };

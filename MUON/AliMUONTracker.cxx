@@ -45,6 +45,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
+#include "AliCodeTimer.h"
 
 #include <Riostream.h>
 #include <TTree.h>
@@ -148,8 +149,8 @@ AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
 {
   /// Performs the tracking
-  
   AliDebug(1,"");
+  AliCodeTimerAuto("")
   
   AliMUONVTrackStore* trackStore(0x0);
   AliMUONVTriggerTrackStore* triggerTrackStore(0x0);
@@ -178,10 +179,12 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
   }
   
   // Fills output TreeT 
-  tracksTree.Fill();
+  //tracksTree.Fill();
 
   if( trackStore && triggerTrackStore && fTriggerStore && fTrigChamberEff){
+      AliCodeTimerStart("EventChamberEff");
       fTrigChamberEff->EventChamberEff(*fTriggerStore,*triggerTrackStore,*trackStore);
+      AliCodeTimerStop("EventChamberEff");
   }
 
   FillESD(*trackStore,esd);
@@ -198,8 +201,8 @@ void
 AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
 {
   /// Fill the ESD from the trackStore
-  
   AliDebug(1,"");
+  AliCodeTimerAuto("")
   
   // Get vertex 
   Double_t vertex[3] = {0};

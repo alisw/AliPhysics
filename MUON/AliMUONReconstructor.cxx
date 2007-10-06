@@ -31,9 +31,7 @@
 ///
 /// SIMPLEFIT : use the AliMUONClusterFinderSimpleFit clusterizer
 ///
-/// AZ : use the AliMUONClusterFinderAZ clusterizer (default)
-///
-/// MLEM : another implementation of AZ, where preclustering is external
+/// MLEM : another implementation of AZ, where preclustering is external (default)
 /// MLEMV3 : MLEM with preclustering=PRECLUSTERV2
 /// MLEMV3 : MLEM with preclustering=PRECLUSTERV3
 ///
@@ -71,9 +69,8 @@
 #include "AliMUONClusterFinderCOG.h"
 #include "AliMUONClusterFinderMLEM.h"
 #include "AliMUONClusterFinderSimpleFit.h"
-#include "AliMUONClusterFinderAZ.h"
 #include "AliMUONClusterReconstructor.h"
-#include "AliMUONClusterStoreV1.h"
+#include "AliMUONClusterStoreV2.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONDigitMaker.h"
@@ -97,7 +94,7 @@
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TTree.h>
-//#include "AliCodeTimer.h"
+
 /// \cond CLASSIMP
 ClassImp(AliMUONReconstructor)
 /// \endcond 
@@ -190,7 +187,7 @@ AliMUONReconstructor::ClusterStore() const
   /// Return (and create if necessary) the cluster container
   if (!fClusterStore) 
   {
-    fClusterStore = new AliMUONClusterStoreV1;
+    fClusterStore = new AliMUONClusterStoreV2;
   }
   return fClusterStore;
 }
@@ -217,6 +214,7 @@ void
 AliMUONReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
    /// convert raw data into a digit tree
+  AliCodeTimerAuto("")
 
   Bool_t alone = ( TriggerStore() == 0 );
   
@@ -233,7 +231,9 @@ AliMUONReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) 
   else
   {
     ConvertDigits(rawReader,DigitStore(),TriggerStore());
+    AliCodeTimerStart("Fill digits")
     digitsTree->Fill();
+    AliCodeTimerStop("Fill digits")
     DigitStore()->Clear();
   }
 }
@@ -359,14 +359,10 @@ AliMUONReconstructor::CreateClusterReconstructor() const
   {
     clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
   } 
-  else if ( strstr(opt,"AZ") )
-  {
-    clusterFinder = new AliMUONClusterFinderAZ;
-  }
   else
   {
-    // default is currently AZ
-    clusterFinder = new AliMUONClusterFinderAZ;
+    // default is currently MLEM
+    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
   }
   
   if ( clusterFinder ) 
@@ -534,7 +530,7 @@ AliMUONReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
   /// This method is called by AliReconstruction if HasLocalReconstruction()==kTRUE
   /// AND HasDigitConversion()==kTRUE
   
-//  AliCodeTimerAuto("(TTree*,TTree*)")
+  AliCodeTimerAuto("")
   
   AliDebug(1,"");
   

@@ -22,11 +22,11 @@
 // Author: J. Gosset
 //-----------------------------------------------------------------------------
 
-#include "AliTrackReference.h" 
 #include "AliMUONHitForRec.h" 
-#include "AliMUONRawCluster.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONConstants.h"
 #include "AliLog.h"
+#include "TMath.h"
 #include "Riostream.h"
 
 /// \cond CLASSIMP
@@ -53,56 +53,10 @@ AliMUONHitForRec::AliMUONHitForRec()
 }
 
   //__________________________________________________________________________
-AliMUONHitForRec::AliMUONHitForRec(AliTrackReference* theGhit)
+AliMUONHitForRec::AliMUONHitForRec(AliMUONVCluster* theRawCluster)
   : TObject(),
-    fBendingCoor(theGhit->Y()),
-    fNonBendingCoor(theGhit->X()),
-    fZ(theGhit->Z()),
-    fBendingReso2(0.),
-    fNonBendingReso2(0.),
-    fChamberNumber(0),
-    fDetElemId(0),
-    fHitNumber(0),
-    fTTRTrack(0),
-    fTrackRefSignal(0),
-    fNTrackHits(0)
-{
-/// Constructor for AliMUONHitForRec from a track ref. hit.
-/// Fills the bending, non bending, and Z coordinates,
-/// which are taken from the coordinates of the track ref. hit,
-/// the track number (track ref. and not TH),
-/// and the chamber number (0...).
-
-  // fTrack = theGhit->fTrack; ?????????
-  fDetElemId = theGhit->UserId();
-  if (fDetElemId) fChamberNumber = fDetElemId / 100 - 1;
-  else fChamberNumber = AliMUONConstants::ChamberNumber(fZ);
-  // other fields will be updated in
-  // AliMUONEventReconstructor::NewHitForRecFromTrackRef
-  return;
-}
-
-//   //__________________________________________________________________________
-// AliMUONHitForRec::AliMUONHitForRec(AliMUONReconstHit* CathCorrel)
-// {
-//   // Constructor for AliMUONHitForRec from a (cathode correlated) raw cluster.
-//   // Fills the bending and non bending coordinates.
-//   // Only the first correlation is taken into account.
-//   // The bending coordinate is taken from the first cathode.
-//   // The non bending coordinate is taken 
-//   // from the second cathode if it exists,
-//   // from the first one otherwise.
-//   fBendingCoor = CathCorrel->fY[3];
-//   if (CathCorrel->fCorrelIndex[0] >= 0) fNonBendingCoor = CathCorrel->fX[0];
-//   else fNonBendingCoor = CathCorrel->fX[3];
-//   return;
-// }
-
-  //__________________________________________________________________________
-AliMUONHitForRec::AliMUONHitForRec(AliMUONRawCluster* theRawCluster)
-  : TObject(),
-    fBendingCoor(theRawCluster->GetY(0)),
-    fNonBendingCoor(theRawCluster->GetX(0)),
+    fBendingCoor(theRawCluster->GetY()),
+    fNonBendingCoor(theRawCluster->GetX()),
     fZ(0.),
     fBendingReso2(0.),
     fNonBendingReso2(0.),

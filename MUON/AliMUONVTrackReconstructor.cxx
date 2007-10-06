@@ -52,7 +52,6 @@
 #include "AliMUONVTrackReconstructor.h"
 
 #include "AliMUONConstants.h"
-#include "AliMUONRawCluster.h"
 #include "AliMUONHitForRec.h"
 #include "AliMUONObjectPair.h"
 #include "AliMUONTriggerTrack.h"
@@ -65,7 +64,7 @@
 #include "AliMUONTrackHitPattern.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONVClusterStore.h"
-#include "AliMUONRawCluster.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
 #include "AliMpDEManager.h"
@@ -188,19 +187,20 @@ void AliMUONVTrackReconstructor::AddHitsForRecFromRawClusters(const AliMUONVClus
 {
   /// Build internal array of hit for rec from clusterStore
   
-  TIter next(clusterStore.CreateIterator());
-  AliMUONRawCluster* clus(0x0);
+  AliMUONVCluster* clus(0x0);
   Int_t iclus(0);
   
-  while ( ( clus = static_cast<AliMUONRawCluster*>(next()) ) )
+  TIter next(clusterStore.CreateIterator());
+  
+  while ( ( clus = static_cast<AliMUONVCluster*>(next()) ) )
   {
     // new AliMUONHitForRec from raw cluster
     // and increment number of AliMUONHitForRec's (total and in chamber)
     AliMUONHitForRec* hitForRec = new ((*fHitsForRecPtr)[fNHitsForRec]) AliMUONHitForRec(clus);
     fNHitsForRec++;
     // more information into HitForRec
-    hitForRec->SetBendingReso2(clus->GetErrY() * clus->GetErrY());
-    hitForRec->SetNonBendingReso2(clus->GetErrX() * clus->GetErrX());
+    hitForRec->SetNonBendingReso2(clus->GetErrX2());
+    hitForRec->SetBendingReso2(clus->GetErrY2());
     //  original raw cluster
     Int_t ch = AliMpDEManager::GetChamberId(clus->GetDetElemId());
     hitForRec->SetChamberNumber(ch);

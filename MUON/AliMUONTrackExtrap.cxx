@@ -798,7 +798,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix(Double_t charge, Double_t step, Doub
 ///    *   output                                                       *
 ///    *     VOUT = same as VECT after completion of the step           *
 ///    *                                                                *
-///    *    ==>Called by : <USER>, GUSWIM                               *
+///    *    ==>Called by : USER, GUSWIM                               *
 ///    *       Author    m.hansroul  *********                          *
 ///    *       modified  s.egli, s.v.levonian                           *
 ///    *       modified  v.perevoztchikov
@@ -911,7 +911,7 @@ void AliMUONTrackExtrap::ExtrapOneStepHelix3(Double_t field, Double_t step, Doub
 ///	*	Tracking is performed with a conventional		 *
 ///	*	helix step method					 *
 ///	*								 *
-///	*    ==>Called by : <USER>, GUSWIM				 *
+///	*    ==>Called by : USER, GUSWIM				 *
 ///	*	Authors    R.Brun, M.Hansroul  *********		 *
 ///	*	Rewritten  V.Perevoztchikov
 ///	*								 *
@@ -997,7 +997,7 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 ///	*  User routine called  					 *
 ///	*	CALL GUFLD(X,F) 					 *
 ///	*								 *
-///	*    ==>Called by : <USER>, GUSWIM				 *
+///	*    ==>Called by : USER, GUSWIM				 *
 ///	*	Authors    R.Brun, M.Hansroul  *********		 *
 ///	*		   V.Perevoztchikov (CUT STEP implementation)	 *
 ///	*								 *

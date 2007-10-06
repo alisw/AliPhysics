@@ -130,7 +130,8 @@ AliMUONPreClusterFinder::Prepare(const AliMpVSegmentation* segmentations[2],
                     ix,iy,pad.Position().X(),pad.Position().Y(),
                     pad.Dimensions().X(),pad.Dimensions().Y(),
                     d->Charge());
-    if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE); 
+    if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE);
+    mpad.SetUniqueID(d->GetUniqueID());
     new (padArray[padArray.GetLast()+1]) AliMUONPad(mpad);      
   }
   if ( fPads[0]->GetLast() < 0 && fPads[1]->GetLast() < 0 )
@@ -203,8 +204,7 @@ AliMUONCluster*
 AliMUONPreClusterFinder::NextCluster()
 {
   /// Builds the next cluster, and returns it.
-  
-//  AliCodeTimerAuto("")
+//  AliCodeTimerAuto("pre-clustering")
   
   // Start a new cluster
   Int_t id = fClusters->GetLast()+1;

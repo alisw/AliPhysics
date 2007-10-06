@@ -125,6 +125,7 @@ AliMUONClusterFinderMLEM::Prepare(const AliMpVSegmentation* segmentations[2],
                                   const AliMUONVDigitStore& digitStore)
 {
   /// Prepare for clustering
+//  AliCodeTimerAuto("")
   
   for ( Int_t i = 0; i < 2; ++i )
   {
@@ -167,6 +168,7 @@ AliMUONCluster*
 AliMUONClusterFinderMLEM::NextCluster()
 {
   /// Return next cluster
+//  AliCodeTimerAuto("clustering + pre-clustering")
   
   // if the list of clusters is not void, pick one from there
   TObject* o = fClusterList.At(++fClusterNumber);
@@ -187,9 +189,6 @@ AliMUONClusterFinderMLEM::NextCluster()
     return 0x0;
   }
     
-//  AliCodeTimerAuto("Excluding preclustering")
-    
-
   fClusterList.Delete(); // reset the list of clusters for this pre-cluster
   fClusterNumber = -1; //AZ
   

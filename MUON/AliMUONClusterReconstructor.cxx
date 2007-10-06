@@ -28,18 +28,23 @@
 
 #include "AliMUONClusterReconstructor.h"
 
-#include "AliLog.h"
 #include "AliMUONCluster.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONRawCluster.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONVClusterFinder.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
+#include "AliMUONPad.h"
+
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpSegmentation.h"
+
+#include "AliLog.h"
+
 #include <Riostream.h>
+#include <float.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterReconstructor) // Class implementation in ROOT context
@@ -51,7 +56,8 @@ AliMUONClusterReconstructor::AliMUONClusterReconstructor(AliMUONVClusterFinder* 
 : TObject(),
   fClusterFinder(clusterFinder),
   fTransformer(transformer),
-  fClusterStore(0x0)
+  fClusterStore(0x0),
+  fNCluster(0)
 {
     /// Standard Constructor
     /// Note that we adopt clusterFinder
@@ -88,45 +94,42 @@ AliMUONClusterReconstructor::ClusterizeOneDE(Int_t detElemId,
     AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::kCath1)
   };
     
-  Bool_t ok = fClusterFinder->Prepare(seg,digitStore);
-  if ( !ok )
-  {
-    AliWarning(Form("No hit pad for DE %d ?",detElemId));
-  }
+  if (!fClusterFinder->Prepare(seg,digitStore)) AliWarning(Form("No hit pad for DE %d ?",detElemId));
   
   AliMUONCluster* cluster;
+  AliMUONVCluster *rawCluster;
+  Int_t nPad;
+  
+  // Converts cluster objects into ones suitable for output
+  while ( ( cluster = fClusterFinder->NextCluster() ) ) {
     
-  while ( ( cluster = fClusterFinder->NextCluster() ) )
-  {
-    // Converts cluster objects into ones suitable for output
-    //
-    AliMUONRawCluster rawCluster;
+    // add new cluster to the store with information to build its ID
+    // increment the number of clusters into the store
+    rawCluster = fClusterStore->Add(AliMpDEManager::GetChamberId(detElemId), detElemId, fNCluster++);
     
-    rawCluster.SetDetElemId(detElemId);
-    
-    for ( Int_t cathode = 0; cathode < 2; ++cathode )
-    {
-      rawCluster.SetMultiplicity(cathode,cluster->Multiplicity(cathode));
-      rawCluster.SetCharge(cathode,cluster->Charge()); // both cathode get the total cluster charge
-      Double_t xg, yg, zg;
-      
-      fTransformer->Local2Global(detElemId, 
-                                 cluster->Position().X(), cluster->Position().Y(), 
-                                 0, xg, yg, zg);
-      
-      if ( cathode == 0 )
-      {
-        AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e)",
-                        detElemId,cluster->Multiplicity(),cluster->Charge(),
-                        cluster->Position().X(),cluster->Position().Y(),0.0,
-                        xg,yg,zg));
-      }
-      rawCluster.SetX(cathode,xg);
-      rawCluster.SetY(cathode,yg);
-      rawCluster.SetZ(cathode,zg);      
+    // fill array of Id of digits attached to this cluster
+    nPad = cluster->Multiplicity();
+    if (nPad < 1) AliWarning("no pad attached to the cluster");
+    for (Int_t iPad=0; iPad<nPad; iPad++) {
+      AliMUONPad *pad = cluster->Pad(iPad);
+      rawCluster->AddDigitId(pad->GetUniqueID());
     }
-    fClusterStore->Add(rawCluster);
+    
+    // fill charge and other cluster informations
+    rawCluster->SetCharge(cluster->Charge());
+    
+    Double_t xg, yg, zg;
+    fTransformer->Local2Global(detElemId, 
+				cluster->Position().X(), cluster->Position().Y(), 
+				0, xg, yg, zg);
+    rawCluster->SetXYZ(xg, yg, zg);
+    
+    AliDebug(1,Form("Adding RawCluster detElemId %4d mult %2d charge %e (xl,yl,zl)=(%e,%e,%e) (xg,yg,zg)=(%e,%e,%e)",
+		detElemId,nPad,cluster->Charge(),
+		cluster->Position().X(),cluster->Position().Y(),0.0,
+		xg,yg,zg));
   }
+  
 }
 
 //____________________________________________________________________
@@ -137,6 +140,7 @@ void AliMUONClusterReconstructor::Digits2Clusters(const AliMUONVDigitStore& digi
   
   fClusterStore = &clusterStore;
   fClusterStore->Clear();
+  fNCluster = 0;
   
   AliMpDEIterator deIt;
   

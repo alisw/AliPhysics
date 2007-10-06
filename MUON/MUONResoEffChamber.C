@@ -64,7 +64,6 @@
 
 #include "AliMUONHit.h"
 #include "AliMUONHitForRec.h"
-#include "AliMUONRawCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"

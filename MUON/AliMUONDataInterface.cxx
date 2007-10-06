@@ -18,7 +18,7 @@
 #include "AliMUONDataInterface.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONVDigit.h"
-#include "AliMUONRawCluster.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRegionalTrigger.h"
@@ -718,7 +718,7 @@ Int_t AliMUONDataInterface::NumberOfRawClusters(Int_t chamber)
 }
 
 //_____________________________________________________________________________
-AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t index)
+AliMUONVCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t index)
 {
 /// Returns a pointer to the index'th raw cluster on the specified chamber.
 /// @param chamber  The chamber number in the range [0 .. 13].
@@ -726,7 +726,7 @@ AliMUONRawCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t index)
 ///   where N = NumberOfRawClusters(chamber)
 
   TIterator* iter = GetIterator(kRawClusterIterator, chamber);
-  return static_cast<AliMUONRawCluster*>( FetchObject(iter, index) );
+  return static_cast<AliMUONVCluster*>( FetchObject(iter, index) );
 }
 
 //_____________________________________________________________________________

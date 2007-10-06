@@ -87,18 +87,48 @@ AliMUONClusterStoreV1::~AliMUONClusterStoreV1()
 }
 
 //_____________________________________________________________________________
+AliMUONVCluster* AliMUONClusterStoreV1::CreateCluster(Int_t /*chamberId*/, Int_t detElemId, Int_t /*clusterIndex*/) const
+{
+  /// Create a cluster
+  AliMUONVCluster* vCluster = new AliMUONRawCluster();
+  (static_cast<AliMUONRawCluster*> (vCluster))->SetDetElemId(detElemId);
+  return vCluster;
+}
+
+//_____________________________________________________________________________
 Bool_t 
-AliMUONClusterStoreV1::Add(const AliMUONRawCluster& cluster)
+AliMUONClusterStoreV1::Add(const AliMUONVCluster& vCluster)
 {
   /// Add a cluster to this store
-  Int_t iChamber = AliMpDEManager::GetChamberId(cluster.GetDetElemId());
+  const AliMUONRawCluster* cluster = dynamic_cast<const AliMUONRawCluster*>(&vCluster);
+  
+  if (!cluster)
+  {
+    AliError(Form("Cluster is not of the expected type (%s vs AliMUONRawCluster)",
+                  vCluster.ClassName()));
+    return 0x0;
+  }
+  
+  Int_t iChamber = AliMpDEManager::GetChamberId(cluster->GetDetElemId());
   TClonesArray* array = ChamberClusters(iChamber);
   if (!array) 
   {
     return kFALSE;
   }
-  new((*array)[array->GetLast()+1]) AliMUONRawCluster(cluster);
+  new((*array)[array->GetLast()+1]) AliMUONRawCluster(*cluster);
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+AliMUONVCluster* AliMUONClusterStoreV1::Add(Int_t chamberId, Int_t detElemId, Int_t /*clusterIndex*/)
+{
+  /// Add a cluster to this store
+  TClonesArray* array = ChamberClusters(chamberId);
+  if (!array) return 0x0;
+  
+  AliMUONVCluster* vCluster = static_cast<AliMUONVCluster*> (new((*array)[array->GetLast()+1]) AliMUONRawCluster());
+  (static_cast<AliMUONRawCluster*> (vCluster))->SetDetElemId(detElemId);
+  return vCluster;
 }
 
 //_____________________________________________________________________________
@@ -166,8 +196,8 @@ AliMUONClusterStoreV1::Connect(TTree& tree, Bool_t alone) const
 }
 
 //_____________________________________________________________________________
-AliMUONRawCluster*
-AliMUONClusterStoreV1::Remove(AliMUONRawCluster& cluster)
+AliMUONVCluster*
+AliMUONClusterStoreV1::Remove(AliMUONVCluster& cluster)
 {
   /// Remove a cluster
   Int_t iChamber = AliMpDEManager::GetChamberId(cluster.GetDetElemId());
@@ -177,7 +207,7 @@ AliMUONClusterStoreV1::Remove(AliMUONRawCluster& cluster)
   {
     array->Compress();
   }
-  return static_cast<AliMUONRawCluster*>(o);
+  return static_cast<AliMUONVCluster*>(o);
 }
 
 //_____________________________________________________________________________
@@ -221,3 +251,4 @@ AliMUONClusterStoreV1::GetSize() const
   }
   return n;
 }
+

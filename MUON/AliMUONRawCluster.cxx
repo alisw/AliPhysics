@@ -35,9 +35,10 @@
 ClassImp(AliMUONRawCluster)
 /// \endcond
 
+
 //____________________________________________________
 AliMUONRawCluster::AliMUONRawCluster() 
-  : TObject(),
+  : AliMUONVCluster(),
     fClusterType(0),
     fGhost(0),
     fDetElemId(0)   
@@ -60,14 +61,29 @@ AliMUONRawCluster::AliMUONRawCluster()
 	}
     }
     fNcluster[0]=fNcluster[1]=-1;
-    fErrXY[0] = 0.144;
-    fErrXY[1] = 0.01;
+    fErrXY[0] = fgkDefaultNonBendingReso;
+    fErrXY[1] = fgkDefaultBendingReso;
 }
 
 //____________________________________________________
 AliMUONRawCluster::~AliMUONRawCluster() 
 {
 /// Destructor
+}
+
+//____________________________________________________
+void AliMUONRawCluster::SetDigitsId(Int_t nDigits, const UInt_t *digitsId)
+{
+  /// Set the array of digit Id
+  /// if digitsId is not given the array is filled with id=0
+  
+  fMultiplicity[0] = (nDigits < 50) ? nDigits : 50;
+  
+  if (fMultiplicity[0] == 0) return;
+  if (digitsId == 0)
+    for (Int_t i=0; i<fMultiplicity[0]; i++) fIndexMap[i][0] = 0;
+  else
+    for (Int_t i=0; i<fMultiplicity[0]; i++) fIndexMap[i][0] = (Int_t) digitsId[i];
 }
 
 //____________________________________________________
@@ -93,11 +109,11 @@ Int_t AliMUONRawCluster::Compare(const TObject *obj) const
    */
   
   const AliMUONRawCluster* raw = static_cast<const AliMUONRawCluster*>(obj);
-  if ( GetCharge(0) > raw->GetCharge(0) ) 
+  if ( GetCharge() > raw->GetCharge() ) 
   {
     return 1;
   }
-  else if ( GetCharge(0) < raw->GetCharge(0) ) 
+  else if ( GetCharge() < raw->GetCharge() ) 
   {
     return -1;
   }
@@ -454,4 +470,5 @@ Int_t AliMUONRawCluster::SetChi2(Int_t i, Float_t chi2)
   }
   else return 0;
 }
+
 

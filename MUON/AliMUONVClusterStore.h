@@ -16,7 +16,11 @@
 #  include "AliMUONVStore.h"
 #endif
 
-class AliMUONRawCluster;
+#ifndef ALIMUONVCLUSTER_H
+#  include "AliMUONVCluster.h" // must be there for covariant return type of FindObjet methods
+#endif
+
+class AliMUONVCluster;
 
 class AliMUONVClusterStore : public AliMUONVStore
 {
@@ -27,24 +31,39 @@ public:
   virtual Bool_t Add(TObject* object);
 
   /// Add a cluster object to the store
-  virtual Bool_t Add(const AliMUONRawCluster& Cluster) = 0;
+  virtual Bool_t Add(const AliMUONVCluster& Cluster) = 0;
+  /// Create a new cluster with an unique ID and add it to the store
+  virtual AliMUONVCluster* Add(Int_t chamberId, Int_t detElemId, Int_t clusterIndex) = 0;
 
   using AliMUONVStore::Create;
   
   static AliMUONVClusterStore* Create(TTree& tree);
+  
+  /// Create a cluster
+  virtual AliMUONVCluster* CreateCluster(Int_t chamberId, Int_t detElemId, Int_t clusterIndex) const = 0;
   
   /// Return an iterator to loop over the whole store
   virtual TIterator* CreateIterator() const = 0;
 
   /// Return an iterator to loop over the store in the given chamber range
   virtual TIterator* CreateChamberIterator(Int_t firstChamberId, Int_t lastChamberId) const = 0;
-
+  
+  /// Clear container
+  virtual void Clear(Option_t* opt="") = 0;
+  
   /// Remove a cluster object to the store
-  virtual AliMUONRawCluster* Remove(AliMUONRawCluster& cluster) = 0;
+  virtual AliMUONVCluster* Remove(AliMUONVCluster& cluster) = 0;
     
-  using AliMUONVStore::GetSize;
+  using AliMUONVStore::FindObject;
+
+  // Find an object (default is the same as in AliMUONVStore)
+  virtual AliMUONVCluster* FindObject(const TObject* object) const;
+  
+  // Find an object by its uniqueID (default is the same as in AliMUONVStore)
+  virtual AliMUONVCluster* FindObject(UInt_t uniqueID) const;
   
   ClassDef(AliMUONVClusterStore,1) // Cluster container interface
 };
 
 #endif
+

@@ -44,7 +44,6 @@
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigit.h"
-#include "AliMUONRawCluster.h"
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONTrack.h"
 

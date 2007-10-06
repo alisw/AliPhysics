@@ -29,9 +29,12 @@ public:
   
   virtual AliMUONClusterStoreV1* Create() const { return new AliMUONClusterStoreV1; }
   
+  virtual AliMUONVCluster* CreateCluster(Int_t /*chamberId*/, Int_t detElemId, Int_t /*clusterIndex*/) const;
+  
   using AliMUONVClusterStore::Add;
   
-  virtual Bool_t Add(const AliMUONRawCluster& Cluster);
+  virtual Bool_t Add(const AliMUONVCluster& Cluster);
+  virtual AliMUONVCluster* Add(Int_t chamberId, Int_t detElemId, Int_t /*clusterIndex*/);
 
   /// Whether the Connect(TTree&) method is implemented
   virtual Bool_t CanConnect() const { return kTRUE; }
@@ -48,18 +51,19 @@ public:
   
   virtual Int_t GetSize() const;
 
-  virtual AliMUONRawCluster* Remove(AliMUONRawCluster& cluster);
+  virtual AliMUONVCluster* Remove(AliMUONVCluster& cluster);
 
 private:
 
   TClonesArray* ChamberClusters(Int_t chamberId) const;
   TObject** ChamberClustersPtr(Int_t chamberId) const;
-  //AliMUONRawCluster* Find(Int_t clusterId, Int_t& index) const;
+  //AliMUONVCluster* Find(Int_t clusterId, Int_t& index) const;
   
 private:
-  TObjArray* fClusters; //!< Array of TClonesArray of RawClusters
+  TObjArray* fClusters; //!< Array of TClonesArray of VClusters
   
   ClassDef(AliMUONClusterStoreV1,1) // Implementation of VClusterStore
 };
 
 #endif
+

@@ -30,7 +30,7 @@
 #include <TIterator.h>
 #include "AliMUONHit.h"
 #include "AliMUONVDigit.h"
-#include "AliMUONRawCluster.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONTrack.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRegionalTrigger.h"
@@ -357,8 +357,8 @@ bool RawClustersOk()
 		clustersFromStore.SetOwner(kTRUE);
 		AliMUONVClusterStore* store = data.ClusterStore(event);
 		TIter next(store->CreateIterator());
-		AliMUONRawCluster* cluster;
-		while ( (cluster = static_cast<AliMUONRawCluster*>( next() )) != NULL )
+		AliMUONVCluster* cluster;
+		while ( (cluster = static_cast<AliMUONVCluster*>( next() )) != NULL )
 		{
 			clustersFromStore.Add(cluster->Clone());
 		}
@@ -372,7 +372,7 @@ bool RawClustersOk()
 			Int_t nclusters = data.NumberOfRawClusters(chamber);
 			for (Int_t i = 0; i < nclusters; i++)
 			{
-				AliMUONRawCluster* cluster = data.RawCluster(chamber, i);
+				AliMUONVCluster* cluster = data.RawCluster(chamber, i);
 				clustersByChamber.Add(cluster->Clone());
 			}
 		}

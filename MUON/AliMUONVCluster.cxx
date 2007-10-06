@@ -16,70 +16,64 @@
 // $Id$
 
 //-----------------------------------------------------------------------------
-/// \class AliMUONVClusterStore
+/// \class AliMUONVCluster
 ///
-/// An interface of a cluster container
+/// An abstract base class for clusters
 ///
-/// The object stored are inherited from AliMUONVCluster
-///
-/// \author Laurent Aphecetche, Subatech
+/// \author Philippe Pillot, Subatech
 //-----------------------------------------------------------------------------
 
-#include "AliMUONVClusterStore.h"
 #include "AliMUONVCluster.h"
 
+#include "AliLog.h"
+
+#include <Riostream.h>
+
 /// \cond CLASSIMP
-ClassImp(AliMUONVClusterStore)
+ClassImp(AliMUONVCluster)
 /// \endcond
 
+const Double_t AliMUONVCluster::fgkDefaultNonBendingReso = 0.144;
+const Double_t AliMUONVCluster::fgkDefaultBendingReso = 0.01;
+
 //_____________________________________________________________________________
-AliMUONVClusterStore::AliMUONVClusterStore()
+AliMUONVCluster::AliMUONVCluster()
 {
-  /// ctor
+  /// default constructor
 }
 
 //_____________________________________________________________________________
-AliMUONVClusterStore::~AliMUONVClusterStore()
+AliMUONVCluster::AliMUONVCluster(Int_t chamberId, Int_t detElemId, Int_t clusterIndex)
+  : TObject() 
 {
-  /// dtor
+  /// constructor
+  SetUniqueID(BuildUniqueID(chamberId, detElemId, clusterIndex));
 }
 
 //_____________________________________________________________________________
-Bool_t
-AliMUONVClusterStore::Add(TObject* object)
+AliMUONVCluster::~AliMUONVCluster()
 {
-  /// Add an object, if it is of the right class
-  AliMUONVCluster* cluster = dynamic_cast<AliMUONVCluster*>(object);
-  if (cluster)
-  {
-    Add(*cluster);
-    return kTRUE;
+  /// destructor
+}
+
+//_____________________________________________________________________________
+void AliMUONVCluster::Print(Option_t *option) const
+{
+  /// print cluster content
+  /// if option=FULL print also all Digit ID
+  UInt_t cId = GetUniqueID();
+  Int_t nDigits = GetNDigits();
+  
+  cout<<Form("clusterID=%u (ch=%d, det=%d, index=%d)",
+	     cId,GetChamberId(),GetDetElemId(),GetClusterIndex(cId))<<endl;
+  
+  cout<<Form("position=(%5.2f, %5.2f, %5.2f), sigma=(%5.2f, %5.2f, 0.0), charge=%5.2f, chi2=%5.2f",
+	     GetX(),GetY(),GetZ(),GetErrX(),GetErrY(),GetCharge(),GetChi2())<<endl;
+  
+  if (strcmp(option,"FULL") == 0) {
+    cout<<"nDigits="<<nDigits<<" digitID=(";
+    for (Int_t i=0; i<nDigits; i++) cout<<GetDigitId(i)<<", ";
+    cout<<")"<<endl;
   }
-  return kFALSE;
+  
 }
-
-//_____________________________________________________________________________
-AliMUONVClusterStore*
-AliMUONVClusterStore::Create(TTree& tree)
-{
-  /// Create a VClusterStore from the tree
-  return static_cast<AliMUONVClusterStore*>(AliMUONVStore::Create(tree,"Cluster"));
-}
-
-//______________________________________________________________________________
-AliMUONVCluster* AliMUONVClusterStore::FindObject(const TObject *obj) const
-{
-  /// Find an object, if of AliMUONVCluster type
-  const AliMUONVCluster* cluster = dynamic_cast<const AliMUONVCluster*>(obj);
-  if (cluster)
-    return static_cast<AliMUONVCluster*>(AliMUONVStore::FindObject(obj));
-  return 0x0;
-}
-
-//_____________________________________________________________________________
-AliMUONVCluster* AliMUONVClusterStore::FindObject(UInt_t uniqueID) const
-{
-  /// Find an object by its uniqueID (default is the same as in AliMUONVStore)
-  return static_cast<AliMUONVCluster*>(AliMUONVStore::FindObject(uniqueID));
-}
-

@@ -16,14 +16,64 @@
 /// RawCluster contains also the information from the both cathode of the chambers.
 
 
-#include <TObject.h>
+#include "AliMUONVCluster.h"
 #include <TMath.h> // because of inline funtion GetRadius
 #include <TArrayF.h>
-class AliMUONRawCluster : public TObject {
+
+class AliMUONRawCluster : public AliMUONVCluster {
 
 public:
    AliMUONRawCluster();
    virtual ~AliMUONRawCluster();
+   
+           /// Clear method (used by TClonesArray)
+   virtual void Clear(Option_t* = "") {}
+   
+	   /// Set coordinates (cm)
+  virtual void     SetXYZ(Double_t x, Double_t y, Double_t z) {fX[0] = x; fY[0] = y; fZ[0] = z;}
+           /// Return coordinate X (cm)
+  virtual Double_t GetX() const {return fX[0];}
+           /// Return coordinate Y (cm)
+  virtual Double_t GetY() const {return fY[0];}
+           /// Return coordinate Z (cm)
+  virtual Double_t GetZ() const {return fZ[0];}
+  
+	   /// Set resolution (cm) on coordinates (X,Y)
+  virtual void     SetErrXY(Double_t errX, Double_t errY) {fErrXY[0] = errX; fErrXY[1] = errY;}
+           /// Return resolution (cm) on coordinate X
+  virtual Double_t GetErrX() const {return fErrXY[0];}
+           /// Return resolution**2 (cm**2) on coordinate X
+  virtual Double_t GetErrX2() const {return fErrXY[0] * fErrXY[0];}
+           /// Return resolution (cm) on coordinate Y
+  virtual Double_t GetErrY() const {return fErrXY[1];}
+           /// Return resolution**2 (cm**2) on coordinate Y
+  virtual Double_t GetErrY2() const {return fErrXY[1] * fErrXY[1];}
+  
+           /// Set the cluster charge
+  virtual void     SetCharge(Double_t q) {fQ[0] = q;}
+           /// Set the cluster charge
+  virtual Double_t GetCharge() const {return fQ[0];}
+  
+           /// Return chamber Id
+  virtual Int_t    GetChamberId() const {return fDetElemId/100 - 1;}
+           /// Set detection element Id
+          void     SetDetElemId(Int_t id) {fDetElemId = id;}
+           /// Return detection element Id
+  virtual Int_t    GetDetElemId() const {return fDetElemId;}
+  
+  virtual void     SetDigitsId(Int_t nDigits, const UInt_t *digitsId);
+           /// Add a digit Id to the array of associated digits
+  virtual void     AddDigitId(UInt_t id) {fIndexMap[fMultiplicity[0]++][0] = id;}
+
+           /// Return number of associated digits
+  virtual Int_t    GetNDigits() const {return fMultiplicity[0];}
+           /// Return Id of digits i
+  virtual UInt_t   GetDigitId(Int_t i) const {return (i < fMultiplicity[0] && i < 50) ? (UInt_t)fIndexMap[i][0] : 0;}
+  
+           /// Set chi2 of cluster
+  virtual void     SetChi2( Double_t chi2) {fChi2[0] = chi2;}
+           /// Return chi2 of cluster
+  virtual Double_t GetChi2() const {return fChi2[0];}
    
    /// Return radius
    Float_t      GetRadius(Int_t i) {return TMath::Sqrt(fX[i]*fX[i]+fY[i]*fY[i]);}
@@ -41,34 +91,26 @@ public:
    Int_t        AddY(Int_t i, Float_t Y);
    Int_t        AddZ(Int_t i, Float_t Z);
 
-   /// Return the ID number of the detection element (slat) on which the cluster is found
-   Int_t DetElemId() const { return fDetElemId; }
-   
-   Float_t        GetCharge(Int_t i=0) const;
-   Float_t      GetX(Int_t i=0) const;
-   Float_t      GetY(Int_t i=0) const;
-   Float_t      GetZ(Int_t i=0) const;
+   Float_t      GetCharge(Int_t i) const;
+   Float_t      GetX(Int_t i) const;
+   Float_t      GetY(Int_t i) const;
+   Float_t      GetZ(Int_t i) const;
    Int_t        GetTrack(Int_t i=0) const;
-   Float_t        GetPeakSignal(Int_t i=0) const;
+   Float_t      GetPeakSignal(Int_t i=0) const;
    Int_t        GetMultiplicity(Int_t i=0) const;
    Int_t        GetClusterType() const;
    Int_t        GetGhost() const;
    Int_t        GetNcluster(Int_t i=0) const;
-   Float_t      GetChi2(Int_t i=0) const;
+   Float_t      GetChi2(Int_t i) const;
    Int_t        GetIndex(Int_t i, Int_t j) const;
    Int_t        GetOffset(Int_t i, Int_t j) const;
    Float_t      GetContrib(Int_t i, Int_t j) const;
    Int_t        GetPhysics(Int_t i) const;
-   Int_t        GetDetElemId() const ; 
-   Float_t      GetError(Int_t iXY) const;
-   Float_t      GetErrX() const;
-   Float_t      GetErrY() const;
 
    Int_t        SetCharge(Int_t i, Float_t Q);
    Int_t        SetX(Int_t i, Float_t X);
    Int_t        SetY(Int_t i, Float_t Y);
    Int_t        SetZ(Int_t i, Float_t Z);
-   void         SetDetElemId(Int_t Id); 
    Int_t        SetTrack(Int_t i, Int_t track);
    Int_t        SetPeakSignal(Int_t i, Float_t peaksignal);
    Int_t        SetMultiplicity(Int_t i, Int_t mul);
@@ -80,15 +122,12 @@ public:
    void         SetOffset(Int_t i, Int_t j, Int_t offset);
    void         SetContrib(Int_t i, Int_t j, Float_t contrib);
    void         SetPhysics(Int_t i, Int_t physics);
-   void         SetError(Int_t iXY, Float_t err);
-   void         SetErrX(Float_t err);
-   void         SetErrY(Float_t err);
 
 private:
    Int_t       fIndexMap[50][2];  ///< Indices of digits
    Int_t       fOffsetMap[50][2]; ///< Emmanuel special
    Float_t     fContMap[50][2];   ///< Contribution from digit
-   Int_t     fPhysicsMap[50];   ///< Distinguish signal and background contr.
+   Int_t       fPhysicsMap[50];   ///< Distinguish signal and background contr.
   
    Float_t     fQ[2]  ;           ///< Q of cluster (in ADC counts)     
    Float_t     fX[2]  ;           ///< X of cluster
@@ -108,7 +147,8 @@ private:
    Float_t     fChi2[2];          ///< Chi**2 of fit
    Int_t       fDetElemId;        ///< ID number of the detection element (slat) on which the cluster is found. 
    Float_t     fErrXY[2];         ///< coordinate errors
-   ClassDef(AliMUONRawCluster,2)  //Cluster class for MUON
+   
+   ClassDef(AliMUONRawCluster,3)  //Cluster class for MUON
 };
 
 // inline functions
@@ -145,42 +185,6 @@ inline  void  AliMUONRawCluster::SetContrib(Int_t i, Int_t j, Float_t contrib)
 inline  void  AliMUONRawCluster::SetPhysics(Int_t i, Int_t physics)
 { fPhysicsMap[i] = physics; }
 
-/// Set ID number of the detection element (slat) on which the cluster is found.
-inline void AliMUONRawCluster::SetDetElemId(Int_t Id)
-{ fDetElemId = Id; }
-
-/// Return ID number of the detection element (slat) on which the cluster is found.
-inline Int_t AliMUONRawCluster::GetDetElemId() const
-{ return fDetElemId;}
-
-/// Set coordinate errors
-inline void AliMUONRawCluster::SetError(Int_t iXY, Float_t err)
-{ fErrXY[iXY] = err; }
-
-/// Set x coordinate error
-inline void AliMUONRawCluster::SetErrX(Float_t err)
-{ SetError(0, err); }
-
-/// Set y coordinate error
-inline void AliMUONRawCluster::SetErrY(Float_t err)
-{ SetError(1, err); }
-
-/// Return coordinate errors
-inline Float_t AliMUONRawCluster::GetError(Int_t iXY) const
-{ return fErrXY[iXY]; }
-
-/// Return x coordinate error
-inline Float_t AliMUONRawCluster::GetErrX() const
-{ return GetError(0); }
-
-/// Return y coordinate error
-inline Float_t AliMUONRawCluster::GetErrY() const
-{ return GetError(1); }
 
 #endif
-
-
-
-
-
 

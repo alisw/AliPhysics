@@ -14,8 +14,7 @@
 
 #include <TObject.h>
 
-class AliTrackReference;
-class AliMUONRawCluster;
+class AliMUONVCluster;
 class AliMUONTrackHit;
 class AliMUONTrackParam;
 
@@ -25,8 +24,7 @@ class AliMUONHitForRec : public TObject {
   virtual ~AliMUONHitForRec(); // Destructor
   AliMUONHitForRec (const AliMUONHitForRec& AliMUONHitForRec); // copy constructor
   AliMUONHitForRec& operator=(const AliMUONHitForRec& AliMUONHitForRec); // assignment operator
-  AliMUONHitForRec(AliTrackReference* mHit); // Constructor from track ref. hit
-  AliMUONHitForRec(AliMUONRawCluster* theRawCluster); // Constructor from raw cluster
+  AliMUONHitForRec(AliMUONVCluster* theRawCluster); // Constructor from raw cluster
 
   // Inline functions for Get and Set
            /// Return coordinate (cm) in bending plane

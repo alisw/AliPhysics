@@ -170,6 +170,7 @@ AliMUONPreClusterFinderV3::Prepare(const AliMpVSegmentation* segmentations[2],
                     pad.Dimensions().X(),pad.Dimensions().Y(),
                     d->Charge());
     if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE); 
+    mpad.SetUniqueID(d->GetUniqueID());
     new (padArray[padArray.GetLast()+1]) AliMUONPad(mpad);      
   }
   if ( fPads[0]->GetLast() < 0 && fPads[1]->GetLast() < 0 )

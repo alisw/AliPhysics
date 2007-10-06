@@ -52,10 +52,6 @@ public:
   /// Return detection element id
   Int_t DetElemId() const { return fDetElemId; }
   
-  /// \brief Return corresponding digit index 
-  /// To get back the digit from which this pad was constructed, if needed
-  Int_t DigitIndex() const { return fDigitIndex; }
-
   /// Return half dimensions in x and y (cm)
   TVector2 Dimensions() const { return fDimensions; }
   
@@ -103,10 +99,6 @@ public:
   void SetChargeBackup(Double_t charge) { fChargeBackup = charge; }
 
   void SetCoord(Int_t ixy, Double_t Coord);
-
-  /// \brief Set corresponding digit index
-  /// To get back the digit from which this pad was constructed, if needed
-  void SetDigitIndex(Int_t digitIndex) { fDigitIndex = digitIndex; }
 
   /// Set status word
   void SetStatus(Int_t status) { fStatus = status; }
@@ -160,7 +152,6 @@ private:
   Int_t fClusterId; ///< cluster id this pad belongs to (-1 if not attached to a cluster)
   Int_t fCathode; ///< cathode number
   Int_t fDetElemId; ///< detection element id
-  Int_t fDigitIndex; ///< corresponding digit index (to get back the digit from which this pad was constructed, if needed)
   Int_t fIx; ///< x-index
   Int_t fIy; ///< y-index
   Int_t fStatus; ///< status word
@@ -169,7 +160,7 @@ private:
   Double_t fCharge; ///< pad charge
   Double_t fChargeBackup; ///< backup charge (usefull if clustering somehow plays with the charge, this one is the "original" one)
   
-  ClassDef(AliMUONPad,1) // A full grown pad 
+  ClassDef(AliMUONPad,2) // A full grown pad 
 };
 
 #endif

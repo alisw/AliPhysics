@@ -27,7 +27,7 @@ class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONVTriggerTrackStore;
 class AliMUONVDigit;
-class AliMUONRawCluster;
+class AliMUONVCluster;
 class AliMUONTrack;
 class AliMUONLocalTrigger;
 class AliMUONRegionalTrigger;
@@ -78,7 +78,7 @@ public:
   Int_t NumberOfDigits(Int_t chamber, Int_t cathode);
   AliMUONVDigit* Digit(Int_t chamber, Int_t cathode, Int_t index);
   Int_t NumberOfRawClusters(Int_t chamber);
-  AliMUONRawCluster* RawCluster(Int_t chamber, Int_t index);
+  AliMUONVCluster* RawCluster(Int_t chamber, Int_t index);
   Int_t NumberOfTracks();
   AliMUONTrack* Track(Int_t index);
   Int_t NumberOfLocalTriggers();
