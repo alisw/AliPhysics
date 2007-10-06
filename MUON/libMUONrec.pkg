@@ -1,7 +1,6 @@
 # $Id$
 
 SRCS:= AliMUONClusterReconstructor.cxx \
-       AliMUONClusterFinderAZ.cxx \
        AliMUONPixel.cxx \
        AliMUONReconstructor.cxx \
        AliMUONVTrackReconstructor.cxx \
@@ -35,6 +34,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONTriggerChamberEff.cxx \
        AliMUONVClusterStore.cxx \
        AliMUONClusterStoreV1.cxx \
+       AliMUONClusterStoreV2.cxx \
+       AliMUONClusterStoreV2Iterator.cxx \
        AliMUONVTrackStore.cxx \
        AliMUONTrackStoreV1.cxx
        

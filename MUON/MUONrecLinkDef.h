@@ -10,7 +10,6 @@
 
 // reconstruction
 #pragma link C++ class AliMUONClusterReconstructor+; 
-#pragma link C++ class AliMUONClusterFinderAZ+; 
 #pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONReconstructor+;
 #pragma link C++ class AliMUONVTrackReconstructor+; 
@@ -40,6 +39,8 @@
 
 #pragma link C++ class AliMUONVClusterStore+;
 #pragma link C++ class AliMUONClusterStoreV1+;
+#pragma link C++ class AliMUONClusterStoreV2+;
+#pragma link C++ class AliMUONClusterStoreV2Iterator+;
 #pragma link C++ class AliMUONVTrackStore+;
 #pragma link C++ class AliMUONTrackStoreV1+;
 #pragma link C++ class AliMUONVTriggerTrackStore+;
