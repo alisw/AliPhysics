@@ -3,26 +3,25 @@
 
 include HLT/hlt.conf
 
-SRCS:= comp/AliHLTClusterFitter.cxx \
-comp/AliHLTCompress.cxx \
-comp/AliHLTDataCompressor.cxx \
-comp/AliHLTDataCompressorHelper.cxx \
-comp/AliHLTModelTrack.cxx \
-comp/AliHLTModeller.cxx \
-comp/AliHLTOfflineDataCompressor.cxx \
-comp/AliHLTCompressAC.cxx
+MODULE_SRCS:=
 
-CSRCS:= comp/AliHLTFitUtilities.c comp/bitio.c comp/errhand.c
+CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
 
-HDRS:= $(SRCS:.cxx=.h)
+MODULE_HDRS:= 	$(CLASS_HDRS)
 
-CHDRS:= $(CSRCS:.c=.h)
+MODULE_DHDR:= 		
 
-DHDR:= comp/AliHLTCompLinkDef.h
+SRCS:=$(patsubst %,rec/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,rec/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,rec/%,$(MODULE_HDRS))
+#DHDR:=
+DHDR:=$(patsubst %,rec/%,$(MODULE_DHDR))
+#CINTAUTOLINK:= 1
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" &&! echo 1)
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE+= HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW
+EINCLUDE = HLT/BASE
