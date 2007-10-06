@@ -2711,6 +2711,7 @@ AliQualAssDataMaker * AliReconstruction::GetQualAssDataMaker(Int_t iDet)
   if (qadm) {
     AliInfo(Form("Initializing quality assurance data maker for %s", fgkDetectorName[iDet]));
     qadm->Init(AliQualAss::kRECPOINTS, fRunLoader->GetHeader()->GetRun(), GetQACycles(fgkDetectorName[iDet]));
+    qadm->Init(AliQualAss::kESDS, fRunLoader->GetHeader()->GetRun(), GetQACycles(fgkDetectorName[iDet]));
     qadm->StartOfCycle(AliQualAss::kRECPOINTS);
     qadm->StartOfCycle(AliQualAss::kESDS, "same") ; 	
     fQualAssDataMaker[iDet] = qadm;
