@@ -292,7 +292,7 @@ TParticle*  AliStack::PopPrimaryForTracking(Int_t i)
 }      
 
 //_____________________________________________________________________________
-void AliStack::PurifyKine()
+Bool_t AliStack::PurifyKine()
 {
   //
   // Compress kinematic tree keeping only flagged particles
@@ -300,13 +300,13 @@ void AliStack::PurifyKine()
   //
 
   TObjArray &particles = *fParticleMap;
-  int nkeep=fHgwmk+1, parent, i;
+  int nkeep = fHgwmk + 1, parent, i;
   TParticle *part, *father;
   fTrackLabelMap.Set(particles.GetLast()+1);
 
   // Save in Header total number of tracks before compression
   // If no tracks generated return now
-  if(fHgwmk+1 == fNtrack) return;
+  if(fHgwmk+1 == fNtrack) return kFALSE;
 
   // First pass, invalid Daughter information
   for(i=0; i<fNtrack; i++) {
@@ -333,19 +333,16 @@ void AliStack::PurifyKine()
   // Second pass, build map between old and new numbering
   for(i=fHgwmk+1; i<fNtrack; i++) {
       if(particles.At(i)->TestBit(kKeepBit)) {
-	  
 	  // This particle has to be kept
 	  fTrackLabelMap[i]=nkeep;
 	  // If old and new are different, have to move the pointer
 	  if(i!=nkeep) particles[nkeep]=particles.At(i);
 	  part = dynamic_cast<TParticle*>(particles.At(nkeep));
-	  
 	  // as the parent is always *before*, it must be already
 	  // in place. This is what we are checking anyway!
 	  if((parent=part->GetFirstMother())>fHgwmk) 
 	      if(fTrackLabelMap[parent]==-99) Fatal("PurifyKine","fTrackLabelMap[%d] = -99!\n",parent);
 	      else part->SetFirstMother(fTrackLabelMap[parent]);
-	  
 	  nkeep++;
       }
   }
@@ -378,26 +375,26 @@ void AliStack::PurifyKine()
       particles[i]=fParticleBuffer=0;
   }
   
-  for (i=nkeep; i<fNtrack; ++i) particles[i]=0;
+  for (i = nkeep; i < fNtrack; ++i) particles[i]=0;
   
   Int_t toshrink = fNtrack-fHgwmk-1;
   fLoadPoint-=toshrink;
   
-  
   for(i=fLoadPoint; i<fLoadPoint+toshrink; ++i) fParticles->RemoveAt(i);
   fNtrack=nkeep;
   fHgwmk=nkeep-1;
+  return kTRUE;
 }
 
 
-void AliStack::ReorderKine()
+Bool_t AliStack::ReorderKine()
 {
 //
 // In some transport code children might not come in a continuous sequence.
 // In this case the stack  has  to  be reordered in order to establish the 
 // mother daughter relation using index ranges.
 //    
-  if(fHgwmk+1 == fNtrack) return;
+  if(fHgwmk+1 == fNtrack) return kFALSE;
 
   //
   // Howmany secondaries have been produced ?
@@ -488,6 +485,8 @@ void AliStack::ReorderKine()
 	  }
       }
   } // new particles poduced
+  
+  return kTRUE;
 }
 
 Bool_t AliStack::KeepPhysics(TParticle* part)

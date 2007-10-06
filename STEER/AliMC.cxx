@@ -589,13 +589,10 @@ void AliMC::FinishPrimary()
   // This primary is finished, purify stack
 #if ROOT_VERSION_CODE > 262152
   if (!(gMC->SecondariesAreOrdered())) {
-      runloader->Stack()->ReorderKine();
-      RemapHits();
+      if (runloader->Stack()->ReorderKine()) RemapHits();
   }
 #endif
-  runloader->Stack()->PurifyKine();
-  
-  RemapHits();
+  if (runloader->Stack()->PurifyKine()) RemapHits();
   
   TIter next(gAlice->Modules());
   AliModule *detector;

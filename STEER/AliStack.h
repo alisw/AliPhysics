@@ -53,8 +53,8 @@ class AliStack : public TVirtualMCStack
 
     void   ConnectTree(TTree* tree);
     Bool_t GetEvent();
-    void   PurifyKine();
-    void   ReorderKine();
+    Bool_t PurifyKine();
+    Bool_t ReorderKine();
     void   FinishEvent();
     void   FlagTrack(Int_t track);
     void   KeepTrack(Int_t itrack); 
