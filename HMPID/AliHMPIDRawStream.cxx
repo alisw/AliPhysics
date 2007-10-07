@@ -171,9 +171,9 @@ Bool_t AliHMPIDRawStream::Next()
       
       if (iRow%8 == 0) {
 	UInt_t segWord = GetNextWord();
-	if ((segWord >> 8) != 0xab0f58) {
+	if ((segWord >> 8) != 0xab0f59) {
 	  fRawReader->AddMajorErrorLog(kBadSegWordErr);
-	  AliWarning(Form("Wrong segment word signature: %x, expected 0xab0f58!",(segWord >> 8)));
+	  AliWarning(Form("Wrong segment word signature: %x, expected 0xab0f59!",(segWord >> 8)));
 	  return kTRUE;
 	}
 	
@@ -273,9 +273,9 @@ Bool_t AliHMPIDRawStream::Next()
       
       if (iRow%8 == 0) {
 	UInt_t segWord = GetNextWord();
-	if ((segWord >> 8) != 0xab0f58) {
+	if ((segWord >> 8) != 0xab0f59) {
 	  fRawReader->AddMajorErrorLog(kBadSegWordErr);
-	  AliWarning(Form("Wrong segment word signature: %x, expected 0xab0f58!",(segWord >> 8)));
+	  AliWarning(Form("Wrong segment word signature: %x, expected 0xab0f59!",(segWord >> 8)));
 	  return kTRUE;
 	}
 	
