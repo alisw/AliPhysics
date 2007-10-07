@@ -27,10 +27,11 @@ ClassImp(AliESDRun)
  
 //______________________________________________________________________________
 AliESDRun::AliESDRun() :
-  fRunNumber(0),
+  TObject(),
+  fMagneticField(0),
   fPeriodNumber(0),
-  fRecoVersion(0), 
-  fMagneticField(0)
+  fRunNumber(0),
+  fRecoVersion(0) 
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
@@ -39,10 +40,10 @@ AliESDRun::AliESDRun() :
 //______________________________________________________________________________
 AliESDRun::AliESDRun(const AliESDRun &esd) :
   TObject(esd),
-  fRunNumber(esd.fRunNumber),
+  fMagneticField(esd.fMagneticField),
   fPeriodNumber(esd.fPeriodNumber),
-  fRecoVersion(esd.fRecoVersion),
-  fMagneticField(esd.fMagneticField)
+  fRunNumber(esd.fRunNumber),
+  fRecoVersion(esd.fRecoVersion)
 { 
   // Copy constructor
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];

@@ -23,7 +23,7 @@
 class TList;
 
 #include "AliVEvent.h"
-// some includes for delegeated methods
+// some includes for delegated methods
 #include "AliESDCaloTrigger.h"
 #include "AliESDRun.h"
 #include "AliESDHeader.h"
@@ -95,11 +95,11 @@ public:
   void     SetMagneticField(Double_t mf){fESDRun->SetMagneticField(mf);}
   Double_t GetMagneticField() const {return fESDRun->GetMagneticField();}
   void     SetDiamond(const AliESDVertex *vertex) { fESDRun->SetDiamond(vertex);}
-  Float_t  GetDiamondX() const {return fESDRun->GetDiamondX();}
-  Float_t  GetDiamondY() const {return fESDRun->GetDiamondY();}
-  Float_t  GetSigma2DiamondX() const {return  fESDRun->GetSigma2DiamondX();}
-  Float_t  GetSigma2DiamondY() const {return  fESDRun->GetSigma2DiamondY();}
-  void     GetDiamondCovXY(Float_t cov[3]) const {fESDRun->GetDiamondCovXY(cov);}   
+  Double_t  GetDiamondX() const {return fESDRun->GetDiamondX();}
+  Double_t  GetDiamondY() const {return fESDRun->GetDiamondY();}
+  Double_t  GetSigma2DiamondX() const {return  fESDRun->GetSigma2DiamondX();}
+  Double_t  GetSigma2DiamondY() const {return  fESDRun->GetSigma2DiamondY();}
+  void      GetDiamondCovXY(Float_t cov[3]) const {fESDRun->GetDiamondCovXY(cov);}   
   
 
   // HEADER
@@ -114,6 +114,7 @@ public:
   //  void      SetRunNumber(Int_t n) {fHeader->SetRunNumber(n);}
   void      SetBunchCrossNumber(UShort_t n) {fHeader->SetBunchCrossNumber(n);}
   void      SetTriggerCluster(UChar_t n) {fHeader->SetTriggerCluster(n);}
+  
   ULong64_t GetTriggerMask() const {return fHeader->GetTriggerMask();}
   UInt_t    GetOrbitNumber() const {return fHeader->GetOrbitNumber();}
   UInt_t    GetTimeStamp()  const { return fHeader->GetTimeStamp();}
@@ -146,13 +147,13 @@ public:
   const AliESDTZERO*    GetESDTZERO() const {return fESDTZERO;}
   // delegetated methods for fESDTZERO
 
-  Float_t GetT0zVertex() const {return fESDTZERO->GetT0zVertex();}
+  Double_t GetT0zVertex() const {return fESDTZERO->GetT0zVertex();}
   void SetT0zVertex(Float_t z) {fESDTZERO->SetT0zVertex(z);}
-  Float_t GetT0() const {return fESDTZERO->GetT0();}
+  Double_t GetT0() const {return fESDTZERO->GetT0();}
   void SetT0(Float_t timeStart) {fESDTZERO->SetT0(timeStart);}
-  const Float_t * GetT0time() const {return fESDTZERO->GetT0time();}
+  const Double_t * GetT0time() const {return fESDTZERO->GetT0time();}
   void SetT0time(Float_t time[24]) {fESDTZERO->SetT0time(time);}
-  const Float_t * GetT0amplitude() const {return fESDTZERO->GetT0amplitude();}
+  const Double_t * GetT0amplitude() const {return fESDTZERO->GetT0amplitude();}
   void SetT0amplitude(Float_t amp[24]){fESDTZERO->SetT0amplitude(amp);}
 
   // VZERO 
@@ -349,7 +350,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,1)  //ESDEvent class 
+  ClassDef(AliESDEvent,2)  //ESDEvent class 
 };
 #endif 
 

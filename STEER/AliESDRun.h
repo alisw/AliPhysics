@@ -26,30 +26,31 @@ public:
   Int_t   GetRunNumber() const {return fRunNumber;}
   void    SetRunNumber(Int_t n) {fRunNumber=n;}
   void    SetMagneticField(Float_t mf){fMagneticField = mf;}
-  Float_t GetMagneticField() const {return fMagneticField;}
-  Int_t   GetPeriodNumber() const {return fPeriodNumber;}
+  Double_t GetMagneticField() const {return fMagneticField;}
+  UInt_t   GetPeriodNumber() const {return fPeriodNumber;}
   void    SetPeriodNumber(Int_t n) {fPeriodNumber=n;}
   void    Reset();
   void    Print(const Option_t *opt=0) const;
   void SetDiamond(const AliESDVertex *vertex);
 
 
-  Float_t GetDiamondX() const {return fDiamondXY[0];}
-  Float_t GetDiamondY() const {return fDiamondXY[1];}
-  Float_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
-  Float_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
+  Double_t GetDiamondX() const {return fDiamondXY[0];}
+  Double_t GetDiamondY() const {return fDiamondXY[1];}
+  Double_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}
+  Double_t GetSigma2DiamondY() const {return fDiamondCovXY[2];}
   void GetDiamondCovXY(Float_t cov[3]) const {
     for(Int_t i=0;i<3;i++) cov[i]=fDiamondCovXY[i]; return;
   }
 private:
-  Int_t        fRunNumber;       // Run Number
-  Int_t        fPeriodNumber;    // PeriodNumber
-  Int_t        fRecoVersion;     // Version of reconstruction 
-  Float_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
-  Float_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
-  Float_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
+  Double32_t      fMagneticField;   // Solenoid Magnetic Field in kG : for compatibility with AliMagF
+  Double32_t      fDiamondXY[2];    // Interaction diamond (x,y) in RUN
+  Double32_t      fDiamondCovXY[3]; // Interaction diamond covariance (x,y) in RUN
+  UInt_t          fPeriodNumber;    // PeriodNumber
+  Int_t           fRunNumber;       // Run Number
+  Int_t           fRecoVersion;     // Version of reconstruction 
 
-  ClassDef(AliESDRun,1)
+
+  ClassDef(AliESDRun,2)
 };
 
 #endif 

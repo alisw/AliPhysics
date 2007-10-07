@@ -22,15 +22,15 @@ public:
   AliESDTZERO(const AliESDTZERO& tzero);
   AliESDTZERO& operator=(const AliESDTZERO& tzero);
 
-  Float_t GetT0zVertex() const {return fT0zVertex;}
-  void SetT0zVertex(Float_t z) {fT0zVertex=z;}
-  Float_t GetT0() const {return fT0timeStart;}
-  void SetT0(Float_t timeStart) {fT0timeStart = timeStart;}
-  const Float_t * GetT0time() const {return fT0time;}
+  Double_t GetT0zVertex() const {return fT0zVertex;}
+  void SetT0zVertex(Double_t z) {fT0zVertex=z;}
+  Double_t GetT0() const {return fT0timeStart;}
+  void SetT0(Double_t timeStart) {fT0timeStart = timeStart;}
+  const Double_t * GetT0time() const {return fT0time;}
   void SetT0time(Float_t time[24]) {
     for (Int_t i=0; i<24; i++) fT0time[i] = time[i];
   }
-  const Float_t * GetT0amplitude() const {return fT0amplitude;}
+  const Double_t * GetT0amplitude() const {return fT0amplitude;}
   void SetT0amplitude(Float_t amp[24]) {
     for (Int_t i=0; i<24; i++) fT0amplitude[i] = amp[i];
   }
@@ -40,12 +40,12 @@ public:
 
 private:
 
-  Float_t      fT0zVertex;       // vertex z position estimated by the T0
-  Float_t      fT0timeStart;     // interaction time estimated by the T0
-  Float_t      fT0time[24];      // best TOF on each T0 PMT
-  Float_t      fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
+  Double32_t      fT0zVertex;       // vertex z position estimated by the T0
+  Double32_t      fT0timeStart;     // interaction time estimated by the T0
+  Double32_t      fT0time[24];      // best TOF on each T0 PMT
+  Double32_t      fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
 
-  ClassDef(AliESDTZERO,1)
+  ClassDef(AliESDTZERO,2)
 };
 
 
