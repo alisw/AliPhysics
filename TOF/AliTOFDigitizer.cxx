@@ -406,6 +406,10 @@ void AliTOFDigitizer::CollectSDigit(AliTOFSDigit * sdigit)
 
 //_____________________________________________________________________________
 void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
+  //
+  //
+  //
+
   calib->CreateSimCalArrays();
   calib->ReadSimParOnlineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
   calib->ReadSimParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
