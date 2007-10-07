@@ -7,38 +7,37 @@ ClassImp(AliMultiplicity)
 AliMultiplicity::AliMultiplicity():
   TObject(),
   fNtracks(0),
+  fNsingle(0),
+  fLabels(0),
   fTh(0),
   fPhi(0),
   fDeltPhi(0),
-  fLabels(0),
-  fNsingle(0),
   fThsingle(0),
   fPhisingle(0)
-
 {
   // Default Constructor
-  fFiredChips[0] = -1;
-  fFiredChips[1] = -1;
+  fFiredChips[0] = 0;
+  fFiredChips[1] = 0;
 }
 
 //______________________________________________________________________
 AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *df, Int_t *labels, Int_t ns, Float_t *ts, Float_t *ps):
   TObject(),
   fNtracks(ntr),
+  fNsingle(ns),
+  fLabels(0),
   fTh(0),
   fPhi(0),
   fDeltPhi(0),
-  fLabels(0),
-  fNsingle(ns),
   fThsingle(0),
   fPhisingle(0)
 {
 // Standard constructor
   if(ntr>0){
-    fTh = new Float_t [ntr];
-    fPhi = new Float_t [ntr];
-    fDeltPhi = new Float_t [ntr];
     fLabels = new Int_t[ntr];
+    fTh = new Double_t [ntr];
+    fPhi = new Double_t [ntr];
+    fDeltPhi = new Double_t [ntr];
     for(Int_t i=0;i<fNtracks;i++){
       fTh[i]=t[i];
       fPhi[i]=ph[i];
@@ -47,26 +46,26 @@ AliMultiplicity::AliMultiplicity(Int_t ntr, Float_t *t,  Float_t *ph, Float_t *d
     }
   }
   if(ns>0){
-    fThsingle = new Float_t [ns];
-    fPhisingle = new Float_t [ns];
+    fThsingle = new Double_t [ns];
+    fPhisingle = new Double_t [ns];
     for(Int_t i=0;i<fNsingle;i++){
       fThsingle[i]=ts[i];
       fPhisingle[i]=ps[i];
     }
   }
-  fFiredChips[0] = -1;
-  fFiredChips[1] = -1;
+  fFiredChips[0] = 0;
+  fFiredChips[1] = 0;
 }
 
 //______________________________________________________________________
 AliMultiplicity::AliMultiplicity(const AliMultiplicity& m):
   TObject(m),
   fNtracks(m.fNtracks),
+  fNsingle(m.fNsingle),
+  fLabels(0),
   fTh(0),
   fPhi(0),
   fDeltPhi(0),
-  fLabels(0),
-  fNsingle(m.fNsingle),
   fThsingle(0),
   fPhisingle(0)
 {
@@ -96,9 +95,9 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   // used by copy constructor and assignment operator
   fNtracks = m.fNtracks;
   if(fNtracks>0){
-    fTh = new Float_t[fNtracks];
-    fPhi = new Float_t[fNtracks];
-    fDeltPhi = new Float_t[fNtracks];
+    fTh = new Double_t[fNtracks];
+    fPhi = new Double_t[fNtracks];
+    fDeltPhi = new Double_t[fNtracks];
     fLabels = new Int_t[fNtracks];
   }
   else {
@@ -109,19 +108,19 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   }
   fNsingle = m.fNsingle;
   if(fNsingle>0){
-    fThsingle = new Float_t[fNsingle];
-    fPhisingle = new Float_t[fNsingle];
+    fThsingle = new Double_t[fNsingle];
+    fPhisingle = new Double_t[fNsingle];
   }
   else {
     fThsingle = 0;
     fPhisingle = 0;
   }
-  memcpy(fTh,m.fTh,fNtracks*sizeof(Float_t));
-  memcpy(fPhi,m.fPhi,fNtracks*sizeof(Float_t));
-  memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Float_t));
-  if (m.fLabels)   memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
-  if (m.fThsingle) memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Float_t));
-  if (m.fPhisingle) memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Float_t));
+  if(m.fTh)memcpy(fTh,m.fTh,fNtracks*sizeof(Double_t));
+  if(m.fPhi)memcpy(fPhi,m.fPhi,fNtracks*sizeof(Double_t));
+  if(m.fDeltPhi)memcpy(fDeltPhi,m.fDeltPhi,fNtracks*sizeof(Double_t));
+  if(m.fLabels)memcpy(fLabels,m.fLabels,fNtracks*sizeof(Int_t));
+  if(m.fThsingle)memcpy(fThsingle,m.fThsingle,fNsingle*sizeof(Double_t));
+  if(m.fPhisingle)memcpy(fPhisingle,m.fPhisingle,fNsingle*sizeof(Double_t));
 
   fFiredChips[0] = m.fFiredChips[0];
   fFiredChips[1] = m.fFiredChips[1];

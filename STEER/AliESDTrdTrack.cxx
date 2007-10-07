@@ -33,16 +33,15 @@ AliESDTrdTrack::AliESDTrdTrack():
   fYproj(0),
   fZproj(0),
   fSlope(0),
-  fDetector(-1),
-  fNtracklets(0),
-  fNplanes(0),
-  fNclusters(0),
   fPt(0),
   fPhi(0),
   fEta(0),
-  fLabel(-1),
   fPID(0),
-  fIsElectron(kFALSE)
+  fLabel(0),
+  fNtracklets(0),
+  fNclusters(0),
+  fNplanes(0),
+  fDetector(0)
 {
 
   //
@@ -57,16 +56,15 @@ AliESDTrdTrack::AliESDTrdTrack(const AliESDTrdTrack& track):
   fYproj(track.fYproj),
   fZproj(track.fZproj),
   fSlope(track.fSlope),
-  fDetector(track.fDetector),
-  fNtracklets(track.fNtracklets),
-  fNplanes(track.fNplanes),
-  fNclusters(track.fNclusters),
   fPt(track.fPt),
   fPhi(track.fPhi),
   fEta(track.fEta),
-  fLabel(track.fLabel),
   fPID(track.fPID),
-  fIsElectron(track.fIsElectron)
+  fLabel(track.fLabel),
+  fNtracklets(track.fNtracklets),
+  fNclusters(track.fNclusters),
+  fNplanes(track.fNplanes),
+  fDetector(track.fDetector)
 {
 
   //
@@ -84,20 +82,19 @@ AliESDTrdTrack& AliESDTrdTrack::operator=(const AliESDTrdTrack& track)
 
   if (this == &track)
     return *this;
-
+  TObject::operator=(track);
   fYproj      = track.fYproj;
   fZproj      = track.fZproj;
   fSlope      = track.fSlope;
-  fDetector   = track.fDetector;
-  fNtracklets = track.fNtracklets;
-  fNplanes    = track.fNplanes;
-  fNclusters  = track.fNclusters;
   fPt         = track.fPt;
   fPhi        = track.fPhi;
   fEta        = track.fEta;
-  fLabel      = track.fLabel;
   fPID        = track.fPID;
-  fIsElectron = track.fIsElectron;
+  fLabel      = track.fLabel;
+  fNtracklets = track.fNtracklets;
+  fNclusters  = track.fNclusters;
+  fDetector   = track.fDetector;
+  fNplanes    = track.fNplanes;
 
   return *this;
 

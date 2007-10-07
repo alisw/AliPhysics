@@ -21,19 +21,19 @@ class AliMultiplicity : public TObject {
   virtual ~AliMultiplicity();
 // methods to access tracklet information
   Int_t GetNumberOfTracklets() const {return fNtracks;}
-  Float_t GetTheta(Int_t i) const { if(i>=0 && i<fNtracks) {return fTh[i];}
+  Double_t GetTheta(Int_t i) const { if(i>=0 && i<fNtracks) {return fTh[i];}
   else {Error("GetTheta","Invalid track number %d",i); return -9999.;}}
-  Float_t GetPhi(Int_t i) const { if(i>=0 && i<fNtracks) {return fPhi[i];}
+  Double_t GetPhi(Int_t i) const { if(i>=0 && i<fNtracks) {return fPhi[i];}
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
-  Float_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
+  Double_t GetDeltaPhi(Int_t i) const {if(i>=0 && i<fNtracks) {return fDeltPhi[i];}
   else {Error("GetDeltaPhi","Invalid track number %d",i); return -9999.;}}
   Int_t GetLabel(Int_t i) const {if(i>=0 && i<fNtracks) {return fLabels[i];}
   else {Error("GetLabel","Invalid track number %d",i); return -9999;}}
 // methods to access single cluster information
   Int_t GetNumberOfSingleClusters() const {return fNsingle;}
-  Float_t GetThetaSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fThsingle[i];}
+  Double_t GetThetaSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fThsingle[i];}
   else {Error("GetThetaSingle","Invalid cluster number %d",i); return -9999.;}}
-  Float_t GetPhiSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fPhisingle[i];}
+  Double_t GetPhiSingle(Int_t i) const { if(i>=0 && i<fNsingle) {return fPhisingle[i];}
   else {Error("GetPhisingle","Invalid cluster number %d",i); return -9999.;}}
 
   Short_t GetFiredChips(Int_t layer) { return fFiredChips[layer]; }
@@ -41,19 +41,19 @@ class AliMultiplicity : public TObject {
 
   protected:
   void Duplicate(const AliMultiplicity &m);  // used by copy ctr.
-  Int_t fNtracks;         // Number of tracklets
-  Float_t *fTh;           //[fNtracks] array with theta values
-  Float_t *fPhi;          //[fNtracks] array with phi values
-  Float_t *fDeltPhi;      //[fNtracks] array with delta phi values
-  Int_t   *fLabels;       //[fNtracks] array with labels of tracklets
-  Int_t fNsingle;         // Number of clusters on SPD layer 1, not associated
-                          // with a tracklet on SPD layer 2
-  Float_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
-  Float_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
 
+  Int_t fNtracks;            // Number of tracklets
+  Int_t fNsingle;            // Number of clusters on SPD layer 1, not associated
+  Int_t *fLabels;            //[fNtracks] array with labels of tracklets
+                             // with a tracklet on SPD layer 2
+  Double32_t *fTh;           //[fNtracks] array with theta values
+  Double32_t *fPhi;          //[fNtracks] array with phi values
+  Double32_t *fDeltPhi;      //[fNtracks] array with delta phi values
+  Double32_t *fThsingle;     //[fNsingle] array with theta values of L1 clusters
+  Double32_t *fPhisingle;    //[fNsingle] array with phi values of L2 clusters
   Short_t fFiredChips[2]; // number of fired chips in the two SPD layers
 
-  ClassDef(AliMultiplicity,4);
+  ClassDef(AliMultiplicity,6);
 };
 
 #endif

@@ -23,8 +23,8 @@ public:
                                                 fMRingV0C[j] = MRingV0C[j];} }
   
 // Getters  
-  Int_t GetNbPMV0A()  const {return fNbPMV0A;}
-  Int_t GetNbPMV0C()  const {return fNbPMV0C;}
+  Short_t GetNbPMV0A()  const {return fNbPMV0A;}
+  Short_t GetNbPMV0C()  const {return fNbPMV0C;}
   Int_t GetMTotV0A()  const {return fMTotV0A;}
   Int_t GetMTotV0C()  const {return fMTotV0C;}
   Int_t* GetMRingV0A() const {return (int*) fMRingV0A;}
@@ -33,14 +33,15 @@ public:
   AliESDVZERO &operator=(const AliESDVZERO& source);
     
 protected:
-  Int_t fNbPMV0A;     // Number of PMs fired in V0A - out of 32
-  Int_t fNbPMV0C;     // Number of PMs fired in V0C - out of 32
   Int_t fMTotV0A;     // Total multiplicity in V0A
   Int_t fMTotV0C;     // Total multiplicity in V0C
   Int_t fMRingV0A[4]; // Multiplicity per ring in V0A - 4 rings
   Int_t fMRingV0C[4]; // Multiplicity per ring in V0C - 4 rings
+  Short_t fNbPMV0A;     // Number of PMs fired in V0A - out of 32
+  Short_t fNbPMV0C;     // Number of PMs fired in V0C - out of 32
 
-  ClassDef(AliESDVZERO,1)
+
+  ClassDef(AliESDVZERO,2)
 };
 
 #endif

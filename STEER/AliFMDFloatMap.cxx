@@ -62,7 +62,7 @@ AliFMDFloatMap::AliFMDFloatMap(Int_t maxDet,
   //	maxRing	Maximum number of rings per detector
   //	maxSec	Maximum number of sectors per ring
   //	maxStr	Maximum number of strips per sector
-  Reset();
+  Reset(0);
 }
 
 //__________________________________________________________
@@ -70,14 +70,16 @@ AliFMDFloatMap&
 AliFMDFloatMap::operator=(const AliFMDFloatMap& other)
 {
   // Assignment operator 
-  fMaxDetectors = other.fMaxDetectors;
-  fMaxRings     = other.fMaxRings;
-  fMaxSectors   = other.fMaxSectors;
-  fMaxStrips    = other.fMaxStrips;
-  fTotal        = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
-  if (fData) delete [] fData;
-  fData = new Float_t[fTotal];
-  for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  if(&other != this){
+    fMaxDetectors = other.fMaxDetectors;
+    fMaxRings     = other.fMaxRings;
+    fMaxSectors   = other.fMaxSectors;
+    fMaxStrips    = other.fMaxStrips;
+    fTotal        = fMaxDetectors * fMaxRings * fMaxSectors * fMaxStrips;
+    if (fData) delete [] fData;
+    fData = new Float_t[fTotal];
+    for (Int_t i = 0; i < fTotal; i++) fData[i] = other.fData[i];
+  }
   return *this;
 }
 

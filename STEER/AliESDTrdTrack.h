@@ -16,19 +16,18 @@ class AliESDTrdTrack : public TObject {
   AliESDTrdTrack(const AliESDTrdTrack& track);
   AliESDTrdTrack& operator=(const AliESDTrdTrack& track);
 
-  Float_t GetYproj()     const { return fYproj; };
-  Float_t GetZproj()     const { return fZproj; };
-  Float_t GetSlope()     const { return fSlope; };
-  Int_t   GetDetector()  const { return fDetector; };
-  Int_t   GetTracklets() const { return fNtracklets; };
-  Int_t   GetPlanes()    const { return fNplanes; };
-  Int_t   GetClusters()  const { return fNclusters; };
-  Float_t GetPt()        const { return fPt; };
-  Float_t GetPhi()       const { return fPhi; };
-  Float_t GetEta()       const { return fEta; };
+  Double_t GetYproj()     const { return fYproj; };
+  Double_t GetZproj()     const { return fZproj; };
+  Double_t GetSlope()     const { return fSlope; };
+  Char_t   GetDetector()  const { return fDetector; };
+  Short_t   GetTracklets() const { return fNtracklets; };
+  Char_t   GetPlanes()    const { return fNplanes; };
+  Short_t   GetClusters()  const { return fNclusters; };
+  Double_t GetPt()        const { return fPt; };
+  Double_t GetPhi()       const { return fPhi; };
+  Double_t GetEta()       const { return fEta; };
   Int_t   GetLabel()     const { return fLabel; };
-  Float_t GetPID()       const { return fPID; };
-  Bool_t  IsElectron()   const { return fIsElectron; }
+  Double_t GetPID()       const { return fPID; };
 
   void SetYproj(Float_t val)     { fYproj = val; };
   void SetZproj(Float_t val)     { fZproj = val; };
@@ -42,25 +41,25 @@ class AliESDTrdTrack : public TObject {
   void SetEta(Float_t val)       { fEta = val; };
   void SetLabel(Int_t val)       { fLabel = val; };
   void SetPID(Float_t val)       { fPID = val; };
-  void SetIsElectron(Bool_t val) { fIsElectron = val; };
 
  protected:
 
-  Float_t fYproj;                                   // Average values calculated
-  Float_t fZproj;                                   // from the tracklets 
-  Float_t fSlope;                                   // slope of the tracklet
-  Int_t   fDetector;                                // First detector in the module
-  Int_t   fNtracklets;                              // Number of tracklets
-  Int_t   fNplanes;                                 // Number of TRD planes
-  Int_t   fNclusters;                               // Total number of clusters
-  Float_t fPt;                                      // Transverse momentum
-  Float_t fPhi;                                     // Phi angle at the vertex
-  Float_t fEta;                                     // Eta at the vertex
-  Int_t   fLabel;                                   // Track label
-  Float_t fPID;                                     // PID electron likelihood
-  Bool_t  fIsElectron;                              // Electron flag
+  Double32_t fYproj;                                   // Average values calculated
+  Double32_t fZproj;                                   // from the tracklets 
+  Double32_t fSlope;                                   // slope of the tracklet
+  Double32_t fPt;                                      // Transverse momentum
+  Double32_t fPhi;                                     //  Phi angle at the vertex
+  Double32_t fEta;                                     // Eta at the vertex
+  Double32_t fPID;                                     //[0.,1.,8] PID electron likelihood
 
-  ClassDef(AliESDTrdTrack,1)
+  Int_t fLabel;                                        // Track label
+  Short_t   fNtracklets;                               // Number of tracklets
+  Short_t   fNclusters;                                // Total number of clusters
+  Char_t   fNplanes;                                  // Number of TRD planes
+  Char_t   fDetector;                                 // First detector in the module
+
+
+  ClassDef(AliESDTrdTrack,2)
 
 };
 
