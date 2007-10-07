@@ -332,7 +332,7 @@ void AliTOFtrackerV1::MatchTracks( ){
   Float_t dY=AliTOFGeometry::XPad(); 
   Float_t dZ=AliTOFGeometry::ZPad(); 
 
-  const Int_t ncmax = 100;
+  const Int_t kncmax = 100;
   Float_t sensRadius = fRecoParam->GetSensRadius();
   Float_t scaleFact   = fRecoParam->GetWindowScaleFact();
   Float_t dyMax=fRecoParam->GetWindowSizeMaxY(); 
@@ -376,11 +376,11 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     // find the clusters inside the selected window 
     Int_t nc=0;
-    AliTOFcluster *clusters[ncmax]; // pointers to the clusters in the window
-    Int_t index[ncmax];//to keep track of the cluster index
+    AliTOFcluster *clusters[kncmax]; // pointers to the clusters in the window
+    Int_t index[kncmax];//to keep track of the cluster index
     for (Int_t k=FindClusterIndex(z-dz); k<fN; k++) {  
       AliTOFcluster *c=fClusters[k];
-      if(nc>ncmax)break;
+      if(nc>kncmax)break;
       if(c->GetZ() > z+dz) break;
       if(c->IsUsed()) continue;      
       if(!c->GetStatus()) continue; // skip bad channels as declared in OCDB  
