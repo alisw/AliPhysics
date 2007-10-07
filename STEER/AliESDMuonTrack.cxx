@@ -48,11 +48,11 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fBendingCoorUncorrected(0),
   fNonBendingCoorUncorrected(0),
   fChi2(0),
-  fNHit(0),
-  fLocalTrigger(234),
   fChi2MatchTrigger(0),
+  fLocalTrigger(234),
+  fMuonClusterMap(0),
   fHitsPatternInTrigCh(0),
-  fMuonClusterMap(0)
+  fNHit(0)
 {
   //
   // Default constructor
@@ -77,11 +77,11 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
   fBendingCoorUncorrected(MUONTrack.fBendingCoorUncorrected),
   fNonBendingCoorUncorrected(MUONTrack.fNonBendingCoorUncorrected),
   fChi2(MUONTrack.fChi2),
-  fNHit(MUONTrack.fNHit),
-  fLocalTrigger(MUONTrack.fLocalTrigger),
   fChi2MatchTrigger(MUONTrack.fChi2MatchTrigger),
+  fLocalTrigger(MUONTrack.fLocalTrigger),
+  fMuonClusterMap(MUONTrack.fMuonClusterMap),
   fHitsPatternInTrigCh(MUONTrack.fHitsPatternInTrigCh),
-  fMuonClusterMap(MUONTrack.fMuonClusterMap)
+  fNHit(MUONTrack.fNHit)
 {
   //
   // Copy constructor

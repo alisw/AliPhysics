@@ -109,11 +109,11 @@ public:
   void CheckNeedUShort(TFile* file);
   enum {
     /** Value used for undefined multiplicity */
-    kInvalidMult = 1000
+    kInvalidMult = 0
   };
   enum {
     /** Value used for undefined pseudo rapidity */
-    kInvalidEta = 1000
+    kInvalidEta = 0
   };
   /** @return constant reference to multiplicity map */
   const AliFMDFloatMap& MultiplicityMap() const { return fMultiplicity; }

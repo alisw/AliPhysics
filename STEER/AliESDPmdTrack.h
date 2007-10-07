@@ -15,37 +15,40 @@
 class AliESDPmdTrack : public TObject {
  public:
   AliESDPmdTrack();
-  virtual ~AliESDPmdTrack(){}
+  virtual ~AliESDPmdTrack(){;}
   AliESDPmdTrack (const AliESDPmdTrack &PMDTrack);  // copy constructor
   AliESDPmdTrack &operator=(const AliESDPmdTrack &PMDTrack); // assignment op
-  
-  void SetDetector(Int_t idet) {fDet = idet;}
 
+  void SetDetector(Int_t idet) {fDet = idet;}
+  
   void SetClusterX(Float_t xglobal) {fX = xglobal;}
   void SetClusterY(Float_t yglobal) {fY = yglobal;}
   void SetClusterZ(Float_t zglobal) {fZ = zglobal;}
   void SetClusterADC(Float_t cluadc) {fCluADC = cluadc;}
-  void SetClusterCells(Float_t ncell) {fNcell = ncell;}
+  void SetClusterCells(Float_t ncell) {fNcell = (UChar_t)ncell;}
   void SetClusterPID(Float_t clupid) {fCluPID = clupid;}
 
-  Int_t   GetDetector() const {return fDet;}
-  Float_t GetClusterX() const {return fX;}
-  Float_t GetClusterY() const {return fY;}
-  Float_t GetClusterZ() const {return fZ;}
-  Float_t GetClusterADC() const {return fCluADC;}
-  Float_t GetClusterCells() const {return fNcell;}
-  Float_t GetClusterPID() const {return fCluPID;}
+  Double_t GetClusterX() const {return fX;}
+  Double_t GetClusterY() const {return fY;}
+  Double_t GetClusterZ() const {return fZ;}
+  Double_t GetClusterADC() const {return fCluADC;}
+  Double_t GetClusterPID() const {return fCluPID;}
+  UChar_t GetClusterCells() const {return fNcell;}
+  UChar_t   GetDetector() const {return fDet;}
+  
   
  protected:
-  Short_t fDet;      // Detector, 0:PRE, 1:CPV
-  Float_t fX;      // Cluster X position
-  Float_t fY;      // Cluster Y position
-  Float_t fZ;      // Cluster Z position (vertex uncorrected)
-  Float_t fCluADC; // Cluster Energy in ADC
-  Float_t fNcell;  // Cluster cells
-  Float_t fCluPID; // Cluster probability, 1: Photon, 0: Hadron
 
-  ClassDef(AliESDPmdTrack,3)  //PMD ESD track class 
+  Double32_t fX;      // Cluster X position
+  Double32_t fY;      // Cluster Y position
+  Double32_t fZ;      // Cluster Z position (vertex uncorrected)
+  Double32_t fCluADC; // Cluster Energy in ADC
+  Double32_t fCluPID; //[0.,1.,8] Cluster probability, 1: Photon, 0: Hadron
+  UChar_t fDet;      // Detector, 0:PRE, 1:CPV
+  UChar_t fNcell;  // Cluster cells
+
+  ClassDef(AliESDPmdTrack,4)  //PMD ESD track class 
+
 };
 
 #endif 

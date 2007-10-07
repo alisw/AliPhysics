@@ -32,9 +32,9 @@ AliESDHeader::AliESDHeader() :
   fOrbitNumber(0),
   fTimeStamp(0),
   fEventType(0),
+  fPeriodNumber(0),
   fEventNumberInFile(0),
   fBunchCrossNumber(0),
-  fPeriodNumber(0),
   fTriggerCluster(0)
 {
   // default constructor
@@ -55,6 +55,7 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fOrbitNumber(header.fOrbitNumber),
   fTimeStamp(header.fTimeStamp),
   fEventType(header.fEventType),
+  fPeriodNumber(header.fPeriodNumber),
   fEventNumberInFile(header.fEventNumberInFile),
   fBunchCrossNumber(header.fBunchCrossNumber),
   fTriggerCluster(header.fTriggerCluster)
@@ -74,14 +75,14 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     fOrbitNumber = header.fOrbitNumber;
     fTimeStamp = header.fTimeStamp;
     fEventType = header.fEventType;
+    fPeriodNumber = header.fPeriodNumber;
     fEventNumberInFile = header.fEventNumberInFile;
     fBunchCrossNumber = header.fBunchCrossNumber;
     fTriggerCluster = header.fTriggerCluster;
+    SetName(header.fName);
+    SetTitle(header.fTitle);
+
   } 
-  
-  SetName(header.fName);
-  SetTitle(header.fTitle);
-  
   return *this;
 }
 
@@ -95,6 +96,7 @@ void AliESDHeader::Reset()
   fOrbitNumber       = 0;
   fTimeStamp         = 0;
   fEventType         = 0;
+  fPeriodNumber      = 0;
   fEventNumberInFile = 0;
   fBunchCrossNumber  = 0;
   fTriggerCluster    = 0;

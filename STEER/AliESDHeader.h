@@ -48,12 +48,12 @@ private:
   UInt_t       fOrbitNumber;       // Orbit Number
   UInt_t       fTimeStamp;         // Time stamp
   UInt_t       fEventType;         // Type of Event
+  UInt_t       fPeriodNumber;      // Period Number
   Int_t        fEventNumberInFile; // running Event count in the file
   UShort_t     fBunchCrossNumber;  // Bunch Crossing Number
-  Int_t        fPeriodNumber;      // Period Number
   UChar_t      fTriggerCluster;    // Trigger cluster (mask)
   
-  ClassDef(AliESDHeader,2)
+  ClassDef(AliESDHeader,3)
 };
 
 #endif

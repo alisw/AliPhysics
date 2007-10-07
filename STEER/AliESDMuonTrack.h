@@ -65,7 +65,7 @@ public:
  // Get and Set methods for global tracking info
   Double_t GetChi2(void) const {return fChi2;}
   void     SetChi2(Double_t Chi2) {fChi2 = Chi2;}
-  UInt_t   GetNHit(void) const {return fNHit;}
+  UChar_t  GetNHit(void) const {return fNHit;}
   void     SetNHit(UInt_t NHit) {fNHit = NHit;}
 
  // Get and Set methods for trigger matching
@@ -141,14 +141,15 @@ protected:
   
  // global tracking info
   Double32_t fChi2;                ///< chi2 in the MUON track fit
-  UInt_t     fNHit;                ///< number of hit in the track
-  Int_t      fLocalTrigger;        ///< packed local trigger information
   Double32_t fChi2MatchTrigger;    ///< chi2 of trigger/track matching
-  UShort_t   fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
+  Int_t      fLocalTrigger;        ///< packed local trigger information
+
   UInt_t     fMuonClusterMap;      ///< Map of clusters in tracking chambers
+  UShort_t   fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
+  UChar_t    fNHit;                ///< number of hit in the track
 
 
-  ClassDef(AliESDMuonTrack,7) // MUON ESD track class 
+  ClassDef(AliESDMuonTrack,8) // MUON ESD track class 
 };
 
 #endif 
