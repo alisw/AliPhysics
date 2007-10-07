@@ -26,10 +26,10 @@ public :
     virtual ~AliHMPIDRecon()                                                          {}
 
 
-  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean             );     //reconstructed Theta Cerenkov
+  void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean, Double_t qthre);  //reconstructed Theta Cerenkov
   Bool_t   FindPhotCkov (Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer    );     //find ckov angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
-  Double_t FindRingArea (Double_t ckov                                                      )const;//estimated area of ring in cm^2
+  Double_t FindRingArea (Double_t ckovAngMin,Double_t ckovAngMax                            )const;//estimated area of delta ring in cm^2 to weight Hough Transform
   Int_t    FlagPhot     (Double_t ckov                                                      );     //is photon ckov near most probable track ckov
   Double_t HoughResponse(                                                                   );     //most probable track ckov angle
   void     Propagate    (const TVector3  dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
@@ -47,7 +47,7 @@ public :
   Double_t Sigma2       (Double_t ckovTh,Double_t ckovPh                                    )const;//photon candidate sigma^2
   enum ETrackingFlags {kMipDistCut=-9,kMipQdcCut=-5,kNoPhotAccept=-11};
 // HTA hidden track algorithm
-  Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean);              //Pattern recognition without trackinf information
+  Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean,Double_t qthre);//Pattern recognition without trackinf information
   Bool_t   CluPreFilter     (TClonesArray *pClu               );                                   //Pre clustering filter to cut bkg clusters
   Bool_t   DoRecHiddenTrk   (TClonesArray *pClu               );                                   //Calling to the fitted procedures
   Bool_t   FitEllipse       (Double_t &phiRec                    );                                //Fit clusters with a conical section (kTRUE only for ellipses)

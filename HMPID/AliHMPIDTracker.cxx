@@ -86,10 +86,10 @@ Int_t AliHMPIDTracker::PropagateBack(AliESDEvent *pEsd)
   if(!pNmeanEnt) AliFatal("No Nmean C6F14 ");
   if(!pQthreEnt) AliFatal("No Qthre");
     
-  return Recon(pEsd,fClu,(TObjArray*)pNmeanEnt->GetObject());  
+  return Recon(pEsd,fClu,(TObjArray*)pNmeanEnt->GetObject(),(TObjArray*)pQthreEnt->GetObject());  
 }//PropagateBack()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmean)
+Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmean, TObjArray *pQthre)
 {
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
 // Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)
@@ -101,21 +101,24 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     Int_t cham=IntTrkCha(pTrk,xPc,yPc);                                                          //get chamber intersected by this track 
     if(cham<0) continue;                                                                         //no intersection at all, go after next track
     Double_t nmean=((TF1*)pNmean->At(3*cham))->Eval(pEsd->GetTimeStamp());                       //C6F14 Nmean for this chamber
+    Double_t qthre=((TF1*)pQthre->At(cham))  ->Eval(pEsd->GetTimeStamp());                       //Qthre for this chamber
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
-    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean);                                 //search for Cerenkov angle of this track
+    recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean,qthre);                           //search for Cerenkov angle of this track
+    Printf("AliHMPIDTracker::Recon: nmean %f, qthre %f",nmean,qthre);
   }                                                                                              //ESD tracks loop
   return 0; // error code: 0=no error;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,AliESDtrack *pTrk,TClonesArray *pCluLst,TObjArray *pNmean)
+Int_t AliHMPIDTracker::ReconHiddenTrk(Int_t iCh,AliESDtrack *pTrk,TClonesArray *pCluLst,TObjArray *pNmean,TObjArray *pQthre)
 {
 // Static method to reconstruct Theta Ckov for all valid tracks of a given event.
-// Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time)
+// Arguments: pEsd- pointer ESD; pClu- pointer to clusters for all chambers; pNmean - pointer to all function Nmean=f(time), pQthre - pointer to all function Qthre=f(time)
 //   Returns: error code, 0 if no errors
   AliHMPIDRecon recon;                                                                          //instance of reconstruction class, nothing important in ctor
   Double_t nmean=((TF1*)pNmean->At(3*iCh))->Eval(0);                                            //C6F14 Nmean for this chamber
+  Double_t qthre=((TF1*)pQthre->At(iCh))  ->Eval(0);                                            //C6F14 Nmean for this chamber
   if(pCluLst->GetEntriesFast()<4) return 1;                                                     //min 4 clusters (3 + 1 mip) to find a ring! 
-  if(recon.CkovHiddenTrk(pTrk,pCluLst,nmean)) return 0;                                         //search for track parameters and Cerenkov angle of this track
+  if(recon.CkovHiddenTrk(pTrk,pCluLst,nmean,qthre)) return 0;                                   //search for track parameters and Cerenkov angle of this track
   else return 1;                                                                                // error code: 0=no error,1=fit not performed;
 }//Recon()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

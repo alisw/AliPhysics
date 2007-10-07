@@ -63,7 +63,7 @@ AliHMPIDRecon::AliHMPIDRecon():TTask("RichRec","RichPat"),
   }
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
+void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean,Double_t qthre)
 {
 // Pattern recognition method based on Hough transform
 // Arguments:   pTrk     - track for which Ckov angle is to be found
@@ -86,7 +86,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
     AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
     chId=pClu->Ch();
-    if(pClu->Q()>pParam->QCut()){                                                             //charge compartible with MIP clusters      
+    if(pClu->Q()>qthre){                                                                      //charge compartible with MIP clusters      
       Float_t dX=fPc.X()-pClu->X(),dY=fPc.Y()-pClu->Y(),d =TMath::Sqrt(dX*dX+dY*dY);          //distance between current cluster and intersection point
       if( d < dMin) {mipId=iClu; dMin=d;mipX=pClu->X();mipY=pClu->Y();mipQ=(Int_t)pClu->Q();} //current cluster is closer, overwrite data for min cluster
     }else{                                                                                    //charge compatible with photon cluster
@@ -189,22 +189,39 @@ void AliHMPIDRecon::RecPhot(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer
   thetaCer= dirCkovTRS.Theta();                                        //actual value of thetaCerenkov of the photon
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
+Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAngMin,Double_t ckovAngMax)const
 {
-// Find area inside the cerenkov ring which lays inside PCs
-// Arguments: ckovAng - cerenkov angle    
+// Find area between 2 cerenkov angles in the PC acceptance
+// Arguments: ckovAngMin - cerenkov angle Min    
+// Arguments: ckovAngMax - cerenkov angle Max
 //   Returns: area of the ring in cm^2 for given theta ckov
    
   const Int_t kN=100;
-  Double_t area=0;
+  Int_t np=0;
+  Double_t xP[2*kN],yP[2*kN];
   
-  TVector2 pos1=TracePhot(ckovAng,0);//trace the first photon 
-  for(Int_t i=1;i<kN;i++){
-    TVector2 pos2=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon
-    if(pos1.X()==-999||pos2.X()==-999) return 0;                       //no area: open ring
-    area+=TMath::Abs((pos1-fTrkPos).X()*(pos2-fTrkPos).Y()-(pos1-fTrkPos).Y()*(pos2-fTrkPos).X()); //add area of the triangle... 
-    pos1=pos2; // actual photon becomes the first one
+  Double_t area=0;
+//---  find points from first ring
+  for(Int_t i=0;i<kN;i++){
+    TVector2 pos=TracePhot(ckovAngMin,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon
+    if(pos.X()==-999) continue;                                       //no area: open ring
+    if(AliHMPIDParam::IsInside(pos.X(),pos.Y(),0)) continue;
+    xP[np] = pos.X();
+    yP[np] = pos.Y();
+    np++;                                                              
   }
+//--- find points from last ring
+  for(Int_t i=kN-1;i>=0;i--){
+    TVector2 pos=TracePhot(ckovAngMax,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon
+    if(pos.X()==-999) continue;                                       
+    if(AliHMPIDParam::IsInside(pos.X(),pos.Y(),0)) continue;
+    xP[np] = pos.X();
+    yP[np] = pos.Y();
+    np++;                                                              
+  }
+//--calculate delta area from array of points...
+//  for(Int_t i=0;i<np;i++) {
+  area = 1;    
   area*=0.5;
   return area;
 }//FindRingArea()
@@ -260,6 +277,7 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov)
 
   Int_t iInsideCnt = 0; //count photons which Theta ckov inside the window
   for(Int_t i=0;i<fPhotCnt;i++){//photon candidates loop
+    fPhotFlag[i] = 0;
     if(fPhotCkov[i] >= tmin && fPhotCkov[i] <= tmax)	{ 
       fPhotFlag[i]=2;	  
       iInsideCnt++;
@@ -331,8 +349,8 @@ Double_t AliHMPIDRecon::HoughResponse()
     Int_t bin = (Int_t)(0.5+angle/(fDTheta));
     Double_t weight=1.;
     if(fIsWEIGHT){
-      Double_t lowerlimit = ((Double_t)bin)*fDTheta - 0.5*fDTheta;  Double_t upperlimit = ((Double_t)bin)*fDTheta + 0.5*fDTheta;   
-      Double_t diffArea = FindRingArea(upperlimit)-FindRingArea(lowerlimit);
+      Double_t lowerlimit = ((Double_t)bin)*fDTheta - 0.5*fDTheta;  Double_t upperlimit = ((Double_t)bin)*fDTheta + 0.5*fDTheta;
+      Double_t diffArea = FindRingArea(lowerlimit,upperlimit);
       if(diffArea>0) weight = 1./diffArea;
     }
     photsw->Fill(angle,weight);
@@ -477,7 +495,7 @@ Double_t AliHMPIDRecon::SigGeom(Double_t thetaC, Double_t phiC,Double_t betaM)co
 // From here HTA....
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean)
+Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean, Double_t qthre)
 {
 // Pattern recognition method without any infos from tracking:HTA (Hidden Track Algorithm)...
 // The method finds in the chmber the cluster with the highest charge
@@ -487,8 +505,6 @@ Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Doub
 //             nmean    - mean freon ref. index
 //   Returns:           - 0=ok,1=not fitted 
   
-  AliHMPIDParam *pParam=AliHMPIDParam::Instance();
-    
   fRadNmean=nmean;
 
   if(pCluLst->GetEntriesFast()>100) return kFALSE;                                            //boundary check for CluX,CluY...
@@ -507,7 +523,7 @@ Bool_t AliHMPIDRecon::CkovHiddenTrk(AliESDtrack *pTrk,TClonesArray *pCluLst,Doub
   }//clusters loop
 
   fNClu = pCluLst->GetEntriesFast();
-  if(qRef>pParam->QCut()){                                                                     //charge compartible with MIP clusters
+  if(qRef>qthre){                                                                     //charge compartible with MIP clusters
     fIdxMip = mipId;
     fClCk[mipId] = kFALSE;
     fMipX = mipX; fMipY=mipY; fMipQ = qRef;

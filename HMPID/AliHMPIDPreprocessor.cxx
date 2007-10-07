@@ -81,19 +81,28 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
     
   for(Int_t iCh=0;iCh<7;iCh++){                   
 // evaluate High Voltage
-//    TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); //HV
+    TObjArray *pHV=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_PW/HMP_MP%i_SEC0/HMP_MP%i_SEC0_HV.actual.vMon",iCh,iCh,iCh,iCh)); TIter nextHV(pHV);
+    TGraph *pGrHV=new TGraph; cnt=0;
+    while((pVal=(AliDCSValue*)nextHV())) pGrHV->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
+    if( cnt!=0) pGrHV->Fit(new TF1(Form("HV%i",iCh),"2000+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
+    delete pGrHV;
+
 // evaluate Pressure
     TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh));    TIter nextP(pP);
     TGraph *pGrP=new TGraph; cnt=0; 
     while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
     if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"1005+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
-    delete pGrP;   
+    delete pGrP;
+    
 // evaluate Qthre
-    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),"100",fStartTime,fEndTime),iCh);
+    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),Form("3*10^(3.01e-3*HV%i - 4.72)+170745848*exp(-P%i*0.0162012)",iCh),fStartTime,fEndTime),iCh);
+
+    
 // evaluate UserCut
     Int_t nSigmaUserCut = 3;
     TObject *pUserCut = new TObject();pUserCut->SetUniqueID(nSigmaUserCut);
     arUserCut.AddAt(pUserCut,iCh);    
+    
 // evaluate Temperatures    
     for(Int_t iRad=0;iRad<3;iRad++){
       TObjArray *pT1=(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_LIQ_LOOP.actual.sensors.Rad%iIn_Temp",iCh,iCh,iRad));  TIter nextT1(pT1);//Tin
