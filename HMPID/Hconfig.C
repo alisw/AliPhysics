@@ -87,8 +87,8 @@ void HmpConfig::GuiHmp(TGHorizontalFrame *pMainHF)
   pHmpGF->AddFrame(fVerBG=new TGButtonGroup(pHmpGF,""));  fVerBG->Connect("Pressed(Int_t)" ,"HmpConfig",this,"HmpVerSlot(Int_t)");
     new TGRadioButton(fVerBG,   "No"         ,kNo       );   
     new TGRadioButton(fVerBG,   "ver0"       ,kVer0     );
-    new TGRadioButton(fVerBG,   "ver1"       ,kVer1     );  fVerBG->SetButton(kVer1);
-    new TGRadioButton(fVerBG,   "ver2"       ,kVer2     );
+    new TGRadioButton(fVerBG,   "ver1"       ,kVer1     );  
+    new TGRadioButton(fVerBG,   "ver2"       ,kVer2     ); fVerBG->SetButton(kVer2);
   pHmpGF->AddFrame(fOptBG=new TGButtonGroup(pHmpGF,""));  fOptBG->Connect("Pressed(Int_t)" ,"HmpConfig",this,"HmpVerSlot(Int_t)");
     new TGCheckButton(fOptBG,"Test run position"   ,kTest);       
     new TGCheckButton(fOptBG,"Unfold cluster    "  ,kDeclust);      fOptBG->SetButton(kDeclust);

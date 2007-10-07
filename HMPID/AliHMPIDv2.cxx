@@ -699,7 +699,9 @@ void AliHMPIDv2::StepManager()
   
 //Treat charged particles  
   static Float_t eloss;                                                                           //need to store mip parameters between different steps    
-  static Double_t in[3];
+  static Double_t in[3];                                                                          
+  if(gMC->IsTrackEntering() && gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdPad)             //Trackref stored when entering in the pad volume
+    AddTrackReference(gMC->GetStack()->GetCurrentTrackNumber());                                  //for acceptance calculations
   if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdCell){                                     //charged particle in amplification gap (fIdCell)
     if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {                                               //entering or newly created
       eloss=0;                                                                                    //reset Eloss collector                         
