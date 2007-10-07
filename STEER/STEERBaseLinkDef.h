@@ -42,5 +42,6 @@
 #pragma link C++ class AliMCEventHandler+;
 
 #pragma link C++ class AliTrackReference+;
+#pragma link C++ class AliSysInfo+;
 
 #endif

@@ -11,7 +11,7 @@ SRCS = AliVParticle.cxx \
        AliGenPythiaEventHeader.cxx AliGenCocktailEventHeader.cxx \
        AliGenHijingEventHeader.cxx AliCollisionGeometry.cxx \
        AliStack.cxx AliMCEventHandler.cxx \
-       AliTrackReference.cxx		   	
+       AliTrackReference.cxx AliSysInfo.cxx 		   	
 
 HDRS:= $(SRCS:.cxx=.h) 
 
