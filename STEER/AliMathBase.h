@@ -8,8 +8,12 @@
 #include "TObject.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
+#include "TGraph2D.h"
+#include "TGraph.h"
 
 class TH1F;
+class TH3;
+
  
 class AliMathBase : public TObject
 {
@@ -24,6 +28,10 @@ class AliMathBase : public TObject
   static Double_t  FitGaus(TH1F* his, TVectorD *param=0, TMatrixD *matrix=0, Float_t xmin=0, Float_t xmax=0,  Bool_t verbose=kFALSE);
   static Double_t  FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param=0, TMatrixD *matrix=0, Bool_t verbose=kFALSE);
   static Float_t  GetCOG(Short_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, Float_t *rms=0, Float_t *sum=0);
+
+
+  static TGraph2D *  MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t type);
+  static TGraph *  MakeStat1D(TH3 * his, Int_t delta1, Int_t type);
 
   //
   // TestFunctions:

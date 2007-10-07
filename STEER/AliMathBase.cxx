@@ -25,6 +25,7 @@
 #include "AliMathBase.h"
 #include "Riostream.h"
 #include "TH1F.h"
+#include "TH3.h"
 #include "TF1.h"
 #include "TLinearFitter.h"
 
@@ -641,4 +642,87 @@ void AliMathBase::TestGausFit(Int_t nhistos){
 
 
 
+TGraph2D * AliMathBase::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t type){
+  //
+  //
+  //
+  // delta - number of bins to integrate
+  // type - 0 - mean value
 
+  TAxis * xaxis  = his->GetXaxis();
+  TAxis * yaxis  = his->GetYaxis();
+  //  TAxis * zaxis  = his->GetZaxis();
+  Int_t   nbinx  = xaxis->GetNbins();
+  Int_t   nbiny  = yaxis->GetNbins();
+  char name[1000];
+  Int_t icount=0;
+  TGraph2D  *graph = new TGraph2D(nbinx*nbiny);
+  TF1 f1("f1","gaus");
+  for (Int_t ix=0; ix<nbinx;ix++)
+    for (Int_t iy=0; iy<nbiny;iy++){
+      Float_t xcenter = xaxis->GetBinCenter(ix); 
+      Float_t ycenter = yaxis->GetBinCenter(iy); 
+      sprintf(name,"%s_%d_%d",his->GetName(), ix,iy);
+      TH1 *projection = his->ProjectionZ(name,ix-delta0,ix+delta0,iy-delta1,iy+delta1);
+      Float_t stat= 0;
+      if (type==0) stat = projection->GetMean();
+      if (type==1) stat = projection->GetRMS();
+      if (type==2 || type==3){
+	TVectorD vec(3);
+	AliMathBase::LTM((TH1F*)projection,&vec,0.7);
+	if (type==2) stat= vec[1];
+	if (type==3) stat= vec[0];	
+      }
+      if (type==4|| type==5){
+	projection->Fit(&f1);
+	if (type==4) stat= f1.GetParameter(1);
+	if (type==5) stat= f1.GetParameter(2);
+      }
+      //printf("%d\t%f\t%f\t%f\n", icount,xcenter, ycenter, stat);
+      graph->SetPoint(icount,xcenter, ycenter, stat);
+      icount++;
+    }
+  return graph;
+}
+
+TGraph * AliMathBase::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
+  //
+  //
+  //
+  // delta - number of bins to integrate
+  // type - 0 - mean value
+
+  TAxis * xaxis  = his->GetXaxis();
+  TAxis * yaxis  = his->GetYaxis();
+  //  TAxis * zaxis  = his->GetZaxis();
+  Int_t   nbinx  = xaxis->GetNbins();
+  Int_t   nbiny  = yaxis->GetNbins();
+  char name[1000];
+  Int_t icount=0;
+  TGraph  *graph = new TGraph(nbinx);
+  TF1 f1("f1","gaus");
+  for (Int_t ix=0; ix<nbinx;ix++){
+    Float_t xcenter = xaxis->GetBinCenter(ix); 
+    //    Float_t ycenter = yaxis->GetBinCenter(iy); 
+    sprintf(name,"%s_%d",his->GetName(), ix);
+    TH1 *projection = his->ProjectionZ(name,ix-delta1,ix+delta1,0,nbiny);
+    Float_t stat= 0;
+    if (type==0) stat = projection->GetMean();
+    if (type==1) stat = projection->GetRMS();
+    if (type==2 || type==3){
+      TVectorD vec(3);
+	AliMathBase::LTM((TH1F*)projection,&vec,0.7);
+	if (type==2) stat= vec[1];
+	if (type==3) stat= vec[0];	
+    }
+    if (type==4|| type==5){
+      projection->Fit(&f1);
+      if (type==4) stat= f1.GetParameter(1);
+      if (type==5) stat= f1.GetParameter(2);
+    }
+      //printf("%d\t%f\t%f\t%f\n", icount,xcenter, ycenter, stat);
+    graph->SetPoint(icount,xcenter, stat);
+    icount++;
+  }
+  return graph;
+}
