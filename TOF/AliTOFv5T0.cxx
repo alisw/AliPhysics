@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.21  2007/10/04 13:15:30  arcelli
+updates to comply with AliTOFGeometryV5 becoming AliTOFGeometry
+
 Revision 1.20  2007/10/03 18:07:22  arcelli
 right handling of l2t matrices and alignable entries in case of TOF holes (Annalisa)
 
@@ -233,6 +236,8 @@ void AliTOFv5T0::AddAlignableVolumes() const
 
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
+
+      if (fTOFSectors[isect]==-1) continue;
 
       if (fTOFHoles && (isect==11 || isect==12)) {
 	if (istr<39) {

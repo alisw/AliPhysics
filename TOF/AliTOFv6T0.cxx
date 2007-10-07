@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.9  2007/10/07 19:36:29  decaro
+TOF materials and volumes description: update
+
 Revision 1.8  2007/10/04 13:15:37  arcelli
 updates to comply with AliTOFGeometryV5 becoming AliTOFGeometry
 
@@ -222,6 +225,8 @@ void AliTOFv6T0::AddAlignableVolumes() const
 
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
+
+      if (fTOFSectors[isect]==-1) continue;
 
       if (fTOFHoles && (isect==11 || isect==12)) {
 	if (istr<39) {
