@@ -172,6 +172,9 @@
 
 #include "AliQualAssDataMaker.h" 
 
+//#include "TMemStatManager.h" // memory snapshots
+#include "AliSysInfo.h" // memory snapshots
+
 ClassImp(AliReconstruction)
 
 
@@ -567,12 +570,14 @@ Bool_t AliReconstruction::Run(const char* input)
   if (!fEquipIdMap.IsNull() && fRawReader)
     fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
 
-
+   AliSysInfo::AddStamp("Start");
   // get the run loader
   if (!InitRunLoader()) return kFALSE;
+   AliSysInfo::AddStamp("LoadLoader");
 
   // Initialize the CDB storage
   InitCDBStorage();
+   AliSysInfo::AddStamp("LoadCDB");
 
   // Set run number in CDBManager (if it is not already set by the user)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
@@ -586,6 +591,7 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
+   AliSysInfo::AddStamp("LoadGeom");
 
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
@@ -603,6 +609,7 @@ Bool_t AliReconstruction::Run(const char* input)
       return kFALSE;
     }
   }
+   AliSysInfo::AddStamp("Vertexer");
 
   // get trackers
   if (!fRunTracking.IsNull() && !CreateTrackers(fRunTracking)) {
@@ -611,6 +618,7 @@ Bool_t AliReconstruction::Run(const char* input)
       return kFALSE;
     }      
   }
+   AliSysInfo::AddStamp("LoadTrackers");
 
   // get the possibly already existing ESD file and tree
   AliESDEvent* esd = new AliESDEvent(); AliESDEvent* hltesd = new AliESDEvent();
@@ -920,7 +928,7 @@ Bool_t AliReconstruction::Run(const char* input)
 Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 {
 // run the local reconstruction
-
+  static Int_t eventNr=0;
   AliCodeTimerAuto("")
 
  //  AliCDBManager* man = AliCDBManager::Instance();
@@ -953,6 +961,7 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 //     }
      
 //      AliCodeTimerStop(Form("running reconstruction for %s", fgkDetectorName[iDet]));
+    // AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr));
 
 //     // unload calibration data
 //     man->UnloadFromCache(calibPath);
@@ -967,6 +976,7 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 //     if (fStopOnError) return kFALSE;
 //   }
 
+	  eventNr++;
   return kTRUE;
 }
 
@@ -974,7 +984,7 @@ Bool_t AliReconstruction::RunLocalReconstruction(const TString& detectors)
 Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 {
 // run the local reconstruction
-
+  static Int_t eventNr=0;
   AliCodeTimerAuto("")
 
   TString detStr = detectors;
@@ -1041,6 +1051,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 
     loader->WriteRecPoints("OVERWRITE");
     loader->UnloadRecPoints();
+     AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr));
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -1048,7 +1059,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
                   detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
-  
+  eventNr++;
   return kTRUE;
 }
 
@@ -1228,7 +1239,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 {
 // run the barrel tracking
-
+  static Int_t eventNr=0;
   AliCodeTimerAuto("")
 
   AliInfo("running tracking");
@@ -1266,7 +1277,8 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     if (iDet == 1) {
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
-    }
+    } 
+     AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr));
   }
 
   // pass 2: ALL backwards
@@ -1283,7 +1295,8 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 	AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
 	return kFALSE;
       }
-      fTracker[iDet]->LoadClusters(tree);
+      fTracker[iDet]->LoadClusters(tree); 
+       AliSysInfo::AddStamp(Form("LoadCluster0%s_%d",fgkDetectorName[iDet],eventNr));
     }
 
     // run tracking
@@ -1305,6 +1318,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
     }
+     AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr));
   }
 
   // write space-points to the ESD in case alignment data output
@@ -1329,6 +1343,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     // unload clusters
     fTracker[iDet]->UnloadClusters();
     fLoader[iDet]->UnloadRecPoints();
+     AliSysInfo::AddStamp(Form("Tracking2%s_%d",fgkDetectorName[iDet],eventNr));
   }
   //
   // Propagate track to the vertex - if not done by ITS
@@ -1345,7 +1360,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
    AliTracker::PropagateTrackTo(track,kRadius,track->GetMass(),kMaxStep,kTRUE);
     track->RelateToVertex(esd->GetVertex(),fieldZ, kMaxD);
   }
-  
+  eventNr++;
   return kTRUE;
 }
 
@@ -1374,7 +1389,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
 // fill the event summary data
 
   AliCodeTimerAuto("")
-
+    static Int_t eventNr=0; 
   TString detStr = detectors;
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
@@ -1422,7 +1437,8 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
                   detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
-
+   AliSysInfo::AddStamp(Form("FillESD%d",eventNr));
+  eventNr++;
   return kTRUE;
 }
 
@@ -2749,6 +2765,8 @@ Bool_t AliReconstruction::RunQualAss(const char* detectors, AliESDEvent *& esd)
  }
  
  return kTRUE;
+  
+
 }
 
 //_____________________________________________________________________________
