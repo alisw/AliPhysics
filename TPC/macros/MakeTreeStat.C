@@ -40,7 +40,6 @@
 
 
 
-
 TTree     *fTree;   // tree of interest
 TObjArray aReport;  // array with branch statistic
 TArrayF   totSize;  // total size for branch
@@ -68,11 +67,14 @@ void PrintSorted(Bool_t zipSort){
     Int_t ib = indexes[i];
     Float_t ratio0= 100.*totSize[ib]/totBytes;
     Float_t ratio1= 100.*zipSize[ib]/zipBytes;
-    if (i==0) 
+    if (i==0) {
       printf("\n------------------------------------------------------------\n");
-
+      printf("%d  \t\t%5.f(%.2f\%)  \t\t%5.f(%.2f\%)  \t%.2f  \t%s\n",i, 
+	     totSize[ib],100., zipSize[ib],100., 100.*zipRatio[ib], aReport.At(ib)->GetName());
+    }else{
     printf("%d  \t\t%5.f(%.2f\%)  \t\t%5.f(%.2f\%)  \t%.2f  \t%s\n",i, 
 	   totSize[ib],ratio0, zipSize[ib],ratio1, 100.*zipRatio[ib], aReport.At(ib)->GetName());
+    }
   }
     
 
