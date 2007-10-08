@@ -27,9 +27,11 @@
 #include "AliJetFinder.h"
 #include "AliJetHistos.h"
 #include "AliESDEvent.h"
+#include "AliESD.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliStack.h"
 
 
@@ -121,13 +123,14 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
     AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     if (mctruth) {
-	AliStack* stack = mctruth->Stack();
+	AliStack* stack = mctruth->MCEvent()->Stack();
 	printf("AliAnalysisTaskJets: Number of tracks on stack %5d\n", stack->GetNtrack());
     }
     
     AliESD* old = fESD->GetAliESDOld();
     if (old) {
 	fESD->CopyFromOldESD();
+	old->Reset();
     }
     
     Long64_t ientry = fChain->GetReadEntry();

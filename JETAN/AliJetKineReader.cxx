@@ -33,6 +33,7 @@
 #include "AliJetKineReaderHeader.h"
 #include "AliJetKineReader.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -78,7 +79,7 @@ Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
   
     ClearArray();
     // Get the stack
-    AliStack* stack = fMCEventHandler->Stack();
+    AliStack* stack = fMCEventHandler->MCEvent()->Stack();
     // Number of primaries
     Int_t nt = stack->GetNprimary();
       
@@ -86,7 +87,7 @@ Bool_t AliJetKineReader::FillMomentumArray(Int_t event)
     Double_t ptMin = ((AliJetKineReaderHeader*) fReaderHeader)->GetPtCut();
     Float_t etaMin = fReaderHeader->GetFiducialEtaMin();
     Float_t etaMax = fReaderHeader->GetFiducialEtaMax();  
-    fAliHeader = fMCEventHandler->Header();
+    fAliHeader = fMCEventHandler->MCEvent()->Header();
       
     
     TLorentzVector p4;
