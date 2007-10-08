@@ -568,7 +568,7 @@ Double_t AliESDtrack::Y() const
   
   Double_t e = E();
   Double_t pz = Pz();
-  if (e!=pz) { // energy was not equal to pz
+  if (e != TMath::Abs(pz)) { // energy was not equal to pz
     return 0.5*TMath::Log((e+pz)/(e-pz));
   } else { // energy was equal to pz
     return -999.;
