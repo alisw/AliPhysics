@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.15  2007/10/04 13:23:28  zampolli
+Updates to handle functionalities in TOF online/offline calibration according to the latest schema
+
 Revision 1.14  2007/06/06 16:26:30  arcelli
 remove fall-back call to local CDB storage
 
@@ -78,6 +81,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TGrid.h"
 
 #include "AliCDBEntry.h"
+#include "AliCDBRunRange.h"
 #include "AliCDBId.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -108,7 +112,9 @@ AliTOFcalib::AliTOFcalib():
   fTOFSimToT(0x0),
   fkValidity(0x0),
   fTree(0x0),
-  fNruns(0)
+  fNruns(0),
+  fFirstRun(0),
+  fLastRun(AliCDBRunRange::Infinity())
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
@@ -125,7 +131,9 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fTOFSimToT(calib.fTOFSimToT),
   fkValidity(calib.fkValidity),
   fTree(calib.fTree),
-  fNruns(calib.fNruns)
+  fNruns(calib.fNruns),
+  fFirstRun(calib.fFirstRun),
+  fLastRun(calib.fLastRun)
 {
   //TOF Calibration Class copy ctor
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
@@ -151,6 +159,8 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
   this->fkValidity = calib.fkValidity;
   this->fTree = calib.fTree;
   this->fNruns = calib.fNruns;
+  this->fFirstRun = calib.fFirstRun;
+  this->fLastRun = calib.fLastRun;
   for (Int_t iarray = 0; iarray<fNChannels; iarray++){
     AliTOFChannelOnline * calChOnline = (AliTOFChannelOnline*)calib.fTOFCalOnline->At(iarray);
     AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
@@ -222,15 +232,37 @@ void AliTOFcalib::CreateSimCalArrays(){
   }
 }
 //_____________________________________________________________________________
-
 void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
   Char_t *sel1 = "OnlineDelay" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  AliCDBId id(out,minrun,maxrun);
+  AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  if (!fTOFCalOnline) {
+    // deve uscire!!
+  }
+  man->Put(fTOFCalOnline,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel)
+{
+  //Write calibration parameters to the CDB with infinite validity
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "OnlineDelay" ;  // to be consistent with TOFPreprocessor
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
   if (!fTOFCalOnline) {
@@ -244,11 +276,32 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
 void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun)
 {
   //Write calibration parameters to the CDB
+  SetFirstRun(minrun);
+  SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
   Char_t *sel1 = "ParOffline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  AliCDBId id(out,minrun,maxrun);
+  AliDebug(2,Form("Writing TOF offline calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
+  AliCDBId id(out,fFirstRun,fLastRun);
+  AliCDBMetaData *md = new AliCDBMetaData();
+  md->SetResponsible("Chiara Zampolli");
+  md->SetComment(validity);
+  man->Put(fTOFCalOffline,id,md);
+  delete md;
+}
+//_____________________________________________________________________________
+
+void AliTOFcalib::WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity)
+{
+  //Write calibration parameters to the CDB with infinite validity
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel1 = "ParOffline" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
+  AliCDBRunRange runrange(fFirstRun,fLastRun);
+  AliDebug(2,Form("Writing TOF offline calib obj on CDB with run range [%i, %i] ",runrange.GetFirstRun(),runrange.GetLastRun()));
+  AliCDBId id(out,runrange);
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Chiara Zampolli");
   md->SetComment(validity);
@@ -667,7 +720,7 @@ Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, O
 
   AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(ichmin);
   calChannel->SetSlewPar(par);
-  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  WriteParOfflineOnCDB("TOF/Calib","valid");
   return 0;
 }
 //----------------------------------------------------------------------------
@@ -797,7 +850,7 @@ Int_t AliTOFcalib::Calibrate(Int_t i, Option_t *optionSave, Option_t *optionFit)
 
   AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(i);
   calChannel->SetSlewPar(par);
-  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  WriteParOfflineOnCDB("TOF/Calib","valid");
   return 0;
 }
 //----------------------------------------------------------------------------
@@ -948,7 +1001,7 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
     delete fileProf;
     fileProf=0x0;
   }
-  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  WriteParOfflineOnCDB("TOF/Calib","valid");
 
   return 0;
 }
@@ -1008,7 +1061,7 @@ Int_t AliTOFcalib::CalibrateFromProfile(Int_t ich, Option_t *optionSave, Option_
   hProf=0x0;
   AliTOFChannelOffline * calChannel = (AliTOFChannelOffline*)fTOFCalOffline->At(ich);
   calChannel->SetSlewPar(par);
-  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  WriteParOfflineOnCDB("TOF/Calib","valid");
   return 0;
 }
 //----------------------------------------------------------------------------
@@ -1151,7 +1204,7 @@ Int_t AliTOFcalib::Calibrate(Option_t *optionSave, Option_t *optionFit){
     delete fileProf;
     fileProf=0x0;
   }
-  WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  WriteParOfflineOnCDB("TOF/Calib","valid");
   return 0;
 }
 

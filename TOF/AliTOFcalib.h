@@ -61,6 +61,8 @@ public:
   void ReadSimParOfflineFromCDB(Char_t *sel, Int_t nrun);
   void WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun);
+  void WriteParOnlineOnCDB(Char_t *sel);
+  void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity);
   Bool_t ReadParOnlineFromCDB(Char_t *sel, Int_t nrun);
   Bool_t ReadParOfflineFromCDB(Char_t *sel, Int_t nrun);
   void WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
@@ -77,6 +79,10 @@ public:
   Int_t FindBins (TH1F* h, Double_t *bins) const;
   void SetNruns(Int_t nruns) {fNruns=nruns;}
   Int_t GetNruns() const {return fNruns;}
+  void SetFirstRun(Int_t firstRun) {fFirstRun=firstRun;}
+  Int_t GetFirstRun() const {return fFirstRun;}
+  void SetLastRun(Int_t lastRun) {fLastRun=lastRun;}
+  Int_t GetLastRun() const {return fLastRun;}
 
 private:
   Int_t fNChannels; // number of TOF channels
@@ -88,7 +94,10 @@ private:
   const char *fkValidity;  // validity for offline calibration object
   TTree *fTree;            // tree for TOF calibration
   Int_t fNruns;            // number of runs to be processed
-  ClassDef(AliTOFcalib,2);
+  Int_t fFirstRun;            // first run for calibration obj validity
+  Int_t fLastRun;            // last run for calib obj validity
+
+  ClassDef(AliTOFcalib,3);
 };
 
 #endif // AliTOFcalib_H
