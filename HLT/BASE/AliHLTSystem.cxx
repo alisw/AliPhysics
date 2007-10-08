@@ -545,7 +545,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 {
   // see header file for class documentation
   int iResult=0;
-  if (runLoader) {
+  if (runLoader || rawReader) {
     HLTInfo("Run Loader %p, Raw Reader %p , %d events", runLoader, rawReader, nofEvents);
     if (CheckStatus(kReady)) {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
@@ -555,7 +555,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
       HLTError("wrong state %#x, required flags %#x", GetStatusFlags(), kReady);
     }
   } else {
-    HLTError("missing run loader instance");
+    HLTError("missing RunLoader (%p)/RawReader (%p) instance", runLoader, rawReader);
     iResult=-EINVAL;
   }
   return iResult;
