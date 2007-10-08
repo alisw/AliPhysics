@@ -175,7 +175,6 @@ void AliPHOSCalibHistoProducer::Run()
     if(fRawDecoder->IsLowGain()) continue; 
 
     energy = fRawDecoder->GetEnergy();
-    if(energy<5) continue; // noise
     
     mod = fRawDecoder->GetModule()-1;
     col = fRawDecoder->GetColumn()-1;
