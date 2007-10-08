@@ -806,10 +806,10 @@ void IceDB2Root::GetTWRDaqData()
  }
 
  // Prescription of the various (de)calibration functions
- TF1 fadccal("fadccal","x/[0]");
- TF1 fadcdecal("fadcdecal","x*[0]");
- fadccal.SetParName(0,"ADC-FACT");
- fadcdecal.SetParName(0,"ADC-FACT");
+ TF1 fadccal("fadccal","x*(5./4096.)/(50.*[0])");
+ TF1 fadcdecal("fadcdecal","x*(50.*[0])/(5./4096.)");
+ fadccal.SetParName(0,"nC/PE");
+ fadcdecal.SetParName(0,"nC/PE");
 
  TF1 ftdccal("ftdccal","x-[0]");
  TF1 ftdcdecal("ftdcdecal","x+[0]");

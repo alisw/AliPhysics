@@ -791,4 +791,5 @@
 03-oct-2007 NvE Class AliMath extended with statistical analysis facilities
                 PsiValue and Chi2Value to investigate statistical significance
                 of observations in counting experiments.
+06-oct-2007 NvE Memberfunctions Chi2Value of class AliMath extended with ndf determination.
 

@@ -136,4 +136,5 @@
 27-sep-2007 NvE Check for event selection flag introduced in IceF2k.cxx and IceRawTWR.cxx
                 to provide selected event output.
 04-oct-2007 NvE New class IceDB2Root of Garmt de Vries-Uiterweerd introduced.
+08-oct-2007 NvE ADC (de)calibration function formula corrected for TWR data in IceDB2Root.
    
