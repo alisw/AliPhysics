@@ -60,8 +60,8 @@ void PrintSorted(Bool_t zipSort){
   else{
     TMath::Sort(entries,totSize.GetArray(),indexes,kTRUE);
   }
-  Float_t zipBytes = fTree->GetZipBytes();
-  Float_t totBytes = fTree->GetTotBytes();
+  Float_t zipBytes = zipSize[indexes[0]];
+  Float_t totBytes =  totSize[indexes[0]];
   Float_t ratioT = 100.*zipBytes/totBytes;
   for (Int_t i=entries-1; i>=0; i--){
     Int_t ib = indexes[i];
@@ -81,11 +81,13 @@ void PrintSorted(Bool_t zipSort){
 }
 
 
-void AddToReport(const char * name, Float_t size[2], Float_t ratio){
+void AddToReport(const char *prefix,const char * name, Float_t size[2], Float_t ratio){
   //
   // add branch info to array
   //
-  aReport.AddLast(new TObjString(name));
+  char fullname[10000];
+  sprintf(fullname,"%s.%s",prefix,name);
+  aReport.AddLast(new TObjString(fullname));
   Int_t entry = aReport.GetEntries();
   if (totSize.GetSize()<entry){
     totSize.Set(entry*2);
@@ -121,7 +123,7 @@ void MakeStat(TTree *tree, Bool_t zipSort){
   Float_t ratio= (size[0]>0) ? size[1]/Float_t(size[0]): 0;
   //  printf("Sum :\t%f\t%f\t%f\t%s.%s\t\n", float(size[0]), float(size[1]),ratio, prefix,tree->GetName());
 
-  AddToReport(tree->GetName(),size,ratio);
+  AddToReport(prefix, tree->GetName(),size,ratio);
   PrintSorted(zipSort);
 }
 
@@ -141,14 +143,14 @@ void MakeStat(const char *prefix, TBranch * branch, Float_t *size, Float_t mrati
     if (bsize[1]>0){
       Float_t ratio= (bsize[0]>0) ? bsize[1]/Float_t(bsize[0]): 0;
       //      printf("Term:\t%f\t%f\t%f\t%s.%s\t\n",float(bsize[0]), float(bsize[1]),ratio, prefix,branch->GetName());
-      AddToReport(branch->GetName(),bsize,ratio);	
+      AddToReport(prefix, branch->GetName(),bsize,ratio);	
       //branch->Print();
       size[0]+=bsize[0];
       size[1]+=bsize[1];
     }else{
       Float_t ratio= mratio;
       //printf("Ter?:\t%f\t%f\t%f\t%s.%s\t\n",float(bsize[0]), float(-1),ratio, prefix,branch->GetName());
-      AddToReport(branch->GetName(),bsize,ratio);
+      AddToReport(prefix, branch->GetName(),bsize,ratio);
       //branch->Print();
       size[0]+=bsize[0];
       size[1]+=TMath::Nint(bsize[0]*mratio);
@@ -168,5 +170,5 @@ void MakeStat(const char *prefix, TBranch * branch, Float_t *size, Float_t mrati
   } 
   Float_t ratio= (size[0]>0) ? size[1]/Float_t(size[0]): 0;
   //printf("Sum :\t%f\t%f\t%f\t%s.%s\t\n", float(bsizeSum[0]), float(bsizeSum[1]),ratio, prefix,branch->GetName()); 
-  AddToReport(branch->GetName(),bsizeSum,ratio);
+  AddToReport(prefix,branch->GetName(),bsizeSum,ratio);
 }
