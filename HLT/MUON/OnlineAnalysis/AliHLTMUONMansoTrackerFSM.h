@@ -382,6 +382,12 @@ protected:
 
 private:
 
+	bool LineFit(
+			const AliHLTMUONTriggerRecordStruct& trigger,
+			AliHLTMUONRecHitStruct& pa,
+			AliHLTMUONRecHitStruct& pb
+		);
+
 	// Not allowed to copy this object.
 	AliHLTMUONMansoTrackerFSM(const AliHLTMUONMansoTrackerFSM& tracker);
 	AliHLTMUONMansoTrackerFSM& operator = (const AliHLTMUONMansoTrackerFSM& tracker);

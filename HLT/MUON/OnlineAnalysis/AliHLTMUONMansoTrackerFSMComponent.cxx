@@ -131,9 +131,9 @@ int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 
 int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
-		const AliHLTComponentBlockData* blocks, 
-		AliHLTComponentTriggerData& trigData,
-		AliHLTUInt8_t* outputPtr, 
+		const AliHLTComponentBlockData* blocks,
+		AliHLTComponentTriggerData& /*trigData*/,
+		AliHLTUInt8_t* outputPtr,
 		AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
@@ -439,7 +439,7 @@ void AliHLTMUONMansoTrackerFSMComponent::RequestClusters(
 
 
 void AliHLTMUONMansoTrackerFSMComponent::EndOfClusterRequests(
-		AliHLTMUONMansoTrackerFSM* tracker
+		AliHLTMUONMansoTrackerFSM* /*tracker*/
 	)
 {
 	DebugTrace("End of cluster requests.");
@@ -472,7 +472,7 @@ void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* t
 }
 
 
-void AliHLTMUONMansoTrackerFSMComponent::NoTrackFound(AliHLTMUONMansoTrackerFSM* tracker)
+void AliHLTMUONMansoTrackerFSMComponent::NoTrackFound(AliHLTMUONMansoTrackerFSM* /*tracker*/)
 {
 	DebugTrace("No track found.");
 }

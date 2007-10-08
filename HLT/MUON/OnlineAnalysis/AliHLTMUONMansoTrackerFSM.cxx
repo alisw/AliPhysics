@@ -223,6 +223,72 @@ AliHLTMUONMansoTrackerFSM::AliHLTMUONMansoTrackerFSM() :
 }
 
 
+bool AliHLTMUONMansoTrackerFSM::LineFit(
+		const AliHLTMUONTriggerRecordStruct& trigger,
+		AliHLTMUONRecHitStruct& pa, AliHLTMUONRecHitStruct& pb
+	)
+{
+	// Apply least squares fit to the hits on the trigger record.
+	// http://mathworld.wolfram.com/LeastSquaresFitting.html
+	
+	AliHLTMUONParticleSign sign;
+	bool hitset[4];
+	AliHLTMUONUtils::UnpackTriggerRecordFlags(trigger.fFlags, sign, hitset);
+	DebugTrace("hitset = {" << hitset[0] << ", " << hitset[1] << ", "
+		<< hitset[2] << ", " << hitset[3] << "}"
+	);
+	
+	AliHLTFloat32_t sumX = 0;
+	AliHLTFloat32_t sumY = 0;
+	AliHLTFloat32_t sumZ = 0;
+	int n = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		if (hitset[i])
+		{
+			sumX += trigger.fHit[i].fX;
+			sumY += trigger.fHit[i].fY;
+			sumZ += trigger.fHit[i].fZ;
+			n++;
+		}
+	}
+	if (n < 2) return false;
+	AliHLTFloat32_t meanX = sumX / AliHLTFloat32_t(n);
+	AliHLTFloat32_t meanY = sumY / AliHLTFloat32_t(n);
+	AliHLTFloat32_t meanZ = sumZ / AliHLTFloat32_t(n);
+	
+	AliHLTFloat32_t SSzz = 0;
+	AliHLTFloat32_t SSzx = 0;
+	AliHLTFloat32_t SSzy = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		if (hitset[i])
+		{
+			SSzz += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fZ - meanZ);
+			SSzx += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fX - meanX);
+			SSzy += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fY - meanY);
+		}
+	}
+	
+	// Calculate params for lines x = Mzx * z + Czx and y = Mzy * z + Czy.
+	if (SSzz == 0) return false;
+	AliHLTFloat32_t Mzx = SSzx / SSzz;
+	AliHLTFloat32_t Mzy = SSzy / SSzz;
+	AliHLTFloat32_t Czx = meanX - Mzx * meanZ;
+	AliHLTFloat32_t Czy = meanY - Mzy * meanZ;
+	
+	// Calculate ideal points on chambers 11 and 13:
+	pa.fZ = fgZ11;
+	pa.fX = Mzx * pa.fZ + Czx;
+	pa.fY = Mzy * pa.fZ + Czy;
+	pb.fZ = fgZ13;
+	pb.fX = Mzx * pb.fZ + Czx;
+	pb.fY = Mzy * pb.fZ + Czy;
+	
+	return true;
+}
+
+
 void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONTriggerRecordStruct& trigger)
 {
 // Tries to find the track from the trigger seed.
@@ -232,56 +298,18 @@ void AliHLTMUONMansoTrackerFSM::FindTrack(const AliHLTMUONTriggerRecordStruct& t
 	
 	fTriggerId = trigger.fId;
 	
-	AliHLTMUONParticleSign sign;
-	bool hitset[4];
-	AliHLTMUONUtils::UnpackTriggerRecordFlags(trigger.fFlags, sign, hitset);	
-	DebugTrace("hitset = {" << hitset[0] << ", " << hitset[1] << ", "
-		<< hitset[2] << ", " << hitset[3] << "}"
-	); 
-	
-	// Find first valid hit in the trigger record from chambers 11 and 12.
-	int firstHit = -1;
-	for (int i = 0; i < 2; i++)
-	{
-		if (hitset[i])
-		{
-			firstHit = i;
-			break;
-		}
-	}
-	// Find the second valid hit in the trigger record from chambers 13 and 14.
-	int secondHit = -1;
-	for (int i = 2; i < 4; i++)
-	{
-		if (hitset[i])
-		{
-			secondHit = i;
-			break;
-		}
-	}
-	if (firstHit == -1 or secondHit == -1)
+	AliHLTMUONRecHitStruct pa, pb;
+	if (not LineFit(trigger, pa, pb))
 	{
 		NoTrackFound();
 		return;
 	}
 	
-	fV1 = AliVertex(
-			trigger.fHit[firstHit].fX,
-			trigger.fHit[firstHit].fY,
-			trigger.fHit[firstHit].fZ
-		);
-	AliVertex v2 = AliVertex(
-			trigger.fHit[secondHit].fX,
-			trigger.fHit[secondHit].fY,
-			trigger.fHit[secondHit].fZ
-		);
+	fV1 = AliVertex(pa.fX, pa.fY, pa.fZ);
+	AliVertex v2 = AliVertex(pb.fX, pb.fY, pb.fZ);
 	
-	DebugTrace("Using fV1 = {x = " << fV1.X() << ", y = " << fV1.Y() << ", "
-		<< fV1.Z() << "}, with firstHit = " << firstHit
-	);
-	DebugTrace("Using v2 = {x = " << v2.X() << ", y = " << v2.Y() << ", "
-		<< v2.Z() << "}, with secondHit = " << secondHit
-	);
+	DebugTrace("Using fV1 = {x = " << fV1.X() << ", y = " << fV1.Y() << ", " << fV1.Z() << "}");
+	DebugTrace("Using v2 = {x = " << v2.X() << ", y = " << v2.Y() << ", " << v2.Z() << "}");
 
 	// Form the vector line between the above two impact points and
 	// find the crossing point of the line with chamber 10 (i.e. station 5).
