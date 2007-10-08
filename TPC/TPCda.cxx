@@ -4,7 +4,7 @@
 TPCda.cxx - calibration algorithm to be run on GDC
 DAcase2.c
 
-AliTPCCalibSignal   - pulser signal calibration
+AliTPCCalibPulser   - pulser signal calibration
 AliTPCCalibPedestal - pedestal and noise calibration
 AliTPCCalibCE       - CE time and amplitude calibration
 
@@ -68,7 +68,7 @@ extern "C" {
 // TPC calibration algorithm includes
 //
 #include "AliTPCCalibPedestal.h"
-#include "AliTPCCalibSignal.h"
+#include "AliTPCCalibPulser.h"
 
 
 
@@ -80,7 +80,7 @@ extern "C" {
 int main(int argc, char **argv) {
 
   int status;
-  AliTPCCalibSignal   calibSignal;     // pulser calibration 
+  AliTPCCalibPulser   calibSignal;     // pulser calibration 
   AliTPCCalibPedestal calibPedestal;   // pedestal and nosie calibration
 
   if (argc!=2) {
