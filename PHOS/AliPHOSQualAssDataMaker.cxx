@@ -151,11 +151,11 @@ void AliPHOSQualAssDataMaker::InitRaws()
   Add2RawsList(h0, 0) ;
   const Int_t modMax = 5 ; 
   TH2I * h1[modMax] ; 
+  char name[32] ; 
+  char title[32] ; 
   for (Int_t mod = 0; mod < modMax; mod++) {
-   char name[16] ; 
-   sprintf(name, "hPHOSMod%d", mod) ; 
-   char title[32] ; 
    sprintf(title, "Raws x Columns for PHOS module %d", mod+1) ;  
+   sprintf(name, "hPHOSxyMod%d", mod+1) ; 
    h1[mod] = new TH2I(name, title, 64, 0, 63, 56, 0, 55) ; 
    Add2RawsList(h1[mod], mod+1) ;
   }
@@ -261,7 +261,7 @@ void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
    GetRawsData(module)->Fill(row, col) ; 
    GetRawsData(6)->Fill(time) ; 
    GetRawsData(7)->Fill(energy) ; 
-   AliInfo(Form(" %d %d %d %d %f %f\n", count, module, row, col, time, energy)) ;
+   //AliInfo(Form(" %d %d %d %d %f %f\n", count, module, row, col, time, energy)) ;
    count++ ; 
   } 
 }
