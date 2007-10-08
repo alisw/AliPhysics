@@ -20,6 +20,7 @@
 #include "AliHMPIDDigit.h"    //Digits2Raw(), Raw2SDigits()
 #include "AliHMPIDRawStream.h"  //Digits2Raw(), Raw2SDigits()
 #include "AliRawReader.h"     //Raw2SDigits()
+#include "AliTrackReference.h"
 #include <TVirtualMC.h>       //StepManager() for gMC
 #include <TPDGCode.h>         //StepHistory() 
 #include <AliStack.h>         //StepManager(),Hits2SDigits()78.6
@@ -701,7 +702,7 @@ void AliHMPIDv2::StepManager()
   static Float_t eloss;                                                                           //need to store mip parameters between different steps    
   static Double_t in[3];                                                                          
   if(gMC->IsTrackEntering() && gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdPad)             //Trackref stored when entering in the pad volume
-    AddTrackReference(gMC->GetStack()->GetCurrentTrackNumber());                                  //for acceptance calculations
+    AddTrackReference(gMC->GetStack()->GetCurrentTrackNumber(), AliTrackReference::kHMPID);       //for acceptance calculations
   if(gMC->TrackCharge() && gMC->CurrentVolID(copy)==fIdCell){                                     //charged particle in amplification gap (fIdCell)
     if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {                                               //entering or newly created
       eloss=0;                                                                                    //reset Eloss collector                         
