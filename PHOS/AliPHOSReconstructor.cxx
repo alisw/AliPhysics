@@ -312,6 +312,7 @@ AliTracker* AliPHOSReconstructor::CreateTracker() const
   return new AliPHOSTracker();
 }
 
+//____________________________________________________________________________
 void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
 {
   // Converts raw data to
@@ -343,6 +344,19 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
   }
   
+  // Clean up digits below the noise threshold
+  // Assuming the digit noise to be 4 MeV, we suppress digits within
+  // 3-sigma of the noise.
+  // This parameter should be passed via AliPHOSRecoParamEmc later
+
+  const Double_t emcDigitThreshold = 0.012;
+  for(Int_t i=0; i<digits->GetEntries(); i++) {
+    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
+    if(digit->GetEnergy() < emcDigitThreshold)
+      digits->RemoveAt(i) ;
+  }
+  digits->Compress() ;  
+
   //!!!!for debug!!!
   Int_t modMax=-111;
   Int_t colMax=-111;

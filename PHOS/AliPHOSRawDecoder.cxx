@@ -132,11 +132,13 @@ Bool_t AliPHOSRawDecoder::NextDigit()
   Int_t    iBin     = 0;
   Int_t    mxSmps   = fSamples->GetSize();
   Int_t    tLength  = 0;
-  Int_t    ped      = 0;
   fEnergy = -111;
+  Float_t pedMean = 0;
+  Int_t   nPed = 0;
+  Float_t baseLine = 1.0;
+  const Float_t nPreSamples = 10;
   
   fSamples->Reset();
-
    while ( in->Next() ) { 
 
      if(!tLength) {
@@ -157,23 +159,29 @@ Bool_t AliPHOSRawDecoder::NextDigit()
        // Take is as a first time bin multiplied by the sample tick time
        
        if(fPedSubtract) 
-	 fEnergy -= (Double_t)ped; // "pedestal subtraction"
+	 fEnergy -= (Double_t)(pedMean/nPed); // "pedestal subtraction"
        
        if(fLowGainFlag)
 	 fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
-      
+
+       if (fEnergy < baseLine) fEnergy = 0;
+
+       pedMean = 0;
        return kTRUE;
      }
 
      fLowGainFlag = in->IsLowGain();
      fTime = fPulseGenerator->GetRawFormatTimeTrigger() * in->GetTime();
      fModule = in->GetModule()+1;
-     fRow = in->GetRow()   +1;
+     fRow    = in->GetRow()   +1;
      fColumn = in->GetColumn()+1;
 
      // Fill array with samples
      iBin++;                                                             
-     if(iBin==1) ped=in->GetSignal();
+     if(tLength-iBin < nPreSamples) {
+       pedMean += in->GetSignal();
+       nPed++;
+     }
      fSamples->AddAt(in->GetSignal(),tLength-iBin);
      if((Double_t)in->GetSignal() > fEnergy) fEnergy = (Double_t)in->GetSignal();
      
