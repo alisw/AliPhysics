@@ -29,7 +29,7 @@ public:
   AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1=-1, Int_t nEvents=0) ; // par ctor
 
   AliTOFSDigitizer(const AliTOFSDigitizer &source); // copy constructor
-  AliTOFSDigitizer& operator=(const AliTOFSDigitizer &source); // ass. op.
+  AliTOFSDigitizer& operator=(const AliTOFSDigitizer &/*source*/); // ass. op.
 
   virtual ~AliTOFSDigitizer() ; // dtor
 

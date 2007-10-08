@@ -145,7 +145,7 @@ AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
 }
 
 //____________________________________________________________________________ 
-AliTOFSDigitizer& AliTOFSDigitizer::operator=(const AliTOFSDigitizer &source)
+AliTOFSDigitizer& AliTOFSDigitizer::operator=(const AliTOFSDigitizer &/*source*/)
 {
   // ass. op.
   return *this;

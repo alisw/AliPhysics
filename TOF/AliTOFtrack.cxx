@@ -78,7 +78,7 @@ AliTOFtrack::AliTOFtrack(const AliESDtrack& t) :
 }              
 
 //____________________________________________________________________________
-AliTOFtrack& AliTOFtrack::operator=(const AliTOFtrack &source)
+AliTOFtrack& AliTOFtrack::operator=(const AliTOFtrack &/*source*/)
 {
   // ass. op.
 
