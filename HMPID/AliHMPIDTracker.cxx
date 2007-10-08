@@ -104,7 +104,7 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     Double_t qthre=((TF1*)pQthre->At(cham))  ->Eval(pEsd->GetTimeStamp());                       //Qthre for this chamber
     recon.SetImpPC(xPc,yPc);                                                                     //store track impact to PC
     recon.CkovAngle(pTrk,(TClonesArray *)pClus->At(cham),nmean,qthre);                           //search for Cerenkov angle of this track
-    Printf("AliHMPIDTracker::Recon: nmean %f, qthre %f",nmean,qthre);
+//    Printf("AliHMPIDTracker::Recon: nmean %f, qthre %f",nmean,qthre);
   }                                                                                              //ESD tracks loop
   return 0; // error code: 0=no error;
 }//Recon()
