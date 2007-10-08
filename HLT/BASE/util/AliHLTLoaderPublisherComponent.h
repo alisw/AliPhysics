@@ -13,6 +13,12 @@
     @brief  A general tree publisher component for the AliLoader.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTOfflineDataSource.h"
 
 class AliLoader;

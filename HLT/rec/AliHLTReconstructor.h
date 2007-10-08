@@ -2,8 +2,21 @@
 
 #ifndef ALIHLTRECONSTRUCTOR_H
 #define ALIHLTRECONSTRUCTOR_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* This file is property of and copyright by the ALICE HLT Project        * 
+ * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
+
+/** @file   AliHLTSimulation.h
+    @author Matthias Richter
+    @date   
+    @brief  Binding class for HLT simulation in AliRoot
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+                                                                          */
 
 #include "AliReconstructor.h"
 
