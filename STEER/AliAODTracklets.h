@@ -34,11 +34,11 @@ class AliAODTracklets : public TNamed
   inline Int_t   GetLabel(Int_t i) const;
 
  protected:
-  Int_t    fNTracks;      // Number of tracklets
+  Int_t      fNTracks;       // Number of tracklets
   Double32_t *fTheta;        //[fNTracks] array with theta values
   Double32_t *fPhi;          //[fNTracks] array with phi values
   Double32_t *fDeltaPhi;     //[fNTracks] array with delta phi values
-  Int_t   *fLabels;       //[fNTracks] array with labels of tracklets
+  Int_t      *fLabels;       //[fNTracks] array with labels of tracklets
 
  private:
   AliAODTracklets(const AliAODTracklets& evt); 

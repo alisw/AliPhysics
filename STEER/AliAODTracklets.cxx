@@ -43,8 +43,10 @@ void AliAODTracklets::CreateContainer(Int_t nTracks)
   
   fNTracks = nTracks;
 
-  if (fNTracks <= 0)
+  if (fNTracks <= 0) {
+    fNTracks = 0;
     return;
+  }
 
   fTheta = new Double32_t[fNTracks];
   fPhi = new Double32_t[fNTracks];
