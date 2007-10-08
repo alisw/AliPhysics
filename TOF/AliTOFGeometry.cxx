@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2007/10/04 14:05:09  zampolli
+AliTOFGeometryV5 becoming AliTOFGeometry
+
 Revision 1.18  2007/02/19 18:55:26  decaro
 Added getter methods for volume path (for Event Display)
 
@@ -450,7 +453,7 @@ void AliTOFGeometry::GetVolumePath(Int_t *ind, Char_t *path ) {
   if( iplate==4) icopy=istrip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
   sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy);
-  if(fHoles && (sector==11 || sector==12)){
+  if(fHoles && (sector==13 || sector==14 || sector==15)){
     if(iplate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
     if(iplate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }
@@ -496,7 +499,7 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_
   if(plate==4) icopy=strip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
   sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy);
-  if(fHoles && (sector==11 || sector==12)) {
+  if(fHoles && (sector==13 || sector==14 || sector==15)){
     if(plate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
     if(plate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }

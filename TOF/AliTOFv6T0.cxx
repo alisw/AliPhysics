@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.10  2007/10/07 19:40:46  decaro
+right handling of l2t matrices and alignable entries in case of TOF staging geometry
+
 Revision 1.9  2007/10/07 19:36:29  decaro
 TOF materials and volumes description: update
 
@@ -226,9 +229,9 @@ void AliTOFv6T0::AddAlignableVolumes() const
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
 
-      if (fTOFSectors[isect]==-1) continue;
+      //if (fTOFSectors[isect]==-1) continue;
 
-      if (fTOFHoles && (isect==11 || isect==12)) {
+      if (fTOFHoles && (isect==13 || isect==14 || isect==15)) {
 	if (istr<39) {
 	  vpL3 = "/FTOB_0";
 	  vpL4 = "/FLTB_0/FSTR_";
@@ -969,7 +972,7 @@ void AliTOFv6T0::MakeModulesInBTOFvolumes(Float_t ytof, Float_t zlenA) const
     if(fTOFSectors[isec]==-1)continue;
     char name[16];
     sprintf(name, "BTOF%d",isec);
-    if (fTOFHoles && (isec==11||isec==12)) {
+    if (fTOFHoles && (isec==13 || isec==14 || isec==15)) {
     //if (fTOFHoles && (isec==16||isec==17)) { \\Old 6h convention
       //xcoor = 0.;
       ycoor = (zlenA*0.5 + fgkInterCentrModBorder1)*0.5;
@@ -1019,7 +1022,7 @@ void AliTOFv6T0::MakeCoversInBTOFvolumes() const
     if(fTOFSectors[isec]==-1)continue;
     sprintf(name, "BTOF%d",isec);
     //if (fTOFHoles && (isec==16||isec==17)) \\Old 6h convention
-    if (fTOFHoles && (isec==11||isec==12))
+    if (fTOFHoles && (isec==13 || isec==14 || isec==15))
       gMC->Gspos("FPEB", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
     else
       gMC->Gspos("FPEA", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
@@ -1058,7 +1061,7 @@ void AliTOFv6T0::MakeBackInBTOFvolumes(Float_t ytof) const
     if(fTOFSectors[isec]==-1)continue;
     sprintf(name, "BTOF%d",isec);
     //if (fTOFHoles && (isec==16||isec==17)) \\Old 6h convention
-    if (fTOFHoles && (isec==11||isec==12))
+    if (fTOFHoles && (isec==13 || isec==14 || isec==15))
       gMC->Gspos("FAIB", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
     else
       gMC->Gspos("FAIA", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
