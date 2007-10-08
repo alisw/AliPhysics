@@ -33,6 +33,7 @@
 #include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliHeader.h"
+#include "AliGenEventHeader.h"
 
 
 AliMCEvent::AliMCEvent():
@@ -455,6 +456,6 @@ AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
     return mcParticle;
 }
 
-inline  AliGenEventHeader* AliMCEvent::GenEventHeader() {return (fHeader->GenEventHeader());}
+ AliGenEventHeader* AliMCEvent::GenEventHeader() {return (fHeader->GenEventHeader());}
 
 ClassImp(AliMCEvent)
