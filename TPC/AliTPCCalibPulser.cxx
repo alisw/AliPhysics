@@ -361,7 +361,6 @@ AliTPCCalibPulser::~AliTPCCalibPulser()
     fPadPedestalArrayEvent.Delete();
 
     if ( fDebugStreamer) delete fDebugStreamer;
-    delete fROC;
     delete fParam;
 }
 //_____________________________________________________________________
