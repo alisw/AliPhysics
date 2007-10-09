@@ -54,14 +54,14 @@ class AliVertex : public TNamed {
 
  protected:
 
-  Double_t fPosition[3];    // vertex position
-  Double_t fSigma;          // track dispersion around found vertex
+  Double32_t fPosition[3];    // vertex position
+  Double32_t fSigma;          // track dispersion around found vertex
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate 
   Int_t    fNIndices;       // # of indices 
   UShort_t *fIndices;       //[fNIndices] indices of tracks used for vertex
 
 
-  ClassDef(AliVertex,2)  // Class for Primary Vertex
+  ClassDef(AliVertex,3)  // Class for Primary Vertex
 };
 
 #endif

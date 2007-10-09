@@ -37,29 +37,29 @@
 
 ClassImp(AliESDv0)
 
-AliESDV0Params  AliESDv0::fgkParams;
+const AliESDV0Params  AliESDv0::fgkParams;
 
 AliESDv0::AliESDv0() :
   TObject(),
-  fOnFlyStatus(kFALSE),
-  fPdgCode(kK0Short),
+  fParamN(),
+  fParamP(),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
   fDcaV0Daughters(0),
-  fPointAngle(0),
-  fChi2V0(31.),
-  fNidx(-1),
-  fParamN(),
-  fPidx(-1),
-  fParamP(),
-  fRr(-1),
-  fStatus(0),
+  fChi2V0(0.),
+  fRr(0),
   fDistSigma(0),
   fChi2Before(0),
-  fNBefore(0),
   fChi2After(0),
-  fNAfter(0),
   fPointAngleFi(0),
-  fPointAngleTh(0)
+  fPointAngleTh(0),
+  fPointAngle(0),
+  fPdgCode(kK0Short),
+  fNidx(0),
+  fPidx(0),
+  fStatus(0),
+  fNBefore(0),
+  fNAfter(0),
+  fOnFlyStatus(kFALSE)
 {
   //--------------------------------------------------------------------
   // Default constructor  (K0s)
@@ -83,25 +83,25 @@ AliESDv0::AliESDv0() :
 
 AliESDv0::AliESDv0(const AliESDv0& v0) :
   TObject(v0),
-  fOnFlyStatus(v0.fOnFlyStatus),
-  fPdgCode(v0.fPdgCode),
+  fParamN(v0.fParamN),
+  fParamP(v0.fParamP),
   fEffMass(v0.fEffMass),
   fDcaV0Daughters(v0.fDcaV0Daughters),
-  fPointAngle(v0.fPointAngle),
   fChi2V0(v0.fChi2V0),
-  fNidx(v0.fNidx),
-  fParamN(v0.fParamN),
-  fPidx(v0.fPidx),
-  fParamP(v0.fParamP),
   fRr(v0.fRr),
-  fStatus(v0.fStatus),
   fDistSigma(v0.fDistSigma),
   fChi2Before(v0.fChi2Before),
-  fNBefore(v0.fNBefore),
   fChi2After(v0.fChi2After),
-  fNAfter(v0.fNAfter),
   fPointAngleFi(v0.fPointAngleFi),
-  fPointAngleTh(v0.fPointAngleTh)
+  fPointAngleTh(v0.fPointAngleTh),
+  fPointAngle(v0.fPointAngle),
+  fPdgCode(v0.fPdgCode),
+  fNidx(v0.fNidx),
+  fPidx(v0.fPidx),
+  fStatus(v0.fStatus),
+  fNBefore(v0.fNBefore),
+  fNAfter(v0.fNAfter),
+  fOnFlyStatus(v0.fOnFlyStatus)
 {
   //--------------------------------------------------------------------
   // The copy constructor
@@ -132,25 +132,25 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
 AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
                    const AliExternalTrackParam &t2, Int_t i2) :
   TObject(),
-  fOnFlyStatus(kFALSE),
-  fPdgCode(kK0Short),
+  fParamN(t1),
+  fParamP(t2),
   fEffMass(TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass()),
   fDcaV0Daughters(0),
-  fPointAngle(0),
-  fChi2V0(31.),
-  fNidx(i1),
-  fParamN(t1),
-  fPidx(i2),
-  fParamP(t2),
-  fRr(-1),
-  fStatus(0),
+  fChi2V0(0.),
+  fRr(0),
   fDistSigma(0),
   fChi2Before(0),
-  fNBefore(0),
   fChi2After(0),
-  fNAfter(0),
   fPointAngleFi(0),
-  fPointAngleTh(0)
+  fPointAngleTh(0),
+  fPointAngle(0),
+  fPdgCode(kK0Short),
+  fNidx(i1),
+  fPidx(i2),
+  fStatus(0),
+  fNBefore(0),
+  fNAfter(0),
+  fOnFlyStatus(kFALSE)
 {
   //--------------------------------------------------------------------
   // Main constructor  (K0s)

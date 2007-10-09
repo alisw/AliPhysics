@@ -74,19 +74,19 @@ public:
 protected:
   void SetChi2(Double_t chi2) {fChi2=chi2;} 
 
+  Double32_t fFakeRatio;  // fake ratio
+  Double32_t fChi2;       // total chi2 value for this track
+  Double32_t fMass;       // mass hypothesis
   Int_t fLab;             // track label
-  Float_t fFakeRatio;     // fake ratio
-  Double_t fChi2;         // total chi2 value for this track
-  Double_t fMass;         // mass hypothesis
   Int_t fN;               // number of associated clusters
 
 private:
-  // variables for time integration (S.Radomski@gsi.de)
   Bool_t  fStartTimeIntegral;       // indicator wether integrate time
-  Double_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
-  Double_t fIntegratedLength;        // integrated length
+  // variables for time integration (S.Radomski@gsi.de)
+  Double32_t fIntegratedTime[AliPID::kSPECIES];       // integrated time
+  Double32_t fIntegratedLength;        // integrated length
   
-  ClassDef(AliKalmanTrack,6)    // Reconstructed track
+  ClassDef(AliKalmanTrack,7)    // Reconstructed track
 };
 
 #endif

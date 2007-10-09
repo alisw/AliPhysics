@@ -32,8 +32,8 @@ public:
 
   Int_t    GetPdgCode() const {return fPdgCode;}
   Float_t  GetEffMass(UInt_t p1, UInt_t p2);
-  Float_t  GetEffMass() const {return fEffMass;}
-  Float_t  GetChi2V0()  const {return fChi2V0;}
+  Double_t  GetEffMass() const {return fEffMass;}
+  Double_t  GetChi2V0()  const {return fChi2V0;}
   void     GetPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetNPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
   void     GetPPxPyPz(Double_t &px, Double_t &py, Double_t &pz) const;
@@ -42,9 +42,9 @@ public:
   Int_t    GetNindex() const {return fNidx;}
   Int_t    GetPindex() const {return fPidx;}
   void     SetDcaV0Daughters(Double_t rDcaV0Daughters=0.);
-  Float_t  GetDcaV0Daughters() {return fDcaV0Daughters;}
+  Double_t  GetDcaV0Daughters() {return fDcaV0Daughters;}
   Float_t  GetV0CosineOfPointingAngle(Double_t&, Double_t&, Double_t&) const;
-  Float_t  GetV0CosineOfPointingAngle() const {return fPointAngle;}
+  Double_t  GetV0CosineOfPointingAngle() const {return fPointAngle;}
   void     SetV0CosineOfPointingAngle(Double_t cpa) {fPointAngle=cpa;}
   void     SetOnFlyStatus(Bool_t status){fOnFlyStatus=status;}
   Bool_t   GetOnFlyStatus() const {return fOnFlyStatus;}
@@ -85,62 +85,65 @@ public:
   Float_t GetChi2After() const {return fChi2After;}
   void SetChi2After(Float_t ca) {fChi2After=ca;}
   Float_t GetNAfter() const {return fNAfter;}
-  void SetNAfter(Float_t na) {fNAfter=na;}
-  Float_t GetNBefore() const {return fNBefore;}
-  void SetNBefore(Float_t nb) {fNBefore=nb;}  
+  void SetNAfter(Short_t na) {fNAfter=na;}
+  Short_t GetNBefore() const {return fNBefore;}
+  void SetNBefore(Short_t nb) {fNBefore=nb;}  
   void SetCausality(Float_t pb0, Float_t pb1, Float_t pa0, Float_t pa1);
-  const Float_t * GetCausalityP() const {return fCausality;}
+  const Double_t * GetCausalityP() const {return fCausality;}
   void SetClusters(Int_t *clp, Int_t *clm);
   const Int_t * GetClusters(Int_t i) const {return fClusters[i];}
   void SetNormDCAPrim(Float_t nd0, Float_t nd1){fNormDCAPrim[0] = nd0; fNormDCAPrim[1]=nd1;}
-  const Float_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
+  const Double_t  *GetNormDCAPrimP() const {return fNormDCAPrim;}
 
 protected:
-  Bool_t   fOnFlyStatus;    // if kTRUE, then this V0 is recontructed
-                            // "on fly" during the tracking
-
-  Int_t    fPdgCode;          // reconstructed V0's type (PDG code)
-  Float_t  fEffMass;          // reconstructed V0's effective mass
-  Float_t  fDcaV0Daughters;   // dca between V0's daughters
-  Float_t  fPointAngle;       //cosine of the pointing angle
-  Float_t  fChi2V0;           // V0's chi2 value
-
-  Double32_t fPos[3];         // V0's position (global)
-  Double32_t fPosCov[6];      // covariance matrix of the vertex position
-
-  Int_t fNidx;                // index of the negative daughter
-  Double32_t fNmom[3];        // momentum of the negative daughter (global)
   AliExternalTrackParam fParamN;  // external parameters of negative particle
-  Int_t fPidx;                // index of the positive daughter
-  Double32_t fPmom[3];        // momentum of the positive daughter (global)
   AliExternalTrackParam fParamP;  // external parameters of positive particle
 
+  // CKBrev: tkink about revision
 
-  // **** The following data members need to be revised ***
+  Double32_t   fEffMass;          // reconstructed V0's effective mass
+  Double32_t   fDcaV0Daughters;   // dca between V0's daughters
+  Double32_t   fChi2V0;           // V0's chi2 value
+  Double32_t   fPos[3];         // V0's position (global)
+  Double32_t   fPosCov[6];      // covariance matrix of the vertex position
+  Double32_t   fNmom[3];        // momentum of the negative daughter (global)
+  Double32_t   fPmom[3];        // momentum of the positive daughter (global)
+  Double32_t   fNormDCAPrim[2];  // normalize distance to the priary vertex CKBrev
+  Double32_t   fRr;         //rec position of the vertex CKBrev
+  Double32_t   fDistSigma; //sigma of distance CKBrev
+  Double32_t        fChi2Before;   //chi2 of the tracks before V0 CKBrev
+  Double32_t        fChi2After;   // chi2 of the tracks after V0 CKBrev
 
-  Int_t          fClusters[2][6]; //! its clusters 
-  //
-  Float_t        fNormDCAPrim[2];  // normalize distance to the priary vertex
-  //
-  Double32_t     fAngle[3];   //three angles
-  Float_t        fRr;         //rec position of the vertex 
-  Int_t          fStatus;       //status
-  Float_t        fDistSigma; //sigma of distance
-  Float_t        fCausality[4];  // causality information - see comments in SetCausality
-  Float_t        fChi2Before;   //chi2 of the tracks before V0
-  Float_t        fNBefore;      // number of possible points before V0
-  Float_t        fChi2After;   // chi2 of the tracks after V0
-  Float_t        fNAfter;      // number of possible points after V0
-  Float_t        fPointAngleFi; //point angle fi
-  Float_t        fPointAngleTh; //point angle theta
+
+  Double32_t        fCausality[4]; //[0,1,8] causality information - see comments in SetCausality CKBrev
+  Double32_t        fAngle[3];   //[-2*pi,2*pi,16]three angles CKBrev
+  Double32_t        fPointAngleFi; //[-1,1,16]point angle fi CKBrev
+  Double32_t        fPointAngleTh; //[-1,1,16]point angle theta CKBrev
+  Double32_t        fPointAngle;   //[-1,1,16] cosine of the pointing angle
+
+
+  Int_t fPdgCode;             // reconstructed V0's type (PDG code)
+  Int_t fClusters[2][6];      //! its clusters CKBrev  
+  Int_t fNidx;                // index of the negative daughter
+  Int_t fPidx;                // index of the positive daughter
+
+
+
+  Short_t    fStatus;     //status CKBrev
+  Short_t    fNBefore;      // number of possible points before V0 CKBrev
+  Short_t    fNAfter;      // number of possible points after V0 CKBrev
+
+  Bool_t     fOnFlyStatus;    // if kTRUE, then this V0 is recontructed
+                            // "on fly" during the tracking
+
   //
   // parameterization coefficients
-  static AliESDV0Params fgkParams;  // resolution and likelihood parameterization  
+  static const AliESDV0Params fgkParams;  //! resolution and likelihood parameterization  
 
 private:
   AliESDv0& operator=(const AliESDv0&);
 
-  ClassDef(AliESDv0,3)      // ESD V0 vertex
+  ClassDef(AliESDv0,4)      // ESD V0 vertex
 };
 
 inline 

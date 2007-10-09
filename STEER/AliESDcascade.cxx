@@ -35,10 +35,10 @@ ClassImp(AliESDcascade)
 
 AliESDcascade::AliESDcascade() : 
   AliESDv0(),
-  fPdgCodeXi(kXiMinus),
   fEffMassXi(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
-  fChi2Xi(1.e+33),
-  fDcaXiDaughters(999),
+  fChi2Xi(1024),
+  fDcaXiDaughters(1024),
+  fPdgCodeXi(kXiMinus),
   fBachIdx(-1)
 {
   //--------------------------------------------------------------------
@@ -49,17 +49,17 @@ AliESDcascade::AliESDcascade() :
     fBachMom[j]=0.;
   }
 
-  fPosCovXi[0]=1e10;
+  fPosCovXi[0]=1024;
   fPosCovXi[1]=fPosCovXi[2]=0.;
-  fPosCovXi[3]=1e10;
+  fPosCovXi[3]=1024;
   fPosCovXi[4]=0.;
-  fPosCovXi[5]=1e10;
+  fPosCovXi[5]=1024;
 
-  fBachMomCov[0]=1e10;
+  fBachMomCov[0]=1024;
   fBachMomCov[1]=fBachMomCov[2]=0.;
-  fBachMomCov[3]=1e10;
+  fBachMomCov[3]=1024;
   fBachMomCov[4]=0.;
-  fBachMomCov[5]=1e10;
+  fBachMomCov[5]=1024;
 }
 
 AliESDcascade::~AliESDcascade() {
@@ -68,10 +68,10 @@ AliESDcascade::~AliESDcascade() {
 AliESDcascade::AliESDcascade(const AliESDv0 &v,
 			     const AliExternalTrackParam &t, Int_t i) : 
   AliESDv0(v),
+  fEffMassXi(TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass()),
+  fChi2Xi(1024),
+  fDcaXiDaughters(1024),
   fPdgCodeXi(kXiMinus),
-  fEffMassXi(-1),
-  fChi2Xi(1.e+33),
-  fDcaXiDaughters(-1),
   fBachIdx(i)
 {
   //---------------------------------------------------------------------------------------------
@@ -117,19 +117,19 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
   fBachMom[0]=px1; fBachMom[1]=py1; fBachMom[2]=pz1; 
 
   //PH Covariance matrices: to be calculated correctly in the future
-  fPosCovXi[0]=1e10;
+  fPosCovXi[0]=1024;
   fPosCovXi[1]=fPosCovXi[2]=0.;
-  fPosCovXi[3]=1e10;
+  fPosCovXi[3]=1024;
   fPosCovXi[4]=0.;
-  fPosCovXi[5]=1e10;
+  fPosCovXi[5]=1024;
 
-  fBachMomCov[0]=1e10;
+  fBachMomCov[0]=1024;
   fBachMomCov[1]=fBachMomCov[2]=0.;
-  fBachMomCov[3]=1e10;
+  fBachMomCov[3]=1024;
   fBachMomCov[4]=0.;
-  fBachMomCov[5]=1e10;
+  fBachMomCov[5]=1024;
 
-  fChi2Xi=7.;   
+  fChi2Xi=1024.;   
 
 }
 

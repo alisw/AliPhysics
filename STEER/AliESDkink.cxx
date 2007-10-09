@@ -30,23 +30,22 @@ ClassImp(AliESDkink)
 //____________________________________________________________________
 AliESDkink::AliESDkink() :
   TObject(),
-  fID(0),
   fParamDaughter(),
   fParamMother(),
   fDist1(-1),
   fDist2(-1),
-  fRr(-1),
+  fRr(0),
   fShapeFactor(0),
-  fRow0(-1)
+  fID(0),
+  fRow0(0)
 {
   //
-  //Dafault constructor
+  //Default constructor
   //
   for (Int_t i=0;i<12;i++) fStatus[i]=0;
   for (Int_t i=0;i<2;i++)
     for (Int_t j=0;j<2;j++){
-      fTPCdensity[i][j]=-1;
-      fTPCdensity2[i][j]=-1;
+      fTPCdensity[i][j]=0;
     }
   fTPCncls[0]=fTPCncls[1]=0;
 
@@ -56,10 +55,79 @@ AliESDkink::AliESDkink() :
     fPm[i] = 0;
     fAngle[i] = 0;
   }
-  
-  fLab[0]=fLab[1]=-1;
+  fLab[0]=fLab[1]=0;
   fIndex[0]=fIndex[1]=-1;
   fMultiple[0]=fMultiple[1]=0;
+}
+
+AliESDkink::AliESDkink(const AliESDkink &source):
+  TObject(source),
+  fParamDaughter(source.fParamDaughter),
+  fParamMother(source.fParamMother),
+  fDist1(source.fDist1),
+  fDist2(source.fDist1),
+  fRr(source.fRr),
+  fShapeFactor(source.fShapeFactor),
+  fID(source.fID),
+  fRow0(source.fRow0)
+{
+  //
+  //Copy constructor
+  //
+  for (Int_t i=0;i<12;i++) fStatus[i]=source.fStatus[i];
+  for (Int_t i=0;i<2;i++){
+    fTPCncls[i] = source.fTPCncls[i];
+    fLab[i]     = source.fLab[i];
+    fIndex[i]   = source.fIndex[i];
+    fMultiple[i]= source.fMultiple[i];
+    for (Int_t j=0;j<2;j++){
+      fTPCdensity[i][j] = source.fTPCdensity[i][j];
+    }
+  }
+  for (Int_t i=0; i<3; i++) {
+    fPdr[i] = source.fPdr[i];
+    fXr[i] = source.fXr[i];
+    fPm[i] = source.fPm[i];
+    fAngle[i] = source.fAngle[i];
+  }
+}
+
+//_____________________________________________________________________________
+AliESDkink& AliESDkink::operator=(const AliESDkink &source)
+{
+  //
+  // assignment operator
+  //
+  
+  if (this!=&source) {
+    TObject::operator=(source);
+    fParamDaughter = source.fParamDaughter;
+    fParamMother = source.fParamMother;
+    fDist1 = source.fDist1;
+    fDist2 = source.fDist1;
+    fRr = source.fRr;
+    fShapeFactor = source.fShapeFactor;
+    fID = source.fID;
+    fRow0 = source.fRow0;
+    for (Int_t i=0;i<12;i++) fStatus[i]=source.fStatus[i];
+    for (Int_t i=0;i<2;i++){
+      fTPCncls[i] = source.fTPCncls[i];
+      fLab[i]     = source.fLab[i];
+      fIndex[i]   = source.fIndex[i];
+      fMultiple[i]= source.fMultiple[i];
+      for (Int_t j=0;j<2;j++){
+	fTPCdensity[i][j] = source.fTPCdensity[i][j];
+      }
+    }
+    for (Int_t i=0; i<3; i++) {
+      fPdr[i] = source.fPdr[i];
+      fXr[i] = source.fXr[i];
+      fPm[i] = source.fPm[i];
+      fAngle[i] = source.fAngle[i];
+    }
+  }
+
+  return *this;
 }
 
 void AliESDkink::SetMother(const AliExternalTrackParam & pmother)  {
@@ -77,11 +145,11 @@ void AliESDkink::SetDaughter(const AliExternalTrackParam & pdaughter){
 
 }
   
-Float_t AliESDkink::GetTPCDensityFactor() const
+Double_t AliESDkink::GetTPCDensityFactor() const
 {
   //
   //
-  return fTPCdensity[0][0]+fTPCdensity[1][1]-TMath::Max(fTPCdensity[0][1],Float_t(0.0))-TMath::Max(fTPCdensity[1][0],Float_t(0.0)); 
+  return fTPCdensity[0][0]+fTPCdensity[1][1]-TMath::Max(fTPCdensity[0][1],Double_t(0.0))-TMath::Max(fTPCdensity[1][0],Double_t(0.0)); 
 }
 
 Float_t AliESDkink::GetQt() const
