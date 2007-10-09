@@ -189,9 +189,9 @@ void AliPHOSCalibHistoProducer::Run()
       fAmpHisto[mod][col][row] = new TH1F(hname,hname,fNbins,fXlow,fXup);
       fAmpHisto[mod][col][row]->Fill(energy);
     }
-    
+  }
     // update histograms in local file every 100th event
-    if(fEvents%fUpdatingRate == 0) {
+    if(fEvents != 0 && fEvents%fUpdatingRate == 0) {
       AliInfo(Form("Updating histo file, event %d, run %d\n",
 		   fEvents,fRawDecoder->GetRawReader()->GetRunNumber()));
       UpdateHistoFile();
@@ -199,7 +199,6 @@ void AliPHOSCalibHistoProducer::Run()
     
     //   UpdateHistoFile();
     //   AliInfo(Form("%d events of run %d processed.",iEvent,runNum));
-  }
   
   fEvents++;
   
