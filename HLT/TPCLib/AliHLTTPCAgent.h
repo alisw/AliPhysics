@@ -39,6 +39,7 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    * @return neg. error code if failed
    */
   int CreateConfigurations(AliHLTConfigurationHandler* handler,
+			   AliRawReader* rawReader=NULL,
 			   AliRunLoader* runloader=NULL) const;
 
   /**
@@ -50,7 +51,8 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    * @param runloader    AliRoot runloader
    * @return number of configurations, neg. error code if failed
    */
-  const char* GetLocalRecConfigurations(AliRunLoader* runloader=NULL) const;
+  const char* GetReconstructionChains(AliRawReader* rawReader=NULL,
+				      AliRunLoader* runloader=NULL) const;
 
   /**
    * Component libraries which the configurations of this agent depend on.

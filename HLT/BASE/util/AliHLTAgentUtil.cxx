@@ -45,16 +45,16 @@ AliHLTAgentUtil::~AliHLTAgentUtil()
   // see header file for class documentation
 }
 
-int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* handler,
+int AliHLTAgentUtil::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
+					  AliRawReader* /*rawReader*/,
 					  AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
-  if (handler) {
-  }
   return 0;
 }
 
-const char* AliHLTAgentUtil::GetLocalRecConfigurations(AliRunLoader* /*runloader*/) const
+const char* AliHLTAgentUtil::GetReconstructionChains(AliRawReader* /*rawReader*/,
+						     AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
   return NULL;
@@ -63,5 +63,5 @@ const char* AliHLTAgentUtil::GetLocalRecConfigurations(AliRunLoader* /*runloader
 const char* AliHLTAgentUtil::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
-  return "libAliHLTUtil.so";
+  return NULL;
 }

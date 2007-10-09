@@ -136,12 +136,16 @@ class AliHLTSystem : public AliHLTLogging {
    * Run the task list.
    * The method checks whether the task list has already been build. If not,
    * or the configuration list has been changed, the @ref BuildTaskList
-   * method is scalled
+   * method is called.                                                    <br>
    * All tasks of the list will be subsequently processed for each event.
+   * The system can remain started if the \em bStop parameter is 0. In that
+   * case the system just waits for the next event. A specific call with
+   * nofEvents==0 is needed to execute the stop sequence.
    * @param iNofEvents number of events
+   * @param bStop      stop the chain after processing
    * @return number of reconstructed events, neg error code if failed
    */
-  int Run(Int_t iNofEvents=1);
+  int Run(Int_t iNofEvents=1, int bStop=1);
 
   /**
    * Init all tasks from the list.
@@ -158,6 +162,15 @@ class AliHLTSystem : public AliHLTLogging {
    * @return neg error code if failed
    */
   int InitBenchmarking(TObjArray* pStopwatches);
+
+  /**
+   * Print benchmarking summary.
+   * Optionak: clean up stop watches.
+   * @param pStopwatches    object array of stopwatches
+   * @param bClean          delete stop watches if 1
+   * @return neg error code if failed
+   */
+  int PrintBenchmarking(TObjArray* pStopwatches, int bClean=0);
 
   /**
    * Start task list.
@@ -197,13 +210,23 @@ class AliHLTSystem : public AliHLTLogging {
   static void* AllocMemory( void* param, unsigned long size );
 
   /**
-   * Reconstruction inside AliRoot.
-   * To be called by the AliHLTReconstructor plugin during the
-   * LocalReconstruction step of the AliRoot reconstruction. The latter means
-   * that all events are reconstructed at once, the event loop is internally
-   * implemented. In contrast to that, the FillESD method is called event by
-   * event. This requires an 'ESD' recorder at the end of the HLT chain, in
-   * order to have the reconstructed events available for the FillESD loop.
+   * AliRoot embedded reconstruction.
+   * Main entry point to execute the HLT reconstruction from AliRoot. Called
+   * either by the AliHLTReconstructor plugin during AliRoot reconstruction
+   * of raw data, or AliHLTSimulation during simulation of data.
+   *
+   * The two cases are distinguished by the availablility of the run loader
+   * and raw reader.
+   * - AliRoot simulation: run loader is available and is propagated to the
+   *   module agents (AliHLTModuleAgent) to generate the corresponding
+   *   configurations and chains, and to the AliHLTOfflineSource components.
+   * - AliRoot reconstruction: raw reader is available and is propagated to
+   *   the agents and AliHLTOfflineSource components.
+   *
+   * The system remains started after the processing and just waits for the
+   * next event. A specific call with nofEvents==0 is needed to execute the
+   * stop sequence.
+   *
    * The 'runLoader' and 'rawReader' parameters are set to all active
    * AliHLTOfflineDataSource's and the HLT chain is processed for the given
    * number of events. If the rawReader is NULL, reconstruction is done on
@@ -252,12 +275,21 @@ class AliHLTSystem : public AliHLTLogging {
    * - module agents are requested to register configurations
    * - task lists are built from the top configurations of the modules
    *
+   * @param rawReader    instance of the raw reader or NULL
+   * @param runloader    optional instance of the run loader
+   * @return neg. error code if failed <br>
+   *         -EBUSY      system is in kRunning state <br>
+   */
+  int Configure(AliRawReader* rawReader, AliRunLoader* runloader=NULL);
+
+  /**
+   * Old method kept for backward compatibilty.
+   *
    * @param runloader    optional instance of the run loader
    * @return neg. error code if failed <br>
    *         -EBUSY      system is in kRunning state <br>
    */
   int Configure(AliRunLoader* runloader=NULL);
-
 
   /**
    * Scan options.
@@ -269,7 +301,7 @@ class AliHLTSystem : public AliHLTLogging {
    *     disable redirection of log messages to AliLog class
    * \li config=<i>macro</i>
    *     configuration macro
-   * \li localrec=<i>configuration</i>
+   * \li chains=<i>configuration</i>
    *     comma separated list of configurations to be run during local
    *     reconstruction
    */
@@ -288,15 +320,20 @@ class AliHLTSystem : public AliHLTLogging {
    * Load the configurations specified by the module agents.
    * The runLoader is passed to the agent and allows configuration
    * selection.
+   * @param rawReader    instance of the raw reader or NULL
+   * @param runloader    optional instance of the run loader
    * @return neg. error code if failed 
    */
-  int LoadConfigurations(AliRunLoader* runloader=NULL);
+  int LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runloader=NULL);
 
   /**
    * Get the top configurations of all agents and build the task lists.
+   * @param rawReader    instance of the raw reader or NULL
+   * @param runloader    optional instance of the run loader
    * @return neg. error code if failed 
    */
-  int BuildTaskListsFromTopConfigurations(AliRunLoader* runloader=NULL);
+  int BuildTaskListsFromTopConfigurations(AliRawReader* rawReader, 
+					  AliRunLoader* runloader=NULL);
 
   enum AliHLTSystemState_t {
     kUninitialized       = 0x0,
@@ -304,7 +341,8 @@ class AliHLTSystem : public AliHLTLogging {
     kConfigurationLoaded = 0x2,
     kTaskListCreated     = 0x4,
     kReady               = 0x7,
-    kRunning             = 0x8,
+    kStarted             = 0x8,
+    kRunning             = 0x10,
     kError               = 0x1000
   };
 
@@ -352,11 +390,20 @@ class AliHLTSystem : public AliHLTLogging {
   /** state of the object */
   int fState;                                                      // see above
 
-  /** configurations to be run during local reconstruction */
-  TString fLocalRec;                                               //!transient
+  /** chains to be run during reconstruction */
+  TString fChains;                                                 //!transient
+
+  /* array of stopwatches */
+  TObjArray* fStopwatches;                                         //!transient
+
+  /* number of events processed in total */                        
+  int fEventCount;                                                 //!transient
+
+  /* number of events processed successfully */
+  int fGoodEvents;                                                 //!transient
 
  private:
-  ClassDef(AliHLTSystem, 3);
+  ClassDef(AliHLTSystem, 4);
 };
 
 #endif

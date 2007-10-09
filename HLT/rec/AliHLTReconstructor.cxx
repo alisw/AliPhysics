@@ -40,7 +40,13 @@ AliHLTReconstructor::AliHLTReconstructor()
 AliHLTReconstructor::~AliHLTReconstructor()
 { 
   //destructor
+
   if (fpSystem) {
+    AliDebug(0, Form("delete HLT system: status %#x", fpSystem->GetStatusFlags()));
+    if (fpSystem->CheckStatus(AliHLTSystem::kReady)) {
+      // send specific 'event' to execute the stop sequence
+      fpSystem->Reconstruct(0, NULL, NULL);
+    }
     delete fpSystem;
   }
   fpSystem=NULL;

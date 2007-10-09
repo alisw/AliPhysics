@@ -36,6 +36,7 @@ public:
 	 */
 	int CreateConfigurations(
 			AliHLTConfigurationHandler* handler,
+			AliRawReader* rawReader=NULL,
 			AliRunLoader* runloader = NULL
 		) const;
 
@@ -45,7 +46,8 @@ public:
 	 * @param runloader  [in] AliRoot runloader
 	 * @return string containing the top configurations separated by blanks.
 	 */
-	const char* GetLocalRecConfigurations(AliRunLoader* runloader = NULL) const;
+	const char* GetReconstructionChains(AliRawReader* rawReader=NULL,
+					    AliRunLoader* runloader = NULL) const;
 
 	/**
 	 * Component libraries which the configurations of this agent depend on.

@@ -27,6 +27,7 @@
 #include "AliHLTConfigurationHandler.h"
 
 class AliRunLoader;
+class AliRawReader;
 
 /**
  * @class AliHLTModuleAgent
@@ -38,6 +39,11 @@ class AliRunLoader;
  * it depends on.
  * @note There must not be more than one agent per module/library.
  *
+ * If a run loader is available, reconstruction is performed on simulated
+ * data as part of <tt>AliSimulation</tt>, if the raw reader is present on
+ * raw data as part of <tt>AliReconstruction</tt>. The configurations
+ * can adapt to the two cases.
+ *
  * All HLT component libraries are loaded on demand through the HLT steering
  * instance (@ref AliHLTSystem). A library can implement an agent derived 
  * from this base class, and has to define one global object of this agent
@@ -45,25 +51,28 @@ class AliRunLoader;
  * can be queried when required.
  *
  * This is usually done during running the AliRoot reconstruction (see AliRoot
- * documentation on <tt> AliReconstruction</tt>). The HLT implemets the @ref
- * AliHLTReconstructor which holds the HLT steering object. Several flags can
- * be specified as options via the <tt>SetOption</tt> method of 
+ * documentation on <tt> AliSimulation </tt> and <tt> AliReconstruction <tt>).
+ * The HLT implemets the @ref AliHLTSimulation and @ref
+ * AliHLTReconstructor which hold the HLT steering object. Several flags can
+ * be specified as options via the <tt>SetRunHLT</tt> method of
+ * <tt>AliSimulation</tt> and the <tt>SetOption</tt> method of 
  * <tt>AliReconstruction</tt>, including the component libraries to be loaded.
  *
  * @section alihltmoduleagent_interface Agent interface
  * The child can implement the following functions:
  * - @ref CreateConfigurations                                              <br>
- *       create HLT configuration forming an HLT analysis chain.
+ *       Create HLT configuration forming an HLT analysis chain.            <br>
+ *       Reconstruction of raw data or simulated data from digits needs
+ *       usually different configurations. If a run loader is available,
+ *       reconstruction is performed on simulated data, on raw data if the
+ *       raw reader is present.
  *
- * - @ref GetLocalRecConfigurations                                         <br>
- *       configurations run during local event reconstruction. 
- *       @note Local event reconstruction is the first step of the 
- *       reconstruction chain. All events are processed at once.
+ * - @ref GetReconstructionChains                                           <br>
+ *       Configurations run during event reconstruction.                    <br>
+ *       Define chains to be run during the recunstruction step,
+ *       Depending on the availability of AliRoot run loader or raw reader
  *                                                                          <br>
- * - @ref GetEventRecConfigurations                                         <br>
- *       configurations run during event reconstruction.
- *       @note This is the reconstruction on event by event basis.
- *                                                                          <br>
+ *
  * - @ref GetRequiredComponentLibraries                                     <br>
  *       can indicate further libraries which are required for running the
  *       chains (e.g. if components of another library are used).
@@ -86,10 +95,6 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * global agent manager
    */
   AliHLTModuleAgent();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTModuleAgent(const AliHLTModuleAgent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTModuleAgent& operator=(const AliHLTModuleAgent&);
   /** destructor */
   virtual ~AliHLTModuleAgent();
 
@@ -116,36 +121,38 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * Register all configurations belonging to this module with the
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
-   * runloader.
+   * runloader and the raw reader. <br>
+   * Run loader and raw reader are usually not present at the same time.
+   * If a run loader is available, reconstruction is performed on simulated
+   * data, if the raw reader is present on raw data. The configurations
+   * can adapt to the two cases.
+   *
    * @param handler   [in] the configuration handler
+   * @param rawReader [in] AliRoot RawReader instance 
    * @param runloader [in] AliRoot runloader
    * @return neg. error code if failed
    */
   virtual int CreateConfigurations(AliHLTConfigurationHandler* handler,
+				   AliRawReader* rawReader=NULL,
 				   AliRunLoader* runloader=NULL) const;
 
   /**
-   * Get the top configurations for local event reconstruction.
+   * Get the top configurations for event reconstruction.
    * A top configuration describes a processing chain. It can simply be
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
-   * AliRoot setup by checking the runloader.
-   * @param runloader  [in] AliRoot runloader
+   * AliRoot setup by checking the run loader and the raw reader.
+   * @param rawReader [in] AliRoot RawReader instance 
+   * @param runloader [in] AliRoot runloader
    * @return string containing the top configurations separated by blanks
    */
-  virtual const char* GetLocalRecConfigurations(AliRunLoader* runloader=NULL) const;
+  virtual const char* GetReconstructionChains(AliRawReader* rawReader=NULL,
+					      AliRunLoader* runloader=NULL) const;
 
   /**
-   * Get the top configurations for event reconstruction.
-   * The same as for @ref GetLocalRecConfigurations, but for the reconstruction on
-   * event by event basis.
-   * @param runloader  [in] AliRoot runloader
-   * @return string containing the top configurations separated by blanks
-   */
-  virtual const char* GetEventRecConfigurations(AliRunLoader* runloader=NULL) const;
-
-  /**
-   * Component libraries which the configurations of this agent depend on.
+   * Component libraries which the configurations of this agent depend on. <br>
+   * @note This is not the right place to specify libraries which this component
+   * library depends. Dependencies must be linked or loaded before.
    * @return list of component libraries as a blank-separated string.
    */
   virtual const char* GetRequiredComponentLibraries() const;
@@ -158,19 +165,25 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * \em Note: The sample object is owned by the agent, make sure to delete
    * it.
    */
-  virtual int RegisterComponents(AliRunLoader* runloader=NULL) const;
+  virtual int RegisterComponents(AliRawReader* rawReader=NULL,
+				 AliRunLoader* runloader=NULL) const;
 
   /**
    * Old method kept for backward compatibility, redirected to @ref
-   * GetLocalRecConfigurations.
+   * GetReconstructionChains.
    */
   const char* GetTopConfigurations(AliRunLoader* runloader=NULL) const {
-    return GetLocalRecConfigurations(runloader);
+    return GetReconstructionChains(NULL,runloader);
   }
 
  protected:
 
  private:
+  /** copy constructor prohibited */
+  AliHLTModuleAgent(const AliHLTModuleAgent&);
+  /** assignment operator prohibited */
+  AliHLTModuleAgent& operator=(const AliHLTModuleAgent&);
+
   /**
    * Register agent in the global list.
    * @return neg. error code if failed

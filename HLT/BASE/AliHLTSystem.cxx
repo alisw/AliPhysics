@@ -61,7 +61,10 @@ AliHLTSystem::AliHLTSystem()
   fpConfigurationHandler(new AliHLTConfigurationHandler()),
   fTaskList(),
   fState(0),
-  fLocalRec()
+  fChains(),
+  fStopwatches(new TObjArray),
+  fEventCount(-1),
+  fGoodEvents(-1)
 {
   // see header file for class documentation
   // or
@@ -324,56 +327,38 @@ void AliHLTSystem::PrintTaskList()
   }
 }
 
-int AliHLTSystem::Run(Int_t iNofEvents) 
+int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
 {
   // see header file for class documentation
   int iResult=0;
   int iCount=0;
   SetStatusFlags(kRunning);
-  TStopwatch StopwatchBase; StopwatchBase.Reset();
-  TStopwatch StopwatchDA; StopwatchDA.Reset();
-  TStopwatch StopwatchInput; StopwatchInput.Reset();
-  TStopwatch StopwatchOutput; StopwatchOutput.Reset();
-  TObjArray Stopwatches;
-  Stopwatches.AddAt(&StopwatchBase, (int)AliHLTComponent::kSWBase);
-  Stopwatches.AddAt(&StopwatchDA, (int)AliHLTComponent::kSWDA);
-  Stopwatches.AddAt(&StopwatchInput, (int)AliHLTComponent::kSWInput);
-  Stopwatches.AddAt(&StopwatchOutput, (int)AliHLTComponent::kSWOutput);
-  if ((iResult=InitTasks())>=0 && (iResult=InitBenchmarking(&Stopwatches))>=0) {
-    if ((iResult=StartTasks())>=0) {
-      for (int i=0; i<iNofEvents && iResult>=0; i++) {
-	iResult=ProcessTasks(i);
-	if (iResult>=0) {
-	  HLTInfo("Event %d successfully finished (%d)", i, iResult);
-	  iResult=0;
+  if (fEventCount>=0 || (iResult=InitTasks())>=0) {
+    if (fEventCount>=0 || (iResult=StartTasks())>=0) {
+      if (fEventCount==0) {
+	InitBenchmarking(fStopwatches);
+      } else {
+	//ResumeBenchmarking(fStopwatches);    
+      }
+      for (int i=fEventCount; i<fEventCount+iNofEvents && iResult>=0; i++) {
+	if ((iResult=ProcessTasks(i))>=0) {
+	  fGoodEvents++;
 	  iCount++;
 	} else {
-	  HLTError("Processing of event %d failed (%d)", i, iResult);
 	  // TODO: define different running modes to either ignore errors in
 	  // event processing or not
 	  // currently ignored 
-	  //iResult=0;
+	  iResult=0;
 	}
       }
-      StopTasks();
-    } else {
-      HLTError("can not start task list");
+      fEventCount+=iNofEvents;
+      if (bStop) StopTasks();
+      //else PauseBenchmarking(fStopwatches);
     }
-    DeinitTasks();
-  } else if (iResult!=-ENOENT) {
-    HLTError("can not initialize task list");
+    if (bStop) DeinitTasks();
   }
   if (iResult>=0) {
     iResult=iCount;
-    HLTInfo("HLT statistics:\n"
-	    "    base:              R:%.3fs C:%.3fs\n"
-	    "    input:             R:%.3fs C:%.3fs\n"
-	    "    output:            R:%.3fs C:%.3fs\n"
-	    "    event processing : R:%.3fs C:%.3fs"
-	    , StopwatchBase.RealTime(),StopwatchBase.CpuTime()
-	    , StopwatchInput.RealTime(),StopwatchInput.CpuTime()
-	    , StopwatchOutput.RealTime(),StopwatchOutput.CpuTime()
-	    , StopwatchDA.RealTime(),StopwatchDA.CpuTime());
   } else  if (iResult==-ENOENT) {
     iResult=0; // do not propagate the error
   }
@@ -386,6 +371,7 @@ int AliHLTSystem::InitTasks()
   // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fTaskList.FirstLink();
+
   if (lnk==NULL) {
     HLTWarning("Task list is empty, aborting ...");
     return -ENOENT;
@@ -400,16 +386,29 @@ int AliHLTSystem::InitTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
+    HLTError("can not initialize task list, error %d", iResult);
   }
+
   return iResult;
 }
 
 int AliHLTSystem::InitBenchmarking(TObjArray* pStopwatches)
 {
   // see header file for class documentation
-  if (pStopwatches==NULL) return -EINVAL;
-
   int iResult=0;
+  if (pStopwatches==NULL) return 0;
+
+  for (int i=0; i<(int)AliHLTComponent::kSWTypeCount; i++) {
+    TStopwatch* pStopwatch= new TStopwatch;
+    if (pStopwatch) {
+      pStopwatch->Reset();
+      pStopwatches->AddAt(pStopwatch, i);
+    } else {
+      iResult=-ENOMEM;
+      break;
+    }
+  }
+
   TObjLink *lnk=fTaskList.FirstLink();
   while (lnk && iResult>=0) {
     TObject* obj=lnk->GetObject();
@@ -454,6 +453,45 @@ int AliHLTSystem::InitBenchmarking(TObjArray* pStopwatches)
   return iResult;
 }
 
+int AliHLTSystem::PrintBenchmarking(TObjArray* pStopwatches, int bClean)
+{
+  // see header file for class documentation
+  int iInitialized=1;
+  if (pStopwatches==NULL) return 0;
+
+  for (int i=0; i<(int)AliHLTComponent::kSWTypeCount; i++) {
+    if (!dynamic_cast<TStopwatch*>(pStopwatches->At(i))) {
+      iInitialized=0;
+      break;
+    }
+  }
+
+  if (iInitialized!=0) {
+    HLTInfo("HLT statistics:\n"
+	    "    base:              R:%.3fs C:%.3fs\n"
+	    "    input:             R:%.3fs C:%.3fs\n"
+	    "    output:            R:%.3fs C:%.3fs\n"
+	    "    event processing : R:%.3fs C:%.3fs"
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWBase))->RealTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWBase))->CpuTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWInput))->RealTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWInput))->CpuTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWOutput))->RealTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWOutput))->CpuTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWDA))->RealTime()
+	    , dynamic_cast<TStopwatch*>(pStopwatches->At(AliHLTComponent::kSWDA))->CpuTime()
+	    );
+  }
+
+  if (bClean) {
+    for (int i=0; i<(int)AliHLTComponent::kSWTypeCount; i++) {
+      TObject* pObj=pStopwatches->RemoveAt(i);
+      if (pObj) delete pObj;
+    }
+  }
+  return 0;
+}
+
 int AliHLTSystem::StartTasks()
 {
   // see header file for class documentation
@@ -469,6 +507,10 @@ int AliHLTSystem::StartTasks()
     lnk = lnk->Next();
   }
   if (iResult<0) {
+    HLTError("can not start task list, error %d", iResult);
+  } else {
+    fEventCount=0;
+    fGoodEvents=0;
   }
   return iResult;
 }
@@ -489,6 +531,14 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
     }
     lnk = lnk->Next();
   }
+
+  if (iResult>=0) {
+    HLTInfo("Event %d successfully finished (%d)", eventNo, iResult);
+    iResult=0;
+  } else {
+    HLTError("Processing of event %d failed (%d)", eventNo, iResult);
+  }
+
   return iResult;
 }
 
@@ -506,6 +556,7 @@ int AliHLTSystem::StopTasks()
     }
     lnk = lnk->Next();
   }
+  PrintBenchmarking(fStopwatches, 1 /*clean*/);
   return iResult;
 }
 
@@ -523,6 +574,9 @@ int AliHLTSystem::DeinitTasks()
     }
     lnk = lnk->Next();
   }
+  fEventCount=-1;
+  fGoodEvents=-1;
+
   return iResult;
 }
 
@@ -545,11 +599,19 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 {
   // see header file for class documentation
   int iResult=0;
-  if (runLoader || rawReader) {
-    HLTInfo("Run Loader %p, Raw Reader %p , %d events", runLoader, rawReader, nofEvents);
+  if (runLoader || rawReader || nofEvents==0) {
+    if (nofEvents>0) {HLTInfo("Run Loader %p, Raw Reader %p , %d event(s)", runLoader, rawReader, nofEvents);}
     if (CheckStatus(kReady)) {
+      if (nofEvents==0) {
+	// special case to close the reconstruction
+	StopTasks();
+	DeinitTasks();
+      } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
-	iResult=Run(nofEvents);
+	// the system always remains started after event processing, a specific
+	// call with nofEvents==0 is neede to execute the stop sequence
+	iResult=Run(nofEvents, 0);
+      }
       }
     } else {
       HLTError("wrong state %#x, required flags %#x", GetStatusFlags(), kReady);
@@ -565,7 +627,7 @@ int AliHLTSystem::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd
 {
   // see header file for class documentation
   int iResult=0;
-  if (runLoader) {
+  if (runLoader || esd) {
     HLTInfo("Event %d: Run Loader %p, ESD %p", eventNo, runLoader, esd);
     iResult=AliHLTOfflineInterface::FillComponentESDs(eventNo, runLoader, esd);
   } else {
@@ -610,6 +672,12 @@ int AliHLTSystem::LoadComponentLibraries(const char* libraries)
 int AliHLTSystem::Configure(AliRunLoader* runloader)
 {
   // see header file for class documentation
+  Configure(NULL, runloader);
+}
+
+int AliHLTSystem::Configure(AliRawReader* rawReader, AliRunLoader* runloader)
+{
+  // see header file for class documentation
   int iResult=0;
   if (CheckStatus(kRunning)) {
     HLTError("HLT system in running state, can not configure");
@@ -619,9 +687,9 @@ int AliHLTSystem::Configure(AliRunLoader* runloader)
   if (CheckFilter(kHLTLogDebug))
     AliHLTModuleAgent::PrintStatus();
   if (CheckStatus(kConfigurationLoaded)==0) {
-    iResult=LoadConfigurations(runloader);
+    iResult=LoadConfigurations(rawReader, runloader);
   } else {
-    if (fLocalRec.Length()==0) {
+    if (fChains.Length()==0) {
       HLTError("custom configuration(s) specified, but no configuration to run in local reconstruction, use \'localrec=<conf>\' option");
       iResult=-ENOENT;
     }
@@ -630,7 +698,7 @@ int AliHLTSystem::Configure(AliRunLoader* runloader)
     SetStatusFlags(kConfigurationLoaded);
     if (CheckFilter(kHLTLogDebug))
       fpConfigurationHandler->PrintConfigurations();
-    iResult=BuildTaskListsFromTopConfigurations(runloader);
+    iResult=BuildTaskListsFromTopConfigurations(rawReader, runloader);
     if (iResult>=0) {
       SetStatusFlags(kTaskListCreated);
     }
@@ -677,8 +745,8 @@ int AliHLTSystem::ScanOptions(const char* options)
 	    iResult=-EBADF;
 	  }
 	} else if (token.Contains("localrec=")) {
-	  TString param=token.ReplaceAll("localrec=", "");
-	  fLocalRec=param.ReplaceAll(",", " ");
+	  TString param=token.ReplaceAll("chains=", "");
+	  fChains=param.ReplaceAll(",", " ");
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";
@@ -720,7 +788,7 @@ int AliHLTSystem::Reset(int bForce)
   return iResult;
 }
 
-int AliHLTSystem::LoadConfigurations(AliRunLoader* runloader)
+int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runloader)
 {
   // see header file for class documentation
   if (CheckStatus(kRunning)) {
@@ -737,14 +805,14 @@ int AliHLTSystem::LoadConfigurations(AliRunLoader* runloader)
     }
     if (iResult>=0) {
       HLTDebug("load configurations for agent %s (%p)", pAgent->GetName(), pAgent);
-      pAgent->CreateConfigurations(fpConfigurationHandler, runloader);
+      pAgent->CreateConfigurations(fpConfigurationHandler, rawReader, runloader);
       pAgent=AliHLTModuleAgent::GetNextAgent();
     }
   }
   return iResult;
 }
 
-int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
+int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRawReader* rawReader, AliRunLoader* runloader)
 {
   // see header file for class documentation
   if (CheckStatus(kRunning)) {
@@ -758,13 +826,13 @@ int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
 
   int iResult=0;
   AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-  while ((pAgent || fLocalRec.Length()>0) && iResult>=0) {
+  while ((pAgent || fChains.Length()>0) && iResult>=0) {
     TString tops;
-    if (fLocalRec.Length()>0) {
-      tops=fLocalRec;
+    if (fChains.Length()>0) {
+      tops=fChains;
       HLTInfo("custom local reconstruction configurations: %s", tops.Data());
     } else {
-      tops=pAgent->GetLocalRecConfigurations(runloader);
+      tops=pAgent->GetReconstructionChains(rawReader, runloader);
       HLTInfo("local reconstruction configurations for agent %s (%p): %s", pAgent->GetName(), pAgent, tops.Data());
     }
     TObjArray* pTokens=tops.Tokenize(" ");
@@ -782,7 +850,7 @@ int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRunLoader* runloader)
       delete pTokens;
     }
     
-    if (fLocalRec.Length()>0) {
+    if (fChains.Length()>0) {
       break; // ignore the agents
     }
     pAgent=AliHLTModuleAgent::GetNextAgent();

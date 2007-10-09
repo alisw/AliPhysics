@@ -117,6 +117,8 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
     return -EFAULT;
   }
   if ((iResult=fpSystem->Reconstruct(nEvents, pRunLoader, NULL))>=0) {
+    // send specific 'event' to execute the stop sequence
+    fpSystem->Reconstruct(0, NULL, NULL);
   }
   return iResult;
 }
