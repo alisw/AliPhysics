@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -258,9 +258,9 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 			       TMath::Power(y,2) +
 			       TMath::Power(z,2));
     
-    fClustersLay1[iC1][0] = TMath::ACos(z/r);  // Store Theta
-    fClustersLay1[iC1][1] = TMath::ATan2(y,x);  // Store Phi
-    fClustersLay1[iC1][2] = z/r;               // Store scaled z
+    fClustersLay1[iC1][0] = TMath::ACos(z/r);                   // Store Theta
+    fClustersLay1[iC1][1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
+    fClustersLay1[iC1][2] = z/r;                                // Store scaled z
     if (fHistOn) {
       Float_t eta=fClustersLay1[iC1][0];
       eta= TMath::Tan(eta/2.);
@@ -280,9 +280,9 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
 			       TMath::Power(y,2) +
 			       TMath::Power(z,2));
     
-    fClustersLay2[iC2][0] = TMath::ACos(z/r);  // Store Theta
-    fClustersLay2[iC2][1] = TMath::ATan2(y,x);  // Store Phi
-    fClustersLay2[iC2][2] = z;                 // Store z
+    fClustersLay2[iC2][0] = TMath::ACos(z/r);                   // Store Theta
+    fClustersLay2[iC2][1] = TMath::Pi() + TMath::ATan2(-y,-x);  // Store Phi
+    fClustersLay2[iC2][2] = z;                                  // Store z
 
  // this only needs to be initialized for the fNClustersLay2 first associations
     fAssociationFlag[iC2] = kFALSE;
@@ -529,4 +529,5 @@ AliITSMultReconstructor::SaveHists() {
   fhetaClustersLay1->Write();
   fhphiClustersLay1->Write();
 }
+
 
