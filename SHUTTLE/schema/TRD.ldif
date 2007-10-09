@@ -5,9 +5,9 @@ det: TRD
 strictRunOrder: 0
 responsible: r.bailhache@gsi.de
 
-dn: dcsHost=aldcs052.cern.ch,det=TRD,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs053.cern.ch,det=TRD,o=alice,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: aldcs053.cern.ch
 dcsPort: 4242
 multiSplit: 1
 dcsAlias: trd_chamberStatus[000..539]
@@ -15,10 +15,10 @@ dcsAlias: trd_goofieHv
 dcsAlias: trd_goofiePeakPos00
 dcsAlias: trd_goofiePeakPos01
 dcsAlias: trd_goofiePeakArea[00..01]
-dcsAlias: trd_goofieTemp[00..01]  
+dcsAlias: trd_goofieTemp[00..01]
 dcsAlias: trd_goofiePressure
 dcsAlias: trd_goofieVelocity
-dcsAlias: trd_goofieGain[00..01]  
+dcsAlias: trd_goofieGain[00..01]
 dcsAlias: trd_goofieCO2
 dcsAlias: trd_goofieN2
 dcsAlias: trd_gasO2
