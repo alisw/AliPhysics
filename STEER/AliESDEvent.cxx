@@ -24,6 +24,7 @@
 //-----------------------------------------------------------------
 
 #include "TList.h"
+#include "TRefArray.h"
 #include <TNamed.h>
 
 #include "AliESDEvent.h"
@@ -717,6 +718,45 @@ TObject* AliESDEvent::FindListObject(const char *name){
   if(fESDObjects)return fESDObjects->FindObject(name);
   return 0;
 } 
+
+Int_t AliESDEvent::GetPHOSClusters(TRefArray *clusters) const
+{
+  // fills the provided TRefArray with all found phos clusters
+
+  clusters->Clear();
+
+  AliESDCaloCluster *cl = 0;
+  for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
+
+    if ( cl = GetCaloCluster(i)) {
+      if (cl->IsPHOS()){
+	clusters->Add(cl);
+	printf("IsPHOS %d Size: %d \n",i,clusters->GetEntriesFast());
+      }
+    }
+  }
+  return clusters->GetEntriesFast();
+}
+
+Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
+{
+  // fills the provided TRefArray with all found phos clusters
+
+  clusters->Clear();
+
+  AliESDCaloCluster *cl = 0;
+  for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
+
+    if ( cl = GetCaloCluster(i)) {
+      if (cl->IsEMCAL()){
+	clusters->Add(cl);
+	printf("IsEMCAL %d Size: %d \n",i,clusters->GetEntriesFast());
+      }
+    }
+  }
+  return clusters->GetEntriesFast();
+}
+
 
 void AliESDEvent::ReadFromTree(TTree *tree){
 

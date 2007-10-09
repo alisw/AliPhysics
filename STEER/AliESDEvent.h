@@ -51,6 +51,7 @@ class AliESDTrdTrack;
 class AliESDMuonTrack;
 class AliESD;
 class AliESDcascade;
+class TRefArray;
 
 class AliESDEvent : public AliVEvent {
 public:
@@ -273,6 +274,8 @@ public:
   Int_t GetNumberOfV0s()      const {return fV0s->GetEntriesFast();}
   Int_t GetNumberOfCascades() const {return fCascades->GetEntriesFast();}
   Int_t GetNumberOfKinks() const {return fKinks->GetEntriesFast();}
+  Int_t GetEMCALClusters(TRefArray *clusters) const;
+  Int_t GetPHOSClusters(TRefArray *clusters) const;
   Int_t GetNumberOfCaloClusters() const {return fCaloClusters->GetEntriesFast();}
 
   Int_t GetNumberOfEMCALClusters() const {return fEMCALClusters;}
@@ -350,7 +353,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,2)  //ESDEvent class 
+  ClassDef(AliESDEvent,3)  //ESDEvent class 
 };
 #endif 
 
