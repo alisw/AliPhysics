@@ -20,7 +20,7 @@ class AliPHOSRawDecoder {
 public:
 
   AliPHOSRawDecoder();
-  AliPHOSRawDecoder(AliRawReader* rawReader);
+  AliPHOSRawDecoder(AliRawReader* rawReader, AliAltroMapping **mapping = NULL);
   AliPHOSRawDecoder(const AliPHOSRawDecoder& rawDecoder);
   AliPHOSRawDecoder& operator = (const AliPHOSRawDecoder& rawDecoder);
   virtual ~AliPHOSRawDecoder();

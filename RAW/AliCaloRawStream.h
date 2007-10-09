@@ -23,7 +23,7 @@ class AliAltroMapping;
 class AliCaloRawStream: public AliAltroRawStream {
 
 public :
-  AliCaloRawStream(AliRawReader* rawReader,  TString calo);
+  AliCaloRawStream(AliRawReader* rawReader,  TString calo, AliAltroMapping **mapping = NULL);
   virtual ~AliCaloRawStream();
  
   virtual void             Reset();
@@ -56,6 +56,7 @@ protected:
   Int_t            fPrevColumn;   // index of previous column
   Bool_t          fGain;         // low (0) or (1) high gain
   Int_t            fNRCU;   // number of RCU per (super)module
+  Bool_t           fExternalMapping;   // use external mapping or create a default one
   AliAltroMapping *fMapping[4];   // pointers to ALTRO mapping
 
   ClassDef(AliCaloRawStream, 0)   // class for reading PHOS/EMCAL raw digits

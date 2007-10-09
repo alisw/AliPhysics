@@ -54,7 +54,7 @@ AliPHOSRawDecoder::AliPHOSRawDecoder():
 }
 
 //-----------------------------------------------------------------------------
-AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader):
+AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader,  AliAltroMapping **mapping):
   fRawReader(0),fCaloStream(0),fPedSubtract(kFALSE),fEnergy(-111),fTime(-111),fModule(-1),fColumn(-1),fRow(-1),fLowGainFlag(kFALSE),fSamples(0),fPulseGenerator(0)
 {
   //Construct a decoder object.
@@ -62,7 +62,7 @@ AliPHOSRawDecoder::AliPHOSRawDecoder(AliRawReader* rawReader):
   //using AliRawReader::NextEvent().
 
   fRawReader =  rawReader;
-  fCaloStream = new AliCaloRawStream(rawReader,"PHOS");
+  fCaloStream = new AliCaloRawStream(rawReader,"PHOS",mapping);
   fCaloStream->SetOldRCUFormat(kFALSE);
   fSamples = new TArrayI(100);
   fPulseGenerator = new AliPHOSPulseGenerator();

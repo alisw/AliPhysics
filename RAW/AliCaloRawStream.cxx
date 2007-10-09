@@ -43,7 +43,7 @@ ClassImp(AliCaloRawStream)
 
 
 //_____________________________________________________________________________
-  AliCaloRawStream::AliCaloRawStream(AliRawReader* rawReader, TString calo) :
+AliCaloRawStream::AliCaloRawStream(AliRawReader* rawReader, TString calo, AliAltroMapping **mapping) :
   AliAltroRawStream(rawReader),
   fModule(-1),
   fPrevModule(-1),
@@ -51,7 +51,9 @@ ClassImp(AliCaloRawStream)
   fPrevRow(-1),
   fColumn(-1),
   fPrevColumn(-1),
-  fGain(0)
+  fGain(0),
+  fNRCU(0),
+  fExternalMapping(kFALSE)
 {
 // create an object to read PHOS/EMCAL raw digits
 
@@ -61,14 +63,21 @@ ClassImp(AliCaloRawStream)
   fNRCU = 4;
   if(calo == "EMCAL")  fNRCU = 2;
 
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/"+calo+"/mapping/RCU";
-  TString path2;
-  for(Int_t i = 0; i < fNRCU; i++) {
-    path2 = path;
-    path2 += i;
-    path2 += ".data";
-    fMapping[i] = new AliCaloAltroMapping(path2.Data());
+  if (mapping == NULL) {
+    TString path = gSystem->Getenv("ALICE_ROOT");
+    path += "/"+calo+"/mapping/RCU";
+    TString path2;
+    for(Int_t i = 0; i < fNRCU; i++) {
+      path2 = path;
+      path2 += i;
+      path2 += ".data";
+      fMapping[i] = new AliCaloAltroMapping(path2.Data());
+    }
+  }
+  else {
+    fExternalMapping = kTRUE;
+    for(Int_t i = 0; i < fNRCU; i++)
+      fMapping[i] = mapping[i];
   }
 
   SetNoAltroMapping(kFALSE);
@@ -84,7 +93,8 @@ AliCaloRawStream::AliCaloRawStream(const AliCaloRawStream& stream) :
   fColumn(-1),
   fPrevColumn(-1),
   fGain(0),
-  fNRCU(0)
+  fNRCU(0),
+  fExternalMapping(kFALSE)
 {  
   Fatal("AliCaloRawStream", "copy constructor not implemented");
 }
@@ -102,7 +112,9 @@ AliCaloRawStream::~AliCaloRawStream()
 {
 // destructor
 
-  for(Int_t i = 0; i < fNRCU; i++) delete fMapping[i];
+  if (!fExternalMapping)
+    for(Int_t i = 0; i < fNRCU; i++)
+      delete fMapping[i];
 }
 
 //_____________________________________________________________________________
