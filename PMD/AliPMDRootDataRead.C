@@ -1,39 +1,31 @@
-//
+// To read PMD raw root data and fetch the adc value for each cell
 void AliPMDRootDataRead()
 {
-  // To read PMD raw root data and fetch the adc value for each cell
-
   TObjArray pmdddlcont;
-
+  
   Int_t ievt = 2;
-
+  
   Bool_t junk;
-
-  AliRawReaderRoot reader("raw_6b_61.root",ievt);
-  //reader.NextEvent();
-  //reader.NextEvent();
-
-
-
+  
+  AliRawReaderRoot reader("raw.root",ievt);
+  // reader.NextEvent();
+  cout<<" Processing Event No  : "<<ievt<<endl;
   /*
-  reader.ReadHeader();
-  cout << "LDC ID =       " << reader.GetLDCId()       << endl;
-  cout << "Equipment ID = " << reader.GetEquipmentId() << endl;
-  cout << "Data Size =    " << reader.GetDataSize()    << endl;
+    reader.ReadHeader();
+    cout << "LDC ID =       " << reader.GetLDCId()       << endl;
+    cout << "Equipment ID = " << reader.GetEquipmentId() << endl;
+    cout << "Data Size =    " << reader.GetDataSize()    << endl;
   */
 
   AliPMDRawStream stream(&reader);
-
+  
   Int_t indexDDL = 0;
-
-
+  
   for (Int_t iddl = 0; iddl < 6; iddl++)
     {
-      
       reader.Select("PMD", iddl, iddl);
-
-      junk = stream.DdlData(&pmdddlcont);
-
+      junk = stream.DdlData(iddl,&pmdddlcont);
+      
       Int_t ientries = pmdddlcont.GetEntries();
       for (Int_t ient = 0; ient < ientries; ient++)
 	{
@@ -46,13 +38,9 @@ void AliPMDRootDataRead()
 	  Int_t row = pmdddl->GetRow();
 	  Int_t col = pmdddl->GetColumn();
 	  Int_t sig = pmdddl->GetSignal();
-
-	  // cout << row << " " << col << " " << sig << endl;
-
+	  
+	  //cout << iddl<<"  "<<row << " " << col << " " << sig << endl;
 	}
       pmdddlcont.Clear();
-
     }
-
-
 }

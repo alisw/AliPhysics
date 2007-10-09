@@ -26,13 +26,12 @@ Int_t AliPMDesdanal() {
    gStyle->SetOptFit(1);
 
 //****** File with the ESD
-   TFile *ef=TFile::Open("AliESDcheck.root");
+   TFile *ef=TFile::Open("AliESDs.root");
    if (!ef || !ef->IsOpen()) {cerr<<"Can't AliESDs.root !\n"; return 1;}
-   AliESD* event = new AliESD;
+   AliESDEvent * event = new AliESDEvent;
    TTree* tree = (TTree*) ef->Get("esdTree");
    if (!tree) {cerr<<"no ESD tree found\n"; return 1;};
-   tree->SetBranchAddress("ESD", &event);
-
+   event->ReadFromTree(tree);
    Int_t n=0;
 
 //******* The loop over events
@@ -47,14 +46,19 @@ Int_t AliPMDesdanal() {
      while (npmdcl--) {
        AliESDPmdTrack *pmdtr = event->GetPmdTrack(npmdcl);
        
-       Int_t   det   = pmdtr->GetDetector();
-       Float_t theta = pmdtr->GetTheta();
-       Float_t phi   = pmdtr->GetPhi();
+       Int_t   det   = pmdtr->GetDetector(); 
+       Float_t clsX  = pmdtr->GetClusterX();
+       Float_t clsY  = pmdtr->GetClusterY();
+       Float_t clsZ  = pmdtr->GetClusterZ();
+       Float_t ncell = pmdtr->GetClusterCells();
        Float_t adc   = pmdtr->GetClusterADC();
        Float_t pid   = pmdtr->GetClusterPID();
        
      }
    }
+
+   delete event;
+
    timer.Stop();
    timer.Print();
 
