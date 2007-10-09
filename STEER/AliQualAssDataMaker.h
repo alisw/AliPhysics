@@ -47,26 +47,26 @@ public:
   const Int_t         Increment() { return ++fCycleCounter ; } 
   TList *             Init(AliQualAss::TASKINDEX, Int_t run, Int_t cycles = -1) ;
   const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
-  const Int_t         Add2DigitsList(TH1 * hist, Int_t index)    { return Add2List(hist, index, fDigitsQAList) ; }
-  const Int_t         Add2ESDsList(TH1 * hist, Int_t index)      { return Add2List(hist, index, fESDsQAList) ; }
-  const Int_t         Add2HitsList(TH1 * hist, Int_t index)      { return Add2List(hist, index, fHitsQAList) ; }
-  const Int_t         Add2RecPointsList(TH1 * hist, Int_t index) { return Add2List(hist, index, fRecPointsQAList) ; }
-  const Int_t         Add2RawsList(TH1 * hist, Int_t index)      { return Add2List(hist, index, fRawsQAList) ; }
-  const Int_t         Add2SDigitsList(TH1 * hist, Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
-  TH1 *               GetDigitsData(Int_t index)    { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; }
-  TH1 *               GetESDsData(Int_t index)      { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
-  TH1 *               GetHitsData(Int_t index)      { return dynamic_cast<TH1 *>(GetData(fHitsQAList, index)) ; }
-  TH1 *               GetRecPointsData(Int_t index) { return dynamic_cast<TH1 *>(GetData(fRecPointsQAList, index)) ; }
-  TH1 *               GetRawsData(Int_t index)      { return dynamic_cast<TH1 *>(GetData(fRawsQAList, index)) ; }
-  TH1 *               GetSDigitsData(Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
+  const Int_t         Add2DigitsList(TH1 * hist, const Int_t index)    { return Add2List(hist, index, fDigitsQAList) ; }
+  const Int_t         Add2ESDsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fESDsQAList) ; }
+  const Int_t         Add2HitsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fHitsQAList) ; }
+  const Int_t         Add2RecPointsList(TH1 * hist, const Int_t index) { return Add2List(hist, index, fRecPointsQAList) ; }
+  const Int_t         Add2RawsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fRawsQAList) ; }
+  const Int_t         Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
+  TH1 *               GetDigitsData(const Int_t index)    { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; }
+  TH1 *               GetESDsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
+  TH1 *               GetHitsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fHitsQAList, index)) ; }
+  TH1 *               GetRecPointsData(const Int_t index) { return dynamic_cast<TH1 *>(GetData(fRecPointsQAList, index)) ; }
+  TH1 *               GetRawsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fRawsQAList, index)) ; }
+  TH1 *               GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
   void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
-  void                StartOfCycle(AliQualAss::TASKINDEX, Option_t * sameCycle = "") ;
+  void                StartOfCycle(AliQualAss::TASKINDEX, Option_t * sameCycle = "new") ;
 
 protected: 
 
-  Int_t          Add2List(TH1 * hist, Int_t index, TList * list) { list->AddAt(hist, index) ; return list->LastIndex() ; }
+  Int_t          Add2List(TH1 * hist, const Int_t index, TList * list) { list->AddAt(hist, index) ; return list->LastIndex() ; }
   virtual void   EndOfDetectorCycle() {AliInfo("To be implemented by detectors");} 
-  TObject *      GetData(TList * list, Int_t index)  { return list->At(index) ; } 
+  TObject *      GetData(TList * list, const Int_t index)  { return list->At(index) ; } 
   virtual void   InitDigits()        {AliInfo("To be implemented by detectors");}
   virtual void   InitESDs()          {AliInfo("To be implemented by detectors");}
   virtual void   InitHits()          {AliInfo("To be implemented by detectors");}
@@ -83,7 +83,7 @@ protected:
   virtual void   MakeRecPoints(TTree * )           {AliInfo("To be implemented by detectors");} 
   virtual void   MakeSDigits(TClonesArray * )      {AliInfo("To be implemented by detectors");} 
   //virtual void   MakeTrackSegments(TTree * )       {AliInfo("To be implemented by detectors");} 
-  void           ResetCycle() { fCycleCounter = 0 ; } 
+  void           ResetCycle() { fCurrentCycle++ ; fCycleCounter = 0 ; } 
   virtual void   StartOfDetectorCycle() {AliInfo("To be implemented by detectors");} 
 
   TFile *        fOutput ;          //! output root file

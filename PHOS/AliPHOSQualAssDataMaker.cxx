@@ -156,7 +156,7 @@ void AliPHOSQualAssDataMaker::InitRaws()
   for (Int_t mod = 0; mod < modMax; mod++) {
    sprintf(title, "Raws x Columns for PHOS module %d", mod+1) ;  
    sprintf(name, "hPHOSxyMod%d", mod+1) ; 
-   h1[mod] = new TH2I(name, title, 64, 0, 63, 56, 0, 55) ; 
+   h1[mod] = new TH2I(name, title, 64, 1, 65, 56, 1, 57) ; 
    Add2RawsList(h1[mod], mod+1) ;
   }
   TH1F * h6 = new TH1F("hPhosRawtime", "Time of raw hits in PHOS", 100, 0, 100.) ; 

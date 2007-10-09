@@ -60,9 +60,6 @@ AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) 
   fRun(0)
 {
   // ctor
-  TString tmp(GetName()) ; 
-  tmp.Append("QA") ; 
-  SetName(tmp.Data()) ; 
   fDetectorDirName = GetName() ; 
 }
 
@@ -234,6 +231,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
 void AliQualAssDataMaker::Finish(AliQualAss::TASKINDEX) const 
 { 
   // write to the output File
+  fOutput->Close() ; 
 } 
 
 //____________________________________________________________________________ 
@@ -245,7 +243,7 @@ TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task, Int_t run, Int_t 
   if (cycles > 0)
     SetCycle(cycles) ;  
 	
-  switch (task) { 
+  switch (task) {
   case AliQualAss::kRAWS: 
    {
 	fRawsQAList = new TList() ;	 
@@ -305,14 +303,13 @@ void AliQualAssDataMaker::StartOfCycle(AliQualAss::TASKINDEX task, Option_t * sa
 { 
   // Finishes a cycle of QA data acquistion
  
- if ( (strcmp(sameCycle, "same") != 0) ) {
-   fCurrentCycle++ ; 
+ if ( (strcmp(sameCycle, "new") == 0) )  {
    ResetCycle() ;
- } else if ( !(strcmp(sameCycle, "") != 0) ) 
-   AliFatal(Form("%s is an invalid option, valid options are: same", sameCycle)) ; 
-
- fOutput = AliQualAss::GetQADMOutFile(fRun, fCurrentCycle) ; 	
-
+   if (fOutput) 
+	fOutput->Close() ; 
+   fOutput = AliQualAss::GetQADMOutFile(GetName(), fRun, fCurrentCycle) ; 	
+ }
+    	
  AliInfo(Form(" Run %d Cycle %d task %s file %s", 
 	fRun, fCurrentCycle, AliQualAss::GetTaskName(task).Data(), fOutput->GetName() )) ;
 

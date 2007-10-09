@@ -45,7 +45,7 @@ ClassImp(AliQualAss)
 
   AliQualAss * AliQualAss::fgQA        = 0x0 ;
   TFile      * AliQualAss::fgDataFile  = 0x0 ;   
-  TString      AliQualAss::fgDataName  = "QAData" ;   
+  TString      AliQualAss::fgDataName  = "QA" ;   
   TString      AliQualAss::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
 					"ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
   TString      AliQualAss::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
@@ -162,11 +162,11 @@ const Bool_t AliQualAss::CheckRange(QABIT bit) const
 
 
 //_______________________________________________________________
-TFile * AliQualAss::GetQADMOutFile(Int_t run, Int_t cycle) 
+TFile * AliQualAss::GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
   char temp[100] ; 
-  sprintf(temp, "%s_%d_%d.root", fgDataName.Data(), run, cycle) ; 
+  sprintf(temp, "%s.%s.%d.%d.root", name, fgDataName.Data(), run, cycle) ; 
   TString opt ; 
   if (! fgDataFile ) {     
     if  (gSystem->AccessPathName(temp))

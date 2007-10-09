@@ -90,13 +90,13 @@ const Double_t AliQualAssCheckerBase::Check()
        TKey * key ;
        count = 0 ; 
        while ( (key = static_cast<TKey *>(next())) ) {
-	 TObject * odata = fRefSubDir->Get(key->GetName()) ; 
-	 if ( odata->IsA()->InheritsFrom("TH1") ) {
-	   TH1 * hdata = static_cast<TH1*>(odata) ; 
-	   TH1 * href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
-	   if (!href) 
+	    TObject * odata = fRefSubDir->Get(key->GetName()) ; 
+	    if ( odata->IsA()->InheritsFrom("TH1") ) {
+	     TH1 * hdata = static_cast<TH1*>(odata) ; 
+	     TH1 * href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
+	    if (!href) 
 	     test = -1 ; // no reference data ; 
-	   else {
+	    else {
 	     Double_t rv =  DiffK(hdata, href) ;
 	     AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
 	     test += rv ; 
