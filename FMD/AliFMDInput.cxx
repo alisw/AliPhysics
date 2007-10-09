@@ -396,19 +396,23 @@ AliFMDInput::ProcessHits()
     AliError("No hit tree defined");
     return kFALSE;
   }
+  if (!fArrayH) {
+    AliError("No hit array defined");
+    return kFALSE;
+  }
+
   Int_t nTracks = fTreeH->GetEntries();
   for (Int_t i = 0; i < nTracks; i++) {
     Int_t hitRead  = fTreeH->GetEntry(i);
     if (hitRead <= 0) continue;
-    if (!fArrayH) {
-      AliError("No hit array defined");
-      return kFALSE;
-    }
+
     Int_t nHit = fArrayH->GetEntries();
     if (nHit <= 0) continue;
+  
     for (Int_t j = 0; j < nHit; j++) {
       AliFMDHit* hit = static_cast<AliFMDHit*>(fArrayH->At(j));
       if (!hit) continue;
+
       TParticle* track = 0;
       if (TESTBIT(fTreeMask, kKinematics) && fStack) {
 	Int_t trackno = hit->Track();
@@ -425,7 +429,7 @@ Bool_t
 AliFMDInput::ProcessTracks()
 {
   // Read the hit tree, and pass each hit to the member function
-  // ProcessHit.
+  // ProcessTrack.
   if (!fStack) {
     AliError("No track tree defined");
     return kFALSE;
@@ -434,25 +438,32 @@ AliFMDInput::ProcessTracks()
     AliError("No hit tree defined");
     return kFALSE;
   }
+  if (!fArrayH) {
+    AliError("No hit array defined");
+    return kFALSE;
+  }
+
+  // Int_t nTracks = fStack->GetNtrack();
   Int_t nTracks = fTreeH->GetEntries();
   for (Int_t i = 0; i < nTracks; i++) {
-    TParticle* track = fStack->Particle(i);
+    Int_t      trackno = nTracks - i - 1;
+    TParticle* track   = fStack->Particle(trackno);
     if (!track) continue;
-    Int_t hitRead  = fTreeH->GetEntry(i);
-    if (hitRead <= 0) continue;
-    if (!fArrayH) {
-      AliError("No hit array defined");
-      return kFALSE;
-    }
-    Int_t nHit = fArrayH->GetEntries();
-    if (nHit <= 0) continue;
 
+    // Get the hits for this track. 
+    Int_t hitRead  = fTreeH->GetEntry(i);
+    Int_t nHit     = fArrayH->GetEntries();
+    if (nHit == 0 || hitRead <= 0) { 
+      // Let user code see the track, even if there's no hits. 
+      if (!ProcessTrack(trackno, track, 0)) return kFALSE;
+      continue;
+    }
+
+    // Loop over the hits corresponding to this track.
     for (Int_t j = 0; j < nHit; j++) {
       AliFMDHit* hit = static_cast<AliFMDHit*>(fArrayH->At(j));
-      if (!hit) continue;
-      if (!ProcessTrack(i, track, hit)) return kFALSE;
-    }    
-    // if (!ProcessTrack(i, track, fArrayH)) return kFALSE;
+      if (!ProcessTrack(trackno, track, hit)) return kFALSE;
+    }   
   }
   return kTRUE;
 }

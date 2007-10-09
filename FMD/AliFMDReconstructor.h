@@ -80,8 +80,8 @@ public:
       @param digitsTree  Tree holding the digits of this event
       @param clusterTree Tree to store AliFMDRecPoint objects in. */
   virtual void   Reconstruct(TTree* digitsTree, TTree* clusterTree) const;
-  virtual void   Reconstruct(AliRawReader *, TTree*) const
-  {AliError("Method is not used");}
+  /** Not used */
+  virtual void   Reconstruct(AliRawReader *, TTree*) const;
   /** Put in the ESD data, the FMD ESD data.  The object created by
       the Reconstruct member function is copied to the ESD object. 
       @param digitsTree   Tree of digits for this event - not used
@@ -89,9 +89,10 @@ public:
       - not used. 
       @param esd ESD object to store data in. 
   */
-  virtual void   FillESD(AliRawReader*, TTree*clusterTree, AliESDEvent*esd) const
-  {FillESD((TTree*)NULL,clusterTree,esd);}
   virtual void   FillESD(TTree* digitsTree, TTree* clusterTree, 
+			 AliESDEvent* esd) const;
+  /** Forwards to above member function */
+  virtual void   FillESD(AliRawReader*, TTree* clusterTree, 
 			 AliESDEvent* esd) const;
   /** Not used */
   virtual void   SetESD(AliESDEvent* esd) { fESD = esd; }
