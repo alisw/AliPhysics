@@ -169,7 +169,7 @@ void AliJetFillUnitArrayEMCalDigits::Exec(Option_t* /*option*/)
       nDigitTot = fClus->GetNumberOfDigits();
       
       // Keep clusters or pseudo clusters
-      if (type != AliESDCaloCluster::kClusterv1) continue;
+      if (type != AliESDCaloCluster::kEMCALClusterv1) continue;
       //      if (type != AliESDCaloCluster::kPseudoCluster) continue;
 
       // Get the digit index and the digit information
