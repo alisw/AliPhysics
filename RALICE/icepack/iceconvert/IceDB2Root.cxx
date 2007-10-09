@@ -806,6 +806,11 @@ void IceDB2Root::GetTWRDaqData()
  }
 
  // Prescription of the various (de)calibration functions
+
+ // Conversion of adc to charge in nC
+ // Volt per digit = 5/4096    Assumed capacitance = 20 pF
+ // Charge (in nC) is adc*(5./4096.)*0.02
+ // The database calibration constant is the amount of nC per photon electron (nC/PE)
  TF1 fadccal("fadccal","x*(5./4096.)/(50.*[0])");
  TF1 fadcdecal("fadcdecal","x*(50.*[0])/(5./4096.)");
  fadccal.SetParName(0,"nC/PE");
