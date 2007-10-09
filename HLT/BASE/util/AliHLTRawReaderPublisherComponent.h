@@ -25,6 +25,7 @@
  * @class AliHLTRawReaderPublisherComponent
  * A general data publisher component for the AliRawReader.
  * The component publishs the data of a given detector and equipment ID.
+ * 
  * Publication of several IDs, i.e. DDLs, requires derivation of
  * the data type and/or specification from the ID. This requires a child
  * class and implementation of @ref GetSpecificationFromEquipmentId.
@@ -37,11 +38,11 @@
  * \li -detector     <i> detector name      </i>
  *      e.g. <tt> -detector TPC </tt>
  * \li -equipmentid  <i> id      </i>
- *      the equipmentid
+ *      the equipmentid within the detector, e.g. TPC 0 is 768
  * \li -minid  <i> id      </i>
- *      the minimum equipmentid
+ *      the minimum equipmentid including detector offset, e.g. 768 is TPC 0
  * \li -maxid  <i> id      </i>
- *      the maximum equipmentid
+ *      the maximum equipmentid including detector offset
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
  * \li -datatype     <i> datatype   dataorigin </i> <br>

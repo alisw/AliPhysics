@@ -164,16 +164,16 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
   if (iResult<0) return iResult;
 
-  if (fDetector.IsNull()) {
-    AliErrorStream() << "detector required, use \'-detector\' option" << endl;
-    return -EINVAL;
-  }
-
   if (fMinEquId>fMaxEquId) fMaxEquId=fMinEquId;
 
   if (fMinEquId<0) {
     AliErrorStream() << "equipment id required, use \'-equipmentid\' option" << endl;
     return -EINVAL;
+  }
+
+  if (!fDetector.IsNull()) {
+    AliErrorStream() << "option \'-detector\' not implemented" << endl;
+    return -ENOSYS;
   }
 
   AliHLTUInt32_t dummy;
@@ -184,10 +184,7 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
   AliRawReader* pRawReader=GetRawReader();
   if ((pRawReader=GetRawReader())!=NULL) {
-    pRawReader->Select(fDetector.Data(), fMinEquId, fMaxEquId);
-    if (!pRawReader->RewindEvents()) {
-      AliWarning(Form("can not rewind RawReader %p", pRawReader));
-    }
+    pRawReader->SelectEquipment(-1, fMinEquId, fMaxEquId);
   } else {
     AliErrorStream() << "RawReader instance needed" << endl;
     return -EINVAL;
@@ -213,14 +210,14 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
   int iResult=0;
   int offset=0;
   AliHLTUInt8_t* pTgt=outputPtr;
-  assert(outputPtr!=NULL);
+  assert(outputPtr!=NULL || size==0);
   AliRawReader* pRawReader=GetRawReader();
   if (pRawReader) {
     AliInfo(Form("get event from RawReader %p", pRawReader));
     while (pRawReader->ReadHeader() && (iResult>=0 || iResult==-ENOSPC)) {
       int readSize=pRawReader->GetDataSize();
       int id=pRawReader->GetEquipmentId();
-      AliInfo(Form("got header for id %d, size %d", readSize, id));
+      AliInfo(Form("got header for id %d, size %d", id, readSize));
       if (fMinEquId<id || fMaxEquId>id) {
 	AliError(Form("id %d returned from RawReader is outside range [%d,%d]", id, fMinEquId, fMaxEquId));
 	continue;
@@ -233,6 +230,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	    break;
 	  }
 	} else {
+	  // we keep the loop going in order to collect the full size
 	  fMaxSize=offset+readSize;
 	  iResult=-ENOSPC;
 	}
@@ -250,9 +248,9 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       offset+=readSize;
     }
     // go to next event, or beginning if last event was processed
-    if (pRawReader->NextEvent()) {
-      pRawReader->RewindEvents();
-    }
+//     if (pRawReader->NextEvent()) {
+//       pRawReader->RewindEvents();
+//     }
     if (offset<=size) size=offset;
   } else {
     AliErrorStream() << "RawReader uninitialized" << endl;
