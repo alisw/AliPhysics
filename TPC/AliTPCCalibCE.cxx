@@ -547,7 +547,6 @@ AliTPCCalibCE::~AliTPCCalibCE()
 
     if ( fDebugStreamer) delete fDebugStreamer;
 //    if ( fHTime0 ) delete fHTime0;
-    delete fROC;
     delete fParam;
 }
 //_____________________________________________________________________

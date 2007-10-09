@@ -250,7 +250,6 @@ AliTPCCalibPedestal::~AliTPCCalibPedestal() /*FOLD00*/
     fCalRocArrayPedestal.Delete();
     fCalRocArrayRMS.Delete();
     fHistoPedestalArray.Delete();
-    delete fROC;
 }
 //_____________________________________________________________________
 Int_t AliTPCCalibPedestal::Update(const Int_t icsector, /*FOLD00*/
