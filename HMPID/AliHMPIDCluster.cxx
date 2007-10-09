@@ -81,7 +81,7 @@ void AliHMPIDCluster::Draw(Option_t*)
   TMarker *pMark=new TMarker(X(),Y(),5); pMark->SetUniqueID(fSt);pMark->SetMarkerColor(kBlue); pMark->Draw();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Double_t *par, Int_t /* */)
+void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Double_t *par, Int_t iflag)
 {
 // Cluster fit function 
 // par[0]=x par[1]=y par[2]=q for the first Mathieson shape
@@ -96,55 +96,64 @@ void AliHMPIDCluster::FitFunc(Int_t &iNpars, Double_t* deriv, Double_t &chi2, Do
   AliHMPIDCluster *pClu=(AliHMPIDCluster*)TVirtualFitter::GetFitter()->GetObjectFit();
 
   Int_t nPads = pClu->Size();  
-  Double_t **derivPart;
   
-  derivPart = new Double_t*[iNpars];
   chi2 = 0;
   
   Int_t iNshape = iNpars/3;
   
-  for(Int_t j=0;j<iNpars;j++){                                                      
-    deriv[j] = 0;
-    derivPart[j] = new Double_t[nPads];
-    for(Int_t i=0;i<nPads;i++){                                                          
-      derivPart[j][i] = 0;
-    }
-  }
-  
-  if(iNshape>6) {Printf("HMPID Error!!: n. of clusters in FitFunc %i",iNshape);return;}
   for(Int_t i=0;i<nPads;i++){                                                          //loop on all pads of the cluster
     Double_t dQpadMath = 0;
     for(Int_t j=0;j<iNshape;j++){                                                      //Mathiesons loop as all of them may contribute to this pad
       Double_t fracMathi = pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);
       dQpadMath+=par[3*j+2]*fracMathi;                                                 // par[3*j+2] is charge par[3*j] is x par[3*j+1] is y of current Mathieson
-      
-      derivPart[3*j  ][i] += par[3*j+2]*(pClu->Dig(i)->Mathieson(par[3*j]-pClu->Dig(i)->LorsX()-0.5*AliHMPIDParam::SizePadX())-
-                                         pClu->Dig(i)->Mathieson(par[3*j]-pClu->Dig(i)->LorsX()+0.5*AliHMPIDParam::SizePadX()))*
-                                         pClu->Dig(i)->IntPartMathi(par[3*j+1],2);
-      derivPart[3*j+1][i] += par[3*j+2]*(pClu->Dig(i)->Mathieson(par[3*j+1]-pClu->Dig(i)->LorsY()-0.5*AliHMPIDParam::SizePadY())-
-                                         pClu->Dig(i)->Mathieson(par[3*j+1]-pClu->Dig(i)->LorsY()+0.5*AliHMPIDParam::SizePadY()))*
-                                         pClu->Dig(i)->IntPartMathi(par[3*j],1);
-      derivPart[3*j+2][i] += fracMathi;
     }
     if(dQpadMath>0 && pClu->Dig(i)->Q()>0) {
       chi2 +=TMath::Power((pClu->Dig(i)->Q()-dQpadMath),2)/pClu->Dig(i)->Q();          //chi2 function to be minimized
     }
   }
-                                                                                       //loop on all pads of the cluster     
-  for(Int_t i=0;i<nPads;i++){                                                          //loop on all pads of the cluster
-    Double_t dQpadMath = 0;                                                            //pad charge collector  
-    for(Int_t j=0;j<iNshape;j++){                                                      //Mathiesons loop as all of them may contribute to this pad
-      Double_t fracMathi = pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);
-      dQpadMath+=par[3*j+2]*fracMathi;                                                 
-      if(dQpadMath>0 && pClu->Dig(i)->Q()>0) {
-        deriv[3*j]   += 2/pClu->Dig(i)->Q()*(pClu->Dig(i)->Q()-dQpadMath)*derivPart[3*j  ][i];
-        deriv[3*j+1] += 2/pClu->Dig(i)->Q()*(pClu->Dig(i)->Q()-dQpadMath)*derivPart[3*j+1][i];
-        deriv[3*j+2] += 2/pClu->Dig(i)->Q()*(pClu->Dig(i)->Q()-dQpadMath)*derivPart[3*j+2][i];
+//---calculate gradients...  
+  if(iflag==2) {
+    Double_t **derivPart;
+
+    derivPart = new Double_t*[iNpars];
+
+    for(Int_t j=0;j<iNpars;j++){                                                      
+      deriv[j] = 0;
+      derivPart[j] = new Double_t[nPads];
+      for(Int_t i=0;i<nPads;i++){                                                          
+        derivPart[j][i] = 0;
       }
     }
+
+    for(Int_t i=0;i<nPads;i++){                                                          //loop on all pads of the cluster
+      for(Int_t j=0;j<iNshape;j++){                                                      //Mathiesons loop as all of them may contribute to this pad
+        Double_t fracMathi = pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);
+        derivPart[3*j  ][i] += par[3*j+2]*(pClu->Dig(i)->Mathieson(par[3*j]-pClu->Dig(i)->LorsX()-0.5*AliHMPIDParam::SizePadX())-
+                                           pClu->Dig(i)->Mathieson(par[3*j]-pClu->Dig(i)->LorsX()+0.5*AliHMPIDParam::SizePadX()))*
+                                           pClu->Dig(i)->IntPartMathi(par[3*j+1],2);
+        derivPart[3*j+1][i] += par[3*j+2]*(pClu->Dig(i)->Mathieson(par[3*j+1]-pClu->Dig(i)->LorsY()-0.5*AliHMPIDParam::SizePadY())-
+                                           pClu->Dig(i)->Mathieson(par[3*j+1]-pClu->Dig(i)->LorsY()+0.5*AliHMPIDParam::SizePadY()))*
+                                           pClu->Dig(i)->IntPartMathi(par[3*j],1);
+        derivPart[3*j+2][i] += fracMathi;
+      }
+    }
+                                                                                         //loop on all pads of the cluster     
+    for(Int_t i=0;i<nPads;i++){                                                          //loop on all pads of the cluster
+      Double_t dQpadMath = 0;                                                            //pad charge collector  
+      for(Int_t j=0;j<iNshape;j++){                                                      //Mathiesons loop as all of them may contribute to this pad
+        Double_t fracMathi = pClu->Dig(i)->IntMathieson(par[3*j],par[3*j+1]);
+        dQpadMath+=par[3*j+2]*fracMathi;                                                 
+        if(dQpadMath>0 && pClu->Dig(i)->Q()>0) {
+          deriv[3*j]   += 2/pClu->Dig(i)->Q()*(pClu->Dig(i)->Q()-dQpadMath)*derivPart[3*j  ][i];
+          deriv[3*j+1] += 2/pClu->Dig(i)->Q()*(pClu->Dig(i)->Q()-dQpadMath)*derivPart[3*j+1][i];
+          deriv[3*j+2] += 2/pClu->Dig(i)->Q()*(pClu->Dig(i)->Q()-dQpadMath)*derivPart[3*j+2][i];
+        }
+      }
+    }
+    //delete array...
+    for(Int_t i=0;i<iNpars;i++) delete [] derivPart[i]; delete [] derivPart;
   }
-  //delete array...
-  for(Int_t i=0;i<iNpars;i++) delete [] derivPart[i]; delete [] derivPart;
+//---gradient calculations ended
   
 }//FitFunction()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

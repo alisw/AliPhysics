@@ -35,7 +35,7 @@ public:
 //framework part                   
          void           Draw   (Option_t *opt=""                                  );                       //overloaded TObject::Print() to draw cluster in current canvas
          void           Print  (Option_t *opt=""                                  )const;                  //overloaded TObject::Print() to print cluster info
-  static void           FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t /* */);//fit function to be used by MINUIT
+  static void           FitFunc(Int_t &iNpars, Double_t* /*deriv*/, Double_t &chi2, Double_t *par, Int_t iflag);//fit function to be used by MINUIT
 //private part  
          Int_t          Box      (                                         )const{return fBox;                                  }
          void           CoG      (                                         );                                                      //calculates center of gravity
