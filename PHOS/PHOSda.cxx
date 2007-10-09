@@ -28,6 +28,7 @@ extern "C" {
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliPHOSCalibHistoProducer.h"
+#include "AliPHOSRawDecoder.h"
 
 
 /* Main routine
@@ -82,9 +83,11 @@ int main(int argc, char **argv) {
   int nevents_physics=0;
   int nevents_total=0;
 
-  AliPHOSCalibHistoProducer hp;
+  AliRawReader *rawReader = NULL;
+
+  AliPHOSCalibHistoProducer hp(200,0.,200.);
   hp.SetOldRCUFormat(kTRUE);
-  hp.SetUpdatingRate(500);
+  hp.SetUpdatingRate(200000);
   
   /* main loop (infinite) */
   for(;;) {
@@ -124,9 +127,10 @@ int main(int argc, char **argv) {
         EVENT_ID_GET_PERIOD(event->eventId)
       );
       
-      AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-
-      hp.SetRawReader(rawReader);
+      rawReader = new AliRawReaderDate((void*)event);
+      AliPHOSRawDecoder dc(rawReader);
+      dc.SubtractPedestals(kTRUE);
+      hp.SetRawDecoder(&dc);
       hp.Run();
       
       nevents_physics++;
