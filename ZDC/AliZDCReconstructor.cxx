@@ -488,7 +488,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   if(nPartTotRight<0) nPartTotRight=0;
   //
   // *** DEBUG ***
-/*  printf("\n\t AliZDCReconstructor -> calibSumZN1HG %1.0f, calibSumZP1HG %1.0f,"
+  printf("\n\t AliZDCReconstructor -> calibSumZN1HG %1.0f, calibSumZP1HG %1.0f,"
       "  calibSumZN2HG %1.0f, calibSumZP2HG %1.0f, corrADCZEMHG %1.0f\n", 
       calibSumZN1HG,calibSumZP1HG,calibSumZN2HG,calibSumZP2HG,corrADCZEMHG);
   printf("\t AliZDCReconstructor -> nGenSpecNLeft %d, nGenSpecPLeft %d, nGenSpecLeft %d\n"
@@ -496,7 +496,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
       nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, 
       nGenSpecNRight, nGenSpecPRight, nGenSpecRight);
   printf("\t AliZDCReconstructor ->  NpartL %d,  NpartR %d,  b %1.2f fm\n\n",nPartTotLeft, nPartTotRight, impPar);
-*/
+
   // create the output tree
   AliZDCReco reco(calibSumZN1HG, calibSumZP1HG, calibSumZN2HG, calibSumZP2HG, 
   		  calibTowZN1LG, calibTowZN2LG, calibTowZP1LG, calibTowZP2LG, 
@@ -524,7 +524,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   clustersTree->SetBranchAddress("ZDC", &preco);
 
   clustersTree->GetEntry(0);
-  Double_t tZN1Ene[4], tZN2Ene[4];
+  /*Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
      tZN1Ene[i] = reco.GetZN1EnTow(i);
      tZN2Ene[i] = reco.GetZN2EnTow(i);
@@ -532,7 +532,11 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   esd->SetZDC(tZN1Ene, tZN2Ene, reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
-  //
+  */
+  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
+	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
+	      reco.GetNPartLeft());
+  
   /*Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
      tZN1Ene[i] = reco.GetZN1EnTow(i);
