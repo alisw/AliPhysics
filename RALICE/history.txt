@@ -792,4 +792,8 @@
                 PsiValue and Chi2Value to investigate statistical significance
                 of observations in counting experiments.
 06-oct-2007 NvE Memberfunctions Chi2Value of class AliMath extended with ndf determination.
+09-oct-2007 NvE Memberfunctions ResetSignals and DeleteSignals of class AliSignal
+                extended with options to preserve the waveform histo contents.
+                These new options are now also used in the SetSignal and SetSignalError
+                memberfunctions of class AliSignal.
 

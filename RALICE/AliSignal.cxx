@@ -306,15 +306,15 @@ void AliSignal::ResetSignals(Int_t mode)
 {
 // Reset various signal data according to user selection.
 //
-// mode = 0 Reset all signal values and their errors to 0.
-//        1 Reset only signal values
-//        2 Reset only signal errors
+// mode = 0 Reset all signal values, their errors and all waveform histos.
+//        1 Reset only signal values and waveform histos.
+//        2 Reset only signal errors and waveform histos.
+//       -1 Reset only signal values.
+//       -2 Reset only signal errors.
 //
 // The default when invoking ResetSignals() corresponds to mode=0.
-//
-// Irrespective of the mode, the waveform histograms are reset.
 
- if (mode<0 || mode>2)
+ if (abs(mode)>2)
  {
   cout << " *AliSignal::ResetSignals* Invalid argument mode = " << mode << endl;
   cout << " Default mode=0 will be used." << endl;
@@ -324,7 +324,7 @@ void AliSignal::ResetSignals(Int_t mode)
  Int_t sflag=0;
  Int_t eflag=0;
 
- if (fSignals && (mode==0 || mode==1))
+ if (fSignals && (abs(mode)==0 || abs(mode)==1))
  {
   for (Int_t i=1; i<=fSignals->GetSize(); i++)
   {
@@ -334,7 +334,7 @@ void AliSignal::ResetSignals(Int_t mode)
   }
  }
 
- if (fDsignals && (mode==0 || mode==2))
+ if (fDsignals && (abs(mode)==0 || abs(mode)==2))
  {
   for (Int_t j=1; j<=fDsignals->GetSize(); j++)
   {
@@ -344,35 +344,35 @@ void AliSignal::ResetSignals(Int_t mode)
   }
  }
 
- ResetWaveform(0);
+ if (mode>=0) ResetWaveform(0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::DeleteSignals(Int_t mode)
 {
 // Delete storage arrays of various signal data according to user selection.
 //
-// mode = 0 Delete arrays of both signal values and their errors.
-//        1 Delete only signal values array
-//        2 Delete only signal errors array
+// mode = 0 Delete arrays of signal values, their errors and all waveform histos.
+//        1 Delete only signal values array and waveform histos.
+//        2 Delete only signal errors array and waveform histos.
+//       -1 Delete only signal values array.
+//       -2 Delete only signal errors array.
 //
 // The default when invoking DeleteSignals() corresponds to mode=0.
-//
-// Irrespective of the mode, the waveform histograms are deleted.
 
- if (mode<0 || mode>2)
+ if (abs(mode)>2)
  {
   cout << " *AliSignal::DeleteSignals* Invalid argument mode = " << mode << endl;
   cout << " Default mode=0 will be used." << endl;
   mode=0;
  }
 
- if (fSignals && (mode==0 || mode==1))
+ if (fSignals && (abs(mode)==0 || abs(mode)==1))
  {
   delete fSignals;
   fSignals=0;
  }
 
- if (fDsignals && (mode==0 || mode==2))
+ if (fDsignals && (abs(mode)==0 || abs(mode)==2))
  {
   delete fDsignals;
   fDsignals=0;
@@ -386,7 +386,7 @@ void AliSignal::DeleteSignals(Int_t mode)
   delete fSigflags;
   fSigflags=0;
  }
- else if (mode==1)
+ else if (abs(mode)==1)
  {
   for (Int_t i=1; i<=fSigflags->GetSize(); i++)
   {
@@ -394,7 +394,7 @@ void AliSignal::DeleteSignals(Int_t mode)
    SetSigFlags(0,eflag,i);
   }
  }
- else if (mode==2)
+ else if (abs(mode)==2)
  {
   for (Int_t j=1; j<=fSigflags->GetSize(); j++)
   {
@@ -403,7 +403,7 @@ void AliSignal::DeleteSignals(Int_t mode)
   }
  }
 
- DeleteWaveform(0);
+ if (mode>=0) DeleteWaveform(0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliSignal::SetSignal(Double_t sig,Int_t j)
@@ -425,7 +425,7 @@ void AliSignal::SetSignal(Double_t sig,Int_t j)
  if (!fSignals)
  {
   fSignals=new TArrayF(j);
-  ResetSignals(1);
+  ResetSignals(-1);
  }
 
  Int_t size=fSignals->GetSize();
@@ -728,7 +728,7 @@ void AliSignal::SetSignalError(Double_t dsig,Int_t j)
  if (!fDsignals)
  {
   fDsignals=new TArrayF(j);
-  ResetSignals(2);
+  ResetSignals(-2);
  }
 
  Int_t size=fDsignals->GetSize();

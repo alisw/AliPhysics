@@ -1291,7 +1291,7 @@ void IceDB2Root::GetJEBADaqData()
    // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
    validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
    validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
-   omid=100*st->GetInt(3)+st->GetInt(4);
+   omid=om.GetOMId(st->GetInt(3),st->GetInt(4));
    if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
    {
     revision[omid]=st->GetInt(2);
@@ -1330,7 +1330,7 @@ void IceDB2Root::GetJEBADaqData()
    // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
    validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
    validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
-   omid=100*st->GetInt(3)+st->GetInt(4);
+   omid=om.GetOMId(st->GetInt(3),st->GetInt(4));
    if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
    {
     revision[omid]=st->GetInt(2);
@@ -1387,7 +1387,7 @@ void IceDB2Root::GetJEBADaqData()
    // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
    validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
    validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
-   omid=100*st->GetInt(3)+st->GetInt(4);
+   omid=om.GetOMId(st->GetInt(3),st->GetInt(4));
    if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
    {
     revision[omid]=st->GetInt(2);

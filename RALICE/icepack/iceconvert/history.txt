@@ -137,4 +137,5 @@
                 to provide selected event output.
 04-oct-2007 NvE New class IceDB2Root of Garmt de Vries-Uiterweerd introduced.
 08-oct-2007 NvE ADC (de)calibration function formula corrected for TWR data in IceDB2Root.
+08-oct-2007 NvE Manual OM id setting replaced by IceGOM::GetOMId in IceDB2Root.
    
