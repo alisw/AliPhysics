@@ -25,10 +25,13 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <TSystem.h>
+
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliPHOSCalibHistoProducer.h"
 #include "AliPHOSRawDecoder.h"
+#include "AliCaloAltroMapping.h"
 
 
 /* Main routine
@@ -51,6 +54,18 @@ int main(int argc, char **argv) {
   if (fp==NULL) {
     printf("Failed to open file\n");
     return -1;
+  }
+
+  /* Open mapping files */
+  AliAltroMapping *mapping[4];
+  TString path = gSystem->Getenv("ALICE_ROOT");
+  path += "/PHOS/mapping/RCU";
+  TString path2;
+  for(Int_t i = 0; i < 4; i++) {
+    path2 = path;
+    path2 += i;
+    path2 += ".data";
+    mapping[i] = new AliCaloAltroMapping(path2.Data());
   }
   
 
@@ -128,15 +143,16 @@ int main(int argc, char **argv) {
       );
       
       rawReader = new AliRawReaderDate((void*)event);
-      AliPHOSRawDecoder dc(rawReader);
+      AliPHOSRawDecoder dc(rawReader,mapping);
       dc.SubtractPedestals(kTRUE);
       hp.SetRawDecoder(&dc);
       hp.Run();
+
+      delete rawReader;
       
       nevents_physics++;
     }
     nevents_total++;
-
 
     /* free resources */
     free(event);
@@ -148,6 +164,7 @@ int main(int argc, char **argv) {
     }
   }
 
+  for(Int_t i = 0; i < 4; i++) delete mapping[i];  
 
   /* write report */
   fprintf(fp,"Run #%s, received %d physics events out of %d\n",getenv("DATE_RUN_NUMBER"),nevents_physics,nevents_total);
