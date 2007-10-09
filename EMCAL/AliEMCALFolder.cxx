@@ -342,7 +342,7 @@ TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
     //    const UShort_t* dgAmp   = cl->GetDigitAmplitude(); // This is energy - bad definition
 
     rp = new AliEMCALRecPoint(""); // opt=""
-    rp->SetClusterType(AliESDCaloCluster::kClusterv1);
+    rp->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
     AliEMCALDigit* dg=0;
     TClonesArray digits("AliEMCALDigit", ndg);
     Int_t absId = 0;

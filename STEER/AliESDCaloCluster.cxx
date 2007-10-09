@@ -31,24 +31,23 @@ ClassImp(AliESDCaloCluster)
 
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster() : 
-  fID(0),
-  fClusterType(-1),
-  fEMCALCluster(kFALSE),
-  fPHOSCluster(kFALSE),
-  fEnergy(-1),
-  fDispersion(-1),
-  fChi2(-1),
-  fM20(0),
-  fM02(0),
-  fM11(0),
-  fNExMax(0),
-  fEmcCpvDistance(9999),
-  fDistToBadChannel(9999),
+  TObject(),
   fTracksMatched(0x0),
   fLabels(0x0),
   fDigitAmplitude(0x0),
   fDigitTime(0x0),
-  fDigitIndex(0x0)
+  fDigitIndex(0x0),
+  fEnergy(0),
+  fDispersion(0),
+  fChi2(0),
+  fM20(0),
+  fM02(0),
+  fM11(0),
+  fEmcCpvDistance(1024),
+  fDistToBadChannel(1024),
+  fID(0),
+  fNExMax(0),
+  fClusterType(kUndef)
 {
   //
   // The default ESD constructor 
@@ -60,24 +59,22 @@ AliESDCaloCluster::AliESDCaloCluster() :
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) : 
   TObject(clus),
-  fID(clus.fID),
-  fClusterType(clus.fClusterType),
-  fEMCALCluster(clus.fEMCALCluster),
-  fPHOSCluster(clus.fPHOSCluster),
+  fTracksMatched(clus.fTracksMatched?new TArrayS(*clus.fTracksMatched):0x0),
+  fLabels(clus.fLabels?new TArrayS(*clus.fLabels):0x0),
+  fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),
+  fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),
+  fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0),
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
   fM20(clus.fM20),
   fM02(clus.fM02),
   fM11(clus.fM11),
-  fNExMax(clus.fNExMax),
   fEmcCpvDistance(clus.fEmcCpvDistance),
   fDistToBadChannel(clus.fDistToBadChannel),
-  fTracksMatched(clus.fTracksMatched?new TArrayS(*clus.fTracksMatched):0x0),
-  fLabels(clus.fLabels?new TArrayS(*clus.fLabels):0x0),
-  fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),
-  fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),
-  fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0)
+  fID(clus.fID),
+  fNExMax(clus.fNExMax),
+  fClusterType(clus.fClusterType)
 {
   //
   // The copy constructor 
@@ -96,32 +93,40 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   // assignment operator
 
   if(&source == this) return *this;
+  TObject::operator=(source);
 
-  fID = source.fID;
-  fClusterType = source.fClusterType;
-  fEMCALCluster = source.fEMCALCluster;
-  fPHOSCluster = source.fPHOSCluster;
+  fGlobalPos[0] = source.fGlobalPos[0];
+  fGlobalPos[1] = source.fGlobalPos[1];
+  fGlobalPos[2] = source.fGlobalPos[2];
+
+
   fEnergy = source.fEnergy;
   fDispersion = source.fDispersion;
   fChi2 = source.fChi2;
   fM20 = source.fM20;
   fM02 = source.fM02;
   fM11 = source.fM11;
-  fNExMax = source.fNExMax;
   fEmcCpvDistance = source.fEmcCpvDistance;
   fDistToBadChannel = source.fDistToBadChannel ;
-
-  fGlobalPos[0] = source.fGlobalPos[0];
-  fGlobalPos[1] = source.fGlobalPos[1];
-  fGlobalPos[2] = source.fGlobalPos[2];
-
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
+  fID = source.fID;
 
+  delete fTracksMatched;
   fTracksMatched = source.fTracksMatched?new TArrayS(*source.fTracksMatched):0x0;
+  delete fLabels;
   fLabels = source.fLabels?new TArrayS(*source.fLabels):0x0;
+
+  delete fDigitAmplitude;
   fDigitAmplitude = source.fDigitAmplitude?new TArrayS(*source.fDigitAmplitude):0x0;
+
+  delete fDigitTime;
   fDigitTime = source.fDigitTime?new TArrayS(*source.fDigitTime):0x0;
+
+  delete fDigitIndex;
   fDigitIndex = source.fDigitIndex?new TArrayS(*source.fDigitIndex):0x0;
+
+  fNExMax = source.fNExMax;
+  fClusterType = source.fClusterType;
 
   return *this;
 
@@ -138,7 +143,6 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   delete fDigitAmplitude;
   delete fDigitTime;
   delete fDigitIndex;
-
 }
 
 //_______________________________________________________________________

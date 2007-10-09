@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.14  2007/07/26 16:54:53  morsch
+ * Changes in AliESDEvent fwd declarartions.
+ *
  * Revision 1.13  2007/07/11 13:43:29  hristov
  * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
  *
@@ -262,7 +265,7 @@ void AliEMCALPID::RunPID(AliESDEvent *esd)
     lambda0 = clust->GetM02();
     // verify cluster type
     Int_t clusterType= clust->GetClusterType();
-    if (clusterType == AliESDCaloCluster::kClusterv1 && lambda0 != 0  && energy < 1000) {
+    if (clusterType == AliESDCaloCluster::kEMCALClusterv1 && lambda0 != 0  && energy < 1000) {
 
 
       // reject clusters with lambda0 = 0

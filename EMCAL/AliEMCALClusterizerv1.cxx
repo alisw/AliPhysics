@@ -177,7 +177,7 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 
   //Evaluate position, dispersion and other RecPoint properties for EC section                      
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
-    if (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->GetClusterType() != AliESDCaloCluster::kPseudoCluster)
+    if (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->GetClusterType() != AliESDCaloCluster::kEMCALPseudoCluster)
       dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalAll(fECAW0,fDigitsArr) ;
   }
 
@@ -496,7 +496,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
         nSM = fGeom->GetSuperModuleNumber(digit->GetId());
         if(recPoints[nSM] == 0) {
           recPoints[nSM] = new AliEMCALRecPoint(Form("PC%2.2i", nSM));
-          recPoints[nSM]->SetClusterType(AliESDCaloCluster::kPseudoCluster);
+          recPoints[nSM]->SetClusterType(AliESDCaloCluster::kEMCALPseudoCluster);
 	}
         recPoints[nSM]->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId()));
       }
@@ -540,7 +540,7 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
       recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
       fNumberOfECAClusters++ ; 
 
-      recPoint->SetClusterType(AliESDCaloCluster::kClusterv1);
+      recPoint->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
 
       recPoint->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId())) ; 
       TObjArray clusterDigits;

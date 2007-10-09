@@ -13,7 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$co: warning: `/* $Log' is obsolescent; use ` * $Log'.
+/* $Log$
+/* Revision 1.2  2007/09/11 19:38:15  pavlinov
+/* added pi0 calibration, linearity, shower profile
+/*co: warning: `/* $Log' is obsolescent; use ` * $Log'.
  * Revision 1.1  2007/08/08 15:58:01  hristov
  * New calibration classes. (Aleksei)
  * */
@@ -313,10 +316,10 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
   static Double_t erec=0., ecorr=0.0;
   for(int i=indOfFirstEmcalRP; i<indOfFirstEmcalRP+nEmcalClusters; i++) {
     cl = fESD->GetCaloCluster(i);
-    if(cl->GetClusterType() == AliESDCaloCluster::kPseudoCluster) {
+    if(cl->GetClusterType() == AliESDCaloCluster::kEMCALPseudoCluster) {
       nEmcalPseudoClusters++;
       l = fLofHistsPC;
-    } else if(cl->GetClusterType() == AliESDCaloCluster::kClusterv1){
+    } else if(cl->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1){
       nEmcalRP++;
       if(fEMCAL->GetIterationNumber()>1||GetKeyOptsValue(kIDEAL)||GetKeyOptsValue(kRECALIB)||GetKeyOptsValue(kFIT)) {
         AliEMCALRecPoint *rp=0;
@@ -387,7 +390,7 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
     for(int id=0; id<cl->GetNumberOfDigits(); id++) {
       eDigi = double(digiAmpl[id]) / 500.; // See AliEMCALClusterizerv1
       //      if(eDigi <= 0.0) { // sometimes it is happen
-      //if(eDigi > 10.0 && cl->GetClusterType() == AliESDCaloCluster::kClusterv1) {
+      //if(eDigi > 10.0 && cl->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1) {
       // printf(" %i digiAmpl %i : %f \n", id, int(digiAmpl[id]), eDigi);
       //}
       u::FillH1(l, 5, eDigi);
