@@ -39,6 +39,7 @@ class AliTPCRecoParam : public TObject
   Float_t  GetMinUpDownCutSigma()    const  { return fMinUpDownCutSigma;}  // minimal amplitude up-down - TRF 
   Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   //
+  void     SetDoKinks(Bool_t on)   { fBKinkFinder=on; }
   Bool_t   GetDoKinks() const      { return fBKinkFinder;}
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
