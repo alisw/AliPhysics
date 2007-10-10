@@ -99,6 +99,7 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
       }
     }
   }//clusters loop
+  fMipPos.Set(mipX,mipY);
   if(fPhotCnt<=3) pTrk->SetHMPIDsignal(kNoPhotAccept);                                        //no reconstruction with <=3 photon candidates
   Int_t iNacc=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
   pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNacc);                                                    //store mip info 
@@ -189,42 +190,79 @@ void AliHMPIDRecon::RecPhot(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer
   thetaCer= dirCkovTRS.Theta();                                        //actual value of thetaCerenkov of the photon
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAngMin,Double_t ckovAngMax)const
+Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
 {
-// Find area between 2 cerenkov angles in the PC acceptance
-// Arguments: ckovAngMin - cerenkov angle Min    
-// Arguments: ckovAngMax - cerenkov angle Max
+// Find area covered in the PC acceptance
+// Arguments: ckovAng - cerenkov angle     
 //   Returns: area of the ring in cm^2 for given theta ckov
    
   const Int_t kN=100;
-  Int_t np=0;
-  Double_t xP[2*kN],yP[2*kN];
-  
+  TVector2 pos1;
   Double_t area=0;
-//---  find points from first ring
+  Bool_t first=kFALSE;
   for(Int_t i=0;i<kN;i++){
-    TVector2 pos=TracePhot(ckovAngMin,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon
-    if(pos.X()==-999) continue;                                       //no area: open ring
-    if(AliHMPIDParam::IsInside(pos.X(),pos.Y(),0)) continue;
-    xP[np] = pos.X();
-    yP[np] = pos.Y();
-    np++;                                                              
+   if(!first) {
+     pos1=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));                                     //find a good trace for the first photon
+     if(pos1.X()==-999) continue;                                                                   //no area: open ring 	          
+     if(!AliHMPIDParam::IsInside(pos1.X(),pos1.Y(),0)) pos1 = IntWithEdge(fMipPos,pos1);            // ffind the very first intersection...
+     first=kTRUE;
+     continue;
+   }
+   TVector2 pos2=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));                              //trace the next photon
+   if(pos2.X()==-999) continue;                                                                     //no area: open ring 	     
+   if(!AliHMPIDParam::IsInside(pos2.X(),pos2.Y(),0)) {
+     pos2 = IntWithEdge(fMipPos,pos2);
+   }
+   area+=TMath::Abs((pos1-fMipPos).X()*(pos2-fMipPos).Y()-(pos1-fMipPos).Y()*(pos2-fMipPos).X());   //add area of the triangle... 	     
+   pos1 = pos2;
   }
-//--- find points from last ring
-  for(Int_t i=kN-1;i>=0;i--){
-    TVector2 pos=TracePhot(ckovAngMax,Double_t(TMath::TwoPi()*(i+1)/kN));//trace the next photon
-    if(pos.X()==-999) continue;                                       
-    if(AliHMPIDParam::IsInside(pos.X(),pos.Y(),0)) continue;
-    xP[np] = pos.X();
-    yP[np] = pos.Y();
-    np++;                                                              
-  }
-//--calculate delta area from array of points...
-//  for(Int_t i=0;i<np;i++) {
-  area = 1;    
+//---  find points from ring
   area*=0.5;
   return area;
 }//FindRingArea()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TVector2 AliHMPIDRecon::IntWithEdge(TVector2 p1,TVector2 p2)const
+{
+// It finds the intersection of the line for 2 points traced as photons
+// and the edge of a given PC
+// Arguments: 2 points obtained tracing the photons
+//   Returns: intersection point with detector (PC) edges
+
+  AliHMPIDParam *pParam = AliHMPIDParam::Instance();
+  
+  Double_t xmin = (p1.X()<p2.X())? p1.X():p2.X(); 
+  Double_t xmax = (p1.X()<p2.X())? p2.X():p1.X(); 
+  Double_t ymin = (p1.Y()<p2.Y())? p1.Y():p2.Y(); 
+  Double_t ymax = (p1.Y()<p2.Y())? p2.Y():p1.Y(); 
+  
+  Double_t m = TMath::Tan((p2-p1).Phi());
+  TVector2 pint;
+  //intersection with low  X
+  pint.Set((Double_t)(p1.X() + (0-p1.Y())/m),0.);
+  pint.Print();
+  if(pint.X()>=0 && pint.X()<=pParam->SizeAllX() &&
+     pint.X()>=xmin && pint.X()<=xmax            &&
+     pint.Y()>=ymin && pint.Y()<=ymax) return pint;
+  //intersection with high X  
+  pint.Set((Double_t)(p1.X() + (pParam->SizeAllY()-p1.Y())/m),(Double_t)(pParam->SizeAllY()));
+  pint.Print();
+  if(pint.X()>=0 && pint.X()<=pParam->SizeAllX() &&
+     pint.X()>=xmin && pint.X()<=xmax            &&
+     pint.Y()>=ymin && pint.Y()<=ymax) return pint;
+  //intersection with left Y  
+  pint.Set(0.,(Double_t)(p1.Y() + m*(0-p1.X())));
+  pint.Print();
+  if(pint.Y()>=0 && pint.Y()<=pParam->SizeAllY() &&
+     pint.Y()>=ymin && pint.Y()<=ymax            &&
+     pint.X()>=xmin && pint.X()<=xmax) return pint;
+  //intersection with righ Y  
+  pint.Set((Double_t)(pParam->SizeAllX()),(Double_t)(p1.Y() + m*(pParam->SizeAllX()-p1.X())));
+  pint.Print();
+  if(pint.Y()>=0 && pint.Y()<=pParam->SizeAllY() &&
+     pint.Y()>=ymin && pint.Y()<=ymax            &&
+     pint.X()>=xmin && pint.X()<=xmax) return pint;
+  return p1;
+}//IntWithEdge()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Double_t AliHMPIDRecon::FindRingCkov(Int_t)
 {
@@ -350,7 +388,7 @@ Double_t AliHMPIDRecon::HoughResponse()
     Double_t weight=1.;
     if(fIsWEIGHT){
       Double_t lowerlimit = ((Double_t)bin)*fDTheta - 0.5*fDTheta;  Double_t upperlimit = ((Double_t)bin)*fDTheta + 0.5*fDTheta;
-      Double_t diffArea = FindRingArea(lowerlimit,upperlimit);
+      Double_t diffArea = FindRingArea(upperlimit)-FindRingArea(lowerlimit);
       if(diffArea>0) weight = 1./diffArea;
     }
     photsw->Fill(angle,weight);
