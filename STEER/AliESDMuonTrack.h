@@ -75,8 +75,7 @@ public:
   UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
   void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
   void     SetLocalTrigger(Int_t locTrig) { fLocalTrigger = locTrig; }
-  Int_t    LoCircuit(void) const
-  { Int_t circ = fLocalTrigger & 0xFF; return (circ == 234) ? -1 : circ; }
+  Int_t    LoCircuit(void) const { return fLocalTrigger & 0xFF;       }
   Int_t    LoStripX(void) const  { return fLocalTrigger >>  8 & 0x1F; }
   Int_t    LoStripY(void) const  { return fLocalTrigger >> 13 & 0x0F; }
   Int_t    LoDev(void)    const  { return fLocalTrigger >> 17 & 0x1F; }

@@ -59,7 +59,7 @@ AliMUONTrack::AliMUONTrack()
     fChi2MatchTrigger(0.),
     fTrackID(0),
     fHitsPatternInTrigCh(0),
-    fLocalTrigger(234)
+    fLocalTrigger(0)
 {
   /// Default constructor
 }
@@ -83,7 +83,7 @@ AliMUONTrack::AliMUONTrack(AliMUONObjectPair *segment)
     fChi2MatchTrigger(0.),
     fTrackID(0),
     fHitsPatternInTrigCh(0),
-    fLocalTrigger(234)
+    fLocalTrigger(0)
 {
   /// Constructor from thw hitForRec's
 
@@ -993,7 +993,7 @@ void AliMUONTrack::SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY,
 {
   /// pack the local trigger information and store
 
-  if (loCirc < 0 || loCirc > 233) return;
+  if (loCirc < 0) return;
 
   fLocalTrigger = 0;
   fLocalTrigger += loCirc;

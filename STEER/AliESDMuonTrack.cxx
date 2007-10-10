@@ -49,7 +49,7 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fNonBendingCoorUncorrected(0),
   fChi2(0),
   fChi2MatchTrigger(0),
-  fLocalTrigger(234),
+  fLocalTrigger(0),
   fMuonClusterMap(0),
   fHitsPatternInTrigCh(0),
   fNHit(0)
@@ -320,7 +320,7 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
   //  2 track match Low pt cut
   //  3 track match High pt cut
 
-  if (LoCircuit() == -1) {
+  if (!LoCircuit()) {
     return 0;
   } else if (LoLpt() == 0 && LoHpt() == 0) {
     return 1;

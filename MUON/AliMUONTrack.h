@@ -116,8 +116,7 @@ class AliMUONTrack : public TObject
   /// return local trigger information for the matched trigger track
   Int_t GetLocalTrigger(void) const { return fLocalTrigger;              }
   /// number of triggering circuit
-  Int_t LoCircuit(void) const 
-  { Int_t circ = fLocalTrigger & 0xFF; return (circ == 234) ? -1 : circ; }
+  Int_t LoCircuit(void) const { return fLocalTrigger & 0xFF;       }
   /// x-strip local trigger 
   Int_t LoStripX(void) const  { return fLocalTrigger >>  8 & 0x1F; }
   /// y-strip local trigger 
