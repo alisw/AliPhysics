@@ -29,6 +29,8 @@ AliVZEROPreprocessor::AliVZEROPreprocessor(AliShuttleInterface* shuttle) :
 AliVZEROPreprocessor::~AliVZEROPreprocessor()
 {
   // destructor
+  
+   delete fData;
 }
 
 //______________________________________________________________________________________________
