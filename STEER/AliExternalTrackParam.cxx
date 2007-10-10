@@ -1016,7 +1016,7 @@ Double_t AliExternalTrackParam::Pz() const {
 Double_t AliExternalTrackParam::Theta() const {
   // return theta angle of momentum
 
-  return TMath::ATan2(Pt(), Pz());
+  return 0.5*TMath::Pi() - TMath::ATan(fP[3]);
 }
 
 Double_t AliExternalTrackParam::Phi() const {
