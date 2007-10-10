@@ -39,13 +39,13 @@
 #include "AliHMPIDDigit.h"
 #include "AliHMPIDHit.h"
 #include "AliHMPIDCluster.h"
-#include "AliHMPIDQualAssDataMaker.h"
+#include "AliHMPIDQADataMaker.h"
 
-ClassImp(AliHMPIDQualAssDataMaker)
+ClassImp(AliHMPIDQADataMaker)
            
 //____________________________________________________________________________ 
-  AliHMPIDQualAssDataMaker::AliHMPIDQualAssDataMaker() : 
-  AliQualAssDataMaker(AliQualAss::GetDetName(AliQualAss::kHMPID), "HMPID Quality Assurance Data Maker"),
+  AliHMPIDQADataMaker::AliHMPIDQADataMaker() : 
+  AliQADataMaker(AliQA::GetDetName(AliQA::kHMPID), "HMPID Quality Assurance Data Maker"),
   fhHitQdc(0x0), 
   fhSDigits(0x0),
   fhDigPcEvt(0x0),
@@ -65,14 +65,14 @@ ClassImp(AliHMPIDQualAssDataMaker)
   // ctor
   for(Int_t i=0; i<7; i++) fhHitMap[i]=0x0;
   for(Int_t j=0; j<5; j++) fhPid[j]=0x0;
-//   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
-//   if (!fDetectorDir) 
-//     fDetectorDir = fOutput->mkdir(GetName()) ;  
+  fDetectorDir = fOutput->GetDirectory(GetName()) ;  
+  if (!fDetectorDir) 
+    fDetectorDir = fOutput->mkdir(GetName()) ;  
 }
 
 //____________________________________________________________________________ 
-AliHMPIDQualAssDataMaker::AliHMPIDQualAssDataMaker(const AliHMPIDQualAssDataMaker& qadm) :
-  AliQualAssDataMaker(), 
+AliHMPIDQADataMaker::AliHMPIDQADataMaker(const AliHMPIDQADataMaker& qadm) :
+  AliQADataMaker(), 
   fhHitQdc(qadm.fhHitQdc), 
   fhSDigits(qadm.fhSDigits),
   fhDigPcEvt(qadm.fhDigPcEvt),
@@ -98,16 +98,16 @@ AliHMPIDQualAssDataMaker::AliHMPIDQualAssDataMaker(const AliHMPIDQualAssDataMake
 }
 
 //__________________________________________________________________
-AliHMPIDQualAssDataMaker& AliHMPIDQualAssDataMaker::operator = (const AliHMPIDQualAssDataMaker& qadm )
+AliHMPIDQADataMaker& AliHMPIDQADataMaker::operator = (const AliHMPIDQADataMaker& qadm )
 {
   // Equal operator.
-  this->~AliHMPIDQualAssDataMaker();
-  new(this) AliHMPIDQualAssDataMaker(qadm);
+  this->~AliHMPIDQADataMaker();
+  new(this) AliHMPIDQADataMaker(qadm);
   return *this;
 }
  
 //____________________________________________________________________________ 
-void AliHMPIDQualAssDataMaker::InitHits()
+void AliHMPIDQADataMaker::InitHits()
 {
   // create Hits histograms in Hits subdir
      fhHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
@@ -115,7 +115,7 @@ void AliHMPIDQualAssDataMaker::InitHits()
 }
 
 //____________________________________________________________________________ 
-void AliHMPIDQualAssDataMaker::InitDigits()
+void AliHMPIDQADataMaker::InitDigits()
 {
   // create Digits histograms in Digits subdir
       fhDigPcEvt=new TH1F("hDigPcEvt","PC occupancy",156,-1,77);
@@ -124,7 +124,7 @@ void AliHMPIDQualAssDataMaker::InitDigits()
 }
 
 //____________________________________________________________________________ 
-void AliHMPIDQualAssDataMaker::InitSDigits()
+void AliHMPIDQADataMaker::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
       fhSDigits     = new TH1F("hHmpidSDigits",    "SDigits Q  distribution in HMPID",  500, 0., 5000.) ; 
@@ -132,7 +132,7 @@ void AliHMPIDQualAssDataMaker::InitSDigits()
 
 //____________________________________________________________________________ 
 
-void AliHMPIDQualAssDataMaker::InitRecPoints()
+void AliHMPIDQADataMaker::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
       fhCluEvt=new TH1F("CluPerEvt","# clusters per chamber",16,-1,7);
@@ -143,7 +143,7 @@ void AliHMPIDQualAssDataMaker::InitRecPoints()
       fhMipCluSize =new TH1F("MipCluSize"  ,"Mip cluster size    ",100,0,100);
 }
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::InitESDs()
+void AliHMPIDQADataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
      fhCkovP  = new TH2F("CkovP" , "#theta_{c}, [rad];P, [GeV]"   , 150,   0,  7  ,100, 0, 1)   ;
@@ -158,7 +158,7 @@ void AliHMPIDQualAssDataMaker::InitESDs()
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeHits(TObject * data)
+void AliHMPIDQADataMaker::MakeHits(TObject * data)
 {
   //fills QA histos for Hits
   TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
@@ -175,7 +175,7 @@ void AliHMPIDQualAssDataMaker::MakeHits(TObject * data)
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeDigits( TObject * data)
+void AliHMPIDQADataMaker::MakeDigits( TObject * data)
 {
   //fills QA histos for Digits
   TObjArray *chambers = dynamic_cast<TObjArray*>(data);
@@ -197,7 +197,7 @@ void AliHMPIDQualAssDataMaker::MakeDigits( TObject * data)
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeSDigits( TObject * data)
+void AliHMPIDQADataMaker::MakeSDigits( TObject * data)
 {
   //fills QA histos for SDigits
   TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
@@ -217,7 +217,7 @@ void AliHMPIDQualAssDataMaker::MakeSDigits( TObject * data)
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
+void AliHMPIDQADataMaker::MakeRecPoints(TTree * clustersTree)
 {
   //fills QA histos for clusters
 
@@ -246,7 +246,7 @@ void AliHMPIDQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
 }
 
 //____________________________________________________________________________
-void AliHMPIDQualAssDataMaker::MakeESDs(AliESDEvent * esd)
+void AliHMPIDQADataMaker::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){

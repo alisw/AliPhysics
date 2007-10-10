@@ -1,5 +1,5 @@
-#ifndef ALIHMPIDQUALASSDATAMAKER_H
-#define ALIHMPIDQUALASSDATAMAKER_H
+#ifndef ALIHMPIDQADATAMAKER_H
+#define ALIHMPIDQADATAMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -24,15 +24,15 @@ class TH1I ;
 #include <TString.h>
 // --- AliRoot header files ---
 
-#include "AliQualAssDataMaker.h"
+#include "AliQADataMaker.h"
 
-class AliHMPIDQualAssDataMaker: public AliQualAssDataMaker {
+class AliHMPIDQADataMaker: public AliQADataMaker {
 
 public:
-  AliHMPIDQualAssDataMaker() ;          // ctor
-  AliHMPIDQualAssDataMaker(const AliHMPIDQualAssDataMaker& qadm) ;   
-  AliHMPIDQualAssDataMaker& operator = (const AliHMPIDQualAssDataMaker& qadm) ;
-  virtual ~AliHMPIDQualAssDataMaker() {;} // dtor
+  AliHMPIDQADataMaker() ;          // ctor
+  AliHMPIDQADataMaker(const AliHMPIDQADataMaker& qadm) ;   
+  AliHMPIDQADataMaker& operator = (const AliHMPIDQADataMaker& qadm) ;
+  virtual ~AliHMPIDQADataMaker() {;} // dtor
 
    TString DirPrint() const{return fDetectorDirName;}
   
@@ -68,8 +68,8 @@ private:
   TH2F *fhDifXY;                   // mip(X,Y) - extrapolated track(X,Y)
   TH1F *fhPid[5];                  // Pid responses
 
-  ClassDef(AliHMPIDQualAssDataMaker,1)  // description 
+  ClassDef(AliHMPIDQADataMaker,1)  // description 
 
 };
 
-#endif // AliHMPIDQualAssDataMaker_H
+#endif // AliHMPIDQADataMaker_H
