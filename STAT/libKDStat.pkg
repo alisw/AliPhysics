@@ -1,5 +1,7 @@
-SRCS=  TKDTree.cxx TKDInterpolator.cxx TKDSpline.cxx AliTMinuitToolkit.cxx
+SRCS=  TKDTree.cxx TKDInterpolator.cxx TKDSpline.cxx AliTMinuitToolkit.cxx TStatToolkit.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
 DHDR:=kDStatLinkDef.h
+
+EINCLUDE:= STEER include

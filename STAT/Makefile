@@ -17,8 +17,8 @@ OutPutOpt = -o
 
 CXX       = g++
 LD        = g++
-CXXFLAGS  = -O -g -pg -fPIC
-LDFLAGS   = -O -g -pg -fPIC
+CXXFLAGS  = -O -g -pg -fPIC -Wall -Weffc++
+LDFLAGS   = -O -g -pg -fPIC -Wall -Weffc++
 SOFLAGS   = -shared -g -pg -fPIC
 
 ROOTCXX  = $(shell root-config --cflags)

@@ -784,6 +784,14 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    chi2 = fitter->GetChisquare();
    chi2 = chi2;
    npoints = entries;
+//    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
+   
+//    for (Int_t iparam = 0; iparam < dim; iparam++) {
+//      returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]/fitParam[0]));
+//      if (iparam < dim-1) returnFormula.Append("+");
+//    }
+//    returnFormula.Append(" )");
+   
    TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
    
    for (Int_t iparam = 0; iparam < dim; iparam++) {
@@ -791,6 +799,10 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
      if (iparam < dim-1) returnFormula.Append("+");
    }
    returnFormula.Append(" )");
+   
+   
+
+
    delete formulaTokens;
    delete fitter;
    delete[] values;
