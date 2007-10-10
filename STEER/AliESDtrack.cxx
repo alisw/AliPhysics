@@ -599,6 +599,7 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   switch (flags) {
     
   case kITSin: case kITSout: case kITSrefit:
+    fITSClusterMap=0;
     fITSncls=t->GetNumberOfClusters();
     index=fFriendTrack->GetITSindices(); 
     for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) {
