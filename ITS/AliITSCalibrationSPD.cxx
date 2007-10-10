@@ -22,12 +22,13 @@
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo
 //  March-April 2006
 //  Last mod:  H. Tydesjo  January 2007
+//  September   2007: CouplingRowDefault = 0.055 (was 0.047)
 //
 ///////////////////////////////////////////////////////////////////////////
 const Double_t AliITSCalibrationSPD::fgkThreshDefault = 3000.;
 const Double_t AliITSCalibrationSPD::fgkSigmaDefault = 250.;
 const Double_t AliITSCalibrationSPD::fgkCouplColDefault = 0.;
-const Double_t AliITSCalibrationSPD::fgkCouplRowDefault = 0.047;
+const Double_t AliITSCalibrationSPD::fgkCouplRowDefault = 0.055;
 const Double_t AliITSCalibrationSPD::fgkBiasVoltageDefault = 18.182;
 
 ClassImp(AliITSCalibrationSPD)	
