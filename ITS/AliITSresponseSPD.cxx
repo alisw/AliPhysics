@@ -20,6 +20,8 @@
 //
 //  Modified by D. Elia, G.E. Bruno
 //  March-April 2006
+//  September   2007: Coupling params taken out
+//                    left in AliITSCalibrationSPD only
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -27,22 +29,16 @@
 
 const Float_t AliITSresponseSPD::fgkDiffCoeffDefault = 0.; //change this
 const TString AliITSresponseSPD::fgkCouplingOptDefault = "old";
-const Float_t AliITSresponseSPD::fgkCouplingColDefault = 0;
-const Float_t AliITSresponseSPD::fgkCouplingRowDefault = 0.047;
 const Float_t AliITSresponseSPD::fgkEccentricityDiffDefault = 0.85;
-//geb const Float_t AliITSresponseSPD::fgkDistanceOverVoltage = 0.0010;
 
 ClassImp(AliITSresponseSPD)	
 //______________________________________________________________________
 AliITSresponseSPD::AliITSresponseSPD():
   AliITSresponse(),
-fCouplCol(0),
-fCouplRow(0),
 fCouplOpt(0),
 fEccDiff(0){
 
   // constructor
-  SetCouplingParam(fgkCouplingColDefault,fgkCouplingRowDefault);
   SetCouplingOption(fgkCouplingOptDefault);
   SetDiffCoeff(fgkDiffCoeffDefault,0.);
   SetSigmaDiffusionAsymmetry(fgkEccentricityDiffDefault);

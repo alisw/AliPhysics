@@ -15,10 +15,6 @@ class AliITSresponseSPD :  public AliITSresponse {
     AliITSresponseSPD(); // default constructor
     virtual ~AliITSresponseSPD() {;} // destructror
 
-    virtual  void   SetCouplingParam(Double_t col, Double_t row)
-        {fCouplCol=col; fCouplRow=row;}   
-    virtual  void   GetCouplingParam(Double_t &col, Double_t &row) const 
-        {col=fCouplCol; row=fCouplRow;}
     virtual void SetCouplingOption(const char *opt) {   // Options: "old" or "new"
         fCouplOpt=opt;}
     virtual void CouplingOption(char *opt) const {
@@ -36,17 +32,13 @@ class AliITSresponseSPD :  public AliITSresponse {
 
     static const Float_t fgkDiffCoeffDefault;  //default for fDiffCoeff
     static const TString fgkCouplingOptDefault;  // type of pixel Coupling (old or new)
-    static const Float_t fgkCouplingColDefault;//default for fCouplCol 
-    static const Float_t fgkCouplingRowDefault;//default for fCouplRow 
     static const Float_t fgkEccentricityDiffDefault;//default for fCouplRow 
 
-    Float_t fCouplCol;        // Coupling probability along a column
-    Float_t fCouplRow;        // Coupling probability along a row
     TString fCouplOpt;        // Coupling Option
     Float_t fEccDiff;         // Eccentricity (i.e. asymmetry parameter) in the Gaussian Diffusion
 
 
-    ClassDef(AliITSresponseSPD,5) // SPD base response class
+    ClassDef(AliITSresponseSPD,6) // SPD base response class
 };
 
 #endif
