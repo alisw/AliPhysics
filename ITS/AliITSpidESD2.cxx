@@ -124,14 +124,11 @@ Int_t AliITSpidESD2::MakePID(TTree *clustersTree, AliESDEvent *event)
       nlay[ii]=0;
     }
     Int_t jj=0;
-    cout<<"track = "<<i<<endl;
     for(Int_t ij=0;ij<12;ij++){
       cluind[ij]=track->GetClusterIndex(ij);
-      cout<<cluind[ij]<<endl;
       if(cluind[ij]>0){
 	cluarr[ij]=(AliITSRecPoint*)fTracker->GetCluster(cluind[ij]);
 	Int_t lay=cluarr[ij]->GetLayer();
-	cout<<"lay = "<<lay<<endl;
 	if(lay>1){//sdd+ssd only
 	  qclu[jj]=cluarr[ij]->GetQ(); 
 	  qclucorr[jj]=qclu[jj]*TMath::Sqrt((1-snp*snp)/(1+tgl*tgl));
