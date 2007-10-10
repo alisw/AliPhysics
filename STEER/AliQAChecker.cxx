@@ -171,7 +171,7 @@ TDirectory * AliQAChecker::GetRefSubDir(const char * det, const char * task)
   // Opens and returns the file with the reference data 
   TFile * f = TFile::Open(fRefDirName, "READ") ;
   if (!f) 
-    AliFatal(Form("Cannot find reference file %s", fRefDirName.Data())) ; 
+    AliError(Form("Cannot find reference file %s", fRefDirName.Data())) ; 
   TDirectory * rv = NULL ; 
   rv = f->GetDirectory(det) ; 
   if (!rv) {
@@ -253,8 +253,11 @@ Bool_t AliQAChecker::Run()
       if ( taskName == AliQA::GetTaskName(AliQA::kESDS) ) 
 		index = AliQA::kESD ; 
       qac->Init(AliQA::DETECTORINDEX(det)) ; 
-      qac->SetRefandData(GetRefSubDir(detNameQA.Data(), taskName.Data()), taskDir) ; 
-      qac->Run(index) ; 
+	  TDirectory * refDir = GetRefSubDir(detNameQA.Data(), taskName.Data()) ;
+	  if ( refDir ) { 
+		qac->SetRefandData(refDir, taskDir) ; 
+		qac->Run(index) ; 
+	  }
     }
  }
   AliInfo("QA performed for following detectors:") ; 
