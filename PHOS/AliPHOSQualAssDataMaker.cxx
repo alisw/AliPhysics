@@ -38,6 +38,7 @@
 #include "AliPHOSDigit.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSQualAssDataMaker.h"
+#include "AliQualAssChecker.h"
 #include "AliPHOSCpvRecPoint.h" 
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSRecParticle.h" 
@@ -72,9 +73,11 @@ AliPHOSQualAssDataMaker& AliPHOSQualAssDataMaker::operator = (const AliPHOSQualA
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::EndOfDetectorCycle()
+void AliPHOSQualAssDataMaker::EndOfDetectorCycle(AliQualAss::TASKINDEX task, TList * list)
 {
   //Detector specific actions at end of cycle
+  // do the QA checking
+  AliQualAssChecker::Instance()->Run(AliQualAss::kPHOS, task, list) ;  
 }
 
 //____________________________________________________________________________ 
@@ -146,25 +149,38 @@ void AliPHOSQualAssDataMaker::InitRecPoints()
 void AliPHOSQualAssDataMaker::InitRaws()
 {
   // create Raws histograms in Raws subdir
-  TH1I * h0 = new TH1I("hPhosModules",    "Hits in EMCA PHOS modules",       6, 0, 6) ; 
-  h0->Sumw2() ;
-  Add2RawsList(h0, 0) ;
   const Int_t modMax = 5 ; 
-  TH2I * h1[modMax] ; 
+  TH2I * h0[modMax*2] ; 
   char name[32] ; 
   char title[32] ; 
   for (Int_t mod = 0; mod < modMax; mod++) {
-   sprintf(title, "Raws x Columns for PHOS module %d", mod+1) ;  
-   sprintf(name, "hPHOSxyMod%d", mod+1) ; 
-   h1[mod] = new TH2I(name, title, 64, 1, 65, 56, 1, 57) ; 
-   Add2RawsList(h1[mod], mod+1) ;
+   sprintf(title, "Low Gain Rows x Columns for PHOS module %d", mod) ;  
+   sprintf(name, "hLowPHOSxyMod%d", mod) ; 
+   h0[mod] = new TH2I(name, title, 64, 1, 65, 56, 1, 57) ; 
+   Add2RawsList(h0[mod], mod) ;
+   sprintf(title, "High Gain Rows x Columns for PHOS module %d", mod) ;  
+   sprintf(name, "hHighPHOSxyMod%d", mod) ; 
+   h0[mod+modMax] = new TH2I(name, title, 64, 1, 65, 56, 1, 57) ; 
+   Add2RawsList(h0[mod+modMax], mod+modMax) ;
   }
-  TH1F * h6 = new TH1F("hPhosRawtime", "Time of raw hits in PHOS", 100, 0, 100.) ; 
-  h6->Sumw2() ;
-  Add2RawsList(h6, 6) ;
-  TH1F * h7 = new TH1F("hPhosRawEnergy", "Energy of raw hits in PHOS", 1000, 0., 1200.) ; 
-  h7->Sumw2() ;
-  Add2RawsList(h7, 7) ;
+  TH1I * h10 = new TH1I("hLowPhosModules",    "Low Gain Hits in EMCA PHOS modules",       6, 0, 6) ; 
+  h10->Sumw2() ;
+  Add2RawsList(h10, 10) ;
+  TH1I * h11 = new TH1I("hHighPhosModules",    "High Gain Hits in EMCA PHOS modules",       6, 0, 6) ; 
+  h11->Sumw2() ;
+  Add2RawsList(h11, 11) ;
+  TH1F * h12 = new TH1F("hLowPhosRawtime", "Low Gain Time of raw hits in PHOS", 100, 0, 100.) ; 
+  h12->Sumw2() ;
+  Add2RawsList(h12, 12) ;
+  TH1F * h13 = new TH1F("hHighPhosRawtime", "High Gain Time of raw hits in PHOS", 100, 0, 100.) ; 
+  h13->Sumw2() ;
+  Add2RawsList(h13, 13) ;
+  TH1F * h14 = new TH1F("hLowPhosRawEnergy", "Low Gain Energy of raw hits in PHOS", 100, 0., 100.) ; 
+  h14->Sumw2() ;
+  Add2RawsList(h14, 14) ;
+  TH1F * h15 = new TH1F("hHighPhosRawEnergy", "High Gain Energy of raw hits in PHOS", 100, 0., 100.) ; 
+  h15->Sumw2() ;
+  Add2RawsList(h15, 15) ;
  
 }
 
@@ -247,20 +263,31 @@ void AliPHOSQualAssDataMaker::MakeDigits(TClonesArray * digits)
 //____________________________________________________________________________
 void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
 {
+  const Int_t modMax = 5 ; 
   rawReader->Reset() ; 
   AliPHOSRawDecoder decoder(rawReader);
   decoder.SetOldRCUFormat(kTRUE);
+  decoder.SubtractPedestals(kTRUE);
+
   Int_t count = 0 ; 
   while (decoder.NextDigit()) {
    Int_t module  = decoder.GetModule() ;
    Int_t row     = decoder.GetRow() ;
    Int_t col     = decoder.GetColumn() ;
    Double_t time = decoder.GetTime() ;
-   Double_t energy  = decoder.GetEnergy() ;          
-   GetRawsData(0)->Fill(module) ; 
-   GetRawsData(module)->Fill(row, col) ; 
-   GetRawsData(6)->Fill(time) ; 
-   GetRawsData(7)->Fill(energy) ; 
+   Double_t energy  = decoder.GetEnergy() ;     
+   Bool_t lowGain = decoder.IsLowGain();
+   if (lowGain) {
+     GetRawsData(module)->Fill(row, col) ; 
+	 GetRawsData(10)->Fill(module) ; 
+     GetRawsData(12)->Fill(time) ; 
+     GetRawsData(14)->Fill(energy) ; 
+   } else {
+	 GetRawsData(module+modMax)->Fill(row, col) ; 
+	 GetRawsData(11)->Fill(module) ; 
+     GetRawsData(13)->Fill(time) ; 
+     GetRawsData(15)->Fill(energy) ; 
+   }
    //AliInfo(Form(" %d %d %d %d %f %f\n", count, module, row, col, time, energy)) ;
    count++ ; 
   } 

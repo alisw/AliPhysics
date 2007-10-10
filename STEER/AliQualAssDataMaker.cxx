@@ -35,6 +35,7 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQualAssDataMaker.h"
+#include "AliQualAssChecker.h"
 #include "AliESDEvent.h"
 #include "AliRawReader.h"
 
@@ -77,11 +78,17 @@ AliQualAssDataMaker::AliQualAssDataMaker(const AliQualAssDataMaker& qadm) :
   fCurrentCycle(qadm.fCurrentCycle), 
   fCycle(qadm.fCycle), 
   fCycleCounter(qadm.fCycleCounter), 
-  fRun(qadm.fRun) 
+  fRun(qadm.fRun)
 {
   //copy ctor
   fDetectorDirName = GetName() ; 
 }
+
+//____________________________________________________________________________ 
+AliQualAssDataMaker::~AliQualAssDataMaker() 
+{
+// dtor
+} 
 
 //__________________________________________________________________
 AliQualAssDataMaker& AliQualAssDataMaker::operator = (const AliQualAssDataMaker& qadm )
@@ -96,35 +103,29 @@ AliQualAssDataMaker& AliQualAssDataMaker::operator = (const AliQualAssDataMaker&
 void AliQualAssDataMaker::EndOfCycle(AliQualAss::TASKINDEX task) 
 { 
   // Finishes a cycle of QA data acquistion
- 
- EndOfDetectorCycle() ; 
- TDirectory * subDir = fDetectorDir->GetDirectory(AliQualAss::GetTaskName(task)) ; 
- 
+  
+ TList * list = 0x0 ; 
+  
  switch (task) { 
   
-  case AliQualAss::kRAWS:
-    subDir->cd() ; 
-	fRawsQAList->Write() ; 
+  case AliQualAss::kRAWS:    
+	list = fRawsQAList ; 
   break ; 
 
   case AliQualAss::kHITS:
-    subDir->cd() ; 
-	fHitsQAList->Write() ; 
+	list = fHitsQAList ; 
   break ; 
 
   case AliQualAss::kSDIGITS:
-    subDir->cd() ; 
-	fSDigitsQAList->Write() ; 
+ 	list = fSDigitsQAList ; 
   break ; 
     
   case AliQualAss::kDIGITS:
-    subDir->cd() ; 
-	fDigitsQAList->Write() ; 
+ 	list = fDigitsQAList ; 
   break ;  
  
    case AliQualAss::kRECPOINTS:
-    subDir->cd() ; 
-	fRecPointsQAList->Write() ; 
+	list = fRecPointsQAList ; 
    break ;  
 
    case AliQualAss::kTRACKSEGMENTS:
@@ -134,10 +135,14 @@ void AliQualAssDataMaker::EndOfCycle(AliQualAss::TASKINDEX task)
    break ;  
     
    case AliQualAss::kESDS:
-    subDir->cd() ; 
-	fESDsQAList->Write() ; 
+	list = fESDsQAList ; 
    break ;  
   }	
+  
+ EndOfDetectorCycle(task, list) ; 
+ TDirectory * subDir = fDetectorDir->GetDirectory(AliQualAss::GetTaskName(task)) ; 
+ subDir->cd() ; 
+ list->Write() ; 
 }
  
 //____________________________________________________________________________

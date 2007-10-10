@@ -42,7 +42,6 @@
 
 
 ClassImp(AliQualAss)
-
   AliQualAss * AliQualAss::fgQA        = 0x0 ;
   TFile      * AliQualAss::fgDataFile  = 0x0 ;   
   TString      AliQualAss::fgDataName  = "QA" ;   
@@ -53,7 +52,6 @@ ClassImp(AliQualAss)
 //____________________________________________________________________________
 AliQualAss::AliQualAss() : 
   TNamed("", ""), 
-  fNdet(12), 
   fQA(0x0), 
   fDet(kNULLDET),
   fTask(kNULLTASK)
@@ -65,7 +63,6 @@ AliQualAss::AliQualAss() :
 //____________________________________________________________________________
 AliQualAss::AliQualAss(const AliQualAss& qa) :
   TNamed(qa),
-  fNdet(qa.fNdet),
   fQA(qa.fQA), 
   fDet(qa.fDet),
   fTask(qa.fTask)
@@ -86,8 +83,7 @@ AliQualAss& AliQualAss::operator = (const AliQualAss& qa)
 //_______________________________________________________________
 AliQualAss::AliQualAss(const DETECTORINDEX det) :
   TNamed("QA", "Quality Assurance status"), 
-  fNdet(12), 
-  fQA(0x0), 
+  fQA(new ULong_t[kNDET]), 
   fDet(det),
   fTask(kNULLTASK)
 {
@@ -95,8 +91,7 @@ AliQualAss::AliQualAss(const DETECTORINDEX det) :
   if (! CheckRange(det) ) {
     fDet = kNULLDET ; 
     return ;
-  } else 
-    fQA = new ULong_t[kNDET] ;
+  } 
   Int_t index ; 
   for (index = 0; index < kNDET; index++) 
     fQA[index] = 0 ; 
@@ -105,8 +100,7 @@ AliQualAss::AliQualAss(const DETECTORINDEX det) :
 //_______________________________________________________________
 AliQualAss::AliQualAss(const ALITASK tsk) :
   TNamed("QA", "Quality Assurance status"), 
-  fNdet(12), 
-  fQA(0x0), 
+  fQA(new ULong_t[kNDET]), 
   fDet(kNULLDET),
   fTask(tsk)
 {
@@ -114,8 +108,7 @@ AliQualAss::AliQualAss(const ALITASK tsk) :
   if (! CheckRange(tsk) ) {
     fTask = kNULLTASK ; 
     return ;
-  } else 
-    fQA = new ULong_t[kNDET] ;
+  } 
   Int_t index ; 
   for (index = 0; index < kNDET; index++) 
     fQA[index] = 0 ; 
@@ -131,7 +124,7 @@ AliQualAss::~AliQualAss()
 //_______________________________________________________________
 const Bool_t AliQualAss::CheckRange(DETECTORINDEX det) const
 { 
-  // check if detector is in given detector range: 0-fNdet
+  // check if detector is in given detector range: 0-kNDET
 
   Bool_t rv = ( det < 0 || det > kNDET )  ? kFALSE : kTRUE ;
   if (!rv)
@@ -378,11 +371,12 @@ void AliQualAss::ShowStatus(DETECTORINDEX det) const
   // Prints the full QA status of a given detector
   CheckRange(det) ;
   ULong_t status = GetStatus(det) ;
-  ULong_t simStatus = status & 0x000f ;
-  ULong_t recStatus = status & 0x00f0 ;
-  ULong_t esdStatus = status & 0x0f00 ;
-  ULong_t anaStatus = status & 0xf000 ;
+  ULong_t rawStatus = status & 0x0000f ;
+  ULong_t simStatus = status & 0x000f0 ;
+  ULong_t recStatus = status & 0x00f00 ;
+  ULong_t esdStatus = status & 0x0f000 ;
+  ULong_t anaStatus = status & 0xf0000 ;
 
-  AliInfo(Form("QA Status for %s sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetName(det).Data(), simStatus, recStatus, esdStatus, anaStatus )) ;
+  AliInfo(Form("QA Status for %s raw =0x%x, sim=0x%x, rec=0x%x, esd=0x%x, ana=0x%x\n", GetDetName(det).Data(), rawStatus, simStatus, recStatus, esdStatus, anaStatus )) ;
 }
 

@@ -38,7 +38,7 @@ public:
   AliQualAssDataMaker(const char * name="", const char * title="") ;          // ctor
   AliQualAssDataMaker(const AliQualAssDataMaker& qadm) ;   
   AliQualAssDataMaker& operator = (const AliQualAssDataMaker& qadm) ;
-  virtual ~AliQualAssDataMaker() {;} // dtor
+  virtual ~AliQualAssDataMaker() ; // dtor
   
   virtual void        Exec(AliQualAss::TASKINDEX, TObject * data) ;
   void                EndOfCycle(AliQualAss::TASKINDEX) ;
@@ -65,7 +65,7 @@ public:
 protected: 
 
   Int_t          Add2List(TH1 * hist, const Int_t index, TList * list) { list->AddAt(hist, index) ; return list->LastIndex() ; }
-  virtual void   EndOfDetectorCycle() {AliInfo("To be implemented by detectors");} 
+  virtual void   EndOfDetectorCycle(AliQualAss::TASKINDEX, TList * ) {AliInfo("To be implemented by detectors");} 
   TObject *      GetData(TList * list, const Int_t index)  { return list->At(index) ; } 
   virtual void   InitDigits()        {AliInfo("To be implemented by detectors");}
   virtual void   InitESDs()          {AliInfo("To be implemented by detectors");}
@@ -99,6 +99,7 @@ protected:
   Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
   Int_t          fCycleCounter ;    //! cycle counter
   Int_t          fRun ;             //! run number
+  
  ClassDef(AliQualAssDataMaker,1)  // description 
 
 };

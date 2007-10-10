@@ -18,6 +18,7 @@
 #include "AliQualAss.h"
 class TFile ; 
 class TH1 ; 
+class TList ; 
 
 // --- Standard library ---
 
@@ -31,12 +32,14 @@ public:
   AliQualAssCheckerBase& operator = (const AliQualAssCheckerBase& qac) ;
   virtual ~AliQualAssCheckerBase() {;} // dtor
 
-  void   Run(AliQualAss::ALITASK tsk); 
   void   Init(const AliQualAss::DETECTORINDEX det) ; 
-  void   SetRefandData(TDirectory * ref, TDirectory * data) { fRefSubDir = ref ;  fDataSubDir = data ; }
+  void   Run(AliQualAss::ALITASK tsk); 
+  void   Run(AliQualAss::ALITASK tsk, TList * list); 
+  void   SetRefandData(TDirectory * ref, TDirectory * data=NULL) { fRefSubDir = ref ;  fDataSubDir = data ; }
 
 protected:
   virtual const Double_t Check() ;
+  virtual const Double_t Check(TList * list) ;
   const Double_t DiffC(const TH1 * href, const TH1 * hin) const ;   
   const Double_t DiffK(const TH1 * href, const TH1 * hin) const ;   
   void           Finish() const ; 

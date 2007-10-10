@@ -16,6 +16,7 @@
 // --- ROOT system ---
 class TH1F ; 
 class TH1I ; 
+class TList ; 
 
 // --- Standard library ---
 
@@ -31,7 +32,7 @@ public:
   virtual ~AliPHOSQualAssDataMaker() {;} // dtor
   
 private:
-  virtual void   EndOfDetectorCycle() ;
+  virtual void   EndOfDetectorCycle(AliQualAss::TASKINDEX, TList * list) ;
   virtual void   InitHits() ; 
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 

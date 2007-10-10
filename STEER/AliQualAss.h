@@ -53,6 +53,7 @@ public:
   void                   Set(QABIT bit) ;
   void                   Show() const { ShowStatus(fDet) ; }
   void                   ShowAll() const ;
+  void                   print() { printf("%d %x\n", kNDET, fQA) ; } 
 
 private:      
 
@@ -72,8 +73,7 @@ private:
   void                 SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit) ;
 
   static AliQualAss *fgQA         ; // pointer to the instance of the singleton
-  Int_t              fNdet        ; // # of detectors
-  ULong_t *          fQA          ; //[kNDET] the status word 4 bits for SIM, REC, ESD, ANA each
+  ULong_t    *       fQA          ; //[kNDET] the status word 4 bits for SIM, REC, ESD, ANA each
   DETECTORINDEX      fDet         ; //!  the current detector (ITS, TPC, ....)
   ALITASK            fTask        ; //!  the current environment (SIM, REC, ESD, ANA)
   static TFile *     fgDataFile   ; //! the output file where the quality assurance maker store their results

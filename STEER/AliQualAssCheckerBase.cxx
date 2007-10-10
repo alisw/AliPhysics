@@ -29,6 +29,7 @@
 #include <TIterator.h> 
 #include <TKey.h> 
 #include <TFile.h> 
+#include <TList.h>
 
 // --- Standard library ---
 
@@ -114,6 +115,46 @@ const Double_t AliQualAssCheckerBase::Check()
    return test ; 
 }  
 
+//____________________________________________________________________________
+const Double_t AliQualAssCheckerBase::Check(TList * list) 
+{
+  // Performs a basic checking
+  // Compares all the histograms in the list
+
+   Double_t test = 0.0  ;
+   Int_t count = 0 ; 
+
+   if (list->GetEntries() == 0)  
+     test = 1. ; // nothing to check
+   else 
+     if (!fRefSubDir)
+       test = -1 ; // no reference data
+     else {
+       TIter next(list) ; 
+       TH1 * hdata ;
+       count = 0 ; 
+       while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
+		if ( hdata) { 
+	     TH1 * href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
+	     if (!href) 
+	      test = -1 ; // no reference data ; 
+	     else {
+	      Double_t rv =  DiffK(hdata, href) ;
+	      AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+	      test += rv ; 
+	      count++ ; 
+	    }
+	   } 
+	   else
+	    AliError("Data type cannot be processed") ;
+       }
+     }
+   if (count != 0) 
+     test /= count ;
+   
+   return test ; 
+}  
+
 //____________________________________________________________________________ 
 const Double_t AliQualAssCheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 {
@@ -145,13 +186,18 @@ void AliQualAssCheckerBase::Init(const AliQualAss::DETECTORINDEX det)
 }
  
 //____________________________________________________________________________
-void AliQualAssCheckerBase::Run(AliQualAss::ALITASK index) 
+void AliQualAssCheckerBase::Run(AliQualAss::ALITASK index, TList * list) 
 { 
   AliInfo(Form("Processing %s", AliQualAss::GetAliTaskName(index))) ; 
 
   AliQualAss * qa = AliQualAss::Instance(index) ; 
 
-  Double_t rv = Check() ;   
+  Double_t rv = -1 ;	
+  if (list)
+    rv = Check(list) ;
+  else 
+    rv = Check() ;   
+
   if ( rv <= 0.) 
     qa->Set(AliQualAss::kFATAL) ; 
   else if ( rv > 0 && rv <= 0.2 )

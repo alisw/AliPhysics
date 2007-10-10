@@ -23,33 +23,34 @@ class AliQualAssCheckerBase ;
 class AliQualAssChecker: public TNamed {
 public:
   AliQualAssChecker(const char* name = "AliQualAssChecker", 
-		    const char* title = "Quality Assurance checker for Hits, Digits and ESDs");
+		    const char* title = "Quality Assurance checker for Raws, Hits, Digits and ESDs");
   AliQualAssChecker(const AliQualAssChecker& qac);
   AliQualAssChecker& operator = (const AliQualAssChecker& qac);
   virtual ~AliQualAssChecker();
 
-  AliQualAssCheckerBase * GetDetQualAssChecker(Int_t det) ; 
-  TDirectory *            GetRefSubDir(const char * det, const char * task) ;
-  static TFile *          GetQAResultFile() ;
-  static const char *     GetQAResultFileName() { return fgQAResultFileName.Data() ; }
-  void                    SetQAResultDirName(const char * name) ; 
-  void                    SetRefDirName(const char * name) ; 
+  static  AliQualAssChecker * Instance() ;
+  AliQualAssCheckerBase *     GetDetQualAssChecker(Int_t det) ; 
+  TDirectory *                GetRefSubDir(const char * det, const char * task) ;
+  static TFile *              GetQAResultFile() ;
+  static const char *         GetQAResultFileName() { return fgQAResultFileName.Data() ; }
+  void                        SetQAResultDirName(const char * name) ; 
+  void                        SetRefDirName(const char * name) ; 
 
   virtual Bool_t Run();
-  
+  virtual Bool_t Run(AliQualAss::DETECTORINDEX det, AliQualAss::TASKINDEX task, TList * list);
+
 private:
-//   AliRunLoader*  LoadRun(const char* mode = "UPDATE") const;
   TFile *      GetDataFile() ; 
 
-  TFile * fDataFile ;                //! Data file to check
-  static TFile * fgQAResultFile ;    //! File where to find the QA result
-  static TString fgQAResultDirName ; //! directory where to find the QA result
-  static TString fgQAResultFileName ;//! file name where to find the QA result
-  TString fRefDirName ;              //! name of directory where to find the reference data file
-  TString fRefName ;                 //! file name where to find the reference data
-  TString fFoundDetectors ;          //! detectors for which the Quality assurance could be done
+  static AliQualAssChecker *fgQAChecker ; // pointer to the instance of the singleton
+  TFile * fDataFile ;                     //! Data file to check
+  static TFile * fgQAResultFile ;         //! File where to find the QA result
+  static TString fgQAResultDirName ;      //! directory where to find the QA result
+  static TString fgQAResultFileName ;     //! file name where to find the QA result
+  TString fRefDirName ;                   //! name of directory where to find the reference data file
+  TString fRefName ;                      //! file name where to find the reference data
+  TString fFoundDetectors ;               //! detectors for which the Quality assurance could be done
   AliQualAssCheckerBase * fCheckers[AliQualAss::kNDET] ; //! list of detectors checkers
   ClassDef(AliQualAssChecker, 1)  // class for running generation, simulation and digitization
 };
-
 #endif
