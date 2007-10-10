@@ -126,7 +126,7 @@ inline Double_t AliAODv0::MomNegZ() const {return fPz[1];}
 // inline Int_t AliAODv0::KeyPos() const {return fKeyPos;}
 // inline Int_t AliAODv0::KeyNeg() const {return fKeyNeg;}
 
-inline Double_t AliAODv0::Chi2V0() const {return fSecondaryVtx->GetChi2perNDF();}
+inline Double_t AliAODv0::Chi2V0() const {return GetSecondaryVtx()->GetChi2perNDF();}
 
 // Compare eventually AliAODv0::MomV0X() and AliAODRecoDecay::Px()
 inline Double_t AliAODv0::MomV0X() const {return MomPosX()+MomNegX();}

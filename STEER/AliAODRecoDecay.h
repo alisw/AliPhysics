@@ -10,6 +10,7 @@
 //***********************************************************
 
 #include <TMath.h>
+#include <TRef.h>
 #include "AliAODVertex.h"
 #include "AliVParticle.h"
 
@@ -30,14 +31,14 @@ class AliAODRecoDecay : public AliVParticle {
    
 
   // decay vertex
-  Double_t GetSecVtxX() const {return fSecondaryVtx->GetX();}
-  Double_t GetSecVtxY() const {return fSecondaryVtx->GetY();}
-  Double_t GetSecVtxZ() const {return fSecondaryVtx->GetZ();}
+  Double_t GetSecVtxX() const {return GetSecondaryVtx()->GetX();}
+  Double_t GetSecVtxY() const {return GetSecondaryVtx()->GetY();}
+  Double_t GetSecVtxZ() const {return GetSecondaryVtx()->GetZ();}
   Double_t RadiusSecVtx() const;
   void     SetSecondaryVtx(AliAODVertex *vtx2) {fSecondaryVtx=vtx2;}
-  AliAODVertex* GetSecondaryVtx() const {return fSecondaryVtx;}
+  AliAODVertex* GetSecondaryVtx() const {return (AliAODVertex*)fSecondaryVtx.GetObject();}
   void     GetSecondaryVtx(Double_t vtx[3]) const;
-  Double_t GetReducedChi2() const {return fSecondaryVtx->GetChi2perNDF();}
+  Double_t GetReducedChi2() const {return GetSecondaryVtx()->GetChi2perNDF();}
   Short_t  Charge() const {return fCharge;}
   Short_t  GetCharge() const {return fCharge;}
   void     SetCharge(Short_t charge=0) {fCharge=charge;}
@@ -49,9 +50,9 @@ class AliAODRecoDecay : public AliVParticle {
   virtual const Double_t *PID() const { return fPID; }
 
   // prong-to-prong DCAs
-  void    SetDCAs(Int_t nDCA,Float_t *dca);
-  void    SetDCA(Float_t dca); // 2 prong
-  Float_t GetDCA(Int_t i=0) const {return fDCA[i];}
+  void    SetDCAs(Int_t nDCA,Double_t *dca);
+  void    SetDCA(Double_t dca); // 2 prong
+  Double_t GetDCA(Int_t i=0) const {return fDCA[i];}
 
   //event and run number
   void SetEventRunNumbers(Int_t en,Int_t rn) 
@@ -73,16 +74,16 @@ class AliAODRecoDecay : public AliVParticle {
   Double_t Y(UInt_t pdg) const {return 0.5*TMath::Log((E(pdg)+Pz())/(E(pdg)-Pz()+1.e-13));}
   Double_t DecayLength(Double_t point[3]) const;
   Double_t DecayLength(AliAODVertex *vtx1) const
-    {return fSecondaryVtx->DistanceToVertex(vtx1);}
+  {return GetSecondaryVtx()->DistanceToVertex(vtx1);}
   Double_t DecayLengthError(AliAODVertex *vtx1) const
-    {return fSecondaryVtx->ErrorDistanceToVertex(vtx1);}
+    {return GetSecondaryVtx()->ErrorDistanceToVertex(vtx1);}
   Double_t NormalizedDecayLength(AliAODVertex *vtx1) const 
     {return DecayLength(vtx1)/DecayLengthError(vtx1);}
   Double_t DecayLengthXY(Double_t point[3]) const;
   Double_t DecayLengthXY(AliAODVertex *vtx1) const
-    {return fSecondaryVtx->DistanceXYToVertex(vtx1);}
+    {return GetSecondaryVtx()->DistanceXYToVertex(vtx1);}
   Double_t DecayLengthXYError(AliAODVertex *vtx1) const
-    {return fSecondaryVtx->ErrorDistanceXYToVertex(vtx1);}
+    {return GetSecondaryVtx()->ErrorDistanceXYToVertex(vtx1);}
   Double_t NormalizedDecayLengthXY(AliAODVertex *vtx1) const 
     {return DecayLengthXY(vtx1)/DecayLengthXYError(vtx1);}
   Double_t Ct(UInt_t pdg,Double_t point[3]) const;
@@ -97,7 +98,7 @@ class AliAODRecoDecay : public AliVParticle {
   Double_t ImpParXY(AliAODVertex *vtx1) const;
 
   // prongs
-  //Int_t   GetNProngs() const {return fSecondaryVtx->GetNDaughters();}
+  //Int_t   GetNProngs() const {return GetSecondaryVtx()->GetNDaughters();}
   Int_t   GetNProngs() const {return fNProngs;}
 
   Short_t ChargeProng(Int_t ip) const;
@@ -134,7 +135,7 @@ class AliAODRecoDecay : public AliVParticle {
 
   // print
   void    Print(Option_t* option = "") const;
-  //void    PrintIndices() const {fSecondaryVtx->PrintIndices();}
+  //void    PrintIndices() const {GetSecondaryVtx()->PrintIndices();}
 
   // dummy functions for inheritance from AliVParticle
   Double_t E() const 
@@ -146,27 +147,27 @@ class AliAODRecoDecay : public AliVParticle {
 
  protected:
 
-  AliAODVertex *fSecondaryVtx;  // decay vertex
-  Short_t  fCharge; // charge, use this convention for prongs charges:
-                    // if(charge== 0) even-index prongs are +
-                    //                odd-index prongs are -
-                    // if(charge==+1) even-index prongs are +
-                    //                odd-index prongs are -
-                    // if(charge==-1) even-index prongs are -
-                    //                odd-index prongs are +
+  TRef     fSecondaryVtx;  // decay vertex
+  Short_t  fCharge;  // charge, use this convention for prongs charges:
+                     // if(charge== 0) even-index prongs are +
+                     //                odd-index prongs are -
+                     // if(charge==+1) even-index prongs are +
+                     //                odd-index prongs are -
+                     // if(charge==-1) even-index prongs are -
+                     //                odd-index prongs are +
 
   // TEMPORARY, to be removed when we do analysis on AliAODEvent
-  Int_t fNProngs;  // number of prongs
-  Int_t fNDCA;     // number of dca's
-  Int_t fNPID;     // number of PID probabilities
-  Double_t *fPx;   //[fNProngs] px of tracks at the vertex [GeV/c]
-  Double_t *fPy;   //[fNProngs] py of tracks at the vertex [GeV/c]
-  Double_t *fPz;   //[fNProngs] pz of tracks at the vertex [GeV/c]
-  Double_t *fd0;   //[fNProngs] rphi impact params w.r.t. Primary Vtx [cm]
-  Float_t *fDCA;   //[fNDCA] prong-to-prong DCA [cm]
-                   // convention:fDCA[0]=p0p1,fDCA[1]=p0p2,fDCA[2]=p1p2,...
-  Double_t *fPID;  //[fNPID] combined pid
-                   //  (combined detector response probabilities)
+  Int_t fNProngs;    // number of prongs
+  Int_t fNDCA;       // number of dca's
+  Int_t fNPID;       // number of PID probabilities
+  Double32_t *fPx;   //[fNProngs] px of tracks at the vertex [GeV/c]
+  Double32_t *fPy;   //[fNProngs] py of tracks at the vertex [GeV/c]
+  Double32_t *fPz;   //[fNProngs] pz of tracks at the vertex [GeV/c]
+  Double32_t *fd0;   //[fNProngs] rphi impact params w.r.t. Primary Vtx [cm]
+  Double32_t *fDCA;  //[fNDCA] prong-to-prong DCA [cm]
+                     // convention:fDCA[0]=p0p1,fDCA[1]=p0p2,fDCA[2]=p1p2,...
+  Double32_t *fPID;  //[fNPID] combined pid
+                     //  (combined detector response probabilities)
                             
   // TEMPORARY, to be removed when we do analysis on AliAODEvent
   Int_t fEventNumber;
@@ -208,7 +209,7 @@ inline Double_t AliAODRecoDecay::RadiusSecVtx() const
 
 inline void AliAODRecoDecay::GetSecondaryVtx(Double_t vtx[3]) const 
 {
-  fSecondaryVtx->GetPosition(vtx);
+  GetSecondaryVtx()->GetPosition(vtx);
   return;
 }
 
@@ -285,22 +286,22 @@ inline Double_t AliAODRecoDecay::QtProngFlightLine(Int_t ip,AliAODVertex *vtx1) 
   return QtProngFlightLine(ip,v);
 }
 
-inline void AliAODRecoDecay::SetDCAs(Int_t nDCA,Float_t *dca) 
+inline void AliAODRecoDecay::SetDCAs(Int_t nDCA,Double_t *dca) 
 {
   if(nDCA!=(GetNProngs()*(GetNProngs()-1)/2)) { 
     printf("Wrong number of DCAs, must be nProngs*(nProngs-1)/2");
     return;
   }
   if(fDCA) delete [] fDCA;
-  fDCA = new Float_t[nDCA];
+  fDCA = new Double32_t[nDCA];
   for(Int_t i=0;i<nDCA;i++) 
     fDCA[i] = dca[i]; 
   return;
 }
 
-inline void AliAODRecoDecay::SetDCA(Float_t dca) 
+inline void AliAODRecoDecay::SetDCA(Double_t dca) 
 {
-  Float_t ddca[1]; ddca[0]=dca;
+  Double_t ddca[1]; ddca[0]=dca;
   SetDCAs(1,ddca);
   return;
 }
@@ -312,7 +313,7 @@ inline void AliAODRecoDecay::SetPID(Int_t nprongs,Double_t *pid)
     return;
   }
   if(fPID) delete [] fPID;
-  fPID = new Double_t[nprongs*5];
+  fPID = new Double32_t[nprongs*5];
   for(Int_t i=0;i<nprongs;i++) 
     for(Int_t j=0;j<5;j++)
       fPID[i*5+j] = pid[i*5+j]; 

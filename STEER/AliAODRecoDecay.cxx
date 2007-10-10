@@ -42,7 +42,6 @@ AliAODRecoDecay::AliAODRecoDecay() :
   //
   // Default Constructor
   //
-  fSecondaryVtx = new AliAODVertex();
 }
 //--------------------------------------------------------------------------
 AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
@@ -126,8 +125,8 @@ AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
       memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
     }
     if(source.fDCA) {
-      fDCA = new Float_t[GetNProngs()*(GetNProngs()-1)/2];
-      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Float_t));
+      fDCA = new Double_t[GetNProngs()*(GetNProngs()-1)/2];
+      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Double_t));
     }
   }
 }
@@ -161,8 +160,8 @@ AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
       memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
     }
     if(source.fDCA) {
-      fDCA = new Float_t[GetNProngs()*(GetNProngs()-1)/2];
-      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Float_t));
+      fDCA = new Double_t[GetNProngs()*(GetNProngs()-1)/2];
+      memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Double32_t));
     }
   }
   return *this;
@@ -172,7 +171,6 @@ AliAODRecoDecay::~AliAODRecoDecay() {
   //  
   // Default Destructor
   //
-  if(fSecondaryVtx) delete fSecondaryVtx;
   if(fPx) delete [] fPx;
   if(fPy) delete [] fPy;
   if(fPz) delete [] fPz;
@@ -308,7 +306,7 @@ Double_t AliAODRecoDecay::EProng(Int_t ip,UInt_t pdg) const
   // Index of prong ip
   //
   if(!GetNProngs()) return 999999;
-  UShort_t *indices = fSecondaryVtx->GetIndices();
+UShort_t *indices = GetSecondaryVtx()->GetIndices();
   return indices[ip];
 }*/
 //----------------------------------------------------------------------------

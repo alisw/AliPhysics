@@ -40,7 +40,7 @@ ClassImp(AliAODv0)
   fNDCA    = 1;
   fNPID    = 2;
 
-  fDCA = new Float_t[fNDCA];
+  fDCA = new Double_t[fNDCA];
   fDCA[0] = 999;
 
   fPx = new Double_t[GetNProngs()];
@@ -71,7 +71,7 @@ ClassImp(AliAODv0)
 //  fNDCA    = 1;
 //  fNPID    = 2;
 
-//  fDCA = new Float_t[fNDCA];
+//  fDCA = new Double_t[fNDCA];
 
 //   fPx = new Double_t[GetNProngs()];
 //   fPy = new Double_t[GetNProngs()];
@@ -95,7 +95,7 @@ AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t 
   fNDCA    = 1;
   fNPID    = 2;
 
-  fDCA = new Float_t[fNDCA];
+  fDCA = new Double_t[fNDCA];
 
   fDCA[0] = rDcaV0Daughters;
   fDcaV0ToPrimVertex = rDcaV0ToPrimVertex;
@@ -140,21 +140,21 @@ AliAODv0::~AliAODv0(){
 // void AliAODv0::Fill(AliESDv0* rV0Vertex ,AliESDEvent* rEvent){
 
 //   Double_t tDecayVertexV0[3]; rV0Vertex->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
-//   fSecondaryVtx->SetX(tDecayVertexV0[0]);
-//   fSecondaryVtx->SetY(tDecayVertexV0[1]);
-//   fSecondaryVtx->SetZ(tDecayVertexV0[2]);
+//   GetSecondaryVtx()->SetX(tDecayVertexV0[0]);
+//   GetSecondaryVtx()->SetY(tDecayVertexV0[1]);
+//   GetSecondaryVtx()->SetZ(tDecayVertexV0[2]);
 
 //   Double_t lCovVtx[6];
 //   rV0Vertex->GetPosCov(lCovVtx);
-//   fSecondaryVtx->SetCovMatrix(lCovVtx);
+//   GetSecondaryVtx()->SetCovMatrix(lCovVtx);
 
-//   fSecondaryVtx->SetChi2perNDF(rV0Vertex->GetChi2V0());
-//   fSecondaryVtx->SetType(AliAODVertex::kV0);
+//   GetSecondaryVtx()->SetChi2perNDF(rV0Vertex->GetChi2V0());
+//   GetSecondaryVtx()->SetType(AliAODVertex::kV0);
 
 //   UInt_t lKeyPos = (UInt_t)TMath::Abs(rV0Vertex->GetPindex());// need to ask why Abs
 //   UInt_t lKeyNeg = (UInt_t)TMath::Abs(rV0Vertex->GetNindex());
-//   fSecondaryVtx->AddDaughter(rEvent->GetTrack(lKeyPos));
-//   fSecondaryVtx->AddDaughter(rEvent->GetTrack(lKeyNeg));
+//   GetSecondaryVtx()->AddDaughter(rEvent->GetTrack(lKeyPos));
+//   GetSecondaryVtx()->AddDaughter(rEvent->GetTrack(lKeyNeg));
 
 //   fDCA[0] = rV0Vertex->GetDcaV0Daughters();
 //   fDcaV0ToPrimVertex = rV0Vertex->GetD();
@@ -206,15 +206,15 @@ void AliAODv0::Fill(AliAODVertex *rAODVertex, Double_t rDcaV0Daughters, Double_t
 
 void AliAODv0::ResetV0(){
 
-  fSecondaryVtx->SetX(999);
-  fSecondaryVtx->SetY(999);
-  fSecondaryVtx->SetZ(999);
-  fSecondaryVtx->SetChi2perNDF(999);
-  fSecondaryVtx->SetType(AliAODVertex::kUndef);
+  GetSecondaryVtx()->SetX(999);
+  GetSecondaryVtx()->SetY(999);
+  GetSecondaryVtx()->SetZ(999);
+  GetSecondaryVtx()->SetChi2perNDF(999);
+  GetSecondaryVtx()->SetType(AliAODVertex::kUndef);
 
-  Int_t lNumDaughters = fSecondaryVtx->GetNDaughters();
+  Int_t lNumDaughters = GetSecondaryVtx()->GetNDaughters();
   for(Int_t iDaughterIndex = 0; iDaughterIndex<lNumDaughters;iDaughterIndex++)
-    fSecondaryVtx->RemoveDaughter(fSecondaryVtx->GetDaughter(iDaughterIndex));
+    GetSecondaryVtx()->RemoveDaughter(GetSecondaryVtx()->GetDaughter(iDaughterIndex));
 
   fDCA[0] = 999;
   fDcaV0ToPrimVertex  = 999;
