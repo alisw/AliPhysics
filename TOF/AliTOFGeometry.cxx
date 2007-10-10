@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2007/10/08 17:52:55  decaro
+hole region in front of PHOS detector: update of sectors' numbers
+
 Revision 1.19  2007/10/04 14:05:09  zampolli
 AliTOFGeometryV5 becoming AliTOFGeometry
 
@@ -186,7 +189,7 @@ const Float_t AliTOFGeometry::fgkDistances[kNPlates][kMaxNstrip]= {
   };
 //_____________________________________________________________________________
 AliTOFGeometry::AliTOFGeometry():
-  fHoles(0)
+  fHoles(1)
 {
   //
   // AliTOFGeometry default constructor
