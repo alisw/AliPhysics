@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.115  2007/08/22 09:20:50  hristov
+ * Updated QA classes (Yves)
+ *
  * Revision 1.114  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -89,7 +92,7 @@ class TFile;
 #include "AliDAQ.h"
 #include "AliPHOSRawDecoder.h"
 #include "AliPHOSRawDigiProducer.h"
-#include "AliPHOSQualAssChecker.h"
+#include "AliPHOSQAChecker.h"
 
 ClassImp(AliPHOS)
 

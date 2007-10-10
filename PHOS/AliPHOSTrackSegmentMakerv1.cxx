@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.92  2007/08/28 12:55:08  policheh
+ * Loaders removed from the reconstruction code (C.Cheshkov)
+ *
  * Revision 1.91  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -118,7 +121,7 @@
 #include "AliPHOSLink.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
-#include "AliPHOSQualAssDataMaker.h"
+#include "AliPHOSQADataMaker.h"
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSCpvRecPoint.h"
 

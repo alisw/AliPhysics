@@ -34,18 +34,18 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQualAss.h"
-#include "AliQualAssChecker.h"
-#include "AliPHOSQualAssChecker.h"
+#include "AliQA.h"
+#include "AliQAChecker.h"
+#include "AliPHOSQAChecker.h"
 
-ClassImp(AliPHOSQualAssChecker)
+ClassImp(AliPHOSQAChecker)
 
 //__________________________________________________________________
-AliPHOSQualAssChecker& AliPHOSQualAssChecker::operator = (const AliPHOSQualAssChecker& qac )
+AliPHOSQAChecker& AliPHOSQAChecker::operator = (const AliPHOSQAChecker& qac )
 {
   // Equal operator.
-  this->~AliPHOSQualAssChecker();
-  new(this) AliPHOSQualAssChecker(qac);
+  this->~AliPHOSQAChecker();
+  new(this) AliPHOSQAChecker(qac);
   return *this;
 }
 

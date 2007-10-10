@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.28  2007/09/30 17:08:20  schutz
+ * Introducing the notion of QA data acquisition cycle (needed by online)
+ *
  * Revision 1.27  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -40,7 +43,7 @@ class TFile ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-class AliPHOSQualAssDataMaker ; 
+class AliPHOSQADataMaker ; 
 
 class AliPHOSSDigitizer: public TTask {
 
@@ -64,7 +67,7 @@ public:
 
  
 private:
-  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
+  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
 
   void     Init() ;
   void     InitParameters() ;
@@ -83,7 +86,7 @@ private:
   Int_t   fFirstEvent;      // first event to process
   Int_t   fLastEvent;       // last  event to process
 
-  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
+  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
   static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
 
   ClassDef(AliPHOSSDigitizer,4)  // description 

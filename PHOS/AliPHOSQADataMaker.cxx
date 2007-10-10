@@ -37,26 +37,26 @@
 #include "AliLog.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSHit.h"
-#include "AliPHOSQualAssDataMaker.h"
-#include "AliQualAssChecker.h"
+#include "AliPHOSQADataMaker.h"
+#include "AliQAChecker.h"
 #include "AliPHOSCpvRecPoint.h" 
 #include "AliPHOSEmcRecPoint.h" 
 #include "AliPHOSRecParticle.h" 
 #include "AliPHOSTrackSegment.h" 
 #include "AliPHOSRawDecoder.h"
 
-ClassImp(AliPHOSQualAssDataMaker)
+ClassImp(AliPHOSQADataMaker)
            
 //____________________________________________________________________________ 
-  AliPHOSQualAssDataMaker::AliPHOSQualAssDataMaker() : 
-  AliQualAssDataMaker(AliQualAss::GetDetName(AliQualAss::kPHOS), "PHOS Quality Assurance Data Maker")
+  AliPHOSQADataMaker::AliPHOSQADataMaker() : 
+  AliQADataMaker(AliQA::GetDetName(AliQA::kPHOS), "PHOS Quality Assurance Data Maker")
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
-AliPHOSQualAssDataMaker::AliPHOSQualAssDataMaker(const AliPHOSQualAssDataMaker& qadm) :
-  AliQualAssDataMaker()
+AliPHOSQADataMaker::AliPHOSQADataMaker(const AliPHOSQADataMaker& qadm) :
+  AliQADataMaker()
 {
   //copy ctor 
   SetName((const char*)qadm.GetName()) ; 
@@ -64,24 +64,24 @@ AliPHOSQualAssDataMaker::AliPHOSQualAssDataMaker(const AliPHOSQualAssDataMaker& 
 }
 
 //__________________________________________________________________
-AliPHOSQualAssDataMaker& AliPHOSQualAssDataMaker::operator = (const AliPHOSQualAssDataMaker& qadm )
+AliPHOSQADataMaker& AliPHOSQADataMaker::operator = (const AliPHOSQADataMaker& qadm )
 {
   // Equal operator.
-  this->~AliPHOSQualAssDataMaker();
-  new(this) AliPHOSQualAssDataMaker(qadm);
+  this->~AliPHOSQADataMaker();
+  new(this) AliPHOSQADataMaker(qadm);
   return *this;
 }
  
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::EndOfDetectorCycle(AliQualAss::TASKINDEX task, TList * list)
+void AliPHOSQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
-  AliQualAssChecker::Instance()->Run(AliQualAss::kPHOS, task, list) ;  
+  AliQAChecker::Instance()->Run(AliQA::kPHOS, task, list) ;  
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitESDs()
+void AliPHOSQADataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
   TH1F * h0 = new TH1F("hPhosESDs",    "ESDs energy distribution in PHOS",       100, 0., 100.) ;  
@@ -93,7 +93,7 @@ void AliPHOSQualAssDataMaker::InitESDs()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitHits()
+void AliPHOSQADataMaker::InitHits()
 {
   // create Hits histograms in Hits subdir
   TH1F * h0 = new TH1F("hPhosHits",    "Hits energy distribution in PHOS",       100, 0., 100.) ; 
@@ -105,7 +105,7 @@ void AliPHOSQualAssDataMaker::InitHits()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitDigits()
+void AliPHOSQADataMaker::InitDigits()
 {
   // create Digits histograms in Digits subdir
   TH1I * h0 = new TH1I("hPhosDigits",    "Digits amplitude distribution in PHOS",    500, 0, 5000) ; 
@@ -117,7 +117,7 @@ void AliPHOSQualAssDataMaker::InitDigits()
 }
 
 //____________________________________________________________________________ 
-//void AliPHOSQualAssDataMaker::InitRecParticles()
+//void AliPHOSQADataMaker::InitRecParticles()
 //{
 //  // create Reconstructed particles histograms in RecParticles subdir
 //  fhRecParticles     = new TH1F("hPhosRecParticles",    "RecParticles energy distribution in PHOS",       100, 0., 100.) ; 
@@ -127,7 +127,7 @@ void AliPHOSQualAssDataMaker::InitDigits()
 //}
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitRecPoints()
+void AliPHOSQADataMaker::InitRecPoints()
 {
   // create Reconstructed Points histograms in RecPoints subdir
   TH1F * h0 = new TH1F("hEmcPhosRecPoints",    "EMCA RecPoints energy distribution in PHOS",       100, 0., 100.) ; 
@@ -146,7 +146,7 @@ void AliPHOSQualAssDataMaker::InitRecPoints()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitRaws()
+void AliPHOSQADataMaker::InitRaws()
 {
   // create Raws histograms in Raws subdir
   const Int_t modMax = 5 ; 
@@ -185,7 +185,7 @@ void AliPHOSQualAssDataMaker::InitRaws()
 }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::InitSDigits()
+void AliPHOSQADataMaker::InitSDigits()
 {
   // create SDigits histograms in SDigits subdir
   TH1F * h0 = new TH1F("hPhosSDigits",    "SDigits energy distribution in PHOS",       100, 0., 100.) ; 
@@ -197,7 +197,7 @@ void AliPHOSQualAssDataMaker::InitSDigits()
 }
 
 //____________________________________________________________________________ 
-//void AliPHOSQualAssDataMaker::InitTrackSegments()
+//void AliPHOSQADataMaker::InitTrackSegments()
 //{
 //  // create Track Segments histograms in TrackSegments subdir
 //  fhTrackSegments     = new TH1F("hPhosTrackSegments",    "TrackSegments EMC-CPV distance in PHOS",       500, 0., 5000.) ; 
@@ -207,7 +207,7 @@ void AliPHOSQualAssDataMaker::InitSDigits()
 //}
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeESDs(AliESDEvent * esd)
+void AliPHOSQADataMaker::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
   
@@ -222,7 +222,7 @@ void AliPHOSQualAssDataMaker::MakeESDs(AliESDEvent * esd)
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeHits(TClonesArray * hits)
+void AliPHOSQADataMaker::MakeHits(TClonesArray * hits)
 {
   //make QA data from Hits
 
@@ -234,7 +234,7 @@ void AliPHOSQualAssDataMaker::MakeHits(TClonesArray * hits)
     }
 }
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeDigits(TClonesArray * digits)
+void AliPHOSQADataMaker::MakeDigits(TClonesArray * digits)
 {
   // makes data from Digits
 
@@ -247,7 +247,7 @@ void AliPHOSQualAssDataMaker::MakeDigits(TClonesArray * digits)
 }
 
 //____________________________________________________________________________
-// void AliPHOSQualAssDataMaker::MakeRecParticles(TTree * recpar)
+// void AliPHOSQADataMaker::MakeRecParticles(TTree * recpar)
 // {
 //   // makes data from RecParticles
 
@@ -261,7 +261,7 @@ void AliPHOSQualAssDataMaker::MakeDigits(TClonesArray * digits)
 // }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
+void AliPHOSQADataMaker::MakeRaws(AliRawReader* rawReader)
 {
   const Int_t modMax = 5 ; 
   rawReader->Reset() ; 
@@ -294,7 +294,7 @@ void AliPHOSQualAssDataMaker::MakeRaws(AliRawReader* rawReader)
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
+void AliPHOSQADataMaker::MakeRecPoints(TTree * clustersTree)
 {
   {
     // makes data from RecPoints
@@ -338,7 +338,7 @@ void AliPHOSQualAssDataMaker::MakeRecPoints(TTree * clustersTree)
 }
 
 //____________________________________________________________________________
-void AliPHOSQualAssDataMaker::MakeSDigits(TClonesArray * sdigits)
+void AliPHOSQADataMaker::MakeSDigits(TClonesArray * sdigits)
 {
   // makes data from SDigits
   
@@ -351,7 +351,7 @@ void AliPHOSQualAssDataMaker::MakeSDigits(TClonesArray * sdigits)
 }
 
 //____________________________________________________________________________
-// void AliPHOSQualAssDataMaker::MakeTrackSegments(TTree * ts)
+// void AliPHOSQADataMaker::MakeTrackSegments(TTree * ts)
 // {
 //   // makes data from TrackSegments
 
@@ -366,7 +366,7 @@ void AliPHOSQualAssDataMaker::MakeSDigits(TClonesArray * sdigits)
 // }
 
 //____________________________________________________________________________ 
-void AliPHOSQualAssDataMaker::StartOfDetectorCycle()
+void AliPHOSQADataMaker::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
   

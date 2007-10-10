@@ -1,5 +1,5 @@
-#ifndef ALIPHOSQUALASSDATAMAKER_H
-#define ALIPHOSQUALASSDATAMAKER_H
+#ifndef ALIPHOSQADATAMAKER_H
+#define ALIPHOSQADATAMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -21,18 +21,18 @@ class TList ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliQualAssDataMaker.h"
+#include "AliQADataMaker.h"
 
-class AliPHOSQualAssDataMaker: public AliQualAssDataMaker {
+class AliPHOSQADataMaker: public AliQADataMaker {
 
 public:
-  AliPHOSQualAssDataMaker() ;          // ctor
-  AliPHOSQualAssDataMaker(const AliPHOSQualAssDataMaker& qadm) ;   
-  AliPHOSQualAssDataMaker& operator = (const AliPHOSQualAssDataMaker& qadm) ;
-  virtual ~AliPHOSQualAssDataMaker() {;} // dtor
+  AliPHOSQADataMaker() ;          // ctor
+  AliPHOSQADataMaker(const AliPHOSQADataMaker& qadm) ;   
+  AliPHOSQADataMaker& operator = (const AliPHOSQADataMaker& qadm) ;
+  virtual ~AliPHOSQADataMaker() {;} // dtor
   
 private:
-  virtual void   EndOfDetectorCycle(AliQualAss::TASKINDEX, TList * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * list) ;
   virtual void   InitHits() ; 
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 
@@ -51,8 +51,8 @@ private:
   //virtual void   MakeTrackSegments(TTree *ts ) ; 
   virtual void   StartOfDetectorCycle() ; 
 
-  ClassDef(AliPHOSQualAssDataMaker,1)  // description 
+  ClassDef(AliPHOSQADataMaker,1)  // description 
 
 };
 
-#endif // AliPHOSQualAssDataMaker_H
+#endif // AliPHOSQADataMaker_H

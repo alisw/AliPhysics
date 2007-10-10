@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.36  2007/09/30 17:08:20  schutz
+ * Introducing the notion of QA data acquisition cycle (needed by online)
+ *
  * Revision 1.35  2007/08/07 14:12:03  kharlov
  * Quality assurance added (Yves Schutz)
  *
@@ -38,7 +41,7 @@ class TClonesArray ;
 // --- AliRoot header files ---
 #include "AliDigitizer.h"
 class AliPHOSSDigitizer ;
-class AliPHOSQualAssDataMaker ; 
+class AliPHOSQADataMaker ; 
 class AliRunDigitizer ;
 
 class AliPHOSDigitizer: public AliDigitizer {
@@ -97,7 +100,7 @@ public:
 
   
 private:
-  AliPHOSQualAssDataMaker * GetQualAssDataMaker() const { return fQADM ; } 
+  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
 
   virtual Bool_t Init() ; 
   void    InitParameters() ; 
@@ -146,7 +149,7 @@ private:
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
   Int_t   fFirstEvent;              // first event to process
   Int_t   fLastEvent;               // last  event to process 
-  AliPHOSQualAssDataMaker * fQADM ; //!Quality Assurance Data Maker
+  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
   Int_t fEventCounter ;             //! counts the events processed
   
   //QA stuff

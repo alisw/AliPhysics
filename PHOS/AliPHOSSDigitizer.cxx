@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.53  2007/09/30 17:08:20  schutz
+ * Introducing the notion of QA data acquisition cycle (needed by online)
+ *
  * Revision 1.52  2007/09/26 14:22:18  cvetan
  * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
  *
@@ -85,7 +88,7 @@
 #include "AliPHOSGetter.h"
 #include "AliPHOSHit.h"
 #include "AliPHOSSDigitizer.h"
-#include "AliPHOSQualAssDataMaker.h" 
+#include "AliPHOSQADataMaker.h" 
 
 ClassImp(AliPHOSSDigitizer)
 
@@ -129,10 +132,10 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName,
   //FIXME: get the run number
   Int_t run = 0 ;
   //EMXIF 	
-  GetQualAssDataMaker()->Init(AliQualAss::kHITS, run, fgkCycles) ;
-  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kHITS) ;
-  GetQualAssDataMaker()->Init(AliQualAss::kSDIGITS, run) ; 
-  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kSDIGITS, "same") ;
+  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
+  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
+  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
+  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, "same") ;
 }
 
 //____________________________________________________________________________
@@ -153,10 +156,10 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer& sd) :
   //FIXME: get the run number
   Int_t run = 0 ;
   //EMXIF 	
-  GetQualAssDataMaker()->Init(AliQualAss::kHITS, run, fgkCycles) ;
-  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kHITS) ;
-  GetQualAssDataMaker()->Init(AliQualAss::kSDIGITS, run) ; 
-  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kSDIGITS, "same") ;
+  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
+  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
+  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
+  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, "same") ;
 }
 
 //_____________________________________________________________________________
@@ -202,7 +205,7 @@ void AliPHOSSDigitizer::Init()
   gime->PostSDigitizer(this);
   gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
  
-  fQADM = new AliPHOSQualAssDataMaker() ;  
+  fQADM = new AliPHOSQADataMaker() ;  
 
 }
 
@@ -289,15 +292,15 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
     // make Quality Assurance data
 
-    if (GetQualAssDataMaker()->IsCycleDone() ) {
-      GetQualAssDataMaker()->EndOfCycle(AliQualAss::kHITS) ; 
-	  GetQualAssDataMaker()->EndOfCycle(AliQualAss::kSDIGITS) ; 
-      GetQualAssDataMaker()->StartOfCycle(AliQualAss::kHITS) ; 
-	  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kSDIGITS, "same") ; 
+    if (GetQADataMaker()->IsCycleDone() ) {
+      GetQADataMaker()->EndOfCycle(AliQA::kHITS) ; 
+	  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ; 
+      GetQADataMaker()->StartOfCycle(AliQA::kHITS) ; 
+	  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, "same") ; 
    }
-    GetQualAssDataMaker()->Exec(AliQualAss::kHITS, hits) ; 
-    GetQualAssDataMaker()->Exec(AliQualAss::kSDIGITS, sdigits) ; 
-    GetQualAssDataMaker()->Increment() ;
+    GetQADataMaker()->Exec(AliQA::kHITS, hits) ; 
+    GetQADataMaker()->Exec(AliQA::kSDIGITS, sdigits) ; 
+    GetQADataMaker()->Increment() ;
 	
     //Now write SDigits
 
@@ -323,10 +326,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   }// event loop
   
   //Write the quality assurance data 
-  GetQualAssDataMaker()->EndOfCycle(AliQualAss::kHITS) ;    
-  GetQualAssDataMaker()->EndOfCycle(AliQualAss::kSDIGITS) ;    
-  GetQualAssDataMaker()->Finish(AliQualAss::kHITS) ;
-  GetQualAssDataMaker()->Finish(AliQualAss::kSDIGITS) ;
+  GetQADataMaker()->EndOfCycle(AliQA::kHITS) ;    
+  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ;    
+  GetQADataMaker()->Finish(AliQA::kHITS) ;
+  GetQADataMaker()->Finish(AliQA::kSDIGITS) ;
 
   Unload();
 

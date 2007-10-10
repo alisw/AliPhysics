@@ -19,8 +19,8 @@ SRCS          =  AliPHOS.cxx \
 		 AliPHOSEmcBadChannelsMap.cxx \
 		 AliPHOSSurvey.cxx \
 		 AliPHOSSurvey1.cxx \
-                 AliPHOSQualAssDataMaker.cxx \
-                 AliPHOSQualAssChecker.cxx \
+                 AliPHOSQADataMaker.cxx \
+                 AliPHOSQAChecker.cxx \
                  AliPHOSRecParticle.cxx AliPHOSRecPoint.cxx \
                  AliPHOSEmcRecPoint.cxx \
                  AliPHOSCpvRecPoint.cxx   AliPHOSTrackSegment.cxx

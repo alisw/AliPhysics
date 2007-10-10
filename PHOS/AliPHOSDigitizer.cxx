@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.99  2007/09/30 17:08:20  schutz
+ * Introducing the notion of QA data acquisition cycle (needed by online)
+ *
  * Revision 1.98  2007/09/26 14:22:17  cvetan
  * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
  *
@@ -118,7 +121,7 @@
 #include "AliPHOSSDigitizer.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSTick.h"
-#include "AliPHOSQualAssDataMaker.h" 
+#include "AliPHOSQADataMaker.h" 
 
 ClassImp(AliPHOSDigitizer)
 
@@ -193,12 +196,12 @@ AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName,
   fDefaultInit = kFALSE ; 
   fManager = 0 ;                     // We work in the standalong mode
   //Initialize the quality assurance data maker only once
-  fQADM = new AliPHOSQualAssDataMaker() ;  
+  fQADM = new AliPHOSQADataMaker() ;  
   //FIXME: get the run number
   Int_t run = 0 ;
   //EMXIF 	
-   GetQualAssDataMaker()->Init(AliQualAss::kDIGITS, run, fgkCycles) ;    
-   GetQualAssDataMaker()->StartOfCycle(AliQualAss::kDIGITS) ;    
+   GetQADataMaker()->Init(AliQA::kDIGITS, run, fgkCycles) ;    
+   GetQADataMaker()->StartOfCycle(AliQA::kDIGITS) ;    
 }
 
 //____________________________________________________________________________ 
@@ -238,8 +241,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) :
  //FIXME: get the run number
   Int_t run = 0 ;
   //EMXIF 	
-  GetQualAssDataMaker()->Init(AliQualAss::kDIGITS, run, fgkCycles) ;    
-  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kDIGITS) ;    
+  GetQADataMaker()->Init(AliQA::kDIGITS, run, fgkCycles) ;    
+  GetQADataMaker()->StartOfCycle(AliQA::kDIGITS) ;    
 }
 
 //____________________________________________________________________________ 
@@ -278,12 +281,12 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
 //Initialize the quality assurance data maker only once
-  fQADM = new AliPHOSQualAssDataMaker() ;  
+  fQADM = new AliPHOSQADataMaker() ;  
  //FIXME: get the run number
   Int_t run = 0 ;
   //EMXIF 	
-  GetQualAssDataMaker()->Init(AliQualAss::kDIGITS, run) ;    
-  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kDIGITS) ;    
+  GetQADataMaker()->Init(AliQA::kDIGITS, run) ;    
+  GetQADataMaker()->StartOfCycle(AliQA::kDIGITS) ;    
 }
 
 //____________________________________________________________________________ 
@@ -643,12 +646,12 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     Digitize(ievent) ; //Add prepared SDigits to digits and add the noise
 
     //makes the quality assurance data
-    if (GetQualAssDataMaker()->IsCycleDone() ) {
-      GetQualAssDataMaker()->EndOfCycle(AliQualAss::kDIGITS) ; 
-	  GetQualAssDataMaker()->StartOfCycle(AliQualAss::kDIGITS) ; 
+    if (GetQADataMaker()->IsCycleDone() ) {
+      GetQADataMaker()->EndOfCycle(AliQA::kDIGITS) ; 
+	  GetQADataMaker()->StartOfCycle(AliQA::kDIGITS) ; 
     }
-    GetQualAssDataMaker()->Exec(AliQualAss::kDIGITS, gime->Digits()) ; 
-	GetQualAssDataMaker()->Increment() ;
+    GetQADataMaker()->Exec(AliQA::kDIGITS, gime->Digits()) ; 
+	GetQADataMaker()->Increment() ;
 				   
     WriteDigits() ;
 
@@ -661,8 +664,8 @@ void AliPHOSDigitizer::Exec(Option_t *option)
  
    //Write the quality assurance data only after the last event 
  if ( fEventCounter == gime->MaxEvent() ) { 
-    GetQualAssDataMaker()->EndOfCycle(AliQualAss::kDIGITS) ;    
-	GetQualAssDataMaker()->Finish(AliQualAss::kDIGITS) ;
+    GetQADataMaker()->EndOfCycle(AliQA::kDIGITS) ;    
+	GetQADataMaker()->Finish(AliQA::kDIGITS) ;
   }
   
   gime->PhosLoader()->CleanDigitizer();
