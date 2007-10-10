@@ -1,8 +1,8 @@
-SRCS=temp/AliESDtrackCuts.cxx
+SRCS=AliESDtrackCuts.cxx
 
 HDRS= $(SRCS:.cxx=.h) 
 
-DHDR:=temp/PWG2LinkDef.h
+DHDR:=PWG2LinkDef.h
 
 EXPORT:=
 
