@@ -138,9 +138,9 @@
 #pragma link C++ class AliFstream+;
 #pragma link C++ class AliCTPRawData+;
 
-#pragma link C++ class AliQualAss+;
-#pragma link C++ class AliQualAssDataMaker+;
-#pragma link C++ class AliQualAssChecker+;
-#pragma link C++ class AliQualAssCheckerBase+;
+#pragma link C++ class AliQA+;
+#pragma link C++ class AliQADataMaker+;
+#pragma link C++ class AliQAChecker+;
+#pragma link C++ class AliQACheckerBase+;
 
 #endif

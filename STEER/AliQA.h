@@ -1,5 +1,5 @@
-#ifndef ALIQualAss_H
-#define ALIQualAss_H
+#ifndef ALIQA_H
+#define ALIQA_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -14,7 +14,7 @@ class TFile ;
 
 #include "AliLog.h"
 
-class AliQualAss : public TNamed {
+class AliQA : public TNamed {
 public:
 
   enum DETECTORINDEX {
@@ -33,16 +33,16 @@ public:
   };
   
  // Creators - destructors
-  AliQualAss(); // beware singleton, not to be used
-  AliQualAss(const ALITASK tsk) ;
-  AliQualAss(const DETECTORINDEX det) ;
-  AliQualAss(const AliQualAss& qa) ;   
-  AliQualAss& operator = (const AliQualAss& qa) ;
-  virtual ~AliQualAss();
+  AliQA(); // beware singleton, not to be used
+  AliQA(const ALITASK tsk) ;
+  AliQA(const DETECTORINDEX det) ;
+  AliQA(const AliQA& qa) ;   
+  AliQA& operator = (const AliQA& qa) ;
+  virtual ~AliQA();
  
-  static  AliQualAss *   Instance() ;
-  static  AliQualAss *   Instance(const DETECTORINDEX det) ;
-  static  AliQualAss *   Instance(const ALITASK tsk) ;
+  static  AliQA *   Instance() ;
+  static  AliQA *   Instance(const DETECTORINDEX det) ;
+  static  AliQA *   Instance(const ALITASK tsk) ;
   const Bool_t           CheckFatal() const ;
   static const char *    GetAliTaskName(ALITASK tsk) ;
   static const char *    GetDataName() { return fgDataName.Data() ; }
@@ -72,7 +72,7 @@ private:
   void                 SetStatus(DETECTORINDEX det, UShort_t status) { fQA[det] = status ; }
   void                 SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit) ;
 
-  static AliQualAss *fgQA         ; // pointer to the instance of the singleton
+  static AliQA *fgQA              ; // pointer to the instance of the singleton
   ULong_t    *       fQA          ; //[kNDET] the status word 4 bits for SIM, REC, ESD, ANA each
   DETECTORINDEX      fDet         ; //!  the current detector (ITS, TPC, ....)
   ALITASK            fTask        ; //!  the current environment (SIM, REC, ESD, ANA)
@@ -80,6 +80,7 @@ private:
   static TString     fgDataName   ; //! the name of the file where the quality assurance maker store their results
   static TString     fgDetNames[] ; //! list of detector names   
   static TString     fgTaskNames[]; //! list of tasks names   
- ClassDef(AliQualAss,1)  //ALICE Quality Assurance Object
+
+ ClassDef(AliQA,1)  //ALICE Quality Assurance Object
 };
 #endif

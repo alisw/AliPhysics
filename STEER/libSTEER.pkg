@@ -45,10 +45,10 @@ AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \
 AliFstream.cxx \
 AliCTPRawData.cxx \
-AliQualAss.cxx \
-AliQualAssDataMaker.cxx \
-AliQualAssChecker.cxx \
-AliQualAssCheckerBase.cxx
+AliQA.cxx \
+AliQADataMaker.cxx \
+AliQAChecker.cxx \
+AliQACheckerBase.cxx
 
 
 

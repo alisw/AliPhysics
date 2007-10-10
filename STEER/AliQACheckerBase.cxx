@@ -18,7 +18,7 @@
 
 /*
   Base class for detectors quality assurance checkers 
-  Compares Data made by QualAssDataMakers with reference data
+  Compares Data made by QADataMakers with reference data
   Y. Schutz CERN August 2007
 */
 
@@ -35,16 +35,16 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQualAss.h"
-#include "AliQualAssChecker.h"
-#include "AliQualAssCheckerBase.h"
-#include "AliQualAssDataMaker.h"
+#include "AliQA.h"
+#include "AliQAChecker.h"
+#include "AliQACheckerBase.h"
+#include "AliQADataMaker.h"
 
-ClassImp(AliQualAssCheckerBase)
+ClassImp(AliQACheckerBase)
 
            
 //____________________________________________________________________________ 
-AliQualAssCheckerBase::AliQualAssCheckerBase(const char * name, const char * title) : 
+AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) : 
   TNamed(name, title), 
   fDataSubDir(0x0),
   fRefSubDir(0x0) 
@@ -53,7 +53,7 @@ AliQualAssCheckerBase::AliQualAssCheckerBase(const char * name, const char * tit
 }
 
 //____________________________________________________________________________ 
-AliQualAssCheckerBase::AliQualAssCheckerBase(const AliQualAssCheckerBase& qadm) :
+AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qadm) :
   TNamed(qadm.GetName(), qadm.GetTitle()),
   fDataSubDir(qadm.fDataSubDir), 
   fRefSubDir(qadm.fRefSubDir)
@@ -63,16 +63,16 @@ AliQualAssCheckerBase::AliQualAssCheckerBase(const AliQualAssCheckerBase& qadm) 
 }
 
 //____________________________________________________________________________
-AliQualAssCheckerBase& AliQualAssCheckerBase::operator = (const AliQualAssCheckerBase& qadm )
+AliQACheckerBase& AliQACheckerBase::operator = (const AliQACheckerBase& qadm )
 {
   // Equal operator.
-  this->~AliQualAssCheckerBase();
-  new(this) AliQualAssCheckerBase(qadm);
+  this->~AliQACheckerBase();
+  new(this) AliQACheckerBase(qadm);
   return *this;
 }
 
 //____________________________________________________________________________
-const Double_t AliQualAssCheckerBase::Check() 
+const Double_t AliQACheckerBase::Check() 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -116,7 +116,7 @@ const Double_t AliQualAssCheckerBase::Check()
 }  
 
 //____________________________________________________________________________
-const Double_t AliQualAssCheckerBase::Check(TList * list) 
+const Double_t AliQACheckerBase::Check(TList * list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -156,11 +156,11 @@ const Double_t AliQualAssCheckerBase::Check(TList * list)
 }  
 
 //____________________________________________________________________________ 
-const Double_t AliQualAssCheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
+const Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Chi2 test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQualAss::GetDataName())) ; 
+    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQA::GetDataName())) ; 
     return 0. ;
   }
     
@@ -168,11 +168,11 @@ const Double_t AliQualAssCheckerBase::DiffC(const TH1 * href, const TH1 * hin) c
 }
 
 //____________________________________________________________________________ 
-const Double_t AliQualAssCheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
+const Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Kolmogorov test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQualAss::GetDataName())) ; 
+    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQA::GetDataName())) ; 
     return 0. ;
   }
     
@@ -180,17 +180,17 @@ const Double_t AliQualAssCheckerBase::DiffK(const TH1 * href, const TH1 * hin) c
 }
 
 //____________________________________________________________________________ 
-void AliQualAssCheckerBase::Init(const AliQualAss::DETECTORINDEX det)
+void AliQACheckerBase::Init(const AliQA::DETECTORINDEX det)
 {
-  AliQualAss::Instance(det) ; 
+  AliQA::Instance(det) ; 
 }
  
 //____________________________________________________________________________
-void AliQualAssCheckerBase::Run(AliQualAss::ALITASK index, TList * list) 
+void AliQACheckerBase::Run(AliQA::ALITASK index, TList * list) 
 { 
-  AliInfo(Form("Processing %s", AliQualAss::GetAliTaskName(index))) ; 
+  AliInfo(Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
 
-  AliQualAss * qa = AliQualAss::Instance(index) ; 
+  AliQA * qa = AliQA::Instance(index) ; 
 
   Double_t rv = -1 ;	
   if (list)
@@ -199,25 +199,25 @@ void AliQualAssCheckerBase::Run(AliQualAss::ALITASK index, TList * list)
     rv = Check() ;   
 
   if ( rv <= 0.) 
-    qa->Set(AliQualAss::kFATAL) ; 
+    qa->Set(AliQA::kFATAL) ; 
   else if ( rv > 0 && rv <= 0.2 )
-    qa->Set(AliQualAss::kERROR) ; 
+    qa->Set(AliQA::kERROR) ; 
   else if ( rv > 0.2 && rv <= 0.5 )
-    qa->Set(AliQualAss::kWARNING) ;
+    qa->Set(AliQA::kWARNING) ;
   else if ( rv > 0.5 && rv < 1 ) 
-    qa->Set(AliQualAss::kINFO) ; 
-  AliInfo(Form("Test result of %s", AliQualAss::GetAliTaskName(index))) ;
+    qa->Set(AliQA::kINFO) ; 
+  AliInfo(Form("Test result of %s", AliQA::GetAliTaskName(index))) ;
   Finish() ; 
 }
 
 //____________________________________________________________________________
-void AliQualAssCheckerBase::Finish() const 
+void AliQACheckerBase::Finish() const 
 {
   // wrap up and save QA in proper file
     
-  AliQualAss * qa = AliQualAss::Instance() ; 
+  AliQA * qa = AliQA::Instance() ; 
   qa->Show() ;
-  AliQualAssChecker::GetQAResultFile()->cd() ; 
+  AliQAChecker::GetQAResultFile()->cd() ; 
   qa->Write(qa->GetName(), kWriteDelete) ;   
-  AliQualAssChecker::GetQAResultFile()->Close() ;  
+  AliQAChecker::GetQAResultFile()->Close() ;  
 }

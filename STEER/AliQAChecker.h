@@ -1,5 +1,5 @@
-#ifndef ALIQUALASSChecker_H
-#define ALIQUALASSChecker_H
+#ifndef ALIQAChecker_H
+#define ALIQAChecker_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -8,7 +8,7 @@
 //
 // class for running the Quality Assurance Checker
 // to run type:
-//   AliQualAssChecker qac;
+//   AliQAChecker qac;
 //   qac.Run();
 //   qac.SelectDetectors("list of detectors") ; 
 //   qac.SelectTargets("list of targets among Hits, Digits, ESD") ; 
@@ -17,19 +17,19 @@
 #include <TNamed.h>
 #include <TFile.h>  
 
-#include "AliQualAss.h"
-class AliQualAssCheckerBase ; 
+#include "AliQA.h"
+class AliQACheckerBase ; 
 
-class AliQualAssChecker: public TNamed {
+class AliQAChecker: public TNamed {
 public:
-  AliQualAssChecker(const char* name = "AliQualAssChecker", 
+  AliQAChecker(const char* name = "AliQAChecker", 
 		    const char* title = "Quality Assurance checker for Raws, Hits, Digits and ESDs");
-  AliQualAssChecker(const AliQualAssChecker& qac);
-  AliQualAssChecker& operator = (const AliQualAssChecker& qac);
-  virtual ~AliQualAssChecker();
+  AliQAChecker(const AliQAChecker& qac);
+  AliQAChecker& operator = (const AliQAChecker& qac);
+  virtual ~AliQAChecker();
 
-  static  AliQualAssChecker * Instance() ;
-  AliQualAssCheckerBase *     GetDetQualAssChecker(Int_t det) ; 
+  static  AliQAChecker * Instance() ;
+  AliQACheckerBase *     GetDetQAChecker(Int_t det) ; 
   TDirectory *                GetRefSubDir(const char * det, const char * task) ;
   static TFile *              GetQAResultFile() ;
   static const char *         GetQAResultFileName() { return fgQAResultFileName.Data() ; }
@@ -37,12 +37,12 @@ public:
   void                        SetRefDirName(const char * name) ; 
 
   virtual Bool_t Run();
-  virtual Bool_t Run(AliQualAss::DETECTORINDEX det, AliQualAss::TASKINDEX task, TList * list);
+  virtual Bool_t Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list);
 
 private:
   TFile *      GetDataFile() ; 
 
-  static AliQualAssChecker *fgQAChecker ; // pointer to the instance of the singleton
+  static AliQAChecker *fgQAChecker ; // pointer to the instance of the singleton
   TFile * fDataFile ;                     //! Data file to check
   static TFile * fgQAResultFile ;         //! File where to find the QA result
   static TString fgQAResultDirName ;      //! directory where to find the QA result
@@ -50,7 +50,7 @@ private:
   TString fRefDirName ;                   //! name of directory where to find the reference data file
   TString fRefName ;                      //! file name where to find the reference data
   TString fFoundDetectors ;               //! detectors for which the Quality assurance could be done
-  AliQualAssCheckerBase * fCheckers[AliQualAss::kNDET] ; //! list of detectors checkers
-  ClassDef(AliQualAssChecker, 1)  // class for running generation, simulation and digitization
+  AliQACheckerBase * fCheckers[AliQA::kNDET] ; //! list of detectors checkers
+  ClassDef(AliQAChecker, 1)  // class for running generation, simulation and digitization
 };
 #endif

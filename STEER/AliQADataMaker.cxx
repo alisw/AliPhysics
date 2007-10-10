@@ -34,18 +34,18 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQualAssDataMaker.h"
-#include "AliQualAssChecker.h"
+#include "AliQADataMaker.h"
+#include "AliQAChecker.h"
 #include "AliESDEvent.h"
 #include "AliRawReader.h"
 
-ClassImp(AliQualAssDataMaker)
+ClassImp(AliQADataMaker)
   
-TString AliQualAssDataMaker::fDetectorDirName("") ;
+TString AliQADataMaker::fDetectorDirName("") ;
 
            
 //____________________________________________________________________________ 
-AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) : 
+AliQADataMaker::AliQADataMaker(const char * name, const char * title) : 
   TNamed(name, title), 
   fOutput(0x0),
   fDetectorDir(0x0),
@@ -65,7 +65,7 @@ AliQualAssDataMaker::AliQualAssDataMaker(const char * name, const char * title) 
 }
 
 //____________________________________________________________________________ 
-AliQualAssDataMaker::AliQualAssDataMaker(const AliQualAssDataMaker& qadm) :
+AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   TNamed(qadm.GetName(), qadm.GetTitle()),
   fOutput(qadm.fOutput),
   fDetectorDir(qadm.fDetectorDir),
@@ -85,22 +85,22 @@ AliQualAssDataMaker::AliQualAssDataMaker(const AliQualAssDataMaker& qadm) :
 }
 
 //____________________________________________________________________________ 
-AliQualAssDataMaker::~AliQualAssDataMaker() 
+AliQADataMaker::~AliQADataMaker() 
 {
 // dtor
 } 
 
 //__________________________________________________________________
-AliQualAssDataMaker& AliQualAssDataMaker::operator = (const AliQualAssDataMaker& qadm )
+AliQADataMaker& AliQADataMaker::operator = (const AliQADataMaker& qadm )
 {
   // Equal operator.
-  this->~AliQualAssDataMaker();
-  new(this) AliQualAssDataMaker(qadm);
+  this->~AliQADataMaker();
+  new(this) AliQADataMaker(qadm);
   return *this;
 }
 
 //____________________________________________________________________________
-void AliQualAssDataMaker::EndOfCycle(AliQualAss::TASKINDEX task) 
+void AliQADataMaker::EndOfCycle(AliQA::TASKINDEX task) 
 { 
   // Finishes a cycle of QA data acquistion
   
@@ -108,51 +108,51 @@ void AliQualAssDataMaker::EndOfCycle(AliQualAss::TASKINDEX task)
   
  switch (task) { 
   
-  case AliQualAss::kRAWS:    
+  case AliQA::kRAWS:    
 	list = fRawsQAList ; 
   break ; 
 
-  case AliQualAss::kHITS:
+  case AliQA::kHITS:
 	list = fHitsQAList ; 
   break ; 
 
-  case AliQualAss::kSDIGITS:
+  case AliQA::kSDIGITS:
  	list = fSDigitsQAList ; 
   break ; 
     
-  case AliQualAss::kDIGITS:
+  case AliQA::kDIGITS:
  	list = fDigitsQAList ; 
   break ;  
  
-   case AliQualAss::kRECPOINTS:
+   case AliQA::kRECPOINTS:
 	list = fRecPointsQAList ; 
    break ;  
 
-   case AliQualAss::kTRACKSEGMENTS:
+   case AliQA::kTRACKSEGMENTS:
    break ;  
   
-   case AliQualAss::kRECPARTICLES:
+   case AliQA::kRECPARTICLES:
    break ;  
     
-   case AliQualAss::kESDS:
+   case AliQA::kESDS:
 	list = fESDsQAList ; 
    break ;  
   }	
   
  EndOfDetectorCycle(task, list) ; 
- TDirectory * subDir = fDetectorDir->GetDirectory(AliQualAss::GetTaskName(task)) ; 
+ TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
  subDir->cd() ; 
  list->Write() ; 
 }
  
 //____________________________________________________________________________
-void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data) 
+void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data) 
 { 
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
     
   switch (task) { 
   
-  case AliQualAss::kRAWS:
+  case AliQA::kRAWS:
   {
     AliInfo("Processing Raws QA") ; 
 	AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
@@ -162,7 +162,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
 	  AliError("Wrong data type") ;     
     break ; 
   }
-  case AliQualAss::kHITS:
+  case AliQA::kHITS:
   {  
 	AliInfo("Processing Hits QA") ; 
 	TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
@@ -172,7 +172,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
      AliError("Wrong type of hits container") ;
     break ; 
   }
-  case AliQualAss::kSDIGITS:
+  case AliQA::kSDIGITS:
   {
     AliInfo("Processing SDigits QA") ; 
     TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
@@ -182,7 +182,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
       AliError("Wrong type of sdigits container") ; 
     break ; 
   }  
-  case AliQualAss::kDIGITS:
+  case AliQA::kDIGITS:
   {
     TClonesArray * digits = dynamic_cast<TClonesArray *>(data) ; 
     if (digits) 
@@ -191,7 +191,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
       AliError("Wrong type of digits container") ; 
     break ;  
   }
-  case AliQualAss::kRECPOINTS:
+  case AliQA::kRECPOINTS:
   {
      AliInfo("Processing RecPoints QA") ; 
      TTree * recpoints = dynamic_cast<TTree *>(data) ; 
@@ -201,7 +201,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
       AliError("Wrong type of recpoints container") ; 
     break ;  
   }
-   case AliQualAss::kTRACKSEGMENTS:
+   case AliQA::kTRACKSEGMENTS:
     AliInfo("Processing Track Segments QA: not existing anymore") ; 
 //     TTree * ts = dynamic_cast<TTree *>(data) ; 
 //     if (ts) 
@@ -210,7 +210,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
 //       AliError("Wrong type of track segments container") ; 
     break ;  
   
-    case AliQualAss::kRECPARTICLES:
+    case AliQA::kRECPARTICLES:
     AliInfo("Processing RecParticles QA: not existing anymore") ; 
 //     TTree * recpar = dynamic_cast<TTree *>(data) ; 
 //     if (recpar) 
@@ -219,7 +219,7 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
 //       AliError("Wrong type of recparticles container") ; 
     break ;  
     
-  case AliQualAss::kESDS:
+  case AliQA::kESDS:
    {
     AliInfo("Processing ESDs QA") ; 
     AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
@@ -233,14 +233,14 @@ void AliQualAssDataMaker::Exec(AliQualAss::TASKINDEX task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-void AliQualAssDataMaker::Finish(AliQualAss::TASKINDEX) const 
+void AliQADataMaker::Finish(AliQA::TASKINDEX) const 
 { 
   // write to the output File
   fOutput->Close() ; 
 } 
 
 //____________________________________________________________________________ 
-TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task, Int_t run, Int_t cycles)
+TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
 {
   // general intialisation
   
@@ -249,50 +249,50 @@ TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task, Int_t run, Int_t 
     SetCycle(cycles) ;  
 	
   switch (task) {
-  case AliQualAss::kRAWS: 
+  case AliQA::kRAWS: 
    {
 	fRawsQAList = new TList() ;	 
     InitRaws() ;
 	return fRawsQAList ;
     break ; 
    }
-  case AliQualAss::kHITS: 
+  case AliQA::kHITS: 
    {
 	fHitsQAList = new TList() ;	 
     InitHits() ;
 	return fHitsQAList ;
     break ; 
    }
-  case AliQualAss::kSDIGITS: 
+  case AliQA::kSDIGITS: 
    {
 	fSDigitsQAList = new TList() ; 
     InitSDigits() ;
 	return fSDigitsQAList ;
     break ; 
    }
-  case AliQualAss::kDIGITS: 
+  case AliQA::kDIGITS: 
    {
 	fDigitsQAList = new TList(); 
 	InitDigits() ;
 	return fDigitsQAList ;
 	break ; 
    }	  
-  case AliQualAss::kRECPOINTS: 
+  case AliQA::kRECPOINTS: 
    {
 	fRecPointsQAList = new TList ; 
     InitRecPoints() ;
 	return fRecPointsQAList ;
     break ; 
   }
-  case AliQualAss::kTRACKSEGMENTS: 
+  case AliQA::kTRACKSEGMENTS: 
 //  InitTrackSegments() ;
     break ; 
     
-  case AliQualAss::kRECPARTICLES: 
+  case AliQA::kRECPARTICLES: 
 //    InitRecParticles() ;
     break ; 
     
-  case AliQualAss::kESDS: 
+  case AliQA::kESDS: 
    {
 	fESDsQAList = new TList() ; 
 	InitESDs() ;
@@ -304,7 +304,7 @@ TList *  AliQualAssDataMaker::Init(AliQualAss::TASKINDEX task, Int_t run, Int_t 
 }
 
 //____________________________________________________________________________
-void AliQualAssDataMaker::StartOfCycle(AliQualAss::TASKINDEX task, Option_t * sameCycle) 
+void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, Option_t * sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
  
@@ -312,51 +312,51 @@ void AliQualAssDataMaker::StartOfCycle(AliQualAss::TASKINDEX task, Option_t * sa
    ResetCycle() ;
    if (fOutput) 
 	fOutput->Close() ; 
-   fOutput = AliQualAss::GetQADMOutFile(GetName(), fRun, fCurrentCycle) ; 	
+   fOutput = AliQA::GetQADMOutFile(GetName(), fRun, fCurrentCycle) ; 	
  }
     	
  AliInfo(Form(" Run %d Cycle %d task %s file %s", 
-	fRun, fCurrentCycle, AliQualAss::GetTaskName(task).Data(), fOutput->GetName() )) ;
+	fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
  fDetectorDir = fOutput->GetDirectory(GetDetectorDirName()) ; 
  if (!fDetectorDir)
    fDetectorDir = fOutput->mkdir(GetDetectorDirName()) ; 
 
- TDirectory * subDir = fDetectorDir->GetDirectory(AliQualAss::GetTaskName(task)) ; 
+ TDirectory * subDir = fDetectorDir->GetDirectory(AliQA::GetTaskName(task)) ; 
  if (!subDir)
-   subDir = fDetectorDir->mkdir(AliQualAss::GetTaskName(task)) ;  
+   subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
  subDir->cd() ; 
 
   TList * list = 0x0 ; 
   
   switch (task) { 
-  case AliQualAss::kRAWS: 
+  case AliQA::kRAWS: 
 	list = fRawsQAList ; 
     break ; 
 
-  case AliQualAss::kHITS: 
+  case AliQA::kHITS: 
 	list = fHitsQAList ; 
     break ; 
   
-  case AliQualAss::kSDIGITS: 
+  case AliQA::kSDIGITS: 
 	list = fSDigitsQAList ;
     break ; 
 
-  case AliQualAss::kDIGITS: 
+  case AliQA::kDIGITS: 
 	list = fDigitsQAList ;
 	break ; 
 	  
-  case AliQualAss::kRECPOINTS: 
+  case AliQA::kRECPOINTS: 
 	list = fRecPointsQAList ;
 	break ; 
 
-  case AliQualAss::kTRACKSEGMENTS: 
+  case AliQA::kTRACKSEGMENTS: 
     break ; 
     
-  case AliQualAss::kRECPARTICLES: 
+  case AliQA::kRECPARTICLES: 
     break ; 
     
-  case AliQualAss::kESDS: 
+  case AliQA::kESDS: 
   	list = fESDsQAList ;
     break ; 
   }  

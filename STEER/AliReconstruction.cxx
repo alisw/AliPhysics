@@ -170,7 +170,7 @@
 #include "AliAODVertex.h"
 #include "AliAODCluster.h"
 
-#include "AliQualAssDataMaker.h" 
+#include "AliQADataMaker.h" 
 
 //#include "TMemStatManager.h" // memory snapshots
 #include "AliSysInfo.h" // memory snapshots
@@ -235,7 +235,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
-    fQualAssDataMaker[iDet] = NULL;
+    fQADataMaker[iDet] = NULL;
 	fQACycles[iDet] = 999999;	
   }
   AliPID pid;
@@ -297,7 +297,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
     fReconstructor[iDet] = NULL;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
-    fQualAssDataMaker[iDet] = NULL;
+    fQADataMaker[iDet] = NULL;
 	fQACycles[iDet] = rec.fQACycles[iDet];	
   }
   for (Int_t i = 0; i < rec.fSpecCDBUri.GetEntriesFast(); i++) {
@@ -786,7 +786,7 @@ Bool_t AliReconstruction::Run(const char* input)
     }
   
     if (!fFillESD.IsNull()) 
-    RunQualAss(fFillESD.Data(), esd);
+    RunQA(fFillESD.Data(), esd);
 
     // fill Event header information from the RawEventHeader
     if (fRawReader){FillRawEventHeaderESD(esd);}
@@ -876,14 +876,12 @@ Bool_t AliReconstruction::Run(const char* input)
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
 	if (!IsSelected(fgkDetectorName[iDet], detStr)) 
 		continue;
-    AliQualAssDataMaker * qadm = GetQualAssDataMaker(iDet);
+    AliQADataMaker * qadm = GetQADataMaker(iDet);
     if (!qadm) continue;
-    
-    qadm->EndOfCycle(AliQualAss::kRECPOINTS);
-    qadm->EndOfCycle(AliQualAss::kESDS);
-    qadm->Finish(AliQualAss::kRECPOINTS);
-    qadm->Finish(AliQualAss::kESDS) ; 
-    
+    qadm->EndOfCycle(AliQA::kRECPOINTS);
+    qadm->EndOfCycle(AliQA::kESDS);
+    qadm->Finish(AliQA::kRECPOINTS);
+    qadm->Finish(AliQA::kESDS) ; 
   }
 
   tree->GetUserInfo()->Add(esd);
@@ -1037,19 +1035,18 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       loader->UnloadDigits();
     }
 
-    AliQualAssDataMaker * qadm = GetQualAssDataMaker(iDet);
+    AliQADataMaker * qadm = GetQADataMaker(iDet);
     if (qadm) {
       AliCodeTimerStart(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
       AliInfo(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
 	  
-      if (qadm->IsCycleDone() ) {
-	
-	qadm->EndOfCycle(AliQualAss::kRECPOINTS) ; 
-	qadm->EndOfCycle(AliQualAss::kESDS) ; 
-      qadm->StartOfCycle(AliQualAss::kRECPOINTS) ; 
-      qadm->StartOfCycle(AliQualAss::kESDS, "same") ; 
-   }
-      qadm->Exec(AliQualAss::kRECPOINTS, clustersTree) ; 
+     if (qadm->IsCycleDone() ) {
+      qadm->EndOfCycle(AliQA::kRECPOINTS) ; 
+	  qadm->EndOfCycle(AliQA::kESDS) ; 
+      qadm->StartOfCycle(AliQA::kRECPOINTS) ; 
+	  qadm->StartOfCycle(AliQA::kESDS, "same") ; 
+     }
+      qadm->Exec(AliQA::kRECPOINTS, clustersTree) ; 
       AliCodeTimerStop(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
     }
 
@@ -1777,8 +1774,8 @@ void AliReconstruction::CleanUp(TFile* file, TFile* fileOld)
     fLoader[iDet] = NULL;
     delete fTracker[iDet];
     fTracker[iDet] = NULL;
-    delete fQualAssDataMaker[iDet];
-    fQualAssDataMaker[iDet] = NULL;
+    delete fQADataMaker[iDet];
+    fQADataMaker[iDet] = NULL;
   }
   delete fVertexer;
   fVertexer = NULL;
@@ -2694,54 +2691,54 @@ void AliReconstruction::TNamedToFile(TTree* fTree, TString fName){
 }
 
 //_____________________________________________________________________________
-AliQualAssDataMaker * AliReconstruction::GetQualAssDataMaker(Int_t iDet)
+AliQADataMaker * AliReconstruction::GetQADataMaker(Int_t iDet)
 {
 // get the quality assurance data maker object and the loader for a detector
 
-  if (fQualAssDataMaker[iDet]) 
-    return fQualAssDataMaker[iDet];
+  if (fQADataMaker[iDet]) 
+    return fQADataMaker[iDet];
 
   // load the QA data maker object
   TPluginManager* pluginManager = gROOT->GetPluginManager();
   TString detName = fgkDetectorName[iDet];
-  TString qadmName = "Ali" + detName + "QualAssDataMaker";
+  TString qadmName = "Ali" + detName + "QADataMaker";
   if (gAlice && !gAlice->GetDetector(detName) && (detName != "HLT")) 
     return NULL;
 
-  AliQualAssDataMaker * qadm = NULL;
+  AliQADataMaker * qadm = NULL;
   // first check if a plugin is defined for the quality assurance data maker
-  TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQualAssDataMaker", detName);
+  TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName);
   // if not, add a plugin for it
   if (!pluginHandler) {
     AliDebug(1, Form("defining plugin for %s", qadmName.Data()));
     TString libs = gSystem->GetLibraries();
     if (libs.Contains("lib" + detName + "base.so") ||
 	(gSystem->Load("lib" + detName + "base.so") >= 0)) {
-      pluginManager->AddHandler("AliQualAssDataMaker", detName, 
+      pluginManager->AddHandler("AliQADataMaker", detName, 
 				qadmName, detName + "qadm", qadmName + "()");
     } else {
-      pluginManager->AddHandler("AliQualAssDataMaker", detName, 
+      pluginManager->AddHandler("AliQADataMaker", detName, 
 				qadmName, detName, qadmName + "()");
     }
-    pluginHandler = pluginManager->FindHandler("AliQualAssDataMaker", detName);
+    pluginHandler = pluginManager->FindHandler("AliQADataMaker", detName);
   }
   if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
-    qadm = (AliQualAssDataMaker *) pluginHandler->ExecPlugin(0);
+    qadm = (AliQADataMaker *) pluginHandler->ExecPlugin(0);
   }
   if (qadm) {
     AliInfo(Form("Initializing quality assurance data maker for %s", fgkDetectorName[iDet]));
-    qadm->Init(AliQualAss::kRECPOINTS, fRunLoader->GetHeader()->GetRun(), GetQACycles(fgkDetectorName[iDet]));
-    qadm->Init(AliQualAss::kESDS, fRunLoader->GetHeader()->GetRun(), GetQACycles(fgkDetectorName[iDet]));
-    qadm->StartOfCycle(AliQualAss::kRECPOINTS);
-        qadm->StartOfCycle(AliQualAss::kESDS, "same") ; 	
-    fQualAssDataMaker[iDet] = qadm;
+    qadm->Init(AliQA::kRECPOINTS, AliCDBManager::Instance()->GetRun(), GetQACycles(fgkDetectorName[iDet]));
+    qadm->StartOfCycle(AliQA::kRECPOINTS);
+    qadm->Init(AliQA::kESDS, AliCDBManager::Instance()->GetRun());
+    qadm->StartOfCycle(AliQA::kESDS, "same") ; 	
+    fQADataMaker[iDet] = qadm;
   }
 
   return qadm;
 }
 
 //_____________________________________________________________________________
-Bool_t AliReconstruction::RunQualAss(const char* detectors, AliESDEvent *& esd)
+Bool_t AliReconstruction::RunQA(const char* detectors, AliESDEvent *& esd)
 {
   // run the Quality Assurance data producer
 
@@ -2750,14 +2747,14 @@ Bool_t AliReconstruction::RunQualAss(const char* detectors, AliESDEvent *& esd)
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
    if (!IsSelected(fgkDetectorName[iDet], detStr)) 
      continue;
-   AliQualAssDataMaker * qadm = GetQualAssDataMaker(iDet);
+   AliQADataMaker * qadm = GetQADataMaker(iDet);
    if (!qadm) 
      continue;
    AliCodeTimerStart(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
    AliInfo(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
     
-      qadm->Exec(AliQualAss::kESDS, esd) ; 
-      qadm->Increment() ; 
+   qadm->Exec(AliQA::kESDS, esd) ; 
+   qadm->Increment() ; 
 
    AliCodeTimerStop(Form("running quality assurance data maker for %s", fgkDetectorName[iDet]));
  }

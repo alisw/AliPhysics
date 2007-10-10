@@ -1,5 +1,5 @@
-#ifndef ALIQUALASSDATAMAKER_H
-#define ALIQUALASSDATAMAKER_H
+#ifndef ALIQADATAMAKER_H
+#define ALIQADATAMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -29,23 +29,23 @@ class TClonesArray;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliQualAss.h"
+#include "AliQA.h"
 
-class AliQualAssDataMaker: public TNamed {
+class AliQADataMaker: public TNamed {
   
 public:
   
-  AliQualAssDataMaker(const char * name="", const char * title="") ;          // ctor
-  AliQualAssDataMaker(const AliQualAssDataMaker& qadm) ;   
-  AliQualAssDataMaker& operator = (const AliQualAssDataMaker& qadm) ;
-  virtual ~AliQualAssDataMaker() ; // dtor
+  AliQADataMaker(const char * name="", const char * title="") ;          // ctor
+  AliQADataMaker(const AliQADataMaker& qadm) ;   
+  AliQADataMaker& operator = (const AliQADataMaker& qadm) ;
+  virtual ~AliQADataMaker() ; // dtor
   
-  virtual void        Exec(AliQualAss::TASKINDEX, TObject * data) ;
-  void                EndOfCycle(AliQualAss::TASKINDEX) ;
-  void                Finish(AliQualAss::TASKINDEX task) const ; 
+  virtual void        Exec(AliQA::TASKINDEX, TObject * data) ;
+  void                EndOfCycle(AliQA::TASKINDEX) ;
+  void                Finish(AliQA::TASKINDEX task) const ; 
   static const char * GetDetectorDirName() { return fDetectorDirName.Data() ; }
   const Int_t         Increment() { return ++fCycleCounter ; } 
-  TList *             Init(AliQualAss::TASKINDEX, Int_t run, Int_t cycles = -1) ;
+  TList *             Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1) ;
   const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
   const Int_t         Add2DigitsList(TH1 * hist, const Int_t index)    { return Add2List(hist, index, fDigitsQAList) ; }
   const Int_t         Add2ESDsList(TH1 * hist, const Int_t index)      { return Add2List(hist, index, fESDsQAList) ; }
@@ -60,12 +60,12 @@ public:
   TH1 *               GetRawsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fRawsQAList, index)) ; }
   TH1 *               GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
   void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
-  void                StartOfCycle(AliQualAss::TASKINDEX, Option_t * sameCycle = "new") ;
+  void                StartOfCycle(AliQA::TASKINDEX, Option_t * sameCycle = "new") ;
 
 protected: 
 
   Int_t          Add2List(TH1 * hist, const Int_t index, TList * list) { list->AddAt(hist, index) ; return list->LastIndex() ; }
-  virtual void   EndOfDetectorCycle(AliQualAss::TASKINDEX, TList * ) {AliInfo("To be implemented by detectors");} 
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * ) {AliInfo("To be implemented by detectors");} 
   TObject *      GetData(TList * list, const Int_t index)  { return list->At(index) ; } 
   virtual void   InitDigits()        {AliInfo("To be implemented by detectors");}
   virtual void   InitESDs()          {AliInfo("To be implemented by detectors");}
@@ -100,8 +100,8 @@ protected:
   Int_t          fCycleCounter ;    //! cycle counter
   Int_t          fRun ;             //! run number
   
- ClassDef(AliQualAssDataMaker,1)  // description 
+ ClassDef(AliQADataMaker,1)  // description 
 
 };
 
-#endif // AliQualAssDataMaker_H
+#endif // AliQADataMaker_H

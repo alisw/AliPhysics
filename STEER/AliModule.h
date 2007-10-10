@@ -98,7 +98,7 @@ public:
   virtual void        Digits2Raw();
   virtual void        Raw2Digits()  {}
   virtual Bool_t      Raw2SDigits(AliRawReader*) {return kFALSE;}
-  virtual void        QualAssDataMaker (const char *) {} 
+  virtual void        QADataMaker (const char *) {} 
   virtual void        Browse(TBrowser *) {} //PH Do we need it?
   virtual void        CreateGeometry() {}
   virtual void        CreateMaterials() {}

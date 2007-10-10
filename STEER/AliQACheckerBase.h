@@ -1,5 +1,5 @@
-#ifndef ALIQUALASSCHECKERBASE_H
-#define ALIQUALASSCHECKERBASE_H
+#ifndef ALIQACHECKERBASE_H
+#define ALIQACHECKERBASE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -8,14 +8,14 @@
 
 /*
   Base class for detectors quality assurance checkers 
-  Compares Data made by QualAssDataMakers with reference data
+  Compares Data made by QADataMakers with reference data
   Y. Schutz CERN August 2007
 */
 
 
 // --- ROOT system ---
 #include <TNamed.h>
-#include "AliQualAss.h"
+#include "AliQA.h"
 class TFile ; 
 class TH1 ; 
 class TList ; 
@@ -24,17 +24,16 @@ class TList ;
 
 // --- AliRoot header files ---
 
-class AliQualAssCheckerBase: public TNamed {
+class AliQACheckerBase: public TNamed {
 
 public:
-  AliQualAssCheckerBase(const char * name = "", const char * title = "") ;          // ctor
-  AliQualAssCheckerBase(const AliQualAssCheckerBase& qac) ;   
-  AliQualAssCheckerBase& operator = (const AliQualAssCheckerBase& qac) ;
-  virtual ~AliQualAssCheckerBase() {;} // dtor
+  AliQACheckerBase(const char * name = "", const char * title = "") ;          // ctor
+  AliQACheckerBase(const AliQACheckerBase& qac) ;   
+  AliQACheckerBase& operator = (const AliQACheckerBase& qac) ;
+  virtual ~AliQACheckerBase() {;} // dtor
 
-  void   Init(const AliQualAss::DETECTORINDEX det) ; 
-  void   Run(AliQualAss::ALITASK tsk); 
-  void   Run(AliQualAss::ALITASK tsk, TList * list); 
+  void   Init(const AliQA::DETECTORINDEX det) ; 
+  void   Run(AliQA::ALITASK tsk, TList * list=0x0); 
   void   SetRefandData(TDirectory * ref, TDirectory * data=NULL) { fRefSubDir = ref ;  fDataSubDir = data ; }
 
 protected:
@@ -47,7 +46,7 @@ protected:
   TDirectory * fDataSubDir ; //! directory for the current task directory in the current detector directory in the data file
   TDirectory * fRefSubDir  ; //! directory for the current task directory in the current detector directory in the reference file
 
-  ClassDef(AliQualAssCheckerBase,1)  // description 
+  ClassDef(AliQACheckerBase,1)  // description 
 
 };
 

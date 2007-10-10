@@ -38,19 +38,19 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
-#include "AliQualAss.h"
+#include "AliQA.h"
 
 
-ClassImp(AliQualAss)
-  AliQualAss * AliQualAss::fgQA        = 0x0 ;
-  TFile      * AliQualAss::fgDataFile  = 0x0 ;   
-  TString      AliQualAss::fgDataName  = "QA" ;   
-  TString      AliQualAss::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+ClassImp(AliQA)
+  AliQA * AliQA::fgQA        = 0x0 ;
+  TFile      * AliQA::fgDataFile  = 0x0 ;   
+  TString      AliQA::fgDataName  = "QA" ;   
+  TString      AliQA::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
 					"ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
-  TString      AliQualAss::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+  TString      AliQA::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 
 //____________________________________________________________________________
-AliQualAss::AliQualAss() : 
+AliQA::AliQA() : 
   TNamed("", ""), 
   fQA(0x0), 
   fDet(kNULLDET),
@@ -61,7 +61,7 @@ AliQualAss::AliQualAss() :
 }
 
 //____________________________________________________________________________
-AliQualAss::AliQualAss(const AliQualAss& qa) :
+AliQA::AliQA(const AliQA& qa) :
   TNamed(qa),
   fQA(qa.fQA), 
   fDet(qa.fDet),
@@ -71,17 +71,17 @@ AliQualAss::AliQualAss(const AliQualAss& qa) :
 }
 
 //_____________________________________________________________________________
-AliQualAss& AliQualAss::operator = (const AliQualAss& qa)
+AliQA& AliQA::operator = (const AliQA& qa)
 {
 // assignment operator
 
-  this->~AliQualAss();
-  new(this) AliQualAss(qa);
+  this->~AliQA();
+  new(this) AliQA(qa);
   return *this;
 }
 
 //_______________________________________________________________
-AliQualAss::AliQualAss(const DETECTORINDEX det) :
+AliQA::AliQA(const DETECTORINDEX det) :
   TNamed("QA", "Quality Assurance status"), 
   fQA(new ULong_t[kNDET]), 
   fDet(det),
@@ -98,7 +98,7 @@ AliQualAss::AliQualAss(const DETECTORINDEX det) :
 }
   
 //_______________________________________________________________
-AliQualAss::AliQualAss(const ALITASK tsk) :
+AliQA::AliQA(const ALITASK tsk) :
   TNamed("QA", "Quality Assurance status"), 
   fQA(new ULong_t[kNDET]), 
   fDet(kNULLDET),
@@ -115,14 +115,14 @@ AliQualAss::AliQualAss(const ALITASK tsk) :
 }
 
 //____________________________________________________________________________
-AliQualAss::~AliQualAss() 
+AliQA::~AliQA() 
 {
   // dtor  
   delete[] fQA ;
 }
 
 //_______________________________________________________________
-const Bool_t AliQualAss::CheckRange(DETECTORINDEX det) const
+const Bool_t AliQA::CheckRange(DETECTORINDEX det) const
 { 
   // check if detector is in given detector range: 0-kNDET
 
@@ -133,7 +133,7 @@ const Bool_t AliQualAss::CheckRange(DETECTORINDEX det) const
 }
 
 //_______________________________________________________________
-const Bool_t AliQualAss::CheckRange(ALITASK task) const
+const Bool_t AliQA::CheckRange(ALITASK task) const
 { 
   // check if task is given taskk range: 0:kNTASK
   Bool_t rv = ( task < kRAW || task > kNTASK )  ? kFALSE : kTRUE ;
@@ -143,7 +143,7 @@ const Bool_t AliQualAss::CheckRange(ALITASK task) const
 }
 
 //_______________________________________________________________
-const Bool_t AliQualAss::CheckRange(QABIT bit) const
+const Bool_t AliQA::CheckRange(QABIT bit) const
 { 
   // check if bit is in given bit range: 0-kNBit
 
@@ -155,7 +155,7 @@ const Bool_t AliQualAss::CheckRange(QABIT bit) const
 
 
 //_______________________________________________________________
-TFile * AliQualAss::GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) 
+TFile * AliQA::GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
   char temp[100] ; 
@@ -180,7 +180,7 @@ TFile * AliQualAss::GetQADMOutFile(const char * name, const Int_t run, const Int
 } 
 
 //_______________________________________________________________
-const char * AliQualAss::GetDetName(Int_t det) 
+const char * AliQA::GetDetName(Int_t det) 
 {
 	// returns the detector name corresponding to a given index (needed in a loop)
 
@@ -191,7 +191,7 @@ const char * AliQualAss::GetDetName(Int_t det)
 }
 
 //_______________________________________________________________
-const char * AliQualAss::GetAliTaskName(ALITASK tsk)
+const char * AliQA::GetAliTaskName(ALITASK tsk)
 {
   // returns the char name corresponding to module index
   TString tskName ;
@@ -221,7 +221,7 @@ const char * AliQualAss::GetAliTaskName(ALITASK tsk)
 }
 
 //_______________________________________________________________
-const Bool_t AliQualAss::CheckFatal() const
+const Bool_t AliQA::CheckFatal() const
 {
   // check if any FATAL status is set
   Bool_t rv = kFALSE ;
@@ -232,7 +232,7 @@ const Bool_t AliQualAss::CheckFatal() const
 }
 
 //_______________________________________________________________
-const Bool_t AliQualAss::IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const
+const Bool_t AliQA::IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const
 {
   // Checks is the requested bit is set
 
@@ -248,7 +248,7 @@ const Bool_t AliQualAss::IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const
 }
 
 //_______________________________________________________________
-AliQualAss * AliQualAss::Instance()
+AliQA * AliQA::Instance()
 {
   // Get an instance of the singleton.
   // Object must have been instantiated with Instance(ALITASK) first
@@ -257,18 +257,18 @@ AliQualAss * AliQualAss::Instance()
 }
 
 //_______________________________________________________________
-AliQualAss * AliQualAss::Instance(const DETECTORINDEX det)
+AliQA * AliQA::Instance(const DETECTORINDEX det)
 {
   // Get an instance of the singleton. The only authorized way to call the ctor
   
   if ( ! fgQA)
-    fgQA = new AliQualAss(det) ;
+    fgQA = new AliQA(det) ;
   fgQA->Set(det) ;
   return fgQA ;
 }
 
 //_______________________________________________________________
-AliQualAss * AliQualAss::Instance(const ALITASK tsk)
+AliQA * AliQA::Instance(const ALITASK tsk)
 {
   // get an instance of the singleton.
 
@@ -277,10 +277,10 @@ AliQualAss * AliQualAss::Instance(const ALITASK tsk)
     case kNULLTASK:
       break ;
 	case kRAW:
-      fgQA = new AliQualAss(tsk) ;
+      fgQA = new AliQA(tsk) ;
       break ;
 	case kSIM:
-      fgQA = new AliQualAss(tsk) ;
+      fgQA = new AliQA(tsk) ;
       break ;
     case kREC:
       printf("fgQA = gAlice->GetQA()") ;
@@ -300,7 +300,7 @@ AliQualAss * AliQualAss::Instance(const ALITASK tsk)
 }
 
 //_______________________________________________________________
-const ULong_t AliQualAss::Offset(ALITASK tsk) const
+const ULong_t AliQA::Offset(ALITASK tsk) const
 {
   // Calculates the bit offset for a given module (SIM, REC, ESD, ANA)
 
@@ -333,7 +333,7 @@ const ULong_t AliQualAss::Offset(ALITASK tsk) const
 }
 
 //_______________________________________________________________
-void AliQualAss::Set(QABIT bit)
+void AliQA::Set(QABIT bit)
 {
   // Set the status bit of the current detector in the current module
   
@@ -341,7 +341,7 @@ void AliQualAss::Set(QABIT bit)
 }
 
 //_______________________________________________________________
-void AliQualAss::SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit)
+void AliQA::SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit)
 {
  // Set the status bit for a given detector and a given task
 
@@ -357,7 +357,7 @@ void AliQualAss::SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit)
 }
 
 //_______________________________________________________________
-void AliQualAss::ShowAll() const
+void AliQA::ShowAll() const
 {
   // dispplay the QA status word
   Int_t index ;
@@ -366,7 +366,7 @@ void AliQualAss::ShowAll() const
 }
 
 //_______________________________________________________________
-void AliQualAss::ShowStatus(DETECTORINDEX det) const
+void AliQA::ShowStatus(DETECTORINDEX det) const
 {
   // Prints the full QA status of a given detector
   CheckRange(det) ;

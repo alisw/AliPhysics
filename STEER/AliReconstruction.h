@@ -31,7 +31,7 @@ class AliESDVertex;
 class AliESDEvent;
 class TFile;
 class TTree;
-class AliQualAssDataMaker;
+class AliQADataMaker;
 
 class AliReconstruction: public TNamed {
 public:
@@ -108,7 +108,7 @@ public:
   virtual Bool_t Run(const char* input = NULL);
 
   // Quality Assurance 
-  virtual Bool_t RunQualAss(const char* detectors, AliESDEvent *& esd);
+  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
   void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
 
 private:
@@ -142,7 +142,7 @@ private:
 
   //Quality Assurance
   Int_t                GetDetIndex(const char * detector);
-  AliQualAssDataMaker* GetQualAssDataMaker(Int_t iDet);
+  AliQADataMaker*      GetQADataMaker(Int_t iDet);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
 
   //*** Global reconstruction flags *******************
@@ -198,7 +198,7 @@ private:
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
   //Quality Assurance
-  AliQualAssDataMaker * fQualAssDataMaker[fgkNDetectors];  //! array of QA data maker objects
+  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
   Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
 
   ClassDef(AliReconstruction, 15)      // class for running the reconstruction

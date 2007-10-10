@@ -23,9 +23,9 @@
 
 #include "AliLog.h"
 #include "AliModule.h" 
-#include "AliQualAss.h"
-#include "AliQualAssChecker.h"
-#include "AliQualAssCheckerBase.h"
+#include "AliQA.h"
+#include "AliQAChecker.h"
+#include "AliQACheckerBase.h"
 
 #include <TKey.h>
 #include <TObjArray.h>
@@ -36,14 +36,14 @@
 #include <TSystem.h> 
 #include <TList.h>
 
-ClassImp(AliQualAssChecker)
-  AliQualAssChecker * AliQualAssChecker::fgQAChecker = 0x0 ;
-  TFile   * AliQualAssChecker::fgQAResultFile        = 0x0 ;  
-  TString   AliQualAssChecker::fgQAResultDirName     = "local://RUN/";  
-  TString   AliQualAssChecker::fgQAResultFileName    = "QA.root" ; 
+ClassImp(AliQAChecker)
+  AliQAChecker * AliQAChecker::fgQAChecker = 0x0 ;
+  TFile   * AliQAChecker::fgQAResultFile        = 0x0 ;  
+  TString   AliQAChecker::fgQAResultDirName     = "local://RUN/";  
+  TString   AliQAChecker::fgQAResultFileName    = "QA.root" ; 
 
 //_____________________________________________________________________________
-AliQualAssChecker::AliQualAssChecker(const char* name, const char* title) :
+AliQAChecker::AliQAChecker(const char* name, const char* title) :
   TNamed(name, title),
   fDataFile(0x0), 
   fRefDirName("./Ref/"), 
@@ -51,7 +51,7 @@ AliQualAssChecker::AliQualAssChecker(const char* name, const char* title) :
   fFoundDetectors(".")
 {
   // ctor: initialise checkers and open the data file   
-  for (Int_t det = 0 ; det < AliQualAss::kNDET ; det++) 
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
     fCheckers[det] = NULL ; 
   
   GetDataFile() ; 
@@ -59,7 +59,7 @@ AliQualAssChecker::AliQualAssChecker(const char* name, const char* title) :
 }
 
 //_____________________________________________________________________________
-AliQualAssChecker::AliQualAssChecker(const AliQualAssChecker& qac) :
+AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   TNamed(qac),
   fDataFile(qac.fDataFile), 
   fRefDirName(qac.fRefDirName), 
@@ -68,40 +68,40 @@ AliQualAssChecker::AliQualAssChecker(const AliQualAssChecker& qac) :
 {
   // copy constructor
   
-  for (Int_t det = 0 ; det < AliQualAss::kNDET ; det++) 
+  for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
     fCheckers[det] = NULL ; 
 }
 
 //_____________________________________________________________________________
-AliQualAssChecker& AliQualAssChecker::operator = (const AliQualAssChecker& qac)
+AliQAChecker& AliQAChecker::operator = (const AliQAChecker& qac)
 {
 // assignment operator
 
-  this->~AliQualAssChecker();
-  new(this) AliQualAssChecker(qac);
+  this->~AliQAChecker();
+  new(this) AliQAChecker(qac);
   return *this;
 }
 
 //_____________________________________________________________________________
-AliQualAssChecker::~AliQualAssChecker()
+AliQAChecker::~AliQAChecker()
 {
 // clean up
   delete [] fCheckers ; 
 }
 
 //_____________________________________________________________________________
-TFile * AliQualAssChecker:: GetDataFile()
+TFile * AliQAChecker:: GetDataFile()
 {
   // Open if necessary the Data file and return its pointer
 
   if (!fDataFile) 
-	if  (gSystem->AccessPathName(AliQualAss::GetDataName()))
-     fDataFile =  TFile::Open(AliQualAss::GetDataName()) ;
+	if  (gSystem->AccessPathName(AliQA::GetDataName()))
+     fDataFile =  TFile::Open(AliQA::GetDataName()) ;
   return fDataFile ; 
 }
 
 //_____________________________________________________________________________
-TFile * AliQualAssChecker:: GetQAResultFile() 
+TFile * AliQAChecker:: GetQAResultFile() 
 {
   // Check if file to store QA exists, if not create it
 
@@ -125,36 +125,36 @@ TFile * AliQualAssChecker:: GetQAResultFile()
 }
 
 //_____________________________________________________________________________
-  AliQualAssCheckerBase * AliQualAssChecker::GetDetQualAssChecker(Int_t det)
+  AliQACheckerBase * AliQAChecker::GetDetQAChecker(Int_t det)
 {
   // Gets the Quality Assurance checker for the detector specified by its name
   
   if (fCheckers[det]) 
     return fCheckers[det];
 
- TString detName(AliQualAss::GetDetName(det)) ; 
+ TString detName(AliQA::GetDetName(det)) ; 
 
   AliInfo(Form("Retrieving QA checker for %s", detName.Data())) ; 
   TPluginManager* pluginManager = gROOT->GetPluginManager() ;
-  TString qacName = "Ali" + detName + "QualAssChecker" ;
+  TString qacName = "Ali" + detName + "QAChecker" ;
 
-  AliQualAssCheckerBase * qac = NULL ;
+  AliQACheckerBase * qac = NULL ;
   // first check if a plugin is defined for the quality assurance checker
-  TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQualAssChecker", detName.Data());
+  TPluginHandler* pluginHandler = pluginManager->FindHandler("AliQAChecker", detName.Data());
   // if not, add a plugin for it
   if (!pluginHandler) {
     //AliInfo(Form("defining plugin for %s", qacName.Data()));
     TString libs = gSystem->GetLibraries();
  
    if (libs.Contains("lib" + detName + "base.so") || (gSystem->Load("lib" + detName + "base.so") >= 0))
-      pluginManager->AddHandler("AliQualAssChecker", detName, qacName, detName + "qac", qacName + "()");
+      pluginManager->AddHandler("AliQAChecker", detName, qacName, detName + "qac", qacName + "()");
     else 
-      pluginManager->AddHandler("AliQualAssChecker", detName, qacName, detName, qacName + "()");
+      pluginManager->AddHandler("AliQAChecker", detName, qacName, detName, qacName + "()");
 
-   pluginHandler = pluginManager->FindHandler("AliQualAssChecker", detName);
+   pluginHandler = pluginManager->FindHandler("AliQAChecker", detName);
 
   if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) 
-    qac = (AliQualAssCheckerBase *) pluginHandler->ExecPlugin(0);
+    qac = (AliQACheckerBase *) pluginHandler->ExecPlugin(0);
   
   if (qac) 
     fCheckers[det] = qac ; 
@@ -165,7 +165,7 @@ TFile * AliQualAssChecker:: GetQAResultFile()
 
 
 //_____________________________________________________________________________
-TDirectory * AliQualAssChecker::GetRefSubDir(const char * det, const char * task)     
+TDirectory * AliQAChecker::GetRefSubDir(const char * det, const char * task)     
 { 
   // Opens and returns the file with the reference data 
   TFile * f = TFile::Open(fRefDirName, "READ") ;
@@ -184,16 +184,16 @@ TDirectory * AliQualAssChecker::GetRefSubDir(const char * det, const char * task
 }
 
 //_____________________________________________________________________________
-AliQualAssChecker * AliQualAssChecker::Instance()
+AliQAChecker * AliQAChecker::Instance()
 {
 	// returns unique instance of the checker
   if ( ! fgQAChecker ) 
-   fgQAChecker = new AliQualAssChecker() ; 
+   fgQAChecker = new AliQAChecker() ; 
   return fgQAChecker ;  
 }
 
 //_____________________________________________________________________________
-Bool_t AliQualAssChecker::Run()
+Bool_t AliQAChecker::Run()
 {
   // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, recpoints, tracksegments, recparticles and ESDs
   // starting from data in file
@@ -213,8 +213,8 @@ Bool_t AliQualAssChecker::Run()
     TString detName ; 
     TString detNameQA(detKey->GetName()) ; 
     Int_t det ; 
-    for ( det = 0; det < AliQualAss::kNDET ; det++) {
-      detName = AliQualAss::GetDetName(det) ; 
+    for ( det = 0; det < AliQA::kNDET ; det++) {
+      detName = AliQA::GetDetName(det) ; 
       if (detNameQA.Contains(detName)) {
 	fFoundDetectors+=detName ; 
 	fFoundDetectors+="." ;		
@@ -231,36 +231,36 @@ Bool_t AliQualAssChecker::Run()
       AliInfo(Form("Found %s", taskName.Data())) ;
       TDirectory * taskDir = detDir->GetDirectory(taskName.Data()) ; 
       taskDir->cd() ; 
-      AliQualAssCheckerBase * qac = GetDetQualAssChecker(det) ; 
+      AliQACheckerBase * qac = GetDetQAChecker(det) ; 
       if (qac)
 		AliInfo(Form("QA checker found for %s", detName.Data())) ; 
       if (!qac)
 		AliFatal(Form("QA checker not found for %s", detName.Data())) ; 
-      AliQualAss::ALITASK index = AliQualAss::kNULLTASK ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kHITS) ) 
-		index = AliQualAss::kSIM ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kSDIGITS) ) 
-		index = AliQualAss::kSIM ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kDIGITS) ) 
-		index = AliQualAss::kSIM ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kRECPOINTS) ) 
-		index = AliQualAss::kREC ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kTRACKSEGMENTS) ) 
-		index = AliQualAss::kREC ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kRECPARTICLES) ) 
-		index = AliQualAss::kREC ; 
-      if ( taskName == AliQualAss::GetTaskName(AliQualAss::kESDS) ) 
-		index = AliQualAss::kESD ; 
-      qac->Init(AliQualAss::DETECTORINDEX(det)) ; 
+      AliQA::ALITASK index = AliQA::kNULLTASK ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kHITS) ) 
+		index = AliQA::kSIM ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kSDIGITS) ) 
+		index = AliQA::kSIM ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kDIGITS) ) 
+		index = AliQA::kSIM ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kRECPOINTS) ) 
+		index = AliQA::kREC ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kTRACKSEGMENTS) ) 
+		index = AliQA::kREC ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kRECPARTICLES) ) 
+		index = AliQA::kREC ; 
+      if ( taskName == AliQA::GetTaskName(AliQA::kESDS) ) 
+		index = AliQA::kESD ; 
+      qac->Init(AliQA::DETECTORINDEX(det)) ; 
       qac->SetRefandData(GetRefSubDir(detNameQA.Data(), taskName.Data()), taskDir) ; 
       qac->Run(index) ; 
     }
  }
   AliInfo("QA performed for following detectors:") ; 
-  for ( Int_t det = 0; det < AliQualAss::kNDET; det++) {
-    if (fFoundDetectors.Contains(AliQualAss::GetDetName(det))) {
-      printf("%s, ",AliQualAss::GetDetName(det)) ; 
-      fFoundDetectors.ReplaceAll(AliQualAss::GetDetName(det), "") ; 
+  for ( Int_t det = 0; det < AliQA::kNDET; det++) {
+    if (fFoundDetectors.Contains(AliQA::GetDetName(det))) {
+      printf("%s, ",AliQA::GetDetName(det)) ; 
+      fFoundDetectors.ReplaceAll(AliQA::GetDetName(det), "") ; 
     }	
   }
   printf("\n") ; 
@@ -271,36 +271,36 @@ Bool_t AliQualAssChecker::Run()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQualAssChecker::Run(AliQualAss::DETECTORINDEX det, AliQualAss::TASKINDEX task, TList * list)
+Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list)
 {
   // run the Quality Assurance Checker for detector det, for task task starting from data in list
 
-  AliQualAssCheckerBase * qac = GetDetQualAssChecker(det) ; 
+  AliQACheckerBase * qac = GetDetQAChecker(det) ; 
   if (qac)
-    AliInfo(Form("QA checker found for %s", AliQualAss::GetDetName(det).Data())) ;
+    AliInfo(Form("QA checker found for %s", AliQA::GetDetName(det).Data())) ;
   if (!qac)
-	AliFatal(Form("QA checker not found for %s", AliQualAss::GetDetName(det).Data())) ; 
+	AliFatal(Form("QA checker not found for %s", AliQA::GetDetName(det).Data())) ; 
   
-  AliQualAss::ALITASK index = AliQualAss::kNULLTASK ; 
-  if ( task == AliQualAss::kRAWS ) 
-		index = AliQualAss::kRAW ; 
-  else if ( task == AliQualAss::kHITS ) 
-		index = AliQualAss::kSIM ; 
-  else if ( task == AliQualAss::kSDIGITS ) 
-		index = AliQualAss::kSIM ; 
-  else if ( task == AliQualAss::kDIGITS ) 
-		index = AliQualAss::kSIM ; 
-  else if ( task == AliQualAss::kRECPOINTS ) 
-		index = AliQualAss::kREC ; 
-  else if ( task == AliQualAss::kTRACKSEGMENTS ) 
-		index = AliQualAss::kREC ; 
-  else if ( task == AliQualAss::kRECPARTICLES ) 
-		index = AliQualAss::kREC ; 
-  else if ( task == AliQualAss::kESDS ) 
-		index = AliQualAss::kESD ; 
+  AliQA::ALITASK index = AliQA::kNULLTASK ; 
+  if ( task == AliQA::kRAWS ) 
+		index = AliQA::kRAW ; 
+  else if ( task == AliQA::kHITS ) 
+		index = AliQA::kSIM ; 
+  else if ( task == AliQA::kSDIGITS ) 
+		index = AliQA::kSIM ; 
+  else if ( task == AliQA::kDIGITS ) 
+		index = AliQA::kSIM ; 
+  else if ( task == AliQA::kRECPOINTS ) 
+		index = AliQA::kREC ; 
+  else if ( task == AliQA::kTRACKSEGMENTS ) 
+		index = AliQA::kREC ; 
+  else if ( task == AliQA::kRECPARTICLES ) 
+		index = AliQA::kREC ; 
+  else if ( task == AliQA::kESDS ) 
+		index = AliQA::kESD ; 
 
   qac->Init(det) ; 
-  qac->SetRefandData(GetRefSubDir(AliQualAss::GetDetName(det).Data(), AliQualAss::GetTaskName(task).Data())) ; 
+  qac->SetRefandData(GetRefSubDir(AliQA::GetDetName(det).Data(), AliQA::GetTaskName(task).Data())) ; 
   qac->Run(index, list) ; 
   
   return kTRUE ; 
@@ -308,7 +308,7 @@ Bool_t AliQualAssChecker::Run(AliQualAss::DETECTORINDEX det, AliQualAss::TASKIND
 }
 
 //_____________________________________________________________________________
-void AliQualAssChecker::SetQAResultDirName(const char * name)
+void AliQAChecker::SetQAResultDirName(const char * name)
 {
   // Set the root directory where to store the QA status object
 
@@ -320,7 +320,7 @@ void AliQualAssChecker::SetQAResultDirName(const char * name)
 }
 
 //_____________________________________________________________________________
-void AliQualAssChecker::SetRefDirName(const char * name)
+void AliQAChecker::SetRefDirName(const char * name)
 {
   // Set the root directory of reference data
 
