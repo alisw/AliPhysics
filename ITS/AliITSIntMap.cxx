@@ -116,7 +116,7 @@ void AliITSIntMap::InsertNode(Int_t key, Int_t val, AliITSIntMapNode* &node, UIn
     InsertNode(key,val,node->Right(),height);
   }
   else { // (key==node->Key()): do nothing (avoid duplicates)
-    Warning("AliITSIntMap::InsertNode","Node with key %d already in map. Not inserted.",key);
+    //    Warning("AliITSIntMap::InsertNode","Node with key %d already in map. Not inserted.",key);
   }
 }
 

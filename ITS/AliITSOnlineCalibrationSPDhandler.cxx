@@ -360,6 +360,17 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteToDB(Int_t runNrStart, Int_t runN
   spdEntry->SetOwner(kTRUE);
   for(UInt_t module=0; module<240; module++){
     AliITSCalibrationSPD* calObj = new AliITSCalibrationSPD();
+
+    // *** this is temporarily hard coded here ********************
+    // (later these parameters will be separated from the cal.obj.)
+    calObj->SetThresholds(3000, 250);
+    calObj->SetBiasVoltage(18.182);
+    calObj->SetNoiseParam(0,0);
+    // CouplingRaw changed to 0.055 (fine tuning), was 0.047 in PDC06
+    calObj->SetCouplingParam(0.,0.055);
+    // *** remove later...
+    // ************************************************************
+
     spdEntry->Add(calObj);
   }
   for(UInt_t module=0; module<240; module++){
@@ -377,6 +388,12 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteToDB(Int_t runNrStart, Int_t runN
 }
 #endif
 
+void AliITSOnlineCalibrationSPDhandler::WriteToFilesAlways() {
+  // write the lists of dead and noisy to files (only if there are >0 dead or noisy pixels)
+  for (UInt_t module=0; module<240; module++) {
+    WriteToFile(module);
+  }
+}
 void AliITSOnlineCalibrationSPDhandler::WriteToFiles() {
   // write the lists of dead and noisy to files (only if there are >0 dead or noisy pixels)
   for (UInt_t module=0; module<240; module++) {
@@ -515,6 +532,31 @@ Bool_t AliITSOnlineCalibrationSPDhandler::SetDeadPixelM(UInt_t module, UInt_t co
 //!!!  if (fNoisyPixelMap[module]->Find(key) != NULL) return kFALSE;
   if (fDeadPixelMap[module]->Insert(key,module)) {
     fNrDead[module]++;
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetDeadPixel(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) {
+  // unset a dead pixel, returns false if pixel is not dead
+  UInt_t module = AliITSRawStreamSPD::GetModuleNumber(eqId,hs,chip);
+  Int_t key = GetKey(eqId,hs,chip,col,row);
+  if (fDeadPixelMap[module]->Remove(key)) {
+    fNrDead[module]--;
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetDeadPixelM(UInt_t module, UInt_t colM, UInt_t row) {
+  // unset a dead pixel, returns false if pixel is not dead
+  UInt_t eqId = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  UInt_t chip = GetChipFromOffline(module,colM);
+  UInt_t col = GetColFromOffline(colM);
+  Int_t key = GetKey(eqId,hs,chip,col,row);
+  if (fDeadPixelMap[module]->Remove(key)) {
+    fNrDead[module]--;
     return kTRUE;
   }
   return kFALSE;
@@ -681,6 +723,31 @@ Bool_t AliITSOnlineCalibrationSPDhandler::SetNoisyPixelM(UInt_t module, UInt_t c
 //!!!  }
   if (fNoisyPixelMap[module]->Insert(key,col)) {
     fNrNoisy[module]++;
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetNoisyPixel(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) {
+  // unset a noisy pixel, returns false if not there
+  UInt_t module = AliITSRawStreamSPD::GetModuleNumber(eqId,hs,chip);
+  Int_t key = GetKey(eqId,hs,chip,col,row);
+  if (fNoisyPixelMap[module]->Remove(key)) {
+    fNrNoisy[module]--;
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t row) {
+  // unset a noisy pixel, returns false if not there
+  UInt_t eqId = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  UInt_t chip = GetChipFromOffline(module,colM);
+  UInt_t col = GetColFromOffline(colM);
+  Int_t key = GetKey(eqId,hs,chip,col,row);
+  if (fNoisyPixelMap[module]->Remove(key)) {
+    fNrNoisy[module]--;
     return kTRUE;
   }
   return kFALSE;

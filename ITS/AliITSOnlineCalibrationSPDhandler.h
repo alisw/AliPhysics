@@ -1,6 +1,11 @@
 #ifndef ALI_ITS_ONLINECALIBRATIONSPDHANDLER_H
 #define ALI_ITS_ONLINECALIBRATIONSPDHANDLER_H
 
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //////////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                               //
 // Class that  simplifies the managing of dead and noisy pixels.        //
@@ -38,6 +43,7 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  ReadDeadFromFileName(const char *fileName);
   Bool_t  ReadNoisyFromFileName(const char *fileName);
 
+  void    WriteToFilesAlways();
   void    WriteToFiles();
   void    WriteDeadToFiles();
   void    WriteNoisyToFiles();
@@ -61,6 +67,8 @@ class AliITSOnlineCalibrationSPDhandler {
   void    ResetDeadForChip(UInt_t eqId, UInt_t hs, UInt_t chip);
   Bool_t  SetDeadPixel(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  SetDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
+  Bool_t  UnSetDeadPixel(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
+  Bool_t  UnSetDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
   Bool_t  IsPixelDead(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelDeadM(UInt_t module, UInt_t colM, UInt_t row);
 
@@ -75,6 +83,8 @@ class AliITSOnlineCalibrationSPDhandler {
   void    ResetNoisyForChip(UInt_t eqId, UInt_t hs, UInt_t chip);
   Bool_t  SetNoisyPixel(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  SetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t row);
+  Bool_t  UnSetNoisyPixel(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
+  Bool_t  UnSetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t row);
   Bool_t  IsPixelNoisy(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelNoisyM(UInt_t module, UInt_t colM, UInt_t row);
 
