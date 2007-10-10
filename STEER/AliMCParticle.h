@@ -7,24 +7,26 @@
 
 //-------------------------------------------------------------------------
 //     AliVParticle realisation for MC Particles
-//     Author: Markus Oldenburg, CERN
+//     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
 #include <Rtypes.h>
-#include <AliVParticle.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
+#include <TRefArray.h>
+
+#include "AliTrackReference.h"
+#include "AliVParticle.h"
 
 class AliMCParticle: public AliVParticle {
-
 public:
     AliMCParticle();
-    AliMCParticle(TParticle* part);
+    AliMCParticle(TParticle* part, TRefArray* rarray = 0);
     virtual ~AliMCParticle() {}
     AliMCParticle(const AliMCParticle& mcPart); 
     AliMCParticle& operator=(const AliMCParticle& mcPart);
     
-    // kinematics
+    // Kinematics
     virtual Double_t Px()        const;
     virtual Double_t Py()        const;
     virtual Double_t Pz()        const;
@@ -46,9 +48,15 @@ public:
     
     // PID
     virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
-    
+
+    // Track References
+    Int_t              GetNumberOfTrackReferences() {return fNTrackRef;}
+    AliTrackReference* GetTrackReference(Int_t i)
+	{return dynamic_cast<AliTrackReference*>((*fTrackReferences)[i]);}
  private:
-    TParticle *fParticle; // The TParticle
+    TParticle *fParticle;             // The wrapped TParticle
+    TRefArray *fTrackReferences;      // Reference array to track references
+    Int_t      fNTrackRef;            // Number of track references
     
   ClassDef(AliMCParticle,0)  // AliVParticle realisation for MCParticles
 };

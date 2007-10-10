@@ -21,6 +21,8 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
+#include <TRefArray.h>
+
 #include "AliMCParticle.h"
 
 
@@ -28,16 +30,23 @@ ClassImp(AliMCParticle)
 
 AliMCParticle::AliMCParticle():
     AliVParticle(),
-    fParticle(0)
+    fParticle(0),
+    fTrackReferences(0),
+    fNTrackRef(0)
 {
     // Constructor
 }
 
-AliMCParticle::AliMCParticle(TParticle* part):
+AliMCParticle::AliMCParticle(TParticle* part, TRefArray* rarray):
     AliVParticle(),
-    fParticle(part)
+    fParticle(part),
+    fTrackReferences(rarray),
+    fNTrackRef(0)
 {
     // Constructor
+    if (rarray != 0) {
+	fNTrackRef = fTrackReferences->GetEntriesFast();
+    }
 }
     
     

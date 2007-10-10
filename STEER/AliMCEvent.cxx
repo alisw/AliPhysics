@@ -26,7 +26,7 @@
 #include <TFile.h>
 #include <TParticle.h>
 #include <TClonesArray.h>
-#include <TObjArray.h>
+#include <TRefArray.h>
 
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -42,7 +42,8 @@ AliMCEvent::AliMCEvent():
     fMCParticles(new TClonesArray("AliMCParticle",1000)),
     fMCParticleMap(0),
     fHeader(0),
-    fTrackReferences(0),
+    fTRBuffer(0),
+    fTrackReferences(new TClonesArray("AliTrackReference", 1000)),
     fTreeTR(0),
     fTmpTreeTR(0),
     fTmpFileTR(0),
@@ -58,6 +59,7 @@ AliMCEvent::AliMCEvent(const AliMCEvent& mcEvnt) :
     fMCParticles(0),
     fMCParticleMap(0),
     fHeader(0),
+    fTRBuffer(0),
     fTrackReferences(0),
     fTreeTR(0),
     fTmpTreeTR(0),
@@ -103,8 +105,8 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
 	fMCParticleMap->Clear();
 	if (fNparticles>0) fMCParticleMap->Expand(fNparticles);}
     else
-	fMCParticleMap = new TObjArray(fNparticles);
-    fMCParticles->Clear();
+	fMCParticleMap = new TRefArray(fNparticles);
+
 }
 
 void AliMCEvent::ConnectTreeTR (TTree* tree)
@@ -121,7 +123,7 @@ void AliMCEvent::ConnectTreeTR (TTree* tree)
 	ReorderAndExpandTreeTR();
     } else {
 	// New format 
-	fTreeTR->SetBranchAddress("TrackReferences", &fTrackReferences);
+	fTreeTR->SetBranchAddress("TrackReferences", &fTRBuffer);
     }
 }
 
@@ -137,7 +139,7 @@ Int_t AliMCEvent::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*&
     particle = fStack->Particle(i);
     if (fTreeTR) {
 	fTreeTR->GetEntry(fStack->TreeKEntry(i));
-	trefs    = fTrackReferences;
+	trefs    = fTRBuffer;
 	return trefs->GetEntries();
     } else {
 	trefs = 0;
@@ -158,10 +160,10 @@ void AliMCEvent::Clean()
     delete fStack;
 
     // Clear TR
-    if (fTrackReferences) {
-	fTrackReferences->Clear();
-	delete fTrackReferences;
-	fTrackReferences = 0;
+    if (fTRBuffer) {
+	fTRBuffer->Clear();
+	delete fTRBuffer;
+	fTRBuffer = 0;
     }
 }
 
@@ -169,7 +171,10 @@ void AliMCEvent::FinishEvent()
 {
     // Clean-up after event
      fStack->Reset(0);
+     fMCParticles->Clear();
+     fTrackReferences->Clear();
 }
+
 
 
 void AliMCEvent::DrawCheck(Int_t i, Int_t search)
@@ -187,14 +192,14 @@ void AliMCEvent::DrawCheck(Int_t i, Int_t search)
 	AliWarning("AliMCEvent::GetEntry: Index out of range");
     }
     
-    Int_t nh = fTrackReferences->GetEntries();
+    Int_t nh = fTRBuffer->GetEntries();
     
     
     if (search) {
 	while(nh <= search && i < fNparticles - 1) {
 	    i++;
 	    fTreeTR->GetEntry(fStack->TreeKEntry(i));
-	    nh =  fTrackReferences->GetEntries();
+	    nh =  fTRBuffer->GetEntries();
 	}
 	printf("Found Hits at %5d\n", i);
     }
@@ -214,7 +219,7 @@ void AliMCEvent::DrawCheck(Int_t i, Int_t search)
     a->Draw();
     
     for (Int_t ih = 0; ih < nh; ih++) {
-	AliTrackReference* ref = (AliTrackReference*) fTrackReferences->At(ih);
+	AliTrackReference* ref = (AliTrackReference*) fTRBuffer->At(ih);
 	TMarker* m = new TMarker(ref->X(), ref->Y(), 20);
 	m->Draw();
 	m->SetMarkerSize(0.4);
@@ -233,8 +238,8 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 
     fTmpFileTR = new TFile("TrackRefsTmp.root", "recreate");
     fTmpTreeTR = new TTree("TreeTR", "TrackReferences");
-    if (!fTrackReferences)  fTrackReferences = new TClonesArray("AliTrackReference", 100);
-    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTrackReferences, 32000, 0);
+    if (!fTRBuffer)  fTRBuffer = new TClonesArray("AliTrackReference", 100);
+    fTmpTreeTR->Branch("TrackReferences", "TClonesArray", &fTRBuffer, 32000, 0);
     
 
 //
@@ -358,14 +363,14 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 			if (label == id) {
 			    // secondary found
 			    tr->SetDetectorId(ib-1);
-			    Int_t nref =  fTrackReferences->GetEntriesFast();
-			    TClonesArray &lref = *fTrackReferences;
+			    Int_t nref =  fTRBuffer->GetEntriesFast();
+			    TClonesArray &lref = *fTRBuffer;
 			    new(lref[nref]) AliTrackReference(*tr);
 			}
 		    } // hits
 		} // branches
 		fTmpTreeTR->Fill();
-		fTrackReferences->Clear();
+		fTRBuffer->Clear();
 		ifills++;
 	    } // daughters
 	} // has hits
@@ -393,8 +398,8 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 		    
 		    if (label == ip) {
 			tr->SetDetectorId(ib-1);
-			Int_t nref = fTrackReferences->GetEntriesFast();
-			TClonesArray &lref = *fTrackReferences;
+			Int_t nref = fTRBuffer->GetEntriesFast();
+			TClonesArray &lref = *fTRBuffer;
 			new(lref[nref]) AliTrackReference(*tr);
 		    }
 		} // hits
@@ -402,7 +407,7 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 	} // entries
 	it++;
 	fTmpTreeTR->Fill();
-	fTrackReferences->Clear();
+	fTRBuffer->Clear();
 	ifills++;
     } // tracks
     // Check
@@ -430,9 +435,12 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
 {
     // Get MC Particle i
-    AliMCParticle *mcParticle;
-    TParticle     *particle;
-
+    AliMCParticle *mcParticle = 0;
+    TParticle     *particle   = 0;
+    TClonesArray  *trefs      = 0;
+    Int_t          ntref      = 0;
+    TRefArray     *rarray     = 0;
+    
     // Out of range check
     if (i < 0 || i >= fNparticles) {
 	AliWarning(Form("AliMCEvent::GetEntry: Index out of range"));
@@ -441,12 +449,31 @@ AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
     }
     
 
-    particle   = fStack->Particle(i);
+
     //
     // First check of the MC Particle has been already cached
     if(!fMCParticleMap->At(i)) {
+	// Get particle from the stack
+	particle   = fStack->Particle(i);
+	// Get track references from Tree TR
+	if (fTreeTR) {
+	    fTreeTR->GetEntry(fStack->TreeKEntry(i));
+	    trefs     = fTRBuffer;
+	    ntref     = trefs->GetEntriesFast();
+	    rarray    = new TRefArray(ntref);
+	    Int_t nen = fTrackReferences->GetEntriesFast();
+	    for (Int_t j = 0; j < ntref; j++) {
+		// Save the track references in a TClonesArray
+		AliTrackReference* ref = dynamic_cast<AliTrackReference*>((*fTRBuffer)[j]);
+		// Save the pointer in a TRefArray
+		new ((*fTrackReferences)[nen]) AliTrackReference(*ref);
+		rarray->AddAt((*fTrackReferences)[nen], j);
+		nen++;
+	    } // loop over track references for entry i
+	} // if TreeTR available
+
 	Int_t nentries = fMCParticles->GetEntriesFast();
-	new ((*fMCParticles)[nentries]) AliMCParticle(particle);
+	new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray);
 	mcParticle = dynamic_cast<AliMCParticle*>((*fMCParticles)[nentries]);
 	fMCParticleMap->AddAt(mcParticle, i);
     } else {
