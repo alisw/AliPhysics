@@ -48,7 +48,8 @@ ClassImp(AliMUONPreprocessor)
 AliMUONPreprocessor::AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle)
 : AliPreprocessor(detName, shuttle),
   fSubprocessors(new TObjArray()),
-  fProcessDCS(kFALSE)
+  fProcessDCS(kFALSE),
+  fIsValid(kFALSE)
 {
   /// ctor
 }
@@ -67,6 +68,7 @@ AliMUONPreprocessor::ClearSubprocessors()
   /// Empty our subprocessor list
   fSubprocessors->Clear();
   fProcessDCS = kFALSE;
+  fIsValid = kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -82,20 +84,37 @@ AliMUONPreprocessor::Add(AliMUONVSubprocessor* sub, Bool_t processDCS)
 void
 AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
 {
-/// Load mapping and initialize subtasks  
+  /// Load mapping and initialize subtasks  
 
   // Delete previous mapping
   delete AliMpSegmentation::Instance(false);
   delete AliMpDDLStore::Instance(false);
   
   // Load mapping from CDB for this run
-  GetFromOCDB("Calib", "Mapping");
-  GetFromOCDB("Calib", "DDLStore");
-
-  // loop over subtasks and initialize them
-  for ( Int_t i = 0; i <= fSubprocessors->GetLast(); ++i )
+  
+  fIsValid = kTRUE;
+  
+  AliCDBEntry* e = GetFromOCDB("Calib", "Mapping");
+  if (!e)
   {
-    Subprocessor(i)->Initialize(run,startTime,endTime);
+    Log("Could not get Mapping from OCDB !");
+    fIsValid = kFALSE;
+  }
+  
+  e = GetFromOCDB("Calib", "DDLStore");
+  if (!e)
+  {
+    Log("Could not get DDLStore from OCDB");
+    fIsValid = kFALSE;
+  }
+
+  if (IsValid())
+  {
+    // loop over subtasks and initialize them
+    for ( Int_t i = 0; i <= fSubprocessors->GetLast(); ++i )
+    {
+      Subprocessor(i)->Initialize(run,startTime,endTime);
+    }
   }
 }
 
@@ -104,12 +123,20 @@ UInt_t
 AliMUONPreprocessor::Process(TMap* dcsAliasMap)
 {
   /// loop over subtasks to make them work
+  
+  if (!IsValid())
+  {
+    Log("Will not run as not properly initialized");
+    return 99;
+  }
+  
   UInt_t rv(0);
   
   for ( Int_t i = 0; i <= fSubprocessors->GetLast(); ++i )
   {
     rv += Subprocessor(i)->Process(dcsAliasMap);
   }
+  
   return rv;
 }
 

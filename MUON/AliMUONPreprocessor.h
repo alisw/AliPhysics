@@ -51,6 +51,9 @@ public:
     return AliPreprocessor::GetFile(system,id,source);
   }  
   
+  /// Whether we can be used (e.g. whether we were properly initialized)
+  Bool_t IsValid() const { return fIsValid; }
+  
 protected:
   AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();
@@ -70,8 +73,9 @@ private:
 
   TObjArray* fSubprocessors; //!< sub processors to execute
   Bool_t fProcessDCS; //!< whether the current subprocessor(s) needs DCS or not
+  Bool_t fIsValid; //!< whether we were correctly initialized
   
-  ClassDef(AliMUONPreprocessor,2) // MUON Shuttle preprocessor
+  ClassDef(AliMUONPreprocessor,3) // MUON Shuttle preprocessor
 };
 
 #endif
