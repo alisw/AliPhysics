@@ -39,6 +39,7 @@
 // --- AliRoot header files ---
 #include "AliLog.h"
 #include "AliQA.h"
+#include "AliQAChecker.h"
 
 
 ClassImp(AliQA)
@@ -52,17 +53,21 @@ ClassImp(AliQA)
 //____________________________________________________________________________
 AliQA::AliQA() : 
   TNamed("", ""), 
-  fQA(0x0), 
+  fNdet(kNDET), 
+  fQA(new ULong_t[fNdet]), 
   fDet(kNULLDET),
   fTask(kNULLTASK)
 {
   // default constructor
   // beware singleton: not to be used
+  for (Int_t index = 0 ; index < fNdet ; index++) 
+	fQA[index] = 0 ; 
 }
 
 //____________________________________________________________________________
 AliQA::AliQA(const AliQA& qa) :
   TNamed(qa),
+  fNdet(qa.fNdet), 
   fQA(qa.fQA), 
   fDet(qa.fDet),
   fTask(qa.fTask)
@@ -82,8 +87,9 @@ AliQA& AliQA::operator = (const AliQA& qa)
 
 //_______________________________________________________________
 AliQA::AliQA(const DETECTORINDEX det) :
-  TNamed("QA", "Quality Assurance status"), 
-  fQA(new ULong_t[kNDET]), 
+  TNamed("QA", "Quality Assurance status"),
+  fNdet(kNDET),  
+  fQA(new ULong_t[fNdet]), 
   fDet(det),
   fTask(kNULLTASK)
 {
@@ -93,14 +99,15 @@ AliQA::AliQA(const DETECTORINDEX det) :
     return ;
   } 
   Int_t index ; 
-  for (index = 0; index < kNDET; index++) 
+  for (index = 0; index < fNdet; index++) 
     fQA[index] = 0 ; 
 }
   
 //_______________________________________________________________
 AliQA::AliQA(const ALITASK tsk) :
   TNamed("QA", "Quality Assurance status"), 
-  fQA(new ULong_t[kNDET]), 
+  fNdet(kNDET),
+  fQA(new ULong_t[fNdet]), 
   fDet(kNULLDET),
   fTask(tsk)
 {
@@ -110,7 +117,7 @@ AliQA::AliQA(const ALITASK tsk) :
     return ;
   } 
   Int_t index ; 
-  for (index = 0; index < kNDET; index++) 
+  for (index = 0; index < fNdet; index++) 
     fQA[index] = 0 ; 
 }
 
@@ -261,8 +268,12 @@ AliQA * AliQA::Instance(const DETECTORINDEX det)
 {
   // Get an instance of the singleton. The only authorized way to call the ctor
   
-  if ( ! fgQA)
-    fgQA = new AliQA(det) ;
+  if ( ! fgQA) {
+    TFile * f = AliQAChecker::GetQAResultFile() ; 
+	fgQA = dynamic_cast<AliQA *>(f->Get("QA")) ; 
+    if ( ! fgQA ) 
+		fgQA = new AliQA(det) ;
+  }		
   fgQA->Set(det) ;
   return fgQA ;
 }

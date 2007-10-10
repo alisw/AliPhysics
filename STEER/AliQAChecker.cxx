@@ -87,6 +87,7 @@ AliQAChecker::~AliQAChecker()
 {
 // clean up
   delete [] fCheckers ; 
+  fgQAResultFile->Close() ; 
 }
 
 //_____________________________________________________________________________

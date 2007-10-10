@@ -50,10 +50,10 @@ public:
   static const TString   GetTaskName(TASKINDEX tsk) { return fgTaskNames[tsk] ; }
   static const char *    GetDetName(Int_t det) ;
   static TFile *         GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) ; 
+  const Bool_t           IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const ;
   void                   Set(QABIT bit) ;
   void                   Show() const { ShowStatus(fDet) ; }
   void                   ShowAll() const ;
-  void                   print() { printf("%d %x\n", kNDET, fQA) ; } 
 
 private:      
 
@@ -63,7 +63,6 @@ private:
   const char *         GetBitName(QABIT bit) const ;
   const ULong_t        GetStatus(DETECTORINDEX det) const  { return fQA[det] ;}
   void                 Finish() const ;  
-  const Bool_t         IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const ;
   const ULong_t        Offset(ALITASK tsk) const ;
   virtual void         ShowStatus(DETECTORINDEX det) const ;
   void                 ResetStatus(DETECTORINDEX det) { fQA[det] = 0 ; }
@@ -73,7 +72,8 @@ private:
   void                 SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit) ;
 
   static AliQA *fgQA              ; // pointer to the instance of the singleton
-  ULong_t    *       fQA          ; //[kNDET] the status word 4 bits for SIM, REC, ESD, ANA each
+  Int_t              fNdet        ; // number of detectors
+  ULong_t    *       fQA          ; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
   DETECTORINDEX      fDet         ; //!  the current detector (ITS, TPC, ....)
   ALITASK            fTask        ; //!  the current environment (SIM, REC, ESD, ANA)
   static TFile *     fgDataFile   ; //! the output file where the quality assurance maker store their results
