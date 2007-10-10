@@ -1,4 +1,4 @@
-void UpdateCDBVertexDiamond() {
+void UpdateCDBVertexDiamond(Double_t xmed = 0., Double_t ymed = 0., Double_t sigx = 0.005, Double_t sigy = 0.005, Double_t sigz = 5.3) {
   // produce the trigger descriptorwith the current AliRoot and store it in the
   // CDB
   
@@ -26,17 +26,26 @@ void UpdateCDBVertexDiamond() {
     alirootv="HEAD";
   }else{
     alirootv = buf;
-    metadata->SetResponsible("Tapan Nayak");
+    metadata->SetResponsible("prino@to.infn.it");
+    metadata->SetComment("Default mean vertex position");
     metadata->SetAliRootVersion(alirootv);
     metadata->SetComment(Form("Default trigger description produced with root version %s and AliRoot version %s",rootv,alirootv));
   }
 
   Printf("Storing in CDB the default trigger description produced with root version %s and AliRoot version %s",rootv,alirootv);
 
-  Double_t position[3] = {0.0,0.0,0.0};
-  Double_t sigma[3] = {0.0,0.0,0.0};
-  AliESDVertex *vertex = new AliESDVertex(position,sigma,"Default");
-  vertex->Print();
+  Double_t resolx=35./10000.;
+  Double_t resoly=35./10000.;
+  Double_t sigma[3],position[3];
+  position[0]=xmed;
+  position[1]=ymed;
+  position[2]=0.;
+  sigma[0]=TMath::Sqrt(sigx*sigx+resolx*resolx);
+  sigma[1]=TMath::Sqrt(sigy*sigy+resoly*resoly);
+  sigma[2]=sigz;
+
+  AliESDVertex *vertex = new AliESDVertex(position,sigma,"vtxmean");
+  vertex->PrintStatus();
 
   man->Put(vertex,id,metadata);
 }
