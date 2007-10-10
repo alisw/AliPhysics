@@ -74,6 +74,8 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   
   if(pCluLst->GetEntries()>pParam->MultCut()) fIsWEIGHT = kTRUE; // offset to take into account bkg in reconstruction
   else                                        fIsWEIGHT = kFALSE;
+  
+  fIsWEIGHT = kTRUE;
 
   Float_t xRa,yRa,th,ph;
   pTrk->GetHMPIDtrk(xRa,yRa,th,ph);        //initialize this track: th and ph angles at middle of RAD 
@@ -239,25 +241,21 @@ TVector2 AliHMPIDRecon::IntWithEdge(TVector2 p1,TVector2 p2)const
   TVector2 pint;
   //intersection with low  X
   pint.Set((Double_t)(p1.X() + (0-p1.Y())/m),0.);
-  pint.Print();
   if(pint.X()>=0 && pint.X()<=pParam->SizeAllX() &&
      pint.X()>=xmin && pint.X()<=xmax            &&
      pint.Y()>=ymin && pint.Y()<=ymax) return pint;
   //intersection with high X  
   pint.Set((Double_t)(p1.X() + (pParam->SizeAllY()-p1.Y())/m),(Double_t)(pParam->SizeAllY()));
-  pint.Print();
   if(pint.X()>=0 && pint.X()<=pParam->SizeAllX() &&
      pint.X()>=xmin && pint.X()<=xmax            &&
      pint.Y()>=ymin && pint.Y()<=ymax) return pint;
   //intersection with left Y  
   pint.Set(0.,(Double_t)(p1.Y() + m*(0-p1.X())));
-  pint.Print();
   if(pint.Y()>=0 && pint.Y()<=pParam->SizeAllY() &&
      pint.Y()>=ymin && pint.Y()<=ymax            &&
      pint.X()>=xmin && pint.X()<=xmax) return pint;
   //intersection with righ Y  
   pint.Set((Double_t)(pParam->SizeAllX()),(Double_t)(p1.Y() + m*(pParam->SizeAllX()-p1.X())));
-  pint.Print();
   if(pint.Y()>=0 && pint.Y()<=pParam->SizeAllY() &&
      pint.Y()>=ymin && pint.Y()<=ymax            &&
      pint.X()>=xmin && pint.X()<=xmax) return pint;
