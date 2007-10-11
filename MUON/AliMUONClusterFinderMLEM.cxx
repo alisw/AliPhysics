@@ -1301,7 +1301,7 @@ void AliMUONClusterFinderMLEM::Mlem(AliMUONCluster& cluster,
           continue; 
         } 
 
-        if (coef[indx] > 1.e-6) 
+        if (sum1 > 1.e-6) 
         {
           sum += pad->Charge()*coef[indx]/sum1;
         }
