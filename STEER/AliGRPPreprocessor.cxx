@@ -21,6 +21,7 @@
 //    Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
 //-------------------------------------------------------------------------
 
+#include <TChain.h>
 #include <TList.h>
 #include <TMap.h>
 #include <TObjString.h>
@@ -83,6 +84,9 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   const char* detectorMask = GetRunParameter("detectorMask");
   const char* lhcPeriod = GetRunParameter("LHCperiod");
 
+  //======DAQ FXS======//
+  TChain *fRawTagChain = new TChain("T");
+  TString fRawDataFileName;
   TList* list = GetFileSources(kDAQ);  
   if (!list) {
     Log("No raw data tag list found!!!");
@@ -95,12 +99,27 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
     if (objStr) {
       Log(Form("Found source %s", objStr->String().Data()));
       TList* list2 = GetFileIDs(kDAQ, objStr->String());
-      list2->Print();
+      if (!list2) {
+	Log("No list with ids from DAQ was found!!!");
+	return kTRUE;
+      }
+      Log(Form("Number of ids: %d",list2->GetEntries()));
+      for(Int_t i = 0; i < list2->GetEntries(); i++) {
+	TObjString *idStr = (TObjString *)list2->At(i);
+	//Log(Form("Filename1: %s",idStr->String().Data()));
+	TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());      
+	Log(Form("Adding file in the chain: %s",fileName.Data()));
+	fRawTagChain->Add(fileName.Data());
+	fRawDataFileName = fileName(0,fileName.First("_"));
+      }
       delete list2;
     }
   }
   delete iter;
-  delete list;  
+  delete list;
+  fRawDataFileName += "_GRP_Merged.tag.root";
+  Log(Form("Merging raw data tags into file: %s",fRawDataFileName.Data()));
+  fRawTagChain->Merge(fRawDataFileName);
   
   //===========//
   //DCS data points
