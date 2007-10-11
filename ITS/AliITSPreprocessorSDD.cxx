@@ -48,6 +48,10 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
     TObjString* tarId = (TObjString*) sourceList->At(ind);
     TString tarName = GetFile(kDAQ, "SDD_Calib", tarId->GetString().Data());
 //    gSystem->cd(tempDir);
+    if(tarName.Length()==0){
+      Log(Form("Baseline tar file from source %d not found.",ind));
+      return 2;
+    }
     sprintf(command,"tar -xf %s",tarName.Data());
     gSystem->Exec(command);
     ind++;
@@ -62,8 +66,12 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
   ind = 0;
   while (sourceList->At(ind)!=NULL) {
    TObjString* tarId = (TObjString*) sourceList->At(ind);
-     TString tarName = GetFile(kDAQ, "SDD_Injec", tarId->GetString().Data());
+   TString tarName = GetFile(kDAQ, "SDD_Injec", tarId->GetString().Data());
 //    gSystem->cd(tempDir);
+    if(tarName.Length()==0){
+      Log(Form("Injector tar file from source %d not found.",ind));
+      return 2;
+    }
     sprintf(command,"tar -xf %s",tarName.Data());
     gSystem->Exec(command);
     ind++;
@@ -118,7 +126,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
 	return 2;
       }      
       while (!feof(injFil)){
-	fscanf(injFil,"%d %d %",&evNumb,&timeStamp);
+	fscanf(injFil,"%d %d",&evNumb,&timeStamp);
 	if(feof(injFil)) break;
 	for(Int_t ic=0;ic<4;ic++) fscanf(injFil,"%f",&param[ic]);
 	cal->SetDriftSpeedParam(isid,param);
