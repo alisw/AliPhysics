@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,6 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliITSRecoParam.h"
+
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -22,13 +25,47 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliITSRecoParam.h"
 
 ClassImp(AliITSRecoParam)
 
 
 //_____________________________________________________________________________
-AliITSRecoParam::AliITSRecoParam()
+AliITSRecoParam::AliITSRecoParam() : TObject(),
+fNSigmaYLayerForRoadY(0),
+fNSigmaRoadY(0),
+fNSigmaZLayerForRoadZ(0),
+fNSigmaRoadZ(0),
+fNSigma2RoadZC(0),
+fNSigma2RoadYC(0),
+fNSigma2RoadZNonC(0),
+fNSigma2RoadYNonC(0),
+fMaxNormChi2NonCForHypothesis(0),
+fMaxChi2(0),
+fMaxRoad(0),
+fMaxChi2In(0),
+fChi2PerCluster(0),
+fXV(0), 
+fYV(0),
+fZV(0),
+fSigmaXV(0),
+fSigmaYV(0),
+fSigmaZV(0),
+fVertexCut(0),
+fMaxDZforPrimTrk(0),
+fMaxDZToUseConstraint(0), 
+fMaxDforV0dghtrForProlongation(0),
+fMaxDForProlongation(0),
+fMaxDZForProlongation(0),
+fMinPtForProlongation(0),
+fAddVirtualClustersInDeadZone(kTRUE),
+fZWindowDeadZone(0),
+fSigmaXDeadZoneHit2(0),
+fSigmaZDeadZoneHit2(0),
+fXPassDeadZoneHits(0),
+fUseTGeoInTracker(kFALSE),
+fAllowSharedClusters(kTRUE),
+fUseNominalClusterErrors(kFALSE),
+fFindV0s(kTRUE)
 {
   //
   // constructor
@@ -38,6 +75,7 @@ AliITSRecoParam::AliITSRecoParam()
   SetAllowSharedClusters(kTRUE);
   SetFindV0s(kTRUE);
   SetAddVirtualClustersInDeadZone(kTRUE);
+  SetUseAmplitudeInfo(kTRUE);
 }
 //_____________________________________________________________________________
 AliITSRecoParam::~AliITSRecoParam() 

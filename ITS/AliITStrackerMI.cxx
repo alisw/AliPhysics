@@ -43,6 +43,7 @@
 #include "AliITSReconstructor.h"
 #include "AliTrackPointArray.h"
 #include "AliAlignObj.h"
+#include "AliITSClusterParam.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -703,8 +704,8 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   Float_t expQ = TMath::Max(0.8*t->GetTPCsignal(),30.);
 
   Float_t errlocalx,errlocalz;
-  GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz);
-
+  if(!AliITSReconstructor::GetRecoParam()->GetUseNominalClusterErrors())
+    AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz);
 
   Float_t xyz[3];
   Float_t cov[6];
@@ -2137,7 +2138,7 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
 	cerry*=cerry;
 	cerrz*=cerrz;	
 	Float_t cchi2 = (track->GetDy(i)*track->GetDy(i)/cerry)+(track->GetDz(i)*track->GetDz(i)/cerrz);
-	if (i>1){
+	if (i>1 && AliITSReconstructor::GetRecoParam()->GetUseAmplitudeInfo(i)) {
 	  Float_t ratio = track->GetNormQ(i)/track->GetExpQ();
 	  if (ratio<0.5) {
 	    cchi2+=(0.5-ratio)*10.;
@@ -2416,7 +2417,8 @@ Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id
     //
     Float_t deltan = 0;
     if (l>3&&cl->GetNy()+cl->GetNz()>6) continue;
-    if (l>2&&track->GetNormQ(l)/track->GetExpQ()>3.5) continue;
+    if (l>2&&AliITSReconstructor::GetRecoParam()->GetUseAmplitudeInfo(l))
+      if (track->GetNormQ(l)/track->GetExpQ()>3.5) continue;
     if (l<2 || l>3){      
       deltan = (cl->GetNy()+cl->GetNz()-ny[l]-nz[l]);
     }
@@ -2466,7 +2468,8 @@ Int_t AliITStrackerMI::GetOverlapTrack(AliITStrackMI *track, Int_t trackID, Int_
     //
     Float_t deltan = 0;
     if (l>3&&cl->GetNy()+cl->GetNz()>6) continue;
-    if (l>2&&track->GetNormQ(l)/track->GetExpQ()>3.5) continue;
+    if (l>2&&AliITSReconstructor::GetRecoParam()->GetUseAmplitudeInfo(l))
+      if (track->GetNormQ(l)/track->GetExpQ()>3.5) continue;
     if (l<2 || l>3){      
       deltan = (cl->GetNy()+cl->GetNz()-ny[l]-nz[l]);
     }
@@ -3187,7 +3190,8 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
       if (ilayer>3&&c->GetNy()+c->GetNz()>6) continue;
       if ( (c->GetNy()+c->GetNz() )> ny[i]+nz[i]+0.7) continue; //shared track
       if (  c->GetNz()> nz[i]+0.7) continue; //shared track
-      if ( ilayer>2&& besttrack->GetNormQ(ilayer)/besttrack->GetExpQ()>1.5) continue;
+      if ( ilayer>2&& AliITSReconstructor::GetRecoParam()->GetUseAmplitudeInfo(ilayer)) 
+	if (besttrack->GetNormQ(ilayer)/besttrack->GetExpQ()>1.5) continue;
       //if (  c->GetNy()> ny[i]+0.7) continue; //shared track
 
       Bool_t cansign = kTRUE;
@@ -3385,10 +3389,11 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   Float_t theta = track->GetTgl();
   Float_t phi   = track->GetSnp();
   phi = TMath::Sqrt(phi*phi/(1.-phi*phi));
-  GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
+  if(!AliITSReconstructor::GetRecoParam()->GetUseNominalClusterErrors())
+    AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
   Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz);
   Float_t ny,nz;
-  GetNTeor(layer,cluster, theta,phi,ny,nz);  
+  AliITSClusterParam::GetNTeor(layer,cluster, theta,phi,ny,nz);  
   Double_t delta = cluster->GetNy()+cluster->GetNz()-nz-ny;
   if (delta>1){
     chi2+=0.5*TMath::Min(delta/2,2.);
@@ -3412,9 +3417,11 @@ Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* c
   //
   Int_t layer = (index & 0xf0000000) >> 28;
   track->SetClIndex(layer, index);
-  if ( (layer>1) &&track->GetNormQ(layer)/track->GetExpQ()<0.5 ) {
-    chi2+= (0.5-track->GetNormQ(layer)/track->GetExpQ())*10.;
-    track->SetdEdxMismatch(track->GetdEdxMismatch()+(0.5-track->GetNormQ(layer)/track->GetExpQ())*10.);
+  if (layer>1&&AliITSReconstructor::GetRecoParam()->GetUseAmplitudeInfo(layer)) {
+    if (track->GetNormQ(layer)/track->GetExpQ()<0.5 ) {
+      chi2+= (0.5-track->GetNormQ(layer)/track->GetExpQ())*10.;
+      track->SetdEdxMismatch(track->GetdEdxMismatch()+(0.5-track->GetNormQ(layer)/track->GetExpQ())*10.);
+    }
   }
 
   if (cl->GetQ()<=0) return 0;  // ingore the "virtual" clusters
@@ -3427,187 +3434,6 @@ Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* c
   if (!track->PropagateTo(x,0.,0.)) return 0;
   
   return track->UpdateMI(cl->GetY(),cl->GetZ(),track->GetSigmaY(layer),track->GetSigmaZ(layer),chi2,index);
-}
-
-void AliITStrackerMI::GetNTeor(Int_t layer, const AliITSRecPoint* /*cl*/, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz)
-{
-  //
-  //get "mean shape"
-  //
-  if (layer==0){
-    ny = 1.+TMath::Abs(phi)*3.2;
-    nz = 1.+TMath::Abs(theta)*0.34;
-    return;
-  }
-  if (layer==1){
-    ny = 1.+TMath::Abs(phi)*3.2;
-    nz = 1.+TMath::Abs(theta)*0.28;
-    return;
-  }
-  
-  if (layer>3){
-    ny = 2.02+TMath::Abs(phi)*1.95;
-    nz = 2.02+TMath::Abs(phi)*2.35;
-    return;
-  }
-  ny  = 6.6-2.7*TMath::Abs(phi);
-  nz  = 2.8-3.11*TMath::Abs(phi)+0.45*TMath::Abs(theta);
-}
-
-
-
-Int_t AliITStrackerMI::GetError(Int_t layer, const AliITSRecPoint*cl, Float_t theta, Float_t phi,Float_t expQ, Float_t &erry, Float_t &errz)
-{
-  //calculate cluster position error
-  //
-  Float_t nz,ny;
-  GetNTeor(layer, cl,theta,phi,ny,nz);  
-  erry   = TMath::Sqrt(cl->GetSigmaY2()); 
-  errz   = TMath::Sqrt(cl->GetSigmaZ2()); 
-  //
-  // PIXELS
-  if (layer<2){
-    if (TMath::Abs(ny-cl->GetNy())>0.6)  {
-      if (ny<cl->GetNy()){
-	erry*=0.4+TMath::Abs(ny-cl->GetNy());
-	errz*=0.4+TMath::Abs(ny-cl->GetNy());
-      }else{
-	erry*=0.7+0.5*TMath::Abs(ny-cl->GetNy());
-	errz*=0.7+0.5*TMath::Abs(ny-cl->GetNy());
-      }
-    }
-    if (TMath::Abs(nz-cl->GetNz())>1.)  {
-      erry*=TMath::Abs(nz-cl->GetNz());
-      errz*=TMath::Abs(nz-cl->GetNz());	      
-    }
-    erry*=0.85;
-    errz*=0.85;
-    erry= TMath::Min(erry,float(0.0050));
-    errz= TMath::Min(errz,float(0.0300));
-    return 10;
-  }
-
-  //STRIPS
-  if (layer>3){ 
-    //factor 1.8 appears in new simulation
-    //
-    Float_t scale=1.8;
-    if (cl->GetNy()==100||cl->GetNz()==100){
-      erry = 0.004*scale;
-      errz = 0.2*scale;
-      return 100;
-    }
-    if (cl->GetNy()+cl->GetNz()>12){
-      erry = 0.06*scale;
-      errz = 0.57*scale;
-      return 100;
-    }
-    Float_t normq = cl->GetQ()/(TMath::Sqrt(1+theta*theta+phi*phi));
-    Float_t chargematch = TMath::Max(double(normq/expQ),2.);
-    //
-    if (cl->GetType()==1 || cl->GetType()==10 ){     							       
-      if (chargematch<1.0 || (cl->GetNy()+cl->GetNz()<nz+ny+0.5)){
-	errz = 0.043*scale;
-	erry = 0.00094*scale;
-	return 101;
-      }
-      if (cl->GetNy()+cl->GetNz()<nz+ny+1.2){
-	errz = 0.06*scale;
-	erry =0.0013*scale;
-	return 102;
-      }
-      erry = 0.0027*scale;
-      errz = TMath::Min(0.028*(chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.15)*scale;
-      return 103;
-    }
-    if (cl->GetType()==2 || cl->GetType()==11 ){ 
-      erry = TMath::Min(0.0010*(1+chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.05)*scale;
-      errz = TMath::Min(0.025*(1+chargematch+cl->GetNy()+cl->GetNz()-nz+ny),0.5)*scale;
-      return 104;
-    }
-    
-    if (cl->GetType()>100 ){     							       
-      if ((chargematch+cl->GetNy()+cl->GetNz()-nz-ny<1.5)){
-	errz = 0.05*scale;
-	erry = 0.00096*scale;
-	return 105;
-      }
-      if (cl->GetNy()+cl->GetNz()-nz-ny<1){
-	errz = 0.10*scale;
-	erry = 0.0025*scale;
-	return 106;
-      }
-
-      errz = TMath::Min(0.05*(chargematch+cl->GetNy()+cl->GetNz()-nz-ny),0.4)*scale;
-      erry = TMath::Min(0.003*(chargematch+cl->GetNy()+cl->GetNz()-nz-ny),0.05)*scale;
-      return 107;
-    }    
-    Float_t diff = cl->GetNy()+cl->GetNz()-ny-nz;
-    if (diff<1) diff=1;
-    if (diff>4) diff=4;
-        
-    if (cl->GetType()==5||cl->GetType()==6||cl->GetType()==7||cl->GetType()==8){
-      errz = 0.14*diff;
-      erry = 0.003*diff;
-      return 108;
-    }  
-    erry = 0.04*diff;
-    errz = 0.06*diff;
-    return 109;
-  }
-  //DRIFTS
-  Float_t normq = cl->GetQ()/(TMath::Sqrt(1+theta*theta+phi*phi));
-  Float_t chargematch = normq/expQ;
-  chargematch/=2.4; // F. Prino Sept. 2007: SDD charge conversion keV->ADC
-  Float_t factorz=1;
-  Int_t   cnz = cl->GetNz()%10;
-  //charge match
-  if (cl->GetType()==1){
-    if (chargematch<1.25){
-      erry =  0.0028*(1.+6./cl->GetQ());  // gold clusters
-    }
-    else{
-      erry = 0.003*chargematch;
-      if (cl->GetNz()==3) erry*=1.5;
-    }
-    if (chargematch<1.0){
-      errz =  0.0011*(1.+6./cl->GetQ());
-    }
-    else{
-      errz = 0.002*(1+2*(chargematch-1.));
-    }
-    if (cnz>nz+0.6) {
-      erry*=(cnz-nz+0.5);
-      errz*=1.4*(cnz-nz+0.5);
-    }
-  }
-  if (cl->GetType()>1){
-    if (chargematch<1){
-      erry =  0.00385*(1.+6./cl->GetQ());  // gold clusters
-      errz =  0.0016*(1.+6./cl->GetQ());
-    }
-    else{
-      errz = 0.0014*(1+3*(chargematch-1.));
-      erry = 0.003*(1+3*(chargematch-1.));
-    } 
-    if (cnz>nz+0.6) {
-      erry*=(cnz-nz+0.5);
-      errz*=1.4*(cnz-nz+0.5);
-    }
-  }
-
-  if (TMath::Abs(cl->GetY())>2.5){
-    factorz*=1+2*(TMath::Abs(cl->GetY())-2.5);
-  }
-  if (TMath::Abs(cl->GetY())<1){
-    factorz*=1.+0.5*TMath::Abs(TMath::Abs(cl->GetY())-1.);
-  }
-  factorz= TMath::Min(factorz,float(4.));  
-  errz*=factorz;
-
-  erry= TMath::Min(erry,float(0.05));
-  errz= TMath::Min(errz,float(0.05));  
-  return 200;
 }
 //------------------------------------------------------------------------
 void   AliITStrackerMI::GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz)

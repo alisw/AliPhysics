@@ -22,6 +22,7 @@
 //#pragma link C++ class  AliITSClusterFinderSPDdubna+;
 #pragma link C++ class  AliITSClusterFinderSDD+;
 #pragma link C++ class  AliITSClusterFinderSSD+;
+#pragma link C++ class  AliITSClusterParam+;
 #pragma link C++ class  AliITSDetTypeRec+;
 
 #pragma link C++ class  AliITSclusterSSD+;

@@ -1,7 +1,9 @@
 #ifndef ALIITSRECOPARAM_H
 #define ALIITSRECOPARAM_H
-/* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -124,6 +126,13 @@ class AliITSRecoParam : public TObject
   void   SetAllowSharedClusters(Bool_t allow=kTRUE) { fAllowSharedClusters=allow; return; }
   Bool_t GetAllowSharedClusters() const { return fAllowSharedClusters; }
 
+  void   SetUseNominalClusterErrors(Bool_t nominal=kTRUE) { fUseNominalClusterErrors=nominal; return; }
+  Bool_t GetUseNominalClusterErrors() const { return fUseNominalClusterErrors; }
+  void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<6;i++) fUseAmplitudeInfo[i]=use; return; }
+  void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
+  Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
+
+
   void   SetFindV0s(Bool_t find=kTRUE) { fFindV0s=find; return; }
   Bool_t GetFindV0s() const { return fFindV0s; }
 
@@ -190,6 +199,8 @@ class AliITSRecoParam : public TObject
 
   Bool_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
+  Bool_t fUseNominalClusterErrors; // if kFALSE don't modify errors using AliITSClusterParam (MI)
+  Bool_t fUseAmplitudeInfo[6]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
 
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
 

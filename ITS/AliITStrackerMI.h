@@ -1,8 +1,9 @@
 #ifndef ALIITSTRACKERMI_H
 #define ALIITSTRACKERMI_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
 
 //-------------------------------------------------------------------------
 //                          ITS tracker
@@ -47,8 +48,6 @@ public:
   void SetLastLayerToTrackTo(Int_t l=0) {fLastLayerToTrackTo=l;} 
   void SetLayersNotToSkip(Int_t *l);
   void UseClusters(const AliKalmanTrack *t, Int_t from=0) const;
-  void GetNTeor(Int_t layer, const AliITSRecPoint* cl, Float_t theta, Float_t phi, Float_t &ny, Float_t &nz);
-  Int_t  GetError(Int_t layer, const AliITSRecPoint*cl, Float_t theta, Float_t phi, Float_t expQ, Float_t &erry, Float_t &errz);
 
   void  GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz);
   Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer);
