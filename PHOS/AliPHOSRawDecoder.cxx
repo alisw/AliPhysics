@@ -159,7 +159,10 @@ Bool_t AliPHOSRawDecoder::NextDigit()
        // Take is as a first time bin multiplied by the sample tick time
        
        if(fPedSubtract) 
-	 fEnergy -= (Double_t)(pedMean/nPed); // "pedestal subtraction"
+	 if (nPed > 0)
+	   fEnergy -= (Double_t)(pedMean/nPed); // pedestal subtraction
+	 else
+	   return kFALSE;
        
        if(fLowGainFlag)
 	 fEnergy *= fPulseGenerator->GetRawFormatHighLowGainFactor(); // *16 
