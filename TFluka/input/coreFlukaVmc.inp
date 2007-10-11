@@ -1,4 +1,4 @@
-GLOBAL        10000.
+GLOBAL        10000.                           4.0
 DEFAULTS                                                              NEW-DEFA
 OPEN             15.                                                  UNKNOWN
 FlukaVmc.err
