@@ -170,9 +170,11 @@ TDirectory * AliQAChecker::GetRefSubDir(const char * det, const char * task)
 { 
   // Opens and returns the file with the reference data 
   TFile * f = TFile::Open(fRefDirName, "READ") ;
-  if (!f) 
-    AliError(Form("Cannot find reference file %s", fRefDirName.Data())) ; 
   TDirectory * rv = NULL ; 
+  if (!f) { 
+    AliError(Form("Cannot find reference file %s", fRefDirName.Data())) ; 
+    return rv ; 
+  }
   rv = f->GetDirectory(det) ; 
   if (!rv) {
     AliWarning(Form("Directory %s not found in %d", det, fRefDirName.Data())) ; 
@@ -253,6 +255,7 @@ Bool_t AliQAChecker::Run()
       if ( taskName == AliQA::GetTaskName(AliQA::kESDS) ) 
 		index = AliQA::kESD ; 
       qac->Init(AliQA::DETECTORINDEX(det)) ; 
+
 	  TDirectory * refDir = GetRefSubDir(detNameQA.Data(), taskName.Data()) ;
 	  if ( refDir ) { 
 		qac->SetRefandData(refDir, taskDir) ; 
@@ -303,10 +306,12 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList 
   else if ( task == AliQA::kESDS ) 
 		index = AliQA::kESD ; 
 
-  qac->Init(det) ; 
-  qac->SetRefandData(GetRefSubDir(AliQA::GetDetName(det).Data(), AliQA::GetTaskName(task).Data())) ; 
-  qac->Run(index, list) ; 
-  
+  TDirectory * refDir = GetRefSubDir(AliQA::GetDetName(det).Data(), AliQA::GetTaskName(task).Data()) ;
+  if ( refDir ) { 
+	qac->Init(det) ; 
+	qac->SetRefandData(refDir) ; 
+	qac->Run(index, list) ; 
+  }
   return kTRUE ; 
   
 }
