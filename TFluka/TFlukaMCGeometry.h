@@ -59,6 +59,7 @@ class TFlukaMCGeometry :public TNamed {
     Int_t         RegionId() const; 
     void          ToFlukaString(TString &str) const;
     void          FlukaMatName(TString &str) const;
+    Int_t         GetPredefinedMaterialId(Int_t z) const;
     void          WritePegFile(Int_t imat, Int_t *NoStern, Int_t *ElemError,
                        Int_t *MixError, Int_t *countGas) const;
     Double_t *    GetISSB(Double_t rho, Int_t nElem, Double_t *zelem, Double_t *welem ) const;

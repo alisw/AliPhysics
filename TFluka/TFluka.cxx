@@ -256,8 +256,6 @@ void TFluka::Init() {
     //
      AddParticlesToPdgDataBase();
      //
-
-     
 }
 
 
@@ -1274,7 +1272,7 @@ void TFluka::InitPhysics()
 // Initialisation needed for Cerenkov photon production and transport
     TObjArray *matList = GetFlukaMaterials();
     Int_t nmaterial =  matList->GetEntriesFast();
-    fMaterials = new Int_t[nmaterial+3];
+    fMaterials = new Int_t[nmaterial+25];
     
     for (Int_t im = 0; im < nmaterial; im++)
     {

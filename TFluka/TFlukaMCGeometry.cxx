@@ -577,8 +577,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
   // program load the right cross sections, and equal to the names included in
   // the .pemf. Otherwise the user must define the LOW-MAT CARDS, and make his
   // own .pemf, in order to get the right cross sections loaded in memory.
-
-
+  // Materials defined by FLUKA
    TString sname;
    gGeoManager->Export("flgeom.root");
    if (fname) sname = fname;
@@ -600,15 +599,13 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    element->SetTitle("ALUMINUM"); // this is how FLUKA likes it ...
    element = table->GetElement(15);
    element->SetTitle("PHOSPHO");  // same story ...
-//   element = table->GetElement(10);
-//   element->SetTitle("ARGON");  // NEON not in neutron xsec table
    Int_t nelements = table->GetNelements();
    TList *matlist = gGeoManager->GetListOfMaterials();
-//   TList *medlist = gGeoManager->GetListOfMedia();
-//   Int_t nmed = medlist->GetSize();
    TIter next(matlist);
    Int_t nmater = matlist->GetSize();
-   Int_t nfmater = 0;
+   Int_t nfmater =  0;
+   Int_t newind  = 26;  // here non predefined materials start
+   
    TGeoMaterial *mat;
    TGeoMixture *mix = 0;
    TString matname;
@@ -623,7 +620,14 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       rho = 0.999;
 
       mat = new TGeoMaterial(matname, element->A(), element->Z(), rho);
-      mat->SetIndex(nfmater+3);
+      // Check if the element has been predefined by FLUKA
+      Int_t pmid = GetPredefinedMaterialId(Int_t(element->Z()));
+      if (pmid > 0) {
+	  mat->SetIndex(pmid);
+      } else {
+	  mat->SetIndex(newind++);
+      }
+      
       mat->SetUsed(kTRUE);
       fMatList->Add(mat);
       objstr = new TObjString(matname.Data());
@@ -632,7 +636,6 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    }
    
    fIndmat = nfmater;
-//   TGeoMedium *med;
    // Adjust material names and add them to FLUKA list
    for (i=0; i<nmater; i++) {
       mat = (TGeoMaterial*)matlist->At(i);
@@ -647,7 +650,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
       matname = mat->GetName();
       FlukaMatName(matname);
 
-      mat->SetIndex(nfmater+3);
+      mat->SetIndex(newind++);
       objstr = new TObjString(matname.Data());
       fMatList->Add(mat);
       fMatNames->Add(objstr);
@@ -1247,6 +1250,7 @@ void TFlukaMCGeometry::SetMreg(Int_t mreg, Int_t lttc)
    Int_t crtlttc = gGeoManager->GetCurrentNodeId()+1;
    if (crtlttc == lttc) return;
    gGeoManager->CdNode(lttc-1);
+   while (gGeoManager->GetCurrentVolume()->IsAssembly()) gGeoManager->CdUp();
 }
 
 //_____________________________________________________________________________
@@ -1350,8 +1354,33 @@ Int_t TFlukaMCGeometry::GetNstep()
    return gNstep;
 }
 
-// FLUKA GEOMETRY WRAPPERS - to replace FLUGG wrappers
 
+Int_t TFlukaMCGeometry::GetPredefinedMaterialId(Int_t z) const
+{
+// Get predifined material id from Z if present in list
+    const Int_t kMax = 25;
+    
+    static Int_t idFluka[kMax] = 	
+	{-1, -1,  1,  2,  4,  6,  7,  8,  12,  13, 
+	 26, 29, 47, 14, 79, 80, 82, 73,  11,  18, 
+	 20, 50, 74, 22, 28};
+    
+    Int_t id = -1;
+
+    for (Int_t i = 0; i < kMax; i++)
+    {
+	if (z == idFluka[i]) {
+	    id = i + 1;
+	    break;
+	}
+
+  }
+  
+    return id;
+}
+
+// FLUKA GEOMETRY WRAPPERS - to replace FLUGG wrappers
+//
 //_____________________________________________________________________________
 Int_t idnrwr(const Int_t & /*nreg*/, const Int_t & /*mlat*/)
 {
