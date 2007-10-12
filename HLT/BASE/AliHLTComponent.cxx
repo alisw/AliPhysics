@@ -22,6 +22,12 @@
     @date   
     @brief  Base class implementation for HLT components. */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -212,6 +218,7 @@ int AliHLTComponent::DoDeinit()
 
 int AliHLTComponent::GetOutputDataTypes(vector<AliHLTComponentDataType>& /*tgtList*/)
 {
+  HLTLogKeyword("dummy");
   return 0;
 }
 
@@ -905,6 +912,7 @@ AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(const AliHLTComponentDataTyp
 int AliHLTComponent::Write(AliHLTMemoryFile* pFile, const TObject* pObject,
 			   const char* key, int option)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pFile && pObject) {
     pFile->cd();
@@ -925,6 +933,7 @@ int AliHLTComponent::Write(AliHLTMemoryFile* pFile, const TObject* pObject,
 
 int AliHLTComponent::CloseMemoryFile(AliHLTMemoryFile* pFile)
 {
+  // see header file for function documentation
   int iResult=0;
   if (pFile) {
     vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();

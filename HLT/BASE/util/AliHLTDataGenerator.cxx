@@ -21,6 +21,12 @@
     @date   
     @brief  HLT file publisher component implementation. */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -76,6 +82,7 @@ AliHLTComponentDataType AliHLTDataGenerator::GetOutputDataType()
 
 int AliHLTDataGenerator::GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList)
 {
+  // see header file for class documentation
   int count=0;
   tgtList.clear();
   tgtList.push_back(fDataType);
@@ -189,6 +196,7 @@ int AliHLTDataGenerator::DoInit( int argc, const char** argv )
 
 int AliHLTDataGenerator::ScanSizeArgument(AliHLTUInt32_t &size, const char* arg)
 {
+  // see header file for class documentation
   int iResult=0;
   if (arg) {
     TString parameter(arg);
@@ -236,6 +244,7 @@ int AliHLTDataGenerator::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTUInt32_t& size,
 				   vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  // see header file for class documentation
   int iResult=0;
   AliHLTUInt32_t generated=fCurrSize;
   if (generated<=size ) {

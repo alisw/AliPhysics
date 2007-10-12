@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTReconstruction.cxx
+/** @file   AliHLTReconstructor.cxx
     @author Matthias Richter
     @date   
     @brief  Binding class for HLT reconstruction in AliRoot. */

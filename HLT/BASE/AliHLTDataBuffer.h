@@ -249,14 +249,14 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     /** standard destructor */
     virtual ~AliHLTRawBuffer() {}
 
-    int operator==(void*);
-    int operator==(AliHLTUInt8_t* ptr) {return fPtr==ptr;}
-    int operator<=(void*);
-    int operator>(void*);
-    int operator-(void*);
+    int operator==(void*) const;
+    int operator==(AliHLTUInt8_t* ptr) const {return fPtr==ptr;}
+    int operator<=(void*) const;
+    int operator>(void*) const;
+    int operator-(void*) const;
 
-    operator void*() {return fPtr;}
-    operator AliHLTUInt8_t*() {return fPtr;}
+    operator void*() const {return fPtr;}
+    operator AliHLTUInt8_t*() const {return fPtr;}
 
   private:
     /** size of the currently occupied partition of the buffer */

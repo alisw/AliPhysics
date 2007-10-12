@@ -631,26 +631,30 @@ int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists)
   return 0;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator==(void* ptr)
+int AliHLTDataBuffer::AliHLTRawBuffer::operator==(void* ptr) const
 {
+  // see header file for function documentation
   return fPtr == static_cast<AliHLTUInt8_t*>(ptr);
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(void* ptr)
+int AliHLTDataBuffer::AliHLTRawBuffer::operator<=(void* ptr) const
 {
+  // see header file for function documentation
   int iResult=fPtr <= static_cast<AliHLTUInt8_t*>(ptr);
   //printf("%p: %p <= %p (%d)\n", this, fPtr, ptr, iResult);
   return iResult;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator>(void* ptr)
+int AliHLTDataBuffer::AliHLTRawBuffer::operator>(void* ptr) const
 {
+  // see header file for function documentation
   int iResult=fPtr+fSize > static_cast<AliHLTUInt8_t*>(ptr);
   //printf("%p: %p + %d > %p (%d)\n", this, fPtr, fSize, ptr, iResult);
   return iResult;
 }
 
-int AliHLTDataBuffer::AliHLTRawBuffer::operator-(void* ptr)
+int AliHLTDataBuffer::AliHLTRawBuffer::operator-(void* ptr) const
 {
+  // see header file for function documentation
   return static_cast<int>(static_cast<AliHLTUInt8_t*>(ptr)-fPtr);
 }

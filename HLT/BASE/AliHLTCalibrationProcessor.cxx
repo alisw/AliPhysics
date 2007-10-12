@@ -21,6 +21,12 @@
  * @date 
  * @brief  Base class of HLT calibration components.  */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__ >= 3
 using namespace std;
 #endif
@@ -388,6 +394,7 @@ Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetec
 } // Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* detector, const char* pFileID, const char* pDDLNumber ) {
 
 Int_t AliHLTCalibrationProcessor::PushToFXS( void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const char* pDDLNumber ) {
+  // see header file for class documentation
 
   Int_t iResult = 0;
   

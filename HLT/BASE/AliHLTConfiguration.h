@@ -20,7 +20,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#include <cerrno>
 #include <vector>
 #include <TObject.h>
 #include <TList.h>

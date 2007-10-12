@@ -19,7 +19,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
-#include <cerrno>
 #include <TObject.h>
 #include <TList.h>
 #include "AliHLTDataTypes.h"

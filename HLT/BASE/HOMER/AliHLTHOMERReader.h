@@ -1,6 +1,6 @@
 // XEMacs -*-C++-*-
-#ifndef _HOMER_H_
-#define _HOMER_H_
+#ifndef AliHLTHOMERREADER_H
+#define AliHLTHOMERREADER_H
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
@@ -249,30 +249,9 @@ class HOMERReader: public MonitoringReader
 	int ReAllocBlocks( unsigned long newCnt );
 	homer_uint64 GetSourceEventID( DataSource& source );
 	homer_uint64 GetSourceEventType( DataSource& source );
-	homer_uint64 Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint64 source )
-		{
-		if ( destFormat == sourceFormat )
-		    return source;
-		else
-		    return ((source & 0xFFULL) << 56) | 
-			((source & 0xFF00ULL) << 40) | 
-			((source & 0xFF0000ULL) << 24) | 
-			((source & 0xFF000000ULL) << 8) | 
-			((source & 0xFF00000000ULL) >> 8) | 
-			((source & 0xFF0000000000ULL) >> 24) | 
-			((source & 0xFF000000000000ULL) >>  40) | 
-			((source & 0xFF00000000000000ULL) >> 56);
-		}
-	homer_uint32 Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint32 source )
-		{
-		if ( destFormat == sourceFormat )
-		    return source;
-		else
-		    return ((source & 0xFFUL) << 24) | 
-			((source & 0xFF00UL) << 8) | 
-			((source & 0xFF0000UL) >> 8) | 
-			((source & 0xFF000000UL) >> 24);
-		}
+        homer_uint64 Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint64 source ) const;
+
+        homer_uint32 Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint32 source ) const;
 
 
 	struct DataBlock
@@ -324,4 +303,4 @@ class HOMERReader: public MonitoringReader
 #endif
     };
 
-#endif /* _HOMER_H_ */
+#endif /* AliHLTHOMERREADER_H */

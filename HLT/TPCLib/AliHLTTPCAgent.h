@@ -35,6 +35,7 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    * to be registered to the current AliRoot setup by checking the
    * runloader.
    * @param handler      the configuration handler
+   * @param rawReader    AliRawReader instance
    * @param runloader    AliRoot runloader
    * @return neg. error code if failed
    */
@@ -48,6 +49,7 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    * described by the last configuration(s) in the chain. 
    * The agent can adapt the configurations to be registered to the current
    * AliRoot setup by checking the runloader.
+   * @param rawReader    AliRawReader instance
    * @param runloader    AliRoot runloader
    * @return number of configurations, neg. error code if failed
    */

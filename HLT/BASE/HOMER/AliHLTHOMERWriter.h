@@ -1,6 +1,6 @@
 // XEMacs -*-C++-*-
-#ifndef _HOMERWRITER_HPP_
-#define _HOMERWRITER_HPP_
+#ifndef ALIHLTHOMERWRITER_H
+#define ALIHLTHOMERWRITER_H
 /************************************************************************
 **
 **
@@ -77,6 +77,72 @@ class HOMERWriter
 	static homer_uint8 DetermineFloatAlignment();
 
 
+        struct HOMERWriterAlignment64TestStructure
+        {
+        	homer_uint64 f64Fill;   // !
+        	homer_uint64 f64Test64; // !
+        	homer_uint32 f32Fill;   // !
+        	homer_uint64 f64Test32; // !
+        	homer_uint16 f16Fill;   // !
+        	homer_uint64 f64Test16; // !
+        	homer_uint8  f8Fill;    // !
+        	homer_uint64 f64Test8;  // !
+        };
+        struct HOMERWriterAlignment32TestStructure
+        {
+        	homer_uint64 f64Fill;   // !
+        	homer_uint32 f32Test64; // !
+        	homer_uint32 f32Fill;   // !
+        	homer_uint32 f32Test32; // !
+        	homer_uint16 f16Fill;   // !
+        	homer_uint32 f32Test16; // !
+        	homer_uint8  f8Fill;    // !
+        	homer_uint32 f32Test8;  // !
+        };
+        struct HOMERWriterAlignment16TestStructure
+        {
+        	homer_uint64 f64Fill;   // !
+            	homer_uint16 f16Test64; // !
+        	homer_uint32 f32Fill;   // !
+        	homer_uint16 f16Test32; // !
+        	homer_uint16 f16Fill;   // !
+        	homer_uint16 f16Test16; // !
+        	homer_uint8  f8Fill;    // !
+        	homer_uint16 f16Test8;  // !
+        };
+        struct HOMERWriterAlignment8TestStructure
+        {
+        	homer_uint64 f64Fill; // !
+        	homer_uint8 f8Test64; // !
+        	homer_uint32 f32Fill; // !
+        	homer_uint8 f8Test32; // !
+        	homer_uint16 f16Fill; // !
+        	homer_uint8 f8Test16; // !
+        	homer_uint8  f8Fill;  // !
+        	homer_uint8 f8Test8;  // !
+        };
+        struct HOMERWriterAlignmentDoubleTestStructure
+        {
+        	homer_uint64 f64Fill; // !
+        	double fDoubleTest64; // !
+        	homer_uint32 f32Fill; // !
+        	double fDoubleTest32; // !
+        	homer_uint16 f16Fill; // !
+        	double fDoubleTest16; // !
+        	homer_uint8  f8Fill;  // !
+        	double fDoubleTest8;  // !
+        };
+        struct HOMERWriterAlignmentFloatTestStructure
+        {
+        	homer_uint64 f64Fill; // !
+        	float fFloatTest64;   // !
+        	homer_uint32 f32Fill; // !
+        	float fFloatTest32;   // !
+        	homer_uint16 f16Fill; // !
+        	float fFloatTest16;   // !
+        	homer_uint8  f8Fill;  // !
+        	float fFloatTest8;    // !
+        };
     protected:
 
 
@@ -109,4 +175,4 @@ class HOMERWriter
 ***************************************************************************
 */
 
-#endif // _HOMERWRITER_HPP_
+#endif // ALIHLTHOMERWRITER_H

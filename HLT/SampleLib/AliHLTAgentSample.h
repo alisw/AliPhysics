@@ -44,7 +44,6 @@
  *   return "libAliHLTUtil.so";
  *   </pre>
  * - not implemented are the in iterface methods
- *   - @ref AliHLTModuleAgent::GetEventRecConfigurations
  *   - @ref AliHLTModuleAgent::RegisterComponents
  *
  * In order to hook the sample library up to the HLT system on global object

@@ -22,6 +22,12 @@
     @brief  Implementation of HLT configuration handler.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -51,7 +57,12 @@ AliHLTConfiguration::AliHLTConfiguration()
   fArgc(-1),
   fArgv(NULL)
 { 
-  // see header file for function documentation
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
   fListSrcElement=fListSources.begin();
 }
 
@@ -447,6 +458,7 @@ AliHLTTask::AliHLTTask(AliHLTConfiguration* pConf)
 
 AliHLTTask::~AliHLTTask()
 {
+  // see header file for function documentation
   TObjLink* lnk=fListDependencies.FirstLink();
 
   while (lnk!=NULL) {
@@ -631,6 +643,7 @@ int AliHLTTask::SetDependency(AliHLTTask* pDep)
 
 int AliHLTTask::UnsetDependency(AliHLTTask* pDep)
 {
+  // see header file for function documentation
   fListDependencies.Remove(pDep);
   if (fpConfiguration) {
     fpConfiguration->InvalidateSources();

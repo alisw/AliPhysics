@@ -5,7 +5,6 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-
 /**
  * Class takes care of handling and shipping of freshly produced calibration
  * data. this data will be shipped to the FXS of the HLT
@@ -49,10 +48,6 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
   /** standard destructor */
   virtual ~AliHLTCalibrationProcessor();
 
-  /** Constants  */ 
-  static const AliHLTUInt32_t fgkFXSProtocolHeaderSize;
-  static const AliHLTUInt32_t fgkFXSProtocolHeaderVersion;
-
  protected:
 
   /*
@@ -83,6 +78,10 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @return neg. error code if failed 
    */
    Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
+
+  /** Constants  */ 
+  static const AliHLTUInt32_t fgkFXSProtocolHeaderSize;
+  static const AliHLTUInt32_t fgkFXSProtocolHeaderVersion;
 
  private:
 

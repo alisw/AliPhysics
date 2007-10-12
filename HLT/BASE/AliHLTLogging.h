@@ -47,7 +47,7 @@ class AliHLTComponentHandler;
 #define HLTFatal( ... )     if (CheckFilter(kHLTLogFatal))   LoggingVarargs(kHLTLogFatal,     Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , __VA_ARGS__ )
 
 // helper macro to set the keyword
-#define HLTLogKeyword(a)    AliHLTKeyword hltlogTmpkey__LINE__(this, a)
+#define HLTLogKeyword(a)    AliHLTKeyword hltlogTmpkey(this, a)
 
 #define HLT_DEFAULT_LOG_KEYWORD "no key"
 

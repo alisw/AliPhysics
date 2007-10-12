@@ -800,7 +800,7 @@ void HOMERReader::ReleaseCurrentEvent()
 	}
     }
 
-int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeout_us )
+int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeoutUsec )
     {
 // see header file for class documentation
     int ret;
@@ -817,8 +817,8 @@ int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned
 	    {
 	    return ENXIO;
 	    }
-	newSndTO.tv_sec = timeout_us / 1000000;
-	newSndTO.tv_usec = timeout_us - (newSndTO.tv_sec*1000000);
+	newSndTO.tv_sec = timeoutUsec / 1000000;
+	newSndTO.tv_usec = timeoutUsec - (newSndTO.tv_sec*1000000);
 	ret = setsockopt( source.fTCPConnection, SOL_SOCKET, SO_SNDTIMEO, &newSndTO, sizeof(newSndTO) );
 	if ( ret )
 	    {
@@ -876,6 +876,7 @@ int HOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long )
 
 int HOMERReader::ReadDataFromTCPSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout )
     {
+// see header file for class documentation
     bool toRead = false;
     do
 	{
@@ -1173,8 +1174,33 @@ homer_uint64 HOMERReader::GetSourceEventType( DataSource& source )
     return Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kType_64b_Offset ] );
     }
 
+homer_uint64 HOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint64 source ) const
+    {
+// see header file for class documentation
+    if ( destFormat == sourceFormat )
+        return source;
+    else
+        return ((source & 0xFFULL) << 56) | 
+    	((source & 0xFF00ULL) << 40) | 
+    	((source & 0xFF0000ULL) << 24) | 
+    	((source & 0xFF000000ULL) << 8) | 
+    	((source & 0xFF00000000ULL) >> 8) | 
+    	((source & 0xFF0000000000ULL) >> 24) | 
+    	((source & 0xFF000000000000ULL) >>  40) | 
+	((source & 0xFF00000000000000ULL) >> 56);
+    }
 
-
+homer_uint32 HOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint32 source ) const
+    {
+// see header file for class documentation
+    if ( destFormat == sourceFormat )
+        return source;
+    else
+        return ((source & 0xFFUL) << 24) | 
+    	((source & 0xFF00UL) << 8) | 
+    	((source & 0xFF0000UL) >> 8) | 
+    	((source & 0xFF000000UL) >> 24);
+    }
 /*
 ***************************************************************************
 **

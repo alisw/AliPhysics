@@ -6,7 +6,7 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTSimulation.h
+/** @file   AliHLTReconstructor.h
     @author Matthias Richter
     @date   
     @brief  Binding class for HLT simulation in AliRoot
