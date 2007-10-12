@@ -552,6 +552,9 @@ void AliJetFillUnitArrayTracks::Exec(Option_t* /*option*/)
 //__________________________________________________________
 void AliJetFillUnitArrayTracks::GetEtaPhiFromIndex(Int_t index, Float_t &eta, Float_t &phi)
 {
+//
+// Obtain the index from eta and phi
+//
   for(Int_t j=0; j<fNphi+1; j++) {
     for(Int_t i=0; i<fNeta+1; i++) {
 

@@ -16,6 +16,8 @@
 //
 // Temporarily added to define part of the EMCal geometry
 // necessary for the jet finder
+// Author: Magali Estienne
+// Magali.Estienne@cern.ch
 //
 
 #include <assert.h>
@@ -297,7 +299,7 @@ Bool_t AliJetDummyGeo::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &
 
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
-  const Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  const Int_t kPhiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
   static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
@@ -310,7 +312,7 @@ Bool_t AliJetDummyGeo::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &
   if(nSupMod<10) {
     yr = fCentersOfCellsPhiDir.At(iphi);
   } else {
-    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
+    yr = fCentersOfCellsPhiDir.At(iphi + kPhiIndexShift);
   }
 
   return kTRUE;

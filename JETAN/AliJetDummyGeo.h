@@ -7,7 +7,9 @@
 //
 // Temporarily added to define part of the EMCal geometry
 // necessary for the jet finder
-//
+// Author: Magali Estienne
+// Magali.Estienne@cern.ch
+
 
 #include <TObject.h>
 #include <TArrayD.h>
@@ -36,17 +38,17 @@ class AliJetDummyGeo : public TObject
     // pseudorapidity and r=sqrt(x*x+y*y).
     return r/TMath::Tan(AngleFromEta(eta));
   }
-  Int_t   GetNCells()     {return fNCells;}
-  Float_t GetPhiModuleSize() const  {return fPhiModuleSize;}
-  Float_t GetEtaModuleSize() const  {return fEtaModuleSize;}
-  Float_t GetShellThickness() const {return fShellThickness;}
-  Int_t   GetNPhi() const {return fNPhi;}
+  Int_t   GetNCells()               const {return fNCells;}
+  Float_t GetPhiModuleSize()        const {return fPhiModuleSize;}
+  Float_t GetEtaModuleSize()        const {return fEtaModuleSize;}
+  Float_t GetShellThickness()       const {return fShellThickness;}
+  Int_t   GetNPhi()                 const {return fNPhi;}
   Int_t   GetNumberOfSuperModules() const {return fNumberOfSuperModules;}
-  Float_t GetArm1EtaMin() {return fArm1EtaMin;}
-  Float_t GetArm1EtaMax() {return fArm1EtaMax;}
-  Float_t GetArm1PhiMin() {return fArm1PhiMin;}
-  Float_t GetArm1PhiMax() {return fArm1PhiMax;}
-  void    EtaPhiFromIndex(Int_t /*id*/, Float_t& /*eta*/, Float_t& /*phi*/);
+  Float_t GetArm1EtaMin()           const {return fArm1EtaMin;}
+  Float_t GetArm1EtaMax()           const {return fArm1EtaMax;}
+  Float_t GetArm1PhiMin()           const {return fArm1PhiMin;}
+  Float_t GetArm1PhiMax()           const {return fArm1PhiMax;}
+  void    EtaPhiFromIndex(Int_t id, Float_t& eta, Float_t& phi);
   void    GetGlobal(const Double_t *loc, Double_t *glob, int ind) const;
   void    GetGlobal(Int_t absId, Double_t glob[3]) const;
   void    GetGlobal(Int_t absId, TVector3 &vglob) const;
@@ -70,14 +72,14 @@ class AliJetDummyGeo : public TObject
   }
   Bool_t  GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
   void    GetTransformationForSM();
-  Float_t GetSampling() {return fSampling;}
+  Float_t GetSampling() const {return fSampling;}
 
  protected:
   Float_t fArm1PhiMin; 			// Minimum angular position of EMCAL in Phi (degrees)
   Float_t fArm1PhiMax;			// Maximum angular position of EMCAL in Phi (degrees)
   Float_t fArm1EtaMin;			// Minimum pseudorapidity position of EMCAL in Eta
   Float_t fArm1EtaMax; 			// Maximum pseudorapidity position of EMCAL in Eta
-  Int_t   fNumberOfSuperModules;
+  Int_t   fNumberOfSuperModules;        // Number of super modules
   Float_t fSteelFrontThick;             // Thickness of the front stell face of the support box - 9-sep-04
   Float_t fEnvelop[3];			// the GEANT TUB for the detector 
   Float_t fIPDistance;                  // Radial Distance of the inner surface of the EMCAL

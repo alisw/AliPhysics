@@ -22,8 +22,6 @@ class AliJetReader;
 class AliJetESDReader;
 class TClonesArray;
 class TRefArray;
-//class AliJetUnitArray;
-//class AliJetReaderHeader;
 class AliJetGrid;
 class AliJetDummyGeo;
 class AliESD;
@@ -61,11 +59,11 @@ class AliJetFillUnitArrayTracks : public TTask
   TRefArray*    GetRefArray() {return fRefArray;}
   //  Int_t         GetIndexFromEtaPhi(Double_t eta,Double_t phi) const;
   void          GetEtaPhiFromIndex(Int_t index,Float_t &eta,Float_t &phi);
-  Int_t         GetNeta() {return fNeta;}
-  Int_t         GetNphi() {return fNphi;}
-  Int_t         GetHadCorrection() {return fHCorrection;}
-  Int_t         GetMult() {return fNTracks;}
-  Int_t         GetMultCut() {return fNTracksCut;}
+  Int_t         GetNeta()          const {return fNeta;}
+  Int_t         GetNphi()          const {return fNphi;}
+  Int_t         GetHadCorrection() const {return fHCorrection;}
+  Int_t         GetMult()          const {return fNTracks;}
+  Int_t         GetMultCut()       const {return fNTracksCut;}
   void          Exec(Option_t*);
 
  protected:
@@ -89,13 +87,12 @@ class AliJetFillUnitArrayTracks : public TTask
   AliJetGrid                  *fTPCGrid;        // Define filled grid
   AliJetGrid                  *fEMCalGrid;      // Define filled grid
   AliJetDummyGeo              *fGeom;           // Define EMCal geometry
-  //  AliESD                     *fESD;            // ESD
   AliESDEvent                 *fESD;            // ESD
-  AliJetGrid                  *fGrid0;
-  AliJetGrid                  *fGrid1;
-  AliJetGrid                  *fGrid2;
-  AliJetGrid                  *fGrid3;
-  AliJetGrid                  *fGrid4;
+  AliJetGrid                  *fGrid0;          // Pointer to Grid 1
+  AliJetGrid                  *fGrid1;          // Pointer to Grid 2
+  AliJetGrid                  *fGrid2;          // Pointer to Grid 3
+  AliJetGrid                  *fGrid3;          // Pointer to Grid 4
+  AliJetGrid                  *fGrid4;          // Pointer to Grid 5  
 
   Int_t     fNphi;                    // number of points in the grid:   phi
   Int_t     fNeta;                    //               "                 eta
@@ -107,15 +104,15 @@ class AliJetFillUnitArrayTracks : public TTask
   TMatrixD* fParams;                  // matrix of parameters in the grid points  
   Int_t     fGrid;                    // Select the grid acceptance you want to fill
                                       // 0 = TPC acceptance, 1 = TPC-EMCal acceptance
-  Float_t   fPhiMin;
-  Float_t   fPhiMax;
-  Float_t   fEtaMin;
-  Float_t   fEtaMax;
-  Int_t     fEtaBinInTPCAcc;
-  Int_t     fPhiBinInTPCAcc;
-  Int_t     fEtaBinInEMCalAcc;
-  Int_t     fPhiBinInEMCalAcc;
-  Int_t     fNbinPhi;
+  Float_t   fPhiMin;                  // minimum phi
+  Float_t   fPhiMax;                  // maximum phi
+  Float_t   fEtaMin;                  // minimum eta
+  Float_t   fEtaMax;                  // maximum eta   
+  Int_t     fEtaBinInTPCAcc;          // eta bins in tpc acceptance
+  Int_t     fPhiBinInTPCAcc;          // phi bins in tpc acceptance 
+  Int_t     fEtaBinInEMCalAcc;        // eta bins in emcal acceptance
+  Int_t     fPhiBinInEMCalAcc;        // phi bins in emcal acceptance
+  Int_t     fNbinPhi;                 // number of phi bins
 
  private:
   //  void SetEMCALGeometry();
