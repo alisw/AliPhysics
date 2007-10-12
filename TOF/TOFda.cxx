@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   
   AliTOFGeometry * geom = new AliTOFGeometry();
 
-  static const Int_t size = AliTOFgeometry::NPadXSector()*AliTOFGeometry::NSectors();
+  static const Int_t size = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();
   static const Int_t nbins = 500;
   static const Int_t binmin = -20;
   const Float_t c = 2.99792458E10; //speed of light
