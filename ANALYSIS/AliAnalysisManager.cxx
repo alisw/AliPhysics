@@ -48,6 +48,7 @@ AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
 AliAnalysisManager::AliAnalysisManager() 
                    :TNamed(),
                     fTree(NULL),
+		    fInputEventHandler(NULL),
 		    fOutputEventHandler(NULL),
 		    fMCtruthEventHandler(NULL),
                     fCurrentEntry(-1),
@@ -70,6 +71,7 @@ AliAnalysisManager::AliAnalysisManager()
 AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                    :TNamed(name,title),
                     fTree(NULL),
+		    fInputEventHandler(NULL),
 		    fOutputEventHandler(NULL),
 		    fMCtruthEventHandler(NULL),
                     fCurrentEntry(-1),
@@ -98,6 +100,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
 AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                    :TNamed(other),
                     fTree(NULL),
+		    fInputEventHandler(NULL),
 		    fOutputEventHandler(NULL),
 		    fMCtruthEventHandler(NULL),
                     fCurrentEntry(-1),
@@ -127,6 +130,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
 // Assignment
    if (&other != this) {
       TNamed::operator=(other);
+      fInputEventHandler   = other.fInputEventHandler;
       fOutputEventHandler  = other.fOutputEventHandler;
       fMCtruthEventHandler = other.fMCtruthEventHandler;
       fTree       = NULL;
@@ -224,6 +228,11 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
 	   fOutputEventHandler->InitIO("local");
        }
    }
+   if (fInputEventHandler) {
+       fInputEventHandler->SetInputTree(tree);
+       fInputEventHandler->InitIO("");
+   }
+   
    //
    TIter next(fTasks);
    AliAnalysisTask *task;

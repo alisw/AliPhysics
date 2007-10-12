@@ -83,8 +83,10 @@ enum EAliAnalysisFlags {
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
    void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
+   void                SetInputEventHandler(AliVEventHandler*  handler)  {fInputEventHandler   = handler;}
    void                SetOutputEventHandler(AliVEventHandler*  handler) {fOutputEventHandler  = handler;}
    void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
+   AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
 
@@ -120,6 +122,7 @@ protected:
 
 private:
    TTree                  *fTree;                //! Input tree in case of TSelector model
+   AliVEventHandler       *fInputEventHandler;   //  Optional common input  event handler
    AliVEventHandler       *fOutputEventHandler;  //  Optional common output event handler
    AliVEventHandler       *fMCtruthEventHandler; //  Optional common MC Truth event handler
    Long64_t                fCurrentEntry;        //! Current processed entry in the tree
