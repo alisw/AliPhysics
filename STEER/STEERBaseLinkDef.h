@@ -40,6 +40,7 @@
 
 #pragma link C++ class AliStack+;
 #pragma link C++ class AliMCEventHandler+;
+#pragma link C++ class AliInputEventHandler+;
 
 #pragma link C++ class AliTrackReference+;
 #pragma link C++ class AliSysInfo+;
