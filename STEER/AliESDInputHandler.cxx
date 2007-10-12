@@ -20,7 +20,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TChain.h>
+#include <TTree.h>
 
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
@@ -51,7 +51,7 @@ Bool_t AliESDInputHandler::InitIO(Option_t* /*opt*/)
 {
     // Get pointer to ESD event
     fEvent = new AliESDEvent();
-    fEvent->ReadFromTree(fChain);
+    fEvent->ReadFromTree(fTree);
     return kTRUE;
 }
 
@@ -60,8 +60,6 @@ Bool_t AliESDInputHandler::BeginEvent()
     // Copy from old to new format if necessary
     AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
     if (old) {
-	printf("It's an old ESD \n");
-	
 	((AliESDEvent*)fEvent)->CopyFromOldESD();
 	old->Reset();
     }

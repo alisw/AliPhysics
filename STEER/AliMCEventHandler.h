@@ -37,6 +37,7 @@ public:
     virtual void         SetOutputFileName(char* /* fname */) {;}
     virtual char*        GetOutputFileName() {return 0;}
     virtual void         SetInputPath(char* fname); 
+    virtual void         SetInputTree(TTree* /*tree*/) {;}
     virtual TString*     GetInputPath() {return fPathName;}
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent();

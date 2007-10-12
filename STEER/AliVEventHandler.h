@@ -12,6 +12,7 @@
 
 #include <TNamed.h>
 
+class TTree;
 
 class AliVEventHandler : public TNamed {
 
@@ -19,11 +20,15 @@ class AliVEventHandler : public TNamed {
     AliVEventHandler();
     AliVEventHandler(const char* name, const char* title);
     virtual ~AliVEventHandler();
+    // Output
     virtual void         SetOutputFileName(char* fname)  = 0;
     virtual char*        GetOutputFileName()             = 0;
+    // Input
+    virtual void         SetInputTree(TTree* tree)       = 0;
+    // Steering 
     virtual Bool_t       InitIO(Option_t* opt)           = 0;
     virtual Bool_t       BeginEvent()                    = 0;
-    virtual Bool_t       Notify(const char *path)                        = 0;    
+    virtual Bool_t       Notify(const char *path)        = 0;    
     virtual Bool_t       FinishEvent()                   = 0;
     virtual Bool_t       Terminate()                     = 0;
     virtual Bool_t       TerminateIO()                   = 0;

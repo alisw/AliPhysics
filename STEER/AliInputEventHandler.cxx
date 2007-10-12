@@ -20,7 +20,6 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TChain.h>
 
 #include "AliInputEventHandler.h"
 #include "AliVEvent.h"

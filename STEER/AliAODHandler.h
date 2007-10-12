@@ -38,6 +38,8 @@ class AliAODHandler : public AliVEventHandler {
     void                 CreateTree();
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
+    //
+    void                 SetInputTree(TTree* /*tree*/) {;}
  private:
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented

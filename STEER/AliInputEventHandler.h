@@ -30,13 +30,13 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual Bool_t       Terminate()                        {return kTRUE;}
     virtual Bool_t       TerminateIO()                      {return kTRUE;}
     // Setters
-    virtual void         SetInputChain(TChain* chain)       {fChain = chain;}
+    virtual void         SetInputTree(TTree* tree)          {fTree = tree;}
     // Getters
-    virtual AliVEvent *GetEvent() const                     {return fEvent;}
-    virtual TChain    *GetChain() const                     {return fChain;}
+    virtual AliVEvent   *GetEvent() const                   {return fEvent;}
+    virtual TTree       *GetChain() const                   {return fTree;}
  protected:
     AliVEvent    *fEvent;   //! Pointer to the event 
-    TChain       *fChain;   //! Pointer to the chain
+    TTree        *fTree;    //! Pointer to the tree
     ClassDef(AliInputEventHandler, 1);
 };
 

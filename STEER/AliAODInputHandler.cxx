@@ -20,7 +20,7 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-#include <TChain.h>
+#include <TTree.h>
 
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
@@ -50,7 +50,7 @@ Bool_t AliAODInputHandler::InitIO(Option_t* /*opt*/)
 {
     // Get pointer to AOD event
     fEvent = new AliAODEvent();
-    fEvent->ReadFromTree(fChain);
+    fEvent->ReadFromTree(fTree);
     return kTRUE;
 }
 
