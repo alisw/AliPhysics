@@ -182,16 +182,31 @@ extern "C" {
 
   /**
    * @struct AliHLTComponentBlockData
-   * Descriptor for data blocks.
+   * This is the decription of data blocks exchanged between components.
+   * \b IMPORTANT: The validity of fPtr and fOffset is different for input and
+   * output blocks:
+   * - input blocks: The \em fPtr member always points to the beginning of the data
+   *                 of size \em fSize. fOffset is ignored and should be in most
+   *                 case 0.
+   * - output blocks: The \em fPtr member is ignored by the framework. \em fOffset
+   *                  must specify the start of the data relative to the output
+   *                  buffer. The data block has size \em fSize.
    */
   struct AliHLTComponentBlockData
   {
+    /* size and version of the struct */
     AliHLTUInt32_t fStructSize;
+    /* shared memory key, ignored by processing components */
     AliHLTComponentShmData fShmKey;
+    /* offset of output data relative to the output buffer */
     AliHLTUInt32_t fOffset;
+    /* start of the data for input data blocks, fOffset to be ignored*/
     void* fPtr;
+    /* size of the data block */
     AliHLTUInt32_t fSize;
+    /* data type of the data block */
     AliHLTComponentDataType fDataType;
+    /* data specification of the data block */
     AliHLTUInt32_t fSpecification;
   };
 

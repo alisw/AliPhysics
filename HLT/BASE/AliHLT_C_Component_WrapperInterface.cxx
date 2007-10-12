@@ -77,9 +77,11 @@ int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, in
 {
   if ( !gComponentHandler_C )
     return ENXIO;
+  if ( !handle ) return EINVAL;
   AliHLTComponent* comp;
   int ret = gComponentHandler_C->CreateComponent( componentType, environ_param, argc, argv, comp );
   *handle = reinterpret_cast<AliHLTComponentHandle>( comp );
+
   return ret;
 }
 

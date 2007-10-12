@@ -182,8 +182,14 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	    arrayBlockDesc[i].fShmKey.fStructSize=sizeof(AliHLTComponentShmData);
 	    arrayBlockDesc[i].fShmKey.fShmType=gkAliHLTComponentInvalidShmType;
 	    arrayBlockDesc[i].fShmKey.fShmID=gkAliHLTComponentInvalidShmID;
+	    // This models the behavior of PubSub.
+	    // For incoming data blocks, fOffset must be ignored by the
+	    // processing component. It is set for bookkeeping in the framework.
+	    // fPtr always points to the beginning of the data.
 	    arrayBlockDesc[i].fOffset=(*segment).fSegmentOffset;
-	    arrayBlockDesc[i].fPtr=*fpBuffer;
+	    AliHLTUInt8_t* pTgt=*fpBuffer;
+	    pTgt+=(*segment).fSegmentOffset;
+	    arrayBlockDesc[i].fPtr=reinterpret_cast<void*>(pTgt);
 	    arrayBlockDesc[i].fSize=(*segment).fSegmentSize;
 	    arrayBlockDesc[i].fDataType=(*segment).fDataType;
 	    arrayBlockDesc[i].fSpecification=(*segment).fSpecification;
@@ -296,17 +302,14 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
       if (*fpBuffer==pTgt) {
 	AliHLTDataBuffer::AliHLTDataSegment segment;
 	for (int i=0; i<iSize; i++) {
-	  // the pointer can be either NULL, than only the offset is considered, or a valid
-	  // pointer in the range of the buffer
-	  // The operator '>' includes the size of the buffer
+	  // This function has to model the behavior of PubSub
+	  // For output blocks only the fOffset value is used, this must be the offset
+	  // relative to the output pointer. fPtr must be either NULL or the output
+	  // pointer
 	  if (arrayBlockData[i].fPtr==NULL ||
-	      ((*fpBuffer)<=arrayBlockData[i].fPtr && (*fpBuffer)>arrayBlockData[i].fPtr)) {
-	    int ptrOffset=0;
-	    if (arrayBlockData[i].fPtr!=NULL) {
-	      ptrOffset=(*fpBuffer)-arrayBlockData[i].fPtr;
-	    }
-	    if (arrayBlockData[i].fOffset+ptrOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
-	      segment.fSegmentOffset=arrayBlockData[i].fOffset+ptrOffset;
+	      arrayBlockData[i].fPtr==*fpBuffer) {
+	    if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->fSize) {
+	      segment.fSegmentOffset=arrayBlockData[i].fOffset;
 	      segment.fSegmentSize=arrayBlockData[i].fSize;
 	      segment.fDataType=arrayBlockData[i].fDataType;
 	      segment.fSpecification=arrayBlockData[i].fSpecification;
@@ -318,7 +321,9 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	      iResult=-E2BIG;
 	    }
 	  } else {
-	    HLTError("invalid pointer (%p) in block data specification (buffer %p size %d)", arrayBlockData[i].fPtr, fpBuffer->fPtr, fpBuffer->fSize);
+	    HLTError("invalid pointer (%p) in block data specification (buffer %p size %d)."
+		     "please note: for output blocks only the fOffset value is valid and must "
+		     "be relative to the output buffer", arrayBlockData[i].fPtr, fpBuffer->fPtr, fpBuffer->fSize);
 	    iResult=-ERANGE;
 	  }
 	}

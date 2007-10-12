@@ -51,7 +51,7 @@ class AliRawReader;
  * can be queried when required.
  *
  * This is usually done during running the AliRoot reconstruction (see AliRoot
- * documentation on <tt> AliSimulation </tt> and <tt> AliReconstruction <tt>).
+ * documentation on <tt> AliSimulation </tt> and <tt> AliReconstruction </tt>).
  * The HLT implemets the @ref AliHLTSimulation and @ref
  * AliHLTReconstructor which hold the HLT steering object. Several flags can
  * be specified as options via the <tt>SetRunHLT</tt> method of
