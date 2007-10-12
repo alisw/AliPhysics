@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 #include "TTree.h"
-#include "AliESD.h"
+#include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include <list>
 
@@ -35,8 +35,8 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   void SetConstrained(const bool constrained);
   bool GetConstrained() const;
 
-  void SetESDSource(AliESD *aESD);
-  void SetESDfriendSource(AliESDfriend *aFriend);
+  void SetESDSource(AliESDEvent *aESD);
+  //  void SetESDfriendSource(AliESDfriend *aFriend);
 
  protected:
 
@@ -46,11 +46,11 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   int            fNumberofEvent; //number of Events in ESD file
   int            fCurEvent;      //number of current event
   unsigned int   fCurFile;       //number of current file
-  AliESD*        fEvent;         //ESD event
-  AliESDfriend*  fEventFriend;
+  AliESDEvent*   fEvent;         //ESD event
+  //  AliESDfriend*  fEventFriend;
 
-  list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared
-  list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow
+/*   list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared */
+/*   list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow */
 		
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)

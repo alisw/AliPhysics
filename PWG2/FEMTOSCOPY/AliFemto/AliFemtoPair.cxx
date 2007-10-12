@@ -110,7 +110,7 @@ void AliFemtoPair::SetMergingPar(double aMaxDuInner, double aMaxDzInner,
   fgMaxDzInner = aMaxDzInner;
   fgMaxDuOuter = aMaxDuOuter;
   fgMaxDzOuter = aMaxDzOuter;
-};
+}
 
 AliFemtoPair::~AliFemtoPair() {
   // Destructor

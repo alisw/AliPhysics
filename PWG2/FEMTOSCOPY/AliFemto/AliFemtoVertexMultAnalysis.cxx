@@ -13,6 +13,15 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.2.2.2  2007/10/12 14:28:37  akisiel
+ * New wave of cleanup and rule conformance
+ *
+ * Revision 1.2.2.1  2007/10/05 09:38:17  akisiel
+ * Fix stray colons
+ *
+ * Revision 1.2  2007/07/09 16:17:11  mlisa
+ * several files changed to change name of AliFemtoAnalysis to AliFemtoSimpleAnalysis and AliFemtoBaseAnalysis to AliFemtoAnalysis.  Also removed some hard-coded cuts of Marek
+ *
  * Revision 1.1  2007/05/16 10:22:12  akisiel
  * Making the directory structure of AliFemto flat. All files go into one common directory
  *
@@ -41,6 +50,15 @@
  *
  *
  **************************************************************************/
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// AliFemtoVertexMultAnalysis - Femtoscopic analysis which mixes event    //
+// with respect to the z position of the primary vertex and event total   //
+// multiplicity                                                           //
+// You need to provide the number of z-vertex and multiplicity bins       //
+// as well as ranges for the variables                                    //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoVertexMultAnalysis.h"
 #include "AliFemtoParticleCollection.h"
@@ -56,13 +74,13 @@ ClassImp(AliFemtoVertexMultAnalysis)
 #endif
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut*         partCut,
-				     AliFemtoEvent*               hbtEvent,
-				     AliFemtoParticleCollection*  partCollection);
+				      AliFemtoEvent*               hbtEvent,
+				      AliFemtoParticleCollection*  partCollection);
 
 
 //____________________________
 AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(unsigned int binsVertex, double minVertex, double maxVertex,
-						 unsigned int binsMult, double minMult, double maxMult) 
+						       unsigned int binsMult, double minMult, double maxMult) 
   : 
   fVertexZBins(binsVertex), 
   fOverFlowVertexZ(0), 
@@ -89,7 +107,7 @@ AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(unsigned int binsVertex, 
   if (fMixingBuffer) delete fMixingBuffer;
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
 										  fMultBins,fMult[0],fMult[1]);
-};
+}
 //____________________________
 
 AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& a) : 
@@ -170,29 +188,33 @@ AliFemtoVertexMultAnalysis::~AliFemtoVertexMultAnalysis(){
 //____________________________
 AliFemtoString AliFemtoVertexMultAnalysis::Report()
 {
+  // Prepare a report of the execution
   cout << "AliFemtoVertexMultAnalysis - constructing Report..."<<endl;
-  char Ctemp[200];
+  char ctemp[200];
   AliFemtoString temp = "-----------\nHbt AliFemtoVertexMultAnalysis Report:\n";
-  sprintf(Ctemp,"Events are mixed in %d VertexZ bins in the range %E cm to %E cm.\n",fVertexZBins,fVertexZ[0],fVertexZ[1]);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events underflowing: %d\n",fUnderFlowVertexZ);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events overflowing: %d\n",fOverFlowVertexZ);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events are mixed in %d Mult bins in the range %E cm to %E cm.\n",fMultBins,fMult[0],fMult[1]);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events underflowing: %d\n",fUnderFlowMult);
-  temp += Ctemp;
-  sprintf(Ctemp,"Events overflowing: %d\n",fOverFlowMult);
-  temp += Ctemp;
-  sprintf(Ctemp,"Now adding AliFemtoSimpleAnalysis(base) Report\n");
-  temp += Ctemp;
+  sprintf(ctemp,"Events are mixed in %d VertexZ bins in the range %E cm to %E cm.\n",fVertexZBins,fVertexZ[0],fVertexZ[1]);
+  temp += ctemp;
+  sprintf(ctemp,"Events underflowing: %d\n",fUnderFlowVertexZ);
+  temp += ctemp;
+  sprintf(ctemp,"Events overflowing: %d\n",fOverFlowVertexZ);
+  temp += ctemp;
+  sprintf(ctemp,"Events are mixed in %d Mult bins in the range %E cm to %E cm.\n",fMultBins,fMult[0],fMult[1]);
+  temp += ctemp;
+  sprintf(ctemp,"Events underflowing: %d\n",fUnderFlowMult);
+  temp += ctemp;
+  sprintf(ctemp,"Events overflowing: %d\n",fOverFlowMult);
+  temp += ctemp;
+  sprintf(ctemp,"Now adding AliFemtoSimpleAnalysis(base) Report\n");
+  temp += ctemp;
   temp += AliFemtoSimpleAnalysis::Report();
   AliFemtoString returnThis=temp;
   return returnThis;
 }
 //_________________________
 void AliFemtoVertexMultAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) {
+  // Perform event processing
+  // in bins of z vertex and multiplicity
+
   cout << " AliFemtoVertexMultAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent) " << endl;
   // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();

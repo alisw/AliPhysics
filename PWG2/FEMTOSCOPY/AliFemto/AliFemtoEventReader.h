@@ -2,8 +2,9 @@
 /// AliFemtoEventReader - the pure virtual base class for the event reader   ///
 /// All event readers must inherit from this one                             ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoEventReader_hh
-#define AliFemtoEventReader_hh
+#ifndef ALIFEMTOEVENTREADER_H
+#define ALIFEMTOEVENTREADER_H
+
 class AliFemtoEvent;
 class AliFemtoEventCut;
 class AliFemtoTrackCut;
@@ -11,12 +12,12 @@ class AliFemtoV0Cut;
 class AliFemtoXiCut;
 class AliFemtoKinkCut;
 
+#include "AliFemtoString.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
-using namespace std;
 
-#include "AliFemtoString.h"
+using namespace std;
 
 class AliFemtoEventReader {
   
@@ -42,7 +43,7 @@ class AliFemtoEventReader {
   virtual int Init(const char* ReadWrite, AliFemtoString& Message){cout << "do-nothing AliFemtoEventReader::Init()\n"; return(0);}
   virtual void Finish(){/*no-op*/};
 
-  int Status(){return fReaderStatus;} // AliFemtoManager looks at this for guidance if it gets null pointer from ReturnHbtEvent
+  int Status() const {return fReaderStatus;} // AliFemtoManager looks at this for guidance if it gets null pointer from ReturnHbtEvent
 
   virtual void SetEventCut(AliFemtoEventCut* ecut);
   virtual void SetTrackCut(AliFemtoTrackCut* pcut);
@@ -61,7 +62,7 @@ class AliFemtoEventReader {
   /* 2: once per event                                    */
   /* 3: once per track                                    */
   /* 4: once per pair                                     */
-  int Debug(){return fDebug;} 
+  int Debug() const {return fDebug;} 
   void SetDebug(int d){fDebug=d;}
 
 protected:

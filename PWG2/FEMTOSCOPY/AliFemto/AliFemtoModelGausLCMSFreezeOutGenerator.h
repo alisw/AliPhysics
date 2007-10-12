@@ -18,7 +18,7 @@ class AliFemtoModelGausLCMSFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   AliFemtoModelGausLCMSFreezeOutGenerator();
   AliFemtoModelGausLCMSFreezeOutGenerator(const AliFemtoModelGausLCMSFreezeOutGenerator &aModel);
   virtual ~AliFemtoModelGausLCMSFreezeOutGenerator();
-  virtual void GenerateFreezeOut(AliFemtoPair *aPair);;
+  virtual void GenerateFreezeOut(AliFemtoPair *aPair);
 
   void SetSizeOut(Double_t aSizeOut);
   void SetSizeSide(Double_t aSizeSide);

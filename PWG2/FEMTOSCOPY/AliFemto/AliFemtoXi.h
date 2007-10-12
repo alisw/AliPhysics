@@ -191,7 +191,7 @@ inline int   AliFemtoXi::TpcHitsBac() const
 inline float AliFemtoXi::DedxBac() const {return fDedxBachelor;}
 
 inline unsigned long    AliFemtoXi::TrackTopologyMapBac(unsigned int word) const { return fTopologyMapBachelor[word]; }
-inline unsigned short   AliFemtoXi::IdBac() const { return fKeyBac; }; 
+inline unsigned short   AliFemtoXi::IdBac() const { return fKeyBac; }
 inline unsigned short   AliFemtoXi::KeyBac() const { return fKeyBac; }
 
 inline void AliFemtoXi::SetdecayLengthXi(const float x){ fDecayLengthXi= x;}   
@@ -239,6 +239,12 @@ inline void AliFemtoXi::SetdedxBac(float x){fDedxBachelor=x;}
 /***********************************************************************
  *
  * $Log$
+ * Revision 1.1.2.1  2007/10/05 09:38:17  akisiel
+ * Fix stray colons
+ *
+ * Revision 1.1  2007/05/16 10:22:12  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.2  2007/05/03 09:42:29  akisiel
  * Fixing Effective C++ warnings
  *

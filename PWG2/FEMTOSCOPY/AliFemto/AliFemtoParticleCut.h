@@ -50,7 +50,7 @@ protected:
 #endif
 };
 
-inline AliFemtoParticleCut::AliFemtoParticleCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0), fMass(0){};   // default constructor. - Users should write their own
+inline AliFemtoParticleCut::AliFemtoParticleCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0), fMass(0){}   // default constructor. - Users should write their own
 inline AliFemtoParticleCut::AliFemtoParticleCut(const AliFemtoParticleCut& c): AliFemtoCutMonitorHandler(), fyAnalysis(0), fMass(0) { 
   fMass = c.fMass; fyAnalysis = 0; 
 #ifdef STHBTDEBUG

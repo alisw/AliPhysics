@@ -11,6 +11,12 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.2.2.1  2007/10/12 14:28:37  akisiel
+ * New wave of cleanup and rule conformance
+ *
+ * Revision 1.2  2007/05/22 09:01:42  akisiel
+ * Add the possibiloity to save cut settings in the ROOT file
+ *
  * Revision 1.1  2007/05/16 10:22:11  akisiel
  * Making the directory structure of AliFemto flat. All files go into one common directory
  *
@@ -64,8 +70,8 @@
  **************************************************************************/
 
 
-#ifndef AliFemtoDummyPairCut_hh
-#define AliFemtoDummyPairCut_hh
+#ifndef ALIFEMTODUMMYPAIRCUT_H
+#define ALIFEMTODUMMYPAIRCUT_H
 
 // do I need these lines ?
 //#ifndef StMaker_H
@@ -85,10 +91,9 @@ public:
   virtual TList *ListSettings();
   AliFemtoDummyPairCut* Clone();
 
-
 private:
-  long fNPairsPassed;
-  long fNPairsFailed;
+  long fNPairsPassed;  // number of pairs analyzed by this cut that passed
+  long fNPairsFailed;  // number of pairs analyzed by this cut that failed
 
 #ifdef __ROOT__
   ClassDef(AliFemtoDummyPairCut, 1)

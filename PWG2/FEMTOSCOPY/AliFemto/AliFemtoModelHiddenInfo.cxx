@@ -15,7 +15,7 @@ AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo() :
   fMass(0)
 {
   // Default constructor
-};
+}
 //_____________________________________________
 AliFemtoModelHiddenInfo::AliFemtoModelHiddenInfo(const AliFemtoModelHiddenInfo &aInfo) :
   fTrueMomentum(0),

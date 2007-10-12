@@ -51,7 +51,7 @@ protected:
 
 inline AliFemtoPairCut::AliFemtoPairCut(const AliFemtoPairCut& c) :  AliFemtoCutMonitorHandler(), fyAnalysis(0) {  }
 inline void AliFemtoPairCut::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
-inline AliFemtoPairCut::AliFemtoPairCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0) {};   // default constructor. - Users should write their own
+inline AliFemtoPairCut::AliFemtoPairCut(): AliFemtoCutMonitorHandler(), fyAnalysis(0) {}   // default constructor. - Users should write their own
 inline AliFemtoPairCut& AliFemtoPairCut::operator=(const AliFemtoPairCut &aCut) { if (this == &aCut) return *this; fyAnalysis = aCut.fyAnalysis; return *this; }
 
 #endif

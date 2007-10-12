@@ -123,6 +123,68 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
     }
   }
 }
+//___________________
+AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
+  fEventNumber(0),
+  fRunNumber(0),
+  fNumberOfTracks(0),
+  fMagneticField(0),
+  fPrimVertPos(0,0,0),
+  fTrackCollection(0),
+  fV0Collection(0),
+  fXiCollection(0),
+  fKinkCollection(0),
+  fZDCN1Energy(0),   
+  fZDCP1Energy(0),   
+  fZDCN2Energy(0),   
+  fZDCP2Energy(0),   
+  fZDCEMEnergy(0),   
+  fZDCParticipants(0),
+  fTriggerMask(0),  
+  fTriggerCluster(0)
+{ 
+  // copy constructor 
+  fEventNumber = ev.fEventNumber;
+  fRunNumber = ev.fRunNumber;
+  
+  fZDCN1Energy=ev.fZDCN1Energy;     
+  fZDCP1Energy=ev.fZDCP1Energy;      
+  fZDCN2Energy=ev.fZDCN2Energy;      
+  fZDCP2Energy=ev.fZDCP2Energy;      
+  fZDCEMEnergy=ev.fZDCEMEnergy;
+  fZDCParticipants=ev.fZDCParticipants;
+  fNumberOfTracks = ev.fNumberOfTracks;
+  fMagneticField= ev.fMagneticField;
+  
+  fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
+  fTriggerCluster=ev.fTriggerCluster;
+  // create collections
+  fTrackCollection = new AliFemtoTrackCollection;
+  fV0Collection = new AliFemtoV0Collection;
+  fXiCollection = new AliFemtoXiCollection;
+  fKinkCollection = new AliFemtoKinkCollection;
+  // copy track collection  
+  for ( AliFemtoTrackIterator tIter=ev.fTrackCollection->begin(); tIter!=ev.fTrackCollection->end(); tIter++) {
+    AliFemtoTrack* trackCopy = new AliFemtoTrack(**tIter);
+    fTrackCollection->push_back(trackCopy);
+  }
+  // copy v0 collection
+  for ( AliFemtoV0Iterator vIter=ev.fV0Collection->begin(); vIter!=ev.fV0Collection->end(); vIter++) {
+    AliFemtoV0* v0Copy = new AliFemtoV0(**vIter);
+    fV0Collection->push_back(v0Copy);
+  }
+  // copy xi collection
+  for ( AliFemtoXiIterator xIter=ev.fXiCollection->begin(); xIter!=ev.fXiCollection->end(); xIter++) {
+    AliFemtoXi* xiCopy = new AliFemtoXi(**xIter);
+    fXiCollection->push_back(xiCopy);
+  }
+  // copy kink collection  
+  for ( AliFemtoKinkIterator kIter=ev.fKinkCollection->begin(); kIter!=ev.fKinkCollection->end(); kIter++) {
+    //cout << " kinkCut passed " << endl;
+    AliFemtoKink* kinkCopy = new AliFemtoKink(**kIter);
+    fKinkCollection->push_back(kinkCopy);
+  }
+}
 //______________________________
 AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
 {

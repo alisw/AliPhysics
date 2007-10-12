@@ -11,6 +11,12 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.2.2.1  2007/10/12 14:28:37  akisiel
+ * New wave of cleanup and rule conformance
+ *
+ * Revision 1.2  2007/05/22 09:01:42  akisiel
+ * Add the possibiloity to save cut settings in the ROOT file
+ *
  * Revision 1.1  2007/05/16 10:22:11  akisiel
  * Making the directory structure of AliFemto flat. All files go into one common directory
  *
@@ -64,17 +70,19 @@ AliFemtoDummyPairCut::AliFemtoDummyPairCut() :
 //}
 //__________________
 bool AliFemtoDummyPairCut::Pass(const AliFemtoPair* pair){
+  // Pass all pairs
   bool temp = true;
   temp ? fNPairsPassed++ : fNPairsFailed++;
   return true;
 }
 //__________________
 AliFemtoString AliFemtoDummyPairCut::Report(){
-  string Stemp = "AliFemtoDummy Pair Cut - total dummy-- always returns true\n";
-  char Ctemp[100];
-  sprintf(Ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
-  Stemp += Ctemp;
-  AliFemtoString returnThis = Stemp;
+  // prepare a report from the execution
+  string stemp = "AliFemtoDummy Pair Cut - total dummy-- always returns true\n";
+  char ctemp[100];
+  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  stemp += ctemp;
+  AliFemtoString returnThis = stemp;
   return returnThis;
 }
 //__________________
