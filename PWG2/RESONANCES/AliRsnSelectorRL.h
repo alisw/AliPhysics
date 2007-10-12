@@ -40,22 +40,21 @@ public:
 	};
 	
 	                      AliRsnSelectorRL(TTree *tree = 0);
-						  AliRsnSelectorRL(const AliRsnSelectorRL&);
+			      AliRsnSelectorRL(const AliRsnSelectorRL& obj);
 	virtual              ~AliRsnSelectorRL();
-	AliRsnSelectorRL&     operator=(const AliRsnSelectorRL&);
+	AliRsnSelectorRL&     operator=(const AliRsnSelectorRL& obj);
 	
 	// TSelector-inherited member functions
 	virtual Int_t   Version() const {return 1;}
-	virtual void    Begin(TTree *tree);
+	virtual void    Begin(TTree *tree) const;
 	virtual void    SlaveBegin(TTree *tree);
 	virtual void    Init(TTree *tree);
-//	virtual Bool_t  Notify();
 	virtual Bool_t  Process(Long64_t entry);
 	virtual void    SetOption(const char *option) {fOption = option;}
 	virtual void    SetObject(TObject *obj) {fObject = obj;}
 	virtual void    SetInputList(TList *input) {fInput = input;}
 	virtual TList  *GetOutputList() const {return fOutput;}
-	virtual void    SlaveTerminate();
+	virtual void    SlaveTerminate() ;
 	virtual void    Terminate();
 	
 	// Parameter/flag setting
@@ -68,7 +67,7 @@ public:
 	
 	// Other
 	void            Clear(const Option_t *option = "");
-	Double_t*       GetPIDprobabilities(AliRsnDaughter track);
+	Double_t*       GetPIDprobabilities(AliRsnDaughter track) const;
 	void            Identify(AliRsnDaughter &track);
 	void            SetMaxRadius(Double_t value) {fMaxRadius=value;}
 	void            SetPIDMethod(AliRsnSelectorRL::EPIDMethod pm) {fPIDMethod=pm;}
@@ -80,20 +79,20 @@ public:
  protected:
  
  	// Parameters/flags
-	TString*      fOutputPath;
-	Bool_t        fDebugFlag;
-	Bool_t        fStoreKineInfo;
-	Bool_t        fCheckITSRefit;
-	Bool_t        fRejectFakes;
-	Bool_t        fCopyMomentum;
+	TString*      fOutputPath;       //! path where output tree will be stored
+	Bool_t        fDebugFlag;        //  flag for debug
+	Bool_t        fStoreKineInfo;    //  store MC information
+	Bool_t        fCheckITSRefit;    //  accept tracks only if flag AliESDtrack::kITSrefit
+	Bool_t        fRejectFakes;      //  reject fake tracks
+	Bool_t        fCopyMomentum;     //  store MC momentum instead of reconstructed momentum
 	
 	// Workaround for AliSelectorRL:
-	Bool_t        fIsRunLoaderOpen;
+	Bool_t        fIsRunLoaderOpen;  //  flag to check if run loader is open
 	
 	// IO tree
-	TTree*        fRsnEventTree;
-	AliRsnEvent*  fRsnEvent;
-	TBranch*      fRsnEventBranch;
+	TTree*        fRsnEventTree;     //  output tree which should contain AliRsnEvents
+	AliRsnEvent*  fRsnEvent;         //  pointer on AliRsnEvent to store
+	TBranch*      fRsnEventBranch;   //  tree branch to store AliRsnEvents in
 	
 	// PID
 	EPIDMethod    fPIDMethod;                //  PID method
