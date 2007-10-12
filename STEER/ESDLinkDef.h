@@ -13,6 +13,7 @@
 
 #pragma link C++ class  AliESD+;
 #pragma link C++ class  AliESDEvent+;
+#pragma link C++ class  AliESDInputHandler+;
 #pragma link C++ class  AliESDRun+;
 #pragma link C++ class  AliESDHeader+;
 #pragma link C++ class  AliESDZDC+;
