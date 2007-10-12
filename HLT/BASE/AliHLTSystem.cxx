@@ -744,7 +744,7 @@ int AliHLTSystem::ScanOptions(const char* options)
 	    HLTError("can not execute macro \'%s\'", param.Data());
 	    iResult=-EBADF;
 	  }
-	} else if (token.Contains("localrec=")) {
+	} else if (token.Contains("chains=")) {
 	  TString param=token.ReplaceAll("chains=", "");
 	  fChains=param.ReplaceAll(",", " ");
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
