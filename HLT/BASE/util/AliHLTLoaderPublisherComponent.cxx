@@ -47,7 +47,7 @@ AliHLTLoaderPublisherComponent::AliHLTLoaderPublisherComponent()
   fTreeType("digits"),
   fVerbose(kFALSE),
   fDataType(kAliHLTAnyDataType),
-  fSpecification(0),
+  fSpecification(kAliHLTVoidDataSpec),
   fpLoader(NULL)
 {
   // see header file for class documentation

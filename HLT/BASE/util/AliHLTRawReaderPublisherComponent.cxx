@@ -42,13 +42,13 @@ ClassImp(AliHLTRawReaderPublisherComponent)
 
 AliHLTRawReaderPublisherComponent::AliHLTRawReaderPublisherComponent()
   :
-  fMaxSize(50000),
+  fMaxSize(5000000),
   fDetector(),
   fMinEquId(-1),
   fMaxEquId(-1),
   fVerbose(kFALSE),
-  fDataType(kAliHLTAnyDataType),
-  fSpecification(0)
+  fDataType(kAliHLTVoidDataType),
+  fSpecification(kAliHLTVoidDataSpec)
 {
   // see header file for class documentation
   // or
@@ -184,7 +184,6 @@ int AliHLTRawReaderPublisherComponent::DoInit( int argc, const char** argv )
 
   AliRawReader* pRawReader=GetRawReader();
   if ((pRawReader=GetRawReader())!=NULL) {
-    pRawReader->SelectEquipment(-1, fMinEquId, fMaxEquId);
   } else {
     AliErrorStream() << "RawReader instance needed" << endl;
     return -EINVAL;
@@ -213,27 +212,35 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
   assert(outputPtr!=NULL || size==0);
   AliRawReader* pRawReader=GetRawReader();
   if (pRawReader) {
-    AliInfo(Form("get event from RawReader %p", pRawReader));
+    pRawReader->Reset();
+    pRawReader->SelectEquipment(-1, fMinEquId, fMaxEquId);
+    AliInfo(Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
     while (pRawReader->ReadHeader() && (iResult>=0 || iResult==-ENOSPC)) {
-      int readSize=pRawReader->GetDataSize();
+      const AliRawDataHeader* pHeader=pRawReader->GetDataHeader();
+      assert(pHeader!=NULL);
+      if (pHeader==NULL) continue;
+      int readSize=pRawReader->GetDataSize()+sizeof(AliRawDataHeader);
       int id=pRawReader->GetEquipmentId();
       AliInfo(Form("got header for id %d, size %d", id, readSize));
-      if (fMinEquId<id || fMaxEquId>id) {
+      if (fMinEquId>id || fMaxEquId<id) {
 	AliError(Form("id %d returned from RawReader is outside range [%d,%d]", id, fMinEquId, fMaxEquId));
 	continue;
       }
-      if (readSize>0) {
-	if (readSize<=size-offset) {
-	  if (!pRawReader->ReadNext(pTgt, readSize)) {
-	    AliError(Form("error reading %d bytes from RawReader %p", readSize, pRawReader));
+      if (readSize<=size-offset) {
+	memcpy(pTgt, pHeader, sizeof(AliRawDataHeader));
+	pTgt+=sizeof(AliRawDataHeader);
+	if (readSize>0) {
+	  if (!pRawReader->ReadNext(pTgt, readSize-sizeof(AliRawDataHeader))) {
+	    AliError(Form("error reading %d bytes from RawReader %p", readSize-sizeof(AliRawDataHeader), pRawReader));
 	    iResult=-ENODATA;
 	    break;
 	  }
-	} else {
-	  // we keep the loop going in order to collect the full size
-	  fMaxSize=offset+readSize;
-	  iResult=-ENOSPC;
+	  pTgt+=readSize-sizeof(AliRawDataHeader);
 	}
+      } else {
+	// we keep the loop going in order to collect the full size
+	fMaxSize=offset+readSize;
+	iResult=-ENOSPC;
       }
       if (iResult>=0) {
 	AliHLTComponentBlockData bd;
@@ -241,16 +248,15 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	bd.fOffset = offset;
 	bd.fSize = readSize;
 	bd.fDataType = fDataType;
-	bd.fSpecification = 0;
-	GetSpecificationFromEquipmentId(id, bd.fSpecification);
+	if (fSpecification == kAliHLTVoidDataSpec) {
+	  GetSpecificationFromEquipmentId(id, bd.fSpecification);
+	} else {
+	  bd.fSpecification=fSpecification;
+	}
 	outputBlocks.push_back( bd );
       }
       offset+=readSize;
     }
-    // go to next event, or beginning if last event was processed
-//     if (pRawReader->NextEvent()) {
-//       pRawReader->RewindEvents();
-//     }
     if (offset<=size) size=offset;
   } else {
     AliErrorStream() << "RawReader uninitialized" << endl;
@@ -259,6 +265,6 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
   return iResult;
 }
 
-int AliHLTRawReaderPublisherComponent::GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t& /*specification*/) const {
-  return -ENOSYS;
+int AliHLTRawReaderPublisherComponent::GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t& specification) const {
+  return specification=id;
 }

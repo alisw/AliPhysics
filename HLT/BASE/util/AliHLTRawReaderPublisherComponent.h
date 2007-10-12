@@ -26,9 +26,9 @@
  * A general data publisher component for the AliRawReader.
  * The component publishs the data of a given detector and equipment ID.
  * 
- * Publication of several IDs, i.e. DDLs, requires derivation of
- * the data type and/or specification from the ID. This requires a child
- * class and implementation of @ref GetSpecificationFromEquipmentId.
+ * If no data specification is given, the equipment id is used as default.
+ * A child class can implement @ref GetSpecificationFromEquipmentId to
+ * provide a different rule.
  * 
  * Component ID: \b AliRawReaderPublisher <br>
  * Library: \b libAliHLTUtil.
