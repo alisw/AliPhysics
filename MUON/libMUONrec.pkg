@@ -16,7 +16,6 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONRecoTrack.cxx \
        AliMUONHitForRec.cxx \
        AliMUONDigitCalibrator.cxx \
-       AliMillepede.cxx \
        AliMUONAlignment.cxx \
        AliMUONVClusterFinder.cxx \
        AliMUONPreClusterFinder.cxx \

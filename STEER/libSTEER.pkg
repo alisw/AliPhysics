@@ -48,7 +48,8 @@ AliCTPRawData.cxx \
 AliQA.cxx \
 AliQADataMaker.cxx \
 AliQAChecker.cxx \
-AliQACheckerBase.cxx
+AliQACheckerBase.cxx \
+AliMillepede.cxx
 
 
 
