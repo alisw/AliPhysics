@@ -2337,8 +2337,7 @@ Double_t TFluka::GetPrimaryElectronKineticEnergy(Int_t i) const
     Double_t ekin = -1.;
     
     if (i >= 0 && i < ALLDLT.nalldl) {
-	Int_t j = ALLDLT.nalldl - 1 - i;
-        ekin =  ALLDLT.talldl[j];
+        ekin =  ALLDLT.talldl[i];
     } else {
         Warning("GetPrimaryElectronKineticEnergy",
                 "Primary electron index out of range %d %d \n",
@@ -2351,10 +2350,9 @@ void TFluka::GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Doubl
 {
     // Returns position  of primary electron i
         if (i >= 0 && i < ALLDLT.nalldl) {
-	    Int_t j = ALLDLT.nalldl - 1 - i;
-	    x = ALLDLT.xalldl[j];
-	    y = ALLDLT.yalldl[j];
-	    z = ALLDLT.zalldl[j];
+	    x = ALLDLT.xalldl[i];
+	    y = ALLDLT.yalldl[i];
+	    z = ALLDLT.zalldl[i];
 	    return;
 	} else {
 	    Warning("GetPrimaryElectronPosition",
