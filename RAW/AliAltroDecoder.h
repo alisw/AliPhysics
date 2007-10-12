@@ -61,7 +61,7 @@ class AliAltroDecoder: public TObject {
       }
   }
 
-  void SetMemory(UChar_t  *dtaPtr, UInt_t size);
+  int SetMemory(UChar_t  *dtaPtr, UInt_t size);
 
   void PrintInfo(AliAltroData &altrodata, Int_t n = 0, Int_t nPerLine = 4);
 
@@ -120,6 +120,8 @@ class AliAltroDecoder: public TObject {
   Int_t    fInComplete;                      // Number of altro channels that is read out properly
   Bool_t   fDecodeIfCorruptedTrailer;        // Wether or not to try to decode the data if the RCU trailer is incorrect (will succseed in most cases)
   Bool_t   fIsDecoded;                       // Wether or not the buffer set last by the "SetMemory()" function has been decoded
+
+  Bool_t  fIsFatalCorruptedTrailer;         //If trailer is fataly corrupted, not possible in any way to recover, then it is not allowed to decode the DDL payload.  
 
   ClassDef(AliAltroDecoder, 0)  // class for decoding Altro payload
 };

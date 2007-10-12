@@ -3,7 +3,7 @@
  * All rights reserved.                                                   *
  *                                                                        *
  * Primary Authors: Per Thomas Hille  <perthi@fys.uio.no>                 *
- *                  Øystein Djuvsland <oystein.djuvsland@gmail.com>       *
+ *                  Ãystein Djuvsland <oystein.djuvsland@gmail.com>       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -21,20 +21,21 @@
 ClassImp(AliAltroDecoder)
 
 AliAltroDecoder::AliAltroDecoder() : f32DtaPtr(0),
-				       f8DtaPtr(0),
-				       fN32HeaderWords(8), 
-				       fN40AltroWords(0), 
-				       fN40RcuAltroWords(0),
-				       fNDDLBlocks(0), 
-				       f32LastDDLBlockSize(5), 
-				       f32PayloadSize(0),
-				       fOutBufferIndex(0),
-				       fSize(0), 
-				       fNAltro10bitWords(0),
-				       fComplete(0),
-				       fInComplete(0),
-				       fDecodeIfCorruptedTrailer(kTRUE),
-				       fIsDecoded(kFALSE) 
+				     f8DtaPtr(0),
+				     fN32HeaderWords(8), 
+				     fN40AltroWords(0), 
+				     fN40RcuAltroWords(0),
+				     fNDDLBlocks(0), 
+				     f32LastDDLBlockSize(5), 
+				     f32PayloadSize(0),
+				     fOutBufferIndex(0),
+				     fSize(0), 
+				     fNAltro10bitWords(0),
+				     fComplete(0),
+				     fInComplete(0),
+				     fDecodeIfCorruptedTrailer(kTRUE),
+				     fIsDecoded(kFALSE),
+				     fIsFatalCorruptedTrailer(kTRUE) 
 {
  // see header file for class documentation
 }
@@ -61,102 +62,126 @@ Bool_t AliAltroDecoder::CheckPayloadTrailer()
 
 
 Bool_t AliAltroDecoder::Decode()
-{
-  // see header file for class documentation
-  fComplete = 0;
-  fInComplete = 0;
-
-  Int_t tmpcnt = countAAApaddings();
-  
-  if(tmpcnt == 3)
+{ 
+  if( fIsFatalCorruptedTrailer == kTRUE)
     {
-      fN40AltroWords = fN40AltroWords -1;
-    } 
-  else if(tmpcnt == 5)
-    {
-      fN40AltroWords = fN40AltroWords -2;
-    } 
-  else if(tmpcnt == 8)
-    {
-      fN40AltroWords = fN40AltroWords -3;
-    } 
-  
-  if(  ((CheckPayloadTrailer() == kTRUE) || fDecodeIfCorruptedTrailer == kTRUE  )  &&  (fSize > 32) )
-    {
-       //      fDDLBlockCnt = 0;
-      fOutBufferIndex = 0;
-
-      for(Int_t i = 0; i < fNDDLBlocks; i++)
-	{
-	  DecodeDDLBlock();
-	}
-
-      DecodeLastDDLBlock(); 
-      fOutBufferIndex =  fN40AltroWords*4  -  1;
-  
-      //      DumpData(fOutBuffer, 400,4);
-    
-      fIsDecoded = kTRUE;
-      return kTRUE;
+      printf("\n AliAltroDecoder::Decode(), WARNING, attempt to decode badly corrupted data\n");
+      printf("\n AliAltroDecoder::Decode(). Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
+      return kFALSE;
     }
 
   else
     {
-      cout <<" ERROR: data integrity check failed, discarding data" << endl;
-      cout << "Size of datablock is  " << fSize   << endl;
-      cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
-      cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
-      return kFALSE;
+      // see header file for class documentation
+      fComplete = 0;
+      fInComplete = 0;
+
+      Int_t tmpcnt = countAAApaddings();
+  
+      if(tmpcnt == 3)
+	{
+	  fN40AltroWords = fN40AltroWords -1;
+	} 
+      else if(tmpcnt == 5)
+	{
+	  fN40AltroWords = fN40AltroWords -2;
+	} 
+      else if(tmpcnt == 8)
+	{
+	  fN40AltroWords = fN40AltroWords -3;
+	} 
+
+      if(  ((CheckPayloadTrailer() == kTRUE) || fDecodeIfCorruptedTrailer == kTRUE  )  &&  (fSize > 32) )
+	{
+	  //      fDDLBlockCnt = 0;
+	  fOutBufferIndex = 0;
+
+	  for(Int_t i = 0; i < fNDDLBlocks; i++)
+	    {
+	      DecodeDDLBlock();
+	    }
+
+	  DecodeLastDDLBlock(); 
+	  fOutBufferIndex =  fN40AltroWords*4  -  1;
+  
+	  //      DumpData(fOutBuffer, 400,4);
+    
+	  fIsDecoded = kTRUE;
+	  return kTRUE;
+	}
+
+      else
+	{
+	  cout <<" ERROR: data integrity check failed, discarding data" << endl;
+	  cout << "Size of datablock is  " << fSize   << endl;
+	  cout << "fN40AltroWords = "      << fN40AltroWords   << endl;
+	  cout << "fN40RcuAltroWords = "   << fN40RcuAltroWords  << endl;
+	  return kFALSE;
+	}
+
     }
 }
 
 
 Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 {
-  if(fIsDecoded != kTRUE)
+  if(fIsFatalCorruptedTrailer == kTRUE)
     {
-      cout <<"AliAltroDecoder::NextChanne, WARNING, buffer was not decoded, decoding now.. "<< endl;
-      Decode();
-    }
-
-  if(fOutBufferIndex >  fN32HeaderWords)
-    {
-      if((fOutBuffer[fOutBufferIndex] << 4 ) | ((fOutBuffer[fOutBufferIndex-1] & 0x3c0) >> 6) == 0x2aaa)
-	{
-	  altroDataPtr->SetIsComplete(kTRUE);
-	  fComplete ++;
-	}
-      else
-	{
-	  altroDataPtr->SetIsComplete(kFALSE);
-	  fInComplete ++;
-	}
-
-      fOutBufferIndex --;
-      fNAltro10bitWords = ( (fOutBuffer[fOutBufferIndex] & 0x3f) << 4 )   |  ((fOutBuffer[fOutBufferIndex -1]  & (0xF << 6)) >> 6) ;
-      fOutBufferIndex --;
-      altroDataPtr->SetHadd( ((fOutBuffer[fOutBufferIndex] & 0x3)) << 10 | ( fOutBuffer[fOutBufferIndex-1] ) );
-      fOutBufferIndex --;
-
-      if(fNAltro10bitWords%4 == 0)
-	{
-	  fOutBufferIndex = fOutBufferIndex  -  fNAltro10bitWords;
-	}
-      else
-	{
-	  fOutBufferIndex = fOutBufferIndex - fNAltro10bitWords -(4 - fNAltro10bitWords%4);
-	}
-
-      altroDataPtr->SetData( &fOutBuffer[fOutBufferIndex] );
-      fOutBufferIndex --;
-      altroDataPtr->SetDataSize( fNAltro10bitWords );
-
-      return kTRUE;
-
-    }
+      printf("\n AliAltroDecoder::NextChannel(), WARNING, attempt to decode badly corrupted data\n");
+      printf("\n AliAltroDecoder::NextChannel(), Please check on the return value (-1 if fataly corrupted) of the SetMemory() function\n");    
+      return kFALSE;
+    } 
+  
   else
     {
-      return kFALSE;
+
+      if(fIsDecoded != kTRUE)
+	{
+	  cout <<"AliAltroDecoder::NextChanne, WARNING, buffer was not decoded, decoding now.. "<< endl;
+ 	  Decode();
+ 	}
+
+      if(fOutBufferIndex >  fN32HeaderWords)
+	{
+	  if((fOutBuffer[fOutBufferIndex] << 4 ) | ((fOutBuffer[fOutBufferIndex-1] & 0x3c0) >> 6) == 0x2aaa)
+	    {
+	      altroDataPtr->SetIsComplete(kTRUE);
+	      fComplete ++;
+	    }
+	  else
+	    {
+	      altroDataPtr->SetIsComplete(kFALSE);
+	      fInComplete ++;
+	    }
+
+	  fOutBufferIndex --;
+	  fNAltro10bitWords = ( (fOutBuffer[fOutBufferIndex] & 0x3f) << 4 )   |  ((fOutBuffer[fOutBufferIndex -1]  & (0xF << 6)) >> 6) ;
+	  fOutBufferIndex --;
+	  altroDataPtr->SetHadd( ((fOutBuffer[fOutBufferIndex] & 0x3)) << 10 | ( fOutBuffer[fOutBufferIndex-1] ) );
+      
+	  fOutBufferIndex --;
+
+	  if(fNAltro10bitWords%4 == 0)
+	    {
+	      fOutBufferIndex = fOutBufferIndex  -  fNAltro10bitWords;
+	    }
+	  else
+	    {
+	      fOutBufferIndex = fOutBufferIndex - fNAltro10bitWords -(4 - fNAltro10bitWords%4);
+	    }
+
+      
+	  altroDataPtr->SetData( &fOutBuffer[fOutBufferIndex] );
+	  fOutBufferIndex --;
+	  altroDataPtr->SetDataSize( fNAltro10bitWords );
+	  return kTRUE;
+
+	}
+      else
+	{
+	  return kFALSE;
+	}
+
     }
 }
 
@@ -211,9 +236,9 @@ void AliAltroDecoder::PrintInfo(AliAltroData &altrodata, Int_t n, Int_t nPerLine
 }
 
 
-void AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
+int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 {
-  // see header file for documentation 
+  int iRet = 0;
   Int_t tmpTrailerSize;
   fIsDecoded = kFALSE; 
   f8DtaPtr =dtaPtr;
@@ -235,9 +260,24 @@ void AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
   fN40AltroWords = (32*f32PayloadSize)/40; 
   fNDDLBlocks =  f32PayloadSize/5;
   f32LastDDLBlockSize =  f32PayloadSize%DDL_32BLOCK_SIZE;
-  f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
-  fN40RcuAltroWords =  *f32DtaPtr;
-  f32DtaPtr = (UInt_t *)dtaPtr + fN32HeaderWords;
+
+  if(tmpTrailerSize > 0 && tmpTrailerSize < 5)
+    {
+      f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
+      fN40RcuAltroWords =  *f32DtaPtr;
+      f32DtaPtr = (UInt_t *)dtaPtr + fN32HeaderWords;
+      fIsFatalCorruptedTrailer = kFALSE; 
+    }
+  else
+    {
+      printf("\n AliAltroDecoder::SetMemory, ERROR\n, trailer is corrupted");
+      fIsFatalCorruptedTrailer = kTRUE;
+      iRet = -1;
+    }
+
+  
+  return iRet;
+
 }
 
 
