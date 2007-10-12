@@ -90,6 +90,10 @@ AliTOF::AliTOF():
   //
   // Default constructor
   //
+
+  //by default all sectors switched on
+  for (Int_t ii=0; ii<18; ii++) fTOFSectors[ii]=0;
+
   fDigits = 0;
   fIshunt   = 0;
   fName = "TOF";
@@ -119,6 +123,9 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
   // added option for time zero analysis
   //skowron
   fTOFGeometry = new AliTOFGeometry();
+
+  //by default all sectors switched on
+  for (Int_t ii=0; ii<18; ii++) fTOFSectors[ii]=0;
 
   if (strstr(option,"tzero")){
     fHits   = new TClonesArray("AliTOFhitT0",  1000);
