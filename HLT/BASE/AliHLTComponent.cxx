@@ -502,8 +502,9 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int start
     for ( ; (UInt_t)idx<fCurrentEventData.fBlockCnt && iResult==-ENOENT; idx++) {
       if (bObject!=0) {
 	if (fpInputBlocks[idx].fPtr==NULL) continue;
-	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
-	if (firstWord!=fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) continue;
+	AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(fpInputBlocks[idx].fPtr);
+	pSrc+=fpInputBlocks[idx].fOffset;
+	if (*reinterpret_cast<AliHLTUInt32_t*>(pSrc)!=fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) continue;
       }
       if (dt == kAliHLTAnyDataType || fpInputBlocks[idx].fDataType == dt) {
 	iResult=idx;
@@ -520,10 +521,12 @@ TObject* AliHLTComponent::CreateInputObject(int idx, int bForce)
   if (fpInputBlocks!=NULL) {
     if ((UInt_t)idx<fCurrentEventData.fBlockCnt) {
       if (fpInputBlocks[idx].fPtr) {
-	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
+	AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(fpInputBlocks[idx].fPtr);
+	pSrc+=fpInputBlocks[idx].fOffset;
+	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pSrc);
 	if (firstWord==fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) {
 	  HLTDebug("create object from block %d size %d", idx, fpInputBlocks[idx].fSize);
-	  AliHLTMessage msg(fpInputBlocks[idx].fPtr, fpInputBlocks[idx].fSize);
+	  AliHLTMessage msg((void*)pSrc, fpInputBlocks[idx].fSize);
 	  TClass* objclass=msg.GetClass();
 	  pObj=msg.ReadObject(objclass);
 	  if (pObj && objclass) {
@@ -779,7 +782,7 @@ int AliHLTComponent::InsertOutputBlock(void* pBuffer, int iBufferSize, const Ali
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset        = fOutputBufferFilled;
-      bd.fPtr           = pTgt;
+      bd.fPtr           = fpOutputBuffer;
       bd.fSize          = iBlkSize;
       bd.fDataType      = dt;
       bd.fSpecification = spec;
@@ -852,7 +855,7 @@ AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity,
 	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset        = fOutputBufferFilled;
-	bd.fPtr           = pTgt;
+	bd.fPtr           = fpOutputBuffer;
 	bd.fSize          = capacity;
 	bd.fDataType      = dt;
 	bd.fSpecification = spec;
