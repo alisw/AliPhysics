@@ -207,7 +207,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   allData->AddAt(mult0,55);
   allData->AddAt(mult1,56);
 
-  //   cout.setf( ios_base::hex, ios_base::basefield );
+    cout.setf( ios_base::hex, ios_base::basefield );
   //space for DRM header
   fIndex += 6;
 
@@ -218,13 +218,16 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   positionOfTRMHeader= fIndex;
   //space for chain  header
   fIndex ++;
-  WriteChainDataHeader(0, 0); // 
+  WriteChainDataHeader(1, 1); // 
+
+  //  fIndex++;
   // Loop through all PMT
   Int_t chain=0; 
   Int_t iTDC = 0;
   Int_t channel=0;
   Int_t trm1words=0;
-  Int_t itrm=0, oldtrm=0;
+  Int_t itrm=7;
+  Int_t inside =0;
   AliT0LookUpKey * lookkey  = new AliT0LookUpKey();
   AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
   for (Int_t det = 0; det < 105; det++) {
@@ -235,13 +238,16 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
       if (lookvalue ) 
 	{
 	  itrm= lookvalue->GetTRM();
-	  if (itrm != oldtrm ) {
+//	  cout<<" TRM "<<itrm<<endl;
+	  if (itrm ==7 && det >56 &&inside ==0) {
 	    WriteChainDataTrailer(1); // 1st chain trailer
 	    fIndex++;
-	    WriteChainDataHeader(2, 1); // 
-	    WriteChainDataTrailer(3); // 2st chain trailer
-	    WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-	    
+	    WriteChainDataHeader(2, 1);
+	    //	    fIndex++;
+	    inside++;
+	    //	    WriteChainDataTrailer(3); // 2st chain trailer
+	    //	    WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
+	    /*	    
 	    
 	    trm1words = fIndex - startTRM;
 	    WriteTRMDataHeader(oldtrm, trm1words , positionOfTRMHeader);
@@ -250,11 +256,13 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
 	    fIndex ++;
 	    positionOfTRMHeader= fIndex;
 	    fIndex ++;
-	    oldtrm=itrm;
+	    //	    oldtrm=itrm;
+	    */
 	  }	    
 	  chain = lookvalue->GetChain();
 	  iTDC = lookvalue->GetTDC();
 	  channel = lookvalue->GetChannel();
+	//  cout<<" chain "<< chain<<"  iTDC "<<iTDC<<" channel "<<channel<<endl;
 	  FillTime(channel,  iTDC,  time);
 	}
       else
@@ -266,9 +274,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
     
   }
     
-  WriteChainDataTrailer(1); // 1st chain trailer
-  fIndex++;
-  WriteChainDataHeader(2, 1); // 
+    //  WriteChainDataHeader(2, 1); // 
   WriteChainDataTrailer(3); // 2st chain trailer
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
   
@@ -276,10 +282,10 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   trm1words = fIndex - startTRM;
   //space for 2st TRM header
   
-  WriteTRMDataHeader(1, trm1words , positionOfTRMHeader);
+  WriteTRMDataHeader(itrm, trm1words , positionOfTRMHeader);
   
   //DRM trailer
-  WriteTrailer(1,0,fEventNumber,5); // 1st TRM trailer
+  WriteTrailer(1,0,fEventNumber,5);
     
     WriteDRMDataHeader();
     
@@ -407,7 +413,7 @@ void  AliT0RawData::WriteTRMDataHeader(UInt_t slotID, Int_t nWordsInTRM,
   word=4;
   PackWord(baseWord,word,28,31); // 0100 marks header
   fBuffer[positionOfTRMHeader] =  baseWord;
-
+//  cout<<" TRM header "<<baseWord<<endl;
   word=0; 
   baseWord=0;
      
@@ -437,7 +443,7 @@ void  AliT0RawData::WriteChainDataHeader(UInt_t chainNumber,UInt_t slotID)
   word=chainNumber;
   PackWord(baseWord,word,28,31); // 0100 marks header
   fBuffer[fIndex] =  baseWord;
-
+  //cout<<" chain header "<<baseWord<<" number "<<chainNumber<<endl;
   word=0;
   baseWord=0;     
   
@@ -461,7 +467,7 @@ void  AliT0RawData::WriteChainDataTrailer(UInt_t chainNumber )
   PackWord(baseWord,word,28,31); // chain number
   fIndex++;
   fBuffer[fIndex] =  baseWord;
-
+ // cout<<" chain trailer "<<baseWord<<endl;
   word=0;
   baseWord=0;     
   
@@ -509,6 +515,7 @@ void  AliT0RawData::WriteTrailer(UInt_t slot, Int_t word1, UInt_t word2, UInt_t 
   PackWord(baseWord,word,28,31); //  marks trailer
   fIndex++;
   fBuffer[fIndex] =  baseWord;
+ // cout<<" trailer "<<baseWord<<endl;
   word=0;
   baseWord=0;
 
@@ -537,7 +544,7 @@ void  AliT0RawData::FillTime(Int_t ch, Int_t iTDC, Int_t time)
   PackWord(baseWord,word, 31, 31); // 1
   fIndex++;
   fBuffer[fIndex]=baseWord;
-  word=0;
+ // cout<<" data  "<<baseWord<<endl;  word=0;
   baseWord=0;
 }
 //---------------------------------------------------------------------------------------
