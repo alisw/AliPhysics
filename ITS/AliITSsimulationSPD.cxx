@@ -30,8 +30,6 @@ $Id$
 #include "AliITSsimulationSPD.h"
 #include "AliLog.h"
 #include "AliRun.h"
-#include "AliCDBEntry.h"
-#include "AliCDBLocal.h"
 
 //#define DEBUG
 
@@ -41,6 +39,7 @@ ClassImp(AliITSsimulationSPD)
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo 
 //  Fast diffusion code by Bjorn S. Nilsen
 //  March-April 2006
+//  October     2007: GetCalibrationObjects() removed
 //
 //  Version: 0
 //  Written by Boris Batyunya
@@ -120,9 +119,6 @@ void AliITSsimulationSPD::Init(){
         fCoupling=1;
     } // end if
 
-    // Get the calibration objects for each module(ladder)
-    GetCalibrationObjects(0); //RunNr 0 hard coded for now
-
 }
 //______________________________________________________________________
 AliITSsimulationSPD::~AliITSsimulationSPD(){
@@ -189,37 +185,6 @@ AliITSsimulation&  AliITSsimulationSPD::operator=(const
 
     return *this;
 }
-
-//______________________________________________________________________
-void AliITSsimulationSPD::GetCalibrationObjects(Int_t RunNr) {
-    //    Gets the calibration objects for each module (ladder) 
-    // Inputs:
-    //    RunNr: hard coded to RunNr=0 for now
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-
-  AliCDBManager* man = AliCDBManager::Instance();
-
-  AliCDBEntry *entrySPD=0;
-  entrySPD = man->Get("ITS/Calib/CalibSPD", RunNr);
-
-  if(!entrySPD){
-    AliFatal("Cannot find SPD calibration entry in default storage!");
-    return;
-  }
-  
-  TObjArray *respSPD = (TObjArray *)entrySPD->GetObject();
-  if ((! respSPD)) {
-    AliFatal("Cannot get data from SPD database entry!");
-    return;
-  }
-  for (Int_t mod=0; mod<240; mod++) {
-    fCalObj[mod] = (AliITSCalibrationSPD*) respSPD->At(mod);
-  }
-}
-
 //______________________________________________________________________
 void AliITSsimulationSPD::InitSimulationModule(Int_t module, Int_t event){
     //  This function creates maps to build the list of tracks for each
@@ -482,7 +447,7 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
                 sigz=sig*fda;
                 //SpreadCharge(x,z,ix,iz,el,sig,idtrack,h);
                 SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,idtrack,h);
-                // cout << "sigx sigz " << sigx << " " << sigz << endl; // dom
+//                cout << "sigx sigz " << sigx << " " << sigz << endl; // dom
             } // end for i // End Integrate over t
         else { // st == 0.0 deposit it at this point
             x   = x0;
@@ -688,9 +653,15 @@ void AliITSsimulationSPD::RemoveDeadPixels(AliITSmodule *mod){
     //    none.
 
   Int_t moduleNr = mod->GetIndex();
-  Int_t nrDead = fCalObj[moduleNr]->GetNrDead();
+  AliITSCalibrationSPD* calObj = (AliITSCalibrationSPD*) GetCalibrationModel(moduleNr);
+
+  Int_t nrDead = calObj->GetNrDead();
+//  cout << "Module --> " << moduleNr << endl; // dom
+//  cout << "nr of dead " << nrDead << endl; // dom
   for (Int_t i=0; i<nrDead; i++) {
-    GetMap()->DeleteHit(fCalObj[moduleNr]->GetDeadColAt(i),fCalObj[moduleNr]->GetDeadRowAt(i));
+    GetMap()->DeleteHit(calObj->GetDeadColAt(i),calObj->GetDeadRowAt(i));
+//    cout << "dead index " << i << endl; // dom
+//    cout << "col row --> " << calObj->GetDeadColAt(i) << " " << calObj->GetDeadRowAt(i) << endl; // dom
   }
 }
 //______________________________________________________________________
@@ -927,8 +898,7 @@ void AliITSsimulationSPD::SetCouplingOld(Int_t col, Int_t row,
 
     //  Debugging ...
 //    cout << "Threshold --> " << GetThreshold() << endl;  // dom
-//    cout << "Couplings --> " << couplC << " " << couplR << endl;  //dom
-
+//    cout << "Couplings --> " << couplC << " " << couplR << endl;  // dom
 
     if(GetDebug(3)) Info("SetCouplingOld","(col=%d,row=%d,ntrack=%d,idhit=%d) "
                          "Calling SetCoupling couplC=%e couplR=%e",

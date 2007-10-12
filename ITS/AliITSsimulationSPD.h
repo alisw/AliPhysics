@@ -1,8 +1,10 @@
 #ifndef ALIITSSIMULATIONSPD_H
 #define ALIITSSIMULATIONSPD_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
 
 ////////////////////////////////////////////////////////////
 // Simulation class for SPD                               //
@@ -32,9 +34,6 @@ class AliITSsimulationSPD : public AliITSsimulation {
     virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilizes the variables
     void Init();
-    // Get pointers (calObj[]) to the calibration objects
-    // ??? Is there a better way to do this ???
-    void GetCalibrationObjects(Int_t RunNr);
 
     // General User calling routines
     // Initilize simulation for a specific event and module
@@ -112,7 +111,6 @@ class AliITSsimulationSPD : public AliITSsimulation {
     TString       fSPDname;      //! Histogram name
     Int_t         fCoupling;     // Sets the coupling to be used.
                                  // ==1 use SetCoupling, ==2 use SetCouplingOld
-    AliITSCalibrationSPD* fCalObj[240]; // Calibration objects (per module)
     ClassDef(AliITSsimulationSPD,2)  // Simulation of SPD clusters
 };
 #endif 
