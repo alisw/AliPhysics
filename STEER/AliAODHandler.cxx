@@ -99,7 +99,7 @@ Bool_t AliAODHandler::Terminate()
 Bool_t AliAODHandler::TerminateIO()
 {
     // Terminate IO
-
+    fFileA->Close();
     return kTRUE;
 }
 
