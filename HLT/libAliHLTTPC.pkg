@@ -43,7 +43,6 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCTrackMerger.cxx \
 		AliHLTTPCGlobalMerger.cxx \
 		AliHLTTPCInterMerger.cxx \
-		AliHLTTPCCATracker.cxx \
 		AliHLTTPCPad.cxx \
 		AliHLTTPCPadArray.cxx \
 		AliHLTTPCDefinitions.cxx \
@@ -52,7 +51,6 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 		AliHLTTPCVertexFinderComponent.cxx \
 		AliHLTTPCSliceTrackerComponent.cxx \
 		AliHLTTPCGlobalMergerComponent.cxx \
-		AliHLTTPCCATrackerComponent.cxx \
 		AliHLTTPCEsdWriterComponent.cxx \
 		AliHLTTPCCalibPedestalComponent.cxx \
 		AliHLTTPCCalibPulserComponent.cxx
@@ -98,7 +96,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCTrackMerger.h \
 		AliHLTTPCGlobalMerger.h \
 		AliHLTTPCInterMerger.h \
-		AliHLTTPCCATracker.h \
 		AliHLTTPCPad.h \
 		AliHLTTPCPadArray.h \
 		AliHLTTPCSpacePointData.h \
@@ -108,7 +105,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCVertexFinderComponent.h \
 		AliHLTTPCSliceTrackerComponent.h \
 		AliHLTTPCGlobalMergerComponent.h \
-		AliHLTTPCCATrackerComponent.h \
 		AliHLTTPCEsdWriterComponent.h \
 		AliHLTTPCCalibPedestalComponent.h \
 		AliHLTTPCCalibPulserComponent.h
