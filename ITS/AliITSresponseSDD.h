@@ -39,11 +39,19 @@ class AliITSresponseSDD : public AliITSresponse {
 	fDynamicRange = p1;}
     virtual Float_t DynamicRange() const {// Get Dynamic Range
 	return fDynamicRange;}
-    virtual void    SetDriftSpeed(Double_t p1) {// Drift velocity
-	fDriftSpeed=p1;}    
-    virtual Float_t DriftSpeed() const {// drift speed
-	return fDriftSpeed;}
+
+    virtual void    SetDriftSpeed(Double_t p1) {fDriftSpeed=p1;}    
+    virtual Float_t DriftSpeed() const {return fDriftSpeed;}
     static Float_t DefaultDriftSpeed() {return fgkDriftSpeedDefault;}
+
+    virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}
+    virtual Float_t TimeOffset()const {return fTimeOffset;}
+    static Float_t DefaultTimeOffset() {return fgkTimeOffsetDefault;}
+
+    virtual void SetADC2keV(Float_t conv){fADC2keV=conv;}
+    virtual Float_t ADC2keV()const {return fADC2keV;}
+    static Float_t DefaulttADC2keV() {return fgkADC2keVDefault;}
+
     virtual void SetParamOptions(const char *opt1,const char *opt2) {
 	// Parameters: "same" or read from "file" 
 	fParam1=opt1; fParam2=opt2;}
@@ -94,6 +102,8 @@ class AliITSresponseSDD : public AliITSresponse {
     static const TString fgkParam2Default; // default for fParam2
     static const TString fgkOptionDefault; // default for fOption
     static const Float_t fgkDriftSpeedDefault; // default for fDriftSpeed
+    static const Float_t fgkTimeOffsetDefault; // default for fTimeOffset
+    static const Float_t fgkADC2keVDefault; // default for fADC2keV
     static const Float_t fgkNsigmasDefault; //default for fNsigmas
     static const Int_t fgkNcompsDefault; //default for fNcomps
     
@@ -102,7 +112,9 @@ class AliITSresponseSDD : public AliITSresponse {
     Float_t  fDynamicRange;   // Set Dynamic Range 
     Float_t  fChargeLoss;     // Set Linear Coefficient for Charge Loss 
     Float_t  fDriftSpeed;     // Drift velocity
-    Int_t     fElectronics;    // Electronics
+    Float_t  fTimeOffset;     // Time offset due to electronic delays 
+    Float_t  fADC2keV;        // Conversion factor from ADC to keV
+    Int_t    fElectronics;    // Electronics
     Float_t  fMaxAdc;         // Adc saturation value
     Float_t  fNsigmas;   // Number of sigmas over which charge disintegration
                           // is performed
@@ -118,7 +130,7 @@ class AliITSresponseSDD : public AliITSresponse {
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,8) // Base response class 
+    ClassDef(AliITSresponseSDD,9) // Base response class 
     
     };
 #endif

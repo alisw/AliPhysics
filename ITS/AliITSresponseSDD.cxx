@@ -37,6 +37,8 @@ const TString AliITSresponseSDD::fgkParam1Default = "same";
 const TString AliITSresponseSDD::fgkParam2Default = "same";
 const TString AliITSresponseSDD::fgkOptionDefault = "1D";
 const Float_t AliITSresponseSDD::fgkDriftSpeedDefault = 7.3;
+const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 55.07;
+const Float_t AliITSresponseSDD::fgkADC2keVDefault = 5.243;
 const Float_t AliITSresponseSDD::fgkNsigmasDefault = 3.;
 const Int_t AliITSresponseSDD::fgkNcompsDefault = 121;
 
@@ -49,6 +51,8 @@ fJitterError(0.),
 fDynamicRange(0.),
 fChargeLoss(0.),
 fDriftSpeed(fgkDriftSpeedDefault),
+fTimeOffset(fgkTimeOffsetDefault),
+fADC2keV(fgkADC2keVDefault),
 fElectronics(0),
 fMaxAdc(fgkMaxAdcDefault),
 fNsigmas(fgkNsigmasDefault),

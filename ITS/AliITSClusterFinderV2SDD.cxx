@@ -42,12 +42,11 @@ fNySDD(256),
 fNzSDD(256),
 fZpitchSDD(0.02940),
 fHwSDD(3.5085),
-fHlSDD(3.7632),
-fTimeOffsetSDD(0.){
+fHlSDD(3.7632)
+{
 
   //Default constructor
 
-  SetTimeOffset();
 }
  
 
@@ -204,7 +203,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          z-=fHlSDD;
 	 Float_t zdet = z;
 	 Float_t timebin = GetSeg()->Dpx(0);
-	 Float_t driftTime = (yyyy-0.5)*timebin - fTimeOffsetSDD;
+	 Float_t driftTime = (yyyy-0.5)*timebin - cal->GetTimeOffset();
 	 Float_t xdet = cal->GetDriftPath(driftTime,0);
 	 xdet=xdet/10000.-fHwSDD;
 	 if (s) xdet=-xdet;
@@ -217,7 +216,7 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          y=trk[1];
          z=trk[2]; 
          }
-         q/=5.243;  //to have MPV 1 MIP = 86.4 KeV --> this must go to calibr.
+         q/=cal->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
 	 if (digits) {	  

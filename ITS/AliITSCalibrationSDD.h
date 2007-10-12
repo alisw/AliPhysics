@@ -114,6 +114,8 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Float_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
     virtual void SetDriftSpeed(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDriftSpeed(p1);}
     virtual void SetDriftSpeedParam(Int_t iWing, Float_t* p);
+    virtual Float_t GetTimeOffset() const {return ((AliITSresponseSDD*)fResponse)->TimeOffset();}
+    virtual Float_t GetADC2keV() const {return ((AliITSresponseSDD*)fResponse)->ADC2keV();}
     virtual Float_t GetDriftSpeed() const {return ((AliITSresponseSDD*)fResponse)->DriftSpeed();}
     virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const {
       if(nAnode<256){
