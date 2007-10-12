@@ -25,8 +25,6 @@
 #include "AliDCSSensor.h"
 ClassImp(AliDCSSensor)
 
-const Double_t kSmall = -9e99;     // invalid small value
-const Double_t kLarge = 9e99;      // invalid large value
 const Double_t kSecInHour = 3600.; // seconds in one hour
 
 
@@ -82,7 +80,8 @@ Double_t AliDCSSensor::GetValue(UInt_t timeSec)
  // Get temperature value for actual sensor
  //  timeSec given as offset from start-of-run measured in seconds
  //
- return Eval(TTimeStamp(fStartTime+timeSec));
+ Bool_t inside;
+ return Eval(TTimeStamp(fStartTime+timeSec),inside);
 }
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(TTimeStamp time) 
@@ -90,29 +89,37 @@ Double_t AliDCSSensor::GetValue(TTimeStamp time)
  // Get temperature value for actual sensor
  //  time given as absolute TTimeStamp
  //
- return Eval(time);
+ Bool_t inside;
+ return Eval(time, inside);
 }
 
 //_____________________________________________________________________________
 
-Double_t AliDCSSensor::Eval(const TTimeStamp& time) const
+Double_t AliDCSSensor::Eval(const TTimeStamp& time, Bool_t inside) const
 {
   // 
   // Return temperature at given time
-  //  If time < start of map  return kSmall
-  //  If time > end of map    return kLarge
+  //  If time < start of map  return value at start of map, inside = false
+  //  If time > end of map    return value at end of map, inside = false
   
   UInt_t timeSec = time.GetSec();
   UInt_t diff = timeSec-fStartTime;
+  inside = true;
   
-  if ( timeSec < fStartTime ) return kSmall;
-  if ( timeSec > fEndTime ) return kLarge;
+  if ( timeSec < fStartTime ) { 
+     inside=false;
+     diff=0;
+  }
+  if ( timeSec > fEndTime ) {
+     inside=false;
+     diff = fEndTime-fStartTime;
+  }
  
   Double_t timeHour = diff/kSecInHour;
   if ( fFit ) {
      return fFit->Eval(timeHour); 
   } else {
-     return kSmall;
+     return -99;
   }
 }
 

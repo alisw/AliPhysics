@@ -31,7 +31,6 @@ class AliDCSSensorArray : public TNamed {
   AliDCSSensorArray(const AliDCSSensorArray &c);
   virtual ~AliDCSSensorArray();
   AliDCSSensorArray &operator=(const AliDCSSensorArray &c);
-  virtual void Copy (TObject &c) const;
   void SetStartTime (const TTimeStamp& start) { fStartTime = start; }
   void SetEndTime   (const TTimeStamp& end) { fEndTime = end; }
   TTimeStamp GetStartTime () const { return fStartTime; }
@@ -65,9 +64,11 @@ class AliDCSSensorArray : public TNamed {
   void RemoveSensorNum(Int_t ind);
   void RemoveSensor(Int_t IdDCS);
   Int_t NumSensors() const { return fSensors->GetEntries(); }
+  Int_t NumFits() const;
 
   Int_t GetFirstIdDCS() const;
   Int_t GetLastIdDCS()  const;
+
 
  protected:
   Int_t  fMinGraph;              // minimum #points of graph to be fitted
@@ -80,6 +81,8 @@ class AliDCSSensorArray : public TNamed {
   TTimeStamp  fStartTime;        // start time for measurements in this entry
   TTimeStamp  fEndTime;          // end time for measurements in this entry
   TClonesArray *fSensors;        // Array of sensors
+
+
 
   ClassDef(AliDCSSensorArray,3)       //  TPC calibration class for parameters which are saved per pad
 

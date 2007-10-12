@@ -32,7 +32,6 @@ class AliTPCPreprocessor : public AliPreprocessor
   private:
     TEnv                   *fConfEnv;  // Preprocessor configuration map
     AliTPCSensorTempArray  *fTemp;     // CDB class for temperature sensors
-    AliDCSSensorArray      *fPressure; // CDB class for pressure sensors
     Bool_t                 fConfigOK;  // Identify succesful reading of OCDB Config
     AliTPCROC              *fROC;      // TPC Read-Out configuration
 

@@ -33,11 +33,11 @@
  */
 //
 
-#include <strings.h>
+
 #include "AliTPCSensorTemp.h"
 ClassImp(AliTPCSensorTemp)
 
-const char kAmandaString[] = "tpc_temp:PT_%d.Temperature";
+
 
 const Float_t kASideX[18][5]={
         { 99.56,  117.59,  160.82,  186.92,  213.11},
@@ -73,7 +73,7 @@ const Float_t kASideY[18][5]={
 	{-50.55,  -59.7,  -81.65,  -94.9, -108.2},
 	{-77.45,  -91.47, -125.1, -145.4, -165.77},
 	{-95.0, -112.2, -153.45, -178.35, -203.35},
-       {-101.1, -119.4, -163.3,  -189.8, -216.4},
+        {-101.1, -119.4, -163.3,  -189.8, -216.4},
         {-95.0, -112.2, -153.45, -178.35, -203.35},
 	{-77.45,  -91.47, -125.1, -145.4, -165.77},
 	{-50.55,  -59.7,  -81.65,  -94.9, -108.2},
@@ -113,7 +113,7 @@ const Float_t kCSideY[18][5]={
 	{-50.55,  -59.7,   -81.56,  -94.9,  -108.2},
 	{-77.45,  -91.47, -125.1,  -145.4,  -165.77},
 	{-95.0,  -112.2,  -153.45, -178.35, -203.35},
-       {-101.1, -119.4, -163.3, -189.8, -216.4},
+        {-101.1, -119.4, -163.3, -189.8, -216.4},
         {-95.0, -112.2, -153.45, -178.35, -203.35},
 	{-77.45,  -91.47, -125.1, -145.4, -165.77},
 	{-50.55,  -59.7,  -81.65,  -94.9, -108.2},
@@ -175,7 +175,8 @@ TClonesArray * AliTPCSensorTemp::ReadList(const char *fname) {
      
 //______________________________________________________________________________________________
 
-TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree) {
+TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree, 
+                                          const TString& amandaString) {
   
   Int_t nentries = tree->GetEntries();
   Int_t sensor=0;
@@ -209,7 +210,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree) {
     tree->GetEntry(isensor);
     temp->SetId(sensor);
     temp->SetIdDCS(echa);
-    TString stringID = Form (kAmandaString,echa);
+    TString stringID = Form (amandaString.Data(),echa);
     temp->SetStringID(stringID);
     if (side[0]=='C') temp->SetSide(1);
     temp->SetSector(sector);

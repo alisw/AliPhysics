@@ -37,6 +37,8 @@ const Int_t kValCutTemp = 100;               // discard temperatures > 100 degre
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
 const TString kPedestalRunType = "PEDESTAL_RUN";  // pedestal run identifier
 const TString kPulserRunType = "PULSER_RUN";   // pulser run identifier
+const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
+const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
 
 //
 // This class is the SHUTTLE preprocessor for the TPC detector.
@@ -49,7 +51,7 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fConfEnv(0), fTemp(0), fPressure(0), fConfigOK(kTRUE), fROC(0)
+  fConfEnv(0), fTemp(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -57,7 +59,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 //______________________________________________________________________________________________
 // AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
 //   AliPreprocessor(org),
-//   fConfEnv(0), fTemp(0), fPressure(0), fConfigOK(kTRUE)
+//   fConfEnv(0), fTemp(0), fConfigOK(kTRUE)
 // {
 //   // copy constructor not implemented
 //   //   -- missing underlying copy constructor in AliPreprocessor
@@ -73,7 +75,6 @@ AliTPCPreprocessor::~AliTPCPreprocessor()
   // destructor
 
   delete fTemp;
-  delete fPressure;
 }
 //______________________________________________________________________________________________
 AliTPCPreprocessor& AliTPCPreprocessor::operator = (const AliTPCPreprocessor& )
@@ -115,22 +116,10 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	   fConfigOK = kFALSE;
 	   return;
         }
-        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, confTree);
+        fTemp = new AliTPCSensorTempArray(fStartTime, fEndTime, confTree, kAmandaTemp);
 	fTemp->SetValCut(kValCutTemp);
 	fTemp->SetDiffCut(kDiffCutTemp);
 
-  // Pressure sensors
-
-        confTree=0;
-	entry=0;
-	entry = GetFromOCDB("Config", "Pressure");
-        if (entry) confTree = (TTree*) entry->GetObject();
-        if ( confTree==0 ) {
-           Log("AliTPCPreprocsessor: Pressure Config OCDB entry missing.\n");
-	   fConfigOK = kFALSE;
-	   return;
-        }
-	fPressure = new AliDCSSensorArray(fStartTime, fEndTime, confTree);
 
 }
 
@@ -153,10 +142,6 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   UInt_t tempResult = MapTemperature(dcsAliasMap);
   UInt_t result=tempResult;
 
-  // Pressure sensors
-
-  UInt_t pressureResult = MapPressure(dcsAliasMap);
-  result += pressureResult;
 
   // Other calibration information will be retrieved through FXS files
   //  examples:
@@ -217,9 +202,15 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
   TMap *map = fTemp->ExtractDCS(dcsAliasMap);
   if (map) {
     fTemp->MakeSplineFit(map);
-    AliInfo(Form("Temperature values extracted, fits performed.\n"));
+    Double_t fitFraction = fTemp->NumFits()/fTemp->NumSensors(); 
+    if (fitFraction > kFitFraction ) {
+      AliInfo(Form("Temperature values extracted, fits performed.\n"));
+    } else { 
+      Log ("Too few temperature maps fitted. \n");
+      result = 9;
+    }
   } else {
-    Log("AliTPCPreprocsessor: no temperature map extracted. \n");
+    Log("No temperature map extracted. \n");
     result=9;
   }
   delete map;
@@ -233,39 +224,6 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
 
 	Bool_t storeOK = Store("Calib", "Temperature", fTemp, &metaData, 0, kFALSE);
         if ( !storeOK )  result=1;
-
-   }
-
-   return result;
-
-}
-//______________________________________________________________________________________________
-
-UInt_t AliTPCPreprocessor::MapPressure(TMap* dcsAliasMap)
-{
-
-   // extract DCS temperature maps. Perform fits to save space
-
-  UInt_t result=0;
-  TMap *map = fPressure->ExtractDCS(dcsAliasMap);
-  if (map) {
-    fPressure->MakeSplineFit(map);
-    AliInfo(Form("Pressure values extracted, fits performed.\n"));
-  } else {
-    Log("AliTPCPreprocsessor: no atmospheric pressure map extracted. \n");
-    result=9;
-  }
-  delete map;
-  // Now store the final CDB file
-
-  if ( result == 0 ) {
-        AliCDBMetaData metaData;
-	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("Haavard Helstrup");
-	metaData.SetComment("Preprocessor AliTPC data base entries.");
-
-	Bool_t storeOK = Store("Calib", "Pressure", fPressure, &metaData, 0, 0);
-        if ( !storeOK ) result=1;
 
    }
 
@@ -322,6 +280,11 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 	}
         AliTPCCalibPedestal *calPed;
 	f->GetObject("AliTPCCalibPedestal",calPed);
+        if ( !calPed ) {
+	  Log ("No pedestal calibration object in file.");
+	  result = 2;
+	  break;
+	}
 
         //  replace entries for the sectors available in the present file
 
@@ -348,7 +311,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
     if ( !storeOK ) ++result;
 
   } else {
-    Log ("Error: no entries!");
+    Log ("Error: no entries in input file list!");
     result = 1;
   }
 
@@ -415,6 +378,11 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
 	}
         AliTPCCalibPulser *calPulser;
 	f->GetObject("AliTPCCalibPulser",calPulser);
+        if ( !calPulser ) {
+	  Log ("No pulser calibration object in file.");
+	  result = 2;
+	  break;
+	}
 
         //  replace entries for the sectors available in the present file
 
@@ -441,7 +409,7 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
     if ( !storeOK ) ++result;
     
   } else {
-    Log ("Error: no entries!");
+    Log ("Error: no entries in input file list!");
     result = 1;
   }
 

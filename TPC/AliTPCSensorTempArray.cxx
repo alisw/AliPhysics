@@ -24,6 +24,9 @@
 #include "AliTPCSensorTempArray.h"
 #include "TLinearFitter.h"
 #include "TVectorD.h"
+#include "AliLog.h"
+
+
 
 ClassImp(AliTPCSensorTempArray)
 
@@ -53,21 +56,21 @@ AliTPCSensorTempArray::AliTPCSensorTempArray(Int_t run) : AliDCSSensorArray()
 }
 //_____________________________________________________________________________
 AliTPCSensorTempArray::AliTPCSensorTempArray(UInt_t startTime, UInt_t endTime,
-                       TTree* confTree)
+                       TTree* confTree, const TString& amandaString)
              :AliDCSSensorArray()
 {
   //
   // AliTPCSensorTempArray constructor for Shuttle preprocessor 
   //  (confTree read from OCDB)
   //
-  fSensors = AliTPCSensorTemp::ReadTree(confTree);
+  fSensors = AliTPCSensorTemp::ReadTree(confTree,amandaString);
   fSensors->BypassStreamer(kFALSE);
   fStartTime = TTimeStamp(startTime);
   fEndTime   = TTimeStamp(endTime);
 }
 
 //_____________________________________________________________________________
-AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname) : 
+AliTPCSensorTempArray::AliTPCSensorTempArray(const char *fname) :
                                                   AliDCSSensorArray()
 {
   //
@@ -102,28 +105,22 @@ AliTPCSensorTempArray &AliTPCSensorTempArray::operator=(const AliTPCSensorTempAr
   //
   // Assignment operator
   //
-
-  if (this != &c) ((AliTPCSensorTempArray &) c).Copy(*this);
+  if (this != &c) {
+     fSensors->Delete();
+     new (this) AliTPCSensorTempArray(c);
+     fSensors = (TClonesArray*)c.fSensors->Clone();
+  }
   return *this;
-
 }
 
-//_____________________________________________________________________________
-void AliTPCSensorTempArray::Copy(TObject &c) const
-{
-  //
-  // Copy function
-  //
 
-  TObject::Copy(c);
-}
 //_____________________________________________________________________________
-void AliTPCSensorTempArray::ReadSensors(const char *dbEntry) 
+void AliTPCSensorTempArray::ReadSensors(const char *dbEntry)
 {
   //
   // Read list of temperature sensors from text file
   //
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry); 
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry);
   TTree *tree = (TTree*) entry->GetObject();
   fSensors = AliTPCSensorTemp::ReadTree(tree);
 

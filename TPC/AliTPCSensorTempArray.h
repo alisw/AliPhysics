@@ -28,13 +28,13 @@ class AliDCSSensor;
 class AliTPCSensorTempArray : public AliDCSSensorArray {
  public:
   AliTPCSensorTempArray();
-  AliTPCSensorTempArray(Int_t run); 
+  AliTPCSensorTempArray(Int_t run);
   AliTPCSensorTempArray(const char *fname);
-  AliTPCSensorTempArray (UInt_t startTime, UInt_t endTime, TTree* confTree);
-  AliTPCSensorTempArray(const AliTPCSensorTempArray &c);   
+  AliTPCSensorTempArray (UInt_t startTime, UInt_t endTime, TTree* confTree,
+                         const TString& amandaString = kAmandaString);
+  AliTPCSensorTempArray(const AliTPCSensorTempArray &c);
   virtual ~AliTPCSensorTempArray();
   AliTPCSensorTempArray &operator=(const AliTPCSensorTempArray &c);
-  virtual void Copy (TObject &c) const;
   void ReadSensors  (const char *dbEntry);
   AliTPCSensorTemp* GetSensor (Int_t type, Int_t side, Int_t sector, Int_t num);
   AliTPCSensorTemp* GetSensor (Int_t IdDCS);

@@ -28,6 +28,8 @@ class TTimeStamp;
 //              Class AliTPCSensorTempSensors
 ////////////////////////////////////////////////////////////////////////
 
+const TString kAmandaString = "tpc_temp:PT_%d.Temperature";
+
 class AliTPCSensorTemp : public AliDCSSensor {
 
 public:
@@ -48,7 +50,8 @@ public:
 
 
   static TClonesArray * ReadList(const char *fname);
-  static TClonesArray * ReadTree(TTree *tree);
+  static TClonesArray * ReadTree(TTree *tree, 
+                                 const TString& amandaString = kAmandaString);
 
 protected:
   Int_t fType;      // Position of sensors on fieldcage

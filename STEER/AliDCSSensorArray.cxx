@@ -47,7 +47,7 @@ AliDCSSensorArray::AliDCSSensorArray():TNamed(),
 
 }
 //_____________________________________________________________________________
-AliDCSSensorArray::AliDCSSensorArray(TClonesArray *arr):TNamed(), 
+AliDCSSensorArray::AliDCSSensorArray(TClonesArray *arr):TNamed(),
   fMinGraph(10),
   fMinPoints(10),
   fIter(10),
@@ -65,7 +65,7 @@ AliDCSSensorArray::AliDCSSensorArray(TClonesArray *arr):TNamed(),
 
 }
 //_____________________________________________________________________________
-AliDCSSensorArray::AliDCSSensorArray(Int_t run, const char* dbEntry) : 
+AliDCSSensorArray::AliDCSSensorArray(Int_t run, const char* dbEntry) :
   TNamed(),
   fMinGraph(10),
   fMinPoints(10),
@@ -81,8 +81,8 @@ AliDCSSensorArray::AliDCSSensorArray(Int_t run, const char* dbEntry) :
   //
   // Read configuration from OCDB
   //
-  
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry,run); 
+
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry,run);
   TTree *tree = (TTree*) entry->GetObject();
   fSensors = AliDCSSensor::ReadTree(tree);
 }
@@ -103,7 +103,7 @@ AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
 
 {
   //
-  // AliDCSSensorArray constructor for Shuttle preprocessor 
+  // AliDCSSensorArray constructor for Shuttle preprocessor
   //  (confTree read from OCDB)
   //
   fSensors = AliDCSSensor::ReadTree(confTree);
@@ -132,8 +132,7 @@ AliDCSSensorArray::AliDCSSensorArray(const AliDCSSensorArray &c):TNamed(c),
   // AliDCSSensorArray copy constructor
   //
 
-  ((AliDCSSensorArray &) c).Copy(*this);
-
+  fSensors = (TClonesArray*)c.fSensors->Clone();
 }
 
 ///_____________________________________________________________________________
@@ -153,22 +152,16 @@ AliDCSSensorArray &AliDCSSensorArray::operator=(const AliDCSSensorArray &c)
   //
   // Assignment operator
   //
-
-  if (this != &c) ((AliDCSSensorArray &) c).Copy(*this);
+  if (this != &c) {
+     fSensors->Delete();
+     new (this) AliDCSSensorArray(c);
+     fSensors = (TClonesArray*)c.fSensors->Clone();
+  }
   return *this;
-
 }
 
-//_____________________________________________________________________________
-void AliDCSSensorArray::Copy(TObject &c) const
-{
-  //
-  // Copy function
-  //
+//____________________________________________________________________________
 
-  TObject::Copy(c);
-}
-//_____________________________________________________________________________
 void AliDCSSensorArray::SetGraph(TMap *map)
 {
   //
@@ -220,7 +213,20 @@ void AliDCSSensorArray::MakeSplineFit(TMap *map, Bool_t keepMap)
   }
 }
 
-
+//_____________________________________________________________________________
+Int_t AliDCSSensorArray::NumFits() const 
+{
+ //
+ // Return number of sensors where a succesful fit has been made
+ //
+  Int_t nfit=0;
+  Int_t nsensors = fSensors->GetEntries();
+  for ( Int_t isensor=0; isensor<nsensors; isensor++) {
+    AliDCSSensor *entry = (AliDCSSensor*)fSensors->At(isensor);
+    if (entry->GetFit()) nfit++;
+  }    
+  return nfit;
+}
 //_____________________________________________________________________________
 Double_t AliDCSSensorArray::GetValue(UInt_t timeSec, Int_t sensor)
 {
