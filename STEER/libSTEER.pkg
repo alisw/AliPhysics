@@ -13,7 +13,7 @@ AliMCQA.cxx AliPDG.cxx AliDebugVolume.cxx \
 AliConfig.cxx \
 AliRunDigitizer.cxx AliDigitizer.cxx AliStream.cxx \
 AliMergeCombi.cxx AliMagFMaps.cxx AliFieldMap.cxx \
-AliMagFCheb.cxx AliCheb3D.cxx \
+AliMagFCheb.cxx AliCheb3D.cxx AliCheb3DCalc.cxx\
 AliGausCorr.cxx \
 AliTrackMap.cxx AliTrackMapper.cxx \
 AliMemoryWatcher.cxx \

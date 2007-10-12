@@ -32,6 +32,7 @@
 #include <TSystem.h>
 #include <TNamed.h>
 #include "AliCheb3D.h"
+#include "AliCheb3DCalc.h"
 
 class AliMagFCheb: public TNamed
 {
