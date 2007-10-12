@@ -66,10 +66,16 @@ class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
    * to use the low-level method.
    * @param evtData       event data structure
    * @param trigData	  trigger data structure
+   * @param outputPtr     not used
+   * @param size          not used
+   * @param outputBlocks  not used
    * @return
    */
   int GetEvent( const AliHLTComponentEventData& evtData,
-		AliHLTComponentTriggerData& trigData);
+		AliHLTComponentTriggerData& trigData,
+		AliHLTUInt8_t* outputPtr, 
+		AliHLTUInt32_t& size,
+		vector<AliHLTComponentBlockData>& outputBlocks);
 
   /**
    * Scan one argument and adjacent parameters.
