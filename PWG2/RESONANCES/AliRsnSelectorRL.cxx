@@ -137,7 +137,7 @@ void AliRsnSelectorRL::Clear(Option_t * /*option*/)
   //
 }
 //--------------------------------------------------------------------------------------------------------
-Double_t* AliRsnSelectorRL::GetPIDprobabilities(AliRsnDaughter track)
+Double_t* AliRsnSelectorRL::GetPIDprobabilities(AliRsnDaughter track) const
 {
 //
 // Computes PID probabilites starting from priors and weights
@@ -243,7 +243,7 @@ AliPID::EParticleType AliRsnSelectorRL::FindType(Int_t pdg)
 //--------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------------
-void AliRsnSelectorRL::Begin(TTree *)
+void AliRsnSelectorRL::Begin(TTree *) const
 {
 //
 // Implementation of BEGIN method
@@ -384,10 +384,13 @@ void AliRsnSelectorRL::SlaveTerminate()
 // SlaveTerminate
 // Partial termination method
 //
+// test have been performed only on AliEn, please contact the author in case of merging problem under CAF/PROOF.
+//
+//
 	Info("SlaveTerminate", "");
 	
 	// Add the histograms to the output on each slave server
-	// fOutput->Add(fRsnEventTree);
+	fOutput->Add(fRsnEventTree);
 }
 //--------------------------------------------------------------------------------------------------------
 void AliRsnSelectorRL::Terminate()
