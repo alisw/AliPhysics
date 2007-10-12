@@ -15,36 +15,117 @@
 
 /*
 $Log$
+Revision 1.1  2007/09/17 10:23:31  cvetan
+New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */ 
+
+////////////////////////////////////////////////////////////////////////
+////
+//// AliTPCMonitorAltro class
+////
+//// Class for decoding raw TPC data in the ALTRO format.
+//// Data are transformed from 32 bit words to 10 bit or 40 bit respectively.
+//// The whole payload is transformed at once and written to an array. 
+//// The single channels are decoded starting from the trailer word which is
+//// decoded by DecodeTrailer(Int_t pos)
+////
+//// Authors: Roland Bramm, 
+////          Stefan Kniege, IKF, Frankfurt
+////       
+/////////////////////////////////////////////////////////////////////////
 
 
 #include "AliTPCMonitorAltro.h"
-#include "stdlib.h"
-#include <fstream>
-ClassImp(AliTPCMonitorAltro) 
+#include "AliLog.h" 
+#include <Riostream.h>
+
+ClassImp(AliTPCMonitorAltro)  
 
 //_____________________________________________________________________________________________
-AliTPCMonitorAltro::AliTPCMonitorAltro(UInt_t* memory, Int_t size, Int_t fformat) 
+AliTPCMonitorAltro::AliTPCMonitorAltro(UInt_t* memory, Int_t size, Int_t fformat) :
+  fverb(0),
+  fmemory(memory),
+  fsize(size),
+  f40BitArray(0),
+  f10BitArray(0),
+  fdecoderPos(0),
+  fallocate40BitArray(false),
+  fallocate10BitArray(false),
+  foffset(0),  
+  fwrite10bit(0),
+  fTrailerNWords(0), 
+  fTrailerHwAddress(0),
+  fTrailerDataPos(0),
+  fTrailerBlockPos(0),
+  fTrailerPos(0),
+  fNextPos(0),
+  ffilename(new Char_t[256])
 {
-  // Constructor: Set different CDH offsets for root(0) and date format
-  fmemory = memory;
-  fsize   = size;
-  fallocate40BitArray = false;
-  fallocate10BitArray = false;
-  fwrite10bit = 0;
+  // Constructor: Set different CDH offsets for ROOT (0) and date format
+  // Data offset can be changed via SetDataOffset(Int_t val)
+
   if(     fformat==0) foffset=7; // old CHD Format
-  else if(fformat==1) foffset=8; // memory pointer form DATE (start CDH)
-  else if(fformat==2) foffset=0; // memory pointer form ROOT (after CDH)
-  
-  fverb             =0;
-  fTrailerNWords    =0; 
-  fTrailerHwAddress =0;
-  fTrailerDataPos   =0;
-  fTrailerBlockPos  =0;
-  fTrailerPos       =0;
-  fNextPos          =0;
-  ffilename         = new Char_t[256];
+  else if(fformat==1) foffset=8; // memory pointer from DATE (start CDH)
+  else if(fformat==2) foffset=0; // memory pointer from ROOT (after CDH)
 } 
+
+
+//_____________________________________________________________________________________________
+AliTPCMonitorAltro::AliTPCMonitorAltro(const AliTPCMonitorAltro &altro) :
+  TNamed(altro),
+  fverb(altro.fverb),
+  fmemory(altro.fmemory),
+  fsize(altro.fsize),
+  f40BitArray(altro.f40BitArray),
+  f10BitArray(altro.f10BitArray),
+  fdecoderPos(altro.fdecoderPos),
+  fallocate40BitArray(altro.fallocate40BitArray),
+  fallocate10BitArray(altro.fallocate10BitArray),
+  foffset(altro.foffset),
+  fwrite10bit(altro.fwrite10bit),
+  fTrailerNWords(altro.fTrailerNWords),
+  fTrailerHwAddress(altro.fTrailerHwAddress),
+  fTrailerDataPos(altro.fTrailerDataPos),
+  fTrailerBlockPos(altro.fTrailerBlockPos),
+  fTrailerPos(altro.fTrailerPos),
+  fNextPos(altro.fNextPos),
+  ffilename(new Char_t[strlen(altro.ffilename)+1])
+{
+  // copy constructor
+  strcpy(ffilename,altro.ffilename);
+
+}
+
+//_____________________________________________________________________________________________
+AliTPCMonitorAltro &AliTPCMonitorAltro::operator =(const AliTPCMonitorAltro& altro)
+{
+  // assignement operator 
+  
+  if(this!=&altro){ 
+    ((TNamed *)this)->operator=(altro);
+    fverb=altro.fverb;
+    fmemory=altro.fmemory;
+    fsize=altro.fsize;
+    f40BitArray=altro.f40BitArray;
+    f10BitArray=altro.f10BitArray;
+    fdecoderPos=altro.fdecoderPos;
+    fallocate40BitArray=altro.fallocate40BitArray;
+    fallocate10BitArray=altro.fallocate10BitArray;
+    foffset=altro.foffset;
+    fwrite10bit=altro.fwrite10bit;
+    fTrailerNWords=altro.fTrailerNWords;
+    fTrailerHwAddress=altro.fTrailerHwAddress;
+    fTrailerDataPos=altro.fTrailerDataPos;
+    fTrailerBlockPos=altro.fTrailerBlockPos;
+    fTrailerPos=altro.fTrailerPos; 
+    fNextPos=altro.fNextPos;
+    ffilename = new Char_t[strlen(altro.ffilename)+1]; 
+    strcpy(ffilename,altro.ffilename);
+  }
+  return *this;
+}
+
 
 //_____________________________________________________________________________________________
 AliTPCMonitorAltro::~AliTPCMonitorAltro() {
@@ -110,15 +191,15 @@ void AliTPCMonitorAltro::Decodeto40Bit()
       rest = i%4;
       switch(rest) {
       case 0:
-	blackbox = (fmemory[foffset])     + (((Long64_t)(fmemory[foffset+1]&k08BitOn))<<32);
+	blackbox = (fmemory[foffset])     + (((Long64_t)(fmemory[foffset+1]&fgk08BitOn))<<32);
 	foffset +=1;
 	break;
       case 1:
-	blackbox = (fmemory[foffset]>>8 ) + (((Long64_t)(fmemory[foffset+1]&k16BitOn))<<24);
+	blackbox = (fmemory[foffset]>>8 ) + (((Long64_t)(fmemory[foffset+1]&fgk16BitOn))<<24);
 	foffset +=1;
 	break;
       case 2:
-	blackbox = (fmemory[foffset]>>16) + (((Long64_t)(fmemory[foffset+1]&k24BitOn))<<16);
+	blackbox = (fmemory[foffset]>>16) + (((Long64_t)(fmemory[foffset+1]&fgk24BitOn))<<16);
 	foffset +=1;
 	break;
       case 3:
@@ -162,15 +243,15 @@ void AliTPCMonitorAltro::Decodeto10Bit(Int_t equipment)
       switch(rest) 
 	{
 	case 0:
-	  blackbox = (fmemory[foffset])     + (((Long64_t)(fmemory[foffset+1]&k08BitOn))<<32);
+	  blackbox = (fmemory[foffset])     + (((Long64_t)(fmemory[foffset+1]&fgk08BitOn))<<32);
 	  foffset +=1;
 	  break;
 	case 1:
-	  blackbox = (fmemory[foffset]>>8 ) + (((Long64_t)(fmemory[foffset+1]&k16BitOn))<<24);
+	  blackbox = (fmemory[foffset]>>8 ) + (((Long64_t)(fmemory[foffset+1]&fgk16BitOn))<<24);
 	  foffset +=1;
 	  break;
 	case 2:
-	  blackbox = (fmemory[foffset]>>16) + (((Long64_t)(fmemory[foffset+1]&k24BitOn))<<16);
+	  blackbox = (fmemory[foffset]>>16) + (((Long64_t)(fmemory[foffset+1]&fgk24BitOn))<<16);
 	  foffset +=1;
 	  break;
 	case 3:
@@ -181,10 +262,10 @@ void AliTPCMonitorAltro::Decodeto10Bit(Int_t equipment)
 	  blackbox = 0;
 	  break;
 	}
-      f10BitArray[ind*4+0] = (Short_t)( blackbox & kmask10 )    ;
-      f10BitArray[ind*4+1] = (Short_t)((blackbox & kmask20)>>10); 
-      f10BitArray[ind*4+2] = (Short_t)((blackbox & kmask30)>>20);
-      f10BitArray[ind*4+3] = (Short_t)((blackbox & kmask40)>>30);
+      f10BitArray[ind*4+0] = (Short_t)( blackbox & fgkmask10 )    ;
+      f10BitArray[ind*4+1] = (Short_t)((blackbox & fgkmask20)>>10); 
+      f10BitArray[ind*4+2] = (Short_t)((blackbox & fgkmask30)>>20);
+      f10BitArray[ind*4+3] = (Short_t)((blackbox & fgkmask40)>>30);
     }
   if(fwrite10bit)
     {
@@ -222,9 +303,9 @@ Int_t AliTPCMonitorAltro::DecodeTrailer(Int_t pos)
       trailer += carry ;
     }
   
-  fTrailerHwAddress = (trailer & ((Long64_t )kTrailerMaskHardw)  );
-  words             = (Long64_t )( (trailer & ((Long64_t )kTrailerMaskNWords))>>16);
-  tail           = (Long64_t )( (trailer & ((Long64_t )kTrailerMaskTail   ))>>26 );
+  fTrailerHwAddress = (trailer & ((Long64_t )fgkTrailerMaskHardw)  );
+  words             = (Long64_t )( (trailer & ((Long64_t )fgkTrailerMaskNWords))>>16);
+  tail           = (Long64_t )( (trailer & ((Long64_t )fgkTrailerMaskTail   ))>>26 );
   
   if(words%4!=0) rest =  4-(words%4);
   fTrailerNWords      = words+rest ;
@@ -232,7 +313,7 @@ Int_t AliTPCMonitorAltro::DecodeTrailer(Int_t pos)
   fTrailerBlockPos    = pos -4 ;
   fNextPos            = (pos -fTrailerNWords -4);
   
-  if(       tail!=kTrailerTail        ) { AliError(Form("Could not read Trailer. \"Write 10bit\" for this event. Last Trailer line (2AA): %i. Supp.next Trailer line (2AA): %i ",pos,fNextPos));    return -1;      }
+  if(       tail!=fgkTrailerTail        ) { AliError(Form("Could not read Trailer. \"Write 10bit\" for this event. Last Trailer line (2AA): %i. Supp.next Trailer line (2AA): %i ",pos,fNextPos));    return -1;      }
   else if(     fNextPos==-1           ) { /* was last channel  */   	                                                                                                                            return  0;      }
   else if(     fNextPos <0            ) { AliError("Next Trailer position < 0 ");                                                                                                                   return -1;      }
   else if((f10BitArray[fNextPos]!=682)) { AliError(Form("Could not find tail (2AA) at next supposed position %i",fNextPos));                                                                        return -1;      }

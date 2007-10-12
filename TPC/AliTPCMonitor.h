@@ -12,8 +12,8 @@
 //
 // AliTPCMonitor class
 // 
-// Main class for TPC Monitor
-// Monitor can handle rootified data, files and online streams in DATE format.
+// Main class for the TPC raw data Monitor.
+// The Monitor can handle rootified data, files and online streams in DATE format.
 // The monitor GUI is started by the macro TPCMonitor.C
 // 
 // Author: Stefan Kniege, IKF, Frankfurt
@@ -21,59 +21,93 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
- 
-#include <stdio.h>
-#include <fstream>
-#include <stdlib.h>
-#include <iostream>
-#include <istream>
-#include <ostream>
-#include "TStyle.h"
-#include "TSystem.h"
-#include "TH2F.h"
-#include "TLegend.h"
-#include "TF1.h"
-#include "TMath.h"
-#include "TFormula.h"
-#include <string>
-#include "TROOT.h"
-#include "TCanvas.h"
-#include "TApplication.h"
-#include "TGaxis.h"
-#include "TPaveText.h"
-#include "TGButtonGroup.h"
-#include "TGButton.h"
-#include "TGTextBuffer.h"
-#include "TGTextEntry.h"
-#include "TGLabel.h"
-#include "TH3S.h"
-#include "AliTPCMonitorMappingHandler.h"
-#include "AliTPCMonitorDateFile.h"
-#include "AliTPCMonitorDateFormat.h"
-#include "AliTPCMonitorAltro.h"
-#include "AliTPCMonitorFFT.h"
 #include "AliTPCMonitorConfig.h"
-#include "AliSignalProcesor.h"
-#include "AliRawReaderRoot.h"
-#include "AliRawReader.h"
-#include "TGMsgBox.h"
-#include "TNamed.h"
-#include "TObject.h" 
-#include "TDirectory.h"
-#include "AliLog.h"
-#include "RQ_OBJECT.h"
 
+class TH1F;
+class TH1D;
+class TH1;
+class TH2F;
+class TH2S;
+class TCanvas;
+class TH3S;
+class AliTPCMonitorMappingHandler;
+class AliTPCMonitorDateFile;
+class AliTPCMonitorDateFormat;
+class AliTPCMonitorAltro;
+class AliTPCMonitorFFT;
+class AliTPCMonitorConfig;
+class AliRawReaderRoot;
+class AliRawReader;
 class AliTPCMonitorDateMonitor;
 
-using namespace std;
 
 class AliTPCMonitor : public AliTPCMonitorConfig {
     
  public:
     
     AliTPCMonitor(char* name, char* title);
+    AliTPCMonitor(const  AliTPCMonitor &monitor);
+    AliTPCMonitor& operator= (const AliTPCMonitor& monitor);
+    
     virtual ~AliTPCMonitor();
     
+    Int_t         CheckEqId(Int_t secid, Int_t eqid);
+    TCanvas*      CreateCanvas(char* name);
+    void          CreateHistos();
+    
+    void          DeleteHistos();
+    void          DisableFit(Int_t val) { fDisableFit =val; }
+    void          DrawHists(Int_t histos);
+    void          DrawRMSMap();
+    void          DumpHeader(AliRawReaderRoot*          reader  ) const ;
+    void          DumpHeader(AliTPCMonitorDateFormat*   DateForm) const ;
+    
+    void          ExecPad() ;
+    void          ExecRow() ;
+    Int_t         ExecProcess();
+    void          ExecTransform();
+    
+    void          FillGlobal(Int_t sector);
+    void          FillHistsDecode( AliTPCMonitorAltro* altro , Int_t rcu_patch, Int_t id=0);
+    void          FillHistsPadPlane();
+    
+    static double Gamma4(double* x, double* par);
+    Int_t         GetChannelsProc()  const  { return fChannelIter     ;}
+    Int_t         GetEventID()       const  { return fEventNumber     ;}
+    TH1*          GetHisto(char* histname);
+    Int_t         GetRCUPatch(Int_t runid, Int_t eqid);
+    
+    Int_t         GetPadAtX(Float_t xval, Int_t row, Int_t padmax) const ;                            
+    Int_t         GetPadAtX(Float_t xval, Int_t row) const ;                                          
+    void          GetXY( Double_t& xval , Double_t& yval , Int_t padmax, Int_t row , Int_t pad) const ; 
+    
+    Int_t         IsLastEvent()      const  { return fLastEv          ;}
+    
+    Int_t         ProcessEvent(); 
+    
+    void          SetEventID(Int_t val)     { fEventNumber =val;}
+    void          SetMirror(Int_t val)      { fMirror=val;}
+    void          SetVerbose(Int_t val)     { fVerb = val;}
+    void          SetMappingHandler(AliTPCMonitorMappingHandler* val ) { fMapHand  = val;}
+    void          ShowSel(Int_t* comp_val);
+    void          SetEqIds();
+    
+    void          ResizeCanv();
+    void          ResetHistos();
+    void          ResetArrays();
+    Int_t         ReadData(    Int_t secid);
+    
+    Int_t         ReadDataDATEFile(Int_t secid); 
+    Int_t         ReadDataDATEStream(Int_t secid); 
+    Int_t         ReadDataDATESubEventLoop(AliTPCMonitorDateFormat* DateForm, Int_t secid);
+    Int_t         ReadDataROOT(Int_t secid ); 
+    
+    void          WriteHistos() ;
+    void          Write10bitChannel();
+    
+
+ private:
+
     // stats for size of arrays and histograms /////////////////////////////////////////////////
     Int_t**      fPad;                      // array to store channel adc in time    
     Float_t*     fPadMapHw;                 // array to store mapping of hardware address and channel number
@@ -123,16 +157,16 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
 
     
     // row and pad settings 
-    Int_t        kNRowsIroc;                // number of rows in IROC
-    Int_t        kNRowsOroc;                // number of rows in OROC
+    Int_t        fkNRowsIroc;                // number of rows in IROC
+    Int_t        fkNRowsOroc;                // number of rows in OROC
     
-    Int_t        kNPadsIroc;                // number of pads in IROC
-    Int_t        kNPadsOroc;                // number of pads in OROC
+    Int_t        fkNPadsIroc;                // number of pads in IROC
+    Int_t        fkNPadsOroc;                // number of pads in OROC
     
-    Int_t        kNPadMinIroc;              // min for pad (y-axis) representation in 2D histogram IROC
-    Int_t        kNPadMinOroc;              // min for pad (y-axis) representation in 2D histogram OROC
-    Int_t        kNPadMaxIroc;              // max for pad (y-axis) representation in 2D histogram IROC
-    Int_t        kNPadMaxOroc;              // max for pad (y-axis) representation in 2D histogram IROC
+    Int_t        fkNPadMinIroc;              // min for pad (y-axis) representation in 2D histogram IROC
+    Int_t        fkNPadMinOroc;              // min for pad (y-axis) representation in 2D histogram OROC
+    Int_t        fkNPadMaxIroc;              // max for pad (y-axis) representation in 2D histogram IROC
+    Int_t        fkNPadMaxOroc;              // max for pad (y-axis) representation in 2D histogram IROC
 
     Int_t        fVerb;                     // verbose flag
     
@@ -171,68 +205,11 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     AliTPCMonitorDateFile*        fReaderDATE;         // reader for DATE files
 
     AliTPCMonitorDateMonitor*     fReaderDATEMon;      // reader for DATE monitoring
-    
-
-    Int_t         CheckEqId(Int_t secid, Int_t eqid);
-    TCanvas*      CreateCanvas(char* name);
-    void          CreateHistos();
-    
-    void          DeleteHistos();
-    void          DisableFit(Int_t val) { fDisableFit =val; }
-    void          DrawHists(Int_t histos);
-    void          DrawRMSMap();
-    void          DumpHeader(AliRawReaderRoot*          reader  );
-    void          DumpHeader(AliTPCMonitorDateFormat*   DateForm);
-    
-    void          ExecPad() ;
-    void          ExecRow() ;
-    Int_t         ExecProcess();
-    void          ExecTransform();
-    
-    void          FillGlobal(Int_t sector);
-    void          FillHistsDecode( AliTPCMonitorAltro* altro , Int_t rcu_patch, Int_t id=0);
-    void          FillHistsPadPlane();
-    
-    static double Gamma4(double* x, double* par);
-    Int_t         GetChannelsProc()   { return fChannelIter     ;}
-    Int_t         GetEventID()        { return fEventNumber     ;}
-    TH1*          GetHisto(char* histname);
-    Int_t         GetRCUPatch(Int_t runid, Int_t eqid);
-    
-    Int_t         GetPadAtX(Float_t xval, Int_t row, Int_t padmax);
-    Int_t         GetPadAtX(Float_t xval, Int_t row);
-    void          GetXY( double& xval , double& yval , Int_t rowmax, Int_t row , Int_t pad);
-    
-    Int_t         IsLastEvent()       { return fLastEv          ;}
-    
-    Int_t         ProcessEvent(); 
-    
-    void          SetEventID(Int_t val)     { fEventNumber =val;}
-    void          SetMirror(Int_t val)      { fMirror=val;}
-    void          SetVerbose(Int_t val)     { fVerb = val;}
-    void          SetMappingHandler(AliTPCMonitorMappingHandler* val ) { fMapHand  = val;}
-    void          ShowSel(Int_t* comp_val);
-    void          SetEqIds();
-    
-    void          ResizeCanv();
-    void          ResetHistos();
-    void          ResetArrays();
-    Int_t         ReadData(    Int_t secid);
-    
-    Int_t         ReadDataDATEFile(Int_t secid); 
-    Int_t         ReadDataDATEStream(Int_t secid); 
-    Int_t         ReadDataDATESubEventLoop(AliTPCMonitorDateFormat* DateForm, Int_t secid);
-    Int_t         ReadDataROOT(Int_t secid ); 
-    
-    void          WriteHistos() ;
-    void          Write10bitChannel();
-    
-
  
    
     
     
- private:
+ 
      
     ClassDef(AliTPCMonitor,1); 
 }; 

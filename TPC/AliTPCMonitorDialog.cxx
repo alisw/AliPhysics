@@ -15,47 +15,99 @@
 
 /*
 $Log$
+Revision 1.1  2007/09/17 10:23:31  cvetan
+New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */ 
 
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorDialog class
+//
+// Class to handle dialogs for settings of files and configurations 
+// for the AliTPCMonitor
+// 
+// The dialog will be called by an AliTPCMonitor object from the macro TPCMonitor.C.
+// Depending on the version number passed when creating an Object of this class
+// a certain dialog window (see constructor)  for the TPCMonitor will be opened.
+// The data inserted will be passed to the configuration handler and read out
+// by the monitor object or a the monitor member function will be directly called.
+//  
+// Author: Stefan Kniege, IKF, Frankfurt
+//       
+//
+/////////////////////////////////////////////////////////////////////////
 
+
+
+ 
 #include "AliTPCMonitorDialog.h"
+#include "TGTab.h"
+#include "TGButton.h"
+#include "TGLabel.h"
+#include "TGListBox.h"
+#include "TGLayout.h"
+#include "TGTextBuffer.h"
+#include "TGTextEntry.h" 
+#include "TGWindow.h"
+#include "TVirtualPadEditor.h"
+#include "TTimer.h"
+#include "RQ_OBJECT.h"
+#include <Riostream.h>
 #include "Rtypes.h"
 #include "AliLog.h"
+
 ClassImp(AliTPCMonitorDialog)
 //_____________________________________________________________________________________________
 AliTPCMonitorDialog::AliTPCMonitorDialog(const TGWindow *p, const TGWindow *main, UInt_t w,
-			 UInt_t h, UInt_t options, Int_t version,AliTPCMonitor* monitor)
+					   UInt_t h, UInt_t options, Int_t version,AliTPCMonitor* monitor):
+  fFrameMain(new TGTransientFrame(p, main, w, h, options)),
+  fFrameComp(0),
+  fFrameHor(new TGHorizontalFrame(fFrameMain, 60, 20, kFixedWidth)),
+  fFrameGroup(0),
+  fOkButton(new TGTextButton(fFrameHor, "&Ok", 1)),
+  fListBox(0),
+  fTab(new TGTab(fFrameMain, 300, 300)),
+  fLayout1(new TGLayoutHints(kLHintsTop    | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2)),
+  fLayout2(new TGLayoutHints(kLHintsBottom | kLHintsRight                , 2, 2, 5, 1)),
+  fLayout3(new TGLayoutHints(kLHintsTop    | kLHintsLeft, 5, 5, 5, 5)),
+  fMonitor(monitor)
+  
 {
-  // Constructor for Dialog window. 
+  // Constructor for Dialog window.  
   // Create a dialog window.depending on the version it is called with.. 
   // Verrion 0: Choose DATA Format
   // Version 1: Choose FEC components to display
   // Version 2: Choose Ranges for base and max adc calculation
 
-  fMonitor  = monitor; 
-  
-  fFrameMain = new TGTransientFrame(p, main, w, h, options);
   fFrameMain->Connect("CloseWindow()", "AliTPCMonitorDialog", this, "DoClose()");
   fFrameMain->DontCallClose(); 
   fFrameMain->SetCleanup(kDeepCleanup);
-  
-  fFrameHor      = new TGHorizontalFrame(fFrameMain, 60, 20, kFixedWidth);
-  fOkButton      = new TGTextButton(fFrameHor, "&Ok", 1);
   fOkButton->Connect("Clicked()", "AliTPCMonitorDialog", this, "DoOK()");
-
-  fLayout1       = new TGLayoutHints(kLHintsTop    | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
-  fLayout2       = new TGLayoutHints(kLHintsBottom | kLHintsRight                , 2, 2, 5, 1);
-  fLayout3       = new TGLayoutHints(kLHintsTop    | kLHintsLeft, 5, 5, 5, 5);
-
   fFrameHor->AddFrame(fOkButton, fLayout1);
   fFrameHor->Resize(150, fOkButton->GetDefaultHeight());
   fFrameMain->AddFrame(    fFrameHor, fLayout2);
-  
-  fTab      = new TGTab(fFrameMain, 300, 300);
   fTab->Connect("Selected(Int_t)", "AliTPCMonitorDialog", this, "DoTab(Int_t)");
-  
   CreateDialogVersion(version);
 }
+
+// //_____________________________________________________________________________
+// AliTPCMonitorDialog::AliTPCMonitorDialog(const AliTPCMonitorDialog &dialog) :
+// {
+//   // copy constructor (actually none forseen for this class 
+//   AliWarning("No copying forseen for this class");
+  
+// }
+
+// //_____________________________________________________________________________
+// AliTPCMonitorDialog &AliTPCMonitorDialog::operator =(const AliTPCMonitorDialog& dialog)
+// {
+//   // assignement operator
+//   AliWarning("No assignment forseen for this class");
+//   return *this;
+// }
+
+
 
 //_____________________________________________________________________________________________
 void AliTPCMonitorDialog::CreateDialogVersion(Int_t version)

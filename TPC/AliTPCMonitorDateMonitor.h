@@ -26,17 +26,19 @@ using namespace std;
 class AliTPCMonitorDateMonitor : public TNamed {
  
  public:
-	AliTPCMonitorDateMonitor();
-	~AliTPCMonitorDateMonitor();
-
-	void    Free();
-	Int_t   OpenMonitoring(string name);
-	Char_t* DecodeError(int error);
-	Int_t   DeclareMonitor(string name); 
-	Int_t   FlushEvents();
-	Int_t   GetEvent();
-	Char_t *GetEventPointerasChar();
-	Int_t   Logout();
+    AliTPCMonitorDateMonitor();
+    AliTPCMonitorDateMonitor(const  AliTPCMonitorDateMonitor &config);
+    AliTPCMonitorDateMonitor& operator= (const AliTPCMonitorDateMonitor& config);
+    ~AliTPCMonitorDateMonitor();
+    
+    void    Free();
+    Int_t   OpenMonitoring(string name);
+    Char_t* DecodeError(int error);
+    Int_t   DeclareMonitor(string name); 
+    Int_t   FlushEvents();
+    Int_t   GetEvent();
+    Char_t *GetEventPointerasChar();
+    Int_t   Logout();
 	
  private:
 	

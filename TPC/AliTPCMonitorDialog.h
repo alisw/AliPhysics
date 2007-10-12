@@ -19,64 +19,31 @@
 /////////////////////////////////////////////////////////////////////////
 
 
-
-#include <iostream>
-#include "TGWindow.h"
-#include "TRootGuiBuilder.h"
-#include "TGMenu.h"
-#include "TGButtonGroup.h"
-#include "TGDockableFrame.h"
-#include "TGToolBar.h"
-#include "TGButton.h"
-#include "TGToolTip.h"
-#include "TGuiBldDragManager.h"
-#include "TGMdiMainFrame.h"
-#include "TGLabel.h"
-#include "TG3DLine.h"
-#include "TGNumberEntry.h"
-#include "TGuiBldHintsButton.h"
-#include "TGuiBldHintsEditor.h"
-#include "TGuiBldEditor.h"
-#include "TGShutter.h"
-#include "TGCanvas.h"
-#include "TGStatusBar.h"
-#include "TGTab.h"
-#include "TGSplitter.h"
-#include "TGMdiMenu.h"
-#include "TGMdiDecorFrame.h"
-#include "TGMdiFrame.h"
-#include "TGListBox.h"
-#include "TGListView.h"
-#include "TGFSContainer.h"
-#include "TGFSComboBox.h"
-#include "TGFileDialog.h"
-#include "TGScrollBar.h"
-#include "TGMsgBox.h"
-#include "TGLayout.h"  
 #include "TGFrame.h"  
-#include "TGTextEdit.h"
 #include "RQ_OBJECT.h"
-#include "TRootEmbeddedCanvas.h"
-#include "TH2F.h"
-#include "TRandom.h"
-#include "TVirtualPadEditor.h"
-#include "TSystem.h"
-#include "Rtypes.h"
 #include "AliTPCMonitor.h" 
-#include "AliLog.h"
-
-using namespace std;
-
- 
+class TGWindow;
+class TGTransientFrame;
+class TGLayoutHints;
+class TGListBox;
+class AliTPCMonitor;
+class TGTab;
+class TGButton;
 class TGHorizontalFrame; 
-class AliLog;
+class TGTextBuffer;
+class TGTextEntry;
+class TGTransientFrame;
+class TGCompositeFrame;
+class TGGroupFrame;
 class AliTPCMonitorDialog : public TNamed{
     
     RQ_OBJECT("AliTPCMonitorDialog")
     
-    
- public:
+	
+public:
     AliTPCMonitorDialog(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h, UInt_t options = kVerticalFrame, Int_t version =1, AliTPCMonitor* monitor =0);
+    //AliTPCMonitorDialog(const  AliTPCMonitorDialog &dialog);
+    //AliTPCMonitorDialog& operator= (const AliTPCMonitorDialog& dialog);
     virtual ~AliTPCMonitorDialog();
     
     void DoClose();
@@ -94,8 +61,6 @@ class AliTPCMonitorDialog : public TNamed{
     TGHorizontalFrame*   fFrameHor;     // Frames for dialog windows 
     TGGroupFrame*        fFrameGroup;   // Frames for dialog windows 
     TGButton*            fOkButton;     // Ok button for windows
-    TGButton*            fCancelButton; // Cancel button for windows
-    
     TGListBox*           fListBox;      // ListBox for entries to be selected
     TGTab*               fTab;          // Tabs for several pages in one window 
     TGLayoutHints*       fLayout1;      // Layout for window version 1 

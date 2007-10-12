@@ -15,20 +15,53 @@
 
 /*
   $Log$
+  Revision 1.1  2007/09/17 10:23:31  cvetan
+  New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */ 
 
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorMappingHandler class
+//
+// Class for handling mapping information TPC  
+//  
+// The mapping information for the TPC front end electornics (pads, front end cards) 
+// are handled by this class.
+// The information from the design mapping and from the hardware address can be 
+// cross checked in the TPCMonitor.C. 
+// Malfunctioning front end cards can be identified by looking at single channels 
+// displayed with  the TPCMonitor.  
+//   
+// 
+// Authors: Roland Bramm, 
+//          Stefan Kniege, IKF, Frankfurt
+//       
+/////////////////////////////////////////////////////////////////////////
+
+
 #include "AliTPCMonitorMappingHandler.h"
+#include "TH1.h"
+#include "TLegend.h"
+#include "AliLog.h"
+#include <Riostream.h>
+
 ClassImp(AliTPCMonitorMappingHandler)
 
 //_____________________________________________________________________________________________
-AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(Char_t* name, Char_t* title): TNamed(name,title)
+AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(Char_t* name, Char_t* title): 
+  TNamed(name,title),
+  fnumofChannels(0),
+  fmaxHWAdress(0),
+  fsizeofArray(0),
+  fmapping(new Short_t*[24000]),
+  fmappingChannelinRow(new Int_t*[160]),
+  fu2ftestmapping(new Short_t*[7000]),
+  fMapHwFECglobal(new Int_t*[24000]),
+  fecGainMap(new Float_t*[7000])
 {
   // Constructor : Initialize mapping arrays
  
-  fmapping = new Short_t*[24000];
-
-
-  fmappingChannelinRow = new Int_t*[160];
   for(Int_t in = 0; in<160; in++)
     {
       Int_t* hold = new Int_t[150]; 
@@ -36,16 +69,13 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(Char_t* name, Char_t* t
       fmappingChannelinRow[in]= hold;
     }
   
-
-  fu2ftestmapping      = new Short_t*[7000];
   for(Int_t i = 0; i<7000; i++)
     {
       Short_t* hold = new Short_t[8]; 
       for(Int_t j = 0; j<8;j++)  hold[j]=0;
       fu2ftestmapping[i]= hold;
     }
-
-  fMapHwFECglobal = new Int_t*[24000];
+  
   for(Int_t i = 0; i<24000; i++)
     {
       Int_t* hold = new Int_t[2]; 
@@ -53,7 +83,7 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(Char_t* name, Char_t* t
       fMapHwFECglobal[i]= hold;
     }
   
-  fecGainMap = new Float_t*[7000];
+  
   for(Int_t i = 0; i<7000; i++)
     {
       Float_t* hold = new Float_t[128]; 
@@ -61,6 +91,103 @@ AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(Char_t* name, Char_t* t
       fecGainMap[i]= hold;
     }
 }
+
+//____________________________________________________________________________
+AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const  AliTPCMonitorMappingHandler &maphand) :
+  TNamed(maphand.GetName(),maphand.GetTitle()),
+  fnumofChannels(maphand.fnumofChannels),
+  fmaxHWAdress(maphand.fmaxHWAdress),
+  fsizeofArray(maphand.fsizeofArray),
+  fmapping(new Short_t*[24000]),
+  fmappingChannelinRow(new Int_t*[160]),
+  fu2ftestmapping(new Short_t*[7000]),
+  fMapHwFECglobal(new Int_t*[24000]),
+  fecGainMap(new Float_t*[7000])
+{
+  // copy constructor
+ 
+ 
+  for(Int_t in = 0; in<160; in++)
+    {
+      Int_t* hold = new Int_t[150]; 
+      for(Int_t jn = 0; jn<150;jn++)  hold[jn]=maphand.fmappingChannelinRow[in][jn];
+      fmappingChannelinRow[in]= hold;
+    }
+  
+  for(Int_t i = 0; i<7000; i++)
+    {
+      Short_t* hold = new Short_t[8]; 
+      for(Int_t j = 0; j<8;j++)  hold[j]=maphand.fu2ftestmapping[i][j];
+      fu2ftestmapping[i]= hold;
+    }
+
+  for(Int_t i = 0; i<24000; i++)
+    {
+      Int_t* hold = new Int_t[2]; 
+      for(Int_t j = 0; j<2;j++)  hold[j]=maphand.fMapHwFECglobal[i][j];
+      fMapHwFECglobal[i]= hold;
+    }
+  
+  for(Int_t i = 0; i<7000; i++)
+    {
+      Float_t* hold = new Float_t[128]; 
+      for(Int_t j = 0; j<128;j++)  hold[j]=maphand.fecGainMap[i][j];
+      fecGainMap[i]= hold;
+    }
+
+}
+
+
+//____________________________________________________________________________
+AliTPCMonitorMappingHandler &AliTPCMonitorMappingHandler:: operator= (const AliTPCMonitorMappingHandler& maphand)
+{
+  // assignment operator
+  if(this!=&maphand)
+    {
+      fnumofChannels=maphand.fnumofChannels;
+      fmaxHWAdress=maphand.fmaxHWAdress;
+      fsizeofArray=maphand.fsizeofArray;
+
+      fmapping = new Short_t*[24000]; // empty
+  
+      
+      fmappingChannelinRow = new Int_t*[160];
+      for(Int_t in = 0; in<160; in++)
+	{
+	  Int_t* hold = new Int_t[150]; 
+	  for(Int_t jn = 0; jn<150;jn++)  hold[jn]=maphand.fmappingChannelinRow[in][jn];
+	  fmappingChannelinRow[in]= hold;
+	}
+      
+      fu2ftestmapping      = new Short_t*[7000];
+      for(Int_t i = 0; i<7000; i++)
+	{
+	  Short_t* hold = new Short_t[8]; 
+	  for(Int_t j = 0; j<8;j++)  hold[j]=maphand.fu2ftestmapping[i][j];
+	  fu2ftestmapping[i]= hold;
+	}
+      
+      fMapHwFECglobal = new Int_t*[24000];
+      for(Int_t i = 0; i<24000; i++)
+	{
+	  Int_t* hold = new Int_t[2]; 
+	  for(Int_t j = 0; j<2;j++)  hold[j]=maphand.fMapHwFECglobal[i][j];
+	  fMapHwFECglobal[i]= hold;
+	}
+      
+      fecGainMap = new Float_t*[7000];
+      for(Int_t i = 0; i<7000; i++)
+	{
+	  Float_t* hold = new Float_t[128]; 
+	  for(Int_t j = 0; j<128;j++)  hold[j]=maphand.fecGainMap[i][j];
+	  fecGainMap[i]= hold;
+	}
+      
+      
+    }
+  return *this;
+}
+
 
 //_____________________________________________________________________________________________
 AliTPCMonitorMappingHandler::~AliTPCMonitorMappingHandler() 
@@ -135,7 +262,7 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
   // can hence be found in fmapping[hwaddr]
 
 
- 
+  Short_t*  mappingRow; 
   char readcarry[255];
   Int_t version = -1;
   Int_t actPos  = 0;
@@ -158,13 +285,13 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
   }
   fmappingEmptyRow[1] = -1;
   for(Int_t i = 0; i < fnumofChannels ; i++) {
-    fmappingRow = new Short_t[11];
+    mappingRow = new Short_t[11];
     for(Int_t j = 0 ; j < 11 ; j++) {
       *in >> readcarry;
-      fmappingRow[j] = atoi(readcarry);
+      mappingRow[j] = atoi(readcarry);
     }
-    actPos = fmappingRow[0];
-    fmapping[actPos] = fmappingRow;
+    actPos = mappingRow[0];
+    fmapping[actPos] = mappingRow;
     if( (actPos - oldPos) > 1) {
       for(Int_t j = (oldPos+1); j < actPos; j++) {
 	fmapping[j] = fmappingEmptyRow;

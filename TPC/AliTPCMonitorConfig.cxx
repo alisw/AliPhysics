@@ -15,63 +15,206 @@
 
 /*
 $Log$
+Revision 1.1  2007/09/17 10:23:31  cvetan
+New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */ 
 
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorConfig class
+//
+// Configuration handler class for AliTPCMonitor
+//
+// The basic configuration will be read from the file AliTPCMonitorConfig.txt
+// and can be changed online via the Button "Conf. Ranges"
+// Basic configuration settings are e.g. the range for the determination 
+// of the baseline, maximum adc value and the settings for the pedestal calculation.
+// 
+// Author: Stefan Kniege, IKF, Frankfurt
+//       
+//
+/////////////////////////////////////////////////////////////////////////
+
+
 #include "AliTPCMonitorConfig.h"
+#include "AliLog.h" 
+#include <Riostream.h>
+
 ClassImp(AliTPCMonitorConfig)
 
-//_______________________________________________________________________________________________________________
-AliTPCMonitorConfig::AliTPCMonitorConfig(Char_t* name, Char_t* title) : TNamed(name,title)
+// _______________________________________________________________________________________________________________
+AliTPCMonitorConfig::AliTPCMonitorConfig(const Char_t* name, const Char_t* title) : 
+  TNamed(name,title),
+  fFormat(-1),
+  fSector(0),
+  fSectorLast(-1),
+  fSectorLastDisplayed(-1),
+  fSectorArr(new Int_t[36]),
+  fFileLast(new Char_t[256]),
+  fFileLastSet(0),
+  fFileCurrent(new Char_t[256]),
+  fEventNext(1),
+  fEventNextID(1),
+  fEventProcessed(0),
+  fRangeMaxAdcMin(50),
+  fRangeMaxAdcMax(100),
+  fRangeBaseMin(300),
+  fRangeBaseMax(600),
+  fRangeSumMin(50), 
+  fRangeSumMax(100),
+  fCanvasXSize(100),
+  fCanvasYSize(100), 
+  fCanvasXSpace(10), 
+  fCanvasYSpace(10), 
+  fCanvasXOffset(130),
+  fCanvasMainSize(200),
+  fMainXSize(100),
+  fMainYSize(600),
+  fBorderXSize(10),
+  fBorderYSize(10),
+  fButtonXSize(100), 
+  fButtonYSize(20), 
+  fButtonFirstX1(10),
+  fButtonFirstX2(50),
+  fButtonFirstY(300),  
+  fWrite10Bit(0),
+  fComponents(new Float_t[10]), 
+  fSamplingFreq(1000000),
+  fPedestals(1),
+  fNumOfChannels(16000),
+  fTimeBins(1024),
+  fMaxHwAddr(24000),
+  fFitPulse(1),
+  fProcOneSector(1)
 {
-
   // Constructor 
-  // Set default values for Size of Window 
-  
-  fRangeMaxAdcMin       = 50  ;
-  fRangeMaxAdcMax       = 100 ;
-  
-  fRangeBaseMin         = 300 ;
-  fRangeBaseMax         = 600 ;
-  
-  fRangeSumMin          = 50  ; 
-  fRangeSumMax          = 100 ;
-  
-  
-  fFormat               = -1;  
-  fSector               = 0;
-  fEventNext            = 1;
-  fEventNextID          = 1;
-
+  for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
+  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
   SetMainSize(130,720,10,26 );
-
-  fFileLast             = new Char_t[256]       ;
-  fFileLastSet          = 0;
-  fFileCurrent          = new Char_t[256];
-  
-  fSectorLast           =-1;
-  fSectorLastDisplayed  =-1;
-  
-  fWrite10Bit           = 0;
-  
-  fSectorArr            = new Int_t[36];    for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
-  fComponents           = new Float_t[10];  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
-  
-  fSamplingFreq         = 1000000;
-  fTimeBins             = 1024;
-  fPedestals            = 1;
-  fNumOfChannels        = 16000;
-  fMaxHwAddr            = 24000;
-
-  fFitPulse             = 1;
-  fEventProcessed       = 0;
   
 } 
  
 
 //_______________________________________________________________________________________________________________
+AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
+  TNamed(config.GetName(),config.GetTitle()),
+  fFormat(config.fFormat),
+  fSector(config.fSector),
+  fSectorLast(config.fSectorLast),
+  fSectorLastDisplayed(config.fSectorLastDisplayed),
+  fSectorArr(new Int_t[36]),
+  fFileLast(new Char_t[strlen(config.fFileLast)+1]), 
+  fFileLastSet(config.fFileLastSet),
+  fFileCurrent(new Char_t[strlen(config.fFileCurrent)+1]),
+  fEventNext(config.fEventNext),
+  fEventNextID(config.fEventNextID),
+  fEventProcessed(config.fEventProcessed),
+  fRangeMaxAdcMin(config.fRangeMaxAdcMin),
+  fRangeMaxAdcMax(config.fRangeMaxAdcMax),
+  fRangeBaseMin(config.fRangeBaseMin),
+  fRangeBaseMax(config.fRangeBaseMax),
+  fRangeSumMin(config.fRangeSumMin),
+  fRangeSumMax(config.fRangeSumMax),
+  fCanvasXSize(config.fCanvasXSize),
+  fCanvasYSize(config.fCanvasYSize),
+  fCanvasXSpace(config.fCanvasXSpace),
+  fCanvasYSpace(config.fCanvasYSpace),
+  fCanvasXOffset(config.fCanvasXOffset),
+  fCanvasMainSize(config.fCanvasMainSize),
+  fMainXSize(config.fMainXSize),
+  fMainYSize(config.fMainYSize),
+  fBorderXSize(config.fBorderXSize),
+  fBorderYSize(config.fBorderYSize),
+  fButtonXSize(config.fBorderXSize),
+  fButtonYSize(config.fButtonYSize),
+  fButtonFirstX1(config.fButtonFirstX1),
+  fButtonFirstX2(config.fButtonFirstX2),
+  fButtonFirstY(config.fButtonFirstY),
+  fWrite10Bit(config.fWrite10Bit),
+  fComponents(new Float_t[10]),
+  fSamplingFreq(config.fSamplingFreq),
+  fPedestals(config.fPedestals),
+  fNumOfChannels(config.fNumOfChannels),
+  fTimeBins(config.fTimeBins),
+  fMaxHwAddr(config.fMaxHwAddr),
+  fFitPulse(config.fFitPulse),
+  fProcOneSector(config.fProcOneSector)
+{
+  // copy constructor
+  strcpy(fFileLast,config.fFileLast);
+  strcpy(fFileCurrent,config.fFileCurrent);
+  
+  for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
+  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
+
+
+}
+//_______________________________________________________________________________________________________________
+AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& config)
+{
+  // assignement operator
+  if(this!=&config){ 
+    ((TNamed *)this)->operator=(config);
+    fFormat=config.fFormat;
+    fSector=config.fSector;
+    fSectorLast=config.fSectorLast;
+    fSectorLastDisplayed=config.fSectorLastDisplayed;
+    fFileLastSet=config.fFileLastSet;
+    fEventNext=config.fEventNext;
+    fEventNextID=config.fEventNextID;
+    fEventProcessed=config.fEventProcessed;
+    fRangeMaxAdcMin=config.fRangeMaxAdcMin;
+    fRangeMaxAdcMax=config.fRangeMaxAdcMax;
+    fRangeBaseMin=config.fRangeBaseMin;
+    fRangeBaseMax=config.fRangeBaseMax;
+    fRangeSumMin=config.fRangeSumMin;
+    fRangeSumMax=config.fRangeSumMax;
+    fCanvasXSize=config.fCanvasXSize;
+    fCanvasYSize=config.fCanvasYSize;
+    fCanvasXSpace=config.fCanvasXSpace;
+    fCanvasYSpace=config.fCanvasYSpace;
+    fCanvasXOffset=config.fCanvasXOffset;
+    fCanvasMainSize=config.fCanvasMainSize;
+    fMainXSize=config.fMainXSize;
+    fMainYSize=config.fMainYSize;
+    fBorderXSize=config.fBorderXSize;
+    fButtonYSize=config.fButtonYSize;
+    fButtonFirstX1=config.fButtonFirstX1;
+    fButtonFirstX2=config.fButtonFirstX2;
+    fButtonFirstY=config.fButtonFirstY;
+    fWrite10Bit=config.fWrite10Bit;
+    fPedestals=config.fPedestals;
+    fNumOfChannels=config.fNumOfChannels;
+    fTimeBins=config.fTimeBins;
+    fMaxHwAddr=config.fMaxHwAddr;
+    fFitPulse=config.fFitPulse; 
+    fProcOneSector=config.fProcOneSector;
+
+    fFileLast             = new Char_t[strlen(config.fFileLast)+1]; 
+    strcpy(fFileLast,config.fFileLast);
+    
+    
+    fFileCurrent          = new Char_t[strlen(config.fFileCurrent)+1];
+    strcpy(fFileCurrent,config.fFileCurrent);
+    
+    fSectorArr            = new Int_t[36];    for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
+    fComponents           = new Float_t[10];  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
+    
+      
+  }
+  return *this;
+}
+
+
+//_______________________________________________________________________________________________________________
 AliTPCMonitorConfig::~AliTPCMonitorConfig() 
 {
   // Destructor
+  delete[] fFileLast; 
+  delete[] fFileCurrent;
+  delete[] fSectorArr;
+  delete[] fComponents;
 } 
 
 
@@ -113,18 +256,18 @@ void AliTPCMonitorConfig::SetMainSize(Int_t mainx, Int_t mainy, Int_t borderx=10
 }
  
 //_______________________________________________________________________________________________________________
-void AliTPCMonitorConfig::SetBaseConfig(Float_t* conf_arr)
+void AliTPCMonitorConfig::SetBaseConfig(Float_t* confarr)
 {
-  // Set base configuration stored in array conf_arr 
+  // Set base configuration stored in array confarr 
   
-  fRangeBaseMin   = (int)conf_arr[0];
-  fRangeBaseMax   = (int)conf_arr[1];
+  fRangeBaseMin   = (int)confarr[0];
+  fRangeBaseMax   = (int)confarr[1];
   
-  fRangeMaxAdcMin = (int)conf_arr[2];
-  fRangeMaxAdcMax = (int)conf_arr[3];
+  fRangeMaxAdcMin = (int)confarr[2];
+  fRangeMaxAdcMax = (int)confarr[3];
   
-  fRangeSumMin    = (int)conf_arr[4];
-  fRangeSumMax    = (int)conf_arr[5];
+  fRangeSumMin    = (int)confarr[4];
+  fRangeSumMax    = (int)confarr[5];
   
   cout << " Set Ranges to : " << endl;
   cout << " range  base       :: " <<  fRangeBaseMin   << "\t :  " << fRangeBaseMax   << endl;

@@ -15,22 +15,72 @@
 
 /*
 $Log$
+Revision 1.2  2007/09/17 16:34:54  cvetan
+The package was overwriting the rootcint flags. This was fixed by applying the necessary changes in the DATE-dependent parts of the code
+
 Revision 1.1  2007/09/17 10:23:31  cvetan
 New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
 */ 
+
+
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorDateFormat class
+//
+// Class for decoding raw data headers in DATE format
+// Reads event and subevent header informations form DATE files
+// 
+// Authors: Roland Bramm, 
+//          Stefan Kniege, IKF, Frankfurt
+//       
+/////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCMonitorDateFormat.h"
 #include "event.h"
 #include <iostream>
 ClassImp(AliTPCMonitorDateFormat)
 //____________________________________________________________________________
-AliTPCMonitorDateFormat::AliTPCMonitorDateFormat(Char_t* data){
+AliTPCMonitorDateFormat::AliTPCMonitorDateFormat(Char_t* data): 
+  fdataPtr(data),
+  fsubEventPtr(data),
+  fcurrentPtr(data),
+  event((struct eventHeaderStruct*) fdataPtr),
+  subEvent(0),
+  equipment(0)
+{
   // Constructor
-  fdataPtr = data;
-  fsubEventPtr = data;
-  fcurrentPtr = data;
-  event = (struct eventHeaderStruct*) fdataPtr;
+}
+
+
+//____________________________________________________________________________
+AliTPCMonitorDateFormat::AliTPCMonitorDateFormat(const AliTPCMonitorDateFormat &dateformat) :
+  TNamed(dateformat.GetName(),dateformat.GetTitle()),
+  fdataPtr(dateformat.fdataPtr),
+  fsubEventPtr(dateformat.fsubEventPtr),
+  fcurrentPtr(dateformat.fcurrentPtr),
+  event((struct eventHeaderStruct*)dateformat.fdataPtr),
+  subEvent(dateformat.subEvent),
+  equipment(dateformat.equipment)
+{
+  // copy constructor
+}
+
+//____________________________________________________________________________
+AliTPCMonitorDateFormat &AliTPCMonitorDateFormat:: operator= (const AliTPCMonitorDateFormat& dateformat)
+{
+
+  // assignment operator 
+  if(this!=&dateformat)
+    {
+      fdataPtr=dateformat.fdataPtr;
+      fsubEventPtr=dateformat.fsubEventPtr;
+      fcurrentPtr=dateformat.fcurrentPtr;
+      event=dateformat.event;
+      subEvent=dateformat.subEvent;
+      equipment=dateformat.equipment;
+    }
+  return *this;
 }
 
 //____________________________________________________________________________

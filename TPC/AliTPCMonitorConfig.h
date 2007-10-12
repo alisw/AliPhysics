@@ -17,152 +17,73 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
-
-
-#include <iostream>
-#include <fstream>
-#include <istream>
-#include <ostream>
-#include <string>
-#include "TNamed.h"
-#include "TObject.h"
-#include "TSystem.h" 
-#include "AliLog.h" 
-using namespace std;
+#include "TNamed.h" 
 
 class AliTPCMonitorConfig: public TNamed
 {
  public :
     
-    AliTPCMonitorConfig(Char_t* name,Char_t* title);
+    AliTPCMonitorConfig(const Char_t* name,const Char_t* title);
+    AliTPCMonitorConfig(const  AliTPCMonitorConfig &config);
+    AliTPCMonitorConfig& operator= (const AliTPCMonitorConfig& config);
     virtual ~AliTPCMonitorConfig();
     
-    // Data Format  0: DATA 1: ROOT
-    Int_t    fFormat;
+    Float_t  GetButtonXSize()                        const { return fButtonXSize;}
+    Float_t  GetButtonYSize()                        const { return fButtonYSize;}
+    Float_t  GetButtonXFirst1()                      const { return fButtonFirstX1;}
+    Float_t  GetButtonXFirst2()                      const { return fButtonFirstX2;}
+    Float_t  GetButtonYFirst()                       const { return fButtonFirstY;}
+    Int_t    GetMainXSize()                          const { return fMainXSize;}
+    Int_t    GetMainYSize()                          const { return fMainYSize;}
+    Int_t    GetBorderXSize()                        const { return fBorderXSize;}
+    Int_t    GetBorderYSize()                        const { return fBorderYSize;}
+    Int_t    GetCanvasXOffset()                      const { return fCanvasXOffset;}
+    Int_t    GetCanvasXSize()                        const { return fCanvasXSize;}
+    Int_t    GetCanvasYSize()                        const { return fCanvasYSize;}
+    Int_t    GetCanvasXSpace()                       const { return fCanvasXSpace;}
+    Int_t    GetCanvasYSpace()                       const { return fCanvasYSpace;}
     
-    Int_t    fSector;                                                   // Currently processed sector 
-    Int_t    fSectorLast;                                               // Previously processed sector
-    Int_t    fSectorLastDisplayed;                                      // Last displayed sector
-    Int_t*   fSectorArr;                                                // Array of processed sectors
+    Float_t* GetComponentSelection()                 const { return fComponents;}
     
-    // Current and Last Files and Dirs
-    Char_t*  fFileLast;                                                 // Name of last processed file/stream
-    Int_t    fFileLastSet ;                                             // Flag showing if last file name was set
-    
-    Char_t*  fFileCurrent;                                              // Current file/stream  name
-    
-    Int_t    fEventNext;                                                // Process next event -> do not stay in current event                         
-    Int_t    fEventNextID;                                              // Next event ID to be processed (if event id does not exist search for next existing event)                                             
-    
-    Int_t    fEventProcessed;                                           // Flag to show if event was read in
-
-    // Ranges for determination of ADC max , Baseline and  ADC Sum 
-    Int_t    fRangeMaxAdcMin   ;                                        // Min timebin of range to determine max.  adc value
-    Int_t    fRangeMaxAdcMax   ;                                        // Max timebin of range to determine max.  adc value
-
-    Int_t    fRangeBaseMin   ;                                          // Min timebin of range to determine baseline
-    Int_t    fRangeBaseMax   ;                                          // Max timebin of range to determine basline
-
-    Int_t    fRangeSumMin  ;                                            // Min timebin of range to determine adc sum
-    Int_t    fRangeSumMax ;                                             // Max timebin of range to determine adc sum
-
-    // Canvas Size for Monitor Canvases
-    Int_t    fCanvasXSize;                                              // Canvas size in x  ( set to fCanvasMainSize )
-    Int_t    fCanvasYSize;                                              // Canvas size in y  ( set to fCanvasMainSize )
-    Int_t    fCanvasXSpace;                                             // Canvas size in x + border size
-    Int_t    fCanvasYSpace;                                             // Canvas size in y + border size
-    Int_t    fCanvasXOffset;                                            // Canvas x offset (main window)
-    Int_t    fCanvasMainSize;                                           // Canvas size in x and y
-    
-    // Size of Main frame and Border (depending on Window Manager)      // Main window size x
-    Int_t    fMainXSize;                                                // Main window size y
-    Int_t    fMainYSize;
-
-    Int_t    fBorderXSize ;                                             // Canvas border size x
-    Int_t    fBorderYSize ;                                             // Canvas border size y
-    
-    // Buttonsize;
-    Float_t  fButtonXSize  ;                                            // Button size x
-    Float_t  fButtonYSize  ;                                            // Button size y
-    Float_t  fButtonFirstX1;                                            // Pos of first button row in x  
-    Float_t  fButtonFirstX2;                                            // Pos of second button row in x
-    Float_t  fButtonFirstY ;                                            // Position of first button in y
-    
-    Int_t    fWrite10Bit ;                                              // Flag to write 10 bit data words to file
-    
-    // Arr to Store Selected components to be displayed
-    Float_t* fComponents;                                               // Array of components to be selected for display
-    
-    // Sampling Freq required for FFT 
-    Int_t    fSamplingFreq;                                             // Sampling frequency for data taking
-    
-    
-    Int_t    fPedestals     ;                                           // Version for pedestal calculation  
-    Int_t    fNumOfChannels ;                                           // Maximum number of channels
-    Int_t    fTimeBins      ;                                           // Number of timebins to be displayed
-    Int_t    fMaxHwAddr     ;                                           // Max value of hardware addresses
-
-    Int_t    fFitPulse     ;                                            // Flag for fitting pulse around max adc    
-
-    Int_t    fProcOneSector ;
- 
-    
-    Float_t  GetButtonXSize()                        { return fButtonXSize;}
-    Float_t  GetButtonYSize()                        { return fButtonYSize;}
-    Float_t  GetButtonXFirst1()                      { return fButtonFirstX1;}
-    Float_t  GetButtonXFirst2()                      { return fButtonFirstX2;}
-    Float_t  GetButtonYFirst()                       { return fButtonFirstY;}
-    Int_t    GetMainXSize()                          { return fMainXSize;}
-    Int_t    GetMainYSize()                          { return fMainYSize;}
-    Int_t    GetBorderXSize()                        { return fBorderXSize;}
-    Int_t    GetBorderYSize()                        { return fBorderYSize;}
-    Int_t    GetCanvasXOffset()                      { return fCanvasXOffset;}
-    Int_t    GetCanvasXSize()                        { return fCanvasXSize;}
-    Int_t    GetCanvasYSize()                        { return fCanvasYSize;}
-    Int_t    GetCanvasXSpace()                       { return fCanvasXSpace;}
-    Int_t    GetCanvasYSpace()                       { return fCanvasYSpace;}
-    
-    Float_t* GetComponentSelection()                 { return fComponents;}
-    
-    Int_t    GetEventProcessed()                     { return fEventProcessed  ;}
+    Int_t    GetEventProcessed()                     const { return fEventProcessed  ;}
     
   
-    Int_t    GetFormat()                             { return fFormat      ;}
-    Char_t*  GetFile()                               { return fFileCurrent;}
+    Int_t    GetFormat()                             const { return fFormat      ;}
+    Char_t*  GetFile()                               const { return fFileCurrent;}
     
-    Int_t    GetFitPulse()                           { return fFitPulse     ;}
+    Int_t    GetFitPulse()                           const { return fFitPulse     ;}
     Char_t*  GetLastProcFile();
-    Int_t    GetMaxHwAddr()                          { return fMaxHwAddr            ; } 
+    Int_t    GetMaxHwAddr()                          const { return fMaxHwAddr            ; } 
     
-    Int_t    GetLastSector()                         { return fSectorLast;}
-    Int_t    GetLastSectorDisplayed()                { return fSectorLastDisplayed;}
+    Int_t    GetLastSector()                         const { return fSectorLast;}
+    Int_t    GetLastSectorDisplayed()                const { return fSectorLastDisplayed;}
     
-    Int_t    GetNextEventID()                        { return fEventNextID      ;}
-    Int_t    GetNumOfChannels()                      { return fNumOfChannels        ; }
+    Int_t    GetNextEventID()                        const { return fEventNextID      ;}
+    Int_t    GetNumOfChannels()                      const { return fNumOfChannels        ; }
     
-    Int_t    GetPedestals()                          { return fPedestals            ; }
-    Int_t    GetProcNextEvent()                      { return fEventNext;}
+    Int_t    GetPedestals()                          const { return fPedestals            ; }
+    Int_t    GetProcNextEvent()                      const { return fEventNext;}
  
-    Int_t    GetProcOneSector()                      { return fProcOneSector;}
+    Int_t    GetProcOneSector()                      const { return fProcOneSector;}
     
-    Int_t    GetRangeBaseMin()                       { return fRangeBaseMin;}
-    Int_t    GetRangeBaseMax()                       { return fRangeBaseMax;}
+    Int_t    GetRangeBaseMin()                       const { return fRangeBaseMin;}
+    Int_t    GetRangeBaseMax()                       const { return fRangeBaseMax;}
     
-    Int_t    GetRangeMaxAdcMin()                     { return fRangeMaxAdcMin;}
-    Int_t    GetRangeMaxAdcMax()                     { return fRangeMaxAdcMax;}
+    Int_t    GetRangeMaxAdcMin()                     const { return fRangeMaxAdcMin;}
+    Int_t    GetRangeMaxAdcMax()                     const { return fRangeMaxAdcMax;}
     
-    Int_t    GetRangeSumMin()                        { return fRangeSumMin;}
-    Int_t    GetRangeSumMax()                        { return fRangeSumMax;}
+    Int_t    GetRangeSumMin()                        const { return fRangeSumMin;}
+    Int_t    GetRangeSumMax()                        const { return fRangeSumMax;}
 
 
-    Int_t    GetSectorFilled(Int_t sector,Int_t side){ return fSectorArr[sector+side*18]   ;}
-    Int_t    GetSectorFilled(Int_t sector)           { return fSectorArr[sector]   ;}
+    Int_t    GetSectorFilled(Int_t sector,Int_t side)const { return fSectorArr[sector+side*18]   ;}
+    Int_t    GetSectorFilled(Int_t sector)           const { return fSectorArr[sector]   ;}
     
-    Int_t    GetSamplingFrequency()                  { return  fSamplingFreq;}
+    Int_t    GetSamplingFrequency()                  const { return  fSamplingFreq;}
     
-    Int_t    GetTimeBins()                           { return fTimeBins             ; }
+    Int_t    GetTimeBins()                           const { return fTimeBins             ; }
     
-    Int_t    GetWrite10Bit()                         { return fWrite10Bit ;}
+    Int_t    GetWrite10Bit()                         const { return fWrite10Bit ;}
 
     
 
@@ -212,6 +133,77 @@ class AliTPCMonitorConfig: public TNamed
     void     ReadConfig(Char_t* nameconf);
     void     ResetSectorArray()                      { for(Int_t i=0;i<36; i++) fSectorArr[i]=0;}
     
+ private: 
+    
+    // Data Format  0: DATA 1: ROOT
+    Int_t    fFormat;                                                   // Format of the processed file/stream  
+    
+    Int_t    fSector;                                                   // Currently processed sector 
+    Int_t    fSectorLast;                                               // Previously processed sector
+    Int_t    fSectorLastDisplayed;                                      // Last displayed sector
+    Int_t*   fSectorArr;                                                // Array of processed sectors
+    
+    // Current and Last Files and Dirs
+    Char_t*  fFileLast;                                                 // Name of last processed file/stream
+    Int_t    fFileLastSet ;                                             // Flag showing if last file name was set
+    
+    Char_t*  fFileCurrent;                                              // Current file/stream  name
+    
+    Int_t    fEventNext;                                                // Process next event -> do not stay in current event                         
+    Int_t    fEventNextID;                                              // Next event ID to be processed (if event id does not exist search for next existing event)                                             
+    
+    Int_t    fEventProcessed;                                           // Flag to show if event was read in
+
+    // Ranges for determination of ADC max , Baseline and  ADC Sum 
+    Int_t    fRangeMaxAdcMin   ;                                        // Min timebin of range to determine max.  adc value
+    Int_t    fRangeMaxAdcMax   ;                                        // Max timebin of range to determine max.  adc value
+
+    Int_t    fRangeBaseMin   ;                                          // Min timebin of range to determine baseline
+    Int_t    fRangeBaseMax   ;                                          // Max timebin of range to determine basline
+
+    Int_t    fRangeSumMin  ;                                            // Min timebin of range to determine adc sum
+    Int_t    fRangeSumMax ;                                             // Max timebin of range to determine adc sum
+
+    // Canvas Size for Monitor Canvases
+    Int_t    fCanvasXSize;                                              // Canvas size in x  ( set to fCanvasMainSize )
+    Int_t    fCanvasYSize;                                              // Canvas size in y  ( set to fCanvasMainSize )
+    Int_t    fCanvasXSpace;                                             // Canvas size in x + border size
+    Int_t    fCanvasYSpace;                                             // Canvas size in y + border size
+    Int_t    fCanvasXOffset;                                            // Canvas x offset (main window)
+    Int_t    fCanvasMainSize;                                           // Canvas size in x and y
+    
+    // Size of Main frame and Border (depending on Window Manager)     
+    Int_t    fMainXSize;                                                // Main window size x
+    Int_t    fMainYSize;                                                // Main window size y
+
+    Int_t    fBorderXSize ;                                             // Canvas border size x
+    Int_t    fBorderYSize ;                                             // Canvas border size y
+    
+    // Buttonsize;
+    Float_t  fButtonXSize  ;                                            // Button size x
+    Float_t  fButtonYSize  ;                                            // Button size y
+    Float_t  fButtonFirstX1;                                            // Pos of first button row in x  
+    Float_t  fButtonFirstX2;                                            // Pos of second button row in x
+    Float_t  fButtonFirstY ;                                            // Position of first button in y
+    
+    Int_t    fWrite10Bit ;                                              // Flag to write 10 bit data words to file
+    
+    // Arr to Store Selected components to be displayed
+    Float_t* fComponents;                                               // Array of components to be selected for display
+    
+    // Sampling Freq required for FFT 
+    Int_t    fSamplingFreq;                                             // Sampling frequency for data taking
+    
+    
+    Int_t    fPedestals     ;                                           // Version for pedestal calculation  
+    Int_t    fNumOfChannels ;                                           // Maximum number of channels
+    Int_t    fTimeBins      ;                                           // Number of timebins to be displayed
+    Int_t    fMaxHwAddr     ;                                           // Max value of hardware addresses
+
+    Int_t    fFitPulse     ;                                            // Flag for fitting pulse around max adc    
+
+    Int_t    fProcOneSector ;                                           // Flag for processing only the specified sector for the next event
+
  
     ClassDef(AliTPCMonitorConfig,1);  
 };

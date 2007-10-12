@@ -6,9 +6,21 @@
 
 /* $Id$ */
 
+
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorDateFile class
+// 
+// Class for handling the data structure in a DATE file
+// 
+// Authors: Roland Bramm
+//          Stefan Kniege, IKF, Frankfurt
+//       
+//
+/////////////////////////////////////////////////////////////////////////
+
+
 #include <string>
-#include <fstream>
-#include "AliTPCMonitorDateFormat.h"
 #include "TNamed.h"
 
 using namespace std;
@@ -16,6 +28,8 @@ using namespace std;
 class AliTPCMonitorDateFile : public TNamed {
 	public:
 	AliTPCMonitorDateFile();
+	AliTPCMonitorDateFile(const  AliTPCMonitorDateFile &datefile);
+	AliTPCMonitorDateFile& operator= (const AliTPCMonitorDateFile& datefile);
 	~AliTPCMonitorDateFile();
 	
 	void    AllocateArray(int size);
@@ -39,10 +53,10 @@ class AliTPCMonitorDateFile : public TNamed {
 
 
 	private:
+	
 	void SetFileSize();
-	ifstream *     fin;                            // file to be read
+
 	Int_t          ffilePos;                       // position in file
-	Char_t         fmem[512];                      // array for event header
 	Char_t*        fbigMem;                        // array for event data
         UInt_t         fbigMemsize;                    // size of data array
 	Bool_t         fisBigMemAllocated;             // flag for already allocated array
@@ -50,6 +64,7 @@ class AliTPCMonitorDateFile : public TNamed {
 	string         ffilename;                      // name of DATE file
 	Bool_t         finitFile;                      // flag for opened file
 	Bool_t         freadPosOverflow;               // data position overflow flag 
+	ifstream *     fin;                            // file to be read
 	
 	ClassDef(AliTPCMonitorDateFile,1);
 };

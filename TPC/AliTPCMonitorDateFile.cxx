@@ -15,26 +15,82 @@
 
 /*
 $Log$
+Revision 1.1  2007/09/17 10:23:31  cvetan
+New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */ 
 
-#include "AliTPCMonitorDateFile.h"
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorDateFile class
+// 
+// Class for handling the data structure in a DATE file
+// Used to read DATE files for the TPC raw data Monitor 
+//
+// Author: Roland Bramm
+//         Stefan Kniege, IKF, Frankfurt
+//       
+//
+/////////////////////////////////////////////////////////////////////////
 
+
+
+#include "AliTPCMonitorDateFile.h"
+#include "AliTPCMonitorDateFormat.h"
+#include <Riostream.h>
 ClassImp(AliTPCMonitorDateFile)
 
 //____________________________________________________________________________
-AliTPCMonitorDateFile::AliTPCMonitorDateFile() 
+AliTPCMonitorDateFile::AliTPCMonitorDateFile() :
+  ffilePos(0),
+  fbigMem(0),
+  fbigMemsize(0),
+  fisBigMemAllocated(false),
+  ffileSize(0),
+  ffilename(""),
+  finitFile(false),
+  freadPosOverflow(false),
+  fin(new ifstream())
 {
   // Constructor
-  fin = new ifstream();
-  fisBigMemAllocated = false;
-  freadPosOverflow = false;
-  ffilePos = 0;
-  ffileSize = 0;
-  fbigMemsize = 0;
-  finitFile = false;
-  ffilename = "";
 }
 
+//____________________________________________________________________________
+AliTPCMonitorDateFile::AliTPCMonitorDateFile(const AliTPCMonitorDateFile &datefile) :
+  TNamed(datefile.GetName(),datefile.GetTitle()),
+  ffilePos(datefile.ffilePos),
+  fbigMem(datefile.fbigMem),
+  fbigMemsize(datefile.fbigMemsize),
+  fisBigMemAllocated(datefile.fisBigMemAllocated),
+  ffileSize(datefile.ffileSize),
+  ffilename(datefile.ffilename),
+  finitFile(datefile.finitFile),
+  freadPosOverflow(datefile.freadPosOverflow),
+  fin(new ifstream())
+{
+  // copy constructor 
+}
+
+//____________________________________________________________________________
+AliTPCMonitorDateFile &AliTPCMonitorDateFile:: operator= (const AliTPCMonitorDateFile& datefile)
+{
+
+  // assignment operator 
+  if(this!=&datefile)
+    {
+      ffilePos=datefile.ffilePos;
+      fbigMem=datefile.fbigMem;
+      fbigMemsize=datefile.fbigMemsize;
+      fisBigMemAllocated=datefile.fisBigMemAllocated;
+      ffileSize=datefile.ffileSize;
+      ffilename=datefile.ffilename;
+      finitFile=datefile.finitFile;
+      freadPosOverflow=datefile.freadPosOverflow;
+      fin = new ifstream();
+    }
+  return *this;
+}
+ 
 //____________________________________________________________________________
 AliTPCMonitorDateFile::~AliTPCMonitorDateFile() 
 {
@@ -104,6 +160,7 @@ void AliTPCMonitorDateFile::ReadEvent()
 {
   // Read in event from file
   Int_t size;
+  Char_t         fmem[512];                      // array for event header
   Char_t swapcarry[4];
 	Bool_t toSwapEndian = false;
 	//Fetch some bytes to get headers to know how much

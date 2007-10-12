@@ -11,7 +11,7 @@
 //
 // AliTPCMonitorDateFormat class
 //
-// Class for decoding and reading raw data headers in DATE format
+// Class for decoding raw data headers in DATE format
 // 
 // Authors: Roland Bramm, 
 //          Stefan Kniege, IKF, Frankfurt
@@ -28,6 +28,8 @@ using namespace std;
 class AliTPCMonitorDateFormat : public TNamed {
  public:
     AliTPCMonitorDateFormat(Char_t* data);
+    AliTPCMonitorDateFormat(const  AliTPCMonitorDateFormat &dateformat);
+    AliTPCMonitorDateFormat& operator= (const AliTPCMonitorDateFormat& dateformat);
     ~AliTPCMonitorDateFormat();
 
     //Super Event Header
@@ -83,9 +85,9 @@ class AliTPCMonitorDateFormat : public TNamed {
     Int_t   GetPositionSubEvent();
     
  private:
-    Char_t*                       fdataPtr;       // pointer to data array (start, will not be changed in event) 
-    Char_t*                       fsubEventPtr;   // pointer to SubEvent
-    Char_t*                       fcurrentPtr;    // pointer to current data position (header or data)
+    Char_t*                fdataPtr;       // pointer to data array (start, will not be changed in event) 
+    Char_t*                fsubEventPtr;   // pointer to SubEvent
+    Char_t*                fcurrentPtr;    // pointer to current data position (header or data)
     eventHeaderStruct*     event;          // event and
     eventHeaderStruct*     subEvent;       // subevent structure
     equipmentHeaderStruct* equipment;      // equipmemnt structure

@@ -17,23 +17,15 @@
 //       
 /////////////////////////////////////////////////////////////////////////
 
-
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include "TObject.h" 
 #include "TNamed.h" 
-#include "TH1.h"
-#include "TFile.h"
-#include "TLegend.h"
-#include "AliLog.h"
-
-using namespace std;
 
 class AliTPCMonitorMappingHandler:   public TNamed {
  public:
     
     AliTPCMonitorMappingHandler(Char_t* name, Char_t* title);
+    AliTPCMonitorMappingHandler(const  AliTPCMonitorMappingHandler &maphand);
+    AliTPCMonitorMappingHandler& operator= (const AliTPCMonitorMappingHandler& maphand);
+
     ~AliTPCMonitorMappingHandler();
     
     void     ReadMapping(char* mapfile);
@@ -77,7 +69,6 @@ class AliTPCMonitorMappingHandler:   public TNamed {
     Int_t     fmaxHWAdress;              // Max value of hardware addresses
     Int_t     fsizeofArray;              // Set to max value of hardware addresses
     Short_t** fmapping;                  // global  mapping array
-    Short_t*  fmappingRow;               // mapping array in one row of the file
     Int_t**   fmappingChannelinRow;      // mapping of hardware addresses in one pad row
     
     Short_t** fu2ftestmapping;           // mapping of global FEC numbers in sectors (determined during installation with U2F card)  

@@ -15,7 +15,24 @@
 
 /*
 $Log$
+Revision 1.1  2007/09/17 10:23:31  cvetan
+New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
+
 */ 
+
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorFFT class
+//
+// Wrapper class to perform Fast Fourier Transformations.
+// The code is based on the Gnu Scientific Library. 
+// See documentation of gsl for further details.
+// 
+// Author: Stefan Kniege, IKF, Frankfurt
+//       
+//
+/////////////////////////////////////////////////////////////////////////
+
 
 #include "AliTPCMonitorFFT.h"
 

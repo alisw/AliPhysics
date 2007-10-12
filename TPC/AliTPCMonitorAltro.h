@@ -7,29 +7,23 @@
 /* $Id$ */
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorAltro class
-//
-// Class for decoding raw TPC data in the ALTRO format
-// 
-// Authors: Roland Bramm, 
-//          Stefan Kniege, IKF, Frankfurt
-//       
+////
+//// AliTPCMonitorAltro class
+////
+//// Class for decoding raw TPC data in the ALTRO format
+//// 
+//// Authors: Roland Bramm, 
+////          Stefan Kniege, IKF, Frankfurt
+////       
 /////////////////////////////////////////////////////////////////////////
 
-
-
-#include <iostream>
-#include <iomanip>
-#include <fstream>
 #include "TNamed.h"
-#include "AliLog.h"
-
-using namespace std;
 
 class AliTPCMonitorAltro : public TNamed {
  public:
     AliTPCMonitorAltro(UInt_t* memory, Int_t size, Int_t fformat);
+    AliTPCMonitorAltro(const  AliTPCMonitorAltro &altro);
+    AliTPCMonitorAltro& operator= (const AliTPCMonitorAltro& altro);
     ~AliTPCMonitorAltro();
     
     void         Allocate40BitArray(); 
@@ -44,23 +38,23 @@ class AliTPCMonitorAltro : public TNamed {
     Short_t     *Get10BitArray();
     Int_t        Get40BitArraySize(); 
     Int_t        Get10BitArraySize();  
-    Char_t*      GetActFileName()        { return ffilename;}
+    Char_t*      GetActFileName()        const { return ffilename;}
     
-    static Int_t GetHwMaskFEC()          { return kHwMaskFEC;}
-    static Int_t GetHwMaskBranch()       { return kHwMaskBranch;}
-    static Int_t GetHwMaskFECChannel()   { return kHwMaskFECChannel;}
-    static Int_t GetHwMaskAltroChannel() { return kHwMaskAltroChannel;}
-    static Int_t GetHwMaskAltroChip()    { return kHwMaskAltroChip;}
+    static Int_t GetHwMaskFEC()                { return fgkHwMaskFEC;}
+    static Int_t GetHwMaskBranch()             { return fgkHwMaskBranch;}
+    static Int_t GetHwMaskFECChannel()         { return fgkHwMaskFECChannel;}
+    static Int_t GetHwMaskAltroChannel()       { return fgkHwMaskAltroChannel;}
+    static Int_t GetHwMaskAltroChip()          { return fgkHwMaskAltroChip;}
 
-    static Int_t GetHwMaskRCU()          { return kHwMaskRCU;}
+    static Int_t GetHwMaskRCU()                { return fgkHwMaskRCU;}
     
-    Int_t        GetNextTrailerPos()     { return fNextPos;}
+    Int_t        GetNextTrailerPos()     const { return fNextPos;}
 
-    Int_t        GetTrailerNWords()      { return fTrailerNWords   ;}
-    Int_t        GetTrailerHwAddress()   { return fTrailerHwAddress;}
-    Int_t        GetTrailerDataPos()     { return fTrailerDataPos  ;}
-    Int_t        GetTrailerBlockPos()    { return fTrailerBlockPos ;}
-    Int_t        GetTrailerPos()         { return fTrailerPos      ;} 
+    Int_t        GetTrailerNWords()      const { return fTrailerNWords   ;}
+    Int_t        GetTrailerHwAddress()   const { return fTrailerHwAddress;}
+    Int_t        GetTrailerDataPos()     const { return fTrailerDataPos  ;}
+    Int_t        GetTrailerBlockPos()    const { return fTrailerBlockPos ;}
+    Int_t        GetTrailerPos()         const { return fTrailerPos      ;} 
 
     void         SetDataOffset(Int_t val){ foffset     =val ;} 
     void         SetWrite10Bit(Int_t wr) { fwrite10bit =wr  ;}
@@ -92,27 +86,27 @@ class AliTPCMonitorAltro : public TNamed {
     Int_t                    fNextPos;                                                  // position of next trailer
     Char_t*                  ffilename;                                                 // name of processed file
     
-    static const Int_t       k24BitOn                = 16777215;                        // bit masks for first 24 bits of 32  for decoding 32 bit words
-    static const Int_t       k16BitOn                = 65535;                           // bit masks for first 24 bits of 24
-    static const Int_t       k08BitOn                = 255;                             // bit masks for first 24 bits of 8
+    static const Int_t       fgk24BitOn                = 16777215;                        // bit masks for first 24 bits of 32  for decoding 32 bit words
+    static const Int_t       fgk16BitOn                = 65535;                           // bit masks for first 24 bits of 24
+    static const Int_t       fgk08BitOn                = 255;                             // bit masks for first 24 bits of 8
     
     
-    static const Long64_t    kmask10                 = (Long64_t)0x00000000000003FFULL; // mask first   10 bit out of 4o0 bit word 
-    static const Long64_t    kmask20                 = (Long64_t)0x00000000000FFC00ULL; // mask second  10 bit out of 4o0 bit word 
-    static const Long64_t    kmask30                 = (Long64_t)0x000000003FF00000ULL; // mask third   10 bit out of 4o0 bit word 
-    static const Long64_t    kmask40                 = (Long64_t)0x000000FFC0000000ULL; // mask fourth  10 bit out of 4o0 bit word 
+    static const Long64_t    fgkmask10                 = (Long64_t)0x00000000000003FFULL; // mask first   10 bit out of 4o0 bit word 
+    static const Long64_t    fgkmask20                 = (Long64_t)0x00000000000FFC00ULL; // mask second  10 bit out of 4o0 bit word 
+    static const Long64_t    fgkmask30                 = (Long64_t)0x000000003FF00000ULL; // mask third   10 bit out of 4o0 bit word 
+    static const Long64_t    fgkmask40                 = (Long64_t)0x000000FFC0000000ULL; // mask fourth  10 bit out of 4o0 bit word 
     
-    static const Long64_t    kTrailerTail            = (Long64_t)0x0000000000002AAAULL; // Tail of the Trailer set to 2AAA 
-    static const Long64_t    kTrailerMaskTail        = (Long64_t)0x000000fffC000000ULL; // mask for trailer 
-    static const Long64_t    kTrailerMaskHardw       = (Long64_t)0x0000000000000FFFULL; // mask for hardware address
-    static const Long64_t    kTrailerMaskNWords      = (Long64_t)0x0000000003FF0000ULL; // mask for nwords  (number of 40 bit data words)
+    static const Long64_t    fgkTrailerTail            = (Long64_t)0x0000000000002AAAULL; // Tail of the Trailer set to 2AAA 
+    static const Long64_t    fgkTrailerMaskTail        = (Long64_t)0x000000fffC000000ULL; // mask for trailer 
+    static const Long64_t    fgkTrailerMaskHardw       = (Long64_t)0x0000000000000FFFULL; // mask for hardware address
+    static const Long64_t    fgkTrailerMaskNWords      = (Long64_t)0x0000000003FF0000ULL; // mask for nwords  (number of 40 bit data words)
     
-    static const Int_t       kHwMaskFEC              = 0x0780;                          // mask for fec in hardware address
-    static const Int_t       kHwMaskBranch           = 0x0800;                          // mask for branch in hardware address
-    static const Int_t       kHwMaskFECChannel       = 0x007f;                          // mask for fec channel  in hardware address
-    static const Int_t       kHwMaskAltroChannel     = 0x000f;                          // mask for altro channel in hardware address
-    static const Int_t       kHwMaskAltroChip        = 0x0070;                          // mask for altro chip  in hardware address
-    static const Int_t       kHwMaskRCU              = 0x7000;                          // not part of the trailer added afterwards
+    static const Int_t       fgkHwMaskFEC              = 0x0780;                          // mask for fec in hardware address
+    static const Int_t       fgkHwMaskBranch           = 0x0800;                          // mask for branch in hardware address
+    static const Int_t       fgkHwMaskFECChannel       = 0x007f;                          // mask for fec channel  in hardware address
+    static const Int_t       fgkHwMaskAltroChannel     = 0x000f;                          // mask for altro channel in hardware address
+    static const Int_t       fgkHwMaskAltroChip        = 0x0070;                          // mask for altro chip  in hardware address
+    static const Int_t       fgkHwMaskRCU              = 0x7000;                          // not part of the trailer added afterwards
     
     ClassDef(AliTPCMonitorAltro,1);
 };

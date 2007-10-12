@@ -15,10 +15,30 @@
 
 /*
 $Log$
+Revision 1.2  2007/09/17 16:34:54  cvetan
+The package was overwriting the rootcint flags. This was fixed by applying the necessary changes in the DATE-dependent parts of the code
+
 Revision 1.1  2007/09/17 10:23:31  cvetan
 New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
 */ 
+
+////////////////////////////////////////////////////////////////////////
+//
+// AliTPCMonitorDateMonitor class
+// 
+// Monitoring wrapper class for DATE raw data monitoring used by the TPC 
+// raw data monitor.
+// Online monitoring is only possible if DATE is installed on the machine.
+// If not, raw data can be read using the AliTPCMonitorDateFile 
+// (can be choosen from 'Sel.Format' in the TPCMonitor gui")
+//
+// Authors: Roland Bramm, 
+//          Stefan Kniege, IKF, Frankfurt
+//       
+/////////////////////////////////////////////////////////////////////////
+
+
 
 #include <iostream>
 #include "AliTPCMonitorDateMonitor.h"
@@ -28,9 +48,30 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 ClassImp(AliTPCMonitorDateMonitor)
 
 //_____________________________________________________________________________
-AliTPCMonitorDateMonitor::AliTPCMonitorDateMonitor(){
+AliTPCMonitorDateMonitor::AliTPCMonitorDateMonitor():
+fPointer(0)
+{
   // Constructor
-  fPointer = 0;
+}
+
+
+//_____________________________________________________________________________
+AliTPCMonitorDateMonitor::AliTPCMonitorDateMonitor(const AliTPCMonitorDateMonitor &datemon) :
+  TNamed(datemon.GetName(),datemon.GetTitle()),
+  fPointer(datemon.fPointer)
+{
+  // copy constructor  
+}
+
+//_____________________________________________________________________________
+AliTPCMonitorDateMonitor &AliTPCMonitorDateMonitor::operator =(const AliTPCMonitorDateMonitor& datemon)
+{
+  // assignement operator
+  if(this!=&datemon){ 
+    fPointer=datemon.fPointer;
+  }
+
+  return *this;
 }
 
 //_____________________________________________________________________________
