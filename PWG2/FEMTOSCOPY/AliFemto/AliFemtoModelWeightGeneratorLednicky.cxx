@@ -13,6 +13,7 @@
 //#include "StHbtMaker/ThCorrFctn/AliFemtoModelWeightGeneratorLednicky.h"
 #include "AliFemtoModelWeightGeneratorLednicky.h"
 #include "AliFemtoModelHiddenInfo.h"
+#include "AliFemtoPair.h"
 //#include "StarCallf77.h"
 //#include <strstream.h>
 //#include <iomanip.h>
@@ -145,7 +146,7 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky() :
   strcpy( fLLName[30],"Proton Anti-proton");// gael 21May02
   FsiInit();
   FsiNucl();
-};
+}
 //______________________
 AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky(const AliFemtoModelWeightGeneratorLednicky &aWeight):
   AliFemtoModelWeightGenerator(),
@@ -383,8 +384,8 @@ double AliFemtoModelWeightGeneratorLednicky::GenerateWeight(AliFemtoPair* aPair)
     if (fI3c==0) return fWein;
     fWeightDen=fWeif;
     return fWei;
-  };
-};
+  }
+}
 
 AliFemtoString AliFemtoModelWeightGeneratorLednicky::Report() {
   // create report
@@ -418,7 +419,7 @@ void AliFemtoModelWeightGeneratorLednicky::FsiInit(){
   cout <<"mIsi dans FsiInit() = " << fIsi << endl;
   cout <<"mI3c dans FsiInit() = " << fI3c << endl;
   fsiin(fItest,fIch,fIqs,fIsi,fI3c);
-};
+}
 
 void AliFemtoModelWeightGeneratorLednicky::FsiNucl(){
   // initialize weight generation taking into account the residual charge
@@ -427,15 +428,15 @@ void AliFemtoModelWeightGeneratorLednicky::FsiNucl(){
   cout <<"fNuclCharge dans FsiNucl() = " << fNuclCharge << endl;
   cout <<"fNuclChargeSign dans FsiNucl() = " << fNuclChargeSign << endl;
   fsinucl(fNuclMass,fNuclCharge*fNuclChargeSign);
-};
+}
 
 void AliFemtoModelWeightGeneratorLednicky::FsiSetLL(){
   // set internal pair type for the module
   int tNS;
   if (fSphereApp||(fLL>5)) {
     if (fT0App) { tNS=4;} 
-    else {tNS=2;};
-  } else { tNS=1;};
+    else {tNS=2;}
+  } else { tNS=1;}
    //cout <<"fLL dans FsiSetLL() = "<< fLL << endl;
    //cout <<"tNS dans FsiSetLL() = "<< tNS << endl;
    //cout <<"fItest dans FsiSetLL() = "<< fItest << endl;
@@ -488,7 +489,7 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
     case ksLamPid:     fLL=27;tChargeFactor*=1 ;break;
     case -ksProtPid:   fLL=30;tChargeFactor*=1 ;break;
     default: fLL=0;
-    };
+    }
     break;
   case ksKPid:
     switch (tPidh) {
@@ -497,20 +498,20 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
     case ksProtPid:    fLL=16;tChargeFactor*=1 ;break;
     case -ksProtPid:   fLL=17;tChargeFactor*=-1 ;break;
     default: fLL=0;
-    };
+    }
     break;    
   case ksK0Pid:
     switch (tPidh) {
     case ksK0Pid:         fLL=22;tChargeFactor*=1 ;break;
     case -ksK0Pid:        fLL=23;tChargeFactor*=1 ;break;
     default: fLL=0;
-    };
+    }
     break;   
   case ksPi0Pid:
     switch (tPidh) {
     case ksPi0Pid:        fLL=6; tChargeFactor*=1 ;break;
     default: fLL=0;
-    };
+    }
     break;
   case ksNeutPid:
     switch (tPidh) {
@@ -518,13 +519,13 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
     case ksProtPid:      fLL=3; tChargeFactor*=1 ;break;
     case ksLamPid:       fLL=28;tChargeFactor*=1 ;break;
     default: fLL=0;
-    };
+    }
     break;                                             //Gael 21May02 
   case ksLamPid:                                        //Gael 21May02 
     switch (tPidh) {                                   //Gael 21May02 
     case ksLamPid:       fLL=29;tChargeFactor*=1 ;break;//Gael 21May02  
     default: fLL=0;                                    //Gael 21May02 
-    };                                                 //Gael 21May02 
+    }                                                 //Gael 21May02 
     break;                                             //Gael 21May02 
   default: fLL=0;
   }
@@ -546,7 +547,7 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
 
 }    
 AliFemtoModelWeightGeneratorLednicky::~AliFemtoModelWeightGeneratorLednicky() 
-{ /* no-op */ };
+{ /* no-op */ }
 
 //_____________________________________________
 void     AliFemtoModelWeightGeneratorLednicky::SetPairType(Int_t aPairType)
@@ -623,25 +624,25 @@ void     AliFemtoModelWeightGeneratorLednicky::SetPairTypeFromPair(AliFemtoPair 
   SetPid(ktPid1, ktPid2);
 }
 
-void AliFemtoModelWeightGeneratorLednicky::SetNuclCharge(const double aNuclCharge) {fNuclCharge=aNuclCharge;FsiNucl();};
-void AliFemtoModelWeightGeneratorLednicky::SetNuclMass(const double aNuclMass){fNuclMass=aNuclMass;FsiNucl();};
+void AliFemtoModelWeightGeneratorLednicky::SetNuclCharge(const double aNuclCharge) {fNuclCharge=aNuclCharge;FsiNucl();}
+void AliFemtoModelWeightGeneratorLednicky::SetNuclMass(const double aNuclMass){fNuclMass=aNuclMass;FsiNucl();}
 
-void AliFemtoModelWeightGeneratorLednicky::SetSphere(){fSphereApp=true;};
-void AliFemtoModelWeightGeneratorLednicky::SetSquare(){fSphereApp=false;};
-void AliFemtoModelWeightGeneratorLednicky::SetT0ApproxOn(){ fT0App=true;};
-void AliFemtoModelWeightGeneratorLednicky::SetT0ApproxOff(){ fT0App=false;};
+void AliFemtoModelWeightGeneratorLednicky::SetSphere(){fSphereApp=true;}
+void AliFemtoModelWeightGeneratorLednicky::SetSquare(){fSphereApp=false;}
+void AliFemtoModelWeightGeneratorLednicky::SetT0ApproxOn(){ fT0App=true;}
+void AliFemtoModelWeightGeneratorLednicky::SetT0ApproxOff(){ fT0App=false;}
 void AliFemtoModelWeightGeneratorLednicky::SetDefaultCalcPar(){
   fItest=1;fIqs=1;fIsi=1;fI3c=0;fIch=1;FsiInit();
-  fSphereApp=false;fT0App=false;};
+  fSphereApp=false;fT0App=false;}
 
-void AliFemtoModelWeightGeneratorLednicky::SetCoulOn()    {fItest=1;fIch=1;FsiInit();};
-void AliFemtoModelWeightGeneratorLednicky::SetCoulOff()   {fItest=1;fIch=0;FsiInit();};
-void AliFemtoModelWeightGeneratorLednicky::SetQuantumOn() {fItest=1;fIqs=1;FsiInit();};
-void AliFemtoModelWeightGeneratorLednicky::SetQuantumOff(){fItest=1;fIqs=0;FsiInit();};
-void AliFemtoModelWeightGeneratorLednicky::SetStrongOn()  {fItest=1;fIsi=1;FsiInit();};
-void AliFemtoModelWeightGeneratorLednicky::SetStrongOff() {fItest=1;fIsi=0;FsiInit();};
-void AliFemtoModelWeightGeneratorLednicky::Set3BodyOn()   {fItest=1;fI3c=1;FsiInit();FsiNucl();};
-void AliFemtoModelWeightGeneratorLednicky::Set3BodyOff()  {fItest=1;fI3c=0;FsiInit();fWeightDen=1.;FsiNucl();};
+void AliFemtoModelWeightGeneratorLednicky::SetCoulOn()    {fItest=1;fIch=1;FsiInit();}
+void AliFemtoModelWeightGeneratorLednicky::SetCoulOff()   {fItest=1;fIch=0;FsiInit();}
+void AliFemtoModelWeightGeneratorLednicky::SetQuantumOn() {fItest=1;fIqs=1;FsiInit();}
+void AliFemtoModelWeightGeneratorLednicky::SetQuantumOff(){fItest=1;fIqs=0;FsiInit();}
+void AliFemtoModelWeightGeneratorLednicky::SetStrongOn()  {fItest=1;fIsi=1;FsiInit();}
+void AliFemtoModelWeightGeneratorLednicky::SetStrongOff() {fItest=1;fIsi=0;FsiInit();}
+void AliFemtoModelWeightGeneratorLednicky::Set3BodyOn()   {fItest=1;fI3c=1;FsiInit();FsiNucl();}
+void AliFemtoModelWeightGeneratorLednicky::Set3BodyOff()  {fItest=1;fI3c=0;FsiInit();fWeightDen=1.;FsiNucl();}
 
 Double_t AliFemtoModelWeightGeneratorLednicky::GetKStar() const {return AliFemtoModelWeightGenerator::GetKStar();}
 Double_t AliFemtoModelWeightGeneratorLednicky::GetKStarOut() const { return AliFemtoModelWeightGenerator::GetKStarOut(); }

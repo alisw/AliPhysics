@@ -36,7 +36,7 @@ public:
 protected:
   AliFemtoAnalysis* fyAnalysis;
 
-private:
+  private:
 
 };
 
@@ -44,7 +44,7 @@ inline void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*) { cout << "Not implemen
 inline void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
 
 inline AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& c):fyAnalysis(0) {}
-inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0) {/* no-op */};
+inline AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0) {/* no-op */}
 inline void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
 inline AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; return *this; }
 

@@ -40,7 +40,8 @@ public:
 //
 #endif
 #endif
-  AliFemtoEvent(const AliFemtoEvent&, AliFemtoTrackCut* =0, AliFemtoV0Cut* =0,  AliFemtoXiCut* =0, AliFemtoKinkCut* =0); // copy constructor with track and v0 cuts
+  AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut=0, AliFemtoV0Cut* vCut=0,  AliFemtoXiCut* xCut=0, AliFemtoKinkCut* kCut=0); // copy constructor with track and v0 cuts
+  AliFemtoEvent(const AliFemtoEvent& ev); // copy constructor
   ~AliFemtoEvent();
   AliFemtoEvent& operator=(const AliFemtoEvent& aEvent);
 

@@ -11,6 +11,9 @@
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoModelCorrFctn.h"
+#include "AliFemtoPair.h"
+#include "AliFemtoModelManager.h"
+#include <TH1D.h>
     
 //_______________________
 AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(): 
@@ -19,6 +22,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn():
   fNumeratorFake(0),
   fDenominator(0)
 {
+  // Default constructor
   fNumeratorTrue = new TH1D("ModelNumTrue","ModelNumTrue",50,0.0,0.5);
   fNumeratorFake = new TH1D("ModelNumFake","ModelNumFake",50,0.0,0.5);
   fDenominator = new TH1D("ModelDen","ModelDen",50,0.0,0.5);
@@ -34,6 +38,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
   fNumeratorFake(0),
   fDenominator(0)
 {
+  // Normal constructor
   char buf[100];
   sprintf(buf, "NumTrue%s", title);
   fNumeratorTrue = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
@@ -53,6 +58,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
   fNumeratorFake(0),
   fDenominator(0)
 {
+  // Copy constructor
   if (aCorrFctn.fNumeratorTrue)
     fNumeratorTrue = new TH1D(*(aCorrFctn.fNumeratorTrue));
   if (aCorrFctn.fNumeratorFake)
@@ -64,6 +70,7 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const AliFemtoModelCorrFctn& aCorrF
 //_______________________
 AliFemtoModelCorrFctn::~AliFemtoModelCorrFctn()
 {
+  // Destructor
   if (fNumeratorTrue) delete fNumeratorTrue;
   if (fNumeratorFake) delete fNumeratorFake;
   if (fDenominator) delete fDenominator;
@@ -71,6 +78,7 @@ AliFemtoModelCorrFctn::~AliFemtoModelCorrFctn()
 //_______________________
 AliFemtoModelCorrFctn& AliFemtoModelCorrFctn::operator=(const AliFemtoModelCorrFctn& aCorrFctn)
 {
+  // Assignment operator
   if (this == &aCorrFctn)
     return *this;
   
@@ -99,6 +107,7 @@ void AliFemtoModelCorrFctn::ConnectToManager(AliFemtoModelManager *aManager)
 //_______________________
 AliFemtoString AliFemtoModelCorrFctn::Report()
 {
+  // Prepare report
   AliFemtoString tStr = "AliFemtoModelCorrFctn report";
 
   return tStr;
@@ -135,6 +144,7 @@ void AliFemtoModelCorrFctn::Finish()
 //_______________________
 void AliFemtoModelCorrFctn::Write()
 {
+  // Write out data histos
   fNumeratorTrue->Write();
   fNumeratorFake->Write();
   fDenominator->Write();
@@ -142,6 +152,7 @@ void AliFemtoModelCorrFctn::Write()
 //_______________________
 AliFemtoModelCorrFctn* AliFemtoModelCorrFctn::Clone()
 {
+  // Create clone
   AliFemtoModelCorrFctn *tCopy = new AliFemtoModelCorrFctn(*this);
   
   return tCopy;

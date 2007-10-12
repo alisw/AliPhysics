@@ -1,27 +1,29 @@
-/***************************************************************************
- * Frank Laue, Ohio State, 2001
- *
- **************************************************************************/
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// AliFemtoVertexMultAnalysis - Femtoscopic analysis which mixes event    //
+// with respect to the z position of the primary vertex and event total   //
+// multiplicity                                                           //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
-#ifndef AliFemtoVertexMultAnalysis_hh
-#define AliFemtoVertexMultAnalysis_hh
+#ifndef ALIFEMTOVERTEXMULTANALYSIS_H
+#define ALIFEMTOVERTEXMULTANALYSIS_H
 
 #include "AliFemtoSimpleAnalysis.h"        // base analysis class
-#include <limits.h>
 
 class AliFemtoVertexMultAnalysis : public AliFemtoSimpleAnalysis {
 
 public:
 
-  AliFemtoVertexMultAnalysis(unsigned int=10, double=-100., double=+100., unsigned int b=10, double=-1.e9, double=+1.e9);
+  AliFemtoVertexMultAnalysis(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9);
   AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);  // copy constructor
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoVertexMultAnalysis();
   virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
-  virtual unsigned int OverflowVertexZ() { return fOverFlowVertexZ;}
-  virtual unsigned int UnderflowVertexZ() { return fUnderFlowVertexZ;}
-  virtual unsigned int OverflowMult() { return fOverFlowMult;}
-  virtual unsigned int UnderflowMult() { return fUnderFlowMult;}
+  virtual unsigned int OverflowVertexZ() const { return fOverFlowVertexZ;}
+  virtual unsigned int UnderflowVertexZ() const { return fUnderFlowVertexZ;}
+  virtual unsigned int OverflowMult() const { return fOverFlowMult;}
+  virtual unsigned int UnderflowMult() const { return fUnderFlowMult;}
 protected:
   double fVertexZ[2];                 /* min/max z-vertex position allowed to be processed */
   unsigned int fVertexZBins;          /* number of VERTEX mixing bins in z-vertex in EventMixing Buffer */

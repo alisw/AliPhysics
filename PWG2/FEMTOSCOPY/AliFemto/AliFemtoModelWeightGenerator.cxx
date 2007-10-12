@@ -9,6 +9,8 @@
   ClassImp(AliFemtoModelGausLCMSFreezeOutGenerator, 1)
 #endif
 
+#include "AliFemtoPair.h"
+
 #include "AliFemtoModelWeightGenerator.h"
 #include "AliFemtoModelHiddenInfo.h"
 
@@ -56,6 +58,7 @@ Int_t    AliFemtoModelWeightGenerator::GetPairType() const
 //_____________________________________________
 void     AliFemtoModelWeightGenerator::SetPairTypeFromPair(AliFemtoPair *aPair)
 {
+  // Get the type of pair from PID of particles in the pair
   AliFemtoModelHiddenInfo *inf1 = ( AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
   AliFemtoModelHiddenInfo *inf2 = ( AliFemtoModelHiddenInfo *) aPair->Track2()->HiddenInfo();
 

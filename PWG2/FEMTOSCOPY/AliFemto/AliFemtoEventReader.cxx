@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
+///                                                                          ///
 /// AliFemtoEventReader - the pure virtual base class for the event reader   ///
 /// All event readers must inherit from this one                             ///
+///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
 #include "AliFemtoEvent.h"
 #include "AliFemtoEventCut.h"
@@ -23,6 +25,7 @@ AliFemtoEventReader::AliFemtoEventReader(const AliFemtoEventReader& aReader):
   fReaderStatus(0),  
   fDebug(0)
 {
+  // Copy constructor
   fEventCut = aReader.fEventCut;
   fTrackCut = aReader.fTrackCut;
   fV0Cut    = aReader.fV0Cut;
@@ -34,6 +37,7 @@ AliFemtoEventReader::AliFemtoEventReader(const AliFemtoEventReader& aReader):
 
 AliFemtoEventReader& AliFemtoEventReader::operator=(const AliFemtoEventReader& aReader)
 {
+  // Assignment operator
   if (this == &aReader) 
     return *this;
 

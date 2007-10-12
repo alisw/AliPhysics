@@ -55,7 +55,8 @@ public:
 
   // the following method is for explicit internal calculation to fill datamembers.
   // It is invoked automatically if AliFemtoParticle constructed from AliFemtoTrack
-  //void CalculateNominalTpcExitAndEntrancePoints(); // NOTE - this requires the fHelix, so be sure this is filled
+  // void CalculateNominalTpcExitAndEntrancePoints(); 
+  // NOTE - this requires the fHelix, so be sure this is filled
 
 
   AliFemtoThreeVector fNominalPosSample[11];  // I make this public for convenience and speed of AliFemtoPair()
@@ -130,7 +131,7 @@ private:
 };
 
 inline AliFemtoTrack* AliFemtoParticle::Track() const { return fTrack; }
-inline unsigned long  AliFemtoParticle::TrackId() const { return fTrack->TrackId(); }; 
+inline unsigned long  AliFemtoParticle::TrackId() const { return fTrack->TrackId(); }
 inline const AliFemtoLorentzVector& AliFemtoParticle::FourMomentum() const {return fFourMomentum;}
 inline AliFmPhysicalHelixD& AliFemtoParticle::Helix() {return fHelix;}
 //inline unsigned long AliFemtoParticle::TopologyMap(const int word) const {return fMap[word];}

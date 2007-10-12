@@ -3,8 +3,8 @@
 // AliFmHelix: a helper helix class                                      //
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
-#ifndef ALIPHYSICALHELIX_H
-#define ALIPHYSICALHELIX_H
+#ifndef ALIFMPHYSICALHELIX_H
+#define ALIFMPHYSICALHELIX_H
 
 #include "AliFmThreeVector.h"
 #include "AliFmHelix.h"

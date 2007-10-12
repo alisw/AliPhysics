@@ -5,11 +5,11 @@
 /// Authors: Adam Kisiel kisiel@mps.ohio-state.edu                           ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoModelWeightGenerator_hh
-#define AliFemtoModelWeightGenerator_hh
+#ifndef ALIFEMTOMODELWEIGHTGENERATOR_H
+#define ALIFEMTOMODELWEIGHTGENERATOR_H
 
 #include "TRandom2.h"
-#include "AliFemtoPair.h"
+class AliFemtoPair;
 
 class AliFemtoModelWeightGenerator 
 {
@@ -48,7 +48,7 @@ class AliFemtoModelWeightGenerator
   static const Int_t fgkKaonPlusAntiproton;// opposite-charge kaon proton pair
 
  protected:
-  Int_t fPairType;
+  Int_t fPairType;     // Type of the pair for which the calculation is done
 
   Double_t fKStarOut;  // relative momentum out component in PRF
   Double_t fKStarSide; // relative momentum side component in PRF

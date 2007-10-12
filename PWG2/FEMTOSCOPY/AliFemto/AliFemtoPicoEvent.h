@@ -16,6 +16,12 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.2.1  2007/10/12 14:28:37  akisiel
+ * New wave of cleanup and rule conformance
+ *
+ * Revision 1.1  2007/05/16 10:22:11  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.2  2007/05/03 09:42:29  akisiel
  * Fixing Effective C++ warnings
  *
@@ -33,8 +39,8 @@
  *
  **************************************************************************/
 
-#ifndef AliFemtoPicoEvent_hh
-#define AliFemtoPicoEvent_hh
+#ifndef ALIFEMTOPICOEVENT_H
+#define ALIFEMTOPICOEVENT_H
 
 #include "AliFemtoParticleCollection.h"
 
@@ -44,7 +50,7 @@ public:
   AliFemtoPicoEvent(const AliFemtoPicoEvent& aPicoEvent);
   ~AliFemtoPicoEvent();
 
-  AliFemtoPicoEvent& operator=(AliFemtoPicoEvent& aPicoEvent);
+  AliFemtoPicoEvent& operator=(const AliFemtoPicoEvent& aPicoEvent);
 
   /* may want to have other stuff in here, like where is primary vertex */
 
@@ -53,9 +59,9 @@ public:
   AliFemtoParticleCollection* ThirdParticleCollection();
 
 private:
-  AliFemtoParticleCollection* fFirstParticleCollection;
-  AliFemtoParticleCollection* fSecondParticleCollection;
-  AliFemtoParticleCollection* fThirdParticleCollection;
+  AliFemtoParticleCollection* fFirstParticleCollection;  // Collection of particles of type 1
+  AliFemtoParticleCollection* fSecondParticleCollection; // Collection of particles of type 2
+  AliFemtoParticleCollection* fThirdParticleCollection;  // Collection of particles of type 3
 };
 
 inline AliFemtoParticleCollection* AliFemtoPicoEvent::FirstParticleCollection(){return fFirstParticleCollection;}

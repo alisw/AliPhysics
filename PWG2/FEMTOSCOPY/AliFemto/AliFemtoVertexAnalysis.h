@@ -1,11 +1,18 @@
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// AliFemtoVertexAnalysis - Femtoscopic analysis which mixes events       //
+// with respect to the z position of the primary vertex                   //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 /***************************************************************************
  * Collection and analysis for vertex dependent event mixing
  * Frank Laue, Ohio State, 2000
  *
  **************************************************************************/
 
-#ifndef AliFemtoVertexAnalysis_hh
-#define AliFemtoVertexAnalysis_hh
+#ifndef ALIFEMTOVERTEXANALYSIS_H
+#define ALIFEMTOVERTEXANALYSIS_H
 
 #include "AliFemtoSimpleAnalysis.h"        // base analysis class
 
@@ -13,7 +20,7 @@ class AliFemtoVertexAnalysis : public AliFemtoSimpleAnalysis {
 
 public:
 
-  AliFemtoVertexAnalysis(unsigned int =10, double =-100., double=+100.);
+  AliFemtoVertexAnalysis(unsigned int bins=10, double min=-100., double max=+100.);
   AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& OriginalAnalysis);  // copy constructor
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoVertexAnalysis();

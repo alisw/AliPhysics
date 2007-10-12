@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// AliFemtoPicoEvent - internal AliFemto representation of the event.         //
+// Created for the sake of minimizing the used size. Multiple instances are   //
+// stored in memory when several mixing bins are used.                        //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
 /***************************************************************************
  *
  * $Id$
@@ -16,6 +23,12 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.1.2.1  2007/10/12 14:28:37  akisiel
+ * New wave of cleanup and rule conformance
+ *
+ * Revision 1.1  2007/05/16 10:22:11  akisiel
+ * Making the directory structure of AliFemto flat. All files go into one common directory
+ *
  * Revision 1.2  2007/05/03 09:42:29  akisiel
  * Fixing Effective C++ warnings
  *
@@ -48,6 +61,7 @@
  **************************************************************************/
 
 #include "AliFemtoPicoEvent.h"
+#include "AliFemtoParticleCollection.h"
 
 //________________
 AliFemtoPicoEvent::AliFemtoPicoEvent() :
@@ -55,6 +69,7 @@ AliFemtoPicoEvent::AliFemtoPicoEvent() :
   fSecondParticleCollection(0),
   fThirdParticleCollection(0)
 {
+  // Default constructor
   fFirstParticleCollection = new AliFemtoParticleCollection;
   fSecondParticleCollection = new AliFemtoParticleCollection;
   fThirdParticleCollection = new AliFemtoParticleCollection;
@@ -65,6 +80,7 @@ AliFemtoPicoEvent::AliFemtoPicoEvent(const AliFemtoPicoEvent& aPicoEvent) :
   fSecondParticleCollection(0),
   fThirdParticleCollection(0)
 {
+  // Copy constructor
   AliFemtoParticleIterator iter;
 
   fFirstParticleCollection = new AliFemtoParticleCollection;
@@ -88,6 +104,7 @@ AliFemtoPicoEvent::AliFemtoPicoEvent(const AliFemtoPicoEvent& aPicoEvent) :
 }
 //_________________
 AliFemtoPicoEvent::~AliFemtoPicoEvent(){
+  // Destructor
   AliFemtoParticleIterator iter;
   
   if (fFirstParticleCollection){
@@ -120,8 +137,9 @@ AliFemtoPicoEvent::~AliFemtoPicoEvent(){
   }
 }
 //_________________
- AliFemtoPicoEvent& AliFemtoPicoEvent::operator=(AliFemtoPicoEvent& aPicoEvent) 
+AliFemtoPicoEvent& AliFemtoPicoEvent::operator=(const AliFemtoPicoEvent& aPicoEvent) 
 {
+  // Assignment operator
   if (this == &aPicoEvent) 
     return *this;
 
