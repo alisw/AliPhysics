@@ -190,10 +190,10 @@ protected:
   Int_t                 fOldXPixel; // Old x pixel of mark
   Int_t                 fOldYPixel; // Old y pixel of mark
   Bool_t                fLineDrawn; // Whether we're drawing a box
-  Bool_t                fOnlyFMD;
-  TH1*                  fSpec;
-  TH1*                  fSpecCut;
-  TCanvas*              fAux;
+  Bool_t                fOnlyFMD;   // Whether to only do FMD
+  TH1*                  fSpec;      // Spectra
+  TH1*                  fSpecCut;   // Cut spectra
+  TCanvas*              fAux;       // Aux canvas.
   ClassDef(AliFMDDisplay,0)  // FMD specialised event display
 };
 

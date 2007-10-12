@@ -68,12 +68,17 @@ AliFMDDisplay*
 AliFMDDisplay::Instance()
 {
   // Return static instance 
+  // If the instance does not exist
+  // it is not created!
   return fgInstance;
 }
 
 //____________________________________________________________________
 AliFMDDisplay::~AliFMDDisplay()
 {
+  // Destructor. 
+  // Cleans 
+  // up 
   if (fMarkers) {
     fMarkers->Delete();
     delete fMarkers;
@@ -112,6 +117,8 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
     fOnlyFMD(onlyFMD)
 {
   // Constructor of an FMD display object. 
+  // Must be called 
+  // before Instance 
   AddLoad(kGeometry);
   if (fgInstance) delete fgInstance;
   fgInstance = this;
@@ -123,6 +130,9 @@ AliFMDDisplay::AliFMDDisplay(Bool_t onlyFMD, const char* gAliceFile)
 void           
 AliFMDDisplay::MakeCanvas(const char** which)
 {
+  // Make a canvas 
+  // Parameters: 
+  //   which   Which button to put up. 
   gStyle->SetPalette(1);
   Double_t y1 = .10;
   Int_t    w  = 700;
@@ -170,6 +180,9 @@ AliFMDDisplay::MakeCanvas(const char** which)
 void           
 AliFMDDisplay::ShowOnlyFMD()
 {
+  // Show only the FMD 
+  // Do not show 
+  // other volumes 
   if (!fGeoManager) return;
   static bool once = false;
   if (once) return;
@@ -223,7 +236,10 @@ AliFMDDisplay::ShowOnlyFMD()
 void           
 AliFMDDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py) 
 {
-  // AliInfo(Form("Event %d, at (%d,%d)", px, py));
+  // Execute an event on canvas 
+  // Parameters: 
+  //   event   What happened
+  //   px, py  Pixel coordinates 
   if (px == 0 && py == 0) return;
   if (!fZoomMode && fPad->GetView()) {
     fPad->GetView()->ExecuteRotateView(event, px, py);
@@ -266,7 +282,9 @@ AliFMDDisplay::ExecuteEvent(Int_t event, Int_t px, Int_t py)
 Int_t          
 AliFMDDisplay::DistancetoPrimitive(Int_t px, Int_t) 
 {
-  // AliInfo(Form("@ (%d,%d)", px, py));
+  // Calculate the distance from point to 
+  // something in the canvas. 
+  // Depends on the zoom mode. 
   fPad->SetCursor(kCross);
   Float_t xmin = fPad->GetX1();
   Float_t xmax = fPad->GetX2();
@@ -279,7 +297,9 @@ AliFMDDisplay::DistancetoPrimitive(Int_t px, Int_t)
 Bool_t 
 AliFMDDisplay::Init()
 {
-  // Initialize.  GEt transforms and such, 
+  // Initialize.  GEt transforms and such,
+  // so that we can draw thins properly 
+  // Returns true on success 
   if (!AliFMDInput::Init()) return kFALSE;
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
@@ -298,6 +318,9 @@ AliFMDDisplay::Init()
 void
 AliFMDDisplay::MakeAux()
 {
+  // MAke the aux canvas 
+  // This is used to display spectra
+  // etc, 
   if ((TESTBIT(fTreeMask, kESD) || 
        TESTBIT(fTreeMask, kDigits) || 
        TESTBIT(fTreeMask, kRaw))) {
@@ -325,6 +348,9 @@ AliFMDDisplay::MakeAux()
 void
 AliFMDDisplay::DrawAux()
 {
+  // Draw in the Aux the canvas 
+  // For example draw the spectra 
+  // or such stuff 
   if (!fAux) return;
   fAux->cd();
   fAux->Clear();
@@ -340,6 +366,8 @@ Bool_t
 AliFMDDisplay::Begin(Int_t event) 
 {
   // Begin of event.  Make canvas is not already done 
+  // Parameters: 
+  //   event   The event number 
   if (!fCanvas) {
     const char* m[] = { "Continue", "Zoom", "Pick", "Redisplay", 0 }; 
     MakeCanvas(m);
@@ -371,6 +399,9 @@ AliFMDDisplay::Begin(Int_t event)
 void
 AliFMDDisplay::AtEnd() 
 {
+  // Called at of the event. 
+  // Draw stuff. 
+  // Draw spectrum. 
   fPad->cd();
   fMarkers->Draw();
   fPad->cd();
@@ -383,6 +414,9 @@ AliFMDDisplay::AtEnd()
 void
 AliFMDDisplay::Idle() 
 {
+  // Idle loop. 
+  // Sends the ROOT loop into the idle loop,
+  // so that we can go on. 
   fWait = kTRUE;
   while (fWait) {
     gApplication->StartIdleing();
@@ -409,7 +443,9 @@ AliFMDDisplay::End()
 Int_t
 AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
 {
-  // Look-up color 
+  // Look-up color.  
+  // Get a colour from the  current palette depending 
+  // on the ratio x/max 
   Int_t idx = Int_t(x / max * gStyle->GetNumberOfColors());
   return gStyle->GetColorPalette(idx);
 }
@@ -418,6 +454,9 @@ AliFMDDisplay::LookupColor(Float_t x, Float_t max) const
 void
 AliFMDDisplay::ChangeCut() 
 {
+  // Change the cut on the slider. 
+  // The factor depends on what is 
+  // drawn in the AUX canvas
   fMultCut        = fSlider->GetMinimum() * 10;
   fPedestalFactor = fSlider->GetMinimum() * 10;
   AliInfo(Form("Multiplicity cut: %7.5f, Pedestal factor: %7.4f (%6.5f)", 
@@ -429,6 +468,9 @@ AliFMDDisplay::ChangeCut()
 void
 AliFMDDisplay::Redisplay()
 {
+  // Redisplay stuff. 
+  // Redraw markers, hits, 
+  // spectra 
   if (fMarkers) fMarkers->Delete();
   if (fHits)    fHits->Clear();
   if (fSpec)    fSpec->Reset();
@@ -472,7 +514,9 @@ AliFMDDisplay::AddMarker(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
 Bool_t 
 AliFMDDisplay::ProcessHit(AliFMDHit* hit, TParticle* /* p */) 
 {
-  // Process a hit 
+  // Process a hit. 
+  // Parameters: 
+  //   hit   Hit data
   if (!hit) { AliError("No hit");   return kFALSE; }
   // if (!p)   { AliError("No track"); return kFALSE; }
 
@@ -496,6 +540,8 @@ Bool_t
 AliFMDDisplay::ProcessDigit(AliFMDDigit* digit)
 {
   // Process a digit 
+  // Parameters: 
+  //   digit Digit information 
   if (!digit) { AliError("No digit");   return kFALSE; }
 
   AliFMDParameters* parm = AliFMDParameters::Instance();
@@ -525,6 +571,8 @@ Bool_t
 AliFMDDisplay::ProcessRaw(AliFMDDigit* digit)
 {
   // PRocess raw data 
+  // Parameters: 
+  //   digit Digit information 
   return ProcessDigit(digit);
 }
 
@@ -533,6 +581,8 @@ Bool_t
 AliFMDDisplay::ProcessRecPoint(AliFMDRecPoint* recpoint)
 {
   // Process reconstructed point 
+  // Parameters: 
+  //  recpoint  Reconstructed multiplicity/energy
   if (!recpoint) { AliError("No recpoint");   return kFALSE; }
   if (recpoint->Particles() < fMultCut) return kTRUE;
   if (fHits) fHits->Add(recpoint);
@@ -546,6 +596,10 @@ Bool_t
 AliFMDDisplay::ProcessESD(UShort_t det, Char_t rng, UShort_t sec, UShort_t str,
 			  Float_t, Float_t mult)
 {
+  // Process data from ESD 
+  // Parameters 
+  //   det,rng,sec,str   Detector coordinates. 
+  //   mult              Multiplicity. 
   Double_t cmult = mult;
   if (fSpec) fSpec->Fill(cmult);
   if (cmult < fMultCut || cmult == AliESDFMD::kInvalidMult) return kTRUE;
