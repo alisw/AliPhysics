@@ -144,6 +144,7 @@ private:
   Int_t                GetDetIndex(const char * detector);
   AliQADataMaker*      GetQADataMaker(Int_t iDet);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
+  void                 CheckQA() ;
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag

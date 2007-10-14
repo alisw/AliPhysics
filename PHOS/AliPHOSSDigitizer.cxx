@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.54  2007/10/10 09:05:10  schutz
+ * Changing name QualAss to QA
+ *
  * Revision 1.53  2007/09/30 17:08:20  schutz
  * Introducing the notion of QA data acquisition cycle (needed by online)
  *
@@ -238,6 +241,18 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   if(strstr(option,"tim"))
     gBenchmark->Start("PHOSSDigitizer");
   
+  // check the QA result for RAWS
+  AliQA * qa = AliQA::Instance(AliQA::kPHOS) ; 
+  if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kFATAL)) {
+	AliFatal("QA status in RAW was Fatal") ;
+  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kERROR)) {
+	AliError("QA status in RAW was Error") ;
+  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kWARNING) ) {
+	AliWarning("QA status in RAW was Warning") ;
+  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kRAW, AliQA::kINFO) ) {
+	AliInfo("QA status in RAW was Info") ;
+  }
+
   AliPHOSGetter * gime = AliPHOSGetter::Instance() ;
 
   //switch off reloading of this task while getting event

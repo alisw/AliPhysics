@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.100  2007/10/10 09:05:10  schutz
+ * Changing name QualAss to QA
+ *
  * Revision 1.99  2007/09/30 17:08:20  schutz
  * Introducing the notion of QA data acquisition cycle (needed by online)
  *
@@ -622,8 +625,20 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     return ; 
   }
   
-  if(strstr(option,"tim"))
-    gBenchmark->Start("PHOSDigitizer");
+  // check the QA result for Hits and SDigits
+  AliQA * qa = AliQA::Instance(AliQA::kPHOS) ; 
+  if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kFATAL)) {
+	AliFatal("QA status in Hits and/or SDIGITS was Fatal") ;
+  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kERROR)) {
+	AliError("QA status in Hits and/or SDIGITS was Error") ;
+  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kWARNING) ) {
+	AliWarning("QA status in Hits and/or SDIGITS was Warning") ;
+  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kINFO) ) {
+	AliInfo("QA status in Hits and/or SDIGITS was Info") ;
+  }
+   
+ if(strstr(option,"tim"))
+     gBenchmark->Start("PHOSDigitizer");
   
   AliPHOSGetter * gime = AliPHOSGetter::Instance(GetTitle()) ;
 

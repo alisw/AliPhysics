@@ -691,6 +691,10 @@ Bool_t AliReconstruction::Run(const char* input)
   ProcInfo_t ProcInfo;
   gSystem->GetProcInfo(&ProcInfo);
   AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
+  
+  // checking the QA of previous steps
+  CheckQA() ; 
+  
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     if (fRawReader) fRawReader->NextEvent();
     if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
@@ -2767,7 +2771,39 @@ Bool_t AliReconstruction::RunQA(const char* detectors, AliESDEvent *& esd)
  
  return kTRUE;
   
+}
 
+
+//_____________________________________________________________________________
+void AliReconstruction::CheckQA()
+{
+// check the QA of SIM for this run and remove the detectors 
+// with status Fatal
+  
+	TString newDetList ; 
+	for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
+		TString detName(AliQA::GetDetName(iDet)) ;
+		if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 
+			fRunLocalReconstruction.Contains("ALL") )  {
+			AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX(iDet)) ; 
+			if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kFATAL)) {
+				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was Fatal; No reconstruction performed", detName.Data())) ;
+			} else if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kERROR)) {
+				AliError(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was ERROR", detName.Data())) ;
+				newDetList += detName ; 
+				newDetList += " " ; 
+			} else if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kWARNING) ) {
+				AliWarning(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was WARNING", detName.Data())) ;
+				newDetList += detName ; 
+				newDetList += " " ; 
+			} else if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kINFO) ) {
+				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was INFO", detName.Data())) ;
+				newDetList += detName ; 
+				newDetList += " " ; 
+			}
+		}
+	}
+	fRunLocalReconstruction = newDetList ; 
 }
 
 //_____________________________________________________________________________
