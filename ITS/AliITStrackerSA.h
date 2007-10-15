@@ -3,6 +3,7 @@
 
 
 
+#include "AliITSgeomTGeo.h"
 #include "AliITStrackerMI.h"
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
@@ -12,6 +13,7 @@
 //  Stand alone tracker class                     //
 //  Origin:  Elisabetta Crescio                   //
 //  e-mail:  crescio@to.infn.it                   //
+//  adapted for cosmics by A.Dainese              //
 ////////////////////////////////////////////////////
 
 class AliITSclusterTable;

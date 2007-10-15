@@ -14,7 +14,6 @@
 
 
 #include "TObject.h"
-#include "AliITSgeomTGeo.h"
 
 //--------------- move from AliITSrecoV2.h ---------------------------    
 const Int_t kMaxLayer = 6;
@@ -141,20 +140,20 @@ class AliITSRecoParam : public TObject
  protected:
   //
   // spatial resolutions of the detectors
-  Double_t fSigmaY2[kMaxLayer];
-  Double_t fSigmaZ2[kMaxLayer];
+  Double_t fSigmaY2[kMaxLayer]; // y
+  Double_t fSigmaZ2[kMaxLayer]; // z
   //
   Double_t fMaxSnp; // maximum of sin(phi)  (MI)
   //
   // search road (MI)
-  Double_t fNSigmaYLayerForRoadY;
-  Double_t fNSigmaRoadY;
-  Double_t fNSigmaZLayerForRoadZ;
-  Double_t fNSigmaRoadZ;
-  Double_t fNSigma2RoadZC;
-  Double_t fNSigma2RoadYC;
-  Double_t fNSigma2RoadZNonC;
-  Double_t fNSigma2RoadYNonC;
+  Double_t fNSigmaYLayerForRoadY; // y
+  Double_t fNSigmaRoadY;  // y
+  Double_t fNSigmaZLayerForRoadZ; // z
+  Double_t fNSigmaRoadZ; // z
+  Double_t fNSigma2RoadZC; // z
+  Double_t fNSigma2RoadYC; // y
+  Double_t fNSigma2RoadZNonC; // z
+  Double_t fNSigma2RoadYNonC; // y
   //
   // chi2 cuts
   Double_t fMaxChi2PerCluster[kMaxLayer-1]; // max chi2 for MIP (MI)
@@ -171,12 +170,12 @@ class AliITSRecoParam : public TObject
   Double_t fChi2PerCluster; // (NOT USED)
   //
   // default primary vertex (MI,V2)
-  Double_t fXV; 
-  Double_t fYV;
-  Double_t fZV;
-  Double_t fSigmaXV;
-  Double_t fSigmaYV;
-  Double_t fSigmaZV;
+  Double_t fXV;  // x
+  Double_t fYV;  // y
+  Double_t fZV;  // z
+  Double_t fSigmaXV; // x
+  Double_t fSigmaYV; // y
+  Double_t fSigmaZV; // z
   Double_t fVertexCut; // (V2)
   Double_t fMaxDZforPrimTrk; // maximum (imp. par.)/(1+layer) to define 
                              // a primary and apply vertex constraint (MI)
@@ -190,11 +189,11 @@ class AliITSRecoParam : public TObject
   Double_t fMinPtForProlongation; // min. pt cut
 
   // parameters to create "virtual" clusters in SPD dead zone (MI)
-  Bool_t   fAddVirtualClustersInDeadZone;
-  Double_t fZWindowDeadZone;
-  Double_t fSigmaXDeadZoneHit2;
-  Double_t fSigmaZDeadZoneHit2;
-  Double_t fXPassDeadZoneHits;
+  Bool_t   fAddVirtualClustersInDeadZone; // add if kTRUE
+  Double_t fZWindowDeadZone; // window size
+  Double_t fSigmaXDeadZoneHit2; // x error virtual cls
+  Double_t fSigmaZDeadZoneHit2; // z error virtual cls
+  Double_t fXPassDeadZoneHits;  // x distance between clusters
 
 
   Bool_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
