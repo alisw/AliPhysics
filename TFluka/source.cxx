@@ -165,7 +165,19 @@ extern "C" {
     /* Cosines (tx,ty,tz)*/
     Double_t cosx = particle->Px()/particle->P();
     Double_t cosy = particle->Py()/particle->P();
-    Double_t cosz = TMath::Sqrt(oneone - cosx*cosx - cosy*cosy);
+    Double_t cosxy = cosx * cosx + cosy * cosy;
+    Double_t cosz;
+
+    if (cosxy < 1.) {
+	cosz = TMath::Sqrt(oneone - cosxy);
+    } else {
+	cosx /= TMath::Sqrt(cosxy);
+	cosy /= TMath::Sqrt(cosxy);	
+	cosz = 0.;
+    }
+    
+    
+    
     if (particle->Pz() < 0.) cosz = -cosz;    
 
     if (pdg != 50000050 &&  pdg !=  50000051) {
