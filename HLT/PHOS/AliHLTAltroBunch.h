@@ -15,13 +15,12 @@ class AliHLTAltroBunch
   AliHLTAltroBunch();
   ~ AliHLTAltroBunch();
   UInt_t *fData;
+  Int_t fBunchDataSize;
   Int_t fBunchSize;
   unsigned int fEndTimeBin;
  private:
   unsigned int fStartTimeBin;
 };
-
-
 
 
 #endif
