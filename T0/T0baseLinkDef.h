@@ -16,5 +16,6 @@
 #pragma link C++ class  AliT0Parameters+;
 #pragma link C++ class  AliT0LookUpValue+;
 #pragma link C++ class  AliT0LookUpKey+;
+#pragma link C++ class  AliT0Align+;
 
 #endif
