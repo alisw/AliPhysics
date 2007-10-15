@@ -65,9 +65,9 @@ ClassImp(AliHMPIDQADataMaker)
   // ctor
   for(Int_t i=0; i<7; i++) fhHitMap[i]=0x0;
   for(Int_t j=0; j<5; j++) fhPid[j]=0x0;
-  fDetectorDir = fOutput->GetDirectory(GetName()) ;  
-  if (!fDetectorDir) 
-    fDetectorDir = fOutput->mkdir(GetName()) ;  
+//   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
+//   if (!fDetectorDir) 
+//     fDetectorDir = fOutput->mkdir(GetName()) ;  
 }
 
 //____________________________________________________________________________ 
