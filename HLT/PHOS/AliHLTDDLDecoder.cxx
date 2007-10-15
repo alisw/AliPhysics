@@ -96,7 +96,7 @@ AliHLTDDLDecoder::Decode()
       DecodeLastDDLBlock(); 
       fOutBufferIndex =  fN40AltroWords*4  -  1;
   
-      //     DumpData(fOutBuffer, 300,4);
+      //DumpData(fOutBuffer, 300,4);
     
       fIsDecoded = true; 
       return true;
@@ -220,6 +220,25 @@ AliHLTDDLDecoder::PrintInfo(AliHLTAltroData &altrodata, int n, int nPerLine)
 void                     
 AliHLTDDLDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 {
+  
+  /*
+  int *t =(int *)dtaPtr;
+
+  printf("printing common data header\n");
+  for(int i=0; i< 4; i++)
+    {
+      printf("0x%x\t");
+      t ++;
+    }
+  printf("\n");
+  for(int i=0; i< 4; i++)
+    {
+      printf("0x%x\t");
+      t ++;
+    }
+  printf("\n");
+  */
+
   // see header file for documentation 
   int tmpTrailerSize;
   fIsDecoded = false; 
@@ -311,6 +330,7 @@ AliHLTDDLDecoder::DecodeLastDDLBlock()
   f32DtaPtr ++;
   DecodeDDLBlock();
 }
+
 
 
 
