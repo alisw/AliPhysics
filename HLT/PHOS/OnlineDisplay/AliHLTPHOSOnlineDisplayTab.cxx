@@ -7,7 +7,8 @@
 using namespace std;
 
 
-AliHLTPHOSOnlineDisplayTab::AliHLTPHOSOnlineDisplayTab():fgSyncronize(kFALSE)
+AliHLTPHOSOnlineDisplayTab::AliHLTPHOSOnlineDisplayTab():AliHLTPHOSBase(),
+							 fgSyncronize(kFALSE)
 {
 
 }

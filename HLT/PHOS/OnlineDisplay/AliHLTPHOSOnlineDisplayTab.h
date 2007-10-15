@@ -4,14 +4,24 @@
 #include "TGTab.h"
 #include "HOMERReader.h"
 #include "AliHLTPHOSCommonDefs.h"
-
 #include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSBase.h"
+
+//#define X_RANGE_START 120
+//#define X_RANGE_LENGTH 80
+
+#define X_RANGE_START 128
+#define X_RANGE_LENGTH 64
+
+#define X_RANGE_END  X_RANGE_START + X_RANGE_LENGTH
+
+
 using namespace PhosHLTConst;
 
 class HOMERReader;
 
 
-class AliHLTPHOSOnlineDisplayTab : public TGTab
+class AliHLTPHOSOnlineDisplayTab : public TGTab, public AliHLTPHOSBase
 {
  public:
   virtual ~AliHLTPHOSOnlineDisplayTab();

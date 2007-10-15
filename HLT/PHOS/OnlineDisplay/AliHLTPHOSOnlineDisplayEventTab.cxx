@@ -8,8 +8,9 @@
 #include "HOMERReader.h"
 #include "HOMERWriter.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-//#include "AliHLTPHOSRcuCellEnergyDebugDataStruct.h"
-#include   "AliHLTPHOSRcuCellEnergyDebugDataStruct.h" 
+//#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+#include   "AliHLTPHOSRcuCellEnergyDataStruct.h" 
+#include "AliHLTPHOSOnlineDisplay.h"
 
 using namespace std;
 
@@ -20,8 +21,11 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab()
 }
 
 
-AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(TGTab  *tabPtr, HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts)
+AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab  *tabPtr, 
+								 HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab()
 {
+  fOnlineDisplayPtr =  onlineDisplayPtr;
+
   for(int mod =0; mod <N_MODULES; mod ++)
     {
       //      for(int rcu = 0; rcu < N_RCUS_PER_MODULE; rcu ++)
@@ -35,8 +39,7 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(TGTab  *tabPtr,
 		    {
 		      for(int gain = 0; gain < N_GAINS; gain ++ )
 			{
-			  //     fChannelData[mod][rcu][z][x][gain] = 0;
-			  fChannelData[mod][rcu_z_coord][rcu_x_coord][x][z][gain] = new int[N_SAMPLES];
+			  fChannelData[mod][rcu_z_coord][rcu_x_coord][x][z][gain] = new int[fNTotalSamples];
 			}
 		    }
 		}	   
@@ -77,9 +80,25 @@ AliHLTPHOSOnlineDisplayEventTab::~AliHLTPHOSOnlineDisplayEventTab()
 void 
 AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int mod, int rcuX, int rcuZ, int x, int z, int gain)
 {
-  for(int i=0;  i < N_SAMPLES ; i++)
+  for(int i=0;  i < fNTotalSamples ; i++)
     {
       histPtr->SetBinContent(i, fChannelData[mod][rcuX][rcuZ][x][z][gain][i]);
+    }
+}
+
+
+void 
+AliHLTPHOSOnlineDisplayEventTab::GetRawData(TH1D *histPtr, int x, int z, int gain)
+{
+  int tmpModID = x/64;
+  int tmpRcuZ = z/32;
+  int tmpRcuX = (x%64)/32;
+  int tmpZ = z%28;
+  int tmpX = x%32;
+
+  for(int i=0;  i < fNTotalSamples ; i++)
+    {
+      histPtr->SetBinContent(i, fChannelData[tmpModID][tmpRcuX][tmpRcuZ][tmpX][tmpZ][gain][i]);
     }
 }
 
@@ -106,7 +125,7 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
     {
       Int_t moduleID;
       //      const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk );  
-      const AliHLTPHOSRcuCellEnergyDebugDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDebugDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+      const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
 
       moduleID = cellEnergiesPtr->fModuleID ;
 
@@ -127,7 +146,7 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
 	    {
 	      fgLegoPlotHGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,  
 				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ, cellEnergiesPtr->fValidData[i].fEnergy);
-	      for(int j= 0; j< N_SAMPLES; j++)
+	      for(int j= 0; j< fNTotalSamples; j++)
 		{
 		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][HIGH_GAIN][j] = cellEnergiesPtr->fValidData[i].fData[j];  
 		  //	  fChannelData[moduleId][]
@@ -139,7 +158,7 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
 	    {
 	      fgLegoPlotLGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,
 				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ,    cellEnergiesPtr->fValidData[i].fEnergy);
-	      for(int j= 0; j< N_SAMPLES; j++)
+	      for(int j= 0; j< fNTotalSamples; j++)
 		{
 		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][LOW_GAIN][j] = cellEnergiesPtr->fValidData[i].fData[j];    
 		}
@@ -172,29 +191,32 @@ AliHLTPHOSOnlineDisplayEventTab::ResetDisplay()
 void
 AliHLTPHOSOnlineDisplayEventTab::InitDisplay(TGTab  *tabPtr)
 {
+  //  fgLegoPlotHGPtr = new TH2D("Cosmics, High gain", "PHOS HLT: Cosmics", 
+  //			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
+  //                             N_ZROWS_MOD,               0, N_ZROWS_MOD);
+ fgLegoPlotHGPtr = new AliHLTPHOSOnlineDisplayTH2D(fOnlineDisplayPtr, "Cosmics, High gain", "PHOS HLT: Cosmics", 
+			    N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
+			    N_ZROWS_MOD,   0, N_ZROWS_MOD);    
+ fgLegoPlotHGPtr->SetGain(HIGH_GAIN);
+ 
 
+ fgLegoPlotHGPtr->SetMaximum(1023);
+ fgLegoPlotHGPtr->Reset();
+ fgLegoPlotHGPtr->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+ 
+ // fgLegoPlotLGPtr = new TH2D("Cosmics, Low gain", "PHOS HLT: Cosmics",  
+ //			    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
+ //			    N_ZROWS_MOD,          0, N_ZROWS_MOD);
+  fgLegoPlotLGPtr = new AliHLTPHOSOnlineDisplayTH2D(fOnlineDisplayPtr, "Cosmics, Low gain", "PHOS HLT: Cosmics",  
+			    N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
+			    N_ZROWS_MOD,          0, N_ZROWS_MOD);
+  fgLegoPlotLGPtr->SetGain(LOW_GAIN);
 
-  //  fgLegoPlotHGPtr = new TH2D("Homer a eventTAB","xx HLT: #pi^{0} 5 - 30Gev HG, High gain",  
-  fgLegoPlotHGPtr = new TH2D("Cosmics, High gain", "PHOS HLT: Cosmics", 
-			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
-                             N_ZROWS_MOD,               0, N_ZROWS_MOD);
-  fgLegoPlotHGPtr->SetMaximum(1023);
-  fgLegoPlotHGPtr->Reset();
-
- //  fgLegoPlotHGPtr = new TH2D("Homer a eventTAB","xx HLT: #pi^{0} 5 - 30Gev HG, High gain",  
- //  fgLegoPlotHGPtr = new TH2D("Homer a eventTAB","xx HLT: #pi^{0} 5 - 30Gev HG, High gain",  
- //			     N_XCOLUMNS_MOD*N_MODULES , 0, N_XCOLUMNS_MOD*N_MODULES,  
- //                             N_ZROWS_MOD,               0, N_ZROWS_MOD);
- //  fgLegoPlotHGPtr->SetMaximum( MAX_BIN_VALUE);
- //  fgLegoPlotHGPtr->Reset();
-
-  fgLegoPlotLGPtr = new TH2D("Cosmics, Low gain", "PHOS HLT: Cosmics",  
-			     N_XCOLUMNS_MOD* N_MODULES , 0, N_XCOLUMNS_MOD* N_MODULES,  
-			     N_ZROWS_MOD,          0, N_ZROWS_MOD);
-  //  fgLegoPlotLGPtr->SetMaximum( MAX_BIN_VALUE); 
   fgLegoPlotLGPtr->SetMaximum(1023); 
 
   fgLegoPlotLGPtr->Reset();
+  fgLegoPlotLGPtr->GetXaxis()->SetRange(X_RANGE_START, X_RANGE_END);
+  
 
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
 					 kLHintsExpandY, 2, 2, 15, 1);

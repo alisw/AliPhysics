@@ -23,6 +23,7 @@
 # include "TStyle.h" 
 #endif
 
+
 #include  "AliHLTPHOSOnlineDisplay.h"
 #include  "AliHLTDataTypes.h"
 #include  "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -69,13 +70,13 @@ AliHLTPHOSOnlineDisplay::Instance(int argc, char** argv)
 }
 
 
-AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay()
+AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay() : AliHLTPHOSBase()
 {
   cout << "ERROR ! level: FATAL, you cannot invoke the onlinedisplay without arguments" << endl;
 }
 
 
-AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv)
+AliHLTPHOSOnlineDisplay::AliHLTPHOSOnlineDisplay(int argc, char** argv) : AliHLTPHOSBase()
 {
   ScanArguments(argc, argv);
   char **tmp;
@@ -107,7 +108,7 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   fTab = new TGTab(this, 100, 100);
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
 					 kLHintsExpandY, 2, 2, 15, 1);
-  fgEventTabPtr = new  AliHLTPHOSOnlineDisplayEventTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
+  fgEventTabPtr = new  AliHLTPHOSOnlineDisplayEventTab(this, fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
   fgCalibTabPtr = new  AliHLTPHOSOnlineDisplayCalibTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
   fgRawTabPtr   = new  AliHLTPHOSOnlineDisplayRawTab(fTab, fgHomerReaderPtr, fgHomerReadersPtr, fgNHosts);
 
@@ -116,12 +117,17 @@ AliHLTPHOSOnlineDisplay::InitDisplay()
   Resize();
   SetWindowName("PHOS HLT OnlineDisplay");
   MapWindow();
-  MoveResize(100,100,1200,1000);
+  MoveResize(100,100, 800,1000);
 
   fgRawMenuPtr = new  AliHLTPHOSOnlineDisplayRawDataMenu(this);
 
 }
 
+void
+AliHLTPHOSOnlineDisplay::GetRawData(TH1D *histogramPtr, int x, int z, int gain)
+{
+  fgEventTabPtr->GetRawData(histogramPtr, x, z, gain); 
+}
 
 void
 AliHLTPHOSOnlineDisplay::ShowRawData()
@@ -179,26 +185,11 @@ AliHLTPHOSOnlineDisplay::ShowRawData()
 	      cout << "tmpRcuX =" << tmpRcuX <<endl;
 	      cout << "tmpZ =" << tmpZ <<endl;
 	      cout << "tmpX =" << tmpX <<endl;
-	      fgRawDataPlotsPtr[cnt] = new TH1D(tmpName, tmpName, 70, 0, 79);
+	      fgRawDataPlotsPtr[cnt] = new TH1D(tmpName, tmpName, fNTotalSamples, 0, fNTotalSamples -1);
 	      fgRawDataPlotsPtr[cnt]->SetFillColor(1);
 	      fgRawDataPlotsPtr[cnt]->SetMaximum(1023); 
-
-	      fgRawDataPlotsPtr[cnt]->SetMaximum(100); 
-
 	      fgRawDataPlotsPtr[cnt]->Reset();
-
-	      /*
-	      for(int i= 0; i< N_SAMPLES; i ++)
-		{
-		  fgEventTabPtr->GetRawData(fgRawDataPlotsPtr[cnt], tmpModID, tmpRcuX, tmpRcuZ, tmpX, tmpZ, HIGH_GAIN); 
-		}
-	      */
-
-	      for(int i= 0; i< N_SAMPLES; i ++)
-		{
-		  fgEventTabPtr->GetRawData(fgRawDataPlotsPtr[cnt], tmpModID, tmpRcuX, tmpRcuZ, tmpX, tmpZ, tmpGain); 
-		}
-
+	      fgEventTabPtr->GetRawData(fgRawDataPlotsPtr[cnt], tmpModID, tmpRcuX, tmpRcuZ, tmpX, tmpZ, tmpGain); 
 	      fgRawDataCanvas->cd(cnt);	  
 	      cout <<  "fgRawDataCanvas->cd("<< cnt <<") = "  <<  fgRawDataCanvas->cd(cnt) << endl;
 	      fgRawDataPlotsPtr[cnt]->Draw();

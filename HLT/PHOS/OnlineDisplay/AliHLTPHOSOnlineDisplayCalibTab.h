@@ -30,10 +30,13 @@ class AliHLTPHOSOnlineDisplayCalibTab : public AliHLTPHOSOnlineDisplayTab
   TH2D *fgCalibHistPtr[N_GAINS];
   TH2I *fgHitsHistPtr[N_GAINS]; 
   TH2D *fgAveragePtr[N_GAINS];
+  TH2D *fgDCSViewPtr[N_GAINS];
+       
+  TH2D *fDeadCannelMapPtr[N_GAINS];
   TGTab               *fTab;
-  TRootEmbeddedCanvas *fEc7, *fEc8, *fEc9, *fEc10, *fEc11, *fEc12, *fEc13, *fEc14;
+  TRootEmbeddedCanvas *fEc7, *fEc8, *fEc9, *fEc10, *fEc11, *fEc12, *fEc13, *fEc14, *fEc15, *fEc16, *fEc17, *fEc18;
   TGTab               *fSubTab2;
-  TGCompositeFrame    *fSubF4, *fSubF5, *fSubF6, *fSubF7,*fSubF8;
+  TGCompositeFrame    *fSubF4, *fSubF5, *fSubF6, *fSubF7,*fSubF8, *fSubF9;
   TCanvas *fgCanvasHGPtr;
   TCanvas *fgCanvasLGPtr;
   TH2D *fgLegoPlotLGPtr;
