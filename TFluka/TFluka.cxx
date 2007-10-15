@@ -492,6 +492,8 @@ void TFluka::Mixture(Int_t& kmat, const char *name, Double_t *a,
   // In this case, WMAT in output is changed to relative
   // weigths.
   //
+    printf("Mixture %5d %10s %5d \n", kmat, name, nlmat);
+    
   Int_t i,j;
   if (nlmat < 0) {
      nlmat = - nlmat;
@@ -588,7 +590,8 @@ void TFluka::Mixture(Int_t& kmat, const char *name, Double_t *a,
      delete [] wmatnew;
      return;     
    }
-   gGeoManager->Mixture(name, a, z, dens, nlmat, wmat, kmat);
+  printf("Mixture (2) %5d %10s %5d \n", kmat, name, nlmat);
+  gGeoManager->Mixture(name, a, z, dens, nlmat, wmat, kmat);
 } 
 
 //______________________________________________________________________________ 
@@ -2017,6 +2020,19 @@ const char* TFluka::VolName(Int_t id) const
 // Returns the volume name for a given volume ID
 //
    return fMCGeo->VolName(id);
+}
+
+Int_t TFluka::MediumId(const Text_t* mediumName) const
+{
+    //
+    // Return the unique medium id for medium with name mediumName
+    TList *medlist = gGeoManager->GetListOfMedia();
+    TGeoMedium* med = (TGeoMedium*) medlist->FindObject(mediumName);
+    if (med) {
+	return (med->GetId());
+    } else {
+	return (-1);
+    }
 }
 
 //______________________________________________________________________________ 

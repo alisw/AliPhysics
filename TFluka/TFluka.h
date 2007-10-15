@@ -168,6 +168,9 @@ class TFluka : public TVirtualMC {
   virtual const  char* VolName(Int_t id) const;
   virtual Int_t  NofVolumes() const {return fNVolumes;}
   virtual Int_t  VolId2Mate(Int_t id) const;
+  // Return the unique numeric identifier for medium name mediumName
+  virtual Int_t MediumId(const Text_t* mediumName) const;
+
   //
   // Methods for physics management
   // ------------------------------------------------
