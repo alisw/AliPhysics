@@ -38,6 +38,61 @@ AliHLTAltroData::~AliHLTAltroData()
 }
 
 
+
+bool
+AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
+{
+  if(fIsComplete == true)
+    {
+
+      if(fBunchCounter == 0)
+	{
+	  fBunchData = &fData[fDataSize - 1];
+	  altroBunch->fData = &fData[fDataSize - 1];
+	}
+
+      if(fWc < fDataSize)
+	{
+	  fWc += *fBunchData;
+	  altroBunch->fBunchSize = *fBunchData;
+	  altroBunch->fBunchDataSize = altroBunch->fBunchSize  -2;
+
+	  fBunchData --;
+	  altroBunch->fEndTimeBin = *fBunchData;
+	  fBunchData ++;
+
+	  fBunchData = fBunchData  -  (altroBunch->fBunchSize);
+	  altroBunch->fData = altroBunch->fData -  (altroBunch->fBunchSize);
+	  //	  altroBunch->fData = fBunchData -  (altroBunch->fBunchSize);
+	  
+	  //	  fBunchData ++;
+	  //	  altroBunch->fData ++; 
+	  
+
+
+	  fBunchCounter ++;
+	  return true;
+
+	}
+      else
+	{
+	  fBunchCounter = 0;
+	  fWc = 0;
+	  return false;
+	}
+    }
+  else
+    {
+      printf("\nAliHLTAltroData::NextBunch: WARNING, dataset is not complet. 2AAA endmarker is missing ");
+      printf("\nfor branch %d, card %d, chip %d, channel %d\n",  GetBranch(), GetCard(), GetChip(), GetChannel());
+      return false;
+    }
+
+}
+
+
+
+/*
 bool
 AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
 {
@@ -59,11 +114,11 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
 	  
 	  fWc += *fBunchData;
 	  altroBunch->fData = fData - *fBunchData -1; ;
-	  altroBunch->fBunchSize = *fBunchData -2;
+	  altroBunch->fBunchDataSize = *fBunchData -2;
 	  fBunchData --;
 	  altroBunch->fEndTimeBin = *fBunchData;
 	  cout <<  "*fBuncchData = " << *fBunchData << endl;
-	  fBunchData = fBunchData  -  (altroBunch->fBunchSize +1);
+	  fBunchData = fBunchData  -  (altroBunch->fBunchDataSize +1);
 
 
 	  fBunchCounter ++;
@@ -84,6 +139,8 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
     }
 
 }
+*/
+
 
 void
 AliHLTAltroData::Reset()
