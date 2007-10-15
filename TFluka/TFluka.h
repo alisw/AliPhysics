@@ -378,10 +378,6 @@ class TFluka : public TVirtualMC {
   Int_t  GetDummyBoundary() const {return fDummyBoundary;}
   Bool_t IsDummyBoundary() const {return (fDummyBoundary==0)?kFALSE:kTRUE;}
   
-
-  void   SetGeneratePemf(Bool_t flag = kTRUE) {fGeneratePemf = flag;}
-  Bool_t IsGeneratePemf() const {return fGeneratePemf;}
-  
   void   EnableField(Bool_t flag=kTRUE) {fFieldFlag = flag;}
   Bool_t IsFieldEnabled() const {return fFieldFlag;}
   
@@ -428,7 +424,6 @@ class TFluka : public TVirtualMC {
   Bool_t   fTrackIsExiting;       // Flag for track exiting  
   Bool_t   fTrackIsNew;           // Flag for new track
   Bool_t   fFieldFlag;            // Flag for magnetic field
-  Bool_t   fGeneratePemf;         // Flag for automatic .pemf generation
   Int_t    fDummyBoundary;        // Flag for crossing dummy boundaries
   Bool_t   fStopped;              // Flag for stopping 
   Bool_t   fStopEvent;            // Flag for stopped event

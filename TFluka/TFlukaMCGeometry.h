@@ -40,7 +40,6 @@ class TFlukaMCGeometry :public TNamed {
     virtual Int_t NofVolumes() const;
    // FLUKA specific methods
     void          CreateFlukaMatFile(const char *fname=0);
-    void          CreatePemfFile();
     void          PrintHeader(ofstream &out, const char *text) const;
     Bool_t        IsDebugging() const {return fDebug;}
     void          SetDebugMode(Bool_t flag=kTRUE) {fDebug = flag;}
@@ -60,12 +59,8 @@ class TFlukaMCGeometry :public TNamed {
     void          ToFlukaString(TString &str) const;
     void          FlukaMatName(TString &str) const;
     Int_t         GetPredefinedMaterialId(Int_t z) const;
-    void          WritePegFile(Int_t imat, Int_t *NoStern, Int_t *ElemError,
-                       Int_t *MixError, Int_t *countGas) const;
-    Double_t *    GetISSB(Double_t rho, Int_t nElem, Double_t *zelem, Double_t *welem ) const;
-
-    Double_t* CreateDoubleArray(Float_t* array, Int_t size) const;
-    void     Vname(const char *name, char *vname) const;
+    Double_t*     CreateDoubleArray(Float_t* array, Int_t size) const;
+    void          Vname(const char *name, char *vname) const;
    
   private:
     // Copy constructor and operator= declared but not implemented (-Weff++ flag)

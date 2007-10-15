@@ -133,7 +133,6 @@ TFluka::TFluka()
    fTrackIsExiting(kFALSE),
    fTrackIsNew(kFALSE),
    fFieldFlag(kTRUE),
-   fGeneratePemf(kFALSE),
    fDummyBoundary(kFALSE),
    fStopped(kFALSE),
    fStopEvent(kFALSE),
@@ -171,7 +170,6 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fTrackIsExiting(kFALSE),
    fTrackIsNew(kFALSE),
    fFieldFlag(kTRUE),
-   fGeneratePemf(kFALSE),
    fDummyBoundary(kFALSE),
    fStopped(kFALSE),
    fStopEvent(kFALSE),
@@ -297,13 +295,7 @@ void TFluka::BuildPhysics() {
         }
     }
     
-    //
-    // At this stage we have the information on materials and cuts available.
-    // Now create the pemf file
-    
-    if (fGeneratePemf) fGeom->CreatePemfFile();
-    
-    //
+
     // Prepare input file with the current physics settings
     
     InitPhysics(); 
