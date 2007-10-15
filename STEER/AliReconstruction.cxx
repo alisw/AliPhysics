@@ -172,8 +172,8 @@
 
 #include "AliQADataMaker.h" 
 
-//#include "TMemStatManager.h" // memory snapshots
 #include "AliSysInfo.h" // memory snapshots
+
 
 ClassImp(AliReconstruction)
 
@@ -1056,7 +1056,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
 
     loader->WriteRecPoints("OVERWRITE");
     loader->UnloadRecPoints();
-     AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr));
+    AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
   }
 
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
@@ -1263,13 +1263,14 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
 
     // load clusters
     fLoader[iDet]->LoadRecPoints("read");
+    AliSysInfo::AddStamp(Form("RLoadCluster%s_%d",fgkDetectorName[iDet],eventNr),iDet,1, eventNr);
     TTree* tree = fLoader[iDet]->TreeR();
     if (!tree) {
       AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
       return kFALSE;
     }
     fTracker[iDet]->LoadClusters(tree);
-
+    AliSysInfo::AddStamp(Form("TLoadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,2, eventNr);
     // run tracking
     if (fTracker[iDet]->Clusters2Tracks(esd) != 0) {
       AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
@@ -1283,7 +1284,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
     } 
-     AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr));
+    AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr), iDet,3,eventNr);
   }
 
   // pass 2: ALL backwards
@@ -1295,13 +1296,14 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     if (iDet > 1) {     // all except ITS, TPC
       TTree* tree = NULL;
       fLoader[iDet]->LoadRecPoints("read");
+      AliSysInfo::AddStamp(Form("RLoadCluster0%s_%d",fgkDetectorName[iDet],eventNr), iDet,1, eventNr);
       tree = fLoader[iDet]->TreeR();
       if (!tree) {
 	AliError(Form("Can't get the %s cluster tree", fgkDetectorName[iDet]));
 	return kFALSE;
       }
       fTracker[iDet]->LoadClusters(tree); 
-       AliSysInfo::AddStamp(Form("LoadCluster0%s_%d",fgkDetectorName[iDet],eventNr));
+      AliSysInfo::AddStamp(Form("TLoadCluster0%s_%d",fgkDetectorName[iDet],eventNr), iDet,2, eventNr);
     }
 
     // run tracking
@@ -1323,7 +1325,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       AliESDpid::MakePID(esd);
     }
-     AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr));
+    AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
   }
 
   // write space-points to the ESD in case alignment data output
@@ -1344,11 +1346,12 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd)
     if (fCheckPointLevel > 1) {
       WriteESD(esd, Form("%s.refit", fgkDetectorName[iDet]));
     }
-
+    AliSysInfo::AddStamp(Form("Tracking2%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
     // unload clusters
     fTracker[iDet]->UnloadClusters();
+    AliSysInfo::AddStamp(Form("TUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,4, eventNr);
     fLoader[iDet]->UnloadRecPoints();
-     AliSysInfo::AddStamp(Form("Tracking2%s_%d",fgkDetectorName[iDet],eventNr));
+    AliSysInfo::AddStamp(Form("RUnloadCluster%s_%d",fgkDetectorName[iDet],eventNr), iDet,5, eventNr);
   }
   //
   // Propagate track to the vertex - if not done by ITS
@@ -1442,7 +1445,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
                   detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
-   AliSysInfo::AddStamp(Form("FillESD%d",eventNr));
+  AliSysInfo::AddStamp(Form("FillESD%d",eventNr), 0,1, eventNr);
   eventNr++;
   return kTRUE;
 }
@@ -1762,6 +1765,7 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
       AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
       if (fStopOnError) return kFALSE;
     }
+    AliSysInfo::AddStamp(Form("LTracker%s",fgkDetectorName[iDet]), iDet,0);
   }
 
   return kTRUE;
@@ -2693,6 +2697,8 @@ void AliReconstruction::TNamedToFile(TTree* fTree, TString fName){
   out.close();
 
 }
+  
+
 
 //_____________________________________________________________________________
 AliQADataMaker * AliReconstruction::GetQADataMaker(Int_t iDet)

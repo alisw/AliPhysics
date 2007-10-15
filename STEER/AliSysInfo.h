@@ -16,20 +16,24 @@
 #include <TObject.h>
 class TStopwatch;
 class TTree;
+class TMemStatManager;
 
 class AliSysInfo : public TObject {
 public:
   AliSysInfo();
   static AliSysInfo * Instance();
-  static void AddStamp(const char *stamp);
-  void Print(Option_t* option = "") const;
+  static void AddStamp(const char *sname, Int_t id0=-1, Int_t id1=-1, Int_t id2=-1);
   static TTree * MakeTree(const char *lname);
+  static void OpenMemStat();
+  static void CloseMemStat();
+  static Bool_t Contain(const char * str1, const char * str2);
 private:
   AliSysInfo(const AliSysInfo& source);
   AliSysInfo& operator= (const AliSysInfo& rec);
 
-  fstream        *fSysWatch;       // system watch - Memory and CPU usage 
-  TStopwatch     *fTimer;          // timer
+  fstream         *fSysWatch;       // system watch - Memory and CPU usage 
+  TStopwatch      *fTimer;          // timer
+  TMemStatManager *fMemStat;      
   static AliSysInfo *   fInstance; //instance pointer
   ClassDef(AliSysInfo,0)
 };
