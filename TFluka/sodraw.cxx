@@ -14,6 +14,7 @@ void sodraw()
 {
   ((TFluka*) gMC)->SetCaller(kSODRAW);
   ((TFluka*) gMC)->SetIcode((FlukaProcessCode_t)0);
+  (TVirtualMCApplication::Instance())->Stepping();
 } // end of sodraw
 } // end of extern "C"
 
