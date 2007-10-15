@@ -1248,24 +1248,24 @@ void AliSHILv3::CreateGeometry()
       // Position of the dipole
       Float_t ziDipole = 741.;
       
-      TGeoPcon* shYOUT1 = new TGeoPcon(0., 360., 25);
+      TGeoPcon* shYOUT1 = new TGeoPcon(0., 360., 24);
       Float_t eps = 1.e-2;
       // FA Tail Section
-      for (Int_t iz =  0; iz < 9; iz++) {
+      for (Int_t iz =  1; iz < 9; iz++) {
 	  z = shFaWTail->GetZ(iz+1);
 	  if (iz == 8) z -= ozFaSaa1;
-	  shYOUT1->DefineSection(iz, z + ziFaWTail, shFaWTail->GetRmax(iz+1) + eps, 150.);
+	  shYOUT1->DefineSection(iz-1, z + ziFaWTail, shFaWTail->GetRmax(iz+1) + eps, 150.);
       }
       // FA-SAA1 Joint
       z = shYOUT1->GetZ(8);
       
       for (Int_t iz =  9; iz < 17; iz++) 
-	  shYOUT1->DefineSection(iz, z + shFaSaa1->GetZ(iz-9), shFaSaa1->GetRmax(iz-9) + eps, 150.);
+	  shYOUT1->DefineSection(iz-1, z + shFaSaa1->GetZ(iz-9), shFaSaa1->GetRmax(iz-9) + eps, 150.);
 
       z = shYOUT1->GetZ(16) - ozSaa1;
       // SAA1  - Dipole
       for (Int_t iz = 17; iz < 24; iz++) 
-	  shYOUT1->DefineSection(iz, z + shSaa1M->GetZ(iz-13), shSaa1M->GetRmax(iz-13) + eps, 150.); 
+	  shYOUT1->DefineSection(iz-1, z + shSaa1M->GetZ(iz-13), shSaa1M->GetRmax(iz-13) + eps, 150.); 
       // Distance between dipole and start of SAA1 2deg opening cone
       dz   = ziDipole - (zSaa1StEnv[0] - dSt + zSaa1StEnvS + ziSaa1);
       rOut = rOuSaa1StEnv2 + dz * TMath::Tan(2. * kDegRad);
