@@ -1,3 +1,6 @@
+#ifndef ALIHLTPHOSALTROCONFIG_H
+#define ALIHLTPHOSALTROCONFIG_H
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -16,21 +19,31 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliHLTPHOSBase.h"
-#include "AliHLTPHOSConfig.h"
-#include "AliHLTPHOSAltroConfig.h"
 
 
-AliHLTPHOSBase::AliHLTPHOSBase(): AliHLTPHOSConfig(),  
-				  AliHLTPHOSAltroConfig()
+class  AliHLTPHOSAltroConfig
 {
-  //  fConfigPtr = new AliHLTPHOSConfig();
-  //  fAltroConfigPtr = new AliHLTPHOSAltroConfig();
-}
+public:
+  AliHLTPHOSAltroConfig();
+  virtual ~AliHLTPHOSAltroConfig();
+  void SetNPresSamples(int presamples);
+  void SetNSamples(int samples);
+  void SetAltroZeroSupression(bool isZerosupressed);
+  void SetAltroBaselineSubtraction(bool isAltroBaselineSubtraction);
+  //  void SetSoftwareBaselineSubtraction(bool isSoftwareBaselineSubtraction);
+  inline int  GetNPresSamples(){return  fNPresamples;}; 
+  inline int  GetNSamples(){return  fNSamples;}; 
+  inline bool GetIsAltroZroSupresses(){return   fIsAltroZeroSupressed;}; 
+  inline bool GetIsAltroBaselineSubtraction(){return fIsAltroBaselineSubtraction;};
+  void PrintAltroDefaultValues();
 
+protected:
+  //Altro Config
+  int fNPresamples;
+  int fNSamples;
+  int fNTotalSamples;
+  bool fIsAltroZeroSupressed;
+  bool fIsAltroBaselineSubtraction;
+};
 
-AliHLTPHOSBase::~AliHLTPHOSBase()
-{
-
-}
-
+#endif

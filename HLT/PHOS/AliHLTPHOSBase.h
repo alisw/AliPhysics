@@ -23,77 +23,75 @@
 #include <Rtypes.h>
 #include "TString.h"
 #include "AliHLTDataTypes.h"
-//#include "AliHLTPHOSDefinitions.h"
-//#include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSConfig.h"
+#include "AliHLTPHOSAltroConfig.h"
 
 using namespace PhosHLTConst;
-
-
-
 using namespace std;
 
 
-class  AliHLTPHOSBase
+class AliHLTPHOSConfig;
+class AliHLTPHOSAltroConfig;
+
+class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
 {
- public:
+public:
   AliHLTPHOSBase();
   virtual ~AliHLTPHOSBase();
 
 
   template<typename T> 
-    void  DumpData(T *array, int N, int nPerLine)
-    {
-      cout <<   "DumpData N=  " << N <<endl;
-      for(int i= 0; i< N; i++)
-	{
-	  if((i%nPerLine == 0)  &&  (i != 0))
-	    {
-	      printf("\n");
-	    }
+  void  DumpData(T *array, int N, int nPerLine)
+  {
+    cout <<   "DumpData N=  " << N <<endl;
+    for(int i= 0; i< N; i++)
+      {
+	if((i%nPerLine == 0)  &&  (i != 0))
+	  {
+	    printf("\n");
+	  }
 
-	  cout << array[i]<< "\t";
+	cout << array[i]<< "\t";
 
-	}
-    }
+      }
+  }
 
   template<typename T> 
-    void  Reset(T *array, int N)
-    {
-      for(int i= 0; i< N; i++)
-	{
-	  array[i] = 0;
-	}
-    }
+  void  ResetArray(T *array, int N)
+  {
+    for(int i= 0; i< N; i++)
+      {
+	array[i] = 0;
+      }
+  }
  
   template<typename T> 
-    T  MaxValue(T *array, int N)
-    {
-      //   Double_t tmpMax = 0;
+  T  MaxValue(T *array, int N)
+  {
+    //   Double_t tmpMax = 0;
       
-      T tmpMax = 0;
+    T tmpMax = 0;
 
-      for(int i = 0; i < N; i++)
-	{
-	  if(array[i] > tmpMax)
-	    {
-	      tmpMax = array[i];
-	    }
-	}
+    for(int i = 0; i < N; i++)
+      {
+	if(array[i] > tmpMax)
+	  {
+	    tmpMax = array[i];
+	  }
+      }
   
-      return tmpMax;
-    }
+    return tmpMax;
+  }
 
+  
+protected:
+  AliHLTPHOSConfig *fConfigPtr;
+  AliHLTPHOSConfig *fAltroConfigPtr;
 
- private:
-  //  AliHLTPHOSBase(const AliHLTPHOSBase & );
-  // AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
-
-
-
-  ///  const struct THIS IS STRANGE;
-
-
+private:
+  AliHLTPHOSBase(const AliHLTPHOSBase & );
+  AliHLTPHOSBase & operator = (const AliHLTPHOSBase &);
 };
 
 #endif
