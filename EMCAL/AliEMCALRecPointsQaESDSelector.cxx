@@ -14,6 +14,9 @@
  **************************************************************************/
 
 /* $Log$
+/* Revision 1.4  2007/10/15 15:50:58  pavlinov
+/* fixed code violation
+/*
 /* Revision 1.3  2007/10/09 08:46:10  hristov
 /* The data members fEMCALClusterCluster and fPHOSCluster are removed from AliESDCaloCluster, the fClusterType is used to select PHOS or EMCAL clusters. Changes, needed to use correctly the new AliESDCaloCluster. (Christian)
 /*
@@ -985,7 +988,8 @@ void AliEMCALRecPointsQaESDSelector::ReadAllEmcalFolders()
   if(fEmcalPool==0) {
     fEmcalPool = new TFolder("PoolOfEMCAL","");
     for(Int_t it=1; it<=10; it++){
-      AliEMCALFolder* fold = AliEMCALFolder::ReadFolder(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
+      //      AliEMCALFolder* fold = AliEMCALFolder::ReadFolder(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
+      AliEMCALFolder* fold = AliEMCALFolder::Read(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
       if(fold) fEmcalPool->Add(fold);
     }
   }
