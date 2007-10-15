@@ -14,6 +14,9 @@
  **************************************************************************/
 
 /* $Log$
+/* Revision 1.3  2007/10/09 08:46:10  hristov
+/* The data members fEMCALClusterCluster and fPHOSCluster are removed from AliESDCaloCluster, the fClusterType is used to select PHOS or EMCAL clusters. Changes, needed to use correctly the new AliESDCaloCluster. (Christian)
+/*
 /* Revision 1.2  2007/09/11 19:38:15  pavlinov
 /* added pi0 calibration, linearity, shower profile
 /*co: warning: `/* $Log' is obsolescent; use ` * $Log'.
@@ -81,25 +84,18 @@ using namespace std;
 
 typedef  AliEMCALHistoUtilities u;
 
-Double_t AliEMCALRecPointsQaESDSelector::fDistEff = 3.;
-Double_t AliEMCALRecPointsQaESDSelector::fW0      = 4.5;
-Double_t AliEMCALRecPointsQaESDSelector::fSlopePhiShift = 0.01; // ?? just guess
+AliEMCALGeometry* AliEMCALRecPointsQaESDSelector::fgEmcalGeo=0;
+Int_t             AliEMCALRecPointsQaESDSelector::fgNmaxCell = 4*12*24*11;
 
-AliEMCALFolder* AliEMCALRecPointsQaESDSelector::fEMCAL = 0;
-AliEMCALFolder* AliEMCALRecPointsQaESDSelector::fEMCALOld = 0;
+Double_t AliEMCALRecPointsQaESDSelector::fgDistEff = 3.;
+Double_t AliEMCALRecPointsQaESDSelector::fgW0      = 4.5;
+Double_t AliEMCALRecPointsQaESDSelector::fgSlopePhiShift = 0.01; // ?? just guess
 
-AliEMCALGeometry *geo=0;
+AliEMCALFolder* AliEMCALRecPointsQaESDSelector::fgEMCAL = 0;
+AliEMCALFolder* AliEMCALRecPointsQaESDSelector::fgEMCALOld = 0;
 
-char *anaOpt[]={
-  "CORR1",   // GetCorrectedEnergyForGamma_1(Double_t eRec);
-  "RECALIB",
-  "IDEAL",
-  "PI0",
-  "GAMMA",
-  "KINE",   // reading kine file
-  "PROF",   // Shower profile: phi direction now
-  "FIT"     // define parameters : deff, w0 and phislope
-};
+Char_t **AliEMCALRecPointsQaESDSelector::fgAnaOpt=0;
+Int_t AliEMCALRecPointsQaESDSelector::fgNanaOpt = 0; 
 enum keyOpt{
   kCORR1,
   kRECALIB,
@@ -112,16 +108,13 @@ enum keyOpt{
  //-- 
   kEND
 };
-        
-int  nAnaOpt = sizeof(anaOpt) / sizeof(char*); 
+
 // Enumeration variables
 // enum {kUndefined=-1, kLed=0, kBeam=1};
 // enum {kPatchResponse=0, kClusterResponse=1};
 // enum {kSkip=0,  kSaveToMemory=1};
 
 ClassImp(AliEMCALRecPointsQaESDSelector)
-
-Int_t  nmaxCell = 4*12*24*11;
 
 AliEMCALRecPointsQaESDSelector::AliEMCALRecPointsQaESDSelector() :
   AliSelector(),
@@ -140,6 +133,20 @@ AliEMCALRecPointsQaESDSelector::AliEMCALRecPointsQaESDSelector() :
   //
   // Constructor. Initialization of pointers
   //
+  Char_t *anaOpt[]={
+  "CORR1",   // GetCorrectedEnergyForGamma_1(Double_t eRec);
+  "RECALIB",
+  "IDEAL",
+  "PI0",
+  "GAMMA",
+  "KINE",   // reading kine file
+  "PROF",   // Shower profile: phi direction now
+  "FIT"     // define parameters : deff, w0 and phislope
+  };
+  
+  fgNanaOpt = sizeof(anaOpt) / sizeof(Char_t*); 
+  fgAnaOpt = new Char_t*[fgNanaOpt];
+  for(int i=0; i<fgNanaOpt; i++) fgAnaOpt[i] = anaOpt[i];
 }
 
 AliEMCALRecPointsQaESDSelector::~AliEMCALRecPointsQaESDSelector()
@@ -190,8 +197,11 @@ Bool_t AliEMCALRecPointsQaESDSelector::Notify()
 
 void AliEMCALRecPointsQaESDSelector::InitStructure(Int_t it)
 {
-  geo = AliEMCALGeometry::GetInstance("SHISH_TRD1_CURRENT_2X2"); // initialize geometry just once
-  fCellsInfo = AliEMCALCellInfo::GetTableForGeometry(geo);
+  //
+  // Initialize the common structure of selector
+  //
+  fgEmcalGeo = AliEMCALGeometry::GetInstance("SHISH_TRD1_CURRENT_2X2"); // initialize geometry just once
+  fCellsInfo = AliEMCALCellInfo::GetTableForGeometry(fgEmcalGeo);
 
   if(fRunOpts.Length()>0) CheckRunOpts();
 
@@ -202,8 +212,8 @@ void AliEMCALRecPointsQaESDSelector::InitStructure(Int_t it)
 
   fEmcalPool = new TFolder("PoolOfEMCAL","");
   if(it <= 1) {
-    fEMCAL     = new AliEMCALFolder(it); // folder for first itteration   
-    fEmcalPool->Add(fEMCAL);
+    fgEMCAL     = new AliEMCALFolder(it); // folder for first itteration   
+    fEmcalPool->Add(fgEMCAL);
   }
   //if(it<=0) SetName("GammaSel"); // For convinience
   //else      SetName("Pi0Sel");
@@ -213,14 +223,15 @@ void AliEMCALRecPointsQaESDSelector::InitStructure(Int_t it)
 
 void AliEMCALRecPointsQaESDSelector::CheckRunOpts()
 {
+  // Check run options
   fRunOpts.ToUpper();
   int nopt = u::ParseString(fRunOpts, fArrOpts);
-  printf("<I> AliEMCALRecPointsQaESDSelector::CheckRunOpts() analyze %i(%i) options : nAnaOpt %i\n", 
-         nopt, fArrOpts.GetEntries(), nAnaOpt);  
+  printf("<I> AliEMCALRecPointsQaESDSelector::CheckRunOpts() analyze %i(%i) options : fgNanaOpt %i\n", 
+         nopt, fArrOpts.GetEntries(), fgNanaOpt);  
   if(nopt <=0) return;
 
-  fKeyOpts = new TArrayI(nAnaOpt);
-  for(Int_t i=0; i<nAnaOpt; i++) (*fKeyOpts)[i] = 0;
+  fKeyOpts = new TArrayI(fgNanaOpt);
+  for(Int_t i=0; i<fgNanaOpt; i++) (*fKeyOpts)[i] = 0;
 
   for(Int_t i=0; i<fArrOpts.GetEntries(); i++ ) {
     TObjString *o = (TObjString*)fArrOpts.At(i); 
@@ -228,8 +239,8 @@ void AliEMCALRecPointsQaESDSelector::CheckRunOpts()
     TString runOpt = o->String();
     Int_t indj=-1;
 
-    for(Int_t j=0; j<nAnaOpt; j++) {
-      TString opt = anaOpt[j];
+    for(Int_t j=0; j<fgNanaOpt; j++) {
+      TString opt = fgAnaOpt[j];
       if(runOpt.Contains(opt,TString::kIgnoreCase)) {
 	indj = j;
         break;
@@ -242,19 +253,20 @@ void AliEMCALRecPointsQaESDSelector::CheckRunOpts()
     } else {
       (*fKeyOpts)[indj] = 1;
       printf("<I> option |%s| is valid : number %i : |%s| \n", 
-	     runOpt.Data(), indj, anaOpt[indj]);
+	     runOpt.Data(), indj, fgAnaOpt[indj]);
     }
   }
 }
 
 Int_t AliEMCALRecPointsQaESDSelector::GetKeyOptsValue(Int_t key)
 {
+  // Oct 14, 2007
   static Int_t val=0;
   val = 0;
   if(fKeyOpts && key>=0 && key<fKeyOpts->GetSize()) {
     val = fKeyOpts->At(key);
   }
-  // printf(" key %i : val %i : opt %s \n", key, val, anaOpt[key]);
+  // printf(" key %i : val %i : opt %s \n", key, val, fgAnaOpt[key]);
   return val;
 }
 
@@ -300,7 +312,7 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
   indOfFirstEmcalRP = fESD->GetFirstEMCALCluster();
   u::FillH1(fLofHistsRP, 1, double(indOfFirstEmcalRP));
 
-  static AliRunLoader* RL = 0;
+  static AliRunLoader* rl = 0;
   static Int_t nev = 0; // Temporary - 0nly for reading one file now !!
   
   static AliESDCaloCluster *cl = 0; 
@@ -321,13 +333,13 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
       l = fLofHistsPC;
     } else if(cl->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1){
       nEmcalRP++;
-      if(fEMCAL->GetIterationNumber()>1||GetKeyOptsValue(kIDEAL)||GetKeyOptsValue(kRECALIB)||GetKeyOptsValue(kFIT)) {
+      if(fgEMCAL->GetIterationNumber()>1||GetKeyOptsValue(kIDEAL)||GetKeyOptsValue(kRECALIB)||GetKeyOptsValue(kFIT)) {
         AliEMCALRecPoint *rp=0;
-        if(GetKeyOptsValue(kFIT) == kFALSE) fDistEff = -1.; // No fitting ; Sep 4, 2007
+        if(GetKeyOptsValue(kFIT) == kFALSE) fgDistEff = -1.; // No fitting ; Sep 4, 2007
         if(GetKeyOptsValue(kIDEAL)) {
-          rp = AliEMCALFolder::GetRecPoint(cl, fEMCAL->GetCCFirst(), 0, fLofHistsRP, fDistEff, fW0, fSlopePhiShift);
+          rp = AliEMCALFolder::GetRecPoint(cl, fgEMCAL->GetCCFirst(), 0, fLofHistsRP, fgDistEff, fgW0, fgSlopePhiShift);
 	} else {
-          rp = AliEMCALFolder::GetRecPoint(cl, fEMCAL->GetCCFirst(), fEMCAL->GetCCIn(), fLofHistsRP, fDistEff, fW0, fSlopePhiShift);
+          rp = AliEMCALFolder::GetRecPoint(cl, fgEMCAL->GetCCFirst(), fgEMCAL->GetCCIn(), fLofHistsRP, fgDistEff, fgW0, fgSlopePhiShift);
 	}
         if(GetKeyOptsValue(kPROF)) {
           FillHistsForShowerProfile( GetListShowerProfile(), rp, GetCellsInfo());
@@ -396,9 +408,9 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
       u::FillH1(l, 5, eDigi);
       u::FillH1(l, 6, double(digiTime[id]));
       u::FillH1(l, 7, double(digiAbsId[id]));
-      if(int(digiAbsId[id]) >= nmaxCell) {
+      if(int(digiAbsId[id]) >= fgNmaxCell) {
         printf(" id %i :  digiAbsId[id] %i (%i) : %s \n", 
-	       id, int(digiAbsId[id]), nmaxCell, l->GetName());
+	       id, int(digiAbsId[id]), fgNmaxCell, l->GetName());
       }
     }
   }
@@ -426,8 +438,8 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
  
 	if((mgg>=rPar->massGGMin && mgg<=rPar->massGGMax)) {// pi0 candidates
 	  if((pgg>=rPar->momPi0Min && pgg>=rPar->momPi0Min)) {
-            if(fEMCAL && fEMCAL->GetIterationNumber()>=1) {
-              fEMCAL->FillPi0Candidate(mgg,fESD->GetCaloCluster(indLv[i1]),fESD->GetCaloCluster(indLv[i2]));
+            if(fgEMCAL && fgEMCAL->GetIterationNumber()>=1) {
+              fgEMCAL->FillPi0Candidate(mgg,fESD->GetCaloCluster(indLv[i1]),fESD->GetCaloCluster(indLv[i2]));
               u::FillH1(fLofHistsRP, 9, pgg); 
               u::FillH1(fLofHistsRP,10, lv1->P());
               u::FillH1(fLofHistsRP,10, lv2->P());
@@ -448,9 +460,9 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
       curFileName = fChain->GetCurrentFile()->GetName();
       curFileName.ReplaceAll("AliESDs.","galice."); 
     }
-    RL = u::InitKinematics(nev, curFileName.Data());
+    rl = u::InitKinematics(nev, curFileName.Data());
   // Compare kineamtics vs EMCal clusters
-    FillHistsOfKineVsRP(fLKineVsRP, RL, lvM1);
+    FillHistsOfKineVsRP(fLKineVsRP, rl, lvM1);
   }
 
   lvM1.Delete();
@@ -495,8 +507,11 @@ void AliEMCALRecPointsQaESDSelector::Terminate()
 //
 TList *AliEMCALRecPointsQaESDSelector::DefineHistsOfRP(const char *name,Double_t p,Int_t keyOpt)
 {
+  //
+  // Define histogramms of rec.points
+  //
   printf("<I> DefineHistsOfRP :%s : p %f : keyOpt %i \n", name, p, keyOpt);
-  Double_t ADCchannelEC = 0.0153; // ~15mev per adc count
+  Double_t adcChannelEC = 0.0153; // ~15mev per adc count
   Double_t xma = p*1.4, xmi=0.0, step=0.0, xmic=xmi, xmac = xma;
   if(xma<0) xma = 20.;
   Int_t nmax=1000, scale=4, nmaxc = nmax;
@@ -519,18 +534,18 @@ TList *AliEMCALRecPointsQaESDSelector::DefineHistsOfRP(const char *name,Double_t
   }
 
   if(step < 0.0153) {
-    nmax = int((xma-xmi) / ADCchannelEC)+1;
-    xma =  xmi + ADCchannelEC*nmax;
+    nmax = int((xma-xmi) / adcChannelEC)+1;
+    xma =  xmi + adcChannelEC*nmax;
   } 
   new TH1F("04_EnergyOf", "energy of ", nmax, xmi, xma);
   nmaxc = nmax; xmic=xmi; xmac = xma;
 
   nmax = 10000;
-  xmi  = ADCchannelEC/2.; xma = xmi + ADCchannelEC*nmax;
+  xmi  = adcChannelEC/2.; xma = xmi + adcChannelEC*nmax;
   // All energy(momentum) unit is GeV if don't notice
   new TH1F("05_DigitEnergyIn", "digit energy in ", nmaxc, xmic, xmac);
   new TH1F("06_DigitTimeIn", "digit time in 10ps(0.01ns) ", 1000, 0.0, 3.e+3); // ns/100 = 10 ps
-  new TH1F("07_DigitAbsIdIn", "digit abs id in ", nmaxCell, -0.5, double(nmaxCell)-0.5);
+  new TH1F("07_DigitAbsIdIn", "digit abs id in ", fgNmaxCell, -0.5, double(fgNmaxCell)-0.5);
   new TH1F("08_EffMass", "effective mass of #gamma,#gamma(m_{#pi^{0}}=134.9766 MeV)", 100, 0.0, 0.5);
   new TH1F("09_MomOfPi0Candidate", "momentum of #pi^{0} candidates (0.085 <mgg<0.185)", 600, 0.0, 30.0);
   new TH1F("10_MomOfRpPi0Candidate", "momentum of RP for #pi^{0} candidates (0.085 <mgg<0.185)", 600, 0.0, 30.0);
@@ -546,7 +561,7 @@ TList *AliEMCALRecPointsQaESDSelector::DefineHistsOfRP(const char *name,Double_t
   // Digi
   new TH1F("14_EDigiRecalib", "energy of digits after recalibration", 2000, 0.0, 20.);
   //  AliEMCALGeometry* g = AliEMCALGeometry::GetInstance();
-  new TH1F("15_AbsIdRecalib", "abs Id of digits after recalibration", geo->GetNCells(),-0.5,Double_t(geo->GetNCells())-0.5);
+  new TH1F("15_AbsIdRecalib", "abs Id of digits after recalibration", fgEmcalGeo->GetNCells(),-0.5,Double_t(fgEmcalGeo->GetNCells())-0.5);
   new TH1F("16_EnergyOfRecalibRp_", "energy of recalibrated rec.points", nmaxc, xmic, xmac); // Jul 12, 2007
   new TH2F("17_ShiftRecalib_", "E(clESD) - E(recalib)", 110,0.0, pmax, 50,0.0,dpmax); // Jul 13, 2007
   
@@ -565,7 +580,10 @@ TList *AliEMCALRecPointsQaESDSelector::DefineHistsOfRP(const char *name,Double_t
 
 TList* AliEMCALRecPointsQaESDSelector::DefineHistsOfKineVsRP(const char *name,  Double_t p, Int_t keyOpt)
 {
-  printf("<I>  DefineHistsOfKineVsRP :%s : p %f : keyOpt %i \n", name, p, keyOpt);
+  //
+  // Define histogramms for comparing a initial kinematics with rec.points
+  //
+ printf("<I>  DefineHistsOfKineVsRP :%s : p %f : keyOpt %i \n", name, p, keyOpt);
 
   gROOT->cd();
   TH1::AddDirectory(1);
@@ -573,7 +591,7 @@ TList* AliEMCALRecPointsQaESDSelector::DefineHistsOfKineVsRP(const char *name,  
   new TH1F("01_hVy",Form("Vy of primary vertex"), 100, -5., +5.);   // 01
   new TH1F("02_hVz",Form("Vz of primary vertex"), 100, -50., +50.); // 02
 
-  //  Double_t ADCchannelEC = 0.0153; // ~15mev per adc count
+  //  Double_t adcChannelEC = 0.0153; // ~15mev per adc count
   Double_t xma = p*1.4, xmi=0.0, sig=0.15*TMath::Sqrt(p);
   //  Double_t step=0.0, xmic=xmi, xmac = xma;
   if(xma<0) xma = 20.;
@@ -643,13 +661,13 @@ TList *AliEMCALRecPointsQaESDSelector::DefineHistsForShowerProfile(const char *n
   return l;
 }
 
-void AliEMCALRecPointsQaESDSelector::FillHistsOfKineVsRP(TList *l, AliRunLoader* RL,  TClonesArray &lvM)
+void AliEMCALRecPointsQaESDSelector::FillHistsOfKineVsRP(TList *l, AliRunLoader* rl,  TClonesArray &lvM)
 {
   //
   // lvM - array of TLorentzVector's which was cretaef from AliESDCaloCluster's
   //
 
-  if(l==0 || RL==0) return;
+  if(l==0 || rl==0) return;
 
   // TNtuple for qucik analysis
   static TNtuple *nt=0;
@@ -665,7 +683,7 @@ void AliEMCALRecPointsQaESDSelector::FillHistsOfKineVsRP(TList *l, AliRunLoader*
   static Int_t gid=0, ic=0, pdg=0, i=0;
   gid = ic = pdg = 0;
 
-  st = RL->Stack();
+  st = rl->Stack();
   if(st == 0) return;
   // first primary particle
   p = st->Particle(0);
@@ -841,8 +859,8 @@ void AliEMCALRecPointsQaESDSelector::PrintInfo()
 {
   // Service routine
   printf("\n %i Entrie(s) | Option(s) |%s| \n", GetOptsArray().GetEntries(), fRunOpts.Data());  
-  for(int i=0; i<nAnaOpt; i++) {
-    if(GetKeyOptsValue(i)) printf(" %i |%s| \n", i, anaOpt[i]);
+  for(int i=0; i<fgNanaOpt; i++) {
+    if(GetKeyOptsValue(i)) printf(" %i |%s| \n", i, fgAnaOpt[i]);
   }
 
   TList *l[2] = {fLofHistsPC, fLofHistsRP};
@@ -851,7 +869,7 @@ void AliEMCALRecPointsQaESDSelector::PrintInfo()
     TH1F *h = (TH1F*)l[i]->At(2);
     printf(" %s \t: %i \n", h->GetTitle(), int(h->GetEntries()));
   }
-  printf(" fDistEff %f fW0 %f fSlopePhiShift %f \n", fDistEff, fW0, fSlopePhiShift);
+  printf(" fgDistEff %f fgW0 %f fgSlopePhiShift %f \n", fgDistEff, fgW0, fgSlopePhiShift);
 }
 
 void  AliEMCALRecPointsQaESDSelector::SetMomentum(Double_t p) 
@@ -863,22 +881,26 @@ void  AliEMCALRecPointsQaESDSelector::SetMomentum(Double_t p)
 
 AliEMCALFolder*  AliEMCALRecPointsQaESDSelector::CreateEmcalFolder(const Int_t it)
 {
+  //
+  // Create emcal folder for iteration number it
+  //
   AliEMCALFolder* newFolder = new AliEMCALFolder(it); // folder for iteration #it   
   if(it>1) {
-    fEMCALOld = fEMCAL; 
-    AliEMCALCalibCoefs* tabOldOut = fEMCALOld->GetCCOut();
+    fgEMCALOld = fgEMCAL; 
+    AliEMCALCalibCoefs* tabOldOut = fgEMCALOld->GetCCOut();
     AliEMCALCalibCoefs* tabNewIn = new AliEMCALCalibCoefs(*tabOldOut);
     tabNewIn->SetName(AliEMCALFolder::fgkCCinName.Data());
     newFolder->Add(tabNewIn);
   } 
   fEmcalPool->Add(newFolder);
-  fEMCAL = newFolder;
+  fgEMCAL = newFolder;
 
-  return fEMCAL;
+  return fgEMCAL;
 }
 
 AliEMCALFolder* AliEMCALRecPointsQaESDSelector::GetEmcalOldFolder(const Int_t nsm)
 {
+  // Return emcal folder with number nsm
   AliEMCALFolder* folder=0;
   if(fEmcalPool) folder =  (AliEMCALFolder*)fEmcalPool->FindObject(Form("EMCAL_%2.2i",nsm));
   return folder;
@@ -887,22 +909,23 @@ AliEMCALFolder* AliEMCALRecPointsQaESDSelector::GetEmcalOldFolder(const Int_t ns
 
 void AliEMCALRecPointsQaESDSelector::SetEmcalFolder(AliEMCALFolder* folder)
 {
-  fEMCAL = folder;
-  fEmcalPool->Add(fEMCAL);
+  fgEMCAL = folder;
+  fEmcalPool->Add(fgEMCAL);
 }
 
 void AliEMCALRecPointsQaESDSelector::SetEmcalOldFolder(AliEMCALFolder* folder)
 {
-  fEMCALOld = folder;
-  fEmcalPool->Add(fEMCALOld);
+  fgEMCALOld = folder;
+  fEmcalPool->Add(fgEMCALOld);
 }
 
 void AliEMCALRecPointsQaESDSelector::Browse(TBrowser* b)
 {
+  // What we see at browser
   if(fESD)        b->Add(fESD);
   if(fChain)      b->Add(fChain);
   if(fEmcalPool)  b->Add(fEmcalPool);
-  if(geo)         b->Add(geo);
+  if(fgEmcalGeo) b->Add(fgEmcalGeo);
   if(fCellsInfo)  b->Add(fCellsInfo);
   //
   if(fLofHistsPC) b->Add(fLofHistsPC);
@@ -919,7 +942,9 @@ Bool_t AliEMCALRecPointsQaESDSelector::IsFolder() const
 }
 
 void AliEMCALRecPointsQaESDSelector::Save(Int_t ver, const char *optIO)
-{ // Aug 3, 2007
+{ 
+  // Aug 3, 2007
+  // Save selector to file
   TString dir("/home/pavlinov/ALICE/SHISHKEBAB/RF/CALIB/"); // Root directory for saving
   TString nf=dir;
   if(GetKeyOptsValue(kPROF)) {
@@ -941,6 +966,7 @@ void AliEMCALRecPointsQaESDSelector::Save(Int_t ver, const char *optIO)
 
 AliEMCALRecPointsQaESDSelector* AliEMCALRecPointsQaESDSelector::ReadSelector(const char* nf)
 {
+  // Read selector to file
   AliEMCALRecPointsQaESDSelector* selector=0;
 
   TH1::AddDirectory(0);
@@ -949,16 +975,17 @@ AliEMCALRecPointsQaESDSelector* AliEMCALRecPointsQaESDSelector::ReadSelector(con
     TObject *o = f.Get("AliEMCALRecPointsQaESDSelector");
     if(o) selector = dynamic_cast<AliEMCALRecPointsQaESDSelector *>(o);
   }
-  printf("<I> read selector %p : file |%s| \n", selector, nf);
+  // printf("<I> read selector %p : file |%s| \n", selector, nf);
   return selector;
 }
 
 void AliEMCALRecPointsQaESDSelector::ReadAllEmcalFolders()
 {
+  // Oct 14, 2007
   if(fEmcalPool==0) {
     fEmcalPool = new TFolder("PoolOfEMCAL","");
     for(Int_t it=1; it<=10; it++){
-      AliEMCALFolder* fold = AliEMCALFolder::Read(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
+      AliEMCALFolder* fold = AliEMCALFolder::ReadFolder(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
       if(fold) fEmcalPool->Add(fold);
     }
   }
@@ -1026,10 +1053,11 @@ void AliEMCALRecPointsQaESDSelector::PictVsIterNumber(const Int_t ind, const Int
 
 TH1F* AliEMCALRecPointsQaESDSelector::FitHistOfRecPointEnergy(const char *opt)
 {
+  // Fit hist of rec.point energy
   TH1::AddDirectory(0);
 
-  TString OPT(opt);
-  OPT.ToUpper();
+  TString sopt(opt);
+  sopt.ToUpper();
 
   Int_t ind = 4, ind2 = 16;
   if(GetKeyOptsValue(kIDEAL)) {
@@ -1043,7 +1071,7 @@ TH1F* AliEMCALRecPointsQaESDSelector::FitHistOfRecPointEnergy(const char *opt)
   if(hold == 0) return 0;
   if(hold->GetEntries() <10.) return hold;
 
-  if(OPT.Contains("CLONE")) {
+  if(sopt.Contains("CLONE")) {
     TString newName(Form("C_%s",hold->GetName()));
     h = (TH1F*)hold->Clone(newName.Data());
     printf(" Clone hist %s -> |%s|%s| \n",hold->GetName(),h->GetName(),h->GetTitle()); 
@@ -1070,7 +1098,9 @@ TH1F* AliEMCALRecPointsQaESDSelector::FitHistOfRecPointEnergy(const char *opt)
 }
 
 TCanvas *AliEMCALRecPointsQaESDSelector::Linearity(TList *l, int ifun)
-{ //Jul 10, 2007
+{ 
+  // Jul 10, 2007
+  // Draw picture of EMCal linearity 
   if(l==0) {
     printf("<E> AliEMCALRecPointsQaESDSelector::Linearity :TList is zero ! Bye ! \n");
     return 0;
@@ -1233,7 +1263,8 @@ TCanvas *AliEMCALRecPointsQaESDSelector::Linearity(TList *l, int ifun)
 }
 
 TCanvas *AliEMCALRecPointsQaESDSelector::DrawKineVsRP(TList *l)
-{ //Jul 25, 2007
+{ 
+  //Jul 25, 2007
   if(l==0) {
     printf("<W> AliEMCALRecPointsQaESDSelector::DrawKineVsRP : TList is zero ! \n");
     return 0;
@@ -1319,7 +1350,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawPhiEtaAnglesDistribution(const char
   TCanvas *c = new TCanvas("Geometry","Geometry", 20,20, 700, 500);
   c->Divide(2,2);
 
-  if(geo==0) geo = AliEMCALGeometry::GetInstance(gn);
+  if(fgEmcalGeo==0) fgEmcalGeo = AliEMCALGeometry::GetInstance(gn);
 
   gROOT->cd();
   TH1::AddDirectory(1);
@@ -1335,7 +1366,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawPhiEtaAnglesDistribution(const char
 
   for(int absid=0; absid<12*24*4; absid++){
     cellInfo *r = t->GetTable(absid);
-    geo->GetGlobal(absid, vg3);
+    fgEmcalGeo->GetGlobal(absid, vg3);
 
     thetaCell   = vg3.Theta()*TMath::RadToDeg();
     thetaModule = 90. - 1.5*r->iEtam;
@@ -1405,7 +1436,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawDeffVsEnergy2(const char *opt)
   Double_t ep[]={0., 0., 0., 0., 0., 0., 0., 0., 0.};
   // 2 pars
   Double_t deff[9], edeff[9], w0[9], ew0[9]; // max size now 
-  TString OPT(opt);
+  TString sopt(opt);
 
   int np = sizeof(p)/sizeof(Double_t);
   printf("<I> AliEMCALRecPointsQaESDSelector::DrawDeffVsEnergy2() | np %i \n", np);
@@ -1416,7 +1447,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawDeffVsEnergy2(const char *opt)
 
   TF1 *fdeff = 0, *fw0 = 0;
   TString optFit(""), funName("");
-  if(OPT.Contains("fit1")) {
+  if(sopt.Contains("fit1")) {
     fdeff= new TF1("fdeff","[0]+[1]*log(x)",0.1, 101.);
     fdeff->SetLineColor(kRed);
     fdeff->SetLineWidth(1);
@@ -1478,6 +1509,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawDeffVsEnergy2(const char *opt)
 void AliEMCALRecPointsQaESDSelector::ReadParsDeffAndW0
 (const char *dirName, double *deff, double *edeff, double *w0, double *ew0, const Int_t pri)
 {
+  // read pars and W0
   int strategy = 0, itmp=0;
   char line[100];
   for(int var=11; var<=19; var++){
@@ -1517,15 +1549,15 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawSpaceResolution()
 
   Double_t* eSpAng    = new Double_t[np];
   Double_t* eSpAngOpt = new Double_t[np];
-  Double_t C=TMath::Sqrt(8000.), C2 = 1000.*TMath::DegToRad();
+  Double_t cc=TMath::Sqrt(8000.), cc2 = 1000.*TMath::DegToRad();
   for(int i=0; i<np; i++){
-    spAng[i]       *= C2;
-    rmsSpAng[i]    *= C2;
-    spAngOpt[i]    *= C2;
-    rmsSpAngOpt[i] *= C2;
+    spAng[i]       *= cc2;
+    rmsSpAng[i]    *= cc2;
+    spAngOpt[i]    *= cc2;
+    rmsSpAngOpt[i] *= cc2;
 
-    eSpAng[i]    = spAng[i]/C;
-    eSpAngOpt[i] = spAngOpt[i]/C;
+    eSpAng[i]    = spAng[i]/cc;
+    eSpAngOpt[i] = spAngOpt[i]/cc;
   }
 
   TCanvas *c = new TCanvas("Deff","Deff", 20,20, 700, 500);
@@ -1569,6 +1601,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawSpaceResolution()
 
 void AliEMCALRecPointsQaESDSelector::ResetAllListOfHists()
 {
+  // Reset all list of hits
   u::ResetListOfHists(fLofHistsPC);
   u::ResetListOfHists(fLofHistsRP);
   u::ResetListOfHists(fLKineVsRP);
@@ -1576,7 +1609,8 @@ void AliEMCALRecPointsQaESDSelector::ResetAllListOfHists()
 }
 
 void AliEMCALRecPointsQaESDSelector::ReloadChain(Long64_t entry)
-{ // unused now
+{ 
+  // Oct 14, 2007 - unused now
   if(fChain) {
     fChain->LoadTree(entry);
   }

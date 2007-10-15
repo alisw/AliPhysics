@@ -6,11 +6,14 @@
 /* $Id$ */
  
 //*--  Authors: Aleksei Pavlinov (WSU)
+//  Pi0 calibration
+//  Tuning parameters of coordinate calculations 
 
 #include "AliSelector.h"
 
 #include <TObjArray.h>
 
+class AliEMCALGeometry;
 class AliEMCALFolder;
 class AliRunLoader;
 class AliEMCALRecPoint;
@@ -31,7 +34,7 @@ class AliEMCALRecPointsQaESDSelector :  public AliSelector {
     AliEMCALRecPointsQaESDSelector();
     virtual ~AliEMCALRecPointsQaESDSelector();
 
-    virtual void    Begin(TTree*);
+    virtual void    Begin(TTree* tree);
     virtual void    SlaveBegin(TTree* tree);
     virtual void    Init(TTree *tree);
     virtual Bool_t  Notify();
@@ -57,7 +60,7 @@ class AliEMCALRecPointsQaESDSelector :  public AliSelector {
   void    SetChain(TChain *chain)  {fChain = chain;}
   TChain* GetChain()               {return fChain;}
   void    SetMomentum(Double_t p);
-  Double_t GetMomentum() {return fPmom;}
+  Double_t GetMomentum() const {return fPmom;}
 
   AliEMCALFolder* CreateEmcalFolder(const Int_t it);
   void SetEmcalFolder(AliEMCALFolder* folder); 
@@ -96,7 +99,29 @@ class AliEMCALRecPointsQaESDSelector :  public AliSelector {
   void     ReadParsDeffAndW0(const char *dirName="/data/r22b/ALICE/CALIB/FIT/",
 	   double *deff=0, double *edeff=0, double *w0=0, double *ew0=0, const Int_t pri=0);
   TCanvas *DrawSpaceResolution();
+  // 
+  static AliEMCALFolder* GetEmcalFolder() {return fgEMCAL;}
+  static AliEMCALFolder* GetEmcalOldFolder() {return fgEMCALOld;}
+  static void SetFitParameters(Double_t deff, Double_t w0, Double_t slope) 
+  {
+    fgDistEff = deff; fgW0 = w0; fgSlopePhiShift = slope;
+  }
+  static void GetFitParameters(Double_t &deff, Double_t &w0, Double_t &slope)
+  {
+    deff = fgDistEff; w0 = fgW0; slope = fgSlopePhiShift;
+  } 
+  void ResetAllListOfHists();
+  void ReloadChain(Long64_t entry=0);
+  void GetInitialParsForFit(const Int_t var, Double_t &deff, Double_t &w0, Double_t &phislope, const int phiCase=0);
+
  protected:
+  static AliEMCALFolder*  fgEMCAL;      // current  EMCAL object
+  static AliEMCALFolder*  fgEMCALOld;   // previous EMCAL object
+  //
+  static Double_t fgDistEff;  // effective depth of electromagnetic shower
+  static Double_t fgW0;       // parameter of log. methods 
+  static Double_t fgSlopePhiShift; // phi shift of cluster = fSlopePhiShift * phi
+
   Double_t fPmom; // positive if defined
   //
   TChain* fChain; //! chain if ESD files
@@ -105,41 +130,25 @@ class AliEMCALRecPointsQaESDSelector :  public AliSelector {
   TList* fLKineVsRP;  // list of histograms kinematics vs rec.points 
   TList* fLShowerProfile;  // list of histograms for shower profile business
   //
-  AliEMCALCellInfo *fCellsInfo; //
-  TFolder*         fEmcalPool;  //
+  AliEMCALCellInfo *fCellsInfo; // pointer to current cell
+  TFolder*         fEmcalPool;  // folder of EMCAL objects
   //
   // Options - Jul 10, 2007
   //
   TString   fRunOpts;        // String of running options
   TObjArray fArrOpts;        // Array of options 
   // Options keys
-  TArrayI  *fKeyOpts;
+  TArrayI  *fKeyOpts;        // optins key; 0-disable, 1-enable
   // Static parameters
- public:
-  static AliEMCALFolder* GetEmcalFolder() {return fEMCAL;}
-  static AliEMCALFolder* GetEmcalOldFolder() {return fEMCALOld;}
-  static AliEMCALFolder*  fEMCAL;      // current  EMCAL object
-  static AliEMCALFolder*  fEMCALOld;   // previous EMCAL object
-  //
-  static Double_t fDistEff;  // effective depth of electromagnetic shower
-  static Double_t fW0;       // 
-  static Double_t fSlopePhiShift; // phi shift of cluster = fSlopePhiShift * phi
-  static void SetFitParameters(Double_t deff, Double_t w0, Double_t slope) 
-  {
-    fDistEff = deff; fW0 = w0; fSlopePhiShift = slope;
-  }
-  static void GetFitParameters(Double_t &deff, Double_t &w0, Double_t &slope)
-  {
-    deff = fDistEff; w0 = fW0; slope = fSlopePhiShift;
-  } 
-  void ResetAllListOfHists();
-  void ReloadChain(Long64_t entry=0);
-  void GetInitialParsForFit(const Int_t var, Double_t &deff, Double_t &w0, Double_t &phislope, const int phiCase=0);
-
  private:
   AliEMCALRecPointsQaESDSelector(const AliEMCALRecPointsQaESDSelector&);
   AliEMCALRecPointsQaESDSelector& operator=(const AliEMCALRecPointsQaESDSelector&);
+  //
+  static AliEMCALGeometry* fgEmcalGeo; // pointer to EMCAL geometry
+  static Int_t fgNmaxCell;  // max number of cells
+  static Char_t **fgAnaOpt; // aray of options
+  static Int_t fgNanaOpt;   // number of options
 
-  ClassDef(AliEMCALRecPointsQaESDSelector, 1);
+  ClassDef(AliEMCALRecPointsQaESDSelector, 2);
 };
 #endif
