@@ -77,7 +77,7 @@ AliHLTPHOSRawAnalyzerCrude::Evaluate(int start, int length)
       //	  tmpTime = i;		     
       //	}
 
-      if(fIntDataPtr[i] >  tmpAmplitudeMax)
+      if(fIntDataPtr[i] >  tmpAmplitudeMax && i > 5)
 	{
 	  tmpAmplitudeMax = fIntDataPtr[i];
 	  tmpTime = i;		     

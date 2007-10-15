@@ -29,6 +29,7 @@ struct AliHLTPHOSRcuCellAccumulatedEnergyDataStruct
   AliHLTUInt8_t fRcuZ; 
   float fAccumulatedEnergies[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
   AliHLTUInt32_t fHits[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
+  AliHLTUInt32_t fDeadChannelMap[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
 };
 
 

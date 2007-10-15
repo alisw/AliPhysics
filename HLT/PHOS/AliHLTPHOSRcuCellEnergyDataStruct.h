@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliHLTPHOSCommonDefs.h"
+//#include "AliHLTPHOSCommonDefs.h"
 #include "AliHLTPHOSValidCellDataStruct.h"
 #include "Rtypes.h"
 
@@ -28,7 +28,6 @@ struct AliHLTPHOSRcuCellEnergyDataStruct
   Int_t fRcuX;
   Int_t fRcuZ;
   Int_t fCnt;
-
   AliHLTPHOSValidCellDataStruct fValidData[N_ZROWS_RCU*N_XCOLUMNS_RCU*N_GAINS];
   
 };

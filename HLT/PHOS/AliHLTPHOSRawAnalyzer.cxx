@@ -149,6 +149,7 @@ AliHLTPHOSRawAnalyzer::MakeInitialGuess(int treshold)
   cout << "Make initial guess not yet implemeted" << endl;  
 }
 
+
 void
 AliHLTPHOSRawAnalyzer::SetStartIndex(int index)
 {

@@ -29,7 +29,7 @@ class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
   void SetStartIndex(int startIndex);
   void MakeInitialGuess();
   void MakeInitialGuess(int treshold);
-
+  
   virtual void SetTVector(Double_t *tVector, Int_t size);
   virtual void SetAVector(Double_t *aVector, Int_t size);
   virtual void Evaluate(Int_t start = 0, Int_t lenght = 100) = 0;

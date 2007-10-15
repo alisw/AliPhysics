@@ -12,6 +12,7 @@ class AliHLTPHOSMapper;
 class AliHLTDDLDecoder;
 class AliHLTAltroData;
 class AliHLTAltroBunch;
+class AliHLTPHOSSanityInspector;
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 {
@@ -34,14 +35,22 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
   void Reset();
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
+  void SetBaselines(const char* baselineFile);
   Bool_t fSendChannelData;       /**<wether or not to send raw data from the component into shared memory*/
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
   Double_t fMaxValues[N_MODULES][N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; /**<array to store cell energies*/
-  AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
+  // AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
+
+  AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;
   AliHLTPHOSMapper *fMapperPtr;
   AliHLTDDLDecoder *fDecoderPtr;
   AliHLTAltroData  *fAltroDataPtr;
   AliHLTAltroBunch *fAltroBunchPtr;
+  AliHLTPHOSSanityInspector *fSanityInspectorPtr;
+  Bool_t fUseBaselineSubtraction;
+  Float_t fBaselines[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
+  int fDebugCnt;
+  
 };
 #endif
 
