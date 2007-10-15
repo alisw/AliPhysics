@@ -1923,7 +1923,7 @@ void AliAstrolab::SetLocalFrame(Double_t t1,Double_t p1,Double_t t2,Double_t p2,
 // Specification of the orientations of the local-frame axes.
 // The input arguments represent the angles (in degrees) of the local-frame axes
 // w.r.t. a so called Master Reference Frame (MRF), with the same convention
-// as the input arguments of TRrotMatix::SetAngles.
+// as the input arguments of TRotMatrix::SetAngles.
 //
 // The right handed Master Reference Frame is defined as follows :
 //  Z-axis : Points to the local Zenith

@@ -856,16 +856,17 @@ Float_t AliSample::GetMaximum(Int_t i) const
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliSample::GetMedian(TH1* histo,Int_t mode) const
 {
-// Provide the median from the specified 1D histogram.
+// Provide the median in X or Y from the specified 1D histogram.
 // For this functionality it is not needed to activate the storage mode.
 //
-// This facility uses TH1::GetQuantiles to determine the median, which
+// In case of X-median, this facility uses TH1::GetQuantiles, which
 // provides a median value which in general is different from any of the
-// central bin X values. The user may force the returned median to be
+// central bin X values. The user may force the returned X-median to be
 // the corresponding central bin X value via the "mode" input argument.
 //
-// mode = 0 ==> The pure TH1::GetQuantiles median value is returned
-//        1 ==> The corresponding central bin X value is returned as median
+// mode = 0 ==> The pure TH1::GetQuantiles X-median value is returned.
+//        1 ==> The corresponding central bin X value is returned as X-median.
+//        2 ==> The Y-median value is returned.
 //
 // By default mode=1 will be used, to agree with the AliSample philosophy.
 
@@ -873,18 +874,33 @@ Double_t AliSample::GetMedian(TH1* histo,Int_t mode) const
 
  Double_t median=0;
 
- Double_t q[1];
- Double_t p[1]={0.5};
- histo->ComputeIntegral();
- Int_t nq=histo->GetQuantiles(1,q,p);
-
- if (!nq) return 0;
-
- median=q[0];
- if (mode)
+ if (mode==2) // Median of Y values
  {
-  Int_t mbin=histo->FindBin(q[0]);
-  median=histo->GetBinCenter(mbin);
+  AliSample temp;
+  temp.SetStoreMode(1);
+  Float_t val=0;
+  for (Int_t i=1; i<=histo->GetNbinsX(); i++)
+  {
+   val=histo->GetBinContent(i);
+   temp.Enter(val);
+  }
+  median=temp.GetMedian(1);
+ }
+ else // Median of X values
+ {
+  Double_t q[1];
+  Double_t p[1]={0.5};
+  histo->ComputeIntegral();
+  Int_t nq=histo->GetQuantiles(1,q,p);
+
+  if (!nq) return 0;
+
+  median=q[0];
+  if (mode==1)
+  {
+   Int_t mbin=histo->FindBin(q[0]);
+   median=histo->GetBinCenter(mbin);
+  }
  }
 
  return median;
@@ -892,17 +908,18 @@ Double_t AliSample::GetMedian(TH1* histo,Int_t mode) const
 ///////////////////////////////////////////////////////////////////////////
 Double_t AliSample::GetSpread(TH1* histo,Int_t mode) const
 {
-// Provide the spread w.r.t. the median for the specified 1D histogram.
-// The spread is defined as the average of |median-xval|.
+// Provide the spread w.r.t. the X or Y median for the specified 1D histogram.
+// The spread is defined as the average of |median-val|.
 // For this functionality it is not needed to activate the storage mode.
 //
-// This facility uses TH1::GetQuantiles to determine the median, which
-// provides a median value which in general is different from any of the
-// central bin X values. The user may force the used median to be
-// the corresponding central bin X value via the "mode" input argument.
+// In case of X-spread, this facility uses TH1::GetQuantiles to determine
+// the X-median, which provides a median value which in general is different
+// from any of the central bin X values. The user may force the used X-median
+// to be the corresponding central bin X value via the "mode" input argument.
 //
-// mode = 0 ==> The pure TH1::GetQuantiles median value is used
-//        1 ==> The corresponding central bin X value is used as median
+// mode = 0 ==> The pure TH1::GetQuantiles X-median value is used
+//        1 ==> The corresponding central bin X value is used as X-median
+//        2 ==> The spread in Y-values w.r.t. the Y-median will be provided
 //
 // By default mode=1 will be used, to agree with the AliSample philosophy.
 
@@ -910,22 +927,36 @@ Double_t AliSample::GetSpread(TH1* histo,Int_t mode) const
 
  Double_t spread=0;
 
- Double_t median=GetMedian(histo,mode);
-
  Int_t nbins=histo->GetNbinsX();
- Double_t x=0,y=0,ysum=0;
- for (Int_t jbin=1; jbin<=nbins; jbin++)
- {
-  x=histo->GetBinCenter(jbin);
-  y=histo->GetBinContent(jbin);
-  if (y>0)
-  {
-   spread+=fabs(x-median)*y;
-   ysum+=y;
-  }
- }
 
- if (ysum>0) spread=spread/ysum;
+ if (mode==2) // Spread in Y values
+ {
+  AliSample temp;
+  temp.SetStoreMode(1);
+  Float_t val=0;
+  for (Int_t i=1; i<=nbins; i++)
+  {
+   val=histo->GetBinContent(i);
+   temp.Enter(val);
+  }
+  spread=temp.GetSpread(1);
+ }
+ else // Spread in X values
+ {
+  Double_t median=GetMedian(histo,mode);
+  Double_t x=0,y=0,ysum=0;
+  for (Int_t jbin=1; jbin<=nbins; jbin++)
+  {
+   x=histo->GetBinCenter(jbin);
+   y=histo->GetBinContent(jbin);
+   if (y>0)
+   {
+    spread+=fabs(x-median)*y;
+    ysum+=y;
+   }
+  }
+  if (ysum>0) spread=spread/ysum;
+ }
 
  return spread;
 }

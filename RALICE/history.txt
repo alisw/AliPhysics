@@ -796,4 +796,6 @@
                 extended with options to preserve the waveform histo contents.
                 These new options are now also used in the SetSignal and SetSignalError
                 memberfunctions of class AliSignal.
+15-oct-2007 NvE Typo corrected in docs of AliAstrolab.cxx and memberfunctions GetMedian
+                and GetSpread of AliSample.cxx extended for Y-values of histo data.
 
