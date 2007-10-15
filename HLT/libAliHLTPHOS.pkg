@@ -21,6 +21,10 @@ SRCS:=	\
 		  PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
 		  PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
 		  PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
+		  PHOS/AliHLTPHOSSanityInspector.cxx \
+		  PHOS/AliHLTPHOSDigit.cxx \
+		  PHOS/AliHLTPHOSDigitMaker.cxx \
+		  PHOS/AliHLTPHOSDigitMakerComponent.cxx \
 		  PHOS/AliHLTPHOSProcessor.cxx \
 		  PHOS/AliHLTPHOSPulseGenerator.cxx \
 		  PHOS/AliHLTPHOSRawAnalyzer.cxx \
