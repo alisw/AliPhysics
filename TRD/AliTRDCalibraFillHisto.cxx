@@ -33,14 +33,11 @@
 //                            
 //////////////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h>
 #include <TProfile2D.h>
 #include <TProfile.h>
 #include <TFile.h>
-#include <TChain.h>
 #include <TStyle.h>
 #include <TCanvas.h>
-#include <TGraphErrors.h>
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TH1F.h>
@@ -49,16 +46,12 @@
 #include <TStopwatch.h>
 #include <TMath.h>
 #include <TDirectory.h>
-#include <TROOT.h>
 #include <TTreeStream.h>
 #include <TVectorD.h>
-#include <TF1.h>
 
 #include "AliLog.h"
-#include "AliCDBManager.h"
 
 #include "AliTRDCalibraFillHisto.h"
-#include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraVector.h"
 #include "AliTRDCalibraVdriftLinearFit.h"
@@ -68,7 +61,7 @@
 #include "AliTRDpadPlane.h"
 #include "AliTRDcluster.h"
 #include "AliTRDtrack.h"
-#include "AliTRDRawStreamV2.h"
+#include "AliTRDRawStream.h"
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
@@ -397,9 +390,9 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistostrack()
   fCalDetT0   = new AliTRDCalDet(*(cal->GetT0Det()));
 
   // Calcul Xbins Chambd0, Chamb2
-  Int_t Ntotal0 = CalculateTotalNumberOfBins(0);
-  Int_t Ntotal1 = CalculateTotalNumberOfBins(1);
-  Int_t Ntotal2 = CalculateTotalNumberOfBins(2);
+  Int_t ntotal0 = CalculateTotalNumberOfBins(0);
+  Int_t ntotal1 = CalculateTotalNumberOfBins(1);
+  Int_t ntotal2 = CalculateTotalNumberOfBins(2);
 
   // If vector method On initialised all the stuff
   if(fVector2d){   
@@ -446,7 +439,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistostrack()
     
     // Create the 2D histo
     if (fHisto2d) {
-      CreateCH2d(Ntotal0);
+      CreateCH2d(ntotal0);
     }
     // Variable
     fAmpTotal = new Float_t[TMath::Max(fCalibraMode->GetDetChamb2(0),fCalibraMode->GetDetChamb0(0))];
@@ -454,8 +447,8 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistostrack()
       fAmpTotal[k] = 0.0;
     } 
     //Statistics
-    fEntriesCH = new Int_t[Ntotal0];
-    for(Int_t k = 0; k < Ntotal0; k++){
+    fEntriesCH = new Int_t[ntotal0];
+    for(Int_t k = 0; k < ntotal0; k++){
       fEntriesCH[k] = 0;
     }
     
@@ -468,7 +461,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistostrack()
     
     // Create the 2D histo
     if (fHisto2d) {
-      CreatePH2d(Ntotal1);
+      CreatePH2d(ntotal1);
     }
     // Variable
     fPHPlace = new Short_t[fTimeMax];
@@ -497,7 +490,7 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistostrack()
                 ,fCalibraMode->GetNrphi(2)));
     // Create the 2D histo
     if (fHisto2d) {
-      CreatePRF2d(Ntotal2);
+      CreatePRF2d(ntotal2);
     }
   }
 
@@ -1072,17 +1065,17 @@ Int_t AliTRDCalibraFillHisto::CalculateTotalNumberOfBins(Int_t i)
   // Calculate the total number of calibration groups
   //
   
-  Int_t Ntotal = 0;
+  Int_t ntotal = 0;
   fCalibraMode->ModePadCalibration(2,i);
   fCalibraMode->ModePadFragmentation(0,2,0,i);
   fCalibraMode->SetDetChamb2(i);
-  Ntotal += 6 * 18 * fCalibraMode->GetDetChamb2(i);
+  ntotal += 6 * 18 * fCalibraMode->GetDetChamb2(i);
   fCalibraMode->ModePadCalibration(0,i);
   fCalibraMode->ModePadFragmentation(0,0,0,i);
   fCalibraMode->SetDetChamb0(i);
-  Ntotal += 6 * 4 * 18 * fCalibraMode->GetDetChamb0(i);
-  AliInfo(Form("Total number of Xbins: %d for i %d",Ntotal,i));
-  return Ntotal;
+  ntotal += 6 * 4 * 18 * fCalibraMode->GetDetChamb0(i);
+  AliInfo(Form("Total number of Xbins: %d for i %d",ntotal,i));
+  return ntotal;
 
 }
 //____________Set the pad calibration variables for the detector_______________
@@ -1204,10 +1197,10 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(AliTRDcluster *cl, AliTRDtrack *
   
 }
 //_____________________________________________________________________
-Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStreamV2 *rawStream, Bool_t nocheck)
+Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDRawStreamV2
+  // Event Processing loop - AliTRDRawStream
   // 0 timebin problem
   // 1 no input
   // 2 input
@@ -1253,14 +1246,12 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStreamV2 *rawStream, Bool
       //row[iTimeBin]   = rawStream->GetRow();                           //  current row
       //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
-      //printf("detector %d, nbtimebin %d, iTimeBin %d\n",fDetectorPreviousTrack,nbtimebin,iTimeBin);
       
       Int_t fin     = TMath::Min(fTimeMax,(iTimeBin+3));
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
 	// should extract baseline here!
 	if(signal[n]>13) phvalue[itime] = signal[n];
-	//printf("signal is %d for %d\n",signal[n],n);
 	n++;
       }
     }
@@ -1301,14 +1292,12 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliTRDRawStreamV2 *rawStream, Bool
       //row[iTimeBin]   = rawStream->GetRow();                           //  current row
       //col[iTimeBin]   = rawStream->GetCol();                           //  current col     
       Int_t *signal     = rawStream->GetSignals();                       //  current ADC signal
-      //printf("detector %d, nbtimebin %d, iTimeBin %d\n",fDetectorPreviousTrack,nbtimebin,iTimeBin);
-
+      
       Int_t fin     = TMath::Min(nbtimebin,(iTimeBin+3));
       Int_t n       = 0;
       for(Int_t itime = iTimeBin; itime < fin; itime++){
 	// should extract baseline here!
 	if(signal[n]>13) phvalue[itime] = signal[n];
-	//printf("signal is %d for %d\n",signal[n],n);
 	n++;
       }
     }
@@ -1338,7 +1327,7 @@ Int_t AliTRDCalibraFillHisto::ProcessEventDAQ(AliRawReader *rawReader, Bool_t no
   //
 
 
-  AliTRDRawStreamV2 rawStream(rawReader);
+  AliTRDRawStream rawStream(rawReader);
 
   rawReader->Select("TRD");
 
@@ -1498,9 +1487,9 @@ Double_t *AliTRDCalibraFillHisto::StatH(TH2 *h, Int_t i)
   Double_t counter = 0;
 
   //Debug
-  TH1F *NbEntries = 0x0;//distribution of the number of entries
-  TH1F *NbEntriesPerGroup = 0x0;//Number of entries per group
-  TProfile *NbEntriesPerSp = 0x0;//Number of entries for one supermodule
+  TH1F *nbEntries = 0x0;//distribution of the number of entries
+  TH1F *nbEntriesPerGroup = 0x0;//Number of entries per group
+  TProfile *nbEntriesPerSp = 0x0;//Number of entries for one supermodule
     
   // Beginning of the loop over the calibration groups 
   for (Int_t idect = 0; idect < nbins; idect++) {
@@ -1527,21 +1516,21 @@ Double_t *AliTRDCalibraFillHisto::StatH(TH2 *h, Int_t i)
 
     //Debug
     if(i > 1){
-      if((!((Bool_t)NbEntries)) && (nentries > 0)){
-	NbEntries = new TH1F("Number of entries","Number of entries"
+      if((!((Bool_t)nbEntries)) && (nentries > 0)){
+	nbEntries = new TH1F("Number of entries","Number of entries"
                                ,100,(Int_t)nentries/2,nentries*2);
-	NbEntries->SetDirectory(0);
-	NbEntriesPerGroup = new TH1F("Number of entries per group","Number of entries per group"
+	nbEntries->SetDirectory(0);
+	nbEntriesPerGroup = new TH1F("Number of entries per group","Number of entries per group"
                                ,nbins,0,nbins);
-	NbEntriesPerGroup->SetDirectory(0);
-	NbEntriesPerSp = new TProfile("Number of entries per supermodule","Number of entries per supermodule"
+	nbEntriesPerGroup->SetDirectory(0);
+	nbEntriesPerSp = new TProfile("Number of entries per supermodule","Number of entries per supermodule"
                                ,(Int_t)(nbins/18),0,(Int_t)(nbins/18));
-	NbEntriesPerSp->SetDirectory(0);
+	nbEntriesPerSp->SetDirectory(0);
       }
-      if(NbEntries){
-	if(nentries > 0) NbEntries->Fill(nentries);
-	NbEntriesPerGroup->Fill(idect+0.5,nentries);
-	NbEntriesPerSp->Fill((idect%((Int_t)(nbins/18)))+0.5,nentries);
+      if(nbEntries){
+	if(nentries > 0) nbEntries->Fill(nentries);
+	nbEntriesPerGroup->Fill(idect+0.5,nentries);
+	nbEntriesPerSp->Fill((idect%((Int_t)(nbins/18)))+0.5,nentries);
       }
     }
 
@@ -1591,14 +1580,14 @@ Double_t *AliTRDCalibraFillHisto::StatH(TH2 *h, Int_t i)
     TCanvas *stat = new TCanvas("stat","",50,50,600,800);
     stat->Divide(2,1);
     stat->cd(1);
-    NbEntries->Draw("");
+    nbEntries->Draw("");
     stat->cd(2);
-    NbEntriesPerSp->SetStats(0);
-    NbEntriesPerSp->Draw("");
+    nbEntriesPerSp->SetStats(0);
+    nbEntriesPerSp->Draw("");
     TCanvas *stat1 = new TCanvas("stat1","",50,50,600,800);
     stat1->cd();
-    NbEntriesPerGroup->SetStats(0);
-    NbEntriesPerGroup->Draw("");
+    nbEntriesPerGroup->SetStats(0);
+    nbEntriesPerGroup->Draw("");
   }
 
   return info;
@@ -2076,8 +2065,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
 
    
   //Number of points: if less than 3 return kFALSE
-  Int_t Npoints = fListClusters->GetEntriesFast();
-  if(Npoints <= 2) return kFALSE;
+  Int_t npoints = fListClusters->GetEntriesFast();
+  if(npoints <= 2) return kFALSE;
 
   //Variables
   TLinearFitter linearFitterTracklet      = TLinearFitter(2,"pol1");        // TLinearFitter per tracklet
@@ -2108,7 +2097,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
   Float_t  tnt                        = TMath::Tan(tiltingangle/180.*TMath::Pi()); // tan tiltingangle
 
   //Fill with points
-  for(Int_t k = 0; k < Npoints; k++){
+  for(Int_t k = 0; k < npoints; k++){
     
     AliTRDcluster *cl                 = (AliTRDcluster *) fListClusters->At(k);
     Double_t ycluster                 = cl->GetY();
@@ -2159,13 +2148,13 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
     } 
     
     (* fDebugStreamer) << "VDRIFT0"<<
-      "Npoints="<<Npoints<<
+      "npoints="<<npoints<<
       "\n"; 
   
     
     (* fDebugStreamer) << "VDRIFT"<<
       "snpright="<<snpright<<
-      "Npoints="<<Npoints<<
+      "npoints="<<npoints<<
       "nbli="<<nbli<<
       "detector="<<detector<<
       "snp="<<snp<<
@@ -2183,7 +2172,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPH()
 
   }
   
-  if(Npoints < fNumberClusters) return kFALSE;
+  if(npoints < fNumberClusters) return kFALSE;
   if(snpright == 0) return kFALSE;
   if(pointError >= 0.1) return kFALSE;
   if(crossrow == 1) return kFALSE;
@@ -2212,15 +2201,15 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
   //
 
   //Number of points
-  Int_t Npoints  = fListClusters->GetEntriesFast();                         // number of total points
-  Int_t Nb3pc    = 0;                                                       // number of three pads clusters used for fit 
+  Int_t npoints  = fListClusters->GetEntriesFast();                         // number of total points
+  Int_t nb3pc    = 0;                                                       // number of three pads clusters used for fit 
   Int_t detector = ((AliTRDcluster *) fListClusters->At(0))->GetDetector(); // detector
  
 
   // To see the difference due to the fit
   Double_t *padPositions;
-  padPositions = new Double_t[Npoints];
-  for(Int_t k = 0; k < Npoints; k++){
+  padPositions = new Double_t[npoints];
+  for(Int_t k = 0; k < npoints; k++){
     padPositions[k] = 0.0;
   } 
 
@@ -2229,7 +2218,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
   TLinearFitter fitter(2,"pol1");
   fitter.StoreData(kFALSE);
   fitter.ClearPoints();
-  for(Int_t k = 0;  k < Npoints; k++){
+  for(Int_t k = 0;  k < npoints; k++){
     //Take the cluster
     AliTRDcluster *cl  = (AliTRDcluster *) fListClusters->At(k);
     Short_t  *signals  = cl->GetSignals();
@@ -2260,21 +2249,21 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
     // Position of the cluster
     Double_t       padPosition = xcenter +  cl->GetPadCol();
     padPositions[k]            = padPosition;
-    Nb3pc++;
+    nb3pc++;
     fitter.AddPoint(&time, padPosition,1);
   }//clusters loop
 
-  //printf("Nb3pc %d, Npoints %d\n",Nb3pc,Npoints);
-  if(Nb3pc < 3) return kFALSE;
+  //printf("nb3pc %d, npoints %d\n",nb3pc,npoints);
+  if(nb3pc < 3) return kFALSE;
   fitter.Eval();
   TVectorD line(2);
   fitter.GetParameters(line);
   Float_t  pointError  = -1.0;
-  pointError  =  TMath::Sqrt(fitter.GetChisquare()/Nb3pc);
+  pointError  =  TMath::Sqrt(fitter.GetChisquare()/nb3pc);
   
 
   // Now fill the PRF  
-  for(Int_t k = 0;  k < Npoints; k++){
+  for(Int_t k = 0;  k < npoints; k++){
     //Take the cluster
     AliTRDcluster *cl      = (AliTRDcluster *) fListClusters->At(k);
     Short_t  *signals      = cl->GetSignals();              // signal
@@ -2310,7 +2299,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
     Int_t     chamber      = GetChamber(detector);                      // chamber  
     Double_t  xdiff        = dpad;                                      // reconstructed position constant
     Double_t  x            = dpad;                                      // reconstructed position moved
-    Float_t   Ep           = pointError;                                // error of fit
+    Float_t   ep           = pointError;                                // error of fit
     Float_t   signal1      = (Float_t)signals[1];                       // signal at the border
     Float_t   signal3      = (Float_t)signals[3];                       // signal
     Float_t   signal2      = (Float_t)signals[2];                       // signal
@@ -2336,9 +2325,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<    
 	"tgl="<<tgl<<  
@@ -2368,9 +2357,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"type="<<type<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<
@@ -2399,9 +2388,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"type="<<type<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<
@@ -2431,9 +2420,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"type="<<type<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<	
@@ -2458,8 +2447,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRF()
     }
     
     // some cuts
-    if(Npoints < fNumberClusters) continue;
-    if(Nb3pc <= 5) continue;
+    if(npoints < fNumberClusters) continue;
+    if(nb3pc <= 5) continue;
     if((time >= 21) || (time < 7)) continue;
     if(TMath::Abs(snp) >= 1.0) continue;
     if(qcl < 80) continue; 
@@ -2522,8 +2511,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrack(AliTRDtrack *t, Int_t index0, 
 
     
   //Number of points: if less than 3 return kFALSE
-  Int_t Npoints = index1-index0;
-  if(Npoints <= 2) return kFALSE;
+  Int_t npoints = index1-index0;
+  if(npoints <= 2) return kFALSE;
 
   //Variables
   TLinearFitter linearFitterTracklet  = TLinearFitter(2,"pol1");            // TLinearFitter per tracklet
@@ -2554,7 +2543,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrack(AliTRDtrack *t, Int_t index0, 
   Float_t  tnt                        = TMath::Tan(tiltingangle/180.*TMath::Pi()); // tan tiltingangle
 
   //Fill with points
-  for(Int_t k = 0; k < Npoints; k++){
+  for(Int_t k = 0; k < npoints; k++){
     
     AliTRDcluster *cl                 = (AliTRDcluster *) t->GetCluster(k+index0);
     Double_t ycluster                 = cl->GetY();
@@ -2610,7 +2599,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrack(AliTRDtrack *t, Int_t index0, 
         
     (* fDebugStreamer) << "VDRIFT"<<
       //"snpright="<<snpright<<
-      "Npoints="<<Npoints<<
+      "npoints="<<npoints<<
       "nbli="<<nbli<<
       "detector="<<detector<<
       "snp="<<snp<<
@@ -2628,7 +2617,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrack(AliTRDtrack *t, Int_t index0, 
 
   }
   
-  if(Npoints < fNumberClusters) return kFALSE;
+  if(npoints < fNumberClusters) return kFALSE;
   //if(snpright == 0) return kFALSE;
   if(pointError >= 0.1) return kFALSE;
   if(crossrow == 1) return kFALSE;
@@ -2657,15 +2646,15 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
   //
 
   //Number of points
-  Int_t Npoints  = index1-index0;                                           // number of total points
-  Int_t Nb3pc    = 0;                                                       // number of three pads clusters used for fit 
+  Int_t npoints  = index1-index0;                                           // number of total points
+  Int_t nb3pc    = 0;                                                       // number of three pads clusters used for fit 
   Int_t detector = ((AliTRDcluster *) t->GetCluster(index0))->GetDetector(); // detector
  
 
   // To see the difference due to the fit
   Double_t *padPositions;
-  padPositions = new Double_t[Npoints];
-  for(Int_t k = 0; k < Npoints; k++){
+  padPositions = new Double_t[npoints];
+  for(Int_t k = 0; k < npoints; k++){
     padPositions[k] = 0.0;
   } 
 
@@ -2674,7 +2663,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
   TLinearFitter fitter(2,"pol1");
   fitter.StoreData(kFALSE);
   fitter.ClearPoints();
-  for(Int_t k = 0;  k < Npoints; k++){
+  for(Int_t k = 0;  k < npoints; k++){
     //Take the cluster
     AliTRDcluster *cl  = (AliTRDcluster *) t->GetCluster(k+index0);
     Short_t  *signals  = cl->GetSignals();
@@ -2705,17 +2694,17 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
     // Position of the cluster
     Double_t       padPosition = xcenter +  cl->GetPadCol();
     padPositions[k]            = padPosition;
-    Nb3pc++;
+    nb3pc++;
     fitter.AddPoint(&time, padPosition,1);
   }//clusters loop
 
-  //printf("Nb3pc %d, Npoints %d\n",Nb3pc,Npoints);
-  if(Nb3pc < 3) return kFALSE;
+  //printf("nb3pc %d, npoints %d\n",nb3pc,npoints);
+  if(nb3pc < 3) return kFALSE;
   fitter.Eval();
   TVectorD line(2);
   fitter.GetParameters(line);
   Float_t  pointError  = -1.0;
-  pointError  =  TMath::Sqrt(fitter.GetChisquare()/Nb3pc);
+  pointError  =  TMath::Sqrt(fitter.GetChisquare()/nb3pc);
   
   // Take the tgl and snp with the track t now
   Double_t  tgl = t->GetTglPlane(GetPlane(detector)); //dz/dl and not dz/dx
@@ -2729,7 +2718,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
 
 
   // Now fill the PRF  
-  for(Int_t k = 0;  k < Npoints; k++){
+  for(Int_t k = 0;  k < npoints; k++){
     //Take the cluster
     AliTRDcluster *cl      = (AliTRDcluster *) t->GetCluster(k+index0);
     Short_t  *signals      = cl->GetSignals();              // signal
@@ -2762,7 +2751,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
     Int_t     chamber      = GetChamber(detector);                      // chamber  
     Double_t  xdiff        = dpad;                                      // reconstructed position constant
     Double_t  x            = dpad;                                      // reconstructed position moved
-    Float_t   Ep           = pointError;                                // error of fit
+    Float_t   ep           = pointError;                                // error of fit
     Float_t   signal1      = (Float_t)signals[1];                       // signal at the border
     Float_t   signal3      = (Float_t)signals[3];                       // signal
     Float_t   signal2      = (Float_t)signals[2];                       // signal
@@ -2784,9 +2773,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<    
 	"tgl="<<tgl<<  
@@ -2815,9 +2804,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"type="<<type<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<
@@ -2845,9 +2834,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"type="<<type<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<
@@ -2876,9 +2865,9 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
 	"detector="<<detector<<
 	"plane="<<plane<<
 	"chamber="<<chamber<<
-	"Npoints="<<Npoints<<
-	"Np="<<Nb3pc<<
-	"Ep="<<Ep<<
+	"npoints="<<npoints<<
+	"Np="<<nb3pc<<
+	"ep="<<ep<<
 	"type="<<type<<
 	"snp="<<snp<<
 	"tnp="<<tnp<<	
@@ -2902,8 +2891,8 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrack(AliTRDtrack *t, Int_t index0, Int_
     }
     
     // some cuts
-    if(Npoints < fNumberClusters) continue;
-    if(Nb3pc <= 5) continue;
+    if(npoints < fNumberClusters) continue;
+    if(nb3pc <= 5) continue;
     if((time >= 21) || (time < 7)) continue;
     if(TMath::Abs(snp) >= 1.0) continue;
     if(qcl < 80) continue; 
@@ -3012,18 +3001,18 @@ TProfile2D* AliTRDCalibraFillHisto::GetPH2d(Int_t nbtimebin, Float_t samplefrequ
       ,fCalibraMode->GetNrphi(1)));
       
       // Calcul the number of Xbins
-      Int_t Ntotal1 = 0;
+      Int_t ntotal1 = 0;
       fCalibraMode->ModePadCalibration(2,1);
       fCalibraMode->ModePadFragmentation(0,2,0,1);
       fCalibraMode->SetDetChamb2(1);
-      Ntotal1 += 6 * 18 * fCalibraMode->GetDetChamb2(1);
+      ntotal1 += 6 * 18 * fCalibraMode->GetDetChamb2(1);
       fCalibraMode->ModePadCalibration(0,1);
       fCalibraMode->ModePadFragmentation(0,0,0,1);
       fCalibraMode->SetDetChamb0(1);
-      Ntotal1 += 6 * 4 * 18 * fCalibraMode->GetDetChamb0(1);
-      AliInfo(Form("Total number of Xbins: %d",Ntotal1));
+      ntotal1 += 6 * 4 * 18 * fCalibraMode->GetDetChamb0(1);
+      AliInfo(Form("Total number of Xbins: %d",ntotal1));
       
-      CreatePH2d(Ntotal1);
+      CreatePH2d(ntotal1);
     */  
 
     CreatePH2d(540);

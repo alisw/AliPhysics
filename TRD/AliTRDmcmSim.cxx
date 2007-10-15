@@ -74,15 +74,18 @@ previously existing codes. If you set this to 3, AliTRDrawData changes behavior
 to use AliTRDmcmSim with ZS.
 
 Plan is after we make sure it works stably, we delete AliTRDmcm which is obsolete.
-However it still take time because tarcklet part is not yet touched.
+However it still take time because tracklet part is not yet touched.
 The default raw version is 2.
 
                                                                  Ken Oyama
 */
 
 #include <fstream>
+
 #include <TMath.h>
+
 #include "AliLog.h"
+
 #include "AliTRDmcmSim.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDSimParam.h"
@@ -156,6 +159,7 @@ AliTRDmcmSim::~AliTRDmcmSim()
   //
   // AliTRDmcmSim destructor
   //
+
   if( fADCR != NULL ) {
     for( Int_t iadc = 0 ; iadc < fNADC; iadc++ ) {
       delete [] fADCR[iadc];
@@ -213,23 +217,24 @@ void AliTRDmcmSim::Copy(TObject &m) const
 
 }
 
-
 //_____________________________________________________________________________
-void AliTRDmcmSim::Init( Int_t cha_id, Int_t rob_pos, Int_t mcm_pos )
+void AliTRDmcmSim::Init( Int_t chaId, Int_t robPos, Int_t mcmPos )
 {
+  //
   // Initialize the class with new geometry information
   // fADC array will be reused with filled by zero
+  //
 
   fFeeParam      = AliTRDfeeParam::Instance();
   fSimParam      = AliTRDSimParam::Instance();
   fCal           = AliTRDcalibDB::Instance();
   fGeo           = new AliTRDgeometry();
-  fChaId         = cha_id;
+  fChaId         = chaId;
   fSector        = fGeo->GetSector( fChaId );
   fStack         = fGeo->GetChamber( fChaId );
   fLayer         = fGeo->GetPlane( fChaId );
-  fRobPos        = rob_pos;
-  fMcmPos        = mcm_pos;
+  fRobPos        = robPos;
+  fMcmPos        = mcmPos;
   fNADC          = fFeeParam->GetNadcMcm();
   fNTimeBin      = fCal->GetNumberOfTimeBins();
   fRow           = fFeeParam->GetPadRowFromMCM( fRobPos, fMcmPos );
@@ -263,6 +268,10 @@ void AliTRDmcmSim::Init( Int_t cha_id, Int_t rob_pos, Int_t mcm_pos )
 //_____________________________________________________________________________
 Bool_t AliTRDmcmSim::CheckInitialized()
 {
+  //
+  // Check whether object is initialized
+  //
+
   if( ! fInitialized ) {
     AliDebug(2, Form ("AliTRDmcmSim is not initialized but function other than Init() is called."));
   }
@@ -272,7 +281,9 @@ Bool_t AliTRDmcmSim::CheckInitialized()
 //_____________________________________________________________________________
 void AliTRDmcmSim::SetData( Int_t iadc, Int_t *adc )
 {
+  //
   // Store ADC data into array of raw data
+  //
 
   if( !CheckInitialized() ) return;
 
@@ -289,7 +300,9 @@ void AliTRDmcmSim::SetData( Int_t iadc, Int_t *adc )
 //_____________________________________________________________________________
 void AliTRDmcmSim::SetData( Int_t iadc, Int_t it, Int_t adc )
 {
+  //
   // Store ADC data into array of raw data
+  //
 
   if( !CheckInitialized() ) return;
 
@@ -304,7 +317,9 @@ void AliTRDmcmSim::SetData( Int_t iadc, Int_t it, Int_t adc )
 //_____________________________________________________________________________
 void AliTRDmcmSim::SetDataPedestal( Int_t iadc )
 {
+  //
   // Store ADC data into array of raw data
+  //
 
   if( !CheckInitialized() ) return;
 
@@ -321,20 +336,23 @@ void AliTRDmcmSim::SetDataPedestal( Int_t iadc )
 //_____________________________________________________________________________
 Int_t AliTRDmcmSim::GetCol( Int_t iadc )
 {
+  //
   // Return column id of the pad for the given ADC channel
+  //
+
   if( !CheckInitialized() ) return -1;
 
   return fFeeParam->GetPadColFromADC(fRobPos, fMcmPos, iadc);
 }
 
-
-
-
 //_____________________________________________________________________________
 Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize )
 {
+  //
   // Produce raw data stream from this MCM and put in buf
-  // Returns number of words filled, or negative value with -1 * number of overflowed words
+  // Returns number of words filled, or negative value 
+  // with -1 * number of overflowed words
+  //
 
   UInt_t  x;
   UInt_t  iEv = 0;
@@ -401,11 +419,12 @@ Int_t AliTRDmcmSim::ProduceRawStream( UInt_t *buf, Int_t maxSize )
   if( of != 0 ) return -of; else return nw;
 }
 
-
 //_____________________________________________________________________________
 void AliTRDmcmSim::Filter()
 {
+  //
   // Apply digital filter
+  //
 
   if( !CheckInitialized() ) return;
 
@@ -425,7 +444,9 @@ void AliTRDmcmSim::Filter()
 //_____________________________________________________________________________
 void AliTRDmcmSim::FilterPedestal()
 {
+  //
   // Apply pedestal filter
+  //
 
   Int_t ap = fSimParam->GetADCbaseline();      // ADC instrinsic pedestal
   Int_t ep = fFeeParam->GetPFeffectPedestal(); // effective pedestal
@@ -441,15 +462,20 @@ void AliTRDmcmSim::FilterPedestal()
 //_____________________________________________________________________________
 void AliTRDmcmSim::FilterGain()
 {
+  //
   // Apply gain filter (not implemented)
   // Later it will be implemented because gain digital filiter will
   // increase noise level.
+  //
+
 }
 
 //_____________________________________________________________________________
 void AliTRDmcmSim::FilterTail()
 {
+  //
   // Apply exponential tail filter (Bogdan's version)
+  //
 
   Double_t *dtarg  = new Double_t[fNTimeBin];
   Int_t    *itarg  = new Int_t[fNTimeBin];
@@ -497,15 +523,19 @@ void AliTRDmcmSim::FilterTail()
 //_____________________________________________________________________________
 void AliTRDmcmSim::ZSMapping()
 {
+  //
   // Zero Suppression Mapping implemented in TRAP chip
   //
   // See detail TRAP manual "Data Indication" section:
   // http://www.kip.uni-heidelberg.de/ti/TRD/doc/trap/TRAP-UserManual.pdf
+  //
 
-  Int_t EBIS = fFeeParam->GetEBsglIndThr();       // TRAP default = 0x4  (Tis=4)
-  Int_t EBIT = fFeeParam->GetEBsumIndThr();       // TRAP default = 0x28 (Tit=40)
-  Int_t EBIL = fFeeParam->GetEBindLUT();          // TRAP default = 0xf0 (lookup table accept (I2,I1,I0)=(111) or (110) or (101) or (100))
-  Int_t EBIN = fFeeParam->GetEBignoreNeighbour(); // TRAP default = 1 (no neighbor sensitivity)
+  Int_t eBIS = fFeeParam->GetEBsglIndThr();       // TRAP default = 0x4  (Tis=4)
+  Int_t eBIT = fFeeParam->GetEBsumIndThr();       // TRAP default = 0x28 (Tit=40)
+  Int_t eBIL = fFeeParam->GetEBindLUT();          // TRAP default = 0xf0
+                                                  // (lookup table accept (I2,I1,I0)=(111)
+                                                  // or (110) or (101) or (100))
+  Int_t eBIN = fFeeParam->GetEBignoreNeighbour(); // TRAP default = 1 (no neighbor sensitivity)
   Int_t ep   = AliTRDfeeParam::GetPFeffectPedestal();
 
   if( !CheckInitialized() ) return;
@@ -514,23 +544,25 @@ void AliTRDmcmSim::ZSMapping()
     for( Int_t it = 0 ; it < fNTimeBin ; it++ ) {
 
       // Get ADC data currently in filter buffer
-      Int_t Ap = fADCF[iadc-1][it] - ep; // previous
-      Int_t Ac = fADCF[iadc  ][it] - ep; // current
-      Int_t An = fADCF[iadc+1][it] - ep; // next
+      Int_t ap = fADCF[iadc-1][it] - ep; // previous
+      Int_t ac = fADCF[iadc  ][it] - ep; // current
+      Int_t an = fADCF[iadc+1][it] - ep; // next
 
       // evaluate three conditions
-      Int_t I0 = ( Ac >=  Ap && Ac >=  An ) ? 0 : 1; // peak center detection
-      Int_t I1 = ( Ap + Ac + An > EBIT )    ? 0 : 1; // cluster
-      Int_t I2 = ( Ac > EBIS )              ? 0 : 1; // absolute large peak
+      Int_t i0 = ( ac >=  ap && ac >=  an ) ? 0 : 1; // peak center detection
+      Int_t i1 = ( ap + ac + an > eBIT )    ? 0 : 1; // cluster
+      Int_t i2 = ( ac > eBIS )              ? 0 : 1; // absolute large peak
 
-      Int_t I = I2 * 4 + I1 * 2 + I0;    // Bit position in lookup table
-      Int_t D = (EBIL >> I) & 1;         // Looking up  (here D=0 means true and D=1 means false according to TRAP manual)
+      Int_t i = i2 * 4 + i1 * 2 + i0;    // Bit position in lookup table
+      Int_t d = (eBIL >> i) & 1;         // Looking up  (here d=0 means true
+                                         // and d=1 means false according to TRAP manual)
 
-      fZSM[iadc][it] &= D;
-      if( EBIN == 0 ) {  // turn on neighboring ADCs
-	fZSM[iadc-1][it] &= D;
-	fZSM[iadc+1][it] &= D;
+      fZSM[iadc][it] &= d;
+      if( eBIN == 0 ) {  // turn on neighboring ADCs
+	fZSM[iadc-1][it] &= d;
+	fZSM[iadc+1][it] &= d;
       }
+
     }
   }
 
@@ -540,11 +572,13 @@ void AliTRDmcmSim::ZSMapping()
       fZSM1Dim[iadc] &= fZSM[iadc][it];
     }
   }
+
 }
 
 //_____________________________________________________________________________
 void AliTRDmcmSim::DumpData( char *f, char *target )
 {
+  //
   // Dump data stored (for debugging).
   // target should contain one or multiple of the following characters
   //   R   for raw data
@@ -552,6 +586,8 @@ void AliTRDmcmSim::DumpData( char *f, char *target )
   //   Z   for zero suppression map
   //   S   Raw dat astream
   // other characters are simply ignored
+  //
+
   UInt_t tempbuf[1024];
 
   if( !CheckInitialized() ) return;
@@ -609,7 +645,8 @@ void AliTRDmcmSim::DumpData( char *f, char *target )
 }
 
 //_____________________________________________________________________________
-void AliTRDmcmSim::FilterSimDeConvExpA(Int_t *source, Double_t *target, Int_t n, Int_t nexp) 
+void AliTRDmcmSim::FilterSimDeConvExpA(Int_t *source, Double_t *target
+                                     , Int_t n, Int_t nexp) 
 {
   //
   // Exponential filter "analog"
@@ -662,7 +699,8 @@ void AliTRDmcmSim::FilterSimDeConvExpA(Int_t *source, Double_t *target, Int_t n,
 }
 
 //_____________________________________________________________________________
-void AliTRDmcmSim::FilterSimDeConvExpD(Int_t *source, Int_t *target, Int_t n, Int_t nexp) 
+void AliTRDmcmSim::FilterSimDeConvExpD(Int_t *source, Int_t *target, Int_t n
+                                     , Int_t nexp) 
 {
   //
   // Exponential filter "digital"
@@ -764,10 +802,12 @@ void AliTRDmcmSim::FilterSimDeConvExpD(Int_t *source, Int_t *target, Int_t n, In
     }
 
   }
+
 }
 
 //_____________________________________________________________________________
-void AliTRDmcmSim::FilterSimDeConvExpMI(Int_t *source, Double_t *target, Int_t n) 
+void AliTRDmcmSim::FilterSimDeConvExpMI(Int_t *source, Double_t *target
+                                      , Int_t n) 
 {
   //
   // Exponential filter (M. Ivanov)
@@ -797,7 +837,8 @@ void AliTRDmcmSim::FilterSimDeConvExpMI(Int_t *source, Double_t *target, Int_t n
 }
 
 //______________________________________________________________________________
-void AliTRDmcmSim::FilterSimTailMakerSpline(Double_t *ampin, Double_t *ampout, Double_t lambda, Int_t n) 
+void AliTRDmcmSim::FilterSimTailMakerSpline(Double_t *ampin, Double_t *ampout
+                                          , Double_t lambda, Int_t n) 
 {
   //
   // Special filter (M. Ivanov)
@@ -844,7 +885,9 @@ void AliTRDmcmSim::FilterSimTailMakerSpline(Double_t *ampin, Double_t *ampout, D
 }
 
 //______________________________________________________________________________
-void AliTRDmcmSim::FilterSimTailCancelationMI(Double_t *ampin, Double_t *ampout, Double_t norm, Double_t lambda, Int_t n) 
+void AliTRDmcmSim::FilterSimTailCancelationMI(Double_t *ampin, Double_t *ampout
+                                            , Double_t norm, Double_t lambda
+                                            , Int_t n) 
 {
   //
   // Special filter (M. Ivanov)
@@ -894,4 +937,3 @@ void AliTRDmcmSim::FilterSimTailCancelationMI(Double_t *ampin, Double_t *ampout,
   }
 }
 
-// EOF

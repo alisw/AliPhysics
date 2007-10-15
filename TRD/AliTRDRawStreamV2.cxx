@@ -30,21 +30,21 @@
 
 #include "AliLog.h"
 #include "AliRawReader.h"
+
 #include "AliTRDRawStreamV2.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDfeeParam.h"
-
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDSignalIndex.h"
 
-#include "TMath.h"
 ClassImp(AliTRDRawStreamV2)
 
 //_____________________________________________________________________________
 AliTRDRawStreamV2::AliTRDRawStreamV2() 
   :TObject()
+  ,fGeo(NULL) 
   ,fSig()
   ,fADC(0)
   ,fTB(0)
@@ -117,7 +117,6 @@ AliTRDRawStreamV2::AliTRDRawStreamV2()
   ,fADClookup()
   ,fNActiveADCs(0)
   ,fEndOfDataFlag(kFALSE)
-  ,fGeo(NULL) 
 {
   //
   // Default constructor
@@ -132,7 +131,7 @@ AliTRDRawStreamV2::AliTRDRawStreamV2()
 //_____________________________________________________________________________
 AliTRDRawStreamV2::AliTRDRawStreamV2(AliRawReader *rawReader) 
   :TObject()
-  ,fSig()
+  ,fGeo(NULL) 
   ,fADC(0)
   ,fTB(0)
   ,fEv(0)
@@ -204,7 +203,6 @@ AliTRDRawStreamV2::AliTRDRawStreamV2(AliRawReader *rawReader)
   ,fADClookup()
   ,fNActiveADCs(0)
   ,fEndOfDataFlag(kFALSE)
-  ,fGeo(NULL) 
 {
   //
   // Create an object to read TRD raw digits
@@ -221,6 +219,7 @@ AliTRDRawStreamV2::AliTRDRawStreamV2(AliRawReader *rawReader)
 //_____________________________________________________________________________
 AliTRDRawStreamV2::AliTRDRawStreamV2(const AliTRDRawStreamV2& stream)
   :TObject(stream)
+  ,fGeo(NULL)
   ,fSig()
   ,fADC(-1)
   ,fTB(-1)
@@ -293,7 +292,6 @@ AliTRDRawStreamV2::AliTRDRawStreamV2(const AliTRDRawStreamV2& stream)
   ,fADClookup()
   ,fNActiveADCs(0)
   ,fEndOfDataFlag(kFALSE)
-  ,fGeo(NULL)
 {
   //
   // Copy constructor
@@ -358,7 +356,6 @@ Bool_t AliTRDRawStreamV2::SetRawVersion(Int_t rv)
 
 }
 
-
 //____________________________________________________________________________
 Int_t AliTRDRawStreamV2::Init()
 {
@@ -398,8 +395,8 @@ Int_t AliTRDRawStreamV2::Init()
   fDataSize = 0;
   fSizeOK = kFALSE;
   
-  fLastStatus = fkStart;
-  fNextStatus = fkStart;
+  fLastStatus = kStart;
+  fNextStatus = kStart;
 
   fCountBytes = 0;
   fBufSize = 0;
@@ -413,7 +410,8 @@ Int_t AliTRDRawStreamV2::Init()
 
   fEndOfDataFlag = kFALSE;
   // set all ADC active
-  fNActiveADCs = ChannelsToRead(0x1fffff); // should be 1111 1111 1111 1111 1111 1 = 21 bits active (0-20)
+  // should be 1111 1111 1111 1111 1111 1 = 21 bits active (0-20)
+  fNActiveADCs = ChannelsToRead(0x1fffff); 
 
   fLastADCmask = 0;
 
@@ -427,7 +425,7 @@ Int_t AliTRDRawStreamV2::NextData()
   // Updates the next data word pointer
   //
 
-  if (fCountBytes + kSizeWord >= fBufSize)
+  if (fCountBytes + fgkSizeWord >= fBufSize)
     {
       fkBufferSet = fRawReader->ReadNextData(fPos);
       if (fkBufferSet == kTRUE)
@@ -435,30 +433,29 @@ Int_t AliTRDRawStreamV2::NextData()
 	  fBufSize = fRawReader->GetDataSize();
 	  fCountBytes = 0;	  
 	  fDataWord = (UInt_t*)fPos;
-	  ChangeStatus(fkNextSM);
+	  ChangeStatus(kNextSM);
 	  fWordCtr = 0;
-	  return fkNextSM;
+	  return kNextSM;
 	}
       else
 	{
-	  ChangeStatus(fkStop);
-	  return fkNoMoreData;
+	  ChangeStatus(kStop);
+	  return kNoMoreData;
 	}
     }
   else
     {
-      fPos += kSizeWord;
-      fCountBytes += kSizeWord;	  
+      fPos += fgkSizeWord;
+      fCountBytes += fgkSizeWord;	  
       fDataWord = (UInt_t*)fPos;
       fWordCtr++;
-      return fkWordOK;
+      return kWordOK;
     }
 }
 
 //============================================================================
 // Decoding functions
 //============================================================================
-
 
 //____________________________________________________________________________
 void AliTRDRawStreamV2::DecodeHCheader(Int_t timeBins)
@@ -533,11 +530,11 @@ void AliTRDRawStreamV2::DecodeHCheader(Int_t timeBins)
   if ( fHCHWords >= 1 ) 
     {
       // read one more word
-      if (NextData() != fkWordOK)
+      if (NextData() != kWordOK)
 	{
 	  AliWarning("Next HC word missing");
 	  fRawReader->AddMajorErrorLog(kHCWordMissing,"Next HC word missing"); 
-	  fNextStatus = fkNextHC;
+	  fNextStatus = kNextHC;
 	  return;
 	}
 
@@ -569,11 +566,11 @@ void AliTRDRawStreamV2::DecodeHCheader(Int_t timeBins)
   // 3nd word (h[2])
   if ( fHCHWords >= 2 ) {
     // read one more word
-    if (NextData() != fkWordOK)
+    if (NextData() != kWordOK)
       {
 	AliWarning("Next HC word missing");
         fRawReader->AddMajorErrorLog(kHCWordMissing,"Next HC word missing"); 
-	fNextStatus = fkNextHC;
+	fNextStatus = kNextHC;
 	return;
       }
     if ( (*fDataWord & 0x3) == 1 ) {
@@ -597,6 +594,10 @@ void AliTRDRawStreamV2::DecodeHCheader(Int_t timeBins)
 //____________________________________________________________________________
 Int_t AliTRDRawStreamV2::ChannelsToRead(Int_t ADCmask)
 {
+  //
+  // Return the channels to read
+  //
+
   memset(fADClookup, -1, 32 * sizeof(Int_t));
   fADClookup[0] = 0; // count entries
   fADClookup[1] = 2; // index - data start at 2
@@ -635,7 +636,6 @@ Int_t AliTRDRawStreamV2::ChannelsToRead(Int_t ADCmask)
 //____________________________________________________________________________
 void AliTRDRawStreamV2::DecodeTracklet()
 {
-
   //
   // Decode the Tracklet
   //
@@ -671,7 +671,6 @@ void AliTRDRawStreamV2::DecodeTracklet()
 //____________________________________________________________________________
 void AliTRDRawStreamV2::DecodeMCMheader()
 {
-
   //
   // Decode the MCM header
   //
@@ -721,11 +720,11 @@ void AliTRDRawStreamV2::DecodeMCMheader()
   if ( fRawVersion == 3 ) 
     {
       // read one more word
-      if (NextData() != fkWordOK)
+      if (NextData() != kWordOK)
 	{
 	  AliWarning("MCM ADC mask missing");
 	  fRawReader->AddMajorErrorLog(kMCMADCMaskMissing,"Missing"); 
-	  fNextStatus = fkNextHC;
+	  fNextStatus = kNextHC;
 	  return;
 	}
       else
@@ -769,6 +768,10 @@ void AliTRDRawStreamV2::DecodeMCMheader()
 //____________________________________________________________________________
 Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
 {
+  //
+  // Decode the next raw data word
+  //
+
   //AliDebug(8, Form("-----------------------------------------"));
   //AliDebug(8, Form("DATA IS 0x%x", *fDataWord));
 
@@ -780,7 +783,7 @@ Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
       fMCMWordsExpected = 0;
       AliWarning("Trying to recover. Fall back to DecodeMCM.");
       DecodeMCM();
-      //ChangeStatus(fkNextMCM);
+      //ChangeStatus(kNextMCM);
       return kFALSE;
     }
 
@@ -790,7 +793,7 @@ Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
     fMCMWordsExpected = 0;
     AliWarning("Trying to recover. Fall back to DecodeMCM.");
     DecodeMCM();
-    //ChangeStatus(fkNextMCM);
+    //ChangeStatus(kNextMCM);
     return kFALSE;
   }
 
@@ -802,7 +805,7 @@ Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
       ++fADClookup[1];
       fTB = 0;    
       fTbSwitchCtr = 0;
-      fLastStatus = fkNextData;
+      fLastStatus = kNextData;
       fLastADCmask = (*fDataWord) & 0x3;
     }
 
@@ -866,7 +869,7 @@ Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
   // all mcm data processed go to next one
   if ( fMCMWordCrt >= fMCMWordsExpected)
     {
-      ChangeStatus(fkNextMCM);
+      ChangeStatus(kNextMCM);
     }
 
   return kIsDataOK;
@@ -875,6 +878,10 @@ Bool_t AliTRDRawStreamV2::DecodeNextRawWord()
 //____________________________________________________________________________
 Bool_t AliTRDRawStreamV2::DecodeMCM()
 {
+  //
+  // Decode a single MCM
+  //
+
   if( ((*fDataWord & 0x80000000) == 0x0) && ((*fDataWord & 0x0000000f) == 0xC) )
     { // MCM Header
       DecodeMCMheader();
@@ -882,7 +889,7 @@ Bool_t AliTRDRawStreamV2::DecodeMCM()
 	{
 	  AliWarning("Wrong fMCM or fROB. Skip this data");
 	  fRawReader->AddMajorErrorLog(kWrongMCMorROB,Form("MCM=%d, ROB=%d",fMCM,fROB));
-	  ChangeStatus(fkNextHC);
+	  ChangeStatus(kNextHC);
 	  return kFALSE;
 	}
 
@@ -893,19 +900,19 @@ Bool_t AliTRDRawStreamV2::DecodeMCM()
 
       if (fMCMWordCrt < fMCMWordsExpected)
 	{
-	  ChangeStatus(fkNextData);
+	  ChangeStatus(kNextData);
 	}
       else
 	{
-	  ChangeStatus(fkNextMCM);
+	  ChangeStatus(kNextMCM);
 	}
       return kTRUE;
     }
 
-  if ( *fDataWord == kEndofrawdatamarker ) 
+  if ( *fDataWord == fgkEndofrawdatamarker ) 
     {  // End of half-chamber data, finished
       fGTUctr1 = -1;
-      ChangeStatus(fkNextHC);
+      ChangeStatus(kNextHC);
       fEndOfDataFlag = kTRUE;
       //AliDebug(5, "Expecting MCM header but got End-Of-Raw-Data Marker");
       if (fMCMWordsExpected == 0 || fMCMWordsExpected == fMCMWordCrt)
@@ -920,7 +927,7 @@ Bool_t AliTRDRawStreamV2::DecodeMCM()
 
   //AliDebug(3, Form("Expecting MCM header but got 0x%x. Going to Next MCM header.", *fDataWord));
   AliWarning(Form("Expecting MCM header but got 0x%x. Fall back: Next MCM header.", *fDataWord));
-  ChangeStatus(fkNextMCM);      
+  ChangeStatus(kNextMCM);      
 
   return kFALSE;
 }
@@ -928,9 +935,13 @@ Bool_t AliTRDRawStreamV2::DecodeMCM()
 //____________________________________________________________________________
 Bool_t AliTRDRawStreamV2::DecodeHC()
 {
-  if ( fNextStatus == fkNextHC )
+  //
+  // Decode a half chamber
+  //
+
+  if ( fNextStatus == kNextHC )
     {
-      //AliDebug(5, "fkNextHC");
+      //AliDebug(5, "kNextHC");
       //
       // 1) Find end_of_tracklet_marker
       //
@@ -941,11 +952,11 @@ Bool_t AliTRDRawStreamV2::DecodeHC()
 	}
       
       // endoftrackletmarker?
-      if ( *fDataWord == kEndoftrackletmarker ) 
+      if ( *fDataWord == fgkEndoftrackletmarker ) 
 	{
 	  //AliDebug(3, "End-of-tracklet-marker found");
 	  //AliDebug(5, Form("Data 0x%x", *fDataWord));
-	  ChangeStatus(fkSeekNonEoTracklet);
+	  ChangeStatus(kSeekNonEoTracklet);
 	  return kTRUE;
 	} 
       else 
@@ -958,18 +969,18 @@ Bool_t AliTRDRawStreamV2::DecodeHC()
 	}
     } // if next HC
 
-  if (fNextStatus == fkSeekNonEoTracklet)
+  if (fNextStatus == kSeekNonEoTracklet)
     {
-      //AliDebug(5, "fkSeekNonEoTracklet");
+      //AliDebug(5, "kSeekNonEoTracklet");
 
       //
       // 2) Look for non-end_of_tracklet_marker
       //
       //printf("Word %d: 0x%08x\n", fWordCtr, *fDataWord); 
       
-      if ( *fDataWord != kEndoftrackletmarker ) 
+      if ( *fDataWord != fgkEndoftrackletmarker ) 
 	{
-	  ChangeStatus(fkDecodeHC);
+	  ChangeStatus(kDecodeHC);
 	  //AliDebug(3, "NON end-of-tracklet-marker found");
 	  //AliDebug(5, Form("Data 0x%x", *fDataWord));
 	  //// no do not continue - this should be the hcheader
@@ -981,9 +992,9 @@ Bool_t AliTRDRawStreamV2::DecodeHC()
 	}
     }
 
-  if ( fNextStatus == fkDecodeHC )
+  if ( fNextStatus == kDecodeHC )
     {
-      //AliDebug(5, "fkDecodeHC");
+      //AliDebug(5, "kDecodeHC");
       
       //
       // 3) This Word must be Half Chamber Header
@@ -1001,19 +1012,20 @@ Bool_t AliTRDRawStreamV2::DecodeHC()
 	  fChamberDone[fDET]++;
 	  //AliDebug(6, Form("--------------      DET %d fChamberDone[fDET]=%d", fDET, fChamberDone[fDET]));
 
-	  ChangeStatus(fkNextMCM);
+	  ChangeStatus(kNextMCM);
 	  return kTRUE;
 	} //HC header
       else
 	{
 	  AliWarning(Form("Expecting HC header mask but got 0x%x. Fall back: Next HC.", *fDataWord));
-	  ChangeStatus(fkNextHC);
-	  // before we went to //ChangeStatus(fkNextSM);
+	  ChangeStatus(kNextHC);
+	  // before we went to //ChangeStatus(kNextSM);
 	}
     } // if decode HC
   
   return kFALSE;
 }
+
 //____________________________________________________________________________
 Bool_t AliTRDRawStreamV2::DecodeGTUlinkMask()
 {
@@ -1045,9 +1057,13 @@ Bool_t AliTRDRawStreamV2::DecodeGTUlinkMask()
   return kFALSE;
 }
 
-// //____________________________________________________________________________
+//____________________________________________________________________________
 void AliTRDRawStreamV2::ChangeStatus(Int_t kstat)
 {
+  //
+  // Change the status
+  //
+
   fLastStatus = fNextStatus;
   fNextStatus = kstat;  
 }
@@ -1055,6 +1071,10 @@ void AliTRDRawStreamV2::ChangeStatus(Int_t kstat)
 //____________________________________________________________________________
 Bool_t AliTRDRawStreamV2::DecodeSM()
 {
+  //
+  // Decode a supermodule
+  //
+
   fDET     = 0;
   fRetVal = 0;
   fEqID     = 0;
@@ -1073,14 +1093,14 @@ Bool_t AliTRDRawStreamV2::DecodeSM()
   // GTU Link Mask?
   if ( DecodeGTUlinkMask() ) 
     {
-      ChangeStatus(fkNextHC);
+      ChangeStatus(kNextHC);
       return kTRUE;
     } 
   else 
     {
       AliWarning(Form("Equipment %d: First data word is not GTU Link Mask! Fall back: None. Stop.", fEqID));
       fRawReader->AddMajorErrorLog(kGTULinkMaskMissing,Form("Equipment %d",fEqID));
-      ChangeStatus(fkStop);
+      ChangeStatus(kStop);
     }	    
 
   return kFALSE;
@@ -1093,18 +1113,18 @@ Bool_t AliTRDRawStreamV2::Next()
   // Updates the next data word pointer
   //
 
-  if (fNextStatus == fkStart)
+  if (fNextStatus == kStart)
     {
       Init();
     }
 
-  while (fNextStatus != fkStop)
-    { // !fkStop
+  while (fNextStatus != kStop)
+    { // !kStop
       NextData();
       
       switch (fNextStatus)
 	{
-	case fkNextData:
+	case kNextData:
 	  {
 	  if (DecodeNextRawWord() == kTRUE)
 	    {
@@ -1113,14 +1133,14 @@ Bool_t AliTRDRawStreamV2::Next()
 		return kTRUE;
 	    }
 	  }; break;
-	case fkNextMCM:
+	case kNextMCM:
 	  {
 	    if (DecodeMCM() == kFALSE)
 	      AliWarning(Form("Decode MCM unsuccessfull. Current Word 0x%x at pos 0x%x", *fDataWord, fPos));	  
 	  }; break;
-	case fkNextHC:
-	case fkSeekNonEoTracklet:
-	case fkDecodeHC:
+	case kNextHC:
+	case kSeekNonEoTracklet:
+	case kDecodeHC:
 	  {
 	    if (DecodeHC() == kFALSE)
 	      {
@@ -1129,26 +1149,26 @@ Bool_t AliTRDRawStreamV2::Next()
 	    else
 	      {
 		//the hc header should be decoded by now
-		if (fLastStatus == fkDecodeHC)
+		if (fLastStatus == kDecodeHC)
 		  {
 		    fLastDET = fDET;
 		    fChamberDone[fDET]++;
 		  }
 	      }
 	  }; break;
-	case fkNextSM:
+	case kNextSM:
 	  {
 	    if (DecodeSM() == kFALSE)
 		AliWarning(Form("Decode SM unsuccessfull. Current Word 0x%x at pos 0x%x", *fDataWord, fPos));	  
 	  }; break;
-	case fkStop:
+	case kStop:
 	  ; break;
 	default:
 	  AliWarning(Form("Unknown state %d. Last state %d. Current Word 0x%x at pos 0x%x", fNextStatus, fLastStatus, *fDataWord, fPos));  
-	  ChangeStatus(fkStop);
+	  ChangeStatus(kStop);
 	};
 
-    } // not fkStop
+    } // not kStop
 
   //AliDebug(1, Form("That's all folks! %d", fSM));
   return kFALSE;
@@ -1168,28 +1188,28 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man)
   AliTRDdataArrayI *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 	  
-  if (fNextStatus == fkStart)
+  if (fNextStatus == kStart)
     {
       Init();
     }
 
-//   while (fNextStatus != fkStop)
-//     { // !fkStop
+//   while (fNextStatus != kStop)
+//     { // !kStop
 //       NextData();
 //       // catch 3 things
 //       // 1) if end of raw data - if chamber complete return
 //       // 2) fill the data with signals if data decoded ok
 //       // 3) initialize (destroy old) after the det has changed -> just after HC header decoding
-//     } // not fkStop
+//     } // not kStop
 
-  while (fNextStatus != fkStop)
-    { // !fkStop
+  while (fNextStatus != kStop)
+    { // !kStop
       NextData();
 
       switch (fNextStatus)
 	{
 	  
-	case fkNextData:
+	case kNextData:
 	  {
 	    if (DecodeNextRawWord() == kTRUE)
 	      {
@@ -1226,7 +1246,7 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man)
 	      }
 	  }; break;
 
-	case fkNextMCM:
+	case kNextMCM:
 	  {
 	    if (DecodeMCM() == kFALSE)
 	      {
@@ -1243,9 +1263,9 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man)
 	      }	     
 	  }; break;
 
-	case fkNextHC:
-	case fkSeekNonEoTracklet:
-	case fkDecodeHC:
+	case kNextHC:
+	case kSeekNonEoTracklet:
+	case kDecodeHC:
 	  {
 	    if (DecodeHC() == kFALSE)
 	      {
@@ -1254,7 +1274,7 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man)
 	    else
 	      {
 		//the hc header should be decoded by now
-		if (fLastStatus == fkDecodeHC)
+		if (fLastStatus == kDecodeHC)
 		  {
 // 		    AliDebug(4, Form("???? New DET ???? %d last %d", fDET, fLastDET));
 		    // allocate stuff for the new det
@@ -1292,21 +1312,21 @@ Int_t AliTRDRawStreamV2::NextChamber(AliTRDdigitsManager *man)
 	      } // decode hc ok
 	  }; break;
 
-	case fkNextSM:
+	case kNextSM:
 	  {
 	    if (DecodeSM() == kFALSE)
 	      AliWarning(Form("Decode SM unsuccessfull. Current Word 0x%x at pos 0x%x", *fDataWord, fPos));	  
 	  }; break;
 
-	case fkStop:
+	case kStop:
 	  ; break;
 
 	default:
 	  AliWarning(Form("Unknown state %d. Last state %d. Current Word 0x%x at pos 0x%x", fNextStatus, fLastStatus, *fDataWord, fPos));  
-	  ChangeStatus(fkStop);
+	  ChangeStatus(kStop);
 	};
 
-    } // not fkStop
+    } // not kStop
 
   // we do not return chambers for which the end-of-data was not received twice (for each HC)
 

@@ -34,10 +34,10 @@ class AliTRDmcmSim : public TObject {
           void      SetData(Int_t iadc, Int_t it, Int_t adc ); // Set ADC data
           void      SetDataPedestal(Int_t iadc );              // Fill ADC data with pedestal values
 
-          Int_t     GetChaId()  { return fChaId;  };           // Returns Chamber ID (0-539)
-          Int_t     GetRobPos() { return fRobPos; };           // Returns ROB position (0-7)
-          Int_t     GetMcmPos() { return fMcmPos; };           // Returns MCM position (0-17) (16,17 are mergers)
-          Int_t     GetRow()    { return fRow; };              // Returns Row number on chamber where the MCM is sitting
+          Int_t     GetChaId() const  { return fChaId;  };     // Returns Chamber ID (0-539)
+          Int_t     GetRobPos() const { return fRobPos; };     // Returns ROB position (0-7)
+          Int_t     GetMcmPos() const { return fMcmPos; };     // Returns MCM position (0-17) (16,17 are mergers)
+          Int_t     GetRow() const    { return fRow;    };     // Returns Row number on chamber where the MCM is sitting
 	  Int_t     GetCol( Int_t iadc );                      // Get corresponding column (0-143) from for ADC channel iadc = [0:20]
 	  // for the ADC/Col mapping, see: http://wiki.kip.uni-heidelberg.de/ti/TRD/index.php/Image:ROB_MCM_numbering.pdf
 
@@ -63,11 +63,11 @@ class AliTRDmcmSim : public TObject {
           Int_t   **fZSM;                               // Zero suppression map
           Int_t    *fZSM1Dim;                           // Zero suppression map (1 dimensional projection)
 
-	  // parameter classes
-	  AliTRDfeeParam *fFeeParam;
-	  AliTRDSimParam *fSimParam;
-	  AliTRDcalibDB  *fCal;
-	  AliTRDgeometry *fGeo;
+	  // Parameter classes
+	  AliTRDfeeParam *fFeeParam;                    // FEE parameters
+	  AliTRDSimParam *fSimParam;                    // Simulation parameters
+	  AliTRDcalibDB  *fCal;                         // Calibration interface
+	  AliTRDgeometry *fGeo;                         // Geometry
 
 	  Bool_t    CheckInitialized();                 // Check whether the class is initialized
 	  void      FilterPedestal();                   // Apply pedestal filter

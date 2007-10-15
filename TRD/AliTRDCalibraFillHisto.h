@@ -39,7 +39,7 @@ class AliRawReader;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
-class AliTRDRawStreamV2;
+class AliTRDRawStream;
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
@@ -73,7 +73,7 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
  
   // Process events DAQ
-	  Int_t   ProcessEventDAQ(AliTRDRawStreamV2 *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
@@ -154,12 +154,6 @@ class AliTRDCalibraFillHisto : public TObject {
 
   // Vector method
 AliTRDCalibraVector *GetCalibraVector() const                                { return fCalibraVector;          }   
-  
- private:
-   
-  // This is a singleton, contructor is private!
-  AliTRDCalibraFillHisto();
-  virtual ~AliTRDCalibraFillHisto();
 
  protected:
 
@@ -289,6 +283,13 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Instance of this class and so on
   static  AliTRDCalibraFillHisto *fgInstance;                // Instance
   static  Bool_t   fgTerminated;                             // If terminated
+
+  
+ private:
+  
+  // This is a singleton, contructor is private!
+  AliTRDCalibraFillHisto();
+  virtual ~AliTRDCalibraFillHisto();
  
     
   ClassDef(AliTRDCalibraFillHisto,3)                         // TRD Calibration class

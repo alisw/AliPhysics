@@ -21,7 +21,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
+//#include <Riostream.h>
+
 #include <TMath.h>
 #include "TClass.h"
 
@@ -29,6 +30,7 @@
 #include "AliRawDataHeader.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
+#include "AliFstream.h"
 
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
@@ -36,12 +38,8 @@
 #include "AliTRDdataArrayI.h"
 #include "AliTRDRawStream.h"
 #include "AliTRDRawStreamV2.h"
-
 #include "AliTRDcalibDB.h"
-#include "AliFstream.h"
-
 #include "AliTRDSignalIndex.h"
-
 #include "AliTRDfeeParam.h"
 #include "AliTRDmcmSim.h"
 
@@ -57,8 +55,10 @@ AliTRDrawData::AliTRDrawData()
   //
   // Default constructor
   //
+
   fFee = AliTRDfeeParam::Instance();
   fNumberOfDDLs = AliDAQ::NumberOfDdls("TRD");
+
 }
 
 //_____________________________________________________________________________
@@ -71,8 +71,10 @@ AliTRDrawData::AliTRDrawData(const AliTRDrawData &r)
   //
   // Copy constructor
   //
+
   fFee = AliTRDfeeParam::Instance();
   fNumberOfDDLs = AliDAQ::NumberOfDdls("TRD");
+
 }
 
 //_____________________________________________________________________________
@@ -81,6 +83,7 @@ AliTRDrawData::~AliTRDrawData()
   //
   // Destructor
   //
+
 }
 
 //_____________________________________________________________________________
@@ -142,10 +145,14 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
   // This version simulate only raw data with ADC data and not with tracklet.
   //
 
-  const Int_t kMaxHcWords = (fGeo->TBmax()/3)*fGeo->ADCmax()*fGeo->MCMmax()*fGeo->ROBmaxC1()/2 + 100 + 20;
+  const Int_t kMaxHcWords = (fGeo->TBmax()/3)
+                          * fGeo->ADCmax()
+                          * fGeo->MCMmax()
+                          * fGeo->ROBmaxC1()/2 
+                          + 100 + 20;
 
   // Buffer to temporary store half chamber data
-  UInt_t     *hc_buffer   = new UInt_t[kMaxHcWords];
+  UInt_t     *hcBuffer    = new UInt_t[kMaxHcWords];
 
   // sect is same as iDDL, so I use only sect here.
   for (Int_t sect = 0; sect < fGeo->Nsect(); sect++) { 
@@ -165,15 +172,15 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 
     // GTU common data header (5x4 bytes per super module, shows link mask)
     for( Int_t cham = 0; cham < fGeo->Ncham(); cham++ ) {
-      UInt_t GtuCdh = (UInt_t)(0xe << 28);
+      UInt_t gtuCdh = (UInt_t)(0xe << 28);
       for( Int_t plan = 0; plan < fGeo->Nplan(); plan++) {
 	Int_t iDet = fGeo->GetDetector(plan, cham, sect);
 	// If chamber status is ok, we assume that the optical link is also OK.
         // This is shown in the GTU link mask.
 	if ( AliTRDcalibDB::Instance()->GetChamberStatus(iDet) )
-	  GtuCdh = GtuCdh | (3 << (2*plan));
+	  gtuCdh = gtuCdh | (3 << (2*plan));
       }
-      of->WriteBuffer((char *) (& GtuCdh), sizeof(GtuCdh));
+      of->WriteBuffer((char *) (& gtuCdh), sizeof(gtuCdh));
       npayloadbyte += 4;
     }
 
@@ -191,17 +198,17 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
 	Int_t rv = fFee->GetRAWversion();
 
         // Process A side of the chamber
-	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hc_buffer,kMaxHcWords);
-	if ( rv == 3 )            hcwords = ProduceHcDataV3     (digits,0,iDet,hc_buffer,kMaxHcWords);
+	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,0,iDet,hcBuffer,kMaxHcWords);
+	if ( rv == 3 )            hcwords = ProduceHcDataV3     (digits,0,iDet,hcBuffer,kMaxHcWords);
 
-        of->WriteBuffer((char *) hc_buffer, hcwords*4);
+        of->WriteBuffer((char *) hcBuffer, hcwords*4);
         npayloadbyte += hcwords*4;
 
         // Process B side of the chamber
-	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hc_buffer,kMaxHcWords);
-	if ( rv >= 3 )            hcwords = ProduceHcDataV3     (digits,1,iDet,hc_buffer,kMaxHcWords);
+	if ( rv >= 1 && rv <= 2 ) hcwords = ProduceHcDataV1andV2(digits,1,iDet,hcBuffer,kMaxHcWords);
+	if ( rv >= 3 )            hcwords = ProduceHcDataV3     (digits,1,iDet,hcBuffer,kMaxHcWords);
 
-        of->WriteBuffer((char *) hc_buffer, hcwords*4);
+        of->WriteBuffer((char *) hcBuffer, hcwords*4);
         npayloadbyte += hcwords*4;
       }
     }
@@ -214,7 +221,8 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     delete of;
   }
 
-  delete [] hc_buffer;
+  delete [] hcBuffer;
+
   return kTRUE;
 
 }
@@ -242,18 +250,18 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
   // the function will finish without crash (this behaviour is similar to the MCM).
   //
 
-  Int_t          nw = 0;                       // Number of written    words
-  Int_t          of = 0;                       // Number of overflowed words
-  Int_t        plan = fGeo->GetPlane( det );   // Plane
-  Int_t        cham = fGeo->GetChamber( det ); // Chamber
-  Int_t        sect = fGeo->GetSector( det );  // Sector (=iDDL)
-  Int_t        nRow = fGeo->GetRowMax( plan, cham, sect );
-  Int_t        nCol = fGeo->GetColMax( plan );
-  const Int_t nTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-  Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
-  Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
-  UInt_t          x = 0;                       // General used number
-  Int_t          rv = fFee->GetRAWversion();
+  Int_t           nw = 0;                       // Number of written    words
+  Int_t           of = 0;                       // Number of overflowed words
+  Int_t         plan = fGeo->GetPlane( det );   // Plane
+  Int_t         cham = fGeo->GetChamber( det ); // Chamber
+  Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
+  Int_t         nRow = fGeo->GetRowMax( plan, cham, sect );
+  Int_t         nCol = fGeo->GetColMax( plan );
+  const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
+  Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
+  UInt_t           x = 0;                       // General used number
+  Int_t           rv = fFee->GetRAWversion();
 
   // Check the nCol and nRow.
   if ((nCol == 144) && 
@@ -303,10 +311,10 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
       of++;
     }
     // h[1]
-    Int_t bc_ctr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
-    Int_t pt_ctr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
-    Int_t pt_phase = 11; // pretrigger phase. Here it is set to 11 always for no reason
-    x = (bc_ctr<<16) | (pt_ctr<<12) | (pt_phase<<8) | ((nTBin-1)<<2) | 1;
+    Int_t bcCtr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
+    Int_t ptCtr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
+    Int_t ptPhase = 11; // pretrigger phase. Here it is set to 11 always for no reason
+    x = (bcCtr<<16) | (ptCtr<<12) | (ptPhase<<8) | ((kNTBin-1)<<2) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
     }
@@ -314,15 +322,15 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
       of++;
     }
     // h[2]
-    Int_t ped_setup       = 1;    // Pedestal filter setup (0:1). Here it is always 1 for no reason
-    Int_t gain_setup      = 1;    // Gain filter setup (0:1). Here it is always 1 for no reason
-    Int_t tail_setup      = 1;    // Tail filter setup (0:1). Here it is always 1 for no reason
-    Int_t xt_setup        = 0;    // Cross talk filter setup (0:1). Here it is always 0 for no reason
-    Int_t nonlin_setup    = 0;    // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
-    Int_t bypass_setup    = 0;    // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
-    Int_t common_additive = 10;   // Digital filter common additive (0:63). Here it is always 10 for no reason
-    x = (ped_setup<<31) | (gain_setup<<30) | (tail_setup<<29) | (xt_setup<<28) | (nonlin_setup<<27)
-      | (bypass_setup<<26) | (common_additive<<20) | 1;
+    Int_t pedSetup       = 1;    // Pedestal filter setup (0:1). Here it is always 1 for no reason
+    Int_t gainSetup      = 1;    // Gain filter setup (0:1). Here it is always 1 for no reason
+    Int_t tailSetup      = 1;    // Tail filter setup (0:1). Here it is always 1 for no reason
+    Int_t xtSetup        = 0;    // Cross talk filter setup (0:1). Here it is always 0 for no reason
+    Int_t nonlinSetup    = 0;    // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
+    Int_t bypassSetup    = 0;    // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
+    Int_t commonAdditive = 10;   // Digital filter common additive (0:63). Here it is always 10 for no reason
+    x = (pedSetup<<31) | (gainSetup<<30) | (tailSetup<<29) | (xtSetup<<28) | (nonlinSetup<<27)
+      | (bypassSetup<<26) | (commonAdditive<<20) | 1;
     if (nw < maxSize) {
       buf[nw++] = x; 
     }
@@ -350,13 +358,13 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
       for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
 	Int_t padcol = fFee->GetPadColFromADC(iRob, iMcm, iAdc);
 	UInt_t aa = !(iAdc & 1) + 2;
-        UInt_t *a = new UInt_t[nTBin+2];
+        UInt_t *a = new UInt_t[kNTBin+2];
         // 3 timebins are packed into one 32 bits word
-        for (Int_t iT = 0; iT < nTBin; iT+=3) { 
+        for (Int_t iT = 0; iT < kNTBin; iT+=3) { 
           if ((padcol >=    0) && (padcol <  nCol)) {
-	    a[iT  ] = ((iT    ) < nTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT    ) : 0;
-	    a[iT+1] = ((iT + 1) < nTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 1) : 0;
-	    a[iT+2] = ((iT + 2) < nTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 2) : 0; 
+	    a[iT  ] = ((iT    ) < kNTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT    ) : 0;
+	    a[iT+1] = ((iT + 1) < kNTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 1) : 0;
+	    a[iT+2] = ((iT + 2) < kNTBin ) ? digits->GetDataUnchecked(padrow,padcol,iT + 2) : 0; 
 	  } 
 	  else {
 	    a[iT] = a[iT+1] = a[iT+2] = 0; // This happenes at the edge of chamber (should be pedestal! How?)
@@ -372,14 +380,14 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
         // Diagnostics
         Float_t avg = 0;
         Float_t rms = 0;
-        for (Int_t iT = 0; iT < nTBin; iT++) {
+        for (Int_t iT = 0; iT < kNTBin; iT++) {
           avg += (Float_t) (a[iT]);
 	}
-        avg /= (Float_t) nTBin;
-        for (Int_t iT = 0; iT < nTBin; iT++) {
+        avg /= (Float_t) kNTBin;
+        for (Int_t iT = 0; iT < kNTBin; iT++) {
           rms += ((Float_t) (a[iT]) - avg) * ((Float_t) (a[iT]) - avg);
 	}
-        rms = TMath::Sqrt(rms / (Float_t) nTBin);
+        rms = TMath::Sqrt(rms / (Float_t) kNTBin);
         if (rms > 1.7) {
           AliDebug(2,Form("Large RMS (>1.7)  (ROB,MCM,ADC)=(%02d,%02d,%02d), avg=%03.1f, rms=%03.1f"
 			  ,iRob,iMcm,iAdc,avg,rms));
@@ -404,27 +412,26 @@ Int_t AliTRDrawData::ProduceHcDataV1andV2(AliTRDdataArrayI *digits, Int_t side
 
 }
 
-
 //_____________________________________________________________________________
 Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
-				     , Int_t det, UInt_t *buf, Int_t maxSize)
+				   , Int_t det, UInt_t *buf, Int_t maxSize)
 {
   //
   // This function simulates: Raw Version == 3 (Zero Suppression Prototype)
   //
 
-  Int_t          nw = 0;                       // Number of written    words
-  Int_t          of = 0;                       // Number of overflowed words
-  Int_t        plan = fGeo->GetPlane( det );   // Plane
-  Int_t        cham = fGeo->GetChamber( det ); // Chamber
-  Int_t        sect = fGeo->GetSector( det );  // Sector (=iDDL)
-  Int_t        nRow = fGeo->GetRowMax( plan, cham, sect );
-  Int_t        nCol = fGeo->GetColMax( plan );
-  const Int_t nTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
-  Int_t      kCtype = 0;                       // Chamber type (0:C0, 1:C1)
-  //Int_t         iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
-  UInt_t          x = 0;                       // General used number
-  Int_t          rv = fFee->GetRAWversion();
+  Int_t           nw = 0;                       // Number of written    words
+  Int_t           of = 0;                       // Number of overflowed words
+  Int_t         plan = fGeo->GetPlane( det );   // Plane
+  Int_t         cham = fGeo->GetChamber( det ); // Chamber
+  Int_t         sect = fGeo->GetSector( det );  // Sector (=iDDL)
+  Int_t         nRow = fGeo->GetRowMax( plan, cham, sect );
+  Int_t         nCol = fGeo->GetColMax( plan );
+  const Int_t kNTBin = AliTRDcalibDB::Instance()->GetNumberOfTimeBins();
+  Int_t       kCtype = 0;                       // Chamber type (0:C0, 1:C1)
+  //Int_t          iEv = 0xA;                     // Event ID. Now fixed to 10, how do I get event id?
+  UInt_t           x = 0;                       // General used number
+  Int_t           rv = fFee->GetRAWversion();
 
   // Check the nCol and nRow.
   if ((nCol == 144) && 
@@ -462,10 +469,10 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
     of++;
   }
   // h[1]
-  Int_t bc_ctr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
-  Int_t pt_ctr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
-  Int_t pt_phase = 11; // pretrigger phase. Here it is set to 11 always for no reason
-  x = (bc_ctr<<16) | (pt_ctr<<12) | (pt_phase<<8) | ((nTBin-1)<<2) | 1;
+  Int_t bcCtr   = 99; // bunch crossing counter. Here it is set to 99 always for no reason
+  Int_t ptCtr   = 15; // pretrigger counter. Here it is set to 15 always for no reason
+  Int_t ptPhase = 11; // pretrigger phase. Here it is set to 11 always for no reason
+  x = (bcCtr<<16) | (ptCtr<<12) | (ptPhase<<8) | ((kNTBin-1)<<2) | 1;
   if (nw < maxSize) {
     buf[nw++] = x; 
   }
@@ -473,22 +480,21 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
     of++;
   }
   // h[2]
-  Int_t ped_setup       = 1;  // Pedestal filter setup (0:1). Here it is always 1 for no reason
-  Int_t gain_setup      = 1;  // Gain filter setup (0:1). Here it is always 1 for no reason
-  Int_t tail_setup      = 1;  // Tail filter setup (0:1). Here it is always 1 for no reason
-  Int_t xt_setup        = 0;  // Cross talk filter setup (0:1). Here it is always 0 for no reason
-  Int_t nonlin_setup    = 0;  // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
-  Int_t bypass_setup    = 0;  // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
-  Int_t common_additive = 10; // Digital filter common additive (0:63). Here it is always 10 for no reason
-  x = (ped_setup<<31) | (gain_setup<<30) | (tail_setup<<29) | (xt_setup<<28) | (nonlin_setup<<27)
-    | (bypass_setup<<26) | (common_additive<<20) | 1;
+  Int_t pedSetup       = 1;  // Pedestal filter setup (0:1). Here it is always 1 for no reason
+  Int_t gainSetup      = 1;  // Gain filter setup (0:1). Here it is always 1 for no reason
+  Int_t tailSetup      = 1;  // Tail filter setup (0:1). Here it is always 1 for no reason
+  Int_t xtSetup        = 0;  // Cross talk filter setup (0:1). Here it is always 0 for no reason
+  Int_t nonlinSetup    = 0;  // Nonlinearity filter setup (0:1). Here it is always 0 for no reason
+  Int_t bypassSetup    = 0;  // Filter bypass (for raw data) setup (0:1). Here it is always 0 for no reason
+  Int_t commonAdditive = 10; // Digital filter common additive (0:63). Here it is always 10 for no reason
+  x = (pedSetup<<31) | (gainSetup<<30) | (tailSetup<<29) | (xtSetup<<28) | (nonlinSetup<<27)
+    | (bypassSetup<<26) | (commonAdditive<<20) | 1;
   if (nw < maxSize) {
     buf[nw++] = x; 
   }
   else {
     of++;
   }
-
 
   // Scan for ROB and MCM
   for (Int_t iRobRow = 0; iRobRow < (kCtype + 3); iRobRow++ ) {
@@ -503,7 +509,7 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
       for (Int_t iAdc = 0; iAdc < 21; iAdc++ ) {
 	Int_t padcol = mcm->GetCol( iAdc );
 	if ((padcol >=    0) && (padcol <  nCol)) {
-	  for (Int_t iT = 0; iT < nTBin; iT++) { 
+	  for (Int_t iT = 0; iT < kNTBin; iT++) { 
 	    mcm->SetData( iAdc, iT, digits->GetDataUnchecked( padrow, padcol, iT) );
 	  } 
 	} else {  // this means it is out of chamber, and masked ADC
@@ -516,13 +522,13 @@ Int_t AliTRDrawData::ProduceHcDataV3(AliTRDdataArrayI *digits, Int_t side
       //mcm->DumpData( "trdmcmdata.txt", "RFZS" ); // debugging purpose
 
       // Write MCM data to buffer
-      Int_t temp_nw =  mcm->ProduceRawStream( &buf[nw], maxSize - nw );
-      if( temp_nw < 0 ) {
-	of += temp_nw;
+      Int_t tempNw =  mcm->ProduceRawStream( &buf[nw], maxSize - nw );
+      if( tempNw < 0 ) {
+	of += tempNw;
 	nw += maxSize - nw;
 	AliError(Form("Buffer overflow detected. Please increase the buffer size and recompile."));
       } else {
-	nw += temp_nw;
+	nw += tempNw;
       }
 
       delete mcm;

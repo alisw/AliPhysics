@@ -12,8 +12,9 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliTracker.h" 
 #include "TObjArray.h" 
+
+#include "AliTracker.h" 
 
 class TFile;
 class TTree;
@@ -21,6 +22,7 @@ class TH1D;
 class TH2D;
 class TParticle;
 class TParticlePDG;
+class TTreeSRedirector;
 
 class AliTRDgeometry;
 class AliTRDtrack;
@@ -28,7 +30,6 @@ class AliTRDtracklet;
 class AliTRDcluster;
 class AliTRDseed;
 class AliESDEvent;
-class TTreeSRedirector;
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -39,27 +40,27 @@ class TTreeSRedirector;
 
 class AliTRDtracker : public AliTracker { 
 
-  // Histograms
-  TH1D *fHBackfit;  // Histogram for back propagation
-  TH1D *fHClSearch; // Cluster search
-  TH1D *fHRefit;
-  
-  TH1D *fHX;
-  TH1D *fHNCl;
-  TH1D *fHNClTrack;
-  TH1D *fHFindCl[4];
-  TH1D *fHMinYPos;
-  TH1D *fHMinYNeg; 
-  TH1D *fHMinZ;
+ public:
 
-  TH2D *fHMinD;
-  TH1D *fHDeltaX;
-  TH1D *fHXCl;
+  // Histograms
+  TH1D *fHBackfit;   // Histogram for back propagation
+  TH1D *fHClSearch;  // Cluster search
+  TH1D *fHRefit;     // ???
+
+  TH1D *fHX;         // ???
+  TH1D *fHNCl;       // ???
+  TH1D *fHNClTrack;  // ???
+  TH1D *fHFindCl[4]; // ???
+  TH1D *fHMinYPos;   // ???
+  TH1D *fHMinYNeg;   // ???
+  TH1D *fHMinZ;      // ???
+
+  TH2D *fHMinD;      // ???
+  TH1D *fHDeltaX;    // ???
+  TH1D *fHXCl;       // ???
 
   void InitLogHists();
   void SaveLogHists();
-
- public:
 
   enum { kMaxLayersPerSector   = 1000
        , kMaxTimeBinIndex      = 216
@@ -113,9 +114,10 @@ class AliTRDtracker : public AliTracker {
   
  protected:
   
+  //__________________________________________________________________________________________________
   class AliTRDpropagationLayer {
     
-  public: 
+   public: 
     
     AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t rho
 			 , Double_t x0, Int_t tbIndex, Int_t plane); 
@@ -129,7 +131,7 @@ class AliTRDtracker : public AliTracker {
                                                               { return *this; }
 
     operator Int_t() const                                    { return fN;    }
-    AliTRDcluster  *operator[](Int_t i) {return fClusters[i];}
+    AliTRDcluster  *operator[](Int_t i)                       { return fClusters[i];          }
     
     void     SetZmax(Int_t cham, Double_t center, Double_t w) { fZc[cham]      = center; 
                                                                 fZmax[cham]    = w;           }
@@ -151,7 +153,7 @@ class AliTRDtracker : public AliTracker {
     Int_t    GetTimeBinIndex() const   { return fTimeBinIndex;          }     
     Int_t    GetPlane() const          { return fPlane;                 }
     Bool_t   IsHole(Int_t zone) const  { return fIsHole[zone];          }              
-    Bool_t   IsSensitive() const       { return (fTimeBinIndex >= 0)? kTRUE : kFALSE;} 
+    Bool_t   IsSensitive() const       { return (fTimeBinIndex >= 0) ? kTRUE : kFALSE;} 
     
     void     Clear() { 
       for (Int_t i = 0; i < fN; i++) fClusters[i] = NULL;
@@ -163,9 +165,8 @@ class AliTRDtracker : public AliTracker {
     Int_t    FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroadz) const;
  
     void     SetX(Double_t x)          { fX = x; }
-
     
-  private:     
+   private:     
     
     Int_t                     fN;                            // This is fN
     Int_t                     fSec;                          // Sector mumber
@@ -194,33 +195,32 @@ class AliTRDtracker : public AliTracker {
     
   };
   
+  //__________________________________________________________________________________________________
   class AliTRDtrackingSector {
     
    public:
     
     AliTRDtrackingSector(AliTRDgeometry* geo, Int_t gs);
     AliTRDtrackingSector(const AliTRDtrackingSector &/*t*/);
-    ~AliTRDtrackingSector() { 
-      for (Int_t i = 0; i < fN; i++) delete fLayers[i];           
-    }
+    ~AliTRDtrackingSector();
     
-    AliTRDtrackingSector &operator=(const AliTRDtrackingSector &/*t*/){ return *this;}
+    AliTRDtrackingSector &operator=(const AliTRDtrackingSector &/*t*/) { return *this; }
     
-    Int_t    GetNumberOfLayers() const             { return fN;}
+    Int_t    GetNumberOfLayers() const             { return fN; }
     Int_t    GetNumberOfTimeBins() const;
     Int_t    GetLayerNumber(Double_t x) const;
     Int_t    GetInnerTimeBin() const;
     Int_t    GetOuterTimeBin() const;
-    Int_t    GetLayerNumber(Int_t tb) const        { return fTimeBinIndex[tb];}
-    Double_t GetX(Int_t pl) const                  { return fLayers[pl]->GetX();}
-    AliTRDpropagationLayer* GetLayer(Int_t i)      { return fLayers[i];}
+    Int_t    GetLayerNumber(Int_t tb) const        { return fTimeBinIndex[tb];   }
+    Double_t GetX(Int_t pl) const                  { return fLayers[pl]->GetX(); }
+    AliTRDpropagationLayer* GetLayer(Int_t i)      { return fLayers[i];          }
     
     void     MapTimeBinLayers();
     Int_t    Find(Double_t x) const; 
     void     InsertLayer(AliTRDpropagationLayer *pl);
     Int_t    CookTimeBinIndex(Int_t plane, Int_t localTB) const;     
     
-  private:
+   private:
     
     Int_t                   fN;                              // Total number of layers
     AliTRDgeometry         *fGeom;                           // Geometry
@@ -248,7 +248,6 @@ class AliTRDtracker : public AliTracker {
   
   Bool_t                   fAddTRDseeds;                   // Something else
   Bool_t                   fNoTilt;                        // No tilt, or what?
-  Bool_t                   fHoles[5][18];                  // Holes
   
   Bool_t   AdjustSector(AliTRDtrack *track); 
   
@@ -265,7 +264,7 @@ class AliTRDtracker : public AliTracker {
   
   TTreeSRedirector        *fDebugStreamer;                 //!Debug streamer
   
-  ClassDef(AliTRDtracker,2)                                        // TRD tracker
+  ClassDef(AliTRDtracker,3)                                // TRD tracker
     
- };
+};
 #endif 
