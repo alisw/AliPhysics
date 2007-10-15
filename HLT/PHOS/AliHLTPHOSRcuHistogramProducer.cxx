@@ -16,10 +16,12 @@
 
 #include "AliHLTPHOSRcuHistogramProducer.h"
 #include <iostream>
-//#include "stdio.h"
-#//include <cstdlib>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "TFile.h"
+#include "unistd.h"
+#include <time.h>
+
+#define THRESHOLD 30
 
 using  namespace std;
 
@@ -33,8 +35,9 @@ using  namespace std;
 **************************************************************************/
 
 
-AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer(): fModuleID(0), fRcuX(0), fRcuZ(0)
+AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSBase(), fModuleID(0), fRcuX(0), fRcuZ(0)
 
+//AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer():  AliHLTPHOSRcuProcessor(), fModuleID(0), fRcuX(0), fRcuZ(0)
 {
   //Default constructor
   cout << "WARNING: You cannot invoke the AliHLTPHOSRcuHistogramProducer without arguments" << endl;
@@ -45,6 +48,22 @@ AliHLTPHOSRcuHistogramProducer:: AliHLTPHOSRcuHistogramProducer(): fModuleID(0),
 AliHLTPHOSRcuHistogramProducer::AliHLTPHOSRcuHistogramProducer(AliHLTUInt8_t moduleID, AliHLTUInt8_t rcuX, AliHLTUInt8_t rcuZ)
 {
   //Se header file for documentation
+  //  char *tmp = getenv("ALIHLT_BASEDIR");
+  char *tmp = getenv("HOME");
+
+  if(tmp == 0)
+    {
+      cout << "ERROR, environment vriable HOME is not set" << endl;
+
+    }
+  
+  else
+    {
+      //  sprintf(fHistoOutDir,"%s/rundir/output/histograms",tmp);
+      sprintf(fHistoOutDir,"%s/rundir/output/histograms/",tmp);
+    }
+  
+
   SetModuleID(moduleID);
   SetRcuX(rcuX); 
   SetRcuZ(rcuZ); 
@@ -58,6 +77,37 @@ AliHLTPHOSRcuHistogramProducer::~ AliHLTPHOSRcuHistogramProducer()
 
 
 void
+AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(char *outDir)
+{
+  sprintf(fHistoOutDir,"%s", outDir);
+}
+
+void 
+AliHLTPHOSRcuHistogramProducer::SetDefaultHistoOutDir()
+{
+  char *tmp = getenv("HOME/rundir"); 
+  sprintf(fHistoOutDir,"%s/rundir/output/histograms", tmp);
+  //testing wether or not directry exist
+  FILE *fp = fopen(fHistoOutDir, "w");
+  
+  if(fp == 0)
+    {
+      cout << "ERROR, directory =" << fHistoOutDir << "  Doesnt exist, or you don have write permissions to the directory" << endl;
+      cout << "WARNING: Histograms will not bew written to files at end of run unless a valid directory is set" << endl;
+      cout << "INFO, You must either" << endl;
+      cout << "1) Create the directory " << fHistoOutDir <<  "Manually" <<endl;
+      cout << "OR "<< endl;
+      cout << "2) Se a valid output directory with the function AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(*char outdir) "<< endl;
+   }
+  else
+    {
+      cout << "INFO: Output ddirectory for Histograms was set tot" << fHistoOutDir << endl;
+      cout << "INFO: if you want another output directory use the AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(*char outdir)" << endl;
+    }
+
+} 
+
+void
 AliHLTPHOSRcuHistogramProducer::Init()
 {
   //See header file for documentation
@@ -65,6 +115,23 @@ AliHLTPHOSRcuHistogramProducer::Init()
   int geomx;
   int geomz;
     
+
+  for(int gain=0; gain< N_GAINS; gain++)
+    {
+      sprintf(tmpHistoName, "DeadChanneMap_Module%d_rcuz%d_rcux%d_gain%d",(int)fModuleID,  fRcuZ, fRcuX, gain);
+      //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
+
+          
+      fDeadChannelMapHistogramPtrs[gain] = new TH2D(tmpHistoName, tmpHistoName,  
+				      N_XCOLUMNS_RCU , 0, N_XCOLUMNS_RCU , 
+				      N_ZROWS_RCU,         0, N_ZROWS_RCU);
+      fDeadChannelMapHistogramPtrs[gain]->Reset(); 
+      //     fgCalibHistPtr[gain]->GetXaxis()->SetRange(128, 128 + 64);
+      
+
+    }
+
+
 
   for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
@@ -79,14 +146,23 @@ AliHLTPHOSRcuHistogramProducer::Init()
 	      fAccumulatedValues[x][z][gain]   = 0;
 	      fTimingAverageValues[x][z][gain] = 0; 
 	      fHits[x][z][gain]                = 0;
+	      fDeadChannelMap[x][z][gain]      = 0;
+
 	      sprintf(tmpHistoName, "Edistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
-	      fEnergyHistogramPtrs[x][z][gain] = 0;
+	      //	      fEnergyHistogramPtrs[x][z][gain] = 0;
 	      fEnergyHistogramPtrs[x][z][gain] = new TH1F( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
-	      sprintf(tmpHistoName, "TOFdistribution_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
-	      fTimingHistogramPtrs[x][z][gain] = 0;
+	      sprintf(tmpHistoName, "TOFdistribution_module%d_x%d_z%d_gain%d", (int)fModuleID,  geomx, geomz, gain);
+	      
+	      //	      fTimingHistogramPtrs[x][z][gain] = 0;
+	      
+	      //	      sprintf(tmpHistoName, "DeadChanneMap_%d_%d_%d_%d",(int)fModuleID,  geomx, geomz, gain);
+	      //	      fDeadChannelMapHistogramPtrs[x][z][gain] = new TH1D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
+
+
 	      fTimingHistogramPtrs[x][z][gain] = new TH1F(tmpHistoName , tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
 	      fCellAccEnergy.fAccumulatedEnergies[x][z][gain] = 0;
 	      fCellAccEnergy.fHits[x][z][gain] = 0;
+	      fCellAccEnergy.fDeadChannelMap[x][z][gain] = 0;
 	      fCellAccEnergy.fModuleID = 0;
 	      fCellAccEnergy.fRcuX = 0;
 	      fCellAccEnergy.fRcuZ = 0; 
@@ -94,6 +170,7 @@ AliHLTPHOSRcuHistogramProducer::Init()
 	} 
     } 
 }
+
 
 
 void 
@@ -128,13 +205,9 @@ AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
 {
-  //  cout << "AliHLTPHOSRcuHistogramProducer::FillEnergy x = " << (int)x<< "  z=  " << (int)z;
-  //  cout << " Energy =" <<  energy;
-  //  cout << " Accumulated energy" <<fCellAccEnergy.fAccumulatedEnergies[x][z][gain] << endl; 
-  //See header file for documentation
   fCellAccEnergy.fAccumulatedEnergies[x][z][gain] += energy;
-  fCellAccEnergy.fHits[x][z][gain] ++; 
-  fEnergyHistogramPtrs[x][z][gain]->Fill(energy);
+  fCellAccEnergy.fHits[x][z][gain] ++;
+  fEnergyHistogramPtrs[x][z][gain]->Fill(energy); 
 }
 
 
@@ -152,6 +225,45 @@ AliHLTPHOSRcuHistogramProducer::GetCellAccumulatedEnergies()
   return fCellAccEnergy ;
 }
 
+void 
+AliHLTPHOSRcuHistogramProducer::FillLiveChannels(Int_t data[], int size,  Int_t x, Int_t z, Int_t gain)
+{
+  for(Int_t i = 0; i < size; i++)
+    {
+      if(data[i] > THRESHOLD)
+	{
+	  if(data[i+1] > THRESHOLD) 
+	    {
+	      if(data[i+2] > THRESHOLD)
+		{
+		  if(data[i+3] > THRESHOLD)
+		    {
+		      
+		      fCellAccEnergy.fDeadChannelMap[x][z][gain] = 10;
+		      
+		      return;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+void 
+AliHLTPHOSRcuHistogramProducer::FillLiveChannelHistograms()
+{
+  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+    {
+      for(int z = 0; z < N_ZROWS_RCU; z ++)
+	{
+	  for(int gain = 0; gain < N_GAINS; gain ++)
+	    {
+	      fDeadChannelMapHistogramPtrs[gain]->SetBinContent(x ,z , fCellAccEnergy.fDeadChannelMap[x][z][gain]);
+	    }
+  	} 
+    }
+
+}
 
 void
 AliHLTPHOSRcuHistogramProducer::Reset()
@@ -167,6 +279,7 @@ AliHLTPHOSRcuHistogramProducer::Reset()
 	      fAccumulatedValues[x][z][gain]   = 0;
 	      fTimingAverageValues[x][z][gain] = 0; 
 	      fHits[x][z][gain]                = 0;
+	      fDeadChannelMap[x][z][gain]      = 0;
 	    }
 	} 
     }
@@ -179,31 +292,125 @@ AliHLTPHOSRcuHistogramProducer::Reset()
 
 
 void 
-AliHLTPHOSRcuHistogramProducer::WriteEnergyHistograms()
+AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 {
-  //See header file for documentation
-  char tmpFileName[256];
-  sprintf(tmpFileName,"/home/aliphoshlt/rundir/outdata/calibHisto_%d_%d_%d.root", (int)fModuleID, (int)fRcuX, (int)fRcuZ);
-  TFile *histoFile =  new TFile(tmpFileName,"update");
-  char hname[128];
-  if(!histoFile) return;
-  if(!histoFile->IsOpen()) return;
+  printf("\nAliHLTPHOSRcuHistogramProducer::WriteAllHistogram, opt = %s\n", opt);
+
+  FillLiveChannelHistograms();
+  //  cout <<<< endl;
+
+  int runNumber = 0;
+  char tmpEFileName[256];
+  char tmpDeadFileName_gain0[256];
+  char tmpDeadFileName_gain1[256]; 
+ // char *tmpRundir = getenv("HOME");
+  char runNumberFile[256]; 
+  char timeString[256];
+
+  ResetArray(runNumberFile, 256);
+  ResetArray(tmpEFileName, 256);
+  ResetArray(timeString, 256);
+  
+
+  sprintf(runNumberFile, "%s/rundir/runNumber.txt", getenv("HOME"));
+
+  FILE *fp = fopen(runNumberFile, "r");
+  if(fp == 0)
+    {
+      ScanTimeString(timeString);  
+      cout << "WARNING, could not find file "<< runNumberFile  <<endl;
+      cout <<"Filename will be stamped with data and time instead " << endl;
+      sprintf(tmpEFileName, "%s/Energy/EnergyHistograms_%s_mod%d_rcuZ%d_rcuX%d.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ);
+      sprintf(tmpDeadFileName_gain0, "%s/DeadMap/DeadChannelHistograms_%s_mod%d_rcuZ%d_rcuX%d_LG.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ); 
+      sprintf(tmpDeadFileName_gain1, "%s/DeadMap/DeadChannelHistograms_%s_mod%d_rcuZ%d_rcuX%d_HG.root", fHistoOutDir, timeString, (int)fModuleID, (int)fRcuZ, (int)fRcuZ); 
+    } 
+  else
+    {
+      fscanf(fp, "%d", &runNumber);
+      sprintf(tmpEFileName, "%s/Energy/EnergyHisttograms_run%d_mod%d_rcuZ%d_rcuX%d.root", fHistoOutDir, runNumber, (int)fModuleID, (int)fRcuZ, (int)fRcuX);
+      sprintf(tmpDeadFileName_gain0, "%s/DeadMap/DeadChannleHistograms_run%d_mod%d_rcuZ%d_rcuX%d_LG.root", fHistoOutDir, runNumber, (int)fModuleID, (int)fRcuZ, (int)fRcuX);
+      sprintf(tmpDeadFileName_gain1, "%s/DeadMap/DeadChannleHistograms_run%d_mod%d_rcuZ%d_rcuX%d_HG.root", fHistoOutDir, runNumber, (int)fModuleID, (int)fRcuZ, (int)fRcuX);
+      fclose(fp);
+    }
+
+  //  cout << "tmpEFileName = "<< tmpEFileName <<endl;
+  //  cout << "tmpDeadFileName_gain0 (low gain)   = " << tmpDeadFileName_gain0 <<endl;
+  //  cout << "tmpDeadFileName_gain1 (high gain)  = " << tmpDeadFileName_gain1 <<endl;
+
+  //  sprintf(tmpEFileName,"/home/aliphoshlt/rundir/outdata/calibHisto_%d_%d_%d.root", (int)fModuleID, (int)fRcuX, (int)fRcuZ);
+
+
+  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"update");
+  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"recreate");
+  //  TFile *energyHistoFile =  new TFile(tmpEFileName,"recreate");
+
+  cout << "tmpEFileName = "<< tmpEFileName  << endl;
+
+  TFile *energyHistoFile =  new TFile(tmpEFileName, opt);
+  if(!energyHistoFile) return;
+  if(!energyHistoFile->IsOpen()) return;
 
   cout <<"printing histograms"<< endl;
-  cout <<"histofile-Getname() =" << histoFile->GetName() << endl;
 
-    for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
       for(int z = 0; z < N_ZROWS_RCU; z ++)
 	{
 	  for(int gain = 0; gain < N_GAINS; gain ++)
 	    {
+	      //     cout << "the number of entries is " <<fEnergyHistogramPtrs[x][z][gain]->GetEntries()<< endl;
 	      fEnergyHistogramPtrs[x][z][gain]->Write();
 	    }
 	} 
     }
+  energyHistoFile->Close();
 
-    cout << "printing histograms, finished"<< endl;
-    histoFile->Close();
 
+  //LOW GAIN
+  //TFile *deadHistoFile_gain0 =  new TFile(tmpDeadFileName_gain0,"update");
+  TFile *deadHistoFile_gain0 =  new TFile(tmpDeadFileName_gain0, opt);
+
+  if(!deadHistoFile_gain0) return;
+  if(!deadHistoFile_gain0->IsOpen()) return;
+  fDeadChannelMapHistogramPtrs[0]->Write();
+
+
+  //HIGH GAIN
+  //  TFile *deadHistoFile_gain1 =  new TFile(tmpDeadFileName_gain1,"update");
+  TFile *deadHistoFile_gain1 =  new TFile(tmpDeadFileName_gain1, opt);
+  if(!deadHistoFile_gain1) return;
+  if(!deadHistoFile_gain1->IsOpen()) return;
+  fDeadChannelMapHistogramPtrs[1]->Write();
+
+
+  deadHistoFile_gain0->Close();
+  deadHistoFile_gain1->Close(); 
+
+  cout << "printing histograms, finished"<< endl;
+}
+
+void
+AliHLTPHOSRcuHistogramProducer::ScanTimeString(char *timeString)
+{
+  time_t timePtr;
+  tm *tmPtr;
+  //  char *timeString;
+  time(&timePtr); 
+  tmPtr=localtime(&timePtr);
+  timeString=asctime(tmPtr);
+  char tShort [strlen(timeString)+1];
+  char day[10];
+  char month[10];
+  int date;
+  int hour;
+  int min;
+  int sec;
+  int year;
+  char sDate[5];
+  char sHour[5];
+  char sMin[5];
+  char sSec[5];
+  char sYear[10];
+  sscanf(timeString, "%s %s %d %d:%d:%d %d\n", day, month, &date, &hour, &min, &sec, &year);
+  
 }

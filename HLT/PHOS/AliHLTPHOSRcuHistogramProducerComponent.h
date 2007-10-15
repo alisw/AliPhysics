@@ -12,6 +12,7 @@
 //#include "Rtypes.h"
 
 
+
 class AliHLTPHOSRcuHistogramProducer;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 
@@ -32,6 +33,8 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
   virtual const char* GetComponentID();
 
  private:
+  int fHistoWriteFrequency;
+
   /*
   AliHLTPHOSRcuHistogramProducerComponent(const AliHLTPHOSRcuHistogramProducerComponent & );
   AliHLTPHOSRcuHistogramProducerComponent & operator = (const AliHLTPHOSRcuHistogramProducerComponent &)

@@ -16,6 +16,8 @@
 
 //#include <iostream>
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
+//#include "AliHLTPHOSDebugRcuHistogramProducer.h"
+//#include "AliHLTPHOSDebugRcuHistogramProducerComponent.h"
 #include "AliHLTPHOSRcuHistogramProducer.h"
 #include "AliHLTPHOSRcuHistogramProducerComponent.h"
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
@@ -32,7 +34,7 @@ AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTPHOSRcuProcessor(), fRcuHistoProducerPtr(0)
+AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTPHOSRcuProcessor(), fRcuHistoProducerPtr(0), fHistoWriteFrequency(100)
 {
   //Default constructor
 } 
@@ -49,7 +51,8 @@ AliHLTPHOSRcuHistogramProducerComponent::Deinit()
 {
   //See html documentation of base class
   cout << "AliHLTPHOSRcuHistogramProducerComponent::Deinit()" << endl;
-  fRcuHistoProducerPtr->WriteEnergyHistograms();
+  //  fRcuHistoProducerPtr->WriteAllHistograms("update");
+  fRcuHistoProducerPtr->WriteAllHistograms("recreate");
   return 0;
 }
 
@@ -92,10 +95,13 @@ AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataSize(unsigned long& constB
 }
 
 
+
 int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  //  cout << "AliHLTPHOSRcuHistogramProducerComponent::DoEven TP0"   << endl;
+
   //See html documentation of base class
   unsigned long ndx       = 0;
   UInt_t offset           = 0; 
@@ -105,27 +111,35 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   AliHLTPHOSRcuCellEnergyDataStruct *cellDataPtr;
   AliHLTUInt8_t* outBPtr;
   int tmpCnt;
-  
-  
+
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
-      cellDataPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)( iter->fPtr);
+      if(iter->fDataType != AliHLTPHOSDefinitions::fgkCellEnergyDataType)
+	{
+	  //	  cout << "Warning: data type is not fgkCellEnergyDataType " << endl;
+	  continue;
+	}
+ 
+ 
+     cellDataPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)( iter->fPtr);
       tmpCnt =  cellDataPtr->fCnt;
-      for(int i= 0; i <= tmpCnt; i ++)
+
+      for(int i= 0; i <  tmpCnt; i ++)
 	{
 	  fRcuHistoProducerPtr->FillEnergy(cellDataPtr->fValidData[i].fX,
-					   cellDataPtr->fValidData[i].fZ, 
+	  				   cellDataPtr->fValidData[i].fZ, 
 					   cellDataPtr->fValidData[i].fGain, 
 					   cellDataPtr->fValidData[i].fEnergy);
 
-	  if(cellDataPtr->fValidData[i].fEnergy > 1024)
-	    {
-	      cout << " AliHLTPHOSRcuHistogramProducerComponent::DoEvent ERROR: cellDataPtr->fValidData[i].fEnergy =" <<  cellDataPtr->fValidData[i].fEnergy << endl;
-	    }
+	  fRcuHistoProducerPtr->FillLiveChannels(cellDataPtr->fValidData[i].fData, 
+						 fNTotalSamples,
+						 cellDataPtr->fValidData[i].fX,
+						 cellDataPtr->fValidData[i].fZ,
+						 cellDataPtr->fValidData[i].fGain);
 	}
     }
-  
+  // cout << "Done filling\n";  
   
   outBPtr = outputPtr;
   fOutPtr =  (AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*)outBPtr;
@@ -143,12 +157,15 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
 	    {
 	      fOutPtr->fAccumulatedEnergies[x][z][gain] = innPtr.fAccumulatedEnergies[x][z][gain];
 	      fOutPtr->fHits[x][z][gain] = innPtr.fHits[x][z][gain];
+	      fOutPtr->fDeadChannelMap[x][z][gain] = innPtr.fDeadChannelMap[x][z][gain];
 	    }
 	}
     }
 
 
+  //    cout << "AliHLTPHOSRcuHistogramProducerComponent::DoEven TP1"   << endl;
   //pushing data to shared output memory
+
   mysize += sizeof(AliHLTPHOSRcuCellAccumulatedEnergyDataStruct);
   AliHLTComponentBlockData bd;
   FillBlockData( bd );
@@ -159,6 +176,9 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   outputBlocks.push_back( bd );
   tSize += mysize;
   outBPtr += mysize;
+  
+  //   cout << "AliHLTPHOSRcuHistogramProducerComponent::DoEven TP2"   << endl;
+
 
   if( tSize > size )
     {
@@ -169,7 +189,17 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
     }
 
   fPhosEventCount++; 
+
+ 
+  if( (fPhosEventCount%fHistoWriteFrequency == 0) &&  ( fPhosEventCount != 0))
+  //if( (fPhosEventCount%fHistoWriteFrequency == 0))
+    {
+      cout << "AliHLTPHOSRcuHistogramProducerComponent::DoEvent, updating histograms " << endl;
+      fRcuHistoProducerPtr->WriteAllHistograms("recreate");
+    }
+
   return 0;
+
   
 }//end DoEvent
 
