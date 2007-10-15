@@ -24,6 +24,12 @@ public:
   static const AliHLTComponentDataType fgkAliHLTClusterDataType;  //Cluster data type
   static const AliHLTComponentDataType fgkAliHLTHistDataType;     //hist data type
   static const AliHLTComponentDataType fgkAliHLTSpectrumDataType; //spectrum data type
+  static const AliHLTComponentDataType fgkAliHLTDigitDataType; //Digit data type
+  static const AliHLTComponentDataType fgkAliHLTRootTreeDataType; //Root tree type
+  static const AliHLTComponentDataType fgkAliHLTBaselineDataType; //Baseline type
+  static const AliHLTComponentDataType fgkAliHLTMIPDataType; //"MIP" data type
+  static const AliHLTComponentDataType fgkAliHLTNoiseMapDataType; //Noise map data type
+  static const AliHLTComponentDataType fgkAliHLTSandboxDataType; //General data type
 };
 
 #endif

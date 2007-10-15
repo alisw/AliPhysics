@@ -5,7 +5,7 @@
  * Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved.      *
  *                                                                        *
  * Authors: Per Thomas Hille <perthi@fys.uio.no>,                         *
- *          Øystein Djuvsland <oysteind@ift.uib.no>after                  * 
+ *          ï¿½ystein Djuvsland <oysteind@ift.uib.no>after                  * 
  *          Matthias Richter <Matthias.Richter@ift.uib.no>                *
  *          Timm Steinbeck <timm@kip.uni-heidelberg.de>                   *
  *          for the ALICE Offline Project.                                *
@@ -42,3 +42,9 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellChannelDataDataType 
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTClusterDataType         = { sizeof(AliHLTComponentDataType),       {'C','L','U','S','T','R','T','Y'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTHistDataType            = { sizeof(AliHLTComponentDataType),       {'H','I','S','T','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSpectrumDataType        = { sizeof(AliHLTComponentDataType),       {'S','P','E','C','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTRootTreeDataType        = { sizeof(AliHLTComponentDataType),       {'R','T','R','E','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTBaselineDataType        = { sizeof(AliHLTComponentDataType),       {'B','A','S','L','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTDigitDataType           = { sizeof(AliHLTComponentDataType),       {'D','I','G','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTNoiseMapDataType        = { sizeof(AliHLTComponentDataType),       {'N','O','M','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTMIPDataType             = { sizeof(AliHLTComponentDataType),       {'M','I','P','T','Y','P','E'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSandboxDataType         = { sizeof(AliHLTComponentDataType),       {'S','B','X','T','Y','P','E'},{'P','H','O','S'}};;
