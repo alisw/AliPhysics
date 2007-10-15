@@ -1,495 +1,258 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
- 
-/** @file   AliHLTPHOSClusterizer.cxx
-    @author Øystein Djuvsland
-    @date   
-    @brief  A temporary clusterizer for PHOS
-*/
+//Insert copyright
 
 
-
-//#include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSClusterizer.h"
-//#include "AliHLTPHOSCommonDefs.h"
-#include "TVector3.h"
+#include "AliHLTPHOSBase.h"
 #include "TMath.h"
-#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTPHOSRecPointListDataStruct.h"
-#include "AliHLTPHOSValidCellDataStruct.h"
+#include "AliHLTPHOSRecPointContainerStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
-#include "AliHLTPHOSClusterDataStruct.h"
-//#include "AliHLTPHOSConstants.h"
+#include "AliHLTPHOSDigitDataStruct.h"
+#include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "TClonesArray.h"
+#include "AliPHOSGeometry.h"
+#include "AliPHOSDigit.h"
+#include "AliPHOSRecoParamEmc.h"
 
-//using namespace PhosHLTConst;
+ClassImp(AliHLTPHOSClusterizer);
 
-
-
-ClassImp(AliHLTPHOSClusterizer)
-
-/**
-* Main constructor
-**/
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
-					       fHighGainFactor(0.005), fLowGainFactor(0.08),
-					       fArraySize(3), fMultiplicity(fArraySize*fArraySize)
-//AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():AliHLTPHOSProcessor(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
-//					       fHighGainFactor(0.005), fLowGainFactor(0.08),
-//					       fArraySize(3), fMultiplicity(fArraySize*fArraySize)
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
+  AliHLTPHOSBase(),
+  fEmcClusteringThreshold(0),
+  fEmcMinEnergyThreshold(0),
+  fEmcTimeGate(0),
+  fLogWeight(0),
+  fDigitsInCluster(0),
+  fOnlineMode(true),
+  fDigitArrayPtr(0),
+  fEmcRecPointsPtr(0),
+  fDigitPtr(0),
+  fDigitContainerPtr(0),
+  fRecPointContainerPtr(0),
+  fPHOSGeometry(0),
+  fGetterPtr(0)
 {
   //See header file for documentation
+  fPHOSGeometry = AliPHOSGeometry::GetInstance("noCPV");
+  fEmcClusteringThreshold = 0.2;
+  fEmcMinEnergyThreshold = 0.03;
+  fEmcTimeGate = 1.e-8 ;
+  fLogWeight = 4.5;
   
+
 }//end
 
-// PTH AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &):AliHLTPHOSBase(),fPHOSModule(0), fThreshold(0), fClusterThreshold(0), 
-//									    fHighGainFactor(0.005), fLowGainFactor(0.08),
-//									    fArraySize(3), fMultiplicity(fArraySize*fArraySize)
 
-//{
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &)
+{
   //Copy constructor, not implemented
-//}//end
+}//end
 
-AliHLTPHOSClusterizer:: ~AliHLTPHOSClusterizer()  
+AliHLTPHOSClusterizer::~AliHLTPHOSClusterizer()  
 {
   //Destructor
 }
 
-/**
-* Building a 2D array of cell energies of the PHOS detector
-* @param cellData object containing the cell energies from one event
-* @param recPointList list to be filled with coordinates of local maxima in the detector
-**/
-
-int
-AliHLTPHOSClusterizer::BuildCellEnergyArray(AliHLTPHOSRcuCellEnergyDataStruct* cellData, 
-					    AliHLTPHOSRecPointListDataStruct* recPointList)
+void
+AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
 {
-  //BuildCellEnergyArray
+  fEmcClusteringThreshold = params->GetClusteringThreshold();
+  fEmcMinEnergyThreshold = params->GetMinE();
+  fLogWeight = params->GetLogWeight();
+}
 
-  Int_t x = 0;
-  Int_t z = 0;
-  Int_t gain = 0;
-  Int_t xMod = 0;
-  Int_t zMod = 0;
-  Int_t index = 0;
-  Double_t energyCount = 0;
-
-  for(Int_t cell = 0; cell < cellData->fCnt; cell++)
-    {
-     
-      z = (cellData->fValidData[cell]).fZ;
-      x = (cellData->fValidData[cell]).fX;
-      gain = (cellData->fValidData[cell]).fGain;
-
-      zMod = z + (cellData->fRcuZ)*N_ZROWS_RCU;
-      xMod = x + (cellData->fRcuX)*N_XCOLUMNS_RCU;
-      
-      energyCount = (cellData->fValidData[cell]).fEnergy;
-
-      if(gain == 0 && energyCount < 1023) 
-	{
-	  fEnergyArray[xMod][zMod] = fHighGainFactor * energyCount;
-	 
-	  if(fEnergyArray[xMod][zMod] > fClusterThreshold)
-	    {	      
-	      recPointList[index].fZ = zMod;
-	      recPointList[index].fX = xMod;
-	      
-	      for(Int_t j = 0; j < index; j++)
-		{
-		  if(recPointList[j].fZ == zMod && recPointList[j].fX == xMod)
-		    recPointList[j].fZ = -1;
-		}
-	      index++;
-	    }
-	  
-	}
-      else if(gain == 1 && fEnergyArray[xMod][zMod] == 0) 
-	{
-	  fEnergyArray[xMod][zMod] = fLowGainFactor * energyCount;
-	   if(fEnergyArray[xMod][zMod] > fClusterThreshold)
-	    {	      
-	      recPointList[index].fZ = zMod;
-	      recPointList[index].fX = xMod;
-	      recPointList[index].fModule = cellData->fModuleID;
-	      index++;
-	    }
-	}
-
-    }  
-  
-  fPHOSModule = cellData->fModuleID;
-
-  return index;
-}//end BuildCellEnergyArray
-
-
-
-/**
-* Creating an array of rec points
-* @param recPointStructArrayPtr array to store the rec points
-* @param list list of rec points
-* @param nPoints number of points
-**/
-int 
-AliHLTPHOSClusterizer::CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* recPointStructArrayPtr, 
-						 AliHLTPHOSRecPointListDataStruct* list, 
-						 int nPoints) 
-
+void
+AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSGetter* getter)
 {
-  //CreateRecPointStructArray
+  fRecPointContainerPtr = new AliHLTPHOSRecPointContainerStruct();
+  fDigitContainerPtr = new AliHLTPHOSDigitContainerDataStruct();
+  fGetterPtr = getter;
+  fDigitArrayPtr = fGetterPtr->Digits();
+  fEmcRecPointsPtr = fGetterPtr->EmcRecPoints();
+  fOnlineMode = false;
+}
 
-  Int_t flag = 0;
-  Int_t edgeFlagRows = 0;
-  Int_t edgeFlagCols = 0;
-  Int_t k = 0;
-  Int_t nRecPoints = 0;
-  Int_t z = 0;
-  Int_t x = 0;
-  Int_t i = 0;
-  Int_t j = 0;
-  Int_t a = 0;
-
-  Float_t* energiesList = NULL;
-
-  for(Int_t point = 0; point < nPoints; point++)
-    {
-      z = list[point].fZ;
-      x = list[point].fX;
-      if(z == -1) continue;
-
-      if((z-fArraySize/2) < 0/*= - N_ZROWS_MOD/2*/ || (z+fArraySize/2) >= N_ZROWS_MOD/*/2*/) 
-	{
-	  edgeFlagRows = 1;
-	  continue;
-	}
-      if((x-fArraySize/2) < 0/*= - N_COLUMNS_MOD/2*/ || (x+fArraySize/2) >= N_XCOLUMNS_MOD) 
-	{
-	  edgeFlagCols = 1;
-	  continue;
-	}
-      
-
-      if(!flag) energiesList = new Float_t[fMultiplicity];
-
-      flag = 0;
-      k = 0;	      
-	  
-      for(i = -fArraySize/2; i <= fArraySize/2; i++)
-	{
-	  if(flag) break;
-	  for(j = -fArraySize/2; j <= fArraySize/2; j++)
-	    {			  
-	      
-	      if(fEnergyArray[x+i][z+j] > fEnergyArray[x][z] && abs(i) < 2 && abs(j) < 2)
-		{
-		  flag = 1;
-		  break;
-		}
-	     
-	      energiesList[k] = fEnergyArray[x+i][z+j];
-	      k++;
-	    }
-	}
-	  
-      
-      if(!flag && k)
-	{
-	  for(a = 0; a < k; a++) 
-	    {
-	      (recPointStructArrayPtr[nRecPoints].fEnergiesListPtr)[a] = energiesList[a];
-	    }
-	  recPointStructArrayPtr[nRecPoints].fCoordinatesPtr[0] = x;
-	  recPointStructArrayPtr[nRecPoints].fCoordinatesPtr[1] = z;
-	  recPointStructArrayPtr[nRecPoints].fX = x;
-	  recPointStructArrayPtr[nRecPoints].fZ = z;
-	  // recPointStructArrayPtr[nRecPoints].fMultiplicity = fMultiplicity;
-	  recPointStructArrayPtr[nRecPoints].fPHOSModule = list[point].fModule;
-	  nRecPoints++;
-	}
-    }
-  if(energiesList)
-    {
-      delete [] energiesList;
-      energiesList = NULL;
-    }
-
-  return nRecPoints;
-  
-}//end CreateRecPointStructArray
-
-
-/**
-* Calculating the center of gravity of a rec point
-* Not working well at this point!
-* @param recPointPtr pointer to the rec point
-**/
-int
-AliHLTPHOSClusterizer::CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* recPointPtr)
+Int_t
+AliHLTPHOSClusterizer::GetEvent(Int_t i)
 {
-  //CalculateCenterOfGravity
-  //Copied from offline code, and modified
+  Int_t coord[4];
 
-  Float_t xt = 0;
-  Float_t zt = 0;
-  Float_t xi = 0;
-  Float_t zj = 0;
-  Float_t w = 0;
-  Float_t w0 = 4.5;
-  Float_t wtot = 0;
-
-  Int_t x = recPointPtr->fCoordinatesPtr[0];
-  Int_t z = recPointPtr->fCoordinatesPtr[1];
-  
-  for(Int_t i = -fArraySize/2; i <= fArraySize/2; i++)
+  fGetterPtr->Event(i, "D");
+  for(Int_t j = 0; j < fDigitArrayPtr->GetEntries(); j++)
     {
-      for(Int_t j = -fArraySize/2; j <= fArraySize/2; j++)
-	{			  
-	  xi = x + i;
-	  zj = z + j;
-	  w = TMath::Max( (Float_t)0., (Float_t)(w0 + log( fEnergyArray[x+i][z+j] / fEnergyArray[x][z]) ) ) ;
-	  //printf("log in cog: %f\n", log( fEnergyArray[x+i][z+j] / fEnergyArray[x][z]));
-	  xt += xi * w ;
-	  zt += zj * w ;
-	  wtot += w ;	  
-	}
+      fDigitPtr = (AliPHOSDigit*)fDigitArrayPtr->At(j);
+      fPHOSGeometry->AbsToRelNumbering(fDigitPtr->GetId(), coord);
+      fDigitContainerPtr->fDigitDataStruct[j].fX = coord[3];
+      fDigitContainerPtr->fDigitDataStruct[j].fZ = coord[2];
+      fDigitContainerPtr->fDigitDataStruct[j].fModule = coord[0];
+      fDigitContainerPtr->fDigitDataStruct[j].fEnergy = fDigitPtr->GetEnergy();
+      fDigitContainerPtr->fDigitDataStruct[j].fTime = fDigitPtr->GetTime();
     }
-  xt /= wtot ;
-  zt /= wtot ;
-  
-  //printf("wtot cog: %f\n", wtot);
-
-  recPointPtr->fX = xt;
-  recPointPtr->fZ = zt;
-  
+  fDigitContainerPtr->fNDigits = fDigitArrayPtr->GetEntriesFast();
   return 0;
+}
 
-}//end CalculateCenterOfGravity
-  
-int
-AliHLTPHOSClusterizer::CalculateMoments(AliHLTPHOSRecPointDataStruct* recPointPtr, Bool_t axisOnly)
+Int_t 
+AliHLTPHOSClusterizer::GetNEvents()
 {
-  //Copied from offline code, and modified
-  
-  
-  // Calculate the shower moments in the eigen reference system
-  // M2x, M2z, M3x, M4z
-  // Calculate the angle between the shower position vector and the eigen vector
-  
-  Double_t wtot = 0. ;
-  Double_t x    = 0.;
-  Double_t z    = 0.;
-  Double_t dxx  = 0.;
-  Double_t dzz  = 0.;
-  Double_t dxz  = 0.;
-  Double_t lambda0=0, lambda1=0;
-  Float_t logWeight = 4.5;
-  
-  //Int_t iDigit;
-  
-  // 1) Find covariance matrix elements:
-  //    || dxx dxz ||
-  //    || dxz dzz ||
-  
-  Int_t xi;
-  Int_t zj;
-  Double_t w;
-  
-  Int_t xc = recPointPtr->fCoordinatesPtr[0];
-  Int_t zc = recPointPtr->fCoordinatesPtr[1];
-  
-  for(Int_t i = -fArraySize/2; i <= fArraySize/2; i++)
+  if(fOnlineMode)
     {
-      xi = xc + i;
-      for(Int_t j = -fArraySize/2; j <= fArraySize/2; j++)
+      printf("Number of events not available in online mode!\n");
+      return -1;
+    }
+  return fGetterPtr->MaxEvent();
+}
+  
+
+Int_t 
+AliHLTPHOSClusterizer::ClusterizeEvent()
+{
+  // Steering method to construct the clusters stored in a list of Reconstructed Points
+  // A cluster is defined as a list of neighbour digits
+  Int_t nRecPoints = 0;
+  UInt_t i = 0;
+
+
+  AliHLTPHOSRecPointDataStruct *recPoint = 0;
+  
+  //Clusterization starts
+  for(i = 0; i < fDigitContainerPtr->fNDigits; i++)
+    { 
+   
+      fDigitsInCluster = 0;
+      
+      if(fDigitContainerPtr->fDigitDataStruct[i].fEnergy < fEmcClusteringThreshold)
 	{
-	  zj = zc + j;
-	  if (fEnergyArray[xi][zj] > 0) 
+	  continue;
+	}
+
+      recPoint = &(fRecPointContainerPtr->fRecPointArray[nRecPoints]);
+      recPoint->fAmp = 0;
+      //recPoint->
+      recPoint->fDigitsList[fDigitsInCluster] =  fDigitContainerPtr->fDigitDataStruct[i];
+      recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[i].fEnergy;
+      fDigitContainerPtr->fDigitDataStruct[i].fEnergy = 0;
+      fDigitsInCluster++;
+      nRecPoints++;
+      ScanForNeighbourDigits(i, recPoint);
+
+      recPoint->fMultiplicity = fDigitsInCluster;
+    }//end of clusterization
+  fRecPointContainerPtr->fNRecPoints = nRecPoints;
+  
+  return nRecPoints;
+}
+
+void
+AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDataStruct* recPoint)
+
+{
+
+  for(UInt_t j = 0; j < fDigitContainerPtr->fNDigits; j++)
+    {
+      if(fDigitContainerPtr->fDigitDataStruct[j].fEnergy > fEmcMinEnergyThreshold)
+	{
+	  switch(AreNeighbours(&(fDigitContainerPtr->fDigitDataStruct[index]),
+			       &(fDigitContainerPtr->fDigitDataStruct[j])))
 	    {
-
-	      //	      w     = TMath::Max(0.,logWeight + log( fEnergyArray[xi][zj]/fEnergyArray[xc][zc] ) ) ;
-
-	      //printf("log in mom: %f\n", TMath::Log( fEnergyArray[xi][zj] / fEnergyArray[xc][zc]));
-	      x    += w * xi ;
-	      z    += w * zj ; 
-	      dxx  += w * xi * xi ;
-	      dzz  += w * zj * zj ;
-	      dxz  += w * xi * zj ; 
-	      wtot += w ;
+	    case 0:
+	      break; 
+	    case 1:      
+	      recPoint->fDigitsList[fDigitsInCluster] =  fDigitContainerPtr->fDigitDataStruct[j];
+	      recPoint->fAmp += fDigitContainerPtr->fDigitDataStruct[j].fEnergy;
+	      fDigitContainerPtr->fDigitDataStruct[j].fEnergy = 0;
+	      fDigitsInCluster++;
+	      ScanForNeighbourDigits(j, recPoint);
+	      break;
+	    case 2:
+	      break;
 	    }
 	}
-    }
-  //printf("wtot: %f\n", wtot);
-  if (wtot>0) 
-    {
-      x   /= wtot ;
-      z   /= wtot ;
-      dxx /= wtot ;
-      dzz /= wtot ;
-      dxz /= wtot ;
-      dxx -= x * x ;
-      dzz -= z * z ;
-      dxz -= x * z ;
-      
-  // 2) Find covariance matrix eigen values lambda0 and lambda1
+    } 
+  return;
+}
 
-      lambda0 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-      lambda1 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-    }
-    
-  recPointPtr->fM2x   = lambda0;
-  recPointPtr->fM2z   = lambda1;
-  //  printf("lambda0 = %f -- lambda1 = %f\n", lambda0, lambda1);
-  // 3) Find covariance matrix eigen vectors e0 and e1
-  if(!axisOnly)
-    {
-      TVector2 e0,e1;
-      if (dxz != 0)
-	e0.Set(1.,(lambda0-dxx)/dxz);
-      else
-	e0.Set(0.,1.);
-      
-      e0 = e0.Unit();
-      e1.Set(-e0.Y(),e0.X());
-      
-      // 4) Rotate cluster tensor from (x,z) to (e0,e1) system
-      //    and calculate moments M3x and M4z
-      
-      Float_t cosPhi = e0.X();
-      Float_t sinPhi = e0.Y();
-      
-      Float_t xiPHOS ;
-      Float_t zjPHOS ;
-      Double_t dx3, dz3, dz4;
-      wtot = 0.;
-      x    = 0.;
-      z    = 0.;
-      dxx  = 0.;
-      dzz  = 0.;
-      dxz  = 0.;
-      dx3  = 0.;
-      dz3  = 0.;
-      dz4  = 0.;
-      for(Int_t i = -fArraySize/2; i <= fArraySize/2; i++)
-	{
-	  for(Int_t j = -fArraySize/2; j <= fArraySize/2; j++)
-	    {
-	      xi = xc + i;
-	      zj = zc + j;
-	      xiPHOS = (Float_t)xi*cosPhi + (Float_t)zj*sinPhi;
-	      zjPHOS = (Float_t)zj*cosPhi - (Float_t)xi*sinPhi;
-	      //	      xi = (Float_t)xi*cosPhi + (Float_t)zj*sinPhi;
-	      //	      zj = (Float_t)zj*cosPhi - (Float_t)xi*sinPhi;
-	      if (fEnergyArray[xi][zj] > 0) 
-		{
-		  w     = TMath::Max(0.,logWeight+TMath::Log(fEnergyArray[xi][zj]/fEnergyArray[xc][zc] ) ) ;
-		  //  printf("log in mom: %f\n", TMath::Log( fEnergyArray[xi][zj] / fEnergyArray[xc][zc]));
-			  
-		  x    += w * xi ;
-		  z    += w * zj ; 
-		  dxx  += w * xi * xi ;
-		  dzz  += w * zj * zj ;
-		  dxz  += w * xi * zj ; 
-		  dx3  += w * xi * xi * xi;
-		  dz3  += w * zj * zj * zj ;
-		  dz4  += w * zj * zj * zj * zj ;
-		  wtot += w ;
-		}
-	    }
-	}
-      if (wtot>0) 
-	{
-	  x   /= wtot ;
-	  z   /= wtot ;
-	  dxx /= wtot ;
-	  dzz /= wtot ;
-	  dxz /= wtot ;
-	  dx3 /= wtot ;
-	  dz3 /= wtot ;
-	  dz4 /= wtot ;
-	  dx3 += -3*dxx*x + 2*x*x*x;
-	  dz4 += -4*dz3*z + 6*dzz*z*z -3*z*z*z*z;
-	  dxx -= x * x ;
-	  dzz -= z * z ;
-	  dxz -= x * z ;
-	}
+
+Int_t 
+AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1, 
+					    AliHLTPHOSDigitDataStruct* digit2)
+{
   
-      // 5) Find an angle between cluster center vector and eigen vector e0
-      
-      Float_t phi = 0;
-      if ( (x*x+z*z) > 0 ) 
-	phi = TMath::ACos ((x*e0.X() + z*e0.Y()) / sqrt(x*x + z*z));
+  //Int_t coord1[4];
+  //Int_t coord2[4];
+  
+  // fPHOSGeometry->AbsToRelNumbering(digit1->fID, coord1);
+  //fPHOSGeometry->AbsToRelNumbering(digit2->fID, coord2);
+  
 
-      recPointPtr->fM3x   = dx3;
-      recPointPtr->fM4z   = dz4;
-      recPointPtr->fPhixe = phi;
-      //      printf("%f\n",phi);
+  if ( (digit1->fModule == digit2->fModule) /*&& (coord1[1]==coord2[1])*/ ) // inside the same PHOS module
+    { 
+
+      Int_t rowdiff = TMath::Abs( digit1->fZ - digit2->fZ );  
+      Int_t coldiff = TMath::Abs( digit1->fX - digit2->fX ); 
+          
+      if (( coldiff <= 1 )  && ( rowdiff <= 1 ))
+	{
+	  if(TMath::Abs(digit1->fTime - digit2->fTime ) < fEmcTimeGate)
+	    return 1; 
+	}
     }
   return 0;
 }
 
-
-/**
-* Create a simpler data struct for a rec point, containing
-* only coordinates, energy and timing
-* @param recPointPtr pointer to the rec point
-* @param clusterStructPtr pointer to the cluster struct
-**/
-int
-AliHLTPHOSClusterizer::ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recPointPtr, AliHLTPHOSClusterDataStruct* clusterStructPtr)
+void
+AliHLTPHOSClusterizer::CalculateCenterOfGravity()
 {
-  //ClusterizeStruct
 
-  Float_t clusterEnergy = 0;
-  Float_t* energiesListPtr = recPointPtr->fEnergiesListPtr;
-  
-  for(Int_t i = 0; i < recPointPtr->fMultiplicity; i++)
+  // Calculates the center of gravity in the local PHOS-module coordinates 
+  Float_t wtot = 0.;
+ 
+  Int_t relid[4];
+
+  Float_t x = 0.;
+  Float_t z = 0.;
+  Float_t xi = 0.;
+  Float_t zi = 0.;
+
+  AliHLTPHOSRecPointDataStruct *recPoint = 0;
+  AliHLTPHOSDigitDataStruct *digit = 0;
+
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
+
+  Int_t iDigit = 0;
+  Int_t iRecPoint = 0;
+
+  for(iRecPoint=0; iRecPoint<fRecPointContainerPtr->fNRecPoints; iRecPoint++) 
     {
-      clusterEnergy += energiesListPtr[i];
-    }
-
-  clusterStructPtr->fLocalPositionPtr[0] = recPointPtr->fX;
-  clusterStructPtr->fLocalPositionPtr[1] = recPointPtr->fZ;
-  clusterStructPtr->fClusterEnergy = clusterEnergy;
-  clusterStructPtr->fPHOSModule = recPointPtr->fPHOSModule;
-
-  return 0;
-
-}//end ClusterizeStruct
-
-
-
-
-/**
-* Resets the cell energy array
-**/ 
-int 
-AliHLTPHOSClusterizer::ResetCellEnergyArray()
-
-{
-  //ResetCellEnergyArray
-
-  for(Int_t x = 0; x < N_ZROWS_MOD; x++)
-    {
-      for(Int_t z = 0; z < N_XCOLUMNS_MOD; z++)
+      recPoint = &(fRecPointContainerPtr->fRecPointArray[iRecPoint]);
+      for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
 	{
-	  fEnergyArray[x][z] = 0;
+	  digit = &(recPoint->fDigitsList[iDigit]);
+	  
+	  //fPHOSGeometry->AbsToRelNumbering(digit->fID, relid) ;
+	  //  fPHOSGeometry->RelPosInModule(relid, xi, zi);
+	  xi = digit->fX;
+	  zi = digit->fZ;
+	  
+	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
+	    {
+	      Float_t w = TMath::Max( 0., fLogWeight + TMath::Log( digit->fEnergy / recPoint->fAmp ) ) ;
+	      x    += xi * w ;
+	      z    += zi * w ;
+	      wtot += w ;
+	    }
+	}
+      
+      if (wtot>0) 
+	{
+	  recPoint->fX = x/wtot ;
+	  recPoint->fZ = z/wtot ;
+	}
+      else
+	{
+	  recPoint->fAmp = 0;
 	}
     }
+      
+}
 
-  return 0;
-
-}//end ResetCellEnergyArray
 

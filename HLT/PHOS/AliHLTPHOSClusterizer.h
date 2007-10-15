@@ -11,71 +11,68 @@
 #ifndef ALIHLTPHOSCLUSTERIZER_H
 #define ALIHLTPHOSCLUSTERIZER_H
 
+#include "AliHLTPHOSBase.h"
+#include "AliHLTPHOSRecPointContainerStruct.h"
+#include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliPHOSGeometry.h"
+#include "TClonesArray.h"
+#include "AliPHOSDigit.h"
+#include "AliPHOSGetter.h"
+#include "AliPHOSRecoParamEmc.h"
 
-
-//#include "AliHLTPHOSProcessor.h"
-#include "AliHLTPHOSBase.h" 
-
-
-//#include "AliHLTPHOSCommonDefs.h"
-//#include "AliHLTPHOSConstants.h"
-
-//using namespace PhosHLTConst;
-
-struct AliHLTPHOSClusterDataStruct;
-struct AliHLTPHOSRecPointDataStruct;
-struct AliHLTPHOSValidCellDataStruct;
-struct AliHLTPHOSRecPointListDataStruct;
-struct AliHLTPHOSRcuCellEnergyDataStruct;
-
-//class AliHLTPHOSClusterizer: public AliHLTPHOSProcessor
-
-class AliHLTPHOSClusterizer: public AliHLTPHOSBase
+class AliHLTPHOSClusterizer : public AliHLTPHOSBase
 {
   
- public: 
+public:
   
-  AliHLTPHOSClusterizer();
+  AliHLTPHOSClusterizer();    
+  
   virtual ~AliHLTPHOSClusterizer();
-  //  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &);
-  //AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
-   
-  void    SetThreshold(float threshold) {fThreshold = threshold;}
-  void    SetClusterThreshold(float clusterThreshold) {fClusterThreshold = clusterThreshold;}
   
-  void    SetHighGainFactor(float highGain) {fHighGainFactor = highGain;}
-  void    SetLowGainFactor(float lowGain) {fLowGainFactor = lowGain;}
-  void    SetArraySize(int size) 
-  { 
-    fArraySize = size;
-    fMultiplicity = fArraySize * fArraySize;
-  }
-  float GetThreshold() {return fThreshold;}
-  float GetClusterThreshold() {return fClusterThreshold;}
-  float GetHighGainFactor() {return fHighGainFactor;}
-  float GetLowGainFactor() {return fLowGainFactor;}
-  float GetArraySize() {return fArraySize;}
-  float GetMultiplicity() {return fMultiplicity;}
+  AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &);
+  AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
+
+  void SetRecPointContainer(AliHLTPHOSRecPointContainerStruct *RecPointContainerPtr)
+  { fRecPointContainerPtr = RecPointContainerPtr; }
+
+  void SetRecoParameters(AliPHOSRecoParamEmc*);
+
+  void SetEmcClusteringThreshold(Float_t threshold) { fEmcClusteringThreshold = threshold; }
+  void SetEmcMinEnergyThreshold(Float_t threshold) { fEmcMinEnergyThreshold = threshold; }
+  void SetEmcTimeGate(Float_t gate) { fEmcTimeGate = gate; }
+  void SetLogWeight(Float_t weight) { fLogWeight = weight; }  
+    
+  void SetOfflineMode(AliPHOSGetter*); 
   
-  int   BuildCellEnergyArray(AliHLTPHOSRcuCellEnergyDataStruct *structPtr, AliHLTPHOSRecPointListDataStruct* recPointList);
-  int   CreateRecPointStructArray(AliHLTPHOSRecPointDataStruct* rectStructsPtr, AliHLTPHOSRecPointListDataStruct* list, int nPoints);
-  int   CalculateCenterOfGravity(AliHLTPHOSRecPointDataStruct* recPointPtr);
-  int   CalculateMoments(AliHLTPHOSRecPointDataStruct* recPointPtr, Bool_t axisOnly);
-  int   ClusterizeStruct(AliHLTPHOSRecPointDataStruct* recArrayPtr, AliHLTPHOSClusterDataStruct* clusterArrayPtr);
-  int   ResetCellEnergyArray();
-
+  virtual Int_t ClusterizeEvent();
+  virtual Int_t GetEvent(Int_t);
   
- private:
+  Int_t GetNEvents();
 
-  AliHLTUInt8_t fPHOSModule;                                     /**<Number of the PHOSModule*/
-  Float_t fEnergyArray[N_XCOLUMNS_MOD][N_ZROWS_MOD];             /**<2D array of cell energies*/
-  Float_t fThreshold;                                            /**<Energy threshold*/
-  Float_t fClusterThreshold;                                     /**<Cluster threshold*/
-  Float_t fHighGainFactor;                                       /**<High gain factor*/
-  Float_t fLowGainFactor;                                        /**<Low gain factor*/
-  Int_t   fArraySize;                                            /**<Size of the array which the energies are summed*/
-  Int_t   fMultiplicity;                                         /**<Number of crystals the energies are summed for*/
+  virtual void ScanForNeighbourDigits(Int_t, AliHLTPHOSRecPointDataStruct*);
+  virtual Int_t AreNeighbours(AliHLTPHOSDigitDataStruct*, AliHLTPHOSDigitDataStruct*);
+  virtual void CalculateCenterOfGravity();
 
+private:
+  
+  Float_t fEmcClusteringThreshold;
+  Float_t fEmcMinEnergyThreshold;
+  Float_t fEmcTimeGate;
+  Float_t fLogWeight;
+  Int_t fDigitsInCluster;
+
+  Bool_t fOnlineMode;
+ 
+  TClonesArray *fDigitArrayPtr; 
+  TObjArray *fEmcRecPointsPtr;
+  AliPHOSDigit *fDigitPtr;
+
+  AliHLTPHOSDigitContainerDataStruct *fDigitContainerPtr;
+  AliHLTPHOSRecPointContainerStruct *fRecPointContainerPtr;
+  AliPHOSGeometry *fPHOSGeometry;
+  
+  AliPHOSGetter *fGetterPtr;
+  
   ClassDef(AliHLTPHOSClusterizer, 1);
 };
 

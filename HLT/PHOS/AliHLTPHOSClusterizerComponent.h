@@ -23,10 +23,12 @@ class AliHLTPHOSClusterizer;
 
 //class Rtypes;
 
-struct AliHLTPHOSRcuCellEnergyDataStruct;
-struct AliHLTPHOSClusterDataStruct;
-struct AliHLTPHOSRecPointDataStruct;
-struct AliHLTPHOSRecPointListDataStruct;
+class AliHLTPHOSRcuCellEnergyDataStruct;
+class AliHLTPHOSClusterDataStruct;
+class AliHLTPHOSRecPointDataStruct;
+class AliHLTPHOSRecPointContainerStruct;
+class AliHLTPHOSRecPointListDataStruct;
+class AliHLTPHOSDigitContainerDataStruct;
 
 
 
@@ -49,7 +51,7 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
 
 
   const char* GetComponentID();
-  void GetInputDataTypes(vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 
   AliHLTComponentDataType GetOutputDataType();
 
@@ -60,6 +62,8 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
 		std::vector<AliHLTComponentBlockData>&);
 
   AliHLTComponent* Spawn();
+  
+ // void SetNoCrazyness(Bool_t val);
 
  protected:
 
@@ -69,10 +73,14 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
   int DoDeinit();
 
  private:
+  AliHLTPHOSDigitContainerDataStruct *fAllDigitsPtr;
   AliHLTPHOSClusterizer* fClusterizerPtr;                       //Pointer to the clusterizer
-  AliHLTPHOSClusterDataStruct* fOutPtr;                         //Pointer to the struct of output clusters
+  AliHLTPHOSRecPointContainerStruct* fOutPtr;                         //Pointer to the struct of output clusters
   AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //Pointer to the struct of output recpoints
   AliHLTPHOSRecPointListDataStruct* fRecPointListPtr;           //Pointer to the struct of list of output recpoints
+  Int_t fDigitCount;
+  Bool_t fNoCrazyness;
+  
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
 
 };
