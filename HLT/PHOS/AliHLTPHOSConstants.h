@@ -44,7 +44,7 @@ namespace PhosHLTConst
   const unsigned char PF_VECTOR_DIR[] = "/HLT/PHOS/PFVectors";
 #endif
 
-  const unsigned int PF_DEFAULT_N_SAMPLES = 70;
+    const unsigned int PF_DEFAULT_N_SAMPLES = 70;
   const unsigned int PF_DEFAULT_STARTINDEX = 0;
 
   const unsigned int DEFAULT_TAU = 2;    /**<Assume that the signal rise time of the altrp pulses is 2 us (nominal value of the electronics)*/

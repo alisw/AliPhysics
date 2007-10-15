@@ -101,7 +101,7 @@ AliHLTPHOSRcuProcessor::ScanArguments(int argc, const char** argv)
     {
       Logging( kHLTLogFatal, "HLT::AliHLTPHOSRcuHistogramProducerComponent::DoInt( int argc, const char** argv )", "Missing argument",
 	       "The argument equippmentID is not set: set it with a component argumet like this: -equippmentID  <number>");
-      iResult = -2; 
+      iResult = -3; 
     }
   return iResult;
 }
