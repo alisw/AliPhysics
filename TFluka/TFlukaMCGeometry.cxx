@@ -911,17 +911,15 @@ void TFlukaMCGeometry::ToFlukaString(TString &str) const
 void TFlukaMCGeometry::FlukaMatName(TString &str) const
 {
 // Strip the detector name
-     
     TObjArray * tokens = str.Tokenize("_");
     Int_t ntok = tokens->GetEntries();
-    if (ntok > 0) {
+    if (ntok > 1) {
         TString head = ((TObjString*) tokens->At(0))->GetString();
         Int_t nhead = head.Length();
         str = str.Remove(0, nhead + 1);
     }
     tokens->Clear();
     delete tokens;
-
 // Convert a name to upper case 8 chars.
    ToFlukaString(str);
    Int_t ilast;
