@@ -189,7 +189,7 @@ void
 AliHLTPHOSTreeMakerComponent::Write()
 {
   cout << "Writing file...";
-  char filename [50];
+  char filename [256];
   sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNb,(fEventCount/fWriteInterval - 1));
   TFile *outfile = new TFile(filename,"recreate");
   fDigitTreePtr->Write();
