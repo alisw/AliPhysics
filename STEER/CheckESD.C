@@ -13,15 +13,18 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliESDEvent.h"
+#include "AliESDv0.h"
+#include "AliESDcascade.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDCaloCluster.h"
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliPID.h"
-#else
+#endif
 const Int_t kXiMinus = 3312;
 const Int_t kOmegaMinus = 3334;
-#endif
 
 
 TH1F* CreateHisto(const char* name, const char* title, 
