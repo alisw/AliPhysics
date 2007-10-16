@@ -96,6 +96,14 @@ DRM DATA FORMAT
 #define DRM_C_BIT_MASK 0x00008000
 #define DRM_C_BIT_POSITION 15
 
+//DRM Vers-ID mask/position
+#define DRM_VERS_ID_MASK 0x001f0000
+#define DRM_VERS_ID_POSITION 16
+
+//DRM DRM Header size mask/position
+#define DRM_HEADER_SIZE_MASK 0x01e00000
+#define DRM_HEADER_SIZE_POSITION 21
+
 //DRM status header 2 word required bit pattern
 #define DRM_STATUS_HEADER_2 0x40000001
 
@@ -103,19 +111,53 @@ DRM DATA FORMAT
 #define DRM_ENABLE_ID_MASK 0x00007ff0
 #define DRM_ENABLE_ID_POSITION 4
 
+//DRM zero in word2 mask/position
+#define DRM_ZERO_WORD2_MASK 0x00008000
+#define DRM_ZERO_WORD2_POSITION 15
+
 //DRM fault ID mask/position
 #define DRM_FAULT_ID_MASK 0x07ff0000
 #define DRM_FAULT_ID_POSITION 16
 
+//DRM RTO bit mask/position
+#define DRM_RTO_BIT_MASK 0x08000000
+#define DRM_RTO_BIT_POSITION 27
+
 //DRM status header 3 word required bit pattern
 #define DRM_STATUS_HEADER_3 0x40000001
 
-//DRM TTC event counter mask/position
-#define DRM_TTC_EVENT_COUNTER_MASK 0x0ffffff0
-#define DRM_TTC_EVENT_COUNTER_POSITION 4
+//DRM L0 BCID mask/position
+#define DRM_L0_BCID_MASK 0x0000fff0
+#define DRM_L0_BCID_POSITION 4
+
+//DRM Run Time Info mask/position
+#define DRM_RUNTIME_INFO_MASK 0x0fff0000
+#define DRM_RUNTIME_INFO_POSITION 16
+
+//DRM status header 4 word required bit pattern
+#define DRM_STATUS_HEADER_4 0x40000001
+
+//DRM Temperature mask/position
+#define DRM_TEMPERATURE_MASK 0x00003ff0
+#define DRM_TEMPERATURE_POSITION 4
+
+//DRM 1st zero in word4 mask/position
+#define DRM_ZERO_1_WORD4_MASK 0x00004000
+#define DRM_ZERO_1_WORD4_POSITION 14
+
+//DRM ACK mask/position
+#define DRM_ACK_MASK 0x00008000
+#define DRM_ACK_POSITION 15
+
+//DRM Sens AD mask/position
+#define DRM_SENS_AD_MASK 0x00070000
+#define DRM_SENS_AD_POSITION 16
+
+//DRM 2nd zero in word4 mask/position
+#define DRM_ZERO_2_WORD4_MASK 0x00080000
+#define DRM_ZERO_2_WORD4_POSITION 19
 
 //DRM event CRC mask/position
-//#define DRM_EVENT_CRC_MASK 0x001ffff0
 #define DRM_EVENT_CRC_MASK 0x000ffff0
 #define DRM_EVENT_CRC_POSITION 4
 

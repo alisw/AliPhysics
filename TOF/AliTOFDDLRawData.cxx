@@ -325,12 +325,35 @@ void AliTOFDDLRawData::MakeDRMheader(Int_t nDDL, UInt_t *buf)
   fIndex++;
   buf[fIndex]=baseWord;
 
+  // DRM status header 4
+  baseWord=0;
+  word = 1; // 0001 -> DRM data are coming from the VME slot number 1
+  AliBitPacking::PackWord(word,baseWord, 0, 3);
+  word = 0; // temperature
+  AliBitPacking::PackWord(word,baseWord, 4,13);
+  word = 0; // zero
+  AliBitPacking::PackWord(word,baseWord, 14,14);
+  word = 0; // ACK
+  AliBitPacking::PackWord(word,baseWord, 15,15);
+  word = 0; // Sens AD
+  AliBitPacking::PackWord(word,baseWord, 16,18);
+  word = 0; // zero
+  AliBitPacking::PackWord(word,baseWord, 19,19);
+  word = 0; // reserved for future use
+  AliBitPacking::PackWord(word,baseWord, 20,27);
+  word = 4; // 0100 -> DRM header ID
+  AliBitPacking::PackWord(word,baseWord,28,31);
+  fIndex++;
+  buf[fIndex]=baseWord;
+
   // DRM status header 3
   baseWord=0;
   word = 1; // 0001 -> DRM data are coming from the VME slot number 1
   AliBitPacking::PackWord(word,baseWord, 0, 3);
-  word = 0; // TTC event counter
-  AliBitPacking::PackWord(word,baseWord, 4,27);
+  word = 0; // L0 BCID
+  AliBitPacking::PackWord(word,baseWord, 4,15);
+  word = 0; // Run Time info
+  AliBitPacking::PackWord(word,baseWord, 16,27);
   word = 4; // 0100 -> DRM header ID
   AliBitPacking::PackWord(word,baseWord,28,31);
   fIndex++;
@@ -354,7 +377,9 @@ void AliTOFDDLRawData::MakeDRMheader(Int_t nDDL, UInt_t *buf)
   word = 0; //
   AliBitPacking::PackWord(word,baseWord,15,15);
   word = 0; // fault ID
-  AliBitPacking::PackWord(word,baseWord,16,27);
+  AliBitPacking::PackWord(word,baseWord,16,26);
+  word = 0; // RTO
+  AliBitPacking::PackWord(word,baseWord,27,27);
   word = 4; // 0100 -> DRM header ID
   AliBitPacking::PackWord(word,baseWord,28,31);
   fIndex++;
@@ -377,8 +402,12 @@ void AliTOFDDLRawData::MakeDRMheader(Int_t nDDL, UInt_t *buf)
       
   word = 1; // LHC clock status: 1/0
   AliBitPacking::PackWord(word,baseWord,15,15);
+  word = 0; // Vers ID
+  AliBitPacking::PackWord(word,baseWord,16,20);
+  word = 0; // DRMH size
+  AliBitPacking::PackWord(word,baseWord,21,24);
   word = 0; // reserved for future use
-  AliBitPacking::PackWord(word,baseWord,16,27);
+  AliBitPacking::PackWord(word,baseWord,25,27);
   word = 4; // 0100 -> DRM header ID
   AliBitPacking::PackWord(word,baseWord,28,31);
   fIndex++;

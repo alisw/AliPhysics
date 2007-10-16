@@ -35,7 +35,7 @@
 #define CHAIN_B_TDC_HIT_STATUS  (DRM_BIT|TRM_BIT|CHAIN_B_BIT)
 
 //define DRM/LTM fixed number of words
-#define DRM_DATA_WORDS          4
+#define DRM_DATA_WORDS          5
 #define LTM_DATA_WORDS          33
 
 //define masks
