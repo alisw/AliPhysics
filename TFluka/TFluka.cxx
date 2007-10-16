@@ -346,7 +346,7 @@ Bool_t TFluka::ProcessRun(Int_t nevent) {
 //
 // Run steering
 //
-
+    
   if (fVerbosityLevel >=3)
     cout << "==> TFluka::ProcessRun(" << nevent << ") called." 
          << endl;
@@ -2085,7 +2085,7 @@ const char* TFluka::CurrentVolName() const
 //
 // Return the current volume name
 //
-  if (gGeoManager->IsOutside()) return 0;
+  if (gGeoManager->IsOutside()) return "Outside FLUKA Geometry !";
   return gGeoManager->GetCurrentVolume()->GetName();
 }
 
