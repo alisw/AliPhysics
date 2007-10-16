@@ -335,6 +335,7 @@ extern "C" {
 //  Pre-track actions at for primary tracks
 //
     if (particleIsPrimary) {
+	fluka->SetCaller(kSODRAW);
         TVirtualMCApplication::Instance()->BeginPrimary();
         TVirtualMCApplication::Instance()->PreTrack();
     }
