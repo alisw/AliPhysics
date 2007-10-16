@@ -9,8 +9,8 @@ MODULE_SRCS= \
         AliHLTTRDDefinitions.cxx \
         AliHLTTRDTrackerComponent.cxx \
         AliTRDclusterizerHLT.cxx \
-	AliHLTTRDEsdWriterComponent.cxx
-
+	AliHLTTRDEsdWriterComponent.cxx \
+	AliHLTTRDCalibrationComponent.cxx
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
@@ -18,8 +18,8 @@ CLASS_HDRS:= \
         AliHLTTRDDefinitions.h \
         AliHLTTRDTrackerComponent.h \
         AliTRDclusterizerHLT.h \
-	AliHLTTRDEsdWriterComponent.h
-
+	AliHLTTRDEsdWriterComponent.h \
+	AliHLTTRDCalibrationComponent.h
 # library headers
 # in most cases you might have already added all the header files to
 # the CLASS_HDRS variable. So we just use the content of this. You

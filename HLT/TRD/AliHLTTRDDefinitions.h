@@ -22,19 +22,21 @@
 
 class AliHLTTRDDefinitions
 {
-    public:
-      AliHLTTRDDefinitions();
-      virtual ~AliHLTTRDDefinitions();
 
-      static const AliHLTComponentDataType fgkDDLRawDataType;
-      static const AliHLTComponentDataType fgkClusterDataType;
-      static const AliHLTComponentDataType fgkTRDSATracksDataType; // Stand Alone tracks
-      static const AliHLTComponentDataType fgkTRDSAEsdDataType; // Stand Alone tracks
-      static const AliHLTComponentDataType fgkMCMtrackletDataType;
-      static const AliHLTComponentDataType fgkMCMcalibrationDataType;
-      
-      ClassDef(AliHLTTRDDefinitions, 0)
+public:
+  AliHLTTRDDefinitions();
+  virtual ~AliHLTTRDDefinitions();
+  
+  static const AliHLTComponentDataType fgkDDLRawDataType; // Raw Data
+  static const AliHLTComponentDataType fgkClusterDataType; // TRD Cluster Data
+  static const AliHLTComponentDataType fgkTRDSATracksDataType; // Stand Alone tracks
+  static const AliHLTComponentDataType fgkTRDSAEsdDataType; // Stand Alone tracks
+  static const AliHLTComponentDataType fgkMCMtrackletDataType; // MCM tracklet Data
+  static const AliHLTComponentDataType fgkMCMcalibrationDataType; // MCM Calibration data
+  static const AliHLTComponentDataType fgkCalibrationDataType; // Calibration with TRDtracks
 
+  ClassDef(AliHLTTRDDefinitions, 0)
+    
 };
 
 #endif
