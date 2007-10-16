@@ -26,9 +26,6 @@
 #include "AliHLTRootFileStreamerComponent.h"
 #include "TString.h"
 
-/** the global object for component registration */
-AliHLTRootFileStreamerComponent gAliHLTRootFileStreamerComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFileStreamerComponent)
 

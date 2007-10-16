@@ -36,14 +36,8 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTDataTypes.h"
-//#include "AliHLTSystem.h"
+#include "AliHLTModuleAgent.h"
 #include "TString.h"
-
-// the standard components
-// #include "AliHLTFilePublisher.h"
-// #include "AliHLTFileWriter.h"
-// #include "AliHLTRootFilePublisherComponent.h"
-// #include "AliHLTRootFileWriterComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTComponentHandler)
@@ -54,7 +48,7 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   fScheduleList(),
   fLibraryList(),
   fEnvironment(),
-  fStandardList()
+  fOwnedComponents()
 {
   // see header file for class documentation
   // or
@@ -72,7 +66,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   fScheduleList(),
   fLibraryList(),
   fEnvironment(),
-  fStandardList()
+  fOwnedComponents()
 {
   // see header file for class documentation
   if (pEnv) {
@@ -84,8 +78,15 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
       // for redirection
       AliHLTLogging::Init(pEnv->fLoggingFunc);
     }
-  }  else
+  }  else {
     memset(&fEnvironment, 0, sizeof(AliHLTComponentEnvironment));
+  }
+  //#ifndef __DEBUG
+  //SetLocalLoggingLevel(kHLTLogError);
+  //#else
+  //SetLocalLoggingLevel(kHLTLogInfo);
+  //#endif
+
   AddStandardComponents();
 }
 
@@ -111,6 +112,16 @@ int AliHLTComponentHandler::AnnounceVersion()
 #else
   HLTInfo("ALICE High Level Trigger build on %s (%s) (embedded AliRoot build)", __DATE__, __TIME__);
 #endif
+  return iResult;
+}
+
+Int_t AliHLTComponentHandler::AddComponent(AliHLTComponent* pSample)
+{
+  // see header file for class documentation
+  Int_t iResult=0;
+  if ((iResult=RegisterComponent(pSample))>=0) {
+    fOwnedComponents.push_back(pSample);
+  }
   return iResult;
 }
 
@@ -242,6 +253,21 @@ void AliHLTComponentHandler::List()
   }
 }
 
+int AliHLTComponentHandler::HasOutputData( const char* componentID)
+{
+  // see header file for class documentation
+  int iResult=0;
+  AliHLTComponent* pSample=FindComponent(componentID);
+  if (pSample) {
+    AliHLTComponent::TComponentType ct=AliHLTComponent::kUnknown;
+    ct=pSample->GetComponentType();
+    iResult=(ct==AliHLTComponent::kSource || ct==AliHLTComponent::kProcessor);
+  } else {
+    iResult=-ENOENT;
+  }
+  return iResult;
+}
+
 void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv) 
 {
   // see header file for class documentation
@@ -257,22 +283,34 @@ void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv)
   }
 }
 
-int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
+int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateAgents)
 {
   // see header file for class documentation
   int iResult=0;
   if (libraryPath) {
+    // first activate all agents which are already loaded
+    if (bActivateAgents) ActivateAgents();
+
+    // set the global component handler for static component registration
     AliHLTComponent::SetGlobalComponentHandler(this);
+
     AliHLTLibHandle hLib;
     const char* loadtype="";
 #ifdef HAVE_DLFCN_H
     // use interface to the dynamic linking loader
-    hLib.fHandle=dlopen(libraryPath, RTLD_NOW);
-    loadtype="dlopen";
+    try {
+      hLib.fHandle=dlopen(libraryPath, RTLD_NOW);
+      loadtype="dlopen";
+    }
+    catch (...) {
+      // error message printed further down
+      loadtype="dlopen exeption";
+    }
 #else
     // use ROOT dynamic loader
     // check if the library was already loaded, as Load returns
     // 'failure' if the library was already loaded
+    try {
     AliHLTLibHandle* pLib=FindLibrary(libraryPath);
     if (pLib) {
 	int* pRootHandle=reinterpret_cast<int*>(pLib->fHandle);
@@ -288,6 +326,11 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
       //HLTDebug("library %s loaded via gSystem", libraryPath);
     }
     loadtype="gSystem";
+    }
+    catch (...) {
+      // error message printed further down
+      loadtype="gSystem exeption";
+    }
 #endif //HAVE_DLFCN_H
     if (hLib.fHandle!=NULL) {
       // create TString object to store library path and use pointer as handle 
@@ -306,9 +349,12 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
       } else {
 	HLTInfo("no build info available (possible AliRoot embedded build)");
       }
+
+      // static registration of components when library is loaded
       iResult=RegisterScheduledComponents();
+
     } else {
-      HLTError("can not load library %s", libraryPath);
+      HLTError("can not load library %s (%s)", libraryPath, loadtype);
 #ifdef HAVE_DLFCN_H
       HLTError("dlopen error: %s", dlerror());
 #endif //HAVE_DLFCN_H
@@ -319,6 +365,13 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath )
 #endif
     }
     AliHLTComponent::UnsetGlobalComponentHandler();
+    
+    if (iResult>=0) {
+      // alternative dynamic registration by library agents
+      // !!! has to be done after UnsetGlobalComponentHandler
+      if (bActivateAgents) ActivateAgents();
+    }
+
   } else {
     iResult=-EINVAL;
   }
@@ -353,7 +406,12 @@ int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandl
   fgAliLoggingFunc=NULL;
   TString* pName=reinterpret_cast<TString*>(handle.fName);
 #ifdef HAVE_DLFCN_H
-  dlclose(handle.fHandle);
+  try {
+    dlclose(handle.fHandle);
+  }
+  catch (...) {
+    HLTError("exeption caught during dlclose of library %s", pName!=NULL?pName->Data():"");
+  }
 #else
   int* pCount=reinterpret_cast<int*>(handle.fHandle);
   if (--(*pCount)==0) {
@@ -444,10 +502,6 @@ int AliHLTComponentHandler::AddStandardComponents()
   // see header file for class documentation
   int iResult=0;
   AliHLTComponent::SetGlobalComponentHandler(this);
-//   fStandardList.push_back(new AliHLTFilePublisher);
-//   fStandardList.push_back(new AliHLTFileWriter);
-//   fStandardList.push_back(new AliHLTRootFilePublisherComponent);
-//   fStandardList.push_back(new AliHLTRootFileWriterComponent);
   AliHLTComponent::UnsetGlobalComponentHandler();
   iResult=RegisterScheduledComponents();
   return iResult;
@@ -468,16 +522,40 @@ int AliHLTComponentHandler::RegisterScheduledComponents()
   return iResult;
 }
 
+int AliHLTComponentHandler::ActivateAgents(const AliHLTModuleAgent** blackList, int size)
+{
+  // see header file for class documentation
+  int iResult=0;
+  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+  while (pAgent && iResult>=0) {
+    if (blackList) {
+      int i=0;
+      for (; i<size; i++) {
+	if (blackList[i]==pAgent) break;
+      }
+      if (i<size) {
+	// this agent was in the list
+	pAgent=AliHLTModuleAgent::GetNextAgent();
+	continue;
+      }
+    }
+
+    pAgent->ActivateComponentHandler(this);
+    pAgent=AliHLTModuleAgent::GetNextAgent();
+  }
+  return iResult;
+}
+
 int AliHLTComponentHandler::DeleteStandardComponents()
 {
   // see header file for class documentation
   int iResult=0;
-  vector<AliHLTComponent*>::iterator element=fStandardList.begin();
-  while (element!=fStandardList.end()) {
+  vector<AliHLTComponent*>::iterator element=fOwnedComponents.begin();
+  while (element!=fOwnedComponents.end()) {
     //DeregisterComponent((*element)->GetComponentID());
     delete(*element);
-    fStandardList.erase(element);
-    element=fStandardList.begin();
+    fOwnedComponents.erase(element);
+    element=fOwnedComponents.begin();
   }
   return iResult;
 }

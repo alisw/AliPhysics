@@ -25,6 +25,7 @@
 #include "AliHLTLogging.h"
 #include "AliHLTConfiguration.h"
 #include "AliHLTConfigurationHandler.h"
+#include "AliHLTComponentHandler.h"
 
 class AliRunLoader;
 class AliRawReader;
@@ -118,6 +119,18 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   static AliHLTModuleAgent* GetNextAgent();
 
   /**
+   * Activate a component handler for this agent.
+   * The @ref RegisterComponents method will be called in order to allow
+   * the agent to register components. Once activated, the function can
+   * be called repeatedly with the same handler and gently ignores the
+   * invocation. In the current stage of development, only one handler
+   * can be activated per agent. This is sufficient for the current
+   * operation, but can be extended.
+   * @param pHandler  [in] the component handler instance
+   */
+  int ActivateComponentHandler(AliHLTComponentHandler* pHandler);
+
+  /**
    * Register all configurations belonging to this module with the
    * AliHLTConfigurationHandler. The agent can adapt the configurations
    * to be registered to the current AliRoot setup by checking the
@@ -158,15 +171,18 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   virtual const char* GetRequiredComponentLibraries() const;
 
   /**
-   * Register componets.
+   * Register components.
    * This method can be used to register components for the module instead
-   * of the 'static object approach'. Registration is don by passing a
-   * sample object to @ref AliHLTComponentHandler::RegisterComponent<br>
-   * \em Note: The sample object is owned by the agent, make sure to delete
-   * it.
+   * of the 'static object approach'. Registration is done by passing a
+   * sample object to the AliHLTComponentHandler via
+   * - @ref AliHLTComponentHandler::RegisterComponent                      <br>
+   *        The sample object is owned by the agent, make sure to delete it.
+   * - @ref AliHLTComponentHandler::AddComponent                           <br>
+   *        Same functionality but handler deletes the object at the end.
+   *
+   * @param pHandler  [in] instance of the component handler          
    */
-  virtual int RegisterComponents(AliRawReader* rawReader=NULL,
-				 AliRunLoader* runloader=NULL) const;
+  virtual int RegisterComponents(AliHLTComponentHandler* pHandler) const;
 
   /**
    * Old method kept for backward compatibility, redirected to @ref
@@ -208,7 +224,10 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
   /** number of agents */
   static int fCount;                                               //! transient
 
-  ClassDef(AliHLTModuleAgent, 1);
+  /* instance of the active component handler */
+  AliHLTComponentHandler* fpComponentHandler;                      //! transient
+
+  ClassDef(AliHLTModuleAgent, 2);
 };
 
 #endif

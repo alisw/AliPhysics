@@ -332,8 +332,8 @@ class AliHLTSystem : public AliHLTLogging {
    * @param runloader    optional instance of the run loader
    * @return neg. error code if failed 
    */
-  int BuildTaskListsFromTopConfigurations(AliRawReader* rawReader, 
-					  AliRunLoader* runloader=NULL);
+  int BuildTaskListsFromReconstructionChains(AliRawReader* rawReader, 
+					     AliRunLoader* runloader=NULL);
 
   enum AliHLTSystemState_t {
     kUninitialized       = 0x0,

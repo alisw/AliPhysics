@@ -34,9 +34,6 @@ using namespace std;
 #include "AliHLTDataGenerator.h"
 #include "TString.h"
 
-/** the global object for component registration */
-AliHLTDataGenerator gAliHLTDataGenerator;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDataGenerator)
 

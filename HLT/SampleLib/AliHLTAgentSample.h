@@ -94,6 +94,11 @@ class AliHLTAgentSample : public AliHLTModuleAgent {
    */
   const char* GetRequiredComponentLibraries() const;
 
+  /**
+   * Register components for the AliHLTSample library.
+   * @param pHandler  [in] instance of the component handler          
+   */
+  int RegisterComponents(AliHLTComponentHandler* pHandler) const;
  protected:
 
  private:

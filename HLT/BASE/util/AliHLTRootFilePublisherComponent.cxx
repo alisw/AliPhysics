@@ -29,9 +29,6 @@
 // temporary
 #include "TH1F.h"
 
-/** the global object for component registration */
-AliHLTRootFilePublisherComponent gAliHLTRootFilePublisherComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFilePublisherComponent)
 
@@ -109,6 +106,7 @@ int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& 
 						AliHLTUInt32_t& /*size*/,
 						vector<AliHLTComponentBlockData>& /*outputBlocks*/ )
 {
+  // see header file for class documentation
   int iResult=0;
   if (GetEventCount()%2==0) {
     TH1F *hpx = new TH1F("hpx","px distribution",100,-4,4);

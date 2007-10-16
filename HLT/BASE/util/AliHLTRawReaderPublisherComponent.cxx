@@ -34,9 +34,6 @@
 #include <cerrno>
 #include <cassert>
 
-/** global instance for agent registration */
-AliHLTRawReaderPublisherComponent gAliHLTRawReaderPublisherComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRawReaderPublisherComponent)
 
@@ -70,11 +67,13 @@ const char* AliHLTRawReaderPublisherComponent::GetComponentID()
 
 AliHLTComponentDataType AliHLTRawReaderPublisherComponent::GetOutputDataType()
 {
+  // see header file for class documentation
   return fDataType;
 }
 
 void AliHLTRawReaderPublisherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // see header file for class documentation
   constBase=fMaxSize;
   inputMultiplier=1;
 }
@@ -266,5 +265,6 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 }
 
 int AliHLTRawReaderPublisherComponent::GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t& specification) const {
+  // see header file for class documentation
   return specification=id;
 }

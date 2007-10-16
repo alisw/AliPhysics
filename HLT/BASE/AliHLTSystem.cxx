@@ -26,6 +26,7 @@
 using namespace std;
 #endif
 
+#include <cassert>
 #include "AliHLTStdIncludes.h"
 #include "AliHLTSystem.h"
 #include "AliHLTComponentHandler.h"
@@ -84,7 +85,7 @@ AliHLTSystem::AliHLTSystem()
     AliHLTComponentLogSeverity loglevel=fpComponentHandler->GetLocalLoggingLevel();
     fpComponentHandler->SetLocalLoggingLevel(kHLTLogError);
     fpComponentHandler->SetEnvironment(&env);
-    fpComponentHandler->LoadLibrary("libAliHLTUtil.so");
+    fpComponentHandler->LoadLibrary("libAliHLTUtil.so", 0/* do not activate agents */);
     fgAliLoggingFunc=(AliHLTLogging::AliHLTDynamicMessage)fpComponentHandler->FindSymbol("libAliHLTUtil.so", "AliDynamicMessage");
     fpComponentHandler->SetLocalLoggingLevel(loglevel);
     if (fgAliLoggingFunc==NULL) {
@@ -303,7 +304,7 @@ AliHLTTask* AliHLTSystem::FindTask(const char* id)
   // see header file for class documentation
   AliHLTTask* pTask=NULL;
   if (id) {
-    pTask=(AliHLTTask*)fTaskList.FindObject(id); 
+    pTask=dynamic_cast<AliHLTTask*>(fTaskList.FindObject(id)); 
   }
   return pTask;
 }
@@ -359,7 +360,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
   }
   if (iResult>=0) {
     iResult=iCount;
-  } else  if (iResult==-ENOENT) {
+  } else  if (iResult==-ENOKEY) {
     iResult=0; // do not propagate the error
   }
   ClearStatusFlags(kRunning);
@@ -374,7 +375,7 @@ int AliHLTSystem::InitTasks()
 
   if (lnk==NULL) {
     HLTWarning("Task list is empty, aborting ...");
-    return -ENOENT;
+    return -ENOKEY;
   }
   while (lnk && iResult>=0) {
     TObject* obj=lnk->GetObject();
@@ -604,13 +605,15 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
     if (CheckStatus(kReady)) {
       if (nofEvents==0) {
 	// special case to close the reconstruction
+	if (!CheckStatus(kError)) {
 	StopTasks();
 	DeinitTasks();
+	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
 	// the system always remains started after event processing, a specific
-	// call with nofEvents==0 is neede to execute the stop sequence
-	iResult=Run(nofEvents, 0);
+	// call with nofEvents==0 is needed to execute the stop sequence
+	if ((iResult=Run(nofEvents, 0))<0) SetStatusFlags(kError);
       }
       }
     } else {
@@ -672,7 +675,7 @@ int AliHLTSystem::LoadComponentLibraries(const char* libraries)
 int AliHLTSystem::Configure(AliRunLoader* runloader)
 {
   // see header file for class documentation
-  Configure(NULL, runloader);
+  return Configure(NULL, runloader);
 }
 
 int AliHLTSystem::Configure(AliRawReader* rawReader, AliRunLoader* runloader)
@@ -698,7 +701,7 @@ int AliHLTSystem::Configure(AliRawReader* rawReader, AliRunLoader* runloader)
     SetStatusFlags(kConfigurationLoaded);
     if (CheckFilter(kHLTLogDebug))
       fpConfigurationHandler->PrintConfigurations();
-    iResult=BuildTaskListsFromTopConfigurations(rawReader, runloader);
+    iResult=BuildTaskListsFromReconstructionChains(rawReader, runloader);
     if (iResult>=0) {
       SetStatusFlags(kTaskListCreated);
     }
@@ -812,7 +815,7 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
   return iResult;
 }
 
-int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRawReader* rawReader, AliRunLoader* runloader)
+int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader, AliRunLoader* runloader)
 {
   // see header file for class documentation
   if (CheckStatus(kRunning)) {
@@ -825,36 +828,72 @@ int AliHLTSystem::BuildTaskListsFromTopConfigurations(AliRawReader* rawReader, A
   }
 
   int iResult=0;
-  AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-  while ((pAgent || fChains.Length()>0) && iResult>=0) {
-    TString tops;
-    if (fChains.Length()>0) {
-      tops=fChains;
-      HLTInfo("custom local reconstruction configurations: %s", tops.Data());
-    } else {
-      tops=pAgent->GetReconstructionChains(rawReader, runloader);
-      HLTInfo("local reconstruction configurations for agent %s (%p): %s", pAgent->GetName(), pAgent, tops.Data());
-    }
-    TObjArray* pTokens=tops.Tokenize(" ");
-    if (pTokens) {
-      int iEntries=pTokens->GetEntries();
-      for (int i=0; i<iEntries && iResult>=0; i++) {
-	const char* pCID=((TObjString*)pTokens->At(i))->GetString().Data();
-	AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(pCID);
-	if (pConf) {
-	  iResult=BuildTaskList(pConf);
-	} else {
-	  HLTWarning("can not find top configuration %s", pCID);
-	}
+  int bHaveOutput=0;
+
+  // query chains
+  TString chains;
+  if (fChains.Length()>0) {
+    chains=fChains;
+    HLTInfo("custom reconstruction chain: %s", chains.Data());
+  } else {
+    AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+    while ((pAgent || fChains.Length()>0) && iResult>=0) {
+      const char* agentchains=pAgent->GetReconstructionChains(rawReader, runloader);
+      if (agentchains) {
+	if (!chains.IsNull()) chains+="";
+	chains+=agentchains;
+	HLTInfo("reconstruction chains for agent %s (%p): %s", pAgent->GetName(), pAgent, agentchains);
       }
-      delete pTokens;
+      pAgent=AliHLTModuleAgent::GetNextAgent();
     }
-    
-    if (fChains.Length()>0) {
-      break; // ignore the agents
-    }
-    pAgent=AliHLTModuleAgent::GetNextAgent();
   }
+
+  // build task list for chains
+  TObjArray* pTokens=chains.Tokenize(" ");
+  if (pTokens) {
+    int iEntries=pTokens->GetEntries();
+    for (int i=0; i<iEntries && iResult>=0; i++) {
+      const char* pCID=((TObjString*)pTokens->At(i))->GetString().Data();
+      AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(pCID);
+      if (pConf) {
+	iResult=BuildTaskList(pConf);
+	if (runloader) {
+	  assert(fpComponentHandler!=NULL);
+	  TString cid=pConf->GetComponentID();
+	  if (cid.CompareTo("HLTOUT")==0) {
+	    // remove from the input of a global HLTOUT configuration
+	    chains.ReplaceAll(pCID, "");
+	  } else if (bHaveOutput==0) {
+	    // check whether this configuration produces data output
+	    if ((bHaveOutput=fpComponentHandler->HasOutputData(cid.Data()))<0) {
+	      bHaveOutput=0;
+	      chains.ReplaceAll(pCID, "");
+	    }
+	  }
+	}
+      } else {
+	HLTWarning("can not find configuration %s", pCID);
+      }
+    }
+    delete pTokens;
+  }
+
+  // build HLTOUT for simulation
+  if (iResult>=0 && runloader) {
+    if (bHaveOutput) {
+      // there are components in the chain which produce data which need to be
+      // piped to an HLTOUT
+      if (fpComponentHandler->FindComponentIndex("HLTOUT")>=0 ||
+	  LoadComponentLibraries("libHLTsim.so")>=0) {
+	AliHLTConfiguration globalout("_globalout_", "HLTOUT", chains.Data(), NULL);
+	iResult=BuildTaskList("_globalout_");
+      } else {
+	HLTError("can not load libHLTsim.so and HLTOUT component");
+	iResult=-EFAULT;
+      }
+    }
+  }
+
   if (iResult>=0) SetStatusFlags(kTaskListCreated);
 
   return iResult;

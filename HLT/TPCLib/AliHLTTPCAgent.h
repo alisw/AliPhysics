@@ -62,6 +62,11 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
    */
   const char* GetRequiredComponentLibraries() const;
 
+  /**
+   * Register components for the AliHLTTPC library.
+   * @param pHandler  [in] instance of the component handler          
+   */
+  int RegisterComponents(AliHLTComponentHandler* pHandler) const;
  protected:
 
  private:

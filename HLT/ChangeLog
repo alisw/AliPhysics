@@ -1,3 +1,9 @@
+2007-10-16
+	- implemented component registration via agents
+	- added HLTOUT component as default data sink for simulation
+	- added AliHLTAgentSim for libHLTsim.so
+	- AliHLTComponentHandler: more robust library handling
+	
 2007-08-17 version HLT-v0-7 tagged
 	- corresponds to AliRoot v4-06-Rev-00
 	- calibration framework

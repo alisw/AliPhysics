@@ -29,12 +29,10 @@ using namespace std;
 #include "AliHLTSystem.h"
 #include "AliHLTDummyComponent.h"
 #include "AliHLTDefinitions.h"
-#include <stdlib.h>
-#include <errno.h>
+#include <cstdlib>
+#include <cerrno>
 
-// this is a global object used for automatic component registration, do not use this
-AliHLTDummyComponent gAliHLTDummyComponent;
-
+/** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTDummyComponent)
     
 AliHLTDummyComponent::AliHLTDummyComponent()

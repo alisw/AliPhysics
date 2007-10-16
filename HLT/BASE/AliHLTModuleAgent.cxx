@@ -30,7 +30,8 @@ ClassImp(AliHLTModuleAgent)
 
 AliHLTModuleAgent::AliHLTModuleAgent()
   :
-  fpNext(NULL)
+  fpNext(NULL),
+  fpComponentHandler(NULL)
 {
   // see header file for class documentation
   // or
@@ -97,8 +98,31 @@ const char* AliHLTModuleAgent::GetRequiredComponentLibraries() const
   return NULL;
 }
 
-int AliHLTModuleAgent::RegisterComponents(AliRawReader* /*rawReader*/,
-					  AliRunLoader* /*runloader*/) const
+int AliHLTModuleAgent::ActivateComponentHandler(AliHLTComponentHandler* pHandler)
+{
+  int iResult=0;
+  if (pHandler==NULL) {
+    if (fpComponentHandler!=NULL) {
+      // reset and think about deregistration
+      fpComponentHandler=NULL;
+      HLTWarning("deregistration of components not yet implemented");
+    }
+    return 0;
+  }
+  if (fpComponentHandler!=NULL) {
+    if (pHandler!=fpComponentHandler) {
+      HLTError("only one component handler can be activated per agent");
+      return -EINVAL;
+    }
+    return 0;
+  }
+  if ((iResult=RegisterComponents(pHandler))>=0) {
+    fpComponentHandler=pHandler;
+  }
+  return iResult;
+}
+
+int AliHLTModuleAgent::RegisterComponents(AliHLTComponentHandler* /*pHandler*/) const
 {
   // default method, nothing to be done, child classes can overload
   return 0;

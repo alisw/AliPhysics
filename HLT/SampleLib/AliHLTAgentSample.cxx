@@ -22,9 +22,13 @@
     @brief  Agent of the libAliHLTSample library
 */
 
+#include <cassert>
 #include "AliHLTAgentSample.h"
 #include "AliHLTConfiguration.h"
 #include "TSystem.h"
+
+// header files of library components
+#include "AliHLTDummyComponent.h"
 
 /** global instance for agent registration */
 AliHLTAgentSample gAliHLTAgentSample;
@@ -103,4 +107,13 @@ const char* AliHLTAgentSample::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
   return "libAliHLTUtil.so libAliHLTSample.so";
+}
+
+int AliHLTAgentSample::RegisterComponents(AliHLTComponentHandler* pHandler) const
+{
+  // see header file for class documentation
+  assert(pHandler);
+  if (!pHandler) return -EINVAL;
+  pHandler->AddComponent(new AliHLTDummyComponent);
+  return 0;
 }

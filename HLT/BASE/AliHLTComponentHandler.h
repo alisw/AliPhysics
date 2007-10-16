@@ -26,6 +26,7 @@
 #include "AliHLTLogging.h"
 
 class AliHLTComponent;
+class AliHLTModuleAgent;
 struct AliHLTComponentEnvironment;
 struct AliHLTComponentDataType;
 
@@ -62,10 +63,11 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * handler. The object has to be valid during the whole runtime and should
    * thus be a global object which is ONLY used for the purpose of registration.
    * This also ensures automatically registration at library load time.
-   * @param libraryPath  const char string containing the library name/path
+   * @param libraryPath      const char string containing the library name/path
+   * @param bActivateAgents  activate agents after loading (@ref ActivateAgents)
    * @return 0 if succeeded, neg. error code if failed
    */
-  int LoadLibrary( const char* libraryPath );
+  int LoadLibrary( const char* libraryPath, int bActivateAgents=1 );
 
   /**
    * Find a symbol in a dynamically loaded library.
@@ -98,10 +100,19 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * Registration is done by passing a sample object of the component to the
    * handler. The object has to be valid during the whole runtime and should
    * thus be a global object which is ONLY used for the purpose of registration.
-   * @param pSample  a sample object of the component
+   * @param pSample   a sample object of the component
    * @return neg. error code if failed
    */
-  int RegisterComponent(AliHLTComponent* pSample );
+  int RegisterComponent(AliHLTComponent* pSample);
+
+  /**
+   * Add a component and leave control of the sample object to the handler.
+   * Exactly the same functionality as @ref RegisterComponent but deletes
+   * the sample object at clean-up of the handler.
+   * @param pSample   a sample object of the component
+   * @return neg. error code if failed
+   */
+  int AddComponent(AliHLTComponent* pSample);
 
   /**
    * Registers all scheduled components.
@@ -172,6 +183,15 @@ class AliHLTComponentHandler : public AliHLTLogging {
     }
 
   /**
+   * Check if a registered component has output data, e.g. is of type
+   * kSource or kProcessor (see @ref AliHLTComponent::TComponentType).
+   * @param componentID  ID of the component to create
+   * @return 1 if component has output data, 0 if not                 <br>
+   *         -ENOENT     if component does not exist
+   */
+  int HasOutputData( const char* componentID);
+
+  /**
    * Print registered components to stdout.
    * @return none
    */
@@ -182,6 +202,13 @@ class AliHLTComponentHandler : public AliHLTLogging {
    */
   int AnnounceVersion();
 
+  /**
+   * Find a component.
+   * @param componentID  ID of the component to find
+   * @return index, neg. error code if failed
+   */
+  int FindComponentIndex(const char* componentID);
+
  protected:
 
  private:
@@ -189,13 +216,6 @@ class AliHLTComponentHandler : public AliHLTLogging {
   AliHLTComponentHandler(const AliHLTComponentHandler&);
   /** assignment operator prohibited */
   AliHLTComponentHandler& operator=(const AliHLTComponentHandler&);
-
-  /**
-   * Find a component.
-   * @param componentID  ID of the component to find
-   * @return index, neg. error code if failed
-   */
-  int FindComponentIndex(const char* componentID);
 
   /**
    * Find a component.
@@ -218,7 +238,18 @@ class AliHLTComponentHandler : public AliHLTLogging {
   int UnloadLibraries();
 
   /**
-   * Compount descriptor for component libraries
+   * Activate all module agents with this component handler.
+   * The function loops over all available module agents and activates
+   * each agent with this component handler. During activation, the
+   * dynamic component registration is carried out by the agents version
+   * of @ref AliHLTModuleAgent::RegisterComponents
+   * @param blackList     array of agents which should be excluded
+   * @param size          array size
+   */
+  int ActivateAgents(const AliHLTModuleAgent** blackList=NULL, int size=0);
+
+  /**
+   * Compound descriptor for component libraries
    */
   struct AliHLTLibHandle {
     AliHLTLibHandle() : fHandle(NULL), fName(NULL) {}
@@ -252,8 +283,8 @@ class AliHLTComponentHandler : public AliHLTLogging {
   vector<AliHLTLibHandle> fLibraryList;                            // see above 
   /** running environment for the component */
   AliHLTComponentEnvironment fEnvironment;                         // see above 
-  /** list of standard components */
-  vector<AliHLTComponent*> fStandardList;                          // see above 
+  /** list of owned components, deleted at termination of the handler */
+  vector<AliHLTComponent*> fOwnedComponents;                       // see above 
 
   ClassDef(AliHLTComponentHandler, 0);
 

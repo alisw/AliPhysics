@@ -5,7 +5,9 @@ include $(MODDIR)/hlt.conf
 
 LIBHLTSIM_VERSION := 0
 
-MODULE_SRCS= 	AliHLTSimulation.cxx
+MODULE_SRCS= 	AliHLTSimulation.cxx \
+		AliHLTAgentSim.cxx \
+		AliHLTOUTComponent.cxx
 
 CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
 

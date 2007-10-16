@@ -34,9 +34,6 @@
 #include "AliLog.h"
 #include "TTree.h"
 
-/** global instance for agent registration */
-AliHLTLoaderPublisherComponent gAliHLTLoaderPublisherComponent;
-
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTLoaderPublisherComponent)
 
@@ -70,11 +67,13 @@ const char* AliHLTLoaderPublisherComponent::GetComponentID()
 
 AliHLTComponentDataType AliHLTLoaderPublisherComponent::GetOutputDataType()
 {
+  // see header file for class documentation
   return fDataType;
 }
 
 void AliHLTLoaderPublisherComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+  // see header file for class documentation
   constBase=fMaxSize;
   inputMultiplier=1;
 }
@@ -221,6 +220,7 @@ int AliHLTLoaderPublisherComponent::GetEvent(const AliHLTComponentEventData& /*e
 
 TTree* AliHLTLoaderPublisherComponent::GetTree()
 {
+  // see header file for class documentation
   TTree* pTree=NULL;
   if (fpLoader) {
     if (fTreeType.CompareTo("digits")==0)

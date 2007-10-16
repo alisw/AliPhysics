@@ -31,8 +31,6 @@ using namespace std;
 #include <TMath.h>
 #include <TFile.h>
 
-/** the global object for component registration */
-AliHLTFilePublisher gAliHLTFilePublisher;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTFilePublisher)
@@ -211,6 +209,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 
 int AliHLTFilePublisher::InsertFile(EventFiles* &pCurrEvent, FileDesc* pDesc)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pDesc) {
     if (pCurrEvent==NULL) {
@@ -232,6 +231,7 @@ int AliHLTFilePublisher::InsertFile(EventFiles* &pCurrEvent, FileDesc* pDesc)
 
 int AliHLTFilePublisher::InsertEvent(EventFiles* &pEvent)
 {
+  // see header file for class documentation
   int iResult=0;
   if (pEvent) {
     HLTDebug("Inserted event %p", pEvent);
@@ -303,6 +303,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTUInt32_t& size,
 				   vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  // see header file for class documentation
   int iResult=0;
   TObjLink *lnk=fpCurrent;
   if (lnk==NULL) lnk=fEvents.FirstLink();
@@ -379,15 +380,22 @@ AliHLTFilePublisher::FileDesc::FileDesc(const char* name, AliHLTComponentDataTyp
   fDataType(dt),
   fSpecification(spec)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTFilePublisher::FileDesc::~FileDesc()
 {
+  // see header file for class documentation
   CloseFile();
 }
 
 void AliHLTFilePublisher::FileDesc::CloseFile()
 {
+  // see header file for class documentation
   if (fpInstance)
   {
     // Unfortunately had to use AliLog mechanisms rather that AliHLTLogging because
@@ -405,6 +413,7 @@ void AliHLTFilePublisher::FileDesc::CloseFile()
 
 int AliHLTFilePublisher::FileDesc::OpenFile()
 {
+  // see header file for class documentation
   int iResult=0;
   TString fullFN= fName + "?filetype=raw";
   fpInstance = new TFile(fullFN);
