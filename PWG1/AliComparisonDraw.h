@@ -10,7 +10,7 @@ using namespace std;
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
-#include "AliGenInfo.h"
+#include "AliMCInfo.h"
 #include "AliESDRecInfo.h"
 #include "AliESDRecV0Info.h"
 #include "AliESDRecKinkInfo.h"
