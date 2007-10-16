@@ -19,6 +19,7 @@ AliRecInfoMaker *t2 = new AliRecInfoMaker("genTracks.root","cmpESDTracks.root","
 t2->Exec();
 
 
+
 2. Make a chain of the information tree
 
 gSystem->Load("libPWG1.so");
@@ -27,7 +28,7 @@ gSystem->Load("libPWG1.so");
 .x ~/rootlogon.C
 .L /u/miranov/macroxrdproof64/AliXRDPROOFtoolkit.cxx+
  AliXRDPROOFtoolkit tool;
- TChain * chain = tool.MakeChain("comp.txt","ESDcmpTracks",0,1000)
+ TChain * chain = tool.MakeChain("pp.txt","ESDcmpTracks",0,1000)
  chain->Lookup();
  .L $ALICE_ROOT/PWG1/AliComparisonSelector.cxx+
 
