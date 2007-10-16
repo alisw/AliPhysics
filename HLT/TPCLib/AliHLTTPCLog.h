@@ -4,6 +4,12 @@
 #ifndef ALIHLTTPCLOG_H
 #define ALIHLTTPCLOG_H
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include <sstream>
 #include <iostream>
 #include "AliHLTLogging.h"
@@ -56,6 +62,13 @@ class AliHLTTPCLog  {
    * into the stringstream.
    */
   static const char* Flush();
+
+ private:
+  /** copy constructor prohibited */
+  AliHLTTPCLog(const AliHLTTPCLog&);
+  /** assignment operator prohibited */
+  AliHLTTPCLog& operator=(const AliHLTTPCLog&);
+
 };
 
 /** LOG macro to be used by the TPC code 

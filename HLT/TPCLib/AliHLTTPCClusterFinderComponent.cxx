@@ -24,10 +24,15 @@
     @brief  The TPC cluster finder processing component
 */
 
+// see header file for class documentation                                   //
+// or                                                                        //
+// refer to README to build package                                          //
+// or                                                                        //
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
-#include "AliHLTTPCLogging.h"
 #include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
@@ -37,10 +42,10 @@ using namespace std;
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusters.h"
-#include <stdlib.h>
-#include <errno.h>
+#include "AliHLTTPCDefinitions.h"
+#include <cstdlib>
+#include <cerrno>
 #include "TString.h"
-#include "TStopwatch.h"
 #include <sys/time.h>
 
 // this is a global object used for automatic component registration, do not use this

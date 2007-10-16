@@ -13,14 +13,17 @@
     @brief  The TPC cluster finder component.
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTProcessor.h"
-#include "AliHLTTPCDefinitions.h"
-#include "AliHLTTPCDigitReaderPacked.h"
-#include "AliHLTTPCDigitReaderUnpacked.h"
-#include "AliHLTTPCDigitReaderRaw.h"
 
 class AliHLTTPCClusterFinder;
 class AliHLTTPCPadArray;
+class AliHLTTPCDigitReader;
 
 /**
  * @class AliHLTTPCClusterFinderComponent
@@ -91,9 +94,9 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 	/** the reader object for data decoding */
 	AliHLTTPCDigitReader* fReader;                                               //!transient
 
-      bool fClusterDeconv;
-      float fXYClusterError;
-      float fZClusterError;
+	bool fClusterDeconv; //!transient
+      float fXYClusterError; //!transient
+      float fZClusterError; //!transient
       /**
        * switch to indicated the reader
        * use fPackedSwitch = true for packed inputtype "gkDDLPackedRawDataType"

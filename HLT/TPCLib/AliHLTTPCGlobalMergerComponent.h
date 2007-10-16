@@ -12,6 +12,12 @@
     @brief  HLT TPC global merger component.
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTProcessor.h"
 
 class AliHLTTPCGlobalMerger;
@@ -28,10 +34,6 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
     public:
       /** standard constructor */
       AliHLTTPCGlobalMergerComponent();
-      /** not a valid copy constructor, defined according to effective C++ style */
-      AliHLTTPCGlobalMergerComponent(const AliHLTTPCGlobalMergerComponent&);
-      /** not a valid assignment op, but defined according to effective C++ style */
-      AliHLTTPCGlobalMergerComponent& operator=(const AliHLTTPCGlobalMergerComponent&);
       /** standard destructor */
       virtual ~AliHLTTPCGlobalMergerComponent();
 
@@ -78,6 +80,10 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
+      /** copy constructor prohibited */
+      AliHLTTPCGlobalMergerComponent(const AliHLTTPCGlobalMergerComponent&);
+      /** assignment operator prohibited */
+      AliHLTTPCGlobalMergerComponent& operator=(const AliHLTTPCGlobalMergerComponent&);
 
       /** the global merger object */
       AliHLTTPCGlobalMerger* fGlobalMerger; //!

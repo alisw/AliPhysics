@@ -23,6 +23,12 @@
     @brief  The TPC conformal mapping tracker component.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -198,6 +204,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
 
 void AliHLTTPCSliceTrackerComponent::SetTrackerParam( bool doPP, int multiplicity, double bField )
     {
+  // see header file for class documentation
     AliHLTTPCTransform::SetBField( bField );
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoInit", "BField", "Setting b field to %f T\n", bField );
 
@@ -720,6 +727,7 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 
 void AliHLTTPCSliceTrackerComponent::SetTrackerParam1()
 {
+  // see header file for class documentation
   SetTrackerParam( 10, 20, 5, 10, 2,2,
 		   0, 1.31, 5, 100,
 		   50, 100, 50, 0.1, 0.1,

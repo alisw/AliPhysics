@@ -1,6 +1,12 @@
 // $Id$
 // Original: AliHLTLog.cxx,v 1.1 2004/05/14 09:37:22 loizides 
 
+// lagacy logging methods for HLT TPC code
+// or                                                                        //
+// refer to README to build package                                          //
+// or                                                                        //
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
+
 #include "AliHLTTPCLog.h"
 
 AliHLTTPCLog::TLogLevel AliHLTTPCLog::fgLevel=AliHLTTPCLog::kNone;

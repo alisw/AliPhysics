@@ -24,6 +24,12 @@
     @brief  Fit class for conformal mapping tracking.
 */
 
+// see header file for class documentation                                   //
+// or                                                                        //
+// refer to README to build package                                          //
+// or                                                                        //
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
+
 #include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCVertex.h"
@@ -36,8 +42,7 @@
 using namespace std;
 #endif
 
-ClassImp(AliHLTTPCConfMapFit)
-
+ClassImp(AliHLTTPCConfMapFit);
 
 AliHLTTPCConfMapFit::AliHLTTPCConfMapFit()
   :
@@ -54,22 +59,6 @@ AliHLTTPCConfMapFit::AliHLTTPCConfMapFit(AliHLTTPCConfMapTrack *track,AliHLTTPCV
 
 {
   //constructor
-}
-
-AliHLTTPCConfMapFit::AliHLTTPCConfMapFit(const AliHLTTPCConfMapFit&)
-  :
-  fTrack(NULL),
-  fVertex(NULL)
-{
-  // dummy copy constructor
-  //HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCConfMapFit& AliHLTTPCConfMapFit::operator=(const AliHLTTPCConfMapFit&)
-{ 
-  // dummy assignment operator
-  //HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTTPCConfMapFit::~AliHLTTPCConfMapFit()
@@ -126,7 +115,7 @@ Int_t AliHLTTPCConfMapFit::FitCircle()
   Double_t xav   = 0.0 ;
   Double_t yav   = 0.0 ;
   
-  Int_t num_of_hits = fTrack->GetNumberOfPoints();
+  Int_t numOfHits = fTrack->GetNumberOfPoints();
   //
   //     Loop over hits calculating average
   Int_t co=0;
@@ -140,9 +129,9 @@ Int_t AliHLTTPCConfMapFit::FitCircle()
       xav       += cHit->GetXYWeight() * cHit->GetX() ;
       yav       += cHit->GetXYWeight() * cHit->GetY() ;
     }
-  if(co!=num_of_hits) 
+  if(co!=numOfHits) 
     LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapFit::FitCircle","TrackFit")<<AliHLTTPCLog::kDec<<
-      "Mismatch of hits. Counter: "<<co<<" nHits: "<<num_of_hits<<ENDLOG;
+      "Mismatch of hits. Counter: "<<co<<" nHits: "<<numOfHits<<ENDLOG;
   if (fTrack->ComesFromMainVertex() == true)
     {    
       wsum += fVertex->GetXYWeight() ;
@@ -243,7 +232,7 @@ Int_t AliHLTTPCConfMapFit::FitCircle()
 
   Double_t xixi, yiyi, riri, wiriri, xold, yold ;
   
-  //for (hit_counter=0; hit_counter<num_of_hits; hit_counter++) 
+  //for (hit_counter=0; hit_counter<numOfHits; hit_counter++) 
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())  
     { 
       //AliHLTTPCConfMapPoint *cHit = (AliHLTTPCConfMapPoint*)hits->At(hit_counter);  
@@ -308,7 +297,7 @@ Int_t AliHLTTPCConfMapFit::FitCircle()
   rrrrav  = rrrrav / wsum ;
   xyav    = xyav   / wsum ;
 
-  Int_t const ntry = 5 ;
+  const Int_t ntry = 5 ;
 //
 //-->  USE THESE TO GET THE COEFFICIENTS OF THE 4-TH ORDER POLYNIMIAL
 //-->  DON'T PANIC - THE THIRD ORDER TERM IS ZERO !
@@ -454,7 +443,7 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
   Double_t radius = (Double_t)(fTrack->GetPt() / AliHLTTPCTransform::GetBFieldValue() ) ;
 
   //TObjArray *hits = fTrack->GetHits();
-  //Int_t num_of_hits = fTrack->GetNumberOfPoints();
+  //Int_t numOfHits = fTrack->GetNumberOfPoints();
 
   if (0)// fTrack->ComesFromMainVertex() == true ) 
     {
@@ -470,15 +459,15 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
     }
   
   Double_t localPsi = 0.5F * sqrt ( dx*dx + dy*dy ) / radius ;
-  Double_t total_s ;
+  Double_t totalS ;
   
   if ( fabs(localPsi) < 1. ) 
     {
-      total_s = 2.0 * radius * asin ( localPsi ) ;
+      totalS = 2.0 * radius * asin ( localPsi ) ;
     } 
   else 
     { 
-      total_s = 2.0 * radius * AliHLTTPCTransform::Pi() ;
+      totalS = 2.0 * radius * AliHLTTPCTransform::Pi() ;
     } 
   
   AliHLTTPCConfMapPoint *previousHit = NULL;
@@ -488,7 +477,7 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
   //for ( startLoop() ; done() ; nextHit() ) {
   Double_t dpsi,s;
 
-  //  for(hit_counter=0; hit_counter<num_of_hits; hit_counter++)
+  //  for(hit_counter=0; hit_counter<numOfHits; hit_counter++)
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())  
     {
       // AliHLTTPCConfMapPoint *cHit = (AliHLTTPCConfMapPoint*)hits->At(hit_counter);
@@ -504,8 +493,8 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
 	  cHit->SetS(s);
 	}
       else
-	cHit->SetS(total_s);
-      //	cHit->s = total_s ;
+	cHit->SetS(totalS);
+      //	cHit->s = totalS ;
     
       sum += cHit->GetZWeight() ;
       ss  += cHit->GetZWeight() * cHit->GetS() ;
@@ -537,7 +526,7 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
   chi2 = 0.;
   Double_t r1 ;
   
-  //for(hit_counter=0; hit_counter<num_of_hits; hit_counter++)
+  //for(hit_counter=0; hit_counter<numOfHits; hit_counter++)
   for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit())  
     {
       //AliHLTTPCConfMapPoint *cHit = (AliHLTTPCConfMapPoint*)hits->At(hit_counter);
@@ -574,18 +563,18 @@ Int_t AliHLTTPCConfMapFit::FitLineXY ( ){
     // with y = a' + bx' , x' = x - <x>
     // -----------------------------------------------------------------------------
 
-    Double_t S = 0.;
-    Double_t Sx = 0.;
+    Double_t s = 0.;
+    Double_t sx = 0.;
 
-    Double_t SPrime = 0.;
-    Double_t SxPrime = 0.;
-    Double_t SxxPrime = 0.;
-    Double_t SyPrime = 0.;
-    Double_t SxyPrime = 0.;
+    Double_t sPrime = 0.;
+    Double_t sxPrime = 0.;
+    Double_t sxxPrime = 0.;
+    Double_t syPrime = 0.;
+    Double_t sxyPrime = 0.;
 
     Double_t chi2 = 0.;
 
-    Int_t num_of_hits = fTrack->GetNumberOfPoints();
+    Int_t numOfHits = fTrack->GetNumberOfPoints();
 
     Int_t co=0;
     
@@ -596,28 +585,28 @@ Int_t AliHLTTPCConfMapFit::FitLineXY ( ){
 	// ** maybe not necessary, already done in ConfMapPoint
 	currentHit->SetXYWeight( 1./ (Double_t)(currentHit->GetXerr()*currentHit->GetXerr() + currentHit->GetYerr()*currentHit->GetYerr()) );
 	// **
-	S   += currentHit->GetXYWeight();
-	Sx  += currentHit->GetXYWeight() * currentHit->GetX();
+	s   += currentHit->GetXYWeight();
+	sx  += currentHit->GetXYWeight() * currentHit->GetX();
     }   
     
-    if(co!=num_of_hits) 
-	LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapFit::FitLineXY","TrackFit") << "Mismatch of hits. Counter: "<<co<<" nHits: "<<num_of_hits<<ENDLOG;
+    if(co!=numOfHits) 
+	LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapFit::FitLineXY","TrackFit") << "Mismatch of hits. Counter: "<<co<<" nHits: "<<numOfHits<<ENDLOG;
 
-    Double_t xav = (Double_t)Sx / S;
+    Double_t xav = (Double_t)sx / s;
     
     // Calculate weighted means
     for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit()) {
 	AliHLTTPCConfMapPoint *currentHit = (AliHLTTPCConfMapPoint*)fTrack->GetCurrentHit();
 
 	Double_t xPrime =  currentHit->GetX() - xav;
-	SPrime   += currentHit->GetXYWeight();
-	SxPrime  += currentHit->GetXYWeight() * xPrime;
-	SxxPrime += currentHit->GetXYWeight() * xPrime * xPrime;
-	SyPrime  += currentHit->GetXYWeight() * currentHit->GetY();
-	SxyPrime += currentHit->GetXYWeight() * xPrime * currentHit->GetY();
+	sPrime   += currentHit->GetXYWeight();
+	sxPrime  += currentHit->GetXYWeight() * xPrime;
+	sxxPrime += currentHit->GetXYWeight() * xPrime * xPrime;
+	syPrime  += currentHit->GetXYWeight() * currentHit->GetY();
+	sxyPrime += currentHit->GetXYWeight() * xPrime * currentHit->GetY();
     }
 
-    Double_t det = SPrime*SxxPrime + SxPrime*SxPrime;
+    Double_t det = sPrime*sxxPrime + sxPrime*sxPrime;
 
     if (fabs(det) < 1e-20) { 
 	LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapFit::FitLineXY","TrackFit") << "Determinant == 0" << ENDLOG;	
@@ -626,11 +615,11 @@ Int_t AliHLTTPCConfMapFit::FitLineXY ( ){
 	return -1 ;
     }
 
-    Double_t b   = (Double_t)(SPrime*SxyPrime - SxPrime*SyPrime) / det;        // line parameter b
-    Double_t aPrime   = (Double_t)(SxxPrime*SyPrime - SxPrime*SxyPrime) / det; // line parameter a
+    Double_t b   = (Double_t)(sPrime*sxyPrime - sxPrime*syPrime) / det;        // line parameter b
+    Double_t aPrime   = (Double_t)(sxxPrime*syPrime - sxPrime*sxyPrime) / det; // line parameter a
 
-    Double_t sigma2b = (Double_t)1. / SxxPrime;
-    //-- Double_t sigma2aprime = (Double_t)1. /SPrime;
+    Double_t sigma2b = (Double_t)1. / sxxPrime;
+    //-- Double_t sigma2aprime = (Double_t)1. /sPrime;
 
     // Get gradient angle psi of line in xy plane
     Double_t psi  = (Double_t) atan(b) ; 
@@ -684,14 +673,18 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
     Double_t S = 0.;
     Double_t Ss = 0.;
 
-    Double_t SPrime = 0.;
-    Double_t SsPrime = 0.;
-    Double_t SssPrime = 0.;
-    Double_t SzPrime = 0.;
-    Double_t SszPrime = 0.;
+    Double_t sPrime = 0.;
+    Double_t ssPrime = 0.;
+    Double_t sssPrime = 0.;
+    Double_t szPrime = 0.;
+    Double_t sszPrime = 0.;
 
     Double_t chi2 = 0.;
-    Double_t s = 0.;
+
+    // Matthias 16.10.2007
+    // what's that!!! local variables 's' and 'S'
+    // change Double_t s = 0.; -> slength
+    Double_t slength = 0.;
 
     AliHLTTPCConfMapPoint *previousHit = NULL;
   
@@ -702,15 +695,15 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
 	if(currentHit != fTrack->GetFirstHit()) {
 	    Double_t dx = currentHit->GetX() - previousHit->GetX() ;
 	    Double_t dy = currentHit->GetY() - previousHit->GetY() ;
-	    s = previousHit->GetS() - (Double_t)sqrt ( dx*dx + dy*dy );
+	    slength = previousHit->GetS() - (Double_t)sqrt ( dx*dx + dy*dy );
 	}
 	else{
 	    Double_t dx = ((AliHLTTPCConfMapPoint *)fTrack->GetFirstHit())->GetX() - ((AliHLTTPCConfMapPoint *)fTrack->GetLastHit())->GetX(); 
 	    Double_t dy = ((AliHLTTPCConfMapPoint *)fTrack->GetFirstHit())->GetY() - ((AliHLTTPCConfMapPoint *)fTrack->GetLastHit())->GetY();
-	    s = (Double_t)sqrt ( dx*dx + dy*dy );
+	    slength = (Double_t)sqrt ( dx*dx + dy*dy );
 	}
 
-	currentHit->SetS(s);
+	currentHit->SetS(slength);
 
 	S   += currentHit->GetZWeight();
 	Ss  += currentHit->GetZWeight() * currentHit->GetS();
@@ -723,14 +716,14 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
 	AliHLTTPCConfMapPoint *currentHit = (AliHLTTPCConfMapPoint*)fTrack->GetCurrentHit();
 
 	Double_t sPrime =  currentHit->GetS() - sav;
-	SPrime   += currentHit->GetZWeight();
-	SsPrime  += currentHit->GetZWeight() * sPrime;
-	SssPrime += currentHit->GetZWeight() * sPrime * sPrime;
-	SzPrime  += currentHit->GetZWeight() * currentHit->GetZ();
-	SszPrime += currentHit->GetZWeight() * sPrime * currentHit->GetZ();
+	sPrime   += currentHit->GetZWeight();
+	ssPrime  += currentHit->GetZWeight() * sPrime;
+	sssPrime += currentHit->GetZWeight() * sPrime * sPrime;
+	szPrime  += currentHit->GetZWeight() * currentHit->GetZ();
+	sszPrime += currentHit->GetZWeight() * sPrime * currentHit->GetZ();
     }
 
-    Double_t det = SPrime*SssPrime + SsPrime*SsPrime;
+    Double_t det = sPrime*sssPrime + ssPrime*ssPrime;
 
     if (fabs(det) < 1e-20) { 
 	LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapFit::FitLineSZ","TrackFit") << "Determinant == 0" << ENDLOG;	
@@ -739,13 +732,13 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
 	return -1 ;
     }
 
-    Double_t b   = (Double_t)(SPrime*SszPrime - SsPrime*SzPrime) / det;        // line parameter b
-    Double_t aPrime   = (Double_t)(SssPrime*SzPrime - SsPrime*SszPrime) / det; // line parameter a
+    Double_t b   = (Double_t)(sPrime*sszPrime - ssPrime*szPrime) / det;        // line parameter b
+    Double_t aPrime   = (Double_t)(sssPrime*szPrime - ssPrime*sszPrime) / det; // line parameter a
 
     Double_t a = aPrime - b*sav;
 
-    Double_t sigma2b = (Double_t) 1. / SssPrime;
-    Double_t sigma2aprime = (Double_t) 1. /SPrime;
+    Double_t sigma2b = (Double_t) 1. / sssPrime;
+    Double_t sigma2aprime = (Double_t) 1. /sPrime;
 
     Double_t sigma2a = sigma2aprime + sav*sav * sigma2b*sigma2b;
 

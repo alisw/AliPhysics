@@ -13,6 +13,12 @@
     @brief  Fit class for conformal mapping tracking.
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCVertex;
 
@@ -29,10 +35,6 @@ class AliHLTTPCConfMapFit {
   AliHLTTPCConfMapFit();
   /** constructor */
   AliHLTTPCConfMapFit (AliHLTTPCConfMapTrack *track,AliHLTTPCVertex *vertex);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCConfMapFit(const AliHLTTPCConfMapFit&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCConfMapFit& operator=(const AliHLTTPCConfMapFit&);
   /** destructor */
   virtual ~AliHLTTPCConfMapFit();
 
@@ -47,6 +49,11 @@ class AliHLTTPCConfMapFit {
   Int_t FitLineSZ();
   
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCConfMapFit(const AliHLTTPCConfMapFit&);
+  /** assignment operator prohibited */
+  AliHLTTPCConfMapFit& operator=(const AliHLTTPCConfMapFit&);
+
   AliHLTTPCConfMapTrack *fTrack; //!
   AliHLTTPCVertex *fVertex; //!
   

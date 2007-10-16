@@ -6,15 +6,21 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCRawDataUnpackerComponent
- */
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
-#include "AliHLTTPCDefinitions.h"
 
 class AliRawReaderMemory;
 class AliTPCRawStream;
 
+/**
+ * @class AliHLTTPCRawDataUnpackerComponent
+ * Unpacker component for TPC RAW data.
+ */
 class AliHLTTPCRawDataUnpackerComponent : public AliHLTProcessor
     {
     public:
@@ -49,10 +55,10 @@ class AliHLTTPCRawDataUnpackerComponent : public AliHLTProcessor
       AliHLTTPCRawDataUnpackerComponent& operator=(const AliHLTTPCRawDataUnpackerComponent&);
 
 	// Initialize AliROOT TPC raw stream parsing class
-	AliRawReaderMemory *fRawMemoryReader;
-	AliTPCRawStream *fTPCRawStream;
+      AliRawReaderMemory *fRawMemoryReader; //! transient
+      AliTPCRawStream *fTPCRawStream; //! transient
 
-	ClassDef(AliHLTTPCRawDataUnpackerComponent, 0)
+      ClassDef(AliHLTTPCRawDataUnpackerComponent, 0);
 
     };
 #endif

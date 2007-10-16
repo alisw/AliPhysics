@@ -6,14 +6,22 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* AliHLTTPCVertexFinderComponent
- */
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTProcessor.h"
-#include "AliHLTTPCDefinitions.h"
 
 class AliHLTTPCVertexFinder;
 
+/**
+ * @class AliHLTTPCVertexFinderComponent
+ * A vertex finder component for the TPC.
+ * This component has never been tested in the new framework and needs certainly
+ * some investigation.
+ */
 class AliHLTTPCVertexFinderComponent : public AliHLTProcessor
     {
     public:
@@ -42,14 +50,13 @@ class AliHLTTPCVertexFinderComponent : public AliHLTProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
-      /** not a valid copy constructor, defined according to effective C++ style */
+      /** copy constructor prohibited */
       AliHLTTPCVertexFinderComponent(const AliHLTTPCVertexFinderComponent&);
-      /** not a valid assignment op, but defined according to effective C++ style */
+      /** assignment operator prohibited */
       AliHLTTPCVertexFinderComponent& operator=(const AliHLTTPCVertexFinderComponent&);
 
-	AliHLTTPCVertexFinder* fVertexFinder;
+      AliHLTTPCVertexFinder* fVertexFinder; //! transient
 
-	ClassDef(AliHLTTPCVertexFinderComponent, 0)
-
+      ClassDef(AliHLTTPCVertexFinderComponent, 0);
     };
 #endif
