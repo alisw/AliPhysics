@@ -65,7 +65,6 @@ void stupre()
 
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
-  debug = 100;
   
   fluka->SetTrackIsNew(kTRUE);
 
