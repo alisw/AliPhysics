@@ -48,4 +48,6 @@
 #pragma link C++ class AliMCEvent+;
 #pragma link C++ class AliMCParticle+;
 
+#pragma link C++ class  AliMagF+;
+
 #endif

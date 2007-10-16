@@ -25,7 +25,6 @@
 #pragma link C++ class  AliHit+;
 #pragma link C++ class  AliDisplay+;
 #pragma link C++ class  AliPoints+;
-#pragma link C++ class  AliMagF+;
 #pragma link C++ class  AliMagFC+;
 #pragma link C++ class  AliMagFCM+;
 #pragma link C++ class  AliMagFMaps-;
