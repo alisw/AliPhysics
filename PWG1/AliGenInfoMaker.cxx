@@ -62,7 +62,9 @@ t->Exec();
 #include "AliTrackPointArray.h"
 
 #endif
-#include "AliGenInfo.h" 
+#include "AliMCInfo.h" 
+#include "AliGenV0Info.h" 
+#include "AliGenKinkInfo.h" 
 #include "AliGenInfoMaker.h" 
 //
 // 
