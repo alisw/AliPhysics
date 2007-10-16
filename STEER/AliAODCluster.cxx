@@ -26,15 +26,13 @@ ClassImp(AliAODCluster)
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster() : 
-  AliVParticle(),
   fEnergy(0),
   fChi2(-999.),
   fID(-999),
-  fLabel(-999),
-  fType(kUndef),
-  fCovMatrix(NULL),
-  fProdVertex(0x0),
-  fPrimTrack(NULL)
+  fNLabel(0),
+  fLabel(0x0),
+  fFilterMap(0),
+  fType(kUndef)
 {
   // default constructor
 
@@ -44,58 +42,50 @@ AliAODCluster::AliAODCluster() :
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(Int_t id,
-			     Int_t label, 
+			     UInt_t nLabel,
+			     Int_t *label, 
 			     Double_t energy,
 			     Double_t x[3],
-			     Double_t covMatrix[10],
 			     Double_t pid[9],
-			     AliAODVertex *prodVertex,
-			     AliAODTrack *primTrack,
-			     Char_t ttype) :
-  AliVParticle(),
+			     Char_t ttype,
+			     UInt_t selectInfo) :
   fEnergy(energy),
   fChi2(-999.),
   fID(id),
-  fLabel(label),
-  fType(ttype),
-  fCovMatrix(NULL),
-  fProdVertex(prodVertex),
-  fPrimTrack(primTrack)
+  fNLabel(0),
+  fLabel(0x0),
+  fFilterMap(selectInfo),
+  fType(ttype)
 {
   // constructor
  
   SetPosition(x);
-  if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
-
+  SetLabel(label, nLabel);
 }
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(Int_t id,
-			     Int_t label, 
+			     UInt_t nLabel,
+			     Int_t *label, 
 			     Float_t energy,
 			     Float_t x[3],
-			     Float_t covMatrix[10],
 			     Float_t pid[9],
-			     AliAODVertex *prodVertex,
-			     AliAODTrack *primTrack,
-			     Char_t ttype) :
-  AliVParticle(),
+			     Char_t ttype,
+			     UInt_t selectInfo) :
   fEnergy(energy),
   fChi2(-999.),
   fID(id),
-  fLabel(label),
-  fType(ttype),
-  fCovMatrix(NULL),
-  fProdVertex(prodVertex),
-  fPrimTrack(primTrack)
+  fNLabel(0),
+  fLabel(0x0),
+  fFilterMap(selectInfo),
+  fType(ttype)
 {
   // constructor
  
   SetPosition(x);
-  if(covMatrix) SetCovMatrix(covMatrix);
   SetPID(pid);
-
+  SetLabel(label, nLabel);
 }
 
 
@@ -103,28 +93,27 @@ AliAODCluster::AliAODCluster(Int_t id,
 AliAODCluster::~AliAODCluster() 
 {
   // destructor
-  delete fCovMatrix;
+
+  RemoveLabel();
 }
 
 
 //______________________________________________________________________________
 AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
-  AliVParticle(clus),
+  TObject(clus),
   fEnergy(clus.fEnergy),
   fChi2(clus.fChi2),
   fID(clus.fID),
-  fLabel(clus.fLabel),
-  fType(clus.fType),
-  fCovMatrix(NULL),
-  fProdVertex(clus.fProdVertex),
-  fPrimTrack(clus.fPrimTrack)
+  fNLabel(0),
+  fLabel(0x0),
+  fFilterMap(clus.fFilterMap),
+  fType(clus.fType)
 {
   // Copy constructor
 
   clus.GetPosition(fPosition);
-  if(clus.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*clus.fCovMatrix);
   SetPID(clus.fPID);
-
+  SetLabel(clus.fLabel, clus.fNLabel);
 }
 
 //______________________________________________________________________________
@@ -133,8 +122,6 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
   // Assignment operator
   if(this!=&clus) {
 
-    AliVParticle::operator=(clus);
-
     clus.GetPosition(fPosition);
     clus.GetPID(fPID);
 
@@ -142,16 +129,10 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
     fChi2 = clus.fChi2;
 
     fID = clus.fID;
-    fLabel = clus.fLabel;    
+    SetLabel(clus.fLabel, clus.fNLabel);
+    fFilterMap = clus.fFilterMap;
 
     fType = clus.fType;
-    
-    delete fCovMatrix;
-    if(clus.fCovMatrix) fCovMatrix=new AliAODRedCov<4>(*clus.fCovMatrix);
-    else fCovMatrix=NULL;
-
-    fProdVertex = clus.fProdVertex;
-    fPrimTrack = clus.fPrimTrack;
   }
 
   return *this;
@@ -204,13 +185,52 @@ AliAODCluster::AODCluPID_t AliAODCluster::GetMostProbablePID() const
 }
 
 //______________________________________________________________________________
+void AliAODCluster::SetLabel(Int_t *label, UInt_t size) 
+{
+  if (label && size>0) {
+    if (size != (UInt_t)fNLabel) {
+      RemoveLabel();
+      fNLabel = size;
+      fLabel = new Int_t[fNLabel];
+    }
+    
+    for (Int_t i = 0; i < fNLabel; i++) {
+      fLabel[i] = label[i];
+    }
+  } else {
+    RemoveLabel();
+  }
+
+  return;
+}
+
+//______________________________________________________________________________
+Int_t AliAODCluster::GetLabel(UInt_t i) const
+{
+  if (fLabel && i < (UInt_t)fNLabel) {
+    return fLabel[i];
+  } else {
+    return -999;
+  }
+}
+
+//______________________________________________________________________________
+void AliAODCluster::RemoveLabel()
+{
+  delete[] fLabel;
+  fLabel = 0x0;
+  fNLabel = 0;
+
+  return;
+}
+
+//______________________________________________________________________________
 void AliAODCluster::Print(Option_t* /* option */) const
 {
   // prints information about AliAODCluster
 
-  printf("Object name: %s   Cluster type: %s\n", GetName(), GetTitle()); 
-  printf("    energy = %f\n", E());
-  printf("      chi2 = %f\n", Chi2());
-  printf(" PID object: %p\n", PID());
+  printf("Cluster type: %d\n", GetType()); 
+  printf("     energy = %f\n", E());
+  printf("       chi2 = %f\n", Chi2());
+  printf("  PID object: %p\n", PID());
 }
-
