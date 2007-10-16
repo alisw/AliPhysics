@@ -2852,6 +2852,9 @@ void AliReconstruction::CheckQA()
 				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was INFO", detName.Data())) ;
 				newDetList += detName ; 
 				newDetList += " " ; 
+			} else {
+				newDetList += detName ; 
+				newDetList += " " ; 			
 			}
 		}
 	}
