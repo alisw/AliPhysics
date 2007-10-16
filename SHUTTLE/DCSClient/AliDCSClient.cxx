@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.5  2007/10/05 12:40:55  acolla
+
+Result error code added to AliDCSClient data members (it was "lost" with the new implementation of TMap* GetAliasValues and GetDPValues).
+
 Revision 1.4  2007/09/14 16:46:14  jgrosseo
 1) Connect and Close are called before and after each query, so one can
 keep the same AliDCSClient object.
@@ -256,7 +260,7 @@ Int_t AliDCSClient::SendMessage(AliDCSMessage& message)
 }
 
 //______________________________________________________________________
-Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message) 
+Int_t AliDCSClient::ReceiveMessage(AliDCSMessage& message)
 {
 // receive message from the DCS server
 	
@@ -318,11 +322,20 @@ Int_t AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 		return sResult;
 	}
 
-	sResult = ReceiveValueSet(result);
+	Int_t receivedValues = 0;
+
+	while (1)
+	{
+		Int_t tmp = 0;
+		sResult = ReceiveValueSet(result, tmp);
+		if (sResult <= 0)
+			break;
+		receivedValues += sResult;
+	}
 
 	Close();
 
-	return sResult;
+	return receivedValues;
 }
 
 //______________________________________________________________________
@@ -344,15 +357,15 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 
 	for (Int_t subsetBegin = startIndex; subsetBegin < endIndex; subsetBegin += fMultiSplit)
 	{
-    		Connect();
-    	
-	    	if (!IsConnected()) 
+		Connect();
+
+	    	if (!IsConnected())
 		{
-    			AliError("Not connected!");
-            		delete result;
+			AliError("Not connected!");
+			delete result;
 			fResultErrorCode = fgkBadState;
-	    		return 0;
-	    	}
+			return 0;
+		}
 
 		Int_t subsetEnd = subsetBegin + fMultiSplit;
 	        if (subsetEnd > endIndex)
@@ -361,17 +374,17 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 		AliDCSMessage requestMessage;
 	        if (fMultiSplit == 1)
         	{
-	            // single dp request
-            
-	    		TObjString* aRequest = (TObjString*) list->At(subsetBegin);
-        	  	requestMessage.CreateRequestMessage(reqType, startTime, endTime, aRequest->String());
+			// single dp request
+
+			TObjString* aRequest = (TObjString*) list->At(subsetBegin);
+			requestMessage.CreateRequestMessage(reqType, startTime, endTime, aRequest->String());
 	        }
         	else
 	        {
-        	    // multi dp request
-            
-	            requestMessage.CreateMultiRequestMessage(reqType,
-			      	startTime, endTime);
+        		// multi dp request
+
+			requestMessage.CreateMultiRequestMessage(reqType,
+				startTime, endTime);
 
 	        	for (Int_t i=subsetBegin; i<subsetEnd; i++)
         		{
@@ -382,127 +395,117 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 					fResultErrorCode = fgkBadMessage;
         				return 0;
 				}
-	        	}
-        	}
-	
-    		if ((fResultErrorCode = SendMessage(requestMessage)) < 0)
-    		{
-                    AliError(Form("Can't send request message! Reason: %s",
-                            GetErrorString(fResultErrorCode)));
-                    Close();
-                    delete result;
-                    return 0;
+			}
+		}
+
+		if ((fResultErrorCode = SendMessage(requestMessage)) < 0)
+		{
+			AliError(Form("Can't send request message! Reason: %s",
+				GetErrorString(fResultErrorCode)));
+			Close();
+			delete result;
+			return 0;
 	        }
-    
-    		for (Int_t i=subsetBegin; i<subsetEnd; i++)
-	    	{
-    			TObjString* aRequest = (TObjString*) list->At(i);
-    		
-    			TObjArray* resultSet = new TObjArray();
+
+		while (1)
+		{
+			TObjArray* resultSet = new TObjArray();
 	    		resultSet->SetOwner(1);
-    
-    			if ((fResultErrorCode = ReceiveValueSet(resultSet)) < 0) 
+
+			Int_t ownerIndex = -1;
+			fResultErrorCode = ReceiveValueSet(resultSet, ownerIndex);
+
+			if (fResultErrorCode < 0)
 	        	{
-    				AliError(Form("Can't get values for %s!" ,
-    				aRequest->String().Data()));
-    
-    				delete resultSet;
-	    			result->DeleteValues();
-    				delete result;
-    				return 0;
-		    	}
+				AliError("Can't get values");
 
-			result->Add(aRequest, resultSet);
-		   }
+				delete resultSet;
+				result->DeleteValues();
+				delete result;
+				return 0;
+			}
 
-	       Close();
+			if (ownerIndex < 0)
+			{
+				// no more values
+				delete resultSet;
+				break;
+			}
 
- 		   AliInfo(Form("Retrieved entries %d..%d (total %d..%d); E.g. %s has %d values collected",
-					subsetBegin, subsetEnd, startIndex, endIndex, list->At(subsetBegin)->GetName(), ((TObjArray*)
-					result->GetValue(list->At(subsetBegin)->GetName()))->GetEntriesFast()));
-		
-	    }
+			TObjString* aRequest = (TObjString*) list->At(ownerIndex + subsetBegin);
+			//AliInfo(Form("Received %d values for entry %d, that is %s", resultSet->GetEntries(),
+			//	ownerIndex + subsetBegin, aRequest->String().Data()));
+
+			TObjArray* target = dynamic_cast<TObjArray*> (result->GetValue(aRequest));
+			if (target)
+			{
+				target->AddAll(resultSet);
+				//AliInfo(Form("Now we have %d entries", target->GetEntries()));
+				resultSet->SetOwner(0);
+				delete resultSet;
+			}
+			else
+				result->Add(aRequest, resultSet);
+		}
+
+		Close();
+
+		AliInfo(Form("Retrieved entries %d..%d (total %d..%d); E.g. %s has %d values collected",
+			subsetBegin, subsetEnd-1, startIndex, endIndex-1, list->At(subsetBegin)->GetName(), ((TObjArray*)
+			result->GetValue(list->At(subsetBegin)->GetName()))->GetEntriesFast()));
+
+	}
 
 	return result;
 }
 	
 //______________________________________________________________________
-Int_t AliDCSClient::ReceiveValueSet(TObjArray* result)
+Int_t AliDCSClient::ReceiveValueSet(TObjArray* result, Int_t& ownerIndex)
 {
-// receive set of values 
+	// receive set of values
 
-	Int_t sResult;
-
-	AliDCSMessage responseMessage;
-	if ((sResult = ReceiveMessage(responseMessage)) < 0) {
-		AliError(Form("Can't receive response message! Reason: %s",
-			GetErrorString(sResult)));
+	AliDCSMessage message;
+	Int_t sResult = ReceiveMessage(message);
+	if (sResult < 0)
+	{
+		AliError(Form("Can't receive message! Reason: %s", GetErrorString(sResult)));
 		return sResult;
-	}	
-
-	UInt_t valueCount;
-
-	if (responseMessage.GetType() == AliDCSMessage::kCount) {
-		valueCount = responseMessage.GetCount();
-
-	} else if (responseMessage.GetType() == AliDCSMessage::kError) {
-		fServerErrorCode = responseMessage.GetErrorCode();
-		fServerError = responseMessage.GetErrorString();
-
-		return AliDCSClient::fgkServerError;
-
-	} else {
-		AliError("Bad message type received!");	
-		return AliDCSClient::fgkBadMessage;
 	}
 
-	UInt_t receivedValues = 0;
+	if (message.GetType() == AliDCSMessage::kResultSet)
+	{
+		// this was the last message
+		ownerIndex = message.GetOwnerIndex();
+		if (ownerIndex < 0)
+			return 0;
 
-	AliDCSValue::Type valueType = AliDCSValue::kInvalid;
+		sResult = message.GetValues(result);
 
-	while (receivedValues < valueCount) {
+		AliDCSMessage nextMessage;
+		nextMessage.CreateNextMessage();
 
-                AliDCSMessage message;
+		if ((fResultErrorCode = SendMessage(nextMessage)) < 0)
+		{
+			AliError(Form("Can't send next message! Reason: %s",
+				GetErrorString(fResultErrorCode)));
+			Close();
+			return AliDCSClient::fgkCommError;
+	        }
 
-                if ((sResult = ReceiveMessage(message)) < 0) {
-                        AliError(Form("Can't receive message! Reason: %s",
-				GetErrorString(sResult)));
-                        return sResult;
-                }
+		return sResult;
+	}
+	else if (message.GetType() == AliDCSMessage::kError)
+	{
+		fServerErrorCode = message.GetErrorCode();
+		fServerError = message.GetErrorString();
 
-                if (message.GetType() == AliDCSMessage::kResultSet) {
+		return AliDCSClient::fgkServerError;
+	}
 
-			if (valueType == AliDCSValue::kInvalid) {
-				valueType = message.GetValueType();
-			} else {
-				if (valueType != message.GetValueType()) {
-					AliError("Unexpected value type!");
-					return AliDCSClient::fgkBadMessage;
-				}
-			}
-
-			receivedValues += message.GetValues(result);
-
-                	if (receivedValues > valueCount) {
-                        	AliError("Message contains more values than expected!");
-	                        return AliDCSClient::fgkBadMessage;
-        	        }
-
-		} else if (message.GetType() == AliDCSMessage::kError) {
-				fServerErrorCode = 
-					responseMessage.GetErrorCode();
-				fServerError = responseMessage.GetErrorString();
-
-                		return AliDCSClient::fgkServerError;
-		} else {
-                        AliError("Bad message type received!");
-                        return AliDCSClient::fgkBadMessage;
-                }       
-        }       
-	
-	return receivedValues;
+	AliError("Bad message type received!");
+	return AliDCSClient::fgkBadMessage;
 }
-		
+
 //______________________________________________________________________
 Int_t AliDCSClient::GetDPValues(const char* dpName, UInt_t startTime,
 				UInt_t endTime, TObjArray* result)

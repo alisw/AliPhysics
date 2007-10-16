@@ -33,9 +33,10 @@
 
 #define COUNT_OFFSET HEADER_SIZE
 
-#define SVT_OFFSET HEADER_SIZE
-#define VALUE_COUNT_OFFSET (HEADER_SIZE + 1)
-#define VALUES_OFFSET (HEADER_SIZE + 5)
+#define INDEX_OFFSET HEADER_SIZE
+#define SVT_OFFSET (INDEX_OFFSET + 4)
+#define VALUE_COUNT_OFFSET (SVT_OFFSET + 1)
+#define VALUES_OFFSET (VALUE_COUNT_OFFSET + 4)
 
 #define ERROR_CODE_OFFSET HEADER_SIZE
 #define ERROR_STRING_OFFSET (HEADER_SIZE + 1)
@@ -48,8 +49,8 @@ public:
 		kCount = 2,
 		kResultSet = 3,
 		kError = 4,
-		kMultiRequest = 5
-//		kNext = 6
+		kMultiRequest = 5,
+		kNext = 6
 	};
 
 	enum RequestType {
@@ -69,26 +70,22 @@ public:
 	};
 
 
-	AliDCSMessage();
+  	AliDCSMessage();
 
         AliDCSMessage(const char* buffer, UInt_t size);
-
         virtual ~AliDCSMessage();
 
-
-        void CreateRequestMessage(RequestType type, 
+        void CreateRequestMessage(RequestType type,
 		UInt_t startTime, UInt_t endTime, const char* request);
 
-        void CreateMultiRequestMessage(RequestType type, 
+        void CreateMultiRequestMessage(RequestType type,
 		UInt_t startTime, UInt_t endTime);
 
         void CreateCountMessage(UInt_t count);
-
         void CreateResultSetMessage(AliDCSValue::Type type);
-
         void CreateErrorMessage(ErrorCode code, const char* errorString);
-	
-	//void CreateNextMessage();
+
+	void CreateNextMessage();
 
 	void DestroyMessage();
 
@@ -136,7 +133,9 @@ public:
         // ResultSetType Message getters ans setters       
         AliDCSValue::Type GetValueType() const;
 
-        UInt_t GetValueCount() const;
+        Int_t GetOwnerIndex() const { return fOwnerIndex; }
+
+	UInt_t GetValueCount() const;
 
         UInt_t GetValues(TObjArray* result) const;
 
@@ -157,7 +156,7 @@ public:
 private:
 
 	AliDCSMessage(const AliDCSMessage& other); 	
-	AliDCSMessage& operator= (const AliDCSMessage& other); 	
+	AliDCSMessage& operator= (const AliDCSMessage& other);
 
 
 	char* fMessage; 	// Array of bytes building the message
@@ -180,6 +179,7 @@ private:
 	UInt_t fCount; 			// count counter
 
 	//ResultSet message fields
+  Int_t fOwnerIndex;  // owner index of this result
 	AliDCSValue::Type fValueType; // Simple value type
 
 	TObjArray* fValues; 		// array of received values
@@ -206,7 +206,7 @@ private:
 
 	void StoreMultiRequestMessage();
 
-	//void StoreNextMessage();
+	void StoreNextMessage();
 
 
 	Bool_t ValidateHeader(const char* buf);
@@ -221,7 +221,7 @@ private:
 
 	void LoadMultiRequestMessage();
 
-	//void LoadNextMessage();
+	void LoadNextMessage();
 
 	// Buffer helpers
 	static void SetBool(char* buf, Bool_t val);

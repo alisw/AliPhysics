@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.1  2006/11/06 14:22:47  jgrosseo
+major update (Alberto)
+o) reading of run parameters from the logbook
+o) online offline naming conversion
+o) standalone DCSclient package
+
 Revision 1.7  2006/10/02 16:38:39  jgrosseo
 update (alberto):
 fixed memory leaks
@@ -102,7 +108,7 @@ AliDCSMessage::AliDCSMessage():
 	TObject(), fMessage(NULL), fMessageSize(0), fType(kInvalid),
 	fRequestType(kNoneType), fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid), fValues(),
+	fOwnerIndex(0), fValueType(AliDCSValue::kInvalid), fValues(),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -117,7 +123,7 @@ AliDCSMessage::AliDCSMessage(const char* message, UInt_t size):
         TObject(), fMessage(NULL), fMessageSize(size), fType(kInvalid),
 	fRequestType(kNoneType), fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid), fValues(),
+	fOwnerIndex(0), fValueType(AliDCSValue::kInvalid), fValues(),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -135,7 +141,7 @@ AliDCSMessage::AliDCSMessage(const AliDCSMessage& /*other*/):
 	TObject(), fMessage(NULL), fMessageSize(0), fType(kInvalid),
 	fRequestType(kNoneType), fStartTime(0), fEndTime(0),
 	fRequestString(""), fCount(0),
-	fValueType(AliDCSValue::kInvalid), fValues(),
+	fOwnerIndex(0), fValueType(AliDCSValue::kInvalid), fValues(),
 	fErrorCode(kNoneError), fErrorString(""),
 	fRequestStrings()
 {
@@ -225,12 +231,12 @@ void AliDCSMessage::CreateErrorMessage(ErrorCode errorCode,
 	fErrorString = errorString;
 }
 
-/*
+
 void AliDCSMessage::CreateNextMessage() {
 	DestroyMessage();
 
 	fType = AliDCSMessage::kNext;
-} */
+}
 
 //______________________________________________________________________
 void AliDCSMessage::DestroyMessage() 
@@ -317,7 +323,7 @@ Char_t AliDCSMessage::GetByte(const char* buf)
 }
 
 //______________________________________________________________________
-UChar_t AliDCSMessage::GetUByte(const char* buf) 
+UChar_t AliDCSMessage::GetUByte(const char* buf)
 {
 // get ubyte value from buf 
 
@@ -383,14 +389,14 @@ TString AliDCSMessage::GetString(const char* buf, Int_t maxLen)
 }
 
 //______________________________________________________________________
-void AliDCSMessage::StoreHeader() 
+void AliDCSMessage::StoreHeader()
 {
 // store header message
 	
 	SetUByte(fMessage + ID_OFFSET, 'A');
 	SetUByte(fMessage + ID_OFFSET + 1, 'D');
 
-	SetUByte(fMessage + VERSION_OFFSET, 1);
+	SetUByte(fMessage + VERSION_OFFSET, 2);
 
 	SetUByte(fMessage + TYPE_OFFSET, fType);
 
@@ -398,7 +404,7 @@ void AliDCSMessage::StoreHeader()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::StoreRequestMessage() 
+void AliDCSMessage::StoreRequestMessage()
 {
 // store request message
 	
@@ -513,7 +519,7 @@ void AliDCSMessage::StoreErrorMessage()
 }
 
 //______________________________________________________________________
-void AliDCSMessage::StoreMultiRequestMessage() 
+void AliDCSMessage::StoreMultiRequestMessage()
 {
 // store multi request message
 	
@@ -523,7 +529,6 @@ void AliDCSMessage::StoreMultiRequestMessage()
 	TObjString* anObjString;
 
 	while ((anObjString = (TObjString*) iter.Next())) {
-		assert(anObjString->String().Length() <= 255);
 		requestDataSize += anObjString->String().Length() + 1;
 	}
 
@@ -543,27 +548,26 @@ void AliDCSMessage::StoreMultiRequestMessage()
 
 	while ((anObjString = (TObjString*) iter.Next())) {
 		UChar_t strLength = anObjString->String().Length();
-		SetUByte(fMessage + cursor, strLength);
-		cursor += 1;
-		strncpy(fMessage + cursor, anObjString->String().Data(), 
+		strncpy(fMessage + cursor, anObjString->String().Data(),
 			strLength);
 		cursor += strLength;
+		SetUByte(fMessage + cursor, 0);
+		cursor += 1;
 	}
 }
 
 //______________________________________________________________________
-/*
-void AliDCSMessage::StoreNextMessage() {
-
+void AliDCSMessage::StoreNextMessage()
+{
         fMessageSize = HEADER_SIZE;
 
         fMessage = new char[fMessageSize];
 
-        StoreHeader(); 
-} */
+        StoreHeader();
+}
 
 //______________________________________________________________________
-Bool_t AliDCSMessage::ValidateHeader(const char* buf) 
+Bool_t AliDCSMessage::ValidateHeader(const char* buf)
 {
 // validate message header
 
@@ -572,7 +576,7 @@ Bool_t AliDCSMessage::ValidateHeader(const char* buf)
 		return kFALSE;
 	}
 
-	if (buf[VERSION_OFFSET] != 1) {
+	if (buf[VERSION_OFFSET] != 2) {
 		AliError("Bad message version!");
 		return kFALSE;
 	}
@@ -651,85 +655,91 @@ void AliDCSMessage::LoadResultSetMessage()
     return;
   }
 
+  fOwnerIndex = GetInt(fMessage + INDEX_OFFSET);
+
   fValueType = (AliDCSValue::Type) GetUByte(fMessage + SVT_OFFSET);
   UInt_t count = GetUInt(fMessage + VALUE_COUNT_OFFSET);
 
   UInt_t cursor = VALUES_OFFSET;
 
-  if (fValueType == AliDCSValue::kBool) {
-    if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
-      fMessageSize) {
-      AliError("Too many bool values for this buffer size!");
-      return;
-    }
+  // -1 end of results
+  if (fOwnerIndex >= 0)
+  {
+    if (fValueType == AliDCSValue::kBool) {
+      if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
+        fMessageSize) {
+        AliError("Too many bool values for this buffer size!");
+        return;
+      }
 
-    for (UInt_t k = 0; k < count; k ++) {
-      Bool_t aBool = GetBool(fMessage + cursor);
-      cursor += 1;
-      UInt_t timeStamp = GetUInt(fMessage + cursor);
-      cursor += sizeof(UInt_t);
-      fValues->Add(new AliDCSValue(aBool, timeStamp));
-    }
-  } else if (fValueType == AliDCSValue::kChar) {
-    if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
-      fMessageSize) {
-      AliError("Too many byte values for this buffer size!");
-      return;
-    }
+      for (UInt_t k = 0; k < count; k ++) {
+        Bool_t aBool = GetBool(fMessage + cursor);
+        cursor += 1;
+        UInt_t timeStamp = GetUInt(fMessage + cursor);
+        cursor += sizeof(UInt_t);
+        fValues->Add(new AliDCSValue(aBool, timeStamp));
+      }
+    } else if (fValueType == AliDCSValue::kChar) {
+      if (VALUES_OFFSET + count + count * sizeof(UInt_t) >
+        fMessageSize) {
+        AliError("Too many byte values for this buffer size!");
+        return;
+      }
 
-    for (UInt_t k = 0; k < count; k ++) {
-      Char_t aByte = GetByte(fMessage + cursor);
-      cursor += sizeof(Char_t);
-      UInt_t timeStamp = GetUInt(fMessage + cursor);
-      cursor += sizeof(UInt_t);
-      fValues->Add(new AliDCSValue(aByte, timeStamp));
-    }
-  } else if (fValueType == AliDCSValue::kInt) {
-    if (VALUES_OFFSET + count * sizeof(Int_t) +
-      count * sizeof(UInt_t) > fMessageSize) {
-            AliError("Too many int values for this buffer size!");
-            return;
-    }
+      for (UInt_t k = 0; k < count; k ++) {
+        Char_t aByte = GetByte(fMessage + cursor);
+        cursor += sizeof(Char_t);
+        UInt_t timeStamp = GetUInt(fMessage + cursor);
+        cursor += sizeof(UInt_t);
+        fValues->Add(new AliDCSValue(aByte, timeStamp));
+      }
+    } else if (fValueType == AliDCSValue::kInt) {
+      if (VALUES_OFFSET + count * sizeof(Int_t) +
+        count * sizeof(UInt_t) > fMessageSize) {
+              AliError("Too many int values for this buffer size!");
+              return;
+      }
 
-    for (UInt_t k = 0; k < count; k ++) {
-            Int_t aInt = GetInt(fMessage + cursor);
-            cursor += sizeof(Int_t);
-            UInt_t timeStamp = GetUInt(fMessage + cursor);
-            cursor += sizeof(UInt_t);
-            fValues->Add(new AliDCSValue(aInt, timeStamp));
-    }
+      for (UInt_t k = 0; k < count; k ++) {
+              Int_t aInt = GetInt(fMessage + cursor);
+              cursor += sizeof(Int_t);
+              UInt_t timeStamp = GetUInt(fMessage + cursor);
+              cursor += sizeof(UInt_t);
+              fValues->Add(new AliDCSValue(aInt, timeStamp));
+      }
 
-  } else if (fValueType == AliDCSValue::kUInt) {
-    if (VALUES_OFFSET + count * sizeof(UInt_t) +
-      count * sizeof(UInt_t) > fMessageSize) {
-      AliError("Too many uint values for this buffer size!");
-      return;
-    }
+    } else if (fValueType == AliDCSValue::kUInt) {
+      if (VALUES_OFFSET + count * sizeof(UInt_t) +
+        count * sizeof(UInt_t) > fMessageSize) {
+        AliError("Too many uint values for this buffer size!");
+        return;
+      }
 
-    for (UInt_t k = 0; k < count; k ++) {
-      UInt_t aUInt = GetUInt(fMessage + cursor);
-      cursor += sizeof(UInt_t);
-      UInt_t timeStamp = GetUInt(fMessage + cursor);
-      cursor += sizeof(UInt_t);
-      fValues->Add(new AliDCSValue(aUInt, timeStamp));
-    }
-  } else if (fValueType == AliDCSValue::kFloat) {
-    if (VALUES_OFFSET + count * sizeof(Float_t) +
-      count * sizeof(UInt_t) > fMessageSize) {
-      AliError("Too many float values for this buffer size!");
-      return;
-    }
+      for (UInt_t k = 0; k < count; k ++) {
+        UInt_t aUInt = GetUInt(fMessage + cursor);
+        cursor += sizeof(UInt_t);
+        UInt_t timeStamp = GetUInt(fMessage + cursor);
+        cursor += sizeof(UInt_t);
+        fValues->Add(new AliDCSValue(aUInt, timeStamp));
+      }
+    } else if (fValueType == AliDCSValue::kFloat) {
+      if (VALUES_OFFSET + count * sizeof(Float_t) +
+        count * sizeof(UInt_t) > fMessageSize) {
+        AliError("Too many float values for this buffer size!");
+        return;
+      }
 
-    for (UInt_t k = 0; k < count; k ++) {
-      Float_t aFloat = GetFloat(fMessage + cursor);
-      cursor += sizeof(Float_t);
-      UInt_t timeStamp = GetUInt(fMessage + cursor);
-      cursor += sizeof(UInt_t);
-      fValues->Add(new AliDCSValue(aFloat, timeStamp));
-    }
+      for (UInt_t k = 0; k < count; k ++) {
+        Float_t aFloat = GetFloat(fMessage + cursor);
+        cursor += sizeof(Float_t);
+        UInt_t timeStamp = GetUInt(fMessage + cursor);
+        cursor += sizeof(UInt_t);
+        fValues->Add(new AliDCSValue(aFloat, timeStamp));
+      }
 
-  } else {
-    AliError("Unknown or invalid value type!");
+    } else {
+      AliError("Unknown or invalid value type!");
+    }
   }
 
   fType = kResultSet;
@@ -810,11 +820,12 @@ void AliDCSMessage::LoadMultiRequestMessage()
 }
 
 //______________________________________________________________________
-/*
-void AliDCSMessage::LoadNextMessage() {
-	
+void AliDCSMessage::LoadNextMessage()
+{
+	//
+
 	fType = kNext;
-} */
+}
 
 //______________________________________________________________________
 void AliDCSMessage::StoreToBuffer() 
@@ -839,9 +850,9 @@ void AliDCSMessage::StoreToBuffer()
 		case kMultiRequest:
 			StoreMultiRequestMessage();
 			break;
-/*		case kNext:
+		case kNext:
 			StoreNextMessage();
-			break; */
+			break;
 		default:
 			AliError("Can't store to buffer invalid message!");
 	}
@@ -898,9 +909,9 @@ void AliDCSMessage::LoadFromBuffer()
 		case kMultiRequest:
 			LoadMultiRequestMessage();
 			break;
-/*		case kNext:
+		case kNext:
 			LoadNextMessage();
-			break; */
+			break;
 		default:
 			AliError("Invalid message type!");
 	}	
@@ -1155,7 +1166,7 @@ TString AliDCSMessage::GetErrorString() const
 
 
 //______________________________________________________________________
-void AliDCSMessage::Print(Option_t* /*option*/) const 
+void AliDCSMessage::Print(Option_t* /*option*/) const
 {
 // print message
 
@@ -1205,6 +1216,9 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 
 		case kResultSet: {
 			printString += "ResultSet\n";
+			printString += " OwnerIndex: ";
+			printString += fOwnerIndex;
+			printString += '\n';
 			printString += " SimpleValueType: ";
 			printString += fValueType;
 			printString += '\n';
@@ -1279,10 +1293,10 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 			break;
 		} 	
 
-/*		case kNext: {
+		case kNext: {
 			printString += "Next\n";
 			break;
-		} */
+		}
 
 		default:
 			printString += "Invalid\n";

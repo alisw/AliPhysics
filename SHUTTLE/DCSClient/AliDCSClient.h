@@ -59,7 +59,6 @@ public:
 
         void Close();
 
-
         static const char* GetErrorString(Int_t code);
 
 private:
@@ -84,11 +83,8 @@ private:
 	Bool_t Connect();
 
 	Int_t SendBuffer(const char* buffer, Int_t size);
-
 	Int_t ReceiveBuffer(char* buffer, Int_t size);
-
 	Int_t SendMessage(AliDCSMessage& message);
-
 	Int_t ReceiveMessage(AliDCSMessage& message);
 
 	Int_t GetValues(AliDCSMessage::RequestType requestType,
@@ -99,7 +95,7 @@ private:
 		const TSeqCollection* list, UInt_t startTime, UInt_t endTime,
 		Int_t startIndex, Int_t endIndex);
 
-	Int_t ReceiveValueSet(TObjArray* result);
+	Int_t ReceiveValueSet(TObjArray* result, Int_t& ownerIndex);
 
 	AliDCSClient(const AliDCSClient& other);		// not implemented
 	AliDCSClient& operator= (const AliDCSClient& other);	// not implemented
