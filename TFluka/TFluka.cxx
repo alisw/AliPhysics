@@ -1968,39 +1968,49 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
   //
   // Return processes active in the current step
   //
-    FlukaProcessCode_t icode = GetIcode();
+    FlukaProcessCode_t icode   = GetIcode();
+    FlukaCallerCode_t  caller  = GetCaller();
+    
     proc.Set(1);
     TMCProcess iproc;
-    switch (icode) {
-    case kKASKADtimekill:
-    case kEMFSCOtimekill:
-    case kKASNEUtimekill:
-    case kKASHEAtimekill:
-    case kKASOPHtimekill:
-        iproc =  kPTOFlimit;
-        break;
-    case kKASKADstopping:
-    case kKASKADescape:
-    case kEMFSCOstopping1:
-    case kEMFSCOstopping2:
-    case kEMFSCOescape:
-    case kKASNEUstopping:
-    case kKASNEUescape:
-    case kKASHEAescape:
-    case kKASOPHescape:
-        iproc = kPStop;
-        break;
-    case kKASOPHabsorption:
-        iproc = kPLightAbsorption;
-        break;
-    case kKASOPHrefraction:
-        iproc = kPLightRefraction;
-    case kEMFSCOlocaldep : 
-        iproc = kPPhotoelectric;
-        break;
-    default:
-        iproc = ProdProcess(0);
+    if (caller == kBXEntering || caller == kBXExiting || caller == kENDRAW) {
+	iproc = kPTransportation;
+    } else {
+	switch (icode) {
+	case kEMFSCO:
+	    iproc = kPEnergyLoss;
+	    break;
+	case kKASKADtimekill:
+	case kEMFSCOtimekill:
+	case kKASNEUtimekill:
+	case kKASHEAtimekill:
+	case kKASOPHtimekill:
+	    iproc =  kPTOFlimit;
+	    break;
+	case kKASKADstopping:
+	case kKASKADescape:
+	case kEMFSCOstopping1:
+	case kEMFSCOstopping2:
+	case kEMFSCOescape:
+	case kKASNEUstopping:
+	case kKASNEUescape:
+	case kKASHEAescape:
+	case kKASOPHescape:
+	    iproc = kPStop;
+	    break;
+	case kKASOPHabsorption:
+	    iproc = kPLightAbsorption;
+	    break;
+	case kKASOPHrefraction:
+	    iproc = kPLightRefraction;
+	case kEMFSCOlocaldep : 
+	    iproc = kPPhotoelectric;
+	    break;
+	default:
+	    iproc = ProdProcess(0);
+	}
     }
+    
     proc[0] = iproc;
     return 1;
 }
