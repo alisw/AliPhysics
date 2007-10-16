@@ -13,8 +13,7 @@ CLASS_HDRS:=  	AliHLTFilePublisher.h \
 		AliHLTDataGenerator.h \
 		AliHLTAgentUtil.h
 
-MODULE_SRCS= 	AliHLTDynamicAliLog.cxx \
-		$(CLASS_HDRS:.h=.cxx)
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
 

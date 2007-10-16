@@ -5,9 +5,10 @@ include $(MODDIR)/hlt.conf
 
 LIBHLTREC_VERSION := 0
 
-MODULE_SRCS:= 	AliHLTReconstructor.cxx
+CLASS_HDRS:=  	AliHLTReconstructor.h
 
-CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
+MODULE_SRCS:= 	AliHLTDynamicAliLog.cxx \
+		$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
 

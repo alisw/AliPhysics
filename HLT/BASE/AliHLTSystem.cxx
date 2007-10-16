@@ -82,15 +82,8 @@ AliHLTSystem::AliHLTSystem()
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
     env.fAllocMemoryFunc=AliHLTSystem::AllocMemory;
     env.fLoggingFunc=NULL;
-    AliHLTComponentLogSeverity loglevel=fpComponentHandler->GetLocalLoggingLevel();
-    fpComponentHandler->SetLocalLoggingLevel(kHLTLogError);
     fpComponentHandler->SetEnvironment(&env);
-    fpComponentHandler->LoadLibrary("libAliHLTUtil.so", 0/* do not activate agents */);
-    fgAliLoggingFunc=(AliHLTLogging::AliHLTDynamicMessage)fpComponentHandler->FindSymbol("libAliHLTUtil.so", "AliDynamicMessage");
-    fpComponentHandler->SetLocalLoggingLevel(loglevel);
-    if (fgAliLoggingFunc==NULL) {
-      HLTError("symbol lookp failure: can not find AliDynamicMessage, switching to HLT logging system");
-    }
+    InitAliLogFunc(fpComponentHandler);
     fpComponentHandler->AnnounceVersion();
   } else {
     HLTFatal("can not create Component Handler");

@@ -20,6 +20,7 @@
 class AliHLTComponentHandler;
 //#define LOG_PREFIX ""       // logging prefix, for later extensions
 
+#define ALILOG_WRAPPER_LIBRARY "libHLTrec.so"
 
 /* the logging macros can be used inside methods of classes which inherit from 
  * AliHLTLogging
@@ -102,6 +103,14 @@ public:
    * when running in AliRoot
    */
   static int InitAliLogTrap(AliHLTComponentHandler* pHandler);
+
+  /**
+   * Init the AliRoot logging function.
+   * All log messages are redirected to AliLog when running in AliRoot.
+   * Note: when running in PubSub, AliLog messages are redirected to PubSub,
+   * see AliHLTLogging::InitAliLogTrap
+   */
+  static int InitAliLogFunc(AliHLTComponentHandler* pHandler);
 
   /**
    * Genaral logging function

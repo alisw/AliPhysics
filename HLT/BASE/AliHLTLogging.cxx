@@ -102,18 +102,56 @@ int AliHLTLogging::Init(AliHLTfctLogging pFun)
 int AliHLTLogging::InitAliLogTrap(AliHLTComponentHandler* pHandler)
 {
   // see header file for class documentation
+  // init the AliRoot logging trap
+  // AliLog messages are redirected to PubSub,
   int iResult=0;
   if (pHandler) {
+    // set temporary loglevel of component handler
     AliHLTComponentLogSeverity loglevel=pHandler->GetLocalLoggingLevel();
     pHandler->SetLocalLoggingLevel(kHLTLogError);
-    pHandler->LoadLibrary("libAliHLTUtil.so");
+
+    // load library containing AliRoot dependencies and initialization handler
+    pHandler->LoadLibrary(ALILOG_WRAPPER_LIBRARY, 0/* do not activate agents */);
+
+    // restore loglevel
     pHandler->SetLocalLoggingLevel(loglevel);
-    InitAliDynamicMessageCallback pFunc=(InitAliDynamicMessageCallback)pHandler->FindSymbol("libAliHLTUtil.so", "InitAliDynamicMessageCallback"); 
+
+    // find the symbol
+    InitAliDynamicMessageCallback pFunc=(InitAliDynamicMessageCallback)pHandler->FindSymbol(ALILOG_WRAPPER_LIBRARY, "InitAliDynamicMessageCallback"); 
     if (pFunc) {
       iResult=(*pFunc)();
     } else {
       Message(NULL, kHLTLogError, "AliHLTLogging::InitAliLogTrap", "init logging",
 	      "can not initialize AliLog callback");
+      iResult=-ENOSYS;
+    }
+  } else {
+    iResult=-EINVAL;
+  }
+  
+  return iResult;
+}
+
+int AliHLTLogging::InitAliLogFunc(AliHLTComponentHandler* pHandler)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (pHandler) {
+    // set temporary loglevel of component handler
+    AliHLTComponentLogSeverity loglevel=pHandler->GetLocalLoggingLevel();
+    pHandler->SetLocalLoggingLevel(kHLTLogError);
+
+    // load library containing AliRoot dependencies and initialization handler
+    pHandler->LoadLibrary(ALILOG_WRAPPER_LIBRARY, 0/* do not activate agents */);
+
+    // restore loglevel
+    pHandler->SetLocalLoggingLevel(loglevel);
+
+    // find the symbol
+    fgAliLoggingFunc=(AliHLTLogging::AliHLTDynamicMessage)pHandler->FindSymbol(ALILOG_WRAPPER_LIBRARY, "AliDynamicMessage");
+    if (fgAliLoggingFunc==NULL) {
+      Message(NULL, kHLTLogError, "AliHLTLogging::InitAliLogFunc", "init logging",
+	      "symbol lookp failure: can not find AliDynamicMessage, switching to HLT logging system");
       iResult=-ENOSYS;
     }
   } else {
