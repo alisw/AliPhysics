@@ -32,9 +32,14 @@ ClassImp(AliAODEvent)
   const char* AliAODEvent::fAODListName[kAODListN] = {"header",
 						      "tracks",
 						      "vertices",
-						      "clusters",
+						      "v0s",
+						      "tracklets",
 						      "jets",
-						      "tracklets"};
+						      "caloCells",
+						      "caloClusters",
+						      "fmdClusters",
+						      "pmdClusters"
+};
 //______________________________________________________________________________
 AliAODEvent::AliAODEvent() :
   AliVEvent(),
@@ -42,9 +47,13 @@ AliAODEvent::AliAODEvent() :
   fHeader(0),
   fTracks(0),
   fVertices(0),
-  fClusters(0),
+  fV0s(0),
+  fTracklets(0),
   fJets(0),
-  fTracklets(0)
+  fCaloCells(0),
+  fCaloClusters(0),
+  fFmdClusters(0),
+  fPmdClusters(0)
 {
   // default constructor
 }
@@ -83,10 +92,14 @@ void AliAODEvent::CreateStdContent()
   AddObject(new AliAODHeader());
   AddObject(new TClonesArray("AliAODTrack", 0));
   AddObject(new TClonesArray("AliAODVertex", 0));
-  AddObject(new TClonesArray("AliAODCluster", 0));
-  AddObject(new TClonesArray("AliAODJet", 0));
+  AddObject(new TClonesArray("AliAODv0", 0));
   AddObject(new AliAODTracklets());
-
+  AddObject(new TClonesArray("AliAODJet", 0));
+  AddObject(new AliAODCaloCells());
+  AddObject(new TClonesArray("AliAODCaloCluster", 0));
+  AddObject(new TClonesArray("AliAODFmdCluster", 0));
+  AddObject(new TClonesArray("AliAODPmdCluster", 0));
+  
   // set names
   SetStdNames();
 
@@ -122,27 +135,29 @@ void AliAODEvent::GetStdContent()
 {
   // set pointers for standard content
 
-  fHeader    = (AliAODHeader*)fAODObjects->FindObject("header");
-  fTracks    = (TClonesArray*)fAODObjects->FindObject("tracks");
-  fVertices  = (TClonesArray*)fAODObjects->FindObject("vertices");
-  fClusters  = (TClonesArray*)fAODObjects->FindObject("clusters");
-  fJets      = (TClonesArray*)fAODObjects->FindObject("jets");
-  fTracklets = (AliAODTracklets*)fAODObjects->FindObject("tracklets");
-  
-  /* old implementation
-  fHeader    = (AliAODHeader*)fAODObjects->At(0);
-  fTracks    = (TClonesArray*)fAODObjects->At(1);
-  fVertices  = (TClonesArray*)fAODObjects->At(2);
-  fClusters  = (TClonesArray*)fAODObjects->At(3);
-  fJets      = (TClonesArray*)fAODObjects->At(4);
-  fTracklets = (AliAODTracklets*)fAODObjects->At(5);
-  */
+  fHeader        = (AliAODHeader*)fAODObjects->FindObject("header");
+  fTracks        = (TClonesArray*)fAODObjects->FindObject("tracks");
+  fVertices      = (TClonesArray*)fAODObjects->FindObject("vertices");
+  fV0s           = (TClonesArray*)fAODObjects->FindObject("v0s");
+  fTracklets     = (AliAODTracklets*)fAODObjects->FindObject("tracklets");
+  fJets          = (TClonesArray*)fAODObjects->FindObject("jets");
+  fCaloCells     = (AliAODCaloCells*)fAODObjects->FindObject("caloCells");
+  fCaloClusters  = (TClonesArray*)fAODObjects->FindObject("caloClusters");
+  fFmdClusters   = (TClonesArray*)fAODObjects->FindObject("fmdClusters");
+  fPmdClusters   = (TClonesArray*)fAODObjects->FindObject("pmdClusters");
 }
 
 //______________________________________________________________________________
-void AliAODEvent::ResetStd(Int_t trkArrSize, Int_t vtxArrSize)
+void AliAODEvent::ResetStd(Int_t trkArrSize, 
+			   Int_t vtxArrSize, 
+			   Int_t v0ArrSize, 
+			   Int_t jetSize, 
+			   Int_t caloClusSize, 
+			   Int_t fmdClusSize, 
+			   Int_t pmdClusSize)
 {
-  // deletes content of standard arrays and resets size
+  // deletes content of standard arrays and resets size 
+
   fTracks->Delete();
   if (trkArrSize > fTracks->GetSize()) 
     fTracks->Expand(trkArrSize);
@@ -150,16 +165,40 @@ void AliAODEvent::ResetStd(Int_t trkArrSize, Int_t vtxArrSize)
   fVertices->Delete();
   if (vtxArrSize > fVertices->GetSize()) 
     fVertices->Expand(vtxArrSize);
+ 
+  fV0s->Delete();
+  if (v0ArrSize > fV0s->GetSize()) 
+    fV0s->Expand(v0ArrSize);
+
+  fJets->Delete();
+  if (jetSize > fJets->GetSize()) 
+    fJets->Expand(jetSize);
+
+  fCaloClusters->Delete();
+  if (caloClusSize > fCaloClusters->GetSize()) 
+    fCaloClusters->Expand(caloClusSize);
+
+  fFmdClusters->Delete();
+  if (fmdClusSize > fFmdClusters->GetSize()) 
+    fFmdClusters->Expand(fmdClusSize);
+
+  fPmdClusters->Delete();
+  if (pmdClusSize > fPmdClusters->GetSize()) 
+    fPmdClusters->Expand(pmdClusSize);
 }
 
 void AliAODEvent::ClearStd()
 {
   // clears the standard arrays
-    fTracks   ->Clear();
-    fVertices ->Clear();
-    fClusters ->Clear();
-    fJets     ->Clear();
-    fTracklets->DeleteContainer();
+  fTracks        ->Clear();
+  fVertices      ->Clear();
+  fV0s           ->Clear();
+  fTracklets     ->DeleteContainer();
+  fJets          ->Clear();
+  fCaloCells     ->DeleteContainer();
+  fCaloClusters ->Clear();
+  fFmdClusters  ->Clear();
+  fPmdClusters  ->Clear();
 }
 
 //______________________________________________________________________________
@@ -176,7 +215,7 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
     }
   }
   
-  return muonTracks->GetSize();
+  return muonTracks->GetEntriesFast();
 }
 
 

@@ -4,12 +4,15 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TMath.h>
+#include <TArrayS.h>
+#include <TArrayD.h>
 
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
-#include "AliAODCluster.h"
+#include "AliAODCaloCluster.h"
+#include "AliAODPmdCluster.h"
 #include "AliAODTracklets.h"
 
 #include "AliESDEvent.h"
@@ -17,8 +20,11 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
+#include "AliESDkink.h"
 #include "AliESDcascade.h"
 #include "AliESDCaloCluster.h"
+#include "AliESDPmdTrack.h"
+#include "AliMultiplicity.h"
 
 #endif
 
@@ -51,12 +57,15 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
   Float_t posF[3];
   Double_t pos[3];
   Double_t p[3];
+  Double_t p_pos[3];
+  Double_t p_neg[3];
   Double_t covVtx[6];
   Double_t covTr[21];
   Double_t pid[10];
 
   // loop over events and fill them
   for (Int_t iEvent = 0; iEvent < nEvents; ++iEvent) {
+    //cout << "event: " << iEvent << endl;
     t->GetEntry(iEvent);
 
     // Multiplicity information needed by the header (to be revised!)
@@ -91,10 +100,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
-    Int_t nVertices = nV0s + nCascades + nKinks;
-    
-    aod->ResetStd(nTracks, nVertices);
-    AliAODTrack *aodTrack;
+    Int_t nVertices = nV0s + nCascades + nKinks + 1 /* = prim. vtx*/;
+    Int_t nJets     = 0;
+    Int_t nCaloClus = esd->GetNumberOfCaloClusters();
+    Int_t nFmdClus  = 0;
+    Int_t nPmdClus  = esd->GetNumberOfPmdTracks();
+   
+    aod->ResetStd(nTracks, nVertices, nV0s+nCascades, nJets, nCaloClus, nFmdClus, nPmdClus);
     
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
@@ -114,7 +126,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       usedKink = new Bool_t[nKinks];
       for (Int_t iKink=0; iKink<nKinks; ++iKink) usedKink[iKink]=kFALSE;
     }
-
+    
     // Access to the AOD container of vertices
     TClonesArray &vertices = *(aod->GetVertices());
     Int_t jVertices=0;
@@ -122,7 +134,11 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     // Access to the AOD container of tracks
     TClonesArray &tracks = *(aod->GetTracks());
     Int_t jTracks=0; 
-  
+   
+    // Access to the AOD container of V0s
+    TClonesArray &V0s = *(aod->GetV0s());
+    Int_t jV0s=0;
+    
     // Add primary vertex. The primary tracks will be defined
     // after the loops on the composite objects (V0, cascades, kinks)
     const AliESDVertex *vtx = esd->GetPrimaryVertex();
@@ -133,8 +149,11 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
     AliAODVertex * primary = new(vertices[jVertices++])
       AliAODVertex(pos, covVtx, vtx->GetChi2toNDF(), NULL, -1, AliAODVertex::kPrimary);
          
+
+    AliAODTrack *aodTrack = 0x0;
+    
     // Create vertices starting from the most complex objects
-      
+
     // Cascades
     for (Int_t nCascade = 0; nCascade < nCascades; ++nCascade) {
       AliESDcascade *cascade = esd->GetCascade(nCascade);
@@ -150,7 +169,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 									nCascade,
 									AliAODVertex::kCascade);
 
-      primary->AddDaughter(vcascade);
+      primary->AddDaughter(vcascade); // the cascade 'particle' (represented by a vertex) is added as a daughter to the primary vertex
 
       // Add the V0 from the cascade. The ESD class have to be optimized...
       // Now we have to search for the corresponding V0 in the list of V0s
@@ -177,7 +196,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
       AliAODVertex * vV0FromCascade = 0x0;
 
-      if (indV0>-1 && !usedV0[indV0] ) {
+      if (indV0>-1 && !usedV0[indV0]) {
 	
 	// the V0 exists in the array of V0s and is not used
 
@@ -209,6 +228,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 								 indV0,
 								 AliAODVertex::kV0);
 	vcascade->AddDaughter(vV0FromCascade);
+
       }
 
       // Add the positive tracks from the V0
@@ -218,7 +238,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	usedTrack[posFromV0] = kTRUE;
 
 	AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
-	esdTrack->GetPxPyPz(p);
+	esdTrack->GetPxPyPz(p_pos);
 	esdTrack->GetXYZ(pos);
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	esdTrack->GetESDpid(pid);
@@ -226,7 +246,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	vV0FromCascade->AddDaughter(aodTrack =
 				    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(), 
-					   p, 
+					   p_pos, 
 					   kTRUE,
 					   pos,
 					   kFALSE,
@@ -253,7 +273,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	usedTrack[negFromV0] = kTRUE;
 	
 	AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
-	esdTrack->GetPxPyPz(p);
+	esdTrack->GetPxPyPz(p_neg);
 	esdTrack->GetXYZ(pos);
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	esdTrack->GetESDpid(pid);
@@ -261,7 +281,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	vV0FromCascade->AddDaughter(aodTrack =
                 new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p_neg,
 					   kTRUE,
 					   pos,
 					   kFALSE,
@@ -280,6 +300,11 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	cerr << "Error: event " << iEvent << " cascade " << nCascade
 	     << " track " << negFromV0 << " has already been used!" << endl;
       }
+
+      // add it to the V0 array as well
+      Double_t d0[2] = { -999., -99.};
+      // counting is probably wrong
+      new(V0s[jV0s++]) AliAODv0(vV0FromCascade, -999., -99., p_pos, p_neg, d0); // to be refined
 
       // Add the bachelor track from the cascade
 
@@ -317,19 +342,19 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	cerr << "Error: event " << iEvent << " cascade " << nCascade
 	     << " track " << bachelor << " has already been used!" << endl;
       }
-
+      
       // Add the primary track of the cascade (if any)
-
+      
     } // end of the loop on cascades
-    
+ 
     // V0s
         
     for (Int_t nV0 = 0; nV0 < nV0s; ++nV0) {
 
       if (usedV0[nV0]) continue; // skip if aready added to the AOD
 
-      AliESDv0 *v0 = esd->GetV0(nV0);
-      
+      AliESDv0 *v0 = esd->GetV0(nV0); 
+     
       v0->GetXYZ(pos[0], pos[1], pos[2]);
       v0->GetPosCov(covVtx);
 
@@ -352,7 +377,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	usedTrack[posFromV0] = kTRUE;
 
 	AliESDtrack *esdTrack = esd->GetTrack(posFromV0);
-	esdTrack->GetPxPyPz(p);
+	esdTrack->GetPxPyPz(p_pos);
 	esdTrack->GetXYZ(pos);
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	esdTrack->GetESDpid(pid);
@@ -360,7 +385,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	vV0->AddDaughter(aodTrack =
         	new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(), 
-					   p, 
+					   p_pos, 
 					   kTRUE,
 					   pos,
 					   kFALSE,
@@ -387,7 +412,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	usedTrack[negFromV0] = kTRUE;
 
 	AliESDtrack *esdTrack = esd->GetTrack(negFromV0);
-	esdTrack->GetPxPyPz(p);
+	esdTrack->GetPxPyPz(p_neg);
 	esdTrack->GetXYZ(pos);
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
 	esdTrack->GetESDpid(pid);
@@ -395,7 +420,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	vV0->AddDaughter(aodTrack =
                 new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
 					   esdTrack->GetLabel(),
-					   p,
+					   p_neg,
 					   kTRUE,
 					   pos,
 					   kFALSE,
@@ -415,6 +440,9 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	     << " track " << negFromV0 << " has already been used!" << endl;
       }
 
+      // add it to the V0 array as well
+      Double_t d0[2] = { 999., 99.};
+      new(V0s[jV0s++]) AliAODv0(vV0, 999., 99., p_pos, p_neg, d0); // to be refined
     } // end of the loop on V0s
     
     // Kinks: it is a big mess the access to the information in the kinks
@@ -547,20 +575,13 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 	      cerr << "Error: event " << iEvent << " kink " << TMath::Abs(ikink)-1
 	      << " track " << idaughter << " has already been used!" << endl;
 	    }
-
-
 	  }
 	}
-
-      }      
-
+      }
     }
 
-    
     // Tracks (primary and orphan)
-      
-    for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
-	
+    for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {	
 
       if (usedTrack[nTrack]) continue;
 
@@ -574,7 +595,7 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
 
       esdTrack->GetImpactParameters(impactXY,impactZ);
 
-      if (impactXY<3) {
+      if (impactXY<3.) {
 	// track inside the beam pipe
       
 	primary->AddDaughter(aodTrack =
@@ -597,25 +618,11 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       }
       else {
 	// outside the beam pipe: orphan track
-	    aodTrack =
-	    new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
-					 esdTrack->GetLabel(),
-					 p,
-					 kTRUE,
-					 pos,
-					 kFALSE,
-					 covTr, 
-					 (Short_t)esdTrack->Charge(),
-					 esdTrack->GetITSClusterMap(), 
-					 pid,
-					 NULL,
-					 kFALSE, // check if this is right
-					 kFALSE, // check if this is right
-					 AliAODTrack::kOrphan);
-	    aodTrack->ConvertAliPIDtoAODPID();
+	// Don't write them anymore!
+	continue;
       }	
     } // end of loop on tracks
-
+    
     // muon tracks
     Int_t nMuTracks = esd->GetNumberOfMuonTracks();
     for (Int_t nMuTrack = 0; nMuTrack < nMuTracks; ++nMuTrack) {
@@ -656,56 +663,91 @@ void CreateAODfromESD(const char *inFileName = "AliESDs.root",
       else 
 	aodTrack->SetChi2MatchTrigger(0.);
     }
-    
+   
+    // Access to the AOD container of PMD clusters
+    TClonesArray &pmdClusters = *(aod->GetPmdClusters());
+    Int_t jPmdClusters=0;
+  
+    for (Int_t iPmd = 0; iPmd < nPmdClus; ++iPmd) {
+      // file pmd clusters, to be revised!
+      AliESDPmdTrack *pmdTrack = esd->GetPmdTrack(iPmd);
+      Int_t nLabel = 0;
+      Int_t *label = 0x0;
+      Double_t pos[3] = { pmdTrack->GetClusterX(), pmdTrack->GetClusterY(), pmdTrack->GetClusterZ() };
+      Double_t pid[9] = { 0., 0., 0., 0., 0., 0., 0., 0., 0. }; // to be revised!
+      // type not set!
+      // assoc cluster not set
+      new(pmdClusters[jPmdClusters++]) AliAODPmdCluster(iPmd, nLabel, label, pmdTrack->GetClusterADC(), pos, pid);
+    }
+
     // Access to the AOD container of clusters
-    TClonesArray &clusters = *(aod->GetClusters());
+    TClonesArray &caloClusters = *(aod->GetCaloClusters());
     Int_t jClusters=0;
 
     // Calo Clusters
-    Int_t nClusters    = esd->GetNumberOfCaloClusters();
-
-    for (Int_t iClust=0; iClust<nClusters; ++iClust) {
+    TArrayS EMCCellNumber(15000);
+    TArrayD EMCCellAmplitude(15000);
+    Int_t nEMCCells = 0;
+    const Float_t fEMCAmpScale = 1./500;
+ 
+    for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
 
       AliESDCaloCluster * cluster = esd->GetCaloCluster(iClust);
 
       Int_t id = cluster->GetID();
-      Int_t label = -1;
+      Int_t nLabel = 0;
+      Int_t *label = 0x0;
       Float_t energy = cluster->E();
       cluster->GetPosition(posF);
-      AliAODVertex *prodVertex = primary;
-      AliAODTrack *primTrack = NULL;
       Char_t ttype=AliAODCluster::kUndef;
 
-      if (cluster->IsPHOS()) ttype=AliAODCluster::kPHOSNeutral;
-      else if (cluster->IsEMCAL()) {
-
-	if (cluster->GetClusterType() == AliESDCaloCluster::kPseudoCluster)
-	  ttype = AliAODCluster::kEMCALPseudoCluster;
-	else
-	  ttype = AliAODCluster::kEMCALClusterv1;
-
+      if (cluster->GetClusterType() == AliESDCaloCluster::kPHOSCluster) {
+	ttype=AliAODCluster::kPHOSNeutral;
+      } 
+      else if (cluster->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1) {
+	ttype = AliAODCluster::kEMCALClusterv1;
       }
-
-      new(clusters[jClusters++]) AliAODCluster(id,
-					       label,
-					       energy,
-					       pos,
-					       NULL, // no covariance matrix provided
-					       NULL, // no pid for clusters provided
-					       prodVertex,
-					       primTrack,
-					       ttype);
+      else if (cluster->GetClusterType() == AliESDCaloCluster::kEMCALPseudoCluster) {
+	// Collect raw tower info
+	for (Int_t iDig = 0; iDig < cluster->GetNumberOfDigits(); iDig++) {
+	  EMCCellNumber[nEMCCells] = cluster->GetDigitIndex()->At(iDig);
+	  EMCCellAmplitude[nEMCCells] = fEMCAmpScale*cluster->GetDigitAmplitude()->At(iDig);
+	  nEMCCells++;
+	}
+	// don't write cluster data (it's just a pseudo cluster, holding the tower information)
+	continue; 
+      }
+      
+      AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) AliAODCaloCluster(id,
+											nLabel,
+											label,
+											energy,
+											pos,
+											NULL,
+											ttype);
+      
+      caloCluster->SetCaloCluster(); // to be refined!
 
     } // end of loop on calo clusters
 
-    // tracklets
+    // fill EMC cell info
+    AliAODCaloCells &EMCCells = *(aod->GetCaloCells());
+    EMCCells.CreateContainer(nEMCCells);
+    EMCCells.SetType(AliAODCaloCells::kEMCAL);
+    for (Int_t iCell = 0; iCell < nEMCCells; iCell++) {      
+      EMCCells.SetCell(iCell,EMCCellNumber[iCell],EMCCellAmplitude[iCell]);
+    }
+    EMCCells.Sort();
+
+    // tracklets    
+    AliAODTracklets &SPDTracklets = *(aod->GetTracklets());
     const AliMultiplicity *mult = esd->GetMultiplicity();
     if (mult) {
       if (mult->GetNumberOfTracklets()>0) {
-	aod->GetTracklets()->CreateContainer(mult->GetNumberOfTracklets());
+	SPDTracklets.CreateContainer(mult->GetNumberOfTracklets());
 
 	for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++) {
-	  aod->GetTracklets()->SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n));
+	  SPDTracklets.SetTracklet(n, mult->GetTheta(n), mult->GetPhi(n), mult->GetDeltaPhi(n), mult->GetLabel(n));
 	}
       }
     } else {

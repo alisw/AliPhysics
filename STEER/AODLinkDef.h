@@ -19,6 +19,9 @@
 #pragma link C++ class AliAODTrack+;
 #pragma link C++ class AliAODVertex+;
 #pragma link C++ class AliAODCluster+;
+#pragma link C++ class AliAODCaloCluster+;
+#pragma link C++ class AliAODPmdCluster+;
+#pragma link C++ class AliAODFmdCluster+;
 #pragma link C++ class AliAODJet+;
 #pragma link C++ class AliAODPhoton+;
 #pragma link C++ class AliAODRedCov<3>+;
@@ -30,6 +33,7 @@
 #pragma link C++ class AliAODInputHandler+;
 #pragma link C++ class AliAODTracklets+;
 #pragma link C++ class AliAODTagCreator+;
+#pragma link C++ class AliAODCaloCells+;
 
 #endif
 

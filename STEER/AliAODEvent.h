@@ -21,9 +21,13 @@
 #include "AliAODHeader.h"
 #include "AliAODTrack.h"
 #include "AliAODVertex.h"
-#include "AliAODCluster.h"
-#include "AliAODJet.h"
+#include "AliAODv0.h"
 #include "AliAODTracklets.h"
+#include "AliAODJet.h"
+#include "AliAODCaloCells.h"
+#include "AliAODCaloCluster.h"
+#include "AliAODPmdCluster.h"
+#include "AliAODFmdCluster.h"
 
 class TTree;
 
@@ -33,9 +37,13 @@ class AliAODEvent : public AliVEvent {
   enum AODListIndex_t {kAODHeader,
 		       kAODTracks,
 		       kAODVertices,
-		       kAODClusters,
-		       kAODJets,
+		       kAODv0,
 		       kAODTracklets,
+		       kAODJets,
+		       kAODCaloCells,
+		       kAODCaloClusters,
+		       kAODFmdClusters,
+		       kAODPmdClusters,
 		       kAODListN
   };
 
@@ -99,15 +107,37 @@ class AliAODEvent : public AliVEvent {
   AliAODVertex *GetVertex(Int_t nVertex) const { return (AliAODVertex*)fVertices->UncheckedAt(nVertex); }
   Int_t         AddVertex(const AliAODVertex* vtx)
   {new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*vtx); return fVertices->GetEntriesFast()-1;}
-  virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
   
+  // primary vertex
+  virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
 
-  // -- Cluster
-  TClonesArray *GetClusters()            const { return fClusters; }
-  Int_t         GetNClusters()           const { return fClusters->GetEntriesFast(); }
-  AliAODCluster *GetCluster(Int_t nCluster) const { return (AliAODCluster*)fClusters->UncheckedAt(nCluster); }
-  Int_t         AddCluster(const AliAODCluster* vtx)
-  {new((*fClusters)[fClusters->GetEntriesFast()]) AliAODCluster(*vtx); return fClusters->GetEntriesFast()-1;}
+  // V0
+  TClonesArray *GetV0s()                 const { return fV0s; }
+  Int_t         GetNV0s()                const { return fV0s->GetEntriesFast(); }
+  AliAODv0     *GetV0(Int_t nV0)         const { return (AliAODv0*)fV0s->UncheckedAt(nV0); }
+  Int_t         AddV0(const AliAODv0* v0)
+  {new((*fV0s)[fV0s->GetEntriesFast()]) AliAODv0(*v0); return fV0s->GetEntriesFast()-1;}
+
+  // -- EMCAL and PHOS Cluster
+  TClonesArray *GetCaloClusters()        const { return fCaloClusters; }
+  Int_t         GetNCaloClusters()       const { return fCaloClusters->GetEntriesFast(); }
+  AliAODCaloCluster *GetCaloCluster(Int_t nCluster) const { return (AliAODCaloCluster*)fCaloClusters->UncheckedAt(nCluster); }
+  Int_t         AddCaloCluster(const AliAODCaloCluster* clus)
+  {new((*fCaloClusters)[fCaloClusters->GetEntriesFast()]) AliAODCaloCluster(*clus); return fCaloClusters->GetEntriesFast()-1;}
+
+  // -- FMD Cluster
+  TClonesArray *GetFmdClusters()        const { return fFmdClusters; }
+  Int_t         GetNFmdClusters()       const { return fFmdClusters->GetEntriesFast(); }
+  AliAODFmdCluster *GetFmdCluster(Int_t nCluster) const { return (AliAODFmdCluster*)fFmdClusters->UncheckedAt(nCluster); }
+  Int_t         AddFmdCluster(const AliAODFmdCluster* clus)
+  {new((*fFmdClusters)[fFmdClusters->GetEntriesFast()]) AliAODFmdCluster(*clus); return fFmdClusters->GetEntriesFast()-1;}
+
+  // -- PMD Cluster
+  TClonesArray *GetPmdClusters()        const { return fPmdClusters; }
+  Int_t         GetNPmdClusters()       const { return fPmdClusters->GetEntriesFast(); }
+  AliAODPmdCluster *GetPmdCluster(Int_t nCluster) const { return (AliAODPmdCluster*)fPmdClusters->UncheckedAt(nCluster); }
+  Int_t         AddPmdCluster(const AliAODPmdCluster* clus)
+  {new((*fPmdClusters)[fPmdClusters->GetEntriesFast()]) AliAODPmdCluster(*clus); return fPmdClusters->GetEntriesFast()-1;}
 
   // -- Jet
   TClonesArray *GetJets()            const { return fJets; }
@@ -119,11 +149,20 @@ class AliAODEvent : public AliVEvent {
   // -- Tracklets
   AliAODTracklets *GetTracklets() const { return fTracklets; }
 
+  // -- Calorimeter Cells
+  AliAODCaloCells *GetCaloCells() const { return fCaloCells; }
+
   // -- Services
   void    CreateStdContent();
   void    SetStdNames();
   void    GetStdContent();
-  void    ResetStd(Int_t trkArrSize = 0, Int_t vtxArrSize = 0);
+  void    ResetStd(Int_t trkArrSize = 0, 
+		   Int_t vtxArrSize = 0, 
+		   Int_t v0ArrSize = 0, 
+		   Int_t jetSize = 0, 
+		   Int_t caloClusSize = 0, 
+		   Int_t fmdClusSize = 0, 
+		   Int_t pmdClusSize = 0);
   void    ClearStd();
   void    ReadFromTree(TTree *tree);
   const void WriteToTree(TTree* tree) const {tree->Branch(fAODObjects);}
@@ -135,12 +174,16 @@ class AliAODEvent : public AliVEvent {
   TList *fAODObjects; //  list of AODObjects
   
   // standard content
-  AliAODHeader    *fHeader;    //! event information
-  TClonesArray    *fTracks;    //! charged tracks
-  TClonesArray    *fVertices;  //! vertices
-  TClonesArray    *fClusters;  //! neutral particles
-  TClonesArray    *fJets;      //! jets
-  AliAODTracklets *fTracklets; //! SPD tracklets
+  AliAODHeader    *fHeader;       //! event information
+  TClonesArray    *fTracks;       //! charged tracks
+  TClonesArray    *fVertices;     //! vertices
+  TClonesArray    *fV0s;          //! V0s
+  AliAODTracklets *fTracklets;    //! SPD tracklets
+  TClonesArray    *fJets;         //! jets
+  AliAODCaloCells *fCaloCells;    //! EMCAL and PHOS calorimenter cells
+  TClonesArray    *fCaloClusters; //! calorimeter clusters
+  TClonesArray    *fFmdClusters;  //! FMDclusters
+  TClonesArray    *fPmdClusters;  //! PMDclusters
 
   static const char* fAODListName[kAODListN]; //!
 
