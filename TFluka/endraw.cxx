@@ -103,9 +103,9 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
       fluka->SetIcode((FlukaProcessCode_t) icode);
       (TVirtualMCApplication::Instance())->Stepping();
       fluka->SetTrackIsNew(kFALSE);
-      fluka->SetIcode((FlukaProcessCode_t)icode);
-      fluka->SetRull(0.);
-      (TVirtualMCApplication::Instance())->Stepping();
+//      fluka->SetIcode((FlukaProcessCode_t)icode);
+//      fluka->SetRull(0.);
+//      (TVirtualMCApplication::Instance())->Stepping();
   }
 } // end of endraw
 } // end of extern "C"
