@@ -42,6 +42,7 @@
 
 
 #include "TSystem.h"
+#include "TFile.h"
 #include <TPDGCode.h>
 #include <TStyle.h>
 #include "TCint.h"
@@ -72,12 +73,15 @@
 //
 #include "AliMathBase.h"
 #include "AliTreeDraw.h" 
+
+#include "AliMCInfo.h" 
+#include "AliESDRecInfo.h" 
 #include "AliComparisonDraw.h" 
 
 
 ClassImp(AliComparisonDraw)
 
-Bool_t    AliComparisonDraw::fBDraw;         //option draw temporary results
+Bool_t    AliComparisonDraw::fgBDraw=kFALSE;         //option draw temporary results
 
 AliComparisonDraw::AliComparisonDraw():
   TObject(),

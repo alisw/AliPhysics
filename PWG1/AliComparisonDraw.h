@@ -7,14 +7,10 @@
 using namespace std;
 #include <TSelector.h>
 
-#include <TROOT.h>
-#include <TChain.h>
-#include <TFile.h>
-#include "AliMCInfo.h"
-#include "AliESDRecInfo.h"
-#include "AliESDRecV0Info.h"
-#include "AliESDRecKinkInfo.h"
 
+class TFile;
+class AliMCInfo;
+class AliESDRecInfo;
 class AliESDEvent; 
 class AliESD;
 class AliESDfriend;
@@ -49,11 +45,11 @@ public :
   static TGraph *  MakeStat1D(TH3 * his, Int_t delta1, Int_t type);
 
 
-public:
+protected:
   //
   // efficiency 
   //
-  static    Bool_t    fBDraw;         //option draw temporary results
+  static    Bool_t    fgBDraw;         //option draw temporary results
   TProfile* fEffTPCPt;      // TPC efficiency as function of Pt (tan+-1)
   TProfile* fEffTPCPtMC;    // MC -TPC efficiency as function of Pt (tan+-1)
   TProfile* fEffTPCPtF;     // efficiency for findable tracks
