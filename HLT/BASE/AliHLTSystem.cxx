@@ -353,7 +353,7 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop)
   }
   if (iResult>=0) {
     iResult=iCount;
-  } else  if (iResult==-ENOKEY) {
+  } else  if (iResult==-126 /*ENOKEY*/) {
     iResult=0; // do not propagate the error
   }
   ClearStatusFlags(kRunning);
@@ -368,7 +368,7 @@ int AliHLTSystem::InitTasks()
 
   if (lnk==NULL) {
     HLTWarning("Task list is empty, aborting ...");
-    return -ENOKEY;
+    return -126 /*ENOKEY*/;
   }
   while (lnk && iResult>=0) {
     TObject* obj=lnk->GetObject();
