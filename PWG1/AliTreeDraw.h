@@ -55,11 +55,16 @@ public:
   static Double_t* CreateLogBins(Int_t nBins, Double_t xMin, Double_t xMax);
   static TH1F*  CreateEffHisto(TH1F* hGen, TH1F* hRec);
   static TH1F*  CreateResHisto(TH2F* hRes2, TH1F **phMean, 
-				Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
+			       Bool_t drawBinFits = kTRUE,Bool_t overflowBinFits = kFALSE);
+
+  static TH1F*  CreateResHistoI(TH2F* hRes2, TH1F **phMean, Int_t integ=0, 
+			       Bool_t drawBinFits = kTRUE);
+
+
 
 private:
-  AliTreeDraw(const AliTreeDraw& t):TObject(),fTree(0),fRes(0),fMean(0),fPoints(0){;}
-  AliTreeDraw & operator=(const AliTreeDraw & t){return *this;}
+  AliTreeDraw(const AliTreeDraw& /*t*/):TObject(),fTree(0),fRes(0),fMean(0),fPoints(0){;}
+    AliTreeDraw & operator=(const AliTreeDraw & /*t*/){return *this;}
 
   TTree * fTree;    //the tree for visualization - NOT OWNER
   TH1F  * fRes;     //temporary histogram        - OWNER  
