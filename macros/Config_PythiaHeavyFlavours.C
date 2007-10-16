@@ -78,6 +78,11 @@ enum TrigConf_t
 const char * TrigConfName[] = {
     "p-p","Pb-Pb"
 };
+enum PprGeo_t
+  {
+    kHoles, kNoHoles
+  };
+
 //--- Functions ---
 AliGenPythia *PythiaHVQ(ProcessHvFl_t proc);
 
@@ -88,6 +93,7 @@ static DecayHvFl_t   decHvFl  = kNature;
 static YCut_t        ycut     = kFull;
 static Mag_t         mag      = k5kG; 
 static TrigConf_t    trig     = kDefaultPbPbTrig; // default PbPb trigger configuration
+static PprGeo_t      geo      = kHoles;
 // nEvts = -1  : you get 1 QQbar pair and all the fragmentation and 
 //               decay chain
 // nEvts = N>0 : you get N charm / beauty Hadrons 
@@ -364,6 +370,11 @@ void Config()
     //=================== FRAME parameters ============================
 
     AliFRAME *FRAME  = new AliFRAMEv2("FRAME","Space Frame");
+    if (geo == kHoles) {
+      FRAME->SetHoles(1);
+    } else {
+      FRAME->SetHoles(0);
+    }
 
   }
 

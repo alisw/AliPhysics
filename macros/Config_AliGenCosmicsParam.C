@@ -48,9 +48,15 @@ enum Mag_t
     k2kG, k4kG, k5kG
 };
 
+enum PprGeo_t
+  {
+    kHoles, kNoHoles
+  };
+
 Float_t EtaToTheta(Float_t arg);
 
 static Mag_t         mag      = k5kG; 
+static PprGeo_t      geo      = kHoles;
 
 void Config()
 {
@@ -233,6 +239,12 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+        if (geo == kHoles) {
+	  FRAME->SetHoles(1);
+	} else {
+	  FRAME->SetHoles(0);
+	}
+
     }
 
     if (iSHIL)

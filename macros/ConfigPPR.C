@@ -119,11 +119,17 @@ const char * pprTrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
+enum PprGeo_t
+  {
+    kHoles, kNoHoles
+  };
+
 // This part for configuration    
 //static PprRun_t srun = test50;
-static PprRun_t srun = kHIJINGplus;
-static PprRad_t srad = kGluonRadiation;
-static PprMag_t smag = k5kG;
+static PprRun_t srun  = kHIJINGplus;
+static PprRad_t srad  = kGluonRadiation;
+static PprMag_t smag  = k5kG;
+static PprGeo_t geo   = kHoles;
 static Int_t    sseed = 12345; //Set 0 to use the current time
 //static PprTrigConf_t strig = kDefaultPPTrig; // default pp trigger configuration
 static PprTrigConf_t strig = kDefaultPbPbTrig; // default PbPb trigger configuration
@@ -345,6 +351,11 @@ void Config()
         //=================== FRAME parameters ============================
 
         AliFRAMEv2 *FRAME = new AliFRAMEv2("FRAME", "Space Frame");
+        if (geo == kHoles) {
+	  FRAME->SetHoles(1);
+	} else {
+	  FRAME->SetHoles(0);
+	}
     }
 
     if (iSHIL)
