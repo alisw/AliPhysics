@@ -38,7 +38,7 @@ ClassImp(AliAODv0)
   fCharge  = 0;
   fNProngs = 2;
   fNDCA    = 1;
-  fNPID    = 2;
+  fNPID    = 0; // used to be 2!
 
   fDCA = new Double_t[fNDCA];
   fDCA[0] = 999;
@@ -93,7 +93,7 @@ AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t 
   fCharge  = 0;
   fNProngs = 2;
   fNDCA    = 1;
-  fNPID    = 2;
+  fNPID    = 0; // used to be 2!
 
   fDCA = new Double_t[fNDCA];
 
