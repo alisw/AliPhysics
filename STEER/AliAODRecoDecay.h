@@ -181,7 +181,7 @@ class AliAODRecoDecay : public AliVParticle {
 
   //
 
-  ClassDef(AliAODRecoDecay,1)  // base class for AOD reconstructed decays
+  ClassDef(AliAODRecoDecay,2)  // base class for AOD reconstructed decays
 };
 
 
