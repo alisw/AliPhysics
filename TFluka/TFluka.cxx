@@ -150,6 +150,7 @@ TFluka::TFluka()
   //
   // Default constructor
   //
+    for (Int_t i = 0; i < 4; i++) fPint[i] = 0.;
 } 
  
 //______________________________________________________________________________ 
@@ -185,6 +186,8 @@ TFluka::TFluka(const char *title, Int_t verbosity, Bool_t isRootGeometrySupporte
    fUserScore(new TObjArray(100)) 
 {
   // create geometry interface
+    for (Int_t i = 0; i < 4; i++) fPint[i] = 0.;
+    
    if (fVerbosityLevel >=3)
        cout << "<== TFluka::TFluka(" << title << ") constructor called." << endl;
    SetCoreInputFileName();
@@ -1425,9 +1428,10 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
   FlukaCallerCode_t  caller = GetCaller();
   FlukaProcessCode_t icode  = GetIcode();
   
-  if (caller != kEEDRAW         && 
-      caller != kMGResumedTrack && 
-      caller != kSODRAW         &&
+  if (caller  != kEEDRAW         && 
+      caller  != kMGResumedTrack && 
+      caller  != kSODRAW         &&
+      caller  != kUSDRAW         &&
       (caller != kENDRAW || (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2))) {
       if (TRACKR.ptrack >= 0) {
 	  momentum.SetPx(TRACKR.ptrack*TRACKR.cxtrck);
@@ -1466,6 +1470,19 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
       momentum.SetPy(p * FLKSTK.tyflk[ist]);
       momentum.SetPz(p * FLKSTK.tzflk[ist]);
       momentum.SetE(e);
+  } else if (caller == kUSDRAW) {
+      if (icode == 208 || icode == 210 || icode == 212 || icode == 219) {
+	  momentum.SetPx(fPint[0]);
+	  momentum.SetPy(fPint[1]);
+	  momentum.SetPz(fPint[2]);
+	  momentum.SetE(fPint[3]);
+      } else {
+	  Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack - ParticleMassFPC(TRACKR.jtrack) * ParticleMassFPC(TRACKR.jtrack));
+	  momentum.SetPx(p*TRACKR.cxtrck);
+	  momentum.SetPy(p*TRACKR.cytrck);
+	  momentum.SetPz(p*TRACKR.cztrck);
+	  momentum.SetE(TRACKR.etrack);
+      }
   }
   else
     Warning("TrackMomentum","momentum not available");
@@ -1487,6 +1504,7 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
   if (caller != kEEDRAW         && 
       caller != kMGResumedTrack && 
       caller != kSODRAW         &&
+      caller != kUSDRAW         &&
       (caller != kENDRAW || (icode != kEMFSCOstopping1 && icode != kEMFSCOstopping2))) {
     if (TRACKR.ptrack >= 0) {
       px = TRACKR.ptrack*TRACKR.cxtrck;
@@ -1523,6 +1541,19 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
       px = p * FLKSTK.txflk[ist];
       py = p * FLKSTK.tyflk[ist];
       pz = p * FLKSTK.tzflk[ist];
+  } else if (caller == kUSDRAW) {
+      if (icode == 208 || icode == 210 || icode == 212 || icode == 219) {
+	  px = fPint[0];
+	  py = fPint[1];
+	  pz = fPint[2];
+	  e  = fPint[3];
+      } else {
+	  Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack - ParticleMassFPC(TRACKR.jtrack) *  ParticleMassFPC(TRACKR.jtrack));
+	  px = p*TRACKR.cxtrck;
+	  py = p*TRACKR.cytrck;
+	  pz = p*TRACKR.cztrck;
+	  e  = TRACKR.etrack;
+      }
   }
   else
       Warning("TrackMomentum","momentum not available");
@@ -1558,8 +1589,10 @@ Double_t TFluka::TrackLength() const
     return TRACKR.cmtrck;
   else if (caller == kMGResumedTrack) 
     return TRACKR.spausr[8];
+  else if (caller == kSODRAW)
+      return 0.0;
   else {
-    Warning("TrackLength", "track length not available");
+    Warning("TrackLength", "track length not available for caller %5d \n", caller);
     return 0.0;
   } 
 }
@@ -1704,7 +1737,7 @@ Double_t TFluka::TrackMass() const
   if (caller != kEEDRAW && caller != kSODRAW)
      return PAPROP.am[CorrectFlukaId()+6];
   else if (caller == kSODRAW) {
-      Int_t ifl =  PDGFromId(FLKSTK.iloflk[FLKSTK.npflka]);
+      Int_t ifl =  FLKSTK.iloflk[FLKSTK.npflka];
       return PAPROP.am[ifl + 6];
   }
   else
@@ -1973,12 +2006,16 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     
     proc.Set(1);
     TMCProcess iproc;
-    if (caller == kBXEntering || caller == kBXExiting || caller == kENDRAW) {
+    if (caller == kBXEntering || caller == kBXExiting || caller == kEEDRAW) {
 	iproc = kPTransportation;
     } else {
 	switch (icode) {
 	case kEMFSCO:
-	    iproc = kPEnergyLoss;
+	    if (Edep() > 0.) {
+		iproc = kPEnergyLoss;
+	    } else {
+		iproc = kPTransportation;
+	    }
 	    break;
 	case kKASKADtimekill:
 	case kEMFSCOtimekill:

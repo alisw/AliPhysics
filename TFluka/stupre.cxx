@@ -65,6 +65,8 @@ void stupre()
 
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel>=3)?kTRUE:kFALSE;
+  debug = 100;
+  
   fluka->SetTrackIsNew(kTRUE);
 
 // Get the stack produced from the generator
@@ -155,7 +157,9 @@ void stupre()
             if (debug) cout << endl << " !!! stupre (COMPTON) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
             EMFSTK.iespak[kp][mkbmx2-1] = ntr;
             EMFSTK.iespak[kp][mkbmx2-2] = 0;
-        }
+        } else {
+	    fluka->SetPint(px, py, pz, e);
+	}
     } // end of lcmptn
 
 //* Bremsstrahlung: true secondary only if charge = 0 (photon)
@@ -168,7 +172,10 @@ void stupre()
             if (debug) cout << endl << " !!! stupre (BREMS) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
             EMFSTK.iespak[kp][mkbmx2-1] = ntr;
             EMFSTK.iespak[kp][mkbmx2-2] = 0;
-        }
+        } else {
+	    fluka->SetPint(px, py, pz, e);
+	}
+	
     } // end of lbrmsp
 
 //* Delta ray: If Bhabha, true secondary only if negative (electron)
@@ -177,12 +184,14 @@ void stupre()
             if (EMFSTK.ichemf[kp] == -1) {
                 mech = kPDeltaRay;
                 cppstack->PushTrack(done, parent, pdg,
-                                   px, py, pz, e, vx, vy, vz, tof,
-                                   polx, poly, polz, mech, ntr, weight, is);
+				    px, py, pz, e, vx, vy, vz, tof,
+				    polx, poly, polz, mech, ntr, weight, is);
                 EMFSTK.iespak[kp][mkbmx2-1] = ntr;
                 EMFSTK.iespak[kp][mkbmx2-2] = 0;
-           if (debug) cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
-            } // end of Bhabha
+		if (debug) cout << endl << " !!! stupre (BHABA) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
+            } else {
+		fluka->SetPint(px, py, pz, e);
+	    }
         } // lbhabh == 1
 
 //* Delta ray: Otherwise Moller: true secondary is the electron with
@@ -195,7 +204,9 @@ void stupre()
             if (debug) cout << endl << " !!! stupre (Moller) : ntr=" << ntr << " pdg " << pdg << " parent=" << parent << endl;
             EMFSTK.iespak[kp][mkbmx2-1] = ntr;
             EMFSTK.iespak[kp][mkbmx2-2] = 0;
-        } // end of Delta ray
+        } else {
+	    fluka->SetPint(px, py, pz, e);
+	}
     } // end of ldltry
 
   } // end of loop
