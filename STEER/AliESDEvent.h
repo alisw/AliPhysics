@@ -43,7 +43,6 @@ class AliESDFMD;
 class AliESDkink;
 class AliESDCaloCluster;
 class AliESDv0;
-class AliESDFMD;
 class AliMultiplicity;
 class AliRawDataErrorLog;
 class AliESDRun;
