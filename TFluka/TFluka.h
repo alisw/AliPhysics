@@ -371,7 +371,7 @@ class TFluka : public TVirtualMC {
   void  SetXsco(Double_t x) {fXsco = x;}
   void  SetYsco(Double_t y) {fYsco = y;}
   void  SetZsco(Double_t z) {fZsco = z;}
-
+  void  SetPint(Double_t px, Double_t py, Double_t pz, Double_t e) {fPint[0] = px; fPint[1] = py; fPint[2] = pz; fPint[3] = e;}
   void  SetTrackIsEntering(){fTrackIsEntering = kTRUE; fTrackIsExiting = kFALSE;}
   void  SetTrackIsExiting() {fTrackIsExiting  = kTRUE; fTrackIsEntering = kFALSE;}
   void  SetTrackIsInside()  {fTrackIsExiting  = kFALSE; fTrackIsEntering = kFALSE;}
@@ -423,6 +423,7 @@ class TFluka : public TVirtualMC {
   Double_t              fXsco;             // Fluka Draw procedures formal parameter
   Double_t              fYsco;             // Fluka Draw procedures formal parameter
   Double_t              fZsco;             // Fluka Draw procedures formal parameter
+  Double_t              fPint[4];          // 4-vector of particle after interaction
   Bool_t   fTrackIsEntering;      // Flag for track entering
   Bool_t   fTrackIsExiting;       // Flag for track exiting  
   Bool_t   fTrackIsNew;           // Flag for new track
