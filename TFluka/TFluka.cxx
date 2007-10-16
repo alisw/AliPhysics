@@ -883,7 +883,8 @@ void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
 //
 //  
 //  Create object holding Cerenkov properties
-//  
+// 
+    
     TFlukaCerenkov* cerenkovProperties = new TFlukaCerenkov(npckov, ppckov, absco, effic, rindex);
 //
 //  Pass object to medium
@@ -915,16 +916,61 @@ void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Float_t* ppckov,
 
 
 //______________________________________________________________________________ 
-void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Double_t * /*ppckov*/,
-                         Double_t * /*absco*/, Double_t * /*effic*/, Double_t * /*rindex*/) {
+void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Double_t *ppckov,
+                         Double_t *absco, Double_t *effic, Double_t *rindex) {
 //
-//  Double_t version not implemented
+// Set Cerenkov properties for medium itmed
+//
+// npckov: number of sampling points
+// ppckov: energy values
+// absco:  absorption length
+// effic:  quantum efficiency
+// rindex: refraction index
+//
+
+//
+//  Double_t version 
+  Float_t* fppckov = CreateFloatArray(ppckov, npckov);
+  Float_t* fabsco  = CreateFloatArray(absco,  npckov);
+  Float_t* feffic  = CreateFloatArray(effic,  npckov);
+  Float_t* frindex = CreateFloatArray(rindex, npckov);
+
+  SetCerenkov(itmed, npckov, fppckov, fabsco, feffic, frindex);
+
+  delete [] fppckov;
+  delete [] fabsco;
+  delete [] feffic;
+  delete [] frindex;
 }  
 
-void TFluka::SetCerenkov(Int_t /*itmed*/, Int_t /*npckov*/, Double_t* /*ppckov*/,
-                         Double_t* /*absco*/, Double_t* /*effic*/, Double_t* /*rindex*/, Double_t* /*rfl*/) {
+void TFluka::SetCerenkov(Int_t itmed, Int_t npckov, Double_t* ppckov,
+                         Double_t* absco, Double_t* effic, Double_t* rindex, Double_t* rfl) {
 //
-// //  Double_t version not implemented
+// Set Cerenkov properties for medium itmed
+//
+// npckov: number of sampling points
+// ppckov: energy values
+// absco:  absorption length
+// effic:  quantum efficiency
+// rindex: refraction index
+// rfl:    reflectivity for boundary to medium itmed
+//
+
+//
+// //  Double_t version 
+  Float_t* fppckov = CreateFloatArray(ppckov, npckov);
+  Float_t* fabsco  = CreateFloatArray(absco,  npckov);
+  Float_t* feffic  = CreateFloatArray(effic,  npckov);
+  Float_t* frindex = CreateFloatArray(rindex, npckov);
+  Float_t* frfl    = CreateFloatArray(rfl,    npckov);
+
+  SetCerenkov(itmed, npckov, fppckov, fabsco, feffic, frindex, frfl);
+
+  delete [] fppckov;
+  delete [] fabsco;
+  delete [] feffic;
+  delete [] frindex;
+  delete [] frfl;
 }
 
 // Euclid
@@ -2503,4 +2549,27 @@ void  TFluka::PrimaryIonisationStepping(Int_t nprim)
     }
     // Reset the index
     SetCurrentPrimaryElectronIndex(-1);
+}
+
+//______________________________________________________________________
+Float_t* TFluka::CreateFloatArray(Double_t* array, Int_t size) const
+{
+// Converts Double_t* array to Float_t*,
+// !! The new array has to be deleted by user.
+// ---
+
+  Float_t* floatArray;
+  if (size>0) {
+    floatArray = new Float_t[size];
+    for (Int_t i=0; i<size; i++)
+      if (array[i] >= FLT_MAX ) 
+        floatArray[i] = FLT_MAX/100.;
+      else	
+        floatArray[i] = array[i];
+  }
+  else {
+    //floatArray = 0;
+    floatArray = new Float_t[1];
+  }
+  return floatArray;
 }
