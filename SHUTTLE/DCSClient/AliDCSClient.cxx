@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.6  2007/10/16 14:37:16  jgrosseo
+changing to AMANDA protocol version 2
+
 Revision 1.5  2007/10/05 12:40:55  acolla
 
 Result error code added to AliDCSClient data members (it was "lost" with the new implementation of TMap* GetAliasValues and GetDPValues).
@@ -450,10 +453,12 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 
 		Close();
 
+		Int_t nValues = 0;
+		TObjArray* example = (TObjArray*) result->GetValue(list->At(subsetBegin));
+		if (example)
+			nValues = example->GetEntries();
 		AliInfo(Form("Retrieved entries %d..%d (total %d..%d); E.g. %s has %d values collected",
-			subsetBegin, subsetEnd-1, startIndex, endIndex-1, list->At(subsetBegin)->GetName(), ((TObjArray*)
-			result->GetValue(list->At(subsetBegin)->GetName()))->GetEntriesFast()));
-
+			subsetBegin, subsetEnd-1, startIndex, endIndex-1, list->At(subsetBegin)->GetName(), nValues));
 	}
 
 	return result;
