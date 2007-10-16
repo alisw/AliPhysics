@@ -41,7 +41,7 @@ protected:
   int DoInit(int argc, const char** argv);
   virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
 
-  virtual int AliHLTPHOSSandboxComponent::DoDeinit();
+  virtual int DoDeinit();
   
 private:
 
