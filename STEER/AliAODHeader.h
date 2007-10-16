@@ -62,6 +62,9 @@ class AliAODHeader : public AliVHeader {
   Int_t     GetRefMultiplicity()    const { return fRefMult; }
   Int_t     GetRefMultiplicityPos() const { return fRefMultPos; }
   Int_t     GetRefMultiplicityNeg() const { return fRefMultNeg; }
+
+  Double_t  GetQTheta(UInt_t i) const;
+  UInt_t    GetNQTheta() const { return (UInt_t)fNQTheta; }
   
   void SetRunNumber(Int_t nRun)                { fRunNumber = nRun; }
   void SetBunchCrossNumber(UShort_t nBx)       { fBunchCrossNumber = nBx; }
@@ -83,6 +86,9 @@ class AliAODHeader : public AliVHeader {
   void SetRefMultiplicityPos(Int_t refMultPos) { fRefMultPos = refMultPos; }
   void SetRefMultiplicityNeg(Int_t refMultNeg) { fRefMultNeg = refMultNeg; }
   
+  void SetQTheta(Double_t *QTheta, UInt_t size = 5);  
+  void RemoveQTheta();
+
   void Print(Option_t* option = "") const;
   
   
@@ -96,6 +102,8 @@ class AliAODHeader : public AliVHeader {
   Double32_t  fZDCN2Energy;         // reconstructed energy in the neutron2 ZDC
   Double32_t  fZDCP2Energy;         // reconstructed energy in the proton2 ZDC
   Double32_t  fZDCEMEnergy;         // reconstructed energy in the electromagnetic ZDC
+  Int_t       fNQTheta;             // number of QTheta elements
+  Double32_t *fQTheta;              // [fNQTheta] values to store Lee-Yang-Zeros
   ULong64_t   fTriggerMask;         // Trigger Type (mask)
   Int_t       fRunNumber;           // Run Number
   Int_t       fRefMult;             // reference multiplicity

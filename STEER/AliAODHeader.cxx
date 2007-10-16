@@ -35,6 +35,8 @@ AliAODHeader::AliAODHeader() :
   fZDCN2Energy(-999.),
   fZDCP2Energy(-999.),
   fZDCEMEnergy(-999.),
+  fNQTheta(0),
+  fQTheta(0x0),
   fTriggerMask(0),
   fRunNumber(-999),  
   fRefMult(-999),
@@ -66,8 +68,10 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCN2Energy(-999.),
   fZDCP2Energy(-999.),
   fZDCEMEnergy(-999.),
+  fNQTheta(0),
+  fQTheta(0x0),
   fTriggerMask(0),
-   fRunNumber(nRun),
+  fRunNumber(nRun),
   fRefMult(-999),
   fRefMultPos(-999),
   fRefMultNeg(-999),
@@ -112,6 +116,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCN2Energy(n2Energy),
   fZDCP2Energy(p2Energy),
   fZDCEMEnergy(emEnergy),
+  fNQTheta(0),
+  fQTheta(0x0),
   fTriggerMask(trigMask),
   fRunNumber(nRun),  
   fRefMult(refMult),
@@ -133,6 +139,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 AliAODHeader::~AliAODHeader() 
 {
   // destructor
+  
+  RemoveQTheta();
 }
 
 //______________________________________________________________________________
@@ -146,6 +154,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fZDCN2Energy(hdr.fZDCN2Energy),
   fZDCP2Energy(hdr.fZDCP2Energy),
   fZDCEMEnergy(hdr.fZDCEMEnergy),
+  fNQTheta(0),
+  fQTheta(0x0),
   fTriggerMask(hdr.fTriggerMask),
   fRunNumber(hdr.fRunNumber),  
   fRefMult(hdr.fRefMult), 
@@ -161,6 +171,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   
   SetName(hdr.fName);
   SetTitle(hdr.fTitle);
+  SetQTheta(hdr.fQTheta, hdr.fNQTheta);
 }
 
 //______________________________________________________________________________
@@ -189,12 +200,54 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fPeriodNumber     = hdr.fPeriodNumber;
     fBunchCrossNumber = hdr.fBunchCrossNumber;
     fTriggerCluster   = hdr.fTriggerCluster;
+
+    SetName(hdr.fName);
+    SetTitle(hdr.fTitle);
+    SetQTheta(hdr.fQTheta, hdr.fNQTheta);
   }
 
-  SetName(hdr.fName);
-  SetTitle(hdr.fTitle);
 
   return *this;
+}
+
+//______________________________________________________________________________
+void AliAODHeader::SetQTheta(Double_t *QTheta, UInt_t size) 
+{
+  if (QTheta && size>0) {
+    if (size != (UInt_t)fNQTheta) {
+      RemoveQTheta();
+      fNQTheta = size;
+      fQTheta = new Double_t[fNQTheta];
+    }
+    
+    for (Int_t i = 0; i < fNQTheta; i++) {
+      fQTheta[i] = QTheta[i];
+    }
+  } else {
+    RemoveQTheta();
+  }
+
+  return;
+}
+
+//______________________________________________________________________________
+Double_t AliAODHeader::GetQTheta(UInt_t i) const
+{
+  if (fQTheta && i < (UInt_t)fNQTheta) {
+    return fQTheta[i];
+  } else {
+    return -999.;
+  }
+}
+
+//______________________________________________________________________________
+void AliAODHeader::RemoveQTheta()
+{
+  delete[] fQTheta;
+  fQTheta = 0x0;
+  fNQTheta = 0;
+
+  return;
 }
 
 //______________________________________________________________________________
@@ -222,4 +275,11 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("ref. Multiplicity (pos) : %d\n", fRefMultPos);
   printf("ref. Multiplicity (neg) : %d\n", fRefMultNeg);
 
+  if (fQTheta) {
+    for (UInt_t i = 0; i<(UInt_t)fNQTheta; i++) {
+      printf("QTheta[%d]              : %d\n", i, GetQTheta(i));
+    }
+  }
+
+  return;
 }
