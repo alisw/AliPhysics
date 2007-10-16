@@ -166,7 +166,9 @@ TProfile prof("prof","prof",10,0.5,5);
 //
 #include "AliTreeDraw.h"
 #include "AliGenInfo.h"
-#include "AliRecInfo.h"
+#include "AliESDRecInfo.h"
+#include "AliESDRecV0Info.h"
+#include "AliESDRecKinkInfo.h"
 #include "AliRecInfoMaker.h"
 
 

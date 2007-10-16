@@ -772,7 +772,7 @@ Int_t AliGenInfoMaker::TreeTRLoop()
     for (Int_t iTrackRef = 0; iTrackRef < trdArrayTR->GetEntriesFast(); iTrackRef++) {
       AliTrackReference *trackRef = (AliTrackReference*)trdArrayTR->At(iTrackRef);            
       //
-      if (trackRef->P()<fTPCPtCut) continue;
+      if (trackRef->P()<fTRDPtCut) continue;
       Int_t label = trackRef->GetTrack();      
       AliMCInfo * info = GetInfo(label);
       if ( (!info) && trackRef->Pt()<fTRDPtCut) continue;
@@ -829,6 +829,10 @@ Int_t AliGenInfoMaker::TreeTRLoop()
   return TreeTRLoopNew();
 }
 
+
+
+
+
 ////////////////////////////////////////////////////////////////////////
 Int_t AliGenInfoMaker::TreeTRLoopNew()
 {
@@ -847,6 +851,18 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
   //
   //
   //
+  for (Int_t ipart = 0; ipart<fStack->GetNtrack(); ipart++) {
+    TParticle * part = fStack->Particle(ipart);
+    if (!part) continue;
+    if (part->Pt()<fITSPtCut) continue;
+    if (part->R()>250.) continue;
+    if (TMath::Abs(part->Vz())>250.) continue;
+    if (TMath::Abs(part->Pz()/part->Pt())>2.5) continue; 
+    MakeInfo(ipart);
+  }
+  //
+  //
+
   for (Int_t iPrimPart = 0; iPrimPart<nPrimaries; iPrimPart++) {
     treeTR->GetEntry(iPrimPart);
     //
@@ -861,9 +877,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
       //
       if (trackRef->DetectorId()== AliTrackReference::kTPC){
 	//
-	if (trackRef->P()<fTPCPtCut) continue;
 	Int_t label = trackRef->GetTrack();      
 	AliMCInfo * info = GetInfo(label);
+	if (!info && trackRef->Pt()<fTPCPtCut) continue;
 	if (!info) info = MakeInfo(label);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
@@ -875,9 +891,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
       //
       if (trackRef->DetectorId()== AliTrackReference::kITS){
 	//
-	if (trackRef->P()<fITSPtCut) continue;
 	Int_t label = trackRef->GetTrack();      
 	AliMCInfo * info = GetInfo(label);
+	if (!info && trackRef->Pt()<fITSPtCut) continue;
 	if (!info) info = MakeInfo(label);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
@@ -889,9 +905,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
       //
       if (trackRef->DetectorId()== AliTrackReference::kTRD){
 	//
-	if (trackRef->P()<fTRDPtCut) continue;
 	Int_t label = trackRef->GetTrack();      
 	AliMCInfo * info = GetInfo(label);
+	if (!info&&trackRef->P()<fTRDPtCut) continue;
 	if (!info) info = MakeInfo(label);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
@@ -903,9 +919,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
       //
       if (trackRef->DetectorId()== AliTrackReference::kTOF){
 	//
-	if (trackRef->P()<fTOFPtCut) continue;
 	Int_t label = trackRef->GetTrack();      
 	AliMCInfo * info = GetInfo(label);
+	if (!info&&trackRef->P()<fTOFPtCut) continue;
 	if (!info) info = MakeInfo(label);
 	if (!info) continue;
 	info->fPrimPart =  iPrimPart;
@@ -917,9 +933,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
       //
       if (trackRef->DetectorId()== AliTrackReference::kDisappeared){
 	//
-	if (!trackRef->TestBit(BIT(2))) continue;  //if not decay
 	AliMCInfo * info = GetInfo(label);
 	if (!info) continue;
+	//if (!trackRef->TestBit(BIT(2))) continue;  //if not decay
 	info->fTRdecay = *trackRef;      	
       }
       

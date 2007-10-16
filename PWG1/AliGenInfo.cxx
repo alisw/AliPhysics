@@ -60,8 +60,8 @@ Container classes with MC infomation
 //
 // 
 
-ClassImp(AliTPCdigitRow);
-ClassImp(AliMCInfo);
+ClassImp(AliTPCdigitRow)
+ClassImp(AliMCInfo)
 ClassImp(AliGenV0Info)
 ClassImp(AliGenKinkInfo)
 
