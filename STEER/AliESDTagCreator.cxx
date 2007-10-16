@@ -26,6 +26,8 @@
 #include <TTree.h>
 #include <TSystem.h>
 #include <TChain.h>
+#include <TList.h>
+#include <TObjString.h>
 #include <TLorentzVector.h>
 
 //ROOT-AliEn
@@ -48,13 +50,21 @@ ClassImp(AliESDTagCreator)
 
 //______________________________________________________________________________
   AliESDTagCreator::AliESDTagCreator() :
-    AliTagCreator() {
+    AliTagCreator(),
+    fChain(new TChain("esdTree")), fGUIDList(new TList()), 
+    fMD5List(new TList()), fTURLList(new TList()), 
+    meminfo(new MemInfo_t) {
   //==============Default constructor for a AliESDTagCreator================
 }
 
 //______________________________________________________________________________
 AliESDTagCreator::~AliESDTagCreator() {
 //================Default destructor for a AliESDTagCreator===================
+  delete fChain;
+  delete fGUIDList;
+  delete fMD5List;
+  delete fTURLList;
+  delete meminfo;
 }
 
 //______________________________________________________________________________
@@ -63,9 +73,9 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
   Int_t nEntries = fresult->GetEntries();
 
   TString alienUrl;
-  const char *guid;
-  const char *md5;
-  const char *turl;
+  const char* guid;
+  const char* md5;
+  const char* turl;
   Long64_t size = -1;
 
   Int_t counter = 0;
@@ -77,14 +87,23 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
     turl = fresult->GetKey(i,"turl");
     if(md5 && !strlen(guid)) md5 = 0;
     if(guid && !strlen(guid)) guid = 0;
-
-    TFile *f = TFile::Open(alienUrl,"READ");
-    CreateTag(f,guid,md5,turl,size,counter);
-    f->Close();
-    delete f;	 
+    
+    fChain->Add(alienUrl);
+    //fGUIDList->Add(new TObjString(guid));
+    //fMD5List->Add(new TObjString(md5));
+    //fTURLList->Add(new TObjString(turl));
+    
+    //TFile *f = TFile::Open(alienUrl,"READ");
+    //CreateTag(f,guid,md5,turl,size,counter);
+    //f->Close();
+    //delete f;	 
     counter += 1;
   }//grid result loop
-
+  
+  AliInfo(Form("ESD chain created......."));	
+  AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+  CreateTag(fChain,"grid");
+  
   return kTRUE;
 }
 
@@ -109,15 +128,22 @@ Bool_t AliESDTagCreator::ReadLocalCollection(const char *localpath) {
 	fESDFileName = fPath;
 	fESDFileName += "/";
 	fESDFileName += pattern;
-	TFile *f = TFile::Open(fESDFileName,"READ");
-	CreateTag(f,fESDFileName,counter);
-	f->Close();
-	delete f;	 
+
+	fChain->Add(fESDFileName);
+
+	//TFile *f = TFile::Open(fESDFileName,"READ");
+	//CreateTag(f,fESDFileName,counter);
+	//f->Close();
+	//delete f;	 
 	
 	counter += 1;
       }//pattern check
     }//child directory's entry loop
   }//parent directory's entry loop
+
+  AliInfo(Form("ESD chain created......."));	
+  AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+  CreateTag(fChain,"local");
 
   return kTRUE;
 }
@@ -137,15 +163,355 @@ Bool_t AliESDTagCreator::ReadCAFCollection(const char *filename) {
   while(in.good()) {
     in >> esdfile;
     if (!esdfile.Contains("root")) continue; // protection
-    TFile *f = TFile::Open(esdfile,"READ");
-    CreateTag(f,esdfile,counter);
-    f->Close();
-    delete f;	 
+
+    fChain->Add(esdfile);
+  
+    //TFile *f = TFile::Open(esdfile,"READ");
+    //CreateTag(f,esdfile,counter);
+    //f->Close();
+    //delete f;	 
     
     counter += 1;
   }
 
+  AliInfo(Form("ESD chain created......."));	
+  AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+  CreateTag(fChain,"proof");
+
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
+  //private method that creates tag files
+  TString fSession = type;
+  //Int_t iCounter = 0;
+  TString fguid, fmd5, fturl;
+  TString fTempGuid = 0;
+
+  /////////////
+  //muon code//
+  ////////////
+  Double_t fMUONMASS = 0.105658369;
+  //Variables
+  Double_t fX,fY,fZ ;
+  Double_t fThetaX, fThetaY, fPyz, fChisquare;
+  Double_t fPxRec, fPyRec, fPzRec, fEnergy;
+  Int_t fCharge;
+  TLorentzVector fEPvector;
+
+  Float_t fZVertexCut = 10.0; 
+  Float_t fRhoVertexCut = 2.0; 
+
+  Float_t fLowPtCut = 1.0;
+  Float_t fHighPtCut = 3.0;
+  Float_t fVeryHighPtCut = 10.0;
+  ////////////
+
+  Double_t partFrac[5] = {0.01, 0.01, 0.85, 0.10, 0.05};
+
+  // Creates the tags for all the events in a given ESD file
+  Bool_t fIsSim = kTRUE;
+  Int_t ntrack;
+  Int_t nProtons, nKaons, nPions, nMuons, nElectrons;
+  Int_t nPos, nNeg, nNeutr;
+  Int_t nK0s, nNeutrons, nPi0s, nGamas;
+  Int_t nCh1GeV, nCh3GeV, nCh10GeV;
+  Int_t nMu1GeV, nMu3GeV, nMu10GeV;
+  Int_t nEl1GeV, nEl3GeV, nEl10GeV;
+  Float_t maxPt = .0, meanPt = .0, totalP = .0;
+  Int_t fVertexflag;
+  Int_t iRunNumber = 0;
+  TString fVertexName;
+
+  AliRunTag *tag = new AliRunTag();
+  AliEventTag *evTag = new AliEventTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  btag->SetCompressionLevel(9);
+  //gSystem->GetMemInfo(meminfo);
+  //AliInfo(Form("After the tag initialization - Memory used: %d MB",meminfo->fMemUsed));
+  //Int_t tempmem = meminfo->fMemUsed;
+  
+  AliInfo(Form("Creating the ESD tags......."));	
+  
+  Int_t firstEvent = 0,lastEvent = 0;
+  AliESDEvent *esd = new AliESDEvent();
+  esd->ReadFromTree(fChain);
+  
+  //gSystem->GetMemInfo(meminfo);
+  //AliInfo(Form("After the esd initialization - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  //tempmem = meminfo->fMemUsed;
+  
+  Int_t iInitRunNumber = -1;
+  for(Int_t iEventNumber = 0; iEventNumber < fChain->GetEntries(); iEventNumber++) {
+    ntrack = 0; nPos = 0; nNeg = 0; nNeutr =0;
+    nK0s = 0; nNeutrons = 0; nPi0s = 0;
+    nGamas = 0; nProtons = 0; nKaons = 0;
+    nPions = 0; nMuons = 0; nElectrons = 0;	  
+    nCh1GeV = 0; nCh3GeV = 0; nCh10GeV = 0;
+    nMu1GeV = 0; nMu3GeV = 0; nMu10GeV = 0;
+    nEl1GeV = 0; nEl3GeV = 0; nEl10GeV = 0;
+    maxPt = .0; meanPt = .0; totalP = .0;
+    fVertexflag = 1;
+    
+    fChain->GetEntry(iEventNumber);
+    TFile *f = fChain->GetFile();
+    const TUrl *url = f->GetEndpointUrl();
+    fguid = f->GetUUID().AsString();
+    if(fSession == "grid") {
+      TString fturltemp = "alien://"; fturltemp += url->GetFile();
+      fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+    }
+    else fturl = url->GetFile();
+
+    if(iEventNumber == 0) iInitRunNumber = esd->GetRunNumber();
+    iRunNumber = esd->GetRunNumber();
+    if(iRunNumber != iInitRunNumber) AliFatal("Inconsistency of run numbers in the AliESD - You are trying to merge different runs!!!");
+
+    const AliESDVertex * vertexIn = esd->GetVertex();
+    fVertexName = vertexIn->GetName();
+    if(fVertexName == "default") fVertexflag = 0;
+
+    for (Int_t iTrackNumber = 0; iTrackNumber < esd->GetNumberOfTracks(); iTrackNumber++) {
+      AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
+      if(esdTrack->GetLabel() != 0) fIsSim = kTRUE;
+      else if(esdTrack->GetLabel() == 0) fIsSim = kFALSE;
+      UInt_t status = esdTrack->GetStatus();
+      
+      //select only tracks with ITS refit
+      if ((status&AliESDtrack::kITSrefit)==0) continue;
+      //select only tracks with TPC refit
+      if ((status&AliESDtrack::kTPCrefit)==0) continue;
+      
+      //select only tracks with the "combined PID"
+      if ((status&AliESDtrack::kESDpid)==0) continue;
+      Double_t p[3];
+      esdTrack->GetPxPyPz(p);
+      Double_t momentum = sqrt(pow(p[0],2) + pow(p[1],2) + pow(p[2],2));
+      Double_t fPt = sqrt(pow(p[0],2) + pow(p[1],2));
+      totalP += momentum;
+      meanPt += fPt;
+      if(fPt > maxPt) maxPt = fPt;
+      
+      if(esdTrack->GetSign() > 0) {
+	nPos++;
+	if(fPt > fLowPtCut) nCh1GeV++;
+	if(fPt > fHighPtCut) nCh3GeV++;
+	if(fPt > fVeryHighPtCut) nCh10GeV++;
+      }
+      if(esdTrack->GetSign() < 0) {
+	nNeg++;
+	if(fPt > fLowPtCut) nCh1GeV++;
+	if(fPt > fHighPtCut) nCh3GeV++;
+	if(fPt > fVeryHighPtCut) nCh10GeV++;
+      }
+      if(esdTrack->GetSign() == 0) nNeutr++;
+      
+      //PID
+      Double_t prob[5];
+      esdTrack->GetESDpid(prob);
+      
+      Double_t rcc = 0.0;
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
+      if(rcc == 0.0) continue;
+      //Bayes' formula
+      Double_t w[5];
+      for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
+      
+      //protons
+      if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
+      //kaons
+      if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
+      //pions
+      if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++; 
+      //electrons
+      if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
+	nElectrons++;
+	if(fPt > fLowPtCut) nEl1GeV++;
+	if(fPt > fHighPtCut) nEl3GeV++;
+	if(fPt > fVeryHighPtCut) nEl10GeV++;
+      }	  
+      ntrack++;
+    }//esd track loop
+    
+    /////////////
+    //muon code//
+    ////////////
+    Int_t nMuonTracks = esd->GetNumberOfMuonTracks();
+    // loop over all reconstructed tracks (also first track of combination)
+    for (Int_t iTrack = 0; iTrack <  nMuonTracks;  iTrack++) {
+      AliESDMuonTrack* muonTrack = esd->GetMuonTrack(iTrack);
+      if (muonTrack == 0x0) continue;
+      
+      // Coordinates at vertex
+      fZ = muonTrack->GetZ(); 
+      fY = muonTrack->GetBendingCoor();
+      fX = muonTrack->GetNonBendingCoor(); 
+      
+      fThetaX = muonTrack->GetThetaX();
+      fThetaY = muonTrack->GetThetaY();
+      
+      fPyz = 1./TMath::Abs(muonTrack->GetInverseBendingMomentum());
+      fPzRec = - fPyz / TMath::Sqrt(1.0 + TMath::Tan(fThetaY)*TMath::Tan(fThetaY));
+      fPxRec = fPzRec * TMath::Tan(fThetaX);
+      fPyRec = fPzRec * TMath::Tan(fThetaY);
+      fCharge = Int_t(TMath::Sign(1.,muonTrack->GetInverseBendingMomentum()));
+      
+      //ChiSquare of the track if needed
+      fChisquare = muonTrack->GetChi2()/(2.0 * muonTrack->GetNHit() - 5);
+      fEnergy = TMath::Sqrt(fMUONMASS * fMUONMASS + fPxRec * fPxRec + fPyRec * fPyRec + fPzRec * fPzRec);
+      fEPvector.SetPxPyPzE(fPxRec, fPyRec, fPzRec, fEnergy);
+      
+      // total number of muons inside a vertex cut 
+      if((TMath::Abs(fZ)<fZVertexCut) && (TMath::Sqrt(fY*fY+fX*fX)<fRhoVertexCut)) {
+	nMuons++;
+	if(fEPvector.Pt() > fLowPtCut) {
+	  nMu1GeV++; 
+	  if(fEPvector.Pt() > fHighPtCut) {
+	    nMu3GeV++; 
+	    if (fEPvector.Pt() > fVeryHighPtCut) {
+	      nMu10GeV++;
+	    }
+	  }
+	}
+      }
+    }//muon track loop
+    
+    // Fill the event tags 
+    if(ntrack != 0) meanPt = meanPt/ntrack;
+    
+    AliInfo(Form("====================================="));
+    AliInfo(Form("URL: %s - GUID: %s",fturl.Data(),fguid.Data()));
+    AliInfo(Form("====================================="));
+
+    evTag->SetEventId(iEventNumber+1);
+    evTag->SetGUID(fguid);
+    if(fSession == "grid") {
+      evTag->SetMD5(0);
+      evTag->SetTURL(fturl);
+      evTag->SetSize(0);
+    }
+    else evTag->SetPath(fturl);
+    
+    evTag->SetVertexX(vertexIn->GetXv());
+    evTag->SetVertexY(vertexIn->GetYv());
+    evTag->SetVertexZ(vertexIn->GetZv());
+    evTag->SetVertexZError(vertexIn->GetZRes());
+    evTag->SetVertexFlag(fVertexflag);
+    
+    evTag->SetT0VertexZ(esd->GetT0zVertex());
+    
+    evTag->SetTriggerMask(esd->GetTriggerMask());
+    evTag->SetTriggerCluster(esd->GetTriggerCluster());
+    
+    evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
+    evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
+    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+    evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
+    evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
+    evTag->SetNumOfParticipants(esd->GetZDCParticipants());
+    
+    
+    evTag->SetNumOfTracks(esd->GetNumberOfTracks());
+    evTag->SetNumOfPosTracks(nPos);
+    evTag->SetNumOfNegTracks(nNeg);
+    evTag->SetNumOfNeutrTracks(nNeutr);
+    
+    evTag->SetNumOfV0s(esd->GetNumberOfV0s());
+    evTag->SetNumOfCascades(esd->GetNumberOfCascades());
+    evTag->SetNumOfKinks(esd->GetNumberOfKinks());
+    evTag->SetNumOfPMDTracks(esd->GetNumberOfPmdTracks());
+    
+    evTag->SetNumOfProtons(nProtons);
+    evTag->SetNumOfKaons(nKaons);
+    evTag->SetNumOfPions(nPions);
+    evTag->SetNumOfMuons(nMuons);
+    evTag->SetNumOfElectrons(nElectrons);
+    evTag->SetNumOfPhotons(nGamas);
+    evTag->SetNumOfPi0s(nPi0s);
+    evTag->SetNumOfNeutrons(nNeutrons);
+    evTag->SetNumOfKaon0s(nK0s);
+    
+    evTag->SetNumOfChargedAbove1GeV(nCh1GeV);
+    evTag->SetNumOfChargedAbove3GeV(nCh3GeV);
+    evTag->SetNumOfChargedAbove10GeV(nCh10GeV);
+    evTag->SetNumOfMuonsAbove1GeV(nMu1GeV);
+    evTag->SetNumOfMuonsAbove3GeV(nMu3GeV);
+    evTag->SetNumOfMuonsAbove10GeV(nMu10GeV);
+    evTag->SetNumOfElectronsAbove1GeV(nEl1GeV);
+    evTag->SetNumOfElectronsAbove3GeV(nEl3GeV);
+    evTag->SetNumOfElectronsAbove10GeV(nEl10GeV);
+    
+    evTag->SetNumOfPHOSClusters(esd->GetNumberOfPHOSClusters());
+    evTag->SetNumOfEMCALClusters(esd->GetNumberOfEMCALClusters());
+    
+    evTag->SetTotalMomentum(totalP);
+    evTag->SetMeanPt(meanPt);
+    evTag->SetMaxPt(maxPt);
+    
+    tag->SetRunId(iInitRunNumber);
+    if(fIsSim) tag->SetDataType(0);
+    else tag->SetDataType(1);
+    tag->AddEventTag(*evTag);
+
+    if(fguid != fTempGuid) {
+      fTempGuid = fguid;
+      ttag.Fill();
+      tag->Clear("");
+    }
+  }//event loop
+  lastEvent = fChain->GetEntries();
+  
+  //gSystem->GetMemInfo(meminfo);
+  //AliInfo(Form("After the event and track loop - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  //tempmem = meminfo->fMemUsed;
+
+  //fChain->Delete("");
+  
+  //gSystem->GetMemInfo(meminfo);
+  //AliInfo(Form("After the t->Delete - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  //tempmem = meminfo->fMemUsed;
+
+  TString localFileName = "Run"; localFileName += tag->GetRunId(); 
+  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += lastEvent; //localFileName += "."; localFileName += Counter;
+  localFileName += ".ESD.tag.root";
+
+  TString fileName;
+  
+  if(fStorage == 0) {
+    fileName = localFileName.Data();      
+    AliInfo(Form("Writing tags to local file: %s",fileName.Data()));
+  }
+  else if(fStorage == 1) {
+    TString alienLocation = "/alien";
+    alienLocation += gGrid->Pwd();
+    alienLocation += fgridpath.Data();
+    alienLocation += "/";
+    alienLocation +=  localFileName;
+    alienLocation += "?se=";
+    alienLocation += fSE.Data();
+    fileName = alienLocation.Data();
+    AliInfo(Form("Writing tags to grid file: %s",fileName.Data()));
+  }
+
+  TFile* ftag = TFile::Open(fileName, "recreate");
+  ftag->cd();
+  //ttag.Fill();
+  tag->Clear();
+  ttag.Write();
+  ftag->Close();
+
+  //gSystem->GetMemInfo(meminfo);
+  //AliInfo(Form("After the file closing - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  //tempmem = meminfo->fMemUsed;
+
+  delete ftag;
+  delete esd;
+
+  delete tag;
+  //gSystem->GetMemInfo(meminfo);
+  //AliInfo(Form("After the delete objects - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
 }
 
 //_____________________________________________________________________________
@@ -194,6 +560,9 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   TTree ttag("T","A Tree with event tags");
   TBranch * btag = ttag.Branch("AliTAG", &tag);
   btag->SetCompressionLevel(9);
+  gSystem->GetMemInfo(meminfo);
+  AliInfo(Form("After the tag initialization - Memory used: %d MB",meminfo->fMemUsed));
+  Int_t tempmem = meminfo->fMemUsed;
   
   AliInfo(Form("Creating the ESD tags......."));	
   
@@ -202,6 +571,10 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(t);
   
+  gSystem->GetMemInfo(meminfo);
+  AliInfo(Form("After the esd initialization - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  tempmem = meminfo->fMemUsed;
+
   t->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
 
@@ -417,8 +790,15 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   }//event loop
   lastEvent = iNumberOfEvents;
   
+  gSystem->GetMemInfo(meminfo);
+  AliInfo(Form("After the event and track loop - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  tempmem = meminfo->fMemUsed;
   t->Delete("");
   
+  gSystem->GetMemInfo(meminfo);
+  AliInfo(Form("After the t->Delete - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  tempmem = meminfo->fMemUsed;
+
   TString localFileName = "Run"; localFileName += tag->GetRunId(); 
   localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += lastEvent; localFileName += "."; localFileName += Counter;
   localFileName += ".ESD.tag.root";
@@ -448,10 +828,16 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
   ttag.Write();
   ftag->Close();
 
+  gSystem->GetMemInfo(meminfo);
+  AliInfo(Form("After the file closing - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
+  tempmem = meminfo->fMemUsed;
+
   delete ftag;
   delete esd;
 
   delete tag;
+  gSystem->GetMemInfo(meminfo);
+  AliInfo(Form("After the delete objects - Memory used: %d MB - Increase: %d MB",meminfo->fMemUsed,meminfo->fMemUsed - tempmem));
 }
 
 //_____________________________________________________________________________
