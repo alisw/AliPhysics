@@ -11,11 +11,12 @@
 //      name for alignable volumes, in form of a TGeo path otherwise,    *
 //      and as a unique integer identifier                               *
 //************************************************************************
-#include "TObject.h"
-#include "TString.h"
-#include "TGeoMatrix.h"
+#include <TObject.h>
+#include <TString.h>
+#include <TGeoMatrix.h>
 #include <Rtypes.h>
 #include <TMath.h>
+#include <TMatrixDSym.h>
 #include "AliGeomManager.h"
 
 
@@ -54,6 +55,7 @@ class AliAlignObj : public TObject {
   void  SetVolUID(UShort_t voluid) {fVolUID=voluid;}
   void  SetVolUID(AliGeomManager::ELayerID layerId, Int_t modId);
   void  SetCorrMatrix(Double_t *cov);
+  void  SetCorrMatrix(TMatrixDSym& mcov);
 
   //Getters
   const char  *GetSymName()    const {return fVolPath.Data();}
@@ -68,6 +70,7 @@ class AliAlignObj : public TObject {
   virtual void GetMatrix(TGeoHMatrix& m) const=0;
   virtual Bool_t GetLocalMatrix(TGeoHMatrix& m) const;
   void  GetCovMatrix(Double_t *cov) const;
+  void  GetCovMatrix(TMatrixDSym& mcov) const;
 
   Bool_t   IsSortable() const {return kTRUE;}
   Int_t         GetLevel() const;

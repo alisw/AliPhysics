@@ -203,6 +203,27 @@ void AliAlignObj::GetCovMatrix(Double_t *cmat) const
     // Diagonal elements
     cmat[i*(i+1)/2+i] = (fDiag[i] >= 0.) ? fDiag[i]*fDiag[i] : -999.;
   }
+
+  return;
+}
+
+//______________________________________________________________________________
+void AliAlignObj::GetCovMatrix(TMatrixDSym& mcov) const
+{
+  // Fills the matrix m passed as argument as the covariance matrix calculated
+  // from the coefficients of the reduced covariance matrix data members
+  //
+
+  for(Int_t i=0; i<6; ++i) {
+    // Off diagonal elements
+    for(Int_t j=0; j<i; ++j) {
+      mcov(j,i) = mcov(i,j) = (fDiag[j] >= 0. && fDiag[i] >= 0.) ? fODia[(i-1)*i/2+j]*fDiag[j]*fDiag[i]: -999.;
+    }
+
+    // Diagonal elements
+    mcov(i,i) = (fDiag[i] >= 0.) ? fDiag[i]*fDiag[i] : -999.;
+  }
+
 }
 
 //______________________________________________________________________________
@@ -223,6 +244,35 @@ void AliAlignObj::SetCorrMatrix(Double_t *cmat)
       // Off diagonal elements
       for(Int_t j=0; j<i; ++j) {
 	fODia[(i-1)*i/2+j] = (fDiag[i] > 0. && fDiag[j] > 0.) ? cmat[i*(i+1)/2+j]/(fDiag[j]*fDiag[i]) : 0.;       // check for division by zero (due to diagonal element of 0) and for fDiag != -999. (due to negative input diagonal element).
+	if (fODia[(i-1)*i/2+j]>1.)  fODia[(i-1)*i/2+j] =  1.; // check upper boundary
+	if (fODia[(i-1)*i/2+j]<-1.) fODia[(i-1)*i/2+j] = -1.; // check lower boundary
+      }
+  } else {
+    for(Int_t i=0; i< 6; ++i) fDiag[i]=-999.;
+    for(Int_t i=0; i< 6*(6-1)/2; ++i) fODia[i]=0.;
+  }
+
+  return;
+}
+
+//______________________________________________________________________________
+void AliAlignObj::SetCorrMatrix(TMatrixDSym& mcov)
+{
+  // Sets the correlation matrix data member from the covariance matrix mcov passed
+  // passed as argument. 
+  //
+  if(mcov.IsValid()) {
+
+    // Diagonal elements first
+    for(Int_t i=0; i<6; ++i) {
+      fDiag[i] = (mcov(i,i) >= 0.) ? TMath::Sqrt(mcov(i,i)) : -999.;
+    }
+
+    // ... then the ones off diagonal
+    for(Int_t i=0; i<6; ++i)
+      // Off diagonal elements
+      for(Int_t j=0; j<i; ++j) {
+	fODia[(i-1)*i/2+j] = (fDiag[i] > 0. && fDiag[j] > 0.) ? mcov(i,j)/(fDiag[j]*fDiag[i]) : 0.;       // check for division by zero (due to diagonal element of 0) and for fDiag != -999. (due to negative input diagonal element).
 	if (fODia[(i-1)*i/2+j]>1.)  fODia[(i-1)*i/2+j] =  1.; // check upper boundary
 	if (fODia[(i-1)*i/2+j]<-1.) fODia[(i-1)*i/2+j] = -1.; // check lower boundary
       }
