@@ -92,10 +92,12 @@ ClassImp(AliTPC)
 		   fHitType(0),
 		   fDigitsSwitch(0),
 		   fSide(0),
+                   fPrimaryIonisation(0),
 		   fNoiseDepth(0),
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
 		   fActiveSectors(0)
+                   
 
 {
   //
@@ -123,10 +125,12 @@ AliTPC::AliTPC(const char *name, const char *title)
 		   fHitType(0),
 		   fDigitsSwitch(0),
 		   fSide(0),
+                   fPrimaryIonisation(0),
 		   fNoiseDepth(0),
 		   fNoiseTable(0),
 		   fCurrentNoise(0),
-		   fActiveSectors(0)
+                   fActiveSectors(0)
+                  
 {
   //
   // Standard constructor

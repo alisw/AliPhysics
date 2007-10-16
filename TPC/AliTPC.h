@@ -95,7 +95,7 @@ public:
    Int_t GetHitType() const {return fHitType;}
    void    SetActiveSectors(Int_t flag=0); //loop over al hits and set active only hitted sectors
    Bool_t  TrackInVolume(Int_t id,Int_t track);  //return true if current track is in volume
-
+   void    SetPrimaryIonisation(Bool_t flag = kTRUE) {fPrimaryIonisation = flag;}
 // static functions
    static AliTPCParam* LoadTPCParam(TFile *file); 
 protected:
@@ -115,7 +115,7 @@ protected:
   //MK changes
 
   Float_t        fSide;  // selects left(-1), right(+1), or both(0) sides of the TPC
-   
+  Bool_t     fPrimaryIonisation; //switch between Fluka(true) and geant3(false)
  private:
   AliTPC(const AliTPC& t);
   AliTPC &operator = (const AliTPC & param);
@@ -136,6 +136,7 @@ protected:
   Float_t *  fNoiseTable;  //! table with noise
   Int_t      fCurrentNoise; //! index of the noise in  the noise table 
   Bool_t*    fActiveSectors; //! bool indicating which sectors are active
+ 
 
   ClassDef(AliTPC,12)  // Time Projection Chamber class
 };
@@ -160,7 +161,7 @@ public:
 
    Float_t Time() const {return fTime;}
  
-   ClassDef(AliTPChit,2)  // Time Projection Chamber hits
+   ClassDef(AliTPChit,3)  // Time Projection Chamber hits
 };
 
 

@@ -1179,7 +1179,7 @@ void AliTPCv2::StepManager()
   
   vol[1]=0; // preset row number to 0
   //
-  gMC->SetMaxStep(kbig);
+  if (fPrimaryIonisation) gMC->SetMaxStep(kbig);
   
   if(!gMC->IsTrackAlive()) return; // particle has disappeared
   
@@ -1274,8 +1274,14 @@ void AliTPCv2::StepManager()
   //  charged particle is in the sensitive drift volume
   //-----------------------------------------------------------------
   if(gMC->TrackStep() > 0) {
-
-    Int_t nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+    Int_t nel=0;
+    if (!fPrimaryIonisation) {
+      nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+    }
+    else {
+	  Float_t edep = gMC->Edep();
+	  if (edep > 0.) nel = (Int_t)((gMC->Edep()*1.5)/kwIon) + 1;      
+    }
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     //
     gMC->TrackPosition(p);
@@ -1304,28 +1310,30 @@ void AliTPCv2::StepManager()
   
   Float_t pp;
   TLorentzVector mom;
-  gMC->TrackMomentum(mom);
-  Float_t ptot=mom.Rho();
-  Float_t betaGamma = ptot/gMC->TrackMass();
-  
-  Int_t pid=gMC->TrackPid();
-  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
-    { 
-      pp = kprim*1.58; // electrons above 20 MeV/c are on the plateau!
-    }
-  else
-    {
+  // below is valid only for Geant3 (fPromaryIonisation not set)
+  if(!fPrimaryIonisation){
+    gMC->TrackMomentum(mom);
+    Float_t ptot=mom.Rho();
+    Float_t betaGamma = ptot/gMC->TrackMass();
 
-      betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-      pp=kprim*BetheBloch(betaGamma); 
+    Int_t pid=gMC->TrackPid();
+    if((pid==kElectron || pid==kPositron) && ptot > 0.002)
+      { 
+        pp = kprim*1.58; // electrons above 20 MeV/c are on the plateau!
+      }
+    else
+      {
+
+        betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
+        pp=kprim*BetheBloch(betaGamma); 
    
-      if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
+        if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
     }
   
-  Double_t rnd = gMC->GetRandom()->Rndm();
+    Double_t rnd = gMC->GetRandom()->Rndm();
   
-  gMC->SetMaxStep(-TMath::Log(rnd)/pp);
-  
+    gMC->SetMaxStep(-TMath::Log(rnd)/pp);
+  }
   
 }
 
