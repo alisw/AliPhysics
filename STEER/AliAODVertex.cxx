@@ -35,7 +35,7 @@ AliAODVertex::AliAODVertex() :
   fID(-1),
   fType(kUndef),
   fCovMatrix(NULL),
-  fParent(0x0),
+  fParent(),
   fDaughters()
   {
   // default constructor
@@ -95,7 +95,7 @@ AliAODVertex::AliAODVertex(const Double_t position[3],
   fID(-1),
   fType(vtype),
   fCovMatrix(NULL),
-  fParent(0x0),
+  fParent(),
   fDaughters()
 {
   // constructor without covariance matrix
@@ -112,7 +112,7 @@ AliAODVertex::AliAODVertex(const Float_t position[3],
   fID(-1),
   fType(vtype),
   fCovMatrix(NULL),
-  fParent(0x0),
+  fParent(),
   fDaughters()
 {
   // constructor without covariance matrix
