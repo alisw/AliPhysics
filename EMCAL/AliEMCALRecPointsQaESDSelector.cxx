@@ -14,6 +14,9 @@
  **************************************************************************/
 
 /* $Log$
+/* Revision 1.5  2007/10/15 18:04:07  pavlinov
+/* quick fix
+/*
 /* Revision 1.4  2007/10/15 15:50:58  pavlinov
 /* fixed code violation
 /*
@@ -137,7 +140,7 @@ AliEMCALRecPointsQaESDSelector::AliEMCALRecPointsQaESDSelector() :
   // Constructor. Initialization of pointers
   //
   Char_t *anaOpt[]={
-  "CORR1",   // GetCorrectedEnergyForGamma_1(Double_t eRec);
+  "CORR1",   // GetCorrectedEnergyForGamma1(Double_t eRec);
   "RECALIB",
   "IDEAL",
   "PI0",
@@ -308,7 +311,7 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
     return kFALSE;
   }
   
-  static pi0SelectionParam* rPar = GetEmcalFolder()->GetPi0SelectionParRow(0);
+  static AliEMCALPi0SelectionParRec* rPar = GetEmcalFolder()->GetPi0SelectionParRow(0);
 
   static Int_t nEmcalClusters, indOfFirstEmcalRP, nEmcalRP,nEmcalPseudoClusters;
   nEmcalClusters    = fESD->GetNumberOfEMCALClusters();
@@ -347,11 +350,11 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
         if(GetKeyOptsValue(kPROF)) {
           FillHistsForShowerProfile( GetListShowerProfile(), rp, GetCellsInfo());
 	}
-	//if(rp->GetPointEnergy()>=rPar->eOfRpMin && u::GetLorentzVectorFromRecPoint(v, rp)) {
+	//if(rp->GetPointEnergy()>=rPar->fEOfRpMin && u::GetLorentzVectorFromRecPoint(v, rp)) {
         if(u::GetLorentzVectorFromRecPoint(v, rp)) { // comparing with RP
           if(GetKeyOptsValue(kCORR1)) {
 	    erec  = v.Rho();
-            ecorr = u::GetCorrectedEnergyForGamma_1(erec);
+            ecorr = u::GetCorrectedEnergyForGamma1(erec);
             v.SetRho(ecorr);
             v.SetE(ecorr); // This is gamma
 	    //printf("<1> erec %f | ecorr %f \n", erec, ecorr);
@@ -372,12 +375,12 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
         }
         if(rp) delete rp;
       } else { // first iteration
-	//        if(cl->E()>=rPar->eOfRpMin && u::GetLorentzVectorFromESDCluster(v, cl)) {
+	//        if(cl->E()>=rPar->fEOfRpMin && u::GetLorentzVectorFromESDCluster(v, cl)) {
         if(u::GetLorentzVectorFromESDCluster(v, cl)) { // comparing with RP
 	// cut 0.4 GeV may be high ! 
           if(GetKeyOptsValue(kCORR1)) {
 	    erec  = v.Rho();
-            ecorr = u::GetCorrectedEnergyForGamma_1(erec);
+            ecorr = u::GetCorrectedEnergyForGamma1(erec);
             v.SetRho(ecorr);
             v.SetE(ecorr); // This is gamma now
             // printf("<2> erec %f | ecorr %f \n", erec, ecorr);
@@ -439,8 +442,8 @@ Bool_t AliEMCALRecPointsQaESDSelector::Process(Long64_t entry)
         pgg = lgg.P();  // momentum
         u::FillH1(fLofHistsRP, 8, mgg);
  
-	if((mgg>=rPar->massGGMin && mgg<=rPar->massGGMax)) {// pi0 candidates
-	  if((pgg>=rPar->momPi0Min && pgg>=rPar->momPi0Min)) {
+	if((mgg>=rPar->fMassGGMin && mgg<=rPar->fMassGGMax)) {// pi0 candidates
+	  if((pgg>=rPar->fMomPi0Min && pgg>=rPar->fMomPi0Min)) {
             if(fgEMCAL && fgEMCAL->GetIterationNumber()>=1) {
               fgEMCAL->FillPi0Candidate(mgg,fESD->GetCaloCluster(indLv[i1]),fESD->GetCaloCluster(indLv[i2]));
               u::FillH1(fLofHistsRP, 9, pgg); 
@@ -766,7 +769,7 @@ void AliEMCALRecPointsQaESDSelector::FillHistsForShowerProfile
   if(l==0 || rp==0 || t==0) return;
   // --
   static Double_t xmean=0., xlog=0.;
-  static cellInfo rMax;
+  static AliEMCALCellIndexes rMax;
   static Int_t phiSize;
 
   if(rp->GetPointEnergy() < 1.0) return;
@@ -776,16 +779,16 @@ void AliEMCALRecPointsQaESDSelector::FillHistsForShowerProfile
   if(phiSize == 0) return; // just one row in cell directions
 
   EvalLocalPhiPosition(5.5, rp, t, xlog, phiSize, rMax);
-  if(rMax.iPhi>1.5&&rMax.iPhi<21.5 && rMax.iEta>1.5&&rMax.iEta<46.5) { 
+  if(rMax.fIPhi>1.5&&rMax.fIPhi<21.5 && rMax.fIEta>1.5&&rMax.fIEta<46.5) { 
     u::FillH1(l, 0, xmean); 
     u::FillH1(l, 1, xlog); 
     u::FillH2(l, 2, xlog, xmean);
     // Select two central modules
-    if((rMax.iPhim==5 || rMax.iPhim==6)){
+    if((rMax.fIPhim==5 || rMax.fIPhim==6)){
     // Transition to system of cell with max energy
-      xmean -= (double(rMax.iPhi)+0.5);  
-      xlog  -= (double(rMax.iPhi)+0.5);  
-      if(rMax.iEtam>=2 && rMax.iEtam<=12){ // approximatively first half on eta 
+      xmean -= (double(rMax.fIPhi)+0.5);  
+      xlog  -= (double(rMax.fIPhi)+0.5);  
+      if(rMax.fIEtam>=2 && rMax.fIEtam<=12){ // approximatively first half on eta 
         u::FillH2(l, 3, xlog, xmean);
       } else {// approximatively second half on eta 
         u::FillH2(l, 4, xlog, xmean);
@@ -794,7 +797,7 @@ void AliEMCALRecPointsQaESDSelector::FillHistsForShowerProfile
   }
 }
 
-void   AliEMCALRecPointsQaESDSelector::EvalLocalPhiPosition(const Double_t wlog, const AliEMCALRecPoint *rp, const AliEMCALCellInfo* t, Double_t &xcog, Int_t &phiSize, cellInfo &rMax)
+void   AliEMCALRecPointsQaESDSelector::EvalLocalPhiPosition(const Double_t wlog, const AliEMCALRecPoint *rp, const AliEMCALCellInfo* t, Double_t &xcog, Int_t &phiSize, AliEMCALCellIndexes &rMax)
 {
   // wlog = 1 - usual center of gravity; >1 - with logarithmic weight.
   // digits - array of digits
@@ -806,7 +809,7 @@ void   AliEMCALRecPointsQaESDSelector::EvalLocalPhiPosition(const Double_t wlog,
 
   static Double_t wtot=0., w=0., edigi=0., e=0., edigiMax=0.;
   static Int_t absid = 0, phiMin=0, phiMax=0;
-  static cellInfo* r=0;
+  static AliEMCALCellIndexes* r=0;
 
   e = rp->GetPointEnergy();
   wtot = 0.0;
@@ -820,14 +823,14 @@ void   AliEMCALRecPointsQaESDSelector::EvalLocalPhiPosition(const Double_t wlog,
     else            w = edigi; // just energy
 
     r     = t->GetTable(absid);
-    xcog += w*(Double_t(r->iPhi) + 0.5);
+    xcog += w*(Double_t(r->fIPhi) + 0.5);
     wtot += w;
     if(edigi > edigiMax) {
       edigiMax = edigi;
       rMax = (*r);
     }
-    if(phiMin > r->iPhi) phiMin = r->iPhi; 
-    if(phiMax < r->iPhi) phiMax = r->iPhi; 
+    if(phiMin > r->fIPhi) phiMin = r->fIPhi; 
+    if(phiMax < r->fIPhi) phiMax = r->fIPhi; 
   }
   xcog /= wtot;
   phiSize = phiMax - phiMin;
@@ -892,7 +895,7 @@ AliEMCALFolder*  AliEMCALRecPointsQaESDSelector::CreateEmcalFolder(const Int_t i
     fgEMCALOld = fgEMCAL; 
     AliEMCALCalibCoefs* tabOldOut = fgEMCALOld->GetCCOut();
     AliEMCALCalibCoefs* tabNewIn = new AliEMCALCalibCoefs(*tabOldOut);
-    tabNewIn->SetName(AliEMCALFolder::fgkCCinName.Data());
+    tabNewIn->SetName(AliEMCALFolder::GetCCinName().Data());
     newFolder->Add(tabNewIn);
   } 
   fEmcalPool->Add(newFolder);
@@ -988,8 +991,8 @@ void AliEMCALRecPointsQaESDSelector::ReadAllEmcalFolders()
   if(fEmcalPool==0) {
     fEmcalPool = new TFolder("PoolOfEMCAL","");
     for(Int_t it=1; it<=10; it++){
-      //      AliEMCALFolder* fold = AliEMCALFolder::ReadFolder(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
-      AliEMCALFolder* fold = AliEMCALFolder::Read(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
+      AliEMCALFolder* fold = AliEMCALFolder::ReadFolder(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
+      //      AliEMCALFolder* fold = AliEMCALFolder::Read(Form("EMCALFOLDER_It%i_fit.root",it), "READ");
       if(fold) fEmcalPool->Add(fold);
     }
   }
@@ -1199,7 +1202,7 @@ TCanvas *AliEMCALRecPointsQaESDSelector::Linearity(TList *l, int ifun)
     gr->GetHistogram()->SetMinimum(xmi);
     gr->GetHistogram()->SetTitleOffset(1.4,"y");
     if(ifun==0) {
-      f = new TF1("fres", "AliEMCALHistoUtilities::EnergyCorrectionForGamma_1(x)", 0., 101.); 
+      f = new TF1("fres", "AliEMCALHistoUtilities::EnergyCorrectionForGamma1(x)", 0., 101.); 
       f->Draw("same");
     }
   }
@@ -1209,7 +1212,7 @@ TCanvas *AliEMCALRecPointsQaESDSelector::Linearity(TList *l, int ifun)
   if(0) {
     c->Clear();
     for(int i=0; i<9; i++) {
-      residual[i] =  100.*(invRat[i] - u::GetCorrectionCoefficientForGamma_1(erec[i])); // in percent
+      residual[i] =  100.*(invRat[i] - u::GetCorrectionCoefficientForGamma1(erec[i])); // in percent
       printf(" erec %f : residual %5.3f \n", erec[i], residual[i]);
     }
     markerColor = 2;
@@ -1359,7 +1362,7 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawPhiEtaAnglesDistribution(const char
   gROOT->cd();
   TH1::AddDirectory(1);
   TH1F *hDtheta  = new TH1F("hDtheta","#Delta#theta in one SM", 60, -2.0, +1.0); // in degree
-  TH2F *hDtheta2 = new TH2F("hDtheta2","#Delta#theta vs iEta of cell", 48, -0.5, 47.5, 60,-2.0,+1.0);
+  TH2F *hDtheta2 = new TH2F("hDtheta2","#Delta#theta vs fIEta of cell", 48, -0.5, 47.5, 60,-2.0,+1.0);
 
   TH1F *hDphi  = new TH1F("hDphi","#Delta#ph in one SM", 2000, -10.0, +10.0); // in degree
 
@@ -1369,13 +1372,13 @@ TCanvas* AliEMCALRecPointsQaESDSelector::DrawPhiEtaAnglesDistribution(const char
   Double_t phiCell=0., dphi=0.;
 
   for(int absid=0; absid<12*24*4; absid++){
-    cellInfo *r = t->GetTable(absid);
+    AliEMCALCellIndexes *r = t->GetTable(absid);
     fgEmcalGeo->GetGlobal(absid, vg3);
 
     thetaCell   = vg3.Theta()*TMath::RadToDeg();
-    thetaModule = 90. - 1.5*r->iEtam;
+    thetaModule = 90. - 1.5*r->fIEtam;
     hDtheta->Fill(thetaCell - thetaModule);
-    hDtheta2->Fill(double(r->iEta), thetaCell - thetaModule);
+    hDtheta2->Fill(double(r->fIEta), thetaCell - thetaModule);
 
     phiCell   = vg3.Phi()*TMath::RadToDeg();
     dphi      = phiCell - 90.;

@@ -8,6 +8,7 @@
 //_________________________________________________________________________
 //  Table of Calibration coefficients  
 //  Should be extended.
+//  Ratio high/low should be added too, pedestals and so on
 //                  
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -16,18 +17,21 @@
 #include <TObjArray.h>
 
 // unit is GeV
-class calibCoef : public TObject {
+class AliEMCALCalibCoef : public TObject {
+  friend class AliEMCALCalibCoefs;
+  friend class AliEMCALFolder;
+  friend class AliEMCALCell;
  public:
-  virtual const char* GetName() const {return Form("CC%5.5i",absId);}
-  calibCoef();
-  calibCoef(const Int_t id, const Double_t c, const Double_t ec);
-  virtual ~calibCoef() {};
+  virtual const char* GetName() const {return Form("CC%5.5i",fAbsId);}
+  AliEMCALCalibCoef();
+  AliEMCALCalibCoef(const Int_t id, const Double_t c, const Double_t ec);
+  virtual ~AliEMCALCalibCoef() {};
 
-  Int_t    absId; // absolute id of cell 
-  Double_t cc;    // Calib. coef
-  Double_t eCc;   // Calib. coef. error
-  // 
-  ClassDef(calibCoef,1) // Cell calibration information 
+ protected:
+  Int_t    fAbsId; // absolute id of cell 
+  Double_t fCc;    // Calib. coef
+  Double_t fECc;   // Calib. coef. error
+  ClassDef(AliEMCALCalibCoef,1) // Cell calibration information 
 };
 
 class TH1F;
@@ -46,15 +50,15 @@ class AliEMCALCalibCoefs : public TNamed {
     Fatal("operator =", "not implemented");
     return *this;
   };
-  void        AddAt(calibCoef* r);
-  calibCoef*  GetTable(Int_t i) const;
+  void        AddAt(AliEMCALCalibCoef* r);
+  AliEMCALCalibCoef*  GetTable(Int_t i) const;
   Int_t       GetSize()  const {return fTable->GetSize();}
   Int_t       GetNRows() const {return fCurrentInd;}
   void        Purge() {/* nothing */};
 
   void  SetCalibMethod(Int_t var) {fCalibMethod=var;}
-  Int_t GetCalibMethod() {return fCalibMethod;}
-  calibCoef* GetRow(const int absId);
+  Int_t GetCalibMethod() const {return fCalibMethod;}
+  AliEMCALCalibCoef* GetRow(const int absId);
   // Get initial Calib Data from DB
   static AliEMCALCalibCoefs *GetCalibTableFromDb(const char *tn="CCIN", AliEMCALCalibData **calData=0);
   //  const char* dbLocation="local:///data/r22b/ALICE/PROD/CALIBRATION_May_2007/PI0/PDSF/10GEV/DECALIB/DeCalibDB");
@@ -67,12 +71,12 @@ class AliEMCALCalibCoefs : public TNamed {
   // Menu
   void PrintTable();                 // *MENU*
   void PrintTable(const Int_t i);    // *MENU*
-  void PrintRec(calibCoef *r);
+  void PrintRec(AliEMCALCalibCoef *r);
 
   //
  protected:
-  TObjArray *fTable;
-  Int_t fCurrentInd;
+  TObjArray *fTable; // table of CC
+  Int_t fCurrentInd; // Current index
   Int_t fCalibMethod;  // method of calibration - EEmcalCalibType
 
   ClassDef(AliEMCALCalibCoefs,2) // Table of Calibration coefficients  

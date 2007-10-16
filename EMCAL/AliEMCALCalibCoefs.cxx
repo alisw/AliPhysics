@@ -13,14 +13,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$co: warning: `/* $Log' is obsolescent; use ` * $Log'.
+/* $Log$
+/* Revision 1.2  2007/09/11 19:38:15  pavlinov
+/* added pi0 calibration, linearity, shower profile
+/*co: warning: `/* $Log' is obsolescent; use ` * $Log'.
 
  * Revision 1.1  2007/08/08 15:58:01  hristov
  * */
 
 
 //_________________________________________________________________________
-//    Calibration coefficients
+//   Calibration coefficients
+//   The place for holding all information after calibration
+//   - not only calibration coefficients.
+//   For flash Adc we should keep at least ratio of high/low gains 
 //
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -38,43 +44,52 @@
 #include "TH1F.h"
 #include <TString.h>
 
-ClassImp(calibCoef) 
+ClassImp(AliEMCALCalibCoef) 
 
-calibCoef::calibCoef() : absId(-1), cc(-1), eCc(-1)
-{ }
-calibCoef::calibCoef(const Int_t id, const Double_t c, const Double_t ec) :
-absId(id), cc(c), eCc(ec)
-{}
+AliEMCALCalibCoef::AliEMCALCalibCoef() : fAbsId(-1), fCc(-1), fECc(-1)
+{ 
+  // default constructor
+}
+AliEMCALCalibCoef::AliEMCALCalibCoef(const Int_t id, const Double_t c, const Double_t ec) :
+fAbsId(id), fCc(c), fECc(ec)
+{
+  // Oct 16, 2007
+}
 // ----------------------------------------------------------------------
 
 ClassImp(AliEMCALCalibCoefs)
 
 AliEMCALCalibCoefs::AliEMCALCalibCoefs() : TNamed("",""), fTable(0), fCurrentInd(0), fCalibMethod(0)
 {
+  // default constructor
 }
 
 AliEMCALCalibCoefs::AliEMCALCalibCoefs(const char* name, const Int_t nrow) : TNamed(name,"table of cell information") , fTable(0), fCurrentInd(0), fCalibMethod(0)
 {
+  // Oct 16, 2007
   fTable = new TObjArray(nrow);
 }
 
-void AliEMCALCalibCoefs::AddAt(calibCoef* r)
+void AliEMCALCalibCoefs::AddAt(AliEMCALCalibCoef* r)
 {
-  (*fTable)[fCurrentInd] = new calibCoef(*r);
+  // Oct 16, 2007
+  (*fTable)[fCurrentInd] = new AliEMCALCalibCoef(*r);
   fCurrentInd++;
 }
 
 AliEMCALCalibCoefs::~AliEMCALCalibCoefs()
 {
+  // Destructor
   if(fTable) {
     fTable->Delete();
     delete fTable;
   }
 }
 
-calibCoef* AliEMCALCalibCoefs::GetTable(Int_t i) const
+AliEMCALCalibCoef* AliEMCALCalibCoefs::GetTable(Int_t i) const
 {
-  return (calibCoef*)fTable->At(i);
+  // Oct 16, 2007
+  return (AliEMCALCalibCoef*)fTable->At(i);
 }
 
 
@@ -107,10 +122,10 @@ AliEMCALCalibCoefs* AliEMCALCalibCoefs::GetCalibTableFromDb(const char *tn, AliE
     g->GetCellIndex(id, nSupMod, nModule, nIphi, nIeta);
     g->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphiCell, ietaCell);
 
-    calibCoef r;
-    r.absId = id;
-    r.cc    = caldata->GetADCchannel(nSupMod, ietaCell, iphiCell); // column(ietaCell) : row(iphiCell)
-    r.eCc   = 0.0;
+    AliEMCALCalibCoef r;
+    r.fAbsId = id;
+    r.fCc    = caldata->GetADCchannel(nSupMod, ietaCell, iphiCell); // column(ietaCell) : row(iphiCell)
+    r.fECc   = 0.0;
 
     tab->AddAt(&r);
   }
@@ -132,12 +147,12 @@ TH1F* AliEMCALCalibCoefs::GetHistOfCalibTableFromDb(const char *tn)
   AliEMCALCalibCoefs* tab = GetCalibTableFromDb(tn, calData);
   if(tab==0) return 0;
 
-  TH1F *h = new TH1F("hCCfirst", " cc first  (in MeV)", 70, 12., 19.);
-  calibCoef *r;
+  TH1F *h = new TH1F("hCCfirst", " fCc first  (in MeV)", 70, 12., 19.);
+  AliEMCALCalibCoef *r;
   for(Int_t i=0; i<tab->GetSize(); i++){
     r = tab->GetTable(i);
     if(i>=1152) break;
-    h->Fill(r->cc*1000.); // GEV ->MeV
+    h->Fill(r->fCc*1000.); // GEV ->MeV
   }
   delete tab;
   return h;
@@ -146,9 +161,9 @@ TH1F* AliEMCALCalibCoefs::GetHistOfCalibTableFromDb(const char *tn)
 AliEMCALCalibData* AliEMCALCalibCoefs::GetCalibTableForDb(const AliEMCALCalibCoefs *tab, const char* dbLocation,
 const char* coment)
 {
-  printf("<I> AliEMCALCalibCoefs::GetCalibTableForDb started \n");
   // See EMCAL/macros/CalibrationDB/AliEMCALSetCDB.C
   // Define and save to CDB 
+  printf("<I> AliEMCALCalibCoefs::GetCalibTableForDb started \n");
   AliEMCALCalibData* caldata=0;
   if(tab==0) return caldata;
 
@@ -168,9 +183,9 @@ const char* coment)
     g->GetCellIndex(id, nSupMod, nModule, nIphi, nIeta);
     g->GetCellPhiEtaIndexInSModule(nSupMod, nModule, nIphi, nIeta, iphiCell, ietaCell);
 
-    calibCoef *r = tab->GetTable(id);
+    AliEMCALCalibCoef *r = tab->GetTable(id);
     // ietaCell - column; iphiCell - row
-    caldata->SetADCchannel (nSupMod, ietaCell, iphiCell, r->cc);
+    caldata->SetADCchannel (nSupMod, ietaCell, iphiCell, r->fCc);
     caldata->SetADCpedestal(nSupMod, ietaCell, iphiCell, ped);
   }
   printf("<I> Fill AliEMCALCalibData table \n");
@@ -187,39 +202,43 @@ const char* coment)
   } else {
     printf("<I> AliCDBManager %p \n", man); 
     AliCDBId id("EMCAL/Calib/Data",firstRun,lastRun); // create in EMCAL/Calib/Data DBFolder 
-    TString DBFolder(dbLocation);
-    AliCDBStorage* loc = man->GetStorage(DBFolder.Data());
+    TString dBFolder(dbLocation);
+    AliCDBStorage* loc = man->GetStorage(dBFolder.Data());
     loc->Put(caldata, id, &md);
   }
 
   return caldata;
 }
 
-calibCoef *AliEMCALCalibCoefs::GetRow(const int absId)
+AliEMCALCalibCoef *AliEMCALCalibCoefs::GetRow(const int absId)
 {
-  calibCoef *r=0;
+  // Oct 16, 2007
+  AliEMCALCalibCoef *r=0;
   for(int id=0; id<fTable->GetSize(); id++){
     r = GetTable(id);
-    if(r->absId == absId) return r;
+    if(r->fAbsId == absId) return r;
   }
   return 0;
 }
 
 void AliEMCALCalibCoefs::PrintTable()
 {
+  // Oct 16, 2007
   printf(" Table : %s : nrows %i \n", GetName(), int(fTable->GetSize()));
   for(int i=0; i<fTable->GetSize(); i++) PrintTable(i);
 }
 
 void AliEMCALCalibCoefs::PrintTable(const Int_t i)
 {
+  // Oct 16, 2007
   if(i>=fTable->GetSize()) return;
   printf("row %i \n", i);
   PrintRec(GetTable(i));
 }
 
-void AliEMCALCalibCoefs::PrintRec(calibCoef* r)
+void AliEMCALCalibCoefs::PrintRec(AliEMCALCalibCoef* r)
 {
+  // Oct 16, 2007
   if(r==0) return;
-  printf(" abs Id %5.5i cc %7.6f eCc %7.6f \n", r->absId, r->cc, r->eCc);
+  printf(" abs Id %5.5i fCc %7.6f fECc %7.6f \n", r->fAbsId, r->fCc, r->fECc);
 }

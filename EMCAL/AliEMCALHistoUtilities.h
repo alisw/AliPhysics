@@ -75,8 +75,8 @@ class AliEMCALHistoUtilities: public TNamed {
   static Double_t Gi(Double_t *x, Double_t *par);
   static Double_t GiPol2(Double_t *x, Double_t *par);
   // Calibration stuff
-  static Double_t GetCorrectionCoefficientForGamma_1(const Double_t eRec);
-  static Double_t GetCorrectedEnergyForGamma_1(const Double_t eRec);
+  static Double_t GetCorrectionCoefficientForGamma1(const Double_t eRec);
+  static Double_t GetCorrectedEnergyForGamma1(const Double_t eRec);
   static TF1* GetResolutionFunction(const char *opt, TString &latexName);
 
   AliEMCALHistoUtilities & operator = (const AliEMCALHistoUtilities &) {

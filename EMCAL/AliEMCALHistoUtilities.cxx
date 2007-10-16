@@ -144,6 +144,7 @@ int AliEMCALHistoUtilities::SaveListOfHists(TList *mylist,const char* name,Bool_
 
 void AliEMCALHistoUtilities::AddToNameAndTitle(TH1 *h, const char *name, const char *title)
 {
+  // Oct 15, 2007
   if(h==0) return;
   if(name  && strlen(name))  h->SetName(Form("%s%s",h->GetName(),name));
   if(title && strlen(title)) h->SetTitle(Form("%s%s",h->GetTitle(),title));
@@ -151,6 +152,7 @@ void AliEMCALHistoUtilities::AddToNameAndTitle(TH1 *h, const char *name, const c
 
 void AliEMCALHistoUtilities::AddToNameAndTitleToList(TList *l, const char *name, const char *title)
 {
+  // Oct 15, 2007
   if(l==0) return;
   if(name || title) {
     for(int i=0; i<l->GetSize(); i++) {
@@ -165,8 +167,8 @@ void AliEMCALHistoUtilities::AddToNameAndTitleToList(TList *l, const char *name,
 
 void AliEMCALHistoUtilities::ResetListOfHists(TList *l)
 {
+  // Oct 15, 2007
   if(l==0) return;
-
   for(int i=0; i<l->GetSize(); i++) {
     TH1F* h = (TH1F*)l->At(i);
     h->Reset(); 
@@ -175,6 +177,7 @@ void AliEMCALHistoUtilities::ResetListOfHists(TList *l)
 
 TLatex *AliEMCALHistoUtilities::Lat(const char *text, Float_t x,Float_t y, Int_t align, Float_t tsize, short tcolor)
 { 
+  // Oct 15, 2007
   double y1=y;
   TLatex *latex = new TLatex;
   latex->SetTextAlign(align);
@@ -258,6 +261,7 @@ TGraphErrors *AliEMCALHistoUtilities::DrawGraphErrors(const Int_t n,Double_t *x,
 Double_t *ey, Int_t markerColor,  Int_t markerStyle, const char* opt, const char* tit, 
 const char* xTit,char* yTit, Int_t ifun, const char *optFit, const char *fun)
 {
+  // Oct 15, 2007
   printf("AliEMCALHistoUtilities::drawGraphErrors started \n");
   printf("Drawing opt |%s| : ifun %i: Fitting opt |%s|, fun |%s|\n", 
 	 opt, ifun, optFit, fun);
@@ -296,13 +300,14 @@ const char* xTit,char* yTit, Int_t ifun, const char *optFit, const char *fun)
 
 TF1* AliEMCALHistoUtilities::GetResolutionFunction(const char *opt, TString &latexName)
 {
-  TString OPT(opt);
-  OPT.ToUpper();
+  // Oct 15, 2007
+  TString sopt(opt);
+  sopt.ToUpper();
   TF1 *fres=0;
-  if      (OPT.Contains("FRES1")) {
+  if      (sopt.Contains("FRES1")) {
     fres = new TF1("fres","[0]+[1]/sqrt(x)", 0.0, 101.);
     latexName = "#frac{#sigma_{E}}{E} = A+#frac{B}{#sqrt{E}}";
-  } else if(OPT.Contains("FRES2")) { 
+  } else if(sopt.Contains("FRES2")) { 
     fres = new TF1("fres","sqrt([0]*[0]+[1]*[1]/x)", 0.0, 101.);
     latexName = "#sqrt{A^{2}+#frac{B^{2}}{E}}";
   }
@@ -346,27 +351,28 @@ void AliEMCALHistoUtilities::InitChain(TChain *chain, const char* nameListOfFile
 
 AliRunLoader* AliEMCALHistoUtilities::InitKinematics(const Int_t nev, const char* galiceName)
 {
-  static AliRunLoader *RL = 0;
-  if(RL == 0 || nev%1000==0) {
-    if(RL)  {
-      RL->UnloadgAlice();
-      delete RL;
+  // Oct 15, 2007
+  static AliRunLoader *rl = 0;
+  if(rl == 0 || nev%1000==0) {
+    if(rl)  {
+      rl->UnloadgAlice();
+      delete rl;
     }
-    RL = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
-    RL->LoadgAlice(); // obligatory
+    rl = AliRunLoader::Open(galiceName,AliConfig::GetDefaultEventFolderName(),"read");
+    rl->LoadgAlice(); // obligatory
   }
-  if(RL) {
-    RL->GetEvent(nev%1000);
-    RL->LoadKinematics();
+  if(rl) {
+    rl->GetEvent(nev%1000);
+    rl->LoadKinematics();
     /* Get what you need after that
-      RL->LoadHits();
-      AliStack *stack=RL->Stack();
+      rl->LoadHits();
+      AliStack *stack=rl->Stack();
       AliESDCaloCluster * clus = esd->GetCaloCluster(n);
       Int_t label = clus->GetLabel(); // what is this 
       TParticle *primary=stack->Particle(label); 
     */
   }
-  return RL;
+  return rl;
 }
 
 Double_t AliEMCALHistoUtilities::GetMomentum(const char* nameListOfFiles)
@@ -454,15 +460,16 @@ Bool_t AliEMCALHistoUtilities::GetLorentzVectorFromRecPoint(TLorentzVector &v, c
 //
 void AliEMCALHistoUtilities::DrawHist(TH1* hid,int lineWidth,int lineColor,const char* opt, int lineStyle)
 {
-  TString OPT;
-  OPT = opt;
+  // Oct 15, 2007
+  TString sopt;
+  sopt = opt;
   if(!hid) return;
   printf(" Hist. %s : option |%s| \n", hid->GetName(), opt);
   if(hid && hid->GetEntries()>=1.) {
     if(lineWidth) hid->SetLineWidth(lineWidth);
     if(lineColor) hid->SetLineColor(lineColor);
     if(lineStyle) hid->SetLineStyle(lineStyle);
-    if(OPT.Contains("stat",TString::kIgnoreCase)) hid->SetStats(kTRUE);
+    if(sopt.Contains("stat",TString::kIgnoreCase)) hid->SetStats(kTRUE);
     hid->Draw(opt);
   } else {
     if   (strcmp(opt,"empty")==0) hid->Draw();
@@ -474,18 +481,20 @@ void AliEMCALHistoUtilities::DrawHist(TH1* hid,int lineWidth,int lineColor,const
 //// Fitting:
 //
 TF1* AliEMCALHistoUtilities::Gausi(const char *addName,double xmi,double xma,double N,double mean,double sig,double width)
-{ // Fit by gaus where first parameter is the number of events under ga
+{ 
+  // Fit by gaus where first parameter is the number of events under ga
+  // Oct 15, 2007
   TString name("gi");
   name += addName;
-  TF1 *F = new TF1(name.Data(), Gi, xmi, xma, 4); 
-  F->SetParNames("INTEGRAL","MEAN","SIGMA","WIDTH");
+  TF1 *f = new TF1(name.Data(), Gi, xmi, xma, 4); 
+  f->SetParNames("INTEGRAL","MEAN","SIGMA","WIDTH");
 
-  F->SetParameter(0,N);
-  F->SetParameter(1,mean);
-  F->SetParameter(2,sig);
+  f->SetParameter(0,N);
+  f->SetParameter(1,mean);
+  f->SetParameter(2,sig);
 
-  F->FixParameter(3,width); // width of histogramm bin
-  return F;
+  f->FixParameter(3,width); // width of histogramm bin
+  return f;
 }
 
 TF1* AliEMCALHistoUtilities::Gausi(const char *addName, double xmi, double xma, TH1 *h) 
@@ -496,22 +505,23 @@ TF1* AliEMCALHistoUtilities::Gausi(const char *addName, double xmi, double xma, 
 }
 
 TF1* AliEMCALHistoUtilities::GausiPol2(const char *addName,double xmi,double xma, TF1 *g, TF1* bg)
-{ // Fit by gaus where first parameter is the number of events under ga
+{ 
+  // Fit by gaus where first parameter is the number of events under ga
   TString name("giPol2");
   name += addName;
-  TF1 *F = new TF1(name.Data(), GiPol2, xmi, xma, 7); 
-  F->SetParNames("INTEGRAL","MEAN","SIGMA","WIDTH","a0","a1","a2");
+  TF1 *f = new TF1(name.Data(), GiPol2, xmi, xma, 7); 
+  f->SetParNames("INTEGRAL","MEAN","SIGMA","WIDTH","a0","a1","a2");
 
   if(g) {
-    for(int i=0; i<4; i++) F->SetParameter(i, g->GetParameter(i));
-    F->FixParameter(3,g->GetParameter(3));
+    for(int i=0; i<4; i++) f->SetParameter(i, g->GetParameter(i));
+    f->FixParameter(3,g->GetParameter(3));
   }
 
   if(bg) {
-    for(int i=4; i<7; i++) F->SetParameter(i, bg->GetParameter(i+4));
+    for(int i=4; i<7; i++) f->SetParameter(i, bg->GetParameter(i+4));
   }
-  F->SetLineColor(kRed);
-  return F;
+  f->SetLineColor(kRed);
+  return f;
 }
 
 Double_t AliEMCALHistoUtilities::Gi(Double_t *x, Double_t *par)
@@ -520,10 +530,10 @@ Double_t AliEMCALHistoUtilities::Gi(Double_t *x, Double_t *par)
   // Forth parameter (par[3]) is width of histogram bin 
   // gaus(0) is a substitute for [0]*exp(-0.5*((x-[1])/[2])**2)
 
-  static Double_t C = TMath::Sqrt(2.*TMath::Pi()), y=0.0, f=0.0; // sqrt(2.*pi)
+  static Double_t c = TMath::Sqrt(2.*TMath::Pi()), y=0.0, f=0.0; // sqrt(2.*pi)
 
   y  = (x[0]-par[1])/par[2];
-  f  = par[0]*par[3]/(par[2]*C) * TMath::Exp(-0.5*y*y);
+  f  = par[0]*par[3]/(par[2]*c) * TMath::Exp(-0.5*y*y);
 
   return f;
 }
@@ -534,10 +544,10 @@ Double_t AliEMCALHistoUtilities::GiPol2(Double_t *x, Double_t *par)
   // Forth parameter (par[3]) is width of histogram bin 
   // gaus(0) is a substitute for [0]*exp(-0.5*((x-[1])/[2])**2)
   // + pol2 -> 7 parameters
-  static Double_t C = TMath::Sqrt(2.*TMath::Pi()), y=0.0, f=0.0; // sqrt(2.*pi)
+  static Double_t c = TMath::Sqrt(2.*TMath::Pi()), y=0.0, f=0.0; // sqrt(2.*pi)
 
   y  = (x[0]-par[1])/par[2];
-  f  = par[0]*par[3]/(par[2]*C) * TMath::Exp(-0.5*y*y);
+  f  = par[0]*par[3]/(par[2]*c) * TMath::Exp(-0.5*y*y);
 
   f += par[4] + par[5]*x[0] + par[6]*x[0]*x[0];
 
@@ -545,7 +555,7 @@ Double_t AliEMCALHistoUtilities::GiPol2(Double_t *x, Double_t *par)
 }
 
 // Calibration stuff
-Double_t AliEMCALHistoUtilities::GetCorrectionCoefficientForGamma_1(const Double_t eRec)
+Double_t AliEMCALHistoUtilities::GetCorrectionCoefficientForGamma1(const Double_t eRec)
 {
   // Correction to rec.energy - Jul 15, 2007
   // E(gamma) = corr * E(eRec);
@@ -571,7 +581,7 @@ Double_t AliEMCALHistoUtilities::GetCorrectionCoefficientForGamma_1(const Double
   return corr;
 }
 
-Double_t AliEMCALHistoUtilities::GetCorrectedEnergyForGamma_1(const Double_t eRec)
+Double_t AliEMCALHistoUtilities::GetCorrectedEnergyForGamma1(const Double_t eRec)
 {
-  return GetCorrectionCoefficientForGamma_1(eRec) * eRec;
+  return GetCorrectionCoefficientForGamma1(eRec) * eRec;
 }

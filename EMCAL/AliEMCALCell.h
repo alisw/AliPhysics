@@ -41,9 +41,9 @@ class AliEMCALCell : public TFolder {
   Int_t    GetSupMod() const {return fSupMod;}
   Int_t    GetModule() const {return fModule;}
 
-  Double_t GetCcIn()  {return  fCcIn;}
-  Double_t GetCcOut() {return  fCcOut;}
-  TF1*     GetFunction() {return fFun;}
+  Double_t GetCcIn()  const {return  fCcIn;}
+  Double_t GetCcOut() const {return  fCcOut;}
+  TF1*     GetFunction() const {return fFun;}
 
   void FillEffMass(const Double_t mgg);
   void FillCellNtuple(TNtuple *nt);
@@ -54,7 +54,7 @@ class AliEMCALCell : public TFolder {
   void PrintInfo();                            //*MENU*
  protected:
   TObject* fParent; // parent
-  TList* fLh;
+  TList* fLh;       // list of hists
   //
   Int_t fAbsId;   // abs cell id 
   Int_t fSupMod;  // super module number

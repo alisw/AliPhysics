@@ -3,7 +3,10 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Log$ */
+/* $Log$
+/* Revision 1.2  2007/09/11 19:38:15  pavlinov
+/* added pi0 calibration, linearity, shower profile
+/* */
 
 //_________________________________________________________________________
 //  Top EMCAL folder - keep everyrhing for calibration task
@@ -22,7 +25,7 @@ class AliEMCALSuperModule;
 class AliEMCALCell;
 class AliESDCaloCluster;
 class AliEMCALPi0SelectionParam;
-class pi0SelectionParam;
+class AliEMCALPi0SelectionParRec;
 class AliEMCALCalibData;
 class AliEMCALCalibCoefs;
 class AliEMCALRecPoint;
@@ -48,15 +51,15 @@ class AliEMCALFolder : public TFolder {
   AliEMCALCell** GetListOfCells() {return fLofCells;}
   AliEMCALCell* GetCell(const Int_t absId);
   void          SetCell(AliEMCALCell *cell, const Int_t absId); 
-  AliEMCALPi0SelectionParam* GetPi0SelectionPar() {return fPi0SelPar;}
-  pi0SelectionParam*         GetPi0SelectionParRow(Int_t nrow);
+  AliEMCALPi0SelectionParam*  GetPi0SelectionPar() {return fPi0SelPar;}
+  AliEMCALPi0SelectionParRec* GetPi0SelectionParRow(Int_t nrow);
  
   void FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1, AliESDCaloCluster* cl2);
   void FillPi0Candidate(const Double_t mgg, Int_t absIdMax, Int_t nm);
   // Define CC
   void FitAllSMs();    // SM0 now
   // Service routine 
-  AliEMCALCalibCoefs* GetCCTable(const char* name);
+  AliEMCALCalibCoefs* GetCCTable(const char* name) const;
   AliEMCALCalibCoefs* GetCCFirst() {return GetCCTable(fgkCCFirstName.Data());}
   AliEMCALCalibCoefs* GetCCIn() {return GetCCTable(fgkCCinName.Data());}
   AliEMCALCalibCoefs* GetCCOut(){return GetCCTable(fgkCCoutName.Data());}
@@ -66,17 +69,19 @@ class AliEMCALFolder : public TFolder {
   TList *l=0, Double_t deff=-1., Double_t w0=-1., Double_t phiSlope=0.0); 
   // MENU
   void   Save(const char *fn = "EMCALFOLDER.root", const char *opt="RECREATE");  // *MENU*
-  static AliEMCALFolder*  Read(const char *fn = "EMCALFOLDER.root", const char *opt="READ");
+  static AliEMCALFolder*  ReadFolder(const char *fn = "EMCALFOLDER.root", const char *opt="READ");
   void   InitAfterRead();                // *MENU*
   void   DrawQA(const int nsm=0); // *MENU*
   void   CreateCellNtuple();      // *MENU*
   void   CreateAndFillAdditionalHists(); // *MENU*
 
+  static const TString GetBaseFolderName() {return fgkBaseFolderName;}
+  static const TString GetCCinName()       {return fgkCCinName;}
  protected:
   TList* BookHists();
   Int_t fCounter; // Counter of iteration 
  //
-  AliEMCALGeometry *fGeometry; //
+  AliEMCALGeometry *fGeometry; // pointer to EMCAL geometry
   //
   Int_t     fNumOfCell;     // number of cells as in geometry
 
@@ -87,16 +92,17 @@ class AliEMCALFolder : public TFolder {
   // 
   TNtuple *fCellNtuple;  //! for quick cell anaylsis
 
-  public:
   static const TString fgkBaseFolderName;  // base name of EMCAL Folder  
   static const TString fgkCCFirstName;     // name of first calib.table 
   static const TString fgkCCinName;        // name of initial calib.coefs. table 
   static const TString fgkCCoutName;       // name of out calib.coefs. table 
   static const TString fgkDirOfRootFiles;  // name of directory for saving EMCAL folder
 
+  TList *fLobj; // list of all objects
+
   void TestSMStruct();  // *MENU*
 
-  ClassDef(AliEMCALFolder,2) // EMCAL folder
+  ClassDef(AliEMCALFolder,3) // EMCAL folder
     
 };
 

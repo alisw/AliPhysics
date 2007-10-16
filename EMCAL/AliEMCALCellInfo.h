@@ -10,32 +10,35 @@
 // Simplify a work with cell indexes 
 // Initial version was created with TTable staff
 // 
-
 //*-- Authors: Aleksei Pavlinov (WSU)
 #include <TNamed.h>
 
 // Aug 1, 2007; Corr. Sep 05
-class cellInfo : public TObject { 
+// cellInfo -> AliEMCALCellIndexes - Oct 15, 2007
+class AliEMCALCellIndexes : public TObject { 
   // See AliEMCALGeometry
   // Indexes information
+  friend class AliEMCALCellInfo;
+  friend class AliEMCALRecPointsQaESDSelector;
  public:
-  virtual const char* GetName() const {return Form("Ind%5.5i",absId);}
-  cellInfo();
-  virtual ~cellInfo() {};
+  virtual const char* GetName() const {return Form("Ind%5.5i",fAbsId);}
+  AliEMCALCellIndexes();
+  virtual ~AliEMCALCellIndexes() {};
 
-  Int_t absId;   // abs id of cell as in Geant
+ protected:
+  Int_t fAbsId;   // abs id of cell as in Geant
   // Geant numbering tree - see AliEMCALv2
-  Int_t nSupMod; // index of super module (SM)
-  Int_t nModule; // index of module in SM
-  Int_t nIphi;   // phi index of tower(cell) in module
-  Int_t nIeta;   // eta index of tower(cell) in module
-  // Inside SM - ised in cluster finder
-  Int_t iPhi;    // phi index of tower(cell) in SM 
-  Int_t iEta;    // eta index of tower(cell) in SM
-  Int_t iPhim;   // phi index of module in SM
-  Int_t iEtam;   // eta index of module in SM
+  Int_t fNSupMod; // index of super module (SM)
+  Int_t fNModule; // index of module in SM
+  Int_t fNIphi;   // phi index of tower(cell) in module
+  Int_t fNIeta;   // eta index of tower(cell) in module
+  // Inside SM - used in cluster finder
+  Int_t fIPhi;    // phi index of tower(cell) in SM 
+  Int_t fIEta;    // eta index of tower(cell) in SM
+  Int_t fIPhim;   // phi index of module in SM
+  Int_t fIEtam;   // eta index of module in SM
   // Coordinate information should be include too ??
-  ClassDef(cellInfo,1) // Cell indexes information
+  ClassDef(AliEMCALCellIndexes,2) // Cell indexes information
 };
 
 class AliEMCALGeometry;
@@ -53,8 +56,8 @@ class AliEMCALCellInfo : public TNamed {
     return *this;
   };
   // 
-  void AddAt(cellInfo* r);
-  cellInfo* GetTable(Int_t i) const;
+  void AddAt(AliEMCALCellIndexes* r);
+  AliEMCALCellIndexes* GetTable(Int_t i) const;
 
   void PrintTable(int ind1=-1, int ind2=-1) const;  //*MENU*
 
@@ -62,8 +65,8 @@ class AliEMCALCellInfo : public TNamed {
   static AliEMCALCellInfo *GetTableForGeometry(AliEMCALGeometry *g);
   //
  protected:
-  TObjArray *fTable;
-  Int_t fCurrentInd;
+  TObjArray *fTable; // Array of  AliEMCALCellIndexes
+  Int_t fCurrentInd; // Current index
 
   ClassDef(AliEMCALCellInfo,2) // Table of emcal indexes  
 };

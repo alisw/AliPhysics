@@ -7,6 +7,8 @@
 
 //_________________________________________________________________________
 //  Set of parameters for pi0 selection 
+// unit is GeV
+// pi0SelectionParam -> AliEMCALPi0SelectionParRec
 //                  
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -14,22 +16,27 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 
-// unit is GeV
-class  pi0SelectionParam :  public TObject{
+// pi0SelectionParam -> AliEMCALPi0SelectionParRec
+
+class  AliEMCALPi0SelectionParRec :  public TObject{
+  friend class AliEMCALPi0SelectionParam;
+  friend class AliEMCALRecPointsQaESDSelector;
  public:
-  pi0SelectionParam();
-  virtual ~pi0SelectionParam() {};
+  AliEMCALPi0SelectionParRec();
+  virtual ~AliEMCALPi0SelectionParRec() {};
   virtual const char* GetName() const {return "Pi0Par";}
 
-  double eOfRpMin;   // minimal energy of em.cluster (rec point)
-  double eOfRpMax;   // maximal energy of em.cluster (rec point)
-  double massGGMin;  // minimal mass of gamma,gamma
-  double massGGMax;  // maximal mass of gamma,gamma
-  double momPi0Min;  // minimal pi0 momentum
-  double momPi0Max;  // maximal pi0 momentum
+ protected:
+  double fEOfRpMin;   // minimal energy of em.cluster (rec point)
+  double fEOfRpMax;   // maximal energy of em.cluster (rec point)
+  double fMassGGMin;  // minimal mass of gamma,gamma
+  double fMassGGMax;  // maximal mass of gamma,gamma
+  double fMomPi0Min;  // minimal pi0 momentum
+  double fMomPi0Max;  // maximal pi0 momentum
 
-  ClassDef(pi0SelectionParam,1);
+  ClassDef(AliEMCALPi0SelectionParRec,1);
 };
+
 
 class AliEMCALPi0SelectionParam : public TNamed {
  public:
@@ -43,22 +50,22 @@ class AliEMCALPi0SelectionParam : public TNamed {
     return *this;
   };
   // 
-  void AddAt(pi0SelectionParam* r);
-  pi0SelectionParam* GetTable(Int_t i) const;
+  void AddAt(AliEMCALPi0SelectionParRec* r);
+  AliEMCALPi0SelectionParRec* GetTable(Int_t i) const;
   Int_t       GetSize()  const {return fTable->GetSize();}
   Int_t       GetNRows() const {return fCurrentInd;}
 
  // Menu
   void PrintTable();                 // *MENU*
   void PrintTable(const Int_t i);    // *MENU*
-  void PrintRec(pi0SelectionParam *r);
+  void PrintRec(AliEMCALPi0SelectionParRec *r);
 
   // Set of parameter(s)
   static AliEMCALPi0SelectionParam* Set1();
   //
  protected:
-  TObjArray *fTable;
-  Int_t fCurrentInd;
+  TObjArray *fTable; // Table of AliEMCALPi0SelectionParRec
+  Int_t fCurrentInd; // Current index
 
   ClassDef(AliEMCALPi0SelectionParam, 2) // Set of Parameters For Pi0 Selection     
 };

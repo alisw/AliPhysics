@@ -13,7 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$ */
+/* $Log$
+/* Revision 1.1  2007/09/12 11:19:24  pavlinov
+/* added pi0 calibration, linearity, shower profile
+/* */
 
 // Aug 1, 2007 - cells information in one place
 #include "AliEMCALCellInfo.h"
@@ -21,10 +24,10 @@
 
 #include <TObjArray.h>
  
-ClassImp(cellInfo) 
+ClassImp(AliEMCALCellIndexes) 
 
-cellInfo::cellInfo() : absId(-1), nSupMod(-1), nModule(-1), nIphi(-1), 
-nIeta(-1), iPhi(-1), iEta(-1), iPhim(-1), iEtam(-1)   
+AliEMCALCellIndexes::AliEMCALCellIndexes() : fAbsId(-1), fNSupMod(-1), fNModule(-1), fNIphi(-1), 
+fNIeta(-1), fIPhi(-1), fIEta(-1), fIPhim(-1), fIEtam(-1)   
 {
 }
 
@@ -40,9 +43,9 @@ AliEMCALCellInfo::AliEMCALCellInfo(const char* name, const Int_t nrow) : TNamed(
   fTable = new TObjArray(nrow);
 }
 
-void AliEMCALCellInfo::AddAt(cellInfo* r)
+void AliEMCALCellInfo::AddAt(AliEMCALCellIndexes* r)
 {
-  (*fTable)[fCurrentInd] = new cellInfo(*r);
+  (*fTable)[fCurrentInd] = new AliEMCALCellIndexes(*r);
   fCurrentInd++;
 }
 
@@ -54,29 +57,32 @@ AliEMCALCellInfo::~AliEMCALCellInfo()
   }
 }
 
-cellInfo* AliEMCALCellInfo::GetTable(Int_t i) const
+AliEMCALCellIndexes* AliEMCALCellInfo::GetTable(Int_t i) const
 {
-  return (cellInfo*)fTable->At(i);
+  // Oct 16, 2007
+  return (AliEMCALCellIndexes*)fTable->At(i);
 }
 
 void AliEMCALCellInfo::PrintTable(int ind1, int ind2) const
 {
+  // Oct 16, 2007
   printf(" %s : %s : #rows %i \n", GetName(), GetTitle(), fTable->GetSize());
   if(ind1==-1 && ind2==-1) return;
-  printf(" absId nSupMod nModule nIphi nIeta iPhi iEta iPhim iEtam\n");
+  printf(" fAbsId fNSupMod fNModule fNIphi fNIeta fIPhi fIEta fIPhim fIEtam\n");
   if(ind1 < 0) ind1 = 0;
   if(ind2 >= fTable->GetSize()) ind2 = fTable->GetSize();
   for(int i=ind1; i<ind2; i++) {
-    cellInfo* r = GetTable(i);
+    AliEMCALCellIndexes* r = GetTable(i);
     if(r==0) break;
     printf(" %5.5i    %2.2i      %3.3i    %1.1i    %1.1i    %2.2i    %2.2i    %2.2i    %2.2i\n", 
-    r->absId, r->nSupMod, r->nModule, r->nIphi, r->nIeta, r->iPhi, r->iEta, r->iPhim,r->iEtam);
+    r->fAbsId, r->fNSupMod, r->fNModule, r->fNIphi, r->fNIeta, r->fIPhi, r->fIEta, r->fIPhim,r->fIEtam);
   }
 }
 
 
 AliEMCALCellInfo *AliEMCALCellInfo::GetTableForGeometry(const char* geoName)
 {
+  // Oct 16, 2007
   if(geoName==0) return 0;
   AliEMCALGeometry *g=AliEMCALGeometry::GetInstance(geoName);  
   return GetTableForGeometry(g);
@@ -84,16 +90,17 @@ AliEMCALCellInfo *AliEMCALCellInfo::GetTableForGeometry(const char* geoName)
 
 AliEMCALCellInfo *AliEMCALCellInfo::GetTableForGeometry(AliEMCALGeometry *g)
 {
+  // Oct 16, 2007
   if(g==0) return 0;
   AliEMCALCellInfo *t = new AliEMCALCellInfo("CellInfo",g->GetNCells());
 
   for(Int_t absid=0; absid<g->GetNCells(); absid++){
-    cellInfo r;
-    r.absId   = absid;
+    AliEMCALCellIndexes r;
+    r.fAbsId   = absid;
 
-    g->GetCellIndex(r.absId,  r.nSupMod, r.nModule, r.nIphi, r.nIeta);
-    g->GetCellPhiEtaIndexInSModule(r.nSupMod,r.nModule,r.nIphi,r.nIeta, r.iPhi,r.iEta);
-    g->GetModulePhiEtaIndexInSModule(r.nSupMod,r.nModule, r.iPhim, r.iEtam); 
+    g->GetCellIndex(r.fAbsId,  r.fNSupMod, r.fNModule, r.fNIphi, r.fNIeta);
+    g->GetCellPhiEtaIndexInSModule(r.fNSupMod,r.fNModule,r.fNIphi,r.fNIeta, r.fIPhi,r.fIEta);
+    g->GetModulePhiEtaIndexInSModule(r.fNSupMod,r.fNModule, r.fIPhim, r.fIEtam); 
 
     t->AddAt(&r);
   }

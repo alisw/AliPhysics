@@ -16,8 +16,10 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// Top EMCAL folder which will keep all information about EMCAL itself,
-// super Modules (SM), modules, towers, set of hists and so on.
+// Top EMCAL folder which will keep all 
+// information about EMCAL itself,
+// super Modules (SM), modules, towers, 
+// set of hists and so on.
 //
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -71,19 +73,17 @@ ClassImp(AliEMCALFolder)
 
 //AliEMCALGeometry* AliEMCALFolder::fGeometry = 0;
 
-  TList *lObj = 0;
-
 AliEMCALFolder::AliEMCALFolder() : 
   TFolder(), 
   fCounter(0), fGeometry(0), fNumOfCell(0), fLhists(0), fLofCells(0),fPi0SelPar(0),fCalibData(0),
-  fCellNtuple(0)
+  fCellNtuple(0),fLobj(0)
 {
 }
 
 AliEMCALFolder::AliEMCALFolder(const char* name, const char* title, Bool_t putToBrowser) : 
   TFolder(name,title),
   fCounter(-1), fGeometry(0), fNumOfCell(0), fLhists(0), fLofCells(0),fPi0SelPar(0),fCalibData(0),
-  fCellNtuple(0)
+  fCellNtuple(0),fLobj(0)
 {
   Init(putToBrowser);
 }
@@ -91,7 +91,7 @@ AliEMCALFolder::AliEMCALFolder(const char* name, const char* title, Bool_t putTo
 AliEMCALFolder::AliEMCALFolder(const Int_t it, const char* title, Bool_t putToBrowser) : 
   TFolder(Form("%s_%2.2i", AliEMCALFolder::fgkBaseFolderName.Data(),it),title),
   fCounter(it), fGeometry(0), fNumOfCell(0), fLhists(0), fLofCells(0),fPi0SelPar(0),fCalibData(0),
-  fCellNtuple(0)
+  fCellNtuple(0),fLobj(0)
 {
   Init(putToBrowser);
 }
@@ -103,13 +103,14 @@ AliEMCALFolder::~AliEMCALFolder()
 
 void AliEMCALFolder::Init(Bool_t putToBrowser)
 {
-  lObj = new TList;
-  lObj->SetName("Objects"); // name is good ?
-  this->Add((TObject*)lObj);
-  //this->AddObject((TObject*)lObj, kTRUE);
+  // Initialize all data structure
+  fLobj = new TList;
+  fLobj->SetName("Objects"); // name is good ?
+  this->Add((TObject*)fLobj);
+  //this->AddObject((TObject*)fLobj, kTRUE);
   // Get default geometry - "SHISH_77_TRD1_2X2_FINAL_110DEG"; May 29, 2007
   fGeometry = AliEMCALGeometry::GetInstance(); // should be define before 
-  lObj->Add(fGeometry);
+  fLobj->Add(fGeometry);
 
   // Initial cc with decalibration
   // Jun 13, 2007;
@@ -119,7 +120,7 @@ void AliEMCALFolder::Init(Bool_t putToBrowser)
   // First table is table which used in rec.points finder.
   Add(AliEMCALCalibCoefs::GetCalibTableFromDb(fgkCCFirstName.Data(),calData));
   fCalibData = calData[0];
-  lObj->Add(fCalibData);
+  fLobj->Add(fCalibData);
   if(GetIterationNumber()<=1) {
     Add(AliEMCALCalibCoefs::GetCalibTableFromDb(fgkCCinName.Data(), calData));
   }
@@ -129,7 +130,7 @@ void AliEMCALFolder::Init(Bool_t putToBrowser)
   this->Add(fPi0SelPar);
   //
   fLhists = BookHists();
-  lObj->Add(fLhists);
+  fLobj->Add(fLhists);
 
   // dimension should be get from geometry - 4*12*24*11); 
   fNumOfCell = fGeometry->GetNCells();
@@ -143,6 +144,7 @@ void AliEMCALFolder::Init(Bool_t putToBrowser)
 
 AliEMCALSuperModule* AliEMCALFolder::GetSuperModule(const Int_t nm)
 {
+  // Oct 15, 2007
   AliEMCALSuperModule *sm = 0;
 
   TObject *set = FindObject(Form("SM%2.2i",nm));
@@ -160,14 +162,16 @@ AliEMCALCell* AliEMCALFolder::GetCell(const Int_t absId)
 
 void  AliEMCALFolder::SetCell(AliEMCALCell *cell, const Int_t absId) 
 {
+  // Oct 15, 2007
   if(absId>=0 && absId < fNumOfCell) {
     fLofCells[absId] = cell;
   }
 }  
 
-pi0SelectionParam* AliEMCALFolder::GetPi0SelectionParRow(Int_t nrow)
+AliEMCALPi0SelectionParRec* AliEMCALFolder::GetPi0SelectionParRow(Int_t nrow)
 {
-  pi0SelectionParam* r=0;
+  // Oct 15, 2007
+  AliEMCALPi0SelectionParRec* r=0;
   if(fPi0SelPar) {
     r = fPi0SelPar->GetTable(nrow);
   }
@@ -176,6 +180,7 @@ pi0SelectionParam* AliEMCALFolder::GetPi0SelectionParRow(Int_t nrow)
 
 void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1, AliESDCaloCluster* cl2)
 {
+  // Oct 15, 2007
   static Int_t absIdMax, nm1, nm2;
 
   u::FillH1(fLhists, 0, 1.);  // number entries 
@@ -191,23 +196,23 @@ void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1
   AliESDCaloCluster* cl = cl1;
   if(cl1->E() < cl2->E()) cl = cl2; // Get cluster with highest energy
 
-  const Int_t  nDigits  = cl->GetNumberOfDigits();
+  const Int_t  kNdigits  = cl->GetNumberOfDigits();
   const Short_t* absId   = cl->GetDigitIndex()->GetArray();
 
   AliEMCALCalibCoefs *tFirst = GetCCFirst();
-  calibCoef *rFirst=0;
+  AliEMCALCalibCoef *rFirst=0;
 
   int    indMax = 0, id=0;
   id = Int_t(absId[0]);
   rFirst = tFirst->GetTable(id);
-  double emax   = cl->GetTrueDigitEnergy(indMax, rFirst->cc);
-  if(nDigits > 1) {
-    for(int i=1; i<nDigits; i++) {
+  double emax   = cl->GetTrueDigitEnergy(indMax, rFirst->fCc);
+  if(kNdigits > 1) {
+    for(int i=1; i<kNdigits; i++) {
       id = Int_t(absId[i]);
       rFirst = tFirst->GetTable(id);
-      if(emax < cl->GetTrueDigitEnergy(i, rFirst->cc)) {
+      if(emax < cl->GetTrueDigitEnergy(i, rFirst->fCc)) {
         indMax = i;
-        emax   = cl->GetTrueDigitEnergy(i, rFirst->cc);
+        emax   = cl->GetTrueDigitEnergy(i, rFirst->fCc);
       }
     }
   }
@@ -220,9 +225,7 @@ void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1
 
 void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, Int_t absIdMax, Int_t nm)
 {
-  //
-  // Jun 08;
-  //
+  // Jun 08
   static Int_t nSupModMax, nModuleMax, nIphiMax, nIetaMax, iphiCellMax, ietaCellMax;
   static AliEMCALCell* cell;
   static TFolder *set; 
@@ -280,13 +283,13 @@ void AliEMCALFolder::FitAllSMs()
    }
    // New calibration table
    AliEMCALCalibCoefs *ccOut = new AliEMCALCalibCoefs(fgkCCoutName.Data(), ccIn->GetNRows());
-   calibCoef *rIn=0, rOut;
+   AliEMCALCalibCoef *rIn=0, rOut;
    for(Int_t i=0; i<ccIn->GetNRows(); i++){
      rIn  = ccIn->GetTable(i);
      rOut = (*rIn);
-     AliEMCALCell* cell = GetCell(rIn->absId);
+     AliEMCALCell* cell = GetCell(rIn->fAbsId);
      if(cell && cell->GetSupMod() == 0) { // only first module now
-       rOut.cc = cell->GetCcOut();
+       rOut.fCc = cell->GetCcOut();
      }
      ccOut->AddAt(&rOut);
    }
@@ -294,8 +297,9 @@ void AliEMCALFolder::FitAllSMs()
    Add(ccOut);
 }
 
-AliEMCALCalibCoefs* AliEMCALFolder::GetCCTable(const char* name)
+AliEMCALCalibCoefs* AliEMCALFolder::GetCCTable(const char* name) const
 {
+  // Oct 15, 2007
   TObject *obj = FindObject(name);
   if(obj) return (AliEMCALCalibCoefs*)obj;
   else    return 0;
@@ -303,6 +307,7 @@ AliEMCALCalibCoefs* AliEMCALFolder::GetCCTable(const char* name)
 
 Int_t AliEMCALFolder::GetSMNumber(AliESDCaloCluster* cl)
 {
+  // Oct 15, 2007
   static Int_t absId, nSupMod, nModule, nIphi, nIeta;
   nSupMod = -1; // if negative something wrong
   if(cl) {
@@ -319,50 +324,50 @@ TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
   //
   // Static function;
   // Get recalibrated rec.point from ESD cluster
-  // If tNew == 0 -> get ideal calibration with  ADCCHANNELEC
+  // If tNew == 0 -> get ideal calibration with  adcCHANNELEC
   //
-  static Double_t ADCCHANNELEC = 0.0153;  // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
+  static Double_t adcCHANNELEC = 0.0153;  // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
   //static Float_t ECAW0 = 4.5; // hard coded now - see AliEMCALClusterizerv1::InitParameters()
-  static Double_t ECAW0 = 5.5; // Beter case for simulation 
+  static Double_t eCAW0 = 5.5; // Beter case for simulation 
   Int_t ampDigi=0, indMax=-1;
   Double_t eDigiNew=0.0, eDigiMax=0.0; 
   static TArrayD ed;
 
-  if(w0 > 0.5) ECAW0 = w0;
+  if(w0 > 0.5) eCAW0 = w0;
   AliEMCALRecPoint *rp=0;
-  calibCoef *rOld=0, *rNew=0;
-  //   printf(" AliEMCALFolder::GetRecPoint() : RECALIBRATION : w0 %f ECAW0 %f \n", w0, ECAW0);
+  AliEMCALCalibCoef *rOld=0, *rNew=0;
+  //   printf(" AliEMCALFolder::GetRecPoint() : RECALIBRATION : w0 %f eCAW0 %f \n", w0, eCAW0);
   if(cl && tOld){
     // cl->PrintClusterInfo(1);
-    const Int_t ndg   = cl->GetNumberOfDigits();
-    //    const Int_t nprim = cl->GetNumberOfPrimaries();
+    const Int_t kNdg   = cl->GetNumberOfDigits();
+    //    const Int_t nkPrim = cl->GetNumberOfPrimaries();
 
-    const Short_t  prim    = cl->GetLabel();
+    const Short_t  kPrim    = cl->GetLabel();
     const Short_t* dgAbsId = cl->GetDigitIndex()->GetArray();
     //    const UShort_t* dgAmp   = cl->GetDigitAmplitude(); // This is energy - bad definition
 
     rp = new AliEMCALRecPoint(""); // opt=""
     rp->SetClusterType(AliESDCaloCluster::kEMCALClusterv1);
     AliEMCALDigit* dg=0;
-    TClonesArray digits("AliEMCALDigit", ndg);
+    TClonesArray digits("AliEMCALDigit", kNdg);
     Int_t absId = 0;
-    ed.Set(ndg); // resize array
-    for(Int_t i=0; i<ndg; i++){
+    ed.Set(kNdg); // resize array
+    for(Int_t i=0; i<kNdg; i++){
       // Save just abs id and amplitude of digits which will be used for recalculation of
       // cluster energy and position
       absId   = Int_t(dgAbsId[i]);
       rOld    = tOld->GetTable(absId);
-      ampDigi = cl->GetTrueDigitAmplitude(i, rOld->cc); // True amplitude
+      ampDigi = cl->GetTrueDigitAmplitude(i, rOld->fCc); // True amplitude
 
-      new(digits[i]) AliEMCALDigit(Int_t(prim),0, absId, ampDigi, 0.0, i, 0.0); 
+      new(digits[i]) AliEMCALDigit(Int_t(kPrim),0, absId, ampDigi, 0.0, i, 0.0); 
       dg     =  (AliEMCALDigit*)digits[i];
 
       if(tNew) rNew = tNew->GetTable(absId);
       if(rNew) {
         rNew  = tNew->GetTable(absId);
-        eDigiNew = Double_t(ampDigi) * rNew->cc;     // Recalibrate with new cc
+        eDigiNew = Double_t(ampDigi) * rNew->fCc;     // Recalibrate with new cc
       } else {
-        eDigiNew = Double_t(ampDigi) * ADCCHANNELEC; // Ideal calibration
+        eDigiNew = Double_t(ampDigi) * adcCHANNELEC; // Ideal calibration
       }
       //eDigiNew = Double_t(cl->GetTrueDigitEnergy(i)); // Copy from ESD for checking
       rp->AddDigit(*dg, Float_t(eDigiNew));
@@ -373,13 +378,13 @@ TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
       }
       u::FillH1(l, 14, eDigiNew);
       u::FillH1(l, 15, Double_t(absId));
-      //printf("<I> digit %i amp %i rOld->cc %6.5f GeV rNew->cc %6.5f GeV\n", i, ampDigi, rOld->cc, rNew->cc);
+      //printf("<I> digit %i amp %i rOld->fCc %6.5f GeV rNew->fCc %6.5f GeV\n", i, ampDigi, rOld->fCc, rNew->fCc);
     }
     //printf("<I> recalibration of digits was done ! \n");
-    //    rp->EvalAll(ECAW0, &digits);
+    //    rp->EvalAll(eCAW0, &digits);
     if(indMax>=0) rp->SetIndMaxDigit(indMax);
     if(deff > 0.0) { // for fit
-      rp->EvalLocalPositionFit(deff, ECAW0, phiSlope, &digits); // I need just position
+      rp->EvalLocalPositionFit(deff, eCAW0, phiSlope, &digits); // I need just position
     } else { // get w0 and deff from parametrisation - Sep 4, 2007 
       rp->EvalLocalPosition2(&digits, ed);
     }
@@ -405,41 +410,43 @@ void  AliEMCALFolder::Save(const char *fn, const char *opt)
   f.NextEventPut(this, eventNum, runNumber);
   printf(" Save %s to file %s\n", GetName(), FN.Data());
   */
+  if(fn || opt);
 }
 
-AliEMCALFolder* AliEMCALFolder::Read(const char *fn, const char *opt)
+AliEMCALFolder* AliEMCALFolder::ReadFolder(const char *fn, const char *opt)
 { 
   //
   // Jun 27, 2007
   // Jul 16 - added fgkDirOfRootFiles
   //
-  printf("<I> AliEMCALFolder::Read(%s,%s)\n",fn,opt); 
-  AliEMCALFolder* EMCAL = 0;
+  printf("<I> AliEMCALFolder::ReadFolder(%s,%s)\n",fn,opt); 
+  AliEMCALFolder* emcal = 0;
   TH1::AddDirectory(0); // this is obligatory
 
-  TString FN = fgkDirOfRootFiles;
-  FN += fn;
-  if(FN.Contains(".root")==0) FN += ".root";
+  TString sfn = fgkDirOfRootFiles;
+  sfn += fn;
+  if(sfn.Contains(".root")==0) sfn += ".root";
 
-  TFile f(FN.Data(),opt);
+  TFile f(sfn.Data(),opt);
   if(f.IsOpen()) {
     TList *l = f.GetListOfKeys();
-    printf("<I> The total number of the objects: %d \n File %s\n", l->GetSize(), FN.Data());
+    printf("<I> The total number of the objects: %d \n File %s\n", l->GetSize(), sfn.Data());
 
     TKey *key = (TKey*)l->At(0);
-    EMCAL = (AliEMCALFolder*)key->ReadObj();
+    emcal = (AliEMCALFolder*)key->ReadObj();
     f.Close();
-    if(EMCAL) EMCAL->InitAfterRead();
+    if(emcal) emcal->InitAfterRead();
   }
-  return EMCAL;
+  return emcal;
 }
 
 
 void  AliEMCALFolder::InitAfterRead()
 { 
-  lObj    = (TList*)FindObject("Objects");
-  if(lObj) {
-    fLhists = (TList*)lObj->FindObject("HistsOfEmcal");
+  // Oct 15, 2007
+  fLobj    = (TList*)FindObject("Objects");
+  if(fLobj) {
+    fLhists = (TList*)fLobj->FindObject("HistsOfEmcal");
   }
 }
 
@@ -493,6 +500,7 @@ void AliEMCALFolder::DrawQA(const int nsm)
 
 TList* AliEMCALFolder::BookHists()
 {
+  // Oct 15, 2007
   gROOT->cd();
   TH1::AddDirectory(1);  
 
@@ -535,11 +543,12 @@ void AliEMCALFolder::CreateCellNtuple()
     }
   }
   fCellNtuple->Print();
-  lObj->Add(fCellNtuple); 
+  fLobj->Add(fCellNtuple); 
 }
 
 void AliEMCALFolder::CreateAndFillAdditionalHists()
 {
+  // Oct 15, 2007
   CreateCellNtuple();
   TH1::AddDirectory(0);  
   fLhists->Add(new TH1F("02_CCoutOnEdge", "cc out on edge of calorimeter (in MeV)", 70, 12., 19.));
@@ -586,7 +595,7 @@ void AliEMCALFolder::CreateAndFillAdditionalHists()
 
   
   // Ideal calibration - Jul 18, 2007
-  Double_t ADCCHANNELEC = 0.0153, ccIdeal =  ADCCHANNELEC*1.e+3;
+  Double_t adcCHANNELEC = 0.0153, ccIdeal =  adcCHANNELEC*1.e+3;
   Double_t ym = h1->GetMaximum();
   TLine *l = new TLine(ccIdeal,-ym*0.05, ccIdeal,ym*1.05);
   l->SetLineColor(kBlue);

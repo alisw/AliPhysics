@@ -18,7 +18,7 @@ class AliEMCALFolder;
 class AliRunLoader;
 class AliEMCALRecPoint;
 class AliEMCALCellInfo;
-class cellInfo;
+class AliEMCALCellIndexes;
 
 class TList;
 class TCanvas;
@@ -48,7 +48,7 @@ class AliEMCALRecPointsQaESDSelector :  public AliSelector {
   static TList *DefineHistsForShowerProfile(const char *name="ProfY", Double_t p=1.);
   static void   FillHistsOfKineVsRP(TList *l, AliRunLoader* RL, TClonesArray &lvM);
   static void   FillHistsForShowerProfile(TList *l, AliEMCALRecPoint *rp, AliEMCALCellInfo* t);
-  static void   EvalLocalPhiPosition(const Double_t wlog, const AliEMCALRecPoint *rp, const AliEMCALCellInfo* t, Double_t &xcog, Int_t &phiSize, cellInfo &rMax); 
+  static void   EvalLocalPhiPosition(const Double_t wlog, const AliEMCALRecPoint *rp, const AliEMCALCellInfo* t, Double_t &xcog, Int_t &phiSize, AliEMCALCellIndexes &rMax); 
   //
   TList *GetListKineVsRP()      {return fLKineVsRP;}
   TList *GetListShowerProfile() {return fLShowerProfile;}

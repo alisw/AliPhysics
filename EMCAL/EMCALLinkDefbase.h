@@ -31,11 +31,11 @@
 #pragma link C++ class AliEMCALCell;
 // Tables without TTable
 #pragma link C++ class AliEMCALPi0SelectionParam+;
-#pragma link C++ class pi0SelectionParam+;
+#pragma link C++ class AliEMCALPi0SelectionParRec+;
 #pragma link C++ class AliEMCALCalibCoefs+;
-#pragma link C++ class calibCoef+;
+#pragma link C++ class AliEMCALCalibCoef+;
 #pragma link C++ class AliEMCALCellInfo+;
-#pragma link C++ class cellInfo+;
+#pragma link C++ class AliEMCALCellIndexes+;
 //
 #pragma link C++ class AliCaloCalibPedestal+;
 #endif
