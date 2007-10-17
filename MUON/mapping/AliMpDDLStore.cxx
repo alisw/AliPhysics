@@ -560,17 +560,19 @@ Bool_t AliMpDDLStore::SetManus()
           
 	  // filling TList manu
 	  for ( Int_t im = 0; im < manus.GetSize(); ++im ) {
-
+      
 	    AliMpIntPair* manu = 0x0;
 	    if( stationType == AliMp::kStation345) 
-		manu = new AliMpIntPair((manus[im] & manuMask), planeType, kTRUE); //remove offset for NB
+        manu = new AliMpIntPair((manus[im] & manuMask), planeType, kTRUE); //remove offset for NB
 	    else 
-		manu = new AliMpIntPair(manus[im], planeType, kTRUE); //keep offset for NB
+        manu = new AliMpIntPair(manus[im], planeType, kTRUE); //keep offset for NB
 	    
 	    manuList.Add(manu);
+      
+      detElement->AddManu(manus[im]);
 	  }        
 	}// cathode
-
+  
 	manuList.Sort(); // sort regardless B or NB plane
 
 	// filling manu to the corresponding buspatch
@@ -592,16 +594,16 @@ Bool_t AliMpDDLStore::SetManus()
 	  AliMpBusPatch* busPatch = GetBusPatch(busPatchId);
 
 	  if( stationType == AliMp::kStation345) {
-
+      
 	    if (manuPtr->GetSecond()) 
-		busPatch->AddManu(manuId+manuMask+1); // add offset again after sorted
+        busPatch->AddManu(manuId+manuMask+1); // add offset again after sorted
 	    else 
-		busPatch->AddManu(manuId); 
-
+        busPatch->AddManu(manuId); 
+      
 	  } else {
-	
+      
 	    busPatch->AddManu(manuId); 
-
+      
 	  }
 	}
 

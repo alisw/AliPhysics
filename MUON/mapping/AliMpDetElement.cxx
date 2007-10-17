@@ -27,9 +27,19 @@
 
 #include "AliMpDetElement.h"
 
+#include "AliMpArrayI.h"
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
+#include "AliMpHVNamer.h"
+#include "AliMpHVUID.h"
+#include "AliMpManuUID.h"
+#include "AliMpPadUID.h"
+#include "AliMpSegmentation.h"
+#include "AliMpVSegmentation.h"
+
+#include "AliCodeTimer.h"
 #include "AliLog.h"
+
 #include <Riostream.h>
 
 /// \cond CLASSIMP
@@ -49,10 +59,12 @@ AliMpDetElement::AliMpDetElement(Int_t id, const TString& name,
     fPlaneType(planeType),
     fBusPatchIds(false),
     fManuToSerialNbs(1700),
-    fSerialNbToManus(1700)
+    fSerialNbToManus(1700),
+    fManuList(1700),
+    fTrackerChannels(1700*AliMpConstants::ManuNofChannels()),
+    fHVmanus(true)
 {
 /// Standard constructor
-
 }
 
 //______________________________________________________________________________
@@ -65,7 +77,10 @@ AliMpDetElement::AliMpDetElement(TRootIOCtor* /*ioCtor*/)
     fPlaneType(),
     fBusPatchIds(),
     fManuToSerialNbs(),
-    fSerialNbToManus()
+    fSerialNbToManus(),
+    fManuList(true),
+    fTrackerChannels(true),
+    fHVmanus(true)
 {
 /// Root IO constructor
 }
@@ -104,6 +119,11 @@ void AliMpDetElement::AddManuSerial(Int_t manuId, Int_t serialNb)
 /// Map the serial manu number 
 /// (Eventually add check if the given pair already present)
 
+  AliCodeTimerAuto("");
+  
+  AliDebug(1,Form("DE %4d ManuId %4d SerialNB %d",
+               fId,manuId,serialNb));
+  
   fManuToSerialNbs.Add(Long_t(manuId), Long_t(serialNb)); 
   fSerialNbToManus.Add(Long_t(serialNb), Long_t(manuId));
 }      
@@ -202,14 +222,6 @@ Bool_t  AliMpDetElement::HasBusPatchId(Int_t busPatchId) const
 }
 
 //______________________________________________________________________________
-Int_t  AliMpDetElement::GetNofManus() const
-{
-/// Return the number of manus in this detection element  
-
-  return fManuToSerialNbs.GetSize();
-}   
-
-//______________________________________________________________________________
 Int_t  AliMpDetElement::GetManuSerialFromId(Int_t manuId) const
 {
 /// Return manu serial number from manuId
@@ -223,5 +235,144 @@ Int_t  AliMpDetElement::GetManuIdFromSerial(Int_t serialNb) const
 /// Return manuId from manu serial number
   
   return (Int_t)fSerialNbToManus.GetValue(Long_t(serialNb));
+}
+
+//______________________________________________________________________________
+Int_t 
+AliMpDetElement::NofChannelsInManu(Int_t manuId) const
+{
+  /// Return the number of channels in a given manu
+  
+  Long_t uid = AliMpManuUID::BuildUniqueID(fId,manuId);
+  
+  return (Int_t)(fManuList.GetValue(uid));
+}
+
+//______________________________________________________________________________
+Bool_t 
+AliMpDetElement::IsExistingChannel(Int_t manuId, Int_t manuChannel) const
+{
+  /// Whether or not the channel is a valid one (does not tell if it is
+  /// connected or not
+  
+  if ( NofChannelsInManu(manuId) > 0 && 
+       manuChannel >= 0 && 
+       manuChannel < AliMpConstants::ManuNofChannels() ) 
+  {
+    return kTRUE;
+  }
+  else
+  {
+    return kFALSE;
+  }
+}
+
+//______________________________________________________________________________
+Bool_t 
+AliMpDetElement::IsConnectedChannel(Int_t manuId, Int_t manuChannel) const
+{
+  /// Whether or not the channel is a *connected* one (i.e. it is valid plus
+  /// it corresponds to a real pad)
+  
+  return ( fTrackerChannels.GetValue(AliMpPadUID::BuildUniqueID(fId,manuId,manuChannel)) > 0 );
+}
+
+//______________________________________________________________________________
+void
+AliMpDetElement::AddManu(Int_t manuId)
+{
+  /// Fills the fManuList and fTrackerChannels
+  AliMp::StationType stationType = AliMpDEManager::GetStationType(fId);
+  
+  if ( stationType == AliMp::kStationTrigger ) return;
+    
+  AliCodeTimerAuto("")
+  
+  AliDebug(1,Form("DE %4d Manu %4d",fId,manuId));
+
+  AliCodeTimerStart(Form("%s",AliMp::StationTypeName(stationType).Data()));
+  
+  if ( fHVmanus.GetSize() == 0 ) 
+  {
+    fHVmanus.SetOwner(kTRUE); // to be 100% explicit
+    
+    // get the size, to avoid resizing when adding later on
+    Int_t nmanus(0);
+    
+    AliMp::CathodType cathodes[] = { AliMp::kCath0, AliMp::kCath1 };
+    
+    for ( Int_t i = 0; i < 2; ++i ) 
+    {
+      const AliMpVSegmentation* seg = 
+      AliMpSegmentation::Instance()->GetMpSegmentation(fId,cathodes[i]);
+      
+      TArrayI manus;
+      
+      seg->GetAllElectronicCardIDs(manus);
+
+      nmanus += manus.GetSize();
+    }
+    
+    fHVmanus.SetSize(nmanus);
+  }
+  
+  const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentationByElectronics(fId,manuId);
+  
+  Int_t n(0);
+  
+  for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i ) 
+  {
+    if ( seg->PadByLocation(AliMpIntPair(manuId,i),kFALSE).IsValid() )
+    {
+      ++n;
+      fTrackerChannels.Add((Long_t)AliMpPadUID::BuildUniqueID(fId,manuId,i),
+                           (Long_t)1);
+    }
+  }
+  
+  fManuList.Add(AliMpManuUID::BuildUniqueID(fId,manuId),(Long_t)n);
+  
+  AliMpHVNamer hvNamer;
+  
+  Int_t index = hvNamer.ManuId2Index(fId,manuId);
+                            
+  UInt_t hvuid = AliMpHVUID::BuildUniqueID(fId,index);
+  
+  AliMpArrayI* hv = static_cast<AliMpArrayI*>(fHVmanus.GetValue(hvuid));
+  
+  if (!hv)
+  {
+    Bool_t sort(kFALSE);
+    hv = new AliMpArrayI(sort);
+    fHVmanus.Add(hvuid,hv);
+  }
+  
+  hv->Add(manuId,kFALSE);        
+  
+  AliCodeTimerStop(Form("%s",AliMp::StationTypeName(stationType).Data()));
+}
+  
+//______________________________________________________________________________
+const AliMpArrayI* 
+AliMpDetElement::ManusForHV(Int_t hvIndex) const
+{
+  /// Return the list of manus sharing a hv channel
+  return static_cast<AliMpArrayI*>(fHVmanus.GetValue(AliMpHVUID::BuildUniqueID(fId,hvIndex)));
+}
+
+//______________________________________________________________________________
+Int_t 
+AliMpDetElement::NofManusWithSerialNumber() const
+{
+  /// Return the number of manus which have a serial number in this detection element  
+  return fManuToSerialNbs.GetSize();
+}
+
+//______________________________________________________________________________
+Int_t 
+AliMpDetElement::NofManus() const
+{
+  /// Return the number of manus in this detection element
+  return fManuList.GetSize();
 }
 

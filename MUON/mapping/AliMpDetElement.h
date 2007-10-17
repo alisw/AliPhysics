@@ -23,11 +23,16 @@
 #include "AliMpPlaneType.h"
 #include "AliMpCathodType.h"
 
+#ifndef ALI_MP_EX_MAP_H
+#  include "AliMpExMap.h"
+#endif
+
 class AliMpVSegmentation;
+class AliMpArrayI;
 
 class AliMpDetElement : public  TObject {
 
-  public:
+  public:  
     AliMpDetElement(Int_t id, const TString& name,
                     const TString& segType, AliMp::PlaneType planeType);
     AliMpDetElement(TRootIOCtor* /*ioCtor*/);
@@ -39,6 +44,7 @@ class AliMpDetElement : public  TObject {
     // methods
     Bool_t AddBusPatch(Int_t busPatchId); 
     void   AddManuSerial(Int_t manuId, Int_t serialNb); 
+    void   AddManu(Int_t manuId);
     void   SetDdlId(Int_t ddlId);
 
     // get methods
@@ -57,10 +63,16 @@ class AliMpDetElement : public  TObject {
     Int_t  GetBusPatchId(Int_t index) const;
     Bool_t HasBusPatchId(Int_t busPatchId) const;
     
-    Int_t  GetNofManus() const;    
+    Int_t  NofManusWithSerialNumber() const;
     Int_t  GetManuSerialFromId(Int_t manuId) const;
     Int_t  GetManuIdFromSerial(Int_t serialNb) const;
 
+    Int_t  NofManus() const;
+    Int_t  NofChannelsInManu(Int_t manuId) const;
+    Bool_t IsExistingChannel(Int_t manuId, Int_t manuChannel) const;
+    Bool_t IsConnectedChannel(Int_t manuId, Int_t manuChannel) const;
+    
+    const AliMpArrayI* ManusForHV(Int_t hvIndex) const;
     
   private:
     /// Not implemented
@@ -83,8 +95,13 @@ class AliMpDetElement : public  TObject {
     AliMpArrayI    fBusPatchIds;  ///< Bus patches connected to this detection element
     mutable TExMap fManuToSerialNbs; ///< Map from manuId to serial #   
     mutable TExMap fSerialNbToManus; ///< Map manu serial # to manuId
-     
-  ClassDef(AliMpDetElement,1)  // The manager class for definition of detection element types
+    
+    mutable TExMap fManuList;  ///< map of manus
+    mutable TExMap fTrackerChannels; ///< list of connected pads (tracker only)
+    
+    AliMpExMap fHVmanus; ///< map of HV->manu
+    
+  ClassDef(AliMpDetElement,2)  // The manager class for definition of detection element types
 };
 
 // inline function
