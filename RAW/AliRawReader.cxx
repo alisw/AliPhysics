@@ -297,6 +297,20 @@ Bool_t AliRawReader::IsEventSelected() const
   return kTRUE;
 }
 
+UInt_t AliRawReader::SwapWord(UInt_t x) const
+{
+   // Swap the endianess of the integer value 'x'
+
+   return (((x & 0x000000ffU) << 24) | ((x & 0x0000ff00U) <<  8) |
+           ((x & 0x00ff0000U) >>  8) | ((x & 0xff000000U) >> 24));
+}
+
+UShort_t AliRawReader::SwapShort(UShort_t x) const
+{
+   // Swap the endianess of the short value 'x'
+
+   return (((x & 0x00ffU) <<  8) | ((x & 0xff00U) >>  8)) ;
+}
 
 Bool_t AliRawReader::ReadNextInt(UInt_t& data)
 {
@@ -315,6 +329,9 @@ Bool_t AliRawReader::ReadNextInt(UInt_t& data)
     Error("ReadNextInt", "could not read data!");
     return kFALSE;
   }
+#ifndef R__BYTESWAP
+  data=SwapWord(data);
+#endif
   return kTRUE;
 }
 
@@ -335,6 +352,9 @@ Bool_t AliRawReader::ReadNextShort(UShort_t& data)
     Error("ReadNextShort", "could not read data!");
     return kFALSE;
   }
+#ifndef R__BYTESWAP
+  data=SwapShort(data);
+#endif
   return kTRUE;
 }
 

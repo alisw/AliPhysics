@@ -156,6 +156,9 @@ class AliRawReader: public TObject {
 
     AliRawDataHeader* fHeaderSwapped;       // temporary buffer for swapping header on PowerPC
 
+    UInt_t SwapWord(UInt_t x) const;
+    UShort_t SwapShort(UShort_t x) const;
+
     ClassDef(AliRawReader, 0) // base class for reading raw digits
 };
 
