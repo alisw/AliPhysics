@@ -170,7 +170,7 @@ void AliPIPEv3::CreateGeometry()
 // CP/1 Be-Section                         //
 /////////////////////////////////////////////
     TGeoVolume* voCp1Vac = new TGeoVolume("CP1VAC", 
-					  new TGeoTube(0., kCP1BeRi,  kCP1Length / 2.), 
+					  new TGeoTube(0., kCP1BeRi,  kCP1BeLength / 2.), 
 					  kMedVac);
     TGeoVolume* voCp1Be  = new TGeoVolume("CP1BE", 
 					  new TGeoTube(0., kCP1BeRo,  kCP1BeLength / 2.), 
@@ -195,24 +195,26 @@ void AliPIPEv3::CreateGeometry()
     TGeoPcon* shCp1At = new TGeoPcon(0., 360., 8);
 //  First Bulge 
     z = - kCP1BeStAdaptorLength / 2.;
-    shCp1At->DefineSection(0, z, kCP1BeRi, kCP1BeStRo);
+    shCp1At->DefineSection(0, z, 0., kCP1BeStRo);
     z += kCP1BulgeLength;
-    shCp1At->DefineSection(1, z, kCP1BeRi, kCP1BeStRo);
-    shCp1At->DefineSection(2, z, kCP1BeRi, kCP1BeRo);
+    shCp1At->DefineSection(1, z, 0., kCP1BeStRo);
+    shCp1At->DefineSection(2, z, 0., kCP1BeRo);
 //  Between the bulges
     z += kCP1BulgeBulgeDistance;
-    shCp1At->DefineSection(3, z, kCP1BeRi, kCP1BeRo);
-    shCp1At->DefineSection(4, z, kCP1BeRi, kCP1BeStRo);
+    shCp1At->DefineSection(3, z, 0., kCP1BeRo);
+    shCp1At->DefineSection(4, z, 0., kCP1BeStRo);
 //  Second bulge
     z += kCP1BulgeLength;
-    shCp1At->DefineSection(5, z, kCP1BeRi, kCP1BeStRo);
-    shCp1At->DefineSection(6, z, kCP1BeRi, kCP1BeRo);
+    shCp1At->DefineSection(5, z, 0., kCP1BeStRo);
+    shCp1At->DefineSection(6, z, 0., kCP1BeRo);
 //  Straight piece
     z = kCP1BeStAdaptorLength / 2.;
-    shCp1At->DefineSection(7, z, kCP1BeRi, kCP1BeRo);
+    shCp1At->DefineSection(7, z, 0., kCP1BeRo);
 //
-    TGeoVolume* voCp1At = new TGeoVolume("CP1AT", shCp1At, kMedSteel);
-
+    TGeoVolume* voCp1At  = new TGeoVolume("CP1AT",  shCp1At, kMedSteel);
+    TGeoVolume* voCp1AtV = new TGeoVolume("CP1ATV", new TGeoTube(0., kCP1BeRi, kCP1BeStAdaptorLength / 2.), kMedVac);
+    voCp1At->AddNode(voCp1AtV, 1, gGeoIdentity);
+    
 //  Position adaptor tube at both ends
     dz = kCP1Length / 2. -  kCP1BeStAdaptorLength / 2.;
     voCp1Mo->AddNode(voCp1At,    1, new TGeoTranslation(0., 0., -dz));
