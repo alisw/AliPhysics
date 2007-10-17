@@ -26,6 +26,7 @@ LIBRARY_VERSION			= '0:0:0'
 # includes another common configuration file
 MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libAliHLTHOMER.pkg
+CINTFLAGS			=
 include $(top_srcdir)/libAliHLTHOMER.pkg
 
 NOROOT_SRC			= $(MODULE_SRCS:.cxx=_noRoot.cxx)
