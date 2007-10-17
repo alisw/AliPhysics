@@ -63,11 +63,10 @@ private:
   static void ReportManu(TList& list, AliMUONCheckItem& manu);
   
 private:
-  TList* fManuList; //!< List of (DE,manuID) pairs.
   TObjArray* fChambers; //!< Array of AliMUONCheckItem.
   AliMUONVStore* fStatus; //!< Statuses
   
-  ClassDef(AliMUON2DStoreValidator,2) // Validator of 2DStore
+  ClassDef(AliMUON2DStoreValidator,3) // Validator of 2DStore
 };
 
 #endif

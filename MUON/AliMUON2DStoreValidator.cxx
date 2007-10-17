@@ -20,12 +20,13 @@
 #include "AliLog.h"
 #include "AliMUONCheckItem.h"
 #include "AliMUONCheckItemIterator.h"
-#include "AliMpConstants.h"
-#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONVStore.h"
+#include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
 #include "AliMpDEManager.h"
-#include "AliMpIntPair.h"
-#include "AliMpManuList.h"
+#include "AliMpDetElement.h"
+#include "AliMpManuIterator.h"
 #include <Riostream.h>
 #include <TList.h>
 #include <TObjArray.h>
@@ -68,7 +69,6 @@ ClassImp(AliMUON2DStoreValidator)
 //_____________________________________________________________________________
 AliMUON2DStoreValidator::AliMUON2DStoreValidator() 
 : TObject(),
-  fManuList(0x0),
   fChambers(0x0),
   fStatus(0x0)
 {
@@ -79,7 +79,6 @@ AliMUON2DStoreValidator::AliMUON2DStoreValidator()
 AliMUON2DStoreValidator::~AliMUON2DStoreValidator()
 {
   /// dtor
-  delete fManuList;
   delete fChambers;
   delete fStatus;
 }
@@ -130,7 +129,7 @@ AliMUON2DStoreValidator::GetDE(Int_t detElemId)
     AliDebug(3,Form("Did not find DE %4d into chamber %d, will create it",
                     detElemId,chamberID));
     de = new AliMUONCheckItem(detElemId,
-                              AliMpManuList::NumberOfManus(detElemId),
+                              AliMpDDLStore::Instance()->GetDetElement(detElemId)->NofManus(),
                               "Detection Element");
     Bool_t ok = chamber->AddItem(detElemId,de);
     if (!ok)
@@ -151,7 +150,7 @@ AliMUON2DStoreValidator::GetManu(Int_t detElemId, Int_t manuId)
   AliMUONCheckItem* manu = static_cast<AliMUONCheckItem*>(de->GetItem(manuId));
   if (!manu)
   {
-    manu = new AliMUONCheckItem(manuId,AliMpManuList::NumberOfChannels(detElemId,manuId),"Manu");
+    manu = new AliMUONCheckItem(manuId,AliMpDDLStore::Instance()->GetDetElement(detElemId)->NofChannelsInManu(manuId),"Manu");
     Bool_t ok = de->AddItem(manuId,manu);
     if (!ok)
     {
@@ -190,7 +189,7 @@ AliMUON2DStoreValidator::AddMissingManu(Int_t detElemId, Int_t manuId)
   AliDebug(3,Form("DE %4d Manu %4d is completely missing",
                   detElemId,manuId));
 
-  Int_t n(AliMpManuList::NumberOfChannels(detElemId,manuId));
+  Int_t n(AliMpDDLStore::Instance()->GetDetElement(detElemId)->NofChannelsInManu(manuId));
 
   for ( Int_t i = 0; i < n; ++i )
   {
@@ -323,16 +322,15 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
   delete fChambers;
   fChambers = 0x0;
   
-  if (!fManuList) fManuList = AliMpManuList::ManuList();
-  
   // Now checks if some full manus are missing
-  TIter next(fManuList);
-  AliMpIntPair* p;
+
+  AliMpManuIterator it;
+
+  Int_t detElemId;
+  Int_t manuId;
   
-  while ( ( p = (AliMpIntPair*)next() ) )
+  while ( it.Next(detElemId,manuId) )
   {
-    Int_t detElemId = p->GetFirst();
-    Int_t manuId = p->GetSecond();
     AliMUONVCalibParam* test = 
       static_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
     if (!test)
@@ -343,10 +341,13 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
     else
     {
       if (!check) continue;
+      
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+      
       // manu is there, check all its channels
       for ( Int_t manuChannel = 0 ; manuChannel < test->Size(); ++manuChannel )
       {
-        if ( AliMpManuList::DoesChannelExist(detElemId,manuId,manuChannel) &&
+        if ( de->IsConnectedChannel(manuId,manuChannel) &&
              !check(*test,manuChannel) )             
         {
           AddMissingChannel(detElemId,manuId,manuChannel);
@@ -371,16 +372,14 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
   delete fChambers;
   fChambers = 0x0;
   
-  if (!fManuList) fManuList = AliMpManuList::ManuList();
-
   // Now checks if some full manus are missing
-  TIter next(fManuList);
-  AliMpIntPair* p;
 
-  while ( ( p = (AliMpIntPair*)next() ) )
+  AliMpManuIterator it;
+  Int_t detElemId;
+  Int_t manuId;
+  
+  while ( it.Next(detElemId,manuId) )
   {
-    Int_t detElemId = p->GetFirst();
-    Int_t manuId = p->GetSecond();
     AliMUONVCalibParam* test = 
       static_cast<AliMUONVCalibParam*>(store.FindObject(detElemId,manuId));
     if (!test)
@@ -391,9 +390,11 @@ AliMUON2DStoreValidator::Validate(const AliMUONVStore& store,
     else
     {
       // manu is there, check all its channels
+      AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+      
       for ( Int_t manuChannel = 0 ; manuChannel < test->Size(); ++manuChannel )
       {
-        if ( AliMpManuList::DoesChannelExist(detElemId,manuId,manuChannel) &&
+        if ( de->IsConnectedChannel(manuId,manuChannel) &&
              ( test->ValueAsFloat(manuChannel,0) == invalidFloatValue ||
                test->ValueAsFloat(manuChannel,1) == invalidFloatValue ) )             
         {
