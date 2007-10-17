@@ -30,6 +30,7 @@ void loadlibs ()
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
   
+  gSystem->Load("libRAWDatarec");
   gSystem->Load("libSTEER"); 
   gSystem->Load("libCDB");
   
@@ -46,7 +47,6 @@ void loadlibs ()
 
   gSystem->Load("libMUONshuttle");
 
-  gSystem->Load("libRAWDatarec");
   gSystem->Load("libMUONrec");
   
   gSystem->Load("libRAWDatasim");
