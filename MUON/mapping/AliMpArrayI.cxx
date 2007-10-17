@@ -91,16 +91,19 @@ Int_t  AliMpArrayI::GetPosition(Int_t value) const
 //
 
 //_____________________________________________________________________________
-Bool_t AliMpArrayI::Add(Int_t value)
+Bool_t AliMpArrayI::Add(Int_t value, Bool_t warn)
 {
 /// Add object with its key to the map and arrays
   
   // Resize array if needed
-  if ( fValues.GetSize() == fNofValues ) {
-   fValues.Set(2*fValues.GetSize());
-   AliWarningStream() << "Resized array." << endl;
+  if ( fValues.GetSize() == fNofValues ) 
+  {
+    fValues.Set(2*fValues.GetSize());
+    if ( warn ) 
+    {
+      AliWarningStream() << "Resized array." << endl;
+    }
   }
-  
   
   // The position for the new value  
   Int_t pos;

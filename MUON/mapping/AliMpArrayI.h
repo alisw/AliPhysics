@@ -28,7 +28,7 @@ class AliMpArrayI : public TObject
     virtual ~AliMpArrayI();
     
     // methods
-    Bool_t Add(Int_t value);
+    Bool_t Add(Int_t value, Bool_t warn=kTRUE);
     Bool_t Remove(Int_t value);
 
     // set methods
