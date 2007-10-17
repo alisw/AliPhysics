@@ -13,56 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
-
-
-
-
 /* $Id$ */
 
-
-
-//Root includes
-#include <TObjArray.h>
-#include <TH1F.h>
-#include <TH2S.h>
-#include <TString.h>
-#include <TVectorF.h>
-#include <TVectorD.h>
-#include <TMatrixD.h>
-#include <TMath.h>
-#include <TGraph.h>
-#include <TString.h>
-
-#include <TDirectory.h>
-#include <TSystem.h>
-#include <TFile.h>
-
-//AliRoot includes
-#include "AliRawReader.h"
-#include "AliRawReaderRoot.h"
-#include "AliRawReaderDate.h"
-#include "AliRawEventHeaderBase.h"
-#include "AliTPCRawStream.h"
-#include "AliTPCcalibDB.h"
-#include "AliTPCCalROC.h"
-#include "AliTPCCalPad.h"
-#include "AliTPCROC.h"
-#include "AliTPCParam.h"
-#include "AliTPCCalibCE.h"
-#include "AliMathBase.h"
-#include "TTreeStream.h"
-
-//date
-#include "event.h"
-ClassImp(AliTPCCalibCE)
-
-//////////////////////////////////////////////////////////////////////////////////////
-//          Implementation of the TPC Central Electrode calibration
-//
-//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch
-// 
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//             Implementation of the TPC Central Electrode calibration                //
+//                                                                                    //
+//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch  //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
 //
 //
 // *************************************************************************************
@@ -299,6 +258,42 @@ END_HTML */
 //////////////////////////////////////////////////////////////////////////////////////
 
 
+//Root includes
+#include <TObjArray.h>
+#include <TH1F.h>
+#include <TH2S.h>
+#include <TString.h>
+#include <TVectorF.h>
+#include <TVectorD.h>
+#include <TMatrixD.h>
+#include <TMath.h>
+#include <TGraph.h>
+#include <TString.h>
+
+#include <TDirectory.h>
+#include <TSystem.h>
+#include <TFile.h>
+
+//AliRoot includes
+#include "AliRawReader.h"
+#include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
+#include "AliRawEventHeaderBase.h"
+#include "AliTPCRawStream.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalROC.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCROC.h"
+#include "AliTPCParam.h"
+#include "AliTPCCalibCE.h"
+#include "AliMathBase.h"
+#include "TTreeStream.h"
+
+//date
+#include "event.h"
+ClassImp(AliTPCCalibCE)
+
+
 AliTPCCalibCE::AliTPCCalibCE() :
     TObject(),
     fFirstTimeBin(650),
@@ -355,7 +350,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
     fVTime0OffsetCounter(72),
     fVMeanQ(72),
     fVMeanQCounter(72),
-    fEvent(-1),
+//    fEvent(-1),
     fDebugStreamer(0x0),
     fDebugLevel(0)
 {
@@ -421,7 +416,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fVTime0OffsetCounter(72),
     fVMeanQ(72),
     fVMeanQCounter(72),
-    fEvent(-1),
+//    fEvent(-1),
     fDebugStreamer(0x0),
     fDebugLevel(sig.fDebugLevel)
 {
@@ -547,6 +542,7 @@ AliTPCCalibCE::~AliTPCCalibCE()
 
     if ( fDebugStreamer) delete fDebugStreamer;
 //    if ( fHTime0 ) delete fHTime0;
+    delete fROC;
     delete fParam;
 }
 //_____________________________________________________________________
@@ -736,7 +732,7 @@ void AliTPCCalibCE::FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF 
     qSum     = ceQsum;
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibCE::IsPeak(Int_t pos, Int_t tminus, Int_t tplus)
+Bool_t AliTPCCalibCE::IsPeak(Int_t pos, Int_t tminus, Int_t tplus) const
 {
     //
     // Check if 'pos' is a Maximum. Consider 'tminus' timebins before
@@ -788,8 +784,8 @@ void AliTPCCalibCE::ProcessPad()
 
 
     TVectorD param(3);
-    Float_t  Qsum;
-    FindCESignal(param, Qsum, maxima);
+    Float_t  qSum;
+    FindCESignal(param, qSum, maxima);
 
     Double_t meanT  = param[1];
     Double_t sigmaT = param[2];
@@ -798,7 +794,7 @@ void AliTPCCalibCE::ProcessPad()
     (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
 
     //Fill Q histogram
-    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(Qsum), fCurrentChannel );
+    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(qSum), fCurrentChannel );
 
     //Fill RMS histogram
     GetHistoRMS(fCurrentSector,kTRUE)->Fill( sigmaT, fCurrentChannel );
@@ -808,7 +804,7 @@ void AliTPCCalibCE::ProcessPad()
     if ( fDebugLevel>0 ){
 	(*GetPadPedestalEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=fPadPedestal;
 	(*GetPadRMSEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=sigmaT;
-	(*GetPadQEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=Qsum;
+	(*GetPadQEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel]=qSum;
     }
 
     ResetPad();
@@ -895,20 +891,20 @@ void AliTPCCalibCE::EndEvent()
 	vMeanQ->GetMatrixArray()[fNevents]=meanQ;
 
 	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
-	    Float_t Time  = (*vTimes).GetMatrixArray()[iChannel];
+	    Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
 
 	    //set values for temporary roc calibration class
 	    if ( iSec < 36 ) {
-		calIroc->SetValue(iChannel, Time);
-                if ( Time == 0 ) calIrocOutliers.SetValue(iChannel,1);
+		calIroc->SetValue(iChannel, time);
+                if ( time == 0 ) calIrocOutliers.SetValue(iChannel,1);
 
 	    } else {
-		calOroc->SetValue(iChannel, Time);
-                if ( Time == 0 ) calOrocOutliers.SetValue(iChannel,1);
+		calOroc->SetValue(iChannel, time);
+                if ( time == 0 ) calOrocOutliers.SetValue(iChannel,1);
 	    }
 
 	    if ( (fNevents>0) && (fOldRunNumber==fRunNumber) )
-		GetHistoT0(iSec,kTRUE)->Fill( Time-time0Side[(iSec/18)%2],iChannel );
+		GetHistoT0(iSec,kTRUE)->Fill( time-time0Side[(iSec/18)%2],iChannel );
 
 
 
@@ -925,8 +921,8 @@ void AliTPCCalibCE::EndEvent()
 		Int_t pad=0;
 		Int_t padc=0;
 
-		Float_t Q   = (*GetPadQEvent(iSec))[iChannel];
-                Float_t RMS = (*GetPadRMSEvent(iSec))[iChannel];
+		Float_t q   = (*GetPadQEvent(iSec))[iChannel];
+                Float_t rms = (*GetPadRMSEvent(iSec))[iChannel];
 
 		UInt_t channel=iChannel;
 		Int_t sector=iSec;
@@ -944,10 +940,10 @@ void AliTPCCalibCE::EndEvent()
 //		for (Int_t i=fFirstTimeBin; i<fLastTimeBin+1; ++i)
 //		    h1->Fill(i,fPadSignal(i));
 
-		Double_t T0Sec = 0;
+		Double_t t0Sec = 0;
 		if (fVTime0OffsetCounter.GetMatrixArray()[iSec]>0)
-		    T0Sec = fVTime0Offset.GetMatrixArray()[iSec]/fVTime0OffsetCounter.GetMatrixArray()[iSec];
-		Double_t T0Side = time0Side[(iSec/18)%2];
+		    t0Sec = fVTime0Offset.GetMatrixArray()[iSec]/fVTime0OffsetCounter.GetMatrixArray()[iSec];
+		Double_t t0Side = time0Side[(iSec/18)%2];
 		(*fDebugStreamer) << "DataPad" <<
 		    "Event=" << fNevents <<
 		    "RunNumber=" << fRunNumber <<
@@ -957,11 +953,11 @@ void AliTPCCalibCE::EndEvent()
 		    "Pad="   << pad <<
 		    "PadC="  << padc <<
 		    "PadSec="<< channel <<
-		    "Time0Sec="  << T0Sec <<
-		    "Time0Side=" << T0Side <<
-		    "Time="  << Time <<
-		    "RMS="   << RMS <<
-		    "Sum="   << Q <<
+		    "Time0Sec="  << t0Sec <<
+		    "Time0Side=" << t0Side <<
+		    "Time="  << time <<
+		    "RMS="   << rms <<
+		    "Sum="   << q <<
                     "MeanQ=" << meanQ <<
 		    //		    "hist.=" << h1 <<
 		    "\n";
@@ -1003,7 +999,7 @@ void AliTPCCalibCE::EndEvent()
 		if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
 	    }
 	    (*fDebugStreamer) << "DataRoc" <<
-		"Event=" << fEvent <<
+//		"Event=" << fEvent <<
 		"RunNumber=" << fRunNumber <<
 		"TimeStamp="   << fTimeStamp <<
 		"Sector="<< iSec <<
@@ -1191,7 +1187,7 @@ TH1S* AliTPCCalibCE::GetHistoTmean(Int_t sector, Bool_t force)
     return GetHisto(sector, arr, "LastTmean", force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibCE::GetVectSector(Int_t sector, TObjArray *arr, UInt_t size, Bool_t force)
+TVectorF* AliTPCCalibCE::GetVectSector(Int_t sector, TObjArray *arr, UInt_t size, Bool_t force) const
 {
     //
     // return pointer to Pad Info from 'arr' for the current event and sector
@@ -1269,7 +1265,7 @@ TVectorF* AliTPCCalibCE::GetQMeanEvents(Int_t sector, Bool_t force)
     return GetVectSector(sector,arr,100,force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibCE::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force)
+AliTPCCalROC* AliTPCCalibCE::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) const
 {
     //
     // return pointer to ROC Calibration
@@ -1326,7 +1322,7 @@ AliTPCCalROC* AliTPCCalibCE::GetCalRocOutliers(Int_t sector, Bool_t force)
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
-TObjArray* AliTPCCalibCE::GetParamArray(Int_t sector, TObjArray* arr, Bool_t force)
+TObjArray* AliTPCCalibCE::GetParamArray(Int_t sector, TObjArray* arr, Bool_t force) const
 {
     //
     // return pointer to TObjArray of fit parameters
@@ -1611,9 +1607,9 @@ void AliTPCCalibCE::Analyse()
 	TH2S *hQ   = GetHistoQ(iSec);
 	TH2S *hRMS = GetHistoRMS(iSec);
 
-	Short_t *array_hQ   = hQ->GetArray();
-	Short_t *array_hT0  = hT0->GetArray();
-	Short_t *array_hRMS = hRMS->GetArray();
+	Short_t *arrayhQ   = hQ->GetArray();
+	Short_t *arrayhT0  = hT0->GetArray();
+	Short_t *arrayhRMS = hRMS->GetArray();
 
         UInt_t nChannels = fROC->GetNChannels(iSec);
 
@@ -1636,9 +1632,9 @@ void AliTPCCalibCE::Analyse()
 	    Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
 	    Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
 
-	    cogQ     = AliMathBase::GetCOG(array_hQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
-	    cogTime0 = AliMathBase::GetCOG(array_hT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
-            cogRMS   = AliMathBase::GetCOG(array_hRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
+	    cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
+	    cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
+            cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
 
 
 

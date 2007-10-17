@@ -3,6 +3,12 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+//             Implementation of the TPC Central Electrode calibration                //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
+
 #include <TVectorT.h>
 class TObjArray;
 class TH1S;
@@ -36,15 +42,15 @@ public:
 	       const Int_t iTimeBin, const Float_t signal);
     void Analyse();
     //
-    AliTPCCalROC* GetCalRocT0 (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
-    AliTPCCalROC* GetCalRocQ  (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
+    AliTPCCalROC* GetCalRocT0  (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
+    AliTPCCalROC* GetCalRocQ   (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocOutliers(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
 
-    const TObjArray* GetCalPadT0() { return &fCalRocArrayT0; }      // get calibration object
-    const TObjArray* GetCalPadQ()  { return &fCalRocArrayQ;  }      // get calibration object
-    const TObjArray* GetCalPadRMS(){ return &fCalRocArrayRMS;}      // get calibration object
-    const TObjArray* GetCalPadOutliers(){ return &fCalRocArrayOutliers;}      // get calibration object
+    const TObjArray* GetCalPadT0()  const { return &fCalRocArrayT0; }      // get calibration object
+    const TObjArray* GetCalPadQ()   const { return &fCalRocArrayQ;  }      // get calibration object
+    const TObjArray* GetCalPadRMS() const { return &fCalRocArrayRMS;}      // get calibration object
+    const TObjArray* GetCalPadOutliers() const { return &fCalRocArrayOutliers;}      // get calibration object
 
     TH2S* GetHistoQ  (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoT0 (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
@@ -86,7 +92,7 @@ public:
     Int_t GetFirstTimeBin()   const { return fFirstTimeBin;  }
     Int_t GetLastTimeBin()    const { return fLastTimeBin;   }
 
-    Int_t GetNeventsProcessed() { return fNevents; }
+    Int_t GetNeventsProcessed() const { return fNevents; }
 
     void Merge(AliTPCCalibCE *ce);
 
@@ -163,16 +169,16 @@ private:
     TVectorD  fVMeanQ;                //!  Mean Q for each sector;
     TVectorD  fVMeanQCounter;         //!  Mean Q counter for each sector;
     //debugging
-    Int_t fEvent;
+//    Int_t fEvent;
     TTreeSRedirector *fDebugStreamer;  //! debug streamer
 
-    Short_t fDebugLevel;
+    Short_t fDebugLevel;              // debug level
     //! debugging
 
     void   FindPedestal(Float_t part=.6);
     void   FindCESignal(TVectorD &param, Float_t &qSum, const TVectorF maxima);
     void   FindLocalMaxima(TVectorF &maxima);
-    Bool_t IsPeak(Int_t pos, Int_t tminus, Int_t tplus);
+    Bool_t IsPeak(Int_t pos, Int_t tminus, Int_t tplus) const;
 
     TH2S* GetHisto(Int_t sector, TObjArray *arr,
 		   Int_t nbinsY, Float_t ymin, Float_t ymax,
@@ -180,12 +186,12 @@ private:
     TH1S* GetHisto(Int_t sector, TObjArray *arr,
 		   Char_t *type, Bool_t force);
 
-    AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
+    AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) const;
 
-    TVectorF* GetVectSector(Int_t sector, TObjArray *arr, UInt_t size, Bool_t force=kFALSE);
+    TVectorF* GetVectSector(Int_t sector, TObjArray *arr, UInt_t size, Bool_t force=kFALSE) const;
     TVectorF* GetPadTimesEvent(Int_t sector, Bool_t force=kFALSE);
 
-    TObjArray* GetParamArray(Int_t sector, TObjArray *arr, Bool_t force=kFALSE);
+    TObjArray* GetParamArray(Int_t sector, TObjArray *arr, Bool_t force=kFALSE) const;
 
     void ResetEvent();
     void ResetPad();
@@ -197,10 +203,6 @@ private:
     TVectorF* GetPadQEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
-
-
-public:
-
 
     ClassDef(AliTPCCalibCE,2)  //Implementation of the TPC Central Electrode calibration
 

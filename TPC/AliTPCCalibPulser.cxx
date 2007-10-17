@@ -15,41 +15,13 @@
 
 /* $Id$ */
 
-//Root includes
-#include <TH1F.h>
-#include <TH2S.h>
-#include <TString.h>
-#include <TVectorF.h>
-#include <TMath.h>
-
-#include <TDirectory.h>
-#include <TSystem.h>
-#include <TFile.h>
-
-//AliRoot includes
-#include "AliRawReader.h"
-#include "AliRawReaderRoot.h"
-#include "AliRawReaderDate.h"
-#include "AliTPCRawStream.h"
-#include "AliTPCCalROC.h"
-#include "AliTPCCalPad.h"
-#include "AliTPCROC.h"
-#include "AliTPCParam.h"
-#include "AliTPCCalibPulser.h"
-#include "AliTPCcalibDB.h"
-#include "AliMathBase.h"
-#include "TTreeStream.h"
-
-//date
-#include "event.h"
-
-
-///////////////////////////////////////////////////////////////////////////////////////
-//          Implementation of the TPC pulser calibration
-//
-//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch
-// 
-// 
+/////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                     //
+//                  Implementation of the TPC pulser calibration                       //
+//                                                                                     //
+//   Origin: Jens Wiechula, Marian Ivanov   J.Wiechula@gsi.de, Marian.Ivanov@cern.ch   //
+//                                                                                     //
+/////////////////////////////////////////////////////////////////////////////////////////
 /***************************************************************************
  *                      Class Description                                  *
  ***************************************************************************
@@ -191,9 +163,42 @@
 */
 
 
-ClassImp(AliTPCCalibPulser) /*FOLD00*/
+//Root includes
+#include <TObjArray.h>
+#include <TH1F.h>
+#include <TH2S.h>
+#include <TString.h>
+#include <TVectorF.h>
+#include <TMath.h>
 
-AliTPCCalibPulser::AliTPCCalibPulser() : /*FOLD00*/
+#include <TDirectory.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TFile.h>
+
+//AliRoot includes
+#include "AliRawReader.h"
+#include "AliRawReaderRoot.h"
+#include "AliRawReaderDate.h"
+#include "AliTPCRawStream.h"
+#include "AliTPCCalROC.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCROC.h"
+#include "AliTPCParam.h"
+#include "AliTPCCalibPulser.h"
+#include "AliTPCcalibDB.h"
+#include "AliMathBase.h"
+#include "TTreeStream.h"
+
+//date
+#include "event.h"
+
+
+
+
+ClassImp(AliTPCCalibPulser)
+
+AliTPCCalibPulser::AliTPCCalibPulser() :
     TObject(),
     fFirstTimeBin(60),
     fLastTimeBin(120),
@@ -235,7 +240,7 @@ AliTPCCalibPulser::AliTPCCalibPulser() : /*FOLD00*/
     fPadNoise(0),
     fVTime0Offset(72),
     fVTime0OffsetCounter(72),
-    fEvent(-1),
+//    fEvent(-1),
     fDebugStreamer(0x0),
     fDebugLevel(0)
 {
@@ -287,7 +292,7 @@ AliTPCCalibPulser::AliTPCCalibPulser(const AliTPCCalibPulser &sig) :
     fPadNoise(0),
     fVTime0Offset(72),
     fVTime0OffsetCounter(72),
-    fEvent(-1),
+//    fEvent(-1),
     fDebugStreamer(0x0),
     fDebugLevel(sig.fDebugLevel)
 {
@@ -361,17 +366,18 @@ AliTPCCalibPulser::~AliTPCCalibPulser()
     fPadPedestalArrayEvent.Delete();
 
     if ( fDebugStreamer) delete fDebugStreamer;
+    delete fROC;
     delete fParam;
 }
 //_____________________________________________________________________
-Int_t AliTPCCalibPulser::Update(const Int_t icsector, /*FOLD00*/
+Int_t AliTPCCalibPulser::Update(const Int_t icsector,
 				const Int_t icRow,
 				const Int_t icPad,
 				const Int_t icTimeBin,
 				const Float_t csignal)
 {
     //
-    // Signal filling methode on the fly pedestal and Time offset correction if necessary.
+    // Signal filling methode on the fly pedestal and time offset correction if necessary.
     // no extra analysis necessary. Assumes knowledge of the signal shape!
     // assumes that it is looped over consecutive time bins of one pad
     //
@@ -532,7 +538,7 @@ void AliTPCCalibPulser::FindPulserSignal(TVectorD &param, Float_t &qSum)
     qSum     = ceQsum;
 }
 //_____________________________________________________________________
-void AliTPCCalibPulser::ProcessPad() /*FOLD00*/
+void AliTPCCalibPulser::ProcessPad()
 {
     //
     //  Process data of current pad
@@ -540,8 +546,8 @@ void AliTPCCalibPulser::ProcessPad() /*FOLD00*/
 
     FindPedestal();
     TVectorD param(3);
-    Float_t  Qsum;
-    FindPulserSignal(param, Qsum);
+    Float_t  qSum;
+    FindPulserSignal(param, qSum);
 
     Double_t meanT  = param[1];
     Double_t sigmaT = param[2];
@@ -550,7 +556,7 @@ void AliTPCCalibPulser::ProcessPad() /*FOLD00*/
     (*GetPadTimesEvent(fCurrentSector,kTRUE)).GetMatrixArray()[fCurrentChannel] = meanT;
 
     //Fill Q histogram
-    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(Qsum), fCurrentChannel );
+    GetHistoQ(fCurrentSector,kTRUE)->Fill( TMath::Sqrt(qSum), fCurrentChannel );
 
     //Fill RMS histogram
     GetHistoRMS(fCurrentSector,kTRUE)->Fill( sigmaT, fCurrentChannel );
@@ -560,13 +566,12 @@ void AliTPCCalibPulser::ProcessPad() /*FOLD00*/
     if ( fDebugLevel>0 ){
 	(*GetPadPedestalEvent(fCurrentSector,kTRUE))[fCurrentChannel]=fPadPedestal;
 	(*GetPadRMSEvent(fCurrentSector,kTRUE))[fCurrentChannel]=sigmaT;
-	(*GetPadQEvent(fCurrentSector,kTRUE))[fCurrentChannel]=Qsum;
+	(*GetPadQEvent(fCurrentSector,kTRUE))[fCurrentChannel]=qSum;
     }
-
     ResetPad();
 }
 //_____________________________________________________________________
-void AliTPCCalibPulser::EndEvent() /*FOLD00*/
+void AliTPCCalibPulser::EndEvent()
 {
     //
     //  Process data of current event
@@ -581,10 +586,10 @@ void AliTPCCalibPulser::EndEvent() /*FOLD00*/
         if ( !vTimes ) continue;
 
 	for ( UInt_t iChannel=0; iChannel<fROC->GetNChannels(iSec); ++iChannel ){
-	    Float_t Time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
-	    Float_t Time  = (*vTimes).GetMatrixArray()[iChannel];
+	    Float_t time0 = fVTime0Offset[iSec]/fVTime0OffsetCounter[iSec];
+	    Float_t time  = (*vTimes).GetMatrixArray()[iChannel];
 
-            GetHistoT0(iSec,kTRUE)->Fill( Time-Time0,iChannel );
+            GetHistoT0(iSec,kTRUE)->Fill( time-time0,iChannel );
 
 
 	    //Debug start
@@ -600,8 +605,8 @@ void AliTPCCalibPulser::EndEvent() /*FOLD00*/
 		Int_t pad=0;
 		Int_t padc=0;
 
-		Float_t Q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
-                Float_t RMS = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
+		Float_t q   = (*GetPadQEvent(iSec)).GetMatrixArray()[iChannel];
+                Float_t rms = (*GetPadRMSEvent(iSec)).GetMatrixArray()[iChannel];
 
 		UInt_t channel=iChannel;
 		Int_t sector=iSec;
@@ -620,16 +625,16 @@ void AliTPCCalibPulser::EndEvent() /*FOLD00*/
 		    h1->Fill(i,fPadSignal(i));
 
 		(*fDebugStreamer) << "DataPad" <<
-		    "Event=" << fEvent <<
+//		    "Event=" << fEvent <<
 		    "Sector="<< sector <<
 		    "Row="   << row<<
 		    "Pad="   << pad <<
 		    "PadC="  << padc <<
 		    "PadSec="<< channel <<
-		    "Time0="  << Time0 <<
-		    "Time="  << Time <<
-		    "RMS="   << RMS <<
-		    "Sum="   << Q <<
+		    "Time0="  << time0 <<
+		    "Time="  << time <<
+		    "RMS="   << rms <<
+		    "Sum="   << q <<
 		    "hist.=" << h1 <<
 		    "\n";
 
@@ -642,7 +647,7 @@ void AliTPCCalibPulser::EndEvent() /*FOLD00*/
 
 }
 //_____________________________________________________________________
-Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream) /*FOLD00*/
+Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream)
 {
   //
   // Event Processing loop - AliTPCRawStream
@@ -699,7 +704,7 @@ Bool_t AliTPCCalibPulser::ProcessEvent(eventHeaderStruct *event)
 
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
+TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr,
 				  Int_t nbinsY, Float_t ymin, Float_t ymax,
 				  Char_t *type, Bool_t force)
 {
@@ -725,7 +730,7 @@ TH2S* AliTPCCalibPulser::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
     return hist;
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibPulser::GetHistoT0(Int_t sector, Bool_t force) /*FOLD00*/
+TH2S* AliTPCCalibPulser::GetHistoT0(Int_t sector, Bool_t force)
 {
     //
     // return pointer to T0 histogram
@@ -735,7 +740,7 @@ TH2S* AliTPCCalibPulser::GetHistoT0(Int_t sector, Bool_t force) /*FOLD00*/
     return GetHisto(sector, arr, fNbinsT0, fXminT0, fXmaxT0, "T0", force);
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibPulser::GetHistoQ(Int_t sector, Bool_t force) /*FOLD00*/
+TH2S* AliTPCCalibPulser::GetHistoQ(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Q histogram
@@ -745,7 +750,7 @@ TH2S* AliTPCCalibPulser::GetHistoQ(Int_t sector, Bool_t force) /*FOLD00*/
     return GetHisto(sector, arr, fNbinsQ, fXminQ, fXmaxQ, "Q", force);
 }
 //_____________________________________________________________________
-TH2S* AliTPCCalibPulser::GetHistoRMS(Int_t sector, Bool_t force) /*FOLD00*/
+TH2S* AliTPCCalibPulser::GetHistoRMS(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Q histogram
@@ -755,7 +760,7 @@ TH2S* AliTPCCalibPulser::GetHistoRMS(Int_t sector, Bool_t force) /*FOLD00*/
     return GetHisto(sector, arr, fNbinsRMS, fXminRMS, fXmaxRMS, "RMS", force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibPulser::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibPulser::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_t force)
 {
     //
     // return pointer to Pad Info from 'arr' for the current event and sector
@@ -769,7 +774,7 @@ TVectorF* AliTPCCalibPulser::GetPadInfoEvent(Int_t sector, TObjArray *arr, Bool_
     return vect;
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibPulser::GetPadTimesEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibPulser::GetPadTimesEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad Times Array for the current event and sector
@@ -779,7 +784,7 @@ TVectorF* AliTPCCalibPulser::GetPadTimesEvent(Int_t sector, Bool_t force) /*FOLD
     return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibPulser::GetPadQEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibPulser::GetPadQEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad Q Array for the current event and sector
@@ -791,7 +796,7 @@ TVectorF* AliTPCCalibPulser::GetPadQEvent(Int_t sector, Bool_t force) /*FOLD00*/
     return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibPulser::GetPadRMSEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibPulser::GetPadRMSEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad RMS Array for the current event and sector
@@ -802,7 +807,7 @@ TVectorF* AliTPCCalibPulser::GetPadRMSEvent(Int_t sector, Bool_t force) /*FOLD00
     return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
-TVectorF* AliTPCCalibPulser::GetPadPedestalEvent(Int_t sector, Bool_t force) /*FOLD00*/
+TVectorF* AliTPCCalibPulser::GetPadPedestalEvent(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Pad RMS Array for the current event and sector
@@ -813,7 +818,7 @@ TVectorF* AliTPCCalibPulser::GetPadPedestalEvent(Int_t sector, Bool_t force) /*F
     return GetPadInfoEvent(sector,arr,force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPulser::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPulser::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) const
 {
     //
     // return pointer to ROC Calibration
@@ -830,7 +835,7 @@ AliTPCCalROC* AliTPCCalibPulser::GetCalRoc(Int_t sector, TObjArray* arr, Bool_t 
     return croc;
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPulser::GetCalRocT0(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPulser::GetCalRocT0(Int_t sector, Bool_t force)
 {
     //
     // return pointer to Carge ROC Calibration
@@ -840,7 +845,7 @@ AliTPCCalROC* AliTPCCalibPulser::GetCalRocT0(Int_t sector, Bool_t force) /*FOLD0
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPulser::GetCalRocQ(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPulser::GetCalRocQ(Int_t sector, Bool_t force)
 {
     //
     // return pointer to T0 ROC Calibration
@@ -850,7 +855,7 @@ AliTPCCalROC* AliTPCCalibPulser::GetCalRocQ(Int_t sector, Bool_t force) /*FOLD00
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
-AliTPCCalROC* AliTPCCalibPulser::GetCalRocRMS(Int_t sector, Bool_t force) /*FOLD00*/
+AliTPCCalROC* AliTPCCalibPulser::GetCalRocRMS(Int_t sector, Bool_t force)
 {
     //
     // return pointer to signal width ROC Calibration
@@ -870,7 +875,7 @@ AliTPCCalROC* AliTPCCalibPulser::GetCalRocOutliers(Int_t sector, Bool_t force)
     return GetCalRoc(sector, arr, force);
 }
 //_____________________________________________________________________
-void AliTPCCalibPulser::ResetEvent() /*FOLD00*/
+void AliTPCCalibPulser::ResetEvent()
 {
     //
     //  Reset global counters  -- Should be called before each event is processed
@@ -893,7 +898,7 @@ void AliTPCCalibPulser::ResetEvent() /*FOLD00*/
     }
 }
 //_____________________________________________________________________
-void AliTPCCalibPulser::ResetPad() /*FOLD00*/
+void AliTPCCalibPulser::ResetPad()
 {
     //
     //  Reset pad infos -- Should be called after a pad has been processed
@@ -956,7 +961,7 @@ void AliTPCCalibPulser::Merge(AliTPCCalibPulser *sig)
     }
 }
 //_____________________________________________________________________
-void AliTPCCalibPulser::Analyse() /*FOLD00*/
+void AliTPCCalibPulser::Analyse()
 {
     //
     //  Calculate calibration constants
@@ -979,9 +984,9 @@ void AliTPCCalibPulser::Analyse() /*FOLD00*/
 	TH2S *hQ   = GetHistoQ(iSec);
 	TH2S *hRMS = GetHistoRMS(iSec);
 
-	Short_t *array_hQ   = hQ->GetArray();
-	Short_t *array_hT0  = hT0->GetArray();
-	Short_t *array_hRMS = hRMS->GetArray();
+	Short_t *arrayhQ   = hQ->GetArray();
+	Short_t *arrayhT0  = hT0->GetArray();
+	Short_t *arrayhRMS = hRMS->GetArray();
 
         UInt_t nChannels = fROC->GetNChannels(iSec);
 
@@ -1005,16 +1010,16 @@ void AliTPCCalibPulser::Analyse() /*FOLD00*/
 	    Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
 
 /*
-	    AliMathBase::FitGaus(array_hQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&paramQ,&dummy);
-	    AliMathBase::FitGaus(array_hT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&paramT0,&dummy);
-            AliMathBase::FitGaus(array_hRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&paramRMS,&dummy);
+	    AliMathBase::FitGaus(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&paramQ,&dummy);
+	    AliMathBase::FitGaus(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&paramT0,&dummy);
+            AliMathBase::FitGaus(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS,&paramRMS,&dummy);
 	    cogQ     = paramQ[1];
 	    cogTime0 = paramT0[1];
 	    cogRMS   = paramRMS[1];
 */
-	    cogQ     = AliMathBase::GetCOG(array_hQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
-	    cogTime0 = AliMathBase::GetCOG(array_hT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
-            cogRMS   = AliMathBase::GetCOG(array_hRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
+	    cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
+	    cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
+            cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
 
 
 

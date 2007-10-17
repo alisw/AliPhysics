@@ -3,10 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TVectorT.h>
-#include <TObject.h>
-#include <TObjArray.h>
+/////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                     //
+//                  Implementation of the TPC pulser calibration                       //
+//                                                                                     //
+/////////////////////////////////////////////////////////////////////////////////////////
 
+#include <TVectorT.h>
 class TObjArray;
 class TH2S;
 class TTreeSRedirector;
@@ -41,10 +44,10 @@ public:
     AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
     AliTPCCalROC* GetCalRocOutliers(Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
 
-    const TObjArray* GetCalPadT0() { return &fCalRocArrayT0; }      // get calibration object
-    const TObjArray* GetCalPadQ()  { return &fCalRocArrayQ;  }      // get calibration object
-    const TObjArray* GetCalPadRMS(){ return &fCalRocArrayRMS;}      // get calibration object
-    const TObjArray* GetCalPadOutliers(){ return &fCalRocArrayOutliers;}      // get calibration object
+    const TObjArray* GetCalPadT0()  const { return &fCalRocArrayT0; }      // get calibration object
+    const TObjArray* GetCalPadQ()   const { return &fCalRocArrayQ;  }      // get calibration object
+    const TObjArray* GetCalPadRMS() const{ return &fCalRocArrayRMS;}      // get calibration object
+    const TObjArray* GetCalPadOutliers() const { return &fCalRocArrayOutliers;}      // get calibration object
 
     TH2S* GetHistoQ  (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
     TH2S* GetHistoT0 (Int_t sector, Bool_t force=kFALSE);           // get refernce histogram
@@ -130,10 +133,10 @@ private:
     TVectorF  fVTime0OffsetCounter;   //!  Time0 Offset from preprocessing for each sector;
 
     //debugging
-    Int_t fEvent;
+//    Int_t fEvent;                      //  Number of events processed
     TTreeSRedirector *fDebugStreamer;  //! debug streamer
 
-    Short_t fDebugLevel;
+    Short_t fDebugLevel;               //  debug Level
     //! debugging
 
     void   FindPedestal(Float_t part=.6);
@@ -144,7 +147,7 @@ private:
 		   Char_t *type, Bool_t force);
 
 
-    AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
+    AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force) const;
 
     TVectorF* GetPadTimesEvent(Int_t sector, Bool_t force=kFALSE);
 
@@ -159,9 +162,6 @@ private:
     TVectorF* GetPadQEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
     TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
-
-
-public:
 
 
   ClassDef(AliTPCCalibPulser,1)           //Implementation of the TPC pulser calibration
