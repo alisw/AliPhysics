@@ -55,6 +55,9 @@ public :
    TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);
    Double_t        GetPadLength(Double_t lx);
    Int_t           GetPadType(Double_t lx);
+  //
+  //
+  static Float_t   TPCBetheBloch(Float_t p, Float_t mass=0.1057);
 
 
 

@@ -515,6 +515,37 @@ void  AliTPCcalibTracksGain::DumpTrack(AliTPCseed * track){
   
 }
 
+
+
+//_____________________________________________________________________________
+Float_t AliTPCcalibTracksGain::TPCBetheBloch(Float_t p, Float_t mass)
+{
+  //
+  // Bethe-Bloch energy loss formula
+  //	
+  Float_t bg = p /mass;
+  const Double_t kp1=0.76176e-1;
+  const Double_t kp2=10.632;
+  const Double_t kp3=0.13279e-4;
+  const Double_t kp4=1.8631;
+  const Double_t kp5=1.9479;
+
+  Double_t dbg = (Double_t) bg;
+
+  Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
+
+  Double_t aa = TMath::Power(beta,kp4);
+  Double_t bb = TMath::Power(1./dbg,kp5);
+
+  bb=TMath::Log(kp3+bb);
+  
+  return ((Float_t)((kp2-aa-bb)*kp1/aa));
+}
+
+
+
+
+
 Bool_t   AliTPCcalibTracksGain::GetDedx(AliTPCseed * track, Int_t padType, Int_t *rows){
   //
   // GetDedx for given sector for given track
@@ -647,6 +678,9 @@ Bool_t   AliTPCcalibTracksGain::GetDedx(AliTPCseed * track, Int_t padType, Int_t
   }
 
   inonEdge=0;
+  Float_t momenta = track->GetP();
+  Float_t mdedx   = track->GetdEdx();
+
   for (Int_t i=0; i<nclusters; i++){
     Int_t rowSorted = rowIn[index[i]]; 
     AliTPCclusterMI* cluster = track->GetClusterPointer(rowSorted);
@@ -658,9 +692,7 @@ Bool_t   AliTPCcalibTracksGain::GetDedx(AliTPCseed * track, Int_t padType, Int_t
     Float_t dedge    = cluster->GetX()*ktany-TMath::Abs(cluster->GetY());
     Float_t fraction = Float_t(i)/Float_t(nclusters);
     Float_t fraction2= Float_t(inonEdge)/Float_t(nclustersNE);
-    Float_t momenta = track->GetP();
-    Float_t mdedx   = track->GetdEdx();
-    (*fDebugStream)<<"dEdx"<<
+    (*fDebugStream)<<"dEdxCl"<<
       "Cl.="<<cluster<<    //cluster of interest
       "P="<<momenta<<     // track momenta
       "dedx="<<mdedx<<    // mean dedx - corrected for angle
@@ -678,6 +710,24 @@ Bool_t   AliTPCcalibTracksGain::GetDedx(AliTPCseed * track, Int_t padType, Int_t
 
   }
 
+  Float_t prim =  TPCBetheBloch(momenta, 0.1057);   //dedx under muon assumption
+  (*fDebugStream)<<"dEdxTr"<<
+    "P="<<momenta<<     // track momenta
+    "sector="<<lastSector<<// sector to investigate
+    "ncl0="<<nclusters<<    // number of clusters
+    "ncl="<<inonEdge<<      // number of clusters used for dEdx
+    "dedx="<<mdedx<<    // mean dedx - corrected for angle
+    "prim="<<prim<<     // primary ionization parameters
+    "IPad="<<padType<<   // pad type 0..2
+    "xc="<<xcenter<<     // x center of chamber
+    "dedxQ.="<<&dedxQ<<  // dedxQ  - total charge
+    "dedxM.="<<&dedxM<<  // dedxM  - maximal charge
+    "parY.="<<&parY<<      // line fit
+    "parZ.="<<&parZ<<      // line fit
+    "meanPos.="<<&meanPos<< // mean position (dx, dx^2, y,y^2, z, z^2)
+    "\n";
+
+  return 0;
 
 }
 
