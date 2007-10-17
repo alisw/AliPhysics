@@ -44,8 +44,6 @@
 #include "AliMpCathodType.h"
 
 #include "AliLog.h"
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
 
 #include <Riostream.h>
 #include <TMap.h>
