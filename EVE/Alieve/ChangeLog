@@ -1,3 +1,9 @@
+2007-10-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* ITSDigitsInfo.cxx:
+	From Massimo: constructor of AliITSsegmentationSDD has been
+	simplified.
+
 2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TOFDigitsInfo.cxx:
