@@ -257,13 +257,10 @@ void AliITSsimulationSDD::Init(){
     fMaxNofSamples = seg->Npx();
     fAnodeFire = new Bool_t [fNofMaps];
     
-    Float_t sddLength = seg->Dx();
     Float_t sddWidth  = seg->Dz();
-
     Int_t dummy        = 0;
     Float_t anodePitch = seg->Dpz(dummy);
     Double_t timeStep  = (Double_t)seg->Dpx(dummy);
-    Float_t driftSpeed = res->DriftSpeed();
 
     if(anodePitch*(fNofMaps/2) > sddWidth) {
         Warning("AliITSsimulationSDD",
@@ -271,11 +268,6 @@ void AliITSsimulationSDD::Init(){
                 fNofMaps/2,anodePitch);
     } // end if
 
-    if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
-        Error("AliITSsimulationSDD",
-              "Time Interval > Allowed Time Interval: exit\n");
-        return;
-    } // end if
 
     fElectronics = new AliITSetfSDD(timeStep/fScaleSize,
                                     res->Electronics());
@@ -463,7 +455,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Double_t  sddWidth   = seg->Dz();
     Double_t  anodePitch = seg->Dpz(dummy);
     Double_t  timeStep   = seg->Dpx(dummy);
-    Double_t  driftSpeed = res->GetDriftSpeed();
+    Double_t  driftSpeed ;  // drift velocity (anode dependent)
     //Float_t   maxadc     = res->GetMaxAdc();    
     //Float_t   topValue   = res->GetDynamicRange();
     Double_t  norm       = res->GetMaxAdc()/res->GetDynamicRange(); //   maxadc/topValue;
@@ -524,6 +516,12 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
         if(!mod->LineSegmentL(ii,xL[0],dxL[0],xL[1],dxL[1],xL[2],dxL[2],
                               depEnergy,itrack)) continue;
         xL[0] += 0.0001*gRandom->Gaus( 0, jitter ); //
+	xAnode=10000.*(xL[2]+0.5*dxL[2])/anodePitch + nofAnodes/2;;
+	driftSpeed = res->GetDriftSpeedAtAnode(xAnode);
+	if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
+	  Warning("AliITSsimulationSDD",
+              "Time Interval > Allowed Time Interval\n");
+	}
         depEnergy  *= kconv;
         hitDetector = mod->GetDet();
         //tof         = 1.E+09*(mod->GetHit(ii)->GetTOF()); // tof in ns.

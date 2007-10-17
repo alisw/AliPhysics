@@ -40,8 +40,6 @@ class AliITSresponseSDD : public AliITSresponse {
     virtual Float_t DynamicRange() const {// Get Dynamic Range
 	return fDynamicRange;}
 
-    virtual void    SetDriftSpeed(Double_t p1) {fDriftSpeed=p1;}    
-    virtual Float_t DriftSpeed() const {return fDriftSpeed;}
     static Float_t DefaultDriftSpeed() {return fgkDriftSpeedDefault;}
 
     virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}
@@ -101,7 +99,7 @@ class AliITSresponseSDD : public AliITSresponse {
     static const TString fgkParam1Default; // default for fParam1
     static const TString fgkParam2Default; // default for fParam2
     static const TString fgkOptionDefault; // default for fOption
-    static const Float_t fgkDriftSpeedDefault; // default for fDriftSpeed
+    static const Float_t fgkDriftSpeedDefault; // default for drift speed
     static const Float_t fgkTimeOffsetDefault; // default for fTimeOffset
     static const Float_t fgkADC2keVDefault; // default for fADC2keV
     static const Float_t fgkNsigmasDefault; //default for fNsigmas
@@ -111,7 +109,6 @@ class AliITSresponseSDD : public AliITSresponse {
     Float_t  fJitterError;    // jitter error
     Float_t  fDynamicRange;   // Set Dynamic Range 
     Float_t  fChargeLoss;     // Set Linear Coefficient for Charge Loss 
-    Float_t  fDriftSpeed;     // Drift velocity
     Float_t  fTimeOffset;     // Time offset due to electronic delays 
     Float_t  fADC2keV;        // Conversion factor from ADC to keV
     Int_t    fElectronics;    // Electronics
@@ -130,7 +127,7 @@ class AliITSresponseSDD : public AliITSresponse {
    AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
    AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-    ClassDef(AliITSresponseSDD,9) // Base response class 
+    ClassDef(AliITSresponseSDD,10) // Base response class 
     
     };
 #endif

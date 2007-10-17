@@ -328,7 +328,7 @@ void AliITSClusterFinderSDD::Find1DClustersE(){
                             if( time > fTimeCorr ) time -= fTimeCorr;   // ns
                             Double_t anodePath =(anode-fNofAnodes/2)*anodePitch;
                             
-			    Double_t driftPath = (Double_t)cal->GetDriftPath(time,anodePath);
+			    Double_t driftPath = (Double_t)cal->GetDriftPath(time,anode);
                             driftPath = fSddLength-driftPath;
                             AliITSRawClusterSDD clust(j+1,anode,time,charge,
                                                       fmax, peakpos,0.,0.,
@@ -838,7 +838,7 @@ void AliITSClusterFinderSDD::ResolveClusters(){
                    continue;
                 }
                 clusterI.SetPeakPos( peakpos ); 
-		Float_t dp = cal->GetDriftPath(newiTimef,anodePath);   
+		Float_t dp = cal->GetDriftPath(newiTimef,newAnodef);
 		Double_t driftPath = fSddLength - (Double_t)dp;
                 Double_t sign = ( wing == 1 ) ? -1. : 1.;
 		Double_t xcoord = driftPath*sign * 0.0001;
@@ -936,7 +936,7 @@ void AliITSClusterFinderSDD::SelectClusters(){
 }
 
 //______________________________________________________________________
-void AliITSClusterFinderSDD::GetRecPoints(){
+void AliITSClusterFinderSDD::GetRecPoints(AliITSCalibrationSDD* cal){
     // get rec points
   
     // get number of clusters for this module
@@ -944,8 +944,10 @@ void AliITSClusterFinderSDD::GetRecPoints(){
     nofClusters -= fNclusters;
     const Double_t kconvGeV = 1.e-6; // GeV -> KeV
     const Double_t kconv = 1.0e-4; 
+    const Double_t kcmToMicrons = 10000.;
     const Double_t kRMSx = 38.0*kconv; // microns->cm ITS TDR Table 1.3
     const Double_t kRMSz = 28.0*kconv; // microns->cm ITS TDR Table 1.3
+    Int_t nAnodes=GetSeg()->NpzHalf();
     Int_t i;
     Int_t ix, iz, idx=-1;
     AliITSdigitSDD *dig=0;
@@ -966,7 +968,14 @@ void AliITSClusterFinderSDD::GetRecPoints(){
         if(idx&&idx<= ndigits) dig =(AliITSdigitSDD*)GetDigit(idx);
         if(!dig) {
             // try cog
-            GetSeg()->GetPadIxz(clusterI->X(),clusterI->Z(),ix,iz);
+	    Float_t xMicrons=clusterI->X()*kcmToMicrons;
+	    Float_t zMicrons=clusterI->Z()*kcmToMicrons;
+	    Float_t zAnode=zMicrons/GetSeg()->Dpz(0)+nAnodes/2;
+	    Float_t driftSpeed=cal->GetDriftSpeedAtAnode(zAnode);	    
+	    Float_t driftPath=GetSeg()->Dx()-TMath::Abs(xMicrons);
+	    ix=1+(Int_t)(driftPath/driftSpeed/GetSeg()->Dpx(0));
+	    iz=1+(Int_t)zAnode;
+	    if(xMicrons>0) iz+=nAnodes;
             dig = (AliITSdigitSDD*)Map()->GetHit(iz-1,ix-1);
             // if null try neighbours
             if (!dig) dig = (AliITSdigitSDD*)Map()->GetHit(iz-1,ix); 
@@ -996,17 +1005,18 @@ void AliITSClusterFinderSDD::FindRawClusters(Int_t mod){
     
     SetModule(mod);
     SetCutAmplitude(mod);
+    AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(mod);
     Int_t nanodes=GetSeg()->Npz();
     Int_t noise=0;
     for(Int_t i=0;i<nanodes;i++){
-      noise+=(Int_t)(((AliITSCalibrationSDD*)GetResp(mod))->GetNoiseAfterElectronics(i));
+      noise+=(Int_t)cal->GetNoiseAfterElectronics(i);
     }    
     SetMinPeak((noise/nanodes)*5);
     Find1DClustersE();
     GroupClusters();
     SelectClusters();
     ResolveClusters();
-    GetRecPoints();
+    GetRecPoints(cal);
 }
 //_______________________________________________________________________
 void AliITSClusterFinderSDD::PrintStatus() const{

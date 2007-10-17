@@ -348,9 +348,9 @@ void AliITSvSDD03::CreateGeometry(){
     gMC->Gspos("ITSV",1,"ALIC",0.0,0.0,0.0,0,"ONLY");
     */
     TGeoVolumeAssembly *itsV = gGeoManager->MakeVolumeAssembly("ITSV");
-    const Int_t length=100;
-    Char_t vstrng[length];
-    if(fIgm.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+    const Int_t kLength=100;
+    Char_t vstrng[kLength];
+    if(fIgm.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion(),
                                fMinorVersion,cvsDate,cvsRevision))
         itsV->SetTitle(vstrng);
     else Error("CreateGeometry","Error writing/setting version string");
@@ -808,7 +808,7 @@ void AliITSvSDD03::SetDefaults(){
 
     AliITSsegmentationSDD *seg1 = (AliITSsegmentationSDD*)
 			 (GetITSgeom()->GetShape(kSDD));
-    seg1->SetDriftSpeed(resp1->GetDriftSpeed());
+    seg1->SetDriftSpeed(AliITSresponseSDD::DefaultDriftSpeed());
     seg1->SetNPads(256,256);// Use AliITSgeomSDD for now
     SetSegmentationModel(kSDD,seg1);
     const char *kData1=(fDetTypeSim->GetCalibrationModel(GetITSgeom()->GetStartSDD()))->DataType();

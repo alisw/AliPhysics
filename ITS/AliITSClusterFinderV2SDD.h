@@ -39,14 +39,7 @@ public:
     return (AliITSsegmentationSDD*)fDetTypeRec->GetSegmentationModel(1);} 
 
 
-  Int_t fNySDD;           //number of "pixels" in Y
-  Int_t fNzSDD;           //number of "pixels" in Z
-  Float_t fZpitchSDD;     //"pixel sizes" in Z
-  Float_t fHwSDD;         //half width of the SDD detector
-  Float_t fHlSDD;         //half length of the SDD detector
-
-
-  ClassDef(AliITSClusterFinderV2SDD,3)  // ITS cluster finder V2 for SDD
+  ClassDef(AliITSClusterFinderV2SDD,4)  // ITS cluster finder V2 for SDD
 };
 
 #endif

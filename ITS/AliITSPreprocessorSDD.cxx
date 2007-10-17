@@ -18,7 +18,6 @@
 
 const Int_t AliITSPreprocessorSDD::fgkNumberOfSDD = 260;
 const Int_t AliITSPreprocessorSDD::fgkNumberOfChannels = 512;
-const Int_t AliITSPreprocessorSDD::fgkNumberOfChannelsPerChip = 64;
 const TString AliITSPreprocessorSDD::fgkNameHistoPedestals = "hpedestal";
 const TString AliITSPreprocessorSDD::fgkNameHistoNoise = "hnoise";
 ClassImp(AliITSPreprocessorSDD)
@@ -30,7 +29,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
 
   TObjArray respSDD(fgkNumberOfSDD);
   respSDD.SetOwner(kFALSE);
-  Float_t baseline,rawnoise,cmn,gain;
+  Float_t baseline,rawnoise,cmn,corn,gain;
   Int_t isgoodan,i,im,is,isgoodmod;
   Int_t numOfBadChannels[fgkNumberOfSDD];
   //TString pwd = gSystem->pwd();
@@ -95,7 +94,7 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
       fscanf(basFil,"%d %d %d\n",&im,&is,&isgoodmod);
       if(!isgoodmod) cal->SetDead();
       for(Int_t ian=0;ian<(fgkNumberOfChannels/2);ian++){
-	fscanf(basFil,"%d %d %f %f %f %f\n",&i,&isgoodan,&baseline,&rawnoise,&cmn,&gain);
+	fscanf(basFil,"%d %d %f %f %f %f %f\n",&i,&isgoodan,&baseline,&rawnoise,&cmn,&corn,&gain);
 	Int_t ich=ian;
 	if(isid==1) ich+=256;
 	if(!isgoodan){ 
@@ -105,8 +104,8 @@ UInt_t AliITSPreprocessorSDD::Process(TMap*/* dcsAliasMap*/){
 	}
 	cal->SetBaseline(ich,baseline);
 	cal->SetNoiseAfterElectronics(ich,rawnoise);
-	Int_t iChip=ian/fgkNumberOfChannelsPerChip;
-	Int_t iChInChip=ian%fgkNumberOfChannelsPerChip;
+	Int_t iChip=cal->GetChip(ich);
+	Int_t iChInChip=cal->GetChipChannel(ich);
 	cal->SetGain(gain,isid,iChip,iChInChip);
       }
       cal->SetDeadChannels(numOfBadChannels[imod]);

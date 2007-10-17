@@ -345,7 +345,7 @@ void AliITSDetTypeRec::SetDefaults(){
     }
     if(dettype==1){
       AliITSCalibrationSDD* res=(AliITSCalibrationSDD*) GetCalibrationModel(GetITSgeom()->GetStartSDD()); 
-      seg = new AliITSsegmentationSDD(GetITSgeom(),res);
+      seg = new AliITSsegmentationSDD(GetITSgeom());
       SetSegmentationModel(dettype,seg);
       const char *kopt = ((AliITSresponseSDD*)res->GetResponse())->ZeroSuppOption();
       if((!strstr(kopt,"2D"))&&(!strstr(kopt,"1D"))) SetDigitClassName(dettype,"AliITSdigit");

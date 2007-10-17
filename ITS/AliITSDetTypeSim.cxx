@@ -275,9 +275,7 @@ void AliITSDetTypeSim::SetDefaultSegmentation(Int_t idet){
     if(idet==0){
 	seg = new AliITSsegmentationSPD(GetITSgeom());
     }else if(idet==1){
-	AliITSCalibration* res=GetCalibrationModel(
-	    GetITSgeom()->GetStartSDD());
-	seg = new AliITSsegmentationSDD(GetITSgeom(),res);
+	seg = new AliITSsegmentationSDD(GetITSgeom());
     }else {
 	seg = new AliITSsegmentationSSD(GetITSgeom());
     }

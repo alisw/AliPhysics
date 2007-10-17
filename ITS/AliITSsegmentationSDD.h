@@ -8,7 +8,6 @@
 // Segmentation class for SDD                       //
 //                                                  //
 //////////////////////////////////////////////////////
-class AliITSCalibration;
 class AliITSsegmentationSDD :
 public AliITSsegmentation {
  public:
@@ -17,7 +16,7 @@ public AliITSsegmentation {
     AliITSsegmentationSDD();
     AliITSsegmentationSDD(const AliITSsegmentationSDD &source);
     AliITSsegmentationSDD& operator=(const AliITSsegmentationSDD &source);
-    AliITSsegmentationSDD(AliITSgeom *gm, AliITSCalibration *resp);
+    AliITSsegmentationSDD(AliITSgeom *gm);
     virtual ~AliITSsegmentationSDD(){}
 
     // Set Detector Segmentation Parameters
@@ -25,7 +24,10 @@ public AliITSsegmentation {
     // get the drift speed used for this segmentation
     virtual Float_t GetDriftSpeed()const{return fDriftSpeed;}
     // Set the drift speed needed for this segmentation
-    virtual void SetDriftSpeed(Float_t ds){fDriftSpeed = ds;}
+    virtual void SetDriftSpeed(Float_t ds){
+      fDriftSpeed = ds;
+      fSetDriftSpeed=kTRUE;
+    }
     // Cell size dz*dx  
     virtual void    SetPadSize(Float_t pitch, Float_t clock) 
                          {fPitch=pitch;fTimeStep=1000./clock;}
@@ -67,6 +69,8 @@ public AliITSsegmentation {
     virtual Int_t    Npx() const {return fNsamples;}
     // Maximum number of anodes in z
     virtual Int_t    Npz() const {return fNanodes;}
+    // Maximum number of anodes in z
+    virtual Int_t    NpzHalf() const {return fNanodes/2;}
 
     //
     // Get next neighbours 
@@ -89,6 +93,7 @@ public AliITSsegmentation {
     Float_t    fPitch;    // Anode pitch - microns
     Float_t    fTimeStep; // Sampling time - ns
     Float_t    fDriftSpeed;  // Drift speed 
+    Bool_t     fSetDriftSpeed; // flag for usage of drift speed
     static const Float_t fgkDxDefault;  // Default value for fDx
     static const Float_t fgkDzDefault;  // Default value for fDz
     static const Float_t fgkDyDefault;  // Default value for fDy
@@ -97,7 +102,7 @@ public AliITSsegmentation {
     static const Int_t fgkHalfNanodesDefault; //Default value for fNanodes/2
     static const Int_t fgkNsamplesDefault; //Default value for fNsamples
 
-    ClassDef(AliITSsegmentationSDD,3) // SDD segmentation
+    ClassDef(AliITSsegmentationSDD,4) // SDD segmentation
 };
 
 #endif

@@ -19,8 +19,6 @@
 // #include "AliITS.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomSDD.h"
-#include "AliITSCalibration.h"
-#include "AliITSCalibrationSDD.h"
 #include "AliITSresponseSDD.h"
 //////////////////////////////////////////////////////
 // Segmentation class for                           //
@@ -38,17 +36,16 @@ const Int_t AliITSsegmentationSDD::fgkNsamplesDefault = 256;
 
 ClassImp(AliITSsegmentationSDD)
 //----------------------------------------------------------------------
-AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom,
-					     AliITSCalibration *resp):
+AliITSsegmentationSDD::AliITSsegmentationSDD(AliITSgeom* geom):
 fNsamples(0),
 fNanodes(0),
 fPitch(0),
 fTimeStep(0),
-fDriftSpeed(0){
+fDriftSpeed(0),
+fSetDriftSpeed(0){
   // constructor
    fGeom=geom;
-   AliITSCalibrationSDD* sp = (AliITSCalibrationSDD*)resp;
-   fDriftSpeed=sp->GetDriftSpeed();
+   fDriftSpeed=AliITSresponseSDD::DefaultDriftSpeed();
    fCorr=0;
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
    SetPadSize(fgkPitchDefault,fgkClockDefault);
@@ -61,7 +58,8 @@ fNsamples(0),
 fNanodes(0),
 fPitch(0),
 fTimeStep(0),
-fDriftSpeed(0){
+fDriftSpeed(0),
+fSetDriftSpeed(0){
   // Default constructor
    fDriftSpeed=0;  
    SetDetSize(fgkDxDefault,fgkDzDefault,fgkDyDefault);
@@ -79,6 +77,7 @@ void AliITSsegmentationSDD::Copy(TObject &obj) const {
   ((AliITSsegmentationSDD& ) obj).fPitch = fPitch;
   ((AliITSsegmentationSDD& ) obj).fTimeStep = fTimeStep;
   ((AliITSsegmentationSDD& ) obj).fDriftSpeed = fDriftSpeed;
+  ((AliITSsegmentationSDD& ) obj).fSetDriftSpeed = fSetDriftSpeed;
 }
 
 //______________________________________________________________________
@@ -96,7 +95,8 @@ fNsamples(0),
 fNanodes(0),
 fPitch(0),
 fTimeStep(0),
-fDriftSpeed(0){
+fDriftSpeed(0),
+fSetDriftSpeed(0){
   // copy constructor
   source.Copy(*this);
 }
@@ -156,6 +156,10 @@ void AliITSsegmentationSDD::GetPadIxz(Float_t x,Float_t z,
 
     timebin+=1;
     anode+=1;
+    if(!fSetDriftSpeed){
+      timebin=-999;
+      Warning("GetPadIxz","Drift speed not set: timebin is dummy");
+    }
 
 }
 //----------------------------------------------------------------------
@@ -174,6 +178,10 @@ void AliITSsegmentationSDD::GetPadCxz(Int_t timebin,Int_t anode,
     else x = -(fDx-driftpath)/kconv;
     if (anode >= na) anode-=na;
     z=((anode+0.5)*fPitch-fDz/2)/kconv;
+    if(!fSetDriftSpeed){
+      x=-9999.;
+      Warning("GetPadCxz","Drift speed not set: x coord. is dummy");
+    }
 
 }
 //----------------------------------------------------------------------
@@ -190,7 +198,10 @@ void AliITSsegmentationSDD::GetPadTxz(Float_t &x,Float_t &z) const{
     x=driftpath/fDriftSpeed/fTimeStep;
     z=kconv*z/fPitch + (float)na/2;
     if (x0 < 0) x = -x;
-
+    if(!fSetDriftSpeed){
+      x=-9999.;
+      Warning("GetPadTxz","Drift speed not set: x coord. is dummy");
+    }
 }
 //----------------------------------------------------------------------
 void AliITSsegmentationSDD::GetLocal(Int_t module,Float_t *g ,Float_t *l) const {
@@ -306,6 +317,11 @@ Bool_t AliITSsegmentationSDD::LocalToDet(Float_t x,Float_t z,
     ix = (Int_t) dx;   // time bin
     iz = (Int_t) dz;   // anode
     if(x>0) iz += Npz()/2; // if x>0 then + side anodes values.
+    if(!fSetDriftSpeed){
+      tb=-999;
+      Warning("LocalToDet","Drift speed not set: timebin is dummy");
+      return kFALSE;
+    }
     return kTRUE; // Found ix and iz, return.
 }
 //______________________________________________________________________
@@ -362,5 +378,9 @@ void AliITSsegmentationSDD::DetToLocal(Int_t ix,Int_t iz,Float_t &x,Float_t &z) 
     if(iz>=Npz()/2) iz -=Npz()/2;// If +x side don't count anodes from -x side.
     for(j=0;j<iz;j++) z += kconv*fPitch; // sum up cell iz-1
     z += 0.5*kconv*fPitch; // add 1/2 of cell iz for center location.
+    if(!fSetDriftSpeed){
+      x=-9999.;
+      Warning("LocalToDet","Drift speed not set: x coord. is dummy");
+    }
     return; // Found x and z, return.
 }

@@ -37,12 +37,7 @@
 #include "AliITSgeomTGeo.h"
 ClassImp(AliITSClusterFinderV2SDD)
 
-AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp),
-fNySDD(256),
-fNzSDD(256),
-fZpitchSDD(0.02940),
-fHwSDD(3.5085),
-fHlSDD(3.7632)
+AliITSClusterFinderV2SDD::AliITSClusterFinderV2SDD(AliITSDetTypeRec* dettyp):AliITSClusterFinderV2(dettyp)
 {
 
   //Default constructor
@@ -62,12 +57,15 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
   //------------------------------------------------------------
   // Actual SDD cluster finder
   //------------------------------------------------------------
-  Int_t kNzBins = fNzSDD + 2;
-  const Int_t kMAXBIN=kNzBins*(fNySDD+2);
+  Int_t nAnodes = GetSeg()->NpzHalf();
+  Int_t nzBins = nAnodes+2;
+  Int_t nTimeBins = GetSeg()->Npx();
+  Int_t nxBins = nTimeBins+2;
+  const Int_t kMaxBin=nzBins*(nxBins+2);
 
   AliBin *bins[2];
-  bins[0]=new AliBin[kMAXBIN];
-  bins[1]=new AliBin[kMAXBIN];
+  bins[0]=new AliBin[kMaxBin];
+  bins[1]=new AliBin[kMaxBin];
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
   AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
   const char *option=res->ZeroSuppOption();
@@ -86,19 +84,19 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
      //if (q<3) continue;
 
-     if (z <= fNzSDD) {
-       bins[0][y*kNzBins+z].SetQ(q);
-       bins[0][y*kNzBins+z].SetMask(1);
-       bins[0][y*kNzBins+z].SetIndex(i);
+     if (z <= nAnodes){
+       bins[0][y*nzBins+z].SetQ(q);
+       bins[0][y*nzBins+z].SetMask(1);
+       bins[0][y*nzBins+z].SetIndex(i);
      } else {
-       z-=fNzSDD; 
-       bins[1][y*kNzBins+z].SetQ(q);
-       bins[1][y*kNzBins+z].SetMask(1);
-       bins[1][y*kNzBins+z].SetIndex(i);
+       z-=nAnodes;
+       bins[1][y*nzBins+z].SetQ(q);
+       bins[1][y*nzBins+z].SetMask(1);
+       bins[1][y*nzBins+z].SetIndex(i);
      }
   }
   
-  FindClustersSDD(bins, kMAXBIN, kNzBins, digits);
+  FindClustersSDD(bins, kMaxBin, nzBins, digits);
 
   delete[] bins[0];
   delete[] bins[1];
@@ -197,25 +195,23 @@ FindClustersSDD(AliBin* bins[2], Int_t nMaxBin, Int_t nzBins,
          y/=q; z/=q;
 
 
-	 Float_t yyyy = y;
-
-         z=(z-0.5)*fZpitchSDD;
-         z-=fHlSDD;
-	 Float_t zdet = z;
-	 Float_t timebin = GetSeg()->Dpx(0);
-	 Float_t driftTime = (yyyy-0.5)*timebin - cal->GetTimeOffset();
-	 Float_t xdet = cal->GetDriftPath(driftTime,0);
-	 xdet=xdet/10000.-fHwSDD;
+	 const Double_t kMicronTocm = 1.0e-4; 
+	 Float_t timeBinCenter = y-0.5;
+	 Float_t zAnode=z-0.5;
+	 Float_t zdet = (zAnode*GetSeg()->Dpz(0)-GetSeg()->Dz()/2.)*kMicronTocm;
+	 Float_t driftTime =  timeBinCenter*GetSeg()->Dpx(0) - cal->GetTimeOffset();
+	 Float_t xdet = cal->GetDriftPath(driftTime,zAnode);
+	 xdet=(xdet-GetSeg()->Dx())*kMicronTocm;
 	 if (s) xdet=-xdet;
+	 
 	 
 	 CorrectPosition(zdet,xdet);
 
-         {
-         Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
-         mT2L->MasterToLocal(loc,trk);
-         y=trk[1];
-         z=trk[2]; 
-         }
+	 Double_t loc[3]={xdet,0.,zdet},trk[3]={0.,0.,0.};
+	 mT2L->MasterToLocal(loc,trk);
+	 y=trk[1];
+	 z=trk[2]; 
+
          q/=cal->GetADC2keV();  //to have MPV 1 MIP = 86.4 KeV
          Float_t hit[5] = {y, z, 0.0030*0.0030, 0.0020*0.0020, q};
          Int_t  info[3] = {maxj-minj+1, maxi-mini+1, fNlayer[fModule]};
@@ -265,8 +261,11 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   // Actual SDD cluster finder for raw data
   //------------------------------------------------------------
   Int_t nClustersSDD = 0;
-  Int_t kNzBins = fNzSDD + 2;
-  Int_t kMaxBin = kNzBins * (fNySDD+2);
+  Int_t nAnodes = GetSeg()->NpzHalf();
+  Int_t nzBins = nAnodes+2;
+  Int_t nTimeBins = GetSeg()->Npx();
+  Int_t nxBins = nTimeBins+2;
+  const Int_t kMaxBin=nzBins*(nxBins+2);
   AliBin *bins[2];
   bins[0]=new AliBin[kMaxBin];
   bins[1]=new AliBin[kMaxBin];
@@ -279,7 +278,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       Int_t iModule = input->GetModuleID();
       clusters[iModule] = new TClonesArray("AliITSRecPoint");
       fModule = iModule;
-      FindClustersSDD(bins, kMaxBin, kNzBins, NULL, clusters[iModule]);
+      FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
       Int_t nClusters = clusters[iModule]->GetEntriesFast();
       nClustersSDD += nClusters;
       for(Int_t iBin=0;iBin<kMaxBin; iBin++){
@@ -300,10 +299,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       }
       if(q>=cal->GetThresholdAnode(input->GetCoord1())) {
 	Int_t iz = input->GetCoord1()+1;
-	//Int_t side = ((iz <= fNzSDD) ? 0 : 1);
 	Int_t side = ((AliITSRawStreamSDD*)input)->GetChannel();
-	//  iz -= side*fNzSDD;
-	Int_t index = (input->GetCoord2()+1) * kNzBins + iz;
+	Int_t index = (input->GetCoord2()+1) * nzBins + iz;
 	bins[side][index].SetQ(q);
 	bins[side][index].SetMask(1);
 	bins[side][index].SetIndex(index);
@@ -325,7 +322,8 @@ void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
   AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(fModule);
   static const Int_t knbint = cal->GetMapTimeNBin();
   static const Int_t knbina = cal->Chips()*cal->Channels();
-  Float_t stepa = (GetSeg()->Dpz(0))/10000.; //anode pitch in cm
+  const Double_t kMicronTocm = 1.0e-4; 
+  Float_t stepa = (GetSeg()->Dpz(0))*kMicronTocm; //anode pitch in cm
   Float_t stept = (GetSeg()->Dx()/cal->GetMapTimeNBin()/2.)/10.;
   
   Int_t bint = TMath::Abs((Int_t)(y/stept));
@@ -336,8 +334,8 @@ void AliITSClusterFinderV2SDD::CorrectPosition(Float_t &z, Float_t&y){
   if(z>=0) bina+=(Int_t)(knbina/2.);
   if(bina>knbina) AliError("Wrong bin number!");
 
-  Float_t devz = cal->GetMapACell(bina,bint)/10000.;
-  Float_t devx = cal->GetMapTCell(bina,bint)/10000.;
+  Float_t devz = cal->GetMapACell(bina,bint)*kMicronTocm;
+  Float_t devx = cal->GetMapTCell(bina,bint)*kMicronTocm;
   z+=devz;
   y+=devx;
 

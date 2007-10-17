@@ -55,8 +55,20 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Int_t GetDeadChannels() const { return fDeadChannels; }
     Float_t Gain(Int_t wing,Int_t chip,Int_t ch)const 
         {return fGain[wing][chip][ch]; }
+    Float_t GetChannelGain(Int_t anode) const;
     virtual void SetGain(Double_t g,Int_t wing,Int_t chip, Int_t ch) 
       {fGain[wing][chip][ch]=g;}
+    
+    Int_t GetWing(Int_t anode) const{
+      if(anode>=fgkChips*fgkChannels) return 1;
+      else return 0;
+    }
+    Int_t GetChipChannel(Int_t anode) const {return anode%fgkChannels;}
+    Int_t GetChip(Int_t anode) const {
+      Int_t chip=anode/fgkChannels;
+      if(GetWing(anode)==1)chip-=fgkChips;
+      return chip;
+    }
     
     void    PrintGains() const;
     void    Print();
@@ -84,8 +96,10 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     
     virtual void SetBadChannel(Int_t i,Int_t anode);
     Int_t GetBadChannel(Int_t i) const {return fBadChannels[i];}
-    Bool_t IsBadChannel(Int_t anode); 
-
+    Bool_t IsBadChannel(Int_t anode){
+      if(GetChannelGain(anode)==0) return kTRUE;
+      else return kFALSE;
+    }
     Float_t GetMapACell(Int_t i,Int_t j) const {
       if(i<256) return fMapAW0->GetCellContent(i,j);
       else return fMapAW1->GetCellContent(i,j);
@@ -112,19 +126,12 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Float_t GetChargeLoss() const {return ((AliITSresponseSDD*)fResponse)->ChargeLoss();}
     virtual void SetDynamicRange(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDynamicRange(p1);}
     virtual Float_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
-    virtual void SetDriftSpeed(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDriftSpeed(p1);}
+
     virtual void SetDriftSpeedParam(Int_t iWing, Float_t* p);
     virtual Float_t GetTimeOffset() const {return ((AliITSresponseSDD*)fResponse)->TimeOffset();}
     virtual Float_t GetADC2keV() const {return ((AliITSresponseSDD*)fResponse)->ADC2keV();}
-    virtual Float_t GetDriftSpeed() const {return ((AliITSresponseSDD*)fResponse)->DriftSpeed();}
-    virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const {
-      if(nAnode<256){
-	return fDriftVelParW0[0]+fDriftVelParW0[1]*nAnode+fDriftVelParW0[2]*nAnode*nAnode+fDriftVelParW0[3]*nAnode*nAnode*nAnode;
-      }else{
-	nAnode-=256;
-	return fDriftVelParW1[0]+fDriftVelParW1[1]*nAnode+fDriftVelParW1[2]*nAnode*nAnode+fDriftVelParW1[3]*nAnode*nAnode*nAnode;
-      }
-    }
+    virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const;
+
     virtual void SetParamOptions(const char *opt1,const char *opt2) {((AliITSresponseSDD*)fResponse)->SetParamOptions(opt1,opt2);}
     virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSDD*)fResponse)->ParamOptions(opt1,opt2);}
     virtual Bool_t Do10to8() const {return ((AliITSresponseSDD*)fResponse)->Do10to8();}
@@ -138,7 +145,7 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual Int_t Convert8to10(Int_t signal) const {return ((AliITSresponseSDD*)fResponse)->Convert8to10(signal);}
     virtual void  SetJitterError(Double_t jitter=20) {((AliITSresponseSDD*)fResponse)->SetJitterError(jitter);}
     virtual Float_t GetJitterError() const {return ((AliITSresponseSDD*)fResponse)->JitterError();}
-    virtual Float_t GetDriftPath(Float_t time,Float_t /*anodecoord*/) const {return time*GetDriftSpeed();}
+    virtual Float_t GetDriftPath(Float_t time, Float_t xAnode) const {return time*GetDriftSpeedAtAnode(xAnode);}
     virtual Float_t GetThresholdAnode(Int_t anode,Int_t nsigma=3) const {
       return nsigma*fNoiseAfterEl[anode];}
 

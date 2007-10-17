@@ -157,21 +157,25 @@ void AliITSCalibrationSDD::SetDriftSpeedParam(Int_t iWing, Float_t* p){
   }
 }
 
-
-
 //_____________________________________________________________________
-Bool_t AliITSCalibrationSDD::IsBadChannel(Int_t anode){
-  //returns kTRUE if the anode i (0-512) has fGain=0
-  if(anode<0 || anode >fgkChannels*fgkChips*fgkWings-1)AliError("Wrong anode number");
-  Int_t wing=0;
-  Int_t chip,channel;
-  chip=anode/fgkChannels;
-  channel=anode-(chip*fgkChannels);
-  if(anode>=fgkChips*fgkChannels) wing=1;
-  if(wing==1)chip-=fgkChips;
-  if(fGain[wing][chip][channel]==0) return kTRUE;
-  else return kFALSE;
-} 
+Float_t AliITSCalibrationSDD::GetDriftSpeedAtAnode(Float_t nAnode) const {
+  // Calculates drift speed for given position along anodes
+  if(nAnode<256){
+    return fDriftVelParW0[0]+fDriftVelParW0[1]*nAnode+fDriftVelParW0[2]*nAnode*nAnode+fDriftVelParW0[3]*nAnode*nAnode*nAnode;
+  }else{
+    nAnode-=256;
+    return fDriftVelParW1[0]+fDriftVelParW1[1]*nAnode+fDriftVelParW1[2]*nAnode*nAnode+fDriftVelParW1[3]*nAnode*nAnode*nAnode;
+  }
+}
+
+//______________________________________________________________________
+Float_t AliITSCalibrationSDD::GetChannelGain(Int_t anode) const{
+  // returns gain for givenanode
+  Int_t iWing=GetWing(anode);
+  Int_t iChip=GetChip(anode);
+  Int_t iChan=GetChipChannel(anode);
+  return fGain[iWing][iChip][iChan];
+}
 /*
 //______________________________________________________________________
 void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
@@ -255,6 +259,8 @@ void AliITSCalibrationSDD::SetDeadChannels(Int_t nchip, Int_t nchan){
   delete [] channelChip;
 }
 */
+
+
 //______________________________________________________________________
 void AliITSCalibrationSDD::PrintGains() const{
   //
