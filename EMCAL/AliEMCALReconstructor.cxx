@@ -108,7 +108,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 }
 
 //____________________________________________________________________________
-void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree, 
+void AliEMCALReconstructor::FillESD(TTree* /*digitsTree*/, TTree* clustersTree, 
 				    AliESDEvent* esd) const
 {
   // Called by AliReconstruct after Reconstruct() and global tracking and vertexing 
@@ -218,9 +218,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       xyz[ixyz] = gpos[ixyz];
     
     Int_t digitMult = clust->GetMultiplicity();
-    Short_t *amplList = new Short_t[digitMult];
-    Short_t *timeList = new Short_t[digitMult];
-    Short_t *digiList = new Short_t[digitMult];
+    TArrayS amplList(digitMult);
+    TArrayS timeList(digitMult);
+    TArrayS digiList(digitMult);
     Float_t *amplFloat = clust->GetEnergiesList();
     Float_t *timeFloat = clust->GetTimeList();
     Int_t   *digitInts = clust->GetAbsId();
@@ -247,29 +247,15 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     
     if(newdigitMult > 0) { // accept cluster if it has some digit
       nClustersNew++;
-      if(newdigitMult != digitMult) { // some digits were deleted
-        Short_t *amplListNew = new Short_t[newdigitMult];
-        Short_t *timeListNew = new Short_t[newdigitMult];
-        Short_t *digiListNew = new Short_t[newdigitMult];
-        for (Int_t iDigit=0; iDigit<newdigitMult; iDigit++) {
-          amplListNew[iDigit] = amplList[iDigit];
-          timeListNew[iDigit] = timeList[iDigit];
-          digiListNew[iDigit] = digiList[iDigit];
-        }
-	
-        delete [] amplList;
-        delete [] timeList;
-        delete [] digiList;
-	
-        amplList = amplListNew;
-        timeList = timeListNew;
-        digiList = digiListNew;
-      }
       
+      amplList.Set(newdigitMult);
+      timeList.Set(newdigitMult);
+      digiList.Set(newdigitMult);
+
       //Primaries
       Int_t  parentMult  = 0;
       Int_t *parentInts =  clust->GetParents(parentMult);
-      Short_t *parentList = new Short_t[parentMult];
+      TArrayS parentList(parentMult);
       for (Int_t ipr=0; ipr<parentMult; ipr++) 
 	parentList[ipr] = (Short_t)(parentInts[ipr]);	 
       
@@ -279,12 +265,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       ec->SetClusterType(clust->GetClusterType());
       ec->SetPosition(xyz);
       ec->SetE(clust->GetEnergy());
-      TArrayS arrayAmpList(newdigitMult,amplList);
-      TArrayS arrayTimeList(newdigitMult,timeList);
-      TArrayS arrayIndexList(newdigitMult,digiList);
-      ec->AddDigitAmplitude(arrayAmpList);
-      ec->AddDigitTime(arrayTimeList);
-      ec->AddDigitIndex(arrayIndexList);
+      ec->AddDigitAmplitude(amplList);
+      ec->AddDigitTime(timeList);
+      ec->AddDigitIndex(digiList);
     
       if(clust->GetClusterType()== AliESDCaloCluster::kEMCALClusterv1){
 
@@ -298,20 +281,13 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
        arrayTrackMatched[0]= (Short_t)(matchedTrack[iClust]);
        ec->AddTracksMatched(arrayTrackMatched);
 	
-       TArrayS arrayParents(parentMult,parentList);
-       ec->AddLabels(arrayParents);
+       ec->AddLabels(parentList);
       } 
       
       // add the cluster to the esd object
       esd->AddCaloCluster(ec);
       delete ec;
-      delete [] parentList;
-    } else { // no new ESD cluster
-      
     }
-    delete [] amplList;
-    delete [] timeList;
-    delete [] digiList;
 
   } // cycle on clusters
 
