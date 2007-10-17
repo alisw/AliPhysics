@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -38,6 +41,8 @@
 #include "AliAnaGammaDirect.h" 
 #include "AliAnaGammaCorrelation.h" 
 #include "AliNeutralMesonSelection.h"
+#include "AliAODCaloCluster.h"
+#include "AliAODEvent.h"
 #include "Riostream.h"
 #include "AliLog.h"
 
@@ -50,7 +55,7 @@ ClassImp(AliAnaGamma)
     fOutputContainer(0x0), 
     fAnaType(0),  fCalorimeter(0), fData(0x0), fKine(0x0), 
     fReader(0x0), fGammaDirect(0x0), fGammaCorrelation(0x0),
-    fNeutralMesonSelection(0x0)
+    fNeutralMesonSelection(0x0), fAODclusters(0x0), fNAODclusters(0)
 {
   //Default Ctor
 
@@ -64,6 +69,8 @@ ClassImp(AliAnaGamma)
   if(!fNeutralMesonSelection)
     fNeutralMesonSelection = new AliNeutralMesonSelection();
 
+  fAODclusters = 0;
+
   InitParameters();
   
 }
@@ -75,7 +82,8 @@ AliAnaGamma::AliAnaGamma(const AliAnaGamma & g) :
   fAnaType(g.fAnaType),  fCalorimeter(g.fCalorimeter), 
   fData(g.fData), fKine(g.fKine),fReader(g.fReader),
   fGammaDirect(g.fGammaDirect), fGammaCorrelation(g.fGammaCorrelation),
-  fNeutralMesonSelection(g.fNeutralMesonSelection)
+  fNeutralMesonSelection(g.fNeutralMesonSelection),  
+  fAODclusters(g. fAODclusters), fNAODclusters(g.fNAODclusters)
 {
   // cpy ctor
   
@@ -135,6 +143,10 @@ void AliAnaGamma::Init()
   TList * promptcontainer =  fGammaDirect->GetCreateOutputObjects(); 
   for(Int_t i = 0; i < promptcontainer->GetEntries(); i++)
     fOutputContainer->Add(promptcontainer->At(i)) ;
+  
+  //Check if selected options are correct or set them when necessary
+  if(fReader->GetDataType() == AliGammaReader::kMCData)
+    fGammaDirect->SetMC();//Only useful with AliGammaMCDataReader, by default kFALSE
   
   if(fAnaType == kCorrelation){
     
@@ -226,7 +238,7 @@ void AliAnaGamma::Print(const Option_t * opt) const
 Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
 
   AliDebug(1,Form("Entry %d",entry));
-
+  cout<<"Event >>>>>>>>>>>>> "<<entry<<endl;
   if(!fOutputContainer)
     AliFatal("Histograms not initialized");
 
@@ -235,6 +247,9 @@ Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
   TClonesArray * plCTS      = new TClonesArray("TParticle",1000); // All particles refitted in Central Tracking System (ITS+TPC)
   TClonesArray * plEMCAL    = new TClonesArray("TParticle",1000);   // All particles measured in Jet Calorimeter (EMCAL)
   TClonesArray * plPHOS     = new TClonesArray("TParticle",1000);  // All particles measured  Gamma calorimeter
+  TClonesArray * plPrimCTS      = new TClonesArray("TParticle",1000); // primary tracks
+  TClonesArray * plPrimEMCAL    = new TClonesArray("TParticle",1000);   // primary emcal clusters
+  TClonesArray * plPrimPHOS     = new TClonesArray("TParticle",1000);  // primary phos clusters
   TClonesArray * plParton   = new TClonesArray("TParticle",1000);  // All partons
   //Fill lists with photons, neutral particles and charged particles
   //look for the highest energy photon in the event inside fCalorimeter
@@ -242,24 +257,28 @@ Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
   //Fill particle lists 
   if(fReader->GetDataType() == AliGammaReader::kData){
     AliDebug(1,"Data analysis");
-    fReader->CreateParticleList(fData, NULL,plCTS,plEMCAL,plPHOS,NULL); 
+    fReader->CreateParticleList(fData, NULL,plCTS,plEMCAL,plPHOS,NULL,NULL,NULL); 
   }
   else if( fReader->GetDataType()== AliGammaReader::kMC){
     AliDebug(1,"Kinematics analysis");
-    fReader->CreateParticleList(fKine, NULL,plCTS,plEMCAL,plPHOS,plParton); 
+    fReader->CreateParticleList(fKine, NULL,plCTS,plEMCAL,plPHOS,plParton,NULL,NULL); 
   }
   else if(fReader->GetDataType() == AliGammaReader::kMCData) {
    AliDebug(1,"Data + Kinematics analysis");
-   fReader->CreateParticleList(fData, fKine,plCTS,plEMCAL,plPHOS,NULL); 
+   fReader->CreateParticleList(fData, fKine,plCTS,plEMCAL,plPHOS,plPrimCTS,plPrimEMCAL,plPrimPHOS); 
   }
   else
     AliError("Option not implemented");
-  
+
+  //Fill AOD with calorimeter
+  //Temporal solution, just for testing
+  //FillAODs(plPHOS,plEMCAL);  
+
   //Search highest energy prompt gamma in calorimeter
   if(fCalorimeter == "PHOS")
-    MakeAnalysis(plPHOS, plEMCAL, plCTS, plParton) ; 
+    MakeAnalysis(plPHOS, plEMCAL, plCTS, plParton, plPrimPHOS) ; 
   else if (fCalorimeter == "EMCAL")
-    MakeAnalysis(plEMCAL, plPHOS, plCTS,plParton) ; 
+    MakeAnalysis(plEMCAL, plPHOS, plCTS,plParton, plPrimEMCAL) ; 
   else
     AliFatal("Wrong calorimeter name");
 
@@ -267,18 +286,24 @@ Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
   plEMCAL->Clear() ;
   plPHOS->Clear() ;
   plParton->Clear() ;
+  plPrimCTS->Clear() ;
+  plPrimEMCAL->Clear() ;
+  plPrimPHOS->Clear() ;
 
   delete plCTS ;
   delete plPHOS ;
   delete plEMCAL ;
   delete plParton ;
+  delete plPrimCTS ;
+  delete plPrimPHOS ;
+  delete plPrimEMCAL ;
 
   return kTRUE;
 
 }
 
 //____________________________________________________________________________
-void AliAnaGamma::MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClonesArray * plCTS, TClonesArray * plParton)  {
+void AliAnaGamma::MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClonesArray * plCTS, TClonesArray * plParton, TClonesArray * plPrimCalo)  {
   
   TParticle * pGamma = new TParticle ;
   Bool_t isInCalo = kFALSE ;
@@ -302,7 +327,7 @@ void AliAnaGamma::MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClon
 	    
 	  default :
 	    {
-	      fGammaDirect->GetPromptGamma(plCalo, plCTS,pGamma,isInCalo);
+	      fGammaDirect->GetPromptGamma(plCalo, plCTS,plPrimCalo, pGamma,isInCalo);
 	      if(!isInCalo)
 		AliDebug(1,"Prompt gamma not found");
 	    }
@@ -316,7 +341,7 @@ void AliAnaGamma::MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClon
       {
 	AliDebug(1,"kCorrelation analysis");
 	//Find prompt photon	
-	fGammaDirect->GetPromptGamma(plCalo, plCTS,pGamma,isInCalo);
+	fGammaDirect->GetPromptGamma(plCalo, plCTS,plPrimCalo, pGamma,isInCalo);
 
 	if(isInCalo){//If prompt photon found, do correlation
 	  
@@ -359,4 +384,45 @@ void AliAnaGamma::MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClon
 
   delete pGamma ; 
   
+}
+
+//____________________________________________________
+void AliAnaGamma::AddCluster(AliAODCaloCluster p)
+{
+// Add new jet to the list
+  cout<<"AOD list pointer "<<fAODclusters<<" nAODclusters "<<fNAODclusters<<endl;
+  cout<<"list entries "<<fAODclusters->GetEntries()<<endl;
+  new ((*fAODclusters)[fNAODclusters++]) AliAODCaloCluster(p);
+}
+
+//___________________________________________________
+void AliAnaGamma::ConnectAOD(AliAODEvent* aod)
+{
+// Connect to the AOD
+  fAODclusters = aod->GetCaloClusters();
+}
+
+//____________________________________________________________________________
+void AliAnaGamma::FillAODs(TClonesArray * plPHOS, TClonesArray * plEMCAL){
+  //Fill AOD caloClusters
+  //Temporal method, just for testing AOD creation
+  
+  //Fill AOD with PHOS clusters
+  Int_t nphos =  plPHOS->GetEntries() ;
+  cout<<"PHOS entries "<<nphos<<endl;
+  for(Int_t ipr = 0;ipr < nphos ; ipr ++ ){
+    TParticle * particle = dynamic_cast<TParticle *>(plPHOS->At(ipr)) ;
+    Float_t pos []= {0,0,0};
+    AliAODCaloCluster phos(ipr,0,0x0,particle->Energy(),pos,0x0,AliAODCluster::kPHOSNeutral,0);
+    AddCluster(phos);
+  }
+  
+  //Fill AOD with EMCAL clusters
+  cout<<"EMCAL entries "<<plEMCAL->GetEntries()<<endl;
+  for(Int_t ipr = 0;ipr < plEMCAL->GetEntries() ; ipr ++ ){
+    TParticle * particle = dynamic_cast<TParticle *>(plEMCAL->At(ipr)) ;
+    Float_t pos []= {0,0,0};
+    AliAODCaloCluster emcal(ipr+nphos,0,0x0,particle->Energy(),pos,0x0,AliAODCluster::kEMCALClusterv1,0);
+    AddCluster(emcal);
+  }
 }

@@ -59,6 +59,6 @@ private:
   TH1D    * fhPHOSInvariantMass ;
   TH1I    * fhPHOSDigitsEvent ;
    
-  ClassDef(AliAnaGammaPhos, 0); // a PHOS photon analysis task 
+  ClassDef(AliAnaGammaPhos, 1); // a PHOS photon analysis task 
 };
 #endif // ALIANAGAMMAPHOS_H

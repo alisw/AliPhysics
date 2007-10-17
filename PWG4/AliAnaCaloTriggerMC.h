@@ -45,6 +45,6 @@ private:
   TNtuple * fNtTrigger22 ;
   TNtuple * fNtTriggerNN ;
 
-  ClassDef(AliAnaCaloTriggerMC, 0); // a PHOS photon analysis task 
+  ClassDef(AliAnaCaloTriggerMC, 1); // a photon analysis task 
 };
 #endif // ALIANACALOTRIGGERMC_H

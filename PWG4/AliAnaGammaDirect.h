@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.4.4.3  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -27,6 +30,7 @@
 #include <TClonesArray.h> 
 #include "TObject.h" 
 #include <TH2F.h>
+#include <TNtuple.h>
 
 class TList ;
 
@@ -46,13 +50,14 @@ public:
   Float_t     GetPtThreshold()      const {return fPtThreshold ; }
   Float_t     GetPtSumThres()     const {return fPtSumThreshold ; }
   Int_t        GetICMethod()          const {return fICMethod ; }
+  Bool_t     IsMC() const {return fAnaMC ; };
 
   TList *  GetCreateOutputObjects();
-  void GetPromptGamma(TClonesArray * plNe, TClonesArray * plCTS, TParticle * pGamma, Bool_t &Is)  const;
+  void GetPromptGamma(TClonesArray * plNe, TClonesArray * plCTS, TClonesArray * plPrimNe,  TParticle * pGamma, Bool_t &Is)  const;
   
   void MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArray * plCTS); 
   void MakeIsolationCut(TClonesArray * plCTS, TClonesArray * plNe, 
-			TParticle *pCandidate, Int_t index, 
+			TParticle *pCandidate, Int_t index, Int_t &n,
 			Bool_t &imcpt, Bool_t &icms, Float_t &ptsum) const ;  
   
   void Print(const Option_t * opt)const;
@@ -62,7 +67,8 @@ public:
   void SetPtThreshold(Float_t pt)        {fPtThreshold = pt; };
   void SetPtSumThreshold(Float_t pt) {fPtSumThreshold = pt; };
   void SetICMethod(Int_t i )          {fICMethod = i ; }
-  
+  void SetMC()    {fAnaMC = kTRUE ; }
+
   Int_t    GetNCones()                  const {return fNCones ; }
   Int_t    GetNPtThresholds()                const {return fNPtThres ; }
   Float_t GetConeSizes(Int_t i)      const {return fConeSizes[i] ; }
@@ -87,11 +93,16 @@ public:
                                            // kPtIC: Pt threshold method
                                            // kSumPtIC: Cone pt sum method
                                            // kSeveralIC: Analysis for several cuts
+  Bool_t fAnaMC ; //Set in case of using MCData reader 
+
   //Histograms  
   TH1F * fhNGamma    ;  //Number of (isolated) gamma identified
-  TH2F * fhPhiGamma    ; // Phi of identified gamma
-  TH2F * fhEtaGamma    ; // eta of identified gamma
-  
+  TH2F * fhPhiGamma  ; // Phi of identified gamma
+  TH2F * fhEtaGamma  ; // eta of identified gamma
+  TH2F * fhConeSumPt ; // Sum Pt in the cone
+
+  TNtuple *    fntuplePrompt ; //List of found prompt photons, pt, eta and phi. Also primary information.
+
   //Prompt photon analysis data members for multiple cones and pt thresholds kIsolationCut
   Int_t         fNCones   ; //Number of cone sizes to test
   Int_t         fNPtThres ; //Number of ptThres to test
@@ -100,8 +111,9 @@ public:
   
   TH1F* fhPtThresIsolated[20][20]; // Isolated gamma with pt threshold 
   TH2F* fhPtSumIsolated[20] ;  //  Isolated gamma with threshold on cone pt sume
+  TNtuple *    fntSeveralIC[20] ; //ntuple 
 
-  ClassDef(AliAnaGammaDirect,0)
+  ClassDef(AliAnaGammaDirect,1)
 } ;
  
 

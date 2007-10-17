@@ -27,6 +27,7 @@
 
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliAnaCaloTriggerMC.h" 
 #include "AliESDEvent.h" 
 #include "AliESDCaloCluster.h"
@@ -169,7 +170,7 @@ void AliAnaCaloTriggerMC::Exec(Option_t *)
     ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
   
   if(mctruth)
-    stack = mctruth->Stack();
+    stack = mctruth->MCEvent()->Stack();
   
   if (!stack) {
     AliError("Stack not found") ; 
@@ -245,7 +246,7 @@ void AliAnaCaloTriggerMC::Exec(Option_t *)
 	  labelmax = cluster->GetLabel();
 	}
 	
-	Float_t * pid = cluster->GetPid() ;
+	Double_t * pid = cluster->GetPid() ;
 	
 	if(pid[AliPID::kPhoton] > 0.9) {
 	  if ( cluEnergy > phEnMax) { 

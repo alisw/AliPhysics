@@ -9,7 +9,7 @@
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is         *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
@@ -17,9 +17,6 @@
 /* History of cvs commits:
  *
  * $Log$
- * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
- * new analysis classes in the the new analysis framework
- *
  *
  */
 
@@ -49,26 +46,19 @@ ClassImp(AliGammaMCReader)
 
 //____________________________________________________________________________
 AliGammaMCReader::AliGammaMCReader() : 
-  AliGammaReader(),
-  fEMCALIPDistance(0.),   fPHOSIPDistance(0.), 
-  fEMCALMinDistance(0.),   fPHOSMinDistance(0.), 
-  fDecayPi0(kFALSE)
+  AliGammaReader(), fDecayPi0(0), fCheckOverlapping(kFALSE)
 {
   //Ctor
   
   //Initialize parameters
-  fDataType = kMC;
   InitParameters();
-  
+  fDataType = kMC;  
   
 }
 
 //____________________________________________________________________________
 AliGammaMCReader::AliGammaMCReader(const AliGammaMCReader & g) :   
-  AliGammaReader(g),
-  fEMCALIPDistance(g.fEMCALIPDistance),  fPHOSIPDistance(g.fPHOSIPDistance),  
-  fEMCALMinDistance(g.fEMCALMinDistance),  fPHOSMinDistance(g.fPHOSMinDistance), 
-  fDecayPi0(g.fDecayPi0)
+  AliGammaReader(g), fDecayPi0(g.fDecayPi0), fCheckOverlapping(g.fCheckOverlapping)
 {
   // cpy ctor
 }
@@ -80,24 +70,102 @@ AliGammaMCReader & AliGammaMCReader::operator = (const AliGammaMCReader & source
 
   if(&source == this) return *this;
 
-  fEMCALIPDistance = source.fEMCALIPDistance; 
-  fPHOSIPDistance = source.fPHOSIPDistance; 
-  fEMCALMinDistance = source.fEMCALMinDistance; 
-  fPHOSMinDistance = source.fPHOSMinDistance; 
-  fDecayPi0 = source.fDecayPi0;
- 
+  fDecayPi0 = source.fDecayPi0; 
+  fCheckOverlapping = source.fCheckOverlapping;
 
   return *this;
 
 }
 
+//___________________________________________________________________________
+void AliGammaMCReader::CaseDecayGamma(Int_t index, TParticle * particle, AliStack * sta,
+				  TClonesArray * plEMCAL, Int_t &indexEMCAL,
+				  TClonesArray * plPHOS, Int_t &indexPHOS){
+  //In case pi0 are decayed by pythia, check if mother is pi0 and in such case look if 
+  //there is overlapping. Send particle=pi0 if there is overlapping. 
+  
+  TParticle * pmother =sta->Particle(particle->GetFirstMother());
+  if(pmother->GetPdgCode() == 111 && pmother->GetNDaughters() == 2) {//Do not consider 3 particle decay case
+    Int_t idaug0 = pmother->GetDaughter(0);
+    Int_t idaug1 = pmother->GetDaughter(1);
+    TParticle * pdaug0 = sta -> Particle(idaug0);
+    TParticle * pdaug1 = sta -> Particle(idaug1);
+    
+    if((index ==  idaug0 &&  pdaug0->Pt() > fNeutralPtCut) ||
+       (index ==  idaug1 &&  pdaug0->Pt() <= fNeutralPtCut))//Check decay when first daughter arrives, do nothing with second.
+      FillListWithDecayGammaOrPi0(pmother, pdaug0, pdaug1, plEMCAL, indexEMCAL, plPHOS, indexPHOS);
+    
+  }//mother is a pi0 with 2 daughters
+  else{
+    if(IsInPHOS(particle->Phi(),particle->Eta()))
+      new((*plPHOS)[indexPHOS++])  TParticle(*particle) ;
+    else if(IsInEMCAL(particle->Phi(),particle->Eta()))
+      new((*plEMCAL)[indexEMCAL++])  TParticle(*particle) ;
+  }
+
+}
+
+//___________________________________________________________________________
+ void AliGammaMCReader::CaseGeantDecay(TParticle * particle, AliStack * stack,
+				   TClonesArray * plEMCAL, Int_t &indexEMCAL,
+				   TClonesArray * plPHOS, Int_t &indexPHOS){
+   //Find decay gamma from pi0, decayed by GEANT and put them in the list.
+   
+   Int_t ndaug = particle->GetNDaughters() ;
+   TParticle * d1 = new TParticle();
+   TParticle * d2 = new TParticle();
+   
+   if(ndaug > 0){//At least 1 daugther
+     d1 = stack->Particle(particle->GetDaughter(0));
+     if (ndaug > 1 ) 
+       d2 = stack->Particle(particle->GetDaughter(1));
+     
+     FillListWithDecayGammaOrPi0(particle, d1, d2, plEMCAL, indexEMCAL, plPHOS, indexPHOS);
+     
+   }// ndaugh > 0
+ }
+
+//___________________________________________________________________________
+void AliGammaMCReader::CasePi0Decay(TParticle * pPi0, 
+				    TClonesArray * plEMCAL, Int_t &indexEMCAL,
+				    TClonesArray * plPHOS, Int_t &indexPHOS){
+  
+  //Decays pi0, see if aperture angle is small and then add the pi0 or the 2 gamma
+  
+  TLorentzVector lvPi0, lvGamma1, lvGamma2 ;
+  //Double_t angle = 0;
+  
+  lvPi0.SetPxPyPzE(pPi0->Px(),pPi0->Py(),pPi0->Pz(),pPi0->Energy());
+
+  //Decay
+  MakePi0Decay(lvPi0,lvGamma1,lvGamma2);//,angle);
+  
+  //Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
+  TParticle * pPhoton1 = new TParticle(22,1,0,0,0,0,lvGamma1.Px(),lvGamma1.Py(),
+				      lvGamma1.Pz(),lvGamma1.E(),0,0,0,0);   
+  TParticle * pPhoton2 = new TParticle(22,1,0,0,0,0,lvGamma2.Px(),lvGamma2.Py(),
+				      lvGamma2.Pz(),lvGamma2.E(),0,0,0,0);
+
+  FillListWithDecayGammaOrPi0(pPi0, pPhoton1, pPhoton2, plEMCAL, indexEMCAL, plPHOS, indexPHOS);
+ 
+}
+
+//_______________________________________________________________
+void AliGammaMCReader::InitParameters()
+{
+  
+  //Initialize the parameters of the analysis.
+
+  fDecayPi0 = kGeantDecay;
+  fCheckOverlapping = kTRUE ;
+}
 
 //____________________________________________________________________________
 void AliGammaMCReader::CreateParticleList(TObject * data, TObject *, 
-					 TClonesArray * plCh, 
-					 TClonesArray * plEMCAL,  
+					  TClonesArray * plCh, 
+					  TClonesArray * plEMCAL,  
 					  TClonesArray * plPHOS,
-					  TClonesArray *plParton)
+					  TClonesArray *plParton,TClonesArray *,TClonesArray *)
 {
   //Create list of particles from EMCAL, PHOS and CTS. 
   AliStack * stack = (AliStack *) data ;
@@ -111,13 +179,14 @@ void AliGammaMCReader::CreateParticleList(TObject * data, TObject *,
   for (iParticle=0 ; iParticle <  stack->GetNprimary() ; iParticle++) {
     TParticle * particle = stack->Particle(iParticle); 
     
+
     //Keep partons
     if(particle->GetStatusCode() == 21 && iParticle>=2){//All partons, not nucleus
       new((*plParton)[indexParton++])  TParticle(*particle) ;
     }
 
     //Keep Stable particles 
-    if((particle->GetStatusCode() == 0) && (particle->Pt() > 0)){
+    if((particle->GetStatusCode() == 1) && (particle->Pt() > 0)){
       
       charge = TDatabasePDG::Instance()->GetParticle(particle->GetPdgCode())->Charge();
       
@@ -134,10 +203,17 @@ void AliGammaMCReader::CreateParticleList(TObject * data, TObject *,
 	      TMath::Abs(particle->GetPdgCode())>16){//Avoid neutrinos
 	
 	if(particle->GetPdgCode()!=111){
-	  if(IsInPHOS(particle->Phi(),particle->Eta()))
-	    new((*plPHOS)[indexPHOS++])  TParticle(*particle) ;
-	  else if(IsInEMCAL(particle->Phi(),particle->Eta()))
-	    new((*plEMCAL)[indexEMCAL++])  TParticle(*particle) ;
+	  //In case that we force PYTHIA to decay pi0, and we want to check the overlapping of 
+	  // the decay gamma.
+	  if(particle->GetPdgCode() == 22 && fDecayPi0==kDecayGamma){
+	    CaseDecayGamma(iParticle,particle, stack,plEMCAL, indexEMCAL, plPHOS, indexPHOS); //If pythia decays pi0
+	  }
+	  else{
+	    if(IsInPHOS(particle->Phi(),particle->Eta()))
+	      new((*plPHOS)[indexPHOS++])  TParticle(*particle) ;
+	    else if(IsInEMCAL(particle->Phi(),particle->Eta()))
+	      new((*plEMCAL)[indexEMCAL++])  TParticle(*particle) ;
+	  }
 	}//no pi0
 	else{
 	  if(fDecayPi0 == kNoDecay){//keep the pi0 do not decay
@@ -147,15 +223,64 @@ void AliGammaMCReader::CreateParticleList(TObject * data, TObject *,
 	      new((*plEMCAL)[indexEMCAL++])  TParticle(*particle) ;
 	  }
 	  else if(fDecayPi0 == kDecay)
-	    MakePi0Decay(particle,plEMCAL,indexEMCAL,plPHOS, indexPHOS);
+	    CasePi0Decay(particle,plEMCAL,indexEMCAL,plPHOS, indexPHOS);
 	  else if(fDecayPi0 == kGeantDecay)
-	    SetGeantDecay(particle, stack,plEMCAL, indexEMCAL, plPHOS, indexPHOS);
+	    CaseGeantDecay(particle, stack,plEMCAL, indexEMCAL, plPHOS, indexPHOS);
 	}//pi0  
       }//neutral particle
     }//stable particle
   }//particle loop
 }
 
+
+//___________________________________________________________________________
+void AliGammaMCReader::FillListWithDecayGammaOrPi0(TParticle * pPi0, TParticle * pdaug0, TParticle * pdaug1,
+				   TClonesArray * plEMCAL, Int_t &indexEMCAL,
+				   TClonesArray * plPHOS, Int_t &indexPHOS){
+
+  //Check if decay gamma overlapp in calorimeter, in such case keep the pi0, if not keep both photons.
+  
+  Bool_t  overlap = kFALSE ;
+  TLorentzVector lv1 , lv2 ;
+  pdaug0->Momentum(lv1);
+  pdaug1->Momentum(lv2);
+  Double_t angle = lv1.Angle(lv2.Vect());
+  
+  if(fCheckOverlapping){//Check if decay products overlapp
+    if(IsInEMCAL(pPi0->Phi(), pPi0->Eta())){
+      if (angle < fEMCALMinAngle){
+	new((*plEMCAL)[indexEMCAL++])       TParticle(*pPi0) ;
+	overlap = kTRUE;
+      }
+    }
+    else if(IsInPHOS(pPi0->Phi(), pPi0->Eta())){
+      if (angle < fPHOSMinAngle){
+	new((*plPHOS)[indexPHOS++])       TParticle(*pPi0) ;
+	overlap = kTRUE;
+      }
+    }
+  }//fCheckOverlapping
+  
+  //Fill with gammas if not overlapp
+  if(!overlap){
+    if(pdaug0->GetPdgCode() == 22 || TMath::Abs(pdaug0->GetPdgCode() ) == 11 ){
+      if(IsInEMCAL(pdaug0->Phi(),pdaug0->Eta()) &&  pdaug0->Pt() > fNeutralPtCut)
+	new((*plEMCAL)[indexEMCAL++])       TParticle(*pdaug0) ;
+      else if(IsInPHOS(pdaug0->Phi(),pdaug0->Eta()) &&  pdaug0->Pt() > fNeutralPtCut)
+	new((*plPHOS)[indexPHOS++])       TParticle(*pdaug0) ;
+    }
+    
+    if(pdaug1->GetPdgCode() == 22 || TMath::Abs(pdaug1->GetPdgCode() ) == 11 ){
+      if(IsInEMCAL(pdaug1->Phi(),pdaug1->Eta()) &&  pdaug1->Pt() > fNeutralPtCut)
+	new((*plEMCAL)[indexEMCAL++])       TParticle(*pdaug1) ;
+      else if(IsInPHOS(pdaug1->Phi(),pdaug1->Eta()) &&  pdaug1->Pt() > fNeutralPtCut)
+	new((*plPHOS)[indexPHOS++])       TParticle(*pdaug1) ;
+    }
+  }// overlap?
+ }
+
+
+ 
 //___________________________________________________________________________
 Bool_t  AliGammaMCReader::IsInEMCAL(Double_t phi, Double_t eta){
   //Check if particle is in EMCAL acceptance
@@ -180,113 +305,9 @@ Bool_t  AliGammaMCReader::IsInPHOS(Double_t phi, Double_t eta){
   return kFALSE ;
 }
 
-//___________________________________________________________________________
-void AliGammaMCReader::SetGeantDecay(TParticle * particle, AliStack * stack,
-				     TClonesArray * plEMCAL, Int_t &indexEMCAL,
-				     TClonesArray * plPHOS, Int_t &indexPHOS){
-  //Find decay gamma from pi0 and put them in the list.
-  
-  Int_t ndaug = particle->GetNDaughters() ;
-  if(ndaug<=2 && ndaug >0){//At least 1 daugther
-    TParticle * d1 = stack->Particle(particle->GetDaughter(0));
-    if(d1->GetPdgCode()==22){
-      if(IsInEMCAL(d1->Phi(),d1->Eta()))
-	new((*plEMCAL)[indexEMCAL++])       TParticle(*d1) ;
-      else if(IsInPHOS(d1->Phi(),d1->Eta()))
-	new((*plPHOS)[indexPHOS++])       TParticle(*d1) ;
-    }
-    
-    if(ndaug>1){//second daugther if present
-      TParticle * d2 = stack->Particle(particle->GetDaughter(1));
-      if(IsInEMCAL(d2->Phi(),d2->Eta()))
-	new((*plEMCAL)[indexEMCAL++])       TParticle(*d2) ;
-      else if(IsInPHOS(d2->Phi(),d2->Eta()))
-	new((*plPHOS)[indexPHOS++])       TParticle(*d2) ;
-    }
-  }
-}
-
-//___________________________________________________________________________
-void AliGammaMCReader::MakePi0Decay(TParticle * particle, 
-				    TClonesArray * plEMCAL, Int_t &indexEMCAL,
-				    TClonesArray * plPHOS, Int_t &indexPHOS){
-  
-  //Decays pi0, see if aperture angle is small and then add the pi0 or the 2 gamma
-  
-  TLorentzVector pPi0, pGamma1, pGamma2 ;
-  Double_t angle = 0, cellDistance = 0.;
-  Bool_t checkPhoton = kTRUE;
-  
-  pPi0.SetPxPyPzE(particle->Px(),particle->Py(),particle->Pz(),particle->Energy());
-  
-  //Decay
-  Pi0Decay(pPi0,pGamma1,pGamma2,angle);
-  
-  //Check if Pi0 is in the acceptance of the calorimeters, if aperture angle is small, keep it
-  if(IsInPHOS(particle->Phi(), particle->Eta())){
-    cellDistance = angle*fPHOSIPDistance;
-    if (cellDistance < fPHOSMinDistance){
-      new((*plPHOS)[indexPHOS++])       TParticle(*particle) ;
-      checkPhoton = kFALSE;
-    }
-  } 
-  else if(IsInEMCAL(particle->Phi(), particle->Eta())){
-    cellDistance = angle*fEMCALIPDistance;
-    if (cellDistance < fEMCALMinDistance) {
-      new((*plEMCAL)[indexEMCAL++])       TParticle(*particle) ;
-      checkPhoton = kFALSE;
-    }
-  } 
-  else checkPhoton = kTRUE ;
-  
-  if (checkPhoton) {
-    //Gamma Not overlapped
-    TParticle * photon1 = new TParticle(22,1,0,0,0,0,pGamma1.Px(),pGamma1.Py(),
-					pGamma1.Pz(),pGamma1.E(),0,0,0,0);    
-    if(photon1->Pt() > fNeutralPtCut) {
-      
-      if(IsInPHOS(photon1->Phi(), photon1->Eta()))
-	new((*plPHOS)[indexPHOS++])       TParticle(*photon1) ;
-      
-      else if(IsInEMCAL(photon1->Phi(), photon1->Eta()))
-	new((*plEMCAL)[indexEMCAL++])       TParticle(*photon1) ;
-      
-    }// photon 1 of pi0 in acceptance
-    
-    
-    TParticle * photon2 = new TParticle(22,1,0,0,0,0,pGamma2.Px(),pGamma2.Py(),
-					pGamma2.Pz(),pGamma2.E(),0,0,0,0);
-    
-    if(photon2->Pt() > fNeutralPtCut) {
-      
-      if(IsInPHOS(photon2->Phi(), photon2->Eta()))
-	new((*plPHOS)[indexPHOS++])       TParticle(*photon2) ;
-      
-      else if(IsInEMCAL(photon2->Phi(), photon2->Eta()))
-	new((*plEMCAL)[indexEMCAL++])       TParticle(*photon2) ;
-      
-    }// photon 2 of pi0 in acceptance
-  }//Not overlapped gamma
-}
-
-
-//_______________________________________________________________
-void AliGammaMCReader::InitParameters()
-{
-  
-  //Initialize the parameters of the analysis.
-  
-  //Fill particle lists when PID is ok
-  fEMCALMinDistance    = 10. ;  
-  fPHOSMinDistance    = 3.6 ;
-  fEMCALIPDistance    = 450. ;//cm  
-  fPHOSIPDistance    = 460. ;//cm
-  fDecayPi0 = kGeantDecay;
-}
-
 //____________________________________________________________________________
-void AliGammaMCReader::Pi0Decay(TLorentzVector &p0, TLorentzVector &p1, 
-				TLorentzVector &p2, Double_t &angle) {
+void AliGammaMCReader::MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, 
+				TLorentzVector &p2){//, Double_t &angle) {
   // Perform isotropic decay pi0 -> 2 photons
   // p0 is pi0 4-momentum (inut)
   // p1 and p2 are photon 4-momenta (output)
@@ -321,7 +342,7 @@ void AliGammaMCReader::Pi0Decay(TLorentzVector &p0, TLorentzVector &p1,
   p2.Boost(b);
   //cout<<"p2: "<<p2.Px()<<" "<<p2.Py()<<" "<<p2.Pz()<<" "<<p2.E()<<endl;
   //cout<<"angle"<<endl;
-  angle = p1.Angle(p2.Vect());
+  //angle = p1.Angle(p2.Vect());
   //cout<<angle<<endl;
 }
 
@@ -335,10 +356,11 @@ void AliGammaMCReader::Print(const Option_t * opt) const
   
   Info("Print", "%s %s", GetName(), GetTitle() ) ;
   
-  printf("IP distance to PHOS         : %f\n", fPHOSIPDistance) ;
-  printf("IP distance to EMCAL         : %f\n", fEMCALIPDistance) ;
-  printf("Min gamma decay distance in PHOS         : %f\n", fPHOSMinDistance) ;
-  printf("Min gamma decay distance in EMCAL         : %f\n", fEMCALMinDistance) ;
   printf("Decay Pi0?          : %d\n", fDecayPi0) ;
-  
+  printf("Check Overlapping?          : %d\n", fCheckOverlapping) ;
+
 }
+
+
+
+

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -48,27 +51,18 @@ ClassImp(AliGammaDataReader)
 
 //____________________________________________________________________________
 AliGammaDataReader::AliGammaDataReader() : 
-  AliGammaReader(),  
-  fEMCALPID(0),fPHOSPID(0),
-  fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.), fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.)  
+  AliGammaReader()
 {
   //Default Ctor
   
   //Initialize parameters
   fDataType=kData;
-  InitParameters();
   
 }
 
 //____________________________________________________________________________
 AliGammaDataReader::AliGammaDataReader(const AliGammaDataReader & g) :   
-  AliGammaReader(g),
-  fEMCALPID(g.fEMCALPID), 
-  fPHOSPID(g.fPHOSPID),
-  fEMCALPhotonWeight(g.fEMCALPhotonWeight), 
-  fEMCALPi0Weight(g.fEMCALPi0Weight), 
-  fPHOSPhotonWeight(g.fPHOSPhotonWeight),
-  fPHOSPi0Weight(g.fPHOSPi0Weight)
+  AliGammaReader(g)
 {
   // cpy ctor
 }
@@ -80,13 +74,6 @@ AliGammaDataReader & AliGammaDataReader::operator = (const AliGammaDataReader & 
 
   if(&source == this) return *this;
 
-  fEMCALPID = source.fEMCALPID ;
-  fPHOSPID = source.fPHOSPID ;
-  fEMCALPhotonWeight = source. fEMCALPhotonWeight ;
-  fEMCALPi0Weight = source.fEMCALPi0Weight ;
-  fPHOSPhotonWeight = source.fPHOSPhotonWeight ;
-  fPHOSPi0Weight = source.fPHOSPi0Weight ;
-
   return *this;
 
 }
@@ -95,15 +82,19 @@ AliGammaDataReader & AliGammaDataReader::operator = (const AliGammaDataReader & 
 void AliGammaDataReader::CreateParticleList(TObject * data, TObject *,
 					    TClonesArray * plCTS, 
 					    TClonesArray * plEMCAL,  
-					    TClonesArray * plPHOS, TClonesArray*){
+					    TClonesArray * plPHOS, 
+					    TClonesArray * , 
+					    TClonesArray * ,  
+					    TClonesArray * ){
   
   //Create a list of particles from the ESD. These particles have been measured 
   //by the Central Tracking system (TPC+ITS), PHOS and EMCAL 
+  //Also create particle list with mothers.
 
   AliESDEvent* esd = (AliESDEvent*) data;
 
   Int_t npar  = 0 ;
-  Float_t *pid = new Float_t[AliPID::kSPECIESN];  
+  Double_t *pid = new Double_t[AliPID::kSPECIESN];  
    AliDebug(3,"Fill particle lists");
   
   //Get vertex for momentum calculation  
@@ -141,21 +132,52 @@ void AliGammaDataReader::CreateParticleList(TObject * data, TObject *,
       	
 	pid=clus->GetPid();	
 	Int_t pdg = 22;
-	
-	if(fPHOSPID){
-	  AliDebug(4, Form("PID: photon %f, pi0 %f, electron %f",pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron]));
-	  if( pid[AliPID::kPhoton] > fPHOSPhotonWeight) pdg=22;
-	  else if( pid[AliPID::kPi0] > fPHOSPi0Weight) pdg=111;
-	  else pdg = 0;
+
+	if(IsPHOSPIDOn()){
+	  AliDebug(5,Form("E %1.2f; PID: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f ",
+			  momentum.E(),pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
+			  pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]));
+	  
+	  Float_t wPhoton =  fPHOSPhotonWeight;
+	  Float_t wPi0 =  fPHOSPi0Weight;
+	  
+	  if(fPHOSWeightFormula){
+	    wPhoton = fPHOSPhotonWeightFormula->Eval(momentum.E()) ;
+	    wPi0 =    fPHOSPi0WeightFormula->Eval(momentum.E());
+	  }
+	  
+	  if(pid[AliPID::kPhoton] > wPhoton) 
+	    pdg = kPhoton ;
+	  else if(pid[AliPID::kPi0] > wPi0) 
+	    pdg = kPi0 ; 
+	  else if(pid[AliPID::kElectron] > fPHOSElectronWeight)  
+	    pdg = kElectron ;
+	  else if(pid[AliPID::kEleCon] > fPHOSElectronWeight) 
+	    pdg = kEleCon ;
+	  else if(pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton] > fPHOSChargeWeight) 
+	    pdg = kChargedHadron ;  
+	  else if(pid[AliPID::kKaon0]+pid[AliPID::kNeutron] > fPHOSNeutralWeight) 
+	    pdg = kNeutralHadron ; 
+	  
+	  else if(pid[AliPID::kElectron]+pid[AliPID::kEleCon]+pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton]  >  
+		  pid[AliPID::kPhoton] + pid[AliPID::kPi0]+pid[AliPID::kKaon0]+pid[AliPID::kNeutron]) 
+	    pdg = kChargedUnknown  ; 
+	  else 
+	    pdg = kNeutralUnknown ; 
+	  //neutral cluster, unidentifed.
 	}
 	
-	TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-					     momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
-	
-	AliDebug(3,Form("PHOS added: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
-	
-	new((*plPHOS)[indexPH++])   TParticle(*particle) ;
-	
+	if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown ){//keep only neutral particles in the array
+	  TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
+					       momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+	  
+	  AliDebug(4,Form("PHOS added: pdg %d, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
+	  
+	  new((*plPHOS)[indexPH++])   TParticle(*particle) ;
+	}
+	else AliDebug(4,Form("PHOS charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f\n", 
+			     pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));	
+
       }//pt, eta, phi cut
       else 	AliDebug(4,"Particle not added");
     }//not charged
@@ -202,18 +224,13 @@ void AliGammaDataReader::CreateParticleList(TObject * data, TObject *,
   //################ EMCAL ##############
   
   Int_t indexEM  = plEMCAL->GetEntries() ; 
-  //Int_t begem = esd->GetFirstEMCALCluster();  
-  //Int_t endem = esd->GetFirstEMCALCluster() + 
-  //esd->GetNumberOfEMCALClusters() ;  
-  
-  //AliDebug(3,Form("First EMCAL particle %d, last particle %d",begem,endem));
   
   for (npar =  begem; npar <  endem; npar++) {//////////////EMCAL track loop
     AliESDCaloCluster * clus = esd->GetCaloCluster(npar) ; // retrieve track from esd
     Int_t clustertype= clus->GetClusterType();
     AliDebug(4,Form("EMCAL clusters: E %f, match %d", clus->E(),clus->GetTrackMatched()));
 
-    if(clustertype == AliESDCaloCluster::kClusterv1 && clus->GetTrackMatched()==-1 ){
+    if(clustertype == AliESDCaloCluster::kEMCALClusterv1 && clus->GetTrackMatched()==-1 ){
       
       TLorentzVector momentum ;
       clus->GetMomentum(momentum, v); 
@@ -224,57 +241,49 @@ void AliGammaDataReader::CreateParticleList(TObject * data, TObject *,
       
 	pid=clus->GetPid();	
 	Int_t pdg = 22;
-	if(fEMCALPID){
-	  AliDebug(4, Form("PID: photon %f, pi0 %f, electron %f",pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron]));
-	  if( pid[AliPID::kPhoton] > fEMCALPhotonWeight) pdg=22;
-	  else if( pid[AliPID::kPi0] > fEMCALPi0Weight) pdg=111;
-	  else pdg = 0 ;
-	}
 
+	if(IsEMCALPIDOn()){
+	  AliDebug(5,Form("E %1.2f; PID: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f ",
+			  momentum.E(),pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
+			  pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]));
+	  
+	  if(pid[AliPID::kPhoton] > fEMCALPhotonWeight) 
+	    pdg = kPhoton ;
+	  else if(pid[AliPID::kPi0] > fEMCALPi0Weight) 
+	    pdg = kPi0 ; 
+	  else if(pid[AliPID::kElectron] > fEMCALElectronWeight)  
+	    pdg = kElectron ;
+	  else if(pid[AliPID::kEleCon] > fEMCALElectronWeight) 
+	    pdg = kEleCon ;
+	  else if(pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton] > fEMCALChargeWeight) 
+	    pdg = kChargedHadron ;  
+	  else if(pid[AliPID::kKaon0]+pid[AliPID::kNeutron] > fEMCALNeutralWeight) 
+	    pdg = kNeutralHadron ; 
+	  else if(pid[AliPID::kElectron]+pid[AliPID::kEleCon]+pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton]  >  
+		  pid[AliPID::kPhoton] + pid[AliPID::kPi0]+pid[AliPID::kKaon0]+pid[AliPID::kNeutron]) 
+	    pdg = kChargedUnknown ; 
+	  else 
+	    pdg = kNeutralUnknown ;
+	}
 	
-	TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-					     momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
-	AliDebug(3,Form("EMCAL added: pt %f, phi %f, eta %f", particle->Pt(),particle->Phi(),particle->Eta()));
+	if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown){//keep only neutral particles in the array
+	  
+	  TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
+					       momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+	  AliDebug(4,Form("EMCAL cluster added: pdg %f, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
+	  
+	  new((*plEMCAL)[indexEM++])   TParticle(*particle) ;
+	}
+	else AliDebug(4,Form("EMCAL charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f", 
+			     pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));
 	
-	new((*plEMCAL)[indexEM++])   TParticle(*particle) ;
-  
       }//pt, phi, eta cut
       else 	AliDebug(4,"Particle not added");
     }//not charged, not pseudocluster
   }//Cluster loop
   
-  AliDebug(3,"Particle lists filled");
-  
-}
-
-  //____________________________________________________________________________
-void AliGammaDataReader::InitParameters()
-{
- 
-  //Initialize the parameters of the analysis.
-
-  //Fill particle lists when PID is ok
-  fEMCALPID = kFALSE;
-  fPHOSPID = kFALSE;
-  fEMCALPhotonWeight = 0.5 ;
-  fEMCALPi0Weight = 0.5 ;
-  fPHOSPhotonWeight = 0.8 ;
+  AliDebug(3,Form("Particle lists filled, PHOS clusters %d, EMCAL clusters %d, CTS tracks %d", 
+		  indexPH,indexEM,indexCh));
 
 }
 
-
-void AliGammaDataReader::Print(const Option_t * opt) const
-{
-
-  //Print some relevant parameters set for the analysis
-  if(! opt)
-    return;
-
-  Info("Print", "%s %s", GetName(), GetTitle() ) ;
-  printf("PHOS PID on?               =     %d\n",  fPHOSPID) ; 
-  printf("EMCAL PID  on?         =     %d\n",  fEMCALPID) ;
-  printf("PHOS PID weight , photon  %f\n",  fPHOSPhotonWeight) ; 
-  printf("EMCAL PID weight, photon %f, pi0 %f\n",   fEMCALPhotonWeight,  fEMCALPi0Weight) ; 
- 
-
-}

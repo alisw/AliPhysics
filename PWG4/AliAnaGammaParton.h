@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/09/26 11:07:19  schutz
+ * Update classes for the new analysis framwork
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -43,7 +46,7 @@ class AliAnaGammaParton : public AliAnaGammaCorrelation {
        TH2F * fhDeltaPtParton;
        TH2F * fhPtRatParton;
        
-       ClassDef(AliAnaGammaParton,0)
+       ClassDef(AliAnaGammaParton,1)
  } ;
 
 

@@ -30,15 +30,14 @@
 #include "AliAnaScale.h" 
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
+#include "Riostream.h"
 
 //______________________________________________________________________________
 AliAnaScale::AliAnaScale() : 
   fDebug(0),
   fScale(1.0),
   fInputList(0x0), 
-  fOutputList(0x0), 
-  fhInPHOSEnergy(0),
-  fhOuPHOSEnergy(0)
+  fOutputList(0x0) 
 {
   //Default constructor
 }
@@ -48,9 +47,7 @@ AliAnaScale::AliAnaScale(const char *name) :
   fDebug(0),
   fScale(1.0), 
   fInputList(0x0), 
-  fOutputList(0x0), 
-  fhInPHOSEnergy(0),
-  fhOuPHOSEnergy(0)
+  fOutputList(0x0) 
 {
   // Constructor.
   // Called only after the event loop
@@ -76,7 +73,6 @@ void AliAnaScale::ConnectInputData(const Option_t*)
     
   AliInfo(Form("*** Initialization of %s", GetName())) ; 
   fInputList     = dynamic_cast<TList*>(GetInputData(0)) ;  
-  fhInPHOSEnergy = dynamic_cast<TH1D*>(fInputList->At(2));
 }
 //________________________________________________________________________
 void AliAnaScale::CreateOutputObjects()
@@ -91,15 +87,23 @@ void AliAnaScale::Exec(Option_t *)
 {
   // Do the Scaling
     
-  fhOuPHOSEnergy = static_cast<TH1D*>(fhInPHOSEnergy->Clone("PHOSEnergyScaled")) ;
-  
-  // create output container
-  
   fOutputList = new TList() ; 
   fOutputList->SetName(GetName()) ; 
-
-  fOutputList->AddAt(fhOuPHOSEnergy,          0) ; 
-  fhOuPHOSEnergy->Scale(fScale) ; 
+  TIter next(fInputList) ; 	
+  TObject * h ; 
+  while ( (h = next()) ) { 
+    if(h){
+      if ( strcmp(h->ClassName(),"TNtuple") ) {
+      char name[20] ; 
+      sprintf(name, "%sScaled", h->GetName()) ; 
+      TH1 * hout = dynamic_cast<TH1*> (h->Clone(name)) ; 
+      hout->Scale(fScale) ;  
+      fOutputList->Add(hout) ; 
+      } 
+      else  fOutputList->Add(h) ; 
+    }
+  }
+  cout<<"end"<<endl;
   PostData(0, fOutputList);
 }
 
@@ -117,24 +121,5 @@ void AliAnaScale::Terminate(Option_t *)
 {
   // Processing when the event loop is ended
   
-  AliInfo(Form(" *** %s Report:", GetName())) ; 
-  printf("        PHOS Energy Integral In         : %5.3e \n", fhInPHOSEnergy->Integral() ) ;
-  printf("        PHOS Energy Integral Ou         : %5.3e \n", fhOuPHOSEnergy->Integral() ) ;
 
-  TCanvas  * cPHOS = new TCanvas("cPHOS", "PHOS ESD Test", 400, 10, 600, 700) ;
-
-  cPHOS->Divide(2, 1);
-  cPHOS->cd(1) ; 
-  if ( fhInPHOSEnergy->GetMaximum() > 0. ) 
-    gPad->SetLogy();
-  fhInPHOSEnergy->SetAxisRange(0, 25.);
-  fhInPHOSEnergy->SetLineColor(2);
-  fhInPHOSEnergy->Draw();
-
-  cPHOS->cd(2) ; 
-  if ( fhOuPHOSEnergy->GetMaximum() > 0. ) 
-    gPad->SetLogy();
-  fhOuPHOSEnergy->SetAxisRange(0, 25.);
-  fhOuPHOSEnergy->SetLineColor(2);
-  fhOuPHOSEnergy->Draw();
 }

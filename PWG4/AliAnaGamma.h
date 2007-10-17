@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -24,13 +27,17 @@
 #include <TH2F.h>
 #include<TObject.h>
 #include <TTree.h>
+
+// --- AliRoot system ---
 #include <AliLog.h>
+#include "AliAODCaloCluster.h"
 
 class AliGammaReader ;
 class AliAnaGammaDirect ;
 class AliAnaGammaCorrelation ;
 class AliAnaGammaJetLeadCone ;
 class AliNeutralMesonSelection ;
+class AliAODEvent;
 
 // --- AliRoot
 class AliAnaGamma : public TObject {
@@ -44,20 +51,11 @@ public:
 
   enum anatype_t {kPrompt, kCorrelation};
 
-  //General methods
+  //Setter and getters
   TList * GetOutputContainer()      const {return fOutputContainer ; }
-  
-  void Init();
-  void InitParameters();
 
   Int_t GetAnalysisType(){  return fAnaType ; }
   void SetAnalysisType(Int_t ana ){  fAnaType = ana ; }
-
-  void Print(const Option_t * opt) const;
-
-  void MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClonesArray * plCTS, TClonesArray *plParton)  ;  
-  Bool_t ProcessEvent(Long64_t entry) ;
-  //TTree * MakeTreeG(TString name) ;
 
   TString GetCalorimeter() {return fCalorimeter ; }
   void SetCalorimeter(TString calo) {if (calo == "PHOS" || calo == "EMCAL") fCalorimeter = calo ;
@@ -74,7 +72,22 @@ public:
   void SetGammaDirect(AliAnaGammaDirect * dg) { fGammaDirect = dg ; }
   void SetGammaCorrelation(AliAnaGammaCorrelation * gc) { fGammaCorrelation = gc ;}
   void SetNeutralMesonSelection(AliNeutralMesonSelection * nms) { fNeutralMesonSelection = nms ; }
-  
+
+  //AOD stuff  
+  void   AddCluster(AliAODCaloCluster p);
+  void   ConnectAOD(AliAODEvent* aod);
+  void   FillAODs(TClonesArray * plPHOS, TClonesArray * plEMCAL);
+
+  //Others
+  void Init();
+  void InitParameters();
+
+  void MakeAnalysis(TClonesArray * plCalo, TClonesArray * plNe, TClonesArray * plCTS, TClonesArray *plParton, TClonesArray * plPrimCalo)  ;  
+
+  void Print(const Option_t * opt) const;
+
+  Bool_t ProcessEvent(Long64_t entry) ;
+
  private:
   
   //General Data members
@@ -87,8 +100,10 @@ public:
   AliAnaGammaDirect *   fGammaDirect ; //! Pointer to prompt gamma algorithm 
   AliAnaGammaCorrelation *   fGammaCorrelation ; //! Pointer to gamma correlation algorithm
   AliNeutralMesonSelection *  fNeutralMesonSelection ; //! Pointer to pair selection for pi0 identification.
-  
-  ClassDef(AliAnaGamma,0)
+  TClonesArray* fAODclusters;        //! reconstructed jets
+  Int_t         fNAODclusters;       //! number of reconstructed jets
+
+  ClassDef(AliAnaGamma,1)
 } ;
  
 

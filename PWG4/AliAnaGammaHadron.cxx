@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.4.4.2  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -45,7 +48,8 @@ ClassImp(AliAnaGammaHadron)
     AliAnaGammaCorrelation(),
     fhPhiCharged(0), fhPhiNeutral(0), fhEtaCharged(0), fhEtaNeutral(0), 
     fhDeltaPhiGammaCharged(0),  fhDeltaPhiGammaNeutral(0), 
-    fhDeltaEtaGammaCharged(0), fhDeltaEtaGammaNeutral(0), 
+    fhDeltaEtaGammaCharged(0), fhDeltaEtaGammaNeutral(0),
+    fhDeltaPhiChargedPt(0),  
     fhCorrelationGammaNeutral(0), fhCorrelationGammaCharged(0)
 {
   //Default Ctor
@@ -64,6 +68,7 @@ AliAnaGammaHadron::AliAnaGammaHadron(const AliAnaGammaHadron & g) :
   fhDeltaPhiGammaNeutral(g.fhDeltaPhiGammaNeutral), 
   fhDeltaEtaGammaCharged(g.fhDeltaEtaGammaCharged), 
   fhDeltaEtaGammaNeutral(g.fhDeltaEtaGammaNeutral), 
+  fhDeltaPhiChargedPt(g.fhDeltaPhiChargedPt), 
   fhCorrelationGammaNeutral(g.fhCorrelationGammaNeutral), 
   fhCorrelationGammaCharged(g.fhCorrelationGammaCharged)
 {
@@ -85,6 +90,7 @@ AliAnaGammaHadron & AliAnaGammaHadron::operator = (const AliAnaGammaHadron & sou
   fhDeltaPhiGammaNeutral = source.fhDeltaPhiGammaNeutral ; 
   fhDeltaEtaGammaCharged = source.fhDeltaEtaGammaCharged ; 
   fhDeltaEtaGammaNeutral = source.fhDeltaEtaGammaNeutral ; 
+  fhDeltaPhiChargedPt = source.fhDeltaPhiChargedPt ;
 
   fhCorrelationGammaNeutral = source.fhCorrelationGammaNeutral ; 
   fhCorrelationGammaCharged = source.fhCorrelationGammaCharged ; 
@@ -105,6 +111,7 @@ AliAnaGammaHadron::~AliAnaGammaHadron()
   delete fhDeltaPhiGammaNeutral   ; 
   delete fhDeltaEtaGammaCharged  ; 
   delete fhDeltaEtaGammaNeutral  ; 
+  delete fhDeltaPhiChargedPt  ;
 
   delete fhCorrelationGammaNeutral  ; 
   delete fhCorrelationGammaCharged  ;
@@ -138,7 +145,13 @@ TList *  AliAnaGammaHadron::GetCreateOutputObjects()
      200,0,120,200,0,6.4); 
   fhDeltaPhiGammaCharged->SetYTitle("#Delta #phi");
   fhDeltaPhiGammaCharged->SetXTitle("p_{T #gamma} (GeV/c)");
-  
+
+  fhDeltaPhiChargedPt  = new TH2F
+    ("DeltaPhiChargedPt","#phi_{#gamma} - #phi_{charged #pi} vs p_{T #pi}",
+     200,0,120,200,0,6.4);
+  fhDeltaPhiChargedPt->SetYTitle("#Delta #phi");
+  fhDeltaPhiChargedPt->SetXTitle("p_{T #pi} (GeV/c)");
+
   fhDeltaEtaGammaCharged  = new TH2F
     ("DeltaEtaGammaCharged","#eta_{#gamma} - #eta_{#pi^{#pm}} vs p_{T #gamma}",
      200,0,120,200,-2,2); 
@@ -156,6 +169,7 @@ TList *  AliAnaGammaHadron::GetCreateOutputObjects()
   outputContainer->Add(fhDeltaPhiGammaCharged) ; 
   outputContainer->Add(fhDeltaEtaGammaCharged) ;
   outputContainer->Add(fhCorrelationGammaCharged) ;
+  outputContainer->Add(fhDeltaPhiChargedPt) ;
 
   if(!AreJetsOnlyInCTS()){
     //---- kHadron and kJetLeadCone ----
@@ -269,6 +283,8 @@ void  AliAnaGammaHadron::MakeGammaChargedCorrelation(TParticle * pGamma, TClones
     fhPhiCharged->Fill(ptg,phi);
     fhDeltaEtaGammaCharged->Fill(ptg,pGamma->Eta()-particle->Eta());
     fhDeltaPhiGammaCharged->Fill(ptg,phig-phi);
+    fhDeltaPhiChargedPt->Fill(pt,phig-phi);
+
     //Selection within angular and energy limits
     if(((phig-phi)> GetDeltaPhiMinCut()) && ((phig-phi)<GetDeltaPhiMaxCut()) && pt > GetMinPtHadron()){
       AliDebug(2,Form("Selected: pt %f, phi %f",pt,phi));

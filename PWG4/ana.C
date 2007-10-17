@@ -22,9 +22,9 @@ Bool_t LoadLib( const char* pararchivename)
     gROOT->ProcessLine(processline) ;
     gSystem->ChangeDirectory(cdir) ; 
     sprintf(processline, ".! mv /tmp/%s .", parpar) ;
-    gROOT->ProcessLine(processline) ; 	
+    //gROOT->ProcessLine(processline) ; 	
     sprintf(processline,".! tar xvzf %s",parpar);
-    gROOT->ProcessLine(processline);
+    //gROOT->ProcessLine(processline);
    }
    gSystem->ChangeDirectory(pararchivename);
    
@@ -62,11 +62,10 @@ Bool_t LoadLib( const char* pararchivename)
 void ana(const Int_t kEvent=10)  
 { 
 
-  //AliLog::SetGlobalDebugLevel(5);
+  //AliLog::SetGlobalDebugLevel(1);
   gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
   gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISRL.so");
-
+ 
   if (! gIsAnalysisLoaded ) {
     //    LoadLib("ESD") ; 
     //   LoadLib("AOD") ;
@@ -77,10 +76,10 @@ void ana(const Int_t kEvent=10)
   // create the analysis goodies object
   AliAnalysisGoodies * ag = new AliAnalysisGoodies() ; 
   
-  AliAnalysisTaskGamma * task = new AliAnalysisTaskGamma ("GammaCorrelations");
+  AliAnalysisTaskGamma * task = new AliAnalysisTaskGamma ("Gamma");
   ag->ConnectInput(task, TChain::Class(), 0) ; 
-  ag->ConnectOuput(task, TList::Class(), 0) ;  
-  //ag->ConnectOuput(task, TTree::Class(), 0, "AOD") ;  
+  ag->ConnectOuput(task, TTree::Class(), 0, "AOD") ;  
+  ag->ConnectOuput(task, TList::Class(), 1) ;  
    
   // get the data to analyze
 

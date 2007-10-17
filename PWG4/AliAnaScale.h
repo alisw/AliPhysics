@@ -38,9 +38,7 @@ private:
   // Histograms
   TList   * fInputList ;  //! input data list
   TList   * fOutputList ; //! output data list
-  TH1D    * fhInPHOSEnergy ;
-  TH1D    * fhOuPHOSEnergy ;
    
-  ClassDef(AliAnaScale, 0); // a post event loop scaling 
+  ClassDef(AliAnaScale, 1); // a post event loop scaling 
 };
 #endif // ALIANASCALE_H

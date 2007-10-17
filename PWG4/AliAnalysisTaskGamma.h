@@ -7,6 +7,7 @@
 #include "AliAnalysisTask.h"
 class AliAnaGamma;
 class AliESDEvent;
+class AliAODEvent;
 class TChain;
 class TList;
 
@@ -21,7 +22,7 @@ class AliAnalysisTaskGamma : public AliAnalysisTask
     virtual void ConnectInputData(Option_t *option = "");
     virtual void CreateOutputObjects();
     virtual void Init();
-    //virtual void LocalInit() {Init();}
+    virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t *option);
    
@@ -30,10 +31,11 @@ class AliAnalysisTaskGamma : public AliAnalysisTask
     AliAnaGamma* fAna; //  Pointer to the jet finder 
     TChain*       fChain;     //! chained files
     AliESDEvent*       fESD;       //! ESD
+    AliAODEvent*       fAOD;       //! AOD
     TTree*        fTreeG;     //  tree of prompt gamma, does nothing for the moment 
     TList * fOutputContainer ; // Histogram container
 
-    ClassDef(AliAnalysisTaskGamma, 0); // Analysis task for standard gamma correlation analysis
+    ClassDef(AliAnalysisTaskGamma, 1); // Analysis task for standard gamma correlation analysis
 };
  
 #endif //ALIANALYSISTASKGAMMA_H

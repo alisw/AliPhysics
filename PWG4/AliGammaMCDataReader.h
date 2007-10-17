@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -36,39 +39,15 @@ public:
   AliGammaMCDataReader & operator = (const AliGammaMCDataReader & g) ;//cpy assignment
   virtual ~AliGammaMCDataReader() {;} //virtual dtor
 
- 
-  void InitParameters();
+  void CreateParticleList(TObject * esd, TObject * stack, 
+			  TClonesArray * plCh, TClonesArray * plEMCAL, TClonesArray * plPHOS,
+			  TClonesArray * plPrimCh, TClonesArray * plPrimEMCAL, TClonesArray * plPrimPHOS);
 
-  Bool_t   IsEMCALPIDOn() const {return fEMCALPID ; }
-  Bool_t   IsPHOSPIDOn() const {return fPHOSPID ; }
-  Float_t  GetEMCALPhotonWeight() { return  fEMCALPhotonWeight  ; }
-  Float_t  GetEMCALPi0Weight()    {  return fEMCALPi0Weight  ; }
-  Float_t  GetPHOSPhotonWeight()  {  return fPHOSPhotonWeight  ; }
-  Float_t  GetPHOSPi0Weight()  {  return fPHOSPi0Weight  ; }
-  
-  void Print(const Option_t * opt)const;
-  
-  void SetEMCALPIDOn(Bool_t pid){ fEMCALPID= pid ; }
-  void SetPHOSPIDOn(Bool_t pid){ fPHOSPID= pid ; }
-  void SetEMCALPhotonWeight(Float_t  w){  fEMCALPhotonWeight = w ; }
-  void SetEMCALPi0Weight(Float_t  w){  fEMCALPi0Weight = w ; }
-  void SetPHOSPhotonWeight(Float_t  w){  fPHOSPhotonWeight = w ; }
-  void SetPHOSPi0Weight(Float_t  w){  fPHOSPi0Weight = w ; }
+  TParticle *  GetMotherParticle(Int_t label, AliStack *stack,  TString calo, TLorentzVector momentum) ;
 
-  void CreateParticleList(TObject * esd, TObject * stack, TClonesArray * plCh, 
-			  TClonesArray * plEMCAL, TClonesArray * plPHOS, TClonesArray *);
+  private:
 
-  
- private:
-
-  Bool_t       fEMCALPID ;//Fill EMCAL particle lists with particles with corresponding pid
-  Bool_t       fPHOSPID;  //Fill PHOS particle lists with particles with corresponding pid
-  Float_t      fEMCALPhotonWeight; //Bayesian PID weight for photons in EMCAL 
-  Float_t      fEMCALPi0Weight;  //Bayesian PID weight for pi0 in EMCAL 
-  Float_t      fPHOSPhotonWeight; //Bayesian PID weight for photons in PHOS 
-  Float_t      fPHOSPi0Weight; //Bayesian PID weight for pi0 in PHOS 
-
-  ClassDef(AliGammaMCDataReader,0)
+  ClassDef(AliGammaMCDataReader,1)
 } ;
  
 
