@@ -8,3 +8,6 @@ removed from the repository:
   old steering class of TPC reconstruction
 - AliHLTTPCRawDataFormat.h removed 20.09.2007
   the structure has been added to AliHLTTPCDigitData.h
+- AliHLTTPCDDLDataFileHandler.cxx/.h removed 17.10.2007
+  the conversion class to old HLT binary formats, deprecated because of completely
+  new framework
