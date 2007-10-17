@@ -49,9 +49,7 @@ AliQA.cxx \
 AliQADataMaker.cxx \
 AliQAChecker.cxx \
 AliQACheckerBase.cxx \
-AliMillepede.cxx \
-AliEnTag.cxx AliEnTagManager.cxx
-
+AliMillepede.cxx 
 
 
 HDRS:= $(SRCS:.cxx=.h) 
