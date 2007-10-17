@@ -53,7 +53,9 @@ AliSysInfo::AliSysInfo():
     TObject(),
     fSysWatch(0),
     fTimer(0),
-    fMemStat(0)
+    fMemStat(0),
+    fCallBackFunc(0),
+    fNCallBack(0)
 {
   fTimer = new TStopwatch;
   fSysWatch  = new fstream("syswatch.log", ios_base::out|ios_base::trunc);
@@ -119,6 +121,9 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
   gSystem->GetCpuInfo(&cpuInfo, 10);
   gSystem->GetMemInfo(&memInfo);
   gSystem->GetProcInfo(&procInfo);
+  procInfo.fMemVirtual*=0.001;  //size in MBy
+  procInfo.fMemResident*=0.001;  //size in MBy
+
   const char * hname = gSystem->HostName();
 
   static Int_t entry=0;
@@ -165,7 +170,9 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2){
   procInfoOld= procInfo;
 
   //  if (fInstance->fMemStat) fInstance->fMemStat->AddStamps(sname);
- 
+  for (Int_t icallback=0; icallback<Instance()->fNCallBack; icallback++){
+    Instance()->fCallBackFunc[icallback](sname);
+  }
   entry++;
 }
 
@@ -176,8 +183,8 @@ TTree * AliSysInfo::MakeTree(const char *lname){
   tree->ReadFile(lname);
   tree->SetAlias("deltaT","stampSec-stampOldSec");
   tree->SetAlias("T","stampSec-first");
-  tree->SetAlias("deltaVM","(pI.fMemVirtual-pIOld.fMemVirtual)*0.001");
-  tree->SetAlias("VM","pI.fMemVirtual*0.001");
+  tree->SetAlias("deltaVM","(pI.fMemVirtual-pIOld.fMemVirtual)");
+  tree->SetAlias("VM","pI.fMemVirtual");
   return tree;
 }
 
@@ -209,4 +216,17 @@ void AliSysInfo::CloseMemStat(){
   //USE IFDEF if MEMSTAT ENABLED
   //if (Instance()->fMemStat  == TMemStatManager::GetInstance()) Instance()->fMemStat->Close();
   //Instance()->fMemStat=0;
+}
+
+
+
+void AliSysInfo::AddCallBack(StampCallback_t callback){
+  //
+  // add cal back function
+  //
+  AliSysInfo *info =  Instance();
+  if (!info->fCallBackFunc)
+    info->fCallBackFunc = new StampCallback_t[100];
+  info->fCallBackFunc[info->fNCallBack]=callback;
+  info->fNCallBack++;
 }

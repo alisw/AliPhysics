@@ -27,6 +27,8 @@ public:
   static void OpenMemStat();
   static void CloseMemStat();
   static Bool_t Contain(const char * str1, const char * str2);
+  typedef void (*StampCallback_t)(const Char_t * desription);
+  static  void AddCallBack(StampCallback_t callback);
 private:
   AliSysInfo(const AliSysInfo& source);
   AliSysInfo& operator= (const AliSysInfo& rec);
@@ -35,6 +37,8 @@ private:
   TStopwatch      *fTimer;          // timer
   TMemStatManager *fMemStat;      
   static AliSysInfo *   fInstance; //instance pointer
+  StampCallback_t *fCallBackFunc; // call back functions
+  Int_t           fNCallBack;        // number of call back functions
   ClassDef(AliSysInfo,0)
 };
 
