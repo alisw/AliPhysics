@@ -20,7 +20,6 @@
 #pragma link C++ class  AliMpVPadIterator+;
 #pragma link C++ class  AliMpPadIteratorPtr+;
 #pragma link C++ class  AliMpFiles!;
-#pragma link C++ class  AliMpManuList;
 
 #pragma link C++ namespace AliMp;
 #pragma link C++ enum   AliMp::Direction;
@@ -105,6 +104,11 @@
 
 // $MpId: managementLinkDefIn.h,v 1.1 2006/01/11 10:24:20 ivana Exp $ 
 
+#pragma link C++ class  AliMpManuIterator;
+#pragma link C++ class  AliMpManuUID;
+#pragma link C++ class  AliMpPadUID;
+#pragma link C++ class  AliMpHVUID;
+#pragma link C++ class  AliMpHVNamer;
 #pragma link C++ class  AliMpSegmentation+;
 #pragma link C++ class  AliMpDetElement+;
 #pragma link C++ class  AliMpDEStore+;

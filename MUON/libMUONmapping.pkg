@@ -23,7 +23,6 @@ SRCS +=  \
 	 mapping/AliMpVIndexed.cxx  \
 	 mapping/AliMpVPadIterator.cxx  \
 	 mapping/AliMpVSegmentation.cxx  \
-	 mapping/AliMpManuList.cxx 
    
 # Category motif
 #
@@ -84,6 +83,11 @@ SRCS +=  \
 # Category management
 #
 SRCS +=  \
+         mapping/AliMpManuIterator.cxx \
+         mapping/AliMpManuUID.cxx \
+         mapping/AliMpPadUID.cxx \
+         mapping/AliMpHVUID.cxx \
+         mapping/AliMpHVNamer.cxx \
          mapping/AliMpSegmentation.cxx \
 	 mapping/AliMpDetElement.cxx \
 	 mapping/AliMpDEStore.cxx  \
