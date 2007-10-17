@@ -26,19 +26,26 @@ public:
   
   virtual ~AliMUONCalibParamNI();
 
+  /// Own clone methods (as the default TObject::Clone turned out to be pretty slow !)
+  virtual TObject* Clone(const char* = "") const { return new AliMUONCalibParamNI(*this); }
+  
   /// Return dimension
   virtual Int_t Dimension() const { return fDimension; }
   
   virtual void Print(Option_t* opt="") const;
   
   virtual void SetValueAsFloat(Int_t i, Int_t j, Float_t value);
+  virtual void SetValueAsFloatFast(Int_t i, Int_t j, Float_t value);
   virtual void SetValueAsInt(Int_t i, Int_t j, Int_t value);
+  virtual void SetValueAsIntFast(Int_t i, Int_t j, Int_t value);
   
   /// Return size - the number of float pair we hold
   virtual Int_t Size() const { return fSize; } 
 
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const;
+  virtual Float_t ValueAsFloatFast(Int_t i, Int_t j=0) const;
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const;
+  virtual Int_t ValueAsIntFast(Int_t i, Int_t j=0) const;
      
   virtual Bool_t UnpackValue(Int_t value, Int_t& a, Int_t& b) const;
   
@@ -49,6 +56,7 @@ public:
 private:
   void CopyTo(AliMUONCalibParamNI& destination) const;
   Int_t Index(Int_t i, Int_t j) const;  
+  Int_t IndexFast(Int_t i, Int_t j) const;  
     
 private:
   Int_t fDimension; ///< dimension of this object

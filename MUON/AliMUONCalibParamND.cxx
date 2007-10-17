@@ -108,6 +108,8 @@ AliMUONCalibParamND::CopyTo(AliMUONCalibParamND& destination) const
 {
 /// Copy *this to destination
 
+  TObject::Copy(destination);
+  
   delete[] destination.fValues;
   destination.fN = fN;
   destination.fSize = fSize;
@@ -132,9 +134,18 @@ AliMUONCalibParamND::Index(Int_t i, Int_t j) const
 
   if ( i >= 0 && i < Size() && j >= 0 && j < Dimension() )
   {
-    return i + Size()*j;
+    return IndexFast(i,j);
   }
   return -1;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONCalibParamND::IndexFast(Int_t i, Int_t j) const
+{
+  /// Compute the 1D index of the internal storage from the pair (i,j)
+  
+  return i + Size()*j;
 }
 
 //_____________________________________________________________________________
@@ -205,6 +216,14 @@ AliMUONCalibParamND::SetValueAsDouble(Int_t i, Int_t j, Double_t value)
   }
 }
 
+//_____________________________________________________________________________
+void
+AliMUONCalibParamND::SetValueAsDoubleFast(Int_t i, Int_t j, Double_t value)
+{
+  /// Set one value as a double, w/o checking that the indices are correct.
+  
+  fValues[IndexFast(i,j)] = value;
+}
 
 //_____________________________________________________________________________
 void
@@ -216,11 +235,28 @@ AliMUONCalibParamND::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 
 //_____________________________________________________________________________
 void
+AliMUONCalibParamND::SetValueAsFloatFast(Int_t i, Int_t j, Float_t value)
+{
+  /// Set one value as a float, after checking that the indices are correct.
+  SetValueAsDoubleFast(i,j,static_cast<Double_t>(value));
+}
+
+//_____________________________________________________________________________
+void
 AliMUONCalibParamND::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 {
 /// Set one value as an int.
 
   SetValueAsFloat(i,j,static_cast<Float_t>(value));
+}
+
+//_____________________________________________________________________________
+void
+AliMUONCalibParamND::SetValueAsIntFast(Int_t i, Int_t j, Int_t value)
+{
+  /// Set one value as an int.
+  
+  SetValueAsFloatFast(i,j,static_cast<Float_t>(value));
 }
 
 //_____________________________________________________________________________
@@ -244,11 +280,28 @@ AliMUONCalibParamND::ValueAsDouble(Int_t i, Int_t j) const
 }
 
 //_____________________________________________________________________________
+Double_t
+AliMUONCalibParamND::ValueAsDoubleFast(Int_t i, Int_t j) const
+{
+  /// Return the value as a double (which it is), w/o checking indices.
+  
+  return fValues[IndexFast(i,j)];
+}
+
+//_____________________________________________________________________________
 Float_t
 AliMUONCalibParamND::ValueAsFloat(Int_t i, Int_t j) const
 {
 /// Return the value as a float 
   return static_cast<Float_t>(ValueAsDouble(i,j));
+}
+
+//_____________________________________________________________________________
+Float_t
+AliMUONCalibParamND::ValueAsFloatFast(Int_t i, Int_t j) const
+{
+  /// Return the value as a float 
+  return static_cast<Float_t>(ValueAsDoubleFast(i,j));
 }
 
 //_____________________________________________________________________________
@@ -258,5 +311,15 @@ AliMUONCalibParamND::ValueAsInt(Int_t i, Int_t j) const
 /// Return the value as an int, by rounding the internal float value.
 
   Float_t v = ValueAsFloat(i,j);
+  return TMath::Nint(v);
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONCalibParamND::ValueAsIntFast(Int_t i, Int_t j) const
+{
+  /// Return the value as an int, by rounding the internal float value.
+  
+  Float_t v = ValueAsFloatFast(i,j);
   return TMath::Nint(v);
 }

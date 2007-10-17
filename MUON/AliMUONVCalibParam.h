@@ -43,12 +43,23 @@ public:
     */
   virtual void SetValueAsDouble(Int_t i, Int_t j, Double_t value);
 
+  /// Same as above but w/o bound checking
+  virtual void SetValueAsDoubleFast(Int_t i, Int_t j, Double_t value);
+
   /// Set one value, for channel i, dimension j. Consider value is a float.
   virtual void SetValueAsFloat(Int_t i, Int_t j, Float_t value) = 0;
-  
+
+  /** Set one value, for channel i, dimension j. Consider value is a float.
+    Assume (i,j) are valid indices, i.e. do not check them.
+    */
+  virtual void SetValueAsFloatFast(Int_t i, Int_t j, Float_t value) = 0;
+
   /// Set one value, for channel i, dimension j. Consider value is an integer.
   virtual void SetValueAsInt(Int_t i, Int_t j, Int_t value) = 0;
-  
+
+  /// Same as above but w/o bound checkings.
+  virtual void SetValueAsIntFast(Int_t i, Int_t j, Int_t value) = 0;
+
   /// The number of channels handled by this object.
   virtual Int_t Size() const = 0;
 
@@ -57,14 +68,31 @@ public:
   
   /** Retrieve the value for a given (channel,dim) as a double.
       Only ok if IsDoublePrecision() is kTRUE.
+      (i,j) are checked to within boundaries
     */
   virtual Double_t ValueAsDouble(Int_t i, Int_t j=0) const;
 
-  /// Retrieve the value for a given (channel,dim) as a float.
-  virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const = 0;
+  /** Retrieve the value for a given (channel,dim) as a double.
+    Only ok if IsDoublePrecision() is kTRUE.
+    Fast means there's no bound checking on (i,j)
+    */
+  virtual Double_t ValueAsDoubleFast(Int_t i, Int_t j=0) const;
   
-  /// Retrieve the value for a given (channel,dim) as an integer.
+  /** Retrieve the value for a given (channel,dim) as a float, with
+      bound checking on (i,j).
+    */
+  virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const = 0;
+
+  /// Same as above but without bound checking.
+  virtual Float_t ValueAsFloatFast(Int_t i, Int_t j=0) const = 0;
+
+  /** Retrieve the value for a given (channel,dim) as an integer.
+      With bound checking.
+    */
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const = 0;
+
+  /// Same as above but w/o bound checking.
+  virtual Int_t ValueAsIntFast(Int_t i, Int_t j=0) const = 0;
 
   /// Unpack a value into a couple (a,b). Returns false if IsPacked()==kFALSE
   virtual Bool_t UnpackValue(Int_t /*value*/, Int_t& /*a*/, Int_t& /*b*/) const { return kFALSE; }

@@ -69,8 +69,8 @@ AliMUONCalibParamNI::AliMUONCalibParamNI(Int_t dimension, Int_t theSize,
 /// by this object, and fillWithValue the default value assigned to each
 /// channel.
 
-    AliDebug(1,Form("this=%p dimension=%d theSize=%d fillWithValue=%d packingFactor=%d",
-                    this,dimension,theSize,fillWithValue,packingFactor));
+//    AliDebug(1,Form("this=%p dimension=%d theSize=%d fillWithValue=%d packingFactor=%d",
+//                    this,dimension,theSize,fillWithValue,packingFactor));
 
   if ( fN > 0 )
   {
@@ -151,9 +151,18 @@ AliMUONCalibParamNI::Index(Int_t i, Int_t j) const
 
   if ( i >= 0 && i < Size() && j >= 0 && j < Dimension() )
   {
-    return i + Size()*j;
+    return IndexFast(i,j);
   }
   return -1;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONCalibParamNI::IndexFast(Int_t i, Int_t j) const
+{
+  /// Compute the 1D index of the internal storage from the pair (i,j)
+  
+  return i + Size()*j;
 }
 
 //_____________________________________________________________________________
@@ -244,6 +253,15 @@ AliMUONCalibParamNI::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 
 //_____________________________________________________________________________
 void
+AliMUONCalibParamNI::SetValueAsIntFast(Int_t i, Int_t j, Int_t value)
+{
+  /// Set one value as a float, w/o checking that the indices are correct.
+  
+  fValues[IndexFast(i,j)] = value;
+}
+
+//_____________________________________________________________________________
+void
 AliMUONCalibParamNI::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 {
   /// Set one value as an int.
@@ -251,6 +269,17 @@ AliMUONCalibParamNI::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
   AliWarning("Float will be rounded to be stored...");
   SetValueAsInt(i,j,TMath::Nint(value));
 }
+
+//_____________________________________________________________________________
+void
+AliMUONCalibParamNI::SetValueAsFloatFast(Int_t i, Int_t j, Float_t value)
+{
+  /// Set one value as an int.
+  
+  AliWarning("Float will be rounded to be stored...");
+  SetValueAsIntFast(i,j,TMath::Nint(value));
+}
+
 
 //_____________________________________________________________________________
 Int_t
@@ -273,11 +302,28 @@ AliMUONCalibParamNI::ValueAsInt(Int_t i, Int_t j) const
 }
 
 //_____________________________________________________________________________
+Int_t
+AliMUONCalibParamNI::ValueAsIntFast(Int_t i, Int_t j) const
+{
+  /// Return the value as an int (which it is), w/o checking indices.
+  
+  return fValues[IndexFast(i,j)];
+}
+
+//_____________________________________________________________________________
 Float_t
 AliMUONCalibParamNI::ValueAsFloat(Int_t i, Int_t j) const
 {
   /// Return the value as a float
   return static_cast<Float_t>(ValueAsInt(i,j));
+}
+
+//_____________________________________________________________________________
+Float_t
+AliMUONCalibParamNI::ValueAsFloatFast(Int_t i, Int_t j) const
+{
+  /// Return the value as a float
+  return static_cast<Float_t>(ValueAsIntFast(i,j));
 }
 
 //_____________________________________________________________________________

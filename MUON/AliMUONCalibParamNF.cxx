@@ -135,9 +135,18 @@ AliMUONCalibParamNF::Index(Int_t i, Int_t j) const
 
   if ( i >= 0 && i < Size() && j >= 0 && j < Dimension() )
   {
-    return i + Size()*j;
+    return IndexFast(i,j);
   }
   return -1;
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONCalibParamNF::IndexFast(Int_t i, Int_t j) const
+{
+  /// Compute the 1D index of the internal storage from the pair (i,j)
+  
+  return i + Size()*j;
 }
 
 //_____________________________________________________________________________
@@ -210,11 +219,29 @@ AliMUONCalibParamNF::SetValueAsFloat(Int_t i, Int_t j, Float_t value)
 
 //_____________________________________________________________________________
 void
+AliMUONCalibParamNF::SetValueAsFloatFast(Int_t i, Int_t j, Float_t value)
+{
+  /// Set one value as a float, w/o checking that the indices are correct.
+  
+  fValues[IndexFast(i,j)] = value;
+}
+
+//_____________________________________________________________________________
+void
 AliMUONCalibParamNF::SetValueAsInt(Int_t i, Int_t j, Int_t value)
 {
 /// Set one value as an int.
 
   SetValueAsFloat(i,j,static_cast<Float_t>(value));
+}
+
+//_____________________________________________________________________________
+void
+AliMUONCalibParamNF::SetValueAsIntFast(Int_t i, Int_t j, Int_t value)
+{
+  /// Set one value as an int.
+  
+  SetValueAsFloatFast(i,j,static_cast<Float_t>(value));
 }
 
 //_____________________________________________________________________________
@@ -238,11 +265,30 @@ AliMUONCalibParamNF::ValueAsFloat(Int_t i, Int_t j) const
 }
 
 //_____________________________________________________________________________
+Float_t
+AliMUONCalibParamNF::ValueAsFloatFast(Int_t i, Int_t j) const
+{
+  /// Return the value as a float (which it is), after checking indices.
+  
+  return fValues[IndexFast(i,j)];
+}
+
+//_____________________________________________________________________________
 Int_t
 AliMUONCalibParamNF::ValueAsInt(Int_t i, Int_t j) const
 {
 /// Return the value as an int, by rounding the internal float value.
 
   Float_t v = ValueAsFloat(i,j);
+  return TMath::Nint(v);
+}
+
+//_____________________________________________________________________________
+Int_t
+AliMUONCalibParamNF::ValueAsIntFast(Int_t i, Int_t j) const
+{
+  /// Return the value as an int, by rounding the internal float value.
+  
+  Float_t v = ValueAsFloatFast(i,j);
   return TMath::Nint(v);
 }

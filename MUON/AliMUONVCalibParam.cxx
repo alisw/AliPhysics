@@ -31,6 +31,10 @@
 /// id1 might be left to zero if not required (e.g. for calibparam which 
 /// can be identified by a single integer)
 ///
+/// Note that the ValueAsXXX methods have 2 versions : with or without bound
+/// checking. The latter is to be used in e.g. loops, where you know for
+/// sure the indices are ok, in order to gain some time.
+///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
 
@@ -123,8 +127,25 @@ AliMUONVCalibParam::SetValueAsDouble(Int_t, Int_t, Double_t)
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONVCalibParam::SetValueAsDoubleFast(Int_t, Int_t, Double_t)
+{
+  /// By default, this one does not exist
+  AliFatal("Not implemented");
+}
+
+//_____________________________________________________________________________
 Double_t 
 AliMUONVCalibParam::ValueAsDouble(Int_t , Int_t ) const
+{
+  /// By default, this one does not exist
+  AliFatal("Not implemented");
+  return 0;
+}
+
+//_____________________________________________________________________________
+Double_t 
+AliMUONVCalibParam::ValueAsDoubleFast(Int_t , Int_t ) const
 {
   /// By default, this one does not exist
   AliFatal("Not implemented");

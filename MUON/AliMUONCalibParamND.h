@@ -26,21 +26,30 @@ public:
   
   virtual ~AliMUONCalibParamND();
 
+  /// Own clone methods (as the default TObject::Clone turned out to be pretty slow !)
+  virtual TObject* Clone(const char* = "") const { return new AliMUONCalibParamND(*this); }
+  
   /// Return dimension
   virtual Int_t Dimension() const { return fDimension; }
   
   virtual void Print(Option_t* opt="") const;
   
   virtual void SetValueAsDouble(Int_t i, Int_t j, Double_t value);
+  virtual void SetValueAsDoubleFast(Int_t i, Int_t j, Double_t value);
   virtual void SetValueAsFloat(Int_t i, Int_t j, Float_t value);
+  virtual void SetValueAsFloatFast(Int_t i, Int_t j, Float_t value);
   virtual void SetValueAsInt(Int_t i, Int_t j, Int_t value);
+  virtual void SetValueAsIntFast(Int_t i, Int_t j, Int_t value);
   
   /// Return size - the number of double tuples we hold
   virtual Int_t Size() const { return fSize; } 
 
   virtual Float_t ValueAsFloat(Int_t i, Int_t j=0) const;
+  virtual Float_t ValueAsFloatFast(Int_t i, Int_t j=0) const;
   virtual Double_t ValueAsDouble(Int_t i, Int_t j=0) const;
+  virtual Double_t ValueAsDoubleFast(Int_t i, Int_t j=0) const;
   virtual Int_t ValueAsInt(Int_t i, Int_t j=0) const;
+  virtual Int_t ValueAsIntFast(Int_t i, Int_t j=0) const;
      
   /// Advertise that we can store double precision values
   virtual Bool_t IsDoublePrecision() const { return kTRUE; }
@@ -48,6 +57,7 @@ public:
 private:
   void CopyTo(AliMUONCalibParamND& destination) const;
   Int_t Index(Int_t i, Int_t j) const;  
+  Int_t IndexFast(Int_t i, Int_t j) const;  
     
 private:
   Int_t fDimension; ///< dimension of this object
