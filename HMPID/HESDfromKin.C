@@ -1,6 +1,6 @@
 AliRunLoader *gAL=0; 
 Int_t gEvt=0; Int_t gMaxEvt=0;
-TObjArray *pNmean;
+TObjArray *pNmean,*pQthre;
 TTree *gEsdTr;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HESDfromKin(const char *name="default")
@@ -24,7 +24,7 @@ void HESDfromKin(const char *name="default")
        
   }  else return;  
 
-  OpenCalib();
+  if(!OpenCalib()) {Printf("Problems in OpenCalib!Bye.");return;}
     
   TString ttl=name;
   Bool_t htaCheck=ttl.Contains("HTA");
@@ -55,7 +55,7 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
       if(mtid>=0) continue; // only primaries
       AliESDtrack trk(pTrack); 
       pEsd->AddTrack(&trk);
-      AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean);
+      AliHMPIDTracker::Recon(pEsd,pH->CluLst(),pNmean,pQthre);
     }// track loop
     pEsd->SetMagneticField(AliHMPIDTracker::GetBz());
     gEsdTr->Fill();
@@ -67,6 +67,9 @@ void SimEsd(AliLoader *pHL,AliESDEvent *pEsd)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void SimEsdHidden(AliLoader *pHL,AliESDEvent *pEsd)
 {
+  TH1F *hdC = new TH1F("dC","dC",100,-0.2,0.2);
+  TH1F *hCer = new TH1F("Cer","Cer",250,0.,0.75);
+  TH2F *htvsp = new TH2F("tvsp","tvsp",100,0.,5.,1000,0.,0.75);
   Double_t rd=TMath::RadToDeg();
   Printf("----------------------------------------------");
   Printf("| SimHTA:Utility to embed ESD from kinematics|");
@@ -93,15 +96,18 @@ void SimEsdHidden(AliLoader *pHL,AliESDEvent *pEsd)
       if(iCh<0) continue;                                                           //no intersection at all, go after next track
       Float_t radX,radY,thetaTrk,phiTrk;
       trk.GetHMPIDtrk(radX,radY,thetaTrk,phiTrk);
-      Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
+//      Printf("simulated track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
       TObjArray *pClus = pH->CluLst();
-      if(AliHMPIDTracker::ReconHiddenTrk(iCh,&trk,(TClonesArray *)pClus->At(iCh),pNmean)!=0) continue;
+      if(AliHMPIDTracker::ReconHiddenTrk(iCh,&trk,(TClonesArray *)pClus->At(iCh),pNmean,pQthre)!=0) continue;
       trk.GetHMPIDtrk(radX,radY,thetaTrk,phiTrk);
-      Printf("reconstr. track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
+//      Printf("reconstr. track theta %f phi %f",thetaTrk*rd,phiTrk*rd);
       pEsd->AddTrack(&trk);
       Double_t thetaCerSim = TMath::ACos(pTrack->Energy()/(1.292*pTrack->P()));
-      Printf(" theta Cerenkov simulated     %f",thetaCerSim);
-      Printf(" theta Cerenkov reconstructed %f",trk.GetHMPIDsignal());
+//      Printf(" theta Cerenkov simulated     %f",thetaCerSim);
+//      Printf(" theta Cerenkov reconstructed %f",trk.GetHMPIDsignal());
+      hdC->Fill(trk.GetHMPIDsignal()-thetaCerSim);
+      hCer->Fill(trk.GetHMPIDsignal());
+      htvsp->Fill(pTrack->P(),trk.GetHMPIDsignal());
     }// track loop
     pEsd->SetMagneticField(AliHMPIDTracker::GetBz());
     gEsdTr->Fill();
@@ -111,15 +117,19 @@ void SimEsdHidden(AliLoader *pHL,AliESDEvent *pEsd)
   gAL->UnloadHeader();  gAL->UnloadKinematics();
 }//EsdHidden()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void OpenCalib()
+Bool_t OpenCalib()
 {
   AliCDBManager* pCDB = AliCDBManager::Instance();
   pCDB->SetDefaultStorage("local://$HOME");
   AliCDBEntry *pQthreEnt=pCDB->Get("HMPID/Calib/Qthre",0);
   AliCDBEntry *pNmeanEnt=pCDB->Get("HMPID/Calib/Nmean",0);
   
-  if(!pQthreEnt || ! pNmeanEnt) return;
+  if(!pQthreEnt || !pNmeanEnt) return kFALSE;
   
   pNmean=(TObjArray*)pNmeanEnt->GetObject(); 
+  pQthre=(TObjArray*)pQthreEnt->GetObject(); 
+
+  if(!pQthre || !pNmean) return kFALSE;  
+  return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
