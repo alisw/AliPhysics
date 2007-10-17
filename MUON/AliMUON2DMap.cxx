@@ -21,9 +21,6 @@
 #include "AliMUON2DMapIterator.h"
 #include "AliMUON2DMapIteratorByI.h"
 #include "AliMpExMap.h"
-#include "AliMpManuList.h"
-#include "AliMpDEManager.h"
-#include "AliMpConstants.h"
 
 //-----------------------------------------------------------------------------
 /// \class AliMUON2DMap
@@ -142,7 +139,7 @@ AliMUON2DMap::CreateIterator() const
   // Returned iterator must be deleted by user.
   if ( fMap ) 
   {
-    return new AliMUON2DMapIterator(*fMap);
+    return new AliMUON2DMapIterator(fMap);
   }
   return 0x0;
 }
@@ -171,12 +168,9 @@ AliMUON2DMap::Clear(Option_t*)
 
   if ( fOptimizeForDEManu )
   {
-    Int_t nDEs(0);
-    for ( Int_t i = 0; i < AliMpConstants::NofChambers(); ++i )
-    {
-      nDEs += AliMpDEManager::GetNofDEInChamber(i);
-    }
-    fMap->SetSize(nDEs);
+    fMap->SetSize(228); // hard-coded constant in order not to depend on mapping
+    // if this number ever change, it will not break the code, simply the
+    // automatic resizing will give a warning...
   }
 }  
 
@@ -224,23 +218,12 @@ AliMUON2DMap::Set(Int_t i, Int_t j, TObject* object, Bool_t replace)
     AliMpExMap* m = new AliMpExMap(true);
     if ( fOptimizeForDEManu ) 
     {
-      Int_t n(AliMpManuList::NumberOfManus(i));
-      if (!n)
-      {
-        AliError(Form("This does not look right : i = %d is supposed to "
-                      "be a DetElemId with n = %d manus!",i,n));
-      }
-      else
-      {
-        m->SetSize(n);
-      }
+      m->SetSize(451); // same remark as for the SetSize in ctor...
     }
     fMap->Add(i,m);
     o = fMap->GetValue(i);
   }
   AliMpExMap* m = static_cast<AliMpExMap*>(o);
-//  AliMpExMap* m = dynamic_cast<AliMpExMap*>(o);
-//  if (!m) AliFatal(Form("fMap[%d] not of the expected type",i));
  
   o = m->GetValue(j);
   
