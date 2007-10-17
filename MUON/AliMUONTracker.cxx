@@ -59,7 +59,7 @@ ClassImp(AliMUONTracker)
 AliMUONTracker::AliMUONTracker(const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
                                const AliMUONTriggerCircuit* triggerCircuit,
-			       AliMUONTriggerChamberEff* chamberEff)
+                               AliMUONTriggerChamberEff* chamberEff)
 : AliTracker(),
   fDigitMaker(digitMaker), // not owner
   fTransformer(transformer), // not owner
@@ -95,6 +95,11 @@ AliMUONTracker::LoadClusters(TTree* clustersTree)
   delete fClusterStore;
   delete fTriggerStore;
 
+  if ( ! clustersTree ) {
+    AliFatal("No clustersTree");
+    return 1;
+  }
+
   fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
   fTriggerStore = AliMUONVTriggerStore::Create(*clustersTree);
   
@@ -121,36 +126,20 @@ AliMUONTracker::LoadClusters(TTree* clustersTree)
 Int_t
 AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 {
-  /// Performs the tracking and store the resulting tracks in both
-  /// the TreeT and the ESD
+  /// Performs the tracking and store the resulting tracks in
+  /// the ESD
   
-  Int_t rv(0);
- 
-  TTree *tracksTree = new TTree;
- 
   if (!fClusterStore)
   {
     AliError("ClusterStore is NULL");
-    rv=2;
+    return 2;
   }
+  
   if (!fTriggerStore)
   {
     AliError("TriggerStore is NULL");
-    rv=3;
+    return 3;
   }
-  if (!rv)
-  {
-    rv = Clusters2Tracks(*tracksTree,esd);
-  }
-  return rv;
-}
-
-//_____________________________________________________________________________
-Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
-{
-  /// Performs the tracking
-  AliDebug(1,"");
-  AliCodeTimerAuto("")
   
   AliMUONVTrackStore* trackStore(0x0);
   AliMUONVTriggerTrackStore* triggerTrackStore(0x0);
@@ -160,7 +149,6 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
   {
     trackStore = new AliMUONTrackStoreV1;
     Bool_t alone = ( ( fTriggerStore && fTriggerCircuit ) ? kFALSE : kTRUE );
-    trackStore->Connect(tracksTree,alone);
     fTrackReco->EventReconstruct(*fClusterStore,*trackStore);
   }
   
@@ -169,7 +157,6 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
     // Make trigger tracks
     triggerTrackStore = new AliMUONTriggerTrackStoreV1;
     Bool_t alone = ( fClusterStore ? kFALSE : kTRUE );
-    triggerTrackStore->Connect(tracksTree,alone);
     fTrackReco->EventReconstructTrigger(*fTriggerCircuit,*fTriggerStore,*triggerTrackStore);
   }
 
@@ -178,9 +165,6 @@ Int_t AliMUONTracker::Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd)
     fTrackReco->ValidateTracksWithTrigger(*trackStore,*triggerTrackStore,*fTriggerStore,*fTrackHitPatternMaker);
   }
   
-  // Fills output TreeT 
-  //tracksTree.Fill();
-
   if( trackStore && triggerTrackStore && fTriggerStore && fTrigChamberEff){
       AliCodeTimerStart("EventChamberEff");
       fTrigChamberEff->EventChamberEff(*fTriggerStore,*triggerTrackStore,*trackStore);

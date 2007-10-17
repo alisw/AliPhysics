@@ -58,8 +58,6 @@ private:
   /// Not implemented
   AliMUONTracker& operator=(const AliMUONTracker& rhs);
     
-  Int_t Clusters2Tracks(TTree& tracksTree, AliESDEvent* esd);
-
   void FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const;
 
 private:
