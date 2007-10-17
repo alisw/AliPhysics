@@ -21,12 +21,13 @@ class AliMUONLogger;
 class AliMUONVStore;
 class AliMUONVDigitStore;
 class AliMUONVDigit;
+class AliMUONPadStatusMaker;
+class AliMUONPadStatusMapMaker;
 
 class AliMUONDigitCalibrator : public TObject
 {
 public:
-  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
-                         Bool_t createAndUseStatusMap=kTRUE);
+  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib);
   
   virtual ~AliMUONDigitCalibrator();
   
@@ -41,11 +42,13 @@ private:
     virtual void CalibrateDigit(AliMUONVDigit& digit);
 
 private:
-    const AliMUONCalibrationData& fCalibrationData; //!< Calibration data
-    AliMUONVStore* fStatusMap; //!< Channel status map
     AliMUONLogger* fLogger; //!< to log repeated messages
+    AliMUONPadStatusMaker* fStatusMaker; //!< to build pad statuses
+    AliMUONPadStatusMapMaker* fStatusMapMaker; //!< to build status map
+    AliMUONVStore* fPedestals; //!< pedestal values
+    AliMUONVStore* fGains; //!< gain values
     
-  ClassDef(AliMUONDigitCalibrator,3) // Calibrate raw digit
+  ClassDef(AliMUONDigitCalibrator,4) // Calibrate raw digit
 };
 
 #endif

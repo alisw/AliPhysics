@@ -53,57 +53,47 @@ ClassImp(AliMUONDigitCalibrator)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
-                                               Bool_t createAndUseStatusMap)
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib)
 : TObject(),
-fCalibrationData(calib),
-fStatusMap(0x0),
-fLogger(new AliMUONLogger(1000))
+fLogger(new AliMUONLogger(1000)),
+fStatusMaker(0x0),
+fStatusMapMaker(0x0),
+fPedestals(0x0),
+fGains(0x0)
 {
   /// ctor
-  if (createAndUseStatusMap) 
-  {
-    AliMUONPadStatusMaker maker(fCalibrationData);
-    
-    // this is here that we decide on our "goodness" policy, i.e.
-    // what do we call an invalid pad (a pad maybe bad because its HV
-    // was too low, or its pedestals too high, etc..)
-    // FIXME: find a way not to hard-code the goodness policy (i.e. the limits)
-    // here...
-    maker.SetHVSt12Limits(1300,1600);
-    maker.SetHVSt345Limits(1500,2000);
-    maker.SetPedMeanLimits(50,200);
-    maker.SetPedSigmaLimits(0.1,3);
-    
-    // From this set of limits, compute the status of all tracker pads.
-    AliMUONVStore* status = maker.MakeStatus();      
-    // we do not check that status is != 0x0, as this is supposed to be
-    // the responsability of the padStatusMaker.
-    
-    AliMUONPadStatusMapMaker mapMaker(fCalibrationData);
-    
-    Int_t mask(0x8080); 
-    //FIXME: kind of fake one for the moment, we consider dead only 
-    // if ped and/or hv value missing.
-    //WARNING : getting this mask wrong is a very effective way of getting
-    //no digits at all out of this class ;-)
-    
-    fStatusMap = mapMaker.MakePadStatusMap(*status,mask);
-    
-    delete status;
-    }
-  else
-  {
-    // make a fake (empty) status map
-    fStatusMap = AliMUONPadStatusMapMaker::MakeEmptyPadStatusMap();
-  }
+  fStatusMaker = new AliMUONPadStatusMaker(calib);
+  
+  // this is here that we decide on our "goodness" policy, i.e.
+  // what do we call an invalid pad (a pad maybe bad because its HV
+  // was too low, or its pedestals too high, etc..)
+  // FIXME: find a way not to hard-code the goodness policy (i.e. the limits)
+  // here...
+  fStatusMaker->SetHVSt12Limits(1300,1600);
+  fStatusMaker->SetHVSt345Limits(1500,2000);
+  fStatusMaker->SetPedMeanLimits(50,200);
+  fStatusMaker->SetPedSigmaLimits(0.1,3);
+  
+  Int_t mask(0x8080); 
+  //FIXME: kind of fake one for the moment, we consider dead only 
+  // if ped and/or hv value missing.
+  //WARNING : getting this mask wrong is a very effective way of getting
+  //no digits at all out of this class ;-)
+  
+  Bool_t deferredInitialization = kTRUE;
+  
+  fStatusMapMaker = new AliMUONPadStatusMapMaker(*fStatusMaker,mask,deferredInitialization);
+  
+  fPedestals = calib.Pedestals();
+  fGains = calib.Gains();
 }
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::~AliMUONDigitCalibrator()
 {
   /// dtor.
-  delete fStatusMap;
+  delete fStatusMaker;
+  delete fStatusMapMaker;
   
   AliInfo("Summary of messages:");
   fLogger->Print();
@@ -137,11 +127,13 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
     return;
   }
   
-  AliMUONVCalibParam* deadmap = static_cast<AliMUONVCalibParam*>
-  (fStatusMap->FindObject(digit.DetElemId(),digit.ManuId()));
-  Int_t statusMap = deadmap->ValueAsInt(digit.ManuChannel());
+  Int_t statusMap = fStatusMapMaker->StatusMap(digit.DetElemId(),
+                                               digit.ManuId(),
+                                               digit.ManuChannel());
+
   digit.SetStatusMap(statusMap);
   digit.Calibrated(kTRUE);
+  
   if ( ( statusMap & AliMUONPadStatusMapMaker::SelfDeadMask() ) != 0 ) 
   {
     // pad itself is bad (not testing its neighbours at this stage)
@@ -156,10 +148,10 @@ AliMUONDigitCalibrator::CalibrateDigit(AliMUONVDigit& digit)
     // If the channel is good, go on with the calibration itself.
 
     AliMUONVCalibParam* pedestal = static_cast<AliMUONVCalibParam*>
-    (fCalibrationData.Pedestals(digit.DetElemId(),digit.ManuId()));
+    (fPedestals->FindObject(digit.DetElemId(),digit.ManuId()));
     
     AliMUONVCalibParam* gain = static_cast<AliMUONVCalibParam*>
-      (fCalibrationData.Gains(digit.DetElemId(),digit.ManuId()));
+      (fGains->FindObject(digit.DetElemId(),digit.ManuId()));
     
     if (!pedestal)
     {

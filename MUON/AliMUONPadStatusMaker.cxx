@@ -28,36 +28,41 @@
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliCodeTimer.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
-#include "AliMUONHVNamer.h"
+#include "AliMUONStringIntMap.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMpArea.h"
+#include "AliMpArrayI.h"
 #include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
+#include "AliMpExMap.h"
+#include "AliMpHVNamer.h"
 #include "AliMpIntPair.h"
-#include "AliMpManuList.h"
+#include "AliMpManuUID.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
 #include "AliMpPCB.h"
 #include "AliMpPad.h"
-#include "AliMpSector.h"
-#include "AliMpSectorSegmentation.h"
 #include "AliMpSegmentation.h"
 #include "AliMpSlat.h"
 #include "AliMpSlatSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVPadIterator.h"
+#include "AliMpVSegmentation.h"
 #include <Riostream.h>
+#include <TArrayI.h>
+#include <TExMap.h>
 #include <TMap.h>
-#include <TStopwatch.h>
 #include <TString.h>
-
 
 /// \cond CLASSIMP
 ClassImp(AliMUONPadStatusMaker)
@@ -66,114 +71,128 @@ ClassImp(AliMUONPadStatusMaker)
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData)
 : fCalibrationData(calibData),
+  fGainA0Limits(0,1E30),
+  fGainA1Limits(-1E-30,1E30),
+  fGainThresLimits(0,4095),
+  fHVSt12Limits(0,5000),
+  fHVSt345Limits(0,5000),
   fPedMeanLimits(0,4095),
   fPedSigmaLimits(0,4095),
-  fHVSt12Limits(0,5000),
-  fHVSt345Limits(0,5000)
+  fStatus(new AliMUON2DMap(true)),
+  fHV(new TExMap),
+  fPedestals(calibData.Pedestals()),
+  fGains(calibData.Gains())
 {
    /// ctor
+    AliInfo(Form("ped store %s gain store %s",
+                 fPedestals->ClassName(),
+                 fGains->ClassName()));
 }
 
 //_____________________________________________________________________________
 AliMUONPadStatusMaker::~AliMUONPadStatusMaker()
 {
   /// dtor.
+  delete fStatus;
+  delete fHV;
 }
 
 //_____________________________________________________________________________
-AliMUONVStore*
-AliMUONPadStatusMaker::Combine(const AliMUONVStore& store1,
-                               const AliMUONVStore& store2,
-                               Int_t binShift) const
+TString
+AliMUONPadStatusMaker::AsString(Int_t status)
 {
-  /// Combine two status containers into one, shifting store2 status bits
-  /// to the left by binShift before making an OR with store1.
+  /// return a human readable version of the integer status
+  Int_t pedStatus;
+  Int_t gainStatus;
+  Int_t hvStatus;
   
-  TStopwatch timer;
-  timer.Start(kTRUE);
+  DecodeStatus(status,pedStatus,hvStatus,gainStatus);
   
-  AliMUONVStore* combined = static_cast<AliMUONVStore*>(store1.Clone());
+//  /// Gain status
+//  enum EGainStatus
+//  {
+//    kGainOK = 0,
+//    kGainA0TooLow = (1<<1),
+//    kGainA0TooHigh = (1<<2),
+//    kGainA1TooLow = (1<<3),
+//    kGainA1TooHigh = (1<<4),
+//    kGainThresTooLow = (1<<5),
+//    kGainThresTooHigh = (1<<6),
+//    
+//    kGainMissing = kMissing // please always use last bit for meaning "missing"
+//  };
+//  
+//  /// Pedestal status
+//  enum EPedestalStatus
+//  {
+//    kPedOK = 0,
+//    kPedMeanZero = (1<<1),
+//    kPedMeanTooLow = (1<<2),
+//    kPedMeanTooHigh = (1<<3),
+//    kPedSigmaTooLow = (1<<4),
+//    kPedSigmaTooHigh = (1<<5),
+//    
+//    kPedMissing = kMissing // please always use last bit for meaning "missing"
+//  };
+//  
+  TString s("PED ");
   
-  TIter next(store1.CreateIterator());
-  AliMUONVCalibParam* param1;
+  if ( pedStatus == 0 ) s+= " OK";
+  if ( pedStatus & kPedMeanZero ) s += " Mean is Zero. ";
+  if ( pedStatus & kPedMeanTooLow ) s += " Mean Too Low. ";
+  if ( pedStatus & kPedMeanTooHigh ) s += " Mean Too High. ";
+  if ( pedStatus & kPedSigmaTooLow ) s += " Sigma Too Low. ";
+  if ( pedStatus & kPedSigmaTooHigh ) s += " Sigma Too High. ";
+  if ( pedStatus & kPedMissing ) s += " is missing.";
   
-  while ( ( param1 = static_cast<AliMUONVCalibParam*>(next()) ) )
-  {
-    Int_t detElemId = param1->ID0();
-    Int_t manuId = param1->ID1();
-    AliMUONVCalibParam* param2 = static_cast<AliMUONVCalibParam*>(store2.FindObject(detElemId,manuId));
-    if (!param2)
-    {
-      AliWarning(Form("Could not get statuses for store2 for DE %d ManuId %d. Marking as missing.",
-                    detElemId,manuId));
-      param2 = static_cast<AliMUONVCalibParam*>(param1->Clone());
-      for ( Int_t manuChannel = 0; manuChannel < param2->Size(); ++manuChannel )
-      {
-        param2->SetValueAsInt(manuChannel,0,kMissing);
-      }      
-    }
-    AliMUONVCalibParam* paramCombined = static_cast<AliMUONVCalibParam*>(combined->FindObject(detElemId,manuId));
-    if (!paramCombined)
-    {
-      paramCombined = static_cast<AliMUONVCalibParam*>(param2->Clone());
-      combined->Add(paramCombined);
-    }
-    
-    for ( Int_t manuChannel = 0; manuChannel < param1->Size(); ++manuChannel )
-    {
-      if ( AliMpManuList::DoesChannelExist(detElemId, manuId, manuChannel) )
-      {
-        Int_t status1(param1->ValueAsInt(manuChannel));
-        Int_t status2(param2->ValueAsInt(manuChannel));
-        
-        Int_t status = status1 | (status2 << binShift);
-        
-        paramCombined->SetValueAsInt(manuChannel,0,status);
-      }
-    }
-  }
-  
-  AliInfo("Timer:");
-  StdoutToAliInfo(timer.Print(););
-  
-  return combined;
+//  /// HV Error
+//  enum EHVError 
+//  {
+//    kHVOK = 0,
+//    kHVError = (1<<0),
+//    kHVTooLow = (1<<1),
+//    kHVTooHigh = (1<<2),
+//    kHVChannelOFF = (1<<3),
+//    kHVSwitchOFF = (1<<4),
+//    
+//    kHVMissing = kMissing // please always use last bit for meaning "missing"
+//  };
+
+  return s;
 }
 
 //_____________________________________________________________________________
-AliMUONVStore* 
-AliMUONPadStatusMaker::GeneratePadStatus(Int_t value)
+Int_t
+AliMUONPadStatusMaker::BuildStatus(Int_t pedStatus, 
+                                   Int_t hvStatus, 
+                                   Int_t gainStatus)
 {
-  /// Generate a "fake" store, with all (detElemId,manuId) present,
-  /// and containing all the same value
+  /// Build a complete status from specific parts (ped,hv,gain)
   
-  AliMUONVStore* store = new AliMUON2DMap(true);
+  return ( hvStatus & 0xFF ) | ( ( pedStatus & 0xFF ) << 8 ) | 
+  ( ( gainStatus & 0xFF ) << 16 );
+}
+
+//_____________________________________________________________________________
+void
+AliMUONPadStatusMaker::DecodeStatus(Int_t status, 
+                                    Int_t& pedStatus, 
+                                    Int_t& hvStatus, 
+                                    Int_t& gainStatus)
+{
+  /// Decode complete status into specific parts (ped,hv,gain)
   
-  TList* list = AliMpManuList::ManuList();
-  
-  AliMpIntPair* pair;
-  
-  TIter next(list);
-  
-  while ( ( pair = static_cast<AliMpIntPair*>(next()) ) ) 
-  {
-    Int_t detElemId = pair->GetFirst();
-    Int_t manuId = pair->GetSecond();
-    AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,value);
-    store->Add(param);
-  }
-  
-  delete list;
-  
-  return store;
+  gainStatus = ( status & 0xFF0000 ) >> 16;
+  pedStatus = ( status & 0xFF00 ) >> 8;
+  hvStatus = (status & 0xFF);
 }
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONPadStatusMaker::GetSt12Status(const TMap& hvMap,
-                                     Int_t detElemId, Int_t sector,
-                                     Bool_t& hvChannelTooLow,
-                                     Bool_t& hvChannelTooHigh,
-                                     Bool_t& hvChannelON) const
+AliMUONPadStatusMaker::HVSt12Status(Int_t detElemId, Int_t sector,
+                                    Bool_t& hvChannelTooLow,
+                                    Bool_t& hvChannelTooHigh,
+                                    Bool_t& hvChannelON) const
 {
   /// Get HV status for one HV sector of St12
   
@@ -181,16 +200,19 @@ AliMUONPadStatusMaker::GetSt12Status(const TMap& hvMap,
   /// and the switch).
   /// Returns false if hv switch changed during the run.
   
+  AliCodeTimerAuto("")
+  
   Bool_t error = kFALSE;
   hvChannelTooLow = kFALSE;
   hvChannelTooHigh = kFALSE;
   hvChannelON = kTRUE;
-  
-  AliMUONHVNamer hvNamer;
+
+  AliMpHVNamer hvNamer;
   
   TString hvChannel(hvNamer.DCSHVChannelName(detElemId,sector));
   
-  TPair* hvPair = static_cast<TPair*>(hvMap.FindObject(hvChannel.Data()));
+  TMap* hvMap = fCalibrationData.HV();
+  TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(hvChannel.Data()));
   if (!hvPair)
   {
     AliError(Form("Did not find expected alias (%s) for DE %d",
@@ -234,17 +256,18 @@ AliMUONPadStatusMaker::GetSt12Status(const TMap& hvMap,
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONPadStatusMaker::GetSt345Status(const TMap& hvMap,
-                                      Int_t detElemId, Int_t pcbIndex,
-                                      Bool_t& hvChannelTooLow,
-                                      Bool_t& hvChannelTooHigh,
-                                      Bool_t& hvChannelON,
-                                      Bool_t& hvSwitchON) const
+AliMUONPadStatusMaker::HVSt345Status(Int_t detElemId, Int_t pcbIndex,
+                                     Bool_t& hvChannelTooLow,
+                                     Bool_t& hvChannelTooHigh,
+                                     Bool_t& hvChannelON,
+                                     Bool_t& hvSwitchON) const
 {
   /// For a given PCB in a given DE, get the HV status (both the channel
   /// and the switch).
   /// Returns false if something goes wrong (in particular if 
   /// hv switch changed during the run).
+  
+  AliCodeTimerAuto("")
   
   Bool_t error = kFALSE;
   hvChannelTooLow = kFALSE;
@@ -252,11 +275,13 @@ AliMUONPadStatusMaker::GetSt345Status(const TMap& hvMap,
   hvSwitchON = kTRUE;
   hvChannelON = kTRUE;
   
-  AliMUONHVNamer hvNamer;
+  AliMpHVNamer hvNamer;
   
   TString hvChannel(hvNamer.DCSHVChannelName(detElemId));
   
-  TPair* hvPair = static_cast<TPair*>(hvMap.FindObject(hvChannel.Data()));
+  TMap* hvMap = fCalibrationData.HV();
+  
+  TPair* hvPair = static_cast<TPair*>(hvMap->FindObject(hvChannel.Data()));
   if (!hvPair)
   {
     AliError(Form("Did not find expected alias (%s) for DE %d",
@@ -290,13 +315,13 @@ AliMUONPadStatusMaker::GetSt345Status(const TMap& hvMap,
       float highThreshold = fHVSt345Limits.Y();
 
       if ( hvMin < lowThreshold ) hvChannelTooLow = kTRUE;
-      if ( hvMax > highThreshold ) hvChannelTooHigh = kTRUE;
+      else if ( hvMax > highThreshold ) hvChannelTooHigh = kTRUE;
       if ( hvMin < 1 ) hvChannelON = kFALSE;
     }
   }
   
   TString hvSwitch(hvNamer.DCSHVSwitchName(detElemId,pcbIndex));
-  TPair* switchPair = static_cast<TPair*>(hvMap.FindObject(hvSwitch.Data()));
+  TPair* switchPair = static_cast<TPair*>(hvMap->FindObject(hvSwitch.Data()));
   if (!switchPair)
   {
     AliError(Form("Did not find expected alias (%s) for DE %d PCB %d",
@@ -347,304 +372,211 @@ AliMUONPadStatusMaker::GetSt345Status(const TMap& hvMap,
 }
 
 //_____________________________________________________________________________
-AliMUONVStore* 
-AliMUONPadStatusMaker::MakeGainStatus(const AliMUONVStore& /*gainValues*/) const
+Int_t
+AliMUONPadStatusMaker::HVStatus(Int_t detElemId, Int_t manuId) const
 {
-  /// FIXME: to be implemented
-  AliWarning("Not implemented yet");
-  return 0x0;
-}
+  /// Get HV status of one manu
+  
+  AliCodeTimerAuto("")
+  
+  if ( !fCalibrationData.HV() ) return kMissing;
 
-//_____________________________________________________________________________
-AliMUONVStore* 
-AliMUONPadStatusMaker::MakeHVStatus(const TMap& hvValues) const
-{
-  /// Scrutinize HV values and deduce an HV status for each pad
+  Long_t lint = fHV->GetValue(AliMpManuUID::BuildUniqueID(detElemId,manuId));
   
-  TStopwatch timerSt12;
-  TStopwatch timerSt345;
-  
-  timerSt12.Start(kTRUE);
-  timerSt12.Stop();
-  timerSt345.Start(kTRUE);
-  timerSt345.Stop();
-  
-  AliMUONHVNamer hvNamer;
-  
-  AliMpDEIterator deIt;
-  
-  deIt.First();
-  
-  AliMUONVStore* hv = new AliMUON2DMap(kTRUE);
-  
-  while ( !deIt.IsDone() )
+  if ( lint ) 
   {
-    Int_t detElemId = deIt.CurrentDEId();
-    
-    switch ( AliMpDEManager::GetStationType(detElemId) )
-    {
-      case AliMp::kStation1:
-      case AliMp::kStation2:
-        timerSt12.Start(kFALSE);
-        for ( int sector = 0; sector < 3; ++sector)
-        {
-          AliDebug(1,Form("detElemId %5d sector %d",detElemId,sector));
-
-          Bool_t hvChannelTooLow, hvChannelTooHigh, hvChannelON;
-          Bool_t error = GetSt12Status(hvValues,
-                                       detElemId,sector,
-                                       hvChannelTooLow,hvChannelTooHigh,
-                                       hvChannelON);
-          Int_t status = 0;
-          if ( error ) status |= kHVError;
-          if ( hvChannelTooLow ) status |= kHVTooLow;
-          if ( hvChannelTooHigh ) status |= kHVTooHigh; 
-          if ( !hvChannelON ) status |= kHVChannelOFF;
-          SetStatusSt12(*hv,detElemId,sector,status);
-          
-        }
-          timerSt12.Stop();
-        break;
-      case AliMp::kStation345:
-      {
-        timerSt345.Start(kFALSE);
-        for ( Int_t pcbIndex = 0; pcbIndex < hvNamer.NumberOfPCBs(detElemId); ++pcbIndex)
-        {
-          AliDebug(1,Form("detElemId %5d pcbIndex %d",detElemId,pcbIndex));
-          Bool_t hvChannelTooLow, hvChannelTooHigh, hvChannelON,hvSwitchON;
-          Bool_t error = GetSt345Status(hvValues,
-                                        detElemId,pcbIndex,
-                                        hvChannelTooLow,hvChannelTooHigh,
-                                        hvChannelON,hvSwitchON);
-          Int_t status = 0;
-          if ( error ) status |= kHVError;
-          if ( hvChannelTooLow ) status |= kHVTooLow;
-          if ( hvChannelTooHigh ) status |= kHVTooHigh; 
-          if ( !hvSwitchON ) status |= kHVSwitchOFF; 
-          if ( !hvChannelON) status |= kHVChannelOFF;
-          SetStatusSt345(*hv,detElemId,pcbIndex,status);
-        }
-        timerSt345.Stop();
-      }
-        break;
-      default:
-        break;
-    }
-    deIt.Next();
+    return (Int_t)(lint - 1);
   }
-  
-  AliInfo("St12 timer:");
-  StdoutToAliInfo(timerSt12.Print(););
-  AliInfo("St345 timer:");
-  StdoutToAliInfo(timerSt345.Print(););
-  
-  return hv;
-}
 
-//_____________________________________________________________________________
-AliMUONVStore* 
-AliMUONPadStatusMaker::MakePedestalStatus(const AliMUONVStore& pedValues) const
-{
-  /// Assign a pedestal status to each pad
+  Int_t status(0);
   
-  TStopwatch timer;
+  AliMpHVNamer hvNamer;
   
-  timer.Start(kTRUE);
-  
-  AliMUONVStore* pedStatuses = new AliMUON2DMap(kTRUE);
-  
-  TIter next(pedValues.CreateIterator());
-  AliMUONVCalibParam* pedestals;
-  Int_t nofManus(0);
-  
-  while ( ( pedestals = static_cast<AliMUONVCalibParam*>(next() ) ) )
+  switch ( AliMpDEManager::GetStationType(detElemId) )
   {
-    Int_t detElemId = pedestals->ID0();
-    Int_t manuId = pedestals->ID1();
-    ++nofManus;
-    for ( Int_t manuChannel = 0; manuChannel < pedestals->Size(); ++manuChannel )
+    case AliMp::kStation1:
+    case AliMp::kStation2:
     {
-      Int_t status(0);
-      if ( AliMpManuList::DoesChannelExist(detElemId, manuId, manuChannel) )
+      int sector = hvNamer.ManuId2Sector(detElemId,manuId);
+      if ( sector >= 0 ) 
       {
-        Float_t pedMean = pedestals->ValueAsFloat(manuChannel,0);
-        Float_t pedSigma = pedestals->ValueAsFloat(manuChannel,1);
-        if ( pedMean < fPedMeanLimits.X() ) status |= kPedMeanTooLow;
-        if ( pedMean > fPedMeanLimits.Y() ) status |= kPedMeanTooHigh;
-        if ( pedSigma < fPedSigmaLimits.X() ) status |= kPedSigmaTooLow;
-        if ( pedSigma > fPedSigmaLimits.Y() ) status |= kPedSigmaTooHigh;
-        if ( pedMean == 0 ) status |= kPedMeanZero;
-        
-        AliMUONVCalibParam* vStatus = 
-          static_cast<AliMUONVCalibParam*>(pedStatuses->FindObject(detElemId,manuId));
-        if ( !vStatus ) 
-        {
-          vStatus = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,0);
-          pedStatuses->Add(vStatus);
-        }
-        vStatus->SetValueAsInt(manuChannel,0,status);
+        Bool_t hvChannelTooLow, hvChannelTooHigh, hvChannelON;
+        Bool_t error = HVSt12Status(detElemId,sector,
+                                    hvChannelTooLow,
+                                    hvChannelTooHigh,
+                                    hvChannelON);
+        if ( error ) status |= kHVError;
+        if ( hvChannelTooLow ) status |= kHVTooLow;
+        if ( hvChannelTooHigh ) status |= kHVTooHigh; 
+        if ( !hvChannelON ) status |= kHVChannelOFF;
+        // assign this status to all the other manus handled by the same HV channel
+        SetHVStatus(detElemId,sector,status);
       }
     }
+      break;
+    case AliMp::kStation345:
+    {
+      int pcbIndex = hvNamer.ManuId2PCBIndex(detElemId,manuId);
+      if ( pcbIndex >= 0 ) 
+      {
+        Bool_t hvChannelTooLow, hvChannelTooHigh, hvChannelON,hvSwitchON;
+        Bool_t error = HVSt345Status(detElemId,pcbIndex,
+                                     hvChannelTooLow,hvChannelTooHigh,
+                                     hvChannelON,hvSwitchON);
+        if ( error ) status |= kHVError;
+        if ( hvChannelTooLow ) status |= kHVTooLow;
+        if ( hvChannelTooHigh ) status |= kHVTooHigh; 
+        if ( !hvSwitchON ) status |= kHVSwitchOFF; 
+        if ( !hvChannelON) status |= kHVChannelOFF;
+        // assign this status to all the other manus handled by the same HV channel
+        SetHVStatus(detElemId,pcbIndex,status);
+      }
+    }
+      break;
+    default:
+      break;
   }
   
-  AliInfo(Form("%d manus checked in :",nofManus));
-  StdoutToAliInfo(timer.Print(););
-  return pedStatuses;  
-}
-
-//_____________________________________________________________________________
-AliMUONVStore* 
-AliMUONPadStatusMaker::MakeStatus() const
-{
-  /// Read ped, gains and hv values from CDB, apply some Q&A and produces
-  /// a combined status for each pad.
-
-  TMap* hvValues = fCalibrationData.HV();
-  AliMUONVStore* hvStatus(0x0);
-  
-  if (!hvValues)
-  {
-    AliError("Could not get HV values from CDB. Will create dummy ones and mark those as missing");
-    hvStatus = GeneratePadStatus(kHVMissing);
-  }
-  else
-  {
-    hvStatus = MakeHVStatus(*hvValues);
-  }
-  
-  AliMUONVStore* pedValues = fCalibrationData.Pedestals();
-  AliMUONVStore* pedStatus(0x0);
-
-  if (!pedValues)
-  {
-    AliError("Could not get pedestals values from CDB. Will create dummy ones and mark those as missing");
-    pedStatus = GeneratePadStatus(kPedMissing);
-  }
-  else
-  {
-    pedStatus = MakePedestalStatus(*pedValues);
-  }
-  
-  // FIXME: should do the same for gains as for hv and ped.    
-  
-  AliMUONVStore* status = Combine(*hvStatus,*pedStatus,8);
-  
-  delete hvStatus;
-  delete pedStatus;
-  
-  // Insure we get all channels there (some or even all can be bad, but they
-  // must be there somehow).
-  
-  AliMUON2DStoreValidator validator;
-        
-  TObjArray* a = validator.Validate(*status);
-    
-  if (a) 
-  {
-    // this should not happen.
-    AliError("Status store not complete. Crash to follow soon...");
-    StdoutToAliError(a->Print(););
-    AliFatal("this should not happen at all!");
-    delete status;
-    status = 0x0;
-  }
-    
   return status;
 }
 
 //_____________________________________________________________________________
-void
-AliMUONPadStatusMaker::SetStatusSt12(AliMUONVStore& hvStatus,
-                                     Int_t detElemId, 
-                                     Int_t isector,
-                                     Int_t status) const
+AliMUONVCalibParam* 
+AliMUONPadStatusMaker::Neighbours(Int_t detElemId, Int_t manuId) const
 {
-  /// Flag all pads of detElemId (for St12) as bad.
+  /// Get the neighbours parameters for a given manu
+  AliMUONVStore* neighbourStore = fCalibrationData.Neighbours();
+  return static_cast<AliMUONVCalibParam*>(neighbourStore->FindObject(detElemId,manuId));
+}
+
+//_____________________________________________________________________________
+AliMUONVStore* 
+AliMUONPadStatusMaker::NeighboursStore() const
+{
+  /// Return the store containing all the neighbours
+  return fCalibrationData.Neighbours();
+}
+
+//_____________________________________________________________________________
+AliMUONVCalibParam*
+AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
+{
+  /// Compute the status of a given manu, using all available information,
+  /// i.e. pedestals, gains, and HV
   
-  // FIXME: need a way to iterator on pads over a given HV sector for St12... 
-  // we currently suppose that one sector is about a third of the chamber...
-  // FIXME !! This has to be checked very carefully...
+//  AliCodeTimerAuto("")
   
-  const AliMp::CathodType kCathodes[] = { AliMp::kCath0, AliMp::kCath1 };
+//  AliCodeTimerStart("Param creation");
+  AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,-1);
+  fStatus->Add(param);
+//  AliCodeTimerStop("Param creation");
   
-  for ( Int_t icathode = 0; icathode < 2; ++icathode )
+//  AliCodeTimerStart("FindObject");
+  AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemId,manuId));
+
+  AliMUONVCalibParam* gains = static_cast<AliMUONVCalibParam*>(fGains->FindObject(detElemId,manuId));
+//  AliCodeTimerStop("FindObject");
+  
+  Int_t hvStatus = HVStatus(detElemId,manuId);
+
+//  AliCodeTimerStart("Loop");
+  
+  for ( Int_t manuChannel = 0; manuChannel < param->Size(); ++manuChannel )
   {
-    const AliMpSectorSegmentation* seg = 
-    static_cast<const AliMpSectorSegmentation*>(AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,kCathodes[icathode]));
-    const AliMpSector* sector = seg->GetSector();
-    AliMpMotifMap* mMap = sector->GetMotifMap();
-    TArrayI a;
+    Int_t pedStatus(0);
     
-    mMap->GetAllMotifPositionsIDs(a);
-    
-    TVector2 dim = seg->Dimensions();
-    Double_t x = dim.X()*2;
-    Double_t xmin = isector*x/3.0;
-    Double_t xmax = xmin + x/3.0;   
-    
-    for ( Int_t i = 0; i < a.GetSize(); ++i ) 
+    if (pedestals) 
     {
-      AliMpMotifPosition* pos = mMap->FindMotifPosition(a[i]);
-      Int_t manuId = pos->GetID();
-      TVector2 position = pos->Position();
-      if ( position.X() >= xmin && position.X() <= xmax) 
-      {
-        AliMUONVCalibParam* dead =
-        static_cast<AliMUONVCalibParam*>(hvStatus.FindObject(detElemId,manuId));
-        if (!dead)
-        {
-          dead = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,status);
-          hvStatus.Add(dead);
-        }        
-        else
-        {
-          // FIXME: this should really not happen, if we'd know really the
-          // relationship between manuId and HV sector...
-          // For the time being, let's leave it like that, for testing
-          // purposes only. For production, this will have to be fixed.
-          AliWarning("Please fixme.");
-        }
-      }
+      Float_t pedMean = pedestals->ValueAsFloatFast(manuChannel,0);
+      Float_t pedSigma = pedestals->ValueAsFloatFast(manuChannel,1);
+      if ( pedMean < fPedMeanLimits.X() ) pedStatus |= kPedMeanTooLow;
+      else if ( pedMean > fPedMeanLimits.Y() ) pedStatus |= kPedMeanTooHigh;
+      if ( pedSigma < fPedSigmaLimits.X() ) pedStatus |= kPedSigmaTooLow;
+      else if ( pedSigma > fPedSigmaLimits.Y() ) pedStatus |= kPedSigmaTooHigh;
+      if ( pedMean == 0 ) pedStatus |= kPedMeanZero;
     }
-  }  
+    else
+    {
+      pedStatus = kPedMissing;
+    }
+    
+    Int_t gainStatus(0);
+  
+    if ( gains ) 
+    {
+      Float_t a0 = gains->ValueAsFloatFast(manuChannel,0);
+      Float_t a1 = gains->ValueAsFloatFast(manuChannel,1);
+      Float_t thres = gains->ValueAsFloatFast(manuChannel,2);
+  
+      if ( a0 < fGainA0Limits.X() ) gainStatus |= kGainA0TooLow;
+      else if ( a0 > fGainA0Limits.Y() ) gainStatus |= kGainA0TooHigh;
+      if ( a1 < fGainA1Limits.X() ) gainStatus |= kGainA1TooLow;
+      else if ( a1 > fGainA1Limits.Y() ) gainStatus |= kGainA1TooHigh;
+      if ( thres < fGainThresLimits.X() ) gainStatus |= kGainThresTooLow;
+      else if ( thres > fGainThresLimits.Y() ) gainStatus |= kGainThresTooHigh;
+    }
+    else
+    {
+      gainStatus = kGainMissing;
+    }
+        
+    Int_t status = BuildStatus(pedStatus,hvStatus,gainStatus);
+      
+    param->SetValueAsIntFast(manuChannel,0,status);
+  }
+  
+//  AliCodeTimerStop("Loop");
+  
+  return param;
+}
+
+//_____________________________________________________________________________
+AliMUONVCalibParam* 
+AliMUONPadStatusMaker::PadStatus(Int_t detElemId, Int_t manuId) const
+{
+  /// Get the status for a given channel
+  
+  AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatus->FindObject(detElemId,manuId));
+  if (!param)
+  {
+    // not already there, so compute it now
+    AliCodeTimerAuto("ComputeStatus");
+    param = ComputeStatus(detElemId,manuId);
+  }
+  return param;
+}
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONPadStatusMaker::PadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const
+{
+  /// Get the status for a given channel
+  
+  AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(fStatus->FindObject(detElemId,manuId));
+  if (!param)
+  {
+    // not already there, so compute it now
+    param = ComputeStatus(detElemId,manuId);
+  }
+  return param->ValueAsInt(manuChannel,0);
 }
 
 //_____________________________________________________________________________
 void
-AliMUONPadStatusMaker::SetStatusSt345(AliMUONVStore& hvStatus,
-                                      Int_t detElemId, Int_t pcbIndex,
-                                      Int_t status) const
+AliMUONPadStatusMaker::SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const
 {
-  /// Flag all pads of pcbIndex-th PCB of detElemId (for St345) as bad.
+  /// Assign status to all manus in a given HV "zone" (defined by index, meaning
+  /// is different thing from St12 and St345)
   
-  const AliMp::CathodType kCathodes[] = { AliMp::kCath0, AliMp::kCath1 };
+  AliCodeTimerAuto("")
   
-  for ( Int_t icathode = 0; icathode < 2; ++icathode )
+  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+  
+  const AliMpArrayI* manus = de->ManusForHV(index);
+  
+  for ( Int_t i = 0; i < manus->GetSize(); ++ i ) 
   {
-    const AliMpSlatSegmentation* seg = static_cast<const AliMpSlatSegmentation*>
-    (AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,kCathodes[icathode]));
-    const AliMpSlat* slat = seg->Slat();
-    const AliMpPCB* pcb = slat->GetPCB(pcbIndex);
-
-    for ( Int_t i = 0; i < pcb->GetSize(); ++i ) 
-    {
-      AliMpMotifPosition* pos = pcb->GetMotifPosition(i);
-      Int_t manuId = pos->GetID();
-      AliMUONVCalibParam* dead = 
-        static_cast<AliMUONVCalibParam*>(hvStatus.FindObject(detElemId,manuId));
-      if (dead)
-      {
-        AliError(Form("dead is not null as expected from DE %d manuId %d",
-                      detElemId,manuId));
-      }
-      if (!dead)
-      {
-        dead = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,status);
-        hvStatus.Add(dead);
-      }
-    }    
+    Int_t manuId = manus->GetValue(i);
+    fHV->Add(AliMpManuUID::BuildUniqueID(detElemId,manuId),status + 1);
   }
 }
-
-
-

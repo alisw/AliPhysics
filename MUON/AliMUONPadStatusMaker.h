@@ -19,9 +19,10 @@
 #  include "TVector2.h"
 #endif
 
+class TExMap;
 class AliMUONCalibrationData;
+class AliMUONVCalibParam;
 class AliMUONVStore;
-class TMap;
 
 class AliMUONPadStatusMaker : public TObject
 {
@@ -29,17 +30,29 @@ public:
   AliMUONPadStatusMaker(const AliMUONCalibrationData& calibData);
   virtual ~AliMUONPadStatusMaker();
       
-  AliMUONVStore* MakeGainStatus(const AliMUONVStore& gainValues) const;
+  /** Get access to internal status store (for debug only, as it may not be complete,
+    depending on whether you've already called PadStatus for all possible de,manu
+    combinations or not...
+    */
+  AliMUONVStore* StatusStore() const { return fStatus; }
 
-  AliMUONVStore* MakeHVStatus(const TMap& hvMap) const;
+  AliMUONVCalibParam* PadStatus(Int_t detElemId, Int_t manuId) const;
 
-  AliMUONVStore* MakePedestalStatus(const AliMUONVStore& pedValues) const;
-
-  /// Produces a status store. Should not return 0x0.
-  AliMUONVStore* MakeStatus() const;
-
-  static AliMUONVStore* GeneratePadStatus(Int_t value);
-
+  Int_t PadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
+  
+  AliMUONVStore* NeighboursStore() const;
+  
+  AliMUONVCalibParam* Neighbours(Int_t detElemId, Int_t manuId) const;
+  
+  static TString AsString(Int_t status);
+  
+  /// Return Low and High limits for a0 parameter of gain (linear slope)
+  TVector2 GainA0Limits() const { return fGainA0Limits; }
+  /// Return Low and High limits for a1 parameter of gain (parabolic term)
+  TVector2 GainA1Limits() const { return fGainA1Limits; }
+  /// Return Low and High limits for thres parameter of gain
+  TVector2 GainThresLimits() const { return fGainThresLimits; }
+  
   /// Return Low and High threshold for St12 HV
   TVector2 HVSt12Limits() const { return fHVSt12Limits; }
   /// Return Low and High threshold for St345 HV
@@ -49,6 +62,13 @@ public:
   TVector2 PedMeanLimits() const { return fPedMeanLimits; }
   /// Return Low and High threshold for pedestal sigma
   TVector2 PedSigmaLimits() const { return fPedSigmaLimits; }
+  
+  /// Set Low and High limits for a0 parameter of gain (linear slope)
+  void GainA0Limits(float low, float high) { fGainA0Limits.Set(low,high); }
+  /// Set Low and High limits for a1 parameter of gain (parabolic term)
+  void GainA1Limits(float low, float high) { fGainA1Limits.Set(low,high); }
+  /// Set Low and High limits for thres parameter of gain
+  void GainThresLimits(float low, float high) { fGainThresLimits.Set(low,high); }
   
   /// Set Low and High threshold for St12 HV
   void SetHVSt12Limits(float low, float high) { fHVSt12Limits.Set(low,high); }
@@ -65,37 +85,47 @@ private:
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);
   /// Not implemented
   AliMUONPadStatusMaker& operator=(const AliMUONPadStatusMaker&);
-  
-private:
-  
-  AliMUONVStore* Combine(const AliMUONVStore& store1,
-                           const AliMUONVStore& store2,
-                           Int_t binShift) const;
-  
-  Bool_t GetSt12Status(const TMap& hvMap, Int_t detElemId, Int_t sector,
-                         Bool_t& hvChannelTooLow,
-                         Bool_t& hvChannelTooHigh,
-                         Bool_t& hvChannelON) const;
-  
-  
-  Bool_t GetSt345Status(const TMap& hvMap, Int_t detElemId, Int_t pcbIndex,
-                        Bool_t& hvChannelTooLow,
-                        Bool_t& hvChannelTooHigh,
-                        Bool_t& hvChannelON,
-                        Bool_t& hvSwitchON) const;
-  
-  void SetStatusSt12(AliMUONVStore& hvStatus, 
-                     Int_t detElemId, Int_t sector, Int_t status) const;
 
-  void SetStatusSt345(AliMUONVStore& hvStatus,
-                      Int_t detElemId, Int_t pcbIndex, Int_t status) const;
-
+  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, Int_t&  gainStatus);
+  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, Int_t gainStatus);
   
+  AliMUONVCalibParam* ComputeStatus(Int_t detElemId, Int_t manuId) const;
+
+  Bool_t HVSt12Status(Int_t detElemId, Int_t sector,
+                      Bool_t& hvChannelTooLow,
+                      Bool_t& hvChannelTooHigh,
+                      Bool_t& hvChannelON) const;
+  
+  
+  Bool_t HVSt345Status(Int_t detElemId, Int_t pcbIndex,
+                       Bool_t& hvChannelTooLow,
+                       Bool_t& hvChannelTooHigh,
+                       Bool_t& hvChannelON,
+                       Bool_t& hvSwitchON) const;
+
+  Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
+
+  void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
+
 private:
   /// General status
   enum EGeneralStatus
   {
     kMissing = (1<<7)
+  };
+
+  /// Gain status
+  enum EGainStatus
+  {
+    kGainOK = 0,
+    kGainA0TooLow = (1<<1),
+    kGainA0TooHigh = (1<<2),
+    kGainA1TooLow = (1<<3),
+    kGainA1TooHigh = (1<<4),
+    kGainThresTooLow = (1<<5),
+    kGainThresTooHigh = (1<<6),
+    
+    kGainMissing = kMissing // please always use last bit for meaning "missing"
   };
   
   /// Pedestal status
@@ -125,11 +155,23 @@ private:
   };
   
   const AliMUONCalibrationData& fCalibrationData; //!< helper class to get data access (not owner)
-  TVector2 fPedMeanLimits; //!< Low and High threshold for pedestal mean
-  TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma
   
+  TVector2 fGainA0Limits; //!< Low and High threshold for gain a0 parameter
+  TVector2 fGainA1Limits; //!< Low and High threshold for gain a1 parameter
+  TVector2 fGainThresLimits; //!< Low and High threshold for gain threshold parameter
+
   TVector2 fHVSt12Limits; //!< Low and High threshold for St12 HV
   TVector2 fHVSt345Limits; //!< Low and High threshold for St345 HV
+
+  TVector2 fPedMeanLimits; //!< Low and High threshold for pedestal mean
+  TVector2 fPedSigmaLimits; //!< Low and High threshold for pedestal sigma
+    
+  AliMUONVStore* fStatus; //!< statuses of the pads
+  
+  mutable TExMap* fHV; //!< cache of hv statuses
+
+  AliMUONVStore* fPedestals; //!< pedestal values
+  AliMUONVStore* fGains; //!< gain values
   
   ClassDef(AliMUONPadStatusMaker,0) // Creates pad statuses from ped,gain,hv
 };

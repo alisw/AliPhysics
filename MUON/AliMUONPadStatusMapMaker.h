@@ -16,29 +16,29 @@
 #  include "TObject.h"
 #endif
 
-class AliMUONCalibrationData;
-class AliMUONVStore;
+class AliMUONPadStatusMaker;
 class AliMUONVCalibParam;
-class AliMpPad;
-class AliMpVSegmentation;
-class TObjArray;
-class TVector2;
+class AliMUONVStore;
 
 class AliMUONPadStatusMapMaker : public TObject
 {
 public:
-  AliMUONPadStatusMapMaker(const AliMUONCalibrationData& calibData);
+  AliMUONPadStatusMapMaker(const AliMUONPadStatusMaker& padStatusMaker,
+                           Int_t mask,
+                           Bool_t deferredInitialization=kTRUE);
   virtual ~AliMUONPadStatusMapMaker();
+  
+  /** Get access to internal status map store (for debug only, as it may not be complete,
+    depending on whether you've already called StatusMap() for all possible de,manu,channel
+    combinations or not...
+    */
+  AliMUONVStore* StatusMap() const { return fStatusMap; }
+  
+  Int_t StatusMap(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
   
   /// Return status bit map to tell a pad is bad
   static Int_t SelfDeadMask() { return fgkSelfDead; }
   
-  AliMUONVStore* MakePadStatusMap(const AliMUONVStore& status,
-                                    Int_t mask);
-  
-  static AliMUONVStore* MakeEmptyPadStatusMap();
-
-
 private:
   /// Not implemented
   AliMUONPadStatusMapMaker(const AliMUONPadStatusMapMaker&);
@@ -46,15 +46,12 @@ private:
   AliMUONPadStatusMapMaker& operator=(const AliMUONPadStatusMapMaker&);
 
 private:
-  Int_t ComputeStatusMap(const AliMUONVCalibParam& neighbours, 
-                        Int_t manuChannel, Int_t detElemId) const;
-  
-  Int_t GetPadStatus(Int_t detElemId, Int_t manuId, Int_t manuChannel) const;
+    
+  AliMUONVCalibParam* ComputeStatusMap(Int_t detElemId, Int_t manuId) const;
   
 private:
-    static Int_t fgkSelfDead; //!< status bit map to tell a pad is bad
-  const AliMUONVStore* fStatus; //!< status store
-  Int_t fMask; //!< mask to be tested
+  
+  static Int_t fgkSelfDead; //!< status bit map to tell a pad is bad
 
   /// Bit numbers
   enum EBitNumbers
@@ -69,7 +66,10 @@ private:
     kRightBit = 17,
     kRightTopBit = 18
   };
-  const AliMUONCalibrationData& fCalibrationData; //!< to access neighbourStore
+  
+  const AliMUONPadStatusMaker& fStatusMaker; //!< to access pad statuses
+  Int_t fMask; //!< mask to be tested
+  mutable AliMUONVStore* fStatusMap; //!< status map
   
   ClassDef(AliMUONPadStatusMapMaker,0) // Pad status map maker
 };
