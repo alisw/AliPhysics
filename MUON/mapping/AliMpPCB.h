@@ -35,6 +35,10 @@
 #  include <vector>
 #endif
 
+#ifndef ALI_MP_VPAD_ITERATOR_H
+#  include "AliMpVPadIterator.h"
+#endif
+
 #ifndef ALI_MP_AREA_H
 #  include "AliMpArea.h"
 #endif
@@ -95,6 +99,8 @@ class AliMpPCB : public TObject
   
   void Print(Option_t* option = "") const;
 
+  Bool_t HasMotifPositionID(Int_t manuId) const;
+  
   Double_t ActiveDX() const;
   Double_t ActiveDY() const;
 

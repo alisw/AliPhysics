@@ -634,6 +634,25 @@ AliMpPCB::GetSize() const
 #endif  
 }
 
+//_____________________________________________________________________________
+Bool_t 
+AliMpPCB::HasMotifPositionID(Int_t manuId) const
+{
+  /// Returns whether or not we have manuId
+
+#ifdef WITH_ROOT
+  TIter next(&fMotifPositions);
+  AliMpMotifPosition* pos;
+  while ( ( pos = static_cast<AliMpMotifPosition*>(next()) ) )
+  {
+    if ( pos->GetID() == manuId ) return kTRUE;
+  }
+  return kFALSE;
+#else
+  AliFatal("Not implemented");
+#endif
+}
+
 
 //_____________________________________________________________________________
 Int_t
