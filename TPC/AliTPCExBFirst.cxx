@@ -166,8 +166,8 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
   // THIS IS PRIVATE! (a helper for the constructor)
   //
   fkNMean=fkNX*fkNY*fkNZ;
-  fkMeanBx=new Double_t[fkNMean];
-  fkMeanBy=new Double_t[fkNMean];
+  fkMeanBx=new Float_t[fkNMean];
+  fkMeanBy=new Float_t[fkNMean];
 
   Double_t x[3];
   Double_t nBz=0;

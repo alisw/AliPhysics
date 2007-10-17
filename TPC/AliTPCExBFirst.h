@@ -35,13 +35,13 @@ private:
   Double_t fkZMin;    // the first grid point in z direction
   Double_t fkZMax;    // the last grid point in z direction
   Int_t fkNMean;      // size of the tablE the mean fields
-  Double_t *fkMeanBx; //[fkNMean] the mean field in x direction upto a certain z value
-  Double_t *fkMeanBy; //[fkNMean] the mean field in y direction upto a certain z value
+  Float_t *fkMeanBx; //[fkNMean] the mean field in x direction upto a certain z value
+  Float_t *fkMeanBy; //[fkNMean] the mean field in y direction upto a certain z value
   Double_t fkMeanBz;  // the mean field in z direction inside the TPC volume
   static const Double_t fgkEM; //! elementary charge over electron mass (C/kg)
   static const Double_t fgkDriftField; //! the TPC drift field (V/m) (modulus)
 
-  ClassDef(AliTPCExBFirst,1)
+  ClassDef(AliTPCExBFirst,2)
 };
 
 #endif
