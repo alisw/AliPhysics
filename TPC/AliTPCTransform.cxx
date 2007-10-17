@@ -4,6 +4,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include "TMath.h"
+#include "AliTPCExB.h"
 
 /* To test it:
    cdb=AliCDBManager::Instance()

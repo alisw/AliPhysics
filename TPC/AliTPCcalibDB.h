@@ -10,8 +10,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "AliTPCTransform.h"
-#include "AliTPCExB.h"
+class AliTPCTransform;
+class AliTPCExB;
 #include "TObject.h"
 class AliTPCCalPad;
 class AliTPCSensorTempArray;
@@ -37,7 +37,6 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
   AliTPCCalPad* GetPedestals() {return fPedestals;}
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
-  AliDCSSensorArray* GetPressure() {return fPressure;}
   AliTPCParam*  GetParameters(){return fParam;}
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
@@ -47,25 +46,25 @@ protected:
   void         Update();  //update entries
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
   Long64_t        fRun;         // current run number
-  AliTPCTransform *fTrafo; // object responsible for spacial corrections
-  AliTPCExB *fExB;
+  AliTPCTransform *fTrafo;      // object responsible for spacial corrections
+  AliTPCExB *fExB;              // ExB correction factor
 //  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
   //
   // calibration parameters per pad
   //
-  AliTPCCalPad* fPadGainFactor;
-  AliTPCCalPad* fPadTime0;
-  AliTPCCalPad* fPadPRFWidth;
-  AliTPCCalPad* fPadNoise;
-  AliTPCCalPad* fPedestals;
-  AliTPCSensorTempArray* fTemperature;
-  AliDCSSensorArray *fPressure;
+  AliTPCCalPad* fPadGainFactor;   // Gain calibration entry
+  AliTPCCalPad* fPadTime0;        // Time0 calibration entry
+  AliTPCCalPad* fPadPRFWidth;     // Pad Response Function width 
+  AliTPCCalPad* fPadNoise;        // Noise calibration entry
+  AliTPCCalPad* fPedestals;       // Pedestal calibration entry
+  AliTPCSensorTempArray* fTemperature; // Temperature calibration entry
+
   //
   //
-  AliTPCParam * fParam;
+  AliTPCParam * fParam;           // TPC parameters
   //
-  static AliTPCcalibDB* fgInstance;
-  static Bool_t       fgTerminated;
+  static AliTPCcalibDB* fgInstance;  // singleton control
+  static Bool_t       fgTerminated;  // termination control 
   ClassDef(AliTPCcalibDB, 0)
  private:
    AliTPCcalibDB (const AliTPCcalibDB& org);

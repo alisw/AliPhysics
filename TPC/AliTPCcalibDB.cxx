@@ -24,23 +24,26 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <fstream>
+
 
 #include <AliCDBManager.h>
-#include <AliCDBStorage.h>
 #include <AliCDBEntry.h>
 #include <AliLog.h>
 
 #include "AliTPCcalibDB.h"
+#include "AliTPCExB.h"
 
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
-#include "AliTPCCalDet.h"
 #include "AliTPCSensorTempArray.h"
+#include "AliTPCTransform.h"
+class AliCDBStorage;
+class AliTPCCalDet;
 //
 //
 
-#include <iostream>
-#include <fstream>
 #include "TFile.h"
 #include "TKey.h"
 
@@ -99,6 +102,7 @@ void AliTPCcalibDB::Terminate()
 //_____________________________________________________________________________
 AliTPCcalibDB::AliTPCcalibDB():
   fRun(-1),
+  fTrafo(0),
   fExB(0),
   fPadGainFactor(0),
   fPadTime0(0),
@@ -106,9 +110,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPadNoise(0),
   fPedestals(0),
   fTemperature(0),
-  fPressure(0),
-  fParam(0),
-  fTrafo(0)
+  fParam(0)
 {
   //
   // constructor
@@ -215,13 +217,6 @@ void AliTPCcalibDB::Update(){
     fTemperature = (AliTPCSensorTempArray*)entry->GetObject();
   }
 
-  entry          = GetCDBEntry("TPC/Calib/Pressure");
-  if (entry){
-    //if (fPressure) delete fPressure;
-    entry->SetOwner(kTRUE);
-    fPressure = (AliDCSSensorArray*)entry->GetObject();
-  }
-
   entry          = GetCDBEntry("TPC/Calib/Parameters");
   if (entry){
     //if (fPadNoise) delete fPadNoise;
@@ -263,6 +258,9 @@ AliTPCcalibDB& AliTPCcalibDB::operator= (const AliTPCcalibDB& rhs)
 
 void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObjects)
 {
+//
+// Create calibration objects and read contents from OCDB
+//
    if ( calibObjects == 0x0 ) return;
    ifstream in;
    in.open(filename);
@@ -355,7 +353,7 @@ void AliTPCcalibDB::CreateObjectList(const Char_t *filename, TObjArray *calibObj
 void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
   //
   // Write a tree with all available information
-  // im mapFileName is speciefied, the Map information are also written to the tree
+  // if mapFileName is specified, the Map information are also written to the tree
   // pads specified in outlierPad are not used for calculating statistics
   //  - the same function as AliTPCCalPad::MakeTree - 
   //
@@ -380,11 +378,11 @@ void AliTPCcalibDB::MakeTree(const char * fileName, TObjArray * array, const cha
       
       mapNames = new TString[mapEntries];
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
-	TString ROCname(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
-         ROCname.Remove(ROCname.Length()-4, 4);
-         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((ROCname + "IROC").Data()), ivalue);
-         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((ROCname + "OROC").Data()), ivalue);
-         mapNames[ivalue].Append(ROCname);
+	TString nameROC(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
+         nameROC.Remove(nameROC.Length()-4, 4);
+         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((nameROC + "IROC").Data()), ivalue);
+         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((nameROC + "OROC").Data()), ivalue);
+         mapNames[ivalue].Append(nameROC);
       }
       
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
