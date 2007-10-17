@@ -75,6 +75,7 @@ class AliTPCseed : public AliTPCtrack {
      Float_t  CookShape(Int_t type);
      void CookPID();
      Double_t Bethe(Double_t bg);     // return bethe-bloch
+     Double_t BetheMass(Double_t mass=0.1057);     // return bethe-bloch
      //     void CookdEdx2(Double_t low=0.05, Double_t up=0.70);
      Bool_t IsActive() const { return !(fRemoval);}
      void Desactivate(Int_t reason){ fRemoval = reason;} 
@@ -133,6 +134,8 @@ class AliTPCseed : public AliTPCtrack {
      Bool_t GetSharedMapBit(int ibit);
      const TBits& GetClusterMap() const { return fClusterMap; };
      const TBits& GetSharedMap() const { return fSharedMap; };
+
+     Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159);
 
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)

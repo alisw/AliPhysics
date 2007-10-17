@@ -13,13 +13,15 @@
 
 
 #include <TObject.h>
-class TTree;
+#include <TVectorD.h>
 
+class TTree;
+class TObjArray;
 //_____________________________________________________________________________
 class AliTPCClusterParam : public TObject {
  public:
   static AliTPCClusterParam* Instance();
-  AliTPCClusterParam(){fRatio=0.01;}
+  AliTPCClusterParam(){fRatio=0.01; fQNorm=0;}
   virtual           ~AliTPCClusterParam(){;}
   virtual void	Print(Option_t* option = "") const;
   void SetInstance(AliTPCClusterParam*param){fgInstance = param;}
@@ -77,6 +79,12 @@ class AliTPCClusterParam : public TObject {
   //
   void FitResol(TTree * tree);
   void FitRMS(TTree * tree);
+  Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz); 
+  static Float_t SQnorm(Int_t ipad, Int_t itype,Float_t dr, Float_t ty, Float_t tz) {return fgInstance->Qnorm(ipad, itype, dr,ty,tz);}
+
+  void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
+
+
  protected: 
   void FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
   void FitResol0Par(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
@@ -88,6 +96,7 @@ class AliTPCClusterParam : public TObject {
   void FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);  
   void FitRMSSigma(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);  
   //
+
   Float_t fRatio;               //ratio of values constibution to error
   Float_t fParamS0[2][3][4];    //error parameterization coeficients
   Float_t fErrorS0[2][3][4];    //error parameterization coeficients
@@ -110,9 +119,10 @@ class AliTPCClusterParam : public TObject {
   Float_t fRMSSigmaRatio[2][2];   // mean value of the varation of RMS to RMS
   Float_t fRMSSigmaFit[2][3][2];   // mean value of the varation of RMS to RMS
   //
+  TObjArray *fQNorm;              // q norm paramters
  protected:
   static AliTPCClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
-  ClassDef(AliTPCClusterParam,1)    //  TPC ROC class
+  ClassDef(AliTPCClusterParam,2)    //  TPC Cluster parameter class
 };
 
 #endif

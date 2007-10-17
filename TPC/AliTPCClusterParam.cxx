@@ -28,6 +28,8 @@
 #include <TLinearFitter.h>
 #include <TH1F.h>
 #include <TProfile2D.h>
+#include <TVectorD.h>
+#include <TObjArray.h>
 
 ClassImp(AliTPCClusterParam)
 
@@ -1128,3 +1130,33 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
 
 
 
+Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz){
+  // get Q normalization
+  // type - 0 Qtot 1 Qmax
+  // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
+  //
+  //
+  //formula= dr++tz++ty++dr*tz++dr*ty++ty*tz++dr**2++ty**2++tz**2
+  if (!fQNorm) return 0;
+  TVectorD * norm = (TVectorD*)fQNorm->At(3*itype+ipad);
+  if (!norm) return 0;
+  TVectorD &no = *norm;
+  Float_t res= no[0]+no[1]*dr+no[2]*tz+no[3]*ty+no[4]*dr*tz+no[5]*dr*ty+no[6]*ty*tz
+    +no[7]*dr*dr+no[8]*ty*ty+no[9]*tz*tz;
+
+  return res;
+}
+
+
+
+void AliTPCClusterParam::SetQnorm(Int_t ipad, Int_t itype, TVectorD * norm){
+  //
+  // set normalization
+  //
+  // type - 0 Qtot 1 Qmax
+  // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
+  //
+
+  if (fQNorm==0) fQNorm = new TObjArray(6);
+  fQNorm->AddAt(new TVectorD(*norm), itype*3+ipad);
+}

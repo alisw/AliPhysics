@@ -24,6 +24,7 @@
 #include "TClonesArray.h"
 #include "AliTPCseed.h"
 #include "AliTPCReconstructor.h"
+#include "AliTPCClusterParam.h"
 
 ClassImp(AliTPCseed)
 
@@ -1032,6 +1033,92 @@ void AliTPCseed::SetSharedMapBit(int ibit, Bool_t state)
 Bool_t AliTPCseed::GetSharedMapBit(int ibit)
 {
   return fSharedMap[ibit];
+}
+
+
+
+
+
+Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2){
+ 
+  //
+  // calculates dedx using the cluster
+  // low    -  up specify trunc mean range  - default form 0-0.7
+  // type   -  0 - max charge  or 1- total charge in cluster 2- max no corr 3- total+ correction
+  // i1-i2  -  the pad-row range used for calculation
+  //
+  // normalization parametrization taken from AliTPCClusterParam
+  //
+  AliTPCClusterParam * parcl = AliTPCClusterParam::Instance();
+  if (!parcl) return 0;
+  Float_t amp[160];
+  Int_t   indexes[160];
+  Int_t   ncl=0;
+  //
+  //
+  const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
+  const Float_t kedgey =4.;
+  //
+  for (Int_t irow=i1; irow<i2; irow++){
+    AliTPCclusterMI* cluster = GetClusterPointer(irow);
+    if (!cluster) continue;
+    if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
+    Float_t charge= (type%2)? cluster->GetQ():cluster->GetMax();
+    //do normalization
+    Float_t corr=1;
+    if (type<=1){
+      Int_t  ipad= 0;
+      if (irow>63) ipad=1;
+      if (irow>128) ipad=2;
+      //	
+      AliTPCTrackerPoint * point = GetTrackPoint(irow);
+      Float_t              ty = TMath::Abs(point->GetAngleY());
+      Float_t              tz = TMath::Abs(point->GetAngleZ());
+      
+      Float_t dr    = (250.-TMath::Abs(cluster->GetZ()))/250.;
+      corr  = parcl->Qnorm(ipad,type,dr,ty,tz);
+    }
+    amp[ncl]=charge/corr;
+    ncl++;
+  }
+  if (type>3) return ncl; 
+  TMath::Sort(ncl,amp, indexes, kFALSE);
+
+  if (ncl<40) return 0;
+  
+  Float_t suma=0;
+  Float_t sumn=0;
+  Int_t icl0=TMath::Nint(ncl*low);
+  Int_t icl1=TMath::Nint(ncl*up);
+  for (Int_t icl=icl0; icl<icl1;icl++){
+    suma+=amp[indexes[icl]];
+    sumn++;
+  }
+  return suma/sumn;
+
+}
+
+Double_t AliTPCseed::BetheMass(Double_t mass){
+  //
+  // return bethe-bloch
+  //
+  Float_t bg= P()/mass; 
+  const Double_t kp1=0.76176e-1;
+  const Double_t kp2=10.632;
+  const Double_t kp3=0.13279e-4;
+  const Double_t kp4=1.8631;
+  const Double_t kp5=1.9479;
+
+  Double_t dbg = (Double_t) bg;
+
+  Double_t beta = dbg/TMath::Sqrt(1.+dbg*dbg);
+
+  Double_t aa = TMath::Power(beta,kp4);
+  Double_t bb = TMath::Power(1./dbg,kp5);
+
+  bb=TMath::Log(kp3+bb);
+  
+  return ((Float_t)((kp2-aa-bb)*kp1/aa));
 }
 
 
