@@ -992,7 +992,11 @@ Int_t TFluka::GetMedium() const {
 //
 //  Get the medium number for the current fluka region
 //
-    return fGeom->GetMedium(); // this I need to check due to remapping !!!
+    if (gGeoManager->IsOutside()) {
+	return (-1);
+    } else {
+	return (fGeom->GetMedium()); // this I need to check due to remapping !!!
+    }
 }
 
 //____________________________________________________________________________ 
@@ -2178,7 +2182,7 @@ const char* TFluka::CurrentVolName() const
 //
 // Return the current volume name
 //
-  if (gGeoManager->IsOutside()) return "Outside FLUKA Geometry !";
+  if (gGeoManager->IsOutside()) return "OutOfWorld";
   return gGeoManager->GetCurrentVolume()->GetName();
 }
 
