@@ -19,14 +19,16 @@
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
+#include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONVStore.h"
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
-#include "Riostream.h"
-#include "TMap.h"
+#include <Riostream.h>
+#include <TClass.h>
+#include <TMap.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONCalibrationData
@@ -166,7 +168,19 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path)
   /// Access the CDB for a given path (e.g. MUON/Calib/Pedestals),
   /// and return the corresponding TObject.
   
+  AliCodeTimerAutoClass(Form("%d : %s",runNumber,path));
+  
   AliCDBManager* man = AliCDBManager::Instance();
+  
+  Bool_t undefStorage(kFALSE);
+  
+  if ( !man->IsDefaultStorageSet() )
+  {
+    TString storage("local://$ALICE_ROOT");
+    AliInfoClass(Form("CDB Storage not set. Will use %s for MUON stuff",storage.Data()));
+    man->SetDefaultStorage(storage.Data());
+    undefStorage = kTRUE;
+  }
   
   Bool_t cacheStatus = man->GetCacheFlag();
   
@@ -178,7 +192,15 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path)
   
   if (entry)
   {
-    return entry->GetObject();
+    TObject* object = entry->GetObject();
+    entry->SetOwner(kFALSE);
+    delete entry;
+    return object;
+  }
+  
+  if ( undefStorage ) 
+  {
+    man->UnsetDefaultStorage();
   }
   
   return 0x0;
