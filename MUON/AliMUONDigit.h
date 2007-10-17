@@ -25,6 +25,9 @@ class AliMUONDigit : public AliMUONVDigit
 
     AliMUONDigit& operator=(const AliMUONDigit& rhs);
     
+    /// Own clone methods (as the default TObject::Clone turned out to be pretty slow !)
+    virtual TObject* Clone(const char* newname="") const { return new AliMUONDigit(*this); }
+    
     virtual Bool_t HasMCInformation() const { return kTRUE; }
     
     virtual Int_t DetElemId()const     {return fDetElemId;}  ///< Return detection element ID  
