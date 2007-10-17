@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2007/10/16 15:02:20  jgrosseo
+fixed bug if zero values collected
+
 Revision 1.6  2007/10/16 14:37:16  jgrosseo
 changing to AMANDA protocol version 2
 
@@ -486,16 +489,16 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray* result, Int_t& ownerIndex)
 
 		sResult = message.GetValues(result);
 
-		AliDCSMessage nextMessage;
-		nextMessage.CreateNextMessage();
-
-		if ((fResultErrorCode = SendMessage(nextMessage)) < 0)
-		{
-			AliError(Form("Can't send next message! Reason: %s",
-				GetErrorString(fResultErrorCode)));
-			Close();
-			return AliDCSClient::fgkCommError;
-	        }
+// 		AliDCSMessage nextMessage;
+// 		nextMessage.CreateNextMessage();
+// 
+// 		if ((fResultErrorCode = SendMessage(nextMessage)) < 0)
+// 		{
+// 			AliError(Form("Can't send next message! Reason: %s",
+// 				GetErrorString(fResultErrorCode)));
+// 			Close();
+// 			return AliDCSClient::fgkCommError;
+// 	        }
 
 		return sResult;
 	}
