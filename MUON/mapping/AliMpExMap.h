@@ -54,6 +54,7 @@ class AliMpExMap : public TObject
     Int_t       GetSize() const;
     TExMapIter  GetIterator() const;
     TObject*    GetObject(Int_t index) const;
+    TObject*    GetObjectFast(Int_t index) const;
 
     TObject*    GetValue(const AliMpIntPair& key) const;
     TObject*    GetValue(const TString& key) const;

@@ -298,7 +298,17 @@ TObject* AliMpExMap::GetObject(Int_t index) const
     return 0;
   }
   
-  return fObjects.At(index);
+  return fObjects.UncheckedAt(index);
+}      
+
+//_____________________________________________________________________________
+TObject* AliMpExMap::GetObjectFast(Int_t index) const
+{
+  /// Return the object via its index in the array
+  /// (This function makes possible looping over map as over an array)
+  /// without bound checking.
+  
+  return fObjects.UncheckedAt(index);
 }      
 
 //_____________________________________________________________________________
