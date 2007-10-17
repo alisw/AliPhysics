@@ -584,7 +584,7 @@ void AliMpDEVisu::InfoDE()
   Int_t lastBus      = TMath::MaxElement(detElem->GetNofBusPatches(), vec);
   
   detElem = AliMpDEManager::GetDetElement(fCurrentDetElem);
-  Int_t numberOfSerialManu = detElem->GetNofManus(); // number of manu with an identified serial number
+  Int_t numberOfSerialManu = detElem->NofManusWithSerialNumber(); // number of manu with an identified serial number
   
   fLogMessage->AddLine(Form("DrawDE: detection element: %d, name: %s", 
 		       fCurrentDetElem, fCurrentDEName.Data()));
