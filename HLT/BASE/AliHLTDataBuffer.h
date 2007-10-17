@@ -261,9 +261,19 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     int CheckSize(AliHLTUInt32_t size) const;
 
     /**
+     * Get used size of the buffer
+     */
+    AliHLTUInt32_t GetUsedSize() const {return fSize;}
+
+    /**
      * Get total size of the buffer
      */
     AliHLTUInt32_t GetTotalSize() const {return fTotalSize;}
+
+    /**
+     * Get pointer of data buffer
+     */
+    AliHLTUInt8_t* GetPointer() const {return fPtr;}
 
     /**
      * Write check pattern
@@ -289,8 +299,6 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
 
     operator void*() const {return fPtr;}
     operator AliHLTUInt8_t*() const {return fPtr;}
-
-    operator AliHLTUInt32_t() const {return fSize;}
 
   private:
     /** copy constructor prohibited */

@@ -309,7 +309,7 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	  // pointer
 	  if (arrayBlockData[i].fPtr==NULL ||
 	      arrayBlockData[i].fPtr==*fpBuffer) {
-	    if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=reinterpret_cast<AliHLTUInt32_t>(fpBuffer)) {
+	    if (arrayBlockData[i].fOffset+arrayBlockData[i].fSize<=fpBuffer->GetUsedSize()) {
 	      segment.fSegmentOffset=arrayBlockData[i].fOffset;
 	      segment.fSegmentSize=arrayBlockData[i].fSize;
 	      segment.fDataType=arrayBlockData[i].fDataType;
@@ -318,18 +318,18 @@ int AliHLTDataBuffer::SetSegments(AliHLTUInt8_t* pTgt, AliHLTComponentBlockData*
 	      HLTDebug("set segment %s with size %d at offset %d", AliHLTComponent::DataType2Text(segment.fDataType).data(), segment.fSegmentSize, segment.fSegmentOffset);
 	    } else {
 	      HLTError("block data specification %#d (%s) exceeds size of data buffer", i, AliHLTComponent::DataType2Text(arrayBlockData[i].fDataType).data());
-	      HLTError("block offset=%d, block size=%d, buffer size=%d", arrayBlockData[i].fOffset, arrayBlockData[i].fSize, reinterpret_cast<AliHLTUInt32_t>(fpBuffer));
+	      HLTError("block offset=%d, block size=%d, buffer size=%d", arrayBlockData[i].fOffset, arrayBlockData[i].fSize, fpBuffer->GetUsedSize());
 	      iResult=-E2BIG;
 	    }
 	  } else {
 	    HLTError("invalid pointer (%p) in block data specification (buffer %p size %d)."
 		     "please note: for output blocks only the fOffset value is valid and must "
-		     "be relative to the output buffer", arrayBlockData[i].fPtr, reinterpret_cast<void*>(fpBuffer), reinterpret_cast<AliHLTUInt32_t>(fpBuffer));
+		     "be relative to the output buffer", arrayBlockData[i].fPtr, fpBuffer->GetPointer(), fpBuffer->GetUsedSize());
 	    iResult=-ERANGE;
 	  }
 	}
       } else {
-	HLTError("this data buffer (%p) does not match the internal data buffer %p of raw buffer %p", pTgt, reinterpret_cast<void*>(fpBuffer), fpBuffer);
+	HLTError("this data buffer (%p) does not match the internal data buffer %p of raw buffer %p", pTgt, fpBuffer->GetPointer(), fpBuffer);
 	iResult=-EINVAL;
       }
     } else {
@@ -390,7 +390,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
       pRawBuffer=*buffer;
       pRawBuffer->UseBuffer(size);
       fgFreeBuffers.erase(buffer);
-      fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "raw buffer container %p provided for request of %d bytes (total %d available in buffer %p)", pRawBuffer, size, pRawBuffer->GetTotalSize(), reinterpret_cast<void*>(pRawBuffer));
+      fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "raw buffer container %p provided for request of %d bytes (total %d available in buffer %p)", pRawBuffer, size, pRawBuffer->GetTotalSize(), pRawBuffer->GetPointer());
       fgActiveBuffers.push_back(pRawBuffer);
       break;
     }
@@ -400,10 +400,10 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
     // no buffer found, create a new one
     pRawBuffer=new AliHLTRawBuffer(reqSize);
     if (pRawBuffer) {
-      if (reinterpret_cast<void*>(pRawBuffer)) {
+      if (pRawBuffer->GetPointer()) {
 	pRawBuffer->UseBuffer(size);
 	fgActiveBuffers.push_back(pRawBuffer);
-	fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "new raw buffer %p of size %d created (container %p)", reinterpret_cast<void*>(pRawBuffer), pRawBuffer->GetTotalSize(), pRawBuffer);
+	fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "new raw buffer %p of size %d created (container %p)", pRawBuffer->GetPointer(), pRawBuffer->GetTotalSize(), pRawBuffer);
       } else {
 	delete pRawBuffer;
 	pRawBuffer=NULL;
@@ -414,7 +414,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
     }
   }
   if (pRawBuffer!=NULL && fgkSafetyPatternSize>0) {
-    //fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "writing safety pattern to %p offset %d", reinterpret_cast<void*>(*buffer), reinterpret_cast<AliHLTUInt32_t>(*buffer));
+    //fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "writing safety pattern to %p offset %d", (*buffer)->GetPointer(), (*buffer)->GetUsedSize());
     int res=pRawBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
     assert(res>=0);
   }
@@ -432,9 +432,9 @@ int AliHLTDataBuffer::ReleaseRawBuffer(AliHLTRawBuffer* pBuffer)
     }
     if (buffer!=fgActiveBuffers.end()) {
       if (fgkSafetyPatternSize>0) {
-	//fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "comparing safety pattern at %p offset %d", reinterpret_cast<void*>(*buffer), reinterpret_cast<AliHLTUInt32_t>(*buffer));
+	//fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "comparing safety pattern at %p offset %d", (*buffer)->GetPointer(), reinterpret_cast<AliHLTUInt32_t>(*buffer));
 	if ((*buffer)->CheckPattern(fgkSafetyPattern, fgkSafetyPatternSize)) {
-	  fgLogging.Logging(kHLTLogFatal, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "component has written beyond end of data buffer %p size %d", reinterpret_cast<void*>(*buffer), reinterpret_cast<AliHLTUInt32_t>(*buffer));
+	  fgLogging.Logging(kHLTLogFatal, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "component has written beyond end of data buffer %p size %d", (*buffer)->GetPointer(), (*buffer)->GetUsedSize());
 	}
       }
       (*buffer)->Reset();
@@ -464,7 +464,7 @@ int AliHLTDataBuffer::DeleteRawBuffers()
   }
   buffer=fgActiveBuffers.begin();
   while (buffer!=fgActiveBuffers.end()) {
-    fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", reinterpret_cast<void*>(*buffer), (*buffer)->GetTotalSize());
+    fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->GetPointer(), (*buffer)->GetTotalSize());
     delete *buffer;
     fgActiveBuffers.erase(buffer);
     buffer=fgActiveBuffers.begin();
@@ -631,7 +631,7 @@ int AliHLTDataBuffer::FindConsumer(AliHLTComponent* pConsumer, int bAllLists)
 
 AliHLTDataBuffer::AliHLTRawBuffer::AliHLTRawBuffer(AliHLTUInt32_t size)
   :
-  fSize(size),
+  fSize(0),
   fTotalSize(size),
   fPtr(static_cast<AliHLTUInt8_t*>(malloc(size)))
 {
