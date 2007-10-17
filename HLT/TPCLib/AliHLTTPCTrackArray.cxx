@@ -27,7 +27,8 @@
 #include "TClass.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTrackArray.h"
-#define INCLUDE_TPC_HOUGH
+// Matthias 17.10.2007 the hough code has been disabled for the moment
+//#define INCLUDE_TPC_HOUGH
 #ifdef INCLUDE_TPC_HOUGH
 #include "AliHLTTPCHoughTrack.h"
 #endif
