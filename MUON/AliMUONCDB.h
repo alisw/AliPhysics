@@ -14,7 +14,6 @@
 #include <TObject.h>
 #include <TString.h>
 
-class TList;
 class AliMUONVStore;
 class AliMUONVStore;
 class TMap;
@@ -81,11 +80,8 @@ private:
   /// Not implemented
   AliMUONCDB& operator=(const AliMUONCDB& rhs);
   
-  TList* ManuList();
-  
 private:
   TString fCDBPath; //!< where to write stuff
-  TList* fManuList; //!< full list of manus
   Int_t fMaxNofChannelsToGenerate; //!< to limit the number of generated channels (debug)
   
   ClassDef(AliMUONCDB,0) // Helper class to experience OCDB
