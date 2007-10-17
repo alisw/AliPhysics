@@ -331,6 +331,19 @@ AliMpSlat::FindPCBIndex(Double_t x, Double_t y) const
 }
 
 //_____________________________________________________________________________
+Int_t 
+AliMpSlat::FindPCBIndexByMotifPositionID(Int_t manuId) const
+{
+  /// Find the index of the PCB containing a given manu
+  for ( Size_t i = 0; i< GetSize(); ++i )
+  {
+    AliMpPCB* pcb = GetPCB(i);
+    if ( pcb->HasMotifPositionID(manuId) ) return i;
+  }
+  return -1;
+}
+
+//_____________________________________________________________________________
 void
 AliMpSlat::ForcePosition(const TVector2& pos)
 {
