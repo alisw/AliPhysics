@@ -49,7 +49,8 @@ AliQA.cxx \
 AliQADataMaker.cxx \
 AliQAChecker.cxx \
 AliQACheckerBase.cxx \
-AliMillepede.cxx
+AliMillepede.cxx \
+AliEnTag.cxx AliEnTagManager.cxx
 
 
 

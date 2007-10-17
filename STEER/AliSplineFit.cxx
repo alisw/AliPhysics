@@ -630,6 +630,7 @@ void AliSplineFit::SplineFit(Int_t nder){
   TGraph * graph = fGraph;
   if (nder>1) nder=2;
   Int_t nknots  = fN;
+  if (nknots < 2 ) return;
   Int_t npoints = graph->GetN(); 
   //
   //

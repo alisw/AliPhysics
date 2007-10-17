@@ -141,6 +141,7 @@
 #pragma link C++ class AliQADataMaker+;
 #pragma link C++ class AliQAChecker+;
 #pragma link C++ class AliQACheckerBase+;
-
 #pragma link C++ class AliMillepede+;
+#pragma link C++ class AliEnTag+;
+#pragma link C++ class AliEnTagManager;
 #endif
