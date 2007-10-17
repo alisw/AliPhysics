@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -43,8 +46,15 @@ ClassImp(AliGammaReader)
 AliGammaReader::AliGammaReader() : 
   TObject(), fDataType(0),
   fCTSEtaCut(0.), fEMCALEtaCut(0.), fPHOSEtaCut(0.),
-  fNeutralPtCut(0.),
-  fChargedPtCut(0.)
+  fNeutralPtCut(0.), fChargedPtCut(0.),
+  fEMCALIPDistance(0.),   fPHOSIPDistance(0.), 
+  fEMCALMinAngle(0.),   fPHOSMinAngle(0.), 
+  fEMCALPID(0),fPHOSPID(0),
+  fEMCALPhotonWeight(0.), fEMCALPi0Weight(0.),  fEMCALElectronWeight(0.),  
+  fEMCALChargeWeight(0.),fEMCALNeutralWeight(0.),
+  fPHOSPhotonWeight(0.), fPHOSPi0Weight(0.),  fPHOSElectronWeight(0.), 
+  fPHOSChargeWeight(0.) , fPHOSNeutralWeight(0.) ,
+  fPHOSWeightFormula(0), fPHOSPhotonWeightFormula(0x0), fPHOSPi0WeightFormula(0x0) 
 {
   //Ctor
 
@@ -61,8 +71,24 @@ AliGammaReader::AliGammaReader() :
 AliGammaReader::AliGammaReader(const AliGammaReader & g) :   
   TObject(g), fDataType(g.fDataType),
   fCTSEtaCut(g.fCTSEtaCut),  fEMCALEtaCut(g.fEMCALEtaCut),  fPHOSEtaCut(g.fPHOSEtaCut),
-  fNeutralPtCut(g.fNeutralPtCut),
-  fChargedPtCut(g.fChargedPtCut)
+  fNeutralPtCut(g.fNeutralPtCut), fChargedPtCut(g.fChargedPtCut),
+  fEMCALIPDistance(g.fEMCALIPDistance),  fPHOSIPDistance(g.fPHOSIPDistance),  
+  fEMCALMinAngle(g.fEMCALMinAngle),  fPHOSMinAngle(g.fPHOSMinAngle), 
+  fEMCALPID(g.fEMCALPID), 
+  fPHOSPID(g.fPHOSPID),
+  fEMCALPhotonWeight(g.fEMCALPhotonWeight), 
+  fEMCALPi0Weight(g.fEMCALPi0Weight), 
+  fEMCALElectronWeight(g.fEMCALElectronWeight), 
+  fEMCALChargeWeight(g.fEMCALChargeWeight), 
+  fEMCALNeutralWeight(g.fEMCALNeutralWeight), 
+  fPHOSPhotonWeight(g.fPHOSPhotonWeight),
+  fPHOSPi0Weight(g.fPHOSPi0Weight),
+  fPHOSElectronWeight(g.fPHOSElectronWeight), 
+  fPHOSChargeWeight(g.fPHOSChargeWeight),
+  fPHOSNeutralWeight(g.fPHOSNeutralWeight),
+  fPHOSWeightFormula(g.fPHOSWeightFormula), 
+  fPHOSPhotonWeightFormula(g.fPHOSPhotonWeightFormula), 
+  fPHOSPi0WeightFormula(g.fPHOSPi0WeightFormula) 
 {
   // cpy ctor
 
@@ -91,6 +117,31 @@ AliGammaReader & AliGammaReader::operator = (const AliGammaReader & source)
   fPhiPHOSCut[0]=source.fPhiPHOSCut[0];
   fPhiPHOSCut[1]=source.fPhiPHOSCut[1];
 
+  fEMCALIPDistance = source.fEMCALIPDistance; 
+  fPHOSIPDistance = source.fPHOSIPDistance; 
+  fEMCALMinAngle = source.fEMCALMinAngle; 
+  fPHOSMinAngle = source.fPHOSMinAngle; 
+
+  fEMCALPID = source.fEMCALPID ;
+  fPHOSPID = source.fPHOSPID ;
+
+  fEMCALPhotonWeight = source. fEMCALPhotonWeight ;
+  fEMCALPi0Weight = source.fEMCALPi0Weight ;
+  fEMCALElectronWeight = source.fEMCALElectronWeight; 
+  fEMCALChargeWeight = source.fEMCALChargeWeight;
+  fEMCALNeutralWeight = source.fEMCALNeutralWeight;
+
+  fPHOSPhotonWeight = source.fPHOSPhotonWeight ;
+  fPHOSPi0Weight = source.fPHOSPi0Weight ;
+  fPHOSElectronWeight = source.fPHOSElectronWeight; 
+  fPHOSChargeWeight = source.fPHOSChargeWeight;
+  fPHOSNeutralWeight = source.fPHOSNeutralWeight;
+
+  fPHOSWeightFormula       = source.fPHOSWeightFormula; 
+  fPHOSPhotonWeightFormula = source.fPHOSPhotonWeightFormula; 
+  fPHOSPi0WeightFormula    = source.fPHOSPi0WeightFormula;
+
+
   return *this;
 
 }
@@ -110,6 +161,34 @@ void AliGammaReader::InitParameters()
   fPhiPHOSCut[1] = 320.*TMath::DegToRad();
   fNeutralPtCut   = 0.5 ;
   fChargedPtCut   = 0.5 ;
+
+  fEMCALMinAngle    =   2.5 * TMath::DegToRad() ;  
+  fPHOSMinAngle    = 0.45 * TMath::DegToRad() ; //3.6 ;
+  fEMCALIPDistance    = 450. ;//cm  
+  fPHOSIPDistance    = 445. ;//cm 460 (EMCA) - 15 (CPV)
+
+  //pid, only for ESD data
+  fEMCALPID = kFALSE;
+  fPHOSPID = kFALSE;
+
+  fEMCALPhotonWeight = 0.8 ;
+  fEMCALPi0Weight = 0.5 ;
+  fEMCALElectronWeight = 0.8 ;
+  fEMCALChargeWeight = 0.5 ;
+  fEMCALNeutralWeight = 0.5 ;
+
+  fPHOSPhotonWeight = 0.75 ;
+  fPHOSPi0Weight = 0.8 ;
+  fPHOSElectronWeight = 0.5 ;
+  fPHOSChargeWeight = 0.5 ;
+  fPHOSNeutralWeight = 0.5 ;
+
+  //Formula to set the PID weight threshold for photon or pi0
+  fPHOSWeightFormula = kTRUE;
+  fPHOSPhotonWeightFormula = 
+    new TFormula("photonWeight","0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))");
+  fPHOSPi0WeightFormula = 
+    new TFormula("pi0Weight","0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))");
 
 }
 
@@ -131,6 +210,32 @@ void AliGammaReader::Print(const Option_t * opt) const
   printf("Phi PHOS cut           : [%f, %f]\n", fPhiPHOSCut[0],fPhiPHOSCut[1]) ;
   printf("pT neutral cut           : %f GeV/c\n", fNeutralPtCut) ;
   printf("pT charged cut           : %f GeV/c\n", fChargedPtCut) ;
+
+  if(fDataType == kMC || fDataType == kMCData){
+    printf("IP distance to PHOS         : %f\n", fPHOSIPDistance) ;
+    printf("IP distance to EMCAL         : %f\n", fEMCALIPDistance) ;
+    printf("Min gamma decay aperture angle in PHOS         : %f\n", fPHOSMinAngle) ;
+    printf("Min gamma decay aperture angle in EMCAL         : %f\n", fEMCALMinAngle) ;
+  }
+  
+  if(fDataType != kMC){
+    printf("PHOS PID on?               =     %d\n",  fPHOSPID) ; 
+    printf("EMCAL PID  on?         =     %d\n",  fEMCALPID) ;
+    printf("PHOS PID weight , photon %f, pi0 %f, e %f, charge %f, neutral %f \n",  
+	   fPHOSPhotonWeight,  fPHOSPi0Weight, 
+	   fPHOSElectronWeight,  fPHOSChargeWeight,   fPHOSNeutralWeight) ; 
+    printf("EMCAL PID weight, photon %f, pi0 %f, e %f, charge %f, neutral %f\n",   
+	   fEMCALPhotonWeight,  fEMCALPi0Weight, 
+	   fEMCALElectronWeight,  fEMCALChargeWeight,  fEMCALNeutralWeight) ; 
+    
+    printf("PHOS Parametrized weight on?               =     %d\n",  fPHOSWeightFormula) ; 
+    if(fPHOSWeightFormula){
+      printf(">>>>>>>>>>> Photon weight formula<<<<<<<<<<<<\n");
+      fPHOSPhotonWeightFormula->Print();
+      printf(">>>>>>>>>>> Pi0    weight formula<<<<<<<<<<<<\n");
+      fPHOSPhotonWeightFormula->Print();
+    }
+  }
 
 } 
 

@@ -226,7 +226,7 @@ void AliAnaCaloTrigger::Exec(Option_t *)
 	phiMax = vpos.Phi() ; 
       }
 
-      Float_t * pid = cluster->GetPid() ;
+      Double_t * pid = cluster->GetPid() ;
       
       if(pid[AliPID::kPhoton] > 0.9) {
 	if ( cluEnergy > phEnMax) { 

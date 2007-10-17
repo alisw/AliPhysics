@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -98,7 +101,7 @@ class AliNeutralMesonSelection : public TObject {
   TH2F * fhInvMassPairOpeningAngleCut  ; 
   TH2F * fhInvMassPairAllCut   ; 
   
-  ClassDef(AliNeutralMesonSelection,0)
+  ClassDef(AliNeutralMesonSelection,1)
     
     } ;
 

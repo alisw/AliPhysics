@@ -12,7 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
- 
+
+// root
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
@@ -20,12 +21,16 @@
 #include <TFile.h>
 #include <Riostream.h>
 
+// analysis
 #include "AliAnalysisTaskGamma.h"
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliAnaGamma.h"
 #include "AliGammaReader.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
 #include "AliStack.h"
 #include "AliLog.h"
 
@@ -37,7 +42,8 @@ AliAnalysisTaskGamma::AliAnalysisTaskGamma():
     fAna(0x0),
     fChain(0x0),
     fESD(0x0),
-    fTreeG(0x0),//Not used for the moment
+    fAOD(0x0),
+    fTreeG(0x0),
     fOutputContainer(0x0)
 {
   // Default constructor
@@ -49,41 +55,48 @@ AliAnalysisTaskGamma::AliAnalysisTaskGamma(const char* name):
     fAna(0x0),
     fChain(0x0),
     fESD(0x0),
-    fTreeG(0x0),//Not used for the moment
+    fAOD(0x0),
+    fTreeG(0x0),
     fOutputContainer(0x0)
 {
   // Default constructor
-  
-  Init();
  
   DefineInput (0, TChain::Class());
-  //DefineOutput(0, TTree::Class());// to create AODs, to be done
-  DefineOutput(0, TList::Class());
+  DefineOutput(0, TTree::Class());
+  DefineOutput(1, TList::Class());
 
 }
 
 //_____________________________________________________
 AliAnalysisTaskGamma::~AliAnalysisTaskGamma() 
 {
-
   // Remove all pointers
-  fOutputContainer->Clear() ; 
-  delete fOutputContainer ;
+ 
+  if(fOutputContainer){
+    fOutputContainer->Clear() ; 
+    delete fOutputContainer ;
+  }
+  
+  if(fTreeG) delete fTreeG ; 
 
-  delete fTreeG ; //Not used for the moment
 }
 
 //_____________________________________________________
 void AliAnalysisTaskGamma::CreateOutputObjects()
 {
   // Create the output container
-  //OpenFile(0);
-  //fTreeG = new TTree ; // fAna->MakeTreeG("TreeG");// to create AODs, to be done
   
+  //AODs
   OpenFile(0);
- 
-  fOutputContainer = fAna->GetOutputContainer();
+  AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+  fAOD   = handler->GetAOD();
+  fTreeG = handler->GetTree();
+  fAna->ConnectAOD(fAOD);
 
+  //Histograms container
+  OpenFile(1);
+  fOutputContainer = fAna->GetOutputContainer();
+  
 }
 
 //_____________________________________________________
@@ -91,7 +104,7 @@ void AliAnalysisTaskGamma::Init()
 {
   // Initialization
   AliDebug(1,"Begin");
-   
+  
   // Call configuration file
   gROOT->LoadMacro("ConfigGammaAnalysis.C");
   fAna = (AliAnaGamma*) gInterpreter->ProcessLine("ConfigGammaAnalysis()");
@@ -146,10 +159,9 @@ void AliAnalysisTaskGamma::Exec(Option_t */*option*/)
     AliMCEventHandler*    mctruth = (AliMCEventHandler*) 
       ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     
-    if(mctruth){
-      stack = mctruth->Stack();
-      //printf("AliAnalysisTaskJets: Number of tracks %5d\n", stack->GetNtrack());
-    }
+    if(mctruth)
+      stack = mctruth->MCEvent()->Stack();
+    
   }
   
   //Get Event
@@ -162,6 +174,7 @@ void AliAnalysisTaskGamma::Exec(Option_t */*option*/)
     AliError("fESD is not connected to the input!") ; 
     return ; 
   } 
+  
   fAna->SetData(fESD);
   
   //In case of montecarlo analysis, pass the stack also.
@@ -171,8 +184,8 @@ void AliAnalysisTaskGamma::Exec(Option_t */*option*/)
   //Process event
   fAna->ProcessEvent(ientry);
   
-  //PostData(0, fTreeG); // Create AODs, to be done.
-  PostData(0, fOutputContainer);
+  PostData(0, fTreeG); 
+  PostData(1, fOutputContainer);
   
 }
 

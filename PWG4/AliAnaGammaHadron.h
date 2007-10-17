@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.3.4.2  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -49,11 +52,12 @@ public:
   TH2F * fhDeltaPhiGammaNeutral   ; 
   TH2F * fhDeltaEtaGammaCharged  ; 
   TH2F * fhDeltaEtaGammaNeutral  ; 
+  TH2F * fhDeltaPhiChargedPt  ;
 
   TH2F * fhCorrelationGammaNeutral  ; //Neutral hadron correlation histogram 
   TH2F * fhCorrelationGammaCharged  ; //Charged hadron correlation histogram
   
-  ClassDef(AliAnaGammaHadron,0)
+  ClassDef(AliAnaGammaHadron,1)
 } ;
  
 

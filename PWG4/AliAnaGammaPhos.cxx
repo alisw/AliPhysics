@@ -127,7 +127,7 @@ void AliAnaGammaPhos::CreateOutputObjects()
   AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());  
   fTreeA = handler->GetTree() ; 
   fAOD   = handler->GetAOD();
-  fAODPhotons = fAOD->GetClusters() ; 
+  fAODPhotons = fAOD->GetCaloClusters() ; 
   
 
   OpenFile(1) ; 
@@ -192,7 +192,7 @@ void AliAnaGammaPhos::Exec(Option_t *)
       fhPHOSPos->Fill( pos[0], pos[1], pos[2] ) ;
       fhPHOSDigits->Fill(entry, caloCluster->GetNumberOfDigits() ) ;
       numberOfDigitsInPhos += caloCluster->GetNumberOfDigits() ;
-      Float_t * pid = caloCluster->GetPid() ;
+      Double_t * pid = caloCluster->GetPid() ;
       if(pid[AliPID::kPhoton] > GetPhotonId() ) {
 	phosVector[fPhotonsInPhos] = new TVector3(pos[0],pos[1],pos[2]) ;
 	phosPhotonsEnergy[fPhotonsInPhos]=caloCluster->E() ;
