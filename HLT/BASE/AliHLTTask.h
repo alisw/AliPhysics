@@ -28,6 +28,7 @@
 struct AliHLTComponentBlockData;
 class AliHLTComponent;
 class AliHLTComponentHandler;
+class AliHLTConfiguration;
 
 /******************************************************************************/
 

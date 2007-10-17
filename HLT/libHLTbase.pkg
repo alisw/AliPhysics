@@ -3,25 +3,9 @@
 
 include $(MODDIR)/hlt.conf
 
-MODULE_SRCS= 	AliHLTComponent.cxx \
-		AliHLTComponentHandler.cxx \
-		AliHLTSystem.cxx \
-		AliHLT_C_Component_WrapperInterface.cxx \
-		AliHLTProcessor.cxx \
-		AliHLTCalibrationProcessor.cxx \
-		AliHLTConfiguration.cxx \
-		AliHLTLogging.cxx \
-		AliHLTDataBuffer.cxx \
-		AliHLTConsumerDescriptor.cxx \
-		AliHLTDataSource.cxx \
-		AliHLTDataSink.cxx \
-		AliHLTOfflineInterface.cxx \
-		AliHLTOfflineDataSource.cxx \
-		AliHLTOfflineDataSink.cxx \
-		AliHLTModuleAgent.cxx \
-		AliHLTMemoryFile.cxx \
+MODULE_SRCS= 	AliHLT_C_Component_WrapperInterface.cxx \
 		AliHLTDataTypes.cxx \
-		AliHLTMessage.cxx
+		$(CLASS_HDRS:.h=.cxx)
 
 CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \

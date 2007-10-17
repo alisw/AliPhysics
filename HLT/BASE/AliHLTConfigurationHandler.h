@@ -21,6 +21,7 @@
 
 #include <TList.h>
 
+#include "AliHLTLogging.h"
 class AliHLTConfiguration;
 
 /**
