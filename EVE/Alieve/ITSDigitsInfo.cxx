@@ -253,11 +253,7 @@ void ITSDigitsInfo::SetITSSegmentation()
   // end of SPD geometry
   
   // SDD
-  // response replaced by Calibration (March 2006).
-  AliITSresponseSDD*   resp1 = new AliITSresponseSDD();
-  AliITSCalibrationSDD* cal1 = new AliITSCalibrationSDD;
-  cal1->SetResponse(resp1);
-  fSegSDD = new AliITSsegmentationSDD(fGeom, cal1);
+  fSegSDD = new AliITSsegmentationSDD(fGeom);
 
   // SSD
   fSegSSD = new AliITSsegmentationSSD(fGeom);
