@@ -41,7 +41,6 @@
 // calibration access
 #pragma link C++ class AliMUONCalibrationData+;
 #pragma link C++ class AliMUONCDB+;
-#pragma link C++ class AliMUONHVNamer+;
 
 #endif
 
