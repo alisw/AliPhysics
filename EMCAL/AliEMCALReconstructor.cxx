@@ -105,6 +105,11 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   static AliEMCALRawUtils rawUtils;
   rawUtils.Raw2Digits(rawReader,digitsArr);
+
+  digitsTree->Fill();
+  digitsArr->Delete();
+  delete digitsArr;
+
 }
 
 //____________________________________________________________________________
