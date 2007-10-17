@@ -47,9 +47,6 @@
 ///
 /// NOCLUSTERING : bypass completely the clustering stage
 ///
-/// NOSTATUSMAP : disable the computation and usage of the pad status map. Only
-/// for debug !
-///
 /// NOLOCALRECONSTRUCTION : for debug, to disable local reconstruction (and hence
 /// "recover" old behavior)
 ///
@@ -408,10 +405,10 @@ AliMUONReconstructor::CreateCalibrator() const
   
   if ( strstr(opt,"NOSTATUSMAP") )
   {
-    AliWarning("Disconnecting status map : SHOULD BE USED FOR DEBUG ONLY. NOT FOR PRODUCTION !!!");
-    statusMap = kFALSE; 
+    AliWarning("NOSTATUSMAP is obsolete");
   }
-  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,statusMap);
+
+  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData);
 }
 
 //_____________________________________________________________________________
