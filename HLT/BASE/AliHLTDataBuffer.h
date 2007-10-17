@@ -238,16 +238,48 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @brief  Descriptor of the raw data buffer which can host several segments.
    */
   class AliHLTRawBuffer {
-  friend class AliHLTDataBuffer;
   public:
     /** standard constructor */
     AliHLTRawBuffer() : fSize(0), fTotalSize(0), fPtr(NULL) {}
-    /** not a valid copy constructor, defined according to effective C++ style */
-    AliHLTRawBuffer(const AliHLTRawBuffer&) : fSize(0), fTotalSize(0), fPtr(NULL) {}
-    /** not a valid assignment op, but defined according to effective C++ style */
-    AliHLTRawBuffer& operator=(const AliHLTRawBuffer&) {return *this;}
-    /** standard destructor */
-    virtual ~AliHLTRawBuffer() {}
+    /** constructor */
+    AliHLTRawBuffer(AliHLTUInt32_t size);
+    /** destructor */
+    virtual ~AliHLTRawBuffer();
+
+    /**
+     * Use a fraction of the buffer.
+     * @param size    size in bytes to be used
+     * @return pointer to buffer
+     */
+    AliHLTUInt8_t* UseBuffer(AliHLTUInt32_t size);
+
+    /**
+     * Check whether buffer fits for a request.
+     * @param size    size of the request in bytes
+     * @return 1 if buffer is big enough, 0 if not
+     */
+    int CheckSize(AliHLTUInt32_t size) const;
+
+    /**
+     * Get total size of the buffer
+     */
+    AliHLTUInt32_t GetTotalSize() const {return fTotalSize;}
+
+    /**
+     * Write check pattern
+     */
+    int WritePattern(const char* pattern, int size);
+
+    /**
+     * Check pattern
+     */
+    int CheckPattern(const char* pattern, int size) const;
+
+    /**
+     * Reset buffer.
+     * Data buffer remains allocated, used size set to 0
+     */
+    int Reset();
 
     int operator==(void*) const;
     int operator==(AliHLTUInt8_t* ptr) const {return fPtr==ptr;}
@@ -258,7 +290,14 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     operator void*() const {return fPtr;}
     operator AliHLTUInt8_t*() const {return fPtr;}
 
+    operator AliHLTUInt32_t() const {return fSize;}
+
   private:
+    /** copy constructor prohibited */
+    AliHLTRawBuffer(const AliHLTRawBuffer&);
+    /** assignment operator prohibited */
+    AliHLTRawBuffer& operator=(const AliHLTRawBuffer&);
+
     /** size of the currently occupied partition of the buffer */
     AliHLTUInt32_t fSize;                                          // see above
     /** total size of the buffer, including safety margin */
