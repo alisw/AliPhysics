@@ -66,7 +66,7 @@ AliEMCALTracker::AliEMCALTracker()
     fCutAlphaMin(-200.0),
     fCutAlphaMax(200.0),
     fCutAngle(100.0),
-    fMaxDist(100.0),
+    fMaxDist(10.0),
     fRho(1.0),
     fX0(1.0),
     fTracks(0),
@@ -524,7 +524,10 @@ Double_t AliEMCALTracker::CheckPair
 	// check against cut on difference 'alpha - phi'
 	Double_t phi = TMath::ATan2(cl->Y(), cl->X());
 	phi = AngleDiff(phi, tr->GetAlpha());
-	if (phi < fCutAlphaMin || phi > fCutAlphaMax) return distance;
+	if (phi < fCutAlphaMin || phi > fCutAlphaMax){
+	  delete tr;
+	  return distance;
+	}
 	
 	// try to propagate to cluster radius
 	// (return the 'distance' value if it fails)
@@ -562,7 +565,10 @@ Double_t AliEMCALTracker::CheckPair
 		if (isTrue) cout << "Init : " << rt << ' ' << x << ' ' << y << ' ' << z << endl;
 		for (i = 0; i < fNPropSteps; i++) {
 			r = rt + (rc - rt) * ((Double_t)(i+1)/(Double_t)fNPropSteps);
-			if (!tr->PropagateTo(r, x0, rho)) return distance;
+			if (!tr->PropagateTo(r, x0, rho)){
+			  delete tr;
+			  return distance;
+			}
 			tr->GetXYZ(pos);
 			if (isTrue) cout << "Step : " << r << ' ' << x << ' ' << y << ' ' << z << endl;
 		}
@@ -571,7 +577,10 @@ Double_t AliEMCALTracker::CheckPair
 	else {
 		// when no steps are used, no correction makes sense
 		//if (!tr->PropagateTo(rc, 0.0, 0.0)) return distance;
-		if (!tr->PropagateToGlobal(cl->X(), cl->Y(), cl->Z(), 0.0, 0.0)) return distance;
+		if (!tr->PropagateToGlobal(cl->X(), cl->Y(), cl->Z(), 0.0, 0.0)){
+		  delete tr;
+		  return distance;
+		}
 		/*
 		Bool_t propOK = kFALSE;
 		cout << "START" << endl;
@@ -607,6 +616,7 @@ Double_t AliEMCALTracker::CheckPair
 	
 	if (angle > fCutAngle) {
 		//cout << "angle" << endl;
+	  delete tr;
 		return distance;
 	}
 		
@@ -614,16 +624,19 @@ Double_t AliEMCALTracker::CheckPair
 	x -= cl->X();
 	if (TMath::Abs(x) > fCutX) {
 		//cout << "cut X" << endl;
+	  delete tr;
 		return distance;
 	}
 	y -= cl->Y();
 	if (TMath::Abs(y) > fCutY) {
 		//cout << "cut Y" << endl;
+	  delete tr;
 		return distance;
 	}
 	z -= cl->Z();
 	if (TMath::Abs(z) > fCutZ) {
 		//cout << "cut Z" << endl;
+	  delete tr;
 		return distance;
 	}
 	
@@ -739,6 +752,7 @@ Double_t AliEMCALTracker::CheckPairV2
 	TVector3 vdiff = vt-vc;
 		
 	// compute differences wr to each coordinate
+	delete track;
 	if (vdiff.X() > fCutX) return distance;
 	if (vdiff.Y() > fCutY) return distance;
 	if (vdiff.Z() > fCutZ) return distance;
