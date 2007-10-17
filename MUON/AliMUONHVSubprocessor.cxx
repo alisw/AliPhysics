@@ -27,11 +27,11 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONHVSubprocessor.h"
-#include "AliMUONHVNamer.h"
 #include "AliMUONPreprocessor.h"
 
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpHVNamer.h"
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
@@ -68,7 +68,7 @@ AliMUONHVSubprocessor::Process(TMap* dcsAliasMap)
   TMap hv;
   hv.SetOwner(kTRUE);
   
-  AliMUONHVNamer hvNamer;
+  AliMpHVNamer hvNamer;
 
   AliMpDEIterator deIt;
 
