@@ -55,7 +55,7 @@ MODULE_SRCS= 	AliHLTTPCLog.cxx \
 # 		tracking/AliHLTTPCHoughMaxFinder.cxx \
 # 		tracking/AliHLTTPCHistogram.cxx \
 # 		tracking/AliHLTTPCHistogram1D.cxx \
-# 		tracking/AliHLTTPCHistogramAdaptive.cxx \
+# 		tracking/AliHLTTPCHistogramAdaptive.cxx
 
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCAgent.h \
@@ -111,7 +111,7 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 # 		tracking/AliHLTTPCHoughMaxFinder.h \
 # 		tracking/AliHLTTPCHistogram.h \
 # 		tracking/AliHLTTPCHistogram1D.h \
-# 		tracking/AliHLTTPCHistogramAdaptive.h \
+# 		tracking/AliHLTTPCHistogramAdaptive.h
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCLog.h \
