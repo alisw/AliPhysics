@@ -12,9 +12,6 @@
 /// 
 //  Author Laurent Aphecetche
 
-#ifndef ROOT_TExMap
-#  include "TExMap.h"
-#endif
 #ifndef ROOT_TIterator
 #  include "TIterator.h"
 #endif
@@ -25,7 +22,7 @@ class AliMpExMap;
 class AliMUON2DMapIterator : public TIterator
 {
 public:
-  AliMUON2DMapIterator(const AliMpExMap& theMap);
+  AliMUON2DMapIterator(AliMpExMap* theMap);
   AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs);
   AliMUON2DMapIterator& operator=(const AliMUON2DMapIterator& rhs);
   TIterator& operator=(const TIterator& rhs);
@@ -40,15 +37,15 @@ public:
   virtual const TCollection* GetCollection() const;
   
 private:
-  TObject* GetValue(TExMapIter& iter, Int_t& key) const;
-  AliMpExMap* GetMap(TExMapIter& iter, Int_t& key) const;
+    
+  AliMpExMap* Map(Int_t i) const;
   
 private:
-  TExMapIter fIter; //!< first iterator
-  TExMapIter* fIter2; //!< second iterator
-  Int_t fCurrentI; //!< current index in direction i 
-  Int_t fCurrentJ; //!< current index in direction j
-
+  AliMpExMap* fMap;        ///< Top map we iterate upon
+  AliMpExMap* fCurrentMap; ///< Current map (inside top map) we are iterating upon
+  Int_t fI;                ///< Map(fI) is fCurrentMap  
+  Int_t fJ;                ///< Current position in fCurrentMap
+  
   ClassDef(AliMUON2DMapIterator,0) // VDataIterator for 2D maps
 };
 

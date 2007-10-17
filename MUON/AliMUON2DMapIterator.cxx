@@ -33,12 +33,12 @@ ClassImp(AliMUON2DMapIterator)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUON2DMapIterator::AliMUON2DMapIterator(const AliMpExMap& theMap)
+AliMUON2DMapIterator::AliMUON2DMapIterator(AliMpExMap* theMap)
 : TIterator(), 
-fIter(theMap.GetIterator()),
-fIter2(0x0),
-fCurrentI(-1),
-fCurrentJ(-1)
+fMap(theMap),
+fCurrentMap(0x0),
+fI(-1),
+fJ(-1)
 {
   /// default ctor
   Reset();
@@ -47,15 +47,14 @@ fCurrentJ(-1)
 //_____________________________________________________________________________
 AliMUON2DMapIterator::AliMUON2DMapIterator(const AliMUON2DMapIterator& rhs)
 : TIterator(rhs),
-fIter(rhs.fIter),
-fIter2(0x0),
-fCurrentI(rhs.fCurrentI),
-fCurrentJ(rhs.fCurrentJ)
+fMap(rhs.fMap),
+fCurrentMap(rhs.fCurrentMap),
+fI(rhs.fI),
+fJ(rhs.fI)
 {
   /// copy ctor
-  if ( rhs.fIter2 ) fIter2 = new TExMapIter(*rhs.fIter2);
-
 }
+
 //_____________________________________________________________________________
 AliMUON2DMapIterator& 
 AliMUON2DMapIterator::operator=(const AliMUON2DMapIterator& rhs)
@@ -63,11 +62,10 @@ AliMUON2DMapIterator::operator=(const AliMUON2DMapIterator& rhs)
   /// assignment operator
   if ( this != &rhs ) 
   {
-    fIter = rhs.fIter;
-    fIter2 = 0x0;
-    if ( rhs.fIter2 ) fIter2 = new TExMapIter(*rhs.fIter2);
-    fCurrentI = rhs.fCurrentI;
-    fCurrentJ = rhs.fCurrentJ;
+    fMap = rhs.fMap;
+    fCurrentMap = rhs.fCurrentMap;
+    fI = rhs.fI;
+    fJ = rhs.fJ;
   }
   return *this;
 }
@@ -81,12 +79,10 @@ AliMUON2DMapIterator::operator=(const TIterator& rhs)
   if ( this != &rhs && rhs.IsA() == AliMUON2DMapIterator::Class() ) 
   {
     const AliMUON2DMapIterator& rhs1 = static_cast<const AliMUON2DMapIterator&>(rhs);
-    
-    fIter = rhs1.fIter;
-    fIter2 = 0x0;
-    if ( rhs1.fIter2 ) fIter2 = new TExMapIter(*rhs1.fIter2);
-    fCurrentI = rhs1.fCurrentI;
-    fCurrentJ = rhs1.fCurrentJ;
+    fMap = rhs1.fMap;
+    fCurrentMap = rhs1.fCurrentMap;
+    fI = rhs1.fI;
+    fJ = rhs1.fJ;
   }
   return *this;
 }
@@ -95,7 +91,6 @@ AliMUON2DMapIterator::operator=(const TIterator& rhs)
 AliMUON2DMapIterator::~AliMUON2DMapIterator()
 {
   /// dtor
-  delete fIter2;
 }
 
 //_____________________________________________________________________________
@@ -107,58 +102,38 @@ AliMUON2DMapIterator::GetCollection() const
 }
 
 //_____________________________________________________________________________
-TObject*
-AliMUON2DMapIterator::GetValue(TExMapIter& iter, Int_t& theKey) const
-{
-  /// return the value corresponding to theKey in iterator iter
-  theKey = -1;
-  Long_t key, value;
-  Bool_t ok = iter.Next(key,value);
-  if (!ok) return 0x0;
-  theKey = (Int_t)(key & 0xFFFF);
-  return reinterpret_cast<TObject*>(value);
-}
-
-//_____________________________________________________________________________
 AliMpExMap*
-AliMUON2DMapIterator::GetMap(TExMapIter& iter, Int_t& key)  const
+AliMUON2DMapIterator::Map(Int_t i) const
 {
-  /// get the map corresponding to key
-  AliMpExMap* rv(0x0);
-  TObject* o = GetValue(iter,key);
-  if (o)
-  {
-    rv = dynamic_cast<AliMpExMap*>(o);
-  }
-  return rv;
+  /// Get the map at a given index
+  return static_cast<AliMpExMap*>(fMap->GetObjectFast(i));
 }
 
 //_____________________________________________________________________________
 TObject*
 AliMUON2DMapIterator::Next()
 {
-  /// logic :
-  /// get TObject* from fIter2
-  /// if null, increment fIter2 by getting next on fIter
+  /// return next object
   
-  if (!fIter2) return 0x0;
+  if (!fCurrentMap) return 0x0;
   
-  TObject* o = GetValue(*fIter2,fCurrentJ);
-  if (!o)
+  ++fJ;
+  
+  if ( fJ < fCurrentMap->GetSize() ) 
   {
-    // fIter2 exhausted, try to get the next one
-    AliMpExMap* m = GetMap(fIter,fCurrentI);
-    if (!m)
-    {
-      // nothing left, we are done.
-      return 0x0;
-    }
-    delete fIter2;
-    fIter2 = new TExMapIter(m->GetIterator());
-    o = GetValue(*fIter2,fCurrentJ);
+    return fCurrentMap->GetObjectFast(fJ);
   }
-  
-  return o;
+  else
+  {
+    ++fI;
+    if ( fI < fMap->GetSize() )
+    {
+      fCurrentMap = Map(fI);
+      fJ = -1;
+      return Next();
+    }
+    return 0x0;
+  }
 }
 
 //_____________________________________________________________________________
@@ -166,11 +141,15 @@ void
 AliMUON2DMapIterator::Reset()
 {
   /// rewind the iterator
-  delete fIter2;
-  fIter.Reset();
-  AliMpExMap* m = GetMap(fIter,fCurrentI);
-  if (m)
+  fI = -1;
+  fJ = -1;
+  fCurrentMap = 0x0;
+  
+  if ( fMap->GetSize() > 0 )
   {
-    fIter2 = new TExMapIter(m->GetIterator());
-  }  
+    fI = 0;
+    fCurrentMap = Map(fI);
+    fJ = -1;
+  }
 }
+
