@@ -46,7 +46,7 @@ fLadOnLay2(0)
   AliITSLoader* itsLoader =  (AliITSLoader*) rl->GetLoader("ITSLoader");
   if(!filename.Contains("default"))itsLoader->SetVerticesFileName(filename);
   if(!filename.Contains("null"))itsLoader->LoadVertices("recreate");
-  itsLoader->LoadRecPoints();
+
   //  Int_t lst;
   SetLastEvent(rl->GetNumberOfEvents()-1);
   /*
