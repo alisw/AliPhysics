@@ -44,10 +44,9 @@
 #include <TH2.h>
 #include <TMinuit.h>
 #include <TCanvas.h>
-#include <TStopwatch.h>
 #include <TMath.h>
 #include <TROOT.h>
-//#include "AliCodeTimer.h"
+#include "AliCodeTimer.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONClusterFinderMLEM)
@@ -76,7 +75,6 @@ fCathBeg(0),
 fPixArray(new TObjArray(20)),
 fDebug(0),
 fPlot(plot),
-fTimers(new TObjArray(kLast)),
 fSplitter(0x0),
 fNClusters(0),
 fNAddVirtualPads(0)
@@ -89,15 +87,6 @@ fNAddVirtualPads(0)
 
   if (!fgMinuit) fgMinuit = new TMinuit(8);
 
-  fTimers->SetOwner(kTRUE);
-  
-  for ( Int_t i = 0; i < kLast; ++i )
-  {
-    TStopwatch* t = new TStopwatch;
-    fTimers->AddLast(new TStopwatch);
-    t->Start(kTRUE);
-    t->Stop();
-  }
   if (fPlot) fDebug = 1;
 }
 
@@ -108,12 +97,6 @@ AliMUONClusterFinderMLEM::~AliMUONClusterFinderMLEM()
   delete fgMinuit; fgMinuit = 0; delete fPixArray; fPixArray = 0;
 //  delete fDraw;
   delete fPreClusterFinder;
-  for ( Int_t i = 0; i < kLast; ++i )
-  {
-    AliInfo(Form("Timer %d",i));
-    Timer(i)->Print();
-  }
-  delete fTimers;
   delete fSplitter;
   AliInfo(Form("Total clusters %d AddVirtualPad needed %d",
                fNClusters,fNAddVirtualPads));
@@ -168,7 +151,7 @@ AliMUONCluster*
 AliMUONClusterFinderMLEM::NextCluster()
 {
   /// Return next cluster
-//  AliCodeTimerAuto("clustering + pre-clustering")
+//  AliCodeTimerAuto("")
   
   // if the list of clusters is not void, pick one from there
   TObject* o = fClusterList.At(++fClusterNumber);
@@ -215,6 +198,8 @@ AliMUONClusterFinderMLEM::WorkOnPreCluster()
 {
   /// Starting from a precluster, builds a pixel array, and then
   /// extract clusters from this array
+  
+//  AliCodeTimerAuto("")
   
   // Set saturation flag - it is not set if working directly with MC digits (w/out 
   // creating raw data) !!!
@@ -276,9 +261,7 @@ AliMUONClusterFinderMLEM::WorkOnPreCluster()
     {
       FindCluster(*cluster,localMax, maxPos[i]);
     }
-    Timer(kMainLoop)->Start(kFALSE);
     MainLoop(*cluster,iSimple);
-    Timer(kMainLoop)->Stop();
     if (i < nMax-1) 
     {
       for (Int_t j=0; j<cluster->Multiplicity(); ++j) 
@@ -317,15 +300,14 @@ AliMUONClusterFinderMLEM::CheckPrecluster(const AliMUONCluster& origCluster)
 {
   /// Check precluster in order to attempt to simplify it (mostly for
   /// two-cathode preclusters)
-    
+
+//  AliCodeTimerAuto("")
+  
   if (origCluster.Multiplicity()==1) 
   { 
     // Disregard one-pad clusters (leftovers from splitting)
     return 0x0;
   }
-
-  Timer(kCheckPreCluster)->Start(kFALSE);
-
 
   AliMUONCluster* cluster = static_cast<AliMUONCluster*>(origCluster.Clone());
 
@@ -344,23 +326,10 @@ AliMUONClusterFinderMLEM::CheckPrecluster(const AliMUONCluster& origCluster)
   }
   else
   {
-    rv = CheckPreclusterOneCathode(cluster);
+    rv = cluster;
   }
-  Timer(kCheckPreCluster)->Stop();
   return rv;
 }
-
-//_____________________________________________________________________________
-AliMUONCluster*
-AliMUONClusterFinderMLEM::CheckPreclusterOneCathode(AliMUONCluster* cluster)
-{
-  /// Check single-cathode precluster
-  AliWarning("Reimplement me!");
- AliDebug(2,"End of CheckPreClusterOneCathode=");
-//  StdoutToAliDebug(2,cluster->Print("full"));
-
-  return cluster;
-}  
 
 //_____________________________________________________________________________
 AliMUONCluster*
@@ -928,6 +897,8 @@ Bool_t AliMUONClusterFinderMLEM::MainLoop(AliMUONCluster& cluster, Int_t iSimple
 {
   /// Repeat MLEM algorithm until pixel size becomes sufficiently small
   
+//  AliCodeTimerAuto("")
+  
   Int_t nPix = fPixArray->GetLast()+1;
 
   AliDebug(2,Form("nPix=%d iSimple=%d, precluster=",nPix,iSimple));
@@ -1423,15 +1394,6 @@ Int_t AliMUONClusterFinderMLEM::FindNearest(AliMUONPad *pixPtr0)
     if (r < rmin) { rmin = r; imin = i; }
   }
   return imin;
-}
-
-
-//_____________________________________________________________________________
-TStopwatch* 
-AliMUONClusterFinderMLEM::Timer(Int_t i) const
-{ 
-  /// Return timer at index i
-  return static_cast<TStopwatch*>(fTimers->At(i)); 
 }
 
 //_____________________________________________________________________________
