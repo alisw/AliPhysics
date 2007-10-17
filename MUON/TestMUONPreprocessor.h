@@ -3,6 +3,6 @@
 
 class TMap;
 
-TMap* CreateDCSAliasMap();
+TMap* CreateDCSAliasMap(const char* inputCDB);
 
 #endif

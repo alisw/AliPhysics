@@ -28,6 +28,13 @@
 /// b) select run type, using shuttle->AddInputRunParameter() (the run type
 ///    dictates which task is really performed by the MUONPreprocessor
 ///
+/// You must load relevant libraries (besides normal MUON ones) before
+/// compiling this macro :
+///
+/// gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle");
+/// gSystem->Load("libMUONshuttle.so");
+///
+///
 /// For more information on usage, please see READMEshuttle.
 ///
 // By Laurent Aphecetche, SUBATECH Nantes
@@ -35,10 +42,12 @@
 #include "TestMUONPreprocessor.h"
 
 #include "AliMUONTrackerPreprocessor.h"
-#include "AliMUONHVNamer.h"
+
+#include "AliLog.h"
 
 #include "AliMpExMap.h"
 #include "AliMpHelper.h"
+#include "AliMpHVNamer.h"
 #include "AliMpCDB.h"
 
 #include "AliCDBManager.h"
@@ -66,29 +75,30 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   // PHYSICS -> HV
   // GMS
   
-  // load library
-  gSystem->Load("../SHUTTLE/TestShuttle/libTestShuttle.so");
-  gSystem->Load("libMUONshuttle.so");
-  
   // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(runNumber, 0, 1);
-
   
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
+  const char* inputCDB = "local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB";
+    
+  AliTestShuttle::SetMainCDB(inputCDB);
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
+  // Create DCS HV aliases
+  TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB);
+  
+  if ( dcsAliasMap ) 
+  {
+    // now give the alias map to the shuttle
+    shuttle->SetDCSInput(dcsAliasMap);
+  }
+  
+  
   printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
   printf("Test Shuttle log dir: %s\n", AliShuttleInterface::GetShuttleLogDir());
   printf("Test OCDB storage Uri: %s\n", AliShuttleInterface::GetMainCDB().Data());
   printf("Test Reference storage Uri: %s\n", AliShuttleInterface::GetMainRefStorage().Data());
   
-  // Create DCS HV aliases
-  TMap* dcsAliasMap = CreateDCSAliasMap();
-
-  // now give the alias map to the shuttle
-  shuttle->SetDCSInput(dcsAliasMap);
-
   // The shuttle can process files that originate from DCS, DAQ and HLT.
   // To test it, we provide some local files and locations where these would be found when
   // the online machinery would be there.
@@ -127,7 +137,7 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   shuttle->Process();
 }
 
-TMap* CreateDCSAliasMap()
+TMap* CreateDCSAliasMap(const char* inputCDB)
 {
   /// Creates a DCS structure for MUON Tracker HV
   ///
@@ -138,15 +148,35 @@ TMap* CreateDCSAliasMap()
   ///     <valueList> is a TObjArray of AliDCSValue
   ///     An AliDCSValue consists of timestamp and a value in form of a AliSimpleValue
   
+  Bool_t undefStorage(kFALSE);
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet())
+  {
+    undefStorage = kTRUE;
+    man->SetDefaultStorage(inputCDB);
+  }
+  
   // Load mapping
-  AliMpCDB::LoadDDLStore();
+  Bool_t ok = AliMpCDB::LoadDDLStore();
+  
+  if (undefStorage)
+  {
+    man->UnsetDefaultStorage();
+  }
+  
+  if (!ok)
+  {
+    AliErrorGeneral("CreateDCSAliasMap","Could not load DDLStore from OCDB");
+    return 0x0;
+  }
 
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(kTRUE);
   
   TRandom random(0);
   
-  AliMUONHVNamer hvNamer;
+  AliMpHVNamer hvNamer;
   
   TObjArray* aliases = hvNamer.GenerateAliases();
   

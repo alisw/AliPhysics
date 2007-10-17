@@ -68,10 +68,16 @@ Bool_t AliMpCDB::LoadMpSegmentation(Bool_t warn)
     cdbManager->SetRun(run);
   }  
 
-  AliCDBEntry* cdbEntry 
-    =  cdbManager->Get("MUON/Calib/Mapping", run);
+  AliCDBEntry* cdbEntry = cdbManager->Get("MUON/Calib/Mapping", run);
   
-  return (AliMpSegmentation*)cdbEntry->GetObject() != 0x0;
+  if ( cdbEntry ) 
+  {
+    return (AliMpSegmentation*)cdbEntry->GetObject() != 0x0;
+  }
+  else
+  {
+    return kFALSE;
+  }
 }    
 
 //______________________________________________________________________________
@@ -104,10 +110,16 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
     cdbManager->SetRun(run);
   }  
 
-  AliCDBEntry* cdbEntry 
-    =  cdbManager->Get("MUON/Calib/DDLStore", run);
+  AliCDBEntry* cdbEntry =  cdbManager->Get("MUON/Calib/DDLStore", run);
   
-  return (AliMpDDLStore*)cdbEntry->GetObject() != 0x0;
+  if ( cdbEntry ) 
+  {
+    return (AliMpDDLStore*)cdbEntry->GetObject() != 0x0;
+  }
+  else
+  {
+    return kFALSE;
+  }
 }    
 
 //______________________________________________________________________________
