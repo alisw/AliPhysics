@@ -499,7 +499,7 @@ void AliRawReader::AddErrorLog(AliRawDataErrorLog::ERawDataErrorLevel level,
     AliError("No events have read so far! Impossible to add a raw data error log!");
     return;
   }
-  Int_t ddlId = GetDDLID();
+  Int_t ddlId = GetEquipmentId();
   if (ddlId < 0) {
     AliError("No ddl raw data have been read so far! Impossible to add a raw data error log!");
     return;
