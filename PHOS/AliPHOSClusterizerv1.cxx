@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.116  2007/10/01 20:24:08  kharlov
+ * Memory leaks fixed
+ *
  * Revision 1.115  2007/09/26 14:22:17  cvetan
  * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
  *
@@ -461,7 +464,7 @@ void AliPHOSClusterizerv1::InitParameters()
   fW0                      = parEmc->GetLogWeight();
   fW0CPV                   = parCpv->GetLogWeight();
 
-  fEmcTimeGate             = 1.e-8 ; 
+  fEmcTimeGate             = 1.e-6 ; 
   
   fToUnfold                = kTRUE ;
     
@@ -492,7 +495,8 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
     Int_t rowdiff = TMath::Abs( relid1[2] - relid2[2] ) ;  
     Int_t coldiff = TMath::Abs( relid1[3] - relid2[3] ) ;  
     
-    if (( coldiff <= 1 )  && ( rowdiff <= 1 )){
+    if (( coldiff <= 1 )  && ( rowdiff <= 1 )){   //At least common vertex
+      //    if (( relid1[2]==relid2[2] && coldiff <= 1 )  || ( relid1[3]==relid2[3] &&  rowdiff <= 1 )){ //common side
       if((relid1[1] != 0) || (TMath::Abs(d1->GetTime() - d2->GetTime() ) < fEmcTimeGate))
       rv = 1 ; 
     }
@@ -514,14 +518,31 @@ Int_t AliPHOSClusterizerv1::AreNeighbours(AliPHOSDigit * d1, AliPHOSDigit * d2)c
 //____________________________________________________________________________
 void AliPHOSClusterizerv1::CleanDigits(TClonesArray * digits)
 {
-  // Remove digits with amplitudes below threshold
+  // Remove digits with amplitudes below threshold.
+  // remove digits in bad channels
 
+  Bool_t isBadMap = 0 ;
+  if(fgCalibData->GetNumOfEmcBadChannels()){
+    isBadMap=1 ;
+  }
+  
+  Int_t inBadList=0 ;
   for(Int_t i=0; i<digits->GetEntriesFast(); i++){
     AliPHOSDigit * digit = static_cast<AliPHOSDigit*>(digits->At(i)) ;
     if ( (IsInEmc(digit) && CalibrateEMC(digit->GetEnergy(),digit->GetId()) < fEmcMinE) ||
-	 (IsInCpv(digit) && CalibrateCPV(digit->GetAmp()   ,digit->GetId()) < fCpvMinE) )
+	 (IsInCpv(digit) && CalibrateCPV(digit->GetAmp()   ,digit->GetId()) < fCpvMinE) ){
       digits->RemoveAt(i) ;
+      continue ;
+    }
+    if(isBadMap){ //check bad map now
+      Int_t relid[4] ;
+      fGeom->AbsToRelNumbering(digit->GetId(), relid) ; 
+      if(fgCalibData->IsBadChannelEmc(relid[0],relid[2],relid[3])){
+	digits->RemoveAt(i) ;
+      }
+    }
   }
+
   digits->Compress() ;
   for (Int_t i = 0 ; i < digits->GetEntriesFast() ; i++) { 
     AliPHOSDigit *digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ; 
