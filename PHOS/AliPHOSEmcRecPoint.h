@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.36  2007/04/05 10:18:58  policheh
+ * Introduced distance to nearest bad crystal.
+ *
  * Revision 1.35  2007/03/06 06:47:28  kharlov
  * DP:Possibility to use actual vertex position added
  *
@@ -95,6 +98,7 @@ public:
   virtual void  EvalDispersion(Float_t logWeight, TClonesArray * digits, TVector3 &vInc) ;   // computes the dispersion of the shower
   virtual void  EvalElipsAxis(Float_t logWeight, TClonesArray * digits, TVector3 &vInc );   // computes the axis of shower ellipsoide
           void  EvalMoments(Float_t logWeight, TClonesArray * digits, TVector3 &vInc );     // computes shower moments
+  virtual void  EvalPrimaries(TClonesArray * digits) ;
           void  EvalTime( TClonesArray * digits );
   virtual Bool_t AreNeighbours(AliPHOSDigit * digit1, AliPHOSDigit * digit2 ) const ;
 

@@ -44,7 +44,6 @@ class AliPHOSRecPoint : public AliCluster {
   void            EvalAll(TClonesArray * digits) ;  
   void            EvalLocal2TrackingCSTransform();
   virtual void    EvalPHOSMod(AliPHOSDigit * digit) ;  
-  virtual void    EvalPrimaries(TClonesArray * digits) ;
   virtual int *   GetDigitsList(void) const { return fDigitsList ; }  
   virtual Float_t GetEnergy() const {return fAmp; }
   virtual void    GetLocalPosition(TVector3 & pos) const ;   

@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.58  2007/04/16 09:03:37  kharlov
+ * Incedent angle correction fixed
+ *
  * Revision 1.57  2007/04/05 10:18:58  policheh
  * Introduced distance to nearest bad crystal.
  *
@@ -711,11 +714,76 @@ void  AliPHOSEmcRecPoint::EvalMoments(Float_t logWeight,TClonesArray * digits, T
   fPhixe = phi;
 
 }
+//______________________________________________________________________________
+void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
+{
+  // Constructs the list of primary particles (tracks) which have contributed to this RecPoint
+  
+  AliPHOSDigit * digit ;
+  Int_t * tempo    = new Int_t[fMaxTrack] ;
+  
+  //First find digit with maximal energy deposition and copy its primaries
+  Float_t emax=0.;
+  Int_t imaxDigit=0;
+  for(Int_t id=0; id<GetDigitsMultiplicity(); id++){
+    if(emax<fEnergyList[id])
+      imaxDigit=id ;
+  }
+  digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[imaxDigit] )) ; 
+  Int_t nprimaries = digit->GetNprimary() ;
+  if ( nprimaries > fMaxTrack ) {
+    fMulTrack = - 1 ;
+    Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
+    nprimaries = fMaxTrack; //skip the rest
+  }
+  for(fMulTrack=1; fMulTrack<=nprimaries ; fMulTrack++){
+    tempo[fMulTrack-1] = digit->GetPrimary(fMulTrack) ;
+  }
+
+  //Now add other digits contributions
+  for (Int_t index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
+    if(index==imaxDigit) //already in
+      continue ; 
+    digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
+    nprimaries = digit->GetNprimary() ;
+    for(Int_t ipr=0; ipr<nprimaries; ipr++){
+      Int_t iprimary = digit->GetPrimary(ipr+1) ;
+      Bool_t notIn=1 ;
+      for(Int_t kndex = 0 ; (kndex < fMulTrack)&& notIn ; kndex++ ) { //check if not already stored
+	if(iprimary == tempo[kndex]){
+	  notIn = kFALSE ;
+	}
+      }
+      if(notIn){
+	if(fMulTrack<fMaxTrack){
+	  tempo[fMulTrack]=iprimary ;
+	  fMulTrack++ ;
+	}
+	else{
+	  Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack!!!" ) ;
+	  break ;
+	}
+      }
+    }
+  } // all digits
+
+  if(fMulTrack > 0){
+    if(fTracksList)delete [] fTracksList;
+    fTracksList = new Int_t[fMulTrack] ;
+  }
+  for(Int_t index = 0; index < fMulTrack; index++)
+    fTracksList[index] = tempo[index] ;
+  
+  delete [] tempo ;
+  
+}
+
 //____________________________________________________________________________
 void AliPHOSEmcRecPoint::EvalAll(Float_t logWeight, TClonesArray * digits )
 {
   EvalCoreEnergy(logWeight, digits);
   EvalTime(digits) ;
+  EvalPrimaries(digits) ;
   AliPHOSRecPoint::EvalAll(digits) ;
 }
 //____________________________________________________________________________

@@ -31,6 +31,7 @@
 
 // --- AliRoot header files ---
 #include "AliLog.h"
+#include "AliPHOSLoader.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
@@ -163,7 +164,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
   case kButton1Down:{
     AliPHOSDigit * digit ;
   
-    AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance();
+    AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
 
     Int_t iDigit;
     Int_t relid[4] ;
@@ -226,7 +227,6 @@ void AliPHOSRecPoint::EvalAll(TClonesArray * digits)
 {
   //evaluates (if necessary) all RecPoint data members 
 
-  EvalPrimaries(digits) ;
 }
 
 //____________________________________________________________________________
@@ -244,75 +244,16 @@ void AliPHOSRecPoint::EvalPHOSMod(AliPHOSDigit * digit)
   }
 }
 
-//______________________________________________________________________________
-void  AliPHOSRecPoint::EvalPrimaries(TClonesArray * digits)
-{
-  // Constructs the list of primary particles (tracks) which have contributed to this RecPoint
-  
-  AliPHOSDigit * digit ;
-  Int_t * tempo    = new Int_t[fMaxTrack] ;
-
-  Int_t index ;  
-  for ( index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
-    digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
-    Int_t nprimaries = digit->GetNprimary() ;
-    if(nprimaries){
-      Int_t * newprimaryarray = new Int_t[nprimaries] ;
-      Int_t ii ; 
-      for ( ii = 0 ; ii < nprimaries ; ii++)
-	newprimaryarray[ii] = digit->GetPrimary(ii+1) ; 
-
-      Int_t jndex ;
-      for ( jndex = 0 ; jndex < nprimaries ; jndex++ ) { // all primaries in digit
-	if ( fMulTrack > fMaxTrack ) {
-	  fMulTrack = - 1 ;
-	  Error("EvalPrimaries", "GetNprimaries ERROR > increase fMaxTrack" ) ;
-	  break ;
-	}
-	Int_t newprimary = newprimaryarray[jndex] ;
-	Int_t kndex ;
-	Bool_t already = kFALSE ;
-	for ( kndex = 0 ; kndex < fMulTrack ; kndex++ ) { //check if not already stored
-	  if ( newprimary == tempo[kndex] ){
-	    already = kTRUE ;
-	    break ;
-	  }
-	} // end of check
-	if ( !already) { // store it
-	  tempo[fMulTrack] = newprimary ; 
-	  fMulTrack++ ;
-	} // store it
-      } // all primaries in digit
-      delete [] newprimaryarray ; 
-    }
-  } // all digits
-
-  if(fMulTrack > 0){
-    if(fTracksList)delete [] fTracksList;
-    fTracksList = new Int_t[fMulTrack] ;
-  }
-  for(index = 0; index < fMulTrack; index++)
-    fTracksList[index] = tempo[index] ;
-  
-  delete [] tempo ;
-  
-}
 //____________________________________________________________________________
 void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
 {
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position
 
-  AliPHOSGeometry * phosgeom = (AliPHOSGeometry::GetInstance());
-  phosgeom->GetGlobalPHOS(this, gpos, gmat);
-
-//   Float_t xyz[3];
-//   GetGlobalXYZ(xyz);
-//   gpos.SetXYZ(xyz[0],xyz[1],xyz[2]);
-
+   AliPHOSGeometry * phosgeom = (AliPHOSGeometry::GetInstance());
+   phosgeom->GetGlobalPHOS(this, gpos, gmat);
   
 }
-
 
 //______________________________________________________________________________
 void AliPHOSRecPoint::Paint(Option_t *)
