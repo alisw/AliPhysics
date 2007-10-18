@@ -19,6 +19,7 @@
 class TFile ; 
 class TH1 ; 
 class TList ; 
+class TDirectory ; 
 
 // --- Standard library ---
 
