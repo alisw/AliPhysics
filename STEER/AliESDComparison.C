@@ -149,15 +149,19 @@ Int_t AliESDComparison(const Char_t *dir=".") {
       AliStack *stack = rl->Stack();
 
       while (ntrk--) {
-         AliESDtrack *t=event->GetTrack(ntrk);
+        AliESDtrack *t=event->GetTrack(ntrk);
 
-         UInt_t status=AliESDtrack::kESDpid;
-         status|=AliESDtrack::kITSpid; 
-         status|=AliESDtrack::kTPCpid; 
-         status|=AliESDtrack::kTRDpid; 
-         status|=AliESDtrack::kTOFpid; 
+	//*** Some track quality cuts ****
+        if (t->GetITSclusters(0) < 6 ) continue;
+        if (t->GetTPCclusters(0) < 60) continue;
+        //if (t->GetTRDclusters(0) < 60) continue;
 
-        if ((t->GetStatus()&status) == status) {
+        if (!t->IsOn(AliESDtrack::kESDpid)) continue;
+        if (!t->IsOn(AliESDtrack::kITSpid)) continue;
+        if (!t->IsOn(AliESDtrack::kTPCpid)) continue;
+        //if (!t->IsOn(AliESDtrack::kTRDpid)) continue;
+        if (!t->IsOn(AliESDtrack::kTOFpid)) continue;
+        {
            nsel++;
 
            Double_t p=t->GetP();
@@ -169,8 +173,10 @@ Int_t AliESDComparison(const Char_t *dir=".") {
            Int_t code=part->GetPdgCode();
 
            Double_t r[10]; t->GetESDpid(r);
-           //t->GetTRDpid(r);
+           //t->GetITSpid(r);
            //t->GetTPCpid(r);
+           //t->GetTRDpid(r);
+           //t->GetTOFpid(r);
 
            AliPID pid(r);
 
