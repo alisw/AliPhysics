@@ -469,7 +469,7 @@ Bool_t AliReconstruction::SetRunNumber()
     }
     // read run number from gAlice
     if(fRunLoader->GetAliRun())
-      AliCDBManager::Instance()->SetRun(fRunLoader->GetAliRun()->GetRunNumber());
+      AliCDBManager::Instance()->SetRun(fRunLoader->GetHeader()->GetRun());
     else {
       if(fRawReader) {
 	if(fRawReader->NextEvent()) {
@@ -1606,6 +1606,7 @@ Bool_t AliReconstruction::InitRunLoader()
 
     //PH This is a temporary fix to give access to the kinematics
     //PH that is needed for the labels of ITS clusters
+    fRunLoader->LoadHeader();
     fRunLoader->LoadKinematics();
 
   } else {               // galice.root does not exist
