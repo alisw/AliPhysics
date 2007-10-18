@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.111  2007/07/24 09:41:19  morsch
+ * AliStack included for kKeepBit.
+ *
  * Revision 1.110  2007/03/10 08:58:52  kharlov
  * Protection for noCPV geometry
  *
@@ -226,12 +229,13 @@ void AliPHOSv1::StepManager(void)
       gMC->TrackCharge() != 0) {      
     
     gMC -> TrackPosition(pos);
-    
+
     Float_t xyzm[3], xyzd[3] ;
     Int_t i;
     for (i=0; i<3; i++) xyzm[i] = pos[i];
-    gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
-    
+    gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system    
+
+
     Float_t        xyd[3]={0,0,0}   ;   //local position of the entering
     xyd[0]  = xyzd[0];
     xyd[1]  =-xyzd[2];
@@ -326,10 +330,6 @@ void AliPHOSv1::StepManager(void)
     xyzte[1] = pos[1] ;
     xyzte[2] = pos[2] ;
 
-    Float_t global[3], local[3] ;
-    global[0] = pos[0] ;
-    global[1] = pos[1] ;
-    global[2] = pos[2] ;
     Float_t lostenergy = gMC->Edep(); 
     
     //Put in the TreeK particle entering PHOS and all its parents
@@ -364,7 +364,7 @@ void AliPHOSv1::StepManager(void)
       gMC->CurrentVolOffID(3, strip);
       Int_t cell ;
       gMC->CurrentVolOffID(2, cell);
-      
+
       //Old formula for row is wrong. For example, I have strip 56 (28 for 2 x 8), row must be 1.
       //But row == 1 + 56 - 56 % 56 == 57 (row == 1 + 28 - 28 % 28 == 29)
       //Int_t row = 1 + GetGeometry()->GetEMCAGeometry()->GetNStripZ() - strip % (GetGeometry()->GetEMCAGeometry()->GetNStripZ()) ;
@@ -375,17 +375,14 @@ void AliPHOSv1::StepManager(void)
       absid = (moduleNumber-1)*GetGeometry()->GetNCristalsInModule() + 
 	            row * 2 + (col*GetGeometry()->GetEMCAGeometry()->GetNCellsXInStrip() + (cell - 1) / 2)*GetGeometry()->GetNZ() - (cell & 1 ? 1 : 0);
 
-      gMC->Gmtod(global, local, 1) ;
       
       //Calculates the light yield, the number of photons produced in the
       //crystal 
-      Float_t lightYield = gRandom->Poisson(fLightFactor * lostenergy *
-					    exp(-fLightYieldAttenuation *
-						(local[1]+GetGeometry()->GetCrystalSize(1)/2.0 ))
-					    ) ;
+      //There is no dependence of reponce on distance from energy deposition to APD
+      Float_t lightYield = gRandom->Poisson(fLightFactor * lostenergy) ;
 
       //Calculates de energy deposited in the crystal  
-      xyzte[4] = fAPDFactor * lightYield  ;
+      xyzte[4] = fAPDFactor * lightYield ;
       
       Int_t primary ;
       if(fIshunt == 2){
