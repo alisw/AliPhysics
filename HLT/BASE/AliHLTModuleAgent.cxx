@@ -98,6 +98,30 @@ const char* AliHLTModuleAgent::GetRequiredComponentLibraries() const
   return NULL;
 }
 
+int AliHLTModuleAgent::GetHandlerDescription(AliHLTComponentDataType /*dt*/,
+					     AliHLTUInt32_t /*spec*/,
+					     AliHLTOUTHandlerDesc& /*desc*/) const
+{
+  // default method, nothing to be done, child classes can overload
+  return 0;
+}
+
+AliHLTOUTHandler* AliHLTModuleAgent::GetOutputHandler(AliHLTComponentDataType /*dt*/,
+						      AliHLTUInt32_t /*spec*/) const
+{
+  // default method, nothing to be done, child classes can overload
+  return NULL;
+}
+
+
+AliRawStream* AliHLTModuleAgent::GetRawStream(AliHLTComponentDataType /*dt*/,
+					      AliHLTUInt32_t /*spec*/,
+					      const AliHLTOUT* /*pData*/) const
+{
+  // default method, nothing to be done, child classes can overload
+  return NULL;
+}
+
 int AliHLTModuleAgent::ActivateComponentHandler(AliHLTComponentHandler* pHandler)
 {
   int iResult=0;

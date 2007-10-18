@@ -29,6 +29,9 @@
 
 class AliRunLoader;
 class AliRawReader;
+class AliRawStream;
+class AliHLTOUTHandler;
+class AliHLTOUT;
 
 /**
  * @class AliHLTModuleAgent
@@ -83,6 +86,22 @@ class AliRawReader;
  *       registration via global objects 
  *       @see @ref alihltcomponent-handling
  *                                                                          <br>
+ * - @ref GetHandlerDescription                                             <br>
+ *       the agent can announce which part of the HLTOUT data can be treated
+ *       by the library and through which method. Different types of handlers
+ *       are defined to fit the various formats of the HLTOUT data.
+ *       @see AliHLTOUTHandlerType
+ *
+ * - @ref GetOutputHandler                                                  <br>
+ *       Return AliHLTOUTHandler for a given data type and specification.
+ *       This is mainly intended to treat detector proprietary data.
+ *
+ * - @ref GetRawStream                                                      <br>
+ *       Return an AliRawStream object which is capable of treating the
+ *       specified data type and specification. Rawstream must be provided
+ *       for data blocks intended to be the input for AliRoot detector
+ *       reconstruction by replacing the normal input stream.
+ *
  * @section alihltmoduleagent_references References
  * @see @ref AliHLTReconstructor interface to the AliRoot reconstruction
  * @see @ref AliHLTAgentSample agent for the libAliHLTSample library
@@ -183,6 +202,69 @@ class AliHLTModuleAgent : public TObject, public AliHLTLogging {
    * @param pHandler  [in] instance of the component handler          
    */
   virtual int RegisterComponents(AliHLTComponentHandler* pHandler) const;
+
+  /**
+   * IDs for output handlers.
+   * The agent can provide output handlers in order to treat the output
+   * data coming from the HLTOUT nodes.
+   */
+  enum AliHLTOUTHandlerType {
+    kUnknownOutput =0,
+    /** output is in ESD format */
+    kEsd,
+    /** agent can create a raw stream */
+    kRawstream,
+    /** agent provides a chain */
+    kChain,
+    /** agent provides detector specific handler */
+    kProprietary,
+    kLastOutputHandler
+  };
+
+  /**
+   * Output handler description.
+   * \em fModule: module name specific for the handler type
+   *              - kRawStream: class name of the Rawstream class
+   *              - kChain:     blank separated list of chains
+   *              - kProprietary: name of the handler class
+   */
+  struct AliHLTOUTHandlerDesc {
+    /** type of the handler */
+    AliHLTOUTHandlerType    fHType;
+    /** data type treated by the handler */
+    AliHLTComponentDataType fDt;
+    /** class or chain name */
+    const char*             fModule;
+  };
+
+  /**
+   * Get handler description for a data block.
+   * @param dt        [in] data type of the block
+   * @param spec      [in] specification of the block
+   * @param desc      [out] handler description
+   * @return 1 if the agent can provide a handler, 0 if not
+   */
+  virtual int GetHandlerDescription(AliHLTComponentDataType dt,
+				    AliHLTUInt32_t spec,
+				    AliHLTOUTHandlerDesc& desc) const;
+  /**
+   * Get handler for a data block of the HLTOUT data.
+   * @param dt        [in] data type of the block
+   * @param spec      [in] specification of the block
+   */
+  virtual AliHLTOUTHandler* GetOutputHandler(AliHLTComponentDataType dt,
+					     AliHLTUInt32_t spec) const;
+
+  /**
+   * Get raw stream for a data block.
+   * @param dt        [in] data type of the block
+   * @param spec      [in] specification of the block
+   * @param pData     [in] data control object
+   * @return Rawstream object, NULL if no Rawstream available for data type/spec
+   */
+  virtual AliRawStream* GetRawStream(AliHLTComponentDataType dt,
+				     AliHLTUInt32_t spec,
+				     const AliHLTOUT* pData) const;
 
   /**
    * Old method kept for backward compatibility, redirected to @ref
