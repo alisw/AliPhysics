@@ -6,7 +6,6 @@
 
 #pragma link C++ class AliQuarkoniaAcceptance+; 
 #pragma link C++ class AliQuarkoniaEfficiency+; 
-#pragma link C++ class AliPWG3TrackExtrapInterface+; 
 
 #pragma link C++ class AliD0toKpi+;
 #pragma link C++ class AliD0toKpiAnalysis+;
