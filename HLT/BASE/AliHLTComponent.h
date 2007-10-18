@@ -47,7 +47,17 @@ typedef AliHLTComponentEventDoneData AliHLTComponent_EventDoneData;
 class AliHLTComponentHandler;
 class TObjArray;
 class TStopwatch;
+class AliHLTComponent;
 class AliHLTMemoryFile;
+
+/** list of component data type structures */
+typedef vector<AliHLTComponentDataType>   AliHLTComponentDataTypeList;
+/** list of component block data structures */
+typedef vector<AliHLTComponentBlockData>  AliHLTComponentBlockDataList;
+/** list of component pointers */
+typedef vector<AliHLTComponent*>          AliHLTComponentPList;
+/** list of memory file pointers */
+typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
 
 /**
  * @class AliHLTComponent
@@ -310,7 +320,7 @@ class AliHLTComponent : public AliHLTLogging {
   virtual int DoProcessing( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 			    AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 			    AliHLTUInt32_t& size,
-			    vector<AliHLTComponentBlockData>& outputBlocks,
+			    AliHLTComponentBlockDataList& outputBlocks,
 			    AliHLTComponentEventDoneData*& edd ) = 0;
 
   // Information member functions for registration.
@@ -335,7 +345,7 @@ class AliHLTComponent : public AliHLTLogging {
    * The function is pure virtual and must be implemented by the child class.
    * @return list of data types in the vector reference
    */
-  virtual void GetInputDataTypes( vector<AliHLTComponentDataType>& ) = 0;
+  virtual void GetInputDataTypes( AliHLTComponentDataTypeList& ) = 0;
 
   /**
    * Get the output data type of the component.
@@ -353,7 +363,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param tgtList          list to receive the data types
    * @return no of output data types, data types in the target list
    */
-  virtual int GetOutputDataTypes(vector<AliHLTComponentDataType>& tgtList);
+  virtual int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 
   /**
    * Get a ratio by how much the data volume is shrinked or enhanced.
@@ -381,7 +391,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param tgtList   reference to a vector list to receive the matching data types.
    * @return >= 0 success, neg. error code if failed
    */ 
-  int FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList);
+  int FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTComponentDataTypeList* tgtList);
  
   /**
    * Set the global component handler.
@@ -575,7 +585,7 @@ class AliHLTComponent : public AliHLTLogging {
    * framework. Function pointers are transferred via the @ref
    * AliHLTComponentEnvironment structure.
    */
-  int MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
+  int MakeOutputDataBlockList( const AliHLTComponentBlockDataList& blocks, AliHLTUInt32_t* blockCount,
 			       AliHLTComponentBlockData** outputBlocks );
 
   /**
@@ -1056,13 +1066,13 @@ class AliHLTComponent : public AliHLTLogging {
   AliHLTUInt32_t fOutputBufferFilled;                              // see above
 
   /** list of ouput block data descriptors */
-  vector<AliHLTComponentBlockData> fOutputBlocks;                  // see above
+  AliHLTComponentBlockDataList fOutputBlocks;                      // see above
 
   /** stopwatch array */
   TObjArray* fpStopwatches;                                        //! transient
 
   /** array of memory files AliHLTMemoryFile */
-  vector<AliHLTMemoryFile*> fMemFiles;                             //! transient
+  AliHLTMemoryFilePList fMemFiles;                                 //! transient
 
   /** descriptor of the current run */
   AliHLTRunDesc* fpRunDesc;                                        //! transient

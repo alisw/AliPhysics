@@ -19,12 +19,15 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include <vector>
+#include "TObject.h"
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
-#include "TObject.h"
+#include "AliHLTComponent.h"
 
-class AliHLTComponent;
 class AliHLTConsumerDescriptor;
+
+/** list of AliHLTConsumerDescriptor pointers */
+typedef vector<AliHLTConsumerDescriptor*> AliHLTConsumerDescriptorPList;
 
 /**
  * @class AliHLTDataBuffer
@@ -80,7 +83,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    *          -EINVAL       invalid parameter <br>
    */
   int FindMatchingDataBlocks(const AliHLTComponent* pConsumer,
-			     vector<AliHLTComponentDataType>* tgtList=NULL);
+			     AliHLTComponentDataTypeList* tgtList=NULL);
 
   /**
    * Subscribe to a segment of the data buffer.
@@ -222,6 +225,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     {
       memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
     }
+
   private:
     /** the data type of this segment */
     AliHLTComponentDataType fDataType;                             // see above
@@ -350,11 +354,11 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   vector<AliHLTDataSegment> fSegments;                             // see above
 
   // the list of all consumers which are going to subscribe to the buffer
-  vector<AliHLTConsumerDescriptor*> fConsumers;                    // see above
+  AliHLTConsumerDescriptorPList fConsumers;                         // see above
   // the list of all consumers which are currently subscribed to the buffer
-  vector<AliHLTConsumerDescriptor*> fActiveConsumers;              // see above
+  AliHLTConsumerDescriptorPList fActiveConsumers;                   // see above
   // the list of all consumers which are already released for the current event
-  vector<AliHLTConsumerDescriptor*> fReleasedConsumers;            // see above
+  AliHLTConsumerDescriptorPList fReleasedConsumers;                 // see above
 
   // the buffer instance
   AliHLTRawBuffer* fpBuffer;                                       //! transient
@@ -426,7 +430,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @param list            list where to search for the consumer
    */
   AliHLTConsumerDescriptor* FindConsumer(const AliHLTComponent* pConsumer,
-					 vector<AliHLTConsumerDescriptor*> &list) const;
+					 AliHLTConsumerDescriptorPList &list) const;
 
   /**
    * Change the state of a consumer.
@@ -437,8 +441,8 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @param tgtList         list where to move the consumer
    */
   int ChangeConsumerState(AliHLTConsumerDescriptor* pDesc,
-			  vector<AliHLTConsumerDescriptor*> &srcList,
-			  vector<AliHLTConsumerDescriptor*> &tgtList);
+			  AliHLTConsumerDescriptorPList &srcList,
+			  AliHLTConsumerDescriptorPList &tgtList);
 
   /**
    * Cleanup a consumer list.

@@ -95,7 +95,7 @@ AliHLTComponent::~AliHLTComponent()
   CleanupInputObjects();
   if (fpStopwatches!=NULL) delete fpStopwatches;
   fpStopwatches=NULL;
-  vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();
+  AliHLTMemoryFilePList::iterator element=fMemFiles.begin();
   while (element!=fMemFiles.end()) {
     if (*element) {
       if ((*element)->IsClosed()==0) {
@@ -216,7 +216,7 @@ int AliHLTComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTComponent::GetOutputDataTypes(vector<AliHLTComponentDataType>& /*tgtList*/)
+int AliHLTComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& /*tgtList*/)
 {
   HLTLogKeyword("dummy");
   return 0;
@@ -264,7 +264,7 @@ void* AliHLTComponent::AllocMemory( unsigned long size )
   return NULL;
 }
 
-int AliHLTComponent::MakeOutputDataBlockList( const vector<AliHLTComponentBlockData>& blocks, AliHLTUInt32_t* blockCount,
+int AliHLTComponent::MakeOutputDataBlockList( const AliHLTComponentBlockDataList& blocks, AliHLTUInt32_t* blockCount,
 					      AliHLTComponentBlockData** outputBlocks ) 
 {
   // see header file for function documentation
@@ -306,14 +306,14 @@ int AliHLTComponent::GetEventDoneData( unsigned long size, AliHLTComponentEventD
   return -ENOSYS;
 }
 
-int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, vector<AliHLTComponentDataType>* tgtList) 
+int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTComponentDataTypeList* tgtList) 
 {
   // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
-    vector<AliHLTComponentDataType> ctlist;
+    AliHLTComponentDataTypeList ctlist;
     ((AliHLTComponent*)pConsumer)->GetInputDataTypes(ctlist);
-    vector<AliHLTComponentDataType>::iterator type=ctlist.begin();
+    AliHLTComponentDataTypeList::iterator type=ctlist.begin();
     //AliHLTComponentDataType ouptdt=GetOutputDataType();
     //PrintDataTypeContent(ouptdt, "publisher \'%s\'");
     while (type!=ctlist.end() && iResult==0) {
@@ -936,7 +936,7 @@ int AliHLTComponent::CloseMemoryFile(AliHLTMemoryFile* pFile)
   // see header file for function documentation
   int iResult=0;
   if (pFile) {
-    vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();
+    AliHLTMemoryFilePList::iterator element=fMemFiles.begin();
     int i=0;
     while (element!=fMemFiles.end() && iResult>=0) {
       if (*element && *element==pFile) {
@@ -1033,7 +1033,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     }
   }
   
-  vector<AliHLTComponentBlockData> blockData;
+  AliHLTComponentBlockDataList blockData;
   { // dont delete, sets the scope for the stopwatch guard
     ALIHLTCOMPONENT_DA_STOPWATCH();
     iResult=DoProcessing(evtData, blocks, trigData, outputPtr, size, blockData, edd);
@@ -1043,7 +1043,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
       //HLTDebug("got %d block(s) via high level interface", fOutputBlocks.size());
       
       // sync memory files and descriptors
-      vector<AliHLTMemoryFile*>::iterator element=fMemFiles.begin();
+      AliHLTMemoryFilePList::iterator element=fMemFiles.begin();
       int i=0;
       while (element!=fMemFiles.end() && iResult>=0) {
 	if (*element) {
