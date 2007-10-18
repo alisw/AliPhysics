@@ -206,8 +206,8 @@ TFluka::~TFluka()
         cout << "<== TFluka::~TFluka() destructor called." << endl;
     if (fMaterials) delete [] fMaterials;
     
-    delete fGeom;
-    delete fMCGeo;
+//    delete fGeom;
+//    delete fMCGeo;
     
     if (fUserConfig) {
         fUserConfig->Delete();
