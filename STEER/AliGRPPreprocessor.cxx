@@ -29,6 +29,7 @@
 
 #include "AliGRPPreprocessor.h"
 #include "AliGRPDCS.h"
+#include "AliDCSSensorArray.h"
 
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
@@ -38,18 +39,23 @@ class AliShuttleInterface;
 
 #include <TH1.h>
 
+const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required
+
 ClassImp(AliGRPPreprocessor)
 
 //_______________________________________________________________
+  const char* AliGRPPreprocessor::fgkDCSDataPoints[12] = {"LHCState","LHCPeriod","LHCLuminosity","BeamIntensity","L3Current","L3Polarity","DipoleCurrent","DipolePolarity","CavernTemperature","CavernAtmosPressure","gva_cr5AtmosphericPressure","gva_meyrinAtmosphericPressure"};
+
+//_______________________________________________________________
 AliGRPPreprocessor::AliGRPPreprocessor():
-  AliPreprocessor("GRP",0) {
+  AliPreprocessor("GRP",0), fPressure(0) {
   // default constructor - Don't use this!
   
 }
 
 //_______________________________________________________________
 AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
-  AliPreprocessor("GRP",shuttle) {
+  AliPreprocessor("GRP",shuttle), fPressure(0) {
   // constructor - shuttle must be instantiated!
   
 }
@@ -57,6 +63,7 @@ AliGRPPreprocessor::AliGRPPreprocessor(AliShuttleInterface* shuttle):
 //_______________________________________________________________
 AliGRPPreprocessor::~AliGRPPreprocessor() {
   //destructor
+  delete fPressure;
 }
 
 //_______________________________________________________________
@@ -68,29 +75,182 @@ void AliGRPPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   fRun = run;
   fStartTime = startTime;
   fEndTime = endTime;
-  AliInfo("This preprocessor is to test the GetRunParameter function.");
+  AliInfo("Initialization of the GRP preprocessor.");
+
+  TClonesArray * array = new TClonesArray("AliDCSSensor",2);
+  for(Int_t j = 0; j < 2; j++) {
+    AliDCSSensor * sens = new ((*array)[j])AliDCSSensor;
+    sens->SetStringID(fgkDCSDataPoints[j+10]);
+  }
+  AliInfo(Form("Pressure Entries: %d",array->GetEntries()));
+
+  fPressure = new AliDCSSensorArray(fStartTime, fEndTime, array);
 }
 
 //_______________________________________________________________
 UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   // process data retrieved by the Shuttle
+  
+  //=================//
+  // DAQ logbook     //
+  //=================//
+  TList *daqlblist = ProcessDaqLB();
+  if(!daqlblist) {
+    Log(Form("Problem with the DAQ logbook parameters!!!"));
+    return 0;
+  }
+  TMap *m1 = (TMap *)daqlblist->At(0);
+  TObjString *s1 = (TObjString *)m1->GetValue("fAliceStartTime");
+  UInt_t iStartTime = atoi(s1->String().Data());
+  TMap *m2 = (TMap *)daqlblist->At(1);
+  TObjString *s2 = (TObjString *)m2->GetValue("fAliceStopTime");
+  UInt_t iStopTime = atoi(s2->String().Data());
+  TMap *m3 = (TMap *)daqlblist->At(6);
+  TObjString *s3 = (TObjString *)m3->GetValue("fLHCPeriod");
+  TString productionYear = "";
+
+  //=================//
+  // DAQ FXS         //
+  //=================//
+  UInt_t iDaqFxs = ProcessDaqFxs(s3->String(),productionYear);
+  if(iDaqFxs == 0) Log(Form("Raw data merged tags copied succesfully in AliEn!!!"));
+ 
+  //=================//
+  // DCS data points //
+  //=================//
+  TList *dcsdplist = ProcessDcsDPs(valueMap, iStartTime, iStopTime);
+  if(!dcsdplist) {
+    Log(Form("Problem with the DCS data points!!!"));
+    return 0;
+  }    
+  if(dcsdplist->GetEntries() != 10) {
+    Log(Form("Problem with the DCS data points!!!"));
+    return 0;
+  }
+  //NEEDS TO BE REVISED - BREAKS!!!
+//   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap,fPressure);
+//   if(!dcsSensorArray) {
+//     Log(Form("Problem with the pressure sensor values!!!"));
+//     return 0;
+//   }
+
+  TList * list = new TList();
+  list = GetGlobalList(daqlblist,dcsdplist);
+  list->SetOwner(1);
+  AliInfo(Form("Final list entries: %d",list->GetEntries()));
+  
+  AliCDBMetaData md;
+  md.SetResponsible("Panos Christakoglou");
+  md.SetComment("Output parameters from the GRP preprocessor.");
+  
+  Bool_t result = Store("GRP", "Data", list, &md);
+  
+  delete list;
+  
+  if (result)
+    return 0;
+  else
+    return 1;
+}
+
+//_______________________________________________________________
+TList *AliGRPPreprocessor::GetGlobalList(TList *l1, TList *l2) {
+  //Getting the global output TList
+  TList *list = new TList();
+  TMap *map = new TMap();
+  for(Int_t i = 0; i < l1->GetEntries(); i++) 
+    list->AddLast(map = (TMap *)l1->At(i));
+  for(Int_t i = 0; i < l2->GetEntries(); i++) 
+    list->AddLast(map = (TMap *)l2->At(i));
+
+  return list;
+}
+
+//_______________________________________________________________
+TList *AliGRPPreprocessor::ProcessDaqLB() {
+  //Getting the DAQ lb informnation
   const char* timeStart = GetRunParameter("time_start");
-  UInt_t iStartTime = atoi(timeStart);
   const char* timeEnd = GetRunParameter("time_end");
-  UInt_t iStopTime = atoi(timeEnd);
   const char* beamEnergy = GetRunParameter("beamEnergy");
   const char* beamType = GetRunParameter("beamType");
   const char* numberOfDetectors = GetRunParameter("numberOfDetectors");
   const char* detectorMask = GetRunParameter("detectorMask");
   const char* lhcPeriod = GetRunParameter("LHCperiod");
 
+  if (timeStart) {
+    Log(Form("Start time for run %d: %s",fRun, timeStart));
+  } else {
+    Log(Form("Start time not put in logbook!"));
+  }
+  TMap *mapDAQ1 = new TMap();
+  mapDAQ1->Add(new TObjString("fAliceStartTime"),new TObjString(timeStart));
+
+  if (timeEnd) {
+    Log(Form("End time for run %d: %s",fRun, timeEnd));
+  } else {
+    Log(Form("End time not put in logbook!"));
+  }
+  TMap *mapDAQ2 = new TMap();
+  mapDAQ2->Add(new TObjString("fAliceStopTime"),new TObjString(timeEnd));
+
+  if (beamEnergy) {
+    Log(Form("Beam energy for run %d: %s",fRun, beamEnergy));
+  } else {
+    Log(Form("Beam energy not put in logbook!"));
+  }
+  TMap *mapDAQ3 = new TMap();
+  mapDAQ3->Add(new TObjString("fAliceBeamEnergy"),new TObjString(beamEnergy));
+
+  if (beamType) {
+    Log(Form("Beam type for run %d: %s",fRun, beamType));
+  } else {
+    Log(Form("Beam type not put in logbook!"));
+  }
+  TMap *mapDAQ4 = new TMap();
+  mapDAQ4->Add(new TObjString("fAliceBeamType"),new TObjString(beamType));
+
+  if (numberOfDetectors) {
+    Log(Form("Number of active detectors for run %d: %s",fRun, numberOfDetectors));
+  } else {
+    Log(Form("Number of active detectors not put in logbook!"));
+  }
+  TMap *mapDAQ5 = new TMap();
+  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString(numberOfDetectors));
+
+  if (detectorMask) {
+    Log(Form("Detector mask for run %d: %s",fRun, detectorMask));
+  } else {
+    Log(Form("Detector mask not put in logbook!"));
+  }
+  TMap *mapDAQ6 = new TMap();
+  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString(detectorMask));
+
+  if (lhcPeriod) {
+    Log(Form("LHC period (DAQ) for run %d: %s",fRun, lhcPeriod));
+  } else {
+    Log(Form("LHCperiod not put in logbook!"));
+  }
+  TMap *mapDAQ7 = new TMap();
+  mapDAQ7->Add(new TObjString("fLHCPeriod"),new TObjString(lhcPeriod));
+
+  TList *list = new TList();
+  list->Add(mapDAQ1); list->Add(mapDAQ2);
+  list->Add(mapDAQ3); list->Add(mapDAQ4);
+  list->Add(mapDAQ5); list->Add(mapDAQ6);
+  list->Add(mapDAQ7);
+
+  return list;
+}
+
+//_______________________________________________________________
+UInt_t AliGRPPreprocessor::ProcessDaqFxs(TString lhcperiod, TString productionYear) {
   //======DAQ FXS======//
   TChain *fRawTagChain = new TChain("T");
   TString fRawDataFileName;
   TList* list = GetFileSources(kDAQ);  
   if (!list) {
     Log("No raw data tag list found!!!");
-    return kTRUE;
+    return 1;
   }
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
@@ -101,7 +261,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
       TList* list2 = GetFileIDs(kDAQ, objStr->String());
       if (!list2) {
 	Log("No list with ids from DAQ was found!!!");
-	return kTRUE;
+	return 2;
       }
       Log(Form("Number of ids: %d",list2->GetEntries()));
       for(Int_t i = 0; i < list2->GetEntries(); i++) {
@@ -119,17 +279,31 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   delete list;
   fRawDataFileName += "_GRP_Merged.tag.root";
   Log(Form("Merging raw data tags into file: %s",fRawDataFileName.Data()));
-  fRawTagChain->Merge(fRawDataFileName);
-  
+
+  TString outputfile = "alien:///alice/data/"; 
+  outputfile += productionYear.Data(); outputfile += "/";
+  outputfile += lhcperiod.Data(); outputfile += "/";
+  outputfile += fRun; outputfile += "/raw/"; 
+  //StoreTagFiles(fRawDataFileName.Data(),outputfile.Data());
+
+  return 0;
+}
+
+//_______________________________________________________________
+TList *AliGRPPreprocessor::ProcessDcsDPs(TMap* valueMap, UInt_t iStartTime, UInt_t iStopTime) {
+  //Getting the DCS dps
   //===========//
+  
+  TList *list = new TList();
+
   //DCS data points
   //===========//
-  TObjArray *aliasLHCState = (TObjArray *)valueMap->GetValue("LHCState");
+  AliInfo(Form("==========LHCState==========="));
+  TObjArray *aliasLHCState = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[0]);
   if(!aliasLHCState) {
     Log(Form("LHCState not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========LHCState==========="));
   AliGRPDCS *dcs1 = new AliGRPDCS(aliasLHCState,iStartTime,iStopTime);
   TString sLHCState = dcs1->ProcessDCS(3);  
   if (sLHCState) {
@@ -137,13 +311,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("LHCState not put in TMap!"));
   }
+  TMap *mapDCS1 = new TMap();
+  mapDCS1->Add(new TObjString("fLHCState"),new TObjString(sLHCState));
+  list->Add(mapDCS1);
 
-  TObjArray *aliasLHCPeriod = (TObjArray *)valueMap->GetValue("LHCPeriod");
+  AliInfo(Form("==========LHCPeriod==========="));
+  TObjArray *aliasLHCPeriod = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[1]);
   if(!aliasLHCPeriod) {
     Log(Form("LHCPeriod not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========LHCPeriod==========="));
   AliGRPDCS *dcs2 = new AliGRPDCS(aliasLHCPeriod,iStartTime,iStopTime);
   TString sLHCPeriod = dcs2->ProcessDCS(3);  
   if (sLHCPeriod) {
@@ -151,13 +328,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("LHCPeriod not put in TMap!"));
   }
+  TMap *mapDCS2 = new TMap();
+  mapDCS2->Add(new TObjString("fLHCCondition"),new TObjString(sLHCPeriod));
+  list->Add(mapDCS2);
 
-  TObjArray *aliasLHCLuminosity = (TObjArray *)valueMap->GetValue("LHCLuminosity");
+  AliInfo(Form("==========LHCLuminosity==========="));
+  TObjArray *aliasLHCLuminosity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[2]);
   if(!aliasLHCLuminosity) {
     Log(Form("LHCLuminosity not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========LHCLuminosity==========="));
   AliGRPDCS *dcs3 = new AliGRPDCS(aliasLHCLuminosity,iStartTime,iStopTime);
   TString sMeanLHCLuminosity = dcs3->ProcessDCS(2);  
   if (sMeanLHCLuminosity) {
@@ -165,13 +345,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("LHCLuminosity not put in TMap!"));
   }
+  TMap *mapDCS3 = new TMap();
+  mapDCS3->Add(new TObjString("fLHCLuminosity"),new TObjString(sMeanLHCLuminosity));
+  list->Add(mapDCS3);
 
-  TObjArray *aliasBeamIntensity = (TObjArray *)valueMap->GetValue("BeamIntensity");
+  AliInfo(Form("==========BeamIntensity==========="));
+  TObjArray *aliasBeamIntensity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[3]);
   if(!aliasBeamIntensity) {
     Log(Form("BeamIntensity not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========BeamIntensity==========="));
   AliGRPDCS *dcs4 = new AliGRPDCS(aliasBeamIntensity,iStartTime,iStopTime);
   TString sMeanBeamIntensity = dcs4->ProcessDCS(2);  
   if (sMeanBeamIntensity) {
@@ -179,13 +362,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("BeamIntensity not put in TMap!"));
   }
+  TMap *mapDCS4 = new TMap();
+  mapDCS4->Add(new TObjString("fBeamIntensity"),new TObjString(sMeanBeamIntensity));
+  list->Add(mapDCS4);
 
-  TObjArray *aliasL3Current = (TObjArray *)valueMap->GetValue("L3Current");
+  AliInfo(Form("==========L3Current==========="));
+  TObjArray *aliasL3Current = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[4]);
   if(!aliasL3Current) {
     Log(Form("L3Current not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========L3Current==========="));
   AliGRPDCS *dcs5 = new AliGRPDCS(aliasL3Current,iStartTime,iStopTime);
   TString sMeanL3Current = dcs5->ProcessDCS(2);  
   if (sMeanL3Current) {
@@ -193,13 +379,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("L3Current not put in TMap!"));
   }
+  TMap *mapDCS5 = new TMap();
+  mapDCS5->Add(new TObjString("fL3Current"),new TObjString(sMeanL3Current));
+  list->Add(mapDCS5);
 
-  TObjArray *aliasL3Polarity = (TObjArray *)valueMap->GetValue("L3Polarity");
+  AliInfo(Form("==========L3Polarity==========="));
+  TObjArray *aliasL3Polarity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[5]);
   if(!aliasL3Polarity) {
     Log(Form("L3Polarity not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========L3Polarity==========="));
   AliGRPDCS *dcs6 = new AliGRPDCS(aliasL3Polarity,iStartTime,iStopTime);
   TString sL3Polarity = dcs6->ProcessDCS(4);  
   if (sL3Polarity) {
@@ -207,13 +396,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("L3Polarity not put in TMap!"));
   }
+  TMap *mapDCS6 = new TMap();
+  mapDCS6->Add(new TObjString("fL3Polarity"),new TObjString(sL3Polarity));
+  list->Add(mapDCS6);
 
-  TObjArray *aliasDipoleCurrent = (TObjArray *)valueMap->GetValue("DipoleCurrent");
+  AliInfo(Form("==========DipoleCurrent==========="));
+  TObjArray *aliasDipoleCurrent = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[6]);
   if(!aliasDipoleCurrent) {
     Log(Form("DipoleCurrent not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========DipoleCurrent==========="));
   AliGRPDCS *dcs7 = new AliGRPDCS(aliasDipoleCurrent,iStartTime,iStopTime);
   TString sMeanDipoleCurrent = dcs7->ProcessDCS(2);  
   if (sMeanDipoleCurrent) {
@@ -221,13 +413,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("DipoleCurrent not put in TMap!"));
   }
+  TMap *mapDCS7 = new TMap();
+  mapDCS7->Add(new TObjString("fDipoleCurrent"),new TObjString(sMeanDipoleCurrent));
+  list->Add(mapDCS7);
 
-  TObjArray *aliasDipolePolarity = (TObjArray *)valueMap->GetValue("DipolePolarity");
+  AliInfo(Form("==========DipolePolarity==========="));
+  TObjArray *aliasDipolePolarity = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[7]);
   if(!aliasDipolePolarity) {
     Log(Form("DipolePolarity not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========DipolePolarity==========="));
   AliGRPDCS *dcs8 = new AliGRPDCS(aliasDipolePolarity,iStartTime,iStopTime);
   TString sDipolePolarity = dcs8->ProcessDCS(4);  
   if (sDipolePolarity) {
@@ -235,13 +430,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("DipolePolarity not put in TMap!"));
   }
+  TMap *mapDCS8 = new TMap();
+  mapDCS8->Add(new TObjString("fDipolePolarity"),new TObjString(sDipolePolarity));
+  list->Add(mapDCS8);
 
-  TObjArray *aliasCavernTemperature = (TObjArray *)valueMap->GetValue("CavernTemperature");
+  AliInfo(Form("==========CavernTemperature==========="));
+  TObjArray *aliasCavernTemperature = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[8]);
   if(!aliasCavernTemperature) {
     Log(Form("CavernTemperature not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========CavernTemperature==========="));
   AliGRPDCS *dcs9 = new AliGRPDCS(aliasCavernTemperature,iStartTime,iStopTime);
   TString sMeanCavernTemperature = dcs9->ProcessDCS(2);  
   if (sMeanCavernTemperature) {
@@ -249,13 +447,16 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("CavernTemperature not put in TMap!"));
   }
+  TMap *mapDCS9 = new TMap();
+  mapDCS9->Add(new TObjString("fCavernTemperature"),new TObjString(sMeanCavernTemperature));
+  list->Add(mapDCS9);
 
-  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue("CavernAtmosPressure");
+  AliInfo(Form("==========CavernPressure==========="));
+  TObjArray *aliasCavernPressure = (TObjArray *)valueMap->GetValue(fgkDCSDataPoints[9]);
   if(!aliasCavernPressure) {
     Log(Form("CavernPressure not found!!!"));
-    return 1;
+    return list;
   }
-  AliInfo(Form("==========CavernPressure==========="));
   AliGRPDCS *dcs10 = new AliGRPDCS(aliasCavernPressure,iStartTime,iStopTime);
   TString sMeanCavernPressure = dcs10->ProcessDCS(2);  
   if (sMeanCavernPressure) {
@@ -263,129 +464,65 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   } else {
     Log(Form("CavernPressure not put in TMap!"));
   }
-
-  //===========//
-  //DAQ logbook
-  //===========//
-  if (timeStart) {
-    Log(Form("Start time for run %d: %s",fRun, timeStart));
-  } else {
-    Log(Form("Start time not put in logbook!"));
-  }
-  if (timeEnd) {
-    Log(Form("End time for run %d: %s",fRun, timeEnd));
-  } else {
-    Log(Form("End time not put in logbook!"));
-  }
-  if (beamEnergy) {
-    Log(Form("Beam energy for run %d: %s",fRun, beamEnergy));
-  } else {
-    Log(Form("Beam energy not put in logbook!"));
-  }
-  if (beamType) {
-    Log(Form("Beam type for run %d: %s",fRun, beamType));
-  } else {
-    Log(Form("Beam type not put in logbook!"));
-  }
-  if (numberOfDetectors) {
-    Log(Form("Number of active detectors for run %d: %s",fRun, numberOfDetectors));
-  } else {
-    Log(Form("Number of active detectors not put in logbook!"));
-  }
-  if (detectorMask) {
-    Log(Form("Detector mask for run %d: %s",fRun, detectorMask));
-  } else {
-    Log(Form("Detector mask not put in logbook!"));
-  }
-  if (lhcPeriod) {
-    Log(Form("LHC period (DAQ) for run %d: %s",fRun, lhcPeriod));
-  } else {
-    Log(Form("LHCperiod not put in logbook!"));
-  }
-
-  TList *values = new TList();
-  values->SetOwner(1);
-  
-  //DAQ logbook
-  TMap *mapDAQ1 = new TMap();
-  mapDAQ1->Add(new TObjString("fAliceStartTime"),new TObjString(timeStart));
-  values->Add(mapDAQ1);
-
-  TMap *mapDAQ2 = new TMap();
-  mapDAQ2->Add(new TObjString("fAliceStopTime"),new TObjString(timeEnd));
-  values->Add(mapDAQ2);
-
-  TMap *mapDAQ3 = new TMap();
-  mapDAQ3->Add(new TObjString("fAliceBeamEnergy"),new TObjString(beamEnergy));
-  values->Add(mapDAQ3);
-
-  TMap *mapDAQ4 = new TMap();
-  mapDAQ4->Add(new TObjString("fAliceBeamType"),new TObjString(beamType));
-  values->Add(mapDAQ4);
-
-  TMap *mapDAQ5 = new TMap();
-  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString(numberOfDetectors));
-  values->Add(mapDAQ5);
-
-  TMap *mapDAQ6 = new TMap();
-  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString(detectorMask));
-  values->Add(mapDAQ6);
-
-  TMap *mapDAQ7 = new TMap();
-  mapDAQ7->Add(new TObjString("fLHCPeriod"),new TObjString(lhcPeriod));
-  values->Add(mapDAQ7);
-
-  //DCS dp
-  TMap *mapDCS1 = new TMap();
-  mapDCS1->Add(new TObjString("fLHCState"),new TObjString(sLHCState));
-  values->Add(mapDCS1);
-
-  TMap *mapDCS2 = new TMap();
-  mapDCS2->Add(new TObjString("fLHCCondition"),new TObjString(sLHCPeriod));
-  values->Add(mapDCS2);
-
-  TMap *mapDCS3 = new TMap();
-  mapDCS3->Add(new TObjString("fLHCLuminosity"),new TObjString(sMeanLHCLuminosity));
-  values->Add(mapDCS3);
-
-  TMap *mapDCS4 = new TMap();
-  mapDCS4->Add(new TObjString("fBeamIntensity"),new TObjString(sMeanBeamIntensity));
-  values->Add(mapDCS4);
-
-  TMap *mapDCS5 = new TMap();
-  mapDCS5->Add(new TObjString("fL3Current"),new TObjString(sMeanL3Current));
-  values->Add(mapDCS5);
-
-  TMap *mapDCS6 = new TMap();
-  mapDCS6->Add(new TObjString("fL3Polarity"),new TObjString(sL3Polarity));
-  values->Add(mapDCS6);
-
-  TMap *mapDCS7 = new TMap();
-  mapDCS7->Add(new TObjString("fDipoleCurrent"),new TObjString(sMeanDipoleCurrent));
-  values->Add(mapDCS7);
-
-  TMap *mapDCS8 = new TMap();
-  mapDCS8->Add(new TObjString("fDipolePolarity"),new TObjString(sDipolePolarity));
-  values->Add(mapDCS8);
-
-  TMap *mapDCS9 = new TMap();
-  mapDCS9->Add(new TObjString("fCavernTemperature"),new TObjString(sMeanCavernTemperature));
-  values->Add(mapDCS9);
-
   TMap *mapDCS10 = new TMap();
   mapDCS10->Add(new TObjString("fCavernPressure"),new TObjString(sMeanCavernPressure));
-  values->Add(mapDCS10);
+  list->Add(mapDCS10);
 
-  AliCDBMetaData md;
-  md.SetResponsible("Panos");
-  
-  Bool_t result = Store("GRP", "Values", values, &md);
-  
-  delete values;
-  
-  if (result)
-    return 0;
-  else
-    return 1;
+  return list;
 }
 
+//_______________________________________________________________
+AliDCSSensorArray *AliGRPPreprocessor::GetPressureMap(TMap* dcsAliasMap, AliDCSSensorArray *fPressure) {
+  // extract DCS pressure maps. Perform fits to save space
+  
+  TMap *map = fPressure->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fPressure->MakeSplineFit(map);
+    Double_t fitFraction = fPressure->NumFits()/fPressure->NumSensors(); 
+    if (fitFraction > kFitFraction ) {
+      AliInfo(Form("Pressure values extracted, fits performed.\n"));
+    } else { 
+      AliInfo("Too few pressure maps fitted. \n");
+    }
+  } else {
+    AliInfo("AliGRPDCS: no atmospheric pressure map extracted. \n");
+  }
+  delete map;
+ 
+  return fPressure;
+}
+
+//_______________________________________________________________
+/*UInt_t AliGRPPreprocessor::MapPressure(TMap* dcsAliasMap) {
+  // extract DCS pressure maps. Perform fits to save space
+  
+  UInt_t result=0;
+  TMap *map = fPressure->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fPressure->MakeSplineFit(map);
+    Double_t fitFraction = fPressure->NumFits()/fPressure->NumSensors(); 
+    if (fitFraction > kFitFraction ) {
+      AliInfo(Form("Pressure values extracted, fits performed.\n"));
+    } else { 
+      Log ("Too few pressure maps fitted. \n");
+      result = 9;
+    }
+  } else {
+    Log("AliTPCPreprocsessor: no atmospheric pressure map extracted. \n");
+    result=9;
+  }
+  delete map;
+  // Now store the final CDB file
+  
+  if ( result == 0 ) {
+    AliCDBMetaData metaData;
+    metaData.SetBeamPeriod(0);
+    metaData.SetResponsible("Panos Christakoglou");
+    metaData.SetComment("Preprocessor AliGRP data base pressure entries.");
+    
+    Bool_t storeOK = Store("Calib", "Pressure", fPressure, &metaData, 0, 0);
+    if ( !storeOK ) result=1; 
+  }
+  
+  return result; 
+  }*/

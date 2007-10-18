@@ -113,6 +113,29 @@ AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
 }
 
 
+//_____________________________________________________________________________
+AliDCSSensorArray::AliDCSSensorArray(UInt_t startTime, UInt_t endTime,
+                       TClonesArray *sensors) :
+  TNamed(),
+  fMinGraph(10),
+  fMinPoints(10),
+  fIter(10),
+  fMaxDelta(0.0),
+  fFitReq(2),
+  fValCut(-1),
+  fDiffCut(-1),
+  fStartTime (2000,1,1,0,0,0),
+  fEndTime   (2000,1,1,0,0,0),
+  fSensors(sensors)
+
+{
+  //
+  // AliDCSSensorArray constructor for Shuttle preprocessor
+  //  (TClonesArray of AliDCSSensor objects)
+  //
+  fStartTime = TTimeStamp(startTime);
+  fEndTime   = TTimeStamp(endTime);
+}
 
 //_____________________________________________________________________________
 AliDCSSensorArray::AliDCSSensorArray(const AliDCSSensorArray &c):TNamed(c),

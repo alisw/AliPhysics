@@ -22,6 +22,10 @@
 
 #include "AliPreprocessor.h"
 
+class TList;
+class TString;
+class AliDCSSensorArray;
+
 class AliGRPPreprocessor: public AliPreprocessor {
  public:
   AliGRPPreprocessor();
@@ -33,7 +37,18 @@ class AliGRPPreprocessor: public AliPreprocessor {
   virtual void Initialize(Int_t run, UInt_t startTime, UInt_t endTime);
   
   virtual UInt_t Process(TMap* valueSet);
-  
+
+  TList *ProcessDaqLB();
+  UInt_t ProcessDaqFxs(TString lhcperiod,TString productionYear);
+  TList *ProcessDcsDPs(TMap* valueSet, UInt_t iStartTime, UInt_t iStopTime);
+  AliDCSSensorArray *GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
+
+ private:
+  TList *GetGlobalList(TList *l1, TList *l2); //global cdb output list
+
+  static const char* fgkDCSDataPoints[12]; //! names of dcs dps
+  AliDCSSensorArray *fPressure; //pressure array
+
   ClassDef(AliGRPPreprocessor, 0);
 };
 

@@ -28,6 +28,7 @@ class AliDCSSensorArray : public TNamed {
   AliDCSSensorArray(TClonesArray *arr);
   AliDCSSensorArray(Int_t run, const char* dbEntry);
   AliDCSSensorArray(UInt_t startTime, UInt_t endTime, TTree* confTree);
+  AliDCSSensorArray(UInt_t startTime, UInt_t endTime, TClonesArray *sensors);
   AliDCSSensorArray(const AliDCSSensorArray &c);
   virtual ~AliDCSSensorArray();
   AliDCSSensorArray &operator=(const AliDCSSensorArray &c);
