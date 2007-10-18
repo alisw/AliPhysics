@@ -71,6 +71,8 @@ class AliTRDRawStreamV2: public TObject {
     Int_t GetMaxCol() const      { return fColMax;  }
     Int_t GetNumberOfTimeBins() const 
                                  { return fTBins;   }
+    
+    void SwapOnEndian();
 
  protected:
 

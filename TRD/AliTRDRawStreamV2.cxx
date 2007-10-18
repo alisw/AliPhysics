@@ -419,6 +419,33 @@ Int_t AliTRDRawStreamV2::Init()
 }
 
 //____________________________________________________________________________
+void AliTRDRawStreamV2::SwapOnEndian()
+{
+  //
+  // Check the endian and swap if needed
+  //
+
+  int itemp = 1;
+  char* ptemp = (char*) &itemp;
+  if (ptemp[0] != 1)
+    {
+      // need to swap...
+      // assume we are at the begining of the buffer!
+      //AliDebug(5, "Swapping.");
+      UInt_t *pbegin = (UInt_t*)fPos;
+      UInt_t iutmp = 0;
+      for (UInt_t i = 0; i < fBufSize / fgkSizeWord; i++)
+	{
+	  fDataWord = pbegin + i;
+	  iutmp = (((*fDataWord & 0x000000ffU) << 24) | ((*fDataWord & 0x0000ff00U) <<  8) |
+		   ((*fDataWord & 0x00ff0000U) >>  8) | ((*fDataWord & 0xff000000U) >> 24));
+	  // here we override the value in the buffer!
+	  *fDataWord = iutmp;
+	}
+      fDataWord = pbegin;
+    }
+}
+//____________________________________________________________________________
 Int_t AliTRDRawStreamV2::NextData()
 {
   //
@@ -433,6 +460,7 @@ Int_t AliTRDRawStreamV2::NextData()
 	  fBufSize = fRawReader->GetDataSize();
 	  fCountBytes = 0;	  
 	  fDataWord = (UInt_t*)fPos;
+	  SwapOnEndian();
 	  ChangeStatus(kNextSM);
 	  fWordCtr = 0;
 	  return kNextSM;
