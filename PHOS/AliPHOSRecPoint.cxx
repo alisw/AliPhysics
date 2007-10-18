@@ -30,11 +30,10 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
-
+#include "AliLog.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSRecPoint.h"
-#include "AliPHOSGetter.h"
 #include "AliGeomManager.h"
 
 ClassImp(AliPHOSRecPoint)
@@ -164,7 +163,7 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
   case kButton1Down:{
     AliPHOSDigit * digit ;
   
-    AliPHOSGeometry * phosgeom = AliPHOSLoader::GetPHOSGeometry();
+    AliPHOSGeometry * phosgeom = AliPHOSGeometry::GetInstance();
 
     Int_t iDigit;
     Int_t relid[4] ;
@@ -304,7 +303,8 @@ void AliPHOSRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
   // returns the position of the cluster in the global reference system of ALICE
   // and the uncertainty on this position
 
-  (AliPHOSGetter::Instance())->PHOSGeometry()->GetGlobalPHOS(this, gpos, gmat);
+  AliPHOSGeometry * phosgeom = (AliPHOSGeometry::GetInstance());
+  phosgeom->GetGlobalPHOS(this, gpos, gmat);
 
 //   Float_t xyz[3];
 //   GetGlobalXYZ(xyz);
