@@ -304,7 +304,7 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
    if (fDebug > 1) {
       cout << "->AliAnalysisManager::Process()" << endl;
    }
-
+   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent();
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent();
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent();
    
@@ -761,7 +761,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       }   
       cont->SetData(fTree); // This will notify all consumers
 //
-//    Call BeginEvent() for optional output and MC services 
+//    Call BeginEvent() for optional input/output and MC services 
+      if (fInputEventHandler)   fInputEventHandler  ->BeginEvent();
       if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent();
       if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent();
 //
@@ -783,7 +784,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    }   
    // The event loop is not controlled by TSelector   
 //
-//  Call BeginEvent() for optional output and MC services 
+//  Call BeginEvent() for optional input/output and MC services 
+   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent();
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent();
    if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent();
    TIter next2(fTopTasks);
