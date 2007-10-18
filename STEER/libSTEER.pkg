@@ -47,6 +47,7 @@ AliFstream.cxx \
 AliCTPRawData.cxx \
 AliQA.cxx \
 AliQADataMaker.cxx \
+AliQADataMakerSteer.cxx \
 AliQAChecker.cxx \
 AliQACheckerBase.cxx \
 AliMillepede.cxx 

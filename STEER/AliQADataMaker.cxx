@@ -40,15 +40,13 @@
 #include "AliRawReader.h"
 
 ClassImp(AliQADataMaker)
-  
-TString AliQADataMaker::fDetectorDirName("") ;
-
-           
+             
 //____________________________________________________________________________ 
 AliQADataMaker::AliQADataMaker(const char * name, const char * title) : 
   TNamed(name, title), 
   fOutput(0x0),
   fDetectorDir(0x0),
+  fDetectorDirName(""), 
   fDigitsQAList(0x0), 
   fESDsQAList(0x0), 
   fHitsQAList(0x0),
@@ -69,6 +67,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   TNamed(qadm.GetName(), qadm.GetTitle()),
   fOutput(qadm.fOutput),
   fDetectorDir(qadm.fDetectorDir),
+  fDetectorDirName(qadm.fDetectorDirName),
   fDigitsQAList(qadm.fDigitsQAList),
   fESDsQAList(qadm.fESDsQAList),
   fHitsQAList(qadm.fHitsQAList),
@@ -84,16 +83,10 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fDetectorDirName = GetName() ; 
 }
 
-//____________________________________________________________________________ 
-AliQADataMaker::~AliQADataMaker() 
-{
-// dtor
-} 
-
 //__________________________________________________________________
 AliQADataMaker& AliQADataMaker::operator = (const AliQADataMaker& qadm )
 {
-  // Equal operator.
+  // Assignment operator.
   this->~AliQADataMaker();
   new(this) AliQADataMaker(qadm);
   return *this;
@@ -150,86 +143,96 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 { 
   // creates the quality assurance data for the various tasks (Hits, SDigits, Digits, ESDs)
     
-  switch (task) { 
+	switch (task) { 
   
-  case AliQA::kRAWS:
-  {
-    AliInfo("Processing Raws QA") ; 
-	AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
-    if (rawReader) 
-	  MakeRaws(rawReader) ;
-	 else
-	  AliError("Wrong data type") ;     
-    break ; 
-  }
-  case AliQA::kHITS:
-  {  
-	AliInfo("Processing Hits QA") ; 
-	TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
-    if (hits) 
-     MakeHits(hits) ;
-	else 
-     AliError("Wrong type of hits container") ;
-    break ; 
-  }
-  case AliQA::kSDIGITS:
-  {
-    AliInfo("Processing SDigits QA") ; 
-    TClonesArray * sdigits = dynamic_cast<TClonesArray *>(data) ; 
-	if (sdigits) 
-      MakeSDigits(sdigits) ;
-	 else    
-      AliError("Wrong type of sdigits container") ; 
-    break ; 
-  }  
-  case AliQA::kDIGITS:
-  {
-    TClonesArray * digits = dynamic_cast<TClonesArray *>(data) ; 
-    if (digits) 
-	  MakeDigits(digits) ;
-	 else 
-      AliError("Wrong type of digits container") ; 
-    break ;  
-  }
-  case AliQA::kRECPOINTS:
-  {
-     AliInfo("Processing RecPoints QA") ; 
-     TTree * recpoints = dynamic_cast<TTree *>(data) ; 
-    if (recpoints) 
-      MakeRecPoints(recpoints) ;
-    else 
-      AliError("Wrong type of recpoints container") ; 
-    break ;  
-  }
-   case AliQA::kTRACKSEGMENTS:
-    AliInfo("Processing Track Segments QA: not existing anymore") ; 
-//     TTree * ts = dynamic_cast<TTree *>(data) ; 
-//     if (ts) 
-//       MakeTrackSegments(ts) ;
-//     else 
-//       AliError("Wrong type of track segments container") ; 
-    break ;  
+		case AliQA::kRAWS:
+		{
+			AliInfo("Processing Raws QA") ; 
+			AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
+			if (rawReader) 
+				MakeRaws(rawReader) ;
+			else
+			AliError("Wrong data type") ;     
+			break ; 
+		}
+		case AliQA::kHITS:
+		{  
+			AliInfo("Processing Hits QA") ; 
+			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
+			if (arr) { 
+				MakeHits(arr) ;
+			} else {
+				TTree * tree = dynamic_cast<TTree *>(data) ; 
+				if (tree) {
+					MakeHits(tree) ; 
+				} else {
+					AliWarning("data are neither a TClonesArray nor a TTree") ; 
+				}
+			}
+			break ; 
+		}
+		case AliQA::kSDIGITS:
+		{
+			AliInfo("Processing SDigits QA") ; 
+			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
+			if (arr) { 
+				MakeSDigits(arr) ;
+			} else {
+				TTree * tree = dynamic_cast<TTree *>(data) ; 
+				if (tree) {
+					MakeSDigits(tree) ; 
+				} else {
+					AliWarning("data are neither a TClonesArray nor a TTree") ; 
+				}
+			}
+			break ; 
+		}  
+		case AliQA::kDIGITS:
+		{
+			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
+			if (arr) { 
+				MakeDigits(arr) ;
+			} else {
+				TTree * tree = dynamic_cast<TTree *>(data) ; 
+				if (tree) {
+					MakeDigits(tree) ; 
+				} else {
+					AliWarning("data are neither a TClonesArray nor a TTree") ; 
+				}
+			}
+			break ;  
+		}
+		case AliQA::kRECPOINTS:
+		{
+			AliInfo("Processing RecPoints QA") ; 
+			TTree * tree = dynamic_cast<TTree *>(data) ; 
+			if (tree) {
+				MakeRecPoints(tree) ; 
+			} else {
+				AliWarning("data are not a TTree") ; 
+			}
+			break ;  
+		}
+		case AliQA::kTRACKSEGMENTS:
+			AliInfo("Processing Track Segments QA: not existing anymore") ; 
+		//       MakeTrackSegments(ts) ;
+		break ;  
   
-    case AliQA::kRECPARTICLES:
-    AliInfo("Processing RecParticles QA: not existing anymore") ; 
-//     TTree * recpar = dynamic_cast<TTree *>(data) ; 
-//     if (recpar) 
-//       MakeRecParticles(recpar) ;
-//     else 
-//       AliError("Wrong type of recparticles container") ; 
-    break ;  
-    
-  case AliQA::kESDS:
-   {
-    AliInfo("Processing ESDs QA") ; 
-    AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
-    if (esd) 
-      MakeESDs(esd) ;
-    else 
-      AliError("Wrong type of esd container") ; 
-    break ;
-   }  
-  }	  
+		case AliQA::kRECPARTICLES:
+			AliInfo("Processing RecParticles QA: not existing anymore") ; 
+			//       MakeRecParticles(recpar) ;
+		break ;  
+		case AliQA::kESDS:
+		{
+			AliInfo("Processing ESDs QA") ; 
+			AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
+			if (esd) 
+				MakeESDs(esd) ;
+			else 
+				AliError("Wrong type of esd container") ; 
+			break ;
+		}  
+	}	  
 }
 
 //____________________________________________________________________________ 
@@ -279,7 +282,7 @@ TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
    }	  
   case AliQA::kRECPOINTS: 
    {
-	fRecPointsQAList = new TList ; 
+	fRecPointsQAList = new TList() ; 
     InitRecPoints() ;
 	return fRecPointsQAList ;
     break ; 
@@ -303,18 +306,66 @@ TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
   return 0x0 ; 
 }
 
+//____________________________________________________________________________ 
+void AliQADataMaker::Init(AliQA::TASKINDEX task, TList * list, Int_t run, Int_t cycles)
+{
+  // Intialisation by passing the list of QA data booked elsewhere
+  
+  fRun = run ;
+  if (cycles > 0)
+    SetCycle(cycles) ;  
+	
+  switch (task) {
+  case AliQA::kRAWS: 
+   {
+	fRawsQAList = list ;	 
+    break ; 
+   }
+  case AliQA::kHITS: 
+   {
+	fHitsQAList = list ;	 
+    break ; 
+   }
+  case AliQA::kSDIGITS: 
+   {
+	fSDigitsQAList = list ; 
+    break ; 
+   }
+  case AliQA::kDIGITS: 
+   {
+	fDigitsQAList = list ; 
+	break ; 
+   }	  
+  case AliQA::kRECPOINTS: 
+   {
+	fRecPointsQAList = list ; 
+    break ; 
+  }
+  case AliQA::kTRACKSEGMENTS: 
+    break ; 
+    
+  case AliQA::kRECPARTICLES: 
+    break ; 
+    
+  case AliQA::kESDS: 
+   {
+	fESDsQAList = list ; 
+    break ; 
+   }
+  }  
+}
+
 //____________________________________________________________________________
 void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, Option_t * sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
  
- if ( (strcmp(sameCycle, "new") == 0) )  {
-   ResetCycle() ;
-   if (fOutput) 
-	fOutput->Close() ; 
-   fOutput = AliQA::GetQADMOutFile(GetName(), fRun, fCurrentCycle) ; 	
- }
-    	
+ if ( (strcmp(sameCycle, "new") == 0) ) {
+	ResetCycle() ;
+	if (fOutput) 
+		fOutput->Close() ; 
+	fOutput = AliQA::GetQADMOutFile(GetName(), fRun, fCurrentCycle) ; 	
+ }	
  AliInfo(Form(" Run %d Cycle %d task %s file %s", 
 	fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
 
