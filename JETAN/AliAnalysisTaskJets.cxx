@@ -31,6 +31,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliMCEventHandler.h"
+#include "AliESDInputHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
 
@@ -42,7 +43,7 @@ ClassImp(AliAnalysisTaskJets)
 AliAnalysisTaskJets::AliAnalysisTaskJets():
     fDebug(0),
     fJetFinder(0x0),
-    fChain(0x0),
+    fTree(0x0),
     fESD(0x0),
     fAOD(0x0),
     fTreeA(0x0),
@@ -56,7 +57,7 @@ AliAnalysisTaskJets::AliAnalysisTaskJets(const char* name):
     AliAnalysisTask(name, "AnalysisTaskJets"),
     fDebug(0),
     fJetFinder(0x0),
-    fChain(0x0),
+    fTree(0x0),
     fESD(0x0),
     fAOD(0x0),
     fTreeA(0x0),
@@ -106,13 +107,15 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 {
 // Connect the input data
     if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
-    fChain = (TChain*)GetInputData(0);
-    fESD = new AliESDEvent();
-    fESD->ReadFromTree(fChain);
+    AliESDInputHandler* esdH = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+    AliESDEvent* fESD = esdH->GetEvent();
+    fTree = esdH->GetTree();
+    
+    
 
     AliMCEventHandler*    mcTruth = (AliMCEventHandler*) 
 	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-
+    
     fJetFinder->GetReader()->SetInputEvent(fESD, fAOD, mcTruth);
 }
 
@@ -124,16 +127,10 @@ void AliAnalysisTaskJets::Exec(Option_t */*option*/)
 	((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     if (mctruth) {
 	AliStack* stack = mctruth->MCEvent()->Stack();
-	printf("AliAnalysisTaskJets: Number of tracks on stack %5d\n", stack->GetNtrack());
+	//printf("AliAnalysisTaskJets: Number of tracks on stack %5d\n", stack->GetNtrack());
     }
     
-    AliESD* old = fESD->GetAliESDOld();
-    if (old) {
-	fESD->CopyFromOldESD();
-	old->Reset();
-    }
-    
-    Long64_t ientry = fChain->GetReadEntry();
+    Long64_t ientry = fTree->GetReadEntry();
     if (fDebug > 1) printf("Analysing event # %5d\n", (Int_t) ientry);
     fJetFinder->ProcessEvent(ientry);
 
@@ -150,6 +147,6 @@ void AliAnalysisTaskJets::Terminate(Option_t */*option*/)
 // Terminate analysis
 //
     if (fDebug > 1) printf("AnalysisJets: Terminate() \n");
-    // if (fJetFinder) fJetFinder->FinishRun();
+//    if (fJetFinder) fJetFinder->FinishRun();
 }
 
