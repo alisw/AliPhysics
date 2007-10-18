@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.93  2007/10/06 22:24:40  kharlov
+ * Bug in strip unit geometry is corrected
+ *
  * Revision 1.92  2007/07/04 16:38:19  policheh
  * Tracking2LocalCS matrices corrected for CPV.
  *
@@ -929,7 +932,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     volpath = physModulePath;
     volpath += iModule;
-    volpath += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
+    //    volpath += "/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1";
 
     symname = symbModuleName;
     symname += iModule;

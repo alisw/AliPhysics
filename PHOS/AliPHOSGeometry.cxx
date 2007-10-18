@@ -347,7 +347,7 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi,
     TGeoHMatrix *m = gGeoManager->GetCurrentMatrix();
     Double_t posG[3]={0.,0.,0.} ;
     if (m) m->LocalToMaster(tmp,posG);
-    TVector3 n(posG[0],posG[1],-posG[2]) ; 
+    TVector3 n(posG[0],posG[1],posG[2]) ; 
     Double_t direction=n.Dot(p) ;
     if(direction<=0.)
       continue ; //momentum directed FROM module
@@ -360,6 +360,8 @@ void AliPHOSGeometry::ImpactOnEmc(Double_t * vtx, Double_t theta, Double_t phi,
       moduleNumber = imod ;
       z=n.Z() ;
       x=TMath::Sign(n.Pt(),n.X()) ;
+      //no need to return to local system since we calcilated distance from module center
+      //and tilts can not be significant.
       return ;
     }
   }
@@ -576,9 +578,12 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     else{
       AliFatal("Geo matrixes are not loaded \n") ;
     }
+    //    printf("Local: x=%f, y=%f, z=%f \n",pos[0],pos[1],pos[2]) ;
+    //    printf("   gl: x=%f, y=%f, z=%f \n",posC[0],posC[1],posC[2]) ;
     //Return to PHOS local system  
     Double_t posL[3]={posC[0],posC[1],posC[2]};
-    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
+    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",relid[0]) ;
+    //    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
     if (!gGeoManager->cd(path)){
       AliFatal("Geo manager can not find path \n");
     }
@@ -590,7 +595,7 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
 //printf("RelPosInMod: posL=[%f,%f,%f]\n",posL[0],posL[1],posL[2]) ;
 //printf("old: x=%f, z=%f \n",x,z);
     x=posL[0] ;
-    z=posL[1];
+    z=-posL[2];
     return ;
   }
   else{//CPV
@@ -599,9 +604,11 @@ void AliPHOSGeometry::RelPosInModule(const Int_t * relid, Float_t & x, Float_t &
     Int_t column     = relid[3] ; //offset along z axis
     Double_t pos[3]= {0.0,0.0,0.}; //Position incide the CPV printed circuit
     Double_t posC[3]={0.0,0.0,0.}; //Global position
+    //    x = - ( GetNumberOfCPVPadsPhi()/2. - row    - 0.5 ) * GetPadSizePhi()  ; // position of pad  with respect
+    //    z = - ( GetNumberOfCPVPadsZ()  /2. - column - 0.5 ) * GetPadSizeZ()  ; // of center of PHOS module
     pos[0] = - ( GetNumberOfCPVPadsPhi()/2. - row    - 0.5 ) * GetPadSizePhi()  ; // position of pad  with respect
     pos[2] = - ( GetNumberOfCPVPadsZ()  /2. - column - 0.5 ) * GetPadSizeZ()  ; // of center of PHOS module
- 
+
     //now apply possible shifts and rotations
     sprintf(path,"/ALIC_1/PHOS_%d/PCPV_1",relid[0]) ;
     if (!gGeoManager->cd(path)){
