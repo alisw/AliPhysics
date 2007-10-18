@@ -579,7 +579,7 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
   // own .pemf, in order to get the right cross sections loaded in memory.
   // Materials defined by FLUKA
    TString sname;
-   gGeoManager->Export("flgeom.root");
+   gGeoManager->Export("geometry.root");
    if (fname) sname = fname;
    else       sname = "flukaMat.inp";
    ofstream out;
