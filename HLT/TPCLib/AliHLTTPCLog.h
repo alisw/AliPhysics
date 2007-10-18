@@ -16,6 +16,13 @@
 
 using namespace std;
 
+/** key to indicate the origin part */
+#define AliHLTTPCLogKeyOrigin  "__origin"
+/** key to indicate the keyword part */
+#define AliHLTTPCLogKeyKeyword "__key" 
+/** key to indicate the message part */
+#define AliHLTTPCLogKeyMessage "__message"
+
 /**
  * @class AliHLTTPCLog
  * This class implements the old HLT TPC logging mechanism.
@@ -37,21 +44,6 @@ class AliHLTTPCLog  {
   /** stream manipulator for decimal output, but empty in the implementation */
   static const char* kDec;                                         //! transient
 
-  /** the logging filter */
-  static TLogLevel fgLevel;                                        // see above
-
-  /** key to indicate the origin part */
-  static const char* fgKeyOrigin;                                  //! transient
-  /** key to indicate the keyword part */
-  static const char* fgKeyKeyword;                                 //! transient
-  /** key to indicate the message part */
-  static const char* fgKeyMessage;                                 //! transient
-
-  /** a stringstream to receive the output */
-  static stringstream fgStream;                                    // see above
-  /** HLT logging instance */
-  static AliHLTLogging fgHLTLogging;                               // see above
-
   /**
    * Flush the stringstream and print output to the HLT logging system.
    * The attributes are set before the message is streamed into the
@@ -63,7 +55,26 @@ class AliHLTTPCLog  {
    */
   static const char* Flush();
 
+  /**
+   * Get the stream.
+   */
+  static stringstream& GetStream() {return fgStream;}
+
+  /**
+   * Get the logging level.
+   */
+  static TLogLevel GetLevel() {return fgLevel;}
+
  private:
+  /** a stringstream to receive the output */
+  static stringstream fgStream;                                    // see above
+
+  /** the logging filter */
+  static TLogLevel fgLevel;                                        // see above
+
+  /** HLT logging instance */
+  static AliHLTLogging fgHLTLogging;                               // see above
+
   /** copy constructor prohibited */
   AliHLTTPCLog(const AliHLTTPCLog&);
   /** assignment operator prohibited */
@@ -75,10 +86,10 @@ class AliHLTTPCLog  {
  * \em Note: this macro should be used any longer 
  */
 #define LOG( lvl, origin, keyword ) \
- if (lvl>=AliHLTTPCLog::fgLevel) AliHLTTPCLog::fgStream << lvl \
-                           << " " << AliHLTTPCLog::fgKeyOrigin  << " " << origin \
-                           << " " << AliHLTTPCLog::fgKeyKeyword << " " << keyword \
-			   << " " << AliHLTTPCLog::fgKeyMessage << " "
+  if (lvl>=AliHLTTPCLog::GetLevel()) AliHLTTPCLog::GetStream() << lvl	\
+                           << " " << AliHLTTPCLogKeyOrigin  << " " << origin \
+                           << " " << AliHLTTPCLogKeyKeyword << " " << keyword \
+			   << " " << AliHLTTPCLogKeyMessage << " "
 
 /** ENDLOG macro calls the Flush method 
  * \em Note: this macro should be used any longer 
