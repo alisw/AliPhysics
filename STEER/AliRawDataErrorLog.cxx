@@ -30,6 +30,8 @@
 
 #include "AliRawDataErrorLog.h"
 
+#include <Riostream.h>
+
 ClassImp(AliRawDataErrorLog)
 
 //_____________________________________________________________________________
@@ -107,4 +109,38 @@ Int_t AliRawDataErrorLog::Compare(const TObject *obj) const
   }
   else
     return ((fEventNumber > eventNumber) ? 1 : -1);
+}
+
+//_____________________________________________________________________________
+const char*
+AliRawDataErrorLog::GetErrorLevelAsString() const
+{
+  switch ( GetErrorLevel() )
+  {
+    case kMinor:
+      return "MINOR";
+      break;
+    case kMajor:
+      return "MAJOR";
+      break;
+    case kFatal:
+      return "FATAL";
+      break;
+    default:
+      return "INVALID";
+      break;
+  }
+  
+}
+
+//_____________________________________________________________________________
+void
+AliRawDataErrorLog::Print(Option_t*) const
+{
+  cout << Form("EventNumber %10d DdlID %5d ErrorLevel %10s ErrorCode %4d Occurence %5d",
+               GetEventNumber(),GetDdlID(),
+               GetErrorLevelAsString(),
+               GetErrorCode(),
+               GetCount()) << endl;
+  cout << "    " << GetMessage() << endl;
 }

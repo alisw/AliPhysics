@@ -42,6 +42,7 @@ class AliRawDataErrorLog: public TNamed {
   Int_t              GetEventNumber() const { return fEventNumber; }
   Int_t              GetDdlID()       const { return fDdlID; }
   ERawDataErrorLevel GetErrorLevel()  const { return fErrorLevel; }
+  const char*        GetErrorLevelAsString() const;
   Int_t              GetErrorCode()   const { return fErrorCode; }
   const char *       GetMessage()     const { return fName.Data(); }
   Int_t              GetCount()       const { return fCount; }
@@ -51,6 +52,8 @@ class AliRawDataErrorLog: public TNamed {
 
   void               AddCount() { fCount++; }
 
+  void Print(Option_t* opt="") const;
+  
  private:
 
   Int_t              fEventNumber; // Event number as it appears in the input raw-data file
