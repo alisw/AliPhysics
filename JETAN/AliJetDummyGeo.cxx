@@ -222,7 +222,6 @@ AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
 AliJetDummyGeo::~AliJetDummyGeo()
 {
   // Destructor
-  delete [] fMatrixOfSM;
 }
 
 //------------------------------------------------------------------------------------
