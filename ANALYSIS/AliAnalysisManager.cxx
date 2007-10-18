@@ -185,6 +185,12 @@ void AliAnalysisManager::Init(TTree *tree)
    if (fDebug > 1) {
       printf("->AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
+
+   if (fInputEventHandler) {
+       fInputEventHandler->SetInputTree(tree);
+       fInputEventHandler->InitIO("");
+   }
+
    if (!fInitOK) InitAnalysis();
    if (!fInitOK) return;
    fTree = tree;
@@ -228,7 +234,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
 	   fOutputEventHandler->InitIO("local");
        }
    }
-   if (fInputEventHandler) {
+   if (fInputEventHandler && fMode == kLocalAnalysis) {
        fInputEventHandler->SetInputTree(tree);
        fInputEventHandler->InitIO("");
    }
@@ -242,7 +248,8 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       task->CreateOutputObjects();
       if (curdir) curdir->cd();
    }   
-   if (fMode == kLocalAnalysis) Init(tree);   
+   if (fMode == kLocalAnalysis) 
+       Init(tree);   
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::SlaveBegin()" << endl;
    }
@@ -257,20 +264,21 @@ Bool_t AliAnalysisManager::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
     if (fTree) {
-       TFile *curfile = fTree->GetCurrentFile();
-      if (curfile && fDebug>1) printf("AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
-      TIter next(fTasks);
-      AliAnalysisTask *task;
-      // Call Notify for all tasks
-      while ((task=(AliAnalysisTask*)next())) 
-	  task->Notify();
+	TFile *curfile = fTree->GetCurrentFile();
+	if (curfile && fDebug>1) printf("AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
+	TIter next(fTasks);
+	AliAnalysisTask *task;
+	// Call Notify for all tasks
+	while ((task=(AliAnalysisTask*)next())) 
+	    task->Notify();
+	
+	// Call Notify of the MC truth handler
+	if (fMCtruthEventHandler) {
+	    fMCtruthEventHandler->Notify(curfile->GetName());
+	}
 
-      // Call Notify of the MC truth handler
-      if (fMCtruthEventHandler) {
-	  fMCtruthEventHandler->Notify(curfile->GetName());
-      }
-   }
-   return kTRUE;
+    }
+    return kTRUE;
 }    
 
 //______________________________________________________________________________
