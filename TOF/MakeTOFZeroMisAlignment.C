@@ -51,7 +51,8 @@ void MakeTOFZeroMisAlignment(){
   for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
       strId++;
-      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+      if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
+      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
       new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId), AliGeomManager::LayerToVolUID(idTOF,strId), dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
     }
   }

@@ -54,6 +54,7 @@ void MakeTOFResMisAlignment(){
     dy = rnd->Gaus(0.,sigmatr);
     dz = rnd->Gaus(0.,sigmatr);
       strId++;
+      if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
       if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
       new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     }

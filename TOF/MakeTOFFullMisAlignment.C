@@ -69,22 +69,22 @@ void MakeTOFFullMisAlignment(){
   Double_t sigmatr = 0.4; // max shift in cm w.r.t. local ideal RS
   Double_t sigmarot = 0.06; // max rot in deg w.r.t. local ideal RS (~ 1 mrad)
   
-  for(Int_t iSect=0; iSect<nSMTOF; iSect++) {
-    TString symname(Form("TOF/sm%02d",iSect));
+  for(Int_t isect=0; isect<nSMTOF; isect++) {
+    TString symname(Form("TOF/sm%02d",isect));
     smdx = rnd->Gaus(0.,sigmatr);
     smdy = rnd->Gaus(0.,sigmatr);
     dtheta = rnd->Gaus(0.,sigmarot);
-    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
     new((*array)[j++]) AliAlignObjParams(symname.Data(), dvoluid, smdx, smdy, smdz, dpsi, dtheta, dphi, kFALSE);
   }
   // Apply objects for TOF supermodules 
   Int_t smCounter=0;
-  for(Int_t iSect=0; iSect<nSMTOF; iSect++){
-    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+  for(Int_t isect=0; isect<nSMTOF; isect++){
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
     AliAlignObjParams* smobj = (AliAlignObjParams*)array->UncheckedAt(smCounter++);
-    Info(macroname,Form("Applying object for sector %d ",iSect));
+    Info(macroname,Form("Applying object for sector %d ",isect));
     if(!smobj->ApplyToGeometry()){
-      Fatal(macroname,Form("application of full misalignment object for sector %d failed!",iSect));
+      Fatal(macroname,Form("application of full misalignment object for sector %d failed!",isect));
       return;
     }
   }
@@ -103,13 +103,14 @@ void MakeTOFFullMisAlignment(){
   Int_t nSectors=18;
   Int_t nStrips=nstrA+2*nstrB+2*nstrC;
 
-  for (Int_t iSect = 0; iSect < nSectors; iSect++) {
+  for (Int_t isect = 0; isect < nSectors; isect++) {
     for (Int_t istr = 1; istr <= nStrips; istr++) {
     sdy = rnds->Gaus(0.,sigmatr);
     sdz = rnds->Gaus(0.,sigmatr);
-      strId++;
-      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
-      new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
+    strId++;
+    if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
+    if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
+    new((*array)[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), sdx, sdy, sdz, sdpsi, sdtheta, sdphi, kFALSE);
     }
   }
 
