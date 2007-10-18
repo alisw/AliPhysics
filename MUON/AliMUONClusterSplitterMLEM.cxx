@@ -109,8 +109,9 @@ AliMUONClusterSplitterMLEM::AddBin(TH2 *mlem,
   Double_t cont1, cont = mlem->GetCellContent(jc,ic);
   AliMUONPad *pixPtr = 0;
   
-  for (Int_t i=TMath::Max(ic-1,1); i<=TMath::Min(ic+1,ny); i++) {
-    for (Int_t j=TMath::Max(jc-1,1); j<=TMath::Min(jc+1,nx); j++) {
+  Int_t ie = TMath::Min(ic+1,ny), je = TMath::Min(jc+1,nx);
+  for (Int_t i = TMath::Max(ic-1,1); i <= ie; ++i) {
+    for (Int_t j = TMath::Max(jc-1,1); j <= je; ++j) {
       if (i != ic && j != jc) continue;
       if (used[(i-1)*nx+j-1]) continue;
       cont1 = mlem->GetCellContent(j,i);
@@ -121,7 +122,7 @@ AliMUONClusterSplitterMLEM::AddBin(TH2 *mlem,
       else {
         pixPtr = new AliMUONPad (mlem->GetXaxis()->GetBinCenter(j), 
                                    mlem->GetYaxis()->GetBinCenter(i), 0, 0, cont1);
-        fPixArray->Add((TObject*)pixPtr);
+        fPixArray->Add(pixPtr);
       }
       AddBin(mlem, i, j, mode, used, pix); // recursive call
     }
@@ -136,7 +137,7 @@ AliMUONClusterSplitterMLEM::AddCluster(Int_t ic, Int_t nclust,
 {
   /// Add a cluster to the group of coupled clusters
   
-  for (Int_t i=0; i<nclust; i++) {
+  for (Int_t i = 0; i < nclust; ++i) {
     if (used[i]) continue;
     if (aijcluclu(i,ic) < fgkCouplMin) continue;
     used[i] = kTRUE;
@@ -159,12 +160,13 @@ AliMUONClusterSplitterMLEM::BinToPix(TH2 *mlem,
   AliMUONPad *pixPtr = NULL;
   
   // Compare pixel and bin positions
-  for (Int_t i=0; i<nPix; i++) {
+  for (Int_t i = 0; i < nPix; ++i) {
     pixPtr = (AliMUONPad*) fPixArray->UncheckedAt(i);
     if (pixPtr->Charge() < 0.5) continue;
     if (TMath::Abs(pixPtr->Coord(0)-xc)<1.e-4 && TMath::Abs(pixPtr->Coord(1)-yc)<1.e-4) 
     {
-      return (TObject*) pixPtr;
+      //return (TObject*) pixPtr;
+      return pixPtr;
     }
   }
   AliError(Form(" Something wrong ??? %f %f ", xc, yc));
@@ -197,14 +199,15 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
   Int_t indx, npads=0;
   Double_t charge, delta, coef=0, chi2=0, qTot = 0;
   
-  for (Int_t j=0; j< cluster.Multiplicity(); ++j) 
+  Int_t mult = cluster.Multiplicity(), ibeg = fNpar / 3;
+  for (Int_t j = 0; j < mult; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
     if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
     if ( pad->IsReal() ) npads++; // exclude virtual pads
     qTot += pad->Charge(); // c.fXyq[2][j];
     charge = 0;
-    for (Int_t i=fNpar/3; i>=0; --i)
+    for (Int_t i = ibeg; i >= 0; --i)
     { // sum over tracks
       indx = i<2 ? 2*i : 2*i+1;
       if (fNpar == 2) 
@@ -213,7 +216,7 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
       }
       else 
       {
-        coef = i==fNpar/3 ? par[indx+2] : 1-coef;
+        coef = i==ibeg ? par[indx+2] : 1-coef;
       }
       coef = TMath::Max (coef, 0.);
       if ( fNpar == 8 && i < 2) 
@@ -256,7 +259,8 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   // Number of pads to use and number of virtual pads
   Int_t npads = 0, nVirtual = 0, nfit0 = nfit;
   //cluster.Print("full");
-  for (Int_t i=0; i<cluster.Multiplicity(); ++i ) 
+  Int_t mult = cluster.Multiplicity();
+  for (Int_t i = 0; i < mult; ++i ) 
   {
     AliMUONPad* pad = cluster.Pad(i);
     if ( !pad->IsReal() ) ++nVirtual;
@@ -355,13 +359,13 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   Double_t cont, cmax = 0, xseed = 0, yseed = 0, errOk[8], qq = 0;
   Double_t xyseed[3][2], qseed[3], xyCand[3][2] = {{0},{0}}, sigCand[3][2] = {{0},{0}};
   
-  for (Int_t ifit=1; ifit<=nfit0; ifit++) 
+  for (Int_t ifit = 1; ifit <= nfit0; ++ifit) 
   {
     cmax = 0;
     pix = clusters[clustFit[ifit-1]];
     npxclu = pix->GetEntriesFast();
     //qq = 0;
-    for (Int_t clu=0; clu<npxclu; ++clu) 
+    for (Int_t clu = 0; clu < npxclu; ++clu) 
     {
       pixPtr = (AliMUONPad*) pix->UncheckedAt(clu);
       cont = pixPtr->Charge();
@@ -405,19 +409,19 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     
     // Try to fit with one-track hypothesis, then 2-track. If chi2/dof is 
     // lower, try 3-track (if number of pads is sufficient).
-    for (Int_t iseed=0; iseed<nfit; iseed++) 
+    for (Int_t iseed = 0; iseed < nfit; ++iseed) 
     {
       
       Int_t memory[8] = {0};
       if (iseed) 
       { 
-        for (Int_t j=0; j<fNpar; j++) 
+        for (Int_t j = 0; j < fNpar; ++j) 
         {
           param[j] = parOk[j]; 
         }
       } // for bounded params
       
-      for (Int_t j=0; j<3; j++) 
+      for (Int_t j = 0; j < 3; ++j) 
       {
         step0[fNpar+j] = shift[fNpar+j] = step[j];
       }
@@ -450,10 +454,14 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       }
       if (iseed) 
       { 
-        for (Int_t j=0; j<fNpar; j++) 
+        for (Int_t j = 0; j < fNpar; ++j) 
         {
           param0[1][j] = 0; 
         }
+      }
+      if (fDebug) {
+	for (Int_t j = 0; j < fNpar; ++j) cout << param[j] << " "; 
+	cout << endl;
       }
       
       // Try new algorithm
@@ -466,7 +474,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
         //cout << " Func: " << func0 << endl;
         
         func2[max] = func0;
-        for (Int_t j=0; j<fNpar; j++) 
+        for (Int_t j = 0; j < fNpar; ++j) 
         {
           param0[max][j] = param[j];
           delta[j] = step0[j];
@@ -485,7 +493,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
         nFail = min == max ? 0 : nFail + 1;
         
         stepMax = derMax = estim = 0;
-        for (Int_t j=0; j<fNpar; j++) 
+        for (Int_t j = 0; j < fNpar; ++j) 
         { 
           // Estimated distance to minimum
           shift0 = shift[j];
@@ -620,11 +628,11 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
       
       if (nInX == 1) {
         // One pad per direction 
-        for (Int_t i=0; i<fNpar; i++) if (i == 0 || i == 2 || i == 5) param0[min][i] = xPad;
+        for (Int_t i=0; i<fNpar; ++i) if (i == 0 || i == 2 || i == 5) param0[min][i] = xPad;
       }
       if (nInY == 1) {
         // One pad per direction 
-        for (Int_t i=0; i<fNpar; i++) if (i == 1 || i == 3 || i == 6) param0[min][i] = yPad;
+        for (Int_t i=0; i<fNpar; ++i) if (i == 1 || i == 3 || i == 6) param0[min][i] = yPad;
       }
       
       /*
@@ -652,7 +660,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
        }
        */
       
-      for (Int_t i=0; i<fNpar; i++) {
+      for (Int_t i = 0; i < fNpar; ++i) {
         parOk[i] = param0[min][i];
         //errOk[i] = fmin;
         errOk[i] = chi2n;
@@ -666,7 +674,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     } // for (Int_t iseed=0; 
    
     if (fDebug) {
-      for (Int_t i=0; i<fNpar; i++) {
+      for (Int_t i=0; i<fNpar; ++i) {
         if (i == 4 || i == 7) {
           if (i == 7 || i == 4 && fNpar < 7) cout << parOk[i] << endl;
           else cout << parOk[i] * (1-parOk[7]) << endl;
@@ -706,7 +714,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     Double_t coef = 0;
     if (iSimple) fnCoupled = 0;
     //for (Int_t j=0; j<nfit; j++) {
-    for (Int_t j=nfit-1; j>=0; j--) {
+    for (Int_t j = nfit-1; j >= 0; --j) {
       indx = j<2 ? j*2 : j*2+1;  
       if (nfit == 1) coef = 1;
       else coef = j==nfit-1 ? parOk[indx+2] : 1-coef;
@@ -769,19 +777,19 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
   Int_t ny = mlem->GetNbinsY();
   Int_t nPix = fPixArray->GetEntriesFast();
   
-  Bool_t *used = new Bool_t[ny*nx];
   Double_t cont;
   Int_t nclust = 0, indx, indx1;
+  Bool_t *used = new Bool_t[ny*nx];
   
-  for (Int_t i=0; i<ny*nx; i++) used[i] = kFALSE; 
+  memset(used,0,ny*nx*sizeof(Bool_t));
   
   TObjArray *clusters[200]={0};
   TObjArray *pix;
   
   // Find clusters of histogram bins (easier to work in 2-D space)
-  for (Int_t i=1; i<=ny; i++) 
+  for (Int_t i = 1; i <= ny; ++i) 
   {
-    for (Int_t j=1; j<=nx; j++) 
+    for (Int_t j = 1; j <= nx; ++j) 
     {
       indx = (i-1)*nx + j - 1;
       if (used[indx]) continue;
@@ -796,13 +804,13 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
     } // for (Int_t j=1; j<=nx; j++) {
     } // for (Int_t i=1; i<=ny;
 //  if (fDebug) cout << nclust << endl;
-  delete [] used; used = 0;
+  delete [] used;
   
   // Compute couplings between clusters and clusters to pads
   Int_t npad = cluster.Multiplicity();
   
   // Exclude pads with overflows
-  for (Int_t j=0; j<npad; ++j) 
+  for (Int_t j = 0; j < npad; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
     if ( pad->IsSaturated() )
@@ -819,14 +827,14 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
   TMatrixD aijclupad(nclust,npad);
   aijclupad = 0;
   Int_t npxclu;
-  for (Int_t iclust=0; iclust<nclust; ++iclust) 
+  for (Int_t iclust = 0; iclust < nclust; ++iclust) 
   {
     pix = clusters[iclust];
     npxclu = pix->GetEntriesFast();
-    for (Int_t i=0; i<npxclu; ++i) 
+    for (Int_t i = 0; i < npxclu; ++i) 
     {
       indx = fPixArray->IndexOf(pix->UncheckedAt(i));
-      for (Int_t j=0; j<npad; ++j) 
+      for (Int_t j = 0; j < npad; ++j) 
       {
         AliMUONPad* pad = cluster.Pad(j);
         if ( pad->Status() < 0 && pad->Status() != -5) continue;
@@ -839,9 +847,9 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
   // Compute couplings between clusters
   TMatrixD aijcluclu(nclust,nclust);
   aijcluclu = 0;
-  for (Int_t iclust=0; iclust<nclust; ++iclust) 
+  for (Int_t iclust = 0; iclust < nclust; ++iclust) 
   {
-    for (Int_t j=0; j<npad; ++j) 
+    for (Int_t j = 0; j < npad; ++j) 
     {
       // Exclude overflows
       if ( cluster.Pad(j)->Status() < 0) continue;
@@ -854,22 +862,26 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       }
     }
   }
-  for (Int_t iclust=0; iclust<nclust; ++iclust) 
+  for (Int_t iclust = 0; iclust < nclust; ++iclust) 
   {
-    for (Int_t iclust1=iclust+1; iclust1<nclust; ++iclust1) 
+    for (Int_t iclust1 = iclust+1; iclust1 < nclust; ++iclust1) 
     {
       aijcluclu(iclust1,iclust) = aijcluclu(iclust,iclust1);
     }
   }
   
+  if (fDebug && nclust > 1) aijcluclu.Print();
+
   // Find groups of coupled clusters
   used = new Bool_t[nclust];
-  for (Int_t i=0; i<nclust; i++) used[i] = kFALSE;
+  memset(used,0,nclust*sizeof(Bool_t));
+
   Int_t *clustNumb = new Int_t[nclust];
   Int_t nCoupled, nForFit, minGroup[3], clustFit[3], nfit = 0;
-  Double_t parOk[8];
+  //Double_t parOk[8];
+  Double_t parOk[8] = {0}; //AZ
   
-  for (Int_t igroup=0; igroup<nclust; igroup++) 
+  for (Int_t igroup = 0; igroup < nclust; ++igroup) 
   {
     if (used[igroup]) continue;
     used[igroup] = kTRUE;
@@ -878,10 +890,10 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
     // Find group of coupled clusters
     AddCluster(igroup, nclust, aijcluclu, used, clustNumb, nCoupled); // recursive
     
-    //    if (fDebug) {                                                                      
-    //      cout << " nCoupled: " << nCoupled << endl;                                                                      
-    //      for (Int_t i=0; i<nCoupled; i++) cout << clustNumb[i] << " "; cout << endl;                                                                       
-    //    }
+    if (fDebug) {                                                                      
+      cout << " nCoupled: " << nCoupled << endl;
+      for (Int_t i=0; i<nCoupled; ++i) cout << clustNumb[i] << " "; cout << endl;
+    }
     
     fnCoupled = nCoupled;
     
@@ -890,31 +902,33 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       if (nCoupled < 4) 
       {
         nForFit = nCoupled;
-        for (Int_t i=0; i<nCoupled; i++) clustFit[i] = clustNumb[i];
+        for (Int_t i = 0; i < nCoupled; ++i) clustFit[i] = clustNumb[i];
       } 
       else 
       {
         // Too many coupled clusters to fit - try to decouple them
         // Find the lowest coupling of 1, 2, min(3,nLinks/2) pixels with 
         // all the others in the group 
-        for (Int_t j=0; j<3; j++) minGroup[j] = -1;
-        /*Double_t coupl =*/ MinGroupCoupl(nCoupled, clustNumb, aijcluclu, minGroup);
+        for (Int_t j = 0; j < 3; ++j) minGroup[j] = -1;
+        Double_t coupl = MinGroupCoupl(nCoupled, clustNumb, aijcluclu, minGroup);
         
         // Flag clusters for fit
         nForFit = 0;
         while (minGroup[nForFit] >= 0 && nForFit < 3)
         {
+          if (fDebug) cout << clustNumb[minGroup[nForFit]] << " ";
           clustFit[nForFit] = clustNumb[minGroup[nForFit]];
           clustNumb[minGroup[nForFit]] -= 999;
           nForFit++;
         }
+        if (fDebug) cout << " nForFit " << nForFit << " " << coupl << endl;
       } // else
       
       // Select pads for fit. 
       if (SelectPad(cluster,nCoupled, nForFit, clustNumb, clustFit, aijclupad) < 3 && nCoupled > 1) 
       {
         // Deselect pads
-        for (Int_t j=0; j<npad; ++j)
+        for (Int_t j = 0; j < npad; ++j)
         {
           AliMUONPad* pad = cluster.Pad(j);
           if ( pad->Status()==1 ) pad->SetStatus(0);
@@ -928,6 +942,10 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       {
         // Do the fit
         nfit = Fit(cluster,0, nForFit, clustFit, clusters, parOk, clusterList);
+	if (nfit == 0) { 
+	  //cout << fNpar << " " << cluster.Multiplicity() << endl; 
+	  fNpar = 0;
+	}
       }
       
       // Subtract the fitted charges from pads with strong coupling and/or
@@ -935,11 +953,11 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       UpdatePads(cluster,nfit, parOk);
       
       // Mark used pads
-      for (Int_t j=0; j<npad; ++j) 
+      for (Int_t j = 0; j < npad; ++j) 
       {
         AliMUONPad* pad = cluster.Pad(j);
-        if ( pad->Status()==1 ) pad->SetStatus(-1);
-        if ( pad->Status()==-9) pad->SetStatus(-5);
+	if ( pad->Status()==1 ) pad->SetStatus(-2);
+	if ( pad->Status()==-9) pad->SetStatus(-5);
       }
       
       // Sort the clusters (move to the right the used ones)
@@ -947,7 +965,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       while (beg < end) 
       {
         if (clustNumb[beg] >= 0) { ++beg; continue; }
-        for (Int_t j=end; j>beg; --j) 
+        for (Int_t j = end; j > beg; --j) 
         {
           if (clustNumb[j] < 0) continue;
           end = j - 1;
@@ -963,10 +981,10 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       if (nCoupled > 3) 
       {
         // Remove couplings of used clusters
-        for (Int_t iclust=nCoupled; iclust<nCoupled+nForFit;++ iclust) 
+        for (Int_t iclust = nCoupled; iclust < nCoupled+nForFit; ++iclust) 
         {
           indx = clustNumb[iclust] + 999;
-          for (Int_t iclust1=0; iclust1<nCoupled; ++iclust1) 
+          for (Int_t iclust1 = 0; iclust1 < nCoupled; ++iclust1) 
           {
             indx1 = clustNumb[iclust1];
             aijcluclu(indx,indx1) = aijcluclu(indx1,indx) = 0;
@@ -975,15 +993,15 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
         
         // Update the remaining clusters couplings (exclude couplings from 
         // the used pads)
-        for (Int_t j=0; j<npad; ++j) 
+        for (Int_t j = 0; j < npad; ++j) 
         {
           AliMUONPad* pad = cluster.Pad(j);
-          if ( pad->Status() != -1) continue;
+          if ( pad->Status() != -2) continue;
           for (Int_t iclust=0; iclust<nCoupled; ++iclust) 
           {
             indx = clustNumb[iclust];
             if (aijclupad(indx,j) < fgkCouplMin) continue;
-            for (Int_t iclust1=iclust+1; iclust1<nCoupled; ++iclust1) 
+            for (Int_t iclust1 = iclust+1; iclust1 < nCoupled; ++iclust1) 
             {
               indx1 = clustNumb[iclust1];
               if (aijclupad(indx1,j) < fgkCouplMin) continue;
@@ -999,17 +1017,14 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
     } // while (nCoupled > 0)
   } // for (Int_t igroup=0; igroup<nclust;
   
-  for (Int_t iclust=0; iclust<nclust; iclust++)
+  for (Int_t iclust = 0; iclust < nclust; ++iclust)
   {
     pix = clusters[iclust]; 
     pix->Clear();
     delete pix; 
-    pix = 0;
   }
   delete [] clustNumb; 
-  clustNumb = 0; 
   delete [] used; 
-  used = 0;
 
 }
 
@@ -1027,13 +1042,13 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
   TObjArray *pix, *pix1;
   Double_t couplMax;
   
-  for (Int_t icl=0; icl<nForFit; ++icl) 
+  for (Int_t icl = 0; icl < nForFit; ++icl) 
   {
     indx = clustFit[icl];
     pix = clusters[indx];
     npxclu = pix->GetEntriesFast();
     couplMax = -1;
-    for (Int_t icl1=0; icl1<nCoupled; ++icl1) 
+    for (Int_t icl1 = 0; icl1 < nCoupled; ++icl1) 
     {
       indx1 = clustNumb[icl1];
       if (indx1 < 0) continue;
@@ -1047,14 +1062,14 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
     pix1 = clusters[imax];
     npxclu1 = pix1->GetEntriesFast();
     // Add pixels 
-    for (Int_t i=0; i<npxclu; ++i) 
+    for (Int_t i = 0; i < npxclu; ++i) 
     { 
       pix1->Add(pix->UncheckedAt(i)); 
       pix->RemoveAt(i); 
     }
     
     //Add cluster-to-cluster couplings
-    for (Int_t icl1=0; icl1<nCoupled; ++icl1) 
+    for (Int_t icl1 = 0; icl1 < nCoupled; ++icl1) 
     {
       indx1 = clustNumb[icl1];
       if (indx1 < 0 || indx1 == imax) continue;
@@ -1064,7 +1079,8 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
     aijcluclu(indx,imax) = aijcluclu(imax,indx) = 0;
     
     //Add cluster-to-pad couplings
-    for (Int_t j=0; j<cluster.Multiplicity(); ++j) 
+    Int_t mult = cluster.Multiplicity();
+    for (Int_t j = 0; j < mult; ++j) 
     {
       AliMUONPad* pad = cluster.Pad(j);
       if ( pad->Status() < 0 && pad->Status() != -5 ) continue;// exclude used pads
@@ -1086,25 +1102,25 @@ AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
   Int_t indx, indx1, indx2, indx3, nTot = 0;
   Double_t *coupl1 = 0, *coupl2 = 0, *coupl3 = 0;
   
-  for (Int_t i123=1; i123<=i123max; i123++) {
+  for (Int_t i123 = 1; i123 <= i123max; ++i123) {
     
     if (i123 == 1) {
       coupl1 = new Double_t [nCoupled];
-      for (Int_t i=0; i<nCoupled; i++) coupl1[i] = 0;
+      for (Int_t i = 0; i < nCoupled; ++i) coupl1[i] = 0;
     }
     else if (i123 == 2) {
       nTot = nCoupled*nCoupled;
       coupl2 = new Double_t [nTot];
-      for (Int_t i=0; i<nTot; i++) coupl2[i] = 9999;
+      for (Int_t i = 0; i < nTot; ++i) coupl2[i] = 9999;
     } else {
       nTot = nTot*nCoupled;
       coupl3 = new Double_t [nTot];
-      for (Int_t i=0; i<nTot; i++) coupl3[i] = 9999;
+      for (Int_t i = 0; i < nTot; ++i) coupl3[i] = 9999;
     } // else
     
-    for (Int_t i=0; i<nCoupled; i++) {
+    for (Int_t i = 0; i < nCoupled; ++i) {
       indx1 = clustNumb[i];
-      for (Int_t j=i+1; j<nCoupled; j++) {
+      for (Int_t j = i+1; j < nCoupled; ++j) {
         indx2 = clustNumb[j];
         if (i123 == 1) {
           coupl1[i] += aijcluclu(indx1,indx2);
@@ -1115,7 +1131,7 @@ AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
           coupl2[indx] = coupl1[i] + coupl1[j];
           coupl2[indx] -= 2 * (aijcluclu(indx1,indx2));
         } else {
-          for (Int_t k=j+1; k<nCoupled; k++) {
+          for (Int_t k = j+1; k < nCoupled; ++k) {
             indx3 = clustNumb[k];
             indx = i*nCoupled*nCoupled + j*nCoupled + k;
             coupl3[indx] = coupl2[i*nCoupled+j] + coupl1[k];
@@ -1130,12 +1146,12 @@ AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
   Double_t couplMin = 9999;
   Int_t locMin = 0;
   
-  for (Int_t i123=1; i123<=i123max; i123++) {
+  for (Int_t i123 = 1; i123 <= i123max; ++i123) {
     if (i123 == 1) {
       locMin = TMath::LocMin(nCoupled, coupl1);
       couplMin = coupl1[locMin];
       minGroup[0] = locMin;
-      delete [] coupl1; coupl1 = 0;
+      delete [] coupl1;
     } 
     else if (i123 == 2) {
       locMin = TMath::LocMin(nCoupled*nCoupled, coupl2);
@@ -1144,7 +1160,7 @@ AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
         minGroup[0] = locMin/nCoupled;
         minGroup[1] = locMin%nCoupled;
       }
-      delete [] coupl2; coupl2 = 0;
+      delete [] coupl2;
     } else {
       locMin = TMath::LocMin(nTot, coupl3);
       if (coupl3[locMin] < couplMin) {
@@ -1153,7 +1169,7 @@ AliMUONClusterSplitterMLEM::MinGroupCoupl(Int_t nCoupled, Int_t *clustNumb,
         minGroup[1] = locMin%(nCoupled*nCoupled)/nCoupled;
         minGroup[2] = locMin%nCoupled;
       }
-      delete [] coupl3; coupl3 = 0;
+      delete [] coupl3; 
     } // else
   } // for (Int_t i123=1;
   return couplMin;
@@ -1175,18 +1191,18 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
   if (nCoupled > 3) 
   {
     padpix = new Double_t[npad];
-    for (Int_t i=0; i<npad; i++) padpix[i] = 0; 
+    memset(padpix,0,npad*sizeof(Double_t));
   }
   
   Int_t nOK = 0, indx, indx1;
-  for (Int_t iclust=0; iclust<nForFit; ++iclust)
+  for (Int_t iclust = 0; iclust < nForFit; ++iclust)
   {
     indx = clustFit[iclust];
-    for (Int_t j=0; j<npad; j++) 
+    for (Int_t j = 0; j < npad; ++j) 
     {
       if ( aijclupad(indx,j) < fgkCouplMin) continue;
       AliMUONPad* pad = cluster.Pad(j);
-      if ( pad->Status() == -5 ) pad->SetStatus(-0); // flag overflow
+      if ( pad->Status() == -5 ) pad->SetStatus(-9); // flag overflow
       if ( pad->Status() < 0 ) continue; // exclude overflows and used pads
       if ( !pad->Status() ) 
       {
@@ -1196,7 +1212,7 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
       if (nCoupled > 3) 
       {
         // Check other clusters
-        for (Int_t iclust1=0; iclust1<nCoupled; ++iclust1) 
+        for (Int_t iclust1 = 0; iclust1 < nCoupled; ++iclust1) 
         {
           indx1 = clustNumb[iclust1];
           if (indx1 < 0) continue;
@@ -1209,7 +1225,7 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
   if (nCoupled < 4) return nOK;
   
   Double_t aaa = 0;
-  for (Int_t j=0; j<npad; ++j) 
+  for (Int_t j = 0; j < npad; ++j) 
   {
     if (padpix[j] < fgkCouplMin) continue;
     aaa += padpix[j];
@@ -1217,7 +1233,6 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
     nOK--;
   }
   delete [] padpix; 
-  padpix = 0;
   return nOK;
 }
 
@@ -1228,17 +1243,17 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
 {
   /// Subtract the fitted charges from pads with strong coupling
   
-  Int_t indx;
+  Int_t indx, mult = cluster.Multiplicity(), ibeg = fNpar/3;
   Double_t charge, coef=0;
   
-  for (Int_t j=0; j<cluster.Multiplicity(); ++j) 
+  for (Int_t j = 0; j < mult; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
     if ( pad->Status() != -1 ) continue;
     if (fNpar != 0) 
     {
       charge = 0;
-      for (Int_t i=fNpar/3; i>=0; --i) 
+      for (Int_t i = ibeg; i >= 0; --i) 
       { 
         // sum over tracks
         indx = i<2 ? 2*i : 2*i+1;
@@ -1248,7 +1263,7 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
         }
         else 
         {
-          coef = i==fNpar/3 ? par[indx+2] : 1-coef;
+          coef = i==ibeg ? par[indx+2] : 1-coef;
         }
         coef = TMath::Max (coef, 0.);
         if (fNpar == 8 && i < 2) 
@@ -1264,6 +1279,7 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
     
     if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(0); 
     // return pad for further using // FIXME: remove usage of zerosuppression here
+    else pad->SetStatus(-2); // do not use anymore
     
   } // for (Int_t j=0;
 }  

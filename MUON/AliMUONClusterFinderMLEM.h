@@ -63,6 +63,7 @@ private:
   void BuildPixArray(AliMUONCluster& cluster); 
   void BuildPixArrayOneCathode(AliMUONCluster& cluster); 
   void BuildPixArrayTwoCathodes(AliMUONCluster& cluster); 
+  void PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, AliMUONPad *pad);
 
   void RemovePixel(Int_t i);
   
@@ -98,7 +99,8 @@ private:
                            Double_t* coef, Double_t* probi);
   
   void CheckOverlaps();
-  
+  void AddBinSimple(TH2D *mlem, Int_t ic, Int_t jc);
+
 private:
     
   // Some constants
