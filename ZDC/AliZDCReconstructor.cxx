@@ -525,7 +525,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   clustersTree->SetBranchAddress("ZDC", &preco);
 
   clustersTree->GetEntry(0);
-  Double_t tZN1Ene[4], tZN2Ene[4];
+  /*Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
      tZN1Ene[i] = reco.GetZN1EnTow(i);
      tZN2Ene[i] = reco.GetZN2EnTow(i);
@@ -533,10 +533,10 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   esd->SetZDC(tZN1Ene, tZN2Ene, reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
-  
-  /*esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
+  */
+  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
-	      reco.GetNPartLeft());*/
+	      reco.GetNPartLeft());
   
   /*Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
