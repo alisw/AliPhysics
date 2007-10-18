@@ -96,7 +96,7 @@ AliAODRecoDecayHF2Prong &AliAODRecoDecayHF2Prong::operator=(const AliAODRecoDeca
       memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
     }
     if(source.fDCA) {
-      fDCA = new Float_t[GetNProngs()*(GetNProngs()-1)/2];
+      fDCA = new Double32_t[GetNProngs()*(GetNProngs()-1)/2];
       memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Float_t));
     }
   }
