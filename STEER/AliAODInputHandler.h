@@ -11,7 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliInputEventHandler.h"
-
+#include "AliAODEvent.h"
 
 class AliAODInputHandler : public AliInputEventHandler {
 
@@ -21,7 +21,9 @@ class AliAODInputHandler : public AliInputEventHandler {
     virtual ~AliAODInputHandler();
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent() {return kTRUE;}
-    private:
+    AliAODEvent         *GetEvent() const {return fEvent;}    
+ private:
+    AliAODEvent    *fEvent;   //! Pointer to the event 
     ClassDef(AliAODInputHandler, 1);
 };
 

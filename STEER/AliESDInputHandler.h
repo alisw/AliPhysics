@@ -11,7 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliInputEventHandler.h"
-
+#include "AliESDEvent.h"
 
 class AliESDInputHandler : public AliInputEventHandler {
 
@@ -21,7 +21,9 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual ~AliESDInputHandler();
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent();
+    AliESDEvent         *GetEvent() const {return fEvent;}
     private:
+    AliESDEvent    *fEvent;   //! Pointer to the event 
     ClassDef(AliESDInputHandler, 1);
 };
 
