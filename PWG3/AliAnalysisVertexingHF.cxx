@@ -54,10 +54,61 @@ fMinPtCut(0.),fMind0rphiCut(0.)
   SetBtoJPSICuts();
   SetDplusCuts();
 }
+//--------------------------------------------------------------------------
+AliAnalysisVertexingHF::AliAnalysisVertexingHF(const AliAnalysisVertexingHF &source) : 
+TNamed(source),
+fRecoPrimVtxSkippingTrks(source.fRecoPrimVtxSkippingTrks),
+fRmTrksFromPrimVtx(source.fRmTrksFromPrimVtx),
+fV1(source.fV1),
+fDebug(source.fDebug),
+fD0toKpi(source.fD0toKpi),
+fJPSItoEle(source.fJPSItoEle),
+f3Prong(source.f3Prong),
+f4Prong(source.f4Prong),
+fITSrefit(source.fITSrefit),
+fBothSPD(source.fBothSPD),
+fMinITSCls(source.fMinITSCls),
+fMinPtCut(source.fMinPtCut),
+fMind0rphiCut(source.fMind0rphiCut)
+{
+  //
+  // Copy constructor
+  //
+  for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
+  for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
+  for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
+}
+//--------------------------------------------------------------------------
+AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVertexingHF &source)
+{
+  //
+  // assignment operator
+  //
+  if(&source == this) return *this;
+  fRecoPrimVtxSkippingTrks = source.fRecoPrimVtxSkippingTrks;
+  fRmTrksFromPrimVtx = source.fRmTrksFromPrimVtx;
+  fV1 = source.fV1;
+  fDebug = source.fDebug;
+  fD0toKpi = source.fD0toKpi;
+  fJPSItoEle = source.fJPSItoEle;
+  f3Prong = source.f3Prong;
+  f4Prong = source.f4Prong;
+  fITSrefit = source.fITSrefit;
+  fBothSPD = source.fBothSPD;
+  fMinITSCls = source.fMinITSCls;
+  fMinPtCut = source.fMinPtCut;
+  fMind0rphiCut = source.fMind0rphiCut;
+
+  for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
+  for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
+  for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
+
+  return *this;
+}
 //----------------------------------------------------------------------------
 AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   // Destructor
-  if(fV1) delete fV1;
+  if(fV1) { delete fV1; fV1=0; }
 }
 //----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
@@ -553,7 +604,8 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   Double_t px[4],py[4],pz[4],d0[4],d0err[4];//d0z[3];
   //Float_t d0z0[2],covd0z0[3];
 
-  Double_t bfieldkG=(Double_t)esd->GetMagneticField();
+  Double_t bfieldkG=dcap1n1*dcap1n2*dcap2n1; // TO BE CHANGED (done just to removed compilation warning about dca... not used)
+  bfieldkG=(Double_t)esd->GetMagneticField();
 
   //charge
   Short_t charge=0;
