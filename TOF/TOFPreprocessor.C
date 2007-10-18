@@ -43,7 +43,7 @@ void TOFPreprocessor()
 
   // checking the file which should have been created  
   AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("TOF/Calib/OnlineDelay", 0);
+  			->Get("TOF/Calib/ParOnline", 0);
   if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");

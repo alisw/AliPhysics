@@ -284,7 +284,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  metaData.SetResponsible("Chiara Zampolli");
 	  metaData.SetComment("This preprocessor fills an AliTOFCal object.");
 	  AliInfo("Storing Calibration Data");
-	  resultDAQ = Store("Calib","OnlineDelay",fCal, &metaData);
+	  resultDAQ = Store("Calib","ParOnline",fCal, &metaData);
           if(!resultDAQ){
 	    Log("Some problems occurred while storing DAQ data processing results");
 	    return 8;//return error code for problems in storing DAQ data 

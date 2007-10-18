@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.16  2007/10/08 10:13:26  zampolli
+First Run and Last Run members added, infinite validity of calib obj implemented.
+
 Revision 1.15  2007/10/04 13:23:28  zampolli
 Updates to handle functionalities in TOF online/offline calibration according to the latest schema
 
@@ -238,7 +241,7 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun)
   SetFirstRun(minrun);
   SetLastRun(maxrun);
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "OnlineDelay" ;  // to be consistent with TOFPreprocessor
+  Char_t *sel1 = "ParOnline" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliDebug(2,Form("Writing TOF online calib obj on CDB with run range [%i, %i] ",fFirstRun,fLastRun));
@@ -257,7 +260,7 @@ void AliTOFcalib::WriteParOnlineOnCDB(Char_t *sel)
 {
   //Write calibration parameters to the CDB with infinite validity
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "OnlineDelay" ;  // to be consistent with TOFPreprocessor
+  Char_t *sel1 = "ParOnline" ;  // to be consistent with TOFPreprocessor
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   AliCDBRunRange runrange(fFirstRun,fLastRun);
@@ -314,7 +317,7 @@ Bool_t AliTOFcalib::ReadParOnlineFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read calibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-  Char_t *sel1 = "OnlineDelay" ;
+  Char_t *sel1 = "ParOnline" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   if (!man->Get(out,nrun)) { 
@@ -404,12 +407,12 @@ void AliTOFcalib::ReadSimParOnlineFromCDB(Char_t *sel, Int_t nrun)
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   if (!man->Get(out,nrun)) { 
-    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    AliFatal("Exiting, no CDB object (SimParOnline) found!!!");
     exit(0);  
   }
   AliCDBEntry *entry1 = man->Get(out,nrun);
   if(!entry1->GetObject()){
-    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    AliFatal("Exiting, no CDB object (SimParOnline) found!!!");
     exit(0);  
   }  
   TObjArray *cal =(TObjArray*)entry1->GetObject();
@@ -428,12 +431,12 @@ void AliTOFcalib::ReadSimParOfflineFromCDB(Char_t *sel, Int_t nrun)
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
   if (!man->Get(out,nrun)) { 
-    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    AliFatal("Exiting, no CDB object (SimParOffline) found!!!");
     exit(0);  
   }
   AliCDBEntry *entry1 = man->Get(out,nrun);
   if(!entry1->GetObject()){
-    AliFatal("Exiting, no CDB object (SimPar) found!!!");
+    AliFatal("Exiting, no CDB object (SimParOffline) found!!!");
     exit(0);  
   }  
   TObjArray *cal =(TObjArray*)entry1->GetObject();
