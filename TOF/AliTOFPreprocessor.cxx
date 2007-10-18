@@ -113,9 +113,9 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   // return=0 : all ok
   // return=1 : no DCS input data Map
   // return=2 : no DCS input data processing
-  // return=3 : no DCS processed data was stored
+  // return=3 : no DCS processed data was stored in Ref Data
   // return=4 : no DAQ input for Ref Data
-  // return=5 : failed to store Ref data
+  // return=5 : failed to store Ref Data
   // return=6 : failed to retrieve DAQ data for calibration 
   // return=7 : problems in histos in the input DAQ file 
   // return=8 : failed to store Online Delays
@@ -146,10 +146,11 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
       metaDataDCS.SetResponsible("Chiara Zampolli");
       metaDataDCS.SetComment("This preprocessor fills an AliTOFDataDCS object.");
       AliInfo("Storing DCS Data");
-      resultDCSStore = Store("Calib","DCSData",fData, &metaDataDCS);
+      resultDCSStore = StoreReferenceData("Calib","DCSData",fData, &metaDataDCS);
       if (!resultDCSStore){
-	Log("Some problems occurred while storing DCS data results in OCDB, TOF exiting from Shuttle");
+	Log("Some problems occurred while storing DCS data results in Reference Data, TOF exiting from Shuttle");
 	return 3;// return error Code for processed DCS data not stored 
+	         // in reference data
 	
       }
     }
