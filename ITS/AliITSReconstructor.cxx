@@ -159,10 +159,10 @@ AliTracker* AliITSReconstructor::CreateTracker() const
   }
   else{
     Info("FillESD","ITS default PID\n");
-    Double_t parITS[] = {0.15, 10.}; //PH positions of the MIP peak
+    Double_t parITS[] = {79.,0.13, 10.}; //IB: this is  "pp tuning"
     nc->fItsPID = new AliITSpidESD1(parITS);
   }
-
+ 
   return tracker;
   
 }

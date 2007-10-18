@@ -25,9 +25,10 @@ public:
   {AliError("Method should not be used!"); return 0;}
 
 private:
+  Double_t fMIP;          // dE/dx for MIP (relative units)
   Double_t fRes;          // relative dEdx resolution
   Double_t fRange;        // one particle type PID range (in sigmas)
-  ClassDef(AliITSpidESD1,2)   // ITS PID class
+  ClassDef(AliITSpidESD1,3)   // ITS PID class
 };
 
 #endif
