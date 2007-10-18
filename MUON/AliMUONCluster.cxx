@@ -290,15 +290,18 @@ AliMUONCluster::Area(Int_t cathode) const
   TVector2 lowerLeft(1E9,1E9);
   TVector2 upperRight(-1E9,-1E9);
   
-  for ( Int_t i = 0; i < Multiplicity(cathode); ++i )
+  for ( Int_t i = 0; i < Multiplicity(); ++i )
   {
     AliMUONPad* pad = Pad(i);
-    TVector2 ll = pad->Position() - pad->Dimensions();
-    TVector2 ur = pad->Position() + pad->Dimensions();
-    lowerLeft.Set( TMath::Min(ll.X(),lowerLeft.X()),
-                   TMath::Min(ll.Y(),lowerLeft.Y()) );
-    upperRight.Set( TMath::Max(ur.X(),upperRight.X()),
-                    TMath::Max(ur.Y(),upperRight.Y()) );
+    if ( pad->Cathode() == cathode ) 
+    {
+      TVector2 ll = pad->Position() - pad->Dimensions();
+      TVector2 ur = pad->Position() + pad->Dimensions();
+      lowerLeft.Set( TMath::Min(ll.X(),lowerLeft.X()),
+                     TMath::Min(ll.Y(),lowerLeft.Y()) );
+      upperRight.Set( TMath::Max(ur.X(),upperRight.X()),
+                      TMath::Max(ur.Y(),upperRight.Y()) );
+    }
   }
   
   // then construct the area from those limits
