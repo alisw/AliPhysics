@@ -156,6 +156,7 @@ Bool_t AliAODRecoDecayHF4Prong::SelectD0(const Double_t *cuts,Int_t &okD0,Int_t 
 // If candidate D0 does not pass the cuts return kFALSE
 //
 
+  okD0=0; okD0bar=0;
   Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t mD0=InvMassD0();
   if(TMath::Abs(mD0-mD0PDG)>cuts[0]) return kFALSE;

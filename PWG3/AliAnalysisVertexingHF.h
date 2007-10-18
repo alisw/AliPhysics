@@ -24,6 +24,8 @@ class AliAnalysisVertexingHF : public TNamed {
  public:
   //
   AliAnalysisVertexingHF();
+  AliAnalysisVertexingHF(const AliAnalysisVertexingHF& source);
+  AliAnalysisVertexingHF& operator=(const AliAnalysisVertexingHF& source); 
   virtual ~AliAnalysisVertexingHF();
 
   void FindCandidates(AliESDEvent *esd,TTree treeout[]);
