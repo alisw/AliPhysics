@@ -333,7 +333,7 @@ void AliHALLv3::CreateGeometry()
   //
   // Transverse bars
   ys += dy;
-  dy = 126.46/2.;
+  dy = 91.32/2.;
   ys += dy;
   TGeoVolume* voFmsMfTb1 = new TGeoVolume("FmsMfTb1", new TGeoBBox(330., dy,  90.), kMedCC);
   asFMS->AddNode(voFmsMfTb1, 1, new TGeoTranslation(0., ys, zFil));

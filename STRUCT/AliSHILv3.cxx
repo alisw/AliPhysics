@@ -1284,38 +1284,50 @@ void AliSHILv3::CreateGeometry()
 //
       Float_t zoDipole = 1249.;
       
-      TGeoPcon* shYOUT2 = new TGeoPcon(0., 360., 14);
+      TGeoPcon* shYOUT21 = new TGeoPcon(0., 360., 14);
       z =  zoDipole;
-      shYOUT2->DefineSection(0, z,             rOuSaa1String,       252.);
+      shYOUT21->DefineSection(0, z,             rOuSaa1String,       375.);
 //    Start of SAA1-SAA2
       z = ziSaa1Saa2;
-      shYOUT2->DefineSection(1, z,             rOuSaa1String,       252.);
-      shYOUT2->DefineSection(2, z,             rOuSaa1Saa2Steel,    252.);
+      shYOUT21->DefineSection(1, z,             rOuSaa1String,       375.);
+      shYOUT21->DefineSection(2, z,             rOuSaa1Saa2Steel,    375.);
 //    End of SAA1-SAA2
       z = ziSaa2;
-      shYOUT2->DefineSection(3, z,             rOuSaa1Saa2Steel,    252.);
+      shYOUT21->DefineSection(3, z,             rOuSaa1Saa2Steel,    375.);
 //    SAA2
-      shYOUT2->DefineSection( 4, z,            rInSaa2StEnv1 + dSt, 252.);
+      shYOUT21->DefineSection( 4, z,            rInSaa2StEnv1 + dSt, 375.);
       z = ziSaa2 + zSaa2PbRing;
-      shYOUT2->DefineSection( 5, z,            rInSaa2StEnv1 + dSt, 252.);
+      shYOUT21->DefineSection( 5, z,            rInSaa2StEnv1 + dSt, 375.);
 //    Pb Cone
-      shYOUT2->DefineSection( 6, z,            rOuSaa2PbRingF,      252.);
+      shYOUT21->DefineSection( 6, z,            rOuSaa2PbRingF,      375.);
       rmin = rOuSaa2PbRingF + (1380. - z) * TMath::Tan(1.6 * kDegRad);
-      shYOUT2->DefineSection( 7, 1380., rmin, 252.);
-      shYOUT2->DefineSection( 8, 1380., rmin, 304.);
+      shYOUT21->DefineSection( 7, 1380., rmin, 375.);
+      shYOUT21->DefineSection( 8, 1380., rmin, 375.);
       z = ziSaa2 + zSaa2PbRing + dzSaa2PbRing;
-      shYOUT2->DefineSection( 9, z,            rOuSaa2PbRingR,      304.);
+      shYOUT21->DefineSection( 9, z,            rOuSaa2PbRingR,      375.);
 //    Straight Sections
-      shYOUT2->DefineSection(10, z,            rInSaa2StEnv1 + dSt, 460.);
+      shYOUT21->DefineSection(10, z,            rInSaa2StEnv1 + dSt, 460.);
       z = ziSaa2 + dzSaa2StEnv1;
-      shYOUT2->DefineSection(11, z,            rInSaa2StEnv1 + dSt, 460.);
-      shYOUT2->DefineSection(12, z,            rInSaa2StEnv2 + dSt, 460.);
+      shYOUT21->DefineSection(11, z,            rInSaa2StEnv1 + dSt, 460.);
+      shYOUT21->DefineSection(12, z,            rInSaa2StEnv2 + dSt, 460.);
       z += dzSaa2StEnv2;
-      shYOUT2->DefineSection(13, z,            rInSaa2StEnv2 + dSt, 460.);
+      shYOUT21->DefineSection(13, z,            rInSaa2StEnv2 + dSt, 460.);
+            
+      InvertPcon(shYOUT21);
+      shYOUT21->SetName("shYOUT21");
+
+      TGeoBBox* shYOUT22 = new TGeoBBox(460. , 200., 65.);
+      shYOUT22->SetName("shYOUT22");
       
-      InvertPcon(shYOUT2);
+      TGeoTranslation* tYOUT22 = new TGeoTranslation(0., -310. - 200., -zcFilter);
+      tYOUT22->SetName("tYOUT22");
+      tYOUT22->RegisterYourself();
+      
+
+      TGeoCompositeShape* shYOUT2 = new TGeoCompositeShape("shYOUT2", "shYOUT21-shYOUT22:tYOUT22");
+      
       TGeoVolume* voYOUT2 = new TGeoVolume("YOUT2", shYOUT2, kMedAirMu);
-      voYOUT2->SetVisibility(0);
+      voYOUT2->SetVisibility(1);
       voYOUT2->AddNode(voMuonFilter, 1, new TGeoCombiTrans(0., dzMuonFilter * TMath::Tan(alhc * kDegrad), -zcFilter, rotxzlhc));
       top->AddNode(voYOUT2, 1, gGeoIdentity);
 }
