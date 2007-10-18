@@ -45,6 +45,8 @@
 #pragma link C++ class AliMUONVTriggerTrackStore+;
 #pragma link C++ class AliMUONTriggerTrackStoreV1+;
 
+#pragma link C++ class AliMUONRecoParam+;
+
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
 #pragma link C++ class AliMUONPadStatusMaker+;

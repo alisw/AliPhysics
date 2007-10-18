@@ -38,6 +38,8 @@ class AliMUONVTrackStore;
 
 class AliMUONTriggerChamberEff;
 
+class AliMUONRecoParam;
+
 class AliMUONReconstructor : public AliReconstructor
 {
 public:
@@ -53,7 +55,11 @@ public:
   virtual void Reconstruct(TTree* digitsTree, TTree* clustersTree) const;
   
   virtual AliTracker* CreateTracker() const;
-    
+  
+  static void SetRecoParam(AliMUONRecoParam *param);
+  /// return reconstruction parametres
+  static const AliMUONRecoParam* GetRecoParam() {return fgRecoParam;}
+  
 private:
   /// Not implemented
   AliMUONReconstructor(const AliMUONReconstructor&);
@@ -92,6 +98,8 @@ private:
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONTriggerChamberEff* fTrigChamberEff; //!< pointer to trigger chamber efficiency class
+  
+  static AliMUONRecoParam* fgRecoParam; //!< parameters used to tune the MUON reconstruction
   
   ClassDef(AliMUONReconstructor,3) // Implementation of AliReconstructor
 };

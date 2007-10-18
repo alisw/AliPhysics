@@ -19,19 +19,25 @@
 // By Laurent Aphecetche
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliMUONReconstructor.h"
+#include "AliMUONRecoParam.h"
 #include "AliCDBManager.h"
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
 #include "AliReconstruction.h"
 #include <TRandom.h>
+//#include <TObjectTable.h>
 #endif
 
 void runReconstruction(int run, int seed, const char* input, const char* recoptions)
 { 
   AliCDBManager::Instance()->SetRun(run);
+  
   gRandom->SetSeed(seed);
+  
   AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
   AliTracker::SetFieldMap(field, kFALSE);
+  
   AliReconstruction* MuonRec = new AliReconstruction("galice.root");
   MuonRec->SetInput(input);
   MuonRec->SetRunVertexFinder(kFALSE);
@@ -43,8 +49,15 @@ void runReconstruction(int run, int seed, const char* input, const char* recopti
   MuonRec->SetOption("MUON",recoptions);
   //  MuonRec->SetEventRange(319,319);
   MuonRec->SetWriteAOD();
+  
+  AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  AliMUONReconstructor::SetRecoParam(muonRecoParam);
+  muonRecoParam->Print("FULL");
+  
   MuonRec->Run();
+  
   delete MuonRec;
+  
   //gObjectTable->Print();
 }
 

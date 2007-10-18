@@ -35,11 +35,6 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
 
  private:
   
-  // Parameters for track reconstruction
-  static const Bool_t fgkRunSmoother; ///< kTRUE to run the smoother
-  
-  
-  // Functions
   /// Not implemented copy constructor
   AliMUONTrackReconstructorK (const AliMUONTrackReconstructorK& rhs); 
   /// Not implemented copy assignment operator

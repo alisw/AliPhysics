@@ -41,8 +41,11 @@
 ///   previous station.
 /// - *fgkImproveTracks* : if this flag is set to 'true', we try to improve the quality
 ///   of the tracks at the end of the tracking by removing clusters that do not pass
-///   new quality cut (within the limit that we must keep at least one cluster per
-///   the station).
+///   new quality cut (the track is removed is it does not contain enough cluster anymore).
+/// - *fgkComplementTracks* : if this flag is set to 'true', we try to improve the quality
+///   of the tracks at the end of the tracking by adding potentially missing clusters
+///   (we may have 2 clusters in the same chamber because of the overlapping of detection
+///   elements, which is not handle by the tracking algorithm).
 /// - *fgkSigmaToCutForImprovement* : quality cut used when we try to improve the
 ///   quality of the tracks.
 ///
@@ -83,29 +86,9 @@
 ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 /// \endcond
 
-
-//************* Defaults parameters for reconstruction
-const Double_t AliMUONVTrackReconstructor::fgkDefaultMinBendingMomentum = 3.0;
-const Double_t AliMUONVTrackReconstructor::fgkDefaultMaxBendingMomentum = 3000.0;
-const Double_t AliMUONVTrackReconstructor::fgkDefaultMaxNormChi2MatchTrigger = 16.0;
-const Double_t AliMUONVTrackReconstructor::fgkMaxTrackingDistanceBending    = 2.;
-const Double_t AliMUONVTrackReconstructor::fgkMaxTrackingDistanceNonBending = 2.;
-
-const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForTracking = 6.0;
-const Bool_t   AliMUONVTrackReconstructor::fgkMakeTrackCandidatesFast = kFALSE;
-const Bool_t   AliMUONVTrackReconstructor::fgkTrackAllTracks = kTRUE;
-const Bool_t   AliMUONVTrackReconstructor::fgkRecoverTracks = kTRUE;
-const Bool_t   AliMUONVTrackReconstructor::fgkComplementTracks = kTRUE;
-const Bool_t   AliMUONVTrackReconstructor::fgkImproveTracks = kTRUE;
-const Double_t AliMUONVTrackReconstructor::fgkSigmaToCutForImprovement = 5.0;
-
-
   //__________________________________________________________________________
 AliMUONVTrackReconstructor::AliMUONVTrackReconstructor()
   : TObject(),
-    fMinBendingMomentum(fgkDefaultMinBendingMomentum),
-    fMaxBendingMomentum(fgkDefaultMaxBendingMomentum),
-    fMaxNormChi2MatchTrigger(fgkDefaultMaxNormChi2MatchTrigger),
     fHitsForRecPtr(0x0),
     fNHitsForRec(0),
     fNHitsForRecPerChamber(0x0),
@@ -279,9 +262,9 @@ void AliMUONVTrackReconstructor::MakeTracks()
   // Follow tracks in stations(1..) 3, 2 and 1
   FollowTracks();
   // Complement the reconstructed tracks
-  if (fgkComplementTracks) ComplementTracks();
+  if (AliMUONReconstructor::GetRecoParam()->ComplementTracks()) ComplementTracks();
   // Improve the reconstructed tracks
-  if (fgkImproveTracks) ImproveTracks();
+  if (AliMUONReconstructor::GetRecoParam()->ImproveTracks()) ImproveTracks();
   // Remove double tracks
   RemoveDoubleTracks();
   // Fill AliMUONTrack data members
@@ -335,7 +318,8 @@ TClonesArray* AliMUONVTrackReconstructor::MakeSegmentsInStation(Int_t station)
         continue;
       }   
       // check for bending momentum within tolerances
-      if ((bendingMomentum < fMaxBendingMomentum) && (bendingMomentum > fMinBendingMomentum)) 
+      if ((bendingMomentum < AliMUONReconstructor::GetRecoParam()->GetMaxBendingMomentum()) &&
+	  (bendingMomentum > AliMUONReconstructor::GetRecoParam()->GetMinBendingMomentum())) 
       {
         // make new segment
         segment = new ((*segments)[segments->GetLast()+1]) AliMUONObjectPair(hit1Ptr, hit2Ptr, kFALSE, kFALSE);
@@ -492,7 +476,8 @@ Bool_t AliMUONVTrackReconstructor::TryOneHitForRecFast(const AliMUONTrackParam &
   Double_t dX = hitForRec->GetNonBendingCoor() - (trackParam.GetNonBendingCoor() + trackParam.GetNonBendingSlope() * dZ);
   Double_t dY = hitForRec->GetBendingCoor() - (trackParam.GetBendingCoor() + trackParam.GetBendingSlope() * dZ);
   
-  if (TMath::Abs(dX) > fgkMaxTrackingDistanceNonBending || TMath::Abs(dY) > fgkMaxTrackingDistanceBending) return kFALSE;
+  if (TMath::Abs(dX) > AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() ||
+      TMath::Abs(dY) > AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack()) return kFALSE;
   
   return kTRUE;
   
@@ -567,8 +552,10 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   
   Double_t chi2WithOneHitForRec = 1.e10;
   Double_t chi2WithTwoHitForRec = 1.e10;
-  Double_t maxChi2WithOneHitForRec = 2. * fgkSigmaToCutForTracking * fgkSigmaToCutForTracking; // 2 because 2 quantities in chi2
-  Double_t maxChi2WithTwoHitForRec = 4. * fgkSigmaToCutForTracking * fgkSigmaToCutForTracking; // 4 because 4 quantities in chi2
+  Double_t maxChi2WithOneHitForRec = 2. * AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() *
+                                          AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking(); // 2 because 2 quantities in chi2
+  Double_t maxChi2WithTwoHitForRec = 4. * AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking() *
+					  AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTracking(); // 4 because 4 quantities in chi2
   Double_t bestChi2WithOneHitForRec = maxChi2WithOneHitForRec;
   Double_t bestChi2WithTwoHitForRec = maxChi2WithTwoHitForRec;
   Bool_t foundOneHit = kFALSE;
@@ -641,7 +628,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
 	  	 << " (Chi2 = " << chi2WithTwoHitForRec << ")" << endl;
 	  }
 	  
-	  if (fgkTrackAllTracks) {
+	  if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
 	    // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new hitForRec's
             newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(trackCandidate);
 	    extrapTrackParamAtHit1.SetRemovable(kTRUE);
@@ -675,7 +662,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
       if (!foundSecondHit) {
 	foundOneHit = kTRUE;
         
-	if (fgkTrackAllTracks) {
+	if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
 	  // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new hitForRec's
           newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(trackCandidate);
 	  extrapTrackParamAtHit2.SetRemovable(kFALSE);
@@ -703,7 +690,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   
   // look for candidates in chamber 1 not already attached to a track
   // if we want to keep all possible tracks or if no good couple of hitForRec has been found
-  if (fgkTrackAllTracks || !foundTwoHits) {
+  if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks() || !foundTwoHits) {
     
     // Printout for debuging
     if ((AliLog::GetDebugLevel("MUON","AliMUONVTrackReconstructor") >= 1) || (AliLog::GetGlobalDebugLevel() >= 1)) {
@@ -741,7 +728,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   	       << " (Chi2 = " << chi2WithOneHitForRec << ")" << endl;
   	}
 	
-	if (fgkTrackAllTracks) {
+	if (AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
 	  // copy trackCandidate into a new track put at the end of fRecTracksPtr and add the new hitForRec's
   	  newTrack = new ((*fRecTracksPtr)[fRecTracksPtr->GetLast()+1]) AliMUONTrack(trackCandidate);
 	  extrapTrackParamAtHit1.SetRemovable(kFALSE);
@@ -768,7 +755,7 @@ Bool_t AliMUONVTrackReconstructor::FollowLinearTrackInStation(AliMUONTrack &trac
   }
   
   // fill out the best track if required else clean up the fRecTracksPtr array
-  if (!fgkTrackAllTracks) {
+  if (!AliMUONReconstructor::GetRecoParam()->TrackAllTracks()) {
     if (foundTwoHits) {
       bestTrackParamAtHit1.SetRemovable(kTRUE);
       trackCandidate.AddTrackParamAtHit(&bestTrackParamAtHit1,bestTrackParamAtHit1.GetHitForRecPtr());
@@ -859,10 +846,10 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
       chi2 = 0.;
       for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
       chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
-      if (chi2 < fMaxNormChi2MatchTrigger) 
+      if (chi2 < AliMUONReconstructor::GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
       {
         Bool_t isDoubleTrack = (TMath::Abs(chi2 - minChi2MatchTrigger)<1.);
-        if (chi2 < minChi2MatchTrigger && chi2 < fMaxNormChi2MatchTrigger) 
+        if (chi2 < minChi2MatchTrigger && chi2 < AliMUONReconstructor::GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
         {
           if(isDoubleTrack)
           {

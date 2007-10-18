@@ -36,7 +36,8 @@ SRCS:= AliMUONClusterReconstructor.cxx \
        AliMUONClusterStoreV2.cxx \
        AliMUONClusterStoreV2Iterator.cxx \
        AliMUONVTrackStore.cxx \
-       AliMUONTrackStoreV1.cxx
+       AliMUONTrackStoreV1.cxx \
+       AliMUONRecoParam.cxx
        
 HDRS:= $(SRCS:.cxx=.h)
 

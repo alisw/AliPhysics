@@ -28,6 +28,8 @@
 
 #include "AliMUONTracker.h"
 
+#include "AliMUONReconstructor.h"
+#include "AliMUONRecoParam.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackHitPattern.h"
@@ -72,9 +74,7 @@ AliMUONTracker::AliMUONTracker(const AliMUONDigitMaker* digitMaker,
 {
   /// constructor
   if (fTransformer && fDigitMaker)
-  {
     fTrackHitPatternMaker = new AliMUONTrackHitPattern(*fTransformer,*fDigitMaker);
-  }
 }
 
 //_____________________________________________________________________________
@@ -88,8 +88,7 @@ AliMUONTracker::~AliMUONTracker()
 }
 
 //_____________________________________________________________________________
-Int_t 
-AliMUONTracker::LoadClusters(TTree* clustersTree)
+Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
 {
   /// Load clusterStore and triggerStore from clustersTree
   delete fClusterStore;
@@ -123,54 +122,51 @@ AliMUONTracker::LoadClusters(TTree* clustersTree)
 }
 
 //_____________________________________________________________________________
-Int_t
-AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
+Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 {
-  /// Performs the tracking and store the resulting tracks in
-  /// the ESD
+  /// Performs the tracking and store the resulting tracks in the ESD
+  AliDebug(1,"");
+  AliCodeTimerAuto("")
   
-  if (!fClusterStore)
-  {
+  if (!fTrackReco) CreateTrackReconstructor();
+  
+  // if the required tracking mode does not exist
+  if  (!fTrackReco) return 1;
+  
+  if (!fClusterStore) {
     AliError("ClusterStore is NULL");
     return 2;
   }
   
-  if (!fTriggerStore)
-  {
+  if (!fTriggerStore) {
     AliError("TriggerStore is NULL");
     return 3;
   }
   
-  AliMUONVTrackStore* trackStore(0x0);
-  AliMUONVTriggerTrackStore* triggerTrackStore(0x0);
-  
   // Make tracker tracks
-  if ( fClusterStore ) 
-  {
-    trackStore = new AliMUONTrackStoreV1;
-    Bool_t alone = ( ( fTriggerStore && fTriggerCircuit ) ? kFALSE : kTRUE );
-    fTrackReco->EventReconstruct(*fClusterStore,*trackStore);
-  }
+  AliMUONVTrackStore* trackStore = new AliMUONTrackStoreV1;
+  fTrackReco->EventReconstruct(*fClusterStore,*trackStore);
   
-  if ( fTriggerStore && fTriggerCircuit )
-  {
-    // Make trigger tracks
+  // Make trigger tracks
+  AliMUONVTriggerTrackStore* triggerTrackStore(0x0);
+  if ( fTriggerCircuit ) {
     triggerTrackStore = new AliMUONTriggerTrackStoreV1;
-    Bool_t alone = ( fClusterStore ? kFALSE : kTRUE );
     fTrackReco->EventReconstructTrigger(*fTriggerCircuit,*fTriggerStore,*triggerTrackStore);
   }
 
-  if ( trackStore && triggerTrackStore && fTriggerStore && fTrackHitPatternMaker )
-  {
+  // Match tracker/trigger tracks
+  if ( triggerTrackStore && fTrackHitPatternMaker ) {
     fTrackReco->ValidateTracksWithTrigger(*trackStore,*triggerTrackStore,*fTriggerStore,*fTrackHitPatternMaker);
   }
   
-  if( trackStore && triggerTrackStore && fTriggerStore && fTrigChamberEff){
+  // Compute trigger chamber efficiency
+  if( triggerTrackStore && fTrigChamberEff){
       AliCodeTimerStart("EventChamberEff");
       fTrigChamberEff->EventChamberEff(*fTriggerStore,*triggerTrackStore,*trackStore);
       AliCodeTimerStop("EventChamberEff");
   }
-
+  
+  // Fill ESD
   FillESD(*trackStore,esd);
   
   // cleanup
@@ -181,8 +177,7 @@ AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 }
 
 //_____________________________________________________________________________
-void 
-AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
+void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
 {
   /// Fill the ESD from the trackStore
   AliDebug(1,"");
@@ -237,23 +232,32 @@ AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) const
 }
 
 //_____________________________________________________________________________
-void AliMUONTracker::SetOption(Option_t* option)
+void AliMUONTracker::CreateTrackReconstructor()
 {
-  /// set reconstructor class
+  /// Create track reconstructor, depending on tracking mode set in RecoParam
   
-  if (strstr(option,"Original")) 
+  TString opt(AliMUONReconstructor::GetRecoParam()->GetTrackingMode());
+  opt.ToUpper();
+  
+  if (strstr(opt,"ORIGINAL"))
   {
-    fTrackReco = new AliMUONTrackReconstructor;
+    fTrackReco = new AliMUONTrackReconstructor();
   }
-  else 
+  else if (strstr(opt,"KALMAN"))
   {
     fTrackReco = new AliMUONTrackReconstructorK();
   }
+  else
+  {
+    AliError(Form("tracking mode \"%s\" does not exist",opt.Data()));
+    return;
+  }
+  
+  AliInfo(Form("Will use %s for tracking",fTrackReco->ClassName()));
 }
 
 //_____________________________________________________________________________
-void 
-AliMUONTracker::UnloadClusters()
+void AliMUONTracker::UnloadClusters()
 {
   /// Delete internal clusterStore
   delete fClusterStore;

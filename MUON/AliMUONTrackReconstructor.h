@@ -36,12 +36,6 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor
 
  private:
   
-  // Parameters for track reconstruction
-  static const Double_t fgkBendingVertexDispersion; ///< Vertex dispersion (cm) in bending plane for reconstruction
-  static const Double_t fgkNonBendingVertexDispersion; ///< Vertex dispersion (cm) in non bending plane for reconstruction
-  
-  
-  // Functions
   /// Not implemented copy constructor
   AliMUONTrackReconstructor (const AliMUONTrackReconstructor& rhs); 
   /// Not implemented copy assignment operator

@@ -84,6 +84,7 @@
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVClusterFinder.h"
+#include "AliMUONRecoParam.h"
 #include "AliMpCDB.h"
 #include "AliRawReader.h"
 #include "AliCodeTimer.h"
@@ -95,6 +96,8 @@
 /// \cond CLASSIMP
 ClassImp(AliMUONReconstructor)
 /// \endcond 
+
+AliMUONRecoParam* AliMUONReconstructor::fgRecoParam = 0x0; // reconstruction parameters
 
 //_____________________________________________________________________________
 AliMUONReconstructor::AliMUONReconstructor() : 
@@ -122,6 +125,11 @@ fTrigChamberEff(0x0)
   // Load geometry data
   fTransformer->LoadGeometryData();
   
+  // initialize reconstruction parameters in not already done
+  if (!fgRecoParam) {
+    AliWarning("Reconstruction parameters not initialized - Use default one");
+    fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
+  }
   
 }
 
@@ -144,6 +152,20 @@ AliMUONReconstructor::~AliMUONReconstructor()
 }
 
 //_____________________________________________________________________________
+void AliMUONReconstructor::SetRecoParam(AliMUONRecoParam *param)
+{
+  /// set reconstruction parameters
+  
+  // remove existing parameters
+  if (fgRecoParam) {
+    cout<<"AliMUONReconstructor::SetRecoParam: Reconstruction parameters already initialized - overwrite them"<<endl;
+    delete fgRecoParam;
+  }
+  
+  fgRecoParam = param;
+}
+
+//_____________________________________________________________________________
 void
 AliMUONReconstructor::Calibrate(AliMUONVDigitStore& digitStore) const
 {
@@ -163,14 +185,14 @@ AliMUONReconstructor::Clusterize(const AliMUONVDigitStore& digitStore,
 {
   /// Creates clusters from digits.
 
-  TString sopt(GetOption());
+  TString sopt(fgRecoParam->GetClusteringMode());
   sopt.ToUpper();
   if ( sopt.Contains("NOCLUSTERING") ) return;
   
-  if  (!fClusterReconstructor)
-  {
-    CreateClusterReconstructor();
-  }
+  if  (!fClusterReconstructor) CreateClusterReconstructor();
+  
+  // if the required clustering mode does not exist
+  if  (!fClusterReconstructor) return;
   
   AliCodeTimerAuto(Form("%s::Digits2Clusters(const AliMUONVDigitStore&,AliMUONVClusterStore&)",
                         fClusterReconstructor->ClassName()))
@@ -289,14 +311,12 @@ AliTracker*
 AliMUONReconstructor::CreateTracker() const
 {
   /// Create the MUONTracker object
-  /// The MUONTracker is passed the GetOption(), i.e. our own options
   
   CreateTriggerCircuit();
   CreateDigitMaker();
   CreateTriggerChamberEff();
   
   AliMUONTracker* tracker = new AliMUONTracker(fDigitMaker,fTransformer,fTriggerCircuit,fTrigChamberEff);
-  tracker->SetOption(GetOption());
   
   return tracker;
 }
@@ -305,7 +325,7 @@ AliMUONReconstructor::CreateTracker() const
 void
 AliMUONReconstructor::CreateClusterReconstructor() const
 {
-  /// Create cluster reconstructor, depending on GetOption()
+  /// Create cluster reconstructor, depending on clustering mode set in RecoParam
   
   AliCodeTimerAuto("")
 
@@ -313,7 +333,7 @@ AliMUONReconstructor::CreateClusterReconstructor() const
   
   AliMUONVClusterFinder* clusterFinder(0x0);
   
-  TString opt(GetOption());
+  TString opt(fgRecoParam->GetClusteringMode());
   opt.ToUpper();
   
   if ( strstr(opt,"PRECLUSTERV2") )
@@ -358,14 +378,11 @@ AliMUONReconstructor::CreateClusterReconstructor() const
   } 
   else
   {
-    // default is currently MLEM
-    clusterFinder = new AliMUONClusterFinderMLEM(kFALSE,new AliMUONPreClusterFinder);
+    AliError(Form("clustering mode \"%s\" does not exist",opt.Data()));
+    return;
   }
   
-  if ( clusterFinder ) 
-  {
-    AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
-  }
+  AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
   
   fClusterReconstructor = new AliMUONClusterReconstructor(clusterFinder,fTransformer);
 }
