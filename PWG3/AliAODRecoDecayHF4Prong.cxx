@@ -58,7 +58,7 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
   //
   // Constructor with AliAODVertex for decay vertex
   //
-  Float_t dcafloat[6];
+  Double_t dcafloat[6];
   for(Int_t i=0;i<6;i++) dcafloat[i]=dca[i];
   SetDCAs(6,dcafloat);
 }
@@ -79,7 +79,7 @@ AliAODRecoDecayHF4Prong::AliAODRecoDecayHF4Prong(AliAODVertex *vtx2,
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
   //
-  Float_t dcafloat[6];
+  Double_t dcafloat[6];
   for(Int_t i=0;i<6;i++) dcafloat[i]=dca[i];
   SetDCAs(6,dcafloat);
 }
@@ -134,7 +134,7 @@ AliAODRecoDecayHF4Prong &AliAODRecoDecayHF4Prong::operator=(const AliAODRecoDeca
       memcpy(fPID,source.fPID,GetNProngs()*sizeof(Double_t));
     }
     if(source.fDCA) {
-      fDCA = new Float_t[GetNProngs()*(GetNProngs()-1)/2];
+      fDCA = new Double32_t[GetNProngs()*(GetNProngs()-1)/2];
       memcpy(fDCA,source.fDCA,(GetNProngs()*(GetNProngs()-1)/2)*sizeof(Float_t));
     }
   }
