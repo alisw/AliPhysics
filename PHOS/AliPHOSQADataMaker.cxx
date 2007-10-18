@@ -224,7 +224,7 @@ void AliPHOSQADataMaker::MakeESDs(AliESDEvent * esd)
 //____________________________________________________________________________
 void AliPHOSQADataMaker::MakeHits(TClonesArray * hits)
 {
-  //make QA data from Hits
+	//make QA data from Hits
 
     GetHitsData(1)->Fill(hits->GetEntriesFast()) ; 
     TIter next(hits) ; 
@@ -233,6 +233,35 @@ void AliPHOSQADataMaker::MakeHits(TClonesArray * hits)
       GetHitsData(0)->Fill( hit->GetEnergy()) ;
     }
 }
+
+//____________________________________________________________________________
+void AliPHOSQADataMaker::MakeHits(TTree * hitTree)
+{
+	// make QA data from Hit Tree
+	
+	TClonesArray * hits = new TClonesArray("AliPHOSHit", 1000);
+
+	TBranch * branch = hitTree->GetBranch("PHOS") ;
+	if ( ! branch ) {
+		AliWarning("PHOS branch in Hit Tree not found") ; 
+	} else {
+		TClonesArray * tmp =  new TClonesArray("AliPHOSHit", 1000) ;
+		branch->SetAddress(&tmp) ;
+		Int_t index = 0 ;  
+		for (Int_t ientry = 0 ; ientry < branch->GetEntries() ; ientry++) {
+			branch->GetEntry(ientry) ; 
+			for (Int_t ihit = 0 ; ihit < tmp->GetEntries() ; ihit++) {
+				AliPHOSHit * hit = dynamic_cast<AliPHOSHit *> (tmp->At(ihit)) ; 
+				new((*hits)[index]) AliPHOSHit(*hit) ; 
+				index++ ;
+			} 
+		} 	
+		tmp->Delete() ; 
+		delete tmp ; 
+		MakeHits(hits) ; 
+	}
+}
+
 //____________________________________________________________________________
 void AliPHOSQADataMaker::MakeDigits(TClonesArray * digits)
 {
@@ -244,6 +273,22 @@ void AliPHOSQADataMaker::MakeDigits(TClonesArray * digits)
     while ( (digit = dynamic_cast<AliPHOSDigit *>(next())) ) {
       GetDigitsData(0)->Fill( digit->GetEnergy()) ;
     }  
+}
+
+//____________________________________________________________________________
+void AliPHOSQADataMaker::MakeDigits(TTree * digitTree)
+{
+	// makes data from Digit Tree
+	TClonesArray * digits = new TClonesArray("AliPHOSDigit", 1000) ; 
+
+	TBranch * branch = digitTree->GetBranch("PHOS") ;
+	if ( ! branch ) {
+		AliWarning("PHOS branch in Digit Tree not found") ; 
+	} else {
+		branch->SetAddress(&digits) ;
+		branch->GetEntry(0) ; 
+		MakeDigits(digits) ; 
+	}
 }
 
 //____________________________________________________________________________
@@ -348,6 +393,22 @@ void AliPHOSQADataMaker::MakeSDigits(TClonesArray * sdigits)
     while ( (sdigit = dynamic_cast<AliPHOSDigit *>(next())) ) {
       GetSDigitsData(0)->Fill( sdigit->GetEnergy()) ;
     } 
+}
+
+//____________________________________________________________________________
+void AliPHOSQADataMaker::MakeSDigits(TTree * sdigitTree)
+{
+	// makes data from SDigit Tree
+	TClonesArray * sdigits = new TClonesArray("AliPHOSDigit", 1000) ; 
+
+	TBranch * branch = sdigitTree->GetBranch("PHOS") ;
+	if ( ! branch ) {
+		AliWarning("PHOS branch in SDigit Tree not found") ; 
+	} else {
+		branch->SetAddress(&sdigits) ;
+		branch->GetEntry(0) ;
+		MakeSDigits(sdigits) ; 
+	}
 }
 
 //____________________________________________________________________________
