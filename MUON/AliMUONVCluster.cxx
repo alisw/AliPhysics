@@ -33,9 +33,6 @@
 ClassImp(AliMUONVCluster)
 /// \endcond
 
-const Double_t AliMUONVCluster::fgkDefaultNonBendingReso = 0.144;
-const Double_t AliMUONVCluster::fgkDefaultBendingReso = 0.01;
-
 //_____________________________________________________________________________
 AliMUONVCluster::AliMUONVCluster()
 {

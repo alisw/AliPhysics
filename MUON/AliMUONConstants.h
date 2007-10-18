@@ -84,7 +84,15 @@ class AliMUONConstants : public TObject {
     static Double_t ChamberThicknessInX0() {return fgChamberThicknessInX0;}
     /// Return Trigger ToF Limit (75 ns)
     static Float_t TriggerTofLimit() {return fgkTriggerTofLimit;}
- 
+    /// Return default chamber resolution in non bending direction
+    static const Double_t DefaultNonBendingReso() {return fgkDefaultNonBendingReso;}
+    /// Return default chamber resolution**2 in non bending direction
+    static const Double_t DefaultNonBendingReso2() {return fgkDefaultNonBendingReso*fgkDefaultNonBendingReso;}
+    /// Return default chamber resolution in bending direction
+    static const Double_t DefaultBendingReso() {return fgkDefaultBendingReso;}
+    /// Return default chamber resolution**2 in bending direction
+    static const Double_t DefaultBendingReso2() {return fgkDefaultBendingReso*fgkDefaultBendingReso;}
+    
  protected:
     /// Default constructor
     AliMUONConstants() : TObject() {}
@@ -128,6 +136,9 @@ class AliMUONConstants : public TObject {
     
     static Int_t    fgMaxZoom;          ///< Maximum Zoom for event display
     static Float_t  fgkTriggerTofLimit; ///< Particle above this threshold are discarded in trigger algorithm
+    
+    static const Double_t fgkDefaultNonBendingReso; ///< default chamber resolution in the non-bending direction
+    static const Double_t fgkDefaultBendingReso; ///< default chamber resolution in the bending direction
     
     ClassDef(AliMUONConstants, 0) // MUON global constants 
 };

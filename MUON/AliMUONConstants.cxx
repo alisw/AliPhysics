@@ -91,6 +91,10 @@ Double_t AliMUONConstants::fgYokeL = 309.4;
 const Double_t AliMUONConstants::fgkAbsZBeg = -90.;
 const Double_t AliMUONConstants::fgkAbsZEnd = -505.;
     
+// Default chamber resolution (cm)
+const Double_t AliMUONConstants::fgkDefaultNonBendingReso = 0.144;
+const Double_t AliMUONConstants::fgkDefaultBendingReso = 0.01;
+
 // Defaults parameters for track reconstruction
 Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.03;
 

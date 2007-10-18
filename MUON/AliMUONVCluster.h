@@ -79,9 +79,6 @@ class AliMUONVCluster : public TObject {
   
   virtual void     Print(Option_t *option = "") const;
   
- protected:
-  static const Double_t fgkDefaultNonBendingReso; ///< default chamber resolution in the non-bending direction
-  static const Double_t fgkDefaultBendingReso; ///< default chamber resolution in the bending direction
   
   ClassDef(AliMUONVCluster, 1) // abstract base class for cluster
 };
