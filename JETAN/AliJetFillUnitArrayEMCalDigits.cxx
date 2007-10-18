@@ -45,9 +45,6 @@
 #include "AliESDCaloCluster.h"
 #include "AliJetUnitArray.h"
 #include "AliJetFillUnitArrayEMCalDigits.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
-#include "AliCDBEntry.h"
 
 ClassImp(AliJetFillUnitArrayEMCalDigits)
 
