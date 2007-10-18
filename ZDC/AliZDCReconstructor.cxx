@@ -54,11 +54,12 @@ AliZDCReconstructor:: AliZDCReconstructor() :
       "(-34.380639-sqrt(34.380639*34.380639-4*(-0.104251)*(-2612.189017-x)))/(2*(-0.104251))",0.,225.)),
   fbCen(new TF1("fbCen","-0.056923+0.079703*x-0.0004301*x*x+0.000001366*x*x*x",0.,220.)),
   fbPer(new TF1("fbPer","17.943998-0.046846*x+0.000074*x*x",0.,220.)),
-  fZEMn(new TF1("fZEMn","126.2-0.05399*x+0.000005679*x*x",0.,4000.)),
-  fZEMp(new TF1("fZEMp","82.49-0.03611*x+0.00000385*x*x",0.,4000.)),
-  fZEMsp(new TF1("fZEMsp","208.7-0.09006*x+0.000009526*x*x",0.,4000.)),
+  //
+  fZEMn(new TF1("fZEMn","121.7-0.1934*x+0.00007565*x*x",0.,1200.)),
+  fZEMp(new TF1("fZEMp","80.05-0.1315*x+0.00005327*x*x",0.,1200.)),
+  fZEMsp(new TF1("fZEMsp","201.7-0.325*x+0.0001292*x*x",0.,1200.)),
   fZEMb(new TF1("fZEMb",
-	"16.06-0.01633*x+1.44e-5*x*x-6.778e-9*x*x*x+1.438e-12*x*x*x*x-1.112e-16*x*x*x*x*x",0.,4000.)),
+	"13.83-0.02851*x+5.101e-5*x*x-7.305e-8*x*x*x+5.101e-11*x*x*x*x-1.25e-14*x*x*x*x*x",0.,1200.)),
   //
   fCalibData(GetCalibData())
 
@@ -524,7 +525,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   clustersTree->SetBranchAddress("ZDC", &preco);
 
   clustersTree->GetEntry(0);
-  /*Double_t tZN1Ene[4], tZN2Ene[4];
+  Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
      tZN1Ene[i] = reco.GetZN1EnTow(i);
      tZN2Ene[i] = reco.GetZN2EnTow(i);
@@ -532,10 +533,10 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   esd->SetZDC(tZN1Ene, tZN2Ene, reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
-  */
-  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
+  
+  /*esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
-	      reco.GetNPartLeft());
+	      reco.GetNPartLeft());*/
   
   /*Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
