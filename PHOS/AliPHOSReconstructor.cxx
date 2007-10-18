@@ -45,6 +45,7 @@
 #include "AliPHOSEmcRecPoint.h"
 #include "AliPHOSRecParticle.h"
 #include "AliPHOSRawDecoder.h"
+#include "AliPHOSRawDecoderv1.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSPulseGenerator.h"
 
@@ -123,7 +124,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   else 
     pid->TrackSegments2RecParticles("") ;
 
-	
+
   // This function creates AliESDtracks from AliPHOSRecParticles
   //         and
   // writes them to the ESD
@@ -135,7 +136,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
 
   AliDebug(2,Form("%d rec. particles, option %s",nOfRecParticles,GetOption()));
-
 
   //#########Calculate trigger and set trigger info###########
  
@@ -230,24 +230,32 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       xyz[ixyz] = rp->GetPos()[ixyz];
     
     AliDebug(2,Form("Global position xyz=(%f,%f,%f)",xyz[0],xyz[1],xyz[2]));
-    
+   
     //Create digits lists
     Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
     Int_t *digitsList = emcRP->GetDigitsList();
+    Float_t *rpElist   = emcRP->GetEnergiesList() ;
     Short_t *amplList  = new Short_t[digitMult];
     Short_t *timeList  = new Short_t[digitMult];
     Short_t *digiList  = new Short_t[digitMult];
 
+
     // Convert Float_t* and Int_t* to Short_t* to save memory
     for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
+
       AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(fDigitsArr->At(digitsList[iDigit]));
       amplList[iDigit] =
-	(Short_t)(TMath::Min(digit->GetEnergy()*gev500,kBigShort)); // Energy in units of GeV/500
-      timeList[iDigit] =
-	(Short_t)(TMath::Min(digit->GetTime()*nsec100,kBigShort)); // time in units of 0.01 ns
+	(Short_t)(TMath::Min(rpElist[iDigit]*gev500,kBigShort)); // Energy in units of GeV/500
+// We should add here not full energy of digit, but unfolded one, stored in RecPoint
+//       amplList[iDigit] =
+//	(Short_t)(TMath::Min(digit->GetEnergy()*gev500,kBigShort)); // Energy in units of GeV/500
+     timeList[iDigit] =
+	(Short_t)(TMath::Max(-kBigShort,TMath::Min(digit->GetTime()*nsec100,kBigShort))); // time in units of 0.01 ns
       digiList[iDigit] = (Short_t)(digit->GetId());
     }
     
+
+
     //Primaries
     Int_t  primMult  = 0;
     Int_t *primInts =  emcRP->GetPrimaries(primMult);
@@ -265,7 +273,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
-    ec->SetEmcCpvDistance(-1);                  //not yet implemented
+    ec->SetEmcCpvDistance(ts->GetCpvDistance("r"));                  //Only radius, what about separate x,z????
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetM11(-1) ;                            //not yet implemented
  
@@ -321,14 +329,20 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   rawReader->Reset() ; 
 
-  AliPHOSRawDecoder dc(rawReader);
+  AliPHOSRawDecoder * dc ;
+
+  if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v1")==0) 
+    dc=new AliPHOSRawDecoderv1(rawReader);
+  else
+    dc=new AliPHOSRawDecoder(rawReader);
+
   TString option = GetOption();
   if (option.Contains("OldRCUFormat"))
-    dc.SetOldRCUFormat(kTRUE);
+    dc->SetOldRCUFormat(kTRUE);
   else
-    dc.SetOldRCUFormat(kFALSE);
+    dc->SetOldRCUFormat(kFALSE);
   
-  dc.SubtractPedestals(fgkRecoParamEmc->SubtractPedestals());
+  dc->SubtractPedestals(fgkRecoParamEmc->SubtractPedestals());
   
   TClonesArray *digits = new TClonesArray("AliPHOSDigit",1);
   digits->SetName("DIGITS");
@@ -336,12 +350,23 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   digitsTree->Branch("PHOS", &digits, bufsize);
 
   AliPHOSRawDigiProducer pr;
-  pr.MakeDigits(digits,&dc);
+  pr.MakeDigits(digits,dc);
+
+  delete dc ;
 
   //ADC counts -> GeV
-  for(Int_t i=0; i<digits->GetEntries(); i++) {
-    AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
-    digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
+  if(strcmp(fgkRecoParamEmc->DecoderVersion(),"v1")==0){ //"Energy" calculated as fit
+    for(Int_t i=0; i<digits->GetEntries(); i++) {
+      AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
+      digit->SetEnergy(digit->GetEnergy()*0.005); //We assume here 5 MeV/ADC channel
+      digit->SetTime(digit->GetTime()*1.e-7) ;    //Here we assume sample step==100 ns TO BE FIXED!!!!!!!!!!!!!
+    }
+  }
+  else{ //Digits energy calculated as maximal energy
+    for(Int_t i=0; i<digits->GetEntries(); i++) {
+      AliPHOSDigit* digit = (AliPHOSDigit*)digits->At(i);
+      digit->SetEnergy(digit->GetEnergy()/AliPHOSPulseGenerator::GeV2ADC());
+    }
   }
   
   // Clean up digits below the noise threshold

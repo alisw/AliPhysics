@@ -93,9 +93,10 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
     else {
       if (decoder->GetEnergy() >= 1023) continue;
       for (iOldDigit=iDigit-1; iOldDigit>=0; iOldDigit--) {
-        if ((dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)))->GetId() == absId) {
-          digits->RemoveAt(iOldDigit);
-          new((*digits)[iOldDigit]) AliPHOSDigit(-1,absId,(Float_t)decoder->GetEnergy(),time);
+	AliPHOSDigit * dig = dynamic_cast<AliPHOSDigit*>(digits->At(iOldDigit)) ;
+        if (dig->GetId() == absId) {
+	  dig->SetEnergy((Float_t)decoder->GetEnergy()) ;
+	  dig->SetTime(time) ;
           seen = kTRUE;
           break;
         }
@@ -105,7 +106,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, AliPHOSRawDecoder*
         iDigit++;
       }
     }
-
+    
   }
 
   digits->Compress();

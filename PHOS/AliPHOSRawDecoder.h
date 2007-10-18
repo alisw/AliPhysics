@@ -45,7 +45,6 @@ protected:
   AliCaloRawStream* fCaloStream; // PHOS/EMCAL raw data stream
   Bool_t fPedSubtract;           // pedestals subtraction (kTRUE="yes")
 
-private:
 
   Double_t fEnergy; // "digit" energy
   Double_t fTime;   // "digit" time
