@@ -90,6 +90,31 @@ public:
 	{
 		assert( buffer != NULL );
 	}
+	
+	/**
+	 * Copy constructor that performs a shallow copy.
+	 * Since this class does not take direct ownership of the buffer, never
+	 * allocates or deallocates memory, this can be allowed.
+	 */
+	AliHLTMUONDataBlockReader(const AliHLTMUONDataBlockReader& reader)
+	{
+		fSize = reader.fSize;
+		fBlock = reader.fBlock;
+		fData = reader.fData;
+	}
+	
+	/**
+	 * Assignment operator performs a shallow copy.
+	 * This is OK because this class does not take direct ownership of the
+	 * output memory buffer.
+	 */
+	AliHLTMUONDataBlockReader& operator = (const AliHLTMUONDataBlockReader& reader)
+	{
+		fSize = reader.fSize;
+		fBlock = reader.fBlock;
+		fData = reader.fData;
+		return *this;
+	}
 
 	/**
 	 * Checks that the size of the buffer storing the data block is correct.

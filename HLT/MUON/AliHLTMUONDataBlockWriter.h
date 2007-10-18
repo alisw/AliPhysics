@@ -113,13 +113,40 @@ public:
 	 */
 	AliHLTMUONDataBlockWriter(void* buffer, AliHLTUInt32_t size) :
 		fSize(size),
-		fMaxArraySize(size - sizeof(DataBlockType)),
+		fMaxArraySize(size > sizeof(DataBlockType) ? size - sizeof(DataBlockType) : 0),
 		fBlock(reinterpret_cast<DataBlockType*>(buffer)),
 		fData(reinterpret_cast<DataElementType*>(
 		       reinterpret_cast<DataBlockType*>(buffer) + 1
 		      ))
 	{
 		assert( buffer != NULL );
+	}
+	
+	/**
+	 * Copy constructor that performs a shallow copy.
+	 * Since this class does not take direct ownership of the buffer, never
+	 * allocates or deallocates memory, this can be allowed.
+	 */
+	AliHLTMUONDataBlockWriter(const AliHLTMUONDataBlockWriter& writer)
+	{
+		fSize = writer.fSize;
+		fMaxArraySize = writer.fMaxArraySize;
+		fBlock = writer.fBlock;
+		fData = writer.fData;
+	}
+	
+	/**
+	 * Assignment operator performs a shallow copy.
+	 * This is OK because this class does not take direct ownership of the
+	 * output memory buffer.
+	 */
+	AliHLTMUONDataBlockWriter& operator = (const AliHLTMUONDataBlockWriter& writer)
+	{
+		fSize = writer.fSize;
+		fMaxArraySize = writer.fMaxArraySize;
+		fBlock = writer.fBlock;
+		fData = writer.fData;
+		return *this;
 	}
 
 	/**
