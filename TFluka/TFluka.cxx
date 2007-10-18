@@ -1521,13 +1521,26 @@ void TFluka::TrackMomentum(TLorentzVector& momentum) const
       momentum.SetPz(p * FLKSTK.tzflk[ist]);
       momentum.SetE(e);
   } else if (caller == kUSDRAW) {
-      if (icode == 208 || icode == 210 || icode == 212 || icode == 219) {
+      if (icode == kEMFSCObrems  || 
+	  icode == kEMFSCOmoller || 
+	  icode == kEMFSCObhabha || 
+	  icode == kEMFSCOcompton ) 
+      {
 	  momentum.SetPx(fPint[0]);
 	  momentum.SetPy(fPint[1]);
 	  momentum.SetPz(fPint[2]);
 	  momentum.SetE(fPint[3]);
+      } else if (icode == kKASKADdray  || 
+		 icode == kKASKADbrems || 
+		 icode == kKASKADpair) {
+	  momentum.SetPx(GENSTK.plr[0] * GENSTK.cxr[0]);
+	  momentum.SetPy(GENSTK.plr[0] * GENSTK.cyr[0]);
+	  momentum.SetPz(GENSTK.plr[0] * GENSTK.czr[0]);
+	  momentum.SetE (GENSTK.tki[0] + PAPROP.am[GENSTK.kpart[0]+6]);
       } else {
-	  Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack - ParticleMassFPC(TRACKR.jtrack) * ParticleMassFPC(TRACKR.jtrack));
+	  Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack 
+			    - ParticleMassFPC(TRACKR.jtrack) 
+			    * ParticleMassFPC(TRACKR.jtrack));
 	  momentum.SetPx(p*TRACKR.cxtrck);
 	  momentum.SetPy(p*TRACKR.cytrck);
 	  momentum.SetPz(p*TRACKR.cztrck);
@@ -1592,11 +1605,22 @@ void TFluka::TrackMomentum(Double_t& px, Double_t& py, Double_t& pz, Double_t& e
       py = p * FLKSTK.tyflk[ist];
       pz = p * FLKSTK.tzflk[ist];
   } else if (caller == kUSDRAW) {
-      if (icode == 208 || icode == 210 || icode == 212 || icode == 219) {
+      if (icode == kEMFSCObrems  || 
+	  icode == kEMFSCOmoller || 
+	  icode == kEMFSCObhabha || 
+	  icode == kEMFSCOcompton ) 
+      {
 	  px = fPint[0];
 	  py = fPint[1];
 	  pz = fPint[2];
 	  e  = fPint[3];
+      } else if (icode == kKASKADdray  || 
+		 icode == kKASKADbrems || 
+		 icode == kKASKADpair) {
+	  px = GENSTK.plr[0] * GENSTK.cxr[0];
+	  py = GENSTK.plr[0] * GENSTK.cyr[0];
+	  pz = GENSTK.plr[0] * GENSTK.czr[0];
+	  e  = GENSTK.tki[0] + PAPROP.am[GENSTK.kpart[0]+6];
       } else {
 	  Double_t p = sqrt(TRACKR.etrack * TRACKR.etrack - ParticleMassFPC(TRACKR.jtrack) *  ParticleMassFPC(TRACKR.jtrack));
 	  px = p*TRACKR.cxtrck;
@@ -1798,9 +1822,24 @@ Double_t TFluka::TrackMass() const
 Double_t TFluka::Etot() const
 {
 // TRACKR.etrack = total energy of the particle
-  FlukaCallerCode_t caller = GetCaller();
-  if (caller != kEEDRAW && caller != kSODRAW)
-    return TRACKR.etrack;
+  FlukaCallerCode_t  caller = GetCaller();
+  FlukaProcessCode_t icode  = GetIcode();
+  if (caller != kEEDRAW && caller != kSODRAW && caller != kUSDRAW)
+  {
+      return TRACKR.etrack;
+  } else if (caller == kUSDRAW) {
+      if (icode == kEMFSCObrems  || 
+	  icode == kEMFSCOmoller || 
+	  icode == kEMFSCObhabha || 
+	  icode == kEMFSCOcompton ) {
+	  return  fPint[3];
+      }
+      else if (icode == kKASKADdray  || 
+	       icode == kKASKADbrems || 
+	       icode == kKASKADpair) {
+	  return (GENSTK.tki[0] + PAPROP.am[GENSTK.kpart[0]+6]);      
+      }
+  }
   else if (caller == kSODRAW) {
       Int_t ist  = FLKSTK.npflka;
       Double_t p = FLKSTK.pmoflk[ist];
@@ -1809,8 +1848,8 @@ Double_t TFluka::Etot() const
       Double_t e = TMath::Sqrt(p * p + m * m);
       return e;
   }
-  else
-    return -1000.0;
+  
+  return -1000.0;
 }
 
 //
@@ -2061,6 +2100,13 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     } else {
 	switch (icode) {
 	case kEMFSCO:
+	    if (Edep() > 0.) {
+		iproc = kPEnergyLoss;
+	    } else {
+		iproc = kPTransportation;
+	    }
+	    break;
+	case kKASKAD:
 	    if (Edep() > 0.) {
 		iproc = kPEnergyLoss;
 	    } else {
