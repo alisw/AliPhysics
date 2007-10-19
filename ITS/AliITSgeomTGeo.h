@@ -90,9 +90,9 @@ class AliITSgeomTGeo : public TObject {
   static Bool_t LocalToGlobalVect(Int_t index, const Double_t *loc, Double_t *glob);
   static Bool_t GlobalToLocalVect(Int_t index, const Double_t *glob, Double_t *loc);
 
- private:
-
   enum {kNLayers = 6}; // The number of layers.
+
+ private:
 
   static Bool_t       GetLayer(Int_t index,Int_t &lay,Int_t &index2);
   static TGeoPNEntry* GetPNEntry(Int_t index);
