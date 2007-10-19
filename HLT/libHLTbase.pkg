@@ -25,6 +25,7 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOfflineDataSink.h \
 		AliHLTModuleAgent.h \
 		AliHLTOUT.h \
+		AliHLTOUTHomerBuffer.h \
 		AliHLTOUTHandler.h \
 		AliHLTMemoryFile.h \
 		AliHLTMessage.h
@@ -48,4 +49,7 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := HLT/BASE
+# the libHLTbase depends on the abstract interface of the monitoring reader
+# and needs include patch HLT/BASE/HOMER because of that. There is no library
+# dependency. Objects are intantianted dynamically.
+EINCLUDE := HLT/BASE HLT/BASE/HOMER
