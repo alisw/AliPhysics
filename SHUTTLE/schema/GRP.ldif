@@ -20,3 +20,5 @@ dcsAlias: L3Polarity
 dcsAlias: DipolePolarity
 dcsAlias: CavernTemperature
 dcsAlias: CavernAtmosPressure
+dcsAlias: gva_cr5AtmosphericPressure
+dcsAlias: gva_meyrinAtmosphericPressure
