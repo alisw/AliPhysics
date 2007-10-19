@@ -40,7 +40,7 @@ class AliAODTagCreator : public AliTagCreator {
   AliAODTagCreator();
   ~AliAODTagCreator(); 
 
-  void CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent);
+  void CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList *grpList);
 
   Bool_t ReadGridCollection(TGridResult *result);
   Bool_t ReadLocalCollection(const char *localpath);

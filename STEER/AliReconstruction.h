@@ -31,6 +31,7 @@ class AliESDVertex;
 class AliESDEvent;
 class TFile;
 class TTree;
+class TList;
 class AliQADataMaker;
 
 class AliReconstruction: public TNamed {
@@ -191,6 +192,8 @@ private:
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks
+
+  TList*         fGRPList;            // TList from the GRP/GRP/Data CDB folder
 
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
 

@@ -265,7 +265,7 @@ Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
   }*/
 
 //__________________________________________________________________________
-void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent) {
+void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList *grpList) {
   //creates tag files for AODs
   
   Float_t fLowPtCut = 1.0;

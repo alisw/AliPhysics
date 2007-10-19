@@ -41,7 +41,7 @@ class AliESDTagCreator : public AliTagCreator {
   AliESDTagCreator();
   ~AliESDTagCreator(); 
 
-  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent);
+  void CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList *grpList);
 
   Bool_t ReadGridCollection(TGridResult *result);
   Bool_t ReadLocalCollection(const char *localpath);
