@@ -1,5 +1,28 @@
+/**************************************************************************
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
+/* $Id$  */
 
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides storage container ITS SSD module callibration data
+/// used by DA. 
+///
+///////////////////////////////////////////////////////////////////////////////
+
+#include "AliITSNoiseSSD.h"
 #include "AliITSModuleDaSSD.h"
 
 ClassImp(AliITSModuleDaSSD)
@@ -17,6 +40,7 @@ AliITSModuleDaSSD::AliITSModuleDaSSD() :
   fStrips(NULL),
   fEventsNumber(0)
 {
+// Default constructor
 }
 
 
@@ -31,6 +55,7 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const UChar_t ddlID, const UChar_t ad, cons
   fStrips(NULL),
   fEventsNumber(0)
 {
+// Constructor, set module id data
 }
 
 
@@ -46,18 +71,18 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips) :
   fStrips(NULL),
   fEventsNumber(0)
 {
+// Constructor, allocates memory for AliITSChannelDaSSD*
   if (numberofstrips != fgkStripsPerModule) 
-    Warning("AliITSModuleDaSSD", "ALICE ITS SSD Module contains %d strips", fgkStripsPerModule);
-  try  {
-     fStrips = new AliITSChannelDaSSD* [numberofstrips];
+    Warning("AliITSModuleDaSSD", "ALICE ITS SSD Module contains %i strips", fgkStripsPerModule);
+  fStrips = new (nothrow) AliITSChannelDaSSD* [numberofstrips];
+  if (fStrips) {
      fNumberOfStrips = numberofstrips;
      for (Int_t i = 0; i < numberofstrips; i++) fStrips[i]= NULL;
-  }
-  catch (bad_alloc&) {
-     Error("AliITSModuleDaSSD", "Error allocating memory for %d AliITSChannelDaSSD objects!", numberofstrips);
+  } else {
+     Error("AliITSModuleDaSSD", "Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips);
      fNumberOfStrips = 0;
      fStrips = NULL;
-  }
+  }  
 }
 
 
@@ -72,29 +97,21 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips, const Long_t ev
   fStrips(NULL),
   fEventsNumber(0)
 {
+// Constructor, allocates memory for AliITSChannelDaSSD* and events data
   if (numberofstrips != fgkStripsPerModule) 
-    Warning("AliITSModuleDaSSD", "ALICE ITS SSD Module contains %d strips", fgkStripsPerModule);
-  try  {
-     fStrips = new AliITSChannelDaSSD* [numberofstrips];
+    Warning("AliITSModuleDaSSD", "ALICE ITS SSD Module contains %i strips", fgkStripsPerModule);
+  fStrips = new (nothrow) AliITSChannelDaSSD* [numberofstrips];
+  if (fStrips) {
      fNumberOfStrips = numberofstrips;
-  }
-  catch (bad_alloc&) {
-     Error("AliITSModuleDaSSD", "Error allocating memory for %d AliITSChannelDaSSD objects!", numberofstrips);
+     memset(fStrips, 0, numberofstrips * sizeof(AliITSChannelDaSSD*));
+     for (Int_t i = 0; i < fNumberOfStrips; i++) {
+       fStrips[i] = new AliITSChannelDaSSD(i, eventsnumber);
+       if (!fStrips[i]) Error("AliITSModuleDaSSD", "Error allocating memory for AliITSChannelDaSSD %i-th object", i);
+     }
+  } else {
+     Error("AliITSModuleDaSSD", "Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips);
      fNumberOfStrips = 0;
      fStrips = NULL;
-  }
-  if (fStrips) {
-    Int_t  i;
-    try {
-       for (i = 0; i < fNumberOfStrips; i++) fStrips[i] = new AliITSChannelDaSSD(i, eventsnumber);
-    }  
-    catch (bad_alloc&) {
-       Error("AliITSModuleDaSSD", "Error allocating memory for %d-th AliITSChannelDaSSD objects!", i);
-       for (Int_t j = 0; j < i; j++) delete fStrips[j];
-       delete [] fStrips;
-       fNumberOfStrips = 0;
-       fStrips = NULL;
-    }
   }  
 }
 
@@ -112,7 +129,7 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const AliITSModuleDaSSD& module) :
   fStrips(module.fStrips),
   fEventsNumber(module.fEventsNumber)
 {
-  // copy constructor
+// copy constructor
 
   Fatal("AliITSModuleDaSSD", "copy constructor not implemented");
 }
@@ -131,12 +148,12 @@ AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& modul
     
 AliITSModuleDaSSD::~AliITSModuleDaSSD()
 {
+// Destructor
   if (fStrips)
   {
     for (Long_t i = 0; i < fNumberOfStrips; i++)
     { 
       if (fStrips[i]) delete fStrips[i];
-//      if (!(i % 100)) cout << "Deleted fStrips[i], i = " << i << endl;
     }
     delete [] fStrips;
   } 
@@ -146,6 +163,7 @@ AliITSModuleDaSSD::~AliITSModuleDaSSD()
   
 Bool_t AliITSModuleDaSSD::SetModuleIdData (const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const UShort_t moduleID)
 {
+// SetModuleIdData
   if (ad > fgkMaxAdNumber) {
     Warning("AliITSModuleDaSSD", "Wrong AD number: %i", ad);
     return kFALSE;
@@ -165,6 +183,7 @@ Bool_t AliITSModuleDaSSD::SetModuleIdData (const UChar_t ddlID, const UChar_t ad
 
 void AliITSModuleDaSSD::SetModuleFEEId (const UChar_t ddlID, const UChar_t ad, const UChar_t adc)
 {
+// Set id data of FEE connected to the Module
   fDdlId = ddlID;
   fAd = ad;
   fAdc = adc;
@@ -173,6 +192,7 @@ void AliITSModuleDaSSD::SetModuleFEEId (const UChar_t ddlID, const UChar_t ad, c
 
 void AliITSModuleDaSSD::SetModuleRorcId (const Int_t equipid, const Int_t equiptype)
 {
+// Set data to access FEROM registres via DDL
   fEquipId = equipid; 
   fEquipType = equiptype;
 }
@@ -180,6 +200,7 @@ void AliITSModuleDaSSD::SetModuleRorcId (const Int_t equipid, const Int_t equipt
 
 Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
 {
+// Allocate the memory for the enents data
   Int_t i;
   if (!fStrips) return kFALSE;
   try {
@@ -189,7 +210,7 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
      } 
   }  
   catch (bad_alloc&) {
-     Error("AliITSModuleDaSSD", "Error allocating memory for %d-th AliITSChannelDaSSD objects!", i);
+     Error("AliITSModuleDaSSD", "Error allocating memory for %i-th AliITSChannelDaSSD objects!", i);
      for (Int_t j = 0; j < i; j++) delete fStrips[j];
      delete [] fStrips;
      fNumberOfStrips = 0;
@@ -203,6 +224,7 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
 
 AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationSSDModule() const
 {
+// Creates the AliITSNoiseSSD objects with callibration data
   AliITSNoiseSSD  *mc;
   if (!fStrips) return NULL;
   mc = new AliITSNoiseSSD();

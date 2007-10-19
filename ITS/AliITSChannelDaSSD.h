@@ -1,10 +1,21 @@
 #ifndef ALIITSCHANNELDASSD_H
 #define ALIITSCHANNELDASSD_H
 
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+/*                                                                        */
+/* $Id$ */
 
-#include <iostream>
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides storage container ITS SSD channel callibration data
+/// used by DA. 
+///
+///////////////////////////////////////////////////////////////////////////////
+
 #include "TMath.h"
 #include "TObject.h"
+
 
 class AliITSChannelDaSSD : public TObject {
   public :
@@ -45,21 +56,20 @@ class AliITSChannelDaSSD : public TObject {
     static  Float_t  GetUndefinedValue() { return fgkUndefinedValue;  }
 
   protected :
-  
-    static const UShort_t fgkMinStripId = 0;
-    static const UShort_t fgkMaxStripId = 1535;
+    static const UShort_t fgkMinStripId = 0;              // minimum strip id
+    static const UShort_t fgkMaxStripId = 1535;           // maximum strip id
 
-    static const Short_t  fgkSignalOverflow  = 2047;
-    static const Short_t  fgkSignalUnderflow = 2048;
-    static const UShort_t fgkDefaultSignal   = 0x7F;
-    static const Float_t  fgkUndefinedValue;
- 
+    static const Short_t  fgkSignalOverflow  = 2047;      // ADC overflow value
+    static const Short_t  fgkSignalUnderflow = 2048;      // ADC underflow value
+    static const UShort_t fgkDefaultSignal   = 0x7F;      // initialization value for fNoise, fPedestal, fSignal[i]
+    static const Float_t  fgkUndefinedValue;              // constant value which indicates that fNoise, fPedestal is undefined
+  
     UShort_t          fStripId;             //  channel = strip number within SSD module 0-1535
     Long_t            fEventsNumber;        //  number of events for fSignal memory allocation
     Short_t          *fSignal;              //! 
     
-    Float_t           fPedestal;
-    Float_t           fNoise;
+    Float_t           fPedestal;            //  pedestal
+    Float_t           fNoise;               //  noise
  
     Float_t           fZsThresholdFactor;   //  factor for zero suppression threshold
 

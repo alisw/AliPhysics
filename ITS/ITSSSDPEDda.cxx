@@ -1,10 +1,11 @@
 
-#include <iostream>
+#include <Riostream.h>
 #include <sstream>
 #include <string>
 #include "TFile.h"
 #include "daqDA.h"
-//#include "AliITSChannelDaSSD.h" 
+#include "event.h"
+#include "AliRawReaderDate.h" 
 #include "AliITSHandleDaSSD.h" 
 
 using namespace std;
@@ -102,9 +103,9 @@ Bool_t GetRunSettings (const char *datafilename, Long_t &eventsnumber, Long_t &s
     cout << "GetRunSettings : Error  new DARawReader(datafilename, 0);" << endl;
     return kFALSE;
   }  
-  rawreaderdate->SelectEvents(PHYSICS_EVENT);
-  while (rawreaderdate->NextEvent())
-  { 
+  rawreaderdate->SelectEvents(-1);
+  while (rawreaderdate->NextEvent()) {
+    if ((rawreaderdate->GetType() != PHYSICS_EVENT) && (rawreaderdate->GetType() != CALIBRATION_EVENT)) continue;
     physeventind += 1;
     datasize = 0;
     strn = 0;

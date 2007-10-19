@@ -2,11 +2,21 @@
 #define ALIITSMODULEDASSD_H
 
 
-#include <iostream>
-#include "TObject.h"
-#include "AliITSNoiseSSD.h"
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+/*                                                                        */
+/* $Id$ */
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides storage container ITS SSD module callibration data
+/// used by DA. 
+///
+///////////////////////////////////////////////////////////////////////////////
 
+#include "TObject.h"
 #include "AliITSChannelDaSSD.h"
+
+class AliITSNoiseSSD;
 
 class AliITSModuleDaSSD : public TObject {
   public :
@@ -26,7 +36,6 @@ class AliITSModuleDaSSD : public TObject {
     Int_t        GetModuleRorcEquipType() const { return fEquipType; }
     Int_t        GetNumberOfStrips() const { return fNumberOfStrips; }
     Long_t       GetEventsNumber()   const { return fEventsNumber; }
-//    AliITSChannelDaSSD*  GetStrip()  const { return fStrips; }
     AliITSChannelDaSSD*  GetStrip(const Int_t stripnumber)  const 
                                 { return (fStrips) ? fStrips[stripnumber] : NULL; }
 
@@ -45,20 +54,20 @@ class AliITSModuleDaSSD : public TObject {
     static Int_t GetStripsPerChip()        { return  fgkStripsPerChip;    }
 
   protected :
-    static const Int_t   fgkStripsPerModule   = 1536;
-    static const Int_t   fgkPNStripsPerModule = 768;
-    static const Int_t   fgkStripsPerChip     = 128;
-    static const UChar_t fgkMaxAdNumber       = 9;
-    static const UChar_t fgkMaxAdcNumber      = 13;
+    static const Int_t   fgkStripsPerModule   = 1536;   // Number of strips per SSD module
+    static const Int_t   fgkPNStripsPerModule = 768;    // Number of N/P strips per SSD module
+    static const Int_t   fgkStripsPerChip     = 128;    // Number of strips per chip HAL25
+    static const UChar_t fgkMaxAdNumber       = 9;      // MAx SSD FEROM AD number
+    static const UChar_t fgkMaxAdcNumber      = 13;     // MAx SSD FEROM ADC number
 
     Int_t          fEquipId;        // required to access to rorc
-    Int_t          fEquipType;
+    Int_t          fEquipType;      // fEquipType, required to access to rorc
     UChar_t        fDdlId;          // index of DDL, ITS SSD: 33-48
     UChar_t        fAd;             // index of AD module     0-9
     UChar_t        fAdc;            // index of ADC module    0-5, 8-13
     UShort_t       fModuleId;       // Module number          0-1697
     
-    Int_t                 fNumberOfStrips;
+    Int_t                 fNumberOfStrips; // Number of AliITSChannelDaSSD* allocated
     AliITSChannelDaSSD  **fStrips;         //[fNumberOfStrips]  Array of *AliITSChannelDaSSD
 
     Long_t            fEventsNumber;       // number of events for fsignal memory allocation

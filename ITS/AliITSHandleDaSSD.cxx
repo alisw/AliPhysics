@@ -1,6 +1,39 @@
+/**************************************************************************
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
-#include <iostream> 
+/* $Id$ */
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides ITS SSD data handling
+/// used by DA. 
+///
+///////////////////////////////////////////////////////////////////////////////
+
+#include <Riostream.h> 
 #include "AliITSHandleDaSSD.h"
+#include <math.h>
+#include <sstream>
+#include <string>
+#include "event.h"
+#include "TFile.h"
+#include "TObjArray.h"
+#include "AliITSNoiseSSD.h"
+#include "AliRawReaderDate.h"
+
+#include "AliITSChannelDaSSD.h"
 
 
 ClassImp(AliITSHandleDaSSD)
@@ -14,6 +47,7 @@ AliITSHandleDaSSD::AliITSHandleDaSSD() :
   fLdcId(0),
   fRunId(0)
 {
+// Default constructor
 }
 
 
@@ -23,20 +57,18 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const Int_t numberofmodules) :
   fLdcId(0),
   fRunId(0)
 {
+// Constructor allocates memory for AliITSModuleDaSSD objects
   if (numberofmodules > fgkNumberOfSSDModules) 
       cout << "ALICE ITS SSD contains " <<  fgkNumberOfSSDModules << "modules!"<< endl;
-  try
-  {
-     fModules = new AliITSModuleDaSSD* [numberofmodules];
-     fNumberOfModules = numberofmodules;
-     for (Int_t i = 0; i < numberofmodules; i++) fModules[i] = NULL;
-  }
-  catch (bad_alloc&) 
-  {
-     Error("AliITSHandleDaSSD", "Error allocating memory for %i AliITSModulesDaSSD objects!", numberofmodules);
+  fModules = new (nothrow) AliITSModuleDaSSD* [numberofmodules];
+  if (fModules) {
+    fNumberOfModules = numberofmodules;
+    memset(fModules, 0, sizeof(AliITSModuleDaSSD*) * numberofmodules);
+  } else {
+     Error("AliITSHandleDaSSD", "Error allocating memory for %i AliITSModulesDaSSD* objects!", numberofmodules);
      fNumberOfModules = 0;
      fModules = NULL;
-  }  
+  }
 }
 
 
@@ -63,7 +95,8 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
 
 
 AliITSHandleDaSSD::~AliITSHandleDaSSD()
-{ 
+{
+// Default destructor 
   if (fModules) 
   {
     for (Int_t i = 0; i < fNumberOfModules; i++)
@@ -78,6 +111,7 @@ AliITSHandleDaSSD::~AliITSHandleDaSSD()
 
 AliITSModuleDaSSD* AliITSHandleDaSSD::GetModule (const UChar_t ddlID, const UChar_t ad, const UChar_t adc) const
 {
+// Retrieve AliITSModuleDaSSD object from the array
    if (!fModules) return NULL;
    for (Int_t i = 0; i < fNumberOfModules; i++) {
      if (fModules[i]) {
@@ -92,10 +126,9 @@ AliITSModuleDaSSD* AliITSHandleDaSSD::GetModule (const UChar_t ddlID, const UCha
 
 
 
-/*************************** Used for test only ******************************/
-
 AliITSChannelDaSSD* AliITSHandleDaSSD::GetStrip (const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const UShort_t stripID) const
 {
+// Retrieve AliITSChannalDaSSD object from the array
   for (Int_t modind = 0; modind < fNumberOfModules; modind++) {
     if (    (fModules[modind]->GetDdlId() == ddlID)
          && (fModules[modind]->GetAD() == ad)
@@ -112,6 +145,7 @@ AliITSChannelDaSSD* AliITSHandleDaSSD::GetStrip (const UChar_t ddlID, const UCha
 
 Bool_t AliITSHandleDaSSD::SetModule(AliITSModuleDaSSD *const module, const Int_t index)
 { 
+// Assign array element with AliITSModuleDaSSD object
    if ((index < fNumberOfModules) && (index >= 0)) 
      { 
         if (fModules[index]) delete fModules[index];
@@ -124,27 +158,27 @@ Bool_t AliITSHandleDaSSD::SetModule(AliITSModuleDaSSD *const module, const Int_t
 
 Bool_t AliITSHandleDaSSD::SetNumberOfModules (const Int_t numberofmodules)
 {
-  if (numberofmodules > fgkNumberOfSSDModules) 
-      Warning("AliITSHandleDaSSD", "The number of modules you use exceeds the maximum %i for ALICE ITS SSD", fgkNumberOfSSDModules);
-  try
-  {
-     fModules = new AliITSModuleDaSSD* [numberofmodules];
-     fNumberOfModules = numberofmodules;
-     for (Int_t i = 0; i < fNumberOfModules; i++) fModules[i] = NULL;
-     return kTRUE;
-  }
-  catch (bad_alloc&) 
-  {
-     Error("AliITSHandleDaSSD", "Error allocating memory for %i AliITSModuleDaSSD objects!", numberofmodules);
+// Allocates memory for AliITSModuleDaSSD objects
+  if (numberofmodules > fgkNumberOfSSDModules)
+    Warning("AliITSHandleDaSSD", "The number of modules %i you use exceeds the maximum %i for ALICE ITS SSD", numberofmodules, fgkNumberOfSSDModules);
+  if (fModules) { delete [] fModules; fModules = NULL; }
+  fModules = new (nothrow) AliITSModuleDaSSD* [numberofmodules];
+  if (fModules) {
+    fNumberOfModules = numberofmodules;
+    memset(fModules, 0, sizeof(AliITSModuleDaSSD*) * numberofmodules);
+    return kTRUE;
+  } else {
+     Error("AliITSHandleDaSSD", "Error allocating memory for %i AliITSModulesDaSSD* objects!", numberofmodules);
      fNumberOfModules = 0;
      fModules = NULL;
-  }  
+  }
   return kFALSE;
 }
 
 
 Bool_t AliITSHandleDaSSD::ReadCalibrationDataFile (const char* fileName, const Long_t eventsnumber)
 {
+// Reads raw data from file
   AliRawReaderDate    *rawreaderdate = new AliRawReaderDate(fileName, 0);
   AliITSModuleDaSSD   *module;
   AliITSChannelDaSSD  *strip;
@@ -156,8 +190,9 @@ Bool_t AliITSHandleDaSSD::ReadCalibrationDataFile (const char* fileName, const L
     Error("AliITSHandleDaSSD", "Error ReadCalibrationDataFile: no structure was allocated for data");
     return kFALSE;
   }
-  rawreaderdate->SelectEvents(PHYSICS_EVENT);
+  rawreaderdate->SelectEvents(-1);
   while (rawreaderdate->NextEvent()) {
+    if ((rawreaderdate->GetType() != PHYSICS_EVENT) && (rawreaderdate->GetType() != CALIBRATION_EVENT)) continue;
     fLdcId = rawreaderdate->GetLDCId();
     fRunId = rawreaderdate->GetRunNumber(); 
     modind = 0;
@@ -202,17 +237,16 @@ Bool_t AliITSHandleDaSSD::ReadCalibrationDataFile (const char* fileName, const L
 
 
 Bool_t AliITSHandleDaSSD::RelocateModules()
-{  
+{
+// Relocate memory for AliITSModuleDaSSD object array
   Int_t         nm = 0;
-  AliITSModuleDaSSD **marray;
+  AliITSModuleDaSSD **marray = NULL;
   for (Int_t modind = 0; modind < fNumberOfModules; modind++)
     if (fModules[modind]) nm += 1;
   if (nm == fNumberOfModules) return kTRUE;
-  try {
-    marray = new AliITSModuleDaSSD* [nm];
-  }
-  catch (bad_alloc&) {
-    Error("AliITSHandleDaSSD", "Error relocating memory for %i AliITSModuleDaSSD objects!", nm);
+  marray = new (nothrow) AliITSModuleDaSSD* [nm];
+  if (!marray) {
+    Error("AliITSHandleDaSSD", "Error relocating memory for %i AliITSModuleDaSSD* objects!", nm);
     return kFALSE;
   }
   nm = 0;
@@ -227,6 +261,7 @@ Bool_t AliITSHandleDaSSD::RelocateModules()
 
 Bool_t AliITSHandleDaSSD::CalculatePedestal()
 {
+// Calculates Pedestal
   Float_t     pedestal;
   Short_t    *signal;
   AliITSChannelDaSSD *strip;
@@ -262,6 +297,7 @@ Bool_t AliITSHandleDaSSD::CalculatePedestal()
 
 Bool_t AliITSHandleDaSSD::CalculateNoise()
 {
+// Calculates Noise
   AliITSChannelDaSSD *strip;
   Short_t    *signal;
   Float_t     noise;
@@ -299,6 +335,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoise()
 
 Bool_t AliITSHandleDaSSD::CalculateCM(const Int_t modind, const Int_t stripind, Float_t* const cm)
 {
+// Calculates CM
   AliITSChannelDaSSD *strip = NULL;
   Short_t    *signal;
   Long_t      ovstr, evn, n;
@@ -327,6 +364,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(const Int_t modind, const Int_t stripind, 
 
 Bool_t  AliITSHandleDaSSD::CalculateNoiseCM()
 {
+// Calculates Noise with CM correction
   Short_t     *signal;
   AliITSChannelDaSSD  *strip = NULL;
   Float_t      noise, *cm = NULL;
@@ -377,7 +415,8 @@ Bool_t  AliITSHandleDaSSD::CalculateNoiseCM()
 
 
 TObjArray* AliITSHandleDaSSD::GetCalibrationSSDLDC() const
-{ 
+{
+// Fill in the array for OCDB 
   TObjArray *ldcc;
   if (!fModules) return NULL;
   ldcc = new TObjArray(fNumberOfModules, 0);
@@ -386,7 +425,7 @@ TObjArray* AliITSHandleDaSSD::GetCalibrationSSDLDC() const
       delete ldcc;
       return NULL;
     }
-    ldcc->AddAt(fModules[i]->GetCalibrationSSDModule(), i);
+    ldcc->AddAt(dynamic_cast<TObject*>(fModules[i]->GetCalibrationSSDModule()), i);
   }
   ldcc->Compress();
   return ldcc;
@@ -395,6 +434,7 @@ TObjArray* AliITSHandleDaSSD::GetCalibrationSSDLDC() const
 
 Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(string& dafname) const
 {
+// Save Calibration data locally
   ostringstream   dadatafilename;
   TObjArray      *ldcc;
   if (!fModules) return kFALSE;
@@ -404,7 +444,7 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(string& dafname) const
       delete ldcc;
       return kFALSE;
     }
-    ldcc->AddAt(fModules[i]->GetCalibrationSSDModule(), i);
+    ldcc->AddAt(dynamic_cast<TObject*>(fModules[i]->GetCalibrationSSDModule()), i);
   }
   ldcc->Compress();
   dadatafilename << dafname << "/ITSSSDda_" << fLdcId << "_" << fRunId << ".root";

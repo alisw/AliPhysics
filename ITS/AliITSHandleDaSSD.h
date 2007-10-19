@@ -1,20 +1,22 @@
 #ifndef ALIITSHANDLEDASSD_H
 #define ALIITSHANDLEDASSD_H
 
-#include <math.h>
-#include <sstream>
-#include <string>
-#include "TObject.h"
-#include "TFile.h"
-#include "TObjArray.h"
-#include "AliRawReaderDate.h"
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+/*                                                                        */
+/* $Id$ */
 
-#include "AliITSChannelDaSSD.h"
+#include "TObject.h"
 #include "AliITSModuleDaSSD.h"
 
-#ifndef PHYSICS_EVENT
-#define PHYSICS_EVENT 7
-#endif
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides ITS SSD data handling
+/// used by DA. 
+///
+///////////////////////////////////////////////////////////////////////////////
+
+class TObjArray;
 
 class AliITSHandleDaSSD : public TObject {
   public :
@@ -46,7 +48,7 @@ class AliITSHandleDaSSD : public TObject {
     static Int_t GetNumberOfSSDModulesConst() { return fgkNumberOfSSDModules; }
 
   protected :
-    static const Int_t fgkNumberOfSSDModules = 1698;
+    static const Int_t fgkNumberOfSSDModules = 1698;   // Number of SSD modules in ITS
 
     Int_t                fNumberOfModules;       // number of AliITSModuleDaSSD to allocate
     AliITSModuleDaSSD  **fModules;               //[fNumberOfModules]  array of all SSD 1698 Modules (2608128 strips)

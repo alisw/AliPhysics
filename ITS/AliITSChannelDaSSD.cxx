@@ -1,4 +1,29 @@
+/**************************************************************************
+ * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
+/* $Id$  */
+
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This class provides storage container ITS SSD channel callibration data
+/// used by DA. 
+///
+///////////////////////////////////////////////////////////////////////////////
+
+
+#include <Riostream.h>
 #include "AliITSChannelDaSSD.h"
 
 ClassImp(AliITSChannelDaSSD)
@@ -15,6 +40,7 @@ AliITSChannelDaSSD::AliITSChannelDaSSD() :
   fNoise(fgkUndefinedValue),
   fZsThresholdFactor(0.0f)
 {
+// Default costructor
 }
 
 
@@ -26,6 +52,7 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const UShort_t stripID) :
   fNoise(fgkUndefinedValue),
   fZsThresholdFactor(0.0f)
 {
+// Costructor, initialize channal id
 }
 
 
@@ -37,20 +64,18 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const UShort_t stripID, const Long_t even
   fNoise(fgkUndefinedValue),
   fZsThresholdFactor(0.0f)
 {
+// Costructor, initialize channal id and allocate array for events data
   if (stripID > fgkMaxStripId)
     Warning("AliITSChannelDaSSD", "Wrong StripID: %i", stripID);
-  try
-  {
-     fSignal = new Short_t [eventsnumber];
-     fEventsNumber = eventsnumber;
-     memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
+  fSignal = new (nothrow) Short_t[eventsnumber];
+  if (fSignal) {
+    fEventsNumber = eventsnumber;
+    memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
+  } else {
+    Error("AliITSChannelDaSSD", "Error allocating memory for %i Short_t objects!", eventsnumber);
+    fSignal = NULL;
+    fEventsNumber = 0;
   }
-  catch (bad_alloc&) 
-  {
-     cout << "Error allocating memory for " << (long) eventsnumber << " Short_t objects in AliITSChannelDaSSD constructor!" << endl;
-     fSignal = NULL;
-     fEventsNumber = 0;
-  }  
 }
 
 
@@ -80,6 +105,7 @@ AliITSChannelDaSSD& AliITSChannelDaSSD::operator = (const AliITSChannelDaSSD& st
 
 AliITSChannelDaSSD::~AliITSChannelDaSSD()
 {
+// Destructor
   if (fSignal) 
   {
      delete [] fSignal;
@@ -89,26 +115,26 @@ AliITSChannelDaSSD::~AliITSChannelDaSSD()
 
 Bool_t AliITSChannelDaSSD::SetEvenetsNumber(const Long_t eventsnumber)
 {
-  try
-  {
-     fSignal = new Short_t[eventsnumber];
-     fEventsNumber = eventsnumber;
-     memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
-     return kTRUE;
+// Allocate array for events data
+  if (fSignal) {delete [] fSignal; fSignal = NULL; }
+  fSignal = new (nothrow) Short_t[eventsnumber];
+  if (fSignal) {
+    fEventsNumber = eventsnumber;
+    memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
+    return kTRUE;
+  } else {
+    Error("AliITSChannelDaSSD", "Error allocating memory for %i Short_t objects!", eventsnumber);
+    fSignal = NULL;
+    fEventsNumber = 0;
+    return kFALSE;
   }
-  catch (bad_alloc&) 
-  {
-     cout << "Error allocating memory for " << (long) eventsnumber << " Short_t objects!" << endl;
-     fSignal = NULL;
-     fEventsNumber = 0;
-     return kFALSE;
-  }  
 }
 
 
 
 Bool_t AliITSChannelDaSSD::SetSignal(const Long_t eventnumber, const Short_t signal)
 {
+// put signal value to array 
   if (eventnumber < fEventsNumber && fSignal)
   {
      fSignal[eventnumber] = signal;
