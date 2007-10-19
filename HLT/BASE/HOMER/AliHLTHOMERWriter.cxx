@@ -52,11 +52,11 @@ HOMERWriter::HOMERWriter()
   fDataOffset(0),
   fBlocks()
     {
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+// Writer implementation of the HOMER interface.
+// The HLT Monitoring Environment including ROOT is
+// a native interface to ship out data from the HLT chain.
+// See pdf document shiped with the package
+// for class documentation and tutorial.
     Clear();
     }
 

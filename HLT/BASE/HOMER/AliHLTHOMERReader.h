@@ -122,6 +122,7 @@ class HOMERReader: public MonitoringReader
 
 	void SetEventRequestAdvanceTime( unsigned long time )
 		{
+		// advance time in us
 		fEventRequestAdvanceTime = time;
 		}
 
@@ -263,41 +264,41 @@ class HOMERReader: public MonitoringReader
 	        const char* fOriginatingNodeID; // node id from which the data originates
 	    };
 
-      /** type of the current event */
-      homer_uint64 fCurrentEventType;                             //!transient
-      /** ID of the current event */
-      homer_uint64 fCurrentEventID;                               //!transient
-      /** no of blocks currently used */
-      unsigned long fBlockCnt;                                    //!transient
-      /** available space in the block array */
-      unsigned long fMaxBlockCnt;                                 //!transient
-      /** block array */
-      DataBlock* fBlocks;                                         //!transient
-	
-      /** total no of data sources */
-      unsigned int fDataSourceCnt;                                //!transient
-      /** no of TCP data sources */
-      unsigned int fTCPDataSourceCnt;                             //!transient
-      /** no of Shm data sources */
-      unsigned int fShmDataSourceCnt;                             //!transient
-      /** available space in the sources array */
-      unsigned int fDataSourceMaxCnt;                             //!transient
-      /** array of data source descriptions */
-      DataSource* fDataSources;                                   //!transient
-
-      /** status of the connection */
-      int fConnectionStatus;                                      //!transient
-      /** flag an error for */
-      unsigned fErrorConnection;                                  //!transient
-
-      /** */
-      unsigned long fEventRequestAdvanceTime;                     //!transient
+        /** type of the current event */
+      	homer_uint64 fCurrentEventType;                             //!transient
+      	/** ID of the current event */
+      	homer_uint64 fCurrentEventID;                               //!transient
+      	/** no of blocks currently used */
+      	unsigned long fBlockCnt;                                    //!transient
+      	/** available space in the block array */
+      	unsigned long fMaxBlockCnt;                                 //!transient
+      	/** block array */
+      	DataBlock* fBlocks;                                         //!transient
+      		
+      	/** total no of data sources */
+      	unsigned int fDataSourceCnt;                                //!transient
+      	/** no of TCP data sources */
+      	unsigned int fTCPDataSourceCnt;                             //!transient
+      	/** no of Shm data sources */
+      	unsigned int fShmDataSourceCnt;                             //!transient
+      	/** available space in the sources array */
+      	unsigned int fDataSourceMaxCnt;                             //!transient
+      	/** array of data source descriptions */
+      	DataSource* fDataSources;                                   //!transient
+      	
+      	/** status of the connection */
+      	int fConnectionStatus;                                      //!transient
+      	/** flag an error for */
+      	unsigned fErrorConnection;                                  //!transient
+      	
+      	/** */
+      	unsigned long fEventRequestAdvanceTime;                     //!transient
     private:
-      /** copy constructor prohibited */
-      HOMERReader(const HOMERReader&);
-      /** assignment operator prohibited */
-      HOMERReader& operator=(const HOMERReader&);
-
+      	/** copy constructor prohibited */
+      	HOMERReader(const HOMERReader&);
+      	/** assignment operator prohibited */
+      	HOMERReader& operator=(const HOMERReader&);
+      	
 #ifdef USE_ROOT
         ClassDef(HOMERReader,2);
 #endif
