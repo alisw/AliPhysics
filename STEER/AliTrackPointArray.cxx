@@ -129,6 +129,7 @@ Bool_t AliTrackPointArray::AddPoint(Int_t i, const AliTrackPoint *p)
   return kTRUE;
 }
 
+
 //______________________________________________________________________________
 Bool_t AliTrackPointArray::GetPoint(AliTrackPoint &p, Int_t i) const
 {
@@ -442,5 +443,47 @@ void AliTrackPoint::Print(Option_t *) const
   printf("X = %12.6f    Tx = %12.6f%12.6f%12.6f\n", fX, fCov[0], fCov[1], fCov[2]);
   printf("Y = %12.6f    Ty = %12.6f%12.6f%12.6f\n", fY, fCov[1], fCov[3], fCov[4]);
   printf("Z = %12.6f    Tz = %12.6f%12.6f%12.6f\n", fZ, fCov[2], fCov[4], fCov[5]);
+
+}
+
+
+//________________________________
+void AliTrackPoint::SetAlignCovMatrix(const TMatrixDSym alignparmtrx){
+  // Add the uncertainty on the cluster position due to alignment
+  // (using the 6x6 AliAlignObj Cov. Matrix alignparmtrx) to the already
+  // present Cov. Matrix 
+
+  TMatrixDSym cov(3);
+  TMatrixD coval(3,3);
+  TMatrixD jacob(3,6);
+  Float_t newcov[6];
+
+  cov(0,0)=fCov[0];
+  cov(1,0)=cov(0,1)=fCov[1];
+  cov(2,0)=cov(0,2)=fCov[2];
+  cov(1,1)=fCov[3];
+  cov(2,1)=cov(1,2)=fCov[4];
+  cov(2,2)=fCov[5];
+  
+  jacob(0,0) = 1;      jacob(1,0) = 0;       jacob(2,0) = 0;
+  jacob(0,1) = 0;      jacob(1,1) = 1;       jacob(2,1) = 0;
+  jacob(0,2) = 0;      jacob(1,2) = 0;       jacob(2,2) = 1;
+  jacob(0,3) = 0;      jacob(1,3) =-fZ;      jacob(2,3) = fY;
+  jacob(0,4) = fZ;     jacob(1,4) = 0;       jacob(2,4) =-fX;
+  jacob(0,5) = fY;     jacob(1,5) = fX;      jacob(2,5) = 0;
+  
+  TMatrixD jacobT=jacob.T();jacob.T();
+  
+  coval=jacob*alignparmtrx*jacobT+cov;
+
+
+  newcov[0]=coval(0,0);
+  newcov[1]=coval(1,0);
+  newcov[2]=coval(2,0);
+  newcov[3]=coval(1,1);
+  newcov[4]=coval(2,1);
+  newcov[5]=coval(2,2);
+ 
+  SetXYZ(fX,fY,fZ,newcov);
 
 }

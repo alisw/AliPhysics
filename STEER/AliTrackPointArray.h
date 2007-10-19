@@ -13,6 +13,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TMatrixDSym.h>
 
 class AliTrackPoint : public TObject {
 
@@ -41,6 +42,8 @@ class AliTrackPoint : public TObject {
   Bool_t   GetPCA(const AliTrackPoint &p, AliTrackPoint &out) const;
 
   Float_t  GetAngle() const;
+  void SetAlignCovMatrix(const TMatrixDSym alignparmtrx);
+
   AliTrackPoint& Rotate(Float_t alpha) const;
   AliTrackPoint& MasterToLocal() const;
 
