@@ -22,6 +22,12 @@
     @brief  Class containing TPC Pad objects.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -41,15 +47,15 @@ ClassImp(AliHLTTPCPadArray)
 
 AliHLTTPCPadArray::AliHLTTPCPadArray()
   :
+  fRowPadVector(),
+  fClusters(),
   fPatch(-1),
   fFirstRow(-1),
   fLastRow(-1),
   fThreshold(10),
-  fNumberOfRows(0),
   fNumberOfPadsInRow(NULL),
-  fDigitReader(NULL),
-  fRowPadVector(0),
-  fClusters(0)
+  fNumberOfRows(0),
+  fDigitReader(NULL)
 {
   // see header file for class documentation
   // or
@@ -60,40 +66,17 @@ AliHLTTPCPadArray::AliHLTTPCPadArray()
 
 AliHLTTPCPadArray::AliHLTTPCPadArray(Int_t patch)
   :
+  fRowPadVector(),
+  fClusters(),
   fPatch(patch),
   fFirstRow(-1),
   fLastRow(-1),
   fThreshold(10),
-  fNumberOfRows(0),
   fNumberOfPadsInRow(NULL),
-  fDigitReader(NULL),
-  fRowPadVector(0),
-  fClusters(0)
+  fNumberOfRows(0),
+  fDigitReader(NULL)
 {
   // see header file for class documentation
-}
-
-AliHLTTPCPadArray::AliHLTTPCPadArray(const AliHLTTPCPadArray& srcPadArray)
-  :
-  fPatch(srcPadArray.fPatch),
-  fFirstRow(srcPadArray.fFirstRow),
-  fLastRow(srcPadArray.fLastRow),
-  fThreshold(srcPadArray.fThreshold),
-  fNumberOfRows(srcPadArray.fNumberOfRows),
-  fNumberOfPadsInRow(srcPadArray.fNumberOfPadsInRow),
-  fDigitReader(srcPadArray.fDigitReader),
-  fRowPadVector(srcPadArray.fRowPadVector),
-  fClusters(srcPadArray.fClusters)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor not implemented");
-}
-
-AliHLTTPCPadArray& AliHLTTPCPadArray::operator=(const AliHLTTPCPadArray&)
-{
-  // see header file for class documentation
-  HLTFatal("assignment operator not implemented");
-  return (*this);
 }
 
 AliHLTTPCPadArray::~AliHLTTPCPadArray()
@@ -101,7 +84,8 @@ AliHLTTPCPadArray::~AliHLTTPCPadArray()
   // see header file for class documentation
 }
 
-Int_t AliHLTTPCPadArray::InitializeVector(){
+Int_t AliHLTTPCPadArray::InitializeVector()
+{
   // see header file for class documentation
 
   if(fPatch>5||fPatch<0){
@@ -119,7 +103,7 @@ Int_t AliHLTTPCPadArray::InitializeVector(){
 
   for(Int_t i=0;i<fNumberOfRows;i++){
     fNumberOfPadsInRow[i]=AliHLTTPCTransform::GetNPads(i+fFirstRow);
-    fPadVector tmpRow;
+    AliHLTTPCPadVector tmpRow;
     for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
       AliHLTTPCPad *tmpPad = new AliHLTTPCPad();
       tmpPad->SetID(i,j);
@@ -127,9 +111,12 @@ Int_t AliHLTTPCPadArray::InitializeVector(){
     }
     fRowPadVector.push_back(tmpRow);
   }
+  return 0;
 }
 
-Int_t AliHLTTPCPadArray::DeInitializeVector(){
+Int_t AliHLTTPCPadArray::DeInitializeVector()
+{
+  // see header file for class documentation
   for(Int_t i=0;i<fNumberOfRows;i++){
     for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
       delete fRowPadVector[i][j];
@@ -139,14 +126,22 @@ Int_t AliHLTTPCPadArray::DeInitializeVector(){
   fRowPadVector.clear();
   return 1;
 } 
-void AliHLTTPCPadArray::SetPatch(Int_t patch){
+
+void AliHLTTPCPadArray::SetPatch(Int_t patch)
+{
+  // see header file for class documentation
   fPatch=patch;
 }
 
-void AliHLTTPCPadArray::SetDigitReader(AliHLTTPCDigitReader* digitReader){
+void AliHLTTPCPadArray::SetDigitReader(AliHLTTPCDigitReader* digitReader)
+{
+  // see header file for class documentation
   fDigitReader=digitReader;
 }
-Int_t AliHLTTPCPadArray::ReadData(){
+
+Int_t AliHLTTPCPadArray::ReadData()
+{
+  // see header file for class documentation
 
   switch (fPatch){
   case 0:
@@ -182,7 +177,9 @@ Int_t AliHLTTPCPadArray::ReadData(){
   }
   return 0;
 }
-void AliHLTTPCPadArray::FindClusters(Int_t match){
+
+void AliHLTTPCPadArray::FindClusters(Int_t match)
+{
   //see header file for documentation
   Int_t nClusters=0;
   Int_t totalChargeOfPreviousCandidate=0;
@@ -394,7 +391,10 @@ void AliHLTTPCPadArray::FindClusters(Int_t match){
   HLTInfo("Found %d clusters.",nClusters);
   // PrintClusters();
 }
-void AliHLTTPCPadArray::PrintClusters(){
+
+void AliHLTTPCPadArray::PrintClusters()
+{
+  // see header file for class documentation
   for(int i=0;i<fClusters.size();i++){
     cout<<"Cluster number: "<<i<<endl;
     cout<<"Row: "<<fClusters[i].fRowNumber<<" Pad: "<<fClusters[i].fFirstPad<<endl;
@@ -404,5 +404,23 @@ void AliHLTTPCPadArray::PrintClusters(){
     cout<<"TimeError:    "<<fClusters[i].fTime2<<endl;
     cout<<endl;
     cout<<endl;
+  }
+}
+
+void AliHLTTPCPadArray::DataToDefault()
+{
+  for(Int_t i=0;i<fNumberOfRows;i++){
+    for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
+	fRowPadVector[i][j]->SetDataToDefault();
+    }
+  }
+}
+
+void AliHLTTPCPadArray::FindClusterCandidates()
+{
+  for(Int_t row=0;row<fNumberOfRows;row++){
+    for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
+	fRowPadVector[row][pad]->FindClusterCandidates();
+    }
   }
 }

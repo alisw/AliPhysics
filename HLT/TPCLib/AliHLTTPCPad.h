@@ -1,8 +1,8 @@
 // -*- Mode: C++ -*-
 // @(#) $Id$
 
-#ifndef ALIHLTPAD_H
-#define ALIHLTPAD_H
+#ifndef ALIHLTTPCPAD_H
+#define ALIHLTTPCPAD_H
 /* This file is property of and copyright by the ALICE HLT Project        * 
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
@@ -12,6 +12,12 @@
     @date   
     @brief  Container Class for TPC Pads.
 */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCClusters.h"
@@ -44,10 +50,6 @@ public:
    */
   AliHLTTPCPad(Int_t offset, Int_t nofBins);
 
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCPad(const AliHLTTPCPad&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCPad& operator=(const AliHLTTPCPad&);
   /** standard destructor */
   virtual ~AliHLTTPCPad();
 
@@ -259,7 +261,8 @@ public:
   /**
    * Returns the signal in the specified bin
    */
-  Int_t GetDataSignal(Int_t bin);
+  Int_t GetDataSignal(Int_t bin) const;
+
   /**
    * Finds the cluster candidate. If atleast two signals in the data array are neighbours
    * they are stored in a cluster candidate vector.
@@ -273,14 +276,19 @@ public:
   /**
    * Vector of cluster candidates
    */
-  vector<AliHLTTPCClusters> fClusterCandidates;
+  vector<AliHLTTPCClusters> fClusterCandidates;                    //! transient
 
   /**
    * Vector of used clustercandidates, used so one do not use candidates multiple times
    */
-  vector<Int_t> fUsedClusterCandidates;
+  vector<Int_t> fUsedClusterCandidates;                            //! transient
 
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCPad(const AliHLTTPCPad&);
+  /** assignment operator prohibited */
+  AliHLTTPCPad& operator=(const AliHLTTPCPad&);
+
   /**
    * Add a value to the base line calculation.
    * The value is been added to the sum if it exceeds the current base line
@@ -328,14 +336,14 @@ public:
   /**
    * Array containing the data
    */
-  AliHLTTPCSignal_t* fDataSignals;
+  AliHLTTPCSignal_t* fDataSignals;                                 //! transient
 
   /**
    * Array containing info on which bins have signals
    */
-  Int_t *fSignalPositionArray;
-  Int_t fSizeOfSignalPositionArray;
+  Int_t *fSignalPositionArray;                                     //! transient
+  Int_t fSizeOfSignalPositionArray;                                //! transient
 
-  ClassDef(AliHLTTPCPad, 0)
+  ClassDef(AliHLTTPCPad, 1)
 };
-#endif
+#endif // ALIHLTTPCPAD_H

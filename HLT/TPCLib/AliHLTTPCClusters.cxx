@@ -2,16 +2,23 @@
 using namespace std;
 #endif
 
-#include <cerrno>
-#include "AliHLTTPCPadArray.h"
-#include "AliHLTTPCPad.h"
-#include "AliHLTStdIncludes.h"
-#include "AliHLTTPCTransform.h"
-#include "AliTPCRawStream.h"
-#include "AliRawReaderMemory.h"
-#include "AliHLTTPCDigitReader.h"
-#include <vector>
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+//#include <cerrno>
+//#include "AliHLTTPCPadArray.h"
+//#include "AliHLTTPCPad.h"
+//#include "AliHLTStdIncludes.h"
+//#include "AliHLTTPCTransform.h"
+//#include "AliTPCRawStream.h"
+//#include "AliRawReaderMemory.h"
+//#include "AliHLTTPCDigitReader.h"
+//#include <vector>
 #include "AliHLTTPCClusters.h"
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 //ClassImp(AliHLTTPCClusters)
 
@@ -27,12 +34,17 @@ AliHLTTPCClusters::AliHLTTPCClusters()
   fChargeFalling(0),
   fLastCharge(0),
   fLastMergedPad(0),
+  fRowNumber(0),
   fFirstPad(0),
-  fLastPad(0),
-  fRowNumber(0)
+  fLastPad(0)
 {
-
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
+
 AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src)
   :
   fTotalCharge(src.fTotalCharge),
@@ -45,13 +57,17 @@ AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src)
   fChargeFalling(src.fChargeFalling),
   fLastCharge(src.fLastCharge),
   fLastMergedPad(src.fLastMergedPad),
+  fRowNumber(src.fRowNumber),
   fFirstPad(src.fFirstPad),
-  fLastPad(src.fLastPad),
-  fRowNumber(src.fRowNumber)
+  fLastPad(src.fLastPad)
 {
+  // see header file for class documentation
   //HLTInfo("Copy constructor called");
 }
-AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src){
+
+AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src)
+{
+  // see header file for class documentation
   fTotalCharge=src.fTotalCharge;
   fPad = src.fPad;
   fTime = src.fTime;
@@ -61,8 +77,8 @@ AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src){
   fFlags = src.fFlags;
   fChargeFalling = src.fChargeFalling;
   fLastCharge = src.fLastCharge;
+  fRowNumber= src.fRowNumber;
   fLastMergedPad = src.fLastMergedPad;
   fFirstPad = src.fFirstPad;
-  fRowNumber= src.fRowNumber;
   return (*this);
 }

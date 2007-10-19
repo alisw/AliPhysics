@@ -110,7 +110,7 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
   AliHLTTPCDigitPublisherComponent& operator=(const AliHLTTPCDigitPublisherComponent&);
 
   /** max output block size, estimate during DoInit */
-  Int_t                   fMaxSize;                                //!transient
+  UInt_t                  fMaxSize;                                //!transient
 
   /** first slice (range of slices currently not implemented) */
   int                     fMinSlice;                               //!transient

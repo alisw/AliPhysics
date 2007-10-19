@@ -1,5 +1,5 @@
-#ifndef ALIHLTTPCCLUSTERS
-#define ALIHLTTPCCLUSTERS
+#ifndef ALIHLTTPCCLUSTERS_H
+#define ALIHLTTPCCLUSTERS_H
 
 #include "AliHLTLogging.h"
 
@@ -8,7 +8,7 @@ class AliHLTTPCClusters : public AliHLTLogging {
  public:
   AliHLTTPCClusters();
   AliHLTTPCClusters(const AliHLTTPCClusters& src);
-  AliHLTTPCClusters& operator=(const AliHLTTPCClusters&);
+  AliHLTTPCClusters& operator=(const AliHLTTPCClusters& src);
 
   UInt_t fTotalCharge;   //tot charge of cluster
   UInt_t fPad;           //pad value
@@ -20,9 +20,9 @@ class AliHLTTPCClusters : public AliHLTLogging {
   UInt_t fChargeFalling; //for deconvolution
   UInt_t fLastCharge;    //for deconvolution
   UInt_t fLastMergedPad; //dont merge twice per pad
-  UInt_t fRowNumber;
-  Int_t fFirstPad;
-  UInt_t fLastPad;
+  UInt_t fRowNumber;     //row number
+  Int_t fFirstPad;       //first pad
+  UInt_t fLastPad;       //last pad (aha!!!)
   ClassDef(AliHLTTPCClusters,0) //Fast cluster finder
     };
-#endif
+#endif //ALIHLTTPCCLUSTERS_H

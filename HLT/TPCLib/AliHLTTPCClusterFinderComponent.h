@@ -55,10 +55,6 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
          * @param packed    whether to use the packed or unpacked reader 
          */
 	AliHLTTPCClusterFinderComponent(bool packed);
-	/** not a valid copy constructor, defined according to effective C++ style */
-	AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&);
-	/** not a valid assignment op, but defined according to effective C++ style */
-	AliHLTTPCClusterFinderComponent& operator=(const AliHLTTPCClusterFinderComponent&);
 	/** destructor */
 	virtual ~AliHLTTPCClusterFinderComponent();
 
@@ -89,6 +85,10 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
     private:
+	/** copy constructor prohibited */
+	AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&);
+	/** assignment operator prohibited */
+	AliHLTTPCClusterFinderComponent& operator=(const AliHLTTPCClusterFinderComponent&);
 	/** the cluster finder object */
 	AliHLTTPCClusterFinder* fClusterFinder;                                      //!transient
 	/** the reader object for data decoding */

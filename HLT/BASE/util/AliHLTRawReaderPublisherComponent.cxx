@@ -206,7 +206,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 {
   // see header file for class documentation
   int iResult=0;
-  int offset=0;
+  unsigned int offset=0;
   AliHLTUInt8_t* pTgt=outputPtr;
   assert(outputPtr!=NULL || size==0);
   AliRawReader* pRawReader=GetRawReader();
@@ -218,7 +218,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       const AliRawDataHeader* pHeader=pRawReader->GetDataHeader();
       assert(pHeader!=NULL);
       if (pHeader==NULL) continue;
-      int readSize=pRawReader->GetDataSize()+sizeof(AliRawDataHeader);
+      unsigned int readSize=pRawReader->GetDataSize()+sizeof(AliRawDataHeader);
       int id=pRawReader->GetEquipmentId();
       AliInfo(Form("got header for id %d, size %d", id, readSize));
       if (fMinEquId>id || fMaxEquId<id) {

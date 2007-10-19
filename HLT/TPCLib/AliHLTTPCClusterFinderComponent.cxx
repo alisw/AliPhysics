@@ -64,8 +64,8 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
   fXYClusterError(-1),
   fZClusterError(-1),
   fPackedSwitch(packed),
-  fPatch(0),
   fUnsorted(0),
+  fPatch(0),
   fPadArray(NULL)
 {
   // see header file for class documentation
@@ -73,29 +73,6 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-}
-
-AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(const AliHLTTPCClusterFinderComponent&)
-  :
-  fClusterFinder(NULL),
-  fReader(NULL),
-  fClusterDeconv(true),
-  fXYClusterError(-1),
-  fZClusterError(-1),
-  fPackedSwitch(0),
-  fPatch(0),
-  fUnsorted(0),
-  fPadArray(NULL)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCClusterFinderComponent& AliHLTTPCClusterFinderComponent::operator=(const AliHLTTPCClusterFinderComponent&)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTTPCClusterFinderComponent::~AliHLTTPCClusterFinderComponent()

@@ -749,7 +749,7 @@ void AliHLTTPCClusterFinder::FindClusters(){
   fPadArray->FindClusters(fMatch);
 
   AliClusterData * clusterlist = new AliClusterData[fPadArray->fClusters.size()]; //Clusterlist
-  for(int i=0;i<fPadArray->fClusters.size();i++){
+  for(unsigned int i=0;i<fPadArray->fClusters.size();i++){
     clusterlist[i].fTotalCharge = fPadArray->fClusters[i].fTotalCharge;
     clusterlist[i].fPad = fPadArray->fClusters[i].fPad;
     clusterlist[i].fPad2 = fPadArray->fClusters[i].fPad2;

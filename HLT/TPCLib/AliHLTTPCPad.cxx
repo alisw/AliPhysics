@@ -23,6 +23,12 @@
     @brief  Container Class for TPC Pads.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -46,6 +52,8 @@ ClassImp(AliHLTTPCPad)
 
 AliHLTTPCPad::AliHLTTPCPad()
   :
+  fClusterCandidates(),
+  fUsedClusterCandidates(),
   fRowNo(-1),
   fPadNo(-1),
   fThreshold(0),
@@ -62,8 +70,6 @@ AliHLTTPCPad::AliHLTTPCPad()
   fNofBins(0),
   fReadPos(0),
   fpRawData(NULL),
-  fClusterCandidates(),
-  fUsedClusterCandidates(0),
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0)
@@ -84,6 +90,8 @@ AliHLTTPCPad::AliHLTTPCPad()
 
 AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   :
+  fClusterCandidates(),
+  fUsedClusterCandidates(),
   fRowNo(-1),
   fPadNo(-1),
   fThreshold(0),
@@ -100,48 +108,11 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fNofBins(nofBins),
   fReadPos(0),
   fpRawData(NULL),
-  fClusterCandidates(),
-  fUsedClusterCandidates(0),
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
   fSizeOfSignalPositionArray(0)
 {
   // see header file for class documentation
-}
-
-AliHLTTPCPad::AliHLTTPCPad(const AliHLTTPCPad& srcPad)
-  :
-  fRowNo(srcPad.fRowNo),
-  fPadNo(srcPad.fPadNo),
-  fThreshold(0),
-  fAverage(-1),
-  fNofEvents(0),
-  fSum(0),
-  fCount(0),
-  fTotal(0),
-  fBLMax(-1),
-  fBLMaxBin(-1),
-  fBLMin(-1),
-  fBLMinBin(-1),
-  fFirstBLBin(0),
-  fNofBins(0),
-  fReadPos(0),
-  fpRawData(NULL),
-  fClusterCandidates(),
-  fUsedClusterCandidates(0),
-  fDataSignals(NULL),
-  fSignalPositionArray(NULL),
-  fSizeOfSignalPositionArray(0)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor not implemented");
-}
-
-AliHLTTPCPad& AliHLTTPCPad::operator=(const AliHLTTPCPad&)
-{
-  // see header file for class documentation
-  HLTFatal("assignment operator not implemented");
-  return (*this);
 }
 
 AliHLTTPCPad::~AliHLTTPCPad()
@@ -464,7 +435,9 @@ Float_t AliHLTTPCPad::GetAveragedOccupancy() const
   // history is not yet implemented
   return GetOccupancy();
 }
-void AliHLTTPCPad::PrintRawData(){
+void AliHLTTPCPad::PrintRawData()
+{
+  // see header file for class documentation
   for(Int_t bin=0;bin<AliHLTTPCTransform::GetNTimeBins();bin++){
     if(GetDataSignal(bin)>0)
       cout<<fRowNo<<"\t"<<fPadNo<<"\t"<<bin<<"\t"<<GetDataSignal(bin)<<endl;;
@@ -472,22 +445,33 @@ void AliHLTTPCPad::PrintRawData(){
   cout<<"bins: "<<AliHLTTPCTransform::GetNTimeBins()<<endl;
 }
 
-void AliHLTTPCPad::SetDataToDefault(){
+void AliHLTTPCPad::SetDataToDefault()
+{
+  // see header file for class documentation
   if(fpRawData){
     memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
     memset( fSignalPositionArray, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
     fSizeOfSignalPositionArray=0;
   }
 }
-void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal){
+
+void AliHLTTPCPad::SetDataSignal(Int_t bin,Int_t signal)
+{
+  // see header file for class documentation
   fDataSignals[bin]=signal;
   fSignalPositionArray[fSizeOfSignalPositionArray]=bin;
   fSizeOfSignalPositionArray++;
 }
-Int_t AliHLTTPCPad::GetDataSignal(Int_t bin){
+
+Int_t AliHLTTPCPad::GetDataSignal(Int_t bin) const
+{
+  // see header file for class documentation
   return fDataSignals[bin];
 }
-void AliHLTTPCPad::FindClusterCandidates(){
+
+void AliHLTTPCPad::FindClusterCandidates()
+{
+  // see header file for class documentation
   UInt_t seqcharge=0;
   UInt_t seqaverage=0;
   UInt_t seqerror=0;
