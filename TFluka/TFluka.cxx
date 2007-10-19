@@ -2095,8 +2095,11 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
     
     proc.Set(1);
     TMCProcess iproc;
-    if (caller == kBXEntering || caller == kBXExiting || caller == kEEDRAW) {
+    if (caller == kBXEntering || caller == kBXExiting || caller == kEEDRAW || caller == kSODRAW) {
 	iproc = kPTransportation;
+    }
+    else if (caller == kUSTCKV) {
+	iproc = kPCerenkov;
     } else {
 	switch (icode) {
 	case kEMFSCO:
@@ -2113,6 +2116,16 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
 		iproc = kPTransportation;
 	    }
 	    break;
+	case kKASHEA:
+	case kKASNEU:
+	case kKASOPH:
+	case kKASKADescape:
+	case kEMFSCOescape:
+	case kKASNEUescape:
+	case kKASHEAescape:
+	case kKASOPHescape:
+	    iproc = kPTransportation;
+	    break;
 	case kKASKADtimekill:
 	case kEMFSCOtimekill:
 	case kKASNEUtimekill:
@@ -2121,14 +2134,9 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
 	    iproc =  kPTOFlimit;
 	    break;
 	case kKASKADstopping:
-	case kKASKADescape:
 	case kEMFSCOstopping1:
 	case kEMFSCOstopping2:
-	case kEMFSCOescape:
 	case kKASNEUstopping:
-	case kKASNEUescape:
-	case kKASHEAescape:
-	case kKASOPHescape:
 	    iproc = kPStop;
 	    break;
 	case kKASOPHabsorption:
@@ -2136,6 +2144,7 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
 	    break;
 	case kKASOPHrefraction:
 	    iproc = kPLightRefraction;
+	    break;
 	case kEMFSCOlocaldep : 
 	    iproc = kPPhotoelectric;
 	    break;

@@ -429,7 +429,7 @@
 *
 *
 *  |  !!!!!! Here Stuprf should be used !!!!!!
-         LOUOPP (LSTOPP) = LLOUSE
+         LOUOPP (LSTOPP) = ITFL
          DO 2100 ISPR = 1, MKBMX1
             SPAROK (ISPR,LSTOPP) = SPAUSR (ISPR)
  2100    CONTINUE

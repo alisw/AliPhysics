@@ -12,6 +12,7 @@
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fltclcm.h"  //(LTCLCM) fluka common
 #include "Fpaprop.h"  //(PAPROP) fluka common
+#include "Fopphst.h"  //(OPPHST) fluka common
 
 #ifndef WIN32
 # define endraw endraw_
@@ -40,7 +41,6 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
       if (debug) printf("Unknown particle %5d %5d \n", TRACKR.jtrack, icode);
       return;
   }
-  
   
   if (TRACKR.jtrack == -1) {
   // Handle quantum efficiency the G3 way
@@ -87,6 +87,8 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
 	  //  Elastic recoil and in stuprf npprmr > 0,
 	  //  the secondary being loaded is actually still the interacting particle
 	  cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-4] );
+      } else if (TRACKR.jtrack == -1) {
+	  cppstack->SetCurrentTrack(OPPHST.louopp[OPPHST.lstopp]);
       } else {
           cppstack->SetCurrentTrack(TRACKR.ispusr[mkbmx2-1] );
       }
@@ -99,6 +101,7 @@ void endraw(Int_t& icode, Int_t& mreg, Double_t& rull, Double_t& xsco, Double_t&
   // This has to be signalled to the StepManager() 
   //
       cppstack->SetCurrentTrack( TRACKR.ispusr[mkbmx2-1] );
+      
       fluka->SetRull(edep);
       fluka->SetIcode((FlukaProcessCode_t) icode);
       (TVirtualMCApplication::Instance())->Stepping();
