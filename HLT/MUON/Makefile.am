@@ -22,16 +22,12 @@ libAliHLTMUON_la_SOURCES	=  $(MODULE_SRCS)
 noinst_HEADERS			=  $(MODULE_HDRS)
 
 # compilation flags of the library
-AM_CPPFLAGS			= @HLTBASE_CPPFLAGS@ \
-				  @ALIROOT_CPPFLAGS@ \
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
 				  @ROOTCFLAGS@ \
-				  -I$(top_srcdir)/BASE \
-				  -I$(top_srcdir)/MUON \
-				  -I$(top_srcdir)/MUON/OnlineAnalysis \
-				  -I$(top_srcdir)/MUON/OfflineInterface \
-				  -I$(ALICE_ROOT)/MUON \
-				  -I$(ALICE_ROOT)/STEER \
-				  -I$(ALICE_ROOT)/RAW
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 
 # linking flags of the library
 libAliHLTMUON_la_LDFLAGS	= -L@ROOTLIBDIR@ \

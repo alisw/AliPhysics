@@ -16,6 +16,7 @@ MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libAliHLTSample.pkg
 include $(top_srcdir)/libAliHLTSample.pkg
 
+
 # library definition
 # The lib_LTLIBRARIES variable is a fixed variable of the autotools build
 # system. All libraries defined by the Makefile template have to be added
@@ -55,11 +56,19 @@ noinst_HEADERS			=  $(MODULE_HDRS)
 
 # compilation flags of the library
 # This is the place to add further include directories if you are
-# using external modules. The AliRoot, ROOT and HLT base directories
+# using external modules. The AliRoot/STEER and ROOT directories
 # are the default include directories.
-AM_CPPFLAGS			= @HLTBASE_CPPFLAGS@ \
+# Include paths within the HLT modules are automatically taken from the
+# EINCLUDE variable of the pkg definition
+# other AliRoot dependencies might need to added
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  @HLTBASE_CPPFLAGS@ \
 				  @ALIROOT_CPPFLAGS@ \
-				  @ROOTCFLAGS@
+				  @ROOTCFLAGS@ \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 
 # linking flags of the library
 # This is the place to add further libraries if you are

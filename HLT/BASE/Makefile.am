@@ -16,8 +16,6 @@ SUBDIRS 			= . $(UTIL_DIR) interface HOMER
 
 EXTRA_DIST			= 
 
-AM_CPPFLAGS			= -DMODULE=$(MODULE)
-
 bin_SCRIPTS			= setenv.sh setenv.csh
 
 # library definition
@@ -32,6 +30,13 @@ LIBRARY_VERSION			= '4:0:1'
 MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libHLTbase.pkg
 include $(top_srcdir)/libHLTbase.pkg
+
+# compiler flags
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 
 # library sources
 libHLTbase_la_SOURCES		= $(MODULE_SRCS)

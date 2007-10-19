@@ -5,12 +5,6 @@ MODULE 				= AliHLTTPC
 
 EXTRA_DIST			= 
 
-AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
-				  -I$(srcdir)                \
-				  -I$(srcdir)/tracking       \
-				  -I$(top_srcdir)/BASE       \
-				  -I$(top_srcdir)/BASE/util
-
 # generation of the TPC Pad mapping tables for the 
 # AliHLTTPCDigitReaderRaw reader
 if USE_TPC_MAPPING
@@ -37,6 +31,13 @@ LIBRARY_VERSION			= '4:0:1'
 MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libAliHLTTPC.pkg
 include $(top_srcdir)/libAliHLTTPC.pkg
+
+# compiler flags
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 
 # library sources
 libAliHLTTPC_la_SOURCES		= $(MODULE_SRCS)

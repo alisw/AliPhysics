@@ -10,10 +10,6 @@ MODULE				= AliHLTUtil
 
 EXTRA_DIST			=
 
-AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
-				  -DMODULE=$(MODULE)         \
-				  -I$(top_srcdir)/BASE
-
 # library definition
 lib_LTLIBRARIES			=  libAliHLTUtil.la
 
@@ -26,6 +22,13 @@ LIBRARY_VERSION			= '0:0:0'
 MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libAliHLTUtil.pkg
 include $(top_srcdir)/libAliHLTUtil.pkg
+
+# compiler flags
+AM_CPPFLAGS			= -DMODULE=$(MODULE)         \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 
 # library sources
 libAliHLTUtil_la_SOURCES	= $(MODULE_SRCS)
