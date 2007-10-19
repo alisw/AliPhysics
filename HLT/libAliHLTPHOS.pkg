@@ -41,7 +41,9 @@ SRCS:=	\
 		  PHOS/AliHLTPHOSRcuProcessor.cxx \
 	          PHOS/AliHLTDDLDecoder.cxx \
 	          PHOS/AliHLTPHOSMapper.cxx \
-	          PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx
+	          PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx \
+		  PHOS/AliHLTPHOSConfig.cxx \
+		  PHOS/AliHLTPHOSAltroConfig.cxx 	
 
 HDRS:=		  $(SRCS:.cxx=.h)
 
