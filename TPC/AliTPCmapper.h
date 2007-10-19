@@ -5,137 +5,110 @@
 
 #include <TObject.h>
 
-class AliTPCmapper : public TObject{
+class AliTPCAltroMapping;
+class AliTPCROC;
 
+class AliTPCmapper : public TObject{
 
 public:
 
-    AliTPCmapper();
-    virtual ~AliTPCmapper();
+  AliTPCmapper();
+  virtual ~AliTPCmapper();
 
-    void Init();
+  AliTPCmapper& operator = (const AliTPCmapper& mapper);
+  AliTPCmapper(const AliTPCmapper& mapper);
 
-    Int_t ReadMapping();
+  void Init();
 
+  // ALTRO mapping functions
+  Int_t GetPad(Int_t patch, Int_t hwAddress) const;
+  Int_t GetPad(Int_t patch, Int_t branch, Int_t fec, Int_t chip, Int_t channel) const;
 
-    Int_t GetRow(Int_t rcu, Int_t branch, Int_t fec, Int_t altro, Int_t channel) const{
-	return fAddressToRow[rcu][branch][fec][altro][channel];}
+  // ALTRO mapping functions on roc level (padrow = 0 ... kNpadrowIROC, kNpadrowOROC)
+  Int_t GetHWAddress(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetRcu(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetPatch(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetPadRow(Int_t roc, Int_t hwAddress) const;
+  Int_t GetPadRow(Int_t roc, Int_t branch, Int_t fec, Int_t chip, Int_t channel) const;
+  Int_t GetBranch(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetFEChw(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetFEC(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetChip(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetChannel(Int_t roc, Int_t padrow, Int_t pad) const;
 
-    Int_t GetPad(Int_t rcu, Int_t branch, Int_t fec, Int_t altro, Int_t channel) const {
-	return fAddressToPad[rcu][branch][fec][altro][channel];}
+  // ALTRO mapping functions on sector level (sectorpadrow = 0 ... kNpadrow)
+  Int_t GetSectorPadRow(Int_t patch, Int_t hwAddress) const;
+  Int_t GetSectorPadRow(Int_t patch, Int_t branch, Int_t fec, Int_t chip, Int_t channel) const;
+  Int_t GetHWAddressSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetRcuSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetPatchSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetBranchSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetFEChwSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetFECSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetChipSector(Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetChannelSector(Int_t sectorpadrow, Int_t pad) const;
 
-    Int_t GetPadSector(Int_t rcu, Int_t branch, Int_t fec, Int_t altro, Int_t channel) const {
-	return fRowPadToPadsec[fAddressToPad[rcu][branch][fec][altro][channel]]
-	    [fAddressToPad[rcu][branch][fec][altro][channel]];}
+  // Coding and decoding of hardware addresses
+  Int_t CodeHWAddress(Int_t branch,  Int_t fec,  Int_t chip, Int_t channel) const;
+  Int_t DecodedHWAddressBranch(Int_t hwAddress) const;
+  Int_t DecodedHWAddressFECaddr(Int_t hwAddress) const;
+  Int_t DecodedHWAddressChipaddr(Int_t hwAddress) const;
+  Int_t DecodedHWAddressChanneladdr(Int_t hwAddress) const;
 
+  // Pad Geometry on sector level (padrow = 0 ... kNpadrow)
+  Int_t    GetNpads(Int_t roc, Int_t padrow) const;
+  Int_t    GetNpads(Int_t sectorpadrow) const;
+  Int_t    GetNpadrows(Int_t roc) const;
+  /*
+  Double_t GetPadXlocal(Int_t sectorpadrow) const;
+  Double_t GetPadYlocal(Int_t sectorpadrow, Int_t pad) const;
+  Double_t GetPadXglobal(Int_t sectorpadrow, Int_t pad, Int_t sector) const;
+  Double_t GetPadYglobal(Int_t sectorpadrow, Int_t pad, Int_t sector) const;
+  Double_t GetPadWidth(Int_t sectorpadrow) const;
+  Double_t GetPadLength(Int_t sectorpadrow) const;
+  */
 
-    Int_t GetRow(Int_t altroaddr) const;
+  // Conversion between hardware FEC numbering and official numbering
+  Int_t HwToOffline(Int_t patch, Int_t branch, Int_t fec) const;
+  Int_t OfflineToHwBranch(Int_t patch, Int_t fec) const;
+  Int_t OfflineToHwFec(Int_t patch, Int_t fec) const;
 
-    Int_t GetPad(Int_t altroaddr) const;
+  // More mapping functions
+  Int_t GetEquipmentID(Int_t roc, Int_t padrow, Int_t pad) const;
+  Int_t GetEquipmentIDsector(Int_t side, Int_t sector, Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetEquipmentIDfromPatch(Int_t side, Int_t sector, Int_t patch) const;
+  Int_t GetSectorFromRoc(Int_t roc) const;
+  Int_t GetSideFromRoc(Int_t roc) const;
+  Int_t GetRocFromPatch(Int_t side, Int_t sector, Int_t patch) const;
+  Int_t GetRoc(Int_t side, Int_t sector, Int_t sectorpadrow, Int_t pad) const;
+  Int_t GetSideFromEquipmentID(Int_t equipmentID) const;
+  Int_t GetSectorFromEquipmentID(Int_t equipmentID) const;
+  Int_t GetRocFromEquipmentID(Int_t equipmentID) const;
+  Int_t GetPatchFromEquipmentID(Int_t equipmentID) const;
 
-    Int_t GetPadFromPadSector(Int_t padsector) const{
-	return fPadsecToPad[padsector];}
+  // Even more
+  Int_t  GetNfec(Int_t patch, Int_t branch) const;
+  Int_t  GetNfec(Int_t patch) const;
+  Bool_t IsIROC(Int_t roc) const;
+  Bool_t IsOROC(Int_t roc) const;
 
-    Int_t GetRowFromPadSector(Int_t padsector) const {
-	return fPadsecToRow[padsector];}
+ private:
 
-    Int_t GetPadSector(Int_t row,Int_t pad) const{
-	return fRowPadToPadsec[row][pad];}
+  Int_t fNside;
+  Int_t fNsector;
+  Int_t fNrcu;
+  Int_t fNbranch;
+  Int_t fNaltro;
+  Int_t fNchannel;
+  Int_t fNpadrow;
+  Int_t fNpadrowIROC;
+  Int_t fNpadrowOROC;
 
-    Int_t GetPadsInRowS(Int_t row) const;
+  AliTPCAltroMapping *fMapping[6];    // The ALTRO mapping for each patch (rcu)
+  AliTPCROC *fROC;                    // ROC object containing some relevant functions
 
-    Double_t GetPadXlocalS (Int_t row, Int_t pad) const;
-    Double_t GetPadXlocalS (Int_t padsector) const;
-    Double_t GetPadYlocalS (Int_t row, Int_t pad) const;
-    Double_t GetPadYlocalS (Int_t padsector) const;
-    Double_t GetPadXglobalS(Int_t row, Int_t pad, Int_t sector) const;
-    Double_t GetPadYglobalS(Int_t row, Int_t pad, Int_t sector) const;
-    Double_t GetPadWidthS  (Int_t row) const;
-    Double_t GetPadLengthS (Int_t row) const;
+  ClassDef(AliTPCmapper,1)
 
-
-    Int_t GetRCUs(Int_t row, Int_t pad) const{
-	return fRowPadToRCU[row][pad];}
-
-    Int_t GetBranchS(Int_t row, Int_t pad) const {
-	return fRowPadToBranch[row][pad];}
-
-    Int_t GetFECs(Int_t row, Int_t pad) const {
-	return fRowPadToFEC[row][pad];}
-
-    Int_t GetAltroS(Int_t row, Int_t pad) const{
-	return fRowPadToAltro[row][pad];}
-
-    Int_t GetChannelS(Int_t row, Int_t pad) const {
-	return fRowPadToChannel[row][pad];}
-
-    void PrintRBFACinfo(Int_t row, Int_t pad);
-
-    void PrintAddressArray(Int_t row, Int_t pad);
-
-
-    Int_t GetAltroAddrwPatch(Int_t row, Int_t pad) const;
-
-    Int_t GetAltroAddrwPatch(Int_t padsector) const;
-
-    //for aliroot compatibility (sector == roc)
-    Int_t GetPadsInRowS(Int_t row, Int_t sector) const {
-	return GetPadsInRowS(row+(sector/36)*63);}
-    Double_t GetPadXlocal  (Int_t row, Int_t pad, Int_t sector) const {
-	return GetPadXlocalS(row+(sector/36)*63,pad);}
-    Double_t GetPadYlocal  (Int_t row, Int_t pad, Int_t sector) const {
-	return GetPadYlocalS(row+(sector/36)*63,pad);}
-    Double_t GetPadXglobal (Int_t row, Int_t pad, Int_t sector) const {
-    	return GetPadXlocalS(row+(sector/36)*63,pad);}
-    Double_t GetPadYglobal (Int_t row, Int_t pad, Int_t sector) const{
-    	return GetPadYlocalS(row+(sector/36)*63,pad);}
-    Int_t GetRCU(Int_t row, Int_t pad, Int_t sector) const {
-    	return GetRCUs(row+(sector/36)*63,pad);}
-    Int_t GetBranch(Int_t row, Int_t pad, Int_t sector) const {
-    	return GetBranchS(row+(sector/36)*63,pad);}
-    Int_t GetFEC(Int_t row, Int_t pad, Int_t sector) const {
-    	return GetFECs(row+(sector/36)*63,pad);}
-    Int_t GetAltro(Int_t row, Int_t pad, Int_t sector) const {
-    	return GetAltroS(row+(sector/36)*63,pad);}
-    Int_t GetChannel(Int_t row, Int_t pad, Int_t sector) const {
-    	return GetChannelS(row+(sector/36)*63,pad);}
-    Double_t GetPadWidth   (Int_t row, Int_t sector) const {
-    	return GetPadWidthS(row+(sector/36)*63);}
-    Double_t GetPadLength  (Int_t row, Int_t sector) const{
-    	return GetPadLengthS(row+(sector/36)*63);}
-
-private:
-    enum {
-	kNrcu       = 6,
-	kNbranch    = 2,
-	kNfecMax    = 13,
-	kNaltro     = 8,
-	kNchannel   = 16,
-	kNpadrow    = 159,
-	kNpadMax    = 140,
-	kNaddrSize  = 20,
-	kNpadSector = 15488
-    };
-
-    Int_t fAddressToRow[kNrcu][kNbranch][kNfecMax][kNaltro][kNchannel]; //fAddressToRow
-    Int_t fAddressToPad[kNrcu][kNbranch][kNfecMax][kNaltro][kNchannel]; //fAddressToPad
-
-    Int_t fRowPadToRCU[kNpadrow][kNpadMax]; //fRowPadToRCU
-    Int_t fRowPadToBranch[kNpadrow][kNpadMax]; //fRowPadToBranch
-    Int_t fRowPadToFEC[kNpadrow][kNpadMax];   //fRowPadToFEC
-    Int_t fRowPadToAltro[kNpadrow][kNpadMax]; // fRowPadToAltro
-    Int_t fRowPadToChannel[kNpadrow][kNpadMax]; //RowPadToChannel
-
-    Int_t fPadsecToRow[kNpadSector];  //PadsecToRow
-    Int_t fPadsecToPad[kNpadSector];  //PadsecToPad
-
-    Int_t fRowPadToPadsec[kNpadrow][kNpadMax]; //RowPadToPadsec
-
-    Char_t fMapfileName[255];                  //MapfileName
-
-
-
-	ClassDef(AliTPCmapper,0)
 };
 
 #endif
