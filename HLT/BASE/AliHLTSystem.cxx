@@ -47,7 +47,7 @@ const char* kHLTDefaultLibs[]= {
   "libAliHLTUtil.so", 
   "libAliHLTTPC.so", 
   //  "libAliHLTSample.so",
-  "libAliHLTPHOS.so",
+  //"libAliHLTPHOS.so",
   //"libAliHLTMUON.so",
   "libAliHLTTRD.so",
   NULL
