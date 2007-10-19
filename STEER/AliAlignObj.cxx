@@ -22,16 +22,14 @@
 //  (AliAlignObjParams, AliAlignObjMatrix) are derived in separate files.
 //-----------------------------------------------------------------
 
-#include <TClass.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
 #include <TMath.h>
-#include "TObjString.h"
+#include <TMatrixDSym.h>
 
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "AliLog.h"
-#include "AliAlignObjParams.h"
  
 ClassImp(AliAlignObj)
 
@@ -165,9 +163,9 @@ Int_t AliAlignObj::GetLevel() const
     path = symname;
   }
 
-  TString path_str = path;
-  if(path_str[0]!='/') path_str.Prepend('/');
-  return path_str.CountChar('/');
+  TString pathStr = path;
+  if(pathStr[0]!='/') pathStr.Prepend('/');
+  return pathStr.CountChar('/');
 }
 
 //_____________________________________________________________________________

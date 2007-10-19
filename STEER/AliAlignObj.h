@@ -13,15 +13,14 @@
 //************************************************************************
 #include <TObject.h>
 #include <TString.h>
-#include <TGeoMatrix.h>
 #include <Rtypes.h>
-#include <TMath.h>
-#include <TMatrixDSym.h>
 #include "AliGeomManager.h"
+#include <TMatrixDSymfwd.h>
 
 
 class AliTrackPoint;
 class AliTrackPointArray;
+class TGeoMatrix;
 
 class AliAlignObj : public TObject {
 
