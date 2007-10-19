@@ -14,6 +14,6 @@ void CreateIdealOnlineCalibPars(){
     Float_t delay = 0.;
     calChannelOnline->SetDelay(delay);
   }
-  tofcalib->WriteParOnlineOnCDB("TOF/Calib",0,0);
+  tofcalib->WriteParOnlineOnCDB("TOF/Calib");
   return;
 }

@@ -8,6 +8,6 @@ void CreateIdealOfflineCalibPars(){
 
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE");
-  tofcalib->WriteParOfflineOnCDB("TOF/Calib","ideal",0,0);
+  tofcalib->WriteParOfflineOnCDB("TOF/Calib","ideal");
   return;
 }

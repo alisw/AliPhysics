@@ -36,7 +36,7 @@ void CreateOfflineCalibPars(){
 
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE");
-  tofcalib->WriteParOfflineOnCDB("TOF/Calib","valid",0,0);
+  tofcalib->WriteParOfflineOnCDB("TOF/Calib","valid");
   f.Close();
   return;
 
