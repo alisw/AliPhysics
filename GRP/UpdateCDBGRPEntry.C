@@ -53,10 +53,10 @@ TList *GetGRPList() {
   mapDAQ4->Add(new TObjString("fAliceBeamType"),new TObjString("pp"));
   list->Add(mapDAQ4);
   TMap *mapDAQ5 = new TMap();
-  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString(""));
+  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString("15"));
   list->Add(mapDAQ5);
   TMap *mapDAQ6 = new TMap();
-  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString(""));
+  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString("1048575"));
   list->Add(mapDAQ6);
   TMap *mapDAQ7 = new TMap();
   mapDAQ7->Add(new TObjString("fLHCPeriod"),new TObjString("LHC07a"));
