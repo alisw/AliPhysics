@@ -1146,7 +1146,15 @@ void AliTPCv2::Init()
 
   gMC->SetMaxNStep(30000); // max. number of steps increased
 
-  gMC->Gstpar(idtmed[2],"LOSS",5); // specific energy loss
+  if (fPrimaryIonisation) {
+      gMC->Gstpar(idtmed[2],"PRIMIO_E", 20.77); // 1st ionisation potential
+ 
+      gMC->Gstpar(idtmed[2],"PRIMIO_N", 14.35);
+      gMC->Gstpar(idtmed[2],"LOSS", 14); // specific energy loss
+  } else {
+      gMC->Gstpar(idtmed[2],"LOSS", 5); // specific energy loss
+  }
+
 
   AliInfo("*** TPC version 2 initialized ***");
   AliInfo(Form("Maximum number of steps = %d",gMC->GetMaxNStep()));
