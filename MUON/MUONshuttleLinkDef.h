@@ -12,5 +12,7 @@
 #pragma link C++ class AliMUONPedestalSubprocessor+;
 #pragma link C++ class AliMUONGainSubprocessor+;
 #pragma link C++ class AliMUONGMSSubprocessor+;
+#pragma link C++ class AliMUONTriggerSubprocessor+;
+#pragma link C++ class AliMUONTriggerPreprocessor+;
 
 #endif

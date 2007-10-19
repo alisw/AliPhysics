@@ -74,6 +74,8 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   
   TString runType = GetRunType();
   
+  fIsValid = kTRUE;
+  
   if ( runType == "PEDESTAL_RUN" ) // FIXME : check the name
   {
     Add(fPedestalSubprocessor); // to be called only for pedestal runs
@@ -98,6 +100,7 @@ AliMUONTrackerPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   else
   {
     Log(Form("ERROR-Unknown RunType=%",runType.Data()));
+    fIsValid = kFALSE;
   }
   
   AliMUONPreprocessor::Initialize(run,startTime,endTime);

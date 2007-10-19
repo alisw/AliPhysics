@@ -7,7 +7,9 @@ AliMUONPedestalSubprocessor.cxx \
 AliMUONGMSSubprocessor.cxx \
 AliMUONHVSubprocessor.cxx \
 AliMUONGainSubprocessor.cxx \
-AliMUONTrackerPreprocessor.cxx
+AliMUONTrackerPreprocessor.cxx \
+AliMUONTriggerSubprocessor.cxx \
+AliMUONTriggerPreprocessor.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

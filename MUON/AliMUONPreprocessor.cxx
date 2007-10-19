@@ -92,17 +92,15 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
   
   // Load mapping from CDB for this run
   
-  fIsValid = kTRUE;
-  
-  AliCDBEntry* e = GetFromOCDB("Calib", "Mapping");
-  if (!e)
+  AliCDBEntry* cdbEntry = GetFromOCDB("Calib", "Mapping");
+  if (!cdbEntry)
   {
     Log("Could not get Mapping from OCDB !");
     fIsValid = kFALSE;
   }
   
-  e = GetFromOCDB("Calib", "DDLStore");
-  if (!e)
+  cdbEntry = GetFromOCDB("Calib", "DDLStore");
+  if (!cdbEntry)
   {
     Log("Could not get DDLStore from OCDB");
     fIsValid = kFALSE;
@@ -116,6 +114,8 @@ AliMUONPreprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
       Subprocessor(i)->Initialize(run,startTime,endTime);
     }
   }
+
+  Log(Form("Initialize was %s",( IsValid() ? "fine" : "NOT OK")));
 }
 
 //_____________________________________________________________________________

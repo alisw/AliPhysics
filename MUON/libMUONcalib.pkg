@@ -17,7 +17,8 @@ SRCS:=  AliMUONObjectPair.cxx \
         AliMUONCheckItem.cxx \
         AliMUONCheckItemIterator.cxx \
         AliMUONVStore.cxx \
-        AliMUONTreeManager.cxx
+        AliMUONTreeManager.cxx \
+        AliMUONTriggerIO.cxx
 
 HDRS:= $(SRCS:.cxx=.h)
 

@@ -42,6 +42,7 @@
 #include "TestMUONPreprocessor.h"
 
 #include "AliMUONTrackerPreprocessor.h"
+#include "AliMUONTriggerPreprocessor.h"
 
 #include "AliLog.h"
 
@@ -122,6 +123,12 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   // and GMS file
   shuttle->AddInputFile(AliTestShuttle::kDCS,"MCH","GMS","GMS","$ALICE_ROOT/MUON/data/GMS.root");
 
+  // and then the trigger stuff
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LOCAL","LDC0","$ALICE_ROOT/MUON/data/MtgLocalMask-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","REGIONAL","LDC0","$ALICE_ROOT/MUON/data/MtgRegionalCrate-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","GLOBAL","LDC0","$ALICE_ROOT/MUON/data/MtgGlobalCrate-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LUT","LDC0","$ALICE_ROOT/MUON/data/MtgLocalLut-1.dat");
+  
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
   // using GetRunParameter function.
@@ -130,7 +137,8 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   new AliMUONTrackerPreprocessor(shuttle);
-
+  new AliMUONTriggerPreprocessor(shuttle);
+  
   shuttle->Print();
   
   // Test the preprocessor

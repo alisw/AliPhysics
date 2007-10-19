@@ -26,6 +26,7 @@
 #pragma link C++ class AliMUON2DStoreValidator+;
 #pragma link C++ class AliMUONVStore+;
 #pragma link C++ class AliMUONTreeManager+;
+#pragma link C++ class AliMUONTriggerIO+;
 
 #endif
 
