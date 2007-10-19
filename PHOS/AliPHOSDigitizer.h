@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.37  2007/10/10 09:05:10  schutz
+ * Changing name QualAss to QA
+ *
  * Revision 1.36  2007/09/30 17:08:20  schutz
  * Introducing the notion of QA data acquisition cycle (needed by online)
  *
@@ -41,7 +44,7 @@ class TClonesArray ;
 // --- AliRoot header files ---
 #include "AliDigitizer.h"
 class AliPHOSSDigitizer ;
-class AliPHOSQADataMaker ; 
+//class AliPHOSQADataMaker ; 
 class AliRunDigitizer ;
 
 class AliPHOSDigitizer: public AliDigitizer {
@@ -100,7 +103,7 @@ public:
 
   
 private:
-  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
+//  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
 
   virtual Bool_t Init() ; 
   void    InitParameters() ; 
@@ -149,11 +152,11 @@ private:
   TString fEventFolderName;         // skowron: name of EFN to read data from in stand alone mode
   Int_t   fFirstEvent;              // first event to process
   Int_t   fLastEvent;               // last  event to process 
-  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
+//  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
   Int_t fEventCounter ;             //! counts the events processed
   
   //QA stuff
-  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
+//  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
 
   ClassDef(AliPHOSDigitizer,4)  // description 
 

@@ -138,6 +138,8 @@
 #include "AliGenEventHeader.h"
 #include "AliMC.h"
 #include "AliHLTSimulation.h"
+#include "AliQA.h"
+#include "AliQADataMakerSteer.h"
 
 ClassImp(AliSimulation)
 
@@ -213,7 +215,8 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fCDBUri(sim.fCDBUri),
   fRemoteCDBUri(sim.fRemoteCDBUri),
   fSpecCDBUri(),
-  fEmbeddingFlag(sim.fEmbeddingFlag)
+  fEmbeddingFlag(sim.fEmbeddingFlag),
+  fRunHLT(sim.fRunHLT)
 {
 // copy constructor
 
@@ -521,7 +524,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 {
 // run the generation, simulation and digitization
 
-  AliCodeTimerAuto("")
+ 
+   AliCodeTimerAuto("")
   
   InitCDBStorage();
 
@@ -531,6 +535,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (fRunGeneration) {
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
   }
+
+//QA
+	AliQADataMakerSteer qas ; 
+	qas.Run(AliQA::kHITS);
 
   // Set run number in CDBManager (if it is not already set in RunSimulation)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
@@ -548,6 +556,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
   }
+  
+  //QA
+	qas.Reset() ; 
+  	qas.Run(AliQA::kSDIGITS);
 
   // summable digits -> digits
   if (!fMakeDigits.IsNull()) {
@@ -568,6 +580,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
       if (fStopOnError) return kFALSE;
     }
   }
+  
+  //QA
+	qas.Reset() ; 
+	qas.Run(AliQA::kDIGITS);
 
   // digits -> trigger
   if (!RunTrigger(fMakeTrigger)) {

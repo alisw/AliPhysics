@@ -236,7 +236,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 }
 
 //____________________________________________________________________________ 
-void AliQADataMaker::Finish(AliQA::TASKINDEX) const 
+void AliQADataMaker::Finish() const 
 { 
   // write to the output File
   fOutput->Close() ; 
@@ -356,11 +356,19 @@ void AliQADataMaker::Init(AliQA::TASKINDEX task, TList * list, Int_t run, Int_t 
 }
 
 //____________________________________________________________________________
-void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, Option_t * sameCycle) 
+void AliQADataMaker::Reset() 
+{ 
+  // Resets defaut value of data members 
+  fCurrentCycle = -1 ;  
+  fCycleCounter = 0 ; 
+}
+
+//____________________________________________________________________________
+void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle) 
 { 
   // Finishes a cycle of QA data acquistion
  
- if ( (strcmp(sameCycle, "new") == 0) ) {
+ if ( !sameCycle ) {
 	ResetCycle() ;
 	if (fOutput) 
 		fOutput->Close() ; 

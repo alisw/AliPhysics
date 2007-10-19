@@ -26,6 +26,7 @@
 class AliQADataMaker ;
 class AliRawReaderRoot ;  
 class AliRunLoader ; 
+class AliESDEvent ; 
 
 class AliQADataMakerSteer: public TNamed {
 public:
@@ -35,6 +36,7 @@ public:
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
+    void   Reset() ;  
 	Bool_t Run(const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
 	void   SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
 
@@ -47,7 +49,7 @@ private:
 	Bool_t           Finish(const AliQA::TASKINDEX taskIndex) ;
 
  
-	Option_t *         fCycleOption ;                  //! new or same in case of 2 consecutive data making for a same detector   
+	Bool_t			   fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
 	AliESDEvent *      fESD ;                          //! current ESD
 	TTree *            fESDTree ;                      //! current ESD Tree
 	Bool_t             fFirst ;                        //! to search the detector QA data maker only once

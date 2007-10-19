@@ -113,7 +113,7 @@ void AliPHOSQADataMaker::InitDigits()
   Add2DigitsList(h0, 0) ;
   TH1I * h1 = new TH1I("hPhosDigitsMul", "Digits multiplicity distribution in PHOS", 500, 0, 1000) ; 
   h1->Sumw2() ;
-  Add2DigitsList(h1, 0) ;
+  Add2DigitsList(h1, 1) ;
 }
 
 //____________________________________________________________________________ 

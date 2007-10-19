@@ -48,7 +48,7 @@ public:
   const Int_t         Add2SDigitsList(TH1 * hist, const Int_t index)   { return Add2List(hist, index, fSDigitsQAList) ; }
   virtual void        Exec(AliQA::TASKINDEX, TObject * data) ;
   void                EndOfCycle(AliQA::TASKINDEX) ;
-  void                Finish(AliQA::TASKINDEX task) const ; 
+  void                Finish() const ; 
   TH1 *               GetDigitsData(const Int_t index)    { return dynamic_cast<TH1 *>(GetData(fDigitsQAList, index)) ; }
   TH1 *               GetESDsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fESDsQAList, index)) ; }
   TH1 *               GetHitsData(const Int_t index)      { return dynamic_cast<TH1 *>(GetData(fHitsQAList, index)) ; }
@@ -60,8 +60,9 @@ public:
   TList *             Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1) ;
   void                Init(AliQA::TASKINDEX, TList * list, Int_t run, Int_t cycles = -1) ;
   const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
+  void                Reset() ; 	
   void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
-  void                StartOfCycle(AliQA::TASKINDEX, Option_t * sameCycle = "new") ;
+  void                StartOfCycle(AliQA::TASKINDEX, const Bool_t sameCycle = kFALSE) ;
 
 protected: 
 

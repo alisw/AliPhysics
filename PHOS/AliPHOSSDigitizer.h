@@ -9,6 +9,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.29  2007/10/10 09:05:10  schutz
+ * Changing name QualAss to QA
+ *
  * Revision 1.28  2007/09/30 17:08:20  schutz
  * Introducing the notion of QA data acquisition cycle (needed by online)
  *
@@ -43,7 +46,7 @@ class TFile ;
 // --- Standard library ---
 
 // --- AliRoot header files ---
-class AliPHOSQADataMaker ; 
+//class AliPHOSQADataMaker ; 
 
 class AliPHOSSDigitizer: public TTask {
 
@@ -67,7 +70,7 @@ public:
 
  
 private:
-  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
+//  AliPHOSQADataMaker * GetQADataMaker() const { return fQADM ; } 
 
   void     Init() ;
   void     InitParameters() ;
@@ -86,8 +89,8 @@ private:
   Int_t   fFirstEvent;      // first event to process
   Int_t   fLastEvent;       // last  event to process
 
-  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
-  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
+//  AliPHOSQADataMaker * fQADM ; //!Quality Assurance Data Maker
+//  static const Int_t fgkCycles = 9999 ; // QA data accumulation cycle 
 
   ClassDef(AliPHOSSDigitizer,4)  // description 
 

@@ -7,7 +7,8 @@
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *ÄQual * appear in the supporting documentation. The authors make no claims     *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
@@ -18,6 +19,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.55  2007/10/14 21:08:10  schutz
+ * Introduced the checking of QA results from previous step before entering the event loop
+ *
  * Revision 1.54  2007/10/10 09:05:10  schutz
  * Changing name QualAss to QA
  *
@@ -106,8 +110,8 @@ AliPHOSSDigitizer::AliPHOSSDigitizer() :
   fInit(kFALSE),
   fSDigitsInRun(0),
   fFirstEvent(0),
-  fLastEvent(0), 
-  fQADM (0x0)
+  fLastEvent(0)
+//  , fQADM (0x0)
 {
   // ctor
   // Intialize the quality assurance data maker 	
@@ -124,21 +128,21 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName,
   fInit(kFALSE),
   fSDigitsInRun(0),
   fFirstEvent(0),
-  fLastEvent(0), 
-  fQADM (0x0)
+  fLastEvent(0)
+//  , fQADM (0x0)
 {
   // ctor
   InitParameters() ; 
   Init();
   fDefaultInit = kFALSE ; 
-  // Intialize the quality assurance data maker 
-  //FIXME: get the run number
-  Int_t run = 0 ;
-  //EMXIF 	
-  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
-  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
-  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
-  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, "same") ;
+//  // Intialize the quality assurance data maker 
+//  //FIXME: get the run number
+//  Int_t run = 0 ;
+//  //EMXIF 	
+//  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
+//  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
+//  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
+//  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, kTRUE) ;
 }
 
 //____________________________________________________________________________
@@ -151,18 +155,18 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer& sd) :
   fInit(kFALSE),
   fSDigitsInRun(sd.fSDigitsInRun),
   fFirstEvent(sd.fFirstEvent),
-  fLastEvent(sd.fLastEvent), 
-  fQADM (sd.fQADM)
+  fLastEvent(sd.fLastEvent)
+//  , fQADM (sd.fQADM)
 { 
   // cpy ctor
-  // Intialize the quality assurance data maker 	
-  //FIXME: get the run number
-  Int_t run = 0 ;
-  //EMXIF 	
-  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
-  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
-  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
-  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, "same") ;
+//  // Intialize the quality assurance data maker 	
+//  //FIXME: get the run number
+//  Int_t run = 0 ;
+//  //EMXIF 	
+//  GetQADataMaker()->Init(AliQA::kHITS, run, fgkCycles) ;
+//  GetQADataMaker()->StartOfCycle(AliQA::kHITS) ;
+//  GetQADataMaker()->Init(AliQA::kSDIGITS, run) ; 
+//  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, kTRUE) ;
 }
 
 //_____________________________________________________________________________
@@ -183,7 +187,7 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer() {
   AliPHOSGetter * gime =
     AliPHOSGetter::Instance();  
   gime->PhosLoader()->CleanSDigitizer();
-  delete fQADM ; 
+//  delete fQADM ; 
 }
 
 //____________________________________________________________________________ 
@@ -208,7 +212,7 @@ void AliPHOSSDigitizer::Init()
   gime->PostSDigitizer(this);
   gime->PhosLoader()->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
  
-  fQADM = new AliPHOSQADataMaker() ;  
+//  fQADM = new AliPHOSQADataMaker() ;  
 
 }
 
@@ -305,17 +309,17 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
       digit->SetIndexInList(i) ;     
     }
 
-    // make Quality Assurance data
-
-    if (GetQADataMaker()->IsCycleDone() ) {
-      GetQADataMaker()->EndOfCycle(AliQA::kHITS) ; 
-	  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ; 
-      GetQADataMaker()->StartOfCycle(AliQA::kHITS) ; 
-	  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, "same") ; 
-   }
-    GetQADataMaker()->Exec(AliQA::kHITS, hits) ; 
-    GetQADataMaker()->Exec(AliQA::kSDIGITS, sdigits) ; 
-    GetQADataMaker()->Increment() ;
+//    // make Quality Assurance data
+//
+//    if (GetQADataMaker()->IsCycleDone() ) {
+//      GetQADataMaker()->EndOfCycle(AliQA::kHITS) ; 
+//	  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ; 
+//      GetQADataMaker()->StartOfCycle(AliQA::kHITS) ; 
+//	  GetQADataMaker()->StartOfCycle(AliQA::kSDIGITS, kTRUE) ; 
+//   }
+//    GetQADataMaker()->Exec(AliQA::kHITS, hits) ; 
+//    GetQADataMaker()->Exec(AliQA::kSDIGITS, sdigits) ; 
+//    GetQADataMaker()->Increment() ;
 	
     //Now write SDigits
 
@@ -340,11 +344,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     //memwatcher.Watch(ievent); 
   }// event loop
   
-  //Write the quality assurance data 
-  GetQADataMaker()->EndOfCycle(AliQA::kHITS) ;    
-  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ;    
-  GetQADataMaker()->Finish(AliQA::kHITS) ;
-  GetQADataMaker()->Finish(AliQA::kSDIGITS) ;
+//  //Write the quality assurance data 
+//  GetQADataMaker()->EndOfCycle(AliQA::kHITS) ;    
+//  GetQADataMaker()->EndOfCycle(AliQA::kSDIGITS) ;    
+//  GetQADataMaker()->Finish() ;
 
   Unload();
 

@@ -109,8 +109,8 @@ public:
   virtual Bool_t Run(const char* input = NULL);
 
   // Quality Assurance 
-  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
-  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+//  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
+//  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
 
 private:
   Bool_t         RunLocalReconstruction(const TString& detectors);
@@ -143,8 +143,8 @@ private:
 
   //Quality Assurance
   Int_t                GetDetIndex(const char * detector);
-  AliQADataMaker*      GetQADataMaker(Int_t iDet);
-  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
+//  AliQADataMaker*      GetQADataMaker(Int_t iDet);
+//  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
 
   //*** Global reconstruction flags *******************
@@ -202,8 +202,8 @@ private:
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
 
   //Quality Assurance
-  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
-  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
+//  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
+//  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
 
   ClassDef(AliReconstruction, 15)      // class for running the reconstruction
 };

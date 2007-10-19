@@ -35,7 +35,7 @@ ClassImp(AliQADataMakerSteer)
 //_____________________________________________________________________________
 AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char * name, const char * title) :
 	TNamed(name, title), 
-	fCycleOption("new"), 
+	fCycleSame(kFALSE),
 	fESD(NULL), 
 	fESDTree(NULL),
 	fFirst(kTRUE),  
@@ -56,7 +56,7 @@ AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char 
 //_____________________________________________________________________________
 AliQADataMakerSteer::AliQADataMakerSteer(const AliQADataMakerSteer & qas) : 
 	TNamed(qas), 
-	fCycleOption("new"), 
+	fCycleSame(kFALSE),
 	fESD(NULL), 
 	fESDTree(NULL), 
 	fFirst(qas.fFirst),  
@@ -89,14 +89,16 @@ AliQADataMakerSteer::~AliQADataMakerSteer()
 	// dtor
   for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
     fLoader[iDet] = NULL;
-    delete fQADataMaker[iDet];
-    fQADataMaker[iDet] = NULL;
+	if (fQADataMaker[iDet]) {
+		(fQADataMaker[iDet])->Finish() ; 
+		delete fQADataMaker[iDet] ;
+		fQADataMaker[iDet] = NULL ;
+	}
   }
 
-  delete fRunLoader;
-  fRunLoader = NULL;
-  delete fRawReader;
-  fRawReader = NULL;
+  fRunLoader = NULL ;
+  delete fRawReader ;
+  fRawReader = NULL ;
 }
 
 //_____________________________________________________________________________
@@ -219,7 +221,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char *
 		} else {
 			AliInfo(Form("Data Maker found for %s", qadm->GetName())) ; 
 			qadm->Init(taskIndex, fRunNumber, GetQACycles(iDet)) ;
-			qadm->StartOfCycle(taskIndex, fCycleOption) ;
+			qadm->StartOfCycle(taskIndex, fCycleSame) ;
 		}
 	} 
 	fFirst = kFALSE ;
@@ -231,7 +233,7 @@ Bool_t AliQADataMakerSteer::InitRunLoader()
 {
 	// get or create the run loader
 	if (fRunLoader) {
-		fCycleOption = "same" ; 
+		fCycleSame = kTRUE ; 
 		return kTRUE ;
 	} 
 		
@@ -276,10 +278,33 @@ Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex)
 		AliQADataMaker * qadm = GetQADataMaker(iDet) ;
 		if (qadm) {
 			qadm->EndOfCycle(taskIndex) ; 
-			qadm->Finish(taskIndex) ; 
 		}
 	}
 	return kTRUE ; 
+}
+
+//_____________________________________________________________________________
+void AliQADataMakerSteer::Reset()
+{
+	// Reset the default data members
+	for (UInt_t iDet = 0; iDet < fgkNDetectors; iDet++) {
+		fLoader[iDet] = NULL;
+		if (fQADataMaker[iDet]) {
+			(fQADataMaker[iDet])->Reset() ; 
+//			delete fQADataMaker[iDet] ;
+//			fQADataMaker[iDet] = NULL ;
+		}
+	}
+
+	fRunLoader      = NULL ;
+	delete fRawReader ;
+	fRawReader      = NULL ;
+
+	fCycleSame      = kFALSE ; 
+	fESD            = NULL ; 
+	fESDTree        = NULL ; 
+	fFirst          = kTRUE ;   
+	fNumberOfEvents = 0 ;  
 }
 
 //_____________________________________________________________________________
