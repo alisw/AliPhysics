@@ -22,6 +22,7 @@ extern "C" {
 #include "monitor.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <fstream.h>
 
 //
 //Root includes
@@ -33,6 +34,7 @@ extern "C" {
 //
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
+#include "AliTPCmapper.h"
 #include "AliTPCRawStream.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
@@ -128,6 +130,35 @@ int main(int argc, char **argv) {
   calibPedestal.Write("calibPedestal");
   delete fileTPC;
   printf("Wrote %s\n",RESULT_FILE);
+
+  // Prepare files for local ALTRO configuration through DDL
+  AliTPCmapper mapping;
+
+  ofstream out;
+  char filename[255];
+  sprintf(filename,"Pedestals.data");
+  out.open(filename);
+
+  Int_t ctr = 0;
+
+  out << 10 << endl;  // PEDESTALS
+  for ( int roc = 0; roc <= 71; roc++ ) {
+    if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
+    Int_t side = mapping.GetSideFromRoc(roc);
+    Int_t sec  = mapping.GetSectorFromRoc(roc);
+    printf("**Analysing ROC %d (side %d, sector %d) ...\n", roc, side, sec);
+    for ( int row = 0; row < mapping.GetNpadrows(roc); row++ ) {
+      for ( int pad = 0; pad < mapping.GetNpads(roc, row); pad++ ) {
+	Int_t rcu   = mapping.GetRcu(roc, row, pad);
+	Int_t hwadd = mapping.GetHWAddress(roc, row, pad);
+	Float_t ped   = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
+	out << ctr << "\t" << side << "\t" << sec << "\t" << rcu << "\t" << hwadd << "\t" << ped << std::endl;
+	ctr++;
+      }
+    }
+  }
+
+  out.close();
 
   return status;
 }
