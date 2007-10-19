@@ -441,21 +441,15 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
       nRecCascades++;
     }
 
-    // loop over the PHOS clusters
+    // loop over the clusters
     {
-    Int_t firstPHOSCluster = esd->GetFirstPHOSCluster();
-    Int_t lastPHOSCluster  = firstPHOSCluster + esd->GetNumberOfPHOSClusters();
-    for (Int_t iCluster=firstPHOSCluster; iCluster<lastPHOSCluster; iCluster++)
-      hEPHOS->Fill(esd->GetCaloCluster(iCluster)->E());
+      for (Int_t iCluster=0; iCluster<esd->GetNumberOfCaloClusters(); iCluster++) {
+	AliESDCaloCluster * clust = esd->GetCaloCluster(iCluster);
+	if (clust->IsPHOS()) hEPHOS->Fill(clust->E());
+	if (clust->IsEMCAL()) hEEMCAL->Fill(clust->E());
+      }
     }
 
-    // loop over the EMCAL clusters
-    {
-    Int_t firstEMCALCluster = esd->GetFirstEMCALCluster();
-    Int_t lastEMCALCluster  = firstEMCALCluster + esd->GetNumberOfEMCALClusters();
-    for (Int_t iCluster=firstEMCALCluster; iCluster<lastEMCALCluster; iCluster++)
-      hEEMCAL->Fill(esd->GetCaloCluster(iCluster)->E());
-    }
   }
 
   // perform checks
