@@ -100,10 +100,10 @@ class AliZDCCalibData: public TNamed {
  protected:
   // --- Pedestals
   Float_t  fMeanPedestal[47];	 // Mean pedestal values 
-  Float_t  fMeanPedWidth[47];	 // Mean pedestal values 
-  Float_t  fOOTPedestal[44];	 // "Out of Time" pedestal values
-  Float_t  fOOTPedWidth[44];	 // "Out of Time" pedestal values
-  Float_t  fPedCorrCoeff[2][44]; // Fit of correlation in-time vs. out-of-time
+  Float_t  fMeanPedWidth[47];	 // Mean pedestal widths 
+  Float_t  fOOTPedestal[47];	 // "Out of Time" pedestal values
+  Float_t  fOOTPedWidth[47];	 // "Out of Time" pedestal widths
+  Float_t  fPedCorrCoeff[2][47]; // Fit of correlation in-time vs. out-of-time
   // --- E calibration
   Float_t  fEnCalibration[6];	 // Coeff. for energy calibration
   // --- Coefficients for tower calibration
@@ -124,7 +124,7 @@ class AliZDCCalibData: public TNamed {
   Float_t  fEZP2MaxValue;	 // Max value of ZP2 vs. Nspec p correlation
   Float_t  fEZDC2MaxValue;	 // Max value of ZDC2 vs. Nspec n+p correlation
   //
-  ClassDef(AliZDCCalibData,9)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,10)    // ZDC  Calibration data
 };
 
 #endif
