@@ -8,8 +8,8 @@ void CreateCalibPars_Ideal(){
   TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFSimCalArrayOnline(); 
   TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFSimCalArrayOffline(); 
   TH1F *hToT= new TH1F(); //"empty" ToT histo as a default for ideal 
-  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,0,tofCalOnline);
-  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,0,tofCalOffline,hToT);
+  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,AliCDBRunRange::Infinity(),tofCalOnline);
+  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,AliCDBRunRange::Infinity(),tofCalOffline,hToT);
 }
 
 

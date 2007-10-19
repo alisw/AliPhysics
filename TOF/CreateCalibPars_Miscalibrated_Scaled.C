@@ -43,8 +43,8 @@ void CreateCalibPars_Miscalibrated_Scaled(){
     calChannelOnline->SetDelay(delay);
     calChannelOffline->SetSlewPar(par);
   }
-  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,0,tofCalOnline);
-  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,0,tofCalOffline,hToT);
+  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,AliCDBRunRange::Infinity(),tofCalOnline);
+  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,AliCDBRunRange::Infinity(),tofCalOffline,hToT);
   f.Close();
 }
 
