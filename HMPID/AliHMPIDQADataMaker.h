@@ -34,8 +34,6 @@ public:
   AliHMPIDQADataMaker& operator = (const AliHMPIDQADataMaker& qadm) ;
   virtual ~AliHMPIDQADataMaker() {;} // dtor
 
-   TString DirPrint() const{return fDetectorDirName;}
-  
 private:
   virtual void   InitHits() ;      //book hit QA histo 
   virtual void   InitDigits() ;    //book Digit QA histo
