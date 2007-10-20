@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
 
 //*************************************************************************
 // SSD geometry, based on ROOT geometrical modeler
@@ -31,6 +32,9 @@
 #include "TGeoTube.h"
 #include "TGeoBBox.h"
 #include "TGeoXtru.h"
+#include "TGeoTorus.h"
+#include "TGeoPgon.h"
+#include "TRotation.h"
 #include "AliITSv11GeometrySSD.h"
 /////////////////////////////////////////////////////////////////////////////////
 // Names of the Sensitive Volumes of Layer 5 and Layer 6
@@ -277,6 +281,8 @@ const Double_t AliITSv11GeometrySSD::fgkEndLadderCarbonFiberUpperJunctionLength[
 const Double_t AliITSv11GeometrySSD::fgkEndLadderMountingBlockPosition[2] = 
 						{fgkEndLadderCarbonFiberLowerJunctionLength[0]-16.50*fgkmm,
 						 fgkEndLadderCarbonFiberLowerJunctionLength[1]-31.50*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkendladdercoolingsupportdistance[3] = 
+											{15.0*fgkmm, 13.5*fgkmm, 14.5*fgkmm};
 /////////////////////////////////////////////////////////////////////////////////
 // Cooling Tube Support (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -300,7 +306,7 @@ const Double_t AliITSv11GeometrySSD::fgkCoolingTubeLength =
 const Double_t AliITSv11GeometrySSD::fgkCoolingTubeSeparation = 
 									 fgkSSDModuleSensorSupportDistance
 								  +	 fgkSSDCoolingBlockLength;
-//const Double_t AliITSv11GeometrySSD_ct::fgkCoolingTubeLength               =  39.1;
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockToSensorSupport = 30.7*fgkmm;
 /////////////////////////////////////////////////////////////////////////////////
 // SSD Mounting Block Parameters (lengths are in mm and angles in degrees)
 /////////////////////////////////////////////////////////////////////////////////
@@ -329,6 +335,152 @@ const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleHeigth      =
 const Double_t AliITSv11GeometrySSD::fgkSSDMountingBlockScrewHoleRadius[2]   =
 							  {  1.5*fgkmm,fgkSSDMountingBlockScrewHoleEdge/6.};
 /////////////////////////////////////////////////////////////////////////////////
+// SSD Mounting Block Clip Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockClipLength        = 15.1*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockClipThickness     = 0.3*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockClibScrewRadius   = 1.6*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockClibScrewPosition = 4.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockClibWidth         = 9.0*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD Mounting Block Support Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockSupportWidth[2] = {9.5*fgkmm,10.0*fgkmm}; 
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockSupportDownHeight   = 4.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockSupportRadius[2] = {fgkSSDLay5RadiusMin
+												  -  fgkSSDMountingBlockHeight[1]
+												  +  0.5*fgkCoolingTubeSupportHeight
+												  +	 fgkSSDModuleCoolingBlockToSensor
+												  -	 fgkMountingBlockSupportDownHeight,
+													 fgkSSDLay6RadiusMin
+												  -  fgkSSDMountingBlockHeight[1]
+												  +  0.5*fgkCoolingTubeSupportHeight
+												  +	 fgkSSDModuleCoolingBlockToSensor
+												  -	 fgkMountingBlockSupportDownHeight}; 
+const Double_t AliITSv11GeometrySSD::fgkMountingBlockSupportUpHeight[2] = {fgkSSDLay5RadiusMax
+   												    -  fgkSSDMountingBlockHeight[1]
+												    +  0.5*fgkCoolingTubeSupportHeight
+												    +  fgkSSDModuleCoolingBlockToSensor
+													-  fgkMountingBlockSupportRadius[0],
+													   fgkSSDLay6RadiusMax
+   												    -  fgkSSDMountingBlockHeight[1]
+												    +  0.5*fgkCoolingTubeSupportHeight
+												    +  fgkSSDModuleCoolingBlockToSensor
+													-  fgkMountingBlockSupportRadius[1]};
+const Double_t AliITSv11GeometrySSD::fgkLadderSupportHeigth = 10.0*fgkmm; // To be verified
+const Double_t AliITSv11GeometrySSD::fgkLadderSupportRingLay5Position = 451.35*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkLadderSupportRingLay6Position = 510.00*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD End Cap Cover Plate Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateSmallHoleRadius = 1.25*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateBigHoleRadius = 2.45*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateThickness = 0.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateSmallHoleSeparation[3] =
+												{16.5*fgkmm,22.0*fgkmm,7.*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateLength[6] = 
+				  {7.*fgkmm,55.*fgkmm,8.0*fgkmm,53.*fgkmm,61.0*fgkmm,25.5*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateWidth[3] = 
+											   {68.5*fgkmm,75.5*fgkmm,6.5*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateScrewRadiusMin = 0.750*fgkmm;  
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateScrewRadiusMax = 2.*fgkmm;  
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateClipLength = 10.4*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateClipWidth = 6.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateDownClipLength = 5.7*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoverPlateDownClipWidth = 5.0*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD End Cap Kapton Foil Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkEndCapKaptonFoilThickness = 0.4*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapKaptonFoilLength = 68.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapKaptonFoilWidth = 75.0*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD End Cap Cooling Tube Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoolingTubeAxialRadius[2] =
+														{10.5*fgkmm,9.25*fgkmm}; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoolingTubeRadiusMin = 1.3*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoolingTubeRadiusMax = 1.5*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoolingTubeAngle[5] =
+													{182.3,177.9,84.4,70.0,35.0}; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoolingTubeLength[5] = 
+									{49.5*fgkmm,41.7*fgkmm,47.6*fgkmm,5.0*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCoolingTubeToCoverSide = 13.0*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
+// SSD End Cap Cover Side Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkEndCapSideCoverLength[5] = {3.5*fgkmm,
+									  6.5*fgkmm,75.0*fgkmm,8.0*fgkmm,2.0*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSideCoverWidth[7] = {30.9*fgkmm,
+									  47.5*fgkmm,12.6*fgkmm,5.6*fgkmm,
+									  20.0*fgkmm,7.0*fgkmm,5.9*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSideCoverThickness = 0.4*fgkmm; 
+/////////////////////////////////////////////////////////////////////////////////
+// SSD End Cap Cards Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardBackLength[3] = 
+													   {62.0*fgkmm,21.87*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardBackWidth[2] = 
+													    {47.1*fgkmm,0.35*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardBackThickness = 
+																	  1.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardLength = 61.8*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardLayerWidth[2] =
+													   {43.5*fgkmm, 0.70*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardElectBoardLayerThickness = 
+																	 0.15*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardJMDConnectorThickness = 
+																	 19.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardJMDConnectorLength[2] = 
+														 {4.80*fgkmm,1.1*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardJMDConnectorWidth[2] =
+														 {3.3*fgkmm,1.10*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardJMDConnectorToLayer = 
+																	  2.1*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardCableConnectorLength[3] =
+												{5.2*fgkmm,3.5*fgkmm,1.2*fgkmm}; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardCableConnectorWidth[2] =
+														 {1.9*fgkmm,0.15*fgkmm}; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardCableConnectorThickness = 
+																	   19*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardCableConnectorDistance = 
+																	  1.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapCardCableConnectorToLayer = 
+																	  3.6*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapStripConnectionLength = 
+																	 61.0*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapStripConnectionThickness =
+																	 5.97*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapStripConnectionWidth = 3.0*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapInterfaceCardBLength[7] = 
+												{3.1*fgkmm,68.0*fgkmm,3.6*fgkmm,
+									  1.9*fgkmm,2.5*fgkmm,14.2*fgkmm,1.5*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapInterfaceCardBWidth[5] = 
+						  {17.0*fgkmm,10.0*fgkmm,5.9*fgkmm,6.4*fgkmm,3.9*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapInterfaceCardBThickness = 
+																	  1.0*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapInterfaceElectBoardCardBThickness 
+																   = 0.15*fgkmm; 
+const Double_t AliITSv11GeometrySSD::fgkEndCapInterfaceCardBJMDConnectorSeparation = 
+																	 20.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapStiffenerLength = 68.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapStiffenerWidth = 5.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapStiffenerThickness = 5.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapEffectiveCableRadiusMin = 1.25*fgkmm; // To Be Checked
+const Double_t AliITSv11GeometrySSD::fgkEndCapEffectiveCableRadiusMax = 1.575*fgkmm; // To Be Checked
+/////////////////////////////////////////////////////////////////////////////////
+// SSD End Cap SupportLayer5/6 Side Parameters (lengths are in mm and angles in degrees)
+/////////////////////////////////////////////////////////////////////////////////
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLength[2] = {70.424*fgkmm,72.919*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportMiddleRadius[2] = {377.0*fgkmm,437.0*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowRadius[2] = {365.0*fgkmm,430.0*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportHighWidth = 20.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportLowWidth[2] = {3.0*fgkmm,3.0*fgkmm};
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5ITSPosition = 625.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay5Position = 2.5*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6ITSPosition = 635.0*fgkmm;
+const Double_t AliITSv11GeometrySSD::fgkEndCapSupportCenterLay6Position = 2.5*fgkmm;
+/////////////////////////////////////////////////////////////////////////////////
 ClassImp(AliITSv11GeometrySSD)
 /////////////////////////////////////////////////////////////////////////////////
 AliITSv11GeometrySSD::AliITSv11GeometrySSD(): 
@@ -353,6 +505,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   fSSDTubeHolderMedium(),
   fSSDCoolingTubeWater(),
   fSSDCoolingTubePhynox(),
+  fSSDSupportRingAl(),
   fSSDMountingBlockMedium(),
   fSSDAir(),
   fCreateMaterials(kFALSE),
@@ -365,12 +518,16 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   fcoolingblocksystematrix(),
   fssdstiffenerflex(),
   fssdendflex(),
+  fendladdercoolingtubesupportmatrix(),
   fendladdermountingblock(),
+  fendladdermountingblockclip(),
   fSSDSensor5(),
   fSSDSensor6(),
   fSSDLayer5(),	
   fSSDLayer6(),
   fMotherVol(),
+  fLay5LadderSupportRing(),
+  fLay6LadderSupportRing(),
   fColorCarbonFiber(4),
   fColorRyton(5),
   fColorPhynox(14),
@@ -410,6 +567,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
   fSSDTubeHolderMedium(s.fSSDTubeHolderMedium),
   fSSDCoolingTubeWater(s.fSSDCoolingTubeWater),
   fSSDCoolingTubePhynox(s.fSSDCoolingTubePhynox),
+  fSSDSupportRingAl(s.fSSDSupportRingAl),
   fSSDMountingBlockMedium(s.fSSDMountingBlockMedium),
   fSSDAir(s.fSSDAir),
   fCreateMaterials(s.fCreateMaterials),
@@ -422,12 +580,16 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
   fcoolingblocksystematrix(s.fcoolingblocksystematrix),
   fssdstiffenerflex(s.fssdstiffenerflex),
   fssdendflex(s.fssdendflex),
+  fendladdercoolingtubesupportmatrix(s.fendladdercoolingtubesupportmatrix),
   fendladdermountingblock(s.fendladdermountingblock),
+  fendladdermountingblockclip(s.fendladdermountingblockclip),
   fSSDSensor5(s.fSSDSensor5),
   fSSDSensor6(s.fSSDSensor6),
   fSSDLayer5(s.fSSDLayer5),	
   fSSDLayer6(s.fSSDLayer6),
   fMotherVol(s.fMotherVol),
+  fLay5LadderSupportRing(s.fLay5LadderSupportRing),
+  fLay6LadderSupportRing(s.fLay6LadderSupportRing),
   fColorCarbonFiber(s.fColorCarbonFiber),
   fColorRyton(s.fColorRyton),
   fColorPhynox(s.fColorPhynox),
@@ -691,6 +853,72 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   fcoolingtubesupportmatrix[1] = new TGeoHMatrix((*localcoolingtubesupportmatrix[1])*
 								(*localcoolingtubesupportmatrix[0]));
   /////////////////////////////////////////////////////////////
+  // End Ladder SSD Cooling Tube Support Transformations
+  /////////////////////////////////////////////////////////////
+  TGeoTranslation** localendladdercooltubetrans[2];
+  localendladdercooltubetrans[0] = new TGeoTranslation*[4];
+  localendladdercooltubetrans[1] = new TGeoTranslation*[2];
+  for(Int_t i=0; i<4; i++) localendladdercooltubetrans[0][i] = new TGeoTranslation();
+  localendladdercooltubetrans[0][0]->SetTranslation(fgkCarbonFiberJunctionLength
+											-	   (fgkCoolingTubeSupportLength
+											-		fgkCoolingTubeSupportRmax),
+													fgkEndLadderMountingBlockPosition[0]
+											-		fgkendladdercoolingsupportdistance[0]
+											+   0.5*fgkCoolingTubeSupportWidth,
+											-   0.5*fgkCoolingTubeSupportHeight);
+  localendladdercooltubetrans[0][1]->SetTranslation(fgkCarbonFiberJunctionLength
+											-	   (fgkCoolingTubeSupportLength
+											-		fgkCoolingTubeSupportRmax),
+													fgkEndLadderMountingBlockPosition[0]
+											+		fgkendladdercoolingsupportdistance[1]
+											+   0.5*fgkCoolingTubeSupportWidth,
+											-   0.5*fgkCoolingTubeSupportHeight);
+  localendladdercooltubetrans[0][2]->SetTranslation(2*(fgkCoolingTubeSupportLength
+											-       fgkCoolingTubeSupportRmax)
+											+		fgkCarbonFiberTriangleLength
+											-   2.0*fgkCarbonFiberJunctionLength,
+												0.0,
+												0.0);
+  localendladdercooltubetrans[0][3]->SetTranslation(0.0,
+													fgkendladdercoolingsupportdistance[0]
+											+		fgkendladdercoolingsupportdistance[1],
+													0.0);
+  for(Int_t i=0; i<2; i++) localendladdercooltubetrans[1][i] = new TGeoTranslation();
+  localendladdercooltubetrans[1][0]->SetTranslation(fgkCoolingTubeSupportRmax
+											+		fgkCarbonFiberJunctionLength
+											-		fgkCoolingTubeSupportLength,
+													fgkEndLadderCarbonFiberLowerJunctionLength[1]
+											-	0.5*fgkCoolingTubeSupportWidth
+												   -fgkendladdercoolingsupportdistance[2],
+											-   0.5*fgkCoolingTubeSupportHeight);
+  localendladdercooltubetrans[1][1]->SetTranslation(fgkCarbonFiberTriangleLength
+											+		fgkCoolingTubeSupportLength
+											-		fgkCoolingTubeSupportRmax
+											-		fgkCarbonFiberJunctionLength,
+													fgkEndLadderCarbonFiberLowerJunctionLength[1]
+											-	0.5*fgkCoolingTubeSupportWidth
+											-		fgkendladdercoolingsupportdistance[2],
+											-   0.5*fgkCoolingTubeSupportHeight);
+  fendladdercoolingtubesupportmatrix = new TGeoHMatrix**[kcoolingtubesupportmatrixnumber];
+  fendladdercoolingtubesupportmatrix[0] = new TGeoHMatrix*[4];
+  fendladdercoolingtubesupportmatrix[1] = new TGeoHMatrix*[2];
+  fendladdercoolingtubesupportmatrix[0][0] = new TGeoHMatrix((*localendladdercooltubetrans[0][0])*
+  (*localcoolingtubesupportrot[1]));
+  fendladdercoolingtubesupportmatrix[0][1] = new TGeoHMatrix((*localendladdercooltubetrans[0][1])*
+  (*localcoolingtubesupportrot[1]));
+  fendladdercoolingtubesupportmatrix[0][2] = new TGeoHMatrix(*fendladdercoolingtubesupportmatrix[0][0]);
+  fendladdercoolingtubesupportmatrix[0][2]->Multiply(localcoolingtubesupportrot[0]);
+  fendladdercoolingtubesupportmatrix[0][2]->MultiplyLeft(localendladdercooltubetrans[0][2]);
+  fendladdercoolingtubesupportmatrix[0][3] = new TGeoHMatrix(*fendladdercoolingtubesupportmatrix[0][2]);
+  fendladdercoolingtubesupportmatrix[0][3]->MultiplyLeft(localendladdercooltubetrans[0][3]);
+
+  fendladdercoolingtubesupportmatrix[1][0] =	
+							new TGeoHMatrix((*localendladdercooltubetrans[1][0])
+										   *(*localcoolingtubesupportrot[1]));
+  fendladdercoolingtubesupportmatrix[1][1] = new TGeoHMatrix(*localcoolingtubesupportrot[1]);
+  fendladdercoolingtubesupportmatrix[1][1]->Multiply(localcoolingtubesupportrot[0]);
+  fendladdercoolingtubesupportmatrix[1][1]->MultiplyLeft(localendladdercooltubetrans[1][1]);
+  /////////////////////////////////////////////////////////////
   // SSD Cooling Tube Transformations
   /////////////////////////////////////////////////////////////
   TGeoRotation* localcoolingtuberot = new TGeoRotation();	
@@ -767,6 +995,119 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
 								localcoolingtubevect[i][j]->Z());
 		fcoolingtubematrix[i][j] = new TGeoHMatrix((*localcoolingtubetrans[i][j])
 							  *					(*localcoolingtuberot));
+	}
+  /////////////////////////////////////////////////////////////
+  // SSD End Ladder Cooling Tube Transformations
+  /////////////////////////////////////////////////////////////
+  TGeoRotation* localendlladdercoolingtuberot = new TGeoRotation();	
+  localendlladdercoolingtuberot->SetAngles(0.,90.,0.);
+  TGeoTranslation** localendlladdercoolingtubetrans[2];
+  localendlladdercoolingtubetrans[0] = new TGeoTranslation*[6];
+  localendlladdercoolingtubetrans[1] = new TGeoTranslation*[4];
+  for(Int_t i=0; i<2; i++)	
+	for(Int_t j=0; j<(i==0?6:4); j++) 	
+		localendlladdercoolingtubetrans[i][j] = new TGeoTranslation();
+  localendlladdercoolingtubetrans[0][0]->SetTranslation(-(fgkCoolingTubeSupportLength
+									-	 fgkCoolingTubeSupportRmax)
+									+	 fgkCarbonFiberJunctionLength,
+									  0.5*(fgkEndLadderMountingBlockPosition[0]
+						  			-    fgkendladdercoolingsupportdistance[0]),
+									- 0.5*fgkCoolingTubeSupportHeight);
+  localendlladdercoolingtubetrans[0][1]->SetTranslation((fgkCoolingTubeSupportLength
+									-	 fgkCoolingTubeSupportRmax)
+									-	 fgkCarbonFiberJunctionLength
+									+    fgkCarbonFiberTriangleLength,
+									  0.5*(fgkEndLadderMountingBlockPosition[0]
+						  			-    fgkendladdercoolingsupportdistance[0]),
+									- 0.5*fgkCoolingTubeSupportHeight);
+  localendlladdercoolingtubetrans[0][2]->SetTranslation(-(fgkCoolingTubeSupportLength
+									-   fgkCoolingTubeSupportRmax)
+									+	fgkCarbonFiberJunctionLength,
+									   fgkEndLadderMountingBlockPosition[0]
+									-   fgkendladdercoolingsupportdistance[0]
+						  +		   0.5*(fgkendladdercoolingsupportdistance[0]
+						  +				fgkendladdercoolingsupportdistance[1]
+						  +				fgkCoolingTubeSupportWidth),
+									- 0.5*fgkCoolingTubeSupportHeight);	
+  localendlladdercoolingtubetrans[0][3]->SetTranslation((fgkCoolingTubeSupportLength
+									-	 fgkCoolingTubeSupportRmax)
+									-	 fgkCarbonFiberJunctionLength
+									+    fgkCarbonFiberTriangleLength,
+									   fgkEndLadderMountingBlockPosition[0]
+									-   fgkendladdercoolingsupportdistance[0]
+						  +		   0.5*(fgkendladdercoolingsupportdistance[0]
+						  +				fgkendladdercoolingsupportdistance[1]
+						  +				fgkCoolingTubeSupportWidth),
+									- 0.5*fgkCoolingTubeSupportHeight);	
+  localendlladdercoolingtubetrans[0][4]->SetTranslation(-(fgkCoolingTubeSupportLength
+									-   fgkCoolingTubeSupportRmax)
+									+	fgkCarbonFiberJunctionLength,
+									fgkEndLadderCarbonFiberLowerJunctionLength[0]
+						  - 0.50 * (fgkEndLadderCarbonFiberLowerJunctionLength[0]
+						  -			fgkEndLadderMountingBlockPosition[0]
+						  -			fgkendladdercoolingsupportdistance[1]		
+						  -			fgkCoolingTubeSupportWidth),
+									- 0.5*fgkCoolingTubeSupportHeight);	 
+  localendlladdercoolingtubetrans[0][5]->SetTranslation((fgkCoolingTubeSupportLength
+									-	 fgkCoolingTubeSupportRmax)
+									-	 fgkCarbonFiberJunctionLength
+									+    fgkCarbonFiberTriangleLength,
+									fgkEndLadderCarbonFiberLowerJunctionLength[0]
+						  - 0.50 * (fgkEndLadderCarbonFiberLowerJunctionLength[0]
+						  -			fgkEndLadderMountingBlockPosition[0]
+						  -			fgkendladdercoolingsupportdistance[1]		
+						  -			fgkCoolingTubeSupportWidth),
+									- 0.5*fgkCoolingTubeSupportHeight);	 
+  localendlladdercoolingtubetrans[1][0]->SetTranslation(-(fgkCoolingTubeSupportLength
+									-   fgkCoolingTubeSupportRmax)
+									+	fgkCarbonFiberJunctionLength,
+							- 0.50 * (fgkMountingBlockToSensorSupport
+							- 0.50 * (fgkSSDFlexHoleWidth-fgkSSDSensorSideSupportWidth)
+							-		  fgkSSDStiffenerWidth-fgkSSDModuleStiffenerPosition[1]
+							+		  fgkSSDSensorOverlap
+							+		  fgkEndLadderCarbonFiberLowerJunctionLength[1]
+							-		  fgkendladdercoolingsupportdistance[2]
+							-		  fgkEndLadderMountingBlockPosition[1]
+							-		  fgkCoolingTubeSupportWidth)
+							+		  fgkEndLadderCarbonFiberLowerJunctionLength[1]
+							-		  fgkendladdercoolingsupportdistance[2]
+							-		  fgkCoolingTubeSupportWidth,
+						  -		0.5*fgkCoolingTubeSupportHeight);	 
+  localendlladdercoolingtubetrans[1][1]->SetTranslation((fgkCoolingTubeSupportLength
+						  -	 fgkCoolingTubeSupportRmax)
+						  -	 fgkCarbonFiberJunctionLength
+						  +    fgkCarbonFiberTriangleLength,
+						  - 0.50 * (fgkMountingBlockToSensorSupport
+							- 0.50 * (fgkSSDFlexHoleWidth-fgkSSDSensorSideSupportWidth)
+							-		  fgkSSDStiffenerWidth-fgkSSDModuleStiffenerPosition[1]
+							+		  fgkSSDSensorOverlap
+							+		  fgkEndLadderCarbonFiberLowerJunctionLength[1]
+							-		  fgkendladdercoolingsupportdistance[2]
+							-		  fgkEndLadderMountingBlockPosition[1]
+							-		  fgkCoolingTubeSupportWidth)
+							+		  fgkEndLadderCarbonFiberLowerJunctionLength[1]
+							-		  fgkendladdercoolingsupportdistance[2]
+							-		  fgkCoolingTubeSupportWidth,
+						  -		0.5*fgkCoolingTubeSupportHeight);	 
+  localendlladdercoolingtubetrans[1][2]->SetTranslation(-(fgkCoolingTubeSupportLength
+									-   fgkCoolingTubeSupportRmax)
+									+	fgkCarbonFiberJunctionLength,
+										fgkEndLadderCarbonFiberLowerJunctionLength[1]
+									- 0.5*fgkendladdercoolingsupportdistance[2],
+									- 0.5*fgkCoolingTubeSupportHeight);	 
+  localendlladdercoolingtubetrans[1][3]->SetTranslation((fgkCoolingTubeSupportLength
+									-	 fgkCoolingTubeSupportRmax)
+									-	 fgkCarbonFiberJunctionLength
+									+    fgkCarbonFiberTriangleLength,
+										fgkEndLadderCarbonFiberLowerJunctionLength[1]
+									- 0.5*fgkendladdercoolingsupportdistance[2],
+									- 0.5*fgkCoolingTubeSupportHeight);	 
+  fendladdercoolingtubematrix[0] = new TGeoHMatrix*[6]; 
+  fendladdercoolingtubematrix[1] = new TGeoHMatrix*[4]; 
+  for(Int_t i=0; i<2; i++)
+	for(Int_t j=0; j<(i==0?6:4); j++){
+		fendladdercoolingtubematrix[i][j] = new TGeoHMatrix(*localendlladdercoolingtuberot);
+		fendladdercoolingtubematrix[i][j]->MultiplyLeft(localendlladdercoolingtubetrans[i][j]);	
 	}
   /////////////////////////////////////////////////////////////
   // SSD Hybrid Components Transformations
@@ -936,13 +1277,38 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   // End Ladder SSD Mounting Block
   /////////////////////////////////////////////////////////////
   for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
-      fendladdermountingblocktrans[i] = 
-            new TGeoTranslation(-  0.25*(fgkSSDMountingBlockLength[0]
+      fendladdermountingblockcombitrans[i] = new TGeoCombiTrans();
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
+      fendladdermountingblockcombitrans[i]->SetTranslation(-  0.25*(fgkSSDMountingBlockLength[0]
                                 +	 fgkSSDMountingBlockLength[1])
                                 +  0.5*fgkCarbonFiberTriangleLength,
                                 fgkEndLadderMountingBlockPosition[i],
                                 -  fgkSSDMountingBlockHeight[1]
                                 +  0.5*fgkSSDMountingBlockHeight[0]);
+  TGeoRotation* endladdermountingblockrot = new TGeoRotation();
+  endladdermountingblockrot->SetAngles(0.,90.,0.);
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
+	fendladdermountingblockcombitrans[i]->SetRotation(*endladdermountingblockrot);
+  /////////////////////////////////////////////////////////////
+  // End Ladder SSD Mounting Block Clip Matrix 
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++) 
+	fendladdermountingblockclipmatrix[i] = new TGeoHMatrix*[2];
+  
+  TGeoRotation* localendladdercliprot = new TGeoRotation();
+  TGeoTranslation* localendladdercliptrans = new TGeoTranslation();
+  localendladdercliptrans->SetTranslation(-0.5*(fgkSSDMountingBlockLength[0]
+										  -     fgkSSDMountingBlockLength[1])
+										  + fgkSSDMountingBlockLength[0],0.,0.);
+  localendladdercliprot->SetAngles(90.,180.,-90.);
+  TGeoCombiTrans* localendladderclipcombitrans = 
+			new TGeoCombiTrans(*localendladdercliptrans,*localendladdercliprot);
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
+	for(Int_t j=0; j<2; j++){
+		fendladdermountingblockclipmatrix[i][j] = 
+						new TGeoHMatrix(*fendladdermountingblockcombitrans[i]);
+		if(j!=0) fendladdermountingblockclipmatrix[i][j]->Multiply(localendladderclipcombitrans);
+	}
   /////////////////////////////////////////////////////////////
   // End Ladder Carbon Fiber Lower Support
   /////////////////////////////////////////////////////////////
@@ -1291,6 +1657,7 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
 	delete [] localcoolingtubevect[i];
 	delete [] localcoolingtubetrans[i];
   }
+ delete endladdermountingblockrot;
  for(Int_t i=0; i<khybridmatrixnumber; i++) delete localhybridtrans[i];
  for(Int_t i=0; i<kcoolingblockmatrixnumber; i++) delete localcoolingblocktrans[i];
  for(Int_t i=0; i<fgkflexnumber; i++){
@@ -1298,6 +1665,13 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
             delete localflexmatrix[i][j];
       delete [] localflexmatrix[i];
  }
+ delete localendlladdercoolingtuberot;
+ for(Int_t i=0; i<2; i++){
+	for(Int_t j=0; j<(i==0?6:4); j++)
+		delete localendlladdercoolingtubetrans[i][j];
+	delete [] localendlladdercoolingtubetrans[i];
+  }
+
  delete localflexrot;
  delete localendflexrot;
  delete localendflexmatrix;
@@ -1319,7 +1693,11 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
       delete localendladdercarbonfiberjunctionglobaltrans[i];
       delete localendladdercarbonfiberjunctionglobalmatrix[i];
  }
- for(Int_t i=0; i<fgkendladdercarbonfibermatrixnumber; i++)
+  for(Int_t i=0; i<2; i++){
+	for(Int_t j=0; j<(i==0?4:2); j++) delete localendladdercooltubetrans[i][j];
+	delete [] localendladdercooltubetrans[i];
+  }
+  for(Int_t i=0; i<fgkendladdercarbonfibermatrixnumber; i++)
       delete localendladdercarbonfibertrans[i];
   for(Int_t i=0; i<3; i++) delete localladdercablerot[i];
   for(Int_t i=0; i<klocalladdersidecablesnumber; i++){
@@ -1327,6 +1705,8 @@ void AliITSv11GeometrySSD::CreateTransformationMatrices(){
 		delete localladdercablecombitransmatrix[i][j];
 		delete []localladdercablecombitransmatrix[i];
   }
+  delete localendladdercliprot;
+  delete localendladdercliptrans;
   for(Int_t i=0; i<fgkladdercablesnumber; i++){
 	for(Int_t j=0; j<klocalladdersidecablesnumber; j++)
 		delete localladdercablehmatrix[i][j];
@@ -1423,6 +1803,9 @@ void AliITSv11GeometrySSD::CreateBasicObjects(){
   TList* coolingtubelist = GetCoolingTubeList();	
   for(Int_t i=0; i<fgkcoolingtubenumber; i++)	
 	fcoolingtube[i] = (TGeoVolume*)coolingtubelist->At(i);
+  for(Int_t i=0; i<fgkendladdercoolingtubenumber; i++)	
+	fendladdercoolingtube[i] = 
+			(TGeoVolume*)coolingtubelist->At(fgkcoolingtubenumber+i);
   /////////////////////////////////////////////////////////////
   // SSD Flex  
   /////////////////////////////////////////////////////////////
@@ -1444,12 +1827,25 @@ void AliITSv11GeometrySSD::CreateBasicObjects(){
   // End Ladder Mounting Block
   ///////////////////////////////////
   fendladdermountingblock = GetSSDMountingBlock();
+  ///////////////////////////////////
+  // End Ladder Mounting Block
+  ///////////////////////////////////
+  fendladdermountingblockclip = GetMountingBlockClip();
+  ///////////////////////////////////
+  // Ladder Support 
+  ///////////////////////////////////
+  TList* laddersupportlist = GetMountingBlockSupport(20);
+  fLay5LadderSupport[0] = (TGeoVolume*)laddersupportlist->At(0);
+  fLay5LadderSupport[1] = (TGeoVolume*)laddersupportlist->At(1);
+  fLay6LadderSupport[0] = (TGeoVolume*)laddersupportlist->At(2);
+  fLay6LadderSupport[1] = (TGeoVolume*)laddersupportlist->At(3);
   /////////////////////////////////////////////////////////////
   // Deallocating memory
   /////////////////////////////////////////////////////////////
   delete carbonfibersupportlist;
   delete carbonfiberlowersupportlist;
   delete ssdhybridcomponentslist;
+  delete laddersupportlist;
   /////////////////////////////////////////////////////////////
   fBasicObjects = kTRUE;
 }
@@ -2279,7 +2675,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   /////////////////////////////////////////////////////////////
   // Checking overlaps	
   /////////////////////////////////////////////////////////////
-	//coolingsystemother->CheckOverlaps(0.01);
+	coolingsystemother->CheckOverlaps(0.01);
   /////////////////////////////////////////////////////////////
 	return coolingsystemother;
 }
@@ -2392,7 +2788,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDStiffenerFlex()const{
 					 +					   fgkSSDFlexHeight[1])); 
     ssdflexmother->AddNode(ssdflex[i],1,ssdflextrans[i]);
   }
-  //ssdflexmother->CheckOverlaps(0.01);
+  ssdflexmother->CheckOverlaps(0.01);
   return ssdflexmother;
 }
 /////////////////////////////////////////////////////////////////////////////////
@@ -2548,286 +2944,315 @@ for(Int_t i=0; i<karcnumber; i++){
   for(Int_t i=0; i<kendflexlayernumber+1; i++) delete transvector[i];	
   delete deltatransvector;
   /////////////////////////////////////////////////////////////
-  //ssdendflexmother->CheckOverlaps(0.01);
+  ssdendflexmother->CheckOverlaps(0.01);
   return ssdendflexmother;
 }
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDMountingBlock(){
   /////////////////////////////////////////////////////////////
-  // Method generating the Mounting Block   
+  // Method generating the Mounting Block
   /////////////////////////////////////////////////////////////  
-  // Mounting Block Boxes Shapes
-  ///////////////////////////////////////
-  const Int_t kmountingblockboxnumber = 3;
-  TGeoBBox* mountingblockboxshape[kmountingblockboxnumber];
-  mountingblockboxshape[0] = new TGeoBBox("MountingBlockBoxShape0",
-							0.25*(fgkSSDMountingBlockLength[0]
-						-	fgkSSDMountingBlockLength[1]),
-							0.5*fgkSSDMountingBlockWidth,
-							0.5*fgkSSDMountingBlockHeight[0]);
-  mountingblockboxshape[1] = new TGeoBBox("MountingBlockBoxShape1",
-							0.25*(fgkSSDMountingBlockLength[1]
-						-	fgkSSDMountingBlockLength[2]),
-							0.5*fgkSSDMountingBlockWidth,
-							0.5*(fgkSSDMountingBlockHeight[1]
-						-	fgkSSDMountingBlockHeight[3]));
-  mountingblockboxshape[2] = new TGeoBBox("MountingBlockBoxShape2",
-							0.5*fgkSSDMountingBlockLength[2],
-							0.5*fgkSSDMountingBlockWidth,
-							0.5*(fgkSSDMountingBlockHeight[2]
-						-	fgkSSDMountingBlockHeight[3]));
-  TGeoTranslation* mountingblockboxtrans[kmountingblockboxnumber+2];
-  mountingblockboxtrans[0] = new TGeoTranslation("MountingBlockBoxTrans0",0.,0.,0.);
-  mountingblockboxtrans[1] = new TGeoTranslation("MountingBlockBoxTrans1",
-							mountingblockboxshape[0]->GetDX()
-						+	mountingblockboxshape[1]->GetDX(),
-							0.0,
-							mountingblockboxshape[1]->GetDZ()
-						-	mountingblockboxshape[0]->GetDZ()
-						+	fgkSSDMountingBlockHeight[3]);
-  mountingblockboxtrans[2] = new TGeoTranslation("MountingBlockBoxTrans2",
-							mountingblockboxshape[0]->GetDX()
-						+	2.*mountingblockboxshape[1]->GetDX()
-						+	mountingblockboxshape[2]->GetDX(),
-							0.0,
-							mountingblockboxshape[2]->GetDZ()
-						-	mountingblockboxshape[0]->GetDZ()
-						+	fgkSSDMountingBlockHeight[3]);
-  mountingblockboxtrans[3] = new TGeoTranslation("MountingBlockBoxTrans3",
-							mountingblockboxshape[0]->GetDX()
-						+	mountingblockboxshape[1]->GetDX()
-						+	2.*(mountingblockboxshape[1]->GetDX()
-						+	mountingblockboxshape[2]->GetDX()),
-							0.0,
-							mountingblockboxshape[1]->GetDZ()
-						-	mountingblockboxshape[0]->GetDZ()
-						+	fgkSSDMountingBlockHeight[3]);
-  mountingblockboxtrans[4] = new TGeoTranslation("MountingBlockBoxTrans4",
-							2.*(mountingblockboxshape[0]->GetDX()
-						+	2.*mountingblockboxshape[1]->GetDX()
-						+   mountingblockboxshape[2]->GetDX()),
-							0.0,
-							0.0);
-  for(Int_t i=0; i<kmountingblockboxnumber+2; i++) 
-									mountingblockboxtrans[i]->RegisterYourself();
-  ///////////////////////////////////////
-  // Mounting Block Trapezoid Hole Shapes
-  ///////////////////////////////////////
-  const Int_t kholetrapezoidvertexnumber = 4;
-  TVector3* holetrapezoidvertex[kholetrapezoidvertexnumber];
-  holetrapezoidvertex[0] = new TVector3();
-  holetrapezoidvertex[1] = new TVector3(fgkSSDMountingBlockHoleTrapezoidHeight);
-  holetrapezoidvertex[2] = new TVector3(*holetrapezoidvertex[0]);
-  holetrapezoidvertex[3] = new TVector3(*holetrapezoidvertex[1]);
-  Double_t holetrapezoidwidth[2] = {fgkSSDMountingBlockHoleTrapezoidUpBasis
-						+	2.*mountingblockboxshape[1]->GetDX()
-						*	TMath::Tan(fgkSSDMountingBlockHoleTrapezoidAngle
-						*	TMath::DegToRad()),
-							fgkSSDMountingBlockHoleTrapezoidUpBasis}; 
-  GetArbShape(holetrapezoidvertex,
-							holetrapezoidwidth,
-							2.*mountingblockboxshape[1]->GetDX(),
-							"HoleTrapezoidShape");
-  TGeoRotation* holetrapezoidshaperot[2];
-  holetrapezoidshaperot[0] = new TGeoRotation("HoleTrapezoidShapeRot0",
-							90.,-90.,-90.);
-  holetrapezoidshaperot[1] = new TGeoRotation("HoleTrapezoidShapeRot1",
-							-180.,0.,0.);
-  TGeoCombiTrans* holetrapezoidshapecombitrans = 
-							new TGeoCombiTrans("HoleTrapezoidShapeCombiTrans",
-							mountingblockboxshape[0]->GetDX()
-						+	3.*mountingblockboxshape[1]->GetDX()
-						+	2.*mountingblockboxshape[2]->GetDX(),
-							0.5*fgkSSDMountingBlockWidth,
-						-	fgkSSDMountingBlockHoleTrapezoidHeight
-						+	2.*mountingblockboxshape[1]->GetDZ()
-						-	mountingblockboxshape[0]->GetDZ()
-						+	fgkSSDMountingBlockHeight[3],
-							new TGeoRotation((*holetrapezoidshaperot[1])
-						*	(*holetrapezoidshaperot[0])));
-  holetrapezoidshapecombitrans->RegisterYourself();
-  ///////////////////////////////////
-  // Mounting Block Screw Hole Shapes
-  ///////////////////////////////////
-  const Int_t kmountingblocktubenumber = 2;
-  TGeoTube* mountingblocktubeshape[kmountingblocktubenumber];
-  mountingblocktubeshape[0] = new TGeoTube("MountingBlockTubeShape0",0.0,
-							fgkSSDMountingBlockHoleRadius,
-							mountingblockboxshape[0]->GetDZ());
-  mountingblocktubeshape[1] = new TGeoTube("MountingBlockTubeShape1",0.0,
-							fgkSSDMountingBlockHoleRadius,
-							mountingblockboxshape[2]->GetDZ());
-  TGeoTranslation* mountingblocktubetrans[2*kmountingblocktubenumber];
-  mountingblocktubetrans[0] = new TGeoTranslation("MountingBlockTubeTrans0",
-						-	0.5*(fgkSSDMountingBlockLength[0]
-						-	fgkSSDMountingBlockHoleTubeLength[0]),
-							0.5*fgkSSDMountingBlockWidth
-						-	fgkSSDMountingBlockHoleTubeWidth[0],0.);
-  mountingblocktubetrans[1] = new TGeoTranslation("MountingBlockTubeTrans1",
-						-	0.5*(fgkSSDMountingBlockLength[0]
-						-	fgkSSDMountingBlockHoleTubeLength[0])
-						+	fgkSSDMountingBlockHoleTubeLength[0],
-						-	0.5*fgkSSDMountingBlockWidth
-						+	fgkSSDMountingBlockHoleTubeWidth[0],
-							0.);
-  mountingblocktubetrans[2] = new TGeoTranslation("MountingBlockTubeTrans2",
-						-	mountingblockboxshape[0]->GetDX()
-						+	0.5*fgkSSDMountingBlockLength[0]
-						-	fgkSSDMountingBlockHoleTubeLength[1],
-							0.5*fgkSSDMountingBlockWidth
-						-	fgkSSDMountingBlockHoleTubeWidth[0],
-							mountingblockboxshape[2]->GetDZ()
-						-	mountingblockboxshape[0]->GetDZ()
-						+	fgkSSDMountingBlockHeight[3]);
-  mountingblocktubetrans[3] = new TGeoTranslation("MountingBlockTubeTrans3",
-						-	mountingblockboxshape[0]->GetDX()
-						+	0.5*fgkSSDMountingBlockLength[0],
-						-	0.5*fgkSSDMountingBlockWidth
-						+	fgkSSDMountingBlockHoleTubeWidth[1],
-							mountingblockboxshape[2]->GetDZ()
-						-	mountingblockboxshape[0]->GetDZ()
-						+	fgkSSDMountingBlockHeight[3]);
-  for(Int_t i=0; i<2*kmountingblocktubenumber; i++) 
-						mountingblocktubetrans[i]->RegisterYourself();
-						new TGeoCompositeShape("MountingBlockMainShape",
-						"MountingBlockBoxShape0:MountingBlockBoxTrans0+"
-						"MountingBlockBoxShape1:MountingBlockBoxTrans1+"
-						"MountingBlockBoxShape2:MountingBlockBoxTrans2+"
-						"MountingBlockBoxShape1:MountingBlockBoxTrans3+"
-						"MountingBlockBoxShape0:MountingBlockBoxTrans4");
-  ////////////////////////////////////////////
-  // Mounting Block Screw Composite Hole Shapes
-  ////////////////////////////////////////////
-  const Int_t kmountingblockholetubesegnumber = 4;
-						new TGeoTubeSeg("MountingBlockHoleTubeSegShape",
-						0.0,
-						fgkSSDMountingBlockScrewHoleRadius[0],
-						0.5*fgkSSDMountingBlockScrewHoleHeigth,-90.,180.);
-  TGeoCombiTrans* mountingblockholetubesegcombitrans[kmountingblockholetubesegnumber];
-  char* mountingblockholetubesegcombitransname[kmountingblockholetubesegnumber] = 
-					{	"MountingBlockHoleTubeSegCombiTrans0",
-						"MountingBlockHoleTubeSegCombiTrans1",
-						"MountingBlockHoleTubeSegCombiTrans2",
-						"MountingBlockHoleTubeSegCombiTrans3"};
-  for(Int_t i=0; i<kmountingblockholetubesegnumber; i++){
-    mountingblockholetubesegcombitrans[i] =
-      new TGeoCombiTrans(mountingblockholetubesegcombitransname[i],
-						0.5*fgkSSDMountingBlockScrewHoleEdge*TMath::Sqrt(2)
-					*	TMath::Cos(45*(2*i+1)*TMath::DegToRad()),
-						0.5*fgkSSDMountingBlockScrewHoleEdge*TMath::Sqrt(2)
-					*	TMath::Sin(45*(2*i+1)*TMath::DegToRad()),
-						0.0,
-						new TGeoRotation("",90.*i,0.,0.));
-    mountingblockholetubesegcombitrans[i]->RegisterYourself();
-  }
-  TGeoBBox* mountingblockholeboxshape = 
-						new TGeoBBox("MountingBlockHoleBoxShape",
-						0.5*fgkSSDMountingBlockScrewHoleEdge,
-						0.5*fgkSSDMountingBlockScrewHoleEdge,
-						0.5*fgkSSDMountingBlockScrewHoleHeigth);
-  TGeoCompositeShape* mountingblockscrewhole[2];
-  mountingblockscrewhole[0] = 
-			new TGeoCompositeShape("MountingBlockScrewHole0",
-			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans0+"
-			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans1+"
-			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans2+"
-			"MountingBlockHoleTubeSegShape:MountingBlockHoleTubeSegCombiTrans3+"
-			"MountingBlockHoleBoxShape");
-			new TGeoTubeSeg("MountingBlockLowerHoleTubeSegShape",
-						0.0,
-						fgkSSDMountingBlockScrewHoleRadius[1],
-						0.5*(fgkSSDMountingBlockHoleTubeWidth[0]
-					-	fgkSSDMountingBlockScrewHoleHeigth
-					-	fgkSSDMountingBlockHeight[3]),0.,90.); 
-  TGeoCombiTrans* mountingblocklowerholetubesegcombitrans[kmountingblockholetubesegnumber];
-  char* mountingblocklowerholetubesegcombitransname[kmountingblockholetubesegnumber] =
-					{	"MountingBlockLowerHoleTubeSegCombiTrans0",
-						"MountingBlockLowerHoleTubeSegCombiTrans1",
-						"MountingBlockLowerHoleTubeSegCombiTrans2",
-						"MountingBlockLowerHoleTubeSegCombiTrans3"};
-  for(Int_t i=0; i<kmountingblockholetubesegnumber; i++){
-    mountingblocklowerholetubesegcombitrans[i] =
-			new TGeoCombiTrans(mountingblocklowerholetubesegcombitransname[i],
-						0.5*(fgkSSDMountingBlockScrewHoleEdge
-					-	2.*fgkSSDMountingBlockScrewHoleRadius[1])
-					*	TMath::Sqrt(2)*TMath::Cos(45*(2*i+1)*TMath::DegToRad()),
-						0.5*(fgkSSDMountingBlockScrewHoleEdge
-					-	2.0*fgkSSDMountingBlockScrewHoleRadius[1])
-					*	TMath::Sqrt(2)*TMath::Sin(45*(2*i+1)*TMath::DegToRad()),0.,
-						new TGeoRotation("",90.*i,0.,0.));
-					mountingblocklowerholetubesegcombitrans[i]->RegisterYourself();
-  }
-  Double_t fgkSSDMountingBlockLowerScrewHoleEdge = fgkSSDMountingBlockScrewHoleEdge
-					-	2.*fgkSSDMountingBlockScrewHoleRadius[1];
-  TGeoBBox* mountingblocklowerholeboxshape[2];
-  mountingblocklowerholeboxshape[0] = 
-			new TGeoBBox("MountingBlockLowerHoleBoxShape0",
-						0.5*fgkSSDMountingBlockLowerScrewHoleEdge,
-						0.5*fgkSSDMountingBlockLowerScrewHoleEdge,
-						0.5*(fgkSSDMountingBlockHoleTubeWidth[0]
-					-	fgkSSDMountingBlockScrewHoleHeigth
-					-	fgkSSDMountingBlockHeight[3]));
-  mountingblocklowerholeboxshape[1] = 
-			new TGeoBBox("MountingBlockLowerHoleBoxShape1",
-						0.5*fgkSSDMountingBlockLowerScrewHoleEdge,
-						0.5*fgkSSDMountingBlockScrewHoleRadius[1],
-						0.5*(fgkSSDMountingBlockHoleTubeWidth[0]
-					-	fgkSSDMountingBlockScrewHoleHeigth
-					-	fgkSSDMountingBlockHeight[3]));
-  TGeoCombiTrans* mountingblocklowerholeBoxcombitrans[kmountingblockholetubesegnumber];
-  char* mountingBlockLowerHoleBoxCombiTransName[kmountingblockholetubesegnumber] = 
-					{	"MountingBlockLowerHoleBoxCombiTrans0",
-						"MountingBlockLowerHoleBoxCombiTrans1",
-						"MountingBlockLowerHoleBoxCombiTrans2",
-						"MountingBlockLowerHoleBoxCombiTrans3"};
-  for(Int_t i=0; i<kmountingblockholetubesegnumber; i++){
-    mountingblocklowerholeBoxcombitrans[i] =
-			new TGeoCombiTrans(mountingBlockLowerHoleBoxCombiTransName[i],
-						0.5*(fgkSSDMountingBlockLowerScrewHoleEdge
-					+	fgkSSDMountingBlockScrewHoleRadius[1])
-					*	TMath::Cos(90*(i+1)*TMath::DegToRad()),
-						0.5*(fgkSSDMountingBlockLowerScrewHoleEdge
-					+	fgkSSDMountingBlockScrewHoleRadius[1])
-					*	TMath::Sin(90*(i+1)*TMath::DegToRad()),0.,
-						new TGeoRotation("",90.*i,0.,0.));
-    mountingblocklowerholeBoxcombitrans[i]->RegisterYourself();
-  }
-  mountingblockscrewhole[1] = new TGeoCompositeShape("MountingBlockScrewHole1",
-	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans0+"
-	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans1+"
-	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans2+"
-	"MountingBlockLowerHoleTubeSegShape:MountingBlockLowerHoleTubeSegCombiTrans3+"
-	"MountingBlockLowerHoleBoxShape0+"
-	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans0+"
-	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans1+"
-	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans2+"
-	"MountingBlockLowerHoleBoxShape1:MountingBlockLowerHoleBoxCombiTrans3");
-  TGeoTranslation* mountingblockscrewhole1trans = 
-			new TGeoTranslation("MountingBlockScrewHole1Trans",0.,0.,
-					-	mountingblocklowerholeboxshape[0]->GetDZ()
-					-	mountingblockholeboxshape->GetDZ());
-  mountingblockscrewhole1trans->RegisterYourself();
-			new TGeoCompositeShape("MountingBlockHole",
-	"MountingBlockScrewHole0+MountingBlockScrewHole1:MountingBlockScrewHole1Trans");
-  TGeoTranslation* mountingblockholetrans = new TGeoTranslation("MountingBlockHoleTrans",
-						0.5*fgkSSDMountingBlockLength[0]
-					-	mountingblockboxshape[0]->GetDZ(),
-						0.0,
-						2.*mountingblockboxshape[2]->GetDZ()
-					-	mountingblockboxshape[0]->GetDZ()
-					+	fgkSSDMountingBlockHeight[3]
-					-	mountingblockholeboxshape->GetDZ());
-  mountingblockholetrans->RegisterYourself();
-  TGeoCompositeShape* mountingblockshape = new TGeoCompositeShape("MountingBlockShape",
-			"MountingBlockMainShape-(MountingBlockTubeShape0:MountingBlockTubeTrans0+"
-			"MountingBlockTubeShape0:MountingBlockTubeTrans1+"
-			"MountingBlockTubeShape1:MountingBlockTubeTrans2+"
-			"MountingBlockTubeShape1:MountingBlockTubeTrans3+"
-			"HoleTrapezoidShape:HoleTrapezoidShapeCombiTrans+"
-			"MountingBlockHole:MountingBlockHoleTrans)");
+  const Int_t kvertexnumber = 8;
+  Double_t xvertex[kvertexnumber];
+  Double_t yvertex[kvertexnumber];
+  xvertex[0] = -0.25*(fgkSSDMountingBlockLength[0]-fgkSSDMountingBlockLength[1]); 
+  xvertex[1] = xvertex[0];
+  xvertex[2] = -xvertex[0];
+  xvertex[3] = xvertex[2];
+  xvertex[4] = xvertex[3]+0.5*(fgkSSDMountingBlockLength[1]
+			 -				   fgkSSDMountingBlockLength[2]);
+  xvertex[5] = xvertex[4];
+  xvertex[6] = 0.5*fgkSSDMountingBlockLength[0]-xvertex[2]
+			 - 0.5*fgkSSDMountingBlockScrewHoleEdge
+			 -     fgkSSDMountingBlockScrewHoleRadius[0];
+  xvertex[7] = xvertex[6];
+  yvertex[0] = -0.5*fgkCoolingTubeSupportHeight-fgkSSDModuleCoolingBlockToSensor
+			 +	fgkSSDMountingBlockHeight[1]-0.5*fgkSSDMountingBlockHeight[0];
+  yvertex[1] = 0.5*fgkSSDMountingBlockHeight[0];
+  yvertex[2] = yvertex[1]; 
+  yvertex[3] = fgkSSDMountingBlockHeight[1]-yvertex[1];
+  yvertex[4] = yvertex[3];
+  yvertex[5] = yvertex[2]+fgkSSDMountingBlockHeight[2]
+			 - fgkSSDMountingBlockHeight[0];
+  yvertex[6] = yvertex[5];
+  yvertex[7] = yvertex[0];
+  ///////////////////////////////////////////////////////////////////////
+  // TGeoXTru Volume definition for Mounting Block Part
+  ///////////////////////////////////////////////////////////////////////
+  TGeoXtru* ssdmountingblockshape = new TGeoXtru(2);
+  ssdmountingblockshape->DefinePolygon(kvertexnumber,xvertex,yvertex);
+  ssdmountingblockshape->DefineSection(0,-0.5*fgkSSDMountingBlockWidth);
+  ssdmountingblockshape->DefineSection(1,0.5*fgkSSDMountingBlockWidth);
   TGeoVolume* ssdmountingblock = new TGeoVolume("SSDMountingBlock",
-			mountingblockshape,fSSDMountingBlockMedium);
-  return ssdmountingblock;
+								          ssdmountingblockshape,
+										  fSSDMountingBlockMedium);
+  ssdmountingblock->SetLineColor(fColorG10);
+  TGeoCombiTrans* mountingblockcombitrans = new TGeoCombiTrans();
+  mountingblockcombitrans->SetTranslation(2.*xvertex[2]+fgkSSDMountingBlockLength[1],0.,0.);
+  TGeoRotation* mountingblockrot = new TGeoRotation();
+  mountingblockrot->SetAngles(90.,180.,-90.);
+  mountingblockcombitrans->SetRotation(*mountingblockrot);
+  /////////////////////////////////////////////////////////////
+  // Generating the Mounting Block Screw Vertices 
+  /////////////////////////////////////////////////////////////  
+  const Int_t kscrewvertexnumber = 15;
+  Double_t alpha = TMath::ACos(0.5*(fgkSSDMountingBlockHeight[1]
+				 -					fgkSSDMountingBlockScrewHoleEdge)
+				 /				fgkSSDMountingBlockScrewHoleRadius[0])
+				 * TMath::RadToDeg();
+  Double_t phi0 = 90.+alpha;
+  Double_t phi = 270.-2*alpha;
+  Double_t deltaphi = phi/kscrewvertexnumber;	
+  TVector3* screwvertex[kscrewvertexnumber+1];
+  for(Int_t i=0; i<kscrewvertexnumber+1; i++)	
+	screwvertex[i] = new TVector3(fgkSSDMountingBlockScrewHoleRadius[0]
+				   *CosD(phi0+i*deltaphi),
+				   fgkSSDMountingBlockScrewHoleRadius[0]
+				   *SinD(phi0+i*deltaphi));
+  Double_t xscrewvertex[kscrewvertexnumber+6];
+  Double_t yscrewvertex[kscrewvertexnumber+6];
+  xscrewvertex[0] = - fgkSSDMountingBlockScrewHoleRadius[0];	
+  yscrewvertex[0] = -0.5*(fgkSSDMountingBlockWidth
+				  -		  fgkSSDMountingBlockScrewHoleEdge);
+  xscrewvertex[1] = xscrewvertex[0];
+  yscrewvertex[1] = 0.5*fgkSSDMountingBlockScrewHoleEdge;
+  xscrewvertex[2] = screwvertex[0]->X();
+  yscrewvertex[2] = yscrewvertex[1];
+  for(Int_t i=0; i<kscrewvertexnumber+1; i++){
+	xscrewvertex[i+3] = screwvertex[i]->X(); 	
+	yscrewvertex[i+3] = screwvertex[i]->Y(); 	
+  } 
+  xscrewvertex[kscrewvertexnumber+4] = 0.5*fgkSSDMountingBlockScrewHoleEdge; 	
+  yscrewvertex[kscrewvertexnumber+4] = yscrewvertex[kscrewvertexnumber+3]; 	
+  xscrewvertex[kscrewvertexnumber+5] = xscrewvertex[kscrewvertexnumber+4];
+  yscrewvertex[kscrewvertexnumber+5] = yscrewvertex[0];
+  TGeoXtru* ssdmountingblockscrewshape = new TGeoXtru(2);
+  ssdmountingblockscrewshape->DefinePolygon(kscrewvertexnumber+6,xscrewvertex,yscrewvertex);
+  ssdmountingblockscrewshape->DefineSection(0,yvertex[0]);
+  ssdmountingblockscrewshape->DefineSection(1,-0.5*fgkSSDMountingBlockHeight[0]
+							+				   fgkSSDMountingBlockHeight[2]);
+  TGeoVolume* ssdmountingblockscrew = new TGeoVolume("SSDMountingBlockScrew",
+								                ssdmountingblockscrewshape,
+											    fSSDMountingBlockMedium);
+  ssdmountingblockscrew->SetLineColor(fColorG10);
+  TGeoCombiTrans* ssdmountingblockscrewcombitrans[4];
+  for(Int_t i=0; i<4; i++) ssdmountingblockscrewcombitrans[i] = new TGeoCombiTrans();
+  ssdmountingblockscrewcombitrans[0]->SetTranslation(-0.5*fgkSSDMountingBlockScrewHoleEdge,
+									-				 yscrewvertex[1],
+													 0.5*fgkSSDMountingBlockHeight[0]
+									-				 fgkSSDMountingBlockHeight[2]
+									+				 0.5*(-0.5*fgkSSDMountingBlockHeight[0]
+									+				 fgkSSDMountingBlockHeight[2]
+									-				 yvertex[0]));
+  ssdmountingblockscrewcombitrans[1]->SetTranslation(0.5*fgkSSDMountingBlockScrewHoleEdge,
+													-0.5*fgkSSDMountingBlockScrewHoleEdge,
+														 yscrewvertex[1]
+													-0.5*(-0.5*fgkSSDMountingBlockHeight[0]
+													 +fgkSSDMountingBlockHeight[2]
+													 -yvertex[0]));
+  ssdmountingblockscrewcombitrans[2]->SetTranslation(-0.5*fgkSSDMountingBlockScrewHoleEdge,
+													  yscrewvertex[1],
+									-				  0.5*fgkSSDMountingBlockHeight[0]
+									+				  fgkSSDMountingBlockHeight[2]
+									-				  0.5*(-0.5*fgkSSDMountingBlockHeight[0]
+									+				  fgkSSDMountingBlockHeight[2]
+									-				  yvertex[0]));
+  ssdmountingblockscrewcombitrans[3]->SetTranslation(0.5*fgkSSDMountingBlockScrewHoleEdge,
+													 yscrewvertex[1],
+									-				 yscrewvertex[1]
+									+				 0.5*(-0.5*fgkSSDMountingBlockHeight[0]
+									+				 fgkSSDMountingBlockHeight[2]
+									-				 yvertex[0]));
+  TGeoRotation* ssdmountingblockscrewrot[4];
+  for(Int_t i=0; i<4; i++) ssdmountingblockscrewrot[i] = new TGeoRotation();
+	ssdmountingblockscrewrot[1]->SetAngles(90.,-180.,-90.);	
+    ssdmountingblockscrewrot[2]->SetAngles(0.,180.,0.);	
+    ssdmountingblockscrewrot[3]->SetAngles(180.,0.,0.);	
+  for(Int_t i=1; i<4; i++) 
+	ssdmountingblockscrewcombitrans[i]->SetRotation(*ssdmountingblockscrewrot[i]);
+  TGeoRotation* ssdmountingblockglobalrot = new TGeoRotation();
+  ssdmountingblockglobalrot->SetAngles(0.,90.,0.);	
+  TGeoTranslation* ssdmountingblockglobaltrans = new TGeoTranslation();
+  ssdmountingblockglobaltrans->SetTranslation(0.5*fgkSSDMountingBlockLength[0]
+							 +				  xvertex[0],yscrewvertex[1]
+							 -				  0.5*(-0.5*fgkSSDMountingBlockHeight[0]
+							 +				  fgkSSDMountingBlockHeight[2]
+							 -				  yvertex[0]),0.);	
+  TGeoHMatrix* ssdmountingblockscrewmatrix[4];
+  for(Int_t i=0; i<4; i++){
+	ssdmountingblockscrewmatrix[i] = 
+		new TGeoHMatrix((*ssdmountingblockglobalrot)*(*ssdmountingblockscrewcombitrans[i])); 
+	ssdmountingblockscrewmatrix[i]->MultiplyLeft(ssdmountingblockglobaltrans);
+  }
+  ///////////////////////////////////////////////////////////////////////
+  // TGeoXtru for Mother Volume 
+  ///////////////////////////////////////////////////////////////////////
+  const Int_t kvertexmothernumber = 12;
+  Double_t xmothervertex[kvertexmothernumber];
+  Double_t ymothervertex[kvertexmothernumber];
+  for(Int_t i=0; i<6; i++){
+	xmothervertex[i] = xvertex[i];
+	ymothervertex[i] = yvertex[i];
+  } 
+  xmothervertex[6]  = xvertex[5]+fgkSSDMountingBlockLength[2];
+  ymothervertex[6]  = ymothervertex[5];
+  xmothervertex[7]  = xmothervertex[6];
+  ymothervertex[7]  = ymothervertex[4];
+  xmothervertex[8]  = xmothervertex[7]
+					+ 0.5*(fgkSSDMountingBlockLength[1]
+					-	   fgkSSDMountingBlockLength[2]);
+  ymothervertex[8]  = ymothervertex[4];
+  xmothervertex[9]  = xmothervertex[8];
+  ymothervertex[9]  = ymothervertex[2];
+  xmothervertex[10] = xvertex[0]+fgkSSDMountingBlockLength[0];
+  ymothervertex[10] = ymothervertex[1];
+  xmothervertex[11] = xmothervertex[10];
+  ymothervertex[11] = ymothervertex[0];  
+  TGeoXtru* ssdmountingblockmothershape = new TGeoXtru(2);
+  ssdmountingblockmothershape->DefinePolygon(kvertexmothernumber,xmothervertex,ymothervertex);
+  ssdmountingblockmothershape->DefineSection(0,-0.5*fgkSSDMountingBlockWidth);
+  ssdmountingblockmothershape->DefineSection(1,0.5*fgkSSDMountingBlockWidth);
+  TGeoVolume* ssdmountingblockmother = new TGeoVolume("SSDMountingBlockMother",
+								          ssdmountingblockmothershape,
+										  fSSDAir);
+  /////////////////////////////////////////////////////////////
+  // Placing the Volumes into Mother Volume 
+  /////////////////////////////////////////////////////////////
+  ssdmountingblockmother->AddNode(ssdmountingblock,1);
+  ssdmountingblockmother->AddNode(ssdmountingblock,2,mountingblockcombitrans);
+  for(Int_t i=0; i<4; i++) 
+	ssdmountingblockmother->AddNode(ssdmountingblockscrew,i+1,
+									ssdmountingblockscrewmatrix[i]);
+  /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  delete mountingblockrot;
+  for(Int_t i=0; i<4; i++) delete ssdmountingblockscrewrot[i];
+  delete ssdmountingblockglobalrot; 
+  delete ssdmountingblockglobaltrans; 
+  /////////////////////////////////////////////////////////////
+  return ssdmountingblockmother;
+}
+///////////////////////////////////////////////////////////////////////////////
+ TGeoVolume* AliITSv11GeometrySSD::GetMountingBlockClip() const {
+  /////////////////////////////////////////////////////////////
+  // Method generating the Mounting Block Clip 
+  /////////////////////////////////////////////////////////////  
+  const Int_t kmothervertexnumber = 10;
+  Double_t xmothervertex[kmothervertexnumber];
+  Double_t ymothervertex[kmothervertexnumber];
+  xmothervertex[0] = -0.25*(fgkSSDMountingBlockLength[0]-fgkSSDMountingBlockLength[1])
+				   - 0.5*(fgkSSDSensorWidth-fgkSSDMountingBlockLength[0]); 
+  xmothervertex[1] = xmothervertex[0];
+  xmothervertex[2] = xmothervertex[0]+0.5*(fgkMountingBlockClibScrewPosition
+				   - fgkMountingBlockClibScrewRadius);
+  xmothervertex[3] = xmothervertex[2]; 
+  xmothervertex[4] = xmothervertex[3]+2.*fgkMountingBlockClibScrewRadius; 
+  xmothervertex[5] = xmothervertex[4]; 
+  xmothervertex[6] = xmothervertex[0]+fgkMountingBlockClipLength; 
+  xmothervertex[7] = xmothervertex[6]; 
+  xmothervertex[8] = -0.25*(fgkSSDMountingBlockLength[0]-fgkSSDMountingBlockLength[1]); 
+  xmothervertex[9] = xmothervertex[8]; 
+  ymothervertex[0] = -0.5*fgkCoolingTubeSupportHeight-fgkSSDModuleCoolingBlockToSensor
+			 +	fgkSSDMountingBlockHeight[1]-0.5*fgkSSDMountingBlockHeight[0];
+  ymothervertex[1] = 0.5*fgkSSDMountingBlockHeight[0]+fgkMountingBlockClipThickness;
+  ymothervertex[2] = ymothervertex[1];
+  ymothervertex[3] = ymothervertex[2]+(fgkSSDMountingBlockHeight[1]
+				   - fgkSSDMountingBlockHeight[0]-fgkMountingBlockClipThickness
+				   - 0.5*fgkCoolingTubeSupportHeight-fgkCoolingTubeSupportRmax);
+  ymothervertex[4] = ymothervertex[3];
+  ymothervertex[5] = ymothervertex[2];
+  ymothervertex[6] = ymothervertex[5];
+  ymothervertex[7] = ymothervertex[6]-fgkMountingBlockClipThickness;
+  ymothervertex[8] = ymothervertex[7];
+  ymothervertex[9] = ymothervertex[0];
+  ///////////////////////////////////////////////////////////////////////
+  // TGeoXTru Volume definition for Mounting Block Clip Part
+  ///////////////////////////////////////////////////////////////////////
+  TGeoXtru* ssdmountingblockclipshape = new TGeoXtru(2);
+  ssdmountingblockclipshape->DefinePolygon(kmothervertexnumber,xmothervertex,ymothervertex);
+  ssdmountingblockclipshape->DefineSection(0,0.5*fgkSSDMountingBlockWidth-fgkMountingBlockSupportWidth[0]);
+  ssdmountingblockclipshape->DefineSection(1,0.5*fgkSSDMountingBlockWidth);
+  TGeoVolume* ssdmountingblockclip = new TGeoVolume("SSDMountingBlockClip",
+								          ssdmountingblockclipshape,fSSDAir);
+  ssdmountingblockclip->SetLineColor(4);
+  ///////////////////////////////////////////////////////////////////////
+  // TGeoXTru Volume definition for Clip 
+  ///////////////////////////////////////////////////////////////////////
+  const Int_t kclipvertexnumber = 6;
+  Double_t xclipvertex[kclipvertexnumber];
+  Double_t yclipvertex[kclipvertexnumber];
+  xclipvertex[0] = xmothervertex[0];
+  xclipvertex[1] = xclipvertex[0];
+  xclipvertex[2] = xmothervertex[6];
+  xclipvertex[3] = xclipvertex[2];
+  xclipvertex[4] = xclipvertex[0]+fgkMountingBlockClipThickness;
+  xclipvertex[5] = xclipvertex[4];
+  yclipvertex[0] = ymothervertex[0];
+  yclipvertex[1] = ymothervertex[1];
+  yclipvertex[2] = yclipvertex[1];
+  yclipvertex[3] = yclipvertex[1]-fgkMountingBlockClipThickness;
+  yclipvertex[4] = yclipvertex[3];
+  yclipvertex[5] = yclipvertex[0];
+  TGeoXtru* clipshape = new TGeoXtru(2);
+  clipshape->DefinePolygon(kclipvertexnumber,xclipvertex,yclipvertex);
+  clipshape->DefineSection(0,0.5*fgkSSDMountingBlockWidth-fgkMountingBlockClibWidth);
+  clipshape->DefineSection(1,0.5*fgkSSDMountingBlockWidth-fgkMountingBlockSupportWidth[0]
+							 +   fgkMountingBlockClibWidth);
+  TGeoVolume* clip = new TGeoVolume("SSDClip",clipshape,fSSDMountingBlockMedium);
+  clip->SetLineColor(18);
+  ///////////////////////////////////////////////////////////////////////
+  // Ladder Support Piece  
+  ///////////////////////////////////////////////////////////////////////
+  const Int_t ksupportvertexnumber = 4;
+  Double_t xsupportvertex[ksupportvertexnumber];
+  Double_t ysupportvertex[ksupportvertexnumber];
+  xsupportvertex[0] = xclipvertex[5];
+  xsupportvertex[1] = xsupportvertex[0];
+  xsupportvertex[2] = xmothervertex[9];
+  xsupportvertex[3] = xsupportvertex[2];
+  ysupportvertex[0] = yclipvertex[0];
+  ysupportvertex[1] = yclipvertex[3];
+  ysupportvertex[2] = ysupportvertex[1];
+  ysupportvertex[3] = ysupportvertex[0];
+  TGeoXtru* supportshape = new TGeoXtru(2);
+  supportshape->DefinePolygon(ksupportvertexnumber,xsupportvertex,ysupportvertex);
+  supportshape->DefineSection(0,0.5*fgkSSDMountingBlockWidth-fgkMountingBlockSupportWidth[0]);
+  supportshape->DefineSection(1,0.5*fgkSSDMountingBlockWidth);
+  TGeoVolume* support = new TGeoVolume("RingSupport",supportshape,fSSDMountingBlockMedium);
+  support->SetLineColor(9);
+  ///////////////////////////////////////////////////////////////////////
+  // TGeoXTru Volume definition for Screw   
+  ///////////////////////////////////////////////////////////////////////
+  Double_t radius[2] = {fgkMountingBlockClibScrewRadius,
+						0.5*fgkMountingBlockClibScrewRadius};
+  Int_t edgesnumber[2] = {50,6};
+  Double_t section[2] = {-0.5*(ymothervertex[3]-ymothervertex[2]),
+						 +0.5*(ymothervertex[3]-ymothervertex[2])};
+  TGeoXtru* clipscrewshape = GetScrewShape(radius,edgesnumber,section);
+  TGeoVolume* clipscrew = new TGeoVolume("ClipScrewShape",clipscrewshape,fSSDSupportRingAl);
+  clipscrew->SetLineColor(12);
+  TGeoRotation* screwrot = new TGeoRotation();
+  screwrot->SetAngles(0.,90.,0.);
+  TGeoTranslation* screwtrans = new TGeoTranslation();
+  screwtrans->SetTranslation(xmothervertex[3]+fgkMountingBlockClibScrewRadius,
+							 0.5*(ymothervertex[3]+ymothervertex[2]),
+							 0.5*fgkSSDMountingBlockWidth+
+							-0.5*fgkMountingBlockSupportWidth[0]);
+  TGeoCombiTrans* screwcombitrans = new TGeoCombiTrans(*screwtrans,*screwrot);
+  ///////////////////////////////////////////////////////////////////////
+  // Placing the Volumes
+  ///////////////////////////////////////////////////////////////////////
+  ssdmountingblockclip->AddNode(clip,1);
+  ssdmountingblockclip->AddNode(support,1);
+  ssdmountingblockclip->AddNode(clipscrew,1,screwcombitrans);
+  /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////  
+  delete screwtrans;
+  delete screwrot;
+  /////////////////////////////////////////////////////////////
+  return ssdmountingblockclip;
 }
 ///////////////////////////////////////////////////////////////////////////////
 TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
@@ -2837,6 +3262,7 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
    TGeoTube** coolingtubeshape[fgkcoolingtubenumber];
    for(Int_t i=0; i<fgkcoolingtubenumber; i++) coolingtubeshape[i] = 
 												new	TGeoTube*[2];
+   // Ladder Cooling Tubes
    coolingtubeshape[0][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
 					  0.25 * (fgkSSDSensorLength-2.*fgkSSDModuleStiffenerPosition[1]
 						  -	2.*fgkSSDCoolingBlockWidth-fgkCoolingTubeSupportWidth));
@@ -2851,6 +3277,44 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
 										 0.5*fgkSSDModuleStiffenerPosition[1]);
    coolingtubeshape[2][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
 										 coolingtubeshape[2][0]->GetDz());
+   // End Ladder Cooling Tubes	
+   TGeoTube** endladdercoolingtubeshape[fgkendladdercoolingtubenumber];
+   for(Int_t i=0; i<fgkendladdercoolingtubenumber; i++) 
+	endladdercoolingtubeshape[i] = new	TGeoTube*[2];
+   endladdercoolingtubeshape[0][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
+							0.50 * (fgkEndLadderMountingBlockPosition[0]
+						  -			fgkendladdercoolingsupportdistance[0]));
+   endladdercoolingtubeshape[0][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
+									endladdercoolingtubeshape[0][0]->GetDz());
+   endladdercoolingtubeshape[1][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
+							0.50 * (fgkendladdercoolingsupportdistance[0]
+						  +			fgkendladdercoolingsupportdistance[1]
+						  -			fgkCoolingTubeSupportWidth));
+   endladdercoolingtubeshape[1][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
+									endladdercoolingtubeshape[1][0]->GetDz());
+   endladdercoolingtubeshape[2][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
+							0.50 * (fgkEndLadderCarbonFiberLowerJunctionLength[0]
+						  -			fgkEndLadderMountingBlockPosition[0]
+						  -			fgkendladdercoolingsupportdistance[1]		
+						  -			fgkCoolingTubeSupportWidth));
+   endladdercoolingtubeshape[2][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
+									endladdercoolingtubeshape[2][0]->GetDz());
+   endladdercoolingtubeshape[3][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
+							  0.50 * (fgkMountingBlockToSensorSupport
+							- 0.50 * (fgkSSDFlexHoleWidth-fgkSSDSensorSideSupportWidth)
+							-		  fgkSSDStiffenerWidth-fgkSSDModuleStiffenerPosition[1]
+							+		  fgkSSDSensorOverlap
+							+		  fgkEndLadderCarbonFiberLowerJunctionLength[1]
+							-		  fgkendladdercoolingsupportdistance[2]
+							-		  fgkEndLadderMountingBlockPosition[1]
+							-		  fgkCoolingTubeSupportWidth));
+   endladdercoolingtubeshape[3][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
+									endladdercoolingtubeshape[3][0]->GetDz());
+   endladdercoolingtubeshape[4][0] = new TGeoTube(fgkCoolingTubeRmin,fgkCoolingTubeRmax,
+							  0.50 * fgkendladdercoolingsupportdistance[2]);
+   endladdercoolingtubeshape[4][1] = new TGeoTube(0.0,fgkCoolingTubeRmin,
+									endladdercoolingtubeshape[4][0]->GetDz());
+   // Ladder Cooling Tubes
    TGeoVolume** coolingtube[fgkcoolingtubenumber];
    for(Int_t i=0; i<fgkcoolingtubenumber; i++) coolingtube[i] = 
 											 new TGeoVolume*[2];
@@ -2870,9 +3334,48 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
 	coolingtube[i][0]->SetLineColor(fColorPhynox);
 	coolingtube[i][1]->SetLineColor(fColorWater);
    }
+   // End Ladder Cooling Tubes	
+   TGeoVolume** endladdercoolingtube[fgkendladdercoolingtubenumber];
+   for(Int_t i=0; i<fgkendladdercoolingtubenumber; i++) 
+   endladdercoolingtube[i] = new TGeoVolume*[2];
+   endladdercoolingtube[0][0] = new TGeoVolume("OuterEndLadderCoolingTube1",
+								endladdercoolingtubeshape[0][0],
+								fSSDCoolingTubePhynox);
+   endladdercoolingtube[0][1] = new TGeoVolume("InnerEndlLadderCoolingTube1",
+								endladdercoolingtubeshape[0][1],
+								fSSDCoolingTubeWater);
+   endladdercoolingtube[1][0] = new TGeoVolume("OuterEndLadderCoolingTube2",
+								endladdercoolingtubeshape[1][0],
+								fSSDCoolingTubePhynox);
+   endladdercoolingtube[1][1] = new TGeoVolume("InnerEndlLadderCoolingTube2",
+								endladdercoolingtubeshape[1][1],
+								fSSDCoolingTubeWater);
+   endladdercoolingtube[2][0] = new TGeoVolume("OuterEndLadderCoolingTube3",
+								endladdercoolingtubeshape[2][0],
+								fSSDCoolingTubePhynox);
+   endladdercoolingtube[2][1] = new TGeoVolume("InnerEndlLadderCoolingTube3",
+								endladdercoolingtubeshape[2][1],
+								fSSDCoolingTubeWater);
+   endladdercoolingtube[3][0] = new TGeoVolume("OuterEndLadderCoolingTube4",
+								endladdercoolingtubeshape[3][0],
+								fSSDCoolingTubePhynox);
+   endladdercoolingtube[3][1] = new TGeoVolume("InnerEndlLadderCoolingTube4",
+								endladdercoolingtubeshape[3][1],
+								fSSDCoolingTubeWater);
+   endladdercoolingtube[4][0] = new TGeoVolume("OuterEndLadderCoolingTube5",
+								endladdercoolingtubeshape[4][0],
+								fSSDCoolingTubePhynox);
+   endladdercoolingtube[4][1] = new TGeoVolume("InnerEndlLadderCoolingTube5",
+								endladdercoolingtubeshape[4][1],
+								fSSDCoolingTubeWater);
+   for(Int_t i=0; i<fgkendladdercoolingtubenumber; i++){
+	endladdercoolingtube[i][0]->SetLineColor(fColorPhynox);
+	endladdercoolingtube[i][1]->SetLineColor(fColorWater);
+   }
   /////////////////////////////////////////////////////////////
   // Virtual Volume containing Cooling Tubes
   /////////////////////////////////////////////////////////////
+  // Ladder Cooling Tubes
   TGeoTube* virtualcoolingtubeshape[fgkcoolingtubenumber];
   for(Int_t i=0; i<fgkcoolingtubenumber; i++)
   virtualcoolingtubeshape[i] = new TGeoTube(coolingtubeshape[i][1]->GetRmin(),
@@ -2885,12 +3388,49 @@ TList* AliITSv11GeometrySSD::GetCoolingTubeList()const{
 									  fSSDAir);
   virtualcoolingtube[2] = new TGeoVolume("CoolingTube3",virtualcoolingtubeshape[2],
 									  fSSDAir);
+  // End Ladder Cooling Tubes
+  TGeoTube* endladdervirtualcoolingtubeshape[fgkendladdercoolingtubenumber];
+  for(Int_t i=0; i<fgkendladdercoolingtubenumber; i++)
+  endladdervirtualcoolingtubeshape[i] = new TGeoTube(endladdercoolingtubeshape[i][1]->GetRmin(),
+											endladdercoolingtubeshape[i][0]->GetRmax(),
+											endladdercoolingtubeshape[i][0]->GetDz());
+  TGeoVolume* endladdervirtualcoolingtube[fgkendladdercoolingtubenumber];
+  endladdervirtualcoolingtube[0] = new TGeoVolume("EndLadderCoolingTube1",
+									  endladdervirtualcoolingtubeshape[0],
+									  fSSDAir);
+  endladdervirtualcoolingtube[1] = new TGeoVolume("EndLadderCoolingTube2",
+									  endladdervirtualcoolingtubeshape[1],
+									  fSSDAir);
+  endladdervirtualcoolingtube[2] = new TGeoVolume("EndLadderCoolingTube3",
+									  endladdervirtualcoolingtubeshape[2],
+									  fSSDAir);
+  endladdervirtualcoolingtube[3] = new TGeoVolume("EndLadderCoolingTube4",
+									  endladdervirtualcoolingtubeshape[3],
+									  fSSDAir);
+  endladdervirtualcoolingtube[4] = new TGeoVolume("EndLadderCoolingTube5",
+									  endladdervirtualcoolingtubeshape[4],
+									  fSSDAir);
   TList* coolingtubelist = new TList();
   for(Int_t i=0; i<fgkcoolingtubenumber; i++){
 	virtualcoolingtube[i]->AddNode(coolingtube[i][0],1);
 	virtualcoolingtube[i]->AddNode(coolingtube[i][1],1);
     coolingtubelist->Add(virtualcoolingtube[i]);
   }
+	endladdervirtualcoolingtube[0]->AddNode(endladdercoolingtube[0][0],1);
+	endladdervirtualcoolingtube[0]->AddNode(endladdercoolingtube[0][1],1);
+    coolingtubelist->Add(endladdervirtualcoolingtube[0]);
+	endladdervirtualcoolingtube[1]->AddNode(endladdercoolingtube[1][0],1);
+	endladdervirtualcoolingtube[1]->AddNode(endladdercoolingtube[1][1],1);
+    coolingtubelist->Add(endladdervirtualcoolingtube[1]);
+	endladdervirtualcoolingtube[2]->AddNode(endladdercoolingtube[2][0],1);
+	endladdervirtualcoolingtube[2]->AddNode(endladdercoolingtube[2][1],1);
+    coolingtubelist->Add(endladdervirtualcoolingtube[2]);
+	endladdervirtualcoolingtube[3]->AddNode(endladdercoolingtube[3][0],1);
+	endladdervirtualcoolingtube[3]->AddNode(endladdercoolingtube[3][1],1);
+    coolingtubelist->Add(endladdervirtualcoolingtube[3]);
+	endladdervirtualcoolingtube[4]->AddNode(endladdercoolingtube[4][0],1);
+	endladdervirtualcoolingtube[4]->AddNode(endladdercoolingtube[4][1],1);
+    coolingtubelist->Add(endladdervirtualcoolingtube[4]);
   return coolingtubelist;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -3629,9 +4169,16 @@ void AliITSv11GeometrySSD::SetEndLadderSegment(){
   /////////////////////////////////////////////////////////////
   // End Ladder Mounting Block
   /////////////////////////////////////////////////////////////
- // for(Int_t i=0; i<fgkendladdermountingblocknumber; i++) 
- //      fendladdersegment[i]->AddNode(fendladdermountingblock,1,
- //									 fendladdermountingblocktrans[i]);
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
+       fendladdersegment[i]->AddNode(fendladdermountingblock,i+1,
+ 									 fendladdermountingblockcombitrans[i]);
+  /////////////////////////////////////////////////////////////
+  // End Ladder Mounting Block
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
+	for(Int_t j=0; j<2; j++)
+		fendladdersegment[i]->AddNode(fendladdermountingblockclip,i+1,
+ 									 fendladdermountingblockclipmatrix[i][j]);
   /////////////////////////////////////////////////////////////
   // End Ladder Lower Supports
   /////////////////////////////////////////////////////////////
@@ -3641,8 +4188,28 @@ void AliITSv11GeometrySSD::SetEndLadderSegment(){
 								fendladderlowersupptrans[1]);
   fendladdersegment[1]->AddNode(fcarbonfiberlowersupport[0],3,
 								fendladderlowersupptrans[2]);
-  //fendladdersegment[0]->CheckOverlaps(0.01);
-  //fendladdersegment[1]->CheckOverlaps(0.01);
+  /////////////////////////////////////////////////////////////
+  // End Ladder Cooling Tube Support
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<2; i++) 
+	for(Int_t j=0; j<(i==0?4:2); j++)   
+		fendladdersegment[i]->AddNode(fcoolingtubesupport,
+									  j+1,fendladdercoolingtubesupportmatrix[i][j]);
+  /////////////////////////////////////////////////////////////
+  // End Ladder Cooling Tube Support
+  /////////////////////////////////////////////////////////////
+  fendladdersegment[0]->AddNode(fendladdercoolingtube[0],1,fendladdercoolingtubematrix[0][0]);									  
+  fendladdersegment[0]->AddNode(fendladdercoolingtube[0],2,fendladdercoolingtubematrix[0][1]);									  
+  fendladdersegment[0]->AddNode(fendladdercoolingtube[1],1,fendladdercoolingtubematrix[0][2]);									  
+  fendladdersegment[0]->AddNode(fendladdercoolingtube[1],2,fendladdercoolingtubematrix[0][3]);									  
+  fendladdersegment[0]->AddNode(fendladdercoolingtube[2],1,fendladdercoolingtubematrix[0][4]);									  
+  fendladdersegment[0]->AddNode(fendladdercoolingtube[2],2,fendladdercoolingtubematrix[0][5]);									  
+  fendladdersegment[1]->AddNode(fendladdercoolingtube[3],1,fendladdercoolingtubematrix[1][0]);									  
+  fendladdersegment[1]->AddNode(fendladdercoolingtube[3],2,fendladdercoolingtubematrix[1][1]);									  
+  fendladdersegment[1]->AddNode(fendladdercoolingtube[4],1,fendladdercoolingtubematrix[1][2]);									  
+  fendladdersegment[1]->AddNode(fendladdercoolingtube[4],2,fendladdercoolingtubematrix[1][3]);									  
+  fendladdersegment[0]->CheckOverlaps(0.01);
+  fendladdersegment[1]->CheckOverlaps(0.01);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetLadder(){
@@ -3693,6 +4260,7 @@ void AliITSv11GeometrySSD::SetLadder(){
     laddershape[i]->DefineSection(1,ssdlaysensorsnumber[i]*fgkCarbonFiberJunctionWidth
 											+fgkEndLadderCarbonFiberLowerJunctionLength[0]);
     fladder[i] = new TGeoVolume(laddername[i],laddershape[i],fSSDAir);
+	fladder[i]->SetLineColor(4);
  }
 ///////////////////////////////////////////////////////////////////////////
  if(!fCreateMaterials) CreateMaterials();
@@ -3769,8 +4337,8 @@ void AliITSv11GeometrySSD::SetLadder(){
 	    fladder[i]->AddNode((TGeoVolume*)laddercableassemblylist[j]->At(j%2==0?0:1),
 									j<2?1:2,fladdercablematrix[i][j]);
   }
-  //fladder[0]->CheckOverlaps(0.01);
-  //fladder[1]->CheckOverlaps(0.01);
+//  fladder[0]->CheckOverlaps(0.01);
+//  fladder[1]->CheckOverlaps(0.01);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetLayer(){
@@ -3787,20 +4355,120 @@ void AliITSv11GeometrySSD::SetLayer(){
   // Generating mother volumes for Layer5 and Layer6
   /////////////////////////////////////////////////////////////
   TGeoXtru* ssdladdermothershape = (TGeoXtru*)fladder[0]->GetShape();
-  TGeoTube* ssdlayershape[fgklayernumber];
-  ssdlayershape[0] = new TGeoTube(fgkSSDLay5RadiusMin,fgkSSDLay5RadiusMax
-				   -              ssdladdermothershape->GetY(0)
-				   +			  TMath::Sqrt(TMath::Power(ssdladdermothershape->GetY(4),2.)
-				   +			  TMath::Power(ssdladdermothershape->GetX(4),2.)),
-								  0.5*fgkSSDLay5LadderLength);
-  ssdlayershape[1] = new TGeoTube(fgkSSDLay6RadiusMin,fgkSSDLay6RadiusMax
-				   -			  ssdladdermothershape->GetY(0)
-				   +			  TMath::Sqrt(TMath::Power(ssdladdermothershape->GetY(4),2.)
-				   +			  TMath::Power(ssdladdermothershape->GetX(4),2.)),
-								  0.5*fgkSSDLay6LadderLength);
-  fSSDLayer5 = new TGeoVolume("ITSssdLayer5",ssdlayershape[0],fSSDAir);
-  fSSDLayer6 = new TGeoVolume("ITSssdLayer6",ssdlayershape[1],fSSDAir);
-  /////////////////////////////////////////////////////////////
+  TGeoXtru* layercontainershape[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++) layercontainershape[i] = new TGeoXtru(2);
+  const Int_t kladdercontainernumber = 8;
+  TVector3* laddercontainervertex[kladdercontainernumber];
+  for(Int_t i=0; i<kladdercontainernumber; i++) laddercontainervertex[i] = 
+		new TVector3(ssdladdermothershape->GetX(i),
+					 ssdladdermothershape->GetY(i)-ssdladdermothershape->GetY(0));
+  TVector3** transvector[fgklayernumber];	
+  Double_t layerradius = 0.;
+  Double_t layerladderangleposition[fgklayernumber] = 
+		{360./fgkSSDLay5LadderNumber,360./fgkSSDLay6LadderNumber};
+  Double_t** rotationangle = new Double_t*[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++) rotationangle[i] = 
+									new Double_t[kssdlayladdernumber[i]];
+  for(Int_t i=0; i<fgklayernumber; i++) transvector[i] = new TVector3*[kssdlayladdernumber[i]];	
+  for(Int_t i=0; i<fgklayernumber; i++)
+	for(Int_t j=0; j<kssdlayladdernumber[i]; j++){
+		switch(i){
+			case 0: //Ladder of Layer5  
+			layerradius = (j%2==0 ? fgkSSDLay5RadiusMin: fgkSSDLay5RadiusMax);
+			break;
+			case 1: //Ladder of Layer6 
+			layerradius = (j%2==0 ? fgkSSDLay6RadiusMin: fgkSSDLay6RadiusMax);
+			break;
+		}
+		transvector[i][j] = new TVector3(layerradius*CosD(90.0+j*layerladderangleposition[i]),
+							  layerradius*SinD(90.0+j*layerladderangleposition[i]));
+		rotationangle[i][j] = j*layerladderangleposition[i]*TMath::DegToRad();
+	}
+  TVector3** layercontainervertex[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++) layercontainervertex[i] = 
+					new TVector3*[5*(1+kssdlayladdernumber[i])];
+  Int_t uplayerindex[2] = {0,7};
+  Int_t downlayerindex[4] = {1,0,7,6};
+  for(Int_t i=0; i<fgklayernumber; i++){
+	Int_t vertexindex = 0; 
+	layercontainervertex[i][0] = new TVector3(0.,laddercontainervertex[0]->Y()); 
+	layercontainervertex[i][1] = new TVector3(0.,laddercontainervertex[3]->Y());
+	layercontainervertex[i][2] = new TVector3(*laddercontainervertex[3]);
+	for(Int_t j=0; j<3; j++){
+		layercontainervertex[i][j]->RotateZ(rotationangle[i][0]);
+	   *layercontainervertex[i][j] += *transvector[i][0];
+		vertexindex++;
+	}
+	for(Int_t j=1; j<kssdlayladdernumber[i]; j++){
+		for(Int_t l=0; l<2; l++){
+			layercontainervertex[i][vertexindex] = new TVector3(l==0?
+												 * laddercontainervertex[4]:
+												 * laddercontainervertex[3]); 
+			layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][j]);
+		   *layercontainervertex[i][vertexindex] += *transvector[i][j];
+			vertexindex++;
+		}
+	}
+	layercontainervertex[i][vertexindex] = new TVector3(*laddercontainervertex[4]);
+	layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][0]);
+	*layercontainervertex[i][vertexindex]+= *transvector[i][0];
+	layercontainervertex[i][vertexindex+1] = new TVector3(*layercontainervertex[i][1]);
+	layercontainervertex[i][vertexindex+2] = new TVector3(*layercontainervertex[i][0]);
+	vertexindex+=3;
+    for(Int_t j=0; j<2; j++){
+		layercontainervertex[i][vertexindex] = new TVector3(*laddercontainervertex[7-j]);
+		layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][0]);
+		*layercontainervertex[i][vertexindex] += *transvector[i][0];
+		vertexindex++;
+	}
+	for(Int_t j=1; j<kssdlayladdernumber[i]; j++){
+		if(j%2!=0){
+			for(Int_t l=0; l<2; l++){
+				layercontainervertex[i][vertexindex] = new TVector3(*laddercontainervertex[uplayerindex[l]]);
+				layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][kssdlayladdernumber[i]-j]);
+			   *layercontainervertex[i][vertexindex] += *transvector[i][kssdlayladdernumber[i]-j];
+				vertexindex++;
+			}
+		}
+		else{
+			for(Int_t l=0; l<4; l++){
+				layercontainervertex[i][vertexindex] = 
+							new TVector3(*laddercontainervertex[downlayerindex[l]]);
+				layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][kssdlayladdernumber[i]-j]);
+			   *layercontainervertex[i][vertexindex] += *transvector[i][kssdlayladdernumber[i]-j];
+				vertexindex++;
+			}
+		}
+	}
+	layercontainervertex[i][vertexindex] = 
+					new TVector3(*laddercontainervertex[1]); 
+	layercontainervertex[i][vertexindex+1] = 
+					new TVector3(*laddercontainervertex[0]); 
+	for(Int_t j=0; j<2; j++){
+		layercontainervertex[i][vertexindex+j]->RotateZ(rotationangle[i][0]);
+	   *layercontainervertex[i][vertexindex+j] += *transvector[i][0];
+	}
+	layercontainervertex[i][vertexindex+2] = 
+					new TVector3(*layercontainervertex[i][0]); 
+  }
+  Double_t** xlayervertex = new Double_t*[fgklayernumber];
+  Double_t** ylayervertex = new Double_t*[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++){ 
+	xlayervertex[i] = new Double_t[5*(1+kssdlayladdernumber[i])]; 
+	ylayervertex[i] = new Double_t[5*(1+kssdlayladdernumber[i])]; 
+  }
+  for(Int_t i=0; i<fgklayernumber; i++)
+	for(Int_t j=0; j<5*(1+kssdlayladdernumber[i]); j++){
+		xlayervertex[i][j] = layercontainervertex[i][j]->X();
+		ylayervertex[i][j] = layercontainervertex[i][j]->Y();
+	}
+  for(Int_t i=0; i<fgklayernumber; i++){
+	layercontainershape[i]->DefinePolygon(5*(1+kssdlayladdernumber[i]),xlayervertex[i],ylayervertex[i]);
+    layercontainershape[i]->DefineSection(0,-0.5*(i==0?fgkSSDLay5LadderLength:fgkSSDLay6LadderLength));
+    layercontainershape[i]->DefineSection(1,0.5*(i==0?fgkSSDLay5LadderLength:fgkSSDLay6LadderLength));
+  }
+  fSSDLayer5 = new TGeoVolume("ITSssdLayer5",layercontainershape[0],fSSDAir);  
+  fSSDLayer6 = new TGeoVolume("ITSssdLayer6",layercontainershape[1],fSSDAir);  
   Int_t *ladderindex[fgklayernumber];
   Int_t index[fgklayernumber] = {8,9};
   for(Int_t i=0; i<fgklayernumber; i++) ladderindex[i] = new Int_t[kssdlayladdernumber[i]];
@@ -3814,7 +4482,27 @@ void AliITSv11GeometrySSD::SetLayer(){
   /////////////////////////////////////////////////////////////
   // Deallocating memory
   /////////////////////////////////////////////////////////////
-	for(Int_t i=0; i<fgklayernumber; i++) delete ladderindex[i];
+  for(Int_t i=0; i<kladdercontainernumber; i++) delete laddercontainervertex[i];
+  for(Int_t i=0; i<fgklayernumber; i++){
+	for(Int_t j=0; j<kssdlayladdernumber[i]; j++) delete transvector[i][j];
+	delete [] transvector[i];
+  }
+  for(Int_t i=0; i<fgklayernumber; i++){
+	delete [] rotationangle[i];
+  }
+  delete rotationangle;		
+  for(Int_t i=0; i<fgklayernumber; i++){
+	for(Int_t j=0; j<5*(1+kssdlayladdernumber[i]); j++)
+		delete layercontainervertex[i][j];
+	delete [] layercontainervertex[i];
+  }		
+  for(Int_t i=0; i<fgklayernumber; i++){ 
+	delete [] xlayervertex[i];
+	delete [] ylayervertex[i];
+  }
+  delete xlayervertex;
+  delete ylayervertex;
+  for(Int_t i=0; i<fgklayernumber; i++) delete ladderindex[i];
 }
 ////////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::Layer5(TGeoVolume* moth){
@@ -3845,6 +4533,2775 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   TGeoTranslation* centerITSlayer6trans = new TGeoTranslation(0.,0.,-0.5*fgkSSDLay6LadderLength
 										+ fgkLay6CenterITSPosition);
   moth->AddNode(fSSDLayer6,1,centerITSlayer6trans);
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ TList* AliITSv11GeometrySSD::GetMountingBlockSupport(Int_t nedges){
+  /////////////////////////////////////////////////////////////
+  // Method generating the Arc structure of Ladder Support 
+  /////////////////////////////////////////////////////////////
+  const Int_t kssdlayladdernumber[fgklayernumber] = 
+			{fgkSSDLay5LadderNumber,fgkSSDLay6LadderNumber};
+  Double_t mountingsupportedge[fgklayernumber];
+  Double_t mountingblockratio[fgklayernumber];
+  Double_t theta[fgklayernumber];
+  Double_t phi[fgklayernumber];
+  Double_t psi0[fgklayernumber];
+  Double_t deltapsi[fgklayernumber];
+  TVector3* mountingsupportedgevector[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++){
+	mountingblockratio[i] = fgkSSDMountingBlockLength[0]/fgkMountingBlockSupportRadius[i];
+    mountingsupportedge[i]    = 0.5*fgkMountingBlockSupportRadius[i]
+							  *(TMath::Sqrt(4.0-TMath::Power(mountingblockratio[i],2))
+							  * TMath::Sin(2.0*TMath::Pi()/kssdlayladdernumber[i])
+							  - mountingblockratio[i]*(1.0+TMath::Cos(2.0*TMath::Pi()
+							  / kssdlayladdernumber[i])));
+    theta[i] = TMath::ASin(0.5*mountingblockratio[i]+mountingsupportedge[i]/fgkMountingBlockSupportRadius[i]);
+    phi[i]   = TMath::ASin(0.5*mountingblockratio[i]);
+	mountingsupportedgevector[i] = new TVector3();
+    mountingsupportedgevector[i]->SetX(-0.5*fgkSSDMountingBlockLength[0]);
+	mountingsupportedgevector[i]->SetY(fgkMountingBlockSupportRadius[i]*TMath::Sqrt(1.
+								 -TMath::Power(mountingsupportedgevector[i]->X()
+								 /			   fgkMountingBlockSupportRadius[i],2)));
+    psi0[i] = 0.5*TMath::Pi()-phi[i];	
+    deltapsi[i] = (theta[i]+phi[i])/nedges;
+  }
+  TVector3** vertex[fgklayernumber];
+  TList* vertexlist[fgklayernumber];
+  Int_t indexedge[fgklayernumber] = {0,0};
+  for(Int_t i=0; i<fgklayernumber; i++){
+	vertex[i] = new TVector3*[nedges+1];
+	vertexlist[i] = new TList();
+  } 
+  for(Int_t i=0; i<fgklayernumber; i++){
+	for(Int_t j=0; j<nedges+1; j++){
+		vertex[i][j] = new TVector3(fgkMountingBlockSupportRadius[i]*TMath::Cos(psi0[i]+j*deltapsi[i]),
+								    fgkMountingBlockSupportRadius[i]*TMath::Sin(psi0[i]+j*deltapsi[i]));
+		if(vertex[i][j]->X()>mountingsupportedgevector[i]->X()) indexedge[i]++;
+		vertexlist[i]->Add(vertex[i][j]);
+	}
+	vertexlist[i]->AddAt(mountingsupportedgevector[i],indexedge[i]);
+  }
+  Double_t** xsidevertex = new Double_t*[fgklayernumber]; 
+  Double_t** ysidevertex = new Double_t*[fgklayernumber]; 
+  Double_t** xcentervertex = new Double_t*[fgklayernumber]; 
+  Double_t** ycentervertex = new Double_t*[fgklayernumber]; 
+  Double_t** xsidelowervertex = new Double_t*[fgklayernumber];
+  Double_t** ysidelowervertex = new Double_t*[fgklayernumber];  
+  Double_t** xcenterlowervertex = new Double_t*[fgklayernumber];
+  Double_t** ycenterlowervertex = new Double_t*[fgklayernumber];  
+  for(Int_t i=0; i<fgklayernumber; i++){
+    xsidevertex[i] = new Double_t[vertexlist[i]->GetSize()+2];
+    ysidevertex[i] = new Double_t[vertexlist[i]->GetSize()+2];
+    xcentervertex[i] = new Double_t[indexedge[i]+3];
+    ycentervertex[i] = new Double_t[indexedge[i]+3];
+	xsidelowervertex[i] = new Double_t[vertexlist[i]->GetSize()+1];
+	ysidelowervertex[i] = new Double_t[vertexlist[i]->GetSize()+1];
+	xcenterlowervertex[i] = new Double_t[indexedge[i]+3];
+	ycenterlowervertex[i] = new Double_t[indexedge[i]+3];
+	for(Int_t j=0; j<vertexlist[i]->GetSize(); j++){
+		xsidevertex[i][j!=vertexlist[i]->GetSize()-1?j+3:0] = 
+										((TVector3*)vertexlist[i]->At(j))->X();
+		ysidevertex[i][j!=vertexlist[i]->GetSize()-1?j+3:0] = 
+										((TVector3*)vertexlist[i]->At(j))->Y();
+		xsidelowervertex[i][j] = ((TVector3*)vertexlist[i]->At(vertexlist[i]->GetSize()-1-j))->X();
+		ysidelowervertex[i][j] = ((TVector3*)vertexlist[i]->At(vertexlist[i]->GetSize()-1-j))->Y();
+		if(j<indexedge[i]+1){
+			xcentervertex[i][j!=indexedge[i]?j+3:0] = 
+										((TVector3*)vertexlist[i]->At(j))->X();
+			ycentervertex[i][j!=indexedge[i]?j+3:0] = 
+										((TVector3*)vertexlist[i]->At(j))->Y();
+			xcenterlowervertex[i][j+1] = ((TVector3*)vertexlist[i]->At(indexedge[i]-j))->X();
+			ycenterlowervertex[i][j+1] = ((TVector3*)vertexlist[i]->At(indexedge[i]-j))->Y();
+		}
+	}
+	xsidevertex[i][1] = xsidevertex[i][0]; 
+	ysidevertex[i][1] = fgkMountingBlockSupportRadius[i]; 
+	xsidevertex[i][2] = xsidevertex[i][3]; 
+	ysidevertex[i][2] = fgkMountingBlockSupportRadius[i]; 
+	xcentervertex[i][1] = xcentervertex[i][0]; 
+	ycentervertex[i][1] = fgkMountingBlockSupportRadius[i]; 
+	xcentervertex[i][2] = xcentervertex[i][3]; 
+	ycentervertex[i][2] = fgkMountingBlockSupportRadius[i]; 
+	xsidelowervertex[i][vertexlist[i]->GetSize()] = xsidelowervertex[i][vertexlist[i]->GetSize()-1];
+	ysidelowervertex[i][vertexlist[i]->GetSize()] = ysidelowervertex[i][0];
+	xcenterlowervertex[i][0] = xcenterlowervertex[i][1];
+	ycenterlowervertex[i][0] = ysidevertex[i][0];
+	xcenterlowervertex[i][indexedge[i]+2] = xsidelowervertex[i][vertexlist[i]->GetSize()];
+	ycenterlowervertex[i][indexedge[i]+2] = ycenterlowervertex[i][0];
+  }
+  /////////////////////////////////////////////////////////////
+  // Building the Arc Structure of Ladder Supports 
+  /////////////////////////////////////////////////////////////
+  TGeoXtru* sidemountingblocksupportshape[fgklayernumber];
+  TGeoXtru* centermountingsupportshape[fgklayernumber];
+  TGeoXtru* sideladdersupportpieceshape[fgklayernumber];
+  TGeoXtru* centerladdersupportpieceshape[fgklayernumber];
+  TGeoVolume* sidemountingblocksupport[fgklayernumber];
+  TGeoVolume* centermountingblocksupport[fgklayernumber];
+  TGeoVolume* sideladdersupportpiece[fgklayernumber];
+  TGeoVolume* centerladdersupportpiece[fgklayernumber];
+  char sidemountingblockname[40];
+  char centermountingblockname[40];
+  char sideladdersupportpiecename[40];
+  char centerladdersupportpiecename[40];
+  for(Int_t i=0; i<fgklayernumber; i++){ 
+	sprintf(sidemountingblockname,"MountingBlockSupportSideLay%dArc",i+5);
+	sprintf(centermountingblockname,"MountingBlockSupportCenterLay%dArc",i+5);
+	sprintf(sideladdersupportpiecename,"SideLadderSupportPieceLay%d",i+5);
+	sprintf(centerladdersupportpiecename,"CenterLadderSupportPieceLay%d",i+5);
+	sidemountingblocksupportshape[i] = new TGeoXtru(2);
+    sidemountingblocksupportshape[i]->DefinePolygon(vertexlist[i]->GetSize()+2,
+												xsidevertex[i],ysidevertex[i]);
+    sidemountingblocksupportshape[i]->DefineSection(0,fgkMountingBlockSupportWidth[1]
+													 -fgkMountingBlockSupportWidth[0]);
+    sidemountingblocksupportshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+    sidemountingblocksupport[i] = new TGeoVolume(sidemountingblockname,
+								          sidemountingblocksupportshape[i],
+										  fSSDAlCoolBlockMedium);
+	sidemountingblocksupport[i]->SetLineColor(9);
+	centermountingsupportshape[i] = new TGeoXtru(2);
+    centermountingsupportshape[i]->DefinePolygon(indexedge[i]+3,
+												xcentervertex[i],ycentervertex[i]);
+	centermountingsupportshape[i]->DefineSection(0,0.);
+    centermountingsupportshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]
+												  -fgkMountingBlockSupportWidth[0]);
+    centermountingblocksupport[i] = new TGeoVolume(centermountingblockname,
+								          centermountingsupportshape[i],
+										  fSSDAlCoolBlockMedium);
+	centermountingblocksupport[i]->SetLineColor(9);
+	sideladdersupportpieceshape[i] = new TGeoXtru(2);
+    sideladdersupportpieceshape[i]->DefinePolygon(vertexlist[i]->GetSize()+1,
+												xsidelowervertex[i],ysidelowervertex[i]);
+	sideladdersupportpieceshape[i]->DefineSection(0,fgkMountingBlockSupportWidth[1]
+													 -fgkMountingBlockSupportWidth[0]);
+    sideladdersupportpieceshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+    sideladdersupportpiece[i] = new TGeoVolume(sideladdersupportpiecename,
+								          sideladdersupportpieceshape[i],
+										  fSSDSupportRingAl);
+	sideladdersupportpiece[i]->SetLineColor(fColorAl);
+	centerladdersupportpieceshape[i] = new TGeoXtru(2);
+    centerladdersupportpieceshape[i]->DefinePolygon(indexedge[i]+3,
+												xcenterlowervertex[i],ycenterlowervertex[i]);
+	centerladdersupportpieceshape[i]->DefineSection(0,0.0);
+    centerladdersupportpieceshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]
+												  -fgkMountingBlockSupportWidth[0]);
+    centerladdersupportpiece[i] = new TGeoVolume(centerladdersupportpiecename,
+								          centerladdersupportpieceshape[i],
+										  fSSDSupportRingAl);
+	centerladdersupportpiece[i]->SetLineColor(fColorAl);
+  }
+  /////////////////////////////////////////////////////////////
+  // Building the Up Structure of Ladder Supports 
+  /////////////////////////////////////////////////////////////
+  TGeoBBox** mountingblocksupportboxupshape[fgklayernumber];	
+  for(Int_t i=0; i<fgklayernumber; i++) mountingblocksupportboxupshape[i] = new TGeoBBox*[2];
+  TGeoBBox** mountingblocksupportboxdownshape[fgklayernumber];	
+  for(Int_t i=0; i<fgklayernumber; i++) mountingblocksupportboxdownshape[i] = new TGeoBBox*[2];
+  TGeoVolume** mountingblocksupportboxdown[fgklayernumber];
+  //////////////////////////////////////////////////////////
+  // Setting the volume for TGeoXtru Mounting Block Piece  
+  //////////////////////////////////////////////////////////
+  TGeoVolume** mountingblocksupportboxup[fgklayernumber];
+  TGeoXtru* mountingblockpiecedownshape[fgklayernumber];
+  TGeoVolume* mountingblockpiecedown[fgklayernumber];
+  TGeoXtru* mountingblockpieceupshape[fgklayernumber];
+  TGeoVolume* mountingblockpieceup[fgklayernumber];
+  Double_t mountingblockpieceupxvertex[fgklayernumber][8];
+  Double_t mountingblockpieceupyvertex[fgklayernumber][8];
+  Double_t mountingblockpiecedownxvertex[fgklayernumber][8];
+  Double_t mountingblockpiecedownyvertex[fgklayernumber][8];
+  char mountingblockpiecedownname[34];
+  char mountingblockpieceupname[34];
+  for(Int_t i=0; i<fgklayernumber; i++){
+    ///////////////////////////
+    // Mounting Block Down Vertex
+    ///////////////////////////
+  	mountingblockpiecedownshape[i] = new TGeoXtru(2);
+    sprintf(mountingblockpiecedownname,"MountingBlockPieceDownLay%d",i+5);
+	mountingblockpiecedownxvertex[i][0] = -0.5*fgkSSDMountingBlockLength[0];	
+	mountingblockpiecedownyvertex[i][0] = fgkMountingBlockSupportRadius[i]
+										+ fgkMountingBlockSupportDownHeight;
+	mountingblockpiecedownxvertex[i][1] = mountingblockpiecedownxvertex[i][0];	
+	mountingblockpiecedownyvertex[i][1] = mountingblockpiecedownyvertex[i][0]
+										+ fgkSSDMountingBlockHeight[1]
+										- 0.5*fgkCoolingTubeSupportHeight
+										- fgkSSDModuleCoolingBlockToSensor;
+	mountingblockpiecedownxvertex[i][2] = 0.5*fgkSSDMountingBlockLength[0];	
+	mountingblockpiecedownyvertex[i][2] = mountingblockpiecedownyvertex[i][1];
+	mountingblockpiecedownxvertex[i][3] = mountingblockpiecedownxvertex[i][2];	
+	mountingblockpiecedownyvertex[i][3] = mountingblockpiecedownyvertex[i][0];
+	mountingblockpiecedownxvertex[i][4] = 0.5*fgkSSDMountingBlockLength[1];
+	mountingblockpiecedownyvertex[i][4] = mountingblockpiecedownyvertex[i][0];
+	mountingblockpiecedownxvertex[i][5] = mountingblockpiecedownxvertex[i][4];
+	mountingblockpiecedownyvertex[i][5] = mountingblockpiecedownyvertex[i][4]
+										+ fgkSSDMountingBlockHeight[2]
+										- fgkSSDMountingBlockHeight[0];
+	mountingblockpiecedownxvertex[i][6] = -mountingblockpiecedownxvertex[i][4];
+	mountingblockpiecedownyvertex[i][6] = mountingblockpiecedownyvertex[i][5];
+	mountingblockpiecedownxvertex[i][7] = mountingblockpiecedownxvertex[i][6];	
+	mountingblockpiecedownyvertex[i][7] = mountingblockpiecedownyvertex[i][0];
+	mountingblockpiecedownshape[i]->DefinePolygon(8,mountingblockpiecedownxvertex[i],
+													 mountingblockpiecedownyvertex[i]);
+	mountingblockpiecedownshape[i]->DefineSection(0,0.0);
+	mountingblockpiecedownshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+	mountingblockpiecedown[i] = new TGeoVolume(mountingblockpiecedownname,
+								 mountingblockpiecedownshape[i],fSSDSupportRingAl);
+	mountingblockpiecedown[i]->SetLineColor(fColorG10);
+    ///////////////////////////
+    // Mounting Block Up Vertex
+    ///////////////////////////
+	mountingblockpieceupshape[i] = new TGeoXtru(2);
+	sprintf(mountingblockpieceupname,"MountingBlockPieceUpLay%d",i+5);
+	mountingblockpieceupxvertex[i][0] = -0.5*fgkSSDMountingBlockLength[0];	
+	mountingblockpieceupyvertex[i][0] = fgkMountingBlockSupportRadius[i]
+										+ fgkMountingBlockSupportUpHeight[i];
+	mountingblockpieceupxvertex[i][1] = mountingblockpieceupxvertex[i][0];	
+	mountingblockpieceupyvertex[i][1] = mountingblockpieceupyvertex[i][0]
+										+ fgkSSDMountingBlockHeight[1]
+										- 0.5*fgkCoolingTubeSupportHeight
+										- fgkSSDModuleCoolingBlockToSensor;
+	mountingblockpieceupxvertex[i][2] = 0.5*fgkSSDMountingBlockLength[0];	
+	mountingblockpieceupyvertex[i][2] = mountingblockpieceupyvertex[i][1];
+	mountingblockpieceupxvertex[i][3] = mountingblockpieceupxvertex[i][2];	
+	mountingblockpieceupyvertex[i][3] = mountingblockpieceupyvertex[i][0];
+	mountingblockpieceupxvertex[i][4] = 0.5*fgkSSDMountingBlockLength[1];
+	mountingblockpieceupyvertex[i][4] = mountingblockpieceupyvertex[i][0];
+	mountingblockpieceupxvertex[i][5] = mountingblockpieceupxvertex[i][4];
+	mountingblockpieceupyvertex[i][5] = mountingblockpieceupyvertex[i][4]
+										+ fgkSSDMountingBlockHeight[2]
+										- fgkSSDMountingBlockHeight[0];
+	mountingblockpieceupxvertex[i][6] = -mountingblockpieceupxvertex[i][4];
+	mountingblockpieceupyvertex[i][6] = mountingblockpieceupyvertex[i][5];
+	mountingblockpieceupxvertex[i][7] = mountingblockpieceupxvertex[i][6];	
+	mountingblockpieceupyvertex[i][7] = mountingblockpieceupyvertex[i][0];
+	mountingblockpieceupshape[i]->DefinePolygon(8,mountingblockpieceupxvertex[i],
+													 mountingblockpieceupyvertex[i]);
+	mountingblockpieceupshape[i]->DefineSection(0,0.0);
+	mountingblockpieceupshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+	mountingblockpieceup[i] = new TGeoVolume(mountingblockpieceupname,
+								mountingblockpieceupshape[i],fSSDSupportRingAl);
+	mountingblockpieceup[i]->SetLineColor(fColorG10);
+ }
+  ///////////////////////////////////////////////////////////////////
+  // Setting the volume for TGeoXtru Mounting Block Support Trapezoid  
+  ///////////////////////////////////////////////////////////////////
+  TGeoXtru* mountingblocksupportrapezoidownshape[fgklayernumber];
+  TGeoXtru* mountingblocksupportrapezoidupshape[fgklayernumber];
+  TGeoVolume* mountingblocksupportrapezoidown[fgklayernumber];
+  TGeoVolume* mountingblocksupportrapezoidup[fgklayernumber];
+  Double_t mountingblocksupportrapezoidownxvertex[fgklayernumber][5];
+  Double_t mountingblocksupportrapezoidownyvertex[fgklayernumber][5];
+  Double_t mountingblocksupportrapezoidupxvertex[fgklayernumber][5];
+  Double_t mountingblocksupportrapezoidupyvertex[fgklayernumber][5];
+  char mountingblocksupportrapezoidowname[40];
+  char mountingblocksupportrapezoidupname[40];
+  Double_t scalefactor = 3./4.;
+  for(Int_t i=0; i<fgklayernumber; i++){
+  ////////////////////////////////////////////
+  // Mounting Block Support Down Trapezoid Vertex 
+  ////////////////////////////////////////////
+	mountingblocksupportrapezoidownshape[i] = new TGeoXtru(2);
+	mountingblocksupportrapezoidownxvertex[i][0] = -0.5*fgkSSDMountingBlockLength[0]
+												 - mountingsupportedge[i];
+	mountingblocksupportrapezoidownyvertex[i][0] = mountingblockpiecedownyvertex[i][0];
+	mountingblocksupportrapezoidownxvertex[i][1] = 
+										mountingblocksupportrapezoidownxvertex[i][0];
+	mountingblocksupportrapezoidownyvertex[i][1] = mountingblockpiecedownyvertex[i][0]
+												 + scalefactor*(mountingblockpiecedownyvertex[i][1]
+											     - mountingblockpiecedownyvertex[i][0]);
+	mountingblocksupportrapezoidownxvertex[i][2] = -0.5*fgkSSDSensorWidth;
+	mountingblocksupportrapezoidownyvertex[i][2] = mountingblockpiecedownyvertex[i][1]; 
+	mountingblocksupportrapezoidownxvertex[i][3] = mountingblockpiecedownxvertex[i][0];
+	mountingblocksupportrapezoidownyvertex[i][3] = mountingblocksupportrapezoidownyvertex[i][2];
+	mountingblocksupportrapezoidownxvertex[i][4] = mountingblocksupportrapezoidownxvertex[i][3];
+	mountingblocksupportrapezoidownyvertex[i][4] = mountingblocksupportrapezoidownyvertex[i][0];
+	mountingblocksupportrapezoidownshape[i]->DefinePolygon(5,mountingblocksupportrapezoidownxvertex[i],
+	 												       mountingblocksupportrapezoidownyvertex[i]);
+	mountingblocksupportrapezoidownshape[i]->DefineSection(0,fgkMountingBlockSupportWidth[1]
+															-fgkMountingBlockSupportWidth[0]);
+	mountingblocksupportrapezoidownshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+	sprintf(mountingblocksupportrapezoidowname,"MountingBlockSuppTrapezoidDownLay%d",i+5);
+	mountingblocksupportrapezoidown[i] = new TGeoVolume(mountingblocksupportrapezoidowname,
+								mountingblocksupportrapezoidownshape[i],fSSDMountingBlockMedium);
+	mountingblocksupportrapezoidown[i]->SetLineColor(9);
+  ////////////////////////////////////////////
+  // Mounting Block Support Up Trapezoid Vertex 
+  ////////////////////////////////////////////
+	mountingblocksupportrapezoidupshape[i] = new TGeoXtru(2);
+	mountingblocksupportrapezoidupxvertex[i][0] = -0.5*fgkSSDMountingBlockLength[0]
+												 - mountingsupportedge[i];
+	mountingblocksupportrapezoidupyvertex[i][0] = mountingblockpieceupyvertex[i][0];
+	mountingblocksupportrapezoidupxvertex[i][1] = 
+										mountingblocksupportrapezoidupxvertex[i][0];
+	mountingblocksupportrapezoidupyvertex[i][1] = 
+											       mountingblockpieceupyvertex[i][0]
+												 + scalefactor*(mountingblockpieceupyvertex[i][1]
+											     - mountingblockpieceupyvertex[i][0]);
+	mountingblocksupportrapezoidupxvertex[i][2] = -0.5*fgkSSDSensorWidth;
+	mountingblocksupportrapezoidupyvertex[i][2] = mountingblockpieceupyvertex[i][1]; 
+	mountingblocksupportrapezoidupxvertex[i][3] = mountingblockpieceupxvertex[i][0];
+	mountingblocksupportrapezoidupyvertex[i][3] = mountingblocksupportrapezoidupyvertex[i][2];
+	mountingblocksupportrapezoidupxvertex[i][4] = mountingblocksupportrapezoidupxvertex[i][3];
+	mountingblocksupportrapezoidupyvertex[i][4] = mountingblocksupportrapezoidupyvertex[i][0];
+	mountingblocksupportrapezoidupshape[i]->DefinePolygon(5,mountingblocksupportrapezoidupxvertex[i],
+	 												       mountingblocksupportrapezoidupyvertex[i]);
+	mountingblocksupportrapezoidupshape[i]->DefineSection(0,fgkMountingBlockSupportWidth[1]
+															-fgkMountingBlockSupportWidth[0]);
+	mountingblocksupportrapezoidupshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+	sprintf(mountingblocksupportrapezoidupname,"MountingBlockSuppTrapezoidUpLay%d",i+5);
+	mountingblocksupportrapezoidup[i] = new TGeoVolume(mountingblocksupportrapezoidupname,
+								mountingblocksupportrapezoidupshape[i],fSSDMountingBlockMedium);
+	mountingblocksupportrapezoidup[i]->SetLineColor(9);
+  }
+  ///////////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<fgklayernumber; i++) mountingblocksupportboxdown[i] = new TGeoVolume*[3];
+  for(Int_t i=0; i<fgklayernumber; i++) mountingblocksupportboxup[i] = new TGeoVolume*[3];
+  Double_t boxoriginup[fgklayernumber][2][3];
+  Double_t boxorigindown[fgklayernumber][2][3];
+  char mountingblocksupportboxdownname[34];
+  char mountingblocksupportboxupname[34];
+  TGeoRotation* mountingblocksupportrot = new TGeoRotation();
+  mountingblocksupportrot->SetAngles(90.,180.,-90);
+  TGeoRotation* globalrefladdersupportrot = new TGeoRotation();
+  globalrefladdersupportrot->SetAngles(0.,90.,0.);
+  TGeoHMatrix* laddersupportmatrix[2];
+  laddersupportmatrix[0] = new TGeoHMatrix(*globalrefladdersupportrot);
+  laddersupportmatrix[1] = new TGeoHMatrix((*globalrefladdersupportrot)*(*mountingblocksupportrot));
+  /////////////////////////////////////////////////////////////
+  // Creating Mother Volume for Containment
+  /////////////////////////////////////////////////////////////
+  Double_t *xmothervertex[fgklayernumber];
+  Double_t *ymothervertex[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++){
+	xmothervertex[i] = new Double_t[8];
+	ymothervertex[i] = new Double_t[8];
+  }  
+  TGeoXtru* downmotherladdersupportshape[fgklayernumber];
+  TGeoVolume* downmotherladdersupport[fgklayernumber]; 
+  TGeoXtru* upmotherladdersupportshape[fgklayernumber];
+  TGeoVolume* upmotherladdersupport[fgklayernumber]; 
+  char upmotheladdersupportname[30];
+  char downmotheladdersupportname[30];
+  for(Int_t i=0; i<fgklayernumber; i++){
+	xmothervertex[i][0] = -0.5*fgkSSDMountingBlockLength[0]
+						    -  mountingsupportedge[i];
+	ymothervertex[i][0] = -fgkMountingBlockSupportWidth[1];
+	xmothervertex[i][1] = xmothervertex[i][0];
+	ymothervertex[i][1] = -fgkMountingBlockSupportWidth[1]
+							+ fgkMountingBlockSupportWidth[0];
+	xmothervertex[i][2] = -0.5*fgkSSDMountingBlockLength[0];
+	ymothervertex[i][2] = ymothervertex[i][1];
+	xmothervertex[i][3] = xmothervertex[i][2];
+	ymothervertex[i][3] = -ymothervertex[i][0];
+	xmothervertex[i][4] = -xmothervertex[i][0];
+	ymothervertex[i][4] = ymothervertex[i][3];
+	xmothervertex[i][5] = xmothervertex[i][4];
+	ymothervertex[i][5] = -ymothervertex[i][1];
+	xmothervertex[i][6] = -xmothervertex[i][2];
+	ymothervertex[i][6] = ymothervertex[i][5];
+	xmothervertex[i][7] = xmothervertex[i][6];
+	ymothervertex[i][7] = ymothervertex[i][0];
+	sprintf(downmotheladdersupportname,"LadderSupportDownLay%d",i+5);
+	sprintf(upmotheladdersupportname,"LadderSupportUpLay%d",i+5);
+    downmotherladdersupportshape[i] = new TGeoXtru(2);
+	downmotherladdersupportshape[i]->DefinePolygon(8,xmothervertex[i],ymothervertex[i]);
+	downmotherladdersupportshape[i]->DefineSection(0,ysidevertex[i][0]);
+    downmotherladdersupportshape[i]->DefineSection(1,ysidevertex[i][1]
+								   +			   fgkMountingBlockSupportDownHeight
+								   +			   fgkSSDMountingBlockHeight[1]
+								   -			   0.5*fgkCoolingTubeSupportHeight
+								   -			   fgkSSDModuleCoolingBlockToSensor);
+    downmotherladdersupport[i] = new TGeoVolume(downmotheladdersupportname,
+								          downmotherladdersupportshape[i],fSSDAir);
+    upmotherladdersupportshape[i] = new TGeoXtru(2);
+	upmotherladdersupportshape[i]->DefinePolygon(8,xmothervertex[i],ymothervertex[i]);
+	upmotherladdersupportshape[i]->DefineSection(0,ysidevertex[i][0]);
+    upmotherladdersupportshape[i]->DefineSection(1,ysidevertex[i][1]
+								   +			   fgkMountingBlockSupportUpHeight[i]
+								   +			   fgkSSDMountingBlockHeight[1]
+								   -			   0.5*fgkCoolingTubeSupportHeight
+								   -			   fgkSSDModuleCoolingBlockToSensor);
+    upmotherladdersupport[i] = new TGeoVolume(upmotheladdersupportname,
+											  upmotherladdersupportshape[i],fSSDAir);
+  }
+  for(Int_t i=0; i<fgklayernumber; i++){
+	/////////////////////////
+	// Setting the box origin
+	/////////////////////////
+	boxorigindown[i][0][0] = -0.5*mountingsupportedge[i];
+	boxorigindown[i][0][1] =  fgkMountingBlockSupportRadius[i]
+						   +  0.5*fgkMountingBlockSupportDownHeight;
+	boxorigindown[i][0][2] =  fgkMountingBlockSupportWidth[1]
+						   -  0.5*fgkMountingBlockSupportWidth[0];
+  
+	boxorigindown[i][1][0] = 0.0;
+	boxorigindown[i][1][1] = boxorigindown[i][0][1];
+	boxorigindown[i][1][2] = 0.5*(fgkMountingBlockSupportWidth[1]
+						   -	  fgkMountingBlockSupportWidth[0]);
+						   
+	boxoriginup[i][0][0] = -0.5*mountingsupportedge[i];
+	boxoriginup[i][0][1] = fgkMountingBlockSupportRadius[i]
+						 + 0.5*fgkMountingBlockSupportUpHeight[i];
+	boxoriginup[i][0][2] = fgkMountingBlockSupportWidth[1]
+						 - 0.5*fgkMountingBlockSupportWidth[0];
+  
+	boxoriginup[i][1][0] = 0.0;
+	boxoriginup[i][1][1] = fgkMountingBlockSupportRadius[i]
+						 + 0.5*fgkMountingBlockSupportUpHeight[i];
+	boxoriginup[i][1][2] = 0.5*(fgkMountingBlockSupportWidth[1]
+						 - fgkMountingBlockSupportWidth[0]);
+  
+	/////////////////////////
+    // Setting the boxes    
+	/////////////////////////
+	mountingblocksupportboxdownshape[i][0] = new TGeoBBox(0.5*(mountingsupportedge[i]
+										 +  fgkSSDMountingBlockLength[0]),
+											0.5*fgkMountingBlockSupportDownHeight,
+											0.5*fgkMountingBlockSupportWidth[0],
+											boxorigindown[i][0]);
+    mountingblocksupportboxdownshape[i][1] = new TGeoBBox(0.5*fgkSSDMountingBlockLength[0],
+											0.5*fgkMountingBlockSupportDownHeight,
+											0.5*(fgkMountingBlockSupportWidth[1]
+										 -  fgkMountingBlockSupportWidth[0]),
+											boxorigindown[i][1]);
+											
+	mountingblocksupportboxupshape[i][0] = new TGeoBBox(0.5*(mountingsupportedge[i]
+										 +  fgkSSDMountingBlockLength[0]),
+											0.5*fgkMountingBlockSupportUpHeight[i],
+											0.5*fgkMountingBlockSupportWidth[0],
+											boxoriginup[i][0]);
+											
+	mountingblocksupportboxupshape[i][1] = new TGeoBBox(0.5*fgkSSDMountingBlockLength[0],
+											0.5*fgkMountingBlockSupportUpHeight[i],
+											0.5*(fgkMountingBlockSupportWidth[1]
+							             -	fgkMountingBlockSupportWidth[0]),
+											boxoriginup[i][1]);
+	///////////////////////////////////////
+    // Adding the Volumes to Mother Volume    
+	///////////////////////////////////////
+	for(Int_t j=0; j<2; j++){
+		sprintf(mountingblocksupportboxdownname,"MountingBlockSuppDownLay%dBox%d",i+5,j+1);
+		sprintf(mountingblocksupportboxupname,"MountingBlockSuppUpLay%dBox%d",i+5,j+1);
+		mountingblocksupportboxdown[i][j] = new TGeoVolume(mountingblocksupportboxdownname,
+										  mountingblocksupportboxdownshape[i][j],
+										  fSSDMountingBlockMedium);
+		mountingblocksupportboxup[i][j] = new TGeoVolume(mountingblocksupportboxupname,
+										  mountingblocksupportboxupshape[i][j],
+										  fSSDMountingBlockMedium);
+		mountingblocksupportboxdown[i][j]->SetLineColor(9);
+		mountingblocksupportboxup[i][j]->SetLineColor(9);
+		for(Int_t k=0; k<2; k++){
+			downmotherladdersupport[i]->AddNode(mountingblocksupportboxdown[i][j],k+1,laddersupportmatrix[k]);
+			upmotherladdersupport[i]->AddNode(mountingblocksupportboxup[i][j],k+1,laddersupportmatrix[k]);
+		}
+	}
+	for(Int_t k=0; k<2; k++){
+		downmotherladdersupport[i]->AddNode(centermountingblocksupport[i],k+1,laddersupportmatrix[k]);
+		downmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
+		downmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+		downmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+	    downmotherladdersupport[i]->AddNode(mountingblockpiecedown[i],k+1,laddersupportmatrix[k]);
+		downmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidown[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(centermountingblocksupport[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(sidemountingblocksupport[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(sideladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(centerladdersupportpiece[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(mountingblockpieceup[i],k+1,laddersupportmatrix[k]);
+		upmotherladdersupport[i]->AddNode(mountingblocksupportrapezoidup[i],k+1,laddersupportmatrix[k]);
+	}
+  }
+  TList* laddersupportlist = new TList();
+  laddersupportlist->Add(downmotherladdersupport[0]); 
+  laddersupportlist->Add(upmotherladdersupport[0]); 
+  laddersupportlist->Add(downmotherladdersupport[1]); 
+  laddersupportlist->Add(upmotherladdersupport[1]); 
+  /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<fgklayernumber; i++){
+	for(Int_t j=0; j<nedges+1; j++)
+		delete vertex[i][j];
+	delete mountingsupportedgevector[i];
+	delete [] vertex[i];
+	delete vertexlist[i];
+	delete [] xsidevertex[i];
+	delete [] ysidevertex[i];
+	delete [] xcentervertex[i];
+	delete [] ycentervertex[i];
+	delete [] xsidelowervertex[i];
+	delete [] ysidelowervertex[i];
+	delete [] xcenterlowervertex[i];
+	delete [] ycenterlowervertex[i];
+  }
+  delete xsidevertex;
+  delete ysidevertex;
+  delete xcentervertex;
+  delete ycentervertex;
+  delete xsidelowervertex;
+  delete ysidelowervertex;
+  delete xcenterlowervertex;
+  delete ycenterlowervertex;
+  delete globalrefladdersupportrot;
+  delete mountingblocksupportrot;
+  /////////////////////
+  return laddersupportlist;	
+}
+ ////////////////////////////////////////////////////////////////////////////////
+void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){ 
+//////////////////////////////////////////
+// Method Generating Ladder Support Ring
+//////////////////////////////////////////
+  if(!fCreateMaterials) CreateMaterials();
+  if(!fTransformationMatrices) CreateTransformationMatrices();
+  if(!fBasicObjects) CreateBasicObjects();
+  fLay5LadderSupportRing = new TGeoVolumeAssembly("Lay5LadderSupportRing");
+  fLay6LadderSupportRing = new TGeoVolumeAssembly("Lay6LadderSupportRing");
+    const Int_t kssdlayladdernumber[fgklayernumber] = 
+			{fgkSSDLay5LadderNumber,fgkSSDLay6LadderNumber};
+  Double_t mountingsupportedge[fgklayernumber];
+  Double_t mountingblockratio[fgklayernumber];
+  Double_t theta[fgklayernumber];
+  Double_t phi[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++){
+	mountingblockratio[i] = fgkSSDMountingBlockLength[0]/fgkMountingBlockSupportRadius[i];
+    mountingsupportedge[i]    = 0.5*fgkMountingBlockSupportRadius[i]
+							  *(TMath::Sqrt(4.0-TMath::Power(mountingblockratio[i],2))
+							  * TMath::Sin(2.0*TMath::Pi()/kssdlayladdernumber[i])
+							  - mountingblockratio[i]*(1.0+TMath::Cos(2.0*TMath::Pi()
+							  / kssdlayladdernumber[i])));
+    theta[i] = TMath::ASin(0.5*mountingblockratio[i]+mountingsupportedge[i]
+			 / fgkMountingBlockSupportRadius[i]);
+    phi[i]   = TMath::ASin(0.5*mountingblockratio[i]);
+  }
+  TGeoRotation* globalrot = new TGeoRotation();
+  globalrot->SetAngles(0.,-90.,0.); 
+  TGeoRotation** laddersupportrot[fgklayernumber];
+  TGeoHMatrix**  laddersupportmatrix[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++){		
+	laddersupportrot[i] = new TGeoRotation*[kssdlayladdernumber[i]];
+	laddersupportmatrix[i] = new TGeoHMatrix*[kssdlayladdernumber[i]];
+	for(Int_t j=0; j<kssdlayladdernumber[i]; j++){
+		laddersupportrot[i][j] = new TGeoRotation();
+		laddersupportrot[i][j]->SetAngles(j*(phi[i]+theta[i])*TMath::RadToDeg(),0.,0.);
+		switch(i){
+			case 0: //Ladder of Layer5  
+				laddersupportmatrix[i][j] = new TGeoHMatrix((*laddersupportrot[i][j])*(*globalrot));
+				fLay5LadderSupportRing->AddNode(j%2==0?fLay5LadderSupport[0]:fLay5LadderSupport[1],j+1,
+									    laddersupportmatrix[i][j]); 
+			break;
+			case 1: //Ladder of Layer6 
+				laddersupportmatrix[i][j] = new TGeoHMatrix((*laddersupportrot[i][j])*(*globalrot));
+				fLay6LadderSupportRing->AddNode(j%2==0?fLay6LadderSupport[0]:fLay6LadderSupport[1],j+1,
+									      laddersupportmatrix[i][j]); 
+			break;
+		}
+    }
+  }
+  /////////////////////////////////////////////////////////////
+  // Creating Lower Ladder Support 
+  /////////////////////////////////////////////////////////////
+  TVector3** ringsupportvertex[fgklayernumber]; 	
+  Double_t angle = 360./nedges;
+  for(Int_t i=0; i<fgklayernumber; i++){
+    ringsupportvertex[i] = new TVector3*[2*kssdlayladdernumber[i]+3+nedges];	
+	ringsupportvertex[i][0] = new TVector3(0.,fgkMountingBlockSupportRadius[i]
+							*			   TMath::Cos(theta[i]));
+	ringsupportvertex[i][1] = new TVector3(-0.5*fgkSSDMountingBlockLength[0]
+							-			   mountingsupportedge[i],
+										   ringsupportvertex[i][0]->Y());
+	ringsupportvertex[i][2] = new TVector3(0.5*fgkSSDMountingBlockLength[0],
+										   ringsupportvertex[i][1]->Y()); 									   	
+    ringsupportvertex[i][2]->RotateZ(theta[i]+phi[i]);
+	for(Int_t j=1; j<kssdlayladdernumber[i]; j++){
+	   ringsupportvertex[i][2*j+1] = new TVector3(*ringsupportvertex[i][1]);  	
+	   ringsupportvertex[i][2*j+1]->RotateZ(j*(theta[i]+phi[i]));	
+	   ringsupportvertex[i][2*j+2] = new TVector3(*ringsupportvertex[i][2]);  	
+	   ringsupportvertex[i][2*j+2]->RotateZ(j*(theta[i]+phi[i]));	
+	}
+	ringsupportvertex[i][2*kssdlayladdernumber[i]+1] = new TVector3(*ringsupportvertex[i][0]);
+    for(Int_t j=0; j<nedges+1; j++){
+		ringsupportvertex[i][2*kssdlayladdernumber[i]+2+j] = 
+			new TVector3((ringsupportvertex[i][0]->Y()-fgkLadderSupportHeigth)*CosD(90.0-j*angle),
+						 (ringsupportvertex[i][0]->Y()-fgkLadderSupportHeigth)*SinD(90.0-j*angle));
+	}
+  }
+  Double_t **xmothervertex = new Double_t*[fgklayernumber];
+  Double_t **ymothervertex = new Double_t*[fgklayernumber];
+  for(Int_t i=0; i<fgklayernumber; i++){
+	xmothervertex[i] = new Double_t[2*kssdlayladdernumber[i]+3+nedges];
+	ymothervertex[i] = new Double_t[2*kssdlayladdernumber[i]+3+nedges];
+	for(Int_t j=0; j<2*kssdlayladdernumber[i]+3+nedges; j++){
+		xmothervertex[i][j] = ringsupportvertex[i][j]->X();
+		ymothervertex[i][j] = ringsupportvertex[i][j]->Y();
+	}
+  }
+  char lowerladdersupportname[30];
+  TGeoXtru* lowerladdersupportshape[fgklayernumber];
+  TGeoVolume* lowerladdersupport[fgklayernumber];
+  TGeoRotation* lowerladdersupportrot = new TGeoRotation();
+  lowerladdersupportrot->SetAngles(90.,180.,-90);
+  for(Int_t i=0; i<fgklayernumber; i++){
+	lowerladdersupportshape[i] = new TGeoXtru(2);
+	lowerladdersupportshape[i]->DefinePolygon(2*kssdlayladdernumber[i]+3+nedges,
+											  xmothervertex[i],ymothervertex[i]);
+	lowerladdersupportshape[i]->DefineSection(0,0.);
+    lowerladdersupportshape[i]->DefineSection(1,fgkMountingBlockSupportWidth[1]);
+	sprintf(lowerladdersupportname,"LowerLadderSupportNameLay%d",i+5);
+    lowerladdersupport[i] = new TGeoVolume(lowerladdersupportname,
+							lowerladdersupportshape[i],fSSDSupportRingAl);
+	lowerladdersupport[i]->SetLineColor(fColorAl);
+	(i==0 ? fLay5LadderSupportRing: fLay6LadderSupportRing)->AddNode(lowerladdersupport[i],1);
+	(i==0 ? fLay5LadderSupportRing: fLay6LadderSupportRing)->AddNode(lowerladdersupport[i],2,lowerladdersupportrot);
+  }
+  /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<fgklayernumber; i++){
+	for(Int_t j=0; j<2*kssdlayladdernumber[i]+3+nedges; j++)
+		delete ringsupportvertex[i][j];
+	delete [] ringsupportvertex[i];
+  }
+  for(Int_t i=0; i<fgklayernumber; i++){
+	delete [] xmothervertex[i];
+	delete [] ymothervertex[i];
+  }
+  delete xmothervertex;
+  delete ymothervertex; 
+  delete globalrot;
+  for(Int_t i=0; i<fgklayernumber; i++){
+	for(Int_t j=0; j<kssdlayladdernumber[i]; j++)
+		delete laddersupportrot[i][j];
+	delete [] laddersupportrot[i];
+  }
+ }  
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume* AliITSv11GeometrySSD::GetEndCapCoverPlate(){
+  /////////////////////////////////////////////////////////////
+  // Method generating Endcap CoverPlate
+  /////////////////////////////////////////////////////////////
+  // Holes Definition 
+  ///////////////////
+  Int_t nendcapcoverplateholedges = 30;
+  const Int_t kendcapcoverplatesmallholenumber[2] = {4,9}; 
+  Double_t holesection[2] = {-0.5*fgkEndCapCoverPlateThickness,
+							  0.5*fgkEndCapCoverPlateThickness};
+  TGeoXtru* endcapcoverplatesmallholeshape = GetHoleShape(fgkEndCapCoverPlateSmallHoleRadius,
+													      nendcapcoverplateholedges,holesection);
+  TGeoVolume* endcapcoverplatesmallhole = new TGeoVolume("EndCapCoverPlateSmallHole",
+										  endcapcoverplatesmallholeshape,fSSDAir);
+  endcapcoverplatesmallhole->SetLineColor(6);
+  TGeoXtru* endcapcoverplatebigholeshape = GetHoleShape(fgkEndCapCoverPlateBigHoleRadius,
+													      nendcapcoverplateholedges,holesection);
+  TGeoVolume* endcapcoverplatebighole = new TGeoVolume("EndCapCoverPlateBigHole",
+										  endcapcoverplatebigholeshape,fSSDAir);
+  endcapcoverplatebighole->SetLineColor(6);
+  //////////////////////////
+  // Screw Piece Definition 
+  //////////////////////////
+  Double_t smallscrewangle = 360.0/nendcapcoverplateholedges;
+  TGeoTube* endcapsmallscrewpieceshape = new TGeoTube(0.0,fgkEndCapCoverPlateSmallHoleRadius*
+												      CosD(0.5*smallscrewangle),
+												      0.5*fgkEndCapCoverPlateThickness);
+  TGeoVolume* endcapsmallscrewpiece = new TGeoVolume("EndCapCoverPlateSmallScrewPiece",
+												endcapsmallscrewpieceshape,
+												fSSDCoolingTubePhynox);
+  endcapsmallscrewpiece->SetLineColor(fColorPhynox);
+  ///////////////////
+  // Box Definition 
+  ///////////////////
+  TGeoBBox* endcapcoverplateboxshape[4];
+  TGeoVolume* endcapcoverplatebox[4];
+  Double_t boxorigin[5][3];
+  boxorigin[0][0] = 0.;
+  boxorigin[0][1] = 0.5*fgkEndCapCoverPlateSmallHoleSeparation[2];
+  boxorigin[0][2] = 0.;
+
+  boxorigin[1][0] = 0.5*fgkEndCapCoverPlateSmallHoleSeparation[0];
+  boxorigin[1][1] = 4.*fgkEndCapCoverPlateSmallHoleSeparation[2];
+  boxorigin[1][2] = 0.;
+
+  boxorigin[2][0] = 1.5*fgkEndCapCoverPlateSmallHoleSeparation[0]
+				  + fgkEndCapCoverPlateSmallHoleSeparation[1];
+  boxorigin[2][1] = boxorigin[1][1];
+  boxorigin[2][2] = 0.;
+
+  boxorigin[3][0] = fgkEndCapCoverPlateSmallHoleSeparation[0]
+				  + 0.5*fgkEndCapCoverPlateSmallHoleSeparation[1];
+  boxorigin[3][1] = boxorigin[1][1];
+  boxorigin[3][2] = 0.;
+
+  endcapcoverplateboxshape[0] = new TGeoBBox(fgkEndCapCoverPlateSmallHoleRadius,
+										0.5*(fgkEndCapCoverPlateSmallHoleSeparation[2]
+						 -              2.*fgkEndCapCoverPlateSmallHoleRadius),
+									    0.5*fgkEndCapCoverPlateThickness,boxorigin[0]);
+
+  endcapcoverplateboxshape[1] = new TGeoBBox(0.5*(fgkEndCapCoverPlateSmallHoleSeparation[0]
+							                -2.*fgkEndCapCoverPlateSmallHoleRadius),
+										     4.*fgkEndCapCoverPlateSmallHoleSeparation[2]
+							  +				 fgkEndCapCoverPlateSmallHoleRadius,
+									         0.5*fgkEndCapCoverPlateThickness,boxorigin[1]);
+
+  endcapcoverplateboxshape[2] = new TGeoBBox(0.5*(fgkEndCapCoverPlateSmallHoleSeparation[0]
+							                -2.*fgkEndCapCoverPlateSmallHoleRadius),
+										     4.*fgkEndCapCoverPlateSmallHoleSeparation[2]
+							  +				 fgkEndCapCoverPlateSmallHoleRadius,
+									         0.5*fgkEndCapCoverPlateThickness,boxorigin[2]);
+
+  endcapcoverplateboxshape[3] = new TGeoBBox(0.5*(fgkEndCapCoverPlateSmallHoleSeparation[1]
+							                -2.*fgkEndCapCoverPlateSmallHoleRadius),
+										     4.*fgkEndCapCoverPlateSmallHoleSeparation[2]
+							  +				 fgkEndCapCoverPlateSmallHoleRadius,
+									         0.5*fgkEndCapCoverPlateThickness,boxorigin[3]);
+  
+  endcapcoverplatebox[0] = new TGeoVolume("EndCapCoverPlateBox1",endcapcoverplateboxshape[0],
+									   fSSDAir);
+  endcapcoverplatebox[1] = new TGeoVolume("EndCapCoverPlateBox2",endcapcoverplateboxshape[1],
+									   fSSDAir);
+  endcapcoverplatebox[2] = new TGeoVolume("EndCapCoverPlateBox3",endcapcoverplateboxshape[2],
+									   fSSDAir);
+  endcapcoverplatebox[3] = new TGeoVolume("EndCapCoverPlateBox4",endcapcoverplateboxshape[3],
+									   fSSDAir);
+  endcapcoverplatebox[0]->SetLineColor(6);
+  endcapcoverplatebox[1]->SetLineColor(6);
+  endcapcoverplatebox[2]->SetLineColor(6);
+  endcapcoverplatebox[3]->SetLineColor(6);
+  Double_t endcapfillingboxorigin[3] = {fgkEndCapCoverPlateSmallHoleSeparation[0],0.,0.};
+  TGeoBBox* endcapfillingboxshape = new TGeoBBox(fgkEndCapCoverPlateSmallHoleRadius,
+											fgkEndCapCoverPlateSmallHoleRadius,
+											0.5*fgkEndCapCoverPlateThickness,
+											endcapfillingboxorigin);
+  TGeoVolume* endcapfillingbox = new TGeoVolume("EndCapFillingBox",endcapfillingboxshape,
+									   fSSDAir);
+  endcapfillingbox->SetLineColor(6);
+  ////////////////////////////
+  // Contour Xtru Definition 
+  ////////////////////////////
+  const Int_t kcontourvertexnumber = 10;
+  Double_t xcontourvertex[kcontourvertexnumber];
+  Double_t ycontourvertex[kcontourvertexnumber];
+  xcontourvertex[0] = -fgkEndCapCoverPlateLength[0];
+  xcontourvertex[1] = xcontourvertex[0];
+  xcontourvertex[2] = fgkEndCapCoverPlateLength[1]-xcontourvertex[0];
+  xcontourvertex[3] = xcontourvertex[2];
+  xcontourvertex[4] = -fgkEndCapCoverPlateSmallHoleRadius;
+  xcontourvertex[5] = xcontourvertex[4];
+  xcontourvertex[6] = fgkEndCapCoverPlateLength[1]+fgkEndCapCoverPlateSmallHoleRadius;
+  xcontourvertex[7] = xcontourvertex[6];
+  xcontourvertex[8] = xcontourvertex[4];
+  xcontourvertex[9] = xcontourvertex[8];
+  ycontourvertex[0] = -0.5*(fgkEndCapCoverPlateWidth[0]-fgkEndCapCoverPlateWidth[2]
+					- (kendcapcoverplatesmallholenumber[1]-1)
+					* fgkEndCapCoverPlateSmallHoleSeparation[2]);
+  ycontourvertex[1] = (kendcapcoverplatesmallholenumber[1]-1)
+					* fgkEndCapCoverPlateSmallHoleSeparation[2]-ycontourvertex[0];
+  ycontourvertex[2] = ycontourvertex[1];
+  ycontourvertex[3] = ycontourvertex[0];
+  ycontourvertex[4] = ycontourvertex[3];
+  ycontourvertex[5] = -fgkEndCapCoverPlateSmallHoleRadius;
+  ycontourvertex[6] = ycontourvertex[5];
+  ycontourvertex[7] = (kendcapcoverplatesmallholenumber[1]-1)
+					* fgkEndCapCoverPlateSmallHoleSeparation[2]
+					+ fgkEndCapCoverPlateSmallHoleRadius;
+  ycontourvertex[8] = ycontourvertex[7];
+  ycontourvertex[9] = ycontourvertex[0];
+  TGeoXtru* contourshape = new TGeoXtru(2);
+  contourshape->DefinePolygon(kcontourvertexnumber,xcontourvertex,ycontourvertex);  
+  contourshape->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
+  contourshape->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
+  TGeoVolume* contour = new TGeoVolume("EndCapCoverPlateContour",contourshape,fSSDAir);
+  contour->SetLineColor(6);
+  /////////////////////////////
+  // Hole Contour Xtru Definition 
+  ////////////////////////////
+  const Int_t kholecontourvertexnumber = 10;
+  Double_t xholecontourvertex[2][kcontourvertexnumber];
+  Double_t yholecontourvertex[2][kcontourvertexnumber];
+  xholecontourvertex[0][0] = xcontourvertex[0];
+  xholecontourvertex[0][1] = xholecontourvertex[0][0];
+  xholecontourvertex[0][2] = xholecontourvertex[0][1]+fgkEndCapCoverPlateLength[2];
+  xholecontourvertex[0][3] = xholecontourvertex[0][2];
+  xholecontourvertex[0][4] = xholecontourvertex[0][0]
+						   + 0.5*(fgkEndCapCoverPlateLength[2]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  xholecontourvertex[0][5] = xholecontourvertex[0][4];
+  xholecontourvertex[0][6] = xholecontourvertex[0][5]
+						   + 2.*fgkEndCapCoverPlateBigHoleRadius;
+  xholecontourvertex[0][7] = xholecontourvertex[0][6];
+  xholecontourvertex[0][8] = xholecontourvertex[0][4];
+  xholecontourvertex[0][9] = xholecontourvertex[0][8];
+  
+  yholecontourvertex[0][0] = ycontourvertex[1];
+  yholecontourvertex[0][1] = yholecontourvertex[0][0]+fgkEndCapCoverPlateWidth[2];
+  yholecontourvertex[0][2] = yholecontourvertex[0][1];
+  yholecontourvertex[0][3] = yholecontourvertex[0][0];
+  yholecontourvertex[0][4] = yholecontourvertex[0][3];
+  yholecontourvertex[0][5] = yholecontourvertex[0][4]+0.5*(fgkEndCapCoverPlateWidth[2]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  yholecontourvertex[0][6] = yholecontourvertex[0][5];
+  yholecontourvertex[0][7] = yholecontourvertex[0][6]+2.*fgkEndCapCoverPlateBigHoleRadius;
+  yholecontourvertex[0][8] = yholecontourvertex[0][7];
+  yholecontourvertex[0][9] = yholecontourvertex[0][0];
+
+  xholecontourvertex[1][0] = xcontourvertex[0]+fgkEndCapCoverPlateLength[5];
+  xholecontourvertex[1][1] = xholecontourvertex[1][0];
+  xholecontourvertex[1][2] = xholecontourvertex[1][1]+fgkEndCapCoverPlateLength[2];
+  xholecontourvertex[1][3] = xholecontourvertex[1][2];
+  xholecontourvertex[1][4] = xholecontourvertex[1][0]
+						   + 0.5*(fgkEndCapCoverPlateLength[2]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  xholecontourvertex[1][5] = xholecontourvertex[1][4];
+  xholecontourvertex[1][6] = xholecontourvertex[1][5]
+						   + 2.*fgkEndCapCoverPlateBigHoleRadius;
+  xholecontourvertex[1][7] = xholecontourvertex[1][6];
+  xholecontourvertex[1][8] = xholecontourvertex[1][4];
+  xholecontourvertex[1][9] = xholecontourvertex[1][8];
+  
+  yholecontourvertex[1][0] = ycontourvertex[0]-(fgkEndCapCoverPlateWidth[1]
+						   - fgkEndCapCoverPlateWidth[0]);
+  yholecontourvertex[1][1] = ycontourvertex[0];
+  yholecontourvertex[1][2] = yholecontourvertex[1][1];
+  yholecontourvertex[1][3] = yholecontourvertex[1][0];
+  yholecontourvertex[1][4] = yholecontourvertex[1][3];
+  yholecontourvertex[1][5] = yholecontourvertex[1][4]+0.5*(fgkEndCapCoverPlateWidth[1]
+						   - fgkEndCapCoverPlateWidth[0]
+						   - 2.*fgkEndCapCoverPlateBigHoleRadius);
+  yholecontourvertex[1][6] = yholecontourvertex[1][5];
+  yholecontourvertex[1][7] = yholecontourvertex[1][6]+2.*fgkEndCapCoverPlateBigHoleRadius;
+  yholecontourvertex[1][8] = yholecontourvertex[1][7];
+  yholecontourvertex[1][9] = yholecontourvertex[1][0];
+
+  TGeoXtru* holecontourshape[2];
+  holecontourshape[0] = new TGeoXtru(2);
+  holecontourshape[0]->DefinePolygon(kholecontourvertexnumber,xholecontourvertex[0],
+								  yholecontourvertex[0]);  
+  holecontourshape[0]->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
+  holecontourshape[0]->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
+
+  holecontourshape[1] = new TGeoXtru(2);
+  holecontourshape[1]->DefinePolygon(kholecontourvertexnumber,xholecontourvertex[1],
+								  yholecontourvertex[1]);  
+  holecontourshape[1]->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
+  holecontourshape[1]->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
+
+  TGeoVolume* holecontour[2];
+  holecontour[0] = new TGeoVolume("EndCapCoverPlateContour1",holecontourshape[0],fSSDAir);
+  holecontour[0]->SetLineColor(6);
+  holecontour[1] = new TGeoVolume("EndCapCoverPlateContour2",holecontourshape[1],fSSDAir);
+  holecontour[1]->SetLineColor(6);
+  TGeoTranslation* holecontourtrans = new TGeoTranslation(fgkEndCapCoverPlateLength[3]
+									+     fgkEndCapCoverPlateLength[2],0.,0.);
+  TGeoTranslation*  bigholetrans[3];
+  bigholetrans[0] = new TGeoTranslation(xholecontourvertex[0][4]+fgkEndCapCoverPlateBigHoleRadius,
+										yholecontourvertex[0][7]-fgkEndCapCoverPlateBigHoleRadius,0.0);
+  bigholetrans[1] = new TGeoTranslation(xholecontourvertex[0][4]+fgkEndCapCoverPlateBigHoleRadius
+				  +                     fgkEndCapCoverPlateLength[4],yholecontourvertex[0][7]
+				  -						fgkEndCapCoverPlateBigHoleRadius,0.0);
+  bigholetrans[2] = new TGeoTranslation(xholecontourvertex[1][4]+fgkEndCapCoverPlateBigHoleRadius,
+										yholecontourvertex[1][5]+fgkEndCapCoverPlateBigHoleRadius,0.0);
+  /////////////////////////////////
+  // Mother Volume Xtru Definition 
+  /////////////////////////////////
+  const Int_t kmothervertexnumber = 12;
+  Double_t xmothervertex[kmothervertexnumber];  
+  Double_t ymothervertex[kmothervertexnumber];  
+  xmothervertex[0]  = xcontourvertex[0];
+  xmothervertex[1]  = xmothervertex[0];
+  xmothervertex[2]  = xmothervertex[1]+fgkEndCapCoverPlateLength[2];
+  xmothervertex[3]  = xmothervertex[2];
+  xmothervertex[4]  = xmothervertex[3]+fgkEndCapCoverPlateLength[3];
+  xmothervertex[5]  = xmothervertex[4];
+  xmothervertex[6]  = xmothervertex[5]+fgkEndCapCoverPlateLength[2];
+  xmothervertex[7]  = xmothervertex[6];
+  xmothervertex[8]  = xmothervertex[0]+fgkEndCapCoverPlateLength[5]
+					+ fgkEndCapCoverPlateLength[2]; 
+  xmothervertex[9]  = xmothervertex[8];
+  xmothervertex[10] = xmothervertex[9]-fgkEndCapCoverPlateLength[2];
+  xmothervertex[11] = xmothervertex[10];
+  
+  ymothervertex[0]  = ycontourvertex[0];
+  ymothervertex[1]  = ymothervertex[0]+fgkEndCapCoverPlateWidth[0];
+  ymothervertex[2]  = ymothervertex[1];
+  ymothervertex[3]  = ycontourvertex[1];
+  ymothervertex[4]  = ymothervertex[3];
+  ymothervertex[5]  = ymothervertex[1];
+  ymothervertex[6]  = ymothervertex[5];
+  ymothervertex[7]  = ymothervertex[0];
+  ymothervertex[8]  = ymothervertex[7];
+  ymothervertex[9]  = ymothervertex[8]
+				   - (fgkEndCapCoverPlateWidth[1]-fgkEndCapCoverPlateWidth[0]);
+  ymothervertex[10] = ymothervertex[9];
+  ymothervertex[11] = ymothervertex[8];
+  TGeoXtru* mothercoverplateshape = new TGeoXtru(2);
+  mothercoverplateshape->DefinePolygon(kmothervertexnumber,xmothervertex,ymothervertex);  
+  mothercoverplateshape->DefineSection(0,-0.5*fgkEndCapCoverPlateThickness);
+  mothercoverplateshape->DefineSection(1,+0.5*fgkEndCapCoverPlateThickness);
+  TGeoVolume* mothercoverplate = new TGeoVolume("EndCapCoverPlateMother",mothercoverplateshape,fSSDAir);
+  ////////////////////////////////////////
+  // Adding Nodes
+  ////////////////////////////////////////
+//  TGeoTranslation** endcapcoverplatesmallholetrans[kendcapcoverplatesmallholenumber[0]]; 
+  TGeoTranslation*** endcapcoverplatesmallholetrans;
+  endcapcoverplatesmallholetrans = new TGeoTranslation**[kendcapcoverplatesmallholenumber[0]]; 
+  Double_t transx[4] = {0,
+						fgkEndCapCoverPlateSmallHoleSeparation[0],
+						fgkEndCapCoverPlateSmallHoleSeparation[0]
+					 +  fgkEndCapCoverPlateSmallHoleSeparation[1],
+					 2.*fgkEndCapCoverPlateSmallHoleSeparation[0]
+					 +  fgkEndCapCoverPlateSmallHoleSeparation[1]};
+  Int_t index = 0;
+  for(Int_t i=0; i<kendcapcoverplatesmallholenumber[0]; i++){
+	endcapcoverplatesmallholetrans[i] = 
+					new TGeoTranslation*[kendcapcoverplatesmallholenumber[1]];
+    for(Int_t j=0; j<kendcapcoverplatesmallholenumber[1]; j++){
+		index = kendcapcoverplatesmallholenumber[1]*i+j+1;
+	    endcapcoverplatesmallholetrans[i][j] = 
+		new TGeoTranslation(transx[i],
+							j*fgkEndCapCoverPlateSmallHoleSeparation[2],0.);
+	    if(index!=10){ 
+			mothercoverplate->AddNode(endcapcoverplatesmallhole,
+									  index,endcapcoverplatesmallholetrans[i][j]);
+			mothercoverplate->AddNode(endcapsmallscrewpiece,
+									  index,endcapcoverplatesmallholetrans[i][j]);
+		}
+		if(j<kendcapcoverplatesmallholenumber[1]-1) 
+			mothercoverplate->AddNode(endcapcoverplatebox[0],
+									  index,endcapcoverplatesmallholetrans[i][j]);
+    }
+  }
+  mothercoverplate->AddNode(endcapcoverplatebox[1],1);
+  mothercoverplate->AddNode(endcapcoverplatebox[2],1);
+  mothercoverplate->AddNode(endcapcoverplatebox[3],1);
+  mothercoverplate->AddNode(endcapfillingbox,1);
+  mothercoverplate->AddNode(endcapcoverplatebighole,1,bigholetrans[0]);
+  mothercoverplate->AddNode(endcapcoverplatebighole,2,bigholetrans[1]);
+  mothercoverplate->AddNode(endcapcoverplatebighole,3,bigholetrans[2]);
+  mothercoverplate->AddNode(holecontour[0],1);
+  mothercoverplate->AddNode(holecontour[0],2,holecontourtrans);
+  mothercoverplate->AddNode(holecontour[1],1);  
+  mothercoverplate->AddNode(contour,1);
+  /////////////////////////////////
+  return mothercoverplate; 	
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume* AliITSv11GeometrySSD::GetEndCapCoolingTube(){
+  /////////////////////////////////////////////////////////////
+  // Getting EndCap Cooling Tube 
+  /////////////////////////////////////////////////////////////
+  TGeoTorus* endcapcoolingtubetorushape[5];
+  TGeoVolume* endcapcoolingtubetorus[5];
+  TGeoTube* endcapcoolingtubeshape[4];
+  TGeoVolume* endcapcoolingtube[4];
+  char endcapcoolingtubetorusname[30];
+  char endcapcoolingtubename[30];
+  TGeoTorus* endcapcoolingwatertubetorushape[5];
+  TGeoVolume* endcapcoolingwatertubetorus[5];
+  TGeoTube* endcapcoolingwatertubeshape[4];
+  TGeoVolume* endcapcoolingwatertube[4];
+  char endcapcoolingwatertubetorusname[30];
+  char endcapcoolingwatertubename[30];
+  for(Int_t i=0; i<5; i++){
+	sprintf(endcapcoolingtubetorusname,"EndCapCoolingTubeTorus%d",i+1);
+	sprintf(endcapcoolingtubename,"EndCapCoolingTube%d",i+1);
+	sprintf(endcapcoolingwatertubetorusname,"EndCapCoolingWaterTubeTorus%d",i+1);
+	sprintf(endcapcoolingwatertubename,"EndCapCoolingWaterTube%d",i+1);
+	if(i==3){
+		endcapcoolingtubetorushape[i] = new TGeoTorus(fgkEndCapCoolingTubeAxialRadius[0],
+										fgkEndCapCoolingTubeRadiusMin,
+										fgkEndCapCoolingTubeRadiusMax,
+										90.0,fgkEndCapCoolingTubeAngle[3]);
+		endcapcoolingwatertubetorushape[i] = new TGeoTorus(fgkEndCapCoolingTubeAxialRadius[0],
+										0.,fgkEndCapCoolingTubeRadiusMin,
+										90.0,fgkEndCapCoolingTubeAngle[3]);
+    }
+	else{
+		endcapcoolingtubetorushape[i] = new TGeoTorus(i!=4?fgkEndCapCoolingTubeAxialRadius[0]
+									  :fgkEndCapCoolingTubeAxialRadius[1],
+									   fgkEndCapCoolingTubeRadiusMin,
+									   fgkEndCapCoolingTubeRadiusMax,
+								    0.,fgkEndCapCoolingTubeAngle[i]);
+		endcapcoolingwatertubetorushape[i] = new TGeoTorus(i!=4?fgkEndCapCoolingTubeAxialRadius[0]
+									       :fgkEndCapCoolingTubeAxialRadius[1],
+										 0.,fgkEndCapCoolingTubeRadiusMin,
+								         0.,fgkEndCapCoolingTubeAngle[i]);
+	}
+	endcapcoolingtubetorus[i] = new TGeoVolume(endcapcoolingtubetorusname,
+ 											   endcapcoolingtubetorushape[i],
+											   fSSDCoolingTubePhynox);
+	endcapcoolingwatertubetorus[i] = new TGeoVolume(endcapcoolingwatertubetorusname,
+													endcapcoolingwatertubetorushape[i],
+													fSSDCoolingTubeWater);
+    endcapcoolingtubetorus[i]->SetLineColor(fColorPhynox);
+    endcapcoolingwatertubetorus[i]->SetLineColor(fColorWater);
+    if(i<4){
+		endcapcoolingtubeshape[i] = new TGeoTube(fgkEndCapCoolingTubeRadiusMin,
+								  fgkEndCapCoolingTubeRadiusMax,
+							  0.5*fgkEndCapCoolingTubeLength[i]);
+		endcapcoolingwatertubeshape[i] = new TGeoTube(0.,fgkEndCapCoolingTubeRadiusMin,
+							  0.5*fgkEndCapCoolingTubeLength[i]);
+        endcapcoolingtube[i] = new TGeoVolume(endcapcoolingtubename,
+							 endcapcoolingtubeshape[i],fSSDCoolingTubePhynox);
+        endcapcoolingwatertube[i] = new TGeoVolume(endcapcoolingwatertubename,
+							 endcapcoolingwatertubeshape[i],fSSDCoolingTubeWater);
+		endcapcoolingtube[i]->SetLineColor(fColorPhynox);
+		endcapcoolingwatertube[i]->SetLineColor(fColorWater);
+	}
+  }
+  TGeoVolumeAssembly* endcapcoolingtubemother = new TGeoVolumeAssembly("MotherEndCapCoolingTube");
+  /////////////////////////////////////////
+  // Transformation for Volume Positioning 
+  /////////////////////////////////////////
+  TGeoCombiTrans* coolingtubecombitrans[6];
+  TGeoRotation* coolingtuberot[8];
+  TGeoTranslation* coolingtubetrans[6];
+  TGeoHMatrix* coolingtubematrix[4];
+  TGeoCombiTrans* torustubecombitrans[4];
+  TGeoRotation* torustuberot[7];
+  TGeoTranslation* torustubetrans[4];
+  TGeoHMatrix* torustubematrix[5];
+  TGeoCombiTrans* coolingwatertubecombitrans[6];
+  TGeoRotation* coolingwatertuberot[8];
+  TGeoTranslation* coolingwatertubetrans[6];
+  TGeoHMatrix* coolingwatertubematrix[4];
+  TGeoCombiTrans* toruswatertubecombitrans[4];
+  TGeoRotation* toruswatertuberot[7];
+  TGeoTranslation* toruswatertubetrans[4];
+  TGeoHMatrix* toruswatertubematrix[5];
+  for(Int_t i=0; i<8; i++){
+    if(i<6){
+	 coolingtubetrans[i] = new TGeoTranslation();
+	 coolingwatertubetrans[i] = new TGeoTranslation();
+    }
+    if(i<8){
+	 coolingtuberot[i] = new TGeoRotation();
+	 coolingwatertuberot[i] = new TGeoRotation();
+    }
+    if(i<4){
+	 torustubetrans[i] = new TGeoTranslation();
+	 toruswatertubetrans[i] = new TGeoTranslation();
+    }
+    if(i<7){
+	 torustuberot[i] = new TGeoRotation();
+	 toruswatertuberot[i] = new TGeoRotation();
+	}
+  }
+  /////////////////////////////////////////
+  // Transformation for Inox Volume Positioning 
+  /////////////////////////////////////////
+  coolingtubetrans[0]->SetTranslation(fgkEndCapCoolingTubeAxialRadius[0],
+									  -endcapcoolingtubeshape[0]->GetDz(),0.);
+  coolingtuberot[0]->SetAngles(0.,90.,0.);
+  coolingtubecombitrans[0] = new TGeoCombiTrans(*coolingtubetrans[0],
+												*coolingtuberot[0]);
+												
+  coolingtubetrans[1]->SetTranslation(0.,-endcapcoolingtubeshape[1]->GetDz(),0.);
+  coolingtuberot[1]->SetAngles(0.,90.,0.);
+  coolingtubecombitrans[1] = new TGeoCombiTrans(*coolingtubetrans[1],
+												*coolingtuberot[1]);
+
+  coolingtubetrans[2]->SetTranslation(fgkEndCapCoolingTubeAxialRadius[0]
+									 *CosD(fgkEndCapCoolingTubeAngle[0]),
+									  fgkEndCapCoolingTubeAxialRadius[0]
+									 *SinD(fgkEndCapCoolingTubeAngle[0]),
+									  0.);
+  coolingtuberot[2]->SetAngles(fgkEndCapCoolingTubeAngle[0]-180.,0.,0.);
+  coolingtubecombitrans[2] = new TGeoCombiTrans(*coolingtubetrans[2],
+												*coolingtuberot[2]);
+
+  coolingtubematrix[0] = new TGeoHMatrix((*coolingtubecombitrans[2])
+					   *				 (*coolingtubecombitrans[1]));
+
+  torustubetrans[0]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[0],0.,
+									 endcapcoolingtubeshape[1]->GetDz());
+  torustuberot[0]->SetAngles(0.,90.,0.); 
+  torustubecombitrans[0] = new TGeoCombiTrans(*torustubetrans[0],*torustuberot[0]);
+
+  torustubematrix[0] = new TGeoHMatrix((*coolingtubematrix[0])*(*torustubecombitrans[0]));
+
+  coolingtubetrans[3]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[0],
+									  -endcapcoolingtubeshape[2]->GetDz(),0.);
+  coolingtuberot[3]->SetAngles(0.,90.,0.);
+  coolingtubecombitrans[3] = new TGeoCombiTrans(*coolingtubetrans[3],
+												*coolingtuberot[3]);
+  coolingtuberot[4]->SetAngles(-180.+fgkEndCapCoolingTubeAngle[1],0.,0.);
+  coolingtubematrix[1] = new TGeoHMatrix((*coolingtuberot[4])*(*coolingtubecombitrans[3]));
+  coolingtubematrix[1]->MultiplyLeft(torustubematrix[0]);
+  
+  torustubetrans[1]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[0],0.,
+									endcapcoolingtubeshape[2]->GetDz());
+  torustuberot[1]->SetAngles(0.,90.,0.); 
+  torustubecombitrans[1] = new TGeoCombiTrans(*torustubetrans[1],*torustuberot[1]);
+  torustuberot[2]->SetAngles(180.,0.,0.); 
+  torustubematrix[2] = new TGeoHMatrix((*torustuberot[2])*(*torustubecombitrans[1]));
+  torustubematrix[2]->MultiplyLeft(coolingtubematrix[1]);
+
+  torustubetrans[2]->SetTranslation(0.,fgkEndCapCoolingTubeAxialRadius[0],
+									-fgkEndCapCoolingTubeAxialRadius[0]);
+  torustuberot[3]->SetAngles(0.,90.,0.); 
+  torustubecombitrans[2] = new TGeoCombiTrans(*torustubetrans[2],*torustuberot[3]);
+  torustuberot[4]->SetAngles(fgkEndCapCoolingTubeAngle[2]-90.,0.,0.); 
+  torustubematrix[3] = new TGeoHMatrix((*torustuberot[4])*(*torustubecombitrans[2]));
+  torustubematrix[3]->MultiplyLeft(torustubematrix[2]);
+
+  coolingtubetrans[4]->SetTranslation(-endcapcoolingtubeshape[3]->GetDz(),
+									  fgkEndCapCoolingTubeAxialRadius[0],0.);
+  coolingtuberot[5]->SetAngles(90.,90.,-90.);
+  coolingtubecombitrans[4] = new TGeoCombiTrans(*coolingtubetrans[4],
+												*coolingtuberot[5]);
+  coolingtuberot[6]->SetAngles(fgkEndCapCoolingTubeAngle[3],0.,0.);
+  coolingtubematrix[2] = new TGeoHMatrix((*coolingtuberot[6])*(*coolingtubecombitrans[4]));
+  coolingtubematrix[2]->MultiplyLeft(torustubematrix[3]);
+  
+  torustubetrans[3]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[1],0.,
+									endcapcoolingtubeshape[0]->GetDz());
+  torustuberot[5]->SetAngles(0.,90.,0.); 
+  torustubecombitrans[3] = new TGeoCombiTrans(*torustubetrans[3],*torustuberot[5]);
+  torustuberot[6]->SetAngles(-90.,0.,0.); 
+  torustubematrix[4] = new TGeoHMatrix((*torustuberot[6])*(*torustubecombitrans[3]));
+  torustubematrix[4]->MultiplyLeft(coolingtubecombitrans[0]);
+  
+  coolingtubetrans[5]->SetTranslation(fgkEndCapCoolingTubeAxialRadius[1],
+									  endcapcoolingtubeshape[3]->GetDz(),0.);
+  coolingtuberot[6]->SetAngles(0.,90.,0.);
+  coolingtubecombitrans[5] = new TGeoCombiTrans(*coolingtubetrans[5],
+												*coolingtuberot[6]);
+  coolingtuberot[7]->SetAngles(fgkEndCapCoolingTubeAngle[4],0.,0.);
+  coolingtubematrix[3] = new TGeoHMatrix((*coolingtuberot[7])*(*coolingtubecombitrans[5]));
+  coolingtubematrix[3]->MultiplyLeft(torustubematrix[4]);
+    /////////////////////////////////////////
+  // Transformation for Water Volume Positioning 
+  /////////////////////////////////////////
+  coolingwatertubetrans[0]->SetTranslation(fgkEndCapCoolingTubeAxialRadius[0],
+									  -endcapcoolingwatertubeshape[0]->GetDz(),0.);
+  coolingwatertuberot[0]->SetAngles(0.,90.,0.);
+  coolingwatertubecombitrans[0] = new TGeoCombiTrans(*coolingwatertubetrans[0],
+												     *coolingwatertuberot[0]);
+
+  coolingwatertubetrans[1]->SetTranslation(0.,-endcapcoolingwatertubeshape[1]->GetDz(),0.);
+  coolingwatertuberot[1]->SetAngles(0.,90.,0.);
+  coolingwatertubecombitrans[1] = new TGeoCombiTrans(*coolingwatertubetrans[1],
+												     *coolingwatertuberot[1]);
+
+  coolingwatertubetrans[2]->SetTranslation(fgkEndCapCoolingTubeAxialRadius[0]
+										  *CosD(fgkEndCapCoolingTubeAngle[0]),
+										  fgkEndCapCoolingTubeAxialRadius[0]
+										  *SinD(fgkEndCapCoolingTubeAngle[0]),
+									      0.);
+  coolingwatertuberot[2]->SetAngles(fgkEndCapCoolingTubeAngle[0]-180.,0.,0.);
+  coolingwatertubecombitrans[2] = new TGeoCombiTrans(*coolingwatertubetrans[2],
+												    *coolingwatertuberot[2]);
+
+  coolingwatertubematrix[0] = new TGeoHMatrix((*coolingwatertubecombitrans[2])
+					   *				     (*coolingwatertubecombitrans[1]));
+					   
+  toruswatertubetrans[0]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[0],0.,
+									 endcapcoolingwatertubeshape[1]->GetDz());
+  toruswatertuberot[0]->SetAngles(0.,90.,0.); 
+  toruswatertubecombitrans[0] = new TGeoCombiTrans(*toruswatertubetrans[0],
+												   *toruswatertuberot[0]);
+
+  toruswatertubematrix[0] = new TGeoHMatrix((*coolingwatertubematrix[0])
+						  *					(*toruswatertubecombitrans[0]));
+
+  coolingwatertubetrans[3]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[0],
+									  -endcapcoolingwatertubeshape[2]->GetDz(),0.);
+  coolingwatertuberot[3]->SetAngles(0.,90.,0.);
+  coolingwatertubecombitrans[3] = new TGeoCombiTrans(*coolingwatertubetrans[3],
+												     *coolingwatertuberot[3]);
+  coolingwatertuberot[4]->SetAngles(-180.+fgkEndCapCoolingTubeAngle[1],0.,0.);
+  coolingwatertubematrix[1] = new TGeoHMatrix((*coolingwatertuberot[4])
+							*				  (*coolingwatertubecombitrans[3]));
+  coolingwatertubematrix[1]->MultiplyLeft(toruswatertubematrix[0]);
+
+  toruswatertubetrans[1]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[0],0.,
+									endcapcoolingwatertubeshape[2]->GetDz());
+  toruswatertuberot[1]->SetAngles(0.,90.,0.); 
+  toruswatertubecombitrans[1] = new TGeoCombiTrans(*toruswatertubetrans[1],
+												   *toruswatertuberot[1]);
+  toruswatertuberot[2]->SetAngles(180.,0.,0.); 
+  toruswatertubematrix[2] = new TGeoHMatrix((*toruswatertuberot[2])
+						  *                 (*toruswatertubecombitrans[1]));
+  toruswatertubematrix[2]->MultiplyLeft(coolingwatertubematrix[1]);
+  
+  toruswatertubetrans[2]->SetTranslation(0.,fgkEndCapCoolingTubeAxialRadius[0],
+										   -fgkEndCapCoolingTubeAxialRadius[0]);
+  toruswatertuberot[3]->SetAngles(0.,90.,0.); 
+  toruswatertubecombitrans[2] = new TGeoCombiTrans(*toruswatertubetrans[2],
+												   *toruswatertuberot[3]);
+  toruswatertuberot[4]->SetAngles(fgkEndCapCoolingTubeAngle[2]-90.,0.,0.); 
+  toruswatertubematrix[3] = new TGeoHMatrix((*toruswatertuberot[4])
+						  *					(*toruswatertubecombitrans[2]));
+  toruswatertubematrix[3]->MultiplyLeft(toruswatertubematrix[2]);
+
+  coolingwatertubetrans[4]->SetTranslation(-endcapcoolingwatertubeshape[3]->GetDz(),
+									        fgkEndCapCoolingTubeAxialRadius[0],0.);
+  coolingwatertuberot[5]->SetAngles(90.,90.,-90.);
+  coolingwatertubecombitrans[4] = new TGeoCombiTrans(*coolingwatertubetrans[4],
+												     *coolingwatertuberot[5]);
+  coolingwatertuberot[6]->SetAngles(fgkEndCapCoolingTubeAngle[3],0.,0.);
+  coolingwatertubematrix[2] = new TGeoHMatrix((*coolingwatertuberot[6])
+							*				  (*coolingwatertubecombitrans[4]));
+  coolingwatertubematrix[2]->MultiplyLeft(toruswatertubematrix[3]);
+  
+  toruswatertubetrans[3]->SetTranslation(-fgkEndCapCoolingTubeAxialRadius[1],0.,
+									      endcapcoolingwatertubeshape[0]->GetDz());
+  toruswatertuberot[5]->SetAngles(0.,90.,0.); 
+  toruswatertubecombitrans[3] = new TGeoCombiTrans(*toruswatertubetrans[3],
+												   *toruswatertuberot[5]);
+  toruswatertuberot[6]->SetAngles(-90.,0.,0.); 
+  toruswatertubematrix[4] = new TGeoHMatrix((*toruswatertuberot[6])
+						  *                 (*toruswatertubecombitrans[3]));
+  toruswatertubematrix[4]->MultiplyLeft(coolingwatertubecombitrans[0]);
+  
+  coolingwatertubetrans[5]->SetTranslation(fgkEndCapCoolingTubeAxialRadius[1],
+									  endcapcoolingwatertubeshape[3]->GetDz(),0.);
+  coolingwatertuberot[6]->SetAngles(0.,90.,0.);
+  coolingwatertubecombitrans[5] = new TGeoCombiTrans(*coolingwatertubetrans[5],
+												     *coolingwatertuberot[6]);
+  coolingwatertuberot[7]->SetAngles(fgkEndCapCoolingTubeAngle[4],0.,0.);
+  coolingwatertubematrix[3] = new TGeoHMatrix((*coolingwatertuberot[7])
+							*				  (*coolingwatertubecombitrans[5]));
+  coolingwatertubematrix[3]->MultiplyLeft(toruswatertubematrix[4]);
+  /////////////////////////////////////////
+  // Positioning Volumes
+  /////////////////////////////////////////
+  endcapcoolingtubemother->AddNode(endcapcoolingtubetorus[0],1);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertubetorus[0],1);
+  
+  endcapcoolingtubemother->AddNode(endcapcoolingtube[0],1,coolingtubecombitrans[0]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertube[0],1,coolingwatertubecombitrans[0]);
+
+  endcapcoolingtubemother->AddNode(endcapcoolingtube[1],1,coolingtubematrix[0]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertube[1],1,coolingwatertubematrix[0]);
+ 
+  endcapcoolingtubemother->AddNode(endcapcoolingtubetorus[1],1,torustubematrix[0]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertubetorus[1],1,toruswatertubematrix[0]);
+
+  endcapcoolingtubemother->AddNode(endcapcoolingtube[2],1,coolingtubematrix[1]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertube[2],1,coolingwatertubematrix[1]);
+
+  endcapcoolingtubemother->AddNode(endcapcoolingtubetorus[2],1,torustubematrix[2]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertubetorus[2],1,toruswatertubematrix[2]);
+
+  endcapcoolingtubemother->AddNode(endcapcoolingtubetorus[3],1,torustubematrix[3]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertubetorus[3],1,toruswatertubematrix[3]);
+
+  endcapcoolingtubemother->AddNode(endcapcoolingtube[3],1,coolingtubematrix[2]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertube[3],1,coolingwatertubematrix[2]);
+  
+  endcapcoolingtubemother->AddNode(endcapcoolingtubetorus[4],1,torustubematrix[4]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertubetorus[4],1,toruswatertubematrix[4]);
+ 
+  endcapcoolingtubemother->AddNode(endcapcoolingtube[3],2,coolingtubematrix[3]);
+  endcapcoolingtubemother->AddNode(endcapcoolingwatertube[3],2,coolingwatertubematrix[3]);
+  /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<8; i++){
+    if(i<6){
+	 delete coolingtubetrans[i];
+	 delete coolingwatertubetrans[i];
+	 if(i!=0){
+	  delete coolingtubecombitrans[i];
+	  delete coolingwatertubecombitrans[i];
+	 }
+	}
+    if(i<8){
+	  delete coolingtuberot[i];
+	  delete coolingwatertuberot[i];
+    }
+    if(i<4){
+		delete torustubetrans[i];
+		delete toruswatertubetrans[i];
+		delete torustubecombitrans[i];
+		delete toruswatertubecombitrans[i];
+	} 
+    if(i<7){
+	 delete torustuberot[i];
+	 delete toruswatertuberot[i];
+	}
+  }
+  /////////////////////////////////////////////////////////////
+  return endcapcoolingtubemother;
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume* AliITSv11GeometrySSD::GetEndCapSideCover() const {
+  /////////////////////////////////////////////////////////////
+  // Getting EndCap Cover Side 
+  /////////////////////////////////////////////////////////////
+  const Int_t kendcapcoverholenumber[2] = {7,5}; 
+  const Int_t kvertexnumber = 15; 
+  Double_t xvertex[kvertexnumber], yvertex[kvertexnumber];
+  xvertex[0]  = 0.0;
+  xvertex[1]  = xvertex[0];
+  xvertex[2]  = fgkEndCapSideCoverLength[0];
+  xvertex[3]  = fgkEndCapSideCoverLength[1];
+  xvertex[4]  = xvertex[3];
+  xvertex[5]  = fgkEndCapSideCoverLength[2];
+  xvertex[6]  = xvertex[5];
+  xvertex[7]  = xvertex[2];
+  xvertex[8]  = xvertex[7];
+  xvertex[9]  = xvertex[6]-fgkEndCapSideCoverLength[0];
+  xvertex[10] = xvertex[9];
+  xvertex[11] = xvertex[5]-fgkEndCapSideCoverLength[0]-kendcapcoverholenumber[1]
+			  * fgkEndCapSideCoverLength[3]-(kendcapcoverholenumber[1]-1)
+			  * fgkEndCapSideCoverLength[4];
+  xvertex[12] = xvertex[11];
+  xvertex[13] = xvertex[5]-fgkEndCapSideCoverLength[0]-kendcapcoverholenumber[0]
+			  * fgkEndCapSideCoverLength[3]-(kendcapcoverholenumber[0]-1)
+			  * fgkEndCapSideCoverLength[4];
+  xvertex[14] = xvertex[13];
+  yvertex[0]  = 0.0;
+  yvertex[1]  = fgkEndCapSideCoverWidth[0];
+  yvertex[2]  = fgkEndCapSideCoverWidth[1]-fgkEndCapSideCoverWidth[2];
+  yvertex[3]  = yvertex[2];
+  yvertex[4]  = fgkEndCapSideCoverWidth[1];
+  yvertex[5]  = yvertex[4];
+  yvertex[6]  = yvertex[0];
+  yvertex[7]  = yvertex[6];
+  yvertex[8]  = fgkEndCapSideCoverWidth[6];
+  yvertex[9]  = yvertex[8];
+  yvertex[10] = fgkEndCapSideCoverWidth[1]-fgkEndCapSideCoverWidth[3];
+  yvertex[11] = yvertex[10];
+  yvertex[12] = yvertex[9]+2.*fgkEndCapSideCoverWidth[5]+fgkEndCapSideCoverLength[4]; 
+  yvertex[13] = yvertex[12];
+  yvertex[14] = yvertex[6];
+  TGeoXtru* endcapsidecovershape = new TGeoXtru(2);
+  endcapsidecovershape->DefinePolygon(kvertexnumber,xvertex,yvertex); 
+  endcapsidecovershape->DefineSection(0,-0.5*fgkEndCapSideCoverThickness);
+  endcapsidecovershape->DefineSection(1,0.5*fgkEndCapSideCoverThickness);
+  TGeoVolume* endcapsidecover = new TGeoVolume("EndCapSideCover",
+								endcapsidecovershape,fSSDCoolingTubePhynox);
+  endcapsidecover->SetLineColor(fColorPhynox);
+  ////////////////////////////////////////////
+  // Defininition of Mother Volume
+  ////////////////////////////////////////////
+  const Int_t kmothervertexnumber = 7;
+  Double_t xmothervertex[kmothervertexnumber]; 
+  Double_t ymothervertex[kmothervertexnumber]; 
+  for(Int_t i=0; i<kmothervertexnumber; i++){
+	xmothervertex[i] = xvertex[i];
+	ymothervertex[i] = yvertex[i];
+  }
+  TGeoXtru* endcapsidecovermothershape = new TGeoXtru(2);
+  endcapsidecovermothershape->DefinePolygon(kmothervertexnumber,xmothervertex,ymothervertex); 
+  endcapsidecovermothershape->DefineSection(0,-0.5*fgkEndCapSideCoverThickness);
+  endcapsidecovermothershape->DefineSection(1,0.5*fgkEndCapSideCoverThickness);
+  TGeoVolume* endcapsidecovermother = new TGeoVolume("EndCapSideCoverMother",
+								endcapsidecovermothershape,fSSDAir);
+  ////////////////////////////////////////////
+  endcapsidecovermother->AddNode(endcapsidecover,1);
+  TGeoBBox* endcapsidecoverboxshape[4];
+  endcapsidecoverboxshape[0] = new TGeoBBox(0.5*(kendcapcoverholenumber[0]*fgkEndCapSideCoverLength[3]
+							 +     (kendcapcoverholenumber[0]-1)*fgkEndCapSideCoverLength[4]),
+							       0.5*fgkEndCapSideCoverLength[4],
+								   0.5*fgkEndCapSideCoverThickness); 
+  endcapsidecoverboxshape[1] = new TGeoBBox(0.5*(kendcapcoverholenumber[1]*fgkEndCapSideCoverLength[3]
+							 +     (kendcapcoverholenumber[1]-1)*fgkEndCapSideCoverLength[4]),
+							       0.5*(fgkEndCapSideCoverWidth[4]-2.*fgkEndCapSideCoverWidth[5]
+							 -     fgkEndCapSideCoverLength[4]),
+								   0.5*fgkEndCapSideCoverThickness); 
+  endcapsidecoverboxshape[2] = new TGeoBBox(endcapsidecoverboxshape[1]->GetDX(),
+							       0.5*fgkEndCapSideCoverLength[4],
+								   0.5*fgkEndCapSideCoverThickness); 
+  endcapsidecoverboxshape[3] = new TGeoBBox(0.5*fgkEndCapSideCoverLength[4],
+							       0.5*fgkEndCapSideCoverWidth[5],
+								   0.5*fgkEndCapSideCoverThickness); 
+  TGeoVolume* endcapsidecoverbox[4];
+  endcapsidecoverbox[0] = new TGeoVolume("EndCapSideCoverBox1",endcapsidecoverboxshape[0],fSSDCoolingTubePhynox);
+  endcapsidecoverbox[1] = new TGeoVolume("EndCapSideCoverBox2",endcapsidecoverboxshape[1],fSSDCoolingTubePhynox);
+  endcapsidecoverbox[2] = new TGeoVolume("EndCapSideCoverBox3",endcapsidecoverboxshape[2],fSSDCoolingTubePhynox);
+  endcapsidecoverbox[3] = new TGeoVolume("EndCapSideCoverBox4",endcapsidecoverboxshape[3],fSSDCoolingTubePhynox);
+  for(Int_t i=0; i<4; i++)   endcapsidecoverbox[i]->SetLineColor(fColorPhynox);
+//  TGeoTranslation* endcapsidecoverboxtrans[3+2*(kendcapcoverholenumber[0]-1)+2*(kendcapcoverholenumber[1]-1)];
+  TGeoTranslation** endcapsidecoverboxtrans;
+  endcapsidecoverboxtrans = new TGeoTranslation*[3+2*(kendcapcoverholenumber[0]-1)+2*(kendcapcoverholenumber[1]-1)];
+  endcapsidecoverboxtrans[0] = new TGeoTranslation(endcapsidecoverboxshape[0]->GetDX()
+							 +					   fgkEndCapSideCoverLength[0],
+												   endcapsidecoverboxshape[0]->GetDY()
+							 +                     yvertex[9]+fgkEndCapSideCoverWidth[5],0.);
+  endcapsidecoverboxtrans[1] = new TGeoTranslation(endcapsidecoverboxshape[1]->GetDX()
+							 +                     xvertex[11],
+												   endcapsidecoverboxshape[1]->GetDY()
+							 +                     yvertex[12],0.);
+  endcapsidecoverboxtrans[2] = new TGeoTranslation(endcapsidecoverboxshape[2]->GetDX()
+							 +                     xvertex[11],
+												   endcapsidecoverboxshape[2]->GetDY()
+							 +                     yvertex[12]
+							 +					   2.*endcapsidecoverboxshape[1]->GetDY() 
+							 +                     fgkEndCapSideCoverWidth[5],0.);
+  endcapsidecovermother->AddNode(endcapsidecoverbox[0],1,endcapsidecoverboxtrans[0]);
+  endcapsidecovermother->AddNode(endcapsidecoverbox[1],1,endcapsidecoverboxtrans[1]);
+  endcapsidecovermother->AddNode(endcapsidecoverbox[2],1,endcapsidecoverboxtrans[2]);
+  for(Int_t i=0; i<2; i++)
+	for(Int_t j=0; j<kendcapcoverholenumber[0]-1; j++){
+		endcapsidecoverboxtrans[i*(kendcapcoverholenumber[0]-1)+j+3] = 
+			new TGeoTranslation(endcapsidecoverboxshape[3]->GetDX()+fgkEndCapSideCoverLength[0]
+								+(j+1)*fgkEndCapSideCoverLength[3]+j*fgkEndCapSideCoverLength[4],
+								endcapsidecoverboxshape[3]->GetDY()+fgkEndCapSideCoverWidth[6]
+								+i*(fgkEndCapSideCoverWidth[5]+fgkEndCapSideCoverLength[4]),0.0);
+		endcapsidecovermother->AddNode(endcapsidecoverbox[3],i*(kendcapcoverholenumber[0]-1)+j+1,
+								endcapsidecoverboxtrans[i*(kendcapcoverholenumber[0]-1)+j+3]);
+	}
+  for(Int_t i=0; i<2; i++)
+	for(Int_t j=0; j<kendcapcoverholenumber[1]-1; j++){
+		endcapsidecoverboxtrans[2*(kendcapcoverholenumber[0]-1)+3+i*(kendcapcoverholenumber[1]-1)+j] = 
+		new TGeoTranslation(endcapsidecoverboxshape[3]->GetDX()+xvertex[12]
+							+(j+1)*fgkEndCapSideCoverLength[3]+j*fgkEndCapSideCoverLength[4],
+							endcapsidecoverboxshape[3]->GetDY()+fgkEndCapSideCoverWidth[6]
+							+fgkEndCapSideCoverWidth[4]+i*(fgkEndCapSideCoverWidth[5]
+							+fgkEndCapSideCoverLength[4]),0.0);
+		endcapsidecovermother->AddNode(endcapsidecoverbox[3],
+								2*(kendcapcoverholenumber[0]-1)+3+i*(kendcapcoverholenumber[1]-1)+j,
+								endcapsidecoverboxtrans[2*(kendcapcoverholenumber[0]-1)+3
+								+i*(kendcapcoverholenumber[1]-1)+j]);
+	}
+	return endcapsidecovermother;
+ } 
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume** AliITSv11GeometrySSD::GetEndCapCards() const { 
+ ////////////////////////////////////////////////////////////////////////////////
+ // Method returning Interface Card A, Interface Card B, Supply Card 
+ ////////////////////////////////////////////////////////////////////////////////
+ /////////////////////
+ // Supply Card
+ /////////////////////
+ // Electronic Board Back Al Plane
+ const Int_t kelectboardbackvertexnumber = 8;
+ Double_t xelectboardback[kelectboardbackvertexnumber];
+ Double_t yelectboardback[kelectboardbackvertexnumber];
+ xelectboardback[0] = 0.0;
+ xelectboardback[1] = xelectboardback[0];
+ xelectboardback[2] = fgkEndCapCardElectBoardBackLength[0];
+ xelectboardback[3] = xelectboardback[2];
+ xelectboardback[4] = xelectboardback[3]-fgkEndCapCardElectBoardBackLength[1];
+ xelectboardback[5] = xelectboardback[4];
+ xelectboardback[6] = fgkEndCapCardElectBoardBackLength[1];
+ xelectboardback[7] = xelectboardback[6];
+ 
+ yelectboardback[0] = 0.0;
+ yelectboardback[1] = fgkEndCapCardElectBoardBackWidth[0];
+ yelectboardback[2] = yelectboardback[1];
+ yelectboardback[3] = yelectboardback[0];
+ yelectboardback[4] = yelectboardback[3];
+ yelectboardback[5] = yelectboardback[4]+fgkEndCapCardElectBoardBackWidth[1];
+ yelectboardback[6] = yelectboardback[5];
+ yelectboardback[7] = yelectboardback[4];
+ TGeoXtru* electboardbackshape = new TGeoXtru(2);
+ electboardbackshape->DefinePolygon(kelectboardbackvertexnumber,
+									xelectboardback,yelectboardback); 
+ electboardbackshape->DefineSection(0,0.0);
+ electboardbackshape->DefineSection(1,fgkEndCapCardElectBoardBackThickness);
+ TGeoVolume* electboardback = new TGeoVolume("EndCapCardElectBoardBackPlane",
+											 electboardbackshape,fSSDSupportRingAl);
+ electboardback->SetLineColor(fColorAl);
+ // Electronic Board Kapton Layer
+ const Int_t kelectlayervertexnumber = 8;
+ Double_t xelectlayer[kelectlayervertexnumber];
+ Double_t yelectlayer[kelectlayervertexnumber];
+ xelectlayer[0] = fgkEndCapCardElectBoardBackLength[0]-fgkEndCapCardElectBoardLength;
+ xelectlayer[1] = xelectlayer[0];
+ xelectlayer[2] = fgkEndCapCardElectBoardLength;
+ xelectlayer[3] = xelectlayer[2];
+ for(Int_t i=4; i<kelectlayervertexnumber; i++) xelectlayer[i] = xelectboardback[i]; 
+     
+ yelectlayer[0] = 0.0;
+ yelectlayer[1] = fgkEndCapCardElectBoardLayerWidth[0];
+ yelectlayer[2] = yelectlayer[1];
+ yelectlayer[3] = yelectlayer[0];
+ yelectlayer[4] = yelectlayer[3];
+ yelectlayer[5] = yelectlayer[4]+fgkEndCapCardElectBoardLayerWidth[1];
+ yelectlayer[6] = yelectlayer[5];
+ yelectlayer[7] = yelectlayer[4];
+ TGeoXtru* electlayershape = new TGeoXtru(2);
+ electlayershape->DefinePolygon(kelectlayervertexnumber,xelectlayer,yelectlayer); 
+ electlayershape->DefineSection(0,0.0);
+ electlayershape->DefineSection(1,fgkEndCapCardElectBoardLayerThickness);
+ TGeoVolume* electlayer = new TGeoVolume("EndCapCardElectBoardLayer",
+											 electlayershape,fSSDKaptonFlexMedium);
+ electlayer->SetLineColor(fColorKapton);
+ // JMD Connector Female
+ const Int_t kjmdconnectorvertexnumber = 6;
+ Double_t xjmdconnectorvertex[kjmdconnectorvertexnumber]; 
+ Double_t yjmdconnectorvertex[kjmdconnectorvertexnumber]; 
+ xjmdconnectorvertex[0] = 0.0; 
+ xjmdconnectorvertex[1] = xjmdconnectorvertex[0]; 
+ xjmdconnectorvertex[2] = fgkEndCapCardJMDConnectorLength[1]; 
+ xjmdconnectorvertex[3] = xjmdconnectorvertex[2];  
+ xjmdconnectorvertex[4] = fgkEndCapCardJMDConnectorLength[0]; 
+ xjmdconnectorvertex[5] = xjmdconnectorvertex[4]; 
+
+ yjmdconnectorvertex[0] = 0.0; 
+ yjmdconnectorvertex[1] = fgkEndCapCardJMDConnectorWidth[0]; 
+ yjmdconnectorvertex[2] = yjmdconnectorvertex[1]; 
+ yjmdconnectorvertex[3] = yjmdconnectorvertex[2]+fgkEndCapCardJMDConnectorWidth[1]; 
+ yjmdconnectorvertex[4] = yjmdconnectorvertex[3]; 
+ yjmdconnectorvertex[5] = yjmdconnectorvertex[0]; 
+ TGeoXtru* jmdconnectorshape = new TGeoXtru(2);
+ jmdconnectorshape->DefinePolygon(kjmdconnectorvertexnumber,xjmdconnectorvertex,
+								  yjmdconnectorvertex); 
+ jmdconnectorshape->DefineSection(0,0.0);
+ jmdconnectorshape->DefineSection(1,fgkEndCapCardJMDConnectorThickness);
+ TGeoVolume* jmdconnector = new TGeoVolume("EndCapCardJMDConnector",
+										   jmdconnectorshape,fSSDMountingBlockMedium);
+ jmdconnector->SetLineColor(fColorG10);
+ // Top Cable Connector
+ const Int_t kcableconnectorvertexnumber = 8;
+ Double_t xconnectorvertex[kcableconnectorvertexnumber]; 
+ Double_t yconnectorvertex[kcableconnectorvertexnumber]; 
+ xconnectorvertex[0] = 0.0;
+ xconnectorvertex[1] = xconnectorvertex[0];
+ xconnectorvertex[2] = xconnectorvertex[1]+fgkEndCapCardCableConnectorLength[1];
+ xconnectorvertex[3] = xconnectorvertex[2];
+ xconnectorvertex[4] = fgkEndCapCardCableConnectorLength[0]
+					 - fgkEndCapCardCableConnectorLength[2];
+ xconnectorvertex[5] = xconnectorvertex[4];
+ xconnectorvertex[6] = fgkEndCapCardCableConnectorLength[0];
+ xconnectorvertex[7] = xconnectorvertex[6];
+
+ yconnectorvertex[0] = 0.0;
+ yconnectorvertex[1] = fgkEndCapCardCableConnectorWidth[0];
+ yconnectorvertex[2] = yconnectorvertex[1];
+ yconnectorvertex[3] = fgkEndCapCardCableConnectorWidth[1];
+ yconnectorvertex[4] = yconnectorvertex[3];
+ yconnectorvertex[5] = yconnectorvertex[1];
+ yconnectorvertex[6] = yconnectorvertex[5];
+ yconnectorvertex[7] = yconnectorvertex[0];
+ TGeoXtru* cableconnectorshape = new TGeoXtru(2);
+ cableconnectorshape->DefinePolygon(kcableconnectorvertexnumber,xconnectorvertex,
+								    yconnectorvertex); 
+ cableconnectorshape->DefineSection(0,0.0);
+ cableconnectorshape->DefineSection(1,fgkEndCapCardCableConnectorThickness);
+ TGeoVolume* cableconnector = new TGeoVolume("EndCapCardTopCableConnector",
+										   cableconnectorshape,fSSDMountingBlockMedium);
+ cableconnector->SetLineColor(fColorG10);
+ // Strip Connection
+ TGeoBBox* endcapstripconnectionshape = 
+								new TGeoBBox(0.5*fgkEndCapStripConnectionLength,
+											 0.5*fgkEndCapStripConnectionThickness,
+											 0.5*fgkEndCapStripConnectionWidth);
+ TGeoVolume* endcapstripconnection = new TGeoVolume("EndCapStripConnection",
+													endcapstripconnectionshape,
+													fSSDSupportRingAl);
+ endcapstripconnection->SetLineColor(fColorAl);
+ // Interface Card B
+ const Int_t kcardBvertexnumber = 12; 
+ Double_t xcardBvertexnumber[kcardBvertexnumber];
+ Double_t ycardBvertexnumber[kcardBvertexnumber];
+
+ xcardBvertexnumber[0]  = 0.0;
+ xcardBvertexnumber[1]  = xcardBvertexnumber[0];
+ xcardBvertexnumber[2]  = xcardBvertexnumber[1]+fgkEndCapInterfaceCardBLength[0];
+ xcardBvertexnumber[3]  = xcardBvertexnumber[2];
+ xcardBvertexnumber[4]  = xcardBvertexnumber[1];
+ xcardBvertexnumber[5]  = xcardBvertexnumber[4];
+ xcardBvertexnumber[6]  = xcardBvertexnumber[5]+fgkEndCapInterfaceCardBLength[1];
+ xcardBvertexnumber[7]  = xcardBvertexnumber[6];
+ xcardBvertexnumber[8]  = xcardBvertexnumber[7]-fgkEndCapInterfaceCardBLength[0];
+ xcardBvertexnumber[9]  = xcardBvertexnumber[8];
+ xcardBvertexnumber[10] = xcardBvertexnumber[7];
+ xcardBvertexnumber[11] = xcardBvertexnumber[10];
+ 
+ ycardBvertexnumber[0]  = 0.0;
+ ycardBvertexnumber[1]  = fgkEndCapInterfaceCardBWidth[0];
+ ycardBvertexnumber[2]  = ycardBvertexnumber[1];
+ ycardBvertexnumber[3]  = ycardBvertexnumber[2]+fgkEndCapInterfaceCardBWidth[1];
+ ycardBvertexnumber[4]  = ycardBvertexnumber[3];
+ ycardBvertexnumber[5]  = ycardBvertexnumber[4]+fgkEndCapInterfaceCardBWidth[2];
+ ycardBvertexnumber[6]  = ycardBvertexnumber[5];
+ ycardBvertexnumber[7]  = ycardBvertexnumber[4];
+ ycardBvertexnumber[8]  = ycardBvertexnumber[7];
+ ycardBvertexnumber[9]  = ycardBvertexnumber[1];
+ ycardBvertexnumber[10] = ycardBvertexnumber[9];
+ ycardBvertexnumber[11] = ycardBvertexnumber[0];
+
+ TGeoXtru* interfacecardBshape = new TGeoXtru(2);
+ interfacecardBshape->DefinePolygon(kcardBvertexnumber,xcardBvertexnumber,ycardBvertexnumber);
+ interfacecardBshape->DefineSection(0,0.);
+ interfacecardBshape->DefineSection(1,fgkEndCapInterfaceCardBThickness);
+ TGeoVolume* interfacecardB = new TGeoVolume("EndCapInterfaceCardB",interfacecardBshape,
+											 fSSDMountingBlockMedium);
+ interfacecardB->SetLineColor(46);
+ // Interface Card B Electronic Board
+ const Int_t kelectboardcardBvertexnumber = 14; 
+ Double_t xelectboardcardBvertex[kelectboardcardBvertexnumber];
+ Double_t yelectboardcardBvertex[kelectboardcardBvertexnumber];
+
+ xelectboardcardBvertex[0]  = xcardBvertexnumber[0]+fgkEndCapInterfaceCardBLength[2];
+ xelectboardcardBvertex[1]  = xelectboardcardBvertex[0]; 
+ xelectboardcardBvertex[2]  = xelectboardcardBvertex[1]+fgkEndCapInterfaceCardBLength[3];
+ xelectboardcardBvertex[3]  = xelectboardcardBvertex[2]; 
+ xelectboardcardBvertex[4]  = xelectboardcardBvertex[3]+fgkEndCapInterfaceCardBLength[4];
+ xelectboardcardBvertex[5]  = xelectboardcardBvertex[4];
+ xelectboardcardBvertex[6]  = xelectboardcardBvertex[5]+fgkEndCapInterfaceCardBLength[5];
+ xelectboardcardBvertex[7]  = xelectboardcardBvertex[6];
+ xelectboardcardBvertex[8]  = xelectboardcardBvertex[7]+8.0*fgkEndCapInterfaceCardBLength[4];
+ xelectboardcardBvertex[9]  = xelectboardcardBvertex[8];
+ xelectboardcardBvertex[10] = xelectboardcardBvertex[9]+fgkEndCapInterfaceCardBLength[6];
+ xelectboardcardBvertex[11] = xelectboardcardBvertex[10];
+ xelectboardcardBvertex[12] = xelectboardcardBvertex[11]-9.0*fgkEndCapInterfaceCardBLength[4];
+ xelectboardcardBvertex[13] = xelectboardcardBvertex[12];
+
+ yelectboardcardBvertex[0]  = ycardBvertexnumber[0]+fgkEndCapInterfaceCardBWidth[1];
+ yelectboardcardBvertex[1]  = yelectboardcardBvertex[0]+fgkEndCapInterfaceCardBWidth[3];
+ yelectboardcardBvertex[2]  = yelectboardcardBvertex[1];
+ yelectboardcardBvertex[3]  = yelectboardcardBvertex[2]+fgkEndCapInterfaceCardBWidth[3];
+ yelectboardcardBvertex[4]  = yelectboardcardBvertex[3];
+ yelectboardcardBvertex[5]  = yelectboardcardBvertex[2];
+ yelectboardcardBvertex[6]  = yelectboardcardBvertex[5];
+ yelectboardcardBvertex[7]  = yelectboardcardBvertex[6]+fgkEndCapInterfaceCardBWidth[4];
+ yelectboardcardBvertex[8]  = yelectboardcardBvertex[7];
+ yelectboardcardBvertex[9]  = yelectboardcardBvertex[8]-fgkEndCapInterfaceCardBWidth[3];
+ yelectboardcardBvertex[10] = yelectboardcardBvertex[9];
+ yelectboardcardBvertex[11] = yelectboardcardBvertex[10]-fgkEndCapInterfaceCardBWidth[3];
+ yelectboardcardBvertex[12] = yelectboardcardBvertex[11];
+ yelectboardcardBvertex[13] = yelectboardcardBvertex[0];
+
+ TGeoXtru* electboardcardBshape = new TGeoXtru(2);
+ electboardcardBshape->DefinePolygon(kelectboardcardBvertexnumber,
+									 xelectboardcardBvertex,yelectboardcardBvertex);
+ electboardcardBshape->DefineSection(0,fgkEndCapInterfaceCardBThickness);
+ electboardcardBshape->DefineSection(1,fgkEndCapInterfaceCardBThickness
+									 + fgkEndCapInterfaceElectBoardCardBThickness);
+ TGeoVolume* electboardcardB = new TGeoVolume("EndCapInterfaceElectBoardCardB",electboardcardBshape,
+											  fSSDSupportRingAl);
+ electboardcardB->SetLineColor(fColorAl);
+ // Generating Stiffener 2
+ TGeoBBox* endcapstiffenershape = new TGeoBBox(0.5*fgkEndCapStiffenerWidth,
+											   0.5*fgkEndCapStiffenerThickness,
+											   0.5*fgkEndCapStiffenerLength);
+ TGeoVolume* endcapstiffener = new TGeoVolume("EndCapStiffener",endcapstiffenershape,fSSDSupportRingAl);
+ endcapstiffener->SetLineColor(fColorAl);   
+ // Generating Mother Interface Card B Container
+ const Int_t kinterfacecardBmothervertexnumber = 10;
+ Double_t xinterfacecardBmothervertex[kinterfacecardBmothervertexnumber];
+ Double_t yinterfacecardBmothervertex[kinterfacecardBmothervertexnumber];
+
+ xinterfacecardBmothervertex[0] = 0.0;
+ xinterfacecardBmothervertex[1] = xinterfacecardBmothervertex[0];
+ xinterfacecardBmothervertex[2] = xinterfacecardBmothervertex[1]
+								+ fgkEndCapInterfaceCardBThickness;
+ xinterfacecardBmothervertex[3] = xinterfacecardBmothervertex[2];
+ xinterfacecardBmothervertex[4] = xinterfacecardBmothervertex[3]
+								+ fgkEndCapInterfaceElectBoardCardBThickness;
+ xinterfacecardBmothervertex[5] = xinterfacecardBmothervertex[4];
+ xinterfacecardBmothervertex[6] = xinterfacecardBmothervertex[3];
+ xinterfacecardBmothervertex[7] = xinterfacecardBmothervertex[6];
+ xinterfacecardBmothervertex[8] = xinterfacecardBmothervertex[7]
+								+ fgkEndCapCardJMDConnectorLength[0];
+ xinterfacecardBmothervertex[9] = xinterfacecardBmothervertex[8];
+
+ yinterfacecardBmothervertex[0] = 0.0;
+ yinterfacecardBmothervertex[1] = fgkEndCapInterfaceCardBWidth[0]
+								+ fgkEndCapInterfaceCardBWidth[1]
+								+ fgkEndCapInterfaceCardBWidth[2];
+ yinterfacecardBmothervertex[2] = yinterfacecardBmothervertex[1];
+ yinterfacecardBmothervertex[3] = yelectboardcardBvertex[3];
+ yinterfacecardBmothervertex[4] = yinterfacecardBmothervertex[3];
+ yinterfacecardBmothervertex[5] = yelectboardcardBvertex[11];
+ yinterfacecardBmothervertex[6] = yinterfacecardBmothervertex[5];
+ yinterfacecardBmothervertex[7] = fgkEndCapCardElectBoardLayerWidth[1]
+								+ fgkEndCapCardJMDConnectorWidth[0]
+								+ fgkEndCapCardJMDConnectorWidth[1];
+ yinterfacecardBmothervertex[8] = yinterfacecardBmothervertex[7];
+ yinterfacecardBmothervertex[9] = yinterfacecardBmothervertex[0];
+ TGeoXtru* interfacecardBmothershape = new TGeoXtru(2);
+ interfacecardBmothershape->DefinePolygon(kinterfacecardBmothervertexnumber,
+										  xinterfacecardBmothervertex,
+										  yinterfacecardBmothervertex);
+ interfacecardBmothershape->DefineSection(0,-1.e-15);
+ interfacecardBmothershape->DefineSection(1,fgkEndCapInterfaceCardBLength[1]);
+ TGeoVolume* interfacecardBmother = new TGeoVolume("EndCapInterfaceCardBMother",
+												   interfacecardBmothershape,fSSDAir);
+ electboardcardB->SetLineColor(fColorAl);
+ // Positioning Volumes Mother Interface Card B Container 
+ TGeoRotation* interfacecardBrot = new TGeoRotation();
+ TGeoTranslation* interfacecardBtrans = new TGeoTranslation(); 
+ interfacecardBrot->SetAngles(90.,-90.,-90.);
+ interfacecardBtrans->SetTranslation(fgkEndCapInterfaceCardBThickness,0.,0.);
+ TGeoCombiTrans* interfacecardBcombitrans = new TGeoCombiTrans(*interfacecardBtrans,*interfacecardBrot);
+ TGeoRotation* electboardcardBrot = new TGeoRotation();
+ TGeoTranslation* electboardcardBtrans = new TGeoTranslation(); 
+ electboardcardBrot->SetAngles(90.,90.,-90.);
+ electboardcardBtrans->SetTranslation(0.,0.,fgkEndCapInterfaceCardBLength[1]);
+ TGeoCombiTrans* electboardcardBcombitrans = 
+				  new TGeoCombiTrans(*electboardcardBtrans,*electboardcardBrot);
+ interfacecardBmother->AddNode(interfacecardB,1,interfacecardBcombitrans);
+ interfacecardBmother->AddNode(electboardcardB,1,electboardcardBcombitrans);
+ TGeoRotation* jmdconnectorcardBrot = new TGeoRotation();
+ jmdconnectorcardBrot->SetAngles(90.,180.,-90.);
+ TGeoTranslation* jmdconnectorcardBtrans[3];
+ TGeoCombiTrans* jmdconnectorcardBcombitrans[3];
+ for(Int_t i=0; i<3; i++){
+   jmdconnectorcardBtrans[i] = new TGeoTranslation(fgkEndCapInterfaceCardBThickness
+							 + fgkEndCapCardJMDConnectorLength[0], 
+							   fgkEndCapCardElectBoardLayerWidth[1],
+							   0.5*fgkEndCapCardJMDConnectorThickness
+							 + 0.5*(fgkEndCapInterfaceCardBLength[1]
+							 - 2.*fgkEndCapInterfaceCardBJMDConnectorSeparation)
+							 + i *fgkEndCapInterfaceCardBJMDConnectorSeparation);	 
+   jmdconnectorcardBcombitrans[i] = new TGeoCombiTrans(*jmdconnectorcardBtrans[i],
+													   *jmdconnectorcardBrot);
+   interfacecardBmother->AddNode(jmdconnector,i+1,jmdconnectorcardBcombitrans[i]);
+ }
+ // Mother Supply Card Container 
+ TGeoVolumeAssembly* mothersupplycard = new TGeoVolumeAssembly("EndCapCardMotherSupply");
+ // Interface Card Container
+ TGeoVolumeAssembly* motherinterfacecardcontainer = new TGeoVolumeAssembly("EndCapMotherInterfaceCardA");
+ // Placing Volumes in Mother Supply Card Container
+ // JMD Connector Positioning
+ TGeoTranslation* jmdconnectortrans[2];
+ for(Int_t i=0; i<2; i++) jmdconnectortrans[i] = new TGeoTranslation();
+ jmdconnectortrans[0]->SetTranslation(0.,fgkEndCapCardElectBoardLayerWidth[1],
+											fgkEndCapCardElectBoardBackLength[0]
+					  -						fgkEndCapCardJMDConnectorThickness
+					  -						fgkEndCapCardJMDConnectorToLayer);
+ TGeoRotation* jmdconnectorot = new TGeoRotation();
+ jmdconnectortrans[1]->SetTranslation(fgkEndCapCardElectBoardBackThickness
+								 + 2.*fgkEndCapCardJMDConnectorLength[0]
+								 + 2.*fgkEndCapCardElectBoardLayerThickness,
+									  fgkEndCapCardElectBoardLayerWidth[1],
+								      fgkEndCapCardJMDConnectorThickness
+								 +    fgkEndCapCardJMDConnectorToLayer);
+ jmdconnectorot->SetAngles(90.,180.,-90);
+ TGeoCombiTrans* jmdconnectorcombitrans = new TGeoCombiTrans(*jmdconnectortrans[1],
+										* jmdconnectorot);
+ mothersupplycard->AddNode(jmdconnector,1,jmdconnectortrans[0]);
+ mothersupplycard->AddNode(jmdconnector,2,jmdconnectorcombitrans);
+ // Top Cable Connector Placing
+ TGeoRotation* cableconnectorot[2];
+ for(Int_t i=0; i<2; i++) cableconnectorot[i] = new TGeoRotation();
+ TGeoTranslation* cableconnectortrans[3];
+ for(Int_t i=0; i<3; i++) cableconnectortrans[i] = new TGeoTranslation();
+ cableconnectorot[0]->SetAngles(90.,0.,0.); 
+ cableconnectorot[1]->SetAngles(0.,-90.,0.); 
+ cableconnectortrans[0]->SetTranslation(fgkEndCapCardJMDConnectorLength[0],0.,0.);
+ TGeoCombiTrans* cableconnectorcombitrans = new TGeoCombiTrans(*cableconnectortrans[0],
+															   *cableconnectorot[0]);
+ TGeoHMatrix* cableconnectormatrix[2];
+ for(Int_t i=0; i<2; i++) cableconnectormatrix[i] =
+							new TGeoHMatrix((*cableconnectorot[1])
+										   *(*cableconnectorcombitrans));
+ cableconnectortrans[1]->SetTranslation(0.,fgkEndCapCardElectBoardLayerWidth[0]
+					   -				   fgkEndCapCardCableConnectorThickness,
+										fgkEndCapCardCableConnectorLength[0]
+					   +				fgkEndCapCardCableConnectorToLayer);
+ cableconnectortrans[2]->SetTranslation(0.,fgkEndCapCardElectBoardLayerWidth[0]
+					   -                2.*fgkEndCapCardCableConnectorThickness
+					   -				fgkEndCapCardCableConnectorDistance,
+										fgkEndCapCardCableConnectorLength[0]
+					   +				fgkEndCapCardCableConnectorToLayer);
+ for(Int_t i=0; i<2; i++){
+	cableconnectormatrix[i]->MultiplyLeft(cableconnectortrans[i+1]);
+    mothersupplycard->AddNode(cableconnector,i+1,cableconnectormatrix[i]);
+ }
+ TGeoRotation* electboardbackrot = new TGeoRotation(); 
+ TGeoTranslation* electboardbacktrans = new TGeoTranslation();
+ electboardbackrot->SetAngles(90.,-90.,-90.);
+ electboardbacktrans->SetTranslation(fgkEndCapCardElectBoardBackThickness
+							+		 fgkEndCapCardJMDConnectorLength[0]
+							+		 fgkEndCapCardElectBoardLayerThickness,0.,0.);
+ TGeoCombiTrans* electboardbackcombitrans = new TGeoCombiTrans(*electboardbacktrans,
+															   *electboardbackrot);
+ mothersupplycard->AddNode(electboardback,1,electboardbackcombitrans);
+ // Electronic Board Kapton Layer Positioning
+ TGeoRotation* electlayerrot = new TGeoRotation();
+ TGeoTranslation* electlayertrans[2];
+ TGeoCombiTrans* electlayercombitrans[2];
+ for(Int_t i=0; i<2; i++) electlayertrans[i] = new TGeoTranslation();
+ electlayerrot->SetAngles(90.,-90.,-90.);
+ electlayertrans[0]->SetTranslation(fgkEndCapCardJMDConnectorLength[0]
+								 + fgkEndCapCardElectBoardLayerThickness,0.,0.);
+ electlayertrans[1]->SetTranslation(fgkEndCapCardJMDConnectorLength[0]
+								 + 2.*fgkEndCapCardElectBoardLayerThickness
+								 + fgkEndCapCardElectBoardBackThickness,0.,0.);
+ for(Int_t i=0; i<2; i++){
+	electlayercombitrans[i] = new TGeoCombiTrans(*electlayertrans[i],*electlayerrot);
+	mothersupplycard->AddNode(electlayer,i+1,electlayercombitrans[i]);
+ }
+ // Placing Volumes in Mother Interface Card Container
+ motherinterfacecardcontainer->AddNode(jmdconnector,1,jmdconnectorcombitrans);
+ motherinterfacecardcontainer->AddNode(electboardback,1,electboardbackcombitrans);
+ for(Int_t i=0; i<2; i++){
+	motherinterfacecardcontainer->AddNode(electlayer,i+1,electlayercombitrans[i]);
+ }
+ /////////////////////////////////////////////////////////////
+ // Generation of Card Interface Container
+ /////////////////////////////////////////////////////////////
+ Double_t stiffenertransx = fgkEndCapKaptonFoilWidth-fgkEndCapStiffenerWidth
+						  - fgkEndCapCardJMDConnectorLength[0]
+						  - fgkEndCapInterfaceCardBThickness
+						  - 9.*fgkEndCapStripConnectionThickness
+						  - 8.*fgkEndCapCardElectBoardBackThickness;
+ const Int_t kcardinterfacecontainervertexnumber = 14;
+ Double_t xcardinterfacecontainervertex[kcardinterfacecontainervertexnumber];
+ Double_t ycardinterfacecontainervertex[kcardinterfacecontainervertexnumber];
+ xcardinterfacecontainervertex[0]  =-6.5*fgkEndCapCardElectBoardBackThickness
+								   - 7.0*fgkEndCapStripConnectionThickness;
+ xcardinterfacecontainervertex[1]  = xcardinterfacecontainervertex[0];
+ xcardinterfacecontainervertex[2]  = xcardinterfacecontainervertex[1]
+								   + fgkEndCapStripConnectionThickness
+								   - fgkEndCapCardElectBoardLayerThickness
+								   - fgkEndCapCardCableConnectorWidth[0];
+ xcardinterfacecontainervertex[3]  = xcardinterfacecontainervertex[2];
+ xcardinterfacecontainervertex[4]  = xcardinterfacecontainervertex[1];
+ xcardinterfacecontainervertex[5]  = xcardinterfacecontainervertex[4];
+ xcardinterfacecontainervertex[6]  = 1.5*fgkEndCapCardElectBoardBackThickness
+								   + 2.0*fgkEndCapStripConnectionThickness;
+ xcardinterfacecontainervertex[7]  = xcardinterfacecontainervertex[6];
+ xcardinterfacecontainervertex[8]  = xcardinterfacecontainervertex[7]
+								   + fgkEndCapInterfaceCardBThickness;
+ xcardinterfacecontainervertex[9]  = xcardinterfacecontainervertex[8];
+ xcardinterfacecontainervertex[10] = xcardinterfacecontainervertex[9]
+								   + fgkEndCapInterfaceElectBoardCardBThickness;
+ xcardinterfacecontainervertex[11] = xcardinterfacecontainervertex[10];
+ xcardinterfacecontainervertex[12] = xcardinterfacecontainervertex[11]
+                                   - fgkEndCapInterfaceElectBoardCardBThickness
+								   + fgkEndCapCardJMDConnectorLength[0]
+								   + stiffenertransx+fgkEndCapStiffenerWidth;
+ xcardinterfacecontainervertex[13] = xcardinterfacecontainervertex[12];								   
+
+ ycardinterfacecontainervertex[0]  = 0.;
+ ycardinterfacecontainervertex[1]  = fgkEndCapCardElectBoardLayerWidth[1]
+								   + fgkEndCapCardJMDConnectorWidth[0]
+								   + fgkEndCapCardJMDConnectorWidth[1];
+ ycardinterfacecontainervertex[2]  = ycardinterfacecontainervertex[1];
+ ycardinterfacecontainervertex[3]  = fgkEndCapCardElectBoardBackWidth[0]
+								   - fgkEndCapStripConnectionWidth;
+ ycardinterfacecontainervertex[4]  = ycardinterfacecontainervertex[3];
+ ycardinterfacecontainervertex[5]  = fgkEndCapCardElectBoardBackWidth[0];
+ ycardinterfacecontainervertex[6]  = ycardinterfacecontainervertex[5];
+ ycardinterfacecontainervertex[7]  = fgkEndCapInterfaceCardBWidth[0]
+								   + fgkEndCapInterfaceCardBWidth[1]
+								   + fgkEndCapInterfaceCardBWidth[2];
+ ycardinterfacecontainervertex[8]  = ycardinterfacecontainervertex[7];
+ ycardinterfacecontainervertex[9]  = yelectboardcardBvertex[3];
+ ycardinterfacecontainervertex[10] = ycardinterfacecontainervertex[9];
+ ycardinterfacecontainervertex[11] = ycardinterfacecontainervertex[1];
+ ycardinterfacecontainervertex[12] = ycardinterfacecontainervertex[11];
+ ycardinterfacecontainervertex[13] = ycardinterfacecontainervertex[0];
+ 
+ TGeoXtru* interfacecardmothershape = new TGeoXtru(2);
+ interfacecardmothershape->DefinePolygon(kcardinterfacecontainervertexnumber,
+										  xcardinterfacecontainervertex,
+										  ycardinterfacecontainervertex);
+ interfacecardmothershape->DefineSection(0,-1.e-15-0.5*(fgkEndCapStiffenerLength
+									   -    fgkEndCapCardElectBoardBackLength[0]));
+ interfacecardmothershape->DefineSection(1,0.5*(fgkEndCapStiffenerLength
+									   +    fgkEndCapCardElectBoardBackLength[0]));
+ TGeoVolume** cardinterfacecontainer;
+ cardinterfacecontainer = new TGeoVolume*[4];
+ cardinterfacecontainer[0] = new TGeoVolume("EndCapCardsContainerLayer5Sx",
+											interfacecardmothershape,fSSDAir); 
+ cardinterfacecontainer[1] = new TGeoVolume("EndCapCardsContainerLayer5Dx",
+											interfacecardmothershape,fSSDAir); 
+ cardinterfacecontainer[2] = new TGeoVolume("EndCapCardsContainerLayer6Sx",
+											interfacecardmothershape,fSSDAir); 
+ cardinterfacecontainer[3] = new TGeoVolume("EndCapCardsContainerLayer6Dx",
+											interfacecardmothershape,fSSDAir); 
+ /////////////////////////////////
+ // cardinterfacecontainer[0]: Card Container End Cap Layer 5 Bellegarde Side
+ // cardinterfacecontainer[1]: Card Container End Cap Layer 5 Gex Side
+ // cardinterfacecontainer[2]: Card Container End Cap Layer 6 Bellegarde Side
+ // cardinterfacecontainer[3]: Card Container End Cap Layer 6 Gex Side
+ /////////////////////////////////
+ TGeoRotation* endcapstripconnectionrot[2];
+ for(Int_t i=0; i<2; i++) endcapstripconnectionrot[i] = new TGeoRotation();
+ endcapstripconnectionrot[0]->SetAngles(0.,90.,0.);
+ endcapstripconnectionrot[1]->SetAngles(90.,90.,-90.);
+ TGeoHMatrix* endcapstripconnectionmatrix = new TGeoHMatrix((*endcapstripconnectionrot[1])
+									*				  (*endcapstripconnectionrot[0]));
+ TGeoTranslation* endcapstripconnectiontrans = new TGeoTranslation();
+ endcapstripconnectiontrans->SetTranslation(-endcapstripconnectionshape->GetDY()
+											-0.5*fgkEndCapCardElectBoardBackThickness,
+											 fgkEndCapCardElectBoardBackWidth[0]
+											-endcapstripconnectionshape->GetDZ(),
+											 0.5*fgkEndCapCardElectBoardBackLength[0]);
+ endcapstripconnectionmatrix->MultiplyLeft(endcapstripconnectiontrans);
+ TGeoTranslation* cardinterfacetrans[9];
+ TGeoHMatrix* cardinterfacematrix[9]; 
+ for(Int_t i=0; i<7; i++){ 
+	cardinterfacetrans[i] = new TGeoTranslation(-i*(fgkEndCapStripConnectionThickness
+						  +							fgkEndCapCardElectBoardBackThickness),
+												0.0,0.0);  
+	cardinterfacematrix[i] = new TGeoHMatrix((*cardinterfacetrans[i])
+						   *				 (*endcapstripconnectionmatrix));
+ }
+ cardinterfacetrans[7] = new TGeoTranslation((fgkEndCapStripConnectionThickness
+						  +						fgkEndCapCardElectBoardBackThickness),
+												0.0,0.0);  
+ cardinterfacematrix[7] = new TGeoHMatrix((*cardinterfacetrans[7])
+						*				  (*endcapstripconnectionmatrix));
+ cardinterfacetrans[8] = new TGeoTranslation(2.*(fgkEndCapStripConnectionThickness
+						  +						fgkEndCapCardElectBoardBackThickness),
+												0.0,0.0);  
+ cardinterfacematrix[8] = new TGeoHMatrix((*cardinterfacetrans[8])
+						*				  (*endcapstripconnectionmatrix));
+
+ for(Int_t i=0; i<4; i++){
+	cardinterfacecontainer[i]->AddNode(endcapstripconnection,1,
+									   cardinterfacematrix[7]);				
+	cardinterfacecontainer[i]->AddNode(endcapstripconnection,2,
+									   cardinterfacematrix[8]);				
+ }
+ TGeoTranslation* mothersupplycardtrans = 
+					new TGeoTranslation(-0.5*(fgkEndCapCardElectBoardBackThickness
+										+ 2.*fgkEndCapCardJMDConnectorLength[0]
+										+ 2.*fgkEndCapCardElectBoardLayerThickness),0.0,0.0);
+ TGeoHMatrix* mothersupplycardmatrix[7];
+ Int_t index[4] = {1,1,1,1};
+ for(Int_t i=0; i<7; i++){
+	mothersupplycardmatrix[i] = new TGeoHMatrix((*cardinterfacetrans[i])
+							*				  (*mothersupplycardtrans));
+	for(Int_t j=0; j<4; j++){
+		switch(j){
+			case 0: //Layer5 EndCap Left Side  
+				cardinterfacecontainer[j]->AddNode(endcapstripconnection,i+3,
+												   cardinterfacematrix[i]);				
+				if(i!=0){
+					cardinterfacecontainer[j]->AddNode(mothersupplycard,index[j],
+													   mothersupplycardmatrix[i]);			
+					index[j]++;
+
+				}
+			break;
+			case 1: //Layer5 EndCap Rigth Side  
+				cardinterfacecontainer[j]->AddNode(endcapstripconnection,i+3,
+												   cardinterfacematrix[i]);			
+				if(i>0&&i<6){
+					cardinterfacecontainer[j]->AddNode(mothersupplycard,index[j],
+													   mothersupplycardmatrix[i]);			
+					index[j]++;
+				}
+			break;
+			case 2: //Layer6 EndCap Left Side  
+				cardinterfacecontainer[j]->AddNode(endcapstripconnection,i+3,
+												   cardinterfacematrix[i]);				
+				if(i!=6){
+					cardinterfacecontainer[j]->AddNode(mothersupplycard,index[j],
+													   mothersupplycardmatrix[i]);			
+					index[j]++;
+				}
+			break;
+			case 3: //Layer6 EndCap Right Side  
+				cardinterfacecontainer[j]->AddNode(endcapstripconnection,i+3,
+												   cardinterfacematrix[i]);				
+				cardinterfacecontainer[j]->AddNode(mothersupplycard,index[j],
+												   mothersupplycardmatrix[i]);			
+				index[j]++;
+			break;
+		}
+	}
+ }
+ // Positioning Interface 
+ TGeoTranslation* motherinterfacecardtrans = 
+		new TGeoTranslation( -fgkEndCapCardJMDConnectorLength[0]
+							 +0.5*fgkEndCapCardElectBoardBackThickness
+							 -fgkEndCapCardElectBoardLayerThickness
+							 +fgkEndCapStripConnectionThickness,0.,0.);
+ for(Int_t i=0; i<4; i++) cardinterfacecontainer[i]->AddNode(
+					motherinterfacecardcontainer,i+1,motherinterfacecardtrans);
+ // Positioning Interface Card B 
+ TGeoTranslation* interfacecardBmothertrans = 
+					new TGeoTranslation(0.5 * fgkEndCapCardElectBoardBackThickness
+									        + 2.*fgkEndCapStripConnectionThickness
+											+ fgkEndCapCardElectBoardBackThickness,0.,
+									   -0.5 * (fgkEndCapInterfaceCardBLength[1]
+											-  fgkEndCapCardElectBoardBackLength[0])); 				
+ for(Int_t i=0; i<4; i++) cardinterfacecontainer[i]->AddNode(interfacecardBmother,1,
+															 interfacecardBmothertrans);
+ // Positioning Stiffener 
+ TGeoTranslation* endcapstiffenertrans = 
+						new TGeoTranslation(1.5*fgkEndCapCardElectBoardBackThickness
+									   +    2.0*fgkEndCapStripConnectionThickness
+									   +    fgkEndCapInterfaceCardBThickness
+									   +    fgkEndCapCardJMDConnectorLength[0]
+									   +    stiffenertransx
+									   +    endcapstiffenershape->GetDX(),endcapstiffenershape->GetDY(),
+											endcapstiffenershape->GetDZ()
+									   -    0.5*(fgkEndCapStiffenerLength
+									   -    fgkEndCapCardElectBoardBackLength[0]));
+ for(Int_t i=0; i<4; i++) cardinterfacecontainer[i]->AddNode(endcapstiffener,1,endcapstiffenertrans);  
+ /////////////////////////////////////////////////////////////
+ // Deallocating memory
+ /////////////////////////////////////////////////////////////
+ delete interfacecardBrot;
+ delete interfacecardBtrans;
+ delete electboardcardBtrans;
+ delete electboardcardBrot; 
+ delete jmdconnectorcardBrot;
+ for(Int_t i=0; i<3; i++) delete jmdconnectorcardBtrans[i];
+ delete jmdconnectorot;
+ delete jmdconnectortrans[1];
+ for(Int_t i=0; i<2; i++) delete cableconnectorot[i];
+ delete cableconnectorcombitrans;
+ delete electboardbacktrans;
+ delete electboardbackrot;
+ delete electlayerrot;
+ for(Int_t i=0; i<2; i++) delete electlayertrans[i];
+ for(Int_t i=0; i<2; i++) delete endcapstripconnectionrot[i];
+ delete mothersupplycardtrans;
+ for(Int_t i=0; i<7; i++) delete cardinterfacetrans[i];
+ /////////////////////////////////////////////////////////////
+ return cardinterfacecontainer;
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume** AliITSv11GeometrySSD::GetEndCapAssembly(){ 
+  /////////////////////////////////////////////////////////////
+  // Method returning EndCap Mother Volume
+  /////////////////////////////////////////////////////////////
+  const Int_t kendcapcoverplatesmallholenumber = 9;
+  Double_t endcapmotherorigin[3];
+  endcapmotherorigin[0] = -fgkEndCapCoverPlateLength[0]
+						+  0.5 *(fgkEndCapCoverPlateLength[3]
+					    +  2.0 * fgkEndCapCoverPlateLength[2]);
+  endcapmotherorigin[1] = - 0.5 * (fgkEndCapCoverPlateWidth[0]
+					  -			 fgkEndCapCoverPlateWidth[2]
+					  -	  (kendcapcoverplatesmallholenumber-1)
+					  *	   fgkEndCapCoverPlateSmallHoleSeparation[2])
+					  +  0.5*(fgkEndCapSideCoverLength[2]
+					  +		  fgkEndCapCoverPlateWidth[1]
+					  -       fgkEndCapCoverPlateWidth[0])
+					  -      (fgkEndCapCoverPlateWidth[1]
+					  -       fgkEndCapCoverPlateWidth[0]);
+  endcapmotherorigin[2] = 0.5*fgkEndCapCoverPlateThickness
+						+ 2.*fgkEndCapCoolingTubeRadiusMax
+						- 0.5*(2.*fgkEndCapCoolingTubeRadiusMax
+						+      fgkEndCapSideCoverWidth[1]
+						+      fgkEndCapSideCoverThickness
+						+      fgkEndCapKaptonFoilThickness);
+  TGeoBBox* endcapmothershape = new TGeoBBox(0.5*(fgkEndCapCoverPlateLength[3]
+							  +				 2.0* fgkEndCapCoverPlateLength[2]
+							  +              2.0* fgkEndCapSideCoverThickness),
+							                 0.5* (fgkEndCapSideCoverLength[2]
+							  +                    fgkEndCapCoverPlateWidth[1]
+							  -					   fgkEndCapCoverPlateWidth[0]),
+											 0.5* (2.*fgkEndCapCoolingTubeRadiusMax
+						      +					   fgkEndCapSideCoverWidth[1]
+							  +					  fgkEndCapSideCoverThickness
+						      +					  fgkEndCapKaptonFoilThickness),
+											 endcapmotherorigin);
+  TGeoVolume** endcapassembly;  
+  endcapassembly = new TGeoVolume*[4];
+  endcapassembly[0] = new TGeoVolume("EndCapContainerLayer5Sx",
+											endcapmothershape,fSSDAir); 
+  endcapassembly[1] = new TGeoVolume("EndCapContainerLayer5Dx",
+											endcapmothershape,fSSDAir); 
+  endcapassembly[2] = new TGeoVolume("EndCapContainerLayer6Sx",
+											endcapmothershape,fSSDAir); 
+  endcapassembly[3] = new TGeoVolume("EndCapContainerLayer6Dx",
+											endcapmothershape,fSSDAir); 
+ /////////////////////////////////
+ // endcapassembly[0]:  Container End Cap Layer 5 Bellegarde Side
+ // endcapassembly[1]:  Container End Cap Layer 5 Gex Side
+ // endcapassembly[2]:  Container End Cap Layer 6 Bellegarde Side
+ // endcapassembly[3]:  Container End Cap Layer 6 Gex Side
+ /////////////////////////////////
+  /////////////////////////////////////////////////////
+  // Placing Endcap Cover Plate
+  /////////////////////////////////////////////////////
+  TGeoVolume* endcapcoverplate = GetEndCapCoverPlate();
+  TGeoRotation* endcapcoverplaterot = new TGeoRotation();
+  endcapcoverplaterot->SetAngles(90.0,180.0,-90.0);
+  TGeoCombiTrans* endcapcoverplatecombitrans = 
+						  new TGeoCombiTrans(-0.5*fgkEndCapCoverPlateLength[1],0.,0.,
+											 endcapcoverplaterot);
+  TGeoTranslation* endcapcoverplatetrans = 
+						  new TGeoTranslation(1.5*fgkEndCapCoverPlateLength[1],0.,0.);
+  TGeoHMatrix* endcapcoverplatematrix = 
+						  new TGeoHMatrix((*endcapcoverplatetrans)
+									  *	  (*endcapcoverplatecombitrans));
+  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapcoverplate,1,endcapcoverplatematrix);
+  /////////////////////////////////////////////////////
+  // Placing Endcap Side Cover
+  /////////////////////////////////////////////////////
+  TGeoVolume* endcapsidecover = GetEndCapSideCover();
+  TGeoRotation* endcapsidecoverot[2];
+  TGeoCombiTrans* endcapsidecovercombitrans[3];
+  for(Int_t i=0; i<2; i++) endcapsidecoverot[i] = new TGeoRotation();
+  endcapsidecoverot[0]->SetAngles(-90.,0.,0.);
+  endcapsidecovercombitrans[0] = new TGeoCombiTrans(0.0,
+											- 0.5*(fgkEndCapCoverPlateWidth[0]
+											- fgkEndCapCoverPlateWidth[2]
+										    - (kendcapcoverplatesmallholenumber-1)
+											* fgkEndCapCoverPlateSmallHoleSeparation[2])
+											+ 0.*fgkEndCapCoverPlateWidth[0]
+											+ fgkEndCapSideCoverLength[2],
+											  0.5*(fgkEndCapSideCoverThickness
+											+ fgkEndCapCoverPlateThickness)
+											- 0.5*fgkEndCapCoverPlateThickness,
+											  endcapsidecoverot[0]);
+  endcapsidecoverot[1]->SetAngles(90.,-90.,-90.); 
+  endcapsidecovercombitrans[1] = new TGeoCombiTrans(-fgkEndCapCoverPlateLength[0],0.0,
+													0.5*fgkEndCapCoverPlateThickness
+													-fgkEndCapSideCoverWidth[1],
+													endcapsidecoverot[1]);
+  endcapsidecovercombitrans[2] = new TGeoCombiTrans(-fgkEndCapCoverPlateLength[0]
+													+fgkEndCapCoverPlateLength[3]
+													+2.*fgkEndCapCoverPlateLength[2]
+													+fgkEndCapSideCoverThickness,0.0,
+													0.5*fgkEndCapCoverPlateThickness
+													-fgkEndCapSideCoverWidth[1],
+													endcapsidecoverot[1]);
+  TGeoHMatrix* endcapsidecovermatrix[2];
+  for(Int_t i=0; i<2; i++){
+   endcapsidecovermatrix[i] = new TGeoHMatrix((*endcapsidecovercombitrans[i+1])
+							*				  (*endcapsidecovercombitrans[0]));
+	for(Int_t k=0; k<4; k++) endcapassembly[k]->AddNode(endcapsidecover,i+1,
+														endcapsidecovermatrix[i]);
+  }
+  /////////////////////////////////////////////////////
+  // Placing Endcap Cooling Tube
+  /////////////////////////////////////////////////////
+  TGeoVolume* endcapcoolingtube = GetEndCapCoolingTube();
+  TGeoRotation* endcapcoolingtuberot = new TGeoRotation();
+  endcapcoolingtuberot->SetAngles(0.,180.,0.); 
+  TGeoCombiTrans* endcapccolingtubecombitrans 
+						= new TGeoCombiTrans(-0.5*(fgkEndCapCoolingTubeAxialRadius[0]
+						+ fgkEndCapCoolingTubeAxialRadius[1])
+						+ fgkEndCapCoverPlateLength[0]+fgkEndCapCoverPlateLength[1]
+						- fgkEndCapCoolingTubeToCoverSide,
+						  fgkEndCapCoolingTubeAxialRadius[0],fgkEndCapCoolingTubeRadiusMax
+						+ 0.5*fgkEndCapCoverPlateThickness,endcapcoolingtuberot);
+  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapcoolingtube,1,
+													  endcapccolingtubecombitrans);
+  /////////////////////////////////////////////////////
+  // Placing Screws 
+  /////////////////////////////////////////////////////
+  Double_t screwcoverplateradius[2] = {fgkEndCapCoverPlateScrewRadiusMax,
+									   fgkEndCapCoverPlateScrewRadiusMin};
+  Int_t screwcoverplatedgesnumber[2] = {20,20};
+  Double_t screwcoverplatesection[2] = {0.5*fgkEndCapCoverPlateThickness,
+										fgkEndCapCoverPlateThickness
+									 +  fgkEndCapCoolingTubeRadiusMax};
+  TGeoXtru* screwcoverplateshape = GetScrewShape(screwcoverplateradius,
+												 screwcoverplatedgesnumber,
+												 screwcoverplatesection);
+  TGeoVolume* screwcoverplate = new TGeoVolume("EndCapScrewCoverPlate",
+											   screwcoverplateshape,
+											   fSSDCoolingTubePhynox); 
+  screwcoverplate->SetLineColor(12);
+  Double_t transx[4] = {0,
+						fgkEndCapCoverPlateSmallHoleSeparation[0],
+						fgkEndCapCoverPlateSmallHoleSeparation[0]
+					 +  fgkEndCapCoverPlateSmallHoleSeparation[1],
+					 2.*fgkEndCapCoverPlateSmallHoleSeparation[0]
+					 +  fgkEndCapCoverPlateSmallHoleSeparation[1]};
+  const Int_t kendcapcoverplatescrewnumber[2] = {4,9}; 
+//  TGeoTranslation** endcapcoverplatescrewtrans[kendcapcoverplatescrewnumber[0]]; 
+  TGeoTranslation*** endcapcoverplatescrewtrans;
+  endcapcoverplatescrewtrans = new TGeoTranslation**[kendcapcoverplatescrewnumber[0]]; 
+  Int_t index = 0;
+  for(Int_t i=0; i<kendcapcoverplatescrewnumber[0]; i++){
+	endcapcoverplatescrewtrans[i] = 
+					new TGeoTranslation*[kendcapcoverplatescrewnumber[1]];
+    for(Int_t j=0; j<kendcapcoverplatescrewnumber[1]; j++){
+		index = kendcapcoverplatescrewnumber[1]*i+j+1;
+        if(index==1||index==9||index==28||index==36){
+			endcapcoverplatescrewtrans[i][j] = 
+				new TGeoTranslation(transx[i],
+									j*fgkEndCapCoverPlateSmallHoleSeparation[2],
+									fgkEndCapSideCoverThickness);
+		}
+		else{
+			endcapcoverplatescrewtrans[i][j] = 
+				new TGeoTranslation(transx[i],
+									j*fgkEndCapCoverPlateSmallHoleSeparation[2],
+									0.);
+		}
+	    if(index!=19) 
+		for(Int_t k=0; k<4; k++) endcapassembly[k]->AddNode(screwcoverplate,index,
+											  endcapcoverplatescrewtrans[i][j]);
+	}
+  }
+  /////////////////////////////////////////////////////
+  // Placing Cover Plate Clips 
+  /////////////////////////////////////////////////////
+  TGeoBBox* endcapcoverplateclipshape = new TGeoBBox(0.5*fgkEndCapCoverPlateClipLength,
+													 0.5*fgkEndCapCoverPlateClipWidth,
+													 0.5*fgkEndCapSideCoverThickness);
+  TGeoVolume* endcapcoverplateclip = new TGeoVolume("EndCapCoverPlateUpClip",
+													endcapcoverplateclipshape,
+													fSSDCoolingTubePhynox);
+  TGeoBBox* endcapcoverplatedownclipshape = new TGeoBBox(0.5*fgkEndCapCoverPlateDownClipLength,
+													 0.5*fgkEndCapCoverPlateDownClipWidth,
+													 0.5*fgkEndCapSideCoverThickness);
+  TGeoVolume* endcapcoverplatedownclip = new TGeoVolume("EndCapCoverPlateDownClip",
+													endcapcoverplatedownclipshape,
+													fSSDCoolingTubePhynox);
+  TGeoTranslation* endcapcoverplatecliptrans[4];
+  endcapcoverplatecliptrans[0] = new TGeoTranslation(0.5*fgkEndCapCoverPlateClipLength
+							   -                     fgkEndCapCoverPlateLength[0]
+							   -                     fgkEndCapSideCoverThickness,
+													 0.0,
+    												 0.5*(fgkEndCapSideCoverThickness
+							   +						  fgkEndCapCoverPlateThickness));
+  endcapcoverplatecliptrans[1] = new TGeoTranslation(0.5*fgkEndCapCoverPlateClipLength
+							   -                     fgkEndCapCoverPlateLength[0]
+							   -                     fgkEndCapSideCoverThickness,
+													 (kendcapcoverplatescrewnumber[1]-1)
+							   *					 fgkEndCapSideCoverWidth[5],
+    												 0.5*(fgkEndCapSideCoverThickness
+							   +						  fgkEndCapCoverPlateThickness));
+  endcapcoverplatecliptrans[2] = new TGeoTranslation(0.5*fgkEndCapCoverPlateClipLength
+							   -                     fgkEndCapCoverPlateLength[0]
+							   +					 fgkEndCapCoverPlateLength[1]
+							   +				  2.*fgkEndCapCoverPlateLength[0]
+							   -					 fgkEndCapCoverPlateClipLength
+							   +				     fgkEndCapSideCoverThickness,
+													 0.0,
+    												 0.5*(fgkEndCapSideCoverThickness
+							   +						  fgkEndCapCoverPlateThickness));
+  endcapcoverplatecliptrans[3] = new TGeoTranslation(0.5*fgkEndCapCoverPlateClipLength
+							   -                     fgkEndCapCoverPlateLength[0]
+							   +					 fgkEndCapCoverPlateLength[1]
+							   +				  2.*fgkEndCapCoverPlateLength[0]
+							   -					 fgkEndCapCoverPlateClipLength
+							   +				     fgkEndCapSideCoverThickness,
+													 (kendcapcoverplatescrewnumber[1]-1)
+							   *					 fgkEndCapSideCoverWidth[5],
+    												 0.5*(fgkEndCapSideCoverThickness
+							   +						  fgkEndCapCoverPlateThickness));
+  endcapcoverplateclip->SetLineColor(fColorPhynox);
+  endcapcoverplatedownclip->SetLineColor(fColorPhynox);  
+  for(Int_t i=0; i<4; i++) 
+	for(Int_t j=0; j<4; j++) endcapassembly[j]->AddNode(endcapcoverplateclip,i+1,
+												   endcapcoverplatecliptrans[i]);  
+  TGeoTranslation* endcapcoverplatedowncliptrans[4];
+  endcapcoverplatedowncliptrans[0] = new TGeoTranslation(0.5*fgkEndCapCoverPlateDownClipLength
+								   -                     fgkEndCapCoverPlateLength[0]
+								   -                     fgkEndCapSideCoverThickness,
+								                    0.5*(fgkEndCapCoverPlateDownClipWidth
+								   - 				     fgkEndCapCoverPlateClipWidth),
+													0.5*(fgkEndCapSideCoverThickness
+							       + 					 fgkEndCapCoverPlateThickness)
+								   -                     fgkEndCapSideCoverWidth[1]
+								   -					 fgkEndCapSideCoverThickness);
+  endcapcoverplatedowncliptrans[1] = new TGeoTranslation(0.5*fgkEndCapCoverPlateDownClipLength
+								   -                     fgkEndCapCoverPlateLength[0]
+								   -                     fgkEndCapSideCoverThickness,
+								                    0.5*(fgkEndCapCoverPlateDownClipWidth
+								   - 				     fgkEndCapCoverPlateClipWidth)
+								   +				fgkEndCapSideCoverLength[2]
+								   -				fgkEndCapCoverPlateDownClipWidth,
+													0.5*(fgkEndCapSideCoverThickness
+							       + 					 fgkEndCapCoverPlateThickness)
+								   -                     fgkEndCapSideCoverWidth[1]
+								   -					 fgkEndCapSideCoverThickness);
+  endcapcoverplatedowncliptrans[2] = new TGeoTranslation(0.5*fgkEndCapCoverPlateDownClipLength
+								   -                     fgkEndCapCoverPlateLength[0]
+								   +                     fgkEndCapSideCoverThickness
+								   +                     fgkEndCapCoverPlateLength[1]
+								   +                 2.0*fgkEndCapCoverPlateLength[0]
+								   -                     fgkEndCapCoverPlateDownClipLength,
+								                    0.5*(fgkEndCapCoverPlateDownClipWidth
+								   - 				     fgkEndCapCoverPlateClipWidth),
+													0.5*(fgkEndCapSideCoverThickness
+							       + 					 fgkEndCapCoverPlateThickness)
+								   -                     fgkEndCapSideCoverWidth[1]
+								   -					 fgkEndCapSideCoverThickness);
+  endcapcoverplatedowncliptrans[3] = new TGeoTranslation(0.5*fgkEndCapCoverPlateDownClipLength
+								   -                     fgkEndCapCoverPlateLength[0]
+								   +                     fgkEndCapSideCoverThickness
+								   +                     fgkEndCapCoverPlateLength[1]
+								   +                 2.0*fgkEndCapCoverPlateLength[0]
+								   -                     fgkEndCapCoverPlateDownClipLength,
+								                    0.5*(fgkEndCapCoverPlateDownClipWidth
+								   - 				     fgkEndCapCoverPlateClipWidth)
+								   +				     fgkEndCapSideCoverLength[2]
+								   -				     fgkEndCapCoverPlateDownClipWidth,
+													0.5*(fgkEndCapSideCoverThickness
+							       + 					 fgkEndCapCoverPlateThickness)
+								   -                     fgkEndCapSideCoverWidth[1]
+								   -					 fgkEndCapSideCoverThickness);
+  for(Int_t i=0; i<4; i++)
+	for(Int_t k=0; k<4; k++) endcapassembly[k]->AddNode(endcapcoverplatedownclip,i+1,
+												   endcapcoverplatedowncliptrans[i]);
+  /////////////////////////////////////////////////////
+  // Placing Kapton Foil
+  /////////////////////////////////////////////////////
+  TGeoBBox* endcapkaptonfoilshape = new TGeoBBox(0.5*fgkEndCapKaptonFoilLength,
+												 0.5*fgkEndCapKaptonFoilWidth,
+												 0.5*fgkEndCapKaptonFoilThickness); 
+  TGeoVolume* endcapkaptonfoil = new TGeoVolume("EndCapKaptonFoil",
+												endcapkaptonfoilshape,
+												fSSDKaptonFlexMedium);
+  endcapkaptonfoil->SetLineColor(8);
+  TGeoTranslation* endcapkaptonfoiltrans = new TGeoTranslation(0.5*fgkEndCapCoverPlateLength[1],
+															   0.5*fgkEndCapKaptonFoilWidth
+										 -                     0.5*fgkEndCapCoverPlateClipWidth,
+															   0.5*fgkEndCapCoverPlateThickness
+										 -                     0.5*fgkEndCapKaptonFoilThickness
+									     -                     fgkEndCapSideCoverWidth[1]
+										 -                     fgkEndCapSideCoverThickness);
+  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapkaptonfoil,1,endcapkaptonfoiltrans);
+  /////////////////////////////////////////////////////////////
+  // Placing Electronic Tubes
+  /////////////////////////////////////////////////////////////
+  Double_t endcapeffectivecableswidth[2] = {fgkEndCapKaptonFoilWidth
+									     - fgkEndCapInterfaceCardBThickness
+									     - 9.*fgkEndCapStripConnectionThickness
+									     - 8.*fgkEndCapCardElectBoardBackThickness,
+									       fgkEndCapKaptonFoilWidth
+									     - fgkEndCapInterfaceCardBThickness
+									     - 9.*fgkEndCapStripConnectionThickness
+									     - 8.*fgkEndCapCardElectBoardBackThickness
+										 - fgkEndCapInterfaceElectBoardCardBThickness};
+  TGeoVolume* endcapeffectivecables[2];
+  endcapeffectivecables[0] = GetEndCapEffectiveCables(fgkEndCapEffectiveCableRadiusMin,
+											 fgkEndCapEffectiveCableRadiusMax,
+											 endcapeffectivecableswidth[0],
+											 10,"EndCapEffectiveCables1"); 
+  endcapeffectivecables[1] = GetEndCapEffectiveCables(fgkEndCapEffectiveCableRadiusMin,
+											 fgkEndCapEffectiveCableRadiusMax,
+											 endcapeffectivecableswidth[1],
+											 25,"EndCapEffectiveCables2"); 
+  TGeoRotation* endcapeffectivecablesrot = new TGeoRotation();
+  TGeoTranslation* endcapeffectivecablestrans[2];
+  endcapeffectivecablestrans[0] = new TGeoTranslation(0.5*fgkEndCapCoverPlateLength[1],
+					  -							   0.5*endcapeffectivecableswidth[0]
+					  -                            0.5*(fgkEndCapCoverPlateWidth[0]
+					  -								  fgkEndCapCoverPlateWidth[2]
+					  -						(kendcapcoverplatesmallholenumber-1)
+					  *						fgkEndCapCoverPlateSmallHoleSeparation[2])
+					  +						fgkEndCapSideCoverLength[2],
+					  -                     0.5*fgkEndCapCoverPlateThickness
+					  -						(fgkEndCapCardElectBoardBackWidth[0]
+					  -						 fgkEndCapInterfaceCardBWidth[0]
+					  -						 fgkEndCapInterfaceCardBWidth[1]));
+  endcapeffectivecablestrans[1] = new TGeoTranslation(0.5*fgkEndCapCoverPlateLength[1],
+					  -							   0.5*endcapeffectivecableswidth[1]
+					  -                            0.5*(fgkEndCapCoverPlateWidth[0]
+					  -								  fgkEndCapCoverPlateWidth[2]
+					  -						(kendcapcoverplatesmallholenumber-1)
+					  *						fgkEndCapCoverPlateSmallHoleSeparation[2])
+					  +	  				    fgkEndCapSideCoverLength[2],
+					  -                     0.5*fgkEndCapCoverPlateThickness
+					  -						(fgkEndCapCardElectBoardBackWidth[0]
+					  -						 fgkEndCapInterfaceCardBWidth[0])
+					  -                     0.5*fgkEndCapInterfaceCardBWidth[2]);
+  endcapeffectivecablesrot->SetAngles(0.,90.,0.);
+  TGeoCombiTrans* endcapeffectivecablescombitrans[2];
+  endcapeffectivecablescombitrans[0]  = new TGeoCombiTrans(*endcapeffectivecablestrans[0],
+														   *endcapeffectivecablesrot);
+  endcapeffectivecablescombitrans[1]  = new TGeoCombiTrans(*endcapeffectivecablestrans[1],
+														   *endcapeffectivecablesrot);
+  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapeffectivecables[0],1,
+													  endcapeffectivecablescombitrans[0]);
+  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapeffectivecables[1],1,
+													  endcapeffectivecablescombitrans[1]);
+  /////////////////////////////////////////////////////////////
+  // Placing End Cap Cards
+  /////////////////////////////////////////////////////////////
+  TGeoVolume** endcapcards = GetEndCapCards();
+  TGeoRotation* endcapcardsrot[2];
+  for(Int_t i=0; i<2; i++) endcapcardsrot[i] = new TGeoRotation();
+  endcapcardsrot[0]->SetAngles(90.,0.,0.); 
+  TGeoTranslation* endcapcardstrans[2]; 
+  endcapcardstrans[0] = new TGeoTranslation(0.,0.,0.5*(fgkEndCapInterfaceCardBLength[1]
+											-  fgkEndCapCardElectBoardBackLength[0]));
+  TGeoCombiTrans* endcapcardscombitrans = new TGeoCombiTrans(*endcapcardstrans[0],*endcapcardsrot[0]);
+  endcapcardsrot[1]->SetAngles(90.,90.,-90.); 
+  TGeoHMatrix* endcapcardsmatrix[2];
+  endcapcardsmatrix[0] = new TGeoHMatrix((*endcapcardsrot[1])*(*endcapcardscombitrans));
+  Double_t stiffenertransx = fgkEndCapKaptonFoilWidth-fgkEndCapStiffenerWidth
+						  - fgkEndCapCardJMDConnectorLength[0]
+						  - fgkEndCapInterfaceCardBThickness
+						  - 9.*fgkEndCapStripConnectionThickness
+						  - 8.*fgkEndCapCardElectBoardBackThickness;  
+  endcapcardstrans[1] = new TGeoTranslation(-0.5*fgkEndCapStiffenerLength
+					  -						fgkEndCapCoverPlateLength[0]
+					  + 0.5 *              (fgkEndCapCoverPlateLength[3]
+					  + 2.0 *				fgkEndCapCoverPlateLength[2]),	
+					  -							stiffenertransx-fgkEndCapStiffenerWidth
+					  -								  fgkEndCapCardJMDConnectorLength[0]
+					  -								  fgkEndCapInterfaceCardBThickness
+					  -	2.0 *						  fgkEndCapStripConnectionThickness
+					  - 1.5 *					      fgkEndCapInterfaceCardBThickness
+					  - 0.5 *						 (fgkEndCapCoverPlateWidth[0]
+					  -								  fgkEndCapCoverPlateWidth[2]
+					  -						(kendcapcoverplatesmallholenumber-1)
+					  *						fgkEndCapCoverPlateSmallHoleSeparation[2])
+					  +                     fgkEndCapKaptonFoilWidth,
+      											  0.5*fgkEndCapCoverPlateThickness
+					  -							fgkEndCapSideCoverWidth[1]);
+  endcapcardsmatrix[1] = new TGeoHMatrix((*endcapcardstrans[1])*(*endcapcardsmatrix[0]));
+  for(Int_t i=0; i<4; i++) endcapassembly[i]->AddNode(endcapcards[i],1,endcapcardsmatrix[1]);
+   /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  delete endcapcoverplaterot;
+  delete endcapcoverplatecombitrans;
+  delete endcapcoverplatetrans;
+  for(Int_t i=0; i<3; i++){
+   delete endcapsidecovercombitrans[i];
+   if(i<2) delete endcapsidecoverot[i];	
+  }
+  for(Int_t i=0; i<2; i++) delete endcapcardsrot[i];
+  for(Int_t i=0; i<2; i++) delete endcapcardstrans[i];
+  delete endcapcardsmatrix[0];
+  return endcapassembly;
+ } 
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume* AliITSv11GeometrySSD::GetEndCapEffectiveCables(Double_t radiusmin, 
+															Double_t radiusmax, 
+															Double_t width, 
+															Int_t ncables,
+															char* volname){
+  /////////////////////////////////////////////////////////////
+  // Generating EndCap High Voltage Tubes 
+  /////////////////////////////////////////////////////////////
+  Double_t effectiveinneradius = TMath::Sqrt(ncables)*radiusmin;
+  Double_t effectiveouteradius = TMath::Sqrt(TMath::Power(effectiveinneradius,2.)
+							   +             TMath::Power(radiusmax,2.)
+                               -             TMath::Power(radiusmin,2.));
+  TGeoTube* effectiveinnertubeshape = new TGeoTube(0.,effectiveinneradius,0.5*width);
+  TGeoTube* effectiveoutertubeshape = new TGeoTube(effectiveinneradius,
+												   effectiveouteradius,0.5*width);
+  TGeoVolume* effectiveinnertube = new TGeoVolume("EffectiveEndCapInnerTube",
+												effectiveinnertubeshape,
+												fSSDStiffenerConnectorMedium);
+  effectiveinnertube->SetLineColor(41);
+  TGeoVolume* effectiveoutertube = new TGeoVolume("EffectiveEndCapOuterTube",
+												effectiveoutertubeshape,
+												fSSDKaptonChipCableMedium);
+  effectiveoutertube->SetLineColor(39);
+  TGeoTube* effectivemothertubeshape = new TGeoTube(0.,effectiveouteradius,0.5*width);  
+  TGeoVolume* effectivemothertube = new TGeoVolume(volname,effectivemothertubeshape,fSSDAir);
+  effectivemothertube->AddNode(effectiveinnertube,1);
+  effectivemothertube->AddNode(effectiveoutertube,1);
+  return effectivemothertube;
+ } 
+ ////////////////////////////////////////////////////////////////////////////////
+ TGeoVolume** AliITSv11GeometrySSD::EndCapSupport(){ 
+  /////////////////////////////////////////////////////////////
+  // Generating EndCap Support Layer 5 and Layer 6 
+  /////////////////////////////////////////////////////////////
+  const Int_t knedges = 5;
+  ///////////////////////////////////////////////
+  // Setting the vertices for TGeoXtru Up Volume
+  ///////////////////////////////////////////////
+  const Int_t klayernumber = 2;
+  Double_t xupvertex[klayernumber][knedges+3];
+  Double_t yupvertex[klayernumber][knedges+3];
+  Double_t upedgeangle[klayernumber] = {360./fgkSSDLay5LadderNumber,360./fgkSSDLay6LadderNumber};
+  Double_t middledgeangle[klayernumber] = {0.0,0.0};
+  Double_t middlepsi[klayernumber] = {0.0,0.0};
+  for(Int_t i=0; i<klayernumber; i++){
+	xupvertex[i][0] = -fgkEndCapSupportMiddleRadius[i]*SinD(0.5*upedgeangle[i]);
+	xupvertex[i][1] = -0.5*fgkEndCapSupportLength[i];
+	xupvertex[i][2] = -xupvertex[i][1];
+	xupvertex[i][3] = -xupvertex[i][0];
+
+	yupvertex[i][0] =  fgkEndCapSupportMiddleRadius[i]*CosD(0.5*upedgeangle[i]);
+	yupvertex[i][1] =  0.5*fgkEndCapSupportLength[i]/TanD(0.5*upedgeangle[i]);
+	yupvertex[i][2] =  yupvertex[i][1];
+	yupvertex[i][3] =  yupvertex[i][0];
+	
+    middledgeangle[i] = upedgeangle[i]/knedges;
+    middlepsi[i] = 90.0-0.5*upedgeangle[i];
+    for(Int_t j=1; j<knedges; j++){
+		xupvertex[i][j+3] = fgkEndCapSupportMiddleRadius[i]*CosD(middlepsi[i]+j*middledgeangle[i]);
+		yupvertex[i][j+3] = fgkEndCapSupportMiddleRadius[i]*SinD(middlepsi[i]+j*middledgeangle[i]);
+	}
+  }
+  ////////////////////////////////////
+  // Generating Up TGeoXtru
+  ////////////////////////////////////
+  TGeoXtru* upendcapsupportshape[klayernumber];
+  TGeoVolume* upendcapsupport[klayernumber]; 
+  char upendcapsupportname[30]; 
+  for(Int_t i=0; i<klayernumber; i++){
+   upendcapsupportshape[i] = new TGeoXtru(2);
+   sprintf(upendcapsupportname,"UpEndCapSupportPieceLayer%i",i+5);
+   upendcapsupportshape[i]->DefinePolygon(knedges+3,xupvertex[i],yupvertex[i]); 
+   upendcapsupportshape[i]->DefineSection(0,0.);
+   upendcapsupportshape[i]->DefineSection(1,fgkEndCapSupportHighWidth);
+   upendcapsupport[i] = new TGeoVolume(upendcapsupportname,upendcapsupportshape[i],
+									fSSDCoolingTubePhynox);
+//   upendcapsupport[i]->SetLineColor(fColorPhynox);
+   upendcapsupport[i]->SetLineColor(5);
+  }
+  ///////////////////////////////////////////////
+  // Setting the vertices for TGeoXtru Down Volume
+  ///////////////////////////////////////////////
+  Double_t xdownvertex[klayernumber][2*(knedges+1)];
+  Double_t ydownvertex[klayernumber][2*(knedges+1)];
+  for(Int_t i=0; i<klayernumber; i++){
+	xdownvertex[i][0] = -fgkEndCapSupportLowRadius[i]*SinD(0.5*upedgeangle[i]);
+	xdownvertex[i][1] =  xupvertex[i][0];
+	ydownvertex[i][0] = fgkEndCapSupportLowRadius[i]*CosD(0.5*upedgeangle[i]);
+	ydownvertex[i][1] =  yupvertex[i][0];
+	for(Int_t j=0; j<knedges; j++){
+		xdownvertex[i][j+2] = xupvertex[i][knedges+2-j];
+		ydownvertex[i][j+2] = yupvertex[i][knedges+2-j];
+	} 
+	for(Int_t j=0; j<knedges; j++){
+		xdownvertex[i][knedges+j+2] = fgkEndCapSupportLowRadius[i]
+									* CosD(middlepsi[i]+j*middledgeangle[i]);
+		ydownvertex[i][knedges+j+2] = fgkEndCapSupportLowRadius[i]
+									* SinD(middlepsi[i]+j*middledgeangle[i]);
+	}
+  }
+  ////////////////////////////////////
+  // Generating Down TGeoXtru
+  ////////////////////////////////////  
+  TGeoXtru* downendcapsupportshape[klayernumber];
+  TGeoVolume* downendcapsupport[klayernumber]; 
+  char downendcapsupportname[30]; 
+  for(Int_t i=0; i<klayernumber; i++){
+	downendcapsupportshape[i] = new TGeoXtru(2);
+    sprintf(downendcapsupportname,"DownEndCapSupportPieceLayer%i",i+5);
+	downendcapsupportshape[i] = new TGeoXtru(2);
+	downendcapsupportshape[i]->DefinePolygon(2*(knedges+1),xdownvertex[i],ydownvertex[i]); 
+    if(i==0){
+		downendcapsupportshape[i]->DefineSection(0,0.);
+		downendcapsupportshape[i]->DefineSection(1,fgkEndCapSupportLowWidth[i]);
+    }
+	else{
+		downendcapsupportshape[i]->DefineSection(0,fgkEndCapSupportHighWidth
+								 -                 fgkEndCapSupportLowWidth[i]);
+		downendcapsupportshape[i]->DefineSection(1,fgkEndCapSupportHighWidth);
+	}
+    downendcapsupport[i] = new TGeoVolume(downendcapsupportname,
+								downendcapsupportshape[i],fSSDCoolingTubePhynox);
+//	downendcapsupport[i]->SetLineColor(fColorPhynox);
+	downendcapsupport[i]->SetLineColor(5);
+  }
+  ///////////////////////////////////////////////
+  // Setting TGeoPgon Volume
+  ///////////////////////////////////////////////
+  const Int_t kssdlayladdernumber[klayernumber] = {fgkSSDLay5LadderNumber,
+												   fgkSSDLay6LadderNumber};
+  TGeoPgon* endcapsupportmothershape[klayernumber];
+  TGeoVolume** endcapsupportmother;
+  endcapsupportmother = new TGeoVolume*[klayernumber];
+  char endcapsupportmothername[30];
+  for(Int_t i=0; i<klayernumber; i++){
+	endcapsupportmothershape[i] = new TGeoPgon(0.0,360.0,kssdlayladdernumber[i],2);
+    sprintf(endcapsupportmothername,"EndCapSupportMotherLayer%i",i+5);
+	endcapsupportmothershape[i]->DefineSection(0,0.,ydownvertex[i][0],yupvertex[i][1]);	
+    endcapsupportmothershape[i]->DefineSection(1,fgkEndCapSupportHighWidth,
+											  ydownvertex[i][0],yupvertex[i][1]);
+    endcapsupportmother[i] = new TGeoVolume(endcapsupportmothername,endcapsupportmothershape[i],
+											fSSDCoolingTubePhynox);	
+  }
+  ////////////////////////////////////
+  TGeoRotation** endcapsupportrot[klayernumber];
+  for(Int_t i=0; i<2; i++){
+	endcapsupportrot[i] = new TGeoRotation*[kssdlayladdernumber[i]];	
+	for(Int_t j=0; j<kssdlayladdernumber[i]; j++){
+	   endcapsupportrot[i][j] = new TGeoRotation();
+	   endcapsupportrot[i][j]->SetAngles(j*upedgeangle[i],0.,0.);
+       endcapsupportmother[i]->AddNode(upendcapsupport[i],j+1,endcapsupportrot[i][j]);
+       endcapsupportmother[i]->AddNode(downendcapsupport[i],j+1,endcapsupportrot[i][j]);
+	}
+  }
+  return endcapsupportmother;
+ } 
+ ////////////////////////////////////////////////////////////////////////////////
+ void AliITSv11GeometrySSD::SetEndCapSupportAssembly(){
+  /////////////////////////////////////////////////////////////
+  // Setting End Cap Support Layer 5 and 6. 
+  /////////////////////////////////////////////////////////////
+  const Int_t kendcapcoverplatesmallholenumber = 9;
+  const Int_t klayernumber = 2;
+  const Int_t kssdlayladdernumber[klayernumber] = {fgkSSDLay5LadderNumber,
+												   fgkSSDLay6LadderNumber};
+  Double_t upedgeangle[klayernumber] = {360.0/kssdlayladdernumber[0],
+										360.0/kssdlayladdernumber[1]};
+  TGeoVolume** endcapsupport = EndCapSupport();
+  TGeoVolume** endcapassembly = GetEndCapAssembly();
+  TGeoPgon* endcapsupportshape[klayernumber];
+  Double_t* radiusmin[klayernumber];
+  Double_t* radiusmax[klayernumber];
+  for(Int_t i=0; i<klayernumber; i++){
+    endcapsupportshape[i] = (TGeoPgon*)endcapsupport[i]->GetShape();
+	radiusmin[i] = endcapsupportshape[i]->GetRmin();
+	radiusmax[i] = endcapsupportshape[i]->GetRmax();
+  }  
+  TGeoBBox* endcapassemblyshape = (TGeoBBox*)endcapassembly[0]->GetShape();
+  Double_t endcapassemblycenter[3] = {endcapassemblyshape->GetDX(),
+									  endcapassemblyshape->GetDY(),
+									  endcapassemblyshape->GetDZ()};
+  ///////////////////////////////////////////////
+  // Setting TGeoPgon Volume for Mother Container
+  ///////////////////////////////////////////////
+  TGeoPgon* endcapsupportsystemshape[klayernumber];
+  char endcapsupportsystemothername[30];
+  for(Int_t i=0; i<klayernumber; i++){
+	endcapsupportsystemshape[i] = new TGeoPgon(0.0,360.0,kssdlayladdernumber[i],2);
+    sprintf(endcapsupportsystemothername,"EndCapSupportSystemLayer%i",i+5);
+	endcapsupportsystemshape[i]->DefineSection(0,-(fgkEndCapCoverPlateWidth[1]
+											     - fgkEndCapCoverPlateWidth[0]),*radiusmin[i],
+											  (*radiusmax[i]*CosD(0.5*upedgeangle[i])
+											   +2.*endcapassemblycenter[2])
+											   /CosD(0.5*upedgeangle[i]));	
+    endcapsupportsystemshape[i]->DefineSection(1,2.*endcapassemblycenter[1]
+												 -(fgkEndCapCoverPlateWidth[1]
+											     - fgkEndCapCoverPlateWidth[0]),
+											   *radiusmin[i],
+											  (*radiusmax[i]*CosD(0.5*upedgeangle[i])
+											   +2.*endcapassemblycenter[2])
+											   /CosD(0.5*upedgeangle[i]));
+  }
+  fgkEndCapSupportSystem[0] = new TGeoVolume("EndCapSupportSystemLayer5Sx",
+									  endcapsupportsystemshape[0],fSSDAir);	
+  fgkEndCapSupportSystem[1] = new TGeoVolume("EndCapSupportSystemLayer5Dx",
+									  endcapsupportsystemshape[0],fSSDAir);	
+  fgkEndCapSupportSystem[2] = new TGeoVolume("EndCapSupportSystemLayer6Sx",
+									  endcapsupportsystemshape[1],fSSDAir);	
+  fgkEndCapSupportSystem[3] = new TGeoVolume("EndCapSupportSystemLayer6Dx",
+									  endcapsupportsystemshape[1],fSSDAir);	
+  ///////////////////////////////////////////////
+  TGeoTranslation* endcapassemblytrans[klayernumber];
+  for(Int_t i=0; i<klayernumber; i++)
+	endcapassemblytrans[i] = new TGeoTranslation(-fgkEndCapCoverPlateLength[0]
+									   -  fgkEndCapSideCoverThickness
+									   +  endcapassemblycenter[0],
+									   -  0.5*fgkEndCapCoverPlateThickness
+									   -  2.0*fgkEndCapCoolingTubeRadiusMax
+									   +  2.0*endcapassemblycenter[2]
+									   +  0.5*fgkEndCapSupportLength[i]
+									   /  TanD(0.5*upedgeangle[i]),
+										  0.5*(fgkEndCapCoverPlateWidth[0]
+									   -  fgkEndCapCoverPlateWidth[2]
+									   - (kendcapcoverplatesmallholenumber-1)
+									   *  fgkEndCapCoverPlateSmallHoleSeparation[2]));
+  TGeoRotation** endcapassemblyrot[klayernumber];
+  TGeoHMatrix** endcapassemblymatrix[klayernumber];
+  for(Int_t i=0; i<klayernumber; i++){
+   endcapassemblyrot[i] = new TGeoRotation*[kssdlayladdernumber[i]+2];
+   endcapassemblymatrix[i] = new TGeoHMatrix*[kssdlayladdernumber[i]+2];	
+   for(Int_t j=0; j<kssdlayladdernumber[i]+2; j++) endcapassemblyrot[i][j] = new TGeoRotation();
+   endcapassemblyrot[i][0]->SetAngles(0.,-90.,0.);	
+   endcapassemblyrot[i][1]->SetAngles(90.,180.,-90.);	
+   endcapassemblymatrix[i][0] = new TGeoHMatrix((*endcapassemblyrot[i][1])*(*endcapassemblyrot[i][0]));
+   endcapassemblymatrix[i][1] = new TGeoHMatrix((*endcapassemblytrans[i])*(*endcapassemblymatrix[i][0]));
+   for(Int_t j=0; j<kssdlayladdernumber[i]; j++){
+	endcapassemblyrot[i][j+2]->SetAngles(j*upedgeangle[i],0.,0.); 
+	endcapassemblymatrix[i][j+2] = new TGeoHMatrix((*endcapassemblyrot[i][j+2])*(*endcapassemblymatrix[i][1]));
+   }
+  }
+  TGeoTranslation* lay6endcapassemblytrans = new TGeoTranslation(0.,0.,
+							fgkEndCapKaptonFoilWidth-fgkEndCapSupportHighWidth);
+  for(Int_t i=0; i<2*klayernumber; i++){
+	for(Int_t j=0; j<(i<2? kssdlayladdernumber[0]:kssdlayladdernumber[1]); j++){
+		fgkEndCapSupportSystem[i]->AddNode(endcapassembly[i],j+1,i<2?endcapassemblymatrix[0][j+2]:
+																	   endcapassemblymatrix[1][j+2]);
+	}
+	fgkEndCapSupportSystem[i]->AddNode(i<2?endcapsupport[0]:endcapsupport[1],1,i<2?0:lay6endcapassemblytrans);
+  }
+   /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  for(Int_t i=0; i<klayernumber; i++){
+	for(Int_t j=0; j<kssdlayladdernumber[i]+2; j++){
+		delete endcapassemblyrot[i][j];
+	}
+	delete endcapassemblyrot[i];
+	delete endcapassemblymatrix[i][0];
+	delete endcapassemblymatrix[i][1];
+  }
+  /////////////////////////////////////////////////////////////
+  }
+  void AliITSv11GeometrySSD::EndCapSupportSystemLayer5(TGeoVolume* moth){
+  /////////////////////////////////////////////////////////////
+  // Setting End Cap Support + End Cap Assembly of Layer 5. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert end cap support of layer5, mother is null!\n");
+    return;
+  };
+  if(!fgkEndCapSupportSystem[0]) SetEndCapSupportAssembly();
+  if(!fgkEndCapSupportSystem[1]) SetEndCapSupportAssembly();
+  TGeoTranslation* endcapsupportsystemITSCentertrans[2];
+  endcapsupportsystemITSCentertrans[0] = new TGeoTranslation(0.,0.,
+												fgkEndCapSupportCenterLay5ITSPosition
+									   +		fgkEndCapSupportCenterLay5Position
+									   -		fgkEndCapSideCoverLength[2]);
+  endcapsupportsystemITSCentertrans[1] = new TGeoTranslation(0.,0.,
+												fgkEndCapSideCoverLength[2]
+									   -        fgkEndCapSupportCenterLay5Position
+									   -        fgkEndCapSupportCenterLay5ITSPosition);
+  TGeoRotation* endcapsupportsystemrot = new TGeoRotation();
+  endcapsupportsystemrot->SetAngles(90.,180.,-90.);
+  TGeoCombiTrans* endcapsupportsystemITSCentercombitrans = 
+	new TGeoCombiTrans(*endcapsupportsystemITSCentertrans[1],*endcapsupportsystemrot);
+  moth->AddNode(fgkEndCapSupportSystem[0],1,endcapsupportsystemITSCentertrans[0]);
+  moth->AddNode(fgkEndCapSupportSystem[1],1,endcapsupportsystemITSCentercombitrans);
+   /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  delete endcapsupportsystemrot;
+  delete endcapsupportsystemITSCentertrans[1];
+ }
+  /////////////////////////////////////////////////////////////
+  void AliITSv11GeometrySSD::EndCapSupportSystemLayer6(TGeoVolume* moth){
+  /////////////////////////////////////////////////////////////
+  // Setting End Cap Support + End Cap Assembly of Layer 6. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert end cap support of layer6, mother is null!\n");
+    return;
+  };
+  if(!fgkEndCapSupportSystem[2]) SetEndCapSupportAssembly();
+  if(!fgkEndCapSupportSystem[3]) SetEndCapSupportAssembly();
+  TGeoTranslation* endcapsupportsystemITSCentertrans[2];
+  endcapsupportsystemITSCentertrans[0] = new TGeoTranslation(0.,0.,
+												fgkEndCapSupportCenterLay6ITSPosition
+									   +		fgkEndCapSupportCenterLay6Position
+									   -		fgkEndCapSideCoverLength[2]);
+  endcapsupportsystemITSCentertrans[1] = new TGeoTranslation(0.,0.,
+												fgkEndCapSideCoverLength[2]
+									   -        fgkEndCapSupportCenterLay6Position
+									   -        fgkEndCapSupportCenterLay6ITSPosition);
+  TGeoRotation* endcapsupportsystemrot = new TGeoRotation();
+  endcapsupportsystemrot->SetAngles(90.,180.,-90.);
+  TGeoCombiTrans* endcapsupportsystemITSCentercombitrans = 
+	new TGeoCombiTrans(*endcapsupportsystemITSCentertrans[1],*endcapsupportsystemrot);
+  moth->AddNode(fgkEndCapSupportSystem[2],1,endcapsupportsystemITSCentertrans[0]);
+  moth->AddNode(fgkEndCapSupportSystem[3],1,endcapsupportsystemITSCentercombitrans);
+   /////////////////////////////////////////////////////////////
+  // Deallocating memory
+  /////////////////////////////////////////////////////////////
+  delete endcapsupportsystemrot;
+  delete endcapsupportsystemITSCentertrans[1];
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ void AliITSv11GeometrySSD::LadderSupportLayer5(TGeoVolume* moth){
+  /////////////////////////////////////////////////////////////
+  // Setting Ladder Support of Layer 5. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert ladder lupport of layer5, mother is null!\n");
+    return;
+  };
+  if(!fLay5LadderSupportRing) SetLadderSupport(100);
+  fMotherVol = moth;
+  TGeoTranslation* centerITSRingSupportLay5trans[2];
+  for(Int_t i=0; i<2; i++){
+	centerITSRingSupportLay5trans[i] = 
+		new TGeoTranslation(0.,0.,TMath::Power(-1.,i)*fgkLadderSupportRingLay5Position);
+    moth->AddNode(fLay5LadderSupportRing,i+1,centerITSRingSupportLay5trans[i]);
+  }
+ }
+ ////////////////////////////////////////////////////////////////////////////////
+ void AliITSv11GeometrySSD::LadderSupportLayer6(TGeoVolume* moth){
+  /////////////////////////////////////////////////////////////
+  // Setting Ladder Support of Layer 6. 
+  /////////////////////////////////////////////////////////////
+  if (! moth) {
+    printf("Error::AliITSv11GeometrySSD: Can't insert ladder lupport of layer6, mother is null!\n");
+    return;
+  };
+  if(!fLay6LadderSupportRing) SetLadderSupport(100);
+  fMotherVol = moth;
+  TGeoTranslation* centerITSRingSupportLay6trans[2];
+  for(Int_t i=0; i<2; i++){
+	centerITSRingSupportLay6trans[i] = 
+		new TGeoTranslation(0.,0.,TMath::Power(-1.,i)*fgkLadderSupportRingLay6Position);
+    moth->AddNode(fLay6LadderSupportRing,i+1,centerITSRingSupportLay6trans[i]);
+  }
  }
  ////////////////////////////////////////////////////////////////////////////////
 TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], Double_t* width, 
@@ -3928,6 +7385,71 @@ TGeoXtru* AliITSv11GeometrySSD::GetArcShape(Double_t phi, Double_t rmin,
   delete [] yvertexpoints;
   /////////////////////////////////////////////////////////////
 	return arcshape;
+}
+////////////////////////////////////////////////////////////////////////////////
+TGeoXtru* AliITSv11GeometrySSD::GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const {
+  ///////////////////////////////////////////////////////////////////////
+  // Method Generating the Screw Shape  
+  // radius[0]: outer radius
+  // radius[1]: inner radius
+  // edgesnumber[0]: outer number of edges
+  // edgesnumber[1]: inner number of edges
+  // section[0]: lower section position
+  // section[1]: higher section position
+  ///////////////////////////////////////////////////////////////////////
+  Double_t outradius = radius[0];
+  Double_t inradius = radius[1];
+  Int_t outvertexnumber = edgesnumber[0];
+  Int_t invertexnumber = edgesnumber[1];
+  Double_t* xscrewvertex = new Double_t[outvertexnumber+invertexnumber+2];
+  Double_t* yscrewvertex = new Double_t[outvertexnumber+invertexnumber+2];
+  for(Int_t i=0; i<outvertexnumber+1; i++){
+	xscrewvertex[i] = outradius*CosD(90.+i*360./outvertexnumber);
+	yscrewvertex[i]	= outradius*SinD(90.+i*360./outvertexnumber);
+  }
+  for(Int_t i=0; i<invertexnumber+1; i++){
+	xscrewvertex[outvertexnumber+i+1] = inradius*CosD(90.-i*360./invertexnumber);
+	yscrewvertex[outvertexnumber+i+1] = inradius*SinD(90.-i*360./invertexnumber);
+  }
+  TGeoXtru* screwshape = new TGeoXtru(2);
+  screwshape->DefinePolygon(outvertexnumber+invertexnumber+2,xscrewvertex,yscrewvertex);
+  screwshape->DefineSection(0,section[0]);
+  screwshape->DefineSection(1,section[1]);
+  delete [] xscrewvertex;
+  delete [] yscrewvertex;
+  return screwshape;
+}
+////////////////////////////////////////////////////////////////////////////////
+TGeoXtru* AliITSv11GeometrySSD::GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const {
+  ///////////////////////////////////////////////////////////////////////
+  // Method Generating the Hole Shape  
+  // radius of the Hole
+  // nedges: number of edges to approximate the circle
+  ///////////////////////////////////////////////////////////////////////
+  Int_t vertexnumber = nedges+6;
+  Double_t* xholevertex = new Double_t[vertexnumber];
+  Double_t* yholevertex = new Double_t[vertexnumber];
+  xholevertex[0] = radius;
+  xholevertex[1] = xholevertex[0];
+  xholevertex[2] = -xholevertex[1];
+  xholevertex[3] = xholevertex[2];
+  xholevertex[4] = xholevertex[0];
+  yholevertex[0] = 0.;
+  yholevertex[1] = -radius;
+  yholevertex[2] = yholevertex[1];
+  yholevertex[3] = -yholevertex[1];
+  yholevertex[4] = yholevertex[3];
+  for(Int_t i=0; i<nedges+1; i++){
+	xholevertex[i+5] = radius*CosD(i*360./nedges);
+	yholevertex[i+5] = radius*SinD(i*360./nedges);
+  }
+  TGeoXtru* holeshape = new TGeoXtru(2);
+  holeshape->DefinePolygon(vertexnumber,xholevertex,yholevertex);
+  holeshape->DefineSection(0,section[0]);
+  holeshape->DefineSection(1,section[1]);
+  delete [] xholevertex;
+  delete [] yholevertex;
+  return holeshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
 TVector3* AliITSv11GeometrySSD::GetReflection(TVector3* vector,Double_t* param) const{
@@ -4033,6 +7555,10 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   //////////////////////////////////////////////////////////////////  
   fSSDCoolingTubeWater = GetMedium("WATER$");
   fSSDCoolingTubePhynox = GetMedium("INOX$");
+  /////////////////////////////////////////////////////////////////////
+  // Material for Support Rings
+  /////////////////////////////////////////////////////////////////////
+  fSSDSupportRingAl = GetMedium("AL$");
   /////////////////////////////////////////////////////////////////////
   fSSDAir = GetMedium("SDD AIR$");
   fCreateMaterials = kTRUE;

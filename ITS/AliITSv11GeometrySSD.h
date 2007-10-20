@@ -1,9 +1,12 @@
+#ifndef ALIITSV11GEOMETRYSSD_H
+#define ALIITSV11GEOMETRYSSD_H
 //*************************************************************************
 // class AliITSv11GeometrySSD
 // Enrico Cattaruzza                                     ecattar@ts.infn.it
 //*************************************************************************
-#ifndef ALIITSV11GEOMETRYSSD_H
-#define ALIITSV11GEOMETRYSSD_H
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+/* $Id$ */
 class TGeoVolume;
 class TGeoCombiTrans;
 class TGeoMedium;
@@ -27,8 +30,7 @@ public:
   /////////////////////////////////////////////////////////////////////////
   // Public methods
   /////////////////////////////////////////////////////////////////////////
-  TGeoMedium* GetMedium(const char* mediumName);
-  // It returns the Medium
+  TGeoMedium* GetMedium(const char* mediumName);   // It returns the Medium
   const char*   GetSenstiveVolumeName5() const {return fgSDDsensitiveVolName5;};
   // it returns the Sensitive Volume of Layer 5
   const char*   GetSenstiveVolumeName6() const {return fgSDDsensitiveVolName6;};
@@ -37,12 +39,17 @@ public:
   TGeoVolumeAssembly* GetEndLadderSegment(Int_t i){return fendladdersegment[i];}; // Get End Ladder Segment 
   TGeoVolume* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
   TGeoVolume* GetLayer(Int_t i)const {return i==5? fSSDLayer5 : fSSDLayer6;}; // Get Layer
+  TGeoVolume** GetEndCapAssembly();     // End Cap Assembly
   void SetLadderSegment();				// Set Ladder Elementary Segment 
   void SetEndLadderSegment();			// Set End Ladder Segment
   void SetLadder();						// Set Ladder
   void SetLayer();						// Set Layer
   void Layer5(TGeoVolume* moth);        // Setting Layer 5 into mother volume
   void Layer6(TGeoVolume* moth);        // Setting Layer 6 into mother volume
+  void LadderSupportLayer5(TGeoVolume* moth); // Setting Ladder Support of Layer 5
+  void LadderSupportLayer6(TGeoVolume* moth); // Setting Ladder Support of Layer 6
+  void EndCapSupportSystemLayer5(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 5
+  void EndCapSupportSystemLayer6(TGeoVolume* moth); // Setting End Cap Support + End Cap Assembly Layer 6
 private:
   /////////////////////////////////////////////////////////////////////////////////
   // Names of the Sensitive Volumes of Layer 5 and Layer 6
@@ -204,6 +211,7 @@ private:
   static const Double_t fgkEndLadderCarbonFiberLowerJunctionLength[2];   // End Ladder Carbon Fiber Lower Up Support length 
   static const Double_t fgkEndLadderCarbonFiberUpperJunctionLength[2];   // End Ladder Carbon Fiber Lower Down Support length 
   static const Double_t fgkEndLadderMountingBlockPosition[2];            // End Ladder Mounting Block Position 
+  static const Double_t fgkendladdercoolingsupportdistance[3];			 // End Ladder Cooling Support Position
   /////////////////////////////////////////////////////////////////////////
   // Cooling Tube Support (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -221,6 +229,7 @@ private:
   static const Double_t fgkCoolingTubeRmin;       // Cooling Tube Min Radius
   static const Double_t fgkCoolingTubeLength;     // Cooling Tube Length  
   static const Double_t fgkCoolingTubeSeparation; // Cooling Tube Separation
+  static const Double_t fgkMountingBlockToSensorSupport; // Distance between Mounting block and Side Sensor Support	
   /////////////////////////////////////////////////////////////////////////
   // SSD Mounting Block Parameters (lengths are in mm and angles in degrees)
   /////////////////////////////////////////////////////////////////////////
@@ -236,6 +245,108 @@ private:
   static const Double_t fgkSSDMountingBlockScrewHoleEdge;       // SSD Mounting Block Screw Hole Edge  
   static const Double_t fgkSSDMountingBlockScrewHoleHeigth;     // SSD Mounting Block Screw Hole Height  
   static const Double_t fgkSSDMountingBlockScrewHoleRadius[2];  // SSD Mounting Block Screw Hole Radii
+  /////////////////////////////////////////////////////////////////////////
+  // SSD Mounting Block Clip Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkMountingBlockClipLength;          // SSD Mounting Block Clip Length  
+  static const Double_t fgkMountingBlockClipThickness;       // SSD Mounting Block Clip Thickness 
+  static const Double_t fgkMountingBlockClibScrewRadius;     // SSD Mounting Block Clip Radius 
+  static const Double_t fgkMountingBlockClibScrewPosition;  // SSD Mounting Block Clip Screw Position
+  static const Double_t fgkMountingBlockClibWidth;          // SSD Mounting Block Clip 
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD Mounting Block Support Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkMountingBlockSupportWidth[2]; // SSD Mounting Block Support Width
+  static const Double_t fgkMountingBlockSupportDownHeight; // SSD Mounting Block Support Down Heigth
+  static const Double_t fgkMountingBlockSupportRadius[2];  // SSD Mounting Block Support Radius
+  static const Double_t fgkMountingBlockSupportUpHeight[2]; // SSD Mounting Block Support Heigth
+  static const Double_t fgkLadderSupportHeigth;            // SSD Ladder Support Width
+  static const Double_t fgkLadderSupportRingLay5Position;  // SSD Ladder Support Ring Position Layer5 respect to ITS center
+  static const Double_t fgkLadderSupportRingLay6Position;  // SSD Ladder Support Ring Position Layer6 respect to ITS center
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD End Cap Cover Plate Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkEndCapCoverPlateSmallHoleRadius; // End Cap Cover Plate Hole Small Radious 
+  static const Double_t fgkEndCapCoverPlateBigHoleRadius;   // End Cap Cover Plate Hole Big Radious
+  static const Double_t fgkEndCapCoverPlateThickness;       // End Cap Cover Plate Thickness
+  static const Double_t fgkEndCapCoverPlateSmallHoleSeparation[3]; // End Cap Cover Plate Hole Separation
+  static const Double_t fgkEndCapCoverPlateLength[6];       // End Cap Cover Plate Length
+  static const Double_t fgkEndCapCoverPlateWidth[3];        // End Cap Cover Plate Width
+  static const Double_t fgkEndCapCoverPlateScrewRadiusMin;  // End Cap Cover Plate Screw Radius Min
+  static const Double_t fgkEndCapCoverPlateScrewRadiusMax;  // End Cap Cover Plate Screw Radius Max
+  static const Double_t fgkEndCapCoverPlateClipLength;      // End Cap Cover Plate Clip Length
+  static const Double_t fgkEndCapCoverPlateClipWidth;       // End Cap Cover Plate Clip Width
+  static const Double_t fgkEndCapCoverPlateDownClipLength;  // End Cap Cover Plate Down Clip Length
+  static const Double_t fgkEndCapCoverPlateDownClipWidth;   // End Cap Cover Plate Down Clip Width
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD End Cap Cooling Tube Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkEndCapCoolingTubeAxialRadius[2]; // End Cap Cooling Tube Axial Radius
+  static const Double_t fgkEndCapCoolingTubeRadiusMin; // End Cap Cooling Tube Min Radius
+  static const Double_t fgkEndCapCoolingTubeRadiusMax; // End Cap Cooling Tube Max Radius
+  static const Double_t fgkEndCapCoolingTubeAngle[5];  // End Cap Cooling Tube Angle
+  static const Double_t fgkEndCapCoolingTubeLength[5]; // End Cap Cooling Tube Length
+  static const Double_t fgkEndCapCoolingTubeToCoverSide; // End Cap Cooling Tube Position respect to CoverSide
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD End Cap Cover Side Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkEndCapSideCoverLength[5]; // End Cap Cover Side Length
+  static const Double_t fgkEndCapSideCoverWidth[7]; //  End Cap Cover Side Width
+  static const Double_t fgkEndCapSideCoverThickness; // End Cap Cover Side Thickness
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD End Cap Cards Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t  fgkEndCapCardElectBoardBackLength[3]; // End Cap Card Electronic Board Back Length 
+  static const Double_t  fgkEndCapCardElectBoardBackWidth[2];  // End Cap Card Electronic Board Back Width 
+  static const Double_t  fgkEndCapCardElectBoardBackThickness; // End Cap Card Electronic Board Back Thickness 
+  static const Double_t  fgkEndCapCardElectBoardLength;        // End Cap Card Electronic Board Length
+  static const Double_t  fgkEndCapCardElectBoardLayerWidth[2]; // End Cap Card Electronic Board Layer Width
+  static const Double_t  fgkEndCapCardElectBoardLayerThickness;// End Cap Card Electronic Board Layer Thickness 
+  static const Double_t  fgkEndCapCardJMDConnectorThickness;   // End Cap Card JMD Connector Thickness
+  static const Double_t  fgkEndCapCardJMDConnectorLength[2];   // End Cap Card JMD Connector Length
+  static const Double_t  fgkEndCapCardJMDConnectorWidth[2];    // End Cap Card JMD Connector Width
+  static const Double_t  fgkEndCapCardJMDConnectorToLayer;     // End Cap Card JMD Connector to Layer Distance 
+  static const Double_t  fgkEndCapCardCableConnectorLength[3]; // End Cap Card Cable Connector Length
+  static const Double_t  fgkEndCapCardCableConnectorWidth[2];  // End Cap Card Cable Connector Width
+  static const Double_t  fgkEndCapCardCableConnectorThickness; // End Cap Card Cable Connector Thickness
+  static const Double_t  fgkEndCapCardCableConnectorDistance;  // End Cap Card Cable Connector Distance
+  static const Double_t  fgkEndCapCardCableConnectorToLayer;   // End Cap Card Cable Connector To Layer Distance
+  static const Double_t  fgkEndCapStripConnectionLength;       // End Cap Strip Connection Length
+  static const Double_t  fgkEndCapStripConnectionThickness;    // End Cap Strip Connection Thickness
+  static const Double_t  fgkEndCapStripConnectionWidth;        // End Cap Strip Connection Width
+  static const Double_t  fgkEndCapInterfaceCardBLength[7];     // End Cap Interface CardB Length
+  static const Double_t  fgkEndCapInterfaceCardBWidth[5];      // End Cap Interface CardB Width
+  static const Double_t  fgkEndCapInterfaceCardBThickness;     // End Cap Interface CardB Thickness
+  static const Double_t  fgkEndCapInterfaceElectBoardCardBThickness; // End Cap Interface Elect Board CardB Thickness 
+  static const Double_t  fgkEndCapInterfaceCardBJMDConnectorSeparation; // End Cap Interface CardB JMD Connector Separation
+  static const Double_t  fgkEndCapStiffenerLength;             // End Cap Stiffener Length
+  static const Double_t  fgkEndCapStiffenerWidth;			   // End Cap Stiffener Width
+  static const Double_t  fgkEndCapStiffenerThickness;          // End Cap Stiffener Thickness
+  static const Double_t  fgkEndCapEffectiveCableRadiusMin;     // End Cap Effective Cable Radius Min
+  static const Double_t  fgkEndCapEffectiveCableRadiusMax;     // End Cap Effective Cable Radius Max
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD End Cap SupportLayer5/6 Side Parameters (lengths are in mm and angles in degrees)
+  /////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkEndCapLay5SupportLength; // End Cap Layer5 Support Length
+  static const Double_t fgkEndCapLay5SupportMiddleRadius; // End Cap Layer5 Support Middle Radius
+  static const Double_t fgkEndCapLay5SupportLowRadius; // End Cap Layer5 Support Low Radius
+  static const Double_t fgkEndCapLay5SupportHighWidth; // End Cap Layer5 High Radius
+  static const Double_t fgkEndCapLay5SupportLowWidth; // End Cap Layer5 Low Width
+  static const Double_t fgkEndCapSupportLength[2]; // End Cap Layer5/6 Support Length
+  static const Double_t fgkEndCapSupportMiddleRadius[2]; // End Cap Layer5/6 Support Middle Radius
+  static const Double_t fgkEndCapSupportLowRadius[2]; // End Cap Layer5/6 Support Low Radius
+  static const Double_t fgkEndCapSupportHighWidth; // End Cap Layer5/6 High Radius
+  static const Double_t fgkEndCapSupportLowWidth[2]; // End Cap Layer5/6 Low Width  
+  static const Double_t fgkEndCapSupportCenterLay5ITSPosition; // End Cap Support Center ITS Position Layer 5
+  static const Double_t fgkEndCapSupportCenterLay5Position; // End Cap Support Position Respect Z Axis Origin Layer 5 
+  static const Double_t fgkEndCapSupportCenterLay6ITSPosition; // End Cap Support Center ITS Position Layer 6
+  static const Double_t fgkEndCapSupportCenterLay6Position; // End Cap Support Position Respect Z Axis Origin Layer 6 
+  /////////////////////////////////////////////////////////////////////////////////
+  // SSD End Cap Kapton Foil Parameters (lengths are in mm and angles in degrees)
+  ////////////////////////////////////////////////////////////////////////////////
+  static const Double_t fgkEndCapKaptonFoilThickness; // End Cap Kapton Foil Thickness
+  static const Double_t fgkEndCapKaptonFoilLength;    // End Cap Kapton Foil Length
+  static const Double_t fgkEndCapKaptonFoilWidth ;    // End Cap Kapton Foil Width
   /////////////////////////////////////////////////////////////////////////
   // Private methods for private members generation
   /////////////////////////////////////////////////////////////////////////
@@ -257,6 +368,7 @@ private:
   TGeoVolume* GetSSDStiffenerFlex()const;    // Method generating StiffenerFlex
   TGeoVolume* GetSSDEndFlex();			// Method generating EndFlex
   TGeoVolume* GetSSDMountingBlock();	// Method generating Mounting Block
+  TGeoVolume* GetMountingBlockClip() const;   // Method generating Mounting Block Clip
   TList* GetCoolingTubeList()const;			// Method generating list of Tubes
   TGeoVolume* GetSSDCoolingBlock(Int_t nedges); 
 									    // Method generating StiffenerFlex
@@ -272,12 +384,24 @@ private:
 										// Method generating Ladder Cable Assembly
   TList* GetLadderCableAssemblyList(Int_t n, Double_t ssdendladdercablelength); 
 										// Method generating Ladder Cable List
+  TList* GetMountingBlockSupport(Int_t nedges); // Get Mounting Block Support
+  void SetLadderSupport(Int_t nedges); // It generates the ladder support
+  TGeoVolume* GetEndCapCoolingTube();  // End Cap Cooling Tube
+  TGeoVolume* GetEndCapCoverPlate();   // End Cap Cover Plate
+  TGeoVolume* GetEndCapSideCover() const;    // End Cap Side Cover
+  TGeoVolume** GetEndCapCards() const;       // End Cap Cards
+  TGeoVolume** EndCapSupport();        // End Cap Support Layer 5 and Layer 6
+  void SetEndCapSupportAssembly();     // EndCap Support + End Cap Layer 5 and 6
+  TGeoVolume* GetEndCapEffectiveCables(Double_t radiusmin, Double_t radiusmax, 
+									   Double_t width,Int_t ncables,char* volname); // End Cap Effective HV Cables
   TGeoXtru* GetArcShape(Double_t phi, Double_t rmin, 
 					    Double_t rmax, Int_t nedges, Double_t height); 
 										//Auxiliary Method for Arc Shape
   TGeoArb8* GetArbShape(TVector3* vertexpos[],Double_t* width, 
                         Double_t height,char* shapename,Int_t isign = 1) const;
 									   // Method generating an Arb shape 
+  TGeoXtru* GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const;// Method Generating the Screw Shape  
+  TGeoXtru* GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const;// Method Generating the Hole Shape  
   TVector3* GetReflection(TVector3* vector,Double_t* param) const; 
 										// Given an axis specified by param,
 										// it gives the reflection of the point respect to the axis
@@ -309,6 +433,7 @@ private:
   TGeoMedium* fSSDTubeHolderMedium;              // Cooling Tube Support Medium
   TGeoMedium* fSSDCoolingTubeWater;              // Medium for Inner Part of Cooling Tube
   TGeoMedium* fSSDCoolingTubePhynox;             // Medium for Cooling Tube 
+  TGeoMedium* fSSDSupportRingAl;                 // Medium for Support Ring
   TGeoMedium* fSSDMountingBlockMedium;           // Medium for SSD Mounting Block  
   TGeoMedium* fSSDAir;							 // SSD Air
   /////////////////////////////////////////////////////////////////////////
@@ -373,12 +498,19 @@ private:
   /////////////////////////////////////////
   static const Int_t fgkcoolingtubenumber = 3;				// Coling Tube Number
   TGeoHMatrix** fcoolingtubematrix[fgkcoolingtubenumber+1];  // Cooling Tube Matrix
-  TGeoVolume* fcoolingtube[fgkcoolingtubenumber];	     // Cooling Tube
+  TGeoVolume* fcoolingtube[fgkcoolingtubenumber];			// Ladder Cooling Tube 
+  static const Int_t fgkendladdercoolingtubenumber = 5;		// End Ladder Cooling Tube Number  	
+  TGeoVolume* fendladdercoolingtube[fgkendladdercoolingtubenumber];	// End Ladder Cooling Tube
+  TGeoHMatrix** fendladdercoolingtubematrix[2];  //End ladder cooling tube matrix
   /////////////////////////////////////////
   // End Ladder Components
   /////////////////////////////////////////
   TGeoVolumeAssembly* fendladdersegment[2];  // End Ladder Segment 
   TGeoHMatrix** fendladdersegmentmatrix[2];  // End Ladder Matrix
+  /////////////////////////////////////////////////////////////
+  // End Ladder SSD Cooling Tube Support 
+  /////////////////////////////////////////////////////////////
+  TGeoHMatrix*** fendladdercoolingtubesupportmatrix; //End ladder cooling tube support matrix
   ///////////////////////////////////
   // End Ladder Carbon Fiber Junction
   ///////////////////////////////////
@@ -396,7 +528,9 @@ private:
   ///////////////////////////////////
   static const Int_t fgkendladdermountingblocknumber = 2; // Mounting Block Number   
   TGeoVolume* fendladdermountingblock;					  // Mounting Block
-  TGeoTranslation* fendladdermountingblocktrans[fgkendladdermountingblocknumber]; // Mounting Block Translation
+  TGeoVolume* fendladdermountingblockclip;                // Mounting Block Clip
+  TGeoCombiTrans* fendladdermountingblockcombitrans[fgkendladdermountingblocknumber]; // End Ladder Mounting Block CombiTrans
+  TGeoHMatrix** fendladdermountingblockclipmatrix[fgkendladdermountingblocknumber]; // End Ladder Mounting Block Clip HMatrix
   ///////////////////////////////////
   // End Ladder Lower Support
   ///////////////////////////////////
@@ -441,6 +575,17 @@ private:
   TGeoVolume *fMotherVol;                                    // Mother volume for ITS Layer5 and Layer6   
   TGeoVolume* GetMotherVolume() const { return fMotherVol;}; // Method returning Mother Volume
   /////////////////////////////////////////////////////////////////////////
+  // Ladder Support 
+  /////////////////////////////////////////////////////////////////////////
+  TGeoVolume* fLay5LadderSupport[2]; // Up and Down parts of Layer5 Ladder Support
+  TGeoVolume* fLay6LadderSupport[2]; // Up and Down parts of Layer6 Ladder Support
+  TGeoVolumeAssembly* fLay5LadderSupportRing; // Layer5 Ladder Support Ring
+  TGeoVolumeAssembly* fLay6LadderSupportRing; // Layer6 Ladder Support Ring
+  /////////////////////////////////////////////////////////////////////////
+  // End Cap Support + End Cap Assembly
+  /////////////////////////////////////////////////////////////////////////
+  TGeoVolume* fgkEndCapSupportSystem[4]; // End Cap Support + End Cap Assembly
+  /////////////////////////////////////////////////////////////////////////
   // Color Display 
   /////////////////////////////////////////////////////////////////////////
   Int_t fColorCarbonFiber;    //  display colors
@@ -454,6 +599,6 @@ private:
   Int_t fColorEpoxy;          //  ===
   Int_t fColorWater;		  //  ===
   Int_t fColorG10;            //  ===
-  ClassDef(AliITSv11GeometrySSD, 2)     // ITS v11 SSD geometry
+ClassDef(AliITSv11GeometrySSD, 3)     // ITS v11 SSD geometry
 };
 #endif
