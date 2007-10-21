@@ -23,6 +23,7 @@
 
 #include "AliESDEvent.h"
 #include "AliLog.h"
+#include "AliModule.h"
 #include "AliQA.h"
 #include "AliQADataMaker.h"
 #include "AliQADataMakerSteer.h" 
@@ -329,7 +330,11 @@ Bool_t AliQADataMakerSteer::Run(const AliQA::TASKINDEX taskIndex, const  char * 
 			fRunLoader->GetEvent(iEvent);
 		}
 		// loop over detectors
+		TObjArray* detArray = fRunLoader->GetAliRun()->Detectors() ;
 		for (UInt_t iDet = 0 ; iDet < fgkNDetectors ; iDet++) {
+			AliModule* det = static_cast<AliModule*>(detArray->At(iDet)) ;
+			if (!det || !det->IsActive()) 
+				continue;
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
 			if (!qadm) {
 				rv = kFALSE ;
