@@ -210,13 +210,14 @@ void AliPHOSQADataMaker::InitSDigits()
 void AliPHOSQADataMaker::MakeESDs(AliESDEvent * esd)
 {
   // make QA data from ESDs
-  
-  Int_t maxClu = esd->GetNumberOfPHOSClusters() ; 
-  Int_t index = 0, count = 0 ; 
-  for ( index = 0 ; index < maxClu; index++ ) {
-    AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
-    GetESDsData(0)->Fill(clu->E()) ;
-    count++ ; 
+
+  Int_t count = 0 ; 
+  for ( Int_t index = esd->GetFirstPHOSCluster(); index < esd->GetNumberOfCaloClusters() ; index++ ) {
+	AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
+	if ( clu->IsPHOS() ) {
+		GetESDsData(0)->Fill(clu->E()) ;
+		count++ ;
+	} 
   }
   GetESDsData(1)->Fill(count) ;
 }
