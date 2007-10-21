@@ -13,6 +13,10 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+// $Id$
+
+
 //========================================================================
 //
 //            Geometry of the Inner Tracking System
@@ -27,9 +31,11 @@
 //========================================================================
 
 
-// $Id$
 
 // $Log$
+// Revision 1.8  2007/10/21 18:59:10  masera
+// SPD new geometry added to Hybrid V11
+//
 // Revision 1.7  2007/08/24 14:32:57  hristov
 // Introduction of SPD half-stave volumes, cleaning and new code (in relation to new SPD geometry) in AliITSv11Hybrid (Ludovic)
 //
@@ -52,8 +58,6 @@
 #include <TLorentzVector.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
-#include <TArrayD.h>
-#include <TArrayF.h>
 #include <TString.h>
 #include <TNode.h>
 #include <TTUBE.h>
@@ -68,10 +72,7 @@
 #include "AliITSgeomSPD.h"
 #include "AliITSgeomSSD.h"
 #include "AliITShit.h"
-#include "AliITSresponseSDD.h"
 #include "AliITSCalibrationSDD.h"
-#include "AliITSCalibrationSPD.h"
-#include "AliITSCalibrationSSD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSSD.h"
@@ -965,9 +966,9 @@ void AliITSv11Hybrid::CreateGeometry() {
 
   const Char_t *cvsDate="$Date$";
   const Char_t *cvsRevision="$Revision$";
-  const Int_t length=100;
-  Char_t vstrng[length];
-  if(fInitGeom.WriteVersionString(vstrng,length,(AliITSVersion_t)IsVersion(),
+  const Int_t kLength=100;
+  Char_t vstrng[kLength];
+  if(fInitGeom.WriteVersionString(vstrng,kLength,(AliITSVersion_t)IsVersion(),
 			     fMinorVersion,cvsDate,cvsRevision))
     vITS->SetTitle(vstrng);
 
@@ -1022,7 +1023,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     //End_Html
     //INNER RADII OF THE SILICON LAYERS 
     // Float_t rl[6]    = { 3.8095,7.,15.,24.,38.1,43.5765 };   
-    //THICKNESSES OF LAYERS (in % radiation length)
+    //THICKNESSES OF LAYERS (in % radiation kLength)
     Float_t drl[6]   = { 1.03,1.03,0.94,0.95,0.91,0.87 };   
     //HALF LENGTHS OF LAYERS  
     // Float_t dzl[6]   = { 14.35,14.35,25.1,32.1,49.405,55.27 };
@@ -5477,7 +5478,7 @@ void AliITSv11Hybrid::CreateMaterials(){
 }
 
 //______________________________________________________________________
-void AliITSv11Hybrid::InitAliITSgeom(){
+void AliITSv11Hybrid::InitAliITSgeom() const {
     //     Based on the geometry tree defined in Geant 3.21, this
     // routine initilizes the Class AliITSgeom from the Geant 3.21 ITS geometry
     // sturture.

@@ -18,6 +18,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.5  2007/08/24 14:32:57  hristov
+// Introduction of SPD half-stave volumes, cleaning and new code (in relation to new SPD geometry) in AliITSv11Hybrid (Ludovic)
+//
 // Revision 1.4  2007/06/28 10:17:25  masera
 // Introduction of the new SSD geometry in simulation (AliITSv11Hybrid) and suppression of overlaps between old and new parts
 //
@@ -127,7 +130,7 @@ class AliITSv11Hybrid : public AliITS {
  private:
     AliITSv11Hybrid(const AliITSv11Hybrid &source); // copy constructor
     AliITSv11Hybrid& operator=(const AliITSv11Hybrid &source); // assignment operator
-    void InitAliITSgeom();
+    void InitAliITSgeom() const;
 
     Bool_t fGeomDetOut;       // Flag to write .det file out
     Bool_t fGeomDetIn;        // Flag to read .det file or directly from Geat.
