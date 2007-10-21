@@ -37,6 +37,8 @@
 #include "AliFMDAltroMapping.h"		// ALIFMDALTROMAPPING_H
 #include "AliFMDParameters.h"
 #include "AliLog.h"
+#include <iostream>
+#include <iomanip>
 
 //____________________________________________________________________
 ClassImp(AliFMDAltroMapping)
@@ -71,6 +73,22 @@ Bool_t
 AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr, 
 				      UShort_t& det, Char_t&   ring, 
 				      UShort_t& sec, UShort_t& str) const
+{
+  // Translate a hardware address to detector coordinates. 
+  // 
+  // See also Hardware2Detector that accepts 4 inputs 
+  UInt_t board =  (addr >> 7) & 0x1F;
+  UInt_t altro =  (addr >> 4) & 0x7;
+  UInt_t chan  =  (addr & 0xf);
+  return Hardware2Detector(ddl, board, altro, chan, det, ring, sec, str);
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl,   UInt_t    board, 
+				      UInt_t    altro, UInt_t    chan,
+				      UShort_t& det,   Char_t&   ring, 
+				      UShort_t& sec,   UShort_t& str) const
 {
   // Translate a hardware address to detector coordinates. 
   // The detector is simply 
@@ -142,9 +160,6 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr,
   // return the first strip in the given range. 
   //
   det          =  ddl + 1;
-  UInt_t board =  (addr >> 7) & 0x1F;
-  UInt_t altro =  (addr >> 4) & 0x7;
-  UInt_t chan  =  (addr & 0xf);
   ring         =  (board % 2) == 0 ? 'I' : 'O';
   switch (ring) {
   case 'i':
@@ -165,9 +180,10 @@ AliFMDAltroMapping::Hardware2Detector(UInt_t    ddl, UInt_t    addr,
 
 //____________________________________________________________________
 Bool_t 
-AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring, 
-				      UShort_t  sec, UShort_t  str,
-				      UInt_t&   ddl, UInt_t&   addr) const
+AliFMDAltroMapping::Detector2Hardware(UShort_t  det,   Char_t    ring, 
+				      UShort_t  sec,   UShort_t  str,
+				      UInt_t&   ddl,   UInt_t&   board,
+				      UInt_t&   altro, UInt_t&   chan) const
 {
   // Translate detector coordinates to a hardware address.
   // The ddl is simply 
@@ -250,28 +266,40 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
   // give us a unique hardware address 
   //
   ddl          =  (det - 1);
-  UInt_t board = 0;
-  UInt_t altro = 0;
-  UInt_t chan  = 0;
   UInt_t tmp   = 0;
   switch (ring) {
   case 'I':
   case 'i':
-    board += (sec / 10) * 16;
+    board =  (sec / 10) * 16;
     altro =  (sec % 10) < 4 ? 0 : (sec % 10) < 6 ? 1 : 2;
     tmp   =  (sec % 10) - (altro == 0 ? 0 : altro == 1 ? 4 : 6);
     chan  =  2  * (str / 128) + (sec % 2) + ((tmp / 2) % 2) * 8;
     break;
   case 'O':
   case 'o':
-    board += (sec / 20) * 20 + 1;
+    board =  (sec / 20) * 16 + 1;
     altro =  (sec % 20) < 8 ? 0 : (sec % 20) < 12 ? 1 : 2;
     tmp   =  (sec % 20) - (altro == 0 ? 0 : altro == 1 ? 8 : 12);
     chan  =  2 * (str / 128) + (sec % 2) + ((tmp / 2) % 4) * 4;
     break;
   }
-  addr         =  chan + (altro << 4) + (board << 7);
-  
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring, 
+				      UShort_t  sec, UShort_t  str,
+				      UInt_t&   ddl, UInt_t&   addr) const
+{
+  // Translate detector coordinates to a hardware address.  
+  // 
+  // See also Detector2Hardware that returns 4 parameters.  
+  UInt_t board = 0;
+  UInt_t altro = 0;
+  UInt_t chan  = 0;
+  if (!Detector2Hardware(det,ring,sec,str,ddl,board,altro,chan)) return kFALSE;
+  addr =  chan + (altro << 4) + (board << 7);
   return kTRUE;
 }
 
@@ -359,6 +387,88 @@ AliFMDAltroMapping::GetSector(Int_t hwaddr) const
   Int_t    ddl = 0;
   if (!Hardware2Detector(ddl, hwaddr, det, ring, sec, str)) return -1;
   return Int_t(ring);
+}
+
+//____________________________________________________________________
+void
+AliFMDAltroMapping::Print(Option_t* option) const
+{
+  TString opt(option);
+  opt.ToLower();
+  UInt_t ddl, board, chip, chan, addr;
+  UShort_t det, sec, str;
+  Char_t   rng;
+  
+  if (opt.Contains("hw") || opt.Contains("hardware")) { 
+    std::cout << " DDL | Board | Chip | Chan | Address | Detector\n"
+	      << "=====+=======+======+======+=========+===============" 
+	      << std::endl;
+    for (ddl = 0; ddl <= 2; ddl++) { 
+      Int_t  boards[] = { 0, 16, (ddl == 0 ? 32 : 1), 17, 32};
+      Int_t* ptr      = boards;
+      while ((board = *(ptr++)) < 32) { 
+	for (chip = 0; chip <= 2; chip++) { 
+	  UInt_t nchan = (chip == 1 ? 8 : 16);
+	  for (chan = 0; chan < nchan; chan++) { 
+	    Hardware2Detector(ddl, board, chip, chan, det, rng, sec, str);
+	    addr = ((board & 0x1f) << 7) | ((chip & 0x7) << 4) | (chan & 0xf);
+	    std::cout << " "  
+		      << std::setw(3) << ddl   << " | " 
+		      << std::setfill('0')     << std::hex << " 0x"
+		      << std::setw(2) << board << " |  0x"
+		      << std::setw(1) << chip  << " |  0x"
+		      << std::setw(1) << chan  << " |   0x" 
+		      << std::setw(3) << addr  << " | " 
+		      << std::setfill(' ')     << std::dec << " FMD" 
+		      << std::setw(1) << det << rng << "[" 
+		      << std::setw(2) << sec << "," << std::setw(3) << str
+		      << "]" << std::endl;
+	  } // for chan ...
+	  if (chip == 2 && *ptr >= 32) continue;
+	  std::cout << "     +       +      +      +         +              " 
+		    << std::endl;
+	} // for chip ... 
+      } // while board 
+      std::cout << "-----+-------+------+------+---------+---------------" 
+		<< std::endl;
+    } // for ddl ... 
+  } // if hw 
+  if (opt.Contains("det")) { 
+    std::cout << " Detector      | DDL | Board | Chip | Chan | Address\n"
+	      << "===============+=====+=======+======+======+========"
+	      << std::endl;
+    for (det = 1; det <= 3; det++) { 
+      Char_t  rings[] = { 'I', (det == 1 ? '\0' : 'O'),'\0' };
+      Char_t* ptr     = rings;
+      while ((rng = *(ptr++)) != '\0') { 
+	UShort_t nsec = (rng == 'I' ?  20 :  40);
+	UShort_t nstr = (rng == 'I' ? 512 : 256);
+	for (sec = 0; sec < nsec; sec++) { 
+	  for (str = 0; str < nstr; str += 128) {
+	    ddl = board = chip = chan;
+	    Detector2Hardware(det,rng,sec,str,ddl,board,chip,chan);
+	    addr = ((board & 0x1f) << 7) | ((chip & 0x7) << 4) | (chan & 0xf);
+	    std::cout << std::setfill(' ')     << std::dec << " FMD" 
+		      << std::setw(1) << det   << rng      << "[" 
+		      << std::setw(2) << sec   << "," 
+		      << std::setw(3) << str   << "] | " 
+		      << std::setw(3) << ddl   << " |  0x"
+		      << std::setfill('0')     << std::hex  
+		      << std::setw(2) << board << " |  0x"
+		      << std::setw(1) << chip  << " |  0x"
+		      << std::setw(1) << chan  << " |   0x" 
+		      << std::setw(3) << addr  << std::endl;
+	  } // for str ...
+	} // for sec ... 
+	if (*ptr == '\0') continue;
+	std::cout << "               +     +       +      +      +        " 
+		  << std::endl;
+      } // while rng ... 
+      std::cout << "---------------+-----+-------+------+------+--------" 
+		<< std::endl;
+
+    } // for det ... 
+  } // if det 
 }
 
 //_____________________________________________________________________________

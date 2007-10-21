@@ -62,11 +62,39 @@ public:
       @param det    On return, the detector #
       @param ring   On return, the ring ID
       @param sec    On return, the sector #
-      @param str    On return, the strip #
+      @param str    On return, the base of strip #
       @return @c true on success, false otherwise */
   Bool_t Hardware2Detector(UInt_t    ddl, UInt_t    hwaddr, 
 			   UShort_t& det, Char_t&   ring, 
 			   UShort_t& sec, UShort_t& str) const;
+  /** Map a hardware address into a detector index. 
+      @param ddl     Hardware DDL number 
+      @param board   FEC number
+      @param altro   ALTRO number 
+      @param channel Channel number 
+      @param det     On return, the detector #
+      @param ring    On return, the ring ID
+      @param sec     On return, the sector #
+      @param str     On return, the base of strip #
+      @return @c true on success, false otherwise */
+  Bool_t Hardware2Detector(UInt_t    ddl,   UInt_t    board, 
+			   UInt_t    altro, UInt_t    channel,
+			   UShort_t& det,   Char_t&   ring, 
+			   UShort_t& sec,   UShort_t& str) const;
+  /** Map a detector index into a hardware address. 
+      @param det     The detector #
+      @param ring    The ring ID
+      @param sec     The sector #
+      @param str     The strip #
+      @param ddl     On return, hardware DDL number 
+      @param board   On return, the FEC board address (local to DDL)
+      @param altro   On return, the ALTRO number (local to FEC)
+      @param channel On return, the channel number (local to ALTRO)
+      @return @c true on success, false otherwise */
+  Bool_t Detector2Hardware(UShort_t  det,   Char_t    ring, 
+			   UShort_t  sec,   UShort_t  str,
+			   UInt_t&   ddl,   UInt_t&   board, 
+			   UInt_t&   altro, UInt_t&   channel) const;
   /** Map a detector index into a hardware address. 
       @param det    The detector #
       @param ring   The ring ID
@@ -105,6 +133,9 @@ public:
       @param hwaddr hardware address
       @return Ring ID as an integer */
   Int_t  GetSector(Int_t hwaddr) const;
+  /** Print map to standard out 
+      @param option Option string (hw, or det) */
+  void Print(Option_t* option="hw") const;
 protected:
   /** Read map from file - not used 
       @return @c true on success */

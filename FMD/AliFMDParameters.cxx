@@ -113,18 +113,18 @@ AliFMDParameters::AliFMDParameters()
 
 //__________________________________________________________________
 void
-AliFMDParameters::Init(Bool_t forceReInit)
+AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
 {
   // Initialize the parameters manager.  We need to get stuff from the
   // CDB here. 
   if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
-  InitPulseGain();
-  InitPedestal();
-  InitDeadMap();
-  InitSampleRate();
-  InitZeroSuppression();
-  InitAltroMap();
+  if (what & kPulseGain)       InitPulseGain();
+  if (what & kPedestal)        InitPedestal();
+  if (what & kDeadMap)         InitDeadMap();
+  if (what & kSampleRate)      InitSampleRate();
+  if (what & kZeroSuppression) InitZeroSuppression();
+  if (what & kAltroMap)        InitAltroMap();
   fIsInit = kTRUE;
   
 }
@@ -701,9 +701,20 @@ AliFMDParameters::GetAltroMap() const
 
 //__________________________________________________________________
 Bool_t
-AliFMDParameters::Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
-				    Char_t& ring, UShort_t& sec, 
-				    UShort_t& str) const
+AliFMDParameters::Hardware2Detector(UInt_t    ddl,  UInt_t    board, 
+				    UInt_t    chip, UInt_t    chan,
+				    UShort_t& det,  Char_t&   ring, 
+				    UShort_t& sec,  UShort_t& str) const
+{
+  // Map hardware address to detector index
+  if (!fAltroMap) return kFALSE;
+  return fAltroMap->Hardware2Detector(ddl,board,chip,chan, det,ring,sec,str);
+}
+//__________________________________________________________________
+Bool_t
+AliFMDParameters::Hardware2Detector(UInt_t    ddl,  UInt_t    addr, 
+				    UShort_t& det,  Char_t&   ring, 
+				    UShort_t& sec,  UShort_t& str) const
 {
   // Map hardware address to detector index
   if (!fAltroMap) return kFALSE;
@@ -712,9 +723,21 @@ AliFMDParameters::Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
 
 //__________________________________________________________________
 Bool_t
-AliFMDParameters::Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec, 
-				    UShort_t str, UInt_t& ddl, 
-				    UInt_t& addr) const			      
+AliFMDParameters::Detector2Hardware(UShort_t det,  Char_t   ring, 
+				    UShort_t sec,  UShort_t str, 
+				    UInt_t&  ddl,  UInt_t&  board, 
+				    UInt_t&  chip, UInt_t&  chan) const
+{
+  // Map detector index to hardware address
+  if (!fAltroMap) return kFALSE;
+  return fAltroMap->Detector2Hardware(det,ring,sec,str, ddl,board,chip,chan);
+}
+
+//__________________________________________________________________
+Bool_t
+AliFMDParameters::Detector2Hardware(UShort_t det, Char_t   ring, 
+				    UShort_t sec, UShort_t str, 
+				    UInt_t&  ddl, UInt_t&  addr) const
 {
   // Map detector index to hardware address
   if (!fAltroMap) return kFALSE;

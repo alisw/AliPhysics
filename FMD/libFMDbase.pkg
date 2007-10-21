@@ -19,7 +19,8 @@ SRCS		=  AliFMDIndex.cxx		\
 		   AliFMDDetector.cxx		\
 		   AliFMD1.cxx			\
 		   AliFMD2.cxx			\
-		   AliFMD3.cxx			
+		   AliFMD3.cxx			\
+		   AliFMDPreprocessor.cxx	
 
 #		   AliFMDAltroIO.cxx		
 

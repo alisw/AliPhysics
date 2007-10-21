@@ -75,6 +75,22 @@ class AliFMDAltroMapping;
 class AliFMDParameters : public TNamed
 {
 public:
+  /** Enumeration of things to initialize */ 
+  enum What { 
+    /** Pulser gain */ 
+    kPulseGain = 0x1, // Pulser gain 
+    /** Pedestals and noise */ 
+    kPedestal = 0x2, // Pedestal and noise 
+    /** Dead channel map */ 
+    kDeadMap = 0x4, // Dead channel map
+    /**  Over sampling rate */ 
+    kSampleRate = 0x8, // Over sampling rate 
+    /** Zero suppression parameters */ 
+    kZeroSuppression = 0x10, // Zero suppression parameters 
+    /** ALTRO data map */ 
+    kAltroMap = 0x20 // Altro channel map
+  };
+  
   /** Singleton access
       @return  single to */
   static AliFMDParameters* Instance();
@@ -82,7 +98,9 @@ public:
   /** Initialize the manager.  This tries to read the parameters from
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
-  void Init(Bool_t forceReInit=kFALSE);
+  void Init(Bool_t forceReInit=kFALSE, 
+	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
+			   kZeroSuppression|kAltroMap));
   /** Print all parameters. 
       @param option Option string */
   void Print(Option_t* option="A") const;
@@ -235,6 +253,20 @@ public:
 		       UShort_t strip) const;
   /** Translate hardware address to detector coordinates 
       @param ddl      DDL number 
+      @param board    Board address
+      @param chip     Chip #
+      @param channel  Channel #
+      @param det      On return, Detector # (1-3)
+      @param ring     On return, Ring ID ('I' or 'O')
+      @param sec      On return, Sector number (0-39)
+      @param str      On return, Strip number (0-511)
+      @return @c true on success. */
+  Bool_t   Hardware2Detector(UInt_t ddl,    UInt_t    board, 
+			     UInt_t chip,   UInt_t    channel, 
+			     UShort_t& det, Char_t&   ring, 
+			     UShort_t& sec, UShort_t& str) const;
+  /** Translate hardware address to detector coordinates 
+      @param ddl      DDL number 
       @param addr     Hardware address
       @param det      On return, Detector # (1-3)
       @param ring     On return, Ring ID ('I' or 'O')
@@ -243,6 +275,21 @@ public:
       @return @c true on success. */
   Bool_t   Hardware2Detector(UInt_t ddl, UInt_t addr, UShort_t& det,
 			     Char_t& ring, UShort_t& sec, UShort_t& str) const;
+
+  /** Translate detector coordinates to hardware address 
+      @param det      Detector # (1-3)
+      @param ring     Ring ID ('I' or 'O')
+      @param sec      Sector number (0-39)
+      @param str      Strip number (0-511)
+      @param ddl      On return, DDL number 
+      @param board    On return, Board address
+      @param chip     On return, Chip #
+      @param channel  On return, Channel #
+      @return @c true on success. */
+  Bool_t   Detector2Hardware(UShort_t det, Char_t ring, 
+			     UShort_t sec, UShort_t str, 
+			     UInt_t& ddl,  UInt_t& board,
+			     UInt_t& chip, UInt_t& channel) const;
   /** Translate detector coordinates to hardware address 
       @param det      Detector # (1-3)
       @param ring     Ring ID ('I' or 'O')
