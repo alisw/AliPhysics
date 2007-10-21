@@ -56,7 +56,7 @@ $Id$
 
 ClassImp(AliITSInitGeometry)
 
-const Bool_t AliITSInitGeometry::fgkOldSPDbarrel = kTRUE;
+const Bool_t AliITSInitGeometry::fgkOldSPDbarrel = kFALSE;
 const Bool_t AliITSInitGeometry::fgkOldSDDbarrel = kFALSE;
 const Bool_t AliITSInitGeometry::fgkOldSSDbarrel = kFALSE;
 const Bool_t AliITSInitGeometry::fgkOldSDDcone   = kTRUE;

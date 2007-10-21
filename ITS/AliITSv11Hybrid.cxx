@@ -30,6 +30,9 @@
 // $Id$
 
 // $Log$
+// Revision 1.7  2007/08/24 14:32:57  hristov
+// Introduction of SPD half-stave volumes, cleaning and new code (in relation to new SPD geometry) in AliITSv11Hybrid (Ludovic)
+//
 // Revision 1.6  2007/07/27 08:12:39  morsch
 // Write all track references into the same branch.
 //
@@ -151,8 +154,8 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *title)
   fIdName = new TString[fIdN];
 
   if (AliITSInitGeometry::SPDIsTGeoNative()) {
-//     fIdName[0] = fSPDgeom->GetSPDLayer1SensitiveVolumeName();
-//     fIdName[1] = fSPDgeom->GetSPDLayer2SensitiveVolumeName();
+    fIdName[0] = fSPDgeom->GetSenstiveVolumeName1();
+    fIdName[1] = fSPDgeom->GetSenstiveVolumeName2();
   } else {
     fIdName[0] = "ITS1";
     fIdName[1] = "ITS2";
@@ -228,8 +231,8 @@ AliITSv11Hybrid::AliITSv11Hybrid(const char *name, const char *title)
   (void) name; // removes warning message
 
   if (AliITSInitGeometry::SPDIsTGeoNative()) {
-//     fIdName[0] = fSPDgeom->GetSPDLayer1SensitiveVolumeName();
-//     fIdName[1] = fSPDgeom->GetSPDLayer2SensitiveVolumeName();
+    fIdName[0] = fSPDgeom->GetSenstiveVolumeName1();
+    fIdName[1] = fSPDgeom->GetSenstiveVolumeName2();
   } else {
     fIdName[0] = "ITS1";
     fIdName[1] = "ITS2";
@@ -426,6 +429,9 @@ void AliITSv11Hybrid::AddAlignableVolumes() const
 	      AliFatal("Unable to set alignable entry!!");    
 	    
 	    SetT2Lmatrix(strEntryName4.Data(), -0.0081, kTRUE, kTRUE);
+	    // -0.0081 is the shift between the centers of alignable and sensitive volumes
+	    // It is directly extracted from the new SPD geometry
+ 
 	  }
 	}
       }
@@ -5853,6 +5859,7 @@ void AliITSv11Hybrid::StepManager(){
     // We should not need to pass by the switch !
     // This is time consuming...
     // therefore DecodeDetectorv11Hybrid(...) shouldn't be private !
+    // and we should be able to use instead :
     //fInitGeom.DecodeDetectorv11Hybrid(mod,lay+1,cpn0,cpn1,copy);
 
     //
