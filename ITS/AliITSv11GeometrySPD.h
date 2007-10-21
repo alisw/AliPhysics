@@ -5,136 +5,160 @@
  * Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved.
  * See cxx source for full Copyright notice.
  */
-
-
+  
+ // Implementation of the SPD v11 central geometry.
+ // Contains also:
+ //  - the materials/media used for its volumes;
+ //  - settings for the related transport parameters
+ //   (GEANT3 types for the moment).
+ //
 
 /*
  * $Id$
  */
 
-//
-// Implementation of the SPD v11 central geometry.
-// Contains also:
-//  - the materials/media used for its volumes;
-//  - settings for the related transport parameters (GEANT3 types for the moment).
-//
 #include <TGeoManager.h>
 #include <TVirtualMC.h>
 #include <TString.h>
 #include <TArrayI.h>
+#include <TPolyLine.h>
+#include <TPolyMarker.h>
 #include <AliITSv11Geometry.h>
 
-class TGeoVolume;
-class TPolyLine;
-class TPolyMarker;
 
+class TGeoVolume;
 
 class AliITSv11GeometrySPD : public AliITSv11Geometry
 {
 public:
-        // Default Constructor, should not be used by default
-        AliITSv11GeometrySPD() : AliITSv11Geometry(),fSPDsectorShapeName(),
-                                 fSPDsectorPoints0(),fSPDsectorPoints1() {};
-        // Standard Constructor, set explicitly debug level
-        AliITSv11GeometrySPD(Int_t debug) : AliITSv11Geometry(debug),
-              fSPDsectorShapeName("ITS SPD Carbon fiber support Sector A0"),
-              fSPDsectorPoints0(6),fSPDsectorPoints1() {}; 
-        virtual ~AliITSv11GeometrySPD() {}; // Destructor
 
+	// Default constructor
+	AliITSv11GeometrySPD(Double_t gap = 0.0075);
+	// Standard Constructor
+	AliITSv11GeometrySPD(Int_t debug, Double_t gap = 0.0075);
+	// Copy constructor (temporarily disabled)
+	// AliITSv11GeometrySPD(const AliITSv11GeometrySPD &s);
+	// Assignment operator (temporarily disabled)
+	// operator=(const AliITSv11GeometrySPD &s);
+	// Destructor
+	virtual ~AliITSv11GeometrySPD() {};
+	
 	/* Settings */
-
+	
 	// define/create materials
-	virtual Int_t CreateSPDCentralMaterials(Int_t &medOffset,
-						Int_t &matOffset) const;
+	virtual Int_t CreateSPDCentralMaterials(Int_t &medOffset, Int_t &matOffset) const;
 	// set SPD Central, GEANT3 type, tracking parameters
-	virtual void InitSPDCentral(Int_t offset,TVirtualMC *mc=gMC) const;
+	virtual void InitSPDCentral(Int_t offset, TVirtualMC *mc = gMC) const;
 	
 	/* Monitoring */
 	
 	// creates standard figures for the documentation of this class
-	virtual void CreateFigure0(const Char_t *filepath = "",
-				   const Char_t *type = "gif",
-				   TGeoManager *mgr=gGeoManager);
+	virtual void CreateFigure0
+		(const Char_t *path = "", const Char_t *type = "gif", TGeoManager *mgr = gGeoManager) const;
+	// fill TPolylines with crossections of the SPD Carbon fiber sectors.
+	Bool_t Make2DCrossSections
+		(TPolyLine &a0, TPolyLine &a1, TPolyLine &b0, TPolyLine &b1, TPolyMarker &p) const;
 	
-	/* Member functions which create pieces of the geometry */
+	/* Services */
+	
+	// get names
+	virtual const char *GetSenstiveVolumeName1() const {return "LAY1_SENSOR";}
+	virtual const char *GetSenstiveVolumeName2() const {return "LAY2_SENSOR";}
+	virtual const char *GetSenstiveVolumeName(Int_t lay) const
+		{return (lay==1) ? GetSenstiveVolumeName1() : GetSenstiveVolumeName2();}
+	// get medium
+	virtual TGeoMedium* GetMedium(const char* mediumName, TGeoManager *mgr = gGeoManager) const;
+	// retrieve the mounting location and rotation needed to mount an SPD stave
+	virtual Bool_t GetSectorMountingPoints
+		(Int_t index, Double_t &x0, Double_t &y0, Double_t &x1, Double_t &y1) const;
+	// displace the staves on the carbon fiber sector
+	virtual void StavesInSector(TGeoVolume *moth, TGeoManager *mgr = gGeoManager);
+	// (debug purposes) define which staves to put in the sector
+	virtual void SetAddStave(Bool_t *mask);
+	// print class in ascii form to stream
+	virtual void PrintAscii(ostream *os) const;
+	// read in class in ascii form from stream
+	virtual void ReadAscii(istream *is);
+		 
+	/* Parts of the geometry */
 	
 	// a single ladder (= 1 detector + 5 chips)
-	TGeoVolume* CreateLadder(Int_t layer, Double_t &width,
-				 Double_t &height, Double_t &thickness,
-				 TGeoManager *mgr = gGeoManager);
-	// the grounding foil (splitted in two components)
-	TGeoVolume* CreateGroundingFoilSingle(Bool_t kapLayer,Double_t &len, 
-					      Double_t &wid, Double_t &thick,
-					      TGeoManager *mgr = gGeoManager);
-	TGeoVolume* CreateGroundingFoil(Double_t &thickness,
-					TGeoManager *mgr = gGeoManager);
-	// the MCM (incomplete: missing the internal chips)
-	TGeoVolume* CreateMCMBase(TGeoManager *mgr = gGeoManager) const;
-	TGeoVolume* CreateMCMCoverBorder(TGeoManager *mgr = gGeoManager);
-	TGeoVolume* CreateMCMCoverTop(TGeoManager *mgr = gGeoManager);
-	// the Pixel Bus & extenders
-	TGeoVolumeAssembly* CreatePixelBusAndExtensions(Bool_t zpos = kTRUE,
-					      TGeoManager *mgr = gGeoManager);
-	// the thin part of a stave (grounding + ladders)
-	TGeoVolume *CreateStaveBase(Int_t layer, Double_t &width,
-				    Double_t &height, Double_t &thickness,
-				    TGeoManager *mgr=gGeoManager);
-	// the whole stave, including the thick parts (MCM cover, 
-	// pixel bus & extensions)
-	TGeoVolumeAssembly* CreateStave(Int_t layer, Double_t &thickness,
-					TGeoManager *mgr);
-	// displacement of staves on the carbon fiber sector
-	virtual void StavesInSector(TGeoVolume *moth,
-				    TGeoManager *mgr=gGeoManager);
+	virtual TGeoVolume* CreateLadder
+		(Int_t layer, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	// a clip on the central ladders
+	virtual TGeoVolume* CreateClip
+		(TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	// the grounding foil (splitted in many components)
+	virtual TGeoVolumeAssembly* CreateGroundingFoilSingle
+		(Int_t type, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	virtual TGeoVolume* CreateGroundingFoil
+		(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	// the MCM (thin part + thick part with chips inside)
+	virtual TGeoVolumeAssembly* CreateMCM
+		(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	// the pixel bus (flat part + pt1000s + large capacitors/resistors)
+	virtual TGeoVolumeAssembly* CreatePixelBus
+		(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	// the extender complicated geometry
+	virtual TGeoVolume* CreateExtender
+		(const Double_t *params, const TGeoMedium *medium, TArrayD &sizes) const;
+	// the Pixel Bus & extenders (old method which will be removed)
+	virtual TGeoVolumeAssembly* CreatePixelBusAndExtensions
+		(Bool_t zpos = kTRUE, TGeoManager *mgr = gGeoManager) const;
+	// a half-stave (put together ladders + MCM + bus, and add clips if requested)
+	virtual TGeoVolumeAssembly* CreateHalfStave
+		(Bool_t isRight, Int_t layer, Int_t idxCentral, Int_t idxSide,
+		 TArrayD &sizes, Bool_t addClips = kFALSE, TGeoManager *mgr = gGeoManager);
+	// the whole stave (2 half-staves of different orientation)
+	virtual TGeoVolumeAssembly* CreateStave
+		(Int_t layer, TArrayD &sizes, Bool_t addClips = kFALSE, TGeoManager *mgr = gGeoManager);
 	// the complete Carbon Fiber sector (support + staves)
-	virtual void CarbonFiberSector(TGeoVolume *moth,
-				       Double_t &xAAtubeCenter0,
-				       Double_t &yAAtubeCenter0,
-				       TGeoManager *mgr=gGeoManager);
-	// the whole SPD barrel
-	virtual void SPDSector(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
-	// Returns the mounting location and rotation needed to mount
-        // and SPD ladder.
-	virtual Bool_t GetSectorMountingPoints(
-                             Int_t index,Double_t &x0,Double_t &y0,
-                             Double_t &x1,Double_t &y1,
-			     TGeoManager *mgr=gGeoManager)const;
-	// Functions to test aspects of this geometry.
-        // Fill TPolylines with crossections of the SPD Carbon
-	// fiber sectors.
-	Bool_t Make2DcrossSections(TPolyLine &a0,TPolyLine &a1,
-				   TPolyLine &b0,TPolyLine &b1,
-				   TPolyMarker &p)const;
+	virtual void CarbonFiberSector
+		(TGeoVolume *moth, Double_t &xAAtubeCenter0, Double_t &yAAtubeCenter0, TGeoManager *mgr = gGeoManager);
+	// the whole SPD barrel (the 10 sectors at once)
+	virtual void SPDSector(TGeoVolume *moth, TGeoManager *mgr = gGeoManager);
 
 private:
-	
+ 
 	// NOTE:
-	// all of the member functions which define a component of the 
-	// final SPD will need to be defined as private once the design 
-	// is fixed and does not
-	// need any longer to be checked and debugged.
+	// all of the member functions which define a component of the final SPD
+	// will need to be defined as private once the design is fixed and 
+	// does not need any longer to be checked and debugged.
 	
-	// Computes shape of the SPD Sector given specific inputs 
-	// (internal use only)
-	void SPDsectorShape(Int_t n, const Double_t *xc, const Double_t *yc,
-			    const Double_t *r,
-	                    const Double_t *ths, const Double_t *the, Int_t npr,
-	                    Int_t &m, Double_t **xp, Double_t **yp);
+	/* Service methods for internal use only */
 	
-	// computes a point to a line parallel to a given direction
-	// and with a fixed distance from it (internal use only)
-	void ParallelPosition(Double_t dist1, Double_t dist2,
-			      Double_t phi, Double_t &x, Double_t &y);
+	// compute shape of the SPD Sector given specific inputs 
+	void SPDsectorShape
+		(Int_t n, 
+		 const Double_t *xc, const Double_t *yc, const Double_t *r,
+		 const Double_t *ths, const Double_t *the, Int_t npr,
+		 Int_t &m, Double_t **xp, Double_t **yp) const;
+	
+	// compute a point o a line parallel to a given direction
+	// and with a fixed distance from it
+	void ParallelPosition
+		(Double_t dist1, Double_t dist2, Double_t phi, Double_t &x, Double_t &y) const;
+	
+	/* Data members */
+	
+	Double_t fAlignmentGap;    // thicknes of the empty (air) gap left between the
+	                           // ladder and the grounding foil for alignment
+	
+	Bool_t  fAddStave[6];      // [DEBUG] must be TRUE for all staves
+	                           // which will be mounted in the sector (used to check overlaps)
+		
+	TArrayD fSPDsectorX0;      // X of first edge of sector plane for stave
+	TArrayD fSPDsectorY0;      // Y of first edge of sector plane for stave
+	TArrayD fSPDsectorX1;      // X of second edge of sector plane for stave
+	TArrayD fSPDsectorY1;      // Y of second edge of sector plane for stave
+	
+	/* ROOT dictionary */
 
-	// Some internal data
-	TString fSPDsectorShapeName; // SPD Sector Shape name
-	TArrayI fSPDsectorPoints0;    // Array of sector points index
-                                     // used to mount SPD ladder to.
-	TArrayI fSPDsectorPoints1;    // Array of sector points index
-                                     // used to mount SPD ladder to.
-	
-	ClassDef(AliITSv11GeometrySPD,1) // ITS v11 Centeral SPD geometry
+	ClassDef(AliITSv11GeometrySPD,1) // ITS v11 Central SPD geometry
 };
 
-#endif
+// Input and output function for standard C++ input/output.
+ostream &operator<<(ostream &os, const AliITSv11GeometrySPD &s);
+istream &operator>>(istream &is, AliITSv11GeometrySPD &s);
 
+#endif
