@@ -108,7 +108,7 @@ void AliAnalysisTaskJets::ConnectInputData(Option_t */*option*/)
 // Connect the input data
     if (fDebug > 1) printf("AnalysisTaskJets::ConnectInputData() \n");
     AliESDInputHandler* esdH = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    AliESDEvent* fESD = esdH->GetEvent();
+    fESD = esdH->GetEvent();
     fTree = esdH->GetTree();
     
     
