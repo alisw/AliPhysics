@@ -99,37 +99,6 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
 }
 
 //______________________________________________________________________________
-/*Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
-  // Reads the entry of the TGridResult and creates the tags
-  Int_t nEntries = fresult->GetEntries();
-
-  TString alienUrl;
-  const char *guid;
-  const char *md5;
-  const char *turl;
-  Long64_t size = -1;
-
-  Int_t counter = 0;
-  for(Int_t i = 0; i < nEntries; i++) {
-    alienUrl = fresult->GetKey(i,"turl");
-    guid = fresult->GetKey(i,"guid");
-    if(fresult->GetKey(i,"size")) size = atol (fresult->GetKey(i,"size"));
-    md5 = fresult->GetKey(i,"md5");
-    turl = fresult->GetKey(i,"turl");
-    if(md5 && !strlen(guid)) md5 = 0;
-    if(guid && !strlen(guid)) guid = 0;
-
-    TFile *f = TFile::Open(alienUrl,"READ");
-    CreateTag(f,guid,md5,turl,size,counter);
-    f->Close();
-    delete f;	 
-    counter += 1;
-  }//grid result loop
-
-  return kTRUE;
-  }*/
-
-//______________________________________________________________________________
 Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath) {
   // Checks the different subdirs of the given local path and in the
   // case where it finds an AliESDs.root file it creates the tags
@@ -171,41 +140,6 @@ Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath) {
 }
 
 //______________________________________________________________________________
-/*Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath) {
-  // Checks the different subdirs of the given local path and in the
-  // case where it finds an AliAODs.root file it creates the tags
-  
-  void *dira =  gSystem->OpenDirectory(localpath);
-  Char_t fPath[256];
-  const char * dirname = 0x0;
-  const char * filename = 0x0;
-  const char * pattern = "AliAOD.root"; 
-
-  Int_t counter = 0;
-  while((dirname = gSystem->GetDirEntry(dira))) {
-    sprintf(fPath,"%s/%s",localpath,dirname);
-    void *dirb =  gSystem->OpenDirectory(fPath);
-    while((filename = gSystem->GetDirEntry(dirb))) {
-      if(strstr(filename,pattern)) {
-	TString fAODFileName;
-	fAODFileName = fPath;
-	fAODFileName += "/";
-	fAODFileName += pattern;
-	TFile *f = TFile::Open(fAODFileName,"READ");
-	CreateTag(f,fAODFileName,counter);
- 	f->Close();
-	delete f;	 
-	
-	counter += 1;
-      }//pattern check
-    }//child directory's entry loop
-  }//parent directory's entry loop
-
-  return kTRUE;
-  }*/
-
-
-//______________________________________________________________________________
 Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
   // Temporary solution for CAF: Takes as an input the ascii file that
   // lists the ESDs stored in the SE of the CAF and creates the tags.
@@ -237,32 +171,6 @@ Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
 
   return kTRUE;
 }
-
-//______________________________________________________________________________
-/*Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
-  // Temporary solution for CAF: Takes as an input the ascii file that
-  // lists the AODs stored in the SE of the CAF and creates the tags.
-
-  // Open the input stream
-  ifstream in;
-  in.open(filename);
-
-  Int_t counter = 0;
-  TString esdfile;
-  // Read the input list of files and add them to the chain
-  while(in.good()) {
-    in >> esdfile;
-    if (!esdfile.Contains("root")) continue; // protection
-    TFile *f = TFile::Open(esdfile,"READ");
-    CreateTag(f,esdfile,counter);
-    f->Close();
-    delete f;	 
-    
-    counter += 1;
-  }
-
-  return kTRUE;
-  }*/
 
 //__________________________________________________________________________
 void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList *grpList) {
@@ -326,6 +234,17 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
   Int_t lastEvent = 0;  
   if(fLastEvent == -1) lastEvent = (Int_t)aodTree->GetEntries();
   else lastEvent = fLastEvent;
+
+  if(fLastEvent == -1) lastEvent = (Int_t)aodTree->GetEntries();
+  else lastEvent = fLastEvent;
+
+  char fileName[256];
+  sprintf(fileName, "Run%d.Event%d_%d.AOD.tag.root", 
+	  tag->GetRunId(),fFirstEvent,lastEvent );
+  AliInfo(Form("writing tags to file %s", fileName));
+  AliDebug(1, Form("writing tags to file %s", fileName));
+ 
+  TFile* ftag = TFile::Open(fileName, "recreate");
 
   // loop over events
   Int_t nEvents = aodTree->GetEntries();
@@ -450,16 +369,7 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
     evTag->SetMaxPt(maxPt);
     tag->AddEventTag(*evTag);
   }//event loop
-  if(fLastEvent == -1) lastEvent = (Int_t)aodTree->GetEntries();
-  else lastEvent = fLastEvent;
 
-  char fileName[256];
-  sprintf(fileName, "Run%d.Event%d_%d.AOD.tag.root", 
-	  tag->GetRunId(),fFirstEvent,lastEvent );
-  AliInfo(Form("writing tags to file %s", fileName));
-  AliDebug(1, Form("writing tags to file %s", fileName));
- 
-  TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
   ttag.Fill();
   tag->Clear();
@@ -473,7 +383,6 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
 void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
   //private method that creates tag files
   TString fSession = type;
-  //Int_t iCounter = 0;
   TString fguid, fmd5, fturl;
   TString fTempGuid = 0;
 
@@ -494,14 +403,8 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
-
-  AliRunTag *tag = new AliRunTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
-  btag->SetCompressionLevel(9);
   
-  //reading the esd tag file                    
-                              
+  //reading the esd tag file                                                  
   TChain *oldTagTree = new TChain("T");
   const char * tagPattern = "ESD.tag";
   // Open the working directory
@@ -513,6 +416,49 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
   }//directory loop
   AliInfo(Form("Chained tag files: %d",oldTagTree->GetEntries()));
   
+  /*if (!file || !file->IsOpen()) {
+    AliError(Form("opening failed"));
+    delete file;
+    return ;
+  }
+  TTree *aodTree = (TTree*)file->Get("aodTree");*/
+  AliAODEvent *aod = new AliAODEvent();
+  aod->ReadFromTree(fChain);
+  fChain->GetEntry(0);
+  TFile *f = fChain->GetFile();
+  fTempGuid = f->GetUUID().AsString();
+  Int_t firstEvent = 0, lastEvent = 0;
+  //lastEvent = (Int_t)aodTree->GetEntries();
+
+  TString localFileName = "Run"; localFileName += aod->GetRunNumber(); 
+  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; localFileName += fChain->GetEntries(); //localFileName += "."; localFileName += Counter;
+  localFileName += ".AOD.tag.root";
+
+  TString fileName;
+  
+  if(fStorage == 0) {
+    fileName = localFileName.Data();      
+    AliInfo(Form("Writing tags to local file: %s",fileName.Data()));
+  }
+  else if(fStorage == 1) {
+    TString alienLocation = "/alien";
+    alienLocation += gGrid->Pwd();
+    alienLocation += fgridpath.Data();
+    alienLocation += "/";
+    alienLocation +=  localFileName;
+    alienLocation += "?se=";
+    alienLocation += fSE.Data();
+    fileName = alienLocation.Data();
+    AliInfo(Form("Writing tags to grid file: %s",fileName.Data()));
+  }
+
+  TFile* ftag = TFile::Open(fileName, "recreate");
+
+  AliRunTag *tag = new AliRunTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  btag->SetCompressionLevel(9);
+
   //reading the esd tag file 
   AliRunTag *oldtag = new AliRunTag();
   TString tagFilename;
@@ -522,17 +468,6 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
   const TClonesArray *evTagList = oldtag->GetEventTags();
 
   AliInfo(Form("Creating the AOD tags......."));
-
-  /*if (!file || !file->IsOpen()) {
-    AliError(Form("opening failed"));
-    delete file;
-    return ;
-  }
-  TTree *aodTree = (TTree*)file->Get("aodTree");*/
-  AliAODEvent *aod = new AliAODEvent();
-  aod->ReadFromTree(fChain);
-  Int_t firstEvent = 0, lastEvent = 0;
-  //lastEvent = (Int_t)aodTree->GetEntries();
 
   // loop over events 
   Int_t nEvents = fChain->GetEntries();
@@ -668,40 +603,21 @@ void AliAODTagCreator::CreateTag(TChain* fChain, const char *type) {
     evTag->SetTotalMomentum(totalP);
     evTag->SetMeanPt(meanPt);
     evTag->SetMaxPt(maxPt);
-    tag->AddEventTag(*evTag);
 
     if(fguid != fTempGuid) {
       fTempGuid = fguid;
       ttag.Fill();
       tag->Clear("");
     }
+    tag->AddEventTag(*evTag);
+    if(iEventNumber+1 == fChain->GetEntries()) {
+      //AliInfo(Form("File: %s",fturl.Data()));
+      ttag.Fill();
+      tag->Clear("");
+    }      
   }//event loop
   lastEvent = fChain->GetEntries();
     
-  TString localFileName = "Run"; localFileName += tag->GetRunId();
-  localFileName += ".Event"; localFileName += firstEvent; localFileName += "_"; 
-  localFileName += lastEvent; //localFileName += "."; localFileName += Counter;
-  localFileName += ".AOD.tag.root";
-
-  TString fileName;
-
-  if(fStorage == 0) {
-    fileName = localFileName.Data();
-    AliInfo(Form("Writing AOD tags to local file: %s",fileName.Data()));
-  }
-  else if(fStorage == 1) {
-    TString alienLocation = "/alien";
-    alienLocation += gGrid->Pwd();
-    alienLocation += fgridpath.Data();
-    alienLocation += "/";
-    alienLocation +=  localFileName;
-    alienLocation += "?se=";
-    alienLocation += fSE.Data();
-    fileName = alienLocation.Data();
-    AliInfo(Form("Writing AOD tags to grid file: %s",fileName.Data()));
-  }
-
-  TFile* ftag = TFile::Open(fileName, "recreate");
   ftag->cd();
   //ttag.Fill();
   tag->Clear();
