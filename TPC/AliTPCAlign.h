@@ -25,7 +25,7 @@ class AliTPCAlign : public TObject {
   Double_t ComputeTransform();
   void CreateAlignObj();
   void Run();
-  void SetDebug(Int_t debug){debug=fDebug;}
+  void SetDebug(Int_t debug){fDebug=debug;}
   void StoreAlignObj();
   virtual   ~AliTPCAlign();
   //

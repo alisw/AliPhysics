@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/10/03 09:27:50  marian
+Extra semicolon removed (Marian)
+
 Revision 1.1  2007/10/01 14:12:45  kowal2
 Class creating the aligmnent object fro the surveyor measurements.
 
@@ -155,37 +158,29 @@ Bool_t AliTPCAlign::LoadSurveyData(){
  //
  Float_t idealPoints[8][3];
  //
- idealPoints[0][0]=0.7973;
- idealPoints[0][1]=-2.5278;
- idealPoints[0][2]=3.0165;
+ AliSurveyObj * s2 = new AliSurveyObj();
+ s2->FillFromLocalFile(fFileLoc);
  //
- idealPoints[1][0]=2.5873;
- idealPoints[1][1]=-0.5738;
- idealPoints[1][2]=3.0166;
+ TString pointNamesL[8] ={"R04","R05","R06","R07","R08","R10","R11","R12"};
  //
- idealPoints[2][0]=1.7898;
- idealPoints[2][1]=1.9540;
- idealPoints[2][2]=3.0164;
- //
- idealPoints[3][0]=-0.2237;
- idealPoints[3][1]=0.7055;
- idealPoints[3][2]=3.0161;
- //
- idealPoints[4][0]=-0.7230;
- idealPoints[4][1]=0.1598;
- idealPoints[4][2]=3.0162;
-//
- idealPoints[5][0]=0.2225;
- idealPoints[5][1]=-0.7058;
- idealPoints[5][2]=3.0166;
- //
- idealPoints[6][0]=0.7224;
- idealPoints[6][1]=-0.1608;
- idealPoints[6][2]=3.0164;
- //
- idealPoints[7][0]=0.4999;
- idealPoints[7][1]=0.5452;
- idealPoints[7][2]=3.0164;
+  AliSurveyPoint *currPointL;
+  //
+ for(Int_t i=0;i<numberPoints;i++){
+   currPointL=0;
+   currPointL = (AliSurveyPoint *) s2->GetData()->FindObject(pointNamesL[i]);
+   if(currPointL){
+     idealPoints[i][0]=currPointL->GetY();
+     idealPoints[i][1]=currPointL->GetZ();
+     idealPoints[i][2]=currPointL->GetX();
+          if(fDebug)
+     Printf(Form("INFO: Point \"%s\" coordinates read.", pointNamesL[i].Data()));
+   }
+   else{
+     if(fDebug){
+    Printf(Form("ERROR: Essential point missing: \"%s\"", pointNamesL[i].Data()));
+    return 1; }
+   }
+ }
  //
  // Create and fill matrices a & y
  //
