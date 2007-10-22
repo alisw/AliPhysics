@@ -1,3 +1,8 @@
+2007-10-22  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Viewer.cxx:
+	Modify defaults for otho-camera (disable rotations).
+
 2007-10-16  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev
