@@ -119,6 +119,20 @@ void RGBAPalette::SetLimits(Int_t low, Int_t high)
     ClearColorArray();
 }
 
+void RGBAPalette::SetLimitsScaleMinMax(Int_t low, Int_t high)
+{
+  Float_t rng_old = fHighLimit - fLowLimit;
+  Float_t rng_new = high - low;
+
+  fMinVal = TMath::Nint(low + (fMinVal - fLowLimit)*rng_new/rng_old);
+  fMaxVal = TMath::Nint(low + (fMaxVal - fLowLimit)*rng_new/rng_old);
+  fLowLimit  = low;
+  fHighLimit = high;
+
+  fNBins  = fMaxVal - fMinVal + 1;
+  ClearColorArray();
+}
+
 void RGBAPalette::SetMin(Int_t min)
 {
   fMinVal = TMath::Min(min, fMaxVal);

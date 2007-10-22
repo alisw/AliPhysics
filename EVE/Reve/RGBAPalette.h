@@ -63,6 +63,7 @@ public:
   Int_t  GetMaxVal() const { return fMaxVal; }
 
   void   SetLimits(Int_t low, Int_t high);
+  void   SetLimitsScaleMinMax(Int_t low, Int_t high);
   void   SetMinMax(Int_t min, Int_t max);
   void   SetMin(Int_t min);
   void   SetMax(Int_t max);

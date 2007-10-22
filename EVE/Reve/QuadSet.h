@@ -3,20 +3,9 @@
 #ifndef REVE_QuadSet_H
 #define REVE_QuadSet_H
 
-#include <Gtypes.h>
-#include <TNamed.h>
-#include <TQObject.h>
-#include <TAtt3D.h>
-#include <TAttBBox.h>
+#include <Reve/DigitSet.h>
 
-#include <Reve/Reve.h>
-#include <Reve/RenderElement.h>
-#include <Reve/FrameBox.h>
-#include <Reve/RGBAPalette.h>
-#include <Reve/Plex.h>
-#include <Reve/ZTrans.h>
-
-#include <vector>
+#include <vector> // For OldQuadSet
 
 class TRandom;
 
@@ -75,12 +64,8 @@ public:
 // To become new implementation of QuadSet ... somewhat finished.
 /**************************************************************************/
 
-class QuadSet : public RenderElement,
-		public TNamed, public TQObject,
-		public TAtt3D,
-		public TAttBBox
+class QuadSet : public DigitSet
 {
-  friend class QuadSetEditor;
   friend class QuadSetGL;
 
   QuadSet(const QuadSet&);            // Not implemented
@@ -119,19 +104,10 @@ public:
   enum RenderMode_e { RM_AsIs, RM_Line, RM_Fill };
 
 protected:
-  struct QuadBase
-  {
-    Int_t fValue;
-    TRef  fId;
 
-    // Here could have additional integer (like time, second threshold).
+  struct QFreeQuad     : public DigitBase      { Float_t fVertices[12]; };
 
-    QuadBase(Int_t v=0) : fValue(v), fId() {}
-  };
-
-  struct QFreeQuad     : public QuadBase      { Float_t fVertices[12]; };
-
-  struct QOrigin       : public QuadBase      { Float_t fA, fB; };
+  struct QOrigin       : public DigitBase      { Float_t fA, fB; };
 
   struct QRectFixDimC  : public QOrigin       { };
 
@@ -147,28 +123,12 @@ protected:
 
 protected:
   QuadType_e        fQuadType;
-  Int_t             fDefaultValue;
-  Bool_t            fValueIsColor;
-  Bool_t            fOwnIds;       //Flag specifying if id-objects are owned by the QuadSet
-  VoidCPlex         fPlex;
-  QuadBase*         fLastQuad;     //!
 
   Float_t           fDefWidth;     // Breadth assigned to first coordinate  (A)
   Float_t           fDefHeight;    // Breadth assigned to second coordinate (B)
   Float_t           fDefCoord;     // Default value for third coordinate    (C)
 
-  FrameBox*         fFrame;
-  RGBAPalette*      fPalette;
-  RenderMode_e      fRenderMode;
-  Bool_t            fDisableLigting;
-  Bool_t            fEmitSignals;
-  Bool_t            fHistoButtons;
-  ZTrans            fHMTrans;
-
   static Int_t SizeofAtom(QuadType_e qt);
-  QuadBase*    NewQuad();
-
-  void ReleaseIds();
 
 public:
   QuadSet(const Text_t* n="QuadSet", const Text_t* t="");
@@ -176,13 +136,7 @@ public:
 	  const Text_t* n="QuadSet", const Text_t* t="");
   virtual ~QuadSet();
 
-  virtual Bool_t CanEditMainColor() { return kTRUE; }
-  virtual void   SetMainColor(Color_t color);
-
   void Reset(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize);
-  void RefitPlex();
-
-  void ScanMinMaxValues(Int_t& min, Int_t& max);
 
   Float_t GetDefWidth()  const { return fDefWidth;  }
   Float_t GetDefHeight() const { return fDefHeight; }
@@ -191,30 +145,6 @@ public:
   void SetDefWidth(Float_t v)  { fDefWidth  = v ; }
   void SetDefHeight(Float_t v) { fDefHeight = v ; }
   void SetDefCoord(Float_t v)  { fDefCoord  = v ; }
-
-  // --------------------------------
-
-  FrameBox* GetFrame() const { return fFrame; }
-  void SetFrame(FrameBox* b);
- 
-  Bool_t GetValueIsColor()  const { return fValueIsColor; }
-
-  RGBAPalette* GetPalette() const { return fPalette; }
-  void SetPalette(RGBAPalette* p);
-  RGBAPalette* AssertPalette();
-
-  RenderMode_e  GetRenderMode() const { return fRenderMode; }
-  void SetRenderMode(RenderMode_e rm) { fRenderMode = rm; }
-
-  Bool_t GetEmitSignals() const   { return fEmitSignals; }
-  void   SetEmitSignals(Bool_t f) { fEmitSignals = f; }
-
-  Bool_t GetHistoButtons() const   { return fHistoButtons; }
-  void   SetHistoButtons(Bool_t f) { fHistoButtons = f; }
-
-  ZTrans& RefHMTrans() { return fHMTrans; }
-  void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
-  void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 
   // --------------------------------
 
@@ -229,20 +159,11 @@ public:
 
   void AddHexagon(Float_t a, Float_t b, Float_t z, Float_t r);
 
-  void QuadValue(Int_t value);
-  void QuadColor(Color_t ci);
-  void QuadColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a=255);
-
-  void QuadId(TObject* id);
-  Bool_t GetOwnIds() const    { return fOwnIds; }
-  void   SetOwnIds(Bool_t o)  { fOwnIds = o; }
-
-  QuadBase* GetQuad(Int_t n) { return (QuadBase*) fPlex.Atom(n);   }
-  TObject*  GetId(Int_t n)   { return GetQuad(n)->fId.GetObject(); }
-
-  virtual void QuadSelected(Int_t idx);
-
-  virtual void CtrlClicked(QuadSet* qs, Int_t idx); // *SIGNAL*
+  // Wrappers to make transition to DigitSet as base easier
+  void QuadValue(Int_t value) { DigitValue(value); }
+  void QuadColor(Color_t ci)  { DigitColor(ci); }
+  void QuadColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a=255) { DigitColor(r, g, b, a); }
+  void QuadId(TObject* id)    { DigitId(id); }
 
   // --------------------------------
 
@@ -250,9 +171,7 @@ public:
 
   virtual void ComputeBBox();
 
-  virtual void Paint(Option_t* option="");
-
-  VoidCPlex* GetPlex() { return &fPlex; }
+  // virtual void Paint(Option_t* option="");
 
   ClassDef(QuadSet, 1);
 };

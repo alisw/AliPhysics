@@ -36,7 +36,7 @@ protected:
 
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
-  Bool_t SetupColor(const QuadSet::QuadBase& q) const;
+  Bool_t SetupColor(const DigitSet::DigitBase& q) const;
 
   void   RenderQuads(TGLRnrCtx & rnrCtx) const;
   void   RenderLines(TGLRnrCtx & rnrCtx) const;
@@ -45,6 +45,8 @@ protected:
 public:
   QuadSetGL();
   virtual ~QuadSetGL();
+
+  virtual Bool_t ShouldDLCache(const TGLRnrCtx & rnrCtx) const;
 
   virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();

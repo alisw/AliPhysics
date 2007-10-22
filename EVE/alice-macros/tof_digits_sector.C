@@ -32,7 +32,7 @@ void tof_digits_sector(Int_t sector=0)
   m->SetName("Sector");
   m->SetAutoTrans(kFALSE);
   m->SetTrans();
-  gReve->AddRenderElement(ll, m);
+  gReve->AddRenderElement(m, ll);
 
   gReve->EnableRedraw();
 }

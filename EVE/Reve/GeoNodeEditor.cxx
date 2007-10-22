@@ -1,6 +1,7 @@
 // $Header$
 
-#include "RGeoNodeEditors.h"
+#include "GeoNodeEditor.h"
+#include "RGValuators.h"
 
 #include <Reve/GeoNode.h>
 #include <TGeoNode.h>
@@ -153,35 +154,27 @@ GeoTopNodeRnrElEditor::GeoTopNodeRnrElEditor(const TGWindow *p,
 {
   MakeTitle("GeoTopNode");
 
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "VisOption:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 1, 2, 1, 1));
-    fVisOption = new TGNumberEntry(f, 0., 6, -1, 
-			      TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative,
-			      TGNumberFormat::kNELLimitMinMax, 0, 3);
-    fVisOption->GetNumberEntry()->SetToolTipText("0 ~ all final nodes, 1 ~ pure leaves only, 2 ~ path (?)");
-    f->AddFrame(fVisOption, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fVisOption->Associate(f);
-    fVisOption->Connect("ValueSet(Long_t)",
-			"Reve::GeoTopNodeRnrElEditor", this, "DoVisOption()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
+  Int_t labelW = 58;
 
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "VisLevel:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 1, 2, 1, 1));
-    fVisLevel = new TGNumberEntry(f, 0., 6, -1, 
-			      TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative,
-			      TGNumberFormat::kNELLimitMinMax, 0, 128);
-    fVisLevel->GetNumberEntry()->SetToolTipText("");
-    f->AddFrame(fVisLevel, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fVisLevel->Associate(f);
-    fVisLevel->Connect("ValueSet(Long_t)",
-			"Reve::GeoTopNodeRnrElEditor", this, "DoVisLevel()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
+  fVisOption = new RGValuator(this, "VisOption:", 90, 0);
+  fVisOption->SetLabelWidth(labelW);
+  fVisOption->SetShowSlider(kFALSE);
+  fVisOption->SetNELength(4);
+  fVisOption->Build();
+  fVisOption->SetLimits(0, 2, 10, TGNumberFormat::kNESInteger);
+  fVisOption->SetToolTip("Visualization option passed to TGeoPainter.");
+  fVisOption->Connect("ValueSet(Double_t)", "Reve::GeoTopNodeRnrElEditor", this, "DoVisOption()");
+  AddFrame(fVisOption, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
+
+  fVisLevel = new RGValuator(this, "VisLevel:", 90, 0);
+  fVisLevel->SetLabelWidth(labelW);
+  fVisLevel->SetShowSlider(kFALSE);
+  fVisLevel->SetNELength(4);
+  fVisLevel->Build();
+  fVisLevel->SetLimits(0, 10, 10, TGNumberFormat::kNESInteger);
+  fVisLevel->SetToolTip("Level (depth) to which the geometry is traversed.");
+  fVisLevel->Connect("ValueSet(Double_t)", "Reve::GeoTopNodeRnrElEditor", this, "DoVisLevel()");
+  AddFrame(fVisLevel, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 }
 
 /**************************************************************************/
@@ -190,18 +183,20 @@ void GeoTopNodeRnrElEditor::SetModel(TObject* obj)
 {
   fTopNodeRE = dynamic_cast<GeoTopNodeRnrEl*>(obj);
 
-  fVisOption->SetNumber(fTopNodeRE->GetVisOption());
-  fVisLevel->SetNumber(fTopNodeRE->GetVisLevel());
+  fVisOption->SetValue(fTopNodeRE->GetVisOption());
+  fVisLevel ->SetValue(fTopNodeRE->GetVisLevel());
 }
 
 /**************************************************************************/
 
 void GeoTopNodeRnrElEditor::DoVisOption()
 {
-  fTopNodeRE->SetVisOption(Int_t(fVisOption->GetNumber()));
+  fTopNodeRE->SetVisOption(Int_t(fVisOption->GetValue()));
+  Update();
 }
 
 void GeoTopNodeRnrElEditor::DoVisLevel()
 {
-  fTopNodeRE->SetVisLevel(Int_t(fVisLevel->GetNumber()));
+  fTopNodeRE->SetVisLevel(Int_t(fVisLevel->GetValue()));
+  Update();
 }

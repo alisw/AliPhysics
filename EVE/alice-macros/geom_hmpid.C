@@ -20,7 +20,7 @@ void geom_hmpid()
 
     Reve::GeoTopNodeRnrEl* re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
     re->UseNodeTrans();
-    gReve->AddGlobalRenderElement(list, re);
+    gReve->AddGlobalRenderElement(re, list);
   }
 
   gReve->Redraw3D();

@@ -1,6 +1,6 @@
 #include "TOFStrip.h"
 
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>

@@ -1,5 +1,5 @@
 
-Reve::PointSet* phos_clusters(RenderElement* cont=0)
+Reve::PointSet* phos_clusters(Reve::RenderElement* cont=0)
 {
   Alieve::Event::AssertGeometry();
 

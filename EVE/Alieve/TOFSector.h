@@ -74,10 +74,10 @@ namespace Alieve {
     TOFSector(TGeoManager *localGeoManager,
 	      Int_t nSector, TTree *tofTree);
     virtual ~TOFSector();
-    
-    
+        
     static Bool_t    fgStaticInitDone;
     static void      InitStatics();
+
     void SetSectorID(Int_t id);
     void SetAutoTrans(Bool_t r){fAutoTrans=r;};
     void SetThreshold(Short_t t);
@@ -87,14 +87,13 @@ namespace Alieve {
     Int_t GetMaxVal() const {return fMaxVal;};
     Bool_t GetAutoTrans() const {return fAutoTrans;};
     Int_t GetSectorID() const {return fSectorID;};
-    virtual void QuadSelected(Int_t idx);
+    virtual void DigitSelected(Int_t idx);
     ///////////////////////////////////////////
    
     void SetPlate(Int_t nPlate, Bool_t r);
 
-  static Reve::FrameBox* fgTOFsectorFrameBox;
-  
-  static Reve::RGBAPalette* fgTOFsectorPalette;
+    static Reve::FrameBox    *fgTOFsectorFrameBox;
+    static Reve::RGBAPalette *fgTOFsectorPalette;
 
   ClassDef(TOFSector, 1);
   }; 

@@ -117,10 +117,12 @@ public:
 
   void SetPos(Double_t x, Double_t y, Double_t z);
   void SetPos(Double_t* x);
+  void SetPos(Float_t * x);
   void SetPos(const ZTrans& t);
 
   void GetPos(Double_t& x, Double_t& y, Double_t& z) const;
   void GetPos(Double_t* x) const;
+  void GetPos(Float_t * x) const;
   void GetPos(TVector3& v) const;  
   TVector3 GetPos() const;
 
@@ -141,7 +143,10 @@ public:
   // Operations on vectors
 
   void     MultiplyIP(TVector3& v, Double_t w=1) const;
+  void     MultiplyIP(Double_t* v, Double_t w=1) const;
+  void     MultiplyIP(Float_t*  v, Double_t w=1) const;
   TVector3 Multiply(const TVector3& v, Double_t w=1) const;
+  void     Multiply(const Double_t *vin, Double_t* vout, Double_t w=1) const;
   void     RotateIP(TVector3& v) const;
   TVector3 Rotate(const TVector3& v) const;
 

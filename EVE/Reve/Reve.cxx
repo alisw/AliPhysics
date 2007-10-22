@@ -16,6 +16,7 @@
 #include <TSystem.h>
 
 #include <TGClient.h>
+#include <TGMimeTypes.h>
 
 #include <list>
 #include <algorithm>
@@ -112,6 +113,15 @@ void SetupGUI()
   RenderElement::fgRnrIcons[1] = gClient->GetPicture(fld + "rnr01_t.xpm");
   RenderElement::fgRnrIcons[2] = gClient->GetPicture(fld + "rnr10_t.xpm");
   RenderElement::fgRnrIcons[3] = gClient->GetPicture(fld + "rnr11_t.xpm");
+  
+  RenderElement::fgListTreeIcons[0] = gClient->GetPicture("folder_t.xpm");
+  RenderElement::fgListTreeIcons[1] = gClient->GetPicture(fld + "viewer.xpm");
+  RenderElement::fgListTreeIcons[2] = gClient->GetPicture(fld + "scene.xpm");
+  RenderElement::fgListTreeIcons[3] = gClient->GetPicture(fld + "pointset.xpm");
+  RenderElement::fgListTreeIcons[4] = gClient->GetPicture(fld + "track.xpm");
+
+  gClient->GetMimeTypeList()->AddType("root/tmacro", "Reve::RMacro",
+                                      "tmacro_s.xpm", "tmacro_t.xpm", "");
 }
 
 /**************************************************************************/
@@ -128,19 +138,24 @@ Bool_t CheckMacro(const Text_t* mac)
 {
   // Checks if macro 'mac' is loaded.
 
-  return gROOT->GetInterpreter()->IsLoaded(mac);
+  // Axel's advice; now sth seems slow, using old method below for test.
+  // return gROOT->GetInterpreter()->IsLoaded(mac);
 
   // Previous version expected function with same name and used ROOT's
   // list of global functions.
-  /*
+
   TString foo(mac); ChompTail(foo);
+  /*
   if(recreate) {
     TCollection* logf = gROOT->GetListOfGlobalFunctions(kFALSE);
     logf->SetOwner();
     logf->Clear();
   }
-  return (gROOT->GetGlobalFunction(foo.Data(), 0, kTRUE) != 0);
   */
+  if (gROOT->GetGlobalFunction(foo.Data(), 0, kFALSE) != 0)
+    return kTRUE;
+  else
+    return (gROOT->GetGlobalFunction(foo.Data(), 0, kTRUE) != 0);
 }
 
 void AssertMacro(const Text_t* mac)

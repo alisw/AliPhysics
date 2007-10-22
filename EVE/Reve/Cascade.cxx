@@ -31,7 +31,7 @@
 #include <TColor.h>
 
 // Updates
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 #include <TCanvas.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -123,7 +123,7 @@ Cascade::Cascade(TrackRnrStyle* rs) :
   fCasCosPointingAngle(999),
   fCasDecayLength(999)
 {
-  fMarkerColor = fRnrStyle->GetColor();
+  fMarkerColor = fRnrStyle->fFVAtt.GetMarkerColor();
   fPolyLineV0.SetLineColor(fMarkerColor);
   fPolyLinePos.SetLineColor(2);  // red
   fPolyLineNeg.SetLineColor(7);  // light blue
@@ -397,7 +397,7 @@ ClassImp(Reve::CascadeList)
 
 //______________________________________________________________________
 CascadeList::CascadeList(TrackRnrStyle* rs) :
-  RenderElement(),
+  RenderElementList(),
   fTitle(),
   fRnrStyle(rs),
   fRnrBach(kTRUE),
@@ -410,13 +410,15 @@ CascadeList::CascadeList(TrackRnrStyle* rs) :
   fPosColor(0),
   fBachColor(0)
 {
+  fChildClass = Cascade::Class(); // override member from base RenderElementList
+
   Init();
 }
 
 
 //______________________________________________________________________
 CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
-  RenderElement(),
+  RenderElementList(),
   fTitle(),
   fRnrStyle(rs),
   fRnrBach(kTRUE),
@@ -429,6 +431,8 @@ CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
   fPosColor(0),
   fBachColor(0)
 {
+  fChildClass = Cascade::Class(); // override member from base RenderElementList
+
   Init();
   SetName(name);
 }
@@ -437,10 +441,7 @@ CascadeList::CascadeList(const Text_t* name, TrackRnrStyle* rs) :
 //______________________________________________________________________
 void CascadeList::Init()
 {
-
   if (fRnrStyle== 0) fRnrStyle = new TrackRnrStyle;
-  SetMainColorPtr(&fRnrStyle->fColor);
-
 
   fMin[0]  =  0;     fMax[0]  = 5; // Xi mass
   fMin[1]  =  0;     fMax[1]  = 5; // Omega mass
@@ -558,17 +559,6 @@ void CascadeList::Paint(Option_t* option) {
 
 
 //______________________________________________________________________
-
-void CascadeList::AddElement(RenderElement* el)
-{
-  static const Exc_t eH("CascadeList::AddElement ");
-  if (dynamic_cast<Cascade*>(el)  == 0)
-    throw(eH + "new element not a Cascade.");
-  RenderElement::AddElement(el);
-}
-
-
-
 void CascadeList::SetRnrV0vtx(Bool_t rnr)
 {
   fRnrV0vtx = rnr;

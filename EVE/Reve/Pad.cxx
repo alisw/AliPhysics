@@ -1,6 +1,6 @@
 // $Header$
 
-#include "Pad.h"
+#include <Reve/Pad.h>
 
 #include <THashList.h>
 

@@ -48,11 +48,11 @@ protected:
   Bool_t      fRnrOut1;
   Bool_t      fRnrOut2;
 
-  Color_t     fFrameColor;
-  Bool_t      fRnrFrame;
+  Color_t      fFrameColor;
+  Bool_t       fRnrFrame;
   Reve::ZTrans fHMTrans;
   Bool_t       fAutoTrans;
-  UInt_t      fRTS;       //! Rendering TimeStamp
+  UInt_t       fRTS;       //! Rendering TimeStamp
 
   void SetupColor(Int_t val, UChar_t* pix) const;
 

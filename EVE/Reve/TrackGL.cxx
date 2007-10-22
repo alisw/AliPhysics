@@ -2,6 +2,7 @@
 
 #include "TrackGL.h"
 #include <Reve/Track.h>
+#include <Reve/GLUtilNS.h>
 
 #include <TGLSelectRecord.h>
 
@@ -54,114 +55,47 @@ void TrackGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
 /**************************************************************************/
 void TrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
-  // Render line and path marks
+  LineGL::DirectDraw(rnrCtx);  
 
-  LineGL::DirectDraw(rnrCtx);
-
-  if ( ! fTrack->fPathMarks.empty())
+  // path-marks
+  std::vector<PathMark*>& pm = fTrack->fPathMarks;
+  TrackRnrStyle& RS = *fTrack->GetRnrStyle();
+  if(pm.size())
   {
-    TrackRnrStyle* rs = fTrack->GetRnrStyle();
-    Int_t  style = rs->fPMStyle;
-
-    UChar_t color[4];
-    ColorFromIdx(rs->fPMColor, color);
-    glColor4ubv(color);
-    
-    glPushAttrib(GL_POINT_BIT | GL_LINE_BIT | GL_ENABLE_BIT);
-    glDisable(GL_LIGHTING);
-
-    Int_t ms = rs->fPMStyle;
-    // points
-    if (ms != 2 && ms != 3 && ms != 5 && ms != 28) 
+    Float_t* pnts = new Float_t[3*pm.size()]; // maximum
+    Int_t N = 0;  
+    Bool_t accept;
+    for(std::vector<PathMark*>::iterator i=pm.begin(); i!=pm.end(); ++i) 
     {
-      Float_t size = 5*rs->fPMSize;
-      if (style == 4 || style == 20 || style == 24) 
+      accept = kFALSE;
+      switch((*i)->type)
       {
-	if (style == 4 || style == 24)
-	  glEnable(GL_BLEND);
-	glEnable(GL_POINT_SMOOTH);
+	case(PathMark::Daughter):
+	  if(RS.fRnrDaughters) accept = kTRUE;
+	  break;
+	case(PathMark::Reference):
+	  if(RS.fRnrReferences) accept = kTRUE;
+	  break;
+	case(PathMark::Decay):
+	  if(RS.fRnrDecay) accept = kTRUE;
+	  break;
       } 
-      else 
+      if(accept)
       {
-	glDisable(GL_POINT_SMOOTH);
-	if      (style == 1) size = 1;
-	else if (style == 6) size = 2;
-	else if (style == 7) size = 3;
-      }
-      glPointSize(size);
-
-      glBegin(GL_POINTS);
-      Bool_t accept;
-      std::vector<PathMark*>& pm = fTrack->fPathMarks;
-      for(std::vector<PathMark*>::iterator i=pm.begin(); i!=pm.end(); ++i) 
-      {
-	accept = kFALSE;
-	switch((*i)->type)
+	if((TMath::Abs((*i)->V.z) < RS.fMaxZ) && ((*i)->V.Perp() < RS.fMaxR))
 	{
-	  case(PathMark::Daughter):
-	    if(rs->fRnrDaughters) accept = kTRUE;
-	    break;
-	  case(PathMark::Reference):
-	    if(rs->fRnrReferences) accept = kTRUE;
-	    break;
-	  case(PathMark::Decay):
-	    if(rs->fRnrDecay) accept = kTRUE;
-	    break;
-	} 
-	if(accept)
-	{
-	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && ((*i)->V.Perp() < rs->fMaxR))
-	    glVertex3f((*i)->V.x, (*i)->V.y,(*i)->V.z);
+	  pnts[3*N  ] =(*i)->V.x; 
+	  pnts[3*N+1] =(*i)->V.y; 
+	  pnts[3*N+2] =(*i)->V.z;
+	  N++;
 	}
-      } 
-      glEnd();
-    } // end render points
-    else 
-    {
-      // crosses
-      if (style == 28) 
-      {
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(2);
-      } 
-      else 
-      {
-	glDisable(GL_LINE_SMOOTH);
       }
+    } 
+    GLUtilNS::RenderPolyMarkers(RS.fPMAtt, pnts, N);
+    delete [] pnts;
+  }
 
-      glBegin(GL_LINES);
-      Bool_t accept;
-      Float_t d = 2* rs->fPMSize;
-      std::vector<PathMark*>& pm = fTrack->fPathMarks;     
-      for(std::vector<PathMark*>::iterator i=pm.begin(); i!=pm.end(); ++i) 
-      {
-	accept = kFALSE;
-	switch((*i)->type)
-	{
-	  case(PathMark::Daughter):
-	    if(rs->fRnrDaughters) accept = kTRUE;
-	    break;
-	  case(PathMark::Reference):
-	    if(rs->fRnrReferences) accept = kTRUE;
-	    break;
-	  case(PathMark::Decay):
-	    if(rs->fRnrDecay) accept = kTRUE;
-	    break;
-	} 
-	if(accept)
-	{
-	  if((TMath::Abs((*i)->V.z) < rs->fMaxZ) && ((*i)->V.Perp() < rs->fMaxR))
-	  {
-	    const Float_t &x=(*i)->V.x, &y=(*i)->V.y, &z=(*i)->V.z;
-	    glVertex3f(x-d, y,   z);    glVertex3f(x+d, y,   z);
-	    glVertex3f(x,   y-d, z);    glVertex3f(x,   y+d, z);
-	    glVertex3f(x,   y,   z-d);  glVertex3f(x,   y,   z+d);
-	  }
-	}
-      } 
-      glEnd();
-    } // end render corsses
-    glPopAttrib();
-  } //if PM not empty
+  // fist vertex
+ if(RS.fRnrFV && fTrack->GetLastPoint())
+    GLUtilNS::RenderPolyMarkers(RS.fFVAtt, fTrack->GetP(), 1);
 }

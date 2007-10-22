@@ -5,6 +5,7 @@
 
 #include <TGedFrame.h>
 
+class TGButton;
 class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
@@ -34,7 +35,7 @@ public:
   // Declare callback/slot methods
   // void DoXYZZ();
 
-  ClassDef(CLASS, 1); // Editor for STEM
+  ClassDef(CLASS, 0); // Editor for STEM
 }; // endclass CLASS
 
 }

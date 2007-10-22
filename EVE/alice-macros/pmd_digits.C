@@ -1,6 +1,8 @@
 // ---------------------------------------------------------------------- //
 void pmd_digits(Int_t mode = 0)
 {
+  Bool_t drawBackPolygons = kFALSE;
+
   gStyle->SetPalette(1, 0);
 
 
@@ -22,7 +24,10 @@ void pmd_digits(Int_t mode = 0)
   // l->SetTitle("tooltip");
   // l->SetMainColor((Color_t)3);
   gReve->AddRenderElement(l);
-  
+
+  Reve::RGBAPalette* pal = new Reve::RGBAPalette(20, 1000);
+  pal->SetLimits(0, 1024);
+
   Int_t NSM         = 0;
   Int_t istartDDL   = 0;
   Int_t iendDDL     = 0;
@@ -75,7 +80,7 @@ void pmd_digits(Int_t mode = 0)
       
       Reve::RenderElementList* lplane = new Reve::RenderElementList(spl.Data());
       //  l->SetMainColor((Color_t)3);
-      gReve->AddRenderElement(l,lplane);
+      gReve->AddRenderElement(lplane, l);
       
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
 	{
@@ -83,7 +88,7 @@ void pmd_digits(Int_t mode = 0)
 	  sddl += iddl;
 	  Reve::RenderElementList* lddl = new Reve::RenderElementList(sddl.Data());
 	  //  l->SetMainColor((Color_t)3);
-	  gReve->AddRenderElement(lplane,lddl);
+	  gReve->AddRenderElement(lddl, lplane);
 
 	  modnumber = iddl*6;
 
@@ -102,7 +107,17 @@ void pmd_digits(Int_t mode = 0)
 	      Alieve::PMDModule *lmodule = new Alieve::PMDModule();
 	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayDigitsData(modnumber, pmdt);
-	      gReve->AddRenderElement(lddl, lmodule);
+              lmodule->SetPalette(pal);
+              if (drawBackPolygons)
+              {
+                Reve::FrameBox* b = lmodule->GetFrame();
+                b->SetFrameWidth(1.5);
+                b->SetFrameColor((Color_t) 1);
+                b->SetBackColor ((Color_t) (kTeal - 9));
+                b->SetFrameFill (kFALSE);
+                b->SetDrawBack  (kTRUE);
+              }
+	      gReve->AddRenderElement(lmodule, lddl);
 	      modnumber++;
 	      if (iddl == 4 && modnumber == 30) modnumber = 42;
 	    }

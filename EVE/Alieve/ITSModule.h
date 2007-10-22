@@ -46,7 +46,7 @@ public:
   virtual void LoadQuads();
   void SetTrans();
 
-  virtual void QuadSelected(Int_t idx);
+  virtual void DigitSelected(Int_t idx);
 
   virtual void Print(Option_t* opt="") const;
 

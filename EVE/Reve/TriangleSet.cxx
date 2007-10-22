@@ -18,7 +18,7 @@
 
 #include "TriangleSet.h"
 #include "RGBAPalette.h"
-#include "RGTopFrame.h"
+#include "ReveManager.h"
 
 #include <TMath.h>
 #include <TVector3.h>
@@ -171,13 +171,13 @@ TriangleSet* TriangleSet::ReadTrivialFile(const char* file)
   TriangleSet* ts = new TriangleSet(nv, nt);
 
   Float_t *V = ts->Vertex(0);
-  for (Int_t i=0; i<nv; ++i) {
-    fscanf(f, "%f %f %f", V++, V++, V++);
+  for (Int_t i=0; i<nv; ++i, V+=3) {
+    fscanf(f, "%f %f %f", &V[0], &V[1], &V[2]);
   }
 
   Int_t *T = ts->Triangle(0);
-  for (Int_t i=0; i<nt; ++i) {
-    fscanf(f, "%d %d %d", T++, T++, T++);
+  for (Int_t i=0; i<nt; ++i, T+=3) {
+    fscanf(f, "%d %d %d", &T[0], &T[1], &T[2]);
   }
 
   fclose(f);

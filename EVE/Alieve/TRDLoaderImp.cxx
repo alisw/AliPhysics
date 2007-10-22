@@ -3,7 +3,7 @@
 
 //#include "AliTRDv1.h"
 
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 
 #include "TFile.h"
 #include "TTree.h"

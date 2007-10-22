@@ -2,13 +2,18 @@
 
 #include "TrackEditors.h"
 #include <Reve/Track.h>
+#include <Reve/TrackRnrStyleEditor.h>
+#include <Reve/ReveManager.h>
 
 #include <Reve/RGValuators.h>
 
 #include <TVirtualPad.h>
 #include <TColor.h>
 
+#include <TGedEditor.h>
+#include <TAttMarkerEditor.h>
 #include <TGLabel.h>
+#include <TG3DLine.h>
 #include <TGButton.h>
 #include <TGNumberEntry.h>
 #include <TGColorSelect.h>
@@ -22,6 +27,39 @@
 
 using namespace Reve;
 
+
+//______________________________________________________________________
+// TrackEditor
+//
+
+ClassImp(TrackEditor)
+
+TrackEditor::TrackEditor(const TGWindow *p, Int_t width, Int_t height,
+			       UInt_t options, Pixel_t back) :
+    TGedFrame(p, width, height, options | kVerticalFrame, back),
+    fM (0),
+    fRSEditor(0)
+{
+  MakeTitle("Track");
+
+  TGHorizontalFrame* f = new TGHorizontalFrame(this);
+
+  fRSEditor =  new TGTextButton(f, "Edit RnrStyle");
+  fRSEditor->Connect("Clicked()", "Reve::TrackEditor", this, "DoEditRnrStyle()");
+  f->AddFrame(fRSEditor, new TGLayoutHints(kLHintsLeft, 2, 1, 4, 4));
+ 
+  AddFrame(f, new TGLayoutHints(kLHintsTop, 0,0,2,1));
+}
+
+void TrackEditor::SetModel(TObject* obj)
+{
+  fM = dynamic_cast<Track*>(obj); 
+}
+
+void TrackEditor::DoEditRnrStyle()
+{
+  fGedEditor->SetModel(fGedEditor->GetPad(), fM->GetRnrStyle(), kButton1Down);
+}
 //______________________________________________________________________
 // TrackListEditor
 //
@@ -29,201 +67,58 @@ using namespace Reve;
 ClassImp(TrackListEditor)
 
 TrackListEditor::TrackListEditor(const TGWindow *p,
-				 Int_t width, Int_t height,
-				 UInt_t options, Pixel_t back) :
+                                 Int_t width, Int_t height,
+                                 UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
 
-  fTC (0),
-
-  fMaxR(0),
-  fMaxZ(0),
-  fMaxOrbits(0),
-  fMinAng(0),
-  fDelta(0),
-
-  fRnrTracks(0),
-  fWidthCombo(0),
-  fStyleCombo(0),
-
-  fRnrMarkers(0),
-
-  fPMFrame(0),
-  fFitDaughters(0),
-  fFitReferences(0),
-  fFitDecay(0),
-  fRnrDaughters(0),
-  fRnrReferences(0),
-  fRnrDecay(0),
-
-  fPtRange(0),
-  fPRange(0)
+  fTC         (0),
+  fPtRange    (0),
+  fPRange     (0),
+  fRSSubEditor(0)
 {
-  MakeTitle("TrackList");
-  Int_t labelW = 67;
-
-  // --- Limits
-
-  fMaxR = new RGValuator(this, "Max R:", 110, 0);
-  fMaxR->SetLabelWidth(labelW);
-  fMaxR->SetNELength(6);
-  fMaxR->Build();
-  fMaxR->SetLimits(0.1, 1000, 100, TGNumberFormat::kNESRealOne);
-  fMaxR->SetToolTip("Maximum radius to which the tracks will be drawn.");
-  fMaxR->Connect("ValueSet(Double_t)", "Reve::TrackListEditor", this, "DoMaxR()");
-  AddFrame(fMaxR, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-
-  fMaxZ = new RGValuator(this, "Max Z:", 110, 0);
-  fMaxZ->SetLabelWidth(labelW);
-  fMaxZ->SetNELength(6);
-  fMaxZ->Build();
-  fMaxZ->SetLimits(0.1, 2000, 100, TGNumberFormat::kNESRealOne);
-  fMaxZ->SetToolTip("Maximum z-coordinate to which the tracks will be drawn.");
-  fMaxZ->Connect("ValueSet(Double_t)", "Reve::TrackListEditor", this, "DoMaxZ()");
-  AddFrame(fMaxZ, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Max Orbits:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 0, 2, 1, 1));
-    fMaxOrbits = new TGNumberEntry(f, 0., 6, -1, 
-				   TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
-				   TGNumberFormat::kNELLimitMinMax, 0.1, 100.0);
-    fMaxOrbits->GetNumberEntry()->SetToolTipText("Maximal angular path of tracks' orbits (1 ~ 2Pi).");
-    f->AddFrame(fMaxOrbits, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fMaxOrbits->Associate(f);
-    fMaxOrbits->Connect("ValueSet(Long_t)", "Reve::TrackListEditor", this, "DoMaxOrbits()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
-
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Min Angle:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 3, 2, 1, 1));
-    fMinAng = new TGNumberEntry(f, 0., 6, -1, 
-				TGNumberFormat::kNESRealOne, TGNumberFormat::kNEAPositive,
-				TGNumberFormat::kNELLimitMinMax, 1, 180.0);
-    fMinAng->GetNumberEntry()->SetToolTipText("Minimal angular step between two helix points.");
-    f->AddFrame(fMinAng, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fMinAng->Associate(f);
-    fMinAng->Connect("ValueSet(Long_t)", "Reve::TrackListEditor", this, "DoMinAng()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
-
-  {
-    TGHorizontalFrame* f = new TGHorizontalFrame(this);
-    TGLabel *l = new TGLabel(f, "Delta:");
-    f->AddFrame(l, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 32, 2, 1, 1));
-    fDelta = new TGNumberEntry(f, 0., 6, -1, 
-			       TGNumberFormat::kNESRealThree, TGNumberFormat::kNEAPositive,
-			       TGNumberFormat::kNELLimitMinMax, 0.001, 100.0);
-    fDelta->GetNumberEntry()->SetToolTipText("Maximal error at the mid-point of the line connecting to helix points.");
-    f->AddFrame(fDelta, new TGLayoutHints(kLHintsLeft, 1, 1, 1, 1));
-    fDelta->Associate(f);
-    fDelta->Connect("ValueSet(Long_t)", "Reve::TrackListEditor", this, "DoDelta()");
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
-  }
-
-  // --- Selectors
-
-  fPtRange = new RGDoubleValuator(this,"Pt Range", 200, 0);
-  fPtRange->SetNELength(6);
-  fPtRange->Build();
-  fPtRange->GetSlider()->SetWidth(224);
-  fPtRange->SetLimits(0, 10, TGNumberFormat::kNESRealTwo);
-  fPtRange->Connect("ValueSet()",
-		    "Reve::TrackListEditor", this, "DoPtRange()");
-  AddFrame(fPtRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
-
-  fPRange = new RGDoubleValuator(this,"P Range", 200, 0);
-  fPRange->SetNELength(6);
-  fPRange->Build();
-  fPRange->GetSlider()->SetWidth(224);
-  fPRange->SetLimits(0, 100, TGNumberFormat::kNESRealTwo);
-  fPRange->Connect("ValueSet()",
-		   "Reve::TrackListEditor", this, "DoPRange()");
-  AddFrame(fPRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
-
-  // --- Rendering control
-  {
-    TGHorizontalFrame* ft = new TGHorizontalFrame(this);
-    fRnrTracks = new TGCheckButton(ft, "Render tracks");
-    ft->AddFrame(fRnrTracks, new TGLayoutHints(kLHintsLeft, 3, 1, 2, 0));
-    fRnrTracks->Connect
-      ("Toggled(Bool_t)", "Reve::TrackListEditor", this, "DoRnrTracks()");
-    AddFrame(ft, new TGLayoutHints(kLHintsTop, 1, 1, 3, 0));
-    
-    TGHorizontalFrame* f = new TGHorizontalFrame(this); 
-    TGLabel *wl = new TGLabel(f, "Width:");
-    f->AddFrame(wl, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 3, 2, 1, 1));
-    fWidthCombo = new TGLineWidthComboBox(f);
-    fWidthCombo->Resize(70, 18);
-    f->AddFrame(fWidthCombo, new TGLayoutHints(kLHintsLeft, 8, 1, 0, 0));
-    fWidthCombo->Connect
-      ("Selected(Int_t)", "Reve::TrackListEditor", this, "DoLineWidth(Int_t)"); 
-
-    TGLabel *sl = new TGLabel(f, "Style:");
-    f->AddFrame(sl, new TGLayoutHints(kLHintsTop | kLHintsCenterY, 6, 2, 1, 1));
-    fStyleCombo = new TGLineStyleComboBox(f);
-    fStyleCombo->Resize(70, 18);
-    f->AddFrame(fStyleCombo, new TGLayoutHints(kLHintsLeft, 8, 1, 0, 0));
-    fStyleCombo->Connect
-      ("Selected(Int_t)", "Reve::TrackListEditor", this, "DoLineStyle(Int_t)"); 
-
-
-    AddFrame(f, new TGLayoutHints(kLHintsTop, 1, 1, 3, 0));
-  }
-
-  // --- Kinematics fitting
-  
-  fPMFrame = new  TGHorizontalFrame(this);
-  {
-    TGGroupFrame* fitPM = new TGGroupFrame(fPMFrame, "PathMarks:", kLHintsTop | kLHintsCenterX);
-    fitPM->SetTitlePos(TGGroupFrame::kLeft);
-    fPMFrame->AddFrame( fitPM, new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 3, 3, 3, 3));
-
-    TGMatrixLayout *ml = new TGMatrixLayout(fitPM, 0,1,6);
-    fitPM->SetLayoutManager(ml);
-
-    fFitDaughters  = new TGCheckButton(fitPM, "Fit Daughters", PathMark::Daughter);
-    fFitReferences = new TGCheckButton(fitPM, "Fit Refs",      PathMark::Reference);
-    fFitDecay      = new TGCheckButton(fitPM, "Fit Decay",     PathMark::Decay);
-
-    fitPM->AddFrame(fFitDaughters);
-    fitPM->AddFrame(fFitReferences);
-    fitPM->AddFrame(fFitDecay);
-
-    fFitDecay->Connect("Clicked()","Reve::TrackListEditor", this, "DoFitPM()");  
-    fFitReferences->Connect("Clicked()","Reve::TrackListEditor", this, "DoFitPM()");  
-    fFitDaughters->Connect("Clicked()","Reve::TrackListEditor", this, "DoFitPM()");
-  }
-  {
-    TGGroupFrame* rnrPM = new TGGroupFrame(fPMFrame, "PathMarks:", kLHintsTop | kLHintsCenterX);
-    rnrPM->SetTitlePos(TGGroupFrame::kLeft);
-    fPMFrame->AddFrame( rnrPM, new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 3, 3, 3, 3));
-
-    TGMatrixLayout *ml = new TGMatrixLayout(rnrPM, 0,1,6);
-    rnrPM->SetLayoutManager(ml);
-
-    fRnrDaughters  = new TGCheckButton(rnrPM, "Rnr Daughters", PathMark::Daughter);
-    fRnrReferences = new TGCheckButton(rnrPM, "Rnr Refs",  PathMark::Reference);
-    fRnrDecay      = new TGCheckButton(rnrPM, "Rnr Decay", PathMark::Decay);
-
-    rnrPM->AddFrame(fRnrDaughters);
-    rnrPM->AddFrame(fRnrReferences);
-    rnrPM->AddFrame(fRnrDecay);
-
-    fRnrDecay->Connect("Clicked()","Reve::TrackListEditor", this, "DoRnrPM()");  
-    fRnrReferences->Connect("Clicked()","Reve::TrackListEditor", this, "DoRnrPM()");  
-    fRnrDaughters->Connect("Clicked()","Reve::TrackListEditor", this, "DoRnrPM()");
-  }
-  AddFrame(fPMFrame, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
  
-  fRnrMarkers = new TGCheckButton(this, "Render markers");
-  AddFrame(fRnrMarkers, new TGLayoutHints(kLHintsTop, 3, 1, 2, 0));
-  fRnrMarkers->Connect
-    ("Toggled(Bool_t)",
-     "Reve::TrackListEditor", this, "DoRnrMarkers()");  
+    fRnrPoints = new TGCheckButton(f, "Draw Marker");
+    f->AddFrame(fRnrPoints, new TGLayoutHints(kLHintsLeft, 2,1,0,0));  
+    fRnrPoints->Connect("Toggled(Bool_t)"," Reve::TrackListEditor", this, "DoRnrPoints()");
 
+    fRnrLine  = new TGCheckButton(f, "Draw Line");
+    f->AddFrame(fRnrLine, new TGLayoutHints(kLHintsLeft, 1,2,0,0));
+    fRnrLine->Connect("Toggled(Bool_t)", "Reve::TrackListEditor", this, "DoRnrLine()");
+  
+    AddFrame(f, new TGLayoutHints(kLHintsTop, 0,0,2,1));
+  }
+  {  // --- Selectors
+    Int_t labelW = 51;
+    Int_t dbW    = 210;
+
+    fPtRange = new RGDoubleValuator(this,"Pt rng:", 40, 0);
+    fPtRange->SetNELength(6);
+    fPtRange->SetLabelWidth(labelW);
+    fPtRange->Build();
+    fPtRange->GetSlider()->SetWidth(dbW);
+    fPtRange->SetLimits(0, 10, TGNumberFormat::kNESRealTwo);
+    fPtRange->Connect("ValueSet()",
+                      "Reve::TrackListEditor", this, "DoPtRange()");
+    AddFrame(fPtRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
+
+    fPRange = new RGDoubleValuator(this,"P rng:", 40, 0);
+    fPRange->SetNELength(6);
+    fPRange->SetLabelWidth(labelW);
+    fPRange->Build();
+    fPRange->GetSlider()->SetWidth(dbW);
+    fPRange->SetLimits(0, 100, TGNumberFormat::kNESRealTwo);
+    fPRange->Connect("ValueSet()",
+                     "Reve::TrackListEditor", this, "DoPRange()");
+    AddFrame(fPRange, new TGLayoutHints(kLHintsTop, 1, 1, 4, 1));
+  }
+
+  MakeTitle("RenderStyle");
+  fRSSubEditor = new TrackRnrStyleSubEditor(this);
+  fRSSubEditor->Connect("Changed()", "Reve::TrackListEditor", this, "Update()"); 
+  AddFrame(fRSSubEditor, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 2, 0,0,0));
+  CreateRefsTab();
 }
 
 TrackListEditor::~TrackListEditor()
@@ -231,169 +126,73 @@ TrackListEditor::~TrackListEditor()
 
 /**************************************************************************/
 
+void TrackListEditor::CreateRefsTab()
+{
+  fRefs = CreateEditorTabSubFrame("Refs");
+
+  TGCompositeFrame *title1 = new TGCompositeFrame(fRefs, 145, 10, 
+						  kHorizontalFrame | 
+						  kLHintsExpandX   | 
+						  kFixedWidth      | 
+						  kOwnBackground);
+  title1->AddFrame(new TGLabel(title1, "PathMarks"), 
+		   new TGLayoutHints(kLHintsLeft, 1, 1, 0, 0));
+  title1->AddFrame(new TGHorizontal3DLine(title1),
+		   new TGLayoutHints(kLHintsExpandX, 5, 5, 7, 7));
+  fRefs->AddFrame(title1, new TGLayoutHints(kLHintsTop, 0, 0, 2, 0));
+   
+  // path marks 
+  fRSSubEditor->CreateRefsContainer(fRefs);
+  fRSSubEditor->fPMAtt->SetGedEditor((TGedEditor*)gReve->GetEditor()); 
+  fRSSubEditor->fFVAtt->SetGedEditor((TGedEditor*)gReve->GetEditor());
+}
+
+/**************************************************************************/
+
 void TrackListEditor::SetModel(TObject* obj)
 {
-  fTC = dynamic_cast<TrackList*>(obj);
+  fTC = dynamic_cast<TrackList*>(obj); 
+  fRnrLine  ->SetState(fTC->GetRnrLine()   ? kButtonDown : kButtonUp);
+  fRnrPoints->SetState(fTC->GetRnrPoints() ? kButtonDown : kButtonUp);
 
-  fMaxR->SetValue(fTC->GetMaxR());
-  fMaxZ->SetValue(fTC->GetMaxZ());
-  fMaxOrbits->SetNumber(fTC->GetMaxOrbs());
-  fMinAng->SetNumber(fTC->GetMinAng());
-  fDelta->SetNumber(fTC->GetDelta());
+  Float_t llim;
+  fPtRange->SetValues(fTC->fMinPt, fTC->fMaxPt);
+  llim = TMath::Log10(fTC->fLimPt);
+  fPtRange->SetLimits(0, fTC->fLimPt, llim < 2 ? TGNumberFormat::kNESRealTwo : (llim < 3 ? TGNumberFormat::kNESRealOne : TGNumberFormat::kNESInteger));
+  fPRange ->SetValues(fTC->fMinP, fTC->fMaxP);
+  llim = TMath::Log10(fTC->fLimP);
+  fPRange ->SetLimits(0, fTC->fLimP, llim < 2 ? TGNumberFormat::kNESRealTwo : (llim < 3 ? TGNumberFormat::kNESRealOne : TGNumberFormat::kNESInteger));
 
-  fWidthCombo->Select(fTC->GetWidth());
-  fStyleCombo->Select(fTC->GetStyle());
-
-  fRnrTracks->SetState(fTC->GetRnrTracks() ? kButtonDown : kButtonUp);
- 
-  if(fTC->GetEditPathMarks()) 
-  {
-    HideFrame(fRnrMarkers);
-    ShowFrame(fPMFrame);
-    fRnrDaughters->SetState(fTC->GetRnrDaughters() ? kButtonDown : kButtonUp);
-    fRnrReferences->SetState(fTC->GetRnrReferences() ? kButtonDown : kButtonUp);
-    fRnrDecay->SetState(fTC->GetRnrDecay() ? kButtonDown : kButtonUp);
-
-    fFitDaughters->SetState(fTC->GetFitDaughters() ? kButtonDown : kButtonUp);
-    fFitReferences->SetState(fTC->GetFitReferences() ? kButtonDown : kButtonUp);
-    fFitDecay->SetState(fTC->GetFitDecay() ? kButtonDown : kButtonUp);
-  }
-  else 
-  {
-    HideFrame(fPMFrame);
-    ShowFrame(fRnrMarkers);
-    fRnrMarkers->SetState(fTC->GetRnrMarkers() ? kButtonDown : kButtonUp);
-  }
-  fPtRange->SetValues(fTC->GetMinPt(), fTC->GetMaxPt());
-  fPRange->SetValues(fTC->GetMinP(), fTC->GetMaxP());
+  fRSSubEditor->SetModel(fTC->GetRnrStyle());
 }
 
 /**************************************************************************/
 
-void TrackListEditor::DoMaxR()
+void TrackListEditor::DoRnrLine()
 {
-  fTC->SetMaxR(fMaxR->GetValue());
+  fTC->SetRnrLine(fRnrLine->IsOn());
   Update();
 }
 
-void TrackListEditor::DoMaxZ()
+void TrackListEditor::DoRnrPoints()
 {
-  fTC->SetMaxZ(fMaxZ->GetValue());
+  fTC->SetRnrPoints(fRnrPoints->IsOn());
   Update();
 }
 
-void TrackListEditor::DoMaxOrbits()
-{
-  fTC->SetMaxOrbs(fMaxOrbits->GetNumber());
-  Update();
-}
-
-void TrackListEditor::DoMinAng()
-{
-  fTC->SetMinAng(fMinAng->GetNumber());
-  Update();
-}
-
-void TrackListEditor::DoDelta()
-{
-  fTC->SetDelta(fDelta->GetNumber());
-  Update();
-}
-
-/**************************************************************************/
-
-void TrackListEditor::DoLineWidth(Int_t width)
-{
-  fTC->SetWidth(width);
-  Update();
-}
-
-/**************************************************************************/
-
-void TrackListEditor::DoLineStyle(Int_t style)
-{
-  fTC->SetStyle(style);
-  Update();
-}
-
-/**************************************************************************/
-
-void TrackListEditor::DoRnrTracks()
-{
-  fTC->SetRnrTracks(fRnrTracks->IsOn());
-  Update();
-}
-
-void TrackListEditor::DoRnrMarkers()
-{
-  fTC->SetRnrMarkers(fRnrMarkers->IsOn());
-  Update();
-}
-
-/**************************************************************************/
-
-void TrackListEditor::DoFitPM()
-{
-  TGButton* b = (TGButton *) gTQSender;
-  PathMark::Type_e type = PathMark::Type_e(b->WidgetId());
-  Bool_t on = b->IsOn();
-
-  switch(type)
-  {
-    case PathMark::Daughter:
-      fTC->SetFitDaughters(on);
-      break; 
-    case PathMark::Reference:
-      fTC->SetFitReferences(on);
-      break; 
-    case PathMark::Decay:
-      fTC->SetFitDecay(on);
-      break;
-     default:
-      break;
-  }
-  Update();
-}
-
-void TrackListEditor::DoRnrPM()
-{
-  TGButton * b = (TGButton *) gTQSender;
-  PathMark::Type_e type = PathMark::Type_e(b->WidgetId());
-  Bool_t on = b->IsOn();
-  switch(type){
-    case  PathMark::Daughter:
-      fTC->SetRnrDaughters(on);
-      break; 
-    case  PathMark::Reference:
-      fTC->SetRnrReferences(on);
-      break; 
-    case  PathMark::Decay:
-      fTC->SetRnrDecay(on);
-      break;
- 
-    default:
-      break;
-
-  }
-  Update();
-}
 /**************************************************************************/
 
 void TrackListEditor::DoPtRange()
-{
- 
+{ 
   fTC->SelectByPt(fPtRange->GetMin(), fPtRange->GetMax());
   Update();
 }
 
-
 void TrackListEditor::DoPRange()
 {
- 
   fTC->SelectByP(fPRange->GetMin(), fPRange->GetMax());
   Update();
 }
-
 
 
 /**************************************************************************/
@@ -402,7 +201,7 @@ void TrackListEditor::DoPRange()
 
 #include <TCanvas.h>
 #include <TGLViewer.h>
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 
 //______________________________________________________________________
 // TrackCounterEditor

@@ -1,6 +1,6 @@
 // $Id$
 
-void hits_from_label(Int_t label=0, RenderElement* cont)
+void hits_from_label(Int_t label=0, Reve::RenderElement* cont)
 {
   Reve::PointSet* h;
   Reve::LoadMacro("its_hits.C");

@@ -1,8 +1,8 @@
 // $Id$
 
-Reve::PointSet* clusters_from_label(Int_t label=0, RenderElement* cont=0)
+Reve::PointSet* clusters_from_label(Int_t label=0, Reve::RenderElement* cont=0)
 {
-  AliESD* esd = Alieve::Event::AssertESD();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
   Reve::PointSet* clusters = new Reve::PointSet(64);
   clusters->SetOwnIds(kTRUE);
 
@@ -50,10 +50,7 @@ Reve::PointSet* clusters_from_label(Int_t label=0, RenderElement* cont=0)
   clusters->SetTitle(tip);
 
   using namespace Reve;
-  if(cont)
-    gReve->AddRenderElement(cont, clusters);
-  else
-    gReve->AddRenderElement(clusters);
+  gReve->AddRenderElement(clusters, cont);
   gReve->Redraw3D();
 
   return clusters;

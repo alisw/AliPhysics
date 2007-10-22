@@ -4,7 +4,7 @@
 #include "TPCData.h"
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSector3D.h>
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 #include <Reve/RGEditor.h>
 
 #include <AliRawReaderRoot.h>
@@ -53,18 +53,14 @@ void TPCLoader::RemoveElementLocal(RenderElement* el)
     if(fSec2Ds[i] == el) fSec2Ds[i] = 0;
     if(fSec3Ds[i] == el) fSec3Ds[i] = 0;
   }
-
-  RenderElement::RemoveElementLocal(el);
 }
 
-void TPCLoader::RemoveElements()
+void TPCLoader::RemoveElementsLocal()
 {
   for(Int_t i=0; i<36; ++i) {
     fSec2Ds[i] = 0;
     fSec3Ds[i] = 0;
   }
-
-  RenderElement::RemoveElements();
 }
 
 /**************************************************************************/
@@ -190,10 +186,11 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
     if(fSec2Ds[i] != 0)
     {
       if (dropNonPresent && sd == 0) {
-	gReve->RemoveRenderElement(this, fSec2Ds[i]);
+	gReve->RemoveRenderElement(fSec2Ds[i], this);
 	fSec2Ds[i] = 0;
       } else {
 	fSec2Ds[i]->IncRTS();
+        fSec2Ds[i]->ElementChanged();
       }
     }
     else
@@ -216,7 +213,7 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
 	s->SetAutoTrans(kTRUE);
 	s->SetFrameColor(36);
 
-	gReve->AddRenderElement(this, s);
+	gReve->AddRenderElement(s, this);
       }
     }
 
@@ -224,10 +221,11 @@ void TPCLoader::UpdateSectors(Bool_t dropNonPresent)
     if(fSec3Ds[i] != 0)
     {
       if (dropNonPresent && sd == 0) {
-	gReve->RemoveRenderElement(this, fSec3Ds[i]);
+	gReve->RemoveRenderElement(fSec3Ds[i], this);
 	fSec3Ds[i] = 0;
       } else {
 	fSec3Ds[i]->IncRTS();
+        fSec3Ds[i]->ElementChanged();
       }
     }
   }
@@ -260,7 +258,7 @@ void TPCLoader::CreateSectors3D()
       s->SetAutoTrans(kTRUE);
       s->SetFrameColor(36);
 
-      gReve->AddRenderElement(this, s);
+      gReve->AddRenderElement(s, this);
     }
   }
   gReve->EnableRedraw();
@@ -272,7 +270,7 @@ void TPCLoader::DeleteSectors3D()
   for(Int_t i=0; i<=35; ++i) {
     RenderElement* re = fSec3Ds[i];
     if(re != 0) {
-      gReve->RemoveRenderElement(this, re);
+      gReve->RemoveRenderElement(re, this);
       // delete re; // Done automatically.
       fSec3Ds[i] = 0;
     }

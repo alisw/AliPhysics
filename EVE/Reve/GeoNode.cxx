@@ -1,7 +1,8 @@
 // $Header$
 
 #include "GeoNode.h"
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
+#include <Reve/NLTBases.h>
 
 #include "TGeoShapeExtract.h"
 
@@ -13,6 +14,7 @@
 #include <TGeoShape.h>
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
+#include <TGeoShapeAssembly.h>
 #include <TGeoManager.h>
 #include <TVirtualGeoPainter.h>
 
@@ -161,8 +163,8 @@ ClassImp(GeoTopNodeRnrEl)
 GeoTopNodeRnrEl::GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node,
 				 Int_t visopt, Int_t vislvl) :
   GeoNodeRnrEl (node),
-  fGlobalTrans (),
   fManager     (manager),
+  fGlobalTrans (),
   fVisOption   (visopt),
   fVisLevel    (vislvl)
 {
@@ -226,13 +228,9 @@ void GeoTopNodeRnrEl::Paint(Option_t* option)
     gPad = pad;
     TVirtualGeoPainter* vgp = fManager->GetGeomPainter();
     if(vgp != 0) {
-#if ROOT_VERSION_CODE > ROOT_VERSION(5,11,6)
       TGeoHMatrix geomat;
       fGlobalTrans.SetGeoHMatrix(geomat);
       vgp->PaintNode(fNode, option, &geomat);
-#else
-      vgp->PaintNode(fNode, option);
-#endif
     }
     fManager->SetTopVolume(top_volume);
   }
@@ -304,6 +302,7 @@ void GeoShapeRnrEl::Paint(Option_t* /*option*/)
   buff.fColor        = fColor;
   buff.fTransparency = fTransparency;
   fHMTrans.SetBuffer3D(buff);
+  buff.fLocalFrame   = kTRUE; // Always enforce local frame (no geo manager).
 
   fShape->GetBuffer3D(TBuffer3D::kBoundingBox | TBuffer3D::kShapeSpecific, true);
 
@@ -320,21 +319,20 @@ void GeoShapeRnrEl::Paint(Option_t* /*option*/)
 
 /**************************************************************************/
 
-Int_t GeoShapeRnrEl::ImportShapeExtract(TGeoShapeExtract * gse,
+GeoShapeRnrEl* GeoShapeRnrEl::ImportShapeExtract(TGeoShapeExtract * gse,
 					RenderElement    * parent)
 {
   gReve->DisableRedraw();
-  Int_t n = SubImportShapeExtract(gse, parent);
-  printf ("GeoShapeRnrEl::ImportShapeExtract imported %d elements\n", n);
+  GeoShapeRnrEl* gsre = SubImportShapeExtract(gse, parent);
+  gsre->ElementChanged();
   gReve->EnableRedraw();
-  return n;
+  return gsre;
 }
 
-Int_t GeoShapeRnrEl::SubImportShapeExtract(TGeoShapeExtract * gse,
+
+GeoShapeRnrEl* GeoShapeRnrEl::SubImportShapeExtract(TGeoShapeExtract * gse,
 					   RenderElement    * parent)
 {
-  Int_t ncreated = 1;
-
   GeoShapeRnrEl* gsre = new GeoShapeRnrEl(gse->GetName(), gse->GetTitle());
   gsre->fHMTrans.SetFromArray(gse->GetTrans());
   const Float_t* rgba = gse->GetRGBA();
@@ -346,18 +344,40 @@ Int_t GeoShapeRnrEl::SubImportShapeExtract(TGeoShapeExtract * gse,
   if (gsre->fShape)
     gsre->fShape->SetUniqueID(gsre->fShape->GetUniqueID() + 1);
 
-  if (parent)
-    gReve->AddGlobalRenderElement(parent, gsre);
-  else
-    gReve->AddGlobalRenderElement(gsre);
+  gReve->AddGlobalRenderElement(gsre, parent);
 
   if (gse->HasElements())
   {
     TIter next(gse->GetElements());
     TGeoShapeExtract* chld;
     while ((chld = (TGeoShapeExtract*) next()) != 0)
-      ncreated += SubImportShapeExtract(chld, gsre);
+     SubImportShapeExtract(chld, gsre);
   }
 
-  return ncreated;
+  return gsre;
+}
+
+/**************************************************************************/
+
+TBuffer3D* GeoShapeRnrEl::MakeBuffer3D()
+{
+  if(fShape == 0) return 0;
+
+  if(dynamic_cast<TGeoShapeAssembly*>(fShape)){
+    // !!!! TGeoShapeAssembly makes a bad TBuffer3D
+    return 0;
+  }
+
+  TBuffer3D* buff  = fShape->MakeBuffer3D();
+  if (fHMTrans.GetUseTrans())
+  {
+    Reve::ZTrans& mx = RefHMTrans();
+    Int_t N = buff->NbPnts();
+    Double_t* pnts = buff->fPnts;   
+    for(Int_t k=0; k<N; k++) 
+    {
+      mx.MultiplyIP(&pnts[3*k]);
+    }
+  }
+  return buff;
 }

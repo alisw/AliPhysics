@@ -46,7 +46,7 @@ void emcal_digits()
     q->SetFrame(sm < 10 ? frame_big : frame_sml);
     q->SetPalette(pal);
 
-    gReve->AddRenderElement(l, q);
+    gReve->AddRenderElement(q, l);
     smodules[sm] = q;
   }
 

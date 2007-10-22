@@ -36,6 +36,8 @@ public:
   { Nx = nx; Ny = ny; Nz = nz; }
   void SetDs(Float_t dx, Float_t dy, Float_t dz=0)
   { Dx = dx; Dy = dy; Dz = dz; }
+  void SetOs(Float_t ox, Float_t oy, Float_t oz=0)
+  { Ox = ox; Oy = oy; Oz = oz; }
   
   bool Step();
 

@@ -1,6 +1,6 @@
 #include "TOFSector.h"
 
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 
 #include <AliTOFdigit.h>
 #include <AliTOFGeometry.h>
@@ -363,11 +363,11 @@ void TOFSector::SetMaxVal(Int_t mv)
 
 /**************************************************************************/
 
-void TOFSector::QuadSelected(Int_t idx)
+void TOFSector::DigitSelected(Int_t idx)
 {
   // Override control-click from QuadSet
 
-  QuadBase* qb   = GetQuad(idx);
+  DigitBase* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
   AliTOFdigit* digs = dynamic_cast<AliTOFdigit*>(obj);
   // printf("TOFSector::QuadSelected "); Print();

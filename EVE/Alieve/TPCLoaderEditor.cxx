@@ -3,7 +3,7 @@
 #include "TPCLoaderEditor.h"
 #include <Alieve/TPCLoader.h>
 #include <Alieve/TPCData.h>
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 #include <Reve/RGValuators.h>
 
 #include <TSystem.h>
@@ -202,7 +202,7 @@ void TPCLoaderEditor::FileSelect()
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFile));
   fi.fFileTypes = tpcfiletypes;
 
-  new TGFileDialog(fClient->GetRoot(), gReve, kFDOpen, &fi);
+  new TGFileDialog(fClient->GetRoot(), gReve->GetMainWindow(), kFDOpen, &fi);
   if (!fi.fFilename)
     return;
 

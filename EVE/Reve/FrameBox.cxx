@@ -17,9 +17,14 @@ FrameBox::FrameBox() :
   fFrameSize   (0),
   fFramePoints (0),
 
-  fFrameColor  (0)
+  fFrameWidth  (1),
+  fFrameColor  (1),
+  fBackColor   (0),
+  fFrameFill   (kFALSE),
+  fDrawBack    (kFALSE)
 {
-  fFrameRGBA[0] = fFrameRGBA[1] = fFrameRGBA[2] = fFrameRGBA[3] = 255;
+  fFrameRGBA[0] = fFrameRGBA[1] = fFrameRGBA[2] = 0;   fFrameRGBA[3] = 255;
+  fBackRGBA [0] = fBackRGBA [1] = fBackRGBA [2] = 255; fBackRGBA [3] = 255;
 }
 
 FrameBox::~FrameBox()
@@ -119,4 +124,26 @@ void FrameBox::SetFrameColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
   fFrameRGBA[1] = g;
   fFrameRGBA[2] = b;
   fFrameRGBA[3] = a;
+}
+
+/**************************************************************************/
+
+void FrameBox::SetBackColor(Color_t ci)
+{
+  fBackColor = ci;
+  ColorFromIdx(ci, fBackRGBA, kTRUE);
+}
+
+void FrameBox::SetBackColor(Pixel_t pix)
+{
+  SetBackColor(Color_t(TColor::GetColor(pix)));
+}
+
+void FrameBox::SetBackColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
+{
+  fBackColor = Color_t(TColor::GetColor(r, g, b));
+  fBackRGBA[0] = r;
+  fBackRGBA[1] = g;
+  fBackRGBA[2] = b;
+  fBackRGBA[3] = a;
 }

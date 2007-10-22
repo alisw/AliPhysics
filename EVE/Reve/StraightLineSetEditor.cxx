@@ -55,8 +55,8 @@ void StraightLineSetEditor::SetModel(TObject* obj)
   fM = dynamic_cast<StraightLineSet*>(obj);
 
   // Set values of widgets
-  fRnrMarkers->SetState(fM->fRnrMarkers ? kButtonDown : kButtonUp);
-  fRnrLines->SetState(fM->fRnrLines ? kButtonDown : kButtonUp);
+  fRnrMarkers->SetState(fM->GetRnrMarkers() ? kButtonDown : kButtonUp);
+  fRnrLines->SetState(fM->GetRnrLines() ? kButtonDown : kButtonUp);
 }
 
 /**************************************************************************/
@@ -65,12 +65,12 @@ void StraightLineSetEditor::SetModel(TObject* obj)
 
 void StraightLineSetEditor::DoRnrMarkers()
 {
-   fM->fRnrMarkers = fRnrMarkers->IsOn();
+  fM->SetRnrMarkers(fRnrMarkers->IsOn());
    Update();
 }
 
 void StraightLineSetEditor::DoRnrLines()
 {
-   fM->fRnrLines = fRnrLines->IsOn();
-   Update();
+  fM->SetRnrLines(fRnrLines->IsOn());
+  Update();
 }

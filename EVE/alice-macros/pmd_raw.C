@@ -74,7 +74,7 @@ void pmd_raw(Int_t mode = 0)
       
       Reve::RenderElementList* lplane = new Reve::RenderElementList(spl.Data());
       //  l->SetMainColor((Color_t)3);
-      gReve->AddRenderElement(l,lplane);
+      gReve->AddRenderElement(lplane, l);
       
       for (Int_t iddl = istartDDL; iddl < iendDDL; iddl++)
       //for (Int_t iddl = 0; iddl < 1; iddl++)
@@ -83,7 +83,7 @@ void pmd_raw(Int_t mode = 0)
 	  sddl += iddl;
 	  Reve::RenderElementList* lddl = new Reve::RenderElementList(sddl.Data());
 	  //  l->SetMainColor((Color_t)3);
-	  gReve->AddRenderElement(lplane,lddl);
+	  gReve->AddRenderElement(ddl, lplane);
 
 	  modnumber = iddl*6;
 
@@ -104,7 +104,7 @@ void pmd_raw(Int_t mode = 0)
 	      Alieve::PMDModule *lmodule = new Alieve::PMDModule();
 	      lmodule->SetPosition(0.,0.,zpos);
 	      lmodule->DisplayRawData(modnumber,pmdddlcont);
-	      gReve->AddRenderElement(lddl, lmodule);
+	      gReve->AddRenderElement(lmodule, lddl);
 	      modnumber++;
 	      if (iddl == 4 && modnumber == 30) modnumber = 42;
 	    }

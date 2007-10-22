@@ -8,7 +8,7 @@
 //#include "TColor.h"
 //#include "TMath.h"
 
-#include "Reve/RGTopFrame.h"
+#include "Reve/ReveManager.h"
 #include "Reve/Track.h"
 
 

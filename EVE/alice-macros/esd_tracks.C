@@ -33,7 +33,7 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
   char form[1000];
   sprintf(form,"ESDTrack %d", rt.label);
   track->SetName(form);
-  sprintf(form,"idx=%d, lbl=%d; pT=%.3f, pZ=%.3f; V=(%.3f, %.3f, %.3f)",
+  sprintf(form,"Index=%d, Label=%d\npT=%.3f, pZ=%.3f\nV=(%.3f, %.3f, %.3f)",
 	  index, rt.label,
 	  rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
 	  rt.V.x, rt.V.y, rt.V.z);
@@ -80,7 +80,8 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
     }
 
     Reve::Track* track = esd_make_track(rnrStyle, n, at, tp);
-    gReve->AddRenderElement(cont, track);
+    track->SetAttLineAttMarker(cont);
+    gReve->AddRenderElement(track, cont);
   }
 
   //PH The line below is replaced waiting for a fix in Root
@@ -93,7 +94,7 @@ Reve::TrackList* esd_tracks(Double_t min_pt=0.1, Double_t max_pt=100)
   cont->UpdateItems();
 
   cont->MakeTracks();
-  cont->MakeMarkers();
+
   gReve->Redraw3D();
 
   return cont;
@@ -132,7 +133,8 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
     AliESDtrack* at = (AliESDtrack*) obj;
 
     Reve::Track* track = esd_make_track(rnrStyle, count, at);
-    gReve->AddRenderElement(cont, track);
+    track->SetAttLineAttMarker(cont);
+    gReve->AddRenderElement(track, cont);
   }
 
   //PH The line below is replaced waiting for a fix in Root
@@ -145,7 +147,7 @@ Reve::TrackList* esd_tracks_from_array(TCollection* col, AliESDEvent* esd=0)
   cont->UpdateItems();
 
   cont->MakeTracks();
-  cont->MakeMarkers();
+
   gReve->Redraw3D();
 
   return cont;
@@ -225,31 +227,31 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
   tc[0] = 0;
   tl[0]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[0]->SetMainColor(Color_t(3));
-  gReve->AddRenderElement(cont, tl[0]);
+  gReve->AddRenderElement(tl[0], cont);
 
   tl[1] = new Reve::TrackList("3 < Sigma < 5");
   tc[1] = 0;
   tl[1]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[1]->SetMainColor(Color_t(7));
-  gReve->AddRenderElement(cont, tl[1]);
+  gReve->AddRenderElement(tl[1], cont);
 
   tl[2] = new Reve::TrackList("5 < Sigma");
   tc[2] = 0;
   tl[2]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[2]->SetMainColor(Color_t(46));
-  gReve->AddRenderElement(cont, tl[2]);
+  gReve->AddRenderElement(tl[2], cont);
 
   tl[3] = new Reve::TrackList("no ITS refit; Sigma < 5");
   tc[3] = 0;
   tl[3]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[3]->SetMainColor(Color_t(41));
-  gReve->AddRenderElement(cont, tl[3]);
+  gReve->AddRenderElement(tl[3], cont);
 
   tl[4] = new Reve::TrackList("no ITS refit; Sigma > 5");
   tc[4] = 0;
   tl[4]->GetRnrStyle()->SetMagField( esd->GetMagneticField() );
   tl[4]->SetMainColor(Color_t(48));
-  gReve->AddRenderElement(cont, tl[4]);
+  gReve->AddRenderElement(tl[4], cont);
 
   for (Int_t n=0; n<esd->GetNumberOfTracks(); n++)
   {
@@ -276,6 +278,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     ++count;
 
     Reve::Track* track = esd_make_track(tlist->GetRnrStyle(), n, at, tp);
+    track->SetAttLineAttMarker(tlist);    
 
     //PH The line below is replaced waiting for a fix in Root
     //PH which permits to use variable siza arguments in CINT
@@ -284,7 +287,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     char form[1000];
     sprintf(form,"Track lbl=%d, sigma=%5.3f", at->GetLabel(), s);
     track->SetName(form);
-    gReve->AddRenderElement(tlist, track);
+    gReve->AddRenderElement(track, tlist);
   }
 
   for (Int_t ti=0; ti<5; ++ti) {
@@ -302,7 +305,6 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     tlist->UpdateItems();
 
     tlist->MakeTracks();
-    tlist->MakeMarkers();
   }
   //PH The line below is replaced waiting for a fix in Root
   //PH which permits to use variable siza arguments in CINT

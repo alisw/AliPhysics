@@ -59,7 +59,8 @@ public:
   TPointSelectorConsumer(TreeVarType_e cs=TVT_XYZ) :fSourceCS(cs) {}
   virtual ~TPointSelectorConsumer() {}
 
-  virtual void TakeAction(TSelectorDraw*) = 0;
+  virtual void InitFill(Int_t /*subIdNum*/) {}
+  virtual void TakeAction(TPointSelector*) = 0;
 
   TreeVarType_e GetSourceCS() const  { return fSourceCS; }
   void SetSourceCS(TreeVarType_e cs) { fSourceCS = cs; }
@@ -78,6 +79,9 @@ protected:
 
   TString                 fVarexp;
   TString                 fSelection;
+
+  TString                 fSubIdExp;
+  Int_t                   fSubIdNum;
 
   TList                   fInput;
 
@@ -102,6 +106,11 @@ public:
 
   const Text_t* GetSelection() const { return fSelection; }
   void SetSelection(const Text_t* s) { fSelection = s; }
+
+  const Text_t* GetSubIdExp() const { return fSubIdExp; }
+  void SetSubIdExp(const Text_t* s) { fSubIdExp = s; }
+
+  Int_t GetSubIdNum() const { return fSubIdNum; }
 
   ClassDef(TPointSelector, 1);
 };

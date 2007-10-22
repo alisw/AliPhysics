@@ -1,5 +1,26 @@
+#ifdef __CINT__
 
-Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
+namespace Reve
+{
+class RenderElement;
+class PointSet;
+}
+
+#else
+
+#include <Reve/Reve.h>
+#include <Reve/ReveManager.h>
+#include <Reve/PointSet.h>
+#include <Alieve/EventAlieve.h>
+
+#include <AliRunLoader.h>
+#include <AliCluster.h>
+
+#include <TClonesArray.h>
+
+#endif
+
+Reve::PointSet* its_clusters(Reve::RenderElement* cont=0, Float_t maxR=50)
 {
   Alieve::Event::AssertGeometry();
 
@@ -11,8 +32,8 @@ Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
   Reve::PointSet* clusters = new Reve::PointSet(10000);
   clusters->SetOwnIds(kTRUE);
 
-  TClonesArray *cl=NULL;
-  TBranch *branch=cTree->GetBranch("ITSRecPoints");
+  TClonesArray *cl = NULL;
+  TBranch *branch  = cTree->GetBranch("ITSRecPoints");
   branch->SetAddress(&cl);
 
   Int_t nentr=(Int_t)cTree->GetEntries();
@@ -54,7 +75,7 @@ Reve::PointSet* its_clusters(RenderElement* cont=0, Float_t maxR=50)
   clusters->SetTitle(tip);
 
   using namespace Reve;
-  gReve->AddRenderElement(clusters);
+  gReve->AddRenderElement(clusters, cont);
   gReve->Redraw3D();
 
   return clusters;

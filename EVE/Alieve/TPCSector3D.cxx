@@ -58,11 +58,8 @@ void TPCSector3D::ComputeBBox()
   const TPCSectorData::SegmentInfo&  iSeg = TPCSectorData::GetInnSeg();
   const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
 
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  bbox_init();
-#else
   BBoxInit();
-#endif
+
   Float_t w = 0.5*o2Seg.GetNMaxPads()*o2Seg.GetPadWidth();
   fBBox[0] = -w;
   fBBox[1] =  w;
@@ -104,40 +101,31 @@ void TPCSector3D::LoadPadrow(TPCSectorData::RowIterator& iter,
                              Float_t xs, Float_t ys, Float_t pw, Float_t ph) 
 {
   Short_t pad, time, val;
-  Float_t x0, x1, z0, z1;
+  Float_t x0, z0;
   Float_t ym = ys + 0.5*ph;
-  Float_t ye = ys + ph;
   Float_t zs = fZStep/fDriftVel;
 
-  while (iter.NextPad()) {
+  while (iter.NextPad())
+  {
     pad = iter.Pad();
-    while (iter.Next()) {
+    while (iter.Next())
+    {
       time = iter.Time();
       val  = iter.Signal();
 
       if(val <= fThreshold || time < fMinTime || time > fMaxTime)
 	continue;
 
-      if(fPointSetOn && val <= fPointSetMaxVal) {
+      if(fPointSetOn && val <= fPointSetMaxVal)
+      {
 	fPointSetArray.Fill(xs + (pad+0.5)*pw, ym, (time+0.5)*zs, val);
-      } else {
-	fBoxSet.fBoxes.push_back(Reve::Box());
-	ColorFromArray(val, fBoxSet.fBoxes.back().color);
+      }
+      else
+      {
 	x0 = xs + pad*pw;
-	x1 = x0 + pw;
 	z0 = time*zs;
-	z1 = z0 + zs;
-	Float_t* p = fBoxSet.fBoxes.back().vertices; 
-	// front
-	p[0] = x0;  p[1] = ys;  p[2] = z0;  p += 3;
-	p[0] = x1;  p[1] = ys;  p[2] = z0;  p += 3;
-	p[0] = x1;  p[1] = ye;  p[2] = z0;  p += 3;
-	p[0] = x0;  p[1] = ye;  p[2] = z0;  p += 3;
-	// back
-	p[0] = x0;  p[1] = ys;  p[2] = z1;  p += 3;
-	p[0] = x1;  p[1] = ys;  p[2] = z1;  p += 3;
-	p[0] = x1;  p[1] = ye;  p[2] = z1;  p += 3;
-	p[0] = x0;  p[1] = ye;  p[2] = z1;
+	fBoxSet.AddBox(x0, ys, z0, pw, ph, zs);
+        fBoxSet.DigitColor(ColorFromArray(val));
       }
     }
   }
@@ -149,7 +137,7 @@ void TPCSector3D::UpdateBoxes()
 
   // printf("TPCSector3D update boxes\n");
 
-  fBoxSet.ClearSet();
+  fBoxSet.Reset(BoxSet::BT_AABox, kTRUE, 16384);
   fPointSetArray.RemoveElements();
 
   TPCSectorData* data = GetSectorData();
@@ -176,6 +164,7 @@ void TPCSector3D::UpdateBoxes()
       }
     }
 
+    fBoxSet.RefitPlex();
     if(fPointSetOn)
       fPointSetArray.CloseBins();
   }

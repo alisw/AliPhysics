@@ -54,7 +54,7 @@ TPCSector2DEditor::TPCSector2DEditor(const TGWindow *p,
     fPickMode->AddEntry("1D histo", 1);
     fPickMode->AddEntry("2D histo", 2);
     TGListBox* lb = fPickMode->GetListBox();
-    lb->Resize(lb->GetWidth(), 3*16);
+    lb->Resize(lb->GetWidth(), 3*18);
     fPickMode->Resize(80, 20);
     fPickMode->Connect("Selected(Int_t)", "Alieve::TPCSector2DEditor", this, "DoPickMode(Int_t)");
     f->AddFrame(fPickMode, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));

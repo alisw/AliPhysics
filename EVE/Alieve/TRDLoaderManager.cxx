@@ -2,7 +2,7 @@
 #include "TRDLoader.h"
 #include "TRDLoaderImp.h"
 
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 
 #include <TGLabel.h>
 #include <TGButton.h>
@@ -48,21 +48,21 @@ void	TRDLoaderManager::Add(Int_t type, const Text_t *name, const Text_t *title)
 	switch(type){
 	case 0:
 		//fChildren.push_back(new TRDLoaderSim(name, title));
-		gReve->AddRenderElement(this, trdl = new TRDLoaderSim(name, title));
+		gReve->AddRenderElement(trdl = new TRDLoaderSim(name, title), this);
 		((TRDLoaderSim*)trdl)->FindListTreeItem(gReve->GetListTree())->SetTipText(title);
 		break;	
 	case 1:
 	case 2:
 	case 3:
 		//fChildren.push_back(new TRDLoader(name, title));
-		gReve->AddRenderElement(this, trdl = new TRDLoader(name, title));
+	  gReve->AddRenderElement(trdl = new TRDLoader(name, title), this);
 		trdl->FindListTreeItem(gReve->GetListTree())->SetTipText(title);
 		trdl->SetDataType((Alieve::TRDDataTypes)type);
 		break;
 	case 4:
 	case 5:
 		//fChildren.push_back(new TRDLoaderRaw(name, title));
-		gReve->AddRenderElement(this, trdl = new TRDLoaderRaw(name, title));
+	  gReve->AddRenderElement(trdl = new TRDLoaderRaw(name, title), this);
 		((TRDLoaderRaw*)trdl)->FindListTreeItem(gReve->GetListTree())->SetTipText(title);
 		trdl->SetDataType((Alieve::TRDDataTypes)type);
 		break;
@@ -89,7 +89,7 @@ void	TRDLoaderManager::Remove(Int_t entry)
 	//printf("TRDLoaderManager::Remove(%d)\n", entry);
 	List_i it = fChildren.begin();
 	for(int i=0; i<entry; i++) it++;
-	gReve->RemoveRenderElement(this, (*it));
+	gReve->RemoveRenderElement((*it), this);
 	fChildren.erase(it);
 }
 

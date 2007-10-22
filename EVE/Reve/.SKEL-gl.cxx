@@ -16,7 +16,7 @@ ClassImp(CLASS)
 
 CLASS::CLASS() : TGLObject(), fM(0)
 {
-  // fCached = false; // Disable display list.
+  // fDLCache = kFALSE; // Disable display list.
 }
 
 CLASS::~CLASS()

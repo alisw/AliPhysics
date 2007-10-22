@@ -345,6 +345,9 @@ void ZTrans::SetPos(Double_t x, Double_t y, Double_t z)
 void ZTrans::SetPos(Double_t* x)
 { M[F03] = x[0]; M[F13] = x[1]; M[F23] = x[2]; }
 
+void ZTrans::SetPos(Float_t* x)
+{ M[F03] = x[0]; M[F13] = x[1]; M[F23] = x[2]; }
+
 void ZTrans::SetPos(const ZTrans& t)
 {
   const Double_t* T = t.M;
@@ -355,6 +358,9 @@ void ZTrans::GetPos(Double_t& x, Double_t& y, Double_t& z) const
 { x = M[F03]; y = M[F13]; z = M[F23]; }
 
 void ZTrans::GetPos(Double_t* x) const
+{ x[0] = M[F03]; x[1] = M[F13]; x[2] = M[F23]; }
+
+void ZTrans::GetPos(Float_t* x) const
 { x[0] = M[F03]; x[1] = M[F13]; x[2] = M[F23]; }
 
 void ZTrans::GetPos(TVector3& v) const
@@ -487,11 +493,34 @@ void ZTrans::MultiplyIP(TVector3& v, Double_t w) const
 	   M[F20]*v.x() + M[F21]*v.y() + M[F22]*v.z() + M[F23]*w);
 }
 
+void ZTrans::MultiplyIP(Double_t* v, Double_t w) const
+{
+  Double_t r[3] = { v[0], v[1], v[2] };
+  v[0] = M[F00]*r[0] + M[F01]*r[1] + M[F02]*r[2] + M[F03]*w;
+  v[1] = M[F10]*r[0] + M[F11]*r[1] + M[F12]*r[2] + M[F13]*w;
+  v[2] = M[F20]*r[0] + M[F21]*r[1] + M[F22]*r[2] + M[F23]*w;
+}
+
+void ZTrans::MultiplyIP(Float_t* v, Double_t w) const
+{
+  Double_t r[3] = { v[0], v[1], v[2] };
+  v[0] = M[F00]*r[0] + M[F01]*r[1] + M[F02]*r[2] + M[F03]*w;
+  v[1] = M[F10]*r[0] + M[F11]*r[1] + M[F12]*r[2] + M[F13]*w;
+  v[2] = M[F20]*r[0] + M[F21]*r[1] + M[F22]*r[2] + M[F23]*w;
+}
+
 TVector3 ZTrans::Multiply(const TVector3& v, Double_t w) const
 {
   return TVector3(M[F00]*v.x() + M[F01]*v.y() + M[F02]*v.z() + M[F03]*w,
 		  M[F10]*v.x() + M[F11]*v.y() + M[F12]*v.z() + M[F13]*w,
 		  M[F20]*v.x() + M[F21]*v.y() + M[F22]*v.z() + M[F23]*w);
+}
+
+void ZTrans::Multiply(const Double_t *vin, Double_t* vout, Double_t w) const
+{
+  vout[0] = M[F00]*vin[0] + M[F01]*vin[1] + M[F02]*vin[2] + M[F03]*w;
+  vout[1] = M[F10]*vin[0] + M[F11]*vin[1] + M[F12]*vin[1] + M[F13]*w;
+  vout[2] = M[F20]*vin[0] + M[F21]*vin[1] + M[F22]*vin[1] + M[F23]*w;
 }
 
 void ZTrans::RotateIP(TVector3& v) const

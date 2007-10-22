@@ -1,7 +1,7 @@
 #include "TRDLoader.h"
 #include "TRDModuleImp.h"
 
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 #include <Reve/RGValuators.h>
 
 #include "TSystem.h"
@@ -107,7 +107,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 			SM = (TRDNode*)(*ichmb);
 			SM->SetRnrSelf(kTRUE);
 		}else{
-			gReve->AddRenderElement(this, SM = new TRDNode("SM", ism));
+		  gReve->AddRenderElement(SM = new TRDNode("SM", ism), this);
 			SM->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("Supermodule %2d", ism));
 		}
 		for(int istk=istk_start; istk<istk_stop; istk++){
@@ -116,7 +116,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 				STK = (TRDNode*)(*ichmb);
 				STK->SetRnrSelf(kTRUE);
 			}else{
-				gReve->AddRenderElement(SM, STK = new TRDNode("Stack", istk));
+			  gReve->AddRenderElement(STK = new TRDNode("Stack", istk), SM);
 				STK->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d", ism, istk));
 			}
 			for(int ily=ily_start; ily<ily_stop; ily++){
@@ -124,7 +124,7 @@ void	TRDLoader::AddChambers(int sm, int stk, int ly)
 				ichmb = find_if(STK->begin(), STK->end(), ID<RenderElement*>(det));
 				if(ichmb != STK->end()) (*ichmb)->SetRnrSelf(kTRUE);
 				else{
-					gReve->AddRenderElement(STK, CHMB = new TRDChamber(det));
+				  gReve->AddRenderElement(CHMB = new TRDChamber(det), STK);
 					CHMB->SetGeometry(fGeo);
 					CHMB->FindListTreeItem(gReve->GetListTree())->SetTipText(Form("SM %2d Stack %1d Layer %1d", ism, istk, ily));
 				}
@@ -476,7 +476,7 @@ void TRDLoaderEditor::FileOpen()
   fi.fFilename  = StrDup(gSystem->BaseName(fM->fFilename.Data()));
 //  fi.fFileTypes = tpcfiletypes;
 
-  new TGFileDialog(fClient->GetRoot(), gReve, kFDOpen, &fi);
+  new TGFileDialog(fClient->GetRoot(), gReve->GetMainWindow(), kFDOpen, &fi);
   if (!fi.fFilename) return;
 
   fFile->SetToolTipText(gSystem->DirName (fi.fFilename));

@@ -1,14 +1,13 @@
 // $Header$
 
 #include "QuadSet.h"
-#include "RGBAPalette.h"
-#include "RGTopFrame.h"
+
+#include "ReveManager.h"
 
 #include <TColor.h>
 
 #include <TBuffer3D.h>
 #include <TBuffer3DTypes.h>
-#include <TGeometry.h>
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 
@@ -21,6 +20,7 @@ using namespace Reve;
 /**************************************************************************/
 // Quad
 /**************************************************************************/
+
 ClassImp(Reve::Quad)
 
 void Quad::ColorFromIdx(Color_t ci)
@@ -181,69 +181,29 @@ void OldQuadSet::ComputeBBox()
 ClassImp(Reve::QuadSet)
 
 QuadSet::QuadSet(const Text_t* n, const Text_t* t) :
-  RenderElement(),
-  TNamed(n, t),
+  DigitSet   (n, t),
 
-  fQuadType(QT_Undef),
-  fDefaultValue(kMinInt),
-  fValueIsColor(kFALSE),
-  fOwnIds      (kFALSE),
-  fPlex(),
-  fLastQuad(0),
-
-  fDefWidth(1), fDefHeight(1), fDefCoord(0),
-
-  fFrame  (0),
-  fPalette(0),
-  fRenderMode(RM_Fill),
-  fDisableLigting(kTRUE),
-  fEmitSignals(kFALSE),
-  fHistoButtons(kTRUE),
-  fHMTrans()
+  fQuadType  (QT_Undef),
+  fDefWidth  (1),
+  fDefHeight (1),
+  fDefCoord  (0)
 {}
 
 QuadSet::QuadSet(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize,
 		 const Text_t* n, const Text_t* t) :
-  RenderElement(),
-  TNamed(n, t),
+  DigitSet   (n, t),
 
-  fQuadType(quadType),
-  fDefaultValue(valIsCol ? 0 : kMinInt),
-  fValueIsColor(valIsCol),
-  fOwnIds      (kFALSE),
-  fPlex(SizeofAtom(quadType), chunkSize),
-  fLastQuad(0),
-
-  fDefWidth(1), fDefHeight(1), fDefCoord(0),
-
-  fFrame  (0),
-  fPalette(0),
-  fRenderMode(RM_Fill),
-  fDisableLigting(kTRUE),
-  fEmitSignals(kFALSE),
-  fHistoButtons(kTRUE),
-  fHMTrans()
-{}
+  fQuadType  (QT_Undef),
+  fDefWidth  (1),
+  fDefHeight (1),
+  fDefCoord  (0)
+{
+  Reset(quadType, valIsCol, chunkSize);
+}
 
 QuadSet::~QuadSet()
-{
-  SetFrame(0);
-  SetPalette(0);
-  if (fOwnIds)
-    ReleaseIds();
-}
+{}
 
-void QuadSet::ReleaseIds()
-{
-  VoidCPlex::iterator qi(fPlex);
-  while (qi.next()) {
-    QuadBase& q = * (QuadBase*) qi();
-    if (q.fId.GetObject()) {
-      delete q.fId.GetObject();
-      q.fId = 0;
-    }
-  }
-}
 
 /**************************************************************************/
 
@@ -285,90 +245,7 @@ void QuadSet::Reset(QuadSet::QuadType_e quadType, Bool_t valIsCol, Int_t chunkSi
   fPlex.Reset(SizeofAtom(fQuadType), chunkSize);
 }
 
-void QuadSet::RefitPlex()
-{
-  // Instruct underlying memory allocator to regroup itself into a
-  // contiguous memory chunk.
-
-  fPlex.Refit();
-}
-
 /**************************************************************************/
-
-void QuadSet::ScanMinMaxValues(Int_t& min, Int_t& max)
-{
-  if (fValueIsColor || fPlex.Size() == 0) return;
-  min = kMaxInt;
-  max = kMinInt;
-  for (Int_t c=0; c<fPlex.VecSize(); ++c)
-  {
-    Char_t* a = fPlex.Chunk(c);
-    Int_t   n = fPlex.NAtoms(c);
-    while (n--)
-    {
-      Int_t v = ((QuadBase*)a)->fValue;
-      if (v < min) min = v;
-      if (v > max) max = v;
-      a += fPlex.S();
-    }
-  }
-  if (min == max)
-    --min;
-}
-
-/**************************************************************************/
-
-void QuadSet::SetMainColor(Color_t color)
-{
-  if (fFrame) {
-    fFrame->SetFrameColor(color);
-    fFrame->UpdateBackPtrItems();
-  }
-  gReve->Redraw3D();
-}
-
-void QuadSet::SetFrame(FrameBox* b)
-{
-  if (fFrame == b) return;
-  if (fFrame) fFrame->DecRefCount(this);
-  fFrame = b;
-  if (fFrame) {
-    fFrame->IncRefCount(this);
-    SetMainColorPtr(fFrame->PtrFrameColor());
-  } else {
-    SetMainColorPtr(0);
-  }
-}
-
-void QuadSet::SetPalette(RGBAPalette* p)
-{
-  if (fPalette == p) return;
-  if (fPalette) fPalette->DecRefCount();
-  fPalette = p;
-  if (fPalette) fPalette->IncRefCount();
-}
-
-RGBAPalette* QuadSet::AssertPalette()
-{
-  if (fPalette == 0) {
-    fPalette = new RGBAPalette;
-    if (!fValueIsColor) {
-      Int_t min, max;
-      ScanMinMaxValues(min, max);
-      fPalette->SetLimits(min, max);
-      fPalette->SetMinMax(min, max);
-    }
-  }
-  return fPalette;
-}
-
-/**************************************************************************/
-
-QuadSet::QuadBase* QuadSet::NewQuad()
-{
-  fLastQuad = new (fPlex.NewAtom()) QuadBase(fDefaultValue);
-  return fLastQuad;
-}
 
 void QuadSet::AddQuad(Float_t* verts)
 {
@@ -377,7 +254,7 @@ void QuadSet::AddQuad(Float_t* verts)
   if (fQuadType != QT_FreeQuad)
     throw(eH + "expect free quad-type.");
 
-  QFreeQuad* fq = (QFreeQuad*) NewQuad();
+  QFreeQuad* fq = (QFreeQuad*) NewDigit();
   memcpy(fq->fVertices, verts, sizeof(fq->fVertices));
 }
 
@@ -400,34 +277,42 @@ void QuadSet::AddQuad(Float_t a, Float_t b, Float_t c, Float_t w, Float_t h)
 {
   static const Exc_t eH("QuadSet::AddAAQuad ");
 
-  QOrigin& fq = * (QOrigin*) NewQuad();
+  QOrigin& fq = * (QOrigin*) NewDigit();
   fq.fA = a; fq.fB = b;
   switch (fQuadType)
   {
     case QT_RectangleXY:
     case QT_RectangleXZ:
-    case QT_RectangleYZ: {
+    case QT_RectangleYZ:
+    {
       QRect& q = (QRect&) fq;
       q.fC = c; q.fW = w; q.fH = h;
       break;
     }
-    case QT_RectangleXYFixedDim: {
+
+    case QT_RectangleXYFixedDim:
+    {
       QRectFixDim& q =  (QRectFixDim&) fq;
       q.fC = c;
       break;
     }
+
     case QT_RectangleXYFixedZ:
     case QT_RectangleXZFixedY:
-    case QT_RectangleYZFixedX: {
+    case QT_RectangleYZFixedX:
+    {
       QRectFixC& q = (QRectFixC&) fq;
       q.fW = w; q.fH = h;
       break;
     }
+
     case QT_RectangleXYFixedDimZ:
     case QT_RectangleXZFixedDimY:
-    case QT_RectangleYZFixedDimX: {
+    case QT_RectangleYZFixedDimX:
+    {
       break;
     }
+
     default:
       throw(eH + "expect axis-aligned quad-type.");
   }
@@ -437,7 +322,7 @@ void QuadSet::AddLine(Float_t a, Float_t b, Float_t w, Float_t h)
 {
   static const Exc_t eH("QuadSet::AddLine ");
 
-  QOrigin& fq = * (QOrigin*) NewQuad();
+  QOrigin& fq = * (QOrigin*) NewDigit();
   fq.fA = a; fq.fB = b;
   switch (fQuadType)
   {
@@ -456,7 +341,7 @@ void QuadSet::AddHexagon(Float_t a, Float_t b, Float_t c, Float_t r)
 {
   static const Exc_t eH("QuadSet::AddHexagon ");
 
-  QOrigin& fq = * (QOrigin*) NewQuad();
+  QOrigin& fq = * (QOrigin*) NewDigit();
   fq.fA = a; fq.fB = b;
   switch (fQuadType)
   {
@@ -472,61 +357,11 @@ void QuadSet::AddHexagon(Float_t a, Float_t b, Float_t c, Float_t r)
 }
 
 /**************************************************************************/
-
-void QuadSet::QuadValue(Int_t value)
-{
-  fLastQuad->fValue = value;
-}
-
-void QuadSet::QuadColor(Color_t ci)
-{
-  ColorFromIdx(ci, (UChar_t*) & fLastQuad->fValue, kTRUE);
-}
-
-void QuadSet::QuadColor(UChar_t r, UChar_t g, UChar_t b, UChar_t a)
-{
-  UChar_t* x = (UChar_t*) & fLastQuad->fValue;
-  x[0] = r; x[1] = g; x[2] = b; x[3] = a;
-}
-
-/**************************************************************************/
-
-void QuadSet::QuadId(TObject* id)
-{
-  fLastQuad->fId = id;
-}
-
-/**************************************************************************/
-
-void QuadSet::QuadSelected(Int_t idx)
-{
-  if (fEmitSignals) {
-    CtrlClicked(this, idx);
-  } else {
-    QuadBase* qb = GetQuad(idx);
-    TObject* obj = qb->fId.GetObject();
-    printf("QuadSet::QuadSelected idx=%d, value=%d, obj=0x%lx\n",
-	   idx, qb->fValue, (ULong_t)obj);
-    if (obj)
-      obj->Print();
-  }
-}
-
-void QuadSet::CtrlClicked(QuadSet* qs, Int_t idx)
-{
-  Long_t args[2];
-  args[0] = (Long_t) qs;
-  args[1] = (Long_t) idx;
-
-  Emit("CtrlClicked(Reve::Track*, Int_t)", args);
-}
-
-/**************************************************************************/
 /**************************************************************************/
 
 void QuadSet::ComputeBBox()
 {
-  // Fill bounding-box information in base-class TAttBBox (virtual method).
+  // Fill bounding-box information of the base-class TAttBBox (virtual method).
   // If member 'FrameBox* fFrame' is set, frame's corners are used as bbox.
 
   static const Exc_t eH("QuadSet::ComputeBBox ");
@@ -755,49 +590,13 @@ void QuadSet::ComputeBBox()
 	break;
       }
 
-      default: {
+      default:
+      {
 	throw(eH + "unsupported quad-type.");
       }
 
     } // end switch quad-type
   } // end if frame ... else ...
 
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,14,0)
-  { // Resize bounding box so that it does not have 0 volume.
-    // This should be done in TAttBBox (via method AssertMinExtents(epsilon)).
-    // Or handled more gracefully in TGLViewer.
-    static const Float_t eps = 1e-3;
-    for (Int_t i=0; i<6; i+=2) {
-      if (fBBox[i+1] - fBBox[i] < eps) {
-	Float_t b = 0.5*(fBBox[i] + fBBox[i+1]);
-	fBBox[i]   = b - 0.5*eps;
-	fBBox[i+1] = b + 0.5*eps;
-      }
-    }
-  }
-#else
   AssertBBoxExtents(0.001);
-#endif
 }
-
-/**************************************************************************/
-
-void QuadSet::Paint(Option_t* /*option*/)
-{
-  static const Exc_t eH("QuadSet::Paint ");
-
-  TBuffer3D buff(TBuffer3DTypes::kGeneric);
-
-  // Section kCore
-  buff.fID           = this;
-  buff.fColor        = fFrame ? fFrame->GetFrameColor() : 1;
-  buff.fTransparency = 0;
-  fHMTrans.SetBuffer3D(buff);
-  buff.SetSectionsValid(TBuffer3D::kCore);
-
-  Int_t reqSections = gPad->GetViewer3D()->AddObject(buff);
-  if (reqSections != TBuffer3D::kNone)
-    Error(eH, "only direct GL rendering supported.");
-}
-
-/**************************************************************************/

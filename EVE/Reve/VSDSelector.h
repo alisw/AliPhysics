@@ -5,6 +5,7 @@
 #include <Reve/VSD.h>
 
 #include <TGTextEntry.h>
+#include <TGButton.h>
 
 namespace Reve {
 

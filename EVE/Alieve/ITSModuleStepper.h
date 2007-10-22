@@ -4,24 +4,23 @@
 #define ALIEVE_ITSModuleStepper_H
 
 #include <TNamed.h>
-#include <TAtt3D.h>
-#include <TAttBBox.h>
+#include <TGLOverlay.h>
 
 #include <Reve/RenderElement.h>
 #include <Reve/GridStepper.h>
-#include <Reve/ZTrans.h>
 
 #include <vector>
+
+class TGLText;
+class TGLAxis;
 
 namespace Alieve {
 
 class ITSDigitsInfo;
 class DigitScaleInfo;
 
-class ITSModuleStepper : public Reve::RenderElement, 
-                         public TNamed,
-		         public TAtt3D,
-		         public TAttBBox
+class ITSModuleStepper : public Reve::RenderElementList,
+                         public TGLOverlayElement
 {
   friend class ITSModuleStepperGL;
 
@@ -29,69 +28,91 @@ public:
   typedef std::vector<UInt_t>           vpInt_t;
   typedef std::vector<UInt_t>::iterator vpInt_i;
 
-  enum PositionType_e { PT_BottomLeft, PT_BottomRight, PT_TopLeft, PT_TopRight };
-
 private:
+  vpInt_t                 fIDs;
+  UInt_t                  fPosition;  // position of top corner ITS module in vector fIDs
+
   ITSModuleStepper(const ITSModuleStepper&);            // Not implemented
   ITSModuleStepper& operator=(const ITSModuleStepper&); // Not implemented
 
 protected:
   ITSDigitsInfo*          fDigitsInfo;
   DigitScaleInfo*         fScaleInfo;
+  Int_t                   fSubDet;
 
-  Reve::GridStepper*      fStepper;  
- 
-  Float_t                 fExpand;
+  Reve::GridStepper*      fStepper;
+  TGLAxis*                fAxis;
+  TGLText*                fText;
+  Float_t                 fTextSize;
+  Float_t                 fPagerGap;
+  Bool_t                  fRnrFrame;
 
-  vpInt_t                 fIDs;
-  UInt_t                  fPosition;
+  // module configuration
+  Float_t                 fExpandCell;
+  Color_t                 fModuleFrameCol;
 
-  Reve::ZTrans            fHMTrans; 
+  // palette configuratiom
+  Float_t                 fPaletteOffset;
+  Float_t                 fPaletteLength;  
 
-  Bool_t                  fRnrFrame;    
-  PositionType_e          fWCorner; 
-  Color_t                 fWColor;   
+  // symbol configuration 
+  Int_t                   fWActive; 
   Float_t                 fWWidth;
   Float_t                 fWHeight;
+  Float_t                 fWOff; ///offset relative to widget size
+  Color_t                 fWCol;  
+  Int_t                   fWActiveCol;
+  Color_t                 fFontCol;
 
-  void                    Apply();
-  Int_t                   Nxy(){ return fStepper->Nx*fStepper->Ny; }
+  // wrappers
+  Float_t TextLength(const char* txt);
+  void    RenderString(TString tex ,Int_t id = -1);
+  void    RenderFrame(Float_t dx, Float_t dy, Int_t id);
+  void    RenderSymbol(Float_t dx, Float_t dy, Int_t id);
+  void    RenderPalette(Float_t dx, Float_t x, Float_t y);
+  void    RenderMenu();
+  void    RenderCellIDs();
 
-  void                    SetFirst(Int_t first);
+  // module ID navigation
+  Int_t  Nxy(){ return fStepper->Nx*fStepper->Ny; }
+  void   AddToList( Int_t modID ){ fIDs.push_back(modID);}
+  void   ResetList(){ fIDs.clear();}
+  void   SetFirst(Int_t first);
 
 public:
   ITSModuleStepper(ITSDigitsInfo* di);
   virtual ~ITSModuleStepper();
 
-  void   Start();
-  void   Next();
-  void   Previous();
-  void   End();
+  // external functions
+  void     DisplayDet(Int_t det, Int_t layer = -1);
+  void     DisplayTheta(Float_t min, Float_t max);
 
-  void   SetStepper(Int_t nx, Int_t ny, Float_t dx = -1, Float_t dy = -1);
-  Reve::GridStepper*  GetStepper(){ return fStepper; }
-  
-  void   AddToList( Int_t modID ){ fIDs.push_back(modID);}
-  void   ResetList(){ fIDs.clear();}
+  // overlay functions
+  virtual  Bool_t MouseEnter(TGLOvlSelectRecord& selRec);
+  virtual  Bool_t Handle(TGLRnrCtx& rnrCtx, TGLOvlSelectRecord& selRec,
+                        Event_t* event);
+  virtual void   MouseLeave();
+  virtual void   Render(TGLRnrCtx& rnrCtx);
 
-  void   DisplayDet(Int_t det, Int_t layer = -1);
-  void   DisplayTheta(Float_t min, Float_t max);
+  // stepper
+  Reve::GridStepper*  GetStepper(){return fStepper;}
+  void                SetStepper(Reve::GridStepper* s){ fStepper = s; Apply();}
 
-  Int_t  GetCurrentPage();
-  Int_t  GetPages();
+  Int_t    GetCurrentPage();
+  Int_t    GetPages();
+  void     Start();
+  void     Next();
+  void     Previous();
+  void     End();
+  void     Apply();
+  void     Capacity();
 
-  virtual Bool_t CanEditMainColor() { return kTRUE; }
 
-  Bool_t  GetRnrFrame(){ return fRnrFrame; }
-  void    SetRnrFrame(Bool_t rnr){ fRnrFrame = rnr; }
-  Color_t GetWColor(){ return fWColor; };
-  void    SetWColor(Color_t c){ fWColor=c; }
-
-  virtual Reve::ZTrans* PtrMainHMTrans()     { return &fHMTrans; }
-
-  virtual void ComputeBBox();
-
-  virtual void Paint(Option_t* option = "");
+  // getters/setters
+  Color_t  GetWColor(){ return fWCol; };
+  void     SetWColor(Color_t c){ fWCol = c; }
+  TGLText* GetFont(){ return fText; }
+  void     SetGLText(TGLText* t) {fText = t;}
 
   ClassDef(ITSModuleStepper, 0);
 };

@@ -1,6 +1,6 @@
 // $Id$
 
-Reve::PointSet* clusters_from_index(Int_t index=0, RenderElement* cont=0)
+Reve::PointSet* clusters_from_index(Int_t index=0, Reve::RenderElement* cont=0)
 {
   AliESDEvent* esd = Alieve::Event::AssertESD();
 

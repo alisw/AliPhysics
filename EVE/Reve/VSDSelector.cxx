@@ -1,7 +1,7 @@
 
 #include "VSDSelector.h"
 #include "VSDEvent.h"
-#include "RGTopFrame.h"
+#include "ReveManager.h"
 
 #include <Reve/Track.h>
 #include <Reve/PointSet.h>
@@ -193,18 +193,17 @@ void VSDSelector::SelectParticles(const Text_t* selection)
     throw (eH + "no entries found for selection in kinematics.");
 
   TrackList* cont   = new TrackList();
-  cont->GetRnrStyle()->SetColor(4);
+  cont->SetMainColor(4);
 
   gReve->AddRenderElement(cont);
 
   if(n > 0) {
-    Reve::PadHolder pHolder(true, gReve->GetGLCanvas());
     for(Int_t i=0; i<n; i++) {
       Int_t label = evl.GetEntry(i);
       mTreeK->GetEntry(label);
       Track* track = new Track(mpK, cont->GetRnrStyle());
       track->SetName(Form("%s daughters:%d", mK.GetName(), mK.GetNDaughters()));
-      gReve->AddRenderElement(cont, track);
+      gReve->AddRenderElement(track, cont);
 
       // printf("select daugters %s selection %s\n",mpK->GetName(),Form("fMother[0] == %d", track->GetLabel()));
       if(fRecursiveSelect->IsOn()) {
@@ -221,7 +220,6 @@ void VSDSelector::SelectParticles(const Text_t* selection)
       }
       track->MakeTrack();
     }
-    cont->MakeMarkers();
   }
 }
 
@@ -234,7 +232,7 @@ void VSDSelector::ImportDaughtersRec(RenderElement* parent, TrackList* cont,
     mTreeK->GetEntry(i); 
     Track* track = new Track(mpK, cont->GetRnrStyle());
     track->SetName(Form("%s daughters:%d", mK.GetName(), mK.GetNDaughters()));
-    gReve->AddRenderElement(parent, track);
+    gReve->AddRenderElement(track, parent);
     cont->AddElement(track); // ?? is this ok ??
     if(mK.GetNDaughters())
       ImportDaughtersRec(track, cont, mK.GetFirstDaughter(), mK.GetLastDaughter());
@@ -358,8 +356,8 @@ void VSDSelector::SelectRecTracks()
     throw (eH + "No entries found in ESD data.");
 
   if(n > 0) {
-    TrackList* cont = new TrackList(Form("RecTracks %s [%d]",selection, n), n);
-    cont->GetRnrStyle()->SetColor(6);
+    TrackList* cont = new TrackList(Form("RecTracks %s [%d]",selection, n));
+    cont->SetMainColor(6);
 
     gReve->AddRenderElement(cont);
 
@@ -369,9 +367,8 @@ void VSDSelector::SelectRecTracks()
       Track* track = new Track(mpR, cont->GetRnrStyle());
       track->MakeTrack();
 
-      gReve->AddRenderElement(cont, track);
+      gReve->AddRenderElement(track, cont);
     }
-    cont->MakeMarkers();
     gReve->Redraw3D();
   }
 }

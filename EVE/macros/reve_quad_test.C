@@ -193,7 +193,7 @@ void reve_quad_test_hierarchy(Int_t n=4)
     // PMD: loop over clones-array, create hexagons above threshold.
     qs->SetPalette(pal);
     qs->SetFrame(box);
-    gReve->AddRenderElement(l, qs);
+    gReve->AddRenderElement(qs, l);
   }
 
   gReve->Redraw3D();

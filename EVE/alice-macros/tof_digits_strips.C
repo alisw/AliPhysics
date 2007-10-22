@@ -46,7 +46,7 @@ void tof_digits_strips()
     Reve::RenderElementList* l = new Reve::RenderElementList(sectorName);
     l->SetTitle(sectorTitle);
     l->SetMainColor((Color_t)2);
-    gReve->AddRenderElement(ll, l);
+    gReve->AddRenderElement(l, ll);
 
 
     for(Int_t iPlate=0; iPlate<g->NPlates(); iPlate++) {
@@ -57,7 +57,7 @@ void tof_digits_strips()
       sPlate+=iPlate;
       Reve::RenderElementList* relPlate = new Reve::RenderElementList(sPlate.Data());
       relPlate->SetMainColor((Color_t)2);
-      gReve->AddRenderElement(l, relPlate);
+      gReve->AddRenderElement(relPlaete, l);
 
 
       for(Int_t iStrip=0; iStrip<nStrips; iStrip++) {
@@ -65,7 +65,7 @@ void tof_digits_strips()
 	array = di->GetDigits(iSector,iPlate, iStrip);
 
 	Alieve::TOFStrip* m = new Alieve::TOFStrip(localGeoManager,iSector,iPlate,iStrip,array);
-	gReve->AddRenderElement(relPlate, m);
+	gReve->AddRenderElement(m, relPlate);
 
       }
     }

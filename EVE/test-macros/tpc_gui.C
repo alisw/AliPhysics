@@ -22,7 +22,7 @@ class TPCSector3D;
 #else
 
 #include <Reve/Reve.h>
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 #include <Alieve/TPCData.h>
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSector3D.h>
@@ -51,12 +51,10 @@ void tpc_gui(const char *file=0, Int_t ievent=0)
   d->SetAutoPedestal(kTRUE);
   l->SetData(d);
   l->SetDoubleSR(kTRUE);
-  // l->SetInitParams(40, 980, 10); // min-time, max-time, threshold
+  l->SetInitParams(40, 980, 10); // min-time, max-time, threshold
   // l->SetTPCEquipementMap("EquipmentIdMap.data");
 
   gReve->AddRenderElement(l);
-  gReve->NotifyBrowser(l);
-  gReve->DrawRenderElement(l);
 
   if(file != 0) {
     l->SetFile(file);

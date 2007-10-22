@@ -113,6 +113,15 @@ QuadSetGL::~QuadSetGL()
 
 /**************************************************************************/
 
+Bool_t QuadSetGL::ShouldDLCache(const TGLRnrCtx & rnrCtx) const
+{
+  if (rnrCtx.DrawPass() == TGLRnrCtx::kPassOutlineLine)
+    return kFALSE;
+  return TGLObject::ShouldDLCache(rnrCtx);
+}
+
+/**************************************************************************/
+
 Bool_t QuadSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
   Bool_t ok = SetModelCheckClass(obj, Reve::QuadSet::Class());
@@ -127,7 +136,7 @@ void QuadSetGL::SetBBox()
 
 /**************************************************************************/
 
-inline Bool_t QuadSetGL::SetupColor(const QuadSet::QuadBase& q) const
+inline Bool_t QuadSetGL::SetupColor(const DigitSet::DigitBase& q) const
 {
   if (fM->fValueIsColor)
   {
@@ -152,9 +161,12 @@ void QuadSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 
   // printf("QuadSetGLRenderer::DirectDraw Style %d, LOD %d\n", rnrCtx.Style(), rnrCtx.LOD());
 
+  if (rnrCtx.DrawPass() == TGLRnrCtx::kPassOutlineLine)
+    return;
+
   QuadSet& mQ = * fM;
 
-  if (mQ.fFrame != 0)
+  if (mQ.fFrame != 0 && ! rnrCtx.SecSelection())
     FrameBoxGL::Render(mQ.fFrame);
 
   if (mQ.fPlex.Size() == 0)
@@ -169,9 +181,9 @@ void QuadSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
   glEnable(GL_COLOR_MATERIAL);
   glDisable(GL_CULL_FACE);
 
-  if (mQ.fRenderMode == QuadSet::RM_Fill)
+  if (mQ.fRenderMode == DigitSet::RM_Fill)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  else if (mQ.fRenderMode == QuadSet::RM_Line)
+  else if (mQ.fRenderMode == DigitSet::RM_Line)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   if (mQ.fDisableLigting)  glDisable(GL_LIGHTING);
@@ -192,7 +204,7 @@ void QuadSetGL::RenderQuads(TGLRnrCtx & rnrCtx) const
   QuadSet& mQ = * fM;
 
   GLenum primitiveType;
-  if (mQ.fRenderMode != QuadSet::RM_Line)
+  if (mQ.fRenderMode != DigitSet::RM_Line)
   {
     primitiveType = GL_QUADS;
     if (mQ.fQuadType == QuadSet::QT_FreeQuad)
@@ -500,7 +512,7 @@ void QuadSetGL::RenderHexagons(TGLRnrCtx & rnrCtx) const
 
   QuadSet& mQ = * fM;
 
-  GLenum primitveType = (mQ.fRenderMode != QuadSet::RM_Line) ?
+  GLenum primitveType = (mQ.fRenderMode != DigitSet::RM_Line) ?
     GL_POLYGON : GL_LINE_LOOP;
 
   glNormal3f(0, 0, 1);
@@ -575,5 +587,5 @@ void QuadSetGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
   // point as an argument.
 
   if (rec.GetN() < 2) return;
-  fM->QuadSelected(rec.GetItem(1));
+  fM->DigitSelected(rec.GetItem(1));
 }

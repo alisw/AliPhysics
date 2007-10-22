@@ -56,22 +56,40 @@ TPointSelector::TPointSelector(TTree* t,
   fTree      (t),
   fConsumer  (c),
   fVarexp    (vexp),
-  fSelection (sel)
+  fSelection (sel),
+  fSubIdExp  (),
+  fSubIdNum  (0)
 {
   SetInputList(&fInput);
 }
 
 Long64_t TPointSelector::Select(const Text_t* selection)
 {
-  if(selection != 0)
-    fSelection = selection;
+  TString var(fVarexp);
+  if (fSubIdExp.IsNull()) {
+    fSubIdNum = 0;
+  } else {
+    fSubIdNum = fSubIdExp.CountChar(':') + 1;
+    var += ":" + fSubIdExp;
+  }
+
+  TString sel;
+  if (selection != 0)
+    sel = selection;
+  else
+    sel = fSelection;
 
   fInput.Delete();
-  fInput.Add(new TNamed("varexp",    fVarexp.Data()));
-  fInput.Add(new TNamed("selection", fSelection.Data()));
+  fInput.Add(new TNamed("varexp",    var.Data()));
+  fInput.Add(new TNamed("selection", sel.Data()));
 
+  if (fConsumer)
+    fConsumer->InitFill(fSubIdNum);
+
+  // 'para' option -> hack allowing arbitrary dimensions.
   if(fTree)
-    fTree->Process(this, "goff");
+    fTree->Process(this, "goff para");
+
   return fSelectedRows;
 }
 
@@ -85,7 +103,7 @@ void TPointSelector::TakeAction()
 {
   fSelectedRows += fNfill;
   // printf("TPointSelector::TakeAction nfill=%d, nall=%lld\n", fNfill, fSelectedRows);
-  if(fConsumer) {
+  if (fConsumer) {
     fConsumer->TakeAction(this);
   }
 }

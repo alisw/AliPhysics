@@ -2,7 +2,7 @@
 
 #include "EventAlieve.h"
 #include <Reve/Reve.h>
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 
 #include <AliRunLoader.h>
 #include <AliRun.h>
@@ -15,12 +15,10 @@
 
 #include <TFile.h>
 #include <TTree.h>
-#include <TObjString.h>
 #include <TError.h>
 
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TCint.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -53,8 +51,7 @@ Event::Event() :
   fPath (), fEventId   (0),
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
-  fESDfriend (0), fESDfriendExists(kFALSE),
-  fNewEventCommands()
+  fESDfriend (0), fESDfriendExists(kFALSE)
 {}
 
 Event::Event(TString path, Int_t ev) :
@@ -63,8 +60,7 @@ Event::Event(TString path, Int_t ev) :
   fPath (path), fEventId(-1),
   fRunLoader (0),
   fESDFile   (0), fESDTree (0), fESD (0),
-  fESDfriend (0), fESDfriendExists(kFALSE),
-  fNewEventCommands()
+  fESDfriend (0), fESDfriendExists(kFALSE)
 {
   Open();
   if (ev >= 0) GotoEvent(ev);
@@ -202,9 +198,12 @@ void Event::GotoEvent(Int_t event)
     throw(eH + Form("event %d not present, available range [%d, %d].",
 		    event, 0, maxEvent));
 
-  RGTopFrame::RedrawDisabler rd(gReve);
+  ReveManager::RedrawDisabler rd(gReve);
   gReve->Redraw3D(kFALSE, kTRUE); // Enforce drop of all logicals.
 
+  // !!! MT this is somewhat brutal; at least optionally, one could be
+  // a bit gentler, checking for objs owning their external refs and having
+  // additinal parents.
   DestroyElements();
   fEventId = event;
   SetName(Form("Event %d", fEventId));
@@ -237,23 +236,6 @@ void Event::Close()
   }
 }
 
-/**************************************************************************/
-
-void Event::AfterNewEventLoaded()
-{
-  TIter next(&fNewEventCommands);
-  TObject* o;
-  while ((o = next())) {
-    TObjString* s = dynamic_cast<TObjString*>(o);
-    if (s)
-      gInterpreter->ProcessLine(s->String());
-  }
-}
-
-void Event::AddNewEventCommand(const Text_t* cmd)
-{
-  fNewEventCommands.Add(new TObjString(cmd));
-}
 
 /**************************************************************************/
 /**************************************************************************/

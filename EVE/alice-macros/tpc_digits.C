@@ -10,7 +10,7 @@ class Event;
 Alieve::TPCData* g_tpc_data = 0;
 Alieve::Event*   g_tpc_last_event = 0;
 
-void tpc_digits(Int_t mode=0)
+void tpc_digits(Int_t mode=1)
 {
   if (g_tpc_data == 0 || g_tpc_last_event != Alieve::gEvent) {
     AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
@@ -45,7 +45,7 @@ void tpc_digits(Int_t mode=0)
     gReve->AddRenderElement(s);
     gReve->Redraw3D();
 
-    TGLViewer* cam = dynamic_cast<TGLViewer*>(gReve->GetGLCanvas()->GetViewer3D());
+    //TGLViewer* cam = gReve->GetGLViewer();
     //cam->SetCurrentCamera(TGLViewer::kCameraOrthoXOY) ;
     //cam->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, 2*left, 2*right, 2*top, bottom); 
     //printf("%f %f %f %f\n", left, right, top, bottom);
@@ -62,12 +62,12 @@ void tpc_digits(Int_t mode=0)
       gReve->AddRenderElement(l);
       
       for(Int_t i = 0; i<18; i++) {
-	Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+	Alieve::TPCSector2D* s = new Alieve::TPCSector2D(Form("TPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(l, s);
+	gReve->AddRenderElement(s, l);
       }
     }
     {
@@ -77,12 +77,12 @@ void tpc_digits(Int_t mode=0)
 
       gReve->AddRenderElement(l);
       for(Int_t i = 18; i<36; i++) {
-	Alieve::TPCSector2D* s = new Alieve::TPCSector2D();
+	Alieve::TPCSector2D* s = new Alieve::TPCSector2D(Form("TPCSector2D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(l, s);
+	gReve->AddRenderElement(s, l);
       }
     }
     gReve->EnableRedraw();
@@ -108,12 +108,12 @@ void tpc_digits(Int_t mode=0)
       gReve->AddRenderElement(l);
       
       for(Int_t i = 0; i<18; i++) {
-	Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
+	Alieve::TPCSector3D* s = new Alieve::TPCSector3D(Form("TPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(l, s);
+	gReve->AddRenderElement(s, l);
       }
     }
     {
@@ -123,12 +123,12 @@ void tpc_digits(Int_t mode=0)
 
       gReve->AddRenderElement(l);
       for(Int_t i = 18; i<36; i++) {
-	Alieve::TPCSector3D* s = new Alieve::TPCSector3D();
+	Alieve::TPCSector3D* s = new Alieve::TPCSector3D(Form("TPCSector3D %d", i));
 	s->SetSectorID(i);
 	s->SetDataSource(g_tpc_data);
 	s->SetFrameColor(col);
 	s->SetAutoTrans(kTRUE);
-	gReve->AddRenderElement(l, s);
+	gReve->AddRenderElement(s, l);
       }
     }
     gReve->EnableRedraw();
@@ -171,7 +171,7 @@ void tpc_digits_2drange(Int_t start, Int_t end)
       s->SetDataSource(g_tpc_data);
       s->SetFrameColor(col);
       s->SetAutoTrans(kTRUE);
-      gReve->AddRenderElement(l, s);
+      gReve->AddRenderElement(s, l);
     }
   }
   gReve->EnableRedraw();

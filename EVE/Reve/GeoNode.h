@@ -5,6 +5,7 @@
 
 #include <Reve/RenderElement.h>
 #include <Reve/ZTrans.h>
+#include <Reve/NLTBases.h>
 
 class TGeoVolume;
 class TGeoNode;
@@ -104,7 +105,8 @@ public:
 //----------------------------------------------------------------
 
 class GeoShapeRnrEl : public RenderElement,
-		      public TNamed
+		      public TNamed,
+                      public NLTGeoProjectable
 {
   GeoShapeRnrEl(const GeoShapeRnrEl&);            // Not implemented
   GeoShapeRnrEl& operator=(const GeoShapeRnrEl&); // Not implemented
@@ -115,7 +117,7 @@ protected:
   UChar_t           fTransparency;
   TGeoShape*        fShape;
 
-  static Int_t SubImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+  static GeoShapeRnrEl* SubImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
 
 public:
   GeoShapeRnrEl(const Text_t* name="GeoShapeRnrEl", const Text_t* title=0);
@@ -139,7 +141,10 @@ public:
 
   virtual void Paint(Option_t* option="");
 
-  static Int_t ImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+  static GeoShapeRnrEl* ImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+  
+  // NLTGeoProjectable
+  virtual TBuffer3D*           MakeBuffer3D();
 
   ClassDef(GeoShapeRnrEl, 1);
 };

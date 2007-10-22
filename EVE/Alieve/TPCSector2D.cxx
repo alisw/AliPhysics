@@ -1,9 +1,12 @@
 // $Header$
 
 #include "TPCSector2D.h"
+#include "TPCSector3D.h"
 
 #include <Alieve/TPCData.h>
 #include <Alieve/TPCSectorData.h>
+
+#include <Reve/ReveManager.h>
 
 #include <AliTPCParam.h>
 
@@ -45,11 +48,23 @@ TPCSector2D::TPCSector2D(const Text_t* n, const Text_t* t) :
 
   fUseTexture (kTRUE),
   fPickEmpty  (kFALSE),
-  fPickMode   (0)
+  fPickMode   (1)
 {}
 
 TPCSector2D::~TPCSector2D()
 {}
+
+/**************************************************************************/
+
+void TPCSector2D::MakeSector3D()
+{
+  TPCSector3D* s = new TPCSector3D;
+  s->SetDataSource(fTPCData);
+  s->SetSectorID(fSectorID);
+  s->SetAutoTrans(fAutoTrans);
+  gReve->AddRenderElement(s, this);
+  gReve->Redraw3D();
+}
 
 /**************************************************************************/
 
@@ -58,11 +73,7 @@ void TPCSector2D::ComputeBBox()
   const TPCSectorData::SegmentInfo&  iSeg = TPCSectorData::GetInnSeg();
   const TPCSectorData::SegmentInfo& o2Seg = TPCSectorData::GetOut2Seg();
 
-#if ROOT_VERSION_CODE <= ROOT_VERSION(5,11,2)
-  bbox_init();
-#else
   BBoxInit();
-#endif
   Float_t w = o2Seg.GetNMaxPads()*o2Seg.GetPadWidth()/2;
   fBBox[0] = -w;
   fBBox[1] =  w;

@@ -18,7 +18,7 @@ class ZTrans;
 
 class RenderElement
 {
-  friend class RGTopFrame;
+  friend class ReveManager;
 
   RenderElement(const RenderElement&);            // Not implemented
   RenderElement& operator=(const RenderElement&); // Not implemented
@@ -47,9 +47,11 @@ public:
   };
 
   static const TGPicture*                      fgRnrIcons[4];
+  static const TGPicture*                      fgListTreeIcons[8];
 
   typedef std::set<ListTreeInfo>               sLTI_t;
-  typedef std::set<ListTreeInfo>::iterator     sLTI_i;
+  typedef sLTI_t::iterator                     sLTI_i;
+  typedef sLTI_t::reverse_iterator             sLTI_ri;
 
   typedef std::list<RenderElement*>            List_t;
   typedef std::list<RenderElement*>::iterator  List_i;
@@ -65,7 +67,7 @@ protected:
   List_t fParents;
 
   Bool_t fDestroyOnZeroRefCnt;
-  Bool_t fDenyDestroy;
+  Int_t  fDenyDestroy;
 
   List_t fChildren;
 
@@ -74,8 +76,15 @@ public:
   RenderElement(Color_t& main_color);
   virtual ~RenderElement();
 
+  virtual void SetRnrElNameTitle(const Text_t* name, const Text_t* title);
+  virtual const Text_t* GetRnrElName()  const;
+  virtual const Text_t* GetRnrElTitle() const;
+
   virtual void AddParent(RenderElement* re);
   virtual void RemoveParent(RenderElement* re);
+  virtual void CheckReferenceCount(const Reve::Exc_t& eh="RenderElement::CheckReferenceCount ");
+  virtual void CollectSceneParents(List_t& scenes);
+  virtual void CollectSceneParentsFromChildren(List_t& scenes, RenderElement* parent);
 
   List_i BeginParents() { return fParents.begin(); }
   List_i EndParents()   { return fParents.end();   }
@@ -85,22 +94,20 @@ public:
   List_i EndChildren()   { return fChildren.end();   }
   Int_t  GetNChildren() const { return fChildren.size(); }
 
-  virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
-  virtual Int_t DestroyListSubTree(TGListTree* ltree, TGListTreeItem* parent);
-
-  void EnableListElements();   // *MENU*
-  void DisableListElements();  // *MENU*
+  void EnableListElements (Bool_t rnr_self=kTRUE,  Bool_t rnr_children=kTRUE);  // *MENU*
+  void DisableListElements(Bool_t rnr_self=kFALSE, Bool_t rnr_children=kFALSE); // *MENU*
 
   Bool_t GetDestroyOnZeroRefCnt() const   { return fDestroyOnZeroRefCnt; }
   void   SetDestroyOnZeroRefCnt(Bool_t d) { fDestroyOnZeroRefCnt = d; }
 
-  Bool_t GetDenyDestroy() const   { return fDenyDestroy; }
-  void   SetDenyDestroy(Bool_t d) { fDenyDestroy = d; }
+  Int_t  GetDenyDestroy() const { return fDenyDestroy; }
+  void   IncDenyDestroy()       { ++fDenyDestroy; }
+  void   DecDenyDestroy()       { if (--fDenyDestroy <= 0) CheckReferenceCount("RenderElement::DecDenyDestroy "); }
 
   virtual void PadPaint(Option_t* option);
 
-  virtual TObject* GetObject(Reve::Exc_t eh="RenderElement::GetObject ");
-
+  virtual TObject* GetObject(Reve::Exc_t eh="RenderElement::GetObject ") const;
+  virtual TObject* GetEditorObject() const { return GetObject(); }
   /*
     TRef&    GetSource() { return fSource; }
     TObject* GetSourceObject() const { return fSource.GetObject(); }
@@ -110,13 +117,20 @@ public:
     void InspectSourceObject(); // *MENU*
   */
 
+  // --------------------------------
+
+  virtual Int_t ExpandIntoListTree(TGListTree* ltree, TGListTreeItem* parent);
+  virtual Int_t DestroyListSubTree(TGListTree* ltree, TGListTreeItem* parent);
+
   virtual TGListTreeItem* AddIntoListTree(TGListTree* ltree,
 					  TGListTreeItem* parent_lti);
   virtual TGListTreeItem* AddIntoListTree(TGListTree* ltree,
 					  RenderElement* parent);
-  virtual Bool_t          RemoveFromListTree(TGListTree* ltree);
+  virtual TGListTreeItem* AddIntoListTrees(RenderElement* parent);
+
   virtual Bool_t          RemoveFromListTree(TGListTree* ltree,
 					     TGListTreeItem* parent_lti);
+  virtual Int_t           RemoveFromListTrees(RenderElement* parent);
 
   virtual sLTI_i          FindItem(TGListTree* ltree);
   virtual sLTI_i          FindItem(TGListTree* ltree,
@@ -125,19 +139,25 @@ public:
   virtual TGListTreeItem* FindListTreeItem(TGListTree* ltree,
 					   TGListTreeItem* parent_lti);
 
-  virtual void UpdateItems();
+  virtual Int_t GetNItems() const { return fItems.size(); }
+  virtual void  UpdateItems();
 
   void SpawnEditor();                          // *MENU*
   virtual void ExportToCINT(Text_t* var_name); // *MENU*
 
+  virtual Bool_t AcceptRenderElement(RenderElement* /*el*/) { return kTRUE; }
 
-  virtual void AddElement(RenderElement* el);
+  virtual TGListTreeItem* AddElement(RenderElement* el);
   virtual void RemoveElement(RenderElement* el);
   virtual void RemoveElementLocal(RenderElement* el);
   virtual void RemoveElements();
+  virtual void RemoveElementsLocal();
 
   virtual void Destroy();                      // *MENU*
-  virtual void DestroyElements();
+  virtual void DestroyElements();              // *MENU*
+
+  virtual Bool_t HandleElementPaste(RenderElement* el);
+  virtual void   ElementChanged(Bool_t update_scenes=kTRUE, Bool_t redraw=kFALSE);
 
   virtual Bool_t CanEditRnrElement()   { return kTRUE; }
   virtual Bool_t GetRnrSelf() const { return fRnrSelf; }
@@ -161,7 +181,8 @@ public:
   virtual Bool_t  CanEditMainHMTrans() { return kFALSE; }
   virtual ZTrans* PtrMainHMTrans()     { return 0; }
 
-  static const TGPicture* GetCheckBoxPicture(Bool_t rnrElement, Bool_t rnrDaughter);
+  static  const TGPicture* GetCheckBoxPicture(Bool_t rnrElement, Bool_t rnrDaughter);
+  virtual const TGPicture* GetListTreeIcon() { return fgListTreeIcons[0]; }
 
   ClassDef(RenderElement, 1);
 }; // endclass RenderElement
@@ -183,7 +204,7 @@ public:
   RenderElementObjPtr(TObject* obj, Color_t& mainColor, Bool_t own=kTRUE);
   virtual ~RenderElementObjPtr();
 
-  virtual TObject* GetObject(Exc_t eh="RenderElementObjPtr::GetObject ");
+  virtual TObject* GetObject(Exc_t eh="RenderElementObjPtr::GetObject ") const;
   virtual void     ExportToCINT(Text_t* var_name);
 
   Bool_t GetOwnObject() const   { return fOwnObject; }
@@ -200,6 +221,7 @@ class RenderElementList : public RenderElement,
 protected:
   Color_t   fColor;
   Bool_t    fDoColor;
+  TClass   *fChildClass;
 
 public:
   RenderElementList(const Text_t* n="RenderElementList", const Text_t* t="",
@@ -208,26 +230,13 @@ public:
 
   virtual Bool_t CanEditMainColor()  { return fDoColor; }
 
+  TClass* GetChildClass() const { return fChildClass; }
+  void SetChildClass(TClass* c) { fChildClass = c; }
+
+  virtual Bool_t AcceptRenderElement(RenderElement* el);
+
   ClassDef(RenderElementList, 1);
 };
-
-
-/**************************************************************************/
-
-class PadPrimitive : public RenderElement,
-		     public TNamed
-{
-public:
-  PadPrimitive(const Text_t* n="PadPrimitive", const Text_t* t="");
-  virtual ~PadPrimitive() {}
-
-  virtual void Paint(Option_t* option = "");
-
-  // virtual void PaintRenderElement(RenderElement* re, Option_t* option);
-
-  ClassDef(PadPrimitive, 1);
-};
-
 
 }
 

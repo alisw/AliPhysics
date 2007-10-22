@@ -1,3 +1,1073 @@
+2007-10-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* Line.cxx:
+	* Line.h:
+	* PointSet.cxx:
+	* PointSet.h:
+	* TTreeTools.cxx:
+	* TTreeTools.h:
+	Add support for optional integer ids for every point in a
+	PointSet. Can also be filled via TPointSelector.
+	Remove obsolete constructor from PointSet and Line.
+
+	* Track.cxx:
+	Merge from EVE-head-after-merge to HEAD.
+
+2007-10-10  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* NLTProjectorGL.cxx:
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	Set NLTProjection name according to projection type and
+	distortion. Use fAxisColor instead of RenderElement::fMainColor.
+
+2007-10-05  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RGeoNodeEditors.cxx:
+	* RGeoNodeEditors.h:
+	* GeoNodeEditor.cxx:
+	* GeoNodeEditor.h:
+	Rename inconsistently named file RGeoNodeEditors to
+	GeoNodeEditor.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	* ReveManager.cxx:
+	* ReveManager.h:
+	* Cascade.cxx:
+	* DigitSet.cxx:
+	* GeoNode.cxx:
+	* LinkDef.h:
+	* NLTProjector.cxx:
+	* PointSet.cxx:
+	* QuadSet.cxx:
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	* RGEditor.cxx:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	* Scene.cxx:
+	* SceneInfo.cxx:
+	* Track.cxx:
+	* TrackEditors.cxx:
+	* TrackRnrStyleEditor.cxx:
+	* TriangleSet.cxx:
+	* V0.cxx:
+	* VSDSelector.cxx:
+	* Viewer.cxx:
+	* reve_main/reve_main.cxx:
+	Renamed class RGTopFrame to ReveManager.
+
+2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* BoxSetGL.cxx:
+	Make box face-normals and face-orientations consistent.
+
+2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* GeoNode.cxx:
+	For class GeoShapeRnrEl:
+	Add missing call to ElementChanged() in ImportShapeExtract().
+	Properly handle fHMTrans::UseTrans.
+
+	* TGeoShapeExtract.cxx:
+	* TGeoShapeExtract.h:
+	Add setters and AddElement() method to allow creation of ad hoc
+	shape collections.
+
+2007-10-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* BoxSetGL.cxx:
+	Progressively skip more and more boxes at lower levels of detail.
+
+2007-10-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* EventBase.h:
+	Fix compilation warning.
+
+	* MCHelixLine.hi:
+	Include cassert, needed by gcc-4.1.
+
+	* RGEditor.cxx:
+	Call RenderElement::ElementChanged() instead of
+	gReve->RenderElementChanged().
+
+	* RGeoNodeEditors.cxx:
+	* RGeoNodeEditors.h:
+	Use RGValuator for top-node visibility option and level.
+	Add missing call to Update() for those two callbacks.
+
+2007-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* DigitSet.cxx:
+	* DigitSet.h:
+	* DigitSetEditor.cxx:
+	* DigitSetEditor.h:
+	New files: take common digit rendering stuff from QuadSet.
+
+	* QuadSet.cxx:
+	* QuadSet.h:
+	Much code moved to DigitSet: this is the new base.
+
+	* QuadSetEditor.cxx:
+	* QuadSetEditor.h:
+	Removed files: all done in DigitSetEditor now.
+
+	* QuadSetGL.cxx:
+	* QuadSetGL.h:
+	Changes for DigitSet.
+	Skip rendering in line-pass of outline mode.
+
+	* BoxSet.cxx:
+	* BoxSet.h:
+	Inherit from DigitSet.
+	Implement optimised axis-aligned box modes.
+
+	* BoxSetGL.cxx:
+	* BoxSetGL.h:
+	Support new box-modes and secondary-selection.
+
+	* FrameBox.cxx:
+	* FrameBox.h:
+	* FrameBoxGL.cxx:
+	* FrameBoxGL.h:
+	Add support for background polygon.
+
+	* LinkDef.h:
+	Add DigitSet and DigitSetEditor.
+	Remove QuadSetEditor and Box.
+
+	* PointSet.cxx:
+	* PointSet.h:
+	Support assignment of external references in PointSetArray.
+
+	* RGBrowser.cxx:
+	Tried to add HTML browser; apparently the class was not put into
+	root repository yet,
+
+	* StraightLineSet.cxx:
+	Effc++ warnings.
+
+2007-09-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* EventBase.cxx:
+	* EventBase.h:
+	Added empty virtual functions for event-navigation.
+	Moved new-event-commands list and method from Alieve::Event.
+
+	* RGValuators.cxx:
+	Do not use GetName() on TGWindow derivatives.
+
+	* Track.cxx:
+	Added initialization of min/max/lim momentums to the other
+	TrackList ctor as well.
+
+2007-09-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* MCHelixLine.hi:
+	Properly extrapolate helices to boundaries (needed for
+	high-momentum tracks).
+	Added check for near-zero pT (extrapolate as line).
+	Some code cleanup.
+
+	* RenderElement.cxx:
+	In SetRnrState() check if update is really necessary.
+
+	* Track.cxx:
+	* Track.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	* TrackRnrStyleEditor.cxx:
+	* TrackRnrStyleEditor.h:
+	Implement automatic determination of p and pT ranges.
+	Moved momentum ranges from TrackRnrStyle to TrackList.
+
+2007-09-10  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TGClassBrowser.cxx:
+	* TGFileBrowser.cxx:
+	* TGFileBrowser.h:
+	* TGNewBrowser.cxx:
+	* TGNewBrowser.h:
+	From Bertrand.
+
+	- Removed dependencies on libRIO
+	- Solved problems when user double-click on different keys
+	  in different opened Root files
+	- Changed icons size for Root files containing pictures
+	- Added drawing option combobox
+	- Added a few main menu entries, allowing to:
+	  - add a new tab with canvas
+	  - add a new tab with editor
+	  - remove a tab element
+	  - execute a plugin by TGFileDialog selection
+	- Added key shortcuts for these menus entries
+	- Double-clicking on a .C file opens it in the editor if 
+	  the active tab is the editor one, otherwise the default 
+	  action will be taken (execute it) 
+	- Properly goes to current (startup) directory at startup 
+	  time (open the list tree to the current directory)
+	- Properly remove menu when closing a tab element
+	- Temporary remove keys binding on embedded menus
+
+2007-09-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RGBrowser.cxx:
+	Clarify exception text.
+
+	* RGEditor.cxx:
+	From Bertrand: use set-method when changing static
+	TGedFrame::fgFrameCreator (required for windows).
+
+2007-08-31  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	New virtual GetListTreeIcon(), which sets an icon picture in a list tree.
+
+	* Reve.cxx:
+        Initialize list tree icons.
+
+	* Scene.h:
+	* Track.h:
+	* Viewer.h:
+	* PointSet.h:
+        Set specific icons for this class in a list tree.
+
+2007-08-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* StraightLineSet.cxx:
+	* StraightLineSet.h:
+        Handle translation and scale in projected line-set separately. 
+	
+2007-08-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjector.h:
+	Reindent.
+	
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	Add RGValuator for current depth.
+
+	* StraightLineSet.cxx:
+	* StraightLineSet.h:
+	Use transformation matrix, to scale or move line set.
+
+	* ZTrans.cxx:
+	* ZTrans.h:
+	Add multiply function with Float_t* as an argument.
+
+2007-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Change DenyDestroy to Int_t, replace Set with Inc/Dec
+	methods. Fixed zero-ref checks accordingly.
+
+	Symmetrized RemoveElement and RemoveElements with their Local
+	parts.
+
+	Moved code for list-tree item mgmnt from RGTopFrame to Add/Remove
+	element methods here.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Moved list-tree item mgmnt from Add/RemoveRenderElement to
+	appropriate methods in RenderElement.
+
+	Update to new RnrEl::DenyDestroy.
+
+	Added Bool_t fKeepEmptyCont as it is queried by many macros.
+
+	* RGBrowser.cxx:
+	Update to new RnrEl::DenyDestroy.
+
+	* PointSet.cxx:
+	* PointSet.h:
+	* Viewer.cxx:
+	* Viewer.h:
+	* Cascade.cxx:
+	* Cascade.h:
+	* V0.cxx:
+	* V0.h:
+	Update to new RnrEl::RemoveElementLocal, RemoveElementsLocal.	
+
+	* NLTBases.cxx:
+	* NLTBases.h:
+	Added list<NTLProjected*> fProjectedList to NLTProjectable.
+	Set of functions to manage it.
+	Proper management in relevant functions of NLTProjectable and
+	NTLProjected.
+
+	* NLTTrack.cxx:
+	* NLTTrack.h:
+	Forward CtrlClicked() call (from gl sec-selection) to
+	fProjectable.
+
+	* NLTProjector.cxx:
+	Set RnrSelf/Children() on imported elements.
+
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	Fix search for duplicate polygons a little.
+
+	* Track.cxx:
+	* Track.h:
+	Manage list of projected tracks so that it works in TrackCount.
+
+	* Reve.cxx:
+	Revert to gled-style check if function is loaded in cint.
+
+2007-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TGFileBrowser.cxx:
+	* TGFileBrowser.h:
+	From Bertrand.
+	Override ReallyDelete() so that browser is properly deregistered
+	from root.
+
+	* TGNewBrowser.cxx:
+	* TGNewBrowser.h:
+	From Bertrand.
+	Move framework specific menus to the left menu-bar.
+
+	* RGBrowser.cxx:
+	Remove the 'Framework' popup on construction.
+	Add 'Reve' popup to inherited member fMenuBar.
+	Added 'New Text Editor' menu entry.
+
+2007-08-29  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* LinkDef.h:
+        Register new class NLTSLineSet.
+
+	* StraightLineSet.cxx:
+	* StraightLineSet.h:
+        Implement StraightLineSet projected class NLTSLineSet.
+
+	* StraightLineSetGL.cxx:
+	StraightLineSet inherits from TAttLine.
+
+	* StraightLineSetEditor.cxx:
+	Editor not friend class of model. Use Getters/Setters.
+
+2007-08-29  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjectorEditor.cxx:
+	ChangeTGNumberEntry length.
+
+	* Track.cxx:
+	* Track.h:
+	Add function in Track to set line and marker attributes from TrackList.
+
+2007-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TGClassBrowser.cxx:
+	* TGClassBrowser.h:
+	* TGCommandPlugin.cxx:
+	* TGCommandPlugin.h:
+	* TGFileBrowser.cxx:
+	* TGFileBrowser.h:
+	* TGNewBrowser.cxx:
+	* TGNewBrowser.h:
+	New files from Bertrand, somewhat hacked: prototype implementation
+	of a new root browser.
+
+	* LinkDef.h:
+	Register new classes TGClassBrowser, TGCommandPlugin,
+	TGFileBrowser and TGNewBrowser.
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Fix includes for the new-browser files (before they were in
+	ROOTSYS/include).
+
+2007-08-28  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* GridStepperEditor.cxx:
+	* GridStepperEditor.h:
+        Configure GridStepper widgets.
+	
+	* NLTProjector.cxx:
+        Remeve obsolete Signal/Slot call.
+	
+2007-08-28  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* .SKEL-gedsubed.cxx:
+	Change callback in sub-editor skeleton file.
+
+	* GridStepperEditor.cxx:
+	* GridStepperEditor.h:
+	New class GridStepperEditor/GridStepperSubEditor.
+
+	* LinkDef.h:
+	Register new classes: GridStepperSubEditor and GridStepperEditor.
+
+	* NLTProjectorEditor.cxx:
+	Add tool-tip in TGComboBox.
+
+2007-08-28  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	*es FrameBoxGL.cxx:
+	Disable back-face culling if enabled.
+
+	* RMacro.cxx:
+	Revert back to gled-style checking if a macro is loaded. The
+	Axel's method spits blood with latest cint.
+
+2007-08-27  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* QuadSetEditor.cxx:
+	* QuadSetEditor.h:
+	Create extra tab to show histograms.
+
+	* RGBAPalette.cxx:
+	* RGBAPalette.h:
+	New function SetLimitsScaleMinMax(Int_t low, Int_t high).
+
+2007-08-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RGTopFrame.cxx:
+	Use gClient->GetRoot() for creation of embedded gl viewer.
+
+	* RGValuators.cxx:
+	During construction of label frame use fName instead of GetName(),
+	which is used for saving gui into a macro.
+
+	* TrackRnrStyleEditor.cxx:
+	Fix labels, now that we can have spaces.
+
+2007-08-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* FrameBox.cxx:
+	* FrameBox.h:
+	* FrameBoxGL.cxx:
+	Added option to render a filled-frame so that a client can be
+	selected even by pressing into an empty area.
+
+	* GridStepper.h:
+	Added SetOs() to set origin.
+
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Implemented SetModel() from TGedEditor so that it can cross check
+	if the edited object is a render element. This is needed when the
+	model is set from somewhere else the reve, like TGLViewer.
+
+	* ZTrans.cxx:
+	* ZTrans.h:
+	Added Float_t* versions of Get/SetPos().
+
+2007-08-26  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	Add member fFixedRadius. It defines distance from center, where
+	projected value is not dependent of distortion. Introduce z-depth
+	which defines the z coordinate of projected points.
+
+	* NLTBases.h:
+	* PointSet.cxx:
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	* NLTPolygonSetEditor.cxx:
+	* NLTPolygonSetEditor.h:
+	NLTProjected new member z-depth.
+
+	* NLTTrack.cxx:
+        Improve algorithm in GetBreakpoint().
+
+	* PODs.h:
+	Add function Vector::Set(const Vector& v).
+
+2007-08-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Added FullRedraw3D() forcing complete redraw of scenes and
+	viewers.
+
+	* Scene.cxx:
+	* Scene.h:
+	Added RepaintAllScenes().
+
+	* Viewer.cxx:
+	* Viewer.h:
+	Added RepaintAllViewers().
+	When camera reset is requested call viewer->PostSceneBuildSetup()
+	instead of ResetCamerasAfterNextUpdate().
+
+2007-08-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added new optional argument Bool_t redraw to ElementChanged().
+	USe the above method consistently throughout the code.
+
+2007-08-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjector.cxx:
+	NLTProjection::GetValForScreenPos(): use projected values during
+	calculation of inital bisection bounds.
+
+	* PODs.cxx:
+	* PODs.h:
+	Added Vector::Mult(). Whitespace.
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	RGLTEFrame: added functions ReconfToHorizontal/Vertical() and menu
+	entry to invoke them.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Added GetLTEFrame().
+	Setup TGLSAViewer to edit external objects by default.
+	At startup show editor of default viewer.
+
+	* RenderElement.cxx:
+	In RemoveFromListTrees() rewrite list-tree-item loop to avoid
+	backward iteration during item removal.
+
+	* Viewer.cxx:
+	Setup TGLSAViewer to edit external objects by default.
+
+2007-08-24  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* NLTProjectorGL.cxx:
+	* NLTProjectorGL.h:
+	Improve algorithm for tick-mark positioning and configuration.
+
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	Add widgets to configure scale info.
+
+	* PODs.h:
+	Add index operator to Vector class.
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Add GetRnrElName()/GetRnrElTitle() in RenderElement class.
+
+2007-08-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* LinkDef.h:
+	Register new class NLTPointSetGL.
+
+	* NLTPointSetGL.cxx:
+	* NLTPointSetGL.h:
+	New files: hack to disable display-lists for NLTPointSet (bug in
+	fglrx driver, takes forever).
+
+	* NLTProjector.cxx:
+	Set fProjection = 0 after destruction.
+
+	* .SKEL-gl.cxx:
+	* NLTTrackGL.cxx:
+	Fix a commented line for display-list disabling.
+
+2007-08-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* LinkDef.h:
+	Register class RGLTEFrame.
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Subclass RGBrowser from TNewBrowser, add new class RGLTEFrame to
+	encapsulate list-tree editor combo.
+	This is a major change,	basically no code left unchanged.
+
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Added width, height ctor args.
+	Use RenderElement::GetEditorObject() instead of GetObject().
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Removed inheritance from TGmainFrame, use RGBrowser as top-level
+	GUI element. Whole initalization rewritten to reflect that.
+	RGTopFrame class is now ripe to be renamed to Application, Manager
+	or something similar.
+
+	For consistency renamed ElementChanged() to RenderElementChanged().
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added virtual GetEditorObject() that can return an alternate
+	object to be edited when rnr-el is selected (eg. Viewer passes its
+	TGLViewer).
+
+	Added virtual CheckReferenceCount() (code taken from
+	RemoveParent()) that is now also called from RemoveFromListTree()
+	when a top-level list-tree-entry is removed.
+
+	Replaced all calls gClient->NeedRedraw(listtree) with
+	listtree->ClearViewPort() [changes in root].
+
+	Added optional arguments Bool_t rnr_self/children to
+	En/DisableListElements().
+
+	* Reve.cxx:
+	Moved mime-type init for RMacro from RGTopFrame to SetupGUI().
+
+	* Scene.cxx:
+	Report scene destruction to global viewer-list.
+
+	* SceneInfo.cxx:
+	* SceneInfo.h:
+	Overrode AcceptRenderElement() and HandleElementPaste() to deny
+	addition of elements.
+
+	* Viewer.cxx:
+	* Viewer.h:
+	Viewer:	overrode GetEditorObject() to return fGLViewer.
+	ViewerList: added SceneDestructing(Scene* scene) method to
+	unregister a scene from all existing viewers.
+
+	* GeoNode.cxx:
+	Remove obsolete root-version ifdef.
+
+	* VSDSelector.h:
+	Add missing include.
+
+2007-08-22  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTBases.cxx:
+	* NLTBases.h:
+	Implementation of NLTGeoProjectable class, to be a common base of
+	GeoNode and GeoShapeRnrEl for non-linear projections.
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	GeoShapeRnrEl inherited from NLTGeoProjectable class.
+
+	* LinkDef.h:
+	Register new class NLTGeoProjectable.
+
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+        Non-linear transformation of TBuffer3D moved in NLTPolygonSet.
+
+	* NLTPolygonSetGL.cxx:
+	NLTPolygons in NLTPolygonSet stored in std::list.
+
+	* NLTProjectorEditor.cxx:
+	Use NLTProjector Getters and Setters.
+
+	* NLTTrack.h:
+	Remove PrintLineSegments() from popup menu.
+
+	* NLTTrack.cxx:
+	In UpdateProjection disable recursive behavior. Recursive calls
+	already done by NLTProjector.
+
+2007-08-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* GLUtilNS.cxx:
+	* GLUtilNS.h:
+	* LineGL.cxx:
+	Add function RenderLine() to draw a float array with given
+	TAttLine. In RenderCorsses() and RenderPoints() fix bug => leave
+	second argument to point to the same location.
+
+	* TrackGL.cxx:
+        Use GLUtilNS::RenderLine(). Do check of PathMarks boundaries in
+	DirectDraw().
+
+	* Track.cxx:
+	* Track.h:
+	TrackList and Track become NLTProjectable classes. In Track remove
+	vector fVisPathMarks. It was unnecessary, since fPathMarks have
+	the required data.
+
+	* LinkDef.h:
+	Register new classes NLTTrack, NLTTrackGL, NLTTrackList.
+
+	* NLTTrack.cxx:
+	* NLTTrack.h:
+	* NLTTrackGL.cxx:
+	* NLTTrackGL.h:
+	New files: new classes for management and rendering of projected
+	tracks.
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	Remove obsolete management for PointSet and Track. Fix bug in RhoZ::AcceptSegment().
+
+	* TrackRnrStyleEditor.cxx:
+	Fix interval in fMaxOrbits RGValuator.
+
+2007-08-20  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* Viewer.cxx:
+	* Viewer.h:
+	Method HandleElementPaste() now returns Bool_t.
+
+	* NLTProjector.cxx:
+	Use new method CollectSceneParentsFromChildren() to optimize
+	update of all related scenes.
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Conform to convention that change initiator is responsible for
+	calling redraw. Added method ItemChecked() to act as a mediator to
+	gReve.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added method CollectSceneParentsFromChildren().
+	Changed return value of HandleElementPaste() from void to Bool_t.
+	Renamed Changed() to ElementChanged().
+
+	* TriangleSet.cxx:
+	Fixed gcc-4 warnings.
+
+2007-08-20  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Added handling of key-presses in list-tree; in particular delete
+	key removes render element from specific parent.
+
+	* RGTopFrame.cxx:
+	RemoveRenderElement now properly untangles the element from all
+	list-trees.
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Implemented RemoveFromListTrees(RenderElement* parent) that
+	removes items from all list trees where parent is equal to the one
+	passed as argument.
+
+2007-08-20  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	Bind element-paste to ImportElements.
+	Prefix imported render-element names with "NLT ".
+
+	* PointSet.cxx:
+	* PointSet.h:
+	Implemented virtual ComputeBBox() to enforce minimal bounding-box
+	size.
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Removed obsolete code for "classic-look".
+
+2007-08-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* LinkDef.h:
+	Register new class NLTProjectorEditor.
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	Added methods for (recursive) import and update of projected
+	elements.
+
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	New files, editor class for NLTProjection.
+
+	* PointSet.cxx:
+	* PointSet.h:
+	PointSet: implemented virtual SetRnrElNameTitle();
+	NLTPointSet: implemented virtual SetProjection().
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added virtual functions SetRnrElNameTitle() and Changed().
+
+2007-08-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* FrameBoxGL.h:
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	Fix gcc-4 warnings.
+
+	* LinkDef.h:
+	Register new classes NLTProjectable, NLTProjected and NLTPointSet.
+
+	* NLTBases.cxx:
+	* NLTBases.h:
+	New files: new abstract bases NLTProjectable and NLTProjected.
+
+	* PointSet.cxx:
+	* PointSet.h:
+	New class NLTPointSet; add NLTProjectable as a base of PointSet.
+
+	* RGBrowser.cxx:
+	Resize widgets to obtain resonable starting size.
+
+2007-08-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Default start-up mode now embedded gl viewer;
+	added function SpawnNewScene().
+
+2007-08-18  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* LinkDef.h:
+	Registere new classes TrackEditor, TrackRnrStyleEditor and
+	TrackRnrStyleSubEditor.
+
+	* Track.cxx:
+	* Track.h:
+	* TrackEditors.cxx:
+	* TrackEditors.h:
+	* TrackGL.cxx:
+	* TrackRnrStyleEditor.cxx:
+	* TrackRnrStyleEditor.h:
+	Configuration of track rendering has two sources. First is done by
+	TrackRnrStyle which can be shared. Second type of configuration
+	goes via TrackList container, a RenderElement parent of a track.
+
+	TrackList handles only track line attributes. These attributes are
+	set recursively by default. The remaining configuration is dane
+	with referenced TrackRnrStyle.
+
+	* GLUtilNS.cxx:
+	* GLUtilNS.h:
+	Change argument TAttMatker& in RenderPoints(), RenderCrosses() and
+	RenderPolymarkers() to const TAttMatker&.
+
+	* LineEditor.cxx:
+	Put checkbox fRnrMarkers before checkbox fRnrLine.
+
+	* Cascade.cxx:
+	* V0.cxx:
+	* VSDSelector.cxx:
+	* NLTProjector.cxx:
+	Set line color in tracks to TrackList main color. Remove call
+	MakeMarkers(). Rendering of fist vertex is done in
+	TrackGL::DirectDraw().
+
+2007-08-18  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added virtual HandleElementPaste(RenderElement* el) that is called
+	on mouse-paste into list-tree-item representing the element.
+
+	* Viewer.cxx:
+	* Viewer.h:
+	Override HandleElementPaste() to try and add a scene to the viewer.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Added methods RenderElementSelect/Paste().
+
+	* RGBrowser.cxx:
+	In ItemClicked also check for middle button.
+
+	* RGEditor.cxx:
+	* RGEditor.h:
+	Added new state data-memebr to cross-check if fRenderElement is
+	still correct;
+	hack to set priority of TAttMArkerEditor to one.
+
+2007-08-17  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* EventBase.cxx:
+	* EventBase.h:
+	Subclass directly from RenderElementList instead of PadPrimitive.
+
+	* Pad.cxx:
+	* Pad.h:
+	Override virtuals IsBatch(), Update() and GetViewer3D() to allow
+	Reve::Pad - GLViewer link to survive without a canvas.
+
+	* RGBrowser.cxx:
+	* RGBrowser.h:
+	Removed all usage of pad during construction of editor and
+	gl-viewer.
+
+	* RGEditor.cxx:
+	* RGEditor.h:
+	In Update() propagate the change to gReve so that it can deduce
+	which scenes need to be repainted. GUI size change.
+
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	Major restructuring of basic state representation: use new
+	Viewer/Scene classes to allow many simoultaneous GL-viewers with
+	shared scenes; update mechanism changed accordingly.
+
+	* RenderElement.cxx:
+	* RenderElement.h:
+	Added virtual CollectSceneParents() for update steering;
+	generalized methods for adding elements into list-trees; removed
+	obsolete class PadPrimitive.
+
+	* Scene.cxx:
+	* Scene.h:
+	* SceneInfo.cxx:
+	* SceneInfo.h:
+	* Viewer.cxx:
+	* Viewer.h:
+	New files implementing classes for representation of
+	GL-viewer/scene classes in Reve.
+
+	* LinkDef.h:
+	Register new classes Scene, SceneList, SceneInfo, Viewer and
+	ViewerList; remove PadPrimitive.
+
+	* VSDSelector.cxx:
+	Removed obsolete protection of gPad.
+
+2007-08-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* GeoNode.cxx:
+	* NLTProjector.cxx:
+	* PointSet.cxx:
+	* RGTopFrame.cxx:
+	* RGTopFrame.h:
+	* VSDSelector.cxx:
+	Consistent ordering of arguments to AddRenderElement(),
+	AddGlobalRenderElement() and RemoveRenderElement().
+
+2007-08-09  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* GLUtilNS.cxx:
+	* GLUtilNS.h:
+	* StraightLineSetGL.cxx:
+	In RederPolymarkers()/RederCorssess()/RederPoints() argument
+	sec_sel has default value false. RenderPolyMarkers() now also
+	applies color from TAttMarker.
+
+	* Track.cxx:
+	* Track.h:
+	* TrackGL.cxx:
+	MakeTrack()/MakeTracks() are recursive by default.
+
+	* LinkDef.h:
+	* NLTProjectorGL.h:
+	* NLTProjectorGL.cxx:
+	New files.
+	Draw axis to define bounding box of non-linear projected geometry.
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	Fix inconsistent checking of polygon duplicates. Enable dynamic
+	configuration of TrackRenderStyle.
+
+	* ZTrans.cxx:
+	* ZTrans.h:
+	Add multiply functions with Double_t* as an argument.
+
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	* NLTPolygonSetGL.cxx:
+	 NLTPolygonSetGL inherited from RenderElementList. Add Getters for
+	vertices and polygons.
+
+	* NLTPolygonSetEditor.cxx:
+	* NLTPolygonSetEditor.h:
+	Edit transparency of main color.
+
 2007-07-23  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.h:
@@ -106,7 +1176,7 @@
 	* Track.h:
 	* TrackEditors.cxx:
 	* TrackEditors.h:
-	Enable line style modification in TrackList/TrackListEditor.   
+	Enable line style modification in TrackList/TrackListEditor.
 
 2007-05-24  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
@@ -119,7 +1189,7 @@
 	* GeoNode.h:
 	* RGeoNodeEditors.cxx:
 	Map SetRnrSelf and SetRnrChildren to node visibility and to node
-	daughters visibility. 
+	daughters visibility.
 
 2007-04-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
@@ -319,12 +1389,12 @@
 	* RenderElement.h:
 	* LinkDef.h:
 	Classes RenderElement and RenderElementListBase have been merged,
-	RenderElementListBase class is removed. 
+	RenderElementListBase class is removed.
 
-	Since RenderElement supports hierarchical structure fRnrElement is 
+	Since RenderElement supports hierarchical structure fRnrElement is
 	replaced to fRnrSelf and fRnrChildren. RnrSelf/RnrDaughters
 	callbacks from editor set check box picture according to the for
-	possible states. 
+	possible states.
 
 	New class PadPrimitve. Objects of the classes enable recursive
 	rendering  as they are added in TPad fListOfPrimitives.
@@ -383,7 +1453,7 @@
 
 	* RenderElement.cxx:
 	Call redraw after Enable/DisableListElements.
-	
+
 	* Track.cxx:
 	* Track.h:
 	Two new items for context menu: PrintPathMarks and
@@ -401,11 +1471,11 @@
 	Fix Ludovic's strange const-method syntax.
 
 2007-02-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
-		
+
 	* PODs.h:
 	Add member time to class PathMark. Set values in enum
 	PathMark::Type_e.
-	
+
 	* Track.cxx:
 	Add callbacks to set path marks. In Track::MakeTrack() implement
 	fitting of track references and daughter particles.
@@ -504,7 +1574,7 @@
 	* QuadSetGL.cxx:
 	* QuadSetGL.h:
 	Added support for secondary selection. Sacrificed some speed for
-	simplicity / clarity. 
+	simplicity / clarity.
 
 2006-12-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
@@ -660,7 +1730,7 @@
 
 	* RGValuators.cxx:
 	* RGValuators.h:
-	Added int version of SetLimits for RGDoubleValuator; added 
+	Added int version of SetLimits for RGDoubleValuator; added
 	getters for value limits (Ludovic).
 
 	* Plex.cxx:
@@ -713,7 +1783,7 @@
 	* TrackEditors.cxx:
 	* TrackEditors.h:
 	Cleaned-up by using RGValuators instead of raw ROOT GUI (partial).
-	
+
 	* QuadSet.cxx:
 	* QuadSet.h:
 	* QuadSetGL.cxx:
@@ -793,7 +1863,7 @@
 	Changed inheritance to include Reve::RenderElement;
 	use ZTrans to store transformation matrix;
 	added render-mode state (to force line/fill drawing).
-	
+
 	In class Box added ctor and function MakeAxisAlignedBox() to
 	facilitate creation of regular boxes.
 
@@ -856,7 +1926,7 @@
 2006-10-12  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev
-	
+
 	* BoxSet.h:
 	Fix wrong numerical constant in transformation assignment.
 
@@ -881,7 +1951,7 @@
 2006-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev
-	
+
 	* RenderElement.cxx:
 	* RenderElement.h:
 	Made RenderElement::ExportToCINT() virtual and reimplemented it in
@@ -895,7 +1965,7 @@
 2006-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev
-	
+
 	* .SKEL-ged.cxx:
 	* .SKEL-ged.h:
 	* .SKEL-gl.cxx:
@@ -1017,7 +2087,7 @@
 2006-08-29  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	EVE-dev
-	
+
 	* BoxSetGL.cxx:
 	* QuadSetGL.cxx:
 	Added ifdefs for post root-5.11.0 prototype of SetModelCheckClass().

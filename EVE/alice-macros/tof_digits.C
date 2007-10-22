@@ -34,7 +34,7 @@ void tof_digits()
    
     Alieve::TOFSector* m = new Alieve::TOFSector(localGeoManager,iSector,array);
 
-    gReve->AddRenderElement(ll, m);
+    gReve->AddRenderElement(m, ll);
 
   }
 

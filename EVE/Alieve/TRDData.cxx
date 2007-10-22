@@ -50,7 +50,7 @@ void	TRDDigits::ComputeRepresentation()
 // - digits apparence (quads/boxes)
 
 	fQuads.clear();
-	fBoxes.fBoxes.clear();
+	// MT fBoxes.fBoxes.clear();
 		
 	Double_t colSize, rowSize, scale;
 	Double_t x, y, z;
@@ -97,14 +97,14 @@ void	TRDDigits::ComputeRepresentation()
 				cloc[3][1] = y - colSize * scale;
 				cloc[3][0] = x;
 	
-				Float_t* p;
+				Float_t* p = 0;
 				if( fParent->GetDigitsBox()){
-					fBoxes.fBoxes.push_back(Reve::Box());
-					fBoxes.fBoxes.back().color[0] = (UChar_t)color;
-					fBoxes.fBoxes.back().color[1] = (UChar_t)color;
-					fBoxes.fBoxes.back().color[2] = (UChar_t)color;
-					fBoxes.fBoxes.back().color[3] = (UChar_t)color;
-					p = fBoxes.fBoxes.back().vertices;
+					// MT fBoxes.fBoxes.push_back(Reve::Box());
+					// MT fBoxes.fBoxes.back().color[0] = (UChar_t)color;
+					// MT fBoxes.fBoxes.back().color[1] = (UChar_t)color;
+					// MT fBoxes.fBoxes.back().color[2] = (UChar_t)color;
+					// MT fBoxes.fBoxes.back().color[3] = (UChar_t)color;
+					// MT p = fBoxes.fBoxes.back().vertices;
 					dimension = 2;
 				} else {
 					fQuads.push_back(Reve::Quad());
@@ -137,7 +137,7 @@ void TRDDigits::Paint(Option_t *option)
 void TRDDigits::Reset()
 {
 	fQuads.clear();
-	fBoxes.fBoxes.clear();
+	// MT fBoxes.fBoxes.clear();
 	fData.Reset();
 }
 

@@ -32,9 +32,14 @@ public:
   ~TGeoShapeExtract();
 
   Bool_t HasElements();
+  void   AddElement(TGeoShapeExtract* gse);
 
   void SetTrans(const Double_t arr[16]);
   void SetRGBA (const Float_t  arr[4]);
+  void SetRnrSelf(Bool_t r)     { mRnrSelf = r;     }
+  void SetRnrElements(Bool_t r) { mRnrElements = r; }
+  void SetShape(TGeoShape* s)   { mShape = s;       }
+  void SetElements(TList* e)    { mElements = e;    }
 
   Double_t*  GetTrans()       { return mTrans; }
   Float_t*   GetRGBA()        { return mRGBA;  }

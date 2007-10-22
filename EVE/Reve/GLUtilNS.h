@@ -6,6 +6,7 @@
 #include <TObject.h>
 
 class TAttMarker;
+class TAttLine;
 
 namespace GLUtilNS
 {
@@ -52,14 +53,16 @@ public:
   { if(fFlip) fFoo(fState); }
 };
 
+void RenderLine(const TAttLine& al, Float_t* p, Int_t n, 
+		       Bool_t selection=kFALSE, Bool_t sec_selection=kFALSE);
 
-void RenderPolyMarkers(TAttMarker& marker, Float_t* p, Int_t n, 
-		       Bool_t selection, Bool_t sec_selection);
+void RenderPolyMarkers(const TAttMarker& marker, Float_t* p, Int_t n, 
+		       Bool_t selection=kFALSE, Bool_t sec_selection=kFALSE);
 
-void RenderPoints(TAttMarker& marker, Float_t* p, Int_t n,
-		  Bool_t selection, Bool_t sec_selection);
+void RenderPoints(const TAttMarker& marker, Float_t* p, Int_t n,
+		  Bool_t selection=kFALSE, Bool_t sec_selection=kFALSE);
 
-void RenderCrosses(TAttMarker& marker, Float_t* p, Int_t n, Bool_t sec_selection);
+void RenderCrosses(const TAttMarker& marker, Float_t* p, Int_t n, Bool_t sec_selection=kFALSE);
 
 }
 

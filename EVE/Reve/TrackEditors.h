@@ -10,15 +10,37 @@ class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 class TGComboBox;
-class TGLineWidthComboBox;
-class TGLineStyleComboBox;
 
 namespace Reve {
 
 class RGValuator;
 class RGDoubleValuator;
-
+class TrackRnrStyleSubEditor;
+class Track;
 class TrackList;
+
+/**************************************************************************/
+// TrackEditor
+/**************************************************************************/
+class TrackEditor : public TGedFrame
+{
+private:
+  TrackEditor(const TrackEditor&);            // Not implemented
+  TrackEditor& operator=(const TrackEditor&); // Not implemented
+
+protected: 
+  Track                          *fM; 
+  TGTextButton                   *fRSEditor;
+public:
+  TrackEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
+		  UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
+  ~TrackEditor(){}
+
+  virtual void SetModel(TObject* obj);
+  void DoEditRnrStyle();
+ 
+  ClassDef(TrackEditor, 1); // Editor for Track
+}; // endclass TrackEditor
 
 /**************************************************************************/
 // TrackListEditor
@@ -26,58 +48,35 @@ class TrackList;
 
 class TrackListEditor : public TGedFrame
 {
+private:
   TrackListEditor(const TrackListEditor&);            // Not implemented
   TrackListEditor& operator=(const TrackListEditor&); // Not implemented
 
-protected:
-  TrackList* fTC; // fModel dynamic-casted to TrackListEditor
+  void CreateRefTab();
+protected: 
+  TGVerticalFrame                 *fRefs;
 
-  Reve::RGValuator*  fMaxR;
-  Reve::RGValuator*  fMaxZ;
-  TGNumberEntry*     fMaxOrbits;
-  TGNumberEntry*     fMinAng;
-  TGNumberEntry*     fDelta;
+  TrackList                       *fTC; // fModel dynamic-casted to TrackListEditor
 
-  TGCheckButton*       fRnrTracks;
-  TGLineWidthComboBox* fWidthCombo;
-  TGLineStyleComboBox* fStyleCombo;
+  TGCheckButton                   *fRnrLine;
+  TGCheckButton                   *fRnrPoints;
 
-  TGCheckButton*     fRnrMarkers;
+  RGDoubleValuator                *fPtRange;
+  RGDoubleValuator                *fPRange;
 
-  TGHorizontalFrame* fPMFrame;
-  TGButton*          fFitDaughters;
-  TGButton*          fFitReferences;
-  TGButton*          fFitDecay;
-  TGButton*          fRnrDaughters;
-  TGButton*          fRnrReferences;
-  TGButton*          fRnrDecay;
-
-  RGDoubleValuator*  fPtRange;
-  RGDoubleValuator*  fPRange;
+  TrackRnrStyleSubEditor          *fRSSubEditor;
 
 public:
   TrackListEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		  UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
   ~TrackListEditor();
 
+  void CreateRefsTab();
   virtual void SetModel(TObject* obj);
 
-  void DoMaxR();
-  void DoMaxZ();
-  void DoMaxOrbits();
-  void DoMinAng();
-  void DoDelta();
-
-  void DoLineWidth(Int_t width);
-  void DoLineStyle(Int_t style);
-
-
-  void DoRnrTracks();
-  void DoRnrMarkers();
-
-  void DoFitPM();
-  void DoRnrPM();
-
+  void DoRnrLine();
+  void DoRnrPoints();
+ 
   void DoPtRange();
   void DoPRange();
 

@@ -15,7 +15,7 @@ class TPCSector3D;
 #else
 
 #include <Reve/Reve.h>
-#include <Reve/RGTopFrame.h>
+#include <Reve/ReveManager.h>
 #include <Alieve/TPCData.h>
 #include <Alieve/TPCSector2D.h>
 #include <Alieve/TPCSector3D.h>

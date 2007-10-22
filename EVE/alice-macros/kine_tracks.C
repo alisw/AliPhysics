@@ -27,9 +27,8 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   gReve->DisableRedraw();
  
   Reve::TrackList* cont = new Reve::TrackList("Kine Tracks"); 
-  cont->SetMainColor(Color_t(6));
+  cont->SetMainColor(Color_t(3));
   Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
-  rnrStyle->fColor = 8;
   // !!! Watch the '-', apparently different sign convention then for ESD.
   rnrStyle->SetMagField( - gAlice->Field()->SolenoidField() );
 
@@ -55,7 +54,7 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
       track->SetName(form);
       if (pdg_col && p->GetPDG())
 	track->SetMainColor(get_pdg_color(p->GetPDG()->PdgCode()));
-      gReve->AddRenderElement(cont, track);
+      gReve->AddRenderElement(track, cont);
 
       if (recurse)
 	kine_daughters(track, stack, min_pt, min_p, pdg_col, recurse);
@@ -65,10 +64,10 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   // set path marks
   Alieve::KineTools kt; 
   kt.SetDaughterPathMarks(cont, stack, recurse);
-  if (use_track_refs && rl->LoadTrackRefs())
+  if (use_track_refs && rl->LoadTrackRefs() == 0)
   {
     kt.SetTrackReferences(cont, rl->TreeTR(), recurse);
-    cont->SetEditPathMarks(kTRUE);
+    rnrStyle->SetEditPathMarks(kTRUE);
   }
   kt.SortPathMarks(cont, recurse);
 
@@ -79,8 +78,6 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
   cont->UpdateItems();
 
   cont->MakeTracks(recurse);
-  cont->MakeMarkers();
-
   gReve->EnableRedraw();
   gReve->Redraw3D();
 
@@ -100,13 +97,13 @@ void kine_daughters(Reve::Track* parent,  AliStack* stack,
       TParticle* dp = stack->Particle(d);
       if (dp->Pt() < min_pt && dp->P() < min_p) continue;
 
-      Track* dtrack = new Reve::Track(dp, d, rs);  
+      Reve::Track* dtrack = new Reve::Track(dp, d, rs);  
       char form[1000];
       sprintf(form,"%s [%d]", dp->GetName(), d);
       dtrack->SetName(form);
       if (pdg_col && dp->GetPDG())
 	dtrack->SetMainColor(get_pdg_color(dp->GetPDG()->PdgCode()));
-      gReve->AddRenderElement(parent, dtrack);
+      gReve->AddRenderElement(dtrack, parent);
 
       if (recurse)
 	kine_daughters(dtrack, stack, min_pt, min_p, pdg_col, recurse);
@@ -190,9 +187,8 @@ kine_track(Int_t  label,
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
       tlist->SetTitle(tooltip);
       tlist->SelectByPt(0.2, 100);
-      rnrStyle->fColor   = 8;
       rnrStyle->fMaxOrbs = 8;
-      tlist->SetEditPathMarks(kTRUE);
+      rnrStyle->SetEditPathMarks(kTRUE);
       gReve->AddRenderElement(cont);
       rs = tlist->GetRnrStyle();
     }
@@ -224,7 +220,7 @@ kine_track(Int_t  label,
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
       track->SetName(form);
-      gReve->AddRenderElement(cont, track);
+      gReve->AddRenderElement(track, cont);
 
     }
 
@@ -238,7 +234,7 @@ kine_track(Int_t  label,
 	sprintf(form,"%s [%d]", dp->GetName(), d);
 	track->SetName(form);
         track->MakeTrack();
-	gReve->AddRenderElement(cont, track);
+	gReve->AddRenderElement(track, cont);
       }
     }
   }

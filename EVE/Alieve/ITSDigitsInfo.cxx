@@ -30,10 +30,10 @@ ClassImp(ITSModuleSelection)
 ITSModuleSelection::ITSModuleSelection():
   fType(-1),
   fLayer(-1),
-  fMinPhi(0),
-  fMaxPhi(2*TMath::Pi()),
-  fMinTheta(0),
-  fMaxTheta(2*TMath::Pi())
+  fMinPhi(-TMath::Pi()),
+  fMaxPhi(TMath::Pi()),
+  fMinTheta(-TMath::Pi()),
+  fMaxTheta(TMath::Pi())
 {}
 
 
@@ -72,9 +72,9 @@ void ITSDigitsInfo::InitInternals()
   fSDDMaxVal = 80;
   fSSDMaxVal = 100;
 
-  fSPDMaxOcc  = 0.15;
-  fSDDMaxOcc  = 0.15;
-  fSSDMaxOcc  = 0.3;
+  fSPDHighLim = 1;
+  fSDDHighLim = 512;
+  fSSDHighLim = 1024;
 
   // lowest scale factor refers to unscaled ITS module
   fSPDScaleX[0] = 1;
@@ -273,7 +273,6 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSPD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
       if(i == fSPDmap.end()) {
-	if (fTree == 0) return 0;
         TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
         br->SetAddress(&digitsSPD);
 	br->GetEntry(mod);
@@ -288,7 +287,6 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSDD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
       if(i == fSDDmap.end()) {
-	if (fTree == 0) return 0;
 	TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
         br->SetAddress(&digitsSDD);
 	br->GetEntry(mod);
@@ -303,7 +301,6 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSSD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
       if(i == fSSDmap.end()) {
-	if (fTree == 0) return 0;
 	TBranch* br =  fTree->GetBranch("ITSDigitsSSD");
         br->SetAddress(&digitsSSD);
 	br->GetEntry(mod);
@@ -333,11 +330,11 @@ void ITSDigitsInfo::GetModuleIDs(ITSModuleSelection* sel, std::vector<UInt_t>& i
       idx1 = fGeom->GetLastSPD();
       break;
     case 1:
-      idx0 = fGeom->GetLastSPD();
+      idx0 = fGeom->GetLastSPD()+1;
       idx1 = fGeom->GetLastSDD();
       break;
     case 2:
-      idx0 = fGeom->GetLastSDD();
+      idx0 = fGeom->GetLastSDD()+1;
       idx1 = fGeom->GetLastSSD();
       break;
     default:
@@ -362,8 +359,8 @@ void ITSDigitsInfo::GetModuleIDs(ITSModuleSelection* sel, std::vector<UInt_t>& i
       fGeom->GetTrans(id, x);  
       mx.SetBaseVec(4, x);
       mx.GetPos(v);
-      if(v.Phi()<sel->fMaxPhi && v.Phi()>sel->fMinPhi &&
-         v.Theta()<sel->fMaxTheta && v.Theta()>sel->fMinTheta )
+      if(v.Phi()<=sel->fMaxPhi && v.Phi()>=sel->fMinPhi &&
+         v.Theta()<=sel->fMaxTheta && v.Theta()>=sel->fMinTheta )
 	ids.push_back(id);
     }
   }

@@ -18,24 +18,30 @@ class DigitScaleInfo : public TQObject, public Reve::ReferenceBackPtr
 {
 public:
   enum StatType_e { ST_Occup, ST_Average, ST_Rms };
-  
-  Int_t            fScale;    
-  Int_t            fStatType;
 
-  Bool_t           fAutoUpdatePalette;
+  // Bool_t           fAutoUpdatePalette;
 private:
   DigitScaleInfo(const DigitScaleInfo&);            // Not implemented
   DigitScaleInfo& operator=(const DigitScaleInfo&); // Not implemented
+
+protected:
+  Int_t            fScale;    
+  Int_t            fStatType;
+  
+  Bool_t           fSyncPalette;
 
 public:
   DigitScaleInfo();
   virtual ~DigitScaleInfo(){}
     
   Int_t            GetScale() { return fScale; }
-  void             ScaleChanged(Int_t s); //*SIGNAL*
+  void             ScaleChanged(Int_t s);
 
   Int_t            GetStatType() { return fStatType; }
-  void             StatTypeChanged(Int_t t);  //*SIGNAL*
+  void             StatTypeChanged(Int_t t);
+
+  Bool_t           GetSyncPalette(){return fSyncPalette;}
+  void             SetSyncPalette(Bool_t x){fSyncPalette = x;}
 
   ClassDef(DigitScaleInfo, 1);
 };
@@ -85,11 +91,14 @@ public:
   ITSScaledModule(Int_t gid, ITSDigitsInfo* info, DigitScaleInfo* si );
   virtual ~ITSScaledModule();
 
-  virtual void QuadSelected(Int_t idx);
+  virtual void DigitSelected(Int_t idx);
 
   virtual void LoadQuads();
   void         SetQuadValues();
 
+  void         SyncPalette();
+
+  void         GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total);
   DigitScaleInfo*  GetScaleInfo(){ return fScaleInfo; }
 
   ClassDef(ITSScaledModule, 1);

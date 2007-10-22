@@ -4,9 +4,10 @@ my ($BINDIR, $BINNAME) = $0 =~ m!^(.*)/(.*)!;
 if ($#ARGV != 1) {
   print STDERR <<"fnord";
 usage: $BINNAME <module> <class-base>
-   eg: $BINNAME base QuadSet
-       $BINNAME gl   QuadSet
-       $BINNAME ged  QuadSet
+   eg: $BINNAME base     QuadSet
+       $BINNAME gl       QuadSet
+       $BINNAME ged      QuadSet
+       $BINNAME gedsubed QuadSet
 Should be in module sub-directory (Reve/ or Alieve/).
 Note that GL and Editor suffixes are not present!
 fnord
@@ -17,9 +18,14 @@ my $MODULE = $ARGV[0];
 # Flat structure now.
 # die "'$MODULE' not a directory" unless -d $MODULE;
 
-%suff = ( 'gl' => 'GL', 'ged' => 'Editor');
+%suff = ( 'gl' => 'GL', 'ged' => 'Editor', 'gedsubed' => 'Editor');
 my $STEM  = $ARGV[1];
 my $CLASS = $STEM . $suff{$MODULE};
+
+if ($MODULE eq 'gedsubed') {
+  $replace_xxclass = 1;
+  $XXCLASS = $STEM . 'SubEditor';
+}
 
 # Flat structure now.
 # my $H_NAME = "$MODULE/$CLASS.h";
@@ -57,6 +63,7 @@ my ($skel_h, $skel_c);
 print "Replacing CLASS -> $CLASS, STEM -> $STEM.\n";
 
 for $f ($skel_h, $skel_c) {
+  $f =~ s/XXCLASS/$XXCLASS/g if ($replace_xxclass);
   $f =~ s/CLASS/$CLASS/g;
   $f =~ s/STEM/$STEM/g;
 }

@@ -314,7 +314,7 @@ inline Float_t V0::GetAntiLamMass() const {
 // V0List
 /**************************************************************************/
 
-class V0List : public TNamed, public RenderElement
+class V0List : public RenderElementList
 {
   V0List(const V0List&);            // Not implemented
   V0List& operator=(const V0List&); // Not implemented
@@ -333,8 +333,6 @@ public:
   virtual Bool_t CanEditMainColor()  { return kTRUE; }
 
   virtual void Paint(Option_t* option="");
-
-  virtual void AddElement(RenderElement* el);
 
   void  SetRnrStyle(TrackRnrStyle* rst) { fRnrStyle= rst; }
   TrackRnrStyle* GetRnrStyle()          { return fRnrStyle; } 

@@ -4,7 +4,7 @@
 #include "TMath.h"
 #include <TGListTree.h>
 
-#include "Reve/RGTopFrame.h"
+#include "Reve/ReveManager.h"
 #include "Reve/Track.h"
 
 #include "AliLog.h"

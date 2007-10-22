@@ -45,12 +45,20 @@ public:
   Vector(Float_t _x, Float_t _y, Float_t _z) : x(_x), y(_y), z(_z) {}
   virtual ~Vector() {}
 
+  Vector operator + (const Vector &);
+  Vector operator - (const Vector &);
+  Vector operator * (Float_t a);
+
   Float_t* c_vec() { return &x; }
+  Float_t& operator [] (Int_t indx);
+  Float_t  operator [] (Int_t indx) const;
+
   void Set(Float_t*  v) { x=v[0]; y=v[1]; z=v[2]; }
   void Set(Double_t* v) { x=v[0]; y=v[1]; z=v[2]; }
   void Set(Float_t  _x, Float_t  _y, Float_t  _z) { x=_x; y=_y; z=_z; }
   void Set(Double_t _x, Double_t _y, Double_t _z) { x=_x; y=_y; z=_z; }
   void Set(const TVector3& v) { x=v.x(); y=v.y(); z=v.z(); }
+  void Set(const Vector& v) { x=v.x; y=v.y; z=v.z; }
 
   Float_t Phi()      const;
   Float_t Theta()    const;
@@ -66,6 +74,8 @@ public:
 
   Float_t Distance(const Vector& v) const;
   Float_t SquareDistance(const Vector& v) const;
+
+  Vector& Mult(const Vector&a, Float_t af) { x = a.x*af; y = a.y*af; z = a.z*af; return *this; }
 
   ClassDef(Vector, 1);
 };
@@ -87,6 +97,12 @@ inline Float_t Vector::SquareDistance(const Vector& b) const
 {
   return ((x - b.x)*(x - b.x) + (y - b.y)*(y - b.y) + (z - b.z)*(z - b.z));
 }
+
+inline Float_t& Vector::operator [] (Int_t idx)
+{ return (&x)[idx]; }
+
+inline Float_t Vector::operator [] (Int_t idx) const
+{ return (&x)[idx]; }
 
 /**************************************************************************/
 // PathMark

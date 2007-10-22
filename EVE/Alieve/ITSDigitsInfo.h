@@ -35,6 +35,7 @@ public:
   Float_t  fMaxTheta; 
   
   ITSModuleSelection();
+  virtual ~ITSModuleSelection() {}
 
   ClassDef(ITSModuleSelection, 1);
 };
@@ -74,9 +75,9 @@ public:
   Int_t                    fSSDMaxVal;
   Int_t                    fSDDMaxVal;
 
-  Float_t                  fSPDMaxOcc;
-  Float_t                  fSDDMaxOcc;
-  Float_t                  fSSDMaxOcc;
+  Int_t                    fSPDHighLim;
+  Int_t                    fSDDHighLim;
+  Int_t                    fSSDHighLim;
 
   Int_t                    fSPDScaleX[5];
   Int_t                    fSPDScaleZ[5];

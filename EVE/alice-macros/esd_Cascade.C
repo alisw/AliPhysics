@@ -1,5 +1,5 @@
 // #include "EVE/Alieve/EventAlieve.h"
-// #include "Reve/RGTopFrame.h"
+// #include "Reve/ReveManager.h"
 // #include "Reve/Cascade.h"
 
 // #include "AliESD.h"
@@ -85,7 +85,7 @@ Reve::CascadeList* esd_Cascade(Double_t min_pt=0.1, Double_t max_pt=100)
       Reve::Cascade* myCas = esd_make_cas(rnrStyle, primVertex, cas,
 					  negTr, posTr, bachTr, n);
       if (myCas) {
-	gReve->AddRenderElement(cont, myCas);
+	gReve->AddRenderElement(myCas, cont);
 	count++;
       }
     }

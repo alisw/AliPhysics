@@ -1,10 +1,13 @@
 #include "RGBrowser.h"
-#include "RGTopFrame.h"
+#include "ReveManager.h"
 #include "Reve.h"
 #include "RGEditor.h"
 #include "VSDSelector.h"
 #include <Reve/PointSet.h>
 #include <Reve/Track.h>
+
+#include "TGFileBrowser.h"
+#include <TBrowser.h>
 
 #include <Riostream.h>
 
@@ -17,11 +20,9 @@
 
 #include <TApplication.h>
 #include <TFile.h>
-#include <TEventList.h>
 #include <TClassMenuItem.h>
 
 #include <TColor.h>
-#include <TPolyMarker3D.h>
 
 #include <TGCanvas.h>
 #include <TGSplitter.h>
@@ -42,13 +43,330 @@
 #include <TGeoNode.h>
 
 using namespace Reve;
-using namespace Reve;
+
+//______________________________________________________________________
+// RGLTEFrame
+//
+//
+
+ClassImp(RGLTEFrame)
+
+RGLTEFrame::RGLTEFrame(const Text_t* name, Int_t width, Int_t height) :
+  TGMainFrame(gClient->GetRoot(), width, height),
+  fCtxMenu     (0),
+  fNewSelected (0)
+{
+  SetWindowName(name);
+  SetCleanup(kNoCleanup);
+
+  fFrame = new TGCompositeFrame(this, width, height, kVerticalFrame);
+
+  // List-tree
+  fLTFrame  = new TGCompositeFrame(fFrame, width, 3*height/7, kVerticalFrame);
+  fLTCanvas = new TGCanvas(fLTFrame, 10, 10, kSunkenFrame | kDoubleBorder);
+  fListTree = new TGListTree(fLTCanvas->GetViewPort(), 10, 10, kHorizontalFrame);
+  fListTree->SetCanvas(fLTCanvas);
+  fListTree->Associate(fFrame);
+  fListTree->SetColorMode(TGListTree::EColorMarkupMode(TGListTree::kColorUnderline | TGListTree::kColorBox));
+  fListTree->SetAutoCheckBoxPic(kFALSE);
+  fLTCanvas->SetContainer(fListTree);
+  fLTFrame->AddFrame(fLTCanvas, new TGLayoutHints
+		     (kLHintsNormal | kLHintsExpandX | kLHintsExpandY, 1, 1, 1, 1));
+  fFrame  ->AddFrame(fLTFrame, new TGLayoutHints
+		     (kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
+
+  // Splitter
+  fSplitter = new TGHSplitter(fFrame);
+  fFrame->AddFrame(fSplitter, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 1,1,2,2));
+
+  // Editor
+  fFrame->SetEditDisabled(kEditEnable);
+  fFrame->SetEditable();
+  fEditor = new RGEditor(0, width, 4*height/7);
+  fEditor->SetGlobal(kFALSE);
+  fEditor->ChangeOptions(fEditor->GetOptions() | kFixedHeight);
+  fFrame->SetEditable(kEditDisable);
+  fFrame->SetEditable(kFALSE);
+  {
+    TGFrameElement *el = 0;
+    TIter next(fFrame->GetList());
+    while ((el = (TGFrameElement *) next())) {
+      if (el->fFrame == fEditor)
+	if (el->fLayout) {
+	  el->fLayout->SetLayoutHints(kLHintsTop | kLHintsExpandX);
+	  el->fLayout->SetPadLeft(0); el->fLayout->SetPadRight(1);
+	  el->fLayout->SetPadTop(2);  el->fLayout->SetPadBottom(1);
+	  break;
+	}
+    }
+  }
+  fSplitter->SetFrame(fEditor, kFALSE);
+
+  AddFrame(fFrame, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY));
+
+  fCtxMenu = new TContextMenu("", "");
+
+  fListTree->Connect("Checked(TObject*,Bool_t)", "Reve::RGLTEFrame",
+		     this, "ItemChecked(TObject*, Bool_t)");
+  fListTree->Connect("Clicked(TGListTreeItem*, Int_t, Int_t, Int_t)", "Reve::RGLTEFrame",
+		     this, "ItemClicked(TGListTreeItem*, Int_t, Int_t, Int_t)");
+  fListTree->Connect("DoubleClicked(TGListTreeItem*, Int_t)", "Reve::RGLTEFrame",
+		     this, "ItemDblClicked(TGListTreeItem*, Int_t)");
+  fListTree->Connect("KeyPressed(TGListTreeItem*, ULong_t, ULong_t)", "Reve::RGLTEFrame",
+  		     this, "ItemKeyPress(TGListTreeItem*, UInt_t, UInt_t)");
+
+  Layout();
+  MapSubwindows();
+  MapWindow();
+}
+
+RGLTEFrame::~RGLTEFrame()
+{
+  delete fCtxMenu;
+
+  // Should un-register editor, all items and list-tree from gReve ... eventually.
+
+  delete fEditor;
+  delete fSplitter;
+  delete fListTree;
+  delete fLTCanvas;
+  delete fLTFrame;
+  delete fFrame;
+}
 
 /**************************************************************************/
 
+void RGLTEFrame::ReconfToHorizontal()
+{
+  UnmapWindow();
+
+  fFrame->ChangeOptions(kHorizontalFrame);
+  fLTFrame->ChangeOptions(kHorizontalFrame);
+  fListTree->ChangeOptions(kVerticalFrame);
+
+  TGFrameElement *el = 0;
+  TIter next(fFrame->GetList());
+  while ((el = (TGFrameElement *) next()))
+  {
+    if (el->fFrame == fSplitter)
+    {
+      delete fSplitter;
+      el->fFrame = fSplitter = new TGVSplitter(fFrame);
+      el->fLayout->SetLayoutHints(kLHintsLeft | kLHintsExpandY);
+      el->fLayout->SetPadLeft(2); el->fLayout->SetPadRight (2);
+      el->fLayout->SetPadTop (1); el->fLayout->SetPadBottom(1);
+    }
+    else if (el->fFrame == fEditor)
+    {
+      fEditor->ChangeOptions(fEditor->GetOptions() & (~kFixedHeight));
+      fEditor->ChangeOptions(fEditor->GetOptions() |   kFixedWidth);
+      el->fLayout->SetLayoutHints(kLHintsLeft | kLHintsExpandY);
+    }
+  }
+
+  fEditor->Resize(fEditor->GetWidth() / 2 - 1, fEditor->GetHeight());
+  fSplitter->SetFrame(fEditor, kFALSE);
+
+  Layout();
+  //fFrame->Layout();
+  //fLTFrame->Layout();
+  //fLTCanvas->Layout();
+  //fListTree->ClearViewPort();
+  MapSubwindows();
+  MapWindow();
+}
+
+void RGLTEFrame::ReconfToVertical()
+{
+  UnmapWindow();
+
+  fFrame->ChangeOptions(kVerticalFrame);
+  fLTFrame->ChangeOptions(kVerticalFrame);
+  fListTree->ChangeOptions(kHorizontalFrame);
+
+  TGFrameElement *el = 0;
+  TIter next(fFrame->GetList());
+  while ((el = (TGFrameElement *) next()))
+  {
+    if (el->fFrame == fSplitter)
+    {
+      delete fSplitter;
+      el->fFrame = fSplitter = new TGHSplitter(fFrame);
+      el->fLayout->SetLayoutHints(kLHintsTop | kLHintsExpandX);
+      el->fLayout->SetPadLeft(2); el->fLayout->SetPadRight (2);
+      el->fLayout->SetPadTop (1); el->fLayout->SetPadBottom(1);
+    }
+    else if (el->fFrame == fEditor)
+    {
+      fEditor->ChangeOptions(fEditor->GetOptions() & (~kFixedWidth));
+      fEditor->ChangeOptions(fEditor->GetOptions() |   kFixedHeight);
+      el->fLayout->SetLayoutHints(kLHintsTop | kLHintsExpandX);
+    }
+  }
+
+  fEditor->Resize(fEditor->GetWidth(), fEditor->GetHeight() / 2 - 1);
+  fSplitter->SetFrame(fEditor, kFALSE);
+
+  Layout();
+  //fFrame->Layout();
+  //fLTFrame->Layout();
+  //fLTCanvas->Layout();
+  //fListTree->ClearViewPort();
+  MapSubwindows();
+  MapWindow();
+}
+
+/**************************************************************************/
+
+void RGLTEFrame::ItemChecked(TObject* obj, Bool_t state)
+{
+  // Item's user-data is blindly casted into TObject.
+  // We recast it blindly back into the render element.
+
+  RenderElement* rnrEl = (RenderElement*) obj;
+  gReve->RenderElementChecked(rnrEl, state);
+  gReve->Redraw3D();
+}
+
+void RGLTEFrame::ItemClicked(TGListTreeItem *item, Int_t btn, Int_t x, Int_t y)
+{
+  //printf("ItemClicked item %s List %d btn=%d, x=%d, y=%d\n",
+  //  item->GetText(),fDisplayFrame->GetList()->GetEntries(), btn, x, y);
+
+  RenderElement* re = (RenderElement*)item->GetUserData();
+  if(re == 0) return;
+  TObject* obj = re->GetObject();
+
+  switch (btn)
+  {
+    case 1:
+      gReve->RenderElementSelect(re);
+      break;
+
+    case 2:
+      if (gReve->RenderElementPaste(re))
+        gReve->Redraw3D();
+      break;
+
+    case 3:
+      // If control pressed, show menu for render-element itself.
+      // event->fState & kKeyControlMask
+      // ??? how do i get current event?
+      if (obj) fCtxMenu->Popup(x, y, obj);
+      break;
+
+    default:
+      break;
+  }
+}
+
+void RGLTEFrame::ItemDblClicked(TGListTreeItem* item, Int_t btn)
+{
+  if (btn != 1) return;
+
+  RenderElement* re = (RenderElement*) item->GetUserData();
+  if (re == 0) return;
+
+  re->ExpandIntoListTree(fListTree, item);
+
+  TObject* obj = re->GetObject();
+  if (obj)
+  {
+    // Browse geonodes.
+    if (obj->IsA()->InheritsFrom(TGeoNode::Class()))
+    {
+      TGeoNode* n = dynamic_cast<TGeoNode*>(obj);
+      if (item->GetFirstChild() == 0 && n->GetNdaughters())
+      {
+	fListTree->DeleteChildren(item);
+	for (Int_t i=0; i< n->GetNdaughters(); i++)
+	{
+	  TString title;
+	  title.Form("%d : %s[%d]", i,
+		     n->GetDaughter(i)->GetVolume()->GetName(),
+		     n->GetDaughter(i)->GetNdaughters());
+
+	  TGListTreeItem* child = fListTree->AddItem( item, title.Data());
+	  child->SetUserData(n->GetDaughter(i));
+	}
+      }
+    }
+  }
+}
+
+void RGLTEFrame::ItemKeyPress(TGListTreeItem *entry, UInt_t keysym, UInt_t /*mask*/)
+{
+  static const Exc_t eH("RGLTEFrame::ItemKeyPress ");
+
+  // replace entry with selected!
+  entry = fListTree->GetSelected();
+  if (entry == 0) return;
+
+  if (keysym == kKey_Delete)
+  {
+    RenderElement* rnr_el = dynamic_cast<RenderElement*>
+      ((RenderElement*) entry->GetUserData());
+    if (rnr_el == 0)
+      return;
+
+    if (entry->GetParent())
+    {
+      if (rnr_el->GetDenyDestroy() > 0 && rnr_el->GetNItems() == 1)
+	throw(eH + "DestroyDenied set for this item.");
+
+      RenderElement* parent_re = dynamic_cast<RenderElement*>
+	((RenderElement*) entry->GetParent()->GetUserData());
+
+      if (parent_re)
+      {
+	ResetSelectedTimer(entry);
+	gReve->RemoveRenderElement(rnr_el, parent_re);
+	gReve->Redraw3D();
+      }
+    }
+    else
+    {
+      if (rnr_el->GetDenyDestroy() > 0)
+	throw(eH + "DestroyDenied set for this top-level item.");
+      ResetSelectedTimer(entry);
+      gReve->RemoveFromListTree(rnr_el, fListTree, entry);
+      gReve->Redraw3D();
+    }
+  }
+}
+
+void RGLTEFrame::ResetSelectedTimer(TGListTreeItem* lti)
+{
+  fNewSelected = lti->GetPrevSibling();
+  if (! fNewSelected) {
+    fNewSelected = lti->GetNextSibling();
+    if (! fNewSelected)
+      fNewSelected = lti->GetParent();
+  }
+
+  TTimer::SingleShot(0, IsA()->GetName(), this, "ResetSelected()");
+}
+
+void RGLTEFrame::ResetSelected()
+{
+  fListTree->HighlightItem(fNewSelected);
+  fListTree->SetSelected(fNewSelected);
+  fNewSelected = 0;
+}
+
+
+/**************************************************************************/
+/**************************************************************************/
+
+//______________________________________________________________________
+// RGBrowser
+//
+//
+
+ClassImp(RGBrowser)
+
 void RGBrowser::SetupCintExport(TClass* cl)
 {
- 
   TList* l = cl->GetMenuList();
   TClassMenuItem* n = new TClassMenuItem(TClassMenuItem::kPopupUserFunction, cl,
 					 "Export to CINT", "ExportToCINT", this, "const char*,TObject*", 1);
@@ -68,273 +386,174 @@ void RGBrowser::CalculateReparentXY(TGObject* parent, Int_t& x, Int_t& y)
 
 /**************************************************************************/
 
-RGBrowser::RGBrowser(const TGWindow *p, UInt_t w, UInt_t h) :
-  TGCompositeFrame(p, w, h),
-    
-  fMainFrame(0), fV1(0), fV2(0),
-  fSelectionFrame(0), fTreeView(0),
-  fCanvasWindow(0), fDisplayFrame(0),  
-  fListTree(0),
-  fCtxMenu(0)
+namespace
 {
-  fMainFrame = new TGCompositeFrame(this, 100, 10, kHorizontalFrame | kRaisedFrame);
-  fMainFrame->SetCleanup(kDeepCleanup);
-  fV1 = new TGVerticalFrame(fMainFrame, 250, 10, kSunkenFrame | kFixedWidth);
-  fV2 = new TGVerticalFrame(fMainFrame,  50, 10, kSunkenFrame);
+enum ReveMenu_e {
+  kNewViewer,  kNewScene,  kNewProjector,
+  kNewBrowser, kNewCanvas, kNewCanvasExt, kNewTextEditor, kNewHtmlBrowser,
+  kVerticalBrowser
+};
+}
 
-  TGLayoutHints *lo;
-  lo = new TGLayoutHints(kLHintsLeft | kLHintsExpandY,2,0,2,2);
-  fMainFrame->AddFrame(fV1, lo);
+RGBrowser::RGBrowser(UInt_t w, UInt_t h) :
+  TGNewBrowser("Reve Main Window", w, h, kFALSE),
+  fFileBrowser (0)
+{
+  // Construct Reve menu
 
-  TGVSplitter *splitter = new TGVSplitter(fMainFrame);
-  splitter->SetFrame(fV1, kTRUE);
-  fMainFrame->AddFrame(splitter,
-		       new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 1,1,2,2));
-   
-  lo = new TGLayoutHints(kLHintsRight | kLHintsExpandX | kLHintsExpandY,0,2,2,4);
-  fMainFrame->AddFrame(fV2, lo);
+  fRevePopup = new TGPopupMenu(gClient->GetRoot());
+  fRevePopup->AddEntry("New &Viewer",      kNewViewer);
+  fRevePopup->AddEntry("New &Scene",       kNewScene);
+  fRevePopup->AddEntry("New &Projector",   kNewProjector);
+  fRevePopup->AddSeparator();
+  fRevePopup->AddEntry("New &Browser",     kNewBrowser);
+  fRevePopup->AddEntry("New &Canvas",      kNewCanvas);
+  fRevePopup->AddEntry("New Canvas Ext",   kNewCanvasExt);
+  fRevePopup->AddEntry("New Text Editor",  kNewTextEditor);
+  // fRevePopup->AddEntry("New HTML Browser", kNewHtmlBrowser);
+  fRevePopup->AddSeparator();
+  fRevePopup->AddEntry("Vertical browser", kVerticalBrowser);
+  fRevePopup->CheckEntry(kVerticalBrowser);
 
-  // selection frame
-  fSelectionFrame = new TGCompositeFrame(fV1, 250, 10, kVerticalFrame);
-  fTreeView = new TGCanvas(fSelectionFrame, 250, 10, kSunkenFrame | kDoubleBorder);
-  fListTree = new TGListTree(fTreeView->GetViewPort(), 250, 10, kHorizontalFrame);
-  fListTree->SetCanvas(fTreeView);
-  fListTree->Associate(this);
-  fListTree->SetColorMode(TGListTree::EColorMarkupMode(TGListTree::kColorUnderline | TGListTree::kColorBox));
-  fListTree->SetAutoCheckBoxPic(kFALSE);
-  fTreeView->SetContainer(fListTree);
+  fRevePopup->Connect("Activated(Int_t)", "Reve::RGBrowser", 
+  		     this, "ReveMenu(Int_t)"); 
 
-  lo= new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY,
-			2, 2, 2, 2);
-  fSelectionFrame->AddFrame(fTreeView, lo);
+  fMenuBar->RemovePopup("Framework");
+  // ?? should disconnect / delete.
+  fMenuBar->AddPopup("&Reve", fRevePopup, new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0));
 
-  lo = new TGLayoutHints(kLHintsTop | kLHintsExpandX | kLHintsExpandY);
-  fV1->AddFrame(fSelectionFrame, lo);
- 
-  // Classic look vars:
-  fCanvasWindow = 0;
-  fDisplayFrame = 0;
- 
-  //display frame
-
-  lo = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
-  AddFrame(fMainFrame, lo);
-
-
-  SetWindowName("Reve List Browser");
-  MapSubwindows();
-  //Resize(GetDefaultSize()); // this is used here to init layout algoritme
-
-  //MapWindow();
-
-  // popup menu
-  
-  fCtxMenu = new TContextMenu("", "");
-
-
-  //-- CINT export now declared in RenderElement with *MENU*
-  // SetupCintExport(PointSet::Class());
-  // SetupCintExport(Track::Class());
-  // SetupCintExport(TrackList::Class());
-  
-  fListTree->Connect("Clicked(TGListTreeItem*, Int_t, Int_t, Int_t)", "Reve::RGBrowser", 
-		     this, "ItemClicked(TGListTreeItem*, Int_t, Int_t, Int_t)");  
-  fListTree->Connect("DoubleClicked(TGListTreeItem*, Int_t)", "Reve::RGBrowser", 
-		     this, "DbClickListItem(TGListTreeItem*,Int_t )"); 
-  //fListTree->Connect("Clicked(TGListTreeItem*, Int_t)", "Reve::RGBrowser", 
-  //		     this, "DisplayChildren(TGListTreeItem*, Int_t)");  
-
-  //---------------------------------------------
-  // WARNING ... this Connect goes to *gReve*!
-  fListTree->Connect("Checked(TObject*,Bool_t)", "Reve::RGTopFrame",
-		     gReve, "RenderElementChecked(TObject*, Bool_t)");
+  fPreMenuFrame->ChangeOptions(fPreMenuFrame->GetOptions() | kRaisedFrame);
+  fTopMenuFrame->Layout();
+  fTopMenuFrame->MapSubwindows();
 }
 
 /**************************************************************************/
 
-void RGBrowser::SetupClassicLook(RGEditor*& editor, TCanvas* glpad)
+void RGBrowser::ReveMenu(Int_t id)
 {
-  fCanvasWindow = new TGCanvas(fV2, 25, 250);
-  fDisplayFrame = new TGCompositeFrame(fCanvasWindow->GetViewPort(), 0, 0,kVerticalFrame, TGFrame::GetWhitePixel() );
-  fCanvasWindow->SetContainer(fDisplayFrame);
-  fDisplayFrame->SetCleanup(kDeepCleanup);
+  switch (id)
+  {
+    case kNewViewer:
+      gReve->SpawnNewViewer("Viewer Pepe");
+      break;
 
-  fV2->AddFrame(fCanvasWindow, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 0, 0, 2, 2));
-  fV2->MapSubwindows();
+    case kNewScene:
+      gReve->SpawnNewScene("Scena Mica");
+      break;
 
-  editor = new RGEditor(glpad);
-  editor->GetTGCanvas()->ChangeOptions(0);
-  editor->SetWindowName("Reve Editor");
-}
-
-void RGBrowser::SetupEditorLook(RGEditor*& editor, TCanvas* glpad)
-{
-  fV2->SetEditDisabled(kEditEnable);
-  fV2->SetEditable();
-  editor = new RGEditor(glpad);
-  editor->GetTGCanvas()->ChangeOptions(0);
-  fV2->SetEditable(kEditDisable);
-  fV2->SetEditable(kFALSE);
-
-  TGFrameElement *el = 0;
-  TIter next(fV2->GetList());
-  while ((el = (TGFrameElement *)next())) {
-      if (el->fFrame == editor)
-         if (el->fLayout) {
-            el->fLayout->SetLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY);
-            el->fLayout->SetPadLeft(0);
-            el->fLayout->SetPadRight(0);
-            el->fLayout->SetPadTop(2);
-            el->fLayout->SetPadBottom(2);
-            break;
-         }
-  }
-
-  fV2->MapSubwindows();
-}
-
-void RGBrowser::SetupGLViewerLook(RGEditor*& editor, TCanvas* glpad)
-{
-
-  TGFrameElement *el = 0;
-  fV2->SetEditDisabled(kEditEnable);
-  fV2->SetEditable();
-  TGLSAViewer* v = new TGLSAViewer(fV2, glpad);
-  v->GetFrame()->SetMinWidth(200);
-  v->GetFrame()->SetCleanup(kNoCleanup);
-  fV2->SetEditable(kEditDisable);
-  fV2->SetEditable(kFALSE);
-  glpad->SetViewer3D(v);
-  TIter next2(fV2->GetList());
-  while ((el = (TGFrameElement *)next2())) {
-     if (el->fFrame == v->GetFrame()) {
-         el->fLayout = new TGLayoutHints(kLHintsLeft | kLHintsExpandX | kLHintsExpandY);
-         break;
-     }
-  }
-  fSelectionFrame->Resize(fSelectionFrame->GetWidth(), fSelectionFrame->GetHeight()/2);
-
-  TGHSplitter *splitter = new TGHSplitter(fV1);
-  fV1->AddFrame(splitter, new TGLayoutHints(kLHintsTop | kLHintsExpandX, 4, 2, 2, 0));
-
-  fV1->SetEditDisabled(kEditEnable);
-  fV1->SetEditable();
-  editor = new RGEditor(glpad);
-  editor->SetGlobal(kFALSE);
-  editor->GetTGCanvas()->ChangeOptions(0);
-  editor->ChangeOptions(editor->GetOptions() | kFixedHeight);
-  fV1->SetEditable(kEditDisable);
-  fV1->SetEditable(kFALSE);
-
-  TIter next(fV1->GetList());
-  while ((el = (TGFrameElement *)next())) {
-      if (el->fFrame == editor)
-         if (el->fLayout) {
-            el->fLayout->SetLayoutHints(kLHintsTop | kLHintsExpandX);
-            el->fLayout->SetPadLeft(0);
-            el->fLayout->SetPadRight(2);
-            el->fLayout->SetPadTop(2);
-            el->fLayout->SetPadBottom(2);
-            break;
-         }
-  }
-  splitter->SetFrame(editor, kFALSE);
-  fV1->MapSubwindows();
-}
-
-
-/**************************************************************************/
-/**************************************************************************/
-
-void RGBrowser::RedrawListTree()
-{
-  gClient->NeedRedraw(fListTree);
-}
-
-/**************************************************************************/
-
-void RGBrowser::ItemClicked(TGListTreeItem *item, Int_t btn, Int_t x, Int_t y)
-{
-  //printf("ItemClicked item %s List %d btn=%d, x=%d, y=%d\n",
-  //  item->GetText(),fDisplayFrame->GetList()->GetEntries(), btn, x, y);
-
-  RenderElement* re = (RenderElement*)item->GetUserData();
-  if(re == 0) return;
-  TObject* obj = re->GetObject();
-
-  if(btn == 3) {
-    // If control pressed, show menu for renderelement itself.
-    // event->fState & kKeyControlMask
-    // ??? how do i get current event?
-    if (obj) {
-      fCtxMenu->Popup(x, y, obj);
+    case kNewProjector: {
+      RenderElement* pr = (RenderElement*) (gROOT->GetClass("Reve::NLTProjector")->New());
+      pr->SetRnrElNameTitle("Projector", "User-created projector.");
+      gReve->AddToListTree(pr, kTRUE);
+      break;
     }
-    return;
-  }
+    case kNewBrowser:
+      gROOT->ProcessLineFast("new TBrowser");
+      break;
 
-  gReve->EditRenderElement(re);
-}
+    case kNewCanvas:
+      StartEmbedding(1);
+      gROOT->ProcessLineFast("new TCanvas");
+      StopEmbedding();
+      SetTabTitle("Canvas", 1);
+      break;
 
-void RGBrowser::DbClickListItem(TGListTreeItem* item, Int_t btn)
-{
-  static const Exc_t eH("RGBrowser::DbClickListItem ");
+    case kNewCanvasExt:
+      gROOT->ProcessLineFast("new TCanvas");
+      break;
 
-  // printf("dbclick item %s\n", item->GetText());
-  RenderElement* re = (RenderElement*)item->GetUserData();
-  if(re == 0) return;
-  TObject* obj = re->GetObject();
+    case kNewTextEditor:
+      StartEmbedding(1);
+      gROOT->ProcessLineFast(Form("new TGTextEditor((const char *)0, (const TGWindow *)0x%lx)", gClient->GetRoot()));
+      StopEmbedding();
+      SetTabTitle("Editor", 1);
+      break;
 
-  if (obj) {
-    //	ListTreeHighlight(item);
-
-    re->ExpandIntoListTree(fListTree, item);
-    
-    // browse geonodes
-    if(obj->IsA()->InheritsFrom("TGeoNode")){
-      TGeoNode* n = (TGeoNode*) obj->IsA()->DynamicCast( TGeoNode::Class(), obj );
-      // initialization
-      if(item->GetFirstChild() == 0 && n->GetNdaughters()){
-	UpdateListItems(item, btn);
+    case kNewHtmlBrowser:
+      gSystem->Load("libGuiHtml");
+      if (gSystem->Load("libRHtml") >= 0)
+      {
+        StartEmbedding(1);
+        gROOT->ProcessLine(Form("new TGHtmlBrowser(\"http://root.cern.ch/root/html/ClassIndex.html\", \
+                              (const TGWindow *)0x%lx)", gClient->GetRoot()));
+        StopEmbedding();
+        SetTabTitle("HTML", 1);
       }
-    }
-  }
-}
+      break;
 
-/**************************************************************************/
-
-void RGBrowser::ExportToCINT(Text_t* var_name, TObject* obj)
-{
-  const char* cname = obj->IsA()->GetName();
-  gROOT->ProcessLine(Form("%s* %s = (%s*) %p;", cname, var_name, cname, obj));
-}
-/**************************************************************************/
-
-void RGBrowser::UpdateListItems(TGListTreeItem* item, Int_t )
-{
-  if (item->GetUserData()) {
-    //	ListTreeHighlight(item);
-    RenderElement* re = (RenderElement*)item->GetUserData();
-    TObject* obj = re->GetObject();
-
-    // geometry tree
-    if(obj->IsA()->InheritsFrom("TGeoNode")){
-      // delete exisiting
-      fListTree->DeleteChildren(item);
-      TGeoNode* n = (TGeoNode*) obj->IsA()->DynamicCast( TGeoNode::Class(), obj );
-      //printf("adding items\n");
-      if (n->GetNdaughters()) {
-	for (Int_t i=0; i< n->GetNdaughters(); i++) { 
-	  TString title;
-	  title.Form("%d : %s[%d]", i,
-		     n->GetDaughter(i)->GetVolume()->GetName(),
-		     n->GetDaughter(i)->GetNdaughters());
-
-	  TGListTreeItem* child = fListTree->AddItem( item, title.Data());
-	  child->SetUserData( n->GetDaughter(i));
-	}
+    case kVerticalBrowser:
+      if (fRevePopup->IsEntryChecked(kVerticalBrowser)) {
+        gReve->GetLTEFrame()->ReconfToHorizontal();
+        fRevePopup->UnCheckEntry(kVerticalBrowser);
+      } else {
+        gReve->GetLTEFrame()->ReconfToVertical();
+        fRevePopup->CheckEntry(kVerticalBrowser);
       }
-    }
+      break;
+
+    default:
+      break;
   }
 }
 
 /**************************************************************************/
+
+void RGBrowser::InitPlugins()
+{
+  // File browser plugin...
+  StartEmbedding(0);
+  //gROOT->ProcessLine(Form("new TGFileBrowser((const TGWindow *)0x%lx, 200, 500)", 
+  //                   gClient->GetRoot()));
+  {
+    TGFileBrowser *fb = MakeFileBrowser();
+    fb->BrowseObj(gROOT);
+    fb->AddFSDirectory("/");
+    fb->Show();
+
+    fFileBrowser = fb;
+  }
+  StopEmbedding();
+  SetTabTitle("Files", 0);
+
+  // Class browser plugin
+  /*
+    StartEmbedding(0);
+    gROOT->ProcessLine(Form("new TGClassBrowser((const TGWindow *)0x%lx, 200, 500)", 
+    gClient->GetRoot()));
+    StopEmbedding();
+    SetTabTitle("Classes", 0, 1);
+  */
+
+  // --- main frame
+
+  // Canvas plugin...
+  /* Now in menu
+  StartEmbedding(1);
+  gROOT->ProcessLineFast("new TCanvas");
+  StopEmbedding();
+  SetTabTitle("Canvas", 1);
+  */
+
+  // Editor plugin...
+  /* Now in menu
+  StartEmbedding(1);
+  gROOT->ProcessLineFast(Form("new TGTextEditor((const char *)0, (const TGWindow *)0x%lx)", 
+			  gClient->GetRoot()));
+  StopEmbedding();
+  SetTabTitle("Editor", 1);
+  */
+
+  // --- bottom area
+
+  // Command plugin...
+  StartEmbedding(2);
+  gROOT->ProcessLineFast(Form("new TGCommandPlugin((const TGWindow *)0x%lx, 700, 300)", 
+			  gClient->GetRoot()));
+  StopEmbedding();
+  SetTabTitle("Command", 2);
+
+  // --- Select first tab everywhere
+  SetTab(0, 0);
+  SetTab(1, 0);
+  SetTab(2, 0);
+}

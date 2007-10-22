@@ -2,8 +2,15 @@
 #pragma link off all globals;
 #pragma link off all classes;
 
+// Bertrand's new browser and helpers
+#pragma link C++ class TGClassBrowser;
+#pragma link C++ class TGCommandPlugin;
+#pragma link C++ class TGFileBrowser;
+#pragma link C++ class TGNewBrowser;
+
+
 #pragma link C++ namespace Reve;
-#pragma link C++ global   gReve; // In RGTopFrame ... should move.
+#pragma link C++ global   gReve; // In ReveManager ... should move.
 
 //================================
 // base/
@@ -47,6 +54,8 @@
 
 // Stepper
 #pragma link C++ class Reve::GridStepper+;
+#pragma link C++ class Reve::GridStepperSubEditor+;
+#pragma link C++ class Reve::GridStepperEditor+;
 
 // RGBAPalette
 #pragma link C++ class Reve::RGBAPalette+;
@@ -75,13 +84,19 @@
 #pragma link C++ class Reve::RenderElement::ListTreeInfo+;
 #pragma link C++ class Reve::RenderElementObjPtr+;
 #pragma link C++ class Reve::RenderElementList+;
-#pragma link C++ class Reve::PadPrimitive+;
 #pragma link C++ class Reve::RenderElementEditor+;
 
 #pragma link C++ class std::list<Reve::RenderElement*>;
 #pragma link C++ class std::list<Reve::RenderElement*>::iterator;
 #pragma link C++ typedef Reve::RenderElement::List_t;
 #pragma link C++ typedef Reve::RenderElement::List_i;
+
+// GL-interface
+#pragma link C++ class Reve::Scene+;
+#pragma link C++ class Reve::SceneList+;
+#pragma link C++ class Reve::SceneInfo+;
+#pragma link C++ class Reve::Viewer+;
+#pragma link C++ class Reve::ViewerList+;
 
 // Pad
 #pragma link C++ class Reve::Pad+;
@@ -90,6 +105,7 @@
 #pragma link C++ class Reve::VSDSelector+;
 
 // RGBrowser
+#pragma link C++ class Reve::RGLTEFrame+;
 #pragma link C++ class Reve::RGBrowser+;
 
 // RGEditor
@@ -98,8 +114,8 @@
 // RMacro
 #pragma link C++ class Reve::RMacro+;
 
-// RGTopFrame
-#pragma link C++ class Reve::RGTopFrame+;
+// ReveManager
+#pragma link C++ class Reve::ReveManager+;
 
 // RGValuators
 #pragma link C++ class Reve::RGValuatorBase+;
@@ -108,17 +124,29 @@
 #pragma link C++ class Reve::RGTriVecValuator+;
 
 // Non-linear transformations
+#pragma link C++ class Reve::NLTProjectable+;
+#pragma link C++ class Reve::NLTGeoProjectable+;
+#pragma link C++ class Reve::NLTProjected+;
 #pragma link C++ class Reve::NLTProjection+;
-#pragma link C++ class Reve::PhiZ+;
+//#pragma link C++ class Reve::PhiZ+;
 #pragma link C++ class Reve::RhoZ+;
 #pragma link C++ class Reve::CircularFishEye+;
 
 #pragma link C++ class Reve::NLTProjector+;
+#pragma link C++ class Reve::NLTProjectorEditor+;
+#pragma link C++ class Reve::NLTProjectorGL+;
+
+#pragma link C++ class Reve::NLTTrack+;
+#pragma link C++ class Reve::NLTTrackGL+;
+#pragma link C++ class Reve::NLTTrackList+;
 
 #pragma link C++ class Reve::NLTPolygon+;
 #pragma link C++ class Reve::NLTPolygonSet+;
 #pragma link C++ class Reve::NLTPolygonSetEditor+;
 #pragma link C++ class Reve::NLTPolygonSetGL+;
+
+#pragma link C++ class Reve::NLTPointSet+;
+#pragma link C++ class Reve::NLTPointSetGL+;
 
 //=====================================
 // Graphical elements (with renderers)
@@ -127,9 +155,12 @@
 // Track
 #pragma link C++ class Reve::Track+;
 #pragma link C++ class Reve::TrackGL+;
+#pragma link C++ class Reve::TrackEditor+;
 #pragma link C++ class Reve::TrackRnrStyle+;
 #pragma link C++ class Reve::TrackList+;
 #pragma link C++ class Reve::TrackListEditor+;
+#pragma link C++ class Reve::TrackRnrStyleSubEditor+;
+#pragma link C++ class Reve::TrackRnrStyleEditor+;
 #pragma link C++ class Reve::TrackCounter+;
 #pragma link C++ class Reve::TrackCounterEditor+;
 
@@ -157,16 +188,18 @@
 #pragma link C++ class Reve::FrameBox+;
 #pragma link C++ class Reve::FrameBoxGL+;
 
+// DigitSet
+#pragma link C++ class Reve::DigitSet+;
+#pragma link C++ class Reve::DigitSetEditor+;
+
 // QuadSet
 #pragma link C++ class Reve::Quad+;
 #pragma link C++ class Reve::OldQuadSet+;
 #pragma link C++ class Reve::OldQuadSetGL+;
 #pragma link C++ class Reve::QuadSet+;
-#pragma link C++ class Reve::QuadSetEditor+;
 #pragma link C++ class Reve::QuadSetGL+;
 
 // BoxSet
-#pragma link C++ class Reve::Box+;
 #pragma link C++ class Reve::BoxSet+;
 #pragma link C++ class Reve::BoxSetGL+;
 
@@ -188,3 +221,4 @@
 #pragma link C++ class Reve::StraightLineSet+;
 #pragma link C++ class Reve::StraightLineSetGL+;
 #pragma link C++ class Reve::StraightLineSetEditor+;
+#pragma link C++ class Reve::NLTSLineSet+;

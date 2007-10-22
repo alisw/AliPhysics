@@ -43,7 +43,7 @@ public:
   virtual ~TPCLoader();
 
   virtual void RemoveElementLocal(Reve::RenderElement* el);
-  virtual void RemoveElements();
+  virtual void RemoveElementsLocal();
 
   void SetFile(const Text_t* f) { fFile = f; }
   void SetDoubleSR(Bool_t d)    { fDoubleSR = d; }

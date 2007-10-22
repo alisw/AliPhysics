@@ -27,17 +27,17 @@ ClassImp(LineEditor)
     fRnrLine   (0),
     fRnrPoints (0)
 {
-  // MakeTitle("Line");
-
+  fPriority = 20;
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
 
-    fRnrLine  = new TGCheckButton(f, "Draw Line");
-    f->AddFrame(fRnrLine, new TGLayoutHints(kLHintsLeft, 1,2,0,0));
-    fRnrLine->Connect("Toggled(Bool_t)", "Reve::LineEditor", this, "DoRnrLine()");
     fRnrPoints = new TGCheckButton(f, "Draw Marker");
     f->AddFrame(fRnrPoints, new TGLayoutHints(kLHintsLeft, 2,1,0,0));  
     fRnrPoints->Connect("Toggled(Bool_t)"," Reve::LineEditor", this, "DoRnrPoints()");
+   
+    fRnrLine  = new TGCheckButton(f, "Draw Line");
+    f->AddFrame(fRnrLine, new TGLayoutHints(kLHintsLeft, 1,2,0,0));
+    fRnrLine->Connect("Toggled(Bool_t)", "Reve::LineEditor", this, "DoRnrLine()");
 
     AddFrame(f, new TGLayoutHints(kLHintsTop, 0,0,2,1));
   }

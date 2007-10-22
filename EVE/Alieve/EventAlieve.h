@@ -3,8 +3,6 @@
 #ifndef ALIEVE_Event_H
 #define ALIEVE_Event_H
 
-#include <TList.h>
-
 #include <Reve/EventBase.h>
 
 class AliRunLoader;
@@ -33,11 +31,9 @@ protected:
 
   TFile*        fESDFile;
   TTree*        fESDTree;
-  AliESDEvent*       fESD;
+  AliESDEvent*  fESD;
   AliESDfriend* fESDfriend;
   Bool_t        fESDfriendExists;
-
-  TList         fNewEventCommands;
 
   static TString  fgCdbUri;
   static Bool_t   fgAssertRunLoader;
@@ -53,27 +49,22 @@ public:
   Event();
   Event(TString path, Int_t ev=0);
 
-  void Open();
-  void GotoEvent(Int_t event);
-  void NextEvent() { GotoEvent(fEventId + 1); }
-  void PrevEvent() { GotoEvent(fEventId - 1); }
-  void Close();
-
-  virtual void  AfterNewEventLoaded();
-
-  TList& GetNewEventCommands() { return fNewEventCommands; }
-  void   AddNewEventCommand(const Text_t* cmd);
+  virtual void Open();
+  virtual void GotoEvent(Int_t event);
+  virtual void NextEvent() { GotoEvent(fEventId + 1); }
+  virtual void PrevEvent() { GotoEvent(fEventId - 1); }
+  virtual void Close();
 
   Int_t         GetEventId()   const { return fEventId; }
   AliRunLoader* GetRunLoader() const { return fRunLoader; }
   TTree*        GetESDTree()   const { return fESDTree; }
-  AliESDEvent*       GetESD()       const { return fESD; }
+  AliESDEvent*  GetESD()       const { return fESD; }
   AliESDfriend* GetESDfriend()       const { return fESDfriend; }
   Bool_t        GetESDfriendExists() const { return fESDfriendExists; }
   virtual const Text_t* GetTitle()   const { return fPath.Data(); }
 
   static AliRunLoader* AssertRunLoader();
-  static AliESDEvent*       AssertESD();
+  static AliESDEvent*  AssertESD();
   static AliESDfriend* AssertESDfriend();
 
   static AliMagF*      AssertMagField();

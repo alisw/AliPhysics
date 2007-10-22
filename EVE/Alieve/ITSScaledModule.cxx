@@ -17,24 +17,41 @@ ClassImp(DigitScaleInfo)
 DigitScaleInfo::DigitScaleInfo():
   fScale(1),
   fStatType (ST_Average),
-  fAutoUpdatePalette(kTRUE)
+  fSyncPalette(kFALSE)
 {
 }
 
 void DigitScaleInfo::ScaleChanged(Int_t s)
 {
-    fScale = s;
-    Emit("ScaleChanged(Int_t)",fScale);
+  fScale = s;
+  
+  ITSScaledModule* sm;
+  std::list<RenderElement*>::iterator i = fBackRefs.begin();
+  while (i != fBackRefs.end())
+  {
+    sm = dynamic_cast<ITSScaledModule*>(*i);
+    if(sm) sm->LoadQuads();
+    ++i;
+  }
 }
 
 void DigitScaleInfo::StatTypeChanged(Int_t t)
 {
-    fStatType = t;
-    Emit("StatTypeChanged(Int_t)",fStatType);
+  fStatType = t;
+  fSyncPalette = kTRUE;
+    
+  ITSScaledModule* sm;
+  std::list<RenderElement*>::iterator i = fBackRefs.begin();
+  while (i != fBackRefs.end())
+  {
+    sm = dynamic_cast<ITSScaledModule*>(*i);
+    if(sm) sm->SetQuadValues();
+    ++i;
+  }
 }
 
 //______________________________________________________________________
-// DigitScaleInfo
+// ScaledDigit
 //
 ScaledDigit::ScaledDigit():
   TObject(),
@@ -63,7 +80,7 @@ void ScaledDigit::Dump() const
 
 ClassImp(ITSScaledModule)
 
-  ITSScaledModule::ITSScaledModule(Int_t gid, ITSDigitsInfo* info, DigitScaleInfo* si):
+ITSScaledModule::ITSScaledModule(Int_t gid, ITSDigitsInfo* info, DigitScaleInfo* si):
   ITSModule("ITSScaledModule", "ITSScaledModule"),
   fNx(-1),
   fNz(-1),
@@ -71,18 +88,16 @@ ClassImp(ITSScaledModule)
   fNCz(-1),
   fScaleInfo(si)
 {
-  si->IncRefCount(this);
-  si->Connect("ScaleChanged(Int_t)", "Alieve::ITSScaledModule", this,"LoadQuads()");
-  si->Connect("StatTypeChanged(Int_t)", "Alieve::ITSScaledModule", this,"SetQuadValues()");
   SetOwnIds(kTRUE);
 
   SetDigitsInfo(info);
-  SetID(gid);
+  SetID(gid); 
+  fScaleInfo->IncRefCount(this);
 }
 
 ITSScaledModule::~ITSScaledModule()
 {
-  fScaleInfo->DecRefCount();
+  fScaleInfo->DecRefCount(this);
 }
 
 /**************************************************************************/
@@ -289,29 +304,87 @@ void ITSScaledModule::LoadQuads()
 
 void ITSScaledModule::SetQuadValues()
 {
-  Int_t N = fPlex.Size();
+  if(fScaleInfo->GetSyncPalette()) SyncPalette();
+
+  Int_t N = fPlex.Size(); 
   for (Int_t i = 0 ; i< N; i++)
   {
     ScaledDigit* sd = dynamic_cast<ScaledDigit*>(GetId(i));
     Int_t v = 0;
-    switch(fScaleInfo->GetStatType()) {
-      case DigitScaleInfo::ST_Occup:   v = sd->N;   break;
-      case DigitScaleInfo::ST_Average: v = Int_t(sd->sum/(1.* sd->N)); break;
-      case DigitScaleInfo::ST_Rms:     v = Int_t(TMath::Sqrt(sd->sqr_sum)/(1.*sd->N)); break;    
+    switch(fScaleInfo->GetStatType())
+    {
+      using namespace TMath;
+
+      case DigitScaleInfo::ST_Occup:
+	v = Nint((100.0*sd->N) / (fNCx*fNCz));
+	break;
+      case DigitScaleInfo::ST_Average:
+	v = Nint((Double_t) sd->sum / sd->N);
+	break;
+      case DigitScaleInfo::ST_Rms:
+	v = Nint(Sqrt(sd->sqr_sum) / sd->N);
+	break;
     }
-    QuadBase* qb = GetQuad(i);
+    DigitBase* qb = GetDigit(i);
     qb->fValue = v;
   }
 }
 
 /**************************************************************************/
 
-void  ITSScaledModule::QuadSelected(Int_t idx)
+void ITSScaledModule::SyncPalette()
+{  
+  // printf("ITSScaledModule::SyncPalette()\n");
+  if(fScaleInfo->GetStatType() == DigitScaleInfo::ST_Occup) 
+  {
+    // SPD
+    ITSModule::fgSPDPalette->SetLimits(0, 100);
+    ITSModule::fgSPDPalette->SetMinMax(0, 100);
+    
+    // SDD
+    ITSModule::fgSDDPalette->SetLimits(0, 100);
+    ITSModule::fgSDDPalette->SetMinMax(0, 100);
+
+    // SSD
+    ITSModule::fgSSDPalette->SetLimits(0, 100);
+    ITSModule::fgSDDPalette->SetMinMax(0, 100);
+  }
+  else
+  {
+    Alieve::ITSDigitsInfo& DI = *fInfo;
+    // SPD
+    ITSModule::fgSPDPalette->SetLimits(0, DI.fSPDHighLim);
+    ITSModule::fgSPDPalette->SetMinMax(DI.fSPDMinVal, DI.fSPDMaxVal);
+    
+    // SDD
+    ITSModule::fgSDDPalette->SetLimits(0, DI.fSDDHighLim);
+    ITSModule::fgSDDPalette->SetMinMax(DI.fSDDMinVal, DI.fSDDMaxVal);
+
+    // SSD
+    ITSModule::fgSSDPalette->SetLimits(0, DI.fSSDHighLim);
+    ITSModule::fgSSDPalette->SetMinMax(DI.fSSDMinVal, DI.fSSDMaxVal);
+  }
+
+  fScaleInfo->SetSyncPalette(kFALSE);
+}
+
+/**************************************************************************/
+
+void ITSScaledModule::GetScaleData(Int_t& cnx, Int_t& cnz, Int_t& total)
+{
+  cnx =fNx;
+  cnz =fNz;
+  total = cnx*cnz;
+}
+
+/**************************************************************************/
+
+void  ITSScaledModule::DigitSelected(Int_t idx)
 {
   // Override control-click from QuadSet
-  printf("ITSScaledModule::QuadSelected "); Print();
+  printf("ITSScaledModule::DigitSelected "); Print();
 
-  QuadBase* qb  = GetQuad(idx);
+  DigitBase* qb  = GetDigit(idx);
   TObject* obj  = qb->fId.GetObject();
   ScaledDigit* sd = dynamic_cast<ScaledDigit*>(obj);
   TClonesArray *digits = fInfo->GetDigits(fID, fDetID);

@@ -16,12 +16,11 @@ class NLTPolygonSetEditor : public TGedFrame
 protected:
   NLTPolygonSet* fPS; // fModel dynamic-casted to NLTPolygonSetEditor
 
-  TGColorSelect       *fFillColor;      // fill color widget
+  // TGColorSelect       *fFillColor;      // fill color widget
   
   TGNumberEntry       *fLineWidth;
   TGColorSelect       *fLineColor;      // fill color widget
 
-  TGNumberEntry       *fZDepth;
 public:
   NLTPolygonSetEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
 		   UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -29,12 +28,10 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  virtual void DoFillColor(Pixel_t color);
+  //virtual void DoFillColor(Pixel_t color);
 
   virtual void DoLineWidth();
   virtual void DoLineColor(Pixel_t color);
-
-  virtual void DoZDepth();
 
   ClassDef(NLTPolygonSetEditor, 0); // Editor for NLTPolygonSet
 }; // endclass  NLTPolygonSetEditor

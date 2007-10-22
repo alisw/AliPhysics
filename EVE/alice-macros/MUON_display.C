@@ -97,7 +97,7 @@ void MUON_display(Bool_t fromRaw = kFALSE, Bool_t showTracks = kTRUE)
     
     mucha->SetDataSource(g_muon_data);
 
-    gReve->AddRenderElement(l,mucha);
+    gReve->AddRenderElement(mucha, l);
 
   }
 
@@ -165,7 +165,7 @@ void MUON_tracks() {
 
     track->MakeMUONTrack(mt);
 
-    gReve->AddRenderElement(lt, track);
+    gReve->AddRenderElement(track, lt);
 
   }
 
@@ -218,7 +218,7 @@ void MUON_trigger_tracks() {
 
     track->MakeMUONTriggerTrack(mt);
 
-    gReve->AddRenderElement(lt, track);
+    gReve->AddRenderElement(track, lt);
 
   }
 
@@ -250,7 +250,7 @@ void MUON_ESD_tracks() {
 
     track->MakeESDTrack(mt);
 
-    gReve->AddRenderElement(lt, track);
+    gReve->AddRenderElement(track, lt);
 
   }
 
@@ -282,7 +282,7 @@ void MUON_Ref_tracks() {
 
     track->MakeRefTrack(trackRef);
 
-    gReve->AddRenderElement(lt, track);
+    gReve->AddRenderElement(track, lt);
 
   }
 
@@ -328,7 +328,7 @@ void MUON_MC_tracks() {
 
     track->MakeMCTrack(part);
 
-    gReve->AddRenderElement(lt, track);
+    gReve->AddRenderElement(track, lt);
 
   }
 

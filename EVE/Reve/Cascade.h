@@ -338,7 +338,7 @@ inline Float_t Cascade::GetBachPseudoRapidity() const {
 *
 ************************************************************************/
 
-class CascadeList : public TNamed, public RenderElement
+class CascadeList : public RenderElementList
 {
   CascadeList(const CascadeList&);            // Not implemented
   CascadeList& operator=(const CascadeList&); // Not implemented
@@ -386,8 +386,6 @@ public:
   virtual Bool_t CanEditMainColor()  { return kTRUE; }
 
   virtual void Paint(Option_t* option="");
-
-  virtual void AddElement(RenderElement* el);
 
   void  SetRnrStyle(TrackRnrStyle* rst) { fRnrStyle= rst; }
   TrackRnrStyle* GetRnrStyle()          { return fRnrStyle; } 

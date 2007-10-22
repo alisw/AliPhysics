@@ -1,5 +1,25 @@
+#ifdef __CINT__
 
-Reve::PointSet* tpc_clusters(RenderElement* cont=0, Float_t maxR=270)
+namespace Reve
+{
+class RenderElement;
+class PointSet;
+}
+
+#else
+
+#include <Reve/Reve.h>
+#include <Reve/ReveManager.h>
+#include <Reve/PointSet.h>
+#include <Alieve/EventAlieve.h>
+
+#include <AliRunLoader.h>
+#include <AliCluster.h>
+#include <TPC/AliTPCClustersRow.h>
+
+#endif
+
+Reve::PointSet* tpc_clusters(Reve::RenderElement* cont=0, Float_t maxR=270)
 {
   const Int_t kMaxCl=100*160;
 
@@ -16,7 +36,7 @@ Reve::PointSet* tpc_clusters(RenderElement* cont=0, Float_t maxR=270)
   clrow->SetArray(kMaxCl);
 
   TTree *cTree = rl->GetTreeR("TPC", false);
-  TBranch *branch=cTree->SetBranchAddress("Segment",&clrow);
+  cTree->SetBranchAddress("Segment", &clrow);
 
   Float_t maxRsqr = maxR*maxR;
   TClonesArray *cl=clrow->GetArray(); 
@@ -61,7 +81,7 @@ Reve::PointSet* tpc_clusters(RenderElement* cont=0, Float_t maxR=270)
   clusters->SetTitle(tip);
 
   using namespace Reve;
-  gReve->AddRenderElement(clusters);
+  gReve->AddRenderElement(clusters, cont);
   gReve->Redraw3D();
 
   return clusters;

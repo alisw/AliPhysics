@@ -19,6 +19,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   Reve::PointSet* points = new Reve::PointSet(form);
 
   TPointSelector ps(ht, points, varexp, selection);
+  // ps.SetSubIdExp("fTrack:fStatus");
   ps.Select();
 
   if(points->Size() == 0 && gReve->GetKeepEmptyCont() == kFALSE) {
@@ -33,10 +34,7 @@ its_hits(const char *varexp    = "fX:fY:fZ",
   points->SetMarkerSize(.5);
   points->SetMarkerColor((Color_t)2);
 
-  if(cont)
-    gReve->AddRenderElement(cont, points);
-  else 
-    gReve->AddRenderElement(points);
+  gReve->AddRenderElement(points, cont);
   gReve->Redraw3D();
 
   return points;

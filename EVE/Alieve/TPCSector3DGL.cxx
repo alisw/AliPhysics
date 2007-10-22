@@ -5,8 +5,9 @@
 
 #include <Reve/BoxSetGL.h>
 
-#include <TGLRnrCtx.h>
 #include <TGLIncludes.h>
+#include <TGLRnrCtx.h>
+#include <TGLSelectRecord.h>
 
 using namespace Reve;
 using namespace Alieve;
@@ -28,6 +29,21 @@ TPCSector3DGL::TPCSector3DGL() :
 TPCSector3DGL::~TPCSector3DGL()
 {
   delete fBoxRnr;
+}
+
+/**************************************************************************/
+
+//______________________________________________________________________________
+Short_t TPCSector3DGL::QuantizeShapeLOD(Short_t shapeLOD, Short_t combiLOD) const
+{
+   // Factor in scene/viewer LOD and quantize.
+
+   Int_t lod = ((Int_t)shapeLOD * (Int_t)combiLOD) / 100;
+
+   if (lod >= 100)
+     return 100;
+   else
+     return (Short_t)(10 * TMath::Nint(0.1*lod));
 }
 
 /**************************************************************************/
@@ -61,16 +77,22 @@ void TPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
     fRTS = fSector->fRTS;
   }  
 
+  if (rnrCtx.SecSelection()) glPushName(0);
+
   Bool_t hasData = (fSector->GetSectorData() != 0);
 
   if(hasData)
+  {
+    if (rnrCtx.SecSelection()) glLoadName(9999);
     fBoxRnr->Render(rnrCtx);
+  }
 
   glPushAttrib(GL_CURRENT_BIT | GL_POINT_BIT | GL_ENABLE_BIT);
   glDisable(GL_LIGHTING);
   UChar_t col[4];
 
-  if(hasData && fSector->fPointSetOn) {
+  if(hasData && fSector->fPointSetOn)
+  {
     glEnable(GL_BLEND);
     glEnable(GL_POINT_SMOOTH);
     glPointSize(fSector->fPointSize);
@@ -79,12 +101,15 @@ void TPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
     glEnableClientState(GL_VERTEX_ARRAY);
 
     const Reve::PointSetArray& psa = fSector->fPointSetArray;
-    for(Int_t b=0; b<psa.GetNBins(); ++b) {
+    for(Int_t b=0; b<psa.GetNBins(); ++b)
+    {
       Reve::PointSet* ps = psa.GetBin(b);
-      if(ps->Size() > 0) {
+      if(ps->Size() > 0)
+      {
 	ColorFromIdx(ps->GetMarkerColor(), col);
 	glColor4ubv(col);
 
+        if (rnrCtx.SecSelection()) glLoadName(b + 1);
 	glVertexPointer(3, GL_FLOAT, 0, ps->GetP());
 	glDrawArrays(GL_POINTS, 0, ps->Size());
       }
@@ -93,7 +118,8 @@ void TPCSector3DGL::DirectDraw(TGLRnrCtx & rnrCtx) const
     glPopClientAttrib();
   }
 
-  if(fSector->fRnrFrame) {
+  if(fSector->fRnrFrame && ! rnrCtx.SecSelection())
+  {
     ColorFromIdx(fSector->fFrameColor, col);
     glColor4ubv(col);
 
@@ -133,4 +159,32 @@ void TPCSector3DGL::DrawSegmentFrame(const TPCSectorData::SegmentInfo& s,
   glVertex3f(-xh, yh, zl);  glVertex3f(-xh, yh, zh);
   glVertex3f(-xl, yl, zl);  glVertex3f(-xl, yl, zh);
   glEnd();
+}
+
+/**************************************************************************/
+/**************************************************************************/
+
+//______________________________________________________________________________
+void TPCSector3DGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
+{
+  // Processes secondary selection from TGLViewer.
+  // Calls TPointSet3D::PointSelected(Int_t) with index of selected
+  // point as an argument.
+
+  if (rec.GetN() < 3) return;
+
+  if (rec.GetItem(1) == 9999)
+  {
+    printf("TPC3D Box selected idx=%u\n", rec.GetItem(2));
+    return;
+  }
+
+  const Reve::PointSetArray& psa = fSector->fPointSetArray;
+
+  if (rec.GetItem(1) > 0 && rec.GetItem(1) <= (UInt_t) psa.GetNBins())
+  {
+    // Reve::PointSet& ps = * psa.GetBin(rec.GetItem(1) - 1);
+    printf("TPC3D Point selected, bin=%u, idx=%u\n", rec.GetItem(1) - 1, rec.GetItem(2));
+    return;
+  }
 }

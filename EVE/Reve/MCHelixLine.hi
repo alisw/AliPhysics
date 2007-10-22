@@ -2,6 +2,7 @@
 #define REVE_MCHelixLine_H
 
 #include <Reve/Track.h>
+#include <cassert>
 #include <vector>
 
 namespace Reve {
@@ -9,6 +10,29 @@ namespace Reve {
 struct MCVertex
 {
   Float_t x,y,z,t;
+
+  MCVertex() : x(0), y(0), z(0), t(0) {}
+  MCVertex(Float_t _x, Float_t _y, Float_t _z, Float_t _t=0) :
+    x(_x), y(_y), z(_z), t(_t) {}
+
+  Float_t Mag()  const { return TMath::Sqrt(x*x+y*y+z*z);}
+  Float_t Mag2() const { return x*x+y*y+z*z;}
+
+  Float_t Perp()  const { return TMath::Sqrt(x*x+y*y);}
+  Float_t Perp2() const { return x*x+y*y;}
+  Float_t R()     const { return Perp(); }
+
+  MCVertex operator + (const MCVertex & b)
+  { return MCVertex(x + b.x, y + b.y, z + b.z, t + b.t); }
+
+  MCVertex operator - (const MCVertex & b)
+  { return MCVertex(x - b.x, y - b.y, z - b.z, t - b.t); }
+
+  MCVertex operator * (Float_t a)
+  { return MCVertex(a*x, a*y, a*z, a*t); }
+
+  MCVertex& operator +=(const MCVertex & b)
+  { x += b.x; y += b.y; z += b.z; t += b.t; return *this; }
 };
 
 
@@ -66,18 +90,20 @@ struct MCHelix : public MCStruct
 
   void Init(Float_t pT, Float_t pZ)
   {
-    fN = 0;
+    fN    = 0;
     crosR = false;
-    x_off = 0; y_off = 0;
-    fLam = pZ/pT;
-    fR   = pT/fA;
+    x_off = 0;
+    y_off = 0;
+    fLam  = pZ/pT;
+    fR    = pT/fA;
 
-    fPhiStep = fRnrMod->fMinAng *TMath::Pi()/180;
-    if(fRnrMod->fDelta < TMath::Abs(fR)){
+    fPhiStep = fRnrMod->fMinAng * TMath::DegToRad();
+    if (fRnrMod->fDelta < TMath::Abs(fR))
+    {
       Float_t ang  = 2*TMath::ACos(1 - fRnrMod->fDelta/TMath::Abs(fR));
       if (ang < fPhiStep) fPhiStep = ang; 
     }
-    if(fA<0) fPhiStep = -fPhiStep;
+    if (fA < 0) fPhiStep = -fPhiStep;
 
     // printf("MCHelix::init (%f/%f) labda %f time step %e phi step %f \n", pT, pZ,fLam,  fTimeStep,fPhiStep);
     fTimeStep = TMath::Abs(fR*fPhiStep)*TMath::Sqrt(1+fLam*fLam)/fVelocity;
@@ -99,10 +125,11 @@ struct MCHelix : public MCStruct
       nz = (-fRnrMod->fMaxZ - fV.z)/(fLam*TMath::Abs(fR*fPhiStep));
     }
     //  printf("steps in helix line %d nz   %f vz %f\n", NMax, nz, fV.z);
-    if (nz < NMax) NMax = Int_t(nz);
+    if (nz < NMax) NMax = Int_t(nz + 1);
     
     // check steps if circles intersect
-    if(TMath::Sqrt(fV.x*fV.x+fV.y*fV.y) < fRnrMod->fMaxR + TMath::Abs(fR)) {
+    if(TMath::Sqrt(fV.x*fV.x+fV.y*fV.y) < fRnrMod->fMaxR + TMath::Abs(fR))
+    {
       crosR = true;
     }
     // printf("end steps in helix line %d \n", NMax);
@@ -116,8 +143,8 @@ struct MCHelix : public MCStruct
     fV.y += (py*sin + px*(1 - cos))/fA + y_off;
     fV.z += fLam*TMath::Abs(fR*fPhiStep);
     fPoints->push_back(fV);
-    Float_t px_t = px*cos - py*sin ;
-    Float_t py_t = py*cos + px*sin ;
+    Float_t px_t = px*cos - py*sin;
+    Float_t py_t = py*cos + px*sin;
     px = px_t;
     py = py_t;
     ++fN;
@@ -129,6 +156,7 @@ struct MCHelix : public MCStruct
   {
     Float_t p0x = px, p0y = py;
     Float_t zs = fLam*TMath::Abs(fR*fPhiStep);
+    Float_t maxrsq  = fRnrMod->fMaxR * fRnrMod->fMaxR;
     Float_t fnsteps = (ez - fV.z)/zs;
     Int_t   nsteps  = Int_t((ez - fV.z)/zs);
     Float_t sinf = TMath::Sin(fnsteps*fPhiStep);
@@ -147,10 +175,12 @@ struct MCHelix : public MCStruct
           xforw  = fV.x + (px*sin - py*(1 - cos))/fA + x_off;
           yforw =  fV.y + (py*sin + px*(1 - cos))/fA + y_off;
           zforw =  fV.z + fLam*TMath::Abs(fR*fPhiStep);
-          if ((xforw*xforw+yforw*yforw > fRnrMod->fMaxR*fRnrMod->fMaxR) ||(TMath::Abs(zforw) > fRnrMod->fMaxZ) ) {
+          if (xforw*xforw+yforw*yforw > maxrsq   ||
+              TMath::Abs(zforw) > fRnrMod->fMaxZ)
+          {
             return false;
           }
-          Step(px,py,pz);
+          Step(px, py, pz);
 	  if (fN > NMax)
 	    break;
         }
@@ -163,17 +193,17 @@ struct MCHelix : public MCStruct
     }
       
     { // fix momentum in the remaining part
-      Float_t cosr =  TMath::Cos((fnsteps-nsteps)*fPhiStep); 
-      Float_t sinr =  TMath::Sin((fnsteps-nsteps)*fPhiStep); 
-      Float_t px_t = px*cosr - py*sinr ;
-      Float_t py_t = py*cosr + px*sinr ;
+      Float_t cosr = TMath::Cos((fnsteps-nsteps)*fPhiStep); 
+      Float_t sinr = TMath::Sin((fnsteps-nsteps)*fPhiStep); 
+      Float_t px_t = px*cosr - py*sinr;
+      Float_t py_t = py*cosr + px*sinr;
       px = px_t;
       py = py_t;
     }
     { // calculate direction of faked px,py
       Float_t pxf = (p0x*cosf - p0y*sinf)/TMath::Abs(fA) + x_off/fPhiStep;
       Float_t pyf = (p0y*cosf + p0x*sinf)/TMath::Abs(fA) + y_off/fPhiStep;
-      Float_t fac = TMath::Sqrt(p0x*p0x + p0y*p0y)/TMath::Sqrt(pxf*pxf + pyf*pyf);
+      Float_t fac = TMath::Sqrt((p0x*p0x + p0y*p0y) / (pxf*pxf + pyf*pyf));
       px = fac*pxf;
       py = fac*pyf;
     }
@@ -186,18 +216,32 @@ struct MCHelix : public MCStruct
     SetBounds();
     if (NMax > 0)
     {
-      // printf("NMAx MC helix  loop_to_bounds\n");
-      Float_t xforw,yforw,zforw;
+      // printf("NMax MC helix  loop_to_bounds\n");
+      MCVertex forw;
+      Float_t maxrsq = fRnrMod->fMaxR * fRnrMod->fMaxR;
       while (fN < NMax)
       {
-        xforw = fV.x + (px*sin - py*(1 - cos))/fA + x_off;
-        yforw = fV.y + (py*sin + px*(1 - cos))/fA + y_off;
-        zforw = fV.z + fLam*TMath::Abs(fR*fPhiStep);
+        forw.x = fV.x + (px*sin - py*(1 - cos))/fA + x_off;
+        forw.y = fV.y + (py*sin + px*(1 - cos))/fA + y_off;
+        forw.z = fV.z + fLam*TMath::Abs(fR*fPhiStep);
+        forw.t = fV.t + fTimeStep;
 	
-        if ((crosR && (xforw*xforw+yforw*yforw > fRnrMod->fMaxR*fRnrMod->fMaxR)) ||(TMath::Abs(zforw) > fRnrMod->fMaxZ)) {
+        if (crosR && forw.Perp2() > maxrsq)
+        {
+          Float_t t = (fRnrMod->fMaxR - fV.R()) / (forw.R() - fV.R());
+          assert(t >= 0 && t <= 1);
+          fPoints->push_back(fV + (forw-fV)*t);
           return false;
         }
-        Step(px,py,pz);
+        if (TMath::Abs(forw.z) > fRnrMod->fMaxZ)
+        {
+          Float_t t = (fRnrMod->fMaxZ - TMath::Abs(fV.z)) / TMath::Abs((forw.z - fV.z));
+          assert(t >= 0 && t <= 1);
+          fPoints->push_back(fV + (forw-fV)*t);
+          return false;
+        }
+
+        Step(px, py, pz);
       }
       return true;
     }

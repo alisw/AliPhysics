@@ -28,7 +28,7 @@ void geom_vzero()
   }
   re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
   re->UseNodeTrans();
-  gReve->AddGlobalRenderElement(list, re);
+  gReve->AddGlobalRenderElement(re, list);
 
   node = mnode->GetVolume()->FindNode("V0LE_1");
   if (!node) {
@@ -37,7 +37,7 @@ void geom_vzero()
   }
   re = new Reve::GeoTopNodeRnrEl(gGeoManager, node);
   re->UseNodeTrans();
-  gReve->AddGlobalRenderElement(list, re);
+  gReve->AddGlobalRenderElement(re, list);
 
   gReve->Redraw3D();
 }

@@ -67,7 +67,10 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSPDFrameBox = new FrameBox();
     fgSPDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSPDFrameBox->SetFrameColor((Color_t) 31);
+    fgSPDFrameBox->SetFrameFill(kTRUE);
+    fgSPDFrameBox->IncRefCount();
     fgSPDPalette  = new RGBAPalette(info->fSPDMinVal,info->fSPDMaxVal);
+    fgSPDPalette->IncRefCount();
   }
 
   {
@@ -77,8 +80,11 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSDDFrameBox = new FrameBox();
     fgSDDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSDDFrameBox->SetFrameColor((Color_t) 32);
+    fgSDDFrameBox->SetFrameFill(kTRUE);
+    fgSDDFrameBox->IncRefCount();
     fgSDDPalette  = new RGBAPalette(info->fSDDMinVal,info->fSDDMaxVal);
-    fgSDDPalette->SetLimits(0, 512); // Set proper ADC range.
+    fgSDDPalette->SetLimits(0, info->fSDDHighLim); // Set proper ADC range.
+    fgSDDPalette->IncRefCount();
   }
 
   {
@@ -88,8 +94,11 @@ void ITSModule::InitStatics(ITSDigitsInfo* info)
     fgSSDFrameBox = new FrameBox();
     fgSSDFrameBox->SetAAQuadXZ(-dx, 0, -dz, 2*dx, 2*dz);
     fgSSDFrameBox->SetFrameColor((Color_t) 33);
+    fgSSDFrameBox->SetFrameFill(kTRUE);
+    fgSSDFrameBox->IncRefCount();
     fgSSDPalette  = new RGBAPalette(info->fSSDMinVal,info->fSSDMaxVal);
-    fgSSDPalette->SetLimits(0, 1024); // Set proper ADC range.
+    fgSSDPalette->SetLimits(0, info->fSSDHighLim); // Set proper ADC range.
+    fgSSDPalette->IncRefCount();
   }
 
 }
@@ -359,11 +368,11 @@ void ITSModule::SetTrans()
 
 /**************************************************************************/
 
-void ITSModule::QuadSelected(Int_t idx)
+void ITSModule::DigitSelected(Int_t idx)
 {
   // Override control-click from QuadSet
 
-  QuadBase* qb   = GetQuad(idx);
+  DigitBase* qb   = GetDigit(idx);
   TObject* obj   = qb->fId.GetObject();
   AliITSdigit* d = dynamic_cast<AliITSdigit*>(obj);
   printf("ITSModule::QuadSelected "); Print();

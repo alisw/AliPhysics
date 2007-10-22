@@ -26,6 +26,9 @@ TGeoShapeExtract::TGeoShapeExtract(const Text_t* n, const Text_t* t) :
   mShape       (0),
   mElements    (0)
 {
+  memset(mTrans, 0, sizeof(mTrans));
+  mTrans[0] = mTrans[5] = mTrans[10] = mTrans[15] = 1;
+  mRGBA [0] = mRGBA [1] = mRGBA [2]  = mRGBA [3]  = 1;
 }
 
 TGeoShapeExtract::~TGeoShapeExtract()
@@ -39,6 +42,14 @@ TGeoShapeExtract::~TGeoShapeExtract()
 Bool_t TGeoShapeExtract::HasElements()
 {
   return mElements != 0 && mElements->GetSize() > 0;
+}
+
+void TGeoShapeExtract::AddElement(TGeoShapeExtract* gse)
+{
+  if (mElements == 0)
+    mElements = new TList;
+
+  mElements->Add(gse);
 }
 
 /**************************************************************************/

@@ -1,14 +1,301 @@
+2007-10-22  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Merged EVE-dev-after-merge to EVE-dev into HEAD.
+	Moved tag EVE-dev-after-merge to current EVE-dev.
+
+2007-10-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	Merged EVE-head-after-merge to HEAD into EVE-dev.
+	Moved tag EVE-head-after-merge to current HEAD.
+
+	EVE-dev
+
+	* alice-macros/MUON_display.C:
+	* alice-macros/acorde_hits.C:
+	* alice-macros/geom_acorde.C:
+	* binalieve.pkg:
+	Merge from EVE-head-after-merge to HEAD.
+
+	* alice-macros/its_hits.C:
+	Added example line for usage of per-point integer ids.
+
+	* icons/pointset.xpm:
+	Changed icon.
+
+2007-10-05  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/esd_Cascade.C:
+	* alice-macros/esd_V0.C:
+	* alice-macros/its_clusters.C:
+	* alice-macros/tpc_clusters.C:
+	* macros/reve_sa_init.C:
+	* test-macros/tpc_gui.C:
+	* test-macros/tpc_gui_hack.C:
+	Renamed class RGTopFrame to ReveManager.
+
+2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/tpc_calib_viewer.C:
+	New macro (with Marian): start an embedded TPC calibration viewer.
+
 2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/acorde_hits.C:
 	* alice-macros/geom_acorde.C:
 	New files from Eleazar: geometry and hits for ACORDE.
 
+2007-10-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/tpc_digits.C:
+	Name sectors by sector-id when creating full A/C side plates.
+
+2007-10-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* test-macros/tpc_gui.C:
+	Enable setting of default parameters matching the standard real
+	TPC data.
+	Remove some obsolete framework calls.
+
+2007-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/pmd_digits.C:
+	Optionally add background polygons.
+
 2007-09-24  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/MUON_display.C:
 	From Bogdan: modifications for the new structure of the data in
 	the MUON code.
+
+2007-08-31  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/kine_tracks.C:
+	Add missing namespace qualifier.
+
+	* icons/pointset.xpm:
+	* icons/scene.xpm:
+	* icons/track.xpm:
+	* icons/viewer.xpm:
+	New files: icons for list tree.
+
+2007-08-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/primary_vertex.C:
+	Generalize creation of primary vertex ellipse.
+
+2007-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/geom_gentle.C:
+	Add missing namespace qualifier.
+
+	* macros/alieve_init.C:
+	Remove std namespace qualifiers disliked by the new cint.
+
+	* alice-macros/NLT_trackcount_init.C:
+	* macros/trackcount_init.C:
+	Reuse its/tpc_cluster.C.so.
+	Do not load event in alieve_init (first event was loaded twice).
+
+2007-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/its_clusters.C:
+	* alice-macros/tpc_clusters.C:
+	Allow on-the-fly compilation.
+
+	* alice-macros/NLT_trackcount_init.C:
+	Put in sync with the rest of the world.
+
+2007-08-29  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_test.C:
+        Fix wrong condition before import event to NLTProjector.
+
+	* alice-macros/primary_vertex.C:
+	Present the primary-vertex as a cross and three ellipses by using
+	the StraightLineSet primitive.
+
+2007-08-29  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* macros/trackcount_init.C:
+	Call alieve_init before trackcount_init. Problems in loading macros with std::list.
+	
+	* alice-macros/NLT_trackcount_init.C:
+        New macro: trackcount in non-linear projections.
+	
+	* alice-macros/esd_tracks.C:
+	Set marker and line attributes as defined in parent TrackList.
+	
+	* alice-macros/geom_gentle.C:
+	Return pointer of imported geometry.
+
+2007-08-28  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/its_module_stepper.C:
+	Remove configuration of GridStepper. Default already done in
+	ITSModuleStepper constructor.
+
+2007-08-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/tpc_digits.C:
+	Run in full 2D mode by default.
+
+2007-08-24  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_test.C:
+	Enable rendering of NLTProjector to get scale info.
+
+2007-08-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_test.C:
+	* alice-macros/clusters_from_index.C:
+	* alice-macros/clusters_from_label.C:
+	* alice-macros/hits_from_label.C:
+	* alice-macros/its_clusters.C:
+	* alice-macros/phos_clusters.C:
+	* alice-macros/tpc_clusters.C:
+	* alice-macros/tpc_hits.C:
+	* alice-macros/trd_hits.C:
+	Argument types must be fully quantified with latest cint: added
+	'Reve::' where needed.
+
+	* macros/alieve_init.C:
+	Changes for browser-topframe reorganization.
+
+2007-08-22  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_geo_demo.C:
+	Remove obsolete demo.
+
+2007-08-21  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_demo.C:
+	Remove file: replaced by NLT_test.C.
+	
+	* alice-macros/NLT_test.C:
+	Put current camera in orthographic XY projection. Disable drawing of
+	NLTProjector.
+
+2007-08-20  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_test.C:
+	Create special scene for projected event and add it to the default
+	gl viewer.
+
+2007-08-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_demo.C:
+	* alice-macros/NLT_geo_demo.C:
+	Update for changes in Reve.
+
+	* alice-macros/NLT_test.C:
+	New file, mini test macro for automatic import of projected
+	elements.
+
+2007-08-18  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/esd_V0.C:
+	* alice-macros/esd_tracks.C:
+	* alice-macros/kine_tracks.C:
+	* alice-macros/primary_vertex_tracks.C:
+	Remove Track::MakeMarkers(). Rendering of fist vertices done in
+	TrackGL::DirectDraw(). Set line color of tracks same as container color.
+
+2007-08-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/MUON_display.C:
+	* alice-macros/NLT_geo_demo.C:
+	* alice-macros/clusters_from_label.C:
+	* alice-macros/emcal_digits.C:
+	* alice-macros/emcal_hits.C:
+	* alice-macros/esd_Cascade.C:
+	* alice-macros/esd_V0.C:
+	* alice-macros/esd_tracks.C:
+	* alice-macros/geom_fmd.C:
+	* alice-macros/geom_hmpid.C:
+	* alice-macros/geom_phos.C:
+	* alice-macros/geom_t0.C:
+	* alice-macros/geom_vzero.C:
+	* alice-macros/its_digits.C:
+	* alice-macros/its_hits.C:
+	* alice-macros/its_raw.C:
+	* alice-macros/kine_tracks.C:
+	* alice-macros/pmd_digits.C:
+	* alice-macros/pmd_raw.C:
+	* alice-macros/primary_vertex_tracks.C:
+	* alice-macros/tof_digits.C:
+	* alice-macros/tof_digits_sector.C:
+	* alice-macros/tof_digits_strips.C:
+	* alice-macros/tof_hits.C:
+	* alice-macros/tpc_digits.C:
+	* alice-macros/tpc_hits.C:
+	* alice-macros/trd_hits.C:
+	* macros/reve_quad_test.C:
+	Consistent ordering of arguments to AddRenderElement(),
+	AddGlobalRenderElement() and RemoveRenderElement().
+
+2007-08-10  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* Alieve/.SKEL-gedsubed.cxx:
+	* Alieve/.SKEL-gedsubed.h:
+	* Reve/.SKEL-gedsubed.cxx:
+	* Reve/.SKEL-gedsubed.h:
+	* reve-genclass.pl:
+	Generate class skeletons for ged sub-editors.
+
+2007-08-09  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* alice-macros/NLT_demo.C:
+	* alice-macros/NLT_geo_demo.C:
+	Add projection of gentle_geo.root geometry.
+
+	* alice-macros/its_module_stepper.C:
+	Display only one ITSModuleStepper. 
 
 2007-08-08  Matevz Tadel  <matevz.tadel@cern.ch>
 

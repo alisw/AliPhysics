@@ -62,15 +62,37 @@ void StraightLineSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
   StraightLineSet& mL = * fM;
 
   glPushAttrib(GL_POINT_BIT | GL_LINE_BIT | GL_ENABLE_BIT);
-  GLUtilNS::GL_Capability_Switch lights_off(GL_LIGHTING, false);
- 
-  if(mL.fRnrLines && mL.fLinePlex.Size() > 0)
-  {
-    UChar_t color[4];
-    ColorFromIdx(mL.GetMainColor(), color);
-    glColor4ubv(color);
 
-    VoidCPlex::iterator li(mL.fLinePlex);
+  // lines
+  GLUtilNS::GL_Capability_Switch lights_off(GL_LIGHTING, false);
+  if(mL.GetRnrLines() && mL.GetLinePlex().Size() > 0)
+  {
+    glDisable(GL_LIGHTING);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
+    UChar_t color[4];
+    Reve::ColorFromIdx(mL.GetLineColor(), color);
+    glColor4ubv(color);  
+    glLineWidth(mL.GetLineWidth());
+    if (mL.GetLineStyle() > 1) {
+      Int_t    fac = 1;
+      UShort_t pat = 0xffff;
+      switch (mL.GetLineStyle()) {
+	case 2:  pat = 0x3333; break;
+	case 3:  pat = 0x5555; break;
+	case 4:  pat = 0xf040; break;
+	case 5:  pat = 0xf4f4; break;
+	case 6:  pat = 0xf111; break;
+	case 7:  pat = 0xf0f0; break;
+	case 8:  pat = 0xff11; break;
+	case 9:  pat = 0x3fff; break;
+	case 10: pat = 0x08ff; fac = 2; break;
+      }
+      glLineStipple(1, pat);
+      glEnable(GL_LINE_STIPPLE);
+    }
+
+    VoidCPlex::iterator li(mL.GetLinePlex());
     if(rnrCtx.SecSelection()) 
     {  
       GLuint name = 0;
@@ -103,35 +125,33 @@ void StraightLineSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
       glEnd();
     }
   }
+  glPopAttrib();
+ 
 
-  if(mL.fRnrMarkers && mL.fMarkerPlex.Size() > 0)
+  // markers
+  if(mL.GetRnrMarkers() && mL.GetMarkerPlex().Size() > 0)
   {
-    UChar_t color[4];
-    ColorFromIdx(mL.GetMarkerColor(), color);
-    glColor4ubv(color);
-
-    VoidCPlex::iterator mi(mL.fMarkerPlex);
-    Float_t* pnts = new Float_t[mL.fMarkerPlex.Size()*3];
+    VoidCPlex::iterator mi(mL.GetMarkerPlex());
+    Float_t* pnts = new Float_t[mL.GetMarkerPlex().Size()*3];
     Float_t* pnt  = pnts;
     Int_t lidx = -1; 
     while (mi.next()) 
     {
       StraightLineSet::Marker& m = * (StraightLineSet::Marker*) mi();
       lidx = m.fLineID;
-      StraightLineSet::Line& l = * (StraightLineSet::Line*) mL.fLinePlex.Atom(lidx);
+      StraightLineSet::Line& l = * (StraightLineSet::Line*) mL.GetLinePlex().Atom(lidx);
       pnt[0] = l.fV1[0] + (l.fV2[0] - l.fV1[0])*m.fPos;
       pnt[1] = l.fV1[1] + (l.fV2[1] - l.fV1[1])*m.fPos;
       pnt[2] = l.fV1[2] + (l.fV2[2] - l.fV1[2])*m.fPos;;
       pnt   += 3;
     }
     if(rnrCtx.SecSelection()) glPushName(2);
-    GLUtilNS::RenderPolyMarkers((TAttMarker&)mL, pnts, mL.fMarkerPlex.Size(),
+    GLUtilNS::RenderPolyMarkers((TAttMarker&)mL, pnts, mL.GetMarkerPlex().Size(),
 				rnrCtx.Selection(), rnrCtx.SecSelection());
     if(rnrCtx.SecSelection()) glPopName();
     delete [] pnts;
   }
 
-  glPopAttrib();
 }
 
 /**************************************************************************/
@@ -146,7 +166,7 @@ void StraightLineSetGL::ProcessSelection(TGLRnrCtx       & /*rnrCtx*/,
   }
   else 
   {
-    StraightLineSet::Marker& m = * (StraightLineSet::Marker*) fM->fMarkerPlex.Atom(rec.GetItem(2));
+    StraightLineSet::Marker& m = * (StraightLineSet::Marker*) fM->GetMarkerPlex().Atom(rec.GetItem(2));
     printf("Selected point %d on line %d\n", rec.GetItem(2), m.fLineID);
   }
 }

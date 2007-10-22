@@ -34,6 +34,8 @@ public:
   Int_t GetPickMode() const     { return fPickMode; }
   void  SetPickMode(Int_t mode) { fPickMode = mode; }
 
+  void MakeSector3D(); // *MENU*
+
   virtual void ComputeBBox();
 
   virtual void PadSelected(Int_t row, Int_t pad);

@@ -27,13 +27,5 @@ Line::Line(const Text_t* name, Int_t n_points, TreeVarType_e tv_type) :
   fMainColorPtr = &fLineColor;
 }
 
-Line::Line(const Text_t* name, TTree* tree, TreeVarType_e tv_type) :
-  PointSet(name, tree, tv_type),
-  fRnrLine   (kTRUE),
-  fRnrPoints (kFALSE)
-{
-  fMainColorPtr = &fLineColor;
-}
-
 Line::~Line()
 {}

@@ -39,9 +39,9 @@ TPCSectorViz::TPCSectorViz(const Text_t* n, const Text_t* t) :
   fRnrOut2  (kTRUE),
 
   fFrameColor ((Color_t) 4),
-  fRnrFrame (kTRUE),
-  fAutoTrans(kFALSE),
-  fRTS      (1),
+  fRnrFrame   (kTRUE),
+  fAutoTrans  (kFALSE),
+  fRTS        (1),
 
   fColorArray (0)
 {}

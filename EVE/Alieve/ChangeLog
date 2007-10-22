@@ -4,6 +4,51 @@
 	From Massimo: constructor of AliITSsegmentationSDD has been
 	simplified.
 
+2007-10-16  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* MUONData.cxx:
+	* MUONData.h:
+	* TOFDigitsInfo.cxx:
+	* TOFSector.cxx:
+	* TOFSector.h:
+	* TOFStrip.cxx:
+	* TOFStrip.h:
+	* TPCData.cxx:
+	* TRDData.cxx:
+	* TRDModuleImp.cxx:
+	Merge from EVE-head-after-merge to HEAD.
+
+2007-10-05  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* EventAlieve.cxx:
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepperEditor.cxx:
+	* PMDModuleEditor.cxx:
+	* T0Module.cxx:
+	* TOFSector.cxx:
+	* TOFStrip.cxx:
+	* TPCLoader.cxx:
+	* TPCLoaderEditor.cxx:
+	* TPCSector2D.cxx:
+	* TRDLoader.cxx:
+	* TRDLoaderImp.cxx:
+	* TRDLoaderManager.cxx:
+	* TRDModule.cxx:
+	* TRDModuleImp.cxx:
+	* alieve_main/alieve_main.cxx:
+	Renamed class RGTopFrame to ReveManager.
+
+2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCSector3D.cxx:
+	Remove lines that were commented-out during last revision.
+
 2007-10-04  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* TOFDigitsInfo.cxx:
@@ -13,12 +58,212 @@
 	* TOFStrip.h:
 	From Annalisa: changes for the new TOF geometry classes.
 
+2007-10-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCSector3DGL.cxx:
+	* TPCSector3DGL.h:
+	Implement virtuals from TGLLogicalShape for level-of-detail
+	calculation / management.
+
+2007-10-03  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCLoader.cxx:
+	Add calls to ElementChanged() for all displayed sectors after
+	loading a new event.
+
+	* TPCSectorViz.cxx:
+	* TPCSectorViz.h:
+	White-space.
+
+2007-10-02  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* ITSModule.cxx:
+	* ITSModule.h:
+	* ITSScaledModule.cxx:
+	* ITSScaledModule.h:
+	* PMDModule.cxx:
+	* T0Module.cxx:
+	* T0Module.h:
+	* TOFSector.cxx:
+	* TOFSector.h:
+	Changes required by re-basing of QuadSet to DigitSet.
+
+	* TPCSector3D.cxx:
+	* TPCSector3DGL.cxx:
+	* TPCSector3DGL.h:
+	Use axis-aligned box-set for speed/memory optimization.
+	Support secondary-selection for boxes.
+
+	* TRDData.cxx:
+	Comment-out unused code requiring obsolete features of BoxSet.
+
 2007-09-24  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* MUONData.cxx:
 	* MUONData.h:
 	From Bogdan: modifications for the new structure of the data in
 	the MUON code.
+
+2007-09-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* EventAlieve.cxx:
+	* EventAlieve.h:
+	Event-navigation commands are now virtual in the base-class.
+	Moved new-event-commands list and method to Reve::EventBase.
+
+2007-08-30  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* EventAlieve.cxx:
+	Added comment about brutality of event-data destruction.
+
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	Subclass from RenderElementList and use fChildClass instead of
+	overriding AddElement to enforce child-class.
+
+	* TPCLoader.cxx:
+	* TPCLoader.h:
+	Update to new convention of RemoveElement.
+
+2007-08-28  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* ITSModule.cxx:
+        In InitStatics add missing reference on global palettes.
+
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	* ITSModuleStepperEditor.cxx:
+	* ITSModuleStepperEditor.h:
+	Enable dynamic setting of Reve::GridStepper cell size and number
+	of rows.
+
+	* LinkDef.h:
+        Register new class ITSModuleStepperEditor.
+
+	* ITSScaledModule.cxx:
+	* ITSScaledModule.h:
+	Replace roots gui Signal/Slot mechanism by using structure of
+	Reve::ReferenceBackPtr.
+
+2007-08-28  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* .SKEL-gedsubed.cxx:
+	* ITSScaledModuleEditor.cxx:
+	* PMDModuleEditor.cxx:
+
+2007-08-28  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* PMDModule.cxx:
+	Request a filled frame.
+
+2007-08-27  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* ITSDigitsInfo.cxx:
+	* ITSDigitsInfo.h:
+        Fix theta range ITSModuleSelection. Add default values values for
+	low and high values in sub-detectors. 
+
+	* ITSModule.cxx:
+	Initialize low and high values reading ITSDigitsInfo.
+
+	* ITSModuleStepper.cxx:
+	* ITSScaledModule.cxx:
+	* ITSScaledModule.h:
+	Synchronize palette according to scale and statistic type.
+
+	* ITSScaledModuleEditor.cxx:
+	* ITSScaledModuleEditor.h:
+	Do not use sub-editor mechanism. Add widgets directly in TGedFrame.
+
+	* LinkDef.h:
+        Unregister obsolete class ITSSDSubEditor.
+
+	* PMDModuleEditor.cxx:
+	* PMDModuleEditor.h:
+	Use QuadSetEditor Info tab.
+
+2007-08-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCSector2D.cxx:
+	* TPCSector2D.h:
+	Added menu-function MakeSector3D().
+	Removed obsolete ifdefed code.
+
+2007-08-27  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* ITSModule.cxx:
+	Request filled frame for all standard frame-boxes.
+
+	* ITSModuleStepper.cxx:
+	Shift origin of grid-stepper instead of shifting each individual
+	module.
+
+2007-08-26  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	Use RenderElement::ElementChanged() to signal redraw requests.
+	Reorder function declarations and function code to make source
+	easier to read.
+
+2007-08-24  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCLoaderEditor.cxx:
+	* TRDLoader.cxx:
+	Use gReve->GetMainWindow() to obtain main window for file-dialog.
+
+2007-08-13  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	EVE-dev
+
+	* TPCLoader.cxx:
+	* TRDLoader.cxx:
+	* TRDLoaderManager.cxx:
+	Consistent ordering of arguments to AddRenderElement(),
+	AddGlobalRenderElement() and RemoveRenderElement().
+
+2007-08-09  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	EVE-dev
+
+	* ITSDigitsInfo.cxx:
+	Fix offset by one bug in GetModuleIDs().
+	
+	* ITSModuleStepper.cxx:
+	* ITSModuleStepper.h:
+	ITSModuleStepper is an TGLOverlayElement. ITSModuleStepperGL
+	functionality moved here.
+	
+	* LinkDef.h:
+	* ITSModuleStepperGL.cxx:
+	* ITSModuleStepperGL.h:
+	Remove files.
 
 2007-08-06  Matevz Tadel  <matevz.tadel@cern.ch>
 

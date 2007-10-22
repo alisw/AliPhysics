@@ -27,7 +27,6 @@ protected:
 public:
   Line(Int_t n_points=0, TreeVarType_e tv_type=TVT_XYZ);
   Line(const Text_t* name, Int_t n_points=0, TreeVarType_e tv_type=TVT_XYZ);
-  Line(const Text_t* name, TTree* tree, TreeVarType_e tv_type=TVT_XYZ);
   virtual ~Line();
 
   virtual void SetMarkerColor(Color_t col)

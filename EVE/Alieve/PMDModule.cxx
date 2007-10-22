@@ -50,16 +50,12 @@ void PMDModule::DisplayInit(Int_t ism)
   Reve::FrameBox *pmdModBox = new FrameBox();
   pmdModBox->SetAAQuadXY(xism, yism, 0, dxism, dyism);
   pmdModBox->SetFrameColor((Color_t) 31);
-
-  Reve::RGBAPalette *pmdModPalette  = new RGBAPalette(20, 1000);
-  pmdModPalette->SetLimits(0, 1000);
+  pmdModBox->SetFrameFill(kTRUE);
+  SetFrame(pmdModBox);
 
   SetName(smodule.Data());
   SetOwnIds(kTRUE);
   Reset(Reve::QuadSet::QT_HexagonXY, kFALSE, 32);
-  
-  SetFrame(pmdModBox);
-  SetPalette(pmdModPalette);
 
   fH1 = new TH1F("fH1", smodule.Data(), 100, 0., 1000.);
   fH1->SetDirectory(0);
