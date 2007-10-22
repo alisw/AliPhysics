@@ -9,6 +9,8 @@
 #include <TGLSAViewer.h>
 #include <TGLScenePad.h>
 
+#include <TGLOrthoCamera.h> // For fixing defaults in root 5.17.4
+
 using namespace Reve;
 
 //______________________________________________________________________
@@ -37,6 +39,15 @@ void Viewer::SetGLViewer(TGLViewer* s)
   fGLViewer->SetSmartRefresh(kTRUE);
   // fGLViewer->SetResetCamerasOnUpdate(kFALSE);
   fGLViewer->SetResetCameraOnDoubleClick(kFALSE);
+
+  // Temporary fix for wrong defaults in root 5.17.04
+  fGLViewer->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+  ((TGLOrthoCamera&)(fGLViewer->CurrentCamera())).SetEnableRotate(kTRUE);
+  fGLViewer->SetCurrentCamera(TGLViewer::kCameraOrthoXOZ);
+  ((TGLOrthoCamera&)(fGLViewer->CurrentCamera())).SetEnableRotate(kTRUE);
+  fGLViewer->SetCurrentCamera(TGLViewer::kCameraOrthoZOY);
+  ((TGLOrthoCamera&)(fGLViewer->CurrentCamera())).SetEnableRotate(kTRUE);
+  fGLViewer->SetCurrentCamera(TGLViewer::kCameraPerspXOZ);
 }
 
 void Viewer::SpawnGLViewer(const TGWindow* parent, TGedEditor* ged)
