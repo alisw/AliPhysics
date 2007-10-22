@@ -138,7 +138,6 @@
 #include "AliGenEventHeader.h"
 #include "AliMC.h"
 #include "AliHLTSimulation.h"
-#include "AliQA.h"
 #include "AliQADataMakerSteer.h"
 
 ClassImp(AliSimulation)
@@ -536,9 +535,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
   }
 
-//QA
-	AliQADataMakerSteer qas ; 
-	qas.Run(AliQA::kHITS);
+  //QA
+  if (!RunQA("ALL", AliQA::kHITS))
+	if (fStopOnError) 
+		return kFALSE ;   	
 
   // Set run number in CDBManager (if it is not already set in RunSimulation)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
@@ -555,17 +555,20 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   // hits -> summable digits
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
+  //QA
+    RunQA(fMakeSDigits, AliQA::kSDIGITS) ;   
   }
   
-  //QA
-	qas.Reset() ; 
-  	qas.Run(AliQA::kSDIGITS);
 
   // summable digits -> digits
   if (!fMakeDigits.IsNull()) {
     if (!RunDigitization(fMakeDigits, fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
     }
+    //QA
+    if (!RunQA(fMakeDigits, AliQA::kDIGITS) )   	
+		if (fStopOnError) 
+			return kFALSE ;   	
   }
 
   // hits -> digits
@@ -579,11 +582,12 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (!RunHitsDigitization(fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
     }
+	//QA
+	if( !RunQA(fMakeDigitsFromHits, AliQA::kDIGITS) )   	
+		if (fStopOnError) 
+			return kFALSE ;   	
+
   }
-  
-  //QA
-	qas.Reset() ; 
-	qas.Run(AliQA::kDIGITS);
 
   // digits -> trigger
   if (!RunTrigger(fMakeTrigger)) {
@@ -1457,3 +1461,14 @@ Bool_t AliSimulation::RunHLT()
 
   return iResult>=0?kTRUE:kFALSE;
 }
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::RunQA(const char* detectors, AliQA::TASKINDEX task)
+{
+// run the QA on summable digits pr digits
+
+	  AliQADataMakerSteer qas ; 
+	  qas.Reset() ; 
+	  return qas.Run(task);	
+}
+

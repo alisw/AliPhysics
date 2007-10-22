@@ -297,7 +297,6 @@ void AliQADataMakerSteer::Reset()
 		}
 	}
 
-	fRunLoader      = NULL ;
 	delete fRawReader ;
 	fRawReader      = NULL ;
 
@@ -332,7 +331,7 @@ Bool_t AliQADataMakerSteer::Run(const AliQA::TASKINDEX taskIndex, const  char * 
 		// loop over detectors
 		TObjArray* detArray = fRunLoader->GetAliRun()->Detectors() ;
 		for (UInt_t iDet = 0 ; iDet < fgkNDetectors ; iDet++) {
-			AliModule* det = static_cast<AliModule*>(detArray->At(iDet)) ;
+			AliModule* det = static_cast<AliModule*>(detArray->FindObject(AliQA::GetDetName(iDet))) ;
 			if (!det || !det->IsActive()) 
 				continue;
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;

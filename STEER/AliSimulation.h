@@ -15,6 +15,7 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <TObjArray.h>
+#include "AliQA.h"
 
 class AliCDBId;
 class AliCDBParam;
@@ -102,6 +103,7 @@ public:
   Int_t       GetDetIndex(const char * detector);
   const Int_t GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void        SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+  Bool_t      RunQA(const char* detectors, AliQA::TASKINDEX task) ;
 
 private:
   AliRunLoader*  LoadRun(const char* mode = "UPDATE") const;
