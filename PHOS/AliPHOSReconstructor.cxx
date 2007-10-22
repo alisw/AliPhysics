@@ -258,11 +258,8 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
 
     //Primaries
     Int_t  primMult  = 0;
-    Int_t *primInts =  emcRP->GetPrimaries(primMult);
-    Short_t *primList = new Short_t[primMult];
-    for (Int_t ipr=0; ipr<primMult; ipr++) 
-      primList[ipr] = (Short_t)(primInts[ipr]);	 
-    
+    Int_t *primList =  emcRP->GetPrimaries(primMult);
+        
     // fills the ESDCaloCluster
  
     ec->SetClusterType(AliESDCaloCluster::kPHOSCluster);
@@ -289,7 +286,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
   
     //Array of MC indeces
-    TArrayS arrayPrim(primMult,primList);
+    TArrayI arrayPrim(primMult,primList);
     ec->AddLabels(arrayPrim);
 
     //Array of tracks uncomment when available in future

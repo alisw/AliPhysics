@@ -259,11 +259,7 @@ void AliEMCALReconstructor::FillESD(TTree* /*digitsTree*/, TTree* clustersTree,
 
       //Primaries
       Int_t  parentMult  = 0;
-      Int_t *parentInts =  clust->GetParents(parentMult);
-      TArrayS parentList(parentMult);
-      for (Int_t ipr=0; ipr<parentMult; ipr++) 
-	parentList[ipr] = (Short_t)(parentInts[ipr]);	 
-      
+      Int_t *parentList =  clust->GetParents(parentMult); 
     
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
@@ -282,11 +278,12 @@ void AliEMCALReconstructor::FillESD(TTree* /*digitsTree*/, TTree* clustersTree,
         ec->SetM20(elipAxis[1]*elipAxis[1]) ;
         ec->SetM11(-1) ;        //not yet implemented
 	
-       TArrayS arrayTrackMatched(1);// Only one track, temporal solution.
-       arrayTrackMatched[0]= (Short_t)(matchedTrack[iClust]);
+       TArrayI arrayTrackMatched(1);// Only one track, temporal solution.
+       arrayTrackMatched[0]= matchedTrack[iClust];
        ec->AddTracksMatched(arrayTrackMatched);
 	
-       ec->AddLabels(parentList);
+       TArrayI arrayParents(parentMult,parentList);
+       ec->AddLabels(arrayParents);
       } 
       
       // add the cluster to the esd object

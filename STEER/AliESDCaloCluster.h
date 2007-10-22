@@ -18,6 +18,7 @@
 #include <TObject.h>
 #include "AliPID.h"
 #include "TArrayS.h"
+#include "TArrayI.h"
 
 class TLorentzVector;
 
@@ -84,14 +85,14 @@ public:
   void SetDistanceToBadChannel(Float_t dist) {fDistToBadChannel=dist;}
   Double_t GetDistanceToBadChannel() const {return fDistToBadChannel;}
 
-  void AddTracksMatched(TArrayS & array)  { fTracksMatched   = new TArrayS(array) ; }
-  void AddLabels(TArrayS & array)         { fLabels = new TArrayS(array) ; }
+  void AddTracksMatched(TArrayI & array)  { fTracksMatched   = new TArrayI(array) ; }
+  void AddLabels(TArrayI & array)         { fLabels = new TArrayI(array) ; }
   void AddDigitAmplitude(TArrayS & array) { fDigitAmplitude   = new TArrayS(array) ; }
   void AddDigitTime(TArrayS & array)      { fDigitTime = new TArrayS(array) ; }
   void AddDigitIndex(TArrayS & array)     { fDigitIndex   = new TArrayS(array) ; }
 
-  TArrayS * GetTracksMatched() const  {return  fTracksMatched;}
-  TArrayS * GetLabels() const         {return  fLabels;}
+  TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
+  TArrayI * GetLabels() const         {return  fLabels;}
   TArrayS * GetDigitAmplitude() const {return  fDigitAmplitude;}
   TArrayS * GetDigitTime() const      {return  fDigitTime;}
   TArrayS * GetDigitIndex() const     {return  fDigitIndex;}
@@ -119,8 +120,8 @@ public:
 
 protected:
 
-  TArrayS * fTracksMatched; //Index of tracks close to cluster. First entry is the most likely match.
-  TArrayS * fLabels;   //list of primaries that generated the cluster, ordered in deposited energy.
+  TArrayI * fTracksMatched; //Index of tracks close to cluster. First entry is the most likely match.
+  TArrayI * fLabels;   //list of primaries that generated the cluster, ordered in deposited energy.
   TArrayS * fDigitAmplitude;   //digit energy (integer units) 
   TArrayS * fDigitTime;        //time of this digit (integer units) 
   TArrayS * fDigitIndex;       //calorimeter digit index 
@@ -140,7 +141,7 @@ protected:
   UChar_t  fNExMax ;          // number of (Ex-)maxima before unfolding  
   Char_t  fClusterType;      // Flag for different cluster type/versions
 
-  ClassDef(AliESDCaloCluster,5)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,6)  //ESDCaloCluster 
 };
 
 #endif 

@@ -59,8 +59,8 @@ AliESDCaloCluster::AliESDCaloCluster() :
 //_______________________________________________________________________
 AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) : 
   TObject(clus),
-  fTracksMatched(clus.fTracksMatched?new TArrayS(*clus.fTracksMatched):0x0),
-  fLabels(clus.fLabels?new TArrayS(*clus.fLabels):0x0),
+  fTracksMatched(clus.fTracksMatched?new TArrayI(*clus.fTracksMatched):0x0),
+  fLabels(clus.fLabels?new TArrayI(*clus.fLabels):0x0),
   fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),
   fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),
   fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0),
@@ -112,9 +112,9 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   fID = source.fID;
 
   delete fTracksMatched;
-  fTracksMatched = source.fTracksMatched?new TArrayS(*source.fTracksMatched):0x0;
+  fTracksMatched = source.fTracksMatched?new TArrayI(*source.fTracksMatched):0x0;
   delete fLabels;
-  fLabels = source.fLabels?new TArrayS(*source.fLabels):0x0;
+  fLabels = source.fLabels?new TArrayI(*source.fLabels):0x0;
 
   delete fDigitAmplitude;
   fDigitAmplitude = source.fDigitAmplitude?new TArrayS(*source.fDigitAmplitude):0x0;
