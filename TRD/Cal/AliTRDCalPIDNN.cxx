@@ -84,6 +84,8 @@ AliTRDCalPIDNN::~AliTRDCalPIDNN()
   //
   // Destructor
   //
+
+  //if (fModel) delete fModel;
   
 }
 
@@ -151,8 +153,8 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   // find the interval in momentum and track segment length which applies for this data
   
   Int_t imom = 1;
-  while(imom<AliTRDCalPID::kNMom-1 && mom>fTrackMomentum[imom]) imom++;
-  Double_t LNN1, LNN2;
+  while (imom<AliTRDCalPID::kNMom-1 && mom>fTrackMomentum[imom]) imom++;
+  Double_t lNN1, lNN2;
   Double_t mom1 = fTrackMomentum[imom-1], mom2 = fTrackMomentum[imom];
 
   TMultiLayerPerceptron *nn = 0x0;
@@ -164,22 +166,30 @@ Double_t AliTRDCalPIDNN::GetProbability(Int_t spec, Float_t mom, Float_t *dedx
   }
 
   Double_t ddedx[AliTRDtrack::kNMLPslice];
-  for(int inode=0; inode<AliTRDtrack::kNMLPslice; inode++) ddedx[inode] = (Double_t)dedx[inode];
-  LNN1 = nn->Evaluate(spec, ddedx);
+  for (int inode=0; inode<AliTRDtrack::kNMLPslice; inode++) {
+    ddedx[inode] = (Double_t) dedx[inode]
+                 / (AliTRDcalibDB::Instance()->GetNumberOfTimeBins()/AliTRDtrack::kNMLPslice);
+  }
+  lNN1 = nn->Evaluate(spec, ddedx);
   
   if(!(nn = (TMultiLayerPerceptron*)fModel->At(GetModelID(imom, spec, iplane/*, ilength*/)))){
     //if(!(nn = (TMultiLayerPerceptron*)fModel->At(GetModelID(imom, spec, iplane/*, ilength*/)))){
     AliInfo(Form("Looking for mom(%f) plane(%d)", mom, iplane));
     AliError(Form("NN id %d not found in DB.", GetModelID(imom, spec, iplane)));
-    return LNN1;
+    return lNN1;
   }
-  
-  LNN2 = nn->Evaluate(spec, ddedx);
+  lNN2 = nn->Evaluate(spec, ddedx);
   
   // return interpolation over momentum binning
-  if(mom < fTrackMomentum[0]) return LNN1;
-  else if(mom > fTrackMomentum[AliTRDCalPID::kNMom-1]) return LNN2;
-  else return LNN1 + (LNN2 - LNN1)*(mom - mom1)/(mom2 - mom1);
+  if      (mom < fTrackMomentum[0]) {
+    return lNN1;
+  }
+  else if (mom > fTrackMomentum[AliTRDCalPID::kNMom-1]) {
+    return lNN2;
+  }
+  else {
+    return lNN1 + (lNN2 - lNN1)*(mom - mom1)/(mom2 - mom1);
+  }
   
 }
 
