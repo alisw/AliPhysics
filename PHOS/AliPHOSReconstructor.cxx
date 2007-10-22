@@ -297,7 +297,6 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     // add the track to the esd object
     esd->AddCaloCluster(ec);
     delete ec;   
-    delete [] primList;
     delete [] amplList;
     delete [] timeList;
     delete [] digiList;    
