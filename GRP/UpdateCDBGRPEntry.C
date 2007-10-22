@@ -30,68 +30,45 @@ void UpdateCDBGRPEntry() {
     metadata->SetAliRootVersion(alirootv);
   }
   
-  TList *list = GetGRPList();
+  TList *list = new TList();
+  TMap *mappp = GetGRPList("pp");
+  list->Add(mappp);
+  TMap *mappbpb = GetGRPList("PbPb");
+  list->Add(mappbpb);
+
   Printf("Storing in CDB the default values for the GRP %d parameters produced with root %s and AliRoot version %s",list->GetEntries(),rootv,alirootv);
 
   man->Put(list,id,metadata);
 }
 
 //_______________________________________//
-TList *GetGRPList() {
-  TList *list = new TList();
+TMap *GetGRPList(const char* system) {
+  TString fSystem = system;
+  TMap *map = new TMap();
+  map->SetName(system);
 
-  TMap *mapDAQ1 = new TMap();
-  mapDAQ1->Add(new TObjString("fAliceStartTime"),new TObjString("0"));
-  list->Add(mapDAQ1);
-  TMap *mapDAQ2 = new TMap();
-  mapDAQ2->Add(new TObjString("fAliceStopTime"),new TObjString("9999"));
-  list->Add(mapDAQ2);
-  TMap *mapDAQ3 = new TMap();
-  mapDAQ3->Add(new TObjString("fAliceBeamEnergy"),new TObjString("14"));
-  list->Add(mapDAQ3);
-  TMap *mapDAQ4 = new TMap();
-  mapDAQ4->Add(new TObjString("fAliceBeamType"),new TObjString("pp"));
-  list->Add(mapDAQ4);
-  TMap *mapDAQ5 = new TMap();
-  mapDAQ5->Add(new TObjString("fNumberOfDetectors"),new TObjString("15"));
-  list->Add(mapDAQ5);
-  TMap *mapDAQ6 = new TMap();
-  mapDAQ6->Add(new TObjString("fDetectorMask"),new TObjString("1048575"));
-  list->Add(mapDAQ6);
-  TMap *mapDAQ7 = new TMap();
-  mapDAQ7->Add(new TObjString("fLHCPeriod"),new TObjString("LHC07a"));
-  list->Add(mapDAQ7);
+  //DAQ
+  map->Add(new TObjString("fAliceStartTime"),new TObjString("0"));
+  map->Add(new TObjString("fAliceStopTime"),new TObjString("9999"));
+  if(fSystem == "pp")
+    map->Add(new TObjString("fAliceBeamEnergy"),new TObjString("14000"));
+  else map->Add(new TObjString("fAliceBeamEnergy"),new TObjString("5500"));
+  map->Add(new TObjString("fAliceBeamType"),new TObjString(system));
+  map->Add(new TObjString("fNumberOfDetectors"),new TObjString("15"));
+  map->Add(new TObjString("fDetectorMask"),new TObjString("1048575"));
+  map->Add(new TObjString("fLHCPeriod"),new TObjString("LHC07a"));
 
-  TMap *mapDCS1 = new TMap();
-  mapDCS1->Add(new TObjString("fLHCState"),new TObjString("test"));
-  list->Add(mapDCS1);
-  TMap *mapDCS2 = new TMap();
-  mapDCS2->Add(new TObjString("fLHCCondition"),new TObjString("test"));
-  list->Add(mapDCS2);
-  TMap *mapDCS3 = new TMap();
-  mapDCS3->Add(new TObjString("fLHCLuminosity"),new TObjString("0"));
-  list->Add(mapDCS3);
-  TMap *mapDCS4 = new TMap();
-  mapDCS4->Add(new TObjString("fBeamIntensity"),new TObjString("0"));
-  list->Add(mapDCS4);
-   TMap *mapDCS5 = new TMap();
-  mapDCS5->Add(new TObjString("fL3Current"),new TObjString("0"));
-  list->Add(mapDCS5);
-  TMap *mapDCS6 = new TMap();
-  mapDCS6->Add(new TObjString("fL3Polarity"),new TObjString("0"));
-  list->Add(mapDCS6);
-  TMap *mapDCS7 = new TMap();
-  mapDCS7->Add(new TObjString("fDipoleCurrent"),new TObjString("0"));
-  list->Add(mapDCS7);
-  TMap *mapDCS8 = new TMap();
-  mapDCS8->Add(new TObjString("fDipolePolarity"),new TObjString("0"));
-  list->Add(mapDCS8);
-  TMap *mapDCS9 = new TMap();
-  mapDCS9->Add(new TObjString("fCavernTemperature"),new TObjString("0"));
-  list->Add(mapDCS9);
-  TMap *mapDCS10 = new TMap();
-  mapDCS10->Add(new TObjString("fCavernPressure"),new TObjString("0"));
-  list->Add(mapDCS10);
+  //DCS
+  map->Add(new TObjString("fLHCState"),new TObjString("test"));
+  map->Add(new TObjString("fLHCCondition"),new TObjString("test"));
+  map->Add(new TObjString("fLHCLuminosity"),new TObjString("0"));
+  map->Add(new TObjString("fBeamIntensity"),new TObjString("0"));
+  map->Add(new TObjString("fL3Current"),new TObjString("0"));
+  map->Add(new TObjString("fL3Polarity"),new TObjString("0"));
+  map->Add(new TObjString("fDipoleCurrent"),new TObjString("0"));
+  map->Add(new TObjString("fDipolePolarity"),new TObjString("0"));
+  map->Add(new TObjString("fCavernTemperature"),new TObjString("0"));
+  map->Add(new TObjString("fCavernPressure"),new TObjString("0"));
 
-  return list;
+  return map;
 }
