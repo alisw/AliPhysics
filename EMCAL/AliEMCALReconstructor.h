@@ -58,6 +58,7 @@ public:
   
   void SetRecParam(AliEMCALRecParam * recParam){ fgkRecParam = recParam;}
 
+  void InitRecParam() const;
   static const AliEMCALRecParam* GetRecParam(){ return fgkRecParam;}
 
 private:

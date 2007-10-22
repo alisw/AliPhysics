@@ -16,8 +16,8 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//*--
-//*-- Yves Schutz (SUBATECH) 
+//--
+//-- Yves Schutz (SUBATECH) 
 // Reconstruction class. Redesigned from the old AliReconstructionner class and 
 // derived from STEER/AliReconstructor. 
 // 
@@ -38,6 +38,9 @@
 #include "AliEMCALPID.h"
 #include "AliEMCALTrigger.h"
 #include "AliRawReader.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliEMCALRecParam.h"
 // to be removed - it is here just because of geom
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -51,10 +54,6 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   : fDebug(kFALSE) 
 {
   // ctor
-  if (!fgkRecParam) {
-    AliWarning("The Reconstruction parameters for EMCAL nonitialized - Used default one");
-    fgkRecParam = new AliEMCALRecParam;
-  }
 } 
 
 //____________________________________________________________________________
@@ -72,6 +71,24 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
 } 
 
 //____________________________________________________________________________
+void AliEMCALReconstructor::InitRecParam() const
+{
+  // Check if the instance of AliEMCALRecParam exists, 
+  // if not, get it from OCDB if available, otherwise create a default one
+
+ if (!fgkRecParam  && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+      AliCDBManager::Instance()->Get("EMCAL/Config/RecParam");
+    if (entry) fgkRecParam =  (AliEMCALRecParam*) entry->GetObject();
+  }
+  
+  if(!fgkRecParam){
+    AliWarning("The Reconstruction parameters for EMCAL nonitialized - Used default one");
+    fgkRecParam = new AliEMCALRecParam;
+  }
+}
+
+//____________________________________________________________________________
 void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
 {
   // method called by AliReconstruction; 
@@ -79,7 +96,8 @@ void AliEMCALReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) 
   // segment maker needs access to the AliESD object to retrieve the tracks reconstructed by 
   // the global tracking.
   // Works on the current event.
- 
+
+  InitRecParam();
   AliEMCALClusterizerv1 clu;
   clu.SetInput(digitsTree);
   clu.SetOutput(clustersTree);
@@ -259,7 +277,7 @@ void AliEMCALReconstructor::FillESD(TTree* /*digitsTree*/, TTree* clustersTree,
 
       //Primaries
       Int_t  parentMult  = 0;
-      Int_t *parentList =  clust->GetParents(parentMult); 
+      Int_t *parentList =  clust->GetParents(parentMult);
     
       // fills the ESDCaloCluster
       AliESDCaloCluster * ec = new AliESDCaloCluster() ; 
@@ -277,12 +295,12 @@ void AliEMCALReconstructor::FillESD(TTree* /*digitsTree*/, TTree* clustersTree,
         ec->SetM02(elipAxis[0]*elipAxis[0]) ;
         ec->SetM20(elipAxis[1]*elipAxis[1]) ;
         ec->SetM11(-1) ;        //not yet implemented
-	
-       TArrayI arrayTrackMatched(1);// Only one track, temporal solution.
-       arrayTrackMatched[0]= matchedTrack[iClust];
-       ec->AddTracksMatched(arrayTrackMatched);
-	
-       TArrayI arrayParents(parentMult,parentList);
+
+       TArrayI arrayTrackMatched(1);// Only one track, temporal solution. 
+       arrayTrackMatched[0]= matchedTrack[iClust]; 
+       ec->AddTracksMatched(arrayTrackMatched); 
+         
+       TArrayI arrayParents(parentMult,parentList); 
        ec->AddLabels(arrayParents);
       } 
       
