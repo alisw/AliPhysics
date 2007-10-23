@@ -212,7 +212,7 @@ void AliPHOSQADataMaker::MakeESDs(AliESDEvent * esd)
   // make QA data from ESDs
 
   Int_t count = 0 ; 
-  for ( Int_t index = esd->GetFirstPHOSCluster(); index < esd->GetNumberOfCaloClusters() ; index++ ) {
+  for ( Int_t index = 0; index < esd->GetNumberOfCaloClusters() ; index++ ) {
 	AliESDCaloCluster * clu = esd->GetCaloCluster(index) ;
 	if ( clu->IsPHOS() ) {
 		GetESDsData(0)->Fill(clu->E()) ;
