@@ -92,10 +92,10 @@ class AliHLTOUT : public AliHLTLogging {
   public:
     /** constructor */
     AliHLTOUTLockGuard(AliHLTOUT* pInstance) : fpInstance(pInstance)
-    {if (fpInstance) fpInstance->fbLocked=1;}
+    {if (fpInstance) fpInstance->SetStatusFlag(kLocked);}
     /** destructor */
     ~AliHLTOUTLockGuard()
-    {if (fpInstance) fpInstance->fbLocked=0;}
+    {if (fpInstance) fpInstance->ClearStatusFlag(kLocked);}
 
   private:
     /** standard constructor prohibited */
@@ -133,6 +133,33 @@ class AliHLTOUT : public AliHLTLogging {
     AliHLTUInt32_t          fIndex; //!transient
   };
 
+  enum AliHLTOUTByteOrder_t {
+    /** no data block selected */
+    kInvalidByteOrder=-1,
+    kUnknownByteOrder=0,
+    kLittleEndian,
+    kBigEndian
+  };
+
+  enum AliHLTOUTDataType_t {
+    kUint64 = 0,
+    kUint32 = 1,
+    kUint16 = 2,
+    kUint8  = 3,
+    kDouble = 4,
+    kFloat  = 5
+  };
+
+  /**
+   * Check byte order of selected block
+   */
+  AliHLTOUTByteOrder_t CheckByteOrder();
+
+  /**
+   * Check alignment of selected block
+   */
+  int CheckAlignment(AliHLTOUT::AliHLTOUTDataType_t type);
+
  protected:
   /**
    * Add a block descriptor.
@@ -150,6 +177,24 @@ class AliHLTOUT : public AliHLTLogging {
   AliHLTOUT& operator=(const AliHLTOUT&);
 
   /**
+   * Internal status flags
+   */
+  enum {
+    /** the HLTOUT object is locked with the current data block */
+    kLocked = 0x1,
+    /** childs can add block descriptors */
+    kCollecting = 0x2,
+    /** user of the data block has checked the byte order */
+    kByteOrderChecked = 0x4,
+    /** warning on byte order missmatch has been printed */
+    kByteOrderWarning = 0x8,
+    /** user of the data block has checked the alignment */
+    kAlignmentChecked = 0x10,
+    /** warning on alignment missmatch has been printed */
+    kAlignmentWarning = 0x20
+  };
+
+  /**
    * Generate the index of the HLTOUT data.
    * Must be implemented by the child classes.
    */
@@ -164,14 +209,56 @@ class AliHLTOUT : public AliHLTLogging {
   virtual int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
 			    AliHLTUInt32_t& size)=0;
 
+  /**
+   * Check byte order of data block
+   */
+  virtual AliHLTOUTByteOrder_t CheckBlockByteOrder(AliHLTUInt32_t index)=0;
+
+  /**
+   * Check alignment of data block
+   */
+  virtual int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType_t type)=0;
+
+  /**
+   * Select the data block of data type and specification of the previous
+   * call to @ref SelectFirstDataBlock. Core function of @ref SelectFirstDataBlock
+   * and @ref SelectNextDataBlock, starts to find a block at the current list
+   * position. 
+   * @return identifier >=0 if success, neg. error code if failed         <br>
+   *                        -ENOENT if no block found                     <br>
+   *                        -EPERM if access denied (object locked)
+   */
+  int FindAndSelectDataBlock();
+
+  /**
+   * Set status flag.
+   * @param flag     flag to set
+   * @return current status flags
+   */
+  unsigned int SetStatusFlag(unsigned int flag) {return fFlags|=flag;}
+
+  /**
+   * Clear status flag.
+   * @param flag     flag to clear
+   * @return current status flags
+   */
+  unsigned int ClearStatusFlag(unsigned int flag) {return fFlags&=~flag;}
+
+  /**
+   * Check status flag.
+   * @param flag     flag to check
+   * @return 1 if flag is set
+   */
+  int CheckStatusFlag(unsigned int flag) const {return (fFlags&flag)==flag;}
+
   /** data type for the current block search, set from @ref SelectFirstDataBlock */
   AliHLTComponentDataType fSearchDataType; //!transient
 
   /** data specification for the current block search */
   AliHLTUInt32_t fSearchSpecification; //!transient
 
-  /** instance locked or not */
-  int fbLocked; //!transient
+  /** instance flags: locked, collecting, ... */
+  unsigned int fFlags; //!transient
 
   /** list of block descriptors */
   vector<AliHLTOUTBlockDescriptor> fBlockDescList; //!transient

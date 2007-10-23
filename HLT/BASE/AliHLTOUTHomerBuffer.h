@@ -20,7 +20,8 @@
                                                                           */
 #include "AliHLTOUT.h"
 
-class HOMERReader;
+class AliHLTHOMERReader;
+class AliHLTHOMERLibManager;
 
 /**
  * @class AliHLTOUTHomerBuffer
@@ -29,11 +30,18 @@ class HOMERReader;
 class AliHLTOUTHomerBuffer : public AliHLTOUT {
  public:
   /** constructor */
-  AliHLTOUTHomerBuffer(const AliHLTUInt8_t* pBuffer);
+  AliHLTOUTHomerBuffer(const AliHLTUInt8_t* pBuffer, int size);
   /** destructor */
   virtual ~AliHLTOUTHomerBuffer();
 
  protected:
+  /**
+   * Step trough data blocks of a HOMER reader and generate index.
+   */
+  int ScanReader(AliHLTHOMERReader* pReader, AliHLTUInt32_t majorIndex=0);
+
+  /** dynamic loader manager for HOMER library */
+  AliHLTHOMERLibManager* fpManager; //!transient
 
  private:
   /** standard constructor prohibited */
@@ -57,11 +65,24 @@ class AliHLTOUTHomerBuffer : public AliHLTOUT {
   virtual int GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t* &pBuffer, 
 			    AliHLTUInt32_t& size);
 
+  /**
+   * Check byte order of data block
+   */
+  virtual AliHLTOUTByteOrder_t CheckBlockByteOrder(AliHLTUInt32_t index);
+
+  /**
+   * Check alignment of data block
+   */
+  virtual int CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::AliHLTOUTDataType_t type);
+
   /** data buffer */
   const AliHLTUInt8_t* fpBuffer; //! transient
 
+  /** size of data buffer */
+  int fSize; //! transient
+
   /** instance of the HOMER reader */
-  HOMERReader* fpReader;  //!transient
+  AliHLTHOMERReader* fpReader;  //!transient
 
   ClassDef(AliHLTOUTHomerBuffer, 0)
 };

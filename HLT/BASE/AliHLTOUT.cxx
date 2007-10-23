@@ -37,7 +37,7 @@ AliHLTOUT::AliHLTOUT()
   :
   fSearchDataType(kAliHLTVoidDataType),
   fSearchSpecification(kAliHLTVoidDataSpec),
-  fbLocked(0),
+  fFlags(0),
   fBlockDescList(),
   fCurrent(fBlockDescList.begin()),
   fpBuffer(NULL)
@@ -63,23 +63,46 @@ int AliHLTOUT::GetNofDataBlocks()
 int AliHLTOUT::SelectFirstDataBlock(AliHLTComponentDataType dt, AliHLTUInt32_t spec)
 {
   // see header file for class documentation
-  if (fbLocked) return -EPERM;
+  if (CheckStatusFlag(kLocked)) return -EPERM;
   fCurrent=fBlockDescList.begin();
   fSearchDataType=dt;
   fSearchSpecification=spec;
-  return SelectNextDataBlock();
+  return FindAndSelectDataBlock();
 }
 
 int AliHLTOUT::SelectNextDataBlock()
 {
   // see header file for class documentation
-  if (fbLocked) return -EPERM;
+  if (CheckStatusFlag(kLocked)) return -EPERM;
+  fCurrent++;
+  return FindAndSelectDataBlock();
+}
+
+int AliHLTOUT::FindAndSelectDataBlock()
+{
+  // see header file for class documentation
+  if (CheckStatusFlag(kLocked)) return -EPERM;
   int iResult=-ENOENT;
   while (fCurrent!=fBlockDescList.end() && iResult==-ENOENT) {
     if ((fSearchDataType==kAliHLTAnyDataType || (*fCurrent)==fSearchDataType) &&
 	fSearchSpecification==kAliHLTVoidDataSpec || (*fCurrent)==fSearchSpecification) {
       iResult=0;
+      // TODO: check the byte order on the current system and the byte order of the
+      // data block, print warning when missmatch and user did not check
+      AliHLTOUTByteOrder_t blockBO=CheckByteOrder();
+      /*
+	if (blockBO!=fByteOrder) {
+	SetStatusFlag(kByteOrderWarning);
+
+	}
+       */
+      ClearStatusFlag(kByteOrderChecked);
+
+      // TODO: check the alignment on the current system and the alignment of the
+      // data block, print warning when missmatch and user did not check
+      ClearStatusFlag(kAlignmentChecked);
     }
+    fCurrent++;
   }
   return iResult;
 }
@@ -125,8 +148,28 @@ int AliHLTOUT::ReleaseDataBuffer(const AliHLTUInt8_t* pBuffer)
 int AliHLTOUT::AddBlockDescriptor(const AliHLTOUTBlockDescriptor desc)
 {
   // see header file for class documentation
-  if (!fbLocked) return -EPERM;
+  if (!CheckStatusFlag(kCollecting)) return -EPERM;
   int iResult=0;
   fBlockDescList.push_back(desc);
   return iResult;  
+}
+
+AliHLTOUT::AliHLTOUTByteOrder_t AliHLTOUT::CheckByteOrder()
+{
+  if (fCurrent!=fBlockDescList.end()) {
+    SetStatusFlag(kByteOrderChecked);
+    AliHLTOUT::AliHLTOUTByteOrder_t order=CheckBlockByteOrder((*fCurrent).GetIndex());
+    return order;
+  }
+  return kInvalidByteOrder;
+}
+
+int AliHLTOUT::CheckAlignment(AliHLTOUT::AliHLTOUTDataType_t type)
+{
+  if (fCurrent!=fBlockDescList.end()) {
+    SetStatusFlag(kAlignmentChecked);
+    int alignment=CheckBlockAlignment((*fCurrent).GetIndex(), type);
+    return alignment;
+  }
+  return -ENOENT;
 }
