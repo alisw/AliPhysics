@@ -110,7 +110,7 @@ class AliTRDdigitizer : public AliDigitizer {
     
   virtual Bool_t   Init();
 
-  ClassDef(AliTRDdigitizer,14)              //  Produces TRD-Digits
+  ClassDef(AliTRDdigitizer,15)              //  Produces TRD-Digits
 
 };
 
