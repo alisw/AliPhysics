@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2007/06/24 20:53:11  hristov
+New generator for the krypton runs of TPC (Marek)
+
 */ 
 
 //
@@ -71,12 +74,13 @@ void AliGenKrypton::Generate(){
   //
   for(Int_t i=0;i<nelectron;i++){
     rnd=gRandom->Rndm();
-    phi=TMath::TwoPi()*rnd;    
-    ptot=TMath::Sqrt(eelectron[i]*(eelectron[i]+2.*me));
-    p[0]=ptot*TMath::Cos(phi);
-    p[1]=ptot*TMath::Sin(phi);
+    phi=TMath::TwoPi()*rnd; 
     rnd=gRandom->Rndm();
-    p[2]=ptot*TMath::Cos(TMath::Pi()*rnd);
+    Double_t theta = TMath::Pi()*rnd;   
+    ptot=TMath::Sqrt(eelectron[i]*(eelectron[i]+2.*me));
+    p[0]=ptot*TMath::Cos(phi)*TMath::Sin(theta);
+    p[1]=ptot*TMath::Sin(phi)*TMath::Sin(theta);    
+    p[2]=ptot*TMath::Cos(theta);
     //
     // her push particle
     //
