@@ -119,14 +119,16 @@ void AliTRDv1::AddAlignableVolumes() const
   TString volPath;
   TString symName;
 
-  TString vpStr  = "ALIC_1/B077_1/BSEGMO";
-  TString vpApp1 = "_1/BTRD";
-  TString vpApp2 = "_1";
-  TString vpApp3 = "/UTR1_1/UTS1_1/UTI1_1/UT";
+  TString vpStr   = "ALIC_1/B077_1/BSEGMO";
+  TString vpApp1  = "_1/BTRD";
+  TString vpApp2  = "_1";
+  TString vpApp3a = "/UTR1_1/UTS1_1/UTI1_1/UT";
+  TString vpApp3b = "/UTR2_1/UTS2_1/UTI2_1/UT";
+  TString vpApp3c = "/UTR3_1/UTS3_1/UTI3_1/UT";
 
-  TString snStr  = "TRD/sm";
-  TString snApp1 = "/st";
-  TString snApp2 = "/pl";
+  TString snStr   = "TRD/sm";
+  TString snApp1  = "/st";
+  TString snApp2  = "/pl";
 
   //
   // The super modules
@@ -169,7 +171,22 @@ void AliTRDv1::AddAlignableVolumes() const
         volPath += vpApp1;
         volPath += isect;
         volPath += vpApp2;
-        volPath += vpApp3;
+        switch (isect) {
+        case 13:
+        case 14:
+        case 15:
+          if (icham == 2) {
+            continue;
+	  }
+          volPath += vpApp3c;
+          break;
+        case 11:
+        case 12:
+          volPath += vpApp3b;
+          break;
+        default:
+          volPath += vpApp3a;
+	};
         volPath += Form("%02d",idet);
         volPath += vpApp2;
 
@@ -189,6 +206,7 @@ void AliTRDv1::AddAlignableVolumes() const
 	  if (!gGeoManager->cd(path)) {
 	    AliFatal(Form("Volume path %s not valid!",path));
 	  }
+  	  // Is this correct still????
 	  TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
 	  Double_t sectorAngle = 20.0 * (isect % 18) + 10.0;
 	  TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
