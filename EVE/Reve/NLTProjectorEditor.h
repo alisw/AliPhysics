@@ -6,6 +6,7 @@
 #include <TGedFrame.h>
 
 class TGComboBox;
+class TGCheckButton;
 class TGNumberEntry;
 class TGColorSelect;
 
@@ -28,9 +29,16 @@ protected:
   RGValuator    *fFixedRadius;
   RGValuator    *fCurrentDepth;
 
+  TGVerticalFrame *fCenterFrame;
+  TGCheckButton   *fDrawCenter;
+  TGCheckButton   *fDrawOrigin;
+  RGValuator      *fCenterX;
+  RGValuator      *fCenterY;
+  RGValuator      *fCenterZ;
+
   // axis
   TGColorSelect *fAxisColor;
-  TGComboBox    *fSIMode; 
+  TGComboBox    *fSIMode;
   TGNumberEntry *fSILevel;
 
 public:
@@ -45,8 +53,11 @@ public:
 
   void DoType(Int_t type);
   void DoDistortion();
-  void DoFixedRadius();  
+  void DoFixedRadius();
   void DoCurrentDepth();
+  void DoDrawCenter();
+  void DoDrawOrigin();
+  void DoCenter();
 
   ClassDef(NLTProjectorEditor, 0); // Editor for NLTProjector
 }; // endclass NLTProjectorEditor

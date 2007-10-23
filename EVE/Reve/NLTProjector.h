@@ -5,10 +5,10 @@
 #include <TAttBBox.h>
 
 #include <Reve/RenderElement.h>
+#include <Reve/PODs.h>
 
 namespace Reve {
 
-class Vector;
 
 /**************************************************************************/
 //  NLTProjections
@@ -17,20 +17,29 @@ class Vector;
 class NLTProjection
 {
 public:
-  enum PType_e { PT_Unknown, PT_CFishEye, PT_RhoZ }; // , PT_RhoPhi}; 
+  enum PType_e   { PT_Unknown, PT_CFishEye, PT_RhoZ };  
+  enum PProc_e  { PP_Plane, PP_Distort, PP_Full };
+  enum GeoMode_e { GM_Unknown, GM_Polygons, GM_Segments };  
 
 protected:
   PType_e             fType;
+  GeoMode_e           fGeoMode;
   const char*         fName;
+
+  Vector              fCenter;
+  Vector              fProjectedZero;
+  Vector              fZeroPosVal;
+
   Float_t             fDistortion; // sensible values from 0 to 0.01
   Float_t             fFixedRadius;
   Float_t             fScale;
- 
+  
 public:
-  NLTProjection() : fType(PT_Unknown), fName(0), fDistortion(0), fFixedRadius(300), fScale(1.0f) {}
-  virtual   ~NLTProjection() {}
+  NLTProjection(Vector& center);
+  virtual ~NLTProjection(){}
 
-  virtual   void      ProjectPoint(Float_t&, Float_t&, Float_t&){}
+  // virtual   void      ProjectPoint(Float_t&, Float_t&, Float_t&, PProc_e p = PP_Full ){p =p;}
+  virtual   void      ProjectPoint(Float_t&, Float_t&, Float_t&, PProc_e p = PP_Full ) = 0;
   virtual   void      ProjectPointFv(Float_t* v){ ProjectPoint(v[0], v[1], v[2]); }
   virtual   void      ProjectVector(Vector& v);
   virtual   Vector*   Project(Vector* pnts, Int_t npnts, Bool_t create_new = kTRUE);
@@ -38,8 +47,15 @@ public:
   const     char*     GetName(){return fName;}
   void                SetName(const char* txt){ fName = txt; }
 
+  virtual void        SetCenter(Vector& v){ fCenter = v; }
+  virtual Float_t*    GetProjectedCenter() { return fCenter.c_vec(); }
+
   void                SetType(PType_e t){fType = t;}
   PType_e             GetType(){return fType;}
+
+  void                SetGeoMode(GeoMode_e m){fGeoMode = m;}
+  GeoMode_e           GetGeoMode(){return fGeoMode;}
+
   void                SetDistortion(Float_t d);
   Float_t             GetDistortion(){return fDistortion;}
   void                SetFixedRadius(Float_t x){fFixedRadius = x;}
@@ -59,24 +75,29 @@ public:
 
 class RhoZ: public NLTProjection
 {
+private:
+  Float_t  fCenterR;
+  Vector   fProjectedCenter;
 public:
-  RhoZ() : NLTProjection() { fType = PT_RhoZ; fName="RhoZ";}
+  RhoZ(Vector& center) : NLTProjection(center), fCenterR(0) { fType = PT_RhoZ; fName="RhoZ"; }
   virtual ~RhoZ() {}
 
   virtual   Bool_t    AcceptSegment(Vector& v1, Vector& v2, Float_t tolerance); 
-  virtual   void      ProjectPoint(Float_t& x, Float_t& y, Float_t& z);
+  virtual   void      ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e proc = PP_Full);
   virtual   void      SetDirectionalVector(Int_t screenAxis, Vector& vec);
 
+  virtual   void      SetCenter(Vector& center); 
+  virtual Float_t*    GetProjectedCenter() { return fProjectedCenter.c_vec(); }
   ClassDef(RhoZ, 0);
 };
 
 class CircularFishEye : public NLTProjection
 {
 public:
-  CircularFishEye():NLTProjection() { fType = PT_CFishEye; fName="CircularFishEye"; }
+  CircularFishEye(Vector& center):NLTProjection(center) { fType = PT_CFishEye; fGeoMode = GM_Polygons; fName="CircularFishEye"; }
   virtual ~CircularFishEye() {}
 
-  virtual   void      ProjectPoint(Float_t& x, Float_t& y, Float_t& z); 
+  virtual   void      ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e proc = PP_Full); 
 
   ClassDef(CircularFishEye, 0);
 };
@@ -93,6 +114,10 @@ private:
   NLTProjector& operator=(const NLTProjector&); // Not implemented
   
   NLTProjection*  fProjection;
+
+  Bool_t          fDrawCenter;
+  Bool_t          fDrawOrigin;
+  Vector          fCenter;
 
   Int_t           fSplitInfoMode;
   Int_t           fSplitInfoLevel;
@@ -121,6 +146,15 @@ public:
 
   void            SetCurrentDepth(Float_t d) { fCurrentDepth = d;      }
   Float_t         GetCurrentDepth()    const { return fCurrentDepth;   }
+
+  void            SetCenter(Float_t x, Float_t y, Float_t z);
+  Vector&         GetCenter(){return fCenter;}
+
+  void            SetDrawCenter(Bool_t x){ fDrawCenter = x; }
+  Bool_t          GetDrawCenter(){ return fDrawCenter; }
+
+  void            SetDrawOrigin(Bool_t x){ fDrawOrigin = x; }
+  Bool_t          GetDrawOrigin(){ return fDrawOrigin; }
 
   virtual Bool_t  HandleElementPaste(RenderElement* el);
 

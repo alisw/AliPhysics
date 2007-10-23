@@ -19,7 +19,7 @@ namespace {
 
     Seg(Int_t i1=-1, Int_t i2=-1):v1(i1), v2(i2){};
   };
-  typedef std::list<Seg>::iterator It_t;    
+  typedef std::list<Seg>::iterator It_t;
 }
 
 
@@ -32,7 +32,8 @@ NLTPolygonSet::NLTPolygonSet(const Text_t* n, const Text_t* t) :
   fBuff(0),
   fIdxMap(0),
 
-  fEps(0.05),
+  fSurf(0),
+
   fNPnts(0),
   fPnts(0),
 
@@ -60,23 +61,25 @@ void NLTPolygonSet::ClearPolygonSet()
     p =  (*i).fPnts; delete [] p;
   }
   fPols.clear();
-  
-  // delete reduced points  
+
+  // delete reduced points
   delete [] fPnts; fPnts = 0; fNPnts = 0;
+  fSurf = 0;
 }
 
 /**************************************************************************/
 void NLTPolygonSet::SetProjection(NLTProjector* proj, NLTProjectable* model)
 {
   NLTProjected::SetProjection(proj, model);
-  GeoShapeRnrEl* gsre = dynamic_cast<GeoShapeRnrEl*>(model);
+  GeoRnrEl* gre = dynamic_cast<GeoRnrEl*>(model);
 
-  fBuff = gsre->MakeBuffer3D();
+  fBuff = gre->MakeBuffer3D();
   if(fBuff)
   {
-    SetMainColor(gsre->GetColor());
-    SetLineColor((Color_t)TColor::GetColorBright(gsre->GetColor()));
-    SetMainTransparency(gsre->GetMainTransparency());
+    Color_t color = gre->GetMainColor();
+    SetMainColor(color);
+    SetLineColor((Color_t)TColor::GetColorBright(color));
+    SetMainTransparency(gre->GetMainTransparency());
   }
 }
 
@@ -98,7 +101,7 @@ Bool_t NLTPolygonSet::IsFirstIdxHead(Int_t s0, Int_t s1)
   Int_t v3 = fBuff->fSegs[3*s1 + 2];
   if(v0 != v2 && v0 != v3 )
     return kTRUE;
-  else 
+  else
     return kFALSE;
 }
 
@@ -106,27 +109,27 @@ Bool_t NLTPolygonSet::IsFirstIdxHead(Int_t s0, Int_t s1)
 void NLTPolygonSet::ProjectAndReducePoints()
 {
   NLTProjection* projection = fProjector->GetProjection();
-  
+
   Int_t N = fBuff->NbPnts();
   Vector*  pnts  = new Vector[N];
-  for(Int_t i = 0; i<N; i++) 
+  for(Int_t i = 0; i<N; i++)
+  {
     pnts[i].Set(fBuff->fPnts[3*i],fBuff->fPnts[3*i+1], fBuff->fPnts[3*i+2]);
-  projection->Project(pnts, N, kFALSE);
-
-  fIdxMap   = new Int_t[N];  
+    projection->ProjectPoint(pnts[i].x, pnts[i].y, pnts[i].z, NLTProjection::PP_Plane);
+  }
+  fIdxMap   = new Int_t[N];
   Int_t* ra = new Int_t[N];  // list of reduced vertices
-
   for(UInt_t v = 0; v < (UInt_t)N; ++v)
   {
     fIdxMap[v] = -1;
-    for(Int_t k = 0; k < fNPnts; ++k) 
+    for(Int_t k = 0; k < fNPnts; ++k)
     {
-      if(pnts[v].SquareDistance(pnts[ra[k]]) < fEps*fEps)
+      if(pnts[v].SquareDistance(pnts[ra[k]]) < NLTProjection::fgEps*NLTProjection::fgEps)
       {
-	fIdxMap[v] = k; 
+	fIdxMap[v] = k;
 	break;
       }
-    } 
+    }
     // have not found a point inside epsilon, add new point in scaled array
     if(fIdxMap[v] == -1)
     {
@@ -136,44 +139,45 @@ void NLTPolygonSet::ProjectAndReducePoints()
     }
     // printf("(%f, %f) vertex map %d -> %d \n", pnts[v*2], pnts[v*2 + 1], v, fIdxMap[v]);
   }
-  
+
   // create an array of scaled points
   fPnts = new Vector[fNPnts];
-  for(Int_t i = 0; i < fNPnts; ++i)
-    fPnts[i].Set(pnts[ra[i]].x,  pnts[ra[i]].y, fDepth);
-  
-  delete [] ra;  
+  for(Int_t idx = 0; idx < fNPnts; ++idx)
+  {
+    Int_t i = ra[idx];
+    projection->ProjectPoint(pnts[i].x, pnts[i].y, pnts[i].z, NLTProjection::PP_Distort);
+    fPnts[idx].Set(pnts[i]);
+  }
+  delete [] ra;
+  delete [] pnts;
   // printf("reduced %d points of %d\n", fNPnts, N);
 }
 
 //______________________________________________________________________________
-void NLTPolygonSet::AddPolygon(std::list<Int_t>& pp)
+void NLTPolygonSet::AddPolygon(std::list<Int_t>& pp, std::list<NLTPolygon>& pols)
 {
   if(pp.size() <= 2) return;
 
   // dimension of bbox
   Float_t bbox[] = { 1e6, -1e6, 1e6, -1e6, 1e6, -1e6 };
-  for (std::list<Int_t>::iterator u = pp.begin(); u!= pp.end(); u++) 
+  for (std::list<Int_t>::iterator u = pp.begin(); u!= pp.end(); u++)
   {
-    Int_t idx = *u; 
-    if(fPnts[idx].x < bbox[0]) bbox[0] = fPnts[idx].x;   
+    Int_t idx = *u;
+    if(fPnts[idx].x < bbox[0]) bbox[0] = fPnts[idx].x;
     if(fPnts[idx].x > bbox[1]) bbox[1] = fPnts[idx].x;
 
-    if(fPnts[idx].y < bbox[2]) bbox[2] = fPnts[idx].y;   
+    if(fPnts[idx].y < bbox[2]) bbox[2] = fPnts[idx].y;
     if(fPnts[idx].y > bbox[3]) bbox[3] = fPnts[idx].y;
-
-    if(fPnts[idx].z < bbox[4]) bbox[4] = fPnts[idx].z;   
-    if(fPnts[idx].z > bbox[5]) bbox[5] = fPnts[idx].z;
-    // printf("bbox (%f, %f) (%f, %f)\n", bbox[1], bbox[0], bbox[3], bbox[2]);
   }
-  if((bbox[1]-bbox[0])<fEps || (bbox[3]-bbox[2])<fEps) return;
+  Float_t eps = 2*NLTProjection::fgEps;
+  if((bbox[1]-bbox[0])<eps || (bbox[3]-bbox[2])<eps) return;
 
   // duplication
-  for (std::list<NLTPolygon>::iterator poi = fPols.begin(); poi!= fPols.end(); poi++)
+  for (std::list<NLTPolygon>::iterator poi = pols.begin(); poi!= pols.end(); poi++)
   {
     NLTPolygon P = *poi;
-    if (pp.size() != (UInt_t)P.fNPnts) 
-      continue;      
+    if (pp.size() != (UInt_t)P.fNPnts)
+      continue;
     std::list<Int_t>::iterator u = pp.begin();
     Int_t pidx = P.FindPoint(*u);
     if (pidx < 0)
@@ -188,14 +192,16 @@ void NLTPolygonSet::AddPolygon(std::list<Int_t>& pp)
     if (u == pp.end()) return;
   }
 
-  // printf("add %d NLTPolygon points %d \n", fPols.size(), pp.size());
+  // printf("add %d NLTPolygon points %d \n", pols.size(), pp.size());
   Int_t* pv = new Int_t[pp.size()];
   Int_t count=0;
   for( std::list<Int_t>::iterator u = pp.begin(); u!= pp.end(); u++){
     pv[count] = *u;
     count++;
   }
-  fPols.push_back(NLTPolygon(pp.size(), pv));
+  pols.push_back(NLTPolygon(pp.size(), pv));
+  fSurf += (bbox[1]-bbox[0])*(bbox[3]-bbox[2]);
+  //  printf("Add Surf %f\n",( bbox[1]-bbox[0])*(bbox[3]-bbox[2]));
 } // AddPolygon
 
 //______________________________________________________________________________
@@ -206,12 +212,12 @@ void NLTPolygonSet::MakePolygonsFromBP()
   //  printf("START NLTPolygonSet::MakePolygonsFromBP\n");
   NLTProjection* projection = fProjector->GetProjection();
   Int_t* bpols = fBuff->fPols;
-  for(UInt_t pi = 0; pi< fBuff->NbPols(); pi++) 
+  for(UInt_t pi = 0; pi< fBuff->NbPols(); pi++)
   {
-    std::list<Int_t>  pp; // points in current polygon 
-    UInt_t Nseg = bpols[1]; 
+    std::list<Int_t>  pp; // points in current polygon
+    UInt_t Nseg = bpols[1];
     Int_t* seg =  &bpols[2];
-    // start idx in the fist segment depends of second segment 
+    // start idx in the fist segment depends of second segment
     Int_t  tail, head;
     Bool_t h = IsFirstIdxHead(seg[0], seg[1]);
     if(h) {
@@ -224,28 +230,31 @@ void NLTPolygonSet::MakePolygonsFromBP()
     }
     pp.push_back(head);
     // printf("start idx head %d, tail %d\n", head, tail);
-    std::list<Seg> segs;  
+    std::list<Seg> segs;
     for(UInt_t s = 1; s < Nseg; ++s)
       segs.push_back(Seg(fBuff->fSegs[3*seg[s] + 1],fBuff->fSegs[3*seg[s] + 2]));
-    Bool_t accepted = kFALSE; 
+
+
+    Bool_t accepted = kFALSE;
     for(std::list<Seg>::iterator it = segs.begin(); it != segs.end(); it++ )
-    { 
+    {
       Int_t mv1 = fIdxMap[(*it).v1];
-      Int_t mv2 = fIdxMap[(*it).v2];         
-      accepted = projection->AcceptSegment(fPnts[mv1], fPnts[mv2], fEps);
+      Int_t mv2 = fIdxMap[(*it).v2];
+      accepted = projection->AcceptSegment(fPnts[mv1], fPnts[mv2], NLTProjection::fgEps);
+
       if(accepted == kFALSE)
       {
 	pp.clear();
 	break;
-      }	  
+      }
       if(tail != pp.back()) pp.push_back(tail);
       tail = (mv1 == tail) ? mv2 :mv1;
     }
     // DirectDraw implementation: last and first vertices should not be equal
-    if(pp.empty() == kFALSE) 
+    if(pp.empty() == kFALSE)
     {
       if(pp.front() == pp.back()) pp.pop_front();
-      AddPolygon(pp);
+      AddPolygon(pp, fPolsBP);
     }
     bpols += (Nseg+2);
   }
@@ -257,14 +266,14 @@ void NLTPolygonSet::MakePolygonsFromBS()
   // builds polygons from the set of buffer segments
 
   // create your own list of segments according to reduced and projected points
-  std::list<Seg> segs;  
+  std::list<Seg> segs;
   std::list<Seg>::iterator it;
   NLTProjection* projection = fProjector->GetProjection();
   for(UInt_t s = 0; s < fBuff->NbSegs(); ++s)
   {
     Bool_t duplicate = kFALSE;
     Int_t vo1, vo2;   // idx from fBuff segment
-    Int_t vor1, vor2; // mapped idx 
+    Int_t vor1, vor2; // mapped idx
     vo1 =  fBuff->fSegs[3*s + 1];
     vo2 =  fBuff->fSegs[3*s + 2]; //... skip color info
     vor1 = fIdxMap[vo1];
@@ -279,7 +288,7 @@ void NLTPolygonSet::MakePolygonsFromBS()
 	continue;
       }
     }
-    if(duplicate == kFALSE && projection->AcceptSegment(fPnts[vor1], fPnts[vor2], fEps))
+    if(duplicate == kFALSE && projection->AcceptSegment(fPnts[vor1], fPnts[vor2], NLTProjection::fgEps))
     {
       segs.push_back(Seg(vor1, vor2));
     }
@@ -303,13 +312,13 @@ void NLTPolygonSet::MakePolygonsFromBS()
 	if( cv1 == tail || cv2 == tail){
 	  // printf("found point %d  in %d,%d  \n", tail, cv1, cv2);
 	  pp.push_back(tail);
-          tail = (cv1 == tail)? cv2:cv1;
+	  tail = (cv1 == tail)? cv2:cv1;
 	  It_t to_erase = k--;
 	  segs.erase(to_erase);
 	  match = kTRUE;
 	  break;
 	}
-	else 
+	else
 	{
 	  match = kFALSE;
 	}
@@ -317,7 +326,7 @@ void NLTPolygonSet::MakePolygonsFromBS()
       if(tail == pp.front())
 	break;
     };
-    AddPolygon(pp);
+    AddPolygon(pp, fPolsBS);
   }
 }//MakePolygonsFromBS
 
@@ -327,25 +336,51 @@ void  NLTPolygonSet::ProjectBuffer3D()
 {
   //DumpBuffer3D();
   ProjectAndReducePoints();
+  NLTProjection::GeoMode_e mode = fProjector->GetProjection()->GetGeoMode();
 
-  MakePolygonsFromBP();
-  if(fPols.empty())
-    MakePolygonsFromBS();
-  
+  switch (mode)
+  {
+    case NLTProjection::GM_Polygons :
+    {
+      MakePolygonsFromBP();
+      fPolsBP.swap(fPols);
+      break;
+    }
+    case NLTProjection::GM_Segments :
+    {
+      MakePolygonsFromBS();
+      fPolsBS.swap(fPols);
+      break;
+    }
+    case NLTProjection::GM_Unknown:
+    {
+      Float_t BPsurf = fSurf;
+      fSurf = 0;
+      MakePolygonsFromBS();
+      if(fSurf < BPsurf)
+      {
+	fPolsBP.swap(fPols);
+	fPolsBS.clear();
+      }
+      else
+      {
+	fPolsBS.swap(fPols);
+	fPolsBP.clear();
+      }
+    }
+    default:
+      break;
+  }
+
   delete []  fIdxMap;
-
   ResetBBox();
 }
 
 /**************************************************************************/
 void NLTPolygonSet::ComputeBBox()
 {
-  // if(fPols.size() == 0) {
-  //  BBoxZero();
-  // }
-  
   BBoxInit();
-  for(Int_t pi = 0; pi<fNPnts; pi++) 
+  for(Int_t pi = 0; pi<fNPnts; pi++)
     BBoxCheckPoint(fPnts[pi].x, fPnts[pi].y, fPnts[pi].z );
   AssertBBoxExtents(0.1);
 }
@@ -360,10 +395,10 @@ void NLTPolygonSet::Paint(Option_t* )
   buffer.fID           = this;
   buffer.fColor        = GetMainColor();
   buffer.fTransparency = fTransparency;
-  buffer.fLocalFrame   = false; 
+  buffer.fLocalFrame   = false;
 
   buffer.SetSectionsValid(TBuffer3D::kCore);
-   
+
   // We fill kCore on first pass and try with viewer
   Int_t reqSections = gPad->GetViewer3D()->AddObject(buffer);
   if (reqSections == TBuffer3D::kNone) {
@@ -378,7 +413,7 @@ void NLTPolygonSet::DumpPolys() const
   for (vpPolygon_ci i = fPols.begin(); i!= fPols.end(); i++)
   {
     Int_t N =  (*i).fNPnts;
-    printf("polygon %d points :\n", N);    
+    printf("polygon %d points :\n", N);
     for(Int_t vi = 0; vi<N; vi++) {
       Int_t pi = (*i).fPnts[vi];
       printf("(%f, %f, %f)", fPnts[pi].x, fPnts[pi].y, fPnts[pi].z);
@@ -391,19 +426,19 @@ void NLTPolygonSet::DumpPolys() const
 void NLTPolygonSet::DumpBuffer3D()
 {
   Int_t* bpols = fBuff->fPols;
-  
-  for(UInt_t pi = 0; pi< fBuff->NbPols(); pi++) 
+
+  for(UInt_t pi = 0; pi< fBuff->NbPols(); pi++)
   {
-    UInt_t Nseg = bpols[1]; 
+    UInt_t Nseg = bpols[1];
     printf("%d polygon of %d has %d segments \n", pi,fBuff->NbPols(),Nseg);
-    
+
     Int_t* seg =  &bpols[2];
     for(UInt_t a=0; a<Nseg; a++)
     {
       Int_t a1 = fBuff->fSegs[3*seg[a]+ 1];
       Int_t a2 = fBuff->fSegs[3*seg[a]+ 2];
       printf("(%d, %d) \n", a1, a2);
-      printf("ORIG points :(%f, %f, %f)  (%f, %f, %f)\n", 
+      printf("ORIG points :(%f, %f, %f)  (%f, %f, %f)\n",
       	     fBuff->fPnts[3*a1],fBuff->fPnts[3*a1+1], fBuff->fPnts[3*a1+2],
       	     fBuff->fPnts[3*a2],fBuff->fPnts[3*a2+1], fBuff->fPnts[3*a2+2]);
     }

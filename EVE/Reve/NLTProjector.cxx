@@ -1,16 +1,9 @@
 #include "NLTProjector.h"
 #include "ReveManager.h"
-#include "NLTPolygonSet.h"
-#include "PointSet.h"
-#include "Track.h"
+#include "NLTBases.h"
 
-#include "TQObject.h"
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
-#include "TColor.h"
-#include "TPointSet3D.h"
-#include "TGeoManager.h"
-#include "TGeoMatrix.h"
 #include <TVirtualPad.h>
 #include <TVirtualViewer3D.h>
 
@@ -20,7 +13,17 @@ using namespace Reve;
 
 ClassImp(Reve::NLTProjection)
 
-Float_t NLTProjection::fgEps = 0.01f;
+Float_t NLTProjection::fgEps = 0.005f;
+ 
+NLTProjection::NLTProjection(Vector& center) : 
+  fType(PT_Unknown),
+  fGeoMode(GM_Unknown),
+  fName(0),
+  fCenter(center.x, center.y, center.z),
+  fDistortion(0), 
+  fFixedRadius(300), 
+  fScale(1.0f)
+{}
 
 //______________________________________________________________________________
 void NLTProjection::ProjectVector(Vector& v)
@@ -76,9 +79,10 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
 
   Vector V, DirVec;
   SetDirectionalVector(i, DirVec);
-  
+
+  Vector zero; ProjectVector(zero);
   // search from -/+ infinity according to sign of screen value
-  if (sv > 0)
+  if (sv > zero[i])
   {
     xL = 0; xR = 1000;
     while (1)
@@ -88,7 +92,7 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
       xL = xR; xR *= 2;
     }
   }
-  else if (sv < 0)
+  else if (sv < zero[i])
   {
     xR = 0; xL = -1000;
     while (1)
@@ -103,7 +107,6 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
     return 0;
   }
 
-  //  printf("start bisection %f, %f , SCREEN VALUE %f \n", xL, xR, sv);
   do 
   {  
     xM = 0.5f * (xL + xR);
@@ -133,16 +136,41 @@ Float_t NLTProjection::GetScreenVal(Int_t i, Float_t x)
 
 ClassImp(Reve::RhoZ)
 
-void RhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z)
+//______________________________________________________________________________
+void RhoZ::SetCenter(Vector& v)
 {
-    Float_t R = TMath::Sqrt(x*x+y*y);
-    Float_t NR = R / (1.0f + R*fDistortion);
-    y = (y > 0) ? NR : -NR;
-    y *= fScale;
-    x = (z*fScale) / (1.0f + TMath::Abs(z)*fDistortion);
-    z = 0;
+  NLTProjection::SetCenter(v);
+  fCenterR = TMath::Sqrt(v.x*v.x+v.y*v.y);
+
+  fProjectedCenter.x = fCenter.z;
+  fProjectedCenter.y = TMath::Sign(fCenterR, fCenter.y);
+  fProjectedCenter.z = 0;
 }
 
+//______________________________________________________________________________
+void RhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,  PProc_e proc )
+{
+  using namespace TMath;
+
+  if(proc == PP_Plane || proc == PP_Full)
+  {
+    y = Sign((Float_t)Sqrt(x*x+y*y), y); 
+    x = z;
+  }
+  if(proc == PP_Distort || proc == PP_Full)
+  {
+    // move to center
+    x -= fProjectedCenter.x;
+    y -= fProjectedCenter.y;
+    // project
+    y = (y*fScale) / (1.0f + Abs(y)*fDistortion);
+    x = (x*fScale) / (1.0f + Abs(x)*fDistortion);
+    // move back from center
+    x += fProjectedCenter.x;
+    y += fProjectedCenter.y;
+  }
+  z = 0.0f;
+}
 
 //______________________________________________________________________________
 void RhoZ::SetDirectionalVector(Int_t screenAxis, Vector& vec)
@@ -156,37 +184,50 @@ void RhoZ::SetDirectionalVector(Int_t screenAxis, Vector& vec)
 //______________________________________________________________________________
 Bool_t RhoZ::AcceptSegment(Vector& v1, Vector& v2, Float_t tolerance) 
 {
-  if((v1.y < 0 && v2.y > 0) || (v1.y > 0 && v2.y < 0))
+  Float_t a = fProjectedCenter.y;
+  
+  Bool_t val = kTRUE;
+  //  printf("accept segment y1:: %f, y2:: %f, center:: %f \n", v1.y ,v2.y, a);
+  if((v1.y <  a && v2.y > a) || (v1.y > a && v2.y < a))
   {
+    val = kFALSE;
     if (tolerance > 0)
     {
-      Float_t a1 = TMath::Abs(v1.y), a2 = TMath::Abs(v2.y);
+      Float_t a1 = TMath::Abs(v1.y - a), a2 = TMath::Abs(v2.y - a);
       if (a1 < a2)
       {
-	if (a1 < tolerance) { v1.y = 0; return kTRUE; }
+	if (a1 < tolerance) { v1.y = a; val = kTRUE; }
       }
       else
       {
-	if (a2 < tolerance) { v2.y = 0; return kTRUE; }
+	if (a2 < tolerance) { v2.y = a; val = kTRUE; }
       }
-    }
-    return kFALSE;
+    } 
   }
-  return kTRUE;
+  // printf("accept segment y1:: %f, y2:: %f, VAL %d \n", v1.y ,v2.y, val);
+  return val;
 }
 
 /**************************************************************************/
 /**************************************************************************/
 ClassImp(Reve:: CircularFishEye)
 //______________________________________________________________________________
-void  CircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z) 
+void  CircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e proc) 
 {
-  Float_t R = TMath::Sqrt(x*x+y*y);
-  Float_t phi = x == 0.0 && y == 0.0 ? 0.0 : TMath::ATan2(y,x);
-  Float_t NR = (R*fScale) / (1.0f + R*fDistortion);
-  x = NR*TMath::Cos(phi);
-  y = NR*TMath::Sin(phi);
-  z = 0;
+  // point look at from external origin
+  using namespace TMath;
+
+  if(proc !=  PP_Plane)
+  {
+    x -= fCenter.x;
+    y -= fCenter.y;
+    Float_t phi = x == 0.0 && y == 0.0 ? 0.0 : ATan2(y,x);
+    Float_t R = Sqrt(x*x+y*y);
+    Float_t NR = (R*fScale) / (1.0f + R*fDistortion);
+    x = NR*Cos(phi) + fCenter.x;
+    y = NR*Sin(phi) + fCenter.y;
+  }
+  z = 0.0f;
 }
 
 /**************************************************************************/
@@ -201,6 +242,9 @@ NLTProjector::NLTProjector():
   RenderElementList("NLTProjector",""),
 
   fProjection (0),
+   
+  fDrawCenter(kFALSE),
+  fDrawOrigin(kFALSE),
 
   fSplitInfoMode(0),
   fSplitInfoLevel(1),
@@ -236,12 +280,12 @@ void NLTProjector::SetProjection(NLTProjection::PType_e type, Float_t distort)
   {
     case NLTProjection::PT_CFishEye:
     {
-      fProjection  = new CircularFishEye();
+      fProjection  = new CircularFishEye(fCenter);
       break;
     }
     case NLTProjection::PT_RhoZ:
     {
-      fProjection  = new RhoZ;
+      fProjection  = new RhoZ(fCenter);
       break;
     }
     default:
@@ -258,6 +302,18 @@ void NLTProjector::SetProjection(NLTProjection* p)
   delete fProjection;
   fProjection = p;
   UpdateName();
+}
+
+//______________________________________________________________________________
+void NLTProjector::SetCenter(Float_t x, Float_t y, Float_t z)
+{
+  fCenter.Set(x, y, z);
+
+  // update projection
+  fProjection->SetCenter(fCenter);
+
+  // rebuild the scene
+  ProjectChildren();
 }
 
 //______________________________________________________________________________

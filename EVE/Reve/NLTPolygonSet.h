@@ -25,7 +25,7 @@ class NLTPolygon
 {
 public:
   Int_t     fNPnts;
-  Int_t*    fPnts; 
+  Int_t*    fPnts;
 
   NLTPolygon() : fNPnts(0), fPnts(0) {}
   NLTPolygon(Int_t n, Int_t* p) : fNPnts(n), fPnts(p) {}
@@ -44,7 +44,7 @@ public:
 
 class NLTPolygonSet :  public RenderElementList,
                        public NLTProjected,
-		       public TAtt3D, 
+		       public TAtt3D,
                        public TAttBBox
 {
   friend class NLTPolygonSetGL;
@@ -54,7 +54,7 @@ private:
   NLTPolygonSet& operator=(const NLTPolygonSet&); // Not implemented
 
 public:
-  typedef std::list<Reve::NLTPolygon>     vpPolygon_t;
+  typedef std::list<NLTPolygon>           vpPolygon_t;
   typedef vpPolygon_t::iterator           vpPolygon_i;
   typedef vpPolygon_t::const_iterator     vpPolygon_ci;
 
@@ -63,21 +63,24 @@ private:
   Int_t*       fIdxMap; // map from original to projected and reduced point needed oly for geometry
 
   Bool_t       IsFirstIdxHead(Int_t s0, Int_t s1);
-  void         AddPolygon(std::list<Int_t, std::allocator<Int_t> >& pp);
+  void         AddPolygon(std::list<Int_t, std::allocator<Int_t> >& pp, std::list<NLTPolygon, std::allocator<NLTPolygon> >& p);
 
   void         ProjectAndReducePoints();
   void         MakePolygonsFromBP();
   void         MakePolygonsFromBS();
-  void         ClearPolygonSet(); 
+  void         ClearPolygonSet();
 
-protected: 
-  vpPolygon_t  fPols;   // NLT polygons
+protected:
+  vpPolygon_t  fPols;     // NLT polygons
+  vpPolygon_t  fPolsBS;   // NLT polygons build freom TBuffer3D segments
+  vpPolygon_t  fPolsBP;   // NLT polygons build freom TBuffer3D polygond
+  Float_t      fSurf;   // sum of surface of polygons
 
-  Float_t      fEps;    // distance accounted in reducing the ponts
+  //  Float_t      fEps;    // distance accounted in reducing the ponts
   Int_t        fNPnts;  // number of reduced and projected points
   Vector*      fPnts;   // reduced and projected points
 
-  Color_t      fFillColor;  
+  Color_t      fFillColor;
   Color_t      fLineColor;
   Float_t      fLineWidth;
 
@@ -90,21 +93,21 @@ public:
   virtual void    SetProjection(NLTProjector* proj, NLTProjectable* model);
   virtual void    UpdateProjection();
 
-  void            ProjectBuffer3D(); 
+  void            ProjectBuffer3D();
 
   virtual void    ComputeBBox();
   virtual void    Paint(Option_t* option = "");
 
-  virtual void    DumpPolys() const; 
+  virtual void    DumpPolys() const;
   void            DumpBuffer3D();
 
   //rendering
   virtual Bool_t  CanEditMainColor()        { return kTRUE; }
   virtual Color_t GetLineColor() const { return fLineColor; }
-  
+
   virtual Bool_t  CanEditMainTransparency()      { return kTRUE; }
   virtual UChar_t GetMainTransparency() const    { return fTransparency; }
-  virtual void    SetMainTransparency(UChar_t t) { fTransparency = t; }  
+  virtual void    SetMainTransparency(UChar_t t) { fTransparency = t; }
 
   virtual void    SetFillColor(Pixel_t pixel) { fFillColor = Color_t(TColor::GetColor(pixel));}
   virtual void    SetLineColor(Pixel_t pixel) { fLineColor = Color_t(TColor::GetColor(pixel));}
@@ -113,7 +116,7 @@ public:
   virtual void    SetLineColor(Color_t c) { fLineColor = c; }
   virtual void    SetLineWidth(Double_t lw){fLineWidth = lw;}
 
-  ClassDef(NLTPolygonSet,0) 
+  ClassDef(NLTPolygonSet,0)
 
   }; // endclass NLTPolygonSet
 } // namespace Reve

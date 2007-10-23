@@ -18,15 +18,15 @@ using namespace Reve;
 
 ClassImp(NLTProjectorGL)
 
-NLTProjectorGL::NLTProjectorGL() : 
-  TGLObject(), 
+NLTProjectorGL::NLTProjectorGL() :
+  TGLObject(),
 
   fRange(300),
   fLabelSize(0.02),
   fLabelOff(0.018),
   fTMSize(0.02),
 
-  fM(0), 
+  fM(0),
   fText(0)
 {
   fDLCache = kFALSE; // Disable display list.
@@ -171,41 +171,42 @@ void NLTProjectorGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   bbv[2] = fM->GetProjection()->GetValForScreenPos(1,bbox[2]);
   bbv[3] = fM->GetProjection()->GetValForScreenPos(1,bbox[3]);
 
+  Vector zeroPos;
+  fM->GetProjection()->ProjectVector(zeroPos);
   fText->SetTextSize(fLabelSize*fRange);
-  fText->SetTextColor(fM->GetAxisColor()); 
- 
+  fText->SetTextColor(fM->GetAxisColor());
+
   { // horizontal
     glPushMatrix();
     glTranslatef(0, bbox[2], 0);
     // left
-    fPos.push_back(bbox[0]); fPos.push_back(0);
+    fPos.push_back(bbox[0]); fPos.push_back(zeroPos.x);
     fVals.push_back(bbv[0]); fVals.push_back(0);
     SplitInterval(0);
     DrawHInfo();
     // right
-    fPos.push_back(0); fPos.push_back(bbox[1]);
+    fPos.push_back(zeroPos.x); fPos.push_back(bbox[1]);
     fVals.push_back(0); fVals.push_back(bbv[1]);
     SplitInterval(0); fVals.pop_front(); fPos.pop_front();
-    DrawHInfo();   
+    DrawHInfo();
     glPopMatrix();
   }
- 
-  { // vertical 
+  { // vertical
     glPushMatrix();
     glTranslatef(bbox[0], 0, 0);
     // bottom
-    fPos.push_back(bbox[2]); fPos.push_back(0);
+    fPos.push_back(bbox[2]); fPos.push_back(zeroPos.y);
     fVals.push_back(bbv[2]); fVals.push_back(0);
     SplitInterval(1);
     DrawVInfo();
     // top
-    fPos.push_back(0); fPos.push_back(bbox[3]);
+    fPos.push_back(zeroPos.y); fPos.push_back(bbox[3]);
     fVals.push_back(0); fVals.push_back(bbv[3]);
     SplitInterval(1);fPos.pop_front(); fVals.pop_front();
     DrawVInfo();
     glPopMatrix();
   }
-  
+
   // body
   glBegin(GL_LINES);
   glVertex3f(bbox[0], bbox[2], 0.);
@@ -214,6 +215,30 @@ void NLTProjectorGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   glVertex3f(bbox[0], bbox[3], 0.);
   glEnd();
 
+  Float_t d = 10;
+  if(fM->GetDrawCenter())
+  {
+    Float_t* c = fM->GetProjection()->GetProjectedCenter();
+    glColor3f(1., 0., 0.);
+    glBegin(GL_LINES);
+    glVertex3f(c[0] +d, c[1],    c[2]);     glVertex3f(c[0] - d, c[1]   , c[2]);
+    glVertex3f(c[0] ,   c[1] +d, c[2]);     glVertex3f(c[0]    , c[1] -d, c[2]);
+    glVertex3f(c[0] ,   c[1],    c[2] + d); glVertex3f(c[0]    , c[1]   , c[2] - d);
+    glEnd();
+
+  }
+
+  if(fM->GetDrawOrigin())
+  {
+      Vector zero;
+      fM->GetProjection()->ProjectVector(zero);
+      glColor3f(1., 1., 1.);
+      glBegin(GL_LINES);
+      glVertex3f(zero[0] +d, zero[1],    zero[2]);     glVertex3f(zero[0] - d, zero[1]   , zero[2]);
+      glVertex3f(zero[0] ,   zero[1] +d, zero[2]);     glVertex3f(zero[0]    , zero[1] -d, zero[2]);
+      glVertex3f(zero[0] ,   zero[1],    zero[2] + d); glVertex3f(zero[0]    , zero[1]   , zero[2] - d);
+      glEnd();
+  }
   if (lightp) glEnable(GL_LIGHTING);
 }
 
