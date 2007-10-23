@@ -302,6 +302,44 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 	fDataSources[n].fNdx = n;
 	}
     }
+
+AliHLTHOMERReader::AliHLTHOMERReader( const void* pBuffer, int size )
+  :
+  AliHLTMonitoringReader(),
+  fCurrentEventType(~(homer_uint64)0),
+  fCurrentEventID(~(homer_uint64)0),
+  fBlockCnt(0),
+  fMaxBlockCnt(0),
+  fBlocks(NULL),
+  fDataSourceCnt(0),
+  fTCPDataSourceCnt(0),
+  fShmDataSourceCnt(0),
+  fDataSourceMaxCnt(0),
+  fDataSources(NULL),
+  fConnectionStatus(0),
+  fErrorConnection(~(unsigned int)0),
+  fEventRequestAdvanceTime(0)
+    {
+// see header file for class documentation
+// For reading from a System V shared memory segment
+    Init();
+    if ( !AllocDataSources(1) )
+	{
+	fErrorConnection = 0;
+	fConnectionStatus = ENOMEM;
+	return;
+	}
+    //fConnectionStatus = AddDataSource( shmKey, shmSize, fDataSources[0] );
+    if ( fConnectionStatus )
+	fErrorConnection = 0;
+    else
+	{
+	fDataSourceCnt++;
+	fShmDataSourceCnt++;
+	fDataSources[0].fNdx = 0;
+	}
+    }
+
 AliHLTHOMERReader::~AliHLTHOMERReader()
     {
 // see header file for class documentation
@@ -658,6 +696,38 @@ int AliHLTHOMERReader::AddDataSource( key_t shmKey, int shmSize, DataSource& sou
     return 0;
     }
 
+int AliHLTHOMERReader::AddDataSource( void* pBuffer, int size, DataSource& source )
+    {
+// see header file for class documentation
+// a buffer data source is like a shm source apart from the shm attach and detach
+// procedure. Furthermore, the size indicator at the beginning of the buffer is not
+// cleared right before sources are read but after the reading.
+    int ret;
+    if ( !pBuffer || size<=0) return EINVAL;
+
+    char* tmpchar = new char[ MAXHOSTNAMELEN+1 ];
+    if ( !tmpchar )
+	{
+	return ENOMEM;
+	}
+    gethostname( tmpchar, MAXHOSTNAMELEN );
+    tmpchar[MAXHOSTNAMELEN]=(char)0;
+    source.fHostname = tmpchar;
+
+    source.fShmID = -1;
+    // the data buffer does not contain a size indicator in the first 4 bytes
+    // like the shm source buffer. Still we want to use the mechanism to invalidate/
+    // trigger by clearing the size indicator. Take the source.fShmSize variable.
+    source.fShmPtr = &source.fShmSize;
+    source.fType = kBuf;
+    source.fShmKey = 0;
+    source.fShmSize = size;
+    source.fData = pBuffer;
+    source.fDataSize = 0;
+    source.fDataRead = 0;
+    return 0;
+    }
+
 void AliHLTHOMERReader::FreeDataSources()
     {
 // see header file for class documentation
@@ -665,7 +735,7 @@ void AliHLTHOMERReader::FreeDataSources()
 	{
 	if ( fDataSources[n].fType == kTCP )
 	    FreeTCPDataSource( fDataSources[n] );
-	else
+	else if ( fDataSources[n].fType == kShm )
 	    FreeShmDataSource( fDataSources[n] );
 	}
     }
@@ -705,7 +775,7 @@ int AliHLTHOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
 	{
 	if ( fDataSources[n].fType == kTCP )
 	    ret = TriggerTCPSource( fDataSources[n], useTimeout, timeout );
-	else
+	else if ( fDataSources[n].fType == kShm )
 	    ret = TriggerShmSource( fDataSources[n], useTimeout, timeout );
 	if ( ret )
 	    {
@@ -1088,7 +1158,15 @@ int AliHLTHOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* s
 		{
 		found = true;
 		sources[n].fDataSize = *(homer_uint32*)sources[n].fShmPtr;
-		sources[n].fData = ((homer_uint8*)sources[n].fShmPtr)+sizeof(homer_uint32);
+		if (sources[n].fType==kBuf)
+		  {
+		    // the data buffer is already set to fData, just need to set fDataSize member
+		    // to invalidate after the first reading. Subsequent calls to ReadNextEvent return 0
+		    TriggerShmSource( sources[n], 0, 0 );
+		  } else 
+		  {
+		    sources[n].fData = ((homer_uint8*)sources[n].fShmPtr)+sizeof(homer_uint32);
+		  }
 		}
 	    }
 	if ( found && useTimeout )
@@ -1207,8 +1285,7 @@ homer_uint32 AliHLTHOMERReader::Swap( homer_uint8 destFormat, homer_uint8 source
 AliHLTHOMERReader* AliHLTHOMERReaderCreate(const void* pBuffer, int size)
     {
 // see header file for function documentation
-      //return new AliHLTHOMERReader(pBuffer, size);
-      return NULL;
+      return new AliHLTHOMERReader(pBuffer, size);
     }
 
 void AliHLTHOMERReaderDelete(AliHLTHOMERReader* pInstance)

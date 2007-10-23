@@ -104,6 +104,8 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
 	/* For reading from multiple TCP ports and multiple System V shared memory segments */
 	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
 		     unsigned int shmCnt, key_t* shmKey, int* shmSize );
+	/* For reading from a buffer */
+	AliHLTHOMERReader( const void* pBuffer, int size );
 	virtual ~AliHLTHOMERReader();
 
 	/* Return the status of the connection as established by one of the constructors.
@@ -214,7 +216,7 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
 
     protected:
 
-	enum DataSourceType { kUndef=0, kTCP, kShm };
+      enum DataSourceType { kUndef=0, kTCP, kShm, kBuf};
 	struct DataSource
 	    {
 		DataSource() { fType = kUndef; };
@@ -237,6 +239,7 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
 	bool AllocDataSources( unsigned int sourceCnt );
 	int AddDataSource( const char* hostname, unsigned short port, DataSource& source );
 	int AddDataSource( key_t shmKey, int shmSize, DataSource& source );
+        int AddDataSource( void* pBuffer, int size, DataSource& source );
 	void FreeDataSources();
 	int FreeShmDataSource( DataSource& source );
 	int FreeTCPDataSource( DataSource& source );
