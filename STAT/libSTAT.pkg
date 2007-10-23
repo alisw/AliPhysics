@@ -1,4 +1,8 @@
-SRCS=  TKDTree.cxx TKDInterpolator.cxx TKDSpline.cxx
+SRCS=  TKDTree.cxx \
+	TKDInterpolator.cxx \
+  TKDSpline.cxx \
+  AliTMinuitToolkit.cxx \
+  TStatToolkit.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 
