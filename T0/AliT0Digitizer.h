@@ -50,7 +50,7 @@ private:
   AliT0Digitizer& operator=(const AliT0Digitizer);
 
   
-    ClassDef(AliT0Digitizer,1)
+    ClassDef(AliT0Digitizer,2)
 };    
 
 typedef AliT0Digitizer AliSTARTDigitizer; // for backward compatibility
