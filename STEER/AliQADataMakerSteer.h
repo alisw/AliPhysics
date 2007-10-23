@@ -36,6 +36,7 @@ public:
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
+	Bool_t Merge() ;  
     void   Reset() ;  
 	Bool_t Run(const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
 	void   SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
