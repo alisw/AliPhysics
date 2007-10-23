@@ -5,16 +5,23 @@
 #include "TKDTree.h"
 #endif
 
+#ifndef ROOT_TVectorD
+#include "TVectorD.h"
+#endif
+#ifndef ROOT_TMatrixD
+#include "TMatrixD.h"
+#endif
+
 // Non parametric interpolation class based on local polinomial regression.
 // The class can be used to approximate PDF together with TKDTree or for
 // general regression when the data points are given.
 
-template <typename Value> class TVectorT;
-typedef struct TVectorT<Double_t> TVectorD;
-template <typename Value> class TMatrixT;
-typedef class TMatrixT<Double_t> TMatrixD;
-template <typename Index, typename Value> class TKDTree;
-typedef class TKDTree<Int_t, Float_t> TKDTreeIF;
+// template <typename Value> class TVectorT;
+// typedef struct TVectorT<Double_t> TVectorD;
+// template <typename Value> class TMatrixT;
+// typedef class TMatrixT<Double_t> TMatrixD;
+// template <typename Index, typename Value> class TKDTree;
+// typedef class TKDTree<Int_t, Float_t> TKDTreeIF;
 class TTree;
 class TLinearFitter;
 class TKDInterpolator : public TKDTreeIF
