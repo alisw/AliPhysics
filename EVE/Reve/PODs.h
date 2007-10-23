@@ -74,8 +74,10 @@ public:
 
   Float_t Distance(const Vector& v) const;
   Float_t SquareDistance(const Vector& v) const;
+  Float_t Dot(const Vector&a) const;
 
   Vector& Mult(const Vector&a, Float_t af) { x = a.x*af; y = a.y*af; z = a.z*af; return *this; }
+
 
   ClassDef(Vector, 1);
 };
@@ -96,6 +98,11 @@ inline Float_t Vector::Distance( const Vector& b) const
 inline Float_t Vector::SquareDistance(const Vector& b) const
 {
   return ((x - b.x)*(x - b.x) + (y - b.y)*(y - b.y) + (z - b.z)*(z - b.z));
+}
+
+inline Float_t Vector::Dot(const Vector& a) const
+{
+  return a.x*x + a.y*y + a.z*z;
 }
 
 inline Float_t& Vector::operator [] (Int_t idx)
