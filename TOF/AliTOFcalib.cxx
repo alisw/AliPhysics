@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.17  2007/10/18 09:12:22  zampolli
+New naming of online calibration directory
+
 Revision 1.16  2007/10/08 10:13:26  zampolli
 First Run and Last Run members added, infinite validity of calib obj implemented.
 
@@ -184,19 +187,19 @@ AliTOFcalib::~AliTOFcalib()
   //TOF Calibration Class dtor
   if(!(AliCDBManager::Instance()->GetCacheFlag())){ // CDB objects must NOT be deleted if cache is active!
     if (fTOFCalOnline){
-      fTOFCalOnline->Clear();
+      //      fTOFCalOnline->Clear();
       delete fTOFCalOnline;
     }
     if (fTOFCalOffline){
-      fTOFCalOffline->Clear();
+      //fTOFCalOffline->Clear();
       delete fTOFCalOffline;
     }
     if (fTOFSimCalOnline){
-      fTOFSimCalOnline->Clear();
+      //fTOFSimCalOnline->Clear();
       delete fTOFSimCalOnline;
     }
     if (fTOFSimCalOffline){
-      fTOFSimCalOffline->Clear();
+      //fTOFSimCalOffline->Clear();
       delete fTOFSimCalOffline;
     }
   }
