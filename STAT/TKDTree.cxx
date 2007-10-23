@@ -5,7 +5,6 @@
 
 #ifndef R__ALPHA
 templateClassImp(TKDTree)
-templateClassImp(TKDNode)
 #endif
 //////////////////////////////////////////////////////////////////////
 // Memory setup of protected data members:
@@ -30,6 +29,16 @@ templateClassImp(TKDNode)
 // 	 - after are the terminal nodes
 // 	fNodes : array of primary nodes
 ///////////////////////////////////////////////////////////////////////
+
+#include "malloc.h"
+int memory()
+{
+	static struct mallinfo debug;
+	debug = mallinfo();
+	//printf("arena[%d] usmblks[%d] uordblks[%d] fordblks[%d]\n", debug.arena, debug.usmblks, debug.uordblks, debug.fordblks);
+	return debug.uordblks;
+}
+
 //_________________________________________________________________
 template <typename  Index, typename Value>
 TKDTree<Index, Value>::TKDTree() :
@@ -40,7 +49,8 @@ TKDTree<Index, Value>::TKDTree() :
 	,fNDimm(0)
 	,fNpoints(0)
 	,fBucketSize(0)
-	,fNodes(0x0)
+	,fAxis(0x0)
+	,fValue(0x0)
 	,fRange(0x0)
 	,fData(0x0)
 	,fBoundaries(0x0)
@@ -68,7 +78,8 @@ TKDTree<Index, Value>::TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **
 	,fNDimm(2*ndim)
 	,fNpoints(npoints)
 	,fBucketSize(bsize)
-	,fNodes(0x0)
+	,fAxis(0x0)
+	,fValue(0x0)
 	,fRange(0x0)
 	,fData(data) //Columnwise!!!!!
 	,fBoundaries(0x0)
@@ -84,7 +95,9 @@ TKDTree<Index, Value>::TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **
 {
 // Allocate data by hand. See TKDTree(TTree*, const Char_t*) for an automatic method.
 
+	//printf("start building kdTree %d\n", memory());
 	Build();
+	//printf("finish building kdTree %d\n", memory());
 }
 
 //_________________________________________________________________
@@ -95,7 +108,8 @@ TKDTree<Index, Value>::~TKDTree()
 	if (fDistBuffer) delete [] fDistBuffer;
 	if (fkNNdist) delete [] fkNNdist;
 	if (fkNN) delete [] fkNN;
-	if (fNodes) delete [] fNodes;
+	if (fAxis) delete [] fAxis;
+	if (fValue) delete [] fValue;
 	if (fIndPoints) delete [] fIndPoints;
 	if (fRange) delete [] fRange;
 	if (fBoundaries) delete [] fBoundaries;
@@ -138,7 +152,8 @@ void TKDTree<Index, Value>::Build(){
 	fRange = new Value[2*fNDim];
 	fIndPoints= new Index[fNpoints];
 	for (Index i=0; i<fNpoints; i++) fIndPoints[i] = i;
-	fNodes  = new TKDNode<Index, Value>[fNnodes];
+	fAxis  = new UChar_t[fNnodes];
+	fValue = new Value[fNnodes];
 	//
 	fCrossNode = (1<<(fRowT0+1))-1;
 	if (fCrossNode<fNnodes) fCrossNode = 2*fCrossNode+1;
@@ -180,7 +195,6 @@ void TKDTree<Index, Value>::Build(){
 		Int_t crow     = rowStack[currentIndex];
 		Int_t cpos     = posStack[currentIndex];
 		Int_t cnode    = nodeStack[currentIndex];		
-		TKDNode<Index, Value> * node = &(fNodes[cnode]);
 		//printf("currentIndex %d npoints %d node %d\n", currentIndex, npoints, cnode);
 		//
 		// divide points
@@ -215,12 +229,14 @@ void TKDTree<Index, Value>::Build(){
 				maxspread=tempspread;
 				axspread = idim;
 			}
-			if(cnode==0) {fRange[2*idim] = min; fRange[2*idim+1] = max;}
+			if(cnode) continue;
+			//printf("set %d %6.3f %6.3f\n", idim, min, max);
+			fRange[2*idim] = min; fRange[2*idim+1] = max;
 		}
 		array = fData[axspread];
 		KOrdStat(npoints, array, nleft, fIndPoints+cpos);
-		node->fAxis  = axspread;
-		node->fValue = array[fIndPoints[cpos+nleft]];
+		fAxis[cnode]  = axspread;
+		fValue[cnode] = array[fIndPoints[cpos+nleft]];
 		//printf("Set node %d : ax %d val %f\n", cnode, node->fAxis, node->fValue);
 		//
 		//
@@ -249,7 +265,7 @@ void TKDTree<Index, Value>::Build(){
 
 //_________________________________________________________________
 template <typename  Index, typename Value>
-Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_t k, Index *&in, Value *&d)
+Bool_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_t k, Index *&in, Value *&d)
 {
 // Find "k" nearest neighbors to "point".
 //
@@ -258,7 +274,7 @@ Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_
 // increasing order of the distance to "point" and the maxim distance
 // in "d".
 //
-// The array "in" is managed internally by the TKDTree.
+// The arrays "in" and "d" are managed internally by the TKDTree.
 
 	Index inode = FindNode(point);
 	if(inode < fNnodes){
@@ -275,10 +291,10 @@ Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_
 		fIndBuffer  = new Index[fBucketSize];
 	}
 	if(fkNNdim < k){
-		//if(debug>=1){
+		if(debug>=1){
 			if(fkNN) printf("Reallocate memory %d -> %d \n", fkNNdim, 2*k);
 			else printf("Allocate %d memory\n", 2*k);
-		//}
+		}
 		fkNNdim  = 2*k;
 		if(fkNN){
 			delete [] fkNN; 
@@ -292,17 +308,20 @@ Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_
 	Index itmp, jtmp; Value ftmp, gtmp;
 	
 	// calculate number of boundaries with the data domain.	
-	Index nBounds = 0;
 	if(!fBoundaries) MakeBoundaries();
 	Value *bounds = &fBoundaries[inode*2*fNDim];
+	Index nBounds = 0;
 	for(int idim=0; idim<fNDim; idim++){
-		if(bounds[2*idim] == fRange[2*idim]) nBounds++;
-		if(bounds[2*idim+1] == fRange[2*idim+1]) nBounds++;
+		if((bounds[2*idim] - fRange[2*idim]) < 1.E-10) nBounds++;
+		if((bounds[2*idim+1] - fRange[2*idim+1]) < 1.E-10) nBounds++;
 	}
 	if(debug>=1) printf("Calculate boundaries [nBounds = %d]\n", nBounds);
-	
+
+		
 	// traverse tree
-	TKDNode<Index, Value> *node;
+	UChar_t ax;
+	Value   val, dif;
+	Int_t nAllNodes = fNnodes + GetNTNodes();
 	Int_t nodeStack[128], nodeIn[128];
 	Index currentIndex = 0;
 	nodeStack[0]   = inode;
@@ -314,12 +333,13 @@ Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_
 		if(debug>=1) printf("Analyse tnode %d entry %d\n", tnode, entry);
 		
 		// check if node is still eligible
-		node = &fNodes[tnode/2 + (tnode%2) - 1];
-		if((TMath::Abs(point[node->fAxis] - node->fValue) > fkNNdist[k-1])
-											&&
-			((point[node->fAxis] > node->fValue && tnode%2) ||
-			 (point[node->fAxis] < node->fValue && !tnode%2))) {
-			//printf("\tREMOVE NODE %d\n", tnode/2 + (tnode%2) - 1);
+		Int_t inode = (tnode-1)>>1; //tnode/2 + (tnode%2) - 1;
+		ax = fAxis[inode];
+		val = fValue[inode];
+		dif = point[ax] - val;
+		if((TMath::Abs(dif) > fkNNdist[k-1]) &&
+			((dif > 0. && (tnode&1)) || (dif < 0. && !(tnode&1)))) {
+			if(debug>=1) printf("\tremove %d\n", (tnode-1)>>1);
 
 			// mark bound
 			nBounds++;
@@ -374,36 +394,37 @@ Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_
 		}
 		
 		// register parent
-		Int_t parent_node = tnode/2 + (tnode%2) - 1;
-		if(parent_node >= 0 && entry != parent_node){
+		Int_t pn = (tnode-1)>>1;//tnode/2 + (tnode%2) - 1;
+		if(pn >= 0 && entry != pn){
 			// check if parent node is eligible at all
-			node = &fNodes[parent_node];
-			if(TMath::Abs(point[node->fAxis] - node->fValue) > fkNNdist[k-1]){
+			if(TMath::Abs(point[fAxis[pn]] - fValue[pn]) > fkNNdist[k-1]){
 				// mark bound
 				nBounds++;
 				// end all recursions
 				if(nBounds==2 * fNDim) break;
 			}
 			currentIndex++;
-			nodeStack[currentIndex]=tnode/2 + (tnode%2) - 1;
+			nodeStack[currentIndex]=pn;
 			nodeIn[currentIndex]=tnode;
 			if(debug>=2) printf("\tregister %d\n", nodeStack[currentIndex]);
 		}
+		if(IsTerminal(tnode)) continue;
 		
 		// register children nodes
-		Int_t child_node;
+		Int_t cn;
 		Bool_t kAllow[] = {kTRUE, kTRUE};
-		node = &fNodes[tnode];
-		if(TMath::Abs(point[node->fAxis] - node->fValue) > fkNNdist[k-1]){
-			if(point[node->fAxis] > node->fValue) kAllow[0] = kFALSE;
+		ax = fAxis[tnode];
+		val = fValue[tnode];
+		if(TMath::Abs(point[ax] - val) > fkNNdist[k-1]){
+			if(point[ax] > val) kAllow[0] = kFALSE;
 			else kAllow[1] = kFALSE;
 		}
 		for(int ic=1; ic<=2; ic++){
 			if(!kAllow[ic-1]) continue;
-			child_node = (tnode*2)+ic;
-			if(child_node < fNnodes + GetNTerminalNodes() && entry != child_node){
+			cn = (tnode<<1)+ic;
+			if(cn < nAllNodes && entry != cn){
 				currentIndex++;
-				nodeStack[currentIndex] = child_node;
+				nodeStack[currentIndex] = cn;
 				nodeIn[currentIndex]=tnode;
 				if(debug>=2) printf("\tregister %d\n", nodeStack[currentIndex]);
 			}
@@ -413,7 +434,7 @@ Int_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int_
 	in = fkNN;
 	d  = fkNNdist;
 	
-	return nCalculations; //kTRUE;
+	return kTRUE;
 }
 
 
@@ -423,24 +444,22 @@ template <typename  Index, typename Value>
 Index TKDTree<Index, Value>::FindNode(const Value * point){
   //
   // find the terminal node to which point belongs
-  
+
 	Index stackNode[128], inode;
 	Int_t currentIndex =0;
 	stackNode[0] = 0;
-	//
 	while (currentIndex>=0){
 		inode    = stackNode[currentIndex];
-		currentIndex--;
 		if (IsTerminal(inode)) return inode;
 		
-		TKDNode<Index, Value> & node = fNodes[inode];
-		if (point[node.fAxis]<=node.fValue){
+		currentIndex--;
+		if (point[fAxis[inode]]<=fValue[inode]){
 			currentIndex++;
-			stackNode[currentIndex]=(inode*2)+1;
+			stackNode[currentIndex]=(inode<<1)+1;
 		}
-		if (point[node.fAxis]>=node.fValue){
+		if (point[fAxis[inode]]>=fValue[inode]){
 			currentIndex++;
-			stackNode[currentIndex]=(inode*2)+2;
+			stackNode[currentIndex]=(inode+1)<<1;
 		}
 	}
 	
@@ -481,12 +500,11 @@ void TKDTree<Index, Value>::FindPoint(Value * point, Index &index, Int_t &iter){
 			continue;
 		}
 		
-		TKDNode<Index, Value> & node = fNodes[inode];
-		if (point[node.fAxis]<=node.fValue){
+		if (point[fAxis[inode]]<=fValue[inode]){
 			currentIndex++;
 			stackNode[currentIndex]=(inode*2)+1;
 		}
-		if (point[node.fAxis]>=node.fValue){
+		if (point[fAxis[inode]]>=fValue[inode]){
 			currentIndex++;
 			stackNode[currentIndex]=(inode*2)+2;
 		}
@@ -520,12 +538,12 @@ void TKDTree<Index, Value>::FindInRangeA(Value * point, Value * delta, Index *re
     currentIndex--;
     if (!IsTerminal(inode)){
       // not terminal
-      TKDNode<Index, Value> * node = &(fNodes[inode]);
-      if (point[node->fAxis] - delta[node->fAxis] <  node->fValue) {
+      //TKDNode<Index, Value> * node = &(fNodes[inode]);
+      if (point[fAxis[inode]] - delta[fAxis[inode]] <  fValue[inode]) {
 	currentIndex++; 
 	stackNode[currentIndex]= (inode*2)+1;
       }
-      if (point[node->fAxis] + delta[node->fAxis] >= node->fValue){
+      if (point[fAxis[inode]] + delta[fAxis[inode]] >= fValue[inode]){
 	currentIndex++; 
 	stackNode[currentIndex]= (inode*2)+2;
       }
@@ -608,18 +626,18 @@ void TKDTree<Index, Value>::FindInRangeB(Value * point, Value * delta, Index *re
       }
     }
     //
-    TKDNode<Index, Value> * node = &(fNodes[inode]);
-    if (point[node->fAxis] - delta[node->fAxis] <  node->fValue) {
+    // TKDNode<Index, Value> * node = &(fNodes[inode]);
+    if (point[fAxis[inode]] - delta[fAxis[inode]] <  fValue[inode]) {
       currentIndex++; 
       stackNode[currentIndex]= (inode<<1)+1;
-      if (point[node->fAxis] + delta[node->fAxis] > node->fValue) 
-	stackStatus[currentIndex]= status | (1<<(2*node->fAxis));
+      if (point[fAxis[inode]] + delta[fAxis[inode]] > fValue[inode])
+	stackStatus[currentIndex]= status | (1<<(2*fAxis[inode]));
     }
-    if (point[node->fAxis] + delta[node->fAxis] >= node->fValue){
+    if (point[fAxis[inode]] + delta[fAxis[inode]] >= fValue[inode]){
       currentIndex++; 
       stackNode[currentIndex]= (inode<<1)+2;
-      if (point[node->fAxis] - delta[node->fAxis]<node->fValue) 
-	stackStatus[currentIndex]= status | (1<<(2*node->fAxis+1));
+      if (point[fAxis[inode]] - delta[fAxis[inode]]<fValue[inode])
+	stackStatus[currentIndex]= status | (1<<(2*fAxis[inode]+1));
     }
   }
   if (fData){
@@ -735,62 +753,69 @@ void TKDTree<Index, Value>::MakeBoundaries(Value *range)
 // Build boundaries for each node.
 
 
-	if(range) memcpy(fRange, range, 2*fNDim*sizeof(Value));
+	if(range) memcpy(fRange, range, fNDimm*sizeof(Value));
 	// total number of nodes including terminal nodes
-	Int_t totNodes = fNnodes + GetNTerminalNodes();
-	fBoundaries = new Value[totNodes*2*fNDim];
-	Info("MakeBoundaries(Value*)", Form("Allocate boundaries for %d nodes", totNodes));
+	Int_t totNodes = fNnodes + GetNTNodes();
+	fBoundaries = new Value[totNodes*fNDimm];
+	//Info("MakeBoundaries(Value*)", Form("Allocate boundaries for %d nodes", totNodes));
+
 	
 	// loop
-	Int_t child_index;
+	Value *tbounds = 0x0, *cbounds = 0x0;
+	Int_t cn;
 	for(int inode=fNnodes-1; inode>=0; inode--){
-		memcpy(&fBoundaries[inode*2*fNDim], fRange, 2*fNDim*sizeof(Value));
+		tbounds = &fBoundaries[inode*fNDimm];
+		memcpy(tbounds, fRange, fNDimm*sizeof(Value));
 				
 		// check left child node
-		child_index = 2*inode+1;
-		if(IsTerminal(child_index)) CookBoundaries(inode, kTRUE);
-		for(int idim=0; idim<fNDim; idim++) fBoundaries[2*fNDim*inode+2*idim] = fBoundaries[2*fNDim*child_index+2*idim];
+		cn = (inode<<1)+1;
+		if(IsTerminal(cn)) CookBoundaries(inode, kTRUE);
+		cbounds = &fBoundaries[fNDimm*cn];
+		for(int idim=0; idim<fNDim; idim++) tbounds[idim<<1] = cbounds[idim<<1];
 		
 		// check right child node
-		child_index = 2*inode+2;
-		if(IsTerminal(child_index)) CookBoundaries(inode, kFALSE);
-		for(int idim=0; idim<fNDim; idim++) fBoundaries[2*fNDim*inode+2*idim+1] = fBoundaries[2*fNDim*child_index+2*idim+1];
+		cn = (inode+1)<<1;
+		if(IsTerminal(cn)) CookBoundaries(inode, kFALSE);
+		cbounds = &fBoundaries[fNDimm*cn];
+		for(int idim=0; idim<fNDim; idim++) tbounds[(idim<<1)+1] = cbounds[(idim<<1)+1];
 	}
 }
 
 //_________________________________________________________________
 template <typename Index, typename Value>
-void TKDTree<Index, Value>::CookBoundaries(Int_t parent_node, Bool_t LEFT)
+void TKDTree<Index, Value>::CookBoundaries(const Int_t node, Bool_t LEFT)
 {
 	// define index of this terminal node
-	Int_t index = 2 * parent_node + (LEFT ? 1 : 2);
+	Int_t index = (node<<1) + (LEFT ? 1 : 2);
+	//Info("CookBoundaries()", Form("Node %d", index));
 	
 	// build and initialize boundaries for this node
-	//printf("\tAllocate terminal node %d\n", index);
-	memcpy(&fBoundaries[2*fNDim*index], fRange, 2*fNDim*sizeof(Value));
+	Value *tbounds = &fBoundaries[fNDimm*index];
+	memcpy(tbounds, fRange, fNDimm*sizeof(Value));
 	Bool_t flag[256];  // cope with up to 128 dimensions 
-	memset(flag, kFALSE, 2*fNDim);
+	memset(flag, kFALSE, fNDimm);
 	Int_t nvals = 0;
 		
 	// recurse parent nodes
-	TKDNode<Index, Value> *node = 0x0;
-	while(parent_node >= 0 && nvals < 2 * fNDim){
-		node = &(fNodes[parent_node]);
+	Int_t pn = node;
+	while(pn >= 0 && nvals < fNDimm){
 		if(LEFT){
-			if(!flag[2*node->fAxis+1]) {
-				fBoundaries[2*fNDim*index+2*node->fAxis+1] = node->fValue;
-				flag[2*node->fAxis+1] = kTRUE;
+			index = (fAxis[pn]<<1)+1;
+			if(!flag[index]) {
+				tbounds[index] = fValue[pn];
+				flag[index] = kTRUE;
 				nvals++;
 			}
 		} else {
-			if(!flag[2*node->fAxis]) {
-				fBoundaries[2*fNDim*index+2*node->fAxis] = node->fValue;
-				flag[2*node->fAxis] = kTRUE;
+			index = fAxis[pn]<<1;
+			if(!flag[index]) {
+				tbounds[index] = fValue[pn];
+				flag[index] = kTRUE;
 				nvals++;
 			}
 		}
-		LEFT = parent_node%2;
-		parent_node =  parent_node/2 + (parent_node%2) - 1;
+		LEFT = pn&1;
+		pn =  (pn - 1)>>1;
 	}
 }
 

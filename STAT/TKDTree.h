@@ -7,13 +7,8 @@
 
 #include "TMath.h"
 
-template <typename Index, typename Value>
-struct TKDNode{
-	Char_t fAxis;
-	Value  fValue;
-	
-	ClassDef(TKDNode, 1) // TKDTree node structure
-};
+Int_t memory();
+
 
 template <typename Index, typename Value> class TKDTree : public TObject
 {
@@ -27,26 +22,26 @@ public:
 	~TKDTree();
 	
 	// getters
-	inline	Index*	GetPointsIndexes(Int_t node) const {
+	inline	Index*  GetPointsIndexes(Int_t node) const {
 		if(node < fNnodes) return 0x0;
 		Int_t offset = (node >= fCrossNode) ? (node-fCrossNode)*fBucketSize : fOffset+(node-fNnodes)*fBucketSize;
 		return &fIndPoints[offset];
 	}
-	inline Char_t		GetNodeAxis(Int_t id) const {return (id < 0 || id >= fNnodes) ? 0 : fNodes[id].fAxis;}
-	inline Value		GetNodeValue(Int_t id) const {return (id < 0 || id >= fNnodes) ? 0 : fNodes[id].fValue;}
-	inline Int_t		GetNNodes() const {return fNnodes;}
-	inline Int_t		GetNTerminalNodes() const {return fNpoints/fBucketSize + ((fNpoints%fBucketSize)?1:0);}
-	inline Value*		GetBoundaries();
-	inline Value*		GetBoundary(const Int_t node);
-	static					Int_t		GetIndex(Int_t row, Int_t collumn){return collumn+(1<<row);}
-	static	inline	void		GetCoord(Int_t index, Int_t &row, Int_t &collumn){for (row=0; index>=(16<<row);row+=4); for (; index>=(2<<row);row++);collumn= index-(1<<row);};
-	Int_t	FindNearestNeighbors(const Value *point, const Int_t kNN, Index *&i, Value *&d);
-	Index           FindNode(const Value * point);
-	void            FindPoint(Value * point, Index &index, Int_t &iter);
-	void            FindInRangeA(Value * point, Value * delta, Index *res , Index &npoints,Index & iter, Int_t bnode);
-	void            FindInRangeB(Value * point, Value * delta, Index *res , Index &npoints,Index & iter, Int_t bnode);
-	inline	void    FindBNodeA(Value * point, Value * delta, Int_t &inode);
-	inline	Bool_t  IsTerminal(Index inode){return (inode>=fNnodes);}
+	inline UChar_t GetNodeAxis(Int_t id) const {return (id < 0 || id >= fNnodes) ? 0 : fAxis[id];}
+	inline Value   GetNodeValue(Int_t id) const {return (id < 0 || id >= fNnodes) ? 0 : fValue[id];}
+	inline Int_t   GetNNodes() const {return fNnodes;}
+	inline Int_t   GetNTNodes() const {return fNpoints/fBucketSize + ((fNpoints%fBucketSize)?1:0);}
+	inline Value*  GetBoundaries();
+	inline Value*  GetBoundary(const Int_t node);
+	static  Int_t   GetIndex(Int_t row, Int_t collumn){return collumn+(1<<row);}
+	static inline void GetCoord(Int_t index, Int_t &row, Int_t &collumn){for (row=0; index>=(16<<row);row+=4); for (; index>=(2<<row);row++);collumn= index-(1<<row);};
+	        Bool_t  FindNearestNeighbors(const Value *point, const Int_t kNN, Index *&i, Value *&d);
+	        Index   FindNode(const Value * point);
+	        void    FindPoint(Value * point, Index &index, Int_t &iter);
+	        void    FindInRangeA(Value * point, Value * delta, Index *res , Index &npoints,Index & iter, Int_t bnode);
+	        void    FindInRangeB(Value * point, Value * delta, Index *res , Index &npoints,Index & iter, Int_t bnode);
+	inline void    FindBNodeA(Value * point, Value * delta, Int_t &inode);
+	inline Bool_t  IsTerminal(Index inode){return (inode>=fNnodes);}
 	Value           KOrdStat(Index ntotal, Value *a, Index k, Index *index);
 	void            MakeBoundaries(Value *range = 0x0);
 	void            SetData(Index npoints, Index ndim, UInt_t bsize, Value **data);
@@ -58,7 +53,7 @@ protected:
 private:
 	TKDTree(const TKDTree &); // not implemented
 	TKDTree<Index, Value>& operator=(const TKDTree<Index, Value>&); // not implemented
-	void            CookBoundaries(Int_t parent_node, Bool_t left);
+	void            CookBoundaries(const Int_t node, Bool_t left);
 
 
 protected:
@@ -68,7 +63,8 @@ protected:
 	Index   fNDimm;      // dummy 2*fNDim
 	Index   fNpoints;    // number of multidimensional points
 	Index   fBucketSize; // limit statistic for nodes 
-	TKDNode<Index, Value> *fNodes;     //[fNnodes] nodes descriptors array
+	UChar_t *fAxis;      //[fNnodes] nodes cutting axis
+	Value   *fValue;     //[fNnodes] nodes cutting value
 	Value		*fRange;     //[fNDimm] range of data for each dimension
 	Value   **fData;     //! data points
 	Value		*fBoundaries;//! nodes boundaries - check class doc
@@ -102,9 +98,8 @@ void TKDTree<Index, Value>::FindBNodeA(Value *point, Value *delta, Int_t &inode)
   //
   inode =0; 
   for (;inode<fNnodes;){
-    TKDNode<Index, Value> & node = fNodes[inode];
-    if (TMath::Abs(point[node.fAxis] - node.fValue)<delta[node.fAxis]) break;
-    inode = (point[node.fAxis] < node.fValue) ? (inode*2)+1: (inode*2)+2;    
+    if (TMath::Abs(point[fAxis[inode]] - fValue[inode])<delta[fAxis[inode]]) break;
+    inode = (point[fAxis[inode]] < fValue[inode]) ? (inode*2)+1: (inode*2)+2;
   }
 }
 
