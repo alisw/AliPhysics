@@ -123,7 +123,7 @@ void NLTSLineSet::SetProjection(NLTProjector* proj, NLTProjectable* model)
 
 void NLTSLineSet::UpdateProjection()
 {
-  NLTProjection&   proj   = * fProjector->GetProjection();
+  NLTProjection&   proj  = * fProjector->GetProjection();
   StraightLineSet& orig  = * dynamic_cast<StraightLineSet*>(fProjectable);
 
   // lines
@@ -136,7 +136,9 @@ void NLTSLineSet::UpdateProjection()
 
   Double_t s1, s2, s3;
   orig.RefHMTrans().GetScale(s1, s2, s3);
-  ZTrans mx; mx.Scale(s1, s2, s3);
+  ZTrans mx; mx.Scale(s1, s2, s3); 
+  Double_t x, y, z;
+  orig.RefHMTrans().GetPos(x, y,z);
   while (li.next()) 
   {
     l = (Line*) li();
@@ -144,6 +146,8 @@ void NLTSLineSet::UpdateProjection()
     p2[0] = l->fV2[0];  p2[1] = l->fV2[1]; p2[2] = l->fV2[2];
     mx.MultiplyIP(p1);
     mx.MultiplyIP(p2);
+    p1[0] += x; p1[1] += y; p1[2] += z;
+    p2[0] += x; p2[1] += y; p2[2] += z;
     proj.ProjectPointFv(p1);
     proj.ProjectPointFv(p2);
     AddLine(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
@@ -159,10 +163,4 @@ void NLTSLineSet::UpdateProjection()
     m = (Marker*) mi();
     AddMarker(m->fLineID, m->fPos);
   }
-
-  // set position
-  Float_t pos[3];
-  orig.RefHMTrans().GetPos(pos);
-  proj.ProjectPointFv(pos);
-  fHMTrans.SetPos(pos);
 }
