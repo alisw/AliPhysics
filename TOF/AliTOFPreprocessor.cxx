@@ -81,7 +81,7 @@ AliTOFPreprocessor::~AliTOFPreprocessor()
     fh2 = 0;
   }
   if (fCal){
-    fCal->Clear();
+    //    fCal->Clear();
     delete fCal;
     fCal = 0;
   }
@@ -226,6 +226,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
 	  AliInfo(Form("Got the file %s, now we can extract some values.", fileName.Data()));
 
 	  daqFile = new TFile(fileName.Data(),"READ");
+	  if (fh2) delete fh2;
 	  fh2 = (TH2S*) daqFile->Get("htoftot");
 	  if (!fh2){
 	    Log("some problems occurred:: No histo retrieved, TOF exiting from Shuttle");
