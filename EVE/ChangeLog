@@ -1,3 +1,8 @@
+2007-10-23  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* alice-macros/NLT_trackcount_init.C:
+	Set center of the projection to the primary vertex.
+
 2007-10-22  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	Merged EVE-dev-after-merge to EVE-dev into HEAD.

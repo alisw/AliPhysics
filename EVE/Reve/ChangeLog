@@ -1,3 +1,34 @@
+2007-10-23  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	* LinkDef.h:
+	* NLTBases.cxx:
+	* NLTBases.h:
+	Move implementation of NLTProjectable class for geometry into GeoNode
+	files.
+
+	* NLTTrack.cxx:
+	Fix bug in GetBreakPoint(). Check segments on projected points.
+
+	* NLTPolygonSet.cxx:
+	* NLTPolygonSet.h:
+	* NLTPolygonSetGL.cxx:
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	* NLTProjectorGL.cxx:
+	* NLTTrack.cxx:
+	Set center of NLTProjection.
+
+	* PODs.h:
+        Add function for scalar product in vector.
+
+	* StraightLineSet.cxx:
+	In UpdateProjection() fix bug => translate point according to
+	transformation matrix.
+
 2007-10-22  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Viewer.cxx:
