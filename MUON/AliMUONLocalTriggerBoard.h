@@ -161,6 +161,6 @@ class AliMUONLocalTriggerBoard : public AliMUONTriggerBoard
       AliMUONTriggerLut *fLUT;    //!< Pointer to trigger LUT, that we do not own.
       Int_t    fCoinc44;          ///< Coinc 44 (0/1 = coinc34/coinc44)
       
-      ClassDef(AliMUONLocalTriggerBoard,1) //Implementation of local trigger board objects
+      ClassDef(AliMUONLocalTriggerBoard,2) //Implementation of local trigger board objects
 };
 #endif
