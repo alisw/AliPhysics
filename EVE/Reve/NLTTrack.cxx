@@ -52,17 +52,13 @@ void  NLTTrack::GetBreakPoint(Int_t idx, Bool_t back,  Float_t& x, Float_t& y, F
 {
   Vector vL = fOrigPnts[idx];
   Vector vR = fOrigPnts[idx+1];
-  // printf("out of tolerance:%d (%f, %f, %f)(%f, %f, %f) \n",
-  // 	 idx, vL.x, vL.y, vL.z, vR.x, vR.y, vR.z );
-
-  Vector vM, vLP, vRP, vMP;
-  while((vL-vR).Mag() > 0.1)
+  Vector vM, vLP, vMP;
+  while((vL-vR).Mag() > 0.01)
   { 
     vM.Mult(vL+vR, 0.5f);
     vLP.Set(vL); fProjection->ProjectPoint(vLP.x, vLP.y, vLP.z);
     vMP.Set(vM); fProjection->ProjectPoint(vMP.x, vMP.y, vMP.z);
-    // if(fProjection->AcceptSegment(vL, vM, GetRnrStyle()->fDelta*0.1))
-    if(fProjection->AcceptSegment(vL, vM, 0.0f))
+    if(fProjection->AcceptSegment(vLP, vMP, 0.0f))
     {
       vL.Set(vM);
     }
