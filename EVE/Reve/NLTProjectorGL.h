@@ -13,7 +13,7 @@ class TGLText;
 namespace Reve {
 class NLTProjector;
 class NLTProjectorGL : public TGLObject
-{ 
+{
 public:
   typedef std::list<Float_t> TMList_t;
 
@@ -23,7 +23,7 @@ private:
 
   mutable TMList_t   fPos;
   mutable TMList_t   fVals;
-  
+
   mutable Float_t    fRange;
   Float_t            fLabelSize;
   Float_t            fLabelOff;
@@ -35,8 +35,8 @@ private:
   const char*        GetText(Float_t) const;
 
   void               SplitInterval(Int_t axis) const;
-  void               SplitIntervalByPos(Float_t min, Float_t max, Int_t axis, Int_t level)const; 
-  void               SplitIntervalByVal(Float_t min, Float_t max, Int_t axis, Int_t level)const; 
+  void               SplitIntervalByPos(Float_t min, Float_t max, Int_t axis, Int_t level)const;
+  void               SplitIntervalByVal(Float_t min, Float_t max, Int_t axis, Int_t level)const;
 
 protected:
   NLTProjector*      fM; // fModel dynamic-casted to NLTProjector
@@ -51,7 +51,7 @@ public:
   virtual Bool_t SetModel(TObject* obj, const Option_t* opt=0);
   virtual void   SetBBox();
   Bool_t IgnoreSizeForOfInterest() const { return kTRUE;}
-  
+
   ClassDef(NLTProjectorGL, 0);
 }; // endclass NLTProjectorGL
 
