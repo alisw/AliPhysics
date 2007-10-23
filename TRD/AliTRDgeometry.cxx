@@ -570,6 +570,12 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   Char_t  cTagV[6];
   Char_t  cTagM[5];
 
+  // There are three TRD volumes for the supermodules in order to accomodate
+  // the different arrangements in front of PHOS
+  // UTR1: Default supermodule
+  // UTR2: Supermodule in front of PHOS with double carbon cover
+  // UTR3: As UTR2, but w/o middle stack
+
   // The TRD mother volume for one sector (Air), full length in z-direction
   // Provides material for side plates of super module
   parTrd[0] = fgkSwidth1/2.0;
@@ -577,6 +583,8 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   parTrd[2] = fgkSlength/2.0;
   parTrd[3] = fgkSheight/2.0;
   gMC->Gsvolu("UTR1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTR2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTR3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   // The outer aluminum plates of the super module (Al)
   parTrd[0] = fgkSwidth1/2.0;
@@ -584,6 +592,8 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   parTrd[2] = fgkSlength/2.0;
   parTrd[3] = fgkSheight/2.0;
   gMC->Gsvolu("UTS1","TRD1",idtmed[1301-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTS2","TRD1",idtmed[1301-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTS3","TRD1",idtmed[1301-1],parTrd,kNparTrd);
 
   // The inner part of the TRD mother volume for one sector (Air), 
   // full length in z-direction
@@ -592,6 +602,8 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   parTrd[2] = fgkSlength/2.0;
   parTrd[3] = fgkSheight/2.0 - fgkSMpltT;
   gMC->Gsvolu("UTI1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTI2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTI3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   for (Int_t icham = 0; icham < kNcham; icham++) {
     for (Int_t iplan = 0; iplan < kNplan; iplan++) {  
@@ -865,11 +877,15 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   ypos = 0.0;
   zpos = 0.0;
   gMC->Gspos("UTI1",1,"UTS1",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTI2",1,"UTS2",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTI3",1,"UTS3",xpos,ypos,zpos,0,"ONLY");
 
   xpos = 0.0;
   ypos = 0.0;
   zpos = 0.0;
   gMC->Gspos("UTS1",1,"UTR1",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTS2",1,"UTR2",xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTS3",1,"UTR3",xpos,ypos,zpos,0,"ONLY");
 
   // Put the TRD volumes into the space frame mother volumes
   // if enabled via status flag
@@ -879,7 +895,22 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   for (Int_t isect = 0; isect < kNsect; isect++) {
     if (fSMstatus[isect]) {
       sprintf(cTagV,"BTRD%d",isect);
-      gMC->Gspos("UTR1",1,cTagV,xpos,ypos,zpos,0,"ONLY");
+      switch (isect) {
+      case 13:
+      case 14:
+      case 15:
+        // Double carbon, w/o middle stack
+        gMC->Gspos("UTR3",1,cTagV,xpos,ypos,zpos,0,"ONLY");
+        break;
+      case 11:
+      case 12:
+	// Double carbon, all stacks
+        gMC->Gspos("UTR2",1,cTagV,xpos,ypos,zpos,0,"ONLY");
+        break;
+      default:
+	// Standard supermodule
+        gMC->Gspos("UTR1",1,cTagV,xpos,ypos,zpos,0,"ONLY");
+      };
     }
   }
 
@@ -1293,14 +1324,14 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   const Int_t kNparTube = 3;
   Float_t parTube[kNparTube];
   // The cooling pipes
-  parTube[0] = 0.0;
-  parTube[1] = 0.0;
-  parTube[2] = 0.0;
+  parTube[0] =  0.0;
+  parTube[1] =  0.0;
+  parTube[2] =  0.0;
   gMC->Gsvolu("UTCP","TUBE",idtmed[1324-1],parTube,0);
   // The cooling water
   parTube[0] =  0.0;
   parTube[1] =  0.2/2.0;
-  parTube[2] =  fCwidth[iplan]/2.0;
+  parTube[2] = -1.0;
   gMC->Gsvolu("UTCH","TUBE",idtmed[1314-1],parTube,kNparTube);
   // Water inside the cooling pipe
   xpos = 0.0;
@@ -1324,6 +1355,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
         ypos   = (0.5 + iMCMrow) * ySize - 1.9 
                - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
         zpos   = 0.0 + 0.742/2.0;                 
+	// The cooling pipes
         par[0] = 0.0;
         par[1] = 0.3/2.0; // Thickness of the cooling pipes
         par[2] = fCwidth[iplan]/2.0;
@@ -1546,6 +1578,19 @@ void AliTRDgeometry::GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed)
             ,xyzOrig[1]
             ,xyzOrig[2]
             ,0,"ONLY");
+  gMC->Gspos(cTagV,1,"UTI2"
+            ,xyzOrig[0]
+            ,xyzOrig[1]
+            ,xyzOrig[2]
+            ,0,"ONLY");
+  if (icham != 2) {
+    // W/o middle stack
+    gMC->Gspos(cTagV,1,"UTI3"
+              ,xyzOrig[0]
+              ,xyzOrig[1]
+              ,xyzOrig[2]
+              ,0,"ONLY");
+  }
 
 }
 
