@@ -2,9 +2,8 @@ void CreateCalibPars_Miscalibrated_Scaled(){
   // Create TOF Calibration Object for miscalibrated detector
   // and write it on CDB
   AliTOFcalib *tofcalib = new AliTOFcalib();
-  tofcalib->CreateSimCalArrays();
-  TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFSimCalArrayOnline(); 
-  TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFSimCalArrayOffline(); 
+  tofcalib->CreateCalArrays();
+  TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFCalArrayOffline(); 
   // Input data for decalibration
 
   TFile f("$ALICE_ROOT/TOF/data/spectrumScaled.root","READ");  
@@ -15,8 +14,10 @@ void CreateCalibPars_Miscalibrated_Scaled(){
   // Slewing parameters (same for all channels)
 
   Float_t par[6] = {0.,0.,0.,0.,0.,0.};
+  Float_t kpar=0;
   for(Int_t i =0;i<6;i++){
     par[i]=fit->GetParameter(i);
+    kpar=par[0];
     cout << " Slewing parameter " <<i<<" =" << par[i] << endl;
   }
 
@@ -37,14 +38,13 @@ void CreateCalibPars_Miscalibrated_Scaled(){
   TRandom *rnd   = new TRandom(4357);
   Int_t nChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
   for (Int_t ipad = 0 ; ipad<nChannels; ipad++){
-    AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline*)tofCalOnline->At(ipad);
     AliTOFChannelOffline *calChannelOffline = (AliTOFChannelOffline*)tofCalOffline->At(ipad);
     delay=rnd->Gaus(meanDelay,sigmaDelay);
-    calChannelOnline->SetDelay(delay);
+    par[0]=kpar+delay;
     calChannelOffline->SetSlewPar(par);
   }
-  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,AliCDBRunRange::Infinity(),tofCalOnline);
-  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,AliCDBRunRange::Infinity(),tofCalOffline,hToT);
+  tofcalib->WriteParOfflineOnCDB("TOF/Calib","valid",0,AliCDBRunRange::Infinity());
+  tofcalib->WriteSimHistoOnCDB("TOF/Calib",0,AliCDBRunRange::Infinity(),hToT);
   f.Close();
 }
 

@@ -44,25 +44,20 @@ public:
   AliTOFcalib& operator=(const AliTOFcalib & calib); // assignment operator
   virtual ~AliTOFcalib() ; // dtor
   void CreateCalArrays();
-  void CreateSimCalArrays();
   TObjArray * GetTOFCalArrayOnline() const {return fTOFCalOnline;}
   TObjArray * GetTOFCalArrayOffline() const {return fTOFCalOffline;}
-  TObjArray * GetTOFSimCalArrayOnline() const {return fTOFSimCalOnline;}
-  TObjArray * GetTOFSimCalArrayOffline() const {return fTOFSimCalOffline;}
   TH1F * GetTOFSimToT() const {return fTOFSimToT;}
   TTree * GetTOFCalibTree() const {return fTree;}
   const char * GetOfflineValidity() const {return fkValidity;}
   void SetOfflineValidity(const char* validity) {fkValidity = validity;}
   Int_t NChannels()const{return fNChannels;}
   // Methods to retrieve/write parameters from/on CDB
-  void WriteSimParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TObjArray *cal);
-  void WriteSimParOfflineOnCDB(Char_t *sel, const Char_t * validity, Int_t minrun, Int_t maxrun, TObjArray *cal, TH1F *histo);
-  void ReadSimParOnlineFromCDB(Char_t *sel, Int_t nrun);
-  void ReadSimParOfflineFromCDB(Char_t *sel, Int_t nrun);
+  void WriteSimHistoOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo);
   void WriteParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun);
   void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun);
   void WriteParOnlineOnCDB(Char_t *sel);
   void WriteParOfflineOnCDB(Char_t *sel, const Char_t *validity);
+  Bool_t ReadSimHistoFromCDB(Char_t *sel, Int_t nrun);
   Bool_t ReadParOnlineFromCDB(Char_t *sel, Int_t nrun);
   Bool_t ReadParOfflineFromCDB(Char_t *sel, Int_t nrun);
   void WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param);
@@ -88,8 +83,6 @@ private:
   Int_t fNChannels; // number of TOF channels
   TObjArray *fTOFCalOnline;       // array of AliTOFChannels storing calib parameters
   TObjArray *fTOFCalOffline;       // array of AliTOFChannels storing calib parameters
-  TObjArray *fTOFSimCalOnline;       // array of AliTOFChannels storing calib parameters
-  TObjArray *fTOFSimCalOffline;       // array of AliTOFChannels storing calib parameters
   TH1F *fTOFSimToT;        // histo with realistic ToT signal from TB Data
   const char *fkValidity;  // validity for offline calibration object
   TTree *fTree;            // tree for TOF calibration
@@ -97,7 +90,7 @@ private:
   Int_t fFirstRun;            // first run for calibration obj validity
   Int_t fLastRun;            // last run for calib obj validity
 
-  ClassDef(AliTOFcalib,3);
+  ClassDef(AliTOFcalib,4);
 };
 
 #endif // AliTOFcalib_H

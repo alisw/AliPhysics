@@ -4,12 +4,11 @@ void CreateCalibPars_Ideal(){
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE");
   AliTOFcalib *tofcalib = new AliTOFcalib();
-  tofcalib->CreateSimCalArrays();
-  TObjArray *tofCalOnline = (TObjArray*) tofcalib->GetTOFSimCalArrayOnline(); 
-  TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFSimCalArrayOffline(); 
+  tofcalib->CreateCalArrays();
+  TObjArray *tofCalOffline = (TObjArray*) tofcalib->GetTOFCalArrayOffline(); 
   TH1F *hToT= new TH1F(); //"empty" ToT histo as a default for ideal 
-  tofcalib->WriteSimParOnlineOnCDB("TOF/Calib",0,AliCDBRunRange::Infinity(),tofCalOnline);
-  tofcalib->WriteSimParOfflineOnCDB("TOF/Calib","valid",0,AliCDBRunRange::Infinity(),tofCalOffline,hToT);
+  tofcalib->WriteParOfflineOnCDB("TOF/Calib","valid",0,AliCDBRunRange::Infinity());
+  tofcalib->WriteSimHistoOnCDB("TOF/Calib",0,AliCDBRunRange::Infinity(),hToT);
 }
 
 

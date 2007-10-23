@@ -15,9 +15,6 @@
 
 /*
 $Log$
-Revision 1.17  2007/10/18 09:12:22  zampolli
-New naming of online calibration directory
-
 Revision 1.16  2007/10/08 10:13:26  zampolli
 First Run and Last Run members added, infinite validity of calib obj implemented.
 
@@ -113,8 +110,6 @@ AliTOFcalib::AliTOFcalib():
   fNChannels(-1),
   fTOFCalOnline(0x0),
   fTOFCalOffline(0x0),
-  fTOFSimCalOnline(0x0),
-  fTOFSimCalOffline(0x0),
   fTOFSimToT(0x0),
   fkValidity(0x0),
   fTree(0x0),
@@ -132,8 +127,6 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fNChannels(calib.fNChannels),
   fTOFCalOnline(0x0),
   fTOFCalOffline(0x0),
-  fTOFSimCalOnline(0x0),
-  fTOFSimCalOffline(0x0),
   fTOFSimToT(calib.fTOFSimToT),
   fkValidity(calib.fkValidity),
   fTree(calib.fTree),
@@ -148,10 +141,6 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
     fTOFCalOnline->AddAt(calChOnline,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
 
-    AliTOFChannelOnline * simCalChOnline = (AliTOFChannelOnline*)calib.fTOFSimCalOnline->At(iarray);
-    AliTOFChannelOffline * simCalChOffline = (AliTOFChannelOffline*)calib.fTOFSimCalOffline->At(iarray);
-    fTOFSimCalOnline->AddAt(simCalChOnline,iarray);
-    fTOFSimCalOffline->AddAt(simCalChOffline,iarray);
   }
 }
 
@@ -172,10 +161,6 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
     AliTOFChannelOffline * calChOffline = (AliTOFChannelOffline*)calib.fTOFCalOffline->At(iarray);
     this->fTOFCalOnline->AddAt(calChOnline,iarray);
     this->fTOFCalOffline->AddAt(calChOffline,iarray);
-    AliTOFChannelOnline * simCalChOnline = (AliTOFChannelOnline*)calib.fTOFSimCalOnline->At(iarray);
-    AliTOFChannelOffline * simCalChOffline = (AliTOFChannelOffline*)calib.fTOFSimCalOffline->At(iarray);
-    this->fTOFSimCalOnline->AddAt(simCalChOnline,iarray);
-    this->fTOFSimCalOffline->AddAt(simCalChOffline,iarray);
   }
   return *this;
 }
@@ -194,14 +179,6 @@ AliTOFcalib::~AliTOFcalib()
       //fTOFCalOffline->Clear();
       delete fTOFCalOffline;
     }
-    if (fTOFSimCalOnline){
-      //fTOFSimCalOnline->Clear();
-      delete fTOFSimCalOnline;
-    }
-    if (fTOFSimCalOffline){
-      //fTOFSimCalOffline->Clear();
-      delete fTOFSimCalOffline;
-    }
   }
   if (fTree!=0x0) delete fTree;
 }
@@ -219,22 +196,6 @@ void AliTOFcalib::CreateCalArrays(){
     AliTOFChannelOffline * calChOffline = new AliTOFChannelOffline();
     fTOFCalOnline->AddAt(calChOnline,iarray);
     fTOFCalOffline->AddAt(calChOffline,iarray);
-  }
-}
-//_____________________________________________________________________________
-void AliTOFcalib::CreateSimCalArrays(){
-
-  // creating arrays for simulation online/offline calibration objs
-
-  fTOFSimCalOnline = new TObjArray(fNChannels);
-  fTOFSimCalOffline = new TObjArray(fNChannels);
-  fTOFSimCalOnline->SetOwner();
-  fTOFSimCalOffline->SetOwner();
-  for (Int_t iarray = 0; iarray<fNChannels; iarray++){
-    AliTOFChannelOnline * simCalChOnline = new AliTOFChannelOnline();
-    AliTOFChannelOffline * simCalChOffline = new AliTOFChannelOffline();
-    fTOFSimCalOnline->AddAt(simCalChOnline,iarray);
-    fTOFSimCalOffline->AddAt(simCalChOffline,iarray);
   }
 }
 //_____________________________________________________________________________
@@ -360,107 +321,41 @@ Bool_t AliTOFcalib::ReadParOfflineFromCDB(Char_t *sel, Int_t nrun)
    
 }
 //_____________________________________________________________________________
-void AliTOFcalib::WriteSimParOnlineOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TObjArray *calOnline){
-  //Write Sim miscalibration parameters to the CDB
-
-  fTOFSimCalOnline=calOnline;  
-  AliCDBManager *man = AliCDBManager::Instance();
-  AliCDBMetaData *md = new AliCDBMetaData();
-  md->SetResponsible("Chiara Zampolli");
-  Char_t *sel1 = "SimParOnline" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
-  AliCDBId id1(out,minrun,maxrun);
-  man->Put(fTOFSimCalOnline,id1,md);
-  delete md;
-}
-//_____________________________________________________________________________
-void AliTOFcalib::WriteSimParOfflineOnCDB(Char_t *sel, const Char_t *validity, Int_t minrun, Int_t maxrun, TObjArray *calOffline, TH1F *histo){
+void AliTOFcalib::WriteSimHistoOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, TH1F *histo){
   //Write Sim miscalibration parameters to the CDB
 
   fTOFSimToT=histo;
-  fTOFSimCalOffline=calOffline;  
   AliCDBManager *man = AliCDBManager::Instance();
-  AliCDBMetaData *md = new AliCDBMetaData();
-  md->SetResponsible("Chiara Zampolli");
-  md->SetComment(validity);
-  Char_t *sel1 = "SimParOffline" ;
+  Char_t *sel1 = "SimHisto" ;
   Char_t  out[100];
   sprintf(out,"%s/%s",sel,sel1); 
-  AliCDBId id1(out,minrun,maxrun);
-  man->Put(fTOFSimCalOffline,id1,md);
-  Char_t *sel2 = "SimHisto" ;
-  sprintf(out,"%s/%s",sel,sel2); 
   AliCDBMetaData *mdhisto = new AliCDBMetaData();
   mdhisto->SetResponsible("Chiara Zampolli");
-  AliCDBId id2(out,minrun,maxrun);
-  man->Put(fTOFSimToT,id2,mdhisto);
-  delete md;
+  AliCDBId id(out,minrun,maxrun);
+  man->Put(fTOFSimToT,id,mdhisto);
   delete mdhisto;
 }
 //_____________________________________________________________________________
-void AliTOFcalib::ReadSimParOnlineFromCDB(Char_t *sel, Int_t nrun)
+Bool_t AliTOFcalib::ReadSimHistoFromCDB(Char_t *sel, Int_t nrun)
 {
   //Read miscalibration parameters from the CDB
   AliCDBManager *man = AliCDBManager::Instance();
-
-  // The Slewing Pars
-
-  Char_t *sel1 = "SimParOnline" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    AliFatal("Exiting, no CDB object (SimParOnline) found!!!");
-    exit(0);  
-  }
-  AliCDBEntry *entry1 = man->Get(out,nrun);
-  if(!entry1->GetObject()){
-    AliFatal("Exiting, no CDB object (SimParOnline) found!!!");
-    exit(0);  
-  }  
-  TObjArray *cal =(TObjArray*)entry1->GetObject();
-  fTOFSimCalOnline=cal;
-
-}
-//_____________________________________________________________________________
-void AliTOFcalib::ReadSimParOfflineFromCDB(Char_t *sel, Int_t nrun)
-{
-  //Read miscalibration parameters from the CDB
-  AliCDBManager *man = AliCDBManager::Instance();
-
-  // The Slewing Pars
-
-  Char_t *sel1 = "SimParOffline" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
-  if (!man->Get(out,nrun)) { 
-    AliFatal("Exiting, no CDB object (SimParOffline) found!!!");
-    exit(0);  
-  }
-  AliCDBEntry *entry1 = man->Get(out,nrun);
-  if(!entry1->GetObject()){
-    AliFatal("Exiting, no CDB object (SimParOffline) found!!!");
-    exit(0);  
-  }  
-  TObjArray *cal =(TObjArray*)entry1->GetObject();
-  AliCDBMetaData *md = (AliCDBMetaData*)entry1->GetMetaData();
-  fkValidity = md->GetComment();
-  fTOFSimCalOffline=cal;
 
   // The Tot Histo
 
-  Char_t *sel2 = "SimHisto" ;
-  sprintf(out,"%s/%s",sel,sel2); 
+  Char_t *sel1 = "SimHisto" ;
+  Char_t  out[100];
+  sprintf(out,"%s/%s",sel,sel1); 
   if (!man->Get(out,nrun)) { 
     AliFatal("Exiting, no CDB object (SimHisto) found!!!");
     exit(0);  
   }
-  AliCDBEntry *entry2 = man->Get(out,nrun);
-  if(!entry2->GetObject()){
+  AliCDBEntry *entry = man->Get(out,nrun);
+  if(!entry->GetObject()){
     AliFatal("Exiting, no CDB object (SimHisto) found!!!");
     exit(0);  
   }  
-  TH1F *histo =(TH1F*)entry2->GetObject();
+  TH1F *histo =(TH1F*)entry->GetObject();
   fTOFSimToT=histo;
 }
 //_____________________________________________________________________________

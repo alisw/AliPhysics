@@ -410,19 +410,17 @@ void AliTOFDigitizer::InitDecalibration( AliTOFcalib *calib) const {
   //
   //
 
-  calib->CreateSimCalArrays();
-  calib->ReadSimParOnlineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
-  calib->ReadSimParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  calib->CreateCalArrays();
+  calib->ReadSimHistoFromCDB("TOF/Calib", -1); // use AliCDBManager's number
+  calib->ReadParOfflineFromCDB("TOF/Calib", -1); // use AliCDBManager's number
 }
 //---------------------------------------------------------------------
 void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
 
   // Read Calibration parameters from the CDB
 
-  TObjArray * calOnline= calib->GetTOFSimCalArrayOnline();
-  TObjArray * calOffline= calib->GetTOFSimCalArrayOffline();
+  TObjArray * calOffline= calib->GetTOFCalArrayOffline();
 
-  AliDebug(2,Form("Size of array for Online Calibration = %i",calOnline->GetEntries()));
   AliDebug(2,Form("Size of array for Offline Calibration = %i",calOffline->GetEntries()));
 
   // Initialize Quantities to Simulate ToT Spectra
@@ -478,19 +476,17 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       //decalibrated TOF Digits likely to be simulated....
  
       Int_t index = AliTOFGeometry::GetIndex(detId); // The channel index    
-      AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline *)calOnline->At(index); //retrieve the info for time delay
       AliTOFChannelOffline *calChannelOffline = (AliTOFChannelOffline *)calOffline->At(index); //retrieve the info for time slewing 
-      Double_t timedelay = (Double_t)calChannelOnline->GetDelay(); //The global channel delay, ns
       Double_t par[6];  // time slewing parameters
   
       //check whether we actually ask for miscalibration
 
-      if(timedelay!=0)misCalibPars=kTRUE;
       for (Int_t j = 0; j<6; j++){
 	par[j]=(Double_t)calChannelOffline->GetSlewPar(j);
 	if(par[j]!=0)misCalibPars=kTRUE;
       }
-      AliDebug(2,Form(" Calib Pars = %f, %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
+      AliDebug(2,Form(" Calib Pars = %f (0-th parameter for time slewing + time delay), %f, %f, %f, %f, %f ",par[0],par[1],par[2],par[3],par[4],par[5]));
+
       // Now generate Realistic ToT distribution from TestBeam Data. 
       // Tot is in ns, assuming a Matching Window of 10 ns.
 
@@ -514,11 +510,8 @@ void AliTOFDigitizer::DecalibrateTOFSignal( AliTOFcalib *calib){
       AliDebug(2,Form(" Time before miscalibration (ps) %e: ",dig->GetTdc()*(Double_t)AliTOFGeometry::TdcBinWidth()));
       // add slewing effect
       timeCorr=par[0] + tToT*(par[1] +tToT*(par[2] +tToT*(par[3] +tToT*(par[4] +tToT*par[5])))); 
-      AliDebug(2,Form(" The Time slewing (ns): %f: ",timeCorr));
-      AliDebug(2,Form(" The Time delay (ns): %f: ",timedelay));
+      AliDebug(2,Form(" The Time slewing + delay (ns): %f: ",timeCorr));
       // add global time shift
-      timeCorr = timeCorr + timedelay;
-      AliDebug(2,Form(" The Time Slewing + delay (ns): %f: ",timeCorr));
       //convert to ps
       timeCorr*=1E3;
       Double_t timeMis = (Double_t)(dig->GetTdc())*(Double_t)AliTOFGeometry::TdcBinWidth();
