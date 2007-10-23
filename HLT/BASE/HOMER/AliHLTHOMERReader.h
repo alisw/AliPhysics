@@ -25,12 +25,12 @@
 
 
 
-class MonitoringReader
+class AliHLTMonitoringReader
     {
     public:
 
-	MonitoringReader() {};
-	virtual ~MonitoringReader() {};
+	AliHLTMonitoringReader() {};
+	virtual ~AliHLTMonitoringReader() {};
 	
 	/* Read in the next available event */
 	virtual int ReadNextEvent() = 0;
@@ -79,32 +79,32 @@ class MonitoringReader
 	virtual homer_uint64 GetBlockStatusFlags( unsigned long ndx ) const = 0;
 
 #ifdef USE_ROOT
-        ClassDef(MonitoringReader,1);
+        ClassDef(AliHLTMonitoringReader,1);
 #endif
     };
 
 
 
-class HOMERReader: public MonitoringReader
+class AliHLTHOMERReader: public AliHLTMonitoringReader
     {
     public:
 #ifdef USE_ROOT
-	HOMERReader();
+	AliHLTHOMERReader();
 #endif
 
 	/* Constructors & destructors, HOMER specific */
 	/* For reading from a TCP port */
-	HOMERReader( const char* hostname, unsigned short port );
+	AliHLTHOMERReader( const char* hostname, unsigned short port );
 	/* For reading from multiple TCP ports */
-	HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports );
+	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports );
 	/* For reading from a System V shared memory segment */
-	HOMERReader( key_t shmKey, int shmSize );
+	AliHLTHOMERReader( key_t shmKey, int shmSize );
 	/* For reading from multiple System V shared memory segments */
-	HOMERReader( unsigned int shmCnt, key_t* shmKey, int* shmSize );
+	AliHLTHOMERReader( unsigned int shmCnt, key_t* shmKey, int* shmSize );
 	/* For reading from multiple TCP ports and multiple System V shared memory segments */
-	HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
+	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
 		     unsigned int shmCnt, key_t* shmKey, int* shmSize );
-	virtual ~HOMERReader();
+	virtual ~AliHLTHOMERReader();
 
 	/* Return the status of the connection as established by one of the constructors.
 	   0 means connection is ok, non-zero specifies the type of error that occured. */
@@ -126,7 +126,7 @@ class HOMERReader: public MonitoringReader
 		fEventRequestAdvanceTime = time;
 		}
 
-	/* Defined in MonitoringReader */
+	/* Defined in AliHLTMonitoringReader */
 	/* Read in the next available event */
 	virtual int  ReadNextEvent();
 	/* Read in the next available event */
@@ -295,13 +295,41 @@ class HOMERReader: public MonitoringReader
       	unsigned long fEventRequestAdvanceTime;                     //!transient
     private:
       	/** copy constructor prohibited */
-      	HOMERReader(const HOMERReader&);
+      	AliHLTHOMERReader(const AliHLTHOMERReader&);
       	/** assignment operator prohibited */
-      	HOMERReader& operator=(const HOMERReader&);
+      	AliHLTHOMERReader& operator=(const AliHLTHOMERReader&);
       	
 #ifdef USE_ROOT
-        ClassDef(HOMERReader,2);
+        ClassDef(AliHLTHOMERReader,2);
 #endif
     };
+
+/** defined for backward compatibility */
+typedef AliHLTMonitoringReader MonitoringReader;
+/** defined for backward compatibility */
+typedef AliHLTHOMERReader HOMERReader;
+
+// external interface of the HOMER reader
+#define ALIHLTHOMERREADER_CREATE_FROM_BUFFER "AliHLTHOMERReaderCreateFromBuffer"
+#define ALIHLTHOMERREADER_DELETE "AliHLTHOMERReaderDelete"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  typedef AliHLTHOMERReader* (*AliHLTHOMERReaderCreateFromBuffer_t)(const void* pBuffer, int size);
+  typedef void (*AliHLTHOMERReaderDelete_t)(AliHLTHOMERReader* pInstance);
+  /**
+   * Create instance of HOMER reader.
+   */
+  AliHLTHOMERReader* AliHLTHOMERReaderCreateFromBuffer();
+
+  /**
+   * Delete instance of HOMER reader.
+   */
+  void AliHLTHOMERReaderDelete(AliHLTHOMERReader* pInstance);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* AliHLTHOMERREADER_H */

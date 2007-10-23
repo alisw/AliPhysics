@@ -1,6 +1,6 @@
 // XEMacs -*-C++-*-
-#ifndef _HOMERDATA_HPP_
-#define _HOMERDATA_HPP_
+#ifndef ALIHLTHOMERDATA_H
+#define ALIHLTHOMERDATA_H
 
 /************************************************************************
 **
@@ -375,4 +375,4 @@ class HOMERBlockDescriptor
 ***************************************************************************
 */
 
-#endif // _HOMERDATA_HPP_
+#endif // ALIHLTHOMERDATA_H

@@ -51,12 +51,12 @@
 
 
 
-class HOMERWriter
+class AliHLTHOMERWriter
     {
     public:
 
-	HOMERWriter();
-	virtual ~HOMERWriter();
+	AliHLTHOMERWriter();
+	virtual ~AliHLTHOMERWriter();
 
 	void Clear();
 
@@ -157,11 +157,36 @@ class HOMERWriter
 
         std::vector<TBlockData> fBlocks; //!transient
 #ifdef USE_ROOT
-      ClassDef(HOMERWriter,0);
+      ClassDef(AliHLTHOMERWriter,0);
 #endif
     };
 
 
+/** defined for backward compatibility */
+typedef AliHLTHOMERWriter HOMERWriter;
+
+// external interface of the HOMER writer
+#define ALIHLTHOMERWRITER_CREATE "AliHLTHOMERWriterCreate"
+#define ALIHLTHOMERWRITER_DELETE "AliHLTHOMERWriterDelete"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  typedef AliHLTHOMERWriter* (*AliHLTHOMERWriterCreate_t)(const void* pBuffer, int size);
+  typedef void (*AliHLTHOMERWriterDelete_t)(AliHLTHOMERWriter* pInstance);
+  /**
+   * Create instance of HOMER writer.
+   */
+  AliHLTHOMERWriter* AliHLTHOMERWriterCreate();
+
+  /**
+   * Delete instance of HOMER writer.
+   */
+  void AliHLTHOMERWriterDelete(AliHLTHOMERWriter* pInstance);
+#ifdef __cplusplus
+}
+#endif
 
 
 

@@ -47,7 +47,7 @@
 #include <time.h>
 
 
-HOMERWriter::HOMERWriter()
+AliHLTHOMERWriter::AliHLTHOMERWriter()
   :
   fDataOffset(0),
   fBlocks()
@@ -60,19 +60,19 @@ HOMERWriter::HOMERWriter()
     Clear();
     }
 
-HOMERWriter::~HOMERWriter()
+AliHLTHOMERWriter::~AliHLTHOMERWriter()
     {
 // see header file for class documentation
     }
 
-void HOMERWriter::Clear()
+void AliHLTHOMERWriter::Clear()
     {
 // see header file for class documentation
     fDataOffset = 0;
     fBlocks.clear();
     }
 
-void HOMERWriter::AddBlock( const void* descriptor, const void* data )
+void AliHLTHOMERWriter::AddBlock( const void* descriptor, const void* data )
     {
 // see header file for class documentation
     TBlockData bd;
@@ -84,7 +84,7 @@ void HOMERWriter::AddBlock( const void* descriptor, const void* data )
     fBlocks.push_back( bd );
     }
 
-homer_uint32 HOMERWriter::GetTotalMemorySize( bool includeData )
+homer_uint32 AliHLTHOMERWriter::GetTotalMemorySize( bool includeData )
     {
 // see header file for class documentation
     if ( includeData )
@@ -93,7 +93,7 @@ homer_uint32 HOMERWriter::GetTotalMemorySize( bool includeData )
 	return HOMERBlockDescriptor::GetHOMERBlockDescriptorSize()*(fBlocks.size()+1);
     }
 
-void HOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 eventNr, homer_uint64 statusFlags, homer_uint64 nodeID, bool includeData )
+void AliHLTHOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 eventNr, homer_uint64 statusFlags, homer_uint64 nodeID, bool includeData )
     {
 // see header file for class documentation
     HOMERBlockDescriptor homerBlock;
@@ -102,12 +102,12 @@ void HOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 
     gettimeofday( &now, NULL );
     homerBlock.UseHeader( bd );
     homerBlock.Initialize();
-    homerBlock.SetUInt64Alignment( HOMERWriter::DetermineUInt64Alignment() );
-    homerBlock.SetUInt32Alignment( HOMERWriter::DetermineUInt32Alignment() );
-    homerBlock.SetUInt16Alignment( HOMERWriter::DetermineUInt16Alignment() );
-    homerBlock.SetUInt8Alignment( HOMERWriter::DetermineUInt8Alignment() );
-    homerBlock.SetDoubleAlignment( HOMERWriter::DetermineDoubleAlignment() );
-    homerBlock.SetFloatAlignment( HOMERWriter::DetermineFloatAlignment() );
+    homerBlock.SetUInt64Alignment( AliHLTHOMERWriter::DetermineUInt64Alignment() );
+    homerBlock.SetUInt32Alignment( AliHLTHOMERWriter::DetermineUInt32Alignment() );
+    homerBlock.SetUInt16Alignment( AliHLTHOMERWriter::DetermineUInt16Alignment() );
+    homerBlock.SetUInt8Alignment( AliHLTHOMERWriter::DetermineUInt8Alignment() );
+    homerBlock.SetDoubleAlignment( AliHLTHOMERWriter::DetermineDoubleAlignment() );
+    homerBlock.SetFloatAlignment( AliHLTHOMERWriter::DetermineFloatAlignment() );
     homerBlock.SetType( eventType );
     homerBlock.SetSubType1( eventNr );
     homerBlock.SetSubType2( fBlocks.size() );
@@ -138,7 +138,7 @@ void HOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 
 	}
     }
 
-homer_uint8 HOMERWriter::DetermineUInt64Alignment()
+homer_uint8 AliHLTHOMERWriter::DetermineUInt64Alignment()
     {
 // see header file for class documentation
     HOMERWriterAlignment64TestStructure test;
@@ -168,7 +168,7 @@ homer_uint8 HOMERWriter::DetermineUInt64Alignment()
     return 1;
     }
 
-homer_uint8 HOMERWriter::DetermineUInt32Alignment()
+homer_uint8 AliHLTHOMERWriter::DetermineUInt32Alignment()
     {
 // see header file for class documentation
     HOMERWriterAlignment32TestStructure test;
@@ -198,7 +198,7 @@ homer_uint8 HOMERWriter::DetermineUInt32Alignment()
     return 1;
     }
 
-homer_uint8 HOMERWriter::DetermineUInt16Alignment()
+homer_uint8 AliHLTHOMERWriter::DetermineUInt16Alignment()
     {
 // see header file for class documentation
     HOMERWriterAlignment16TestStructure test;
@@ -228,7 +228,7 @@ homer_uint8 HOMERWriter::DetermineUInt16Alignment()
     return 1;
     }
 
-homer_uint8 HOMERWriter::DetermineUInt8Alignment()
+homer_uint8 AliHLTHOMERWriter::DetermineUInt8Alignment()
     {
 // see header file for class documentation
     HOMERWriterAlignment8TestStructure test;
@@ -258,7 +258,7 @@ homer_uint8 HOMERWriter::DetermineUInt8Alignment()
     return 1;
     }
 
-homer_uint8 HOMERWriter::DetermineDoubleAlignment()
+homer_uint8 AliHLTHOMERWriter::DetermineDoubleAlignment()
     {
 // see header file for class documentation
     HOMERWriterAlignmentDoubleTestStructure test;
@@ -288,7 +288,7 @@ homer_uint8 HOMERWriter::DetermineDoubleAlignment()
     return 1;
     }
 
-homer_uint8 HOMERWriter::DetermineFloatAlignment()
+homer_uint8 AliHLTHOMERWriter::DetermineFloatAlignment()
     {
 // see header file for class documentation
     HOMERWriterAlignmentFloatTestStructure test;
@@ -318,6 +318,17 @@ homer_uint8 HOMERWriter::DetermineFloatAlignment()
     return 1;
     }
 
+AliHLTHOMERWriter* AliHLTHOMERWriterCreate()
+    {
+// see header file for function documentation
+      return new AliHLTHOMERWriter();
+    }
+
+void AliHLTHOMERWriterDelete(AliHLTHOMERWriter* pInstance)
+    {
+// see header file for function documentation
+      if (pInstance) delete pInstance;
+    }
 
 
 /*

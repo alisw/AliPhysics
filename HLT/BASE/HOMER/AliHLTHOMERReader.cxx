@@ -69,8 +69,8 @@ extern int h_errno;
 #define GET_ALL "GET ALL\n"
 
 #ifdef USE_ROOT
-ClassImp(MonitoringReader);
-ClassImp(HOMERReader);
+ClassImp(AliHLTMonitoringReader);
+ClassImp(AliHLTHOMERReader);
 #endif
 
 
@@ -78,7 +78,7 @@ ClassImp(HOMERReader);
 
 
 #ifdef USE_ROOT
-HOMERReader::HOMERReader()
+AliHLTHOMERReader::AliHLTHOMERReader()
   :
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
@@ -104,9 +104,9 @@ HOMERReader::HOMERReader()
 #endif
 
 
-HOMERReader::HOMERReader( const char* hostname, unsigned short port )
+AliHLTHOMERReader::AliHLTHOMERReader( const char* hostname, unsigned short port )
   :
-  MonitoringReader(),
+  AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -141,9 +141,9 @@ HOMERReader::HOMERReader( const char* hostname, unsigned short port )
 	}
     }
 
-HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )
+AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )
   :
-  MonitoringReader(),
+  AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -179,9 +179,9 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
 	}
     }
 
-HOMERReader::HOMERReader( key_t shmKey, int shmSize )
+AliHLTHOMERReader::AliHLTHOMERReader( key_t shmKey, int shmSize )
   :
-  MonitoringReader(),
+  AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -216,9 +216,9 @@ HOMERReader::HOMERReader( key_t shmKey, int shmSize )
 	}
     }
 
-HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
+AliHLTHOMERReader::AliHLTHOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   :
-  MonitoringReader(),
+  AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -254,10 +254,10 @@ HOMERReader::HOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
 	}
     }
 
-HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
+AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
 			  unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
   :
-  MonitoringReader(),
+  AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
   fCurrentEventID(~(homer_uint64)0),
   fBlockCnt(0),
@@ -302,28 +302,28 @@ HOMERReader::HOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned 
 	fDataSources[n].fNdx = n;
 	}
     }
-HOMERReader::~HOMERReader()
+AliHLTHOMERReader::~AliHLTHOMERReader()
     {
 // see header file for class documentation
     ReleaseCurrentEvent();
     FreeDataSources();
     }
 
-int  HOMERReader::ReadNextEvent()
+int  AliHLTHOMERReader::ReadNextEvent()
     {
 // see header file for class documentation
 // Read in the next available event
     return ReadNextEvent( false, 0 );
     }
 
-int HOMERReader::ReadNextEvent( unsigned long timeout )
+int AliHLTHOMERReader::ReadNextEvent( unsigned long timeout )
     {
 // see header file for class documentation
 // Read in the next available event
     return ReadNextEvent( true, timeout );
     }
 
-unsigned long HOMERReader::GetBlockDataLength( unsigned long ndx ) const
+unsigned long AliHLTHOMERReader::GetBlockDataLength( unsigned long ndx ) const
     {
 // see header file for class documentation
 // Return the size (in bytes) of the current event's data
@@ -333,7 +333,7 @@ unsigned long HOMERReader::GetBlockDataLength( unsigned long ndx ) const
     return fBlocks[ndx].fLength;
     }
 
-const void* HOMERReader::GetBlockData( unsigned long ndx ) const
+const void* AliHLTHOMERReader::GetBlockData( unsigned long ndx ) const
     {
 // see header file for class documentation
 // Return a pointer to the start of the current event's data
@@ -343,7 +343,7 @@ const void* HOMERReader::GetBlockData( unsigned long ndx ) const
     return fBlocks[ndx].fData;
     }
 
-const char* HOMERReader::GetBlockSendNodeID( unsigned long ndx ) const
+const char* AliHLTHOMERReader::GetBlockSendNodeID( unsigned long ndx ) const
     {
 // see header file for class documentation
 // Return IP address or hostname of node which sent the 
@@ -365,7 +365,7 @@ const char* HOMERReader::GetBlockSendNodeID( unsigned long ndx ) const
     //return fBlocks[ndx].fOriginatingNodeID;
     }
 
-homer_uint8 HOMERReader::GetBlockByteOrder( unsigned long ndx ) const
+homer_uint8 AliHLTHOMERReader::GetBlockByteOrder( unsigned long ndx ) const
     {
 // see header file for class documentation
 // Return byte order of the data stored in the 
@@ -379,7 +379,7 @@ homer_uint8 HOMERReader::GetBlockByteOrder( unsigned long ndx ) const
     return *(((homer_uint8*)fBlocks[ndx].fMetaData)+kByteOrderAttribute_8b_Offset);
     }
 
-homer_uint8 HOMERReader::GetBlockTypeAlignment( unsigned long ndx, homer_uint8 dataType ) const
+homer_uint8 AliHLTHOMERReader::GetBlockTypeAlignment( unsigned long ndx, homer_uint8 dataType ) const
     {
 // see header file for class documentation
 // Return the alignment (in bytes) of the given datatype 
@@ -400,7 +400,7 @@ homer_uint8 HOMERReader::GetBlockTypeAlignment( unsigned long ndx, homer_uint8 d
     return *(((homer_uint8*)fBlocks[ndx].fMetaData)+kAlignment_8b_StartOffset+dataType);
     }
 
-homer_uint64 HOMERReader::GetBlockStatusFlags( unsigned long ndx ) const
+homer_uint64 AliHLTHOMERReader::GetBlockStatusFlags( unsigned long ndx ) const
     {
 // see header file for class documentation
     if ( ndx >= fBlockCnt )
@@ -411,7 +411,7 @@ homer_uint64 HOMERReader::GetBlockStatusFlags( unsigned long ndx ) const
 /* HOMER specific */
 /* Return the type of the data in the current event's data
    block with the given block index (starting at 0). */
-homer_uint64 HOMERReader::GetBlockDataType( unsigned long ndx ) const
+homer_uint64 AliHLTHOMERReader::GetBlockDataType( unsigned long ndx ) const
     {
 // see header file for class documentation
     if ( ndx >= fBlockCnt )
@@ -422,7 +422,7 @@ homer_uint64 HOMERReader::GetBlockDataType( unsigned long ndx ) const
 
 /* Return the origin of the data in the current event's data
    block with the given block index (starting at 0). */
-homer_uint32 HOMERReader::GetBlockDataOrigin( unsigned long ndx ) const
+homer_uint32 AliHLTHOMERReader::GetBlockDataOrigin( unsigned long ndx ) const
     {
 // see header file for class documentation
     if ( ndx >= fBlockCnt )
@@ -433,7 +433,7 @@ homer_uint32 HOMERReader::GetBlockDataOrigin( unsigned long ndx ) const
 
 /* Return a specification of the data in the current event's data
    block with the given block index (starting at 0). */
-homer_uint32 HOMERReader::GetBlockDataSpec( unsigned long ndx ) const
+homer_uint32 AliHLTHOMERReader::GetBlockDataSpec( unsigned long ndx ) const
     {
 // see header file for class documentation
     if ( ndx >= fBlockCnt )
@@ -445,7 +445,7 @@ homer_uint32 HOMERReader::GetBlockDataSpec( unsigned long ndx ) const
 /* Find the next data block in the current event with the given
    data type, origin, and specification. Returns the block's 
    index. */
-unsigned long HOMERReader::FindBlockNdx( homer_uint64 type, homer_uint32 origin, 
+unsigned long AliHLTHOMERReader::FindBlockNdx( homer_uint64 type, homer_uint32 origin, 
 					 homer_uint32 spec, unsigned long startNdx ) const
     {
 // see header file for class documentation
@@ -462,7 +462,7 @@ unsigned long HOMERReader::FindBlockNdx( homer_uint64 type, homer_uint32 origin,
 /* Find the next data block in the current event with the given
    data type, origin, and specification. Returns the block's 
    index. */
-unsigned long HOMERReader::FindBlockNdx( char type[8], char origin[4], 
+unsigned long AliHLTHOMERReader::FindBlockNdx( char type[8], char origin[4], 
 					 homer_uint32 spec, unsigned long startNdx ) const
     {
 // see header file for class documentation
@@ -522,7 +522,7 @@ unsigned long HOMERReader::FindBlockNdx( char type[8], char origin[4],
 /* Return the ID of the node that actually produced this data block.
    This may be different from the node which sent the data to this
    monitoring object as returned by GetBlockSendNodeID. */
-const char* HOMERReader::GetBlockCreateNodeID( unsigned long ndx ) const
+const char* AliHLTHOMERReader::GetBlockCreateNodeID( unsigned long ndx ) const
     {
 // see header file for class documentation
     if ( ndx >= fBlockCnt )
@@ -531,7 +531,7 @@ const char* HOMERReader::GetBlockCreateNodeID( unsigned long ndx ) const
     }
 
 
-void HOMERReader::Init()
+void AliHLTHOMERReader::Init()
     {
 // see header file for class documentation
     fCurrentEventType = ~(homer_uint64)0;
@@ -549,7 +549,7 @@ void HOMERReader::Init()
     fEventRequestAdvanceTime = 0;
     }
 	
-bool HOMERReader::AllocDataSources( unsigned int sourceCnt )
+bool AliHLTHOMERReader::AllocDataSources( unsigned int sourceCnt )
     {
 // see header file for class documentation
     fDataSources = new DataSource[ sourceCnt ];
@@ -560,7 +560,7 @@ bool HOMERReader::AllocDataSources( unsigned int sourceCnt )
     return true;
     }
 
-int HOMERReader::AddDataSource( const char* hostname, unsigned short port, DataSource& source )
+int AliHLTHOMERReader::AddDataSource( const char* hostname, unsigned short port, DataSource& source )
     {
 // see header file for class documentation
     struct hostent* he;
@@ -619,7 +619,7 @@ int HOMERReader::AddDataSource( const char* hostname, unsigned short port, DataS
     return 0;
     }
 
-int HOMERReader::AddDataSource( key_t shmKey, int shmSize, DataSource& source )
+int AliHLTHOMERReader::AddDataSource( key_t shmKey, int shmSize, DataSource& source )
     {
 // see header file for class documentation
     int ret;
@@ -658,7 +658,7 @@ int HOMERReader::AddDataSource( key_t shmKey, int shmSize, DataSource& source )
     return 0;
     }
 
-void HOMERReader::FreeDataSources()
+void AliHLTHOMERReader::FreeDataSources()
     {
 // see header file for class documentation
     for ( unsigned n=0; n < fDataSourceCnt; n++ )
@@ -670,7 +670,7 @@ void HOMERReader::FreeDataSources()
 	}
     }
 
-int HOMERReader::FreeShmDataSource( DataSource& source )
+int AliHLTHOMERReader::FreeShmDataSource( DataSource& source )
     {
 // see header file for class documentation
     if ( source.fShmPtr )
@@ -682,7 +682,7 @@ int HOMERReader::FreeShmDataSource( DataSource& source )
     return 0;
     }
 
-int HOMERReader::FreeTCPDataSource( DataSource& source )
+int AliHLTHOMERReader::FreeTCPDataSource( DataSource& source )
     {
 // see header file for class documentation
     if ( source.fTCPConnection )
@@ -692,7 +692,7 @@ int HOMERReader::FreeTCPDataSource( DataSource& source )
     return 0;
     }
 
-int HOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
+int AliHLTHOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
     {
 // see header file for class documentation
     if ( fDataSourceCnt<=0 )
@@ -769,7 +769,7 @@ int HOMERReader::ReadNextEvent( bool useTimeout, unsigned long timeout )
     return 0;
     }
 
-void HOMERReader::ReleaseCurrentEvent()
+void AliHLTHOMERReader::ReleaseCurrentEvent()
     {
 // see header file for class documentation
     // sources.fDataRead = 0;
@@ -800,7 +800,7 @@ void HOMERReader::ReleaseCurrentEvent()
 	}
     }
 
-int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeoutUsec )
+int AliHLTHOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeoutUsec )
     {
 // see header file for class documentation
     int ret;
@@ -862,9 +862,11 @@ int HOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned
     return 0;
     }
 
-int HOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long )
+int AliHLTHOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long )
     {
 // see header file for class documentation
+// clear the size indicator in the first 4 bytes of the buffer to request data
+// from the HOMER writer.
     if ( source.fShmPtr )
 	{
 	*(homer_uint32*)( source.fShmPtr ) = 0;
@@ -874,7 +876,7 @@ int HOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long )
 	return EFAULT;
     }
 
-int HOMERReader::ReadDataFromTCPSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout )
+int AliHLTHOMERReader::ReadDataFromTCPSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout )
     {
 // see header file for class documentation
     bool toRead = false;
@@ -986,7 +988,7 @@ int HOMERReader::ReadDataFromTCPSources( unsigned sourceCnt, DataSource* sources
     }
 
 /*
-int HOMERReader::ReadDataFromTCPSources( DataSource& source, bool useTimeout, unsigned long timeout )
+int AliHLTHOMERReader::ReadDataFromTCPSources( DataSource& source, bool useTimeout, unsigned long timeout )
     {
 #warning TODO If useTimeout: Set sockets to nonblocking, select + loop around GET_ONE write
     // Send one event request
@@ -1060,13 +1062,13 @@ int HOMERReader::ReadDataFromTCPSources( DataSource& source, bool useTimeout, un
 */
 
 /*
-int HOMERReader::ReadDataFromShmSource( DataSource& source, bool useTimeout, unsigned long timeout )
+int AliHLTHOMERReader::ReadDataFromShmSource( DataSource& source, bool useTimeout, unsigned long timeout )
     {
     
     }
 */
 
-int HOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout )
+int AliHLTHOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout )
     {
 // see header file for class documentation
     struct timeval tv1, tv2;
@@ -1108,7 +1110,7 @@ int HOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources
     return 0;
     }
 
-int HOMERReader::ParseSourceData( DataSource& source )
+int AliHLTHOMERReader::ParseSourceData( DataSource& source )
     {
 // see header file for class documentation
     if ( source.fData )
@@ -1142,7 +1144,7 @@ int HOMERReader::ParseSourceData( DataSource& source )
     return EFAULT;
     }
 	
-int HOMERReader::ReAllocBlocks( unsigned long newCnt )
+int AliHLTHOMERReader::ReAllocBlocks( unsigned long newCnt )
     {
 // see header file for class documentation
     DataBlock* newBlocks;
@@ -1160,21 +1162,21 @@ int HOMERReader::ReAllocBlocks( unsigned long newCnt )
     return 0;
     }
 
-homer_uint64 HOMERReader::GetSourceEventID( DataSource& source )
+homer_uint64 AliHLTHOMERReader::GetSourceEventID( DataSource& source )
     {
 // see header file for class documentation
     homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
     return Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kSubType1_64b_Offset ] );
     }
 
-homer_uint64 HOMERReader::GetSourceEventType( DataSource& source )
+homer_uint64 AliHLTHOMERReader::GetSourceEventType( DataSource& source )
     {
 // see header file for class documentation
     homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
     return Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kType_64b_Offset ] );
     }
 
-homer_uint64 HOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint64 source ) const
+homer_uint64 AliHLTHOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint64 source ) const
     {
 // see header file for class documentation
     if ( destFormat == sourceFormat )
@@ -1190,7 +1192,7 @@ homer_uint64 HOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat
 	((source & 0xFF00000000000000ULL) >> 56);
     }
 
-homer_uint32 HOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint32 source ) const
+homer_uint32 AliHLTHOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint32 source ) const
     {
 // see header file for class documentation
     if ( destFormat == sourceFormat )
@@ -1201,6 +1203,20 @@ homer_uint32 HOMERReader::Swap( homer_uint8 destFormat, homer_uint8 sourceFormat
     	((source & 0xFF0000UL) >> 8) | 
     	((source & 0xFF000000UL) >> 24);
     }
+
+AliHLTHOMERReader* AliHLTHOMERReaderCreate(const void* pBuffer, int size)
+    {
+// see header file for function documentation
+      //return new AliHLTHOMERReader(pBuffer, size);
+      return NULL;
+    }
+
+void AliHLTHOMERReaderDelete(AliHLTHOMERReader* pInstance)
+    {
+// see header file for function documentation
+      if (pInstance) delete pInstance;
+    }
+
 /*
 ***************************************************************************
 **
