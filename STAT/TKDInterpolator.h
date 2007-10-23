@@ -14,7 +14,7 @@ typedef struct TVectorT<Double_t> TVectorD;
 template <typename Value> class TMatrixT;
 typedef class TMatrixT<Double_t> TMatrixD;
 template <typename Index, typename Value> class TKDTree;
-typedef class TKDTreeIF<Int_t, Float_t> TKDTreeIF;
+typedef class TKDTree<Int_t, Float_t> TKDTreeIF;
 class TTree;
 class TLinearFitter;
 class TKDInterpolator : public TKDTreeIF
