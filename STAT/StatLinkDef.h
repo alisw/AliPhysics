@@ -18,7 +18,7 @@
 #pragma link C++ class TKDSpline+;
 
 #pragma link C++ class AliTMinuitToolkit+;
-//#pragma link C++ class TStatToolkit+;
+#pragma link C++ class TStatToolkit+;
 
 
 #endif
