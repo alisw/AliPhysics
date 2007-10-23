@@ -23,20 +23,6 @@ NLTProjectable::~NLTProjectable()
 }
 
 //______________________________________________________________________
-// NLTGeoProjectable
-//
-
-ClassImp(NLTGeoProjectable)
-
-NLTGeoProjectable::NLTGeoProjectable()
-{}
-
-TClass* NLTGeoProjectable::ProjectedClass() const
-{
-   return NLTPolygonSet::Class();
-} 
-
-//______________________________________________________________________
 // NLTProjected
 //
 
@@ -74,5 +60,5 @@ void NLTProjected::UnRefProjectable(NLTProjectable* assumed_parent)
   if (fProjectable) {
     fProjectable->RemoveProjected(this);
     fProjectable = 0;
-  } 
+  }
 }

@@ -17,7 +17,26 @@ class TGeoShapeExtract;
 
 namespace Reve {
 
-class GeoNodeRnrEl : public RenderElement,
+class GeoRnrEl : public RenderElement,
+                 public NLTProjectable
+{
+ private:
+  GeoRnrEl(const GeoRnrEl&);            // Not implemented
+  GeoRnrEl& operator=(const GeoRnrEl&); // Not implemented
+
+ public:
+  GeoRnrEl(){};
+  virtual ~GeoRnrEl() {};
+
+  virtual TBuffer3D*     MakeBuffer3D() = 0;
+  virtual TClass*        ProjectedClass() const;
+
+  ClassDef(GeoRnrEl, 1);
+};
+
+/**************************************************************************/
+/**************************************************************************/
+class GeoNodeRnrEl : public GeoRnrEl,
                      public TObject
 {
   friend class GeoNodeRnrElEditor;
@@ -50,6 +69,9 @@ public:
   void UpdateNode(TGeoNode* node);
   void UpdateVolume(TGeoVolume* volume);
 
+  // NLTGeoProjectable
+  virtual TBuffer3D*           MakeBuffer3D();
+
   virtual void Draw(Option_t* option="");
 
   ClassDef(GeoNodeRnrEl, 1);
@@ -66,7 +88,7 @@ protected:
   TGeoManager* fManager;
   ZTrans       fGlobalTrans;
   Int_t        fVisOption;
-  Int_t        fVisLevel;  
+  Int_t        fVisLevel;
 
 public:
   GeoTopNodeRnrEl(TGeoManager* manager, TGeoNode* node, Int_t visopt=1, Int_t vislvl=3);
@@ -104,9 +126,8 @@ public:
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 
-class GeoShapeRnrEl : public RenderElement,
-		      public TNamed,
-                      public NLTGeoProjectable
+class GeoShapeRnrEl : public GeoRnrEl,
+		      public TNamed
 {
   GeoShapeRnrEl(const GeoShapeRnrEl&);            // Not implemented
   GeoShapeRnrEl& operator=(const GeoShapeRnrEl&); // Not implemented
@@ -127,7 +148,7 @@ public:
 
   virtual Bool_t  CanEditMainTransparency()      { return kTRUE; }
   virtual UChar_t GetMainTransparency() const    { return fTransparency; }
-  virtual void    SetMainTransparency(UChar_t t) { fTransparency = t; }  
+  virtual void    SetMainTransparency(UChar_t t) { fTransparency = t; }
 
   virtual Bool_t  CanEditMainHMTrans() { return  kTRUE; }
   virtual ZTrans* PtrMainHMTrans()     { return &fHMTrans; }
@@ -142,7 +163,7 @@ public:
   virtual void Paint(Option_t* option="");
 
   static GeoShapeRnrEl* ImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
-  
+
   // NLTGeoProjectable
   virtual TBuffer3D*           MakeBuffer3D();
 

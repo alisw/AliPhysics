@@ -2,7 +2,7 @@
 
 #include "GeoNode.h"
 #include <Reve/ReveManager.h>
-#include <Reve/NLTBases.h>
+#include <Reve/NLTPolygonSet.h>
 
 #include "TGeoShapeExtract.h"
 
@@ -19,6 +19,16 @@
 #include <TVirtualGeoPainter.h>
 
 using namespace Reve;
+//______________________________________________________________________
+// GeoNodeRnrEl
+//
+
+ClassImp(GeoRnrEl)
+
+TClass* GeoRnrEl::ProjectedClass() const
+{
+   return NLTPolygonSet::Class();
+}
 
 //______________________________________________________________________
 // GeoNodeRnrEl
@@ -27,7 +37,7 @@ using namespace Reve;
 ClassImp(GeoNodeRnrEl)
 
 GeoNodeRnrEl::GeoNodeRnrEl(TGeoNode* node) :
-  RenderElement(),
+  GeoRnrEl(),
   TObject(),
   fNode(node)
 {
@@ -151,6 +161,33 @@ void GeoNodeRnrEl::Draw(Option_t* option)
 }
 
 /**************************************************************************/
+
+TBuffer3D* GeoNodeRnrEl::MakeBuffer3D()
+{
+  TGeoShape* shape = fNode->GetVolume()->GetShape();
+  if(shape == 0) return 0;
+
+  if(dynamic_cast<TGeoShapeAssembly*>(shape)){
+    // !!!! TGeoShapeAssembly makes a bad TBuffer3D
+    return 0;
+  }
+
+  printf("eoNodeRnrEl::MakeBuffer3D() \n");
+  TBuffer3D* buff  = shape->MakeBuffer3D();
+  TGeoMatrix* mx = fNode->GetMatrix();
+  Int_t N = buff->NbPnts();
+  Double_t* pnts = buff->fPnts;
+  Double_t  master[4];
+  for(Int_t i = 0; i<N; i++)
+  {
+    mx->LocalToMaster(&pnts[3*i], master);
+    pnts[3*i] =   master[0];
+    pnts[3*i+1] = master[1];
+    pnts[3*i+2] = master[2];
+  }
+  return buff;
+}
+/**************************************************************************/
 //______________________________________________________________________
 // GeoTopNodeRnrEl
 //
@@ -197,7 +234,7 @@ void GeoTopNodeRnrEl::SetVisOption(Int_t visopt)
 void GeoTopNodeRnrEl::SetVisLevel(Int_t vislvl)
 {
   fVisLevel = vislvl;
-  gReve->Redraw3D(); 
+  gReve->Redraw3D();
 }
 
 /**************************************************************************/
@@ -271,13 +308,15 @@ void GeoTopNodeRnrEl::NodeVisChanged(TGeoNode* node)
 ClassImp(GeoShapeRnrEl)
 
 GeoShapeRnrEl::GeoShapeRnrEl(const Text_t* name, const Text_t* title) :
-  RenderElement (fColor),
+  GeoRnrEl(),
   TNamed        (name, title),
   fHMTrans      (),
   fColor        (0),
   fTransparency (0),
   fShape        (0)
-{}
+{
+  fMainColorPtr = &fColor;
+}
 
 GeoShapeRnrEl::~GeoShapeRnrEl()
 {
@@ -373,8 +412,8 @@ TBuffer3D* GeoShapeRnrEl::MakeBuffer3D()
   {
     Reve::ZTrans& mx = RefHMTrans();
     Int_t N = buff->NbPnts();
-    Double_t* pnts = buff->fPnts;   
-    for(Int_t k=0; k<N; k++) 
+    Double_t* pnts = buff->fPnts;
+    for(Int_t k=0; k<N; k++)
     {
       mx.MultiplyIP(&pnts[3*k]);
     }

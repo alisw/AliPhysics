@@ -125,10 +125,8 @@
 
 // Non-linear transformations
 #pragma link C++ class Reve::NLTProjectable+;
-#pragma link C++ class Reve::NLTGeoProjectable+;
 #pragma link C++ class Reve::NLTProjected+;
 #pragma link C++ class Reve::NLTProjection+;
-//#pragma link C++ class Reve::PhiZ+;
 #pragma link C++ class Reve::RhoZ+;
 #pragma link C++ class Reve::CircularFishEye+;
 
@@ -204,6 +202,7 @@
 #pragma link C++ class Reve::BoxSetGL+;
 
 // GeoNode
+#pragma link C++ class Reve::GeoRnrEl+;
 #pragma link C++ class Reve::GeoNodeRnrEl+;
 #pragma link C++ class Reve::GeoTopNodeRnrEl+;
 #pragma link C++ class Reve::GeoNodeRnrElEditor+;

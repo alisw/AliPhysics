@@ -36,23 +36,6 @@ public:
   ClassDef(NLTProjectable, 0);
 }; // endclass NLTProjectable
 
-
-class NLTGeoProjectable : public NLTProjectable
-{
-private:
-  NLTGeoProjectable(const NLTGeoProjectable&);            // Not implemented
-  NLTGeoProjectable& operator=(const NLTGeoProjectable&); // Not implemented
-
-public:
-  NLTGeoProjectable();
-  virtual ~NLTGeoProjectable() {}
-
-  virtual TBuffer3D*     MakeBuffer3D() = 0;
-  virtual TClass*        ProjectedClass() const;
-
-  ClassDef(NLTGeoProjectable, 0);
-};
-
 /**************************************************************************/
 
 class NLTProjected
