@@ -30,14 +30,6 @@ templateClassImp(TKDTree)
 // 	fNodes : array of primary nodes
 ///////////////////////////////////////////////////////////////////////
 
-#include "malloc.h"
-int memory()
-{
-	static struct mallinfo debug;
-	debug = mallinfo();
-	//printf("arena[%d] usmblks[%d] uordblks[%d] fordblks[%d]\n", debug.arena, debug.usmblks, debug.uordblks, debug.fordblks);
-	return debug.uordblks;
-}
 
 //_________________________________________________________________
 template <typename  Index, typename Value>
@@ -95,9 +87,7 @@ TKDTree<Index, Value>::TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **
 {
 // Allocate data by hand. See TKDTree(TTree*, const Char_t*) for an automatic method.
 
-	//printf("start building kdTree %d\n", memory());
 	Build();
-	//printf("finish building kdTree %d\n", memory());
 }
 
 //_________________________________________________________________

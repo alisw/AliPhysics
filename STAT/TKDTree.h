@@ -7,8 +7,6 @@
 
 #include "TMath.h"
 
-Int_t memory();
-
 
 template <typename Index, typename Value> class TKDTree : public TObject
 {
