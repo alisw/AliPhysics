@@ -56,7 +56,7 @@ PWG2/module.mk:		PWG2/libPWG2flow.pkg PWG2/libPWG2resonances.pkg
 PWG3/module.mk:		PWG3/libPWG3base.pkg PWG3/libPWG3.pkg
 PWG4/module.mk:		PWG4/libPWG4Gamma.pkg
 ESDCheck/module.mk:	ESDCheck/libAnalysisCheck.pkg 
-STAT/module.mk:		STAT/libKDStat.pkg
+STAT/module.mk:		STAT/libSTAT.pkg
 BCM/module.mk:		BCM/libBCM.pkg
 DPMJET/module.mk:	DPMJET/libdpmjet.pkg
 TDPMjet/module.mk:	TDPMjet/libTDPMjet.pkg
