@@ -26,6 +26,9 @@
 //-----------------------------------------------------------------
 
 //---- Root headers --------
+#include <TSystem.h>
+#include <TDirectory.h>
+#include <TFile.h>
 #include <TTree.h>
 #include <TMatrixD.h>
 //---- AliRoot headers -----
@@ -135,6 +138,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
     return fCurrentVertex;
   } 
 
+  TDirectory * olddir = gDirectory;
+  TFile f("VertexerTracks.root","recreate");
   TTree *trkTree = new TTree("TreeT","tracks");
   AliESDtrack *esdTrack = 0;
   trkTree->Branch("tracks","AliESDtrack",&esdTrack);
@@ -142,7 +147,6 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
   Bool_t   skipThis;
   for(Int_t i=0; i<nTrksTot; i++) {
     AliESDtrack *et = esdEvent->GetTrack(i);
-    esdTrack = new AliESDtrack(*et);
     // check tracks to skip
     skipThis = kFALSE;
     for(Int_t j=0; j<fNTrksToSkip; j++) { 
@@ -151,13 +155,14 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
 	skipThis = kTRUE;
       }
     }
-    if(skipThis) {delete esdTrack;continue;}
+    if(skipThis) continue;
     if(fITSin) {
-      if(!(esdTrack->GetStatus()&AliESDtrack::kITSin)) {delete esdTrack;continue;}
-      if(fITSrefit && !(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) {delete esdTrack;continue;}
-      Int_t nclus=esdTrack->GetNcls(0); // check number of clusters in ITS
-      if(nclus<fMinITSClusters) {delete esdTrack;continue;}
+      if(!(et->GetStatus()&AliESDtrack::kITSin)) continue;
+      if(fITSrefit && !(et->GetStatus()&AliESDtrack::kITSrefit)) continue;
+      Int_t nclus=et->GetNcls(0); // check number of clusters in ITS
+      if(nclus<fMinITSClusters) continue;
     }
+    esdTrack = new AliESDtrack(*et);
     trkTree->Fill();
     delete esdTrack;
   }
@@ -207,6 +212,9 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
       if(fDebug) fCurrentVertex->PrintStatus();
       fTrkArray.Delete();
       delete trkTree;
+      f.Close();
+      gSystem->Unlink("VertexerTracks.root");
+      olddir->cd();
       return fCurrentVertex; 
     }
 
@@ -260,7 +268,10 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliESDEvent *esdEvent)
   delete [] indices;
 
   delete trkTree;
-  
+  f.Close();
+  gSystem->Unlink("VertexerTracks.root");
+  olddir->cd();
+
   fTrkArray.Delete();
 
   if(fTrksToSkip) { delete [] fTrksToSkip; fTrksToSkip=NULL; }
@@ -1341,6 +1352,8 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,Boo
     fCurrentVertex = new AliESDVertex(0.,0.,-1);
     return fCurrentVertex;
   }
+  TDirectory * olddir = gDirectory;
+  TFile f("VertexerTracks.root","recreate");
   TTree *trkTree = new TTree("TreeT","tracks");
   AliESDtrack *esdTrack = 0;
   trkTree->Branch("tracks","AliESDtrack",&esdTrack);
@@ -1351,6 +1364,9 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(TObjArray *trkArray,Boo
     
   AliESDVertex *vtx =  VertexForSelectedTracks(trkTree,optUseFitter,optPropagate);
   delete trkTree;
+  f.Close();
+  gSystem->Unlink("VertexerTracks.root");
+  olddir->cd();
   return vtx;
 }
 //--------------------------------------------------------------------------
