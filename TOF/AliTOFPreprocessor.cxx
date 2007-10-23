@@ -72,13 +72,19 @@ AliTOFPreprocessor::AliTOFPreprocessor(AliShuttleInterface* shuttle) :
 AliTOFPreprocessor::~AliTOFPreprocessor()
 {
   // destructor
-  delete fData;
-  fData = 0;
-  delete fh2;
-  fh2 = 0;
-  fCal->Clear();
-  delete fCal;
-  fCal = 0;
+  if (fData){
+    delete fData;
+    fData = 0;
+  }
+  if (fh2){
+    delete fh2;
+    fh2 = 0;
+  }
+  if (fCal){
+    fCal->Clear();
+    delete fCal;
+    fCal = 0;
+  }
 }
 
 //______________________________________________________________________________
