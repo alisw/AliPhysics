@@ -100,17 +100,36 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
 
   AliMUONTriggerIO tio;
   
-  tio.ReadMasks(GetFileName("LOCAL").Data(),
-                GetFileName("REGIONAL").Data(),
-                GetFileName("GLOBAL").Data(),
-                fLocalMasks,fRegionalMasks,fGlobalMasks);
+  Bool_t ok = tio.ReadMasks(GetFileName("LOCAL").Data(),
+                            GetFileName("REGIONAL").Data(),
+                            GetFileName("GLOBAL").Data(),
+                            fLocalMasks,fRegionalMasks,fGlobalMasks);
+  
+  if (!ok)
+  {
+    Master()->Log("ERROR : ReadMasks failed");
+    delete fLocalMasks;
+    delete fRegionalMasks;
+    delete fGlobalMasks;
+    fLocalMasks = 0x0;
+    fRegionalMasks = 0x0;
+    fGlobalMasks = 0x0;
+  }
 
   delete fLUT;
-  fLUT = 0x0; // new AliMUONTriggerLut;
+  fLUT = new AliMUONTriggerLut;
     
-//  Master()->Log(Form("Reading trigger LUT for Run %d startTime %ld endTime %ld",
-//                     run,startTime,endTime));
-//  tio.ReadLut(lutFile,fLUT);
+  Master()->Log(Form("Reading trigger LUT for Run %d startTime %ld endTime %ld",
+                     run,startTime,endTime));
+  
+  tio.ReadLUT(GetFileName("LUT").Data(),*fLUT);
+
+  if (!ok)
+  {
+    Master()->Log("ERROR : ReadLUT failed");
+    delete fLUT;
+    fLUT = 0x0;
+  }
 }
 
 //_____________________________________________________________________________

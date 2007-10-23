@@ -21,6 +21,15 @@
 /// Local Trigger Look Up Table
 /// reading interface LUT data is stored into TH3S histograms and readout 
 /// from the Local Trigger algorithm
+///
+/// Histograms structure is :
+/// X 234 bins, 1 to 235   = local board number
+/// Y  31 bins, 0 to  31   = x strip
+/// Z  31 bins, 0 to  31   = x deviation
+/// content = Short_t      = y strip mask
+///
+///  overflow bin is used !
+///
 /// \author Philippe Crochet
 //-----------------------------------------------------------------------------
 
@@ -28,8 +37,10 @@
 
 #include "AliLog.h"
 
-#include "TFile.h"
-#include "TH3.h"
+#include <TFile.h>
+#include <TH3.h>
+#include <TMap.h>
+#include <TObjString.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTriggerLut)
@@ -46,7 +57,8 @@ AliMUONTriggerLut::AliMUONTriggerLut()
       fHptUnde(0),
       fAptPlus(0),
       fAptMinu(0),
-      fAptUnde(0)
+      fAptUnde(0),
+  fMap(0x0)
 {
 /// ctor
 }
@@ -65,6 +77,68 @@ AliMUONTriggerLut::~AliMUONTriggerLut()
   delete fAptPlus;  
   delete fAptMinu;
   delete fAptUnde;
+  delete fMap;
+}
+
+//----------------------------------------------------------------------
+Int_t
+AliMUONTriggerLut::Compare(TH3* h1, TH3* h2) const
+{
+/// Return 0 if both histograms are strictly equal (at the bin-by-bin level)
+
+  AliDebug(1,Form("h1 %s h2 %s",h1 ? h1->GetName() : "null", h2 ? h2->GetName() : "null"));
+
+  if (!h1 || !h2) 
+  {
+    return 0;
+  }
+  
+  for ( Int_t i = 0; i < h1->GetBufferSize(); ++i ) 
+  {
+    Double_t x1 = h1->GetBinContent(i);
+    Double_t x2 = h2->GetBinContent(i);
+    if ( x1 != x2 ) return 0;
+  }
+
+  AliDebug(1,"same");
+  
+  return 1;
+}
+
+//----------------------------------------------------------------------
+Int_t 
+AliMUONTriggerLut::Compare(const TObject* object) const
+{
+/// Return 0 if the two luts are strictly equal
+
+  const AliMUONTriggerLut* lut = static_cast<const AliMUONTriggerLut*>(object);
+  
+  Int_t rvLpt(0);
+  
+  rvLpt += Compare(fLptPlus,lut->fLptPlus);
+  rvLpt += Compare(fLptMinu,lut->fLptMinu);
+  rvLpt += Compare(fLptUnde,lut->fLptUnde);
+
+  Int_t rvHpt(0);
+  
+  rvHpt += Compare(fHptPlus,lut->fHptPlus);
+  rvHpt += Compare(fHptMinu,lut->fHptMinu);
+  rvHpt += Compare(fHptUnde,lut->fHptUnde);
+  
+  Int_t rv(0);
+  
+  rv += Compare(fAptPlus,lut->fAptPlus);
+  rv += Compare(fAptMinu,lut->fAptMinu);
+  rv += Compare(fAptUnde,lut->fAptUnde);
+  
+  AliDebug(1,Form("Same Lpt %d Hpt %d Apt %d",rvLpt,rvHpt,rv));
+  
+  if ( rvLpt == 3 && rvHpt == 3 ) 
+  {
+    return 0;
+  }
+
+  return 1;
 }
 
 //----------------------------------------------------------------------
@@ -81,16 +155,6 @@ void AliMUONTriggerLut::ReadFromFile(const char* filename)
   
   AliDebug(1,Form("filename=%s",filename));
   
-//  fLptPlus = (TH3*)(f.Get("LptPlus")->Clone());  
-//  fLptMinu = (TH3*)(f.Get("LptMinu")->Clone());
-//  fLptUnde = (TH3*)(f.Get("LptUnde")->Clone());
-//  fHptPlus = (TH3*)(f.Get("HptPlus")->Clone());  
-//  fHptMinu = (TH3*)(f.Get("HptMinu")->Clone());
-//  fHptUnde = (TH3*)(f.Get("HptUnde")->Clone());
-//  fAptPlus = (TH3*)(f.Get("AptPlus")->Clone());  
-//  fAptMinu = (TH3*)(f.Get("AptMinu")->Clone());
-//  fAptUnde = (TH3*)(f.Get("AptUnde")->Clone());
-
   fLptPlus = (TH3*)(f.Get("LptPlus"));  
   fLptMinu = (TH3*)(f.Get("LptMinu"));
   fLptUnde = (TH3*)(f.Get("LptUnde"));
@@ -111,18 +175,81 @@ void AliMUONTriggerLut::ReadFromFile(const char* filename)
   fAptPlus->SetDirectory(0);
   fAptMinu->SetDirectory(0);
   fAptUnde->SetDirectory(0);
+  
+  RegisterHistos();
+}
+
+//----------------------------------------------------------------------
+void
+AliMUONTriggerLut::RegisterHistos()
+{
+/// Add histos to our internal map
+
+  Add(fLptPlus);
+  Add(fLptMinu);
+  Add(fLptUnde);
+
+  Add(fHptPlus);
+  Add(fHptMinu);
+  Add(fHptUnde);
+
+  Add(fAptPlus);
+  Add(fAptMinu);
+  Add(fAptUnde);
+}
+
+//----------------------------------------------------------------------
+void
+AliMUONTriggerLut::Add(TH3* h)
+{
+  /// Update internal map
+  if (!fMap)
+  {
+    fMap = new TMap;
+    fMap->SetOwner(kTRUE);
+  }
+  
+  if (h) fMap->Add(new TObjString(h->GetName()),h);
+}
+
+//----------------------------------------------------------------------
+void 
+AliMUONTriggerLut::SetContent(const char* hname, Int_t icirc, UChar_t istripX, 
+                              UChar_t idev, Short_t value)
+{
+  /// Set the content of one bin of one histogram
+  
+  if (!fMap)
+  {
+    //..........................................circuit/stripX/deviation
+    fLptPlus = new TH3S("LptPlus","LptPlus",234,0,234,31,0,31,31,0,31);
+    fLptMinu = new TH3S("LptMinu","LptMinu",234,0,234,31,0,31,31,0,31);
+    fLptUnde = new TH3S("LptUnde","LptUnde",234,0,234,31,0,31,31,0,31);
+    
+    fHptPlus = new TH3S("HptPlus","HptPlus",234,0,234,31,0,31,31,0,31);
+    fHptMinu = new TH3S("HptMinu","HptMinu",234,0,234,31,0,31,31,0,31);
+    fHptUnde = new TH3S("HptUnde","HptUnde",234,0,234,31,0,31,31,0,31);
+    
+    RegisterHistos();
+  }
+  
+  TH3* h = static_cast<TH3*>(fMap->GetValue(hname));
+  
+  Int_t bin = h->GetBin(icirc,istripX,idev);
+  h->SetBinContent(bin,value);
 }
 
 //----------------------------------------------------------------------
 void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
-				     Int_t ystrip, Int_t lutLpt[2], 
-				     Int_t lutHpt[2])
+                                     Int_t ystrip, Int_t lutLpt[2], 
+                                     Int_t lutHpt[2]) const
 {
 /// Return output of LuT for corresponding TH3S  
 
   if ( !fLptPlus )
   {
-    ReadFromFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
+    AliError("LUT not initialized");
+//    ReadFromFile("$(ALICE_ROOT)/MUON/data/MUONTriggerLut.root");
   }
   
   Int_t bin;
@@ -171,7 +298,7 @@ void AliMUONTriggerLut::GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev,
 }
 
 //----------------------------------------------------------------------
-Int_t AliMUONTriggerLut::GetMask(Int_t ystrip)
+Int_t AliMUONTriggerLut::GetMask(Int_t ystrip) const
 {
 /// Return the mask corresponding to ystrip
 

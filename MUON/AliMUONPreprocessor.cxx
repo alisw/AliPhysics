@@ -47,9 +47,9 @@ ClassImp(AliMUONPreprocessor)
 //_____________________________________________________________________________
 AliMUONPreprocessor::AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle)
 : AliPreprocessor(detName, shuttle),
+  fIsValid(kFALSE),
   fSubprocessors(new TObjArray()),
-  fProcessDCS(kFALSE),
-  fIsValid(kFALSE)
+  fProcessDCS(kFALSE)
 {
   /// ctor
 }

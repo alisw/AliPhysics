@@ -15,6 +15,7 @@
 #include <TNamed.h>
 
 class TH3;
+class TMap;
 
 //----------------------------------------------
 class AliMUONTriggerLut : public TNamed 
@@ -23,19 +24,31 @@ class AliMUONTriggerLut : public TNamed
   AliMUONTriggerLut();    // constructor
   virtual ~AliMUONTriggerLut();   // destructor
 
-  void ReadFromFile(const char* filename);
+  Int_t Compare(const TObject* object) const;
   
   void GetLutOutput(Int_t circuit, Int_t xstrip, Int_t idev, Int_t ystrip, 
-		    Int_t lutLpt[2], Int_t lutHpt[2]);
+		    Int_t lutLpt[2], Int_t lutHpt[2]) const;
+
+  void ReadFromFile(const char* filename);
+  
+  void SetContent(const char* hname, Int_t icirc, UChar_t istripX, 
+                  UChar_t idev, Short_t value); 
 
  private:
-  /// Not implemented copy constructor
+  
+    /// Not implemented copy constructor
   AliMUONTriggerLut (const AliMUONTriggerLut& AliMUONTriggerLut);
   /// Not implemented assignment operator
   AliMUONTriggerLut& operator=(const AliMUONTriggerLut& AliMUONTriggerLut); 
 
-  Int_t GetMask(Int_t ystrip);
+  void Add(TH3* h);
 
+  Int_t Compare(TH3* h1, TH3* h2) const;
+  
+  Int_t GetMask(Int_t ystrip) const;
+
+  void RegisterHistos();
+  
 private:
   TH3 *fLptPlus; ///< 3-d histogram with 234x32x31 bins Low pt Plus  
   TH3 *fLptMinu; ///< 3-d histogram with 234x32x31 bins Low pt Minus
@@ -47,7 +60,9 @@ private:
   TH3 *fAptMinu; ///< 3-d histogram with 234x32x31 bins All pt Minus  
   TH3 *fAptUnde; ///< 3-d histogram with 234x32x31 bins All pt Undefined    
 
-  ClassDef(AliMUONTriggerLut,1) // Trigger Look up Table class
+  TMap* fMap; //!< from name to histo
+  
+  ClassDef(AliMUONTriggerLut,2) // Trigger Look up Table class
 
 };
 #endif
