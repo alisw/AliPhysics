@@ -16,25 +16,25 @@ class AliESDEvent;
 class AliTOFGeometry;
 
 class AliTOFpidESD : public TObject {
-enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 public:
- AliTOFpidESD();
- AliTOFpidESD(Double_t *param);
+  AliTOFpidESD();
+  AliTOFpidESD(Double_t *param);
  ~AliTOFpidESD(){}
+ 
+  void     SetMaxMismatchProbability(Double_t p) {fPmax=p;}
+  Double_t GetMaxMismatchProbability() {return fPmax;}
 
   Int_t MakePID(AliESDEvent *event);
   Int_t MakePID(AliESDEvent *event, Double_t timeZero);
-  void  SetEventNumber(Int_t n) {fEventN=n;}
-  Int_t GetEventNumber() const {return fEventN;}
 
 private:
- 
-  Int_t fN;               // number of the TOF clusters
-  Int_t fEventN;          // event number
+  Double_t GetMismatchProbability(Double_t p,Double_t mass) const;
+
   Double_t fSigma;        // intrinsic TOF resolution
   Double_t fRange;        // one particle type PID range (in sigmas)
+  Double_t fPmax;         // "maximal" probability of mismathing (at ~0.5 GeV/c)
 
-  ClassDef(AliTOFpidESD,1)   // TOF PID class
+  ClassDef(AliTOFpidESD,2)   // TOF PID class
 };
 
 #endif

@@ -40,57 +40,41 @@ Int_t AliESDpid::MakePID(AliESDEvent *event)
   for (Int_t i=0; i<ntrk; i++) {
     Int_t ns=AliPID::kSPECIES;
     Double_t p[10]={1.,1.,1.,1.,1.,1.,1.,1.,1.,1.};
-    const Double_t keps=1e-13;
 
     AliESDtrack *t=event->GetTrack(i);
 
-    if ((t->GetStatus()&AliESDtrack::kITSpid )!=0) {
+    if (t->IsOn(AliESDtrack::kITSpid)) {
       Double_t d[10];
       t->GetITSpid(d);
-      Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
-      if (ok) 
-      for (j=0; j<ns; j++) p[j]*=d[j];
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
-    if ((t->GetStatus()&AliESDtrack::kTPCpid )!=0) {
+    if (t->IsOn(AliESDtrack::kTPCpid)) {
       Double_t d[10];
       t->GetTPCpid(d);
-      Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
-      if (ok) 
-      for (j=0; j<ns; j++) p[j]*=d[j];
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
-    if ((t->GetStatus()&AliESDtrack::kTRDpid )!=0) {
+    if (t->IsOn(AliESDtrack::kTRDpid)) {
       Double_t d[10];
       t->GetTRDpid(d);
-      Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
-      if (ok) 
-      for (j=0; j<ns; j++) p[j]*=d[j];
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
-    if (t->GetP()>0.7) // accept the TOF only for the high momenta
-    if ((t->GetStatus()&AliESDtrack::kTOFpid )!=0) {
+    if (t->IsOn(AliESDtrack::kTOFpid)) {
       Double_t d[10];
       t->GetTOFpid(d);
-      Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
-      if (ok) 
-      for (j=0; j<ns; j++) p[j]*=d[j];
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
-    if ((t->GetStatus()&AliESDtrack::kHMPIDpid )!=0) {
+    if (t->IsOn(AliESDtrack::kHMPIDpid)) {
       Double_t d[10];
       t->GetHMPIDpid(d);
-      Int_t j, ok=0;
-      for (j=0; j<ns; j++) if (d[j]>keps) ok=1;
-      if (ok) 
-      for (j=0; j<ns; j++) p[j]*=d[j];
+      for (Int_t j=0; j<ns; j++) p[j]*=d[j];
     }
 
     t->SetESDpid(p);
   }
+
   return 0;
 }

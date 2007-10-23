@@ -63,21 +63,35 @@ Int_t AliTPCpidESD::MakePID(AliESDEvent *event)
     AliESDtrack *t=event->GetTrack(i);
     if ((t->GetStatus()&AliESDtrack::kTPCin )==0)
       if ((t->GetStatus()&AliESDtrack::kTPCout)==0) continue;
-    Int_t ns=AliPID::kSPECIES;
     Double_t p[10];
-    for (Int_t j=0; j<ns; j++) {
+    Double_t mom=t->GetP();
+    const AliExternalTrackParam *in=t->GetInnerParam();
+    if (in) mom=in->GetP();
+    Double_t dedx=t->GetTPCsignal()/fMIP;
+    Bool_t mismatch=kTRUE, heavy=kTRUE;
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) {
       Double_t mass=AliPID::ParticleMass(j);
-      Double_t mom=t->GetP();
-      Double_t dedx=t->GetTPCsignal()/fMIP;
       Double_t bethe=Bethe(mom/mass); 
       Double_t sigma=fRes*bethe;
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
 	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
-        continue;
+      } else {
+        p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+        mismatch=kFALSE;
       }
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+
+      // Check for particles heavier than (AliPID::kSPECIES - 1)
+      if (dedx < (bethe + fRange*sigma)) heavy=kFALSE;
+
     }
+
+    if (mismatch)
+       for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1/AliPID::kSPECIES;
+
     t->SetTPCpid(p);
+
+    if (heavy) t->ResetStatus(AliESDtrack::kTPCpid);
+
   }
   return 0;
 }

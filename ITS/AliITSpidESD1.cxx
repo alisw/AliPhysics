@@ -60,19 +60,31 @@ Int_t AliITSpidESD1::MakePID(AliESDEvent *event)
       if ((t->GetStatus()&AliESDtrack::kITSout)==0) continue;
     Double_t mom=t->GetP();
     Double_t dedx=t->GetITSsignal()/fMIP;
-    Int_t ns=AliPID::kSPECIES;
     Double_t p[10];
-    for (Int_t j=0; j<ns; j++) {
+    Bool_t mismatch=kTRUE, heavy=kTRUE;
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) {
       Double_t mass=AliPID::ParticleMass(j);//GeV/c^2
       Double_t bethe=AliITSpidESD::Bethe(mom,mass);
       Double_t sigma=fRes*bethe;
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {
 	p[j]=TMath::Exp(-0.5*fRange*fRange)/sigma;
-        continue;
+      } else {
+        p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+        mismatch=kFALSE;
       }
-      p[j]=TMath::Exp(-0.5*(dedx-bethe)*(dedx-bethe)/(sigma*sigma))/sigma;
+
+      // Check for particles heavier than (AliPID::kSPECIES - 1)
+      if (dedx < (bethe + fRange*sigma)) heavy=kFALSE;
+
     }
+
+    if (mismatch)
+       for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1/AliPID::kSPECIES;
+
     t->SetITSpid(p);
+
+    if (heavy) t->ResetStatus(AliESDtrack::kITSpid);
+
   }
   return 0;
 }
