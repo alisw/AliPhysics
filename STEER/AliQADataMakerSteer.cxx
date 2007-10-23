@@ -189,30 +189,30 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char *
 		fRunNumber = fRawReader->GetRunNumber() ; 
 		fRawReader->RewindEvents();
 		fNumberOfEvents = 999999 ;
-		
+	} else if (taskIndex == AliQA::kESDS) {
+		if (!gSystem->AccessPathName("AliESDs.root")) { // AliESDs.root exists
+			TFile * esdFile = TFile::Open("AliESDs.root") ;
+			fESDTree = dynamic_cast<TTree *> (esdFile->Get("esdTree")) ; 
+			fESD     = new AliESDEvent() ;
+			fESD->ReadFromTree(fESDTree) ;
+			fESDTree->GetEntry(0) ; 
+			fRunNumber = fESD->GetRunNumber() ; 
+			fNumberOfEvents = fESDTree->GetEntries() ;
+		} else {
+			AliError("AliESDs.root not found") ; 
+			return kFALSE ; 
+		}			
 	} else {
 		if ( !InitRunLoader() ) {
 			AliError("Problems in getting the Run Loader") ; 
 			return kFALSE ; 
 		} else {
-			fRunNumber      = fRunLoader->GetAliRun()->GetRunNumber() ; 
+			if (fRunLoader->GetAliRun()) 
+				fRunNumber      = fRunLoader->GetAliRun()->GetRunNumber() ; 
 			fNumberOfEvents = fRunLoader->GetNumberOfEvents() ;
 		}
-		if (taskIndex == AliQA::kESDS) {
-			if (!gSystem->AccessPathName("AliESDs.root")) { // AliESDs.root exists
-				TFile * esdFile = TFile::Open("AliESDs.root") ;
-				fESDTree = dynamic_cast<TTree *> (esdFile->Get("esdTree")) ; 
-				fESD     = new AliESDEvent() ;
-				fESD->ReadFromTree(fESDTree) ;
-				fESDTree->GetEntry(0) ; 
-				fRunNumber = fESD->GetRunNumber() ; 
-				fNumberOfEvents = fESDTree->GetEntries() ;
-			} else {
-				AliError("AliESDs.root not found") ; 
-				return kFALSE ; 
-			}
-		}
-	}	
+	}
+		
 	// Initialize all QA data makers for all detectors
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		AliQADataMaker * qadm = GetQADataMaker(iDet) ;
