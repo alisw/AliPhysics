@@ -7,7 +7,6 @@ class RnrElement*;
 
 Reve::NLTProjector  * proj = 0;
 Reve::GeoShapeRnrEl * geom = 0;
-// Reve::RenderElement* pgeom = 0;
 
 void NLT_trackcount_init()
 {
@@ -82,6 +81,11 @@ void on_new_event()
 
   Reve::RenderElement* top = gReve->GetCurrentEvent();
   proj->DestroyElements();
+  AliESDEvent* esd = Alieve::Event::AssertESD();
+  Double_t x[3];
+  esd->GetPrimaryVertex()->GetXYZ(x);
+  proj->SetCenter(x[0], x[1], x[2]);
+
   // geom
   proj->ImportElements(geom);
   // event
