@@ -24,7 +24,7 @@ SOFLAGS   = -shared -g -pg -fPIC
 ROOTCXX  = $(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --libs) -lMinuit
 
-MCCXX    =
+MCCXX    = -I$(ALICE_ROOT)/STEER
 MCLIBS   =
 
 CXXFLAGS += $(ROOTCXX) $(MCCXX) $(LOCALCXX)
@@ -32,7 +32,7 @@ CXXFLAGS += $(ROOTCXX) $(MCCXX) $(LOCALCXX)
 # define module specific variables
 FILE_LIST =  $(shell ls -1 ./*.$(SrcSuf))
 FILES = $(basename $(FILE_LIST))
-DICTIONARIES = kDStatDict
+DICTIONARIES = StatDict
 OBJECTS = $(addsuffix .$(ObjSuf),$(FILES))
 OBJECTS += ./$(DICTIONARIES).$(ObjSuf)
 
@@ -43,7 +43,7 @@ HEADERS = $(notdir $(HDRS))
 # define libs on which the main lib depends ! (this are defined in config/Makefile.flags)
 LIBSDEPEND = $(ROOTLIBS) $(MCLIBS)
 # define libs build by module
-LIBS = libKDStat.so
+LIBS = libSTAT.so
 
 # rule for building executables
 $(EXECS):	$(OBJECTS)
