@@ -32,6 +32,11 @@ public:
   
 private:
 
+    /// not implemented
+    AliMpManuIterator(const AliMpManuIterator& rhs);
+  /// not implemented
+  AliMpManuIterator& operator=(const AliMpManuIterator& rhs);
+
     AliMpBusPatch* NextBusPatch() const;
     
 private:
