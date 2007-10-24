@@ -48,7 +48,8 @@ Int_t AliGeomManager::fgLayerSize[kLastLayer - kFirstLayer] = {
   1638,     // TOF
   5, 5,     // PHOS,CPV
   7,        // HMPID ??
-  1         // MUON ??
+  1,         // MUON ??
+  12        // EMCAL
 };
 
 const char* AliGeomManager::fgLayerName[kLastLayer - kFirstLayer] = {
@@ -60,8 +61,9 @@ const char* AliGeomManager::fgLayerName[kLastLayer - kFirstLayer] = {
   "TRD chambers layer 4", "TRD chambers layer 5", "TRD chambers layer 6",
   "TOF layer",
   "PHOS EMC layer","PHOS CPV layer",
-  "HMPID layer",
-  "?"
+  "HMPID layer", 
+  "MUON ?",
+  "EMCAL layer"
 };
 
 TString* AliGeomManager::fgSymName[kLastLayer - kFirstLayer] = {
@@ -73,6 +75,7 @@ TString* AliGeomManager::fgSymName[kLastLayer - kFirstLayer] = {
   0x0,0x0,0x0,
   0x0,
   0x0,0x0,
+  0x0,
   0x0,
   0x0
 };
@@ -87,6 +90,7 @@ TGeoPNEntry** AliGeomManager::fgPNEntry[kLastLayer - kFirstLayer] = {
   0x0,
   0x0,0x0,
   0x0,
+  0x0,
   0x0
 };
 
@@ -100,6 +104,7 @@ TGeoHMatrix** AliGeomManager::fgOrigMatrix[kLastLayer - kFirstLayer] = {
   0x0,
   0x0,0x0,
   0x0,
+  0x0,
   0x0
 };
 
@@ -112,6 +117,7 @@ AliAlignObj** AliGeomManager::fgAlignObjs[kLastLayer - kFirstLayer] = {
   0x0,0x0,0x0,
   0x0,
   0x0,0x0,
+  0x0,
   0x0,
   0x0
 };
@@ -834,6 +840,22 @@ void AliGeomManager::InitSymNamesLUT()
     }
   }
 
+  /*********************      EMCAL layer   ***********************/
+  {
+    TString str = "EMCAL/FullSupermodule";
+    modnum=0;
+
+    for (Int_t iModule=1; iModule <= 12; iModule++) {
+      symname = str;
+      symname += iModule;
+      if(iModule >10) {
+	symname = "EMCAL/HalfSupermodule";
+	symname += iModule-10;
+      }
+      modnum = iModule-1;
+      fgSymName[kEMCAL-kFirstLayer][modnum] = symname.Data();
+    }
+  }
 
 }
 

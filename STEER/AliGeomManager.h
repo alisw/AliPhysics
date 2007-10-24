@@ -36,7 +36,8 @@ public:
 		kPHOS1=16, kPHOS2=17,
 		kHMPID=18,
 		kMUON=19,
-		kLastLayer=20};
+		kEMCAL=20,
+		kLastLayer=21};
 
   static TGeoManager* GetGeometry() { return fgGeometry; }
 
