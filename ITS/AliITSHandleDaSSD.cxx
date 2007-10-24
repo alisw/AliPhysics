@@ -383,12 +383,11 @@ Bool_t  AliITSHandleDaSSD::CalculateNoiseCM()
       }
       if (!(strind % AliITSModuleDaSSD::GetStripsPerChip())) {
         if (!cm) {
-          try { 
-	    cm = new Float_t [strip->GetEventsNumber()];  }
-          catch (bad_alloc&) {
+          cm = new (nothrow) Float_t [strip->GetEventsNumber()];
+          if (!cm) {
             Warning("AliITSHandleDaSSD", "Noise calculation with common mode correction failed becouse of memory allocation problems.");
             return kFALSE; 
-          }  
+          }
         }
 // calculate cm;
         if (!CalculateCM(modind, strind, cm)) return kFALSE;

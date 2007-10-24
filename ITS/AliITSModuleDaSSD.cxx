@@ -200,23 +200,27 @@ void AliITSModuleDaSSD::SetModuleRorcId (const Int_t equipid, const Int_t equipt
 
 Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
 {
-// Allocate the memory for the enents data
+// Allocate the memory for the events data
   Int_t i;
   if (!fStrips) return kFALSE;
-  try {
-     for (i = 0; i < fNumberOfStrips; i++) {
-       if (fStrips[i]) fStrips[i]->SetEvenetsNumber(eventsnumber);
-       else fStrips[i] = new AliITSChannelDaSSD(i, eventsnumber);
-     } 
-  }  
-  catch (bad_alloc&) {
-     Error("AliITSModuleDaSSD", "Error allocating memory for %i-th AliITSChannelDaSSD objects!", i);
-     for (Int_t j = 0; j < i; j++) delete fStrips[j];
-     delete [] fStrips;
-     fNumberOfStrips = 0;
-     fStrips = NULL;
-     return kFALSE;
-  }
+  for (i = 0; i < fNumberOfStrips; i++) {
+    if (fStrips[i])  
+      if (!fStrips[i]->SetEvenetsNumber(eventsnumber)) {
+        for (Int_t j = 0; j < i; j++) fStrips[j]->DeleteSignal();
+        Error("AliITSModuleDaSSD", "Error allocating memory for i% events for module %i, strip %i", 
+	                            eventsnumber, (Int_t)fModuleId, i);
+        return kFALSE;
+      }
+    else 
+      if (!(fStrips[i] = new AliITSChannelDaSSD(i, eventsnumber))) {
+        for (Int_t j = 0; j < i; j++) delete fStrips[j];
+        delete [] fStrips;
+        fNumberOfStrips = 0;
+        fStrips = NULL;
+        Error("AliITSModuleDaSSD", "Error allocating memory for strip %i of module %i!", (Int_t)fModuleId, i);
+        return kFALSE;
+      }
+  } 
   return kTRUE;
 }
 
