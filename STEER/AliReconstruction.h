@@ -108,6 +108,9 @@ public:
 
   virtual Bool_t Run(const char* input = NULL);
 
+  // AOD creation
+  void ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
+
   // Quality Assurance 
 //  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
 //  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
@@ -134,9 +137,7 @@ private:
   Bool_t         ReadESD(AliESDEvent*& esd, const char* recStep) const;
   void           WriteESD(AliESDEvent* esd, const char* recStep) const;
 
-   //==========================================//
-  void           ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
-
+  //==========================================//
   void           WriteAlignmentData(AliESDEvent* esd);
 
   void           FillRawDataErrorLog(Int_t iEvent, AliESDEvent* esd);

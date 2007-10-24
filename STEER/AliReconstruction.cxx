@@ -2449,7 +2449,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 
     // Tracks (primary and orphan)
     for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
-	
 
       if (usedTrack[nTrack]) continue;
 
@@ -2631,9 +2630,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
   } // end of event loop
 
   aodTree->GetUserInfo()->Add(aod);
-
-  // close ESD file
-  esdFile->Close();
 
   // write the tree to the specified file
   aodFile = aodTree->GetCurrentFile();
