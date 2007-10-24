@@ -15,6 +15,11 @@
 
 /*
 $Log$
+Revision 1.23  2007/09/28 15:27:40  acolla
+
+AliDCSClient "multiSplit" option added in the DCS configuration
+in AliDCSMessage: variable MAX_BODY_SIZE set to 500000
+
 Revision 1.22  2007/09/27 16:53:13  acolla
 Detectors can have more than one AMANDA server. SHUTTLE queries the servers sequentially,
 merges the dcs aliases/DPs in one TMap and sends it to the preprocessor.
@@ -1208,8 +1213,6 @@ void AliShuttleConfig::Print(Option_t* option) const
 	
 	TIter iter(fDetectorMap.GetTable());
 	TPair* aPair = 0;
-	
-	AliInfo(Form("Option = %s", option));
 	
 	while ((aPair = (TPair*) iter.Next())) {
 		AliShuttleDetConfigHolder* aHolder = (AliShuttleDetConfigHolder*) aPair->Value();
