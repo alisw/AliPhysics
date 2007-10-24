@@ -75,6 +75,7 @@ public:
 	virtual Bool_t IsEqual(const TObject *obj) const;
 
 	TString ToString() const;
+	void Print(Option_t* option="") const;
 
 private:
 

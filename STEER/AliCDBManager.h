@@ -42,6 +42,9 @@ class AliCDBManager: public TObject {
 
 	TList* GetActiveStorages();
 
+	const TMap* GetStorageMap() const {return fStorageMap;}
+	const TList* GetRetrievedIds() const {return fIds;}
+
 	void SetDefaultStorage(const char* dbString);
 	void SetDefaultStorage(const AliCDBParam* param);
 	void SetDefaultStorage(AliCDBStorage *storage);
@@ -122,8 +125,6 @@ class AliCDBManager: public TObject {
 
 	static TString fgkCondUri;	// URI of the Conditions data base folder
 	static TString fgkRefUri;	// URI of the Reference data base folder
-	AliCDBParam* fCondParam; 	// Conditions data storage parameters
-	AliCDBParam* fRefParam;		// Reference data storage parameters
 
 	AliCDBManager();
 	AliCDBManager(const AliCDBManager & source);
@@ -146,17 +147,22 @@ class AliCDBManager: public TObject {
 	TList fFactories; 		//! list of registered storage factories
 	TMap fActiveStorages;		//! list of active storages
 	TMap fSpecificStorages;         //! list of detector-specific storages
+	TMap fEntryCache;    	  	//! cache of the retrieved objects
+
+	TList* fIds;           	//! List of the retrieved object Id's (to be streamed to file)
+	TMap* fStorageMap;      //! list of storages (to be streamed to file)
+	TList* fShortLived; 	//! List of short lived objects
 
 	AliCDBStorage *fDefaultStorage;	//! pointer to default storage
 	AliCDBStorage *fRemoteStorage;	//! pointer to remote storage
 	AliCDBStorage *fDrainStorage;	//! pointer to drain storage
 
-  	TMap fEntryCache;    	//! cache of the retrieved objects
+	AliCDBParam* fCondParam; 	// Conditions data storage parameters
+	AliCDBParam* fRefParam;		// Reference data storage parameters
 
+	Int_t fRun;			//! The run number
 	Bool_t fCache;			//! The cache flag
-  	Int_t fRun;			//! The run number
 
-	TList* fShortLived; 	//! List of short lived objects
 
 	ClassDef(AliCDBManager, 0);
 };

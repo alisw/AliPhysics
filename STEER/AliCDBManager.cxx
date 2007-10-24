@@ -82,24 +82,31 @@ void AliCDBManager::Destroy() {
 //_____________________________________________________________________________
 AliCDBManager::AliCDBManager():
   TObject(),
-  fCondParam(0),
-  fRefParam(0),
   fFactories(),
   fActiveStorages(),
   fSpecificStorages(),
+  fEntryCache(),
+  fIds(0),
+  fStorageMap(0),
+  fShortLived(0),
   fDefaultStorage(NULL),
   fRemoteStorage(NULL),
   fDrainStorage(NULL),
-  fEntryCache(),
-  fCache(kTRUE),
+  fCondParam(0),
+  fRefParam(0),
   fRun(-1),
-  fShortLived(0)
+  fCache(kTRUE)
 {
 // default constuctor
 	fFactories.SetOwner(1);
 	fActiveStorages.SetOwner(1);
 	fSpecificStorages.SetOwner(1);
 	fEntryCache.SetOwner(1);
+
+	fStorageMap = new TMap();
+	fStorageMap->SetOwner(1);
+	fIds = new TList();
+	fIds->SetOwner(1);
 }
 
 //_____________________________________________________________________________
@@ -111,6 +118,8 @@ AliCDBManager::~AliCDBManager() {
 	fDrainStorage = 0x0;
 	fDefaultStorage = 0x0;
   	fRemoteStorage = 0x0;
+	delete fStorageMap; fStorageMap = 0;
+	delete fIds; fIds = 0;
 	delete fCondParam;
 	delete fRefParam;
 	delete fShortLived; fShortLived = 0x0;
@@ -135,7 +144,7 @@ void AliCDBManager::RegisterFactory(AliCDBStorageFactory* factory) {
 
 //_____________________________________________________________________________
 Bool_t AliCDBManager::HasStorage(const char* dbString) const {
-// check if dbString is a URI valid for one of the registered factories 
+// check if dbString is a URI valid for one of the registered factories
 
 	TIter iter(&fFactories);
 
@@ -286,6 +295,11 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 		AliWarning("Existing default storage replaced: clearing cache!");
 		ClearCache();
 	}
+
+	if (fStorageMap->Contains("default")) {
+		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
+	}
+	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
 
 //_____________________________________________________________________________
@@ -300,6 +314,11 @@ void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 		AliWarning("Existing default storage replaced: clearing cache!");
 		ClearCache();
 	}
+
+	if (fStorageMap->Contains("default")) {
+		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
+	}
+	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
 
 //_____________________________________________________________________________
@@ -314,6 +333,11 @@ void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 		AliWarning("Existing default storage replaced: clearing cache!");
 		ClearCache();
 	}
+
+	if (fStorageMap->Contains("default")) {
+		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
+	}
+	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
 //_____________________________________________________________________________
 void AliCDBManager::SetRemoteStorage(const char* dbString) {
@@ -381,6 +405,12 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param
 	GetStorage(param);
 
  	fSpecificStorages.Add(objCalibType, param->CloneParam());
+
+	if(fStorageMap->Contains(objCalibType)){
+		delete fStorageMap->Remove(objCalibType);
+	}
+	fStorageMap->Add(objCalibType->Clone(), new TObjString(param->GetURI()));
+
 }
 
 //_____________________________________________________________________________
@@ -512,6 +542,11 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
  	if(entry && fCache && (query.GetFirstRun() == fRun)){
 		CacheEntry(query.GetPath(), entry);
 	}
+
+	if(entry && !fIds->Contains(&entry->GetId())){
+		fIds->Add(entry->GetId().Clone());
+	}
+
 
   	return entry;
 
@@ -711,14 +746,18 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 	}
 
 	// caching entries
- 	if(fCache && (query.GetFirstRun() == fRun)){
+	TIter iter(result);
+	AliCDBEntry* entry=0;
+	while((entry = dynamic_cast<AliCDBEntry*> (iter.Next()))){
 
-		TIter iter(result);
-		AliCDBEntry* entry=0;
-		while((entry = dynamic_cast<AliCDBEntry*> (iter.Next()))){
+		if(!fIds->Contains(&entry->GetId())){
+			fIds->Add(entry->GetId().Clone());
+		}
+		if(fCache && (query.GetFirstRun() == fRun)){
 			CacheEntry(entry->GetId().GetPath(), entry);
 		}
 	}
+
 
 	return result;
 }

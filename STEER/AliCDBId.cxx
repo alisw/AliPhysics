@@ -22,6 +22,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "AliCDBId.h"
+#include <Riostream.h>
 
 ClassImp(AliCDBId)
 
@@ -120,4 +121,12 @@ TString AliCDBId::ToString() const {
 	if(GetVersion() >= 0) result += Form("; version: v%d", GetVersion());
 	if(GetSubVersion() >= 0) result += Form("_s%d", GetSubVersion());
 	return result;
+}
+
+//_____________________________________________________________________________
+void AliCDBId::Print(Option_t* /*option*/) const {
+// Prints ToString()
+
+	cout << ToString().Data() << endl;
+
 }
