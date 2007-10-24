@@ -1,0 +1,6 @@
+#MTR config
+dn: det=MTR,o=alice,dc=cern,dc=ch
+objectClass: detectorConfig
+det: MTR
+strictRunOrder: 0
+responsible: aphecetc@in2p3.fr
