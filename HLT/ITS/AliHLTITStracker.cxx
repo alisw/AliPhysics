@@ -112,7 +112,7 @@ Int_t AliHLTITStracker::Clusters2Tracks(AliESDEvent *event) {
        ResetTrackToFollow(*t);
        ResetBestTrack();
 
-       for (FollowProlongation(); fI<kMaxLayer; fI++) {
+       for (FollowProlongation(); fI<AliITSgeomTGeo::GetNLayers(); fI++) {
 	 while (TakeNextProlongation()) FollowProlongation();
        }
 
