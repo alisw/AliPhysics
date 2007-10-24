@@ -99,11 +99,11 @@ class AliZDCCalibData: public TNamed {
   
  protected:
   // --- Pedestals
-  Float_t  fMeanPedestal[47];	 // Mean pedestal values 
-  Float_t  fMeanPedWidth[47];	 // Mean pedestal widths 
-  Float_t  fOOTPedestal[47];	 // "Out of Time" pedestal values
-  Float_t  fOOTPedWidth[47];	 // "Out of Time" pedestal widths
-  Float_t  fPedCorrCoeff[2][47]; // Fit of correlation in-time vs. out-of-time
+  Float_t  fMeanPedestal[48];	 // Mean pedestal values 
+  Float_t  fMeanPedWidth[48];	 // Mean pedestal widths 
+  Float_t  fOOTPedestal[48];	 // "Out of Time" pedestal values
+  Float_t  fOOTPedWidth[48];	 // "Out of Time" pedestal widths
+  Float_t  fPedCorrCoeff[2][48]; // Fit of correlation in-time vs. out-of-time
   // --- E calibration
   Float_t  fEnCalibration[6];	 // Coeff. for energy calibration
   // --- Coefficients for tower calibration

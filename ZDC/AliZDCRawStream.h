@@ -23,7 +23,6 @@ class AliZDCRawStream: public TObject {
     virtual Bool_t   Next();
 
     Int_t            GetSector(Int_t i) const {return fSector[i];};
-    Int_t            GetADCModule() const {return fADCModule;};
     Int_t            GetADCValue() const {return fADCValue;};
     UInt_t           GetADCRaw() const {return fRawADC;};
     Int_t            GetADCGain() const {return fADCGain;};

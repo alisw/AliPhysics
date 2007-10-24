@@ -118,7 +118,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // Execute digitization
 
   // ------------------------------------------------------------
-  // !!! 2nd ZDC set added (needed for trigger purposes!)
+  // !!! 2nd ZDC set added 
   // *** 1st 3 arrays are digits from REAL (simulated) hits
   // *** last 2 are copied from simulated digits
   // --- pm[0][...] = light in ZN right  [C, Q1, Q2, Q3, Q4]
@@ -266,9 +266,23 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 	   new(pdigit) AliZDCDigit(sectorL, digiL);
            treeD->Fill();
 	}
-	//
-        //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
     }
+  } // Loop over detector
+  // Adding in-time digits for 2 reference PTM signals (after signal ch.)
+  // (for the moment the ref. signal is completely invented assuming a PMgain of 5*10^4!)
+  Int_t sectorRef[2];
+  sectorRef[1] = 5;
+  Int_t sigRef[2] = {100, 800};
+  for(Int_t iref=0; iref<2; iref++){
+     sectorRef[0] = 3*iref+1;
+     for(Int_t res=0; res<2; res++){
+       sigRef[res] += Pedestal(sectorRef[0], sectorRef[1], res);
+     }
+     /*printf("\t RefDigit added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+         sectorRef[0], sectorRef[1], sigRef[0], sigRef[1]); // Chiara debugging!
+     */
+     new(pdigit) AliZDCDigit(sectorRef, sigRef);
+     treeD->Fill();     
   }
   //
   // --- Adding digits for out-of-time channels after signal digits
@@ -299,9 +313,24 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
            treeD->Fill();
 	}
 	//
-        //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
     }
   }
+  // Adding out-of-time digits for 2 reference PTM signals (after out-of-time ch.)
+  Int_t sigRefoot[2];
+  for(Int_t iref=0; iref<2; iref++){
+     sectorRef[0] = 3*iref+1;
+     for(Int_t res=0; res<2; res++){
+       sigRefoot[res] = Pedestal(sectorRef[0], sectorRef[1], res);
+     }
+     /*printf("\t RefDigitoot added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+         sectorRef[0], sectorRef[1], sigRefoot[0], sigRefoot[1]); // Chiara debugging!
+     */
+     new(pdigit) AliZDCDigit(sectorRef, sigRefoot);
+     treeD->Fill();
+     
+  }
+  //printf("\t AliZDCDigitizer -> TreeD has %d entries\n",(Int_t) treeD->GetEntries());
+
   // write the output tree
   loader->WriteDigits("OVERWRITE");
   loader->UnloadDigits();
@@ -434,21 +463,26 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   if(fIsCalibration == 0){
     Float_t meanPed, Pedwidth;
     Int_t index=0;
-    if(Det==1|| Det==2)		index = 10*(Det-1)+Quad+5*Res;	 // ZN1, ZP1
-    else if(Det==3)		index = 10*(Det-1)+(Quad-1)+Res; // ZEM
-    else if(Det==4|| Det==5)	index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
+    if(Quad!=5){
+      if(Det==1 || Det==2)	index = 10*(Det-1)+Quad+5*Res;	 // ZN1, ZP1
+      else if(Det==3)		index = 10*(Det-1)+(Quad-1)+Res; // ZEM
+      else if(Det==4 || Det==5)	index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
+    }
+    else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
+    //
     meanPed = fCalibData->GetMeanPed(index);
     Pedwidth = fCalibData->GetMeanPedWidth(index);
     PedValue = gRandom->Gaus(meanPed,Pedwidth);
     //
     /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
-  	Det, Quad, index,(Int_t) PedValue); // Chiara debugging!
+  	Det, Quad, Res, index,(Int_t) PedValue); // Chiara debugging!
     */
   }
-  
   // To create calibration object
-  else PedValue = gRandom->Gaus((40.+10.*gRandom->Rndm()),5.);
-  
+  else{
+    if(Res == 0) PedValue = gRandom->Gaus((35.+10.*gRandom->Rndm()),(0.5+0.2*gRandom->Rndm())); //High gain
+    else  PedValue = gRandom->Gaus((250.+100.*gRandom->Rndm()),(3.5+2.*gRandom->Rndm())); //Low gain
+  }
 
   return (Int_t) PedValue;
 }
