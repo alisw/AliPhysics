@@ -16,6 +16,7 @@
 /* $Id$ */
 
 #include <TFile.h>
+#include <TFileMerger.h>
 #include <TPluginManager.h>
 #include <TROOT.h>
 #include <TString.h>
@@ -286,8 +287,54 @@ Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex)
 //_____________________________________________________________________________
 Bool_t AliQADataMakerSteer::Merge() 
 {
-	// Merge 
-
+	// Merge all the cycles from all detectors in one single file per run
+	
+	gROOT->ProcessLine(".! ls *QA*.*.*.root > tempo.txt") ; 
+	ifstream in("tempo.txt") ; 
+	const Int_t runMax = 10 ;  
+	TString file[AliQA::kNDET*runMax] ;
+	Int_t run[AliQA::kNDET*runMax] ;
+	
+	Int_t index = 0 ; 
+	while ( 1 ) {
+		in >> file[index++] ; 
+		if ( !in.good() ) 
+			break ; 
+	}
+	Int_t previousRun = -1 ;
+	Int_t runIndex = 0 ;  
+	for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
+		TString tmp(file[ifile]) ; 
+		tmp.ReplaceAll(".root", "") ; 
+		TString det = tmp(0, tmp.Index(".")) ; 
+		tmp.Remove(0, tmp.Index(".QA.")+4) ; 
+		TString ttmp = tmp(0, tmp.Index(".")) ; 
+		Int_t newRun = ttmp.Atoi() ;
+		if (newRun != previousRun) {
+			run[runIndex] = newRun ; 
+			previousRun = newRun ; 
+			runIndex++ ; 
+		}
+		ttmp = tmp(tmp.Index("."), tmp.Length()) ; 
+		Int_t cycle = ttmp.Atoi() ;  
+		AliInfo(Form("%s : det = %s run = %d cycle = %d \n", file[ifile].Data(), det.Data(), newRun, cycle)) ; 
+	}
+	for (Int_t irun = 0 ; irun < runIndex ; irun++) {
+		TFileMerger merger ; 
+		char outFileName[runMax] ; 
+		sprintf(outFileName, "Merged.QA.%d.root", runIndex-1) ; 
+		merger.OutputFile(outFileName) ; 
+		for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
+			char pattern[100] ; 
+			sprintf(pattern, "QA.%d.", runIndex-1) ; 
+			TString tmp(file[ifile]) ; 
+			if (tmp.Contains(pattern))
+				merger.AddFile(tmp) ; 
+		}
+		merger.Merge() ; 
+	}
+	
+	return kTRUE ; 
 }
 
 //_____________________________________________________________________________
