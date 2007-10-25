@@ -143,4 +143,8 @@
 #pragma link C++ class AliQAChecker+;
 #pragma link C++ class AliQACheckerBase+;
 #pragma link C++ class AliMillepede+;
+
+#pragma link C++ class AliDetectorRecoParam+;
+#pragma link C++ class AliRecoParam+;
+
 #endif

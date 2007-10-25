@@ -50,7 +50,10 @@ AliQADataMaker.cxx \
 AliQADataMakerSteer.cxx \
 AliQAChecker.cxx \
 AliQACheckerBase.cxx \
-AliMillepede.cxx 
+AliMillepede.cxx \
+AliRecoParam.cxx \
+AliDetectorRecoParam.cxx 
+
 
 
 HDRS:= $(SRCS:.cxx=.h) 
