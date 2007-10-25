@@ -26,6 +26,7 @@
 
 #include "AliCluster.h"
 #include "AliESDtrack.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITStrackMI.h"
 
 ClassImp(AliITStrackMI)
@@ -46,7 +47,7 @@ fConstrain(kFALSE),
 fGoldV0(kFALSE)
 {
   //constructor
-    for(Int_t i=0; i<kMaxLayer; i++) fClIndex[i]=-1;
+    for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fClIndex[i]=-1;
     for(Int_t i=0; i<6; i++) { fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000;}
     for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
     fD[0]=0; fD[1]=0;

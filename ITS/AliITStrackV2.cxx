@@ -36,7 +36,7 @@ AliITStrackV2::AliITStrackV2() : AliKalmanTrack(),
   fdEdx(0),
   fESDtrack(0)
 {
-    for(Int_t i=0; i<2*kMaxLayer; i++) fIndex[i]=-1;
+    for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) fIndex[i]=-1;
     for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
@@ -88,7 +88,7 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) :
   //------------------------------------------------------------------
   Int_t i;
   for (i=0; i<4; i++) fdEdxSample[i]=t.fdEdxSample[i];
-  for (i=0; i<2*kMaxLayer; i++) fIndex[i]=t.fIndex[i];
+  for (i=0; i<2*AliITSgeomTGeo::GetNLayers(); i++) fIndex[i]=t.fIndex[i];
 }
 
 //_____________________________________________________________________________
@@ -114,19 +114,22 @@ AliITStrackV2::PropagateToVertex(const AliESDVertex *v,Double_t d,Double_t x0)
   //This function propagates a track to the minimal distance from the origin
   //------------------------------------------------------------------  
   Double_t bz=GetBz();
-  if (PropagateToDCA(v,bz,kVeryBig))
-   if (AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass())) return kTRUE;
+  if (PropagateToDCA(v,bz,kVeryBig)) {
+    Double_t xOverX0,xTimesRho; 
+    xOverX0 = d; xTimesRho = d*x0;
+    if (CorrectForMeanMaterial(xOverX0,xTimesRho,kTRUE)) return kTRUE;
+  }
   return kFALSE;
 }
 
 //____________________________________________________________________________
 Bool_t AliITStrackV2::
-GetGlobalXYZat(Double_t xk, Double_t &x, Double_t &y, Double_t &z) const {
+GetGlobalXYZat(Double_t xloc, Double_t &x, Double_t &y, Double_t &z) const {
   //------------------------------------------------------------------
   //This function returns a track position in the global system
   //------------------------------------------------------------------
   Double_t r[3];
-  Bool_t rc=GetXYZAt(xk, AliTracker::GetBz(), r);
+  Bool_t rc=GetXYZAt(xloc, AliTracker::GetBz(), r);
   x=r[0]; y=r[1]; z=r[2]; 
   return rc;
 }
@@ -151,7 +154,9 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
   
   Double_t bz=GetBz();
   if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
-  if (!AliExternalTrackParam::CorrectForMaterial(d,x0,GetMass())) return kFALSE;
+  Double_t xOverX0,xTimesRho; 
+  xOverX0 = d; xTimesRho = d*x0;
+  if (!CorrectForMeanMaterial(xOverX0,xTimesRho,kTRUE)) return kFALSE;
 
   Double_t x=GetX(), y=GetY(), z=GetZ();
   if (IsStartedTimeIntegral() && x>oldX) {
@@ -163,7 +168,7 @@ Bool_t AliITStrackV2::PropagateTo(Double_t xk, Double_t d, Double_t x0) {
 }
 
 //____________________________________________________________________________
-Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep) {
+Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep, Double_t &xOverX0, Double_t &xTimesRho) {
   //-------------------------------------------------------------------
   //  Propagates the track to a reference plane x=xToGo in n steps.
   //  These n steps are only used to take into account the curvature.
@@ -184,13 +189,11 @@ Bool_t AliITStrackV2::PropagateToTGeo(Double_t xToGo, Int_t nstep) {
     if (!GetXYZAt(x, bz, end)) return kFALSE;
     if (!AliExternalTrackParam::PropagateTo(x, bz)) return kFALSE;
     AliTracker::MeanMaterialBudget(start, end, mparam);
-    //printf("mparam: %f %f %f %f %f %f %f\n",mparam[0],mparam[1],mparam[2],mparam[3],mparam[4],mparam[5],mparam[6]);
     if (mparam[1]<900000) {
-      Double_t lengthTimesMeanDensity = sign*mparam[4]*mparam[0];
-      Double_t xOverX0 = mparam[1];
-      //printf("%f %f %f CorrectForMeanMaterial(%f,%f)\n",startx,xToGo,sign,xOverX0,lengthTimesMeanDensity);
+      xTimesRho = sign*mparam[4]*mparam[0];
+      xOverX0   = mparam[1];
       if (!AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,
-				      lengthTimesMeanDensity,GetMass())) return kFALSE;
+				      xTimesRho,GetMass())) return kFALSE;
     }
   }
 
@@ -419,20 +422,41 @@ Double_t AliITStrackV2::GetBz() const {
 
 //____________________________________________________________________________
 Bool_t AliITStrackV2::
-GetPhiZat(Double_t rk, Double_t &phik, Double_t &zk) const {
+GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
   //------------------------------------------------------------------
-  // This function returns the global cylindrical (phik,zk) of the track 
-  // position estimated at the radius rk. 
+  // This function returns the global cylindrical (phi,z) of the track 
+  // position estimated at the radius r. 
   // The track curvature is neglected.
   //------------------------------------------------------------------
   Double_t d=GetD(0.,0.);
-  if (TMath::Abs(d) > rk) return kFALSE; 
+  if (TMath::Abs(d) > r) return kFALSE; 
 
-  Double_t r=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
-  Double_t phi=GetAlpha()+TMath::ASin(GetSnp());
+  Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
+  if (TMath::Abs(d) > rcurr) return kFALSE; 
+  Double_t phicurr=GetAlpha()+TMath::ASin(GetSnp());
 
-  phik=phi+TMath::ASin(d/rk)-TMath::ASin(d/r);
-  zk=GetZ()+GetTgl()*(TMath::Sqrt(rk*rk-d*d) - TMath::Sqrt(r*r-d*d));
+  phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+  z=GetZ()+GetTgl()*(TMath::Sqrt(r*r-d*d) - TMath::Sqrt(rcurr*rcurr-d*d));
+
+  return kTRUE;
+}
+//____________________________________________________________________________
+Bool_t AliITStrackV2::
+GetLocalXat(Double_t r,Double_t &xloc) const {
+  //------------------------------------------------------------------
+  // This function returns the local x of the track 
+  // position estimated at the radius r. 
+  // The track curvature is neglected.
+  //------------------------------------------------------------------
+  Double_t d=GetD(0.,0.);
+  if (TMath::Abs(d) > r) return kFALSE; 
+
+  Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
+  Double_t phicurr=GetAlpha()+TMath::ASin(GetSnp());
+  Double_t phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+
+  xloc=r*(TMath::Cos(phi)*TMath::Cos(GetAlpha())
+         +TMath::Sin(phi)*TMath::Sin(GetAlpha())); 
 
   return kTRUE;
 }

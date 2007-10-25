@@ -813,12 +813,12 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
               ot->ResetCovariance(10.);
               ot->ResetClusters();
               
-              if(RefitAt(krInsideITSscreen,ot,trac)){ //fit from layer 1 to layer 6
+              if(RefitAt(AliITSRecoParam::GetrInsideITSscreen(),ot,trac)){ //fit from layer 1 to layer 6
                 AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
                 otrack2->ResetCovariance(10.); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1
-                if(RefitAt(krInsideSPD1,otrack2,ot)) {
+                if(RefitAt(AliITSRecoParam::GetrInsideSPD1(),otrack2,ot)) {
 		  fListOfTracks->AddLast(otrack2);
 		  new (tri[nlist]) AliITStrackSA(*trac);
 		  nlist++;
@@ -1073,39 +1073,31 @@ AliITStrackV2* AliITStrackerSA::FitShortTrack(AliITStrackSA* tr,Double_t *primar
 	      Double_t cv=Curvature(primaryVertex[0],primaryVertex[1],x1,y1,x2,y2);        
 	      Double_t tgl2 = (z2-z1)/TMath::Sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 	      Double_t phi2 = TMath::ATan2((y2-y1),(x2-x1));
-	      //printf("phi2: %f   tgl2: %f\n",phi2,tgl2);
               AliITStrackSA* trac = new AliITStrackSA(layer,ladder,detector,yclu1,zclu1,phi2,tgl2,cv,1);
                               
-	      //Float_t clxyz[3]; 
               if(cl5!=0) {
 		trac->AddClusterV2(5,(clind5[l6] & 0x0fffffff)>>0);
 		trac->AddClusterMark(5,mark5[l6]);
-		//cl5->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
 	      }
               if(cl4!=0){
 		trac->AddClusterV2(4,(clind4[l5] & 0x0fffffff)>>0);
 		trac->AddClusterMark(4,mark4[l5]);
-		//cl4->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
 	      }
               if(cl3!=0){
 		trac->AddClusterV2(3,(clind3[l4] & 0x0fffffff)>>0);
 		trac->AddClusterMark(3,mark3[l4]);
-		//cl3->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
 	      }
               if(cl2!=0){
 		trac->AddClusterV2(2,(clind2[l3] & 0x0fffffff)>>0);
 		trac->AddClusterMark(2,mark2[l3]);
-		//cl2->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
 	      }
               if(cl1!=0){
 		trac->AddClusterV2(1,(clind1[l2] & 0x0fffffff)>>0);
 		trac->AddClusterMark(1,mark1[l2]);
-		//cl1->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
 	      }
               if(cl0!=0){
 		trac->AddClusterV2(0,(clind0[l1] & 0x0fffffff)>>0);
 		trac->AddClusterMark(0,mark0[l1]);
-		//cl0->GetGlobalXYZ(clxyz);printf("gcl %f %f %f\n",clxyz[0],clxyz[1],clxyz[2]);	      
 	      }
 
 
@@ -1115,13 +1107,12 @@ AliITStrackV2* AliITStrackerSA::FitShortTrack(AliITStrackSA* tr,Double_t *primar
               ot->ResetCovariance(10.);
               ot->ResetClusters();
               
-	      //printf("%d  \n",trac->GetNumberOfClusters());for(Int_t ijk=0;ijk<trac->GetNumberOfClusters();ijk++) printf("    %d",trac->GetClusterIndex(ijk)); printf("\n");
-              if(RefitAt(krInsideITSscreen,ot,trac)){ //fit from layer 1 to layer 6
+              if(RefitAt(AliITSRecoParam::GetrInsideITSscreen(),ot,trac)){ //fit from layer 1 to layer 6
                 AliITStrackMI *otrack2 = new AliITStrackMI(*ot);
                 otrack2->ResetCovariance(10.); 
                 otrack2->ResetClusters();
                 //fit from layer 6 to layer 1
-                if(RefitAt(krInsideSPD1,otrack2,ot)) {
+                if(RefitAt(AliITSRecoParam::GetrInsideSPD1(),otrack2,ot)) {
 		  fListOfTracks->AddLast(otrack2);
 		  new (tri[nlist]) AliITStrackSA(*trac);
 		  nlist++;

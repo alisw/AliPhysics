@@ -27,9 +27,13 @@
 //#include <TLinearFitter.h>
 //#include <TH1F.h>
 //#include <TProfile2D.h>
+#include <TVector3.h>
 #include "TMath.h"
+#include "AliGeomManager.h"
 #include "AliITSRecPoint.h"
 #include "AliITSClusterParam.h"
+#include "AliITSReconstructor.h"
+#include "AliExternalTrackParam.h"
 
 ClassImp(AliITSClusterParam)
 
@@ -73,40 +77,86 @@ AliITSClusterParam* AliITSClusterParam::Instance()
 }
 //-------------------------------------------------------------------------
 void AliITSClusterParam::GetNTeor(Int_t layer,const AliITSRecPoint* /*cl*/, 
-				  Float_t theta,Float_t phi,
+				  Float_t tgl,Float_t tgphitr,
 				  Float_t &ny,Float_t &nz)
 {
   //
-  //get "mean shape"
+  // Get "mean shape" (original parametrization from AliITStrackerMI)
   //
-  if (layer==0){
-    ny = 1.+TMath::Abs(phi)*3.2;
-    nz = 1.+TMath::Abs(theta)*0.34;
+  tgl = TMath::Abs(tgl);
+  tgphitr = TMath::Abs(tgphitr);
+
+  // SPD
+  if (layer==0) {
+    ny = 1.+tgphitr*3.2;
+    nz = 1.+tgl*0.34;
     return;
   }
-  if (layer==1){
-    ny = 1.+TMath::Abs(phi)*3.2;
-    nz = 1.+TMath::Abs(theta)*0.28;
+  if (layer==1) {
+    ny = 1.+tgphitr*3.2;
+    nz = 1.+tgl*0.28;
     return;
   }
-  
-  if (layer>3){
-    ny = 2.02+TMath::Abs(phi)*1.95;
-    nz = 2.02+TMath::Abs(phi)*2.35;
+  // SSD
+  if (layer==4 || layer==5) {
+    ny = 2.02+tgphitr*1.95;
+    nz = 2.02+tgphitr*2.35;
     return;
   }
-  ny  = 6.6-2.7*TMath::Abs(phi);
-  nz  = 2.8-3.11*TMath::Abs(phi)+0.45*TMath::Abs(theta);
+  // SDD
+  ny  = 6.6-2.7*tgphitr;
+  nz  = 2.8-3.11*tgphitr+0.45*tgl;
+  return;
 }
 //--------------------------------------------------------------------------
-Int_t AliITSClusterParam::GetError(Int_t layer,const AliITSRecPoint*cl,
-				   Float_t theta,Float_t phi,Float_t expQ,
+Int_t AliITSClusterParam::GetError(Int_t layer,
+				   const AliITSRecPoint *cl,
+				   Float_t tgl,Float_t tgphitr,Float_t expQ,
 				   Float_t &erry,Float_t &errz)
 {
-  //calculate cluster position error
+  //
+  // Calculate cluster position error
+  //
+  switch(AliITSReconstructor::GetRecoParam()->GetClusterErrorsParam()) {
+  case 0: 
+    return GetErrorOrigRecPoint(cl,erry,errz);
+    break;
+  case 1: 
+    return GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
+    break;
+  case 2: 
+    return GetErrorParamAngle(layer,cl,tgl,tgphitr,erry,errz);
+    break;
+  default: 
+    return GetErrorParamMI(layer,cl,tgl,tgphitr,expQ,erry,errz);
+    break;
+  }
+
+}
+//--------------------------------------------------------------------------
+Int_t AliITSClusterParam::GetErrorOrigRecPoint(const AliITSRecPoint*cl,
+				   Float_t &erry,Float_t &errz)
+{
+  //
+  // Calculate cluster position error (just take error from AliITSRecPoint)
+  //
+  erry   = TMath::Sqrt(cl->GetSigmaY2()); 
+  errz   = TMath::Sqrt(cl->GetSigmaZ2()); 
+
+  return 1;
+}
+//--------------------------------------------------------------------------
+Int_t AliITSClusterParam::GetErrorParamMI(Int_t layer,const AliITSRecPoint*cl,
+					  Float_t tgl,Float_t tgphitr,
+					  Float_t expQ,
+					  Float_t &erry,Float_t &errz)
+{
+  //
+  // Calculate cluster position error (original parametrization from 
+  // AliITStrackerMI)
   //
   Float_t nz,ny;
-  GetNTeor(layer, cl,theta,phi,ny,nz);  
+  GetNTeor(layer, cl,tgl,tgphitr,ny,nz);  
   erry   = TMath::Sqrt(cl->GetSigmaY2()); 
   errz   = TMath::Sqrt(cl->GetSigmaZ2()); 
   //
@@ -147,7 +197,7 @@ Int_t AliITSClusterParam::GetError(Int_t layer,const AliITSRecPoint*cl,
       errz = 0.57*scale;
       return 100;
     }
-    Float_t normq = cl->GetQ()/(TMath::Sqrt(1+theta*theta+phi*phi));
+    Float_t normq = cl->GetQ()/(TMath::Sqrt(1+tgl*tgl+tgphitr*tgphitr));
     Float_t chargematch = TMath::Max(double(normq/expQ),2.);
     //
     if (cl->GetType()==1 || cl->GetType()==10 ){     							       
@@ -201,7 +251,7 @@ Int_t AliITSClusterParam::GetError(Int_t layer,const AliITSRecPoint*cl,
     return 109;
   }
   //DRIFTS
-  Float_t normq = cl->GetQ()/(TMath::Sqrt(1+theta*theta+phi*phi));
+  Float_t normq = cl->GetQ()/(TMath::Sqrt(1+tgl*tgl+tgphitr*tgphitr));
   Float_t chargematch = normq/expQ;
   chargematch/=2.4; // F. Prino Sept. 2007: SDD charge conversion keV->ADC
   Float_t factorz=1;
@@ -253,6 +303,80 @@ Int_t AliITSClusterParam::GetError(Int_t layer,const AliITSRecPoint*cl,
   erry= TMath::Min(erry,float(0.05));
   errz= TMath::Min(errz,float(0.05));  
   return 200;
+}
+//--------------------------------------------------------------------------
+Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
+					     const AliITSRecPoint *cl,
+					     Float_t tgl,Float_t tgphitr,
+					     Float_t &erry,Float_t &errz)
+{
+  //
+  // Calculate cluster position error (parametrization extracted from rp-hit
+  // residuals, as a function of angle between track and det module plane.
+  // Origin: M.Lunardon, S.Moretto)
+  //
+
+  Double_t maxSigmaSPDx=100.;
+  Double_t maxSigmaSPDz=400.;
+  Double_t maxSigmaSDDx=100.;
+  Double_t maxSigmaSDDz=400.;
+  Double_t maxSigmaSSDx=100.;
+  Double_t maxSigmaSSDz=1000.;
+  
+  Double_t paramSPDx[3]={-6.417,0.18,11.14};
+  Double_t paramSPDz[2]={118.,-0.155};
+  Double_t paramSDDx[2]={30.93,0.059};
+  Double_t paramSDDz[2]={33.09,0.011};
+  Double_t paramSSDx[2]={18.64,-0.0046};
+  Double_t paramSSDz[2]={784.4,-0.828};
+  Double_t sigmax=1000.0,sigmaz=1000.0;
+  
+  Int_t volId = (Int_t)cl->GetVolumeId();
+  Double_t tra[3]; AliGeomManager::GetOrigTranslation(volId,tra);
+  Double_t rot[9]; AliGeomManager::GetOrigRotation(volId,rot);
+
+
+  Double_t phitr = TMath::ATan(tgphitr);
+  Double_t alpha = TMath::ATan2(tra[1],tra[0]);
+  Double_t phiglob = alpha+phitr;
+  Double_t p[3]; 
+  p[0] = TMath::Cos(phiglob);
+  p[1] = TMath::Sin(phiglob);
+  p[2] = tgl;
+  TVector3 pvec(p[0],p[1],p[2]);
+  TVector3 normvec(rot[1],-rot[0],0.);
+  Double_t angle = pvec.Angle(normvec);
+  if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
+  Double_t angleDeg = angle*TMath::Pi()/180.;
+  
+  if(layer==0 || layer==1) { // SPD
+
+    sigmax = TMath::Exp(angleDeg*paramSPDx[1]+paramSPDx[0])+paramSPDx[2];
+    sigmaz = paramSPDz[0]+paramSPDz[1]*angleDeg;
+    if(sigmax > maxSigmaSPDx) sigmax = maxSigmaSPDx;
+    if(sigmaz > maxSigmaSPDz) sigmax = maxSigmaSPDz;
+
+  } else if(layer==2 || layer==3) { // SDD
+
+    sigmax = angleDeg*paramSDDx[1]+paramSDDx[0];
+    sigmaz = paramSDDz[0]+paramSDDz[1]*angleDeg;
+    if(sigmax > maxSigmaSDDx) sigmax = maxSigmaSDDx;
+    if(sigmaz > maxSigmaSDDz) sigmax = maxSigmaSDDz;
+    
+  } else if(layer==4 || layer==5) { // SSD
+
+    sigmax = angleDeg*paramSSDx[1]+paramSSDx[0];
+    sigmaz = paramSSDz[0]+paramSSDz[1]*angleDeg;
+    if(sigmax > maxSigmaSSDx) sigmax = maxSigmaSSDx;
+    if(sigmaz > maxSigmaSSDz) sigmax = maxSigmaSSDz;
+    
+  }
+
+  // convert from micron to cm
+  erry = 1.e-4*sigmax; 
+  errz = 1.e-4*sigmaz;
+  
+  return 1;
 }
 //--------------------------------------------------------------------------
 void AliITSClusterParam::Print(Option_t* /*option*/) const {

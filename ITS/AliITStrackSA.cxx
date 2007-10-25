@@ -37,7 +37,7 @@ fNSA(0)
   SetNumberOfClusters(0);
   SetNumberOfClustersSA(0);
   ResetIndexSA();
-  for(Int_t nlay=0;nlay<fgkLayers;nlay++){ 
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){ 
     SetNumberOfMarked(nlay,0);
   }
   ResetMarked();
@@ -51,7 +51,7 @@ fNSA(0){
 // Copy a V2 track into a SA track
   SetNumberOfClustersSA(0);
   ResetIndexSA();
-  for(Int_t nlay=0;nlay<fgkLayers;nlay++){ 
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){ 
     SetNumberOfMarked(nlay,0);
   }
   ResetMarked();
@@ -68,13 +68,13 @@ fNSA(t.fNSA){
   ResetMarked();
   Int_t number = t.GetNumberOfClustersSA();
   SetNumberOfClustersSA(number);
-  for(Int_t nlay=0;nlay<fgkLayers;nlay++){
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
     SetNumberOfMarked(nlay,t.GetNumberOfMarked(nlay));
   }
   for(Int_t i=0;i<number;i++){
     fSain[i]=t.fSain[i];
   }
-  for(Int_t nlay=0;nlay<fgkLayers;nlay++){
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
     for(Int_t i=0;i<t.GetNumberOfMarked(nlay);i++){
       fCluMark[nlay][i]=t.fCluMark[nlay][i];
     }
@@ -146,13 +146,13 @@ fNSA(0)
                                                                               
   Set(sX,sAlpha,sP,sC);
 
-  for(Int_t i=0; i<kMaxLayer; i++) fIndex[i] = 0;  // to be set explicitely
+  for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fIndex[i] = 0;  // to be set explicitely
 
   for(Int_t i=0; i<4; i++) fdEdxSample[i] = 0; 
 
   SetNumberOfClusters(0);
   SetNumberOfClustersSA(0);
-  for(Int_t nlay=0;nlay<fgkLayers;nlay++) SetNumberOfMarked(nlay,0);
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++) SetNumberOfMarked(nlay,0);
   ResetIndexSA();
   ResetMarked();
   SetChi2(0);
@@ -194,7 +194,7 @@ void AliITStrackSA::AddClusterMark(Int_t layer, Int_t clnumb) {
 void AliITStrackSA::AddClusterV2(Int_t layer,Int_t clnumb) {
   // add one clusters to the list (maximum number=6)
   Int_t presnum = GetNumberOfClusters();
-  if(presnum>=kMaxLayer){
+  if(presnum>=AliITSgeomTGeo::GetNLayers()){
     Warning("AddClusterV2","Maximum number of clusters already reached. Nothing is done\n");
     return;
    }    
@@ -208,7 +208,7 @@ void AliITStrackSA::AddClusterV2(Int_t layer,Int_t clnumb) {
 void AliITStrackSA::ResetMarked(){
 
   //Reset array of marked clusters
-  for(Int_t nlay=0;nlay<fgkLayers;nlay++){
+  for(Int_t nlay=0;nlay<AliITSgeomTGeo::GetNLayers();nlay++){
     for(Int_t k=0; k<fgkMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
   }
 }

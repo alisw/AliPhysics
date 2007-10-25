@@ -41,13 +41,12 @@ class AliITStrackSA : public AliITStrackMI {
 
   static const Int_t fgkMaxNumberOfClustersL = 4;// Max. n. of clusters/layer 
   static const Int_t fgkMaxNumberOfClusters = 15;// Max. number of clusters 
-  static const Int_t fgkLayers = 6; //Number of lyers
-                                            // per trackSA
+
   UInt_t  fSain[fgkMaxNumberOfClusters];   // cluster index (SA)
   Int_t fNSA;          // number of clusters SA 
 
-  Int_t fCluMark[fgkLayers][fgkMaxNumberOfClustersL]; //indices for cluster used
-  Int_t fNM[fgkLayers]; //number of marked clusters
+  Int_t fCluMark[AliITSgeomTGeo::kNLayers][fgkMaxNumberOfClustersL]; //indices for cluster used
+  Int_t fNM[AliITSgeomTGeo::kNLayers]; //number of marked clusters
 
   ClassDef(AliITStrackSA,3)
 };

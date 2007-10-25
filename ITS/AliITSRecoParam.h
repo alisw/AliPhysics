@@ -14,49 +14,7 @@
 
 
 #include "TObject.h"
-
-//--------------- move from AliITSrecoV2.h ---------------------------    
-const Int_t kMaxLayer = 6;
-
-const Int_t kLayersNotToSkip[6]={0,0,0,0,0,0};
-const Int_t kLastLayerToTrackTo=0;
-
-const Int_t kMaxClusterPerLayer=7000*10;
-const Int_t kMaxClusterPerLayer5=7000*10*2/5;
-const Int_t kMaxClusterPerLayer10=7000*10*2/10;
-const Int_t kMaxClusterPerLayer20=7000*10*2/20;
-const Int_t kMaxDetectorPerLayer=1000;
-//------------- end of move from AliITSrecoV2.h --------------------
-
-const Double_t kriw=80.0,kdiw=0.0053,kX0iw=30.0; // TPC inner wall
-const Double_t krcd=61.0,kdcd=0.0053,kX0cd=30.0; // TPC "central drum"
-const Double_t kyr=12.8,kdr=0.03; // rods
-const Double_t kzm=0.2,kdm=0.40;  // membrane
-const Double_t krs=50.0,kds=0.001; // ITS screen
-const Double_t krInsideITSscreen=49.0; // inside ITS screen
-
-const Double_t krInsideSPD1=3.7; // inside SPD
-const Double_t krPipe=3.; // beam pipe radius
-const Double_t krInsidePipe=2.7; // inside beam pipe
-const Double_t krOutsidePipe=3.3; // outside beam pipe
-const Double_t kdPipe=0.0023; // beam pipe thickness
-
-const Double_t kX0Air=21.82;
-const Double_t kX0Be=65.19;
-const Double_t kX0shieldSDD=38.6;
-const Double_t kX0shieldSPD=42.0;
-
-const Double_t kdshieldSDD=0.0034;
-const Double_t krshieldSPD=7.5,kdshieldSPD=0.0097;
-
-
-const Double_t kBoundaryWidth=0.2; // to define track at detector boundary 
-const Double_t kDeltaXNeighbDets=0.5; // max difference in radius between 
-                                      // neighbouring detectors
-
-// Size of the SPD sensitive volumes (ladders), for dead zones treatment
-const Double_t kSPDdetzlength=6.960; // 7.072-2*0.056
-const Double_t kSPDdetxlength=1.298; // 1.410-2*0.056
+#include "AliITSgeomTGeo.h"
 
 class AliITSRecoParam : public TObject
 {
@@ -68,7 +26,42 @@ class AliITSRecoParam : public TObject
   static AliITSRecoParam *GetHighFluxParam();// make reco parameters for high flux env. 
   static AliITSRecoParam *GetCosmicTestParam();// special setting for cosmic  
 
-  
+  static Int_t GetLayersNotToSkip(Int_t i) { return fgkLayersNotToSkip[i]; }
+  static Int_t GetLastLayerToTrackTo() { return fgkLastLayerToTrackTo; }
+  static Int_t GetMaxClusterPerLayer() { return fgkMaxClusterPerLayer; }
+  static Int_t GetMaxClusterPerLayer5() { return fgkMaxClusterPerLayer5; }
+  static Int_t GetMaxClusterPerLayer10() { return fgkMaxClusterPerLayer10; }
+  static Int_t GetMaxClusterPerLayer20() { return fgkMaxClusterPerLayer20; }
+  static Int_t GetMaxDetectorPerLayer() { return fgkMaxDetectorPerLayer; }
+  static Double_t Getriw() { return fgkriw; }
+  static Double_t Getdiw() { return fgkdiw; }
+  static Double_t GetX0iw() { return fgkX0iw; }
+  static Double_t Getrcd() { return fgkrcd; }
+  static Double_t Getdcd() { return fgkdcd; }
+  static Double_t GetX0cd() { return fgkX0cd; }
+  static Double_t Getyr() { return fgkyr; }
+  static Double_t Getdr() { return fgkdr; }
+  static Double_t Getzm() { return fgkzm; }
+  static Double_t Getdm() { return fgkdm; }
+  static Double_t Getrs() { return fgkrs; }
+  static Double_t Getds() { return fgkds; }
+  static Double_t GetrInsideITSscreen() { return fgkrInsideITSscreen; }
+  static Double_t GetrInsideSPD1() { return fgkrInsideSPD1; }
+  static Double_t GetrPipe() { return fgkrPipe; }
+  static Double_t GetrInsidePipe() { return fgkrInsidePipe; }
+  static Double_t GetrOutsidePipe() { return fgkrOutsidePipe; }
+  static Double_t GetdPipe() { return fgkdPipe; }
+  static Double_t GetrInsideShield(Int_t i) { return fgkrInsideShield[i]; }
+  static Double_t GetrOutsideShield(Int_t i) { return fgkrOutsideShield[i]; }
+  static Double_t Getdshield(Int_t i) { return fgkdshield[i]; }
+  static Double_t GetX0shield(Int_t i) { return fgkX0shield[i]; }
+  static Double_t GetX0Air() { return fgkX0Air; }
+  static Double_t GetX0Be() { return fgkX0Be; }
+  static Double_t GetBoundaryWidth() { return fgkBoundaryWidth; }
+  static Double_t GetDeltaXNeighbDets() { return fgkDeltaXNeighbDets; }
+  static Double_t GetSPDdetzlength() { return fgkSPDdetzlength; }
+  static Double_t GetSPDdetxlength() { return fgkSPDdetxlength; }
+
   Double_t GetSigmaY2(Int_t i) const { return fSigmaY2[i]; }
   Double_t GetSigmaZ2(Int_t i) const { return fSigmaZ2[i]; }
 
@@ -119,15 +112,15 @@ class AliITSRecoParam : public TObject
 
 
 
-  void   SetUseTGeoInTracker(Bool_t use=kTRUE) { fUseTGeoInTracker=use; return; }
-  Bool_t GetUseTGeoInTracker() const { return fUseTGeoInTracker; }
+  void   SetUseTGeoInTracker(Int_t use=1) { fUseTGeoInTracker=use; return; }
+  Int_t  GetUseTGeoInTracker() const { return fUseTGeoInTracker; }
   
   void   SetAllowSharedClusters(Bool_t allow=kTRUE) { fAllowSharedClusters=allow; return; }
   Bool_t GetAllowSharedClusters() const { return fAllowSharedClusters; }
 
-  void   SetUseNominalClusterErrors(Bool_t nominal=kTRUE) { fUseNominalClusterErrors=nominal; return; }
-  Bool_t GetUseNominalClusterErrors() const { return fUseNominalClusterErrors; }
-  void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<6;i++) fUseAmplitudeInfo[i]=use; return; }
+  void   SetClusterErrorsParam(Int_t param=1) { fClusterErrorsParam=param; return; }
+  Int_t  GetClusterErrorsParam() const { return fClusterErrorsParam; }
+  void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
   Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
 
@@ -137,11 +130,49 @@ class AliITSRecoParam : public TObject
 
   void SetLayersParameters();
   //
+
+  enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
+  enum {fgkMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
+  enum {fgkMaxClusterPerLayer10=14000};//7000*10*2/10; // max clusters per layer
+  enum {fgkMaxClusterPerLayer20=7000};//7000*10*2/20; // max clusters per layer
+
  protected:
   //
+  static const Int_t fgkLayersNotToSkip[AliITSgeomTGeo::kNLayers]; // array with layers not to skip
+  static const Int_t fgkLastLayerToTrackTo;  // innermost layer
+  static const Int_t fgkMaxDetectorPerLayer; // max clusters per layer
+  static const Double_t fgkriw;              // TPC inner wall radius
+  static const Double_t fgkdiw;              // TPC inner wall x/X0
+  static const Double_t fgkX0iw;             // TPC inner wall X0 
+  static const Double_t fgkrcd;              // TPC central drum radius
+  static const Double_t fgkdcd;              // TPC central drum x/X0
+  static const Double_t fgkX0cd;             // TPC central drum X0
+  static const Double_t fgkyr;               // TPC rods y (tracking c.s.)
+  static const Double_t fgkdr;               // TPC rods x/X0
+  static const Double_t fgkzm;               // TPC membrane z
+  static const Double_t fgkdm;               // TPC membrane x/X0
+  static const Double_t fgkrs;               // ITS screen radius
+  static const Double_t fgkds;               // ITS screed x/X0
+  static const Double_t fgkrInsideITSscreen; // inside ITS screen radius
+  static const Double_t fgkrInsideSPD1;      // inside SPD1 radius
+  static const Double_t fgkrPipe;            // pipe radius
+  static const Double_t fgkrInsidePipe;      // inside pipe radius
+  static const Double_t fgkrOutsidePipe;     // outside pipe radius
+  static const Double_t fgkdPipe;            // pipe x/X0
+  static const Double_t fgkrInsideShield[2]; // inside SPD (0) SDD (1) shield radius
+  static const Double_t fgkrOutsideShield[2]; // outside SPD (0) SDD (1) shield radius
+  static const Double_t fgkdshield[2];        // SPD (0) SDD (1) shield x/X0
+  static const Double_t fgkX0shield[2];       // SPD (0) SDD (1) shield X0
+  static const Double_t fgkX0Air;             // air X0
+  static const Double_t fgkX0Be;              // Berillium X0
+  static const Double_t fgkBoundaryWidth;     // to define track at detector boundary
+  static const Double_t fgkDeltaXNeighbDets;  // max difference in radius between neighbouring detectors 
+  static const Double_t fgkSPDdetzlength;     // SPD ladder length in z
+  static const Double_t fgkSPDdetxlength;     // SPD ladder length in x
+
   // spatial resolutions of the detectors
-  Double_t fSigmaY2[kMaxLayer]; // y
-  Double_t fSigmaZ2[kMaxLayer]; // z
+  Double_t fSigmaY2[AliITSgeomTGeo::kNLayers]; // y
+  Double_t fSigmaZ2[AliITSgeomTGeo::kNLayers]; // z
   //
   Double_t fMaxSnp; // maximum of sin(phi)  (MI)
   //
@@ -156,17 +187,17 @@ class AliITSRecoParam : public TObject
   Double_t fNSigma2RoadYNonC; // y
   //
   // chi2 cuts
-  Double_t fMaxChi2PerCluster[kMaxLayer-1]; // max chi2 for MIP (MI)
-  Double_t fMaxNormChi2NonC[kMaxLayer]; //max norm chi2 for non constrained tracks (MI)
-  Double_t fMaxNormChi2C[kMaxLayer];  //max norm chi2 for constrained tracks (MI)
+  Double_t fMaxChi2PerCluster[AliITSgeomTGeo::kNLayers-1]; // max chi2 for MIP (MI)
+  Double_t fMaxNormChi2NonC[AliITSgeomTGeo::kNLayers]; //max norm chi2 for non constrained tracks (MI)
+  Double_t fMaxNormChi2C[AliITSgeomTGeo::kNLayers];  //max norm chi2 for constrained tracks (MI)
   Double_t fMaxNormChi2NonCForHypothesis; //max norm chi2 (on layers 0,1,2) for hypotheis to be kept (MI)
   Double_t fMaxChi2; // used to initialize variables needed to find minimum chi2 (MI,V2)
-  Double_t fMaxChi2s[kMaxLayer];   // max predicted chi2 (cluster & track prol.) (MI)
+  Double_t fMaxChi2s[AliITSgeomTGeo::kNLayers];   // max predicted chi2 (cluster & track prol.) (MI)
   //
   Double_t fMaxRoad;   // (V2)
   //
   Double_t fMaxChi2In; // (NOT USED)
-  Double_t fMaxChi2sR[kMaxLayer];  // (NOT USED) 
+  Double_t fMaxChi2sR[AliITSgeomTGeo::kNLayers];  // (NOT USED) 
   Double_t fChi2PerCluster; // (NOT USED)
   //
   // default primary vertex (MI,V2)
@@ -196,10 +227,10 @@ class AliITSRecoParam : public TObject
   Double_t fXPassDeadZoneHits;  // x distance between clusters
 
 
-  Bool_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
+  Int_t fUseTGeoInTracker; // use TGeo to get material budget in tracker MI
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
-  Bool_t fUseNominalClusterErrors; // if kFALSE don't modify errors using AliITSClusterParam (MI)
-  Bool_t fUseAmplitudeInfo[6]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
+  Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
+  Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
 
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
 

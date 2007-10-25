@@ -11,6 +11,8 @@
 #include "AliTracker.h"
 #include "AliITSRecoParam.h"
 #include "AliITStrackV2.h"
+#include "AliITSgeomTGeo.h"
+
 
 class AliITSRecPoint;
 class AliESDEvent;
@@ -58,7 +60,7 @@ public:
 
   class AliITSlayer {
   public:
-    enum {kNsector=5, kMaxClusterPerSector=kMaxClusterPerLayer/kNsector};
+    enum {kNsector=5, kMaxClusterPerSector=AliITSRecoParam::fgkMaxClusterPerLayer/kNsector};
     AliITSlayer();
     AliITSlayer(Double_t r, Double_t p, Double_t z, Int_t nl, Int_t nd);
    ~AliITSlayer();
@@ -86,10 +88,10 @@ public:
     Int_t fNdetectors;          // detectors/ladder
     AliITSdetector *fDetectors; // array of detectors
 
-    AliITSRecPoint *fClusters[kMaxClusterPerLayer]; // pointers to clusters
+    AliITSRecPoint *fClusters[AliITSRecoParam::fgkMaxClusterPerLayer]; // pointers to clusters
     Int_t fN[kNsector];         // numbers of clusters sector by sector 
 
-    Int_t fIndex[kMaxClusterPerLayer]; // indexes of selected clusters 
+    Int_t fIndex[AliITSRecoParam::fgkMaxClusterPerLayer]; // indexes of selected clusters 
     Int_t fNsel;                       // number of selected clusters
 
     Double_t fRoad;     // road defined by the cluster density
@@ -111,14 +113,14 @@ protected:
      new(&fTrackToFollow) AliITStrackV2(t);
   }
   Int_t fI;                              // index of the current layer
-  static AliITSlayer fgLayers[kMaxLayer];// ITS layers
-  AliITStrackV2 fTracks[kMaxLayer];      // track estimations at the ITS layers
+  static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
+  AliITStrackV2 fTracks[AliITSgeomTGeo::kNLayers];      // track estimations at the ITS layers
   AliITStrackV2 fBestTrack;              // "best" track 
   AliITStrackV2 fTrackToFollow;          // followed track
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
 
-  Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
+  Int_t fLayersNotToSkip[AliITSgeomTGeo::kNLayers];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
 
 private:

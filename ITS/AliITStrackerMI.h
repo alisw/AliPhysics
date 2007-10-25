@@ -120,32 +120,32 @@ public:
     Int_t fNdetectors;          // detectors/ladder
     AliITSdetector *fDetectors; // array of detectors
     Int_t fN;                   // number of clusters
-    AliITSRecPoint *fClusters[kMaxClusterPerLayer]; // pointers to clusters
-    Int_t        fClusterIndex[kMaxClusterPerLayer]; // pointers to clusters
-    Float_t fY[kMaxClusterPerLayer];                // y position of the clusters      
-    Float_t fZ[kMaxClusterPerLayer];                // z position of the clusters      
+    AliITSRecPoint *fClusters[AliITSRecoParam::fgkMaxClusterPerLayer]; // pointers to clusters
+    Int_t        fClusterIndex[AliITSRecoParam::fgkMaxClusterPerLayer]; // pointers to clusters
+    Float_t fY[AliITSRecoParam::fgkMaxClusterPerLayer];                // y position of the clusters      
+    Float_t fZ[AliITSRecoParam::fgkMaxClusterPerLayer];                // z position of the clusters      
     Float_t fYB[2];                                       // ymin and ymax
     //
-    AliITSRecPoint *fClusters5[6][kMaxClusterPerLayer5]; // pointers to clusters -     slice in y
-    Int_t        fClusterIndex5[6][kMaxClusterPerLayer5]; // pointers to clusters -     slice in y    
-    Float_t fY5[6][kMaxClusterPerLayer5];                // y position of the clusters  slice in y    
-    Float_t fZ5[6][kMaxClusterPerLayer5];                // z position of the clusters  slice in y 
+    AliITSRecPoint *fClusters5[6][AliITSRecoParam::fgkMaxClusterPerLayer5]; // pointers to clusters -     slice in y
+    Int_t        fClusterIndex5[6][AliITSRecoParam::fgkMaxClusterPerLayer5]; // pointers to clusters -     slice in y    
+    Float_t fY5[6][AliITSRecoParam::fgkMaxClusterPerLayer5];                // y position of the clusters  slice in y    
+    Float_t fZ5[6][AliITSRecoParam::fgkMaxClusterPerLayer5];                // z position of the clusters  slice in y 
     Int_t fN5[6];                                       // number of cluster in slice
     Float_t fDy5;                                       //delta y
     Float_t fBy5[6][2];                                    //slice borders
     //
-    AliITSRecPoint *fClusters10[11][kMaxClusterPerLayer10]; // pointers to clusters -     slice in y
-    Int_t        fClusterIndex10[11][kMaxClusterPerLayer10]; // pointers to clusters -     slice in y    
-    Float_t fY10[11][kMaxClusterPerLayer10];                // y position of the clusters  slice in y    
-    Float_t fZ10[11][kMaxClusterPerLayer10];                // z position of the clusters  slice in y 
+    AliITSRecPoint *fClusters10[11][AliITSRecoParam::fgkMaxClusterPerLayer10]; // pointers to clusters -     slice in y
+    Int_t        fClusterIndex10[11][AliITSRecoParam::fgkMaxClusterPerLayer10]; // pointers to clusters -     slice in y    
+    Float_t fY10[11][AliITSRecoParam::fgkMaxClusterPerLayer10];                // y position of the clusters  slice in y    
+    Float_t fZ10[11][AliITSRecoParam::fgkMaxClusterPerLayer10];                // z position of the clusters  slice in y 
     Int_t fN10[11];                                       // number of cluster in slice
     Float_t fDy10;                                        // delta y
     Float_t fBy10[11][2];                                 // slice borders
     //
-    AliITSRecPoint *fClusters20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y
-    Int_t        fClusterIndex20[21][kMaxClusterPerLayer20]; // pointers to clusters -     slice in y    
-    Float_t fY20[21][kMaxClusterPerLayer20];                // y position of the clusters  slice in y    
-    Float_t fZ20[21][kMaxClusterPerLayer20];                // z position of the clusters  slice in y 
+    AliITSRecPoint *fClusters20[21][AliITSRecoParam::fgkMaxClusterPerLayer20]; // pointers to clusters -     slice in y
+    Int_t        fClusterIndex20[21][AliITSRecoParam::fgkMaxClusterPerLayer20]; // pointers to clusters -     slice in y    
+    Float_t fY20[21][AliITSRecoParam::fgkMaxClusterPerLayer20];                // y position of the clusters  slice in y    
+    Float_t fZ20[21][AliITSRecoParam::fgkMaxClusterPerLayer20];                // z position of the clusters  slice in y 
     Int_t fN20[21];                                       // number of cluster in slice
     Float_t fDy20;                                        //delta y 
     Float_t fBy20[21][2];                                 //slice borders
@@ -157,8 +157,8 @@ public:
     Int_t    fNcs;                                        //number of clusters in current slice    
     Int_t fCurrentSlice;                                  //current slice
     //
-    Float_t  fClusterWeight[kMaxClusterPerLayer]; // probabilistic weight of the cluster
-    Int_t    fClusterTracks[4][kMaxClusterPerLayer]; //tracks registered to given cluster
+    Float_t  fClusterWeight[AliITSRecoParam::fgkMaxClusterPerLayer]; // probabilistic weight of the cluster
+    Int_t    fClusterTracks[4][AliITSRecoParam::fgkMaxClusterPerLayer]; //tracks registered to given cluster
     Float_t fZmax;      //    edges
     Float_t fYmin;      //   of  the
     Float_t fYmax;      //   "window"
@@ -178,7 +178,7 @@ protected:
   void UpdateTPCV0(AliESDEvent *event);  //try to update, or reject TPC  V0s
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
-  Double_t GetEffectiveThickness(Double_t y, Double_t z) const;
+  Double_t GetEffectiveThickness();
   void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain);
   void ResetBestTrack() {
      fBestTrack.~AliITStrackMI();
@@ -212,10 +212,16 @@ protected:
   Float_t  * GetNz(Int_t trackindex) const {return &fCoefficients[trackindex*48+36];}
   void       SignDeltas( TObjArray *ClusterArray, Float_t zv);
   void MakeCoefficients(Int_t ntracks);
+  void BuildMaterialLUT(TString material);
+  void MakeTrksMaterialLUT(Int_t ntracks);
+  void DeleteTrksMaterialLUT();
+  Int_t CorrectForPipeMaterial(AliITStrackMI *t, TString direction="inward");
+  Int_t CorrectForShieldMaterial(AliITStrackMI *t, TString shield, TString direction="inward");
+  Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
   Int_t fI;                              // index of the current layer
-  static AliITSlayer fgLayers[kMaxLayer];// ITS layers
-  AliITStrackMI fTracks[kMaxLayer];      // track estimations at the ITS layers
+  static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
+  AliITStrackMI fTracks[AliITSgeomTGeo::kNLayers];      // track estimations at the ITS layers
   AliITStrackMI fBestTrack;              // "best" track 
   AliITStrackMI fTrackToFollow;          // followed track
   TObjArray     fTrackHypothesys;        // ! array with track hypothesys- ARRAY is the owner of tracks- MI
@@ -226,17 +232,31 @@ protected:
   Int_t fPass;                           // current pass through the data 
   Int_t fConstraint[2];                  // constraint flags
   Bool_t fAfterV0;                       //indicates V0 founded
-  Int_t fLayersNotToSkip[kMaxLayer];     // layer masks
+  Int_t fLayersNotToSkip[AliITSgeomTGeo::kNLayers];     // layer masks
   Int_t fLastLayerToTrackTo;             // the innermost layer to track to
-  Float_t * fCoefficients;                //! working array with errors and mean cluster shape
+  Float_t * fCoefficients;               //! working array with errors and mean cluster shape
   AliESDEvent  * fEsd;                   //! pointer to the ESD event
   Double_t fSPDdetzcentre[4];            // centres of SPD modules in z
-  Bool_t fUseTGeo;                       // use TGeo to get material budget
-  TTreeSRedirector *fDebugStreamer;     //!debug streamer
+  TString fTrackingPhase;                // current tracking phase
+  Int_t fUseTGeo;                        // use TGeo to get material budget
+  Int_t   fNtracks;                      // number of tracks to prolong
+  Float_t fxOverX0Pipe;                  // material budget
+  Float_t fxTimesRhoPipe;                // material budget
+  Float_t fxOverX0Shield[2];             // material budget
+  Float_t fxTimesRhoShield[2];           // material budget
+  Float_t fxOverX0Layer[6];              // material budget
+  Float_t fxTimesRhoLayer[6];            // material budget
+  Float_t *fxOverX0PipeTrks;             //! material budget
+  Float_t *fxTimesRhoPipeTrks;           //! material budget
+  Float_t *fxOverX0ShieldTrks;           //! material budget
+  Float_t *fxTimesRhoShieldTrks;         //! material budget
+  Float_t *fxOverX0LayerTrks;            //! material budget
+  Float_t *fxTimesRhoLayerTrks;          //! material budget
+  TTreeSRedirector *fDebugStreamer;      //!debug streamer
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,3)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,4)   //ITS tracker MI
 };
 
 

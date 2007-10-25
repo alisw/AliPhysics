@@ -27,9 +27,9 @@
 #include <TMatrixD.h>
 #include <TTree.h>
 #include <TTreeStream.h>
-#include <TTree.h>
 #include <TDatabasePDG.h>
 #include <TString.h>
+#include <TRandom.h>
 
 
 #include "AliESDEvent.h"
@@ -47,9 +47,7 @@
 
 ClassImp(AliITStrackerMI)
 
-
-
-AliITStrackerMI::AliITSlayer AliITStrackerMI::fgLayers[kMaxLayer]; // ITS layers
+AliITStrackerMI::AliITSlayer AliITStrackerMI::fgLayers[AliITSgeomTGeo::kNLayers]; // ITS layers
 
 AliITStrackerMI::AliITStrackerMI():AliTracker(),
 fI(0),
@@ -64,14 +62,27 @@ fAfterV0(kFALSE),
 fLastLayerToTrackTo(0),
 fCoefficients(0),
 fEsd(0),
-fUseTGeo(kFALSE),
+fTrackingPhase("Default"),
+fUseTGeo(0),
+fNtracks(0),
+fxOverX0Pipe(-1.),
+fxTimesRhoPipe(-1.),
+fxOverX0PipeTrks(0),
+fxTimesRhoPipeTrks(0),
+fxOverX0ShieldTrks(0),
+fxTimesRhoShieldTrks(0),
+fxOverX0LayerTrks(0),
+fxTimesRhoLayerTrks(0),
 fDebugStreamer(0){
   //Default constructor
-  for(Int_t i=0;i<4;i++) fSPDdetzcentre[i]=0.;
+  Int_t i;
+  for(i=0;i<4;i++) fSPDdetzcentre[i]=0.;
+  for(i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
+  for(i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITStrackerMI(const Char_t *geom) : AliTracker(),
-fI(kMaxLayer),
+fI(AliITSgeomTGeo::GetNLayers()),
 fBestTrack(),
 fTrackToFollow(),
 fTrackHypothesys(),
@@ -80,10 +91,20 @@ fOriginal(),
 fCurrentEsdTrack(),
 fPass(0),
 fAfterV0(kFALSE),
-fLastLayerToTrackTo(kLastLayerToTrackTo),
+fLastLayerToTrackTo(AliITSRecoParam::GetLastLayerToTrackTo()),
 fCoefficients(0),
 fEsd(0),
-fUseTGeo(kFALSE),
+fTrackingPhase("Default"),
+fUseTGeo(0),
+fNtracks(0),
+fxOverX0Pipe(-1.),
+fxTimesRhoPipe(-1.),
+fxOverX0PipeTrks(0),
+fxTimesRhoPipeTrks(0),
+fxOverX0ShieldTrks(0),
+fxTimesRhoShieldTrks(0),
+fxOverX0LayerTrks(0),
+fxTimesRhoLayerTrks(0),
 fDebugStreamer(0){
   //--------------------------------------------------------------------
   //This is the AliITStrackerMI constructor
@@ -95,7 +116,7 @@ fDebugStreamer(0){
   fCoefficients = 0;
   fAfterV0     = kFALSE;
 
-  for (Int_t i=1; i<kMaxLayer+1; i++) {
+  for (Int_t i=1; i<AliITSgeomTGeo::GetNLayers()+1; i++) {
     Int_t nlad=AliITSgeomTGeo::GetNLadders(i);
     Int_t ndet=AliITSgeomTGeo::GetNDetectors(i);
 
@@ -135,7 +156,7 @@ fDebugStreamer(0){
 
   }
 
-  fI=kMaxLayer;
+  fI=AliITSgeomTGeo::GetNLayers();
 
   fPass=0;
   fConstraint[0]=1; fConstraint[1]=0;
@@ -148,8 +169,8 @@ fDebugStreamer(0){
 		     AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyzVtx,ersVtx);
 
-  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
-  fLastLayerToTrackTo=kLastLayerToTrackTo;
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=AliITSRecoParam::GetLayersNotToSkip(i);
+  fLastLayerToTrackTo=AliITSRecoParam::GetLastLayerToTrackTo();
   for (Int_t i=0;i<100000;i++){
     fBestTrackIndex[i]=0;
   }
@@ -165,9 +186,11 @@ fDebugStreamer(0){
   AliITSgeomTGeo::GetTranslation(1,1,4,tr);
   fSPDdetzcentre[3] = tr[2];
 
-
   fUseTGeo = AliITSReconstructor::GetRecoParam()->GetUseTGeoInTracker();
-  //
+
+  for(Int_t i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
+  for(Int_t i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
+  
   fDebugStreamer = new TTreeSRedirector("ITSdebug.root");
 
 }
@@ -185,9 +208,31 @@ fAfterV0(tracker.fAfterV0),
 fLastLayerToTrackTo(tracker.fLastLayerToTrackTo),
 fCoefficients(tracker.fCoefficients),
 fEsd(tracker.fEsd),
+fTrackingPhase(tracker.fTrackingPhase),
 fUseTGeo(tracker.fUseTGeo),
+fNtracks(tracker.fNtracks),
+fxOverX0Pipe(tracker.fxOverX0Pipe),
+fxTimesRhoPipe(tracker.fxTimesRhoPipe),
+fxOverX0PipeTrks(0),
+fxTimesRhoPipeTrks(0),
+fxOverX0ShieldTrks(0),
+fxTimesRhoShieldTrks(0),
+fxOverX0LayerTrks(0),
+fxTimesRhoLayerTrks(0),
 fDebugStreamer(tracker.fDebugStreamer){
   //Copy constructor
+  Int_t i;
+  for(i=0;i<4;i++) {
+    fSPDdetzcentre[i]=tracker.fSPDdetzcentre[i];
+  }
+  for(i=0;i<6;i++) {
+    fxOverX0Layer[i]=tracker.fxOverX0Layer[i];
+    fxTimesRhoLayer[i]=tracker.fxTimesRhoLayer[i];
+  }
+  for(i=0;i<2;i++) {
+    fxOverX0Shield[i]=tracker.fxOverX0Shield[i];
+    fxTimesRhoShield[i]=tracker.fxTimesRhoShield[i];
+  }
 }
 //------------------------------------------------------------------------
 AliITStrackerMI & AliITStrackerMI::operator=(const AliITStrackerMI &tracker){
@@ -202,7 +247,8 @@ AliITStrackerMI::~AliITStrackerMI()
   //
   //destructor
   //
-  if (fCoefficients) delete []fCoefficients;
+  if (fCoefficients) delete [] fCoefficients;
+  DeleteTrksMaterialLUT();
   if (fDebugStreamer) {
     //fDebugStreamer->Close();
     delete fDebugStreamer;
@@ -213,7 +259,7 @@ void AliITStrackerMI::SetLayersNotToSkip(Int_t *l) {
   //--------------------------------------------------------------------
   //This function set masks of the layers which must be not skipped
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=l[i];
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=l[i];
 }
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
@@ -231,7 +277,7 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 
   Int_t j=0;
   Int_t detector=0;
-  for (Int_t i=0; i<kMaxLayer; i++) {
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
     Int_t ndet=fgLayers[i].GetNdetectors();
     Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
     for (; j<jmax; j++) {           
@@ -251,7 +297,7 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
       // add dead zone "virtual" cluster in SPD, if there is a cluster within 
       // zwindow cm from the dead zone      
       if (i<2 && AliITSReconstructor::GetRecoParam()->GetAddVirtualClustersInDeadZone()) {
-	for (Float_t xdead = 0; xdead < kSPDdetxlength; xdead += (i+1.)*AliITSReconstructor::GetRecoParam()->GetXPassDeadZoneHits()) {
+	for (Float_t xdead = 0; xdead < AliITSRecoParam::GetSPDdetxlength(); xdead += (i+1.)*AliITSReconstructor::GetRecoParam()->GetXPassDeadZoneHits()) {
 	  Int_t lab[4]   = {0,0,0,detector};
 	  Int_t info[3]  = {0,0,i};
 	  Float_t q      = 0.;
@@ -262,22 +308,22 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 			    q};
 	  Bool_t local   = kTRUE;
 	  Double_t zwindow = AliITSReconstructor::GetRecoParam()->GetZWindowDeadZone();
-	  hit[1] = fSPDdetzcentre[0]+0.5*kSPDdetzlength;
+	  hit[1] = fSPDdetzcentre[0]+0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
-	  hit[1] = fSPDdetzcentre[1]-0.5*kSPDdetzlength;
+	  hit[1] = fSPDdetzcentre[1]-0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
-	  hit[1] = fSPDdetzcentre[1]+0.5*kSPDdetzlength;
+	  hit[1] = fSPDdetzcentre[1]+0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
-	  hit[1] = fSPDdetzcentre[2]-0.5*kSPDdetzlength;
+	  hit[1] = fSPDdetzcentre[2]-0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
-	  hit[1] = fSPDdetzcentre[2]+0.5*kSPDdetzlength;
+	  hit[1] = fSPDdetzcentre[2]+0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
-	  hit[1] = fSPDdetzcentre[3]-0.5*kSPDdetzlength;
+	  hit[1] = fSPDdetzcentre[3]-0.5*AliITSRecoParam::GetSPDdetzlength();
 	  if (TMath::Abs(fgLayers[i].GetDetector(detector).GetZmax()-hit[1])<zwindow) 
 	    fgLayers[i].InsertCluster(new AliITSRecPoint(lab,hit,info,local));
 	}
@@ -296,41 +342,27 @@ void AliITStrackerMI::UnloadClusters() {
   //--------------------------------------------------------------------
   //This function unloads ITS clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxLayer; i++) fgLayers[i].ResetClusters();
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fgLayers[i].ResetClusters();
 }
 //------------------------------------------------------------------------
 static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t) {
   //--------------------------------------------------------------------
   // Correction for the material between the TPC and the ITS
   //--------------------------------------------------------------------
-  if (t->GetX() > kriw) {                 // inward direction 
-      if (!t->PropagateToTGeo(kriw,1)) return 1;// TPC inner wall
-      if (!t->PropagateToTGeo(krcd,1)) return 1;// TPC central drum
-      if (!t->PropagateToTGeo(krs,1))  return 1;// ITS screen
-      /* without TGeo:
-	 if (!t->PropagateTo(kriw,kdiw,kX0iw)) return 1;// TPC inner wall
-	 if (TMath::Abs(t->GetY())>kyr) t->CorrectForMaterial(kdr);//rods 
-	 if (TMath::Abs(t->GetZ())<kzm) t->CorrectForMaterial(kdm);//membrane 
-	 if (!t->PropagateTo(krcd,kdcd,kX0cd)) return 1;// TPC central drum
-	 //Double_t x,y,z; t->GetGlobalXYZat(rr,x,y,z);
-	 //if (TMath::Abs(y)<yyr) t->PropagateTo(rr,dr,x0r); 
-	 if (!t->PropagateTo(krs,kds,kX0Air)) return 1;// ITS screen */
-  } else if (t->GetX() < krs) {          // outward direction
-      if (!t->PropagateToTGeo(krs,1))        return 1;// ITS screen
-      if (!t->PropagateToTGeo(krcd,1))       return 1;// TPC central drum
-      if (!t->PropagateToTGeo(kriw+0.001,1)) return 1;// TPC inner wall
-      /* without TGeo
-      if (!t->PropagateTo(krs,-kds,kX0Air)) return 1;
-      //Double_t x,y,z; t->GetGlobalXYZat(rr,x,y,z);
-      //if (TMath::Abs(y)<yyr) t->PropagateTo(rr,-dr,x0r); 
-      if (!t->PropagateTo(krcd,-kdcd,kX0cd)) return 1;// TPC central drum
-      if (!t->PropagateTo(kriw+0.001,-kdiw,kX0iw)) return 1; */
+  if (t->GetX() > AliITSRecoParam::Getriw()) {   // inward direction 
+      if (!t->PropagateToTGeo(AliITSRecoParam::Getriw(),1)) return 0;// TPC inner wall
+      if (!t->PropagateToTGeo(AliITSRecoParam::Getrcd(),1)) return 0;// TPC central drum
+      if (!t->PropagateToTGeo(AliITSRecoParam::Getrs(),1))  return 0;// ITS screen
+  } else if (t->GetX() < AliITSRecoParam::Getrs()) {  // outward direction
+      if (!t->PropagateToTGeo(AliITSRecoParam::Getrs(),1))        return 0;// ITS screen
+      if (!t->PropagateToTGeo(AliITSRecoParam::Getrcd(),1))       return 0;// TPC central drum
+      if (!t->PropagateToTGeo(AliITSRecoParam::Getriw()+0.001,1)) return 0;// TPC inner wall
   } else {
     Error("CorrectForTPCtoITSDeadZoneMaterial","Track is already in the dead zone !");
-    return 1;
+    return 0;
   }
   
-  return 0;
+  return 1;
 }
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
@@ -338,6 +370,8 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   // This functions reconstructs ITS tracks
   // The clusters must be already loaded !
   //--------------------------------------------------------------------
+  fTrackingPhase="Clusters2Tracks";
+
   TObjArray itsTracks(15000);
   fOriginal.Clear();
   fEsd = event;         // store pointer to the esd 
@@ -385,8 +419,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 	if (TMath::Abs(t->GetD(0))>AliITSReconstructor::GetRecoParam()->GetMaxDForProlongation()) {
 	  delete t;
 	  continue;
-	}
-	
+	}	
 	if (TMath::Abs(vdist)>AliITSReconstructor::GetRecoParam()->GetMaxDZForProlongation()) {
 	  delete t;
 	  continue;
@@ -395,10 +428,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 	  delete t;
 	  continue;
 	}
-	
-	if (CorrectForTPCtoITSDeadZoneMaterial(t)!=0) {
-	  //Warning("Clusters2Tracks",
-	  //        "failed to correct for the material in the dead zone !\n");
+	if (!CorrectForTPCtoITSDeadZoneMaterial(t)) {
 	  delete t;
 	  continue;
 	}
@@ -415,14 +445,14 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fTrackHypothesys.Expand(nentr);
   fBestHypothesys.Expand(nentr);
   MakeCoefficients(nentr);
+  if(fUseTGeo==3 || fUseTGeo==4) MakeTrksMaterialLUT(nentr);
   Int_t ntrk=0;
   // THE TWO TRACKING PASSES
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
-     for (Int_t i=0; i<nentr; i++) {
-       //cerr<<fPass<<"    "<<i<<'\r';
-       fCurrentEsdTrack = i;
-       AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(i);
+     for (fCurrentEsdTrack=0; fCurrentEsdTrack<nentr; fCurrentEsdTrack++) {
+       //cerr<<fPass<<"    "<<fCurrentEsdTrack<<'\r';
+       AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(fCurrentEsdTrack);
        if (t==0) continue;              //this track has been already tracked
        if (t->GetReconstructed()&&(t->GetNUsed()<1.5)) continue;  //this track was  already  "succesfully" reconstructed
        Float_t dz[2]; t->GetDZ(GetX(),GetY(),GetZ(),dz);              //I.B.
@@ -435,7 +465,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
        fI = 6;
        ResetTrackToFollow(*t);
        ResetBestTrack();
-       FollowProlongationTree(t,i,fConstraint[fPass]);
+       FollowProlongationTree(t,fCurrentEsdTrack,fConstraint[fPass]);
 
        SortTrackHypothesys(fCurrentEsdTrack,20,0);  //MI change
        //
@@ -465,7 +495,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   itsTracks.Delete();
   //
   Int_t entries = fTrackHypothesys.GetEntriesFast();
-  for (Int_t ientry=0;ientry<entries;ientry++){
+  for (Int_t ientry=0; ientry<entries; ientry++) {
     TObjArray * array =(TObjArray*)fTrackHypothesys.UncheckedAt(ientry);
     if (array) array->Delete();
     delete fTrackHypothesys.RemoveAt(ientry); 
@@ -476,7 +506,11 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fOriginal.Clear();
   delete [] fCoefficients;
   fCoefficients=0;
+  DeleteTrksMaterialLUT();
+
   Info("Clusters2Tracks","Number of prolonged tracks: %d\n",ntrk);
+
+  fTrackingPhase="Default";
   
   return 0;
 }
@@ -486,6 +520,7 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
   // This functions propagates reconstructed ITS tracks back
   // The clusters must be loaded !
   //--------------------------------------------------------------------
+  fTrackingPhase="PropagateBack";
   Int_t nentr=event->GetNumberOfTracks();
   Info("PropagateBack", "Number of ESD tracks: %d\n", nentr);
 
@@ -510,27 +545,16 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
 
      // propagate to vertex [SR, GSI 17.02.2003]
      // Start Time measurement [SR, GSI 17.02.2003], corrected by I.Belikov
-     if(fUseTGeo) {
-       if (fTrackToFollow.PropagateToTGeo(krInsidePipe,1)) {
-	 if (fTrackToFollow.PropagateToVertex(event->GetVertex())) {
-	   fTrackToFollow.StartTimeIntegral();
-	 }
-	 fTrackToFollow.PropagateToTGeo(krOutsidePipe,1);
-       }
-     } else {
-       if (fTrackToFollow.PropagateTo(krInsidePipe,kdPipe,kX0Be)) {
-	 if (fTrackToFollow.PropagateToVertex(event->GetVertex())) {
-	   fTrackToFollow.StartTimeIntegral();
-	 }
-	 fTrackToFollow.PropagateTo(krOutsidePipe,-kdPipe,kX0Be);
-       }
+     if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
+       if (fTrackToFollow.PropagateToVertex(event->GetVertex()))
+	 fTrackToFollow.StartTimeIntegral();
+       // from vertex to outside pipe
+       CorrectForPipeMaterial(&fTrackToFollow,"outward");
      }
 
      fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
-     if (RefitAt(krInsideITSscreen,&fTrackToFollow,t)) {
-        if (CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)!=0) {
-          //Warning("PropagateBack",
-          //        "failed to correct for the material in the dead zone !\n");
+     if (RefitAt(AliITSRecoParam::GetrInsideITSscreen(),&fTrackToFollow,t)) {
+        if (!CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)) {
           delete t;
           continue;
         }
@@ -546,6 +570,8 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
 
   Info("PropagateBack","Number of back propagated ITS tracks: %d\n",ntrk);
 
+  fTrackingPhase="Default";
+
   return 0;
 }
 //------------------------------------------------------------------------
@@ -555,6 +581,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
   // "inward propagated" TPC tracks
   // The clusters must be loaded !
   //--------------------------------------------------------------------
+  fTrackingPhase="RefitInward";
   if(AliITSReconstructor::GetRecoParam()->GetFindV0s()) RefitV02(event);
   Int_t nentr=event->GetNumberOfTracks();
   Info("RefitInward", "Number of ESD tracks: %d\n", nentr);
@@ -577,9 +604,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
         continue;
     }
     t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
-    if (CorrectForTPCtoITSDeadZoneMaterial(t)!=0) {
-      //Warning("RefitInward",
-      //         "failed to correct for the material in the dead zone !\n");
+    if (!CorrectForTPCtoITSDeadZoneMaterial(t)) {
        delete t;
        continue;
     }
@@ -591,7 +616,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
       fTrackToFollow.ResetCovariance(10.);
 
     //Refitting...
-    if (RefitAt(krInsideSPD1, &fTrackToFollow, t,kTRUE)) {
+    if (RefitAt(AliITSRecoParam::GetrInsideSPD1(), &fTrackToFollow, t,kTRUE)) {
        fTrackToFollow.SetLabel(t->GetLabel());
        //       fTrackToFollow.CookdEdx();
        CookdEdx(&fTrackToFollow);
@@ -599,13 +624,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
        CookLabel(&fTrackToFollow,0.0); //For comparison only
 
        //The beam pipe
-       Bool_t okToPipe;
-       if(fUseTGeo) { 
-	 okToPipe = fTrackToFollow.PropagateToTGeo(krInsidePipe,1); 
-       } else {
-	 okToPipe = fTrackToFollow.PropagateTo(krInsidePipe,kdPipe,kX0Be);
-       }
-       if(okToPipe) {
+       if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
 	 AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
 	 esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
 	 Float_t r[3]={0.,0.,0.};
@@ -613,12 +632,13 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
 	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
 	 ntrk++;
        }
-
     }
     delete t;
   }
 
   Info("RefitInward","Number of refitted tracks: %d\n",ntrk);
+
+  fTrackingPhase="Default";
 
   return 0;
 }
@@ -704,8 +724,7 @@ Bool_t AliITStrackerMI::GetTrackPointTrackingError(Int_t index,
   Float_t expQ = TMath::Max(0.8*t->GetTPCsignal(),30.);
 
   Float_t errlocalx,errlocalz;
-  if(!AliITSReconstructor::GetRecoParam()->GetUseNominalClusterErrors())
-    AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz);
+  AliITSClusterParam::GetError(l,cl,tgl,tgphi,expQ,errlocalx,errlocalz);
 
   Float_t xyz[3];
   Float_t cov[6];
@@ -799,16 +818,17 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   // 
   //
   // follow prolongations
-  for (Int_t ilayer=5;ilayer>=0;ilayer--){
+  for (Int_t ilayer=5; ilayer>=0; ilayer--) {
     //
     AliITSlayer &layer=fgLayers[ilayer]; 
-    Double_t r=layer.GetR();
+    Double_t r=layer.GetR();    
+    Double_t deltar=(ilayer<2 ? 0.10*r : 0.05*r);
     ntracks[ilayer]=0;
     //
     //
    Int_t nskipped=0;
     Float_t nused =0;
-    for (Int_t itrack =0;itrack<ntracks[ilayer+1];itrack++){
+    for (Int_t itrack =0; itrack<ntracks[ilayer+1]; itrack++) {
       //set current track
       if (ntracks[ilayer]>=100) break;  
       if (tracks[ilayer+1][nindexes[ilayer+1][itrack]].GetNSkipped()>0) nskipped++;
@@ -821,23 +841,10 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       new(&currenttrack1)  AliITStrackMI(tracks[ilayer+1][nindexes[ilayer+1][itrack]]);
   
       // material between SSD and SDD, SDD and SPD
-      if (ilayer==3 || ilayer==1) {
-	Double_t rshield,dshield,x0shield;
-	if (ilayer==3) { // SDDouter
-	  rshield=0.5*(fgLayers[ilayer+1].GetR() + r);
-	  dshield=kdshieldSDD;
-	  x0shield=kX0shieldSDD;
-	} else {        // SPDouter
-	  rshield=krshieldSPD; 
-	  dshield=kdshieldSPD; 
-	  x0shield=kX0shieldSPD;
-	}
-	if (fUseTGeo) {
-	  if (!currenttrack1.PropagateToTGeo(rshield,1)) continue;
-	} else {
-	  if (!currenttrack1.PropagateTo(rshield,dshield,x0shield)) continue;
-	}
-      }
+      if (ilayer==3) 
+	if(!CorrectForShieldMaterial(&currenttrack1,"SDD","inward")) continue;
+      if (ilayer==1) 
+	if(!CorrectForShieldMaterial(&currenttrack1,"SPD","inward")) continue;
 
       Double_t phi,z;
       if (!currenttrack1.GetPhiZat(r,phi,z)) continue;
@@ -845,34 +852,23 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       Int_t idet=layer.FindDetectorIndex(phi,z);
       if (idet<0) continue;
       
-      Double_t trackGlobXYZ1[3],trackGlobXYZ2[3];
-      currenttrack1.GetXYZ(trackGlobXYZ1);
-
       //propagate to the intersection
       const AliITSdetector &det=layer.GetDetector(idet);
       new(&currenttrack2)  AliITStrackMI(currenttrack1);
+
+      Double_t trackGlobXYZ1[3];
+      currenttrack1.GetXYZ(trackGlobXYZ1);
+
       if (!currenttrack1.Propagate(det.GetPhi(),det.GetR())) continue;
       currenttrack2.Propagate(det.GetPhi(),det.GetR());
       currenttrack1.SetDetectorIndex(idet);
       currenttrack2.SetDetectorIndex(idet);
       
+      fI = ilayer;
       // Get the budget to the primary vertex and between the two layers
       // for the current track being prolonged (before searching for clusters
       // on this layer)
-      fI = ilayer;
-      Double_t budgetToPrimVertex = 0.;
-      if (fUseTGeo) {
-	if (!currenttrack2.MeanBudgetToPrimVertex(xyzVtx,2,budgetToPrimVertex))
-	  budgetToPrimVertex = GetEffectiveThickness(0,0);
-      } else {
-	  budgetToPrimVertex = GetEffectiveThickness(0,0);
-      }
-      Double_t mparam[7];
-      currenttrack2.GetXYZ(trackGlobXYZ2);
-      if(fUseTGeo) {
-	AliTracker::MeanMaterialBudget(trackGlobXYZ1,trackGlobXYZ2,mparam);
-      }
-
+      Double_t budgetToPrimVertex = GetEffectiveThickness();
 
       //***************
       // DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
@@ -889,16 +885,18 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 		    AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
       
       // track at boundary between detectors, enlarge road
-      if ( (currenttrack1.GetY()-dy < det.GetYmin()+kBoundaryWidth) || 
-	   (currenttrack1.GetY()+dy > det.GetYmax()-kBoundaryWidth) || 
-	   (currenttrack1.GetZ()-dz < det.GetZmin()+kBoundaryWidth) ||
-	   (currenttrack1.GetZ()+dz > det.GetZmax()-kBoundaryWidth) ) {
+      Double_t boundaryWidth=AliITSRecoParam::GetBoundaryWidth();
+      if ( (currenttrack1.GetY()-dy < det.GetYmin()+boundaryWidth) || 
+	   (currenttrack1.GetY()+dy > det.GetYmax()-boundaryWidth) || 
+	   (currenttrack1.GetZ()-dz < det.GetZmin()+boundaryWidth) ||
+	   (currenttrack1.GetZ()+dz > det.GetZmax()-boundaryWidth) ) {
      	Float_t tgl = TMath::Abs(currenttrack1.GetTgl());
 	if (tgl > 1.) tgl=1.;
-	dz = TMath::Sqrt(dz*dz+kDeltaXNeighbDets*kDeltaXNeighbDets*tgl*tgl);
+	Double_t deltaXNeighbDets=AliITSRecoParam::GetDeltaXNeighbDets();
+	dz = TMath::Sqrt(dz*dz+deltaXNeighbDets*deltaXNeighbDets*tgl*tgl);
 	Float_t snp = TMath::Abs(currenttrack1.GetSnp());
 	if (snp > AliITSReconstructor::GetRecoParam()->GetMaxSnp()) continue;
-	dy = TMath::Sqrt(dy*dy+kDeltaXNeighbDets*kDeltaXNeighbDets*snp*snp);
+	dy = TMath::Sqrt(dy*dy+deltaXNeighbDets*deltaXNeighbDets*snp*snp);
       } // boundary
       
       // road in global (rphi,z)
@@ -967,16 +965,9 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	    continue;
 	  }
 	  currenttrack->SetDetectorIndex(idet);
-	  // Get again the budget to the primary vertex and between the two 
-	  // layers for the current track being prolonged, if had to change detector 
-	  if (fUseTGeo) {
-	    if (!currenttrack->MeanBudgetToPrimVertex(xyzVtx,2,budgetToPrimVertex))
-	      budgetToPrimVertex = GetEffectiveThickness(0,0);
-	    currenttrack->GetXYZ(trackGlobXYZ2);
-	    AliTracker::MeanMaterialBudget(trackGlobXYZ1,trackGlobXYZ2,mparam);
-	  } else {
-	    budgetToPrimVertex = GetEffectiveThickness(0,0);
-	  }
+	  // Get again the budget to the primary vertex 
+	  // for the current track being prolonged, if had to change detector 
+	  //budgetToPrimVertex = GetEffectiveThickness();// not needed at the moment because anyway we take a mean material for this correction
 	}
 
 	// calculate track-clusters chi2
@@ -999,16 +990,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  if (cl->IsUsed()) updatetrack->IncrementNUsed();
 
 	  // apply correction for material of the current layer
-	  if(fUseTGeo) { 
-	    Double_t d,lengthTimesMeanDensity;
-	    d=mparam[1]; 
-	    lengthTimesMeanDensity=mparam[0]*mparam[4]; 
-	    updatetrack->CorrectForMeanMaterial(d,lengthTimesMeanDensity);	  
-	  } else {
-	    Double_t d,x0;
-	    d=layer.GetThickness(updatetrack->GetY(),updatetrack->GetZ(),x0);
-	    updatetrack->CorrectForMaterial(d,x0);	  
-	  }
+	  CorrectForLayerMaterial(updatetrack,ilayer,trackGlobXYZ1,"inward");
+
 	  if (constrain) { // apply vertex constrain
 	    updatetrack->SetConstrain(constrain);
 	    Bool_t isPrim = kTRUE;
@@ -1025,6 +1008,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	}  // create new hypothesis
       } // loop over possible cluster prolongation      
       if (constrain&&itrack<2&&currenttrack1.GetNSkipped()==0 && deadzone==0&&ntracks[ilayer]<100) {	
+	// Bring the track beyond the material
+	currenttrack1.AliExternalTrackParam::PropagateTo(currenttrack1.GetX()-deltar,GetBz());
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	vtrack->SetClIndex(ilayer,0);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
@@ -1033,6 +1018,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       }
 
       if (constrain&&itrack<1&&TMath::Abs(currenttrack1.GetTgl())>1.1) {  //big theta - for low flux
+	// Bring the track beyond the material
+	currenttrack1.AliExternalTrackParam::PropagateTo(currenttrack1.GetX()-deltar,GetBz());
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
 	vtrack->SetClIndex(ilayer,0);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
@@ -1041,7 +1028,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       }
      
       
-    }
+    } // loop over tracks in layer ilayer+1
 
     //loop over track candidates for the current layer
     //
@@ -1224,7 +1211,7 @@ fRoad(0){
   //--------------------------------------------------------------------
   //default AliITSlayer constructor
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxClusterPerLayer;i++) {
+  for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
     fClusterTracks[1][i]=-1;
@@ -1300,7 +1287,7 @@ AliITStrackerMI::AliITSlayer::~AliITSlayer() {
   //--------------------------------------------------------------------
   delete[] fDetectors;
   for (Int_t i=0; i<fN; i++) delete fClusters[i];
-  for (Int_t i=0; i<kMaxClusterPerLayer;i++) {
+  for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
     fClusterTracks[1][i]=-1;
@@ -1314,7 +1301,7 @@ void AliITStrackerMI::AliITSlayer::ResetClusters() {
   // This function removes loaded clusters
   //--------------------------------------------------------------------
   for (Int_t i=0; i<fN; i++) delete fClusters[i];
-  for (Int_t i=0; i<kMaxClusterPerLayer;i++){
+  for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++){
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
     fClusterTracks[1][i]=-1;
@@ -1330,7 +1317,7 @@ void AliITStrackerMI::AliITSlayer::ResetWeights() {
   //--------------------------------------------------------------------
   // This function reset weights of the clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxClusterPerLayer;i++) {
+  for (Int_t i=0; i<AliITSRecoParam::GetMaxClusterPerLayer(); i++) {
     fClusterWeight[i]=0;
     fClusterTracks[0][i]=-1;
     fClusterTracks[1][i]=-1;
@@ -1359,7 +1346,7 @@ Int_t AliITStrackerMI::AliITSlayer::InsertCluster(AliITSRecPoint *cl) {
   //--------------------------------------------------------------------
   //This function adds a cluster to this layer
   //--------------------------------------------------------------------
-  if (fN==kMaxClusterPerLayer) {
+  if (fN==AliITSRecoParam::GetMaxClusterPerLayer()) {
     ::Error("InsertCluster","Too many clusters !\n");
     return 1;
   }
@@ -1431,7 +1418,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
       Float_t curY = fY[i]+irot*TMath::TwoPi()*fR; 
       // slice 5
       for (Int_t slice=0; slice<6;slice++){
-	if (fBy5[slice][0]<curY && curY<fBy5[slice][1]&&fN5[slice]<kMaxClusterPerLayer5){
+	if (fBy5[slice][0]<curY && curY<fBy5[slice][1]&&fN5[slice]<AliITSRecoParam::GetMaxClusterPerLayer5()){
 	  fClusters5[slice][fN5[slice]] = fClusters[i];
 	  fY5[slice][fN5[slice]] = curY;
 	  fZ5[slice][fN5[slice]] = fZ[i];
@@ -1441,7 +1428,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
       }
       // slice 10
       for (Int_t slice=0; slice<11;slice++){
-	if (fBy10[slice][0]<curY && curY<fBy10[slice][1]&&fN10[slice]<kMaxClusterPerLayer10){
+	if (fBy10[slice][0]<curY && curY<fBy10[slice][1]&&fN10[slice]<AliITSRecoParam::GetMaxClusterPerLayer10()){
 	  fClusters10[slice][fN10[slice]] = fClusters[i];
 	  fY10[slice][fN10[slice]] = curY;
 	  fZ10[slice][fN10[slice]] = fZ[i];
@@ -1451,7 +1438,7 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
       }
       // slice 20
       for (Int_t slice=0; slice<21;slice++){
-	if (fBy20[slice][0]<curY && curY<fBy20[slice][1]&&fN20[slice]<kMaxClusterPerLayer20){
+	if (fBy20[slice][0]<curY && curY<fBy20[slice][1]&&fN20[slice]<AliITSRecoParam::GetMaxClusterPerLayer20()){
 	  fClusters20[slice][fN20[slice]] = fClusters[i];
 	  fY20[slice][fN20[slice]] = curY;
 	  fZ20[slice][fN20[slice]] = fZ[i];
@@ -1644,7 +1631,7 @@ const {
   // This function returns the layer thickness at this point (units X0)
   //--------------------------------------------------------------------
   Double_t d=0.0085;
-  x0=kX0Air;
+  x0=AliITSRecoParam::GetX0Air();
   if (43<fR&&fR<45) { //SSD2
      Double_t dd=0.0034;
      d=dd;
@@ -1736,32 +1723,40 @@ const {
   return d;
 }
 //------------------------------------------------------------------------
-Double_t AliITStrackerMI::GetEffectiveThickness(Double_t y,Double_t z) const
+Double_t AliITStrackerMI::GetEffectiveThickness()
 {
   //--------------------------------------------------------------------
   // Returns the thickness between the current layer and the vertex (units X0)
   //--------------------------------------------------------------------
 
+  if(fUseTGeo!=0) {
+    if(fxOverX0Layer[0]<0) BuildMaterialLUT("Layers");
+    if(fxOverX0Shield[0]<0) BuildMaterialLUT("Shields");
+    if(fxOverX0Pipe<0) BuildMaterialLUT("Pipe");
+  }
+
   // beam pipe
-  Double_t d=kdPipe*krPipe*krPipe;
+  Double_t dPipe = (fUseTGeo==0 ? AliITSRecoParam::GetdPipe() : fxOverX0Pipe);
+  Double_t d=dPipe*AliITSRecoParam::GetrPipe()*AliITSRecoParam::GetrPipe();
 
   // layers
   Double_t x0=0;
   Double_t xn=fgLayers[fI].GetR();
   for (Int_t i=0; i<fI; i++) {
     Double_t xi=fgLayers[i].GetR();
-    d+=fgLayers[i].GetThickness(y,z,x0)*xi*xi;
+    Double_t dLayer = (fUseTGeo==0 ? fgLayers[i].GetThickness(0,0,x0) : fxOverX0Layer[i]);
+    d+=dLayer*xi*xi;
   }
 
   // shields
   if (fI>1) {
-    d+=kdshieldSPD*krshieldSPD*krshieldSPD;
+    Double_t dshieldSPD = (fUseTGeo==0 ? AliITSRecoParam::Getdshield(0) : fxOverX0Shield[0]);
+    d+=dshieldSPD*AliITSRecoParam::GetrInsideShield(0)*AliITSRecoParam::GetrInsideShield(0);
   }
   if (fI>3) {
-    Double_t xi=0.5*(fgLayers[3].GetR()+fgLayers[4].GetR());
-    d+=kdshieldSDD*xi*xi;
+    Double_t dshieldSDD = (fUseTGeo==0 ? AliITSRecoParam::Getdshield(1) : fxOverX0Shield[1]);
+    d+=dshieldSDD*AliITSRecoParam::GetrInsideShield(1)*AliITSRecoParam::GetrInsideShield(1);
   }
-
   return d/(xn*xn);
 }
 //------------------------------------------------------------------------
@@ -1795,9 +1790,9 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
   // If "extra"==kTRUE, 
   //    the clusters from overlapped modules get attached to "t" 
   //--------------------------------------------------------------------
-  Int_t index[kMaxLayer];
+  Int_t index[AliITSgeomTGeo::kNLayers];
   Int_t k;
-  for (k=0; k<kMaxLayer; k++) index[k]=-1;
+  for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   Int_t nc=c->GetNumberOfClusters();
   for (k=0; k<nc; k++) { 
     Int_t idx=c->GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
@@ -1808,18 +1803,19 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
   // by the track
   Int_t innermostlayer=5;
   Double_t d = TMath::Abs(t->GetD(0.,0.));
-  for(innermostlayer=0; innermostlayer<kMaxLayer; innermostlayer++)
+  for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++)
     if(d<fgLayers[innermostlayer].GetR()) break;
   //printf(" d  %f  innermost %d\n",d,innermostlayer);
 
   Int_t from, to, step;
   if (xx > t->GetX()) {
-      from=innermostlayer; to=kMaxLayer;
+      from=innermostlayer; to=AliITSgeomTGeo::GetNLayers();
       step=+1;
   } else {
-      from=kMaxLayer-1; to=innermostlayer-1;
+      from=AliITSgeomTGeo::GetNLayers()-1; to=innermostlayer-1;
       step=-1;
   }
+  TString dir=(step>0 ? "outward" : "inward");
 
   // loop on the layers
   for (Int_t i=from; i != to; i += step) {
@@ -1828,23 +1824,10 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
  
      // material between SSD and SDD, SDD and SPD
      Double_t hI=i-0.5*step; 
-     if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {             
-	Double_t rshield,dshield,x0shield;
-	if (TMath::Abs(hI-3.5)<0.01) { // SDDouter
-	  rshield=0.5*(fgLayers[i-step].GetR() + r);
-	  dshield=kdshieldSDD;
-	  x0shield=kX0shieldSDD;
-	} else {        // SPDouter
-	  rshield=krshieldSPD; 
-	  dshield=kdshieldSPD; 
-	  x0shield=kX0shieldSPD;
-	}
-	if (fUseTGeo) {
-	  if (!t->PropagateToTGeo(rshield,1)) return kFALSE;
-	} else {
-	  if (!t->PropagateTo(rshield,-step*dshield,x0shield)) return kFALSE;
-	}
-     }
+     if (TMath::Abs(hI-3.5)<0.01) // SDDouter
+       if(!CorrectForShieldMaterial(t,"SDD",dir)) return kFALSE;
+     if (TMath::Abs(hI-1.5)<0.01) // SPDouter
+       if(!CorrectForShieldMaterial(t,"SPD",dir)) return kFALSE;
      
      // remember old position [SR, GSI 18.02.2003]
      Double_t oldX=0., oldY=0., oldZ=0.;
@@ -1860,15 +1843,11 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
      if (!t->GetPhiZat(r,phi,z)) return kFALSE;
 
      Int_t idet=layer.FindDetectorIndex(phi,z);
-     if (idet<0) { 
-       return kFALSE;
-     }
+     if (idet<0) return kFALSE;
 
      const AliITSdetector &det=layer.GetDetector(idet);
      phi=det.GetPhi();
-     if (!t->Propagate(phi,det.GetR())) {
-       return kFALSE;
-     }
+     if (!t->Propagate(phi,det.GetR())) return kFALSE;
      t->SetDetectorIndex(idet);
 
      const AliITSRecPoint *cl=0;
@@ -1903,27 +1882,6 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
        t->SetSampledEdx(cl->GetQ(),t->GetNumberOfClusters()-1);
      }
 
-     // Correct for material of the current layer
-     Double_t d,x0;
-     if(fUseTGeo) {
-       Double_t globXYZ[3];
-       t->GetXYZ(globXYZ);
-       Double_t mparam[7];
-       AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
-       if (mparam[1]<900000) {
-	 d=mparam[1]; 
-	 Double_t lengthTimesMeanDensity=mparam[0]*mparam[4]; 
-	 t->CorrectForMeanMaterial(d,lengthTimesMeanDensity);
-       } else {
-	 d=layer.GetThickness(t->GetY(),t->GetZ(),x0);
-	 t->CorrectForMaterial(-step*d,x0);
-       }
-     } else {
-       d=layer.GetThickness(t->GetY(),t->GetZ(),x0);
-       t->CorrectForMaterial(-step*d,x0);
-     }
-     
-                 
      if (extra) { //search for extra clusters
         AliITStrackV2 tmp(*t);
         Double_t dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+AliITSReconstructor::GetRecoParam()->GetSigmaZ2(i));
@@ -1964,6 +1922,9 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
      }
      //
 
+     // Correct for material of the current layer
+     if(!CorrectForLayerMaterial(t,i,oldGlobXYZ,dir)) return kFALSE;
+
   } // end loop on the layers
 
   if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
@@ -1976,11 +1937,11 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
   // This function refits the track "t" at the position "x" using
   // the clusters from array
   //--------------------------------------------------------------------
-  Int_t index[kMaxLayer];
+  Int_t index[AliITSgeomTGeo::kNLayers];
   Int_t k;
-  for (k=0; k<kMaxLayer; k++) index[k]=-1;
+  for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   //
-  for (k=0; k<kMaxLayer; k++) { 
+  for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) { 
     index[k]=clindex[k]; 
   }
 
@@ -1988,18 +1949,19 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
   // by the track
   Int_t innermostlayer=5;
   Double_t d = TMath::Abs(t->GetD(0.,0.));
-  for(innermostlayer=0; innermostlayer<kMaxLayer; innermostlayer++)
+  for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++)
     if(d<fgLayers[innermostlayer].GetR()) break;
   //printf(" d  %f  innermost %d\n",d,innermostlayer);
 
   Int_t from, to, step;
   if (xx > t->GetX()) {
-      from=innermostlayer; to=kMaxLayer;
+      from=innermostlayer; to=AliITSgeomTGeo::GetNLayers();
       step=+1;
   } else {
-      from=kMaxLayer-1; to=innermostlayer-1;
+      from=AliITSgeomTGeo::GetNLayers()-1; to=innermostlayer-1;
       step=-1;
   }
+  TString dir=(step>0 ? "outward" : "inward");
 
   for (Int_t i=from; i != to; i += step) {
      AliITSlayer &layer=fgLayers[i];
@@ -2008,23 +1970,10 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
 
      // material between SSD and SDD, SDD and SPD
      Double_t hI=i-0.5*step; 
-     if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {             
-	Double_t rshield,dshield,x0shield;
-	if (TMath::Abs(hI-3.5)<0.01) { // SDDouter
-	  rshield=0.5*(fgLayers[i-step].GetR() + r);
-	  dshield=kdshieldSDD;
-	  x0shield=kX0shieldSDD;
-	} else {        // SPDouter
-	  rshield=krshieldSPD; 
-	  dshield=kdshieldSPD; 
-	  x0shield=kX0shieldSPD;
-	}
-	if (fUseTGeo) {
-	  if (!t->PropagateToTGeo(rshield,1)) return kFALSE;
-	} else {
-	  if (!t->PropagateTo(rshield,-step*dshield,x0shield)) return kFALSE;
-	}
-     }
+     if (TMath::Abs(hI-3.5)<0.01) // SDDouter
+       if(!CorrectForShieldMaterial(t,"SDD",dir)) return kFALSE;
+     if (TMath::Abs(hI-1.5)<0.01) // SPDouter
+       if(!CorrectForShieldMaterial(t,"SPD",dir)) return kFALSE;
 
      // remember old position [SR, GSI 18.02.2003]
      Double_t oldX=0., oldY=0., oldZ=0.;
@@ -2039,14 +1988,10 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
      if (!t->GetPhiZat(r,phi,z)) return kFALSE;
 
      Int_t idet=layer.FindDetectorIndex(phi,z);
-     if (idet<0) { 
-       return kFALSE;
-     }
+     if (idet<0) return kFALSE;
      const AliITSdetector &det=layer.GetDetector(idet);
      phi=det.GetPhi();
-     if (!t->Propagate(phi,det.GetR())) {
-       return kFALSE;
-     }
+     if (!t->Propagate(phi,det.GetR())) return kFALSE;
      t->SetDetectorIndex(idet);
 
      const AliITSRecPoint *cl=0;
@@ -2082,24 +2027,7 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
      }
 
      // Correct for material of the current layer
-     Double_t d,x0;
-     if(fUseTGeo) {
-       Double_t globXYZ[3];
-       t->GetXYZ(globXYZ);
-       Double_t mparam[7];
-       AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
-       if (mparam[1]<900000) {
-	 d=mparam[1]; 
-	 Double_t lengthTimesMeanDensity=mparam[0]*mparam[4]; 
-	 t->CorrectForMeanMaterial(d,lengthTimesMeanDensity);
-       } else {
-	 d=layer.GetThickness(t->GetY(),t->GetZ(),x0);
-	 t->CorrectForMaterial(-step*d,x0);
-       }
-     } else {
-       d=layer.GetThickness(t->GetY(),t->GetZ(),x0);
-       t->CorrectForMaterial(-step*d,x0);
-     }
+     if(!CorrectForLayerMaterial(t,i,oldGlobXYZ,dir)) return kFALSE;
                  
      // track time update [SR, GSI 17.02.2003]
      if (t->IsStartedTimeIntegral() && step==1) {
@@ -2266,14 +2194,14 @@ Double_t  AliITStrackerMI::GetDeadZoneProbability(Double_t zpos, Double_t zerr)
   if (TMath::Abs(absz-nearestz)>0.25+3.*zerr) return probability;
   Double_t zmin, zmax;   
   if (zpos<-6.) { // dead zone at z = -7
-    zmin = fSPDdetzcentre[0] + 0.5*kSPDdetzlength;
-    zmax = fSPDdetzcentre[1] - 0.5*kSPDdetzlength;
+    zmin = fSPDdetzcentre[0] + 0.5*AliITSRecoParam::GetSPDdetzlength();
+    zmax = fSPDdetzcentre[1] - 0.5*AliITSRecoParam::GetSPDdetzlength();
   } else if (zpos>6.) { // dead zone at z = +7
-    zmin = fSPDdetzcentre[2] + 0.5*kSPDdetzlength;
-    zmax = fSPDdetzcentre[3] - 0.5*kSPDdetzlength;
+    zmin = fSPDdetzcentre[2] + 0.5*AliITSRecoParam::GetSPDdetzlength();
+    zmax = fSPDdetzcentre[3] - 0.5*AliITSRecoParam::GetSPDdetzlength();
   } else if (absz<2.) { // dead zone at z = 0
-    zmin = fSPDdetzcentre[1] + 0.5*kSPDdetzlength;
-    zmax = fSPDdetzcentre[2] - 0.5*kSPDdetzlength;
+    zmin = fSPDdetzcentre[1] + 0.5*AliITSRecoParam::GetSPDdetzlength();
+    zmax = fSPDdetzcentre[2] - 0.5*AliITSRecoParam::GetSPDdetzlength();
   } else {
     zmin = 0.;
     zmax = 0.;
@@ -3031,11 +2959,7 @@ AliITStrackMI * AliITStrackerMI::GetBestHypothesys(Int_t esdindex, AliITStrackMI
     // backtrack
     backtrack = new(backtrack) AliITStrackMI(*track); 
     if (track->GetConstrain()) {
-      if(fUseTGeo) {
-	if (!backtrack->PropagateToTGeo(krInsidePipe,1)) continue;
-      } else {
-	if (!backtrack->PropagateTo(krInsidePipe,kdPipe,kX0Be)) continue;
-      }
+      if (!CorrectForPipeMaterial(backtrack,"inward")) continue;
       if (!backtrack->Improve(0,xyzVtx,ersVtx))         continue;     
       backtrack->ResetCovariance(10.);      
     }else{
@@ -3372,7 +3296,7 @@ void AliITStrackerMI::CookdEdx(AliITStrackMI* track)
   track->SetdEdx(sumamp/sumweight);
 }
 //------------------------------------------------------------------------
-void  AliITStrackerMI::MakeCoefficients(Int_t ntracks){
+void AliITStrackerMI::MakeCoefficients(Int_t ntracks){
   //
   //
   if (fCoefficients) delete []fCoefficients;
@@ -3389,11 +3313,10 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   Float_t theta = track->GetTgl();
   Float_t phi   = track->GetSnp();
   phi = TMath::Sqrt(phi*phi/(1.-phi*phi));
-  if(!AliITSReconstructor::GetRecoParam()->GetUseNominalClusterErrors())
-    AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
+  AliITSClusterParam::GetError(layer,cluster,theta,phi,track->GetExpQ(),erry,errz);
   Double_t chi2 = track->GetPredictedChi2MI(cluster->GetY(),cluster->GetZ(),erry,errz);
   Float_t ny,nz;
-  AliITSClusterParam::GetNTeor(layer,cluster, theta,phi,ny,nz);  
+  AliITSClusterParam::GetNTeor(layer,cluster,theta,phi,ny,nz);  
   Double_t delta = cluster->GetNy()+cluster->GetNz()-nz-ny;
   if (delta>1){
     chi2+=0.5*TMath::Min(delta/2,2.);
@@ -3409,8 +3332,8 @@ Double_t AliITStrackerMI::GetPredictedChi2MI(AliITStrackMI* track, const AliITSR
   return chi2;
 
 }
-
-Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t index) const 
+//------------------------------------------------------------------------
+Int_t AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t index) const 
 {
   //
   //
@@ -3436,7 +3359,7 @@ Int_t    AliITStrackerMI::UpdateMI(AliITStrackMI* track, const AliITSRecPoint* c
   return track->UpdateMI(cl->GetY(),cl->GetZ(),track->GetSigmaY(layer),track->GetSigmaZ(layer),chi2,index);
 }
 //------------------------------------------------------------------------
-void   AliITStrackerMI::GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz)
+void AliITStrackerMI::GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Float_t &sigmaz)
 {
   //
   //DCA sigmas parameterization
@@ -3446,8 +3369,7 @@ void   AliITStrackerMI::GetDCASigma(AliITStrackMI* track, Float_t & sigmarfi, Fl
   sigmarfi = 0.0040+1.4 *TMath::Abs(track->GetC())+332.*track->GetC()*track->GetC();
   sigmaz   = 0.0110+4.37*TMath::Abs(track->GetC());
 }
-
-
+//------------------------------------------------------------------------
 void AliITStrackerMI::SignDeltas( TObjArray *ClusterArray, Float_t vz)
 {
   //
@@ -3658,7 +3580,7 @@ void AliITStrackerMI::UpdateTPCV0(AliESDEvent *event){
   //
 }
 //------------------------------------------------------------------------
-void  AliITStrackerMI::FindV02(AliESDEvent *event)
+void AliITStrackerMI::FindV02(AliESDEvent *event)
 {
   //
   // V0 finder
@@ -4364,6 +4286,410 @@ void AliITStrackerMI::RefitV02(AliESDEvent *event)
       }	
     }    
   }
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::BuildMaterialLUT(TString material) {
+  //--------------------------------------------------------------------
+  // Fill a look-up table with mean material
+  //--------------------------------------------------------------------
+
+  Int_t n=1000;
+  Double_t mparam[7];
+  Double_t point1[3],point2[3];
+  Double_t phi,cosphi,sinphi,z;
+  // 0-5 layers, 6 pipe, 7-8 shields 
+  Double_t rmin[9]={ 3.5, 5.5,13.0,22.0,35.0,41.0, 2.0, 7.5,25.0};
+  Double_t rmax[9]={ 5.5, 7.3,17.0,26.0,41.0,47.0, 3.0,10.5,30.0};
+
+  Int_t ifirst=0,ilast=0;  
+  if(material.Contains("Pipe")) {
+    ifirst=6; ilast=6;
+  } else if(material.Contains("Shields")) {
+    ifirst=7; ilast=8;
+  } else if(material.Contains("Layers")) {
+    ifirst=0; ilast=5;
+  } else {
+    Error("BuildMaterialLUT","Wrong layer name\n");
+  }
+
+  for(Int_t imat=ifirst; imat<=ilast; imat++) {
+    Double_t param[5]={0.,0.,0.,0.,0.};
+    for (Int_t i=0; i<n; i++) {
+      phi = 2.*TMath::Pi()*gRandom->Rndm();
+      cosphi = TMath::Cos(phi); sinphi = TMath::Sin(phi); 
+      z = 14.*(-1.+2.*gRandom->Rndm()); // SPD barrel
+      point1[0] = rmin[imat]*cosphi;
+      point1[1] = rmin[imat]*sinphi;
+      point1[2] = z;
+      point2[0] = rmax[imat]*cosphi;
+      point2[1] = rmax[imat]*sinphi;
+      point2[2] = z;
+      AliTracker::MeanMaterialBudget(point1,point2,mparam);
+      for(Int_t j=0;j<5;j++) param[j]+=mparam[j];
+    }
+    for(Int_t j=0;j<5;j++) param[j]/=(Float_t)n;
+    if(imat<=5) {
+      fxOverX0Layer[imat] = param[1];
+      fxTimesRhoLayer[imat] = param[0]*param[4];
+    } else if(imat==6) {
+      fxOverX0Pipe = param[1];
+      fxTimesRhoPipe = param[0]*param[4];
+    } else if(imat==7) {
+      fxOverX0Shield[0] = param[1];
+      fxTimesRhoShield[0] = param[0]*param[4];
+    } else if(imat==8) {
+      fxOverX0Shield[1] = param[1];
+      fxTimesRhoShield[1] = param[0]*param[4];
+    }
+  }
+  /*
+  printf("%s\n",material.Data());
+  printf("%f  %f\n",fxOverX0Pipe,fxTimesRhoPipe);
+  printf("%f  %f\n",fxOverX0Shield[0],fxTimesRhoShield[0]);
+  printf("%f  %f\n",fxOverX0Shield[1],fxTimesRhoShield[1]);
+  printf("%f  %f\n",fxOverX0Layer[0],fxTimesRhoLayer[0]);
+  printf("%f  %f\n",fxOverX0Layer[1],fxTimesRhoLayer[1]);
+  printf("%f  %f\n",fxOverX0Layer[2],fxTimesRhoLayer[2]);
+  printf("%f  %f\n",fxOverX0Layer[3],fxTimesRhoLayer[3]);
+  printf("%f  %f\n",fxOverX0Layer[4],fxTimesRhoLayer[4]);
+  printf("%f  %f\n",fxOverX0Layer[5],fxTimesRhoLayer[5]);
+  */
+  return;
+}
+//------------------------------------------------------------------------
+Int_t AliITStrackerMI::CorrectForPipeMaterial(AliITStrackMI *t,
+					      TString direction) {
+  //-------------------------------------------------------------------
+  // Propagate beyond beam pipe and correct for material
+  // (material budget in different ways according to fUseTGeo value)
+  //-------------------------------------------------------------------
+
+  // Define budget mode:
+  // 0: material from AliITSRecoParam (hard coded)
+  // 1: material from TGeo (on the fly)
+  // 2: material from lut
+  // 3: material from TGeo (same for all hypotheses)
+  Int_t mode;
+  switch(fUseTGeo) {
+  case 0:
+    mode=0; 
+    break;    
+  case 1:
+    mode=1;
+    break;    
+  case 2:
+    mode=2;
+    break;
+  case 3:
+    if(fTrackingPhase.Contains("Clusters2Tracks")) 
+      { mode=3; } else { mode=1; }
+    break;
+  case 4:
+    if(fTrackingPhase.Contains("Clusters2Tracks")) 
+      { mode=3; } else { mode=2; }
+    break;
+  default:
+    mode=0;
+    break;
+  }
+  if(fTrackingPhase.Contains("Default")) mode=0;
+
+  Int_t index=fCurrentEsdTrack;
+
+  Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
+  Double_t rToGo=(dir>0 ? AliITSRecoParam::GetrInsidePipe() : AliITSRecoParam::GetrOutsidePipe());
+  Double_t xToGo; t->GetLocalXat(rToGo,xToGo);
+
+  Double_t xOverX0,x0,lengthTimesMeanDensity;
+  Bool_t anglecorr=kTRUE;
+
+  switch(mode) {
+  case 0:
+    xOverX0 = AliITSRecoParam::GetdPipe();
+    x0 = AliITSRecoParam::GetX0Be();
+    lengthTimesMeanDensity = xOverX0*x0;
+    break;
+  case 1:
+    if (!t->PropagateToTGeo(xToGo,1)) return 0;
+    return 1;
+    break;
+  case 2:
+    if(fxOverX0Pipe<0) BuildMaterialLUT("Pipe");  
+    xOverX0 = fxOverX0Pipe;
+    lengthTimesMeanDensity = fxTimesRhoPipe;
+    break;
+  case 3:
+    if(!fxOverX0PipeTrks || index<0 || index>=fNtracks) Error("CorrectForPipeMaterial","Incorrect usage of UseTGeo option!\n");
+    if(fxOverX0PipeTrks[index]<0) {
+      if (!t->PropagateToTGeo(xToGo,1,xOverX0,lengthTimesMeanDensity)) return 0;
+      Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
+				 (1.-t->GetSnp()*t->GetSnp()));
+      fxOverX0PipeTrks[index] = TMath::Abs(xOverX0)/angle;
+      fxTimesRhoPipeTrks[index] = TMath::Abs(lengthTimesMeanDensity)/angle;
+      return 1;
+    }
+    xOverX0 = fxOverX0PipeTrks[index];
+    lengthTimesMeanDensity = fxTimesRhoPipeTrks[index];
+    break;
+  }
+
+  lengthTimesMeanDensity *= dir;
+
+  if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
+  if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
+
+  return 1;
+}
+//------------------------------------------------------------------------
+Int_t AliITStrackerMI::CorrectForShieldMaterial(AliITStrackMI *t,
+						TString shield,
+						TString direction) {
+  //-------------------------------------------------------------------
+  // Propagate beyond SPD or SDD shield and correct for material
+  // (material budget in different ways according to fUseTGeo value)
+  //-------------------------------------------------------------------
+
+  // Define budget mode:
+  // 0: material from AliITSRecoParam (hard coded)
+  // 1: material from TGeo (on the fly)
+  // 2: material from lut
+  // 3: material from TGeo (same for all hypotheses)
+  Int_t mode;
+  switch(fUseTGeo) {
+  case 0:
+    mode=0; 
+    break;    
+  case 1:
+    mode=1;
+    break;    
+  case 2:
+    mode=2;
+    break;
+  case 3:
+    if(fTrackingPhase.Contains("Clusters2Tracks")) 
+      { mode=3; } else { mode=1; }
+    break;
+  case 4:
+    if(fTrackingPhase.Contains("Clusters2Tracks")) 
+      { mode=3; } else { mode=2; }
+    break;
+  default:
+    mode=0;
+    break;
+  }
+  if(fTrackingPhase.Contains("Default")) mode=0;
+
+  Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
+  Double_t rToGo;
+  Int_t    shieldindex=0;
+  if (shield.Contains("SDD")) { // SDDouter
+    rToGo=(dir>0 ? AliITSRecoParam::GetrInsideShield(1) : AliITSRecoParam::GetrOutsideShield(1));
+    shieldindex=1;
+  } else if (shield.Contains("SPD")) {        // SPDouter
+    rToGo=(dir>0 ? AliITSRecoParam::GetrInsideShield(0) : AliITSRecoParam::GetrOutsideShield(0)); 
+    shieldindex=0;
+  } else {
+    Error("CorrectForShieldMaterial"," Wrong shield name\n");
+    //    printf("%s\n",shield.Data());
+    return 0;
+  }
+  Double_t xToGo; t->GetLocalXat(rToGo,xToGo);
+
+  Int_t index=2*fCurrentEsdTrack+shieldindex;
+
+  Double_t xOverX0,x0,lengthTimesMeanDensity;
+  Bool_t anglecorr=kTRUE;
+
+  switch(mode) {
+  case 0:
+    xOverX0 = AliITSRecoParam::Getdshield(shieldindex);
+    x0 = AliITSRecoParam::GetX0shield(shieldindex);
+    lengthTimesMeanDensity = xOverX0*x0;
+    break;
+  case 1:
+    if (!t->PropagateToTGeo(xToGo,1)) return 0;
+    return 1;
+    break;
+  case 2:
+    if(fxOverX0Shield[shieldindex]<0) BuildMaterialLUT("Shields");  
+    xOverX0 = fxOverX0Shield[shieldindex];
+    lengthTimesMeanDensity = fxTimesRhoShield[shieldindex];
+    break;
+  case 3:
+    if(!fxOverX0ShieldTrks || index<0 || index>=2*fNtracks) Error("CorrectForShieldMaterial","Incorrect usage of UseTGeo option!\n");
+    if(fxOverX0ShieldTrks[index]<0) {
+      if (!t->PropagateToTGeo(xToGo,1,xOverX0,lengthTimesMeanDensity)) return 0;
+      Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
+				 (1.-t->GetSnp()*t->GetSnp()));
+      fxOverX0ShieldTrks[index] = TMath::Abs(xOverX0)/angle;
+      fxTimesRhoShieldTrks[index] = TMath::Abs(lengthTimesMeanDensity)/angle;
+      return 1;
+    }
+    xOverX0 = fxOverX0ShieldTrks[index];
+    lengthTimesMeanDensity = fxTimesRhoShieldTrks[index];
+    break;
+  }
+
+  lengthTimesMeanDensity *= dir;
+
+  if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
+  if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
+
+  return 1;
+}
+//------------------------------------------------------------------------
+Int_t AliITStrackerMI::CorrectForLayerMaterial(AliITStrackMI *t,
+					       Int_t layerindex,
+					       Double_t oldGlobXYZ[3],
+					       TString direction) {
+  //-------------------------------------------------------------------
+  // Propagate beyond layer and correct for material
+  // (material budget in different ways according to fUseTGeo value)
+  //-------------------------------------------------------------------
+
+  // Define budget mode:
+  // 0: material from AliITSRecoParam (hard coded)
+  // 1: material from TGeo (on the fly)
+  // 2: material from lut
+  // 3: material from TGeo (same for all hypotheses)
+  Int_t mode;
+  switch(fUseTGeo) {
+  case 0:
+    mode=0; 
+    break;    
+  case 1:
+    mode=1;
+    break;    
+  case 2:
+    mode=2;
+    break;
+  case 3:
+    if(fTrackingPhase.Contains("Clusters2Tracks"))
+      { mode=3; } else { mode=1; }
+    break;
+  case 4:
+    if(fTrackingPhase.Contains("Clusters2Tracks")) 
+      { mode=3; } else { mode=2; }
+    break;
+  default:
+    mode=0;
+    break;
+  }
+  if(fTrackingPhase.Contains("Default")) mode=0;
+
+  Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
+
+  Double_t r=fgLayers[layerindex].GetR();
+  Double_t deltar=(layerindex<2 ? 0.10*r : 0.05*r);
+
+  Double_t rToGo=TMath::Sqrt(t->GetX()*t->GetX()+t->GetY()*t->GetY())-deltar*dir;
+  Double_t xToGo; t->GetLocalXat(rToGo,xToGo);
+
+  Int_t index=6*fCurrentEsdTrack+layerindex;
+
+  // Bring the track beyond the material
+  if (!t->AliExternalTrackParam::PropagateTo(xToGo,GetBz())) return 0;
+  Double_t globXYZ[3];
+  t->GetXYZ(globXYZ);
+
+  Double_t xOverX0=0.0,x0=0.0,lengthTimesMeanDensity=0.0;
+  Double_t mparam[7];
+  Bool_t anglecorr=kTRUE;
+
+  switch(mode) {
+  case 0:
+    xOverX0 = fgLayers[layerindex].GetThickness(t->GetY(),t->GetZ(),x0);
+    lengthTimesMeanDensity = xOverX0*x0;
+    break;
+  case 1:
+    AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
+    if(mparam[1]>900000) return 0;
+    xOverX0=mparam[1];
+    lengthTimesMeanDensity=mparam[0]*mparam[4];
+    anglecorr=kFALSE;
+    break;
+  case 2:
+    if(fxOverX0Layer[layerindex]<0) BuildMaterialLUT("Layers");  
+    xOverX0 = fxOverX0Layer[layerindex];
+    lengthTimesMeanDensity = fxTimesRhoLayer[layerindex];
+    break;
+  case 3:
+    if(!fxOverX0LayerTrks || index<0 || index>=6*fNtracks) Error("CorrectForLayerMaterial","Incorrect usage of UseTGeo option!\n");
+    if(fxOverX0LayerTrks[index]<0) {
+      AliTracker::MeanMaterialBudget(oldGlobXYZ,globXYZ,mparam);
+      if(mparam[1]>900000) return 0;
+      Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
+				 (1.-t->GetSnp()*t->GetSnp()));
+      xOverX0=mparam[1]/angle;
+      lengthTimesMeanDensity=mparam[0]*mparam[4]/angle;
+      fxOverX0LayerTrks[index] = TMath::Abs(xOverX0);
+      fxTimesRhoLayerTrks[index] = TMath::Abs(lengthTimesMeanDensity);
+    }
+    xOverX0 = fxOverX0LayerTrks[index];
+    lengthTimesMeanDensity = fxTimesRhoLayerTrks[index];
+    break;
+  }
+
+  lengthTimesMeanDensity *= dir;
+
+  if (!t->CorrectForMeanMaterial(xOverX0,lengthTimesMeanDensity,anglecorr)) return 0;  
+
+  return 1;
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::MakeTrksMaterialLUT(Int_t ntracks) {
+  //-----------------------------------------------------------------
+  // Initialize LUT for storing material for each prolonged track
+  //-----------------------------------------------------------------
+  fxOverX0PipeTrks = new Float_t[ntracks]; 
+  fxTimesRhoPipeTrks = new Float_t[ntracks]; 
+  fxOverX0ShieldTrks = new Float_t[ntracks*2]; 
+  fxTimesRhoShieldTrks = new Float_t[ntracks*2]; 
+  fxOverX0LayerTrks = new Float_t[ntracks*6]; 
+  fxTimesRhoLayerTrks = new Float_t[ntracks*6]; 
+
+  for(Int_t i=0; i<ntracks; i++) {
+    fxOverX0PipeTrks[i] = -1.;
+    fxTimesRhoPipeTrks[i] = -1.;
+  }
+  for(Int_t j=0; j<ntracks*2; j++) {
+    fxOverX0ShieldTrks[j] = -1.;
+    fxTimesRhoShieldTrks[j] = -1.;
+  }
+  for(Int_t k=0; k<ntracks*6; k++) {
+    fxOverX0LayerTrks[k] = -1.;
+    fxTimesRhoLayerTrks[k] = -1.;
+  }
+
+  fNtracks = ntracks;  
+
+  return;
+}
+//------------------------------------------------------------------------
+void AliITStrackerMI::DeleteTrksMaterialLUT() {
+  //-----------------------------------------------------------------
+  // Delete LUT for storing material for each prolonged track
+  //-----------------------------------------------------------------
+  if(fxOverX0PipeTrks) { 
+    delete [] fxOverX0PipeTrks; fxOverX0PipeTrks = 0; 
+  } 
+  if(fxOverX0ShieldTrks) { 
+    delete [] fxOverX0ShieldTrks; fxOverX0ShieldTrks = 0; 
+  } 
+  
+  if(fxOverX0LayerTrks) { 
+    delete [] fxOverX0LayerTrks;  fxOverX0LayerTrks = 0; 
+  } 
+  if(fxTimesRhoPipeTrks) { 
+    delete [] fxTimesRhoPipeTrks;  fxTimesRhoPipeTrks = 0; 
+  } 
+  if(fxTimesRhoShieldTrks) { 
+    delete [] fxTimesRhoShieldTrks; fxTimesRhoShieldTrks = 0; 
+  } 
+  if(fxTimesRhoLayerTrks) { 
+    delete [] fxTimesRhoLayerTrks; fxTimesRhoLayerTrks = 0; 
+  } 
+  return;
 }
 //------------------------------------------------------------------------
 

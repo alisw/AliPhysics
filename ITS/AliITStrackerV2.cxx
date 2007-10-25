@@ -40,21 +40,21 @@
 
 ClassImp(AliITStrackerV2)
 
-AliITStrackerV2::AliITSlayer AliITStrackerV2::fgLayers[kMaxLayer]; //ITS layers
+AliITStrackerV2::AliITSlayer AliITStrackerV2::fgLayers[AliITSgeomTGeo::kNLayers]; //ITS layers
 
 AliITStrackerV2::AliITStrackerV2(): 
   AliTracker(), 
-  fI(kMaxLayer),
+  fI(AliITSgeomTGeo::GetNLayers()),
   fBestTrack(),
   fTrackToFollow(),
   fPass(0),
-  fLastLayerToTrackTo(kLastLayerToTrackTo)
+  fLastLayerToTrackTo(AliITSRecoParam::GetLastLayerToTrackTo())
 {
   //--------------------------------------------------------------------
   //This is the AliITStrackerV2 default constructor
   //--------------------------------------------------------------------
 
-  for (Int_t i=1; i<kMaxLayer+1; i++) new(fgLayers+i-1) AliITSlayer();
+  for (Int_t i=1; i<AliITSgeomTGeo::GetNLayers()+1; i++) new(fgLayers+i-1) AliITSlayer();
 
   fConstraint[0]=1; fConstraint[1]=0;
 
@@ -66,7 +66,7 @@ AliITStrackerV2::AliITStrackerV2():
 		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyz,ers);
 
-  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=AliITSRecoParam::GetLayersNotToSkip(i);
 
 }
 
@@ -82,7 +82,7 @@ AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t):
   //This is the AliITStrackerV2 copy constructor
   //--------------------------------------------------------------------
 
-  //for (Int_t i=1; i<kMaxLayer+1; i++) new(fgLayers+i-1) AliITSlayer();
+  //for (Int_t i=1; i<AliITSgeomTGeo::GetNLayers()+1; i++) new(fgLayers+i-1) AliITSlayer();
 
   fConstraint[0]=t.fConstraint[0]; fConstraint[1]=t.fConstraint[1];
 
@@ -96,17 +96,17 @@ AliITStrackerV2::AliITStrackerV2(const AliITStrackerV2 &t):
   ers[0]=t.GetSigmaX(); ers[1]=t.GetSigmaY(); ers[2]=t.GetSigmaZ(); 
   SetVertex(xyz,ers);
 
-  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=t.fLayersNotToSkip[i];
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=t.fLayersNotToSkip[i];
 
 }
 
 AliITStrackerV2::AliITStrackerV2(const Char_t *geom) : 
   AliTracker(), 
-  fI(kMaxLayer),
+  fI(AliITSgeomTGeo::GetNLayers()),
   fBestTrack(),
   fTrackToFollow(),
   fPass(0),
-  fLastLayerToTrackTo(kLastLayerToTrackTo)
+  fLastLayerToTrackTo(AliITSRecoParam::GetLastLayerToTrackTo())
 {
   //--------------------------------------------------------------------
   //This is the AliITStrackerV2 constructor
@@ -115,7 +115,7 @@ AliITStrackerV2::AliITStrackerV2(const Char_t *geom) :
     AliWarning("\"geom\" is actually a dummy argument !");
   }
 
-  for (Int_t i=1; i<kMaxLayer+1; i++) {
+  for (Int_t i=1; i<AliITSgeomTGeo::GetNLayers()+1; i++) {
     Int_t nlad=AliITSgeomTGeo::GetNLadders(i);
     Int_t ndet=AliITSgeomTGeo::GetNDetectors(i);
 
@@ -165,7 +165,7 @@ AliITStrackerV2::AliITStrackerV2(const Char_t *geom) :
 		  AliITSReconstructor::GetRecoParam()->GetSigmaZVdef()}; 
   SetVertex(xyz,ers);
 
-  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=kLayersNotToSkip[i];
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=AliITSRecoParam::GetLayersNotToSkip(i);
 
 }
 
@@ -173,7 +173,7 @@ void AliITStrackerV2::SetLayersNotToSkip(Int_t *l) {
   //--------------------------------------------------------------------
   //This function set masks of the layers which must be not skipped
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxLayer; i++) fLayersNotToSkip[i]=l[i];
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fLayersNotToSkip[i]=l[i];
 }
 
 Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
@@ -190,7 +190,7 @@ Int_t AliITStrackerV2::LoadClusters(TTree *cTree) {
   branch->SetAddress(&clusters);
 
   Int_t j=0;
-  for (Int_t i=0; i<kMaxLayer; i++) {
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) {
     Int_t ndet=fgLayers[i].GetNdetectors();
     Int_t jmax = j + fgLayers[i].GetNladders()*ndet;
 
@@ -227,7 +227,7 @@ void AliITStrackerV2::UnloadClusters() {
   //--------------------------------------------------------------------
   //This function unloads ITS clusters
   //--------------------------------------------------------------------
-  for (Int_t i=0; i<kMaxLayer; i++) fgLayers[i].ResetClusters();
+  for (Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fgLayers[i].ResetClusters();
 }
 
 static Int_t CorrectForDeadZoneMaterial(AliITStrackV2 *t) {
@@ -318,7 +318,7 @@ Int_t AliITStrackerV2::Clusters2Tracks(AliESDEvent *event) {
        ResetTrackToFollow(*t);
        ResetBestTrack();
 
-       for (FollowProlongation(); fI<kMaxLayer; fI++) {
+       for (FollowProlongation(); fI<AliITSgeomTGeo::GetNLayers(); fI++) {
           while (TakeNextProlongation()) FollowProlongation();
        }
 
@@ -687,7 +687,7 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd):
 
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
 
-  for (Int_t i=0; i<kMaxClusterPerLayer; i++) fClusters[i]=0;
+  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) fClusters[i]=0;
 
 }
 
@@ -1000,9 +1000,9 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
   // If "extra"==kTRUE, 
   //    the clusters from overlapped modules get attached to "t" 
   //--------------------------------------------------------------------
-  Int_t index[kMaxLayer];
+  Int_t index[AliITSgeomTGeo::kNLayers];
   Int_t k;
-  for (k=0; k<kMaxLayer; k++) index[k]=-1;
+  for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   Int_t nc=c->GetNumberOfClusters();
   for (k=0; k<nc; k++) { 
     Int_t idx=c->GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
@@ -1011,10 +1011,10 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
 
   Int_t from, to, step;
   if (xx > t->GetX()) {
-      from=0; to=kMaxLayer;
+      from=0; to=AliITSgeomTGeo::GetNLayers();
       step=+1;
   } else {
-      from=kMaxLayer-1; to=-1;
+      from=AliITSgeomTGeo::GetNLayers()-1; to=-1;
       step=-1;
   }
 

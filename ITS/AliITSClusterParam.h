@@ -26,16 +26,25 @@ class AliITSClusterParam : public TObject {
   virtual void	Print(Option_t* option = "") const;
   void SetInstance(AliITSClusterParam *param){fgInstance = param;}
   static void GetNTeor(Int_t layer,const AliITSRecPoint* cl,
-		Float_t theta,Float_t phi,
-		Float_t &ny,Float_t &nz);
+		       Float_t tgl,Float_t tgphitr,
+		       Float_t &ny,Float_t &nz);
   static Int_t GetError(Int_t layer,const AliITSRecPoint*cl,
-		 Float_t theta,Float_t phi,Float_t expQ,
-		 Float_t &erry,Float_t &errz);
+			Float_t tgl,Float_t tgphitr,Float_t expQ,
+			Float_t &erry,Float_t &errz);
 
   //void FitData(TTree * tree);
   //
  protected:
   static AliITSClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
+  static Int_t GetErrorOrigRecPoint(const AliITSRecPoint*cl,
+				    Float_t &erry,Float_t &errz);
+  static Int_t GetErrorParamMI(Int_t layer,const AliITSRecPoint*cl,
+			       Float_t tgl,Float_t tgphitr,Float_t expQ,
+			       Float_t &erry,Float_t &errz);
+  static Int_t GetErrorParamAngle(Int_t layer,const AliITSRecPoint*cl,
+				  Float_t tgl,Float_t tgphitr,
+				  Float_t &erry,Float_t &errz);
+
   ClassDef(AliITSClusterParam,1)    //  ITS cluster parametrization class
 };
 
