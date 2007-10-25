@@ -26,7 +26,12 @@ class AliT0Parameters : public TNamed
 {
 public:
   static AliT0Parameters* Instance();
-
+  
+  AliT0Parameters();
+  virtual ~AliT0Parameters() {};
+  AliT0Parameters(const  AliT0Parameters&);
+  AliT0Parameters& operator=(const AliT0Parameters&);
+ 
   void Init();  
   void InitIfOnline();
 
@@ -80,8 +85,6 @@ public:
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
 
  protected:
-  AliT0Parameters();
-  virtual ~AliT0Parameters() {}
   static AliT0Parameters* fgInstance; // Static singleton instance
   
   Bool_t    fIsInit;                // Whether we've been initialised
@@ -114,10 +117,7 @@ public:
   AliCDBEntry*   fSlewCorr ;  // pointer to slewing correction
   
   ClassDef(AliT0Parameters,4)
-    private:
-  AliT0Parameters(const  AliT0Parameters&);
-  AliT0Parameters& operator=(const AliT0Parameters&);
-
+ 
 };
 
 #endif
