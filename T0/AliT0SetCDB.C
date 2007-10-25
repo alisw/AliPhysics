@@ -15,7 +15,8 @@
 
 #include "AliRun.h"
 #include "AliT0CalibData.h"
-#include "AliT0AlignData.h"
+//#include "AliT0AlignData.h"
+#include "AliT0Align.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
@@ -62,9 +63,12 @@ void SetAC()
   DBFolder  ="local://Align";
   firstRun  =  0;
   lastRun   =  10;
-  objFormat = "T0 array Z positions";
+  objFormat = "T0 array  positions";
 
-  
+  AliT0Align *al = new AliT0Align(1,835615);
+  al->Run();
+
+   /* 
   AliT0AlignData *alignda=new AliT0AlignData("T0");
   alignda-> SetZposition (67.9,373);
   alignda->Print();
@@ -87,6 +91,7 @@ void SetAC()
 
    storage->Put(alignda, id, &md);
  }
+   */
 }
 //------------------------------------------------------------------------
 void SetTimeDelay()
@@ -275,7 +280,8 @@ void SetLookUp()
 
   AliT0CalibData *calibda=new AliT0CalibData("T0");
 
-  calibda->ReadAsciiLookup("lookUpTable.txt");
+//  calibda->ReadAsciiLookup("lookUpTable.txt");
+  calibda->ReadAsciiLookup("lookUpTable_tanay.txt");
 
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
