@@ -9,6 +9,7 @@
 #include <TTimeStamp.h>           //Initialize()
 #include <TF1.h>                  //Process()
 #include <TF2.h>                  //Process()
+//#include <TString.h>
 #include <TGraph.h>               //Process()
 #include <TMatrix.h>              //ProcPed()
 #include <TList.h>                //ProcPed()
@@ -148,11 +149,27 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
   TObjArray aDaqSig(7); aDaqSig.SetOwner(kTRUE); for(Int_t i=0;i<7;i++) aDaqSig.AddAt(new TMatrix(160,144),i); //TObjArray of 7 TMatrixF, m(padx,pady)=sigma
   
   TList *pLdc=GetFileSources(kDAQ,"pedestals"); //get list of LDC names containing id "pedestals"
+
+  if(!pLdc) {
+        Log("ERROR: Retrieval of sources for pedestals failed!");
+        return 1;}
+
   Log(Form("HMPID - Pedestal files to be read --> %i LDCs for HMPID",pLdc->GetEntries()));
   
-  for(Int_t i=0;i<pLdc->GetEntries();i++)//lists of LDCs
-    gSystem->Exec(Form("tar xf %s",GetFile(kDAQ,"pedestals",((TObjString*)pLdc->At(i))->GetName()))); //untar pedestal files from current LDC
+  for(Int_t i=0;i<pLdc->GetEntries();i++) {//lists of LDCs
+
+    //gSystem->Exec(Form("tar xf %s",GetFile(kDAQ,"pedestals",((TObjString*)pLdc->At(i))->GetName()))); //untar pedestal files from current LDC
   
+  TString fileName = GetFile(kDAQ,"pedestals", ((TObjString*)pLdc->At(i))->GetName());
+
+  if(fileName.Length()==0) {
+        Log("ERROR retrieving pedestal file!");
+        return 1;  }
+
+  gSystem->Exec(Form("tar xf %s",fileName.Data()));
+
+ }
+
   AliHMPIDDigit dig;
   AliHMPIDRawStream rs;
   Int_t nSigCut,r,d,a,hard;  Float_t mean,sigma;
