@@ -238,31 +238,16 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
       if (lookvalue ) 
 	{
 	  itrm= lookvalue->GetTRM();
-//	  cout<<" TRM "<<itrm<<endl;
-	  if (itrm ==7 && det >56 &&inside ==0) {
+	  if (det >56 &&inside ==0) {
 	    WriteChainDataTrailer(1); // 1st chain trailer
 	    fIndex++;
 	    WriteChainDataHeader(2, 1);
 	    //	    fIndex++;
 	    inside++;
-	    //	    WriteChainDataTrailer(3); // 2st chain trailer
-	    //	    WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
-	    /*	    
-	    
-	    trm1words = fIndex - startTRM;
-	    WriteTRMDataHeader(oldtrm, trm1words , positionOfTRMHeader);
-	    //space for 2st TRM header
-	    startTRM=fIndex;
-	    fIndex ++;
-	    positionOfTRMHeader= fIndex;
-	    fIndex ++;
-	    //	    oldtrm=itrm;
-	    */
 	  }	    
 	  chain = lookvalue->GetChain();
 	  iTDC = lookvalue->GetTDC();
 	  channel = lookvalue->GetChannel();
-	//  cout<<" chain "<< chain<<"  iTDC "<<iTDC<<" channel "<<channel<<endl;
 	  FillTime(channel,  iTDC,  time);
 	}
       else
