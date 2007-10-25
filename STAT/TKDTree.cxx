@@ -311,7 +311,7 @@ Bool_t	TKDTree<Index, Value>::FindNearestNeighbors(const Value *point, const Int
 	// traverse tree
 	UChar_t ax;
 	Value   val, dif;
-	Int_t nAllNodes = fNnodes + GetNTNodes();
+	Int_t nAllNodes = fNnodes + fNpoints/fBucketSize + ((fNpoints%fBucketSize)?1:0);
 	Int_t nodeStack[128], nodeIn[128];
 	Index currentIndex = 0;
 	nodeStack[0]   = inode;
@@ -745,7 +745,7 @@ void TKDTree<Index, Value>::MakeBoundaries(Value *range)
 
 	if(range) memcpy(fRange, range, fNDimm*sizeof(Value));
 	// total number of nodes including terminal nodes
-	Int_t totNodes = fNnodes + GetNTNodes();
+	Int_t totNodes = fNnodes + fNpoints/fBucketSize + ((fNpoints%fBucketSize)?1:0);
 	fBoundaries = new Value[totNodes*fNDimm];
 	//Info("MakeBoundaries(Value*)", Form("Allocate boundaries for %d nodes", totNodes));
 

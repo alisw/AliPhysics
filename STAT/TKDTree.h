@@ -28,7 +28,6 @@ public:
 	inline UChar_t GetNodeAxis(Int_t id) const {return (id < 0 || id >= fNnodes) ? 0 : fAxis[id];}
 	inline Value   GetNodeValue(Int_t id) const {return (id < 0 || id >= fNnodes) ? 0 : fValue[id];}
 	inline Int_t   GetNNodes() const {return fNnodes;}
-	inline Int_t   GetNTNodes() const {return fNpoints/fBucketSize + ((fNpoints%fBucketSize)?1:0);}
 	inline Value*  GetBoundaries();
 	inline Value*  GetBoundary(const Int_t node);
 	static  Int_t   GetIndex(Int_t row, Int_t collumn){return collumn+(1<<row);}

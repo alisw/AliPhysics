@@ -13,8 +13,10 @@
 #pragma link C++ typedef TKDTreeIF;
 
 
+#pragma link C++ class TKDInterpolatorBase+;
+#pragma link C++ class TKDNodeInfo+;
+#pragma link C++ class TKDPDF+;
 #pragma link C++ class TKDInterpolator+;
-#pragma link C++ class TKDInterpolator::TKDNodeInfo+;
 #pragma link C++ class TKDSpline+;
 
 #pragma link C++ class AliTMinuitToolkit+;
