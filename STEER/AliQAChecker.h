@@ -30,17 +30,17 @@ public:
 
   static  AliQAChecker * Instance() ;
   AliQACheckerBase *     GetDetQAChecker(Int_t det) ; 
-  TDirectory *                GetRefSubDir(const char * det, const char * task) ;
-  static TFile *              GetQAResultFile() ;
-  static const char *         GetQAResultFileName() { return fgQAResultFileName.Data() ; }
-  void                        SetQAResultDirName(const char * name) ; 
-  void                        SetRefDirName(const char * name) ; 
+  TDirectory *           GetRefSubDir(const char * det, const char * task) ;
+  static TFile *         GetQAResultFile() ;
+  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
+  void                   SetQAResultDirName(const char * name) ; 
+  void                   SetRefDirName(const char * name) ; 
 
-  virtual Bool_t Run();
+  virtual Bool_t Run(const char * fileName = NULL) ;
   virtual Bool_t Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list);
 
 private:
-  TFile *      GetDataFile() ; 
+  TFile *      GetDataFile(const char * fileName) ; 
 
   static AliQAChecker *fgQAChecker ; // pointer to the instance of the singleton
   TFile * fDataFile ;                     //! Data file to check

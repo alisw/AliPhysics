@@ -54,7 +54,7 @@ AliQAChecker::AliQAChecker(const char* name, const char* title) :
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
     fCheckers[det] = NULL ; 
   
-  GetDataFile() ; 
+  //GetDataFile() ; 
   fRefDirName.Append(fRefName) ; 
 }
 
@@ -91,13 +91,18 @@ AliQAChecker::~AliQAChecker()
 }
 
 //_____________________________________________________________________________
-TFile * AliQAChecker:: GetDataFile()
+TFile * AliQAChecker:: GetDataFile(const char * fileName)
 {
   // Open if necessary the Data file and return its pointer
 
   if (!fDataFile) 
-	if  (gSystem->AccessPathName(AliQA::GetDataName()))
-     fDataFile =  TFile::Open(AliQA::GetDataName()) ;
+	if (!fileName) 
+		fileName = AliQA::GetDataName() ; 
+	if  (!gSystem->AccessPathName(fileName)) {
+		fDataFile =  TFile::Open(fileName) ;
+	} else {
+		AliFatal(Form("File %s not found", fileName)) ; 
+	}
   return fDataFile ; 
 }
 
@@ -196,7 +201,7 @@ AliQAChecker * AliQAChecker::Instance()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run()
+Bool_t AliQAChecker::Run(const char * fileName)
 {
   // run the Quality Assurance Checker for all tasks Hits, SDigits, Digits, recpoints, tracksegments, recparticles and ESDs
   // starting from data in file
@@ -207,7 +212,7 @@ Bool_t AliQAChecker::Run()
   stopwatch.Start();
 
   //search for all detectors QA directories
-  TList * detKeyList = GetDataFile()->GetListOfKeys() ; 
+  TList * detKeyList = GetDataFile(fileName)->GetListOfKeys() ; 
   TIter nextd(detKeyList) ; 
   TKey * detKey ; 
   while ( (detKey = dynamic_cast<TKey *>(nextd()) ) ) {
@@ -224,7 +229,7 @@ Bool_t AliQAChecker::Run()
 	break ; 
       }
     } 
-    TDirectory * detDir = GetDataFile()->GetDirectory(detKey->GetName()) ; 
+    TDirectory * detDir = GetDataFile(fileName)->GetDirectory(detKey->GetName()) ; 
     TList * taskKeyList = detDir->GetListOfKeys() ;
     TIter nextt(taskKeyList) ; 
     TKey * taskKey ; 

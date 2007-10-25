@@ -147,7 +147,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
   
 		case AliQA::kRAWS:
 		{
-			AliInfo("Processing Raws QA") ; 
+			AliDebug(1, "Processing Raws QA") ; 
 			AliRawReader * rawReader = dynamic_cast<AliRawReader *>(data) ; 
 			if (rawReader) 
 				MakeRaws(rawReader) ;
@@ -157,7 +157,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 		}
 		case AliQA::kHITS:
 		{  
-			AliInfo("Processing Hits QA") ; 
+			AliDebug(1, "Processing Hits QA") ; 
 			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 			if (arr) { 
 				MakeHits(arr) ;
@@ -173,7 +173,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 		}
 		case AliQA::kSDIGITS:
 		{
-			AliInfo("Processing SDigits QA") ; 
+			AliDebug(1, "Processing SDigits QA") ; 
 			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 			if (arr) { 
 				MakeSDigits(arr) ;
@@ -189,6 +189,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 		}  
 		case AliQA::kDIGITS:
 		{
+			AliDebug(1, "Processing Digits QA") ; 
 			TClonesArray * arr = dynamic_cast<TClonesArray *>(data) ; 
 			if (arr) { 
 				MakeDigits(arr) ;
@@ -204,7 +205,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 		}
 		case AliQA::kRECPOINTS:
 		{
-			AliInfo("Processing RecPoints QA") ; 
+			AliDebug(1, "Processing RecPoints QA") ; 
 			TTree * tree = dynamic_cast<TTree *>(data) ; 
 			if (tree) {
 				MakeRecPoints(tree) ; 
@@ -224,7 +225,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 		break ;  
 		case AliQA::kESDS:
 		{
-			AliInfo("Processing ESDs QA") ; 
+			AliDebug(1, "Processing ESDs QA") ; 
 			AliESDEvent * esd = dynamic_cast<AliESDEvent *>(data) ; 
 			if (esd) 
 				MakeESDs(esd) ;

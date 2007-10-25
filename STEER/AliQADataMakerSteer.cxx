@@ -204,7 +204,7 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char *
 		}			
 	} else {
 		if ( !InitRunLoader() ) {
-			AliError("Problems in getting the Run Loader") ; 
+			AliError("Run Loader not found") ; 
 			return kFALSE ; 
 		} else {
 			if (fRunLoader->GetAliRun()) 
@@ -325,7 +325,7 @@ Bool_t AliQADataMakerSteer::Run(const AliQA::TASKINDEX taskIndex, const  char * 
     // Fill QA data in event loop 
 	for (UInt_t iEvent = 0 ; iEvent < fNumberOfEvents ; iEvent++) {
 		// Get the event
-		AliInfo(Form("processing event %d", iEvent));
+		AliDebug(1, Form("processing event %d", iEvent));
 		if ( taskIndex == AliQA::kRAWS ) {
 			if ( !fRawReader->NextEvent() )
 				break ;
