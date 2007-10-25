@@ -17,8 +17,13 @@ public:
   enum constants {kAir=1, kSc=2, kVac=3, kCer=4, kGlass=6, kSteel=8, kRibber=9, kBrass=11, kLucite=12, kC=13, kPP=14, kAl=15, kOpGlass=16, kOpAir=17, kOpAirNext=18, kOpGlassCathode=19};
 
  
-  AliT0v1() {};
+  AliT0v1();
   AliT0v1(const char *name, const char *title);
+  AliT0v1(const AliT0v1& o):AliT0(),
+    fIdSens1(0),
+    fEffPMT(0x0) {((AliT0v1 &) o).Copy(*this);}
+  
+  AliT0v1& operator=(const AliT0v1&) { return *this; }
   virtual       ~AliT0v1();
   virtual void   CreateGeometry();
   virtual void   DefineOpticalProperties();

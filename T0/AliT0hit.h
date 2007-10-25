@@ -12,9 +12,21 @@
  
 class AliT0hit : public AliHit {
 public:
+
   AliT0hit();//Empty ctor
   AliT0hit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
   virtual ~AliT0hit(){}//Empty virtual dtor
+
+  AliT0hit& operator=(const AliT0hit&)  { return *this; }
+  AliT0hit(const AliT0hit& o):AliHit(),
+    fVolume(0),
+    fPmt(0),
+    fParticle(0),
+    fEtot(0),
+    fTime(0)
+    { ((AliT0hit &) o).Copy(*this);}
+  
+
   Int_t Volume() const {return fVolume;}
   Int_t Pmt() const {return fPmt;}
   Float_t Particle() const {return fParticle;} 
@@ -28,8 +40,8 @@ private:
   Double_t    fEtot;     //Energy of primary particle at the entrance to radiator 
   Float_t    fTime;     //Primary particle TOF 
  
-  
-   ClassDef(AliT0hit,2)  //Hits for detector T0
+   
+   ClassDef(AliT0hit,3)  //Hits for detector T0
 };
 
 typedef AliT0hit AliSTARThit; // for backward compatibility

@@ -59,10 +59,22 @@
 
 ClassImp(AliT0v1)
 
+
+//--------------------------------------------------------------------
+AliT0v1::AliT0v1():  AliT0(),
+		     fIdSens1(0),
+		     fEffPMT(0x0)
+
+{
+  //
+  // Standart constructor for T0 Detector version 0
+}
 //--------------------------------------------------------------------
 AliT0v1::AliT0v1(const char *name, const char *title):
   AliT0(name,title),
-  fIdSens1(0)
+  fIdSens1(0),
+  fEffPMT(0x0)
+
 {
   //
   // Standart constructor for T0 Detector version 0
@@ -244,9 +256,9 @@ void AliT0v1::CreateGeometry()
     TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment
     TGeoVolume *ins = gGeoManager->GetVolume("0INS");
 
-    Double_t phimin = TMath::ACos((16-4.8)/16.) * (180 / TMath::Pi()) ;
+    //   Double_t phimin = TMath::ACos((16-4.8)/16.) * (180 / TMath::Pi()) ;
     //  TGeoTubeSeg *hole = new TGeoTubeSeg("hole", 0, 1.6, 0, -phimin+90, phimin+90);
-    TGeoTube*hole = new TGeoTube("hole", 0, 1.61, 6.5);
+    new TGeoTube("hole", 0, 1.61, 6.5);
     TGeoTranslation *tr [12];
     Float_t angle  = 2 * TMath::Pi() / 12;
     Char_t nameTr[40];
