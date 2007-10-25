@@ -249,7 +249,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
       
       ierflg = fitter->SetParameter(3*fNlocMax  ,Form("x%i",fNlocMax),xStart,0.1,xMin,xMax);    // X,Y,Q initial values of the loc max pad
       ierflg = fitter->SetParameter(3*fNlocMax+1,Form("y%i",fNlocMax),yStart,0.1,yMin,yMax);    // X, Y constrained to be near the loc max
-      ierflg = fitter->SetParameter(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,100000); // Q constrained to be positive
+      ierflg = fitter->SetParameter(3*fNlocMax+2,Form("q%i",fNlocMax),pDig1->Q(),0.1,0,10000);  // Q constrained to be positive
       
       fNlocMax++;
       
@@ -262,7 +262,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
    
    ierflg = fitter->SetParameter(3*fNlocMax  ,Form("x%i",fNlocMax),fX,0.1,0,0);              // Init values taken from CoG() -> fX,fY,fQRaw
    ierflg = fitter->SetParameter(3*fNlocMax+1,Form("y%i",fNlocMax),fY,0.1,0,0);              //
-   ierflg = fitter->SetParameter(3*fNlocMax+2,Form("q%i",fNlocMax),fQRaw,0.1,0,100000);      //
+   ierflg = fitter->SetParameter(3*fNlocMax+2,Form("q%i",fNlocMax),fQRaw,0.1,0,10000);       //
    
    fNlocMax = 1;
    fSt=kNoLoc;
