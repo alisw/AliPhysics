@@ -135,7 +135,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
 
   /**
    */
-  int DeleteStandardComponents();
+  int DeleteOwnedComponents();
 
   /**
    * Find the ID of a component with the given output data.

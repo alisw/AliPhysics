@@ -93,7 +93,7 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
 AliHLTComponentHandler::~AliHLTComponentHandler()
 {
   // see header file for class documentation
-  DeleteStandardComponents();
+  DeleteOwnedComponents();
   UnloadLibraries();
 }
 
@@ -119,7 +119,9 @@ Int_t AliHLTComponentHandler::AddComponent(AliHLTComponent* pSample)
 {
   // see header file for class documentation
   Int_t iResult=0;
+  if (pSample==NULL) return -EINVAL;
   if ((iResult=RegisterComponent(pSample))>=0) {
+    //HLTDebug("sample %s (%p) managed by handler", pSample->GetComponentID(), pSample);
     fOwnedComponents.push_back(pSample);
   }
   return iResult;
@@ -546,14 +548,19 @@ int AliHLTComponentHandler::ActivateAgents(const AliHLTModuleAgent** blackList, 
   return iResult;
 }
 
-int AliHLTComponentHandler::DeleteStandardComponents()
+int AliHLTComponentHandler::DeleteOwnedComponents()
 {
   // see header file for class documentation
   int iResult=0;
   vector<AliHLTComponent*>::iterator element=fOwnedComponents.begin();
   while (element!=fOwnedComponents.end()) {
     //DeregisterComponent((*element)->GetComponentID());
-    delete(*element);
+    try {
+      delete *element;
+    }
+    catch (...) {
+      HLTError("delete managed sample %p", *element);
+    }
     fOwnedComponents.erase(element);
     element=fOwnedComponents.begin();
   }

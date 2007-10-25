@@ -70,7 +70,17 @@ int AliHLT_C_Component_UnloadLibrary( const char* libraryPath )
 {
   if ( !gComponentHandler_C )
     return ENXIO;
-  return gComponentHandler_C->UnloadLibrary( libraryPath );
+  // Matthias 26.10.2007
+  // Unloading of libraries has to be re-worked. It has been commented out here
+  // since the libraries will be unloaded at the destruction of the component
+  // handler instance anyway. So it has no effect to the operation in PubSub.
+  // With the introduction of the dynamic component registration via module
+  // agents we run into trouble when cleaning up the samples managed by the
+  // component handler. Destruction of the sample objects is done AFTER
+  // unloading of the library and thus the destructor is not present any 
+  // more.
+  //return gComponentHandler_C->UnloadLibrary( libraryPath );
+  return 0;
 }
 
 int AliHLT_C_CreateComponent( const char* componentType, void* environ_param, int argc, const char** argv, AliHLTComponentHandle* handle )
