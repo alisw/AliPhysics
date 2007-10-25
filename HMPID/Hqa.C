@@ -50,7 +50,9 @@ void Hits(Int_t mode,TTree *pTree)
     case 1:
       hHitQdc=new TH1F("HitQdc","Hit Qdc all chamber;QDC",4000,0,4000);
   for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){
-        hHitMap[iCh]=new TH2F(Form("HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),160,0,160,160,0,160);      
+        hHitMap[iCh]=new TH2F(Form("HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),
+            Int_t(AliHMPIDParam::SizeAllX()/AliHMPIDParam::SizePadX()),0,AliHMPIDParam::SizeAllX(),
+            Int_t(AliHMPIDParam::SizeAllY()/AliHMPIDParam::SizePadY()),0,AliHMPIDParam::SizeAllY());
         hHitQdcCh[iCh]=new TH1F(Form("HMPID%i",iCh),Form("Charge for HMPID%i",iCh),4000,0,4000);
       }
       break;
@@ -169,6 +171,8 @@ void Clus(Int_t mode, TTree *pTree)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hqa()
 {
+  AliHMPIDParam::Instance();
+  
   TFile *fh=0; if(gSystem->IsFileInIncludePath("HMPID.Hits.root"))      fh=TFile::Open("HMPID.Hits.root"     ,"read");if(fh->IsZombie()) fh=0;
   TFile *fd=0; if(gSystem->IsFileInIncludePath("HMPID.Digits.root"))    fd=TFile::Open("HMPID.Digits.root"   ,"read");if(fd->IsZombie()) fd=0;
   TFile *fc=0; if(gSystem->IsFileInIncludePath("HMPID.RecPoints.root")) fc=TFile::Open("HMPID.RecPoints.root","read");if(fc->IsZombie()) fc=0;
