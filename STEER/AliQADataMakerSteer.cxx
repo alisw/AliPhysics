@@ -335,11 +335,16 @@ Bool_t AliQADataMakerSteer::Run(const AliQA::TASKINDEX taskIndex, const  char * 
 			fRunLoader->GetEvent(iEvent);
 		}
 		// loop over detectors
-		TObjArray* detArray = fRunLoader->GetAliRun()->Detectors() ;
+		TObjArray* detArray = NULL ; 
+		if (fRunLoader) // check if RunLoader exists 
+			if ( fRunLoader->GetAliRun() ) // check if AliRun exists in gAlice.root
+				detArray = fRunLoader->GetAliRun()->Detectors() ;
 		for (UInt_t iDet = 0 ; iDet < fgkNDetectors ; iDet++) {
-			AliModule* det = static_cast<AliModule*>(detArray->FindObject(AliQA::GetDetName(iDet))) ;
-			if (!det || !det->IsActive()) 
-				continue;
+			if (detArray) {
+				AliModule* det = static_cast<AliModule*>(detArray->FindObject(AliQA::GetDetName(iDet))) ;
+				if (!det || !det->IsActive()) 
+					continue;
+			}
 			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
 			if (!qadm) {
 				rv = kFALSE ;
