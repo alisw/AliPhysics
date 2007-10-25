@@ -21,22 +21,24 @@
 //*-- Author: Heather Gray (LBL) merged AliEMCALRecPoint and AliEMCALTowerRecPoint 02/04
 
 // --- ROOT system ---
-class Riostream;
-#include <TPad.h>
-class TGraph;
-class TPaveText;
-#include <TClonesArray.h>
-#include <TMath.h>
+#include "TPad.h"
+#include "TGraph.h"
+#include "TPaveText.h"
+#include "TClonesArray.h"
+#include "TMath.h"
+#include "TGeoMatrix.h"
+#include "TGeoManager.h"
+#include "TGeoPhysicalNode.h"
 
 // --- Standard library ---
+#include <Riostream.h>
 
 // --- AliRoot header files ---
 //#include "AliGenerator.h"
 class AliGenerator;
-#include "AliRunLoader.h"
-#include "AliRun.h"
 class AliEMCAL;
-#include "AliEMCALLoader.h"
+#include "AliLog.h"
+#include "AliGeomManager.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALHit.h"
 #include "AliEMCALDigit.h"
@@ -46,65 +48,41 @@ ClassImp(AliEMCALRecPoint)
 
 //____________________________________________________________________________
 AliEMCALRecPoint::AliEMCALRecPoint()
-  : AliRecPoint(),
-    fGeomPtr(0),
-    fClusterType(-1),
-    fCoreEnergy(0),
-    fDispersion(0),
-    fEnergyList(0),
-    fTimeList(0),
-    fAbsIdList(0),
-    fTime(0.),
-    fCoreRadius(10),  //HG check this
-    fDETracksList(0),
-    fMulParent(0),
-    fMaxParent(0),
-    fParentsList(0),
-    fDEParentsList(0),
-    fSuperModuleNumber(0),
+  : AliCluster(), fGeomPtr(0),
+    fAmp(0), fIndexInList(-1), //to be set when the point is already stored
+    fLocPos(0,0,0), fLocPosM(0),
+    fMaxDigit(100), fMulDigit(0), fMaxTrack(200),
+    fMulTrack(0), fDigitsList(0), fTracksList(0),
+    fClusterType(-1), fCoreEnergy(0), fDispersion(0),
+    fEnergyList(0), fTimeList(0), fAbsIdList(0),
+    fTime(0.), fCoreRadius(10),  //HG check this
+    fDETracksList(0), fMulParent(0), fMaxParent(0),
+    fParentsList(0), fDEParentsList(0), fSuperModuleNumber(0),
     fDigitIndMax(-1)
 {
   // ctor
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
-    fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  else
-    fGeomPtr = AliEMCALGeometry::GetInstance();
-  //fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
+  fGeomPtr = AliEMCALGeometry::GetInstance();
+  
   fLambda[0] = 0;
   fLambda[1] = 0;
-    //  fGeomPtr->GetTransformationForSM(); // Global <-> Local
+
 }
 
 //____________________________________________________________________________
-AliEMCALRecPoint::AliEMCALRecPoint(const char * opt) 
-  : AliRecPoint(opt),
-    fGeomPtr(0),
-    fClusterType(-1),
-    fCoreEnergy(0),
-    fDispersion(0),
-    fEnergyList(0),
-    fTimeList(0),
-    fAbsIdList(0),
-    fTime(-1.),
-    fCoreRadius(10),  //HG check this
-    fDETracksList(0),
-    fMulParent(0),
-    fMaxParent(1000),
-    fParentsList(0),
-    fDEParentsList(0),
-    fSuperModuleNumber(0),
-    fDigitIndMax(-1)
+AliEMCALRecPoint::AliEMCALRecPoint(const char *) 
+  : AliCluster(), fGeomPtr(0),
+    fAmp(0), fIndexInList(-1), //to be set when the point is already stored
+    fLocPos(0,0,0), fLocPosM(new TMatrixF(3,3)),
+    fMaxDigit(100), fMulDigit(0), fMaxTrack(1000), fMulTrack(0),
+    fDigitsList(new Int_t[fMaxDigit]), fTracksList(new Int_t[fMaxTrack]),
+    fClusterType(-1), fCoreEnergy(0), fDispersion(0),
+    fEnergyList(new Float_t[fMaxDigit]), fTimeList(new Float_t[fMaxDigit]), 
+    fAbsIdList(new Int_t[fMaxDigit]), fTime(-1.), fCoreRadius(10),
+    fDETracksList(new Float_t[fMaxTrack]), fMulParent(0), fMaxParent(1000),
+    fParentsList(new Int_t[fMaxParent]), fDEParentsList(new Float_t[fMaxParent]),
+    fSuperModuleNumber(0), fDigitIndMax(-1)
 {
   // ctor
-  // Increase fMaxTrack for EMCAL.
-  delete [] fTracksList;
-  fMaxTrack = 1000 ;
-  fTracksList = new Int_t[fMaxTrack];
-  fDETracksList = new Float_t[fMaxTrack];
-
-  fParentsList = new Int_t[fMaxParent];
-  fDEParentsList = new Float_t[fMaxParent];
   for (Int_t i = 0; i < fMaxTrack; i++)
     fDETracksList[i] = 0;
   for (Int_t i = 0; i < fMaxParent; i++) {
@@ -112,55 +90,44 @@ AliEMCALRecPoint::AliEMCALRecPoint(const char * opt)
     fDEParentsList[i] = 0;
   }
 
-  AliRunLoader *rl = AliRunLoader::GetRunLoader();
-  if (rl && rl->GetAliRun() && rl->GetAliRun()->GetDetector("EMCAL"))
-    fGeomPtr = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
-  else
-    fGeomPtr = AliEMCALGeometry::GetInstance();
+  fGeomPtr = AliEMCALGeometry::GetInstance();
   fLambda[0] = 0;
   fLambda[1] = 0;
-  //    fGeomPtr = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
-  //  fGeomPtr->GetTransformationForSM(); // Global <-> Local
 }
 
 //____________________________________________________________________________
 AliEMCALRecPoint::AliEMCALRecPoint(const AliEMCALRecPoint & rp) 
-  : AliRecPoint(rp),
-    fGeomPtr(rp.fGeomPtr),
-    fClusterType(rp.fClusterType),
-    fCoreEnergy(rp.fCoreEnergy),
+  : AliCluster(rp), fGeomPtr(rp.fGeomPtr),
+    fAmp(rp.fAmp), fIndexInList(rp.fIndexInList),
+    fLocPos(rp.fLocPos), fLocPosM(rp.fLocPosM),
+    fMaxDigit(rp.fMaxDigit), fMulDigit(rp.fMulDigit),
+    fMaxTrack(rp.fMaxTrack), fMulTrack(rp.fMaxTrack),
+    fDigitsList(new Int_t[rp.fMaxDigit]), fTracksList(new Int_t[rp.fMaxTrack]),
+    fClusterType(rp.fClusterType), fCoreEnergy(rp.fCoreEnergy), 
     fDispersion(rp.fDispersion),
-    fEnergyList(0),
-    fTimeList(0),
-    fAbsIdList(0),
-    fTime(rp.fTime),
-    fCoreRadius(rp.fCoreRadius),
-    fDETracksList(0),
-    fMulParent(rp.fMulParent),
-    fMaxParent(rp.fMaxParent),
-    fParentsList(0),
-    fDEParentsList(0),
-    fSuperModuleNumber(rp.fSuperModuleNumber),
-    fDigitIndMax(rp.fDigitIndMax)
+    fEnergyList(new Float_t[rp.fMaxDigit]), fTimeList(new Float_t[rp.fMaxDigit]), 
+    fAbsIdList(new Int_t[rp.fMaxDigit]), fTime(rp.fTime), fCoreRadius(rp.fCoreRadius),
+    fDETracksList(new Float_t[rp.fMaxTrack]), fMulParent(rp.fMulParent), 
+    fMaxParent(rp.fMaxParent), fParentsList(new Int_t[rp.fMaxParent]), 
+    fDEParentsList(new Float_t[rp.fMaxParent]),
+    fSuperModuleNumber(rp.fSuperModuleNumber), fDigitIndMax(rp.fDigitIndMax)
 {
   //copy ctor
   fLambda[0] = rp.fLambda[0];
   fLambda[1] = rp.fLambda[1];
 
-  fEnergyList = new Float_t[rp.fMaxDigit];
-  fTimeList = new Float_t[rp.fMaxDigit];
-  fAbsIdList = new Int_t[rp.fMaxDigit];
   for(Int_t i = 0; i < rp.fMulDigit; i++) {
     fEnergyList[i] = rp.fEnergyList[i];
     fTimeList[i] = rp.fTimeList[i];
     fAbsIdList[i] = rp.fAbsIdList[i];
   }
-  fDETracksList = new Float_t[rp.fMaxTrack];
+
   for(Int_t i = 0; i < rp.fMulTrack; i++) fDETracksList[i] = rp.fDETracksList[i];
-  fParentsList = new Int_t[rp.fMaxParent];
-  for(Int_t i = 0; i < rp.fMulParent; i++) fParentsList[i] = rp.fParentsList[i];
-  fDEParentsList = new Float_t[rp.fMaxParent];
-  for(Int_t i = 0; i < rp.fMulParent; i++) fDEParentsList[i] = rp.fDEParentsList[i];
+
+  for(Int_t i = 0; i < rp.fMulParent; i++) {
+    fParentsList[i] = rp.fParentsList[i];
+    fDEParentsList[i] = rp.fDEParentsList[i];
+  }
 
 }
 //____________________________________________________________________________
@@ -179,6 +146,53 @@ AliEMCALRecPoint::~AliEMCALRecPoint()
     delete[] fParentsList;
    if ( fDEParentsList)
     delete[] fDEParentsList;
+
+   delete fLocPosM ;
+   delete [] fDigitsList ;
+   delete [] fTracksList ;
+}
+
+//____________________________________________________________________________
+AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
+{
+  if(&rp == this) return *this;
+
+  fGeomPtr = rp.fGeomPtr;
+  fAmp = rp.fAmp;
+  fIndexInList = rp.fIndexInList;
+  fLocPos = rp.fLocPos;
+  fLocPosM = rp.fLocPosM;
+  fMaxDigit = rp.fMaxDigit;
+  fMulDigit = rp.fMulDigit;
+  fMaxTrack = rp.fMaxTrack;
+  fMulTrack = rp.fMaxTrack;
+  for(Int_t i = 0; i<fMaxDigit; i++) fDigitsList[i] = rp.fDigitsList[i];
+  for(Int_t i = 0; i<fMaxTrack; i++) fTracksList[i] = rp.fTracksList[i];
+  fClusterType = rp.fClusterType;
+  fCoreEnergy = rp.fCoreEnergy; 
+  fDispersion = rp.fDispersion;
+  for(Int_t i = 0; i<fMaxDigit; i++) {
+    fEnergyList[i] = rp.fEnergyList[i];
+    fTimeList[i] = rp.fTimeList[i]; 
+    fAbsIdList[i] = rp.fAbsIdList[i];
+  }
+  fTime = rp.fTime;
+  fCoreRadius = rp.fCoreRadius;
+  for(Int_t i = 0; i < fMaxTrack; i++) fDETracksList[i] = rp.fDETracksList[i];
+  fMulParent = rp.fMulParent;
+  fMaxParent = rp.fMaxParent;
+  for(Int_t i = 0; i < fMaxParent; i++) {
+    fParentsList[i] = rp.fParentsList[i]; 
+    fDEParentsList[i] = rp.fDEParentsList[i];
+  }
+  fSuperModuleNumber = rp.fSuperModuleNumber;
+  fDigitIndMax = rp.fDigitIndMax;
+
+  fLambda[0] = rp.fLambda[0];
+  fLambda[1] = rp.fLambda[1];
+
+  return *this;
+
 }
 
 //____________________________________________________________________________
@@ -193,7 +207,6 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
     fTimeList =  new Float_t[fMaxDigit]; 
   if(fAbsIdList == 0) {
     fAbsIdList =  new Int_t[fMaxDigit];
-    fSuperModuleNumber = fGeomPtr->GetSuperModuleNumber(digit.GetId());
   }
 
   if ( fMulDigit >= fMaxDigit ) { // increase the size of the lists 
@@ -228,6 +241,13 @@ void AliEMCALRecPoint::AddDigit(AliEMCALDigit & digit, Float_t Energy)
   fAbsIdList[fMulDigit]    = digit.GetId();
   fMulDigit++ ; 
   fAmp += Energy ; 
+
+  //JLK 10-Oct-2007 this hasn't been filled before because it was in
+  //the wrong place in previous versions.
+  //Now we evaluate it only if the supermodulenumber for this recpoint
+  //has not yet been set (or is the 0th one)
+  if(fSuperModuleNumber == 0)
+    fSuperModuleNumber = fGeomPtr->GetSuperModuleNumber(digit.GetId());
 
 }
 //____________________________________________________________________________
@@ -329,7 +349,7 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t)
 
   //  static Int_t pxold, pyold;
 
-  /* static TGraph *  digitgraph = 0 ;
+  /*  static TGraph *  digitgraph = 0 ;
   static TPaveText* clustertext = 0 ;
   
   if (!gPad->IsEditable()) return;
@@ -339,7 +359,6 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t)
     
   case kButton1Down:{
     AliEMCALDigit * digit ;
-    AliEMCALGeometry * emcalgeom =  (AliEMCALGetter::Instance())->EMCALGeometry() ;
 
     Int_t iDigit;
     Int_t relid[2] ;
@@ -351,8 +370,8 @@ void AliEMCALRecPoint::ExecuteEvent(Int_t /*event*/, Int_t, Int_t)
     for(iDigit = 0; iDigit < kMulDigit; iDigit++) {
       Fatal("AliEMCALRecPoint::ExecuteEvent", " -> Something wrong with the code"); 
       digit = 0 ; //dynamic_cast<AliEMCALDigit *>((fDigitsList)[iDigit]);
-      emcalgeom->AbsToRelNumbering(digit->GetId(), relid) ;
-      emcalgeom->PosInAlice(relid, xi[iDigit], zi[iDigit]) ;
+      fGeomPtr->AbsToRelNumbering(digit->GetId(), relid) ;
+      fGeomPtr->PosInAlice(relid, xi[iDigit], zi[iDigit]) ;
     }
     
     if (!digitgraph) {
@@ -408,6 +427,10 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits)
   EvalTime(digits) ;
   EvalPrimaries(digits) ;
   EvalParents(digits);
+
+  //Called last because it sets the global position of the cluster?
+  EvalLocal2TrackingCSTransform();
+
 }
 
 //____________________________________________________________________________
@@ -537,9 +560,6 @@ void AliEMCALRecPoint::EvalLocalPosition(Float_t logWeight, TClonesArray * digit
   fLocPosM = 0 ; // covariance matrix
 }
 
-//void AliEMCALRecPoint::EvalLocalPositionSimple()
-//{ // Weight is proportional of cell energy 
-//}
 //____________________________________________________________________________
 void AliEMCALRecPoint::EvalLocalPositionFit(Double_t deff, Double_t logWeight, 
 Double_t phiSlope, TClonesArray * digits)
@@ -609,6 +629,7 @@ Double_t phiSlope, TClonesArray * digits)
   fLocPosM = 0 ; // covariance matrix
 }
 
+//_____________________________________________________________________________
 Bool_t AliEMCALRecPoint::EvalLocalPosition2(TClonesArray * digits, TArrayD &ed)
 {
   // Evaluated local position of rec.point using digits 
@@ -617,12 +638,13 @@ Bool_t AliEMCALRecPoint::EvalLocalPosition2(TClonesArray * digits, TArrayD &ed)
   return AliEMCALRecPoint::EvalLocalPositionFromDigits(digits, ed, fLocPos);
 }
 
+//_____________________________________________________________________________
 Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
   // Used when digits should be recalibrated
   static Double_t deff, w0, esum;
   static Int_t iDigit;
-  static AliEMCALDigit *digit;
+  //  static AliEMCALDigit *digit;
 
   if(ed.GetSize() && (digits->GetEntries()!=ed.GetSize())) return kFALSE;
 
@@ -635,16 +657,18 @@ Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(TClonesArray *digits, TArra
   return EvalLocalPositionFromDigits(esum, deff, w0, digits, ed, locPos); 
 }
 
-Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, 
-						     TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
+//_____________________________________________________________________________
+Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const Double_t deff, const Double_t w0, TClonesArray *digits, TArrayD &ed, TVector3 &locPos)
 {
   static AliEMCALDigit *digit;
 
   Int_t i=0, nstat=0, idMax=-1;
   Double_t clXYZ[3]={0.,0.,0.}, xyzi[3], wtot=0., w=0.; 
 
-  AliEMCALGeometry* geo = AliEMCALGeometry::GetInstance(); // Get pointer to EMCAL geometry
-   
+  // Get pointer to EMCAL geometry
+  // (can't use fGeomPtr in static method)
+  AliEMCALGeometry* geo = AliEMCALGeometry::GetInstance(); 
+
   for(Int_t iDigit=0; iDigit<digits->GetEntries(); iDigit++) {
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(iDigit));
 
@@ -676,6 +700,7 @@ Bool_t AliEMCALRecPoint::EvalLocalPositionFromDigits(const Double_t esum, const 
 
 }
 
+//_____________________________________________________________________________
 void AliEMCALRecPoint::GetDeffW0(const Double_t esum , Double_t &deff,  Double_t &w0)
 {
   //
@@ -929,11 +954,10 @@ void  AliEMCALRecPoint::EvalParents(TClonesArray * digits)
 //____________________________________________________________________________
 void AliEMCALRecPoint::GetLocalPosition(TVector3 & lpos) const
 {
-  // returns the position of the cluster in the local reference system of ALICE
+  // returns the position of the cluster in the local reference system
+  // of the sub-detector
   
-  lpos.SetX(fLocPos.X()) ;
-  lpos.SetY(fLocPos.Y()) ;
-  lpos.SetZ(fLocPos.Z()) ;
+  lpos = fLocPos;
 }
 
 //____________________________________________________________________________
@@ -943,6 +967,54 @@ void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos) const
   // These are now the Cartesian X, Y and Z
   //  cout<<" geom "<<geom<<endl;
   fGeomPtr->GetGlobal(fLocPos, gpos, fSuperModuleNumber);
+
+}
+
+//____________________________________________________________________________
+void AliEMCALRecPoint::GetGlobalPosition(TVector3 & gpos, TMatrixF & gmat) const
+{
+  // returns the position of the cluster in the global reference system of ALICE
+  // These are now the Cartesian X, Y and Z
+  //  cout<<" geom "<<geom<<endl;
+
+  //To be implemented
+  fGeomPtr->GetGlobalEMCAL(this, gpos, gmat);
+
+}
+
+//_____________________________________________________________________________
+void AliEMCALRecPoint::EvalLocal2TrackingCSTransform()
+{
+  //Evaluates local to "tracking" c.s. transformation (B.P.).
+  //All evaluations should be completed before calling for this
+  //function.                           
+  //See ALICE PPR Chapter 5 p.18 for "tracking" c.s. definition,
+  //or just ask Jouri Belikov. :) 
+
+  SetVolumeId(AliGeomManager::LayerToVolUID(AliGeomManager::kEMCAL,GetSuperModuleNumber()));
+
+  const TGeoHMatrix* tr2loc = GetTracking2LocalMatrix();
+  if(!tr2loc) AliFatal(Form("No Tracking2LocalMatrix found."));
+
+  Double_t lxyz[3] = {fLocPos.X(),fLocPos.Y(),fLocPos.Z()};
+  Double_t txyz[3] = {0,0,0};
+
+  tr2loc->MasterToLocal(lxyz,txyz);
+  SetX(txyz[0]); SetY(txyz[1]); SetZ(txyz[2]);
+
+  if(AliLog::GetGlobalDebugLevel()>0) {
+    TVector3 gpos; TMatrixF gmat;
+    GetGlobalPosition(gpos,gmat);
+    Float_t gxyz[3];
+    GetGlobalXYZ(gxyz);
+    AliInfo(Form("lCS-->(%.3f,%.3f,%.3f), tCS-->(%.3f,%.3f,%.3f), gCS-->(%.3f,%.3f,%.3f),  gCScalc-\
+->(%.3f,%.3f,%.3f), supermodule %d",
+                 fLocPos.X(),fLocPos.Y(),fLocPos.Z(),
+                 GetX(),GetY(),GetZ(),
+                 gpos.X(),gpos.Y(),gpos.Z(),
+                 gxyz[0],gxyz[1],gxyz[2],GetSuperModuleNumber()));
+  }
+
 }
 
 //____________________________________________________________________________
@@ -1078,9 +1150,10 @@ void AliEMCALRecPoint::Paint(Option_t *)
   gPad->PaintPolyMarker(1,&x,&y,"") ;
 }
 
+//_____________________________________________________________________
 Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
 { 
-  // e energ in in GeV)
+  // e energy in GeV)
   // key  =  0(gamma, default)
   //     !=  0(electron)
   static Double_t ca = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
@@ -1152,6 +1225,7 @@ void AliEMCALRecPoint::Print(Option_t *opt) const
   Info("Print", message.Data(), fClusterType, fMulDigit, fAmp, fCoreEnergy, fCoreRadius, fMulTrack, GetIndexInList() ) ;  
 }
 
+//___________________________________________________________
 Double_t  AliEMCALRecPoint::GetPointEnergy() const
 {
   static double e;

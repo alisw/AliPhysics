@@ -66,13 +66,13 @@ public:
 
   Bool_t GetAbsCellIdFromEtaPhi(Double_t eta,Double_t phi, Int_t &absId) const;
 
-  //  virtual void GetGlobal(const AliEMCALRecPoint *rp, TVector3 &vglob) const;
-
   virtual void GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const;
-  // Bool_t AreInSameTower(Int_t id1, Int_t id2) const ;  
-
-  virtual void GetGlobal(const AliRecPoint *, TVector3 &, TMatrixF &) const {}
-
+  virtual void GetGlobal(const AliRecPoint *rp, TVector3 & gpos, TMatrixF & /* gmat */) const
+               {GetGlobal(rp,gpos); }
+  virtual void GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 &vglob) const;
+  virtual void GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 & gpos, TMatrixF & /* gmat */) const
+               {GetGlobalEMCAL(rp,gpos); }
+  
   virtual Bool_t Impact(const TParticle *) const {return kTRUE;}
 
   Bool_t IsInEMCAL(Double_t x, Double_t y, Double_t z) const;
@@ -142,6 +142,8 @@ public:
   void    CreateListOfTrd1Modules();
   TList  *GetShishKebabTrd1Modules() const {return fShishKebabTrd1Modules;}
   AliEMCALShishKebabTrd1Module *GetShishKebabModule(Int_t neta) const;
+
+  Double_t GetPhiCenterOfSM(Int_t nsupmod) const;
 
   Float_t *GetSuperModulesPars() {return fParSM;}
 

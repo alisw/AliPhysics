@@ -34,6 +34,8 @@
 #include <TPGON.h>
 #include <TTUBS.h>
 #include <TGeometry.h>
+#include <TGeoPhysicalNode.h>
+#include <TGeoManager.h>
 #include <TVirtualMC.h>
 #include <TArrayI.h>
 #include <TROOT.h>
@@ -1318,34 +1320,75 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
   // eventual changes in the geometry.
   //
 
-  TString vpstr1 = "ALIC_1/XEN1_1/SMOD_";
-  TString snstr1 = "EMCAL/FullSupermodule";
+  Float_t * pars = GetGeometry()->GetSuperModulesPars();
+  double rpos = (GetGeometry()->GetEnvelop(0) + GetGeometry()->GetEnvelop(1))/2.;
+  double phi, phiRad, xpos, ypos, zpos;
+
   TString volpath, symname;
 
-  //Int_t nSMod = ((AliEMCALGeometry*)GetGeometry())->GetNumberOfSuperModules();
-  //could use this, but what happens if it is > 10?
- 
-  for (Int_t smodnum=0; smodnum < 10; smodnum++) {
-    symname = snstr1;
-    symname += (smodnum+1);
-    volpath = vpstr1;
+  Int_t nSMod = ((AliEMCALGeometry*)GetGeometry())->GetNumberOfSuperModules(); 
+  for (Int_t smodnum=0; smodnum < nSMod; smodnum++) {
+    volpath = "ALIC_1/XEN1_1/SMOD_";
     volpath += (smodnum+1);
+    symname = "EMCAL/FullSupermodule";
+    symname += (smodnum+1);
+
+    if(GetGeometry()->GetKey110DEG() && smodnum>=10) {
+      volpath = "ALIC_1/XEN1_1/SM10_";
+      volpath += (smodnum-10+1);
+      symname = "EMCAL/HalfSupermodule";    
+      symname += (smodnum-10+1);
+    }
+
     if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
-      AliFatal("Unable to set alignable entry!!");
+      AliFatal("AliEMCALv0::Unable to set alignable entry!!");
+
+    // Creates the Tracking to Local transformation matrix for EMCAL
+    // modules                         
+    TGeoPNEntry *alignableEntry = gGeoManager->GetAlignableEntry(symname.Data()) ;
+    const char *path = alignableEntry->GetTitle();
+    if (!gGeoManager->cd(path))
+      AliFatal(Form("Volume path %s not valid!",path));
+
+    phi = GetGeometry()->GetPhiCenterOfSM(smodnum);
+    phiRad = phi*TMath::Pi()/180.;
+    xpos = rpos * TMath::Cos(phiRad);
+    ypos = rpos * TMath::Sin(phiRad);
+    zpos = pars[2];
+    if(GetGeometry()->GetKey110DEG() && smodnum >= 10) {
+      xpos += (pars[1]/2. * TMath::Sin(phiRad));
+      ypos -= (pars[1]/2. * TMath::Cos(phiRad));
+    }
+
+    TGeoHMatrix *matTtoL;
+    TGeoHMatrix* globMatrix = gGeoManager->GetCurrentMatrix();
+
+    if(smodnum%2 == 0) {
+      // pozitive z                                                        
+      TGeoTranslation geoTran0(xpos,ypos, zpos);                        
+      TGeoRotation geoRot0("geoRot0", 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
+      TGeoCombiTrans mat0(geoTran0, geoRot0);
+      matTtoL = new TGeoHMatrix(mat0);
+
+      matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
+      alignableEntry->SetMatrix(matTtoL);
+
+    } else {
+      // negative z                                                                                 
+      double phiy = 90. + phi + 180.;
+      if(phiy>=360.) phiy -= 360.;
+      TGeoTranslation geoTran1(xpos,ypos,-zpos);
+      TGeoRotation geoRot1("geoRot1", 90.0, phi, 90.0, phiy, 180.0, 0.0);
+      TGeoCombiTrans mat1(geoTran1, geoRot1);
+      matTtoL = new TGeoHMatrix(mat1);
+
+      matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
+      alignableEntry->SetMatrix(matTtoL);
+
+    }
+
   }
 
-  if(GetGeometry()->GetKey110DEG()) {
-    TString vpstr2 = "ALIC_1/XEN1_1/SM10_";
-    TString snstr2 = "EMCAL/HalfSupermodule";    
-    for (Int_t smodnum=0; smodnum < 2; smodnum++) {
-      symname = snstr2;
-      symname += (smodnum+1);
-      volpath = vpstr2;
-      volpath += (smodnum+1);
-      if(!gGeoManager->SetAlignableEntry(symname.Data(),volpath.Data()))
-	AliFatal("Unable to set alignable entry!!");
-    }
-  }
 
 }
 

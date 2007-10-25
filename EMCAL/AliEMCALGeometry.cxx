@@ -1124,15 +1124,15 @@ void AliEMCALGeometry::GetGlobal(const Double_t *loc, Double_t *glob, int ind) c
 
   if(ind>=0 && ind < GetNumberOfSuperModules()) {
     TString volpath = "ALIC_1/XEN1_1/SMOD_";
-    volpath += (ind+1);
+    volpath += ind+1;
 
     if(GetKey110DEG() && ind>=10) {
       volpath = "ALIC_1/XEN1_1/SM10_";
-      volpath += (ind-10+1);
+      volpath += ind-10+1;
     }
 
     if(!gGeoManager->cd(volpath.Data()))
-      AliFatal(Form("GeoManager cannot find path %s!",volpath.Data()));
+      AliFatal(Form("AliEMCALGeometry::GeoManager cannot find path %s!",volpath.Data()));
 
     TGeoHMatrix* m = gGeoManager->GetCurrentMatrix();
     if(m) {
@@ -1184,6 +1184,7 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , double glob[3]) const
   }
 }
 
+//___________________________________________________________________
 void AliEMCALGeometry::GetGlobal(Int_t absId , TVector3 &vglob) const
 { 
   // Alice numbering scheme - Jun 03, 2006
@@ -1194,7 +1195,14 @@ void AliEMCALGeometry::GetGlobal(Int_t absId , TVector3 &vglob) const
 
 }
 
-void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
+//____________________________________________________________________________
+void AliEMCALGeometry::GetGlobal(const AliRecPoint* /*rp*/, TVector3& /* vglob */) const
+{
+  AliFatal(Form("Please use GetGlobalEMCAL(recPoint,gpos) instead of GetGlobal!"));
+}
+
+//_________________________________________________________________________________
+void AliEMCALGeometry::GetGlobalEMCAL(const AliEMCALRecPoint *rp, TVector3 &vglob) const
 {
   // Figure out the global numbering
   // of a given supermodule from the
@@ -1203,9 +1211,8 @@ void AliEMCALGeometry::GetGlobal(const AliRecPoint *rp, TVector3 &vglob) const
   static TVector3 vloc;
   static Int_t nSupMod, nModule, nIphi, nIeta;
 
-  AliRecPoint *rpTmp = (AliRecPoint*)rp; // const_cast ??
-  if(!rpTmp) return;
-  AliEMCALRecPoint *rpEmc = (AliEMCALRecPoint*)rpTmp;
+  const AliEMCALRecPoint *rpTmp = rp;
+  const AliEMCALRecPoint *rpEmc = rpTmp;
 
   GetCellIndex(rpEmc->GetAbsId(0), nSupMod, nModule, nIphi, nIeta);
   rpTmp->GetLocalPosition(vloc);
@@ -1351,4 +1358,11 @@ Bool_t AliEMCALGeometry::IsFolder() const
 {
   if(fShishKebabTrd1Modules) return kTRUE;
   else                       return kFALSE;
+}
+
+Double_t AliEMCALGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
+{
+  static int i = nsupmod/2;
+  return fPhiCentersOfSM[i];
+
 }
