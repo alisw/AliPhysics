@@ -1,12 +1,40 @@
 #-*- Mode: Makefile -*-
 
-DAMODULE=$(firstword $(subst -, ,$(subst -da,,$(subst -da-rpm,,$(subst -da-clean,,$(filter %-da %-da-rpm %-da-clean,$(MAKECMDGOALS)))))))
-DANAME=$(word 2,$(subst -, ,$(subst -da,,$(subst -da-rpm,,$(subst -da-clean,,$(filter %-da %-da-rpm %-da-clean,$(MAKECMDGOALS)))))))
+ONLINEDETECTORNAME:=$(firstword $(subst -, ,$(subst -clean,,$(subst -rpm,,$(subst daqDA-,,$(filter daqDA-% daqDA-%-rpm daqDA-%-clean,$(MAKECMDGOALS)))))))
+DAMODULE:=$(subst SPD,ITS,$(subst SDD,ITS,$(subst SSD,ITS,$(subst HMP,HMPID,$(subst PHS,PHOS,$(subst CPV,PHOS,$(subst MCH,MUON,$(subst MTR,MUON,$(subst T00,T0,$(subst V00,VZERO,$(subst ACO,ACORDE,$(subst EMC,EMCAL,$(ONLINEDETECTORNAME)))))))))))))
 
-ifeq ($(DANAME),)
-DATARGETNAME=$(DAMODULE)-da
+ifeq ($(ONLINEDETECTORNAME),SPD)
+SUBDAMODULE:=SPD
 else
-DATARGETNAME=$(DAMODULE)-$(DANAME)-da
+ifeq ($(ONLINEDETECTORNAME),SDD)
+SUBDAMODULE:=SDD
+else
+ifeq ($(ONLINEDETECTORNAME),SSD)
+SUBDAMODULE:=SSD
+else
+ifeq ($(ONLINEDETECTORNAME),CPV)
+SUBDAMODULE:=CPV
+else
+ifeq ($(ONLINEDETECTORNAME),MCH)
+SUBDAMODULE:=TRK
+else
+ifeq ($(ONLINEDETECTORNAME),MTR)
+SUBDAMODULE:=TRG
+endif
+endif
+endif
+endif
+endif
+endif
+
+DANAME=$(word 2,$(subst -, ,$(subst -clean,,$(subst -rpm,,$(subst daqDA-,,$(filter daqDA-% daqDA-%-rpm daqDA-%-clean,$(MAKECMDGOALS)))))))
+
+ifneq ($(DANAME),)
+
+DATARGETNAME:=daqDA-$(ONLINEDETECTORNAME)-$(DANAME)
+
+ifeq ($(DANAME),NONAME)
+DANAME:=
 endif
 
 ifneq ($(findstring $(DAMODULE),$(MODULES)),)
@@ -16,28 +44,26 @@ CXXFLAGS+=-I${ALICE_ROOT}/$(DAMODULE)
 CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(DAMODULE)/*/)))))
 
 DATARGETDIR=${DAMODULE}/tgt_${ALICE_TARGET}
-DASRC=${DAMODULE}/${DAMODULE}${DANAME}da.cxx
-DAOBJ=${DATARGETDIR}/${DAMODULE}${DANAME}da.o
-DADEP=${DATARGETDIR}/${DAMODULE}${DANAME}da.d
-DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}${DANAME}DA.a
-DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}${DANAME}da.exe
+DASRC=${DAMODULE}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.cxx
+DAOBJ=${DATARGETDIR}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.o
+DADEP=${DATARGETDIR}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.d
+DALIB=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}/lib${DAMODULE}$(SUBDAMODULE)${DANAME}DA.a
+DAEXE=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.exe
 
 DAVERSION=$(firstword $(shell cvs status $(DASRC) | grep "Working revision:" | cut -d: -f2 ))
 
 DAROOTRELEASE=$(subst /,.,$(shell root-config --version))
-DARELEASE:="Root_"$(DAROOTRELEASE)"__AliRoot_"
 
 DAALIROOTRELEASE=$(subst -,.,$(firstword $(shell cvs status $(DASRC) | grep "Sticky Tag:" | cut -d: -f2 )))
 ifeq ($(DAALIROOTRELEASE),(none))
 DAALIROOTRELEASE:="HEAD_"$(subst -,.,$(shell date --iso-8601))
 endif
-DARELEASE:=$(DARELEASE)$(DAALIROOTRELEASE)
 
-DAARC=daqDA-${DAMODULE}${DANAME}-calib-$(DAVERSION)
+DAARCNAME=$(patsubst %-,%,daqDA-${ONLINEDETECTORNAME}-${DANAME})
+DAARC=$(DAARCNAME)-$(DAVERSION)
 DATAR=${DATARGETDIR}/$(DAARC).src.tar.gz
-DASPECFILE=${DATARGETDIR}/$(DAMODULE)$(DANAME)da.spec
-
-DAMAKEFILE=${DATARGETDIR}/${DAMODULE}${DANAME}da.make
+DASPECFILE=${DATARGETDIR}/$(DAMODULE)$(SUBDAMODULE)$(DANAME)da.spec
+DAMAKEFILE=${DATARGETDIR}/${DAMODULE}$(SUBDAMODULE)${DANAME}da.make
 
 ifeq ($(DAQDALIB_PATH),)
 DAQDADIR=${ALICE}/daqDAlib
@@ -68,7 +94,6 @@ endif
 
 DAOUTPUTFILES=$(sort $(shell grep TFile $(DASRC) | grep '(' | grep ')' | grep -i recreate | cut -d'(' -f2 | cut -d',' -f1 | cut -d')' -f1 ))
 DAINPUTFILES=$(sort $(shell grep TFile $(DASRC) | grep '(' | grep ')' | grep -vi recreate | cut -d'(' -f2 | cut -d',' -f1 | cut -d')' -f1 ))
-
 $(DATARGETNAME): $(DAEXE)
 
 $(DAEXE): $(DAOBJ) $(LIBPATH) $(DALIB) $(DAQDALIB) $(EXTRAROOTLIB)
@@ -104,7 +129,7 @@ $(EXTRAROOTLIB): $(LIBPATH)
 	$(MUTE)$(AR) r $@ `ls ${ROOTSYS}/vmc/src/*.o ${ROOTSYS}/treeplayer/src/*.o`
 
 $(DATARGETNAME)-clean:
-	@echo "***** Cleaning $(DAMODULE)$(DANAME) detector-algorithm *****"
+	@echo "***** Cleaning $(DAMODULE)$(SUBDAMODULE)$(DANAME) detector-algorithm *****"
 	$(MUTE)rm -f $(DASPECFILE)
 	$(MUTE)rm -f $(DATAR)
 	$(MUTE)rm -f $(DAEXE)
@@ -142,7 +167,7 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "DAQDALIB=""$$""(DAQDADIR)/libdaqDA.a" >> $@
 	@echo "MONITORLIBS=""$$""(shell date-config --monitorlibs=noshift)" >> $@
 	@echo "" >> $@
-	@echo "${DAMODULE}${DANAME}da.exe: ${DAMODULE}${DANAME}da.o" >> $@
+	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.exe: ${DAMODULE}${SUBDAMODULE}${DANAME}da.o" >> $@
 	@echo "		""$$""(LD) ""$$""(LDFLAGS) -o ""$$""@ ""$$""< \\" >> $@
 	@echo "		$(DALIB) \\" >> $@
 	@echo "		$(EXTRAROOTLIB) \\" >> $@
@@ -151,18 +176,18 @@ $(DAMAKEFILE): $(DATARGETDIR)
 	@echo "		""$$""(DAQDALIB) ""$$""(MONITORLIBS) \\" >> $@
 	@echo "		$(SYSLIBS)" >> $@
 	@echo "" >> $@
-	@echo "${DAMODULE}${DANAME}da.o: ${DAMODULE}${DANAME}da.cxx" >> $@
+	@echo "${DAMODULE}${SUBDAMODULE}${DANAME}da.o: ${DAMODULE}${SUBDAMODULE}${DANAME}da.cxx" >> $@
 	@echo "		""$$""(CXX) -c ""$$""(CXXFLAGS) -I""$$""(DAQDADIR) ""$$""< -o ""$$""@" >> $@
 	@echo "" >> $@
 	@echo "clean:" >> $@
-	@echo "		@rm -f ${DAMODULE}${DANAME}da.exe ${DAMODULE}${DANAME}da.o" >> $@
+	@echo "		@rm -f ${DAMODULE}${SUBDAMODULE}${DANAME}da.exe ${DAMODULE}${SUBDAMODULE}${DANAME}da.o" >> $@
 	@echo "" >> $@
-	@echo "install: ${DAMODULE}${DANAME}da.exe" >> $@
+	@echo "install: ${DAMODULE}${SUBDAMODULE}${DANAME}da.exe" >> $@
 	@echo "		@if [ '""$$""(INSTALL_PATH)' == '' ]; then \\" >> $@
 	@echo "		echo Environment variable INSTALL_PATH undefined, cannot continue; \\" >> $@
 	@echo "		exit 1; \\" >> $@
 	@echo "		fi" >> $@
-	@echo "		@cp -p ${DAMODULE}${DANAME}da.exe ""$$""(INSTALL_PATH)" >> $@
+	@echo "		@cp -p ${DAMODULE}${SUBDAMODULE}${DANAME}da.exe ""$$""(INSTALL_PATH)" >> $@
 
 $(DATAR): $(DASRC) $(DAMAKEFILE) $(DASPECFILE)
 	@echo "***** Making archive $(DATAR) *****"
@@ -171,7 +196,7 @@ $(DATAR): $(DASRC) $(DAMAKEFILE) $(DASPECFILE)
 	$(MUTE)mkdir junk && mkdir junk/$(DAARC) && \
 	cp -a $(DASRC) junk/$(DAARC) && \
 	cp -a $(DAMAKEFILE) junk/$(DAARC)/Makefile && \
-	cp -a $(DASPECFILE) junk/$(DAARC)/$(DAMODULE)$(DANAME)da.spec && \
+	cp -a $(DASPECFILE) junk/$(DAARC)/$(DAMODULE)${SUBDAMODULE}$(DANAME)da.spec && \
 	cd junk && \
 	tar czf ../$(DATAR) * && \
 	cd .. && rm -rf junk
@@ -179,11 +204,11 @@ $(DATAR): $(DASRC) $(DAMAKEFILE) $(DASPECFILE)
 $(DASPECFILE): $(DATARGETDIR)
 	$(MUTE)rm -f $(DASPECFILE)
 	@echo "***** Making RPM spec-file $(DASPECFILE) *****"
-	@echo "# RPM specfile for $(DAMODULE)$(DANAME) Detector Algorithm" >> $@
-	@echo "Summary: $(DAMODULE) Detector Algorithm" >> $@
-	@echo "Name: daqDA-$(DAMODULE)$(DANAME)-calib" >> $@
+	@echo "# RPM specfile for $(DAMODULE)${SUBDAMODULE}$(DANAME) Detector Algorithm" >> $@
+	@echo "Summary: $(ONLINEDETECTORNAME) Detector Algorithm" >> $@
+	@echo "Name: $(DAARCNAME)" >> $@
 	@echo "Version: $(DAVERSION)" >> $@
-	@echo "Release: $(DARELEASE)" >> $@
+	@echo "Release: $(DAALIROOTRELEASE)" >> $@
 	@echo "Copyright: CERN Alice DAQ/Offine" >> $@
 	@echo "Source: %{name}-%{version}.src.tar.gz" >> $@
 	@echo "Group: Applications/Alice" >> $@
@@ -203,7 +228,7 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "" >> $@
 	@echo "# description of the package" >> $@
 	@echo "%description" >> $@
-	@echo "This is the $(DAMODULE)$(DANAME) DA for online calibration." >> $@
+	@echo "This is the $(ONLINEDETECTORNAME) $(DANAME) DA for online calibration." >> $@
 	@echo "It uses data from $(DAMODULE) and $(EXTRADAMODULE) detectors at run time." >> $@
 	@echo "Build requires: daqDAlib, date, AliRoot $(DAALIROOTRELEASE), ROOT $(DAROOTRELEASE)." >> $@
 	@echo "Runtime requires: date." >> $@
@@ -261,7 +286,7 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "%postun" >> $@
 
 $(DATARGETNAME)-rpm: $(DATAR) $(DASPECFILE) $(DALIB) $(DADEP) $(EXTRAROOTLIB)
-	@echo "***** Making RPMS for $(DAMODULE)$(DANAME) detector-algorithm *****"
+	@echo "***** Making RPMS for $(DAMODULE)$(SUBDAMODULE)$(DANAME) detector-algorithm *****"
 	$(MUTE)rm -rf junk
 	$(MUTE)mkdir -p junk/SOURCES junk/SPECS junk/BUILD junk/RPMS junk/SRPMS
 	$(MUTE)cp $(DATAR) junk/SOURCES
@@ -288,5 +313,29 @@ $(DATARGETNAME)-rpm:
 	@echo "*              make ITS-SPD-da-rpm (compiles, link ITS/ITSSPDda.cxx and builds ITS SPD DA binary RPM) *"
 	@echo "*******************************************************************************************************"
 	@echo
+
+endif
+
+else
+
+DAMODULEALLTARGETS:=$(notdir $(wildcard $(DAMODULE)/$(DAMODULE)$(SUBDAMODULE)*da.cxx))
+
+daqDA-$(ONLINEDETECTORNAME): $(DAMODULEALLTARGETS)
+	@echo "***** All available detector-algorithms for $(ONLINEDETECTORNAME) have been built *****"
+
+%da.cxx:
+	$(MUTE)make $(patsubst %-,%-NONAME,$(addprefix daqDA-,$(subst $(DAMODULE)$(SUBDAMODULE),$(ONLINEDETECTORNAME)-,$(subst da.cxx,,$@))))
+
+daqDA-$(ONLINEDETECTORNAME)-rpm: $(addsuffix -rpm,$(DAMODULEALLTARGETS))
+	@echo "***** All available detector-algorithm RPMs for $(ONLINEDETECTORNAME) have been built *****"
+
+%da.cxx-rpm:
+	$(MUTE)make $(subst --,-NONAME-,$(addsuffix -rpm,$(addprefix daqDA-,$(subst $(DAMODULE)$(SUBDAMODULE),$(ONLINEDETECTORNAME)-,$(subst da.cxx-rpm,,$@)))))
+
+daqDA-$(ONLINEDETECTORNAME)-clean: $(addsuffix -clean,$(DAMODULEALLTARGETS))
+	@echo "***** All available detector-algorithms for $(ONLINEDETECTORNAME) have been cleaned *****"
+
+%da.cxx-clean:
+	$(MUTE)make $(subst --,-NONAME-,$(addsuffix -clean,$(addprefix daqDA-,$(subst $(DAMODULE)$(SUBDAMODULE),$(ONLINEDETECTORNAME)-,$(subst da.cxx-clean,,$@)))))
 
 endif
