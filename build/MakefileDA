@@ -304,7 +304,7 @@ $(DATARGETNAME)-rpm:
 	@echo "*******************************************************************************************************"
 	@echo "* In order to build a detector-algorithm package you have run AliRoot make with the following syntax: *"
 	@echo "* For example: make daqDA-TPC (compiles and link all the TPC DAs and produces the corresponding DA    *"
-	@echo "*			     executables)                                                            *"
+	@echo "*                             executables)                                                            *"
 	@echo "*              make daqDA-MCH (MCH is the online code for MUON TRK detector.                          *"
 	@echo "*                              this target will compile and link MUON/MUONTRKda.cxx and will          *"
 	@echo "*                              produce MUONTRKda.exe)                                                 *"
@@ -320,6 +320,8 @@ $(DATARGETNAME)-rpm:
 endif
 
 else
+
+ifneq ($(findstring $(DAMODULE),$(MODULES)),)
 
 DAMODULEALLTARGETS:=$(notdir $(wildcard $(DAMODULE)/$(DAMODULE)$(SUBDAMODULE)*da.cxx))
 
@@ -340,5 +342,19 @@ daqDA-$(ONLINEDETECTORNAME)-clean: $(addsuffix -clean,$(DAMODULEALLTARGETS))
 
 %da.cxx-clean:
 	$(MUTE)make $(subst --,-NONAME-,$(addsuffix -clean,$(addprefix daqDA-,$(subst $(DAMODULE)$(SUBDAMODULE),$(ONLINEDETECTORNAME)-,$(subst da.cxx-clean,,$@)))))
+
+else
+
+daqDA-$(ONLINEDETECTORNAME): daqDA-$(ONLINEDETECTORNAME)-rpm
+daqDA-$(ONLINEDETECTORNAME)-rpm: daqDA-$(ONLINEDETECTORNAME)-clean
+daqDA-$(ONLINEDETECTORNAME)-clean:
+	@echo
+	@echo "========================================================================================================================="
+	@echo " $(ONLINEDETECTORNAME) is not a valid online detector code.                                                              "
+	@echo " The list of the valid codes is SPD SDD SSD TPC TRD TOF HMP PHS CPV PMD MCH MTR FMD T00 V00 ZDC ACO TRI EMC HLT TST GRP  "
+	@echo "========================================================================================================================="
+	@echo
+
+endif
 
 endif
