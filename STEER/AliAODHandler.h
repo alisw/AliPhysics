@@ -35,7 +35,7 @@ class AliAODHandler : public AliVEventHandler {
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
     TTree*               GetTree() {return fTreeA;}
-    void                 CreateTree();
+    void                 CreateTree(Int_t flag);
     void                 FillTree();
     void                 AddAODtoTreeUserInfo();
     //

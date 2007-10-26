@@ -69,14 +69,12 @@ Bool_t AliAODHandler::InitIO(Option_t* opt)
 
     if (!(strcmp(opt, "proof"))) {
 	// proof
+	CreateTree(0);
     } else {
 	// local and grid
 	fFileA = new TFile(fName, "RECREATE");
+	CreateTree(1);
     }
-    //
-    // Create the output tree
-    CreateTree();
-    
     return kTRUE;
 }
 
@@ -107,11 +105,12 @@ Bool_t AliAODHandler::TerminateIO()
 }
 
 
-void AliAODHandler::CreateTree()
+void AliAODHandler::CreateTree(Int_t flag)
 {
     // Creates the AOD Tree
     fTreeA = new TTree("aodTree", "AliAOD tree");
     fTreeA->Branch(fAODEvent->GetList());
+    if (flag == 0) fTreeA->SetDirectory(0);
 }
 
 void AliAODHandler::FillTree()
