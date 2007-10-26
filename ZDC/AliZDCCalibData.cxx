@@ -46,7 +46,7 @@ AliZDCCalibData::AliZDCCalibData(const char* name)
 AliZDCCalibData::AliZDCCalibData(const AliZDCCalibData& calibda) :
   TNamed(calibda)
 {
-// copy constructor
+  // Copy constructor
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();

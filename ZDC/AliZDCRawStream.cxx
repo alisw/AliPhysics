@@ -39,7 +39,8 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
   fRawADC(0),	 
   fADCModule(0),	 
   fADCValue(-1),	 
-  fADCGain(0)
+  fADCGain(0),
+  fIsADCDataWord(kFALSE)
 {
   // Create an object to read ZDC raw digits
 
@@ -48,11 +49,17 @@ AliZDCRawStream::AliZDCRawStream(AliRawReader* rawReader) :
 
 //_____________________________________________________________________________
 AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
-  TObject(stream),
-  fADCValue(-1)
+  TObject(stream)
 {
   // Copy constructor
-  Fatal("AliZDCRawStream", "copy constructor not implemented");
+  fRawADC = stream.GetADCRaw();	 
+  for(Int_t j=0; j<2; j++) fSector[j] = stream.GetSector(j);	 
+  fADCModule = stream.GetADCModule();	 
+  fADCValue = stream.GetADCValue();	 
+  fADCGain = stream.GetADCGain();	 
+  fIsADCDataWord = stream.IsADCDataWord();
+  
+    
 }
 
 //_____________________________________________________________________________

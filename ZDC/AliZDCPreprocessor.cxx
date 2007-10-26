@@ -66,14 +66,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   if(!dcsAliasMap) return 1;
 
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
-  Float_t DCSValues[26];
+  Float_t DCSValues[28]; // DCSAliases=28
   fData->ProcessData(*dcsAliasMap, DCSValues);
-  // Store DCS data for reference
-  AliCDBMetaData metadata;
-  metadata.SetResponsible("Chiara Oppedisano");
-  metadata.SetComment("DCS data for ZDC");
-  Bool_t resStore = kFALSE;
-  resStore = StoreReferenceData("DCS","Data",fData,&metadata);
   //dcsAliasMap->Print("");
   //
   // --- Writing ZDC table positions into alignment object
@@ -130,7 +124,8 @@ if (runType = "PEDESTAL_RUN") {
 	  return 1;
        }
        const char* PedFileName = stringPedFileName.Data();
-       const Int_t NZDCch = 44;
+       // no. ADCch = (22 signal ch. + 2 reference PMs) * 2 gain chain = 48
+       const Int_t NZDCch = 48;
        if(PedFileName){
          FILE *file;
          if((file = fopen(PedFileName,"r")) == NULL){

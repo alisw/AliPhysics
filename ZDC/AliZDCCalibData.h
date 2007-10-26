@@ -124,7 +124,7 @@ class AliZDCCalibData: public TNamed {
   Float_t  fEZP2MaxValue;	 // Max value of ZP2 vs. Nspec p correlation
   Float_t  fEZDC2MaxValue;	 // Max value of ZDC2 vs. Nspec n+p correlation
   //
-  ClassDef(AliZDCCalibData,10)    // ZDC  Calibration data
+  ClassDef(AliZDCCalibData,11)    // ZDC  Calibration data
 };
 
 #endif

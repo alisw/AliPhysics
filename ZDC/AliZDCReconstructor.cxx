@@ -107,10 +107,10 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
 
   // loop over digits
   Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.}; 
-  Float_t dZEMCorrHG=0.; 
+  Float_t dZEM1CorrHG=0., dZEM2CorrHG=0.; 
   Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
   Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
-  Float_t dZEMCorrLG=0.; 
+  Float_t dZEM1CorrLG=0., dZEM2CorrLG=0.; 
   Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
   
   //printf("\n\t # of digits in tree: %d\n",(Int_t) digitsTree->GetEntries());
@@ -145,27 +145,27 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
     else if(det == 3){
        if(quad == 1){	    // *** ZEM1  
     	 pedindex = quad+19;
-         dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
-         if(dZEMCorrHG<0.) dZEMCorrHG = 0.;
-         dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
-         if(dZEMCorrLG<0.) dZEMCorrLG = 0.;
+         dZEM1CorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         if(dZEM1CorrHG<0.) dZEM1CorrHG = 0.;
+         dZEM1CorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
+         if(dZEM1CorrLG<0.) dZEM1CorrLG = 0.;
          //printf("\t pedindex %d ADC(0) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEMCorrHG);
+	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEM1CorrHG);
          //printf("\t pedindex %d ADC(1) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex+2, digit.GetADCValue(1), meanPed[pedindex+2], dZEMCorrLG);
-         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEMCorrHG, dZEMCorrLG);
+	 //	pedindex+2, digit.GetADCValue(1), meanPed[pedindex+2], dZEM1CorrLG);
+         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEM1CorrHG, dZEM1CorrLG);
        }
-       else if(quad == 2){  // *** ZEM1
+       else if(quad == 2){  // *** ZEM2
     	 pedindex = quad+19;
-         dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
-         if(dZEMCorrHG<0.) dZEMCorrHG = 0.;
-         dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
-         if(dZEMCorrLG<0.) dZEMCorrLG = 0.;
+         dZEM2CorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         if(dZEM2CorrHG<0.) dZEM2CorrHG = 0.;
+         dZEM2CorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
+         if(dZEM2CorrLG<0.) dZEM2CorrLG = 0.;
          //printf("\t pedindex %d ADC(0) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEMCorrHG);
+	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEM2CorrHG);
          //printf("\t pedindex %d ADC(1) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex+2, digit.GetADCValue(1),meanPed[pedindex+2], dZEMCorrLG);
-         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEMCorrHG, dZEMCorrLG);
+	 //	pedindex+2, digit.GetADCValue(1),meanPed[pedindex+2], dZEM2CorrLG);
+         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEM2CorrHG, dZEM2CorrLG);
        }
     }
     else if(det == 4){  // *** ZN2
@@ -191,7 +191,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   // reconstruct the event
     ReconstructEvent(clustersTree, tZN1CorrHG, tZP1CorrHG, tZN2CorrHG, 
     	tZP2CorrHG, tZN1CorrLG, tZP1CorrLG, tZN2CorrLG, 
-    	tZP2CorrLG, dZEMCorrHG);
+    	tZP2CorrLG, dZEM1CorrHG, dZEM2CorrHG);
 
 }
 
@@ -209,10 +209,10 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 
   // loop over raw data rawDatas
   Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.};
-  Float_t dZEMCorrHG=0.;
+  Float_t dZEM1CorrHG=0., dZEM2CorrHG=0.;
   Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
   Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
-  Float_t dZEMCorrLG=0.; 
+  Float_t dZEM1CorrLG=0., dZEM2CorrLG=0.; 
   Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
   //
   AliZDCRawStream rawData(rawReader);
@@ -236,13 +236,13 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
       else if(det == 3){ 
         if(quad==1){	 
           pedindex = quad+20;
-          if(gain == 0) dZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-          else dZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+          if(gain == 0) dZEM1CorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+          else dZEM1CorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
         }
         else if(quad==2){ 
           pedindex = rawData.GetSector(1)+21;
-          if(gain == 0) dZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-          else dZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+          if(gain == 0) dZEM2CorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+          else dZEM2CorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
         }
       }
       else if(det == 4){       
@@ -261,7 +261,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   // reconstruct the event
     ReconstructEvent(clustersTree, tZN1CorrHG, tZP1CorrHG, tZN2CorrHG, 
     	tZP2CorrHG, tZN1CorrLG, tZP1CorrLG, tZN2CorrLG, 
-    	tZP2CorrLG, dZEMCorrHG);
+    	tZP2CorrLG, dZEM1CorrHG, dZEM2CorrHG);
 
 }
 
@@ -271,7 +271,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
 		Float_t* ZN2ADCCorrHG, Float_t* ZP2ADCCorrHG, 
 		Float_t* ZN1ADCCorrLG, Float_t* ZP1ADCCorrLG, 
 		Float_t* ZN2ADCCorrLG, Float_t* ZP2ADCCorrLG, 
-		Float_t corrADCZEMHG) const
+		Float_t corrADCZEM1HG, Float_t corrADCZEM2HG) const
 {
   // ***** Reconstruct one event
   
@@ -440,6 +440,8 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   //
   // *** RECONSTRUCTION FROM REAL DATA
   //
+  Float_t corrADCZEMHG = corrADCZEM1HG + corrADCZEM2HG;
+  //
   if(corrADCZEMHG > supValueZEM){
     nGenSpecNLeft  = (Int_t) (fZNCen->Eval(calibSumZN1HG));
     nGenSpecPLeft  = (Int_t) (fZPCen->Eval(calibSumZP1HG));
@@ -501,7 +503,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   // create the output tree
   AliZDCReco reco(calibSumZN1HG, calibSumZP1HG, calibSumZN2HG, calibSumZP2HG, 
   		  calibTowZN1LG, calibTowZN2LG, calibTowZP1LG, calibTowZP2LG, 
-		  corrADCZEMHG, 
+		  corrADCZEM1HG, corrADCZEM2HG,
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
 		  nGenSpecPRight, nGenSpecRight,
@@ -534,7 +536,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
   */
-  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
+  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEM1signal(), reco.GetZEM2signal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
   

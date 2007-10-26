@@ -42,7 +42,8 @@ AliZDCReco::AliZDCReco() :
 //  fZN2EnTow(0x0),
 //  fZP2EnTow(0x0),
   //
-  fZEMsignal(0),
+  fZEM1signal(0),
+  fZEM2signal(0),
   //
   fNDetSpecNLeft(0),
   fNDetSpecPLeft(0),
@@ -70,7 +71,7 @@ AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,
 	     //
 	     Float_t* ezn1tow, Float_t* ezp1tow,
 	     Float_t* ezn2tow, Float_t* ezp2tow, 
-	     Float_t ezem, 
+	     Float_t ezem1, Float_t ezem2,
 	     //	   
 	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight,
 	     Int_t detsppRight,  Int_t trspnLeft, Int_t trsppLeft, 
@@ -84,7 +85,8 @@ AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,
   fZN2Energy(ezn2),
   fZP2Energy(ezp2),
   //
-  fZEMsignal(ezem),
+  fZEM1signal(ezem1),
+  fZEM2signal(ezem2),
   //
   fNDetSpecNLeft(detspnLeft),
   fNDetSpecPLeft(detsppLeft),
@@ -132,7 +134,8 @@ AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
      fZP2EnTow[i]  = oldreco.GetZP2EnTow(i);
   }
   //
-  fZEMsignal = oldreco.GetZEMsignal();	
+  fZEM1signal = oldreco.GetZEM1signal();	
+  fZEM2signal = oldreco.GetZEM2signal();	
   //   
   fNDetSpecNLeft = oldreco.GetNDetSpecNLeft();	
   fNDetSpecPLeft = oldreco.GetNDetSpecPLeft();	
@@ -154,13 +157,14 @@ void AliZDCReco::Print(Option_t *) const {
   //
   // Printing Reconstruction Parameters
   //
-  printf(" \t ---   Reconstruction -> EZN = %f TeV, EZP = %f TeV,  EZEM = %f GeV \n "		
+  printf(" \t ---   Reconstruction -> EZN1 = %f TeV, EZP1 = %f TeV,  EZEM1 = %f GeV ,  EZEM2 = %f GeV \n "		
+	 "EZN2 = %f TeV, EZP2 = %f TeV \n"
 	 " \t NDetSpecNLeft = %d, NDetSpecPLeft = %d, NspecnLeft = %d,"
 	 " NspecpLeft = %d, NpartLeft = %d"
 	 " \t NDetSpecNRight = %d, NDetSpecPRight = %d, NspecnRight = %d,"
 	 " NspecpRight = %d, NpartRight = %d"
 	 " \t b = %f fm\n ", 
-	 fZN1Energy,fZP1Energy,fZEMsignal,
+	 fZN1Energy,fZP1Energy,fZEM1signal,fZEM2signal, fZN2Energy, fZP2Energy,
 	 fNDetSpecNLeft,fNDetSpecPLeft,fNTrueSpecNLeft,fNTrueSpecPLeft,fNPartLeft,
 	 fNDetSpecNRight,fNDetSpecPRight,fNTrueSpecNRight,fNTrueSpecPRight,fNPartRight,
 	 fImpPar);

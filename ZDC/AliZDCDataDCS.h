@@ -12,7 +12,7 @@
 
 class AliZDCDataDCS : public TObject {
 public:
-	enum {kNAliases=26, kNGraphs=22};
+	enum {kNAliases=28, kNGraphs=24};
 
 	AliZDCDataDCS();
 	AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime);

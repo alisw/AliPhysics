@@ -144,6 +144,12 @@ void AliZDCDataDCS::Init()
    //
    fAliasNames[24]  = "ZDC_ZEM_HV0.actual.vMon";
    fAliasNames[25]  = "ZDC_ZEM_HV1.actual.vMon";
+   //
+   fAliasNames[26]  = "ZDC_ZEM_HV0.actual.vMon";
+   fAliasNames[27]  = "ZDC_ZEM_HV1.actual.vMon";
+   //
+   fAliasNames[28]  = "ZDC_REFA_HV0.actual.vMon";
+   fAliasNames[29]  = "ZDC_REFC_HV1.actual.vMon";
  
 }
 
