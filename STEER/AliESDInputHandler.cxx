@@ -47,8 +47,9 @@ AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
 {
 }
 
-Bool_t AliESDInputHandler::InitIO(Option_t* /*opt*/)
+Bool_t AliESDInputHandler::InitIO(Option_t* opt)
 {
+    if (!fTree) return kFALSE;
     // Get pointer to ESD event
     fEvent = new AliESDEvent();
     fEvent->ReadFromTree(fTree);

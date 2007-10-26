@@ -188,7 +188,7 @@ void AliAnalysisManager::Init(TTree *tree)
 
    if (fInputEventHandler) {
        fInputEventHandler->SetInputTree(tree);
-       fInputEventHandler->InitIO("");
+       fInputEventHandler->InitIO("proof");
    }
 
    if (!fInitOK) InitAnalysis();
@@ -234,9 +234,22 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
 	   fOutputEventHandler->InitIO("local");
        }
    }
-   if (fInputEventHandler && fMode == kLocalAnalysis) {
-       fInputEventHandler->SetInputTree(tree);
-       fInputEventHandler->InitIO("");
+   if (fInputEventHandler) {
+       if (fMode == kProofAnalysis) {
+	   fInputEventHandler->SetInputTree(tree);
+	   fInputEventHandler->InitIO("proof");
+       } else {
+	   fInputEventHandler->SetInputTree(tree);
+	   fInputEventHandler->InitIO("local");
+       }
+   }
+
+   if (fMCtruthEventHandler) {
+       if (fMode == kProofAnalysis) {
+	   fMCtruthEventHandler->InitIO("proof");
+       } else {
+	   fMCtruthEventHandler->InitIO("local");
+       }
    }
    
    //
@@ -272,7 +285,15 @@ Bool_t AliAnalysisManager::Notify()
 	while ((task=(AliAnalysisTask*)next())) 
 	    task->Notify();
 	
-	// Call Notify of the MC truth handler
+	// Call Notify of the event handlers
+	if (fInputEventHandler) {
+	    fInputEventHandler->Notify(curfile->GetName());
+	}
+
+	if (fOutputEventHandler) {
+	    fOutputEventHandler->Notify(curfile->GetName());
+	}
+
 	if (fMCtruthEventHandler) {
 	    fMCtruthEventHandler->Notify(curfile->GetName());
 	}
@@ -328,7 +349,7 @@ void AliAnalysisManager::PackOutput(TList *target)
       Error("PackOutput", "No target. Aborting.");
       return;
    }
-
+   if (fInputEventHandler)   fInputEventHandler  ->Terminate();
    if (fOutputEventHandler)  fOutputEventHandler ->Terminate();
    if (fMCtruthEventHandler) fMCtruthEventHandler->Terminate();
    
@@ -455,7 +476,9 @@ void AliAnalysisManager::Terminate()
       cout << "<-AliAnalysisManager::Terminate()" << endl;
    }   
    //
-   if (fOutputEventHandler) fOutputEventHandler->TerminateIO();
+   if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
+   if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
+   if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
 }
 
 //______________________________________________________________________________
@@ -748,9 +771,6 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    AliAnalysisTask *task;
    // Check if the top tree is active.
    if (fTree) {
-      if (fDebug>1) {
-         printf("AliAnalysisManager::ExecAnalysis\n");
-      }   
       TIter next(fTasks);
    // De-activate all tasks
       while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
@@ -777,6 +797,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       }
 //
 //    Call FinishEvent() for optional output and MC services 
+      if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
       if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
       if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
 //
@@ -798,7 +819,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    }   
 //
 // Call FinishEvent() for optional output and MC services 
-   if (fOutputEventHandler)  fOutputEventHandler->FinishEvent();
+   if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
+   if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
    if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
 }
 

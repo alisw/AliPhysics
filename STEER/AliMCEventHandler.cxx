@@ -91,10 +91,13 @@ AliMCEventHandler::~AliMCEventHandler()
     delete fFileTR;
 }
 
-Bool_t AliMCEventHandler::InitIO(Option_t* /*opt*/) 
+Bool_t AliMCEventHandler::InitIO(Option_t* opt) 
 { 
     // Initialize input
     //
+    if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
+    //
+
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
     if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
 
