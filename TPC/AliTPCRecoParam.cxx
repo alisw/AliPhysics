@@ -31,6 +31,7 @@ ClassImp(AliTPCRecoParam)
 
 //_____________________________________________________________________________
 AliTPCRecoParam::AliTPCRecoParam():
+  AliDetectorRecoParam(),
   fBClusterSharing(kTRUE),
   fCtgRange(1.05),       
   fMaxSnpTracker(0.95),
@@ -57,6 +58,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   //
   // constructor
   //
+  SetName("TPC");
+  SetTitle("TPC");
 }
 
 //_____________________________________________________________________________

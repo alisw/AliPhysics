@@ -10,9 +10,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "TObject.h"
+#include "AliDetectorRecoParam.h"
 
-class AliTPCRecoParam : public TObject
+class AliTPCRecoParam : public AliDetectorRecoParam
 {
  public: 
   AliTPCRecoParam();
