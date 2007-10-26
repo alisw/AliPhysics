@@ -990,6 +990,40 @@ Bool_t AliGeomManager::GetRotation(Int_t index, Double_t r[9])
   return kTRUE;
 }
 
+//_____________________________________________________________________________
+Bool_t AliGeomManager::GetDeltaForBranch(Int_t index, TGeoHMatrix &inclusiveD)
+{
+  // The method sets the matrix passed as argument as the global delta
+  // (for the volume referred by the unique index) including the displacements
+  // of all parent volumes in the branch.
+  //
+  const char* symname = SymName(index);
+  if(!symname) return kFALSE;
+
+  TGeoHMatrix go,invgo;
+  go = *GetOrigGlobalMatrix(index);
+  invgo = go.Inverse();
+  inclusiveD = *GetMatrix(symname);
+  inclusiveD.Multiply(&invgo);
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliGeomManager::GetDeltaForBranch(AliAlignObj& aao, TGeoHMatrix &inclusiveD)
+{
+  // The method sets the matrix passed as argument as the global delta
+  // (for the volume referred by the alignment object) including the displacements
+  // of all parent volumes in the brach.
+  //
+  Int_t index = aao.GetVolUID();
+  if(!index){
+    AliErrorClass("Either the alignment object or its index are not valid");
+    return kFALSE;
+  }
+  return GetDeltaForBranch(index, inclusiveD);
+}
+
 //______________________________________________________________________
 Bool_t AliGeomManager::GetOrigGlobalMatrix(const char* symname, TGeoHMatrix &m) 
 {

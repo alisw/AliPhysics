@@ -65,6 +65,8 @@ public:
   static Bool_t GetTranslation(Int_t index, Double_t t[3]);
   static Bool_t GetRotation(Int_t index, Double_t r[9]);
 
+  static Bool_t GetDeltaForBranch(AliAlignObj& aao, TGeoHMatrix &inclusiveD);
+  static Bool_t GetDeltaForBranch(Int_t index, TGeoHMatrix &inclusiveD);
   static TGeoHMatrix* GetOrigGlobalMatrix(Int_t index);
   static Bool_t GetOrigGlobalMatrix(const char *symname, TGeoHMatrix &m);
   static Bool_t GetOrigTranslation(Int_t index, Double_t t[3]);
