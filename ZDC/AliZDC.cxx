@@ -583,7 +583,7 @@ void AliZDC::Digits2Raw()
   UInt_t lADCEndBlockEvCount = gAlice->GetEventNrInRun();
   //  
   lADCEndBlock = lADCEndBlockGEO << 27 | 0x1 << 26 | lADCEndBlockEvCount;
-  printf("\t AliZDC::Digits2Raw -> ADCEndBlock = %d\n",lADCEndBlock);
+  //printf("\t AliZDC::Digits2Raw -> ADCEndBlock = %d\n",lADCEndBlock);
 
 
   // open the output file
