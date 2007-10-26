@@ -10,6 +10,8 @@ MODDIR:=@MODULE@
 MODDIRS:=$(MODDIR)
 MODDIRI:=$(MODDIR)
 MODDIRO:=$(MODDIR)/tgt_$(ALICE_TARGET)
+MODDIRC:=$(MODDIR)/check
+MODDIRZ:=$(MODDIR)/smell
 
 # Reseting variables before importing pkg-file
 SRCS:=

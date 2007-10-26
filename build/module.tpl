@@ -119,6 +119,8 @@ endif
 @PACKAGE@CAPITFO:=$(patsubst %.F,$(MODDIRO)/%.o, $(filter %.F, $(FSRCS)))
 @PACKAGE@FO:=$(@PACKAGE@SMALLFO) $(@PACKAGE@CAPITFO)
 @PACKAGE@O:= $(@PACKAGE@CXXO) $(@PACKAGE@FO) $(@PACKAGE@CO)
+@PACKAGE@CHV:=$(patsubst %,$(MODDIRC)/%, $(SRCS:.cxx=.viol))
+@PACKAGE@SML:=$(patsubst %,$(MODDIRZ)/%, $(SRCS:.cxx=.smell))
 
 
 
@@ -380,50 +382,39 @@ endif
 .PRECIOUS: $(patsubst %.c,$(MODDIRO)/%.d,$(CSRCS))
 .PRECIOUS: $(patsubst %.F,$(MODDIRO)/%.d,$(patsubst %.f,$(MODDIRO)/%.d,$(FSRCS)))
 
-@PACKAGE@CHECKS := $(patsubst %.cxx,@MODULE@/check/%.viol,$(SRCS))
-@PACKAGE@SRCDIR := $(dir $(word 1,$(patsubst %.cxx,@MODULE@/%.cxx,$(SRCS))))
-@PACKAGE@CHKDIR := $(dir $(word 1,$(@PACKAGE@CHECKS)))
-@PACKAGE@OBJDIR := $(dir $(word 1,$(patsubst %.cxx,@MODULE@/tgt_$(ALICE_TARGET)/%.cxx,$(SRCS))))
-
-check-@MODULE@: $(@PACKAGE@CHECKS)
+check-@MODULE@: $(@PACKAGE@CHV)
 
 # IRST coding rule check 
-$(@PACKAGE@CHKDIR)%.i : $(@PACKAGE@SRCDIR)%.cxx $(@PACKAGE@OBJDIR)%.d
+$(@PACKAGE@CHV:.viol=.i): $(MODDIRC)/%.i: $(MODDIR)/%.cxx $(MODDIRO)/%.d
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)$(CXX) -E $(@PACKAGE@DEFINE) $(@PACKAGE@INC) -I. $< > $@ $(@PACKAGE@CXXFLAGS)
 	@cd $(dir $@) ; $(IRST_INSTALLDIR)/patch/patch4alice.prl $(notdir $@)
 
 # IRST coding rule check
-@MODULE@/check/%.viol : @MODULE@/check/%.i
+$(@PACKAGE@CHV): $(MODDIRC)/%.viol: $(MODDIRC)/%.i
 	$(MUTE)echo $@ ; $(CODE_CHECK) $< $(shell echo $(dir $<) | sed -e 's:/check::') > $@
 
-@PACKAGE@PREPROC       = $(patsubst %.viol,%.i,$(@PACKAGE@CHECKS))
+.SECONDARY: $(@PACKAGE@CHV:.viol=.i) $(@PACKAGE@CHI:.viol=.ii)
 
-@PACKAGE@REVENGS       = $(patsubst %.viol,%.ii,$(@PACKAGE@CHECKS))
-
-.SECONDARY: $(@PACKAGE@REVENGS) $(@PACKAGE@PREPROC)
-
-PACKREVENG += $(@PACKAGE@PREPROC)
+PACKREVENG += $(@PACKAGE@CHV:.viol=.ii)
 
 # IRST code smell checker
 
-@PACKAGE@SMELL := $(patsubst %.cxx,@MODULE@/smell/%.smell,$(SRCS))
+smell-@MODULE@: $(@PACKAGE@SML)
 
-smell-@MODULE@: $(@PACKAGE@SMELL)
-
-@MODULE@/smell/%_cxx.ml : @MODULE@/%.cxx
+$(@PACKAGE@SML:.smell=_cxx.ml) : $(MODDIRZ)/%_cxx.ml : $(MODDIR)/%.cxx
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)src2srcml $< $@
 
-@MODULE@/smell/%_h.ml : @MODULE@/%.h 
+$(@PACKAGE@SML:.smell=_h.ml) : $(MODDIRZ)/%_h.ml : $(MODDIR)/%.h
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	$(MUTE)src2srcml $< $@
 
-@MODULE@/smell/%.smell : @MODULE@/smell/%_cxx.ml @MODULE@/smell/%_h.ml
+$(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 	$(MUTE)echo smelling $@
-	java -classpath $(SMELL_DETECTOR_DIR):$(SMELL_DETECTOR_DIR)/xom-1.1.jar -Xmx500m SmellDetector $? > $@
+	$(MUTE)java -classpath $(SMELL_DETECTOR_DIR):$(SMELL_DETECTOR_DIR)/xom-1.1.jar -Xmx500m SmellDetector $? > $@
 
-.PRECIOUS: $(patsubst %.cxx,@MODULE@/smell/%_h.ml,$(SRCS)) $(patsubst %.cxx,@MODULE@/smell/%_cxx.ml,$(SRCS))
+.SECONDARY: $(@PACKAGE@SML:.smell=_cxx.ml) $(@PACKAGE@SML:.smell=_h.ml)
 
 # targets to create .par archives (jgrosseo)
 @PACKAGE@.par: $(patsubst %,@MODULE@/@PACKAGE@/%,$(filter-out dict.%, $(HDRS) $(SRCS) $(DHDR) $(PKGFILE) Makefile Makefile.arch lib@PACKAGE@.pkg PROOF-INF))
