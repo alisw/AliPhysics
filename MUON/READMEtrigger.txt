@@ -20,7 +20,7 @@ Note: rec points from tracking chamber will be lost.
 Usage:
 <pre>
 root [0] .L $ALICE_ROOT/MUON/MUONTrigger.C+
-root [1] MUONTrigger()
+root [1] MUONTrigger("galice.root")
 </pre>
 
 

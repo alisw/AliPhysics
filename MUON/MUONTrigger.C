@@ -23,20 +23,25 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliRun.h"
 #include "AliMUON.h"
-#include "AliMUONLoader.h"
-#include "AliMUONData.h"
 #include "AliMUONDigit.h"
 #include "AliMUONTriggerElectronics.h"
 #include "AliMUONCalibrationData.h"
 #include "AliCDBManager.h"
+#include "AliMUONDataInterface.h"
+#include "AliMUONMCDataInterface.h"
+#include "AliMUONVTriggerStore.h"
+#include "AliMUONDigitStoreV1.h"
 #include <TClonesArray.h>
+#include "AliMpCDB.h"
+#include <TFile.h>
 #endif
-void MUONTrigger(char * FileNameSim="galice_sim.root", char * FileName="galice.root")
+
+void MUONTrigger(const char* filename)
 {
     // Creating Run Loader and openning file containing Digits 
-    AliRunLoader * RunLoader = AliRunLoader::Open(FileName,"MUONLoader","UPDATE");
+    AliRunLoader * RunLoader = AliRunLoader::Open(filename,"MUONLoader","UPDATE");
     if (RunLoader ==0x0) {
-        printf(">>> Error : Error Opening %s file \n",FileName);
+        printf(">>> Error : Error Opening %s file \n",filename);
         return;
     }
     // Loading AliRun master
@@ -44,82 +49,96 @@ void MUONTrigger(char * FileNameSim="galice_sim.root", char * FileName="galice.r
     gAlice = RunLoader->GetAliRun();
     
     // Loading MUON subsystem
-    AliLoader * MUONLoader = RunLoader->GetLoader("MUONLoader");
+    AliLoader* MUONLoader = RunLoader->GetDetectorLoader("MUON");
     MUONLoader->LoadDigits("READ");
-    MUONLoader->LoadRecPoints("UPDATE"); // absolutely essential !!!
-    
-    Int_t nevents;
-    nevents = RunLoader->GetNumberOfEvents();
-    
-    // Creating MUON data container
-    AliMUONData* MUONData = new AliMUONData(MUONLoader,"MUON","MUON");
+    MUONLoader->LoadRecPoints("UPDATE"); // absolutely essential !!!    
     
     // Creating MUONTriggerDecision
-    TTask *TriggerProcessor;
     AliCDBManager* cdbManager = AliCDBManager::Instance();
     cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
-    Int_t runnumber = gAlice->GetRunNumber();
+    
+    Int_t runnumber = cdbManager->GetRun();
+    AliMpCDB::LoadDDLStore();
+    
     AliMUONCalibrationData *CalibrationData = new AliMUONCalibrationData(runnumber);
-    TriggerProcessor = new AliMUONTriggerElectronics(MUONData,CalibrationData);
+    AliMUONTriggerElectronics *TriggerProcessor	= new AliMUONTriggerElectronics(CalibrationData);
     
-    // Testing if Trigger has already been done
-    RunLoader->GetEvent(0);    
-    if (MUONLoader->TreeR()) {
-	if (MUONData->IsTriggerBranchesInTree()) {
-	    MUONLoader->UnloadRecPoints();
-	    MUONLoader->LoadRecPoints("RECREATE");
-	    printf("Recreating recpoints files\n");
-	}
-    }
-    
-    AliMUONDigit * mDigit;    
-    Float_t digits[7];
+    Int_t nevents = RunLoader->GetNumberOfEvents();
+    AliMUONVDigitStore* digitStore=0x0;
+    AliMUONVTriggerStore* triggerStore=0x0;
     
     for(Int_t ievent = 0; ievent < nevents; ievent++) {
 	printf(">>> Event %i out of %i \n",ievent,nevents);
-	RunLoader->GetEvent(ievent);
-	MUONData->SetTreeAddress("D");
+	RunLoader->GetRunLoader()->GetEvent(ievent);
 	
-	MUONData->GetDigits();
-	for(Int_t ichamber=10; ichamber<14; ichamber++) {	    
-	    Int_t ndigits = (Int_t) MUONData->Digits(ichamber)->GetEntriesFast();
-	    for(Int_t idigit=0; idigit<ndigits; idigit++) {
-		mDigit = static_cast<AliMUONDigit*>(MUONData->Digits(ichamber)->At(idigit));		 
-		
-		digits[0] = mDigit->PadX();
-		digits[1] = mDigit->PadY();
-		digits[2] = mDigit->Cathode();
-		digits[3] = mDigit->Charge();
-		digits[4] = mDigit->Physics();
-		digits[5] = mDigit->Hit();
-		digits[6] = mDigit->DetElemId();
-		
-//		printf("ichamber ix iy %d %d %d \n",ichamber,mDigit->PadX(),mDigit->PadY());
-		
-	    } // loop on digits
-	} // loop on chambers
+	MUONLoader->LoadRecPoints("update");
+	MUONLoader->CleanRecPoints();
+	MUONLoader->MakeRecPointsContainer();
+	TTree* clustersTree = MUONLoader->TreeR();
+	TFile* cfile = clustersTree->GetCurrentFile();
+	if ( !cfile ) 
+	{
+	    cout << " could not find Cluster file " << endl;
+	    return;
+	}
 	
+	MUONLoader->LoadDigits("read");
+	TTree* digitsTree = MUONLoader->TreeD();
+	TFile* dfile = digitsTree->GetCurrentFile();
+	if ( !dfile ) 
+	{
+	    cout << " could not find Digit file " << endl;
+	    return;
+	}
 	
-	if (MUONLoader->TreeR() == 0x0) {	
-	    MUONLoader->MakeRecPointsContainer();
-	} else {
-	    if (MUONData->IsTriggerBranchesInTree()){ 
-		if (ievent==0) MUONLoader->UnloadRecPoints();
-		MUONLoader->MakeRecPointsContainer();
-		cout << "Recreating RecPointsContainer and deleting previous ones" << "\n";
+// here start reconstruction	
+	if (!digitStore) digitStore = AliMUONVDigitStore::Create(*digitsTree);	
+	if (!triggerStore) triggerStore = AliMUONVTriggerStore::Create(*digitsTree);
+	// insure we start with empty stores
+	if ( digitStore ) 
+	{
+	    digitStore->Clear(); 
+	    Bool_t alone = ( triggerStore ? kFALSE : kTRUE );
+	    Bool_t ok = digitStore->Connect(*digitsTree,alone);
+	    if (!ok)
+	    {
+		cerr << "Could not connect digitStore to digitsTree \n";
+		return;
 	    }
-	}	
+	} else {
+	    cerr << "digitStore does not exist " << "\n";
+	    return;
+	}
 	
-	MUONData->MakeBranch("TC");	
-	MUONData->SetTreeAddress("TC");
-	TriggerProcessor->ExecuteTask();
+	digitsTree->GetEvent(0);
+	
+// process trigger response
+	TriggerProcessor->Digits2Trigger(*digitStore,*triggerStore);
+	
+	//triggerStore->Print();
+	
+	Bool_t ok(kFALSE);
+	if ( triggerStore ) {
+	    ok = triggerStore->Connect(*clustersTree,kTRUE);
+	    if (!ok)
+	    {
+		cerr << "Could not create triggerStore branches in TreeR " << "\n";
+		return;
+	    }
+	} else {
+	    cerr << "triggerStore does not exist " << "\n";
+	    return;
+	}
 
-	MUONData->Fill("TC");
-	MUONLoader->WriteRecPoints("OVERWRITE");  
-        MUONData->ResetDigits();
+// fill TreeR
+	clustersTree->Fill();
+	MUONLoader->UnloadDigits();
+	MUONLoader->WriteRecPoints("OVERWRITE");
+	MUONLoader->UnloadRecPoints();
 
-    } // loop on events
-    MUONLoader->UnloadDigits();
-    MUONLoader->UnloadRecPoints();
+    }  // loop on events
+
 }
+
+
 
