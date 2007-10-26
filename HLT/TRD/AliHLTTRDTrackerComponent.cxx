@@ -61,9 +61,6 @@ AliHLTTRDTrackerComponent::AliHLTTRDTrackerComponent()
   , fTracker(NULL)
 {
   // Default constructor
-  fCDB = AliCDBManager::Instance();
-  //fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
-  fCDB->SetRun(0);
 
   fGeometryFileName = getenv("ALICE_ROOT");
   fGeometryFileName += "/HLT/TRD/geometry.root";
@@ -144,7 +141,6 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
 	    }
 	  fStrorageDBpath = argv[i+1];
 	  Logging( kHLTLogInfo, "HLT::TRDTracker::DoInit", "DB storage set", "DB storage is %s", fStrorageDBpath.c_str() );	  
-	  fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
 	  i += 2;
 	  continue;
 	}      
@@ -173,6 +169,18 @@ int AliHLTTRDTrackerComponent::DoInit( int argc, const char** argv )
     AliTracker::SetFieldMap(fField,1);
   else
     Logging(kHLTLogError, "HLT::TRDTracker::DoInit", "Field", "Unable to init the field");
+
+  fCDB = AliCDBManager::Instance();
+  if (!fCDB)
+    {
+      Logging(kHLTLogError, "HLT::TRDCalibration::DoInit", "Could not get CDB instance", "fCDB 0x%x", fCDB);
+    }
+  else
+    {
+      fCDB->SetRun(0); // THIS HAS TO BE RETRIEVED !!!
+      fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
+      Logging(kHLTLogDebug, "HLT::TRDCalibration::DoInit", "CDB instance", "fCDB 0x%x", fCDB);
+    }
     
   fGeometryFile = TFile::Open(fGeometryFileName.c_str());
   if (fGeometryFile)
