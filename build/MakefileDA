@@ -303,14 +303,17 @@ $(DATARGETNAME)-rpm:
 	@echo
 	@echo "*******************************************************************************************************"
 	@echo "* In order to build a detector-algorithm package you have run AliRoot make with the following syntax: *"
-	@echo "* For example: make TPC-da (compiles and link TPC/TPCda.cxx DA source file and produces TPCda.exe)    *"
-	@echo "*              make MUON-TRK-da (MUON is the AliRoot module, TRK is the name of the DA algorithm,     *"
-	@echo "*                                this target will compile and link MUON/MUONTRKda.cxx and will        *"
-	@echo "*                                produce MUONTRKda.exe)                                               *"
+	@echo "* For example: make daqDA-TPC (compiles and link all the TPC DAs and produces the corresponding DA    *"
+	@echo "*			     executables)                                                            *"
+	@echo "*              make daqDA-MCH (MCH is the online code for MUON TRK detector.                          *"
+	@echo "*                              this target will compile and link MUON/MUONTRKda.cxx and will          *"
+	@echo "*                              produce MUONTRKda.exe)                                                 *"
 	@echo "* In case you want to build the corresponding DA binary RPM, you have to add -rpm to your target name,*"
 	@echo "* for example:                                                                                        *"
-	@echo "*              make TOF-da-rpm  (compiles, links TOF/TOFda.cxx and builds the TOF DA binary RPM)      *"
-	@echo "*              make ITS-SPD-da-rpm (compiles, link ITS/ITSSPDda.cxx and builds ITS SPD DA binary RPM) *"
+	@echo "*              make daqDA-TOF-rpm  (compiles, links TOF/TOFda.cxx and builds the TOF DA binary RPM)   *"
+	@echo "*              make daqDA-SPD-rpm (compiles, link ITS/ITSSPDda.cxx and builds ITS SPD DA binary RPM)  *"
+	@echo "* For more details about the DA targets, please refer to:                                             *"
+	@echo "* http://aliceinfo.cern.ch/static/people/cheshkov/da-packaging/                                       *"
 	@echo "*******************************************************************************************************"
 	@echo
 
