@@ -241,7 +241,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fAlignObjArray(NULL),
   fCDBUri(cdbUri),
   fRemoteCDBUri(""),
-  fSpecCDBUri()
+  fSpecCDBUri(), 
+  fRunQA(kTRUE) 
+
 {
 // create reconstruction object with default parameters
   
@@ -302,7 +304,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fAlignObjArray(rec.fAlignObjArray),
   fCDBUri(rec.fCDBUri),
   fRemoteCDBUri(rec.fRemoteCDBUri),
-  fSpecCDBUri()
+  fSpecCDBUri(), 
+  fRunQA(kTRUE)
 {
 // copy constructor
 
@@ -950,11 +953,12 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   //QA 
-  AliQADataMakerSteer qas ; 
-  qas.Run(AliQA::kRECPOINTS) ;
-  qas.Reset() ;
-  qas.Run(AliQA::kESDS) ;
-
+  if ( fRunQA ) {
+	AliQADataMakerSteer qas ; 
+	qas.Run(AliQA::kRECPOINTS) ;
+	qas.Reset() ;
+	qas.Run(AliQA::kESDS) ;
+  }
   return kTRUE;
 }
 

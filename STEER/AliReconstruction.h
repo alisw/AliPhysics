@@ -147,6 +147,7 @@ private:
 //  AliQADataMaker*      GetQADataMaker(Int_t iDet);
 //  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
+  void        SetQA(const Bool_t val) { fRunQA = val ; } 
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -205,8 +206,9 @@ private:
   //Quality Assurance
 //  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
 //  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
+  Bool_t              fRunQA ;                        // Runs the QA at the end of simulation
 
-  ClassDef(AliReconstruction, 15)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 16)      // class for running the reconstruction
 };
 
 #endif

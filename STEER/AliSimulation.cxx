@@ -175,6 +175,7 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fRemoteCDBUri(""),
   fSpecCDBUri(),
   fEmbeddingFlag(kFALSE),
+  fRunQA(kTRUE), 
   fRunHLT("default")
 {
 // create simulation object with default parameters
@@ -215,6 +216,7 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fRemoteCDBUri(sim.fRemoteCDBUri),
   fSpecCDBUri(),
   fEmbeddingFlag(sim.fEmbeddingFlag),
+  fRunQA(kTRUE), 
   fRunHLT(sim.fRunHLT)
 {
 // copy constructor
@@ -536,9 +538,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   }
 
   //QA
-  if (!RunQA("ALL", AliQA::kHITS))
-	if (fStopOnError) 
-		return kFALSE ;   	
+  if (fRunQA) 
+	if (!RunQA("ALL", AliQA::kHITS))
+		if (fStopOnError) 
+			return kFALSE ;   	
 
   // Set run number in CDBManager (if it is not already set in RunSimulation)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
@@ -556,7 +559,8 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
   //QA
-    RunQA(fMakeSDigits, AliQA::kSDIGITS) ;   
+	if (fRunQA) 
+		RunQA(fMakeSDigits, AliQA::kSDIGITS) ;   
   }
   
 
@@ -566,9 +570,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
       if (fStopOnError) return kFALSE;
     }
     //QA
-    if (!RunQA(fMakeDigits, AliQA::kDIGITS) )   	
-		if (fStopOnError) 
-			return kFALSE ;   	
+	if (fRunQA) 
+		if (!RunQA(fMakeDigits, AliQA::kDIGITS) )   	
+			if (fStopOnError) 
+				return kFALSE ;   	
   }
 
   // hits -> digits
@@ -583,9 +588,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
       if (fStopOnError) return kFALSE;
     }
 	//QA
-	if( !RunQA(fMakeDigitsFromHits, AliQA::kDIGITS) )   	
-		if (fStopOnError) 
-			return kFALSE ;   	
+	if (fRunQA) 
+		if( !RunQA(fMakeDigitsFromHits, AliQA::kDIGITS) )   	
+			if (fStopOnError) 
+				return kFALSE ;   	
 
   }
 
