@@ -131,7 +131,7 @@ Bool_t AliZDCRawStream::Next()
           fSector[1] = vADCChannel-8;
         } 
         else if(vADCChannel == 5 || vADCChannel == 13){
-          fSector[0] = (vADCChannel-5)/8+1; // PM Ref 1,2
+          fSector[0] = (vADCChannel-5)*3/8+1; // PM Ref 1,2
           fSector[1] = 5;
         }
       }
