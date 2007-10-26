@@ -46,7 +46,7 @@ private:
   		Float_t* ZP1ADCCorrHG, Float_t* ZN2ADCCorrHG, 
 		Float_t* ZP2ADCCorrHG, Float_t* ZN1ADCCorrLG, 
 		Float_t* ZP1ADCCorrLG, Float_t* ZN2ADCCorrLG, 
-		Float_t* ZP2ADCCorrLG, Float_t ZEM1ADCCorrHG, Float_t ZEM2ADCCorrHG) const;
+		Float_t* ZP2ADCCorrLG, Float_t ZEMADCCorrHG) const;
   void   FillZDCintoESD(TTree *clustersTree, AliESDEvent*esd) const;
 
   TF1*   fZNCen;     //! Nspectator n true vs. EZN
