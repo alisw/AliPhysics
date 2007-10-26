@@ -696,8 +696,6 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   //
   // Getting calibration object for ZDC set
   AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("local://$ALICE_ROOT");
-  man->SetRun(0);
   AliCDBEntry  *entry = man->Get("ZDC/Calib/Data");
   AliZDCCalibData *CalibData = (AliZDCCalibData*) entry->GetObject();
   //
