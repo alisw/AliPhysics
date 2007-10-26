@@ -31,6 +31,7 @@ class TF1;
 class TH1F;
 class TObjArray;
 class TTree;
+class TChain;
 
 class AliESD;
 
@@ -48,6 +49,7 @@ public:
   TObjArray * GetTOFCalArrayOffline() const {return fTOFCalOffline;}
   TH1F * GetTOFSimToT() const {return fTOFSimToT;}
   TTree * GetTOFCalibTree() const {return fTree;}
+  TChain * GetTOFCalibChain() const {return fChain;}
   const char * GetOfflineValidity() const {return fkValidity;}
   void SetOfflineValidity(const char* validity) {fkValidity = validity;}
   Int_t NChannels()const{return fNChannels;}
@@ -65,6 +67,7 @@ public:
   void CreateTreeFromCDB(Int_t minrun, Int_t maxrun);
   void CreateTreeFromFile(Int_t minrun, Int_t maxrun);
   void CreateTreeFromGrid(Int_t minrun, Int_t maxrun);
+  void CreateChainFromGrid(Int_t minrun, Int_t maxrun);
   Int_t Calibrate(Option_t *optionSave="", Option_t *optionFit="RQ");
   Int_t Calibrate(Int_t nch,Int_t *ich, Option_t *optionSave="", Option_t *optionFit="RQ");
   Int_t Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave="", Option_t *optionFit="RQ");
@@ -86,11 +89,12 @@ private:
   TH1F *fTOFSimToT;        // histo with realistic ToT signal from TB Data
   const char *fkValidity;  // validity for offline calibration object
   TTree *fTree;            // tree for TOF calibration
+  TChain *fChain;          // chain for TOF calibration
   Int_t fNruns;            // number of runs to be processed
   Int_t fFirstRun;            // first run for calibration obj validity
   Int_t fLastRun;            // last run for calib obj validity
 
-  ClassDef(AliTOFcalib,4);
+  ClassDef(AliTOFcalib,5);
 };
 
 #endif // AliTOFcalib_H

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.19  2007/10/23 15:27:38  zampolli
+Rearrangement of Calibration objects for simulation
+
 Revision 1.16  2007/10/08 10:13:26  zampolli
 First Run and Last Run members added, infinite validity of calib obj implemented.
 
@@ -80,6 +83,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TTree.h"
+#include "TChain.h"
 #include "TProfile.h"
 #include "TGrid.h"
 
@@ -113,6 +117,7 @@ AliTOFcalib::AliTOFcalib():
   fTOFSimToT(0x0),
   fkValidity(0x0),
   fTree(0x0),
+  fChain(0x0),
   fNruns(0),
   fFirstRun(0),
   fLastRun(AliCDBRunRange::Infinity())
@@ -130,6 +135,7 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fTOFSimToT(calib.fTOFSimToT),
   fkValidity(calib.fkValidity),
   fTree(calib.fTree),
+  fChain(calib.fChain),
   fNruns(calib.fNruns),
   fFirstRun(calib.fFirstRun),
   fLastRun(calib.fLastRun)
@@ -153,6 +159,7 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
   this->fTOFSimToT = calib.fTOFSimToT;
   this->fkValidity = calib.fkValidity;
   this->fTree = calib.fTree;
+  this->fChain = calib.fChain;
   this->fNruns = calib.fNruns;
   this->fFirstRun = calib.fFirstRun;
   this->fLastRun = calib.fLastRun;
@@ -172,15 +179,14 @@ AliTOFcalib::~AliTOFcalib()
   //TOF Calibration Class dtor
   if(!(AliCDBManager::Instance()->GetCacheFlag())){ // CDB objects must NOT be deleted if cache is active!
     if (fTOFCalOnline){
-      //      fTOFCalOnline->Clear();
       delete fTOFCalOnline;
     }
     if (fTOFCalOffline){
-      //fTOFCalOffline->Clear();
       delete fTOFCalOffline;
     }
   }
   if (fTree!=0x0) delete fTree;
+  if (fChain!=0x0) delete fChain;
 }
 //_____________________________________________________________________________
 void AliTOFcalib::CreateCalArrays(){
@@ -486,6 +492,26 @@ void AliTOFcalib::CreateTreeFromFile(Int_t minrun, Int_t maxrun){
   AliInfo(Form("Number of runs being analyzed %i",fNruns));
 }
 //-----------------------------------------------------------------------------
+void AliTOFcalib::CreateChainFromGrid(Int_t minrun, Int_t maxrun){
+
+  // creating the chain with the trees for calibration
+  // collecting them from the Grid 
+  // from minrun to maxrun
+
+  fChain = new TChain("T");
+  AliInfo("connected to alien");
+  TGrid::Connect("alien://");
+  
+  Char_t filename[100];
+  for (Int_t irun = minrun;irun<=maxrun;irun++){
+    sprintf(filename,"alien:///alice/cern.ch/user/c/czampolli/TOFCalibReference_%i.root",irun);
+    fChain->Add(filename);
+    fNruns++;    
+  }
+  
+  AliInfo(Form("Number of runs being analyzed %i",fNruns));
+}
+//-----------------------------------------------------------------------------
 Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, Option_t *optionFit){
 
   // calibrating summing more than one channels
@@ -504,15 +530,18 @@ Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, O
 
   Float_t p[CHENTRIESSMALL];
   Int_t nentries;
-  fTree->SetBranchAddress("nentries",&nentries);
-  fTree->SetBranchAddress("TOFentries",p);
+  //fTree->SetBranchAddress("nentries",&nentries);
+  //fTree->SetBranchAddress("TOFentries",p);
+  fChain->SetBranchAddress("nentries",&nentries);
+  fChain->SetBranchAddress("TOFentries",p);
 
   Float_t ntracksTotalmean =0;
   for (Int_t i=ichmin; i<ichmax; i++){
     Int_t ientry = -1;
     for (Int_t irun=0;irun<fNruns;irun++){
       ientry = i+irun*fNChannels;
-      fTree->GetEntry(ientry);
+      //fTree->GetEntry(ientry);
+      fChain->GetEntry(ientry);
       Int_t ntracksRun=nentries/3;
       ntracksTotalmean+=ntracksRun;
     }
@@ -541,7 +570,8 @@ Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, O
     Int_t ientry = -1;
     for (Int_t irun=0;irun<fNruns;irun++){
       ientry = i+irun*fNChannels;
-      fTree->GetEntry(ientry);
+      //fTree->GetEntry(ientry);
+      fChain->GetEntry(ientry);
       ntracksTotal+=nentries/3;
       ntracksRun=nentries/3;
       AliDebug(2,Form("run %i, channel %i, nentries = %i, ntracks = %i",irun,i,nentries, ntracksRun));
@@ -571,7 +601,8 @@ Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, O
     Int_t ientry = -1;
     for (Int_t i=ichmin; i<ichmax; i++){
       ientry = i+irun*fNChannels;
-      fTree->GetEntry(ientry);
+      //fTree->GetEntry(ientry);
+      fChain->GetEntry(ientry);
       ntracksRun=nentries/3;
       for (Int_t j=0;j<ntracksRun;j++){
 	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
@@ -642,14 +673,17 @@ Int_t AliTOFcalib::Calibrate(Int_t i, Option_t *optionSave, Option_t *optionFit)
 
   Float_t p[MAXCHENTRIESSMALL];
   Int_t nentries;
-  fTree->SetBranchAddress("nentries",&nentries);
-  fTree->SetBranchAddress("TOFentries",p);
+  //fTree->SetBranchAddress("nentries",&nentries);
+  //fTree->SetBranchAddress("TOFentries",p);
+  fChain->SetBranchAddress("nentries",&nentries);
+  fChain->SetBranchAddress("TOFentries",p);
 
   Float_t ntracksTotal =0;
   for (Int_t irun=0;irun<fNruns;irun++){
     Int_t ientry = -1;
     ientry = i+irun*fNChannels;
-    fTree->GetEntry(ientry);
+    //fTree->GetEntry(ientry);
+    fChain->GetEntry(ientry);
     ntracksTotal+=nentries/3;    
   }
   
@@ -674,7 +708,8 @@ Int_t AliTOFcalib::Calibrate(Int_t i, Option_t *optionSave, Option_t *optionFit)
   for (Int_t irun=0;irun<fNruns;irun++){
     Int_t ientry = -1;
     ientry = i+irun*fNChannels;
-    fTree->GetEntry(ientry);
+    //fTree->GetEntry(ientry);
+    fChain->GetEntry(ientry);
     ntracksRun=nentries/3;
     AliDebug(2,Form("run %i, channel %i, nentries = %i, ntracksRun = %i",irun, i ,nentries, ntracksRun));
     for (Int_t j=0;j<ntracksRun;j++){
@@ -701,7 +736,8 @@ Int_t AliTOFcalib::Calibrate(Int_t i, Option_t *optionSave, Option_t *optionFit)
   for (Int_t irun=0;irun<fNruns;irun++){
     Int_t ientry = -1;
     ientry = i+irun*fNChannels;
-    fTree->GetEntry(ientry);
+    //fTree->GetEntry(ientry);
+    fChain->GetEntry(ientry);
     ntracksRun=nentries/3;
     for (Int_t j=0;j<ntracksRun;j++){
       Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
@@ -776,8 +812,10 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
   }
   Float_t p[MAXCHENTRIESSMALL];
   Int_t nentries;
-  fTree->SetBranchAddress("nentries",&nentries);
-  fTree->SetBranchAddress("TOFentries",p);
+  //fTree->SetBranchAddress("nentries",&nentries);
+  //fTree->SetBranchAddress("TOFentries",p);
+  fChain->SetBranchAddress("nentries",&nentries);
+  fChain->SetBranchAddress("TOFentries",p);
 
   Float_t ntracksTotalmean =0;
   for (Int_t ich=0; ich<nch; ich++){
@@ -785,7 +823,8 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
       Int_t i = ch[ich];
       for (Int_t irun=0;irun<fNruns;irun++){
       ientry = i+irun*fNChannels;
-      fTree->GetEntry(ientry);
+      //fTree->GetEntry(ientry);
+      fChain->GetEntry(ientry);
       ntracksTotalmean+=nentries/3;
     }
   }
@@ -819,7 +858,8 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
     for (Int_t irun=0;irun<fNruns;irun++){
       i = ch[ich]+irun*fNChannels;
       AliDebug(2,Form("Calibrating channel %i",i));
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksTotal+=nentries/3;
     }
     if (ntracksTotal < MEANENTRIES) {
@@ -829,7 +869,8 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
   
     for (Int_t irun=0;irun<fNruns;irun++){
       Int_t i = ch[ich]+irun*fNChannels;
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksRun=nentries/3;
       for (Int_t j=0;j<ntracksRun;j++){
 	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
@@ -851,7 +892,8 @@ Int_t AliTOFcalib::Calibrate(Int_t nch, Int_t *ch, Option_t *optionSave, Option_
     TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
     for (Int_t irun=0;irun<fNruns;irun++){
       Int_t i = ch[ich]+irun*fNChannels;
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksRun=nentries/3;
       for (Int_t j=0;j<ntracksRun;j++){
 	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
@@ -924,12 +966,15 @@ Int_t AliTOFcalib::CalibrateFromProfile(Int_t ich, Option_t *optionSave, Option_
   Float_t p[MAXCHENTRIESSMALL];
   Int_t nentries;
   Int_t ntracksTotal=0;
-  fTree->SetBranchAddress("nentries",&nentries);
-  fTree->SetBranchAddress("TOFentries",p);
+  //fTree->SetBranchAddress("nentries",&nentries);
+  //fTree->SetBranchAddress("TOFentries",p);
+  fChain->SetBranchAddress("nentries",&nentries);
+  fChain->SetBranchAddress("TOFentries",p);
 
   for (Int_t irun=0;irun<fNruns;irun++){
     Int_t i = ich+irun*fNChannels;
-    fTree->GetEntry(i);
+    //fTree->GetEntry(i);
+    fChain->GetEntry(i);
     ntracksTotal+=nentries/3;
   }
 
@@ -989,14 +1034,17 @@ Int_t AliTOFcalib::Calibrate(Option_t *optionSave, Option_t *optionFit){
 
   Float_t p[MAXCHENTRIESSMALL];
   Int_t nentries;
-  fTree->SetBranchAddress("nentries",&nentries);
-  fTree->SetBranchAddress("TOFentries",p);
+  //fTree->SetBranchAddress("nentries",&nentries);
+  //fTree->SetBranchAddress("TOFentries",p);
+  fChain->SetBranchAddress("nentries",&nentries);
+  fChain->SetBranchAddress("TOFentries",p);
 
   Float_t ntracksTotalmean =0;
   for (Int_t ii=0; ii<fNChannels; ii++){
     for (Int_t irun=0;irun<fNruns;irun++){
       Int_t i = ii+irun*fNChannels;
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksTotalmean+=nentries/3;
     }
   }
@@ -1025,7 +1073,8 @@ Int_t AliTOFcalib::Calibrate(Option_t *optionSave, Option_t *optionFit){
     Int_t ntracksTotal = 0;
     for (Int_t irun=0;irun<fNruns;irun++){
       Int_t i = ii+irun*fNChannels;
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksTotal+=nentries/3;
     }
     if (ntracksTotal < MEANENTRIES) {
@@ -1035,7 +1084,8 @@ Int_t AliTOFcalib::Calibrate(Option_t *optionSave, Option_t *optionFit){
     Float_t meantime=0;
     for (Int_t irun=0;irun<fNruns;irun++){
       Int_t i = ii+irun*fNChannels;
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksRun=nentries/3;
       for (Int_t j=0;j<ntracksRun;j++){
 	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
@@ -1055,7 +1105,8 @@ Int_t AliTOFcalib::Calibrate(Option_t *optionSave, Option_t *optionFit){
     TProfile* hSlewingProf = new TProfile("hSlewingProf", "hSlewingProf",nusefulbins, binsProfile, "G");  // CHECK THE BUILD OPTION, PLEASE!!!!!!
     for (Int_t irun=0;irun<fNruns;irun++){
       Int_t i = ii+irun*fNChannels;
-      fTree->GetEntry(i);
+      //fTree->GetEntry(i);
+      fChain->GetEntry(i);
       ntracksRun=nentries/3;
       for (Int_t j=0;j<ntracksRun;j++){
 	Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
@@ -1116,8 +1167,10 @@ TH1F* AliTOFcalib::Profile(Int_t ich)
 
   Float_t p[MAXCHENTRIESSMALL];
   Int_t nentries;
-  fTree->SetBranchAddress("nentries",&nentries);
-  fTree->SetBranchAddress("TOFentries",p);
+  //fTree->SetBranchAddress("nentries",&nentries);
+  //fTree->SetBranchAddress("TOFentries",p);
+  fChain->SetBranchAddress("nentries",&nentries);
+  fChain->SetBranchAddress("TOFentries",p);
 
   //Prepare histograms for Slewing Correction
   const Int_t knbinToT = 100;
@@ -1153,7 +1206,8 @@ TH1F* AliTOFcalib::Profile(Int_t ich)
   TH1F *histo = new TH1F("histo", "1D Time vs ToT", knbinToT, minToT, maxToT);
   for (Int_t irun=0;irun<fNruns;irun++){
     Int_t i = ich+irun*fNChannels;
-    fTree->GetEntry(i);
+    //fTree->GetEntry(i);
+    fChain->GetEntry(i);
     ntracksRun=nentries/3;
     for (Int_t j=0;j<ntracksRun;j++){
       Int_t idxexToT = (j* NIDXSMALL)+DELTAIDXTOT; 
