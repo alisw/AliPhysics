@@ -29,8 +29,6 @@ public:
   
   AliT0Parameters();
   virtual ~AliT0Parameters() {};
-  AliT0Parameters(const  AliT0Parameters&);
-  AliT0Parameters& operator=(const AliT0Parameters&);
  
   void Init();  
   void InitIfOnline();
@@ -115,6 +113,10 @@ public:
   AliCDBEntry*   fCalibentry ;  // pointer to T0 calibration object
   AliCDBEntry*   fLookUpentry ;  // pointer to T0 lokkup table
   AliCDBEntry*   fSlewCorr ;  // pointer to slewing correction
+
+ private:
+  AliT0Parameters(const  AliT0Parameters&);
+  AliT0Parameters& operator=(const AliT0Parameters&);
   
   ClassDef(AliT0Parameters,4)
  
