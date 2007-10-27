@@ -49,6 +49,13 @@ Float_t AliMUONConstants::fgDefaultChamberZ[14] =
    -967.5, -998.5, -1276.5, -1307.5, -1406.6, -1437.6,// updated 08/05, EDMS id 335328 (A. Tournaire)
    -1603.5, -1620.5, -1703.5, -1720.5}; // M1 & M2
 
+
+// These are used by AliMUONConstants::ChamberNumber and must be calculated once
+// by that method from fgDzCh, fgDzSlat, fgDefaultChamberZ and fgSt345inclination,
+// so for now we set everything to zero.
+Float_t AliMUONConstants::fgDefaultChamberMinZ[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+Float_t AliMUONConstants::fgDefaultChamberMaxZ[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 Float_t AliMUONConstants::fgDefaultRatioTriggerChamber[4] =
 {1., 1.01060, 1.06236, 1.07296};
 
@@ -111,31 +118,48 @@ Int_t AliMUONConstants::NTrackingCh()
 }
 
 //______________________________________________________________________________
-Int_t AliMUONConstants::ChamberNumber(Float_t z) 
+Int_t AliMUONConstants::ChamberNumber(Float_t z, bool warn)
 {
   // return chamber number according z position of hit. Should be taken from geometry ?
- 
-  Float_t dMaxChamber = DzSlat() + DzCh() + 0.25; // cm st 3 &4 & 5
-  dMaxChamber += 3.00;                            // factor for inclination of chamber  
-  // dMaxChamber += Rmax(4) * TMath::Sin(fgSt345inclination*TMath::Pi()/360.); 
-                                                  // factor for inclination of chamber 
-  if ( z >  (DefaultChamberZ(4)+50.)) dMaxChamber = 7.; // cm stations 1 & 2
-  Int_t iChamber;
 
-  for (iChamber = 0; iChamber < 10; iChamber++) {
-    if (TMath::Abs(z-DefaultChamberZ(iChamber)) < dMaxChamber) {
-      return iChamber;
+  if (fgDefaultChamberMinZ[0] == 0) // Are the min/max Z arrays initialised?
+  {
+    // The min and max Z arrays need to be calculated.
+    for (Int_t i = 0; i < NCh(); i++)
+    {
+      Float_t a = 0, b = 0;
+      if (4 <= i and i < 10)
+      {
+        Float_t dzAngle = TMath::Tan(TMath::Pi()*St345Inclination()/180.) * Rmax(i/2);
+        // We add 2.5mm since Rmax is an under-estimate.
+        a = DefaultChamberZ(i) + DzSlat() + DzCh() + dzAngle + 0.25;
+        b = DefaultChamberZ(i) - DzSlat() - DzCh() - dzAngle - 0.25;
+      }
+      else
+      {
+        a = DefaultChamberZ(i) + DzSlat();
+        b = DefaultChamberZ(i) - DzSlat();
+      }
+      fgDefaultChamberMinZ[i] = TMath::Min(a, b);
+      fgDefaultChamberMaxZ[i] = TMath::Max(a, b);
     }
   }
-  
-  if ( z > DefaultChamberZ(NTrackingCh()-1) ) {
-    AliWarningClass(Form("No chamber number found for z = %f",z));
-    // for (iChamber = 0; iChamber < 10; iChamber++) {
-    //   cout << iChamber << " zpos: " << DefaultChamberZ(iChamber)
-    //        << "  from " << DefaultChamberZ(iChamber) + dMaxChamber
-    // 	      << "  to " << DefaultChamberZ(iChamber) - dMaxChamber 
-    //        << "  delta " << dMaxChamber << endl;
-    //}
+
+  // We can apply a binary search for the chamber since the fgDefaultChamberMinZ and
+  // fgDefaultChamberMaxZ arrays are ordered.
+  Int_t mini = 0, maxi = NCh()-1;
+  while (mini <= maxi)
+  {
+    Int_t iChamber = (maxi + mini) / 2;
+    if (z < fgDefaultChamberMinZ[iChamber])
+      mini = iChamber+1;
+    else if (z > fgDefaultChamberMaxZ[iChamber])
+      maxi = iChamber-1;
+    else
+      // We are between min and max Z of chamber number iChamber so we found our chamber.
+      return iChamber;
   }
+
+  if (warn) AliWarningClass(Form("No chamber number found for z = %f",z));
   return -1;
 }

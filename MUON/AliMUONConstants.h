@@ -51,7 +51,7 @@ class AliMUONConstants : public TObject {
     /// Return half-distance between two slats
     static Float_t  DzSlat()                 {return fgDzSlat;}
     /// Return chamber number according z position of hit.
-    static  Int_t ChamberNumber(Float_t z); 
+    static  Int_t ChamberNumber(Float_t z, bool warn = false); 
     /// Return SqrtKx3 for Slat
     static Float_t SqrtKx3()                 {return fgSqrtKx3;}
     /// Return SqrtKy3 for Slat
@@ -106,6 +106,8 @@ class AliMUONConstants : public TObject {
     static Int_t  fgNGeomModules;       ///<  Number of Geometry modules   
 
     static Float_t  fgDefaultChamberZ[14];		//!< Z-positions of chambers
+    static Float_t  fgDefaultChamberMinZ[14];		//!< Minimum z-positions of chambers
+    static Float_t  fgDefaultChamberMaxZ[14];		//!< Maximum z-positions of chambers
     static Float_t  fgDefaultRatioTriggerChamber[4];	///< Ratio between trigger chambers
     static Float_t  fgSt345inclination;			//!< Inclination with respect the vertical axis of stations 345
     static Float_t  fgDmin[7];				//!< Inner diameter
