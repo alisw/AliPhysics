@@ -413,6 +413,7 @@ $(@PACKAGE@SML:.smell=_h.ml) : $(MODDIRZ)/%_h.ml : $(MODDIR)/%.h
 $(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 	$(MUTE)echo smelling $@
 	$(MUTE)java -classpath $(SMELL_DETECTOR_DIR):$(SMELL_DETECTOR_DIR)/xom-1.1.jar -Xmx500m SmellDetector $? > $@
+	$(MUTE)[ -s $@ ] || touch $@
 
 .SECONDARY: $(@PACKAGE@SML:.smell=_cxx.ml) $(@PACKAGE@SML:.smell=_h.ml)
 
