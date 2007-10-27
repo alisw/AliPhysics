@@ -128,6 +128,7 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","REGIONAL","LDC0","$ALICE_ROOT/MUON/data/MtgRegionalCrate-1.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","GLOBAL","LDC0","$ALICE_ROOT/MUON/data/MtgGlobalCrate-1.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LUT","LDC0","$ALICE_ROOT/MUON/data/MtgLocalLut-1.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","CURRENT","LDC0","$ALICE_ROOT/MUON/data/MtgCurrent.dat");
   
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
