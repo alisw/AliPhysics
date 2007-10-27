@@ -54,6 +54,9 @@ public:
   /// Whether we can be used (e.g. whether we were properly initialized)
   Bool_t IsValid() const { return fIsValid; }
   
+  /// Mark as invalid
+  void Invalidate() { fIsValid = kFALSE; }
+  
 protected:
   AliMUONPreprocessor(const char* detName, AliShuttleInterface* shuttle);
   virtual ~AliMUONPreprocessor();

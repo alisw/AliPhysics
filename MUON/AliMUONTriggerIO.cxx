@@ -318,7 +318,7 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
   FILE* flut = fopen(gSystem->ExpandPathName(lutFileToRead),"rb");
   if (!flut) 
   {
-    AliError(Form("Could not create output LUT file %s",lutFileToRead));
+    AliError(Form("Could not read LUT file %s",lutFileToRead));
     return kFALSE;
   }   
   

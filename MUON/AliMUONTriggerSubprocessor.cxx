@@ -87,13 +87,42 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
 {
   /// When starting a new run, reads in the trigger online files.
   
+  // First thing to do (after cleanup, that is), is to check whether the DA
+  // was alive or not. If it was, it should have put the "MtgCurrent.dat" file
+  // on the FXS. 
+  //
+  
+  Bool_t da(kTRUE);
+  
+  TString current(gSystem->ExpandPathName(GetFileName("CURRENT").Data()));
+  
+  if ( current == "" ) 
+  {
+    Master()->Log("CURRENT file not specified");
+    da = kFALSE;
+  }
+  
+  if ( gSystem->AccessPathName(current.Data(),kFileExists) ) // mind the strange return value convention of that method !
+  {
+    Master()->Log(Form("%s is not there !",current.Data()));
+    da = kFALSE;
+  }
+  
+  if (!da)
+  {
+    Master()->Log("FATAL ERROR : DA does not seem to have been run !!!");
+    Master()->Invalidate();
+    return;
+  }
+  
+  delete fRegionalMasks; fRegionalMasks = 0x0;
+  delete fLocalMasks; fLocalMasks = 0x0;
+  delete fGlobalMasks; fGlobalMasks = 0x0;
+  delete fLUT; fLUT = 0x0;
+  
   Master()->Log(Form("Reading trigger masks for Run %d startTime %ld endTime %ld",
                      run,startTime,endTime));
     
-  delete fRegionalMasks;
-  delete fLocalMasks;
-  delete fGlobalMasks;
-  
   fRegionalMasks = new AliMUON1DArray(16);
   fLocalMasks = new AliMUON1DArray(AliMpConstants::NofLocalBoards()+1);
   fGlobalMasks = 0x0; // new AliMUONCalibParamNI(1,16,1,0,0);
@@ -116,13 +145,12 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     fGlobalMasks = 0x0;
   }
 
-  delete fLUT;
   fLUT = new AliMUONTriggerLut;
     
   Master()->Log(Form("Reading trigger LUT for Run %d startTime %ld endTime %ld",
                      run,startTime,endTime));
   
-  tio.ReadLUT(GetFileName("LUT").Data(),*fLUT);
+  ok = tio.ReadLUT(GetFileName("LUT").Data(),*fLUT);
 
   if (!ok)
   {
