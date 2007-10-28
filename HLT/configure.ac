@@ -60,7 +60,8 @@ if test "x$have_root" = "x1"; then
   # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
   #   libTreePlayer.so
   # - from Jan 07 libESD also depends on libXMLIO
-  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO'
+  # - libSTEER depends on libProofPlayer since Oct 2007 (after v4-07-Release)
+  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO Thread Proof ProofPlayer'
   for CHECKLIB in $ROOT_CHECKLIBS ; do
     LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
     LIBS="$save_LIBS $ROOTLIBS $ADD_ROOTLIBS"
@@ -167,11 +168,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   CHECKLIB=AOD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
-  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=CDB
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
   # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
   have_alirawdata=no
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
@@ -203,8 +199,47 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
   AC_MSG_RESULT([$have_alirawdata])
 
+  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lSTEER"
+  CHECKLIB=CDB
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=STEER
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"],[have_aliroot=no])
+
   dnl
-  dnl required header files and libraries for the AliHLTTPC library  
+  dnl check whether AliLog supports notification callback
+  dnl
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  have_alilog_notification=no
+  if test ! "x$have_aliroot" = "xno" ; then
+  AC_MSG_CHECKING([whether AliLog supports notification callback])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
+		                  [AliLog::AliLogNotification fct])],
+                                  [have_alilog_notification=yes], 
+				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
+  AC_MSG_RESULT([$have_alilog_notification])
+  fi
+
+  if test "x$have_aliroot" = "xno" ; then
+    # 2007-08-18 dont reset ALIROOT_CPPFLAGS in order to allow compilation
+    # but library dependencies might not be resolved completely
+    #ALIROOT_CPPFLAGS=
+    AC_MSG_WARN([some of the AliRoot library dependencies are not resolved.
+    This can happen from time to time due to development in AliRoot. You can
+    force compilation of detector libs by --enable-<detector>, but be aware
+    of unresolved references at runtime.])
+    AC_MSG_WARN([       ------------------------------------------ ])
+    AC_MSG_WARN([       Report this to $PACKAGE_BUGREPORT ])
+    AC_MSG_WARN([       please include config.log                  ])
+    AC_MSG_WARN([       ------------------------------------------ ])
+    ALIROOT_LDFLAGS=
+    ALIROOT_LIBS=
+  fi
+
+  dnl
+  dnl required header files and libraries for modules
   dnl
   if test ! "x$have_aliroot" = "xno" ; then
     # the HLTTPCLib needs to link agains TPCbase and TPCrec
@@ -245,24 +280,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   fi
   AC_CHECK_HEADERS([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
   AC_CHECK_HEADERS([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
-
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=STEER
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"],[have_aliroot=no])
-
-  dnl
-  dnl check whether AliLog supports notification callback
-  dnl
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  have_alilog_notification=no
-  if test ! "x$have_aliroot" = "xno" ; then
-  AC_MSG_CHECKING([whether AliLog supports notification callback])
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliLog.h>], 
-		                  [AliLog::AliLogNotification fct])],
-                                  [have_alilog_notification=yes], 
-				  [AC_DEFINE(NO_ALILOG_NOTIFICATION)])
-  AC_MSG_RESULT([$have_alilog_notification])
-  fi
 
   dnl
   dnl Check for the interface of AliExternalTrackParam which has been changed
@@ -326,19 +343,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for TPC mapping layout])
   AC_MSG_RESULT([$have_tpc_mapping])
 
-  if test "x$have_aliroot" = "xno" ; then
-    # 2007-08-18 dont reset ALIROOT_CPPFLAGS in order to allow compilation
-    # but library dependencies might not be resolved completely
-    #ALIROOT_CPPFLAGS=
-    AC_MSG_WARN([some of the AliRoot library dependencies are not resolved. You
-    can force compilation of detector libs by --enable-<detector>, but be aware
-    of unresolved references at runtime.])
-    AC_MSG_WARN([       ------------------------------------------ ])
-    AC_MSG_WARN([       Report this to $PACKAGE_BUGREPORT ])
-    AC_MSG_WARN([       ------------------------------------------ ])
-    ALIROOT_LDFLAGS=
-    ALIROOT_LIBS=
-  fi
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS
