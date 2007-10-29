@@ -44,6 +44,14 @@ public:
 
   virtual void Paint(Option_t* opt="");
 
+  // Status flags for pads
+  static const Int_t fgkZero; ///< pad "basic" state
+  static const Int_t fgkMustKeep; ///< do not kill (for pixels)
+  static const Int_t fgkUseForFit; ///< should be used for fit
+  static const Int_t fgkOver; ///< processing is over
+  static const Int_t fgkModified; ///< modified pad charge 
+  static const Int_t fgkCoupled; ///< coupled pad  
+  
 private:
   /// Not implemented
   AliMUONClusterFinderMLEM(const AliMUONClusterFinderMLEM& rhs);
@@ -62,16 +70,12 @@ private:
   /// build array of pixels
   void BuildPixArray(AliMUONCluster& cluster); 
   void BuildPixArrayOneCathode(AliMUONCluster& cluster); 
-  void BuildPixArrayTwoCathodes(AliMUONCluster& cluster); 
   void PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, AliMUONPad *pad);
 
   void RemovePixel(Int_t i);
   
   AliMUONPad* Pixel(Int_t i) const;
   
-  void   AdjustPixel(AliMUONCluster& cluster, Float_t width, Int_t ixy); // adjust size of small pixels
-  void   AdjustPixel(Double_t wxmin, Double_t wymin); // adjust size of large pixels
-
   Bool_t MainLoop(AliMUONCluster& cluster, Int_t iSimple); // repeat MLEM algorithm until pixels become sufficiently small
   
   void   Mlem(AliMUONCluster& cluster, Double_t *coef, Double_t *probi, Int_t nIter); // use MLEM for cluster finding
@@ -89,10 +93,6 @@ private:
   /// Process simple cluster
   void Simple(AliMUONCluster& cluster); 
   
-  void Neighbours(Int_t cath, Int_t ix0, Int_t iy0, 
-                  Int_t& nn,
-                  Int_t* xList, Int_t* yList);
-
   void Plot(const char* outputfile);
     
   void ComputeCoefficients(AliMUONCluster& cluster, 
@@ -100,13 +100,12 @@ private:
   
   void CheckOverlaps();
   void AddBinSimple(TH2D *mlem, Int_t ic, Int_t jc);
+  void MaskPeaks(Int_t mask);
 
 private:
     
   // Some constants
-  static const Int_t fgkDim = 10000; ///< array size
   static const Double_t fgkZeroSuppression; ///< average zero suppression value
-  static const Double_t fgkSaturation; ///< average saturation level
   static const Double_t fgkDistancePrecision; ///< used to check overlaps and so on
   static const TVector2 fgkIncreaseSize; ///< idem
   static const TVector2 fgkDecreaseSize; ///< idem
@@ -121,8 +120,6 @@ private:
   
   const AliMpVSegmentation *fSegmentation[2]; //!< new segmentation
   
-  Float_t    fZpad;             //!< z-coordinate of the hit
-  Int_t      fReco;             //!< !=0 if run reco with writing of reconstructed clusters 
   Int_t fCathBeg;               //!< starting cathode (for combined cluster / track reco)
   Int_t fPadBeg[2];             //!< starting pads (for combined cluster / track reco)
   
