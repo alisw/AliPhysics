@@ -22,7 +22,7 @@ class AliESDkink;
 class AliESDfriendTrack;
 class AliITStrackMI;
 class AliTRDtrack;
-
+class AliTPCParam;
 class AliTPCseed;
 
 /////////////////////////////////////////////////////////////////////////
