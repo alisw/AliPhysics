@@ -5,7 +5,8 @@ SRCS = AliAnaCaloTrigger.cxx AliAnaCaloTriggerMC.cxx \
        AliAnaGammaCorrelation.cxx  AliAnaGammaParton.cxx AliAnaGammaHadron.cxx AliAnaGammaJetLeadCone.cxx  AliAnaGammaJetFinder.cxx \
        AliAnalysisTaskGamma.cxx \
        AliGammaReader.cxx AliGammaDataReader.cxx \
-       AliGammaMCReader.cxx  AliGammaMCDataReader.cxx 
+       AliGammaMCReader.cxx  AliGammaMCDataReader.cxx \
+       AliAnaGammaSelection.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

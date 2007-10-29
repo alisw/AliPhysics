@@ -21,5 +21,6 @@
 #pragma link C++ class AliGammaDataReader+;
 #pragma link C++ class AliGammaMCReader+;
 #pragma link C++ class AliGammaMCDataReader+;
+#pragma link C++ class AliAnaGammaSelection+;
 
 #endif
