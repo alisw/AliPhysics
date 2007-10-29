@@ -27,8 +27,6 @@
 
 
 
-#include <stdio.h>
-#include <string.h>
 //ROOT includes
 #include "Rtypes.h"
 //
@@ -38,23 +36,12 @@
 #include "AliTPCParam.h"
 #include "AliTrackReference.h"
 #include "AliTPCParamSR.h"
-#include "AliESD.h"
 #include "AliESDfriend.h"
 #include "AliESDtrack.h"
 #include "AliTPCseed.h"
 #include "AliITStrackMI.h"
 #include "AliTRDtrack.h"
-#include "AliHelix.h"
-#include "AliESDVertex.h"
-#include "AliExternalTrackParam.h"
-#include "AliESDkink.h"
-#include "AliESDv0.h"
-#include "AliV0.h"
-//
-#include "AliTreeDraw.h"
 #include "AliMCInfo.h"
-#include "AliGenV0Info.h"
-#include "AliGenKinkInfo.h"
 #include "AliESDRecInfo.h"
 
 
