@@ -30,6 +30,9 @@
 #include "AliPWG0Helper.h"
 
 //
+// Selector that produces plots needed for the high multiplicity analysis with the
+// pixel detector
+// Needs cluster file
 //
 
 ClassImp(AliHighMultiplicitySelector)
@@ -48,7 +51,7 @@ AliHighMultiplicitySelector::AliHighMultiplicitySelector() :
   fClusterZL2(0),
   fClvsL1(0),
   fClvsL2(0),
-  centralRegion(kFALSE)
+  fCentralRegion(kFALSE)
 {
   //
   // Constructor. Initialization of pointers
@@ -67,6 +70,8 @@ AliHighMultiplicitySelector::~AliHighMultiplicitySelector()
 
 void AliHighMultiplicitySelector::SlaveBegin(TTree *tree)
 {
+  // create histograms
+
   AliSelectorRL::SlaveBegin(tree);
 
   fChipsFired = new TH2F("fChipsFired", ";Module;Chip;Count", 240, -0.5, 239.5, 5, -0.5, 4.5);
@@ -151,7 +156,7 @@ Bool_t AliHighMultiplicitySelector::Process(Long64_t entry)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
 
-    if (centralRegion)
+    if (fCentralRegion)
     {
       if (TMath::Abs(particle->Eta()) < 1.05)
         multiplicity21++;
@@ -216,7 +221,7 @@ Bool_t AliHighMultiplicitySelector::Process(Long64_t entry)
   // loop over modules (ladders)
   for (Int_t moduleIndex=startSPD; moduleIndex<lastSPD+1; moduleIndex++)
   {
-    if (centralRegion)
+    if (fCentralRegion)
     {
       if ((moduleIndex % 4) == 0 || (moduleIndex % 4) == 3)
         continue;
@@ -385,6 +390,8 @@ Bool_t AliHighMultiplicitySelector::Process(Long64_t entry)
 
 Bool_t AliHighMultiplicitySelector::Notify()
 {
+  // get next ITS runloader
+
   AliRunLoader* runLoader = GetRunLoader();
 
   if (runLoader)
@@ -447,6 +454,8 @@ void AliHighMultiplicitySelector::Terminate()
 
 void AliHighMultiplicitySelector::WriteHistograms(const char* filename)
 {
+  // write the histograms to a file
+
   TFile* file = TFile::Open(filename, "RECREATE");
 
   fChipsFired->Write();
@@ -460,6 +469,8 @@ void AliHighMultiplicitySelector::WriteHistograms(const char* filename)
 
 void AliHighMultiplicitySelector::ReadHistograms(const char* filename)
 {
+  // read the data from a file and fill histograms
+
   TFile* file = TFile::Open(filename);
 
   if (!file)
@@ -577,6 +588,8 @@ TH1* AliHighMultiplicitySelector::GetXSectionCut(TH1* xSection, TH2* multVsLayer
 
 void AliHighMultiplicitySelector::MakeGraphs2(const char* title, TH1* xSection, TH2* fMvsL)
 {
+  // creates graphs
+
   TGraph* effGraph = new TGraph;
   effGraph->SetTitle(Form("%s;Cut on fired chips;mult. where eff. >50%%", title));
   TGraph* ratioGraph = new TGraph;
@@ -638,6 +651,7 @@ void AliHighMultiplicitySelector::MakeGraphs2(const char* title, TH1* xSection, 
 void AliHighMultiplicitySelector::MakeGraphs(const char* title, TH1* xSection, TH2* fMvsL, Int_t limit)
 {
   // relative x-section, once we have a collision
+
   xSection->Scale(1.0 / xSection->Integral());
 
   TGraph* ratioGraph = new TGraph;
@@ -705,6 +719,8 @@ void AliHighMultiplicitySelector::MakeGraphs(const char* title, TH1* xSection, T
 
 void AliHighMultiplicitySelector::JPRPlots()
 {
+  // more plots
+
   /*
 
   gSystem->Load("libPWG0base");
@@ -867,7 +883,7 @@ void AliHighMultiplicitySelector::Ntrigger()
   // 10^28 lum --> 1.2 kHz
   // 10^31 lum --> 1200 kHz
   //Float_t rate = 1200e3;
-  Float_t rate = 1200e3;
+  Float_t rate = 250e3;
 
   // time in s
   Float_t lengthRun = 1e6;
@@ -884,12 +900,16 @@ void AliHighMultiplicitySelector::Ntrigger()
     TH1* xSection = xSections[i];
     TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
 
-    Int_t nCuts = 6;
-    Int_t cuts[] = { 0, 164, 178, 190, 204, 216 };
+    //Int_t nCuts = 6;
+    //Int_t cuts[] = { 0, 164, 178, 190, 204, 216 };
     //Int_t nCuts = 4;
     //Int_t cuts[] = { 0, 164, 190, 216 };
+    Int_t nCuts = 4;
+    Int_t cuts[] = { 0, 114, 145, 165 };
+
     // desired trigger rate in Hz
-    Float_t ratePerTrigger[] = { 100, 1, 1, 1, 1, 1 };
+    //Float_t ratePerTrigger[] = { 100, 1, 1, 1, 1, 1 };
+    Float_t ratePerTrigger[] = { 60, 13.3, 13.3, 13.3 };
 
     xSection->SetStats(kFALSE);
     xSection->SetTitle(""); //(i == 0) ? "SPD Layer 1" : "SPD Layer 2");
@@ -964,6 +984,8 @@ void AliHighMultiplicitySelector::Ntrigger()
 
 void AliHighMultiplicitySelector::DrawHistograms()
 {
+  // draws the histograms
+
   /*
 
   gSystem->Load("libPWG0base");
@@ -1167,4 +1189,53 @@ void AliHighMultiplicitySelector::DrawHistograms()
   fClusterZL2->Draw();
   fClusterZL2->Rebin(2);
   canvas->SaveAs(Form("%s.gif", canvas->GetName()));
+}
+
+TGraph* AliHighMultiplicitySelector::IntFractRate()
+{
+  // A plot which shows the fractional rate above any threshold
+  // as function of threshold (i.e. the integral of dSigma/dN as function of
+  // N, normalised to 1 for N=0)
+
+  /*
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->IntFractRate();
+  */
+
+  // get x-sections
+  TFile* file = TFile::Open("crosssectionEx.root");
+  if (!file)
+    return 0;
+
+  TH1* xSection;
+  xSection = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+
+  TGraph* result = new TGraph;
+
+  for (Int_t threshold = 0; threshold < 300; threshold += 2)
+  {
+    TH1* proj = GetXSectionCut(xSection, fMvsL1, threshold);
+
+    //new TCanvas; proj->DrawCopy();
+
+    Double_t integral = proj->Integral();
+
+    Printf("Cut at %d, intregral is %e", threshold, integral);
+
+    result->SetPoint(result->GetN(), threshold, integral);
+  }
+
+  TCanvas* canvas = new TCanvas("IntFractRate", "IntFractRate", 600, 400);
+  gPad->SetLogy();
+
+  result->Draw("A*");
+  result->GetXaxis()->SetTitle("threshold");
+  result->GetYaxis()->SetTitle("integrated fractional rate above threshold");
+
+  canvas->SaveAs(Form("%s.gif", canvas->GetName()));
+
+  return result;
 }
