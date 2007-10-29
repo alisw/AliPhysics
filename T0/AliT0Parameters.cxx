@@ -165,7 +165,8 @@ void AliT0Parameters::InitIfOnline()
 	  if (channel<6) channel +=2;
 	  else {channel = 0; tdc++;}
 	   if(ik==57) { tdc=0; channel=0; trm=1;}
-           fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
+	   //           fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
+         fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
        }
   
   fIsInit=kTRUE;
@@ -272,7 +273,8 @@ AliT0Parameters::GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel)
 
   if (fgLookUp) {
     AliT0LookUpValue key(trm,tdc,chain,channel);
-    AliT0LookUpKey *val = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)&key);
+      AliT0LookUpKey *val = (AliT0LookUpKey*) fgLookUp->GetMapLookup()->GetValue((TObject*)&key);
+      // AliT0LookUpKey *val = (AliT0LookUpKey*) fLookUp.GetValue((TObject*)&key);
     if (val )
       return val->GetKey();
     else {
