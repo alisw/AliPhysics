@@ -16,5 +16,13 @@
 #pragma link C++ class AliHLTPHOSRawAnalyzerLMS+; 
 #pragma link C++ class AliHLTPHOSRawAnalyzerPeakFinder+; 
 #pragma link C++ class AliHLTPHOSDigit+;
+#pragma link C++ class AliHLTPHOSDigitMaker+;
+#pragma link C++ class AliHLTPHOSBaseline+;
+#pragma link C++ class AliHLTPHOSTreeMaker+;
+#pragma link C++ class AliHLTPHOSRcuDigitMaker+;
+#pragma link C++ class AliHLTPHOSSanityInspector+;
+#pragma link C++ class AliHLTPHOSBaselineAnalyzer+;
+#pragma link C++ class AliHLTPHOSRcuTreeMaker+;
+#pragma link C++ class AliHLTPHOSChannelCounter+;
 
 #endif

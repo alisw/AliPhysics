@@ -3,37 +3,36 @@
 
 MODULE 				= AliHLTTRD
 
-EXTRA_DIST			= AliHLTTRDLinkDef.h
-
-AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
-				  -I$(top_srcdir)/BASE \
-				  -I$(top_srcdir)/BASE/util \
-				  -I$(ALICE_ROOT)/TRD
+EXTRA_DIST			=
 
 # library definition
-lib_LTLIBRARIES			=  libAliHLTTRD.la
+lib_LTLIBRARIES			= libAliHLTTRD.la
 
 # version info for the library
 LIBRARY_VERSION			= '1:0:0'
 
+# MODDIR is set by the AliRoot build system and denotes the topdir
+# of the module, we must set it since the package definition libAliHLTTRD.pkg
+# includes another common configuration file
+MODDIR				= $(top_srcdir)
+PKGDEF				= $(MODDIR)/libAliHLTTRD.pkg
+include $(top_srcdir)/libAliHLTTRD.pkg
+
+# compiler flags
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  $(PACKCXXFLAGS) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 # library sources
-libAliHLTTRD_la_SOURCES		= AliTRDclusterizerHLT.cxx \
-				  AliHLTTRDDefinitions.cxx \
-				  AliHLTTRDClusterizerComponent.cxx \
-				  AliHLTTRDTrackerComponent.cxx \
-				  AliHLTTRDEsdWriterComponent.cxx \
-				  AliHLTTRDCalibrationComponent.cxx
+libAliHLTTRD_la_SOURCES		= $(MODULE_SRCS)
 
-# class header files, the link definition for the root dictionary
-# will be created from the names of the header files
-CLASS_HDRS			= AliTRDclusterizerHLT.h \
-				  AliHLTTRDDefinitions.h \
-				  AliHLTTRDClusterizerComponent.h \
-				  AliHLTTRDTrackerComponent.h \
-				  AliHLTTRDEsdWriterComponent.h \
-				  AliHLTTRDCalibrationComponent.h
+# library headers
+pkginclude_HEADERS		= $(MODULE_HDRS)
 
-pkginclude_HEADERS		= $(CLASS_HDRS) 
+# additional link def file
+EXTRA_DIST			+=$(MODULE_DHDR)
 
 libAliHLTTRD_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
 # version info for the library
@@ -41,6 +40,7 @@ libAliHLTTRD_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
+				  @ALITRD_LIBS@ \
 				  -version-info  $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build

@@ -3,10 +3,6 @@
 
 include $(MODDIR)/hlt.conf
 
-MODULE_SRCS= 	AliHLT_C_Component_WrapperInterface.cxx \
-		AliHLTDataTypes.cxx \
-		$(CLASS_HDRS:.h=.cxx)
-
 CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTComponentHandler.h \
 		AliHLTSystem.h \
@@ -30,6 +26,10 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOUTHandler.h \
 		AliHLTMemoryFile.h \
 		AliHLTMessage.h
+
+MODULE_SRCS= 	AliHLT_C_Component_WrapperInterface.cxx \
+		AliHLTDataTypes.cxx \
+		$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTDataTypes.h \

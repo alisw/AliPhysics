@@ -1,60 +1,112 @@
 #-*- Mode: Makefile -*-
+# $Id$
+# package definition for the libAliHLTPHOS library
 
 include $(MODDIR)/hlt.conf
 
-SRCS:=	\
-		  PHOS/AliHLTAltroBunch.cxx \
-		  PHOS/AliHLTAltroData.cxx \
-		  PHOS/AliHLTPHOSBase.cxx \
-		  PHOS/AliHLTPHOSCellEnergiesFileWriter.cxx \
-		  PHOS/AliHLTPHOSClusterizer.cxx \
-		  PHOS/AliHLTPHOSClusterizerComponent.cxx \
-		  PHOS/AliHLTPHOSDDLDecoderComponent.cxx \
-		  PHOS/AliHLTPHOSDDLPackedFileWriter.cxx \
-		  PHOS/AliHLTPHOSDataCorruptor.cxx \
-		  PHOS/AliHLTPHOSDataQualityMonitor.cxx \
-		  PHOS/AliHLTPHOSDefinitions.cxx \
-		  PHOS/AliHLTPHOSEmcCalibData.cxx \
-		  PHOS/AliHLTPHOSFileWriter.cxx \
-		  PHOS/AliHLTPHOSFileWriterComponent.cxx \
-		  PHOS/AliHLTPHOSPhysicsAnalyzer.cxx \
-		  PHOS/AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
-		  PHOS/AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
-		  PHOS/AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
-		  PHOS/AliHLTPHOSSanityInspector.cxx \
-		  PHOS/AliHLTPHOSDigit.cxx \
-		  PHOS/AliHLTPHOSDigitMaker.cxx \
-		  PHOS/AliHLTPHOSDigitMakerComponent.cxx \
-		  PHOS/AliHLTPHOSProcessor.cxx \
-		  PHOS/AliHLTPHOSPulseGenerator.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzer.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerChiSquareFit.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerComponent.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerCrude.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerKLevel.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerLMS.cxx \
-		  PHOS/AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
-		  PHOS/AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
-		  PHOS/AliHLTPHOSRcuHistogramProducer.cxx \
-		  PHOS/AliHLTPHOSRcuHistogramProducerComponent.cxx \
-		  PHOS/AliHLTPHOSRcuProcessor.cxx \
-	          PHOS/AliHLTDDLDecoder.cxx \
-	          PHOS/AliHLTPHOSMapper.cxx \
-	          PHOS/AliHLTPHOSRawAnalyzerPeakFinder.cxx \
-		  PHOS/AliHLTPHOSConfig.cxx \
-		  PHOS/AliHLTPHOSAltroConfig.cxx 	
+CLASS_HDRS:=	\
+		  AliHLTAltroBunch.h \
+		  AliHLTAltroData.h \
+		  AliHLTPHOSBase.h \
+		  AliHLTPHOSCellEnergiesFileWriter.h \
+		  AliHLTPHOSClusterizer.h \
+		  AliHLTPHOSClusterizerComponent.h \
+		  AliHLTPHOSDDLDecoderComponent.h \
+		  AliHLTPHOSDDLPackedFileWriter.h \
+		  AliHLTPHOSDataCorruptor.h \
+		  AliHLTPHOSDataQualityMonitor.h \
+		  AliHLTPHOSDefinitions.h \
+		  AliHLTPHOSEmcCalibData.h \
+		  AliHLTPHOSFileWriter.h \
+		  AliHLTPHOSFileWriterComponent.h \
+		  AliHLTPHOSPhysicsAnalyzer.h \
+		  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
+		  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
+		  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
+		  AliHLTPHOSProcessor.h \
+		  AliHLTPHOSPulseGenerator.h \
+		  AliHLTPHOSRawAnalyzer.h \
+		  AliHLTPHOSRawAnalyzerChiSquareFit.h \
+		  AliHLTPHOSRawAnalyzerComponent.h \
+		  AliHLTPHOSRawAnalyzerCrude.h \
+		  AliHLTPHOSRawAnalyzerCrudeComponent.h \
+		  AliHLTPHOSRawAnalyzerKLevel.h \
+		  AliHLTPHOSRawAnalyzerLMS.h \
+		  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
+		  AliHLTPHOSRcuDataQualityMonitorComponent.h \
+		  AliHLTPHOSRcuHistogramProducer.h \
+		  AliHLTPHOSRcuHistogramProducerComponent.h \
+		  AliHLTPHOSRcuProcessor.h \
+		  AliHLTDDLDecoder.h \
+		  AliHLTPHOSMapper.h \
+		  AliHLTPHOSRawAnalyzerPeakFinder.h \
+		  AliHLTPHOSSanityInspector.h \
+		  AliHLTPHOSDigitMaker.h \
+		  AliHLTPHOSRcuDigitMaker.h \
+		  AliHLTPHOSDigitMakerComponent.h \
+		  AliHLTPHOSRcuDigitMakerComponent.h \
+		  AliHLTPHOSDigit.h \
+		  AliHLTPHOSChannelCounter.h \
+		  AliHLTPHOSTreeMakerComponent.h \
+		  AliHLTPHOSRcuTreeMakerComponent.h \
+		  AliHLTPHOSTreeMaker.h \
+		  AliHLTPHOSRcuTreeMaker.h \
+		  AliHLTPHOSBaselineAnalyzer.h \
+		  AliHLTPHOSBaselineAnalyzerComponent.h \
+		  AliHLTPHOSBaseline.h \
+		  AliHLTPHOSConfig.h \
+		  AliHLTPHOSAltroConfig.h \
+		  AliHLTPHOSSandboxComponent.h \
+		  AliHLTPHOSMIPCounter.h \
+		  AliHLTPHOSMIPCounterComponent.h 
+#				  AliHLTPHOSNoiseMapper.h \
+#				  AliHLTPHOSNoiseMapperComponent.h
 
-HDRS:=		  $(SRCS:.cxx=.h)
+MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
+
+MODULE_HDRS:=	  $(CLASS_HDRS) \
+		  AliHLTPHOSCommonDefs.h \
+		  AliHLTPHOSConstants.h \
+		  AliHLTAltroBunch.h \
+		  AliHLTPHOSRecPointListDataStruct.h \
+		  AliHLTPHOSRecPointDataStruct.h \
+		  AliHLTPHOSClusterDataStruct.h \
+	 	  AliHLTPHOSRawAnalyzer.h \
+		  AliHLTPHOSDefinitions.h \
+		  AliHLTPHOSModuleCellEnergyDataStruct.h\
+		  AliHLTPHOSRcuCellEnergyDataStruct.h \
+		  AliHLTPHOSValidCellDataStruct.h\
+		  AliHLTPHOSDataHeaderStruct.h \
+		  AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
+		  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
+		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
+		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
+		  AliHLTPHOSRcuChannelDataStruct.h \
+		  AliHLTPHOSValidChannelDataStruct.h \
+		  AliHLTPHOSClusterDataStruct.h \
+		  AliHLTPHOSRecPointDataStruct.h \
+		  AliHLTPHOSRecPointListDataStruct.h \
+		  AliHLTPHOSRecPointContainerStruct.h \
+		  AliHLTPHOSDigitContainerDataStruct.h \
+		  AliHLTPHOSRcuDigitContainerDataStruct.h \
+		  AliHLTPHOSDigitDataStruct.h
+
+
+MODULE_DHDR:=	  HLTPHOSLinkDef.h
 
 EDEFINE      := ${HLTDEFS}
 PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}		
 
-DHDR=   	  PHOS/HLTPHOSLinkDef.h
+EINCLUDE     := HLT/BASE HLT/BASE/util STEER RAW PHOS
 
-EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/comp HLT/misc  STEER RAW PHOS
-#EINCLUDE+= HLT/BASE HLT/BASE/util HLT/src HLT/hough HLT/comp HLT/misc HLT/ITS HLT/MUON/src TPC ITS MUON STEER RAW PHOS
-
-
+###############################################################################
+#
+# do not change anything below this line
+#
+SRCS:=$(patsubst %,PHOS/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,PHOS/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,PHOS/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,PHOS/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" && echo 1)

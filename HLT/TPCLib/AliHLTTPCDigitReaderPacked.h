@@ -94,6 +94,8 @@ public:
   {
     HLTFatal("AliHLTTPCDigitReaderPacked not build");
   }
+
+  ClassDef(AliHLTTPCDigitReaderPacked, 0)
 };
 #endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 

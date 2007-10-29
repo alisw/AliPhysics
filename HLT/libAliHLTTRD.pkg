@@ -1,16 +1,9 @@
 #-*- Mode: Makefile -*-
-# $Id: 
+# $Id$
+# package definition for the libAliHLTTRD library
 
 include $(MODDIR)/hlt.conf
 
-# library sources
-MODULE_SRCS= \
-        AliHLTTRDClusterizerComponent.cxx \
-        AliHLTTRDDefinitions.cxx \
-        AliHLTTRDTrackerComponent.cxx \
-        AliTRDclusterizerHLT.cxx \
-	AliHLTTRDEsdWriterComponent.cxx \
-	AliHLTTRDCalibrationComponent.cxx
 # class header files, the link definition for the root dictionary
 # will be created from the names of the header files
 CLASS_HDRS:= \
@@ -20,6 +13,11 @@ CLASS_HDRS:= \
         AliTRDclusterizerHLT.h \
 	AliHLTTRDEsdWriterComponent.h \
 	AliHLTTRDCalibrationComponent.h
+
+# library sources
+MODULE_SRCS= \
+	$(CLASS_HDRS:.h=.cxx)
+
 # library headers
 # in most cases you might have already added all the header files to
 # the CLASS_HDRS variable. So we just use the content of this. You
@@ -45,7 +43,7 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD RAW
+EINCLUDE := HLT/BASE HLT/BASE/util HLT/TRD TRD STEER RAW
 
 ###############################################################################
 #

@@ -3,159 +3,36 @@
 
 MODULE 				= AliHLTPHOS
 
-EXTRA_DIST			= HLTPHOSLinkDef.h
-
-AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@ \
-				  -I@ALICE_ROOT@/PHOS \
-				  -I$(top_srcdir)/BASE \
-				  -I$(top_srcdir)/BASE/util
-
+EXTRA_DIST			= 
 
 # library definition
 lib_LTLIBRARIES			=  libAliHLTPHOS.la
 
+# version info for the library
+LIBRARY_VERSION			= '0:0:0'
+
+# MODDIR is set by the AliRoot build system and denotes the topdir
+# of the module, we must set it since the package definition libAliHLTPHOS.pkg
+# includes another common configuration file
+MODDIR				= $(top_srcdir)
+PKGDEF				= $(MODDIR)/libAliHLTPHOS.pkg
+include $(top_srcdir)/libAliHLTPHOS.pkg
+
+# compiler flags
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  $(PACKCXXFLAGS) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 # library sources
-libAliHLTPHOS_la_SOURCES	= AliHLTPHOSPulseGenerator.cxx \
-			          AliHLTPHOSRawAnalyzerPeakFinder.cxx \
-				  AliHLTPHOSRawAnalyzerCrude.cxx \
-				  AliHLTPHOSRawAnalyzerKLevel.cxx \
-		                  AliHLTPHOSRawAnalyzerLMS.cxx \
-				  AliHLTPHOSRawAnalyzerChiSquareFit.cxx \
-				  AliHLTPHOSRawAnalyzer.cxx \
-				  AliHLTPHOSEmcCalibData.cxx \
-				  AliHLTPHOSRawAnalyzerComponent.cxx \
-				  AliHLTPHOSRawAnalyzerCrudeComponent.cxx \
-				  AliHLTPHOSRawAnalyzerPeakFinderComponent.cxx \
-			          AliHLTPHOSDefinitions.cxx \
-				  AliHLTPHOSFileWriterComponent.cxx \
-				  AliHLTPHOSFileWriter.cxx \
-				  AliHLTPHOSDDLPackedFileWriter.cxx \
-				  AliHLTPHOSCellEnergiesFileWriter.cxx \
-				  AliHLTPHOSRcuHistogramProducer.cxx \
-				  AliHLTPHOSRcuHistogramProducerComponent.cxx \
-				  AliHLTPHOSDataCorruptor.cxx \
-				  AliHLTPHOSDataQualityMonitor.cxx \
-				  AliHLTPHOSRcuDataQualityMonitorComponent.cxx \
-				  AliHLTPHOSProcessor.cxx \
-				  AliHLTPHOSClusterizer.cxx \
-				  AliHLTPHOSClusterizerComponent.cxx \
-				  AliHLTPHOSPhysicsAnalyzerSpectrum.cxx \
-				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx \
-				  AliHLTPHOSPhysicsAnalyzer.cxx \
-				  AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx \
-				  AliHLTPHOSSanityInspector.cxx \
-				  AliHLTPHOSDigitMaker.cxx \
-				  AliHLTPHOSRcuDigitMaker.cxx \
-				  AliHLTPHOSDigitMakerComponent.cxx \
-				  AliHLTPHOSRcuDigitMakerComponent.cxx \
-				  AliHLTPHOSDigit.cxx \
-				  AliHLTPHOSChannelCounter.cxx \
-				  AliHLTPHOSTreeMakerComponent.cxx \
-				  AliHLTPHOSRcuTreeMakerComponent.cxx \
-				  AliHLTPHOSTreeMaker.cxx \
-				  AliHLTPHOSRcuTreeMaker.cxx \
-				  AliHLTPHOSBaselineAnalyzer.cxx \
-				  AliHLTPHOSBaselineAnalyzerComponent.cxx \
-				  AliHLTPHOSBaseline.cxx \
-			          AliHLTDDLDecoder.cxx \
-				  AliHLTAltroData.cxx \
-				  AliHLTAltroBunch.cxx \
-			          AliHLTPHOSMapper.cxx \
-				  AliHLTPHOSRcuProcessor.cxx \
-				  AliHLTPHOSDDLDecoderComponent.cxx \
-				  AliHLTPHOSBase.cxx \
-				  AliHLTPHOSConfig.cxx \
-				  AliHLTPHOSAltroConfig.cxx \
-				  AliHLTPHOSSandboxComponent.cxx \
-				  AliHLTPHOSMIPCounter.cxx \
-				  AliHLTPHOSMIPCounterComponent.cxx 
-#				  AliHLTPHOSNoiseMapper.cxx \
-#				  AliHLTPHOSNoiseMapperComponent.cxx
+libAliHLTPHOS_la_SOURCES	= $(MODULE_SRCS)
 
+# library headers
+pkginclude_HEADERS		= $(MODULE_HDRS)
 
-# class header files, the link definition for the root dictionary
-# will be created from the names of the header files
-CLASS_HDRS			= AliHLTPHOSPulseGenerator.h \
-				  AliHLTPHOSRawAnalyzerPeakFinder.h \
-				  AliHLTPHOSRawAnalyzerCrude.h \
-				  AliHLTPHOSRawAnalyzerKLevel.h \
-				  AliHLTPHOSRawAnalyzerLMS.h \
-				  AliHLTPHOSRawAnalyzerChiSquareFit.h \
-				  AliHLTPHOSEmcCalibData.h \
-				  AliHLTPHOSRawAnalyzerComponent.h \
-				  AliHLTPHOSRawAnalyzerCrudeComponent.h \
-				  AliHLTPHOSRawAnalyzerPeakFinderComponent.h \
-                                  AliHLTPHOSFileWriterComponent.h \
-				  AliHLTPHOSFileWriter.h \
-				  AliHLTPHOSDDLPackedFileWriter.h \
-				  AliHLTPHOSCellEnergiesFileWriter.h \
-				  AliHLTPHOSRcuHistogramProducer.h \
-				  AliHLTPHOSRcuHistogramProducerComponent.h \
-				  AliHLTPHOSDataCorruptor.h \
-				  AliHLTPHOSDataQualityMonitor.h \
-				  AliHLTPHOSRcuDataQualityMonitorComponent.h \
-				  AliHLTPHOSProcessor.h \
-				  AliHLTPHOSClusterizer.h \
-				  AliHLTPHOSClusterizerComponent.h \
-				  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
-				  AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h \
-				  AliHLTPHOSPhysicsAnalyzer.h \
-				  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
-				  AliHLTPHOSSanityInspector.h \
-				  AliHLTPHOSDigitMaker.h \
-	 			  AliHLTPHOSRcuDigitMaker.h \
-				  AliHLTPHOSDigitMakerComponent.h \
-				  AliHLTPHOSRcuDigitMakerComponent.h \
-				  AliHLTPHOSDigit.h \
-				  AliHLTPHOSChannelCounter.h \
-				  AliHLTPHOSTreeMakerComponent.h \
-				  AliHLTPHOSRcuTreeMakerComponent.h \
-				  AliHLTPHOSTreeMaker.h \
-				  AliHLTPHOSRcuTreeMaker.h \
-				  AliHLTPHOSBaselineAnalyzer.h \
-				  AliHLTPHOSBaselineAnalyzerComponent.h \
-				  AliHLTPHOSBaseline.h \
-				  AliHLTDDLDecoder.h \
-				  AliHLTAltroData.h \
-				  AliHLTPHOSMapper.h \
-				  AliHLTPHOSRcuProcessor.h \
-				  AliHLTPHOSBase.h \
-				  AliHLTPHOSDDLDecoderComponent.h \
-				  AliHLTPHOSMapper.h \
-				  AliHLTPHOSConfig.h \
-				  AliHLTPHOSAltroConfig.h \
-				  AliHLTPHOSSandboxComponent.h \
-				  AliHLTPHOSMIPCounter.h \
-				  AliHLTPHOSMIPCounterComponent.h 
-#				  AliHLTPHOSNoiseMapper.h \
-#				  AliHLTPHOSNoiseMapperComponent.h
-
-pkginclude_HEADERS		= $(CLASS_HDRS) \
-				  AliHLTPHOSCommonDefs.h \
-				  AliHLTPHOSConstants.h \
-				  AliHLTAltroBunch.h \
-				  AliHLTPHOSRecPointListDataStruct.h \
-				  AliHLTPHOSRecPointDataStruct.h \
-				  AliHLTPHOSClusterDataStruct.h \
-	 			  AliHLTPHOSRawAnalyzer.h \
-			          AliHLTPHOSDefinitions.h \
-				  AliHLTPHOSModuleCellEnergyDataStruct.h\
-				  AliHLTPHOSRcuCellEnergyDataStruct.h \
-				  AliHLTPHOSValidCellDataStruct.h\
-				  AliHLTPHOSDataHeaderStruct.h \
-				  AliHLTPHOSModuleCellAccumulatedEnergyDataStruct.h \
-				  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
-				  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
-			 	  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
-				  AliHLTPHOSRcuChannelDataStruct.h \
-				  AliHLTPHOSValidChannelDataStruct.h \
-				  AliHLTPHOSClusterDataStruct.h \
-				  AliHLTPHOSRecPointDataStruct.h \
-				  AliHLTPHOSRecPointListDataStruct.h \
-				  AliHLTPHOSRecPointContainerStruct.h \
-				  AliHLTPHOSDigitContainerDataStruct.h \
-				  AliHLTPHOSRcuDigitContainerDataStruct.h \
-				  AliHLTPHOSDigitDataStruct.h
+# additional link def file
+EXTRA_DIST			+=$(MODULE_DHDR)
 
 # version info and linking flags for the library
 libAliHLTPHOS_la_LIBADD		= $(top_builddir)/BASE/util/libAliHLTUtil.la
@@ -163,11 +40,8 @@ libAliHLTPHOS_la_LDFLAGS	= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
 				  @ALIROOT_LIBS@ \
-				  -lRAWDatasim \
-				  -lPHOSbase \
-				  -lPHOSsim \
-				  -lPHOSrec \
-				  -version-info 0:0:0
+				  @ALIPHOS_LIBS@ \
+				  -version-info $(LIBRARY_VERSION)
 
 # automatic generation of data and time of library build
 COMPILE_INFO			=  AliHLTPHOSCompileInfo.cxx

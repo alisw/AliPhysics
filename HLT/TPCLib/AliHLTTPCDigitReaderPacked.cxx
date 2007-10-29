@@ -28,7 +28,6 @@
 using namespace std;
 #endif
 
-#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 #include "AliHLTTPCDigitReaderPacked.h"
 
 #include "AliTPCRawStream.h"
@@ -42,6 +41,7 @@ using namespace std;
 
 ClassImp(AliHLTTPCDigitReaderPacked)
 
+#if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   :
 #if ENABLE_PAD_SORTING

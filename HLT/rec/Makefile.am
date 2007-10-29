@@ -7,11 +7,6 @@ SUBDIRS 			=
 
 EXTRA_DIST			= 
 
-AM_CPPFLAGS			= -DMODULE=$(MODULE) \
-				  $(PACKCXXFLAGS) \
-				  @ALIROOT_CPPFLAGS@         \
-				  -I$(top_srcdir)/BASE
-
 # library definition
 lib_LTLIBRARIES			=  libHLTrec.la
 
@@ -25,6 +20,13 @@ MODDIR				= $(top_srcdir)
 PKGDEF				= $(MODDIR)/libHLTrec.pkg
 include $(top_srcdir)/libHLTrec.pkg
 
+# compiler flags
+AM_CPPFLAGS			= -DMODULE=$(MODULE) \
+				  $(PACKCXXFLAGS) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//!d" -e "s|HLT/|-I$(top_srcdir)/|")) \
+				  $(foreach i, $(EINCLUDE),  \
+					$(shell echo $(i) | sed -e "/HLT\//d" -e "s|^|-I$(ALICE_ROOT)/|"))
 # library sources
 libHLTrec_la_SOURCES		= $(MODULE_SRCS)
 

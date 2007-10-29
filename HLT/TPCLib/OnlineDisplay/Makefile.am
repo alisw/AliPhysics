@@ -5,6 +5,7 @@ MODULE 				= AliHLTTPCDisplay
 
 AM_CPPFLAGS			= @ALIROOT_CPPFLAGS@         \
 				  @HOMER_CPPFLAGS@ \
+				  -I$(ALICE_ROOT)/TPC \
 				  -I$(top_srcdir)/BASE       \
 				  -I$(srcdir)/../
 
