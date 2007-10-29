@@ -81,7 +81,8 @@ private:
   AliMUONClusterSplitterMLEM(const AliMUONClusterSplitterMLEM&);
   /// will not be implemented
   AliMUONClusterSplitterMLEM& operator=(const AliMUONClusterSplitterMLEM&);
-  
+  Double_t Param2Coef(Int_t icand, Double_t coef, Double_t *par);
+
 private:
   
     static const Double_t fgkCouplMin; ///< threshold on coupling 

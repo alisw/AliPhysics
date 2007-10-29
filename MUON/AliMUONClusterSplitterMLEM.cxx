@@ -13,20 +13,21 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-// $Id$
+/* $Id$ */
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONClusterSplitterMLEM
 /// 
-/// Splitter class for the MLEM algorithm...
-///
-/// FIXME: describe it a little bit more here...
+/// Splitter class for the MLEM algorithm. Performs fitting procedure
+/// with up to 3 hit candidates and tries to split clusters if the number
+/// of candidates exceeds 3.
 ///
 /// \author Laurent Aphecetche (for the "new" C++ structure) and 
 /// Alexander Zinchenko, JINR Dubna, for the hardcore of it ;-)
 //-----------------------------------------------------------------------------
 
 #include "AliMUONClusterSplitterMLEM.h"
+#include "AliMUONClusterFinderMLEM.h" // for status flag constants
 
 #include "AliMUONCluster.h"
 #include "AliMUONPad.h"
@@ -51,7 +52,8 @@
 ClassImp(AliMUONClusterSplitterMLEM)
 /// \endcond
 
-const Double_t AliMUONClusterSplitterMLEM::fgkCouplMin = 1.e-3; // threshold on coupling 
+//const Double_t AliMUONClusterSplitterMLEM::fgkCouplMin = 1.e-3; // threshold on coupling 
+const Double_t AliMUONClusterSplitterMLEM::fgkCouplMin = 1.e-2; // threshold on coupling 
 
 //_____________________________________________________________________________
 AliMUONClusterSplitterMLEM::AliMUONClusterSplitterMLEM(Int_t detElemId, 
@@ -121,7 +123,7 @@ AliMUONClusterSplitterMLEM::AddBin(TH2 *mlem,
       if (pix) pix->Add(BinToPix(mlem,j,i)); 
       else {
         pixPtr = new AliMUONPad (mlem->GetXaxis()->GetBinCenter(j), 
-                                   mlem->GetYaxis()->GetBinCenter(i), 0, 0, cont1);
+				 mlem->GetYaxis()->GetBinCenter(i), 0, 0, cont1);
         fPixArray->Add(pixPtr);
       }
       AddBin(mlem, i, j, mode, used, pix); // recursive call
@@ -192,49 +194,52 @@ AliMUONClusterSplitterMLEM::ChargeIntegration(Double_t x, Double_t y,
 void 
 AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster, 
                                     Int_t & /*fNpar*/, Double_t * /*gin*/, 
-                                    Double_t &f, Double_t *par, Int_t /*iflag*/)
+                                    Double_t &f, Double_t *par, Int_t iflag)
 {
-  /// Fit for one track
+  /// Computes the functional to be minimized
   
   Int_t indx, npads=0;
   Double_t charge, delta, coef=0, chi2=0, qTot = 0;
+  static Double_t qAver = 0;
   
-  Int_t mult = cluster.Multiplicity(), ibeg = fNpar / 3;
+  Int_t mult = cluster.Multiplicity(), iend = fNpar / 3;
   for (Int_t j = 0; j < mult; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
-    if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
-    if ( pad->IsReal() ) npads++; // exclude virtual pads
-    qTot += pad->Charge(); // c.fXyq[2][j];
+    //if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::fgkUseForFit) continue;
+    if (iflag == 0) {
+      if ( pad->IsReal() ) npads++; // exclude virtual pads
+      qTot += pad->Charge(); 
+    }
     charge = 0;
-    for (Int_t i = ibeg; i >= 0; --i)
-    { // sum over tracks
-      indx = i<2 ? 2*i : 2*i+1;
-      if (fNpar == 2) 
-      {
-        coef = 1;
-      }
-      else 
-      {
-        coef = i==ibeg ? par[indx+2] : 1-coef;
-      }
-      coef = TMath::Max (coef, 0.);
-      if ( fNpar == 8 && i < 2) 
-      {
-        coef = i==1 ? coef*par[indx+2] : coef - par[7];
-      }
-      coef = TMath::Max (coef, 0.);
+    for (Int_t i = 0; i <= iend; ++i)
+    { 
+      // sum over hits
+      indx = 3 * i;
+      coef = Param2Coef(i, coef, par);
       charge += ChargeIntegration(par[indx],par[indx+1],*pad) * coef;
     }
     charge *= fQtot;
-    delta = charge - pad->Charge(); //c.fXyq[2][j];
+    delta = charge - pad->Charge(); 
     delta *= delta;
-    delta /= pad->Charge(); //c.fXyq[2][j];
+    delta /= pad->Charge(); 
     chi2 += delta;
   } // for (Int_t j=0;
-  f = chi2; 
-  Double_t qAver = qTot/npads;
-  f = chi2/qAver;
+  if (iflag == 0) qAver = qTot / npads;
+  f = chi2 / qAver;
+}
+
+//_____________________________________________________________________________
+Double_t AliMUONClusterSplitterMLEM::Param2Coef(Int_t icand, Double_t coef, Double_t *par)
+{
+  /// Extract hit contribution scale factor from fit parameters
+  
+  if (fNpar == 2) return 1.;
+  if (fNpar == 5) return icand==0 ? par[2] : TMath::Max(1.-par[2],0.);
+  if (icand == 0) return par[2];
+  if (icand == 1) return TMath::Max((1.-par[2])*par[5], 0.);
+  return TMath::Max(1.-par[2]-coef,0.);
 }
 
 //_____________________________________________________________________________
@@ -245,7 +250,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
                                 Double_t *parOk,
                                 TObjArray& clusterList)
 {
-  /// Find selected clusters to selected pad charges
+  /// Steering function and fitting procedure for the fit of pad charge distribution
   
   //  AliDebug(2,Form("iSimple=%d nfit=%d",iSimple,nfit));
   
@@ -254,7 +259,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   Double_t xmax = mlem->GetXaxis()->GetXmax() + mlem->GetXaxis()->GetBinWidth(1);
   Double_t ymin = mlem->GetYaxis()->GetXmin() - mlem->GetYaxis()->GetBinWidth(1);
   Double_t ymax = mlem->GetYaxis()->GetXmax() + mlem->GetYaxis()->GetBinWidth(1);
-  Double_t step[3]={0.01,0.002,0.02}, xPad = 0, yPad = 99999;
+  Double_t xPad = 0, yPad = 99999;
   
   // Number of pads to use and number of virtual pads
   Int_t npads = 0, nVirtual = 0, nfit0 = nfit;
@@ -264,24 +269,25 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   {
     AliMUONPad* pad = cluster.Pad(i);
     if ( !pad->IsReal() ) ++nVirtual;
-    if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
+    //if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::fgkUseForFit ) continue;
     if ( pad->IsReal() )
     {
       ++npads;
       if (yPad > 9999) 
       { 
-        xPad = pad->X();//fXyq[0][i]; 
-        yPad = pad->Y();//fXyq[1][i]; 
+        xPad = pad->X();
+        yPad = pad->Y();
       } 
       else 
       {
-        if (pad->DY() < pad->DX() ) //fXyq[4][i] < fXyq[3][i]) 
+        if (pad->DY() < pad->DX() ) 
         {
-          yPad = pad->Y();//fXyq[1][i]; 
+          yPad = pad->Y();
         }
         else 
         {
-          xPad = pad->X();//fXyq[0][i]; 
+          xPad = pad->X();
         }
       }
     }
@@ -327,9 +333,8 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
    */
   
   // Get number of pads in X and Y 
-//  Int_t nInX = 0, nInY;
-//  PadsInXandY(cluster,nInX, nInY);
-  const Int_t kStatusToTest(1);
+  //const Int_t kStatusToTest(1);
+  const Int_t kStatusToTest(AliMUONClusterFinderMLEM::fgkUseForFit);
   
   AliMpIntPair nofPads = cluster.NofPads(kStatusToTest);
   Int_t nInX = nofPads.GetFirst();
@@ -339,7 +344,8 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     Int_t npadOK = 0;
     for (Int_t j = 0; j < cluster.Multiplicity(); ++j) {
       AliMUONPad *pad = cluster.Pad(j);
-      if (pad->Status() == 1 && !pad->IsSaturated()) npadOK++;
+      //if (pad->Status() == 1 && !pad->IsSaturated()) npadOK++;
+      if (pad->Status() == AliMUONClusterFinderMLEM::fgkUseForFit && !pad->IsSaturated()) npadOK++;
     }
     cout << " Number of pads to fit: " << npadOK << endl;
     cout << " nInX and Y: " << nInX << " " << nInY << endl;
@@ -396,377 +402,380 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   if (fDebug) cout << xyCand[0][0] << " " << xyCand[0][1] << " " << sigCand[0][0] << " " << sigCand[0][1] << endl;
   
   Int_t nDof, maxSeed[3];//, nMax = 0;
-    Double_t fmin, chi2o = 9999, chi2n;
     
-    TMath::Sort(nfit0, qseed, maxSeed, kTRUE); // in decreasing order
+  TMath::Sort(nfit0, qseed, maxSeed, kTRUE); // in decreasing order
     
-    Double_t *gin = 0, func0, func1, param[8], step0[8];
-    Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
-    Double_t shift[8], stepMax, derMax, parmin[8], parmax[8], func2[2], shift0;
-    Double_t delta[8], scMax, dder[8], estim, shiftSave = 0;
-    Int_t min, max, nCall = 0, nLoop, idMax = 0, iestMax = 0, nFail;
-    Double_t rad, dist[3] = {0};
+  Double_t step[3]={0.01,0.002,0.02}, fmin, chi2o = 9999, chi2n;
+  Double_t *gin = 0, func0, func1, param[8], step0[8];
+  Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
+  Double_t shift[8], stepMax, derMax, parmin[8], parmax[8], func2[2], shift0;
+  Double_t delta[8], scMax, dder[8], estim, shiftSave = 0;
+  Int_t min, max, nCall = 0, nLoop, idMax = 0, iestMax = 0, nFail;
+  Double_t rad, dist[3] = {0};
     
-    // Try to fit with one-track hypothesis, then 2-track. If chi2/dof is 
-    // lower, try 3-track (if number of pads is sufficient).
-    for (Int_t iseed = 0; iseed < nfit; ++iseed) 
+  // Try to fit with one-track hypothesis, then 2-track. If chi2/dof is 
+  // lower, try 3-track (if number of pads is sufficient).
+  Int_t iflag = 0; // for the first call of fcn1
+  for (Int_t iseed = 0; iseed < nfit; ++iseed) 
+  {
+      
+    Int_t memory[8] = {0};
+    if (iseed) 
+    { 
+      for (Int_t j = 0; j < fNpar; ++j) 
+      {
+	param[j] = parOk[j]; 
+      }
+      param[fNpar] = 0.6;
+      parmin[fNpar] = 0; 
+      parmax[fNpar++] = 1; 
+    }
+      
+    if (nfit == 1) 
     {
-      
-      Int_t memory[8] = {0};
-      if (iseed) 
-      { 
-        for (Int_t j = 0; j < fNpar; ++j) 
-        {
-          param[j] = parOk[j]; 
-        }
-      } // for bounded params
-      
-      for (Int_t j = 0; j < 3; ++j) 
+      param[fNpar] = xyCand[0][0]; // take COG
+    }
+    else 
+    {
+      param[fNpar] = xyseed[maxSeed[iseed]][0];
+      //param[fNpar] = fNpar==0 ? -16.1651 : -15.2761; 
+    }
+    parmin[fNpar] = xmin; 
+    parmax[fNpar++] = xmax; 
+    if (nfit == 1) 
+    {
+      param[fNpar] = xyCand[0][1]; // take COG
+    }
+    else 
+    {
+      param[fNpar] = xyseed[maxSeed[iseed]][1];
+      //param[fNpar] = fNpar==1 ? -15.1737 : -15.8487;
+    }
+    parmin[fNpar] = ymin; 
+    parmax[fNpar++] = ymax; 
+
+    for (Int_t j = 0; j < fNpar; ++j) 
+    {
+      step0[j] = shift[j] = step[j%3];
+    }
+
+    if (iseed) 
+    { 
+      for (Int_t j = 0; j < fNpar; ++j) 
       {
-        step0[fNpar+j] = shift[fNpar+j] = step[j];
+	param0[1][j] = 0; 
       }
-      
-      if (nfit == 1) 
-      {
-        param[fNpar] = xyCand[0][0]; // take COG
-      }
-      else 
-      {
-        param[fNpar] = xyseed[maxSeed[iseed]][0];
-      }
-      parmin[fNpar] = xmin; 
-      parmax[fNpar++] = xmax; 
-      if (nfit == 1) 
-      {
-        param[fNpar] = xyCand[0][1]; // take COG
-      }
-      else 
-      {
-        param[fNpar] = xyseed[maxSeed[iseed]][1];
-      }
-      parmin[fNpar] = ymin; 
-      parmax[fNpar++] = ymax; 
-      if (fNpar > 2) 
-      {
-        param[fNpar] = fNpar == 4 ? 0.5 : 0.3;
-        parmin[fNpar] = 0; 
-        parmax[fNpar++] = 1; 
-      }
-      if (iseed) 
-      { 
-        for (Int_t j = 0; j < fNpar; ++j) 
-        {
-          param0[1][j] = 0; 
-        }
-      }
-      if (fDebug) {
-	for (Int_t j = 0; j < fNpar; ++j) cout << param[j] << " "; 
-	cout << endl;
-      }
-      
-      // Try new algorithm
-      min = nLoop = 1; stepMax = func2[1] = derMax = 999999; nFail = 0;
-      
-      while (1) 
-      {
-        max = !min;
-        Fcn1(cluster,fNpar, gin, func0, param, 1); nCall++;
-        //cout << " Func: " << func0 << endl;
-        
-        func2[max] = func0;
-        for (Int_t j = 0; j < fNpar; ++j) 
-        {
-          param0[max][j] = param[j];
-          delta[j] = step0[j];
-          param[j] += delta[j] / 10;
-          if (j > 0) param[j-1] -= delta[j-1] / 10;
-          Fcn1(cluster,fNpar, gin, func1, param, 1); nCall++;
-          deriv[max][j] = (func1 - func0) / delta[j] * 10; // first derivative
-                                                           //cout << j << " " << deriv[max][j] << endl;
-          dder[j] = param0[0][j] != param0[1][j] ? (deriv[0][j] - deriv[1][j]) / 
-            (param0[0][j] - param0[1][j]) : 0; // second derivative
-        }
-        param[fNpar-1] -= delta[fNpar-1] / 10;
-        if (nCall > 2000) break;
-        
-        min = func2[0] < func2[1] ? 0 : 1;
-        nFail = min == max ? 0 : nFail + 1;
-        
-        stepMax = derMax = estim = 0;
-        for (Int_t j = 0; j < fNpar; ++j) 
-        { 
-          // Estimated distance to minimum
-          shift0 = shift[j];
-          if (nLoop == 1) 
-          {
-            shift[j] = TMath::Sign (step0[j], -deriv[max][j]); // first step
-          }
-          else if (TMath::Abs(deriv[0][j]) < 1.e-3 && TMath::Abs(deriv[1][j]) < 1.e-3) 
-          {
-            shift[j] = 0;
-          }
-          else if (deriv[min][j]*deriv[!min][j] > 0 && TMath::Abs(deriv[min][j]) > TMath::Abs(deriv[!min][j])
-                   || TMath::Abs(deriv[0][j]-deriv[1][j]) < 1.e-3 || TMath::Abs(dder[j]) < 1.e-6) 
-          {
-            shift[j] = -TMath::Sign (shift[j], (func2[0]-func2[1]) * (param0[0][j]-param0[1][j]));
-	    if (min == max) 
-	    { 
-	      if (memory[j] > 1) 
-	      { 
-		shift[j] *= 2; 
-	      } 
-	      memory[j]++;
-	    }
-	  }
-          else 
-          {
-            shift[j] = dder[j] != 0 ? -deriv[min][j] / dder[j] : 0;
-            memory[j] = 0;
-          }
-          
-          if (TMath::Abs(shift[j])/step0[j] > estim) 
-          { 
-            estim = TMath::Abs(shift[j])/step0[j];
-            iestMax = j;
-          }
-          
-          // Too big step
-          if (TMath::Abs(shift[j])/step0[j] > 10) shift[j] = TMath::Sign(10.,shift[j]) * step0[j]; // 
-          
-          // Failed to improve minimum
-          if (min != max) 
-          {
-            memory[j] = 0;
-            param[j] = param0[min][j];
-            if (TMath::Abs(shift[j]+shift0) > 0.1*step0[j]) 
-            {
-              shift[j] = (shift[j] + shift0) / 2;
-            }
-            else 
-            {
-              shift[j] /= -2;
-            }
-          } 
-          
-          // Too big step
-          if (TMath::Abs(shift[j]*deriv[min][j]) > func2[min]) 
-          {
-            shift[j] = TMath::Sign (func2[min]/deriv[min][j], shift[j]);
-          }
-          
-          // Introduce step relaxation factor
-          if (memory[j] < 3) 
-          {
-            scMax = 1 + 4 / TMath::Max(nLoop/2.,1.);
-            if (TMath::Abs(shift0) > 0 && TMath::Abs(shift[j]/shift0) > scMax) 
-            {
-              shift[j] = TMath::Sign (shift0*scMax, shift[j]);
-            }
-          }
-          param[j] += shift[j]; 
-          //MLEM Check parameter limits 27-12-2004
-          if (param[j] < parmin[j]) 
-          { 
-            shift[j] = parmin[j] - param[j]; 
-            param[j] = parmin[j]; 
-          } 
-          else if (param[j] > parmax[j]) 
-          {
-            shift[j] = parmax[j] - param[j];
-            param[j] = parmax[j];
-          }
-          //cout << " xxx " << j << " " << shift[j] << " " << param[j] << endl;
-          stepMax = TMath::Max (stepMax, TMath::Abs(shift[j]/step0[j]));
-          if (TMath::Abs(deriv[min][j]) > derMax) 
-          {
-            idMax = j;
-            derMax = TMath::Abs (deriv[min][j]);
-          }
-        } // for (Int_t j=0; j<fNpar;
-        
-        if (estim < 1 && derMax < 2 || nLoop > 150) break; // minimum was found
-        
-        nLoop++;
-        
-        // Check for small step
-        if (shift[idMax] == 0) 
-        { 
-          shift[idMax] = step0[idMax]/10; 
-          param[idMax] += shift[idMax]; 
-          continue; 
-        }
-        
-        if (!memory[idMax] && derMax > 0.5 && nLoop > 10) 
-        {
-          if (dder[idMax] != 0 && TMath::Abs(deriv[min][idMax]/dder[idMax]/shift[idMax]) > 10) 
-          {
-            if (min == max) dder[idMax] = -dder[idMax];
-            shift[idMax] = -deriv[min][idMax] / dder[idMax] / 10; 
-            param[idMax] += shift[idMax];
-            stepMax = TMath::Max (stepMax, TMath::Abs(shift[idMax])/step0[idMax]);
-            if (min == max) shiftSave = shift[idMax];
-          }
-          if (nFail > 10) 
-          {
-            param[idMax] -= shift[idMax];
-            shift[idMax] = 4 * shiftSave * (gRandom->Rndm(0) - 0.5);
-            param[idMax] += shift[idMax];
-          }
-        }      
-  } // while (1)
-      
-      fmin = func2[min];
-      
-      nDof = npads - fNpar + nVirtual;
-      if (!nDof) nDof++;
-      chi2n = fmin / nDof;
-      if (fDebug) cout << " Chi2 " << chi2n << " " << fNpar << endl;
-      
-      if (chi2n*1.2+1.e-6 > chi2o ) { fNpar -= 3; break; }
-      
-      // Save parameters and errors
-      
-      if (nInX == 1) {
-        // One pad per direction 
-        for (Int_t i=0; i<fNpar; ++i) if (i == 0 || i == 2 || i == 5) param0[min][i] = xPad;
-      }
-      if (nInY == 1) {
-        // One pad per direction 
-        for (Int_t i=0; i<fNpar; ++i) if (i == 1 || i == 3 || i == 6) param0[min][i] = yPad;
-      }
-      
-      /*
-       if (iseed > 0) {
-         // Find distance to the nearest neighbour
-         dist[0] = dist[1] = TMath::Sqrt ((param0[min][0]-param0[min][2])*
-                                          (param0[min][0]-param0[min][2])
-                                          +(param0[min][1]-param0[min][3])*
-                                          (param0[min][1]-param0[min][3]));
-         if (iseed > 1) {
-           dist[2] = TMath::Sqrt ((param0[min][0]-param0[min][5])*
-                                  (param0[min][0]-param0[min][5])
-                                  +(param0[min][1]-param0[min][6])*
-                                  (param0[min][1]-param0[min][6]));
-           rad = TMath::Sqrt ((param0[min][2]-param0[min][5])*
-                              (param0[min][2]-param0[min][5])
-                              +(param0[min][3]-param0[min][6])*
-                              (param0[min][3]-param0[min][6]));
-           if (dist[2] < dist[0]) dist[0] = dist[2];
-           if (rad < dist[1]) dist[1] = rad;
-           if (rad < dist[2]) dist[2] = rad;
-         }
-         cout << dist[0] << " " << dist[1] << " " << dist[2] << endl;
-         if (dist[TMath::LocMin(iseed+1,dist)] < 1.) { fNpar -= 3; break; }
-       }
-       */
-      
-      for (Int_t i = 0; i < fNpar; ++i) {
-        parOk[i] = param0[min][i];
-        //errOk[i] = fmin;
-        errOk[i] = chi2n;
-        // Bounded params
-        parOk[i] = TMath::Max (parOk[i], parmin[i]);
-        parOk[i] = TMath::Min (parOk[i], parmax[i]);
-      }
-      
-      chi2o = chi2n;
-      if (fmin < 0.1) break; // !!!???
-    } // for (Int_t iseed=0; 
-   
+    }
     if (fDebug) {
-      for (Int_t i=0; i<fNpar; ++i) {
-        if (i == 4 || i == 7) {
-          if (i == 7 || i == 4 && fNpar < 7) cout << parOk[i] << endl;
-          else cout << parOk[i] * (1-parOk[7]) << endl;
-          continue;
-        }
-        cout << parOk[i] << " " << errOk[i] << endl;
-      }
+      for (Int_t j = 0; j < fNpar; ++j) cout << param[j] << " "; 
+      cout << endl;
     }
-    nfit = (fNpar + 1) / 3;
-    dist[0] = dist[1] = dist[2] = 0;
-    
-    if (nfit > 1) {
-      // Find distance to the nearest neighbour
-      dist[0] = dist[1] = TMath::Sqrt ((parOk[0]-parOk[2])*
-                                       (parOk[0]-parOk[2])
-                                       +(parOk[1]-parOk[3])*
-                                       (parOk[1]-parOk[3]));
-      if (nfit > 2) {
-        dist[2] = TMath::Sqrt ((parOk[0]-parOk[5])*
-                               (parOk[0]-parOk[5])
-                               +(parOk[1]-parOk[6])*
-                               (parOk[1]-parOk[6]));
-        rad = TMath::Sqrt ((parOk[2]-parOk[5])*
-                           (parOk[2]-parOk[5])
-                           +(parOk[3]-parOk[6])*
-                           (parOk[3]-parOk[6]));
-        if (dist[2] < dist[0]) dist[0] = dist[2];
-        if (rad < dist[1]) dist[1] = rad;
-        if (rad < dist[2]) dist[2] = rad;
-      }
-    }
-    
-    Int_t indx;
-    
-    //if (!fDraw) {
-    
-    Double_t coef = 0;
-    if (iSimple) fnCoupled = 0;
-    //for (Int_t j=0; j<nfit; j++) {
-    for (Int_t j = nfit-1; j >= 0; --j) {
-      indx = j<2 ? j*2 : j*2+1;  
-      if (nfit == 1) coef = 1;
-      else coef = j==nfit-1 ? parOk[indx+2] : 1-coef;
-      coef = TMath::Max (coef, 0.);
-      if (nfit == 3 && j < 2) coef = j==1 ? coef*parOk[indx+2] : coef - parOk[7];
-      coef = TMath::Max (coef, 0.);
       
-      //void AliMUONClusterFinderMLEM::AddRawCluster(Double_t x, Double_t y, 
-      //                                             Double_t qTot, Double_t fmin,
-      //                                             Int_t nfit, Int_t *tracks, 
-      //                                             Double_t /*sigx*/, 
-      //                                             Double_t /*sigy*/, 
-      //                                             Double_t /*dist*/)
+    // Try new algorithm
+    min = nLoop = 1; stepMax = func2[1] = derMax = 999999; nFail = 0;
       
-      if ( coef*fQtot >= 14 )
+    while (1) 
+    {
+      max = !min;
+      Fcn1(cluster,fNpar, gin, func0, param, iflag); nCall++;
+      iflag = 1;
+      //cout << " Func: " << func0 << endl;
+      
+      func2[max] = func0;
+      for (Int_t j = 0; j < fNpar; ++j) 
       {
-        //AZ AliMUONCluster* cluster1 = new AliMUONCluster();
-        AliMUONCluster* cluster1 = new AliMUONCluster(cluster);
-        
-        cluster1->SetCharge(coef*fQtot,coef*fQtot);
-        cluster1->SetPosition(TVector2(parOk[indx],parOk[indx+1]),TVector2(sigCand[0][0],sigCand[0][1]));
-        cluster1->SetChi2(dist[TMath::LocMin(nfit,dist)]);
-        
-        // FIXME: we miss some information in this cluster, as compared to 
-        // the original AddRawCluster code.
-        
-        AliDebug(2,Form("Adding RawCluster detElemId %4d mult %2d charge %5d (xl,yl)=(%9.6g,%9.6g)",
-                        fDetElemId,cluster1->Multiplicity(),(Int_t)cluster1->Charge(),
-                        cluster1->Position().X(),cluster1->Position().Y()));
-        
-        clusterList.Add(cluster1);
+	param0[max][j] = param[j];
+	delta[j] = step0[j];
+	param[j] += delta[j] / 10;
+	if (j > 0) param[j-1] -= delta[j-1] / 10;
+	Fcn1(cluster,fNpar, gin, func1, param, iflag); nCall++;
+	deriv[max][j] = (func1 - func0) / delta[j] * 10; // first derivative
+	//cout << j << " " << deriv[max][j] << endl;
+	dder[j] = param0[0][j] != param0[1][j] ? (deriv[0][j] - deriv[1][j]) / 
+	  (param0[0][j] - param0[1][j]) : 0; // second derivative
       }
-      //      AddRawCluster (parOk[indx], // double x
-      //                     parOk[indx+1], // double y
-      //                     coef*qTot, // double charge
-      //                     errOk[indx], // double fmin
-      //                     nfit0+10*nfit+100*nMax+10000*fnCoupled, // int nfit
-      //                     tracks, // int* tracks
-      //                     sigCand[0][0], // double sigx
-      //                     sigCand[0][1], // double sigy
-      //                     dist[TMath::LocMin(nfit,dist)] // double dist
-      //                     );
+      param[fNpar-1] -= delta[fNpar-1] / 10;
+      if (nCall > 2000) break;
+        
+      min = func2[0] < func2[1] ? 0 : 1;
+      nFail = min == max ? 0 : nFail + 1;
+        
+      stepMax = derMax = estim = 0;
+      for (Int_t j = 0; j < fNpar; ++j) 
+      { 
+	// Estimated distance to minimum
+	shift0 = shift[j];
+	if (nLoop == 1) 
+        {
+	  shift[j] = TMath::Sign (step0[j], -deriv[max][j]); // first step
+	}
+	else if (TMath::Abs(deriv[0][j]) < 1.e-3 && TMath::Abs(deriv[1][j]) < 1.e-3) 
+        {
+	  shift[j] = 0;
+	}
+	else if (deriv[min][j]*deriv[!min][j] > 0 && TMath::Abs(deriv[min][j]) > TMath::Abs(deriv[!min][j])
+		 || TMath::Abs(deriv[0][j]-deriv[1][j]) < 1.e-3 || TMath::Abs(dder[j]) < 1.e-6) 
+        {
+	  shift[j] = -TMath::Sign (shift[j], (func2[0]-func2[1]) * (param0[0][j]-param0[1][j]));
+	  if (min == max) 
+	  { 
+	    if (memory[j] > 1) 
+	    { 
+	      shift[j] *= 2; 
+	    } 
+	    memory[j]++;
+	  }
+	}
+	else 
+        {
+	  shift[j] = dder[j] != 0 ? -deriv[min][j] / dder[j] : 0;
+	  memory[j] = 0;
+	}
+          
+	Double_t es = TMath::Abs(shift[j]) / step0[j];
+	if (es > estim) 
+        { 
+	  estim = es;
+	  iestMax = j;
+	}
+          
+	// Too big step
+	if (TMath::Abs(shift[j])/step0[j] > 10) shift[j] = TMath::Sign(10.,shift[j]) * step0[j]; // 
+	
+	// Failed to improve minimum
+	if (min != max) 
+        {
+	  memory[j] = 0;
+	  param[j] = param0[min][j];
+	  if (TMath::Abs(shift[j]+shift0) > 0.1*step0[j]) 
+          {
+	    shift[j] = (shift[j] + shift0) / 2;
+	  }
+	  else 
+          {
+	    shift[j] /= -2;
+	  }
+	} 
+          
+	// Too big step
+	if (TMath::Abs(shift[j]*deriv[min][j]) > func2[min]) 
+        {
+	  shift[j] = TMath::Sign (func2[min]/deriv[min][j], shift[j]);
+	}
+          
+	// Introduce step relaxation factor
+	if (memory[j] < 3) 
+        {
+	  scMax = 1 + 4 / TMath::Max(nLoop/2.,1.);
+	  if (TMath::Abs(shift0) > 0 && TMath::Abs(shift[j]/shift0) > scMax) 
+          {
+	    shift[j] = TMath::Sign (shift0*scMax, shift[j]);
+	  }
+	}
+	param[j] += shift[j]; 
+	// Check parameter limits
+	if (param[j] < parmin[j]) 
+        { 
+	  shift[j] = parmin[j] - param[j]; 
+	  param[j] = parmin[j]; 
+	} 
+	else if (param[j] > parmax[j]) 
+        {
+	  shift[j] = parmax[j] - param[j];
+	  param[j] = parmax[j];
+	}
+	//cout << " xxx " << j << " " << shift[j] << " " << param[j] << endl;
+	stepMax = TMath::Max (stepMax, TMath::Abs(shift[j]/step0[j]));
+	if (TMath::Abs(deriv[min][j]) > derMax) 
+        {
+	  idMax = j;
+	  derMax = TMath::Abs (deriv[min][j]);
+	}
+      } // for (Int_t j=0; j<fNpar;
+        
+      if (estim < 1 && derMax < 2 || nLoop > 150) break; // minimum was found
+        
+      nLoop++;
+        
+      // Check for small step
+      if (shift[idMax] == 0) 
+      { 
+	shift[idMax] = step0[idMax]/10; 
+	param[idMax] += shift[idMax]; 
+	continue; 
+      }
+        
+      if (!memory[idMax] && derMax > 0.5 && nLoop > 10) 
+      {
+	if (dder[idMax] != 0 && TMath::Abs(deriv[min][idMax]/dder[idMax]/shift[idMax]) > 10) 
+        {
+	  if (min == max) dder[idMax] = -dder[idMax];
+	  shift[idMax] = -deriv[min][idMax] / dder[idMax] / 10; 
+	  param[idMax] += shift[idMax];
+	  stepMax = TMath::Max (stepMax, TMath::Abs(shift[idMax])/step0[idMax]);
+	  if (min == max) shiftSave = shift[idMax];
+	}
+	if (nFail > 10) 
+        {
+	  param[idMax] -= shift[idMax];
+	  shift[idMax] = 4 * shiftSave * (gRandom->Rndm(0) - 0.5);
+	  param[idMax] += shift[idMax];
+	}
+      }      
+    } // while (1)
+      
+    fmin = func2[min];
+    
+    nDof = npads - fNpar + nVirtual;
+    if (!nDof) nDof++;
+    chi2n = fmin / nDof;
+    if (fDebug) cout << " Chi2 " << chi2n << " " << fNpar << endl;
+      
+    //if (fNpar > 2) cout << param0[min][fNpar-3] << " " << chi2n * (1+TMath::Min(1-param0[min][fNpar-3],0.25)) << endl;
+    //if (chi2n*1.2+1.e-6 > chi2o ) 
+    if (fNpar > 2 && (chi2n > chi2o || iseed == nfit-1 
+		      && chi2n * (1+TMath::Min(1-param0[min][fNpar-3],0.25)) > chi2o)) 
+      { fNpar -= 3; break; }
+      
+    // Save parameters and errors
+      
+    if (nInX == 1) {
+      // One pad per direction 
+      //for (Int_t i=0; i<fNpar; ++i) if (i == 0 || i == 2 || i == 5) param0[min][i] = xPad;
+      for (Int_t i=0; i<fNpar; ++i) if (i == 0 || i == 2 || i == 5) 
+	param0[min][i] = xyCand[0][0];
     }
-    return nfit;
-    }  
+    if (nInY == 1) {
+      // One pad per direction 
+      //for (Int_t i=0; i<fNpar; ++i) if (i == 1 || i == 3 || i == 6) param0[min][i] = yPad;
+      for (Int_t i=0; i<fNpar; ++i) if (i == 1 || i == 3 || i == 6) 
+	param0[min][i] = xyCand[0][1];
+    }
+      
+    /*
+      if (iseed > 0) {
+      // Find distance to the nearest neighbour
+      dist[0] = dist[1] = TMath::Sqrt ((param0[min][0]-param0[min][2])*
+      (param0[min][0]-param0[min][2])
+      +(param0[min][1]-param0[min][3])*
+      (param0[min][1]-param0[min][3]));
+      if (iseed > 1) {
+      dist[2] = TMath::Sqrt ((param0[min][0]-param0[min][5])*
+      (param0[min][0]-param0[min][5])
+      +(param0[min][1]-param0[min][6])*
+      (param0[min][1]-param0[min][6]));
+      rad = TMath::Sqrt ((param0[min][2]-param0[min][5])*
+      (param0[min][2]-param0[min][5])
+      +(param0[min][3]-param0[min][6])*
+      (param0[min][3]-param0[min][6]));
+      if (dist[2] < dist[0]) dist[0] = dist[2];
+      if (rad < dist[1]) dist[1] = rad;
+      if (rad < dist[2]) dist[2] = rad;
+      }
+      cout << dist[0] << " " << dist[1] << " " << dist[2] << endl;
+      if (dist[TMath::LocMin(iseed+1,dist)] < 1.) { fNpar -= 3; break; }
+      }
+    */
+      
+    for (Int_t i = 0; i < fNpar; ++i) {
+      parOk[i] = param0[min][i];
+      //errOk[i] = fmin;
+      errOk[i] = chi2n;
+      // Bounded params
+      parOk[i] = TMath::Max (parOk[i], parmin[i]);
+      parOk[i] = TMath::Min (parOk[i], parmax[i]);
+    }
+      
+    chi2o = chi2n;
+    if (fmin < 0.1) break; // !!!???
+  } // for (Int_t iseed=0; 
+   
+  if (fDebug) {
+    for (Int_t i=0; i<fNpar; ++i) {
+      if (i == 4 || i == 7) {
+	if (i == 7 || i == 4 && fNpar < 7) cout << parOk[i] << endl;
+	else cout << parOk[i] * (1-parOk[7]) << endl;
+	continue;
+      }
+      cout << parOk[i] << " " << errOk[i] << endl;
+    }
+  }
+  nfit = (fNpar + 1) / 3;
+  dist[0] = dist[1] = dist[2] = 0;
+  
+  if (nfit > 1) {
+    // Find distance to the nearest neighbour
+    dist[0] = dist[1] = TMath::Sqrt ((parOk[0]-parOk[2])*
+				     (parOk[0]-parOk[2])
+				     +(parOk[1]-parOk[3])*
+				     (parOk[1]-parOk[3]));
+    if (nfit > 2) {
+      dist[2] = TMath::Sqrt ((parOk[0]-parOk[5])*
+			     (parOk[0]-parOk[5])
+			     +(parOk[1]-parOk[6])*
+			     (parOk[1]-parOk[6]));
+      rad = TMath::Sqrt ((parOk[2]-parOk[5])*
+			 (parOk[2]-parOk[5])
+			 +(parOk[3]-parOk[6])*
+			 (parOk[3]-parOk[6]));
+      if (dist[2] < dist[0]) dist[0] = dist[2];
+      if (rad < dist[1]) dist[1] = rad;
+      if (rad < dist[2]) dist[2] = rad;
+    }
+  }
+    
+  Int_t indx;
+  
+  Double_t coef = 0;
+  if (iSimple) fnCoupled = 0;
+  for (Int_t j = 0; j < nfit; ++j) {
+    indx = 3 * j;
+    coef = Param2Coef(j, coef, parOk);
+      
+    //void AliMUONClusterFinderMLEM::AddRawCluster(Double_t x, Double_t y, 
+    //                                             Double_t qTot, Double_t fmin,
+    //                                             Int_t nfit, Int_t *tracks, 
+    //                                             Double_t /*sigx*/, 
+    //                                             Double_t /*sigy*/, 
+    //                                             Double_t /*dist*/)
+    
+    if ( coef*fQtot >= 14 )
+    {
+      //AZ AliMUONCluster* cluster1 = new AliMUONCluster();
+      AliMUONCluster* cluster1 = new AliMUONCluster(cluster);
+      
+      cluster1->SetCharge(coef*fQtot,coef*fQtot);
+      cluster1->SetPosition(TVector2(parOk[indx],parOk[indx+1]),TVector2(sigCand[0][0],sigCand[0][1]));
+      cluster1->SetChi2(dist[TMath::LocMin(nfit,dist)]);
+      
+      // FIXME: we miss some information in this cluster, as compared to 
+      // the original AddRawCluster code.
+      
+      AliDebug(2,Form("Adding RawCluster detElemId %4d mult %2d charge %5d (xl,yl)=(%9.6g,%9.6g)",
+		      fDetElemId,cluster1->Multiplicity(),(Int_t)cluster1->Charge(),
+		      cluster1->Position().X(),cluster1->Position().Y()));
+        
+      clusterList.Add(cluster1);
+    }
+    //      AddRawCluster (parOk[indx], // double x
+    //                     parOk[indx+1], // double y
+    //                     coef*qTot, // double charge
+    //                     errOk[indx], // double fmin
+    //                     nfit0+10*nfit+100*nMax+10000*fnCoupled, // int nfit
+    //                     tracks, // int* tracks
+    //                     sigCand[0][0], // double sigx
+    //                     sigCand[0][1], // double sigy
+    //                     dist[TMath::LocMin(nfit,dist)] // double dist
+    //                     );
+  }
+  return nfit;
+}  
 
 
 //_____________________________________________________________________________
 void
 AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
-                                  TH2 *mlem,
-                                  Double_t *coef,
+                                  TH2 *mlem, Double_t *coef,
                                   TObjArray& clusterList)
 {
   /// The main steering function to work with clusters of pixels in anode
@@ -778,10 +787,10 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
   Int_t nPix = fPixArray->GetEntriesFast();
   
   Double_t cont;
-  Int_t nclust = 0, indx, indx1;
-  Bool_t *used = new Bool_t[ny*nx];
+  Int_t nclust = 0, indx, indx1, nxy = ny * nx; 
+  Bool_t *used = new Bool_t[nxy];
   
-  memset(used,0,ny*nx*sizeof(Bool_t));
+  for (Int_t j = 0; j < nxy; ++j) used[j] = kFALSE; 
   
   TObjArray *clusters[200]={0};
   TObjArray *pix;
@@ -802,14 +811,15 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       if (nclust >= 200) AliFatal(" Too many clusters !!!");
       clusters[nclust++] = pix;
     } // for (Int_t j=1; j<=nx; j++) {
-    } // for (Int_t i=1; i<=ny;
-//  if (fDebug) cout << nclust << endl;
+  } // for (Int_t i=1; i<=ny;
+  if (fDebug) cout << nclust << endl;
   delete [] used;
   
   // Compute couplings between clusters and clusters to pads
   Int_t npad = cluster.Multiplicity();
   
   // Exclude pads with overflows
+  /*
   for (Int_t j = 0; j < npad; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
@@ -822,8 +832,9 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       pad->SetStatus(0);
     }
   }
+  */
   
-  // Compute couplings of clusters to pads
+  // Compute couplings of clusters to pads (including overflows)
   TMatrixD aijclupad(nclust,npad);
   aijclupad = 0;
   Int_t npxclu;
@@ -836,15 +847,15 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       indx = fPixArray->IndexOf(pix->UncheckedAt(i));
       for (Int_t j = 0; j < npad; ++j) 
       {
-        AliMUONPad* pad = cluster.Pad(j);
-        if ( pad->Status() < 0 && pad->Status() != -5) continue;
+        //AliMUONPad* pad = cluster.Pad(j);
+        //if ( pad->Status() < 0 && pad->Status() != -5) continue;
         if (coef[j*nPix+indx] < fgkCouplMin) continue;
         aijclupad(iclust,j) += coef[j*nPix+indx];
       }
     }
   }
   
-  // Compute couplings between clusters
+  // Compute couplings between clusters (exclude overflows)
   TMatrixD aijcluclu(nclust,nclust);
   aijcluclu = 0;
   for (Int_t iclust = 0; iclust < nclust; ++iclust) 
@@ -852,7 +863,8 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
     for (Int_t j = 0; j < npad; ++j) 
     {
       // Exclude overflows
-      if ( cluster.Pad(j)->Status() < 0) continue;
+      //if ( cluster.Pad(j)->Status() < 0) continue;
+      if ( cluster.Pad(j)->IsSaturated()) continue;
       if (aijclupad(iclust,j) < fgkCouplMin) continue;
       for (Int_t iclust1=iclust+1; iclust1<nclust; iclust1++) 
       {
@@ -874,7 +886,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
 
   // Find groups of coupled clusters
   used = new Bool_t[nclust];
-  memset(used,0,nclust*sizeof(Bool_t));
+  for (Int_t j = 0; j < nclust; ++j) used[j] = kFALSE;
 
   Int_t *clustNumb = new Int_t[nclust];
   Int_t nCoupled, nForFit, minGroup[3], clustFit[3], nfit = 0;
@@ -931,8 +943,11 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
         for (Int_t j = 0; j < npad; ++j)
         {
           AliMUONPad* pad = cluster.Pad(j);
-          if ( pad->Status()==1 ) pad->SetStatus(0);
-          if ( pad->Status()==-9) pad->SetStatus(-5);
+          //if ( pad->Status()==1 ) pad->SetStatus(0);
+          //if ( pad->Status()==-9) pad->SetStatus(-5);
+          if ( pad->Status() == AliMUONClusterFinderMLEM::fgkUseForFit ||
+	       pad->Status() == AliMUONClusterFinderMLEM::fgkCoupled) 
+	    pad->SetStatus(AliMUONClusterFinderMLEM::fgkZero);
         }
         // Merge the failed cluster candidates (with too few pads to fit) with 
         // the one with the strongest coupling
@@ -943,8 +958,8 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
         // Do the fit
         nfit = Fit(cluster,0, nForFit, clustFit, clusters, parOk, clusterList);
 	if (nfit == 0) { 
-	  //cout << fNpar << " " << cluster.Multiplicity() << endl; 
-	  fNpar = 0;
+	  //cout << " (nfit == 0) " << fNpar << " " << cluster.Multiplicity() << endl; 
+	  fNpar = 0; // should be 0 by itself but just in case ...
 	}
       }
       
@@ -956,8 +971,10 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       for (Int_t j = 0; j < npad; ++j) 
       {
         AliMUONPad* pad = cluster.Pad(j);
-	if ( pad->Status()==1 ) pad->SetStatus(-2);
-	if ( pad->Status()==-9) pad->SetStatus(-5);
+	//if ( pad->Status()==1 ) pad->SetStatus(-2);
+	//if ( pad->Status()==-9) pad->SetStatus(-5);
+	if ( pad->Status() == AliMUONClusterFinderMLEM::fgkUseForFit ) 
+	  pad->SetStatus(AliMUONClusterFinderMLEM::fgkModified);
       }
       
       // Sort the clusters (move to the right the used ones)
@@ -991,12 +1008,13 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
           }
         }
         
-        // Update the remaining clusters couplings (exclude couplings from 
-        // the used pads)
+        // Update the remaining clusters couplings (subtract couplings from 
+        // the used pads) - overflows excluded
         for (Int_t j = 0; j < npad; ++j) 
         {
           AliMUONPad* pad = cluster.Pad(j);
-          if ( pad->Status() != -2) continue;
+          //if ( pad->Status() != -2) continue;
+          if ( pad->Status() != AliMUONClusterFinderMLEM::fgkModified) continue;
           for (Int_t iclust=0; iclust<nCoupled; ++iclust) 
           {
             indx = clustNumb[iclust];
@@ -1011,7 +1029,8 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
               aijcluclu(indx1,indx) = aijcluclu(indx,indx1);
             }
           }
-          pad->SetStatus(-8);
+          //pad->SetStatus(-8);
+          pad->SetStatus(AliMUONClusterFinderMLEM::fgkOver);
         } // for (Int_t j=0; j<npad;
       } // if (nCoupled > 3)
     } // while (nCoupled > 0)
@@ -1083,7 +1102,8 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
     for (Int_t j = 0; j < mult; ++j) 
     {
       AliMUONPad* pad = cluster.Pad(j);
-      if ( pad->Status() < 0 && pad->Status() != -5 ) continue;// exclude used pads
+      //if ( pad->Status() < 0 && pad->Status() != -5 ) continue;// exclude used pads
+      if ( pad->Status() != AliMUONClusterFinderMLEM::fgkZero) continue;// exclude used pads
         aijclupad(imax,j) += aijclupad(indx,j);
         aijclupad(indx,j) = 0;
     }
@@ -1191,7 +1211,7 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
   if (nCoupled > 3) 
   {
     padpix = new Double_t[npad];
-    memset(padpix,0,npad*sizeof(Double_t));
+    for (Int_t i = 0; i < npad; ++i) padpix[i] = 0.;
   }
   
   Int_t nOK = 0, indx, indx1;
@@ -1202,6 +1222,7 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
     {
       if ( aijclupad(indx,j) < fgkCouplMin) continue;
       AliMUONPad* pad = cluster.Pad(j);
+      /*
       if ( pad->Status() == -5 ) pad->SetStatus(-9); // flag overflow
       if ( pad->Status() < 0 ) continue; // exclude overflows and used pads
       if ( !pad->Status() ) 
@@ -1209,6 +1230,12 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
         pad->SetStatus(1);
         ++nOK; // pad to be used in fit
       }      
+      */
+      if ( pad->Status() != AliMUONClusterFinderMLEM::fgkZero 
+	   || pad->IsSaturated() ) continue; // used pads and overflows
+      pad->SetStatus(AliMUONClusterFinderMLEM::fgkUseForFit);
+      ++nOK; // pad to be used in fit
+
       if (nCoupled > 3) 
       {
         // Check other clusters
@@ -1229,7 +1256,8 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
   {
     if (padpix[j] < fgkCouplMin) continue;
     aaa += padpix[j];
-    cluster.Pad(j)->SetStatus(-1); // exclude pads with strong coupling to the other clusters
+    //cluster.Pad(j)->SetStatus(-1); // exclude pads with strong coupling to the other clusters
+    cluster.Pad(j)->SetStatus(AliMUONClusterFinderMLEM::fgkCoupled); // exclude pads with strong coupling to the other clusters
     nOK--;
   }
   delete [] padpix; 
@@ -1243,43 +1271,32 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
 {
   /// Subtract the fitted charges from pads with strong coupling
   
-  Int_t indx, mult = cluster.Multiplicity(), ibeg = fNpar/3;
+  Int_t indx, mult = cluster.Multiplicity(), iend = fNpar/3;
   Double_t charge, coef=0;
   
   for (Int_t j = 0; j < mult; ++j) 
   {
     AliMUONPad* pad = cluster.Pad(j);
-    if ( pad->Status() != -1 ) continue;
+    //if ( pad->Status() != -1 ) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::fgkCoupled ) continue;
     if (fNpar != 0) 
     {
       charge = 0;
-      for (Int_t i = ibeg; i >= 0; --i) 
+      for (Int_t i = 0; i <= iend; ++i) 
       { 
-        // sum over tracks
-        indx = i<2 ? 2*i : 2*i+1;
-        if (fNpar == 2) 
-        {
-          coef = 1;
-        }
-        else 
-        {
-          coef = i==ibeg ? par[indx+2] : 1-coef;
-        }
-        coef = TMath::Max (coef, 0.);
-        if (fNpar == 8 && i < 2) 
-        {
-          coef = i==1 ? coef*par[indx+2] : coef - par[7];
-        }
-        coef = TMath::Max (coef, 0.);
+        // sum over hits
+	indx = 3 * i;
+	coef = Param2Coef(i, coef, par);
         charge += ChargeIntegration(par[indx],par[indx+1],*pad) * coef;
       }
       charge *= fQtot;
       pad->SetCharge(pad->Charge()-charge);
     } // if (fNpar != 0)
     
-    if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(0); 
+    //if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(0); 
+    if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(AliMUONClusterFinderMLEM::fgkZero); 
     // return pad for further using // FIXME: remove usage of zerosuppression here
-    else pad->SetStatus(-2); // do not use anymore
+    else pad->SetStatus(AliMUONClusterFinderMLEM::fgkOver); // do not use anymore
     
   } // for (Int_t j=0;
 }  
