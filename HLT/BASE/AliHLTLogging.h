@@ -14,6 +14,7 @@
 
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"
+#include "TString.h"
 #include "TObject.h"
 #include "TArrayC.h"
 

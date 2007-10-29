@@ -14,8 +14,8 @@
 /* class AliTRDdataArrayI; */
 /* class AliTRDdataArrayF; */
 /* class AliTRDdigitsManager; */
-/* class AliRawReader; */
 
+class AliRawReader;
 class AliRawReaderMemory;
 class AliTRDrawData;
 
