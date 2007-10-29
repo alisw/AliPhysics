@@ -8,4 +8,3 @@ EXPORT:=
 
 EINCLUDE:= PYTHIA6
 
-all-PWG2: all-PWG2ebye all-PWG2resonances all-PWG2flow all-PWG2femtoscopy all-PWG2femtoscopyUser
