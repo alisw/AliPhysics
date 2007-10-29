@@ -1,24 +1,8 @@
-// The class definition in esdClus.h has been generated automatically
-// by the ROOT utility TTree::MakeSelector(). This class is derived
-// from the ROOT class TSelector. For more information on the TSelector
-// framework see $ROOTSYS/README/README.SELECTOR or the ROOT User Manual.
 
-// The following methods are defined in this file:
-//    Begin():        called everytime a loop on the tree starts,
-//                    a convenient place to create your histograms.
-//    SlaveBegin():   called after Begin(), when on PROOF called only on the
-//                    slave servers.
-//    Process():      called for each event, in this function you decide what
-//                    to read and fill your histograms.
-//    SlaveTerminate: called at the end of the loop on the tree, when on PROOF
-//                    called only on the slave servers.
-//    Terminate():    called at the end of the loop on the tree,
-//                    a convenient place to draw/fit your histograms.
-//
 
 //
-// Comaprison draw
-// Comapre the MC information with the reconstructed 
+// Comparison draw
+// Compare the MC information with the reconstructed 
 //
 
 /*
@@ -31,45 +15,27 @@
   fl2.SetParameter(1,1);
   fl2.SetParameter(0,1);
 
-
-
-
-
-
 */
 
 
 
 
-#include "TSystem.h"
 #include "TFile.h"
-#include <TPDGCode.h>
-#include <TStyle.h>
 #include "TCint.h"
-#include "TH1I.h"
-#include "TTimeStamp.h"
-#include "TProof.h"
-#include "TTree.h"
 #include "TH3F.h"
 #include "TH2F.h"
 #include "TF1.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TGraph2D.h"
-#include "TPad.h"
 #include "TCanvas.h"
 #include "TGraph.h"
 //
-#include "AliTracker.h"
-#include "AliMagF.h"
 // 
 #include "AliESDEvent.h"   // new container
 #include "AliESD.h"
-#include "AliESDtrack.h"
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
-#include "AliTPCseed.h"
-#include "AliTPCclusterMI.h"
 //
 #include "AliMathBase.h"
 #include "AliTreeDraw.h" 
@@ -85,11 +51,105 @@ Bool_t    AliComparisonDraw::fgBDraw=kFALSE;         //option draw temporary res
 
 AliComparisonDraw::AliComparisonDraw():
   TObject(),
-  fPtResolLPT(0),
-  fPtResolHPT(0)
+  fEffTPCPt(0),      // TPC efficiency as function of Pt (tan+-1)
+  fEffTPCPtMC(0),    // MC -TPC efficiency as function of Pt (tan+-1)
+  fEffTPCPtF(0),     // efficiency for findable tracks
+  //
+  fEffTPCTan(0),   // TPC efficiency as function of Tan (pt>0.15
+  fEffTPCTanMC(0), // MC -TPC efficiency as function of Tan (pt>0.15)
+  fEffTPCTanF(0),  // efficiency for findable tracks Tan (pt>0.15)
+  //
+  fEffTPCPtTan(0),    // TPC efficiency as function of Pt and tan
+  fEffTPCPtTanMC(0),  // MC -TPC efficiency as function of Pt and tan
+  fEffTPCPtTanF(0),  // TPC efficiency as function of Pt and tan
+  //
+  // dEdx resolution
+  //
+  fTPCSignalNormTan(0), // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormSPhi(0),   // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormTPhi(0),   // tpc signal normalized to the mean signal - MC
+  //
+  fTPCSignalNormTanSPhi(0),   // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormTanTPhi(0),   // tpc signal normalized to the mean signal - MC
+  fTPCSignalNormTanSPt(0),   // tpc signal normalized to the mean signal - MC
+  //
+  //
+  fPtResolLPT(0),        // pt resolution - low pt
+  fPtResolHPT(0),        // pt resolution - high pt 
+  fPtPullLPT(0),         // pt resolution - low pt
+  fPtPullHPT(0),         // pt resolution - high pt 
+  //
+  // Resolution constrained param
+  //
+  fCPhiResolTan(0),   // angular resolution -  constrained
+  fCTanResolTan(0),   // angular resolution -  constrained
+  fCPtResolTan(0),    // pt resolution      -  constrained
+  fCPhiPullTan(0),   // angular resolution -  constrained
+  fCTanPullTan(0),   // angular resolution -  constrained
+  fCPtPullTan(0),    // pt resolution      -  constrained
+  //
+  // DCA resolution
+  //
+  fD0TanSPtB1(0),   // distance to vertex y  
+  fD1TanSPtB1(0),   // distance to vertex z  
+  fD0TanSPtL1(0),   // distance to vertex y  
+  fD1TanSPtL1(0)   // distance to vertex z  
 {
   InitHisto();
 }
+
+AliComparisonDraw::~AliComparisonDraw(){
+  //
+  //
+  //
+  delete  fEffTPCPt;      // TPC efficiency as function of Pt (tan+-1)
+  delete  fEffTPCPtMC;    // MC -TPC efficiency as function of Pt (tan+-1)
+  delete  fEffTPCPtF;     // efficiency for findable tracks
+  //
+  delete  fEffTPCTan;   // TPC efficiency as function of Tan (pt>0.15
+  delete  fEffTPCTanMC; // MC -TPC efficiency as function of Tan (pt>0.15)
+  delete  fEffTPCTanF;  // efficiency for findable tracks Tan (pt>0.15)
+  //
+  delete  fEffTPCPtTan;    // TPC efficiency as function of Pt and tan
+  delete  fEffTPCPtTanMC;  // MC -TPC efficiency as function of Pt and tan
+  delete  fEffTPCPtTanF;  // TPC efficiency as function of Pt and tan
+  //
+  // dEdx resolution
+  //
+  delete  fTPCSignalNormTan; // tpc signal normalized to the mean signal - MC
+  delete  fTPCSignalNormSPhi;   // tpc signal normalized to the mean signal - MC
+  delete  fTPCSignalNormTPhi;   // tpc signal normalized to the mean signal - MC
+  //
+  delete  fTPCSignalNormTanSPhi;   // tpc signal normalized to the mean signal - MC
+  delete  fTPCSignalNormTanTPhi;   // tpc signal normalized to the mean signal - MC
+  delete  fTPCSignalNormTanSPt;   // tpc signal normalized to the mean signal - MC
+  //
+  //
+  delete  fPtResolLPT;        // pt resolution - low pt
+  delete  fPtResolHPT;        // pt resolution - high pt 
+  delete  fPtPullLPT;         // pt resolution - low pt
+  delete  fPtPullHPT;         // pt resolution - high pt 
+  //
+  // Resolution constrained param
+  //
+  delete fCPhiResolTan;   // angular resolution -  constrained
+  delete fCTanResolTan;   // angular resolution -  constrained
+  delete fCPtResolTan;    // pt resolution      -  constrained
+  delete fCPhiPullTan;   // angular resolution -  constrained
+  delete fCTanPullTan;   // angular resolution -  constrained
+  delete fCPtPullTan;    // pt resolution      -  constrained
+  //
+  // DCA resolution
+  //
+  delete fD0TanSPtB1;   // distance to vertex y  
+  delete fD1TanSPtB1;   // distance to vertex z  
+  delete fD0TanSPtL1;   // distance to vertex y  
+  delete fD1TanSPtL1;   // distance to vertex z  
+ 
+}
+
+
+
 
 void AliComparisonDraw::InitHisto(){
   //

@@ -2,11 +2,6 @@
 #ifndef AliComparisonDraw_h
 #define AliComparisonDraw_h
 
-#include <iostream>
-#include <fstream>
-using namespace std;
-#include <TSelector.h>
-
 
 class TFile;
 class AliMCInfo;
@@ -25,6 +20,7 @@ class TGraph;
 class AliComparisonDraw : public TObject {
 public :
   AliComparisonDraw(); 
+  ~AliComparisonDraw();
   virtual Bool_t    IsFolder(){return kTRUE;}
   void      InitHisto();
   void      Process(AliMCInfo* infoMC, AliESDRecInfo *infoRC);
