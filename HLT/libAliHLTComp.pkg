@@ -1,22 +1,26 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-include HLT/hlt.conf
+include $(MODDIR)/hlt.conf
 
-MODULE_SRCS:=
+CLASS_HDRS:=  	
 
-CLASS_HDRS:=  	$(MODULE_SRCS:.cxx=.h)
+MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
 MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-SRCS:=$(patsubst %,rec/%,$(MODULE_SRCS))
-CINTHDRS:=$(patsubst %,rec/%,$(CLASS_HDRS))
-HDRS:=$(patsubst %,rec/%,$(MODULE_HDRS))
-#DHDR:=
-DHDR:=$(patsubst %,rec/%,$(MODULE_DHDR))
-#CINTAUTOLINK:= 1
+EINCLUDE := HLT/BASE
+
+###############################################################################
+#
+# do not change anything below this line
+#
+SRCS:=$(patsubst %,comp/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,comp/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,comp/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,comp/%,$(MODULE_DHDR))
 CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" &&! echo 1)
 
 EDEFINE      := ${HLTDEFS}
@@ -24,4 +28,3 @@ PACKCXXFLAGS := ${HLTCXXFLAGS}
 PACKCFLAGS   := ${HLTCLFAGS}
 PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
 
-EINCLUDE = HLT/BASE

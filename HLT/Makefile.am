@@ -22,6 +22,10 @@ if EN_HLT_MUON
 MUON_DIR=MUON
 endif
 
+if EN_HLT_COMP
+COMP_DIR=comp
+endif
+
 SUBDIRS 		= BASE \
 			  sim \
 			  rec \
@@ -30,6 +34,7 @@ SUBDIRS 		= BASE \
 			  $(PHOS_DIR) \
 			  $(TRD_DIR) \
 			  $(MUON_DIR) \
+			  $(COMP_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
@@ -43,6 +48,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTTPC.pkg \
 			  libAliHLTTRD.pkg \
 			  libAliHLTMUON.pkg \
+			  libAliHLTComp.pkg \
 			  hlt.conf
 
 DIST_SUBDIRS		= $(SUBDIRS)

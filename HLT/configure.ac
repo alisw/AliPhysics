@@ -616,7 +616,7 @@ dnl ------------------------------------------------------------------
 AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 
 ALIMUON_LIBS=
-CHECK_HLTMODULE([muon],
+CHECK_HLTMODULE([dimuon],
 		[AliMUONVCluster.h], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON],
 		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
 		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
@@ -636,6 +636,31 @@ AM_CONDITIONAL(EN_HLT_MUON, test x$enable_muon = xyes)
 AC_MSG_CHECKING([whether to compile muon library])
 AC_MSG_RESULT([$enable_muon])
 AC_SUBST([ALIMUON_LIBS])
+
+dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_COMP],[hlt comp library])
+
+ALICOMP_LIBS=
+CHECK_HLTMODULE([comp],
+		[], [$ALIROOT_CPPFLAGS],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_comp="no...header.missing"
+else
+  enable_comp=$enable_module
+fi
+
+if test "x$enable_comp" = "xyes" ; then 
+  AC_DEFINE(HLT_COMP)
+  ALICOMP_LIBS=$ALIHLTMODULE_LIBS
+fi
+AM_CONDITIONAL(EN_HLT_COMP, test x$enable_comp = xyes)
+AC_MSG_CHECKING([whether to compile comp library])
+AC_MSG_RESULT([$enable_comp])
+AC_SUBST([ALICOMP_LIBS])
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to disable AliRoot logging])
@@ -743,6 +768,7 @@ AC_CONFIG_FILES([Makefile
 		 PHOS/Makefile
 		 TRD/Makefile
 		 MUON/Makefile
+		 comp/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
 
