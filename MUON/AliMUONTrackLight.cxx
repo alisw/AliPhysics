@@ -32,6 +32,7 @@
 #include "AliMUONTrackLight.h"
 #include "AliMUONTrack.h"
 #include "AliMUONConstants.h"
+#include "AliMUONVTrackStore.h"
 
 #include "AliESDMuonTrack.h"
 #include "AliRunLoader.h"
@@ -40,7 +41,6 @@
 #include "AliMUONTrackExtrap.h"
 
 #include "TDatabasePDG.h"
-#include "TClonesArray.h"
 #include "TParticle.h"
 #include "TString.h"
 
@@ -180,33 +180,37 @@ void AliMUONTrackLight::SetPxPyPz(Double_t px, Double_t py, Double_t pz){
 }
 
 //============================================
-TParticle* AliMUONTrackLight::FindRefTrack(AliMUONTrack* trackReco, TClonesArray* trackRefArray, AliRunLoader *runLoader){ 
+TParticle* AliMUONTrackLight::FindRefTrack(
+		AliMUONTrack* trackReco, AliMUONVTrackStore* trackRefArray,
+		AliStack* stack
+	)
+{
   /// find the MC particle that corresponds to a given rec track
   TParticle *part = 0; 
   const Double_t kSigma2Cut = 16;  // 4 sigmas cut, kSigma2Cut = 4*4
-  Int_t nTrackRef = trackRefArray->GetEntriesFast();
-  Int_t compPart = 0; 
-  for (Int_t iref = 0; iref < nTrackRef; iref++) {
-    AliMUONTrack *trackRef = (AliMUONTrack *)trackRefArray->At(iref);
+  Int_t compPart = 0;
+  TIter next(trackRefArray->CreateIterator());
+  AliMUONTrack* trackRef;
+  while ( (trackRef = static_cast<AliMUONTrack*>(next())) ) {
     // check if trackRef is compatible with trackReco:
     //routine returns for each chamber a yes/no information if the
     //hit of rec. track and hit of referenced track are compatible
     Bool_t *compTrack = trackRef->CompatibleTrack(trackReco,kSigma2Cut);
     Int_t iTrack = this->TrackCheck(compTrack); //returns number of validated conditions 
-    if (iTrack==4) { 
-      compPart++; 
+    if (iTrack==4) {
+      compPart++;
       Int_t trackID = trackRef->GetTrackID();
       this->SetTrackPythiaLine(trackID);
-      part = ((AliStack *)(((AliHeader *) runLoader->GetHeader())->Stack()))->Particle(trackID);
+      part = stack->Particle(trackID);
       fTrackPDGCode = part->GetPdgCode();
     }
   }
-  if (compPart>1) { 
+  if (compPart>1) {
     printf ("<AliMUONTrackLight::FindRefTrack> ERROR: more than one particle compatible to the reconstructed track.\n"); 
     Int_t i=0, j=1/i; 
-    printf ("j=%d \n",j); 
+    printf ("j=%d \n",j);
   } 
-  return part; 
+  return part;
 }
 
 //============================================
@@ -226,15 +230,6 @@ Int_t AliMUONTrackLight::TrackCheck(Bool_t *compTrack){
   }
   if (hitsInLastStations > 2) iTrack++; // at least 3 hits in st. 3 & 4
   return iTrack;
-}
-
-//============================================
-void AliMUONTrackLight::FillMuonHistory(AliRunLoader *runLoader, TParticle *part){
-  /// scans the muon history to determine parents pdg code and pythia line
-  // kept for backward compatibility
-  // see the overloaded method FillMuonHistory(AliStack *stack, TParticle *part)
-  AliStack *stack = runLoader->GetHeader()->Stack();
-  FillMuonHistory(stack,part);
 }
 
 //============================================

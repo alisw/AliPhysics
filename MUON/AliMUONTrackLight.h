@@ -27,11 +27,11 @@
 
 class AliMUONTrack;
 class AliESDMuonTrack;
-class AliRunLoader;
-class AliStack; 
+class AliStack;
 class TParticle;
+class AliMUONVTrackStore;
 
-class AliMUONTrackLight : public TObject { 
+class AliMUONTrackLight : public TObject {
  public: 
   AliMUONTrackLight(); 
   AliMUONTrackLight(AliESDMuonTrack* muonTrack); 
@@ -86,7 +86,7 @@ class AliMUONTrackLight : public TObject {
   /// Set pdg code of the rec. track (in general will be a muon)
   void SetTrackPDGCode(Int_t trackPdg) {fTrackPDGCode = trackPdg;}
   void FillFromESD(AliESDMuonTrack* muonTrack, Double_t zvert=-9999);
-  void FillFromAliMUONTrack(AliMUONTrack *trackReco,Double_t zvert=-9999);  
+  void FillFromAliMUONTrack(AliMUONTrack *trackReco,Double_t zvert=-9999);
   /// Return info if is a muon 
   Bool_t IsAMuon() const { return (TMath::Abs(fTrackPDGCode)==13); }
   Bool_t IsParentPionOrKaon(Int_t idParent = 0);
@@ -95,12 +95,11 @@ class AliMUONTrackLight : public TObject {
   void SetTriggered(Bool_t isTriggered) { fIsTriggered = isTriggered; } 
   /// Return flag for trigger  
   Bool_t IsTriggered() const { return fIsTriggered; } 
-  TParticle* FindRefTrack(AliMUONTrack* trackReco, TClonesArray* trackRefArray, AliRunLoader *runLoader); 
+  TParticle* FindRefTrack(AliMUONTrack* trackReco, AliMUONVTrackStore* trackRefArray, AliStack* stack);
   Int_t TrackCheck(Bool_t *compTrack);
   /// Return acually filled no. of *fragmented* parents 
   Int_t GetNParents() const {return fNParents;}
   void FillMuonHistory(AliStack *stack, TParticle *part);
-  void FillMuonHistory(AliRunLoader *runLoader, TParticle *part);
   Bool_t IsB0(Int_t intTest) const;//checks if the provided PDG code corresponds to a neutral B meson
   Bool_t IsMotherAResonance(Int_t index=0) const;
   /// Return flag for oscillation 
