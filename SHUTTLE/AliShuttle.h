@@ -55,6 +55,7 @@ public:
 			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
 	virtual Bool_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData);
 	virtual Bool_t StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName);
+	virtual Bool_t StoreRunMetadataFile(const char* localFile, const char* gridFileName);
 	virtual const char* GetFile(Int_t system, const char* detector,
 		const char* id, const char* source);
 	virtual TList* GetFileSources(Int_t system, const char* detector, const char* id = 0);
@@ -104,7 +105,8 @@ private:
 
 	Bool_t StoreOCDB();
 	Bool_t StoreOCDB(const TString& uri);
-	Bool_t StoreRefFilesToGrid();
+	Bool_t CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName);
+	Bool_t CopyFilesToGrid(const char* type);
 	void CleanLocalStorage(const TString& uri);
 	Bool_t CleanReferenceStorage(const char* detector);
 	void RemoveFile(const char* filename);
