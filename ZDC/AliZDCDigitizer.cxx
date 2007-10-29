@@ -61,6 +61,7 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager)
 {
   fIsCalibration=0; //By default the simulation doesn't create calib. data
+//  fIsCalibration=1; //To create calib. data
   // Get calibration data
   fCalibData = GetCalibData(); 
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
@@ -272,7 +273,10 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   // (for the moment the ref. signal is completely invented assuming a PMgain of 5*10^4!)
   Int_t sectorRef[2];
   sectorRef[1] = 5;
-  Int_t sigRef[2] = {100, 800};
+  Int_t sigRef[2];
+  if(fIsCalibration==0) {sigRef[0]=100;  sigRef[1]=800;}
+  else {sigRef[0]=0;  sigRef[1]=0;}
+  //
   for(Int_t iref=0; iref<2; iref++){
      sectorRef[0] = 3*iref+1;
      for(Int_t res=0; res<2; res++){
