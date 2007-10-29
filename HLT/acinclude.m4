@@ -51,7 +51,7 @@ AC_DEFUN([AC_OPTIMIZATION],
   AC_REQUIRE([AC_PROG_CXX])
 
   AC_ARG_ENABLE(optimization,
-    [AC_HELP_STRING([--enable-optimization],[Enable optimization of objects])],
+    [AC_HELP_STRING([--disable-optimization],[Enable optimization of objects])],
     [],[enable_optimization=yes])
 
   AC_MSG_CHECKING(for optimiztion level)
@@ -168,6 +168,107 @@ AC_DEFUN([ROOT_PATH],
   else 
     ifelse([$3], , :, [$3])     
   fi
+])
+
+dnl ------------------------------------------------------------------
+dnl
+dnl Autoconf macro to check conditions for an HLT module
+dnl          - header dependencies
+dnl          - library dependencies
+dnl          - AliRoot availability
+dnl The macro also exports the --enable/--disable option for the
+dnl module.
+dnl
+dnl Synopsis:
+dnl
+dnl  ROOT_PATH([module],
+dnl            [headers], [additional CPPFLAGS],
+dnl            [libraries], [LD flags], [LIBS],
+dnl            [circ libraries], [LD flags], [LIBS])
+dnl
+dnl First argument is the module name.
+dnl
+dnl Arg 2 and 3 allow to check a list of header files and to specify
+dnl additional CPPFLAGS which might be necessary to perform the checks.
+dnl 
+dnl Arg 4 to 6 allow to check a list of libraries, with additional
+dnl LDFLAGS and LIBS to be specified.
+dnl
+dnl Arg 7 to 9 is the same for libraries with circular dependencies
+dnl among each other.
+dnl
+dnl Return:
+dnl enable_module=yes
+dnl   - AliRoot was found &&
+dnl   - header files found &&
+dnl   - module not disabled
+dnl
+dnl enable_module=no...requires.AliRoot
+dnl   - AliRoot not found
+dnl
+dnl enable_module=missheader
+dnl   - one of the specified header files is missing
+dnl
+dnl Libraries are probed and the variable ALIHLTMODULE_LIBS is set to
+dnl all libraries which could be found.
+dnl 
+dnl Some examples:
+dnl
+dnl Matthias Richter <Matthias.Richter@uib.no>
+AC_DEFUN([CHECK_HLTMODULE],
+[
+AH_TEMPLATE([HLT_[$1]],[hlt [$1] library])
+AC_ARG_ENABLE([$1],
+  [AC_HELP_STRING([--disable-[$1]],
+      [   compile the $1 library ])],
+  [],
+  [enable_module=yes
+   if test "x$have_aliroot" = "xno" ; then
+     enable_module="no...requires.AliRoot"
+   else
+     AC_MSG_NOTICE([checking dependencies for [$1] library])
+
+     AC_LANG_PUSH(C++)
+     save_CPPFLAGS="$CPPFLAGS"
+     save_LDFLAGS="$LDFLAGS"
+     save_LIBS="$LIBS"
+     CPPFLAGS="$save_CPPFLAGS [$3]"
+
+     AC_CHECK_HEADERS([$2], [], [enable_module="missheader"])
+
+     dnl ==========================================================================
+     dnl
+     dnl required header files and libraries for the AliHLTxxx library  
+     dnl
+     
+     dnl ROOT/AliRoot libs needed by libAliHLTxxx
+     CHECKLIBS="[$4]"
+     ALIHLTMODULE_LIBS=
+     LDFLAGS="$save_LDFLAGS [$5]"
+     for CHECKLIB in $CHECKLIBS ; do
+       LIBS="$save_LIBS $ROOTLIBS [$6] $ALIHLTMODULE_LIBS"
+       AC_CHECK_LIB([$CHECKLIB],[_init], [ALIHLTMODULE_LIBS="$ALIHLTMODULE_LIBS -l$CHECKLIB"])
+     done
+
+     dnl libs with circular dependencies needed by libAliHLTxxx
+     CHECKLIBS="[$7]"
+     CIRCULARS=
+     for dep in [$7]; do 
+       CIRCULARS="$CIRCULARS -l$dep"
+     done
+     ALIHLTMODULE_LIBS="$ALIHLTMODULE_LIBS"
+     LDFLAGS="$save_LDFLAGS [$8]"
+     for CHECKLIB in $CHECKLIBS ; do
+       LIBS="$save_LIBS [$9] $CIRCULARS $ALIHLTMODULE_LIBS"
+       AC_CHECK_LIB([$CHECKLIB],[_init], [ALIHLTMODULE_LIBS="$ALIHLTMODULE_LIBS -l$CHECKLIB"])
+     done
+     CPPFLAGS="$save_CPPFLAGS"
+     LDFLAGS="$save_LDFLAGS"
+     LIBS="$save_LIBS"  
+     AC_LANG_POP(C++)
+
+   fi
+  ])
 ])
 
 

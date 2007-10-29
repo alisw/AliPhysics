@@ -154,6 +154,9 @@ might fail.
 Compilation of detector libraries can be forced by the switch
 
   --enable-detector, e.g. --enable-phos
+
+Compilation can also be forced by typing 'make' in the detector
+sub-directory.
  
 Debugging (default disabled)
 

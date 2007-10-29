@@ -246,15 +246,12 @@ if test ! "x$have_aliroot" = "xno" ; then
     # TPC library for AliTPCParam and AliSimDigits used in 
     # AliHLTTPCFileHandler.h and AliHLTTPCDisplay.cxx
     # fram May 07 TPCbase depends on libGui.so
-    saveALIROOT_CPPFLAGS="$ALIROOT_CPPFLAGS"
-    ALIROOT_CPPFLAGS="$saveALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I${ALICE_ROOT}/TPC"
     have_alitpc=yes
     AC_MSG_CHECKING(for required classes in TPC libraries)
     if test ! "x$have_alitpc" = "xno" ; then
-      save_ALIROOT_LIBS=$ALIROOT_LIBS
-      ALIROOT_LIBS="$save_ALIROOT_LIBS -lTPCbase -lTPCrec -lGui -lSTEER"
-      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+      ALITPC_LIBS="-lGui -lTPCbase -lTPCrec"
+      LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS $ALITPC_LIBS"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliSimDigits.h>
   				       #include <AliTPCParam.h>
 				       #include <AliTPCParamSR.h>
@@ -269,62 +266,14 @@ if test ! "x$have_aliroot" = "xno" ; then
 				       AliTPCClustersArray clustarray;
 				       AliTPCcluster clust;
 				       AliTPCClustersRow row])],
-                                      [AC_DEFINE(HAVE_ALITPC)
-				       saveALIROOT_CPPFLAGS=$ALIROOT_CPPFLAGS
-				       saveALIROOT_LIBS=$ALIROOT_LIBS], 
+                                      [AC_DEFINE(HAVE_ALITPC)], 
   				      [have_alitpc=no
-				       ALIROOT_CPPFLAGS=$saveALIROOT_CPPFLAGS
-				       ALIROOT_LIBS=$saveALIROOT_LIBS])
+				       ALITPC_LIBS= ])
     fi
     AC_MSG_RESULT($have_alitpc)
   fi
   AC_CHECK_HEADERS([AliTPCCalibPulser.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPULSER)])
   AC_CHECK_HEADERS([AliTPCCalibPedestal.h], [], [AC_DEFINE(HAVE_NOT_ALITPCCALIBPEDESTAL)])
-
-  dnl
-  dnl Check for the interface of AliExternalTrackParam which has been changed
-  dnl in revision 1.17 of AliExternalTrackParam.h (AliRoot version v4-05-04
-  dnl or higher)
-  externaltrackparam_version=1
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliExternalTrackParam.h>], 
-                                  [AliExternalTrackParam trackparam;
-				   Double_t param[[5]]; Double_t covar[[15]];
- 				   trackparam.Set(0., 0., param, covar);])],
-                                  [externaltrackparam_version=2],
- 				  [AC_DEFINE(EXTERNALTRACKPARAM_V1)])
-  AC_MSG_CHECKING(for version of AliExternalTrackParam)
-  AC_MSG_RESULT($externaltrackparam_version)
-
-  dnl
-  dnl required header files and libraries for the AliHLTPHOS library  
-  dnl
-  have_alicalorawstream=no
-  if test ! "x$have_aliroot" = "xno" ; then
-    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
-    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
-    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
-  				     #include <AliCaloRawStream.h>], 
-                                    [int i])],
-                                    [AC_DEFINE(HAVE_ALICALORAWSTREAM)
-				     have_alicalorawstream=yes], 
-  				    [])
-    AC_MSG_RESULT([$have_alicalorawstream])
-  fi
-
-  dnl
-  dnl required header files and libraries for the AliHLTTRD library  
-  dnl
-  AC_CHECK_HEADERS([AliGeomManager.h], [], [AC_DEFINE([HAVNT_ALIGEOMMANAGER])])
-
-  if test ! "x$have_alirawdata" = "xno" ; then
-    # check for header files needed by the TPCLib/AliHLTTPCDigitReaderPacket
-    # the header file has been moved to the TPC module
-    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
-    # AliRawReaderMemory.h AliRawReaderFile.h already checked
-    #AC_CHECK_HEADERS([AliRawReaderMemory.h AliRawReaderFile.h AliTPCRawStream.h])
-    AC_CHECK_HEADERS([AliTPCRawStream.h])
-  fi
 
   have_tpc_mapping=no
   if test ! "x$have_aliroot" = "xno" ; then
@@ -343,10 +292,34 @@ if test ! "x$have_aliroot" = "xno" ; then
   AC_MSG_CHECKING([for TPC mapping layout])
   AC_MSG_RESULT([$have_tpc_mapping])
 
+  if test ! "x$have_alirawdata" = "xno" ; then
+    # check for header files needed by the TPCLib/AliHLTTPCDigitReaderPacket
+    # the header file has been moved to the TPC module
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS  -I${ALICE_ROOT}/TPC"
+    # AliRawReaderMemory.h AliRawReaderFile.h already checked
+    #AC_CHECK_HEADERS([AliRawReaderMemory.h AliRawReaderFile.h AliTPCRawStream.h])
+    AC_CHECK_HEADERS([AliTPCRawStream.h])
+  fi
+
+  dnl
+  dnl Check for the interface of AliExternalTrackParam which has been changed
+  dnl in revision 1.17 of AliExternalTrackParam.h (AliRoot version v4-05-04
+  dnl or higher)
+  externaltrackparam_version=1
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <AliExternalTrackParam.h>], 
+                                  [AliExternalTrackParam trackparam;
+				   Double_t param[[5]]; Double_t covar[[15]];
+ 				   trackparam.Set(0., 0., param, covar);])],
+                                  [externaltrackparam_version=2],
+ 				  [AC_DEFINE(EXTERNALTRACKPARAM_V1)])
+  AC_MSG_CHECKING(for version of AliExternalTrackParam)
+  AC_MSG_RESULT($externaltrackparam_version)
+
   CPPFLAGS=$save_CPPFLAGS
   LDFLAGS=$save_LDFLAGS
   LIBS=$save_LIBS
 fi
+
 AC_LANG_POP(C++)
 AC_SUBST([ALICE_ROOT])
 AC_SUBST([ALIROOT_CPPFLAGS])
@@ -532,88 +505,137 @@ AM_CONDITIONAL(EN_HLT_UTIL, test x$enable_util = xyes)
 AC_MSG_RESULT([$enable_util])
 
 dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to compile tpc library])
 AH_TEMPLATE([HLT_TPC],[hlt tpc library])
-AC_ARG_ENABLE(tpc,
-  [AC_HELP_STRING([--disable-tpc],
-      [compile the tpc library ])],
-  [],
-  [if test "x$have_aliroot" = "xno" ; then
-     enable_tpc="no...requires.AliRoot"
-   elif test "x$have_alitpc" = "xno" ; then
-     enable_tpc="no...requires.AliRoot.TPC.libraries"
-   else
-     enable_tpc=yes
-   fi
-  ])
+
+CHECK_HLTMODULE([tpc],
+		[], [],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable-module" = "xmissheader"; then
+  enable_tpc="no...missing.headers"
+elif test "x$have_alitpc" = "xno" ; then
+  enable_tpc="no...requires.AliRoot.TPC.libraries"
+else
+  enable_tpc=$enable_module
+fi
 
 if test "x$enable_tpc" = "xyes" ; then 
   AC_DEFINE(HLT_TPC)
 fi
 AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
+AC_MSG_CHECKING([whether to compile tpc library])
 AC_MSG_RESULT([$enable_tpc])
+AC_SUBST([ALITPC_LIBS])
 
 dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to compile phos library])
 AH_TEMPLATE([HLT_PHOS],[hlt phos library])
-AC_ARG_ENABLE(phos,
-  [AC_HELP_STRING([--disable-phos],
-      [compile the phos library ])],
-  [],
-  [if test "x$have_aliroot" = "xno" ; then
-     enable_phos="no...requires.AliRoot"
-   elif ! test "x$have_alicalorawstream" = "xyes"; then
-     enable_phos="no...requires.AliRoot>v4-05-07"
-   else
-     enable_phos=yes
-   fi
-  ])
+  
+ALIPHOS_LIBS=
+CHECK_HLTMODULE([phos],
+		[], [$ALIROOT_CPPFLAGS],
+		[RAWDatasim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], [$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS],
+		[PHOSbase PHOSrec PHOSsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable-module" = "xmissheader"; then
+  enable_phos="no...requires.AliRoot>v4-05-07"
+else
+  have_alicalorawstream=no
+  if test ! "x$have_aliroot" = "xno" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    # this can not be used as AliCaloRawStream.h indirectly depends on TString.h
+    #AC_CHECK_HEADERS([AliCaloRawStream.h], [have_alicalorawstream=yes])
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS"
+    AC_MSG_CHECKING([for AliCaloRawStream.h usability])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <TString.h>
+  				        #include <AliCaloRawStream.h>], 
+                                       [int i])],
+                                       [AC_DEFINE(HAVE_ALICALORAWSTREAM)
+				        have_alicalorawstream=yes], 
+  				       [])
+    AC_MSG_RESULT([$have_alicalorawstream])
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
+  if test "x$have_alicalorawstream" != "xyes"; then
+    enable_phos="no...requires.AliRoot>v4-05-07"
+  else
+    enable_phos=$enable_module
+  fi
+fi
 
 if test "x$enable_phos" = "xyes" ; then 
   AC_DEFINE(HLT_PHOS)
+  ALIPHOS_LIBS=$ALIHLTMODULE_LIBS
 fi
 AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
+AC_MSG_CHECKING([whether to compile phos library])
 AC_MSG_RESULT([$enable_phos])
+AC_SUBST([ALIPHOS_LIBS])
 
-dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to compile trd library])
-AH_TEMPLATE([HLT_TRD],[hlt trd library])
-AC_ARG_ENABLE(trd,
-  [AC_HELP_STRING([--disable-trd],
-      [compile the trd library ])],
-  [],
-  [if test "x$have_aliroot" = "xno" ; then
-     enable_trd="no...requires.AliRoot"
-   else
-     enable_trd=yes
-   fi
-  ])
+ALITRD_LIBS=
+CHECK_HLTMODULE([trd],
+		[], [],
+		[MLP], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[TRDbase TRDrec TRDsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable-module" = "xmissheader"; then
+  enable_trd="no...requires.AliRoot>v4-07-Release"
+else
+  enable_trd=$enable_module
+  if test "x$enable_trd" = "xyes" ; then
+    AC_LANG_PUSH(C++)
+    save_CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$save_CPPFLAGS $ALIROOT_CPPFLAGS -I$ALICE_ROOT/TRD"
+    AC_MSG_CHECKING([for required functions in AliTRDclusterizer])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <AliTRDclusterizer.h>], 
+                                       [AliTRDclusterizer c;
+				       c.SetRawVersion(0)])],
+                                       [], 
+  				       [enable_trd="no...requires.AliRoot>v4-07-Release"])
+    AC_MSG_RESULT([$enable_trd])       
+    AC_LANG_POP(C++)
+    CPPFLAGS="$save_CPPFLAGS"
+  fi
+fi
 
 if test "x$enable_trd" = "xyes" ; then 
   AC_DEFINE(HLT_TRD)
+  ALITRD_LIBS=$ALIHLTMODULE_LIBS
 fi
 AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
+AC_MSG_CHECKING([whether to compile trd library])
 AC_MSG_RESULT([$enable_trd])
+AC_SUBST([ALITRD_LIBS])
 
 dnl ------------------------------------------------------------------
-AC_MSG_CHECKING([whether to compile dimuon library])
 AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
-AC_ARG_ENABLE(dimuon,
-  [AC_HELP_STRING([--disable-dimuon],
-      [compile the dimuon library ])],
-  [],
-  [if test "x$have_aliroot" = "xno" ; then
-     enable_dimuon="no...requires.AliRoot"
-   else
-     enable_dimuon=yes
-   fi
-  ])
 
-if test "x$enable_dimuon" = "xyes" ; then 
-  AC_DEFINE(HLT_MUON)
+ALIMUON_LIBS=
+CHECK_HLTMODULE([muon],
+		[AliMUONVCluster.h], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON],
+		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
+		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
+		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
+
+if test "x$enable_module" = "xmissheader"; then
+  enable_muon="no...requires.AliRoot>v4-07-Release"
+else
+  enable_muon=$enable_module
 fi
-AM_CONDITIONAL(EN_HLT_MUON, test x$enable_dimuon = xyes)
-AC_MSG_RESULT([$enable_dimuon])
+
+if test "x$enable_muon" = "xyes" ; then 
+  AC_DEFINE(HLT_MUON)
+  ALIMUON_LIBS=$ALIHLTMODULE_LIBS
+fi
+AM_CONDITIONAL(EN_HLT_MUON, test x$enable_muon = xyes)
+AC_MSG_CHECKING([whether to compile muon library])
+AC_MSG_RESULT([$enable_muon])
+AC_SUBST([ALIMUON_LIBS])
 
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to disable AliRoot logging])
