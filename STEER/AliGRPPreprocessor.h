@@ -39,7 +39,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
   virtual UInt_t Process(TMap* valueSet);
 
   TList *ProcessDaqLB();
-  UInt_t ProcessDaqFxs(TString lhcperiod,TString productionYear);
+  UInt_t ProcessDaqFxs();
   TList *ProcessDcsDPs(TMap* valueSet, UInt_t iStartTime, UInt_t iStopTime);
   AliDCSSensorArray *GetPressureMap(TMap *dcsAliasMap, AliDCSSensorArray *fPressure);
 

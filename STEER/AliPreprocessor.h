@@ -42,6 +42,7 @@ class AliPreprocessor : public TNamed
     Bool_t StoreReferenceData(const char* pathLevel2, const char* pathLevel3, TObject* object,
     		AliCDBMetaData* metaData);
     Bool_t StoreReferenceFile(const char* localFile, const char* gridFileName);
+    Bool_t StoreRunMetadataFile(const char* localFile, const char* gridFileName);
     
     const char* GetFile(Int_t system, const char* id, const char* source);
     TList* GetFileSources(Int_t system, const char* id = 0);

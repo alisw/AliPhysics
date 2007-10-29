@@ -29,6 +29,7 @@ class AliShuttleInterface : public TObject
     				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) = 0;
     virtual Bool_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData) = 0;
     virtual Bool_t StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName) = 0;
+    virtual Bool_t StoreRunMetadataFile(const char* localFile, const char* gridFileName) = 0;
     
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source) = 0;
     

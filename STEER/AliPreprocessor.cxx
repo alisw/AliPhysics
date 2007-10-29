@@ -15,6 +15,13 @@
 
 /*
 $Log$
+Revision 1.17  2007/08/28 16:03:30  acolla
+Restored to v1.14:
+
+
+Function Bool_t GetHLTStatus() added to preprocessor interface. It will return
+the status of HLT read from the run logbook.
+
 Revision 1.16  2007/08/22 09:20:50  hristov
 Updated QA classes (Yves)
 
@@ -240,6 +247,23 @@ Bool_t AliPreprocessor::StoreReferenceFile(const char* localFile, const char* gr
 	const char* offlineDetName = AliShuttleInterface::GetOfflineDetName(GetName());
   	if(!offlineDetName) return 0;
 	return fShuttle->StoreReferenceFile(GetName(), localFile, gridFileName);
+}
+    
+//______________________________________________________________________________________________
+Bool_t AliPreprocessor::StoreRunMetadataFile(const char* localFile, const char* gridFileName)
+{
+	//
+	// Stores Run metadata file to the Grid, in the run folder
+	//
+	// Only GRP can call this function.
+		
+  	TString detName(GetName());
+	if (detName != "GRP") 
+	{
+		Log("StoreRunMetadataFile - Sorry, only Panos has this privilege.");
+		return kFALSE;
+	}
+	return fShuttle->StoreRunMetadataFile(localFile, gridFileName);
 }
 
 //______________________________________________________________________________________________

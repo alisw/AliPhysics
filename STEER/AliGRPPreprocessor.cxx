@@ -112,8 +112,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   //=================//
   // DAQ FXS         //
   //=================//
-  UInt_t iDaqFxs = ProcessDaqFxs(s3->String(),productionYear);
-  if(iDaqFxs == 0) Log(Form("Raw data merged tags copied succesfully in AliEn!!!"));
+  UInt_t iDaqFxs = ProcessDaqFxs();
+  if(iDaqFxs == 1) Log(Form("Raw data merged tags copied succesfully in AliEn!!!"));
  
   //=================//
   // DCS data points //
@@ -243,7 +243,7 @@ TList *AliGRPPreprocessor::ProcessDaqLB() {
 }
 
 //_______________________________________________________________
-UInt_t AliGRPPreprocessor::ProcessDaqFxs(TString lhcperiod, TString productionYear) {
+UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   //======DAQ FXS======//
   TChain *fRawTagChain = new TChain("T");
   TString fRawDataFileName;
@@ -280,13 +280,14 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs(TString lhcperiod, TString productionYe
   fRawDataFileName += "_GRP_Merged.tag.root";
   Log(Form("Merging raw data tags into file: %s",fRawDataFileName.Data()));
 
-  TString outputfile = "alien:///alice/data/"; 
-  outputfile += productionYear.Data(); outputfile += "/";
-  outputfile += lhcperiod.Data(); outputfile += "/";
-  outputfile += fRun; outputfile += "/raw/"; 
-  //StoreTagFiles(fRawDataFileName.Data(),outputfile.Data());
+  //TString outputfile = "alien:///alice/data/"; 
+  //outputfile += productionYear.Data(); outputfile += "/";
+  //outputfile += lhcperiod.Data(); outputfile += "/";
+  //outputfile += fRun; outputfile += "/raw/"; 
+  TString outputfile = "runMetadata.root";
+  Bool_t result = StoreRunMetadataFile(fRawDataFileName.Data(),outputfile.Data());
 
-  return 0;
+  return result;
 }
 
 //_______________________________________________________________
