@@ -25,7 +25,10 @@ class AliAnalysisTaskGamma : public AliAnalysisTask
     virtual void LocalInit() {Init();}
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t *option);
-   
+
+    void SetConfigFileName(TString name ) {fConfigName = name ; }
+    TString GetConfigFileName() const {return fConfigName ; }
+
  private:
 
     AliAnaGamma* fAna; //  Pointer to the jet finder 
@@ -34,6 +37,7 @@ class AliAnalysisTaskGamma : public AliAnalysisTask
     AliAODEvent*       fAOD;       //! AOD
     TTree*        fTreeG;     //  tree of prompt gamma, does nothing for the moment 
     TList * fOutputContainer ; // Histogram container
+    TString fConfigName ; //Configuration file name
 
     ClassDef(AliAnalysisTaskGamma, 1); // Analysis task for standard gamma correlation analysis
 };

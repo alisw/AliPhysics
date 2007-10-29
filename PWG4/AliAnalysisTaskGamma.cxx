@@ -44,7 +44,8 @@ AliAnalysisTaskGamma::AliAnalysisTaskGamma():
     fESD(0x0),
     fAOD(0x0),
     fTreeG(0x0),
-    fOutputContainer(0x0)
+    fOutputContainer(0x0),
+    fConfigName(0)
 {
   // Default constructor
 }
@@ -57,7 +58,8 @@ AliAnalysisTaskGamma::AliAnalysisTaskGamma(const char* name):
     fESD(0x0),
     fAOD(0x0),
     fTreeG(0x0),
-    fOutputContainer(0x0)
+    fOutputContainer(0x0),
+    fConfigName("ConfigGammaAnalysis")
 {
   // Default constructor
  
@@ -106,7 +108,13 @@ void AliAnalysisTaskGamma::Init()
   AliDebug(1,"Begin");
   
   // Call configuration file
-  gROOT->LoadMacro("ConfigGammaAnalysis.C");
+
+  if(fConfigName == ""){
+    fConfigName="ConfigGammaAnalysis";
+  }
+ 
+  AliInfo(Form("### Configuration file is %s.C ###", fConfigName.Data()));
+  gROOT->LoadMacro(fConfigName+".C");
   fAna = (AliAnaGamma*) gInterpreter->ProcessLine("ConfigGammaAnalysis()");
   
   if(!fAna)

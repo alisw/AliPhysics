@@ -27,16 +27,22 @@
  */
 
 //_________________________________________________________________________
-// Base class for reading data in order to do prompt gamma correlations
+// Base class for reading data: MonteCarlo, ESD or AOD, of PHOS EMCAL and 
+// Central Barrel Tracking detectors.
+// Not all MC particles/tracks/clusters are kept, some kinematical restrictions are done.
+// Mother class of : AliGammaDataReader: Fills ESD data in 3 TClonesArrays (PHOS, EMCAL, CTS)
+//                 : AliGammaMCReader: Fills Kinematics data in 3 TClonesArrays (PHOS, EMCAL, CTS)
+//                 : AliGammaMCDataReader: Fills ESD data in 3 TClonesArrays (PHOS, EMCAL, CTS) 
+//                             and MC data in other 3 TClonesArray
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
 
 // --- ROOT system ---
+#include <TFormula.h>
+#include <TMath.h>
 
 //---- ANALYSIS system ----
-#include "Riostream.h"
-#include "AliLog.h"
 #include "AliGammaReader.h"
 
 ClassImp(AliGammaReader)
@@ -45,6 +51,7 @@ ClassImp(AliGammaReader)
 //____________________________________________________________________________
 AliGammaReader::AliGammaReader() : 
   TObject(), fDataType(0),
+  fSwitchOnEMCAL(0),  fSwitchOnPHOS(0),  fSwitchOnCTS(0),
   fCTSEtaCut(0.), fEMCALEtaCut(0.), fPHOSEtaCut(0.),
   fNeutralPtCut(0.), fChargedPtCut(0.),
   fEMCALIPDistance(0.),   fPHOSIPDistance(0.), 
@@ -70,6 +77,7 @@ AliGammaReader::AliGammaReader() :
 //____________________________________________________________________________
 AliGammaReader::AliGammaReader(const AliGammaReader & g) :   
   TObject(g), fDataType(g.fDataType),
+  fSwitchOnEMCAL(g.fSwitchOnEMCAL),  fSwitchOnPHOS(g.fSwitchOnPHOS),  fSwitchOnCTS(g.fSwitchOnCTS),
   fCTSEtaCut(g.fCTSEtaCut),  fEMCALEtaCut(g.fEMCALEtaCut),  fPHOSEtaCut(g.fPHOSEtaCut),
   fNeutralPtCut(g.fNeutralPtCut), fChargedPtCut(g.fChargedPtCut),
   fEMCALIPDistance(g.fEMCALIPDistance),  fPHOSIPDistance(g.fPHOSIPDistance),  
@@ -106,6 +114,11 @@ AliGammaReader & AliGammaReader::operator = (const AliGammaReader & source)
   if(&source == this) return *this;
 
   fDataType = source.fDataType ;
+
+  fSwitchOnEMCAL = source.fSwitchOnEMCAL;  
+  fSwitchOnPHOS = source.fSwitchOnPHOS;
+  fSwitchOnCTS = source.fSwitchOnCTS;
+
   fCTSEtaCut = source.fCTSEtaCut;  
   fEMCALEtaCut = source.fEMCALEtaCut;  
   fPHOSEtaCut = source.fPHOSEtaCut;
@@ -152,6 +165,11 @@ void AliGammaReader::InitParameters()
  
   //Initialize the parameters of the analysis.
   fDataType = kData ;
+
+  fSwitchOnEMCAL = kTRUE ;  
+  fSwitchOnPHOS = kTRUE ;
+  fSwitchOnCTS = kTRUE ;
+
   fCTSEtaCut         = 0.7 ;  
   fEMCALEtaCut         = 0.7 ;  
   fPHOSEtaCut         = 0.12 ;
@@ -203,6 +221,11 @@ void AliGammaReader::Print(const Option_t * opt) const
 
   Info("Print", "%s %s", GetName(), GetTitle() ) ;
   printf("Data type           : %d\n", fDataType) ;
+
+  printf(" EMCAL on?          : %d\n", fSwitchOnEMCAL) ;
+  printf(" PHOS on?          : %d\n", fSwitchOnPHOS) ;
+  printf(" CTS on?          : %d\n", fSwitchOnCTS) ;
+
   printf("CTS Eta cut           : %f\n", fCTSEtaCut) ;
   printf("EMCAL Eta cut           : %f\n", fEMCALEtaCut) ;
   printf("PHOS Eta cut           : %f\n", fPHOSEtaCut) ;

@@ -17,16 +17,23 @@
  */
 //_________________________________________________________________________
 // Class that contains methods to select candidate pairs to neutral meson 
+// 2 main selections, invariant mass around pi0 (also any other mass),
+// apperture angle to distinguish from combinatorial.
+// There is a 3rd cut based on the gamma correlation on phi or pt.
 //-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
 #include<TObject.h>
-#include <TArrayD.h>
+#include<TArrayD.h>
 
 class TLorentzVector ;
 class TParticle ;
 class TList ;
 class TH2F ;
+class Riostream ;
+
+//--- AliRoot system ---
+class AliLog ;
 
 class AliNeutralMesonSelection : public TObject {
 
@@ -37,7 +44,7 @@ class AliNeutralMesonSelection : public TObject {
   AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ;//cpy assignment
   virtual ~AliNeutralMesonSelection() ; //virtual dtor
 
-  enum type_t {kSelectPhiMinPt, kSelectPhiPtRatio, kNoSelectPhiPt};
+  enum Type {kSelectPhiMinPt, kSelectPhiPtRatio, kNoSelectPhiPt};
 
   TList * GetCreateOutputObjects();
   
@@ -65,17 +72,17 @@ class AliNeutralMesonSelection : public TObject {
   Double_t GetMass() const {return fM ; }
   void SetMass(Double_t m) { fM =m ; }
   
-  Int_t GetPhiPtSelection(){  return fSelect ; }
+  Int_t GetPhiPtSelection() const { return fSelect ; }
   void SetPhiPtSelection(Int_t ana ){  fSelect = ana ; }
 
-  Bool_t AreNeutralMesonSelectionHistosKept() { return fKeepNeutralMesonHistos ; }
+  Bool_t AreNeutralMesonSelectionHistosKept() const { return fKeepNeutralMesonHistos ; }
   void KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
 
   void InitParameters();	
-  Bool_t IsAngleInWindow(const Float_t angle, const Float_t e);
+  Bool_t IsAngleInWindow(const Float_t angle, const Float_t e) const ;
   void Print(const Option_t * opt) const;
 
-  Bool_t  CutPtPhi(Double_t ptg, Double_t phig, Double_t pt, Double_t phi) ;
+  Bool_t  CutPtPhi(Double_t ptg, Double_t phig, Double_t pt, Double_t phi) const ;
   Bool_t  SelectPair(TParticle * photon, TLorentzVector particlei,  TLorentzVector particlej)  ;
   
   private:
@@ -85,21 +92,21 @@ class AliNeutralMesonSelection : public TObject {
   Double_t   fInvMassMinCut ;  // Invariant Masscut minimun
   TArrayD    fAngleMaxParam ; //Max opening angle selection parameters
   Double_t   fMinPt;       // Minimum pt 
-  Double_t   fDeltaPhiMaxCut ;      // 
-  Double_t   fDeltaPhiMinCut ;      // 
+  Double_t   fDeltaPhiMaxCut ;      // Leading particle - gamma Ratio cut maximum
+  Double_t   fDeltaPhiMinCut ;      // Leading particle - gamma Ratio cut maximum
   Double_t   fRatioMaxCut ;    // Leading particle/gamma Ratio cut maximum
   Double_t   fRatioMinCut ;    // Leading particle/gamma Ratio cut minimum
   Bool_t  fKeepNeutralMesonHistos ; // Keep neutral meson selection histograms
 
   //Histograms
-  TH2F * fhAnglePairNoCut  ; 
-  TH2F * fhAnglePairCorrelationCut  ; 
-  TH2F * fhAnglePairOpeningAngleCut   ; 
-  TH2F * fhAnglePairAllCut   ; 
-  TH2F * fhInvMassPairNoCut    ; 
-  TH2F * fhInvMassPairCorrelationCut    ;
-  TH2F * fhInvMassPairOpeningAngleCut  ; 
-  TH2F * fhInvMassPairAllCut   ; 
+  TH2F * fhAnglePairNoCut  ;  //Aperture angle of decay photons, no cuts
+  TH2F * fhAnglePairCorrelationCut  ;  //Aperture angle of decay photons, cut on phi/pT correlation with prompt gamma
+  TH2F * fhAnglePairOpeningAngleCut   ;  //Aperture angle of decay photons, cut on opening angle
+  TH2F * fhAnglePairAllCut   ;  //Aperture angle of decay photons, all cuts
+  TH2F * fhInvMassPairNoCut    ;  //Invariant mass of decay photons, no cuts
+  TH2F * fhInvMassPairCorrelationCut    ;   //Invariant mass of decay photons, cut on phi/pT correlation with prompt gamma
+  TH2F * fhInvMassPairOpeningAngleCut  ;  //Invariant mass of decay photons, cut on opening angle
+  TH2F * fhInvMassPairAllCut   ;  //Invariant mass of decay photons, all cuts
   
   ClassDef(AliNeutralMesonSelection,1)
     

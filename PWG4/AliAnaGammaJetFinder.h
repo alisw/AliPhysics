@@ -41,10 +41,10 @@ class AliAnaGammaJetFinder : public AliAnaGammaCorrelation {
        
   private:
        
-       TH2F * fhDeltaEtaJet;
-       TH2F * fhDeltaPhiJet;
-       TH2F * fhDeltaPtJet;
-       TH2F * fhPtRatJet;
+       TH2F * fhDeltaEtaJet; // Difference of jet eta and prompt gamma eta as function of gamma pT
+       TH2F * fhDeltaPhiJet;  // Difference of jet phi and prompt gamma phi as function of gamma pT
+       TH2F * fhDeltaPtJet; // Difference of jet pT and prompt gamma pT as function of gamma pT
+       TH2F * fhPtRatJet; // Ratio of jet pT and prompt gamma pT as function of gamma pT
        
        ClassDef(AliAnaGammaJetFinder,1)
  } ;

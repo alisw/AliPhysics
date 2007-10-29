@@ -17,7 +17,11 @@
  */
 
 //_________________________________________________________________________
-// Base class for prompt gamma and correlation analysis
+// Base class for gamma and correlation analysis
+// It is called by the task class AliAnalysisGammaTask and it connects the input (ESD/AOD/MonteCarlo)
+// got with AliGammaReader (produces TClonesArrays of TParticles), with the analysis classes 
+// AliAnaGammaDirect, AliAnaGammaCorrelation ....
+//
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
@@ -35,7 +39,7 @@
 class AliGammaReader ;
 class AliAnaGammaDirect ;
 class AliAnaGammaCorrelation ;
-class AliAnaGammaJetLeadCone ;
+class AliAnaGammaSelection ;
 class AliNeutralMesonSelection ;
 class AliAODEvent;
 
@@ -49,28 +53,34 @@ public:
   AliAnaGamma & operator = (const AliAnaGamma & g) ;//cpy assignment
   virtual ~AliAnaGamma() ; //virtual dtor
 
-  enum anatype_t {kPrompt, kCorrelation};
+  enum Anatype {kPrompt, kCorrelation};
 
   //Setter and getters
   TList * GetOutputContainer()      const {return fOutputContainer ; }
 
-  Int_t GetAnalysisType(){  return fAnaType ; }
+  Int_t GetAnalysisType() const {return fAnaType ; }
   void SetAnalysisType(Int_t ana ){  fAnaType = ana ; }
 
-  TString GetCalorimeter() {return fCalorimeter ; }
+  TString GetCalorimeter() const {return fCalorimeter ; }
   void SetCalorimeter(TString calo) {if (calo == "PHOS" || calo == "EMCAL") fCalorimeter = calo ;
     else AliFatal("Wrong calorimeter name") ; }
 
-  TObject * GetData() {return fData ; }
-  TObject * GetKine() {return fKine ;}
+  TObject * GetData() const {return fData ; }
+  TObject * GetKine() const {return fKine ;}
   void SetData(TObject * data) {fData = data ; }
   void SetKine(TObject * kine) {fKine = kine ; }
 
-  AliGammaReader * GetReader() {return fReader ; }
+  AliGammaReader * GetReader() const {return fReader ; }
   void SetReader(AliGammaReader * reader) { fReader = reader ; }
+
+  AliAnaGammaDirect * GetGammaDirect() const { return fGammaDirect ; }
+  AliAnaGammaCorrelation * GetGammaCorrelation() const { return fGammaCorrelation  ;}
+  AliAnaGammaSelection * GetGammaSelection() const { return fGammaSelection ;}
+  AliNeutralMesonSelection * GetNeutralMesonSelection() const { return fNeutralMesonSelection  ; }
 
   void SetGammaDirect(AliAnaGammaDirect * dg) { fGammaDirect = dg ; }
   void SetGammaCorrelation(AliAnaGammaCorrelation * gc) { fGammaCorrelation = gc ;}
+  void SetGammaSelection(AliAnaGammaSelection * gs) { fGammaSelection = gs ;}
   void SetNeutralMesonSelection(AliNeutralMesonSelection * nms) { fNeutralMesonSelection = nms ; }
 
   //AOD stuff  
@@ -99,6 +109,7 @@ public:
   AliGammaReader *      fReader ; //! Pointer to reader 
   AliAnaGammaDirect *   fGammaDirect ; //! Pointer to prompt gamma algorithm 
   AliAnaGammaCorrelation *   fGammaCorrelation ; //! Pointer to gamma correlation algorithm
+  AliAnaGammaSelection *   fGammaSelection ; //! Pointer to gamma selection algorithm
   AliNeutralMesonSelection *  fNeutralMesonSelection ; //! Pointer to pair selection for pi0 identification.
   TClonesArray* fAODclusters;        //! reconstructed jets
   Int_t         fNAODclusters;       //! number of reconstructed jets

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -25,6 +28,9 @@
 
 //_________________________________________________________________________
 // Class that contains methods to select candidate pairs to neutral meson 
+// 2 main selections, invariant mass around pi0 (also any other mass),
+// apperture angle to distinguish from combinatorial.
+// There is a 3rd cut based on the gamma correlation on phi or pt.
 //-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
@@ -32,10 +38,10 @@
 #include <TLorentzVector.h>
 #include <TH2.h>
 #include <TList.h>
-
+#include <TArrayD.h>
+ 
 //---- AliRoot system ----
 #include "AliNeutralMesonSelection.h" 
-#include "Riostream.h"
 #include "AliLog.h"
 
 ClassImp(AliNeutralMesonSelection)
@@ -240,7 +246,7 @@ void AliNeutralMesonSelection::InitParameters()
 }
 
 //__________________________________________________________________________-
-Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float_t e) {
+Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float_t e) const {
   //Check if the opening angle of the candidate pairs is inside 
   //our selection windowd
 
@@ -259,7 +265,7 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float
 }
 
 //____________________________________________________________________________
-Bool_t  AliNeutralMesonSelection::CutPtPhi(Double_t ptg, Double_t phig, Double_t pt, Double_t phi)  
+Bool_t  AliNeutralMesonSelection::CutPtPhi(Double_t ptg, Double_t phig, Double_t pt, Double_t phi)  const
 { 
   //Select pair if delta
   Bool_t cut = kFALSE ;

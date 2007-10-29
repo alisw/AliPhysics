@@ -67,7 +67,7 @@ AliAnaCaloTriggerMC::AliAnaCaloTriggerMC(const char *name) :
 }
 //____________________________________________________________________________
 AliAnaCaloTriggerMC::AliAnaCaloTriggerMC(const AliAnaCaloTriggerMC & ct) : 
-  fChain(ct.fChain), fESD(ct.fESD),
+  AliAnalysisTask(ct),fChain(ct.fChain), fESD(ct.fESD),
   fOutputContainer(ct.fOutputContainer), fCalorimeter(ct. fCalorimeter),
   fNtTrigger22(ct.fNtTrigger22), fNtTriggerNN(ct.fNtTriggerNN)
 {
