@@ -74,7 +74,7 @@ DAQDALIB=$(DAQDADIR)/libdaqDA.a
 
 ROOTLIBDIR=$(shell root-config --libdir)
 
-SYSLIBS=-ldl
+SYSLIBS=-ldl -lpthread
 
 MONITORLIBS=$(shell date-config --monitorlibs=noshift)
 
