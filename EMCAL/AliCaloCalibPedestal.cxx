@@ -1,8 +1,46 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+/* $Id$ */
+
+//________________________________________________________________________
+//
+// A help class for monitoring and calibration tools: MOOD, AMORE etc.,
+// It can be created and used a la (ctor):
+/*
+  //Create the object for making the histograms
+  fPedestals = new AliCaloCalibPedestal( fDetType );
+  // AliCaloCalibPedestal knows how many modules we have for PHOS or EMCAL
+  fNumModules = fPedestals->GetModules();
+*/
+// fed an event:
+//  fPedestals->ProcessEvent(fCaloRawStream);
+// asked to draw histograms:
+//  fPedestals->GetDeadMap(i)->Draw("col");
+// or
+//  fPedestals->GetPeakProfileHighGainRatio((i < fNumModules) ? i : fVisibleModule)->Draw("colz");
+// etc.
+// The pseudo-code examples above were from the first implementation in MOOD (summer 2007).
+//________________________________________________________________________
+
 #include "TH1.h"
 #include "TFile.h"
 
 #include <fstream>
 #include <iostream>
+
+#include "AliCaloRawStream.h"
 
 //The include file
 #include "AliCaloCalibPedestal.h"
@@ -173,6 +211,7 @@ AliCaloCalibPedestal::AliCaloCalibPedestal(const AliCaloCalibPedestal &ped) :
 //_____________________________________________________________________
 AliCaloCalibPedestal& AliCaloCalibPedestal::operator = (const AliCaloCalibPedestal &source)
 {
+  // assignment operator; use copy ctor
   if (&source == this) return *this;
 
   new (this) AliCaloCalibPedestal(source);
@@ -182,6 +221,7 @@ AliCaloCalibPedestal& AliCaloCalibPedestal::operator = (const AliCaloCalibPedest
 //_____________________________________________________________________
 void AliCaloCalibPedestal::Reset()
 {
+  // Reset all arrays/histograms
   for (int i = 0; i < fModules; i++) {
     GetPedProfileLowGain(i)->Reset();
     GetPedProfileHighGain(i)->Reset();
@@ -213,6 +253,7 @@ void AliCaloCalibPedestal::Reset()
 //_____________________________________________________________________
 Bool_t AliCaloCalibPedestal::ProcessEvent(AliCaloRawStream *in)
 { 
+  // Method to process=analyze one event in the data stream
   if (!in) return kFALSE; //Return right away if there's a null pointer
   
   in->SetOldRCUFormat(kTRUE);
@@ -330,6 +371,7 @@ Bool_t AliCaloCalibPedestal::LoadReferenceCalib(TString fileName, TString object
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ValidateComparisonProfiles()
 {
+  //Make sure the comparison histos exist
   if (!fPedestalLowGainDiff.IsEmpty()) return; //The profiles already exist. We just check one, because they're all created at
   //the same time
 						
@@ -415,7 +457,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ComputeDiffAndRatio()
 {
- 
+  // calculate differences and ratios relative to a reference
   ValidateComparisonProfiles();//Make sure the comparison histos exist
  
   if (!fReference) {
@@ -460,7 +502,8 @@ void AliCaloCalibPedestal::ComputeDiffAndRatio()
 
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ComputeDeadTowers(int threshold, const char * deadMapFile)
-{//Computes the number of dead towers etc etc into memory, after this you can call the GetDead... -functions
+{
+  //Computes the number of dead towers etc etc into memory, after this you can call the GetDead... -functions
   int countTot = 0;
   int countNew = 0;
   int countRes = 0;

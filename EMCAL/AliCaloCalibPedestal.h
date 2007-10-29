@@ -1,27 +1,32 @@
 #ifndef ALICALOCALIBPEDESTAL_H
 #define ALICALOCALIBPEDESTAL_H
 
-/* \file AliCaloCalibPedestal.h
-   \brief Description:
-   A help class for monitoring and calibration tools: MOOD, AMORE etc.,
-   that can process events from a standard AliCaloRawStream,
-   most usually from LED/pulser runs. It stores signal info as
-   typical (highest) amplitude, and pedestal info in geometrically-binned
-   2D profiles of the detectors (EMCAL and PHOS).
-   Comparisons (ratios and differences) can be done with references.
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
 
-   \author: Timo Alho (Jyvaskyla), original version. 
-   [Consultant: D. Silvermyr (ORNL)]
-   Partly based on AliTPCCalibPedestal.
-   
-   \version $Revision$
-   \date $Date$
-*/
+/* $Id$ */
+
+
+// \file AliCaloCalibPedestal.h
+//   \brief Description:
+//   A help class for monitoring and calibration tools: MOOD, AMORE etc.,
+//   that can process events from a standard AliCaloRawStream,
+//   most usually from LED/pulser runs. It stores signal info as
+//   typical (highest) amplitude, and pedestal info in geometrically-binned
+//   2D profiles of the detectors (EMCAL and PHOS).
+//   Comparisons (ratios and differences) can be done with references.
+
+//   \author: Timo Alho (Jyvaskyla), original version. 
+//   [Consultant: D. Silvermyr (ORNL)]
+//   Partly based on AliTPCCalibPedestal.
+//   
+//   \version $Revision$
+//   \date $Date$
 
 #include "TProfile2D.h"
 #include "TH2.h"
 #include "TObjArray.h"
-#include "AliCaloRawStream.h"
+class AliCaloRawStream;
 
 class AliCaloCalibPedestal : public TObject {
   
@@ -104,10 +109,10 @@ class AliCaloCalibPedestal : public TObject {
   //The histograms. We use a TObjArray instead of a simple array,because this gives automatic streaming properties for the
   //class. A TClonesArray would be more efficient, but it's a bit more difficult to use and it doesn't matter too much
   //since we have only around 12 objects (maximum) in the array anyway.
-  TObjArray fPedestalLowGain;
-  TObjArray fPedestalHighGain;
-  TObjArray fPeakMinusPedLowGain;
-  TObjArray fPeakMinusPedHighGain;
+  TObjArray fPedestalLowGain; // pedestal info for low gain
+  TObjArray fPedestalHighGain; // pedestal info for high gain
+  TObjArray fPeakMinusPedLowGain; // (peak-pedestal) info for low gain
+  TObjArray fPeakMinusPedHighGain; // (peak-pedestal) info for high gain
   
   //The difference of profiles between this and the reference object
   TObjArray fPedestalLowGainDiff; //!
@@ -137,19 +142,16 @@ class AliCaloCalibPedestal : public TObject {
   int fRunNumber; //The run number. Needs to be set by the user.
   
   //Constants needed by the class
-  static const int fgkSampleMax = 1023;
-  static const int fgkSampleMin = 0;
+  static const int fgkSampleMax = 1023; // highest possible sample value (10-bit = 0x3ff)
+  static const int fgkSampleMin = 0; // lowest possible sample value 
   
-  static const int fgkPhosRows = 64;
-  static const int fgkPhosCols = 56;
-  static const int fgkPhosModules = 5;
+  static const int fgkPhosRows = 64; // number of rows per module for PHOS
+  static const int fgkPhosCols = 56; // number of columns per module for PHOS
+  static const int fgkPhosModules = 5; // number of modules for PHOS
   
-  static const int fgkEmCalRows = 24;
-  static const int fgkEmCalCols = 48;
-  static const int fgkEmCalModules = 12;
-  
-  
- public:
+  static const int fgkEmCalRows = 24; // number of rows per module for EMCAL
+  static const int fgkEmCalCols = 48; // number of columns per module for EMCAL
+  static const int fgkEmCalModules = 12; // number of modules for EMCAL
   
   ClassDef(AliCaloCalibPedestal,1)
 
