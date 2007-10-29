@@ -20,43 +20,36 @@
 Origin: marian.ivanov@cern.ch
 Container classes with MC infomation
 
+The AliMCInfo contains the information about the particles properties 
+during transportation throuch ALICE Detector
+
+The base Information :
+TParticle - fParticle             -  properties of the particle at creation point
+AliTrackReference - fXXXRefernces -  TClonesArray of refernces in differnt detectors
+fNXXXRef                          -  number of the track refernces in differnt detectors
+AliTPCdigitRow    - fTPCRow       -  the map of the hitted rows - (will be repalced by TBits)
+fRowsWith*                        - number of rows hitted by particle
+fMCtracks         -               - number of turn over of the track inside of the TPC
+
+++++
+some additional information usable for tree draw - TO SPEED UP tree queries
+IMPORTANT FOR PROOF FAST PROTOTYPING ANALYSIS 
+                                      
+
+
+
 */
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <stdio.h>
-#include <string.h>
 //ROOT includes
-#include "TROOT.h"
 #include "Rtypes.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TString.h"
-#include "TStopwatch.h"
-#include "TParticle.h"
-#include "TSystem.h"
-#include "TCanvas.h"
-#include "TGeometry.h"
-#include "TPolyLine3D.h"
-
+#include "TClonesArray.h"
 //ALIROOT includes
-#include "AliRun.h"
-#include "AliStack.h"
-#include "AliSimDigits.h"
-#include "AliTPCParam.h"
-#include "AliTPC.h"
-#include "AliTPCLoader.h"
-#include "AliDetector.h"
 #include "AliTrackReference.h"
-#include "AliTPCParamSR.h"
-#include "AliTracker.h"
-#include "AliMagF.h"
-#include "AliHelix.h"
-#include "AliTrackPointArray.h"
-
-#endif
 #include "AliMCInfo.h" 
+#endif
+
 //
 // 
 
@@ -93,6 +86,9 @@ AliMCInfo::AliMCInfo():
   fTRDReferences(0),
   fTOFReferences(0)
 {
+  //
+  // Default constructor
+  //
   fTPCReferences  = new TClonesArray("AliTrackReference",10);
   fITSReferences  = new TClonesArray("AliTrackReference",10);
   fTRDReferences  = new TClonesArray("AliTrackReference",10);
@@ -129,6 +125,9 @@ AliMCInfo::AliMCInfo(const AliMCInfo& info):
   fTRDReferences(0),
   fTOFReferences(0)
 {
+  //
+  // copy constructor
+  //
   fTPCReferences = (TClonesArray*)info.fTPCReferences->Clone();
   fITSReferences = (TClonesArray*)info.fITSReferences->Clone();
   fTRDReferences = (TClonesArray*)info.fTRDReferences->Clone();
@@ -138,6 +137,9 @@ AliMCInfo::AliMCInfo(const AliMCInfo& info):
 
 AliMCInfo::~AliMCInfo()
 {
+  //
+  // Destructor of the class
+  //
   if (fTPCReferences) {
     delete fTPCReferences;
   }
@@ -157,6 +159,9 @@ AliMCInfo::~AliMCInfo()
 
 void AliMCInfo::Update()
 {
+  //
+  // Update MC info
+  // Calculates some derived variables
   //
   //
   fMCtracks =1;
@@ -240,14 +245,17 @@ AliTPCdigitRow::AliTPCdigitRow()
 ////////////////////////////////////////////////////////////////////////
 AliTPCdigitRow & AliTPCdigitRow::operator=(const AliTPCdigitRow &digOld)
 {
-  for (Int_t i = 0; i<kgRowBytes; i++) fDig[i] = digOld.fDig[i];
+  for (Int_t i = 0; i<32; i++) fDig[i] = digOld.fDig[i];
   return (*this);
 }
 ////////////////////////////////////////////////////////////////////////
 void AliTPCdigitRow::SetRow(Int_t row) 
 {
-  if (row >= 8*kgRowBytes) {
-    cerr<<"AliTPCdigitRow::SetRow: index "<<row<<" out of bounds."<<endl;
+  //
+  // set bit mask for given row
+  //
+  if (row >= 8*32) {
+    //    cerr<<"AliTPCdigitRow::SetRow: index "<<row<<" out of bounds."<<endl;
     return;
   }
   Int_t iC = row/8;
@@ -273,7 +281,7 @@ Int_t AliTPCdigitRow::RowsOn(Int_t upto) const
 // count only rows less equal row number upto
 //
   Int_t total = 0;
-  for (Int_t i = 0; i<kgRowBytes; i++) {
+  for (Int_t i = 0; i<32; i++) {
     for (Int_t j = 0; j < 8; j++) {
       if (i*8+j > upto) return total;
       if (TESTBIT(fDig[i],j))  total++;
@@ -287,7 +295,7 @@ void AliTPCdigitRow::Reset()
 //
 // resets all rows to zero
 //
-  for (Int_t i = 0; i<kgRowBytes; i++) {
+  for (Int_t i = 0; i<32; i++) {
     fDig[i] <<= 8;
   }
 }
@@ -298,7 +306,7 @@ Int_t AliTPCdigitRow::Last() const
 // returns the last row number with a digit
 // returns -1 if now digits 
 //
-  for (Int_t i = kgRowBytes-1; i>=0; i--) {
+  for (Int_t i = 32-1; i>=0; i--) {
     for (Int_t j = 7; j >= 0; j--) {
       if TESTBIT(fDig[i],j) return i*8+j;
     }
@@ -312,7 +320,7 @@ Int_t AliTPCdigitRow::First() const
 // returns the first row number with a digit
 // returns -1 if now digits 
 //
-  for (Int_t i = 0; i<kgRowBytes; i++) {
+  for (Int_t i = 0; i<32; i++) {
     for (Int_t j = 0; j < 8; j++) {
       if (TESTBIT(fDig[i],j)) return i*8+j;
     }

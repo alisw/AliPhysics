@@ -25,9 +25,7 @@
 class TFile;
 class AliRunLoader;
 class AliStack;
-class AliTPCParam;
 
-const Int_t kgRowBytes = 32;
 
 class AliTPCdigitRow: public TObject {
 public:
@@ -36,13 +34,13 @@ public:
   void SetRow(Int_t row);
   Bool_t TestRow(Int_t row) const ;
   AliTPCdigitRow & operator=(const AliTPCdigitRow &digOld);
-  Int_t RowsOn(Int_t upto=8*kgRowBytes) const;
+  Int_t RowsOn(Int_t upto=8*32) const;
   Int_t Last() const;
   Int_t First() const ;
   void Reset();
 
 private:
-  UChar_t fDig[kgRowBytes];
+  UChar_t fDig[32];   // bitmask of the digits presence
   ClassDef(AliTPCdigitRow,1)  // container for digit pattern
 };
 
@@ -103,7 +101,7 @@ private:
   Int_t     fPrimPart;               // index of primary particle in TreeH
   TParticle fParticle;               // generated particle 
   Float_t   fMass;                   // mass of the particle
-  Float_t   fCharge;                 //
+  Float_t   fCharge;                 // charge of the particle
   Int_t     fLabel;                  // track label
   Int_t     fEventNr;                // event number
   Int_t     fMCtracks;               // indication of how many times the track is retuturned back
