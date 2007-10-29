@@ -75,12 +75,12 @@ public:
 		AliEMCALMatchCluster(Int_t ID, AliESDCaloCluster *caloCluster);
 		virtual ~AliEMCALMatchCluster() { }
 		//----------------------------------------------------------------------------
-		Int_t     Index() {return fIndex;}
-		Int_t     Label() {return fLabel;}
-		Double_t  X() {return fX;}
-		Double_t  Y() {return fY;} 
-		Double_t  Z() {return fZ;}
-		Double_t   Phi() {return TMath::ATan2(fY, fX);}
+		Int_t     Index() const {return fIndex;}
+		Int_t     Label() const {return fLabel;}
+		Double_t  X() const {return fX;}
+		Double_t  Y() const {return fY;} 
+		Double_t  Z() const {return fZ;}
+		Double_t   Phi() const {return TMath::ATan2(fY, fX);}
 	private:
 		Int_t     fIndex;  // index of cluster in its native container (ESD or TClonesArray)
 		Int_t     fLabel;  // track label of assigned cluster
@@ -98,10 +98,10 @@ public:
 		//----------------------------------------------------------------------------
 		Bool_t&   CanBeSaved() {return fCanBeSaved;}
 		Int_t     Compare(const TObject *obj) const;
-		Double_t  GetDistance() {return fDistance;}
-		Double_t  GetPt() {return fPt;}
-		Int_t     GetIndexC() {return fIndexC;}
-		Int_t     GetIndexT() {return fIndexT;}
+		Double_t  GetDistance() const {return fDistance;}
+		Double_t  GetPt() const {return fPt;}
+		Int_t     GetIndexC() const {return fIndexC;}
+		Int_t     GetIndexT() const {return fIndexT;}
 		Bool_t    IsSortable() const {return kTRUE;}
 		void      SetIndexC(Int_t icl) {fIndexC=icl;}
 		void      SetIndexT(Int_t itr) {fIndexT=itr;}

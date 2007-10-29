@@ -138,6 +138,11 @@ AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& copy)
 //
 TTree* AliEMCALTracker::SearchTrueMatches()
 {
+  //Search through the list of
+  //track match candidates and clusters
+  //and look for true matches
+  //
+  //
 	if (!fClusters) return 0;
 	if (fClusters->IsEmpty()) return 0;
 	if (!fTracks) return 0;
