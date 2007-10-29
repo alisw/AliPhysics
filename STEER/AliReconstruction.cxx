@@ -955,6 +955,8 @@ Bool_t AliReconstruction::Run(const char* input)
   //QA 
   if ( fRunQA ) {
 	AliQADataMakerSteer qas ; 
+	if (fRawReader) 
+		qas.Run(AliQA::kRAWS, input) ; 
 	qas.Run(AliQA::kRECPOINTS) ;
 	qas.Reset() ;
 	qas.Run(AliQA::kESDS) ;
