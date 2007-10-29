@@ -38,7 +38,7 @@ public:
   AliAnaGammaCorrelation & operator = (const AliAnaGammaCorrelation & g) ;//cpy assignment
   virtual ~AliAnaGammaCorrelation() ; //virtual dtor
 
-  enum corrtype_t {kParton, kHadron, kJetLeadCone, kJetFinder};
+  enum Corrtype {kParton, kHadron, kJetLeadCone, kJetFinder};
 
   //General methods
 
@@ -47,12 +47,12 @@ public:
   void SetNeutralMesonSelection(AliNeutralMesonSelection * nms) 
   { fNeutralMesonSelection = nms ; } 
 
-  TList * GetOutputContainer() {return fOutputContainer ;} 
+  TList * GetOutputContainer() const {return fOutputContainer ;} 
   void SetOutputContainer(TList * oc) {fOutputContainer = oc ;}  
 
   void InitParameters();
 
-  Int_t GetCorrelationType(){  return fCorrelationType ; }
+  Int_t GetCorrelationType() const {  return fCorrelationType ; }
   void SetCorrelationType(Int_t ana ){  fCorrelationType = ana ; }
 
   void Print(const Option_t * opt) const;
@@ -61,7 +61,7 @@ public:
   void SetJetsOnlyInCTS(Bool_t opt){fJetsOnlyInCTS = opt; }
 
   virtual TList * GetCreateOutputObjects() {return fOutputContainer ;}
-  virtual void MakeGammaCorrelation(TParticle * p,  TClonesArray * ob1, TClonesArray * ob2)  {;}
+  virtual void MakeGammaCorrelation(TParticle * ,  TClonesArray *, TClonesArray *)  {;}
 
   //Gamma hadron correlations methods: kHadron
   Float_t    GetMinPtHadron() const {return fMinPtHadron ; }

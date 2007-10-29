@@ -37,16 +37,16 @@
 
 
 // --- ROOT system ---
-#include "Riostream.h"
+#include <TFormula.h>
 #include <TParticle.h>
-
+ 
 //---- ANALYSIS system ----
 #include "AliGammaMCDataReader.h" 
-#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDCaloCluster.h"
 #include "AliStack.h"
+#include "AliLog.h"
 
 ClassImp(AliGammaMCDataReader)
 
@@ -90,7 +90,8 @@ void AliGammaMCDataReader::CreateParticleList(TObject * data, TObject * kine,
 					      TClonesArray * plPrimPHOS){
   
   //Create a list of particles from the ESD. These particles have been measured 
-  //by the Central Tracking system (TPC+ITS), PHOS and EMCAL 
+  //by the Central Tracking system (TPC+ITS+...), PHOS and EMCAL 
+  //Also create particle list with mothers.
 
   AliESDEvent* esd = (AliESDEvent*) data;
   AliStack* stack = (AliStack*) kine;
@@ -103,221 +104,207 @@ void AliGammaMCDataReader::CreateParticleList(TObject * data, TObject * kine,
   Double_t v[3] ; //vertex ;
   esd->GetVertex()->GetXYZ(v) ; 
   
-  //########### PHOS ##############
-  
-  Int_t begphos = 0;  
-  Int_t endphos = esd->GetNumberOfCaloClusters() ;  
+  //########### CALORIMETERS ##############  
+  Int_t nCaloCluster = esd->GetNumberOfCaloClusters() ;  
   Int_t indexPH = plPHOS->GetEntries() ;
-  Int_t begem = 0;
-  Int_t endem = endphos;
+  Int_t indexEM = plEMCAL->GetEntries() ;
   
-  AliDebug(3,Form("First Calorimeter particle %d, last particle %d", begphos,endphos));
-  
-  for (npar =  begphos; npar <  endphos; npar++) {//////////////PHOS track loop
-    AliESDCaloCluster * clus = esd->GetCaloCluster(npar) ; // retrieve track from esd
-
-    //Check if it is PHOS cluster
-    if(!clus->IsEMCAL())
-      begem=npar+1;
-    else
-      continue;
-
-    AliDebug(4,Form("PHOS clusters: E %f, match %d", clus->E(),clus->GetTrackMatched()));
-    if(clus->GetTrackMatched()==-1 ){
-      //Create a TParticle to fill the particle list
-      TLorentzVector momentum ;
-      clus->GetMomentum(momentum, v);
-      Double_t phi = momentum.Phi();
-      if(phi<0) phi+=TMath::TwoPi() ;
-      if(momentum.Pt() > fNeutralPtCut &&  TMath::Abs(momentum.Eta()) < fPHOSEtaCut &&
-	 phi > fPhiPHOSCut[0] && phi < fPhiPHOSCut[1] ) {
-	
-	pid=clus->GetPid();	
-	Int_t pdg = 22;
-
-    	if(IsPHOSPIDOn()){
-	  AliDebug(5,Form("E %1.2f; PID: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f ",
-			  momentum.E(),pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
-			  pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]));
+  for (npar =  0; npar <  nCaloCluster; npar++) {//////////////CaloCluster loop
+    AliESDCaloCluster * clus = esd->GetCaloCluster(npar) ; // retrieve cluster from esd
+    Int_t type = clus->GetClusterType();
+    
+    //########### PHOS ##############
+    if(fSwitchOnPHOS && type ==  AliESDCaloCluster::kPHOSCluster){
+      AliDebug(4,Form("PHOS clusters: E %f, match %d", clus->E(),clus->GetTrackMatched()));
+      
+      if(clus->GetTrackMatched()==-1){
+	TLorentzVector momentum ;
+	clus->GetMomentum(momentum, v);      
+	Double_t phi = momentum.Phi();
+	if(phi<0) phi+=TMath::TwoPi() ;
+	if(momentum.Pt() > fNeutralPtCut &&  TMath::Abs(momentum.Eta()) < fPHOSEtaCut &&
+	   phi > fPhiPHOSCut[0] && phi < fPhiPHOSCut[1] ) {
 	  
-	  Float_t wPhoton =  fPHOSPhotonWeight;
-	  Float_t wPi0 =  fPHOSPi0Weight;
+	  pid=clus->GetPid();	
+	  Int_t pdg = 22;
 	  
-	  if(fPHOSWeightFormula){
-	    wPhoton = fPHOSPhotonWeightFormula->Eval(momentum.E()) ;
-	    wPi0 =    fPHOSPi0WeightFormula->Eval(momentum.E());
+	  if(IsPHOSPIDOn()){
+	    AliDebug(5,Form("E %1.2f; PID: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f ",
+			    momentum.E(),pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
+			    pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]));
+	    
+	    Float_t wPhoton =  fPHOSPhotonWeight;
+	    Float_t wPi0 =  fPHOSPi0Weight;
+	    
+	    if(fPHOSWeightFormula){
+	      wPhoton = fPHOSPhotonWeightFormula->Eval(momentum.E()) ;
+	      wPi0 =    fPHOSPi0WeightFormula->Eval(momentum.E());
+	    }
+	    
+	    if(pid[AliPID::kPhoton] > wPhoton) 
+	      pdg = kPhoton ;
+	    else if(pid[AliPID::kPi0] > wPi0) 
+	      pdg = kPi0 ; 
+	    else if(pid[AliPID::kElectron] > fPHOSElectronWeight)  
+	      pdg = kElectron ;
+	    else if(pid[AliPID::kEleCon] > fPHOSElectronWeight) 
+	      pdg = kEleCon ;
+	    else if(pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton] > fPHOSChargeWeight) 
+	      pdg = kChargedHadron ;  
+	    else if(pid[AliPID::kKaon0]+pid[AliPID::kNeutron] > fPHOSNeutralWeight) 
+	      pdg = kNeutralHadron ; 
+	    
+	    else if(pid[AliPID::kElectron]+pid[AliPID::kEleCon]+pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton]  >  
+		    pid[AliPID::kPhoton] + pid[AliPID::kPi0]+pid[AliPID::kKaon0]+pid[AliPID::kNeutron]) 
+	      pdg = kChargedUnknown  ; 
+	    else 
+	      pdg = kNeutralUnknown ; 
+	    //neutral cluster, unidentifed.
 	  }
 	  
-	  if(pid[AliPID::kPhoton] > wPhoton) 
-	    pdg = kPhoton ;
-	  else if(pid[AliPID::kPi0] > wPi0) 
-	    pdg = kPi0 ; 
-	  else if(pid[AliPID::kElectron] > fPHOSElectronWeight)  
-	    pdg = kElectron ;
-	  else if(pid[AliPID::kEleCon] > fPHOSElectronWeight) 
-	    pdg = kEleCon ;
-	  else if(pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton] > fPHOSChargeWeight) 
-	    pdg = kChargedHadron ;  
-	  else if(pid[AliPID::kKaon0]+pid[AliPID::kNeutron] > fPHOSNeutralWeight) 
-	    pdg = kNeutralHadron ; 
+	  if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown ){//keep only neutral particles in the array
+	    
+	    //###############
+	    //Check kinematics
+	    //###############
+	    Int_t label = clus->GetLabel();
+	    TParticle * pmother = GetMotherParticle(label,stack, "PHOS",momentum);
+	    
+	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
+						 momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+	    
+	    AliDebug(4,Form("PHOS added: pdg %d, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
+	    new((*plPHOS)[indexPH])   TParticle(*particle) ;
+	    new((*plPrimPHOS)[indexPH])   TParticle(*pmother) ;
+	    indexPH++;
+	    
+	  }
+	  else AliDebug(4,Form("PHOS charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f\n", 
+			       pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));	
 	  
-	  else if(pid[AliPID::kElectron]+pid[AliPID::kEleCon]+pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton]  >  
-		  pid[AliPID::kPhoton] + pid[AliPID::kPi0]+pid[AliPID::kKaon0]+pid[AliPID::kNeutron]) 
-	    pdg = kChargedUnknown  ; 
-	  else 
-	    pdg = kNeutralUnknown ; 
-	  //neutral cluster, unidentifed.
-	}
-	
-	if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown ){//keep only neutral particles in the array
+	}//pt, eta, phi cut
+	else 	AliDebug(4,"Particle not added");
+      }//track-match?
+    }//PHOS cluster
 
-	  //###############
-	  //Check kinematics
-	  //###############
-	  Int_t label = clus->GetLabel();
-	  TParticle * pmother = GetMotherParticle(label,stack, "PHOS",momentum);
-
-	  TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-					       momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+    //################ EMCAL ##############
+    else if(fSwitchOnEMCAL &&  type ==  AliESDCaloCluster::kEMCALClusterv1){
+      AliDebug(4,Form("EMCAL clusters: E %f, match %d", clus->E(),clus->GetTrackMatched()));
+      
+      if(clus->GetTrackMatched()==-1 ){
+	TLorentzVector momentum ;
+	clus->GetMomentum(momentum, v); 
+	Double_t phi = momentum.Phi();
+	if(phi<0) phi+=TMath::TwoPi() ;
+	if(momentum.Pt() > fNeutralPtCut &&  TMath::Abs(momentum.Eta()) < fEMCALEtaCut &&
+	   phi > fPhiEMCALCut[0] && phi < fPhiEMCALCut[1] ) {
 	  
-	  AliDebug(4,Form("PHOS added: pdg %d, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
-	  //printf("PHOS added: pdg %d, pt %f, phi %f, eta %f\n", pdg, particle->Pt(),particle->Phi(),particle->Eta());
-	  new((*plPHOS)[indexPH])   TParticle(*particle) ;
-	  new((*plPrimPHOS)[indexPH])   TParticle(*pmother) ;
-	  indexPH++;
+	  pid=clus->GetPid();	
+	  Int_t pdg = 22;
 	  
-	}
-	else AliDebug(4,Form("PHOS charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f\n", pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));	
+	  if(IsEMCALPIDOn()){
+	    AliDebug(5,Form("E %1.2f; PID: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f ",
+			    momentum.E(),pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
+			    pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]));
+	    
+	    if(pid[AliPID::kPhoton] > fEMCALPhotonWeight) 
+	      pdg = kPhoton ;
+	    else if(pid[AliPID::kPi0] > fEMCALPi0Weight) 
+	      pdg = kPi0 ; 
+	    else if(pid[AliPID::kElectron] > fEMCALElectronWeight)  
+	      pdg = kElectron ;
+	    else if(pid[AliPID::kEleCon] > fEMCALElectronWeight) 
+	      pdg = kEleCon ;
+	    else if(pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton] > fEMCALChargeWeight) 
+	      pdg = kChargedHadron ;  
+	    else if(pid[AliPID::kKaon0]+pid[AliPID::kNeutron] > fEMCALNeutralWeight) 
+	      pdg = kNeutralHadron ; 
+	    else if(pid[AliPID::kElectron]+pid[AliPID::kEleCon]+pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton]  >  
+		    pid[AliPID::kPhoton] + pid[AliPID::kPi0]+pid[AliPID::kKaon0]+pid[AliPID::kNeutron]) 
+	      pdg = kChargedUnknown ; 
+	    else 
+	      pdg = kNeutralUnknown ;
+	  }
+	  
+	  if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown){//keep only neutral particles in the array
+	    
+	    //###############
+	    //Check kinematics
+	    //###############
+	    Int_t label = clus->GetLabel();
+	    TParticle * pmother = GetMotherParticle(label,stack, "EMCAL",momentum);
+	    
+	    TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
+						 momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
+	    AliDebug(4,Form("EMCAL cluster added: pdg %f, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
+	    
+	    new((*plEMCAL)[indexEM])   TParticle(*particle) ;
+	    new((*plPrimEMCAL)[indexEM])   TParticle(*pmother) ;
+	    indexEM++;
+	  }
+	  else AliDebug(4,Form("EMCAL charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f", 
+			       pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));
+	  
+	}//pt, phi, eta cut
+	else 	AliDebug(4,"Particle not added");
+      }//track-matched
+    }//EMCAL cluster
 
-      }//pt, eta, phi cut
-    }//not charged
   }//cluster loop
 
+ 
+
   //########### CTS (TPC+ITS) #####################
-  Int_t begtpc   = 0 ;  
-  Int_t endtpc   = esd->GetNumberOfTracks() ;
+  Int_t nTracks   = esd->GetNumberOfTracks() ;
   Int_t indexCh  = plCTS->GetEntries() ;
-  AliDebug(3,Form("First CTS particle %d, last particle %d", begtpc,endtpc));
-  
-  for (npar =  begtpc; npar <  endtpc; npar++) {////////////// track loop
-    AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
-    
-    //We want tracks fitted in the detectors:
-    ULong_t status=AliESDtrack::kTPCrefit;
-    status|=AliESDtrack::kITSrefit;
-    
-    //We want tracks whose PID bit is set:
-    //     ULong_t status =AliESDtrack::kITSpid;
-    //     status|=AliESDtrack::kTPCpid;
-    
-    if ( (track->GetStatus() & status) == status) {//Check if the bits we want are set
-      // Do something with the tracks which were successfully
-      // re-fitted 
-      Double_t en = 0; //track ->GetTPCsignal() ;
-      Double_t mom[3];
-      track->GetPxPyPz(mom) ;
-      Double_t px = mom[0];
-      Double_t py = mom[1];
-      Double_t pz = mom[2]; //Check with TPC people if this is correct.
-      Int_t pdg = 11; //Give any charged PDG code, in this case electron.
-      //I just want to tag the particle as charged
 
-      //Check kinematics
-      Int_t label = track->GetLabel();
-      TParticle * pmother = new TParticle();
-      if(label>=0){
-	pmother = stack->Particle(label);
-	// 	    AliDebug(4,("Primary Track: Pt %2.2f, mother: label %d, pdg  %d, status %d,  mother 2 %d, grandmother %d",
-	// 			TMath::Sqrt(px*px+py*py), label, pmother->GetPdgCode(),pmother->GetStatusCode(), pmother->GetMother(0), stack->GetPrimary(label)));
-      }
-      else AliDebug(3, Form("Negative Kinematic label of track:  %d",label));
-      
-      TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-					   px, py, pz, en, v[0], v[1], v[2], 0);
-      
-      if(particle->Pt() > fChargedPtCut && TMath::Abs(particle->Eta())<fCTSEtaCut){
-	new((*plCTS)[indexCh])       TParticle(*particle) ;   
-	new((*plPrimCTS)[indexCh])       TParticle(*pmother) ;
-	indexCh++;    
-	
-      }
-    }
-  }
+  if(fSwitchOnCTS){
+    AliDebug(3,Form("Number of tracks %d",nTracks));
   
-  //################ EMCAL ##############
-  
-  Int_t indexEM  = plEMCAL->GetEntries() ; 
-  
-  
-  for (npar =  begem; npar <  endem; npar++) {//////////////EMCAL track loop
-    AliESDCaloCluster * clus = esd->GetCaloCluster(npar) ; // retrieve track from esd
-    Int_t clustertype= clus->GetClusterType();
-    if(clustertype == AliESDCaloCluster::kEMCALClusterv1 && clus->GetTrackMatched()==-1 ){
+    for (npar =  0; npar <  nTracks; npar++) {////////////// track loop
+      AliESDtrack * track = esd->GetTrack(npar) ; // retrieve track from esd
       
-      TLorentzVector momentum ;
-      clus->GetMomentum(momentum, v);          
-      Double_t phi = momentum.Phi();
-      if(phi<0) phi+=TMath::TwoPi() ;
-      if(momentum.Pt() > fNeutralPtCut &&  TMath::Abs(momentum.Eta()) < fEMCALEtaCut &&
-	 phi > fPhiEMCALCut[0] && phi < fPhiEMCALCut[1] ) {
-	
-      pid=clus->GetPid();	
-      Int_t pdg = 22;
-
-      if(IsEMCALPIDOn()){
-	AliDebug(5,Form("E %1.2f; PID: ph %0.2f, pi0 %0.2f, el %0.2f, conv el %0.2f,pi %0.2f, k %0.2f, p %0.2f, k0 %0.2f, n %0.2f, mu %0.2f ",
-			momentum.E(),pid[AliPID::kPhoton],pid[AliPID::kPi0],pid[AliPID::kElectron],pid[AliPID::kEleCon],pid[AliPID::kPion],
-			pid[AliPID::kKaon],pid[AliPID::kProton], pid[AliPID::kKaon0],pid[AliPID::kNeutron], pid[AliPID::kMuon]));
-	
-	if(pid[AliPID::kPhoton] > fEMCALPhotonWeight) 
-	    pdg = kPhoton ;
-	else if(pid[AliPID::kPi0] > fEMCALPi0Weight) 
-	  pdg = kPi0 ; 
-	else if(pid[AliPID::kElectron] > fEMCALElectronWeight)  
-	  pdg = kElectron ;
-	else if(pid[AliPID::kEleCon] > fEMCALElectronWeight) 
-	  pdg = kEleCon ;
-	else if(pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton] > fEMCALChargeWeight) 
-	  pdg = kChargedHadron ;  
-	else if(pid[AliPID::kKaon0]+pid[AliPID::kNeutron] > fEMCALNeutralWeight) 
-	  pdg = kNeutralHadron ; 
-	else if(pid[AliPID::kElectron]+pid[AliPID::kEleCon]+pid[AliPID::kPion]+pid[AliPID::kKaon]+pid[AliPID::kProton]  >  
-		pid[AliPID::kPhoton] + pid[AliPID::kPi0]+pid[AliPID::kKaon0]+pid[AliPID::kNeutron]) 
-	  pdg = kChargedUnknown ; 
-	else 
-	  pdg = kNeutralUnknown ;
-      }
+      //We want tracks fitted in the detectors:
+      ULong_t status=AliESDtrack::kTPCrefit;
+      status|=AliESDtrack::kITSrefit;
+    
+      //We want tracks whose PID bit is set:
+      //     ULong_t status =AliESDtrack::kITSpid;
+      //     status|=AliESDtrack::kTPCpid;
       
-      if(pdg != kElectron && pdg != kEleCon && pdg !=kChargedHadron && pdg !=kChargedUnknown){//keep only neutral particles in the array
+      if ( (track->GetStatus() & status) == status) {//Check if the bits we want are set
+	// Do something with the tracks which were successfully
+	// re-fitted 
+	Double_t en = 0; //track ->GetTPCsignal() ;
+	Double_t mom[3];
+	track->GetPxPyPz(mom) ;
+	Double_t px = mom[0];
+	Double_t py = mom[1];
+	Double_t pz = mom[2]; //Check with TPC people if this is correct.
+	Int_t pdg = 11; //Give any charged PDG code, in this case electron.
+	//I just want to tag the particle as charged
 	
-	//###############
 	//Check kinematics
-	//###############
-	Int_t label = clus->GetLabel();
-	TParticle * pmother = GetMotherParticle(label,stack, "EMCAL",momentum);
+	Int_t label = TMath::Abs(track->GetLabel());
+	TParticle * pmother = new TParticle();
+	pmother = stack->Particle(label);
 	
 	TParticle * particle = new TParticle(pdg, 1, -1, -1, -1, -1, 
-					     momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E(), v[0], v[1], v[2], 0);
-	AliDebug(4,Form("EMCAL cluster added: pdg %f, pt %f, phi %f, eta %f", pdg, particle->Pt(),particle->Phi(),particle->Eta()));
+					     px, py, pz, en, v[0], v[1], v[2], 0);
 	
-	new((*plEMCAL)[indexEM])   TParticle(*particle) ;
-	new((*plPrimEMCAL)[indexEM])   TParticle(*pmother) ;
-	indexEM++;
-      }
-      else AliDebug(4,Form("EMCAL charged cluster NOT added: pdg %d, pt %f, phi %f, eta %f", 
-			   pdg, momentum.Pt(),momentum.Phi(),momentum.Eta()));
-      
-      }//pt, phi, eta cut
-      else 	AliDebug(4,"Particle not added");
-      
-    }//not charged, not pseudocluster
-  }//Cluster loop
-  
-  AliDebug(3,Form("Particle lists filled, PHOS clusters %d, EMCAL clusters %d, CTS tracks %d", 
-		  indexPH,indexEM,indexCh));
-  
-}
+	if(particle->Pt() > fChargedPtCut && TMath::Abs(particle->Eta())<fCTSEtaCut){
+	  new((*plCTS)[indexCh])       TParticle(*particle) ;   
+	  new((*plPrimCTS)[indexCh])       TParticle(*pmother) ;
+	  indexCh++;    
+	  
+	}//kinematic selection
+      }//select track from refit
+    }//track loop    
+  }//CTS
 
+  AliDebug(3,Form("Particle lists filled, tracks  %d , clusters: EMCAL %d, PHOS %d", indexCh,indexEM,indexPH));
+
+}
 
 TParticle * AliGammaMCDataReader:: GetMotherParticle(Int_t label, AliStack *stack, TString calo,  TLorentzVector momentum)
 {

@@ -43,7 +43,7 @@ public:
   AliAnaGammaDirect & operator = (const AliAnaGammaDirect & g) ;//cpy assignment
   virtual ~AliAnaGammaDirect() ; //virtual dtor
   
-  enum anatype_t {kNoIC, kPtIC, kSumPtIC, kSeveralIC};
+  enum Anatype {kNoIC, kPtIC, kSumPtIC, kSeveralIC};
   
   Double_t  GetMinGammaPt()    const {return fMinGammaPt ; }
   Float_t     GetConeSize()          const {return fConeSize ; }
@@ -68,6 +68,7 @@ public:
   void SetPtSumThreshold(Float_t pt) {fPtSumThreshold = pt; };
   void SetICMethod(Int_t i )          {fICMethod = i ; }
   void SetMC()    {fAnaMC = kTRUE ; }
+  void SetIsolatePi0(Bool_t iso)    {fIsolatePi0 = iso ; }
 
   Int_t    GetNCones()                  const {return fNCones ; }
   Int_t    GetNPtThresholds()                const {return fNPtThres ; }
@@ -94,7 +95,7 @@ public:
                                            // kSumPtIC: Cone pt sum method
                                            // kSeveralIC: Analysis for several cuts
   Bool_t fAnaMC ; //Set in case of using MCData reader 
-
+  Bool_t fIsolatePi0 ; //Consider identified pi0 in the isolation study.
   //Histograms  
   TH1F * fhNGamma    ;  //Number of (isolated) gamma identified
   TH2F * fhPhiGamma  ; // Phi of identified gamma

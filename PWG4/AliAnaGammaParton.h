@@ -41,10 +41,10 @@ class AliAnaGammaParton : public AliAnaGammaCorrelation {
        
   private:
        
-       TH2F * fhDeltaEtaParton;
-       TH2F * fhDeltaPhiParton;
-       TH2F * fhDeltaPtParton;
-       TH2F * fhPtRatParton;
+       TH2F * fhDeltaEtaParton; //Difference of parton eta and prompt gamma eta
+       TH2F * fhDeltaPhiParton; //Difference of parton phi and prompt gamma phi
+       TH2F * fhDeltaPtParton; //Difference of parton pT and prompt gamma pT
+       TH2F * fhPtRatParton; //Ratio of parton pT and prompt gamma pT
        
        ClassDef(AliAnaGammaParton,1)
  } ;

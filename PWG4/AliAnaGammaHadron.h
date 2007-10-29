@@ -44,15 +44,15 @@ public:
   private:
   
   //Histograms
-  TH2F * fhPhiCharged  ; 
-  TH2F * fhPhiNeutral   ; 
-  TH2F * fhEtaCharged  ; 
-  TH2F * fhEtaNeutral   ; 
-  TH2F * fhDeltaPhiGammaCharged  ;  
-  TH2F * fhDeltaPhiGammaNeutral   ; 
-  TH2F * fhDeltaEtaGammaCharged  ; 
-  TH2F * fhDeltaEtaGammaNeutral  ; 
-  TH2F * fhDeltaPhiChargedPt  ;
+  TH2F * fhPhiCharged  ; //Phi distribution of charged particles
+  TH2F * fhPhiNeutral   ;  //Phi distribution of neutral particles
+  TH2F * fhEtaCharged  ; //Eta distribution of charged particles
+  TH2F * fhEtaNeutral   ; //Eta distribution of neutral particles
+  TH2F * fhDeltaPhiGammaCharged  ;  //Difference of charged particle phi and prompt gamma phi as function of gamma pT
+  TH2F * fhDeltaPhiGammaNeutral   ;  //Difference of neutral particle phi and prompt gamma phi as function of gamma pT
+  TH2F * fhDeltaEtaGammaCharged  ;  //Difference of charged particle eta and prompt gamma eta as function of gamma pT
+  TH2F * fhDeltaEtaGammaNeutral  ;  //Difference of neutral particle eta and prompt gamma eta as function of gamma pT
+  TH2F * fhDeltaPhiChargedPt  ;  //Difference of charged particle eta and prompt gamma eta as function of charged pT
 
   TH2F * fhCorrelationGammaNeutral  ; //Neutral hadron correlation histogram 
   TH2F * fhCorrelationGammaCharged  ; //Charged hadron correlation histogram

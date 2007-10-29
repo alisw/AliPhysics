@@ -18,6 +18,10 @@
 
 //_________________________________________________________________________
 // Class that contains the algorithm for the reconstruction of jet, cone around leading particle
+// 1)Take the prompt photon found with AliAnaGammaDirect,
+// 2) Search for the highest pt leading particle opposite to the photon within a phi, pt window
+// 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
+//
 //  Class created from old AliPHOSGammaJet
 //  (see AliRoot versions previous Release 4-09)
 //-- Author: Gustavo Conesa (INFN-LNF)
@@ -144,45 +148,50 @@ public:
   UInt_t       fSelect  ;   //kTRUE: Selects all jets, no limits.
  
   //Histograms
+  //Particle distributions
+  TH2F * fhPhiCharged  ; //Phi distribution of charged particles
+  TH2F * fhPhiNeutral   ;  //Phi distribution of neutral particles
+  TH2F * fhEtaCharged  ;  //Eta distribution of charged particles
+  TH2F * fhEtaNeutral   ;  //Eta distribution of neutral particles
+  //Leading particle distributions
+  TH2F * fhDeltaPhiGammaCharged  ;   //Difference of charged particle phi and prompt gamma phi as function of gamma pT
+  TH2F * fhDeltaPhiGammaNeutral   ;  //Difference of neutral particle phi and prompt gamma phi as function of gamma pT
+  TH2F * fhDeltaEtaGammaCharged  ;  //Difference of charged particle eta and prompt gamma eta as function of gamma pT
+  TH2F * fhDeltaEtaGammaNeutral  ;   //Difference of charged particle eta and prompt gamma eta as function of charged pT
 
-  TH2F * fhPhiCharged  ; 
-  TH2F * fhPhiNeutral   ; 
-  TH2F * fhEtaCharged  ; 
-  TH2F * fhEtaNeutral   ; 
-  TH2F * fhDeltaPhiGammaCharged  ;  
-  TH2F * fhDeltaPhiGammaNeutral   ; 
-  TH2F * fhDeltaEtaGammaCharged  ; 
-  TH2F * fhDeltaEtaGammaNeutral  ; 
+  TH2F * fhAnglePairLeading  ; //Aperture angle of decay photons of leading pi0
+  TH2F * fhInvMassPairLeading  ; //Invariant mass of decay photons of leading pi0
+  TH2F * fhChargedRatio  ; //Ratio of leading charge and prompt gamma
+  TH2F * fhNeutralRatio   ;  //Ratio of leading neutral and prompt gamma
+  TH1F * fhNBkg   ; //Bakground multiplicity
+  TH2F * fhNLeading  ; //Accepted leading particle pt distribution
 
-  TH2F * fhAnglePairLeading  ; 
-  TH2F * fhInvMassPairLeading  ; 
-  TH2F * fhChargedRatio  ; 
-  TH2F * fhNeutralRatio   ; 
-  TH1F * fhNBkg   ; 
-  TH2F * fhNLeading  ; 
-  TH1F * fhNJet  ; 
-  TH2F * fhJetRatio  ; 
-  TH2F * fhJetPt   ; 
-  TH2F * fhBkgRatio   ; 
-  TH2F * fhBkgPt  ; 
-  TH2F * fhJetFragment  ; 
-  TH2F * fhBkgFragment  ; 
-  TH2F * fhJetPtDist  ; 
-  TH2F * fhBkgPtDist  ; 
+  //Jet distributions
+  //Fixed cone and pt threshold
+  TH1F * fhNJet  ; //Accepted reconstructed Jet pt distribution 
+  TH2F * fhJetRatio  ; //Ratio of pt jet and pt gamma
+  TH2F * fhJetPt   ; //reconstructed pt jet vs prompt pt gamma
+  TH2F * fhBkgRatio   ; //leading pt bakground / pt gamma 
+  TH2F * fhBkgPt  ; //leading pt bakground vs pt gamma 
+  TH2F * fhJetFragment  ; //Accepted reconstructed jet fragmentation function
+  TH2F * fhBkgFragment  ;  //Background "fragmentation function"
+  TH2F * fhJetPtDist  ; //Jet particle pt distribution
+  TH2F * fhBkgPtDist  ; //Background jet particle pt distribution
 
-  TH2F * fhJetRatios[5][5];
-  TH2F * fhJetPts[5][5];
-  TH2F * fhBkgRatios[5][5];  
-  TH2F * fhBkgPts[5][5];
+  //Variable cone and pt threshold
+  TH2F * fhJetRatios[5][5]; //Ratio of pt jet and pt gamma
+  TH2F * fhJetPts[5][5]; //reconstructed pt jet vs prompt pt gamma
+  TH2F * fhBkgRatios[5][5];  //leading pt bakground / pt gamma 
+  TH2F * fhBkgPts[5][5]; //leading pt bakground vs pt gamma 
   
-  TH2F * fhNLeadings[5][5];
-  TH1F * fhNJets[5][5];
-  TH1F * fhNBkgs[5][5];
+  TH2F * fhNLeadings[5][5];  //Accepted leading particle pt distribution
+  TH1F * fhNJets[5][5]; //Accepted reconstructed Jet pt distribution 
+  TH1F * fhNBkgs[5][5]; //Bakground multiplicity
   
-  TH2F * fhJetFragments[5][5];
-  TH2F * fhBkgFragments[5][5];
-  TH2F * fhJetPtDists[5][5];
-  TH2F * fhBkgPtDists[5][5];
+  TH2F * fhJetFragments[5][5];//Accepted reconstructed jet fragmentation function
+  TH2F * fhBkgFragments[5][5];  //Background "fragmentation function"
+  TH2F * fhJetPtDists[5][5]; //Jet particle pt distribution
+  TH2F * fhBkgPtDists[5][5]; //Background jet particle pt distribution
   
 
   ClassDef(AliAnaGammaJetLeadCone,1)

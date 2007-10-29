@@ -24,11 +24,9 @@
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-#include <TParticle.h> 
-#include <TClonesArray.h> 
-#include "AliGammaReader.h" 
 
-class AliESDEvent ;
+// --- AliRoot system ---
+#include "AliGammaReader.h" 
 
 class AliGammaMCDataReader : public AliGammaReader {
 

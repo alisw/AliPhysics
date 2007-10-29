@@ -27,7 +27,11 @@
  */
 
 //_________________________________________________________________________
-// Base class for prompt gamma and correlation analysis
+// Base class for gamma and correlation analysis
+// It is called by the task class AliAnalysisGammaTask and it connects the input (ESD/AOD/MonteCarlo)
+// got with AliGammaReader (produces TClonesArrays of TParticles), with the analysis classes 
+// AliAnaGammaDirect, AliAnaGammaCorrelation ....
+//
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
@@ -40,6 +44,7 @@
 #include "AliGammaReader.h" 
 #include "AliAnaGammaDirect.h" 
 #include "AliAnaGammaCorrelation.h" 
+#include "AliAnaGammaSelection.h" 
 #include "AliNeutralMesonSelection.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
@@ -54,7 +59,7 @@ ClassImp(AliAnaGamma)
     TObject(),
     fOutputContainer(0x0), 
     fAnaType(0),  fCalorimeter(0), fData(0x0), fKine(0x0), 
-    fReader(0x0), fGammaDirect(0x0), fGammaCorrelation(0x0),
+    fReader(0x0), fGammaDirect(0x0), fGammaCorrelation(0x0), fGammaSelection(0x0),
     fNeutralMesonSelection(0x0), fAODclusters(0x0), fNAODclusters(0)
 {
   //Default Ctor
@@ -66,6 +71,8 @@ ClassImp(AliAnaGamma)
     fGammaDirect = new AliAnaGammaDirect();
   if(!fGammaCorrelation)
     fGammaCorrelation = new AliAnaGammaCorrelation();
+  if(!fGammaSelection)
+    fGammaSelection = new AliAnaGammaSelection();
   if(!fNeutralMesonSelection)
     fNeutralMesonSelection = new AliNeutralMesonSelection();
 
@@ -82,6 +89,7 @@ AliAnaGamma::AliAnaGamma(const AliAnaGamma & g) :
   fAnaType(g.fAnaType),  fCalorimeter(g.fCalorimeter), 
   fData(g.fData), fKine(g.fKine),fReader(g.fReader),
   fGammaDirect(g.fGammaDirect), fGammaCorrelation(g.fGammaCorrelation),
+  fGammaSelection(g.fGammaSelection),
   fNeutralMesonSelection(g.fNeutralMesonSelection),  
   fAODclusters(g. fAODclusters), fNAODclusters(g.fNAODclusters)
 {
@@ -105,6 +113,7 @@ AliAnaGamma & AliAnaGamma::operator = (const AliAnaGamma & source)
   fReader = source.fReader ;
   fGammaDirect = source.fGammaDirect ;
   fGammaCorrelation = source.fGammaCorrelation ;
+  fGammaSelection = source.fGammaSelection ;
   fNeutralMesonSelection = source.fNeutralMesonSelection ;
 
   return *this;
@@ -124,6 +133,7 @@ AliAnaGamma::~AliAnaGamma()
   delete fReader ;
   delete fGammaDirect ;
   delete fGammaCorrelation ;
+  delete fGammaSelection ;
   delete fNeutralMesonSelection ;
 
 }
@@ -139,14 +149,28 @@ void AliAnaGamma::Init()
   
   //Fill container with appropriate histograms
   
+  //Set selection  analysis histograms
+  TList * selectcontainer =  fGammaSelection->GetCreateOutputObjects(); 
+  for(Int_t i = 0; i < selectcontainer->GetEntries(); i++){
+    Bool_t  add = kTRUE ;
+    TString name = (selectcontainer->At(i))->GetName();   
+    if(!fReader->IsEMCALOn() && name.Contains("EMCAL")) add = kFALSE;
+    if(!fReader->IsPHOSOn() && name.Contains("PHOS"))   add = kFALSE;
+    if(!fReader->IsCTSOn() &&  !fGammaSelection->FillCTS() && name.Contains("CTS"))   add = kFALSE;
+    if(add) fOutputContainer->Add(selectcontainer->At(i)) ;
+  }  //Set selection  analysis histograms
+ 
+  
   //Set prompt photon analysis histograms
   TList * promptcontainer =  fGammaDirect->GetCreateOutputObjects(); 
   for(Int_t i = 0; i < promptcontainer->GetEntries(); i++)
     fOutputContainer->Add(promptcontainer->At(i)) ;
   
   //Check if selected options are correct or set them when necessary
-  if(fReader->GetDataType() == AliGammaReader::kMCData)
+  if(fReader->GetDataType() == AliGammaReader::kMCData){
     fGammaDirect->SetMC();//Only useful with AliGammaMCDataReader, by default kFALSE
+    fGammaSelection->SetMC();//Only useful with AliGammaMCDataReader, by default kFALSE
+  }
   
   if(fAnaType == kCorrelation){
     
@@ -238,7 +262,7 @@ void AliAnaGamma::Print(const Option_t * opt) const
 Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
 
   AliDebug(1,Form("Entry %d",entry));
-  cout<<"Event >>>>>>>>>>>>> "<<entry<<endl;
+  //cout<<"Event >>>>>>>>>>>>> "<<entry<<endl;
   if(!fOutputContainer)
     AliFatal("Histograms not initialized");
 
@@ -273,6 +297,12 @@ Bool_t AliAnaGamma::ProcessEvent(Long64_t entry){
   //Fill AOD with calorimeter
   //Temporal solution, just for testing
   //FillAODs(plPHOS,plEMCAL);  
+
+  //Select particles to do the final analysis.
+  if(fReader->IsEMCALOn()) fGammaSelection->Selection("EMCAL",plEMCAL,plPrimEMCAL);
+  if(fReader->IsPHOSOn())  fGammaSelection->Selection("PHOS",plPHOS,plPrimPHOS);
+  if(fReader->IsCTSOn() &&  fGammaSelection->FillCTS()) fGammaSelection->Selection("CTS",plCTS,plPrimCTS);
+
 
   //Search highest energy prompt gamma in calorimeter
   if(fCalorimeter == "PHOS")

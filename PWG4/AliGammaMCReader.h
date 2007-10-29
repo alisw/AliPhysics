@@ -18,13 +18,11 @@
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
 // --- ROOT system ---
-#include <TParticle.h> 
-#include <TClonesArray.h> 
-#include "AliStack.h"
+class TArrayI ;
+
+// --- AliRoot system ---
 #include "AliGammaReader.h" 
  
-class TH2F ; 
-
 class AliGammaMCReader : public AliGammaReader {
 
 public: 
@@ -32,23 +30,29 @@ public:
   AliGammaMCReader() ; // ctor
   AliGammaMCReader(const AliGammaMCReader & g) ; // cpy ctor
   AliGammaMCReader & operator = (const AliGammaMCReader & g) ;//cpy assignment
-  virtual ~AliGammaMCReader() {;} //virtual dtor
+  virtual ~AliGammaMCReader() ;//virtual dtor
 
-  enum decay_t {kNoDecay, kGeantDecay, kDecay, kDecayGamma};
+  enum DecayType {kNoDecay, kGeantDecay, kDecay, kDecayGamma};
  
   void InitParameters();
 
-  Bool_t  IsInEMCAL(Double_t phi, Double_t eta) ;
-  Bool_t  IsInPHOS(Double_t phi, Double_t eta) ;
+  Bool_t  IsInEMCAL(Double_t phi, Double_t eta) const ;
+  Bool_t  IsInPHOS(Double_t phi, Double_t eta) const ;
 
   Int_t    GetDecayPi0Flag() const {return fDecayPi0 ; }
 
-  void Print(const Option_t * opt)const;
+  void Print(const Option_t * opt) const;
   
   void SetDecayPi0Flag(Int_t d){ fDecayPi0 = d ; }
 
   void SetCheckOverlapping(Bool_t check){fCheckOverlapping = check ;}
-  Bool_t IsCheckOverlappingOn() {return fCheckOverlapping ;}
+  Bool_t IsCheckOverlappingOn() const {return fCheckOverlapping ;}
+
+  void SetPhotonStatus(TParticle* pphoton, TParticle* mother);
+
+  void AddNeutralParticlesArray(TArrayI & array)  
+  { fNeutralParticlesArray   = new TArrayI(array) ; }
+  TArrayI * GetNeutralParticlesArray() const   {return  fNeutralParticlesArray;}
 
   private:
   
@@ -72,12 +76,14 @@ public:
 				   TClonesArray * plPHOS, Int_t &indexPHOS);  
   void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2);//, Double_t &angle);
   
-  
+  Bool_t SkipNeutralParticles(Int_t pdg) const ;
+ 
   private:
   
-  Int_t      fDecayPi0; //Decay Pi0.
+  Int_t      fDecayPi0; //Options to study pi0 decay
   Bool_t   fCheckOverlapping; // if True, check if gammas from decay overlapp in calorimeters.
-  
+  TArrayI * fNeutralParticlesArray ; //Do not keep neutral particles of the list.
+ 
   ClassDef(AliGammaMCReader,1)
 } ;
 

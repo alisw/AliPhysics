@@ -54,7 +54,7 @@ ClassImp(AliAnaGammaDirect)
     TObject(),
     fMinGammaPt(0.),
     fConeSize(0.),fPtThreshold(0.),fPtSumThreshold(0), 
-    fICMethod(0), fAnaMC(0),
+    fICMethod(0), fAnaMC(0), fIsolatePi0(0),
     fhNGamma(0),fhPhiGamma(0),fhEtaGamma(0), fhConeSumPt(0), 
     fntuplePrompt(0),
     //kSeveralIC
@@ -76,7 +76,8 @@ AliAnaGammaDirect::AliAnaGammaDirect(const AliAnaGammaDirect & g) :
   fPtThreshold(g.fPtThreshold),
   fPtSumThreshold(g.fPtSumThreshold), 
   fICMethod(g.fICMethod),
-  fAnaMC( g.fAnaMC),
+  fAnaMC( g.fAnaMC), 
+  fIsolatePi0(g.fIsolatePi0),
   fhNGamma(g.fhNGamma),fhPhiGamma(g.fhPhiGamma),
   fhEtaGamma(g.fhEtaGamma), fhConeSumPt(g.fhConeSumPt),    
   fntuplePrompt(g.fntuplePrompt),
@@ -114,6 +115,7 @@ AliAnaGammaDirect & AliAnaGammaDirect::operator = (const AliAnaGammaDirect & sou
   fPtSumThreshold = source.fPtSumThreshold ; 
   fICMethod = source.fICMethod ;
   fAnaMC = source.fAnaMC ;
+  fIsolatePi0 =  source.fIsolatePi0 ;
 
   fhNGamma = source.fhNGamma ; 
   fhPhiGamma = source.fhPhiGamma ;
@@ -193,7 +195,7 @@ TList *  AliAnaGammaDirect::GetCreateOutputObjects()
   outputContainer->Add(fhConeSumPt) ;
   
   //NTUPLE
-  fntuplePrompt = new TNtuple("ntuplePromptGamma", "Tree of prompt #gamma", "ptcluster:phicluster:etacluster:ptprimary:phiprimary:etaprimary:pdgprimary:statusprimary");
+  fntuplePrompt = new TNtuple("ntuplePromptGamma", "Tree of prompt #gamma", "ptcluster:phicluster:etacluster:pdg:status:ptprimary:phiprimary:etaprimary:pdgprimary:statusprimary");
   outputContainer->Add(fntuplePrompt) ;
 
   if(fICMethod == kSeveralIC){
@@ -241,14 +243,17 @@ void AliAnaGammaDirect::GetPromptGamma(TClonesArray * plCalo, TClonesArray * plC
   for(Int_t ipr = 0;ipr < plCalo->GetEntries() ; ipr ++ ){
     TParticle * particle = dynamic_cast<TParticle *>(plCalo->At(ipr)) ;
 
-    if((particle->Pt() > fMinGammaPt) && (particle->Pt() > pt) && (particle->GetPdgCode() == 22)){
+    if((particle->Pt() > fMinGammaPt) && (particle->Pt() > pt) && 
+       (particle->GetPdgCode() == 22 || (fIsolatePi0 && particle->GetPdgCode() == 111))){
       index = ipr ;
       pt = particle->Pt();
       pGamma->SetMomentum(particle->Px(),particle->Py(),particle->Pz(),particle->Energy());
+      pGamma->SetStatusCode(particle->GetStatusCode());
+      pGamma->SetPdgCode(particle->GetPdgCode());
       found  = kTRUE;
     }
   }
-
+ 
   //Do Isolation?
   if( ( fICMethod == kPtIC  ||  fICMethod == kSumPtIC )  && found)
     {
@@ -269,6 +274,8 @@ void AliAnaGammaDirect::GetPromptGamma(TClonesArray * plCalo, TClonesArray * plC
     Float_t ptcluster = pGamma->Pt();
     Float_t phicluster = pGamma->Phi();
     Float_t etacluster = pGamma->Eta();
+    Int_t statuscluster = pGamma->GetStatusCode();
+    Int_t pdgcluster = pGamma->GetPdgCode();
 
     fhNGamma   ->Fill(ptcluster);
     fhPhiGamma ->Fill(ptcluster,phicluster);
@@ -294,7 +301,8 @@ void AliAnaGammaDirect::GetPromptGamma(TClonesArray * plCalo, TClonesArray * plC
     }
 
     //Fill ntuple with cluster / MC data
-    fntuplePrompt->Fill(ptcluster,phicluster,etacluster,ptprimary,phiprimary, etaprimary,pdgprimary,statusprimary);
+    gROOT->cd();
+    fntuplePrompt->Fill(ptcluster,phicluster,etacluster,pdgcluster,statuscluster,ptprimary,phiprimary, etaprimary,pdgprimary,statusprimary);
   }
   else
     AliDebug(1,Form("NO Cluster with pT larger than %f found in calorimeter ", fMinGammaPt)) ;
@@ -314,11 +322,12 @@ void AliAnaGammaDirect::InitParameters()
 
   fICMethod = kNoIC; // 0 don't isolate, 1 pt thresh method, 2 cone pt sum method
   fAnaMC = kFALSE ;
+  fIsolatePi0 = kFALSE ;
  //-----------kSeveralIC-----------------
   fNCones           = 5 ; 
-  fNPtThres         = 5 ; 
+  fNPtThres         = 6 ; 
   fConeSizes[0] = 0.1; fConeSizes[1] = 0.2; fConeSizes[2] = 0.3; fConeSizes[3] = 0.4; fConeSizes[4] = 0.5;
-  fPtThresholds[0]=0.; fPtThresholds[1]=1.; fPtThresholds[2]=2.; fPtThresholds[3]=3.; fPtThresholds[4]=4.;
+  fPtThresholds[0]=0.; fPtThresholds[1]=1.; fPtThresholds[2]=2.; fPtThresholds[3]=3.; fPtThresholds[4]=4.;fPtThresholds[5]=5.;
 
 }
 
@@ -402,7 +411,8 @@ void  AliAnaGammaDirect::MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArr
   for(Int_t ipr = 0;ipr < plCalo->GetEntries() ; ipr ++ ){
     TParticle * particle = dynamic_cast<TParticle *>(plCalo->At(ipr)) ;
     
-    if((particle->Pt() > fMinGammaPt) && (particle->Pt() > ptC) && (particle->GetPdgCode() == 22)){
+    if((particle->Pt() > fMinGammaPt) && (particle->Pt() > ptC) && 
+       (particle->GetPdgCode() == 22 ||  (fIsolatePi0 && particle->GetPdgCode() == 111))){
       index = ipr ;
       ptC = particle->Pt();
       pCandidate = particle ;
@@ -410,13 +420,14 @@ void  AliAnaGammaDirect::MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArr
     }
   }
   
+  //If there is a large cluster, larger than threshold, study isolation cut
   if(found){
     
     fhNGamma->Fill(ptC);
     fhPhiGamma->Fill(ptC,pCandidate->Phi());
     fhEtaGamma->Fill(ptC,pCandidate->Eta());
     
-    Int_t ncone[fNCones][fNPtThres];
+    Int_t ncone[10][10];//[fNCones][fNPtThres];
     Bool_t  icPtThres   = kFALSE;
     Bool_t  icPtSum     = kFALSE;
     
@@ -427,22 +438,22 @@ void  AliAnaGammaDirect::MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArr
 	ncone[icone][ipt]=0;
 	fPtThreshold=fPtThresholds[ipt] ;
 	MakeIsolationCut(plCTS,plCalo, pCandidate, index,  
-			 ncone[icone][ipt]=0, icPtThres, icPtSum,coneptsum);
+			 ncone[icone][ipt], icPtThres, icPtSum,coneptsum);
 	AliDebug(1,Form("Candidate pt %f, pt in cone %f, Isolated? ICPt %d, ICSum %d",
 			pCandidate->Pt(), coneptsum, icPtThres, icPtSum));
-	if(ptC >15 && ptC < 25 && (icPtThres || icPtSum) && ipt ==0){
-	  printf("R %0.1f, ptthres %1.1f, ptsum %1.1f, Candidate pt %2.2f,  eta %2.2f, phi %2.2f, pt in cone %2.2f, Isolated? ICPt %d, ICSum %d\n",
-		 fConeSize,  fPtThreshold, fPtSumThreshold, ptC, pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), coneptsum, icPtThres, icPtSum);
-	  //cout<<"mother label "<<pCandidate->GetMother(0)<<endl;
-	}
+// 	if(ptC >15 && ptC < 25 && (icPtThres || icPtSum) && ipt ==0){
+// 	  printf("R %0.1f, ptthres %1.1f, ptsum %1.1f, Candidate pt %2.2f,  eta %2.2f, phi %2.2f, pt in cone %2.2f, Isolated? ICPt %d, ICSum %d\n",
+// 		 fConeSize,  fPtThreshold, fPtSumThreshold, ptC, pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), coneptsum, icPtThres, icPtSum);
+// 	  //cout<<"mother label "<<pCandidate->GetMother(0)<<endl;
+// 	}
 	
 	fhPtThresIsolated[icone][ipt]->Fill(ptC); 
       }//pt thresh loop
       fhPtSumIsolated[icone]->Fill(ptC,coneptsum) ;
+      gROOT->cd();
       fntSeveralIC[icone]->Fill(ptC,pCandidate->Phi(),pCandidate->Eta(), coneptsum,type,ncone[icone][0],ncone[icone][1],ncone[icone][2],ncone[icone][3],ncone[icone][4],ncone[icone][5]);
     }//cone size loop
   }//found high energy gamma in the event
-
 }
 
 //__________________________________________________________________

@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -24,7 +27,10 @@
  */
 
 //_________________________________________________________________________
-// Class for the analysis of gamma-jet correlations, jet reconstructed in cone around leading
+// Class for the analysis of gamma-jet correlations:
+// 1)Take the prompt photon found with AliAnaGammaDirect,
+// 2) Search for the highest pt leading particle opposite to the photon within a phi, pt window
+// 3) Take all particles around leading in a cone R with pt larger than threshold and construct the jet
 //
 //  Class created from old AliPHOSGammaJet 
 //  (see AliRoot versions previous Release 4-09)
@@ -34,12 +40,11 @@
 
 
 // --- ROOT system ---
-#include "Riostream.h"
 
 //---- AliRoot system ----
-#include "AliLog.h"
 #include "AliNeutralMesonSelection.h"
 #include "AliAnaGammaJetLeadCone.h"  
+#include "AliLog.h"
 
 ClassImp(AliAnaGammaJetLeadCone)
 
