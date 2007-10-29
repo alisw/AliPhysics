@@ -15,6 +15,12 @@
 
 /*
 $Log$
+Revision 1.14  2007/08/06 12:25:47  acolla
+Function Bool_t GetHLTStatus added to preprocessor. It returns the status of HLT
+read from the run logbook.
+TestShuttle setup updated.
+TRD data point configuration updated.
+
 Revision 1.13  2007/05/30 06:35:21  jgrosseo
 Adding functionality to the Shuttle/TestShuttle:
 o) Function to retrieve list of sources from a given system (GetFileSources with id=0)
@@ -119,6 +125,7 @@ some docs added
 #include <TList.h>
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TTimeStamp.h>
 
 ClassImp(AliTestShuttle)
 
@@ -214,39 +221,121 @@ Bool_t AliTestShuttle::StoreReferenceFile(const char* detector, const char* loca
 	// puts it to the Grid FileCatalog
 	
 	AliCDBManager* man = AliCDBManager::Instance();
-	AliCDBStorage* sto = man->GetStorage(fgkMainRefStorage);
+	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
 	
 	TString localBaseFolder = sto->GetBaseFolder();
 	
-	TString targetDir;
-	targetDir.Form("%s/%s", localBaseFolder.Data(), detector);
+	TString targetDir = GetRefFilePrefix(localBaseFolder.Data(), detector);	
 	
-	TString target;
-	target.Form("%s/%d_%s", targetDir.Data(), fRun, gridFileName);
+	return CopyFileLocally(targetDir, localFile, gridFileName);
+}
+
+//______________________________________________________________________________________________
+Bool_t AliTestShuttle::StoreRunMetadataFile(const char* localFile, const char* gridFileName)
+{
+	//
+	// Stores Run metadata file to the Grid, in the run folder
+	//
+	// Only GRP can call this function.
 	
-	Int_t result = gSystem->GetPathInfo(targetDir, 0, (Long64_t*) 0, 0, 0);
-	if (result)
+	AliCDBManager* man = AliCDBManager::Instance();
+	AliCDBStorage* sto = man->GetStorage(fgkLocalRefStorage);
+	
+	TString localBaseFolder = sto->GetBaseFolder();
+	
+	// Build Run level folder
+	// folder = /alice/data/year/lhcPeriod/runNb/Raw
+	
+	TTimeStamp startTime(fStartTime);
+		
+	TString year =  Form("%d",startTime.GetDate());
+	year = year(0,4);
+		
+	TString lhcPeriod = GetRunParameter("LHCperiod");
+	
+	if (lhcPeriod.Length() == 0) 
 	{
-		result = gSystem->mkdir(targetDir, kTRUE);
-		if (result != 0)
-		{
-			Log("SHUTTLE", Form("StoreReferenceFile - Error creating base directory %s", targetDir.Data()));
+		Log("SHUTTLE","StoreRunMetaDataFile - LHCPeriod not found in logbook!");
+		return 0;
+	}
+	
+	// TODO: currently SHUTTLE cannot write in /alice/data/ !!!!!
+	//TString targetDir = Form("%s/GRP/RunMetadata/alice/data/%s/%s/%d/Raw", 
+	//			localBaseFolder.Data(), year.Data(), 
+	//			lhcPeriod.Data(), fRun);
+	
+	TString targetDir = Form("%s/GRP/RunMetadata/alice/simulation/%s/%s/%d/Raw", 
+				localBaseFolder.Data(), year.Data(), 
+				lhcPeriod.Data(), fRun);
+					
+	return CopyFileLocally(targetDir, localFile, gridFileName);
+}
+
+//______________________________________________________________________________________________
+Bool_t AliTestShuttle::CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName)
+{
+	//
+	// Stores file locally. Called by StoreReferenceFile and StoreRunMetadataFile
+	//
+	
+	//try to open folder, if it does not exist
+	void* dir = gSystem->OpenDirectory(targetDir.Data());
+	if (dir == NULL) {
+		if (gSystem->mkdir(targetDir.Data(), kTRUE)) {
+			Log("SHUTTLE", Form("StoreFileLocally - Can't open directory <%s>", targetDir.Data()));
 			return kFALSE;
 		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
 	}
-		
+
+	TString target = Form("%s/%s", targetDir.Data(), gridFileName);
+	
+	Int_t result = gSystem->GetPathInfo(localFile, 0, (Long64_t*) 0, 0, 0);
+	if (result)
+	{
+		Log("SHUTTLE", Form("StoreFileLocally - %s does not exist", localFile));
+		return kFALSE;
+	}
+
 	result = gSystem->CopyFile(localFile, target);
 
 	if (result == 0)
 	{
-		Log("SHUTTLE", Form("StoreReferenceFile - Stored file %s locally to %s", localFile, target.Data()));
+		Log("SHUTTLE", Form("StoreFileLocally - File %s stored locally to %s", localFile, target.Data()));
 		return kTRUE;
 	}
 	else
 	{
-		Log("SHUTTLE", Form("StoreReferenceFile - Storing file %s locally to %s failed with %d", localFile, target.Data(), result));
+		Log("SHUTTLE", Form("StoreFileLocally - Could not store file %s to %s!. Error code = %d", 
+				localFile, target.Data(), result));
 		return kFALSE;
-	}		
+	}	
+
+
+
+}
+
+//______________________________________________________________________________________________
+const char* AliTestShuttle::GetRefFilePrefix(const char* base, const char* detector)
+{
+	//
+	// Get folder name of reference files 
+	//
+
+	TString offDetStr(GetOfflineDetName(detector));
+	TString dir;
+	if (offDetStr == "ITS" || offDetStr == "MUON" || offDetStr == "PHOS")
+	{
+		dir.Form("%s/%s/%s", base, offDetStr.Data(), detector);
+	} else {
+		dir.Form("%s/%s", base, offDetStr.Data());
+	}
+	
+	return dir.Data();
+	
+
 }
 
 //______________________________________________________________________________________________

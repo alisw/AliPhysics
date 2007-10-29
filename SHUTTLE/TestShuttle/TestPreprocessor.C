@@ -84,14 +84,6 @@ void TestPreprocessor()
 
   // TODO(5)
   //
-  // The shuttle can read run parameters stored in the DAQ run logbook.
-  // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor
-  // using GetRunParameter function.
-  shuttle->AddInputRunParameter("totalEvents", "30000");
-  shuttle->AddInputRunParameter("NumberOfGDCs", "15");
-
-  // TODO(6) NEW!
-  //
   // This is for preprocessor that require data from HLT.
   // Since HLT may be switched off, the preprocessor should first query the Run logbook where
   // the HLT status is stored. SHUTTLE implements a shortcut function (GetHLTStatus) that returns
@@ -102,14 +94,14 @@ void TestPreprocessor()
   shuttle->SetInputHLTStatus(hltStatus);
 
 
-  // TODO(7)
+  // TODO(6)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
   AliPreprocessor* test = new AliTestPreprocessor(shuttle);
 
   // Test the preprocessor
   shuttle->Process();
 
-  // TODO(8)
+  // TODO(7)
   // In the preprocessor AliShuttleInterface::Store should be called to put the final
   // data to the CDB. To check if all went fine have a look at the files produced in
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
