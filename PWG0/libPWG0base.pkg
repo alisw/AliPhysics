@@ -17,4 +17,3 @@ DHDR= PWG0baseLinkDef.h
 
 EINCLUDE= 
 
-all-PWG0: all-PWG0base all-PWG0selectors all-PWG0dep

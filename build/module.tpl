@@ -123,7 +123,6 @@ endif
 @PACKAGE@SML:=$(patsubst %,$(MODDIRZ)/%, $(SRCS:.cxx=.smell))
 
 
-
 ifdef WITHDICT
   @PACKAGE@DS:=$(MODDIRO)/G__@PACKAGE@.cxx
   @PACKAGE@DO:=$(MODDIRO)/G__@PACKAGE@.o
@@ -304,13 +303,14 @@ $(MODDIRO)/@PACKAGE@_srcslist: @MODULE@/@TYPE@@PACKAGE@.pkg
 #Different targets for the module
 
 ifeq ($(TYPE),lib)
-all-@PACKAGE@: $(@PACKAGE@LIB)
+all-@MODULE@: $(@PACKAGE@LIB)
 ifneq ($(DYEXT),)
-all-@PACKAGE@: $(@PACKAGE@DLIB)
+all-@MODULE@: $(@PACKAGE@DLIB)
 endif
 else
-all-@PACKAGE@: $(@PACKAGE@BIN)
+all-@MODULE@: $(@PACKAGE@BIN)
 endif
+
 
 depend-@PACKAGE@: $(@PACKAGE@DEP)
 
@@ -412,7 +412,7 @@ $(@PACKAGE@SML:.smell=_h.ml) : $(MODDIRZ)/%_h.ml : $(MODDIR)/%.h
 
 $(@PACKAGE@SML) : $(MODDIRZ)/%.smell : $(MODDIRZ)/%_cxx.ml $(MODDIRZ)/%_h.ml
 	$(MUTE)echo smelling $@
-	$(MUTE)java -classpath $(SMELL_DETECTOR_DIR):$(SMELL_DETECTOR_DIR)/xom-1.1.jar -Xmx500m SmellDetector $? > $@
+	$(MUTE)java -classpath $(SMELL_DETECTOR_DIR):$(SMELL_DETECTOR_DIR)/xom-1.1.jar -Xmx500m SmellDetector $^ > $@
 	$(MUTE)[ -s $@ ] || touch $@
 
 .SECONDARY: $(@PACKAGE@SML:.smell=_cxx.ml) $(@PACKAGE@SML:.smell=_h.ml)
