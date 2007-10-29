@@ -18,8 +18,12 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+#include <vector>
 #include "AliHLTOfflineDataSink.h"
 #include <TString.h>
+
+class AliHLTHOMERWriter;
+typedef vector<AliHLTHOMERWriter*> AliHLTHOMERWriterPVector;
 
 /**
  * @class AliHLTOUTComponent
@@ -75,6 +79,60 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   AliHLTOUTComponent(const AliHLTOUTComponent&);
   /** assignment operator prohibited */
   AliHLTOUTComponent& operator=(const AliHLTOUTComponent&);
+
+  int ShuffleWriters(AliHLTHOMERWriterPVector &list, AliHLTUInt32_t size);
+
+  /**
+   * Fill the output buffer and allocate if neccessary.
+   * Assemble ouput buffer with Common Data Header, HLT header and data from the
+   * writer. Works on the same buffer witch is allocated once and eventually
+   * grown in order to avoid frequent allocs/deallocs.   
+   * @param eventNo    number of the event
+   * @param pWriter    [IN]  the HOMER writer
+   * @param pBuffer    [OUT] target to receive the pointer to buffer
+   * @return size of the buffer
+   */
+  int FillOutputBuffer(int eventNo, AliHLTHOMERWriter* pWriter, const AliHLTUInt8_t* &pBuffer);
+
+  /**
+   * Write the digits for one DDL
+   * @param eventNo    number of the event
+   * @param runLoader  AliRoot run loader instance
+   * @param hltddl     Number of DDL link within the range of HLT
+   * @param pBuffer    buffer to write
+   * @param size       size of the buffer
+   * @return neg. error if failed
+   */
+  int WriteDigits(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int size);
+
+  /**
+   * Write the raw file for one DDL
+   * @param eventNo    number of the event
+   * @param runLoader  AliRoot run loader instance
+   * @param hltddl     Number of DDL link within the range of HLT
+   * @param pBuffer    buffer to write
+   * @param size       size of the buffer
+   * @return neg. error if failed
+   */
+  int WriteRawFile(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int size);
+
+  /** list of HOMER writers */
+  AliHLTHOMERWriterPVector fWriters; //!transient
+
+  /** number of DDLs used*/
+  int fNofDDLs; //!transient
+
+  /** equipment ID of first HLT DDL */
+  int fIdFirstDDL; //!transient
+
+  /** write digits or not */
+  Bool_t fWriteDigits; //!transient
+
+  /** write raw file or not */
+  Bool_t fWriteRaw; //!transient
+
+  /** output buffer, allocated once in order to avoid frequent alloc/dealloc */
+  vector<AliHLTUInt8_t> fBuffer; //!transient
 
   ClassDef(AliHLTOUTComponent, 0)
 };

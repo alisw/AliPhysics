@@ -110,6 +110,30 @@ class AliHLTOUT : public AliHLTLogging {
   };
 
   /**
+   * The HLT OUT Event Header.
+   * Defined between HLT and DAQ.
+   */
+  struct AliHLTOUTEventHeader {
+    /**Total length of the data in bytes, including HLT event header, excluding CDH. */
+    AliHLTUInt32_t fLength; //! see above
+    /** version of the header */
+    AliHLTUInt32_t fVersion; //! see above
+    /** event id */
+    AliHLTUInt64_t fEventID; //! see above
+  };
+
+  // definitions from ALICE internal notes ALICE-INT-2002-010 and
+  // ALICE-INT-2006-XXX
+  /** the 32bit word in the CDH containing the status flags */
+  static const unsigned char fgkCDHStatusWord; //! see above
+  /** start of the flags in word fgkCDHStatusWord */
+  static const unsigned char fgkCDHStatusFlagsOffset; //! see above
+  /** bit indicating HLT decision in the HLTOUT*/
+  static const unsigned char fgkCDHFlagsHLTDecision; //! see above
+  /** bit indicating HLT payload in the HLTOUT*/
+  static const unsigned char fgkCDHFlagsHLTPayload; //! see above
+
+  /**
    * Block descriptor.
    */
   class AliHLTOUTBlockDescriptor {

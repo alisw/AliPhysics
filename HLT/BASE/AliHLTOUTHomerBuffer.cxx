@@ -39,10 +39,10 @@ ClassImp(AliHLTOUTHomerBuffer)
 AliHLTOUTHomerBuffer::AliHLTOUTHomerBuffer(const AliHLTUInt8_t* pBuffer, int size)
   :
   AliHLTOUT(),
+  fpManager(new AliHLTHOMERLibManager),
   fpBuffer(pBuffer),
   fSize(size),
-  fpReader(NULL),
-  fpManager(new AliHLTHOMERLibManager)
+  fpReader(NULL)
 {
   // see header file for class documentation
   // or
@@ -131,8 +131,8 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTHOMERReader* pReader, AliHLTUInt32_t 
 	HLTError("index range %#x exceeded for %d data blocks", nofBlocks, offset);
 	iResult=-ERANGE;
       }
-      tmp2>>1;
-      tmp1<<1;
+      tmp2>>=1;
+      tmp1<<=1;
     }
 
     // loop over data blocks

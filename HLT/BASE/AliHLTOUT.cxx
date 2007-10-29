@@ -49,6 +49,14 @@ AliHLTOUT::AliHLTOUT()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
+// definitions from ALICE internal note ALICE-INT-2002-010
+const unsigned char AliHLTOUT::fgkCDHStatusWord=4;
+const unsigned char AliHLTOUT::fgkCDHStatusFlagsOffset=12;
+
+// definitions from ALICE internal note ALICE-INT-2006-XXX
+const unsigned char AliHLTOUT::fgkCDHFlagsHLTDecision=6;
+const unsigned char AliHLTOUT::fgkCDHFlagsHLTPayload=7;
+
 AliHLTOUT::~AliHLTOUT()
 {
   // see header file for class documentation
