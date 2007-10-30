@@ -90,6 +90,18 @@ AliTRDCommonParam::AliTRDCommonParam()
 }
 
 //_____________________________________________________________________________
+AliTRDCommonParam::AliTRDCommonParam(TRootIoCtor *)
+  :TObject()
+  ,fExBOn(0)
+  ,fSamplingFrequency(0.0)
+{
+  //
+  // IO constructor
+  //
+
+}
+
+//_____________________________________________________________________________
 void AliTRDCommonParam::Init()
 {
   //

@@ -37,6 +37,7 @@ are fully debugged.
 #include <TMath.h>
 
 #include "AliLog.h"
+
 #include "AliTRDfeeParam.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
@@ -112,6 +113,27 @@ AliTRDfeeParam::AliTRDfeeParam()
 
   //  fGeo = AliTRDgeometry::Instance();
   fCP  = AliTRDCommonParam::Instance();
+
+}
+
+//_____________________________________________________________________________
+AliTRDfeeParam::AliTRDfeeParam(TRootIoCtor *)
+  :TObject()
+  ,fCP(0)
+  ,fTFr1(0)
+  ,fTFr2(0)
+  ,fTFc1(0)
+  ,fTFc2(0)
+  ,fEBsglIndThr(0)
+  ,fEBsumIndThr(0)
+  ,fEBindLUT(0)
+  ,fEBignoreNeighbour(0)
+  ,fRAWversion(0)
+  ,fRAWstoreRaw(0)
+{
+  //
+  // IO constructor
+  //
 
 }
 

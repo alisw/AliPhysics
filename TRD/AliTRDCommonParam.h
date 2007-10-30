@@ -13,6 +13,8 @@
 
 #include "TObject.h"
 
+class TRootIoCtor;
+
 class AliTRDpadPlane;
 
 class AliTRDCommonParam : public TObject
@@ -22,6 +24,7 @@ class AliTRDCommonParam : public TObject
   
     enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
     
+    AliTRDCommonParam(TRootIoCtor *);
     AliTRDCommonParam(const AliTRDCommonParam &p);   
     AliTRDCommonParam &operator=(const AliTRDCommonParam &p); 
     virtual        ~AliTRDCommonParam();

@@ -15,6 +15,8 @@
 
 #include <TObject.h>
 
+class TRootIoCtor;
+
 class AliTRDCommonParam;
 class AliTRDpadPlane;
 class AliTRDgeometry;
@@ -25,6 +27,7 @@ class AliTRDfeeParam : public TObject
 
  public:
 
+  AliTRDfeeParam(TRootIoCtor *);
   AliTRDfeeParam(const AliTRDfeeParam &p);
   virtual           ~AliTRDfeeParam();
   AliTRDfeeParam    &operator=(const AliTRDfeeParam &p);
