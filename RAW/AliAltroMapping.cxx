@@ -30,7 +30,9 @@ ClassImp(AliAltroMapping)
 AliAltroMapping::AliAltroMapping():
   fIn(NULL),
   fNumberOfChannels(0),
-  fMaxHWAddress(0)
+  fMaxHWAddress(0),
+  fMappingSize(0),
+  fInvMappingSize(0)
 {
   // Default constructor
 }
@@ -39,7 +41,9 @@ AliAltroMapping::AliAltroMapping():
 AliAltroMapping::AliAltroMapping(const char *mappingFile):
   fIn(NULL),
   fNumberOfChannels(0),
-  fMaxHWAddress(0)
+  fMaxHWAddress(0),
+  fMappingSize(0),
+  fInvMappingSize(0)
 {
   // Constructor
   // Reads the mapping from an external file
@@ -54,27 +58,6 @@ AliAltroMapping::~AliAltroMapping()
 {
   CloseMappingFile();
   // destructor
-}
-
-//_____________________________________________________________________________
-AliAltroMapping::AliAltroMapping(const AliAltroMapping& mapping):
-  TObject(mapping),
-  fIn(mapping.fIn),
-  fNumberOfChannels(mapping.fNumberOfChannels),
-  fMaxHWAddress(mapping.fMaxHWAddress)
-{
-// Copy Constructor
-
-  Fatal("AliAltroMapping", "copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliAltroMapping& AliAltroMapping::operator = (const AliAltroMapping& /*mapping*/)
-{
-//Assigment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
 }
 
 //_____________________________________________________________________________

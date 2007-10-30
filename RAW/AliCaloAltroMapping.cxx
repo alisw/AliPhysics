@@ -30,6 +30,20 @@
 ClassImp(AliCaloAltroMapping)
 
 //_____________________________________________________________________________
+AliCaloAltroMapping::AliCaloAltroMapping():
+  AliAltroMapping(),
+  fMinRow(0),
+  fMaxRow(0),
+  fMinCol(0),
+  fMaxCol(0),
+  fMapping(NULL),
+  fInvMappingLow(NULL),
+  fInvMappingHigh(NULL)
+{
+  // Default constructor
+}
+
+//_____________________________________________________________________________
 AliCaloAltroMapping::AliCaloAltroMapping(const char *mappingFile):
   AliAltroMapping(mappingFile),
   fMinRow(0),
@@ -53,31 +67,6 @@ AliCaloAltroMapping::~AliCaloAltroMapping()
 }
 
 //_____________________________________________________________________________
-AliCaloAltroMapping::AliCaloAltroMapping(const AliCaloAltroMapping& mapping):
-  AliAltroMapping(mapping),
-  fMinRow(mapping.fMinRow),
-  fMaxRow(mapping.fMaxRow),
-  fMinCol(mapping.fMinCol),
-  fMaxCol(mapping.fMaxCol),
-  fMapping(mapping.fMapping),
-  fInvMappingLow(mapping.fInvMappingLow),
-  fInvMappingHigh(mapping.fInvMappingHigh)
-{
-// Copy Constructor
-
-  Fatal("AliCaloAltroMapping", "copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliCaloAltroMapping& AliCaloAltroMapping::operator = (const AliCaloAltroMapping& /*mapping*/)
-{
-//Assigment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-//_____________________________________________________________________________
 Bool_t AliCaloAltroMapping::ReadMapping()
 {
   // Initalizes the ALTRO mapping from a file
@@ -92,10 +81,10 @@ Bool_t AliCaloAltroMapping::ReadMapping()
   fMaxRow = 0;
   fMinCol = 0x7fffffff;
   fMaxCol = 0;
-  fMapping = new Short_t*[fMaxHWAddress+1];
+  fMappingSize = 3*(fMaxHWAddress+1);
+  fMapping = new Short_t[fMappingSize];
   for (Int_t i = 0; i <= fMaxHWAddress; i++) {
-    fMapping[i] = new Short_t[3];
-    fMapping[i][0] = fMapping[i][1] = fMapping[i][2] = -1;
+    fMapping[3*i] = fMapping[3*i+1] = fMapping[3*i+2] = -1;
   }
  
   for(Int_t i = 0; i < fNumberOfChannels ; i++) { // 1792 = 2*896 channels connected to each RCU
@@ -119,9 +108,9 @@ Bool_t AliCaloAltroMapping::ReadMapping()
       return kFALSE;
     }
  
-    fMapping[hwAddress][0] = row;
-    fMapping[hwAddress][1] = col;
-    fMapping[hwAddress][2] = gain;
+    fMapping[3*hwAddress] = row;
+    fMapping[3*hwAddress+1] = col;
+    fMapping[3*hwAddress+2] = gain;
 
     if (row > fMaxRow) fMaxRow = row;
     if (row < fMinRow) fMinRow = row;
@@ -130,26 +119,29 @@ Bool_t AliCaloAltroMapping::ReadMapping()
 
   }
 
-  fInvMappingLow  = new Short_t*[fMaxRow - fMinRow + 1];
-  fInvMappingHigh = new Short_t*[fMaxRow - fMinRow + 1];
-  for (Int_t i = 0; i <= (fMaxRow - fMinRow); i++) {
-    fInvMappingLow[i]  = new Short_t[fMaxCol - fMinCol + 1];
-    fInvMappingHigh[i] = new Short_t[fMaxCol - fMinCol + 1];
-    for (Int_t j = 0; j <= (fMaxCol - fMinCol); j++) {
-      fInvMappingLow[i][j]  = -1;
-      fInvMappingHigh[i][j] = -1;
+  Int_t nRows = fMaxRow - fMinRow + 1;
+  Int_t nCols = fMaxCol - fMinCol + 1;
+  fInvMappingSize = nRows*nCols;
+
+
+  fInvMappingLow  = new Short_t[fInvMappingSize];
+  fInvMappingHigh = new Short_t[fInvMappingSize];
+  for (Int_t i = 0; i < nRows; i++) {
+    for (Int_t j = 0; j < nCols; j++) {
+      fInvMappingLow[nCols*i+j]  = -1;
+      fInvMappingHigh[nCols*i+j] = -1;
     }
   }
 
   for(Int_t i = 0; i <= fMaxHWAddress; i++) {
-    Int_t row = fMapping[i][0];
-    Int_t col = fMapping[i][1];
-    Int_t gain = fMapping[i][2];
+    Int_t row = fMapping[3*i];
+    Int_t col = fMapping[3*i+1];
+    Int_t gain = fMapping[3*i+2];
     if(row != -1 && col != -1) {
       if (gain == 0)
-	fInvMappingLow[row-fMinRow][col-fMinCol] = i;
+	fInvMappingLow[nCols*(row-fMinRow)+(col-fMinCol)] = i;
       if (gain == 1)
-	fInvMappingHigh[row-fMinRow][col-fMinCol] = i;
+	fInvMappingHigh[nCols*(row-fMinRow)+(col-fMinCol)] = i;
     }
   }
 
@@ -180,9 +172,9 @@ Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t gain) const
   }
   Int_t hwAddress = -1;
   if (gain == 0)
-    hwAddress = fInvMappingLow[row-fMinRow][col-fMinCol];
+    hwAddress = fInvMappingLow[(fMaxCol - fMinCol + 1)*(row-fMinRow)+(col-fMinCol)];
   if (gain == 1)
-    hwAddress = fInvMappingHigh[row-fMinRow][col-fMinCol];
+    hwAddress = fInvMappingHigh[(fMaxCol - fMinCol + 1)*(row-fMinRow)+(col-fMinCol)];
 
   if (hwAddress == -1)
     AliWarning(Form("Hardware (ALTRO) adress is not defined for these row (%d), column (%d) and gain (%d) !",row,col,gain));
@@ -203,7 +195,7 @@ Int_t AliCaloAltroMapping::GetPadRow(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t row = fMapping[hwAddress][0];
+  Int_t row = fMapping[3*hwAddress];
   if (row == -1)
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
@@ -223,7 +215,7 @@ Int_t AliCaloAltroMapping::GetPad(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t col = fMapping[hwAddress][1];
+  Int_t col = fMapping[3*hwAddress+1];
   if (col == -1)
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
@@ -243,7 +235,7 @@ Int_t AliCaloAltroMapping::GetSector(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t gain = fMapping[hwAddress][2];
+  Int_t gain = fMapping[3*hwAddress+2];
   if (gain == -1)
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
@@ -256,20 +248,9 @@ void AliCaloAltroMapping::DeleteMappingArrays()
   // Deletes the arrays which have been
   // allocated during the reading of the
   // mapping file
-  if (fMapping) {
-    for (Int_t i = 0; i <= fMaxHWAddress; i++) delete [] fMapping[i];
-    delete [] fMapping;
-  }
+  if (fMapping) delete [] fMapping;
 
-  if (fInvMappingLow) {
-    for (Int_t i = 0; i <= (fMaxRow - fMinRow); i++)
-      delete [] fInvMappingLow[i];
-    delete [] fInvMappingLow;
-  }
+  if (fInvMappingLow) delete [] fInvMappingLow;
 
-  if (fInvMappingHigh) {
-    for (Int_t i = 0; i <= (fMaxRow - fMinRow); i++)
-      delete [] fInvMappingHigh[i];
-    delete [] fInvMappingHigh;
-  }
+  if (fInvMappingHigh) delete [] fInvMappingHigh;
 }

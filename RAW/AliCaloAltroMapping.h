@@ -21,11 +21,9 @@
 
 class AliCaloAltroMapping: public AliAltroMapping {
  public:
+  AliCaloAltroMapping();
   AliCaloAltroMapping(const char *mappingFile);
   virtual ~AliCaloAltroMapping();
-
-  AliCaloAltroMapping(const AliCaloAltroMapping& mapping);
-  AliCaloAltroMapping& operator = (const AliCaloAltroMapping& mapping);
 
   // In case of PHOS/EMCAL the relevant segmentation is row-column-gain
   // or eta-phi-gain
@@ -45,11 +43,16 @@ class AliCaloAltroMapping: public AliAltroMapping {
   Int_t     fMaxRow;        // Maximum row index
   Int_t     fMinCol;        // Minimum column index
   Int_t     fMaxCol;        // Maximum column index
-  Short_t **fMapping;       // Array which connects hardware adresses to row and column indeces
-  Short_t **fInvMappingLow; // Inverse of fMapping (Low gain)
-  Short_t **fInvMappingHigh;// Inverse of fMapping (High gain)
+  Short_t  *fMapping;       //[fMappingSize] Array which connects hardware adresses to row and column indeces
+  Short_t  *fInvMappingLow; //[fInvMappingSize] Inverse of fMapping (Low gain)
+  Short_t  *fInvMappingHigh;//[fInvMappingSize] Inverse of fMapping (High gain)
 
-  ClassDef(AliCaloAltroMapping,1)  // Altro mapping handler class
+ private:
+
+  AliCaloAltroMapping(const AliCaloAltroMapping& mapping);
+  AliCaloAltroMapping& operator = (const AliCaloAltroMapping& mapping);
+
+  ClassDef(AliCaloAltroMapping,2)  // Altro mapping handler class
 };
 
 #endif

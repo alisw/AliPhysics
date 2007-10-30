@@ -26,6 +26,18 @@
 ClassImp(AliTPCAltroMapping)
 
 //_____________________________________________________________________________
+AliTPCAltroMapping::AliTPCAltroMapping():
+  AliAltroMapping(),
+  fMinPadRow(0),
+  fMaxPadRow(0),
+  fMaxPad(0),
+  fMapping(NULL),
+  fInvMapping(NULL)
+{
+  // Default constructor
+}
+
+//_____________________________________________________________________________
 AliTPCAltroMapping::AliTPCAltroMapping(const char *mappingFile):
   AliAltroMapping(mappingFile),
   fMinPadRow(0),
@@ -47,29 +59,6 @@ AliTPCAltroMapping::~AliTPCAltroMapping()
 }
 
 //_____________________________________________________________________________
-AliTPCAltroMapping::AliTPCAltroMapping(const AliTPCAltroMapping& mapping):
-  AliAltroMapping(mapping),
-  fMinPadRow(mapping.fMinPadRow),
-  fMaxPadRow(mapping.fMaxPadRow),
-  fMaxPad(mapping.fMaxPad),
-  fMapping(mapping.fMapping),
-  fInvMapping(mapping.fInvMapping)
-{
-// Copy Constructor
-
-  Fatal("AliTPCAltroMapping", "copy constructor not implemented");
-}
-
-//_____________________________________________________________________________
-AliTPCAltroMapping& AliTPCAltroMapping::operator = (const AliTPCAltroMapping& /*mapping*/)
-{
-//Assigment operator
-
-  Fatal("operator =", "assignment operator not implemented");
-  return *this;
-}
-
-//_____________________________________________________________________________
 Bool_t AliTPCAltroMapping::ReadMapping()
 {
   // Initalizes the ALTRO mapping from a file
@@ -83,10 +72,10 @@ Bool_t AliTPCAltroMapping::ReadMapping()
   fMinPadRow = 0x7fffffff;
   fMaxPadRow = 0;
   fMaxPad = 0;
-  fMapping = new Short_t*[fMaxHWAddress+1];
+  fMappingSize = 2*(fMaxHWAddress+1);
+  fMapping = new Short_t[fMappingSize];
   for (Int_t i = 0; i <= fMaxHWAddress; i++) {
-    fMapping[i] = new Short_t[2];
-    fMapping[i][0] = fMapping[i][1] = -1;
+    fMapping[2*i] = fMapping[2*i+1] = -1;
   }
  
   for(Int_t i = 0; i < fNumberOfChannels ; i++) { //5504 is size of irorc mapping at ther moment only for irorc
@@ -105,25 +94,28 @@ Bool_t AliTPCAltroMapping::ReadMapping()
       return kFALSE;
     }
  
-    fMapping[hwAddress][0] = padrow;
-    fMapping[hwAddress][1] = pad;
+    fMapping[2*hwAddress] = padrow;
+    fMapping[2*hwAddress+1] = pad;
 
     if (padrow > fMaxPadRow) fMaxPadRow = padrow;
     if (padrow < fMinPadRow) fMinPadRow = padrow;
     if (pad > fMaxPad) fMaxPad = pad;
   }
 
-  fInvMapping = new Short_t*[fMaxPadRow - fMinPadRow + 1];
+  Int_t nRows = fMaxPadRow - fMinPadRow + 1;
+  Int_t nPads = fMaxPad + 1;
+  fInvMappingSize = nRows*nPads;
+
+  fInvMapping = new Short_t[fInvMappingSize];
   for (Int_t i = 0; i <= (fMaxPadRow - fMinPadRow); i++) {
-    fInvMapping[i] = new Short_t[fMaxPad + 1];
-    for (Int_t j = 0; j <= fMaxPad; j++) fInvMapping[i][j] = -1;
+    for (Int_t j = 0; j <= fMaxPad; j++) fInvMapping[nPads*i+j] = -1;
   }
 
   for(Int_t i = 0; i <= fMaxHWAddress; i++) {
-    Int_t padrow = fMapping[i][0];
-    Int_t pad = fMapping[i][1];
+    Int_t padrow = fMapping[2*i];
+    Int_t pad = fMapping[2*i+1];
     if(padrow != -1 && pad != -1)
-      fInvMapping[padrow-fMinPadRow][pad] = i;
+      fInvMapping[nPads*(padrow-fMinPadRow)+pad] = i;
   }
 
   return kTRUE;
@@ -147,7 +139,7 @@ Int_t AliTPCAltroMapping::GetHWAddress(Int_t padrow, Int_t pad, Int_t /* sector 
     AliWarning(Form("Index of pad (%d) outside the range (0 -> %d) !",pad,fMaxPad));
     return -1;
   }
-  Int_t hwAddress = fInvMapping[padrow-fMinPadRow][pad];
+  Int_t hwAddress = fInvMapping[(fMaxPad+1)*(padrow-fMinPadRow)+pad];
   if (hwAddress == -1)
     AliWarning(Form("Hardware (ALTRO) adress is not defined for these pad-row (%d) and pad (%d) !",padrow,pad));
 
@@ -165,7 +157,7 @@ Int_t AliTPCAltroMapping::GetPadRow(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t padrow = fMapping[hwAddress][0];
+  Int_t padrow = fMapping[2*hwAddress];
   if (padrow == -1)
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
@@ -183,7 +175,7 @@ Int_t AliTPCAltroMapping::GetPad(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) outside the range (0 -> %d) !",hwAddress,fMaxHWAddress));
     return -1;
   }
-  Int_t pad = fMapping[hwAddress][1];
+  Int_t pad = fMapping[2*hwAddress+1];
   if (pad == -1)
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
@@ -203,14 +195,7 @@ void AliTPCAltroMapping::DeleteMappingArrays()
   // Deletes the arrays which have been
   // allocated during the reading of the
   // mapping file
-  if (fMapping) {
-    for (Int_t i = 0; i <= fMaxHWAddress; i++) delete [] fMapping[i];
-    delete [] fMapping;
-  }
+  if (fMapping) delete [] fMapping;
 
-  if (fInvMapping) {
-    for (Int_t i = 0; i <= (fMaxPadRow - fMinPadRow); i++)
-      delete [] fInvMapping[i];
-    delete [] fInvMapping;
-  }
+  if (fInvMapping) delete [] fInvMapping;
 }

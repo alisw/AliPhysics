@@ -18,9 +18,6 @@ class AliAltroMapping: public TObject {
   AliAltroMapping(const char *mappingFile);
   virtual ~AliAltroMapping();
 
-  AliAltroMapping(const AliAltroMapping& mapping);
-  AliAltroMapping& operator = (const AliAltroMapping& mapping);
-
   virtual Int_t GetHWAddress(Int_t padrow, Int_t pad, Int_t sector) const = 0;
   virtual Int_t GetPadRow(Int_t hwAddress) const = 0;
   virtual Int_t GetPad(Int_t hwAddress) const = 0;
@@ -35,8 +32,14 @@ class AliAltroMapping: public TObject {
   ifstream *fIn;               //! External mapping file
   Int_t     fNumberOfChannels; // Number of ALTRO channels
   Int_t     fMaxHWAddress;     // Maximum HW adress
+  Int_t     fMappingSize;      // Maximum size of the mapping array, used by the streamer of derived classes
+  Int_t     fInvMappingSize;   // Maximum size of the inverse mapping arrays, used by the streamer of derived classes
 
-  ClassDef(AliAltroMapping,2)  // Altro mapping handler class
+ private:
+  AliAltroMapping(const AliAltroMapping& mapping);
+  AliAltroMapping& operator = (const AliAltroMapping& mapping);
+
+  ClassDef(AliAltroMapping,3)  // Altro mapping handler class
 };
 
 #endif
