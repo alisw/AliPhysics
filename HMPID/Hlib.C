@@ -15,9 +15,12 @@ void Hlib()
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
+  
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
+  
+  gSystem->Load("libSTEER");
+  
   gSystem->Load("libRAWDatasim");
 
   gSystem->Load("libHMPIDbase.so");
