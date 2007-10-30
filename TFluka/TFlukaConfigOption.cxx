@@ -48,9 +48,6 @@ TFlukaConfigOption::TFlukaConfigOption()
    fCMaterial(0)
 {
     // Default constructor
-//    fMedium  = -1;
-//    fCMatMin = -1.;
-//    fCMatMax = -1.;    
     Int_t i;
     for (i = 0; i < 11; i++) fCutValue[i]    = -1.;
     for (i = 0; i < 15; i++) fProcessFlag[i] = -1;
@@ -64,9 +61,6 @@ TFlukaConfigOption::TFlukaConfigOption(Int_t medium)
    fCMaterial(0)
 {
     // Constructor
-//    fMedium = medium;
-//    fCMatMin = -1.;
-//    fCMatMax = -1.;    
     Int_t i;
     for (i = 0; i < 11; i++) fCutValue[i]    = -1.;
     for (i = 0; i < 15; i++) fProcessFlag[i] = -1;
@@ -593,13 +587,13 @@ void TFlukaConfigOption::ProcessLOSS()
 // No fluctuations
 //
        fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",-1., -1., stra, fCMatMin, fCMatMax);
-       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", 1.e10, 0., 0., fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", -1., 0., 0., fCMatMin, fCMatMax, 1.);
     }  else {
 //
 // Full fluctuations
 //
        fprintf(fgFile,"IONFLUCT  %10.1f%10.1f%10.1f%10.1f%10.1f\n",1., 1., stra, fCMatMin, fCMatMax);
-       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", 1.e10, 0., 0., fCMatMin, fCMatMax, 1.);
+       fprintf(fgFile,"DELTARAY  %10.4g%10.1f%10.1f%10.1f%10.1f%10.1f\n", -1., 0., 0., fCMatMin, fCMatMax, 1.);
     }
 }
 
