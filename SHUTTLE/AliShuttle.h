@@ -105,7 +105,7 @@ private:
 
 	Bool_t StoreOCDB();
 	Bool_t StoreOCDB(const TString& uri);
-	Bool_t CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName);
+	Bool_t CopyFileLocally(const char* localFile, const TString& target);
 	Bool_t CopyFilesToGrid(const char* type);
 	void CleanLocalStorage(const TString& uri);
 	Bool_t CleanReferenceStorage(const char* detector);

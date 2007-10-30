@@ -15,6 +15,18 @@
 
 /*
 $Log$
+Revision 1.60  2007/10/29 18:06:16  acolla
+
+New function StoreRunMetadataFile added to preprocessor and Shuttle interface
+This function can be used by GRP only. It stores raw data tags merged file to the
+raw data folder (e.g. /alice/data/2008/LHC08a/000099999/Raw).
+
+KNOWN ISSUES:
+
+1. Shuttle cannot write to /alice/data/ because it belongs to alidaq. Tag file is stored in /alice/simulation/... for the time being.
+2. Due to a bug in TAlien::Mkdir, the creation of a folder in recursive mode (-p option) does not work. The problem
+has been corrected in the root package on the Shuttle machine.
+
 Revision 1.59  2007/10/05 12:40:55  acolla
 
 Result error code added to AliDCSClient data members (it was "lost" with the new implementation of TMap* GetAliasValues and GetDPValues).
@@ -644,7 +656,7 @@ Bool_t AliShuttle::CleanReferenceStorage(const char* detector)
 
   	TString targetDir = GetRefFilePrefix(localBaseFolder.Data(), detector);
 	
-  	Log("SHUTTLE", Form("Cleaning %s", targetDir.Data()));
+  	Log("SHUTTLE", Form("CleanReferenceStorage - Cleaning %s", targetDir.Data()));
 
 	TString begin;
 	begin.Form("%d_", GetCurrentRun());
@@ -686,7 +698,7 @@ Bool_t AliShuttle::CleanReferenceStorage(const char* detector)
 		
 		if (result)
 		{
-			Log("SHUTTLE", Form("Could not delete file %s!", fileName.Data()));
+			Log("SHUTTLE", Form("CleanReferenceStorage - Could not delete file %s!", fileName.Data()));
 			success = kFALSE;
 		} else {
 			nDel++;
@@ -710,10 +722,10 @@ Bool_t AliShuttle::CleanReferenceStorage(const char* detector)
   if (result == 0)
   {
     // delete directory
-    result = gSystem->Exec(Form("rm -r %s", targetDir.Data()));
+    result = gSystem->Exec(Form("rm -rf %s", targetDir.Data()));
     if (result != 0)
     {  
-      Log("SHUTTLE", Form("CleanReferenceStorage - Could not clear directory %s", targetDir.Data()));
+      Log("SHUTTLE", Form("CleanReferenceStorage - Could not clean directory %s", targetDir.Data()));
       return kFALSE;
     }
   }
@@ -750,9 +762,10 @@ Bool_t AliShuttle::StoreReferenceFile(const char* detector, const char* localFil
 	
 	TString localBaseFolder = sto->GetBaseFolder();
 	
-	TString targetDir = GetRefFilePrefix(localBaseFolder.Data(), detector);	
+	TString target = GetRefFilePrefix(localBaseFolder.Data(), detector);	
+	target.Append(Form("/%d_%s", GetCurrentRun(), gridFileName));
 	
-	return CopyFileLocally(targetDir, localFile, gridFileName);
+	return CopyFileLocally(localFile, target);
 }
 
 //______________________________________________________________________________________________
@@ -791,25 +804,32 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 	}
 	
 	// TODO: currently SHUTTLE cannot write in /alice/data/ !!!!!
-	//TString targetDir = Form("%s/GRP/RunMetadata/alice/data/%s/%s/%d/Raw", 
+	//TString target = Form("%s/GRP/RunMetadata/alice/data/%s/%s/%d/Raw/%s", 
 	//			localBaseFolder.Data(), year.Data(), 
-	//			lhcPeriod.Data(), GetCurrentRun());
+	//			lhcPeriod.Data(), GetCurrentRun(), gridFileName);
 	
-	TString targetDir = Form("%s/GRP/RunMetadata/alice/simulation/%s/%s/%d/Raw", 
+	TString target = Form("%s/GRP/RunMetadata/alice/simulation/%s/%s/%d/Raw/%s", 
 				localBaseFolder.Data(), year.Data(), 
-				lhcPeriod.Data(), GetCurrentRun());
+				lhcPeriod.Data(), GetCurrentRun(), gridFileName);
+	
+				
 					
-	return CopyFileLocally(targetDir, localFile, gridFileName);
+	return CopyFileLocally(localFile, target);
 }
 
 //______________________________________________________________________________________________
-Bool_t AliShuttle::CopyFileLocally(TString& targetDir, const char* localFile, const char* gridFileName)
+Bool_t AliShuttle::CopyFileLocally(const char* localFile, const TString& target)
 {
 	//
 	// Stores file locally. Called by StoreReferenceFile and StoreRunMetadataFile
+	// Files are temporarily stored in the local reference storage. When the preprocessor 
+	// finishes, the Shuttle calls CopyFilesToGrid to transfer the files to AliEn 
+	// (in reference or run level folders)
 	//
 	
-	//try to open folder, if it does not exist
+	TString targetDir(target(0, target.Last('/')));
+	
+	//try to open base dir folder, if it does not exist
 	void* dir = gSystem->OpenDirectory(targetDir.Data());
 	if (dir == NULL) {
 		if (gSystem->mkdir(targetDir.Data(), kTRUE)) {
@@ -820,8 +840,6 @@ Bool_t AliShuttle::CopyFileLocally(TString& targetDir, const char* localFile, co
 	} else {
 		gSystem->FreeDirectory(dir);
 	}
-
-	TString target = Form("%s/%s", targetDir.Data(), gridFileName);
 	
 	Int_t result = gSystem->GetPathInfo(localFile, 0, (Long64_t*) 0, 0, 0);
 	if (result)
@@ -839,7 +857,7 @@ Bool_t AliShuttle::CopyFileLocally(TString& targetDir, const char* localFile, co
 	}
 	else
 	{
-		Log("SHUTTLE", Form("StoreFileLocally - Could not store file %s to %s!. Error code = %d", 
+		Log("SHUTTLE", Form("StoreFileLocally - Could not store file %s to %s! Error code = %d", 
 				localFile, target.Data(), result));
 		return kFALSE;
 	}	
@@ -1563,10 +1581,27 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 			
 			TString wd = gSystem->WorkingDirectory();
-			TString tmpDir = Form("%s/%s_process",GetShuttleTempDir(),fCurrentDetector.Data());
+			TString tmpDir = Form("%s/%s_process", GetShuttleTempDir(), fCurrentDetector.Data());
 			
-			gSystem->mkdir(tmpDir.Data());
-			gSystem->ChangeDirectory(tmpDir.Data());
+			Int_t result = gSystem->GetPathInfo(tmpDir.Data(), 0, (Long64_t*) 0, 0, 0);
+			if (!result) // temp dir already exists!
+			{
+				Log(fCurrentDetector.Data(), 
+					Form("Process - %s dir already exists! Removing...", tmpDir.Data()));
+				gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));		
+			} else {
+				if (gSystem->mkdir(tmpDir.Data(), 1))
+				{
+					Log(fCurrentDetector.Data(), "Process - could not make temp directory!!");
+					gSystem->Exit(1);
+				}
+			}
+			
+			if (!gSystem->ChangeDirectory(tmpDir.Data())) 
+			{
+				Log(fCurrentDetector.Data(), "Process - could not change directory!!");
+				gSystem->Exit(1);			
+			}
 			
 			Bool_t success = ProcessCurrentDetector();
 			
@@ -1675,9 +1710,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 	Log("SHUTTLE", Form("ProcessCurrentDetector - Retrieving values for %s, run %d", 
 						fCurrentDetector.Data(), GetCurrentRun()));
 
+	TString wd = gSystem->WorkingDirectory();
+	
 	if (!CleanReferenceStorage(fCurrentDetector.Data()))
 		return kFALSE;
-
+	
+	gSystem->ChangeDirectory(wd.Data());
+	
 	TMap* dcsMap = new TMap();
 
 	// call preprocessor
@@ -2077,8 +2116,10 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 				filePath.Data(), fileSize.Data(), fileChecksum.Data()));
 
 	// retrieved file is renamed to make it unique
-	TString localFileName = Form("%s_%s_%d_%s_%s.shuttle",
-					GetSystemName(system), detector, GetCurrentRun(), id, sourceName.Data());
+	TString localFileName = Form("%s/%s_process/%s_%s_%d_%s_%s.shuttle",
+					GetShuttleTempDir(), detector,
+					GetSystemName(system), detector, GetCurrentRun(), 
+					id, sourceName.Data());
 
 
 	// file retrieval from FXS
@@ -2100,8 +2141,8 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 		if (fileChecksum.Length()>0)
 		{
 			// compare md5sum of local file with the one stored in the FXS DB
-			Int_t md5Comp = gSystem->Exec(Form("md5sum %s/%s |grep %s 2>&1 > /dev/null",
-						GetShuttleTempDir(), localFileName.Data(), fileChecksum.Data()));
+			Int_t md5Comp = gSystem->Exec(Form("md5sum %s |grep %s 2>&1 > /dev/null",
+						localFileName.Data(), fileChecksum.Data()));
 
 			if (md5Comp != 0)
 			{
@@ -2123,14 +2164,14 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, sourceName.Data()));
 	fFXSlist[system].Add(fileParams);
 
-	static TString fullLocalFileName;
-	fullLocalFileName.Form("%s/%s", GetShuttleTempDir(), localFileName.Data());
+	static TString staticLocalFileName = localFileName;
+	//fullLocalFileName.Form("%s/%s_process/%s", GetShuttleTempDir(), detector, localFileName.Data());
 
 	Log(fCurrentDetector, Form("GetFile - Retrieved file with id %s and "
 			"source %s from %s to %s", id, source, 
-			GetSystemName(system), fullLocalFileName.Data()));
+			GetSystemName(system), localFileName.Data()));
 
-	return fullLocalFileName.Data();
+	return staticLocalFileName.Data();
 }
 
 //______________________________________________________________________________________________
@@ -2141,18 +2182,21 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 	//
 
 	// check temp directory: trying to cd to temp; if it does not exist, create it
-	AliDebug(2, Form("Copy file %s from %s FXS into %s/%s",
-			GetSystemName(system), fxsFileName, GetShuttleTempDir(), localFileName));
+	AliDebug(2, Form("Copy file %s from %s FXS into %s",
+			GetSystemName(system), fxsFileName, localFileName));
+			
+	TString tmpDir(localFileName);
+	
+	tmpDir = tmpDir(0,tmpDir.Last('/'));
 
-	void* dir = gSystem->OpenDirectory(GetShuttleTempDir());
-	if (dir == NULL) {
-		if (gSystem->mkdir(GetShuttleTempDir(), kTRUE)) {
-			AliError(Form("Can't open directory <%s>", GetShuttleTempDir()));
+	Int_t noDir = gSystem->GetPathInfo(tmpDir.Data(), 0, (Long64_t*) 0, 0, 0);
+	if (noDir) // temp dir does not exists!
+	{
+		if (gSystem->mkdir(tmpDir.Data(), 1))
+		{
+			Log(fCurrentDetector.Data(), "RetrieveFile - could not make temp directory!!");
 			return kFALSE;
 		}
-
-	} else {
-		gSystem->FreeDirectory(dir);
 	}
 
 	TString baseFXSFolder;
@@ -2170,13 +2214,12 @@ Bool_t AliShuttle::RetrieveFile(UInt_t system, const char* fxsFileName, const ch
 	}
 
 
-	TString command = Form("scp -oPort=%d -2 %s@%s:%s%s %s/%s",
+	TString command = Form("scp -oPort=%d -2 %s@%s:%s%s %s",
 		fConfig->GetFXSPort(system),
 		fConfig->GetFXSUser(system),
 		fConfig->GetFXSHost(system),
 		baseFXSFolder.Data(),
 		fxsFileName,
-		GetShuttleTempDir(),
 		localFileName);
 
 	AliDebug(2, Form("%s",command.Data()));
@@ -2795,8 +2838,8 @@ Bool_t AliShuttle::RetrieveConditionsData(const TObjArray& dateEntries)
 		}
 
 		// clean SHUTTLE temp directory
-		TString filename = Form("%s/*.shuttle", GetShuttleTempDir());
-		RemoveFile(filename.Data());
+		//TString filename = Form("%s/*.shuttle", GetShuttleTempDir());
+		//RemoveFile(filename.Data());
 	}
 
 	return hasError == kFALSE;
