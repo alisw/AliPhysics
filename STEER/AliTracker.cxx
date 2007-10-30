@@ -216,7 +216,7 @@ AliTracker::MeanMaterialBudget(Double_t *start,Double_t *end,Double_t *mparam)
   TGeoNode *startnode = gGeoManager->InitTrack(start, dir);
   //printf("%s length=%f\n",gGeoManager->GetPath(),length);
   if (!startnode) {
-    AliErrorClass(Form("start point out of geometry: x %f, y %f, z %f\n",
+    AliErrorClass(Form("start point out of geometry: x %f, y %f, z %f",
 		  start[0],start[1],start[2]));
     return 0.0;
   }
