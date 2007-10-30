@@ -1,10 +1,19 @@
 #ifndef ALI_PMD_PREPROCESSOR_H
 #define ALI_PMD_PREPROCESSOR_H
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+//-----------------------------------------------------//
+//                                                     //
+//  Header File : AliPMDPreprocessor.h                 //
+//                                                     //
+// test preprocessor that writes data to AliPMDDataDAQ //
+//-----------------------------------------------------//
+// Author - A. Ahmed
 
 #include "AliPreprocessor.h"
 
-// test preprocessor that writes data to AliPMDDataDAQ  
-
+class TTimeStamp;
+class TSystem;
 
 class AliPMDPreprocessor : public AliPreprocessor
 {

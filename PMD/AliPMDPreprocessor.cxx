@@ -1,6 +1,26 @@
+/***************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+//-----------------------------------------------------//
+//                                                     //
+//  Source File : AliPMDPreprocessor.cxx               //
+//                                                     //
+//                                                     //
+//-----------------------------------------------------//
+
 // --- ROOT system
 #include <TFile.h>
-#include <TTimeStamp.h>
 
 #include "AliPMDPreprocessor.h"
 #include "AliPMDPedestal.h"
@@ -11,7 +31,6 @@
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TTree.h>
-#include <TSystem.h>
 
 
 ClassImp(AliPMDPreprocessor)
@@ -50,7 +69,9 @@ void AliPMDPreprocessor::Initialize(Int_t run, UInt_t startTime,
 //______________________________________________________________________________________________
 UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 {
-    
+    // This reads the pedestal and gain files and stores in the database
+
+
     if(!pdaqAliasMap) return 1;
     TString runType = GetRunType();
     if(runType == "PEDESTAL_RUN"){
@@ -79,8 +100,10 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    }
 	    
 	    Log(Form("File with id PMD_PED got from %s", source->GetName()));
-	    Int_t DET,SM,ROW,COL;
-	    Float_t MEAN,RMS;
+
+	    Int_t   det, sm, row, col;
+	    Float_t mean, rms;
+
 	    TFile *f= new TFile(filename.Data());
 	    if(!f || !f->IsOpen()) 
 	    {
@@ -94,17 +117,17 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 		return 1;
 	    }
 	    
-	    tree->SetBranchAddress("DET",  &DET);
-	    tree->SetBranchAddress("SM",   &SM);
-	    tree->SetBranchAddress("ROW",  &ROW);
-	    tree->SetBranchAddress("COL",  &COL);
-	    tree->SetBranchAddress("MEAN", &MEAN);
-	    tree->SetBranchAddress("RMS",  &RMS);
+	    tree->SetBranchAddress("det",  &det);
+	    tree->SetBranchAddress("sm",   &sm);
+	    tree->SetBranchAddress("row",  &row);
+	    tree->SetBranchAddress("col",  &col);
+	    tree->SetBranchAddress("mean", &mean);
+	    tree->SetBranchAddress("rms",  &rms);
 	    Int_t nEntries = (Int_t) tree->GetEntries();
 	    for(Int_t i = 0; i < nEntries; i++)
 	    {
 		tree->GetEntry(i);
-		pedestal->SetPedMeanRms(DET,SM,ROW,COL,MEAN,RMS);
+		pedestal->SetPedMeanRms(det,sm,row,col,mean,rms);
 	    }
 	    f->Close();
 	    delete f;
@@ -152,8 +175,10 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    }
 	    
 	    Log(Form("File with id PMDGAINS got from %s", source->GetName()));
-	    Int_t DET,SM,ROW,COL;
-	    Float_t GAIN;
+
+	    Int_t   det, sm, row, col;
+	    Float_t gain;
+
 	    TFile *f1= new TFile(filename.Data());
 	    if(!f1 || !f1->IsOpen()) 
 	    {
@@ -167,11 +192,11 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 		return 1;
 	    }
 	    
-	    tree->SetBranchAddress("DET",  &DET);
-	    tree->SetBranchAddress("SM",   &SM);
-	    tree->SetBranchAddress("ROW",  &ROW);
-	    tree->SetBranchAddress("COL",  &COL);
-	    tree->SetBranchAddress("GAIN", &GAIN);
+	    tree->SetBranchAddress("det",  &det);
+	    tree->SetBranchAddress("sm",   &sm);
+	    tree->SetBranchAddress("row",  &row);
+	    tree->SetBranchAddress("col",  &col);
+	    tree->SetBranchAddress("gain", &gain);
 	    Int_t nEntries = (Int_t) tree->GetEntries();
 	    for(Int_t i = 0; i < nEntries; i++)
 	    {
@@ -180,7 +205,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 // 	printf("Error! gain[%d,%d,%d,%d] = %f\n",DET,SM,ROW,COL,GAIN);
 //	continue;
 		//    		 	}
-		calibda->SetGainFact(DET,SM,ROW,COL,GAIN);
+		calibda->SetGainFact(det,sm,row,col,gain);
 	    }
 	    f1->Close();
 	    delete f1;
