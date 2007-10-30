@@ -513,10 +513,14 @@ CHECK_HLTMODULE([tpc],
 		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
-if test "x$enable-module" = "xmissheader"; then
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...missing.headers"
   enable_tpc="no...missing.headers"
 elif test "x$have_alitpc" = "xno" ; then
+  enable_module="no...requires.AliRoot.TPC.libraries"
   enable_tpc="no...requires.AliRoot.TPC.libraries"
+elif test "x$enable_module" = "xforce"; then
+  enable_tpc="yes"
 else
   enable_tpc=$enable_module
 fi
@@ -526,7 +530,7 @@ if test "x$enable_tpc" = "xyes" ; then
 fi
 AM_CONDITIONAL(EN_HLT_TPC, test x$enable_tpc = xyes)
 AC_MSG_CHECKING([whether to compile tpc library])
-AC_MSG_RESULT([$enable_tpc])
+AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITPC_LIBS])
 
 dnl ------------------------------------------------------------------
@@ -539,8 +543,11 @@ CHECK_HLTMODULE([phos],
 		[PHOSbase PHOSrec PHOSsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
-if test "x$enable-module" = "xmissheader"; then
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...requires.AliRoot>v4-05-07"
   enable_phos="no...requires.AliRoot>v4-05-07"
+elif test "x$enable_module" = "xforce"; then
+  enable_phos="yes"
 else
   have_alicalorawstream=no
   if test ! "x$have_aliroot" = "xno" ; then
@@ -573,9 +580,12 @@ if test "x$enable_phos" = "xyes" ; then
 fi
 AM_CONDITIONAL(EN_HLT_PHOS, test x$enable_phos = xyes)
 AC_MSG_CHECKING([whether to compile phos library])
-AC_MSG_RESULT([$enable_phos])
+AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIPHOS_LIBS])
 
+dnl ------------------------------------------------------------------
+AH_TEMPLATE([HLT_TRD],[hlt trd library])
+  
 ALITRD_LIBS=
 CHECK_HLTMODULE([trd],
 		[], [],
@@ -583,8 +593,11 @@ CHECK_HLTMODULE([trd],
 		[TRDbase TRDrec TRDsim], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
-if test "x$enable-module" = "xmissheader"; then
+if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...requires.AliRoot>v4-07-Release"
   enable_trd="no...requires.AliRoot>v4-07-Release"
+elif test "x$enable_module" = "xforce"; then
+  enable_trd="yes"
 else
   enable_trd=$enable_module
   if test "x$enable_trd" = "xyes" ; then
@@ -609,7 +622,7 @@ if test "x$enable_trd" = "xyes" ; then
 fi
 AM_CONDITIONAL(EN_HLT_TRD, test x$enable_trd = xyes)
 AC_MSG_CHECKING([whether to compile trd library])
-AC_MSG_RESULT([$enable_trd])
+AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALITRD_LIBS])
 
 dnl ------------------------------------------------------------------
@@ -623,7 +636,10 @@ CHECK_HLTMODULE([dimuon],
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...requires.AliRoot>v4-07-Release"
   enable_muon="no...requires.AliRoot>v4-07-Release"
+elif test "x$enable_module" = "xforce"; then
+  enable_muon="yes"
 else
   enable_muon=$enable_module
 fi
@@ -634,7 +650,7 @@ if test "x$enable_muon" = "xyes" ; then
 fi
 AM_CONDITIONAL(EN_HLT_MUON, test x$enable_muon = xyes)
 AC_MSG_CHECKING([whether to compile muon library])
-AC_MSG_RESULT([$enable_muon])
+AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALIMUON_LIBS])
 
 dnl ------------------------------------------------------------------
@@ -648,7 +664,10 @@ CHECK_HLTMODULE([comp],
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
+  enable_module="no...header.missing"
   enable_comp="no...header.missing"
+elif test "x$enable_module" = "xforce"; then
+  enable_comp="yes"
 else
   enable_comp=$enable_module
 fi
@@ -659,7 +678,7 @@ if test "x$enable_comp" = "xyes" ; then
 fi
 AM_CONDITIONAL(EN_HLT_COMP, test x$enable_comp = xyes)
 AC_MSG_CHECKING([whether to compile comp library])
-AC_MSG_RESULT([$enable_comp])
+AC_MSG_RESULT([$enable_module])
 AC_SUBST([ALICOMP_LIBS])
 
 dnl ------------------------------------------------------------------

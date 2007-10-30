@@ -221,7 +221,11 @@ AH_TEMPLATE([HLT_[$1]],[hlt [$1] library])
 AC_ARG_ENABLE([$1],
   [AC_HELP_STRING([--disable-[$1]],
       [   compile the $1 library ])],
-  [],
+  [if test "x$enableval" = "xno";
+     then enable_module=no
+   else
+     enable_module=force
+  fi],
   [enable_module=yes
    if test "x$have_aliroot" = "xno" ; then
      enable_module="no...requires.AliRoot"
