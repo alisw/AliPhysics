@@ -51,7 +51,7 @@ geant3->SetCUTS(cut,cut, cut, cut, cut, cut,  cut,  cut, cut,  cut, tofmax);
 //gener->SetPhiRange(0,0);
 //gener->SetThetaRange(5., 5.);
 //gener->SetOrigin(0,0,0);          //vertex position
-//gener->SetPart(14)                //GEANT particle type
+//gener->SetPart(kProton);
 
 //*********************************************
 // Example for Moving Particle Gun            *
@@ -64,7 +64,7 @@ gener->SetThetaRange(2., 10.);
 gener->SetOrigin(0,0,0);   
        //vertex position
 gener->SetSigma(0,0,5.6);           //Sigma in (X,Y,Z) (cm) on IP position
-gener->SetPart(14)                //GEANT particle type
+gener->SetPart(kProton);
  */
 //**************************************
 // Example for HIJING Parameterisation *

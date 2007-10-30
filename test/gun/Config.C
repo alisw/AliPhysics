@@ -6,6 +6,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -155,49 +156,49 @@ void Config()
     // Particle guns for the barrel part (taken from RichConfig)
 
     AliGenFixed *pG1=new AliGenFixed(1);
-    pG1->SetPart(2212);
+    pG1->SetPart(kProton);
     pG1->SetMomentum(2.5);
     pG1->SetTheta(109.5-3);
     pG1->SetPhi(10);
     gener->AddGenerator(pG1,"g1",1);
     
     AliGenFixed *pG2=new AliGenFixed(1);
-    pG2->SetPart(211);
+    pG2->SetPart(kPiPlus);
     pG2->SetMomentum(1.0);
     pG2->SetTheta( 90.0-3);
     pG2->SetPhi(10);
     gener->AddGenerator(pG2,"g2",1);
 
     AliGenFixed *pG3=new AliGenFixed(1);
-    pG3->SetPart(-211);
+    pG3->SetPart(kPiMinus);
     pG3->SetMomentum(1.5);
     pG3->SetTheta(109.5-3);
     pG3->SetPhi(30);
     gener->AddGenerator(pG3,"g3",1);
     
     AliGenFixed *pG4=new AliGenFixed(1);
-    pG4->SetPart(321);
+    pG4->SetPart(kKPlus);
     pG4->SetMomentum(0.7);
     pG4->SetTheta( 90.0-3);
     pG4->SetPhi(30);
     gener->AddGenerator(pG4,"g4",1);
     
     AliGenFixed *pG5=new AliGenFixed(1);
-    pG5->SetPart(-321);
+    pG5->SetPart(kKMinus);
     pG5->SetMomentum(1.0);
     pG5->SetTheta( 70.0-3);
     pG5->SetPhi(30);
     gener->AddGenerator(pG5,"g5",1);
     
     AliGenFixed *pG6=new AliGenFixed(1);
-    pG6->SetPart(-2212);
+    pG6->SetPart(kProtonBar);
     pG6->SetMomentum(2.5);
     pG6->SetTheta( 90.0-3);
     pG6->SetPhi(50);
     gener->AddGenerator(pG6,"g6",1);
     
     AliGenFixed *pG7=new AliGenFixed(1);
-    pG7->SetPart(-211);
+    pG7->SetPart(kPiMinus);
     pG7->SetMomentum(0.7);
     pG7->SetTheta( 70.0-3);
     pG7->SetPhi(50);
@@ -206,14 +207,14 @@ void Config()
     // Electrons for TRD
 
     AliGenFixed *pG8=new AliGenFixed(1);
-    pG8->SetPart(11);
+    pG8->SetPart(kElectron);
     pG8->SetMomentum(1.2);
     pG8->SetTheta( 95.0);
     pG8->SetPhi(190);
     gener->AddGenerator(pG8,"g8",1);
 
     AliGenFixed *pG9=new AliGenFixed(1);
-    pG9->SetPart(-11);
+    pG9->SetPart(kPositron);
     pG9->SetMomentum(1.2);
     pG9->SetTheta( 85.0);
     pG9->SetPhi(190);
@@ -225,7 +226,7 @@ void Config()
     gphos->SetMomentumRange(10,11.);
     gphos->SetPhiRange(270.5,270.7);
     gphos->SetThetaRange(90.5,90.7);
-    gphos->SetPart(22);
+    gphos->SetPart(kGamma);
     gener->AddGenerator(gphos,"GENBOX GAMMA for PHOS",1);
 
     // EMCAL
@@ -234,7 +235,7 @@ void Config()
     gemcal->SetMomentumRange(10,11.);
     gemcal->SetPhiRange(90.5,199.5);
     gemcal->SetThetaRange(90.5,90.7);
-    gemcal->SetPart(22);
+    gemcal->SetPart(kGamma);
     gener->AddGenerator(gemcal,"GENBOX GAMMA for EMCAL",1);
 
     // MUON
@@ -242,19 +243,19 @@ void Config()
     gmuon1->SetMomentumRange(20.,20.1);
     gmuon1->SetPhiRange(0., 360.);         
     gmuon1->SetThetaRange(171.000,178.001);
-    gmuon1->SetPart(13);           // Muons
+    gmuon1->SetPart(kMuonMinus);           // Muons
     gener->AddGenerator(gmuon1,"GENBOX MUON1",1);
 
     AliGenBox * gmuon2 = new AliGenBox(1);
     gmuon2->SetMomentumRange(20.,20.1);
     gmuon2->SetPhiRange(0., 360.);         
     gmuon2->SetThetaRange(171.000,178.001);
-    gmuon2->SetPart(-13);           // Muons
+    gmuon2->SetPart(kMuonPlus);           // Muons
     gener->AddGenerator(gmuon2,"GENBOX MUON1",1);
 
     //TOF
     AliGenFixed *gtof=new AliGenFixed(1);
-    gtof->SetPart(2212);
+    gtof->SetPart(kProton);
     gtof->SetMomentum(2.5);
     gtof->SetTheta(95);
     pG1->SetPhi(340);

@@ -6,6 +6,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -164,7 +165,7 @@ void Config()
    // g1->SetMomentumRange(0, 3);
    // g1->SetOrigin(0,0,0);        //vertex position
    // g1->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-   // g1->SetPart(310);        //K0short(310), Lambda(3122)
+   // g1->SetPart(kK0Short);        //K0short(310), Lambda(3122)
    
 
     /*****************     M E V S I M    ********************************/    

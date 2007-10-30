@@ -1,3 +1,5 @@
+#include <TPDGCode.h>
+
 void Config(){
     // Set Random Number seed
     // gRandom->SetSeed(12345);
@@ -70,7 +72,7 @@ void Config(){
     gener->SetOrigin(0.,0.,-50.);
     //vertex position
     gener->SetSigma(0.1,0.1,0.0); //Sigma in (X,Y,Z) (cm) on IP position
-    gener->SetPart(211);                //GEANT particle type
+    gener->SetPart(kPiPlus);
     gener->Init();
     // Activate this line if you want the vertex smearing to happen
     // track by track

@@ -10,6 +10,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeant3TGeo.h>
+#include <TPDGCode.h>
 #include "STEER/AliRunLoader.h"
 #include "STEER/AliRun.h"
 #include "STEER/AliConfig.h"
@@ -145,7 +146,7 @@ void Config()
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
 
     AliGenBox *genbox = new AliGenBox(nParticles);
-    genbox->SetPart(11);
+    genbox->SetPart(kElectron);
     genbox->SetPtRange(0.3, 10.00);
     gener->AddGenerator(genbox,"GENBOX GAMMA for PHOS",1);
     gener->Init();

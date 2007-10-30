@@ -14,6 +14,7 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 #include <TDatime.h>
 #include <TSystem.h>
@@ -250,7 +251,7 @@ void Config()
   
   // electron generator
   AliGenBox *eminus= new AliGenBox(Npart);
-  eminus->SetPart(11);
+  eminus->SetPart(kElectron);
   eminus->SetMomentumRange(momen,momen);
   eminus->SetPhiRange(0,360);
   eminus->SetThetaRange(thmin,thmax);
@@ -259,7 +260,7 @@ void Config()
 
   // positron generator
   AliGenBox *eplus= new AliGenBox(Npart);
-  eplus->SetPart(-11);
+  eplus->SetPart(kPositron);
   eplus->SetMomentumRange(momen,momen);
   eplus->SetPhiRange(0,360);
   eplus->SetThetaRange(thmin,thmax);
@@ -268,7 +269,7 @@ void Config()
 
   // mu- generator
   AliGenBox *muminus= new AliGenBox(Npart);
-  muminus->SetPart(13);
+  muminus->SetPart(kMuonMinus);
   muminus->SetMomentumRange(momen,momen);
   muminus->SetPhiRange(0,360);
   muminus->SetThetaRange(thmin,thmax);
@@ -277,7 +278,7 @@ void Config()
 
   // mu+ generator
   AliGenBox *muplus= new AliGenBox(Npart);
-  muplus->SetPart(-13);
+  muplus->SetPart(kMuonPlus);
   muplus->SetMomentumRange(momen,momen);
   muplus->SetPhiRange(0,360);
   muplus->SetThetaRange(thmin,thmax);
@@ -286,7 +287,7 @@ void Config()
 
   // pi- generator
   AliGenBox *piminus= new AliGenBox(Npart);
-  piminus->SetPart(-211);
+  piminus->SetPart(kPiMinus);
   piminus->SetMomentumRange(momen,momen);
   piminus->SetPhiRange(0,360);
   piminus->SetThetaRange(thmin,thmax);
@@ -295,7 +296,7 @@ void Config()
 
   // pi+ generator
   AliGenBox *piplus= new AliGenBox(Npart);
-  piplus->SetPart(211);
+  piplus->SetPart(kPiPlus);
   piplus->SetMomentumRange(momen,momen);
   piplus->SetPhiRange(0,360);
   piplus->SetThetaRange(thmin,thmax);
@@ -304,7 +305,7 @@ void Config()
 
   // K- generator
   AliGenBox *kminus= new AliGenBox(Npart);
-  kminus->SetPart(-321);
+  kminus->SetPart(kKMinus);
   kminus->SetMomentumRange(momen,momen);
   kminus->SetPhiRange(0,360);
   kminus->SetThetaRange(thmin,thmax);
@@ -313,7 +314,7 @@ void Config()
 
   // K+ generator
   AliGenBox *kplus= new AliGenBox(Npart);
-  kplus->SetPart(321);
+  kplus->SetPart(kKPlus);
   kplus->SetMomentumRange(momen,momen);
   kplus->SetPhiRange(0,360);
   kplus->SetThetaRange(thmin,thmax);
@@ -322,7 +323,7 @@ void Config()
 
   // p generator
   AliGenBox *proton= new AliGenBox(Npart);
-  proton->SetPart(2212);
+  proton->SetPart(kProton);
   proton->SetMomentumRange(momen,momen);
   proton->SetPhiRange(0,360);
   proton->SetThetaRange(thmin,thmax);
@@ -331,7 +332,7 @@ void Config()
 
   // anti-p generator
   AliGenBox *aproton= new AliGenBox(Npart);
-  aproton->SetPart(-2212);
+  aproton->SetPart(kProtonBar);
   aproton->SetMomentumRange(momen,momen);
   aproton->SetPhiRange(0,360);
   aproton->SetThetaRange(thmin,thmax);

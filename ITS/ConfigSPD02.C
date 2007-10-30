@@ -1,6 +1,7 @@
 //
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
+#include <TPDGCode.h>
 #include <TRandom.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -93,7 +94,7 @@ void Config(){
     gener->SetOrigin(0.,0.,-50.);
     //vertex position
     gener->SetSigma(0.1,0.1,0.0); //Sigma in (X,Y,Z) (cm) on IP position
-    gener->SetPart(211);                //GEANT particle type
+    gener->SetPart(kPiPlus);
     gener->Init();
     // Activate this line if you want the vertex smearing to happen
     // track by track

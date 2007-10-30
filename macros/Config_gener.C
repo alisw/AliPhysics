@@ -128,7 +128,7 @@ void Config()
 	gener->SetPhi(180.);
 	gener->SetTheta(5.);
 	gener->SetOrigin(0,0,0);        //vertex position
-	gener->SetPart(13);             //GEANT particle type
+	gener->SetPart(kNeutron);
 	gGener = gener;
       }
       break;
@@ -144,7 +144,7 @@ void Config()
 	gener->SetOrigin(0,0,0);   
 	//vertex position
 	gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-	gener->SetPart(5);              //GEANT particle type
+	gener->SetPart(kMuonPlus);
 	gGener = gener;
       }
       break;
@@ -159,7 +159,7 @@ void Config()
 	gener->SetThetaRange(9,9);
 	//vertex position
 	gener->SetSigma(6,6,0);         //Sigma in (X,Y,Z) (cm) on IP position
-	gener->SetPart(5); 
+	gener->SetPart(kMuonPlus); 
 	gener->SetRange(20, -100, 100, 20, -100, 100, 1, 500, 500);
 	gGener = gener;
       }

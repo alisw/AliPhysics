@@ -1,3 +1,5 @@
+#include <TPDGCode.h>
+
 static Int_t    eventsPerRun = 100;
 enum PprGeo_t
 {
@@ -29,6 +31,7 @@ Float_t EtaToTheta(Float_t arg);
 
 void Config()
 {
+
   cout << "==> Config.C..." << endl;
   
   // Set Random Number seed
@@ -129,7 +132,7 @@ void Config()
     gener->SetMomentumRange(0.5, 5.);
     gener->SetPhiRange(260., 280.);
     gener->SetThetaRange(82.,98.);
-    gener->SetPart(22);
+    gener->SetPart(kGamma);
 
     gener->SetOrigin(0, 0, 0);  //vertex position
     gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position

@@ -70,7 +70,7 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
     gener->SetMomentumRange(20.,20.1);
     gener->SetPhiRange(0., 360.);         
     gener->SetThetaRange(171.000,178.001);
-    gener->SetPart(13);           // Muons
+    gener->SetPart(kMuonMinus);           // Muons
     gener->SetOrigin(0.,0., 0.);  //vertex position
     gener->SetSigma(0.0, 0.0, 0.0);         //Sigma in (X,Y,Z) (cm) on IP position
   }
@@ -80,7 +80,7 @@ void Config(char directory[100]="", char option[6]="param", const char* digitsto
     gener->SetPhiRange(0.);
     gener->SetThetaRange(0.);
     gener->SetOrigin(30,30,-1200);//vertex position
-    gener->SetPart(13);          //GEANT particle type  13 is muons
+    gener->SetPart(kMuonMinus);          //GEANT particle type  13 is muons
   }
   if (!strcmp(option,"scan")) {
     AliGenScan *gener = new AliGenScan(-1);

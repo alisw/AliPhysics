@@ -1,6 +1,7 @@
+#include <TPDGCode.h>
+
 void Config()
 {
-
   Int_t iField = 0;
 
   // libraries required by geant321
@@ -72,12 +73,12 @@ void Config()
   AliGenBox *genEl = new AliGenBox(100);
   genEl->SetOrigin(0,0,0);        // Vertex position
   genEl->SetSigma(0,0,0);         // Sigma in (X,Y,Z) (cm) on IP position
-  genEl->SetPart(11);             // Only electrons 
+  genEl->SetPart(kElectron);             // Only electrons 
 
   AliGenBox *genPi = new AliGenBox(100);
   genPi->SetOrigin(0,0,0);        // Vertex position
   genPi->SetSigma(0,0,0);         // Sigma in (X,Y,Z) (cm) on IP position
-  genPi->SetPart(-211);           // Only pions 
+  genPi->SetPart(kPiMinus);           // Only pions 
 
   gener->AddGenerator(genEl,"Electrons",1);
   gener->AddGenerator(genPi,"Pions"    ,1);

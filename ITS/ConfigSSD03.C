@@ -97,9 +97,9 @@ void Config(){
     //vertex position
     gener->SetSigma(1.,1.,0.0); //Sigma in (X,Y,Z) (cm) on IP position
 
-    //gener->SetPart(211);                //GEANT particle type
+    //gener->SetPart(kPiPlus);
     //cout<<"kPiPlus="<<kPiPlus<<endl;
-    gener->SetPart(kPiPlus);                //GEANT particle type
+    gener->SetPart(kPiPlus);
     gener->Init();
     // Activate this line if you want the vertex smearing to happen
     // track by track

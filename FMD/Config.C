@@ -15,7 +15,7 @@
 */
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
-#include <TRandom.h>
+#include <TPDGCode.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeant3.h>
@@ -1581,7 +1581,7 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     {
       comment = comment.Append(" Flat in FMD1 range");
       AliGenBox* gener = new AliGenBox(2000);
-      gener->SetPart(211);
+      gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
       gener->SetThetaRange(0.77, 3.08);
@@ -1592,7 +1592,7 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     {
       comment = comment.Append(" Flat in FMD2 range");
       AliGenBox* gener = new AliGenBox(2000);
-      gener->SetPart(211);
+      gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
       gener->SetThetaRange(2.95, 20.42);
@@ -1603,7 +1603,7 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
     {
       comment = comment.Append(" Flat in FMD3 range");
       AliGenBox* gener = new AliGenBox(2000);
-      gener->SetPart(211);
+      gener->SetPart(kPiPlus);
       gener->SetMomentumRange(3,4);
       gener->SetPhiRange(0, 360);
       gener->SetThetaRange(155.97, 176.73);
@@ -1618,15 +1618,15 @@ GeneratorFactory(EG_t eg, Rad_t rad, TString& comment)
       gener->SetPhiRange(0, 360);
       AliGenBox* gener3 = new AliGenBox(2000);
       gener3->SetThetaRange(155.97, 176.73);
-      gener3->SetPart(211);
+      gener3->SetPart(kPiPlus);
       gener->AddGenerator(gener3, "FMD3", .33);
       AliGenBox* gener2 = new AliGenBox(2000);
       gener2->SetThetaRange(2.95, 20.42);
-      gener2->SetPart(211);
+      gener2->SetPart(kPiPlus);
       gener->AddGenerator(gener2, "FMD2", .33);
       AliGenBox* gener1 = new AliGenBox(2000);
       gener1->SetThetaRange(0.77, 3.08);
-      gener1->SetPart(211);
+      gener1->SetPart(kPiPlus);
       gener->AddGenerator(gener1, "FMD1", .34);
       gGener = gener;
     }

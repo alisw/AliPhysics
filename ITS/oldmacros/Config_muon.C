@@ -1,3 +1,5 @@
+#include <TPDGCode.h>
+
 void Config(){
     // 7-DEC-2000 09:00
     // Switch on Transition Radiation simulation. 6/12/00 18:00  
@@ -80,7 +82,7 @@ void Config(){
      gener->SetPhi(180.);
      gener->SetTheta(95.);
      gener->SetOrigin(0,0,0);          //vertex position
-     gener->SetPart(13);                //GEANT particle type
+     gener->SetPart(kMuonMinus);
     gener->Init();
     // 
     // Activate this line if you want the vertex smearing to happen

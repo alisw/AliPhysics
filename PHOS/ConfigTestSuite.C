@@ -1,3 +1,5 @@
+#include <TPDGCode.h>
+
 static Int_t    eventsPerRun = 100;
 enum PprGeo_t 
 {
@@ -106,7 +108,7 @@ void Config()
 //     gener->AddGenerator(hijingparam,"HIJING PARAM",1);
 
 //     AliGenBox *genbox = new AliGenBox(nParticles);
-//     genbox->SetPart(22);
+//     genbox->SetPart(kGamma);
 //     genbox->SetPtRange(0.3, 10.00);
 //     gener->AddGenerator(genbox,"GENBOX GAMMA for PHOS",1);
 //     gener->Init();
@@ -118,7 +120,7 @@ void Config()
 
     gener->SetOrigin(0,0,0);        //vertex position
     gener->SetSigma(0,0,0);         //Sigma in (X,Y,Z) (cm) on IP position
-    gener->SetPart(22);
+    gener->SetPart(kGamma);
     gener->Init();
  
     // 
