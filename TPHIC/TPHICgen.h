@@ -25,29 +25,31 @@ public:
   void Finish        ();
 
   // Setters for COMMON /GGINI/
-  void SetIPROC    (Int_t   iproc   );
-  void SetNEVENT   (Int_t   nevent  );
-  void SetILUMF    (Int_t   ilumf   );
-  void SetLUMFIL   (TString lumfil  );
-  void SetEBMN     (Float_t ebmn    );
-  void SetIZ       (Int_t   iz      );
-  void SetIA       (Int_t   ia      );
-  void SetAMAS     (Float_t amas    );
-  void SetAMIN     (Float_t amin    );
-  void SetAMAX     (Float_t amax    );
-  void SetYMIN     (Float_t ymin    );
-  void SetYMAX     (Float_t ymax    );
-  void SetNMAS     (Int_t   nmas    );
-  void SetNY       (Int_t   ny      );
-  void SetKFERM    (Int_t   kferm   );
-  void SetKFONIUM  (Int_t   kfonium );
-  void SetXMRES    (Float_t xmres   );
-  void SetXGTRES   (Float_t xgtres  );
-  void SetXGGRES   (Float_t xggres  );
-  void SetMODDCY   (Int_t   moddcy  );
-  void SetTHETAMIN (Float_t thetamin);
-  void SetKV1      (Int_t   kv1     );
-  void SetKV2      (Int_t   kv2     );
+  //PH all these setters can be declared  const
+  //PH because they don't change the _object_
+  void SetIPROC    (Int_t   iproc   ) const;
+  void SetNEVENT   (Int_t   nevent  ) const;
+  void SetILUMF    (Int_t   ilumf   ) const;
+  void SetLUMFIL   (TString lumfil  ) const;
+  void SetEBMN     (Float_t ebmn    ) const;
+  void SetIZ       (Int_t   iz      ) const;
+  void SetIA       (Int_t   ia      ) const;
+  void SetAMAS     (Float_t amas    ) const;
+  void SetAMIN     (Float_t amin    ) const;
+  void SetAMAX     (Float_t amax    ) const;
+  void SetYMIN     (Float_t ymin    ) const;
+  void SetYMAX     (Float_t ymax    ) const;
+  void SetNMAS     (Int_t   nmas    ) const;
+  void SetNY       (Int_t   ny      ) const;
+  void SetKFERM    (Int_t   kferm   ) const;
+  void SetKFONIUM  (Int_t   kfonium ) const;
+  void SetXMRES    (Float_t xmres   ) const;
+  void SetXGTRES   (Float_t xgtres  ) const;
+  void SetXGGRES   (Float_t xggres  ) const;
+  void SetMODDCY   (Int_t   moddcy  ) const;
+  void SetTHETAMIN (Float_t thetamin) const;
+  void SetKV1      (Int_t   kv1     ) const;
+  void SetKV2      (Int_t   kv2     ) const;
 
   // Getters for COMMON /GGEVNT/
   Float_t GetWSQ  () const;

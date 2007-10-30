@@ -68,7 +68,15 @@ ClassImp(AliGenTPHIC)
 
 //------------------------------------------------------------
 
-AliGenTPHIC::AliGenTPHIC()
+AliGenTPHIC::AliGenTPHIC() :
+  AliGenMC(),
+  fTPHICgen(0x0),
+  fPythia(0x0),
+  fParticles(0x0),
+  fEvent(-1),
+  fDebug(0),
+  fDebugEventFirst(-1),
+  fDebugEventLast(-1)
 {
   // Constructor: create generator instance,
   // create particle array

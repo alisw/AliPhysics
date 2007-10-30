@@ -24,8 +24,8 @@
 #include "TRandom.h"
 
 #include "TPHICgen.h"
-#include "TClonesArray.h"
-#include "TParticle.h"
+//#include "TClonesArray.h"
+//#include "TParticle.h"
 #define IN_TPHICGEN_CXX
 #include "TPHICcommon.h"
 
@@ -94,118 +94,118 @@ void TPHICgen::Finish()
 //______________________________________________________________________________
 
 // Setters
-void TPHICgen::SetIPROC    (Int_t   iproc   )
+void TPHICgen::SetIPROC    (Int_t   iproc   ) const
 {
   GGINI.iproc    = iproc;        
 }
 //______________________________________________________________________________
-void TPHICgen::SetNEVENT   (Int_t   nevent  )
+void TPHICgen::SetNEVENT   (Int_t   nevent  ) const
 {
   GGINI.nevent   = nevent;        
 }
 //______________________________________________________________________________
-void TPHICgen::SetILUMF    (Int_t   ilumf   )
+void TPHICgen::SetILUMF    (Int_t   ilumf   ) const
 {
   GGINI.ilumf    = ilumf;        
 }
 //______________________________________________________________________________
-void TPHICgen::SetLUMFIL   (TString lumfil  )
+void TPHICgen::SetLUMFIL   (TString lumfil  ) const
 {
   for (Int_t i=0; i<lumfil.Length(); i++)
     GGINI.lumfil[i]   = lumfil[i];
 }
 //______________________________________________________________________________
-void TPHICgen::SetEBMN     (Float_t ebmn    )
+void TPHICgen::SetEBMN     (Float_t ebmn    ) const
 {
   GGINI.ebmn     = ebmn;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetIZ       (Int_t   iz      )
+void TPHICgen::SetIZ       (Int_t   iz      ) const
 {
   GGINI.iz       = iz;           
 }
 //______________________________________________________________________________
-void TPHICgen::SetIA       (Int_t   ia      )
+void TPHICgen::SetIA       (Int_t   ia      ) const
 {
   GGINI.ia       = ia;           
 }
 //______________________________________________________________________________
-void TPHICgen::SetAMAS     (Float_t amas    )
+void TPHICgen::SetAMAS     (Float_t amas    ) const
 {
   GGINI.amas     = amas;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetAMIN     (Float_t amin    )
+void TPHICgen::SetAMIN     (Float_t amin    ) const
 {
   GGINI.amin     = amin;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetAMAX     (Float_t amax    )
+void TPHICgen::SetAMAX     (Float_t amax    ) const
 {
   GGINI.amax     = amax;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetYMIN     (Float_t ymin    )
+void TPHICgen::SetYMIN     (Float_t ymin    ) const
 {
   GGINI.ymin     = ymin;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetYMAX     (Float_t ymax    )
+void TPHICgen::SetYMAX     (Float_t ymax    ) const
 {
   GGINI.ymax     = ymax;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetNMAS     (Int_t   nmas    )
+void TPHICgen::SetNMAS     (Int_t   nmas    ) const
 {
   GGINI.nmas     = nmas;         
 }
 //______________________________________________________________________________
-void TPHICgen::SetNY       (Int_t   ny      )
+void TPHICgen::SetNY       (Int_t   ny      ) const
 {
   GGINI.ny       = ny;           
 }
 //______________________________________________________________________________
-void TPHICgen::SetKFERM    (Int_t   kferm   )
+void TPHICgen::SetKFERM    (Int_t   kferm   ) const
 {
   GGINI.kferm    = kferm;        
 }
 //______________________________________________________________________________
-void TPHICgen::SetKFONIUM  (Int_t   kfonium )
+void TPHICgen::SetKFONIUM  (Int_t   kfonium ) const
 {
   GGINI.kfonium  = kfonium;      
 }
 //______________________________________________________________________________
-void TPHICgen::SetXMRES    (Float_t xmres   )
+void TPHICgen::SetXMRES    (Float_t xmres   ) const
 {
   GGINI.xmres    = xmres;        
 }
 //______________________________________________________________________________
-void TPHICgen::SetXGTRES   (Float_t xgtres  )
+void TPHICgen::SetXGTRES   (Float_t xgtres  ) const
 {
   GGINI.xgtres   = xgtres;       
 }
 //______________________________________________________________________________
-void TPHICgen::SetXGGRES   (Float_t xggres  )
+void TPHICgen::SetXGGRES   (Float_t xggres  ) const
 {
   GGINI.xggres   = xggres;       
 }
 //______________________________________________________________________________
-void TPHICgen::SetMODDCY   (Int_t   moddcy  )
+void TPHICgen::SetMODDCY   (Int_t   moddcy  ) const
 {
   GGINI.moddcy   = moddcy;       
 }
 //______________________________________________________________________________
-void TPHICgen::SetTHETAMIN (Float_t thetamin)
+void TPHICgen::SetTHETAMIN (Float_t thetamin) const
 {
   GGINI.thetamin = thetamin;     
 }
 //______________________________________________________________________________
-void TPHICgen::SetKV1      (Int_t   kv1     )
+void TPHICgen::SetKV1      (Int_t   kv1     ) const
 {
   GGINI.kv1      = kv1;
 }
 //______________________________________________________________________________
-void TPHICgen::SetKV2      (Int_t   kv2     )
+void TPHICgen::SetKV2      (Int_t   kv2     ) const
 {
   GGINI.kv2      = kv2;
 }
