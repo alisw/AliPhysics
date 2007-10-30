@@ -19,7 +19,7 @@
 /** @file   AliHLTCompAgent.cxx
     @author Matthias Richter
     @date   
-    @brief  Agent of the libHLTsim library
+    @brief  Agent of the libAliHLTComp library
 */
 
 // see header file for class documentation

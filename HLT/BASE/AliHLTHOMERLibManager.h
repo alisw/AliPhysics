@@ -26,7 +26,35 @@ class AliHLTHOMERWriter;
 
 /**
  * @class AliHLTHOMERLibManager
- * Handler of HLTOUT data for buffer input.
+ * Dynamic manager of HOMER library.
+ * The class allows to generate objects of HOMER readers and writers
+ * dynamically and loads also the HOMER lib. In order to write HOMER library
+ * independent code it is important to use the AliHLTMonitoringWriter/
+ * AliHLTMonitoringReader classes when ever class methods are used. Those
+ * classes just define a virtual interface. <br>
+ *
+ * Instead of creating a reader or writer by \em new and deleting it with
+ * \em delete, one has to use the Open and Delete methods of this class.
+ *
+ * <pre>
+ * AliHLTHOMERLibManager manager;
+ *
+ * // open a HOMER reader listening at port 23000 of the localhost
+ * AliHLTMonitoringReader* pReader=manager.OpenReader(localhost, 23000);
+ *
+ * // read next event, timeout 5s
+ * while (pReader && pReader->ReadNextEvent(5000000)) {
+ *   unsigned long count=pReader->GetBlockCnt();
+ *   ...
+ * }
+ *
+ * // delete reader
+ * manager.DeleteReader(pReader);
+ * </pre>
+ *
+ * The manager does not not provide methods to create a HOMER reader on
+ * basis of shared memory. This is most likely a depricated functionality,
+ * although kept for the sake of completeness.
  */
 class AliHLTHOMERLibManager : public AliHLTLogging {
  public:
@@ -34,6 +62,32 @@ class AliHLTHOMERLibManager : public AliHLTLogging {
   AliHLTHOMERLibManager();
   /** destructor */
   virtual ~AliHLTHOMERLibManager();
+
+  /**
+   * Open a homer reader working on a TCP port.
+   */
+  AliHLTHOMERReader* OpenReader(const char* hostname, unsigned short port );
+  
+  /**
+   * Open a homer reader working on multiple TCP ports.
+   */
+  AliHLTHOMERReader* OpenReader(unsigned int tcpCnt, const char** hostnames, unsigned short* ports);
+	
+  /**
+   * Open a HOMER reader for reading from a System V shared memory segment.
+  AliHLTHOMERReader* OpenReader(key_t shmKey, int shmSize );
+   */
+	
+  /**
+   * Open a HOMER reader for reading from multiple System V shared memory segments
+  AliHLTHOMERReader* OpenReader(unsigned int shmCnt, key_t* shmKey, int* shmSize );
+   */
+	
+  /**
+   * Open a HOMER reader for reading from multiple TCP ports and multiple System V shared memory segments
+  AliHLTHOMERReader* OpenReader(unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
+				    unsigned int shmCnt, key_t* shmKey, int* shmSize );
+   */
 
   /**
    * Open a HOMER reader.
@@ -76,6 +130,12 @@ class AliHLTHOMERLibManager : public AliHLTLogging {
 
   /** status of the loading of the HOMER library */
   int fLibraryStatus; //!transient
+
+  /** entry in the HOMER library */
+  void* fFctCreateReaderFromTCPPort; //!transient
+
+  /** entry in the HOMER library */
+  void* fFctCreateReaderFromTCPPorts; //!transient
 
   /** entry in the HOMER library */
   void* fFctCreateReaderFromBuffer; //!transient

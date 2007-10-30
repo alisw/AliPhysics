@@ -25,6 +25,13 @@
 
 
 
+/**
+ * @class AliHLTMonitoringReader
+ * The class provides a virtual interface for the HOMER reader.
+ * Used for dynamic generation of HOMER readers and dynamic loading of
+ * the libAliHLTHOMER library.
+ * @see AliHLTHOMERLibManager
+ */
 class AliHLTMonitoringReader
     {
     public:
@@ -78,6 +85,27 @@ class AliHLTMonitoringReader
 
 	virtual homer_uint64 GetBlockStatusFlags( unsigned long ndx ) const = 0;
 
+	/* Return the type of the data in the current event's data
+	   block with the given block index (starting at 0). */
+	virtual homer_uint64 GetBlockDataType( unsigned long ndx ) const = 0;
+	/* Return the origin of the data in the current event's data
+	   block with the given block index (starting at 0). */
+	virtual homer_uint32 GetBlockDataOrigin( unsigned long ndx ) const = 0;
+	/* Return a specification of the data in the current event's data
+	   block with the given block index (starting at 0). */
+	virtual homer_uint32 GetBlockDataSpec( unsigned long ndx ) const = 0;
+
+	/* Find the next data block in the current event with the given
+	   data type, origin, and specification. Returns the block's 
+	   index. */
+	virtual unsigned long FindBlockNdx( homer_uint64 type, homer_uint32 origin, 
+				    homer_uint32 spec, unsigned long startNdx=0 ) const = 0;
+
+	/* Find the next data block in the current event with the given
+	   data type, origin, and specification. Returns the block's 
+	   index. */
+	virtual unsigned long FindBlockNdx( char type[8], char origin[4], 
+				    homer_uint32 spec, unsigned long startNdx=0 ) const = 0;
 #ifdef USE_ROOT
         ClassDef(AliHLTMonitoringReader,1);
 #endif
@@ -313,19 +341,34 @@ typedef AliHLTMonitoringReader MonitoringReader;
 typedef AliHLTHOMERReader HOMERReader;
 
 // external interface of the HOMER reader
-#define ALIHLTHOMERREADER_CREATE_FROM_BUFFER "AliHLTHOMERReaderCreateFromBuffer"
-#define ALIHLTHOMERREADER_DELETE "AliHLTHOMERReaderDelete"
+#define ALIHLTHOMERREADER_CREATE_FROM_TCPPORT  "AliHLTHOMERReaderCreateFromTCPPort"
+#define ALIHLTHOMERREADER_CREATE_FROM_TCPPORTS "AliHLTHOMERReaderCreateFromTCPPorts"
+#define ALIHLTHOMERREADER_CREATE_FROM_BUFFER   "AliHLTHOMERReaderCreateFromBuffer"
+#define ALIHLTHOMERREADER_DELETE               "AliHLTHOMERReaderDelete"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  typedef AliHLTHOMERReader* (*AliHLTHOMERReaderCreateFromTCPPort_t)(const char* hostname, unsigned short port );
+  typedef AliHLTHOMERReader* (*AliHLTHOMERReaderCreateFromTCPPorts_t)(unsigned int tcpCnt, const char** hostnames, unsigned short* ports);
   typedef AliHLTHOMERReader* (*AliHLTHOMERReaderCreateFromBuffer_t)(const void* pBuffer, int size);
   typedef void (*AliHLTHOMERReaderDelete_t)(AliHLTHOMERReader* pInstance);
+
   /**
-   * Create instance of HOMER reader.
+   * Create instance of HOMER reader working on a TCP port.
    */
-  AliHLTHOMERReader* AliHLTHOMERReaderCreateFromBuffer();
+  AliHLTHOMERReader* AliHLTHOMERReaderCreateFromTCPPort(const char* hostname, unsigned short port );
+  
+  /**
+   * Create instance of HOMER reader working on multiple TCP ports.
+   */
+  AliHLTHOMERReader* AliHLTHOMERReaderCreateFromTCPPorts(unsigned int tcpCnt, const char** hostnames, unsigned short* ports);
+
+  /**
+   * Create instance of HOMER reader working on buffer.
+   */
+  AliHLTHOMERReader* AliHLTHOMERReaderCreateFromBuffer(const void* pBuffer, int size);
 
   /**
    * Delete instance of HOMER reader.

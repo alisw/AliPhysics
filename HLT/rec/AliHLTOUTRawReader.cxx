@@ -113,8 +113,9 @@ int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t*
 
     // get data
     if (fpCurrent) {
-      if ((pBuffer=static_cast<const AliHLTUInt8_t*>(fpCurrent->GetBlockData(blockNo)))!=NULL) {
-	size=fpCurrent->GetBlockDataLength(blockNo);
+      AliHLTMonitoringReader* pReader=fpCurrent;
+      if ((pBuffer=static_cast<const AliHLTUInt8_t*>(pReader->GetBlockData(blockNo)))!=NULL) {
+	size=pReader->GetBlockDataLength(blockNo);
       } else {
 	iResult=-ENOENT;
       }

@@ -49,15 +49,40 @@
 #include "AliHLTHOMERData.h"
 #include <vector>
 
+/**
+ * @class AliHLTMonitoringWriter
+ * A pure virtual interface definition for HLT monitoring writers.
+ */
+class AliHLTMonitoringWriter
+    {
+    public:
+        AliHLTMonitoringWriter() {}
+        virtual ~AliHLTMonitoringWriter() {}
 
+	virtual void Clear() = 0;
 
-class AliHLTHOMERWriter
+	virtual void AddBlock( const void* descriptor, const void* data ) = 0;
+
+	virtual homer_uint32 GetTotalMemorySize( bool includeData = true ) = 0;
+	virtual void Copy( void* destination, homer_uint64 eventType, homer_uint64 eventNr, homer_uint64 statusFlags, homer_uint64 nodeID, bool includeData = true ) = 0;
+     };
+
+/**
+ * @class AliHLTHOMERWriter
+ * The HOMER writer assembles several data blocks of different properties
+ * into one big buffer and adds meta information to describe the data's
+ * alignment and byte order.
+ */
+class AliHLTHOMERWriter : public AliHLTMonitoringWriter
     {
     public:
 
 	AliHLTHOMERWriter();
 	virtual ~AliHLTHOMERWriter();
 
+        /**
+	 * Resets the writer and clears the block list.
+         */
 	void Clear();
 
 	void AddBlock( const void* descriptor, const void* data );
@@ -66,17 +91,33 @@ class AliHLTHOMERWriter
 		AddBlock( descriptor->GetHeader(), data );
 		}
 
+        /**
+         * Get the total buffer size required to write all data into one buffer
+         */
 	homer_uint32 GetTotalMemorySize( bool includeData = true );
+
+        /**
+         * Copy the data into a buffer.
+         * The buffer is supposed to be big enough, the capacity should be queried
+         * by calling @ref GetTotalMemorySize.
+         */
 	void Copy( void* destination, homer_uint64 eventType, homer_uint64 eventNr, homer_uint64 statusFlags, homer_uint64 nodeID, bool includeData = true );
 
+        /** determine alignment of 64 bit variables */
 	static homer_uint8 DetermineUInt64Alignment();
+        /** determine alignment of 32 bit variables */
 	static homer_uint8 DetermineUInt32Alignment();
+        /** determine alignment of 16 bit variables */
 	static homer_uint8 DetermineUInt16Alignment();
+        /** determine alignment of 8 bit variables */
 	static homer_uint8 DetermineUInt8Alignment();
+        /** determine alignment of double type variables */
 	static homer_uint8 DetermineDoubleAlignment();
+        /** determine alignment of float type bit variables */
 	static homer_uint8 DetermineFloatAlignment();
 
 
+        /** test structure for the alignment determination of 64 bit variables */
         struct HOMERWriterAlignment64TestStructure
         {
         	homer_uint64 f64Fill;   // !
@@ -88,6 +129,7 @@ class AliHLTHOMERWriter
         	homer_uint8  f8Fill;    // !
         	homer_uint64 f64Test8;  // !
         };
+        /** test structure for the alignment determination of 32 bit variables */
         struct HOMERWriterAlignment32TestStructure
         {
         	homer_uint64 f64Fill;   // !
@@ -99,6 +141,7 @@ class AliHLTHOMERWriter
         	homer_uint8  f8Fill;    // !
         	homer_uint32 f32Test8;  // !
         };
+        /** test structure for the alignment determination of 16 bit variables */
         struct HOMERWriterAlignment16TestStructure
         {
         	homer_uint64 f64Fill;   // !
@@ -110,6 +153,7 @@ class AliHLTHOMERWriter
         	homer_uint8  f8Fill;    // !
         	homer_uint16 f16Test8;  // !
         };
+        /** test structure for the alignment determination of 8 bit variables */
         struct HOMERWriterAlignment8TestStructure
         {
         	homer_uint64 f64Fill; // !
@@ -121,6 +165,7 @@ class AliHLTHOMERWriter
         	homer_uint8  f8Fill;  // !
         	homer_uint8 f8Test8;  // !
         };
+        /** test structure for the alignment determination of double type variables */
         struct HOMERWriterAlignmentDoubleTestStructure
         {
         	homer_uint64 f64Fill; // !
@@ -132,6 +177,7 @@ class AliHLTHOMERWriter
         	homer_uint8  f8Fill;  // !
         	double fDoubleTest8;  // !
         };
+        /** test structure for the alignment determination of float type variables */
         struct HOMERWriterAlignmentFloatTestStructure
         {
         	homer_uint64 f64Fill; // !
@@ -145,8 +191,11 @@ class AliHLTHOMERWriter
         };
     protected:
 
-
-
+        /**
+         * Block descriptor structure.
+         * The descriptor contains a header for meta information and position
+         * and a pointer to the data.
+         */
 	struct TBlockData
 	    {
 	      homer_uint64 fDescriptor[kCount_64b_Words]; //!transient
@@ -155,6 +204,7 @@ class AliHLTHOMERWriter
 
         unsigned long fDataOffset; //!transient
 
+        /** list of data blocks */
         std::vector<TBlockData> fBlocks; //!transient
 #ifdef USE_ROOT
       ClassDef(AliHLTHOMERWriter,0);

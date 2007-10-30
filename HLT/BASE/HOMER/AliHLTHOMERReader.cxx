@@ -1282,15 +1282,27 @@ homer_uint32 AliHLTHOMERReader::Swap( homer_uint8 destFormat, homer_uint8 source
     	((source & 0xFF000000UL) >> 24);
     }
 
-AliHLTHOMERReader* AliHLTHOMERReaderCreate(const void* pBuffer, int size)
+AliHLTHOMERReader* AliHLTHOMERReaderCreateFromTCPPort(const char* hostname, unsigned short port )
     {
-// see header file for function documentation
+      // see header file for function documentation
+      return new AliHLTHOMERReader(hostname, port);
+    }
+
+AliHLTHOMERReader* AliHLTHOMERReaderCreateFromTCPPorts(unsigned int tcpCnt, const char** hostnames, unsigned short* ports)
+    {
+      // see header file for function documentation
+      return new AliHLTHOMERReader(tcpCnt, hostnames, ports);
+    }
+
+AliHLTHOMERReader* AliHLTHOMERReaderCreateFromBuffer(const void* pBuffer, int size)
+    {
+      // see header file for function documentation
       return new AliHLTHOMERReader(pBuffer, size);
     }
 
 void AliHLTHOMERReaderDelete(AliHLTHOMERReader* pInstance)
     {
-// see header file for function documentation
+      // see header file for function documentation
       if (pInstance) delete pInstance;
     }
 

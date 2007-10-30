@@ -41,6 +41,8 @@ ClassImp(AliHLTHOMERLibManager)
 AliHLTHOMERLibManager::AliHLTHOMERLibManager()
   :
   fLibraryStatus(0),
+  fFctCreateReaderFromTCPPort(NULL),
+  fFctCreateReaderFromTCPPorts(NULL),
   fFctCreateReaderFromBuffer(NULL),
   fFctDeleteReader(NULL),
   fFctCreateWriter(NULL),
@@ -56,6 +58,40 @@ AliHLTHOMERLibManager::AliHLTHOMERLibManager()
 AliHLTHOMERLibManager::~AliHLTHOMERLibManager()
 {
   // see header file for class documentation
+}
+
+AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const char* hostname, unsigned short port )
+{
+  // see header file for class documentation
+  if (fLibraryStatus<0) return NULL;
+
+  if (fLibraryStatus==0) {
+    fLibraryStatus=LoadHOMERLibrary();
+  }
+  
+  AliHLTHOMERReader* pReader=NULL;
+  if (fFctCreateReaderFromTCPPort!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromTCPPort_t)fFctCreateReaderFromTCPPort)(hostname, port)))==NULL) {
+    HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPort);
+  }
+  
+  return pReader;
+}
+
+AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(unsigned int tcpCnt, const char** hostnames, unsigned short* ports)
+{
+  // see header file for class documentation
+  if (fLibraryStatus<0) return NULL;
+
+  if (fLibraryStatus==0) {
+    fLibraryStatus=LoadHOMERLibrary();
+  }
+  
+  AliHLTHOMERReader* pReader=NULL;
+  if (fFctCreateReaderFromTCPPorts!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromTCPPorts_t)fFctCreateReaderFromTCPPorts)(tcpCnt, hostnames, ports)))==NULL) {
+    HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPorts);
+  }
+  
+  return pReader;
 }
 
 AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const AliHLTUInt8_t* pBuffer, int size)
@@ -133,8 +169,7 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
   do {
     TString libs = gSystem->GetLibraries();
     if (libs.Contains(*library) ||
-	(gSystem->Load(*library)) > 0) {
-      HLTDebug("%s (is) loaded", *library);
+	(gSystem->Load(*library)) >= 0) {
       iResult=1;
       break;
     }
@@ -155,18 +190,26 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
       HLTInfo("no build info available for %s", *library);
     }
 
+    fFctCreateReaderFromTCPPort=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORT);
+    fFctCreateReaderFromTCPPorts=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORTS);
     fFctCreateReaderFromBuffer=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_BUFFER);
     fFctDeleteReader=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_DELETE);
     fFctCreateWriter=gSystem->DynFindSymbol(*library, ALIHLTHOMERWRITER_CREATE);
     fFctDeleteWriter=gSystem->DynFindSymbol(*library, ALIHLTHOMERWRITER_DELETE);
-    if (fFctCreateReaderFromBuffer==NULL || fFctDeleteReader==NULL ||
-	fFctCreateWriter==NULL || fFctDeleteWriter==NULL) {
+    if (fFctCreateReaderFromTCPPort==NULL ||
+	fFctCreateReaderFromTCPPorts==NULL ||
+	fFctCreateReaderFromBuffer==NULL || 
+	fFctDeleteReader==NULL ||
+	fFctCreateWriter==NULL ||
+	fFctDeleteWriter==NULL) {
       iResult=-ENOSYS;
     } else {
-      HLTDebug("%s: create fct %p, delete fct %p", *library, fFctCreateReaderFromBuffer, fFctDeleteReader);
+      //HLTDebug("%s: entries found", *library);
     }
   }
   if (iResult<0 || *library==NULL) {
+    fFctCreateReaderFromTCPPort=NULL;
+    fFctCreateReaderFromTCPPorts=NULL;
     fFctCreateReaderFromBuffer=NULL;
     fFctDeleteReader=NULL;
     fFctCreateWriter=NULL;

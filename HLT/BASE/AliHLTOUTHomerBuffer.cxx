@@ -115,7 +115,7 @@ int AliHLTOUTHomerBuffer::CheckBlockAlignment(AliHLTUInt32_t index, AliHLTOUT::A
   return -ENODATA;
 }
 
-int AliHLTOUTHomerBuffer::ScanReader(AliHLTHOMERReader* pReader, AliHLTUInt32_t offset)
+int AliHLTOUTHomerBuffer::ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt32_t offset)
 {
   // see header file for class documentation
   int iResult=0;
@@ -138,14 +138,14 @@ int AliHLTOUTHomerBuffer::ScanReader(AliHLTHOMERReader* pReader, AliHLTUInt32_t 
     // loop over data blocks
     HLTDebug("generating index for %d data blocks of reader with offset %#x", nofBlocks, offset);
     for (AliHLTUInt32_t i=0; i<nofBlocks && iResult>=0; i++) {
-//       homer_uint64 id=pReader->GetBlockDataType( i );
-//       homer_uint32 origin=pReader->GetBlockDataOrigin( i );
-//       homer_uint32 spec=pReader->GetBlockDataSpec( i );
-//       AliHLTComponentDataType dt;
-//       memcpy(&dt.fID, &id, kAliHLTComponentDataTypefIDsize);
-//       memcpy(&dt.fOrigin, &origin, kAliHLTComponentDataTypefOriginSize);
-//       AliHLTOUTBlockDescriptor desc(dt, spec, offset|i);
-//       iResult=AddBlockDescriptor(desc);
+      homer_uint64 id=pReader->GetBlockDataType( i );
+      homer_uint32 origin=pReader->GetBlockDataOrigin( i );
+      homer_uint32 spec=pReader->GetBlockDataSpec( i );
+      AliHLTComponentDataType dt;
+      memcpy(&dt.fID, &id, kAliHLTComponentDataTypefIDsize);
+      memcpy(&dt.fOrigin, &origin, kAliHLTComponentDataTypefOriginSize);
+      AliHLTOUTBlockDescriptor desc(dt, spec, offset|i);
+      iResult=AddBlockDescriptor(desc);
     }
   } else {
     iResult=-ENODEV;

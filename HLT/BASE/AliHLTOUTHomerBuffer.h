@@ -21,6 +21,7 @@
 #include "AliHLTOUT.h"
 
 class AliHLTHOMERReader;
+class AliHLTMonitoringReader;
 class AliHLTHOMERLibManager;
 
 /**
@@ -38,7 +39,7 @@ class AliHLTOUTHomerBuffer : public AliHLTOUT {
   /**
    * Step trough data blocks of a HOMER reader and generate index.
    */
-  int ScanReader(AliHLTHOMERReader* pReader, AliHLTUInt32_t majorIndex=0);
+  int ScanReader(AliHLTMonitoringReader* pReader, AliHLTUInt32_t majorIndex=0);
 
   /** dynamic loader manager for HOMER library */
   AliHLTHOMERLibManager* fpManager; //!transient

@@ -32,10 +32,11 @@ using namespace std;
 #endif
 
 #include <cassert>
+#include <iostream>
 #include "AliHLTOUTComponent.h"
 #include "AliHLTOUT.h"
 #include "AliHLTHOMERWriter.h"
-#include "AliDAQ.h" // euqipment Ids
+#include "AliDAQ.h" // equipment Ids
 #include "AliRawDataHeader.h" // Common Data Header 
 #include <TDatime.h> // seed for TRandom
 #include <TRandom.h> // random int generation for DDL no
@@ -51,7 +52,8 @@ AliHLTOUTComponent::AliHLTOUTComponent()
   fIdFirstDDL(4864), // 0x13<<8
   fWriteDigits(kTRUE),
   fWriteRaw(kTRUE),
-  fBuffer()
+  fBuffer(),
+  fpLibManager(NULL)
 {
   // see header file for class documentation
   // or
@@ -69,6 +71,8 @@ AliHLTOUTComponent::AliHLTOUTComponent()
 AliHLTOUTComponent::~AliHLTOUTComponent()
 {
   // see header file for class documentation
+  if (fpLibManager) delete fpLibManager;
+  fpLibManager=NULL;
 }
 
 const char* AliHLTOUTComponent::GetComponentID()
@@ -112,15 +116,20 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
   if (iResult>=0) {
   }
 
-  int writerNo=0;
-  for (writerNo=0; writerNo<fNofDDLs; writerNo++) {
-    AliHLTHOMERWriter* pWriter=new AliHLTHOMERWriter;
-    if (pWriter) {
-      fWriters.push_back(pWriter);
-    } else {
-      iResult=-ENOMEM;
-      break;
+  fpLibManager=new AliHLTHOMERLibManager;
+  if (fpLibManager) {
+    int writerNo=0;
+    for (writerNo=0; writerNo<fNofDDLs; writerNo++) {
+      AliHLTMonitoringWriter* pWriter=fpLibManager->OpenWriter();
+      if (pWriter) {
+	fWriters.push_back(pWriter);
+      } else {
+	iResult=-ENOMEM;
+	break;
+      }
     }
+  } else {
+    iResult=-ENOMEM;
   }
 
   return iResult;
@@ -131,11 +140,13 @@ int AliHLTOUTComponent::DoDeinit()
   // see header file for class documentation
   int iResult=0;
 
-  vector<AliHLTHOMERWriter*>::iterator element=fWriters.begin();
-  while (element!= fWriters.end()) {
-    assert(*element);
-    if (*element!=NULL) delete *element;
-    element=fWriters.erase(element);
+  if (fpLibManager) {
+    AliHLTMonitoringWriterPVector::iterator element=fWriters.begin();
+    while (element!= fWriters.end()) {
+      assert(*element);
+      if (*element!=NULL) fpLibManager->DeleteWriter(dynamic_cast<AliHLTHOMERWriter*>(*element));
+      element=fWriters.erase(element);
+    }
   }
   
   return iResult;
@@ -175,7 +186,7 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   
   // search for the writer with the biggest data volume in order to allocate the
   // output buffer of sufficient size
-  AliHLTHOMERWriterPVector::iterator writer=fWriters.begin();
+  AliHLTMonitoringWriterPVector::iterator writer=fWriters.begin();
   vector<int> sorted;
   for (int i=0; i<fWriters.size(); i++) {
     assert(fWriters[i]);
@@ -203,7 +214,7 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   return iResult;
 }
 
-int AliHLTOUTComponent::ShuffleWriters(AliHLTHOMERWriterPVector &list, AliHLTUInt32_t size)
+int AliHLTOUTComponent::ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliHLTUInt32_t size)
 {
   // see header file for class documentation
   int iResult=-ENOENT;
@@ -237,7 +248,7 @@ int AliHLTOUTComponent::ShuffleWriters(AliHLTHOMERWriterPVector &list, AliHLTUIn
   return iResult;
 }
 
-int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTHOMERWriter* pWriter, const AliHLTUInt8_t* &pBuffer)
+int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pWriter, const AliHLTUInt8_t* &pBuffer)
 {
   // see header file for class documentation
   int iResult=0;
@@ -295,8 +306,8 @@ int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* runLoader, int h
   // see header file for class documentation
   int iResult=0;
   const char* fileName=AliDAQ::DdlFileName("HLT", hltddl);
-  TString filePath;
   assert(fileName!=NULL);
+  TString filePath(fileName);
   if (fileName) {
     ios::openmode filemode=(ios::openmode)0;
     ofstream rawfile(filePath.Data(), filemode);

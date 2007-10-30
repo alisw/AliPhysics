@@ -52,29 +52,29 @@ AliHLTHOMERWriter::AliHLTHOMERWriter()
   fDataOffset(0),
   fBlocks()
     {
-// Writer implementation of the HOMER interface.
-// The HLT Monitoring Environment including ROOT is
-// a native interface to ship out data from the HLT chain.
-// See pdf document shiped with the package
-// for class documentation and tutorial.
+    // Writer implementation of the HOMER interface.
+    // The HLT Monitoring Environment including ROOT is
+    // a native interface to ship out data from the HLT chain.
+    // See pdf document shiped with the package
+    // for class documentation and tutorial.
     Clear();
     }
 
 AliHLTHOMERWriter::~AliHLTHOMERWriter()
     {
-// see header file for class documentation
+    // see header file for class documentation
     }
 
 void AliHLTHOMERWriter::Clear()
     {
-// see header file for class documentation
+    // see header file for class documentation
     fDataOffset = 0;
     fBlocks.clear();
     }
 
 void AliHLTHOMERWriter::AddBlock( const void* descriptor, const void* data )
     {
-// see header file for class documentation
+    // see header file for class documentation
     TBlockData bd;
     memcpy( bd.fDescriptor, descriptor, HOMERBlockDescriptor::GetHOMERBlockDescriptorSize() );
     bd.fData = data;
@@ -86,7 +86,7 @@ void AliHLTHOMERWriter::AddBlock( const void* descriptor, const void* data )
 
 homer_uint32 AliHLTHOMERWriter::GetTotalMemorySize( bool includeData )
     {
-// see header file for class documentation
+    // see header file for class documentation
     if ( includeData )
 	return fDataOffset + HOMERBlockDescriptor::GetHOMERBlockDescriptorSize()*(fBlocks.size()+1);
     else
@@ -95,7 +95,7 @@ homer_uint32 AliHLTHOMERWriter::GetTotalMemorySize( bool includeData )
 
 void AliHLTHOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_uint64 eventNr, homer_uint64 statusFlags, homer_uint64 nodeID, bool includeData )
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERBlockDescriptor homerBlock;
     homer_uint8* bd = reinterpret_cast<homer_uint8*>( destination );
     struct timeval now;
@@ -140,7 +140,7 @@ void AliHLTHOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_u
 
 homer_uint8 AliHLTHOMERWriter::DetermineUInt64Alignment()
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERWriterAlignment64TestStructure test;
     if ( (unsigned long)(&test.f64Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -149,19 +149,19 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt64Alignment()
 	}
     if ( (unsigned long)(&test.f64Test32) != ((unsigned long)(&test.f32Fill))+sizeof(test.f32Fill) )
 	{
-	// The 64 bit element does not immedately follow the 32 bit element, 
+	// The 64 bit element does not immediately follow the 32 bit element, 
 	// therefore the alignment has to be greater than 4.
 	return (homer_uint8)8;
 	}
     if ( (unsigned long)(&test.f64Test16) != ((unsigned long)(&test.f16Fill))+sizeof(test.f16Fill) )
 	{
-	// The 64 bit element does not immedately follow the 16 bit element, 
+	// The 64 bit element does not immediately follow the 16 bit element, 
 	// therefore the alignment has to be greater than 2.
 	return (homer_uint8)4;
 	}
     if ( (unsigned long)(&test.f64Test8) != ((unsigned long)(&test.f8Fill))+sizeof(test.f8Fill) )
 	{
-	// The 64 bit element does not immedately follow the 8 bit element, 
+	// The 64 bit element does not immediately follow the 8 bit element, 
 	// therefore the alignment has to be greater than 1.
 	return (homer_uint8)2;
 	}
@@ -170,7 +170,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt64Alignment()
 
 homer_uint8 AliHLTHOMERWriter::DetermineUInt32Alignment()
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERWriterAlignment32TestStructure test;
     if ( (unsigned long)(&test.f32Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -179,19 +179,19 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt32Alignment()
 	}
     if ( (unsigned long)(&test.f32Test32) != ((unsigned long)(&test.f32Fill))+sizeof(test.f32Fill) )
 	{
-	// The 32 bit element does not immedately follow the 32 bit element, 
+	// The 32 bit element does not immediately follow the 32 bit element, 
 	// therefore the alignment has to be greater than 4.
 	return (homer_uint8)8;
 	}
     if ( (unsigned long)(&test.f32Test16) != ((unsigned long)(&test.f16Fill))+sizeof(test.f16Fill) )
 	{
-	// The 32 bit element does not immedately follow the 16 bit element, 
+	// The 32 bit element does not immediately follow the 16 bit element, 
 	// therefore the alignment has to be greater than 2.
 	return (homer_uint8)4;
 	}
     if ( (unsigned long)(&test.f32Test8) != ((unsigned long)(&test.f8Fill))+sizeof(test.f8Fill) )
 	{
-	// The 32 bit element does not immedately follow the 8 bit element, 
+	// The 32 bit element does not immediately follow the 8 bit element, 
 	// therefore the alignment has to be greater than 1.
 	return (homer_uint8)2;
 	}
@@ -200,7 +200,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt32Alignment()
 
 homer_uint8 AliHLTHOMERWriter::DetermineUInt16Alignment()
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERWriterAlignment16TestStructure test;
     if ( (unsigned long)(&test.f16Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -209,19 +209,19 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt16Alignment()
 	}
     if ( (unsigned long)(&test.f16Test32) != ((unsigned long)(&test.f32Fill))+sizeof(test.f32Fill) )
 	{
-	// The 16 bit element does not immedately follow the 32 bit element, 
+	// The 16 bit element does not immediately follow the 32 bit element, 
 	// therefore the alignment has to be greater than 4.
 	return (homer_uint8)8;
 	}
     if ( (unsigned long)(&test.f16Test16) != ((unsigned long)(&test.f16Fill))+sizeof(test.f16Fill) )
 	{
-	// The 16 bit element does not immedately follow the 16 bit element, 
+	// The 16 bit element does not immediately follow the 16 bit element, 
 	// therefore the alignment has to be greater than 2.
 	return (homer_uint8)4;
 	}
     if ( (unsigned long)(&test.f16Test8) != ((unsigned long)(&test.f8Fill))+sizeof(test.f8Fill) )
 	{
-	// The 16 bit element does not immedately follow the 8 bit element, 
+	// The 16 bit element does not immediately follow the 8 bit element, 
 	// therefore the alignment has to be greater than 1.
 	return (homer_uint8)2;
 	}
@@ -230,7 +230,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt16Alignment()
 
 homer_uint8 AliHLTHOMERWriter::DetermineUInt8Alignment()
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERWriterAlignment8TestStructure test;
     if ( (unsigned long)(&test.f8Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -239,19 +239,19 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt8Alignment()
 	}
     if ( (unsigned long)(&test.f8Test32) != ((unsigned long)(&test.f32Fill))+sizeof(test.f32Fill) )
 	{
-	// The 8 bit element does not immedately follow the 32 bit element, 
+	// The 8 bit element does not immediately follow the 32 bit element, 
 	// therefore the alignment has to be greater than 4.
 	return (homer_uint8)8;
 	}
     if ( (unsigned long)(&test.f8Test16) != ((unsigned long)(&test.f16Fill))+sizeof(test.f16Fill) )
 	{
-	// The 8 bit element does not immedately follow the 16 bit element, 
+	// The 8 bit element does not immediately follow the 16 bit element, 
 	// therefore the alignment has to be greater than 2.
 	return (homer_uint8)4;
 	}
     if ( (unsigned long)(&test.f8Test8) != ((unsigned long)(&test.f8Fill))+sizeof(test.f8Fill) )
 	{
-	// The 8 bit element does not immedately follow the 8 bit element, 
+	// The 8 bit element does not immediately follow the 8 bit element, 
 	// therefore the alignment has to be greater than 1.
 	return (homer_uint8)2;
 	}
@@ -260,7 +260,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt8Alignment()
 
 homer_uint8 AliHLTHOMERWriter::DetermineDoubleAlignment()
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERWriterAlignmentDoubleTestStructure test;
     if ( (unsigned long)(&test.fDoubleTest64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -269,19 +269,19 @@ homer_uint8 AliHLTHOMERWriter::DetermineDoubleAlignment()
 	}
     if ( (unsigned long)(&test.fDoubleTest32) != ((unsigned long)(&test.f32Fill))+sizeof(test.f32Fill) )
 	{
-	// The double element does not immedately follow the 32 bit element, 
+	// The double element does not immediately follow the 32 bit element, 
 	// therefore the alignment has to be greater than 4.
 	return (homer_uint8)8;
 	}
     if ( (unsigned long)(&test.fDoubleTest16) != ((unsigned long)(&test.f16Fill))+sizeof(test.f16Fill) )
 	{
-	// The double element does not immedately follow the 16 bit element, 
+	// The double element does not immediately follow the 16 bit element, 
 	// therefore the alignment has to be greater than 2.
 	return (homer_uint8)4;
 	}
     if ( (unsigned long)(&test.fDoubleTest8) != ((unsigned long)(&test.f8Fill))+sizeof(test.f8Fill) )
 	{
-	// The double element does not immedately follow the 8 bit element, 
+	// The double element does not immediately follow the 8 bit element, 
 	// therefore the alignment has to be greater than 1.
 	return (homer_uint8)2;
 	}
@@ -290,7 +290,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineDoubleAlignment()
 
 homer_uint8 AliHLTHOMERWriter::DetermineFloatAlignment()
     {
-// see header file for class documentation
+    // see header file for class documentation
     HOMERWriterAlignmentFloatTestStructure test;
     if ( (unsigned long)(&test.fFloatTest64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
@@ -299,19 +299,19 @@ homer_uint8 AliHLTHOMERWriter::DetermineFloatAlignment()
 	}
     if ( (unsigned long)(&test.fFloatTest32) != ((unsigned long)(&test.f32Fill))+sizeof(test.f32Fill) )
 	{
-	// The float element does not immedately follow the 32 bit element, 
+	// The float element does not immediately follow the 32 bit element, 
 	// therefore the alignment has to be greater than 4.
 	return (homer_uint8)8;
 	}
     if ( (unsigned long)(&test.fFloatTest16) != ((unsigned long)(&test.f16Fill))+sizeof(test.f16Fill) )
 	{
-	// The float element does not immedately follow the 16 bit element, 
+	// The float element does not immediately follow the 16 bit element, 
 	// therefore the alignment has to be greater than 2.
 	return (homer_uint8)4;
 	}
     if ( (unsigned long)(&test.fFloatTest8) != ((unsigned long)(&test.f8Fill))+sizeof(test.f8Fill) )
 	{
-	// The float element does not immedately follow the 8 bit element, 
+	// The float element does not immediately follow the 8 bit element, 
 	// therefore the alignment has to be greater than 1.
 	return (homer_uint8)2;
 	}
@@ -320,14 +320,14 @@ homer_uint8 AliHLTHOMERWriter::DetermineFloatAlignment()
 
 AliHLTHOMERWriter* AliHLTHOMERWriterCreate()
     {
-// see header file for function documentation
-      return new AliHLTHOMERWriter();
+    // see header file for function documentation
+    return new AliHLTHOMERWriter();
     }
 
 void AliHLTHOMERWriterDelete(AliHLTHOMERWriter* pInstance)
     {
-// see header file for function documentation
-      if (pInstance) delete pInstance;
+    // see header file for function documentation
+    if (pInstance) delete pInstance;
     }
 
 

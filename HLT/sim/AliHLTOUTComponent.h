@@ -20,10 +20,10 @@
 
 #include <vector>
 #include "AliHLTOfflineDataSink.h"
-#include <TString.h>
+#include "AliHLTHOMERLibManager.h"
 
-class AliHLTHOMERWriter;
-typedef vector<AliHLTHOMERWriter*> AliHLTHOMERWriterPVector;
+class AliHLTMonitoringWriter;
+typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
 
 /**
  * @class AliHLTOUTComponent
@@ -80,7 +80,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /** assignment operator prohibited */
   AliHLTOUTComponent& operator=(const AliHLTOUTComponent&);
 
-  int ShuffleWriters(AliHLTHOMERWriterPVector &list, AliHLTUInt32_t size);
+  int ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliHLTUInt32_t size);
 
   /**
    * Fill the output buffer and allocate if neccessary.
@@ -92,7 +92,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
    * @param pBuffer    [OUT] target to receive the pointer to buffer
    * @return size of the buffer
    */
-  int FillOutputBuffer(int eventNo, AliHLTHOMERWriter* pWriter, const AliHLTUInt8_t* &pBuffer);
+  int FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pWriter, const AliHLTUInt8_t* &pBuffer);
 
   /**
    * Write the digits for one DDL
@@ -117,7 +117,7 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   int WriteRawFile(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int size);
 
   /** list of HOMER writers */
-  AliHLTHOMERWriterPVector fWriters; //!transient
+  AliHLTMonitoringWriterPVector fWriters; //!transient
 
   /** number of DDLs used*/
   int fNofDDLs; //!transient
@@ -133,6 +133,9 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
 
   /** output buffer, allocated once in order to avoid frequent alloc/dealloc */
   vector<AliHLTUInt8_t> fBuffer; //!transient
+
+  /** instance of the HOMER library manager */
+  AliHLTHOMERLibManager* fpLibManager; // !transient
 
   ClassDef(AliHLTOUTComponent, 0)
 };
