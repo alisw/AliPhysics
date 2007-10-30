@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.3  2007/10/22 14:20:25  kowal2
+Hardwired "ideal" coordinates replaced with those from the DCDB.
+Corrected bug in SetDebug method
+
 Revision 1.2  2007/10/03 09:27:50  marian
 Extra semicolon removed (Marian)
 
@@ -28,6 +32,8 @@ Class creating the aligmnent object fro the surveyor measurements.
 //
 
 #include "AliTPCAlign.h"
+#include "AliSurveyPoint.h"
+#include "AliSurveyPoint.h"
 //
 #include "TROOT.h"
 #include "Riostream.h"
@@ -35,6 +41,7 @@ Class creating the aligmnent object fro the surveyor measurements.
 #include "TMath.h"
 #include "TSystem.h"
 #include "AliSurveyObj.h"
+#include "AliSurveyPoint.h"
 #include "AliAlignObjParams.h"
 #include "AliCDBStorage.h"
 #include <TClonesArray.h>

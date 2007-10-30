@@ -18,7 +18,8 @@
 #include <TObjArray.h>
 
 //#include "AliLog.h"
-#include "AliSurveyPoint.h"
+//#include "AliSurveyPoint.h"
+class AliSurveyPoint;
 
 class TGridResult;
 
@@ -88,11 +89,11 @@ class AliSurveyObj: public TObject {
   
   TObjArray *fDataPoints;	// Actual Data
   
-  static const TString fgkStorage;
-  static const TString fgkBaseFolder;
-  static const TString fgkValidDetectors;
-  static const TString fgkGRPDetectors;
-  static const TString fgkMUONDetectors;
+  static const TString fgkStorage; // Storage
+  static const TString fgkBaseFolder; // Base folder
+  static const TString fgkValidDetectors;// Valid detectors
+  static const TString fgkGRPDetectors;// GRP detectors
+  static const TString fgkMUONDetectors;// MUON detectors
     
   Bool_t Connect(const char *gridUrl, const char *user);
   Bool_t OpenFile(TString openString);

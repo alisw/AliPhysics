@@ -23,8 +23,8 @@
 #include "AliSurveyObj.h"
 
 //ROOT includes
-#include "TROOT.h"
-#include "Riostream.h"
+//#include "TROOT.h"
+//#include "Riostream.h"
 #include "TObjArray.h"
 #include "TGrid.h"
 #include "TGridResult.h"
@@ -33,6 +33,7 @@
 
 //AliROOT includes
 #include "AliLog.h"
+#include "AliSurveyPoint.h"
 
 ClassImp(AliSurveyObj)
 
@@ -577,11 +578,11 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
   // Some local variables declarations and initializations
   const Int_t kFieldCheck = 10;
   Bool_t check[kFieldCheck];
-  TString tmp_name = "";
-  Float_t tmp_x = 0.0, tmp_y = 0.0, tmp_z = 0.0;
-  Float_t tmp_precX = 0.0, tmp_precY = 0.0, tmp_precZ = 0.0;
-  Char_t tmp_type = '\0';
-  Bool_t tmp_targ = kTRUE;
+  TString tmpname = "";
+  Float_t tmpx = 0.0, tmpy = 0.0, tmpz = 0.0;
+  Float_t tmpprecX = 0.0, tmpprecY = 0.0, tmpprecZ = 0.0;
+  Char_t tmptype = '\0';
+  Bool_t tmptarg = kTRUE;
   AliSurveyPoint *dp = 0;
   for (Int_t i = 0; i < kFieldCheck; ++i) check[i] = kFALSE;
 
@@ -630,8 +631,8 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	  nextLine.Remove(TString::kTrailing, '/');
 	  nextLine = nextLine(nextLine.Last('/') + 1, nextLine.Length() - nextLine.Last('/') + 1);
 	  
-	  Int_t sscanf_tmp = 0;
-	  if (1 != sscanf(nextLine.Data(), "%d", &sscanf_tmp)) {
+	  Int_t sscanftmp = 0;
+	  if (1 != sscanf(nextLine.Data(), "%d", &sscanftmp)) {
 	    AliError("Survey text file sintax error! (incorrectly formated Report URL)");
 	    lines->Delete();
 	    return kFALSE;
@@ -725,16 +726,16 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	    TString cn = ((TObjString *)(colLine->At(j)))->GetString();
 	    TString value = ((TObjString *)(dataLine->At(j)))->GetString();
 	    if (cn.BeginsWith("Point Name", TString::kIgnoreCase)) {
-	      tmp_name = value;
+	      tmpname = value;
 	      check[0] = kTRUE;
 	    } else if (cn.BeginsWith("X", TString::kIgnoreCase)) {
-	      tmp_x = value.Atof();
+	      tmpx = value.Atof();
 	      check[1] = kTRUE;
 	    } else if (cn.BeginsWith("Y", TString::kIgnoreCase)) {
-	      tmp_y = value.Atof();
+	      tmpy = value.Atof();
 	      check[2] = kTRUE;
 	    } else if (cn.BeginsWith("Z", TString::kIgnoreCase)) {
-	      tmp_z = value.Atof();
+	      tmpz = value.Atof();
 	      check[3] = kTRUE;
 	    } else if (cn.BeginsWith("Precision", TString::kIgnoreCase)) {
 	      TString tmpCN = cn(0, cn.First('('));
@@ -742,18 +743,18 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	      //Printf(" ====== %d ======= %d ====== \n", precLength, tmpCN.Length());
 	      //Printf(" ====== %s ======= \n", tmpCN.Data());
 	      if (precLength == tmpCN.Length()) {
-		tmp_precX = tmp_precY = tmp_precZ = value.Atof();
+		tmpprecX = tmpprecY = tmpprecZ = value.Atof();
 		check[6] = kTRUE;
 	      } else {
 		TString axis = cn(precLength, tmpCN.Length() - precLength);
 		if (axis.Contains('X', TString::kIgnoreCase)) {
-		  tmp_precX = value.Atof();
+		  tmpprecX = value.Atof();
 		  check[7] = kTRUE;
 		} else if (axis.Contains('Y', TString::kIgnoreCase)) {
-		  tmp_precY = value.Atof();
+		  tmpprecY = value.Atof();
 		  check[8] = kTRUE;
 		} else if (axis.Contains('Z', TString::kIgnoreCase)) {
-		  tmp_precZ = value.Atof();
+		  tmpprecZ = value.Atof();
 		  check[9] = kTRUE;
 		} else {
 		  AliError("Survey text file sintax error! (Precision column name invalid)");
@@ -763,10 +764,10 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 		}
 	      }
 	    } else if (cn.BeginsWith("Point Type", TString::kIgnoreCase)) {
-	      tmp_type = value.Data()[0];
+	      tmptype = value.Data()[0];
 	      check[4] = kTRUE;
 	    } else if (cn.BeginsWith("Target Used", TString::kIgnoreCase)) {
-	      tmp_targ = (value.Data()[0] == 'Y') ? kTRUE : kFALSE;
+	      tmptarg = (value.Data()[0] == 'Y') ? kTRUE : kFALSE;
 	      check[5] = kTRUE;
 	    }
 
@@ -778,7 +779,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 
 	  // Target
 	  if (kFALSE == check[5]) {
-	    tmp_targ = kTRUE;
+	    tmptarg = kTRUE;
 	    check[5] = kTRUE;
 	  }
 	  
@@ -791,7 +792,7 @@ Bool_t AliSurveyObj::ParseBuffer(const Char_t* buf) {
 	    res &= check[t];
 	  }
 	  if (kTRUE == res) {
-	    dp = new AliSurveyPoint(tmp_name, tmp_x, tmp_y, tmp_z, tmp_precX, tmp_precY, tmp_precZ, tmp_type, tmp_targ);
+	    dp = new AliSurveyPoint(tmpname, tmpx, tmpy, tmpz, tmpprecX, tmpprecY, tmpprecZ, tmptype, tmptarg);
 	    dp->PrintPoint();
 	    AddPoint(dp);
 	  } else {

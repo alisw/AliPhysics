@@ -27,6 +27,7 @@
 #include "TMath.h"
 #include "TSystem.h"
 #include "AliSurveyObj.h"
+#include "AliSurveyPoint.h"
 #include "AliAlignObjParams.h"
 #include "AliCDBStorage.h"
 #include <TClonesArray.h>
