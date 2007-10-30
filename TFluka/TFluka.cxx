@@ -1393,12 +1393,12 @@ void TFluka::TrackPosition(TLorentzVector& position) const
       Int_t i = -1;
       if ((i = fPrimaryElectronIndex) > -1) {
 	  // Primary Electron Ionisation
-	  Double_t x, y, z;
-	  GetPrimaryElectronPosition(i, x, y, z);
+	  Double_t x, y, z, t;
+	  GetPrimaryElectronPosition(i, x, y, z, t);
 	  position.SetX(x);
 	  position.SetY(y);
 	  position.SetZ(z);
-	  position.SetT(TRACKR.atrack);
+	  position.SetT(t);
       } else {
 	  position.SetX(TRACKR.xtrack[TRACKR.ntrack]);
 	  position.SetY(TRACKR.ytrack[TRACKR.ntrack]);
@@ -1442,7 +1442,8 @@ void TFluka::TrackPosition(Double_t& x, Double_t& y, Double_t& z) const
   else if (caller == kMGDRAW) { 
       Int_t i = -1;
       if ((i = fPrimaryElectronIndex) > -1) {
-	  GetPrimaryElectronPosition(i, x, y, z);
+	  Double_t t;
+	  GetPrimaryElectronPosition(i, x, y, z, t);
       } else {
 	  x = TRACKR.xtrack[TRACKR.ntrack];
 	  y = TRACKR.ytrack[TRACKR.ntrack];
@@ -1677,9 +1678,18 @@ Double_t TFluka::TrackTime() const
 // Return the current time of flight of the track being transported
 // TRACKR.atrack = age of the particle
   FlukaCallerCode_t caller = GetCaller();
-  if (caller == kBXEntering || caller == kBXExiting || 
-      caller == kENDRAW     || caller == kUSDRAW    || caller == kMGDRAW || 
-      caller == kUSTCKV)
+  if (caller == kMGDRAW) {
+      Int_t i;
+      if ((i = fPrimaryElectronIndex) > -1) {
+	  Double_t x, y, z, t;
+	  GetPrimaryElectronPosition(i, x, y, z, t);
+	  return t;
+      } else {
+	  return TRACKR.atrack;
+      }
+  } else if (caller == kBXEntering || caller == kBXExiting || 
+	     caller == kENDRAW     || caller == kUSDRAW    || 
+	     caller == kUSTCKV)
     return TRACKR.atrack;
   else if (caller == kMGResumedTrack)
     return TRACKR.spausr[3];
@@ -2562,13 +2572,14 @@ Double_t TFluka::GetPrimaryElectronKineticEnergy(Int_t i) const
     return ekin;
 }
 
-void TFluka::GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z) const
+void TFluka::GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z, Double_t& t) const
 {
     // Returns position  of primary electron i
         if (i >= 0 && i < ALLDLT.nalldl) {
 	    x = ALLDLT.xalldl[i];
 	    y = ALLDLT.yalldl[i];
 	    z = ALLDLT.zalldl[i];
+	    t = ALLDLT.talldl[i];
 	    return;
 	} else {
 	    Warning("GetPrimaryElectronPosition",

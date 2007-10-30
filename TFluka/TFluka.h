@@ -397,7 +397,7 @@ class TFluka : public TVirtualMC {
   // Info about primary ionization electrons
   Int_t    GetNPrimaryElectrons();
   Double_t GetPrimaryElectronKineticEnergy(Int_t i) const;
-  void     GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z) const;
+  void     GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z, Double_t& t) const;
   void     SetCurrentPrimaryElectronIndex(Int_t i)  {fPrimaryElectronIndex = i;}
   void     PrimaryIonisationStepping(Int_t nprim);
  private:
