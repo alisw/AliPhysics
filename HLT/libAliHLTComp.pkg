@@ -3,7 +3,7 @@
 
 include $(MODDIR)/hlt.conf
 
-CLASS_HDRS:=  	
+CLASS_HDRS:=  	AliHLTCompAgent.h
 
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
