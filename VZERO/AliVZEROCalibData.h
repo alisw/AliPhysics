@@ -73,7 +73,7 @@ class AliVZEROCalibData: public TNamed {
   Float_t  fMeanHV[64];    		// Mean PMT HV
   Float_t  fWidthHV[64];		// Width of the PMT HV
 
-  ClassDef(AliVZEROCalibData,1)    // VZERO Calibration data
+  ClassDef(AliVZEROCalibData,2)    // VZERO Calibration data
 };
 
 #endif
