@@ -12,9 +12,10 @@ public:
 	TKDInterpolator(Int_t ndim, Int_t npoints=0);
 	~TKDInterpolator();
 	void       AddNode(const TKDNodeInfo &ref);
+	void       Build(Int_t ndim) {TKDInterpolatorBase::Build(ndim);}
 	void       Build(Int_t npoints, Int_t ndim);
 	Int_t      GetNodeIndex(const Float_t *p);
-	Bool_t     SetNode(const Int_t i, const TKDNodeInfo &ref);
+	Bool_t     SetNode(Int_t i, const TKDNodeInfo &ref);
 
 private:
 	TKDInterpolator(const TKDInterpolator &);

@@ -30,7 +30,7 @@ ClassImp(TKDInterpolatorBase)
 
 
 //_________________________________________________________________
-TKDInterpolatorBase::TKDInterpolatorBase(const Int_t dim) :
+TKDInterpolatorBase::TKDInterpolatorBase(Int_t dim) :
 	fNSize(dim)
 	,fNTNodes(0)
 	,fTNodes(0x0)
@@ -48,7 +48,7 @@ TKDInterpolatorBase::TKDInterpolatorBase(const Int_t dim) :
 }
 
 //_________________________________________________________________
-void	TKDInterpolatorBase::Build(const Int_t n)
+void	TKDInterpolatorBase::Build(Int_t n)
 {
 	// allocate memory for data
 
@@ -79,14 +79,14 @@ Bool_t	TKDInterpolatorBase::GetCOGPoint(Int_t inode, Float_t *&coord, Float_t &v
 	if(inode < 0 || inode > fNTNodes) return kFALSE;
 
 	TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
-	coord = &(node->fData[0]);
-	val = node->fVal[0];
-	err = node->fVal[1];
+	coord = &(node->Data()[0]);
+	val = node->Val()[0];
+	err = node->Val()[1];
 	return kTRUE;
 }
 
 //_________________________________________________________________
-TKDNodeInfo* TKDInterpolatorBase::GetNodeInfo(const Int_t inode) const
+TKDNodeInfo* TKDInterpolatorBase::GetNodeInfo(Int_t inode) const
 {
 	if(!fTNodes || inode >= fNTNodes) return 0x0;
 	return (TKDNodeInfo*)(*fTNodes)[inode];
@@ -130,7 +130,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 		return 0.;
 	}
 	TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[nodeIndex];
-	if((fStatus&1) && node->fCov && !force) return node->CookPDF(point, result, error);
+	if((fStatus&1) && node->Cov() && !force) return node->CookPDF(point, result, error);
 
 	// Allocate memory
 	if(!fBuffer) fBuffer = new Double_t[2*fLambda];
@@ -138,7 +138,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 		fRefPoints = new Float_t*[fNSize];
 		for(int id=0; id<fNSize; id++){
 			fRefPoints[id] = new Float_t[fNTNodes];
-			for(int in=0; in<fNTNodes; in++) fRefPoints[id][in] = ((TKDNodeInfo*)(*fTNodes)[in])->fData[id];
+			for(int in=0; in<fNTNodes; in++) fRefPoints[id][in] = ((TKDNodeInfo*)(*fTNodes)[in])->Data()[id];
 		}
 		fKDhelper = new TKDTreeIF(fNTNodes, fNSize, 30, fRefPoints);
 		fKDhelper->MakeBoundaries();
@@ -175,7 +175,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 			tnode = (TKDNodeInfo*)(*fTNodes)[index[in]];
 			//tnode->Print();
 			if(fStatus&1){ // INT
-				Float_t *bounds = &(tnode->fData[fNSize]);
+				Float_t *bounds = &(tnode->Data()[fNSize]);
 				ipar = 0;
 				for(int idim=0; idim<fNSize; idim++){
 					fBuffer[ipar++] = .5*(bounds[2*idim] + bounds[2*idim+1]);
@@ -183,7 +183,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 					for(int jdim=idim+1; jdim<fNSize; jdim++) fBuffer[ipar++] = (bounds[2*idim] + bounds[2*idim+1]) * (bounds[2*jdim] + bounds[2*jdim+1]) * .25;
 				}
 			} else { // COG
-				Float_t *p = &(tnode->fData[0]);
+				Float_t *p = &(tnode->Data()[0]);
 				ipar = 0;
 				for(int idim=0; idim<fNSize; idim++){
 					fBuffer[ipar++] = p[idim];
@@ -199,8 +199,8 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
 			 
 // 			printf("x[");
 // 			for(int idim=0; idim<fLambda-1; idim++) printf("%f ", fBuffer[idim]);
-// 			printf("]  v[%f +- %f] (%f, %f)\n", tnode->fVal[0], tnode->fVal[1]/w, tnode->fVal[1], w);
-			fFitter->AddPoint(fBuffer, tnode->fVal[0], tnode->fVal[1]/w);
+// 			printf("]  v[%f +- %f] (%f, %f)\n", tnode->Val()[0], tnode->Val()[1]/w, tnode->Val()[1], w);
+			fFitter->AddPoint(fBuffer, tnode->Val()[0], tnode->Val()[1]/w);
 		}
 		npoints += 4;
 	} while(fFitter->Eval());
@@ -261,7 +261,7 @@ void TKDInterpolatorBase::DrawBins(UInt_t ax1, UInt_t ax2, Float_t ax1min, Float
 		box->SetFillStyle(3002);
 		box->SetFillColor(50+inode/*Int_t(gRandom->Uniform()*50.)*/);
 		
-		bounds = &(((TKDNodeInfo*)(*fTNodes)[inode])->fData[fNSize]);
+		bounds = &(((TKDNodeInfo*)(*fTNodes)[inode])->Data()[fNSize]);
 		box->DrawBox(bounds[2*ax1]+kBorder, bounds[2*ax2]+kBorder, bounds[2*ax1+1]-kBorder, bounds[2*ax2+1]-kBorder);
 	}
 
@@ -272,14 +272,14 @@ void TKDInterpolatorBase::DrawBins(UInt_t ax1, UInt_t ax2, Float_t ax1min, Float
 	ref->SetMarkerColor(2);
 	for(int inode = 0; inode < fNTNodes; inode++){
 		TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
-		ref->SetPoint(inode, node->fData[ax1], node->fData[ax2]);
+		ref->SetPoint(inode, node->Data()[ax1], node->Data()[ax2]);
 	}
 	ref->Draw("p");
 	return;
 }
 
 //__________________________________________________________________
-void TKDInterpolatorBase::SetInterpolationMethod(const Bool_t on)
+void TKDInterpolatorBase::SetInterpolationMethod(Bool_t on)
 {
 // Set interpolation bit to "on".
 	
@@ -289,7 +289,7 @@ void TKDInterpolatorBase::SetInterpolationMethod(const Bool_t on)
 
 
 //_________________________________________________________________
-void TKDInterpolatorBase::SetStore(const Bool_t on)
+void TKDInterpolatorBase::SetStore(Bool_t on)
 {
 // Set store bit to "on"
 	
@@ -298,7 +298,7 @@ void TKDInterpolatorBase::SetStore(const Bool_t on)
 }
 
 //_________________________________________________________________
-void TKDInterpolatorBase::SetWeights(const Bool_t on)
+void TKDInterpolatorBase::SetWeights(Bool_t on)
 {
 // Set weights bit to "on"
 	

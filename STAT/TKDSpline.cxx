@@ -19,7 +19,7 @@ TKDSpline::TKDSpline(Int_t npoints, Int_t ndim) :
 
 
 //_________________________________________________________________
-void TKDSpline::Build()
+void TKDSpline::Build(Int_t)
 {
 }
 

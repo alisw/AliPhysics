@@ -81,7 +81,7 @@ TKDPDF::~TKDPDF()
 }
 
 //_________________________________________________________________
-void TKDPDF::Build()
+void TKDPDF::Build(Int_t)
 {
 // Fill interpolator's data array i.e.
 //  - estimation points 
@@ -100,19 +100,19 @@ void TKDPDF::Build()
 	Int_t *indexPoints;
 	for(int inode=0, tnode = fNnodes; inode<fNTNodes-1; inode++, tnode++){
 		node = (TKDNodeInfo*)(*fTNodes)[inode];
-		node->fVal[0] =  Float_t(fBucketSize)/fNpoints;
+		node->Val()[0] =  Float_t(fBucketSize)/fNpoints;
 		bounds = GetBoundary(tnode);
-		for(int idim=0; idim<fNDim; idim++) node->fVal[0] /= (bounds[2*idim+1] - bounds[2*idim]);
-		node->fVal[1] =  node->fVal[0]/TMath::Sqrt(float(fBucketSize));
+		for(int idim=0; idim<fNDim; idim++) node->Val()[0] /= (bounds[2*idim+1] - bounds[2*idim]);
+		node->Val()[1] =  node->Val()[0]/TMath::Sqrt(float(fBucketSize));
 		
 		indexPoints = GetPointsIndexes(tnode);
 		// loop points in this terminal node
 		for(int idim=0; idim<fNDim; idim++){
-			node->fData[idim] = 0.;
-			for(int ip = 0; ip<fBucketSize; ip++) node->fData[idim] += fData[idim][indexPoints[ip]];
-			node->fData[idim] /= fBucketSize;
+			node->Data()[idim] = 0.;
+			for(int ip = 0; ip<fBucketSize; ip++) node->Data()[idim] += fData[idim][indexPoints[ip]];
+			node->Data()[idim] /= fBucketSize;
 		}
-		memcpy(&(node->fData[fNDim]), bounds, fNDimm*sizeof(Float_t));
+		memcpy(&(node->Data()[fNDim]), bounds, fNDimm*sizeof(Float_t));
 	}
 
 	// analyze last (incomplete) terminal node
@@ -120,19 +120,19 @@ void TKDPDF::Build()
 	counts = counts ? counts : fBucketSize;
 	Int_t inode = fNTNodes - 1, tnode = inode + fNnodes;
 	node = (TKDNodeInfo*)(*fTNodes)[inode];
-	node->fVal[0] =  Float_t(counts)/fNpoints;
+	node->Val()[0] =  Float_t(counts)/fNpoints;
 	bounds = GetBoundary(tnode);
-	for(int idim=0; idim<fNDim; idim++) node->fVal[0] /= (bounds[2*idim+1] - bounds[2*idim]);
-	node->fVal[1] =  node->fVal[0]/TMath::Sqrt(float(counts));
+	for(int idim=0; idim<fNDim; idim++) node->Val()[0] /= (bounds[2*idim+1] - bounds[2*idim]);
+	node->Val()[1] =  node->Val()[0]/TMath::Sqrt(float(counts));
 
 	// loop points in this terminal node
 	indexPoints = GetPointsIndexes(tnode);
 	for(int idim=0; idim<fNDim; idim++){
-		node->fData[idim] = 0.;
-		for(int ip = 0; ip<counts; ip++) node->fData[idim] += fData[idim][indexPoints[ip]];
-		node->fData[idim] /= counts;
+		node->Data()[idim] = 0.;
+		for(int ip = 0; ip<counts; ip++) node->Data()[idim] += fData[idim][indexPoints[ip]];
+		node->Data()[idim] /= counts;
 	}
-	memcpy(&(node->fData[fNDim]), bounds, fNDimm*sizeof(Float_t));
+	memcpy(&(node->Data()[fNDim]), bounds, fNDimm*sizeof(Float_t));
 
 	delete [] fBoundaries;
 	fBoundaries = 0x0;
@@ -166,7 +166,7 @@ void TKDPDF::DrawNode(Int_t tnode, UInt_t ax1, UInt_t ax2)
 
 	// draw estimation point
 	TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
-	TMarker *m=new TMarker(node->fData[ax1], node->fData[ax2], 20);
+	TMarker *m=new TMarker(node->Data()[ax1], node->Data()[ax2], 20);
 	m->SetMarkerColor(2);
 	m->SetMarkerSize(1.7);
 	

@@ -32,7 +32,7 @@ public:
 private:
 	TKDPDF(const TKDPDF &);
 	TKDPDF& operator=(const TKDPDF &);
-	        void       Build();
+	        void       Build(Int_t ndim = 0);
 
 					
 	ClassDef(TKDPDF, 1)   // data interpolator based on KD tree

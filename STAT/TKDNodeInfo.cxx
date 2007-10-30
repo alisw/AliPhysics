@@ -8,13 +8,14 @@ ClassImp(TKDNodeInfo)
 
 
 //_________________________________________________________________
-TKDNodeInfo::TKDNodeInfo(const Int_t dim):
+TKDNodeInfo::TKDNodeInfo(Int_t dim):
 	TObject()
 	,fNDim(3*dim)
 	,fData(0x0)
 	,fCov(0x0)
 	,fPar(0x0)
 {
+  // Default constructor
 	fVal[0] = 0.; fVal[1] = 0.;
 	Build(dim);
 }
@@ -27,6 +28,7 @@ TKDNodeInfo::TKDNodeInfo(const TKDNodeInfo &ref):
 	,fCov(0x0)
 	,fPar(0x0)
 {
+  // Copy constructor
 	Build(fNDim/3);
 
 	memcpy(fData, ref.fData, fNDim*sizeof(Float_t));
@@ -40,6 +42,7 @@ TKDNodeInfo::TKDNodeInfo(const TKDNodeInfo &ref):
 //_________________________________________________________________
 TKDNodeInfo::~TKDNodeInfo()
 {
+  // Destructor
 	if(fData) delete [] fData;
 	if(fCov){
 		delete fPar;
@@ -67,7 +70,7 @@ TKDNodeInfo& TKDNodeInfo::operator=(const TKDNodeInfo & ref)
 }
 
 //_________________________________________________________________
-void TKDNodeInfo::Build(const Int_t dim)
+void TKDNodeInfo::Build(Int_t dim)
 {
 // Allocate/Reallocate space for this node.
 
@@ -86,14 +89,15 @@ void TKDNodeInfo::Build(const Int_t dim)
 }
 
 //_________________________________________________________________
-void TKDNodeInfo::Print()
+void TKDNodeInfo::Print(const Option_t *) const
 {
+  // Print the content of the node
 	Int_t dim = fNDim/3;
 	printf("x[");
 	for(int idim=0; idim<dim; idim++) printf("%f ", fData[idim]);
 	printf("] f = [%f +- %f]\n", fVal[0], fVal[1]);
 
-	Float_t *bounds = &fData[dim];
+	//	Float_t *bounds = &fData[dim];
 	printf("range[");
 	for(int idim=0; idim<dim; idim++) printf("(%f %f) ", fData[2*idim], fData[2*idim+1]);
 	printf("]\n");
@@ -104,7 +108,7 @@ void TKDNodeInfo::Print()
 		return;
 	}
 	
-	Int_t lambda = Int_t(1 + dim + .5*dim*(dim+1));
+	//	Int_t lambda = Int_t(1 + dim + .5*dim*(dim+1));
 	for(int ip=0; ip<3; ip++) printf("p%d[%f] ", ip, (*fPar)(ip));
 	printf("\n");
 }
@@ -112,6 +116,7 @@ void TKDNodeInfo::Print()
 //_________________________________________________________________
 void TKDNodeInfo::Store(const TVectorD &par, const TMatrixD &cov)
 {
+  // Store the parameters and the covariance in the node
 	if(!fCov){
 		fCov = new TMatrixD(cov.GetNrows(), cov.GetNrows());
 		fPar = new TVectorD(par.GetNrows());

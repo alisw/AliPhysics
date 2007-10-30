@@ -26,7 +26,7 @@ class TKDNodeInfo;
 class TKDInterpolatorBase
 {
 public:	
-	TKDInterpolatorBase(const Int_t size = 0);
+	TKDInterpolatorBase(Int_t size = 0);
 	virtual ~TKDInterpolatorBase();
 
 	Double_t   Eval(const Double_t *point, Double_t &result, Double_t &error, Bool_t force = kFALSE);
@@ -34,20 +34,20 @@ public:
 	Float_t    GetAlpha() const {return fAlpha;}
 	Bool_t     GetCOGPoint(Int_t node, Float_t *&coord, Float_t &val, Float_t &error) const;
 	Bool_t     GetInterpolationMethod() const {return fStatus&1;}
-	TKDNodeInfo* GetNodeInfo(const Int_t inode) const;
+	TKDNodeInfo* GetNodeInfo(Int_t inode) const;
 	Int_t      GetNTNodes() const {return fNTNodes;}
 	void       GetStatus();
 	Bool_t     GetStore() const {return fStatus&2;}
 	Bool_t     GetWeights() const {return fStatus&4;}
 
 	void       DrawBins(UInt_t ax1 = 0, UInt_t ax2 = 1, Float_t ax1min=-1., Float_t ax1max=1., Float_t ax2min=-1., Float_t ax2max=1.);
-	void       SetAlpha(const Float_t a){if(a>0.) fAlpha = a;}
-	void       SetInterpolationMethod(const Bool_t on = kTRUE);
-	void       SetStore(const Bool_t on = kTRUE);
-	void       SetWeights(const Bool_t on = kTRUE);
+	void       SetAlpha(Float_t a){if(a>0.) fAlpha = a;}
+	void       SetInterpolationMethod(Bool_t on = kTRUE);
+	void       SetStore(Bool_t on = kTRUE);
+	void       SetWeights(Bool_t on = kTRUE);
 
 protected:
-	virtual void      Build(const Int_t nnodes);
+	virtual void      Build(Int_t nnodes);
 
 private:
 	TKDInterpolatorBase(const TKDInterpolatorBase &);

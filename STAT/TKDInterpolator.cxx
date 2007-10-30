@@ -66,7 +66,7 @@ Int_t TKDInterpolator::GetNodeIndex(const Float_t *p)
 
 
 //_________________________________________________________________
-Bool_t TKDInterpolator::SetNode(const Int_t inode, const TKDNodeInfo &ref)
+Bool_t TKDInterpolator::SetNode(Int_t inode, const TKDNodeInfo &ref)
 {
 	if(!fTNodes){
 		printf("W - TKDInterpolator::SetNode() : Node array not defined.\n");
@@ -78,5 +78,6 @@ Bool_t TKDInterpolator::SetNode(const Int_t inode, const TKDNodeInfo &ref)
 	}
 	TKDNodeInfo *node = (TKDNodeInfo*)(*fTNodes)[inode];
 	(*node) = ref;
+	return kTRUE;
 }
 
