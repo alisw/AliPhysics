@@ -26,6 +26,8 @@
 #include <TMap.h>
 #include <TObjString.h>
 #include <TTimeStamp.h>
+#include <TSystem.h>
+#include <TFile.h>
 
 #include "AliGRPPreprocessor.h"
 #include "AliGRPDCS.h"
@@ -94,6 +96,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   //=================//
   // DAQ logbook     //
   //=================//
+  
   TList *daqlblist = ProcessDaqLB();
   if(!daqlblist) {
     Log(Form("Problem with the DAQ logbook parameters!!!"));
@@ -246,7 +249,7 @@ TList *AliGRPPreprocessor::ProcessDaqLB() {
 UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   //======DAQ FXS======//
   TChain *fRawTagChain = new TChain("T");
-  TString fRawDataFileName;
+
   TList* list = GetFileSources(kDAQ);  
   if (!list) {
     Log("No raw data tag list found!!!");
@@ -270,16 +273,22 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
 	TString fileName = GetFile(kDAQ,idStr->String().Data(),objStr->String().Data());      
 	Log(Form("Adding file in the chain: %s",fileName.Data()));
 	fRawTagChain->Add(fileName.Data());
-	fRawDataFileName = fileName(0,fileName.First("_"));
+	//fRawDataFileName = fileName(0,fileName.First("_"));
       }
       delete list2;
     }
   }
   delete iter;
   delete list;
-  fRawDataFileName += "_GRP_Merged.tag.root";
+  TString fRawDataFileName = "GRP_Merged.tag.root";
   Log(Form("Merging raw data tags into file: %s",fRawDataFileName.Data()));
 
+  TFile* f = new TFile(fRawDataFileName.Data(), "RECREATE");
+  f->cd();
+  fRawTagChain->Write();
+  f->Close();
+  delete f; f=0;  
+  
   //TString outputfile = "alien:///alice/data/"; 
   //outputfile += productionYear.Data(); outputfile += "/";
   //outputfile += lhcperiod.Data(); outputfile += "/";
