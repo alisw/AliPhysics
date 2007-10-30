@@ -20,7 +20,7 @@ class AliTRDCalPadStatus : public TNamed {
  public:
  
   enum { kNplan = 6, kNcham = 5, kNsect = 18, kNdet = 540 };
-  enum { kMasked = 2, kPadBridgedLeft = 4, kPadBridgedRight = 8    };
+  enum { kMasked = 2, kPadBridgedLeft = 4, kPadBridgedRight = 8, kReadSecond = 16 };
 
   AliTRDCalPadStatus();
   AliTRDCalPadStatus(const Text_t* name, const Text_t* title);
@@ -36,6 +36,8 @@ class AliTRDCalPadStatus : public TNamed {
                                                { return CheckStatus(d, col, row, kPadBridgedLeft);  };
           Bool_t      IsBridgedRight(Int_t d, Int_t col, Int_t row) const 
                                                { return CheckStatus(d, col, row, kPadBridgedRight); };
+	  Bool_t      IsReadSecond(Int_t d, Int_t col, Int_t row) const 
+	                                       { return CheckStatus(d, col, row, kReadSecond); };
           Bool_t      CheckStatus(Int_t d, Int_t col, Int_t row, Int_t bitMask) const;
 
   AliTRDCalSingleChamberStatus *GetCalROC(Int_t d) const { return fROC[d]; };

@@ -175,6 +175,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
     if (nGraph [iAlias] == 0) {
       Log("No TGraph for this dcsDatapointAlias : not stored");
       results [iAlias] = kFALSE;
+      //error  = kTRUE;
       continue;
     }
 		
@@ -304,6 +305,14 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
 	    AliTRDCalROC *rocRMS = calPed->GetCalRocRMS(idet, kFALSE);
 	    if ( rocRMS )  {
 	      calPedSum.SetCalRocRMS(rocRMS,idet);
+	    }
+	    AliTRDCalROC *rocMeand  = calPed->GetCalRocMeand(idet, kFALSE);
+	    if ( rocMeand )  {
+	      calPedSum.SetCalRocMeand(rocMeand,idet);
+	    }
+	    AliTRDCalROC *rocRMSd = calPed->GetCalRocRMSd(idet, kFALSE);
+	    if ( rocRMSd )  {
+	      calPedSum.SetCalRocRMSd(rocRMSd,idet);
 	    }
 	  }// det loop
 

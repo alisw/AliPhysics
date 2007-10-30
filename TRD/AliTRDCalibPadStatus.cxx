@@ -54,15 +54,12 @@ histo->Draw();
 
 //Root includes
 #include <TObjArray.h>
-#include <TH1F.h>
 #include <TH2F.h>
 #include <TString.h>
 #include <TMath.h>
-#include <TF1.h>
 #include <TRandom.h>
 #include <TDirectory.h>
 #include <TFile.h>
-#include <TTreeStream.h>
 
 //AliRoot includes
 #include <AliMathBase.h>
@@ -71,9 +68,9 @@ histo->Draw();
 #include "AliRawReaderDate.h"
 
 //header file
+#include "AliLog.h"
 #include "AliTRDCalibPadStatus.h"
 #include "AliTRDRawStreamV2.h"
-#include "AliTRDarrayF.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDCommonParam.h"
 #include "./Cal/AliTRDCalROC.h"
@@ -96,15 +93,11 @@ AliTRDCalibPadStatus::AliTRDCalibPadStatus() : /*FOLD00*/
   fAdcMax(20),
   fDetector(-1),
   fNumberOfTimeBins(0),
-  fCalArrayEntries(540),
-  fCalArrayMean(540),
-  fCalArraySquares(540),
   fCalRocArrayMean(540),
   fCalRocArrayRMS(540),
-  fHistoArray(540),
-  fCalEntries(0x0),
-  fCalMean(0x0),
-  fCalSquares(0x0)
+  fCalRocArrayMeand(540),
+  fCalRocArrayRMSd(540),
+  fHistoArray(540)
 {
     //
     // default constructor
@@ -122,32 +115,27 @@ AliTRDCalibPadStatus::AliTRDCalibPadStatus(const AliTRDCalibPadStatus &ped) : /*
   fAdcMax(ped.GetAdcMax()),
   fDetector(ped.fDetector),
   fNumberOfTimeBins(ped.fNumberOfTimeBins),
-  fCalArrayEntries(540),
-  fCalArrayMean(540),
-  fCalArraySquares(540),
   fCalRocArrayMean(540),
   fCalRocArrayRMS(540),
-  fHistoArray(540),
-  fCalEntries(0x0),
-  fCalMean(0x0),
-  fCalSquares(0x0)
+  fCalRocArrayMeand(540),
+  fCalRocArrayRMSd(540),
+  fHistoArray(540)
 {
     //
     // copy constructor
     //
     for (Int_t idet = 0; idet < 540; idet++){
-	const AliTRDarrayF *calEntries  = (AliTRDarrayF*)ped.fCalArrayEntries.UncheckedAt(idet);
-	const AliTRDarrayF *calMean     = (AliTRDarrayF*)ped.fCalArrayMean.UncheckedAt(idet);
-	const AliTRDarrayF *calSquares  = (AliTRDarrayF*)ped.fCalArraySquares.UncheckedAt(idet);
 	const AliTRDCalROC *calRocMean  = (AliTRDCalROC*)ped.fCalRocArrayMean.UncheckedAt(idet);
 	const AliTRDCalROC *calRocRMS   = (AliTRDCalROC*)ped.fCalRocArrayRMS.UncheckedAt(idet);
+	const AliTRDCalROC *calRocMeand = (AliTRDCalROC*)ped.fCalRocArrayMeand.UncheckedAt(idet);
+	const AliTRDCalROC *calRocRMSd  = (AliTRDCalROC*)ped.fCalRocArrayRMSd.UncheckedAt(idet);
 	const TH2F         *hped        = (TH2F*)ped.fHistoArray.UncheckedAt(idet);
     
-	if ( calEntries != 0x0 ) fCalArrayEntries.AddAt(new AliTRDarrayF(*calEntries), idet);
-	if ( calMean != 0x0 )    fCalArrayMean.AddAt(new AliTRDarrayF(*calMean), idet);
-	if ( calSquares != 0x0 ) fCalArraySquares.AddAt(new AliTRDarrayF(*calSquares), idet);
 	if ( calRocMean != 0x0 ) fCalRocArrayMean.AddAt(new AliTRDCalROC(*calRocMean), idet);
 	if ( calRocRMS != 0x0 )  fCalRocArrayRMS.AddAt(new AliTRDCalROC(*calRocRMS), idet);
+
+	if ( calRocMeand != 0x0 ) fCalRocArrayMeand.AddAt(new AliTRDCalROC(*calRocMeand), idet);
+	if ( calRocRMSd != 0x0 )  fCalRocArrayRMSd.AddAt(new AliTRDCalROC(*calRocRMSd), idet);
 
 	if ( hped != 0x0 ){
 	  TH2F *hNew = new TH2F(*hped);
@@ -186,53 +174,24 @@ AliTRDCalibPadStatus::~AliTRDCalibPadStatus() /*FOLD00*/
 }
 
 //_____________________________________________________________________
-Int_t AliTRDCalibPadStatus::Update(const Int_t icdet, /*FOLD00*/
-				   const Int_t icRow,
-				   const Int_t icCol,
-				   const Int_t csignal,
-				   const Int_t crowMax)
-{
-    //
-    // Signal filling methode 
-    //
-    if ( (csignal>fAdcMax) || (csignal<fAdcMin)   ) return 0;
-
-    if(fDetector != icdet){
-      fCalEntries = ((AliTRDarrayF *)GetCalEntries(icdet,kTRUE));
-      fCalMean    = ((AliTRDarrayF *)GetCalMean(icdet,kTRUE));
-      fCalSquares = ((AliTRDarrayF *)GetCalSquares(icdet,kTRUE));
-    }
-
-    Float_t entries  = fCalEntries->At(icRow+icCol*crowMax);
-    Float_t mean     = fCalMean->At(icRow+icCol*crowMax);
-    Float_t squares  = fCalSquares->At(icRow+icCol*crowMax);
-    
-    Float_t entriesn = entries+1.0;
-    fCalEntries->AddAt(entriesn,(icRow+icCol*crowMax));
-    Float_t meann = (mean*entries+((Float_t)(csignal+0.5)))/entriesn;
-    fCalMean->AddAt(meann,icRow+icCol*crowMax);
-    Float_t squaresn = ((squares*entries)+(((Float_t)(csignal+0.5))*((Float_t)(csignal+0.5))))/entriesn;
-    fCalSquares->AddAt(squaresn,icRow+icCol*crowMax);
-
-    //printf("icdet %d, icRow %d, icCol %d, csignal %d, crowMax %d\n",icdet,icRow,icCol,csignal,crowMax);
-    //printf("entries %f, mean %f, squares %f\n",entriesn,meann,squaresn);
-
-    fDetector = icdet;
-    
-    return 0;
-}
-
-//_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
-				       const Int_t icRow,
-				       const Int_t icCol,
-				       const Int_t csignal,
-				       const Int_t crowMax)
+					const Int_t icRow,
+					const Int_t icCol,
+					const Int_t csignal,
+					const Int_t crowMax,
+					const Int_t ccold,
+					const Int_t icMcm)
 {
-    //
-    // Signal filling methode 
-    //
+  //
+  // Signal filling methode 
+  //
   Int_t nbchannel = icRow+icCol*crowMax;
+
+  // now the case of double read channel
+  if(ccold > 0){
+    nbchannel = (((ccold-1)*8+ icMcm)*crowMax+icRow)+144*crowMax;
+    //printf("nbchannel %d, ccold %d, icMcm %d, crowMax %d, icRow %d\n",nbchannel,ccold,icMcm,crowMax,icRow);
+  }
   
   // fast filling methode.
   // Attention: the entry counter of the histogram is not increased
@@ -245,12 +204,11 @@ Int_t AliTRDCalibPadStatus::UpdateHisto(const Int_t icdet, /*FOLD00*/
   
   return 0;
 }
-
 //_____________________________________________________________________
 Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck)
 {
   //
-  // Event Processing loop - AliTRDRawStreamV2
+  // Event Processing loop - AliTRDRawStreamCosmic
   // 0 time bin problem or zero suppression
   // 1 no input
   // 2 input
@@ -258,26 +216,51 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t no
 
   Int_t withInput = 1;
 
+  //rawStream->SetSharedPadReadout(kTRUE);
+
   if(!nocheck) {
     while (rawStream->Next()) {
       Int_t rawversion = rawStream->GetRawVersion();                     //  current raw version
-      if(rawversion != 2) return 0;
+      //if(!rawStream->IsDataZeroSuppressed()) {
+      if(rawversion > 2) {
+	AliInfo(Form("this is not no-zero-suppressed data, the version is %d",rawversion));
+	return 0;
+      }
       Int_t idetector  = rawStream->GetDet();                            //  current detector
       Int_t iRow       = rawStream->GetRow();                            //  current row
       Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
       Int_t iCol       = rawStream->GetCol();                            //  current col
+      
+
+      Int_t iADC       = 21-rawStream->GetADC();                            //  current ADC
+      Int_t col        = 0;
+      if(iADC == 1) col = 1;
+      else {
+	col = TMath::Max(0,(Int_t)(iADC-19));
+	if(col > 0) col++;
+      }
+      Int_t mcm        = (Int_t)(iCol/18);                               //  current group of 18 col pads
+      if(col > 1) mcm -= 1;      
+      if(col ==1) mcm += 1;
+
+      //Bool_t shared = rawStream->IsCurrentPadShared();                  
+      //printf("ADC %d, iCol %d, col %d, mcm %d, shared %d\n",iADC,iCol,col,mcm,(Int_t)shared);
+
       Int_t iTimeBin   = rawStream->GetTimeBin();                        //  current time bin
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin  = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
 
-      if((fDetector != -1) && (nbtimebin != fNumberOfTimeBins)) return 0;
+      if((fDetector != -1) && (nbtimebin != fNumberOfTimeBins)) {
+	AliInfo(Form("the number of time bins is %d, is different from the previous one %d",nbtimebin,fNumberOfTimeBins));
+      	return 0;
+      }
       fNumberOfTimeBins = nbtimebin;
       
       Int_t fin        = TMath::Min(nbtimebin,(iTimeBin+3));
       Int_t n          = 0;
       
       for(Int_t k = iTimeBin; k < fin; k++){
-	if(signal[n]>0) UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax);
+	if(signal[n]>0) UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
 	n++;
       }
       
@@ -290,6 +273,19 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t no
       Int_t iRow       = rawStream->GetRow();                            //  current row
       Int_t iRowMax    = rawStream->GetMaxRow();                         //  current rowmax
       Int_t iCol       = rawStream->GetCol();                            //  current col
+      
+
+      Int_t iADC       = 21-rawStream->GetADC();                            //  current ADC
+      Int_t col        = 0;
+      if(iADC == 1) col = 1;
+      else {
+	col = TMath::Max(0,(Int_t)(iADC-19));
+	if(col > 0) col++;
+      }
+      Int_t mcm        = (Int_t)(iCol/18);                               //  current group of 18 col pads
+      if(col > 1) mcm -= 1;      
+      if(col ==1) mcm += 1;
+
       Int_t iTimeBin   = rawStream->GetTimeBin();                        //  current time bin
       Int_t *signal    = rawStream->GetSignals();                        //  current ADC signal
       Int_t nbtimebin = rawStream->GetNumberOfTimeBins();               //  number of time bins read from data
@@ -298,7 +294,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t no
       Int_t n          = 0;
       
       for(Int_t k = iTimeBin; k < fin; k++){
-	if(signal[n]>0) UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax);
+	if(signal[n]>0) UpdateHisto(idetector,iRow,iCol,signal[n],iRowMax,col,mcm);
 	n++;
       }
       
@@ -352,33 +348,6 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(
 }
 
 //_____________________________________________________________________
-Bool_t AliTRDCalibPadStatus::TestEvent(Int_t nevent, Int_t sm) /*FOLD00*/
-{
-  //
-  //  Test event loop
-  // fill one oroc and one iroc with random gaus
-  //
-
-  gRandom->SetSeed(0);
-
-    for (Int_t ism=sm; ism<sm+1; ism++){
-       	for (Int_t ich=0; ich < 5; ich++){
-	    for (Int_t ipl=0; ipl < 6; ipl++){
-	      for(Int_t irow = 0; irow < fGeo->GetRowMax(ipl,ich,ism); irow++){
-		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
-		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
-		    Int_t signal=(Int_t)(gRandom->Gaus(10.0,1.2));
-		    if ( signal>0 )Update((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism));
-		  }
-		}
-	      }
-	    }
-	}
-    }
-    return kTRUE;
-}
-
-//_____________________________________________________________________
 Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm) /*FOLD00*/
 {
   //
@@ -395,7 +364,7 @@ Bool_t AliTRDCalibPadStatus::TestEventHisto(Int_t nevent, Int_t sm) /*FOLD00*/
 		for(Int_t icol = 0; icol < fGeo->GetColMax(ipl); icol++){
 		  for (Int_t iTimeBin=0; iTimeBin<(30*nevent); iTimeBin++){
 		    Int_t signal=(Int_t)(gRandom->Gaus(10.0,1.2));
-		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism));
+		    if ( signal>0 )UpdateHisto((ipl+ich*6+ism*6*5),irow,icol,signal,fGeo->GetRowMax(ipl,ich,ism),0,0);
 		  }
 		}
 	      }
@@ -425,6 +394,10 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, TObjArray *arr, /*FOLD00*/
 
    
     Int_t nbchannels = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*fGeo->GetColMax(GetPlane(det));
+    
+    // we will add 3*8*rowMax channels at the end for the double counted
+    nbchannels += 3*8*(fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det)));
+
 
     // new histogram with calib information. One value for each pad!
     TH2F* hist = new TH2F(name,title,
@@ -448,30 +421,6 @@ TH2F* AliTRDCalibPadStatus::GetHisto(Int_t det, Bool_t force) /*FOLD00*/
 }
 
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibPadStatus::GetCal(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
-{
-    //
-    // return pointer to ROC Calibration
-    // if force is true create a new AliTRDarrayF if it doesn't exist allready
-    //
-    if ( !force || arr->UncheckedAt(det) )
-	return (AliTRDarrayF*)arr->UncheckedAt(det);
-
-    // if we are forced and histogram doesn't yes exist create it
-    AliTRDarrayF *croc = new AliTRDarrayF();
- 
-    Int_t nbpad = fGeo->GetRowMax(GetPlane(det),GetChamber(det),GetSector(det))*fGeo->GetColMax(GetPlane(det));
-
-    // new AliTRDCalROC. One value for each pad!
-    croc->Expand(nbpad);
-    for(Int_t k = 0; k < nbpad; k++){
-      croc->AddAt(0.0,k);
-    }
-    arr->AddAt(croc,det);
-    return croc;
-}
-
-//_____________________________________________________________________
 AliTRDCalROC* AliTRDCalibPadStatus::GetCalRoc(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
 {
     //
@@ -488,40 +437,6 @@ AliTRDCalROC* AliTRDCalibPadStatus::GetCalRoc(Int_t det, TObjArray* arr, Bool_t 
     arr->AddAt(croc,det);
     return croc;
 }
-
-//_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibPadStatus::GetCalEntries(Int_t det, Bool_t force) /*FOLD00*/
-{
-    //
-    // return pointer to Carge ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
-    TObjArray *arr = &fCalArrayEntries;
-    return GetCal(det, arr, force);
-}
-
-//_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibPadStatus::GetCalMean(Int_t det, Bool_t force) /*FOLD00*/
-{
-    //
-    // return pointer to Carge ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
-    TObjArray *arr = &fCalArrayMean;
-    return GetCal(det, arr, force);
-}
-
-//_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibPadStatus::GetCalSquares(Int_t det, Bool_t force) /*FOLD00*/
-{
-    //
-    // return pointer to Carge ROC Calibration
-    // if force is true create a new histogram if it doesn't exist allready
-    //
-    TObjArray *arr = &fCalArraySquares;
-    return GetCal(det, arr, force);
-}
-
 //_____________________________________________________________________
 AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocMean(Int_t det, Bool_t force) /*FOLD00*/
 {
@@ -543,44 +458,26 @@ AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocRMS(Int_t det, Bool_t force) /*FOLD
     TObjArray *arr = &fCalRocArrayRMS;
     return GetCalRoc(det, arr, force);
 }
-
-//_________________________________________________________________________
-void AliTRDCalibPadStatus::Analyse() /*FOLD00*/
+//_____________________________________________________________________
+AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocMeand(Int_t det, Bool_t force) /*FOLD00*/
 {
-  //
-  // Calcul the rms properly
-  // 
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fCalRocArrayMeand;
+    return GetCalRoc(det, arr, force);
+}
 
-  for(Int_t idet = 0; idet < 540; idet++){
-
-    // Take the stuff
-    fCalEntries                 = ((AliTRDarrayF *)GetCalEntries(idet));
-    fCalMean                    = ((AliTRDarrayF *)GetCalMean(idet));
-    fCalSquares                 = ((AliTRDarrayF *)GetCalSquares(idet));
-
-    if(!fCalEntries) continue;
-
-    AliTRDCalROC *calRocMean    = ((AliTRDCalROC *)GetCalRocMean(idet,kTRUE));
-    AliTRDCalROC *calRocRMS     = ((AliTRDCalROC *)GetCalRocRMS(idet,kTRUE));
-
-    // range channels
-    Int_t channels = calRocMean->GetNchannels();
-    
-    for(Int_t ichannels = 0 ; ichannels < channels; ichannels++){
-      
-      Float_t entries  = fCalEntries->At(ichannels);
-      Float_t mean     = fCalMean->At(ichannels);
-      Float_t squares  = fCalSquares->At(ichannels);
-
-      Float_t rms = 0.0;
-      if(entries > 0){
-	Double_t rm = TMath::Abs(squares-(mean*mean));
-	rms = TMath::Sqrt(rm);
-	calRocRMS->SetValue(ichannels,rms/10.0);
-	calRocMean->SetValue(ichannels,mean/10.0);
-      }
-    }
-  }
+//_____________________________________________________________________
+AliTRDCalROC* AliTRDCalibPadStatus::GetCalRocRMSd(Int_t det, Bool_t force) /*FOLD00*/
+{
+    //
+    // return pointer to Carge ROC Calibration
+    // if force is true create a new histogram if it doesn't exist allready
+    //
+    TObjArray *arr = &fCalRocArrayRMSd;
+    return GetCalRoc(det, arr, force);
 }
 
 //_____________________________________________________________________
@@ -623,8 +520,50 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 	    rocMean->SetValue(iChannel,param[1]/10.0);
             rocRMS->SetValue(iChannel,param[2]/10.0);
 	}
+
+	// here we analyse doubled read channels
+	
+	AliTRDCalROC *rocMeand     = GetCalRocMeand(idet,kTRUE);
+	AliTRDCalROC *rocRMSd      = GetCalRocRMSd(idet,kTRUE);
+
+	Int_t nrows = rocMeand->GetNrows();
+	Int_t shift = 144*nrows;
+	Int_t total = shift+3*8*nrows; 
+
+      	for (Int_t iChannel=shift; iChannel<total; iChannel++){
+            Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
+	    Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+            // if the fitting failed set noise and pedestal to 0
+	    if ((ret==-4) || (ret==-1) || (ret==-2)) {
+		param[1]=0.0;
+		param[2]=0.0;
+	    }
+	    if((param[1]/10.0) > 65534.0) param[1] = 0.0;
+	    if((param[2]/10.0) > 65534.0) param[2] = 0.0;
+	    
+	    // here we have to recalculate backward
+	    Int_t nb   = iChannel-shift;
+	    Int_t row  = nb%nrows;
+	    Int_t j    = (Int_t)(nb/nrows);
+	    Int_t imcm = j%8;
+	    Int_t icol = (Int_t)(j/8);
+	    
+	    Int_t finalcol = 18*imcm;
+	    if(icol > 0) icol += 17;
+	    else icol = -1;
+	    finalcol += icol;
+
+	    Int_t channel = row+finalcol*nrows;
+
+	    //printf("iChannel %d, nrows %d, finalcol %d, row %d, channel %d\n",iChannel,nrows,finalcol,row,channel);
+	    if((finalcol < 0) || (finalcol >= 144)) continue;
+
+	    rocMeand->SetValue(channel,param[1]/10.0);
+            rocRMSd->SetValue(channel,param[2]/10.0);
+	}
+
     }
-   
+      
 }
 
 //_______________________________________________________________________________________
@@ -644,6 +583,10 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
       AliTRDCalROC *calRocMean    = ((AliTRDCalROC *)GetCalRocMean(idet));
       AliTRDCalROC *calRocRMS     = ((AliTRDCalROC *)GetCalRocRMS(idet));
 
+      //Take the stuff second chance
+      AliTRDCalROC *calRocMeand    = ((AliTRDCalROC *)GetCalRocMeand(idet));
+      AliTRDCalROC *calRocRMSd     = ((AliTRDCalROC *)GetCalRocRMSd(idet));
+
       if ( !calRocMean ) {
 	for(Int_t k = 0; k < calROC->GetNchannels(); k++){
 	  calROC->SetStatus(k,AliTRDCalPadStatus::kMasked);
@@ -658,21 +601,28 @@ AliTRDCalPadStatus* AliTRDCalibPadStatus::CreateCalPadStatus()
       Double_t meanmean      = calRocMean->GetMean()*10.0;
       Double_t meansquares   = calRocRMS->GetMean()*10.0;
 
-
       for(Int_t ich = 0; ich < channels; ich++){
 	
 	Float_t mean     = calRocMean->GetValue(ich)*10.0;
 	Float_t rms      = calRocRMS->GetValue(ich)*10.0;
 	
-	if((rms <= 0.0001) || (TMath::Abs(mean-meanmean)>(5*rmsmean)) || (TMath::Abs(rms)>(5.0*TMath::Abs(meansquares)))) calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
-      
+	if((rms <= 0.0001) || (TMath::Abs(mean-meanmean)>(5*rmsmean)) || (TMath::Abs(rms)>(5.0*TMath::Abs(meansquares)))) {
+	  // look at second chance
+	  Float_t meand     = calRocMeand->GetValue(ich)*10.0;
+	  Float_t rmsd      = calRocRMSd->GetValue(ich)*10.0;
+
+	  if((rmsd <= 0.0001) || (TMath::Abs(meand-meanmean)>(5*rmsmean)) || (TMath::Abs(rmsd)>(5.0*TMath::Abs(meansquares)))) {
+	    calROC->SetStatus(ich, AliTRDCalPadStatus::kMasked);
+	  }
+	  else calROC->SetStatus(ich, AliTRDCalPadStatus::kReadSecond);
+	}
+	
       }
     }
   
   return obj;
   
 }
-
 //_______________________________________________________________________________________
 AliTRDCalPad* AliTRDCalibPadStatus::CreateCalPad()
 {
@@ -783,7 +733,45 @@ void AliTRDCalibPadStatus::SetCalRocRMS(AliTRDCalROC *rms, Int_t det) /*FOLD00*/
   }
   
 }
+//_____________________________________________________________________
+void AliTRDCalibPadStatus::SetCalRocMeand(AliTRDCalROC *mean, Int_t det) /*FOLD00*/
+{
+    //
+    //  Put the AliTRDCalROC in the array fCalRocArrayMean
+    //
 
+
+  AliTRDCalROC *rocMean = GetCalRocMeand(det,kTRUE);
+  
+  Int_t nChannels = rocMean->GetNchannels();
+  
+  for (Int_t iChannel=0; iChannel<nChannels; iChannel++){
+    
+    rocMean->SetValue(iChannel,mean->GetValue(iChannel));
+    
+  }
+  
+}
+
+//_____________________________________________________________________
+void AliTRDCalibPadStatus::SetCalRocRMSd(AliTRDCalROC *rms, Int_t det) /*FOLD00*/
+{
+    //
+    //  Put the AliTRDCalROC in the array fCalRocArrayRMS
+    //
+
+
+  AliTRDCalROC *rocRms = GetCalRocRMSd(det,kTRUE);
+  
+  Int_t nChannels = rocRms->GetNchannels();
+  
+  for (Int_t iChannel=0; iChannel<nChannels; iChannel++){
+    
+    rocRms->SetValue(iChannel,rms->GetValue(iChannel));
+    
+  }
+  
+}
 //_____________________________________________________________________________
 Int_t AliTRDCalibPadStatus::GetPlane(Int_t d) const
 {

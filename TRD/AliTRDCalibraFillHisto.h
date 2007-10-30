@@ -39,7 +39,7 @@ class AliRawReader;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
-class AliTRDRawStream;
+class AliTRDRawStreamV2;
 class AliTRDcluster;
 class AliTRDtrack;
 class AliTRDmcmTracklet;
@@ -73,7 +73,7 @@ class AliTRDCalibraFillHisto : public TObject {
           Bool_t   UpdateHistogramcm(AliTRDmcmTracklet *trk);
  
   // Process events DAQ
-	  Int_t   ProcessEventDAQ(AliTRDRawStream *rawStream, Bool_t nocheck = kFALSE);
+	  Int_t   ProcessEventDAQ(AliTRDRawStreamV2 *rawStream, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader, Bool_t nocheck = kFALSE);
 	  Int_t   ProcessEventDAQ(eventHeaderStruct *event, Bool_t nocheck = kFALSE);
 
@@ -154,7 +154,7 @@ class AliTRDCalibraFillHisto : public TObject {
 
   // Vector method
 AliTRDCalibraVector *GetCalibraVector() const                                { return fCalibraVector;          }   
-
+  
  protected:
 
   // Geometry
@@ -188,6 +188,8 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   // Fill the 2D histos in the offline tracking
           Bool_t   fDetectorAliTRDtrack;    // Change of track
 	  Int_t    fDetectorPreviousTrack;  // Change of detector
+	  Int_t    fMCMPrevious;            // Change of MCM
+	  Int_t    fROBPrevious;            // Change of ROB
 	  Short_t  fNumberClusters;         // Minimum number of clusters in the tracklets
           Float_t  fProcent;                // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
           Short_t  fDifference;             // Limit to take the info of the most important calibration group if the track goes through 2 groups (CH)
@@ -284,15 +286,13 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   static  AliTRDCalibraFillHisto *fgInstance;                // Instance
   static  Bool_t   fgTerminated;                             // If terminated
 
-  
  private:
   
   // This is a singleton, contructor is private!
   AliTRDCalibraFillHisto();
-  virtual ~AliTRDCalibraFillHisto();
- 
+  virtual ~AliTRDCalibraFillHisto(); 
     
-  ClassDef(AliTRDCalibraFillHisto,3)                         // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,4)                         // TRD Calibration class
 
 };
   

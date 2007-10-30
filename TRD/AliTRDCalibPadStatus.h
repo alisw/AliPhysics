@@ -13,7 +13,6 @@
 
 class TObjArray;
 class TH2F;
-class TTreeSRedirector;
 
 class AliRawReader;
 
@@ -22,7 +21,6 @@ class AliTRDCalPad;
 class AliTRDCalROC;
 class AliTRDCalPadStatus;
 class AliTRDRawStreamV2;
-class AliTRDarrayF;
 class AliTRDgeometry;
 
 struct eventHeaderStruct;
@@ -41,12 +39,9 @@ public:
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 
-  Int_t Update(const Int_t idet, const Int_t iRow, const Int_t iCol,
-	       const Int_t signal, const Int_t rowMax);
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
-		    const Int_t signal, const Int_t crowMax);
+		    const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm);
 
-  void Analyse();
   void AnalyseHisto();
   AliTRDCalPadStatus *CreateCalPadStatus();
   AliTRDCalPad *CreateCalPad();
@@ -55,12 +50,15 @@ public:
   void SetCalRocMean(AliTRDCalROC *mean, Int_t det);
   void SetCalRocRMS(AliTRDCalROC *rms, Int_t det);  
 
+  void SetCalRocMeand(AliTRDCalROC *mean, Int_t det);
+  void SetCalRocRMSd(AliTRDCalROC *rms, Int_t det);  
+
   //
-  AliTRDarrayF* GetCalEntries(Int_t det, Bool_t force=kFALSE);    // get calibration object
-  AliTRDarrayF* GetCalMean(Int_t det, Bool_t force=kFALSE);       // get calibration object
-  AliTRDarrayF* GetCalSquares(Int_t det, Bool_t force=kFALSE);    // get calibration object
   AliTRDCalROC* GetCalRocMean(Int_t det, Bool_t force=kFALSE);    // get calibration object
   AliTRDCalROC* GetCalRocRMS(Int_t det, Bool_t force=kFALSE);     // get calibration object
+
+  AliTRDCalROC* GetCalRocMeand(Int_t det, Bool_t force=kFALSE);   // get calibration object
+  AliTRDCalROC* GetCalRocRMSd(Int_t det, Bool_t force=kFALSE);    // get calibration object
 
   TH2F* GetHisto  (Int_t det, Bool_t force=kFALSE);              // get refernce histogram
   
@@ -72,10 +70,9 @@ public:
   void    SetRangeAdc (Int_t aMin, Int_t aMax){ fAdcMin=aMin; fAdcMax=aMax; }  // Set adc range 
 
 
-  Bool_t TestEvent(Int_t nevent, Int_t sm);  //test the fast approach to fill array  - used for test purposes
   Bool_t TestEventHisto(Int_t nevent, Int_t sm);  //test the fast approach to fill histograms  
 
-private:
+ private:
 
   // Geometry
   AliTRDgeometry  *fGeo;            //! The TRD geometry
@@ -85,19 +82,15 @@ private:
   Int_t fDetector;                  //  Current detector
   Int_t fNumberOfTimeBins;          //  Current number of time bins
      
-  TObjArray fCalArrayEntries;       //  Array of AliTRDarrayF class calibration
-  TObjArray fCalArrayMean;          //  Array of AliTRDarrayF class calibration
-  TObjArray fCalArraySquares;       //  Array of AliTRDarrayF class calibration
   TObjArray fCalRocArrayMean;       //  Array of AliTRDCalROC class for signal width calibration
   TObjArray fCalRocArrayRMS;        //  Array of AliTRDCalROC class for mean width calibration
 
+  TObjArray fCalRocArrayMeand;      //  Array of AliTRDCalROC class for signal width calibration doubled
+  TObjArray fCalRocArrayRMSd;       //  Array of AliTRDCalROC class for mean width calibration doubled
+
   TObjArray fHistoArray;            //  Array of histos for mean width calibration
   
-  AliTRDarrayF *fCalEntries;        //  Current AliTRDArrayF entries
-  AliTRDarrayF *fCalMean;           //  Current AliTRDArrayF Mean
-  AliTRDarrayF *fCalSquares;        //  Current AliTRDArrayF Squares
-
-  AliTRDarrayF* GetCal(Int_t det, TObjArray* arr, Bool_t force);
+ 
   AliTRDCalROC* GetCalRoc(Int_t det, TObjArray* arr, Bool_t force);
  
   TH2F* GetHisto(Int_t det, TObjArray *arr,
@@ -108,8 +101,6 @@ private:
   virtual Int_t    GetPlane(Int_t d) const;
   virtual Int_t    GetChamber(Int_t d) const;
   virtual Int_t    GetSector(Int_t d) const;
-
-public:
 
   ClassDef(AliTRDCalibPadStatus,1)
 
