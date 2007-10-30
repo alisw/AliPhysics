@@ -409,6 +409,8 @@ class TFluka : public TVirtualMC {
   void  PrintHeader();
   void  AddParticlesToPdgDataBase() const;
   Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
+  Int_t GetSpecialPdg(Int_t number) const;
+  
   Float_t* CreateFloatArray(Double_t* array, Int_t size) const;
   
   //

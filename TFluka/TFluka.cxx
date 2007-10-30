@@ -256,7 +256,7 @@ void TFluka::Init() {
     // Add ions to PDG Data base
     //
      AddParticlesToPdgDataBase();
-     //
+    //
 }
 
 
@@ -2542,6 +2542,15 @@ void TFluka::AddParticlesToPdgDataBase() const
                      khShGev/(12.33*kYear2Sec),6,"Ion",GetIonPdg(2,4));
   pdgDB->AddParticle("HE3","HE3",3*kAu2Gev+14.931e-3,kFALSE,
                      0,6,"Ion",GetIonPdg(2,3));
+//
+//
+//
+// Special particles
+//
+  pdgDB->AddParticle("Cherenkov","Cherenkov",0,kFALSE,
+                     0,0,"Special",GetSpecialPdg(50));
+  pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
+                     0,0,"Special",GetSpecialPdg(51));
 }
 
 //
@@ -2597,6 +2606,15 @@ Int_t TFluka::GetIonPdg(Int_t z, Int_t a, Int_t i) const
 
   return 1000000000 + 10*1000*z + 10*a + i;
 }  
+
+//__________________________________________________________________
+Int_t TFluka::GetSpecialPdg(Int_t number) const
+{
+// Numbering for special particles
+
+  return 50000000 + number;
+}                
+
      
 void  TFluka::PrimaryIonisationStepping(Int_t nprim)
 {
