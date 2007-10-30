@@ -82,6 +82,6 @@ class AliSplineFit : public TObject {
   Double_t *fY0;          //[fN] - y value at X
   Double_t *fY1;          //[fN] - y derivative value at X
   Double_t *fChi2I;       //[fN] - chi2 on interval
-  ClassDef(AliSplineFit, 1);
+  ClassDef(AliSplineFit, 2);
 };
 #endif
