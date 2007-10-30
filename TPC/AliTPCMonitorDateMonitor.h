@@ -8,14 +8,14 @@
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorDateMonitor class
-// 
-// Monitoring wrapper class for DATE monitoring
-// 
-// Authors: Roland Bramm, 
-//          Stefan Kniege, IKF, Frankfurt
-//       
+////
+//// AliTPCMonitorDateMonitor class
+//// 
+//// Monitoring wrapper class for DATE monitoring
+//// 
+//// Authors: Roland Bramm, 
+////          Stefan Kniege, IKF, Frankfurt
+////       
 /////////////////////////////////////////////////////////////////////////
 
 #include <string>

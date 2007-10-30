@@ -15,22 +15,25 @@
 
 /*
 $Log$
+Revision 1.2  2007/10/12 13:36:27  cvetan
+Coding convention fixes from Stefan
+
 Revision 1.1  2007/09/17 10:23:31  cvetan
 New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
 */ 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorFFT class
-//
-// Wrapper class to perform Fast Fourier Transformations.
-// The code is based on the Gnu Scientific Library. 
-// See documentation of gsl for further details.
-// 
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitorFFT class
+////
+//// Wrapper class to perform Fast Fourier Transformations.
+//// The code is based on the Gnu Scientific Library. 
+//// See documentation of gsl for further details.
+//// 
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -83,12 +86,12 @@ Int_t AliTPCMonitorFFT::ComplexRadix2InverseWrap(Double_t* data,Int_t stride, si
       return ret;
     }
   
-  const Double_t norm = 1.0 / n;
+  const Double_t knorm = 1.0 / n;
   size_t i;
   for (i = 0; i < n; i++)
     {
-      REAL(data,stride,i) *= norm;
-      IMAG(data,stride,i) *= norm;
+      REAL(data,stride,i) *= knorm;
+      IMAG(data,stride,i) *= knorm;
     }
   
   return ret;
@@ -127,14 +130,14 @@ Int_t AliTPCMonitorFFT::ComplexRadix2TransformWrap(Double_t* data,   Int_t strid
 
   for (bit = 0; bit < logn; bit++)
     {
-      Double_t w_real = 1.0;
-      Double_t w_imag = 0.0;
+      Double_t wreal = 1.0;
+      Double_t wimag = 0.0;
 
-      const Double_t theta = 2.0 * ((Int_t) sign) * M_PI / ((Double_t) (2 * dual));
+      const Double_t ktheta = 2.0 * ((Int_t) sign) * M_PI / ((Double_t) (2 * dual));
 
-      const Double_t s = sin (theta);
-      const Double_t t = sin (theta / 2.0);
-      const Double_t s2 = 2.0 * t * t;
+      const Double_t ks = sin (ktheta);
+      const Double_t kt = sin (ktheta / 2.0);
+      const Double_t ks2 = 2.0 * kt * kt;
 
       size_t a, b;
 
@@ -142,27 +145,27 @@ Int_t AliTPCMonitorFFT::ComplexRadix2TransformWrap(Double_t* data,   Int_t strid
 	{
 	  for (a = 0; a < n; a+= 2 * dual)
 	    {
-	      const size_t i = b + a;
-	      const size_t j = b + a + dual;
+	      const size_t ki = b + a;
+	      const size_t kj = b + a + dual;
               
-	      const Double_t t1_real = REAL(data,stride,i) + REAL(data,stride,j);
-	      const Double_t t1_imag = IMAG(data,stride,i) + IMAG(data,stride,j);
-	      const Double_t t2_real = REAL(data,stride,i) - REAL(data,stride,j);
-	      const Double_t t2_imag = IMAG(data,stride,i) - IMAG(data,stride,j);
+	      const Double_t kt1real = REAL(data,stride,ki) + REAL(data,stride,kj);
+	      const Double_t kt1imag = IMAG(data,stride,ki) + IMAG(data,stride,kj);
+	      const Double_t kt2real = REAL(data,stride,ki) - REAL(data,stride,kj);
+	      const Double_t kt2imag = IMAG(data,stride,ki) - IMAG(data,stride,kj);
 
-	      REAL(data,stride,i) = t1_real;
-	      IMAG(data,stride,i) = t1_imag;
-	      REAL(data,stride,j) = w_real*t2_real - w_imag * t2_imag;
-	      IMAG(data,stride,j) = w_real*t2_imag + w_imag * t2_real;
+	      REAL(data,stride,ki) = kt1real;
+	      IMAG(data,stride,ki) = kt1imag;
+	      REAL(data,stride,kj) = wreal*kt2real - wimag * kt2imag;
+	      IMAG(data,stride,kj) = wreal*kt2imag + wimag * kt2real;
 	    }
 
-	  /* trignometric recurrence for w-> exp(i theta) w */
+	  /* trignometric recurrence for w-> exp(i ktheta) w */
 
 	  {
-	    const Double_t tmp_real = w_real - s * w_imag - s2 * w_real;
-	    const Double_t tmp_imag = w_imag + s * w_real - s2 * w_imag;
-	    w_real = tmp_real;
-	    w_imag = tmp_imag;
+	    const Double_t ktmpreal = wreal - ks * wimag - ks2 * wreal;
+	    const Double_t ktmpimag = wimag + ks * wreal - ks2 * wimag;
+	    wreal = ktmpreal;
+	    wimag = ktmpimag;
 	  }
 	}
       dual /= 2;
@@ -177,7 +180,7 @@ Int_t AliTPCMonitorFFT::ComplexRadix2TransformWrap(Double_t* data,   Int_t strid
 }
 
 //__________________________________________________________________
-Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride, size_t n, Int_t logn)
+Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride, size_t n, Int_t logn) const
 {
   // Wrapper function from gnu scientific library
   /* This is the Goldrader bit-reversal algorithm */
@@ -193,12 +196,12 @@ Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride,
       
       if (i < j)
         {
-          const Double_t tmp_real = REAL(data,stride,i);
-          const Double_t tmp_imag = IMAG(data,stride,i);
+          const Double_t ktmpreal = REAL(data,stride,i);
+          const Double_t ktmpimag = IMAG(data,stride,i);
           REAL(data,stride,i) = REAL(data,stride,j);
           IMAG(data,stride,i) = IMAG(data,stride,j);
-          REAL(data,stride,j) = tmp_real;
-          IMAG(data,stride,j) = tmp_imag;
+          REAL(data,stride,j) = ktmpreal;
+          IMAG(data,stride,j) = ktmpimag;
         }
       
       while (k <= j) 
@@ -215,27 +218,27 @@ Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride,
 }
 
 //__________________________________________________________________
-Int_t AliTPCMonitorFFT::FFTBinaryLogn(size_t n)
+Int_t AliTPCMonitorFFT::FFTBinaryLogn(size_t n) const
 {
 
   // Return log on base 2
   size_t ntest ;
-  size_t binary_logn = 0 ;
+  size_t binarylogn = 0 ;
   size_t k = 1;
   
   while (k < n)
     {
       k *= 2;
-      binary_logn++;
+      binarylogn++;
     }
   
-  ntest = (1 << binary_logn) ;
+  ntest = (1 << binarylogn) ;
   
   if (n != ntest )       
     {
       return -1 ; /* n is not a power of 2 */
     } 
   
-  return binary_logn;
+  return binarylogn;
 }
 

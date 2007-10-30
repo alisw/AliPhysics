@@ -21,21 +21,21 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 */ 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorDialog class
-//
-// Class to handle dialogs for settings of files and configurations 
-// for the AliTPCMonitor
-// 
-// The dialog will be called by an AliTPCMonitor object from the macro TPCMonitor.C.
-// Depending on the version number passed when creating an Object of this class
-// a certain dialog window (see constructor)  for the TPCMonitor will be opened.
-// The data inserted will be passed to the configuration handler and read out
-// by the monitor object or a the monitor member function will be directly called.
-//  
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitorDialog class
+////
+//// Class to handle dialogs for settings of files and configurations 
+//// for the AliTPCMonitor
+//// 
+//// The dialog will be called by an AliTPCMonitor object from the macro TPCMonitor.C.
+//// Depending on the version number passed when creating an Object of this class
+//// a certain dialog window (see constructor)  for the TPCMonitor will be opened.
+//// The data inserted will be passed to the configuration handler and read out
+//// by the monitor object or a the monitor member function will be directly called.
+////  
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -52,15 +52,15 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "TGWindow.h"
 #include "TVirtualPadEditor.h"
 #include "TTimer.h"
-#include "RQ_OBJECT.h"
 #include <Riostream.h>
 #include "Rtypes.h"
 #include "AliLog.h"
 
 ClassImp(AliTPCMonitorDialog)
 //_____________________________________________________________________________________________
-AliTPCMonitorDialog::AliTPCMonitorDialog(const TGWindow *p, const TGWindow *main, UInt_t w,
-					   UInt_t h, UInt_t options, Int_t version,AliTPCMonitor* monitor):
+AliTPCMonitorDialog::AliTPCMonitorDialog(TGWindow *p, TGWindow *main, UInt_t w,
+					 UInt_t h, UInt_t options, Int_t version,AliTPCMonitor* monitor): 
+  //fQObject(0),
   fFrameMain(new TGTransientFrame(p, main, w, h, options)),
   fFrameComp(0),
   fFrameHor(new TGHorizontalFrame(fFrameMain, 60, 20, kFixedWidth)),
@@ -71,8 +71,13 @@ AliTPCMonitorDialog::AliTPCMonitorDialog(const TGWindow *p, const TGWindow *main
   fLayout1(new TGLayoutHints(kLHintsTop    | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2)),
   fLayout2(new TGLayoutHints(kLHintsBottom | kLHintsRight                , 2, 2, 5, 1)),
   fLayout3(new TGLayoutHints(kLHintsTop    | kLHintsLeft, 5, 5, 5, 5)),
-  fMonitor(monitor)
-  
+  fMonitor(monitor),
+  fWidth(w),
+  fHeight(h),
+  fOptions(options),
+  fVersion(version),
+  fClient(p),
+  fMain(main)
 {
   // Constructor for Dialog window.  
   // Create a dialog window.depending on the version it is called with.. 
@@ -91,21 +96,76 @@ AliTPCMonitorDialog::AliTPCMonitorDialog(const TGWindow *p, const TGWindow *main
   CreateDialogVersion(version);
 }
 
-// //_____________________________________________________________________________
-// AliTPCMonitorDialog::AliTPCMonitorDialog(const AliTPCMonitorDialog &dialog) :
-// {
-//   // copy constructor (actually none forseen for this class 
-//   AliWarning("No copying forseen for this class");
-  
-// }
+//_____________________________________________________________________________
+AliTPCMonitorDialog::AliTPCMonitorDialog(const AliTPCMonitorDialog &dialog) :
+TNamed(dialog.GetName(),dialog.GetTitle()),
+//fQObject(0),
+fFrameMain(new TGTransientFrame(dialog.GetClient(), dialog.GetMainFrame(), dialog.GetWidth(), dialog.GetHeight())),
+fFrameComp(0),
+fFrameHor(new TGHorizontalFrame(fFrameMain, 60, 20, kFixedWidth)),
+fFrameGroup(0),
+fOkButton(new TGTextButton(fFrameHor, "&Ok", 1)),
+fListBox(0),
+fTab(new TGTab(fFrameMain, 300, 300)),
+fLayout1(new TGLayoutHints(kLHintsTop    | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2)),
+fLayout2(new TGLayoutHints(kLHintsBottom | kLHintsRight                , 2, 2, 5, 1)),
+fLayout3(new TGLayoutHints(kLHintsTop    | kLHintsLeft, 5, 5, 5, 5)),
+fMonitor(dialog.GetMonitor()),
+fWidth(dialog.GetWidth()),
+fHeight(dialog.GetHeight()),
+fOptions(dialog.GetOptions()),
+fVersion(dialog.GetVersion()),
+fClient(dialog.GetClient()),
+fMain(dialog.GetMainFrame())
+{
+  // copy constructor (actually none forseen for this class)
+  fFrameMain->Connect("CloseWindow()", "AliTPCMonitorDialog", this, "DoClose()");
+  fFrameMain->DontCallClose(); 
+  fFrameMain->SetCleanup(kDeepCleanup);
+  fOkButton->Connect("Clicked()", "AliTPCMonitorDialog", this, "DoOK()");
+  fFrameHor->AddFrame(fOkButton, fLayout1);
+  fFrameHor->Resize(150, fOkButton->GetDefaultHeight());
+  fFrameMain->AddFrame(    fFrameHor, fLayout2);
+  fTab->Connect("Selected(Int_t)", "AliTPCMonitorDialog", this, "DoTab(Int_t)");
+  CreateDialogVersion(dialog.GetVersion());
+ 
+}
 
-// //_____________________________________________________________________________
-// AliTPCMonitorDialog &AliTPCMonitorDialog::operator =(const AliTPCMonitorDialog& dialog)
-// {
-//   // assignement operator
-//   AliWarning("No assignment forseen for this class");
-//   return *this;
-// }
+ //_____________________________________________________________________________
+AliTPCMonitorDialog &AliTPCMonitorDialog::operator =(const AliTPCMonitorDialog& dialog) 
+{
+  // assignement operator (actually none forseen for this class)
+  if(this!=&dialog)
+    {
+      fFrameMain  = new TGTransientFrame(dialog.GetClient(), dialog.GetMainFrame(), dialog.GetWidth(), dialog.GetHeight());
+      fFrameComp  = 0;
+      fFrameHor   = new TGHorizontalFrame(fFrameMain, 60, 20, kFixedWidth);
+      fFrameGroup = 0;
+      fOkButton   =  new TGTextButton(fFrameHor, "&Ok", 1);
+      fListBox    = 0;
+      fTab        = new TGTab(fFrameMain, 300, 300);
+      fLayout1    = new TGLayoutHints(kLHintsTop    | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
+      fLayout2    = new TGLayoutHints(kLHintsBottom | kLHintsRight                , 2, 2, 5, 1);
+      fLayout3    = new TGLayoutHints(kLHintsTop    | kLHintsLeft, 5, 5, 5, 5);
+      fMonitor    = dialog.GetMonitor();
+      fWidth      = dialog.GetWidth();
+      fHeight     = dialog.GetHeight();
+      fOptions    = dialog.GetOptions();
+      fClient     = dialog.GetClient();
+      fVersion    = dialog.GetVersion();
+      fMain       = dialog.GetMainFrame();    
+      fFrameMain->Connect("CloseWindow()", "AliTPCMonitorDialog", this, "DoClose()");
+      fFrameMain->DontCallClose(); 
+      fFrameMain->SetCleanup(kDeepCleanup);
+      fOkButton->Connect("Clicked()", "AliTPCMonitorDialog", this, "DoOK()");
+      fFrameHor->AddFrame(fOkButton, fLayout1);
+      fFrameHor->Resize(150, fOkButton->GetDefaultHeight());
+      fFrameMain->AddFrame(    fFrameHor, fLayout2);
+      fTab->Connect("Selected(Int_t)", "AliTPCMonitorDialog", this, "DoTab(Int_t)");
+      CreateDialogVersion(dialog.GetVersion());
+    }
+   return *this;
+ }
 
 
 
@@ -254,7 +314,7 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
     case 2: 
       {
 	// Select FEE Component 
-	Int_t comp_sel=1;
+	Int_t compsel=1;
 	Int_t fComponents[10];
 	for(Int_t j = 0; j < 6; j++) 
 	  {
@@ -269,11 +329,11 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
 	       j==4 && (fComponents[j] < -1 || fComponents[j]>6   ) ||
 	       j==5 && (fComponents[j] < -1 || fComponents[j]>8   )    )
 	      {
-		comp_sel =0;
+		compsel =0;
 		AliError("Settings out of range ( version 2) "); 
 	      }
 	  }
-	if(comp_sel==1) 
+	if(compsel==1) 
 	  {
 	    if(fMonitor!=0 && fMonitor->GetEventProcessed() )fMonitor->ShowSel((Int_t*)fComponents);
 	    else                                             AliError("No event processed up to now");
@@ -292,16 +352,16 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
 	Int_t error = 1;
 	
 	if(s1.find(",")!=string::npos){
-	  string sub1_1 = s1.substr(0,s1.find(","))               ;fConfigArr[0] = atoi(sub1_1.data());
-	  string sub1_2 = s1.substr(s1.find(",")+1,s1.length() )  ;fConfigArr[1] = atoi(sub1_2.data());
+	  string sub11 = s1.substr(0,s1.find(","))               ;fConfigArr[0] = atoi(sub11.data());
+	  string sub12 = s1.substr(s1.find(",")+1,s1.length() )  ;fConfigArr[1] = atoi(sub12.data());
 	  if(fConfigArr[0]<fConfigArr[1] && fConfigArr[1]<1024){
 	    fMonitor->SetRangeBase(fConfigArr[0],fConfigArr[1]);
 	    error=0;
 	  }
 	}
 	if(s2.find(",")!=string::npos){
-	  string sub2_1 = s2.substr(0,s2.find(","))               ;fConfigArr[2] = atoi(sub2_1.data());
-	  string sub2_2 = s2.substr(s2.find(",")+1,s2.length() )  ;fConfigArr[3] = atoi(sub2_2.data());
+	  string sub21 = s2.substr(0,s2.find(","))               ;fConfigArr[2] = atoi(sub21.data());
+	  string sub22 = s2.substr(s2.find(",")+1,s2.length() )  ;fConfigArr[3] = atoi(sub22.data());
 	  if(fConfigArr[2]<fConfigArr[3] && fConfigArr[3]<1024){
 	    fMonitor->SetRangeMax(fConfigArr[2],fConfigArr[3]);
 	    error=0;
@@ -309,8 +369,8 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
 	}
 
 	if(s3.find(",")!=string::npos){
-	  string sub3_1 = s3.substr(0,s3.find(","))               ;fConfigArr[4] = atoi(sub3_1.data());
-	  string sub3_2 = s3.substr(s3.find(",")+1,s3.length() )  ;fConfigArr[5] = atoi(sub3_2.data());
+	  string sub31 = s3.substr(0,s3.find(","))               ;fConfigArr[4] = atoi(sub31.data());
+	  string sub32 = s3.substr(s3.find(",")+1,s3.length() )  ;fConfigArr[5] = atoi(sub32.data());
 	  if(fConfigArr[4]<fConfigArr[5] && fConfigArr[5]<1024){
 	    fMonitor->SetRangeSum(fConfigArr[4],fConfigArr[5]);
 	    error=0;
@@ -325,24 +385,24 @@ void AliTPCMonitorDialog::HandleButtons(Int_t id)
 }
 
 //_____________________________________________________________________________________________
-void AliTPCMonitorDialog::DoTab(Int_t id)
+void AliTPCMonitorDialog::DoTab(Int_t id) 
 {
   printf("Tab item %d activated\n", id);
 }
 
 //_____________________________________________________________________________________________
-void AliTPCMonitorDialog::DoClose()
+void AliTPCMonitorDialog::DoClose() const
 {
   // Close the dialog window
   printf("\nTerminating dialog: via window manager\n");
-  CloseWindow();
+  CloseWindow(); 
   // Close the Ged editor if it was activated.
   if (TVirtualPadEditor::GetPadEditor(kFALSE) != 0)
     TVirtualPadEditor::Terminate();
 }
 
 //_____________________________________________________________________________________________
-void AliTPCMonitorDialog::CloseWindow()
+void AliTPCMonitorDialog::CloseWindow() const
 {
   // Called when window is closed via the window manager.
   delete this;

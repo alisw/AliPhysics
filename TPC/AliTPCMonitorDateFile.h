@@ -8,15 +8,15 @@
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorDateFile class
-// 
-// Class for handling the data structure in a DATE file
-// 
-// Authors: Roland Bramm
-//          Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitorDateFile class
+//// 
+//// Class for handling the data structure in a DATE file
+//// 
+//// Authors: Roland Bramm
+////          Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -26,7 +26,7 @@
 using namespace std;
 
 class AliTPCMonitorDateFile : public TNamed {
-	public:
+	public: 
 	AliTPCMonitorDateFile();
 	AliTPCMonitorDateFile(const  AliTPCMonitorDateFile &datefile);
 	AliTPCMonitorDateFile& operator= (const AliTPCMonitorDateFile& datefile);
@@ -35,13 +35,13 @@ class AliTPCMonitorDateFile : public TNamed {
 	void    AllocateArray(int size);
 	void    CloseDateFile();
 	
-	Int_t   GetAllocatedSizeofArray();
-	Int_t   GetFileSize(); 
-	Int_t   GetFilePosition();
+	Int_t   GetAllocatedSizeofArray() const;
+	Int_t   GetFileSize() const; 
+	Int_t   GetFilePosition() const;
 	Char_t* GetMemoryPointer();
 	
-	Bool_t  IsLastEvent();
-	Bool_t  IsEventValid();
+	Bool_t  IsLastEvent() const;
+	Bool_t  IsEventValid() const;
 	
 	Bool_t  IsDateFileOpen();
 	void    OpenDateFile(string name);

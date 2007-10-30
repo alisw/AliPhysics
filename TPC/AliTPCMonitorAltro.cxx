@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/10/12 13:36:27  cvetan
+Coding convention fixes from Stefan
+
 Revision 1.1  2007/09/17 10:23:31  cvetan
 New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
@@ -39,7 +42,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "AliTPCMonitorAltro.h"
 #include "AliLog.h" 
 #include <Riostream.h>
-
+using namespace std;
 ClassImp(AliTPCMonitorAltro)  
 
 //_____________________________________________________________________________________________
@@ -149,7 +152,7 @@ void AliTPCMonitorAltro::Allocate10BitArray()
   // Create array for 10 bit decoded data
   fallocate10BitArray = true;
   f10BitArray = new Short_t[Get10BitArraySize()];
-}
+} 
 
 //_____________________________________________________________________________________________
 long long *AliTPCMonitorAltro::Get40BitArray() 
@@ -165,19 +168,19 @@ Short_t *AliTPCMonitorAltro::Get10BitArray()
   return f10BitArray;
 }
 
-//_____________________________________________________________________________________________
-Int_t AliTPCMonitorAltro::Get40BitArraySize() 
-{
-  // Return number of 40 bit words in payload 
-  return fmemory[fsize-1];
-}
+// //_____________________________________________________________________________________________
+// Int_t AliTPCMonitorAltro::Get40BitArraySize() 
+// {
+//   // Return number of 40 bit words in payload 
+//   return fmemory[fsize-1];
+// }
 
-//_____________________________________________________________________________________________
-Int_t AliTPCMonitorAltro::Get10BitArraySize() 
-{ 
-  // Return number of 10 bit words in payload 
-  return fmemory[fsize-1]*4;
-}
+// //_____________________________________________________________________________________________
+// Int_t AliTPCMonitorAltro::Get10BitArraySize() 
+// { 
+//   // Return number of 10 bit words in payload 
+//   return fmemory[fsize-1]*4;
+// }
 
 //_____________________________________________________________________________________________
 void AliTPCMonitorAltro::Decodeto40Bit() 

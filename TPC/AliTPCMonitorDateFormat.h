@@ -8,14 +8,14 @@
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorDateFormat class
-//
-// Class for decoding raw data headers in DATE format
-// 
-// Authors: Roland Bramm, 
-//          Stefan Kniege, IKF, Frankfurt
-//       
+////
+//// AliTPCMonitorDateFormat class
+////
+//// Class for decoding raw data headers in DATE format
+//// 
+//// Authors: Roland Bramm, 
+////          Stefan Kniege, IKF, Frankfurt
+////       
 /////////////////////////////////////////////////////////////////////////
 
 struct eventHeaderStruct;
@@ -29,68 +29,68 @@ class AliTPCMonitorDateFormat : public TNamed {
  public:
     AliTPCMonitorDateFormat(Char_t* data);
     AliTPCMonitorDateFormat(const  AliTPCMonitorDateFormat &dateformat);
-    AliTPCMonitorDateFormat& operator= (const AliTPCMonitorDateFormat& dateformat);
-    ~AliTPCMonitorDateFormat();
+    AliTPCMonitorDateFormat& operator= (const AliTPCMonitorDateFormat& dateformat); 
+    ~AliTPCMonitorDateFormat(); 
 
     //Super Event Header
-    Int_t   GetEventSize();
-    Int_t   GetEventHeaderSize();
-    Int_t   GetEventHeaderBaseSize();
-    Int_t   GetEventID();
-    Int_t   GetEventLDC();
-    Int_t   GetEventGDC();
+    Int_t   GetEventSize() const;
+    Int_t   GetEventHeaderSize() const;
+    Int_t   GetEventHeaderBaseSize() const; 
+    Int_t   GetEventID() const;
+    Int_t   GetEventLDC() const;
+    Int_t   GetEventGDC() const;
 
-    Int_t   GetEventRunID();
-    Int_t   GetEventVersion();
-    Int_t   GetEventVersionMajor();
-    Int_t   GetEventVersionMinor();
-    Bool_t  IsEventSuperEvent();
-    Bool_t  IsEventStartOfRun();
-    Bool_t  IsEventEndOfRun();
-    Bool_t  IsEventPhysicsEvent();
-    Bool_t  IsEventSwapped();
-    Bool_t  IsEventWrongEndian();
+    Int_t   GetEventRunID() const;
+    Int_t   GetEventVersion() const;
+    Int_t   GetEventVersionMajor() const;
+    Int_t   GetEventVersionMinor() const;
+    Bool_t  IsEventSuperEvent() const;
+    Bool_t  IsEventStartOfRun() const;
+    Bool_t  IsEventEndOfRun() const;
+    Bool_t  IsEventPhysicsEvent() const;
+    Bool_t  IsEventSwapped() const;
+    Bool_t  IsEventWrongEndian() const;
  
     //Sub Event Header
     void    GotoSubEventHeader();
     void    GotoNextSubEventHeader();
-    Bool_t  IsLastSubEventHeader();
+    Bool_t  IsLastSubEventHeader() const;
 
-    Int_t   GetSubEventSize();
-    Int_t   GetSubEventHeaderSize();
-    Int_t   GetSubEventLDC();
-    Int_t   GetSubEventGDC();
+    Int_t   GetSubEventSize() const;
+    Int_t   GetSubEventHeaderSize() const;
+    Int_t   GetSubEventLDC() const;
+    Int_t   GetSubEventGDC() const;
 
     Bool_t  IsSubEventSuperEvent();
-    Bool_t  IsSubEventStartOfRun();
-    Bool_t  IsSubEventEndOfRun();
-    Bool_t  IsSubEventPhysicsEvent();
+    Bool_t  IsSubEventStartOfRun() const;
+    Bool_t  IsSubEventEndOfRun() const;
+    Bool_t  IsSubEventPhysicsEvent() const;
 
     //Eqipments
     void    GotoFirstEquipment();
     void    GotoNextEquipment();
-    Bool_t  IsLastEquipment();
+    Bool_t  IsLastEquipment() const;
 
-    Int_t   GetEquipmentSize();
-    Int_t   GetEquipmentType();
-    Int_t   GetEquipmentID();
+    Int_t   GetEquipmentSize() const;
+    Int_t   GetEquipmentType() const;
+    Int_t   GetEquipmentID() const; 
     Int_t*  GetEquipmentTypeAttribute();
-    Int_t   GetEquipmentBasicSize();
-    Int_t   GetEquipmentHeaderSize();
-    Int_t   GetPayloadSize();
+    Int_t   GetEquipmentBasicSize()  const;
+    Int_t   GetEquipmentHeaderSize() const; 
+    Int_t   GetPayloadSize() const;
 
     //DATA
     Char_t* GetFirstDataPointer();
-    Int_t   GetPosition();
-    Int_t   GetPositionSubEvent();
+    Int_t   GetPosition() const;
+    Int_t   GetPositionSubEvent() const;
     
  private:
     Char_t*                fdataPtr;       // pointer to data array (start, will not be changed in event) 
     Char_t*                fsubEventPtr;   // pointer to SubEvent
     Char_t*                fcurrentPtr;    // pointer to current data position (header or data)
-    eventHeaderStruct*     event;          // event and
-    eventHeaderStruct*     subEvent;       // subevent structure
-    equipmentHeaderStruct* equipment;      // equipmemnt structure
+    eventHeaderStruct*     fevent;         // event and
+    eventHeaderStruct*     fsubEvent;      // subevent structure
+    equipmentHeaderStruct* fequipment;     // equipmemnt structure
   
     ClassDef(AliTPCMonitorDateFormat,1);
 };

@@ -6,15 +6,18 @@
 
 /* $Id$ */
 
-////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorConfig class
-//
-// Configuration handler class for AliTPCMonitor
-// 
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+//////////////////////////////////////////////////////////////////////////
+////
+//// AliTPCMonitorConfig class
+////
+//// Configuration handler class for AliTPCMonitor.
+//// The class reads and stores basic configurations
+//// for the AliTPCMonitor class. The values can be changed
+//// online or written to the configuration file  AliTPCMonitorConfig.txt 
+//// 
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h" 

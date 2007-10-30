@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.3  2007/10/12 13:36:27  cvetan
+Coding convention fixes from Stefan
+
 Revision 1.2  2007/09/18 09:44:45  cvetan
 Sorting out some issues concerning the compilation with and without DATE support
 
@@ -24,24 +27,24 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 */   
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitor class
-// 
-// Main class for TPC Monitor
-// Monitor can handle rootified data, files and online streams in DATE format.
-// The monitor GUI is started by the macro TPCMonitor.C
-// 
-// In the The data are read in in two read cycles. 
-// If no sector is specified (sectorid==-1) all sectors are read and only the max value 
-// for each channel is stored in a global histogram for Side A and C.
-// In this way the whole TPC can be read in at once.
-//
-// If the sector is specified  only one sector is read in and additional quantities
-// e.g baseline and baseline rms are calculated and stored. 
-// 
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitor class
+//// 
+//// Main class for TPC Monitor
+//// Monitor can handle rootified data, files and online streams in DATE format.
+//// The monitor GUI is started by the macro TPCMonitor.C
+//// 
+//// In the The data are read in in two read cycles. 
+//// If no sector is specified (sectorid==-1) all sectors are read and only the max value 
+//// for each channel is stored in a global histogram for Side A and C.
+//// In this way the whole TPC can be read in at once.
+////
+//// If the sector is specified  only one sector is read in and additional quantities
+//// e.g baseline and baseline rms are calculated and stored. 
+//// 
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
  
@@ -1829,10 +1832,10 @@ void AliTPCMonitor::ExecRow()
   Float_t  rowtimezmin = 0;
   Float_t  rowtimezmax = 0;
   
-  Int_t    prof_rowxmin = 0;
-  Int_t    prof_rowxmax = 0;
-  Double_t prof_rowymin = 0;
-  Double_t prof_rowymax = 0;
+  Int_t    profrowxmin = 0;
+  Int_t    profrowxmax = 0;
+  Double_t profrowymin = 0;
+  Double_t profrowymax = 0;
 
   Int_t    profxxmin   = 0;
   Int_t    profxxmax   = 0;
@@ -1870,10 +1873,10 @@ void AliTPCMonitor::ExecRow()
       rowtimezmin  = ((TH2F*)gROOT->Get(rowhist))->GetMinimum();
       rowtimezmax  = ((TH2F*)gROOT->Get(rowhist))->GetMaximum();
       
-      prof_rowxmin  = ((TH1F*)gROOT->Get(rowhistmax))->GetXaxis()->GetFirst();
-      prof_rowxmax  = ((TH1F*)gROOT->Get(rowhistmax))->GetXaxis()->GetLast();
-      prof_rowymin  = ((TH1F*)gROOT->Get(rowhistmax))->GetMinimum();
-      prof_rowymax  = ((TH1F*)gROOT->Get(rowhistmax))->GetMaximum();
+      profrowxmin  = ((TH1F*)gROOT->Get(rowhistmax))->GetXaxis()->GetFirst();
+      profrowxmax  = ((TH1F*)gROOT->Get(rowhistmax))->GetXaxis()->GetLast();
+      profrowymin  = ((TH1F*)gROOT->Get(rowhistmax))->GetMinimum();
+      profrowymax  = ((TH1F*)gROOT->Get(rowhistmax))->GetMaximum();
 
       profxxmin    = ((TH1F*)gROOT->Get(rowhistxmax))->GetXaxis()->GetFirst();
       profxxmax    = ((TH1F*)gROOT->Get(rowhistxmax))->GetXaxis()->GetLast();
@@ -1996,9 +1999,9 @@ void AliTPCMonitor::ExecRow()
   // max and sum /////////////////////////
   crowmax->cd();
   if(setrange) {
-    hrowmax->GetXaxis()->SetRange(prof_rowxmin,prof_rowxmax);
-    hrowmax->SetMinimum(prof_rowymin);
-    hrowmax->SetMaximum(prof_rowymax);
+    hrowmax->GetXaxis()->SetRange(profrowxmin,profrowxmax);
+    hrowmax->SetMinimum(profrowymin);
+    hrowmax->SetMaximum(profrowymax);
   }
   hrowmax->SetTitleSize(0.04);
   hrowmax->SetTitle(title);
@@ -2167,7 +2170,7 @@ void AliTPCMonitor::ShowSel(Int_t* compval)
   
   Int_t   connector   =  0;
   Int_t   fecnr       =  0;
-  Int_t   altrochip       =  0;
+  Int_t   altrochip   =  0;
   Int_t   feclocbran  =  0;
   Int_t   branch      =  0;
   Short_t rcuget      =  0;
@@ -2388,7 +2391,7 @@ Int_t AliTPCMonitor::ExecProcess()
 }
 
 //__________________________________________________________________
-Int_t AliTPCMonitor::GetRCUPatch(Int_t runid, Int_t eqid)
+Int_t AliTPCMonitor::GetRCUPatch(Int_t runid, Int_t eqid) const
 {
   
   // Return RCU patch index for given equipment id eqid 

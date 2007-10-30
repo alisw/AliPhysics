@@ -15,28 +15,31 @@
 
 /*
   $Log$
+  Revision 1.2  2007/10/12 13:36:27  cvetan
+  Coding convention fixes from Stefan
+
   Revision 1.1  2007/09/17 10:23:31  cvetan
   New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
 */ 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorMappingHandler class
-//
-// Class for handling mapping information TPC  
-//  
-// The mapping information for the TPC front end electornics (pads, front end cards) 
-// are handled by this class.
-// The information from the design mapping and from the hardware address can be 
-// cross checked in the TPCMonitor.C. 
-// Malfunctioning front end cards can be identified by looking at single channels 
-// displayed with  the TPCMonitor.  
-//   
-// 
-// Authors: Roland Bramm, 
-//          Stefan Kniege, IKF, Frankfurt
-//       
+////
+//// AliTPCMonitorMappingHandler class
+////
+//// Class for handling mapping information TPC  
+////  
+//// The mapping information for the TPC front end electornics (pads, front end cards) 
+//// are handled by this class.
+//// The information from the design mapping and from the hardware address can be 
+//// cross checked in the TPCMonitor.C. 
+//// Malfunctioning front end cards can be identified by looking at single channels 
+//// displayed with  the TPCMonitor.  
+////   
+//// 
+//// Authors: Roland Bramm, 
+////          Stefan Kniege, IKF, Frankfurt
+////       
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -350,7 +353,7 @@ void AliTPCMonitorMappingHandler::ReadfecHwMap(Int_t sector)
   Int_t  fsector        = 0;
   Int_t  fec            = 0;
   Int_t  branch         = 0;
-  Int_t  rcu_patch      = 0;
+  Int_t  rcupatch      = 0;
   Int_t  altrchann      = 0;
   Int_t  altrchip       = 0;
   Int_t  nextHwAddress  = 0;
@@ -369,14 +372,14 @@ void AliTPCMonitorMappingHandler::ReadfecHwMap(Int_t sector)
 	  nfecs++;
 	  fec            = U2fGetFECinBranch(ind);
 	  branch         = U2fGetBranch(ind);
-	  rcu_patch      = U2fGetRCU(ind);
+	  rcupatch      = U2fGetRCU(ind);
 	  	  
 	  for(Int_t ch = 0; ch<128; ch++)
 	    {
 	      altrchann      = ch%16;
 	      altrchip       = ch/16;
 	      
-	      nextHwAddress  = (   ((branch&1)<<11) + (fec<<7) + (altrchip<<4) + (altrchann)  + ((rcu_patch-1)<<12) ); 
+	      nextHwAddress  = (   ((branch&1)<<11) + (fec<<7) + (altrchip<<4) + (altrchann)  + ((rcupatch-1)<<12) ); 
 	      
 	      fMapHwFECglobal[nextHwAddress][0] = ind;
 	      fMapHwFECglobal[nextHwAddress][1] = ch ;
@@ -438,14 +441,14 @@ void  AliTPCMonitorMappingHandler::ReadRowMappingGlob(char* fpathtoMappingRowfil
 
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetNumOfChannels()
+Int_t AliTPCMonitorMappingHandler::GetNumOfChannels() const
 {
   // Return number of channels
   return fnumofChannels;
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetSizeofArray()
+Int_t AliTPCMonitorMappingHandler::GetSizeofArray() const
 {
   // Return sise of global mapping fmapping array.
   // Value orresponds to max value of hardware addresses
@@ -454,7 +457,7 @@ Int_t AliTPCMonitorMappingHandler::GetSizeofArray()
 
 
 //_____________________________________________________________________________________________
-Short_t* AliTPCMonitorMappingHandler::GetLine(Int_t hwaddr)
+Short_t* AliTPCMonitorMappingHandler::GetLine(Int_t hwaddr)const
 {
   // Return pointer to mapping array for the hardware address hwaddr 
   Short_t* retval;
@@ -466,7 +469,7 @@ Short_t* AliTPCMonitorMappingHandler::GetLine(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetIndex(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetIndex(Int_t hwaddr) const
 {
   // Return readout index for the hardware address hwaddr
   Int_t retval;
@@ -478,7 +481,7 @@ Int_t AliTPCMonitorMappingHandler::GetIndex(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetPadRow(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetPadRow(Int_t hwaddr) const
 {
   // Return global pad row  for the hardware address hwaddr 
   Int_t retval;
@@ -490,7 +493,7 @@ Int_t AliTPCMonitorMappingHandler::GetPadRow(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetPad(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetPad(Int_t hwaddr) const
 {
   // Return pad number in row for the hardware address hwaddr 
   Int_t retval;
@@ -502,7 +505,7 @@ Int_t AliTPCMonitorMappingHandler::GetPad(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetConnector(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetConnector(Int_t hwaddr) const
 {
   // Return connector for the hardware address hwaddr 
   Int_t retval;
@@ -514,7 +517,7 @@ Int_t AliTPCMonitorMappingHandler::GetConnector(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetPin(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetPin(Int_t hwaddr) const
 {
   // Return pin for the hardware address hwaddr 
   Int_t retval;
@@ -526,7 +529,7 @@ Int_t AliTPCMonitorMappingHandler::GetPin(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetFEC(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetFEC(Int_t hwaddr) const
 {
   // Return fec number in IROC/OROC  for the hardware address hwaddr 
   Int_t retval;
@@ -538,7 +541,7 @@ Int_t AliTPCMonitorMappingHandler::GetFEC(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetFECchannel(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetFECchannel(Int_t hwaddr) const
 {
   // Return FEC channel for the hardware address hwaddr 
   Int_t retval;
@@ -550,7 +553,7 @@ Int_t AliTPCMonitorMappingHandler::GetFECchannel(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetFECconnector(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetFECconnector(Int_t hwaddr) const
 {
   // Return FEC connector for the hardware address hwaddr 
   Int_t retval;
@@ -562,7 +565,7 @@ Int_t AliTPCMonitorMappingHandler::GetFECconnector(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetAltroChannel(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetAltroChannel(Int_t hwaddr)  const
 {
   // Return Altro channel for the hardware address hwaddr 
   Int_t retval;
@@ -574,7 +577,7 @@ Int_t AliTPCMonitorMappingHandler::GetAltroChannel(Int_t hwaddr)
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetAltro(Int_t hwaddr) 
+Int_t AliTPCMonitorMappingHandler::GetAltro(Int_t hwaddr)  const
 {
   // Return Altro chip number in FEC for the hardware address hwaddr 
   Int_t retval;
@@ -587,7 +590,7 @@ Int_t AliTPCMonitorMappingHandler::GetAltro(Int_t hwaddr)
 
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::GetNumofPads(Int_t row)
+Int_t AliTPCMonitorMappingHandler::GetNumofPads(Int_t row) 
 {
   // Return number of pads in row
   if(row<159)
@@ -613,49 +616,49 @@ Int_t AliTPCMonitorMappingHandler::GetPadAddInRow(Int_t row,Int_t pad )
 
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetFECnr(Int_t index)
+Int_t AliTPCMonitorMappingHandler::U2fGetFECnr(Int_t index) const
 {
   // Return FEC number for index  (FEC number should be equal to index)
   return  fu2ftestmapping[index][0];
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetSide(Int_t fecnr)
+Int_t AliTPCMonitorMappingHandler::U2fGetSide(Int_t fecnr) const
 {
   // Return side on which FEC is installed
   return  fu2ftestmapping[fecnr][1];
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetSector(Int_t fecnr)
+Int_t AliTPCMonitorMappingHandler::U2fGetSector(Int_t fecnr) const
 {
   // Return sector in which FEC is installed
   return  fu2ftestmapping[fecnr][2];
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetRCU(Int_t fecnr)
+Int_t AliTPCMonitorMappingHandler::U2fGetRCU(Int_t fecnr) const
 {
   // Rerurn rcu patch in which FEC is installed
   return  fu2ftestmapping[fecnr][3];
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetFECinRCU(Int_t fecnr)
+Int_t AliTPCMonitorMappingHandler::U2fGetFECinRCU(Int_t fecnr) const
 {
   // Return index of FEC in RCU (0-25)
   return  fu2ftestmapping[fecnr][4];
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetFECinBranch(Int_t fecnr)
+Int_t AliTPCMonitorMappingHandler::U2fGetFECinBranch(Int_t fecnr) const
 {
   // Return index of FEC in branch (0-12)
   return  fu2ftestmapping[fecnr][5];
 }
 
 //_____________________________________________________________________________________________
-Int_t AliTPCMonitorMappingHandler::U2fGetBranch(Int_t fecnr)
+Int_t AliTPCMonitorMappingHandler::U2fGetBranch(Int_t fecnr) const
 {
   // Return branch in which FEC is installed (0,1)
   return  fu2ftestmapping[fecnr][6];

@@ -15,22 +15,25 @@
 
 /*
 $Log$
+Revision 1.2  2007/10/12 13:36:27  cvetan
+Coding convention fixes from Stefan
+
 Revision 1.1  2007/09/17 10:23:31  cvetan
 New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
 */ 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorDateFile class
-// 
-// Class for handling the data structure in a DATE file
-// Used to read DATE files for the TPC raw data Monitor 
-//
-// Author: Roland Bramm
-//         Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitorDateFile class
+//// 
+//// Class for handling the data structure in a DATE file
+//// Used to read DATE files for the TPC raw data Monitor 
+////
+//// Author: Roland Bramm
+////         Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -149,7 +152,7 @@ void AliTPCMonitorDateFile::SetFileSize()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFile::GetFileSize() 
+Int_t AliTPCMonitorDateFile::GetFileSize() const
 {
   // Return size of DATE file
   return ffileSize;
@@ -172,14 +175,14 @@ void AliTPCMonitorDateFile::ReadEvent()
 	  
 	  fin->read((Char_t*)fmem,sfmem);
 		fin->seekg(ffilePos);
-		AliTPCMonitorDateFormat *DateForm;
-		DateForm = new AliTPCMonitorDateFormat((Char_t *)&fmem);
+		AliTPCMonitorDateFormat *dateform;
+		dateform = new AliTPCMonitorDateFormat((Char_t *)&fmem);
 		
 
 	  
-		toSwapEndian = DateForm->IsEventWrongEndian();
+		toSwapEndian = dateform->IsEventWrongEndian();
 		if(toSwapEndian == true){
-			delete DateForm;
+			delete dateform;
 			for(Int_t i = 0; i < 68; i++) {
 				swapcarry[0] = fmem[(i*4)+0];
 				swapcarry[1] = fmem[(i*4)+1];
@@ -190,9 +193,9 @@ void AliTPCMonitorDateFile::ReadEvent()
 				fmem[(i*4)+2] = swapcarry[1];
 				fmem[(i*4)+3] = swapcarry[0];
 			}
-			DateForm = new AliTPCMonitorDateFormat((Char_t *)&fmem);
+			dateform = new AliTPCMonitorDateFormat((Char_t *)&fmem);
 		}
-		size = DateForm->GetEventSize();
+		size = dateform->GetEventSize();
 		if(size > GetAllocatedSizeofArray()) {
 		  AllocateArray((Int_t)(size*1.1));
 		}
@@ -214,14 +217,14 @@ void AliTPCMonitorDateFile::ReadEvent()
 		}else{
 		  freadPosOverflow = true;
 		}
-		delete DateForm;
+		delete dateform;
 	}else{
 	  freadPosOverflow = true;
 	}
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFile::IsLastEvent() 
+Bool_t AliTPCMonitorDateFile::IsLastEvent() const
 {
   // Check if event is last event in file
   Bool_t retval;
@@ -233,7 +236,7 @@ Bool_t AliTPCMonitorDateFile::IsLastEvent()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFile::IsEventValid()
+Bool_t AliTPCMonitorDateFile::IsEventValid() const
 {
   // Check Over flow flag 
   Bool_t retval;
@@ -245,14 +248,14 @@ Bool_t AliTPCMonitorDateFile::IsEventValid()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFile::GetFilePosition() 
+Int_t AliTPCMonitorDateFile::GetFilePosition() const
 {
   // Return current position in file
   return ffilePos;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFile::GetAllocatedSizeofArray() 
+Int_t AliTPCMonitorDateFile::GetAllocatedSizeofArray() const
 {
   // Return size of allocated data array
   return fbigMemsize;

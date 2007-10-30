@@ -13,8 +13,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
+/* 
 $Log$
+Revision 1.3  2007/10/12 13:36:27  cvetan
+Coding convention fixes from Stefan
+
 Revision 1.2  2007/09/17 16:34:54  cvetan
 The package was overwriting the rootcint flags. This was fixed by applying the necessary changes in the DATE-dependent parts of the code
 
@@ -25,15 +28,16 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorDateFormat class
-//
-// Class for decoding raw data headers in DATE format
-// Reads event and subevent header informations form DATE files
-// 
-// Authors: Roland Bramm, 
-//          Stefan Kniege, IKF, Frankfurt
-//       
+////
+//// AliTPCMonitorDateFormat class
+////
+//// Class for decoding raw data headers in DATE format
+////
+//// Reads event and subevent header informations form DATE files
+//// 
+//// Authors: Roland Bramm, 
+////          Stefan Kniege, IKF, Frankfurt
+////       
 /////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCMonitorDateFormat.h"
@@ -45,9 +49,9 @@ AliTPCMonitorDateFormat::AliTPCMonitorDateFormat(Char_t* data):
   fdataPtr(data),
   fsubEventPtr(data),
   fcurrentPtr(data),
-  event((struct eventHeaderStruct*) fdataPtr),
-  subEvent(0),
-  equipment(0)
+  fevent((struct eventHeaderStruct*) fdataPtr),
+  fsubEvent(0),
+  fequipment(0)
 {
   // Constructor
 }
@@ -59,9 +63,9 @@ AliTPCMonitorDateFormat::AliTPCMonitorDateFormat(const AliTPCMonitorDateFormat &
   fdataPtr(dateformat.fdataPtr),
   fsubEventPtr(dateformat.fsubEventPtr),
   fcurrentPtr(dateformat.fcurrentPtr),
-  event((struct eventHeaderStruct*)dateformat.fdataPtr),
-  subEvent(dateformat.subEvent),
-  equipment(dateformat.equipment)
+  fevent((struct eventHeaderStruct*)dateformat.fdataPtr),
+  fsubEvent(dateformat.fsubEvent),
+  fequipment(dateformat.fequipment)
 {
   // copy constructor
 }
@@ -76,9 +80,9 @@ AliTPCMonitorDateFormat &AliTPCMonitorDateFormat:: operator= (const AliTPCMonito
       fdataPtr=dateformat.fdataPtr;
       fsubEventPtr=dateformat.fsubEventPtr;
       fcurrentPtr=dateformat.fcurrentPtr;
-      event=dateformat.event;
-      subEvent=dateformat.subEvent;
-      equipment=dateformat.equipment;
+      fevent=dateformat.fevent;
+      fsubEvent=dateformat.fsubEvent;
+      fequipment=dateformat.fequipment;
     }
   return *this;
 }
@@ -90,81 +94,81 @@ AliTPCMonitorDateFormat::~AliTPCMonitorDateFormat()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventSize()
+Int_t AliTPCMonitorDateFormat::GetEventSize()const
 {
   // Return event size
-  return (Int_t)event->eventSize;
+  return (Int_t)fevent->eventSize;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventHeaderSize()
+Int_t AliTPCMonitorDateFormat::GetEventHeaderSize()const
 {
   // Return event header size
-  return (Int_t)event->eventHeadSize;
+  return (Int_t)fevent->eventHeadSize;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventHeaderBaseSize()
+Int_t AliTPCMonitorDateFormat::GetEventHeaderBaseSize()const
 {
   // Return event header base size
 	return (Int_t)EVENT_HEAD_BASE_SIZE;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventID()
+Int_t AliTPCMonitorDateFormat::GetEventID()const
 {
   // Return event ID
-  return (Int_t)EVENT_ID_GET_NB_IN_RUN(event->eventId);
+  return (Int_t)EVENT_ID_GET_NB_IN_RUN(fevent->eventId);
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventLDC()
+Int_t AliTPCMonitorDateFormat::GetEventLDC()const
 {
   // Return event LDC
-  return (Int_t)event->eventLdcId;
+  return (Int_t)fevent->eventLdcId;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventGDC()
+Int_t AliTPCMonitorDateFormat::GetEventGDC()const
 {
   // return event GDC
-  return (Int_t)event->eventGdcId;
+  return (Int_t)fevent->eventGdcId;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventRunID()
+Int_t AliTPCMonitorDateFormat::GetEventRunID()const
 {
   // Return run ID
-  return (Int_t)event->eventRunNb;
+  return (Int_t)fevent->eventRunNb;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventVersion()
+Int_t AliTPCMonitorDateFormat::GetEventVersion()const
 {
   // Return event version
-  return (Int_t)event->eventVersion;
+  return (Int_t)fevent->eventVersion; 
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventVersionMajor()
+Int_t AliTPCMonitorDateFormat::GetEventVersionMajor()const
 {
   // retrun event version (16-32 bit)
   return (Int_t)(GetEventVersion()>>16);
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEventVersionMinor()
+Int_t AliTPCMonitorDateFormat::GetEventVersionMinor()const
 {
   // return event version (0-15 bit)
   return (Int_t)(GetEventVersion()&0x0000ffff);
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsEventSuperEvent()
+Bool_t AliTPCMonitorDateFormat::IsEventSuperEvent()const
 {
   // Check if event ist super event
   Bool_t retval;
-  if(TEST_SYSTEM_ATTRIBUTE( event->eventTypeAttribute, ATTR_SUPER_EVENT ) == 1)
+  if(TEST_SYSTEM_ATTRIBUTE( fevent->eventTypeAttribute, ATTR_SUPER_EVENT ) == 1)
     retval = true;
   else
     retval = false;
@@ -172,11 +176,11 @@ Bool_t AliTPCMonitorDateFormat::IsEventSuperEvent()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsEventStartOfRun()
+Bool_t AliTPCMonitorDateFormat::IsEventStartOfRun()const
 {
   // Check if event ist Start of Run
   Bool_t retval;
-  if(event->eventType == START_OF_RUN)
+  if(fevent->eventType == START_OF_RUN)
     retval = true;
   else
     retval = false;
@@ -184,11 +188,11 @@ Bool_t AliTPCMonitorDateFormat::IsEventStartOfRun()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsEventEndOfRun()
+Bool_t AliTPCMonitorDateFormat::IsEventEndOfRun()const
 {
   // Check if event is End of Run
   Bool_t retval;
-  if(event->eventType == END_OF_RUN)
+  if(fevent->eventType == END_OF_RUN)
     retval = true;
   else
     retval = false;
@@ -196,11 +200,11 @@ Bool_t AliTPCMonitorDateFormat::IsEventEndOfRun()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsEventPhysicsEvent()
+Bool_t AliTPCMonitorDateFormat::IsEventPhysicsEvent()const
 {
   // Check if event is Physics event
   Bool_t retval;
-  if(event->eventType == PHYSICS_EVENT)
+  if(fevent->eventType == PHYSICS_EVENT)
     retval = true;
   else
     retval = false;
@@ -208,11 +212,11 @@ Bool_t AliTPCMonitorDateFormat::IsEventPhysicsEvent()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsEventSwapped()
+Bool_t AliTPCMonitorDateFormat::IsEventSwapped()const
 {
   // Check if event is swapped
   Bool_t retval;
-  if(TEST_SYSTEM_ATTRIBUTE( event->eventTypeAttribute, ATTR_EVENT_SWAPPED ) == 1)
+  if(TEST_SYSTEM_ATTRIBUTE( fevent->eventTypeAttribute, ATTR_EVENT_SWAPPED ) == 1)
     retval = true;
   else
     retval = false;
@@ -220,11 +224,11 @@ Bool_t AliTPCMonitorDateFormat::IsEventSwapped()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsEventWrongEndian()
+Bool_t AliTPCMonitorDateFormat::IsEventWrongEndian()const
 {
   // Check endian  
   Bool_t retval;
-  if(EVENT_MAGIC_NUMBER == event->eventMagic)
+  if(EVENT_MAGIC_NUMBER == fevent->eventMagic)
     retval = false;
   else
     retval = true;
@@ -238,10 +242,10 @@ void AliTPCMonitorDateFormat::GotoSubEventHeader()
   // Set subevent Pointer to sub event
   if(IsEventSuperEvent() ==true){
     fsubEventPtr = fdataPtr+GetEventHeaderSize();
-    subEvent = (struct eventHeaderStruct*) (fsubEventPtr);
+    fsubEvent = (struct eventHeaderStruct*) (fsubEventPtr);
   }else{
     fsubEventPtr = fdataPtr;
-		subEvent = (struct eventHeaderStruct*) (fsubEventPtr);
+		fsubEvent = (struct eventHeaderStruct*) (fsubEventPtr);
   }
 }
 
@@ -250,11 +254,11 @@ void AliTPCMonitorDateFormat::GotoNextSubEventHeader()
 {
   // set subevent pointer to next  sub event 
   fsubEventPtr += GetSubEventSize();
-  subEvent = (struct eventHeaderStruct*) (fsubEventPtr);
+  fsubEvent = (struct eventHeaderStruct*) (fsubEventPtr);
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsLastSubEventHeader()
+Bool_t AliTPCMonitorDateFormat::IsLastSubEventHeader()const
 {
   // Check if sub event is last sub event
   Bool_t retval;
@@ -276,31 +280,31 @@ Bool_t AliTPCMonitorDateFormat::IsLastSubEventHeader()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetSubEventSize()
+Int_t AliTPCMonitorDateFormat::GetSubEventSize()const
 {
   // Return sub event size
-  return (Int_t)subEvent->eventSize;
+  return (Int_t)fsubEvent->eventSize;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetSubEventHeaderSize()
+Int_t AliTPCMonitorDateFormat::GetSubEventHeaderSize()const
 {
   // Return sub event header size
-  return (Int_t)subEvent->eventHeadSize;
+  return (Int_t)fsubEvent->eventHeadSize;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetSubEventLDC()
+Int_t AliTPCMonitorDateFormat::GetSubEventLDC()const
 {
   // Return sub event LDC
-  return (Int_t)subEvent->eventLdcId;
+  return (Int_t)fsubEvent->eventLdcId;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetSubEventGDC()
+Int_t AliTPCMonitorDateFormat::GetSubEventGDC()const
 {
   // return sub event GDC
-	return (Int_t)subEvent->eventGdcId;
+	return (Int_t)fsubEvent->eventGdcId;
 }
 
 
@@ -309,7 +313,7 @@ Bool_t AliTPCMonitorDateFormat::IsSubEventSuperEvent()
 {
   // Check if sub event is super event
 	Bool_t retval;
-	if(TEST_SYSTEM_ATTRIBUTE( subEvent->eventTypeAttribute, ATTR_SUPER_EVENT ) == 1)
+	if(TEST_SYSTEM_ATTRIBUTE( fsubEvent->eventTypeAttribute, ATTR_SUPER_EVENT ) == 1)
 		retval = true;
 	else
 		retval = false;
@@ -317,11 +321,11 @@ Bool_t AliTPCMonitorDateFormat::IsSubEventSuperEvent()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsSubEventStartOfRun()
-{
+Bool_t AliTPCMonitorDateFormat::IsSubEventStartOfRun()const
+{ 
   // Check if sub event is start of run
   Bool_t retval;
-  if(subEvent->eventType == START_OF_RUN)
+  if(fsubEvent->eventType == START_OF_RUN)
     retval = true;
   else
     retval = false;
@@ -329,11 +333,11 @@ Bool_t AliTPCMonitorDateFormat::IsSubEventStartOfRun()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsSubEventEndOfRun()
+Bool_t AliTPCMonitorDateFormat::IsSubEventEndOfRun()const
 {
   // Check if sub event is end of run
   Bool_t retval;
-  if(subEvent->eventType == END_OF_RUN)
+  if(fsubEvent->eventType == END_OF_RUN)
     retval = true;
   else
     retval = false;
@@ -341,11 +345,11 @@ Bool_t AliTPCMonitorDateFormat::IsSubEventEndOfRun()
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsSubEventPhysicsEvent()
+Bool_t AliTPCMonitorDateFormat::IsSubEventPhysicsEvent()const
 {
   // Check if sub event is physics event
   Bool_t retval;
-  if(subEvent->eventType == PHYSICS_EVENT)
+  if(fsubEvent->eventType == PHYSICS_EVENT)
     retval = true;
   else
     retval = false;
@@ -357,7 +361,7 @@ void AliTPCMonitorDateFormat::GotoFirstEquipment()
 {
   // Set current pointer to first equipment
   fcurrentPtr = fsubEventPtr + GetSubEventHeaderSize();
-  equipment = (struct equipmentHeaderStruct*) (fcurrentPtr);
+  fequipment = (struct equipmentHeaderStruct*) (fcurrentPtr);
 }
 
 //____________________________________________________________________________
@@ -365,15 +369,15 @@ void AliTPCMonitorDateFormat::GotoNextEquipment()
 {
   // Set current pointer to next equipment
   fcurrentPtr += GetEquipmentSize();
-  equipment = (struct equipmentHeaderStruct*) (fcurrentPtr);
+  fequipment = (struct equipmentHeaderStruct*) (fcurrentPtr);
 }
 
 //____________________________________________________________________________
-Bool_t AliTPCMonitorDateFormat::IsLastEquipment()
+Bool_t AliTPCMonitorDateFormat::IsLastEquipment() const
 {
   // Check if equipment is last equipment
   Bool_t retval;
-  Int_t position;
+  Int_t position; 
   position = fcurrentPtr - fsubEventPtr;
   if( (position+GetEquipmentSize()) < GetSubEventSize() )
 		  retval = false;
@@ -383,55 +387,55 @@ Bool_t AliTPCMonitorDateFormat::IsLastEquipment()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEquipmentSize()
+Int_t AliTPCMonitorDateFormat::GetEquipmentSize() const
 {
   // Return equipment size
-  return (Int_t)equipment->equipmentSize;
+  return (Int_t)fequipment->equipmentSize;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetPayloadSize()
+Int_t AliTPCMonitorDateFormat::GetPayloadSize() const
 {
   // Return payload slze
   Int_t retval = 0;
   if(GetEventVersion() < 196610){
-    retval = (Int_t)equipment->equipmentSize;
+    retval = (Int_t)fequipment->equipmentSize;
   }else{
-    retval = (Int_t)equipment->equipmentSize - GetEquipmentHeaderSize();
+    retval = (Int_t)fequipment->equipmentSize - GetEquipmentHeaderSize();
   }
   return retval;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEquipmentType()
+Int_t AliTPCMonitorDateFormat::GetEquipmentType() const
 {
   // Return equipment type
-  return (Int_t)equipment->equipmentType;
+  return (Int_t)fequipment->equipmentType;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEquipmentID()
+Int_t AliTPCMonitorDateFormat::GetEquipmentID() const
 {
   // Return equipment ID
-  return (Int_t)equipment->equipmentId;
+  return (Int_t)fequipment->equipmentId;
 }
 
 //____________________________________________________________________________
 Int_t* AliTPCMonitorDateFormat::GetEquipmentTypeAttribute()
 {
   // Return equipment type attribute
-  return (Int_t*)equipment->equipmentTypeAttribute;
+  return (Int_t*)fequipment->equipmentTypeAttribute;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEquipmentBasicSize()
+Int_t AliTPCMonitorDateFormat::GetEquipmentBasicSize() const
 {
   // Return equipment basic size
-  return (Int_t)equipment->equipmentBasicElementSize;
+  return (Int_t)fequipment->equipmentBasicElementSize;
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetEquipmentHeaderSize()
+Int_t AliTPCMonitorDateFormat::GetEquipmentHeaderSize() const
 {
   // Return equipment header size
   return sizeof(struct equipmentHeaderStruct);
@@ -439,7 +443,7 @@ Int_t AliTPCMonitorDateFormat::GetEquipmentHeaderSize()
 
 
 //____________________________________________________________________________
-Char_t *AliTPCMonitorDateFormat::GetFirstDataPointer()
+Char_t *AliTPCMonitorDateFormat::GetFirstDataPointer() 
 {
   // Return data pointer (after equipment header)
   Char_t *datapointer;
@@ -454,7 +458,7 @@ Char_t *AliTPCMonitorDateFormat::GetFirstDataPointer()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetPosition()
+Int_t AliTPCMonitorDateFormat::GetPosition() const
 {
   // Return current position relative to start of event
   Int_t retval = (Int_t) (fcurrentPtr - fdataPtr);
@@ -462,7 +466,7 @@ Int_t AliTPCMonitorDateFormat::GetPosition()
 }
 
 //____________________________________________________________________________
-Int_t AliTPCMonitorDateFormat::GetPositionSubEvent()
+Int_t AliTPCMonitorDateFormat::GetPositionSubEvent() const
 {
   // Return subevent position  relative to start of event
   Int_t retval = (Int_t) (fsubEventPtr - fdataPtr);

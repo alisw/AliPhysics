@@ -15,25 +15,28 @@
 
 /*
 $Log$
+Revision 1.2  2007/10/12 13:36:27  cvetan
+Coding convention fixes from Stefan
+
 Revision 1.1  2007/09/17 10:23:31  cvetan
 New TPC monitoring package from Stefan Kniege. The monitoring package can be started by running TPCMonitor.C macro located in macros folder.
 
 */ 
 
-////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorConfig class
-//
-// Configuration handler class for AliTPCMonitor
-//
-// The basic configuration will be read from the file AliTPCMonitorConfig.txt
-// and can be changed online via the Button "Conf. Ranges"
-// Basic configuration settings are e.g. the range for the determination 
-// of the baseline, maximum adc value and the settings for the pedestal calculation.
-// 
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+//////////////////////////////////////////////////////////////////////////
+////
+//// AliTPCMonitorConfig class
+////
+//// Configuration handler class for AliTPCMonitor
+////
+//// The basic configuration will be read from the file AliTPCMonitorConfig.txt
+//// and can be changed online via the Button "Conf. Ranges"
+//// Basic configuration settings are e.g. the range for the determination 
+//// of the baseline, maximum adc value and the settings for the pedestal calculation.
+//// 
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -86,7 +89,7 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const Char_t* name, const Char_t* title
   fTimeBins(1024),
   fMaxHwAddr(24000),
   fFitPulse(1),
-  fProcOneSector(1)
+  fProcOneSector(0)
 {
   // Constructor 
   for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}

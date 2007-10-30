@@ -9,16 +9,16 @@
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitor class
-// 
-// Main class for the TPC raw data Monitor.
-// The Monitor can handle rootified data, files and online streams in DATE format.
-// The monitor GUI is started by the macro TPCMonitor.C
-// 
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitor class
+//// 
+//// Main class for the TPC raw data Monitor.
+//// The Monitor can handle rootified data, files and online streams in DATE format.
+//// The monitor GUI is started by the macro TPCMonitor.C
+//// 
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCMonitorConfig.h"
@@ -68,14 +68,14 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     void          ExecTransform();
     
     void          FillGlobal(Int_t sector);
-    void          FillHistsDecode( AliTPCMonitorAltro* altro , Int_t rcu_patch, Int_t id=0);
+    void          FillHistsDecode( AliTPCMonitorAltro* altro , Int_t rcupatch, Int_t secid=0);
     void          FillHistsPadPlane();
     
     static double Gamma4(double* x, double* par);
     Int_t         GetChannelsProc()  const  { return fChannelIter     ;}
     Int_t         GetEventID()       const  { return fEventNumber     ;}
     TH1*          GetHisto(char* histname);
-    Int_t         GetRCUPatch(Int_t runid, Int_t eqid);
+    Int_t         GetRCUPatch(Int_t runid, Int_t eqid) const;
     
     Int_t         GetPadAtX(Float_t xval, Int_t row, Int_t padmax) const ;                            
     Int_t         GetPadAtX(Float_t xval, Int_t row) const ;                                          
@@ -89,7 +89,7 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
     void          SetMirror(Int_t val)      { fMirror=val;}
     void          SetVerbose(Int_t val)     { fVerb = val;}
     void          SetMappingHandler(AliTPCMonitorMappingHandler* val ) { fMapHand  = val;}
-    void          ShowSel(Int_t* comp_val);
+    void          ShowSel(Int_t* compval);
     void          SetEqIds();
     
     void          ResizeCanv();

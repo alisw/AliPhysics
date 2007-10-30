@@ -35,9 +35,9 @@ class AliTPCMonitorAltro : public TNamed {
     Int_t        DecodeTrailer(Int_t pos);
 
     Long64_t*    Get40BitArray();
-    Short_t     *Get10BitArray();
-    Int_t        Get40BitArraySize(); 
-    Int_t        Get10BitArraySize();  
+    Short_t     *Get10BitArray();     
+    Int_t        Get40BitArraySize()     const { return fmemory[fsize-1];}  
+    Int_t        Get10BitArraySize()     const { return fmemory[fsize-1]*4;}  
     Char_t*      GetActFileName()        const { return ffilename;}
     
     static Int_t GetHwMaskFEC()                { return fgkHwMaskFEC;}

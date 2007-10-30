@@ -8,16 +8,16 @@
 
 
 ////////////////////////////////////////////////////////////////////////
-//
-// AliTPCMonitorFFT class
-//
-// Wrapper class to perform Fast Fourier Transformations
-// Code based on Gnu Scientific Library 
-// See documentation of gsl for further details
-// 
-// Author: Stefan Kniege, IKF, Frankfurt
-//       
-//
+////
+//// AliTPCMonitorFFT class
+////
+//// Wrapper class to perform Fast Fourier Transformations
+//// Code based on Gnu Scientific Library 
+//// See documentation of gsl for further details
+//// 
+//// Author: Stefan Kniege, IKF, Frankfurt
+////       
+////
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -39,8 +39,8 @@ class AliTPCMonitorFFT : public TNamed {
     Int_t     ComplexRadix2BackwardWrap( Double_t* data, Int_t stride, size_t n );  
     Int_t     ComplexRadix2InverseWrap(  Double_t* data, Int_t stride, size_t n ); 
     Int_t     ComplexRadix2TransformWrap(Double_t* data, Int_t stride, size_t n, Int_t sign ); 
-    Int_t     ComplexBitReverseOrderWrap(Double_t* data, Int_t stride, size_t n, Int_t logn); 
-    Int_t     FFTBinaryLogn(size_t n);
+    Int_t     ComplexBitReverseOrderWrap(Double_t* data, Int_t stride, size_t n, Int_t logn) const ; 
+    Int_t     FFTBinaryLogn(size_t n) const ;
 
  private:
     
