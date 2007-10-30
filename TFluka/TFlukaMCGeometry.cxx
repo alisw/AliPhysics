@@ -807,7 +807,8 @@ void TFlukaMCGeometry::CreateFlukaMatFile(const char *fname)
    out << setw(10) << "0.0";
    out << setw(10) << "0.0" << endl;
    out.close();
-   fLastMaterial = nfmater+2;
+//   fLastMaterial = nfmater+2;
+   fLastMaterial = newind;
 }
 
 //_____________________________________________________________________________
