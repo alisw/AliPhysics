@@ -43,8 +43,9 @@ class AliHLTHOMERWriter;
  * AliHLTMonitoringReader* pReader=manager.OpenReader(localhost, 23000);
  *
  * // read next event, timeout 5s
- * while (pReader && pReader->ReadNextEvent(5000000)) {
+ * while (pReader && pReader->ReadNextEvent(5000000)==0) {
  *   unsigned long count=pReader->GetBlockCnt();
+ *   gSystem->Sleep(5);
  *   ...
  * }
  *
