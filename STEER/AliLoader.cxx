@@ -510,7 +510,6 @@ void AliLoader::MakeTree(Option_t *option)
 //   S: - Summable Digits
 //   R: - Reconstructed Points (clusters)
 //   T: - Tracks (tracklets)
-//   GG: - Trigger
 
   const char *oH = strstr(option,"H");
   const char *oD = strstr(option,"D");
@@ -518,7 +517,6 @@ void AliLoader::MakeTree(Option_t *option)
   const char *oR = strstr(option,"R");
   const char *oT = strstr(option,"T");
   const char *oP = strstr(option,"P");
-  const char *oGG = strstr(option,"GG");
   
   if (oH) MakeHitsContainer();
   if (oD) MakeDigitsContainer();
@@ -526,7 +524,6 @@ void AliLoader::MakeTree(Option_t *option)
   if (oR) MakeRecPointsContainer();
   if (oT) MakeTracksContainer();
   if (oP) MakeRecParticlesContainer();
-  if (oGG) AliError("Don't know how to create a trigger tree");
  }
 
 /*****************************************************************************/ 
