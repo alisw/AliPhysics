@@ -80,8 +80,11 @@ fCleanupInterval(cleanupInterval)
 	// check DBFolder: trying to cd to DBFolder; if it does not exist, create it
 	if(!gGrid->Cd(fDBFolder.Data(),0)){
 		AliDebug(2,Form("Creating new folder <%s> ...",fDBFolder.Data()));
-		if(!gGrid->Mkdir(fDBFolder.Data(),"",0)){
-			AliError(Form("Cannot create folder <%s> !",fDBFolder.Data()));
+		TGridResult* res = gGrid->Command(Form("mkdir -p %s",fDBFolder.Data()));
+		TString result = res->GetKey(0,"__result__");
+		if(result == "0"){
+			AliFatal(Form("Cannot create folder <%s> !",fDBFolder.Data()));
+			return;
 		}
 	} else {
 		AliDebug(2,Form("Folder <%s> found",fDBFolder.Data()));
@@ -1038,16 +1041,16 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 		else if (key.Contains("user",TString::kIgnoreCase)){
 			user = value;
 		}
-		else if (key.Contains("folder",TString::kIgnoreCase)){
-			dbFolder = value;
-		}
 		else if (key.Contains("se",TString::kIgnoreCase)){
 			se = value;
 		}
-		else if (key.Contains("cacheFold",TString::kIgnoreCase)){
+		else if (key.Contains("cacheF",TString::kIgnoreCase)){
 			cacheFolder = value;
    			if (!cacheFolder.EndsWith("/"))
       				cacheFolder += "/";
+		}
+		else if (key.Contains("folder",TString::kIgnoreCase)){
+			dbFolder = value;
 		}
 		else if (key.Contains("operateDisc",TString::kIgnoreCase)){
 			if(value == "kTRUE") {
@@ -1061,7 +1064,7 @@ AliCDBParam* AliCDBGridFactory::CreateParameter(const char* gridString) {
 				return NULL;
 			}
 		}
-		else if (key.Contains("cacheSiz",TString::kIgnoreCase)){
+		else if (key.Contains("cacheS",TString::kIgnoreCase)){
 			if(value.IsDigit()) {
 				cacheSize = value.Atoi();
 			} else {
