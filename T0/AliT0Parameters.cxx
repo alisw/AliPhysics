@@ -149,6 +149,9 @@ void AliT0Parameters::InitIfOnline()
    //standart configuration (used for simulation)
    //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   // configuration for test Jun07.
+
+  fgLookUp = new AliT0CalibData("T0");
+
   fNumberOfTRMs = 1;
   Int_t trm=7; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   for (Int_t ik=0; ik<105; ik++)
@@ -164,9 +167,9 @@ void AliT0Parameters::InitIfOnline()
           lookkey->SetKey(ik);
 	  if (channel<6) channel +=2;
 	  else {channel = 0; tdc++;}
-	   if(ik==57) { tdc=0; channel=0; chain = 1;}
-	   //           fLookUp.Add((TObject*)lookvalue,(TObject*)lookkey);	
-         fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
+	  if(ik==57) { tdc=0; channel=0; chain = 1;}
+
+	  fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
        }
   
   fIsInit=kTRUE;
