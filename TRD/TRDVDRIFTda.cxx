@@ -1,23 +1,13 @@
 /*
 
-
-TRDda.cxx - calibration algorithm to be run on monitoring server
-DAcase2.c
-
-AliTRDCalibraFillHisto - average pulse height/ vdrift calibration
-AliTRDCalibPadStatus - pad status calibration
-
-
-This program connects to the DAQ data source passed as argument
-and populates local "./result.txt" file with the ids of events received
-during the run.
-
-The program exits when being asked to shut down (daqDA_checkshutdown)
-or End of Run event.
-
-Messages on stdout are exported to DAQ log system.
-
-contact: alice-datesupport@cern.ch
+- "Contact: r.bailhache@gsi.de"
+- "Link: http://www-linux.gsi.de/~bailhach/VDRIFT/raw.root.date"
+- "Run Type: nothing special in ECS, physics run" 
+- "DA Type: MON"
+- "Number of events needed: as many as possible"
+- "Input Files: no config files, no previous result files, RAW DATA file with all the TRD ([DDL = 1024 to DDL = 1041])" 
+- "Output Files: trdCalibrationv.root, trdCalibrationv.root, no persitent file over runs"
+- "Trigger types used: PHYSICS"
 
 */
 

@@ -1,19 +1,13 @@
 /*
 
-TRDPEDESTALda.cxx - calibration algorithm for the pedestal to be run in parallel on the LDCs
-DAcase1.c
-
-
-AliTRDCalibPadStatus - pad status calibration
-
-This program reads the DAQ data files passed as argument using the monitoring library.
-
-It fills a TRD calib object AliTRDCalibPadStatus and write it in a local file trdPedestal.root before
-exporting it to the file exchange server.
-
-Messages on stdout are exported to DAQ log system.
-
-contact: alice-datesupport@cern.ch
+- "Contact: r.bailhache@gsi.de"
+- "Link: http://www-linux.gsi.de/~bailhach/PEDESTAL/raw.root.date" 
+- "Run Type: dedicated pedestals run"
+- "DA Type: LDC"
+- "Number of events needed: 100"
+- "Input Files: no config files, no previous result files, RAW DATA files from DDL = 1024 to DDL = 1041 included"
+- "Output Files: trdCalibration.root, trdCalibration.root, no persitent file over runs"
+- "Trigger types used: PEDESTAL_RUN"
 
 */
 
