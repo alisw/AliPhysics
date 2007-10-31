@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/09/27 08:36:46  mvl
+ * More robust setting of fit range in FitRawSignal (P. Hristov)
+ *
  * Revision 1.2  2007/09/03 20:55:35  jklay
  * EMCAL e-by-e reconstruction methods from Cvetan
  *
@@ -48,9 +51,9 @@
 ClassImp(AliEMCALRawUtils)
 
 // Signal shape parameters
-Int_t    AliEMCALRawUtils::fgOrder       = 2 ;      // Order of gamma function 
-Double_t AliEMCALRawUtils::fgTimeMax     = 2.56E-5 ;  // each sample is over 100 ns fTimeMax/fTimeBins
-Double_t AliEMCALRawUtils::fgTau         = 165E-9 ;   // 165 ns (from testbeam; not very accurate)
+Int_t    AliEMCALRawUtils::fgOrder         = 2 ;      // Order of gamma function 
+Double_t AliEMCALRawUtils::fgTimeBinWidth  = 100E-9 ; // each sample is 100 ns
+Double_t AliEMCALRawUtils::fgTau         = 235E-9 ;   // 235 ns (from CERN testbeam; not very accurate)
 Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 musec
 
 // some digitization constants
@@ -204,54 +207,57 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   // reading is from previously existing AliEMCALGetter.cxx
   // ReadRaw method
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-  signalF->SetParNames("Charge", "Gain", "Amplitude", "TimeZero"); 
   
   Int_t id =  -1;
-  Int_t idigit = 0 ; 
-  Double_t time = 0. ; 
-  Double_t amp = 0. ; 
+  Float_t time = 0. ; 
+  Float_t amp = 0. ; 
 
   TGraph * gSig = new TGraph(GetRawFormatTimeBins()) ; 
 
-  Int_t eofReached = 0;
+  Int_t readOk = 1;
   Int_t lowGain = 0;
 
-  in.Next(); // Go to first digit
-  do {
+  while (readOk && in.GetModule() < 0) 
+    readOk = in.Next();  // Go to first digit
+  while (readOk) { 
     id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
     lowGain = in.IsLowGain();
-    gSig->SetPoint(in.GetTime(), 
-		   in.GetTime()* GetRawFormatTimeMax() / GetRawFormatTimeBins(), 
-		   in.GetSignal()) ;
+    Int_t nTime = in.GetTimeLength()-1;
+    Int_t maxTime = in.GetTime();  // timebins come in reverse order
+    gSig->Set(maxTime+1);
+    // There is some kind of zero-suppression in the raw data, 
+    // so set up the TGraph in advance
+    for (Int_t i=0; i < maxTime; i++) {
+      gSig->SetPoint(i, i * GetRawFormatTimeBinWidth(), 0);
+    }
 
-    Int_t iTime = 1;
+    Int_t iTime = 0;
     do {
-      if (!in.Next())
-	eofReached = 1;
-      else {
-	gSig->SetPoint(in.GetTime(), 
-		       in.GetTime()* GetRawFormatTimeMax() / GetRawFormatTimeBins(), 
-		       in.GetSignal()) ;
+      if (in.GetTime() >= gSig->GetN()) {
+	  AliWarning("Too many time bins");
+	  gSig->Set(in.GetTime());
       }
+      gSig->SetPoint(in.GetTime(), 
+		   in.GetTime() * GetRawFormatTimeBinWidth(), 
+		   in.GetSignal()) ;
+      if (in.GetTime() > maxTime)
+        maxTime = in.GetTime();
       iTime++;
-    } while (!eofReached && !in.IsNewRow() && !in.IsNewColumn() && !in.IsNewModule());
+    } while ((readOk = in.Next()) && !in.IsNewHWAddress());
+    signalF->SetRange(0,(Float_t)maxTime*GetRawFormatTimeBinWidth());
 
     FitRaw(gSig, signalF, amp, time) ; 
-    if (lowGain) 
-      amp *= fHighLowGainFactor; 
     
     if (amp > 0) {
-      AliDebug(2,Form("id %d amp %g", id, amp));
-      new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, (Int_t)amp, time, idigit) ;	
-	  idigit++ ; 
+      AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
+      AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
     }
-    Int_t index ; 
 	
     // Reset graph
-    for (index = 0; index < GetRawFormatTimeBins(); index++) {
-      gSig->SetPoint(index, index * GetRawFormatTimeMax() / GetRawFormatTimeBins(), 0) ;  
+    for (Int_t index = 0; index < gSig->GetN(); index++) {
+      gSig->SetPoint(index, index * GetRawFormatTimeBinWidth(), 0) ;  
     } 
-  } while (!eofReached); // EMCAL entries loop
+  }; // EMCAL entries loop
   
   delete signalF ; 
   delete gSig;
@@ -260,57 +266,90 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 }
 
 //____________________________________________________________________________ 
-void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Double_t & amp, Double_t & time)
+void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time) {
+  //
+  // Add a new digit. 
+  // This routine checks whether a digit exists already for this tower 
+  // and then decides whether to use the high or low gain info
+  //
+  // Called by Raw2Digits
+  
+  AliEMCALDigit *digit = 0, *tmpdigit = 0;
+  
+  TIter nextdigit(digitsArr);
+  while (digit == 0 && (tmpdigit = (AliEMCALDigit*) nextdigit())) {
+    if (tmpdigit->GetId() == id)
+      digit = tmpdigit;
+  }
+
+  if (!digit) { // no digit existed for this tower; create one
+    if (lowGain) 
+      amp = Int_t(fHighLowGainFactor * amp); 
+    Int_t idigit = digitsArr->GetEntries();
+    new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, idigit) ;	
+  }
+  else { // a digit already exists, check range 
+         // (use high gain if signal < 800, otherwise low gain)
+    if (lowGain) { // new digit is low gain
+      if (digit->GetAmp() > 800) {  // use if stored digit is out of range
+	digit->SetAmp(Int_t(fHighLowGainFactor * amp));
+	digit->SetTime(time);
+      }
+    }
+    else if (amp < 800) { // new digit is high gain; use if not out of range
+      digit->SetAmp(amp);
+      digit->SetTime(time);
+    }
+  }
+}
+
+//____________________________________________________________________________ 
+void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time)
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
 
-  const Int_t kNoiseThreshold = 0 ;
+  const Int_t kNoiseThreshold = 5 ;
   Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
-  Double_t signal = 0., signalmax = 0. ;       
+  Double_t ttime, signal = 0., signalmax = 0. ;       
   amp = time = 0. ; 
+  Double_t ped = 0;
+  Int_t nPed = 0;
 
   timezero1 = signalmax = timemax = 0. ;
-  timezero1 = GetRawFormatTimeMax();
   timezero2 = 0;
+  Int_t index ; 
+  for (index = 0; index < 10; index++) {
+    gSig->GetPoint(index, ttime, signal) ; 
+    if (signal > 0) {
+      ped += signal;
+      nPed++;
+    }
+  }
+  if (nPed > 0)
+    ped /= nPed;
+  else
+    ped = 10; // put some small value as first guess
 
-  //  Find the time,the value and the index of the maximum
-
-  Int_t indexmax = 0;
-  for (Int_t index = 0; index < GetRawFormatTimeBins(); index++) {
-    gSig->GetPoint(index, time, signal) ; 
-    if (signal >= signalmax) {
+  for (index = 0; index < gSig->GetN(); index++) {
+    gSig->GetPoint(index, ttime, signal) ; 
+    if (signal > ped + kNoiseThreshold && timezero1 == 0.) 
+      timezero1 = ttime ;
+    if (signal <= ped + kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
+      timezero2 = ttime ; 
+    if (signal > signalmax && timezero2 == 0) {
       signalmax = signal ; 
-      timemax   = time ;
-      indexmax = index;
+      timemax   = ttime ; 
     }
   }
 
-  if ( timemax < GetRawFormatTimeMax() * 0.4 ) { // else its noise 
-
-    // Find the start time of the signal;
-    for (Int_t index = indexmax; index >= 0; index--) {    
-      gSig->GetPoint(index, time, signal) ; 
-      
-      if (signal>kNoiseThreshold) {
-	timezero1 = time;
-      }
-      else break;
-    }
-    // Find the end time of the signal;
-    for (Int_t index = indexmax; index < GetRawFormatTimeBins(); index++) {    
-      gSig->GetPoint(index, time, signal) ; 
-      if (signal>kNoiseThreshold) {
-	timezero2 = time;
-      }
-      else break;
-    }
-
-    signalF->SetParameter(0, signalmax) ; 
-    //    signalF->SetParameter(1, timemax) ; 
-    signalF->SetParameter(1, 0.5*(timezero1+timezero2)) ; 
-    gSig->Fit(signalF, "QRON", "", timezero1, timezero2); //, "QRON") ; 
-    amp = signalF->GetParameter(0) ; 
-    time = signalF->GetParameter(1) - fgTimeTrigger;
+  AliDebug(2,Form("Fitting signalmax %d ped %d", signalmax, ped));
+  if ( signalmax - ped > kNoiseThreshold ) { // else its noise 
+    signalF->SetParameter(0, ped) ; 
+    signalF->SetParameter(1, signalmax - ped) ; 
+    signalF->SetParameter(2, timemax) ; 
+    gSig->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
+    amp = signalF->GetParameter(1); 
+    time = signalF->GetParameter(2) - fgTimeTrigger;
   }
   return;
 }
@@ -325,18 +364,20 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   // F = 0                                for t < 0 
   //
   // parameters:
-  // A:   par[0]   // Amplitude = peak value
-  // t0:  par[1]
+  // ped: par[0]
+  // A:   par[1]   // Amplitude = peak value
+  // t0:  par[2]
   // tau: fgTau
   // N:   fgOrder
   //
   Double_t signal ;
-  Double_t xx = ( x[0] - par[1] + fgTau ) / fgTau ; 
+  Double_t xx = ( x[0] - par[2] + fgTau ) / fgTau ; 
 
   if (xx <= 0) 
-    signal = 0. ;  
+    signal = par[0] ;  
   else {  
-    signal = par[0] * TMath::Power(xx , fgOrder) * TMath::Exp(fgOrder * (1 - xx )) ; 
+    signal = par[0] + par[1] * TMath::Power(xx , fgOrder) * TMath::Exp(fgOrder * (1 - xx )) ; 
+
   }
   return signal ;  
 }
@@ -349,14 +390,16 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   // calculates the raw sampled response AliEMCAL::RawResponseFunction
 
   const Int_t kRawSignalOverflow = 0x3FF ; 
+  const Int_t pedVal = 32;
   Bool_t lowGain = kFALSE ; 
 
   TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-  signalF.SetParameter(0, damp) ; 
-  signalF.SetParameter(1, dtime + fgTimeTrigger) ; 
+  signalF.SetParameter(0, pedVal) ; 
+  signalF.SetParameter(1, damp) ; 
+  signalF.SetParameter(2, dtime + fgTimeTrigger) ; 
 
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
-    Double_t time = iTime * GetRawFormatTimeMax() / GetRawFormatTimeBins() ;
+    Double_t time = iTime * GetRawFormatTimeBinWidth() ;
     Double_t signal = signalF.Eval(time) ;     
     adcH[iTime] =  static_cast<Int_t>(signal + 0.5) ;
     if ( adcH[iTime] > kRawSignalOverflow ){  // larger than 10 bits 

@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/09/03 20:55:35  jklay
+ * EMCAL e-by-e reconstruction methods from Cvetan
+ *
  * Revision 1.1  2007/03/17 19:56:38  mvl
  * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
  *
@@ -37,19 +40,21 @@ class AliEMCALRawUtils : public TObject {
 
   void Digits2Raw();
   void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr);
+  void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
 
   // Signal shape parameters
   Double_t GetRawFormatHighLowGainFactor() const {return fHighLowGainFactor ;}
   static Int_t GetRawFormatOrder() { return fgOrder ; }   
   static Int_t GetRawFormatTimeBins() { return fgkTimeBins ; }    
-  static Double_t GetRawFormatTimeMax() { return fgTimeMax ; }   
+  static Double_t GetRawFormatTimeMax() { return fgkTimeBins*fgTimeBinWidth; }   
+  static Double_t GetRawFormatTimeBinWidth() { return fgTimeBinWidth; }   
   Double_t GetRawFormatTau() const { return fgTau ; }    
   Double_t GetRawFormatTimeTrigger() const { return fgTimeTrigger ; }
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 
 
   // Signal shape functions
-  void FitRaw(TGraph * gSig, TF1* signalF, Double_t & amp, Double_t & time);
+  void FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time);
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
 
@@ -62,7 +67,7 @@ class AliEMCALRawUtils : public TObject {
   static Double_t fgTimeTrigger ;       // time of the trigger for the RO signal 
 
   static const Int_t fgkTimeBins = 256 ; // number of sampling bins of the raw RO signal  
-  static Double_t fgTimeMax ;           // maximum sampled time of the raw RO signal                             
+  static Double_t fgTimeBinWidth;       // maximum sampled time of the raw RO signal                             
   static Int_t fgThreshold;             // threshold
   static Int_t fgDDLPerSuperModule;     // number of DDL per SuperModule
 };
