@@ -50,6 +50,9 @@ public:
 	Int_t GetCurrentRun() const;
 	UInt_t GetCurrentStartTime() const;
 	UInt_t GetCurrentEndTime() const;
+	UInt_t GetCurrentYear() const;
+	
+	const char* GetLHCPeriod() const;
 
 	virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
 			Int_t validityStart = 0, Bool_t validityInfinite = kFALSE);
@@ -118,6 +121,7 @@ private:
 	void UpdateShuttleStatus(AliShuttleStatus::Status newStatus, Bool_t increaseCount = kFALSE);
 	Bool_t UpdateShuttleLogbook(const char* detector, const char* status=0);
 	Bool_t SendMail();
+	Bool_t SendMailToDCS();
 	
 	TString GetLogFileName(const char* detector) const;
 

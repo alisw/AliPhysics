@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.61  2007/10/30 20:33:51  acolla
+Improved managing of temporary folders, which weren't correctly handled.
+Resolved bug introduced in StoreReferenceFile, which caused SPD preprocessor fail.
+
 Revision 1.60  2007/10/29 18:06:16  acolla
 
 New function StoreRunMetadataFile added to preprocessor and Shuttle interface
@@ -790,29 +794,17 @@ Bool_t AliShuttle::StoreRunMetadataFile(const char* localFile, const char* gridF
 	// Build Run level folder
 	// folder = /alice/data/year/lhcPeriod/runNb/Raw
 	
-	TTimeStamp startTime(GetCurrentStartTime());
 		
-	TString year =  Form("%d",startTime.GetDate());
-	year = year(0,4);
-		
-	TString lhcPeriod = GetRunParameter("LHCperiod");
-	
+	TString lhcPeriod = GetLHCPeriod();	
 	if (lhcPeriod.Length() == 0) 
 	{
 		Log("SHUTTLE","StoreRunMetaDataFile - LHCPeriod not found in logbook!");
 		return 0;
 	}
 	
-	// TODO: currently SHUTTLE cannot write in /alice/data/ !!!!!
-	//TString target = Form("%s/GRP/RunMetadata/alice/data/%s/%s/%d/Raw/%s", 
-	//			localBaseFolder.Data(), year.Data(), 
-	//			lhcPeriod.Data(), GetCurrentRun(), gridFileName);
-	
-	TString target = Form("%s/GRP/RunMetadata/alice/simulation/%s/%s/%d/Raw/%s", 
-				localBaseFolder.Data(), year.Data(), 
+	TString target = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/Raw/%s", 
+				localBaseFolder.Data(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun(), gridFileName);
-	
-				
 					
 	return CopyFileLocally(localFile, target);
 }
@@ -900,12 +892,8 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 	} 
 	else if (strcmp(type, "metadata") == 0)
 	{
-		TTimeStamp startTime(GetCurrentStartTime());
-		
-		TString year =  Form("%d",startTime.GetDate());
-		year = year(0,4);
 			
-		TString lhcPeriod = GetRunParameter("LHCperiod");
+		TString lhcPeriod = GetLHCPeriod();
 	
 		if (lhcPeriod.Length() == 0) 
 		{
@@ -913,16 +901,11 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 			return 0;
 		}
 		
-		// TODO: currently SHUTTLE cannot write in /alice/data/ !!!!!
-		//dir = Form("%s/GRP/RunMetadata/alice/data/%s/%s/%d/Raw", 
-		//		localBaseFolder.Data(), year.Data(), 
-		//		lhcPeriod.Data(), GetCurrentRun());
-		//alienDir = dir(dir.Index("/alice/data/"), dir.Length());
-		
-		dir = Form("%s/GRP/RunMetadata/alice/simulation/%s/%s/%d/Raw", 
-				localBaseFolder.Data(), year.Data(), 
+		dir = Form("%s/GRP/RunMetadata/alice/data/%d/%s/%09d/Raw", 
+				localBaseFolder.Data(), GetCurrentYear(), 
 				lhcPeriod.Data(), GetCurrentRun());
-		alienDir = dir(dir.Index("/alice/simulation/"), dir.Length());
+		alienDir = dir(dir.Index("/alice/data/"), dir.Length());
+		
 		begin = "";
 	}
 	else 
@@ -985,6 +968,8 @@ Bool_t AliShuttle::CopyFilesToGrid(const char* type)
 			
 			if (!result->GetFileName(1)) // TODO: It looks like element 0 is always 0!!
 			{
+				// TODO It does not work currently! Bug in TAliEn::Mkdir
+				// TODO Manually fixed in local root v5-16-00
 				if (!gGrid->Mkdir(alienDir.Data(),"-p",0))
 				{
 					Log("SHUTTLE", Form("CopyFilesToGrid - Cannot create directory %s",
@@ -1349,6 +1334,7 @@ Bool_t AliShuttle::ContinueProcessing()
 		if (status->GetStatus() == AliShuttleStatus::kDCSError || 
 			status->GetStatus() == AliShuttleStatus::kDCSStarted)
 				increaseCount = kFALSE;
+				
 		UpdateShuttleStatus(AliShuttleStatus::kStarted, increaseCount);
 		cont = kTRUE;
 	}
@@ -1434,6 +1420,22 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	// Initialization
 	Bool_t hasError = kFALSE;
 
+	// Set the CDB and Reference folders according to the year and LHC period
+	TString lhcPeriod(GetLHCPeriod());
+	if (lhcPeriod.Length() == 0) 
+	{
+		Log("SHUTTLE","StoreRunMetaDataFile - LHCPeriod not found in logbook!");
+		return 0;
+	}	
+	
+	if (fgkMainCDB.Length() == 0)
+		fgkMainCDB = Form("alien://folder=/alice/data/%d/%s/OCDB?user=alidaq?cacheFold=/tmp/OCDBCache", 
+					GetCurrentYear(), lhcPeriod.Data());
+	
+	if (fgkMainRefStorage.Length() == 0)
+		fgkMainRefStorage = Form("alien://folder=/alice/data/%d/%s/Reference?user=alidaq?cacheFold=/tmp/OCDBCache", 
+					GetCurrentYear(), lhcPeriod.Data());
+	
 	AliCDBStorage *mainCDBSto = AliCDBManager::Instance()->GetStorage(fgkMainCDB);
 	if(mainCDBSto) mainCDBSto->QueryCDB(GetCurrentRun());
 	AliCDBStorage *mainRefSto = AliCDBManager::Instance()->GetStorage(fgkMainRefStorage);
@@ -1581,7 +1583,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			}
 			
 			TString wd = gSystem->WorkingDirectory();
-			TString tmpDir = Form("%s/%s_process", GetShuttleTempDir(), fCurrentDetector.Data());
+			TString tmpDir = Form("%s/%s_%d_process", GetShuttleTempDir(), 
+				fCurrentDetector.Data(), GetCurrentRun());
 			
 			Int_t result = gSystem->GetPathInfo(tmpDir.Data(), 0, (Long64_t*) 0, 0, 0);
 			if (!result) // temp dir already exists!
@@ -1589,12 +1592,12 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 				Log(fCurrentDetector.Data(), 
 					Form("Process - %s dir already exists! Removing...", tmpDir.Data()));
 				gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));		
-			} else {
-				if (gSystem->mkdir(tmpDir.Data(), 1))
-				{
-					Log(fCurrentDetector.Data(), "Process - could not make temp directory!!");
-					gSystem->Exit(1);
-				}
+			} 
+			
+			if (gSystem->mkdir(tmpDir.Data(), 1))
+			{
+				Log(fCurrentDetector.Data(), "Process - could not make temp directory!!");
+				gSystem->Exit(1);
 			}
 			
 			if (!gSystem->ChangeDirectory(tmpDir.Data())) 
@@ -1773,9 +1776,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 				{
 					Log(fCurrentDetector, 
 						Form("ProcessCurrentDetector -"
-							" Error retrieving DCS aliases from server %s", 
-								host.Data()));
+							" Error retrieving DCS aliases from server %s."
+							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
+					
+					if (!SendMailToDCS())
+						Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
+
 					delete dcsMap;
 					return kFALSE;
 				}
@@ -1790,9 +1797,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 				{
 					Log(fCurrentDetector, 
 						Form("ProcessCurrentDetector -"
-							" Error retrieving DCS data points from server %s", 
-								host.Data()));
+							" Error retrieving DCS data points from server %s."
+							" Sending mail to DCS experts!", host.Data()));
 					UpdateShuttleStatus(AliShuttleStatus::kDCSError);
+					
+					if (!SendMailToDCS())
+						Log("SHUTTLE", Form("ProcessCurrentDetector - Could not send mail to DCS experts!"));
+					
 					if (aliasMap) delete aliasMap;
 					delete dcsMap;
 					return kFALSE;
@@ -2116,8 +2127,8 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 				filePath.Data(), fileSize.Data(), fileChecksum.Data()));
 
 	// retrieved file is renamed to make it unique
-	TString localFileName = Form("%s/%s_process/%s_%s_%d_%s_%s.shuttle",
-					GetShuttleTempDir(), detector,
+	TString localFileName = Form("%s/%s_%d_process/%s_%s_%d_%s_%s.shuttle",
+					GetShuttleTempDir(), detector, GetCurrentRun(),
 					GetSystemName(system), detector, GetCurrentRun(), 
 					id, sourceName.Data());
 
@@ -2164,13 +2175,13 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	TObjString *fileParams = new TObjString(Form("%s#!?!#%s", id, sourceName.Data()));
 	fFXSlist[system].Add(fileParams);
 
-	static TString staticLocalFileName = localFileName;
-	//fullLocalFileName.Form("%s/%s_process/%s", GetShuttleTempDir(), detector, localFileName.Data());
-
+	static TString staticLocalFileName;
+	staticLocalFileName.Form("%s", localFileName.Data());
+	
 	Log(fCurrentDetector, Form("GetFile - Retrieved file with id %s and "
 			"source %s from %s to %s", id, source, 
 			GetSystemName(system), localFileName.Data()));
-
+			
 	return staticLocalFileName.Data();
 }
 
@@ -2677,6 +2688,34 @@ UInt_t AliShuttle::GetCurrentEndTime() const
 }
 
 //______________________________________________________________________________________________
+UInt_t AliShuttle::GetCurrentYear() const
+{
+	//
+	// Get current year from logbook entry
+	//
+
+	if (!fLogbookEntry) return 0;
+	
+	TTimeStamp startTime(GetCurrentStartTime());
+	TString year =  Form("%d",startTime.GetDate());
+	year = year(0,4);
+	
+	return year.Atoi();
+}
+
+//______________________________________________________________________________________________
+const char* AliShuttle::GetLHCPeriod() const
+{
+	//
+	// Get current LHC period from logbook entry
+	//
+
+	if (!fLogbookEntry) return 0;
+		
+	return fLogbookEntry->GetRunParameter("LHCperiod");
+}
+
+//______________________________________________________________________________________________
 void AliShuttle::Log(const char* detector, const char* message)
 {
 	//
@@ -2949,7 +2988,7 @@ Bool_t AliShuttle::SendMail()
 	{
 		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE))
 		{
-			AliError(Form("Can't open directory <%s>", GetShuttleLogDir()));
+			Log("SHUTTLE", Form("SendMail - Can't open directory <%s>", GetShuttleLogDir()));
 			return kFALSE;
 		}
 
@@ -2966,7 +3005,7 @@ Bool_t AliShuttle::SendMail()
 
   	if (!mailBody.is_open())
 	{
-    		AliError(Form("Could not open mail body file %s", bodyFileName.Data()));
+    		Log("SHUTTLE", Form("Could not open mail body file %s", bodyFileName.Data()));
     		return kFALSE;
   	}
 
@@ -2994,6 +3033,104 @@ Bool_t AliShuttle::SendMail()
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
 			"failed processing run %d!!\n\n", GetCurrentRun());
+	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", fCurrentDetector.Data());
+	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	body += Form("Find the %s log for the current run on \n\n"
+		"\thttp://pcalishuttle01.cern.ch:8880/logs/%s_%d.log \n\n", 
+		fCurrentDetector.Data(), fCurrentDetector.Data(), GetCurrentRun());
+	body += Form("The last 10 lines of %s log file are following:\n\n");
+
+	AliDebug(2, Form("Body begin: %s", body.Data()));
+
+	mailBody << body.Data();
+  	mailBody.close();
+  	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
+
+	TString logFileName = Form("%s/%s_%d.log", GetShuttleLogDir(), fCurrentDetector.Data(), GetCurrentRun());
+	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
+	if (gSystem->Exec(tailCommand.Data()))
+	{
+		mailBody << Form("%s log file not found ...\n\n", fCurrentDetector.Data());
+	}
+
+	TString endBody = Form("------------------------------------------------------\n\n");
+	endBody += Form("In case of problems please contact the SHUTTLE core team.\n\n");
+	endBody += "Please do not answer this message directly, it is automatically generated.\n\n";
+	endBody += "Greetings,\n\n \t\t\tthe SHUTTLE\n";
+
+	AliDebug(2, Form("Body end: %s", endBody.Data()));
+
+	mailBody << endBody.Data();
+
+  	mailBody.close();
+
+	// send mail!
+	TString mailCommand = Form("mail -s \"%s\" -c %s %s < %s",
+						subject.Data(),
+						cc.Data(),
+						to.Data(),
+						bodyFileName.Data());
+	AliDebug(2, Form("mail command: %s", mailCommand.Data()));
+
+	Bool_t result = gSystem->Exec(mailCommand.Data());
+
+	return result == 0;
+}
+
+//______________________________________________________________________________________________
+Bool_t AliShuttle::SendMailToDCS()
+{
+	//
+	// sends a mail to the DCS experts in case of DCS error
+	//
+	
+	if (fTestMode != kNone)
+		return kTRUE;
+
+	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
+	if (dir == NULL)
+	{
+		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE))
+		{
+			Log("SHUTTLE", Form("SendMailToDCS - Can't open directory <%s>", GetShuttleLogDir()));
+			return kFALSE;
+		}
+
+	} else {
+		gSystem->FreeDirectory(dir);
+	}
+
+  	TString bodyFileName;
+  	bodyFileName.Form("%s/mail.body", GetShuttleLogDir());
+  	gSystem->ExpandPathName(bodyFileName);
+
+  	ofstream mailBody;
+  	mailBody.open(bodyFileName, ofstream::out);
+
+  	if (!mailBody.is_open())
+	{
+    		Log("SHUTTLE", Form("SendMailToDCS - Could not open mail body file %s", bodyFileName.Data()));
+    		return kFALSE;
+  	}
+
+	TString to="Vladimir.Fekete@cern.ch, Svetozar.Kapusta@cern.ch";
+	//TString to="alberto.colla@cern.ch";
+	AliDebug(2, Form("to: %s",to.Data()));
+
+	if (to.IsNull()) {
+		Log("SHUTTLE", "List of detector responsibles not yet set!");
+		return kFALSE;
+	}
+
+	TString cc="alberto.colla@cern.ch";
+
+	TString subject = Form("Retrieval of data points for %s FAILED in run %d !",
+				fCurrentDetector.Data(), GetCurrentRun());
+	AliDebug(2, Form("subject: %s", subject.Data()));
+
+	TString body = Form("Dear DCS experts, \n\n");
+	body += Form("SHUTTLE couldn\'t retrieve the data points for detector %s "
+			"in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
 	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", fCurrentDetector.Data());
 	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
 	body += Form("Find the %s log for the current run on \n\n"
