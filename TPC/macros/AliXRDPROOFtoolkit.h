@@ -37,6 +37,11 @@ class AliXRDPROOFtoolkit : public TObject
   //
   Bool_t ListOfFiles(const char*fileName, const char*path, const char*filter,  Bool_t displayMachine);
   //
+  //
+  Bool_t  XRDCopyDir(const char * idir, const char * files, const char *odir, Bool_t zip); 
+
+
+  //
   // Interface for users with ssh access to the machines
   //
   void      FilterSegFault(const char *filter="last");
@@ -44,7 +49,7 @@ class AliXRDPROOFtoolkit : public TObject
   TTree *   DumpSys(Bool_t verbose=kTRUE);
   TTree *   DumpSys2(Bool_t verbose=kTRUE);
   TTree *   DumpFiles(Bool_t verbose=kTRUE);
-  //   
+  //
   void CheckFiles (const char*fileIn, UInt_t checkLevel, const char*treeToRetrieve, const char*varexp, const char*selection);
   void AddMachine (const char*name);
   Int_t         fVerbose;          // verbso mode  - print command 

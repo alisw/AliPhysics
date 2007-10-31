@@ -578,9 +578,39 @@ void AliXRDPROOFtoolkit::CheckFiles (const char*fileIn, UInt_t checkLevel, const
   fout.Close();
   focGood.close();
   focBad.close();
- 
+  
 }
 
+
+
+Bool_t  AliXRDPROOFtoolkit::XRDCopyDir(const char * idir, const char * files, const char *odir, Bool_t zip){
+  //
+  // idir  - input directory
+  // odir  - output directory
+  // files - the list of files to be coppied
+  // zip   - not supported yet
+  //
+  // Example :									
+  //
+  // idir ="root://gsiaf.gsi.de:1094//sma/sim/v4-05-Rev-03/pp/0000";
+  // odir ="root://lxgrid2.gsi.de:1094//miranov/test/pp/0000"; 
+  // char *files="AliESDs.root AliESDfriend.root Kinematics.root";
+  TString str(files);
+  TObjArray * array = str.Tokenize(" "); 
+  Int_t nfiles = array->GetEntries();
+  char infile[1000];
+  char outfile[1000];
+  char command[20000];
+  Bool_t succes=kTRUE;
+  for (Int_t ifile =0; ifile<nfiles; ifile++){
+    sprintf(infile,"%s/%s", idir, array->At(ifile)->GetName());
+    sprintf(outfile,"%s/%s", odir, array->At(ifile)->GetName());
+    printf("%s - %s\n",infile, outfile);
+    Bool_t result = TFile::Cp(infile,outfile); 
+    succes &= result;
+  }
+  return succes;
+}
 
 
 
