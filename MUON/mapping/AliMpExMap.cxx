@@ -75,8 +75,8 @@ Long_t  AliMpExMap::GetIndex(const TString& s)
 /// Convert the TString to integer.
 
   if (s.Length() > 5) {
-    AliFatalClass("String too long.");
-    return 0;
+    AliErrorClass("String too long.");
+    return -1;
   }  
 
   Long_t index = 0;
