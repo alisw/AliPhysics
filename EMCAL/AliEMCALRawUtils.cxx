@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/10/31 17:15:24  mvl
+ * Fixed bug in raw data unpacking; Added pedestal to signal fit; Added logic to deal with high/low gain
+ *
  * Revision 1.3  2007/09/27 08:36:46  mvl
  * More robust setting of fit range in FitRawSignal (P. Hristov)
  *
@@ -203,6 +206,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   AliCaloRawStream in(reader,"EMCAL");
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
+  in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
+  
+  cout << "Stream set up" << endl;
 
   // reading is from previously existing AliEMCALGetter.cxx
   // ReadRaw method
@@ -219,11 +225,15 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
 
   while (readOk && in.GetModule() < 0) 
     readOk = in.Next();  // Go to first digit
+
   while (readOk) { 
     id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
     lowGain = in.IsLowGain();
-    Int_t nTime = in.GetTimeLength()-1;
     Int_t maxTime = in.GetTime();  // timebins come in reverse order
+    if (maxTime < 0 || maxTime >= GetRawFormatTimeBins()) {
+      AliWarning(Form("Invalid time bin %d",maxTime));
+      maxTime = GetRawFormatTimeBins();
+    }
     gSig->Set(maxTime+1);
     // There is some kind of zero-suppression in the raw data, 
     // so set up the TGraph in advance
@@ -308,46 +318,78 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
 {
   // Fits the raw signal time distribution; from AliEMCALGetter 
 
-  const Int_t kNoiseThreshold = 5 ;
-  Double_t timezero1 = 0., timezero2 = 0., timemax = 0. ;
-  Double_t ttime, signal = 0., signalmax = 0. ;       
+  const Int_t kNoiseThreshold = 5;
+  const Int_t kNPedSamples = 10;
   amp = time = 0. ; 
   Double_t ped = 0;
   Int_t nPed = 0;
 
-  timezero1 = signalmax = timemax = 0. ;
-  timezero2 = 0;
-  Int_t index ; 
-  for (index = 0; index < 10; index++) {
+  for (Int_t index = 0; index < kNPedSamples; index++) {
+    Double_t ttime, signal;
     gSig->GetPoint(index, ttime, signal) ; 
     if (signal > 0) {
       ped += signal;
       nPed++;
     }
   }
+
   if (nPed > 0)
     ped /= nPed;
-  else
+  else {
+    AliWarning("Could determine pedestal");	  
     ped = 10; // put some small value as first guess
+  }
 
-  for (index = 0; index < gSig->GetN(); index++) {
-    gSig->GetPoint(index, ttime, signal) ; 
-    if (signal > ped + kNoiseThreshold && timezero1 == 0.) 
-      timezero1 = ttime ;
-    if (signal <= ped + kNoiseThreshold && timezero1 > 0. && timezero2 == 0.)
-      timezero2 = ttime ; 
-    if (signal > signalmax && timezero2 == 0) {
-      signalmax = signal ; 
-      timemax   = ttime ; 
+  Int_t max_found = 0;
+  Int_t i_max = 0;
+  Float_t max = -1;
+  Float_t tmax = 0;
+  Float_t max_fit = gSig->GetN()*GetRawFormatTimeBinWidth();
+  Float_t min_after_sig = 9999;
+  Int_t imin_after_sig = gSig->GetN();
+  Float_t tmin_after_sig = gSig->GetN()*GetRawFormatTimeBinWidth();
+  Int_t n_ped_after_sig = 0;
+
+  for (Int_t i=kNPedSamples; i < gSig->GetN(); i++) {
+    Double_t ttime, signal;
+    gSig->GetPoint(i, ttime, signal) ; 
+    if (!max_found && signal > max) {
+      i_max = i;
+      tmax = ttime;
+      max = signal;
+    }
+    else if ( max > ped + kNoiseThreshold ) {
+      max_found = 1;
+      min_after_sig = signal;
+      imin_after_sig = i;
+      tmin_after_sig = ttime;
+    }
+    if (max_found) {
+      if ( signal < min_after_sig) {
+        min_after_sig = signal;
+	imin_after_sig = i;
+        tmin_after_sig = ttime;
+      }
+      if (i > tmin_after_sig + 5) {  // Two close peaks; end fit at minimum
+        max_fit = tmin_after_sig;
+        break;
+      }
+      if ( signal < ped + kNoiseThreshold)
+        n_ped_after_sig++;
+      if (n_ped_after_sig >= 5) {  // include 5 pedestal bins after peak
+        max_fit = ttime;
+        break;
+      }
     }
   }
 
-  AliDebug(2,Form("Fitting signalmax %d ped %d", signalmax, ped));
-  if ( signalmax - ped > kNoiseThreshold ) { // else its noise 
+  if ( max - ped > kNoiseThreshold ) { // else its noise 
+    AliDebug(2,Form("Fitting max %d ped %d", max, ped));
     signalF->SetParameter(0, ped) ; 
-    signalF->SetParameter(1, signalmax - ped) ; 
-    signalF->SetParameter(2, timemax) ; 
-    gSig->Fit(signalF, "QRON", "", 0., timezero2); //, "QRON") ; 
+    signalF->SetParameter(1, max - ped) ; 
+    signalF->SetParameter(2, tmax) ; 
+    signalF->SetParLimits(2, 0, max_fit) ; 
+    gSig->Fit(signalF, "QRON", "", 0., max_fit); //, "QRON") ; 
     amp = signalF->GetParameter(1); 
     time = signalF->GetParameter(2) - fgTimeTrigger;
   }
