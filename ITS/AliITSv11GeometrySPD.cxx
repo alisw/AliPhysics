@@ -66,8 +66,7 @@ AliITSv11GeometrySPD::AliITSv11GeometrySPD(Double_t gap) :
 	// This does not initialize anything and is provided just for completeness.
 	// It is recommended to use the other one.
 	// The alignment gap is specified as argument (default = 0.0075 cm).
-	//
-	
+	//	
 	Int_t i = 0;
 	for (i = 0; i < 6; i++) fAddStave[i] = kTRUE;
 }
@@ -82,8 +81,7 @@ AliITSv11GeometrySPD::AliITSv11GeometrySPD(Int_t debug, Double_t gap):
 	// This is the constructor which is recommended to be used.
 	// It sets a debug level, and initializes the name of the object.
 	// The alignment gap is specified as argument (default = 0.0075 cm).
-	//
-	
+	//		
 	Int_t i = 0;
 	for (i = 0; i < 6; i++) fAddStave[i] = kTRUE;
 }
@@ -2753,7 +2751,7 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr) {
 	TArrayD staveSizes1(3), staveSizes2(3);
 	Double_t &staveHeight = staveSizes1[2], &staveThickness = staveSizes1[0];
 	TGeoVolume *stave1        = CreateStave(1, staveSizes1, kFALSE, mgr);
-	TGeoVolume *stave2clips   = CreateStave(2, staveSizes2, kTRUE, mgr);
+	//TGeoVolume *stave2clips   = CreateStave(2, staveSizes2, kTRUE, mgr);
 	TGeoVolume *stave2noclips = CreateStave(2, staveSizes2, kFALSE, mgr);
 	
 	Double_t xL, yL;      // leftmost edge of mounting point (XY projection)
@@ -2810,10 +2808,10 @@ void AliITSv11GeometrySPD::StavesInSector(TGeoVolume *moth, TGeoManager *mgr) {
 		}
 		else {
 			if (i == 2) {
-				moth->AddNode(stave2noclips, i, trans);
+				moth->AddNode(stave2noclips, i - 2, trans);
 			}
 			else {
-				moth->AddNode(stave2clips, i, trans);
+				moth->AddNode(stave2noclips, i - 2, trans);
 			}
 		}
 	}
