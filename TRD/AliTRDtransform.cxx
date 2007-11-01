@@ -238,6 +238,7 @@ void AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
 
   if (!fMatrix) {
 
+    AliWarning("No transformation matrix available!");
     x[0] = 0.0;
     x[1] = 0.0;
     x[2] = 0.0;
