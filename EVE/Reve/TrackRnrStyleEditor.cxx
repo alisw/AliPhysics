@@ -153,7 +153,8 @@ void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
   {
     fPMAtt = new TAttMarkerEditor(fRefsCont);
     TGFrameElement *el = (TGFrameElement*) fPMAtt->GetList()->First();
-    TGFrame *f = el->fFrame; fPMAtt->RemoveFrame(f); delete f;
+    TGFrame *f = el->fFrame; fPMAtt->RemoveFrame(f);
+    f->DestroyWindow(); delete f;
     fRefsCont->AddFrame(fPMAtt, new TGLayoutHints(kLHintsTop, 1, 1, 3, 1));
   }
 
@@ -175,7 +176,8 @@ void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
   {
     fFVAtt = new TAttMarkerEditor(fRefsCont);
     TGFrameElement *el = (TGFrameElement*) fFVAtt->GetList()->First();
-    TGFrame *f = el->fFrame; fFVAtt->RemoveFrame(f); delete f;
+    TGFrame *f = el->fFrame; fFVAtt->RemoveFrame(f);
+    f->DestroyWindow(); delete f;
     fRefsCont->AddFrame(fFVAtt, new TGLayoutHints(kLHintsTop, 1, 1, 3, 1));
   }
   p->AddFrame(fRefsCont,new TGLayoutHints(kLHintsTop| kLHintsExpandX));

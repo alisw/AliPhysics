@@ -244,7 +244,7 @@ void RGDoubleValuator::Build(Bool_t connect)
   }
 
   // entries
-  fMinEntry = new TGNumberEntry(this, 0, fNELength);
+  fMinEntry = new TGNumberEntry(hf1, 0, fNELength);
   fMinEntry->SetHeight(fNEHeight);
   fMinEntry->GetNumberEntry()->SetToolTipText("Enter Slider Min Value");
   hf1->AddFrame(fMinEntry, new TGLayoutHints(kLHintsLeft, 0,0,0,0));
@@ -253,7 +253,7 @@ void RGDoubleValuator::Build(Bool_t connect)
 		       "Reve::RGDoubleValuator", this, "MinEntryCallback()");
   fMinEntry->Associate(this);   
    
-  fMaxEntry = new TGNumberEntry(this, 0, fNELength);
+  fMaxEntry = new TGNumberEntry(hf1, 0, fNELength);
   fMaxEntry->SetHeight(fNEHeight);
   fMaxEntry->GetNumberEntry()->SetToolTipText("Enter Slider Max Value");
   hf1->AddFrame(fMaxEntry,  new TGLayoutHints(kLHintsLeft, 2,0,0,0));
