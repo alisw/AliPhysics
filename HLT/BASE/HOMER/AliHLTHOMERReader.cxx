@@ -68,6 +68,12 @@ extern int h_errno;
 #define GET_ONE "GET ONE\n"
 #define GET_ALL "GET ALL\n"
 
+// MAXHOSTNAMELEN not defined on macosx
+// 686-apple-darwin9-gcc-4.0.1
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 64
+#endif
+
 #ifdef USE_ROOT
 ClassImp(AliHLTMonitoringReader);
 ClassImp(AliHLTHOMERReader);
