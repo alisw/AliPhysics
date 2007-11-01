@@ -90,7 +90,9 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   //
 
   fGeo               = new AliTRDgeometry();
-  fGeo->CreateClusterMatrixArray();
+  if (!fGeo->CreateClusterMatrixArray()) {
+    AliError("Could not get transformation matrices\n");
+  }
 
   fParam             = AliTRDCommonParam::Instance();
   if (!fParam) {
