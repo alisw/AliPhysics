@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/11/01 01:20:33  mvl
+ * Further improvement of peak finding; more robust fit
+ *
  * Revision 1.4  2007/10/31 17:15:24  mvl
  * Fixed bug in raw data unpacking; Added pedestal to signal fit; Added logic to deal with high/low gain
  *
@@ -206,7 +209,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   AliCaloRawStream in(reader,"EMCAL");
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
-  in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
+  //in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
   
   cout << "Stream set up" << endl;
 
