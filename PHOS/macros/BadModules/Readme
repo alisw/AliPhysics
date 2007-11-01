@@ -1,0 +1,9 @@
+This dir contains compilable macros for selecting bad modules
+using ESD. This is done in 2 steps:
+1. Make scan of ESD data using macro scanESD.C. It produces 
+   set of spectra of (all) clusters with centers in different channels.
+2. Analyze produced spectra with macro makeBadModESD.C. It produces
+   bad map in the form of TH2S and CDB entry (locally).
+
+
+ 
