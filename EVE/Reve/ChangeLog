@@ -1,3 +1,9 @@
+2007-11-01  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* RGValuators.cxx:
+	* TrackRnrStyleEditor.cxx:
+	From Bertrand: Windows fixes.
+
 2007-10-23  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* GeoNode.cxx:
