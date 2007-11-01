@@ -120,7 +120,7 @@ endif
 @PACKAGE@FO:=$(@PACKAGE@SMALLFO) $(@PACKAGE@CAPITFO)
 @PACKAGE@O:= $(@PACKAGE@CXXO) $(@PACKAGE@FO) $(@PACKAGE@CO)
 @PACKAGE@CHV:=$(patsubst %,$(MODDIRC)/%, $(SRCS:.cxx=.viol))
-@PACKAGE@SML:=$(patsubst %,$(MODDIRZ)/%, $(SRCS:.cxx=.smell))
+@PACKAGE@SML:=$(sort $(patsubst %,$(MODDIRZ)/%, $(filter $(SRCS:.cxx=.smell),$(HDRS:.h=.smell))))
 
 
 ifdef WITHDICT
