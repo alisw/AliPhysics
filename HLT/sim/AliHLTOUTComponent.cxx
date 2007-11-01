@@ -144,7 +144,9 @@ int AliHLTOUTComponent::DoDeinit()
     AliHLTMonitoringWriterPVector::iterator element=fWriters.begin();
     while (element!= fWriters.end()) {
       assert(*element);
-      if (*element!=NULL) fpLibManager->DeleteWriter(dynamic_cast<AliHLTHOMERWriter*>(*element));
+      // wanted to have a dynamic_cast<AliHLTHOMERWriter*> here, but this results into
+      // undefined symbol when loading the library
+      if (*element!=NULL) fpLibManager->DeleteWriter((AliHLTHOMERWriter*)(*element));
       element=fWriters.erase(element);
     }
   }
@@ -186,7 +188,6 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   
   // search for the writer with the biggest data volume in order to allocate the
   // output buffer of sufficient size
-  AliHLTMonitoringWriterPVector::iterator writer=fWriters.begin();
   vector<int> sorted;
   for (int i=0; i<fWriters.size(); i++) {
     assert(fWriters[i]);
@@ -197,7 +198,6 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
 	sorted.push_back(i);
       }
     }
-    writer++;
   }
 
   vector<int>::iterator ddlno=sorted.begin();
@@ -205,7 +205,7 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
     const AliHLTUInt8_t* pBuffer=NULL;
     int bufferSize=0;
     
-    if ((bufferSize=FillOutputBuffer(eventNo, *writer, pBuffer))>0) {
+    if ((bufferSize=FillOutputBuffer(eventNo, fWriters[*ddlno], pBuffer))>0) {
       if (fWriteDigits) WriteDigits(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
       if (fWriteRaw) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
     }
