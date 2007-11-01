@@ -8,8 +8,7 @@ void SETUP()
    // Load the ESD library
    gSystem->Load("libESD");
 
-   // Set the Inlucde paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -IESD");
+   // Set the include paths
    gROOT->ProcessLine(".include ESD");
 
    // Set our location, so that other packages can find us

@@ -5,24 +5,24 @@ default-target: libANALYSIS.so
 
 ALICEINC      = -I.
 
-### define include dir for local case and par case
+# add include paths from other par files
 ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(ESD_INCLUDE)
-	ifneq ($(AOD_INCLUDE),)
-		ALICEINC += -I../$(AOD_INCLUDE)
-	endif
-	ifneq ($(STEERBase_INCLUDE),)
-		ALICEINC += -I../$(STEERBase_INCLUDE)
-	endif				
-else
-  ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include 
-  endif
 endif
 
-# for building of ANALYSIS.par
-ifneq ($(ANALYSIS_INCLUDE),)
-  ALICEINC += -I../$(ANALYSIS_INCLUDE)
+ifneq ($(AOD_INCLUDE),)
+   ALICEINC += -I../$(AOD_INCLUDE)
+endif
+
+ifneq ($(STEERBase_INCLUDE),)
+   ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
+
+# only if no par file was loaded before
+ifeq ($(ALICEINC),-I.)
+  ifneq ($(ALICE_ROOT),)
+    ALICEINC += -I$(ALICE_ROOT)/include
+  endif
 endif
 
 CXXFLAGS     += $(ALICEINC) -g

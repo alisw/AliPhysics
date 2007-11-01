@@ -4,8 +4,7 @@ void SETUP()
    gSystem->Load("libVMC");
    gSystem->Load("libSTEERBase");
 
-   // Set the Inlucde paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -ISTEERBase");
+   // Set the include paths
    gROOT->ProcessLine(".include STEERBase");
 
    // Set our location, so that other packages can find us
