@@ -1,3 +1,9 @@
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// AliFemtoShareQualityPairCut - a pair cut which checks for some pair     //
+// qualities that attempt to identify slit/doubly reconstructed tracks     //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 /***************************************************************************
  *
  * $Id$
@@ -14,8 +20,8 @@
  **************************************************************************/
 
 
-#ifndef AliFemtoShareQualityPairCut_hh
-#define AliFemtoShareQualityPairCut_hh
+#ifndef ALIFEMTOSHAREQUALITYPAIRCUT_H
+#define ALIFEMTOSHAREQUALITYPAIRCUT_H
 
 // do I need these lines ?
 //#ifndef StMaker_H
@@ -27,20 +33,28 @@
 class AliFemtoShareQualityPairCut : public AliFemtoPairCut{
 public:
   AliFemtoShareQualityPairCut();
-  AliFemtoShareQualityPairCut(const AliFemtoShareQualityPairCut&);
-  ~AliFemtoShareQualityPairCut();
-
-  virtual bool Pass(const AliFemtoPair*);
+  AliFemtoShareQualityPairCut(const AliFemtoShareQualityPairCut& cut);
+  virtual ~AliFemtoShareQualityPairCut();
+  
+  virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
   AliFemtoShareQualityPairCut* Clone();
   void SetShareQualityMax(Double_t aAliFemtoShareQualityMax);
-  Double_t GetAliFemtoShareQualityMax();
+  Double_t GetAliFemtoShareQualityMax() const;
+  void SetShareFractionMax(Double_t aAliFemtoShareFractionMax);
+  Double_t GetAliFemtoShareFractionMax() const;
+  void     SetRemoveSameLabel(Bool_t aRemove);
+  
+ protected:
+  long fNPairsPassed;          // Number of pairs consideered that passed the cut 
+  long fNPairsFailed;          // Number of pairs consideered that failed the cut
 
-private:
-  long fNPairsPassed;
-  long fNPairsFailed;
-  Double_t fShareQualityMax;
+ private:
+  Double_t fShareQualityMax;   // Maximum allowed pair quality
+  Double_t fShareFractionMax;  // Maximum allowed share fraction
+  Bool_t   fRemoveSameLabel;   // If 1 pairs with two tracks with the same label will be removed 
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoShareQualityPairCut, 0)
@@ -51,7 +65,8 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   AliFemtoPairCut(c),
   fNPairsPassed(0),
   fNPairsFailed(0),
-  fShareQualityMax(1.0) // no cut
+  fShareQualityMax(1.0),
+  fShareFractionMax(1.0)// no cut
 { /* no-op */ }
 
 inline AliFemtoShareQualityPairCut* AliFemtoShareQualityPairCut::Clone() { AliFemtoShareQualityPairCut* c = new AliFemtoShareQualityPairCut(*this); return c;}

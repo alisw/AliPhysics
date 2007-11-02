@@ -12,6 +12,9 @@
 /*
  *$Id$
  *$Log$
+ *Revision 1.1  2007/05/25 12:42:54  akisiel
+ *Adding a reader for the Kine information
+ *
  *Revision 1.1  2007/05/16 10:22:11  akisiel
  *Making the directory structure of AliFemto flat. All files go into one common directory
  *
@@ -27,16 +30,15 @@
  */
   
 
-#ifndef ALIFEMTOEVENTREADERESD_H
-#define ALIFEMTOEVENTREADERESD_H
+#ifndef ALIFEMTOEVENTREADERESDKINE_H
+#define ALIFEMTOEVENTREADERESDKINE_H
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEnumeration.h"
 
 #include <string>
 #include <vector>
-#include "TTree.h"
-#include "AliESD.h"
-#include "AliESDfriend.h"
+#include "TChain.h"
+#include "AliESDEvent.h"
 #include <list>
 #include "AliRunLoader.h"
 #include "AliFemtoModelHiddenInfo.h"
@@ -53,7 +55,7 @@ class AliFemtoEventReaderESDKine : public AliFemtoEventReader
   AliFemtoEventReaderESDKine& operator=(const AliFemtoEventReaderESDKine& aReader);
 
   AliFemtoEvent* ReturnHbtEvent();
-  AliFemtoString Report();
+  AliFemtoString Report() const;
   //void SetFileName(const char* fileName);
   void SetInputFile(const char* inputFile);
   void SetConstrained(const bool constrained);
@@ -62,23 +64,15 @@ class AliFemtoEventReaderESDKine : public AliFemtoEventReader
  protected:
 
  private:
-  bool           GetNextFile();     // setting next file to read 
-
-  string         fInputFile;        // name of input file with ESD filenames
-  string         fFileName;         // name of current ESD file
+  TString        fInputFile;        // name of input file with ESD filenames
+  TString        fFileName;         // name of current ESD file
   bool           fConstrained;      // flag to set which momentum from ESD file will be use
   int            fNumberofEvent;    // number of Events in ESD file
   int            fCurEvent;         // number of current event
-  unsigned int   fCurFile;          // number of current file
-  vector<string> fListOfFiles;      // list of ESD files 		
-  TTree*         fTree;             // ESD tree
-  AliESD*        fEvent;            // ESD event
-  TFile*         fEsdFile;          // ESD file 
-  AliESDfriend*  fEventFriend;      // ESD friend informaion
+  int            fCurRLEvent;       // Current simulated event
+  TChain*        fTree;             // ESD tree
+  AliESDEvent*   fEvent;            // ESD event
   AliRunLoader*  fRunLoader;        // Run loader for kine reading 
-
-  list<Int_t>  **fSharedList;       //! Table (one list per padrow) of clusters which are shared
-  list<Int_t>  **fClusterPerPadrow; //! Table (one list per padrow) of clusters in each padrow
 		
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDKine, 1)

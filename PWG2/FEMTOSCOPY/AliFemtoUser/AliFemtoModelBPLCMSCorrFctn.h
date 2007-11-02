@@ -6,15 +6,15 @@
 /// Authors: Adam Kisiel, kisiel@mps.ohio-state.edu                          ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoModelBPLCMS3DCorrFctn_hh
-#define AliFemtoModelBPLCMS3DCorrFctn_hh
+#ifndef AliFemtoModelBPLCMSCorrFctn_hh
+#define AliFemtoModelBPLCMSCorrFctn_hh
 
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoModelCorrFctn.h"
 #include "AliFemtoPairCut.h"
 #include "TH3D.h"
 
-class AliFemtoModelBPLCMS3DCorrFctn : public AliFemtoModelCorrFctn {
+class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
  public:
   AliFemtoModelBPLCMSCorrFctn();
   AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi);
@@ -31,26 +31,19 @@ class AliFemtoModelBPLCMS3DCorrFctn : public AliFemtoModelCorrFctn {
 
   virtual void Write();
 
-  virtual AliFemtoModelCorrFctnSource* Clone();
+  virtual AliFemtoModelCorrFctn* Clone();
 
-  TH3D* Numerator();
-  TH3D* Denominator();
-  TH3D* QinvHisto();
+protected:
+  TH3D* fNumerator3DTrue;            // 3D Numerator with pairs from same event only
+  TH3D* fNumerator3DFake;            // 3D Numerator with pairs from mixed events
+  TH3D* fDenominator3D;              // 3D Denominator with the weight of 1.0
 
-private:
-  TH3D* fNumerator;
-  TH3D* fDenominator;
-
-  TH3D* fQinvHisto;
+  TH3D* fQinvHisto;                  // Averag qinv histogram
 
 #ifdef __ROOT__
   ClassDef(AliFemtoModelBPLCMSCorrFctn, 1)
 #endif
 };
-
-inline  TH3D* AliFemtoModelBPLCMSCorrFctn::Numerator(){return fNumerator;}
-inline  TH3D* AliFemtoModelBPLCMSCorrFctn::Denominator(){return fDenominator;}
-inline  TH3D* AliFemtoModelBPLCMSCorrFctn::QinvHisto(){return fQinvHisto;}
 
 #endif
 
