@@ -25,7 +25,7 @@ class AliAltroMapping;
 
 class AliAltroBuffer: public TObject {
  public:
-  AliAltroBuffer(const char* fileName, const AliAltroMapping *mapping = NULL);
+  AliAltroBuffer(const char* fileName, AliAltroMapping *mapping = NULL);
   virtual ~AliAltroBuffer();
 
   void  FillBuffer(Int_t val);
@@ -88,7 +88,7 @@ class AliAltroBuffer: public TObject {
   UInt_t fDataHeaderPos;//Data header position
 
   // Now the parameters for the mapping
-  const AliAltroMapping*    fMapping;      // Pointer to the mapping handler
+  AliAltroMapping*    fMapping;      // Pointer to the mapping handler
 
   ClassDef(AliAltroBuffer,0)  // Interface to the Altro format
 };

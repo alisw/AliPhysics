@@ -31,7 +31,7 @@
 ClassImp(AliAltroBuffer)
 
 //_____________________________________________________________________________
-AliAltroBuffer::AliAltroBuffer(const char* fileName, const AliAltroMapping *mapping):
+AliAltroBuffer::AliAltroBuffer(const char* fileName, AliAltroMapping *mapping):
   fShift(0),
   fCurrentCell(0),
   fFreeCellBuffer(16),

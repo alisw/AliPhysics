@@ -31,7 +31,6 @@ AliTPCAltroMapping::AliTPCAltroMapping():
   fMinPadRow(0),
   fMaxPadRow(0),
   fMaxPad(0),
-  fMapping(NULL),
   fInvMapping(NULL)
 {
   // Default constructor
@@ -43,7 +42,6 @@ AliTPCAltroMapping::AliTPCAltroMapping(const char *mappingFile):
   fMinPadRow(0),
   fMaxPadRow(0),
   fMaxPad(0),
-  fMapping(NULL),
   fInvMapping(NULL)
 {
   // Constructor
@@ -55,7 +53,7 @@ AliTPCAltroMapping::AliTPCAltroMapping(const char *mappingFile):
 AliTPCAltroMapping::~AliTPCAltroMapping()
 {
   // destructor
-  DeleteMappingArrays();
+  if (fInvMapping) delete [] fInvMapping;
 }
 
 //_____________________________________________________________________________
@@ -102,11 +100,27 @@ Bool_t AliTPCAltroMapping::ReadMapping()
     if (pad > fMaxPad) fMaxPad = pad;
   }
 
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliTPCAltroMapping::CreateInvMapping()
+{
+  // Create the inverse mapping
+  // needed for the simulation of
+  // raw data
+  if (fInvMapping) return kTRUE;
+
+  if (!fMapping) {
+    AliWarning("Mapping array was not initalized correctly ! Impossible to create the inverse mapping !");
+    return kFALSE;
+  }
+
   Int_t nRows = fMaxPadRow - fMinPadRow + 1;
   Int_t nPads = fMaxPad + 1;
-  fInvMappingSize = nRows*nPads;
+  Int_t invMappingSize = nRows*nPads;
 
-  fInvMapping = new Short_t[fInvMappingSize];
+  fInvMapping = new Short_t[invMappingSize];
   for (Int_t i = 0; i <= (fMaxPadRow - fMinPadRow); i++) {
     for (Int_t j = 0; j <= fMaxPad; j++) fInvMapping[nPads*i+j] = -1;
   }
@@ -122,14 +136,13 @@ Bool_t AliTPCAltroMapping::ReadMapping()
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCAltroMapping::GetHWAddress(Int_t padrow, Int_t pad, Int_t /* sector */) const
+Int_t AliTPCAltroMapping::GetHWAddress(Int_t padrow, Int_t pad, Int_t /* sector */)
 {
   // Get the content of the mapping array
   // return -1 in case there is no hardware
   // adress defined for these pad-row and pad
   if (!fInvMapping) {
-    AliWarning("Mapping array was not initalized correctly !");
-    return -1;
+    if (!CreateInvMapping()) return -1;
   }
   if (padrow < fMinPadRow || padrow > fMaxPadRow) {
     AliWarning(Form("Index of pad-row (%d) outside the range (%d -> %d) !",padrow,fMinPadRow,fMaxPadRow));
@@ -187,15 +200,4 @@ Int_t AliTPCAltroMapping::GetSector(Int_t /* hwAddress */) const
 {
   AliWarning("Sector index is not contained in the TPC altro mapping !");
   return -1;
-}
-
-//_____________________________________________________________________________
-void AliTPCAltroMapping::DeleteMappingArrays()
-{
-  // Deletes the arrays which have been
-  // allocated during the reading of the
-  // mapping file
-  if (fMapping) delete [] fMapping;
-
-  if (fInvMapping) delete [] fInvMapping;
 }

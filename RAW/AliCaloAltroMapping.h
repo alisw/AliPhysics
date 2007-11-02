@@ -27,7 +27,7 @@ class AliCaloAltroMapping: public AliAltroMapping {
 
   // In case of PHOS/EMCAL the relevant segmentation is row-column-gain
   // or eta-phi-gain
-  virtual Int_t GetHWAddress(Int_t row, Int_t column, Int_t gain) const;
+  virtual Int_t GetHWAddress(Int_t row, Int_t column, Int_t gain);
   // Get Row (not pad-row as in the base class)
   virtual Int_t GetPadRow(Int_t hwAddress) const;
   // Get Column (not pad as in the base class)
@@ -37,22 +37,21 @@ class AliCaloAltroMapping: public AliAltroMapping {
 
  protected:
   virtual Bool_t ReadMapping();
-  virtual void   DeleteMappingArrays();
+  virtual Bool_t CreateInvMapping();
 
   Int_t     fMinRow;        // Minimum row index
   Int_t     fMaxRow;        // Maximum row index
   Int_t     fMinCol;        // Minimum column index
   Int_t     fMaxCol;        // Maximum column index
-  Short_t  *fMapping;       //[fMappingSize] Array which connects hardware adresses to row and column indeces
-  Short_t  *fInvMappingLow; //[fInvMappingSize] Inverse of fMapping (Low gain)
-  Short_t  *fInvMappingHigh;//[fInvMappingSize] Inverse of fMapping (High gain)
+  Short_t  *fInvMappingLow; //! Inverse of fMapping (Low gain)
+  Short_t  *fInvMappingHigh;//! Inverse of fMapping (High gain)
 
  private:
 
   AliCaloAltroMapping(const AliCaloAltroMapping& mapping);
   AliCaloAltroMapping& operator = (const AliCaloAltroMapping& mapping);
 
-  ClassDef(AliCaloAltroMapping,2)  // Altro mapping handler class
+  ClassDef(AliCaloAltroMapping,3)  // Altro mapping handler class
 };
 
 #endif

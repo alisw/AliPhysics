@@ -18,28 +18,29 @@ class AliAltroMapping: public TObject {
   AliAltroMapping(const char *mappingFile);
   virtual ~AliAltroMapping();
 
-  virtual Int_t GetHWAddress(Int_t padrow, Int_t pad, Int_t sector) const = 0;
+  virtual Int_t GetHWAddress(Int_t padrow, Int_t pad, Int_t sector) = 0;
   virtual Int_t GetPadRow(Int_t hwAddress) const = 0;
   virtual Int_t GetPad(Int_t hwAddress) const = 0;
   virtual Int_t GetSector(Int_t hwAddress) const = 0;
 
  protected:
-  Bool_t OpenMappingFile(const char *mappingFile);
-  Bool_t CloseMappingFile();
+  void           CloseMappingFile();
   virtual Bool_t ReadMapping() = 0;
-  virtual void   DeleteMappingArrays() = 0;
+  virtual Bool_t CreateInvMapping() = 0;
 
   ifstream *fIn;               //! External mapping file
   Int_t     fNumberOfChannels; // Number of ALTRO channels
   Int_t     fMaxHWAddress;     // Maximum HW adress
-  Int_t     fMappingSize;      // Maximum size of the mapping array, used by the streamer of derived classes
-  Int_t     fInvMappingSize;   // Maximum size of the inverse mapping arrays, used by the streamer of derived classes
+  Int_t     fMappingSize;      // Size of the mapping array, used by the streamer of derived classes
+  Short_t  *fMapping;          //[fMappingSize] Array which connects hardware adresses to detector element indices
 
  private:
+  Bool_t    OpenMappingFile(const char *mappingFile);
+
   AliAltroMapping(const AliAltroMapping& mapping);
   AliAltroMapping& operator = (const AliAltroMapping& mapping);
 
-  ClassDef(AliAltroMapping,3)  // Altro mapping handler class
+  ClassDef(AliAltroMapping,4)  // Altro mapping handler class
 };
 
 #endif

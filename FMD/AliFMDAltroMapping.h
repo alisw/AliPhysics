@@ -106,21 +106,12 @@ public:
   Bool_t Detector2Hardware(UShort_t  det, Char_t    ring, 
 			   UShort_t  sec, UShort_t  str,
 			   UInt_t&   ddl, UInt_t&   hwaddr) const;
-  /** Here to take care of a a misspelling in base class 
-      @param sector Sector number
-      @param str    Strip number
-      @param ring   Ring ID as an integer 
-      @return Hardware address */
-  Int_t  GetHWAdress(Int_t sector, Int_t str, Int_t ring) const
-  {
-    return GetHWAddress(sector, str, ring);
-  }
   /** convert a partial detector index into a hardware address
       @param sector Sector number
       @param str    Strip number
       @param ring   Ring ID as an integer 
       @return Hardware address */
-  Int_t  GetHWAddress(Int_t sector, Int_t str, Int_t ring) const;
+  Int_t  GetHWAddress(Int_t sector, Int_t str, Int_t ring);
   /** Get the pad-row (or sector) corresponding to hardware address
       @param hwaddr hardware address
       @return Sector number */
@@ -140,10 +131,10 @@ protected:
   /** Read map from file - not used 
       @return @c true on success */
   virtual Bool_t ReadMapping();
-  /** Clear map in memory */
-  virtual void   DeleteMappingArrays();
+  /** Create the inverse mapping arrays */
+  virtual Bool_t CreateInvMapping();
   
-  ClassDef(AliFMDAltroMapping, 1) // Read raw FMD Altro data 
+  ClassDef(AliFMDAltroMapping, 2) // Read raw FMD Altro data 
 };
 
 #endif

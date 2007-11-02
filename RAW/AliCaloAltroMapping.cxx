@@ -36,7 +36,6 @@ AliCaloAltroMapping::AliCaloAltroMapping():
   fMaxRow(0),
   fMinCol(0),
   fMaxCol(0),
-  fMapping(NULL),
   fInvMappingLow(NULL),
   fInvMappingHigh(NULL)
 {
@@ -50,7 +49,6 @@ AliCaloAltroMapping::AliCaloAltroMapping(const char *mappingFile):
   fMaxRow(0),
   fMinCol(0),
   fMaxCol(0),
-  fMapping(NULL),
   fInvMappingLow(NULL),
   fInvMappingHigh(NULL)
 {
@@ -63,7 +61,12 @@ AliCaloAltroMapping::AliCaloAltroMapping(const char *mappingFile):
 AliCaloAltroMapping::~AliCaloAltroMapping()
 {
   // destructor
-  DeleteMappingArrays();
+  // Deletes the arrays which have been
+  // allocated during the reading of the
+  // mapping file
+  if (fInvMappingLow) delete [] fInvMappingLow;
+
+  if (fInvMappingHigh) delete [] fInvMappingHigh;
 }
 
 //_____________________________________________________________________________
@@ -119,13 +122,28 @@ Bool_t AliCaloAltroMapping::ReadMapping()
 
   }
 
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliCaloAltroMapping::CreateInvMapping()
+{
+  // Create the inverse mapping
+  // needed for the simulation of
+  // raw data
+  if (fInvMappingLow) return kTRUE;
+
+  if (!fMapping) {
+    AliWarning("Mapping array was not initalized correctly ! Impossible to create the inverse mapping !");
+    return kFALSE;
+  }
+
   Int_t nRows = fMaxRow - fMinRow + 1;
   Int_t nCols = fMaxCol - fMinCol + 1;
-  fInvMappingSize = nRows*nCols;
+  Int_t invMappingSize = nRows*nCols;
 
-
-  fInvMappingLow  = new Short_t[fInvMappingSize];
-  fInvMappingHigh = new Short_t[fInvMappingSize];
+  fInvMappingLow  = new Short_t[invMappingSize];
+  fInvMappingHigh = new Short_t[invMappingSize];
   for (Int_t i = 0; i < nRows; i++) {
     for (Int_t j = 0; j < nCols; j++) {
       fInvMappingLow[nCols*i+j]  = -1;
@@ -149,14 +167,13 @@ Bool_t AliCaloAltroMapping::ReadMapping()
 }
 
 //_____________________________________________________________________________
-Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t gain) const
+Int_t AliCaloAltroMapping::GetHWAddress(Int_t row, Int_t col, Int_t gain)
 {
   // Get the content of the mapping array
   // return -1 in case there is no hardware
   // adress defined for these row-column-gain
   if (!fInvMappingLow || !fInvMappingHigh) {
-    AliWarning("Mapping array was not initalized correctly !");
-    return -1;
+    if (!CreateInvMapping()) return -1;
   }
   if (row < fMinRow || row > fMaxRow) {
     AliWarning(Form("Index of row (%d) outside the range (%d -> %d) !",row,fMinRow,fMaxRow));
@@ -240,17 +257,4 @@ Int_t AliCaloAltroMapping::GetSector(Int_t hwAddress) const
     AliWarning(Form("Hardware (ALTRO) adress (%d) is not defined !",hwAddress));
 
   return gain;
-}
-
-//_____________________________________________________________________________
-void AliCaloAltroMapping::DeleteMappingArrays()
-{
-  // Deletes the arrays which have been
-  // allocated during the reading of the
-  // mapping file
-  if (fMapping) delete [] fMapping;
-
-  if (fInvMappingLow) delete [] fInvMappingLow;
-
-  if (fInvMappingHigh) delete [] fInvMappingHigh;
 }

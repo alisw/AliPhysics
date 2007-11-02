@@ -62,10 +62,11 @@ AliFMDAltroMapping::ReadMapping()
 }
 
 //_____________________________________________________________________________
-void
-AliFMDAltroMapping::DeleteMappingArrays()
+Bool_t
+AliFMDAltroMapping::CreateInvMapping()
 {
-  // Clear map in memory 
+  // Create inverse mapping - not used
+  return kTRUE;
 }
 
 //____________________________________________________________________
@@ -305,7 +306,7 @@ AliFMDAltroMapping::Detector2Hardware(UShort_t  det, Char_t    ring,
 
 //____________________________________________________________________
 Int_t
-AliFMDAltroMapping::GetHWAddress(Int_t sec, Int_t str, Int_t ring) const
+AliFMDAltroMapping::GetHWAddress(Int_t sec, Int_t str, Int_t ring)
 {
   // Return hardware address corresponding to sector sec, strip str,
   // and ring ring.   Mapping from TPC to FMD coordinates are 

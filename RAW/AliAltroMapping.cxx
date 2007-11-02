@@ -21,7 +21,6 @@
 #include "AliAltroMapping.h"
 #include "AliLog.h"
 #include <Riostream.h>
-//#include <stdlib.h>
 
 
 ClassImp(AliAltroMapping)
@@ -32,7 +31,7 @@ AliAltroMapping::AliAltroMapping():
   fNumberOfChannels(0),
   fMaxHWAddress(0),
   fMappingSize(0),
-  fInvMappingSize(0)
+  fMapping(NULL)
 {
   // Default constructor
 }
@@ -43,7 +42,7 @@ AliAltroMapping::AliAltroMapping(const char *mappingFile):
   fNumberOfChannels(0),
   fMaxHWAddress(0),
   fMappingSize(0),
-  fInvMappingSize(0)
+  fMapping(NULL)
 {
   // Constructor
   // Reads the mapping from an external file
@@ -56,8 +55,10 @@ AliAltroMapping::AliAltroMapping(const char *mappingFile):
 //_____________________________________________________________________________
 AliAltroMapping::~AliAltroMapping()
 {
-  CloseMappingFile();
   // destructor
+  CloseMappingFile();
+
+  if (fMapping) delete [] fMapping;
 }
 
 //_____________________________________________________________________________
@@ -69,14 +70,17 @@ Bool_t AliAltroMapping::OpenMappingFile(const char *mappingFile)
   fIn = new ifstream(mappingFile);
   if (!*fIn) {
     AliFatal(Form("Missing mapping file (%s) !",mappingFile));
+    CloseMappingFile();
     return kFALSE;
   }
   if (!(*fIn >> fNumberOfChannels)) {
     AliFatal(Form("Syntax of the mapping file is wrong (%s) !",mappingFile));
+    CloseMappingFile();
     return kFALSE;
   }
   if (!(*fIn >> fMaxHWAddress)) {
     AliFatal(Form("Syntax of the mapping file is wrong (%s) !",mappingFile));
+    CloseMappingFile();
     return kFALSE;
   }
 
@@ -84,7 +88,7 @@ Bool_t AliAltroMapping::OpenMappingFile(const char *mappingFile)
 }
 
 //_____________________________________________________________________________
-Bool_t AliAltroMapping::CloseMappingFile()
+void AliAltroMapping::CloseMappingFile()
 {
   // Closes the external mapping
   // file
@@ -93,6 +97,4 @@ Bool_t AliAltroMapping::CloseMappingFile()
     delete fIn;
     fIn = NULL;
   }
-
-  return kTRUE;
 }

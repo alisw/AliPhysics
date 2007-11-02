@@ -19,26 +19,26 @@ class AliTPCAltroMapping: public AliAltroMapping {
   AliTPCAltroMapping(const char *mappingFile);
   virtual ~AliTPCAltroMapping();
 
-  virtual Int_t GetHWAddress(Int_t padrow, Int_t pad, Int_t sector) const;
+  virtual Int_t GetHWAddress(Int_t padrow, Int_t pad, Int_t sector);
   virtual Int_t GetPadRow(Int_t hwAddress) const;
   virtual Int_t GetPad(Int_t hwAddress) const;
   virtual Int_t GetSector(Int_t hwAddress) const;
 
  protected:
   virtual Bool_t ReadMapping();
-  virtual void   DeleteMappingArrays();
+  virtual Bool_t CreateInvMapping();
 
   Int_t     fMinPadRow;        // Minimum Index of pad-row
   Int_t     fMaxPadRow;        // Maximum Index of pad-row
   Int_t     fMaxPad;           // Maximum Index of pad inside row
-  Short_t  *fMapping;          //[fMappingSize] Array which connects hardware adresses to pad and pad-row indeces
-  Short_t  *fInvMapping;       //[fInvMappingSize] Inverse of fMapping
+  Short_t  *fInvMapping;       //! Inverse of fMapping
 
  private:
+
   AliTPCAltroMapping(const AliTPCAltroMapping& mapping);
   AliTPCAltroMapping& operator = (const AliTPCAltroMapping& mapping);
 
-  ClassDef(AliTPCAltroMapping,2)  // Altro mapping handler class
+  ClassDef(AliTPCAltroMapping,3)  // Altro mapping handler class
 };
 
 #endif
