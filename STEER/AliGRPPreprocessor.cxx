@@ -100,7 +100,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TList *daqlblist = ProcessDaqLB();
   if(!daqlblist) {
     Log(Form("Problem with the DAQ logbook parameters!!!"));
-    return 0;
+    return 1;
   }
   TMap *m1 = (TMap *)daqlblist->At(0);
   TObjString *s1 = (TObjString *)m1->GetValue("fAliceStartTime");
@@ -108,27 +108,30 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   TMap *m2 = (TMap *)daqlblist->At(1);
   TObjString *s2 = (TObjString *)m2->GetValue("fAliceStopTime");
   UInt_t iStopTime = atoi(s2->String().Data());
-  TMap *m3 = (TMap *)daqlblist->At(6);
-  TObjString *s3 = (TObjString *)m3->GetValue("fLHCPeriod");
-  TString productionYear = "";
 
   //=================//
   // DAQ FXS         //
   //=================//
   UInt_t iDaqFxs = ProcessDaqFxs();
-  if(iDaqFxs == 1) Log(Form("Raw data merged tags copied succesfully in AliEn!!!"));
- 
+  if(iDaqFxs == 1) {
+  	Log(Form("Raw data merged tags copied succesfully in AliEn!!!"));
+  } else {
+  	Log(Form("Could not store run raw tag file!"));
+	return 1;
+  }
+  
+  
   //=================//
   // DCS data points //
   //=================//
   TList *dcsdplist = ProcessDcsDPs(valueMap, iStartTime, iStopTime);
   if(!dcsdplist) {
     Log(Form("Problem with the DCS data points!!!"));
-    return 0;
+    return 1;
   }    
   if(dcsdplist->GetEntries() != 10) {
     Log(Form("Problem with the DCS data points!!!"));
-    return 0;
+    return 1;
   }
   //NEEDS TO BE REVISED - BREAKS!!!
 //   AliDCSSensorArray *dcsSensorArray = GetPressureMap(valueMap,fPressure);
@@ -253,7 +256,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   TList* list = GetFileSources(kDAQ);  
   if (!list) {
     Log("No raw data tag list found!!!");
-    return 1;
+    return 0;
   }
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
@@ -264,7 +267,7 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
       TList* list2 = GetFileIDs(kDAQ, objStr->String());
       if (!list2) {
 	Log("No list with ids from DAQ was found!!!");
-	return 2;
+	return 0;
       }
       Log(Form("Number of ids: %d",list2->GetEntries()));
       for(Int_t i = 0; i < list2->GetEntries(); i++) {
@@ -282,21 +285,12 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs() {
   delete list;
   TString fRawDataFileName = "GRP_Merged.tag.root";
   Log(Form("Merging raw data tags into file: %s",fRawDataFileName.Data()));
-
-  TFile* f = new TFile(fRawDataFileName.Data(), "RECREATE");
-  f->cd();
-  fRawTagChain->Write();
-  f->Close();
-  delete f; f=0;  
+  fRawTagChain->Merge(fRawDataFileName);
   
-  //TString outputfile = "alien:///alice/data/"; 
-  //outputfile += productionYear.Data(); outputfile += "/";
-  //outputfile += lhcperiod.Data(); outputfile += "/";
-  //outputfile += fRun; outputfile += "/raw/"; 
-  TString outputfile = "runMetadata.root";
+  TString outputfile = Form("Run%d.Merged.RAW.tag.root", fRun);
   Bool_t result = StoreRunMetadataFile(fRawDataFileName.Data(),outputfile.Data());
 
-  return result;
+  return (UInt_t) result;
 }
 
 //_______________________________________________________________
