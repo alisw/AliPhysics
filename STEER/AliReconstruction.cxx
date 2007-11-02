@@ -2001,7 +2001,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
-    Int_t nVertices = nV0s + nCascades + nKinks + 1 /* = prim. vtx*/;
+    Int_t nVertices = nV0s + 2*nCascades /*could lead to two vertices, one V0 and the Xi */+ nKinks + 1 /* = prim. vtx*/;
     Int_t nJets     = 0;
     Int_t nCaloClus = esd->GetNumberOfCaloClusters();
     Int_t nFmdClus  = 0;
@@ -2344,7 +2344,9 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       // add it to the V0 array as well
       Double_t d0[2] = { 999., 99.};
       new(V0s[jV0s++]) AliAODv0(vV0, 999., 99., p_pos, p_neg, d0); // to be refined
-    } // end of the loop on V0s
+    } 
+    V0s.Expand(jV0s);
+    // end of the loop on V0s
     
     // Kinks: it is a big mess the access to the information in the kinks
     // The loop is on the tracks in order to find the mother and daugther of each kink
@@ -2479,6 +2481,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 	}
       }
     }
+    vertices.Expand(jVertices);
 
     // Tracks (primary and orphan)
     for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
@@ -2563,6 +2566,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       else 
 	aodTrack->SetChi2MatchTrigger(0.);
     }
+    tracks.Expand(jTracks); // remove 'empty slots' due to unwritten tracks
    
     // Access to the AOD container of PMD clusters
     TClonesArray &pmdClusters = *(aod->GetPmdClusters());
@@ -2628,7 +2632,9 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       
       caloCluster->SetCaloCluster(); // to be refined!
 
-    } // end of loop on calo clusters
+    } 
+    caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters
+    // end of loop on calo clusters
 
     // fill EMC cell info
     AliAODCaloCells &EMCCells = *(aod->GetCaloCells());
