@@ -311,21 +311,30 @@ int AliHLTComponent::FindMatchingDataTypes(AliHLTComponent* pConsumer, AliHLTCom
   // see header file for function documentation
   int iResult=0;
   if (pConsumer) {
-    AliHLTComponentDataTypeList ctlist;
-    ((AliHLTComponent*)pConsumer)->GetInputDataTypes(ctlist);
-    AliHLTComponentDataTypeList::iterator type=ctlist.begin();
-    //AliHLTComponentDataType ouptdt=GetOutputDataType();
-    //PrintDataTypeContent(ouptdt, "publisher \'%s\'");
-    while (type!=ctlist.end() && iResult==0) {
-      //PrintDataTypeContent((*type), "consumer \'%s\'");
-      if ((*type)==GetOutputDataType() ||
-	  (*type)==kAliHLTAnyDataType) {
-	if (tgtList) tgtList->push_back(*type);
-	iResult++;
-	// this loop has to be changed in case of multiple output types
-	break;
+    AliHLTComponentDataTypeList itypes;
+    AliHLTComponentDataTypeList otypes;
+    otypes.push_back(GetOutputDataType());
+    if (otypes[0]==kAliHLTMultipleDataType) {
+      otypes.clear();
+      int count=0;
+      if ((count=GetOutputDataTypes(otypes))>0) {
+      } else if (GetComponentType()!=kSink) {
+	HLTWarning("component %s indicates multiple output data types but GetOutputDataTypes returns %d", GetComponentID(), count);
       }
-      type++;
+    }
+    ((AliHLTComponent*)pConsumer)->GetInputDataTypes(itypes);
+    AliHLTComponentDataTypeList::iterator itype=itypes.begin();
+    while (itype!=itypes.end()) {
+      //PrintDataTypeContent((*itype), "consumer \'%s\'");
+      AliHLTComponentDataTypeList::iterator otype=otypes.begin();
+      while (otype!=otypes.end() && (*itype)!=(*otype)) otype++;
+      //if (otype!=otypes.end()) PrintDataTypeContent(*otype, "publisher \'%s\'");
+      if (otype!=otypes.end() ||
+	  (*itype)==kAliHLTAnyDataType) {
+	if (tgtList) tgtList->push_back(*itype);
+	iResult++;
+      }
+      itype++;
     }
   } else {
     iResult=-EINVAL;

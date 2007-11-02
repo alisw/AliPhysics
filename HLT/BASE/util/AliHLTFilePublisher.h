@@ -62,6 +62,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 
   const char* GetComponentID();
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
   AliHLTComponent* Spawn();
 
@@ -244,6 +245,9 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
   /** Flag specifying if all the files should be opened during initialisation.  */
   bool fOpenFilesAtStart;                                          //! transient
 
-  ClassDef(AliHLTFilePublisher, 1)
+  /** output data types  */
+  AliHLTComponentDataTypeList fOutputDataTypes;                    //! transient
+
+  ClassDef(AliHLTFilePublisher, 2)
 };
 #endif

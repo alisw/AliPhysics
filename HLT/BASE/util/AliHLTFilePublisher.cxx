@@ -41,7 +41,8 @@ AliHLTFilePublisher::AliHLTFilePublisher()
   fpCurrent(NULL),
   fEvents(),
   fMaxSize(0),
-  fOpenFilesAtStart(false)
+  fOpenFilesAtStart(false),
+  fOutputDataTypes()
 {
   // see header file for class documentation
   // or
@@ -71,7 +72,16 @@ const char* AliHLTFilePublisher::GetComponentID()
 AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 {
   // see header file for class documentation
-  return kAliHLTVoidDataType;
+  if (fOutputDataTypes.size()==0) return kAliHLTVoidDataType;
+  else if (fOutputDataTypes.size()==1) return fOutputDataTypes[0];
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTFilePublisher::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+{
+  tgtList.assign(fOutputDataTypes.begin(), fOutputDataTypes.end());
+  HLTInfo("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
+  return fOutputDataTypes.size();
 }
 
 void AliHLTFilePublisher::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -129,6 +139,12 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
       memcpy(&currDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
       if ((bMissingParam=(++i>=argc))) break;
       memcpy(&currDataType.fOrigin, argv[i], TMath::Min(kAliHLTComponentDataTypefOriginSize, (Int_t)strlen(argv[i])));
+
+      // add all different data types to the list
+      AliHLTComponentDataTypeList::iterator element=fOutputDataTypes.begin();
+      while (element!=fOutputDataTypes.end() && *element!=currDataType) element++;
+      if (element==fOutputDataTypes.end()) fOutputDataTypes.push_back(currDataType);
+
       if (bHaveDatatype==0 && pCurrEvent && iResult>=0) {
 	// this is a workaround to make old tutorials working which contain
 	// the arguments in the wrong sequence
@@ -336,6 +352,10 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 	      bd.fSpecification=*pFileDesc; // type conversion operator defined
 	      outputBlocks.push_back(bd);
 	      iTotalSize+=iCopy;
+// 	      TString msg;
+// 	      msg.Form("get file %s ", pFile->GetName());
+// 	      msg+="data type \'%s\'";
+// 	      PrintDataTypeContent(bd.fDataType, msg.Data());
 	    }
 	  } else {
 	    // output buffer too small, update GetOutputDataSize for the second trial
