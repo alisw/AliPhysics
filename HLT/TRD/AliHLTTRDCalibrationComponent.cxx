@@ -153,7 +153,7 @@ Int_t AliHLTTRDCalibrationComponent::InitCalibration()
       fCDB->SetDefaultStorage(fStrorageDBpath.c_str());
       Logging(kHLTLogDebug, "HLT::TRDCalibration::InitCalibration", "CDB instance", "fCDB 0x%x", fCDB);
     }
-
+  return 0;
 }
 
 Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
@@ -165,6 +165,7 @@ Int_t AliHLTTRDCalibrationComponent::DeinitCalibration()
       fCDB->Destroy();
       fCDB = 0;
     }
+  return 0;
 }
 
 Int_t AliHLTTRDCalibrationComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)

@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.20  2007/10/26 15:13:50  zampolli
+Using a TChain instead of a TTree
+
 Revision 1.19  2007/10/23 15:27:38  zampolli
 Rearrangement of Calibration objects for simulation
 
@@ -363,6 +366,7 @@ Bool_t AliTOFcalib::ReadSimHistoFromCDB(Char_t *sel, Int_t nrun)
   }  
   TH1F *histo =(TH1F*)entry->GetObject();
   fTOFSimToT=histo;
+  return kTRUE;
 }
 //_____________________________________________________________________________
 void AliTOFcalib::WriteRecParOnCDB(Char_t *sel, Int_t minrun, Int_t maxrun, AliTOFRecoParam *param){

@@ -70,6 +70,7 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
       delete fFilename;
       fFilename = 0;
     }
+  return 0;
 }
 
 const char*

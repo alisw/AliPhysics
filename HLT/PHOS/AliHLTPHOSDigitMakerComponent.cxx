@@ -36,6 +36,7 @@ AliHLTPHOSDigitMakerComponent::Deinit()
       delete fDigitMakerPtr;
       fDigitMakerPtr = 0;
     }
+  return 0;
 }
 
 const char*
