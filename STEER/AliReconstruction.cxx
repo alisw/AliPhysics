@@ -917,8 +917,35 @@ Bool_t AliReconstruction::Run(const char* input)
 
   tree->GetUserInfo()->Add(esd);
   hlttree->GetUserInfo()->Add(hltesd);
+  
+  const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();
+  const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();
 
-
+  TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());
+  cdbMapCopy->SetOwner(1);
+  cdbMapCopy->SetName("cdbMap");
+  TIter iter(cdbMap->GetTable());
+  
+  TPair* pair = 0;
+  while((pair = dynamic_cast<TPair*> (iter.Next()))){
+  	TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());
+	TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+	cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));
+  }
+  
+  TList *cdbListCopy = new TList();
+  cdbListCopy->SetOwner(1);
+  cdbListCopy->SetName("cdbList");
+  
+  TIter iter2(cdbList);
+  
+  AliCDBId* id=0;
+  while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){
+	cdbListCopy->Add(id->Clone());
+  }
+    
+  tree->GetUserInfo()->Add(cdbMapCopy);
+  tree->GetUserInfo()->Add(cdbListCopy);
 
   if(fESDPar.Contains("ESD.par")){
     AliInfo("Attaching ESD.par to Tree");
