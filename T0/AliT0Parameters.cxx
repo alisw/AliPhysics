@@ -144,15 +144,15 @@ void AliT0Parameters::InitIfOnline()
 // for switching to this one should write
   // AliT0RawReader myrawreader(rawReader);
 //	myrawreader.SetOnlineMode(kTRUE);
-     
+
   if (fIsInit) return;
    //standart configuration (used for simulation)
    //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   // configuration for test Jun07.
-
-  fgLookUp = new AliT0CalibData("T0");
+   fgLookUp = new AliT0CalibData("T0");
 
   fNumberOfTRMs = 1;
+ fgLookUp-> SetNumberOfTRMs(fNumberOfTRMs);
   Int_t trm=7; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   for (Int_t ik=0; ik<105; ik++)
         {
@@ -328,8 +328,6 @@ Double_t AliT0Parameters::GetZPosition(const char* symname){
 // Get the global z coordinate of the given T0 alignable volume
 //
   Double_t *tr;
-  
-  cout<<symname<<endl;
   TGeoPNEntry *pne = gGeoManager->GetAlignableEntry(symname);
   if (!pne) return 0;
   
