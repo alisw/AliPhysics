@@ -16,7 +16,7 @@
 #include "AliHLTProcessor.h"
 #include "AliHLTMUONDataTypes.h"
 
-#if __GNUC__ < 3
+#if __GNUC__ && __GNUC__ < 3
 #define std
 #endif
 
