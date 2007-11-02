@@ -228,6 +228,7 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
   Int_t trm1words=0;
   Int_t itrm=7;
   Int_t inside =0;
+  Int_t isData = 0;
   AliT0LookUpKey * lookkey  = new AliT0LookUpKey();
   AliT0LookUpValue * lookvalue ;//= new AliT0LookUpValue(trm,tdc,chain,channel);
   for (Int_t det = 0; det < 105; det++) {
@@ -237,8 +238,9 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
       lookvalue = (AliT0LookUpValue*) fLookUp.GetValue((TObject*)lookkey);     
       if (lookvalue ) 
 	{
+	  isData++;
 	  itrm= lookvalue->GetTRM();
-	  if (det >56 &&inside ==0) {
+	  if (det >56 &&inside ==0)  {
 	    WriteChainDataTrailer(1); // 1st chain trailer
 	    fIndex++;
 	    WriteChainDataHeader(2, 1);
@@ -258,7 +260,11 @@ void AliT0RawData::GetDigits(AliT0digit *fDigits)
     }
     
   }
-    
+  if (inside==0) {
+    WriteChainDataTrailer(1); // 1st chain trailer
+    fIndex++;
+    WriteChainDataHeader(2, 1);
+  }
     //  WriteChainDataHeader(2, 1); // 
   WriteChainDataTrailer(3); // 2st chain trailer
   WriteTrailer(15,0,fEventNumber,5); // 1st TRM trailer
