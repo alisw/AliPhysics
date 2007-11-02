@@ -21,16 +21,16 @@
 
 // --- ROOT system
 #include <TFile.h>
-
-#include "AliPMDPreprocessor.h"
-#include "AliPMDPedestal.h"
-#include "AliPMDCalibData.h"
-#include "AliLog.h"
-#include "AliShuttleInterface.h"
-#include "AliCDBMetaData.h"
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TTree.h>
+
+#include "AliLog.h"
+#include "AliShuttleInterface.h"
+#include "AliCDBMetaData.h"
+#include "AliPMDCalibData.h"
+#include "AliPMDPedestal.h"
+#include "AliPMDPreprocessor.h"
 
 
 ClassImp(AliPMDPreprocessor)
@@ -69,9 +69,7 @@ void AliPMDPreprocessor::Initialize(Int_t run, UInt_t startTime,
 //______________________________________________________________________________________________
 UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 {
-    // This reads the pedestal and gain files and stores in the database
-
-
+    
     if(!pdaqAliasMap) return 1;
     TString runType = GetRunType();
     if(runType == "PEDESTAL_RUN"){
@@ -101,7 +99,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    
 	    Log(Form("File with id PMD_PED got from %s", source->GetName()));
 
-	    Int_t   det, sm, row, col;
+	    Int_t det, sm, row, col;
 	    Float_t mean, rms;
 
 	    TFile *f= new TFile(filename.Data());
@@ -123,6 +121,8 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    tree->SetBranchAddress("col",  &col);
 	    tree->SetBranchAddress("mean", &mean);
 	    tree->SetBranchAddress("rms",  &rms);
+
+
 	    Int_t nEntries = (Int_t) tree->GetEntries();
 	    for(Int_t i = 0; i < nEntries; i++)
 	    {
@@ -176,7 +176,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    
 	    Log(Form("File with id PMDGAINS got from %s", source->GetName()));
 
-	    Int_t   det, sm, row, col;
+	    Int_t det, sm, row, col;
 	    Float_t gain;
 
 	    TFile *f1= new TFile(filename.Data());
@@ -197,14 +197,18 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    tree->SetBranchAddress("row",  &row);
 	    tree->SetBranchAddress("col",  &col);
 	    tree->SetBranchAddress("gain", &gain);
+
 	    Int_t nEntries = (Int_t) tree->GetEntries();
 	    for(Int_t i = 0; i < nEntries; i++)
 	    {
 		tree->GetEntry(i);
-//	  if(DET>1 || SM>23 || ROW>95 || COL>95) {
-// 	printf("Error! gain[%d,%d,%d,%d] = %f\n",DET,SM,ROW,COL,GAIN);
-//	continue;
+
+		//if(DET>1 || SM>23 || ROW>95 || COL>95) {
+		//    printf("Error! gain[%d,%d,%d,%d] = %f\n",
+		//   DET,SM,ROW,COL,GAIN);
+		//  continue;
 		//    		 	}
+
 		calibda->SetGainFact(det,sm,row,col,gain);
 	    }
 	    f1->Close();
@@ -226,8 +230,22 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    return 0;
 	}
 	
+  // Store DCS data for reference
+  AliCDBMetaData metadata;
+  metadata.SetComment("DCS data for PMD");
+  Bool_t resStore = kFALSE;
+  resStore = StoreReferenceData("DCS","Data",pdaqAliasMap,&metadata);
+	if(resStore==0)
+	{
+	    Log("Error storing");                        
+	    return 1;
+	}
+	else
+	{
+	    return 0;
+	}
+
     }
     
     return 2;
 }
-
