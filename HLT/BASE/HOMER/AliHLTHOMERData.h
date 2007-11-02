@@ -94,8 +94,13 @@ typedef unsigned long homer_uint64;
 typedef unsigned long long homer_uint64;
 #else // defined __GNUC__
 
+#if defined __SUNPRO_CC
+typedef unsigned long long homer_uint64;
+#else // defined __SUNPRO_CC
+
 #error Could not typedef homer_uint64
 
+#endif // defined __SUNPRO_CC
 #endif // defined __GNUC__
 
 #endif // ULONG_MAX==18446744073709551615UL
