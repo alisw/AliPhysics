@@ -114,7 +114,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap) {
   //=================//
   UInt_t iDaqFxs = ProcessDaqFxs();
   if(iDaqFxs == 1) {
-  	Log(Form("Raw data merged tags copied succesfully in AliEn!!!"));
+  	Log(Form("Raw data tags merged successfully!"));
   } else {
   	Log(Form("Could not store run raw tag file!"));
 	return 1;
