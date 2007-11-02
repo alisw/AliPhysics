@@ -51,6 +51,7 @@ fGoldV0(kFALSE)
     for(Int_t i=0; i<6; i++) { fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000;}
     for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fChi2MIP[i]=0;}
     fD[0]=0; fD[1]=0;
+    fDnorm[0]=0; fDnorm[1]=0;
 }
 
 //____________________________________________________________________________
@@ -73,6 +74,7 @@ fGoldV0(kFALSE) {
   for(Int_t i=0; i<6; i++) {fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000;}
   for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0;fChi2MIP[i]=0;}
   fD[0]=0; fD[1]=0;
+  fDnorm[0]=0; fDnorm[1]=0;
   //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
 }
