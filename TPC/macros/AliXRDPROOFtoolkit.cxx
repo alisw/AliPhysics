@@ -13,8 +13,9 @@
 
   AliXRDPROOFtoolkit tool;
   tool.ListOfFiles("pp.txt","/data.local2/sma/sim/v4-05-Rev-03/pp", "AliESDs.root", kTRUE);
-   
-
+  
+  // check the list
+  AliXRDPROOFtoolkit::FilterList("pp.txt","AliESDs.root esdTree",0)  
   2. 
   
   AliXRDPROOFtoolkit tool;
@@ -95,7 +96,7 @@ Bool_t AliXRDPROOFtoolkit::ListOfFiles(const char*fileName, const char*path, con
   //
   // Get the list of files on "registerd slaves"
   //
-  // fileName - Resultinfg flie with list
+  // fileName - Resultinfg file with list
   // path     - starting path on slave e.g /data.local2/sma/
   // filter   - filter expression e.g. AliESDs.root
   // display machine - not used yet
@@ -114,6 +115,9 @@ Bool_t AliXRDPROOFtoolkit::ListOfFiles(const char*fileName, const char*path, con
   //
   gSystem->Exec(Form("echo  >%s",fileName));
   for(UInt_t i=0; i<listeMachine.size(); i++){
+    if (displayMachine){
+      sprintf(filterXRD,"sed s/\\\\/data.local2/root:\\\\/\\\\/%s.gsi.de:1094\\\\//",listeMachine[i]->Data());
+    }
     cout<<"Inspecting "<<listeMachine[i]->Data()<<" ..."<<endl;
     sprintf(command,"lsrun -m %s   find %s | grep %s | %s >> %s", listeMachine[i]->Data(), path, filter, filterXRD,fileName);
     printf(command);
@@ -405,23 +409,6 @@ TTree*    AliXRDPROOFtoolkit::DumpFiles(Bool_t verbose){
 
 
 
-//______________________________________________________________________________
-Int_t AliXRDPROOFtoolkit::Read(char * str, Int_t lenght, FILE *in)
-{
-  Int_t nread=0;
-  Int_t n;
-
-  while (lenght>0) {
-    n=fread(str+nread, sizeof(char), lenght, in);
-    if(n<=0) return nread;
-    nread+=n;
-    lenght-=n;
-  }
-  return nread;
-}
-
-
-
 
 //______________________________________________________________________________
 void AliXRDPROOFtoolkit::CheckFiles (const char*fileIn, UInt_t checkLevel, const char*treeToRetrieve, const char*varexp, const char*selection)
@@ -581,6 +568,113 @@ void AliXRDPROOFtoolkit::CheckFiles (const char*fileIn, UInt_t checkLevel, const
   
 }
 
+Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeName, Int_t debugLevel, const char *branchName){
+  //
+  // Check the tree in file 
+  // fileName   - the name of the file with tree
+  // treeName   - the name of file
+  // debugLevel - 0 check the existance of the file -  1 make loop over entries
+  // branchName - if debugLevel>0 the branch is chcecked
+  //              if brnachName =0 the content of full tree is chcecked
+  // return value = 0 - Check things  OK
+  //               -1 - file not exist or not accesible
+  //               -2 - file is zombie
+  //		   -3 - tree not present
+  //               -4 - branch not present
+  TFile * file = TFile::Open(fileName);
+  if (!file) return -1;
+  if (file->IsZombie()) {delete file; return -2;};
+  if (treeName="*") return 0;
+  TTree * tree = (TTree*)file->Get(treeName);
+  if (!tree) return -3;
+  TBranch * branch = 0;
+  if (branchName) {
+    branch = tree->GetBranch(branchName);
+    if (!branch) return -4;
+  }
+  //
+  tree->SetBranchStatus("*",1);
+  try {
+    if (debugLevel>0){
+      Int_t entries = tree->GetEntries();
+      for (Int_t i=0;i<entries; i++){
+	if (branch) branch->GetEntry(i);
+	else tree->GetEntry();      
+      }
+    }
+  }catch ( ... ) {
+    printf("PROBLEM\n");  
+    // never catched  - as there is no exception in the ROOT IO
+    return 1 ;
+  }
+
+  return 0;
+}
+
+
+Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList, Int_t checkLevel){
+  //
+  // Filter the list  
+  // inputList - list of original file names
+  // fileList  - list of file to be checked
+  //           - 0 - fileName
+  //           - 1 - treeName (if * not checked)
+  //           - 2 - fileName 
+  //                 ....
+  // checkLevel - 0 - check only existance of the files and tree's + 
+  //                  simple file corruption
+  //            > 1 - check the content of the tree - 
+  //                  (can crash as there do not exest exception handling in ROOT)
+  // Output -  two streams are created - file with good entries
+  // "%s.Good a,d file with bad entries %s.Bad
+  //EXAMPLE:
+  // AliXRDPROOFtoolkit::FilterList("ppgrid2.txt","AliESDs.root esdTree AliESDfriends.root * Kinematics.root *",1) 
+
+  fstream finput;
+  finput.open(inputList, ios_base::in);
+  fstream focGood;
+  fstream focBad;
+  focGood.open(Form("%s.Good",inputList), ios_base::out|ios_base::trunc);
+  focBad.open(Form("%s.Bad",inputList), ios_base::out|ios_base::trunc);
+  //
+  if(!finput.is_open()) {
+    cout<<"Can't open file "<<inputList<<endl;
+    return kFALSE;
+  }
+  //
+  // Read the input list of files and add them to the chain
+  //
+  TObjArray *array = (TString(fileList)).Tokenize(" ");
+  TString currentFile;
+  Int_t counter=0;
+  while(finput.good()) {
+    finput >> currentFile;
+    if (!currentFile.Contains("root")) continue; // protection
+    //    Bool_t isZip = currentFile.Contains("#");
+    const char * dirname = gSystem->DirName(currentFile.Data());
+    Int_t status = 0;
+    for (Int_t i=0; i<array->GetEntries(); i+=2){
+      char fname[1000];
+      //if (isZip) sprintf(fname,
+      sprintf(fname, "%s/%s",dirname,array->At(i)->GetName());
+      Int_t cstatus = CheckTreeInFile(fname, array->At(i+1)->GetName(), checkLevel,0);
+      if (cstatus!=0) {
+	status = cstatus; 
+	break;
+      }
+    }
+    if (status==0){
+      focGood<<currentFile<<endl;
+    }else{
+      focBad<<currentFile<<endl;
+    }
+    counter++;    
+  }
+  finput.close();
+}
+
+
+
 
 
 Bool_t  AliXRDPROOFtoolkit::XRDCopyDir(const char * idir, const char * files, const char *odir, Bool_t zip){
@@ -600,7 +694,6 @@ Bool_t  AliXRDPROOFtoolkit::XRDCopyDir(const char * idir, const char * files, co
   Int_t nfiles = array->GetEntries();
   char infile[1000];
   char outfile[1000];
-  char command[20000];
   Bool_t succes=kTRUE;
   for (Int_t ifile =0; ifile<nfiles; ifile++){
     sprintf(infile,"%s/%s", idir, array->At(ifile)->GetName());

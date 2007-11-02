@@ -24,6 +24,7 @@ class AliXRDPROOFtoolkit : public TObject
  public :
   AliXRDPROOFtoolkit ();
   void Print(Option_t* option = " ") const;
+  void AddMachine (const char*name);
  public :
   //
   // Interface for low priority users - NO ssh ACCESS to PROOF machines 
@@ -33,14 +34,19 @@ class AliXRDPROOFtoolkit : public TObject
   TDSet  * MakeSet(const char*fileIn, const char * treeName, const char *fName=0, Int_t maxFiles=-1);
   TDSet  * MakeSetRandom(const char*fileIn, const char * treeName,const char *fName=0, Int_t maxFiles=-1);
   //
-  // Interface for users with privileges - Possible to use lsrun command 
+  //
   //
   Bool_t ListOfFiles(const char*fileName, const char*path, const char*filter,  Bool_t displayMachine);
+  static Bool_t FilterList(const char*inputList, const char*fileList, Int_t checkLevel);
+  //
   //
   //
   Bool_t  XRDCopyDir(const char * idir, const char * files, const char *odir, Bool_t zip); 
+  //
+  void CheckFiles (const char*fileIn, UInt_t checkLevel, const char*treeToRetrieve, const char*varexp, const char*selection);
 
-
+  static Int_t  CheckTreeInFile(const char*fileName,const char*treeName, Int_t debugLevel=0, const char *branchName=0);
+  //
   //
   // Interface for users with ssh access to the machines
   //
@@ -50,14 +56,12 @@ class AliXRDPROOFtoolkit : public TObject
   TTree *   DumpSys2(Bool_t verbose=kTRUE);
   TTree *   DumpFiles(Bool_t verbose=kTRUE);
   //
-  void CheckFiles (const char*fileIn, UInt_t checkLevel, const char*treeToRetrieve, const char*varexp, const char*selection);
-  void AddMachine (const char*name);
+
   Int_t         fVerbose;          // verbso mode  - print command 
  private :
   //
   //
   //
-  Int_t Read(char * str, Int_t lenght, FILE *in);  
  private:
   vector <const TString *> listeMachine;  // list of slaves         
   TString       fUserName;              // user name
