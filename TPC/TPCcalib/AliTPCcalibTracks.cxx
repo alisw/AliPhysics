@@ -188,10 +188,10 @@ AliTPCcalibTracks::~AliTPCcalibTracks() {
    delete fArrayQDY;
    delete fArrayQDZ;
    delete fArrayQRMSY;
-   delete fArrayQRMSZ;
-   
-  delete fHclus;
-  delete fDebugStream;
+   delete fArrayQRMSZ;   
+   delete fHclus;
+   //delete fDebugStream;
+   //fDebugStream->Close();;
 }
 
 

@@ -28,8 +28,8 @@ cp $SRC/Ali*.h                $EDIR
 cp $SRC/Ali*.cxx              $EDIR
 cp $SRC/TPCcalibLinkDef.h     $EDIR
 cp $SRC/Makefile*             $EDIR
-cp $SRC/libTPCcalib.pkg       $EDIR  
 cp $SRC/libTPCcalib.pkg2      $EDIR  
+
 
 mkdir $EDIR/PROOF-INF
 cd $EDIR/PROOF-INF

@@ -86,7 +86,11 @@ void AliTPCSelectorTracks::InitComponent(){
   //    chain->GetUserInfo()->AddLast(clusterParam);
   //    chain->GetUserInfo()->AddLast(cuts);
   //
-  AliTPCClusterParam *clusterParam  = (AliTPCClusterParam*)fChain->GetUserInfo()->FindObject("AliTPCClusterParam");
+  if (!fChain){
+    printf("EROOR - chain not initialized\n");
+  }
+ 
+ AliTPCClusterParam *clusterParam  = (AliTPCClusterParam*)fChain->GetUserInfo()->FindObject("AliTPCClusterParam");
   if (clusterParam != 0) printf("clusterParam found in fChain! \n");
   AliTPCcalibTracksCuts *cuts = (AliTPCcalibTracksCuts*)fChain->GetUserInfo()->FindObject("calibTracksCuts");
   if (cuts != 0) printf("cuts found in fChain! \n");
@@ -96,7 +100,7 @@ void AliTPCSelectorTracks::InitComponent(){
    
    fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks");
    fOutput->AddLast(fCalibTracksGain);
-   
+   fInit=kTRUE;
 }
 
 void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
@@ -106,10 +110,7 @@ void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
    // The tree argument is deprecated (on PROOF 0 is passed).
   
   AliTPCSelectorESD::SlaveBegin(tree);
-  if (!fChain){
-    printf("EROOR - chain not initialized\n");
-  }
-
+ 
   printf(" ***** SlaveBegin ***** \n");
 }
 
