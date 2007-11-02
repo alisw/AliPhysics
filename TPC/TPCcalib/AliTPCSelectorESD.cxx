@@ -50,7 +50,7 @@
  
 
 
-AliTPCSelectorESD::AliTPCSelectorESD(TTree *) : 
+AliTPCSelectorESD::AliTPCSelectorESD(TTree *tree) : 
    TSelector(),
    fChain(0),
    fESDevent(0),
@@ -68,7 +68,7 @@ AliTPCSelectorESD::AliTPCSelectorESD(TTree *) :
    fSysWatch  = new fstream("syswatch.log", ios_base::out|ios_base::trunc);
    fFileWatch = new fstream("filewatch.log", ios_base::out|ios_base::trunc);
    if (gProof) fDebugLevel = gProof->GetLogLevel();
-
+   if (tree) fChain=tree;
  }   
 
 
@@ -87,7 +87,7 @@ void AliTPCSelectorESD::SlaveBegin(TTree * tree)
    // The SlaveBegin() function is called after the Begin() function.
    // When running with PROOF SlaveBegin() is called on each slave server.
    // The tree argument is deprecated (on PROOF 0 is passed).
-  fChain = tree;
+  if (tree) fChain = tree;
   Init(tree);
   //
   fNtracks       = new TH1I("ntracks","Number of tracks",100,0,400);
@@ -227,7 +227,7 @@ Int_t AliTPCSelectorESD::ProcessIn(Long64_t entry)
   for (Int_t tr = 0; tr < ntracks; tr++){ 
     AliESDtrack *esdTrack = fESD ? (AliESDtrack*) fESD->GetTrack(tr): (AliESDtrack*) fESDevent->GetTrack(tr);
     AliESDfriendTrack *friendtrack = (AliESDfriendTrack*) esdTrack->GetFriendTrack();
-    //seed = (AliTPCseed*)(friendtrack->GetCalibObject(0));
+    seed = 0;
     TObject *cobject=0;
     for (Int_t i=0;;i++){
       cobject = friendtrack->GetCalibObject(i);
@@ -278,7 +278,7 @@ void AliTPCSelectorESD::Terminate()
 
 
 
-void AliTPCSelectorESD::Init(TTree *tree)
+void AliTPCSelectorESD::Init(TTree *tree) 
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -289,27 +289,31 @@ void AliTPCSelectorESD::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set branch addresses and branch pointers
-
-   if (!tree) return;
-   fChain = tree;
-   tree->SetBranchStatus("*",1);
-   //
-   // New AliESDevent format
-   //
-   if (!fChain->GetBranch("ESD")){
-     //
-     //
-     //
-     if (!fESDevent) fESDevent = new AliESDEvent();
+  static Int_t counter=0;
+  printf(Form("\nAliTPCSelectorESD::Init Accesing%d time\n",counter));
+  counter++;
+  if (!tree) return;
+  fChain = tree;
+  //if (counter>1) return;
+  tree->SetBranchStatus("*",1);
+  //
+  // New AliESDevent format
+  //
+  if (!fChain->GetBranch("ESD")){
+    //
+    //
+    //
+    if (fESDevent) delete fESDevent;
+     fESDevent = new AliESDEvent();
      fESDevent->ReadFromTree(tree); // Attach the branch with ESD friends
      fESDfriend = (AliESDfriend*)fESDevent->FindListObject("AliESDfriend");
      tree->SetBranchAddress("ESDfriend.",&fESDfriend); 
      return;
-   }
-   //
-   // if old format
-   //
-
+  }
+  //
+  // if old format
+  //
+  
 
 
    //   fChain->SetMakeClass(1);
@@ -367,6 +371,7 @@ Bool_t AliTPCSelectorESD::Notify()
   ++fFileNo;
   const char * fname = "UNKNOWN";
   const char * hname = gSystem->HostName();
+  if (!fChain) return kFALSE;
   if (fChain->GetCurrentFile()){
     fname = fChain->GetCurrentFile()->GetName();
   }
