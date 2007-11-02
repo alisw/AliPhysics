@@ -398,7 +398,7 @@ AliHLTPHOSRcuHistogramProducer::ScanTimeString(char *timeString)
   time(&timePtr); 
   tmPtr=localtime(&timePtr);
   timeString=asctime(tmPtr);
-  char tShort [strlen(timeString)+1];
+  //  char tShort [strlen(timeString)+1];
   char day[10];
   char month[10];
   int date;
