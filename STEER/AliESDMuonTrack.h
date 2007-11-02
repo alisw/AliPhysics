@@ -93,6 +93,7 @@ public:
   Double_t Py() const;
   Double_t Pz() const;
   Double_t P() const;
+  Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
   void     LorentzP(TLorentzVector& vP) const;
   Double_t PxUncorrected() const;
   Double_t PyUncorrected() const;
@@ -101,6 +102,10 @@ public:
   void     LorentzPUncorrected(TLorentzVector& vP) const;
   
   // additional methods to comply with AliVParticle
+  Double_t Xv() const {return -999.;} // put reasonable values here
+  Double_t Yv() const {return -999.;} //
+  Double_t Zv() const {return -999.;} //
+  Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }  
   Double_t Pt() const { return TMath::Sqrt(Px()*Px() + Py()*Py()); }
   Double_t OneOverPt() const { return 1./Pt(); }
   Double_t Phi() const { return TMath::ATan2(Py(), Px()); }

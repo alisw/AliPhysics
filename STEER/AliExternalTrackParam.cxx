@@ -906,54 +906,6 @@ Bool_t AliExternalTrackParam::PropagateToDCA(const AliESDVertex *vtx, Double_t b
 }
 
 
-
-
-Bool_t Local2GlobalMomentum(Double_t p[3],Double_t alpha) {
-  //----------------------------------------------------------------
-  // This function performs local->global transformation of the
-  // track momentum.
-  // When called, the arguments are:
-  //    p[0] = 1/pt of the track;
-  //    p[1] = sine of local azim. angle of the track momentum;
-  //    p[2] = tangent of the track momentum dip angle;
-  //   alpha - rotation angle. 
-  // The result is returned as:
-  //    p[0] = px
-  //    p[1] = py
-  //    p[2] = pz
-  // Results for (nearly) straight tracks are meaningless !
-  //----------------------------------------------------------------
-  if (TMath::Abs(p[0])<=kAlmost0) return kFALSE;
-  if (TMath::Abs(p[1])> kAlmost1) return kFALSE;
-
-  Double_t pt=1./TMath::Abs(p[0]);
-  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
-  Double_t r=TMath::Sqrt(1 - p[1]*p[1]);
-  p[0]=pt*(r*cs - p[1]*sn); p[1]=pt*(p[1]*cs + r*sn); p[2]=pt*p[2];
-
-  return kTRUE;
-}
-
-Bool_t Local2GlobalPosition(Double_t r[3],Double_t alpha) {
-  //----------------------------------------------------------------
-  // This function performs local->global transformation of the
-  // track position.
-  // When called, the arguments are:
-  //    r[0] = local x
-  //    r[1] = local y
-  //    r[2] = local z
-  //   alpha - rotation angle. 
-  // The result is returned as:
-  //    r[0] = global x
-  //    r[1] = global y
-  //    r[2] = global z
-  //----------------------------------------------------------------
-  Double_t cs=TMath::Cos(alpha), sn=TMath::Sin(alpha), x=r[0];
-  r[0]=x*cs - r[1]*sn; r[1]=x*sn + r[1]*cs;
-
-  return kTRUE;
-}
-
 void AliExternalTrackParam::GetDirection(Double_t d[3]) const {
   //----------------------------------------------------------------
   // This function returns a unit vector along the track direction
@@ -968,7 +920,7 @@ void AliExternalTrackParam::GetDirection(Double_t d[3]) const {
   d[2]=fP[3]/norm;
 }
 
-Bool_t AliExternalTrackParam::GetPxPyPz(Double_t *p) const {
+Bool_t AliExternalTrackParam::GetPxPyPz(Double_t p[3]) const {
   //---------------------------------------------------------------------
   // This function returns the global track momentum components
   // Results for (nearly) straight tracks are meaningless !
@@ -1011,6 +963,39 @@ Double_t AliExternalTrackParam::Pz() const {
   GetPxPyPz(p);
 
   return p[2];
+}
+
+Double_t AliExternalTrackParam::Xv() const {
+  //---------------------------------------------------------------------
+  // Returns x-component of first track point
+  //---------------------------------------------------------------------
+
+  Double_t r[3]={0.,0.,0.};
+  GetXYZ(r);
+
+  return r[0];
+}
+
+Double_t AliExternalTrackParam::Yv() const {
+  //---------------------------------------------------------------------
+  // Returns y-component of first track point
+  //---------------------------------------------------------------------
+
+  Double_t r[3]={0.,0.,0.};
+  GetXYZ(r);
+
+  return r[1];
+}
+
+Double_t AliExternalTrackParam::Zv() const {
+  //---------------------------------------------------------------------
+  // Returns z-component of first track point
+  //---------------------------------------------------------------------
+
+  Double_t r[3]={0.,0.,0.};
+  GetXYZ(r);
+
+  return r[2];
 }
 
 Double_t AliExternalTrackParam::Theta() const {

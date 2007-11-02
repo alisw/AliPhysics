@@ -67,9 +67,14 @@ class AliAODRecoDecay : public AliVParticle {
   Double_t P() const {return TMath::Sqrt(Px()*Px()+Py()*Py()+Pz()*Pz());}
   Double_t Pt() const {return TMath::Sqrt(Px()*Px()+Py()*Py());}
   Double_t OneOverPt() const {return (Pt() ? 1./Pt() : 0.);}
+  Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
   Double_t Phi() const {return TMath::Pi()+TMath::ATan2(-Py(),-Px());}
   Double_t Theta() const {return 0.5*TMath::Pi()-TMath::ATan(Pz()/(Pt()+1.e-13));}
   Double_t Eta() const {return 0.5*TMath::Log((P()+Pz())/(P()-Pz()+1.e-13));}
+  Double_t Xv() const { return GetSecVtxX(); }
+  Double_t Yv() const { return GetSecVtxY(); }
+  Double_t Zv() const { return GetSecVtxZ(); }
+  virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
   Double_t E(UInt_t pdg) const;
   Double_t Y(UInt_t pdg) const {return 0.5*TMath::Log((E(pdg)+Pz())/(E(pdg)-Pz()+1.e-13));}
   Double_t DecayLength(Double_t point[3]) const;

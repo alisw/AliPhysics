@@ -22,17 +22,12 @@
 
 #include "AliVParticle.h"
 
-const Double_t kAlmost1=0.999;
-const Double_t kAlmost0=1e-33;
 const Double_t kVeryBig=1./kAlmost0;
-
-const Double_t kB2C=0.299792458e-3;
-const Double_t kAlmost0Field=1.e-13;
 const Double_t kMostProbablePt=0.35;
 
-class AliESDVertex;
-
 Double_t ApproximateBetheBloch(Double_t);
+
+class AliESDVertex;
 
 class AliExternalTrackParam: public AliVParticle {
  public:
@@ -85,6 +80,13 @@ class AliExternalTrackParam: public AliVParticle {
   Double_t Pz() const;
   Double_t Pt() const { return TMath::Abs(GetSignedPt()); }
   Double_t P() const { return GetP(); }
+  Bool_t   PxPyPz(Double_t p[3]) const { return GetPxPyPz(p); }
+  
+  Double_t Xv() const;
+  Double_t Yv() const;
+  Double_t Zv() const;
+  Bool_t   XvYvZv(Double_t x[3]) const { return GetXYZ(x); }
+
   Double_t OneOverPt() const { return 1./Pt(); }
   Double_t Phi() const;
   Double_t Theta() const;

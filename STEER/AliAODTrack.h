@@ -93,7 +93,13 @@ class AliAODTrack : public AliVParticle {
   virtual Double_t Pz() const { return fMomentum[0] / TMath::Tan(fMomentum[2]); }
   virtual Double_t Pt() const { return fMomentum[0]; }
   virtual Double_t P()  const { return TMath::Sqrt(Pt()*Pt()+Pz()*Pz()); }
-  
+  virtual Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
+
+  virtual Double_t Xv() const { return GetProdVertex() ? GetProdVertex()->GetX() : -999.; }
+  virtual Double_t Yv() const { return GetProdVertex() ? GetProdVertex()->GetY() : -999.; }
+  virtual Double_t Zv() const { return GetProdVertex() ? GetProdVertex()->GetZ() : -999.; }
+  virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
+
   Double_t Chi2perNDF() const { return fChi2perNDF; }
   
   virtual Double_t M() const { return M(GetMostProbablePID()); }
@@ -198,10 +204,12 @@ class AliAODTrack : public AliVParticle {
   Int_t    HitsMuonChamber(Int_t MuonChamber);  // Check if track hits Muon chambers
   Bool_t   IsMuonTrack() const { return fITSMuonClusterMap>>16;}  // This scheme has to be checked, still!
 
-  void SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
+  void     SetProdVertex(TObject *vertex) { fProdVertex = vertex; }
+  void     SetType(AODTrk_t ttype) { fType=ttype; }
 
-  // name and title
-  void SetType(AODTrk_t ttype) { fType=ttype; }
+  // track operations
+  Bool_t   PropagateTo(Double_t xk, Double_t b);
+
 
  private :
 

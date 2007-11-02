@@ -32,12 +32,17 @@ public:
     virtual Double_t Pz()        const;
     virtual Double_t Pt()        const;
     virtual Double_t P()         const;
-    
+    virtual Bool_t   PxPyPz(Double_t p[3]) const;
+   
     virtual Double_t OneOverPt() const;
     virtual Double_t Phi()       const;
     virtual Double_t Theta()     const;
     
-    
+    virtual Double_t Xv() const;
+    virtual Double_t Yv() const;
+    virtual Double_t Zv() const;
+    virtual Bool_t   XvYvZv(Double_t x[3]) const;  
+
     virtual Double_t E()         const;
     virtual Double_t M()         const;
     
@@ -67,8 +72,13 @@ inline Double_t AliMCParticle::Pz()        const {return fParticle->Pz();}
 inline Double_t AliMCParticle::Pt()        const {return fParticle->Pt();}
 inline Double_t AliMCParticle::P()         const {return fParticle->P(); }
 inline Double_t AliMCParticle::OneOverPt() const {return 1. / fParticle->Pt();}
+inline Bool_t   AliMCParticle::PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
 inline Double_t AliMCParticle::Phi()       const {return fParticle->Phi();}
 inline Double_t AliMCParticle::Theta()     const {return fParticle->Theta();}
+inline Double_t AliMCParticle::Xv()        const {return fParticle->Vx();}
+inline Double_t AliMCParticle::Yv()        const {return fParticle->Vy();}
+inline Double_t AliMCParticle::Zv()        const {return fParticle->Vz();}
+inline Bool_t   AliMCParticle::XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 inline Double_t AliMCParticle::E()         const {return fParticle->Energy();}
 inline Double_t AliMCParticle::Eta()       const {return fParticle->Eta();}
 
