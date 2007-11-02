@@ -77,29 +77,6 @@ AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent()
   fEta[1] = 1.1;
 }
 
-AliHLTTPCSliceTrackerComponent::AliHLTTPCSliceTrackerComponent(const AliHLTTPCSliceTrackerComponent& src)
-  :
-  fTracker(NULL),
-  fVertex(NULL),
-  fDoNonVertex(false),
-  fDoPP(false),
-  fMultiplicity(4000),
-  fBField(0.4),
-  fnonvertextracking(kFALSE),
-  fmainvertextracking(kTRUE),
-  fpInterMerger(NULL)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCSliceTrackerComponent& AliHLTTPCSliceTrackerComponent::operator=(const AliHLTTPCSliceTrackerComponent& src)
-{ 
-  // see header file for class documentation
-  HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTTPCSliceTrackerComponent::~AliHLTTPCSliceTrackerComponent()
 {
   // see header file for class documentation
@@ -524,6 +501,11 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
     for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
 	{
 	iter = blocks+ndx;
+
+	if(iter->fDataType!=AliHLTTPCDefinitions::fgkClustersDataType){
+	  HLTDebug("Data block type is not of type AliHLTTPCDefinitions::fgkClustersDataType");
+	  continue;
+	}
 
 	slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
 	found = false;

@@ -890,7 +890,7 @@ Int_t AliHLTTPCConfMapper::FillTracks()
   Int_t numoftracks = fNTracks;
   if(fNTracks == 0)
     {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCConfMapper::FillTracks","fNTracks")<<AliHLTTPCLog::kDec<<
+      LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::FillTracks","fNTracks")<<AliHLTTPCLog::kDec<<
 	"No tracks found!!"<<ENDLOG;
       return 0;
     }

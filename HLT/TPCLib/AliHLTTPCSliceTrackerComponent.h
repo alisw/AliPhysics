@@ -41,10 +41,6 @@ class AliHLTTPCSliceTrackerComponent : public AliHLTProcessor
 public:
   /** default constructor */
   AliHLTTPCSliceTrackerComponent();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCSliceTrackerComponent(const AliHLTTPCSliceTrackerComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCSliceTrackerComponent& operator=(const AliHLTTPCSliceTrackerComponent&);
   /** destructor */
   virtual ~AliHLTTPCSliceTrackerComponent();
 
@@ -106,6 +102,10 @@ protected:
 	       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
   
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCSliceTrackerComponent(const AliHLTTPCSliceTrackerComponent&);
+  /** assignment operator prohibited */
+  AliHLTTPCSliceTrackerComponent& operator=(const AliHLTTPCSliceTrackerComponent&);
 
   /** instance of the tracker */
   AliHLTTPCConfMapper* fTracker;                                   //! transient
