@@ -24,8 +24,10 @@ public :
    virtual void    SlaveBegin(TTree *tree);
    virtual Int_t   ProcessIn(Long64_t entry);
    virtual void    Terminate();
+  void InitComponent();
 
 private:
+  Bool_t            fInit;                 //! flag - component initialized
   AliTPCcalibTracks *fCalibTracks;         //! calib Tracks object
   AliTPCcalibTracksGain *fCalibTracksGain; //! gain calibration object for tracks
   static const char *fgkOutputFileName;    //! filename of the output root file

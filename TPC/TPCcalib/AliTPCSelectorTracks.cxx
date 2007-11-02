@@ -56,6 +56,7 @@ const char* AliTPCSelectorTracks::fgkOutputFileName = "Output.root";
 
 AliTPCSelectorTracks::AliTPCSelectorTracks(TTree *) : 
   AliTPCSelectorESD(),
+  fInit(kFALSE),
   fCalibTracks(0),
   fCalibTracksGain(0)
 {
@@ -72,13 +73,10 @@ AliTPCSelectorTracks::~AliTPCSelectorTracks(){
 }
 
 
-void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
-{
-   // The SlaveBegin() function is called after the Begin() function.
-   // When running with PROOF SlaveBegin() is called on each slave server.
-   // The tree argument is deprecated (on PROOF 0 is passed).
-  
-  AliTPCSelectorESD::SlaveBegin(tree);
+void AliTPCSelectorTracks::InitComponent(){
+  //
+  // Init Components
+  //
   //
   // USER -COMPONENT definder part
   // 
@@ -88,18 +86,31 @@ void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
   //    chain->GetUserInfo()->AddLast(clusterParam);
   //    chain->GetUserInfo()->AddLast(cuts);
   //
-
-  printf(" ***** SlaveBegin ***** \n");
-   AliTPCClusterParam *clusterParam  = (AliTPCClusterParam*)fChain->GetUserInfo()->FindObject("AliTPCClusterParam");
-   if (clusterParam != 0) printf("clusterParam found in fChain! \n");
-   AliTPCcalibTracksCuts *cuts = (AliTPCcalibTracksCuts*)fChain->GetUserInfo()->FindObject("calibTracksCuts");
-   if (cuts != 0) printf("cuts found in fChain! \n");
-   
-   fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
+  AliTPCClusterParam *clusterParam  = (AliTPCClusterParam*)fChain->GetUserInfo()->FindObject("AliTPCClusterParam");
+  if (clusterParam != 0) printf("clusterParam found in fChain! \n");
+  AliTPCcalibTracksCuts *cuts = (AliTPCcalibTracksCuts*)fChain->GetUserInfo()->FindObject("calibTracksCuts");
+  if (cuts != 0) printf("cuts found in fChain! \n");
+  
+  fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
    fOutput->AddLast(fCalibTracks);
    
    fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks");
    fOutput->AddLast(fCalibTracksGain);
+   
+}
+
+void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
+{
+   // The SlaveBegin() function is called after the Begin() function.
+   // When running with PROOF SlaveBegin() is called on each slave server.
+   // The tree argument is deprecated (on PROOF 0 is passed).
+  
+  AliTPCSelectorESD::SlaveBegin(tree);
+  if (!fChain){
+    printf("EROOR - chain not initialized\n");
+  }
+
+  printf(" ***** SlaveBegin ***** \n");
 }
 
 
@@ -108,6 +119,7 @@ Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
   //
   //
   //
+  if (!fInit) InitComponent();
   Int_t status = ReadEvent(entry);
   if (status<0) return status; 
   Int_t ntracks = (fESD) ? fESD->GetNumberOfTracks() : fESDevent->GetNumberOfTracks();     
