@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// AliFemtoQPairCut - a simple cut which selects pairs based on the values //
+// of their respective q components                                        /
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
 /***************************************************************************
  *
  * $Id $
@@ -8,6 +15,12 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.2.6.1  2007/11/01 17:10:38  akisiel
+ * Fix code rule conformace
+ *
+ * Revision 1.2  2007/05/22 09:01:42  akisiel
+ * Add the possibiloity to save cut settings in the ROOT file
+ *
  * Revision 1.1  2007/05/16 10:25:06  akisiel
  * Making the directory structure of AliFemtoUser flat. All files go into one common directory
  *
@@ -21,8 +34,8 @@
  **************************************************************************/
 
 
-#ifndef AliFemtoQPairCut_hh
-#define AliFemtoQPairCut_hh
+#ifndef ALIFEMTOQPAIRCUT_H
+#define ALIFEMTOQPAIRCUT_H
 
 // do I need these lines ?
 //#ifndef StMaker_H
@@ -36,7 +49,7 @@ public:
   AliFemtoQPairCut();
   ~AliFemtoQPairCut();
 
-  virtual bool Pass(const AliFemtoPair*);
+  virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
 
@@ -48,12 +61,12 @@ public:
 
 
 private:
-  long fNPairsPassed;
-  long fNPairsFailed;
-  float fQlong[2];
-  float fQout[2];
-  float fQside[2];
-  float fQinv[2];
+  long fNPairsPassed;  // Number of pairs that passed the cut
+  long fNPairsFailed;  // Number of pairs that failed the cut
+  float fQlong[2];     // Qlong range
+  float fQout[2];      // Qout range
+  float fQside[2];     // Qside range
+  float fQinv[2];      // Qinv range
   
 
 #ifdef __ROOT__

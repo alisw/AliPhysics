@@ -11,6 +11,9 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.3  2007/05/22 09:01:42  akisiel
+ * Add the possibiloity to save cut settings in the ROOT file
+ *
  * Revision 1.2  2007/05/21 10:38:25  akisiel
  * More coding rule conformance
  *
@@ -47,6 +50,38 @@
 ClassImp(AliFemtoESDTrackCut)
 #endif
 
+
+// electron
+// 0.13 - 1.8
+// 0       7.594129e-02    8.256141e-03
+// 1       -5.535827e-01   8.170825e-02
+// 2       1.728591e+00    3.104210e-01
+// 3       -2.827893e+00   5.827802e-01
+// 4       2.503553e+00    5.736207e-01
+// 5       -1.125965e+00   2.821170e-01
+// 6       2.009036e-01    5.438876e-02
+
+// pion
+// 0.13 - 2.0
+// 0       1.063457e+00    8.872043e-03
+// 1       -4.222208e-01   2.534402e-02
+// 2       1.042004e-01    1.503945e-02
+
+// kaon
+// 0.18 - 2.0
+// 0       -7.289406e-02   1.686074e-03
+// 1       4.415666e-01    1.143939e-02
+// 2       -2.996790e-01   1.840964e-02
+// 3       6.704652e-02    7.783990e-03
+
+// proton
+// 0.26 - 2.0
+// 0       -3.730200e-02   2.347311e-03
+// 1       1.163684e-01    1.319316e-02
+// 2       8.354116e-02    1.997948e-02
+// 3       -4.608098e-02   8.336400e-03
+
+
 AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fCharge(0),
     fLabel(0),
@@ -54,7 +89,9 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fminTPCclsF(0),
     fminITScls(0),
     fNTracksPassed(0),
-    fNTracksFailed(0)
+    fNTracksFailed(0),
+    fRemoveKinks(kFALSE),
+    fMostProbable(0)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
@@ -70,18 +107,18 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
   fStatus=0;
   fminTPCclsF=0;
   fminITScls=0;
-    
 }
 //------------------------------
-//AliFemtoESDTrackCut::~AliFemtoESDTrackCut(){
-//  /* noop */
-//}
+AliFemtoESDTrackCut::~AliFemtoESDTrackCut(){
+  /* noop */
+}
 //------------------------------
 bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 {
   // test the particle and return 
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
+  float tMost[5];
   
   //cout<<"AliFemtoESD  cut"<<endl;
   //cout<<fPidProbPion[0]<<" < pi ="<<track->PidProbPion()<<" <"<<fPidProbPion[1]<<endl;
@@ -90,7 +127,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<" status "<<track->Label()<<" "<<track->Flags()<<" "<<track->TPCnclsF()<<" "<<track->ITSncls()<<endl;
       if ((track->Flags()&fStatus)!=fStatus)
 	{
-	  //  cout<<track->Flags()<<" "<<fStatus<<" no go through status"<<endl;
+	  //	  cout<<track->Flags()<<" "<<fStatus<<" no go through status"<<endl;
 	  return false;
 	}
 	
@@ -146,6 +183,15 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<fPt[0]<<" < Pt ="<<Pt<<" <"<<fPt[1]<<endl;
       return false;
     }
+//   cout << "Track has pids: " 
+//        << track->PidProbElectron() << " " 
+//        << track->PidProbMuon() << " " 
+//        << track->PidProbPion() << " " 
+//        << track->PidProbKaon() << " " 
+//        << track->PidProbProton() << " " 
+//        << track->PidProbElectron()+track->PidProbMuon()+track->PidProbPion()+track->PidProbKaon()+track->PidProbProton() << endl;
+
+    
   if ((track->PidProbElectron()<fPidProbElectron[0])||(track->PidProbElectron()>fPidProbElectron[1]))
     {
       fNTracksFailed++;
@@ -181,6 +227,23 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<fPidProbMuon[0]<<" <  mi="<<track->PidProbMuon()<<" <"<<fPidProbMuon[1]<<endl;
       return false;
     }
+  if (fRemoveKinks) {
+    if ((track->KinkIndex(0)) || (track->KinkIndex(1)) || (track->KinkIndex(2)))
+      return false;
+  }
+
+  if (fMostProbable) {
+    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().mag());
+    tMost[1] = 0.0;
+    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().mag());
+    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().mag());
+    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().mag());
+    int imost=0;
+    float ipidmax = 0.0;
+    for (int ip=0; ip<5; ip++)
+      if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+    if (imost != fMostProbable) return false;
+  }
   
   // cout<<"Go Through the cut"<<endl;
   // cout<<fLabel<<" Label="<<track->Label()<<endl;
@@ -200,6 +263,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 //------------------------------
 AliFemtoString AliFemtoESDTrackCut::Report()
 {
+  // Prepare report from the execution
   string tStemp;
   char tCtemp[100];
   sprintf(tCtemp,"Particle mass:\t%E\n",this->Mass());
@@ -257,6 +321,92 @@ TList *AliFemtoESDTrackCut::ListSettings()
   tListSetttings->AddLast(new TObjString(buf));
   snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.maximum=%lf", fRapidity[1]);
   tListSetttings->AddLast(new TObjString(buf));
-
+  snprintf(buf, 200, "AliFemtoESDTrackCut.removekinks=%i", fRemoveKinks);
+  tListSetttings->AddLast(new TObjString(buf));
+  if (fMostProbable) {
+    if (fMostProbable == 2)
+      snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Pion");
+    if (fMostProbable == 3)
+      snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Kaon");
+    if (fMostProbable == 4)
+      snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Proton");
+    tListSetttings->AddLast(new TObjString(buf));
+  }
   return tListSetttings;
+}
+void AliFemtoESDTrackCut::SetRemoveKinks(const bool& flag)
+{
+  fRemoveKinks = flag;
+}
+			    
+			    // electron
+// 0.13 - 1.8
+// 0       7.594129e-02    8.256141e-03
+// 1       -5.535827e-01   8.170825e-02
+// 2       1.728591e+00    3.104210e-01
+// 3       -2.827893e+00   5.827802e-01
+// 4       2.503553e+00    5.736207e-01
+// 5       -1.125965e+00   2.821170e-01
+// 6       2.009036e-01    5.438876e-02
+float AliFemtoESDTrackCut::PidFractionElectron(float mom) const
+{
+  // Provide a parameterized fraction of electrons dependent on momentum
+  if (mom<0.13) return 0.0;
+  if (mom>1.8) return 0.0;
+  return (7.594129e-02 
+	  -5.535827e-01*mom	   
+	  +1.728591e+00*mom*mom    
+	  -2.827893e+00*mom*mom*mom 
+	  +2.503553e+00*mom*mom*mom*mom	   
+	  -1.125965e+00*mom*mom*mom*mom*mom      
+	  +2.009036e-01*mom*mom*mom*mom*mom*mom);   
+}
+
+// pion
+// 0.13 - 2.0
+// 0       1.063457e+00    8.872043e-03
+// 1       -4.222208e-01   2.534402e-02
+// 2       1.042004e-01    1.503945e-02
+float AliFemtoESDTrackCut::PidFractionPion(float mom) const
+{
+  // Provide a parameterized fraction of pions dependent on momentum
+  if (mom<0.13) return 0.0;
+  if (mom>2.0) return 0.0;
+  return ( 1.063457e+00
+	   -4.222208e-01*mom
+	   +1.042004e-01*mom*mom);
+}
+
+// kaon
+// 0.18 - 2.0
+// 0       -7.289406e-02   1.686074e-03
+// 1       4.415666e-01    1.143939e-02
+// 2       -2.996790e-01   1.840964e-02
+// 3       6.704652e-02    7.783990e-03
+float AliFemtoESDTrackCut::PidFractionKaon(float mom) const
+{
+  // Provide a parameterized fraction of kaons dependent on momentum
+  if (mom<0.18) return 0.0;
+  if (mom>2.0) return 0.0;
+  return (-7.289406e-02
+	  +4.415666e-01*mom	   
+	  -2.996790e-01*mom*mom    
+	  +6.704652e-02*mom*mom*mom);
+}
+
+// proton
+// 0.26 - 2.0
+// 0       -3.730200e-02   2.347311e-03
+// 1       1.163684e-01    1.319316e-02
+// 2       8.354116e-02    1.997948e-02
+// 3       -4.608098e-02   8.336400e-03
+float AliFemtoESDTrackCut::PidFractionProton(float mom) const
+{
+  // Provide a parameterized fraction of protons dependent on momentum
+  if (mom<0.26) return  0.0;
+  if (mom>2.0) return 0.0;
+  return (-3.730200e-02  
+	  +1.163684e-01*mom	      
+	  +8.354116e-02*mom*mom       
+	  -4.608098e-02*mom*mom*mom);  
 }

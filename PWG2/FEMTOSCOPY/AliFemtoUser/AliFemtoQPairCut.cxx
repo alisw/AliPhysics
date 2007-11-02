@@ -1,3 +1,9 @@
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+// AliFemtoQPairCut - a simple cut which selects pairs based on the values //
+// of their respective q components                                        /
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 /***************************************************************************
  *
  * $Id$
@@ -7,6 +13,12 @@
  ***************************************************************************
  *
  * $Log$
+ * Revision 1.2.6.1  2007/11/01 17:10:38  akisiel
+ * Fix code rule conformace
+ *
+ * Revision 1.2  2007/05/22 09:01:42  akisiel
+ * Add the possibiloity to save cut settings in the ROOT file
+ *
  * Revision 1.1  2007/05/16 10:25:06  akisiel
  * Making the directory structure of AliFemtoUser flat. All files go into one common directory
  *
@@ -38,6 +50,7 @@ AliFemtoQPairCut::AliFemtoQPairCut():
   fNPairsPassed(0),
   fNPairsFailed(0)
 {
+  // Default constructor
   fNPairsPassed = fNPairsFailed = 0;
   fQlong[0]=-1.0; fQlong[1]=100.0;
   fQout[0]=-1.0;  fQout[1]=100.0;
@@ -52,6 +65,7 @@ AliFemtoQPairCut::~AliFemtoQPairCut()
 //__________________
 bool AliFemtoQPairCut::Pass(const AliFemtoPair* pair)
 {
+  // Select pairs based on their q values
   //bool temp = true;
   //temp ? fNPairsPassed++ : fNPairsFailed++;
   if ((fabs(pair->QLongCMS())<fQlong[0])||(fabs(pair->QLongCMS())>fQlong[1]))
@@ -80,11 +94,12 @@ bool AliFemtoQPairCut::Pass(const AliFemtoPair* pair)
 //__________________
 AliFemtoString AliFemtoQPairCut::Report()
 {
-  string Stemp = "AliFemtoQ Pair Cut \n";
-  char Ctemp[100];
-  sprintf(Ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
-  Stemp += Ctemp;
-  AliFemtoString returnThis = Stemp;
+  // Prepare a report
+  string stemp = "AliFemtoQ Pair Cut \n";
+  char ctemp[100];
+  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  stemp += ctemp;
+  AliFemtoString returnThis = stemp;
   return returnThis;
 }
 //__________________

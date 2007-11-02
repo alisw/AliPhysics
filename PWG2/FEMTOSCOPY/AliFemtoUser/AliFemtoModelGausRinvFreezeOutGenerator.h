@@ -18,7 +18,7 @@ class AliFemtoModelGausRinvFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   AliFemtoModelGausRinvFreezeOutGenerator();
   AliFemtoModelGausRinvFreezeOutGenerator(const AliFemtoModelGausRinvFreezeOutGenerator &aModel);
   virtual ~AliFemtoModelGausRinvFreezeOutGenerator();
-  virtual void GenerateFreezeOut(AliFemtoPair *aPair);;
+  virtual void GenerateFreezeOut(AliFemtoPair *aPair);
 
   void SetSizeInv(Double_t aSizeInv);
   
