@@ -60,20 +60,6 @@ AliHLTTPCRawDataUnpackerComponent::AliHLTTPCRawDataUnpackerComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCRawDataUnpackerComponent::AliHLTTPCRawDataUnpackerComponent(const AliHLTTPCRawDataUnpackerComponent&)
-  :
-  fRawMemoryReader(NULL),
-  fTPCRawStream(NULL)
-{
-  // see header file for class documentation
-}
-
-AliHLTTPCRawDataUnpackerComponent& AliHLTTPCRawDataUnpackerComponent::operator=(const AliHLTTPCRawDataUnpackerComponent&)
-{ 
-  // see header file for class documentation
-  return *this;
-}
-
 AliHLTTPCRawDataUnpackerComponent::~AliHLTTPCRawDataUnpackerComponent()
 {
   // see header file for class documentation

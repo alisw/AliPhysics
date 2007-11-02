@@ -52,19 +52,6 @@ AliHLTTPCMerger::AliHLTTPCMerger()
   fNIn=0;
 }
 
-AliHLTTPCMerger::AliHLTTPCMerger(const AliHLTTPCMerger&)
-{
-  // dummy copy constructor
-  //HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCMerger& AliHLTTPCMerger::operator=(const AliHLTTPCMerger&)
-{ 
-  // dummy assignment operator
-  //HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTTPCMerger::~AliHLTTPCMerger()
 {
   //Destructor

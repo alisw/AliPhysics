@@ -61,28 +61,6 @@ AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCCalibPedestalComponent::AliHLTTPCCalibPedestalComponent(const AliHLTTPCCalibPedestalComponent&)
-  :
-  fRawReader(NULL),
-  fRawStream(NULL),
-  fCalibPedestal(NULL),
-  fRCUFormat(kFALSE),
-  fMinPatch(5),
-  fMaxPatch(0),
-  fSpecification(0),
-  fEnableAnalysis(kFALSE) {
-  // see header file for class documentation
-
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCCalibPedestalComponent& AliHLTTPCCalibPedestalComponent::operator=(const AliHLTTPCCalibPedestalComponent&) { 
-  // see header file for class documentation
-
-  HLTFatal("assignment operator untested");
-  return *this;
-}	
-
 AliHLTTPCCalibPedestalComponent::~AliHLTTPCCalibPedestalComponent() {
   // see header file for class documentation
 }

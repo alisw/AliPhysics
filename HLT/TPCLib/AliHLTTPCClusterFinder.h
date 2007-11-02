@@ -46,7 +46,45 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   };
   typedef struct AliClusterData AliClusterData; //!
 
+  /** standard constructor */
+  AliHLTTPCClusterFinder();
+  /** destructor */
+  virtual ~AliHLTTPCClusterFinder();
+
+  void Read(void* ptr,unsigned long size);
+
+  void InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t maxpoints);
+  void InitSlice(Int_t slice,Int_t patch,Int_t maxpoints);
+  void ProcessDigits();
+
+  void SetOutputArray(AliHLTTPCSpacePointData *pt);
+  void WriteClusters(Int_t n_clusters,AliClusterData *list);
+
+  void SetXYError(Float_t f) {fXYErr=f;}
+  void SetZError(Float_t f) {fZErr=f;}
+  void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
+  void SetThreshold(UInt_t i) {fThreshold=i;}
+  void SetOccupancyLimit(Float_t f) {fOccupancyLimit=f;}
+  void SetSignalThreshold(Int_t i) {fSignalThreshold=i;}
+  void SetMatchWidth(UInt_t i) {fMatch=i;}
+  void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
+  void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
+  void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
+  void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
+  Int_t GetNumberOfClusters() const {return fNClusters;}
+
+  //----------------------------------Methods for the new unsorted way of reading data ----------
+  void SetPadArray(AliHLTTPCPadArray *padArray);
+  void ReadDataUnsorted(void* ptr,unsigned long size);
+  void FindClusters();
+  void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
+  
  private: 
+  /** copy constructor prohibited */
+  AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
+  /** assignment operator prohibited */
+  AliHLTTPCClusterFinder& operator=(const AliHLTTPCClusterFinder&);
+
   AliHLTTPCSpacePointData *fSpacePointData; //! array of space points
   AliHLTTPCDigitReader *fDigitReader;       //! reader instance
 
@@ -81,44 +119,6 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
-  
- public:
-  /** standard constructor */
-  AliHLTTPCClusterFinder();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCClusterFinder& operator=(const AliHLTTPCClusterFinder&);
-  /** destructor */
-  virtual ~AliHLTTPCClusterFinder();
-
-  void Read(void* ptr,unsigned long size);
-
-  void InitSlice(Int_t slice,Int_t patch,Int_t firstrow, Int_t lastrow,Int_t maxpoints);
-  void InitSlice(Int_t slice,Int_t patch,Int_t maxpoints);
-  void ProcessDigits();
-
-  void SetOutputArray(AliHLTTPCSpacePointData *pt);
-  void WriteClusters(Int_t n_clusters,AliClusterData *list);
-
-  void SetXYError(Float_t f) {fXYErr=f;}
-  void SetZError(Float_t f) {fZErr=f;}
-  void SetDeconv(Bool_t f) {fDeconvPad=f; fDeconvTime=f;}
-  void SetThreshold(UInt_t i) {fThreshold=i;}
-  void SetOccupancyLimit(Float_t f) {fOccupancyLimit=f;}
-  void SetSignalThreshold(Int_t i) {fSignalThreshold=i;}
-  void SetMatchWidth(UInt_t i) {fMatch=i;}
-  void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
-  void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
-  void SetRawSP(Bool_t f=kFALSE) {fRawSP=f;}
-  void SetReader(AliHLTTPCDigitReader* f){fDigitReader = f;}
-  Int_t GetNumberOfClusters() const {return fNClusters;}
-
-  //----------------------------------Methods for the new unsorted way of reading data ----------
-  void SetPadArray(AliHLTTPCPadArray *padArray);
-  void ReadDataUnsorted(void* ptr,unsigned long size);
-  void FindClusters();
-  void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
   
   ClassDef(AliHLTTPCClusterFinder,1) //Fast cluster finder
 };

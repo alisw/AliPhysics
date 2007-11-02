@@ -18,17 +18,12 @@ class TString;
 #else
 class  AliHLTTPCStopwatch;
 #endif
-#include "AliHLTLogging.h"
 
-class AliHLTTPCBenchmark : public AliHLTLogging {
+class AliHLTTPCBenchmark  {
 
 public:
   /** standard constructor */
   AliHLTTPCBenchmark();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCBenchmark(const AliHLTTPCBenchmark&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCBenchmark& operator=(const AliHLTTPCBenchmark&);
   /** destructor */
   virtual ~AliHLTTPCBenchmark();
    Int_t      GetBench(const Char_t *name);
@@ -39,6 +34,10 @@ public:
    static Double_t GetCpuTime();
 
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCBenchmark(const AliHLTTPCBenchmark&);
+  /** assignment operator prohibited */
+  AliHLTTPCBenchmark& operator=(const AliHLTTPCBenchmark&);
 
    Int_t      fNbench;          //Number of active benchmarks
    Int_t      fNmax;            //Maximum number of benchmarks initialized

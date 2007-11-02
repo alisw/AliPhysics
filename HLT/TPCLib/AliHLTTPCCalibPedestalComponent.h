@@ -39,10 +39,6 @@ class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
     public:
       /** constructor */
       AliHLTTPCCalibPedestalComponent();
-      /** not a valid copy constructor, defined according to effective C++ style */
-      AliHLTTPCCalibPedestalComponent(const AliHLTTPCCalibPedestalComponent&);
-      /** not a valid assignment op, but defined according to effective C++ style */
-      AliHLTTPCCalibPedestalComponent& operator=(const AliHLTTPCCalibPedestalComponent&);
       /** destructor */
       virtual ~AliHLTTPCCalibPedestalComponent();
       
@@ -77,6 +73,10 @@ class AliHLTTPCCalibPedestalComponent : public AliHLTCalibrationProcessor
       Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
     private:
+      /** copy constructor prohibited */
+      AliHLTTPCCalibPedestalComponent(const AliHLTTPCCalibPedestalComponent&);
+      /** assignment operator prohibited */
+      AliHLTTPCCalibPedestalComponent& operator=(const AliHLTTPCCalibPedestalComponent&);
 
       /** The reader object for reading from memory */
       AliRawReaderMemory* fRawReader;                                              //!transient

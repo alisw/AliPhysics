@@ -32,10 +32,6 @@ class AliHLTTPCConfMapTrack :public AliHLTTPCTrack {
  public:
   
   AliHLTTPCConfMapTrack();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCConfMapTrack(const AliHLTTPCConfMapTrack&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCConfMapTrack& operator=(const AliHLTTPCConfMapTrack&);
   /** destructor */
   virtual ~AliHLTTPCConfMapTrack();
   void Fill(AliHLTTPCVertex *vertex,Double_t max_Dca);
@@ -105,6 +101,12 @@ class AliHLTTPCConfMapTrack :public AliHLTTPCTrack {
   
   Double_t    fddXy, fa1Xy, fa2Xy ;    /*fit par in xy */
   Double_t    fddSz, fa1Sz, fa2Sz ;    /*fit par in sz */
+
+ private:
+  /** copy constructor prohibited */
+  AliHLTTPCConfMapTrack(const AliHLTTPCConfMapTrack&);
+  /** assignment operator prohibited */
+  AliHLTTPCConfMapTrack& operator=(const AliHLTTPCConfMapTrack&);
   
   ClassDef(AliHLTTPCConfMapTrack,1) //Conformal mapping track class
 };

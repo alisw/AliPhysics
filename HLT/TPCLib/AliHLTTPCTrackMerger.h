@@ -32,10 +32,6 @@ class AliHLTTPCTrackMerger : public AliHLTTPCMerger {
  public:
   AliHLTTPCTrackMerger();
   AliHLTTPCTrackMerger(Int_t nsubsectors);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCTrackMerger& operator=(const AliHLTTPCTrackMerger&);
   /** destructor */
   virtual ~AliHLTTPCTrackMerger();
 
@@ -46,6 +42,11 @@ class AliHLTTPCTrackMerger : public AliHLTTPCMerger {
   void InterMerge();
 
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&);
+  /** assignment operator prohibited */
+  AliHLTTPCTrackMerger& operator=(const AliHLTTPCTrackMerger&);
+
   Int_t fSubSector;//Index of the readout patch inside given TPC sector
   Int_t fNSubSector;//Number of readout patches inside given TPC sector
   Int_t *fRowMin;//!

@@ -39,10 +39,6 @@ class AliHLTTPCCalibPulserComponent : public AliHLTCalibrationProcessor
     public:
       /** constructor */
       AliHLTTPCCalibPulserComponent();
-      /** not a valid copy constructor, defined according to effective C++ style */
-      AliHLTTPCCalibPulserComponent(const AliHLTTPCCalibPulserComponent&);
-      /** not a valid assignment op, but defined according to effective C++ style */
-      AliHLTTPCCalibPulserComponent& operator=(const AliHLTTPCCalibPulserComponent&);
       /** destructor */
       virtual ~AliHLTTPCCalibPulserComponent();
       
@@ -77,6 +73,10 @@ class AliHLTTPCCalibPulserComponent : public AliHLTCalibrationProcessor
       Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
 
     private:
+      /** copy constructor prohibited */
+      AliHLTTPCCalibPulserComponent(const AliHLTTPCCalibPulserComponent&);
+      /** assignment operator prohibited */
+      AliHLTTPCCalibPulserComponent& operator=(const AliHLTTPCCalibPulserComponent&);
 
       /** The reader object for reading from memory */
       AliRawReaderMemory* fRawReader;                                              //!transient

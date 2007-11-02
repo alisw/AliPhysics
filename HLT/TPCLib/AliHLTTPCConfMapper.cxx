@@ -65,46 +65,6 @@ AliHLTTPCConfMapper::AliHLTTPCConfMapper()
   fParamSet[1]=0;
 }
 
-AliHLTTPCConfMapper::AliHLTTPCConfMapper(const AliHLTTPCConfMapper&)
-  :
-  fBench(kTRUE),
-  fNTracks(0),
-  fVertex(NULL),
-  fVertexFinder(kFALSE),
-  fHit(NULL),
-  fTrack(NULL),
-  fMaxDca(0.0), // no clue whether this is reasonable, but at least better than without initialization
-  fVolume(NULL),
-  fRow(NULL),
-  fNumRowSegment(0),
-  fNumPhiSegment(0),
-  fNumEtaSegment(0),
-  fNumRowSegmentPlusOne(0),
-  fNumPhiSegmentPlusOne(0),
-  fNumEtaSegmentPlusOne(0),
-  fNumPhiEtaSegmentPlusOne(0),
-  fBounds(0),
-  fPhiHitsOutOfRange(0),
-  fEtaHitsOutOfRange(0),
-  fPhiMin(0),
-  fPhiMax(0),
-  fEtaMin(0),
-  fEtaMax(0),
-  fRowMin(0),
-  fRowMax(0),
-  fVertexConstraint(kTRUE)
-{
-  // dummy copy constructor
-  //HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCConfMapper& AliHLTTPCConfMapper::operator=(const AliHLTTPCConfMapper&)
-{ 
-  // dummy assignment operator
-  //HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTTPCConfMapper::~AliHLTTPCConfMapper()
 {
   // Destructor.

@@ -27,10 +27,6 @@ class AliHLTTPCDigitReaderUnpacked : public AliHLTTPCDigitReader{
 public:
   /** standard constructor */
   AliHLTTPCDigitReaderUnpacked();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitReaderUnpacked&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCDigitReaderUnpacked& operator=(const AliHLTTPCDigitReaderUnpacked&);
   /** destructor */
   virtual ~AliHLTTPCDigitReaderUnpacked();
 
@@ -77,6 +73,11 @@ protected:
 
 
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitReaderUnpacked&);
+  /** assignment operator prohibited */
+  AliHLTTPCDigitReaderUnpacked& operator=(const AliHLTTPCDigitReaderUnpacked&);
+
   /** intermediate row data structure (pointer in fPtr buffer) */
   AliHLTTPCDigitRowData *fDigitRowData; //!
   /** current row data structure (pointer in fPtr buffer) */

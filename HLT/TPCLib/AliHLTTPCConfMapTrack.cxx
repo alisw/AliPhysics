@@ -67,39 +67,6 @@ AliHLTTPCConfMapTrack::AliHLTTPCConfMapTrack()
   fChiSq[1] = 0.;
 }
 
-AliHLTTPCConfMapTrack::AliHLTTPCConfMapTrack(const AliHLTTPCConfMapTrack&)
-  :
-  fCurrentHit(0),
-  fLastHit(0),
-  fFirstHit(0),
-  fs11Xy(0),
-  fs12Xy(0),
-  fs22Xy(0),
-  fg1Xy(0),
-  fg2Xy(0),
-  fs11Sz(0),
-  fs12Sz(0),
-  fs22Sz(0),
-  fg1Sz(0),
-  fg2Sz(0),
-  fddXy(0),
-  fa1Xy(0),
-  fa2Xy(0),
-  fddSz(0),
-  fa1Sz(0),
-  fa2Sz(0)
-{
-  // dummy copy constructor
-  //HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCConfMapTrack& AliHLTTPCConfMapTrack::operator=(const AliHLTTPCConfMapTrack&)
-{ 
-  // dummy assignment operator
-  //HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTTPCConfMapTrack::~AliHLTTPCConfMapTrack()
 {
   //deconstructor

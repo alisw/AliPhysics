@@ -27,10 +27,6 @@ class AliHLTTPCTrackArray;
 class AliHLTTPCMerger {
  public:
   AliHLTTPCMerger();
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCMerger(const AliHLTTPCMerger&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCMerger& operator=(const AliHLTTPCMerger&);
   /** destructor */
   virtual ~AliHLTTPCMerger();
 
@@ -71,6 +67,11 @@ class AliHLTTPCMerger {
   void InitMerger(Int_t ntrackarrays,Char_t *tracktype="AliHLTTPCTrack");
   
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCMerger(const AliHLTTPCMerger&);
+  /** assignment operator prohibited */
+  AliHLTTPCMerger& operator=(const AliHLTTPCMerger&);
+
   void SetArray(Int_t nin);
   void DeleteArray();
 

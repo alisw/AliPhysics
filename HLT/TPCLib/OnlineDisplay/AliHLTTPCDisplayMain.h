@@ -51,11 +51,6 @@ class AliHLTTPCDisplayMain : public TObject , public AliHLTLogging {
    */
   AliHLTTPCDisplayMain(void* pt2GUI, void (*pt2Function)(void*, Int_t));
 
-  /** not a valid copy constructor, defined according to effective C++ style */
-  //  AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  //  AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain&);
-
   /** standard destructor */
   virtual ~AliHLTTPCDisplayMain();
 
@@ -389,6 +384,11 @@ Char_t GetTrackParamBfield());
 
 // ---------------------------------------------------
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain&);
+  /** assignment operator prohibited */
+  AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain&);
+
   //    AliHLTTPCDisplayMain(const AliHLTTPCDisplayMain &/*d*/):TObject(){;}
   //    AliHLTTPCDisplayMain& operator=(const AliHLTTPCDisplayMain &/*d*/){return *this;}
       

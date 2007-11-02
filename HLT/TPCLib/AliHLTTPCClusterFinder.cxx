@@ -146,53 +146,6 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   //constructor
 }
 
-AliHLTTPCClusterFinder::AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder& src)
-  :
-  fSpacePointData(NULL),
-  fDigitReader(src.fDigitReader),
-  fPtr(NULL),
-  fSize(src.fSize),
-  fDeconvTime(src.fDeconvTime),
-  fDeconvPad(src.fDeconvPad),
-  fStdout(src.fStdout),
-  fCalcerr(src.fCalcerr),
-  fRawSP(src.fRawSP),
-  fFirstRow(src.fFirstRow),
-  fLastRow(src.fLastRow),
-  fCurrentRow(src.fCurrentRow),
-  fCurrentSlice(src.fCurrentSlice),
-  fCurrentPatch(src.fCurrentPatch),
-  fMatch(src.fMatch),
-  fThreshold(src.fThreshold),
-  fSignalThreshold(src.fSignalThreshold),
-  fNClusters(src.fNClusters),
-  fMaxNClusters(src.fMaxNClusters),
-  fXYErr(src.fXYErr),
-  fZErr(src.fZErr),
-  fOccupancyLimit(src.fOccupancyLimit),
-  fPadArray(NULL)
-{
-}
-
-AliHLTTPCClusterFinder& AliHLTTPCClusterFinder::operator=(const AliHLTTPCClusterFinder& src)
-{
-  fMatch=src.fMatch;
-  fThreshold=src.fThreshold;
-  fSignalThreshold=src.fSignalThreshold;
-  fOccupancyLimit=src.fOccupancyLimit;
-  fXYErr=src.fXYErr;
-  fZErr=src.fZErr;
-  fDeconvPad=src.fDeconvPad;
-  fDeconvTime=src.fDeconvTime;
-  fStdout=src.fStdout;
-  fCalcerr=src.fCalcerr;
-  fRawSP=src.fRawSP;
-  fFirstRow=src.fFirstRow;
-  fLastRow=src.fLastRow;
-  fDigitReader=src.fDigitReader;
-  return (*this);
-}
-
 AliHLTTPCClusterFinder::~AliHLTTPCClusterFinder()
 {
   //destructor
@@ -581,7 +534,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
 {
   //write cluster to output pointer
-  Int_t thisrow,thissector;
+  Int_t thisrow=-1,thissector=-1;
   UInt_t counter = fNClusters;
   
   for(int j=0; j<nclusters; j++)

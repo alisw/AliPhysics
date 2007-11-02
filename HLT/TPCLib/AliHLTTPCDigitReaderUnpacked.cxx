@@ -54,38 +54,6 @@ AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCDigitReaderUnpacked::AliHLTTPCDigitReaderUnpacked(const AliHLTTPCDigitReaderUnpacked& src)
-  :
-  fDigitRowData(NULL),
-  fActRowData(NULL),
-  fData(NULL),
-  fPtr(NULL),
-  fSize(0),
-  fBin(0),
-  fRow(0),
-  fFirstRow(0),
-  fLastRow(0)
-{
-  // see header file for class documentation
-  HLTFatal("copy constructor not for use");
-}
-
-AliHLTTPCDigitReaderUnpacked& AliHLTTPCDigitReaderUnpacked::operator=(const AliHLTTPCDigitReaderUnpacked& src)
-{
-  // see header file for class documentation
-  fDigitRowData=NULL;
-  fActRowData=NULL;
-  fData=NULL;
-  fPtr=NULL;
-  fSize=0;
-  fBin=0;
-  fRow=0;
-  fFirstRow=0;
-  fLastRow=0;
-  HLTFatal("assignment operator not for use");
-  return (*this);
-}
-
 AliHLTTPCDigitReaderUnpacked::~AliHLTTPCDigitReaderUnpacked(){
   // see header file for class documentation
 }

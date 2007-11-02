@@ -98,9 +98,9 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
   int ScanArgument(int argc, const char** argv);
 
  private:
-  /** not a valid copy constructor, defined according to effective C++ style */
+  /** copy constructor prohibited */
   AliHLTTPCEsdWriterComponent(const AliHLTTPCEsdWriterComponent&);
-  /** not a valid assignment op, but defined according to effective C++ style */
+  /** assignment operator prohibited */
   AliHLTTPCEsdWriterComponent& operator=(const AliHLTTPCEsdWriterComponent&);
 
   /**

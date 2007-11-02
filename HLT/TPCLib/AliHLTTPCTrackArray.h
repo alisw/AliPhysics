@@ -52,10 +52,6 @@ class AliHLTTPCTrackArray {
    *   - AliHLTTPCModelTrack   -> 'm'
    */
   AliHLTTPCTrackArray(char* tracktype);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCTrackArray(const AliHLTTPCTrackArray&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCTrackArray& operator=(const AliHLTTPCTrackArray&);
   /** destructor */
   virtual ~AliHLTTPCTrackArray();
 
@@ -118,6 +114,10 @@ class AliHLTTPCTrackArray {
   AliHLTTPCTrack* operator[](int index);
 
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCTrackArray(const AliHLTTPCTrackArray&);
+  /** assignment operator prohibited */
+  AliHLTTPCTrackArray& operator=(const AliHLTTPCTrackArray&);
 
   Char_t fTrackType; //track type
   Int_t fSize; //size of arra

@@ -46,26 +46,6 @@ AliHLTTPCBenchmark::AliHLTTPCBenchmark()
   //Constructor
 }
 
-AliHLTTPCBenchmark::AliHLTTPCBenchmark(const AliHLTTPCBenchmark&)
-  :
-  fNbench(0),
-  fNmax(20),
-  fNames(NULL),
-  fTimer(NULL),
-  fSum(NULL),
-  fMin(NULL),
-  fMax(NULL),
-  fCount(NULL)
-{
-  HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCBenchmark& AliHLTTPCBenchmark::operator=(const AliHLTTPCBenchmark&)
-{ 
-  HLTFatal("assignment operator untested");
-  return *this;
-}
-
 AliHLTTPCBenchmark::~AliHLTTPCBenchmark()
 {
   //deconstructor

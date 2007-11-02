@@ -58,30 +58,6 @@ AliHLTTPCTrackArray::AliHLTTPCTrackArray()
 }
 
 
-AliHLTTPCTrackArray::AliHLTTPCTrackArray(const AliHLTTPCTrackArray&)
-  :
-  fTrackType('t'),
-  fSize(0),
-  fIsPresent(NULL),
-  fNAbsent(0),
-  fTrack(NULL),
-  fNTracks(0)
-{
-  //constructor
-  SetSize();
-}
-
-AliHLTTPCTrackArray& AliHLTTPCTrackArray::operator=(const AliHLTTPCTrackArray&)
-{
-  //assignment
-  fSize=0;
-  fNTracks=0;
-  fNAbsent=0;
-  fTrackType='t';
-  SetSize();
-  return *this;
-}
-
 AliHLTTPCTrackArray::AliHLTTPCTrackArray(Int_t ntrack)
   :
   fTrackType('t'),

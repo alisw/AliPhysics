@@ -50,18 +50,6 @@ AliHLTTPCEsdWriterComponent::AliHLTTPCEsdWriterComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCEsdWriterComponent::AliHLTTPCEsdWriterComponent(const AliHLTTPCEsdWriterComponent&)
-  :
-  fTree(NULL),
-  fESD(NULL)
-{
-}
-
-AliHLTTPCEsdWriterComponent& AliHLTTPCEsdWriterComponent::operator=(const AliHLTTPCEsdWriterComponent&)
-{
-  return *this;
-}
-
 AliHLTTPCEsdWriterComponent::~AliHLTTPCEsdWriterComponent()
 {
   // see header file for class documentation

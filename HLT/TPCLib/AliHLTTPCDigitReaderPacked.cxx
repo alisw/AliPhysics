@@ -85,46 +85,6 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
 #endif // ENABLE_PAD_SORTING
 }
 
-AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked(const AliHLTTPCDigitReaderPacked& src)
-  :
-#if ENABLE_PAD_SORTING
-  fCurrentRow(0),
-  fCurrentPad(0),
-  fCurrentBin(-1),
-  fNRows(0),
-  fRowOffset(0),
-  fNMaxRows(0),
-  fNMaxPads(0),
-  fNTimeBins(0),
-  fData(NULL),
-#endif // ENABLE_PAD_SORTING  
-  fRawMemoryReader(NULL),
-  fTPCRawStream(NULL),
-  fOldRCUFormat(kFALSE)
-{
-  HLTFatal("copy constructor not for use");
-}
-
-AliHLTTPCDigitReaderPacked& AliHLTTPCDigitReaderPacked::operator=(const AliHLTTPCDigitReaderPacked& src)
-{
-#if ENABLE_PAD_SORTING
-  fCurrentRow=0;
-  fCurrentPad=0;
-  fCurrentBin=-1;
-  fNRows=0;
-  fRowOffset=0;
-  fNMaxRows=0;
-  fNMaxPads=0;
-  fNTimeBins=0;
-  fData=NULL;
-#endif // ENABLE_PAD_SORTING  
-  fRawMemoryReader=NULL;
-  fTPCRawStream=NULL;
-  fOldRCUFormat=kFALSE;
-  HLTFatal("assignment operator not for use");
-  return (*this);
-}
-
 AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
   if ( fRawMemoryReader )
     delete fRawMemoryReader;

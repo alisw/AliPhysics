@@ -24,10 +24,6 @@ class AliHLTTPCConfMapper {
 
   AliHLTTPCConfMapper();
   //  AliHLTTPCConfMapper(AliTPCParam *param,AliHLTTPCVertex *vertex,Bool_t bench=(Bool_t)false);
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCConfMapper(const AliHLTTPCConfMapper&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCConfMapper& operator=(const AliHLTTPCConfMapper&);
   /** destructor */
   virtual ~AliHLTTPCConfMapper();
   
@@ -83,6 +79,10 @@ class AliHLTTPCConfMapper {
   void SetParamDone(Bool_t vconstraint) {fParamSet[(Int_t)vconstraint] = kTRUE;}
 
  private:
+  /** copy constructor prohibited */
+  AliHLTTPCConfMapper(const AliHLTTPCConfMapper&);
+  /** assignment operator prohibited */
+  AliHLTTPCConfMapper& operator=(const AliHLTTPCConfMapper&);
 
   struct AliHLTTPCConfMapContainer 
   {

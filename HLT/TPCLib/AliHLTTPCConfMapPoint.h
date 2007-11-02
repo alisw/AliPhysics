@@ -145,9 +145,9 @@ class AliHLTTPCConfMapPoint {
   void SetConfCoord();// conformal mapping
 
  private:
-  /** not a valid copy constructor, defined according to effective C++ style */
+  /** copy constructor prohibited */
   AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&);
-  /** not a valid assignment op, but defined according to effective C++ style */
+  /** assignment operator prohibited */
   AliHLTTPCConfMapPoint& operator=(const AliHLTTPCConfMapPoint&);
 
   Int_t fHitNumber;     //hit number

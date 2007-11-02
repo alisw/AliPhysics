@@ -33,10 +33,6 @@ class AliHLTTPCDigitReaderPacked : public AliHLTTPCDigitReader{
 public:
   /** standard constructor */
   AliHLTTPCDigitReaderPacked(); 
-  /** not a valid copy constructor, defined according to effective C++ style */
-  AliHLTTPCDigitReaderPacked(const AliHLTTPCDigitReaderPacked&);
-  /** not a valid assignment op, but defined according to effective C++ style */
-  AliHLTTPCDigitReaderPacked& operator=(const AliHLTTPCDigitReaderPacked&);
   /** destructor */
   virtual ~AliHLTTPCDigitReaderPacked();
   
@@ -60,6 +56,11 @@ public:
 protected:
     
 private:
+  /** copy constructor prohibited */
+  AliHLTTPCDigitReaderPacked(const AliHLTTPCDigitReaderPacked&);
+  /** assignment operator prohibited */
+  AliHLTTPCDigitReaderPacked& operator=(const AliHLTTPCDigitReaderPacked&);
+
   // Initialize AliROOT TPC raw stream parsing class
   AliRawReaderMemory *fRawMemoryReader;
 
