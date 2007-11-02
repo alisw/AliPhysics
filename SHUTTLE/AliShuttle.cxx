@@ -15,6 +15,19 @@
 
 /*
 $Log$
+Revision 1.62  2007/10/31 18:23:13  acolla
+Furter developement on the Shuttle:
+
+- Shuttle now connects to the Grid as alidaq. The OCDB and Reference folders
+are now built from /alice/data, e.g.:
+/alice/data/2007/LHC07a/OCDB
+
+the year and LHC period are taken from the Shuttle.
+Raw metadata files are stored by GRP to:
+/alice/data/2007/LHC07a/<runNb>/Raw/RunMetadata.root
+
+- Shuttle sends a mail to DCS experts each time DP retrieval fails.
+
 Revision 1.61  2007/10/30 20:33:51  acolla
 Improved managing of temporary folders, which weren't correctly handled.
 Resolved bug introduced in StoreReferenceFile, which caused SPD preprocessor fail.
@@ -833,13 +846,26 @@ Bool_t AliShuttle::CopyFileLocally(const char* localFile, const TString& target)
 		gSystem->FreeDirectory(dir);
 	}
 	
-	Int_t result = gSystem->GetPathInfo(localFile, 0, (Long64_t*) 0, 0, 0);
+	Int_t result = 0;
+	
+	result = gSystem->GetPathInfo(localFile, 0, (Long64_t*) 0, 0, 0);
 	if (result)
 	{
 		Log("SHUTTLE", Form("StoreFileLocally - %s does not exist", localFile));
 		return kFALSE;
 	}
 
+	result = gSystem->GetPathInfo(target, 0, (Long64_t*) 0, 0, 0);
+	if (!result)
+	{
+		Log("SHUTTLE", Form("StoreFileLocally - target file %s already exist, removing...", target.Data()));
+		if (gSystem->Unlink(target.Data()))
+		{
+			Log("SHUTTLE", Form("StoreFileLocally - Could not remove existing target file %s!", target.Data()));
+			return kFALSE;
+		}
+	}	
+	
 	result = gSystem->CopyFile(localFile, target);
 
 	if (result == 0)
