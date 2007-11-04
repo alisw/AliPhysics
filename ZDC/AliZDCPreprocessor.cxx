@@ -101,10 +101,13 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   
   AliZDCCalibData *calibdata = new AliZDCCalibData("ZDC");
   
-  // *************** From DAQ ******************
-  // [a] PEDESTALS
+// *************** From DAQ ******************
+// *****************************************************
+// [a] PEDESTALS -> Pedestal subtraction
+// *****************************************************
 TString runType = GetRunType();
-if (runType = "PEDESTAL_RUN") {
+printf("\n\t AliZDCPreprocessor -> runType detected %s\n\n",runType.Data());
+if(runType == "PEDESTAL_RUN") {
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for PEDESTALS run %d !", fRun));
@@ -161,14 +164,16 @@ if (runType = "PEDESTAL_RUN") {
   }
   delete daqSources; daqSources = 0;
 }
-  // [b] EMD EVENTS
-else if (runType == "PHYSICS") {
-  TList* daqSources = GetFileSources(kDAQ, "PHYSICS");
+// *****************************************************
+// [b] EMD EVENTS -> Energy calibration and equalization
+// *****************************************************
+else if(runType == "PULSER_RUN"){
+  TList* daqSources = GetFileSources(kDAQ, "EMDCALIB");
   if(!daqSources){
-    AliError(Form("No sources for PHYSICS run %d !", fRun));
+    AliError(Form("No sources for PULSER_RUN run %d !", fRun));
     return 1;
   }
-  Log("\t List of sources for PHYSICS");
+  Log("\t List of sources for PULSER_RUN");
   daqSources->Print();
   //
   TIter iter2(daqSources);
@@ -176,9 +181,9 @@ else if (runType == "PHYSICS") {
   Int_t j=0;
   while((source = dynamic_cast<TObjString*> (iter2.Next()))){
        Log(Form("\n\t Getting file #%d\n",++j));
-       TString stringEMDFileName = GetFile(kDAQ, "PHYSICS", source->GetName());
+       TString stringEMDFileName = GetFile(kDAQ, "EMDCALIB", source->GetName());
        if(stringEMDFileName.Length() <= 0){
-         Log(Form("No PHYSICS file from source %s!", source->GetName()));
+         Log(Form("No EMDCALIB file from source %s!", source->GetName()));
 	 return 1;
        }
        const char* EMDFileName = stringEMDFileName.Data();
@@ -189,11 +194,27 @@ else if (runType == "PHYSICS") {
 	   return 1;
     	 }
     	 Log(Form("File %s connected to analyze EM dissociation events", EMDFileName));
-    	 Float_t EMDFitVal[2];
-    	 for(Int_t j=0; j<2; j++){	    
-    	   fscanf(file,"%f",&EMDFitVal[j]);
+    	 Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
+	 Float_t CalibVal[4];
+    	 for(Int_t j=0; j<10; j++){	    
+    	   if(j<6){
+	     fscanf(file,"%f",&fitValEMD[j]);
+             if(j<4){
+	       CalibVal[j] = fitValEMD[j]/2.76;
+	       calibdata->SetEnCalib(j,CalibVal[j]);
+	     }
+	     else calibdata->SetEnCalib(j,fitValEMD[j]);
+	   }
+	   else{
+	     for(Int_t k=0; k<5; k++){
+	        fscanf(file,"%f",&equalCoeff[j][k]);
+	        if(j==6) calibdata->SetZN1EqualCoeff(k, equalCoeff[j][k]);
+	 	else if(j==7) calibdata->SetZP1EqualCoeff(k, equalCoeff[j][k]);
+	 	else if(j==8) calibdata->SetZN2EqualCoeff(k, equalCoeff[j][k]);
+	 	else if(j==9) calibdata->SetZP2EqualCoeff(k, equalCoeff[j][k]);	 
+             }
+	   }
          }
-         calibdata->SetEnCalib(EMDFitVal);
        }
        else{
          Log(Form("File %s not found", EMDFileName));
@@ -206,6 +227,7 @@ else {
   Log(Form("Nothing to do: run type is %s", runType.Data()));
   return 0;
 } 
+
   // note that the parameters are returned as character strings!
   const char* nEvents = GetRunParameter("totalEvents");
   if(nEvents) Log(Form("Number of events for run %d: %s",fRun, nEvents));
