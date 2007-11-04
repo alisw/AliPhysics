@@ -17,9 +17,6 @@ void TestZDCPreprocessor()
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(7, 0, 1);
 
-
-  printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
-
   // TODO if needed, change location of OCDB and Reference test folders
   // by default they are set to $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB and TestReference
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
@@ -65,14 +62,16 @@ void TestZDCPreprocessor()
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDEqual.dat");
 
   // TODO(3)
   //
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
-  shuttle->SetInputRunType("PEDESTALS");
+//  shuttle->SetInputRunType("PEDESTALS");
+  shuttle->SetInputRunType("PULSER_RUN");
 
   // TODO(4)
   //
@@ -83,22 +82,32 @@ void TestZDCPreprocessor()
   shuttle->AddInputRunParameter("totalEvents", "1000");
   shuttle->AddInputRunParameter("NumberOfGDCs", "1");
 
-  // TODO(5)
+  // TODO(5) NEW!
+  //
+  // This is for preprocessor that require data from HLT.
+  // Since HLT may be switched off, the preprocessor should first query the Run logbook where
+  // the HLT status is stored. SHUTTLE implements a shortcut function (GetHLTStatus) that returns
+  // a bool directly. 1 = HLT ON, 0 = HLT OFF
+  //
+  Bool_t hltStatus=kFALSE;
+  //shuttle->SetInputHLTStatus(hltStatus);
+
+  // TODO(6)
   //
   // The shuttle can query condition parameters valid from the current run from the OCDB
   // To test it, we must first store the object into the OCDB. It will be retrieved in the preprocessor
   // using GetFromOCDB function.
-
+/*
   TObjString obj("This is a condition parameter stored in OCDB");
   AliCDBId id("ZDC/Calib/Data", 0, AliCDBRunRange::Infinity());
   AliCDBMetaData md;
   AliCDBEntry entry(&obj, id, &md);
 
   shuttle->AddInputCDBEntry(&entry);
-
+*/
   // TODO(6)
   // Create the preprocessor that should be tested, it registers itself automatically to the shuttle
-  AliPreprocessor* test = new AliZDCPreprocessor("ZDC",shuttle);
+  AliPreprocessor* test = new AliZDCPreprocessor(shuttle);
 
   // Test the preprocessor
   shuttle->Process();
@@ -109,8 +118,8 @@ void TestZDCPreprocessor()
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
-  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainRefStorage())
-  			->Get("ZDC/DCS/Data", 7);
+  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/Data", 7);
   if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");
@@ -140,7 +149,7 @@ TMap* CreateDCSAliasMap()
   aliasMap->SetOwner(1);
 
   TRandom random;
-  TString aliasNames[26];
+  TString aliasNames[28];
 
   // ******************************** alignment values
   aliasNames[0] = "ZDC_ZNA_POS.actual.position";
@@ -204,10 +213,13 @@ TMap* CreateDCSAliasMap()
   aliasNames[22]  = "ZDC_ZPC_HV3.actual.vMon";
   aliasNames[23]  = "ZDC_ZPC_HV4.actual.vMon";
   //
-  aliasNames[24]  = "ZDC_ZEM1_HV0.actual.vMon";
-  aliasNames[25]  = "ZDC_ZEM2_HV1.actual.vMon";
+  aliasNames[24]  = "ZDC_ZEM_HV0.actual.vMon";
+  aliasNames[25]  = "ZDC_ZEM_HV1.actual.vMon";
   //
-  for(int nAlias=4;nAlias<26;nAlias++)
+  aliasNames[26]  = "ZDC_REFA_HV0.actual.vMon";
+  aliasNames[27]  = "ZDC_REFC_HV1.actual.vMon";
+  //
+  for(int nAlias=4;nAlias<28;nAlias++)
   {
     TObjArray* valueSet = new TObjArray;
     valueSet->SetOwner(1);
