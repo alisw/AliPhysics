@@ -40,8 +40,11 @@
 #include "AliFMDAltroMapping.h"    // ALIFMDALTROMAPPING_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
+#include <AliFMDPreprocessor.h>
+#include <AliLog.h>
 #include <Riostream.h>
 #include <sstream>
+#include <TSystem.h>
 #include <TArrayF.h>
 #include <TH2D.h>
 
@@ -126,7 +129,22 @@ AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
   if (what & kZeroSuppression) InitZeroSuppression();
   if (what & kAltroMap)        InitAltroMap();
   fIsInit = kTRUE;
-  
+}
+//__________________________________________________________________
+void
+AliFMDParameters::Init(AliFMDPreprocessor* pp, Bool_t forceReInit, UInt_t what)
+{
+  // Initialize the parameters manager.  We need to get stuff from the
+  // CDB here. 
+  if (forceReInit) fIsInit = kFALSE;
+  if (fIsInit) return;
+  if (what & kPulseGain)       InitPulseGain(pp);
+  if (what & kPedestal)        InitPedestal(pp);
+  if (what & kDeadMap)         InitDeadMap(pp);
+  if (what & kSampleRate)      InitSampleRate(pp);
+  if (what & kZeroSuppression) InitZeroSuppression(pp);
+  if (what & kAltroMap)        InitAltroMap(pp);
+  fIsInit = kTRUE;
 }
 
 //__________________________________________________________________
@@ -435,17 +453,41 @@ AliFMDParameters::SetStripRange(UShort_t min, UShort_t max)
 }
 
 //__________________________________________________________________
+AliCDBEntry*
+AliFMDParameters::GetEntry(const char* path, AliFMDPreprocessor* pp, 
+			   Bool_t fatal) const
+{
+  // Get an entry from the CDB or via preprocessor 
+  AliCDBEntry* entry = 0;
+  if (!pp) {
+    AliCDBManager* cdb = AliCDBManager::Instance();
+    entry              = cdb->Get(path);
+  }
+  else {
+    const char* third  = gSystem->BaseName(path);
+    const char* second = gSystem->BaseName(gSystem->DirName(path));
+    entry              = pp->GetFromCDB(second, third);
+  }
+  if (!entry) { 
+    TString msg(Form("No %s found in CDB, perhaps you need to "
+		     "use AliFMDCalibFaker?", path));
+    if (fatal) { AliFatal(msg.Data()); }
+    else       AliLog::Message(AliLog::kWarning, msg.Data(), "FMD", 
+			       "AliFMDParameters", "GetEntry", __FILE__, 
+			       __LINE__);
+    return 0;
+  }
+  return entry;
+}
+
+    
+//__________________________________________________________________
 void
-AliFMDParameters::InitPulseGain()
+AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
 {
   // Get pulse gain from CDB or used fixed 
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   gain     = cdb->Get(fgkPulseGain);
-  if (!gain) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkPulseGain));
-    return;
-  }
+  AliCDBEntry*   gain     = GetEntry(fgkPulseGain, pp);
+  if (!gain) return;
   
   AliFMDDebug(1, ("Got gain from CDB"));
   fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
@@ -453,16 +495,12 @@ AliFMDParameters::InitPulseGain()
 }
 //__________________________________________________________________
 void
-AliFMDParameters::InitPedestal()
+AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
 {
   // Initialize the pedestals from CDB 
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   pedestal = cdb->Get(fgkPedestal);
-  if (!pedestal) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkPedestal));
-    return;
-  }
+  AliCDBEntry*   pedestal = GetEntry(fgkPedestal, pp);
+  if (!pedestal) return;
+
   AliFMDDebug(1, ("Got pedestal from CDB"));
   fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
   if (!fPedestal) AliFatal("Invalid pedestal object from CDB");
@@ -470,16 +508,12 @@ AliFMDParameters::InitPedestal()
 
 //__________________________________________________________________
 void
-AliFMDParameters::InitDeadMap()
+AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
 {
   // Get Dead-channel-map from CDB 
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   deadMap  = cdb->Get(fgkDead);
-  if (!deadMap) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkDead));
-    return;
-  }
+  AliCDBEntry*   deadMap  = GetEntry(fgkDead, pp);
+  if (!deadMap) return;
+  
   AliFMDDebug(1, ("Got dead map from CDB"));
   fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
   if (!fDeadMap) AliFatal("Invalid dead map object from CDB");
@@ -487,16 +521,11 @@ AliFMDParameters::InitDeadMap()
 
 //__________________________________________________________________
 void
-AliFMDParameters::InitZeroSuppression()
+AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
 {
   // Get 0-suppression from CDB 
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   zeroSup  = cdb->Get(fgkZeroSuppression);
-  if (!zeroSup) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkZeroSuppression));
-    return;
-  }
+  AliCDBEntry*   zeroSup  = GetEntry(fgkZeroSuppression, pp);
+  if (!zeroSup) return;
   AliFMDDebug(1, ("Got zero suppression from CDB"));
   fZeroSuppression = 
     dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
@@ -505,16 +534,11 @@ AliFMDParameters::InitZeroSuppression()
 
 //__________________________________________________________________
 void
-AliFMDParameters::InitSampleRate()
+AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
 {
   // get Sample rate from CDB
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   sampRat  = cdb->Get(fgkSampleRate);
-  if (!sampRat) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkSampleRate));
-    return;
-  }
+  AliCDBEntry*   sampRat  = GetEntry(fgkSampleRate, pp);
+  if (!sampRat) return;
   AliFMDDebug(1, ("Got zero suppression from CDB"));
   fSampleRate = dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
   if (!fSampleRate) AliFatal("Invalid zero suppression object from CDB");
@@ -522,17 +546,12 @@ AliFMDParameters::InitSampleRate()
 
 //__________________________________________________________________
 void
-AliFMDParameters::InitAltroMap()
+AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
 {
   // Get hardware mapping from CDB
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   hwMap    = cdb->Get(fgkAltroMap);       
-  if (!hwMap) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkAltroMap));
-    fAltroMap = new AliFMDAltroMapping;
-    return;
-  }
+  AliCDBEntry*   hwMap    = GetEntry(fgkAltroMap, pp);       
+  if (!hwMap) return;
+
   AliFMDDebug(1, ("Got ALTRO map from CDB"));
   fAltroMap = dynamic_cast<AliFMDAltroMapping*>(hwMap->GetObject());
   if (!fAltroMap) {
@@ -543,16 +562,11 @@ AliFMDParameters::InitAltroMap()
 
 //__________________________________________________________________
 void
-AliFMDParameters::InitStripRange()
+AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
 {
   // Get strips read-out from CDB
-  AliCDBManager* cdb      = AliCDBManager::Instance();
-  AliCDBEntry*   range    = cdb->Get(fgkStripRange);
-  if (!range) {
-    AliFatal(Form("No %s found in CDB, perhaps you need to "
-		    "use AliFMDCalibFaker?", fgkStripRange));
-    return;
-  }
+  AliCDBEntry*   range    = GetEntry(fgkStripRange, pp);
+  if (!range) return;
   AliFMDDebug(1, ("Got strip range from CDB"));
   fStripRange = dynamic_cast<AliFMDCalibStripRange*>(range->GetObject());
   if (!fStripRange) AliFatal("Invalid strip range object from CDB");

@@ -37,6 +37,9 @@ class AliFMDCalibGain;
 class AliFMDCalibSampleRate;
 class AliFMDCalibStripRange;
 class AliFMDAltroMapping;
+class AliCDBEntry;
+class AliFMDPreprocessor;
+
 //____________________________________________________________________
 //
 //  Singleton class to handle various parameters (not geometry) of the
@@ -99,6 +102,13 @@ public:
       CDB.  If that fails, the class uses the hard-coded parameters. 
    */
   void Init(Bool_t forceReInit=kFALSE, 
+	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
+			   kZeroSuppression|kAltroMap));
+  /** Initialize the manager.  This tries to read the parameters from
+      CDB.  If that fails, the class uses the hard-coded parameters. 
+   */
+  void Init(AliFMDPreprocessor* pp, 
+	    Bool_t forceReInit=kFALSE, 
 	    UInt_t what = (kPulseGain|kPedestal|kDeadMap|kSampleRate|
 			   kZeroSuppression|kAltroMap));
   /** Print all parameters. 
@@ -349,20 +359,28 @@ protected:
   virtual ~AliFMDParameters() {}
   /** Singleton instance  */
   static AliFMDParameters* fgInstance;   // Static singleton instance
+  /** Get an entry from either global AliCDBManager or passed
+      AliFMDPreprocessor. 
+      @param path  Path to CDB object. 
+      @param pp    AliFMDPreprocessor 
+      @param fatal If true, raise a fatal flag if we didn't get the entry.
+      @return AliCDBEntry if found */ 
+  AliCDBEntry* GetEntry(const char* path, AliFMDPreprocessor* pp, 
+			Bool_t fatal=kTRUE) const;
   /** Initialize gains.  Try to get them from CDB */
-  void InitPulseGain();
+  void InitPulseGain(AliFMDPreprocessor* pp=0);
   /** Initialize pedestals.  Try to get them from CDB */
-  void InitPedestal();
+  void InitPedestal(AliFMDPreprocessor* pp=0);
   /** Initialize dead map.  Try to get it from CDB */
-  void InitDeadMap();
+  void InitDeadMap(AliFMDPreprocessor* pp=0);
   /** Initialize sample rates.  Try to get them from CDB */
-  void InitSampleRate();
+  void InitSampleRate(AliFMDPreprocessor* pp=0);
   /** Initialize zero suppression thresholds.  Try to get them from CDB */
-  void InitZeroSuppression();
+  void InitZeroSuppression(AliFMDPreprocessor* pp=0);
   /** Initialize hardware map.  Try to get it from CDB */
-  void InitAltroMap();
+  void InitAltroMap(AliFMDPreprocessor* pp=0);
   /** Initialize strip range.  Try to get it from CDB */
-  void InitStripRange();
+  void InitStripRange(AliFMDPreprocessor* pp=0);
 
   Bool_t          fIsInit;               // Whether we've been initialised  
 

@@ -60,6 +60,8 @@
 #include "AliFMDPreprocessor.h"
 #include "AliFMDCalibPedestal.h"
 #include "AliFMDCalibGain.h"
+#include "AliFMDCalibStripRange.h"
+#include "AliFMDCalibSampleRate.h"
 #include "AliFMDParameters.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBManager.h"
@@ -78,6 +80,40 @@ ClassImp(AliFMDPreprocessor)
 #endif 
 
 //____________________________________________________
+Bool_t AliFMDPreprocessor::GetAndCheckFileSources(TList*&     list,
+						  Int_t       system, 
+						  const char* id) 
+{
+  // Convinience function 
+  // Parameters: 
+  //   list     On return, list of files. 
+  //   system   Alice system (DAQ, DCS, ...)
+  //   id       File id
+  // Return:
+  //   kTRUE on success. 
+  list = GetFileSources(system, id);
+  if (!list) { 
+    TString sys;
+    switch (system) { 
+    case kDAQ: sys = "DAQ";     break;
+    case kDCS: sys = "DCS";     break;
+    default:   sys = "unknown"; break;
+    }
+    Log(Form("Failed to get file sources for %s/%s", sys.Data(), system));
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
+//____________________________________________________
+AliCDBEntry* 
+AliFMDPreprocessor::GetFromCDB(const char* second, const char* third)
+{
+  return GetFromOCDB(second, third);
+}
+
+
+//____________________________________________________
 UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
 {
   // Main member function. 
@@ -94,13 +130,32 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // cdb->SetDefaultStorage("local://$ALICE_ROOT");
   // cdb->SetRun(0);
   AliFMDParameters* pars = AliFMDParameters::Instance();
-  pars->Init(false, AliFMDParameters::kAltroMap);
+  pars->Init(this, false, AliFMDParameters::kAltroMap);
+
+  // This is if the SOR contains Fee parameters, and we run a DA to
+  // extract these parameters.   The same code could work if we get
+  // the information from DCS via the FXS 
+  TList* files = 0;
+  GetAndCheckFileSources(files, kDAQ,"info");
+  // if (!ifiles) return 1;
+  AliFMDCalibSampleRate*      calibRate  = 0;
+  AliFMDCalibStripRange*      calibRange = 0;
+  AliFMDCalibZeroSuppression* calibZero  = 0;
+  GetInfoCalibration(files, calibRate, calibRange, calibZero);
   
+  // Gt the run type 
+  TString runType(GetRunType()); 
+
   //Creating calibration objects
-  TList*               pedFiles     = GetFileSources(kDAQ,"pedestal");
-  TList*               gainFiles    = GetFileSources(kDAQ, "gain");
-  AliFMDCalibPedestal* calibPed     = GetPedestalCalibration(pedFiles);
-  AliFMDCalibGain*     calibGain    = GetGainCalibration(gainFiles);
+  AliFMDCalibPedestal* calibPed  = 0;
+  AliFMDCalibGain*     calibGain = 0;
+  if (runType.Contains("PEDESTAL", TString::kIgnoreCase) && 
+      GetAndCheckFileSources(files, kDAQ, "pedestal"))  
+    calibPed = GetPedestalCalibration(files);
+  if (runType.Contains("PULSER", TString::kIgnoreCase) && 
+      GetAndCheckFileSources(files, kDAQ, "gain"))
+    calibGain = GetGainCalibration(files);
+
   
   
   //Storing Calibration objects  
@@ -109,15 +164,82 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   metaData.SetResponsible("Hans H. Dalsgaard");
   metaData.SetComment("Preprocessor stores pedestals and gains for the FMD.");
   
-  Bool_t resultPed = kFALSE, resultGain = kFALSE;
-  if(calibPed)  resultPed  = Store("Calib","Pedestal", calibPed, &metaData);
-  if(calibGain) resultGain = Store("Calib","PulseGain", calibGain, &metaData);
-  if (calibPed)  delete calibPed;
-  if (calibGain) delete calibGain;
+  Bool_t resultPed   = kFALSE;
+  Bool_t resultGain  = kFALSE;
+  Bool_t resultRange = kFALSE;
+  Bool_t resultRate  = kFALSE;
+  Bool_t resultZero  = kFALSE;
+  if(calibPed)  { 
+    resultPed  = Store("Calib","Pedestal", calibPed, &metaData);
+    delete calibPed;
+  }
+  if(calibGain) { 
+    resultGain = Store("Calib","PulseGain", calibGain, &metaData);
+    delete calibGain;
+  }
+  if(calibRange) { 
+    resultRange = Store("Calib","StripRange", calibRange, &metaData);
+    delete calibRange;
+  }
+  if(calibRate) { 
+    resultRate = Store("Calib","SampleRate", calibRate, &metaData);
+    delete calibRate;
+  }
+  if(calibZero) { 
+    resultZero = Store("Calib","ZeroSuppression", calibZero, &metaData);
+    delete calibZero;
+  }
   
   return (resultPed && resultGain ? 0 : 1);
+#if 0
+  // Disabled until we implement GetInfoCalibration properly
+  return (resultPed   && 
+	  resultGain  && 
+	  resultRange && 
+	  resultRate  &&
+	  resultZero 
+	  ? 0 : 1);
+#endif
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDPreprocessor::GetInfoCalibration(TList* files, 
+				       AliFMDCalibSampleRate*&      s,
+				       AliFMDCalibStripRange*&      r, 
+				       AliFMDCalibZeroSuppression*& z)
+{
+  // Get info calibrations. 
+  // Parameters:
+  //     files List of files. 
+  //     s     On return, newly allocated object 
+  //     r     On return, newly allocated object 
+  //     z     On return, newly allocated object 
+  // Return: 
+  //     kTRUE on success
+  if (!files) return kTRUE; // Should really be false
+  if (files->GetEntries() <= 0) return kTRUE;
+  
+  s = new AliFMDCalibSampleRate();
+  r = new AliFMDCalibStripRange();
+  z = new AliFMDCalibZeroSuppression();
+  
+  // AliFMDParameters*    pars     = AliFMDParameters::Instance();
+  TIter                iter(files);
+  TObjString*          fileSource;
+
+  while((fileSource = dynamic_cast<TObjString*>(iter.Next()))) {
+    const Char_t* filename = GetFile(kDAQ, "info", fileSource->GetName());
+    std::ifstream in(filename);
+    if(!in) {
+      AliError(Form("File %s not found!", filename));
+      continue;
+    }
+  }
+  return kTRUE;
+}
+
+  
 //____________________________________________________________________
 AliFMDCalibPedestal* 
 AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)

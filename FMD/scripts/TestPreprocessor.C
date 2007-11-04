@@ -9,7 +9,7 @@
 #ifndef __CINT__
 # include <TString.h>
 # include <AliPreprocessor.h>
-# include <../FMD/AliFMDPreprocessor.h>
+# include <FMD/AliFMDPreprocessor.h>
 # include <AliShuttleInterface.h>
 # include <AliCDBStorage.h>
 # include <AliCDBEntry.h>
@@ -20,13 +20,14 @@
 # include <AliLog.h>
 // # include <../FMD/AliFMDCalibZeroSuppression.h>
 // # include <../FMD/AliFMDCalibDeadMap.h>
-# include <../FMD/AliFMDParameters.h>
-# include <../SHUTTLE/TestShuttle/AliTestShuttle.h>
+# include <FMD/AliFMDParameters.h>
+# include <SHUTTLE/TestShuttle/AliTestShuttle.h>
 # include <TRandom.h>
 # include <TSystem.h>
 # include <TObjString.h>
 # include <TMap.h>
 # include <TError.h>
+# include <iostream>
 #endif
 
 namespace { 
@@ -185,7 +186,7 @@ namespace {
 //
 void ReadBack(const char* dbBase="local://$ALICE_ROOT/FMD/")
 {
-  AliLog::SetModuleDebugLevel("FMD", 1);
+  // AliLog::SetModuleDebugLevel("FMD", 1);
   // Set specific storage of FMD ALTRO map 
   AliCDBManager::Instance()->SetDefaultStorage(Form("%s/TestCDB", dbBase));
   AliCDBManager::Instance()->SetSpecificStorage("FMD/Calib/AltroMap",
@@ -270,16 +271,8 @@ void TestPreprocessor(Bool_t createDummies=kTRUE,
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
-
-  // Set specific storage of FMD ALTRO map 
-  AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetSpecificStorage("FMD/Calib/AltroMap",
-						"local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetRun(0);
-  // TODO if needed, change location of OCDB and Reference test
-  // folders by default they are set to
-  // $ALICE_ROOT/TestCDB and TestReference
-  AliTestShuttle::SetMainCDB(Form("%s/TestCDB", dbBase));
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT");
+  AliTestShuttle::SetLocalCDB(Form("%s/TestCDB", dbBase));
   AliTestShuttle::SetMainRefStorage(Form("%s/TestReference", dbBase));
 
   std::cout << "Test OCDB storage URI: " << AliShuttleInterface::GetMainCDB()
@@ -292,7 +285,7 @@ void TestPreprocessor(Bool_t createDummies=kTRUE,
 			"source1", "peds.csv");
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "FMD", "gain", 
 			"source2", "gains.csv");
-  shuttle->SetInputRunType("PHYSICS");
+  shuttle->SetInputRunType("PEDESTAL PULSER PHYSICS");
 
   new AliFMDPreprocessor(shuttle);
   // Test the preprocessor
@@ -379,6 +372,35 @@ void WriteDCSAliasMap()
     ->Put(dcsAliasMap, id, &metaData);
 }
 
+#ifndef __CINT__
+int
+main(int argc, char** argv)
+{
+  Bool_t createDummies = kTRUE;
+  TString dbBase   = "local://$ALICE_ROOT/FMD/";
+  for (int i = 1; i < argc; i++) { 
+    if (argv[i][0] == '-') { 
+      switch (argv[i][1])  {
+      case 'h': 
+	std::cout << "Usage: " << argv[0] << " [OPTIONS]\n\n"
+		  << "Options:\n"
+		  << "\t-h\tThis help\n"
+		  << "\t-d\tToggle dummies\n" 
+		  << "\t-b DIR\tSet database dir\n" 
+		  << std::endl;
+	return 0;
+      case 'd':  createDummies = !createDummies; break;
+      case 'b':  dbBase = argv[++i]; break;
+      }
+    }
+  }
+  
+  TestPreprocessor(createDummies, dbBase);
+  return 0;
+}
+
+#endif
+  
 //____________________________________________________________________
 //
 // EOF

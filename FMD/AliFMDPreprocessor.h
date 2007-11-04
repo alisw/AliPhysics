@@ -12,8 +12,15 @@
 
 
 #include "AliPreprocessor.h"
+#ifndef ALIFMDUSHORTMAP_H
+# include <AliFMDUShortMap.h>
+#endif
+typedef AliFMDUShortMap AliFMDCalibZeroSuppression;
 class AliFMDCalibPedestal;
 class AliFMDCalibGain;
+class AliFMDCalibSampleRate;
+class AliFMDCalibStripRange;
+class AliCDBEntry;
 class TList;
 
 //___________________________________________________________________
@@ -60,6 +67,8 @@ public:
   {}
   /** Destructor */
   virtual ~AliFMDPreprocessor() {}
+  /** Get an entry from OCDB */ 
+  AliCDBEntry* GetFromCDB(const char* second, const char* third);
 protected:
   /** Get the pedestal calibrations 
       @param list List of files */
@@ -67,6 +76,23 @@ protected:
   /** Get the gain calibrations 
       @param list List of files */
   AliFMDCalibGain*       GetGainCalibration(TList*);
+  /** Get info calibrations. 
+      @param files List of files. 
+      @param s     On return, newly allocated object 
+      @param r     On return, newly allocated object 
+      @param z     On return, newly allocated object 
+      @return kTRUE on success */
+  Bool_t GetInfoCalibration(TList* files, 
+			    AliFMDCalibSampleRate*&      s,
+			    AliFMDCalibStripRange*&      r, 
+			    AliFMDCalibZeroSuppression*& z);
+  /** Convinience function 
+      @param list On return, list of files. 
+      @param system Alice system (DAQ, DCS, ...)
+      @param id     File id
+      @return kTRUE on success. */
+  Bool_t GetAndCheckFileSources(TList*& list, Int_t system, const char* id);
+  
   /** Entry method 
       @param dcsAliasMap Map of DCS data points */
   virtual UInt_t Process(TMap* dcsAliasMap);
