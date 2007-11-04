@@ -94,7 +94,7 @@ void AliZDCDataDCS::ProcessData(TMap& aliasMap, Float_t *fCalibData)
       //
       
       //
-      if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
+//      if(j>=4) CreateGraph(j, aliasArr->GetEntries(), time, val); // fill graphs 
       //
       delete[] val;
       delete[] time;	      
@@ -173,7 +173,7 @@ void AliZDCDataDCS::CreateGraph(int i, int dim, const Double_t *x, const Double_
    gr->GetXaxis()->SetTimeDisplay(1);
    gr->SetTitle(fAliasNames[i].Data());
 
-   AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
+//   AliInfo(Form("Array entries: %d",fGraphs.GetEntriesFast()));
 
 
 }

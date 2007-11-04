@@ -12,6 +12,7 @@ or End of Run event.
 Messages on stdout are exported to DAQ log system.
 
 DA for ZDC standalone pedestal runs
+
 Contact: Chiara.Oppedisano@to.infn.it
 Link: /afs/cern.ch/user/c/chiarao/public/RawPed.date
 Run Type: STANDALONE_PEDESTAL_RUN
@@ -219,7 +220,7 @@ int main(int argc, char **argv) {
       const AliRawDataHeader* header = reader->GetDataHeader();
       if(header) {
          UChar_t message = header->GetAttributes();
-	 if(message & 0x2000000){ // DEDICATED PEDESTAL RUN
+	 if(message & 0x20){ // DEDICATED PEDESTAL RUN
 	    printf("\t STANDALONE_PEDESTAL_RUN raw data found\n");
 	    continue;
 	 }
@@ -230,9 +231,9 @@ int main(int argc, char **argv) {
       }
       //Commented until we won't have true Raw Data Header...
       //else{
-         //printf("\t ERROR! No Raw Data Header found!!!\n");
-	 //return -1;
-      //
+      //   printf("\t ATTENTION! No Raw Data Header found!!!\n");
+	// return -1;
+      //}
       //
       AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
       //
@@ -327,7 +328,7 @@ int main(int argc, char **argv) {
      MeanPed[i] = ADCfunchg[i]->GetParameter(1);
      MeanPedWidth[i] = ADCfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i],MeanPedWidth[i]);
-     printf("\t MeanPed[%d] = %f\n",i, MeanPed[i]);
+     //printf("\t MeanPed[%d] = %f\n",i, MeanPed[i]);
   }
   TF1 *ADCfunclg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -336,7 +337,7 @@ int main(int argc, char **argv) {
      MeanPed[i+kNChannels] = ADCfunclg[i]->GetParameter(1);
      MeanPedWidth[i+kNChannels] = ADCfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPed[i+kNChannels],MeanPedWidth[i+kNChannels]);
-     printf("\t MeanPed[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
+     //printf("\t MeanPed[%d] = %f\n",i+kNChannels, MeanPed[i+kNChannels]);
   }
   // --- Out-of-time pedestals
   TF1 *ADCootfunchg[kNChannels];
@@ -346,7 +347,7 @@ int main(int argc, char **argv) {
      MeanPedOOT[i] = ADCootfunchg[i]->GetParameter(1);
      MeanPedWidthOOT[i] = ADCootfunchg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i],MeanPedWidthOOT[i]);
-     printf("\t MeanPedOOT[%d] = %f\n",i, MeanPedOOT[i]);
+     //printf("\t MeanPedOOT[%d] = %f\n",i, MeanPedOOT[i]);
   }
   TF1 *ADCootfunclg[kNChannels];
   for(Int_t i=0; i<kNChannels; i++){
@@ -355,7 +356,7 @@ int main(int argc, char **argv) {
      MeanPedOOT[i+kNChannels] = ADCootfunclg[i]->GetParameter(1);
      MeanPedWidthOOT[i+kNChannels] = ADCootfunclg[i]->GetParameter(2);
      fprintf(fileShuttle,"\t%f\t%f\n",MeanPedOOT[i+kNChannels],MeanPedWidthOOT[i+kNChannels]);
-     printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
+     //printf("\t MeanPedOOT[%d] = %f\n",i+kNChannels, MeanPedOOT[i+kNChannels]);
   }
   //
   // --- Correlations
@@ -371,7 +372,7 @@ int main(int argc, char **argv) {
      CorrCoeff0[i] = ffunchg[i]->GetParameter(0);
      CorrCoeff1[i] = ffunchg[i]->GetParameter(1);
      fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i],CorrCoeff1[i]);
-     printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",i, CorrCoeff0[i], i, CorrCoeff1[i]);
+     //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",i, CorrCoeff0[i], i, CorrCoeff1[i]);
   }    
   for(int i=0;i<kNChannels;i++) {
      sprintf(namhist4,"ADCLRvsOOT%d_Prof",i);
@@ -382,8 +383,8 @@ int main(int argc, char **argv) {
      CorrCoeff0[i+kNChannels] = ffunclg[i]->GetParameter(0);
      CorrCoeff1[i+kNChannels] = ffunclg[i]->GetParameter(1);
      fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i+kNChannels],CorrCoeff1[i+kNChannels]);
-     printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
-     		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
+     //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
+     //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
   }    
   //						       
   fclose(fileShuttle);

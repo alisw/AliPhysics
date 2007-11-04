@@ -26,13 +26,25 @@
 ClassImp(AliZDCCalibData)
 
 //________________________________________________________________
-AliZDCCalibData::AliZDCCalibData()
+AliZDCCalibData::AliZDCCalibData():
+TNamed()
 {
   Reset();
 }
 
 //________________________________________________________________
-AliZDCCalibData::AliZDCCalibData(const char* name)
+AliZDCCalibData::AliZDCCalibData(const char* name):
+TNamed(),
+fZEMEndValue(0),
+fZEMCutFraction(0),
+fDZEMSup(0),
+fDZEMInf(0),
+fEZN1MaxValue(0),
+fEZP1MaxValue(0),
+fEZDC1MaxValue(0),
+fEZN2MaxValue(0),
+fEZP2MaxValue(0),
+fEZDC2MaxValue(0)
 {
   // Constructor
   TString namst = "Calib_";
@@ -102,6 +114,10 @@ void AliZDCCalibData::Reset()
   memset(fOOTPedestal,0,48*sizeof(Float_t));
   memset(fOOTPedWidth,0,48*sizeof(Float_t));
   memset(fEnCalibration,0,6*sizeof(Float_t));
+  memset(fZN1EqualCoeff,0,5*sizeof(Float_t));
+  memset(fZP1EqualCoeff,0,5*sizeof(Float_t));
+  memset(fZN2EqualCoeff,0,5*sizeof(Float_t));
+  memset(fZP2EqualCoeff,0,5*sizeof(Float_t));
 }                                                                                       
 
 
@@ -109,33 +125,15 @@ void AliZDCCalibData::Reset()
 void  AliZDCCalibData::Print(Option_t *) const
 {
    // Printing of calibration object
-   printf("\n #######	In-time pedestal values (mean value, sigma)	####### \n");
-   for(int t=0; t<48; t++){
-     if(t==0 || t==24) printf("\n-------- ZN1 HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n-------- ZN1 LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n-------- ZP1 HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n-------- ZP1 LowRes -------- \n");
-     else if(t==20) printf("\n-------- ZEM1 HighRes --------  \n");
-     else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
-     else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
-     else if(t==23) printf("\n-------- ZEM2 LowRes --------  \n");
-     printf("ADC%d (%.1f, %.1f)  ",t,fMeanPedestal[t],fMeanPedWidth[t]);
-   }
+   printf("\n ####### In-time pedestal values (mean value, sigma) ####### \n");
+   for(int t=0; t<48; t++) 
+      printf("\t ADC%d (%.1f, %.1f)\n",t,fMeanPedestal[t],fMeanPedWidth[t]);
    //
-   printf("\n\n #######	Out-of-time pedestal values (mean value, sigma)	####### \n");
-   for(int t=0; t<48; t++){
-     if(t==0 || t==24) printf("\n-------- ZN1 HighRes -------- \n");
-     else if(t==5 || t==29) printf("\n-------- ZN1 LowRes -------- \n");
-     else if(t==10 || t==34) printf("\n-------- ZP1 HighRes -------- \n");
-     else if(t==15 || t==39) printf("\n-------- ZP1 LowRes -------- \n");
-     else if(t==20) printf("\n-------- ZEM1 HighRes --------  \n");
-     else if(t==21) printf("\n-------- ZEM1 LowRes --------  \n");
-     else if(t==22) printf("\n-------- ZEM2 HighRes --------  \n");
-     else if(t==23) printf("\n-------- ZEM2 LowRes --------  \n");
-     printf("ADC%d (%.1f, %.1f)  ",t,fOOTPedestal[t],fOOTPedWidth[t]);
-   }
+   printf("\n\n ####### Out-of-time pedestal values (mean value, sigma) ####### \n");
+   for(int t=0; t<48; t++)
+      printf("\t ADC-OoT%d (%.1f, %.1f)\n",t,fOOTPedestal[t],fOOTPedWidth[t]);
  
-   printf("\n\n #######	Energy calibration coefficients #######	\n");
+   printf("\n\n ####### Energy calibration coefficients #######	\n");
    printf("  ZN1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[0]);
    printf("  ZP1 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[1]);
    printf("  ZN2 = %.4f (E[TeV]/ADCch.) \n",fEnCalibration[2]);
@@ -143,7 +141,7 @@ void  AliZDCCalibData::Print(Option_t *) const
    printf("  ZEM1 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[4]);
    printf("  ZEM2 = %.2f (E[TeV]/ADCch.) \n",fEnCalibration[5]);
  
-   printf("\n\n #######	Equalization coefficients #######	\n");
+   printf("\n\n ####### Equalization coefficients ####### \n");
    printf("  ZN1 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZN1EqualCoeff[0],fZN1EqualCoeff[1],fZN1EqualCoeff[2],fZN1EqualCoeff[3],fZN1EqualCoeff[4]);
    printf("  ZP1 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
@@ -153,12 +151,12 @@ void  AliZDCCalibData::Print(Option_t *) const
    printf("  ZP2 -> %1.2f %1.2f %1.2f %1.2f %1.2f  \n",
     fZP2EqualCoeff[0],fZP2EqualCoeff[1],fZP2EqualCoeff[2],fZP2EqualCoeff[3],fZP2EqualCoeff[4]);
  
-   printf("\n\n #######	Parameters from EZDC vs. ZEM correlation #######	\n");
+   printf("\n\n ####### Parameters from EZDC vs. ZEM correlation #######	\n");
    printf("  ZEMEndPoint = %1.2f, ZEMCutFraction = %1.2f \n"
-     "	DZEMInf = %1.2f, DZEMSup = %1.2f\n",
+     "  DZEMInf = %1.2f, DZEMSup = %1.2f\n",
      fZEMEndValue, fZEMCutFraction, fDZEMInf, fDZEMSup);
  
-   printf("\n\n #######	Parameters from EZDC vs. Nspec correlation #######	\n");
+   printf("\n\n ####### Parameters from EZDC vs. Nspec correlation #######	\n");
    printf("  EZN1MaxValue = %1.2f, EZP1MaxValue = %1.2f, EZDC1MaxValue = %1.2f \n"
      "  EZN2MaxValue = %1.2f, EZP2MaxValue = %1.2f, EZDC2MaxValue = %1.2f \n\n",
      fEZN1MaxValue, fEZP1MaxValue, fEZDC1MaxValue,

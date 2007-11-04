@@ -11,8 +11,14 @@ or End of Run event.
 
 Messages on stdout are exported to DAQ log system.
 
-DA for ZDC standalon pedestal runs
-contact: Chiara.Oppedisano@cern.ch
+Contact: Chiara.Oppedisano@to.infn.it
+Link: /afs/cern.ch/user/c/chiarao/public/RawEMD.date
+Run Type: STANDALONE_EMD_RUN
+DA Type: MON
+Number of events needed: at least ~10^3
+Input Files: ZDCPedestal.dat
+Output Files: ZDCEMDCalib.dat
+Trigger Types Used: Standalone Trigger
 
 */
 
@@ -164,26 +170,26 @@ int main(int argc, char **argv) {
         printf("\t ERROR!!! You MUST have a ZDCPedestal.dat file!!!\n");
         return -1;
       }
-      // 132 = 44 in-time + 44 out-of-time + 44 correlations
-      Float_t readValues[2][132], MeanPed[44], MeanPedWidth[44], 
+      // 144 = 48 in-time + 48 out-of-time + 48 correlations
+      Float_t readValues[2][144], MeanPed[44], MeanPedWidth[44], 
    	      MeanPedOOT[44], MeanPedWidthOOT[44],
    	      CorrCoeff0[44], CorrCoeff1[44];
       //
-      for(int jj=0; jj<132; jj++){
+      for(int jj=0; jj<144; jj++){
         for(int ii=0; ii<2; ii++){
            fscanf(filePed,"%f",&readValues[ii][jj]);
         }
-	if(jj<44){
+	if(jj<48){
 	  MeanPed[jj] = readValues[0][jj];
 	  MeanPedWidth[jj] = readValues[1][jj];
 	}
-	else if(jj>44 && jj<88){
-	  MeanPedOOT[jj-44] = readValues[0][jj];
-	  MeanPedWidthOOT[jj-44] = readValues[1][jj];
+	else if(jj>48 && jj<96){
+	  MeanPedOOT[jj-48] = readValues[0][jj];
+	  MeanPedWidthOOT[jj-48] = readValues[1][jj];
 	}
-	else if(jj>88){
-	  CorrCoeff0[jj-88] = readValues[0][jj]; 
-	  CorrCoeff1[jj-88] = readValues[1][jj];;
+	else if(jj>144){
+	  CorrCoeff0[jj-96] = readValues[0][jj]; 
+	  CorrCoeff1[jj-96] = readValues[1][jj];;
 	}
       }
       //
@@ -192,12 +198,21 @@ int main(int argc, char **argv) {
       AliRawReader *reader = new AliRawReaderDate((void*)event);
       const AliRawDataHeader* header = reader->GetDataHeader();
       if(header){
-         UChar_t message = header->GetL1TriggerMessage();
+         UChar_t message = header->GetAttributes();
+	 if(message & 0x70){ // DEDICATED EMD RUN
+	    printf("\t STANDALONE_EMD_RUN raw data found\n");
+	    continue;
+	 }
+	 else{
+	    printf("\t NO STANDALONE_EMD_RUN raw data found\n");
+	    return -1;
+	 }
       }
-      else{
-         printf("\t ATTENTION! No Raw Data Header found!!!\n");
-	 return -1;
-      }
+      //Commented until we won't have true Raw Data Header...
+      //else{
+      //   printf("\t ATTENTION! No Raw Data Header found!!!\n");
+      //   return -1;
+      //}
       //
       AliZDCRawStream *rawStreamZDC = new AliZDCRawStream(reader);
       //
@@ -211,25 +226,34 @@ int main(int argc, char **argv) {
       //
       while(rawStreamZDC->Next()){
         if(rawStreamZDC->IsADCDataWord()){
-	  Int_t StartIndex[4] = {5,15,29,39};
-	  Int_t DetIndex;
-	  if(rawStreamZDC->GetSector(0) == 1 || rawStreamZDC->GetSector(0) == 2)
+	  Int_t DetIndex=999, PedIndex=999;
+	  if(rawStreamZDC->GetSector(0) == 1 || rawStreamZDC->GetSector(0) == 2){
 	    DetIndex = rawStreamZDC->GetSector(0)-1;
-	  else if(rawStreamZDC->GetSector(0) == 4 || rawStreamZDC->GetSector(0) == 5)
+	    PedIndex = (rawStreamZDC->GetSector(0)+1)+4*rawStreamZDC->GetSector(1);
+	  }
+	  else if(rawStreamZDC->GetSector(0) == 4 || rawStreamZDC->GetSector(0) == 5){
 	    DetIndex = rawStreamZDC->GetSector(0)-2;
-
+	    PedIndex = (rawStreamZDC->GetSector(0)-2)+4*rawStreamZDC->GetSector(1)+24;
+	  }
+          //
 	  if(rawStreamZDC->GetADCGain() == 1){ //EMD -> LR ADC
 	    //
 	    ZDCRawADC[DetIndex] += (Float_t) rawStreamZDC->GetADCValue();
-	    Int_t PedIndex = StartIndex[DetIndex]+rawStreamZDC->GetSector(1);
 	    // Mean pedestal subtraction 
 	    Float_t Pedestal = MeanPed[PedIndex];
 	    // Pedestal subtraction from correlation with out-of-time signals
-	    //Float_t Pedestal = ;
+	    //Float_t Pedestal = CorrCoeff0[PedIndex]+CorrCoeff1[PedIndex]*MeanPedOOT[PedIndex];
 	    //
 	    ZDCCorrADC[DetIndex] = (rawStreamZDC->GetADCValue()) - Pedestal;
 	    ZDCCorrADCSum[DetIndex] += ZDCCorrADC[DetIndex];
-	  }       
+	    //
+	    /*printf("\t det %d quad %d res %d pedInd %d ADCCorr %d ZDCCorrADCSum[%d] = %d\n", 
+	       rawStreamZDC->GetSector(0),rawStreamZDC->GetSector(1),
+	       rawStreamZDC->GetADCGain(),PedIndex,  
+	       (Int_t) (rawStreamZDC->GetADCValue() - Pedestal), DetIndex, 
+	       (Int_t) ZDCCorrADCSum[DetIndex]);
+	    */
+	  }   
 	}//IsADCDataWord()
 	 //
        }
@@ -258,7 +282,7 @@ int main(int argc, char **argv) {
   /* Analysis of the histograms */
   //
   FILE *fileShuttle;
-  fileShuttle = fopen("ZDCEMD.dat","w");
+  fileShuttle = fopen("ZDCEMDCalib.dat","w");
   //
   Int_t BinMax[4];
   Float_t YMax[4];
@@ -269,11 +293,11 @@ int main(int argc, char **argv) {
      BinMax[k] = histoEMDCorr[k]->GetMaximumBin();
      YMax[k] = (histoEMDCorr[k]->GetXaxis())->GetXmax();
      NBinsx[k] = (histoEMDCorr[k]->GetXaxis())->GetNbins();
-     //printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
+//     printf("\n\t Det%d -> BinMax = %d, ChXMax = %f\n", k+1, BinMax[k], BinMax[k]*YMax[k]/NBinsx[k]);
      histoEMDCorr[k]->Fit("gaus","Q","",BinMax[k]*YMax[k]/NBinsx[k]*0.7,BinMax[k]*YMax[k]/NBinsx[k]*1.25);
      fitfun[k] = histoEMDCorr[k]->GetFunction("gaus");
      MeanFitVal[k] = (Float_t) (fitfun[k]->GetParameter(1));
-     //printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
+     printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
   }
   //
    Float_t CalibCoeff[6];
@@ -285,7 +309,7 @@ int main(int argc, char **argv) {
   */
   // --- For the moment we have sim data only for ZN1!!!
   for(Int_t j=0; j<6; j++){
-     if(j==0 || j==1) CalibCoeff[j] = 2.76/MeanFitVal[j];
+     if(j==0) CalibCoeff[j] = 2.76/MeanFitVal[j];
      else if(j>0 && j<4) CalibCoeff[j] = CalibCoeff[0];
      else  CalibCoeff[j] = 1.;
      fprintf(fileShuttle,"\t%f\n",CalibCoeff[j]);

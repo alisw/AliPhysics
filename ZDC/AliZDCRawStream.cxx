@@ -57,8 +57,7 @@ AliZDCRawStream::AliZDCRawStream(const AliZDCRawStream& stream) :
   fADCModule = stream.GetADCModule();	 
   fADCValue = stream.GetADCValue();	 
   fADCGain = stream.GetADCGain();	 
-  fIsADCDataWord = stream.IsADCDataWord();
-  
+  fIsADCDataWord = stream.IsADCDataWord(); 
     
 }
 
@@ -92,11 +91,11 @@ Bool_t AliZDCRawStream::Next()
     fADCModule++;
     //printf(" \t AliZDCRawStream -> Header ADC %d -> ADC datum contains %d data words \n",fADCModule,((fRawADC & 0x3f00) >> 8));
   }
-  else if((fRawADC & 0x4000000)){//ADC EOB
+  else if(fRawADC & 0x4000000){//ADC EOB
     //printf(" \t AliZDCRawStream -> ADC %d End Of Block - event number %d\n\n",fADCModule, (fRawADC & 0xffffff));
     fSector[0] = fSector[1] = 99;
   } 
-  else if((fRawADC & 0x6000000)){//Not valid datum
+  else if(fRawADC & 0x6000000){//Not valid datum
     printf(" \t AliZDCRawStream -> Not valid datum in ADC module %d\n",fADCModule);
   }
   else{//ADC data word
