@@ -58,6 +58,7 @@
 #include <Riostream.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH3F.h>
 #include <TMath.h>
 
 #include <TSeqCollection.h>
@@ -85,6 +86,7 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff()
 
     CheckConstants();
     ResetArrays();
+    InitHistos();
 }
 
 
@@ -105,6 +107,7 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(const AliMUONGeometryTransfor
 
     CheckConstants();
     ResetArrays();
+    InitHistos();
 }
 
 
@@ -199,6 +202,26 @@ void AliMUONTriggerChamberEff::ResetArrays()
 	fInefficientBoard[chCath].Reset();
 	fHitPerBoard[chCath].Reset();
     }
+}
+
+
+//_____________________________________________________________________________
+void AliMUONTriggerChamberEff::InitHistos()
+{
+  //
+  /// Initialize histogram for firef pads counting.
+  //
+  const Int_t kMaxNpads[fgkNcathodes] = {GetMaxX(0)*GetMaxY(0), GetMaxX(1)*GetMaxY(1)};
+  Char_t histoName[40];
+  Char_t *cathCode[fgkNcathodes] = {"bendPlane", "nonBendPlane"};
+
+  for(Int_t cath=0; cath<fgkNcathodes; cath++){
+    sprintf(histoName, "fPadFired%s", cathCode[cath]);
+    fPadFired[cath] = new TH3F(histoName, histoName,
+			       fgkNchambers, -0.5, (Float_t)fgkNchambers - 0.5,
+			       fgkNslats, -0.5, (Float_t)fgkNslats - 0.5,
+			       kMaxNpads[cath], -0.5, (Float_t)kMaxNpads[cath] - 0.5);
+  }
 }
 
 
@@ -326,6 +349,10 @@ Int_t AliMUONTriggerChamberEff::MatchingPad(AliMUONVDigitStore& digitStore, Int_
 	for(Int_t loc=pad.GetNofLocations(); loc<fgkNlocations; loc++){
 	    nboard[cathode][loc]=-1;
 	}
+
+	// Fired pads info
+	Int_t currPair = ix*GetMaxY(cathode) + iy;
+	fPadFired[cathode]->Fill(ch, currSlat, currPair);
     }
 
     for(Int_t cath=0; cath<fgkNcathodes; cath++){
@@ -898,23 +925,34 @@ void AliMUONTriggerChamberEff::SaveInESDFile()
   //
   /// Store AliMUONTriggerChamberEff in esd file
   //
-  TList countHistoList, noCountHistoList;
+  TList countHistoList, noCountHistoList, firedPads;
+  for(Int_t cath=0; cath<fgkNcathodes; cath++){
+    firedPads.Add(fPadFired[cath]->Clone());
+  }
+  TFile *prova = new TFile("prova.root", "recreate");
+  prova->cd();
+  firedPads.Write();
+  prova->Close();
+  
   GetEfficiencyHistos(countHistoList, noCountHistoList);
   AliMUONTriggerEfficiencyCells *effMap = 
     new AliMUONTriggerEfficiencyCells(&countHistoList, &noCountHistoList);
+  effMap->SetFiredStrips(&firedPads);
 
   TDirectory *dir = gDirectory;
 
   TFile *logFile = 0x0;
-  Char_t *esdFileName = "AliESDs.root";
-  TSeqCollection *list = gROOT->GetListOfFiles();
   Bool_t reopenFile = kFALSE;
+  Char_t *esdFileName = "AliESDs.root";
+
+  TSeqCollection *list = gROOT->GetListOfFiles();
   Int_t n = list->GetEntries();
   for(Int_t i=0; i<n; i++) {
     logFile = (TFile*)list->At(i);
     if (strstr(logFile->GetName(), esdFileName)) break;
     logFile = 0x0;
   }
+
   if(!logFile) {
     AliWarning(Form("%s already stored on disk. Re-opening in update mode.",esdFileName));
     logFile = new TFile(esdFileName, "update");
@@ -922,12 +960,13 @@ void AliMUONTriggerChamberEff::SaveInESDFile()
   }
     
   if(logFile){
-    TTree *esdTree = (TTree*)logFile->Get("esdTree");
+    logFile->cd();
+    TTree *esdTree = (TTree*)logFile->Get("esdTree;1");
     if(esdTree){
       if(!esdTree->GetUserInfo()->FindObject("AliMUONTriggerEfficiencyCells")){
 	AliInfo(Form("Adding AliMUONTriggerEfficiencyCells in %s",esdTree->GetName()));
 	esdTree->GetUserInfo()->Add(effMap);
-	esdTree->Write("",TObject::kOverwrite);
+	esdTree->Write(esdTree->GetName(),TObject::kOverwrite);
       }
     }
     if(reopenFile){

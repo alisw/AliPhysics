@@ -13,6 +13,7 @@
 #include <TList.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
+#include <TH3.h>
 
 class AliMUONGeometryTransformer;
 class AliMUONDigitMaker;
@@ -62,6 +63,7 @@ protected:
     void LocalBoardFromPos(Float_t x, Float_t y, Int_t detElemId,
 			   Int_t cathode, Int_t localBoard[4]);
     void ResetArrays();
+    void InitHistos();
     Bool_t TriggerDigits(const AliMUONVTriggerStore& triggerStore,
 			 AliMUONVDigitStore& digitStore) const;
     Bool_t IsCleanTrack(AliMUONTriggerTrack *triggerTrack,
@@ -72,6 +74,8 @@ protected:
     
 private:
     void CheckConstants() const;
+    inline Int_t GetMaxX(Int_t cath){return (cath==0) ? 7 : 112;}
+    inline Int_t GetMaxY(Int_t cath){return (cath==0) ? 64 : 1;}
 
     const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer
     const AliMUONDigitMaker* fDigitMaker; //!< pointer to digit maker
@@ -93,7 +97,9 @@ private:
     TArrayI fHitPerSlat[fgkNplanes]; ///< Array counting # of times slats were efficient
     TArrayI fInefficientBoard[fgkNplanes]; ///< Array counting # of times boards were inefficient
     TArrayI fHitPerBoard[fgkNplanes]; ///< Array counting # of times boards were efficient
+
+    TH3F *fPadFired[fgkNcathodes]; ///< Histo counting the fired pads
     
-    ClassDef(AliMUONTriggerChamberEff,2) // Trigger chamber efficiency
+    ClassDef(AliMUONTriggerChamberEff,3) // Trigger chamber efficiency
 };
 #endif
