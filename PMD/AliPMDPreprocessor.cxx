@@ -122,7 +122,6 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    tree->SetBranchAddress("mean", &mean);
 	    tree->SetBranchAddress("rms",  &rms);
 
-
 	    Int_t nEntries = (Int_t) tree->GetEntries();
 	    for(Int_t i = 0; i < nEntries; i++)
 	    {
@@ -136,7 +135,7 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	metaData.SetBeamPeriod(0);
 	metaData.SetComment("test PMD preprocessor");
 	
-	result = Store("Calib","Ped", pedestal, &metaData);
+	result = Store("Calib","Ped", pedestal, &metaData,0,kTRUE);
 	delete pedestal;
 	if(result==0)
 	{
@@ -198,16 +197,18 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
 	    tree->SetBranchAddress("col",  &col);
 	    tree->SetBranchAddress("gain", &gain);
 
+
+
 	    Int_t nEntries = (Int_t) tree->GetEntries();
 	    for(Int_t i = 0; i < nEntries; i++)
 	    {
 		tree->GetEntry(i);
 
 		//if(DET>1 || SM>23 || ROW>95 || COL>95) {
-		//    printf("Error! gain[%d,%d,%d,%d] = %f\n",
+		//  printf("Error! gain[%d,%d,%d,%d] = %f\n",
 		//   DET,SM,ROW,COL,GAIN);
 		//  continue;
-		//    		 	}
+		//}
 
 		calibda->SetGainFact(det,sm,row,col,gain);
 	    }
@@ -249,3 +250,5 @@ UInt_t AliPMDPreprocessor::Process(TMap* pdaqAliasMap)
     
     return 2;
 }
+
+
