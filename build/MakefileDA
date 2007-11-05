@@ -92,8 +92,15 @@ CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(p
 ALIROOTALIBS+=$($(EXTRADAMODULE)ALIBS)
 endif
 
-DAOUTPUTFILES=$(sort $(shell grep TFile $(DASRC) | grep '(' | grep ')' | grep -i recreate | cut -d'(' -f2 | cut -d',' -f1 | cut -d')' -f1 ))
-DAINPUTFILES=$(sort $(shell grep TFile $(DASRC) | grep '(' | grep ')' | grep -vi recreate | cut -d'(' -f2 | cut -d',' -f1 | cut -d')' -f1 ))
+DACONTACT=$(sort $(shell grep -i "Contact:" $(DASRC) | cut -d':' -f2))
+DALINKPAGE=$(sort $(shell grep -i "Link:" $(DASRC) | cut -d':' -f2))
+DARUNTYPE=$(sort $(shell grep -i "Run Type:" $(DASRC) | cut -d':' -f2))
+DATYPE=$(sort $(shell grep -i "DA Type:" $(DASRC) | cut -d':' -f2))
+DANUMBEROFEVENTS=$(sort $(shell grep -i "Number of events needed:" $(DASRC) | cut -d':' -f2))
+DAINPUTFILES=$(sort $(shell grep -i "Input Files:" $(DASRC) | cut -d':' -f2))
+DAOUTPUTFILES=$(sort $(shell grep -i "Output Files:" $(DASRC) | cut -d':' -f2))
+DATRIGGERTYPE=$(sort $(shell grep -i "Trigger types used:" $(DASRC) | cut -d':' -f2))
+
 $(DATARGETNAME): $(DAEXE)
 
 $(DAEXE): $(DAOBJ) $(LIBPATH) $(DALIB) $(DAQDALIB) $(EXTRAROOTLIB)
@@ -232,8 +239,14 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "It uses data from $(DAMODULE) and $(EXTRADAMODULE) detectors at run time." >> $@
 	@echo "Build requires: daqDAlib, date, AliRoot $(DAALIROOTRELEASE), ROOT $(DAROOTRELEASE)." >> $@
 	@echo "Runtime requires: date." >> $@
-	@echo "Files produced: $(DAOUTPUTFILES)" >> $@
-	@echo "Files used: $(DAINPUTFILES)" >> $@
+	@echo "Contact: $(DACONTACT)" >> $@
+	@echo "Link: $(DALINKPAGE)" >> $@
+	@echo "Run type: $(DARUNTYPE)" >> $@
+	@echo "DA type: $(DATYPE)" >> $@
+	@echo "Number of events needed: $(DANUMBEROFEVENTS)" >> $@
+	@echo "Input files: $(DAINPUTFILES)" >> $@
+	@echo "Output files: $(DAOUTPUTFILES)" >> $@
+	@echo "Trigger types used: $(DATRIGGERTYPE)" >> $@
 	@echo "" >> $@
 	@echo "#################################################################" >> $@
 	@echo "# Do not modify following scripts" >> $@
