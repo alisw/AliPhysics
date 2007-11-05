@@ -268,6 +268,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
     }
 
     timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
+    Int_t meanTimeDelay=200;
 
     for (Int_t i=0; i<24; i++)
       {
@@ -321,9 +322,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
       {
 	timeDiff=Int_t (((besttimeC-besttimeA)+1000*delayVertex)
 			/channelWidth);
-	meanTime=Int_t (((besttimeC+timeDelayCFD[pmtBestC]+
-			  besttimeA+timeDelayCFD[pmtBestA])/2.)
-			/channelWidth);
+	meanTime=Int_t (((besttimeC+besttimeA)/2. + meanTimeDelay)/channelWidth);
       }
 	AliDebug(10,Form(" time A& C %i %i  time diff && mean time in channels %i %i",bestATDC,bestCTDC, timeDiff, meanTime));
 

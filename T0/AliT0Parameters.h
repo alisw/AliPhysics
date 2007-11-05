@@ -36,7 +36,7 @@ public:
   // Set various `Fixed' parameters 
   void SetPh2Mip(Int_t r=300)          { fPh2Mip = r; }
   void SetmV2Mip(Int_t r=50)          { fmV2Mip = r; }
-  void SetChannelWidth(Int_t s=25)   { fChannelWidth = s;}
+  void SetChannelWidth(Int_t s=24.4)   { fChannelWidth = s;}
   void SetmV2channel(Int_t size=320) { fmV2Channel = size; }
   void SetQTmin(Int_t qt=13) {fQTmin = qt;}
   void SetQTmax(Int_t qt=125) {fQTmax = qt;}
