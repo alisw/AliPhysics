@@ -2,6 +2,15 @@
 
 TOF DA for online calibration
 
+- "Contact:" - Chiara.Zampolli@bo.infn.it
+- "Link:" - www.bo.infn.it/~zampolli
+- "Run Type:" - PHYSICS
+- "DA Type:" - MON
+- "Number of events needed:" depending on the run, being run-level
+- "Input Files:" - TOFdaTotal.root, to be updated if existing
+- "Output Files:" - TOFdaRun.root, TOFdaTotal.root, both to be exported to the DAQ FXS
+- "Trigger types used:" - PHYSICS_EVENT
+
 */
 
 #define FILE_TOTAL "TOFdaTotal.root"
@@ -133,19 +142,23 @@ int main(int argc, char **argv) {
       AliT0RawReader *rawReaderT0 = new AliT0RawReader(rawReader,kTRUE);
       if (!rawReaderT0->Next()) {
         printf("T0: no raw data found!\n");
-      } else {
-        Int_t allData[110][5];
-        for (Int_t i=0; i<110; i++) {
+      } 
+      else {
+	/*
+        Int_t allData[105][5];
+        for (Int_t i=0; i<105; i++) {
 	  allData[i][0]=rawReaderT0->GetData(i,0);
-        }
+	}
         meantime = allData[49][0];
-        //printf("time zero (ns) = %i (%f) \n", meantime, meantime*25*1E-3-200);
+	*/
+        meantime = rawReaderT0->GetData(49,0);
+	//        printf("time zero (ns) = %i (%f) \n", meantime, (meantime*24.4-200)*1E-3);   // debugging purpose
       }
       
       delete rawReaderT0;
       rawReaderT0 = 0x0;
       rawReader->Reset();
-
+      
       //TOF event
       Int_t dummy = -1;
       Int_t Volume[5];
