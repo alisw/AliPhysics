@@ -254,7 +254,8 @@ void ReadBack(const char* dbBase="local://$ALICE_ROOT/FMD/")
 //   CreateInputFilesMap() creates a list of local files, that can be
 //                         accessed by the shuttle 
 //
-void TestPreprocessor(Bool_t createDummies=kTRUE,
+void TestPreprocessor(const char* runType="PEDESTAL", 
+		      Bool_t createDummies=kTRUE,
 		      const char* dbBase="local://$ALICE_ROOT/FMD/")
 {
   // Dummy data
@@ -271,7 +272,7 @@ void TestPreprocessor(Bool_t createDummies=kTRUE,
    // create AliTestShuttle instance
   // The parameters are run, startTime, endTime
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
-  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT");
+  AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/FMD/TestCDB");
   AliTestShuttle::SetLocalCDB(Form("%s/TestCDB", dbBase));
   AliTestShuttle::SetMainRefStorage(Form("%s/TestReference", dbBase));
 
@@ -285,7 +286,8 @@ void TestPreprocessor(Bool_t createDummies=kTRUE,
 			"source1", "peds.csv");
   shuttle->AddInputFile(AliShuttleInterface::kDAQ, "FMD", "gain", 
 			"source2", "gains.csv");
-  shuttle->SetInputRunType("PEDESTAL PULSER PHYSICS");
+  shuttle->SetInputRunType(runType);
+  // shuttle->SetInputRunType("PEDESTAL PULSER PHYSICS");
 
   new AliFMDPreprocessor(shuttle);
   // Test the preprocessor

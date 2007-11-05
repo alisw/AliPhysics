@@ -51,6 +51,10 @@
 //                       error   Error on gain
 //                       chi2    Chi^2 per degrees of freedom of fit
 //                  
+// See also 
+//
+//   http://aliceinfo.cern.ch/Offline/Activities/Shuttle.html
+//
 // Latest changes by Christian Holm Christensen
 //
 
@@ -120,7 +124,12 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // Parameters: 
   //    dcsAliassMap   Map of DCS data point aliases.
   // Return 
-  //    ? 
+  //    0 on success, >0 otherwise 
+  Bool_t resultPed   = kTRUE;
+  Bool_t resultGain  = kTRUE;
+  Bool_t resultRange = kTRUE;
+  Bool_t resultRate  = kTRUE;
+  Bool_t resultZero  = kTRUE;
 
   // Do we need this ?
   // if(!dcsAliasMap) return 1;
@@ -136,13 +145,17 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   // extract these parameters.   The same code could work if we get
   // the information from DCS via the FXS 
   TList* files = 0;
-  GetAndCheckFileSources(files, kDAQ,"info");
-  // if (!ifiles) return 1;
+  // GetAndCheckFileSources(files, kDAQ,"info");
+  // if (!files) return 1;
   AliFMDCalibSampleRate*      calibRate  = 0;
   AliFMDCalibStripRange*      calibRange = 0;
   AliFMDCalibZeroSuppression* calibZero  = 0;
   GetInfoCalibration(files, calibRate, calibRange, calibZero);
-  
+  // Disabled for now. 
+  // resultRate  = (!calibRate  ? kFALSE : kTRUE);
+  // resultRange = (!calibRange ? kFALSE : kTRUE);
+  // resultZero  = (!calibZero  ? kFALSE : kTRUE);
+
   // Gt the run type 
   TString runType(GetRunType()); 
 
@@ -151,12 +164,10 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   AliFMDCalibGain*     calibGain = 0;
   if (runType.Contains("PEDESTAL", TString::kIgnoreCase) && 
       GetAndCheckFileSources(files, kDAQ, "pedestal"))  
-    calibPed = GetPedestalCalibration(files);
+    resultPed = (!(calibPed = GetPedestalCalibration(files)) ? kFALSE : kTRUE);
   if (runType.Contains("PULSER", TString::kIgnoreCase) && 
       GetAndCheckFileSources(files, kDAQ, "gain"))
-    calibGain = GetGainCalibration(files);
-
-  
+    resultGain = (!(calibGain = GetGainCalibration(files)) ? kFALSE : kTRUE);
   
   //Storing Calibration objects  
   AliCDBMetaData metaData;
@@ -164,42 +175,35 @@ UInt_t AliFMDPreprocessor::Process(TMap* /* dcsAliasMap */)
   metaData.SetResponsible("Hans H. Dalsgaard");
   metaData.SetComment("Preprocessor stores pedestals and gains for the FMD.");
   
-  Bool_t resultPed   = kFALSE;
-  Bool_t resultGain  = kFALSE;
-  Bool_t resultRange = kFALSE;
-  Bool_t resultRate  = kFALSE;
-  Bool_t resultZero  = kFALSE;
   if(calibPed)  { 
-    resultPed  = Store("Calib","Pedestal", calibPed, &metaData);
+    resultPed  = Store("Calib","Pedestal", calibPed, &metaData, 0, kTRUE);
     delete calibPed;
   }
   if(calibGain) { 
-    resultGain = Store("Calib","PulseGain", calibGain, &metaData);
+    resultGain = Store("Calib","PulseGain", calibGain, &metaData, 0, kTRUE);
     delete calibGain;
   }
   if(calibRange) { 
-    resultRange = Store("Calib","StripRange", calibRange, &metaData);
+    resultRange = Store("Calib","StripRange", calibRange, &metaData, 0, kTRUE);
     delete calibRange;
   }
   if(calibRate) { 
-    resultRate = Store("Calib","SampleRate", calibRate, &metaData);
+    resultRate = Store("Calib","SampleRate", calibRate, &metaData, 0, kTRUE);
     delete calibRate;
   }
   if(calibZero) { 
-    resultZero = Store("Calib","ZeroSuppression", calibZero, &metaData);
+    resultZero = Store("Calib","ZeroSuppression", calibZero, &metaData,0,kTRUE);
     delete calibZero;
   }
-  
-  return (resultPed && resultGain ? 0 : 1);
+
 #if 0
   // Disabled until we implement GetInfoCalibration properly
-  return (resultPed   && 
-	  resultGain  && 
-	  resultRange && 
-	  resultRate  &&
-	  resultZero 
-	  ? 0 : 1);
+  Bool_t success = (resultPed && resultGain  && resultRange && 
+		    resultRate  && resultZero);
 #endif
+  Bool_t success = resultPed && resultGain;
+  Log(Form("FMD preprocessor was %s", (success ? "successful" : "failed")));
+  return (success ? 0 : 1);
 }
 
 //____________________________________________________________________
@@ -232,7 +236,7 @@ AliFMDPreprocessor::GetInfoCalibration(TList* files,
     const Char_t* filename = GetFile(kDAQ, "info", fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
-      AliError(Form("File %s not found!", filename));
+      Log(Form("File %s not found!", filename));
       continue;
     }
   }
@@ -262,7 +266,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
     const Char_t* filename = GetFile(kDAQ, "pedestal", fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
-      AliError(Form("File %s not found!", filename));
+      Log(Form("File %s not found!", filename));
       continue;
     }
 
@@ -271,7 +275,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
     header.ReadLine(in);
     header.ToLower();
     if(!header.Contains("pedestal")) {
-      AliError("File header is not from pedestal!");
+      Log("File header is not from pedestal!");
       continue;
     }
     Log("File contains data from pedestals");
@@ -283,7 +287,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
     // Loop until EOF
     while(!in.eof()) {
       if(in.bad()) { 
-	AliError(Form("Bad read at line %d in %s", lineno, filename));
+	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
       }
       UInt_t ddl=2, board, chip, channel, strip, tb;
@@ -338,7 +342,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
     const Char_t* filename = GetFile(kDAQ, "gain", fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
-      AliError(Form("File %s not found!", filename));
+      Log(Form("File %s not found!", filename));
       continue;
     }
 
@@ -347,7 +351,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
     header.ReadLine(in);
     header.ToLower();
     if(!header.Contains("gain")) {
-      AliError("File header is not from gain!");
+      Log("File header is not from gain!");
       continue;
     }
     Log("File contains data from pulse gain");
@@ -359,7 +363,7 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
     // Read until EOF 
     while(!in.eof()) {
       if(in.bad()) { 
-	AliError(Form("Bad read at line %d in %s", lineno, filename));
+	Log(Form("Bad read at line %d in %s", lineno, filename));
 	break;
       }
       UInt_t ddl=2, board, chip, channel, strip;

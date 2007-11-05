@@ -19,10 +19,10 @@ AdcPerMip2Gain(Int_t adc)
 }
 
 void
-MakeCalibration()
+MakeCalibration(const char* base="local://$ALICE_ROOT")
 {
   AliCDBManager* cdb   = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT");
+  cdb->SetDefaultStorage(base);
 
   gSystem->Load("libFMDutil.so");
   AliFMDCalibFaker f(AliFMDCalibFaker::kAll, 0);
