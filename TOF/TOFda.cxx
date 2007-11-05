@@ -2,14 +2,14 @@
 
 TOF DA for online calibration
 
-- "Contact:" - Chiara.Zampolli@bo.infn.it
-- "Link:" - www.bo.infn.it/~zampolli
-- "Run Type:" - PHYSICS
-- "DA Type:" - MON
-- "Number of events needed:" depending on the run, being run-level
-- "Input Files:" - TOFdaTotal.root, to be updated if existing
-- "Output Files:" - TOFdaRun.root, TOFdaTotal.root, both to be exported to the DAQ FXS
-- "Trigger types used:" - PHYSICS_EVENT
+Contact: Chiara.Zampolli@bo.infn.it
+Link: www.bo.infn.it/~zampolli
+Run Type: PHYSICS
+DA Type: MON
+Number of events needed: depending on the run, being run-level
+Input Files: TOFdaTotal.root, to be updated if existing
+Output Files: TOFdaRun.root, TOFdaTotal.root, both to be exported to the DAQ FXS
+Trigger types used: PHYSICS_EVENT
 
 */
 
