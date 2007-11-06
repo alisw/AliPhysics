@@ -24,7 +24,7 @@
 #include "AliLoader.h" 
  
 class AliQADataMaker ;
-class AliRawReaderRoot ;  
+class AliRawReader ;  
 class AliRunLoader ; 
 class AliESDEvent ; 
 
@@ -57,7 +57,7 @@ private:
 	TString            fGAliceFileName ;               //! name of the galice file
 	UInt_t             fRunNumber ;                    //! current run number
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
-	AliRawReaderRoot * fRawReader ;                    //! current raw reader object 
+	AliRawReader     * fRawReader ;                    //! current raw reader object 
 	AliRunLoader *     fRunLoader ;                    //! current run loader object
 	static const UInt_t fgkNDetectors = AliQA::kNDET ; //! number of detectors    
 	AliLoader      *   fLoader[fgkNDetectors];         //! array of detectors loader

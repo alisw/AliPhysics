@@ -43,6 +43,7 @@ public:
   static  AliQA *   Instance() ;
   static  AliQA *   Instance(const DETECTORINDEX det) ;
   static  AliQA *   Instance(const ALITASK tsk) ;
+  const Bool_t           AddQAData2CDB(const char * defSto) const ;
   const Bool_t           CheckFatal() const ;
   static const char *    GetAliTaskName(ALITASK tsk) ;
   static const char *    GetDataName() { return fgDataName.Data() ; }
@@ -50,8 +51,14 @@ public:
   static const TString   GetTaskName(TASKINDEX tsk) { return fgTaskNames[tsk] ; }
   static const char *    GetDetName(Int_t det) ;
   static TFile *         GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) ; 
+  static TFile *         GetQAResultFile() ; 
+  static TFile *         GetQARefFile() ; 
+  static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
+  static const char  *   GetQARefFileName() { return (fgQARefDirName + fgQARefFileName).Data() ; }
   const Bool_t           IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const ;
   void                   Set(QABIT bit) ;
+  static void			 SetQAResultDirName(const char * name) ; 
+  static void            SetQARefDir(const char * name) ; 
   void                   Show() const { ShowStatus(fDet) ; }
   void                   ShowAll() const ;
 
@@ -71,15 +78,19 @@ private:
   void                 SetStatus(DETECTORINDEX det, UShort_t status) { fQA[det] = status ; }
   void                 SetStatusBit(DETECTORINDEX det, ALITASK tsk, QABIT bit) ;
 
-  static AliQA *fgQA              ; // pointer to the instance of the singleton
-  Int_t              fNdet        ; // number of detectors
-  ULong_t    *       fQA          ; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
-  DETECTORINDEX      fDet         ; //!  the current detector (ITS, TPC, ....)
-  ALITASK            fTask        ; //!  the current environment (SIM, REC, ESD, ANA)
-  static TFile *     fgDataFile   ; //! the output file where the quality assurance maker store their results
-  static TString     fgDataName   ; //! the name of the file where the quality assurance maker store their results
-  static TString     fgDetNames[] ; //! list of detector names   
-  static TString     fgTaskNames[]; //! list of tasks names   
+  static AliQA *fgQA					; // pointer to the instance of the singleton
+  Int_t              fNdet				; // number of detectors
+  ULong_t    *       fQA				; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
+  DETECTORINDEX      fDet				; //!  the current detector (ITS, TPC, ....)
+  ALITASK            fTask				; //!  the current environment (SIM, REC, ESD, ANA)
+  static TFile *     fgDataFile			; //! the output file where the quality assurance maker store their results
+  static TString     fgDataName			; //! the name of the file where the quality assurance maker store their results
+  static TString     fgDetNames[]		; //! list of detector names   
+  static TString     fgQAResultDirName  ; //! the location of the output file where the QA results are stored  
+  static TString     fgQAResultFileName ; //! the output file where the QA results are stored  
+  static TString     fgQARefDirName		; //! name of directory where to find the reference data file
+  static TString     fgQARefFileName	; //! file name where to find the reference data
+  static TString     fgTaskNames[]		; //! list of tasks names   
 
  ClassDef(AliQA,1)  //ALICE Quality Assurance Object
 };

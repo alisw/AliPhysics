@@ -71,7 +71,7 @@ AliQADataMaker::AliQADataMaker(const AliQADataMaker& qadm) :
   fDigitsQAList(qadm.fDigitsQAList),
   fESDsQAList(qadm.fESDsQAList),
   fHitsQAList(qadm.fHitsQAList),
-  fRawsQAList(qadm.fRecPointsQAList),
+  fRawsQAList(qadm.fRawsQAList),
   fRecPointsQAList(qadm.fRecPointsQAList),
   fSDigitsQAList(qadm.fSDigitsQAList), 
   fCurrentCycle(qadm.fCurrentCycle), 

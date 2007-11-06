@@ -28,6 +28,8 @@
 #include "AliQA.h"
 #include "AliQADataMaker.h"
 #include "AliQADataMakerSteer.h" 
+#include "AliRawReaderDate.h"
+#include "AliRawReaderFile.h"
 #include "AliRawReaderRoot.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -178,12 +180,20 @@ AliQADataMaker * AliQADataMakerSteer::GetQADataMaker(Int_t iDet)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char * fileName )
+Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char * input )
 {
 	// Initialize the event source and QA data makers
 	
 	if (taskIndex == AliQA::kRAWS) {
-		fRawReader = new AliRawReaderRoot(fileName) ; 
+		TString fileName(input);
+		if (fileName.EndsWith("/")) {
+			fRawReader = new AliRawReaderFile(fileName);
+		} else if (fileName.EndsWith(".root")) {
+			fRawReader = new AliRawReaderRoot(fileName);
+		} else if (!fileName.IsNull()) {
+			fRawReader = new AliRawReaderDate(fileName);
+			fRawReader->SelectEvents(7);
+		}
 	    if ( ! fRawReader ) 
 			return kFALSE ; 
 		fRawReader->NextEvent() ; 

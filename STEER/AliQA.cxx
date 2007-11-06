@@ -38,18 +38,25 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliCDBManager.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliQAChecker.h"
 
 
 ClassImp(AliQA)
-  AliQA * AliQA::fgQA        = 0x0 ;
-  TFile      * AliQA::fgDataFile  = 0x0 ;   
-  TString      AliQA::fgDataName  = "QA" ;   
-  TString      AliQA::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+  AliQA    * AliQA::fgQA                = 0x0 ;
+  TFile    * AliQA::fgDataFile          = 0x0 ;   
+  TString    AliQA::fgDataName          = "QA" ;  // will transform into Det.QA.run.cycle.root  
+  TString    AliQA::fgQARefDirName		= "local://Ref/" ; 
+  TString    AliQA::fgQARefFileName     = "QA.root" ;
+  TString    AliQA::fgQAResultDirName   = "local://RUN/" ;  
+  TString    AliQA::fgQAResultFileName  = "QA.root" ; 
+  TString    AliQA::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
 					"ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
-  TString      AliQA::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+  TString   AliQA::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 
 //____________________________________________________________________________
 AliQA::AliQA() : 
@@ -61,6 +68,7 @@ AliQA::AliQA() :
 {
   // default constructor
   // beware singleton: not to be used
+  
   for (Int_t index = 0 ; index < fNdet ; index++) 
 	fQA[index] = 0 ; 
 }
@@ -130,6 +138,32 @@ AliQA::~AliQA()
 }
 
 //_______________________________________________________________
+const Bool_t AliQA::AddQAData2CDB(const char * defSto) const 
+{
+	// loads the QA data into the OCDB
+	Bool_t rv = kTRUE ; 
+	AliCDBManager* man = AliCDBManager::Instance() ;
+	man->SetDefaultStorage(defSto) ;
+	AliCDBMetaData md ; 
+	// loop over detectors	
+	AliCDBId id("QA/Ref/PHOS",0,999999999) ;
+
+	
+	return rv ; 
+}  
+
+//_______________________________________________________________
+const Bool_t AliQA::CheckFatal() const
+{
+  // check if any FATAL status is set
+  Bool_t rv = kFALSE ;
+  Int_t index ;
+  for (index = 0; index < kNDET ; index++)
+    rv = rv || IsSet(DETECTORINDEX(index), fTask, kFATAL) ;
+  return rv ;
+}
+
+//_______________________________________________________________
 const Bool_t AliQA::CheckRange(DETECTORINDEX det) const
 { 
   // check if detector is in given detector range: 0-kNDET
@@ -161,7 +195,6 @@ const Bool_t AliQA::CheckRange(QABIT bit) const
   return rv ;
 }
 
-
 //_______________________________________________________________
 TFile * AliQA::GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) 
 {
@@ -186,6 +219,7 @@ TFile * AliQA::GetQADMOutFile(const char * name, const Int_t run, const Int_t cy
   }
   return fgDataFile ; 
 } 
+
 
 //_______________________________________________________________
 const char * AliQA::GetDetName(Int_t det) 
@@ -229,14 +263,33 @@ const char * AliQA::GetAliTaskName(ALITASK tsk)
 }
 
 //_______________________________________________________________
-const Bool_t AliQA::CheckFatal() const
+TFile * AliQA::GetQARefFile() 
 {
-  // check if any FATAL status is set
-  Bool_t rv = kFALSE ;
-  Int_t index ;
-  for (index = 0; index < kNDET ; index++)
-    rv = rv || IsSet(DETECTORINDEX(index), fTask, kFATAL) ;
-  return rv ;
+  // opens the file whwre Quality Assurance Reference Data are stored
+
+	TString fileName(fgQARefDirName + fgQARefFileName) ; 
+
+	if ( fileName.Contains("local://")) 
+		fileName.ReplaceAll("local://", "") ;
+
+	return TFile::Open(fileName.Data(), "READ") ;
+} 
+
+//_______________________________________________________________
+TFile * AliQA::GetQAResultFile() 
+{
+  // opens the file to store the  Quality Assurance Data Checker results
+   
+	TString fileName(fgQAResultDirName + fgQAResultFileName) ; 
+	if ( fileName.Contains("local://")) 
+		fileName.ReplaceAll("local://", "") ;
+	TString opt("") ; 
+	if ( !gSystem->AccessPathName(fileName) )
+		opt = "UPDATE" ; 
+	else 
+		opt = "NEW" ; 
+      
+	return TFile::Open(fileName, opt) ;   
 }
 
 //_______________________________________________________________
@@ -350,6 +403,30 @@ void AliQA::Set(QABIT bit)
   // Set the status bit of the current detector in the current module
   
   SetStatusBit(fDet, fTask, bit) ;
+}
+
+//_____________________________________________________________________________
+void AliQA::SetQARefDir(const char * name)
+{
+  // Set the root directory where the QA reference data are stored
+
+  fgQARefDirName.Prepend(name) ; 
+  printf("AliQA::SetQARefDir: QA references are in  %s\n", fgQARefDirName.Data()) ;
+  if ( fgQARefDirName.Contains("local://")) 
+    fgQARefDirName.ReplaceAll("local:/", "") ;
+  fgQARefFileName.Prepend(fgQARefDirName) ;
+}
+
+//_____________________________________________________________________________
+void AliQA::SetQAResultDirName(const char * name)
+{
+  // Set the root directory where to store the QA status object
+
+  fgQAResultDirName.Prepend(name) ; 
+  printf("AliQA::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data()) ;
+  if ( fgQAResultDirName.Contains("local://")) 
+    fgQAResultDirName.ReplaceAll("local:/", "") ;
+  fgQAResultFileName.Prepend(fgQAResultDirName) ;
 }
 
 //_______________________________________________________________
