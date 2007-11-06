@@ -10,6 +10,7 @@
 // Author: Anders Vestbo <mailto:vestbo@fi.uib.no>
 //*-- Copyright &copy ALICE HLT Group
 
+#include <vector>
 
 class AliHLTTPCConfMapPoint;
 class AliHLTTPCConfMapTrack;
@@ -27,7 +28,16 @@ class AliHLTTPCConfMapper {
   /** destructor */
   virtual ~AliHLTTPCConfMapper();
   
+  /**
+   * Init and calculate bounds for the internal arrays.
+   */
   void InitVolumes();
+
+  /**
+   * Reset internal arrays and free memory.
+   */
+  void Reset();
+
   void InitSector(Int_t sector,Int_t *rowrange=0,Float_t *etarange=0);
   void SetVertex(AliHLTTPCVertex *vertex){fVertex = vertex;}
   void MainVertexTrackingA();
@@ -38,6 +48,13 @@ class AliHLTTPCConfMapper {
 			  Int_t rowscopetracklet, Int_t rowscopetrack,Double_t maxphi=0.1,Double_t maxeta=0.1);
   void NonVertexSettings(Int_t trackletlength, Int_t tracklength, 
 			 Int_t rowscopetracklet, Int_t rowscopetrack);
+
+  /**
+   * Read an array of space point data.
+   * @param count    array size
+   * @param hits     array
+   * @return kTRUE if success.
+   */
   Bool_t ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits );
   void ClusterLoop();
   void CreateTrack(AliHLTTPCConfMapPoint *hit);
@@ -98,7 +115,8 @@ class AliHLTTPCConfMapper {
   Bool_t fVertexFinder; //Include vertexfinding or not 
                         //(latter case vertex=(0,0,0))
 
-  AliHLTTPCConfMapPoint *fHit;  //!
+  /** the list of hits */
+  vector<AliHLTTPCConfMapPoint> fHit;  //!
   AliHLTTPCTrackArray *fTrack;  //!
   Double_t fMaxDca;      //cut value for momentum fit
   

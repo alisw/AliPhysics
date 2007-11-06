@@ -150,7 +150,7 @@ int AliHLTTPCDigitPublisherComponent::DoInit( int argc, const char** argv )
       fFileHandlerInstances=1;
     } else {
       fFileHandlerInstances++;
-      //HLTInfo("publisher %p: %d references to file handler instance", this, fFileHandlerInstances);
+      //HLTDebug("publisher %p: %d references to file handler instance", this, fFileHandlerInstances);
     }
     if (fpFileHandler) {
       if (!fpFileHandler->SetAliInput(pRunLoader)) {
@@ -175,7 +175,7 @@ int AliHLTTPCDigitPublisherComponent::DoDeinit()
     fpFileHandler->FreeDigitsTree();
     fCurrEvent=-1;
   }
-  //HLTInfo("publisher %p: %d references to file handler instance", this, fFileHandlerInstances);
+  //HLTDebug("publisher %p: %d references to file handler instance", this, fFileHandlerInstances);
   if (--fFileHandlerInstances==0 && fpFileHandler!=NULL) {
     try {
       if (fpFileHandler) {
@@ -211,14 +211,15 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& e
       UInt_t nrow=0;
       UInt_t tgtSize=size-sizeof(AliHLTTPCUnpackedRawData);
       if (fCurrEvent>=0 && fCurrEvent!=event) {
-	HLTInfo("new event %d, free digit tree for event %d", event, fCurrEvent);
+	HLTDebug("new event %d, free digit tree for event %d", event, fCurrEvent);
 	fpFileHandler->FreeDigitsTree();
       }
       fCurrEvent=event;
-      fpFileHandler->Init(fMinSlice,fMinPart);	   
+      HLTDebug("converting digits for slice %d partition %d", fMinSlice, fMinPart);
+      fpFileHandler->Init(fMinSlice,fMinPart);
       AliHLTTPCDigitRowData* pData=fpFileHandler->AliDigits2Memory(nrow, event, reinterpret_cast<Byte_t*>(pTgt->fDigits), &tgtSize);
       if (pData==NULL && tgtSize>0 && tgtSize>fMaxSize) {
-	HLTInfo("target buffer too small: %d byte required, %d available", tgtSize+sizeof(AliHLTTPCUnpackedRawData), size);
+	HLTDebug("target buffer too small: %d byte required, %d available", tgtSize+sizeof(AliHLTTPCUnpackedRawData), size);
 	// indicate insufficient buffer size, on occasion the frameworks calls
 	// again with the corrected buffer 
 	fMaxSize=tgtSize;
@@ -236,6 +237,7 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& e
 	bd.fSize = size;
 	bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(fMinSlice, fMinSlice, fMinPart, fMinPart);
 	outputBlocks.push_back( bd );
+	HLTDebug("added AliHLTTPCUnpackedRawData size %d, first row %d nof digits %d", size, pTgt->fDigits->fRow, pTgt->fDigits->fNDigit);
       }
     }
   } else {

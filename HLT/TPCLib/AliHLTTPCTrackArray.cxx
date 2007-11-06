@@ -131,6 +131,7 @@ void AliHLTTPCTrackArray::DeleteArray()
     delete fTrack[i];
   delete[] fIsPresent;
   delete[] fTrack;
+  fSize=0;
 }
 
 Bool_t AliHLTTPCTrackArray::SetSize(Int_t newsize)

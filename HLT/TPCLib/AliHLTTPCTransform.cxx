@@ -1746,7 +1746,8 @@ Double_t AliHLTTPCTransform::GetPhi(Float_t *xyz)
 
 Bool_t AliHLTTPCTransform::Slice2Sector(Int_t slice, Int_t slicerow, Int_t & sector, Int_t &row)
 {
-  //slice to sector number
+  //slice no to sector number
+  //row no to local sector row no
   if(slicerow<0&&slicerow>=fgNRow){
     LOG(AliHLTTPCLog::kError,"AliHLTTPCTransform::Slice2Sector","Slicerow")
       <<AliHLTTPCLog::kDec<<"Wrong slicerow "<<slicerow<<ENDLOG;

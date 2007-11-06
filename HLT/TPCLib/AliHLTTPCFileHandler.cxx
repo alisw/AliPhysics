@@ -31,7 +31,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
                                                                           */
-
+#include <cassert>
 #include <TClonesArray.h>
 #include <TSystem.h>
 #include <TMath.h>
@@ -383,6 +383,7 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
     LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::CreateIndex","Index")
       <<"Starting to create index, this can take a while."<<ENDLOG;
 
+    Int_t lslice,lrow;
     for(Int_t n=0; n<fDigitsTree->GetEntries(); n++) {
       Int_t sector, row;
       Int_t lslice,lrow;
@@ -442,7 +443,6 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 
   UShort_t dig;
   Int_t time,pad,sector,row;
-  Int_t lslice,lrow;
   Int_t nrows=0;
   Int_t ndigitcount=0;
   Int_t entries = (Int_t)fDigitsTree->GetEntries();
@@ -483,9 +483,12 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   for(Int_t r=fRowMin;r<=fRowMax;r++){
     Int_t n=fIndex[fSlice][r];
     if(n!=-1){ // there is data on that row available
+      Int_t lslice,lrow;
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
       AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
+//       LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::AliDigits2Memory","Digits")
+// 	<< "Sector "<<sector<<" Row " << row << " Slice " << lslice << " lrow " << lrow<<ENDLOG;
 
       if(lrow!=r){
 	LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2Memory","Row")
@@ -513,34 +516,49 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
       } while (fDigits->Next());
       //cout << lrow << " " << ndigits[lrow] << " - " << ndigitcount << endl;
     }
-    nrows++;
+    //see comment below//nrows++;
   }
+  // Matthias 05.11.2007
+  // The question is whether we should always return a AliHLTTPCDigitRowData
+  // for each row, even the empty ones or only for the ones filled with data.
+  // the AliHLTTPCDigitReaderUnpacked as the counnterpart so far assumes 
+  // empty RawData structs for empty rows. But some of the code here implies
+  // the latter approach, e.g. the count of nrows in the loop above (now
+  // commented). At least the two loops were not consistent, it's fixed now.
+  nrows=fRowMax-fRowMin+1;
 
-  UInt_t size = sizeof(AliHLTTPCDigitData)*ndigitcount
+  UInt_t bufferSize = sizeof(AliHLTTPCDigitData)*ndigitcount
     + nrows*sizeof(AliHLTTPCDigitRowData);
 
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCFileHandler::AliDigits2Memory","Digits")
-    <<AliHLTTPCLog::kDec<<"Found "<<ndigitcount<<" Digits"<<ENDLOG;
-  
+    << "Found "<<ndigitcount<<" Digits in " << nrows << " rows out of [" << fRowMin << "," << fRowMax <<"]"<<ENDLOG;
+
   if (tgtBuffer!=NULL && pTgtSize!=NULL && *pTgtSize>0) {
-    if (size<=*pTgtSize) {
+    if (bufferSize<=*pTgtSize) {
       data=reinterpret_cast<AliHLTTPCDigitRowData*>(tgtBuffer);
     } else {
     }
-  } else {
-    data=reinterpret_cast<AliHLTTPCDigitRowData*>(Allocate(size));
+  } else if (bufferSize>0) {
+    data=reinterpret_cast<AliHLTTPCDigitRowData*>(Allocate(bufferSize));
   }
-  if (pTgtSize) *pTgtSize=size;
-  if (data==NULL) return NULL;
+  if (pTgtSize) *pTgtSize=bufferSize;
+  if (data==NULL) {
+    delete [] ndigits;
+    return NULL;
+  }
   nrow = (UInt_t)nrows;
   AliHLTTPCDigitRowData *tempPt = data;
+  memset(data, 0, bufferSize);
 
   for(Int_t r=fRowMin;r<=fRowMax;r++){
     Int_t n=fIndex[fSlice][r];
-    tempPt->fRow = r;
+
+    AliHLTTPCTransform::Slice2Sector(fSlice,r,sector,row);
+    tempPt->fRow = row;
     tempPt->fNDigit = 0;
 
     if(n!=-1){//data on that row
+      Int_t lslice,lrow;
       fDigitsTree->GetEvent(n);
       fParam->AdjustSectorRow(fDigits->GetID(),sector,row);
       AliHLTTPCTransform::Sector2Slice(lslice,lrow,sector,row);
@@ -550,6 +568,8 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	continue;
       }
 
+      // set the correct row no and digit count
+      tempPt->fRow = row;
       tempPt->fNDigit = ndigits[lrow];
 
       Int_t localcount=0;
@@ -580,13 +600,15 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
 	tempPt->fDigitData[localcount].fTrackID[2] = fDigits->GetTrackID(time,pad,2);
 	localcount++;
       } while (fDigits->Next());
-      Byte_t *tmp = (Byte_t*)tempPt;
-      Int_t size = sizeof(AliHLTTPCDigitRowData)
-	+ ndigits[lrow]*sizeof(AliHLTTPCDigitData);
-      tmp += size;
-      tempPt = (AliHLTTPCDigitRowData*)tmp;
     }
+
+    Byte_t *tmp = (Byte_t*)tempPt;
+    Int_t blockSize = sizeof(AliHLTTPCDigitRowData)
+      + tempPt->fNDigit*sizeof(AliHLTTPCDigitData);
+    tmp += blockSize;
+    tempPt = (AliHLTTPCDigitRowData*)tmp;
   }
+  assert((Byte_t*)tempPt==((Byte_t*)data)+bufferSize);
   delete [] ndigits;
   return data;
 }

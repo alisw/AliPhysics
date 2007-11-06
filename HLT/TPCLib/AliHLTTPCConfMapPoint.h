@@ -27,13 +27,26 @@ class AliHLTTPCVertex;
 class AliHLTTPCConfMapPoint {
 
  public:
-
+  /** constructor */
   AliHLTTPCConfMapPoint();
+  /** copy constructor */
+  AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&);
+  /** assignment operator */
+  AliHLTTPCConfMapPoint& operator=(const AliHLTTPCConfMapPoint&);
   /** destructor */
   virtual ~AliHLTTPCConfMapPoint();
   
+  /**
+   * Reset this point.
+   * The usage flag will be cleared as well as variables are reset.
+   */
   void Reset();
-  Bool_t ReadHits(AliHLTTPCSpacePointData* hits );
+
+  /**
+   * Read one hit.
+   * Set members from AliHLTTPCSpacePointData.
+   */
+  Bool_t Read(const AliHLTTPCSpacePointData& hit);
   
    // getter
   Double_t GetX() const {return fx;}
@@ -84,7 +97,6 @@ class AliHLTTPCConfMapPoint {
   Short_t GetEtaIndex() const {return fEtaIndex;}
   Double_t GetXYChi2() const {return fXYChi2;}
   Double_t GetSZChi2() const {return fSZChi2;}
-  //Int_t fMCTrackID[3]; //MClabel of tracks, may overlap
 
   // setter
   void SetNextVolumeHit(AliHLTTPCConfMapPoint* p){fNextVolumeHit=p;}
@@ -145,10 +157,6 @@ class AliHLTTPCConfMapPoint {
   void SetConfCoord();// conformal mapping
 
  private:
-  /** copy constructor prohibited */
-  AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint&);
-  /** assignment operator prohibited */
-  AliHLTTPCConfMapPoint& operator=(const AliHLTTPCConfMapPoint&);
 
   Int_t fHitNumber;     //hit number
   Int_t fTrackNumber;   //track number

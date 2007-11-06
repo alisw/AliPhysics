@@ -13,6 +13,7 @@
 </pre>
 */
 
+#include <cassert>
 #include <sys/time.h>
  
 #include "AliHLTTPCRootTypes.h"
@@ -37,7 +38,7 @@ AliHLTTPCConfMapper::AliHLTTPCConfMapper()
   fNTracks(0),
   fVertex(NULL),
   fVertexFinder(kFALSE),
-  fHit(NULL),
+  fHit(),
   fTrack(NULL),
   fMaxDca(0.0), // no clue whether this is reasonable, but at least better than without initialization
   fVolume(NULL),
@@ -68,14 +69,8 @@ AliHLTTPCConfMapper::AliHLTTPCConfMapper()
 AliHLTTPCConfMapper::~AliHLTTPCConfMapper()
 {
   // Destructor.
-  if(fVolume) {
-    delete [] fVolume;
-  }
   if(fRow) {
     delete [] fRow;
-  }
-  if(fHit) {
-    delete [] fHit;
   }
   if(fTrack) {
     delete fTrack;
@@ -94,32 +89,21 @@ void AliHLTTPCConfMapper::InitVolumes()
   fNumEtaSegmentPlusOne = fNumEtaSegment+1;
   fNumPhiEtaSegmentPlusOne = fNumPhiSegmentPlusOne*fNumEtaSegmentPlusOne;
   fBounds = fNumRowSegmentPlusOne * fNumPhiSegmentPlusOne * fNumEtaSegmentPlusOne;
+
+  Reset();
   
-  //Allocate volumes:
+  fTrack = new AliHLTTPCTrackArray("AliHLTTPCConfMapTrack",10);
+}
+
+void AliHLTTPCConfMapper::Reset()
+{
   if(fVolume) delete [] fVolume;
+  fVolume=NULL;
   if(fRow) delete [] fRow;
+  fRow=NULL;
   
-  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
-    "Allocating "<<fBounds*sizeof(AliHLTTPCConfMapContainer)<<" Bytes to fVolume"<<ENDLOG;
-  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
-    "Allocating "<<fNumRowSegmentPlusOne*sizeof(AliHLTTPCConfMapContainer)<<" Bytes to fRow"<<ENDLOG;
-  
-  fVolume = new AliHLTTPCConfMapContainer[fBounds];
-  fRow = new AliHLTTPCConfMapContainer[fNumRowSegmentPlusOne];
-  
-  memset(fVolume,0,fBounds*sizeof(AliHLTTPCConfMapContainer));
-  memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliHLTTPCConfMapContainer));
-  
-  Int_t maxnumoftracks = 2000;
-  Int_t maxnumofhits = 120000;
-  
-  if(fHit)
-    delete [] fHit;
-  if(fTrack)
-    delete fTrack;
-    
-  fHit = new AliHLTTPCConfMapPoint[maxnumofhits];
-  fTrack = new AliHLTTPCTrackArray("AliHLTTPCConfMapTrack",maxnumoftracks);
+  fClustersUnused=0;
+  fHit.clear();
 }
 
 void AliHLTTPCConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etarange)
@@ -173,16 +157,17 @@ void AliHLTTPCConfMapper::InitSector(Int_t sector,Int_t *rowrange,Float_t *etara
 Bool_t AliHLTTPCConfMapper::ReadHits(UInt_t count, AliHLTTPCSpacePointData* hits )
 {
   //read hits
-  Int_t nhit=(Int_t)count; 
-  for (Int_t i=0;i<nhit;i++)
+  if (fHit.size()<fClustersUnused+count) fHit.resize(fClustersUnused+count);
+  assert(fHit.size()>=fClustersUnused+count);
+  for (Int_t i=0;(UInt_t)i<count;i++)
     {	
       fHit[i+fClustersUnused].Reset();
-      fHit[i+fClustersUnused].ReadHits(&(hits[i]));
+      fHit[i+fClustersUnused].Read(hits[i]);
     }
-  fClustersUnused += nhit;
+  fClustersUnused += count;
 
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::ReadHits","#hits")
-    <<AliHLTTPCLog::kDec<<"hit_counter: "<<nhit<<" count: "<<count<<ENDLOG;
+    <<AliHLTTPCLog::kDec<<"#hits: "<<count<<" total: "<<fClustersUnused<<ENDLOG;
   
   return true;
 }
@@ -195,7 +180,19 @@ void AliHLTTPCConfMapper::SetPointers()
   if(fClustersUnused < fMinPoints[fVertexConstraint])
     return;
   
-  //Reset detector volumes
+  //Allocate detector volumes
+  if (fVolume==NULL) {
+    LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
+      "Allocating "<<fBounds*sizeof(AliHLTTPCConfMapContainer)<<" Bytes to fVolume"<<ENDLOG;
+    fVolume = new AliHLTTPCConfMapContainer[fBounds];
+  }
+
+  if (fRow==NULL) {
+    LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::InitVolumes","Memory")<<AliHLTTPCLog::kDec<<
+      "Allocating "<<fNumRowSegmentPlusOne*sizeof(AliHLTTPCConfMapContainer)<<" Bytes to fRow"<<ENDLOG;
+    fRow = new AliHLTTPCConfMapContainer[fNumRowSegmentPlusOne];
+  }
+  
   memset(fVolume,0,fBounds*sizeof(AliHLTTPCConfMapContainer));
   memset(fRow,0,fNumRowSegmentPlusOne*sizeof(AliHLTTPCConfMapContainer));
   
@@ -204,9 +201,9 @@ void AliHLTTPCConfMapper::SetPointers()
 
   Int_t volumeIndex;
   Int_t localcounter=0;
+  assert(fHit.size()>=fClustersUnused);
   for(Int_t j=0; j<fClustersUnused; j++)
     {
-      //AliHLTTPCConfMapPoint *thisHit = (AliHLTTPCConfMapPoint*)fHit->At(j);
       AliHLTTPCConfMapPoint *thisHit = &(fHit[j]);
 
       thisHit->Setup(fVertex);
@@ -259,7 +256,7 @@ void AliHLTTPCConfMapper::SetPointers()
       <<fEtaHitsOutOfRange+fPhiHitsOutOfRange<<ENDLOG;
 
   Int_t hits_accepted=fClustersUnused-(fEtaHitsOutOfRange+fPhiHitsOutOfRange);
-  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::SetPointers","Setup")
+  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::SetPointers","Setup")
     <<"Setup finished, hits out of range: "<<fEtaHitsOutOfRange+fPhiHitsOutOfRange
     <<" hits accepted "<<hits_accepted<<ENDLOG;
 }
@@ -282,7 +279,7 @@ void AliHLTTPCConfMapper::MainVertexTrackingA()
   SetVertexConstraint(true);
   cpuTime = CpuTime() - initCpuTime;
   if(fBench)
-    LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::MainVertexTrackingA","Timing")
+    LOG(AliHLTTPCLog::kBenchmark,"AliHLTTPCConfMapper::MainVertexTrackingA","Timing")
       <<AliHLTTPCLog::kDec<<"Setup finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
   
 }
@@ -304,7 +301,7 @@ void AliHLTTPCConfMapper::MainVertexTrackingB()
  
   cpuTime = CpuTime() - initCpuTime;
   if(fBench)
-    LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::MainVertexTrackingB","Timing")
+    LOG(AliHLTTPCLog::kBenchmark,"AliHLTTPCConfMapper::MainVertexTrackingB","Timing")
       <<AliHLTTPCLog::kDec<<"Main Tracking finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
 }
 
@@ -330,7 +327,7 @@ void AliHLTTPCConfMapper::MainVertexTracking()
 
   cpuTime = CpuTime() - initCpuTime;
   if(fBench)
-    LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::MainVertexTracking","Timing")<<AliHLTTPCLog::kDec<<
+    LOG(AliHLTTPCLog::kBenchmark,"AliHLTTPCConfMapper::MainVertexTracking","Timing")<<AliHLTTPCLog::kDec<<
       "Tracking finished in "<<cpuTime*1000<<" ms"<<ENDLOG;
   
   return;
@@ -672,6 +669,7 @@ AliHLTTPCConfMapPoint *AliHLTTPCConfMapper::GetNextNeighbor(AliHLTTPCConfMapPoin
 		    "VolumeIndex error "<<volumeIndex<<ENDLOG;
 		}
 	      
+	      assert(fVolume!=NULL);
 	      for(hit = (AliHLTTPCConfMapPoint*)fVolume[volumeIndex].first;
 		  hit!=0; hit = hit->GetNextVolumeHit())
 		{
@@ -895,7 +893,7 @@ Int_t AliHLTTPCConfMapper::FillTracks()
       return 0;
     }
 
-  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCConfMapper::FillTracks","fNTracks")<<AliHLTTPCLog::kDec<<
+  LOG(AliHLTTPCLog::kInformational,"AliHLTTPCConfMapper::FillTracks","fNTracks")<<AliHLTTPCLog::kDec<<
     "Number of found tracks: "<<fNTracks<<ENDLOG;
   
   //  fTrack->Sort();

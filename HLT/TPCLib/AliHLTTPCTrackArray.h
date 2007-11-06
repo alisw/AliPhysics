@@ -80,6 +80,11 @@ class AliHLTTPCTrackArray {
 
   Int_t GetNPresent() const {return (fNTracks- fNAbsent);}
   Int_t GetNTracks() const {return fNTracks;}
+
+  /**
+   * Return pointer to next free track object.
+   * The array is grown if necessary.
+   */
   AliHLTTPCTrack *NextTrack();
   AliHLTTPCTrack *GetCheckedTrack(Int_t t){if(fIsPresent[t]) return fTrack[t]; return 0;}
   AliHLTTPCTrack *GetTrack(Int_t t){return fTrack[t];}
@@ -120,7 +125,7 @@ class AliHLTTPCTrackArray {
   AliHLTTPCTrackArray& operator=(const AliHLTTPCTrackArray&);
 
   Char_t fTrackType; //track type
-  Int_t fSize; //size of arra
+  Int_t fSize; //size of array
   Bool_t *fIsPresent;//!
   Int_t fNAbsent; //ntracks absent
 

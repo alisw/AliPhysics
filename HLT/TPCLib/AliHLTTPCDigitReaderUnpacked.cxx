@@ -70,8 +70,9 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
 
   fBin = -1;
 
-  fFirstRow=AliHLTTPCTransform::GetFirstRow(patch);
-  fLastRow=AliHLTTPCTransform::GetLastRow(patch);
+  int dummy=0;
+  AliHLTTPCTransform::Slice2Sector(slice, AliHLTTPCTransform::GetFirstRow(patch), dummy, fFirstRow);
+  AliHLTTPCTransform::Slice2Sector(slice, AliHLTTPCTransform::GetLastRow(patch), dummy, fLastRow);
 
   fRow = fFirstRow; 
 

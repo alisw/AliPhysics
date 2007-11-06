@@ -684,6 +684,8 @@ int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evt
 	     "Input: Number of tracks: %lu Slice/MinPatch/MaxPatch/RowMin/RowMax: %lu/%lu/%lu/%lu/%lu.", 
 	     ntracks0, slice, minPatch, maxPatch, row[0], row[1] );
 
+    fTracker->Reset();
+
     tSize += mysize+sizeof(AliHLTTPCTrackletData);
     outBPtr += mysize+sizeof(AliHLTTPCTrackletData);
     

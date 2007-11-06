@@ -24,6 +24,7 @@
     @brief  Hit class for conformal mapper
 */
 
+#include <cassert>
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCConfMapPoint.h"
 #include "AliHLTTPCSpacePointData.h"
@@ -49,7 +50,7 @@ AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint()
   fHitNumber(-1),
   fTrackNumber(0),
   fNextHitNumber(0),
-  fUsed(0),
+  fUsed(kFALSE),
   fPadrow(0),
   fSector(0),
   fx(0),
@@ -79,20 +80,116 @@ AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint()
   fZverr(0),
   fPhi(0),
   fEta(0),
-  fNextVolumeHit(0),
-  fNextRowHit(0),
-  fNextTrackHit(0),
+  fNextVolumeHit(NULL),
+  fNextRowHit(NULL),
+  fNextTrackHit(NULL),
   fPhiIndex(0),
   fEtaIndex(0),
   fXYChi2(0),
   fSZChi2(0)
 {
   //Constructor
-  
-  SetUsage(false);
-  SetIntPoint(0., 0., 0., 0., 0., 0.);
-  SetShiftedCoord();
-  SetMCTrackID(0,0,0);
+  fMCTrackID[0]=-1;
+  fMCTrackID[1]=-1;
+  fMCTrackID[2]=-1;
+}
+
+AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint& src)
+  :
+  fHitNumber(src.fHitNumber),
+  fTrackNumber(src.fTrackNumber),
+  fNextHitNumber(src.fNextHitNumber),
+  fUsed(src.fUsed),
+  fPadrow(src.fPadrow),
+  fSector(src.fSector),
+  fx(src.fx),
+  fy(src.fy),
+  fz(src.fz),
+  fxerr(src.fxerr),
+  fyerr(src.fyerr),
+  fzerr(src.fzerr),
+  fWxy(src.fWxy),
+  fWz(src.fWz),
+  fs(src.fs),
+  fXt(src.fXt),
+  fYt(src.fYt),
+  fZt(src.fZt),
+  fXterr(src.fXterr),
+  fYterr(src.fYterr),
+  fZterr(src.fZterr),
+  fXprime(src.fXprime),
+  fYprime(src.fYprime),
+  fXprimeerr(src.fXprimeerr),
+  fYprimeerr(src.fYprimeerr),
+  fXv(src.fXv),
+  fYv(src.fYv),
+  fZv(src.fZv),
+  fXverr(src.fXverr),
+  fYverr(src.fYverr),
+  fZverr(src.fZverr),
+  fPhi(src.fPhi),
+  fEta(src.fEta),
+  fNextVolumeHit(src.fNextVolumeHit),
+  fNextRowHit(src.fNextRowHit),
+  fNextTrackHit(src.fNextTrackHit),
+  fPhiIndex(src.fPhiIndex),
+  fEtaIndex(src.fEtaIndex),
+  fXYChi2(src.fXYChi2),
+  fSZChi2(src.fSZChi2)
+{
+  //Copy Constructor
+  fMCTrackID[0]=src.fMCTrackID[0];
+  fMCTrackID[1]=src.fMCTrackID[1];
+  fMCTrackID[2]=src.fMCTrackID[2];
+}
+
+AliHLTTPCConfMapPoint& AliHLTTPCConfMapPoint::operator=(const AliHLTTPCConfMapPoint& src)
+{
+  fHitNumber=src.fHitNumber;
+  fTrackNumber=src.fTrackNumber;
+  fNextHitNumber=src.fNextHitNumber;
+  fUsed=src.fUsed;
+  fPadrow=src.fPadrow;
+  fSector=src.fSector;
+  fx=src.fx;
+  fy=src.fy;
+  fz=src.fz;
+  fxerr=src.fxerr;
+  fyerr=src.fyerr;
+  fzerr=src.fzerr;
+  fWxy=src.fWxy;
+  fWz=src.fWz;
+  fs=src.fs;
+  fXt=src.fXt;
+  fYt=src.fYt;
+  fZt=src.fZt;
+  fXterr=src.fXterr;
+  fYterr=src.fYterr;
+  fZterr=src.fZterr;
+  fXprime=src.fXprime;
+  fYprime=src.fYprime;
+  fXprimeerr=src.fXprimeerr;
+  fYprimeerr=src.fYprimeerr;
+  fXv=src.fXv;
+  fYv=src.fYv;
+  fZv=src.fZv;
+  fXverr=src.fXverr;
+  fYverr=src.fYverr;
+  fZverr=src.fZverr;
+  fPhi=src.fPhi;
+  fEta=src.fEta;
+  fNextVolumeHit=src.fNextVolumeHit;
+  fNextRowHit=src.fNextRowHit;
+  fNextTrackHit=src.fNextTrackHit;
+  fPhiIndex=src.fPhiIndex;
+  fEtaIndex=src.fEtaIndex;
+  fXYChi2=src.fXYChi2;
+  fSZChi2=src.fSZChi2;
+  fMCTrackID[0]=src.fMCTrackID[0];
+  fMCTrackID[1]=src.fMCTrackID[1];
+  fMCTrackID[2]=src.fMCTrackID[2];
+
+  return *this;
 }
 
 AliHLTTPCConfMapPoint::~AliHLTTPCConfMapPoint()
@@ -100,19 +197,19 @@ AliHLTTPCConfMapPoint::~AliHLTTPCConfMapPoint()
   // Destructor.
 }
 
-Bool_t AliHLTTPCConfMapPoint::ReadHits(AliHLTTPCSpacePointData* hits )
+Bool_t AliHLTTPCConfMapPoint::Read(const AliHLTTPCSpacePointData& hit)
 {
   //read the hits
-  SetHitNumber(hits->fID);
-  SetPadRow(hits->fPadRow);
-  Int_t slice = (hits->fID>>25) & 0x7f;
+  SetHitNumber(hit.fID);
+  SetPadRow(hit.fPadRow);
+  Int_t slice = (hit.fID>>25) & 0x7f;
   SetSector(slice);
-  SetX(hits->fX);
-  SetY(hits->fY);
-  SetZ(hits->fZ);
-  SetXerr(sqrt(hits->fSigmaY2));
-  SetYerr(sqrt(hits->fSigmaY2));
-  SetZerr(sqrt(hits->fSigmaZ2));
+  SetX(hit.fX);
+  SetY(hit.fY);
+  SetZ(hit.fZ);
+  SetXerr(sqrt(hit.fSigmaY2));
+  SetYerr(sqrt(hit.fSigmaY2));
+  SetZerr(sqrt(hit.fSigmaZ2));
   return kTRUE;
 }
 
@@ -121,9 +218,9 @@ void AliHLTTPCConfMapPoint::Reset()
   //Reset this point.
   SetUsage(kFALSE);
   SetS(0);
-  fNextRowHit = 0;
-  fNextVolumeHit=0;
-  fNextTrackHit=0;
+  fNextRowHit = NULL;
+  fNextVolumeHit=NULL;
+  fNextTrackHit=NULL;
 }
 
 void AliHLTTPCConfMapPoint::Setup(AliHLTTPCVertex *vertex)

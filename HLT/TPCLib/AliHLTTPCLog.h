@@ -33,7 +33,7 @@ using namespace std;
  */
 class AliHLTTPCLog  {
   public:
-  enum TLogLevel { kNone = 0, kDebug= 0x01, kInformational = 0x02, kWarning = 0x04, kError = 0x08 , kFatal = 0x10, kPrimary = 0x80, kAll = 0x9F };
+  enum TLogLevel { kNone = 0, kBenchmark=0x01,kDebug= 0x02, kInformational = 0x04, kWarning = 0x08, kError = 0x10 , kFatal = 0x20, kPrimary = 0x80, kAll = 0xBF };
 
   /** not used */
   static const char* kEnd;                                         //! transient
