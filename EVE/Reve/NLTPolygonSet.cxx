@@ -71,7 +71,7 @@ void NLTPolygonSet::ClearPolygonSet()
 void NLTPolygonSet::SetProjection(NLTProjector* proj, NLTProjectable* model)
 {
   NLTProjected::SetProjection(proj, model);
-  GeoRnrEl* gre = dynamic_cast<GeoRnrEl*>(model);
+  GeoShapeRnrEl* gre = dynamic_cast<GeoShapeRnrEl*>(model);
 
   fBuff = gre->MakeBuffer3D();
   if(fBuff)
