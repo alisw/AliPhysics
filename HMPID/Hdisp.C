@@ -5,10 +5,12 @@
 #include <TTree.h>
 #include <TButton.h>
 #include <TCanvas.h>
+#include <TString.h>
 #include <TClonesArray.h>
 #include <TParticle.h>
 #include <TRandom.h>
 #include <TLatex.h>
+#include <TPDGCode.h>
 #include <TLegend.h>
 #include <TPolyMarker.h>
 #include <TBox.h>
@@ -27,13 +29,25 @@
 
 #endif
 
-TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=0; Int_t fNevt=0;                      
+TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=-1; Int_t fNevt=0;                      
 TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];
                                   TClonesArray *fSdiLst; 
 TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TPolyMarker *fRenDig[7];    
 TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];    
-TFile *fEsdFile; TTree *fEsdTree;  AliESDEvent      *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
+TFile *fEsdFile; TTree *fEsdTree; AliESDEvent  *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
 TFile *fCosFile; TTree *fCosTree;
+
+TButton *fHitMipBok,*fHitCkoBok,*fHitFeeBok,*fDigBok,*fCluBok,*fEsdBok;
+
+TString fStHitMip = "ON";
+TString fStHitCko = "ON";
+TString fStHitFee = "ON";
+TString fStDig    = "ON";
+TString fStClu    = "ON";
+TString fStEsd    = "ON";
+
+Int_t fTimeArrow = 1;
+
 AliRunLoader *gAL=0; 
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -52,7 +66,7 @@ void CreateRenders()
     fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);  fRenMip[ch]->SetMarkerColor(kRed);
     fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);      fRenCko[ch]->SetMarkerColor(kRed);
     fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);     fRenFee[ch]->SetMarkerColor(kRed);
-    fRenDig[ch]=new TPolyMarker; fRenDig[ch]->SetMarkerStyle(kOpenSquare);      fRenDig[ch]->SetMarkerColor(kGreen);
+    fRenDig[ch]=new TPolyMarker; fRenDig[ch]->SetMarkerStyle(kOpenSquare);      fRenDig[ch]->SetMarkerColor(kGreen);    
     fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);            fRenClu[ch]->SetMarkerColor(kBlue);
     fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);            fRenTxC[ch]->SetMarkerColor(kRed);      fRenTxC[ch]->SetMarkerSize(3);
     fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);    fRenRin[ch]->SetMarkerColor(kMagenta);
@@ -123,7 +137,7 @@ void PrintEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DrawChamber(Int_t iCh) 
 {//used by Draw() to Draw() chamber structure
-  gPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5); 
+  gPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5);
   if(iCh>=0){TLatex txt; txt.SetTextSize(0.1); txt.DrawLatex(-5,-5,Form("%i",iCh));}
   
   for(Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++){
@@ -137,12 +151,12 @@ void DrawLegend()
 {//used by Draw() to draw legend
   Int_t nTxC=0,nMip=0,nCko=0,nFee=0,nDig=0,nClu=0;
   for(Int_t ch=0;ch<7;ch++){
-    nTxC+=fRenTxC[ch]->GetN();
-    nMip+=fRenMip[ch]->GetN();
-    nCko+=fRenCko[ch]->GetN();
-    nFee+=fRenFee[ch]->GetN();
-    nDig+=fRenDig[ch]->GetN();
-    nClu+=fRenClu[ch]->GetN();
+    nTxC+=fRenTxC[ch]->GetLastPoint()+1;
+    nMip+=fRenMip[ch]->GetLastPoint()+1;
+    nCko+=fRenCko[ch]->GetLastPoint()+1;
+    nFee+=fRenFee[ch]->GetLastPoint()+1;
+    nDig+=fRenDig[ch]->GetLastPoint()+1;
+    nClu+=fRenClu[ch]->GetLastPoint()+1;
   }
   TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
   pLeg->SetHeader(Form("Event %i Total %i",fEvt,fNevt));
@@ -157,24 +171,30 @@ void DrawLegend()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Draw()
 {//draws all the objects of current event in given canvas
+  Int_t iPadN[7]={9,8,6,5,4,2,1};
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
-    switch(iCh){
-      case 6: fCanvas->cd(1); break; case 5: fCanvas->cd(2); break;
-      case 4: fCanvas->cd(4); break; case 3: fCanvas->cd(5); break; case 2: fCanvas->cd(6); break;
-                                     case 1: fCanvas->cd(8); break; case 0: fCanvas->cd(9); break;
-    }
+    fCanvas->cd(iPadN[iCh]);
     gPad->SetEditable(kTRUE); gPad->Clear(); DrawChamber(iCh);
-    fRenTxC[iCh]->Draw();        
-    fRenMip[iCh]->Draw();        
-    fRenFee[iCh]->Draw();        
-    fRenCko[iCh]->Draw();       
-    fRenRin[iCh]->Draw("CLP");   
-    fRenDig[iCh]->Draw();        
-    fRenClu[iCh]->Draw();        
+    if(fStEsd   =="ON") fRenTxC[iCh]->Draw();
+    if(fStHitMip=="ON") fRenMip[iCh]->Draw();
+    if(fStHitFee=="ON") fRenFee[iCh]->Draw();
+    if(fStHitCko=="ON") fRenCko[iCh]->Draw();
+    if(fStEsd   =="ON") fRenRin[iCh]->Draw();
+    if(fStDig   =="ON") fRenDig[iCh]->Draw();
+    if(fStClu   =="ON") fRenClu[iCh]->Draw();
     gPad->SetEditable(kFALSE);
   }//chambers loop
-  
   fCanvas->cd(3);  gPad->Clear(); DrawLegend();
+  
+  fCanvas->cd(7);
+  
+  if(fHitFile){fHitMipBok->SetTitle(Form("Mips  %s",fStHitMip.Data())); fHitMipBok->Modified();}
+  if(fHitFile){fHitCkoBok->SetTitle(Form("Ckov  %s",fStHitCko.Data())); fHitCkoBok->Modified();}
+  if(fHitFile){fHitFeeBok->SetTitle(Form("Fdbk  %s",fStHitFee.Data())); fHitFeeBok->Modified();}
+  if(fDigFile){fDigBok->SetTitle(fStDig); fDigBok->Modified();}  
+  if(fCluFile){fCluBok->SetTitle(fStClu); fCluBok->Modified();} 
+  if(fEsdFile){fEsdBok->SetTitle(fStEsd); fEsdBok->Modified();}
+  
 }//Draw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderHit(TClonesArray *pHitLst)
@@ -196,7 +216,7 @@ void RenderDig(TObjArray *pDigLst)
     for(Int_t iDig=0;iDig<pDigCham->GetEntries();iDig++){            //digs loop
       AliHMPIDDigit *pDig = (AliHMPIDDigit*)pDigCham->At(iDig); Float_t x=pDig->LorsX(); Float_t y=pDig->LorsY();    //get current hit        
       fRenDig[iCh]->SetNextPoint(x,y);
-    }
+    }//Digit loop
   }//hits loop for this entry
 }//RenderHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -207,8 +227,9 @@ void RenderClu(TObjArray *pClus)
     for(Int_t iClu=0;iClu<pClusCham->GetEntries();iClu++){           //clusters loop
       AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(iClu); //get current cluster        
       fRenClu[iCh]->SetNextPoint(pClu->X(),pClu->Y()); 
-    }//switch hit PID      
-  }//hits loop for this entry
+//      Printf("RenderClu: ch %i x %f y %f",iCh,pClu->X(),pClu->Y());
+    }//cluster loop
+  }//chamber loop for this entry
 }//RenderClus()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderEsd(AliESDEvent *pEsd)
@@ -222,9 +243,10 @@ void RenderEsd(AliESDEvent *pEsd)
     Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);              //find again intersection of track with PC--> it is not stored in ESD!
     fRenTxC[ch]->SetNextPoint(xPc,yPc);                                            //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
+//    Printf("RenderEsd: thetaC %f",ckov);
     if(ckov>0){
       rec.SetTrack(xRa,yRa,thRa,phRa);
-      for(Int_t j=0;j<100;j++){ 
+      for(Int_t j=0;j<100;j++){
         TVector2 pos; pos=rec.TracePhot(ckov,j*0.0628);
        if(!AliHMPIDParam::IsInDead(pos.X(),pos.Y())) fRenRin[ch]->SetNextPoint(pos.X(),pos.Y());
       }      
@@ -236,6 +258,7 @@ void SimulateEsd(AliESDEvent *pEsd)
 {
   TParticle part; TLorentzVector mom;
   for(Int_t iTrk=0;iTrk<100;iTrk++){//stack loop
+    Printf("SimulateEsd: kProton %i",kProton);
     part.SetPdgCode(kProton);
     part.SetProductionVertex(0,0,0,0);
     Double_t eta= -0.2+gRandom->Rndm()*0.4; //rapidity is random [-0.2,+0.2]
@@ -307,6 +330,7 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 void ReadEvent()
 {//used by NextEvent()  to read curent event and construct all render elements
   if(fNevt && fEvt>=fNevt) fEvt=0; //loop over max event
+  if(fNevt && fEvt<0) fEvt=fNevt-1; //loop over max event
   
   if(fHitFile){ 
     if(fHitTree) delete fHitTree;   fHitTree=(TTree*)fHitFile->Get(Form("Event%i/TreeH",fEvt));
@@ -345,7 +369,7 @@ void SimulateEvent()
 
   SimulateEsd(fEsd);
   SimulateHits(fEsd,fHitLst);
-                 AliHMPIDv1::Hit2Sdi(fHitLst,fSdiLst);                               
+                 AliHMPIDv2::Hit2Sdi(fHitLst,fSdiLst);                               
           AliHMPIDDigitizer::Sdi2Dig(fSdiLst,fDigLst);     
       AliHMPIDReconstructor::Dig2Clu(fDigLst,fCluLst);
             AliHMPIDTracker::Recon(fEsd,fCluLst,(TObjArray*)pNmeanEnt->GetObject());
@@ -355,9 +379,8 @@ void SimulateEvent()
   RenderEsd(fEsd);            
 }//SimulateEvent()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void NextEvent()
+void GetEvent()
 {
-  fEvt++;
   ClearRenders();
   switch(fType){
     case 1: ReadEvent();break;
@@ -366,6 +389,25 @@ void NextEvent()
     default:                 return;
   }  
   Draw();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void NextEvent()
+{
+  fTimeArrow = 1;
+  fEvt+=fTimeArrow;
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void PrevEvent()
+{
+  fTimeArrow = -1;
+  fEvt+=fTimeArrow;
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void End()
+{
+  gSystem->Exit(0);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()                                  
@@ -410,34 +452,82 @@ void Hdisp()
     fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
   }            
 
-  fCanvas=new TCanvas("all","",600,400); fCanvas->Divide(3,3,0,0);//  pAll->ToggleEditor();
+  fCanvas=new TCanvas("all","",-1024,768);fCanvas->SetWindowSize(1024,768);
+  fCanvas->Divide(3,3,0,0);//  pAll->ToggleEditor();
   fCanvas->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,0,"DoZoom(Int_t,Int_t,Int_t,TObject*)");
   fCanvas->cd(7); 
   switch(fType){
     case 1: fCanvas->SetTitle(title.Data());                      
-                         TButton *pNxtBtn=new TButton("Next"      ,"NextEvent()",0.0,0.0,0.3,0.1); pNxtBtn->Draw(); 
-            if(fHitFile){TButton *pHitBtn=new TButton("Print hits","PrintHits()",0.0,0.2,0.3,0.3); pHitBtn->Draw();}  
-            if(fDigFile){TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0.0,0.4,0.3,0.5); pDigBtn->Draw();}  
-            if(fCluFile){TButton *pCluBtn=new TButton("Print clus","PrintClus()",0.0,0.6,0.3,0.7); pCluBtn->Draw();} 
-            if(fEsdFile){TButton *pEsdBtn=new TButton("Print ESD" ,"PrintEsd()" ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();}
-           
+                         TButton *pNxtBtn = new TButton("Next"      ,"NextEvent()"   ,0.0,0.0,0.3,0.1); pNxtBtn->Draw(); 
+                         TButton *pPrvBtn = new TButton("Previous"  ,"PrevEvent()"   ,0.3,0.0,0.6,0.1); pPrvBtn->Draw(); 
+            if(fHitFile){TButton *pHitBtn = new TButton("Print hits","PrintHits()"   ,0.0,0.2,0.3,0.3); pHitBtn->Draw();}  
+            if(fDigFile){TButton *pDigBtn = new TButton("Print digs","PrintDigs()"   ,0.0,0.4,0.3,0.5); pDigBtn->Draw();}  
+            if(fCluFile){TButton *pCluBtn = new TButton("Print clus","PrintClus()"   ,0.0,0.6,0.3,0.7); pCluBtn->Draw();} 
+            if(fEsdFile){TButton *pEsdBtn = new TButton("Print ESD ","PrintEsd()"    ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();}
+            if(fHitFile){      fHitMipBok = new TButton(Form("Mip  %s",fStHitMip.Data()),"SwitchHitMip()",0.3,0.16,0.6,0.22); fHitMipBok->Draw();}  
+            if(fHitFile){      fHitCkoBok = new TButton(Form("Ckov %s",fStHitCko.Data()),"SwitchHitCko()",0.3,0.22,0.6,0.28); fHitCkoBok->Draw();}  
+            if(fHitFile){      fHitFeeBok = new TButton(Form("Fdbk %s",fStHitFee.Data()),"SwitchHitFee()",0.3,0.28,0.6,0.34); fHitFeeBok->Draw();}  
+            if(fDigFile){         fDigBok = new TButton(fStDig      ,"SwitchDigs()"  ,0.3,0.4,0.6,0.5); fDigBok->Draw();}  
+            if(fCluFile){         fCluBok = new TButton(fStClu      ,"SwitchClus()"  ,0.3,0.6,0.6,0.7); fCluBok->Draw();} 
+            if(fEsdFile){         fEsdBok = new TButton(fStEsd      ,"SwitchEsd()"   ,0.3,0.8,0.6,0.9); fEsdBok->Draw();}
+                         TButton *pEnd    = new TButton("Quit"      ,"End()"         ,0.6,0.0,0.9,0.1); pEnd->Draw();
     break;
     case 2: fCanvas->SetTitle("COSMIC");
-                         TButton *pCosBtn=new TButton("Next"      ,"NextEvent()",0.0,0.0,0.3,0.1); pCosBtn->Draw(); 
+                         TButton *pCosBtn = new TButton("Next"      ,"NextEvent()",0.0,0.0,0.3,0.1); pCosBtn->Draw(); 
              
     break;
     case 3: fCanvas->SetTitle("SIMULATION"); 
-            TButton *pSimBtn=new TButton("Simulate"  ,"NextEvent()",0.0,0.0,0.3,0.1); pSimBtn->Draw(); 
-            TButton *pHitBtn=new TButton("Print hits","PrintHits()",0.0,0.2,0.3,0.3); pHitBtn->Draw();  
-            TButton *pDigBtn=new TButton("Print digs","PrintDigs()",0.0,0.4,0.3,0.5); pDigBtn->Draw();
-            TButton *pCluBtn=new TButton("Print clus","PrintClus()",0.0,0.6,0.3,0.7); pCluBtn->Draw(); 
-            TButton *pEsdBtn=new TButton("Print ESD" ,"PrintEsd()" ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();
+            TButton *pSimBtn = new TButton("Simulate"  ,"NextEvent()",0.0,0.0,0.3,0.1); pSimBtn->Draw(); 
+            TButton *pHitBtn = new TButton("Print hits","PrintHits()",0.0,0.2,0.3,0.3); pHitBtn->Draw();  
+            TButton *pDigBtn = new TButton("Print digs","PrintDigs()",0.0,0.4,0.3,0.5); pDigBtn->Draw();
+            TButton *pCluBtn = new TButton("Print clus","PrintClus()",0.0,0.6,0.3,0.7); pCluBtn->Draw(); 
+            TButton *pEsdBtn = new TButton("Print ESD" ,"PrintEsd()" ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();
+            if(fHitFile){      fHitMipBok = new TButton(Form("Mips %s",fStHitMip.Data()),"SwitchHitMip()",0.3,0.16,0.6,0.22); fHitMipBok->Draw();}  
+            if(fHitFile){      fHitCkoBok = new TButton(Form("Ckov %s",fStHitCko.Data()),"SwitchHitCko()",0.3,0.22,0.6,0.28); fHitCkoBok->Draw();}  
+            if(fHitFile){      fHitFeeBok = new TButton(Form("Fdbk %s",fStHitFee.Data()),"SwitchHitFee()",0.3,0.28,0.6,0.34); fHitFeeBok->Draw();}  
+            if(fDigFile){         fDigBok = new TButton(fStDig      ,"SwitchDigs()"  ,0.3,0.4,0.6,0.5); fDigBok->Draw();}  
+            if(fCluFile){         fCluBok = new TButton(fStClu      ,"SwitchClus()"  ,0.3,0.6,0.6,0.7); fCluBok->Draw();} 
+            if(fEsdFile){         fEsdBok = new TButton(fStEsd      ,"SwitchEsd()"   ,0.3,0.8,0.6,0.9); fEsdBok->Draw();}
     break;
   }
     
-      
   NextEvent();           
-  
       
 }//Hdisp()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SwitchHitMip()
+{
+  fStHitMip=(fStHitMip=="OFF")? "ON":"OFF";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SwitchHitCko()
+{
+  fStHitCko=(fStHitCko=="OFF")? "ON":"OFF";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SwitchHitFee()
+{
+  fStHitFee=(fStHitFee=="OFF")? "ON":"OFF";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SwitchDigs()
+{
+  fStDig=(fStDig=="OFF")? "ON":"OFF";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SwitchClus()
+{
+  fStClu=(fStClu=="OFF")? "ON":"OFF";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void SwitchEsd()
+{
+  fStEsd=(fStEsd=="OFF")? "ON":"OFF";
+  GetEvent();
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
