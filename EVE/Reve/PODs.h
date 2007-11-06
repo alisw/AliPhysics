@@ -118,13 +118,14 @@ inline Float_t Vector::operator [] (Int_t idx) const
 class PathMark
 {
  public:
-  enum Type_e       { Reference, Daughter, Decay }; 
+  enum Type_e   { Reference, Daughter, Decay }; 
 
-  Vector V, P;
-  Float_t time;
-  Type_e type;
+  Vector  V;    // vertex
+  Vector  P;    // momentum
+  Float_t time; // time
+  Type_e  type; // mark-type
 
-  PathMark(Type_e t=Reference) : V(), P(), time (0), type(t) {}
+  PathMark(Type_e t=Reference) : V(), P(), time(0), type(t) {}
   virtual ~PathMark() {}
 
   const char* type_name();

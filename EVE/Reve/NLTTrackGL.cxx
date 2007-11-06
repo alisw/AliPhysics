@@ -51,7 +51,7 @@ void NLTTrackGL::DirectDraw(TGLRnrCtx & rnrCtx) const
        bpi != fM->fBreakPoints.end(); ++bpi)
   {
     Int_t size = *bpi - start;
-    if (fM->fRnrLine) GLUtilNS::RenderLine(*fM, p, size);
+    if (fM->fRnrLine)   GLUtilNS::RenderLine(*fM, p, size);
     if (fM->fRnrPoints) GLUtilNS::RenderPolyMarkers(*fM, p, size);
     p     += 3*size;
     start +=   size;
