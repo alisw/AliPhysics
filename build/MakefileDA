@@ -277,10 +277,10 @@ $(DASPECFILE): $(DATARGETDIR)
 	@echo "" >> $@
 	@echo "# clean RPM build files" >> $@
 	@echo "%clean" >> $@
-	@echo "# remove source files" >> $@
-	@echo "rm -rf ""$$""RPM_BUILD_DIR/%{pkgname}" >> $@
 	@echo "# remove installed files" >> $@
 	@echo "rm -rf ""$$""RPM_BUILD_ROOT" >> $@
+	@echo "# remove source files" >> $@
+	@echo "rm -rf ""$$""RPM_BUILD_DIR/%{pkgname}" >> $@
 	@echo "" >> $@
 	@echo "# pre-install script" >> $@
 	@echo "%pre" >> $@
