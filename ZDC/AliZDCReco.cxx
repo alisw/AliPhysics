@@ -37,11 +37,6 @@ AliZDCReco::AliZDCReco() :
   fZN2Energy(0),
   fZP2Energy(0),
   //
-//  fZN1EnTow(0x0),
-//  fZP1EnTow(0x0),
-//  fZN2EnTow(0x0),
-//  fZP2EnTow(0x0),
-  //
   fZEMsignal(0),
   //
   fNDetSpecNLeft(0),
@@ -62,6 +57,17 @@ AliZDCReco::AliZDCReco() :
   //
   // Default constructor
   //
+  for(Int_t i=0; i<5; i++){
+     fZN1EnTow[i] = 0;
+     fZP1EnTow[i] = 0;
+     fZN2EnTow[i] = 0;
+     fZP2EnTow[i] = 0;
+     fZN1SigLowRes[i] = 0;
+     fZP1SigLowRes[i] = 0;
+     fZN2SigLowRes[i] = 0;
+     fZP2SigLowRes[i] = 0;
+     
+  }
 }
   
 
@@ -70,6 +76,8 @@ AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,
 	     //
 	     Float_t* ezn1tow, Float_t* ezp1tow,
 	     Float_t* ezn2tow, Float_t* ezp2tow, 
+	     Float_t* ezn1siglr, Float_t* ezp1siglr,
+	     Float_t* ezn2siglr, Float_t* ezp2siglr,
 	     Float_t ezem, 
 	     //	   
 	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight,
@@ -109,6 +117,10 @@ AliZDCReco::AliZDCReco(Float_t ezn1, Float_t ezp1, Float_t ezn2, Float_t ezp2,
      fZP1EnTow[j] =  ezp1tow[j];
      fZN2EnTow[j] =  ezn2tow[j];
      fZP2EnTow[j] =  ezp2tow[j];
+     fZN1SigLowRes[j] = ezn1siglr[j];
+     fZP1SigLowRes[j] = ezp1siglr[j];
+     fZN2SigLowRes[j] = ezn2siglr[j];
+     fZP2SigLowRes[j] = ezp2siglr[j];
   }
   
 }
@@ -130,6 +142,10 @@ AliZDCReco::AliZDCReco(const AliZDCReco &oldreco) :
      fZP1EnTow[i]  = oldreco.GetZP1EnTow(i);
      fZN2EnTow[i]  = oldreco.GetZN2EnTow(i);
      fZP2EnTow[i]  = oldreco.GetZP2EnTow(i);
+     fZN1SigLowRes[i] = oldreco.GetZN1SigLowRes(i);
+     fZP1SigLowRes[i] = oldreco.GetZP1SigLowRes(i);
+     fZN2SigLowRes[i] = oldreco.GetZN2SigLowRes(i);
+     fZP2SigLowRes[i] = oldreco.GetZP2SigLowRes(i);
   }
   //
   fZEMsignal = oldreco.GetZEMsignal();	

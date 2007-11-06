@@ -317,6 +317,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   // *** RECONSTRUCTION FROM "REAL" DATA
   //
   // Retrieving calibration data
+  // --- Equalization coefficients ---------------------------------------------
   Float_t equalCoeffZN1[5], equalCoeffZP1[5], equalCoeffZN2[5], equalCoeffZP2[5];
   for(Int_t ji=0; ji<5; ji++){
      equalCoeffZN1[ji] = fCalibData->GetZN1EqualCoeff(ji);
@@ -324,10 +325,11 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
      equalCoeffZN2[ji] = fCalibData->GetZN2EqualCoeff(ji); 
      equalCoeffZP2[ji] = fCalibData->GetZP2EqualCoeff(ji); 
   }
-  //
+  // --- Energy calibration factors ------------------------------------
   Float_t calibEne[4];
   for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fCalibData->GetEnCalib(ij);
   //
+  // --- Reconstruction parameters ------------------
   Float_t endPointZEM = fCalibData->GetZEMEndValue();
   Float_t cutFractionZEM = fCalibData->GetZEMCutFraction();
   Float_t dZEMSup = fCalibData->GetDZEMSup();
@@ -501,6 +503,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   // create the output tree
   AliZDCReco reco(calibSumZN1HG, calibSumZP1HG, calibSumZN2HG, calibSumZP2HG, 
   		  calibTowZN1LG, calibTowZN2LG, calibTowZP1LG, calibTowZP2LG, 
+		  calibTowZN1LG, calibTowZP1LG, calibTowZN2LG, calibTowZP2LG,
 		  corrADCZEMHG, 
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
@@ -525,26 +528,23 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   clustersTree->SetBranchAddress("ZDC", &preco);
 
   clustersTree->GetEntry(0);
+  //
+  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
+	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
+	      reco.GetNPartLeft());
+  //
+  //
   /*Double_t tZN1Ene[4], tZN2Ene[4];
   for(Int_t i=0; i<4; i++){
      tZN1Ene[i] = reco.GetZN1EnTow(i);
      tZN2Ene[i] = reco.GetZN2EnTow(i);
   }
+  esd->SetZN1TowerEnergy(tZN1Ene);
+  esd->SetZN2TowerEnergy(tZN2Ene);
   esd->SetZDC(tZN1Ene, tZN2Ene, reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
 	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
   */
-  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
-	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
-	      reco.GetNPartLeft());
-  
-  /*Double_t tZN1Ene[4], tZN2Ene[4];
-  for(Int_t i=0; i<4; i++){
-     tZN1Ene[i] = reco.GetZN1EnTow(i);
-     tZN2Ene[i] = reco.GetZN2EnTow(i);
-  }*/
-  //esd->SetZN1TowerEnergy(tZN1Ene);
-  //esd->SetZN2TowerEnergy(tZN2Ene);
   
 }
 
