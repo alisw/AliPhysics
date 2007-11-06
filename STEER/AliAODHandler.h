@@ -28,6 +28,8 @@ class AliAODHandler : public AliVEventHandler {
     virtual char*        GetOutputFileName() {return fName;}
     virtual Bool_t       InitIO(Option_t* option);
     virtual Bool_t       BeginEvent(){ return kTRUE;}
+    // needed to prevent warning of hidden virtual Bool_t TObject::Notify()
+    virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char * /* path */) {return kTRUE;}
     virtual Bool_t       FinishEvent();
     virtual Bool_t       Terminate();
