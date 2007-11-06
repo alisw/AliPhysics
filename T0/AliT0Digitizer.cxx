@@ -165,7 +165,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 
   
   Int_t ph2Mip = fParam->GetPh2Mip();     
-  Int_t channelWidth = fParam->GetChannelWidth() ;  
+  Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t delayVertex = fParam->GetTimeDelayTVD();
    
   zdetC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
@@ -287,7 +287,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  sl = gr->Eval(qt);
 
 	  trLED = Int_t(( timeGaus[i] + 1000*sl )/channelWidth);
-	  qtCh=Int_t (1000.*TMath::Log(qt)) / channelWidth;
+	  qtCh=Int_t (1000.*TMath::Log(qt) / channelWidth);
 	  fADC0->AddAt(0,i);
 	  fADC->AddAt(qtCh,i);
 	  ftimeLED->AddAt(trLED,i); 

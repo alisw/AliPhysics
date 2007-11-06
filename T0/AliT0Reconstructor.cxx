@@ -115,7 +115,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 
   //  Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
-  Int_t channelWidth = fParam->GetChannelWidth() ;  
+  Float_t channelWidth = fParam->GetChannelWidth() ;  
   Int_t meanT0 = fParam->GetMeanT0();
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
@@ -243,7 +243,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
   //  Int_t mV2Mip = param->GetmV2Mip();     
   //mV2Mip = param->GetmV2Mip();     
-  Int_t channelWidth = fParam->GetChannelWidth() ;  
+  Float_t channelWidth = fParam->GetChannelWidth() ;  
+
   Int_t meanT0 = fParam->GetMeanT0();
  
   for (Int_t in=0; in<24; in++)
@@ -280,6 +281,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       frecpoints->SetTime(ipmt,time[ipmt]);
       frecpoints->SetAmp(ipmt,adc[ipmt]);
       frecpoints->SetAmpLED(ipmt,qt);
+    AliDebug(1,Form(" QTC %f mv,  QTC  %f MIPS time in chann %f time %f ",adc[ipmt], adc[ipmt]/50.,time[ipmt], time[ipmt]*channelWidth));
+     
     }
     else {
       time[ipmt] = 0;
@@ -309,8 +312,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t vertex = 0;
   if(besttimeA !=999999 && besttimeC != 999999 ){
     timeDiff = (besttimeC - besttimeA)*channelWidth;
-    //    meanTime = (besttimeA + besttimeC)/2.;
-    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
+    meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;   
     vertex = c*(timeDiff)/2. + (fdZ_A - fdZ_C)/2; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
@@ -318,12 +320,14 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
   }
   //time in each channel as time[ipmt]-MeanTimeinThisChannel(with vertex=0)
+  /*
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(time[ipmt]>1) {
       time[ipmt] = (time[ipmt] - fTime0vertex[ipmt])*channelWidth;
       frecpoints->SetTime(ipmt,time[ipmt]);
     }
-  }
+    }
+  */
   recTree->Fill();
  
 
