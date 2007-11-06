@@ -62,8 +62,8 @@ void TestZDCPreprocessor()
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDCalib.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDEqual.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS", "LDC0", "ZDCRecParam.dat");
 
   // TODO(3)
   //
@@ -71,7 +71,8 @@ void TestZDCPreprocessor()
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
 //  shuttle->SetInputRunType("PEDESTALS");
-  shuttle->SetInputRunType("PULSER_RUN");
+//  shuttle->SetInputRunType("PULSER_RUN");
+  shuttle->SetInputRunType("PHYSICS");
 
   // TODO(4)
   //
