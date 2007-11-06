@@ -1,4 +1,4 @@
-// -*- mode: C++ -*- 
+// -*- mode: C++ -*-
 #ifndef ALIMCEVENTHANDLER_H
 #define ALIMCEVENTHANDLER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -47,6 +47,7 @@ public:
     virtual Bool_t       TerminateIO();
     virtual void         ResetIO();
     virtual Bool_t       GetEvent(Int_t iev);
+    virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
     //
     AliMCEvent* MCEvent() {return fMCEvent;}
     TTree*      TreeTR() {return fTreeTR;}
@@ -70,7 +71,8 @@ private:
     char             *fExtension;        //! File name extension 
     Int_t             fFileNumber;       //! Input file number
     Int_t             fEventsPerFile;    //! Number of events per file
-    ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class 
+    Bool_t            fReadTR;           // determines if TR shall be read
+    ClassDef(AliMCEventHandler,1)  //MC Truth EventHandler class
 };
 #endif 
 

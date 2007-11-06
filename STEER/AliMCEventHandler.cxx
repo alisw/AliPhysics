@@ -57,7 +57,8 @@ AliMCEventHandler::AliMCEventHandler() :
     fPathName(new TString("./")),
     fExtension(""),
     fFileNumber(0),
-    fEventsPerFile(0)
+    fEventsPerFile(0),
+    fReadTR(kTRUE)
 {
     // Default constructor
 }
@@ -91,7 +92,7 @@ AliMCEventHandler::~AliMCEventHandler()
     delete fFileTR;
 }
 
-Bool_t AliMCEventHandler::InitIO(Option_t* opt) 
+Bool_t AliMCEventHandler::InitIO(Option_t* opt)
 { 
     // Initialize input
     //
@@ -114,8 +115,10 @@ Bool_t AliMCEventHandler::InitIO(Option_t* opt)
     fEventsPerFile = fFileK->GetNkeys() - fFileK->GetNProcessIDs();
     //
     // Tree TR
-    fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
-    if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
+    if (fReadTR) {
+      fFileTR = TFile::Open(Form("%sTrackRefs%s.root", fPathName->Data(), fExtension));
+      if (!fFileTR) AliWarning(Form("AliMCEventHandler:TrackRefs.root not found in directory %s ! \n", fPathName->Data()));
+    }
     //
     // Reset the event number
     fEvent      = -1;
