@@ -8,14 +8,6 @@ void trackcount_init()
   Reve::LoadMacro("its_clusters.C+");
   Reve::LoadMacro("tpc_clusters.C+");
 
-  {
-    TGLViewer* glv = (TGLViewer *)gReve->GetGLViewer();
-    glv->SetIgnoreSizesOnUpdate(kTRUE);
-    // The size of ortho cameras can not be set in advance.
-    glv->SetOrthoCamera(TGLViewer::kCameraOrthoXOY, -0.1, 0.1, 0.1, -0.1);
-    glv->SetOrthoCamera(TGLViewer::kCameraOrthoZOY, -22, 22, 22, -22);
-  }
-
   Reve::TrackCounter* g_trkcnt = new Reve::TrackCounter("Primary Counter");
   gReve->AddGlobalRenderElement(g_trkcnt);
 
