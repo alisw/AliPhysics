@@ -12,12 +12,31 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
   using namespace std;
 
   // Set-up environment, load libraries.
-
   Reve::SetupEnvironment();
 
-  // Put macros in the list of browsables, spawn a browser.
 
   Info("alieve_init", "Adding standard macros.");
+  alieve_init_import_macros();
+
+  // Reve::AssertMacro("region_marker.C");
+  
+  gSystem->ProcessEvents();
+
+  // Open event
+  if(path != 0) {
+    Alieve::Event::SetCdbUri(cdburi);
+    Alieve::Event::SetAssertElements(assert_runloader, assert_esd);
+    printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
+    Alieve::gEvent = new Alieve::Event(path, event);
+    printf(" done.\n");
+    gReve->AddEvent(Alieve::gEvent);
+  }
+}
+
+void alieve_init_import_macros()
+{
+  // Put macros in the list of browsables, add a macro browser to
+  // top-level GUI.
 
   TString macdir("$(REVESYS)/alice-macros");
   gSystem->ExpandPathName(macdir);
@@ -55,7 +74,7 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
     Reve::RGBrowser *br = gReve->GetBrowser();
     TGFileBrowser   *fb = 0;
     fb = br->GetFileBrowser();
-    fb->GotoDir("/alice-macros"); //macdir);
+    fb->GotoDir(macdir);
     {
       br->StartEmbedding(0);
       fb = br->MakeFileBrowser();
@@ -65,19 +84,5 @@ void alieve_init(const Text_t* path   = ".", Int_t event=0,
       br->SetTabTitle("Macros", 0);
       br->SetTab(0, 0);
     }
-  }
-
-  // Reve::AssertMacro("region_marker.C");
-  
-  gSystem->ProcessEvents();
-
-  // Open event
-  if(path != 0) {
-    Alieve::Event::SetCdbUri(cdburi);
-    Alieve::Event::SetAssertElements(assert_runloader, assert_esd);
-    printf("Opening event %d from '%s' ...", event, path); fflush(stdout);
-    Alieve::gEvent = new Alieve::Event(path, event);
-    printf(" done.\n");
-    gReve->AddEvent(Alieve::gEvent);
-  }
+  }  
 }
