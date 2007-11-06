@@ -132,7 +132,7 @@ ClassImp(NLTProjectorEditor)
     f->AddFrame(lab, new TGLayoutHints(kLHintsLeft|kLHintsBottom, 1, 8, 1, 2));
 
     fSILevel = new TGNumberEntry(f, 0, 3, -1,TGNumberFormat::kNESInteger, TGNumberFormat::kNEANonNegative,
-				 TGNumberFormat::kNELLimitMinMax, 0, 3);
+				 TGNumberFormat::kNELLimitMinMax, 0, 7);
     fSILevel->GetNumberEntry()->SetToolTipText("Number of tick-marks TMath::Power(2, level).");
     fSILevel->Connect("ValueSet(Long_t)", "Reve::NLTProjectorEditor", this, "DoSplitInfoLevel()");
     f->AddFrame(fSILevel, new TGLayoutHints(kLHintsTop, 1, 1, 1, 2));
@@ -255,7 +255,7 @@ void NLTProjectorEditor::DoFixedRadius()
 
 void NLTProjectorEditor::DoCurrentDepth()
 {
-  fM->GetProjection()->SetFixedRadius(fCurrentDepth->GetValue());
+  fM->SetCurrentDepth(fCurrentDepth->GetValue());
   fM->ProjectChildren();
   Update();
 }
