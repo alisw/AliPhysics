@@ -39,6 +39,7 @@ using namespace std;
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
+//#include <TSystem.h>
 #include <TROOT.h>
 #include <TInterpreter.h>
 
@@ -77,6 +78,7 @@ AliHLTSystem::AliHLTSystem()
     HLTWarning("multiple instances of AliHLTSystem, you should not use more than one at a time");
 
   SetGlobalLoggingLevel(kHLTLogDefault);
+  SetFrameworkLog(kHLTLogDefault);
   if (fpComponentHandler) {
     AliHLTComponentEnvironment env;
     memset(&env, 0, sizeof(AliHLTComponentEnvironment));
@@ -192,6 +194,8 @@ int AliHLTSystem::BuildTaskList(AliHLTConfiguration* pConf)
       pTask=new AliHLTTask(pConf);
       if (pTask==NULL) {
 	iResult=-ENOMEM;
+      } else {
+	pTask->SetLocalLoggingLevel(GetLocalLoggingLevel());
       }
     }
     static int iterationLevel=0;
@@ -375,6 +379,9 @@ int AliHLTSystem::InitTasks()
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
       iResult=pTask->Init(NULL, fpComponentHandler);
+//       ProcInfo_t ProcInfo;
+//       gSystem->GetProcInfo(&ProcInfo);
+//       HLTInfo("task %s initialized (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
     } else {
     }
     lnk = lnk->Next();
@@ -496,6 +503,9 @@ int AliHLTSystem::StartTasks()
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
       iResult=pTask->StartRun();
+//       ProcInfo_t ProcInfo;
+//       gSystem->GetProcInfo(&ProcInfo);
+//       HLTInfo("task %s started (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
     } else {
     }
     lnk = lnk->Next();
@@ -520,7 +530,9 @@ int AliHLTSystem::ProcessTasks(Int_t eventNo)
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
       iResult=pTask->ProcessTask(eventNo);
-      HLTDebug("task %s finnished (%d)", pTask->GetName(), iResult);
+//       ProcInfo_t ProcInfo;
+//       gSystem->GetProcInfo(&ProcInfo);
+//       HLTInfo("task %s processed (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
     } else {
     }
     lnk = lnk->Next();
@@ -546,6 +558,9 @@ int AliHLTSystem::StopTasks()
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
       iResult=pTask->EndRun();
+//       ProcInfo_t ProcInfo;
+//       gSystem->GetProcInfo(&ProcInfo);
+//       HLTInfo("task %s stopped (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
     } else {
     }
     lnk = lnk->Next();
@@ -564,6 +579,9 @@ int AliHLTSystem::DeinitTasks()
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
       iResult=pTask->Deinit();
+//       ProcInfo_t ProcInfo;
+//       gSystem->GetProcInfo(&ProcInfo);
+//       HLTInfo("task %s cleaned (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
     } else {
     }
     lnk = lnk->Next();
@@ -709,6 +727,7 @@ int AliHLTSystem::ScanOptions(const char* options)
   // see header file for class documentation
   int iResult=0;
   if (options) {
+    AliHLTComponentHandler::TLibraryMode libMode=AliHLTComponentHandler::kDynamic;
     TString libs("");
     TString alloptions(options);
     TObjArray* pTokens=alloptions.Tokenize(" ");
@@ -728,6 +747,18 @@ int AliHLTSystem::ScanOptions(const char* options)
 	  } else {
 	    HLTWarning("wrong parameter for option \'loglevel=\', (hex) number expected");
 	  }
+	} else if (token.Contains("frameworklog=")) {
+	  TString param=token.ReplaceAll("frameworklog=", "");
+	  if (param.IsDigit()) {
+	    SetFrameworkLog((AliHLTComponentLogSeverity)param.Atoi());
+	  } else if (param.BeginsWith("0x") &&
+		     param.Replace(0,2,"",0).IsHex()) {
+	    int severity=0;
+	    sscanf(param.Data(),"%x", &severity);
+	    SetFrameworkLog((AliHLTComponentLogSeverity)severity);
+	  } else {
+	    HLTWarning("wrong parameter for option \'loglevel=\', (hex) number expected");
+	  }
 	} else if (token.Contains("alilog=off")) {
 	  SwitchAliLog(0);
 	} else if (token.Contains("config=")) {
@@ -743,6 +774,18 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.Contains("chains=")) {
 	  TString param=token.ReplaceAll("chains=", "");
 	  fChains=param.ReplaceAll(",", " ");
+	} else if (token.Contains("libmode=")) {
+	  TString param=token.ReplaceAll("libmode=", "");
+	  param.ReplaceAll(",", " ");
+	  if (fpComponentHandler) {
+	    if (param.CompareTo("static")==0) {
+	      fpComponentHandler->SetLibraryMode(AliHLTComponentHandler::kStatic);
+	    } else if (param.CompareTo("dynamic")==0) {
+	      fpComponentHandler->SetLibraryMode(AliHLTComponentHandler::kDynamic);
+	    } else {
+	      HLTWarning("wrong argument for option \'libmode=\', use \'static\' or \'dynamic\'");
+	    }
+	  }
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";
@@ -925,4 +968,11 @@ void* AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol)
   // see header file for class documentation
   if (fpComponentHandler==NULL) return NULL;
   return fpComponentHandler->FindSymbol(library, symbol);
+}
+
+void AliHLTSystem::SetFrameworkLog(AliHLTComponentLogSeverity level) 
+{
+  SetLocalLoggingLevel(level);
+  if (fpComponentHandler) fpComponentHandler->SetLocalLoggingLevel(level);
+  if (fpConfigurationHandler) fpConfigurationHandler->SetLocalLoggingLevel(level);
 }

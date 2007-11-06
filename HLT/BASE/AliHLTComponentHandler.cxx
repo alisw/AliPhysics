@@ -285,6 +285,14 @@ void AliHLTComponentHandler::SetEnvironment(AliHLTComponentEnvironment* pEnv)
   }
 }
 
+AliHLTComponentHandler::TLibraryMode AliHLTComponentHandler::SetLibraryMode(TLibraryMode mode)
+{
+  // see header file for class documentation
+  TLibraryMode old=fLibraryMode;
+  fLibraryMode=mode;
+  return old;
+}
+
 int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateAgents)
 {
   // see header file for class documentation
@@ -337,7 +345,8 @@ int AliHLTComponentHandler::LoadLibrary( const char* libraryPath, int bActivateA
     if (hLib.fHandle!=NULL) {
       // create TString object to store library path and use pointer as handle 
       hLib.fName=new TString(libraryPath);
-      HLTInfo("library %s loaded (%s)", libraryPath, loadtype);
+      hLib.fMode=fLibraryMode;
+      HLTInfo("library %s loaded (%s%s)", libraryPath, hLib.fMode==kStatic?"persistent, ":"", loadtype);
       fLibraryList.insert(fLibraryList.begin(), hLib);
       typedef void (*CompileInfo)( char*& date, char*& time);
       CompileInfo fctInfo=(CompileInfo)FindSymbol(libraryPath, "CompileInfo");
@@ -407,6 +416,7 @@ int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandl
   int iResult=0;
   fgAliLoggingFunc=NULL;
   TString* pName=reinterpret_cast<TString*>(handle.fName);
+  if (handle.fMode!=kStatic) {
 #ifdef HAVE_DLFCN_H
   try {
     dlclose(handle.fHandle);
@@ -443,13 +453,16 @@ int AliHLTComponentHandler::UnloadLibrary(AliHLTComponentHandler::AliHLTLibHandl
     delete pCount;
   }
 #endif //HAVE_DLFCN_H
+  if (pName) {
+    HLTDebug("unload library %s", pName->Data());
+  } else {
+    HLTWarning("missing name for unloaded library");
+  }
+  }
   handle.fName=NULL;
   handle.fHandle=NULL;
   if (pName) {
-    HLTDebug("unload library %s", pName->Data());
     delete pName;
-  } else {
-    HLTWarning("missing name for unloaded library");
   }
   pName=NULL;
   return iResult;

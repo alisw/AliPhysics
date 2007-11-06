@@ -297,6 +297,8 @@ class AliHLTSystem : public AliHLTLogging {
    * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
    * \li loglevel=<i>level</i> <br>
    *     logging level for this processing
+   * \li frameworklog=<i>level</i> <br>
+   *     logging level for framework classes
    * \li alilog=off
    *     disable redirection of log messages to AliLog class
    * \li config=<i>macro</i>
@@ -304,6 +306,9 @@ class AliHLTSystem : public AliHLTLogging {
    * \li chains=<i>configuration</i>
    *     comma separated list of configurations to be run during local
    *     reconstruction
+   * \li libmode=<i>static,dynamic(default)</i>
+   *     libraries are persistent if loaded in mode <i>static</i>, i.e. they
+   *     can't be unloaded
    */
   int ScanOptions(const char* options);
 
@@ -377,6 +382,13 @@ class AliHLTSystem : public AliHLTLogging {
    */
   int ClearStatusFlags(int flags);
 
+  /**
+   * Set logging level for framework classes.
+   * This sets the local logging level of this instance and all subsequent
+   * framework classes to \em level.
+   * @param level     local logging level for the framework classes
+   */
+  void SetFrameworkLog(AliHLTComponentLogSeverity level);
 
 /*   TList fConfList; */
 /*   int fbListChanged; */

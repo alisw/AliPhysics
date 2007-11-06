@@ -200,6 +200,13 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
   int Reset();
 
   /**
+   * Set local logging level
+   * logging filter for individual object
+   */
+  void SetLocalLoggingLevel(AliHLTComponentLogSeverity level)
+  {fgLogging.SetLocalLoggingLevel(level); AliHLTLogging::SetLocalLoggingLevel(level);}
+
+  /**
    * @class AliHLTDataSegment
    * @brief  Descriptor of a data segment within the buffer.
    */

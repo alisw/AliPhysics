@@ -459,19 +459,21 @@ int AliHLTDataBuffer::DeleteRawBuffers()
 {
   // see header file for function documentation
   int iResult=0;
-  AliHLTRawBufferPList::iterator buffer=fgFreeBuffers.begin();
-  while (buffer!=fgFreeBuffers.end()) {
+//   int iTotalSize=0;
+//   int iCount=fgFreeBuffers.size()+fgActiveBuffers.size();
+  AliHLTRawBufferPList::iterator buffer;;
+  while ((buffer=fgFreeBuffers.begin())!=fgFreeBuffers.end()) {
+//     iTotalSize+=(*buffer)->GetTotalSize();
     delete *buffer;
     fgFreeBuffers.erase(buffer);
-    buffer=fgFreeBuffers.begin();
   }
-  buffer=fgActiveBuffers.begin();
-  while (buffer!=fgActiveBuffers.end()) {
+  while ((buffer=fgActiveBuffers.begin())!=fgActiveBuffers.end()) {
+//     iTotalSize+=(*buffer)->GetTotalSize();
     fgLogging.Logging(kHLTLogWarning, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "request to delete active raw buffer container (raw buffer %p, size %d)", (*buffer)->GetPointer(), (*buffer)->GetTotalSize());
     delete *buffer;
     fgActiveBuffers.erase(buffer);
-    buffer=fgActiveBuffers.begin();
   }
+//   fgLogging.Logging(kHLTLogInfo, "AliHLTDataBuffer::ReleaseRawBuffer", "data buffer handling", "Total memory allocation: %d byte in %d buffers", iTotalSize, iCount);
   return iResult;
 }
 
@@ -690,7 +692,7 @@ int AliHLTDataBuffer::AliHLTRawBuffer::operator-(void* ptr) const
 AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
 {
   // see header file for function documentation
-  if (size>0 && CheckSize(size)) {
+  if (size>0 && fTotalSize>=size) {
     fSize=size;
     return fPtr;
   }

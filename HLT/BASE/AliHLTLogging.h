@@ -167,7 +167,7 @@ public:
    * Set local logging level
    * logging filter for individual object
    */
-  void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
+  virtual void SetLocalLoggingLevel(AliHLTComponentLogSeverity level);
 
   /**
    * Get local logging level

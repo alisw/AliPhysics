@@ -46,6 +46,14 @@ class AliHLTComponentHandler : public AliHLTLogging {
   virtual ~AliHLTComponentHandler();
 
   /**
+   * Library mode.
+   * - kDynamic: library can be unloaded (unload forced at termination of the
+   *             handler
+   * - kStatic:  library persistent, once loaded it stays
+   */
+  enum TLibraryMode {kDynamic, kStatic};
+
+  /**
    * Set the environment for the HLT framework.
    * The environment mainly consists of function pointers for the integration
    * of the HLT framework into a system like the PubSub online system or
@@ -54,6 +62,14 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @return none
    */
   void SetEnvironment(AliHLTComponentEnvironment* pEnv);
+
+  /**
+   * Set library mode.
+   * The mode effects all loaded libraries until another mode is set.
+   * @param mode             persistent library or not
+   * @param previous mode
+   */
+  TLibraryMode SetLibraryMode(TLibraryMode mode);
 
   /**
    * Load a component shared library.
@@ -67,7 +83,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * @param bActivateAgents  activate agents after loading (@ref ActivateAgents)
    * @return 0 if succeeded, neg. error code if failed
    */
-  int LoadLibrary( const char* libraryPath, int bActivateAgents=1 );
+  int LoadLibrary( const char* libraryPath, int bActivateAgents=1);
 
   /**
    * Find a symbol in a dynamically loaded library.
@@ -257,6 +273,8 @@ class AliHLTComponentHandler : public AliHLTLogging {
     void* fHandle;                                                 //! transient
     /** name of the library, casted to TString* before use */
     void* fName;                                                   //! transient
+    /** library mode: kStatic means never unloaded */
+    TLibraryMode fMode;                                            //! transient
   };
 
   /**
@@ -285,6 +303,8 @@ class AliHLTComponentHandler : public AliHLTLogging {
   AliHLTComponentEnvironment fEnvironment;                         // see above 
   /** list of owned components, deleted at termination of the handler */
   vector<AliHLTComponent*> fOwnedComponents;                       // see above 
+  /** library mode effects all loaded libraries until a new mode is set */
+  TLibraryMode fLibraryMode;                                       // see above 
 
   ClassDef(AliHLTComponentHandler, 0);
 

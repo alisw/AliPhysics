@@ -382,6 +382,7 @@ int AliHLTTask::StartRun()
       if (iResult>=0) {
 	fpDataBuffer=new AliHLTDataBuffer;
 	if (fpDataBuffer!=NULL) {
+	  fpDataBuffer->SetLocalLoggingLevel(GetLocalLoggingLevel());
 	  HLTDebug("created data buffer %p for task %s (%p)", fpDataBuffer, GetName(), this);
 	  TObjLink* lnk=fListTargets.FirstLink();
 	  while (lnk && iResult>=0) {
