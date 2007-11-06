@@ -21,12 +21,13 @@
 
 using namespace Reve;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // Track
 //
 
 ClassImp(Reve::Track)
 
+//______________________________________________________________________________
 Track::Track() :
   Line(),
 
@@ -41,6 +42,7 @@ Track::Track() :
   fRnrStyle(0)
 {}
 
+//______________________________________________________________________________
 Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   Line(),
 
@@ -64,6 +66,7 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   SetName(t->GetName());
 }
 
+//______________________________________________________________________________
 Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
   Line(),
 
@@ -89,6 +92,7 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
   SetName(t->GetName());
 }
 
+//______________________________________________________________________________
 Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
   Line(),
 
@@ -108,6 +112,7 @@ Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
   SetName(t->GetName());
 }
 
+//______________________________________________________________________________
 Track::~Track()
 {
   SetRnrStyle(0);
@@ -115,6 +120,7 @@ Track::~Track()
     delete *i;
 }
 
+//______________________________________________________________________________
 Track::Track(const Track& t) :
   Line(),
   TQObject(),
@@ -127,26 +133,7 @@ Track::Track(const Track& t) :
   fPathMarks(),
   fRnrStyle(0)
 {
-  SetRnrStyle(t.fRnrStyle);
-  SetMainColor(t.GetMainColor());
-  // Line
-  fRnrLine = t.fRnrLine;
-  fRnrPoints = t.fRnrPoints;
-  // TLineAttrib
-  fLineColor = t.fLineColor;
-  fLineStyle = t.fLineStyle;
-  fLineWidth = t.fLineWidth;
-}
-
-void Track::SetTrackParams(const Track& t)
-{
-  fV        = t.fV;
-  fP        = t.fP;
-  fBeta     = t.fBeta;
-  fCharge   = t.fCharge;
-  fLabel    = t.fLabel;
-  fIndex    = t.fIndex;
-  fPathMarks= t.fPathMarks;
+  // Copy constructor.
 
   SetMainColor(t.GetMainColor());
   // Line
@@ -156,22 +143,50 @@ void Track::SetTrackParams(const Track& t)
   fLineColor = t.fLineColor;
   fLineStyle = t.fLineStyle;
   fLineWidth = t.fLineWidth;
+  SetPathMarks(t);
+  SetRnrStyle (t.fRnrStyle);
+}
 
+//______________________________________________________________________________
+void Track::SetTrackParams(const Track& t)
+{
+  // Copy track parameters from t.
+  // PathMarks are cleared.
+
+  fV         = t.fV;
+  fP         = t.fP;
+  fBeta      = t.fBeta;
+  fCharge    = t.fCharge;
+  fLabel     = t.fLabel;
+  fIndex     = t.fIndex;
+
+  SetMainColor(t.GetMainColor());
+  // Line
+  fRnrLine   = t.fRnrLine;
+  fRnrPoints = t.fRnrPoints;
+  // TLineAttrib
+  fLineColor = t.fLineColor;
+  fLineStyle = t.fLineStyle;
+  fLineWidth = t.fLineWidth;
+  fPathMarks.clear();
   SetRnrStyle(t.fRnrStyle);
 }
 
-/*
-void Track::Reset(Int_t n_points)
+//______________________________________________________________________________
+void Track::SetPathMarks(const Track& t)
 {
-  delete [] TPolyLine3D::fP; TPolyLine3D::fP = 0;
-  fN = n_points;
-  if(fN) TPolyLine3D::fP = new Float_t [3*fN];
-  memset(TPolyLine3D::fP, 0, 3*fN*sizeof(Float_t));
-  fLastPoint = -1;
-}
-*/
+  // Copy path-marks from t.
 
-/**************************************************************************/
+  const std::vector<PathMark*>& refs = t.GetPathMarksRef();
+  for(std::vector<PathMark*>::const_iterator i=refs.begin(); i!=refs.end(); ++i)
+  {
+    fPathMarks.push_back(new PathMark(**i));
+  }
+}
+
+/******************************************************************************/
+
+//______________________________________________________________________________
 void Track::SetRnrStyle(TrackRnrStyle* rs)
 {
  if (fRnrStyle == rs) return;
@@ -180,7 +195,9 @@ void Track::SetRnrStyle(TrackRnrStyle* rs)
   if (fRnrStyle) rs->IncRefCount(this);
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 void Track::SetAttLineAttMarker(TrackList* tl)
 {
   SetLineColor(tl->GetLineColor());
@@ -192,8 +209,9 @@ void Track::SetAttLineAttMarker(TrackList* tl)
   SetMarkerSize(tl->GetMarkerSize());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void Track::MakeTrack(Bool_t recurse)
 {
   TrackRnrStyle& RS((fRnrStyle != 0) ? *fRnrStyle : TrackRnrStyle::fgDefStyle);
@@ -330,7 +348,7 @@ make_polyline:
     Reset(size);
     for(Int_t i=0; i<size; ++i)
     {
-      MCVertex& v = track_points[i];
+      const MCVertex& v = track_points[i];
       SetNextPoint(v.x, v.y, v.z);
     }
   }
@@ -343,16 +361,17 @@ make_polyline:
       if(t) t->MakeTrack(recurse); 
     }
   }
-  Emit("MakeTrack(Bool_t)", (Long_t)recurse);
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 TClass* Track::ProjectedClass() const
 {
   return NLTTrack::Class();
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
 namespace {
 
@@ -364,13 +383,15 @@ struct cmp_pathmark
 
 }
 
+//______________________________________________________________________________
 void Track::SortPathMarksByTime()
 {
   std::sort(fPathMarks.begin(), fPathMarks.end(), cmp_pathmark());
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void Track::ImportHits()
 {
   Reve::LoadMacro("hits_from_label.C");
@@ -378,6 +399,7 @@ void Track::ImportHits()
 			  fLabel, this));
 }
 
+//______________________________________________________________________________
 void Track::ImportClusters()
 {
   Reve::LoadMacro("clusters_from_label.C");
@@ -385,6 +407,7 @@ void Track::ImportClusters()
 			  fLabel, this));
 }
 
+//______________________________________________________________________________
 void Track::ImportClustersFromIndex()
 {
   static const Exc_t eH("Track::ImportClustersFromIndex ");
@@ -397,8 +420,9 @@ void Track::ImportClustersFromIndex()
 			  fIndex, this));
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void Track::ImportKine()
 {
   static const Exc_t eH("Track::ImportKine ");
@@ -412,6 +436,7 @@ void Track::ImportKine()
 
 }
 
+//______________________________________________________________________________
 void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
 {
   static const Exc_t eH("Track::ImportKineWithArgs ");
@@ -424,15 +449,16 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
 			   fLabel, importMother, importDaugters, this));
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void Track::PrintKineStack()
 {
   Reve::LoadMacro("print_kine_from_label.C");
   gROOT->ProcessLine(Form("print_kine_from_label(%d);", fLabel));
 }
 
-
+//______________________________________________________________________________
 void Track::PrintPathMarks()
 {
   static const Exc_t eH("Track::PrintPathMarks ");
@@ -455,13 +481,15 @@ void Track::PrintPathMarks()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void Track::CtrlClicked(Reve::Track* track)
 {
   Emit("CtrlClicked(Reve::Track*)", (Long_t)track);
 }
 
+//______________________________________________________________________________
 void Track::SetLineStyle(Style_t lstyle)
 {
   TAttLine::SetLineStyle(lstyle);
@@ -478,10 +506,12 @@ void Track::SetLineStyle(Style_t lstyle)
   }
 }
 
-/**************************************************************************/
-/**************************************************************************/
 
-//______________________________________________________________________
+/******************************************************************************/
+/******************************************************************************/
+
+
+//______________________________________________________________________________
 // TrackRnrStyle
 //
 
@@ -1070,7 +1100,7 @@ void TrackCounter::Reset()
   TrackList* tlist;
   while ((tlist = dynamic_cast<TrackList*>(next())))
     tlist->DecDenyDestroy();
-  fTrackLists.Clear();
+  fTrackLists.Clear("nodelete");
 }
 
 void TrackCounter::RegisterTracks(TrackList* tlist, Bool_t goodTracks)

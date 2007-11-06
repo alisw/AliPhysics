@@ -6,49 +6,51 @@
 
 using namespace Reve;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // NLTTrack
 //
 
 ClassImp(NLTTrack)
 
+//______________________________________________________________________________
 NLTTrack::NLTTrack() :
   Track     (),
   fOrigPnts(0),
   fProjection(0)
-{}
+{
+  // Default constructor.
+}
 
-/**************************************************************************/
+//______________________________________________________________________________
+NLTTrack::~NLTTrack()
+{
+  // Destructor. Noop.
+}
+
+/******************************************************************************/
+
+//______________________________________________________________________________
 void NLTTrack::SetProjection(NLTProjector* proj, NLTProjectable* model)
 {
   NLTProjected::SetProjection(proj, model);
   Track* origTrack = dynamic_cast<Track*>(fProjectable);
 
   SetTrackParams(*origTrack);
-
-  // unfortunately fPathMarks is a vector of PathMark pointers
-  PathMark* pm;
-  std::vector<PathMark*>& refs = origTrack->GetPathMarksRef();
-  for(std::vector<PathMark*>::iterator i=refs.begin(); i!=refs.end(); ++i)
-  {
-   pm = new PathMark();
-   pm->V = (*i)->V;
-   pm->P = (*i)->P;
-   pm->type = (*i)->type;
-   pm->time = (*i)->time;
-   fPathMarks.push_back(pm);
-  }
+  SetPathMarks  (*origTrack);
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 void NLTTrack::UpdateProjection()
 {
   fProjection = fProjector->GetProjection();
-  MakeTrack(kFALSE); //NLTProjector makes recursive calls
+  MakeTrack(kFALSE); // NLTProjector makes recursive calls
 }
 
 //______________________________________________________________________________
-void  NLTTrack::GetBreakPoint(Int_t idx, Bool_t back,  Float_t& x, Float_t& y, Float_t& z)
+void NLTTrack::GetBreakPoint(Int_t idx, Bool_t back,
+			     Float_t& x, Float_t& y, Float_t& z)
 {
   Vector vL = fOrigPnts[idx];
   Vector vR = fOrigPnts[idx+1];
@@ -84,12 +86,16 @@ void  NLTTrack::GetBreakPoint(Int_t idx, Bool_t back,  Float_t& x, Float_t& y, F
 //______________________________________________________________________________
 Int_t  NLTTrack::GetBreakPointIdx(Int_t start)
 {
+  // Findex index of the last point that lies within the same
+  // segment of projected space.
+  // For example, rho-z projection separates upper and lower hemisphere
+  // and tracks break into two lines when crossing the y=0 plane.
+
   Int_t val = fLastPoint;
 
-  Vector v1; Vector v2;
-  if( Size() > 1 )
+  Vector v1, v2;
+  if (Size() > 1)
   {
-    Bool_t broken = kFALSE;
     Int_t i = start;
     while(i < fLastPoint)
     {
@@ -97,35 +103,40 @@ Int_t  NLTTrack::GetBreakPointIdx(Int_t start)
       GetPoint(i+1, v2.x, v2.y, v2.z);
       if(fProjection->AcceptSegment(v1, v2, fRnrStyle->fDelta) == kFALSE)
       {
-	broken = kTRUE;
+	val = i;
         break;
       }
       i++;
     }
-    if(broken) val = i;
   }
   // printf("BreakPoint IDX start:%d, BREAK %d,  total:%d \n", start, val, Size());
   return val;
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void NLTTrack::MakeTrack(Bool_t recurse)
 {
+  // Calculate the points of the track for drawing.
+  // Call base-class, project, find break-points and insert points
+  // required for full representation.
+
   Track::MakeTrack(recurse);
 
   fBreakPoints.clear();
-  if(Size() == 0) return; // it is possible to be outside the limits of MaxR, MaxZ ...
+  if(Size() == 0) return; // All points can be outside of MaxR / MaxZ limits.
 
-  // poject line points
+  // Project points, store originals (needed for break-points).
   Float_t *p = GetP();
-  fOrigPnts = new Vector[Size()];
+  fOrigPnts  = new Vector[Size()];
   for(Int_t i = 0; i < Size(); ++i, p+=3)
   {
     fOrigPnts[i].Set(p);
     fProjection->ProjectPoint(p[0], p[1], p[2]);
     p[2] = fDepth;
-  } 
+  }
+
   Float_t x, y, z;
   std::vector<Vector> vvec;
   Int_t bL = 0, bR = GetBreakPointIdx(0); 
@@ -133,7 +144,7 @@ void NLTTrack::MakeTrack(Bool_t recurse)
   {
     for(Int_t i=bL; i<=bR; i++)
     {
-      GetPoint(i, x, y,z);
+      GetPoint(i, x, y, z);
       vvec.push_back(Vector(x, y, z));
     }
     if (bR == fLastPoint)
@@ -146,14 +157,17 @@ void NLTTrack::MakeTrack(Bool_t recurse)
     bL = bR + 1;
     bR = GetBreakPointIdx(bL);
   }
-  fBreakPoints.push_back(fLastPoint+1); // enforce drawing to end of line
+  fBreakPoints.push_back(vvec.size()); // Mark the track-end for drawing.
+
   Reset(vvec.size());
   for (std::vector<Reve::Vector>::iterator i=vvec.begin(); i!=vvec.end(); ++i)
     SetNextPoint((*i).x, (*i).y, (*i).z); 
   delete [] fOrigPnts;
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 void NLTTrack::PrintLineSegments()
 {
   printf("%s LineSegments:\n", GetName());
@@ -175,8 +189,9 @@ void NLTTrack::PrintLineSegments()
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void NLTTrack::CtrlClicked(Reve::Track* /*track*/)
 {
   Track* t = dynamic_cast<Track*>(fProjectable);
@@ -184,19 +199,28 @@ void NLTTrack::CtrlClicked(Reve::Track* /*track*/)
     t->CtrlClicked(t);
 }
 
-//______________________________________________________________________
+
+/******************************************************************************/
+/******************************************************************************/
+
+
+//______________________________________________________________________________
 // NLTTrackList
 //
 
 ClassImp(NLTTrackList)
 
+//______________________________________________________________________________
 NLTTrackList::NLTTrackList() :
   TrackList    (),
   NLTProjected ()
 {
+  // Default constructor.
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 void NLTTrackList::SetProjection(NLTProjector* proj, NLTProjectable* model)
 {
   NLTProjected::SetProjection(proj, model);

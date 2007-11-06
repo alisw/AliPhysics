@@ -53,6 +53,7 @@ public:
 
   Track(const Track& t);
   virtual void SetTrackParams(const Track& t);
+  virtual void SetPathMarks  (const Track& t);
 
   virtual void MakeTrack(Bool_t recurse=kTRUE);
 
@@ -65,9 +66,10 @@ public:
   Int_t GetIndex() const    { return fIndex; }
   void  SetIndex(Int_t idx) { fIndex = idx;  }
 
-  void  AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
-  vpPathMark_t& GetPathMarksRef(){return fPathMarks;}
-  void  SortPathMarksByTime();
+  void          AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
+  vpPathMark_t& GetPathMarksRef()               { return fPathMarks; }
+  const vpPathMark_t& GetPathMarksRef() const   { return fPathMarks; }
+  void          SortPathMarksByTime();
 
   //--------------------------------
 

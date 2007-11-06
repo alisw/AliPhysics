@@ -24,12 +24,12 @@ private:
   void               GetBreakPoint(Int_t N, Bool_t back, Float_t& x, Float_t& y, Float_t& z);
 
 protected:
-  std::vector<Int_t> fBreakPoints;
-  NLTProjection*     fProjection;
+  std::vector<Int_t>  fBreakPoints;
+  NLTProjection      *fProjection;
 
 public:
   NLTTrack();
-  virtual ~NLTTrack(){}
+  virtual ~NLTTrack();
 
   virtual void SetProjection(NLTProjector* proj, NLTProjectable* model);
 
