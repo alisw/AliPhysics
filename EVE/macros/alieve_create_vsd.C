@@ -13,7 +13,7 @@ void alieve_create_vsd()
 
   Reve::DisablePODTObjectStreamers();
 
-  TGeoManager::Import("misaligned_geometry.root");
+  TGeoManager::Import("geometry.root");
 
   Alieve::VSDCreator vc;
   vc.SetDebugLevel(2);
