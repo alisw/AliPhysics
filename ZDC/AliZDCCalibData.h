@@ -48,8 +48,19 @@ class AliZDCCalibData: public TNamed {
   Float_t* GetZN2EqualCoeffs()		   const {return (float*)fZN2EqualCoeff;}
   Float_t  GetZP2EqualCoeff(Int_t channel) const {return fZP2EqualCoeff[channel];}
   Float_t* GetZP2EqualCoeffs()		   const {return (float*)fZP2EqualCoeff;}
- 
   //
+  Float_t GetZEMEndValue()     const {return fZEMEndValue;}
+  Float_t GetZEMCutFraction()  const {return fZEMCutFraction;}
+  Float_t GetDZEMSup()	       const {return fDZEMSup;}
+  Float_t GetDZEMInf()	       const {return fDZEMInf;}
+  //
+  Float_t GetEZN1MaxValue()  const {return fEZN1MaxValue;}
+  Float_t GetEZP1MaxValue()  const {return fEZP1MaxValue;}
+  Float_t GetEZDC1MaxValue() const {return fEZDC1MaxValue;}
+  Float_t GetEZN2MaxValue()  const {return fEZN2MaxValue;}
+  Float_t GetEZP2MaxValue()  const {return fEZP2MaxValue;}
+  Float_t GetEZDC2MaxValue() const {return fEZDC2MaxValue;}
+
   void  SetMeanPed(Int_t channel, Float_t val) {fMeanPedestal[channel]=val;}
   void  SetMeanPed(Float_t* MeanPed);
   void  SetMeanPedWidth(Int_t channel, Float_t val) {fMeanPedWidth[channel]=val;}
@@ -75,27 +86,17 @@ class AliZDCCalibData: public TNamed {
   void 	SetZP2EqualCoeff(Int_t channel, Float_t val) {fZP2EqualCoeff[channel]=val;}
   void 	SetZP2EqualCoeff(Float_t* EqualCoeff);
   //  
-  void    SetZEMEndValue(Float_t ZEMEndValue) {fZEMEndValue = ZEMEndValue;}
-  void    SetZEMCutFraction(Float_t ZEMCutFraction) {fZEMCutFraction = ZEMCutFraction;}
-  void    SetDZEMSup(Float_t DZEMSup) {fDZEMSup = DZEMSup;}
-  void    SetDZEMInf(Float_t DZEMInf) {fDZEMInf = DZEMInf;}
-  virtual Float_t GetZEMEndValue()     const {return fZEMEndValue;}
-  virtual Float_t GetZEMCutFraction()  const {return fZEMCutFraction;}
-  virtual Float_t GetDZEMSup()	       const {return fDZEMSup;}
-  virtual Float_t GetDZEMInf()	       const {return fDZEMInf;}
+  void  SetZEMEndValue(Float_t ZEMEndValue) {fZEMEndValue = ZEMEndValue;}
+  void  SetZEMCutFraction(Float_t ZEMCutFraction) {fZEMCutFraction = ZEMCutFraction;}
+  void  SetDZEMSup(Float_t DZEMSup) {fDZEMSup = DZEMSup;}
+  void  SetDZEMInf(Float_t DZEMInf) {fDZEMInf = DZEMInf;}
   //
-  void	  SetEZN1MaxValue(Float_t value)  {fEZN1MaxValue = value;}
-  void	  SetEZP1MaxValue(Float_t value)  {fEZP1MaxValue = value;}
-  void	  SetEZDC1MaxValue(Float_t value) {fEZDC1MaxValue = value;}
-  void	  SetEZN2MaxValue(Float_t value)  {fEZN2MaxValue = value;}
-  void	  SetEZP2MaxValue(Float_t value)  {fEZP2MaxValue = value;}
-  void	  SetEZDC2MaxValue(Float_t value) {fEZDC2MaxValue = value;}
-  virtual Float_t GetEZN1MaxValue()  const {return fEZN1MaxValue;}
-  virtual Float_t GetEZP1MaxValue()  const {return fEZP1MaxValue;}
-  virtual Float_t GetEZDC1MaxValue() const {return fEZDC1MaxValue;}
-  virtual Float_t GetEZN2MaxValue()  const {return fEZN2MaxValue;}
-  virtual Float_t GetEZP2MaxValue()  const {return fEZP2MaxValue;}
-  virtual Float_t GetEZDC2MaxValue() const {return fEZDC2MaxValue;}
+  void	SetEZN1MaxValue(Float_t value)  {fEZN1MaxValue = value;}
+  void	SetEZP1MaxValue(Float_t value)  {fEZP1MaxValue = value;}
+  void	SetEZDC1MaxValue(Float_t value) {fEZDC1MaxValue = value;}
+  void	SetEZN2MaxValue(Float_t value)  {fEZN2MaxValue = value;}
+  void	SetEZP2MaxValue(Float_t value)  {fEZP2MaxValue = value;}
+  void	SetEZDC2MaxValue(Float_t value) {fEZDC2MaxValue = value;}
   
  protected:
   // --- Pedestals
