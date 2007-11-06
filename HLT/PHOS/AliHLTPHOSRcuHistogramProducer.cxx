@@ -79,12 +79,14 @@ AliHLTPHOSRcuHistogramProducer::~ AliHLTPHOSRcuHistogramProducer()
 void
 AliHLTPHOSRcuHistogramProducer::SetHistoOutDir(char *outDir)
 {
+  //comment
   sprintf(fHistoOutDir,"%s", outDir);
 }
 
 void 
 AliHLTPHOSRcuHistogramProducer::SetDefaultHistoOutDir()
 {
+  //comment
   char *tmp = getenv("HOME/rundir"); 
   sprintf(fHistoOutDir,"%s/rundir/output/histograms", tmp);
   //testing wether or not directry exist
@@ -205,6 +207,7 @@ AliHLTPHOSRcuHistogramProducer::SetModuleID(AliHLTUInt8_t moduleID)
 void 
 AliHLTPHOSRcuHistogramProducer::FillEnergy(AliHLTUInt8_t x, AliHLTUInt8_t z,  AliHLTUInt8_t gain, float energy)
 {
+  //comment
   fCellAccEnergy.fAccumulatedEnergies[x][z][gain] += energy;
   fCellAccEnergy.fHits[x][z][gain] ++;
   fEnergyHistogramPtrs[x][z][gain]->Fill(energy); 
@@ -228,6 +231,7 @@ AliHLTPHOSRcuHistogramProducer::GetCellAccumulatedEnergies()
 void 
 AliHLTPHOSRcuHistogramProducer::FillLiveChannels(Int_t data[], int size,  Int_t x, Int_t z, Int_t gain)
 {
+  //comment
   for(Int_t i = 0; i < size; i++)
     {
       if(data[i] > THRESHOLD)
@@ -252,6 +256,7 @@ AliHLTPHOSRcuHistogramProducer::FillLiveChannels(Int_t data[], int size,  Int_t 
 void 
 AliHLTPHOSRcuHistogramProducer::FillLiveChannelHistograms()
 {
+  //comment
   for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
       for(int z = 0; z < N_ZROWS_RCU; z ++)
@@ -294,6 +299,7 @@ AliHLTPHOSRcuHistogramProducer::Reset()
 void 
 AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 {
+  //comment
   printf("\nAliHLTPHOSRcuHistogramProducer::WriteAllHistogram, opt = %s\n", opt);
 
   FillLiveChannelHistograms();
@@ -392,6 +398,7 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 void
 AliHLTPHOSRcuHistogramProducer::ScanTimeString(char *timeString)
 {
+  //comment
   time_t timePtr;
   tm *tmPtr;
   //  char *timeString;

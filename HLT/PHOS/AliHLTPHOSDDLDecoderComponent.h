@@ -1,3 +1,8 @@
+// 1
+// 2
+// 3
+// 4
+// 5
 #ifndef ALIHLTPHOSDDLDECODERCOMPONENT_H
 #define ALIHLTPHOSDDLDECODERCOMPONENT_H
 
@@ -40,9 +45,9 @@ class AliHLTPHOSDDLDecoderComponent:public AliHLTPHOSRcuProcessor
   AliHLTPHOSDataCorruptor *fDataCorruptorPtr;                  /**<Pointer to data corruptor*/
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                 /**<Temporary storage for altro dat from a single channel*/
   AliHLTPHOSRcuChannelDataStruct*  fOutPtr;                    /**<Pointer to outputbuffer to write results from the component into shared memory*/
-  AliHLTDDLDecoder *fDecoderPtr;
-  AliHLTAltroData *fAltroDataPtr;
-  AliHLTPHOSMapper   *fMapperPtr;
+  AliHLTDDLDecoder *fDecoderPtr; //comment
+  AliHLTAltroData *fAltroDataPtr; //comment
+  AliHLTPHOSMapper   *fMapperPtr; //comment
 };
 #endif
 

@@ -1,5 +1,17 @@
-
-//insert copyright
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        *
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                     *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include "AliHLTPHOSDigitMakerComponent.h"
 #include "AliHLTPHOSDigitMaker.h"
@@ -19,18 +31,20 @@ AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   AliHLTPHOSProcessor(),
   fDigitMakerPtr(0),
-  fEventCount(0)
+  fEvtCnt(0)
 {
- 
+  //comment
 }
 
 AliHLTPHOSDigitMakerComponent::~AliHLTPHOSDigitMakerComponent()
 {
+  //comment
 }
 
 int 
 AliHLTPHOSDigitMakerComponent::Deinit()
 { 
+  //comment
   if(fDigitMakerPtr)
     {
       delete fDigitMakerPtr;
@@ -42,6 +56,7 @@ AliHLTPHOSDigitMakerComponent::Deinit()
 const char*
 AliHLTPHOSDigitMakerComponent::GetComponentID()
 {
+  //comment
   return "PhosDigitMaker";
 }
 
@@ -60,6 +75,7 @@ AliHLTPHOSDigitMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>
 AliHLTComponentDataType 
 AliHLTPHOSDigitMakerComponent::GetOutputDataType()
 {
+  //comment
   return AliHLTPHOSDefinitions::fgkAliHLTDigitDataType;
 }
 
@@ -67,6 +83,7 @@ AliHLTPHOSDigitMakerComponent::GetOutputDataType()
 void 
 AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
+  //comment
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -109,7 +126,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 	}
       digitCount = fDigitMakerPtr->MakeDigits(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
     }
-  fEventCount++;
+  fEvtCnt++;
   
   mysize = 0;
   offset = tSize;
@@ -137,9 +154,9 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       
   fDigitMakerPtr->Reset();
   
-  if(fEventCount % 10 == 0)
+  if(fEvtCnt % 10 == 0)
     {
-      cout << "Event #: " << fEventCount << endl;
+      cout << "Event #: " << fEvtCnt << endl;
       cout << "  - Number of digits found: " << digitCount << endl;
     }
   
@@ -170,5 +187,6 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSDigitMakerComponent::Spawn()
 {
+  //comment
   return new AliHLTPHOSDigitMakerComponent();
 }

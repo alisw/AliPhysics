@@ -1,3 +1,9 @@
+// 1
+// 2
+// 3
+// 4
+// 5
+
 #ifndef ALIHLTPHOSRCUHISTOGRAMPRODUCER_H
 #define ALIHLTPHOSRCUHISTOGRAMPRODUCER_H 
 
@@ -10,6 +16,10 @@
 #include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
 //#include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSRcuProcessor.h"
+
+class TH1;
+class TH2D;
+class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 
 #define XBIN_LOW  0
 #define XBIN_UP   1023
@@ -55,10 +65,10 @@ class AliHLTPHOSRcuHistogramProducer : public AliHLTPHOSBase
   Float_t fEnergyAverageValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];  /**<Accumulated energy divided by  hits*/
   Double_t fAccumulatedValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];   /**<Array to store accumulated energy per channel for one rcu during run*/
   Float_t fTimingAverageValues[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];  /**<Avereage TOF*/
-  AliHLTUInt32_t fHits[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
-  AliHLTUInt32_t fDeadChannelMap[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
+  AliHLTUInt32_t fHits[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
+  AliHLTUInt32_t fDeadChannelMap[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];        /**<temporary variable to store raw samples from a single altro channel*/
-  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct fCellAccEnergy;
+  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct fCellAccEnergy; //comment
   AliHLTUInt8_t fModuleID; /**<ID of the module this component read data from (0-4)*/
   AliHLTUInt8_t fRcuX;     /**<X position of RCU the data from this Equippment comes from (0 or 1)*/
   AliHLTUInt8_t fRcuZ;     /**<Z position of RCU the data from this Equippment comes from (0 or 1)*/

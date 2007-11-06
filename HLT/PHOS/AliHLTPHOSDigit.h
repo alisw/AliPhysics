@@ -24,7 +24,7 @@ public:
   void SetEnergy(Float_t energy) { fEnergy = energy; }
   void SetGain(Int_t gain) { fGain = gain; }
 
-  void SetRawData(Int_t*);
+  void SetRawData(Int_t* rawData);
 
   void SetCrazyness(Int_t crazyness) { fCrazyness = crazyness; }
   void SetBaseline(Float_t baseline) { fBaseline = baseline; }
@@ -32,20 +32,8 @@ public:
   void SetSamples(Int_t samples) { fSamples = samples; }
   void SetPreSamples(Int_t presamples) { fPreSamples = presamples; }
 
-  void ResetDigit()
-  {
-    fZ = -1;
-    fX = -1;
-    fAmplitude = -1;
-    fTime = -1;
-    fEnergy =-1;
-    fGain = -1;
-    fSamples = 55;
-    fPreSamples =15;
-    fTotalSamples =70;
-    fDebugVar = -1;
-  }
- 
+  void ResetDigit();
+   
   void SetDebugVar(Int_t val) { fDebugVar = val; }
   
   Int_t GetX() { return fX; }
@@ -69,22 +57,22 @@ public:
 
 private:
   
-  Int_t fX;
-  Int_t fZ;
-  Float_t fAmplitude;
-  Float_t fTime;
-  Float_t fEnergy;
-  Int_t fGain;
-  Int_t fSamples;
-  Int_t fPreSamples;
-  Int_t fTotalSamples;
+  Int_t fX;   //comment
+  Int_t fZ; //comment
+  Float_t fAmplitude; //comment
+  Float_t fTime; //comment
+  Float_t fEnergy; //comment
+  Int_t fGain; //comment
+  Int_t fSamples; //comment
+  Int_t fPreSamples; //comment
+  Int_t fTotalSamples; //comment
   
   Int_t fDebugVar; //can be anything, not intended for use in analysis
   
   Int_t *fData;   //[fTotalSamples]
 
-  Int_t fCrazyness; 
-  Float_t fBaseline;
+  Int_t fCrazyness;  //comment
+  Float_t fBaseline; //comment
 
   ClassDef(AliHLTPHOSDigit, 1);
   

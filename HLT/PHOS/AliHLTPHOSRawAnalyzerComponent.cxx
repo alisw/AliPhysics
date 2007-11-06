@@ -35,6 +35,7 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
 								 fSendChannelData(kFALSE),fOutPtr(0), fMapperPtr(0), fDecoderPtr(0), 
 								 fAltroDataPtr(0), fAltroBunchPtr(0), fUseBaselineSubtraction(false), fDebugCnt(0)
 {
+  //comment
   fMapperPtr = new AliHLTPHOSMapper();
   
 } 
@@ -42,6 +43,7 @@ AliHLTPHOSRawAnalyzerComponent::AliHLTPHOSRawAnalyzerComponent():AliHLTPHOSRcuPr
 
 AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 {
+  //comment
   delete  fMapperPtr;
 }
 
@@ -49,6 +51,7 @@ AliHLTPHOSRawAnalyzerComponent::~AliHLTPHOSRawAnalyzerComponent()
 int 
 AliHLTPHOSRawAnalyzerComponent::Deinit()
 {
+  //comment
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerComponen Deinit");
   return 0;
 }
@@ -57,6 +60,7 @@ AliHLTPHOSRawAnalyzerComponent::Deinit()
 const char* 
 AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 {
+  //comment
   return "AliPhosTestRaw";
 }
 
@@ -64,6 +68,7 @@ AliHLTPHOSRawAnalyzerComponent::GetComponentID()
 void
 AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
+  //comment
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType);
@@ -75,6 +80,7 @@ AliHLTPHOSRawAnalyzerComponent::GetInputDataTypes( vector<AliHLTComponentDataTyp
 AliHLTComponentDataType 
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataType()
 {
+  //comment
   return AliHLTPHOSDefinitions::fgkCellEnergyDataType;
 }
 
@@ -83,6 +89,7 @@ void
 AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier )
 
 {
+  //comment
   constBase = 30;
   inputMultiplier = 1.2;
 }
@@ -95,6 +102,7 @@ int
 AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
+  //comment
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
   UInt_t tSize            = 0;
@@ -254,6 +262,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 int
 AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 {
+  //comment
   cout <<"AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv ) "<< endl;
   fAltroDataPtr = new AliHLTAltroData();
   fAltroBunchPtr = new AliHLTAltroBunch();
@@ -298,6 +307,7 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 void
 AliHLTPHOSRawAnalyzerComponent::Reset()
 {
+  //comment
   for(int mod = 0; mod < N_MODULES; mod ++)
     {
       for(int row = 0; row < N_ZROWS_MOD; row ++)
@@ -320,6 +330,7 @@ AliHLTPHOSRawAnalyzerComponent::Reset()
 void
 AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 {
+  //comment
   for(int i = startindex ; i< sampleCnt; i++)
     {
       fTmpChannelData[i] = 0;
@@ -329,6 +340,7 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
 void 
 AliHLTPHOSRawAnalyzerComponent::SetBaselines(const char* file)
 {
+  //comment
   fUseBaselineSubtraction = true;
   AliHLTPHOSBaseline *baseline = 0;
   TFile *baselineFile = TFile::Open(file);

@@ -41,15 +41,15 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   Double_t fMaxValues[N_MODULES][N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; /**<array to store cell energies*/
   // AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
 
-  AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;
-  AliHLTPHOSMapper *fMapperPtr;
-  AliHLTDDLDecoder *fDecoderPtr;
-  AliHLTAltroData  *fAltroDataPtr;
-  AliHLTAltroBunch *fAltroBunchPtr;
-  AliHLTPHOSSanityInspector *fSanityInspectorPtr;
-  Bool_t fUseBaselineSubtraction;
-  Float_t fBaselines[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS];
-  int fDebugCnt;
+  AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;  //comment
+  AliHLTPHOSMapper *fMapperPtr; //comment
+  AliHLTDDLDecoder *fDecoderPtr; //comment
+  AliHLTAltroData  *fAltroDataPtr; //comment
+  AliHLTAltroBunch *fAltroBunchPtr; //comment
+  AliHLTPHOSSanityInspector *fSanityInspectorPtr; //comment
+  Bool_t fUseBaselineSubtraction; //comment
+  Float_t fBaselines[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
+  int fDebugCnt; //comment
   
 };
 #endif

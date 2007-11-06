@@ -35,13 +35,13 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   
 AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker() 
 {
-
+  //comment
 }
 
 Int_t
 AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
-
+  //comment
   Int_t i = 0;
   Int_t j = 0;
   Int_t x = -1;

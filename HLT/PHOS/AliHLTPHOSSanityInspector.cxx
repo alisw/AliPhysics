@@ -24,18 +24,20 @@ AliHLTPHOSSanityInspector::AliHLTPHOSSanityInspector() :
   AliHLTPHOSBase(),
   fMaxDifference(120)
 {
+  //comment
 }
 
 
 AliHLTPHOSSanityInspector::~AliHLTPHOSSanityInspector()
 {
+  //comment
 }
 
 
 Int_t  
 AliHLTPHOSSanityInspector::CheckInsanity(UInt_t* data, Int_t N)
 {
- 
+   //comment
   for(Int_t i = 1; i < N; i++)
     {
       if((((Int_t)data[i] - (Int_t)data[i-1]) > fMaxDifference) || (((Int_t)data[i-1] - (Int_t)data[i]) > fMaxDifference))
@@ -47,7 +49,7 @@ AliHLTPHOSSanityInspector::CheckInsanity(UInt_t* data, Int_t N)
 Int_t
 AliHLTPHOSSanityInspector::CheckInsanity(Int_t* data, Int_t N)
 {
- 
+   //comment
   for(Int_t i = 1; i < N; i++)
   {
     if((((Int_t)data[i] - (Int_t)data[i-1]) > fMaxDifference) || (((Int_t)data[i-1] - (Int_t)data[i]) > fMaxDifference))
@@ -61,7 +63,7 @@ Int_t
 AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
 //
 {
- 
+   //comment
   Int_t crazyness = 0;
   
   /*  if(((data[0] - data[1]) > fMaxDifference) || ((data[1] - data[0]) > fMaxDifference))
@@ -151,11 +153,12 @@ AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
   return crazyness;
   
 }
+
 Int_t 
-    AliHLTPHOSSanityInspector::CheckAndHealInsanity(Int_t* data, Int_t N)
+AliHLTPHOSSanityInspector::CheckAndHealInsanity(Int_t* data, Int_t N)
     //
 {
- 
+   //comment
   Int_t crazyness = 0;
   
   /*  if(((data[0] - data[1]) > fMaxDifference) || ((data[1] - data[0]) > fMaxDifference))

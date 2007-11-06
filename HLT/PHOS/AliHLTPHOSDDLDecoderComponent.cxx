@@ -46,7 +46,7 @@ AliHLTPHOSDDLDecoderComponent::AliHLTPHOSDDLDecoderComponent():AliHLTPHOSRcuProc
 
 AliHLTPHOSDDLDecoderComponent::~AliHLTPHOSDDLDecoderComponent()
 {
-
+  //comment
 }
 
 int 
@@ -101,7 +101,7 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
-
+  //comment
   cout <<"AliHLTPHOSDDLDecoderComponent::DoEvent()" << endl;
 
   Int_t sampleCnt         = 0;

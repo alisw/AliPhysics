@@ -31,19 +31,19 @@ public:
   void SetAltroZeroSupression(bool isZerosupressed);
   void SetAltroBaselineSubtraction(bool isAltroBaselineSubtraction);
   //  void SetSoftwareBaselineSubtraction(bool isSoftwareBaselineSubtraction);
-  inline int  GetNPresSamples(){return  fNPresamples;}; 
-  inline int  GetNSamples(){return  fNSamples;}; 
-  inline bool GetIsAltroZroSupresses(){return   fIsAltroZeroSupressed;}; 
-  inline bool GetIsAltroBaselineSubtraction(){return fIsAltroBaselineSubtraction;};
+  int  GetNPresSamples(){return  fNPresamples;}; 
+  int  GetNSamples(){return  fNSamples;}; 
+  bool GetIsAltroZroSupresses(){return   fIsAltroZeroSupressed;}; 
+  bool GetIsAltroBaselineSubtraction(){return fIsAltroBaselineSubtraction;};
   void PrintAltroDefaultValues();
 
 protected:
   //Altro Config
-  int fNPresamples;
-  int fNSamples;
-  int fNTotalSamples;
-  bool fIsAltroZeroSupressed;
-  bool fIsAltroBaselineSubtraction;
+  int fNPresamples; //comment
+  int fNSamples; //comment
+  int fNTotalSamples; //comment
+  bool fIsAltroZeroSupressed; //comment
+  bool fIsAltroBaselineSubtraction; //comment
 };
 
 #endif

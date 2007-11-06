@@ -37,16 +37,18 @@ AliHLTPHOSRcuTreeMakerComponent::AliHLTPHOSRcuTreeMakerComponent() :
   fEventCount(0),
   fWriteInterval(1000)
 {
+  //comment
 }
 
 AliHLTPHOSRcuTreeMakerComponent::~AliHLTPHOSRcuTreeMakerComponent()
 {
+  //comment
 }
 
 int 
 AliHLTPHOSRcuTreeMakerComponent::Deinit()
 {
-
+  //comment
   //  cout << "Printing file...";
 
   /*
@@ -75,12 +77,14 @@ AliHLTPHOSRcuTreeMakerComponent::Deinit()
 const char*
 AliHLTPHOSRcuTreeMakerComponent::GetComponentID()
 {
+  //comment
   return "PhosRcuTreeMaker";
 }
 
 void
 AliHLTPHOSRcuTreeMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
+  //comment
  //Get datatypes for input
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
@@ -92,12 +96,14 @@ AliHLTPHOSRcuTreeMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataTyp
 AliHLTComponentDataType 
 AliHLTPHOSRcuTreeMakerComponent::GetOutputDataType()
 {
+  //comment
   return AliHLTPHOSDefinitions::fgkAliHLTRootTreeDataType;
 }
 
 void 
 AliHLTPHOSRcuTreeMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
+  //comment
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -151,7 +157,7 @@ return 0;
 int
 AliHLTPHOSRcuTreeMakerComponent::DoInit ( int argc, const char** argv )
 {
-
+  //comment
   fTreeMakerPtr = new AliHLTPHOSRcuTreeMaker();
   fDigitTreePtr = new TTree ( "digitTree", "Digits tree" );
   fDirectory = new char[50];
@@ -190,12 +196,14 @@ AliHLTPHOSRcuTreeMakerComponent::DoInit ( int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSRcuTreeMakerComponent::Spawn()
 {
+  //comment
   return new AliHLTPHOSRcuTreeMakerComponent();
 }
 
 void
 AliHLTPHOSRcuTreeMakerComponent::Write()
 {
+  //comment
   cout << "Writing file...";
 
   char filename [256];
@@ -211,6 +219,7 @@ AliHLTPHOSRcuTreeMakerComponent::Write()
 void
 AliHLTPHOSRcuTreeMakerComponent::ResetTrees()
 {
+  //comment
   delete fDigitTreePtr;
   fDigitTreePtr = new TTree("digitTree", "Digits tree");
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);

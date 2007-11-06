@@ -39,7 +39,7 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
  public:
 
   AliHLTPHOSClusterizerComponent();
-  ~AliHLTPHOSClusterizerComponent();
+  virtual ~AliHLTPHOSClusterizerComponent();
 
   //  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &);
   //  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent &)
@@ -57,9 +57,9 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
 
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
-  int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
-		AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&,
-		std::vector<AliHLTComponentBlockData>&);
+  int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
+		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+		std::vector<AliHLTComponentBlockData>& outputBlocks);
 
   AliHLTComponent* Spawn();
   
@@ -73,16 +73,15 @@ class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
   int DoDeinit();
 
  private:
-  AliHLTPHOSDigitContainerDataStruct *fAllDigitsPtr;
+  AliHLTPHOSDigitContainerDataStruct *fAllDigitsPtr;            //comment
   AliHLTPHOSClusterizer* fClusterizerPtr;                       //Pointer to the clusterizer
   AliHLTPHOSRecPointContainerStruct* fOutPtr;                         //Pointer to the struct of output clusters
   AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //Pointer to the struct of output recpoints
   AliHLTPHOSRecPointListDataStruct* fRecPointListPtr;           //Pointer to the struct of list of output recpoints
-  Int_t fDigitCount;
-  Bool_t fNoCrazyness;
+  Int_t fDigitCount;                                            //comment
+  Bool_t fNoCrazyness;                                          //comment
   
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
-
 };
 
 #endif

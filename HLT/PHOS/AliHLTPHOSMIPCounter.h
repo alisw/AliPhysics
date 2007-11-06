@@ -137,15 +137,15 @@ class AliHLTPHOSMIPCounter : public AliHLTPHOSBase
       
 
     private:
-      Int_t fMIPCountEvent;
-      Int_t fMIPCountTotal;
-      Float_t fMIPRate;
-      Float_t fLowerBound;
-      Float_t fUpperBound;
-      Float_t fUpperStartTime;
-      Float_t fLowerStartTime;
-      Float_t fZeroThreshold;
-      TH2I *fChannelHistPtr;
+    Int_t fMIPCountEvent; //comment
+      Int_t fMIPCountTotal;  //comment
+      Float_t fMIPRate; //comment
+      Float_t fLowerBound; //comment
+      Float_t fUpperBound; //comment 
+      Float_t fUpperStartTime; //comment
+      Float_t fLowerStartTime; //comment
+      Float_t fZeroThreshold; //comment
+      TH2I *fChannelHistPtr; //comment
   };
 
 #endif

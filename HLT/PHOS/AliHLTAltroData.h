@@ -10,7 +10,7 @@ class AliHLTAltroData
 {
 public:
   AliHLTAltroData();
-  ~ AliHLTAltroData();
+  ~AliHLTAltroData();
   bool NextBunch(AliHLTAltroBunch *altrobunch);
 
   int GetChannel();
@@ -19,13 +19,13 @@ public:
   int GetBranch();
   void Reset();
 
-  UInt_t *fData;
-  UInt_t *fBunchData;
-  int fDataSize;
-  int fWc;
-  int fHadd;
-  int fBunchCounter;
-  bool fIsComplete;
+  UInt_t *fData; //comment
+  UInt_t *fBunchData; //comment
+  int fDataSize; //comment
+  int fWc; //comment
+  int fHadd; //comment
+  int fBunchCounter; //comment
+  bool fIsComplete; //comment
 
 };
 

@@ -32,7 +32,7 @@ class AliHLTPHOSMIPCounterComponent : public AliHLTPHOSProcessor
 public:
     AliHLTPHOSMIPCounterComponent();
 
-    ~AliHLTPHOSMIPCounterComponent();
+    virtual ~AliHLTPHOSMIPCounterComponent();
 
     const char* GetComponentID();
 
@@ -42,9 +42,9 @@ public:
 
     void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
-    int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
-		AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&,
-		std::vector<AliHLTComponentBlockData>&);
+    int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
+		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+		std::vector<AliHLTComponentBlockData>& outputBlocks);
 
     AliHLTComponent* Spawn();
   
@@ -52,21 +52,22 @@ public:
     int DoInit(int argc, const char** argv);
     virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
 
-  private:
-
-    Int_t fEventCount;
-    Int_t fInterval;
-    Int_t fMIPCount;
-    Char_t *fTRUThreshold;
-    Float_t fMIPCountInterval;
-    Char_t *fPath;
-    AliHLTPHOSMIPCounter *fMIPCounterPtr;
-    TH1I *fHistPtr;
-    TH1I *fIntervalHistPtr;
-    TH1F *fRateHistPtr;
-    TH2I *fChannelHistPtr;
-    TH1F *fRatioHistPtr;
-    static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
+private:
+  
+  Int_t fEvtCnt;          //comment
+  Int_t fInterval; //comment
+  Int_t fMIPCount; //comment
+  Char_t *fTRUThreshold; //comment
+  Float_t fMIPCountInterval; //comment
+  Char_t *fPath; //comment
+  AliHLTPHOSMIPCounter *fMIPCounterPtr; //comment
+  TH1I *fHistPtr; //comment
+  TH1I *fIntervalHistPtr; //comment
+  TH1F *fRateHistPtr; //comment
+  TH2I *fChannelHistPtr; //comment
+  TH1F *fRatioHistPtr; //comment
+  
+  static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
 };
 #endif
 

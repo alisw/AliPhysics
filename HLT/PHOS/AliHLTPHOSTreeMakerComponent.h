@@ -19,7 +19,7 @@
 #ifndef ALIHLTPHOSTREEMAKERCOMPONENT_H
 #define ALIHLTPHOSTREEMAKERCOMPONENT_H
 
-# include "AliHLTPHOSProcessor.h"
+#include "AliHLTPHOSProcessor.h"
 
 class AliHLTPHOSTreeMaker;
 class TTree;
@@ -29,7 +29,7 @@ class AliHLTPHOSTreeMakerComponent : public AliHLTPHOSProcessor
  public:
   
   AliHLTPHOSTreeMakerComponent();
-  ~AliHLTPHOSTreeMakerComponent();
+  virtual ~AliHLTPHOSTreeMakerComponent();
     
   const char* GetComponentID();
   
@@ -43,27 +43,28 @@ class AliHLTPHOSTreeMakerComponent : public AliHLTPHOSProcessor
 	      AliHLTComponentTriggerData&);
   */
   
-  int DoEvent(const AliHLTComponentEventData&, const AliHLTComponentBlockData*,
-	      AliHLTComponentTriggerData&, AliHLTUInt8_t*, AliHLTUInt32_t&,
-       std::vector<AliHLTComponentBlockData>&);
+  int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
+	      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t&size,
+       std::vector<AliHLTComponentBlockData>& outputBlocks);
   
   AliHLTComponent* Spawn();
 
   void Write(); 
   void ResetTrees();
    
+
  protected:
   int DoInit(int argc, const char** argv);
 
   virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
   
  private:  
-  AliHLTPHOSTreeMaker *fTreeMakerPtr;
-  TTree *fDigitTreePtr;
-  UInt_t fEventCount;
-  UInt_t fWriteInterval;
-  UInt_t fRunNb;
-  char *fDirectory;
+  AliHLTPHOSTreeMaker *fTreeMakerPtr; //comment
+  TTree *fDigitTreePtr; //comment
+  UInt_t fEventCount; //comment
+  UInt_t fWriteInterval; //comment
+  UInt_t fRunNb; //comment
+  char *fDirectory; //comment
  
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
   

@@ -75,12 +75,13 @@ AliHLTPHOSAltroConfig::AliHLTPHOSAltroConfig() : fNPresamples(900),
 
 AliHLTPHOSAltroConfig::~AliHLTPHOSAltroConfig()
 {
-
+  //comment
 }
 
 void 
 AliHLTPHOSAltroConfig:: PrintAltroDefaultValues()
 {
+  //comment
   printf("\n AliHLTPHOSAltroConfig Default  Values\n");
   printf("Presamples = %d\n", fNPresamples);
   printf("NSamples = %d\n", fNSamples);
@@ -110,24 +111,28 @@ AliHLTPHOSAltroConfig:: PrintAltroDefaultValues()
 void 
 AliHLTPHOSAltroConfig::SetNPresSamples(int presamples)
 {
+  //comment
   fNPresamples =  presamples;
 }
 
 void 
 AliHLTPHOSAltroConfig::SetNSamples(int samples)
 {
+  //comment
   fNSamples = samples;
 }
 
 void 
 AliHLTPHOSAltroConfig::SetAltroZeroSupression(bool isZeroSupressed)
 {
+  //comment
   fIsAltroZeroSupressed = isZeroSupressed;
 }
 
 void 
 AliHLTPHOSAltroConfig::SetAltroBaselineSubtraction(bool isAltroBaselineSubtraction)
 {
+  //comment
   fIsAltroBaselineSubtraction = isAltroBaselineSubtraction;
 }
 

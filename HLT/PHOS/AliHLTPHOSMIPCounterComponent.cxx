@@ -29,7 +29,7 @@ AliHLTPHOSMIPCounterComponent gAliHLTPHOSMIPCounterComponent;
 
 AliHLTPHOSMIPCounterComponent::AliHLTPHOSMIPCounterComponent()
     : AliHLTPHOSProcessor(),
-    fEventCount ( 0 ),
+    fEvtCnt ( 0 ),
     fInterval ( 0 ),
     fMIPCount ( 0 ),
     fTRUThreshold ( 0 ),
@@ -63,8 +63,8 @@ AliHLTPHOSMIPCounterComponent::Deinit()
   fRatioHistPtr->Write();
   outfile->Close();
   
-  printf("Total number of MIPs in %d events: %d\nGives a rate of: %f\n", fEventCount, fMIPCounterPtr->GetMIPCountTotal(),
-	 ((float)(fMIPCounterPtr->GetMIPCountTotal()))/((float)fEventCount));
+  printf("Total number of MIPs in %d events: %d\nGives a rate of: %f\n", fEvtCnt, fMIPCounterPtr->GetMIPCountTotal(),
+	 ((float)(fMIPCounterPtr->GetMIPCountTotal()))/((float)fEvtCnt));
       
   return 0;
 }
@@ -124,11 +124,11 @@ AliHLTPHOSMIPCounterComponent::DoEvent(const AliHLTComponentEventData& evtData, 
     fMIPCount += fMIPCounterPtr->CountMIPs(reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(iter->fPtr));
   }
   fRatioHistPtr->Fill((float)(((float)fMIPCount)/((float)digitCount)));
-  fEventCount++;
+  fEvtCnt++;
   fMIPCountInterval += fMIPCount;
   fMIPCount = 0;
   
-  if(fEventCount % fInterval == 0)
+  if(fEvtCnt % fInterval == 0)
   {
     printf("Event #: %d -- Number of MIPs the last %d events: %d -- Which gives a rate of: %f\n",
 	   fInterval, fMIPCountInterval, (Float_t)fMIPCountInterval/(Float_t)fInterval);   

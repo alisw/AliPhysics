@@ -1,4 +1,17 @@
-//Insert copyright
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                                      *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 
 #include "AliHLTPHOSClusterizer.h"
@@ -55,6 +68,7 @@ AliHLTPHOSClusterizer::~AliHLTPHOSClusterizer()
 void
 AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
 {
+  //comment
   fEmcClusteringThreshold = params->GetClusteringThreshold();
   fEmcMinEnergyThreshold = params->GetMinE();
   fLogWeight = params->GetLogWeight();
@@ -63,6 +77,7 @@ AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
 void
 AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSGetter* getter)
 {
+  //comment
   fRecPointContainerPtr = new AliHLTPHOSRecPointContainerStruct();
   fDigitContainerPtr = new AliHLTPHOSDigitContainerDataStruct();
   fGetterPtr = getter;
@@ -74,6 +89,7 @@ AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSGetter* getter)
 Int_t
 AliHLTPHOSClusterizer::GetEvent(Int_t i)
 {
+  //comment
   Int_t coord[4];
 
   fGetterPtr->Event(i, "D");
@@ -94,6 +110,7 @@ AliHLTPHOSClusterizer::GetEvent(Int_t i)
 Int_t 
 AliHLTPHOSClusterizer::GetNEvents()
 {
+  //comment
   if(fOnlineMode)
     {
       printf("Number of events not available in online mode!\n");
@@ -106,8 +123,7 @@ AliHLTPHOSClusterizer::GetNEvents()
 Int_t 
 AliHLTPHOSClusterizer::ClusterizeEvent()
 {
-  // Steering method to construct the clusters stored in a list of Reconstructed Points
-  // A cluster is defined as a list of neighbour digits
+  //comment
   Int_t nRecPoints = 0;
   UInt_t i = 0;
 
@@ -146,6 +162,7 @@ void
 AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDataStruct* recPoint)
 
 {
+  //comment
 
   for(UInt_t j = 0; j < fDigitContainerPtr->fNDigits; j++)
     {
@@ -176,7 +193,7 @@ Int_t
 AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1, 
 					    AliHLTPHOSDigitDataStruct* digit2)
 {
-  
+    //comment
   //Int_t coord1[4];
   //Int_t coord2[4];
   
@@ -202,7 +219,7 @@ AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1,
 void
 AliHLTPHOSClusterizer::CalculateCenterOfGravity()
 {
-
+  //comment
   // Calculates the center of gravity in the local PHOS-module coordinates 
   Float_t wtot = 0.;
  

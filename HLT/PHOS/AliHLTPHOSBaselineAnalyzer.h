@@ -59,28 +59,27 @@ public:
  
      
 private:
-  Int_t fSampleStart;
-  Int_t fMaxCrazyDifference;
-  Int_t fMaxSignal;
-  Int_t fChannelCount;
-  Float_t fBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
-  Float_t fAccumulatedBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS][2];
-  TTree *fTreePtr;
-  TClonesArray *fBaselineArrayPtr;
- // TH1F *fChannelLowGainHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD];
- // TH1F *fChannelHighGainHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD];
-  TH1F *fChannelHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
-  TH1F *fFixedChannelHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
-  TH1F *fRMSHistogramPtr;
-  TH2F *fRMSMapHighGainHistogramPtr;
-  TH2F *fRMSMapLowGainHistogramPtr;
-  TH1F *fFixedRMSHistogramPtr;
-  TH2F *fFixedRMSMapHighGainHistogramPtr;
-  TH2F *fFixedRMSMapLowGainHistogramPtr;
-  AliHLTPHOSSanityInspector *fSanityInspector;
-  
+  Int_t fSampleStart; //comment
+  Int_t fMaxCrazyDifference; //comment
+  Int_t fMaxSignal; //comment
+  Int_t fChannelCount; //comment
+  Float_t fBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //comment
+  Float_t fAccumulatedBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS][2]; //comment
+  TTree *fTreePtr; //comment
+  TClonesArray *fBaselineArrayPtr; //comment
+ // TH1F *fChannelLowGainHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD]; //comment
+ // TH1F *fChannelHighGainHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD]; //comment
+  TH1F *fChannelHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //comment
+  TH1F *fFixedChannelHistogramsPtr[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS]; //comment
+  TH1F *fRMSHistogramPtr; //comment
+  TH2F *fRMSMapHighGainHistogramPtr; //comment
+  TH2F *fRMSMapLowGainHistogramPtr; //comment
+  TH1F *fFixedRMSHistogramPtr; //comment
+  TH2F *fFixedRMSMapHighGainHistogramPtr; //comment
+  TH2F *fFixedRMSMapLowGainHistogramPtr; //comment
+  AliHLTPHOSSanityInspector *fSanityInspector;   //comment
  
-  //  ClassDef(AliHLTPHOSBaselineAnalyzer, 1);
+  ClassDef(AliHLTPHOSBaselineAnalyzer, 1);
 };
 
 #endif

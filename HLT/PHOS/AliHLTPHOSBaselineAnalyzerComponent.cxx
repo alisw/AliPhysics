@@ -1,5 +1,18 @@
-//insert copyright
 
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                                      *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include "AliHLTPHOSBaselineAnalyzerComponent.h"
 #include "AliHLTPHOSBaselineAnalyzer.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
@@ -21,7 +34,7 @@ AliHLTPHOSBaselineAnalyzerComponent::AliHLTPHOSBaselineAnalyzerComponent() :
   AliHLTPHOSProcessor(),
   fBaselineAnalyzerPtr(0),
   fTreePtr(0),
-  fEventCount(0),
+  fEvCnt(0),
   fWriteInterval(100),
   fFillInterval(100),
   fFilename(0),
@@ -29,21 +42,24 @@ AliHLTPHOSBaselineAnalyzerComponent::AliHLTPHOSBaselineAnalyzerComponent() :
   fHistPath(0),
   fRunNb(0)
 {
-  
+   //comment
 }
 
 AliHLTPHOSBaselineAnalyzerComponent::~AliHLTPHOSBaselineAnalyzerComponent()
 {
+ //comment
 }
+
+
 
 int 
 AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 {
- 
+  //comment
   fBaselineAnalyzerPtr->CalculateChannelsBaselineRMS();
   char filename [50];
   cout << "Writing files...";
-  sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEventCount/fWriteInterval);
+  sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEvCnt/fWriteInterval);
   fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
   sprintf(filename, "%s/run%d_channelHistograms.root", fHistPath, fRunNb);
   fBaselineAnalyzerPtr->WriteChannelHistograms(filename);
@@ -76,6 +92,7 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 const char*
 AliHLTPHOSBaselineAnalyzerComponent::GetComponentID()
 {
+ //comment
   return "PhosBaselineAnalyzer";
 }
 
@@ -94,6 +111,7 @@ AliHLTPHOSBaselineAnalyzerComponent::GetInputDataTypes(vector<AliHLTComponentDat
 AliHLTComponentDataType 
 AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataType()
 {
+ //comment
   return AliHLTPHOSDefinitions::fgkAliHLTBaselineDataType;
 }
 
@@ -101,6 +119,7 @@ AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataType()
 void 
 AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
+ //comment
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -140,24 +159,24 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
       fBaselineAnalyzerPtr->CalculateRcuBaselines(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
     }
   
-  fEventCount++;
+  fEvCnt++;
 
   //PushBack(fDigitArrayPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
   
-   if(fEventCount % 10 == 0)
+   if(fEvCnt % 10 == 0)
     {
-      cout << "Event #: " << fEventCount << endl;
+      cout << "Event #: " << fEvCnt << endl;
     }
 
-  if(fEventCount % fFillInterval == 0)
+  if(fEvCnt % fFillInterval == 0)
     {
       fBaselineAnalyzerPtr->FillTree(); 
     }
-  if(fEventCount % fWriteInterval == 0)
+  if(fEvCnt % fWriteInterval == 0)
     {
       char filename [50];
       cout << "Writing file...";
-      sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEventCount/fWriteInterval - 1);
+      sprintf(filename, "%s/run%d_baselineTree_%d.root", fDirectory, fRunNb,fEvCnt/fWriteInterval - 1);
       fBaselineAnalyzerPtr->WriteAccumulatedBaselines(filename);
       cout << "Done!\n";
       delete fTreePtr;
@@ -172,7 +191,7 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
 int
 AliHLTPHOSBaselineAnalyzerComponent::DoInit(int argc, const char** argv )
 {
-  //Do initialization     sprintf(fFilename, "/tmp/phoshlt/analysis/data/run%d/run%d_digitTree_%d.root", fRunNb,fRunNb,(fEventCount/fWriteInterval - 1));
+  //Do initialization     sprintf(fFilename, "/tmp/phoshlt/analysis/data/run%d/run%d_digitTree_%d.root", fRunNb,fRunNb,(fEvCnt/fWriteInterval - 1));
   
   Bool_t pathSet = false;
   Bool_t histPathSet = false;
@@ -251,13 +270,14 @@ AliHLTPHOSBaselineAnalyzerComponent::DoInit(int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSBaselineAnalyzerComponent::Spawn()
 {
+ //comment
   return new AliHLTPHOSBaselineAnalyzerComponent();
 }
 
 void 
 AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
 {
-
+ //comment
   cout << "Calculating total baselines... \n";
   AliHLTPHOSBaseline *baselineObject = 0;
   TChain* chain = new TChain("baselineTree");

@@ -37,15 +37,18 @@ AliHLTPHOSTreeMakerComponent::AliHLTPHOSTreeMakerComponent() :
   fEventCount(0),
   fWriteInterval(1000)
 {
+  //comment
 }
 
 AliHLTPHOSTreeMakerComponent::~AliHLTPHOSTreeMakerComponent()
 {
+  //comment
 }
 
 int 
 AliHLTPHOSTreeMakerComponent::Deinit()
 {
+  //comment
   cout << "Printing file...";
   char filename [50];
   sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNb,(fEventCount/fWriteInterval));
@@ -67,12 +70,14 @@ AliHLTPHOSTreeMakerComponent::Deinit()
 const char*
 AliHLTPHOSTreeMakerComponent::GetComponentID()
 {
+  //comment
   return "PhosTreeMaker";
 }
 
 void
 AliHLTPHOSTreeMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
+  //comment
  //Get datatypes for input
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
@@ -84,12 +89,14 @@ AliHLTPHOSTreeMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>&
 AliHLTComponentDataType 
 AliHLTPHOSTreeMakerComponent::GetOutputDataType()
 {
+  //comment
   return AliHLTPHOSDefinitions::fgkAliHLTRootTreeDataType;
 }
 
 void 
 AliHLTPHOSTreeMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
+  //comment
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -143,7 +150,7 @@ return 0;
 int
 AliHLTPHOSTreeMakerComponent::DoInit ( int argc, const char** argv )
 {
-
+  //comment
   fTreeMakerPtr = new AliHLTPHOSTreeMaker();
   fDigitTreePtr = new TTree ( "digitTree", "Digits tree" );
   fDirectory = new char[50];
@@ -182,12 +189,14 @@ AliHLTPHOSTreeMakerComponent::DoInit ( int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSTreeMakerComponent::Spawn()
 {
+  //comment
   return new AliHLTPHOSTreeMakerComponent();
 }
 
 void
 AliHLTPHOSTreeMakerComponent::Write()
 {
+  //comment
   cout << "Writing file...";
   char filename [256];
   sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNb,(fEventCount/fWriteInterval - 1));
@@ -201,6 +210,7 @@ AliHLTPHOSTreeMakerComponent::Write()
 void
 AliHLTPHOSTreeMakerComponent::ResetTrees()
 {
+  //comment
   delete fDigitTreePtr;
   fDigitTreePtr = new TTree("digitTree", "Digits tree");
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);

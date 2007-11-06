@@ -30,6 +30,7 @@ AliHLTPHOSDigit::AliHLTPHOSDigit() :
 
 AliHLTPHOSDigit::~AliHLTPHOSDigit()
 {
+  //comment
 }
 
 void 
@@ -47,4 +48,17 @@ AliHLTPHOSDigit::SetRawData(Int_t *dataPtr)
 }
  
 
-
+void 
+AliHLTPHOSDigit::ResetDigit()
+  {
+    fZ = -1;
+    fX = -1;
+    fAmplitude = -1;
+    fTime = -1;
+    fEnergy =-1;
+    fGain = -1;
+    fSamples = 55;
+    fPreSamples =15;
+    fTotalSamples =70;
+    fDebugVar = -1;
+  }

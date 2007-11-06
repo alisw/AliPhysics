@@ -47,7 +47,7 @@ class AliHLTPHOSFileWriterComponent:public AliHLTFileWriter
   string  fDirectory;                                             /**<target directory for files*/
   string  fFilename;                                              /**<the basename of the output file*/
   AliHLTComponentDataType fDataTypesToFile[N_DATATYPES];          /**<Array for registering datatypes that should be written to files*/          
-  int fEventCount;                                                /**<Event counter*/
+  int fEvtCnt;                                                /**<Event counter*/
   static const AliHLTComponentDataType fgkInputDataTypes[];         /**<Datatypes that can be given as input to this component*/
 };
 #endif

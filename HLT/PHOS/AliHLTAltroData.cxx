@@ -25,7 +25,7 @@ AliHLTAltroData::AliHLTAltroData(): fData(0),
 				    fBunchCounter(0),
 				    fIsComplete(0)
 {
-
+  //comment
 
 }
 
@@ -33,7 +33,7 @@ AliHLTAltroData::AliHLTAltroData(): fData(0),
 
 AliHLTAltroData::~AliHLTAltroData()
 {
-
+  //comment
 
 }
 
@@ -42,6 +42,7 @@ AliHLTAltroData::~AliHLTAltroData()
 bool
 AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
 {
+  //comment
   if(fIsComplete == true)
     {
 
@@ -145,6 +146,7 @@ AliHLTAltroData::NextBunch(AliHLTAltroBunch *altroBunch)
 void
 AliHLTAltroData::Reset()
 {
+  //comment
    fWc = 0;
    fBunchCounter = 0;
 }
@@ -153,18 +155,21 @@ AliHLTAltroData::Reset()
 int
 AliHLTAltroData::GetChannel()
 {
+  //comment
  return  fHadd & 0xf;
 }
 
 int
 AliHLTAltroData::GetChip()
 {
+  //comment
  return  (fHadd & 0x70) >> 4 ;
 }
 
 int
 AliHLTAltroData::GetCard()
 {
+  //comment
  return   (fHadd & 0x780) >>  7;
 }
 
@@ -172,5 +177,6 @@ AliHLTAltroData::GetCard()
 int
 AliHLTAltroData::GetBranch()
 {
+  //comment
  return   (fHadd & 0x800 ) >> 11;
 }

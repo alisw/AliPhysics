@@ -135,6 +135,7 @@ AliHLTPHOSClusterizerComponent::DoDeinit()
 const Char_t*
 AliHLTPHOSClusterizerComponent::GetComponentID()
 {
+  //comment
   return "AliHltPhosClusterizer";
 }
 

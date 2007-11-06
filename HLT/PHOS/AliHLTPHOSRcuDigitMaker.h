@@ -22,7 +22,7 @@ class AliHLTPHOSRcuDigitMaker : public AliHLTPHOSBase
 {
 public:
   AliHLTPHOSRcuDigitMaker();
-  ~AliHLTPHOSRcuDigitMaker();
+  virtual ~AliHLTPHOSRcuDigitMaker();
  
   // void SetValidCellData(AliHLTPHOSValidCellDataStruct *data) { fCellDataPtr = data; }
   //  void SetDigitContainerStruct(AliHLTPHOSDigitContainerStruct *container) 
@@ -41,16 +41,16 @@ public:
 
 private:
 
-  AliHLTPHOSValidCellDataStruct *fCellDataPtr;
-  AliHLTPHOSRcuDigitContainerDataStruct *fDigitContainerStructPtr;
-  TClonesArray *fDigitArrayPtr;
-  AliHLTPHOSDigit *fDigitPtr;
+  AliHLTPHOSValidCellDataStruct *fCellDataPtr; //comment
+  AliHLTPHOSRcuDigitContainerDataStruct *fDigitContainerStructPtr; //comment
+  TClonesArray *fDigitArrayPtr; //comment
+  AliHLTPHOSDigit *fDigitPtr; //comment
   //AliHLTPHOSDigitDataStruct *fDigitStructPtr;
-  AliHLTPHOSDigitDataStruct *fDigitStructPtr;
-  Int_t fDigitCount; 
-  Int_t fNrPresamples;
+  AliHLTPHOSDigitDataStruct *fDigitStructPtr; //comment
+  Int_t fDigitCount;  //comment
+  Int_t fNrPresamples; //comment
 
-  Float_t fDigitThreshold;
+  Float_t fDigitThreshold; //comment
 
   //  ClassDef(AliHLTPHOSRcuDigitMaker, 1); 
 };

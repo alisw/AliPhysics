@@ -1,5 +1,17 @@
-//insert copyright
-
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        *
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                     *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include "AliHLTPHOSSandboxComponent.h"
 #include "AliHLTPHOSProcessor.h"
 #include "AliHLTPHOSChannelCounter.h"
@@ -12,19 +24,20 @@ AliHLTPHOSSandboxComponent gAliHLTPHOSSandboxComponent;
 
 AliHLTPHOSSandboxComponent::AliHLTPHOSSandboxComponent() :
   AliHLTPHOSProcessor(),
-  fEventCount(0),
+  fEvtCnt(0),
   fChannelCounterPtr(0)
 {
-
+  //comment
 }
 
 AliHLTPHOSSandboxComponent::~AliHLTPHOSSandboxComponent()
 {
+  //comment
 }
 /*
 AliHLTPHOSSandboxComponent::AliHLTPHOSSandboxComponent(const AliHLTPHOSSandboxComponent &) :
   AliHLTDataSink(),
-  fEventCount(0),
+  fEvtCnt(0),
   fChannelCounterPtr(0)
 {
 
@@ -36,10 +49,11 @@ AliHLTPHOSSandboxComponent::AliHLTPHOSSandboxComponent(const AliHLTPHOSSandboxCo
 int 
 AliHLTPHOSSandboxComponent::Deinit()
 {
+  //comment
   printf("AliHLTPHOSSandboxComponent::Deinit()\n");
 
-  //fChannelCounterPtr->PrintOutOfSyncChannels(fEventCount);
-  fChannelCounterPtr->FillHistograms(fEventCount);
+  //fChannelCounterPtr->PrintOutOfSyncChannels(fEvtCnt);
+  fChannelCounterPtr->FillHistograms(fEvtCnt);
   fChannelCounterPtr->WriteHistograms("/opt/HLT-public/rundir/channelcount.root");
   return 0;
 }
@@ -47,6 +61,7 @@ AliHLTPHOSSandboxComponent::Deinit()
 Int_t
 AliHLTPHOSSandboxComponent::DoDeinit()
 {
+  //comment
   //Deinitialize the component
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSSandboxComponent DoDeinit");
 
@@ -58,6 +73,7 @@ AliHLTPHOSSandboxComponent::DoDeinit()
 const char*
 AliHLTPHOSSandboxComponent::GetComponentID()
 {
+  //comment
   return "PhosSandbox";
 }
 
@@ -75,6 +91,7 @@ AliHLTPHOSSandboxComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& l
 AliHLTComponentDataType 
 AliHLTPHOSSandboxComponent::GetOutputDataType()
 {
+  //comment
   return AliHLTPHOSDefinitions::fgkAliHLTSandboxDataType;
 }
 
@@ -82,6 +99,7 @@ AliHLTPHOSSandboxComponent::GetOutputDataType()
 void 
 AliHLTPHOSSandboxComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
+  //comment
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -116,18 +134,18 @@ AliHLTPHOSSandboxComponent::DoEvent(const AliHLTComponentEventData& evtData, con
       fChannelCounterPtr->CountChannels(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
     }
   
-  fEventCount++;
+  fEvtCnt++;
 
-  if(fEventCount % 10 == 0)
+  if(fEvtCnt % 10 == 0)
    {
-	printf("Event #: %d\n", fEventCount);   
-	//fChannelCounterPtr->PrintOutOfSyncChannels(fEventCount);
+	printf("Event #: %d\n", fEvtCnt);   
+	//fChannelCounterPtr->PrintOutOfSyncChannels(fEvtCnt);
     }
  
-  if(fEventCount % 1000 == 0 && fEventCount != 0)
+  if(fEvtCnt % 1000 == 0 && fEvtCnt != 0)
     {
-//      fChannelCounterPtr->PrintOutOfSyncChannels(fEventCount);
-      fChannelCounterPtr->FillHistograms(fEventCount);
+//      fChannelCounterPtr->PrintOutOfSyncChannels(fEvtCnt);
+      fChannelCounterPtr->FillHistograms(fEvtCnt);
       fChannelCounterPtr->WriteHistograms("/opt/HLT-public/rundir/channelcount.root");
     }
 
@@ -155,5 +173,6 @@ AliHLTPHOSSandboxComponent::DoInit(int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSSandboxComponent::Spawn()
 {
+  //comment
   return new AliHLTPHOSSandboxComponent();
 }
