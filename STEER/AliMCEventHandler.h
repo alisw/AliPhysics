@@ -42,7 +42,7 @@ public:
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent();
     // needed to prevent warning of hidden virtual Bool_t TObject::Notify()
-    virtual Bool_t       Notify() { return TNamed::Notify(); };
+    virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char* path);
     virtual Bool_t       FinishEvent();
     virtual Bool_t       Terminate();
