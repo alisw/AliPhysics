@@ -10,6 +10,7 @@
 #include <TBuffer3D.h>
 #include <TVirtualViewer3D.h>
 #include <TColor.h>
+#include <TFile.h>
 
 #include <TGeoShape.h>
 #include <TGeoVolume.h>
@@ -19,16 +20,7 @@
 #include <TVirtualGeoPainter.h>
 
 using namespace Reve;
-//______________________________________________________________________
-// GeoNodeRnrEl
-//
 
-ClassImp(GeoRnrEl)
-
-TClass* GeoRnrEl::ProjectedClass() const
-{
-   return NLTPolygonSet::Class();
-}
 
 //______________________________________________________________________
 // GeoNodeRnrEl
@@ -37,7 +29,7 @@ TClass* GeoRnrEl::ProjectedClass() const
 ClassImp(GeoNodeRnrEl)
 
 GeoNodeRnrEl::GeoNodeRnrEl(TGeoNode* node) :
-  GeoRnrEl(),
+  RenderElement(),
   TObject(),
   fNode(node)
 {
@@ -162,30 +154,94 @@ void GeoNodeRnrEl::Draw(Option_t* option)
 
 /**************************************************************************/
 
-TBuffer3D* GeoNodeRnrEl::MakeBuffer3D()
+void GeoNodeRnrEl::Save(const char* file, const char* name)
 {
-  TGeoShape* shape = fNode->GetVolume()->GetShape();
-  if(shape == 0) return 0;
+  TGeoShapeExtract* gse = DumpShapeTree(this, 0, 0);
+  
+  TFile f(file, "RECREATE");
+  gse->Write(name);
+  f.Close();
+}
 
-  if(dynamic_cast<TGeoShapeAssembly*>(shape)){
-    // !!!! TGeoShapeAssembly makes a bad TBuffer3D
+/**************************************************************************/
+
+TGeoShapeExtract* GeoNodeRnrEl::DumpShapeTree(GeoNodeRnrEl* geon, TGeoShapeExtract* parent, Int_t level)
+{
+  printf("dump_shape_tree %s \n", geon->GetName());
+  TGeoNode*   tnode   = 0;
+  TGeoVolume* tvolume = 0;
+  TGeoShape*  tshape  = 0;
+
+  tnode = geon->GetNode();
+  if(tnode == 0) {
+    printf("Null node for %s; assuming it's a holder and descending.\n", geon->GetName());
+    goto do_dump;
+  }
+
+  tvolume = tnode->GetVolume();
+  if(tvolume == 0) {
+    printf("Null volume for %s; skipping.\n", geon->GetName());
     return 0;
   }
 
-  printf("eoNodeRnrEl::MakeBuffer3D() \n");
-  TBuffer3D* buff  = shape->MakeBuffer3D();
-  TGeoMatrix* mx = fNode->GetMatrix();
-  Int_t N = buff->NbPnts();
-  Double_t* pnts = buff->fPnts;
-  Double_t  master[4];
-  for(Int_t i = 0; i<N; i++)
-  {
-    mx->LocalToMaster(&pnts[3*i], master);
-    pnts[3*i] =   master[0];
-    pnts[3*i+1] = master[1];
-    pnts[3*i+2] = master[2];
+  tshape  = tvolume->GetShape();
+
+do_dump:
+  // transformation
+  ZTrans trans;
+  if (parent) if (parent) trans.SetFromArray(parent->GetTrans());
+  TGeoMatrix* gm =  tnode->GetMatrix();
+  const Double_t* rm = gm->GetRotationMatrix();
+  const Double_t* tv = gm->GetTranslation();
+  ZTrans t;
+  t(1,1) = rm[0]; t(1,2) = rm[1]; t(1,3) = rm[2];
+  t(2,1) = rm[3]; t(2,2) = rm[4]; t(2,3) = rm[5];
+  t(3,1) = rm[6]; t(3,2) = rm[7]; t(3,3) = rm[8];
+  t(1,4) = tv[0]; t(2,4) = tv[1]; t(3,4) = tv[2];
+  trans *= t;
+
+  TGeoShapeExtract* gse = new TGeoShapeExtract(geon->GetName(), geon->GetTitle());
+  gse->SetTrans(trans.Array());
+  Int_t ci = 0;
+  if(tvolume) ci = tvolume->GetLineColor();
+  TColor* c = gROOT->GetColor(ci);
+  Float_t rgba[4] = {1, 0, 0, 1};
+  if (c) {
+    rgba[0] = c->GetRed();
+    rgba[1] = c->GetGreen();
+    rgba[2] = c->GetBlue();
+  } 
+  gse->SetRGBA(rgba);
+  Bool_t rnr = geon->GetRnrSelf();
+  if(level > gGeoManager->GetVisLevel())
+    rnr = kFALSE;
+  gse->SetRnrSelf(rnr);
+  gse->SetRnrElements(geon->GetRnrChildren());
+
+  if(dynamic_cast<TGeoShapeAssembly*>(tshape)){
+    //    printf("<TGeoShapeAssembly \n");
+    tshape = 0;
   }
-  return buff;
+  gse->SetShape(tshape);
+  level ++;
+  if ( geon->GetNChildren())
+  {
+    TList* ele = new TList();
+    gse->SetElements(ele);
+    gse->GetElements()->SetOwner(true);
+
+    RenderElement::List_i i = geon->BeginChildren();
+    while (i != geon->EndChildren()) {
+      GeoNodeRnrEl* l = dynamic_cast<GeoNodeRnrEl*>(*i);
+      DumpShapeTree(l, gse, level+1);
+      i++;
+    }
+  }
+
+  if(parent)
+    parent->GetElements()->Add(gse);
+   
+  return gse;
 }
 /**************************************************************************/
 //______________________________________________________________________
@@ -308,7 +364,7 @@ void GeoTopNodeRnrEl::NodeVisChanged(TGeoNode* node)
 ClassImp(GeoShapeRnrEl)
 
 GeoShapeRnrEl::GeoShapeRnrEl(const Text_t* name, const Text_t* title) :
-  GeoRnrEl(),
+  RenderElement(),
   TNamed        (name, title),
   fHMTrans      (),
   fColor        (0),
@@ -358,6 +414,53 @@ void GeoShapeRnrEl::Paint(Option_t* /*option*/)
 
 /**************************************************************************/
 
+void GeoShapeRnrEl::Save(const char* file, const char* name)
+{
+  TGeoShapeExtract* gse = DumpShapeTree(this, 0);
+  
+  TFile f(file, "RECREATE");
+  gse->Write(name);
+  f.Close();
+}
+
+/**************************************************************************/
+
+TGeoShapeExtract* GeoShapeRnrEl::DumpShapeTree(GeoShapeRnrEl* gsre, TGeoShapeExtract* parent)
+{
+  //  printf("dump_shape_tree %s \n", gsre->GetName());
+  TGeoShapeExtract* she = new TGeoShapeExtract(gsre->GetName(), gsre->GetTitle());
+  she->SetTrans(gsre->RefHMTrans().Array());
+  Int_t ci = gsre->GetColor();
+  TColor* c = gROOT->GetColor(ci);
+  Float_t rgba[4] = {1, 0, 0, 1 - gsre->GetMainTransparency()/100.};
+  if (c)
+ {
+    rgba[0] = c->GetRed();
+    rgba[1] = c->GetGreen();
+    rgba[2] = c->GetBlue();
+  } 
+  she->SetRGBA(rgba);
+  she->SetRnrSelf(gsre->GetRnrSelf());
+  she->SetRnrElements(gsre->GetRnrChildren());
+  she->SetShape(gsre->GetShape());
+  if ( gsre->GetNChildren())
+  {
+    TList* ele = new TList();
+    she->SetElements(ele);
+    she->GetElements()->SetOwner(true);
+    RenderElement::List_i i = gsre->BeginChildren();
+    while (i != gsre->EndChildren()) {
+      GeoShapeRnrEl* l = dynamic_cast<GeoShapeRnrEl*>(*i);
+      DumpShapeTree(l, she);
+      i++;
+    }
+  }
+  if(parent)
+    parent->GetElements()->Add(she);
+
+  return she; 
+}
+
 GeoShapeRnrEl* GeoShapeRnrEl::ImportShapeExtract(TGeoShapeExtract * gse,
 					RenderElement    * parent)
 {
@@ -398,6 +501,13 @@ GeoShapeRnrEl* GeoShapeRnrEl::SubImportShapeExtract(TGeoShapeExtract * gse,
 
 /**************************************************************************/
 
+TClass* GeoShapeRnrEl::ProjectedClass() const
+{
+   return NLTPolygonSet::Class();
+} 
+
+/**************************************************************************/
+
 TBuffer3D* GeoShapeRnrEl::MakeBuffer3D()
 {
   if(fShape == 0) return 0;
@@ -420,3 +530,6 @@ TBuffer3D* GeoShapeRnrEl::MakeBuffer3D()
   }
   return buff;
 }
+
+
+

@@ -17,26 +17,7 @@ class TGeoShapeExtract;
 
 namespace Reve {
 
-class GeoRnrEl : public RenderElement,
-                 public NLTProjectable
-{
- private:
-  GeoRnrEl(const GeoRnrEl&);            // Not implemented
-  GeoRnrEl& operator=(const GeoRnrEl&); // Not implemented
-
- public:
-  GeoRnrEl(){};
-  virtual ~GeoRnrEl() {};
-
-  virtual TBuffer3D*     MakeBuffer3D() = 0;
-  virtual TClass*        ProjectedClass() const;
-
-  ClassDef(GeoRnrEl, 1);
-};
-
-/**************************************************************************/
-/**************************************************************************/
-class GeoNodeRnrEl : public GeoRnrEl,
+class GeoNodeRnrEl : public RenderElement,
                      public TObject
 {
   friend class GeoNodeRnrElEditor;
@@ -46,7 +27,7 @@ class GeoNodeRnrEl : public GeoRnrEl,
 
 protected:
   TGeoNode *fNode;
-
+  TGeoShapeExtract* DumpShapeTree(GeoNodeRnrEl* geon, TGeoShapeExtract* parent = 0, Int_t level = 0);
 public:
   GeoNodeRnrEl(TGeoNode* node);
 
@@ -63,14 +44,13 @@ public:
   virtual void SetRnrState(Bool_t rnr);
 
   virtual Bool_t CanEditMainColor()  { return true; }
-  virtual void SetMainColor(Color_t color);
-  virtual void SetMainColor(Pixel_t pixel);
+  virtual void   SetMainColor(Color_t color);
+  virtual void   SetMainColor(Pixel_t pixel);
 
   void UpdateNode(TGeoNode* node);
   void UpdateVolume(TGeoVolume* volume);
 
-  // NLTGeoProjectable
-  virtual TBuffer3D*           MakeBuffer3D();
+  void Save(const char* file, const char* name="Extract");  
 
   virtual void Draw(Option_t* option="");
 
@@ -126,8 +106,9 @@ public:
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 
-class GeoShapeRnrEl : public GeoRnrEl,
-		      public TNamed
+class GeoShapeRnrEl : public RenderElement,
+		      public TNamed,
+                      public NLTProjectable
 {
   GeoShapeRnrEl(const GeoShapeRnrEl&);            // Not implemented
   GeoShapeRnrEl& operator=(const GeoShapeRnrEl&); // Not implemented
@@ -139,6 +120,7 @@ protected:
   TGeoShape*        fShape;
 
   static GeoShapeRnrEl* SubImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+  TGeoShapeExtract*     DumpShapeTree(GeoShapeRnrEl* geon, TGeoShapeExtract* parent = 0);
 
 public:
   GeoShapeRnrEl(const Text_t* name="GeoShapeRnrEl", const Text_t* title=0);
@@ -162,10 +144,12 @@ public:
 
   virtual void Paint(Option_t* option="");
 
-  static GeoShapeRnrEl* ImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
+  void Save(const char* file, const char* name="Extract");  
+  static GeoShapeRnrEl*        ImportShapeExtract(TGeoShapeExtract* gse, RenderElement* parent);
 
   // NLTGeoProjectable
   virtual TBuffer3D*           MakeBuffer3D();
+  virtual TClass*              ProjectedClass() const;
 
   ClassDef(GeoShapeRnrEl, 1);
 };
