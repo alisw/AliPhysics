@@ -1,3 +1,25 @@
+2007-11-06  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* GeoNode.cxx:
+	* GeoNode.h:
+	Support load/save of GeoNodeRnrEl and GeoShapeRnrEl. GeoNodeRnrEl
+	is no loner NLTProjectable. 
+
+	* LinkDef.h:
+	Remove coomon base class class for GeoNodeRnrEl and GeoShapeRnrEl.
+	
+	* NLTPolygonSet.cxx:
+	Move NLTPRojectale class from GeoRnrEl to GeoShapeRnrEl.
+	
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* NLTProjectorGL.cxx:
+	* NLTProjectorGL.h:
+
+
+	* NLTProjectorEditor.cxx:
+	Change range for number of tick-marck.  
+
 2007-11-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* NLTBases.cxx:
