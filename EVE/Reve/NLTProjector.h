@@ -33,6 +33,9 @@ protected:
   Float_t             fDistortion; // sensible values from 0 to 0.01
   Float_t             fFixedRadius;
   Float_t             fScale;
+  Vector              fUpLimit;  
+  Vector              fLowLimit;
+
   
 public:
   NLTProjection(Vector& center);
@@ -47,7 +50,7 @@ public:
   const     char*     GetName(){return fName;}
   void                SetName(const char* txt){ fName = txt; }
 
-  virtual void        SetCenter(Vector& v){ fCenter = v; }
+  virtual void        SetCenter(Vector& v){ fCenter = v; UpdateLimit();}
   virtual Float_t*    GetProjectedCenter() { return fCenter.c_vec(); }
 
   void                SetType(PType_e t){fType = t;}
@@ -56,9 +59,10 @@ public:
   void                SetGeoMode(GeoMode_e m){fGeoMode = m;}
   GeoMode_e           GetGeoMode(){return fGeoMode;}
 
+  void                UpdateLimit();
   void                SetDistortion(Float_t d);
   Float_t             GetDistortion(){return fDistortion;}
-  void                SetFixedRadius(Float_t x){fFixedRadius = x;}
+  void                SetFixedRadius(Float_t x);
   Float_t             GetFixedRadius(){return fFixedRadius;}
 
   virtual   Bool_t    AcceptSegment(Vector&, Vector&, Float_t /*tolerance*/) { return kTRUE; } 
@@ -67,6 +71,7 @@ public:
   // utils to draw axis
   virtual Float_t     GetValForScreenPos(Int_t ax, Float_t value);
   virtual Float_t     GetScreenVal(Int_t ax, Float_t value);
+  Float_t             GetLimit(Int_t i, Bool_t pos) { return pos ? fUpLimit[i] : fLowLimit[i]; }
 
   static   Float_t    fgEps;
 

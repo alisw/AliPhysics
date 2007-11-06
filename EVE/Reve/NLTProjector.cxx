@@ -20,7 +20,7 @@ NLTProjection::NLTProjection(Vector& center) :
   fGeoMode(GM_Unknown),
   fName(0),
   fCenter(center.x, center.y, center.z),
-  fDistortion(0), 
+  fDistortion(0.0f), 
   fFixedRadius(300), 
   fScale(1.0f)
 {}
@@ -53,6 +53,18 @@ Vector* NLTProjection::Project(Vector* origPnts, Int_t Npnts, Bool_t copy)
 }
 
 //______________________________________________________________________________
+void NLTProjection::UpdateLimit()
+{
+  if ( fDistortion == 0.0f )
+    return;
+ 
+  Float_t lim =  1.0f/fDistortion + fFixedRadius;
+  Float_t* c = GetProjectedCenter();
+  fUpLimit.Set(lim + c[0], lim + c[1], c[2]);
+  fLowLimit.Set(-lim + c[0], -lim + c[1], c[2]);
+}
+
+//______________________________________________________________________________
 void NLTProjection::SetDistortion(Float_t d)
 {
   // Prevent scaling down whole projected scene.
@@ -60,6 +72,16 @@ void NLTProjection::SetDistortion(Float_t d)
 
   fDistortion=d; 
   fScale = 1+fFixedRadius*fDistortion;
+  UpdateLimit();
+}
+
+//______________________________________________________________________________
+void NLTProjection::SetFixedRadius(Float_t r)
+{
+
+  fFixedRadius=r;
+  fScale = 1+fFixedRadius*fDistortion;
+  UpdateLimit();
 }
 
 //______________________________________________________________________________
@@ -74,13 +96,17 @@ void NLTProjection::SetDirectionalVector(Int_t screenAxis, Vector& vec)
 //______________________________________________________________________________
 Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
 {
-  // move on unprojected axis, find when projected value is geiven screen values
-  Float_t xL, xM, xR;
+  // move on unprojected axis, find when projected value is geiven screen values(sv)
+  static const Exc_t eH("NLTProjector::GetValForScreenPos ");
 
+  Float_t xL, xM, xR;
   Vector V, DirVec;
   SetDirectionalVector(i, DirVec);
+  if((sv > 0 && sv > fUpLimit[i]) || (sv < 0 && sv < fLowLimit[i]) )
+    throw(eH + Form("screen value '%f' out of limit '%f'.", sv, sv > 0 ? fUpLimit[i] : fLowLimit[i]));
 
   Vector zero; ProjectVector(zero);
+  // printf("NLTProjection::GetValForScreenPos %d sv %f , zero %f\n",i,  sv, zero[i]);
   // search from -/+ infinity according to sign of screen value
   if (sv > zero[i])
   {
@@ -88,7 +114,8 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
     while (1)
     {
       V.Mult(DirVec, xR); ProjectVector(V);
-      if (V[i] > sv) break;
+      // printf("positive projected %f, value %f,xL, xR ( %f, %f)\n", V[i], sv, xL, xR);
+      if (V[i] > sv || V[i] == sv) break;
       xL = xR; xR *= 2;
     }
   }
@@ -98,15 +125,17 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
     while (1)
     {
       V.Mult(DirVec, xL); ProjectVector(V);
-      if (V[i] < sv) break;
+      // printf("negative projected %f, value %f,xL, xR ( %f, %f)\n", V[i], sv, xL, xR);
+      if (V[i] < sv || V[i] == sv) break;
       xR = xL; xL *= 2;
     }
   }
   else
   {
-    return 0;
+    return 0.0f;
   }
 
+  // printf("start bisection %f %f sv %f\n", xL, xR, sv);
   do 
   {  
     xM = 0.5f * (xL + xR);
@@ -116,7 +145,7 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
       xR = xM; 
     else
       xL = xM;
-  } while(TMath::Abs(V[i] - sv) > fgEps);
+  } while(TMath::Abs(V[i] - sv) >= fgEps);
 
   return xM;
 }
@@ -139,12 +168,13 @@ ClassImp(Reve::RhoZ)
 //______________________________________________________________________________
 void RhoZ::SetCenter(Vector& v)
 {
-  NLTProjection::SetCenter(v);
-  fCenterR = TMath::Sqrt(v.x*v.x+v.y*v.y);
+  fCenter = v;
 
+  fCenterR = TMath::Sqrt(v.x*v.x+v.y*v.y);
   fProjectedCenter.x = fCenter.z;
   fProjectedCenter.y = TMath::Sign(fCenterR, fCenter.y);
   fProjectedCenter.z = 0;
+  UpdateLimit();
 }
 
 //______________________________________________________________________________
@@ -154,6 +184,7 @@ void RhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,  PProc_e proc )
 
   if(proc == PP_Plane || proc == PP_Full)
   {
+    // project
     y = Sign((Float_t)Sqrt(x*x+y*y), y); 
     x = z;
   }
@@ -162,7 +193,7 @@ void RhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,  PProc_e proc )
     // move to center
     x -= fProjectedCenter.x;
     y -= fProjectedCenter.y;
-    // project
+    // distort
     y = (y*fScale) / (1.0f + Abs(y)*fDistortion);
     x = (x*fScale) / (1.0f + Abs(x)*fDistortion);
     // move back from center
@@ -223,6 +254,7 @@ void  CircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e 
     y -= fCenter.y;
     Float_t phi = x == 0.0 && y == 0.0 ? 0.0 : ATan2(y,x);
     Float_t R = Sqrt(x*x+y*y);
+    // distort
     Float_t NR = (R*fScale) / (1.0f + R*fDistortion);
     x = NR*Cos(phi) + fCenter.x;
     y = NR*Sin(phi) + fCenter.y;

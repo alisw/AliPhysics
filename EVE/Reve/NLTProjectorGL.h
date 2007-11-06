@@ -38,6 +38,8 @@ private:
   void               SplitIntervalByPos(Float_t min, Float_t max, Int_t axis, Int_t level)const;
   void               SplitIntervalByVal(Float_t min, Float_t max, Int_t axis, Int_t level)const;
 
+  void               SetRange(Float_t val, Int_t axis) const;
+
 protected:
   NLTProjector*      fM; // fModel dynamic-casted to NLTProjector
   TGLText*           fText;

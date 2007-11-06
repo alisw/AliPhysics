@@ -40,8 +40,50 @@ NLTProjectorGL::~NLTProjectorGL()
 /**************************************************************************/
 const char* NLTProjectorGL::GetText(Float_t x) const
 {
-  Float_t v = 10*TMath::Nint(x/10.0f);
-  return Form("%.0f", v);
+  using  namespace TMath;
+  // TODO: Form could be replaced with own version of printf
+  if     ( Abs(x) > 1000 )
+  {
+    Float_t v = 10*TMath::Nint(x/10.0f);
+    return Form("%.0f", v);
+  }
+  else if( Abs(x) > 100  )
+  {
+    Float_t v = TMath::Nint(x);
+    return Form("%.0f", v);
+  }
+  else if ( Abs(x) > 10  )
+  {
+    return Form("%.1f", x);
+  }
+  else if ( Abs(x) > 1   )
+  {
+    return Form("%.2f", x);
+  }
+  else
+  {
+    return Form("%.3f", x);
+  }
+}
+
+/**************************************************************************/
+void NLTProjectorGL::SetRange(Float_t pos, Int_t ax) const
+{
+  using namespace TMath;
+  Float_t limit =  fM->GetProjection()->GetLimit(ax, pos > 0 ? kTRUE: kFALSE);
+  // printf("NLTProjectorGL::SetRange pos %f range %f \n", pos, limit );
+  if ( fM->GetProjection()->GetDistortion() > 0.001 && Abs(pos) > Abs(limit *0.97))
+  {
+    fPos.push_back(limit *0.7);
+    fVals.push_back(fM->GetProjection()->GetValForScreenPos(ax, fPos.back()));
+    // printf("bbox value out of limit:: val %f, pos %f\n", limit, fVals.back());
+  }
+
+  else
+  {
+    fPos.push_back(pos);
+    fVals.push_back(fM->GetProjection()->GetValForScreenPos(ax, fPos.back()));
+  }
 }
 
 /**************************************************************************/
@@ -100,7 +142,7 @@ void NLTProjectorGL::DrawVInfo() const
   {
     txt= GetText(*vi);
     fText->BBox(txt, llx, lly, llz, urx, ury, urz);
-    fText->PaintGLText( -tms, 0, *pi - (ury - lly)*fText->GetTextSize()*0.5, txt);
+    fText->PaintGLText(-(urx-llx)*fText->GetTextSize(), 0, *pi - (ury - lly)*fText->GetTextSize()*0.5, txt);
     vi++;
   }
   glPopMatrix();
@@ -163,14 +205,7 @@ void NLTProjectorGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 
   Float_t* bbox = fM->GetBBox();
   fRange = bbox[1] - bbox[0];
-
-  // value of projected bbox
-  Float_t bbv[4];
-  bbv[0] = fM->GetProjection()->GetValForScreenPos(0,bbox[0]);
-  bbv[1] = fM->GetProjection()->GetValForScreenPos(0,bbox[1]);
-  bbv[2] = fM->GetProjection()->GetValForScreenPos(1,bbox[2]);
-  bbv[3] = fM->GetProjection()->GetValForScreenPos(1,bbox[3]);
-
+  // printf("bbox %f, %f\n", bbox[0], bbox[1]);
   Vector zeroPos;
   fM->GetProjection()->ProjectVector(zeroPos);
   fText->SetTextSize(fLabelSize*fRange);
@@ -179,14 +214,14 @@ void NLTProjectorGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
   { // horizontal
     glPushMatrix();
     glTranslatef(0, bbox[2], 0);
-    // left
-    fPos.push_back(bbox[0]); fPos.push_back(zeroPos.x);
-    fVals.push_back(bbv[0]); fVals.push_back(0);
+    // left 
+    SetRange(bbox[0], 0);
+    fPos.push_back(zeroPos.x); fVals.push_back(0);
     SplitInterval(0);
     DrawHInfo();
     // right
-    fPos.push_back(zeroPos.x); fPos.push_back(bbox[1]);
-    fVals.push_back(0); fVals.push_back(bbv[1]);
+    fPos.push_back(zeroPos.x); fVals.push_back(0);
+    SetRange(bbox[1], 0);
     SplitInterval(0); fVals.pop_front(); fPos.pop_front();
     DrawHInfo();
     glPopMatrix();
@@ -195,13 +230,13 @@ void NLTProjectorGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
     glPushMatrix();
     glTranslatef(bbox[0], 0, 0);
     // bottom
-    fPos.push_back(bbox[2]); fPos.push_back(zeroPos.y);
-    fVals.push_back(bbv[2]); fVals.push_back(0);
+    fPos.push_back(zeroPos.y);fVals.push_back(0);
+    SetRange(bbox[2], 1);
     SplitInterval(1);
     DrawVInfo();
     // top
-    fPos.push_back(zeroPos.y); fPos.push_back(bbox[3]);
-    fVals.push_back(0); fVals.push_back(bbv[3]);
+    fPos.push_back(zeroPos.y); fVals.push_back(0);
+    SetRange(bbox[3], 1);
     SplitInterval(1);fPos.pop_front(); fVals.pop_front();
     DrawVInfo();
     glPopMatrix();
@@ -230,14 +265,14 @@ void NLTProjectorGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 
   if(fM->GetDrawOrigin())
   {
-      Vector zero;
-      fM->GetProjection()->ProjectVector(zero);
-      glColor3f(1., 1., 1.);
-      glBegin(GL_LINES);
-      glVertex3f(zero[0] +d, zero[1],    zero[2]);     glVertex3f(zero[0] - d, zero[1]   , zero[2]);
-      glVertex3f(zero[0] ,   zero[1] +d, zero[2]);     glVertex3f(zero[0]    , zero[1] -d, zero[2]);
-      glVertex3f(zero[0] ,   zero[1],    zero[2] + d); glVertex3f(zero[0]    , zero[1]   , zero[2] - d);
-      glEnd();
+    Vector zero;
+    fM->GetProjection()->ProjectVector(zero);
+    glColor3f(1., 1., 1.);
+    glBegin(GL_LINES);
+    glVertex3f(zero[0] +d, zero[1],    zero[2]);     glVertex3f(zero[0] - d, zero[1]   , zero[2]);
+    glVertex3f(zero[0] ,   zero[1] +d, zero[2]);     glVertex3f(zero[0]    , zero[1] -d, zero[2]);
+    glVertex3f(zero[0] ,   zero[1],    zero[2] + d); glVertex3f(zero[0]    , zero[1]   , zero[2] - d);
+    glEnd();
   }
   if (lightp) glEnable(GL_LIGHTING);
 }
