@@ -107,7 +107,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
 // *****************************************************
 TString runType = GetRunType();
 printf("\n\t AliZDCPreprocessor -> runType detected %s\n\n",runType.Data());
-if(runType == "PEDESTAL_RUN") {
+if(runType == "PEDESTAL_RUN"){
   TList* daqSources = GetFileSources(kDAQ, "PEDESTALS");
   if(!daqSources){
     Log(Form("No source for PEDESTALS run %d !", fRun));
@@ -135,7 +135,7 @@ if(runType == "PEDESTAL_RUN") {
            printf("Cannot open file %s \n",PedFileName);
 	   return 1;
          }
-         Log(Form("File %s connected to analyze pedestal events", PedFileName));
+         Log(Form("File %s connected to process pedestal data", PedFileName));
          Float_t PedVal[(3*NZDCch)][2];
          for(Int_t i=0; i<(3*NZDCch); i++){
             for(Int_t j=0; j<2; j++){
@@ -193,8 +193,9 @@ else if(runType == "PULSER_RUN"){
     	   printf("Cannot open file %s \n",EMDFileName);
 	   return 1;
     	 }
-    	 Log(Form("File %s connected to analyze EM dissociation events", EMDFileName));
-    	 Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
+    	 Log(Form("File %s connected to process data from EM dissociation events", EMDFileName));
+    	 //
+	 Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
 	 Float_t CalibVal[4];
     	 for(Int_t j=0; j<10; j++){	    
     	   if(j<6){
@@ -218,6 +219,57 @@ else if(runType == "PULSER_RUN"){
        }
        else{
          Log(Form("File %s not found", EMDFileName));
+         return 1;
+       }
+       //calibdata->Print("");
+  }
+}
+// ********************************************************
+// [c] PHYSICS RUNS -> Parameters needed for reconstruction
+// ********************************************************
+else if(runType == "PHYSICS"){
+  TList* daqSources = GetFileSources(kDAQ, "PHYSICS");
+  if(!daqSources){
+    AliError(Form("No sources for PHYSICS run %d !", fRun));
+    return 1;
+  }
+  Log("\t List of sources for PHYSICS");
+  daqSources->Print();
+  //
+  TIter iter2(daqSources);
+  TObjString* source = 0;
+  Int_t j=0;
+  while((source = dynamic_cast<TObjString*> (iter2.Next()))){
+       Log(Form("\n\t Getting file #%d\n",++j));
+       TString stringPHYSFileName = GetFile(kDAQ, "PHYSICS", source->GetName());
+       if(stringPHYSFileName.Length() <= 0){
+         Log(Form("No PHYSICS file from source %s!", source->GetName()));
+	 return 1;
+       }
+       const char* PHYSFileName = stringPHYSFileName.Data();
+       if(PHYSFileName){
+    	 FILE *file;
+    	 if((file = fopen(PHYSFileName,"r")) == NULL){
+    	   printf("Cannot open file %s \n",PHYSFileName);
+	   return 1;
+    	 }
+    	 Log(Form("File %s connected to process data from PHYSICS runs", PHYSFileName));
+    	 //
+	 Float_t PHYSRecParam[10]; 
+    	 for(Int_t j=0; j<10; j++) fscanf(file,"%f",&PHYSRecParam[j]);
+	 calibdata->SetZEMEndValue(PHYSRecParam[0]);
+	 calibdata->SetZEMCutFraction(PHYSRecParam[1]);
+	 calibdata->SetDZEMSup(PHYSRecParam[2]);
+	 calibdata->SetDZEMInf(PHYSRecParam[3]);
+	 calibdata->SetEZN1MaxValue(PHYSRecParam[4]);
+	 calibdata->SetEZP1MaxValue(PHYSRecParam[5]);
+	 calibdata->SetEZDC1MaxValue(PHYSRecParam[6]);
+	 calibdata->SetEZN2MaxValue(PHYSRecParam[7]);
+	 calibdata->SetEZP2MaxValue(PHYSRecParam[8]);
+	 calibdata->SetEZDC2MaxValue(PHYSRecParam[9]);
+       }
+       else{
+         Log(Form("File %s not found", PHYSFileName));
          return 1;
        }
        //calibdata->Print("");
