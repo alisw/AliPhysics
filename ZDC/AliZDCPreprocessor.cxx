@@ -16,11 +16,13 @@
 #include "AliZDCDataDCS.h"
 #include "AliZDCCalibData.h"
 
-//
-// Class implementing ZDC pre-processor.
-// It takes data from DCS and passes it to the class AliZDCDataDCS.
-// The class is then written to the CDB.
-//
+/////////////////////////////////////////////////////////////////////
+//								   //
+// Class implementing ZDC pre-processor.			   //
+// It takes data from DCS and passes it to the class AliZDCDataDCS //
+// The class is then written to the CDB.			   //
+//								   //
+/////////////////////////////////////////////////////////////////////
 
 ClassImp(AliZDCPreprocessor)
 
@@ -66,8 +68,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   if(!dcsAliasMap) return 1;
 
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
-  Float_t DCSValues[28]; // DCSAliases=28
-  fData->ProcessData(*dcsAliasMap, DCSValues);
+  Float_t dcsValues[28]; // DCSAliases=28
+  fData->ProcessData(*dcsAliasMap, dcsValues);
   //dcsAliasMap->Print("");
   //
   // --- Writing ZDC table positions into alignment object
@@ -76,22 +78,22 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliAlignObjParams a;
   Double_t dx=0., dz=0., dpsi=0., dtheta=0., dphi=0.;
   // Vertical table position in mm from DCS
-  Double_t dyZN1 = (Double_t) (DCSValues[0]/10.);
-  Double_t dyZP1 = (Double_t) (DCSValues[1]/10.);
-  Double_t dyZN2 = (Double_t) (DCSValues[2]/10.);
-  Double_t dyZP2 = (Double_t) (DCSValues[3]/10.);
-  const char *ZDCn1="ZDC/NeutronZDC1";
-  const char *ZDCp1="ZDC/ProtonZDC1";
-  const char *ZDCn2="ZDC/NeutronZDC2";
-  const char *ZDCp2="ZDC/ProtonZDC2";
+  Double_t dyZN1 = (Double_t) (dcsValues[0]/10.);
+  Double_t dyZP1 = (Double_t) (dcsValues[1]/10.);
+  Double_t dyZN2 = (Double_t) (dcsValues[2]/10.);
+  Double_t dyZP2 = (Double_t) (dcsValues[3]/10.);
+  const char *n1ZDC="ZDC/NeutronZDC1";
+  const char *p1ZDC="ZDC/ProtonZDC1";
+  const char *n2ZDC="ZDC/NeutronZDC2";
+  const char *p2ZDC="ZDC/ProtonZDC2";
   UShort_t iIndex=0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
   //
-  new(alobj[0]) AliAlignObjParams(ZDCn1, volid, dx, dyZN1, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[1]) AliAlignObjParams(ZDCp1, volid, dx, dyZP1, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[2]) AliAlignObjParams(ZDCn2, volid, dx, dyZN2, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[3]) AliAlignObjParams(ZDCp2, volid, dx, dyZP2, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[0]) AliAlignObjParams(n1ZDC, volid, dx, dyZN1, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[1]) AliAlignObjParams(p1ZDC, volid, dx, dyZP1, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[2]) AliAlignObjParams(n2ZDC, volid, dx, dyZN2, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[3]) AliAlignObjParams(p2ZDC, volid, dx, dyZP2, dz, dpsi, dtheta, dphi, kTRUE);
   // save in CDB storage
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
@@ -126,37 +128,37 @@ if(runType == "PEDESTAL_RUN"){
           Log(Form("No PEDESTAL file from source %s!", source->GetName()));
 	  return 1;
        }
-       const char* PedFileName = stringPedFileName.Data();
+       const char* pedFileName = stringPedFileName.Data();
        // no. ADCch = (22 signal ch. + 2 reference PMs) * 2 gain chain = 48
-       const Int_t NZDCch = 48;
-       if(PedFileName){
+       const Int_t knZDCch = 48;
+       if(pedFileName){
          FILE *file;
-         if((file = fopen(PedFileName,"r")) == NULL){
-           printf("Cannot open file %s \n",PedFileName);
+         if((file = fopen(pedFileName,"r")) == NULL){
+           printf("Cannot open file %s \n",pedFileName);
 	   return 1;
          }
-         Log(Form("File %s connected to process pedestal data", PedFileName));
-         Float_t PedVal[(3*NZDCch)][2];
-         for(Int_t i=0; i<(3*NZDCch); i++){
+         Log(Form("File %s connected to process pedestal data", pedFileName));
+         Float_t pedVal[(3*knZDCch)][2];
+         for(Int_t i=0; i<(3*knZDCch); i++){
             for(Int_t j=0; j<2; j++){
-               fscanf(file,"%f",&PedVal[i][j]);
-	       //if(j==1) printf("PedVal[%d] -> %f, %f \n",i,PedVal[i][0],PedVal[i][1]);
+               fscanf(file,"%f",&pedVal[i][j]);
+	       //if(j==1) printf("pedVal[%d] -> %f, %f \n",i,pedVal[i][0],pedVal[i][1]);
             }
-            if(i<NZDCch){
-              calibdata->SetMeanPed(i,PedVal[i][0]);
-              calibdata->SetMeanPedWidth(i,PedVal[i][1]);
+            if(i<knZDCch){
+              calibdata->SetMeanPed(i,pedVal[i][0]);
+              calibdata->SetMeanPedWidth(i,pedVal[i][1]);
             }
-            else if(i>=NZDCch && i<(2*NZDCch)){
-              calibdata->SetOOTPed(i-NZDCch,PedVal[i][0]);
-              calibdata->SetOOTPedWidth(i-NZDCch,PedVal[i][1]);
+            else if(i>=knZDCch && i<(2*knZDCch)){
+              calibdata->SetOOTPed(i-knZDCch,pedVal[i][0]);
+              calibdata->SetOOTPedWidth(i-knZDCch,pedVal[i][1]);
             }
-            else if(i>=(2*NZDCch) && i<(3*NZDCch)){
-              calibdata->SetPedCorrCoeff(i-(2*NZDCch),PedVal[i][0],PedVal[i][1]);
+            else if(i>=(2*knZDCch) && i<(3*knZDCch)){
+              calibdata->SetPedCorrCoeff(i-(2*knZDCch),pedVal[i][0],pedVal[i][1]);
             }
          }
        }
        else{
-          Log(Form("File %s not found", PedFileName));
+          Log(Form("File %s not found", pedFileName));
           return 1;
        }
        //
@@ -186,23 +188,23 @@ else if(runType == "PULSER_RUN"){
          Log(Form("No EMDCALIB file from source %s!", source->GetName()));
 	 return 1;
        }
-       const char* EMDFileName = stringEMDFileName.Data();
-       if(EMDFileName){
+       const char* emdFileName = stringEMDFileName.Data();
+       if(emdFileName){
     	 FILE *file;
-    	 if((file = fopen(EMDFileName,"r")) == NULL){
-    	   printf("Cannot open file %s \n",EMDFileName);
+    	 if((file = fopen(emdFileName,"r")) == NULL){
+    	   printf("Cannot open file %s \n",emdFileName);
 	   return 1;
     	 }
-    	 Log(Form("File %s connected to process data from EM dissociation events", EMDFileName));
+    	 Log(Form("File %s connected to process data from EM dissociation events", emdFileName));
     	 //
 	 Float_t fitValEMD[6]; Float_t equalCoeff[5][4];
-	 Float_t CalibVal[4];
+	 Float_t calibVal[4];
     	 for(Int_t j=0; j<10; j++){	    
     	   if(j<6){
 	     fscanf(file,"%f",&fitValEMD[j]);
              if(j<4){
-	       CalibVal[j] = fitValEMD[j]/2.76;
-	       calibdata->SetEnCalib(j,CalibVal[j]);
+	       calibVal[j] = fitValEMD[j]/2.76;
+	       calibdata->SetEnCalib(j,calibVal[j]);
 	     }
 	     else calibdata->SetEnCalib(j,fitValEMD[j]);
 	   }
@@ -218,7 +220,7 @@ else if(runType == "PULSER_RUN"){
          }
        }
        else{
-         Log(Form("File %s not found", EMDFileName));
+         Log(Form("File %s not found", emdFileName));
          return 1;
        }
        //calibdata->Print("");
@@ -246,30 +248,30 @@ else if(runType == "PHYSICS"){
          Log(Form("No PHYSICS file from source %s!", source->GetName()));
 	 return 1;
        }
-       const char* PHYSFileName = stringPHYSFileName.Data();
-       if(PHYSFileName){
+       const char* physFileName = stringPHYSFileName.Data();
+       if(physFileName){
     	 FILE *file;
-    	 if((file = fopen(PHYSFileName,"r")) == NULL){
-    	   printf("Cannot open file %s \n",PHYSFileName);
+    	 if((file = fopen(physFileName,"r")) == NULL){
+    	   printf("Cannot open file %s \n",physFileName);
 	   return 1;
     	 }
-    	 Log(Form("File %s connected to process data from PHYSICS runs", PHYSFileName));
+    	 Log(Form("File %s connected to process data from PHYSICS runs", physFileName));
     	 //
-	 Float_t PHYSRecParam[10]; 
-    	 for(Int_t j=0; j<10; j++) fscanf(file,"%f",&PHYSRecParam[j]);
-	 calibdata->SetZEMEndValue(PHYSRecParam[0]);
-	 calibdata->SetZEMCutFraction(PHYSRecParam[1]);
-	 calibdata->SetDZEMSup(PHYSRecParam[2]);
-	 calibdata->SetDZEMInf(PHYSRecParam[3]);
-	 calibdata->SetEZN1MaxValue(PHYSRecParam[4]);
-	 calibdata->SetEZP1MaxValue(PHYSRecParam[5]);
-	 calibdata->SetEZDC1MaxValue(PHYSRecParam[6]);
-	 calibdata->SetEZN2MaxValue(PHYSRecParam[7]);
-	 calibdata->SetEZP2MaxValue(PHYSRecParam[8]);
-	 calibdata->SetEZDC2MaxValue(PHYSRecParam[9]);
+	 Float_t physRecParam[10]; 
+    	 for(Int_t j=0; j<10; j++) fscanf(file,"%f",&physRecParam[j]);
+	 calibdata->SetZEMEndValue(physRecParam[0]);
+	 calibdata->SetZEMCutFraction(physRecParam[1]);
+	 calibdata->SetDZEMSup(physRecParam[2]);
+	 calibdata->SetDZEMInf(physRecParam[3]);
+	 calibdata->SetEZN1MaxValue(physRecParam[4]);
+	 calibdata->SetEZP1MaxValue(physRecParam[5]);
+	 calibdata->SetEZDC1MaxValue(physRecParam[6]);
+	 calibdata->SetEZN2MaxValue(physRecParam[7]);
+	 calibdata->SetEZP2MaxValue(physRecParam[8]);
+	 calibdata->SetEZDC2MaxValue(physRecParam[9]);
        }
        else{
-         Log(Form("File %s not found", PHYSFileName));
+         Log(Form("File %s not found", physFileName));
          return 1;
        }
        //calibdata->Print("");
