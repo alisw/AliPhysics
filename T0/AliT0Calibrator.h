@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include "AliT0CalibData.h"
-#include "TTask.h"
+#include "TNamed.h"
 
 class AliT0Calibrator: public TNamed
  {
@@ -23,7 +23,7 @@ class AliT0Calibrator: public TNamed
  protected:
 
   Int_t           fTimeDelayCFD[24]; 
-  Int_t           fChannelWidth  ;  
+  Float_t           fChannelWidth  ;  
   TObjArray       fWalk;
   
   ClassDef(AliT0Calibrator, 1)   // class for the T0 reconstruction

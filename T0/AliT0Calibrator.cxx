@@ -27,7 +27,7 @@
 ClassImp(AliT0Calibrator)
 
 //____________________________________________________________________
-  AliT0Calibrator::AliT0Calibrator():
+  AliT0Calibrator::AliT0Calibrator():TNamed(),
   fChannelWidth(0),  
   fWalk(0)
 {
@@ -47,7 +47,7 @@ ClassImp(AliT0Calibrator)
 }
 //_____________________________________________________________________________
 
-AliT0Calibrator::AliT0Calibrator(const AliT0Calibrator &r):
+AliT0Calibrator::AliT0Calibrator(const AliT0Calibrator &r): TNamed(),
   fChannelWidth(0),  
   fWalk(0)
 
@@ -84,10 +84,10 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t ipmt, Int_t qt, Int_t time)
   Float_t walk=fu1->Eval(Float_t(qt));
   TH1F*hr=fu1->GetHistogram();
   Float_t maxValue=hr->GetMaximum(50);
-  timeWalk = time + Int_t(maxValue-walk)/fChannelWidth ;
+  timeWalk = time + Int_t((maxValue-walk)/fChannelWidth) ;
   
   timeEq= timeWalk - (fTimeDelayCFD[ipmt]-fTimeDelayCFD[0]);
-  AliDebug(2,Form(" time before %i timeWalk %i ,  qt %i timeEq %i \n ",
+  AliDebug(10,Form(" time before %i timeWalk %i ,  qt %i timeEq %i \n ",
 		  time,timeWalk, qt, timeEq ));
   return timeEq;
 }
