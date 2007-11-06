@@ -45,8 +45,7 @@ enum EAliAnalysisFlags {
    kDisableBranches  = BIT(15)
 };   
 
-   AliAnalysisManager();
-   AliAnalysisManager(const char *name, const char *title="");
+   AliAnalysisManager(const char *name = "mgr", const char *title="");
    virtual            ~AliAnalysisManager();
 
    AliAnalysisManager(const AliAnalysisManager& other);

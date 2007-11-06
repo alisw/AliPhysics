@@ -45,29 +45,6 @@ ClassImp(AliAnalysisManager)
 AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
 
 //______________________________________________________________________________
-AliAnalysisManager::AliAnalysisManager() 
-                   :TNamed(),
-                    fTree(NULL),
-		    fInputEventHandler(NULL),
-		    fOutputEventHandler(NULL),
-		    fMCtruthEventHandler(NULL),
-                    fCurrentEntry(-1),
-                    fMode(kLocalAnalysis),
-                    fInitOK(kFALSE),
-                    fDebug(0),
-                    fTasks(NULL),
-                    fTopTasks(NULL),
-                    fZombies(NULL),
-                    fContainers(NULL),
-                    fInputs(NULL),
-                    fOutputs(NULL)
-{
-// Dummy constructor.
-   fgAnalysisManager = this;
-   SetEventLoop(kTRUE);
-}
-
-//______________________________________________________________________________
 AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                    :TNamed(name,title),
                     fTree(NULL),
