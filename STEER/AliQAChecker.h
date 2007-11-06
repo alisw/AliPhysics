@@ -34,7 +34,7 @@ public:
   static TFile *         GetQAResultFile() ;
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 
-  void                   SetRefDirName(const char * name) ; 
+//  void                   SetRefDirName(const char * name) ; 
 
   virtual Bool_t Run(const char * fileName = NULL) ;
   virtual Bool_t Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list);
