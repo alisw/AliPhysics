@@ -461,11 +461,11 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 {
   // Returns a pedestal for detector det, PM quad, channel with res.
   //
-  Float_t PedValue;
+  Float_t pedValue;
   
   // Normal run
   if(fIsCalibration == 0){
-    Float_t meanPed, Pedwidth;
+    Float_t meanPed, pedWidth;
     Int_t index=0;
     if(Quad!=5){
       if(Det==1 || Det==2)	index = 10*(Det-1)+Quad+5*Res;	 // ZN1, ZP1
@@ -475,20 +475,20 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
     else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
     //
     meanPed = fCalibData->GetMeanPed(index);
-    Pedwidth = fCalibData->GetMeanPedWidth(index);
-    PedValue = gRandom->Gaus(meanPed,Pedwidth);
+    pedWidth = fCalibData->GetMeanPedWidth(index);
+    pedValue = gRandom->Gaus(meanPed,pedWidth);
     //
     /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
-  	Det, Quad, Res, index,(Int_t) PedValue); // Chiara debugging!
+  	Det, Quad, Res, index,(Int_t) pedValue); // Chiara debugging!
     */
   }
   // To create calibration object
   else{
-    if(Res == 0) PedValue = gRandom->Gaus((35.+10.*gRandom->Rndm()),(0.5+0.2*gRandom->Rndm())); //High gain
-    else  PedValue = gRandom->Gaus((250.+100.*gRandom->Rndm()),(3.5+2.*gRandom->Rndm())); //Low gain
+    if(Res == 0) pedValue = gRandom->Gaus((35.+10.*gRandom->Rndm()),(0.5+0.2*gRandom->Rndm())); //High gain
+    else  pedValue = gRandom->Gaus((250.+100.*gRandom->Rndm()),(3.5+2.*gRandom->Rndm())); //Low gain
   }
 
-  return (Int_t) PedValue;
+  return (Int_t) pedValue;
 }
 
 //_____________________________________________________________________________
