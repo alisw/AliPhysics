@@ -1,3 +1,19 @@
+2007-11-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* NLTBases.cxx:
+	* NLTTrackGL.cxx:
+	* PODs.h:
+	Comments, grayspace.
+
+	* NLTTrack.cxx:
+	* NLTTrack.h:
+	* Track.cxx:
+	* Track.h:
+	Original track's path marks were copied to the projected track in
+	Track::SetTrackParams(). This caused duplication of track-lines
+	and occasional crashes during event navigation.
+	Comments, grayspace.
+
 2007-11-01  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* RGValuators.cxx:

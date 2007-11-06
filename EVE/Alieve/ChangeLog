@@ -1,3 +1,9 @@
+2007-11-06  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* VSDCreator.cxx:
+	Use TDirectoryFile when creating event directory for VSD.
+	Remove unnecessary whitespace from print statements.
+
 2007-10-17  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* ITSDigitsInfo.cxx:
