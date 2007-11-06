@@ -14,14 +14,14 @@
 //  **************************************************************************
 #include "AliHMPIDParam.h"  //class header
 #include "AliHMPIDDigit.h"  //ctor
-#include <TCanvas.h>       //TestXXX() 
-#include <TLatex.h>        //TestTrans()  
-#include <TView.h>         //TestTrans()
-#include <TPolyMarker3D.h> //TestTrans()
+#include "AliLog.h"         //general
+#include <AliRunLoader.h>   //Stack()
+#include <AliStack.h>       //Stack()
+#include <TLatex.h>         //TestTrans()  
+#include <TView.h>          //TestTrans()
+#include <TPolyMarker3D.h>  //TestTrans()
 #include <TRotation.h>
-#include <AliRunLoader.h>  //Stack()
-#include <AliStack.h>      //Stack()
-#include <TParticle.h>     //Stack()    
+#include <TParticle.h>      //Stack()    
 #include <TGeoPhysicalNode.h> //ctor
 #include <TGeoBBox.h>
 ClassImp(AliHMPIDParam)
@@ -51,6 +51,8 @@ AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):TNamed("HmpidParam","default v
 // In particular, matrices to be used for LORS<->MARS trasnformations are initialized from TGeo structure.    
 // Note that TGeoManager should be already initialized from geometry.root file  
 
+  fRadNmean = MeanIdxRad(); //initialization of the running ref. index of freon
+  
   Float_t dead=2.6;// cm of the dead zones between PCs-> See 2CRC2099P1
   
   if(noGeo==kFALSE && !gGeoManager)  
@@ -157,7 +159,8 @@ Int_t AliHMPIDParam::Stack(Int_t evt,Int_t tid)
     AliStack *pStack=pAL->Stack();  
     if(tid==-1){                        //print all tids for this event
       for(Int_t i=0;i<pStack->GetNtrack();i++) pStack->Particle(i)->Print();
-      Printf("totally %i tracks including %i primaries for event %i out of %i event(s)",pStack->GetNtrack(),pStack->GetNprimary(),iEvt,iNevt);
+          Printf("totally %i tracks including %i primaries for event %i out of %i event(s)",
+          pStack->GetNtrack(),pStack->GetNprimary(),iEvt,iNevt);
     }else{                              //print only this tid and it;s mothers
       if(tid<0 || tid>pStack->GetNtrack()) {Printf("Wrong tid, valid tid range for event %i is 0-%i",iEvt,pStack->GetNtrack());break;}
       TParticle *pTrack=pStack->Particle(tid); mtid=pTrack->GetFirstMother();
