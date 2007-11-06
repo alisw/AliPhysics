@@ -55,8 +55,6 @@
  
 ClassImp(AliZDC)
 
-AliZDC *gAliZDC;
- 
 //_____________________________________________________________________________
 AliZDC::AliZDC() :
   AliDetector(),
@@ -100,8 +98,6 @@ AliZDC::AliZDC(const char *name, const char *title) :
   sprintf(senstitle,"ZDC dummy");
   SetName(sensname); SetTitle(senstitle);
 
-  gAliZDC = this;
-
 }
 
 //____________________________________________________________________________ 
@@ -112,8 +108,6 @@ AliZDC::~AliZDC()
   //
 
   fIshunt = 0;
-  gAliZDC = 0;
-
   delete fCalibData;
 
 }
@@ -656,21 +650,21 @@ Bool_t AliZDC::Raw2SDigits(AliRawReader* rawReader)
     treeS->Branch("ZDC", "AliZDCSDigit",  &psdigit, kBufferSize);
     //
     AliZDCRawStream rawStream(rawReader);
-    Int_t sector[2], ADCRes, ADCRaw, ADCPedSub, nPheVal;
+    Int_t sector[2], resADC, rawADC, corrADC, nPheVal;
     Int_t jcount = 0;
     while(rawStream.Next()){
       if(rawStream.IsADCDataWord()){
         //For the moment only in-time SDigits are foreseen (1st 48 raw values)
         if(jcount < 48){ 
           for(Int_t j=0; j<2; j++) sector[j] = rawStream.GetSector(j);
-	  ADCRaw = rawStream.GetADCValue();
-	  ADCRes = rawStream.GetADCGain();
+	  rawADC = rawStream.GetADCValue();
+	  resADC = rawStream.GetADCGain();
 	  //printf("\t RAw2SDigits raw%d ->  RawADC[%d, %d, %d] read\n",
-	  //	jcount, sector[0], sector[1], ADCRaw);
+	  //	jcount, sector[0], sector[1], rawADC);
 	  //
-	  ADCPedSub = ADCRaw - Pedestal(sector[0], sector[1], ADCRes);
-	  if(ADCPedSub<0) ADCPedSub=0;
-	  nPheVal = ADCch2Phe(sector[0], sector[1], ADCPedSub, ADCRes);
+	  corrADC = rawADC - Pedestal(sector[0], sector[1], resADC);
+	  if(corrADC<0) corrADC=0;
+	  nPheVal = ADCch2Phe(sector[0], sector[1], corrADC, resADC);
           //
 	  //printf("\t \t ->  SDigit[%d, %d, %d] created\n",
 	  //	sector[0], sector[1], nPheVal);
@@ -697,15 +691,15 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   // Getting calibration object for ZDC set
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry  *entry = man->Get("ZDC/Calib/Data");
-  AliZDCCalibData *CalibData = (AliZDCCalibData*) entry->GetObject();
+  AliZDCCalibData *calibData = (AliZDCCalibData*) entry->GetObject();
   //
-  if(!CalibData){
+  if(!calibData){
     printf("\t No calibration object found for ZDC!");
     return -1;
   }
   //
-  Float_t PedValue;
-  Float_t meanPed, Pedwidth;
+  Float_t pedValue;
+  Float_t meanPed, pedWidth;
   Int_t index=0;
   if(Quad!=5){
     if(Det==1 || Det==2)      index = 10*(Det-1)+Quad+5*Res;   // ZN1, ZP1
@@ -715,15 +709,15 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
   //
   //
-  meanPed = CalibData->GetMeanPed(index);
-  Pedwidth = CalibData->GetMeanPedWidth(index);
-  PedValue = gRandom->Gaus(meanPed,Pedwidth);
+  meanPed = calibData->GetMeanPed(index);
+  pedWidth = calibData->GetMeanPedWidth(index);
+  pedValue = gRandom->Gaus(meanPed,pedWidth);
   //
-  //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) PedValue); // Chiara debugging!
+  //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) pedValue); // Chiara debugging!
   
   
 
-  return (Int_t) PedValue;
+  return (Int_t) pedValue;
 }
 
 
@@ -731,21 +725,21 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
 Int_t AliZDC::ADCch2Phe(Int_t Det, Int_t Quad, Int_t ADCVal, Int_t Res) const
 {
   // Evaluation of the no. of phe produced
-  Float_t PMGain[6][5];
-  Float_t ADCRes[2];
+  Float_t pmGain[6][5];
+  Float_t resADC[2];
   for(Int_t j = 0; j < 5; j++){
-    PMGain[0][j] = 50000.;
-    PMGain[1][j] = 100000.;
-    PMGain[2][j] = 100000.;
-    PMGain[3][j] = 50000.;
-    PMGain[4][j] = 100000.;
-    PMGain[5][j] = 100000.;
+    pmGain[0][j] = 50000.;
+    pmGain[1][j] = 100000.;
+    pmGain[2][j] = 100000.;
+    pmGain[3][j] = 50000.;
+    pmGain[4][j] = 100000.;
+    pmGain[5][j] = 100000.;
   }
   // ADC Caen V965
-  ADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
-  ADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
+  resADC[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
+  resADC[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
   //
-  Int_t nPhe = (Int_t) (ADCVal * PMGain[Det-1][Quad] * ADCRes[Res]);
+  Int_t nPhe = (Int_t) (ADCVal * pmGain[Det-1][Quad] * resADC[Res]);
   //
   //printf("\t AliZDC::ADCch2Phe -> det(%d, %d) - ADC %d  phe %d\n",Det,Quad,ADCVal,nPhe);
 
