@@ -253,12 +253,11 @@ void AliHMPIDRawStream::WriteEoE(AliFstream *ddl,UInt_t row,UInt_t dil,UInt_t wo
 void AliHMPIDRawStream::WriteSegMarker(AliFstream *ddl,UInt_t row)
 {
   //Writes the segment marker (after 8 rows) into the ddl stream
-  //Arguments: ddl stream and the segment: row 8 -> 0x5800, row 16 -> 5801, row 24 -> 5802
+  //Arguments: ddl stream and the segment: row 8 -> 0x5900, row 16 -> 5901, row 24 -> 5902
   //Retruns:   nothing
     UInt_t w32=0;
                                 AliBitPacking::PackWord((UInt_t)43791,        w32,16,31);       //43791==AB0F
-                                AliBitPacking::PackWord((UInt_t)(22528+row/8),w32, 0,15);       //22528==5800
-    
+                                AliBitPacking::PackWord((UInt_t)(22784+row/8),w32, 0,15);       //22784==5900    
     ddl->WriteBuffer((char*)&w32,sizeof(w32)); 
 }      
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++     
