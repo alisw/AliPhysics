@@ -120,7 +120,7 @@ void VSDCreator::CreateVSD(const Text_t* data_dir, Int_t event,
     printf("%s opening output VSD.\n", eH.Data());
 
   TFile* file = TFile::Open(vsd_file, "RECREATE", "ALICE VisualizationDataSummary");
-  mDirectory = new TDirectory("Event0", "");
+  mDirectory = new TDirectoryFile("Event0", "");
 
   if(mDebugLevel > 0)
     printf("%s creating trees now ...\n", eH.Data());
@@ -167,25 +167,25 @@ void VSDCreator::CreateTrees()
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertKinematics.\n", eH.Data());
+      printf("%sConvertKinematics.\n", eH.Data());
     ConvertKinematics();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertHits.\n", eH.Data());
+      printf("%sConvertHits.\n", eH.Data());
     ConvertHits();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertClusters.\n", eH.Data());
+      printf("%sConvertClusters.\n", eH.Data());
     ConvertClusters();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertRecTracks.\n", eH.Data());
+      printf("%sConvertRecTracks.\n", eH.Data());
     ConvertRecTracks();
   } catch(Exc_t& exc) {
     WarnCaller(exc + " Skipping V0 extraction.");
@@ -194,13 +194,13 @@ void VSDCreator::CreateTrees()
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertV0.\n", eH.Data());
+      printf("%sConvertV0.\n", eH.Data());
     ConvertV0();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertKinks.\n", eH.Data());
+      printf("%sConvertKinks.\n", eH.Data());
     ConvertKinks();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
@@ -208,7 +208,7 @@ end_esd_processing:
 
   try {
     if(mDebugLevel > 1)
-      printf("%s ConvertGenInfo.\n", eH.Data());
+      printf("%sConvertGenInfo.\n", eH.Data());
     ConvertGenInfo();
   } catch(Exc_t& exc) { WarnCaller(exc); }
 
@@ -430,7 +430,6 @@ void VSDCreator::ConvertHits()
   for(map<Int_t, Int_t>::iterator j=hmap.begin(); j!=hmap.end(); ++j) {
     GetGeninfo(j->first)->n_hits += j->second;
   }
-  
 }
 
 /**************************************************************************/
