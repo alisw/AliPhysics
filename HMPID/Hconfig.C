@@ -637,7 +637,8 @@ void HmpConfig::WriteBatch()
     if     (fRawBG->GetButton(kDdl)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\");                  //raw data as DDL\n",det.Data());
     else if(fRawBG->GetButton(kDat)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\",\"raw.date\");     //raw data as DATE\n",det.Data());
     else if(fRawBG->GetButton(kRoo)->GetState())    fprintf(fp,"  pSim->SetWriteRawData(\"%s\",\"raw.root\");     //raw data as ROOT\n",det.Data());
-  
+
+                                                    fprintf(fp,"  pSim->SetRunHLT(\"\");                           //no HLT stuff\n");   
                                                     fprintf(fp,"  pSim->Run(iNevt);                              //run iNevt events\n  delete pSim;\n\n");
   }//sim section
 
