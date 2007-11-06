@@ -202,7 +202,6 @@
 #pragma link C++ class Reve::BoxSetGL+;
 
 // GeoNode
-#pragma link C++ class Reve::GeoRnrEl+;
 #pragma link C++ class Reve::GeoNodeRnrEl+;
 #pragma link C++ class Reve::GeoTopNodeRnrEl+;
 #pragma link C++ class Reve::GeoNodeRnrElEditor+;
