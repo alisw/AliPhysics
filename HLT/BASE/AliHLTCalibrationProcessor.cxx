@@ -199,7 +199,6 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
   // see header file for class documentation
 
   Int_t iResult = 0;
-  const AliHLTComponentBlockData* iter = NULL;
 
   const AliHLTComponentBlockData* blkSOR = NULL;
   const AliHLTComponentBlockData* blkEOR = NULL;
@@ -217,7 +216,7 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
   blkDDL = GetFirstInputBlock( kAliHLTDataTypeDDL );
   
   if ( blkDDL ) {
-    HLTInfo("DDLLIST block received, size: %u", iter->fSize );
+    HLTInfo("DDLLIST block received, size: %u", blkDDL->fSize );
     //AliHLTEventDDL ddlList = ( AliHLTEventDDL* ) iter->fPtr;
   }
   
