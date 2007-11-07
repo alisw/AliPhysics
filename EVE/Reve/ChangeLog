@@ -1,5 +1,17 @@
 2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
 
+	* BoxSet.cxx:
+	* BoxSet.h:
+	* BoxSetGL.cxx:
+	* BoxSetGL.h:
+	* DigitSet.cxx:
+	* DigitSet.h:
+	* DigitSetEditor.cxx:
+	* DigitSetEditor.h:
+	Added comments required by coding conventions.
+
+2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
+
 	* LinkDef.h:
 	Removed entries for Cascade and V0 classes.
 
