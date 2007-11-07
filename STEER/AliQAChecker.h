@@ -31,7 +31,7 @@ public:
   static  AliQAChecker * Instance() ;
   AliQACheckerBase *     GetDetQAChecker(Int_t det) ; 
   TDirectory *           GetRefSubDir(const char * det, const char * task) ;
-  static TFile *         GetQAResultFile() ;
+//  static TFile *         GetQAResultFile() ;
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 
 //  void                   SetRefDirName(const char * name) ; 
@@ -40,15 +40,9 @@ public:
   virtual Bool_t Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list);
 
 private:
-  TFile *      GetDataFile(const char * fileName) ; 
 
   static AliQAChecker *fgQAChecker ; // pointer to the instance of the singleton
   TFile * fDataFile ;                     //! Data file to check
-  static TFile * fgQAResultFile ;         //! File where to find the QA result
-//  static TString fgQAResultDirName ;      //! directory where to find the QA result
-//  static TString fgQAResultFileName ;     //! file name where to find the QA result
-//  TString fRefDirName ;                   //! name of directory where to find the reference data file
-//  TString fRefName ;                      //! file name where to find the reference data
   TString fFoundDetectors ;               //! detectors for which the Quality assurance could be done
   AliQACheckerBase * fCheckers[AliQA::kNDET] ; //! list of detectors checkers
   ClassDef(AliQAChecker, 1)  // class for running generation, simulation and digitization

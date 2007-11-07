@@ -38,31 +38,22 @@
 
 ClassImp(AliQAChecker)
   AliQAChecker * AliQAChecker::fgQAChecker = 0x0 ;
-  TFile   * AliQAChecker::fgQAResultFile        = 0x0 ;  
-//  TString   AliQAChecker::fgQAResultDirName     = "local://RUN/";  
-//  TString   AliQAChecker::fgQAResultFileName    = "QA.root" ; 
 
 //_____________________________________________________________________________
 AliQAChecker::AliQAChecker(const char* name, const char* title) :
   TNamed(name, title),
   fDataFile(0x0), 
-//  fRefDirName("./Ref/"), 
-//  fRefName("QA.root"), 
   fFoundDetectors(".")
 {
   // ctor: initialise checkers and open the data file   
   for (Int_t det = 0 ; det < AliQA::kNDET ; det++) 
     fCheckers[det] = NULL ; 
-  
-//  fRefDirName.Append(fRefName) ; 
 }
 
 //_____________________________________________________________________________
 AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   TNamed(qac),
   fDataFile(qac.fDataFile), 
-//  fRefDirName(qac.fRefDirName), 
-//  fRefName(qac.fRefName), 
   fFoundDetectors(qac.fFoundDetectors)
 {
   // copy constructor
@@ -86,48 +77,7 @@ AliQAChecker::~AliQAChecker()
 {
 // clean up
   delete [] fCheckers ; 
-  fgQAResultFile->Close() ; 
-}
-
-//_____________________________________________________________________________
-TFile * AliQAChecker:: GetDataFile(const char * fileName)
-{
-  // Open if necessary the Data file and return its pointer
-
-  if (!fDataFile) 
-	if (!fileName) 
-		fileName = AliQA::GetDataName() ; 
-	if  (!gSystem->AccessPathName(fileName)) {
-		fDataFile =  TFile::Open(fileName) ;
-	} else {
-		AliFatal(Form("File %s not found", fileName)) ; 
-	}
-  return fDataFile ; 
-}
-
-//_____________________________________________________________________________
-TFile * AliQAChecker:: GetQAResultFile() 
-{
-  // Check if file to store QA exists, if not create it
-
-  if (fgQAResultFile) { 
-    if (fgQAResultFile->IsOpen()){
-      fgQAResultFile->Close() ; 
-      fgQAResultFile = 0x0 ; 
-    }
-  }   
-//  if ( fgQAResultFileName.Contains("local://")) 
-//    fgQAResultFileName.ReplaceAll("local:/", "") ;
-//  
-//  TString opt("") ; 
-//  if ( !gSystem->AccessPathName(fgQAResultFileName) )
-//    opt = "UPDATE" ; 
-//  else 
-//    opt = "NEW" ; 
-//  fgQAResultFile = TFile::Open(fgQAResultFileName, opt) ;   
-//      
-  fgQAResultFile = AliQA::GetQAResultFile() ; 
-  return fgQAResultFile ; 
+  AliQA::Close() ; 
 }
 
 //_____________________________________________________________________________
@@ -212,7 +162,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
   stopwatch.Start();
 
   //search for all detectors QA directories
-  TList * detKeyList = GetDataFile(fileName)->GetListOfKeys() ; 
+  TList * detKeyList = AliQA::GetQADataFile(fileName)->GetListOfKeys() ; 
   TIter nextd(detKeyList) ; 
   TKey * detKey ; 
   while ( (detKey = dynamic_cast<TKey *>(nextd()) ) ) {
@@ -229,7 +179,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
 	break ; 
       }
     } 
-    TDirectory * detDir = GetDataFile(fileName)->GetDirectory(detKey->GetName()) ; 
+    TDirectory * detDir = AliQA::GetQADataFile(fileName)->GetDirectory(detKey->GetName()) ; 
     TList * taskKeyList = detDir->GetListOfKeys() ;
     TIter nextt(taskKeyList) ; 
     TKey * taskKey ; 
@@ -310,7 +260,6 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList 
 		index = AliQA::kREC ; 
   else if ( task == AliQA::kESDS ) 
 		index = AliQA::kESD ; 
-
   TDirectory * refDir = GetRefSubDir(AliQA::GetDetName(det).Data(), AliQA::GetTaskName(task).Data()) ;
   if ( refDir ) { 
 	qac->Init(det) ; 
@@ -320,32 +269,6 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList 
   return kTRUE ; 
   
 }
-
-//_____________________________________________________________________________
-//void AliQAChecker::SetQAResultDirName(const char * name)
-//{
-//  // Set the root directory where to store the QA status object
-//
-//  fgQAResultDirName.Prepend(name) ; 
-//  AliInfo(Form("QA results are in  %s", fgQAResultDirName.Data())) ;
-//  if ( fgQAResultDirName.Contains("local://")) 
-//    fgQAResultDirName.ReplaceAll("local:/", "") ;
-//  fgQAResultFileName.Prepend(fgQAResultDirName) ;
-//}
-
-//_____________________________________________________________________________
-//void AliQAChecker::SetRefDirName(const char * name)
-//{
-//  // Set the root directory of reference data
-//
-//  fRefDirName.Prepend(name) ; 
-//  fRefDirName.Append(fRefName) ; 
-//  AliInfo(Form("Reference data are taken from %s", fRefDirName.Data())) ;
-//  if ( fRefDirName.Contains("local://")) 
-//    fRefDirName.ReplaceAll("local:/", "") ; 
-//}
-//
-
 
 
 

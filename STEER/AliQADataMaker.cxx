@@ -373,8 +373,8 @@ void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle)
 	ResetCycle() ;
 	if (fOutput) 
 		fOutput->Close() ; 
-	fOutput = AliQA::GetQADMOutFile(GetName(), fRun, fCurrentCycle) ; 	
- }	
+	fOutput = AliQA::GetQADataFile(GetName(), fRun, fCurrentCycle) ; 	
+}	
  AliInfo(Form(" Run %d Cycle %d task %s file %s", 
 	fRun, fCurrentCycle, AliQA::GetTaskName(task).Data(), fOutput->GetName() )) ;
 

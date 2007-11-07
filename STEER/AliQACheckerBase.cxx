@@ -160,7 +160,7 @@ const Double_t AliQACheckerBase::DiffC(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Chi2 test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQA::GetDataName())) ; 
+    AliWarning(Form("Spectrum %s is empty", hin->GetName())) ; 
     return 0. ;
   }
     
@@ -172,7 +172,7 @@ const Double_t AliQACheckerBase::DiffK(const TH1 * href, const TH1 * hin) const
 {
   // compares two histograms using the Kolmogorov test
   if ( hin->Integral() == 0 ) {
-    AliWarning(Form("Spectrum %s in %s is empty", hin->GetName(), AliQA::GetDataName())) ; 
+    AliWarning(Form("Spectrum %s is empty", hin->GetName())) ; 
     return 0. ;
   }
     
@@ -217,7 +217,6 @@ void AliQACheckerBase::Finish() const
     
   AliQA * qa = AliQA::Instance() ; 
   qa->Show() ;
-  AliQAChecker::GetQAResultFile()->cd() ; 
+  AliQA::GetQAResultFile()->cd() ; 
   qa->Write(qa->GetName(), kWriteDelete) ;   
-  AliQAChecker::GetQAResultFile()->Close() ;  
 }
