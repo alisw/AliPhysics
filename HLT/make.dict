@@ -33,12 +33,18 @@ CLEANFILES			+= $(DICTFILES)
 
 EXTRA_DIST			+= $(MODULE_DHDR)
 
+# the rootcint buffer for macros is limited to 1024 characters
+# we have to filter out some of the defines
+DEFFILTER			= -DPACKAGE*
 
 $(DICTCPP:.cxx=.h): $(DICTCPP)
 	if test $@ ; then : ; else rm -f $< ; $(MAKE) $(MAKEFLAGS) $< ; fi 
 
 $(DICTCPP): $(DICTHEADERS:%=$(srcdir)/%) $(DICTDEF)
-	if [ -x $(ROOTCINT) ]; then $(ROOTCINT) -f $@ -c $(CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(foreach i, $(DICTINCLUDE), $(i)) $^ ; fi
+	if [ -x $(ROOTCINT) ]; then $(ROOTCINT) -f $@ -c $(CPPFLAGS) $(AM_CPPFLAGS) \
+	 `for i in $(DEFS);do case $$i in $(foreach def, $(DEFFILTER), $(def) |) -DVERSION*);; *) echo -n " $$i";; esac; done` \
+	 $(foreach i, $(DICTINCLUDE), $(i)) \
+	 $^ ; fi
 
 $(DICTAUTODEF): Makefile.am $(PKGDEF)
 	@echo '//automatically generated ROOT DICT definition' > $@
