@@ -162,16 +162,6 @@
 #pragma link C++ class Reve::TrackCounter+;
 #pragma link C++ class Reve::TrackCounterEditor+;
 
-// Cascade
-#pragma link C++ class Reve::Cascade+;
-#pragma link C++ class Reve::CascadeList+;
-#pragma link C++ class Reve::CascadeListEditor+;
-
-// V0
-#pragma link C++ class Reve::V0+;
-#pragma link C++ class Reve::V0List+;
-#pragma link C++ class Reve::V0ListEditor+;
-
 // PointSet
 #pragma link C++ class Reve::PointSet+;
 #pragma link C++ class Reve::PointSetArray+;
