@@ -45,12 +45,14 @@ public:
   static  AliQA *   Instance(const ALITASK tsk) ;
   const Bool_t           AddQAData2CDB(const char * defSto) const ;
   const Bool_t           CheckFatal() const ;
+  static void            Close() ; 
   static const char *    GetAliTaskName(ALITASK tsk) ;
-  static const char *    GetDataName() { return fgDataName.Data() ; }
   static const TString   GetDetName(DETECTORINDEX det) { return fgDetNames[det] ; }
   static const TString   GetTaskName(TASKINDEX tsk) { return fgTaskNames[tsk] ; }
   static const char *    GetDetName(Int_t det) ;
-  static TFile *         GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) ; 
+  static const char *    GetQADataFileName() { return fgQADataFileName.Data() ; }
+  static TFile *         GetQADataFile(const char * name, const Int_t run, const Int_t cycle) ; 
+  static TFile *		 GetQADataFile(const char * fileName) ;
   static TFile *         GetQAResultFile() ; 
   static TFile *         GetQARefFile() ; 
   static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
@@ -83,13 +85,15 @@ private:
   ULong_t    *       fQA				; //[fNdet] the status word 4 bits for SIM, REC, ESD, ANA each
   DETECTORINDEX      fDet				; //!  the current detector (ITS, TPC, ....)
   ALITASK            fTask				; //!  the current environment (SIM, REC, ESD, ANA)
-  static TFile *     fgDataFile			; //! the output file where the quality assurance maker store their results
-  static TString     fgDataName			; //! the name of the file where the quality assurance maker store their results
   static TString     fgDetNames[]		; //! list of detector names   
-  static TString     fgQAResultDirName  ; //! the location of the output file where the QA results are stored  
-  static TString     fgQAResultFileName ; //! the output file where the QA results are stored  
+  static TFile *     fgQADataFile		; //! the output file where the quality assurance maker store their results
+  static TString     fgQADataFileName	; //! the name of the file where the quality assurance maker store their results
+  static TFile *     fgQARefFile		; //! the output file where the quality assurance maker store their results
   static TString     fgQARefDirName		; //! name of directory where to find the reference data file
   static TString     fgQARefFileName	; //! file name where to find the reference data
+  static TFile *     fgQAResultFile     ; //! File where to find the QA result
+  static TString     fgQAResultDirName  ; //! the location of the output file where the QA results are stored  
+  static TString     fgQAResultFileName ; //! the output file where the QA results are stored  
   static TString     fgTaskNames[]		; //! list of tasks names   
 
  ClassDef(AliQA,1)  //ALICE Quality Assurance Object

@@ -48,10 +48,12 @@
 
 ClassImp(AliQA)
   AliQA    * AliQA::fgQA                = 0x0 ;
-  TFile    * AliQA::fgDataFile          = 0x0 ;   
-  TString    AliQA::fgDataName          = "QA" ;  // will transform into Det.QA.run.cycle.root  
+  TFile    * AliQA::fgQADataFile        = 0x0 ;   
+  TString    AliQA::fgQADataFileName    = "QA" ;  // will transform into Det.QA.run.cycle.root  
+  TFile    * AliQA::fgQARefFile         = 0x0 ;   
   TString    AliQA::fgQARefDirName		= "local://Ref/" ; 
   TString    AliQA::fgQARefFileName     = "QA.root" ;
+  TFile    * AliQA::fgQAResultFile      = 0x0 ;  
   TString    AliQA::fgQAResultDirName   = "local://RUN/" ;  
   TString    AliQA::fgQAResultFileName  = "QA.root" ; 
   TString    AliQA::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
@@ -153,6 +155,21 @@ const Bool_t AliQA::AddQAData2CDB(const char * defSto) const
 }  
 
 //_______________________________________________________________
+void AliQA::Close() 
+{
+	// close the open files
+	if (fgQADataFile) 
+		if (fgQADataFile->IsOpen())
+			fgQADataFile->Close() ; 
+	if (fgQAResultFile) 
+		if (fgQAResultFile->IsOpen()) 
+			fgQAResultFile->Close() ;
+	if (fgQARefFile)
+		if (fgQARefFile->IsOpen())
+			fgQARefFile->Close() ; 
+} 
+
+//_______________________________________________________________
 const Bool_t AliQA::CheckFatal() const
 {
   // check if any FATAL status is set
@@ -195,42 +212,7 @@ const Bool_t AliQA::CheckRange(QABIT bit) const
   return rv ;
 }
 
-//_______________________________________________________________
-TFile * AliQA::GetQADMOutFile(const char * name, const Int_t run, const Int_t cycle) 
-{
-  // opens the file to store the detectors Quality Assurance Data Maker results
-  char temp[100] ; 
-  sprintf(temp, "%s.%s.%d.%d.root", name, fgDataName.Data(), run, cycle) ; 
-  TString opt ; 
-  if (! fgDataFile ) {     
-    if  (gSystem->AccessPathName(temp))
-      opt = "NEW" ;
-    else 
-      opt = "UPDATE" ; 
-    fgDataFile = TFile::Open(temp, opt.Data()) ;
-  } else {
-   if ( (strcmp(temp, fgDataFile->GetName()) != 0) ) {
-     if  (gSystem->AccessPathName(temp))
-      opt = "NEW" ;
-    else 
-      opt = "UPDATE" ; 
-    fgDataFile = TFile::Open(temp, opt.Data()) ;
-   }
-  }
-  return fgDataFile ; 
-} 
 
-
-//_______________________________________________________________
-const char * AliQA::GetDetName(Int_t det) 
-{
-	// returns the detector name corresponding to a given index (needed in a loop)
-
-	if ( det >= 0 &&  det < kNDET) 
-		return (fgDetNames[det]).Data() ; 
-	else 
-		return NULL ; 
-}
 
 //_______________________________________________________________
 const char * AliQA::GetAliTaskName(ALITASK tsk)
@@ -263,33 +245,93 @@ const char * AliQA::GetAliTaskName(ALITASK tsk)
 }
 
 //_______________________________________________________________
+const char * AliQA::GetDetName(Int_t det) 
+{
+	// returns the detector name corresponding to a given index (needed in a loop)
+
+	if ( det >= 0 &&  det < kNDET) 
+		return (fgDetNames[det]).Data() ; 
+	else 
+		return NULL ; 
+}
+
+//_______________________________________________________________
+TFile * AliQA::GetQADataFile(const char * name, const Int_t run, const Int_t cycle) 
+{
+  // opens the file to store the detectors Quality Assurance Data Maker results
+  char temp[100] ; 
+  sprintf(temp, "%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle) ; 
+  TString opt ; 
+  if (! fgQADataFile ) {     
+    if  (gSystem->AccessPathName(temp))
+      opt = "NEW" ;
+    else 
+      opt = "UPDATE" ; 
+    fgQADataFile = TFile::Open(temp, opt.Data()) ;
+  } else {
+   if ( (strcmp(temp, fgQADataFile->GetName()) != 0) ) {
+     if  (gSystem->AccessPathName(temp))
+      opt = "NEW" ;
+    else 
+      opt = "UPDATE" ; 
+    fgQADataFile = TFile::Open(temp, opt.Data()) ;
+   }
+  }
+  return fgQADataFile ; 
+} 
+
+//_____________________________________________________________________________
+TFile * AliQA::GetQADataFile(const char * fileName)
+{
+  // Open if necessary the Data file and return its pointer
+
+  if (!fgQADataFile) 
+	if (!fileName) 
+		fileName = AliQA::GetQADataFileName() ; 
+	if  (!gSystem->AccessPathName(fileName)) {
+		fgQADataFile =  TFile::Open(fileName) ;
+	} else {
+		printf("File %s not found", fileName) ;
+		exit(1) ;  
+	}
+  return fgQADataFile ; 
+}
+
+//_______________________________________________________________
 TFile * AliQA::GetQARefFile() 
 {
   // opens the file whwre Quality Assurance Reference Data are stored
 
-	TString fileName(fgQARefDirName + fgQARefFileName) ; 
+	if (!fgQARefFile) {
+		TString fileName(fgQARefDirName + fgQARefFileName) ; 
 
-	if ( fileName.Contains("local://")) 
-		fileName.ReplaceAll("local://", "") ;
+		if ( fileName.Contains("local://")) 
+			fileName.ReplaceAll("local://", "") ;
 
-	return TFile::Open(fileName.Data(), "READ") ;
-} 
+		fgQARefFile = TFile::Open(fileName.Data(), "READ") ;
+	}
+	return fgQARefFile ; 
+}
 
 //_______________________________________________________________
 TFile * AliQA::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results
    
-	TString fileName(fgQAResultDirName + fgQAResultFileName) ; 
-	if ( fileName.Contains("local://")) 
-		fileName.ReplaceAll("local://", "") ;
-	TString opt("") ; 
-	if ( !gSystem->AccessPathName(fileName) )
-		opt = "UPDATE" ; 
-	else 
-		opt = "NEW" ; 
+	if (!fgQAResultFile) { 
+		TString fileName(fgQAResultDirName + fgQAResultFileName) ; 
+		if ( fileName.Contains("local://")) 
+			fileName.ReplaceAll("local://", "") ;
+		TString opt("") ; 
+		if ( !gSystem->AccessPathName(fileName) )
+			opt = "UPDATE" ; 
+		else 
+			opt = "NEW" ; 
       
-	return TFile::Open(fileName, opt) ;   
+		fgQAResultFile = TFile::Open(fileName, opt) ;   
+	}
+	
+	return fgQAResultFile ;
 }
 
 //_______________________________________________________________
@@ -323,7 +365,7 @@ AliQA * AliQA::Instance(const DETECTORINDEX det)
   // Get an instance of the singleton. The only authorized way to call the ctor
   
   if ( ! fgQA) {
-    TFile * f = AliQAChecker::GetQAResultFile() ; 
+    TFile * f = GetQAResultFile() ; 
 	fgQA = dynamic_cast<AliQA *>(f->Get("QA")) ; 
     if ( ! fgQA ) 
 		fgQA = new AliQA(det) ;
