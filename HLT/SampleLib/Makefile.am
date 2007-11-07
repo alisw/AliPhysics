@@ -102,6 +102,10 @@ DICTHEADERS			=  $(CLASS_HDRS)
 
 CLEANFILES			+= $(DICTFILES)
 
+# the rootcint buffer for macros is limited to 1024 characters
+# we have to filter out some of the defines
+DEFFILTER			= -DPACKAGE*
+
 
 $(DICTCPP:.cxx=.h): $(DICTCPP)
 	if test $@ ; then : ; else rm -f $< ; $(MAKE) $(MAKEFLAGS) $< ; fi 
