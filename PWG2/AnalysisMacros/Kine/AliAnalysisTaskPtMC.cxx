@@ -9,15 +9,18 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
-#include "AliAnalysisTaskPt.h"
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+
+#include "AliAnalysisTaskPtMC.h"
 
 // example of an analysis task creating a p_t spectrum
 // Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
 
-ClassImp(AliAnalysisTaskPt)
+ClassImp(AliAnalysisTaskPtMC)
 
 //________________________________________________________________________
-AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name) 
+AliAnalysisTaskPtMC::AliAnalysisTaskPtMC(const char *name) 
   : AliAnalysisTask(name, ""), fESD(0), fHistPt(0)
 {
   // Constructor
@@ -30,7 +33,7 @@ AliAnalysisTaskPt::AliAnalysisTaskPt(const char *name)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPt::ConnectInputData(Option_t *) 
+void AliAnalysisTaskPtMC::ConnectInputData(Option_t *) 
 {
   // Connect ESD or AOD here
   // Called once
@@ -39,10 +42,8 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
-    // Disable all branches and enable only the needed ones
-    // The next two lines are different when data produced as AliESDEvent is read
+    // Disable all branches, we want to process only MC
     tree->SetBranchStatus("*", kFALSE);
-    tree->SetBranchStatus("fTracks.*", kTRUE);
 
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -54,7 +55,7 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPt::CreateOutputObjects()
+void AliAnalysisTaskPtMC::CreateOutputObjects() 
 {
   // Create histograms
   // Called once
@@ -66,26 +67,35 @@ void AliAnalysisTaskPt::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPt::Exec(Option_t *) 
+void AliAnalysisTaskPtMC::Exec(Option_t *) 
 {
   // Main loop
   // Called for each event
 
-  if (!fESD) {
-    Printf("ERROR: fESD not available");
+  // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
+  // This handler can return the current MC event
+
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!eventHandler) {
+    Printf("ERROR: Could not retrieve MC event handler");
     return;
   }
 
-  Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+  AliMCEvent* mcEvent = eventHandler->MCEvent();
+  if (!mcEvent) {
+     Printf("ERROR: Could not retrieve MC event");
+     return;
+  }
 
-  // Track loop to fill a pT spectrum
-  for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+
+  for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
+    AliMCParticle* track = mcEvent->GetTrack(iTracks);
     if (!track) {
-      Printf("ERROR: Could not receive track %d", iTracks);
+      Printf("ERROR: Could not receive track %d (mc loop)", iTracks);
       continue;
     }
-
+      
     fHistPt->Fill(track->Pt());
   } //track loop 
 
@@ -94,7 +104,7 @@ void AliAnalysisTaskPt::Exec(Option_t *)
 }      
 
 //________________________________________________________________________
-void AliAnalysisTaskPt::Terminate(Option_t *) 
+void AliAnalysisTaskPtMC::Terminate(Option_t *) 
 {
   // Draw result to the screen
   // Called once at the end of the query
@@ -105,7 +115,7 @@ void AliAnalysisTaskPt::Terminate(Option_t *)
     return;
   }
    
-  TCanvas *c1 = new TCanvas("AliAnalysisTaskPt","Pt",10,10,510,510);
+  TCanvas *c1 = new TCanvas("AliAnalysisTaskPtMC","Pt MC",10,10,510,510);
   c1->cd(1)->SetLogy();
   fHistPt->DrawCopy("E");
 }

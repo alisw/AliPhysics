@@ -6,24 +6,22 @@ The AnalysisMacros is divided into three sub-directories:
 o) Local
    Inside this directory you can find the files you need to run the following processes:
     i)  (Sub-dir Tags)Creation tag files for the locally stored ESDs - The two files are stored under the Tags directory. Run it by typing "root runTagCreator.C".
-    ii) Analysis of the locally stored ESDs using the previously created tag files - Run the example by typing "root runAnalysis.C"
+    ii) Analysis of the locally stored ESDs using the previously created tag files - Run the example by typing "root runLocal.C"
 
 o) Interactive
-   You can find the runAnalysis.C and demoInteractive.C files that use the root api to access the grid. You should also use the AliAnalysisTaskPt.* from the Local directory. Run the example by typing "alienroot runAnalysis.C" (you can find the alienroot executable in this directory - open it and change it accordingly - place it in a directory which is defined in your $PATH).
+   You can find the runInteractive.C file that uses the root api to access the grid as well as a collection of tag files to be querried (tag.xml). You should also use the AliAnalysisTaskPt.* from the Local directory. Run the example by typing "alienroot runInteractive.C" (you can find the alienroot executable in this directory - open it and change it accordingly - place it in a directory which is defined in your $PATH).
 
 o) Batch
-   You can find the executable (that you should store under your $HOME/bin  AliEn directory), the jdl, the jdl file (you must change it accordingly), as well as the macro runProcess.C. You should also use the AliAnalysisTaskPt.* from the Local directory and the xml file from the Kine directory. Everybody who wants to use these files should change them accordingly!!!
+   You can find the executable (that you should store under your $HOME/bin  AliEn directory), the jdl file (you must change it accordingly), as well as the macro runBatch.C. You should also use the AliAnalysisTaskPt.* from the Local directory and the global.xml file (information on how to create this file can be found in the tutorial slides - CreateXML function). Everybody who wants to use these files should change them accordingly!!!
 
 o) Proof
-   You can find the runAnalysis.C and the demoCAF.C macros to be used for CAF. Follow the instructions written in the first file for the correct env. variables and the additional files needed (CreateESDChain.C & the txt file containing the ESDs' location).
-
-In order to run the examples you should use the ESD.par as well as the ANALYSIS.par. You can creat both par files by typing "make ESD.par" and "make ANALYSIS.par" respectively under $ALICE_ROOT.
+   You can find the runProof.C macro to be used for CAF. The CreateESDChain.C & the txt file containing the ESDs' location in the cluster can be found in the CAF web page.
 
 o) Kine
-   You can find the runProcess.C and the demoLocal.C macros along with the AliAnalysisTaskRLPt class. Use the example to access the MC information. You have to run it with aliroot. The last additions are the executable (should be stored in your $HOME/bin AliEn directory), the xml collection (run $ALICE_ROOT/STEER/CreateXML.C), the jdl (you must change it accordingly) and the macro to be used as a template for the batch sessions.
+   You can find the runKine.C along with the AliAnalysisTaskPtMC class. Use the example to access the MC information. You have to run it with root. If you follow the instructions indicated in the Local - Interactive - Batch - Proof directories you will be able to access the MC information on all kinds of sessions.
 
 o) packages
-   You can find the ESD.par and ANALYSIS.par having the latest updates to be used with PDC06 data
+   You can find the par files coming from the v4-07-Release to be used with PDC06 and PDC07 data.
 
 ===========================================================
 For any questions send mails to: Panos.Christakoglou@cern.ch

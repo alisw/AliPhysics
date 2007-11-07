@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="tag">
+    <event name="1">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-04 12:42:49" dir="4443499" entryId="4443508" expiretime="" gowner="aliprod" guid="62FE4A2A-5AD3-11DC-A677-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/001/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23318" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/001/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="10">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-08-31 21:23:23" dir="4376483" entryId="4376492" expiretime="" gowner="aliprod" guid="981764F6-57F6-11DC-A546-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/010/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23559" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/010/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="2">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-01 01:41:05" dir="4397616" entryId="4397625" expiretime="" gowner="aliprod" guid="473620AC-581B-11DC-8F8F-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/002/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23386" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/002/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="3">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-01 01:40:24" dir="4397463" entryId="4397472" expiretime="" gowner="aliprod" guid="3ACFED58-581A-11DC-AAA7-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/003/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23377" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/003/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="4">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-01 02:46:20" dir="4407340" entryId="4407349" expiretime="" gowner="aliprod" guid="62B1F4F6-5824-11DC-AC01-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/004/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23535" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/004/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="5">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-01 06:54:05" dir="4430698" entryId="4430707" expiretime="" gowner="aliprod" guid="862CF3A0-5846-11DC-96C1-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/005/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23466" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/005/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="6">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-08-31 21:45:06" dir="4379238" entryId="4379247" expiretime="" gowner="aliprod" guid="38A1BA32-57F9-11DC-A3D4-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/006/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23477" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/006/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="7">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-04 12:35:07" dir="4442428" entryId="4442437" expiretime="" gowner="aliprod" guid="562DD348-5AD2-11DC-A649-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/007/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23411" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/007/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="8">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-09-01 03:06:58" dir="4410621" entryId="4410630" expiretime="" gowner="aliprod" guid="A79C7E90-5826-11DC-9133-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/008/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23302" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/008/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <event name="9">
+      <file name="Run8268.Event0_100.ESD.tag.root" aclId="" ctime="2007-08-31 21:01:48" dir="4374477" entryId="4374486" expiretime="" gowner="aliprod" guid="AA12A254-57F3-11DC-BD72-000423B5AB42" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/009/Run8268.Event0_100.ESD.tag.root" md5="" owner="aliprod" perm="755" replicated="0" size="23397" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/009/Run8268.Event0_100.ESD.tag.root" type="f" />
+    </event>
+    <info command="[/alice/cern.ch/user/p/pchrist/]: find -z -x tag -l 10 /alice/sim/2007/LHC07c/pp_minbias/8268/* *tag.root" creator="admin" date="Mon Oct 22 12:18:19 CEST 2007" timestamp="1193048299" />
+  </collection>
+</alien>
