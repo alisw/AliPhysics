@@ -6,5 +6,5 @@ echo $ROOTSYS
 echo $LD_LIBRARY_PATH
 echo ==========================
 
-root -b -x runProcess.C;
+root -b -x runBatch.C;
 
