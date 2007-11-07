@@ -917,35 +917,8 @@ Bool_t AliReconstruction::Run(const char* input)
 
   tree->GetUserInfo()->Add(esd);
   hlttree->GetUserInfo()->Add(hltesd);
-  
-  const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();
-  const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();
 
-  TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());
-  cdbMapCopy->SetOwner(1);
-  cdbMapCopy->SetName("cdbMap");
-  TIter iter(cdbMap->GetTable());
-  
-  TPair* pair = 0;
-  while((pair = dynamic_cast<TPair*> (iter.Next()))){
-  	TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());
-	TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
-	cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));
-  }
-  
-  TList *cdbListCopy = new TList();
-  cdbListCopy->SetOwner(1);
-  cdbListCopy->SetName("cdbList");
-  
-  TIter iter2(cdbList);
-  
-  AliCDBId* id=0;
-  while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){
-	cdbListCopy->Add(id->Clone());
-  }
-    
-  tree->GetUserInfo()->Add(cdbMapCopy);
-  tree->GetUserInfo()->Add(cdbListCopy);
+
 
   if(fESDPar.Contains("ESD.par")){
     AliInfo("Attaching ESD.par to Tree");
@@ -1462,11 +1435,11 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
   AliCodeTimerAuto("")
     static Int_t eventNr=0; 
   TString detStr = detectors;
+  
   for (Int_t iDet = 0; iDet < fgkNDetectors; iDet++) {
-    if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+  if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
-
     if (!ReadESD(esd, fgkDetectorName[iDet])) {
       AliDebug(1, Form("filling ESD for %s", fgkDetectorName[iDet]));
       TTree* clustersTree = NULL;
@@ -2001,7 +1974,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = esd->GetNumberOfCascades();
     Int_t nKinks    = esd->GetNumberOfKinks();
-    Int_t nVertices = nV0s + 2*nCascades /*could lead to two vertices, one V0 and the Xi */+ nKinks + 1 /* = prim. vtx*/;
+    Int_t nVertices = nV0s + nCascades + nKinks + 1 /* = prim. vtx*/;
     Int_t nJets     = 0;
     Int_t nCaloClus = esd->GetNumberOfCaloClusters();
     Int_t nFmdClus  = 0;
@@ -2344,9 +2317,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       // add it to the V0 array as well
       Double_t d0[2] = { 999., 99.};
       new(V0s[jV0s++]) AliAODv0(vV0, 999., 99., p_pos, p_neg, d0); // to be refined
-    } 
-    V0s.Expand(jV0s);
-    // end of the loop on V0s
+    } // end of the loop on V0s
     
     // Kinks: it is a big mess the access to the information in the kinks
     // The loop is on the tracks in order to find the mother and daugther of each kink
@@ -2481,7 +2452,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
 	}
       }
     }
-    vertices.Expand(jVertices);
 
     // Tracks (primary and orphan)
     for (Int_t nTrack = 0; nTrack < nTracks; ++nTrack) {
@@ -2566,7 +2536,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       else 
 	aodTrack->SetChi2MatchTrigger(0.);
     }
-    tracks.Expand(jTracks); // remove 'empty slots' due to unwritten tracks
    
     // Access to the AOD container of PMD clusters
     TClonesArray &pmdClusters = *(aod->GetPmdClusters());
@@ -2632,9 +2601,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       
       caloCluster->SetCaloCluster(); // to be refined!
 
-    } 
-    caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters
-    // end of loop on calo clusters
+    } // end of loop on calo clusters
 
     // fill EMC cell info
     AliAODCaloCells &EMCCells = *(aod->GetCaloCells());
@@ -2892,33 +2859,36 @@ void AliReconstruction::CheckQA()
 // check the QA of SIM for this run and remove the detectors 
 // with status Fatal
   
-	TString newDetList ; 
+	TString newRunLocalReconstruction ; 
+	TString newRunTracking ;
+	TString newFillESD ;
+	 
 	for (Int_t iDet = 0; iDet < AliQA::kNDET; iDet++) {
 		TString detName(AliQA::GetDetName(iDet)) ;
-		if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 
-			fRunLocalReconstruction.Contains("ALL") )  {
-			AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX(iDet)) ; 
-			if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kFATAL)) {
+		AliQA * qa = AliQA::Instance(AliQA::DETECTORINDEX(iDet)) ; 
+		if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kFATAL)) {
 				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was Fatal; No reconstruction performed", detName.Data())) ;
-			} else if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kERROR)) {
-				AliError(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was ERROR", detName.Data())) ;
-				newDetList += detName ; 
-				newDetList += " " ; 
-			} else if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kWARNING) ) {
-				AliWarning(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was WARNING", detName.Data())) ;
-				newDetList += detName ; 
-				newDetList += " " ; 
-			} else if ( qa->IsSet(AliQA::DETECTORINDEX(iDet), AliQA::kSIM, AliQA::kINFO) ) {
-				AliInfo(Form("QA status for %s in Hits and/or SDIGITS  and/or Digits was INFO", detName.Data())) ;
-				newDetList += detName ; 
-				newDetList += " " ; 
-			} else {
-				newDetList += detName ; 
-				newDetList += " " ; 			
+		} else {
+			if ( fRunLocalReconstruction.Contains(AliQA::GetDetName(iDet)) || 
+					fRunLocalReconstruction.Contains("ALL") )  {
+				newRunLocalReconstruction += detName ; 
+				newRunLocalReconstruction += " " ; 			
+			}
+			if ( fRunTracking.Contains(AliQA::GetDetName(iDet)) || 
+					fRunTracking.Contains("ALL") )  {
+				newRunTracking += detName ; 
+				newRunTracking += " " ; 			
+			}
+			if ( fFillESD.Contains(AliQA::GetDetName(iDet)) || 
+					fFillESD.Contains("ALL") )  {
+				newFillESD += detName ; 
+				newFillESD += " " ; 			
 			}
 		}
 	}
-	fRunLocalReconstruction = newDetList ; 
+	fRunLocalReconstruction = newRunLocalReconstruction ; 
+	fRunTracking            = newRunTracking ; 
+	fFillESD                = newFillESD ; 
 }
 
 //_____________________________________________________________________________
