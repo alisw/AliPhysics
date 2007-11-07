@@ -4,23 +4,27 @@
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
 // An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h> 
 #include "AliAnalysisTask.h"  
 
 class AliESD ; 
 class TNtuple ;
 class TH1D ; 
-class TH1I ; 
+class TH1I ;
+class TTree ;  
 
 class AliPHOSQATask : public AliAnalysisTask {
 
 public:
   AliPHOSQATask(const char *name) ;
-  virtual ~AliPHOSQATask() ;
+  AliPHOSQATask(const AliPHOSQATask& ap) ;   
+  AliPHOSQATask& operator = (const AliPHOSQATask& ap) ;
+ virtual ~AliPHOSQATask() ;
    
   virtual void Exec(Option_t * opt = "") ;
   virtual void ConnectInputData(Option_t *);
@@ -34,14 +38,14 @@ private:
   TObjArray * fOutputContainer ; //! output data container
 
   // Histograms
-  TNtuple * fhPHOSPos ;
-  TNtuple * fhPHOS ;
-  TH1D    * fhPHOSEnergy ;
-  TH1I    * fhPHOSDigits ;
-  TH1D    * fhPHOSRecParticles ;
-  TH1I    * fhPHOSPhotons ;
-  TH1D    * fhPHOSInvariantMass ;
-  TH1I    * fhPHOSDigitsEvent ;
+  TNtuple * fhPHOSPos ; // x, y
+  TNtuple * fhPHOS ; // all parameters
+  TH1D    * fhPHOSEnergy ; // energy
+  TH1I    * fhPHOSDigits ; // sdigits
+  TH1D    * fhPHOSRecParticles ; // recparticles
+  TH1I    * fhPHOSPhotons ; // photons 
+  TH1D    * fhPHOSInvariantMass ; // invariant mass
+  TH1I    * fhPHOSDigitsEvent ; // digits per event
    
   ClassDef(AliPHOSQATask, 0); // a PHOS photon analysis task 
 };

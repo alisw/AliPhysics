@@ -17,6 +17,10 @@
 
 //_________________________________________________________________________
 // An analysis task to check the EMCAL photon data in simulated data
+// An analysis task to check the EMCAL photon data in simulated data
+// An analysis task to check the EMCAL photon data in simulated data
+// An analysis task to check the EMCAL photon data in simulated data
+// An analysis task to check the EMCAL photon data in simulated data
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
@@ -25,9 +29,6 @@
 #include <TChain.h>
 #include <TFile.h> 
 #include <TH1.h>
-#include <TH1F.h>
-#include <TH1I.h>
-#include <TLegend.h> 
 #include <TNtuple.h>
 #include <TROOT.h>
 #include <TVector3.h> 
@@ -42,6 +43,7 @@ AliEMCALQATask::AliEMCALQATask(const char *name) :
   AliAnalysisTask(name,""),  
   fChain(0),
   fESD(0), 
+  fOutputContainer(0), 
   fhEMCALPos(0),
   fhEMCAL(0),
   fhEMCALEnergy(0),
@@ -56,6 +58,34 @@ AliEMCALQATask::AliEMCALQATask(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+}
+
+//____________________________________________________________________________
+AliEMCALQATask::AliEMCALQATask(const AliEMCALQATask& ta) :
+  AliAnalysisTask(ta.GetName(),""),  
+  fChain(ta.fChain),
+  fESD(ta.fESD), 
+  fOutputContainer(ta.fOutputContainer), 
+  fhEMCALPos(ta.fhEMCALPos),
+  fhEMCAL(ta.fhEMCAL),
+  fhEMCALEnergy(ta.fhEMCALEnergy),
+  fhEMCALDigits(ta.fhEMCALDigits),
+  fhEMCALRecParticles(ta.fhEMCALRecParticles),
+  fhEMCALPhotons(ta.fhEMCALPhotons),
+  fhEMCALInvariantMass(ta.fhEMCALInvariantMass),
+  fhEMCALDigitsEvent(ta.fhEMCALDigitsEvent)
+{ 
+  // cpy ctor
+}
+
+//_____________________________________________________________________________
+AliEMCALQATask& AliEMCALQATask::operator = (const AliEMCALQATask& ap)
+{
+// assignment operator
+
+  this->~AliEMCALQATask();
+  new(this) AliEMCALQATask(ap);
+  return *this;
 }
 
 //______________________________________________________________________________
@@ -147,10 +177,10 @@ void AliEMCALQATask::Exec(Option_t *)
   
   //************************  EMCAL *************************************
   Int_t       firstEmcalCluster       = fESD->GetFirstEMCALCluster() ;
-  const Int_t mumberOfEmcalClusters   = fESD->GetNumberOfEMCALClusters() ;
+  const Int_t kNumberOfEmcalClusters   = fESD->GetNumberOfEMCALClusters() ;
 
-  TVector3 ** emcalVector        = new TVector3*[mumberOfEmcalClusters] ;
-  Float_t   * emcalPhotonsEnergy = new Float_t[mumberOfEmcalClusters] ;
+  TVector3 ** emcalVector        = new TVector3*[kNumberOfEmcalClusters] ;
+  Float_t   * emcalPhotonsEnergy = new Float_t[kNumberOfEmcalClusters] ;
   Int_t      emcalCluster ; 
   Int_t      numberOfEmcalClustersv1 = 0 ; 
   Int_t      numberOfPhotonsInEmcal  = 0 ;
@@ -158,7 +188,7 @@ void AliEMCALQATask::Exec(Option_t *)
 
 
   // loop over all the EMCAL Cluster
-  for(emcalCluster = firstEmcalCluster ; emcalCluster < firstEmcalCluster + mumberOfEmcalClusters ; emcalCluster++) {
+  for(emcalCluster = firstEmcalCluster ; emcalCluster < firstEmcalCluster + kNumberOfEmcalClusters ; emcalCluster++) {
     AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(emcalCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;

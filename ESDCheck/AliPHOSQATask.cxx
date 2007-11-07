@@ -17,6 +17,11 @@
 
 //_________________________________________________________________________
 // An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the PHOS photon data in simulated data
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
@@ -25,9 +30,6 @@
 #include <TChain.h>
 #include <TFile.h> 
 #include <TH1.h>
-#include <TH1F.h>
-#include <TH1I.h>
-#include <TLegend.h> 
 #include <TNtuple.h>
 #include <TROOT.h> 
 #include <TVector3.h> 
@@ -55,6 +57,34 @@ AliPHOSQATask::AliPHOSQATask(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+}
+
+//____________________________________________________________________________
+AliPHOSQATask::AliPHOSQATask(const AliPHOSQATask& ta) :
+  AliAnalysisTask(ta.GetName(),""),  
+  fChain(ta.fChain),
+  fESD(ta.fESD), 
+  fOutputContainer(ta.fOutputContainer), 
+  fhPHOSPos(ta.fhPHOSPos),
+  fhPHOS(ta.fhPHOS),
+  fhPHOSEnergy(ta.fhPHOSEnergy),
+  fhPHOSDigits(ta.fhPHOSDigits),
+  fhPHOSRecParticles(ta.fhPHOSRecParticles),
+  fhPHOSPhotons(ta.fhPHOSPhotons),
+  fhPHOSInvariantMass(ta.fhPHOSInvariantMass),
+  fhPHOSDigitsEvent(ta.fhPHOSDigitsEvent)
+{ 
+  // cpy ctor
+}
+
+//_____________________________________________________________________________
+AliPHOSQATask& AliPHOSQATask::operator = (const AliPHOSQATask& ap)
+{
+// assignment operator
+
+  this->~AliPHOSQATask();
+  new(this) AliPHOSQATask(ap);
+  return *this;
 }
 
 //______________________________________________________________________________
@@ -148,16 +178,16 @@ void AliPHOSQATask::Exec(Option_t *)
   //************************  PHOS *************************************
       
   Int_t       firstPhosCluster       = fESD->GetFirstPHOSCluster() ;
-  const Int_t numberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
+  const Int_t kNumberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
   
-  TVector3 ** phosVector       = new TVector3*[numberOfPhosClusters] ;
-  Float_t  * phosPhotonsEnergy = new Float_t[numberOfPhosClusters] ;
+  TVector3 ** phosVector       = new TVector3*[kNumberOfPhosClusters] ;
+  Float_t  * phosPhotonsEnergy = new Float_t[kNumberOfPhosClusters] ;
   Int_t      phosCluster ; 
   Int_t      numberOfPhotonsInPhos  = 0 ;
   Int_t      numberOfDigitsInPhos   = 0 ;
   
   // loop over the PHOS Cluster
-  for(phosCluster = firstPhosCluster ; phosCluster < firstPhosCluster + numberOfPhosClusters ; phosCluster++) {
+  for(phosCluster = firstPhosCluster ; phosCluster < firstPhosCluster + kNumberOfPhosClusters ; phosCluster++) {
     AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(phosCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;
@@ -175,10 +205,10 @@ void AliPHOSQATask::Exec(Option_t *)
     }
   } //PHOS clusters
     
-  fhPHOSRecParticles->Fill(numberOfPhosClusters);
+  fhPHOSRecParticles->Fill(kNumberOfPhosClusters);
   fhPHOSPhotons->Fill(numberOfPhotonsInPhos);
   fhPHOSDigitsEvent->Fill(numberOfDigitsInPhos);
-  fhPHOS->Fill(entry, numberOfDigitsInPhos, numberOfPhosClusters, numberOfPhotonsInPhos) ; 
+  fhPHOS->Fill(entry, numberOfDigitsInPhos, kNumberOfPhosClusters, numberOfPhotonsInPhos) ; 
 
   // invariant Mass
   if (numberOfPhotonsInPhos > 1 ) {

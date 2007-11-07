@@ -4,6 +4,8 @@
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
 // A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to analyse photon detected by PHOS
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
@@ -24,6 +26,8 @@ class AliAnaGammaPhos : public AliAnalysisTask {
 public:
   AliAnaGammaPhos() ;
   AliAnaGammaPhos(const char *name) ;
+  AliAnaGammaPhos(const AliAnaGammaPhos& ap) ;   
+  AliAnaGammaPhos& operator = (const AliAnaGammaPhos& ap) ;
   virtual ~AliAnaGammaPhos() ;
    
   virtual void ConnectInputData(Option_t * = "");
@@ -49,15 +53,15 @@ private:
   Float_t   fPhotonId ;  // threshold for photon identification 
 
   // Histograms
-  TList   * fOutputList ; //! output data list
-  TNtuple * fhPHOSPos ;
-  TNtuple * fhPHOS ;
-  TH1D    * fhPHOSEnergy ;
-  TH1I    * fhPHOSDigits ;
-  TH1D    * fhPHOSRecParticles ;
-  TH1I    * fhPHOSPhotons ;
-  TH1D    * fhPHOSInvariantMass ;
-  TH1I    * fhPHOSDigitsEvent ;
+  TList   * fOutputList ;	//! output data list
+  TNtuple * fhPHOSPos ;		// PHOS (x,y)
+  TNtuple * fhPHOS ;		// all PHOS parameters
+  TH1D    * fhPHOSEnergy ;	// PHOS energy 
+  TH1I    * fhPHOSDigits ;	// PHOS numer of SDigits 
+  TH1D    * fhPHOSRecParticles ;// PHOS number of RecParticles
+  TH1I    * fhPHOSPhotons ;		// PHOS number of photons
+  TH1D    * fhPHOSInvariantMass ;// PHOS invariant mass
+  TH1I    * fhPHOSDigitsEvent ;		//PHOS numbet of Sdigits per event	
    
   ClassDef(AliAnaGammaPhos, 1); // a PHOS photon analysis task 
 };

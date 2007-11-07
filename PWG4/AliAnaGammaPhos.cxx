@@ -17,6 +17,10 @@
 
 //_________________________________________________________________________
 // A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to analyse photon detected by PHOS
+// A basic analysis task to analyse photon detected by PHOS
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
@@ -25,8 +29,6 @@
 #include <TChain.h>
 #include <TFile.h> 
 #include <TH1.h>
-#include <TH1F.h>
-#include <TH1I.h>
 #include <TLegend.h> 
 #include <TNtuple.h>
 #include <TROOT.h> 
@@ -38,7 +40,6 @@
 #include "AliESDCaloCluster.h" 
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
-#include "AliAODPhoton.h"
 #include "AliLog.h"
 
 //______________________________________________________________________________
@@ -90,6 +91,40 @@ AliAnaGammaPhos::AliAnaGammaPhos(const char *name) :
   // Output slots 
   DefineOutput(0,  TTree::Class()) ; 
   DefineOutput(1,  TList::Class()) ; 
+}
+
+//____________________________________________________________________________
+AliAnaGammaPhos::AliAnaGammaPhos(const AliAnaGammaPhos& ap) :
+  AliAnalysisTask(ap.GetName(),""),  
+  fChain(ap.fChain),
+  fDebug(ap.fDebug),
+  fESD(ap.fESD),
+  fAOD(ap.fAOD),
+  fAODPhotons(ap.fAODPhotons), 
+  fPhotonsInPhos(ap.fPhotonsInPhos),
+  fTreeA(ap.fTreeA),
+  fPhotonId(ap.fPhotonId),
+  fOutputList(ap.fOutputList), 
+  fhPHOSPos(ap.fhPHOSPos),
+  fhPHOS(ap.fhPHOS),
+  fhPHOSEnergy(ap.fhPHOSEnergy),
+  fhPHOSDigits(ap.fhPHOSDigits),
+  fhPHOSRecParticles(ap.fhPHOSRecParticles),
+  fhPHOSPhotons(ap.fhPHOSPhotons),
+  fhPHOSInvariantMass(ap.fhPHOSInvariantMass),
+  fhPHOSDigitsEvent(ap.fhPHOSDigitsEvent)
+{ 
+  // cpy ctor
+}
+
+//_____________________________________________________________________________
+AliAnaGammaPhos& AliAnaGammaPhos::operator = (const AliAnaGammaPhos& ap)
+{
+// assignment operator
+
+  this->~AliAnaGammaPhos();
+  new(this) AliAnaGammaPhos(ap);
+  return *this;
 }
 
 //______________________________________________________________________________
@@ -176,16 +211,16 @@ void AliAnaGammaPhos::Exec(Option_t *)
   //************************  PHOS *************************************
       
   Int_t       firstPhosCluster       = fESD->GetFirstPHOSCluster() ;
-  const Int_t numberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
+  const Int_t kNumberOfPhosClusters   = fESD->GetNumberOfPHOSClusters() ;
   
-  TVector3 ** phosVector       = new TVector3*[numberOfPhosClusters] ;
-  Float_t  * phosPhotonsEnergy = new Float_t[numberOfPhosClusters] ;
+  TVector3 ** phosVector       = new TVector3*[kNumberOfPhosClusters] ;
+  Float_t  * phosPhotonsEnergy = new Float_t[kNumberOfPhosClusters] ;
   Int_t      phosCluster ; 
   Int_t      numberOfDigitsInPhos   = 0 ;
   
   fPhotonsInPhos  = 0 ;
   // loop over the PHOS Cluster
-  for(phosCluster = firstPhosCluster ; phosCluster < firstPhosCluster + numberOfPhosClusters ; phosCluster++) {
+  for(phosCluster = firstPhosCluster ; phosCluster < firstPhosCluster + kNumberOfPhosClusters ; phosCluster++) {
     AliESDCaloCluster * caloCluster = fESD->GetCaloCluster(phosCluster) ;
     if (caloCluster) {
       Float_t pos[3] ;
@@ -203,10 +238,10 @@ void AliAnaGammaPhos::Exec(Option_t *)
     }
   } //PHOS clusters
     
-  fhPHOSRecParticles->Fill(numberOfPhosClusters);
+  fhPHOSRecParticles->Fill(kNumberOfPhosClusters);
   fhPHOSPhotons->Fill(fPhotonsInPhos);
   fhPHOSDigitsEvent->Fill(numberOfDigitsInPhos);
-  fhPHOS->Fill(entry, numberOfDigitsInPhos, numberOfPhosClusters, fPhotonsInPhos) ; 
+  fhPHOS->Fill(entry, numberOfDigitsInPhos, kNumberOfPhosClusters, fPhotonsInPhos) ; 
 
   // invariant Mass
   if (fPhotonsInPhos > 1 ) {
