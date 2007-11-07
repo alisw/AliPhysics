@@ -16,6 +16,22 @@
 
 #pragma link C++ class Alieve::VSDCreator+;
 
+
+//================================
+// compound classes
+//================================
+
+// Cascade
+#pragma link C++ class Alieve::Cascade+;
+#pragma link C++ class Alieve::CascadeList+;
+#pragma link C++ class Alieve::CascadeListEditor+;
+
+// V0
+#pragma link C++ class Alieve::V0+;
+#pragma link C++ class Alieve::V0List+;
+#pragma link C++ class Alieve::V0ListEditor+;
+
+
 //================================
 // detectors/
 //================================
