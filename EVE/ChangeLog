@@ -1,3 +1,9 @@
+2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_Cascade.C:
+	* alice-macros/esd_V0.C:
+	Cascade and V0 classes moved from Reve to Alieve namespace.
+
 2007-11-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* macros/alieve_create_vsd.C:

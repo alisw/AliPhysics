@@ -1,3 +1,18 @@
+2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	Added entries for Cascade and V0 classes.
+
+	* Cascade.cxx:
+	* Cascade.h:
+	* CascadeEditors.cxx:
+	* CascadeEditors.h:
+	* V0.cxx:
+	* V0.h:
+	* V0Editors.cxx:
+	* V0Editors.h:
+	Moved from Reve to Alieve.
+
 2007-11-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* VSDCreator.cxx:

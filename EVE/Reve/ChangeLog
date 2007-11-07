@@ -1,3 +1,18 @@
+2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* LinkDef.h:
+	Removed entries for Cascade and V0 classes.
+
+	* Cascade.cxx:
+	* Cascade.h:
+	* CascadeEditors.cxx:
+	* CascadeEditors.h:
+	* V0.cxx:
+	* V0.h:
+	* V0Editors.cxx:
+	* V0Editors.h:
+	Moved to Alieve.
+
 2007-11-06  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* GeoNode.cxx:
