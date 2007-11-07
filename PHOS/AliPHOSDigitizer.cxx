@@ -18,6 +18,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.102  2007/10/19 18:04:29  schutz
+ * The standalone QA data maker is called from AliSimulation and AliReconstruction outside the event loop; i.e. re-reading the data. The QA data making in the event loop has been commented out.
+ *
  * Revision 1.101  2007/10/14 21:08:10  schutz
  * Introduced the checking of QA results from previous step before entering the event loop
  *
@@ -628,17 +631,17 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     return ; 
   }
   
-  // check the QA result for Hits and SDigits
-  AliQA * qa = AliQA::Instance(AliQA::kPHOS) ; 
-  if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kFATAL)) {
-	AliFatal("QA status in Hits and/or SDIGITS was Fatal") ;
-  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kERROR)) {
-	AliError("QA status in Hits and/or SDIGITS was Error") ;
-  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kWARNING) ) {
-	AliWarning("QA status in Hits and/or SDIGITS was Warning") ;
-  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kINFO) ) {
-	AliInfo("QA status in Hits and/or SDIGITS was Info") ;
-  }
+ // // check the QA result for Hits and SDigits
+//  AliQA * qa = AliQA::Instance(AliQA::kPHOS) ; 
+//  if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kFATAL)) {
+//	AliFatal("QA status in Hits and/or SDIGITS was Fatal") ;
+//  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kERROR)) {
+//	AliError("QA status in Hits and/or SDIGITS was Error") ;
+//  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kWARNING) ) {
+//	AliWarning("QA status in Hits and/or SDIGITS was Warning") ;
+//  } else if ( qa->IsSet(AliQA::kPHOS, AliQA::kSIM, AliQA::kINFO) ) {
+//	AliInfo("QA status in Hits and/or SDIGITS was Info") ;
+//  }
    
  if(strstr(option,"tim"))
      gBenchmark->Start("PHOSDigitizer");
