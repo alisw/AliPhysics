@@ -319,15 +319,18 @@ TFile * AliQA::GetQAResultFile()
   // opens the file to store the  Quality Assurance Data Checker results
    
 	if (!fgQAResultFile) { 
-		TString fileName(fgQAResultDirName + fgQAResultFileName) ; 
-		if ( fileName.Contains("local://")) 
-			fileName.ReplaceAll("local://", "") ;
+		TString dirName(fgQAResultDirName) ; 
+		if ( dirName.Contains("local://")) 
+			dirName.ReplaceAll("local://", "") ;
+		TString fileName(dirName + fgQAResultFileName) ; 
 		TString opt("") ; 
 		if ( !gSystem->AccessPathName(fileName) )
 			opt = "UPDATE" ; 
 		else 
+			if ( gSystem->AccessPathName(dirName) )
+				gSystem->mkdir(dirName) ; 
 			opt = "NEW" ; 
-      
+
 		fgQAResultFile = TFile::Open(fileName, opt) ;   
 	}
 	
