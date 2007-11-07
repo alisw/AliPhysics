@@ -13,14 +13,14 @@
 // using namespace Alieve;
 
 
-Reve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
+Alieve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
 		      AliESDtrack* neg, AliESDtrack* pos, AliESDv0* v0, Int_t i)
 {
   if (! v0->GetOnFlyStatus())
   { // v0 on fly do not have the momentum vector filled...
     Reve::RecTrack  rcPos;
     Reve::RecTrack  rcNeg;
-    Reve::RecV0 rcV0;
+    Reve::RecV0     rcV0;
 
     Double_t p[3];
     v0->GetNPxPyPz(p[0], p[1], p[2]);
@@ -49,7 +49,7 @@ Reve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
     rcPos.beta = ep/TMath::Sqrt(ep*ep + mc*mc);
 
 
-    Reve::V0* myV0 = new Reve::V0(&rcNeg, &rcPos, &rcV0, rnrStyle);
+    Alieve::V0* myV0 = new Alieve::V0(&rcNeg, &rcPos, &rcV0, rnrStyle);
     char ch[50];
     //   sprintf(ch,"ESDv0%i",i); 
     //   myV0->SetName(ch);
@@ -72,13 +72,13 @@ Reve::V0* esd_make_v0(Reve::TrackRnrStyle* rnrStyle, AliESDVertex* primVtx,
 }
 
 
-Reve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
+Alieve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
 {
 
   AliESDEvent* esd = Alieve::Event::AssertESD();
   AliESDVertex* primVertex =(AliESDVertex*) esd->GetVertex();
 
-  Reve::V0List* cont = new Reve::V0List("ESD v0"); 
+  Alieve::V0List* cont = new Alieve::V0List("ESD v0"); 
   cont->SetMainColor(Color_t(3)); // green
   Reve::TrackRnrStyle* rnrStyle = cont->GetRnrStyle();
   rnrStyle->SetMagField( esd->GetMagneticField() );
@@ -97,7 +97,7 @@ Reve::V0List* esd_V0(Double_t min_pt=0.1, Double_t max_pt=100)
     AliESDtrack* negTr = esd->GetTrack(negInd);
     AliESDtrack* posTr = esd->GetTrack(posInd);
     
-    Reve::V0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
+    Alieve::V0* myV0 = esd_make_v0(rnrStyle, primVertex, negTr,posTr, v0, n);
     if (myV0) {
       gReve->AddRenderElement(myV0, cont);
       count++;
