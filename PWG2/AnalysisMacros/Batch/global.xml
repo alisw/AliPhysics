@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<alien>
+  <collection name="global">
+    <event name="1">
+      <file name="AliESDs.root" guid="00529d2e-33c5-16dd-8001-89ab9e86beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/001/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/001/AliESDs.root" evlist="0,4,21,38,47,50,57,79,86,88" />
+    </event>
+    <event name="2">
+      <file name="AliESDs.root" guid="007ac006-639b-16d8-8001-b0c88e80beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/010/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/010/AliESDs.root" evlist="19,23,35,36,41,51,58,60,76" />
+    </event>
+    <event name="3">
+      <file name="AliESDs.root" guid="00751cd2-a3ee-16d8-8001-2101a8c0beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/002/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/002/AliESDs.root" evlist="16,20,45,52,84" />
+    </event>
+    <event name="4">
+      <file name="AliESDs.root" guid="0075f1a2-a063-16d8-8001-3301a8c0beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/003/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/003/AliESDs.root" evlist="42,54,55,63,93" />
+    </event>
+    <event name="5">
+      <file name="AliESDs.root" guid="004ff182-b048-16d8-8001-7f65010abeef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/004/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/004/AliESDs.root" evlist="0,6,10,35,47,74" />
+    </event>
+    <event name="6">
+      <file name="AliESDs.root" guid="003471dc-ec6f-16d8-8001-2301a8c0beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/005/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/005/AliESDs.root" evlist="16,18,24,32,43,52,64,72,82,86,98" />
+    </event>
+    <event name="7">
+      <file name="AliESDs.root" guid="002f608e-68d1-16d8-8001-1d858e80beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/006/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/006/AliESDs.root" evlist="6,19,22,51,52" />
+    </event>
+    <event name="8">
+      <file name="AliESDs.root" guid="000e3634-2eea-16dd-8001-f6ffff0abeef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/007/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/007/AliESDs.root" evlist="37,50,73,82,91,92" />
+    </event>
+    <event name="9">
+      <file name="AliESDs.root" guid="001a5b08-a411-16d8-9717-7064a8c0beef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/008/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/008/AliESDs.root" evlist="41,42,62,80" />
+    </event>
+    <event name="10">
+      <file name="AliESDs.root" guid="00025fee-6023-16d8-8001-b7275d9fbeef" lfn="/alice/sim/2007/LHC07c/pp_minbias/8268/009/AliESDs.root" turl="alien:///alice/sim/2007/LHC07c/pp_minbias/8268/009/AliESDs.root" evlist="19,20,21,45,47,60,65,77,81" />
+    </event>
+  </collection>
+</alien>

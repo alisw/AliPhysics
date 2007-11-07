@@ -11,31 +11,43 @@ SplitMaxInputFileNumber="5";
 # this job has to run in the ANALYSIS partition
 Requirements=( member(other.GridPartitions,"Analysis") );
 
+# validation command
+Validationcommand ="/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/validation.sh";
+
 # we need ROOT and the API service configuration package
-Packages={"APISCONFIG::V2.4","VO_ALICE@ROOT::v5-15-08"};
+Packages={"APISCONFIG::V2.4","VO_ALICE@ROOT::v5-16-00"};
+
+# Time to live
 TTL = "30000";
+
+# Automatic merging
+Merge={"Pt.ESD.root:/alice/jdl/mergerootfile.jdl:Pt.ESD.Merged.root"};
+
+# Output dir of the automatic merging
+MergeOutputDir="/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/output/";
 
 #ROOT will read this collection file to know, which files to analyze
 InputDataList="wn.xml";
 
 #ROOT requires the collection file in the xml-single format
-InputDataListFormat="merge:/alice/cern.ch/user/p/pchrist/test/Rev-14/global.xml";
+InputDataListFormat="merge:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/global.xml";
 
 # this is our collection file containing the files to be analyzed
-InputDataCollection="LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/global.xml,nodownload";
+InputDataCollection="LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/global.xml,nodownload";
 
-InputFile= {"LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/runESDAnalysis.C",
-            "LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/demoESDBatch.C",
-            "LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/ESD.par",
-            "LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/ANALYSIS.par",
-            "LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/AliAnalysisTaskPt.h",
-            "LF:/alice/cern.ch/user/p/pchrist/test/Rev-14/AliAnalysisTaskPt.cxx"};
+InputFile= {"LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/runBatch.C",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/STEERBase.par",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ESD.par",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AOD.par",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/ANALYSIS.par",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AliAnalysisTaskPt.h",
+            "LF:/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/AliAnalysisTaskPt.cxx"};
 
 # Output archive	    
-OutputArchive={"log_archive:stdout,stderr@Alice::CERN::se","root_archive.zip:*.root@Alice::CERN::se"};
+OutputArchive={"log_archive:stdout,stderr,*.log@Alice::CERN::se","root_archive.zip:*.root@Alice::CERN::se"};
 
 # Output directory
-OutputDir="/alice/cern.ch/user/p/pchrist/test/Rev-14/output/#alien_counter#";
+OutputDir="/alice/cern.ch/user/p/pchrist/Tutorial/BATCH/output/#alien_counter#";
 
 # email
 Email="Panos.Christakoglou@cern.ch";
