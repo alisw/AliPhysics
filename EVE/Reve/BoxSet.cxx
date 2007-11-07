@@ -10,12 +10,26 @@
 using namespace Reve;
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // BoxSet
 //
+// A collection of 3D-boxes. The way how the boxes are defined depends
+// on the fBoxType data-member.
+//   BT_FreeBox         arbitrary box: specify 8*(x,y,z) box corners
+//   BT_AABox           axis-aligned box: specify (x,y,z) and (w, h, d)
+//   BT_AABoxFixedDim   axis-aligned box w/ fixed dimensions: specify (x,y,z)
+//                      also set fDefWidth, fDefHeight and fDefDepth
+//
+// Each box can be assigned:
+// a) Color or signal value. Thresholds and signal-to-color mapping
+//    can then be set dynamically via the RGBAPalette class.
+// b) External TObject* (stored as TRef).
+//
+// See also base-class DigitSet for more information.
 
 ClassImp(BoxSet)
 
+//______________________________________________________________________________
 BoxSet::BoxSet(const Text_t* n, const Text_t* t) :
   DigitSet      (n, t),
 
@@ -24,14 +38,19 @@ BoxSet::BoxSet(const Text_t* n, const Text_t* t) :
   fDefHeight    (1),
   fDefDepth     (1)
 {
+  // Constructor.
+
   // Override from DigitSet.
   fDisableLigting = kFALSE;
 }
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 Int_t BoxSet::SizeofAtom(BoxSet::BoxType_e bt)
 {
+  // Return size of data-structure describing a box of type bt.
+
   static const Exc_t eH("BoxSet::SizeofAtom ");
 
   switch (bt) {
@@ -46,8 +65,12 @@ Int_t BoxSet::SizeofAtom(BoxSet::BoxType_e bt)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void BoxSet::Reset(BoxSet::BoxType_e boxType, Bool_t valIsCol, Int_t chunkSize)
 {
+  // Reset the data containers to zero size.
+  // The arguments describe the basic parameters of data storage.
+
   fBoxType      = boxType;
   fValueIsColor = valIsCol;
   fDefaultValue = valIsCol ? 0 : kMinInt;
@@ -56,8 +79,12 @@ void BoxSet::Reset(BoxSet::BoxType_e boxType, Bool_t valIsCol, Int_t chunkSize)
   fPlex.Reset(SizeofAtom(fBoxType), chunkSize);
 }
 
+//______________________________________________________________________________
 void BoxSet::Reset()
 {
+  // Reset the data containers to zero size.
+  // Keep the old data-storage parameters.
+
   if (fOwnIds)
     ReleaseIds();
   fPlex.Reset(SizeofAtom(fBoxType), TMath::Max(fPlex.N(), 64));
@@ -65,6 +92,7 @@ void BoxSet::Reset()
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void BoxSet::AddBox(const Float_t* verts)
 {
   // Create a new box from a set of 8 vertices.
@@ -79,6 +107,7 @@ void BoxSet::AddBox(const Float_t* verts)
   memcpy(b->fVertices, verts, sizeof(b->fVertices));
 }
 
+//______________________________________________________________________________
 void BoxSet::AddBox(Float_t a, Float_t b, Float_t c, Float_t w, Float_t h, Float_t d)
 {
   // Create a new axis-aligned box from at a given position and with
@@ -95,6 +124,7 @@ void BoxSet::AddBox(Float_t a, Float_t b, Float_t c, Float_t w, Float_t h, Float
   box->fW = w; box->fH = h; box->fD = d;
 }
 
+//______________________________________________________________________________
 void BoxSet::AddBox(Float_t a, Float_t b, Float_t c)
 {
   // Create a new axis-aligned box from at a given position.
@@ -111,6 +141,7 @@ void BoxSet::AddBox(Float_t a, Float_t b, Float_t c)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void BoxSet::ComputeBBox()
 {
   // Fill bounding-box information of the base-class TAttBBox (virtual method).
@@ -182,100 +213,13 @@ void BoxSet::ComputeBBox()
          fBBox[0], fBBox[1], fBBox[2], fBBox[3], fBBox[4], fBBox[5]);
 }
 
-/*
-void BoxSet::Paint(Option_t* option)
-{
-  TBuffer3D buff(TBuffer3DTypes::kGeneric);
-
-  // Section kCore
-  buff.fID           = this;
-  buff.fColor        = 1;
-  buff.fTransparency = 0;
-  fHMTrans.SetBuffer3D(buff);
-  buff.SetSectionsValid(TBuffer3D::kCore);
-
-  Int_t reqSections = gPad->GetViewer3D()->AddObject(buff);
-  if (reqSections == TBuffer3D::kNone) {
-    // printf("BoxSet::Paint viewer was happy with Core buff3d.\n");
-    return;
-  }
-
-  if (reqSections & TBuffer3D::kRawSizes) {
-    Int_t nbPnts = fBoxes.size()*8;
-    Int_t nbSegs = fBoxes.size()*12;
-    Int_t nbPoly = fBoxes.size()*6;
-    if (!buff.SetRawSizes(nbPnts, 3*nbPnts, nbSegs, 3*nbSegs, nbPoly, nbPoly*6)) {
-      return;
-    }
-    buff.SetSectionsValid(TBuffer3D::kRawSizes);
-  }
-
-  if ((reqSections & TBuffer3D::kRaw) && buff.SectionsValid(TBuffer3D::kRawSizes)) {
-    // Points
-    Int_t pidx = 0;
-    for (std::vector<Box>::iterator i=fBoxes.begin(); i!=fBoxes.end(); ++i) {
-      for (Int_t k=0; k<24; ++k) {
-	buff.fPnts[pidx] = (*i).vertices[k];
-	pidx++;
-      }
-    }
-    Int_t c = 2;   // color; !!! wrong
-    Int_t eoff;    // polygon or segment offset in fPols and fSegs array
-    Int_t voff;    // vertex offset
-    Int_t soff;    // offset in counting segments
-    Int_t nspp = 4; // number of segments per polygon
-
-    // Segments & Polygons
-    for (Int_t q = 0; q < (Int_t)fBoxes.size(); ++q) {
-      eoff = q*36;
-      soff = q*12;
-      voff = q*8;
-      //bottom
-      buff.fSegs[ 0 + eoff] = c;  buff.fSegs[ 1 + eoff] = 0 + voff;  buff.fSegs[ 2 + eoff] = 1 + voff;
-      buff.fSegs[ 3 + eoff] = c;  buff.fSegs[ 4 + eoff] = 1 + voff;  buff.fSegs[ 5 + eoff] = 2 + voff;
-      buff.fSegs[ 6 + eoff] = c;  buff.fSegs[ 7 + eoff] = 2 + voff;  buff.fSegs[ 8 + eoff] = 3 + voff;
-      buff.fSegs[ 9 + eoff] = c;  buff.fSegs[10 + eoff] = 3 + voff;  buff.fSegs[11 + eoff] = 0 + voff;
-      // top
-      buff.fSegs[12 + eoff] = c;  buff.fSegs[13 + eoff] = 4 + voff;  buff.fSegs[14 + eoff] = 5 + voff;
-      buff.fSegs[15 + eoff] = c;  buff.fSegs[16 + eoff] = 5 + voff;  buff.fSegs[17 + eoff] = 6 + voff;
-      buff.fSegs[18 + eoff] = c;  buff.fSegs[19 + eoff] = 6 + voff;  buff.fSegs[20 + eoff] = 7 + voff;
-      buff.fSegs[21 + eoff] = c;  buff.fSegs[22 + eoff] = 7 + voff;  buff.fSegs[23 + eoff] = 4 + voff;
-      //sides
-      buff.fSegs[24 + eoff] = c;  buff.fSegs[25 + eoff] = 0 + voff;  buff.fSegs[26 + eoff] = 4 + voff;
-      buff.fSegs[27 + eoff] = c;  buff.fSegs[28 + eoff] = 1 + voff;  buff.fSegs[29 + eoff] = 5 + voff;
-      buff.fSegs[30 + eoff] = c;  buff.fSegs[31 + eoff] = 2 + voff;  buff.fSegs[32 + eoff] = 6 + voff;
-      buff.fSegs[33 + eoff] = c;  buff.fSegs[34 + eoff] = 3 + voff;  buff.fSegs[35 + eoff] = 7 + voff;
-
-      buff.fPols[ 0 + eoff] = c;         buff.fPols[ 1 + eoff] = nspp;
-      buff.fPols[ 2 + eoff] = 0 + soff;  buff.fPols[ 3 + eoff] = 9  + soff;
-      buff.fPols[ 4 + eoff] = 4 + soff;  buff.fPols[ 5 + eoff] = 8  + soff;
-      buff.fPols[ 6 + eoff] = c;         buff.fPols[ 7 + eoff] = nspp;
-      buff.fPols[ 8 + eoff] = 1 + soff;  buff.fPols[ 9 + eoff] = 10 + soff;
-      buff.fPols[10 + eoff] = 5 + soff;  buff.fPols[11 + eoff] = 9  + soff;
-      buff.fPols[12 + eoff] = c;         buff.fPols[13 + eoff] = nspp;
-      buff.fPols[14 + eoff] = 2 + soff;  buff.fPols[15 + eoff] = 11 + soff;
-      buff.fPols[16 + eoff] = 6 + soff;  buff.fPols[17 + eoff] = 10 + soff;
-      buff.fPols[18 + eoff] = c;         buff.fPols[19 + eoff] = nspp;
-      buff.fPols[20 + eoff] = 3 + soff;  buff.fPols[21 + eoff] = 8  + soff;
-      buff.fPols[22 + eoff] = 7 + soff;  buff.fPols[23 + eoff] = 11 + soff;
-      buff.fPols[24 + eoff] = c;         buff.fPols[25 + eoff] = nspp;
-      buff.fPols[26 + eoff] = 0 + soff;  buff.fPols[27 + eoff] = 3  + soff;
-      buff.fPols[28 + eoff] = 2 + soff;  buff.fPols[29 + eoff] = 1  + soff;
-      buff.fPols[30 + eoff] = c;         buff.fPols[31 + eoff] = nspp;
-      buff.fPols[32 + eoff] = 4 + soff;  buff.fPols[33 + eoff] = 5  + soff;
-      buff.fPols[34 + eoff] = 6 + soff;  buff.fPols[35 + eoff] = 7  + soff;
-    }
-    buff.fColor = 2; // colors on polygons are ignored
-    buff.SetSectionsValid(TBuffer3D::kRaw);
-  }
-  gPad->GetViewer3D()->AddObject(buff);
-}
-*/
-
 /**************************************************************************/
 
+//______________________________________________________________________________
 void BoxSet::Test(Int_t nboxes)
 {
+  // Fill the structure with a random set of boxes.
+
   Reset(BT_AABox, kTRUE, nboxes);
   TRandom rnd(0);
   const Float_t origin = 10, size = 2;

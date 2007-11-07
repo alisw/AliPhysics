@@ -29,13 +29,13 @@ private:
 
   void CreateInfoTab();
 protected:
-  DigitSet*              fM; // fModel dynamic-casted to DigitSetEditor
+  DigitSet             * fM;              // Model object.
 
-  ZTransSubEditor*      fHMTrans;
-  RGBAPaletteSubEditor* fPalette;
+  ZTransSubEditor      *fHMTrans;         // ZTrans sub-editor.
+  RGBAPaletteSubEditor *fPalette;         // Palette sub-editor.
 
-  TGHorizontalFrame*    fHistoButtFrame;
-  TGVerticalFrame*      fInfoFrame;
+  TGHorizontalFrame    *fHistoButtFrame;  // Frame holding histogram display buttons.
+  TGVerticalFrame      *fInfoFrame;       // Frame displaying basic digit statistics.
 
 public:
   DigitSetEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -48,7 +48,7 @@ public:
   void DoRangeHisto();
   void PlotHisto(Int_t min, Int_t max);
 
-  ClassDef(DigitSetEditor, 1); // Editor for DigitSet
+  ClassDef(DigitSetEditor, 1); // Editor for DigitSet class.
 }; // endclass DigitSetEditor
 
 }

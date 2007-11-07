@@ -11,31 +11,46 @@
 
 using namespace Reve;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // BoxSetGL
+//
+// A GL rendering class for BoxSet.
 //
 
 ClassImp(BoxSetGL)
 
+//______________________________________________________________________________
 BoxSetGL::BoxSetGL() : fM(0), fBoxDL(0)
 {
+  // Default constructor.
+
   // fDLCache = false; // Disable display list.
 }
 
+//______________________________________________________________________________
 BoxSetGL::~BoxSetGL()
-{}
+{
+  // Destructor. Noop.
+}
 
 /**************************************************************************/
 // Protected methods
 /**************************************************************************/
 
+//______________________________________________________________________________
 Int_t BoxSetGL::PrimitiveType() const
 {
+  // Return GL primitive used to render the boxes, based on the
+  // render-mode specified in the model object.
+
   return (fM->fRenderMode != DigitSet::RM_Line) ? GL_QUADS : GL_LINE_LOOP;
 }
 
+//______________________________________________________________________________
 inline Bool_t BoxSetGL::SetupColor(const DigitSet::DigitBase& q) const
 {
+  // Set GL color for given primitive.
+
   if (fM->fValueIsColor)
   {
     glColor4ubv((UChar_t*) & q.fValue);
@@ -51,8 +66,11 @@ inline Bool_t BoxSetGL::SetupColor(const DigitSet::DigitBase& q) const
   }
 }
 
-void BoxSetGL::MakeOriginBox(Float_t* p, Float_t dx, Float_t dy, Float_t dz) const
+//______________________________________________________________________________
+void BoxSetGL::MakeOriginBox(Float_t p[24], Float_t dx, Float_t dy, Float_t dz) const
 {
+  // Fill array p to represent a box (0,0,0) - (dx,dy,dz).
+
   // bottom
   p[0] = 0;  p[1] = dy; p[2] = 0;  p += 3;
   p[0] = dx; p[1] = dy; p[2] = 0;  p += 3;
@@ -65,8 +83,11 @@ void BoxSetGL::MakeOriginBox(Float_t* p, Float_t dx, Float_t dy, Float_t dz) con
   p[0] = 0;  p[1] = 0;  p[2] = dz;
 }
 
-inline void BoxSetGL::RenderBox(const Float_t* p) const
+//______________________________________________________________________________
+inline void BoxSetGL::RenderBox(const Float_t p[24]) const
 {
+  // Render a box specified by points in array p.
+
   // bottom: 0123
   glNormal3f(0, 0, -1);
   glVertex3fv(p);      glVertex3fv(p + 3);
@@ -93,8 +114,14 @@ inline void BoxSetGL::RenderBox(const Float_t* p) const
   glVertex3fv(p + 18);  glVertex3fv(p + 6);
 }
 
+//______________________________________________________________________________
 void BoxSetGL::MakeDisplayList() const
 {
+  // Create a display-list for rendering a single box, based on the
+  // current box-type.
+  // Some box-types don't benefit from the display-list rendering and
+  // so display-list is not created.
+
   if (fM->fBoxType == BoxSet::BT_AABox ||
       fM->fBoxType == BoxSet::BT_AABoxFixedDim)
   {
@@ -119,8 +146,12 @@ void BoxSetGL::MakeDisplayList() const
 // Virtuals from base-classes
 /**************************************************************************/
 
+//______________________________________________________________________________
 Bool_t BoxSetGL::ShouldDLCache(const TGLRnrCtx & rnrCtx) const
 {
+  // Determines if display-list will be used for rendering.
+  // Virtual from TGLLogicalShape.
+
   MakeDisplayList();
 
   if (rnrCtx.DrawPass() == TGLRnrCtx::kPassOutlineLine)
@@ -128,14 +159,23 @@ Bool_t BoxSetGL::ShouldDLCache(const TGLRnrCtx & rnrCtx) const
   return TGLObject::ShouldDLCache(rnrCtx);
 }
 
+//______________________________________________________________________________
 void BoxSetGL::DLCacheDrop()
 {
+  // Called when display lists have been destroyed externally and the
+  // internal display-list data needs to be cleare.
+  // Virtual from TGLLogicalShape.
+
   fBoxDL = 0;
   TGLObject::DLCacheDrop();
 }
 
+//______________________________________________________________________________
 void BoxSetGL::DLCachePurge()
 {
+  // Called when display-lists need to be returned to the system.
+  // Virtual from TGLLogicalShape.
+
   static const Exc_t eH("BoxSetGL::DLCachePurge ");
 
   if (fBoxDL == 0) return;
@@ -153,20 +193,32 @@ void BoxSetGL::DLCachePurge()
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 Bool_t BoxSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
+  // Set model object.
+  // Virtual from TGLObject.
+
   Bool_t isok = SetModelCheckClass(obj, Reve::BoxSet::Class());
   fM = isok ? dynamic_cast<Reve::BoxSet*>(obj) : 0;
   return isok;
 }
 
+//______________________________________________________________________________
 void BoxSetGL::SetBBox()
 {
+  // Fill the bounding-box data of the logical-shape.
+  // Virtual from TGLObject.
+
   SetAxisAlignedBBox(fM->AssertBBox());
 }
 
+//______________________________________________________________________________
 void BoxSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 {
+  // Actual rendering code.
+  // Virtual from TGLLogicalShape.
+
   static const Exc_t eH("BoxSetGL::DirectDraw ");
 
   if (rnrCtx.DrawPass() == TGLRnrCtx::kPassOutlineLine)
@@ -267,7 +319,6 @@ void BoxSetGL::DirectDraw(TGLRnrCtx & rnrCtx) const
 }
 
 /**************************************************************************/
-/**************************************************************************/
 
 //______________________________________________________________________________
 void BoxSetGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
@@ -280,9 +331,11 @@ void BoxSetGL::ProcessSelection(TGLRnrCtx & /*rnrCtx*/, TGLSelectRecord & rec)
   fM->DigitSelected(rec.GetItem(1));
 }
 
+//______________________________________________________________________________
 void BoxSetGL::Render(TGLRnrCtx & rnrCtx)
 {
-  // Interface for direct rendering from classes that include BoxSet as a member.
+  // Interface for direct rendering from classes that include BoxSet
+  // as a member.
 
   MakeDisplayList();
   DirectDraw(rnrCtx);

@@ -22,12 +22,15 @@
 
 using namespace Reve;
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // DigitSetEditor
+//
+// GUI editor for class DigitSet.
 //
 
 ClassImp(DigitSetEditor)
 
+//______________________________________________________________________________
 DigitSetEditor::DigitSetEditor(const TGWindow *p, Int_t width, Int_t height,
 			     UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
@@ -38,6 +41,8 @@ DigitSetEditor::DigitSetEditor(const TGWindow *p, Int_t width, Int_t height,
   fHistoButtFrame(0),
   fInfoFrame(0)
 {
+  // Constructor.
+
   MakeTitle("Transformation matrix");
 
   fHMTrans = new ZTransSubEditor(this);
@@ -55,12 +60,18 @@ DigitSetEditor::DigitSetEditor(const TGWindow *p, Int_t width, Int_t height,
   CreateInfoTab();
 }
 
+//______________________________________________________________________________
 DigitSetEditor::~DigitSetEditor()
-{}
+{
+  // Destructor. Noop.
+}
 
 /*************************************************************************/
+
+//______________________________________________________________________________
 void DigitSetEditor::CreateInfoTab()
 {
+  // Create information tab.
 
   fInfoFrame = CreateEditorTabSubFrame("Info");
 
@@ -93,8 +104,11 @@ void DigitSetEditor::CreateInfoTab()
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void DigitSetEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<DigitSet*>(obj);
 
   fHMTrans->SetDataFromTrans(&fM->fHMTrans);
@@ -106,9 +120,6 @@ void DigitSetEditor::SetModel(TObject* obj)
     fPalette->MapWindow();
   }
 
-  // Set values of widgets
-  // fXYZZ->SetValue(fM->GetXYZZ());
-
   if (fM->fHistoButtons)
     fHistoButtFrame->MapWindow();
   else
@@ -117,8 +128,11 @@ void DigitSetEditor::SetModel(TObject* obj)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void DigitSetEditor::DoHisto()
 {
+  // Show histogram slot.
+
   Int_t min, max;
   if (fM->fPalette) {
     min = fM->fPalette->GetLowLimit();
@@ -129,8 +143,11 @@ void DigitSetEditor::DoHisto()
   PlotHisto(min, max);
 }
 
+//______________________________________________________________________________
 void DigitSetEditor::DoRangeHisto()
 {
+  // Show ranged histogram slot.
+
   Int_t min, max;
   if (fM->fPalette) {
     min = fM->fPalette->GetMinVal();
@@ -141,8 +158,11 @@ void DigitSetEditor::DoRangeHisto()
   PlotHisto(min, max);
 }
 
+//______________________________________________________________________________
 void DigitSetEditor::PlotHisto(Int_t min, Int_t max)
 {
+  // Plots a histogram from digit vales with given range.
+
   Int_t nbins = max-min+1;
   while (nbins > 200)
     nbins /= 2;

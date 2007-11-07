@@ -35,27 +35,27 @@ public:
 protected:
   struct DigitBase
   {
-    Int_t fValue;
-    TRef  fId;
+    // Base-class for digit representation classes.
 
-    // Here could have additional integer (like time, second threshold).
+    Int_t fValue; // signal value of a digit (can be direct RGBA color)
+    TRef  fId;    // external object reference
 
     DigitBase(Int_t v=0) : fValue(v), fId() {}
   };
 
-  Int_t             fDefaultValue;
-  Bool_t            fValueIsColor;
-  Bool_t            fOwnIds;       //Flag specifying if id-objects are owned by the DigitSet
-  VoidCPlex         fPlex;
-  DigitBase*        fLastDigit;    //!
+  Int_t             fDefaultValue;  // Default signal value.
+  Bool_t            fValueIsColor;  // Interpret signal value as RGBA color.
+  Bool_t            fOwnIds;        // Flag specifying if id-objects are owned by the DigitSet
+  VoidCPlex         fPlex;          // Container of digit data.
+  DigitBase*        fLastDigit;     //! The last digit added to collection.
 
-  FrameBox*         fFrame;
-  RGBAPalette*      fPalette;
-  RenderMode_e      fRenderMode;
-  Bool_t            fDisableLigting;
-  Bool_t            fEmitSignals;
-  Bool_t            fHistoButtons;
-  ZTrans            fHMTrans;
+  FrameBox*         fFrame;          // Pointer to frame structure.
+  RGBAPalette*      fPalette;        // Pointer to signal-color palette.
+  RenderMode_e      fRenderMode;     // Render mode: as-is / line / filled.
+  Bool_t            fDisableLigting; // Disable lighting for rendering.
+  Bool_t            fEmitSignals;    // Emit signals on secondary-select.
+  Bool_t            fHistoButtons;   // Show histogram buttons in object editor.
+  ZTrans            fHMTrans;        // Overall transformation of whole collection.
 
   DigitBase* NewDigit();
   void       ReleaseIds();
@@ -67,6 +67,7 @@ public:
   virtual Bool_t CanEditMainColor() { return kTRUE; }
   virtual void   SetMainColor(Color_t color);
 
+  // Implemented in sub-classes:
   // virtual void Reset(QuadType_e quadType, Bool_t valIsCol, Int_t chunkSize);
 
   void RefitPlex();
@@ -81,15 +82,17 @@ public:
 
   void DigitId(TObject* id);
 
-  Bool_t GetOwnIds() const    { return fOwnIds; }
-  void   SetOwnIds(Bool_t o)  { fOwnIds = o; }
+  Bool_t GetOwnIds() const     { return fOwnIds; }
+  void   SetOwnIds(Bool_t o)   { fOwnIds = o; }
 
   DigitBase* GetDigit(Int_t n) { return (DigitBase*) fPlex.Atom(n);   }
-  TObject*   GetId(Int_t n)   { return GetDigit(n)->fId.GetObject(); }
+  TObject*   GetId(Int_t n)    { return GetDigit(n)->fId.GetObject(); }
 
   // --------------------------------
 
-  // virtual void ComputeBBox(); // implement in subclass
+  // Implemented in subclasses:
+  // virtual void ComputeBBox();
+
   virtual void Paint(Option_t* option="");
 
   virtual void DigitSelected(Int_t idx);
@@ -121,7 +124,7 @@ public:
   void SetTransMatrix(Double_t* carr)        { fHMTrans.SetFrom(carr); }
   void SetTransMatrix(const TGeoMatrix& mat) { fHMTrans.SetFrom(mat);  }
 
-  ClassDef(DigitSet, 1);
+  ClassDef(DigitSet, 1); // Base-class for visual digit collections.
 }; // endclass DigitSet
 
 }

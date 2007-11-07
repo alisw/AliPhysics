@@ -32,16 +32,16 @@ protected:
 
   struct BOrigin        : public DigitBase { Float_t fA, fB, fC; };
 
-  struct BAABox         : public BOrigin { Float_t fW, fH, fD; };
+  struct BAABox         : public BOrigin   { Float_t fW, fH, fD; };
 
   struct BAABoxFixedDim : public BOrigin {};
 
 protected:
-  BoxType_e         fBoxType;
+  BoxType_e         fBoxType;      // Type of rendered box.
 
-  Float_t           fDefWidth;     // Breadth assigned to first coordinate  (A)
-  Float_t           fDefHeight;    // Breadth assigned to second coordinate (B)
-  Float_t           fDefDepth;     // Breadth assigned to third coordinate  (C)
+  Float_t           fDefWidth;     // Breadth assigned to first coordinate  (A).
+  Float_t           fDefHeight;    // Breadth assigned to second coordinate (B).
+  Float_t           fDefDepth;     // Breadth assigned to third coordinate  (C).
 
   static Int_t SizeofAtom(BoxType_e bt);
 
@@ -69,7 +69,7 @@ public:
   void SetDefHeight(Float_t v) { fDefHeight = v ; }
   void SetDefDepth(Float_t v)  { fDefDepth  = v ; }
 
-  ClassDef(BoxSet, 1);
+  ClassDef(BoxSet, 1); // Visual class showing a set of boxes.
 }; // endclass BoxSet
 
 }

@@ -14,16 +14,16 @@ class BoxSetGL : public TGLObject
   BoxSetGL& operator=(const BoxSetGL&); // Not implemented
 
 protected:
-  BoxSet* fM;
+  BoxSet* fM;               // Model object.
 
-  mutable UInt_t  fBoxDL;
+  mutable UInt_t  fBoxDL;   // Display-list id for a box atom.
 
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
   Int_t  PrimitiveType() const;
   Bool_t SetupColor(const DigitSet::DigitBase& q) const;
-  void   MakeOriginBox(Float_t* p, Float_t dx, Float_t dy, Float_t dz) const;
-  void   RenderBox(const Float_t* p) const;
+  void   MakeOriginBox(Float_t p[24], Float_t dx, Float_t dy, Float_t dz) const;
+  void   RenderBox(const Float_t p[24]) const;
   void   MakeDisplayList() const;
 
 public:
@@ -42,7 +42,7 @@ public:
 
   virtual void Render(TGLRnrCtx & rnrCtx);
 
-  ClassDef(BoxSetGL, 0);
+  ClassDef(BoxSetGL, 0); // GL rendering class for BoxSet.
 }; // endclass BoxSetGL
 
 }
