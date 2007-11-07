@@ -655,11 +655,11 @@ void AliITSsimulationSPD::RemoveDeadPixels(AliITSmodule *mod){
   Int_t moduleNr = mod->GetIndex();
   AliITSCalibrationSPD* calObj = (AliITSCalibrationSPD*) GetCalibrationModel(moduleNr);
 
-  Int_t nrDead = calObj->GetNrDead();
+  Int_t nrDead = calObj->GetNrBad();
 //  cout << "Module --> " << moduleNr << endl; // dom
 //  cout << "nr of dead " << nrDead << endl; // dom
   for (Int_t i=0; i<nrDead; i++) {
-    GetMap()->DeleteHit(calObj->GetDeadColAt(i),calObj->GetDeadRowAt(i));
+    GetMap()->DeleteHit(calObj->GetBadColAt(i),calObj->GetBadRowAt(i));
 //    cout << "dead index " << i << endl; // dom
 //    cout << "col row --> " << calObj->GetDeadColAt(i) << " " << calObj->GetDeadRowAt(i) << endl; // dom
   }

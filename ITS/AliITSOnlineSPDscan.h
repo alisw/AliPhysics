@@ -22,7 +22,7 @@ class AliITSOnlineSPDHitEvent;
 class AliITSOnlineSPDscan {
 
  public:
-  AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL),fFileName("."){}
+  AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL),fFileName("./test.root"){}
   AliITSOnlineSPDscan(const Char_t *fileName);
   AliITSOnlineSPDscan(const AliITSOnlineSPDscan& scan);
   virtual ~AliITSOnlineSPDscan();

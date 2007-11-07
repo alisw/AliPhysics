@@ -72,24 +72,15 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     virtual void SetSigmaDiffusionAsymmetry(Double_t ecc) {((AliITSresponseSPD*)fResponse)->SetSigmaDiffusionAsymmetry(ecc);}
     virtual void GetSigmaDiffusionAsymmetry(Double_t &ecc) const {((AliITSresponseSPD*)fResponse)->GetSigmaDiffusionAsymmetry(ecc);}
     
-    void   AddDead(UInt_t col, UInt_t row);
-    Int_t  GetNrDead() const {return fNrDead;}
-    Int_t  GetDeadColAt(UInt_t index); //returns -1 if out of bounds
-    Int_t  GetDeadRowAt(UInt_t index); //returns -1 if out of bounds
-    void   ClearDead() {fDeadChannels.Reset(); fNrDead=0;}
-    Bool_t IsPixelDead(Int_t col, Int_t row) const ;
+    void   AddBad(UInt_t col, UInt_t row);
+    Int_t  GetNrBad() const {return fNrBad;}
+    Int_t  GetBadColAt(UInt_t index); //returns -1 if out of bounds
+    Int_t  GetBadRowAt(UInt_t index); //returns -1 if out of bounds
+    void   ClearBad() {fBadChannels.Reset(); fNrBad=0;}
+    Bool_t IsPixelBad(Int_t col, Int_t row) const ;
 
-    void   AddNoisy(UInt_t col, UInt_t row);
-    Int_t  GetNrNoisy() const {return fNrNoisy;}
-    Int_t  GetNoisyColAt(UInt_t index); //returns -1 if out of bounds
-    Int_t  GetNoisyRowAt(UInt_t index); //returns -1 if out of bounds
-    void   ClearNoisy() {fNoisyChannels.Reset(); fNrNoisy=0;}
-    Bool_t IsPixelNoisy(Int_t col, Int_t row) const ;
-
-    void   SetDeadList(TArrayI deadlist) {fDeadChannels=deadlist;}
-    void   SetNoisyList(TArrayI noisylist) {fNoisyChannels=noisylist;}
-    void   SetNrDead(UInt_t nr) {fNrDead=nr;}
-    void   SetNrNoisy(UInt_t nr) {fNrNoisy=nr;}
+    void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
+    void   SetNrBad(UInt_t nr) {fNrBad=nr;}
 
  protected:
     // static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff
@@ -105,12 +96,10 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
     Double_t fCouplCol;        // Coupling parameter along the cols
     Double_t fCouplRow;        // Coupling parameter along the rows
     Double_t fBiasVoltage;     // Bias Voltage for the SPD (used to compute DistanceOverVoltage)
-    UInt_t   fNrDead;           // Nr of dead pixels
-    TArrayI fDeadChannels;     // Array with dead channels info (col0,row0,col1...rowN) N = fNrDead
-    UInt_t   fNrNoisy;          // Nr of noisy pixels
-    TArrayI fNoisyChannels;    // Array with noisy channels info (col0,row0,col1...rowN) N = fNrNoisy
+    UInt_t   fNrBad;           // Nr of bad pixels
+    TArrayI  fBadChannels;     // Array with bad channels info (col0,row0,col1...rowN) N = fNrBad
 
-    ClassDef(AliITSCalibrationSPD,4) // SPD response
+    ClassDef(AliITSCalibrationSPD,5) // SPD response
 };
 
 #endif

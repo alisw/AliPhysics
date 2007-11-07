@@ -29,26 +29,26 @@ ClassImp(AliITSRawStreamSPD)
 
 
 const Int_t AliITSRawStreamSPD::fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL] = {
-  { 0, 1, 4, 5, 80, 81, 84, 85, 88, 89, 92, 93},
-  { 8, 9,12,13, 96, 97,100,101,104,105,108,109},
-  {16,17,20,21,112,113,116,117,120,121,124,125},
-  {24,25,28,29,128,129,132,133,136,137,140,141},
-  {32,33,36,37,144,145,148,149,152,153,156,157},
-  {40,41,44,45,160,161,164,165,168,169,172,173},
-  {48,49,52,53,176,177,180,181,184,185,188,189},
-  {56,57,60,61,192,193,196,197,200,201,204,205},
-  {64,65,68,69,208,209,212,213,216,217,220,221},
-  {72,73,76,77,224,225,228,229,232,233,236,237},
-  { 2, 3, 6, 7, 82, 83, 86, 87, 90, 91, 94, 95},
-  {10,11,14,15, 98, 99,102,103,106,107,110,111},
-  {18,19,22,23,114,115,118,119,122,123,126,127},
-  {26,27,30,31,130,131,134,135,138,139,142,143},
-  {34,35,38,39,146,147,150,151,154,155,158,159},
-  {42,43,46,47,162,163,166,167,170,171,174,175},
-  {50,51,54,55,178,179,182,183,186,187,190,191},
-  {58,59,62,63,194,195,198,199,202,203,206,207},
-  {66,67,70,71,210,211,214,215,218,219,222,223},
-  {74,75,78,79,226,227,230,231,234,235,238,239}
+  { 4, 5, 0, 1, 80, 81, 84, 85, 88, 89, 92, 93},
+  {12,13, 8, 9, 96, 97,100,101,104,105,108,109},
+  {20,21,16,17,112,113,116,117,120,121,124,125},
+  {28,29,24,25,128,129,132,133,136,137,140,141},
+  {36,37,32,33,144,145,148,149,152,153,156,157},
+  {44,45,40,41,160,161,164,165,168,169,172,173},
+  {52,53,48,49,176,177,180,181,184,185,188,189},
+  {60,61,56,57,192,193,196,197,200,201,204,205},
+  {68,69,64,65,208,209,212,213,216,217,220,221},
+  {76,77,72,73,224,225,228,229,232,233,236,237},
+  { 7, 6, 3, 2, 83, 82, 87, 86, 91, 90, 95, 94},
+  {15,14,11,10, 99, 98,103,102,107,106,111,110},
+  {23,22,19,18,115,114,119,118,123,122,127,126},
+  {31,30,27,26,131,130,135,134,139,138,143,142},
+  {39,38,35,34,147,146,151,150,155,154,159,158},
+  {47,46,43,42,163,162,167,166,171,170,175,174},
+  {55,54,51,50,179,178,183,182,187,186,191,190},
+  {63,62,59,58,195,194,199,198,203,202,207,206},
+  {71,70,67,66,211,210,215,214,219,218,223,222},
+  {79,78,75,74,227,226,231,230,235,234,239,238}
 };
 
 
@@ -208,6 +208,7 @@ Bool_t AliITSRawStreamSPD::Next()
       }
       // translate  ("online") ddl, hs, chip nr  to  ("offline") module id :
       fModuleID = GetOfflineModuleFromOnline(ddlID,fHalfStaveNr,fChipAddr);
+      //      fOffset = 32 * (fChipAddr % 5);
     } 
     else if ((fData & 0xC000) == 0x0000) {    // trailer
       UShort_t hitCount = fData & 0x1FFF;
@@ -223,6 +224,16 @@ Bool_t AliITSRawStreamSPD::Next()
 
       fCoord1 = GetOfflineColFromOnline(ddlID,fHalfStaveNr,fChipAddr,fCol);
       fCoord2 = GetOfflineRowFromOnline(ddlID,fHalfStaveNr,fChipAddr,fRow);
+
+      // translate  ("online") chipcol, chiprow  to  ("offline") col (coord1), row (coord2): 
+      // This will change, waiting for new geometry!!!
+      //      fCoord1 = fCol;
+      //      if      (fModuleID < 80 && ddlID < 10) fCoord1=31-fCoord1;
+      //      else if (fModuleID >=80 && ddlID >=10) fCoord1=31-fCoord1;
+      //      fCoord1 += fOffset;
+      //      if (ddlID>=10) fCoord1=159-fCoord1;
+      //      fCoord2 = fRow;
+      //      if (fModuleID<80) fCoord2=255-fCoord2;
 
       return kTRUE;
     } 
@@ -344,7 +355,12 @@ UInt_t AliITSRawStreamSPD::GetOnlineChipFromOffline(UInt_t module, UInt_t colM) 
   for (UInt_t eq=0; eq<20; eq++) {
     for (UInt_t iModule=0; iModule<12; iModule++) {
       if (GetModuleNumber(eq,iModule)==(Int_t)module) {
-	return colM/32 + 5*(iModule%2);
+	if (eq<10) { // side A
+	  return (159-colM)/32 + 5*(iModule%2);
+	}
+	else { // side C
+	  return colM/32 + 5*(iModule%2);
+	}
       }
     }
   }
@@ -353,14 +369,24 @@ UInt_t AliITSRawStreamSPD::GetOnlineChipFromOffline(UInt_t module, UInt_t colM) 
 
 UInt_t AliITSRawStreamSPD::GetOnlineColFromOffline(UInt_t module, UInt_t colM) {
   // offline->online (col)
-  if (colM<160) return colM%32;
-  else return 32; // error
+  if (module<80) { // inner layer
+    return colM%32;
+  }
+  else if (module<240) { // outer layer
+    return (159-colM)%32;
+  }
+  return 32; // error
 }
 
 UInt_t AliITSRawStreamSPD::GetOnlineRowFromOffline(UInt_t module, UInt_t rowM) {
   // offline->online (row)
-  if (rowM<256) return rowM;
-  else return 256; // error
+  if (module<80) { // inner layer
+    return rowM;
+  }
+  else if (module<240) { // outer layer
+    return (255-rowM);
+  }
+  return 256; // error
 }
 
 
@@ -377,11 +403,31 @@ UInt_t AliITSRawStreamSPD::GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_
   // online->offline (col)
   if (eqId>=20 || hs>=6 || chip>=10 || col>=32) return 160; // error
   UInt_t offset = 32 * (chip % 5);
-  return col+offset;
+  if (hs<2) {
+    if (eqId<10) {
+      return 159 - (31-col + offset); // inner layer, side A
+    }
+    else {
+      return col + offset; // inner layer, side C
+    }
+  }
+  else {
+    if (eqId<10) {
+      return 159 - (col + offset); // outer layer, side A
+    }
+    else {
+      return 31-col + offset; // outer layer, side C
+    }
+  }
 }
 
 UInt_t AliITSRawStreamSPD::GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row) {
   // online->offline (row)
   if (eqId>=20 || hs>=6 || chip>=10 || row>=256) return 256; // error
-  return row;
+  if (hs<2) {
+    return row;
+  }
+  else {
+    return 255-row;
+  }
 }

@@ -249,6 +249,7 @@ void AliITSIntMap::ClearFastAccess(){
 
 void AliITSIntMap::InitFastAccess(){
   // initializes the fast access array
+  if (fFastAccess) return;
   ClearFastAccess();
   if (fNrEntries>0) {
     fFastAccessArray = new AliITSIntMapNode*[fNrEntries];
@@ -268,6 +269,7 @@ void AliITSIntMap::InitFastAccessNode(AliITSIntMapNode* node) {
 
 void AliITSIntMap::InitFastAccessSerialize(){
   // initializes the fast access array
+  if (fFastAccessSerialize) return;
   ClearFastAccess();
   if (fNrEntries>0) {
     fFastAccessArray = new AliITSIntMapNode*[fNrEntries];

@@ -34,8 +34,24 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     Int_t    GetChipRow() const {return fRow;};
 
     // module mapping
-    static Int_t GetModuleNumber(UInt_t iDDL, UInt_t iModule) {return fgkDDLModuleMap[iDDL][iModule];}
-    static Int_t GetModuleNumber(UInt_t iDDL, UInt_t iHS, UInt_t iChip) {return fgkDDLModuleMap[iDDL][iHS*2+iChip/5];}
+    static Int_t GetModuleNumber(UInt_t iDDL, UInt_t iModule);
+    static Int_t GetModuleNumber(UInt_t iDDL, UInt_t iHS, UInt_t iChip) 
+      {return GetOfflineModuleFromOnline(iDDL,iHS,iChip);}
+
+    // coordinate conversions:
+    static Bool_t OfflineToOnline(UInt_t module, UInt_t colM, UInt_t RowM, UInt_t& eq, UInt_t& hs, UInt_t& chip, UInt_t& col, UInt_t& row);
+    static Bool_t OnlineToOffline(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row, UInt_t& module, UInt_t& colM, UInt_t& rowM);
+    // coordinate conversions - offline->online
+    static UInt_t GetOnlineEqIdFromOffline(UInt_t module);
+    static UInt_t GetOnlineHSFromOffline(UInt_t module);
+    static UInt_t GetOnlineChipFromOffline(UInt_t module, UInt_t colM);
+    static UInt_t GetOnlineColFromOffline(UInt_t module, UInt_t colM);
+    static UInt_t GetOnlineRowFromOffline(UInt_t module, UInt_t rowM);
+    // coordinate conversions - online->offline
+    static UInt_t GetOfflineModuleFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip);
+    static UInt_t GetOfflineColFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t col);
+    static UInt_t GetOfflineRowFromOnline(UInt_t eqId, UInt_t hs, UInt_t chip, UInt_t row);
+
 
     Bool_t GetHalfStavePresent(UInt_t hs);
 

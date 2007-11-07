@@ -2675,7 +2675,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingBlockSystem(){
   /////////////////////////////////////////////////////////////
   // Checking overlaps	
   /////////////////////////////////////////////////////////////
-	coolingsystemother->CheckOverlaps(0.01);
+	//coolingsystemother->CheckOverlaps(0.01);
   /////////////////////////////////////////////////////////////
 	return coolingsystemother;
 }
@@ -2788,7 +2788,7 @@ TGeoVolume* AliITSv11GeometrySSD::GetSSDStiffenerFlex()const{
 					 +					   fgkSSDFlexHeight[1])); 
     ssdflexmother->AddNode(ssdflex[i],1,ssdflextrans[i]);
   }
-  ssdflexmother->CheckOverlaps(0.01);
+  //ssdflexmother->CheckOverlaps(0.01);
   return ssdflexmother;
 }
 /////////////////////////////////////////////////////////////////////////////////
@@ -2944,7 +2944,7 @@ for(Int_t i=0; i<karcnumber; i++){
   for(Int_t i=0; i<kendflexlayernumber+1; i++) delete transvector[i];	
   delete deltatransvector;
   /////////////////////////////////////////////////////////////
-  ssdendflexmother->CheckOverlaps(0.01);
+  //ssdendflexmother->CheckOverlaps(0.01);
   return ssdendflexmother;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -4208,8 +4208,8 @@ void AliITSv11GeometrySSD::SetEndLadderSegment(){
   fendladdersegment[1]->AddNode(fendladdercoolingtube[3],2,fendladdercoolingtubematrix[1][1]);									  
   fendladdersegment[1]->AddNode(fendladdercoolingtube[4],1,fendladdercoolingtubematrix[1][2]);									  
   fendladdersegment[1]->AddNode(fendladdercoolingtube[4],2,fendladdercoolingtubematrix[1][3]);									  
-  fendladdersegment[0]->CheckOverlaps(0.01);
-  fendladdersegment[1]->CheckOverlaps(0.01);
+ // fendladdersegment[0]->CheckOverlaps(0.01);
+ // fendladdersegment[1]->CheckOverlaps(0.01);
 }
 ///////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::SetLadder(){

@@ -35,12 +35,13 @@ class AliITSIntMap {
   void               PrintEntries() const;
   void               Balance();
   void               PrepareSerialize() {InitFastAccessSerialize();}
+  void               PrepareSerializeOrdered() {InitFastAccess();}
   UInt_t             GetTreeHeight() const;
 
  private:
   UInt_t             fNrEntries;          // nr of entries in map
   AliITSIntMapNode*  fRoot;               // link to first node of tree
-  Bool_t             fFastAccess;         // is the array below initialized (key ordered)?
+  Bool_t             fFastAccess;         // is fast access array initialized (key ordered)?
   Bool_t             fFastAccessSerialize;// is fast access array initialized (tree ordered)?
   AliITSIntMapNode** fFastAccessArray;    // array of pointers to nodes
   UInt_t             fDummyIndex;         // dummy index used when traversing tree

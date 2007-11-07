@@ -20,7 +20,7 @@
 // This class is used in the detector algorithm framework //
 // to process the data stored in special container files  //
 // (see AliITSOnlineSPDscan). For instance, minimum       //
-// threshold values can be calculated.                    //
+// threshold values can be extracted.                     //
 ////////////////////////////////////////////////////////////
 
 #include "AliITSOnlineSPDscanAnalyzer.h"
@@ -36,6 +36,8 @@
 #include <TGraph.h>
 #include <TH2F.h>
 #include <TError.h>
+#include <iostream>
+#include <fstream>
 
 Double_t itsSpdErrorf(Double_t *x, Double_t *par){
   if (par[2]<0) par[2]=0;
@@ -47,10 +49,10 @@ Double_t itsSpdErrorf(Double_t *x, Double_t *par){
 //}
 
 
-AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName) :
-  fType(99),fDacId(99),fRouterNr(99),fFileName(fileName),fScanObj(NULL),fTriggers(NULL),
+AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName, AliITSOnlineCalibrationSPDhandler *handler) :
+  fType(99),fDacId(99),fFileName(fileName),fScanObj(NULL),fHandler(handler),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
-  fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(2),fMaxBaseLineLevel(10)
+  fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(5),fMaxBaseLineLevel(10)
 {
   // constructor
   for (UInt_t chipNr=0; chipNr<11; chipNr++) {
@@ -59,31 +61,36 @@ AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const Char_t *fileName)
       fHitEventEfficiency[hs][chipNr]=NULL;
     }
   }
-  for (Int_t module=0; module<240; module++) {
-    fHandler[module]=NULL;
+  for (UInt_t mod=0; mod<240; mod++) {
+    fbModuleScanned[mod]=kFALSE;
   }
 
   Init();
 }
 
 AliITSOnlineSPDscanAnalyzer::AliITSOnlineSPDscanAnalyzer(const AliITSOnlineSPDscanAnalyzer& handle) :
-  fType(99),fDacId(99),fRouterNr(99),fFileName("."),fScanObj(NULL),fTriggers(NULL),
+  fType(99),fDacId(99),fFileName("."),fScanObj(NULL),fHandler(NULL),fTriggers(NULL),
   fOverWrite(kFALSE),fNoiseThreshold(0.01),fNoiseMinimumEvents(100),
-  fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(2),fMaxBaseLineLevel(10)
+  fMinNrStepsBeforeIncrease(5),fMinIncreaseFromBaseLine(2),fStepDownDacSafe(5),fMaxBaseLineLevel(10)
 {
-  // copy constructor, only copies the filename (not the processed data)
+  // copy constructor, only copies the filename and params (not the processed data)
   fFileName=handle.fFileName;
+  fOverWrite=handle.fOverWrite;
+  fNoiseThreshold=handle.fNoiseThreshold;
+  fNoiseMinimumEvents=handle.fNoiseMinimumEvents;
+  fMinNrStepsBeforeIncrease=handle.fMinNrStepsBeforeIncrease;
+  fMinIncreaseFromBaseLine=handle.fMinIncreaseFromBaseLine;
+  fStepDownDacSafe=handle.fStepDownDacSafe;
+  fMaxBaseLineLevel=handle.fMaxBaseLineLevel;
 
-  fScanObj=NULL;
   for (UInt_t chipNr=0; chipNr<11; chipNr++) {
     for (UInt_t hs=0; hs<6; hs++) {
       fMeanMultiplicity[hs][chipNr]=NULL;
       fHitEventEfficiency[hs][chipNr]=NULL;
     }
   }
-  fTriggers=NULL;
-  for (Int_t module=0; module<240; module++) {
-    fHandler[module]=NULL;
+  for (UInt_t mod=0; mod<240; mod++) {
+    fbModuleScanned[mod]=kFALSE;
   }
 
   Init();
@@ -103,15 +110,10 @@ AliITSOnlineSPDscanAnalyzer::~AliITSOnlineSPDscanAnalyzer() {
   }
   if (fTriggers!=NULL) delete fTriggers;
   if (fScanObj!=NULL) delete fScanObj;
-  for (Int_t module=0; module<240; module++) {
-    if (fHandler[module]!=NULL) {
-      delete fHandler[module];
-    }
-  }
 }
 
 AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITSOnlineSPDscanAnalyzer& handle) {
-  // assignment operator, only copies the filename (not the processed data)
+  // assignment operator, only copies the filename and params (not the processed data)
   if (this!=&handle) {
     for (UInt_t hs=0; hs<6; hs++) {
       for (UInt_t chipNr=0; chipNr<11; chipNr++) {
@@ -125,29 +127,32 @@ AliITSOnlineSPDscanAnalyzer& AliITSOnlineSPDscanAnalyzer::operator=(const AliITS
     }
     if (fTriggers!=NULL) delete fTriggers;
     if (fScanObj!=NULL) delete fScanObj;
-    for (Int_t module=0; module<240; module++) {
-      if (fHandler[module]!=NULL) {
-	delete fHandler[module];
-      }
-    }
    
     fFileName=handle.fFileName;
+    fOverWrite=handle.fOverWrite;
+    fNoiseThreshold=handle.fNoiseThreshold;
+    fNoiseMinimumEvents=handle.fNoiseMinimumEvents;
+    fMinNrStepsBeforeIncrease=handle.fMinNrStepsBeforeIncrease;
+    fMinIncreaseFromBaseLine=handle.fMinIncreaseFromBaseLine;
+    fStepDownDacSafe=handle.fStepDownDacSafe;
+    fMaxBaseLineLevel=handle.fMaxBaseLineLevel;
 
-    fScanObj=NULL;
-    fType=99;
-    fDacId=99;
-    fRouterNr=99;
     for (UInt_t chipNr=0; chipNr<11; chipNr++) {
       for (UInt_t hs=0; hs<6; hs++) {
 	fMeanMultiplicity[hs][chipNr]=NULL;
 	fHitEventEfficiency[hs][chipNr]=NULL;
       }
     }
-    fTriggers=NULL;
-    for (Int_t module=0; module<240; module++) {
-      fHandler[module]=NULL;
+    for (UInt_t mod=0; mod<240; mod++) {
+      fbModuleScanned[mod]=kFALSE;
     }
+    fTriggers=NULL;
+    fHandler=NULL;
     
+    fScanObj=NULL;
+    fType=99;
+    fDacId=99;
+
     Init();    
   }
   return *this;
@@ -164,7 +169,6 @@ void AliITSOnlineSPDscanAnalyzer::Init() {
   }
   fScanObj = new AliITSOnlineSPDscan(fFileName.Data());
   fType = fScanObj->GetType();
-  fRouterNr = fScanObj->GetRouterNr();
   delete fScanObj;
 
   // init container
@@ -190,15 +194,6 @@ void AliITSOnlineSPDscanAnalyzer::Init() {
     break;
   }
 
-  // set some default values (these should later be read from text file)
-  fOverWrite=kFALSE;
-  fNoiseThreshold=0.01;
-  fNoiseMinimumEvents=100;
-  fMinNrStepsBeforeIncrease=6;
-  fMinIncreaseFromBaseLine=2;
-  fStepDownDacSafe=2;
-  fMaxBaseLineLevel=10;
-
 }
 
 void AliITSOnlineSPDscanAnalyzer::SetParam(const Char_t *pname, const Char_t *pval) {
@@ -206,9 +201,10 @@ void AliITSOnlineSPDscanAnalyzer::SetParam(const Char_t *pname, const Char_t *pv
   TString name = pname;
   TString val = pval;
   if (name.CompareTo("fOverWrite")==0) {
-    if (val.CompareTo("YES")==0) {
+    if (val.CompareTo("YES")==0 || val.CompareTo("1")==0) {
       fOverWrite = kTRUE;
     }
+    else fOverWrite = kFALSE;
   }
   else if (name.CompareTo("fNoiseThreshold")==0) {
     fNoiseThreshold = val.Atof();
@@ -233,7 +229,37 @@ void AliITSOnlineSPDscanAnalyzer::SetParam(const Char_t *pname, const Char_t *pv
   }
 }
 
-Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(Char_t *oldcalibDir) {
+void AliITSOnlineSPDscanAnalyzer::ReadParamsFromLocation(const Char_t *dirName) {
+  // opens file (default name) in dir dirName and reads parameters from it
+  TString paramsFileName = Form("%s/standal_params.txt",dirName);
+  ifstream paramsFile;
+  paramsFile.open(paramsFileName, ifstream::in);
+  if (paramsFile.fail()) {
+    printf("No config file (%s) present. Using default tuning parameters.\n",paramsFileName.Data());
+  }
+  else {
+    while(1) {
+      Char_t paramN[50];
+      Char_t paramV[50];
+      paramsFile >> paramN;
+      if (paramsFile.eof()) break;
+      paramsFile >> paramV;
+      SetParam(paramN,paramV);
+      if (paramsFile.eof()) break;
+    }
+    paramsFile.close();
+  }
+}
+
+Bool_t AliITSOnlineSPDscanAnalyzer::IsModuleScanned(UInt_t module) const {
+  // is this module scanned?
+  if (module<240) {
+    return fbModuleScanned[module];
+  }
+  return kFALSE;
+}
+
+Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(/*Char_t *oldcalibDir*/) {
   // process dead pixel data, for uniformity scan, 
   // NB: This will not be the general way of finding dead pixels.
   if (fScanObj==NULL) {
@@ -245,6 +271,11 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(Char_t *oldcalibDir) {
     Warning("AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels","Dead pixels only for scan type %d.",kUNIMA);
     return kFALSE;
   }
+  // handler should be initialized
+  if (fHandler==NULL) {
+    Error("AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels","Calibration handler is not initialized!");
+    return kFALSE;
+  }
 
   UInt_t routerNr = fScanObj->GetRouterNr();
   UInt_t rowStart = fScanObj->GetRowStart();
@@ -253,17 +284,17 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(Char_t *oldcalibDir) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       if (fScanObj->GetChipPresent(hs,chipNr) && fScanObj->GetAverageMultiplicity(0,hs,chipNr)>0) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs,chipNr);
+	if (!fbModuleScanned[module]) {
+	  fbModuleScanned[module]=kTRUE;
+	  //	  fHandler[module]->SetFileLocation(oldcalibDir);
+	  //	  fHandler[module]->ReadFromFile(module);
+	  if (fOverWrite) {fHandler->ResetDeadForChip(routerNr,hs,chipNr);}
+	}
 	for (UInt_t col=0; col<32; col++) {
 	  for (UInt_t row=rowStart; row<=rowEnd; row++) {
 	    if (col!=1 && col!=9 && col!=17 && col!=25) { //exclude test columns!!!
 	      if (fScanObj->GetHits(0,hs,chipNr,col,row)==0) {
-		if (!fHandler[module]) {
-		  fHandler[module] = new AliITSOnlineCalibrationSPDhandler();
-		  fHandler[module]->SetFileLocation(oldcalibDir);
-		  fHandler[module]->ReadFromFile(module);
-		  if (fOverWrite) {fHandler[module]->ResetDeadForChip(routerNr,hs,chipNr);}
-		}
-		fHandler[module]->SetDeadPixel(routerNr,hs,chipNr,col,row);
+		fHandler->SetDeadPixel(routerNr,hs,chipNr,col,row);
 	      }
 	    }
 	  }
@@ -276,7 +307,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(Char_t *oldcalibDir) {
 
 
 
-Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(Char_t *oldcalibDir) {
+Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(/*Char_t *oldcalibDir*/) {
   // process noisy pixel data
   if (fScanObj==NULL) {
     Warning("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","No data!");
@@ -287,26 +318,30 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(Char_t *oldcalibDir) {
     Warning("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","Noisy pixels only for scan type %d.",kNOISE);
     return kFALSE;
   }
-
+  // handler should be initialized
+  if (fHandler==NULL) {
+    Error("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","Calibration handler is not initialized!");
+    return kFALSE;
+  }
+  // check if enough statistics
   if (fScanObj->GetTriggers(0)<fNoiseMinimumEvents) {
     Warning("AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels","Process noisy: Too few events.");
     return kFALSE;
   }
+
   UInt_t routerNr = fScanObj->GetRouterNr();
   for (UInt_t hs=0; hs<6; hs++) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       if (fScanObj->GetChipPresent(hs,chipNr)) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs,chipNr);
+	if (!fbModuleScanned[module]) {
+	  fbModuleScanned[module]=kTRUE;
+	  if (fOverWrite) {fHandler->ResetNoisyForChip(routerNr,hs,chipNr);}
+	}
 	for (UInt_t col=0; col<32; col++) {
 	  for (UInt_t row=0; row<256; row++) {
 	    if (fScanObj->GetHitsEfficiency(0,hs,chipNr,col,row)>fNoiseThreshold) {
-	      if (!fHandler[module]) {
-		fHandler[module] = new AliITSOnlineCalibrationSPDhandler();
-		fHandler[module]->SetFileLocation(oldcalibDir);
-		fHandler[module]->ReadFromFile(module);
-		if (fOverWrite) {fHandler[module]->ResetNoisyForChip(routerNr,hs,chipNr);}
-	      }
-	      fHandler[module]->SetNoisyPixel(routerNr,hs,chipNr,col,row);
+	      fHandler->SetNoisyPixel(routerNr,hs,chipNr,col,row);
 	    }
 	  }
 	}
@@ -315,17 +350,6 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(Char_t *oldcalibDir) {
   }
   return kTRUE;
 }
-
-Bool_t AliITSOnlineSPDscanAnalyzer::SaveDeadNoisyPixels(UInt_t module, Char_t *calibDir) {
-  // save dead and noisy pixels to file in dir calibDir
-  if (fHandler[module]!=NULL) {
-    fHandler[module]->SetFileLocation(calibDir);
-    fHandler[module]->WriteToFile(module);
-    return kTRUE;
-  }
-  return kFALSE;
-}
-
 
 Int_t AliITSOnlineSPDscanAnalyzer::GetDelay(UInt_t hs, UInt_t chipNr) {
   // get delay
@@ -657,12 +681,6 @@ Bool_t AliITSOnlineSPDscanAnalyzer::GetHalfStavePresent(UInt_t hs) {
   return kFALSE;
 }
 
-AliITSOnlineCalibrationSPDhandler* AliITSOnlineSPDscanAnalyzer::GetOnlineCalibrationHandler(UInt_t module) {
-  // returns a pointer to the AliITSOnlineCalibrationSPDhandler
-  if (module<240) return fHandler[module]; 
-  else return NULL;
-}
-
 UInt_t AliITSOnlineSPDscanAnalyzer::GetRouterNr() {
   // returns the router nr of scan obj
   if (fScanObj!=NULL) return fScanObj->GetRouterNr(); 
@@ -699,4 +717,27 @@ TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapTot(UInt_t step) {
     }
   }
   return fHitMapTot;
+}
+
+TH2F* AliITSOnlineSPDscanAnalyzer::GetHitMapChip(UInt_t step, UInt_t hs, UInt_t chip) {
+  // creates and returns a pointer to a hitmap histo (chip style a la spdmood)
+  if (fScanObj==NULL) {
+    Error("AliITSOnlineSPDscanAnalyzer::GetHitMapChip","No data!");
+    return NULL;
+  }
+
+  TString histoName;
+  TString histoTitle;
+  histoName = Form("fChipHisto_%d_%d_%d", GetRouterNr(), hs, chip);
+  histoTitle = Form("Eq ID %d, Half Stave %d, Chip %d", GetRouterNr(), hs, chip);
+
+  TH2F *returnHisto = new TH2F(histoName.Data(), histoTitle.Data(), 32, -0.5, 31.5, 256, -0.5, 255.5);
+  returnHisto->SetMinimum(0);
+  for (UInt_t col=0; col<32; col++) {
+    for (UInt_t row=0; row<256; row++) {
+      returnHisto->Fill(col,row,fScanObj->GetHits(step,hs,chip,col,row));
+    }
+  }
+
+  return returnHisto;
 }

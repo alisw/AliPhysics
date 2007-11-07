@@ -103,6 +103,9 @@
 #pragma link C++ class AliITSOnlineSPDscanMeanTh+;
 #pragma link C++ class AliITSOnlineSPDscanMultiple+;
 #pragma link C++ class AliITSOnlineSPDscanSingle+;
+#pragma link C++ class AliITSOnlineSPDphys+;
+#pragma link C++ class AliITSOnlineSPDphysAnalyzer+;
+#pragma link C++ class AliITSOnlineSPDphysInfo+;
 #pragma link C++ class AliITSPreprocessorSDD+;
 #pragma link C++ class AliITSOnlineSDD+;
 #pragma link C++ class AliITSOnlineSDDBase+;

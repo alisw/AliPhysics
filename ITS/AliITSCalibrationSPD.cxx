@@ -21,7 +21,7 @@
 //
 //  Modified by D. Elia, G.E. Bruno, H. Tydesjo
 //  March-April 2006
-//  Last mod:  H. Tydesjo  January 2007
+//  Last mod:  H. Tydesjo  Oct 2007
 //  September   2007: CouplingRowDefault = 0.055 (was 0.047)
 //
 ///////////////////////////////////////////////////////////////////////////
@@ -43,10 +43,8 @@ fSigma(fgkSigmaDefault),
 fCouplCol(fgkCouplColDefault),
 fCouplRow(fgkCouplRowDefault),
 fBiasVoltage(fgkBiasVoltageDefault),
-fNrDead(0),
-fDeadChannels(0),
-fNrNoisy(0),
-fNoisyChannels(0){
+fNrBad(0),
+fBadChannels(0){
   // constructor
 
    SetThresholds(fgkThreshDefault,fgkSigmaDefault);
@@ -55,86 +53,43 @@ fNoisyChannels(0){
    SetNoiseParam(0.,0.);
    SetDataType("simulated");
 }
-//_________________________________________________________________________
-
-void AliITSCalibrationSPD::AddDead(UInt_t col, UInt_t row) {
+//____________________________________________________________________________
+void AliITSCalibrationSPD::AddBad(UInt_t col, UInt_t row) {
   //
-  // Add a dead channel to fDeadChannel array
+  // add bad pixel 
   //
-  fDeadChannels.Set(fNrDead*2+2);
-  fDeadChannels.AddAt(col,fNrDead*2);
-  fDeadChannels.AddAt(row,fNrDead*2+1);
-  fNrDead++;
-}
-//_________________________________________________________________________
-Int_t AliITSCalibrationSPD::GetDeadColAt(UInt_t index) {
-  // 
-  // Returns column of index-th dead channel
-  //
-  if (index<fNrDead) {
-    return fDeadChannels.At(index*2);
-  }
-  return -1;
-}
-//_________________________________________________________________________
-Int_t AliITSCalibrationSPD::GetDeadRowAt(UInt_t index) {
-  // 
-  // Returns row of index-th dead channel
-  //
-  if (index<fNrDead) {
-    return fDeadChannels.At(index*2+1);
-  }
-  return -1;
-}
-//_________________________________________________________________________
-Bool_t AliITSCalibrationSPD::IsPixelDead(Int_t col, Int_t row) const {
-  //
-  // Check if pixel (col,row) is dead
-  //
-  for (UInt_t i=0; i<fNrDead; i++) { 
-    if (fDeadChannels.At(i*2)==col && fDeadChannels.At(i*2+1)==row) {
-      return true;
-    }
-  }
-  return false;
+  fBadChannels.Set(fNrBad*2+2);
+  fBadChannels.AddAt(col,fNrBad*2);
+  fBadChannels.AddAt(row,fNrBad*2+1);
+  fNrBad++;
 }
 //____________________________________________________________________________
-void AliITSCalibrationSPD::AddNoisy(UInt_t col, UInt_t row) {
+Int_t AliITSCalibrationSPD::GetBadColAt(UInt_t index) {
   //
-  // add noisy pixel 
+  // Get column of index-th bad pixel
   //
-  fDeadChannels.Set(fNrNoisy*2+2);
-  fNoisyChannels.AddAt(col,fNrNoisy*2);
-  fNoisyChannels.AddAt(row,fNrNoisy*2+1);
-  fNrNoisy++;
-}
-//____________________________________________________________________________
-Int_t AliITSCalibrationSPD::GetNoisyColAt(UInt_t index) {
-  //
-  // Get column of index-th noisy pixel
-  //
-  if (index<fNrNoisy) {
-    return fNoisyChannels.At(index*2);
+  if (index<fNrBad) {
+    return fBadChannels.At(index*2);
   }
   return -1;
 }
 //____________________________________________________________________________
-Int_t AliITSCalibrationSPD::GetNoisyRowAt(UInt_t index) {
+Int_t AliITSCalibrationSPD::GetBadRowAt(UInt_t index) {
   //
-  // Get row of index-th noisy pixel
+  // Get row of index-th bad pixel
   //
-  if (index<fNrNoisy) {
-    return fNoisyChannels.At(index*2+1);
+  if (index<fNrBad) {
+    return fBadChannels.At(index*2+1);
   }
   return -1;
 }
 //____________________________________________________________________________
-Bool_t AliITSCalibrationSPD::IsPixelNoisy(Int_t col, Int_t row) const {
+Bool_t AliITSCalibrationSPD::IsPixelBad(Int_t col, Int_t row) const {
   //
-  // Check if pixel (col,row) is noisy
+  // Check if pixel (col,row) is bad
   //
-  for (UInt_t i=0; i<fNrNoisy; i++) { 
-    if (fNoisyChannels.At(i*2)==col && fNoisyChannels.At(i*2+1)==row) {
+  for (UInt_t i=0; i<fNrBad; i++) { 
+    if (fBadChannels.At(i*2)==col && fBadChannels.At(i*2+1)==row) {
       return true;
     }
   }

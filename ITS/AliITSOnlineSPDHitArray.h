@@ -7,7 +7,7 @@
 // One object for each half stave and step in a scan. It keeps //
 // the nr of hits in each pixel.                               //
 // This class should only be used through the interface of the //
-// AliITSOnlineSPDscan class.                                  //
+// AliITSOnlineSPDscan and AliITSOnlineSPDphys classes.        //
 /////////////////////////////////////////////////////////////////
 
 #include <TObject.h>

@@ -67,6 +67,9 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSOnlineSPDscanMeanTh.cxx \
 		AliITSOnlineSPDscanMultiple.cxx \
 		AliITSOnlineSPDscanSingle.cxx \
+		AliITSOnlineSPDphys.cxx \
+		AliITSOnlineSPDphysAnalyzer.cxx \
+		AliITSOnlineSPDphysInfo.cxx \
 		AliITSBadChannelsAuxSPD.cxx \
 		AliITSBadChannelsSPD.cxx  \
 		AliITSChannelSPD.cxx  \

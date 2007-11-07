@@ -448,7 +448,7 @@ Bool_t AliITSDetTypeSim::GetCalibration() {
 
   AliCDBManager::Instance()->SetCacheFlag(isCacheActive);
 
-  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSPD", run);
+  AliCDBEntry *entrySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead", run);
   AliCDBEntry *entrySDD = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD", run);
   AliCDBEntry *mapASDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsAnodeSDD",run);
   AliCDBEntry *mapTSDD = AliCDBManager::Instance()->Get("ITS/Calib/MapsTimeSDD",run);
@@ -835,7 +835,7 @@ void AliITSDetTypeSim::StoreCalibration(Int_t firstRun, Int_t lastRun,
     AliError("AliITSCalibration classes are not defined - nothing done");
     return;
   }
-  AliCDBId idRespSPD("ITS/Calib/CalibSPD",firstRun, lastRun);
+  AliCDBId idRespSPD("ITS/Calib/SPDDead",firstRun, lastRun);
   AliCDBId idRespSDD("ITS/Calib/CalibSDD",firstRun, lastRun);
   AliCDBId idRespSSD("ITS/Calib/CalibSSD",firstRun, lastRun);
 
