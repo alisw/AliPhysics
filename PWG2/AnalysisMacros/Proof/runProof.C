@@ -12,7 +12,6 @@ void runProof() {
 void runProofESD(const char *file) {
   //the next line should point to the local $ALICE_ROOT
   //that contains the latest ANALYSIS developments
-  gSystem->AddIncludePath("-I\"$ALICE_ROOT/include\"");
   printf("****** Connect to PROOF *******\n");
   TProof::Open("proof://lxb6046.cern.ch"); 
   gProof->SetParallel(1);
@@ -34,7 +33,7 @@ void runProofESD(const char *file) {
   chain = CreateESDChain("ESD82XX_30K.txt",10);
   chain->SetBranchStatus("*Calo*",0);
 
-  gROOT->LoadMacro(file);
+  gProof->Load(file);
  
   //____________________________________________//
   // Make the analysis manager
