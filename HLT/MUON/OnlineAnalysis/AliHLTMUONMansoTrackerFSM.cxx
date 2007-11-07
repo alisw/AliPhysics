@@ -16,12 +16,12 @@
 
 /* $Id$ */
 
-/**
- *  @file   AliHLTMUONMansoTrackerFSM.cxx
- *  @author Artur Szostak <artursz@iafrica.com>
- *  @date   
- *  @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
- */
+///**
+// *  @file   AliHLTMUONMansoTrackerFSM.cxx
+// *  @author Artur Szostak <artursz@iafrica.com>
+// *  @date   
+// *  @brief  Implementation of AliHLTMUONMansoTrackerFSM class.
+// */
 
 #include "AliHLTMUONMansoTrackerFSM.h"
 #include "AliHLTMUONCalculations.h"
@@ -257,33 +257,33 @@ bool AliHLTMUONMansoTrackerFSM::LineFit(
 	AliHLTFloat32_t meanY = sumY / AliHLTFloat32_t(n);
 	AliHLTFloat32_t meanZ = sumZ / AliHLTFloat32_t(n);
 	
-	AliHLTFloat32_t SSzz = 0;
-	AliHLTFloat32_t SSzx = 0;
-	AliHLTFloat32_t SSzy = 0;
+	AliHLTFloat32_t vSSzz = 0;
+	AliHLTFloat32_t vSSzx = 0;
+	AliHLTFloat32_t vSSzy = 0;
 	for (int i = 0; i < 4; i++)
 	{
 		if (hitset[i])
 		{
-			SSzz += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fZ - meanZ);
-			SSzx += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fX - meanX);
-			SSzy += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fY - meanY);
+			vSSzz += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fZ - meanZ);
+			vSSzx += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fX - meanX);
+			vSSzy += (trigger.fHit[i].fZ - meanZ)*(trigger.fHit[i].fY - meanY);
 		}
 	}
 	
 	// Calculate params for lines x = Mzx * z + Czx and y = Mzy * z + Czy.
-	if (SSzz == 0) return false;
-	AliHLTFloat32_t Mzx = SSzx / SSzz;
-	AliHLTFloat32_t Mzy = SSzy / SSzz;
-	AliHLTFloat32_t Czx = meanX - Mzx * meanZ;
-	AliHLTFloat32_t Czy = meanY - Mzy * meanZ;
+	if (vSSzz == 0) return false;
+	AliHLTFloat32_t vMzx = vSSzx / vSSzz;
+	AliHLTFloat32_t vMzy = vSSzy / vSSzz;
+	AliHLTFloat32_t vCzx = meanX - vMzx * meanZ;
+	AliHLTFloat32_t vCzy = meanY - vMzy * meanZ;
 	
 	// Calculate ideal points on chambers 11 and 13:
 	pa.fZ = fgZ11;
-	pa.fX = Mzx * pa.fZ + Czx;
-	pa.fY = Mzy * pa.fZ + Czy;
+	pa.fX = vMzx * pa.fZ + vCzx;
+	pa.fY = vMzy * pa.fZ + vCzy;
 	pb.fZ = fgZ13;
-	pb.fX = Mzx * pb.fZ + Czx;
-	pb.fY = Mzy * pb.fZ + Czy;
+	pb.fX = vMzx * pb.fZ + vCzx;
+	pb.fY = vMzy * pb.fZ + vCzy;
 	
 	return true;
 }

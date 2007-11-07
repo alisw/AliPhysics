@@ -18,14 +18,14 @@
 
 /* $Id$ */
 
-/**
- *  @file   AliHLTMUONMansoTrackerFSM.h
- *  @author Artur Szostak <artursz@iafrica.com>
- *  @date   
- *  @brief  The AliHLTMUONMansoTrackerFSM implements the Manso tracking
- *          algorithm as a finite state machine, which partially reconstructs
- *          tracks in the muon spectrometer.
- */
+///**
+// *  @file   AliHLTMUONMansoTrackerFSM.h
+// *  @author Artur Szostak <artursz@iafrica.com>
+// *  @date   
+// *  @brief  The AliHLTMUONMansoTrackerFSM implements the Manso tracking
+// *          algorithm as a finite state machine, which partially reconstructs
+// *          tracks in the muon spectrometer.
+// */
 
 #include "AliHLTMUONDataTypes.h"
 #include "AliHLTMUONList.h"
@@ -90,7 +90,7 @@ public:
 	
 	/* To set the TrackerCallback callback object.
 	 */
-	inline void SetCallback(AliHLTMUONMansoTrackerFSMCallback* callback)
+	void SetCallback(AliHLTMUONMansoTrackerFSMCallback* callback)
 	{
 		fCallback = callback;
 	};
@@ -181,9 +181,7 @@ protected:
 		AliHLTMUONRecHitStruct AsXYPoint() const
 		{
 			AliHLTMUONRecHitStruct p;
-			p.fX = fX;
-			p.fY = fY;
-			p.fZ = 0;
+			p.fX = fX; p.fY = fY; p.fZ = 0;
 			return p;
 		};
 
@@ -234,30 +232,30 @@ protected:
 	};
 
 	
-	struct AliTagData
+	class AliTagData
 	{
+	public:
+		AliTagData() : fChamber(kChamber1), fRoi(), fLine() {};
+		
 		AliHLTMUONChamberName fChamber;     // The chamber on which the region of interest lies.
 		AliRegionOfInterest fRoi;  // Region of interest on the next station.
 		AliLine fLine;             // line between a cluster point and the previous station.
-
-		AliTagData() : fChamber(kChamber1), fRoi(), fLine() {};
 	};
 	
-	struct AliStation5Data
+	class AliStation5Data
 	{
+	public:
+		AliStation5Data() : fClusterPoint(), fTag() {};
+		
 		AliHLTMUONRecHitStruct fClusterPoint;  // Cluster point found on station 5.
 		AliTagData fTag;  // Chamber, ROI and line data for station 5.
-
-		AliStation5Data() : fClusterPoint(), fTag() {};
 	};
 	
 	typedef AliHLTMUONCountedList<AliStation5Data> Station5List;
 
-	struct AliStation4Data
+	class AliStation4Data
 	{
-		AliHLTMUONRecHitStruct fClusterPoint;  // Cluster point found on station 4.
-		const AliTagData* fSt5tag;      // Corresponding station 5 tag.
-
+	public:
 		AliStation4Data() : fClusterPoint(), fSt5tag() {};
 
 		AliStation4Data(const AliStation4Data& data) :
@@ -270,6 +268,9 @@ protected:
 			fSt5tag = data.fSt5tag;
 			return *this;
 		};
+		
+		AliHLTMUONRecHitStruct fClusterPoint;  // Cluster point found on station 4.
+		const AliTagData* fSt5tag;      // Corresponding station 5 tag.
 	};
 
 	typedef AliHLTMUONList<AliStation4Data> Station4List;
@@ -313,7 +314,7 @@ public:
 	
 protected:
 
-	AliHLTMUONMansoTrackerFSMCallback* fCallback;
+	AliHLTMUONMansoTrackerFSMCallback* fCallback;  // Pointer to the callback interface from which we fetch reco hits and to which we publish results.
 	
 	StatesSM4 fSm4state;  // State of SM4 used for fetching clusters on chambers 7 and 8.
 	StatesSM5 fSm5state;  // State of SM5 used for fetching clusters on chambers 9 and 10.
@@ -340,7 +341,7 @@ protected:
 	   to figure out where processing should continue in the ReturnClusters or
 	   EndOfClusters methods.
 	 */
-	inline void RequestClusters(
+	void RequestClusters(
 			AliHLTFloat32_t left, AliHLTFloat32_t right, AliHLTFloat32_t bottom, AliHLTFloat32_t top,
 			AliHLTMUONChamberName chamber, const void* tag = NULL
 		)
@@ -353,7 +354,7 @@ protected:
 	   method should be called.
 	   DO NOT request more clusters after calling this method.
 	 */
-	inline void EndOfClusterRequests()
+	void EndOfClusterRequests()
 	{
 		assert( fCallback != NULL );
 		fCallback->EndOfClusterRequests(this);
@@ -363,7 +364,7 @@ protected:
 	   the rest of the system. At this point all cluster blocks received with
 	   ReturnClusters are to be considered released and MUST NOT be accessed.
 	 */
-	inline void FoundTrack()
+	void FoundTrack()
 	{
 		assert( fCallback != NULL );
 		fCallback->FoundTrack(this);
@@ -374,7 +375,7 @@ protected:
 	   At this point all cluster blocks received with ReturnClusters are to be
 	   considered released and MUST NOT be accessed.
 	 */
-	inline void NoTrackFound()
+	void NoTrackFound()
 	{
 		assert( fCallback != NULL );
 		fCallback->NoTrackFound(this);
