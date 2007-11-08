@@ -115,4 +115,7 @@
 #pragma link C++ class AliITSOnlineSDDInjectors+;
 #pragma link C++ class AliITSPreprocessorSSD+;
 
+// Classes for alignment
+#pragma link C++ class AliITSAlignMille+;
+
 #endif
