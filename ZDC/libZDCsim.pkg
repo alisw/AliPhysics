@@ -1,7 +1,7 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS= AliZDC.cxx AliZDCv2.cxx \
+SRCS= AliZDC.cxx AliZDCv2.cxx AliZDCv3.cxx \
       AliZDCHit.cxx AliZDCSDigit.cxx AliZDCFragment.cxx AliZDCDigitizer.cxx \
       AliGenZDC.cxx AliZDCTrigger.cxx 
 #AliZDCMergedHit.cxx AliZDCMerger.cxx
