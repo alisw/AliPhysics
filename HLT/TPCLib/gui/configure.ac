@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl Online Monitoring GUI
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice HLT Online Monitoring GUI] , [1.5], [thaeder@kip.uni-heidelberg.de], AliHLTGUI)
+AC_INIT([Alice HLT Online Monitoring GUI] , [1.5.1], [thaeder@kip.uni-heidelberg.de], AliHLTGUI)
 
 dnl ------------------------------------------------------------------
 AC_CANONICAL_SYSTEM
@@ -42,10 +42,40 @@ dnl Check for ROOT
 dnl
 ROOT_PATH(5.08, [have_root=1], [AC_ERROR([Stop! The package needs ROOT 5.08 or later.])])
 AM_CONDITIONAL(HAVE_ROOT, test "x$have_root" = "x1" )
-CPPFLAGS="$CPPFLAGS ${ROOTCFLAGS}"
-LDFLAGS="$LDFLAGS -L${ROOTLIBDIR}"
-LIBS="$LIBS $ROOTLIBS"
 AC_SUBST([ROOTSYS])
+ROOTBINDIR=`dirname $ROOTEXEC`
+AC_SUBST([ROOTBINDIR])
+
+dnl test for additional required root libraries
+  # we check for the libSTEER library which is linked to
+  # - the ROOT libs libGeom libMinuit libVMC libEG
+  # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
+  # - ROOT libCint needs also libdl
+  # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
+  #   libTreePlayer.so
+  # - from Jan 07 libESD also depends on libXMLIO
+LIBS='-ldl'
+if test "x$have_root" = "x1"; then
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  
+  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO'
+  for CHECKLIB in $ROOT_CHECKLIBS ; do
+    CPPFLAGS="$save_CPPFLAGS ${ROOTCFLAGS}"
+    LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
+    LIBS="$save_LIBS $ROOTLIBS $ADD_ROOTLIBS"
+    AC_CHECK_LIB([$CHECKLIB],[_init], [ADD_ROOTLIBS="$ADD_ROOTLIBS -l$CHECKLIB"])
+  done
+
+dnl in order to have the configure.ac somewhat similar to the AliRoot HLT module's
+dnl one we keep this three lines commented. The build system of this package
+dnl might be changed later in order to pu the ROOT CPPFLAGS, LDFLAGS and LIBS
+dnl directly into the Makefile.am
+dnl   CPPFLAGS=$save_CPPFLAGS
+dnl   LDFLAGS=$save_LDFLAGS
+dnl   LIBS=$save_LIBS
+fi
 
 
 dnl ------------------------------------------------------------------
@@ -82,31 +112,31 @@ if test "x$ALICE_ROOT" != "x" && test -d $ALICE_ROOT ; then
     fi
     ALICE_TARGET=$alice_target
   fi
+  ALIROOTBINDIR=${ALICE_ROOT}/bin/tgt_${ALICE_TARGET}
   ALIROOTLIBDIR=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
   ALIROOTINCDIR=${ALICE_ROOT}/include
+  test -d ${ALIROOTBINDIR} || AC_MSG_WARN([can not find AliRoot binary directory $ALIROOTBINDIR])
   test -d ${ALIROOTLIBDIR} || AC_MSG_WARN([can not find AliRoot library directory $ALIROOTLIBDIR])
   test -d ${ALIROOTINCDIR} || AC_MSG_WARN([can not find AliRoot include directory $ALIROOTINCDIR])
 fi
 
 AC_MSG_CHECKING([for AliRoot])
 if test "x$ALICE_ROOT" != "x" \
+   && test -d ${ALIROOTBINDIR} \
    && test -d ${ALIROOTLIBDIR} \
    && test -d ${ALIROOTINCDIR}; then
   have_aliroot=$ALICE_ROOT
 else
+  ALIROOTBINDIR=
   ALIROOTLIBDIR=
   ALIROOTINCDIR=
 fi
 AC_MSG_RESULT([$have_aliroot])
 
 if test ! "x$have_aliroot" = "xno" ; then
-  # we check for the libSTEER library which is linked to
-  # - the ROOT libs libGeom libMinuit libVMC libEG
-  # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
-  # - ROOT libCint needs also libdl
   ALIROOT_CPPFLAGS="-I${ALIROOTINCDIR} -I${ALICE_ROOT}/RAW"
   ALIROOT_LDFLAGS="-L${ALIROOTLIBDIR}"
-  ALIROOT_LIBS="-lESD -lGeom -lMinuit -lVMC -lEG -ldl -lTreePlayer"
+  ALIROOT_LIBS="-lESD $ADD_ROOTLIBS"
   save_CPPFLAGS=$CPPFLAGS
   save_LDFLAGS=$LDFLAGS
   save_LIBS=$LIBS
@@ -173,6 +203,8 @@ test "x$have_aliroot" = "xno" && \
 AC_SUBST([ALIROOTLIBDIR])
 AC_SUBST([ALIROOT_CPPFLAGS])
 AC_SUBST([ALIROOT_LDFLAGS])
+AC_SUBST([ALIROOTBINDIR])
+AC_SUBST([ALIROOTLIBDIR])
 AC_SUBST([ALIROOT_LIBS])
 
 dnl ------------------------------------------------------------------
@@ -209,8 +241,8 @@ if test "x$with_pubsub" != "xno" ; then
     HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/reader/include ${with_pubsub}/src/Util/HOMER/data/include"
   fi
   HOMER_CPPFLAGS=`for i in ${HOMER_INCDIRS}; do echo -n "-I$i " ; done`
-  HOMER_LIBDIR=${with_pubsub}/lib/`uname -s`-`uname -m`
-  HOMER_LDFLAGS="-L$HOMER_LIBDIR"
+  HOMER_LIBDIR="${with_pubsub}/lib/`uname -s`-`uname -m`"
+  HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
   CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS $ALIROOT_CPPFLAGS"
   LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS $ALIROOT_LDFLAGS"
   LIBS="$save_LIBS $ALIROOT_LIBS"
@@ -254,11 +286,12 @@ test "x$with_homer" != "xyes" && \
      test "x$enable_strict" != "xno" && \
      AC_ERROR([Stop! The package needs the HOMER library.
       Use  --with-pubsub option to point to the HLT PubSub installation])
-AC_SUBST([HOMER_INCDIRS])
-AC_SUBST([HOMER_LIBDIR])
 
 AC_SUBST([HOMER_CPPFLAGS])
 AC_SUBST([HOMER_LDFLAGS])
+AC_SUBST([HOMER_LIBDIR])
+AC_SUBST([HOMER_BINDIR])
+AC_SUBST([HOMER_INCDIRS])
 AC_SUBST([HOMER_LIBS])
 
 
