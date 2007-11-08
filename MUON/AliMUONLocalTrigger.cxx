@@ -182,7 +182,7 @@ void AliMUONLocalTrigger::SetLocalStruct(Int_t loCircuit, AliMUONLocalStruct& lo
   SetLoStripY((Int_t)localStruct.GetYPos());
   SetLoDev((Int_t)localStruct.GetXDev());
   SetLoSdev((Int_t)localStruct.GetSXDev());
-  SetLoTrigY((Int_t)localStruct.GetTriggerY());
+  SetLoTrigY((Int_t)localStruct.GetTrigY());
  
   // set L(H)pt
   SetLoLpt(localStruct.GetLpt());
