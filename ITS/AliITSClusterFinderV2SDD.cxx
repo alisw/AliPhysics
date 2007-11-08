@@ -276,14 +276,16 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
     if (!next || input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
       Int_t iModule = input->GetModuleID();
-      clusters[iModule] = new TClonesArray("AliITSRecPoint");
-      fModule = iModule;
-      FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
-      Int_t nClusters = clusters[iModule]->GetEntriesFast();
-      nClustersSDD += nClusters;
-      for(Int_t iBin=0;iBin<kMaxBin; iBin++){
-	bins[0][iBin].Reset();
-	bins[1][iBin].Reset();
+      if (iModule >= 0) { 
+	clusters[iModule] = new TClonesArray("AliITSRecPoint");
+	fModule = iModule;
+	FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
+	Int_t nClusters = clusters[iModule]->GetEntriesFast();
+	nClustersSDD += nClusters;
+	for(Int_t iBin=0;iBin<kMaxBin; iBin++){
+	  bins[0][iBin].Reset();
+	  bins[1][iBin].Reset();
+	}
       }
       if (!next) break;
     }else{
