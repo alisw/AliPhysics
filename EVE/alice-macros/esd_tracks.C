@@ -31,7 +31,7 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
   //PH		       rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
   //PH		       rt.V.x, rt.V.y, rt.V.z));
   char form[1000];
-  sprintf(form,"ESDTrack %d", rt.label);
+  sprintf(form,"Track %d", rt.index);
   track->SetName(form);
   sprintf(form,"Index=%d, Label=%d\npT=%.3f, pZ=%.3f\nV=(%.3f, %.3f, %.3f)",
 	  index, rt.label,
@@ -285,7 +285,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
     char form[1000];
-    sprintf(form,"Track lbl=%d, sigma=%5.3f", at->GetLabel(), s);
+    sprintf(form,"Track idx=%d, sigma=%5.3f", at->GetIndex(), s);
     track->SetName(form);
     gReve->AddRenderElement(track, tlist);
   }
