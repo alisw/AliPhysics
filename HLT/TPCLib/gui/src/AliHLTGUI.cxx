@@ -47,8 +47,8 @@ using namespace std;
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <string.h>
-#include <errno.h>
+#include <cstring>
+#include <cerrno>
 #include <iostream>
 #include <vector>
 
@@ -124,8 +124,6 @@ AliHLTGUI::AliHLTGUI( Int_t argc, Char_t **argv )
 {
   cout << "Creating display" << endl;
 
-  const Float_t fVersion = 1.5;  // CONST XXX INLINE
-  
   // Set Widgets 
   padrowWidget = tQtWidgetPadRow; 
   residualsWidget = tQtWidgetResiduals;
@@ -392,7 +390,7 @@ AliHLTGUI::AliHLTGUI( Int_t argc, Char_t **argv )
     
     // -- Version
     if ( !strcmp( argv[ii], "--version" ) ) {
-      cout << "Version of AliHLTGUI: " << fVersion << endl;
+      cout << "Version of AliHLTGUI: " << PACKAGE_VERSION << endl;
       
       exit (0);
     }
@@ -497,7 +495,7 @@ void AliHLTGUI::connectDisplay() {
   
   strcat(geoPath,"/");
   strcat(geoPath,geometryFile);
-  
+
   // -- Set Hostnames in AliHLTTPCDisplayMain
   // ----------------------------------------
   Int_t cnt = fHostnames.size();
@@ -794,7 +792,7 @@ void AliHLTGUI::redisplay(Bool_t newRawSlice){
 #if ALIHLTTPCDISPLAY_VERSION >= 2
     display->DisplayEvent(newRawSlice);
 #else
-    HLTError("function not available for AliHLTTPCDisplay version < 2");
+    display->DisplayEvent();
 #endif
 
     displayTrackParam();

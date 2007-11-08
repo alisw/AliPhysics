@@ -6,7 +6,8 @@ REAL_SRC		= AliHLTGUI.cxx \
 			  AliHLTGUI.h \
 			  main.cxx \
 			  AliHLTGUIMainForm.ui \
-			  AliceLogo.gif
+			  AliceLogo.gif \
+			  KIPLogo.gif
 
 REAL_SRC_DIR		= $(top_srcdir)/src
 
@@ -60,7 +61,7 @@ $(QT_BUILD_DIR)/AliHLTGUI: $(QT_BUILD_DIR) $(REAL_SRC:%=$(QT_BUILD_DIR)/%) $(QT_
 	(cd $(QT_BUILD_DIR)  \
 	&& export PATH=@QT_DIR@/bin:$(PATH) \
 	&& export QTDIR=@QT_DIR@ \
-	&& $(MAKE) CXXFLAGS="$(CXXFLAGS) -DALIHLTTPCDISPLAY_VERSION=@ALIHLTTPCDISPLAY_VERSION@")
+	&& $(MAKE) CXXFLAGS="$(CXXFLAGS) -DALIHLTTPCDISPLAY_VERSION=@ALIHLTTPCDISPLAY_VERSION@ -DPACKAGE_VERSION=\"@PACKAGE_VERSION@\"")
 
 clean-local:
 	rm -rf $(QT_BUILD_DIR)
