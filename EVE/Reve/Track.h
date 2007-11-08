@@ -34,15 +34,15 @@ public:
   typedef std::vector<Reve::PathMark*>::iterator vpPathMark_i;
 
 protected:
-  Reve::Vector      fV;
-  Reve::Vector      fP;
-  Double_t          fBeta;
-  Int_t             fCharge;
-  Int_t             fLabel;
-  Int_t             fIndex;
-  vpPathMark_t      fPathMarks;
+  Reve::Vector      fV;          // Starting vertex
+  Reve::Vector      fP;          // Starting momentum
+  Double_t          fBeta;       // Relativistic beta factor
+  Int_t             fCharge;     // Charge in units of e0
+  Int_t             fLabel;      // Simulation label
+  Int_t             fIndex;      // Reconstruction index
+  vpPathMark_t      fPathMarks;  // Vector of known points along the track
 
-  TrackRnrStyle*    fRnrStyle; 
+  TrackRnrStyle*    fRnrStyle;   // Pointer to shared render-style
 
 public:
   Track();
@@ -91,21 +91,13 @@ public:
 
   virtual TClass* ProjectedClass() const;
 
-  ClassDef(Track, 1);
+  ClassDef(Track, 1); // Visual representation of a track.
 }; // endclass Track
 
 
 /**************************************************************************/
 // TrackRnrStyle
 /**************************************************************************/
-
-// This is decoupled from Track/TrackList to allow sharing of the
-// RnrStyle among several instances. The interface is half cooked and
-// there is no good way to set RnrStyle after the object has been
-// created (shouldn't be too hard to fix).
-//
-// TrackList has Get/Set methods for RnrStlye and
-// TrackListEditor provides editor access to them.
 
 class TrackRnrStyle : public TObject,
                       public ReferenceBackPtr
@@ -114,28 +106,31 @@ private:
   void                     RebuildTracks();
 
 public:
-  Float_t                  fMagField;
-  // track limits
-  Float_t                  fMaxR;
-  Float_t                  fMaxZ;
-  // helix limits
-  Float_t                  fMaxOrbs; // Maximal angular path of tracks' orbits (1 ~ 2Pi).
-  Float_t                  fMinAng;  // Minimal angular step between two helix points.
-  Float_t                  fDelta;   // Maximal error at the mid-point of the line connecting to helix points.
+  Float_t                  fMagField;      // Constant magnetic field along z.
 
-  Bool_t                   fEditPathMarks;
-  TMarker                  fPMAtt;
+  // Track limits
+  Float_t                  fMaxR;          // Max radius for track extrapolation
+  Float_t                  fMaxZ;          // Max z-coordinate for track extrapolation.
+  // Helix limits
+  Float_t                  fMaxOrbs;       // Maximal angular path of tracks' orbits (1 ~ 2Pi).
+  Float_t                  fMinAng;        // Minimal angular step between two helix points.
+  Float_t                  fDelta;         // Maximal error at the mid-point of the line connecting to helix points.
 
-  Bool_t                   fFitDaughters;
-  Bool_t                   fFitReferences;
-  Bool_t                   fFitDecay;
+  // Path-mark control
+  Bool_t                   fEditPathMarks; // Show widgets for path-mark control in GUI editor.
+  TMarker                  fPMAtt;         // Marker attributes for rendering of path-marks.
 
-  Bool_t                   fRnrDaughters;
-  Bool_t                   fRnrReferences;
-  Bool_t                   fRnrDecay;
- 
-  Bool_t                   fRnrFV; // first vertex
-  TMarker                  fFVAtt;
+  Bool_t                   fFitDaughters;  // Pass through daughter creation points when extrapolating a track.
+  Bool_t                   fFitReferences; // Pass through given track-references when extrapolating a track.
+  Bool_t                   fFitDecay;      // Pass through decay point when extrapolating a track.
+
+  Bool_t                   fRnrDaughters;  // Render daughter path-marks.
+  Bool_t                   fRnrReferences; // Render track-reference path-marks.
+  Bool_t                   fRnrDecay;      // Render decay path-marks.
+
+  // First vertex control
+  Bool_t                   fRnrFV;         // Render first vertex.
+  TMarker                  fFVAtt;         // Marker attributes for fits vertex.
 
   TrackRnrStyle();
 
@@ -160,11 +155,11 @@ public:
   Float_t GetMagField() const     { return fMagField; }
   void    SetMagField(Float_t mf) { fMagField = mf; }
 
-  static Float_t       fgDefMagField;
-  static const Float_t fgkB2C;
-  static TrackRnrStyle fgDefStyle;
+  static Float_t       fgDefMagField; // Default value for constant solenoid magnetic field.
+  static const Float_t fgkB2C;        // Constant for conversion of momentum to curvature.
+  static TrackRnrStyle fgDefStyle;    // Default track render-style.
 
-  ClassDef(TrackRnrStyle, 1);
+  ClassDef(TrackRnrStyle, 1); // Rendering parameters for tracks.
 }; // endclass TrackRnrStyle
 
 
@@ -182,20 +177,21 @@ class TrackList : public RenderElementList,
 private:
   TrackList(const TrackList&);            // Not implemented
   TrackList& operator=(const TrackList&); // Not implemented
-  Bool_t               fRecurse;
+
+  Bool_t               fRecurse;    // Recurse when propagating marker/line attributes to tracks.
 
 protected:
-  TrackRnrStyle*       fRnrStyle;
+  TrackRnrStyle*       fRnrStyle;   // Basic track rendering parameters, not enforced to elements.
 
-  Bool_t               fRnrLine;
-  Bool_t               fRnrPoints;
+  Bool_t               fRnrLine;    // Render track as line.
+  Bool_t               fRnrPoints;  // Render track as points.
 
-  Float_t              fMinPt;
-  Float_t              fMaxPt;
-  Float_t              fLimPt;
-  Float_t              fMinP;
-  Float_t              fMaxP;
-  Float_t              fLimP;
+  Float_t              fMinPt;      // Minimum track pT for display selection.
+  Float_t              fMaxPt;      // Maximum track pT for display selection.
+  Float_t              fLimPt;      // Highest track pT in the container.
+  Float_t              fMinP;       // Minimum track p for display selection.
+  Float_t              fMaxP;       // Maximum track p for display selection.
+  Float_t              fLimP;       // Highest track p in the container.
 
   Float_t RoundMomentumLimit(Float_t x);
 
@@ -242,13 +238,17 @@ public:
 
   //--------------------------------
 
+  Track* FindTrackByLabel(Int_t label); // *MENU*
+  Track* FindTrackByIndex(Int_t index); // *MENU*
+
   void ImportHits();     // *MENU*
   void ImportClusters(); // *MENU*
 
   virtual TClass* ProjectedClass() const;
 
-  ClassDef(TrackList, 1);
+  ClassDef(TrackList, 1); // A list of tracks.
 };
+
 
 /**************************************************************************/
 // TrackCounter

@@ -11,6 +11,7 @@
 
 // Updates
 #include <Reve/ReveManager.h>
+#include <Reve/RGBrowser.h>
 #include <Reve/NLTTrack.h>
 #include <TCanvas.h>
 
@@ -24,6 +25,8 @@ using namespace Reve;
 //______________________________________________________________________________
 // Track
 //
+// Visual representation of a track.
+//
 
 ClassImp(Reve::Track)
 
@@ -35,8 +38,8 @@ Track::Track() :
   fP(),
   fBeta(0),
   fCharge(0),
-  fLabel(-1),
-  fIndex(-1),
+  fLabel(kMinInt),
+  fIndex(kMinInt),
   fPathMarks(),
 
   fRnrStyle(0)
@@ -51,7 +54,7 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   fBeta(t->P()/t->Energy()),
   fCharge(0),
   fLabel(label),
-  fIndex(-1),
+  fIndex(kMinInt),
   fPathMarks(),
 
   fRnrStyle(0)
@@ -412,7 +415,7 @@ void Track::ImportClustersFromIndex()
 {
   static const Exc_t eH("Track::ImportClustersFromIndex ");
 
-  if (fIndex < 0)
+  if (fIndex == kMinInt)
     throw(eH + "index not set.");
 
   Reve::LoadMacro("clusters_from_index.C");
@@ -427,12 +430,20 @@ void Track::ImportKine()
 {
   static const Exc_t eH("Track::ImportKine ");
 
-  if (fLabel < 0)
+  if (fLabel == kMinInt)
     throw(eH + "label not set.");
+
+  Int_t label;
+  if (fLabel < 0) {
+    Warning(eH, "label negative, taking absolute value.");
+    label = -fLabel;
+  } else {
+    label = fLabel;
+  }
 
   Reve::LoadMacro("kine_tracks.C");
   gROOT->ProcessLine(Form("kine_track(%d, kFALSE, kTRUE, (Reve::RenderElement*)%p);", 
-			  fLabel, this));
+			  label, this));
 
 }
 
@@ -441,12 +452,20 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
 {
   static const Exc_t eH("Track::ImportKineWithArgs ");
 
-  if (fLabel < 0)
+  if (fLabel == kMinInt)
     throw(eH + "label not set.");
+
+  Int_t label;
+  if (fLabel < 0) {
+    Warning(eH, "label negative, taking absolute value.");
+    label = -fLabel;
+  } else {
+    label = fLabel;
+  }
 
   Reve::LoadMacro("kine_tracks.C");
   gROOT->ProcessLine(Form("kine_track(%d, %d, %d, (Reve::RenderElement*)%p);", 
-			   fLabel, importMother, importDaugters, this));
+			   label, importMother, importDaugters, this));
 }
 
 /******************************************************************************/
@@ -462,9 +481,6 @@ void Track::PrintKineStack()
 void Track::PrintPathMarks()
 {
   static const Exc_t eH("Track::PrintPathMarks ");
-
-  if (fLabel < 0)
-    throw(eH + "label not set.");
 
   printf("Track '%s', number of path marks %d, label %d\n",
 	 GetName(), fPathMarks.size(), fLabel);
@@ -510,10 +526,17 @@ void Track::SetLineStyle(Style_t lstyle)
 /******************************************************************************/
 /******************************************************************************/
 
-
 //______________________________________________________________________________
 // TrackRnrStyle
 //
+// Holding structure for a number of track rendering parameters.
+//
+// This is decoupled from Track/TrackList to allow sharing of the
+// RnrStyle among several instances. Back references are kept so the
+// tracks can be recreated when the parameters change.
+//
+// TrackList has Get/Set methods for RnrStlye. TrackEditor and
+// TrackListEditor provide editor access.
 
 ClassImp(Reve::TrackRnrStyle)
 
@@ -521,6 +544,7 @@ Float_t       TrackRnrStyle::fgDefMagField = 5;
 const Float_t TrackRnrStyle::fgkB2C        = 0.299792458e-3;
 TrackRnrStyle TrackRnrStyle::fgDefStyle;
 
+//______________________________________________________________________________
 TrackRnrStyle::TrackRnrStyle() :
   TObject(),
   ReferenceBackPtr(),
@@ -548,6 +572,8 @@ TrackRnrStyle::TrackRnrStyle() :
   fRnrFV(kFALSE),
   fFVAtt()
 {
+  // Default constructor.
+
   fPMAtt.SetMarkerColor(4);
   fPMAtt.SetMarkerStyle(2);
 
@@ -558,8 +584,11 @@ TrackRnrStyle::TrackRnrStyle() :
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void TrackRnrStyle::RebuildTracks()
 {
+  // Rebuild all tracks using this render-style.
+
   Track* track;
   std::list<RenderElement*>::iterator i = fBackRefs.begin();  
   while (i != fBackRefs.end())
@@ -570,70 +599,103 @@ void TrackRnrStyle::RebuildTracks()
   }
 }
 
-/*************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetMaxR(Float_t x)
 {
+  // Set maximum radius and rebuild tracks.
+
   fMaxR = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetMaxZ(Float_t x)
 {
+  // Set maximum z and rebuild tracks.
+
   fMaxZ = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetMaxOrbs(Float_t x)
 {
+  // Set maximum number of orbits and rebuild tracks.
+
   fMaxOrbs = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetMinAng(Float_t x)
 {
+  // Set minimum step angle and rebuild tracks.
+
   fMinAng = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetDelta(Float_t x)
 {
+  // Set maximum error and rebuild tracks.
+
   fDelta = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetFitDaughters(Bool_t x)
 {
+  // Set daughter creation point fitting and rebuild tracks.
+
   fFitDaughters = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetFitReferences(Bool_t x)
 {
+  // Set track-reference fitting and rebuild tracks.
+
   fFitReferences = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetFitDecay(Bool_t x)
 {
+  // Set decay fitting and rebuild tracks.
+
   fFitDecay = x;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetRnrDecay(Bool_t rnr)
 {
+  // Set decay rendering and rebuild tracks.
+
   fRnrDecay = rnr;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetRnrDaughters(Bool_t rnr)
 {
+  // Set daughter rendering and rebuild tracks.
+
   fRnrDaughters = rnr;
   RebuildTracks();
 }
 
+//______________________________________________________________________________
 void TrackRnrStyle::SetRnrReferences(Bool_t rnr)
 {
+  // Set track-reference rendering and rebuild tracks.
+
   fRnrReferences = rnr;
   RebuildTracks();
 }
@@ -641,12 +703,14 @@ void TrackRnrStyle::SetRnrReferences(Bool_t rnr)
 
 /**************************************************************************/
 /**************************************************************************/
-//______________________________________________________________________
+
+//______________________________________________________________________________
 // TrackList
 //
 
 ClassImp(Reve::TrackList)
 
+//______________________________________________________________________________
 TrackList::TrackList(TrackRnrStyle* rs) :
   RenderElementList(),
   TAttMarker(1, 20, 1),
@@ -660,6 +724,9 @@ TrackList::TrackList(TrackRnrStyle* rs) :
   fMinPt (0), fMaxPt (0), fLimPt (0),
   fMinP  (0), fMaxP  (0), fLimP  (0)
 {
+  // Constructor. If TrackRenderStyle argument is 0, a new default
+  // render-style is created.
+
   fChildClass = Track::Class(); // override member from base RenderElementList
 
   fMainColorPtr = &fLineColor;
@@ -667,6 +734,7 @@ TrackList::TrackList(TrackRnrStyle* rs) :
   SetRnrStyle(rs);
 }
 
+//______________________________________________________________________________
 TrackList::TrackList(const Text_t* name, TrackRnrStyle* rs) :
   RenderElementList(name),
   TAttMarker(1, 20, 1),
@@ -680,6 +748,9 @@ TrackList::TrackList(const Text_t* name, TrackRnrStyle* rs) :
   fMinPt (0), fMaxPt (0), fLimPt (0),
   fMinP  (0), fMaxP  (0), fLimP  (0)
 {
+  // Constructor. If TrackRenderStyle argument is 0, a new default
+  // render-style is created.
+
   fChildClass = Track::Class(); // override member from base RenderElementList
 
   fMainColorPtr = &fLineColor;
@@ -687,15 +758,23 @@ TrackList::TrackList(const Text_t* name, TrackRnrStyle* rs) :
   SetRnrStyle(rs);
 }
 
+//______________________________________________________________________________
 TrackList::~TrackList()
 {
+  // Destructor.
+
   SetRnrStyle(0);
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetRnrStyle(TrackRnrStyle* rs)
 {
+  // Set default render-style for tracks.
+  // This is not enforced onto the tracks themselves but this is the
+  // render-style that is show in the TrackListEditor.
+
   if (fRnrStyle == rs) return;
   if (fRnrStyle) fRnrStyle->DecRefCount();
   fRnrStyle = rs;
@@ -704,11 +783,15 @@ void TrackList::SetRnrStyle(TrackRnrStyle* rs)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::MakeTracks(Bool_t recurse)
 {
+  // Regenerate the visual representations of tracks.
+  // The momentum limits are rescanned during the same traversal.
+
   fLimPt = fLimP = 0;
 
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i)
   {
     Track* track = (Track*)(*i);
     track->MakeTrack(recurse);
@@ -727,9 +810,13 @@ void TrackList::MakeTracks(Bool_t recurse)
   gReve->Redraw3D();
 }
 
+//______________________________________________________________________________
 void TrackList::FindMomentumLimits(RenderElement* el, Bool_t recurse)
 {
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  // Loop over track elements of argument el and find highest pT and p.
+  // These are stored in members fLimPt and fLimP.
+
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     Track* track = dynamic_cast<Track*>(*i);
     if (track)
@@ -742,8 +829,11 @@ void TrackList::FindMomentumLimits(RenderElement* el, Bool_t recurse)
   }
 }
 
+//______________________________________________________________________________
 Float_t TrackList::RoundMomentumLimit(Float_t x)
 {
+  // Round the momentum limit up to a nice value.
+
   using namespace TMath;
   Double_t fac = Power(10, 1 - Floor(Log10(x)));
   return Ceil(fac*x) / fac;
@@ -751,21 +841,29 @@ Float_t TrackList::RoundMomentumLimit(Float_t x)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetRnrLine(Bool_t rnr)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set rendering of track as line for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetRnrLine() == fRnrLine) track->SetRnrLine(rnr);
-    if (fRecurse) SetRnrLine(rnr, *i);
+    if (track->GetRnrLine() == fRnrLine)
+      track->SetRnrLine(rnr);
+    if (fRecurse)
+      SetRnrLine(rnr, *i);
   }
   fRnrLine = rnr;
 }
 
+//______________________________________________________________________________
 void TrackList::SetRnrLine(Bool_t rnr, RenderElement* el)
 {
+  // Set rendering of track as line for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && (track->GetRnrLine() == fRnrLine))
@@ -775,48 +873,66 @@ void TrackList::SetRnrLine(Bool_t rnr, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetRnrPoints(Bool_t rnr)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set rendering of track as points for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetRnrPoints() == fRnrPoints) track->SetRnrPoints(rnr);
-    if (fRecurse) SetRnrPoints(rnr, *i);
+    if (track->GetRnrPoints() == fRnrPoints)
+      track->SetRnrPoints(rnr);
+    if (fRecurse)
+      SetRnrPoints(rnr, *i);
   }
   fRnrPoints = rnr;
 }
 
+//______________________________________________________________________________
 void TrackList::SetRnrPoints(Bool_t rnr, RenderElement* el)
 {
+  // Set rendering of track as points for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track) 
-      if (track->GetRnrPoints() == fRnrPoints) track->SetRnrPoints(rnr);
-    
-    if (fRecurse) SetRnrPoints(rnr, *i);
+      if (track->GetRnrPoints() == fRnrPoints)
+	track->SetRnrPoints(rnr);
+    if (fRecurse)
+      SetRnrPoints(rnr, *i);
   }
 }
-/**************************************************************************/
 
+/******************************************************************************/
+
+//______________________________________________________________________________
 void TrackList::SetMainColor(Color_t col)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set main (line) color for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetLineColor() == fLineColor) track->SetLineColor(col);
-    if (fRecurse) SetLineColor(col, *i);
+    if (track->GetLineColor() == fLineColor)
+      track->SetLineColor(col);
+    if (fRecurse)
+      SetLineColor(col, *i);
   }
   RenderElement::SetMainColor(col);
 }
 
+//______________________________________________________________________________
 void TrackList::SetLineColor(Color_t col, RenderElement* el)
 {
+  // Set line color for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && track->GetLineColor() == fLineColor)
@@ -826,23 +942,31 @@ void TrackList::SetLineColor(Color_t col, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetLineWidth(Width_t width)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set line width for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetLineWidth() == fLineWidth) track->SetLineWidth(width);
-    if (fRecurse) SetLineWidth(width, *i);
+    if (track->GetLineWidth() == fLineWidth)
+      track->SetLineWidth(width);
+    if (fRecurse)
+      SetLineWidth(width, *i);
   }
   fLineWidth=width; 
 }
 
+//______________________________________________________________________________
 void TrackList::SetLineWidth(Width_t width, RenderElement* el)
 {
+  // Set line width for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && track->GetLineWidth() == fLineWidth)
@@ -852,23 +976,31 @@ void TrackList::SetLineWidth(Width_t width, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetLineStyle(Style_t style)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set line style for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetLineStyle() == fLineStyle) track->SetLineStyle(style);
-    if (fRecurse)SetLineStyle(style, *i);
+    if (track->GetLineStyle() == fLineStyle)
+      track->SetLineStyle(style);
+    if (fRecurse)
+      SetLineStyle(style, *i);
   }
   fLineStyle=style; 
 }
 
+//______________________________________________________________________________
 void TrackList::SetLineStyle(Style_t style, RenderElement* el)
 {
+  // Set line style for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && track->GetLineStyle() == fLineStyle)
@@ -878,23 +1010,31 @@ void TrackList::SetLineStyle(Style_t style, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetMarkerStyle(Style_t style)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set marker style for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetMarkerStyle() == fMarkerStyle) track->SetMarkerStyle(style);
-    if (fRecurse) SetMarkerStyle(style, *i);
+    if (track->GetMarkerStyle() == fMarkerStyle)
+      track->SetMarkerStyle(style);
+    if (fRecurse)
+      SetMarkerStyle(style, *i);
   }
   fMarkerStyle=style; 
 }
 
+//______________________________________________________________________________
 void TrackList::SetMarkerStyle(Style_t style, RenderElement* el)
 {
+  // Set marker style for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && track->GetMarkerStyle() == fMarkerStyle)
@@ -904,23 +1044,31 @@ void TrackList::SetMarkerStyle(Style_t style, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetMarkerColor(Color_t col)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set marker color for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetMarkerColor() == fMarkerColor) track->SetMarkerColor(col);
-    if (fRecurse) SetMarkerColor(col, *i);
+    if (track->GetMarkerColor() == fMarkerColor)
+      track->SetMarkerColor(col);
+    if (fRecurse)
+      SetMarkerColor(col, *i);
   }
   fMarkerColor=col; 
 }
 
+//______________________________________________________________________________
 void TrackList::SetMarkerColor(Color_t col, RenderElement* el)
 {
+  // Set marker color for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && track->GetMarkerColor() == fMarkerColor)
@@ -930,23 +1078,31 @@ void TrackList::SetMarkerColor(Color_t col, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SetMarkerSize(Size_t size)
 {
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  // Set marker size for the list and the elements.
+
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     Track* track = (Track*)(*i);
-    if (track->GetMarkerSize() == fMarkerSize) track->SetMarkerSize(size);
-    if (fRecurse) SetMarkerSize(size, *i);
+    if (track->GetMarkerSize() == fMarkerSize)
+      track->SetMarkerSize(size);
+    if (fRecurse)
+      SetMarkerSize(size, *i);
   }
   fMarkerSize=size; 
 }
 
+//______________________________________________________________________________
 void TrackList::SetMarkerSize(Size_t size, RenderElement* el)
 {
+  // Set marker size for children of el.
+
   Track* track;
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     track = dynamic_cast<Track*>(*i);
     if (track && track->GetMarkerSize() == fMarkerSize)
@@ -956,8 +1112,9 @@ void TrackList::SetMarkerSize(Size_t size, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 {
   fMinPt = min_pt;
@@ -966,7 +1123,7 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
   const Float_t minptsq = min_pt*min_pt;
   const Float_t maxptsq = max_pt*max_pt;
 
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     const Float_t ptsq = ((Track*)(*i))->fP.Perp2();
     Bool_t on = ptsq >= minptsq && ptsq <= maxptsq;
@@ -976,12 +1133,13 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
   }
 }
 
+//______________________________________________________________________________
 void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt, RenderElement* el)
 {
   const Float_t minptsq = min_pt*min_pt;
   const Float_t maxptsq = max_pt*max_pt;
 
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     Track* track = dynamic_cast<Track*>(*i);
     if (track)
@@ -995,6 +1153,7 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt, RenderElement* el)
   }
 }
 
+//______________________________________________________________________________
 void TrackList::SelectByP(Float_t min_p, Float_t max_p)
 {
   fMinP = min_p;
@@ -1003,7 +1162,7 @@ void TrackList::SelectByP(Float_t min_p, Float_t max_p)
   const Float_t minpsq = min_p*min_p;
   const Float_t maxpsq = max_p*max_p;
 
-  for(List_i i=BeginChildren(); i!=EndChildren(); ++i)
+  for (List_i i=BeginChildren(); i!=EndChildren(); ++i)
   {
     const Float_t psq  = ((Track*)(*i))->fP.Mag2();
     Bool_t on = psq >= minpsq && psq <= maxpsq;
@@ -1013,12 +1172,13 @@ void TrackList::SelectByP(Float_t min_p, Float_t max_p)
   }
 }
 
+//______________________________________________________________________________
 void TrackList::SelectByP(Float_t min_p, Float_t max_p, RenderElement* el)
 {
   const Float_t minpsq = min_p*min_p;
   const Float_t maxpsq = max_p*max_p;
 
-  for(List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
+  for (List_i i=el->BeginChildren(); i!=el->EndChildren(); ++i)
   {
     Track* track = dynamic_cast<Track*>(*i);
     if (track)
@@ -1032,35 +1192,81 @@ void TrackList::SelectByP(Float_t min_p, Float_t max_p, RenderElement* el)
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
+Track* TrackList::FindTrackByLabel(Int_t label)
+{
+  // Find track by label, select it and display it in the editor.
+
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    if (((Track*)(*i))->GetLabel() == label) {
+      TGListTree     *lt   = gReve->GetLTEFrame()->GetListTree();
+      TGListTreeItem *mlti = lt->GetSelected();
+      if (mlti->GetUserData() != this)
+	mlti = FindListTreeItem(lt);
+      TGListTreeItem *tlti = (*i)->FindListTreeItem(lt, mlti);
+      lt->HighlightItem(tlti);
+      lt->SetSelected(tlti);
+      gReve->EditRenderElement(*i);
+      return (Track*) *i;
+    }
+  }
+  return 0;
+}
+
+//______________________________________________________________________________
+Track* TrackList::FindTrackByIndex(Int_t index)
+{
+  // Find track by index, select it and display it in the editor.
+
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+    if (((Track*)(*i))->GetIndex() == index) {
+      TGListTree     *lt   = gReve->GetLTEFrame()->GetListTree();
+      TGListTreeItem *mlti = lt->GetSelected();
+      if (mlti->GetUserData() != this)
+	mlti = FindListTreeItem(lt);
+      TGListTreeItem *tlti = (*i)->FindListTreeItem(lt, mlti);
+      lt->HighlightItem(tlti);
+      lt->SetSelected(tlti);
+      gReve->EditRenderElement(*i);
+      return (Track*) *i;
+    }
+  }
+  return 0;
+}
+
+//______________________________________________________________________________
 void TrackList::ImportHits()
 {
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportHits();
   }
 }
 
+//______________________________________________________________________________
 void TrackList::ImportClusters()
 {
-  for(List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
+  for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportClusters();
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 TClass* TrackList::ProjectedClass() const
 {
   return NLTTrackList::Class();
 }
-/**************************************************************************/
-/**************************************************************************/
-/**************************************************************************/
+
+
+/******************************************************************************/
+/******************************************************************************/
 
 #include "RGEditor.h"
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // TrackCounter
 //
 
