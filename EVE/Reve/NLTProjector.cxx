@@ -87,7 +87,7 @@ void NLTProjection::SetFixedRadius(Float_t r)
 //______________________________________________________________________________
 void NLTProjection::SetDirectionalVector(Int_t screenAxis, Vector& vec)
 {
-  for(Int_t i=0; i<3; i++)
+  for (Int_t i=0; i<3; i++)
   {
     vec[i] = (i==screenAxis) ? 1. : 0.;
   }
@@ -102,7 +102,7 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
   Float_t xL, xM, xR;
   Vector V, DirVec;
   SetDirectionalVector(i, DirVec);
-  if((sv > 0 && sv > fUpLimit[i]) || (sv < 0 && sv < fLowLimit[i]) )
+  if (fDistortion > 0.0f && ((sv > 0 && sv > fUpLimit[i]) || (sv < 0 && sv < fLowLimit[i])))
     throw(eH + Form("screen value '%f' out of limit '%f'.", sv, sv > 0 ? fUpLimit[i] : fLowLimit[i]));
 
   Vector zero; ProjectVector(zero);
