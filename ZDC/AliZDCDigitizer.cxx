@@ -44,7 +44,9 @@
 #include "AliZDCDigitizer.h"
 
 class AliCDBStorage;
-class AliZDCCalibData;
+class AliZDCPedestals;
+class AliZDCCalib;
+class AliZDCRecParam;
 
 ClassImp(AliZDCDigitizer)
 
@@ -61,9 +63,11 @@ AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
   AliDigitizer(manager)
 {
   fIsCalibration=0; //By default the simulation doesn't create calib. data
-//  fIsCalibration=1; //To create calib. data
+//  fIsCalibration=1; //To create pedestal calib. data
   // Get calibration data
+  fPedData = GetPedData(); 
   fCalibData = GetCalibData(); 
+  fRecParam = GetRecParam(); 
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
 
 }
@@ -89,7 +93,9 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   }
   for(Int_t i=0; i<2; i++) fADCRes[i] = digitizer.fADCRes[i];
   fIsCalibration = digitizer.fIsCalibration;
+  fPedData = digitizer.fPedData;
   fCalibData = digitizer.fCalibData;
+  fRecParam = digitizer.fRecParam;
 
 }
 
@@ -474,8 +480,8 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
     }
     else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
     //
-    meanPed = fCalibData->GetMeanPed(index);
-    pedWidth = fCalibData->GetMeanPedWidth(index);
+    meanPed = fPedData->GetMeanPed(index);
+    pedWidth = fPedData->GetMeanPedWidth(index);
     pedValue = gRandom->Gaus(meanPed,pedWidth);
     //
     /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
@@ -517,15 +523,45 @@ AliCDBStorage* AliZDCDigitizer::SetStorage(const char *uri)
 }
 
 //_____________________________________________________________________________
-AliZDCCalibData* AliZDCDigitizer::GetCalibData() const
+AliZDCPedestals* AliZDCDigitizer::GetPedData() const
+{
+
+  // Getting pedestal calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Pedestals");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCCalib* AliZDCDigitizer::GetCalibData() const
 {
 
   // Getting calibration object for ZDC set
 
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Data");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Calib");
   if(!entry) AliFatal("No calibration data loaded!");  
 
-  AliZDCCalibData *calibdata = dynamic_cast<AliZDCCalibData*>  (entry->GetObject());
+  AliZDCCalib *calibdata = dynamic_cast<AliZDCCalib*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCRecParam* AliZDCDigitizer::GetRecParam() const
+{
+
+  // Getting calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/RecParam");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCRecParam *calibdata = dynamic_cast<AliZDCRecParam*>  (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

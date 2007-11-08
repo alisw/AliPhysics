@@ -14,7 +14,9 @@
 #include "AliDetector.h"
 #include "AliZDCTrigger.h"
 
-class AliZDCCalibData;
+class AliZDCPedestals;
+class AliZDCCalib;
+class AliZDCRecParam;
  
 class AliZDC : public AliDetector {
 
@@ -49,11 +51,9 @@ public:
   //Calibration methods 
   void    SetZDCCalibFName(const char *name);
   char*   GetZDCCalibFName() const {return (char*)fZDCCalibFName.Data();}
-  void    CreateCalibData();
-  void    WriteCalibData(Int_t option=TObject::kOverwrite);
-  void    LoadCalibData();
-  void    SetCalibData(AliZDCCalibData* data) {fCalibData = data;}
-  AliZDCCalibData* GetCalibData() const  {return fCalibData;}
+  AliZDCPedestals* GetPedCalib()   const  {return fPedCalib;}
+  AliZDCCalib*     GetECalibData() const  {return fCalibData;}
+  AliZDCRecParam*  GetRecParams()  const  {return fRecParam;}
 
   // Trigger
   virtual AliTriggerDetector* CreateTriggerDetector() const
@@ -68,10 +68,12 @@ protected:
   Int_t        fNoShower;		// Flag to switch off the shower	
 
   //Calibration data member 
-  AliZDCCalibData* fCalibData;		// Calibration data for ZDC
-  TString          fZDCCalibFName; 	//  Name of the ZDC calibration data
+  AliZDCPedestals* fPedCalib;		// Pedestal data for ZDC
+  AliZDCCalib*     fCalibData;		// Energy and equalization data for ZDC
+  AliZDCRecParam*  fRecParam;		// Parameters for reconstruction for ZDC
+  TString          fZDCCalibFName; 	// Name of the ZDC calibration data
   
-  ClassDef(AliZDC,5)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,6)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

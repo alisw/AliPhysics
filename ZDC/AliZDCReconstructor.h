@@ -14,7 +14,9 @@
 #include "AliReconstructor.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliZDCCalibData.h"
+#include "AliZDCPedestals.h"
+#include "AliZDCCalib.h"
+#include "AliZDCRecParam.h"
 #include "AliLog.h"
 
 class TF1;
@@ -36,7 +38,9 @@ public:
   	        {FillZDCintoESD(clustersTree,esd);}
     
   AliCDBStorage   *SetStorage(const char* uri);
-  AliZDCCalibData *GetCalibData() const; 
+  AliZDCPedestals *GetPedData() const; 
+  AliZDCCalib     *GetECalibData() const; 
+  AliZDCRecParam  *GetRecParams() const; 
   
 private:
   AliZDCReconstructor(const AliZDCReconstructor&);
@@ -62,9 +66,11 @@ private:
   TF1*   fZEMsp;     //! Nspectators from ZEM energy
   TF1*   fZEMb;      //! b from ZEM energy
   
-  AliZDCCalibData *fCalibData; 	//! calibration data
+  AliZDCPedestals *fPedData; 	//! pedestal calibration data
+  AliZDCCalib     *fECalibData; //! energy and equalization calibration data
+  AliZDCRecParam  *fRecParam; 	//! reconstruction parameters
 
-  ClassDef(AliZDCReconstructor, 2)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 3)   // class for the ZDC reconstruction
 };
 
 #endif

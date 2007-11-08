@@ -12,7 +12,9 @@
 #include "AliDigitizer.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
-#include "AliZDCCalibData.h"
+#include "AliZDCPedestals.h"
+#include "AliZDCCalib.h"
+#include "AliZDCRecParam.h"
 
 class AliRunDigitizer;
 
@@ -44,7 +46,9 @@ public:
   
   void	  SetCalibrationOn() {fIsCalibration=1;}  
   AliCDBStorage   *SetStorage(const char* uri);
-  AliZDCCalibData *GetCalibData() const; 
+  AliZDCPedestals *GetPedData() const; 
+  AliZDCCalib     *GetCalibData() const; 
+  AliZDCRecParam  *GetRecParam() const; 
 
 private:
 
@@ -64,8 +68,11 @@ private:
   Float_t fADCRes[2];	      	// ADC conversion factors
   
   Int_t   fIsCalibration; 	// !=0 if simulation creates calibration data
-  AliZDCCalibData *fCalibData; 	//! calibration data
+  
+  AliZDCPedestals *fPedData; 	//! pedestal calibration data
+  AliZDCCalib     *fCalibData; 	//! energy and equalization calibration data
+  AliZDCRecParam  *fRecParam; 	//! parameters used in reconstruction
        
-  ClassDef(AliZDCDigitizer, 5)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 6)     // digitizer for ZDC
 };    
 #endif

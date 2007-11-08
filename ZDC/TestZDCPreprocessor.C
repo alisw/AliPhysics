@@ -62,15 +62,16 @@ void TestZDCPreprocessor()
   // Note that the test preprocessor name is TPC. The name of the detector's preprocessor must follow
   // the "online" naming convention ALICE-INT-2003-039.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PEDESTALS", "LDC0", "ZDCPedestal.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB", "LDC0", "ZDCEMDCalib.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS", "LDC0", "ZDCRecParam.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "EMDCALIB",  "LDC0", "ZDCEMDEqual.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "PHYSICS",   "LDC0", "ZDCRecParam.dat");
 
   // TODO(3)
   //
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
   // using GetRunType function.
-//  shuttle->SetInputRunType("PEDESTALS");
+//  shuttle->SetInputRunType("PEDESTAL_RUN");
 //  shuttle->SetInputRunType("PULSER_RUN");
   shuttle->SetInputRunType("PHYSICS");
 
@@ -119,8 +120,15 @@ void TestZDCPreprocessor()
   // $ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB/<detector>/SHUTTLE/Data
   //
   // Check the file which should have been created
+  /*AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/Pedestals", 7);
+  */
+  /*AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/Calib", 7);
+  */
   AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("ZDC/Calib/Data", 7);
+  			->Get("ZDC/Calib/RecParam", 7);
+  
   if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");

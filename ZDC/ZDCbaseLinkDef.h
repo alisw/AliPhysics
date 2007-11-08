@@ -10,7 +10,9 @@
  
 #pragma link C++ class  AliZDCDigit+;
 #pragma link C++ class  AliZDCRawStream+;
-#pragma link C++ class  AliZDCCalibData+;
+#pragma link C++ class  AliZDCPedestals+;
+#pragma link C++ class  AliZDCCalib+;
+#pragma link C++ class  AliZDCRecParam+;
 #pragma link C++ class  AliZDCDataDCS+;
 #pragma link C++ class  AliZDCPreprocessor+;
 

@@ -14,7 +14,9 @@
 #include "AliAlignObjParams.h"
 #include "AliLog.h"
 #include "AliZDCDataDCS.h"
-#include "AliZDCCalibData.h"
+#include "AliZDCPedestals.h"
+#include "AliZDCCalib.h"
+#include "AliZDCRecParam.h"
 
 /////////////////////////////////////////////////////////////////////
 //								   //
@@ -101,9 +103,8 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   Bool_t resultAl = kFALSE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
-  AliZDCCalibData *calibdata = new AliZDCCalibData("ZDC");
-  
 // *************** From DAQ ******************
+Bool_t resPedCal = kFALSE, resECal = kFALSE, resRecPar = kFALSE;
 // *****************************************************
 // [a] PEDESTALS -> Pedestal subtraction
 // *****************************************************
@@ -128,6 +129,9 @@ if(runType == "PEDESTAL_RUN"){
           Log(Form("No PEDESTAL file from source %s!", source->GetName()));
 	  return 1;
        }
+       // --- Initializing pedestal calibration object
+       AliZDCPedestals *pedCalib = new AliZDCPedestals("ZDC");
+       // --- Reading file with pedestal calibration data
        const char* pedFileName = stringPedFileName.Data();
        // no. ADCch = (22 signal ch. + 2 reference PMs) * 2 gain chain = 48
        const Int_t knZDCch = 48;
@@ -145,15 +149,15 @@ if(runType == "PEDESTAL_RUN"){
 	       //if(j==1) printf("pedVal[%d] -> %f, %f \n",i,pedVal[i][0],pedVal[i][1]);
             }
             if(i<knZDCch){
-              calibdata->SetMeanPed(i,pedVal[i][0]);
-              calibdata->SetMeanPedWidth(i,pedVal[i][1]);
+              pedCalib->SetMeanPed(i,pedVal[i][0]);
+              pedCalib->SetMeanPedWidth(i,pedVal[i][1]);
             }
             else if(i>=knZDCch && i<(2*knZDCch)){
-              calibdata->SetOOTPed(i-knZDCch,pedVal[i][0]);
-              calibdata->SetOOTPedWidth(i-knZDCch,pedVal[i][1]);
+              pedCalib->SetOOTPed(i-knZDCch,pedVal[i][0]);
+              pedCalib->SetOOTPedWidth(i-knZDCch,pedVal[i][1]);
             }
             else if(i>=(2*knZDCch) && i<(3*knZDCch)){
-              calibdata->SetPedCorrCoeff(i-(2*knZDCch),pedVal[i][0],pedVal[i][1]);
+              pedCalib->SetPedCorrCoeff(i-(2*knZDCch),pedVal[i][0],pedVal[i][1]);
             }
          }
        }
@@ -162,7 +166,14 @@ if(runType == "PEDESTAL_RUN"){
           return 1;
        }
        //
-      //calibdata->Print("");
+      //pedCalib->Print("");
+      // 
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible("Chiara");
+      metaData.SetComment("Filling AliZDCPedestals object");  
+      //
+      resPedCal = Store("Calib","Pedestals",pedCalib, &metaData, 0, 1);
   }
   delete daqSources; daqSources = 0;
 }
@@ -188,6 +199,9 @@ else if(runType == "PULSER_RUN"){
          Log(Form("No EMDCALIB file from source %s!", source->GetName()));
 	 return 1;
        }
+       // --- Initializing pedestal calibration object
+       AliZDCCalib *eCalib = new AliZDCCalib("ZDC");
+       // --- Reading file with pedestal calibration data
        const char* emdFileName = stringEMDFileName.Data();
        if(emdFileName){
     	 FILE *file;
@@ -204,17 +218,17 @@ else if(runType == "PULSER_RUN"){
 	     fscanf(file,"%f",&fitValEMD[j]);
              if(j<4){
 	       calibVal[j] = fitValEMD[j]/2.76;
-	       calibdata->SetEnCalib(j,calibVal[j]);
+	       eCalib->SetEnCalib(j,calibVal[j]);
 	     }
-	     else calibdata->SetEnCalib(j,fitValEMD[j]);
+	     else eCalib->SetEnCalib(j,fitValEMD[j]);
 	   }
 	   else{
 	     for(Int_t k=0; k<5; k++){
 	        fscanf(file,"%f",&equalCoeff[j][k]);
-	        if(j==6) calibdata->SetZN1EqualCoeff(k, equalCoeff[j][k]);
-	 	else if(j==7) calibdata->SetZP1EqualCoeff(k, equalCoeff[j][k]);
-	 	else if(j==8) calibdata->SetZN2EqualCoeff(k, equalCoeff[j][k]);
-	 	else if(j==9) calibdata->SetZP2EqualCoeff(k, equalCoeff[j][k]);	 
+	        if(j==6) eCalib->SetZN1EqualCoeff(k, equalCoeff[j][k]);
+	 	else if(j==7) eCalib->SetZP1EqualCoeff(k, equalCoeff[j][k]);
+	 	else if(j==8) eCalib->SetZN2EqualCoeff(k, equalCoeff[j][k]);
+	 	else if(j==9) eCalib->SetZP2EqualCoeff(k, equalCoeff[j][k]);  
              }
 	   }
          }
@@ -224,6 +238,13 @@ else if(runType == "PULSER_RUN"){
          return 1;
        }
        //calibdata->Print("");
+      // 
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible("Chiara");
+      metaData.SetComment("Filling AliZDCCalib object");  
+      //
+      resECal = Store("Calib","Calib",eCalib, &metaData, 0, 1);
   }
 }
 // ********************************************************
@@ -248,6 +269,9 @@ else if(runType == "PHYSICS"){
          Log(Form("No PHYSICS file from source %s!", source->GetName()));
 	 return 1;
        }
+       // --- Initializing pedestal calibration object
+       AliZDCRecParam *recCalib = new AliZDCRecParam("ZDC");
+       // --- Reading file with pedestal calibration data
        const char* physFileName = stringPHYSFileName.Data();
        if(physFileName){
     	 FILE *file;
@@ -259,22 +283,29 @@ else if(runType == "PHYSICS"){
     	 //
 	 Float_t physRecParam[10]; 
     	 for(Int_t j=0; j<10; j++) fscanf(file,"%f",&physRecParam[j]);
-	 calibdata->SetZEMEndValue(physRecParam[0]);
-	 calibdata->SetZEMCutFraction(physRecParam[1]);
-	 calibdata->SetDZEMSup(physRecParam[2]);
-	 calibdata->SetDZEMInf(physRecParam[3]);
-	 calibdata->SetEZN1MaxValue(physRecParam[4]);
-	 calibdata->SetEZP1MaxValue(physRecParam[5]);
-	 calibdata->SetEZDC1MaxValue(physRecParam[6]);
-	 calibdata->SetEZN2MaxValue(physRecParam[7]);
-	 calibdata->SetEZP2MaxValue(physRecParam[8]);
-	 calibdata->SetEZDC2MaxValue(physRecParam[9]);
+	 recCalib->SetZEMEndValue(physRecParam[0]);
+	 recCalib->SetZEMCutFraction(physRecParam[1]);
+	 recCalib->SetDZEMSup(physRecParam[2]);
+	 recCalib->SetDZEMInf(physRecParam[3]);
+	 recCalib->SetEZN1MaxValue(physRecParam[4]);
+	 recCalib->SetEZP1MaxValue(physRecParam[5]);
+	 recCalib->SetEZDC1MaxValue(physRecParam[6]);
+	 recCalib->SetEZN2MaxValue(physRecParam[7]);
+	 recCalib->SetEZP2MaxValue(physRecParam[8]);
+	 recCalib->SetEZDC2MaxValue(physRecParam[9]);
        }
        else{
          Log(Form("File %s not found", physFileName));
          return 1;
        }
        //calibdata->Print("");
+      // 
+      AliCDBMetaData metaData;
+      metaData.SetBeamPeriod(0);
+      metaData.SetResponsible("Chiara");
+      metaData.SetComment("Filling AliZDCCalib object");  
+      //
+      resRecPar = Store("Calib","RecParam",recCalib, &metaData, 0, 1);
   }
 } 
 else {
@@ -286,20 +317,13 @@ else {
   const char* nEvents = GetRunParameter("totalEvents");
   if(nEvents) Log(Form("Number of events for run %d: %s",fRun, nEvents));
   else Log(Form("Number of events not put in logbook!"));
-
-  // Storing the final CDB file
-  AliCDBMetaData metaData;
-  metaData.SetBeamPeriod(0);
-  metaData.SetResponsible("Chiara");
-  metaData.SetComment("Filling AliZDCCalibData object");
-
-  Bool_t resultCal = kFALSE;
-  resultCal = Store("Calib","Data",calibdata, &metaData, 0, 1);
  
   UInt_t result = 0;
-  if(resultAl == kFALSE || resultCal == kFALSE){
-    if(resultAl == kFALSE  && resultCal == kFALSE ) result = 3;
-    else result = 2;
+  if(resultAl==kFALSE || resPedCal==kFALSE || resECal==kFALSE || resRecPar==kFALSE){
+    if(resultAl == kFALSE) result = 1;
+    else if(resPedCal == kFALSE) result = 2;
+    else if(resECal == kFALSE)   result = 3;
+    else if(resRecPar == kFALSE) result = 4;
   }
   
   return result;

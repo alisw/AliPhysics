@@ -31,7 +31,9 @@
 #include "AliZDCRawStream.h"
 #include "AliZDCReco.h"
 #include "AliZDCReconstructor.h"
-#include "AliZDCCalibData.h"
+#include "AliZDCPedestals.h"
+#include "AliZDCCalib.h"
+#include "AliZDCRecParam.h"
 
 
 ClassImp(AliZDCReconstructor)
@@ -61,8 +63,9 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fZEMb(new TF1("fZEMb",
 	"13.83-0.02851*x+5.101e-5*x*x-7.305e-8*x*x*x+5.101e-11*x*x*x*x-1.25e-14*x*x*x*x*x",0.,1200.)),
   //
-  fCalibData(GetCalibData())
-
+  fPedData(GetPedData()),
+  fECalibData(GetECalibData()),
+  fRecParam(GetRecParams())
 {
   // **** Default constructor
 
@@ -98,7 +101,7 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
     
   // Retrieving calibration data  
   Float_t meanPed[47];
-  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fCalibData->GetMeanPed(jj);
+  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
 
   // get digits
   AliZDCDigit digit;
@@ -203,7 +206,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   
   // Retrieving calibration data  
   Float_t meanPed[47];
-  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fCalibData->GetMeanPed(jj);
+  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
 
   rawReader->Reset();
 
@@ -320,31 +323,31 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   // --- Equalization coefficients ---------------------------------------------
   Float_t equalCoeffZN1[5], equalCoeffZP1[5], equalCoeffZN2[5], equalCoeffZP2[5];
   for(Int_t ji=0; ji<5; ji++){
-     equalCoeffZN1[ji] = fCalibData->GetZN1EqualCoeff(ji);
-     equalCoeffZP1[ji] = fCalibData->GetZP1EqualCoeff(ji); 
-     equalCoeffZN2[ji] = fCalibData->GetZN2EqualCoeff(ji); 
-     equalCoeffZP2[ji] = fCalibData->GetZP2EqualCoeff(ji); 
+     equalCoeffZN1[ji] = fECalibData->GetZN1EqualCoeff(ji);
+     equalCoeffZP1[ji] = fECalibData->GetZP1EqualCoeff(ji); 
+     equalCoeffZN2[ji] = fECalibData->GetZN2EqualCoeff(ji); 
+     equalCoeffZP2[ji] = fECalibData->GetZP2EqualCoeff(ji); 
   }
   // --- Energy calibration factors ------------------------------------
   Float_t calibEne[4];
-  for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fCalibData->GetEnCalib(ij);
+  for(Int_t ij=0; ij<4; ij++) calibEne[ij] = fECalibData->GetEnCalib(ij);
   //
   // --- Reconstruction parameters ------------------
-  Float_t endPointZEM = fCalibData->GetZEMEndValue();
-  Float_t cutFractionZEM = fCalibData->GetZEMCutFraction();
-  Float_t dZEMSup = fCalibData->GetDZEMSup();
-  Float_t dZEMInf = fCalibData->GetDZEMInf();
+  Float_t endPointZEM = fRecParam->GetZEMEndValue();
+  Float_t cutFractionZEM = fRecParam->GetZEMCutFraction();
+  Float_t dZEMSup = fRecParam->GetDZEMSup();
+  Float_t dZEMInf = fRecParam->GetDZEMInf();
   //
   Float_t cutValueZEM = endPointZEM*cutFractionZEM;
   Float_t supValueZEM = cutValueZEM+(endPointZEM*dZEMSup);
   Float_t infValueZEM = cutValueZEM-(endPointZEM*dZEMInf);
   //
-  Float_t maxValEZN1 = fCalibData->GetEZN1MaxValue();
-  Float_t maxValEZP1 = fCalibData->GetEZP1MaxValue();
-  Float_t maxValEZDC1 = fCalibData->GetEZDC1MaxValue();
-  Float_t maxValEZN2 = fCalibData->GetEZN2MaxValue();
-  Float_t maxValEZP2 = fCalibData->GetEZP2MaxValue();
-  Float_t maxValEZDC2 = fCalibData->GetEZDC2MaxValue();
+  Float_t maxValEZN1 = fRecParam->GetEZN1MaxValue();
+  Float_t maxValEZP1 = fRecParam->GetEZP1MaxValue();
+  Float_t maxValEZDC1 = fRecParam->GetEZDC1MaxValue();
+  Float_t maxValEZN2 = fRecParam->GetEZN2MaxValue();
+  Float_t maxValEZP2 = fRecParam->GetEZP2MaxValue();
+  Float_t maxValEZDC2 = fRecParam->GetEZDC2MaxValue();
   //
   //printf("\n\t AliZDCReconstructor -> ZEMEndPoint %1.0f, ZEMCutValue %1.0f,"
   //   " ZEMSupValue %1.0f, ZEMInfValue %1.0f\n",endPointZEM,cutValueZEM,supValueZEM,infValueZEM);
@@ -575,15 +578,45 @@ AliCDBStorage* AliZDCReconstructor::SetStorage(const char *uri)
 }
 
 //_____________________________________________________________________________
-AliZDCCalibData* AliZDCReconstructor::GetCalibData() const
+AliZDCPedestals* AliZDCReconstructor::GetPedData() const
 {
 
-  // Getting calibration object for ZDC set
+  // Getting pedestal calibration object for ZDC set
 
-  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Data");
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Pedestals");
   if(!entry) AliFatal("No calibration data loaded!");  
 
-  AliZDCCalibData *calibdata = dynamic_cast<AliZDCCalibData*>  (entry->GetObject());
+  AliZDCPedestals *calibdata = dynamic_cast<AliZDCPedestals*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCCalib* AliZDCReconstructor::GetECalibData() const
+{
+
+  // Getting energy and equalization calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/Calib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCCalib *calibdata = dynamic_cast<AliZDCCalib*>  (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCRecParam* AliZDCReconstructor::GetRecParams() const
+{
+
+  // Getting energy and equalization calibration object for ZDC set
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/RecParam");
+  if(!entry) AliFatal("No calibration data loaded!");  
+
+  AliZDCRecParam *calibdata = dynamic_cast<AliZDCRecParam*>  (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

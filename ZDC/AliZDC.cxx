@@ -49,7 +49,9 @@
 #include "AliZDCDigit.h"
 #include "AliZDCDigitizer.h"
 #include "AliZDCRawStream.h"
-#include "AliZDCCalibData.h"
+#include "AliZDCPedestals.h"
+#include "AliZDCCalib.h"
+#include "AliZDCRecParam.h"
 #include "AliFstream.h"
 
  
@@ -59,8 +61,9 @@ ClassImp(AliZDC)
 AliZDC::AliZDC() :
   AliDetector(),
   fNoShower  (0),
-  fCalibData (0)
-
+  fPedCalib(0),
+  fCalibData(0),
+  fRecParam(0)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -78,8 +81,9 @@ AliZDC::AliZDC() :
 AliZDC::AliZDC(const char *name, const char *title) : 
   AliDetector(name,title),
   fNoShower  (0),
-  fCalibData (0)
-		 
+  fPedCalib(0),
+  fCalibData(0),
+  fRecParam(0)
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -108,7 +112,9 @@ AliZDC::~AliZDC()
   //
 
   fIshunt = 0;
+  delete fPedCalib;
   delete fCalibData;
+  delete fRecParam;
 
 }
 
@@ -118,7 +124,9 @@ AliZDC::AliZDC(const AliZDC& ZDC) :
 {
   // copy constructor
     fNoShower = ZDC.fNoShower;
+    fPedCalib = ZDC.fPedCalib;
     fCalibData = ZDC.fCalibData;
+    fRecParam = ZDC.fRecParam;
     fZDCCalibFName = ZDC.fZDCCalibFName;
 }
 
@@ -128,7 +136,9 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
   // assignement operator
   if(this!=&ZDC){
     fNoShower = ZDC.fNoShower;
+    fPedCalib = ZDC.fPedCalib;
     fCalibData = ZDC.fCalibData;
+    fRecParam = ZDC.fRecParam;
     fZDCCalibFName = ZDC.fZDCCalibFName;
   } return *this;
 }
@@ -222,11 +232,11 @@ void AliZDC::BuildGeometry()
   top=gAlice->GetGeometry()->GetNode("alice");
   
   // ZDC
-    brik = new TBRIK("S_ZDC","ZDC box","void",300,300,5);
-    top->cd();
-    node = new TNode("ZDC","ZDC","S_ZDC",0,0,600,"");
-    node->SetLineColor(kColorZDC);
-    fNodes->Add(node);
+  brik = new TBRIK("S_ZDC","ZDC box","void",300,300,5);
+  top->cd();
+  node = new TNode("ZDC","ZDC","S_ZDC",0,0,600,"");
+  node->SetLineColor(kColorZDC);
+  fNodes->Add(node);
 }
 
 //____________________________________________________________________________
@@ -691,9 +701,9 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   // Getting calibration object for ZDC set
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry  *entry = man->Get("ZDC/Calib/Data");
-  AliZDCCalibData *calibData = (AliZDCCalibData*) entry->GetObject();
+  AliZDCPedestals *calibPed = (AliZDCPedestals*) entry->GetObject();
   //
-  if(!calibData){
+  if(!calibPed){
     printf("\t No calibration object found for ZDC!");
     return -1;
   }
@@ -709,8 +719,8 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
   //
   //
-  meanPed = calibData->GetMeanPed(index);
-  pedWidth = calibData->GetMeanPedWidth(index);
+  meanPed = calibPed->GetMeanPed(index);
+  pedWidth = calibPed->GetMeanPedWidth(index);
   pedValue = gRandom->Gaus(meanPed,pedWidth);
   //
   //printf("\t AliZDC::Pedestal - det(%d, %d) - Ped[%d] = %d\n",Det, Quad, index,(Int_t) pedValue); // Chiara debugging!
@@ -755,62 +765,3 @@ void AliZDC::SetTreeAddress(){
       
   AliDetector::SetTreeAddress();
 }
- 
-//________________________________________________________________
-void AliZDC::CreateCalibData()
-{
-  // 
-  //if(fCalibData) delete fCalibData; // delete previous version
-  fCalibData = new AliZDCCalibData(GetName());
-}
-//________________________________________________________________
-void AliZDC::WriteCalibData(Int_t option)
-{
-  //
-  const int kCompressLevel = 9;
-  char* fnam = GetZDCCalibFName();
-  if(!fnam || fnam[0]=='\0') {
-    fnam = gSystem->ExpandPathName("$(ALICE_ROOT)/data/AliZDCCalib.root");
-    Warning("WriteCalibData","No File Name is provided, using default %s",fnam);
-  }
-  TFile* cdfile = TFile::Open(fnam,"UPDATE","",kCompressLevel);
-
-  // Writes Calibration Data to current directory. 
-  // User MUST take care of corresponding file opening and ->cd()... !!!
-  // By default, the object is overwritten. Use 0 option for opposite.
-  if(option) option = TObject::kOverwrite;
-  if(fCalibData) fCalibData->Write(0,option);
-  else if(fCalibData) fCalibData->Write(0,option);
-
-  cdfile->Close();
-  delete cdfile;
-}
-
-//________________________________________________________________
-void AliZDC::LoadCalibData()
-{
-  //
-  char* fnam = GetZDCCalibFName();
-  if(!fnam || fnam[0]=='\0') return; 
-  if(!gAlice->IsFileAccessible(fnam)) {
-    Error("LoadCalibData","ZDC Calibration Data file is not accessible, %s",fnam);
-    exit(1);
-  }
-  TFile* cdfile = TFile::Open(fnam);
-
-  // Loads Calibration Data from current directory. 
-  // User MUST take care of corresponding file opening and ->cd()...!!!
-  //
-  if(fCalibData) delete fCalibData; // delete previous version
-  TString dtname = "Calib_";
-  dtname += GetName();
-  fCalibData = (AliZDCCalibData*) gDirectory->Get(dtname.Data());
-  if(!fCalibData) { 
-    Error("LoadCalibData","No Calibration data found for %s",GetName());
-    exit(1);
-  }
-
-  cdfile->Close();
-  delete cdfile;
-}
-
