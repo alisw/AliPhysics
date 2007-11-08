@@ -395,7 +395,7 @@ fi
       dnl   1          inintial version
       dnl   2          GetBlockStatusFlags added to the interface
       AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <$HOMERREADER_HEADER>],
-                                      [HOMERReader reader("dummy", 0);
+                                      [HOMERReader reader((const void*)0, (int)0);
  				       reader.GetBlockStatusFlags(0);])],
                                       [],
  				      [HOMER_VERSION=1])
