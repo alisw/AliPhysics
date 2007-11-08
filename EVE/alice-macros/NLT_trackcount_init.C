@@ -20,7 +20,10 @@ void NLT_trackcount_init()
   Reve::LoadMacro("its_clusters.C+");
   Reve::LoadMacro("tpc_clusters.C+");
 
-  TGLViewer* v = (TGLViewer *)gReve->GetGLViewer();
+  Reve::Viewer* nv = gReve->SpawnNewViewer("NLT Projected");
+  Reve::Scene*  ns = gReve->SpawnNewScene("NLT"); 
+  nv->AddScene(ns);
+  TGLViewer* v = nv->GetGLViewer();
   v->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
   TGLCameraMarkupStyle* mup = v->GetCameraMarkup();
   if(mup) mup->SetShow(kFALSE);
@@ -28,13 +31,9 @@ void NLT_trackcount_init()
   Reve::TrackCounter* g_trkcnt = new Reve::TrackCounter("Primary Counter");
   gReve->AddToListTree(g_trkcnt, kFALSE);
 
-  Reve::Scene* s = gReve->SpawnNewScene("Projected Event");
-  gReve->GetDefViewer()->RemoveElements();
-  gReve->GetDefViewer()->AddScene(s);
-
   Reve::NLTProjector* p = new Reve::NLTProjector; proj = p;
   gReve->AddToListTree(p, kTRUE);
-  gReve->AddRenderElement(proj, s);
+  gReve->AddRenderElement(proj, ns);
 
   // geometry
   Reve::GeoShapeRnrEl* gg = geom_gentle();
@@ -78,7 +77,6 @@ void on_new_event()
     }
     ++i;
   }
-
   Reve::RenderElement* top = gReve->GetCurrentEvent();
   proj->DestroyElements();
   AliESDEvent* esd = Alieve::Event::AssertESD();
