@@ -172,10 +172,11 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
     return 0;
   }
   
-  Master()->Log(Form("N global = %d N regional = %d N local %d",                     
+  Master()->Log(Form("N global = %d N regional = %d N local %d N lut %d",                     
                      (fGlobalMasks ? 1 : 0 ),
                      (fRegionalMasks ? fRegionalMasks->GetSize() : 0 ),
-                     (fLocalMasks ? fLocalMasks->GetSize() : 0 )));
+                     (fLocalMasks ? fLocalMasks->GetSize() : 0 ),
+                     (fLUT ? 1 : 0)));
   
   AliCDBMetaData metaData;
 	metaData.SetBeamPeriod(0);
@@ -213,5 +214,5 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
                               &metaData, 0, validToInfinity);
   }
   
-  return ( result1 != kTRUE && result2 != kTRUE && result3 != kTRUE && result4 != kTRUE ); // return 0 if everything is ok.  
+  return ( result1 != kTRUE || result2 != kTRUE || result3 != kTRUE || result4 != kTRUE ); // return 0 if everything is ok.  
 }
