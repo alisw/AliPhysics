@@ -35,7 +35,6 @@
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
 
-#include "/home/oppedisa/AliRoot/geant3/TGeant3/TGeant3.h"
 
 // --- AliRoot classes
 #include "AliConst.h"
