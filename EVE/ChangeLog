@@ -1,3 +1,12 @@
+2007-11-08  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_tracks.C:
+	Put index into track's name instead of its label.
+
+	* alice-macros/kine_tracks.C:
+	Protect against too high track label in kine_track() as AliStack
+	segvs.
+
 2007-11-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* alice-macros/NLT_trackcount_init.C:

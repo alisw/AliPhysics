@@ -1,3 +1,15 @@
+2007-11-08  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Reve.cxx:
+	Rewrite Exc_t operator+ variants.
+
+	* Track.cxx:
+	* Track.h:
+	Added comments required by coding conventions.
+	Add context-menu functions TrackList::FindTrackByLabel/Index().
+	Use mMinInt for unset label/index.
+	Handle negative label according to ALICE convention.
+
 2007-11-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* NLTProjector.cxx:
