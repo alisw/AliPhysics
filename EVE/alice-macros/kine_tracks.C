@@ -166,6 +166,12 @@ kine_track(Int_t  label,
   AliRunLoader* rl =  Alieve::Event::AssertRunLoader();
   rl->LoadKinematics();
   AliStack* stack = rl->Stack();
+  if (label >= stack->GetNtrack())
+  {
+    Warning("kine_track", "label out of range.");
+    return 0;
+  }
+
   TParticle* p = stack->Particle(label);
 
   if (import_mother || (import_daughters && p->GetNDaughters()))
