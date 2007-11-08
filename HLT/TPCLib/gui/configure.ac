@@ -5,7 +5,7 @@ dnl template for the configuration script for the Alice HLT
 dnl Online Monitoring GUI
 dnl 
 dnl ------------------------------------------------------------------
-AC_INIT([Alice HLT Online Monitoring GUI] , [1.5.1], [thaeder@kip.uni-heidelberg.de], AliHLTGUI)
+AC_INIT([Alice HLT Online Monitoring GUI] , [1.5.3], [thaeder@kip.uni-heidelberg.de], AliHLTGUI)
 
 dnl ------------------------------------------------------------------
 AC_CANONICAL_SYSTEM
@@ -144,6 +144,15 @@ if test ! "x$have_aliroot" = "xno" ; then
   LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR} $ALIROOT_LDFLAGS"
   
   # check for certain AliRoot libraries/files/features
+  # libSTEERBase present since Aug 7 2007
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=STEERBase
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
+  CHECKLIB=AOD
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
+
   # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=CDB
@@ -208,94 +217,6 @@ AC_SUBST([ALIROOTLIBDIR])
 AC_SUBST([ALIROOT_LIBS])
 
 dnl ------------------------------------------------------------------
-dnl check for the HLT PubSub Framework
-AC_MSG_CHECKING([for HLT PubSub Framework])
-AC_ARG_WITH(pubsub, [installation path of the HLT PubSub framework],
-		    [],
-		    [ test -n $ALIHLT_DC_DIR && with_pubsub=$ALIHLT_DC_DIR ])
-if test -z $with_pubsub || ! test -d $with_pubsub ; then
-  with_pubsub=no
-fi
-AC_MSG_RESULT([$with_pubsub])
-HOMER_VERSION=1
-HOMER_LIBS=
-
-AH_TEMPLATE([HAVE_HOMERREADER],[the HLT PubSub Homer Reader interface])
-if test "x$with_pubsub" != "xno" ; then
-  save_CPPFLAGS=$CPPFLAGS
-  save_LDFLAGS=$LDFLAGS
-  save_LIBS=$LIBS
-  # currently the different versions of the HLT PubSub framework have a different
-  # directory layout
-  if test -d ${with_pubsub}/include/HOMER ; then
-    # the 'early' location of the include files with separated HOMER sub dirs
-    HOMER_INCDIRS="${with_pubsub}/include/HOMER ${with_pubsub}/include/HOMER/reader"
-  elif test -d ${with_pubsub}/include/Util/HOMER ; then
-    # location for HLT Framework versions after Sep 2006
-    HOMER_INCDIRS="${with_pubsub}/include/Util/HOMER"
-  elif test -d ${with_pubsub}/src/Util/HOMER/include ; then
-    # fall back if include files were not installed (versions after Sep 06)
-    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/include"
-  else
-    # fall back if include files were not installed (versions before Sep 06)
-    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/reader/include ${with_pubsub}/src/Util/HOMER/data/include"
-  fi
-  HOMER_CPPFLAGS=`for i in ${HOMER_INCDIRS}; do echo -n "-I$i " ; done`
-  HOMER_LIBDIR="${with_pubsub}/lib/`uname -s`-`uname -m`"
-  HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
-  CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS $ALIROOT_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS $ALIROOT_LDFLAGS"
-  LIBS="$save_LIBS $ALIROOT_LIBS"
-  with_homer=no
-  AC_LANG_PUSH(C++)
-  AC_CHECK_HEADER([HOMERReader.h],
-    [ AC_CHECK_LIB([HOMER],[_init],
-      [with_homer=yes
-       HOMER_LIBS="-lHOMER"],
-      [ AC_CHECK_LIB([HOMERReader],[_init],
-                     [with_homer=yes
-		      HOMER_LIBS="-lHOMERReader"])])
-      LIBS="$LIBS $HOMER_LIBS"
-      AC_MSG_CHECKING([version of HOMER library])
-      dnl The Homer library has no versioning, so we do our own
-      dnl version           description
-      dnl ----------------------------------------------------------------------
-      dnl   1          inintial version
-      dnl   2          GetBlockStatusFlags added to the interface
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <HOMERReader.h>],
-                                      [HOMERReader reader("dummy", 0);
- 				       reader.GetBlockStatusFlags(0);])],
-                                      [if test $HOMER_VERSION -lt 2 ; then HOMER_VERSION=2; fi],
- 				      [])
-      AC_MSG_RESULT([$HOMER_VERSION])
-  ]) #AC_CHECK_HEADER([HOMERReader.h])
-  AC_LANG_POP(C++)
-  if test "x$with_homer" = "xno" ; then
-    HOMER_CPPFLAGS=
-    HOMER_LDFLAGS=
-    HOMER_LIBS=
-  else
-    HOMER_CPPFLAGS="$HOMER_CPPFLAGS -DHOMER_VERSION=$HOMER_VERSION"
-    AC_DEFINE(HAVE_HOMERREADER)
-  fi
-  CPPFLAGS="$save_CPPFLAGS"
-  LDFLAGS="$save_LDFLAGS"
-  LIBS="$save_LIBS"  
-fi
-test "x$with_homer" != "xyes" && \
-     test "x$enable_strict" != "xno" && \
-     AC_ERROR([Stop! The package needs the HOMER library.
-      Use  --with-pubsub option to point to the HLT PubSub installation])
-
-AC_SUBST([HOMER_CPPFLAGS])
-AC_SUBST([HOMER_LDFLAGS])
-AC_SUBST([HOMER_LIBDIR])
-AC_SUBST([HOMER_BINDIR])
-AC_SUBST([HOMER_INCDIRS])
-AC_SUBST([HOMER_LIBS])
-
-
-dnl ------------------------------------------------------------------
 dnl Check for the AliHLTTPCLibrary
 dnl
 AC_ARG_WITH(alihlt, [  --with-alihlt		top of the AliRoot HLT module],
@@ -307,7 +228,7 @@ if ! test -z ${with_alihlt} \
   ALIHLT_INCDIRS="${with_alihlt}/include/alice-hlt"
   ALIHLT_LIBDIR=${with_alihlt}/lib
 else
-  ALIHLT_INCDIRS="${ALICE_ROOT}/HLT/BASE"
+  ALIHLT_INCDIRS="${ALICE_ROOT}/HLT/BASE ${ALICE_ROOT}/HLT/BASE/HOMER"
   ALIHLT_LIBDIR=${ALICE_ROOT}/lib/tgt_${ALICE_TARGET}
 fi
 ALIHLT_CPPFLAGS=`for i in ${ALIHLT_INCDIRS}; do echo -I$i ; done`
@@ -382,6 +303,130 @@ AC_SUBST([ALIHLT_LIBS])
 AC_SUBST([ALIHLTTPCDISPLAY_VERSION])
 
 AC_LANG_POP(C++)
+
+dnl ------------------------------------------------------------------
+dnl check for the HLT PubSub Framework
+dnl namely for the existence of the HOMER library
+dnl from Sep 2007, the HOMER lib has been incorporated into the alice-hlt
+dnl package. It os though possible to choose an external. library
+dnl In order to make the origni of the HOMER lib clear, the one in AliRoot
+dnl got the name libAliHLTHOMER
+AC_MSG_CHECKING([for HLT PubSub Framework])
+AC_ARG_WITH(pubsub, [installation path of the HLT PubSub framework],
+		    [],
+		    [ test -n $ALIHLT_DC_DIR && with_pubsub=$ALIHLT_DC_DIR ])
+if test -z $with_pubsub || ! test -d $with_pubsub ; then
+  with_pubsub=no
+fi
+AC_MSG_RESULT([$with_pubsub])
+HOMER_VERSION=2
+HOMER_LIBS=
+
+AH_TEMPLATE([HAVE_HOMERREADER],[the HLT PubSub Homer Reader interface])
+if test "x$with_pubsub" != "xno" ; then
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  # currently the different versions of the HLT PubSub framework have a different
+  # directory layout
+  if test -d ${with_pubsub}/include/HOMER ; then
+    # the 'early' location of the include files with separated HOMER sub dirs
+    HOMER_INCDIRS="${with_pubsub}/include/HOMER ${with_pubsub}/include/HOMER/reader"
+  elif test -d ${with_pubsub}/include/Util/HOMER ; then
+    # location for HLT Framework versions after Sep 2006
+    HOMER_INCDIRS="${with_pubsub}/include/Util/HOMER"
+  elif test -d ${with_pubsub}/src/Util/HOMER/include ; then
+    # fall back if include files were not installed (versions after Sep 06)
+    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/include"
+  else
+    # fall back if include files were not installed (versions before Sep 06)
+    HOMER_INCDIRS="${with_pubsub}/src/Util/HOMER/reader/include ${with_pubsub}/src/Util/HOMER/data/include"
+  fi
+  HOMER_CPPFLAGS=`for i in ${HOMER_INCDIRS}; do echo -n "-I$i " ; done`
+
+  AC_ARG_ENABLE(pubsub-debug,
+    [AC_HELP_STRING([--disable-pubsub-debug],
+        [force the production version of the PubSub framework])],
+    [],[enable_pubsub_debug=yes])
+  homer_type="none"
+  HOMER_TARGET="`uname -s`-`uname -m`"
+  AC_MSG_CHECKING([for HLT PubSub Framework release type])
+  if test -d "${with_pubsub}/lib/${HOMER_TARGET}-release" ; then
+    homer_type="production"
+    HOMER_TARGET="${HOMER_TARGET}-release"
+  elif test "x$enable_pubsub_debug" = "xyes" && test -d "${with_pubsub}/lib/${HOMER_TARGET}-debug" ; then
+    homer_type="debug"
+    HOMER_TARGET="${HOMER_TARGET}-debug"
+  fi
+  AC_MSG_RESULT([${homer_type}])
+  HOMERREADER_HEADER=HOMERReader.h
+  HOMER_BINDIR="${with_pubsub}/bin/${HOMER_TARGET}"
+  HOMER_LIBDIR="${with_pubsub}/lib/${HOMER_TARGET}"
+  HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
+  CHECK_LIB=HOMER
+  CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
+  LIBS="$save_LIBS "
+else
+  HOMERREADER_HEADER=AliHLTHOMERReader.h
+  HOMER_BINDIR=
+  HOMER_LIBDIR=$ALIHLT_LIBDIR
+  HOMER_LDFLAGS="-L${HOMER_LIBDIR}"
+  CHECK_LIB=AliHLTHOMER
+  HOMER_CPPFLAGS=`for i in ${ALIHLT_INCDIRS}; do echo -I$i ; done`
+  CPPFLAGS="$save_CPPFLAGS $HOMER_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS $HOMER_LDFLAGS"
+  LIBS="$save_LIBS "
+fi
+  with_homer=no
+  AC_LANG_PUSH(C++)
+  AC_CHECK_HEADER([$HOMERREADER_HEADER],
+    [ AC_CHECK_LIB([$CHECK_LIB],[_init],
+      [with_homer=yes
+       HOMER_LIBS="-l$CHECK_LIB"],
+      [ AC_CHECK_LIB([HOMERReader],[_init],
+                     [with_homer=yes
+		      HOMER_LIBS="-lHOMERReader"])])
+      LIBS="$LIBS $HOMER_LIBS"
+      AC_MSG_CHECKING([version of HOMER library])
+      dnl The Homer library has no versioning, so we do our own
+      dnl version           description
+      dnl ----------------------------------------------------------------------
+      dnl   1          inintial version
+      dnl   2          GetBlockStatusFlags added to the interface
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <$HOMERREADER_HEADER>],
+                                      [HOMERReader reader("dummy", 0);
+ 				       reader.GetBlockStatusFlags(0);])],
+                                      [],
+ 				      [HOMER_VERSION=1])
+      AC_MSG_RESULT([$HOMER_VERSION])
+  ],
+  [HOMERREADER_HEADER=]) #AC_CHECK_HEADER([$HOMERREADER_HEADER])
+  AC_LANG_POP(C++)
+  if test "x$with_homer" = "xno" ; then
+    HOMER_CPPFLAGS=
+    HOMER_LDFLAGS=
+    HOMER_LIBS=
+  else
+    HOMER_CPPFLAGS="$HOMER_CPPFLAGS -DHOMER_VERSION=$HOMER_VERSION"
+    AC_DEFINE(HAVE_HOMERREADER)
+  fi
+  CPPFLAGS="$save_CPPFLAGS"
+  LDFLAGS="$save_LDFLAGS"
+  LIBS="$save_LIBS"  
+
+test "x$with_homer" != "xyes" && \
+     test "x$enable_strict" != "xno" && \
+     AC_ERROR([Stop! The package needs the HOMER library.
+      Use  --with-pubsub option to point to the HLT PubSub installation])
+
+AC_SUBST([HOMER_CPPFLAGS])
+AC_SUBST([HOMER_LDFLAGS])
+AC_SUBST([HOMER_LIBDIR])
+AC_SUBST([HOMER_BINDIR])
+AC_SUBST([HOMER_INCDIRS])
+AC_SUBST([HOMER_LIBS])
+
 
 dnl ------------------------------------------------------------------
 dnl

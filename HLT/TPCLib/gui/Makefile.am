@@ -52,12 +52,22 @@ $(QT_BUILD_DIR)/Makefile: $(QT_BUILD_DIR)/AliHLTGUI.pro
 	&& export PATH=@QT_DIR@/bin:$(PATH) \
 	&& export QTDIR=@QT_DIR@ \
 	&& qmake  AliHLTGUI.pro)
-	cat $@ | sed -e 's|^LFLAGS\([ \t]*\)=|LFLAGS\1= $$(LDFLAGS)|' > $@.tmp
-	mv $@.tmp $@
-	cat $@ | sed -e 's|^CXXFLAGS\([ \t]*\)=|CXXFLAGS\1+=|' > $@.tmp
-	mv $@.tmp $@
+	cat $@ | sed -e 's|^LFLAGS\([ \t]*\)=|LFLAGS\1= $$(LDFLAGS)|' > $@.tmp \
+	&& mv $@.tmp $@
+	cat $@ | sed -e 's|^CXXFLAGS\([ \t]*\)=|CXXFLAGS\1+=|' > $@.tmp \
+	&& mv $@.tmp $@
+#	this is a fix for a bug in the ROOT Qt layer which causes TQtWidget.h included
+#	twice, and one wrongly as tqtwidget.h. See README
+	cat $@ | sed -e '/.ui\/AliHLTGUIMainForm.cpp:/,/(UIC)/d' > $@.tmp \
+	&& cat $@ | sed -e '/.ui\/AliHLTGUIMainForm.cpp:/,/(UIC)/!d' >> $@.tmp \
+	&& echo -e '\tcat $$@ | sed -e /tqtwidget.h/d > $$@.tmp && mv $$@.tmp $$@' >> $@.tmp \
+	&& mv $@.tmp $@
 
-$(QT_BUILD_DIR)/AliHLTGUI: $(QT_BUILD_DIR) $(REAL_SRC:%=$(QT_BUILD_DIR)/%) $(QT_BUILD_DIR)/Makefile
+$(QT_BUILD_DIR)/.ui/AliHLTGUIMainForm.h: $(QT_BUILD_DIR)/Makefile
+#	cat $@ | sed -e '/tqwidget/d' > $@.tmp
+#	mv $@.tmp $@
+
+$(QT_BUILD_DIR)/AliHLTGUI: $(QT_BUILD_DIR) $(REAL_SRC:%=$(QT_BUILD_DIR)/%) $(QT_BUILD_DIR)/Makefile $(QT_BUILD_DIR)/.ui/AliHLTGUIMainForm.h
 	(cd $(QT_BUILD_DIR)  \
 	&& export PATH=@QT_DIR@/bin:$(PATH) \
 	&& export QTDIR=@QT_DIR@ \

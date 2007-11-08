@@ -1,3 +1,11 @@
+2007-02-20 version 1.5.3
+	- build system fixed for AliRoot v4-06-Release and higher
+	- new library dependencies resolved
+	- HOMER library migrated to AliRoot from v4-07-Release, check
+	  and switch added to choose between internal/external library
+2007-02-20 version 1.5.2
+	- build system fix: add ROOT include directory to CPP flags
+
 2007-01-18 version 1.5.1
 	- modification due to new hidden dependency in AliRoot libESD
 	  libXMLIO added to the additional ROOT libraries
