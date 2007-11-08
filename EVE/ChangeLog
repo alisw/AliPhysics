@@ -1,3 +1,8 @@
+2007-11-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* alice-macros/NLT_trackcount_init.C:
+	Create projected and unprojected scene in separate viewers.
+
 2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_Cascade.C:

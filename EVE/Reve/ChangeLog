@@ -1,3 +1,9 @@
+2007-11-08  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* NLTProjector.cxx:
+	Bugfix: in GetValForScreenPos() check if distortion exist before checking
+	the limit.
+
 2007-11-07  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* BoxSet.cxx:
@@ -29,23 +35,23 @@
 
 	* GeoNode.cxx:
 	* GeoNode.h:
-	Support load/save of GeoNodeRnrEl and GeoShapeRnrEl. GeoNodeRnrEl
-	is no loner NLTProjectable. 
+	Implement load/save of GeoNodeRnrEl and GeoShapeRnrEl. GeoNodeRnrEl
+	is no longer NLTProjectable. 
 
 	* LinkDef.h:
-	Remove coomon base class class for GeoNodeRnrEl and GeoShapeRnrEl.
-	
+	Remove common base class for GeoNodeRnrEl and GeoShapeRnrEl.
+
 	* NLTPolygonSet.cxx:
-	Move NLTPRojectale class from GeoRnrEl to GeoShapeRnrEl.
-	
+	Move NLTProjectale class from GeoRnrEl to GeoShapeRnrEl.
+
 	* NLTProjector.cxx:
 	* NLTProjector.h:
 	* NLTProjectorGL.cxx:
 	* NLTProjectorGL.h:
-
+        Check if projected value is in the limit.
 
 	* NLTProjectorEditor.cxx:
-	Change range for number of tick-marck.  
+	Change range for number of tick-mark.
 
 2007-11-06  Matevz Tadel  <matevz.tadel@cern.ch>
 
@@ -1257,7 +1263,7 @@
 	White-space.
 
 	* StraightLineSetGL.cxx:
-	Bugfix; wrong size passed to marker renderer.
+	Bugfix: wrong size passed to marker renderer.
 
 2007-05-30  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
