@@ -369,7 +369,7 @@ void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle)
 { 
   // Finishes a cycle of QA data acquistion
  
- if ( !sameCycle ) {
+ if ( !sameCycle || fCurrentCycle == -1) {
 	ResetCycle() ;
 	if (fOutput) 
 		fOutput->Close() ; 
