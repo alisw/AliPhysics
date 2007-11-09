@@ -1,3 +1,15 @@
+2007-11-09  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* Track.cxx:
+	* Track.h:
+	Fix update propagation from TrackRnrStyle::MakeTracks().
+	Fix handling of ctx-menu functions.
+
+	* TrackEditors.cxx:
+	* TrackRnrStyleEditor.cxx:
+	* TrackRnrStyleEditor.h:
+	Add some class-docs.
+
 2007-11-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Reve.cxx:
