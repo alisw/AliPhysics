@@ -128,6 +128,9 @@ class AliITSRecoParam : public TObject
   void   SetFindV0s(Bool_t find=kTRUE) { fFindV0s=find; return; }
   Bool_t GetFindV0s() const { return fFindV0s; }
 
+  void SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
+  Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
+
   void SetLayersParameters();
   //
 
@@ -233,6 +236,8 @@ class AliITSRecoParam : public TObject
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
 
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
+
+  Double_t fFactorSAWindowSizes; // larger window sizes in SA
 
   ClassDef(AliITSRecoParam,1) // ITS reco parameters
 };

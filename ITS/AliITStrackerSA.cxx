@@ -38,6 +38,7 @@
 #include "AliITSgeomTGeo.h"
 #include "AliITStrackSA.h"
 #include "AliITStrackerSA.h"
+#include "AliITSReconstructor.h"
 #include "AliRun.h"
 
 ClassImp(AliITStrackerSA)
@@ -1486,10 +1487,13 @@ void AliITStrackerSA::SetWindowSizes(Int_t n, Double_t *phi, Double_t *lam){
     
     fPhiWin = new Double_t[fNloop];
     fLambdaWin = new Double_t[fNloop];
-   
-    for(Int_t k=0;k<fNloop;k++){
-      fPhiWin[k]=phid[k];
-      fLambdaWin[k]=lambdad[k];
+
+
+
+    Double_t factor=AliITSReconstructor::GetRecoParam()->GetFactorSAWindowSizes(); // possibility to enlarge windows for cosmics reco with large misalignments (A.Dainese)
+    for(Int_t k=0;k<fNloop;k++) {
+      fPhiWin[k]=phid[k]*factor;
+      fLambdaWin[k]=lambdad[k]*factor;
     }
   
   }

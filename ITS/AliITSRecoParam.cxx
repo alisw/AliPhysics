@@ -97,7 +97,8 @@ fXPassDeadZoneHits(0),
 fUseTGeoInTracker(0),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
-fFindV0s(kTRUE)
+fFindV0s(kTRUE),
+fFactorSAWindowSizes(1.)
 {
   //
   // constructor
@@ -222,7 +223,92 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   //
   // make default reconstruction  parameters for cosmics
   //
-  return GetHighFluxParam();
+  AliITSRecoParam *param = new AliITSRecoParam();
+
+  param->SetFactorSAWindowSizes(3.);
+
+  param->fMaxSnp = 0.95;
+
+  param->fNSigmaYLayerForRoadY = 4.;
+  param->fNSigmaRoadY = 7.5;
+  param->fNSigmaZLayerForRoadZ = 4.;
+  param->fNSigmaRoadZ = 7.5;
+
+  param->fNSigma2RoadZC = 60.; //7.75^2
+  param->fNSigma2RoadYC = 60.; //7.75^2
+  param->fNSigma2RoadZNonC = 50.; //7.07^2
+  param->fNSigma2RoadYNonC = 50.; //7.07^2
+
+  param->fMaxChi2PerCluster[0] = 11.; //7
+  param->fMaxChi2PerCluster[1] = 12.; //5
+  param->fMaxChi2PerCluster[2] = 12.; //8
+  param->fMaxChi2PerCluster[3] = 5.;  //8
+  param->fMaxChi2PerCluster[4] = 12.; //6.5
+
+  param->fMaxNormChi2NonC[0] = 7.;
+  param->fMaxNormChi2NonC[1] = 8.;
+  param->fMaxNormChi2NonC[2] = 8.;
+  param->fMaxNormChi2NonC[3] = 11.;
+  param->fMaxNormChi2NonC[4] = 14.;
+  param->fMaxNormChi2NonC[5] = 25.;
+
+  param->fMaxNormChi2C[0] = 11.;
+  param->fMaxNormChi2C[1] = 13.;
+  param->fMaxNormChi2C[2] = 15.;
+  param->fMaxNormChi2C[3] = 18.;
+  param->fMaxNormChi2C[4] = 30.;
+  param->fMaxNormChi2C[5] = 35.;
+
+  param->fMaxNormChi2NonCForHypothesis = 7.;
+  
+  param->fMaxChi2 = 35.;
+
+  param->fMaxChi2s[0] = 25.; //40   
+  param->fMaxChi2s[1] = 25.; //40   
+  param->fMaxChi2s[2] = 25.; //40   
+  param->fMaxChi2s[3] = 25.; //40   
+  param->fMaxChi2s[4] = 40.; //40   
+  param->fMaxChi2s[5] = 50.; //40
+
+  param->fMaxRoad = 6.;
+
+  // not used
+  param->fMaxChi2In = 16.;
+   
+  param->fMaxChi2sR[0] = 10.;   
+  param->fMaxChi2sR[1] = 10.;   
+  param->fMaxChi2sR[2] = 10.;   
+  param->fMaxChi2sR[3] = 10.;   
+  param->fMaxChi2sR[4] = 30.;   
+  param->fMaxChi2sR[5] = 40.;   
+
+  param->fChi2PerCluster = 9.;
+  // not used
+
+  param->fXV = 0.;
+  param->fYV = 0.;
+  param->fZV = 0.;
+  param->fSigmaXV = 0.0050;
+  param->fSigmaYV = 0.0050;
+  param->fSigmaZV = 0.0100;
+
+  param->fVertexCut = 25.;
+
+  param->fMaxDZforPrimTrk = 0.4;
+  param->fMaxDZToUseConstraint = 3.;
+
+  param->fMaxDforV0dghtrForProlongation = 30.;
+  param->fMaxDForProlongation = 10.;
+  param->fMaxDZForProlongation = 20.;
+  param->fMinPtForProlongation = 0.120;
+
+  param->fZWindowDeadZone = 2.0;
+  param->fSigmaXDeadZoneHit2 = 0.004/12.;
+  param->fSigmaZDeadZoneHit2 = 0.001/12.;
+  param->fXPassDeadZoneHits = 0.018;
+
+  
+  return param;
 }
 //_____________________________________________________________________________
 void AliITSRecoParam::SetLayersParameters() 
