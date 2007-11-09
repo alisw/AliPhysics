@@ -798,4 +798,6 @@
                 memberfunctions of class AliSignal.
 15-oct-2007 NvE Typo corrected in docs of AliAstrolab.cxx and memberfunctions GetMedian
                 and GetSpread of AliSample.cxx extended for Y-values of histo data.
+09-nov-2007 NvE Graphical skymap facilities introduced in AliAstrolab, based on the
+                work by Garmt de Vries-Uiterweerd.
 

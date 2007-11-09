@@ -47,6 +47,8 @@
 // so-called reference signals.
 // This class provides facilities (e.g. MatchRefSignal) to check
 // correlations of the stored measurement with these reference signals.
+// Also graphical facilities (e.g. DisplaySignals) are available to
+// provide skymaps in various projections.
 // 
 // Coding example :
 // ----------------
@@ -117,6 +119,8 @@
 //  }
 // }
 //
+// // Display all stored objects in a skymap (Hammer projection)
+// lab.DisplaySignals("equ","M",&ts,"ham",1);
 //
 //--- Author: Nick van Eijndhoven 15-mar-2007 Utrecht University
 //- Modified: NvE $Date$ Utrecht University
@@ -137,6 +141,11 @@ AliAstrolab::AliAstrolab(const char* name,const char* title) : TTask(name,title)
  fBias=0;
  fGal=0;
  fIndices=0;
+ fMeridian=-999;
+ fProj="none";
+ fCanvas=0;
+ fHist=0;
+ fMarkers=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 AliAstrolab::~AliAstrolab()
@@ -157,6 +166,21 @@ AliAstrolab::~AliAstrolab()
  {
   delete fIndices;
   fIndices=0;
+ }
+ if (fHist)
+ {
+  delete fHist;
+  fHist=0;
+ }
+ if (fMarkers)
+ {
+  delete fMarkers;
+  fMarkers=0;
+ }
+ if (fCanvas)
+ {
+  delete fCanvas;
+  fCanvas=0;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -182,6 +206,11 @@ AliAstrolab::AliAstrolab(const AliAstrolab& t) : TTask(t),AliTimestamp(t)
  fBias=0;
  fGal=0;
  fIndices=0;
+ fMeridian=-999;
+ fProj="none";
+ fCanvas=0;
+ fHist=0;
+ fMarkers=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 void AliAstrolab::Data(Int_t mode,TString u)
@@ -474,13 +503,13 @@ void AliAstrolab::SetSignal(Ali3Vector* r,TString frame,TString mode,AliTimestam
 //
 //  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d),
 //                    where the "sph" components of r correspond to theta=(pi/2)-d and phi=a.
-//          "gal" ==> Galactic coordinates with longitude (l) and lattitude (b).
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
-//          "ecl" ==> Ecliptic coordinates with longitude (l) and lattitude (b),
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b),
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
 //          "hor" ==> Horizontal coordinates at the AliAstrolab location, where the "sph"
 //                    components of r correspond to theta=zenith angle and phi=pi-azimuth.
-//          "icr" ==> ICRS coordinates with longitude (l) and lattitude (b),
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b),
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
 //          "loc" ==> Local coordinates at the AliAstrolab location, where the "sph"
 //                    components of r correspond to the usual theta and phi angles.
@@ -815,13 +844,13 @@ AliSignal* AliAstrolab::GetSignal(Ali3Vector& r,TString frame,TString mode,AliTi
 //
 //  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d),
 //                    where the "sph" components of r correspond to theta=(pi/2)-d and phi=a.
-//          "gal" ==> Galactic coordinates with longitude (l) and lattitude (b).
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
-//          "ecl" ==> Ecliptic coordinates with longitude (l) and lattitude (b),
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b),
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
 //          "hor" ==> Horizontal coordinates at the AliAstrolab location, where the "sph"
 //                    components of r correspond to theta=zenith angle and phi=pi-azimuth.
-//          "icr" ==> ICRS coordinates with longitude (l) and lattitude (b),
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b),
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
 //          "loc" ==> Local coordinates at the AliAstrolab location, where the "sph"
 //                    components of r correspond to the usual theta and phi angles.
@@ -949,13 +978,13 @@ AliSignal* AliAstrolab::GetSignal(Ali3Vector& r,TString frame,TString mode,AliTi
 //
 //  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d),
 //                    where the "sph" components of r correspond to theta=(pi/2)-d and phi=a.
-//          "gal" ==> Galactic coordinates with longitude (l) and lattitude (b).
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
-//          "ecl" ==> Ecliptic coordinates with longitude (l) and lattitude (b),
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b),
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
 //          "hor" ==> Horizontal coordinates at the AliAstrolab location, where the "sph"
 //                    components of r correspond to theta=zenith angle and phi=pi-azimuth.
-//          "icr" ==> ICRS coordinates with longitude (l) and lattitude (b),
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b),
 //                    where the "sph" components of r correspond to theta=(pi/2)-b and phi=l.
 //          "loc" ==> Local coordinates at the AliAstrolab location, where the "sph"
 //                    components of r correspond to the usual theta and phi angles.
@@ -1317,13 +1346,13 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 //
 //  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d).
 //
-//          "gal" ==> Galactic coordinates with longitude (l) and lattitude (b).
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
 //
-//          "ecl" ==> Ecliptic coordinates with longitude (l) and lattitude (b).
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b).
 //
 //          "hor" ==> Horizontal azimuth and altitude coordinates at the AliAstrolab location.
 //
-//          "icr" ==> ICRS coordinates with longitude (l) and lattitude (b).
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b).
 //
 //          "loc" ==> Local spherical angles theta and phi at the AliAstrolab location.
 //
@@ -1451,7 +1480,7 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 {
 // Print data of the stored signal with the specified name in user specified coordinates
 // at the specific timestamp ts.
-// In case such stored signal was available or one of the input arguments was
+// In case no such stored signal was available or one of the input arguments was
 // invalid, no printout is produced.
 //
 // The argument "ndig" specifies the number of digits for the fractional
@@ -1468,13 +1497,13 @@ void AliAstrolab::PrintSignal(TString frame,TString mode,AliTimestamp* ts,Int_t 
 //
 //  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d).
 //
-//          "gal" ==> Galactic coordinates with longitude (l) and lattitude (b).
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
 //
-//          "ecl" ==> Ecliptic coordinates with longitude (l) and lattitude (b).
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b).
 //
 //          "hor" ==> Horizontal azimuth and altitude coordinates at the AliAstrolab location.
 //
-//          "icr" ==> ICRS coordinates with longitude (l) and lattitude (b).
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b).
 //
 //          "loc" ==> Local spherical angles theta and phi at the AliAstrolab location.
 //
@@ -1528,13 +1557,13 @@ void AliAstrolab::ListSignals(TString frame,TString mode,Int_t ndig)
 //
 //  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d).
 //
-//          "gal" ==> Galactic coordinates with longitude (l) and lattitude (b).
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
 //
-//          "ecl" ==> Ecliptic coordinates with longitude (l) and lattitude (b).
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b).
 //
 //          "hor" ==> Horizontal azimuth and altitude coordinates at the AliAstrolab location.
 //
-//          "icr" ==> ICRS coordinates with longitude (l) and lattitude (b).
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b).
 //
 //          "loc" ==> Local spherical angles theta and phi at the AliAstrolab location.
 //
@@ -1951,11 +1980,13 @@ Double_t AliAstrolab::ConvertAngle(Double_t a,TString in,TString out) const
 //      "deg" : input angle provided in degrees
 //      "dms" : input angle provided in dddmmss.sss
 //      "hms" : input angle provided in hhmmss.sss
+//      "hrs" : input angle provided in fractional hours
 //
 // out = "rad" : output angle provided in radians
 //       "deg" : output angle provided in degrees
 //       "dms" : output angle provided in dddmmss.sss
 //       "hms" : output angle provided in hhmmss.sss
+//       "hrs" : output angle provided in fractional hours
  
  if (in==out) return a;
 
@@ -1968,6 +1999,8 @@ Double_t AliAstrolab::ConvertAngle(Double_t a,TString in,TString out) const
  Double_t b=fabs(a);
 
  if (in=="rad") b*=180./pi;
+
+ if (in=="hrs") b*=15.;
 
  if (in=="dms")
  {
@@ -1997,6 +2030,8 @@ Double_t AliAstrolab::ConvertAngle(Double_t a,TString in,TString out) const
  }
 
  if (out=="rad") b*=pi/180.;
+
+ if (out=="hrs") b/=15.;
 
  if (out=="dms")
  {
@@ -2323,6 +2358,532 @@ TArrayI* AliAstrolab::MatchRefSignal(Double_t da,TString au,Double_t dt,TString 
 
  fIndices->Set(jfill);
  return fIndices;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::DisplaySignal(TString frame,TString mode,AliTimestamp* ts,Int_t jref,TString proj,Int_t clr)
+{
+// Display a stored signal in a user specified coordinate projection
+// at the specific timestamp ts.
+//
+// In case no stored signal was available or one of the input arguments was
+// invalid, no display is produced.
+//
+// Note : In case ts=0 the current timestamp of the lab will be taken.
+//
+// The input parameter "frame" allows the user to specify the frame to which
+// the coordinates refer. Available options are :
+//
+//  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d).
+//
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
+//
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b).
+//
+//          "hor" ==> Horizontal azimuth and altitude coordinates at the AliAstrolab location.
+//
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b).
+//
+//          "loc" ==> Local spherical angles theta and phi at the AliAstrolab location.
+//
+// In case the coordinates are the equatorial right ascension and declination (a,d),
+// they can represent so-called "mean" and "true" values.
+// The distinction between these two representations is the following :
+//
+// mean values : (a,d) are only corrected for precession and not for nutation
+// true values : (a,d) are corrected for both precession and nutation
+//
+// The input parameter "mode" allows the user to specifiy either "mean" or "true"
+// values for the input in case of equatorial (a,d) coordinates.
+//
+// mode = "M" --> Input coordinates are the mean values 
+//        "T" --> Input coordinates are the true values 
+//
+// The input parameter "jref" allows display of a so-called "reference" signal.
+// These reference signals may serve to check space-time event coincidences with the
+// stored measurement (e.g. coincidence of the measurement with transient phenomena).
+//
+// jref = 0 --> Display of the measurement
+//        j --> Display of the j-th reference signal
+//
+// Default value is jref=0.
+//
+// The input parameter "proj" allows the user to specify the desired projection.
+// The available projection modes are :
+//
+// cyl  : Cylindrical projection plotted with colored markers
+// cylh : Cylindrical projection plotted in a 2-D histogram
+// ham  : Hammer equal area projection plotted with colored markers
+// hamh : Hammer equal area projection plotted in a 2-D histogram
+// ait  : Aitoff projection plotted with colored markers
+// aith : Aitoff projection plotted in a 2-D histogram
+// mer  : Mercator projection plotted with colored markers
+// merh : Mercator projection plotted in a 2-D histogram
+// ang  : Straight cos(b) vs. l plot with colored markers
+// angh : Straight cos(b) vs. l plot in a 2-D histogram
+//
+// Note : The ang(h) plot allows for easy identification of a homogeneous distribution.
+//
+// The input argument "clr" allows to clear (1) the display before drawing or not (0).
+//
+// The default values are : jref=0, proj="ham" and clr=0.
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Ali3Vector r;
+ AliSignal* sx=GetSignal(r,frame,mode,ts,jref);
+
+ if (!sx) return;
+
+ // The generic input angles (in rad) for the projections 
+ Double_t theta=0;
+ Double_t phi=0;
+
+ Double_t pi=acos(-1.);
+
+ if (frame=="equ" || frame=="gal" || frame=="icr" || frame=="ecl" || frame=="loc")
+ {
+  theta=(pi/2.)-r.GetX(2,"sph","rad");
+  phi=r.GetX(3,"sph","rad");
+ }
+
+ if (frame=="hor")
+ {
+  theta=(pi/2.)-r.GetX(2,"sph","rad");
+  phi=pi-r.GetX(3,"sph","rad");
+ }
+
+ // Automatic choice of central meridian if not selected by the user
+ if (fMeridian<0)
+ {
+  if (frame=="gal")
+  {
+   fMeridian=0;
+  }
+  else
+  {
+   fMeridian=pi;
+  }
+ }
+
+ // Obtain the projected (x,y) position
+ Double_t x=0;
+ Double_t y=0;
+ Project(phi,theta,proj,x,y);
+
+ Int_t hist=0;
+ if (proj=="hamh" || proj=="aith" || proj=="merh" || proj=="cylh" || proj=="angh") hist=1;
+
+ // Update the display for this signal position
+
+ // Create a new canvas if needed
+ if (!fCanvas) fCanvas=new TCanvas("AliAstrolab","Skymap");
+
+ // Construct the title string for this map
+ TString title="Projection : ";
+ title+=frame;
+ title+=" ";
+ title+=proj;
+ title+="   Center : ";
+ Int_t ang,h,m,s,d;
+ if (frame=="equ" || frame=="icr")
+ {
+  ang=int(ConvertAngle(fMeridian,"rad","hms"));
+  h=ang/10000;
+  ang=ang%10000;
+  m=ang/100;
+  s=ang%100;
+  title+=h;
+  title+="h ";
+  title+=m;
+  title+="m ";
+  title+=s;
+  title+="s";
+ }
+ else
+ {
+  ang=int(ConvertAngle(fMeridian,"rad","dms"));
+  d=ang/10000;
+  ang=ang%10000;
+  m=ang/100;
+  s=ang%100;
+  title+=d;
+  title+="d ";
+  title+=m;
+  title+="' ";
+  title+=s;
+  title+="\"";
+ }
+
+ if (!hist) // 2-D Marker display (i.e. not a histogram) 
+ {
+  // Remove existing markers, grid and outline from display if needed
+  if (clr==1 || proj!=fProj)
+  {
+   if (fMarkers)
+   {
+    delete fMarkers;
+    fMarkers=0;
+   }
+   fCanvas->Clear();
+   fProj=proj;
+  }
+
+  if (!fMarkers)
+  {
+   fMarkers=new TObjArray();
+   fMarkers->SetOwner();
+   // Set canvas range, header and axes
+   if (proj=="mer")
+   {
+    fCanvas->Range(-2.2,-6.,2.2,6.);
+    TText* header=new TText;
+    fMarkers->Add(header);
+    header->DrawText(-1.4,5.5,title.Data());
+    TLine* line=new TLine(-2,0,2,0);
+    fMarkers->Add(line);
+    line->Draw();
+    line=new TLine(0,5.5,0,-5.5);
+    fMarkers->Add(line);
+    line->Draw();
+   }
+   else
+   {
+    fCanvas->Range(-2.2,-1.2,2.2,1.2);
+    TText* header=new TText;
+    fMarkers->Add(header);
+    header->DrawText(-1.4,1.1,title.Data());
+    TLine* line=new TLine(-2,0,2,0);
+    fMarkers->Add(line);
+    line->Draw();
+    line=new TLine(0,1,0,-1);
+    fMarkers->Add(line);
+    line->Draw();
+   }
+   // Draw the outline 
+   if (proj=="ham" || proj=="ait")
+   {
+    // Draw ellips outline with axes
+    TEllipse* outline=new TEllipse(0,0,2,1);
+    fMarkers->Add(outline);
+    outline->Draw();
+   }
+  }
+  TMarker* marker=0;
+  if (!jref) // The measurement
+  {
+   marker=new TMarker(x,y,29);
+   marker->SetMarkerColor(kRed);
+  }
+  else // The reference signal(s)
+  {
+   marker=new TMarker(x,y,20);
+   marker->SetMarkerColor(kBlue);
+  }
+  marker->SetMarkerSize(1);
+  fMarkers->Add(marker);
+  marker->Draw();
+ }
+ else if (hist==1) // 2-D display via histogram
+ {
+  // Reset the histogram if needed
+  if (clr==1 || proj!=fProj)
+  {
+   fCanvas->Clear();
+   if (!fHist) fHist=new TH2F();
+   fHist->Reset();
+   fHist->SetMarkerStyle(20);
+   fHist->SetMarkerSize(1);
+   fHist->SetMarkerColor(kBlue);
+   fHist->SetNameTitle("SkyMap",title.Data());
+   if (proj=="merh")
+   {
+    fHist->SetBins(100,-2.2,2.2,100,-5.5,5.5);
+   }
+   else
+   {
+    fHist->SetBins(100,-2.2,2.2,100,-1.1,1.1);
+   }
+   fProj=proj;
+  }
+  fHist->Fill(x,y);
+  fHist->Draw();
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::DisplaySignal(TString frame,TString mode,AliTimestamp* ts,TString name,TString proj,Int_t clr)
+{
+// Display the stored signal with the specified name in a user specified
+// coordinate projection at the specific timestamp ts.
+//
+// Note : In case ts=0 the current timestamp of the lab will be taken.
+//
+// In case no such stored signal was available or one of the input arguments was
+// invalid, no display is produced.
+//
+// The input parameter "frame" allows the user to specify the frame to which
+// the coordinates refer. Available options are :
+//
+//  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d).
+//
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
+//
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b).
+//
+//          "hor" ==> Horizontal azimuth and altitude coordinates at the AliAstrolab location.
+//
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b).
+//
+//          "loc" ==> Local spherical angles theta and phi at the AliAstrolab location.
+//
+// In case the coordinates are the equatorial right ascension and declination (a,d),
+// they can represent so-called "mean" and "true" values.
+// The distinction between these two representations is the following :
+//
+// mean values : (a,d) are only corrected for precession and not for nutation
+// true values : (a,d) are corrected for both precession and nutation
+//
+// The input parameter "mode" allows the user to specifiy either "mean" or "true"
+// values for the input in case of equatorial (a,d) coordinates.
+//
+// mode = "M" --> Input coordinates are the mean values 
+//        "T" --> Input coordinates are the true values 
+//
+// The input parameter "proj" allows the user to specify the desired projection.
+// The available projection modes are :
+//
+// cyl  : Cylindrical projection plotted with colored markers
+// cylh : Cylindrical projection plotted in a 2-D histogram
+// ham  : Hammer equal area projection plotted with colored markers
+// hamh : Hammer equal area projection plotted in a 2-D histogram
+// ait  : Aitoff projection plotted with colored markers
+// aith : Aitoff projection plotted in a 2-D histogram
+// mer  : Mercator projection plotted with colored markers
+// merh : Mercator projection plotted in a 2-D histogram
+// ang  : Straight cos(b) vs. l plot with colored markers
+// angh : Straight cos(b) vs. l plot in a 2-D histogram
+//
+// Note : The ang(h) plot allows for easy identification of a homogeneous distribution.
+//
+// The input argument "clr" allows to clear (1) the display before drawing or not (0).
+//
+// The default values are : proj="ham" and clr=0.
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Int_t j=GetSignalIndex(name);
+ if (j>=0) DisplaySignal(frame,mode,ts,j,proj,clr);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::DisplaySignals(TString frame,TString mode,AliTimestamp* ts,TString proj,Int_t clr)
+{
+// Display of all stored signals in user specified coordinate projection
+// at the specific timestamp ts.
+// In case ts=0, the timestamp of the actual recording of the stored measurement
+// under investigation will be used.
+// In case no (timestamp of the) actual measurement is available,
+// the current timestamp of the lab will be taken.
+// In case no stored signal is available or one of the input arguments is
+// invalid, no display is produced.
+//
+// The input parameter "frame" allows the user to specify the frame to which
+// the coordinates refer. Available options are :
+//
+//  frame = "equ" ==> Equatorial coordinates with right ascension (a) and declination (d).
+//
+//          "gal" ==> Galactic coordinates with longitude (l) and latitude (b).
+//
+//          "ecl" ==> Ecliptic coordinates with longitude (l) and latitude (b).
+//
+//          "hor" ==> Horizontal azimuth and altitude coordinates at the AliAstrolab location.
+//
+//          "icr" ==> ICRS coordinates with longitude (l) and latitude (b).
+//
+//          "loc" ==> Local spherical angles theta and phi at the AliAstrolab location.
+//
+// In case the coordinates are the equatorial right ascension and declination (a,d),
+// they can represent so-called "mean" and "true" values.
+// The distinction between these two representations is the following :
+//
+// mean values : (a,d) are only corrected for precession and not for nutation
+// true values : (a,d) are corrected for both precession and nutation
+//
+// The input parameter "mode" allows the user to specifiy either "mean" or "true"
+// values for the input in case of equatorial (a,d) coordinates.
+//
+// mode = "M" --> Input coordinates are the mean values 
+//        "T" --> Input coordinates are the true values 
+//
+// The input parameter "proj" allows the user to specify the desired projection.
+// The available projection modes are :
+//
+// cyl  : Cylindrical projection plotted with colored markers
+// cylh : Cylindrical projection plotted in a 2-D histogram
+// ham  : Hammer equal area projection plotted with colored markers
+// hamh : Hammer equal area projection plotted in a 2-D histogram
+// ait  : Aitoff projection plotted with colored markers
+// aith : Aitoff projection plotted in a 2-D histogram
+// mer  : Mercator projection plotted with colored markers
+// merh : Mercator projection plotted in a 2-D histogram
+// ang  : Straight cos(b) vs. l plot with colored markers
+// angh : Straight cos(b) vs. l plot in a 2-D histogram
+//
+// Note : The ang(h) plot allows for easy identification of a homogeneous distribution.
+//
+// The input argument "clr" allows to clear (1) the display before drawing or not (0).
+//
+// The default values are : proj="ham" and clr=0.
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ AliTimestamp* tx=ts;
+ if (fXsig && !tx) tx=fXsig->GetTimestamp();
+ if (!tx) tx=(AliTimestamp*)this;
+
+ // Display all stored reference signals
+ if (fRefs)
+ {
+  for (Int_t i=1; i<=fRefs->GetSize(); i++)
+  {
+   DisplaySignal(frame,mode,tx,i,proj,clr);
+   clr=0; // No display clear for subsequent signals
+  }
+ }
+
+ // Display the measurement
+ DisplaySignal(frame,mode,tx,0,proj,clr);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::SetCentralMeridian(Double_t phi,TString u)
+{
+// Set the central meridian for the sky display.
+// Setting a negative value will induce automatic meridian setting
+// in the display.
+// By default the central meridian is set at -999 in the constructor.
+//
+// The string argument "u" allows to choose between different angular units
+// u = "rad" : angle provided in radians
+//     "deg" : angle provided in degrees
+//     "dms" : angle provided in dddmmss.sss
+//     "hms" : angle provided in hhmmss.sss
+//
+// The default is u="deg".
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ fMeridian=ConvertAngle(phi,u,"rad");
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::Project(Double_t l,Double_t b,TString proj,Double_t& x,Double_t& y)
+{
+// Generic interface for projection of a (long,lat) pair onto a (x,y) pair.
+//
+// Meaning of the arguments :
+// --------------------------
+// l    : Longitude (e.g. right ascension)
+// b    : Latitude (e.g. declination)
+// proj : Projection mode (e.g. "ham")
+// x    : The resulting x coordinate for the selected projection
+// y    : The resulting x coordinate for the selected projection
+//
+// The available projection modes are :
+//
+// cyl  : Cylindrical projection plotted with colored markers
+// cylh : Cylindrical projection plotted in a 2-D histogram
+// ham  : Hammer equal area projection plotted with colored markers
+// hamh : Hammer equal area projection plotted in a 2-D histogram
+// ait  : Aitoff projection plotted with colored markers
+// aith : Aitoff projection plotted in a 2-D histogram
+// mer  : Mercator projection plotted with colored markers
+// merh : Mercator projection plotted in a 2-D histogram
+// ang  : Straight cos(b) vs. l plot with colored markers
+// angh : Straight cos(b) vs. l plot in a 2-D histogram
+//
+// Note : The ang(h) plot allows for easy identification of a homogeneous distribution.
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Double_t pi=acos(-1.);
+
+ // Subtract central meridian from longitude
+ l-=fMeridian;
+
+ // Take l between -180 and 180 degrees
+ while (l>pi)
+ {
+  l-=2*pi;
+ }
+ while (l<-pi)
+ {
+  l+=2*pi;
+ }
+
+ x=0;
+ y=0;
+
+ // Convert (l,b) to (x,y) with -2 < x <= 2 
+ if (proj=="cyl" || proj=="cylh") ProjectCylindrical(l,b,x,y);
+ if (proj=="ham" || proj=="hamh") ProjectHammer(l,b,x,y);
+ if (proj=="ait" || proj=="aith") ProjectAitoff(l,b,x,y);
+ if (proj=="mer" || proj=="merh") ProjectMercator(l,b,x,y);
+ if (proj=="ang" || proj=="angh")
+ {
+  x=2*l/pi;
+  y=cos(b);
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::ProjectCylindrical(Double_t l,Double_t b,Double_t& x, Double_t& y)
+{
+// Cylindrical projection of a (long,lat) coordinate pair 
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Double_t pi=acos(-1.);
+ x=2*l/pi;
+ y=2*b/pi;
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::ProjectHammer(Double_t l,Double_t b,Double_t& x,Double_t& y)
+{
+// Hammer-Aitoff projection of a (long,lat) coordinate pair. 
+// This is an equal-area projection.
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Double_t k=1./sqrt(1.+cos(b)*cos(l/2.));
+ x=2.*k*cos(b)*sin(l/2.);
+ y=k*sin(b);
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::ProjectAitoff(Double_t l,Double_t b,Double_t& x,Double_t& y)
+{
+// Aitoff projection of a (long,lat) coordinate pair. 
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Double_t pi=acos(-1.);
+ x=0;
+ y=0;
+ Double_t k=acos(cos(b)*cos(l/2.));
+ if(sin(k)!=0)
+ {
+  x=4.*k*cos(b)*sin(l/2.)/(pi*sin(k));
+  y=2.*k*sin(b)/(pi*sin(k));
+ }
+}
+///////////////////////////////////////////////////////////////////////////
+void AliAstrolab::ProjectMercator(Double_t l,Double_t b,Double_t& x,Double_t& y)
+{
+// Mercator projection of a (long,lat) coordinate pair 
+//
+// This routine is based on the work by Garmt de Vries-Uiterweerd.
+
+ Double_t pi=acos(-1.);
+ x=2.*l/pi;
+ y=0;
+ if (b >= 89.*pi/180.) b=89.*pi/180.;
+ if (b <= -89.*pi/180.) y=-89.*pi/180.;
+ if (fabs(y) < 1) y=log((1.+sin(b))/(1.-sin(b)))/2.;
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* AliAstrolab::Clone(const char* name) const

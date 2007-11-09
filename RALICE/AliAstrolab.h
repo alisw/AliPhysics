@@ -13,6 +13,12 @@
 #include "TRotMatrix.h"
 #include "TObjArray.h"
 #include "TArrayI.h"
+#include "TCanvas.h"
+#include "TEllipse.h"
+#include "TLine.h"
+#include "TText.h"
+#include "TH2.h"
+#include "TMarker.h"
 
 #include "AliTimestamp.h"
 #include "AliPosition.h"
@@ -64,6 +70,10 @@ class AliAstrolab : public TTask,public AliTimestamp
   Double_t GetDifference(Int_t jref,TString au,Double_t& dt,TString tu,Int_t mode=1,Int_t* ia=0,Int_t* it=0); // Provide space and time difference
   Double_t GetDifference(TString name,TString au,Double_t& dt,TString tu,Int_t mode=1);// Provide space and time difference
   TArrayI* MatchRefSignal(Double_t da,TString au,Double_t dt,TString tu,Int_t mode=1); // Provide space and time matching reference signals
+  void DisplaySignal(TString frame,TString mode,AliTimestamp* ts,Int_t jref=0,TString proj="ham",Int_t clr=0); // Display stored signal
+  void DisplaySignal(TString frame,TString mode,AliTimestamp* ts,TString name,TString proj="ham",Int_t clr=0); // Display stored signal
+  void DisplaySignals(TString frame,TString mode,AliTimestamp* ts,TString proj="ham",Int_t clr=0);             // Display all stored signals
+  void SetCentralMeridian(Double_t phi,TString u="deg"); // Set central meridian for the sky display
  
  protected:
   AliPosition fLabPos;   // Position of the lab in the terrestrial longitude-latitude frame
@@ -88,7 +98,19 @@ class AliAstrolab : public TTask,public AliTimestamp
   void SetHmatrix(AliTimestamp* ts); // Set the equatorial to horizontal conversion matrix
   void Precess(Ali3Vector& r,AliTimestamp* ts1,AliTimestamp* ts2); // Correct RA and decl. for earth's precession
   void Nutate(Ali3Vector& r,AliTimestamp* ts); // Correct RA and decl. for earth's nutation
+
+  // The skymap display facilities of Garmt
+  Double_t fMeridian;  //! Central meridian (in rad) for the sky display
+  TString fProj;       //! Projection which is currently in use
+  TCanvas* fCanvas;    //! The canvas for the skymap
+  TH1* fHist;          //! Temp. histogram for the sky display
+  TObjArray* fMarkers; //! Temp. array to hold the markers for the signal display
+  void Project(Double_t l,Double_t b,TString proj,Double_t& x,Double_t& y);// Projection of (l,b) pair
+  void ProjectCylindrical(Double_t l,Double_t b,Double_t& x,Double_t& y);  // Cylindrical projection of (l,b) pair
+  void ProjectHammer(Double_t l,Double_t b,Double_t& x,Double_t& y);       // Hammer-Aitoff projection of (l,b) pair
+  void ProjectAitoff(Double_t l,Double_t b,Double_t& x,Double_t& y);       // Aitoff projection of (l,b) pair
+  void ProjectMercator(Double_t l,Double_t b,Double_t& x,Double_t& y);     // Mercator projection of (l,b) pair
  
- ClassDef(AliAstrolab,2) // Virtual lab to relate measurements with astrophysical phenomena
+ ClassDef(AliAstrolab,3) // Virtual lab to relate measurements with astrophysical phenomena
 };
 #endif
