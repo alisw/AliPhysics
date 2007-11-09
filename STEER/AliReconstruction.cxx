@@ -577,6 +577,7 @@ Bool_t AliReconstruction::Run(const char* input)
   
   // set the input
   if (!input) input = fInput.Data();
+     
   TString fileName(input);
   if (fileName.EndsWith("/")) {
     fRawReader = new AliRawReaderFile(fileName);
@@ -612,6 +613,14 @@ Bool_t AliReconstruction::Run(const char* input)
   if (!MisalignGeometry(fLoadAlignData)) if (fStopOnError) return kFALSE;
    AliSysInfo::AddStamp("LoadGeom");
 
+  //QA 
+  AliQADataMakerSteer qas ; 
+  if ( fRunQA && fRawReader) 
+		qas.Run(fRawReader) ; 
+ 
+ // checking the QA of previous steps
+  CheckQA() ; 
+ 
   // local reconstruction
   if (!fRunLocalReconstruction.IsNull()) {
     if (!RunLocalReconstruction(fRunLocalReconstruction)) {
@@ -719,9 +728,6 @@ Bool_t AliReconstruction::Run(const char* input)
   ProcInfo_t ProcInfo;
   gSystem->GetProcInfo(&ProcInfo);
   AliInfo(Form("Current memory usage %d %d", ProcInfo.fMemResident, ProcInfo.fMemVirtual));
-  
-  // checking the QA of previous steps
-  CheckQA() ; 
   
   for (Int_t iEvent = 0; iEvent < fRunLoader->GetNumberOfEvents(); iEvent++) {
     if (fRawReader) fRawReader->NextEvent();
@@ -982,9 +988,6 @@ Bool_t AliReconstruction::Run(const char* input)
 
   //QA 
   if ( fRunQA ) {
-	AliQADataMakerSteer qas ; 
-	if (fRawReader) 
-		qas.Run(AliQA::kRAWS, input) ; 
 	qas.Run(AliQA::kRECPOINTS) ;
 	qas.Reset() ;
 	qas.Run(AliQA::kESDS) ;
