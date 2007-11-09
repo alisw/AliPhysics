@@ -77,73 +77,73 @@ Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
     // Try to gess particle masses and pid from the weight generator
     Double_t tMass1, tMass2;
     Int_t tPid1, tPid2;
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusPionPlus) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusPionPlus()) {
       tMass1 = 0.13957;
       tMass2 = 0.13957;
       tPid1 = 211;
       tPid2 = 211;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusPionMinus) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusPionMinus()) {
       tMass1 = 0.13957;
       tMass2 = 0.13957;
       tPid1 = 211;
       tPid2 = -211;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusKaonPlus) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::KaonPlusKaonPlus()) {
       tMass1 = 0.493677;
       tMass2 = 0.493677;
       tPid1 = 321;
       tPid2 = 321;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusKaonMinus) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::KaonPlusKaonMinus()) {
       tMass1 = 0.493677;
       tMass2 = 0.493677;
       tPid1 = 321;
       tPid2 = -321;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkProtonProton) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::ProtonProton()) {
       tMass1 = 0.938272;
       tMass2 = 0.938272;
       tPid1 = 2212;
       tPid2 = 2212;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkProtonAntiproton) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::ProtonAntiproton()) {
       tMass1 = 0.938272;
       tMass2 = 0.938272;
       tPid1 = 2212;
       tPid2 = -2212;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusKaonPlus) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusKaonPlus()) {
       tMass1 = 0.13957;
       tMass2 = 0.493677;
       tPid1 = 211;
       tPid2 = 321;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusKaonMinus) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusKaonMinus()) {
       tMass1 = 0.13957;
       tMass2 = 0.493677;
       tPid1 = 211;
       tPid2 = -321;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusProton) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusProton()) {
       tMass1 = 0.13957;
       tMass2 = 0.938272;
       tPid1 = 211;
       tPid2 = 2212;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkPionPlusAntiproton) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::PionPlusAntiproton()) {
       tMass1 = 0.13957;
       tMass2 = 0.938272;
       tPid1 = 211;
       tPid2 = -2212;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusProton) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::KaonPlusProton()) {
       tMass1 = 0.493677;
       tMass2 = 0.938272;
       tPid1 = 321;
       tPid2 = 2212;
     }
-    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::fgkKaonPlusAntiproton) {
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::KaonPlusAntiproton()) {
       tMass1 = 0.493677;
       tMass2 = 0.938272;
       tPid1 = 321;
