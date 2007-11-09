@@ -29,11 +29,10 @@
 #include <AliESDtrack.h>     //CkovHiddenTrk()
 #include <TH2I.h>            //InitDatabase()
 #include <TGraph.h>          //ShapeModel()
-#include <TFile.h>           //ShapeModel()
 #include <TSpline.h>         //ShapeModel()
 #include "TStopwatch.h"      //
 
-TH2I* AliHMPIDReconHTA::fDatabase = 0x0;
+TH2I* AliHMPIDReconHTA::fgDatabase = 0x0;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():TTask("RichRec","RichPat")
@@ -51,7 +50,7 @@ AliHMPIDReconHTA::AliHMPIDReconHTA():TTask("RichRec","RichPat")
   fParam=AliHMPIDParam::Instance();
   
   fParam->SetRefIdx(fParam->MeanIdxRad()); // initialization of ref index to a default one
-  if(!fDatabase) InitDatabase();
+  if(!fgDatabase) InitDatabase();
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::~AliHMPIDReconHTA()
@@ -71,7 +70,7 @@ void AliHMPIDReconHTA::InitVars(Int_t n)
 //
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconHTA::DeleteVars()
+void AliHMPIDReconHTA::DeleteVars()const
 {
 //..
 //Delete variables
@@ -187,8 +186,9 @@ Bool_t AliHMPIDReconHTA::DoRecHiddenTrk(TClonesArray *pCluLst)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::CluPreFilter(TClonesArray *pCluLst)
 {
-// Filter of bkg clusters
-// based on elliptical-shapes...
+// Pre-filter of bkg clusters
+// Arguments:    pSluLst  -  List of the clusters for a given chamber
+//   Returns:    status   -  TRUE if filtering leaves enough photons, FALSE if not
 //
   Int_t nClusTot = pCluLst->GetEntriesFast();
   if(nClusTot<4||nClusTot>100) {
@@ -201,6 +201,14 @@ Bool_t AliHMPIDReconHTA::CluPreFilter(TClonesArray *pCluLst)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double_t &thetaCRec)
 {
+// Finds the estimates for phi and theta of the track and the ThetaCerenkov
+// by using a database of the shapes of the rings
+// Arguments:   none  
+//   Returns:   thTrkRec  - estimate of theta track
+//              phiTrkRec - estimate of phi   track
+//              thetaCRec - estimate of ThetaCerenkov
+//              status    - TRUE if a good solution is found, FALSE if not
+
   Double_t *phiphot = new Double_t[fNClu];  
   Double_t *dist    = new Double_t[fNClu];  
   Int_t    *indphi  = new    Int_t[fNClu];  
@@ -268,8 +276,8 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
     
 //    Printf("FindShape: phi start %f",phiTrkRec*TMath::RadToDeg());
 
-    Int_t bin = fDatabase->FindBin(xA,xB);
-    Int_t compact = (Int_t)fDatabase->GetBinContent(bin);
+    Int_t bin = fgDatabase->FindBin(xA,xB);
+    Int_t compact = (Int_t)fgDatabase->GetBinContent(bin);
     thetaCRec =  (Double_t)(compact%1000);
     thTrkRec  =  (Double_t)(compact/1000);
 
@@ -294,6 +302,15 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Double_t &xA,Double_t &xB,Double_t &phiStart)
 {
+// Find a Spline curve to define dist. vs. phi angle
+// in order to estimate the phi of the track
+// Arguments:   np     - # points corresponding to # photon candidates
+//             dist    - distance of each photon from MIP
+//             phiphot - phi of the photon in the DRS
+//   Returns:  xA      - min. distance from MIP
+//             xB      - dist. from mip perpedicular to the major axis 
+//             phiStart- estimate of the track phi
+
   TGraph *phigr = new TGraph(np,phiphot,dist);
   TSpline3 *sphi = new TSpline3("sphi",phigr);
   if(!sphi) {Printf("Spline not created!Bye.");return kFALSE;}
@@ -347,8 +364,12 @@ Bool_t AliHMPIDReconHTA::ShapeModel(Int_t np,Double_t *phiphot,Double_t *dist,Do
   return kTRUE;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDReconHTA::VertParab(Double_t x1,Double_t y1,Double_t x2, Double_t y2, Double_t x3, Double_t y3)
+Double_t AliHMPIDReconHTA::VertParab(Double_t x1,Double_t y1,Double_t x2, Double_t y2, Double_t x3, Double_t y3)const
 {
+// It uses parabola from 3 points to evaluate the x-coord of the parab 
+// Arguments:    xi,yi - points
+//   Returns:    x-coord of the vertex 
+  
   Double_t a = ((x1-x3)*(y1-y2)-(x1-x2)*(y1-y3))/((x1*x1-x2*x2)*(x1-x3)-(x1*x1-x3*x3)*(x1-x2));
   Double_t b = (y1-y2 - a*(x1*x1-x2*x2))/(x1-x2);
 //  Double_t c = y1 - a*x1*x1-b*x1;
@@ -363,7 +384,6 @@ Bool_t AliHMPIDReconHTA::FitFree(Double_t thTrkRec,Double_t phiTrkRec)
 // as free parameters
 // Arguments:    PhiRec phi of the track
 //   Returns:    none
-  
   
   TMinuit *pMinuit = new TMinuit(2);
   pMinuit->mncler();
@@ -473,6 +493,14 @@ void AliHMPIDReconHTA::FunMinPhot(Int_t &/* */,Double_t* /* */,Double_t &f,Doubl
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDReconHTA::InitDatabase()
 {
+// Construction a database of ring shapes on fly
+//   Arguments: none
+//   Returns  : none
+//  N.B. fgDatabase points to a TH2I with x-min dist from MIP
+//                                        y-dist from the ring of the MIP perpendicular to major axis
+//        The content is the packed info of track theta and thetaC in degrees
+//                        thetaC+1000*thTrk
+//
   TStopwatch timer;
   timer.Start();
   
@@ -550,14 +578,14 @@ void AliHMPIDReconHTA::InitDatabase()
   }
 
   FillZeroChan(deconv);
-  fDatabase = deconv;
+  fgDatabase = deconv;
 
   timer.Stop();
   Double_t nSecs = timer.CpuTime();  
   AliInfo(Form("database HTA successfully open in %3.1f sec.(CPU). Reconstruction is started.",nSecs));
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDReconHTA::FillZeroChan(TH2I *deconv)
+void AliHMPIDReconHTA::FillZeroChan(TH2I *deconv)const
 {
   Int_t nbinx = deconv->GetNbinsX();
   Int_t nbiny = deconv->GetNbinsY();

@@ -14,7 +14,6 @@
 
 
 #include <TTask.h>        //base class
-#include <TVector3.h>     //fields 
 
 class TClonesArray; //CkovAngle()
 class AliESDtrack;  //CkovAngle()
@@ -29,16 +28,16 @@ public :
 
 // HTA hidden track algorithm
   void     InitVars         (Int_t n);                                                             //init space for variables
-  void     DeleteVars       ();                                                                    //delete variables
+  void     DeleteVars       ()const;                                                               //delete variables
   void     InitDatabase     ();                                                                    //initialization of database
-  TH2I*    DBHTA            ()     {return fDatabase;}                                             //pointer for HTA database of rings
-  void     FillZeroChan     (TH2I *deconv);                                                        //complete the DB
+  TH2I*    DBHTA            ()     {return fgDatabase;}                                            //pointer for HTA database of rings
+  void     FillZeroChan     (TH2I *deconv)const;                                                   //complete the DB
   Bool_t   CkovHiddenTrk    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean,Double_t qthre);//Pattern recognition without trackinf information
   Bool_t   CluPreFilter     (TClonesArray *pClu               );                                   //Pre clustering filter to cut bkg clusters
   Bool_t   DoRecHiddenTrk   (                                 );                                   //Calling to the fitted procedures
   Bool_t   FindShape        (Double_t &thTrkRec,Double_t &phiTrkRec,Double_t &thetaCRec);          //Find shape of the ring
   Bool_t   ShapeModel       (Int_t np,Double_t *phiphot,Double_t *dist,Double_t &xA,Double_t &xB,Double_t &phiStart);//initial shape model for the cluster candidates
-  Double_t VertParab        (Double_t x1,Double_t y1,Double_t x2, Double_t y2, Double_t x3, Double_t y3);//calculate the coord. of the min. for a parabole for 3 points
+  Double_t VertParab        (Double_t x1,Double_t y1,Double_t x2, Double_t y2, Double_t x3, Double_t y3)const;//calculate the coord. of the min. for a parabole for 3 points
   Bool_t   FitFree          (Double_t thTrkRec,Double_t phiTrkRec);                                //Fit (th,ph) of the track and ckovFit as result
   void     SetNClu          (Int_t nclu                          ) {fNClu=nclu;}                   //Setter for # of clusters
   void     SetClCk          (Int_t i,Bool_t what                 ) {fClCk[i]=what;}                //Setter for cluster flags 
@@ -79,7 +78,7 @@ protected:
   Double_t fCkovSig2;                          //estimated error^2 on ring Cherenkov angle
   
   AliHMPIDParam *fParam;                       //Pointer to AliHMPIDParam
-  static TH2I* fDatabase;                      //database for ring shapes
+  static TH2I* fgDatabase;                     //database for ring shapes
 //
   ClassDef(AliHMPIDReconHTA,0)
 };
