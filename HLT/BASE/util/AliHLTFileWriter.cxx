@@ -266,7 +266,7 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
     if (iResult>=0) {
       ofstream dump(filename.Data(), filemode);
       if (dump.good()) {
-	dump.write((static_cast<const char*>(blocks[n].fPtr))+blocks[n].fOffset, blocks[n].fSize);
+	dump.write((static_cast<const char*>(blocks[n].fPtr)), blocks[n].fSize);
 	HLTDebug("wrote %d byte(s) to file %s", blocks[n].fSize, filename.Data());
       } else {
 	HLTError("can not open file %s for writing", filename.Data());
