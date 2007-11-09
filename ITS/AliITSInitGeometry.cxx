@@ -50,7 +50,6 @@ $Id$
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
-#include "AliITSgeom.h"
 #include "AliITSInitGeometry.h"
 #include <TDatime.h>
 
@@ -561,7 +560,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomSSD03(AliITSgeom *geom){
     return kTRUE;
 }
 //______________________________________________________________________
-Bool_t AliITSInitGeometry::InitAliITSgeomITS04(AliITSgeom *geom){
+Bool_t AliITSInitGeometry::InitAliITSgeomITS04(AliITSgeom *geom) const{
     // Initilizes the geometry transformation class AliITSgeom
     // to values appropreate to this specific geometry. Now that
     // the segmentation is part of AliITSgeom, the detector
@@ -1624,7 +1623,7 @@ void AliITSInitGeometry::DecodeDetectorvSPD02(
 }
 //______________________________________________________________________
 void AliITSInitGeometry::RecodeDetectorvSPD02(Int_t mod,Int_t &cpn0,
-                                        Int_t &cpn1,Int_t &cpn2){
+                                        Int_t &cpn1,Int_t &cpn2) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose.
@@ -1654,7 +1653,7 @@ void AliITSInitGeometry::RecodeDetectorvSPD02(Int_t mod,Int_t &cpn0,
 }
 //______________________________________________________________________
 void AliITSInitGeometry::DecodeDetectorLayersvSPD02(Int_t mod,Int_t &lay,
-                                                    Int_t &lad,Int_t &det){
+                                            Int_t &lad,Int_t &det) const{
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose. Note, this use of layer ladder
@@ -1704,7 +1703,7 @@ void AliITSInitGeometry::DecodeDetectorvSDD03(
 }
 //______________________________________________________________________
 void AliITSInitGeometry::RecodeDetectorvSDD03(Int_t mod,Int_t &cpn0,
-                                        Int_t &cpn1,Int_t &cpn2){
+                                        Int_t &cpn1,Int_t &cpn2) const{
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose.
@@ -1727,7 +1726,7 @@ void AliITSInitGeometry::RecodeDetectorvSDD03(Int_t mod,Int_t &cpn0,
 }
 //______________________________________________________________________
 void AliITSInitGeometry::DecodeDetectorLayersvSDD03(Int_t mod,Int_t &lay,
-                                                    Int_t &lad,Int_t &det){
+                                                 Int_t &lad,Int_t &det) const{
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose. Note, this use of layer ladder
@@ -1774,7 +1773,7 @@ void AliITSInitGeometry::DecodeDetectorvSSD03(
 }
 //______________________________________________________________________
 void AliITSInitGeometry::RecodeDetectorvSSD03(Int_t mod,Int_t &cpn0,
-                                        Int_t &cpn1,Int_t &cpn2){
+                                        Int_t &cpn1,Int_t &cpn2) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose.
@@ -1797,7 +1796,7 @@ void AliITSInitGeometry::RecodeDetectorvSSD03(Int_t mod,Int_t &cpn0,
 }
 //______________________________________________________________________
 void AliITSInitGeometry::DecodeDetectorLayersvSSD03(Int_t mod,Int_t &lay,
-                                                    Int_t &lad,Int_t &det){
+                                                Int_t &lad,Int_t &det) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose. Note, this use of layer ladder
@@ -1841,7 +1840,7 @@ void AliITSInitGeometry::DecodeDetectorvITS04(
 }
 //______________________________________________________________________
 void AliITSInitGeometry::RecodeDetectorvITS04(Int_t mod,Int_t &cpn0,
-                                        Int_t &cpn1,Int_t &cpn2){
+                                        Int_t &cpn1,Int_t &cpn2) const {
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose.
@@ -1874,7 +1873,7 @@ void AliITSInitGeometry::RecodeDetectorvITS04(Int_t mod,Int_t &cpn0,
 }
 //______________________________________________________________________
 void AliITSInitGeometry::DecodeDetectorLayersvITS04(Int_t mod,Int_t &lay,
-                                                    Int_t &lad,Int_t &det){
+                                             Int_t &lad,Int_t &det) const{
     // decode geometry into detector module number. There are two decoding
     // Scheams. Old which does not follow the ALICE coordinate system
     // requirements, and New which dose. Note, this use of layer ladder

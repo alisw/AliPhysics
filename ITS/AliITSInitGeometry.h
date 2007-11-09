@@ -87,7 +87,7 @@ class AliITSInitGeometry : public TObject{
  private:
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvtest2(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det){
+                                   Int_t &lad,Int_t &det) const {
         lay=mod+1;lad=det=1;};
     // find module number by layer, and copy numbers
     void DecodeDetectorvtest2(Int_t &mod,Int_t lay,Int_t cpn0,
@@ -95,47 +95,47 @@ class AliITSInitGeometry : public TObject{
         mod=lay-1;cpn0=cpn1=cpn2=1;};
     // Given module number, find copy numbers.
     void RecodeDetectorvtest2(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2){
+                             Int_t &cpn2) const {
         mod=cpn0=cpn1=cpn2=1;};
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvSPD02(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det);
+                                   Int_t &lad,Int_t &det) const;
     // find module number by layer, and copy numbers
     void DecodeDetectorvSPD02(Int_t &mod,Int_t lay,Int_t cpn0,
                              Int_t cpn1,Int_t cpn2) const;
     // Given module number, find copy numbers.
     void RecodeDetectorvSPD02(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2);
+                             Int_t &cpn2) const;
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvSDD03(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det);
+                                   Int_t &lad,Int_t &det) const;
     // find module number by layer, and copy numbers
     void DecodeDetectorvSDD03(Int_t &mod,Int_t lay,Int_t cpn0,
                              Int_t cpn1,Int_t cpn2) const;
     // Given module number, find copy numbers.
     void RecodeDetectorvSDD03(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2);
+                             Int_t &cpn2) const;
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvSSD03(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det);
+                                   Int_t &lad,Int_t &det) const;
     // find module number by layer, and copy numbers
     void DecodeDetectorvSSD03(Int_t &mod,Int_t lay,Int_t cpn0,
                              Int_t cpn1,Int_t cpn2) const;
     // Given module number, find copy numbers.
     void RecodeDetectorvSSD03(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2);
+                             Int_t &cpn2) const;
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvITS04(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det);
+                                   Int_t &lad,Int_t &det) const;
     // find module number by layer, and copy numbers
     void DecodeDetectorvITS04(Int_t &mod,Int_t lay,Int_t cpn0,
                              Int_t cpn1,Int_t cpn2) const;
     // Given module number, find copy numbers.
     void RecodeDetectorvITS04(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2);
+                             Int_t &cpn2) const;
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvPPRcourseasymm(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det){
+                                   Int_t &lad,Int_t &det) const {
         lay=lad=det=mod;/*Dummy*/};
     // find module number by layer, and copy numbers
     void DecodeDetectorvPPRcourseasymm(Int_t &mod,Int_t lay,Int_t cpn0,
@@ -143,7 +143,7 @@ class AliITSInitGeometry : public TObject{
         mod=lay=cpn0=cpn1=cpn2;/*Dummy*/};
     // Given module number, find copy numbers.
     void RecodeDetectorvPPRcourseasymm(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2){
+                             Int_t &cpn2) const {
         cpn0=cpn1=cpn2=mod;/*Dummy*/};
     // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersvPPRasymmFMD(Int_t mod,Int_t &lay,
@@ -180,7 +180,7 @@ class AliITSInitGeometry : public TObject{
     Bool_t InitAliITSgeomSPD02(AliITSgeom *geom);
     Bool_t InitAliITSgeomSDD03(AliITSgeom *geom);
     Bool_t InitAliITSgeomSSD03(AliITSgeom *geom);
-    Bool_t InitAliITSgeomITS04(AliITSgeom *geom);
+    Bool_t InitAliITSgeomITS04(AliITSgeom *geom) const;
     Bool_t InitAliITSgeomtest2(AliITSgeom *geom);
     Bool_t InitAliITSgeomPPRasymmFMD(AliITSgeom *geom);
     Bool_t InitAliITSgeomV11Hybrid(AliITSgeom *geom);
