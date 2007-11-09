@@ -34,15 +34,15 @@ using namespace std;
 #endif
 
 #include "AliHLTTPCGlobalMergerComponent.h"
-#include "AliHLTTPCTransform.h"
+//#include "AliHLTTPCTransform.h"
 #include "AliHLTTPCGlobalMerger.h"
 #include "AliHLTTPCVertex.h"
 #include "AliHLTTPCVertexData.h"
 #include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
-#include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCClusterDataFormat.h"
+//#include "AliHLTTPCSpacePointData.h"
+//#include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include <cstdlib>
 #include <cerrno>
@@ -78,7 +78,7 @@ const char* AliHLTTPCGlobalMergerComponent::GetComponentID()
   return "TPCGlobalMerger";
 }
 
-void AliHLTTPCGlobalMergerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTTPCGlobalMergerComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
   // see header file for class documentation
   list.clear();
@@ -137,7 +137,7 @@ int AliHLTTPCGlobalMergerComponent::DoDeinit()
 
 int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
+					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
   const AliHLTComponentBlockData* iter = NULL;

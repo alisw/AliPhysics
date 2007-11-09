@@ -67,7 +67,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * Set library mode.
    * The mode effects all loaded libraries until another mode is set.
    * @param mode             persistent library or not
-   * @param previous mode
+   * @return previous mode
    */
   TLibraryMode SetLibraryMode(TLibraryMode mode);
 

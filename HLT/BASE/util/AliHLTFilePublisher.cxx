@@ -21,13 +21,19 @@
     @date   
     @brief  HLT file publisher component implementation. */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
 
 #include "AliHLTFilePublisher.h"
 #include "AliLog.h"
-#include <TObjString.h>
+//#include <TObjString.h>
 #include <TMath.h>
 #include <TFile.h>
 
@@ -79,6 +85,7 @@ AliHLTComponentDataType AliHLTFilePublisher::GetOutputDataType()
 
 int AliHLTFilePublisher::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
 {
+  // see header file for class documentation
   tgtList.assign(fOutputDataTypes.begin(), fOutputDataTypes.end());
   HLTInfo("%s %p provides %d output data types", GetComponentID(), this, fOutputDataTypes.size());
   return fOutputDataTypes.size();
@@ -317,7 +324,7 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
 				   AliHLTComponentTriggerData& /*trigData*/,
 				   AliHLTUInt8_t* outputPtr, 
 				   AliHLTUInt32_t& size,
-				   vector<AliHLTComponentBlockData>& outputBlocks )
+				   AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation
   int iResult=0;

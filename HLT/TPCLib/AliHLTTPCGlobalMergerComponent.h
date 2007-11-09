@@ -44,7 +44,7 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 	const char* GetComponentID();
       
       /** @see component interface @ref AliHLTComponent::GetInputDataTypes */
-	void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+	void GetInputDataTypes(AliHLTComponentDataTypeList& list);
 
       /** @see component interface @ref AliHLTComponent::GetOutputDataType */
 	AliHLTComponentDataType GetOutputDataType();
@@ -77,7 +77,7 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
       /** @see component interface @ref AliHLTProcessor::DoEvent */
 	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+		     AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
 	
     private:
       /** copy constructor prohibited */

@@ -92,7 +92,7 @@ const char* AliHLTTPCSliceTrackerComponent::GetComponentID()
   return "TPCSliceTracker";
 }
 
-void AliHLTTPCSliceTrackerComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
+void AliHLTTPCSliceTrackerComponent::GetInputDataTypes(AliHLTComponentDataTypeList& list)
 {
   // see header file for class documentation
   list.clear();
@@ -464,7 +464,7 @@ int AliHLTTPCSliceTrackerComponent::DoDeinit()
 
 int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
+					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
     {
   // see header file for class documentation
     Logging( kHLTLogDebug, "HLT::TPCSliceTracker::DoEvent", "DoEvent", "DoEvent()" );

@@ -50,7 +50,7 @@ public:
   /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
   /** interface function, see @ref AliHLTComponent for description */
-  void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
+  void GetInputDataTypes(AliHLTComponentDataTypeList& list);
   /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
   /** interface function, see @ref AliHLTComponent for description */
@@ -99,7 +99,7 @@ protected:
   /** interface function, see @ref AliHLTComponent for description */
   int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 	       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
-	       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
+	       AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
   
 private:
   /** copy constructor prohibited */

@@ -22,6 +22,12 @@
     @date   
     @brief  Implementation of HLT component handler. */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -207,7 +213,7 @@ Int_t AliHLTComponentHandler::FindComponentIndex(const char* componentID)
   // see header file for class documentation
   Int_t iResult=0;
   if (componentID) {
-    vector<AliHLTComponent*>::iterator element=fComponentList.begin();
+    AliHLTComponentPList::iterator element=fComponentList.begin();
     while (element!=fComponentList.end() && iResult>=0) {
       if (strcmp(componentID, (*element)->GetComponentID())==0) {
 	break;
@@ -248,7 +254,7 @@ Int_t AliHLTComponentHandler::InsertComponent(AliHLTComponent* pSample)
 void AliHLTComponentHandler::List() 
 {
   // see header file for class documentation
-  vector<AliHLTComponent*>::iterator element=fComponentList.begin();
+  AliHLTComponentPList::iterator element=fComponentList.begin();
   int index=0;
   while (element!=fComponentList.end()) {
     HLTInfo("%d. %s", index++, (*element++)->GetComponentID());
@@ -526,7 +532,7 @@ int AliHLTComponentHandler::RegisterScheduledComponents()
 {
   // see header file for class documentation
   int iResult=0;
-  vector<AliHLTComponent*>::iterator element=fScheduleList.begin();
+  AliHLTComponentPList::iterator element=fScheduleList.begin();
   int iLocalResult=0;
   while (element!=fScheduleList.end()) {
     iLocalResult=RegisterComponent(*element);
@@ -565,7 +571,7 @@ int AliHLTComponentHandler::DeleteOwnedComponents()
 {
   // see header file for class documentation
   int iResult=0;
-  vector<AliHLTComponent*>::iterator element=fOwnedComponents.begin();
+  AliHLTComponentPList::iterator element=fOwnedComponents.begin();
   while (element!=fOwnedComponents.end()) {
     //DeregisterComponent((*element)->GetComponentID());
     try {

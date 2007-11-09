@@ -14,9 +14,15 @@
     @note   The class is used in Offline (AliRoot) context
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTDataSource.h"
-#include <TFile.h>
 #include <TList.h>
+class TFile;
 
 /**
  * @class AliHLTFilePublisher
@@ -100,7 +106,7 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 		        AliHLTComponentTriggerData& trigData,
 		        AliHLTUInt8_t* outputPtr, 
 		        AliHLTUInt32_t& size,
-		        vector<AliHLTComponentBlockData>& outputBlocks );
+		        AliHLTComponentBlockDataList& outputBlocks );
 
   /**
    * Scan one argument and adjacent parameters.
@@ -172,8 +178,8 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 
     // implicite type conversions
     operator TFile*() const   {return fpInstance;}
-    operator AliHLTComponentDataType() {return fDataType;}
-    operator AliHLTUInt32_t() {return fSpecification;}
+    operator AliHLTComponentDataType() const {return fDataType;}
+    operator AliHLTUInt32_t() const {return fSpecification;}
 
   private:
     /** prohibited copy constructor */
