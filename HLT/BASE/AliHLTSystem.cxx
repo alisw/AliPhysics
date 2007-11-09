@@ -697,7 +697,7 @@ int AliHLTSystem::Configure(AliRawReader* rawReader, AliRunLoader* runloader)
     HLTError("HLT system in running state, can not configure");
     return -EBUSY;
   }
-  ClearStatusFlags(kConfigurationLoaded|kTaskListCreated);
+  ClearStatusFlags(kTaskListCreated);
   if (CheckFilter(kHLTLogDebug))
     AliHLTModuleAgent::PrintStatus();
   if (CheckStatus(kConfigurationLoaded)==0) {

@@ -364,6 +364,14 @@ class AliHLTSystem : public AliHLTLogging {
    */
   int GetStatusFlags();
 
+  /**
+   * Set logging level for framework classes.
+   * This sets the local logging level of this instance and all subsequent
+   * framework classes to \em level.
+   * @param level     local logging level for the framework classes
+   */
+  void SetFrameworkLog(AliHLTComponentLogSeverity level);
+
  protected:
  
  private:
@@ -381,14 +389,6 @@ class AliHLTSystem : public AliHLTLogging {
    * clear status flags.
    */
   int ClearStatusFlags(int flags);
-
-  /**
-   * Set logging level for framework classes.
-   * This sets the local logging level of this instance and all subsequent
-   * framework classes to \em level.
-   * @param level     local logging level for the framework classes
-   */
-  void SetFrameworkLog(AliHLTComponentLogSeverity level);
 
 /*   TList fConfList; */
 /*   int fbListChanged; */

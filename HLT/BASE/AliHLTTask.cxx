@@ -115,7 +115,7 @@ int AliHLTTask::Init(AliHLTConfiguration* pConf, AliHLTComponentHandler* pCH)
 	if (fpComponent || iResult<=0) {
 	  //HLTDebug("component %s (%p) created", fpComponent->GetComponentID(), fpComponent); 
 	} else {
-	  HLTError("can not find component \"%s\" (%d)", fpConfiguration->GetComponentID(), iResult);
+	  //HLTError("can not find component \"%s\" (%d)", fpConfiguration->GetComponentID(), iResult);
 	}
       } else {
 	HLTError("can not get argument list for configuration %s (%s)", fpConfiguration->GetName(), fpConfiguration->GetComponentID());
