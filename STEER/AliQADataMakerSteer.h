@@ -39,9 +39,11 @@ public:
 	Bool_t Merge() ;  
     void   Reset() ;  
 	Bool_t Run(const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
+	Bool_t Run(AliRawReader * rawReader) ; 
 	void   SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
 
 private: 
+	Bool_t			 DoIt(const AliQA::TASKINDEX taskIndex, const  char * fileName = NULL) ;
 	AliLoader      * GetLoader(Int_t iDet) ; 
 	const Int_t      GetQACycles(const Int_t iDet) { return fQACycles[iDet] ; }
 	AliQADataMaker * GetQADataMaker(Int_t iDet) ; 
@@ -58,6 +60,7 @@ private:
 	UInt_t             fRunNumber ;                    //! current run number
 	Long64_t           fNumberOfEvents ;               //! number of events in the run 
 	AliRawReader     * fRawReader ;                    //! current raw reader object 
+	Bool_t             fRawReaderDelete ;              //! tells if the rawReader has been created by this
 	AliRunLoader *     fRunLoader ;                    //! current run loader object
 	static const UInt_t fgkNDetectors = AliQA::kNDET ; //! number of detectors    
 	AliLoader      *   fLoader[fgkNDetectors];         //! array of detectors loader

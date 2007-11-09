@@ -23,6 +23,7 @@
 #include <TSystem.h>
 
 #include "AliESDEvent.h"
+#include "AliHeader.h"
 #include "AliLog.h"
 #include "AliModule.h"
 #include "AliQA.h"
@@ -47,6 +48,7 @@ AliQADataMakerSteer::AliQADataMakerSteer(const char* gAliceFilename, const char 
 	fRunNumber(0), 
 	fNumberOfEvents(0), 
 	fRawReader(NULL), 
+	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL)  
 {
 	// default ctor
@@ -68,6 +70,7 @@ AliQADataMakerSteer::AliQADataMakerSteer(const AliQADataMakerSteer & qas) :
 	fRunNumber(qas.fRunNumber), 
 	fNumberOfEvents(qas.fNumberOfEvents), 
 	fRawReader(NULL), 
+	fRawReaderDelete(kTRUE), 
 	fRunLoader(NULL)  
 {
 	// cpy ctor
@@ -100,9 +103,11 @@ AliQADataMakerSteer::~AliQADataMakerSteer()
 	}
   }
 
-  fRunLoader = NULL ;
-  delete fRawReader ;
-  fRawReader = NULL ;
+  if (fRawReaderDelete) { 
+	fRunLoader = NULL ;
+	delete fRawReader ;
+	fRawReader = NULL ;
+  }
 }
 
 //_____________________________________________________________________________
@@ -184,15 +189,17 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char *
 {
 	// Initialize the event source and QA data makers
 	
-	if (taskIndex == AliQA::kRAWS) {
-		TString fileName(input);
-		if (fileName.EndsWith("/")) {
-			fRawReader = new AliRawReaderFile(fileName);
-		} else if (fileName.EndsWith(".root")) {
-			fRawReader = new AliRawReaderRoot(fileName);
-		} else if (!fileName.IsNull()) {
-			fRawReader = new AliRawReaderDate(fileName);
-			fRawReader->SelectEvents(7);
+	if (taskIndex == AliQA::kRAWS) { 
+		if (!fRawReader) {
+			TString fileName(input);
+			if (fileName.EndsWith("/")) {
+				fRawReader = new AliRawReaderFile(fileName);
+			} else if (fileName.EndsWith(".root")) {
+				fRawReader = new AliRawReaderRoot(fileName);
+			} else if (!fileName.IsNull()) {
+				fRawReader = new AliRawReaderDate(fileName);
+				fRawReader->SelectEvents(7);
+			}
 		}
 	    if ( ! fRawReader ) 
 			return kFALSE ; 
@@ -216,14 +223,14 @@ Bool_t AliQADataMakerSteer::Init(const AliQA::TASKINDEX taskIndex, const  char *
 	} else {
 		if ( !InitRunLoader() ) {
 			AliError("Run Loader not found") ; 
-			return kFALSE ; 
 		} else {
-			if (fRunLoader->GetAliRun()) 
-				fRunNumber      = fRunLoader->GetAliRun()->GetRunNumber() ; 
+			if (fRunLoader->GetHeader()) 
+				fRunNumber      = fRunLoader->GetHeader()->GetRun() ;
+			else
+				fRunNumber      = 0 ; 
 			fNumberOfEvents = fRunLoader->GetNumberOfEvents() ;
 		}
 	}
-		
 	// Initialize all QA data makers for all detectors
 	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
 		AliQADataMaker * qadm = GetQADataMaker(iDet) ;
@@ -360,8 +367,10 @@ void AliQADataMakerSteer::Reset()
 		}
 	}
 
-	delete fRawReader ;
-	fRawReader      = NULL ;
+	if (fRawReaderDelete) { 
+		delete fRawReader ;
+		fRawReader      = NULL ;
+	}
 
 	fCycleSame      = kFALSE ; 
 	fESD            = NULL ; 
@@ -371,14 +380,49 @@ void AliQADataMakerSteer::Reset()
 }
 
 //_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::Run(AliRawReader * rawReader) 
+{
+	//Runs all the QA data Maker for Raws only
+	fRawReader = rawReader ; 		
+	fRawReaderDelete = kFALSE ; 
+	fCycleSame = kTRUE ; 
+
+	// Initialize all QA data makers for all detectors
+	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+		AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+		if (!qadm) {
+			AliWarning(Form("AliQADataMaker not found for %s", AliQA::GetDetName(iDet))) ; 
+		} else {
+			AliInfo(Form("Data Maker found for %s", qadm->GetName())) ; 
+			qadm->Init(AliQA::kRAWS, fRunNumber, GetQACycles(iDet)) ;
+			qadm->StartOfCycle(AliQA::kRAWS, fCycleSame) ;
+		}
+	} 
+	fFirst = kFALSE ;
+		
+	return DoIt(AliQA::kRAWS) ; 
+}
+
+//_____________________________________________________________________________
 Bool_t AliQADataMakerSteer::Run(const AliQA::TASKINDEX taskIndex, const  char * fileName )
 {
 	// Runs all the QA data Maker for every detector
+
 	Bool_t rv = kFALSE ;
 	
 	if ( !Init(taskIndex, fileName) ) 
 		return kFALSE ; 
-		
+
+	return DoIt(taskIndex, fileName) ; 
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex, const  char * fileName )
+{
+	// Runs all the QA data Maker for every detector
+	Bool_t rv = kFALSE ;
+			
     // Fill QA data in event loop 
 	for (UInt_t iEvent = 0 ; iEvent < fNumberOfEvents ; iEvent++) {
 		// Get the event
