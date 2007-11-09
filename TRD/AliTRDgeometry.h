@@ -130,10 +130,14 @@ class AliTRDgeometry : public AliGeometry {
   static const Int_t    fgkNcham;                            //  Number of chambers in z-direction (5)
   static const Int_t    fgkNdet;                             //  Total number of detectors (18 * 6 * 5 = 540)
 
-  static const Float_t  fgkSheight;                          //  Height of the TRD-volume in spaceframe (BTRD)
-  static const Float_t  fgkSwidth1;                          //  Lower width of the TRD-volume in spaceframe (BTRD)
-  static const Float_t  fgkSwidth2;                          //  Upper width of the TRD-volume in spaceframe (BTRD)
-  static const Float_t  fgkSlength;                          //  Length of the TRD-volume in spaceframe (BTRD)
+  static const Float_t  fgkTlength;                          //  Length of the TRD-volume in spaceframe (BTRD)
+
+  static const Float_t  fgkSheight;                          //  Height of the supermodule
+  static const Float_t  fgkSwidth1;                          //  Lower width of the supermodule
+  static const Float_t  fgkSwidth2;                          //  Upper width of the supermodule
+  static const Float_t  fgkSlength;                          //  Length of the supermodule
+
+  static const Float_t  fgkFlength;                          //  Length of the service space in front of a supermodule
 
   static const Float_t  fgkSMpltT;                           //  Thickness of the super module side plates
 
@@ -220,7 +224,7 @@ class AliTRDgeometry : public AliGeometry {
   TObjArray            *fClusterMatrixArray;                 //! Transformation matrices loc. cluster to tracking cs
   TObjArray            *fPadPlaneArray;                      //! Array of pad plane objects
 
-  ClassDef(AliTRDgeometry,15)                                //  TRD geometry class
+  ClassDef(AliTRDgeometry,16)                                //  TRD geometry class
 
 };
 

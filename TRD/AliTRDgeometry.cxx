@@ -53,11 +53,19 @@ ClassImp(AliTRDgeometry)
   // Dimensions of the detector
   //
 
-  // Parameter of the BTRD mother volumes 
+  // Total length of the TRD mother volume
+  const Float_t  AliTRDgeometry::fgkTlength   = 751.0;
+
+  // Parameter of the super module mother volumes 
   const Float_t  AliTRDgeometry::fgkSheight   =  77.9; 
   const Float_t  AliTRDgeometry::fgkSwidth1   =  94.881; 
   const Float_t  AliTRDgeometry::fgkSwidth2   = 122.353;
-  const Float_t  AliTRDgeometry::fgkSlength   = 751.0;
+  const Float_t  AliTRDgeometry::fgkSlength   = 702.0;
+
+  // Length of the additional space in front of the supermodule
+  // used for services
+  const Float_t  AliTRDgeometry::fgkFlength   = (AliTRDgeometry::fgkTlength
+                                               - AliTRDgeometry::fgkSlength) / 2.0;
 
   // The super module side plates
   const Float_t  AliTRDgeometry::fgkSMpltT    =   0.2;
@@ -575,8 +583,8 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   // UTR1: Default supermodule
   // UTR2: Supermodule in front of PHOS with double carbon cover
   // UTR3: As UTR2, but w/o middle stack
-
-  // The TRD mother volume for one sector (Air), full length in z-direction
+  //
+  // The mother volume for one sector (Air), full length in z-direction
   // Provides material for side plates of super module
   parTrd[0] = fgkSwidth1/2.0;
   parTrd[1] = fgkSwidth2/2.0;
@@ -585,7 +593,6 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   gMC->Gsvolu("UTR1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   gMC->Gsvolu("UTR2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   gMC->Gsvolu("UTR3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
-
   // The outer aluminum plates of the super module (Al)
   parTrd[0] = fgkSwidth1/2.0;
   parTrd[1] = fgkSwidth2/2.0;
@@ -594,7 +601,6 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   gMC->Gsvolu("UTS1","TRD1",idtmed[1301-1],parTrd,kNparTrd);
   gMC->Gsvolu("UTS2","TRD1",idtmed[1301-1],parTrd,kNparTrd);
   gMC->Gsvolu("UTS3","TRD1",idtmed[1301-1],parTrd,kNparTrd);
-
   // The inner part of the TRD mother volume for one sector (Air), 
   // full length in z-direction
   parTrd[0] = fgkSwidth1/2.0 - fgkSMpltT;
@@ -604,6 +610,15 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
   gMC->Gsvolu("UTI1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   gMC->Gsvolu("UTI2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
   gMC->Gsvolu("UTI3","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+
+  // The inner part of the TRD mother volume for services in front
+  // of the supermodules  (Air), 
+  parTrd[0] = fgkSwidth1/2.0;
+  parTrd[1] = fgkSwidth2/2.0;
+  parTrd[2] = fgkFlength/2.0;
+  parTrd[3] = fgkSheight/2.0;
+  gMC->Gsvolu("UTF1","TRD1",idtmed[1302-1],parTrd,kNparTrd);
+  gMC->Gsvolu("UTF2","TRD1",idtmed[1302-1],parTrd,kNparTrd);
 
   for (Int_t icham = 0; icham < kNcham; icham++) {
     for (Int_t iplan = 0; iplan < kNplan; iplan++) {  
@@ -622,7 +637,7 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
       gMC->Gsvolu(cTagV,"BOX ",idtmed[1301-1],parCha,kNparCha);
       // The additional aluminum on the frames
       // This part has not the correct postion but is just supposed to
-      // represent the missing material. The correct from of the L-shaped
+      // represent the missing material. The correct form of the L-shaped
       // profile would not fit into the alignable volume. 
       sprintf(cTagV,"UZ%02d",iDet);
       parCha[0] = fgkCroW/2.0;
@@ -914,6 +929,19 @@ void AliTRDgeometry::CreateGeometry(Int_t *idtmed)
     }
   }
 
+  // Put the TRD volumes into the space frame mother volumes
+  // if enabled via status flag
+  xpos = 0.0;
+  ypos = 0.5*fgkSlength + 0.5*fgkFlength;
+  zpos = 0.0;
+  for (Int_t isect = 0; isect < kNsect; isect++) {
+    if (fSMstatus[isect]) {
+      sprintf(cTagV,"BTRD%d",isect);
+      gMC->Gspos("UTF1",1,cTagV,xpos, ypos,zpos,0,"ONLY");
+      gMC->Gspos("UTF2",1,cTagV,xpos,-ypos,zpos,0,"ONLY");
+    }
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -939,13 +967,103 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   Char_t  cTagV[5];
   Char_t  cTagM[5];
 
+  const Int_t kNparTRD = 4;
+  Float_t parTRD[kNparTRD];
+  const Int_t kNparBOX = 3;
+  Float_t parBOX[kNparBOX];
+  const Int_t kNparTRP = 11;
+  Float_t parTRP[kNparTRP];
+
   // The rotation matrices
-  const Int_t kNmatrix = 4;
+  const Int_t kNmatrix = 6;
   Int_t   matrix[kNmatrix];
   gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
   gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
   gMC->Matrix(matrix[2],  90.0,   0.0,   0.0,   0.0,  90.0,  90.0);
   gMC->Matrix(matrix[3],  90.0, 180.0,   0.0, 180.0,  90.0,  90.0);
+  gMC->Matrix(matrix[4], 170.0,   0.0,  80.0,   0.0,  90.0,  90.0);
+  gMC->Matrix(matrix[5], 170.0, 180.0,  80.0, 180.0,  90.0,  90.0);
+  gMC->Matrix(matrix[6], 180.0, 180.0,  90.0, 180.0,  90.0,  90.0);
+
+  //
+  // The carbon inserts in the top/bottom aluminum plates
+  //
+
+  const Int_t kNparCrb = 3;
+  Float_t parCrb[kNparCrb];
+  parCrb[0] = 0.0;
+  parCrb[1] = 0.0;
+  parCrb[2] = 0.0;
+  gMC->Gsvolu("USCR","BOX ",idtmed[1307-1],parCrb,0);
+  // Bottom 1 (all sectors)
+  parCrb[0] =  77.49/2.0;
+  parCrb[1] = 104.60/2.0;
+  parCrb[2] = fgkSMpltT/2.0;
+  xpos      =   0.0;
+  ypos      =   0.0;
+  zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
+  gMC->Gsposp("USCR", 1,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 2,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 3,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  // Bottom 2 (all sectors)
+  parCrb[0] =  77.49/2.0;
+  parCrb[1] =  55.80/2.0;
+  parCrb[2] = fgkSMpltT/2.0;
+  xpos      =   0.0;
+  ypos      =  85.6;
+  zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
+  gMC->Gsposp("USCR", 4,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 5,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 6,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 7,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 8,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR", 9,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  // Bottom 3 (all sectors)
+  parCrb[0] =  77.49/2.0;
+  parCrb[1] =  56.00/2.0;
+  parCrb[2] = fgkSMpltT/2.0;
+  xpos      =   0.0;
+  ypos      = 148.5;
+  zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
+  gMC->Gsposp("USCR",10,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",11,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",12,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",13,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",14,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",15,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  // Bottom 4 (all sectors)
+  parCrb[0] =  77.49/2.0;
+  parCrb[1] = 118.00/2.0;
+  parCrb[2] = fgkSMpltT/2.0;
+  xpos      =   0.0;
+  ypos      = 240.5;
+  zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
+  gMC->Gsposp("USCR",16,"UTS1", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",17,"UTS2", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",18,"UTS3", xpos, ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",19,"UTS1", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",20,"UTS2", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",21,"UTS3", xpos,-ypos, zpos,0,"ONLY",parCrb,kNparCrb);
+  // Top 1 (only in front of PHOS)
+  parCrb[0] = 111.48/2.0;
+  parCrb[1] = 105.00/2.0;
+  parCrb[2] = fgkSMpltT/2.0;
+  xpos      =   0.0;
+  ypos      =   0.0;
+  zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
+  gMC->Gsposp("USCR",22,"UTS2", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",23,"UTS3", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  // Top 2 (only in front of PHOS)
+  parCrb[0] = 111.48/2.0;
+  parCrb[1] =  56.00/2.0;
+  parCrb[2] = fgkSMpltT/2.0;
+  xpos      =   0.0;
+  ypos      =  85.5;
+  zpos      = fgkSMpltT/2.0 - fgkSheight/2.0;
+  gMC->Gsposp("USCR",24,"UTS2", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",25,"UTS3", xpos, ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",26,"UTS2", xpos,-ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
+  gMC->Gsposp("USCR",27,"UTS3", xpos,-ypos,-zpos,0,"ONLY",parCrb,kNparCrb);
 
   //
   // The chamber support rails
@@ -972,6 +1090,10 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
           + iplan * (fgkCH + fgkVspace);
     gMC->Gspos("USRL",iplan+1         ,"UTI1", xpos,ypos,zpos,0,"ONLY");
     gMC->Gspos("USRL",iplan+1+  kNplan,"UTI1",-xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos("USRL",iplan+1+2*kNplan,"UTI2", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos("USRL",iplan+1+3*kNplan,"UTI2",-xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos("USRL",iplan+1+4*kNplan,"UTI3", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos("USRL",iplan+1+5*kNplan,"UTI3",-xpos,ypos,zpos,0,"ONLY");
   }
 
   //
@@ -1029,23 +1151,15 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
     zpos  = fgkVrocsm + fgkSMpltT + parSCB[2] - fgkSheight/2.0 
           + iplan * (fgkCH + fgkVspace);
 
-    ypos  =   fgkSlength/2.0 - kSCBwid/2.0;
-    gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
-
     ypos  =   fClength[iplan][2]/2.0 + fClength[iplan][1];
-    gMC->Gspos(cTagV,2,"UTI1", xpos,ypos,zpos,0,"ONLY");
-
-    ypos  =   fClength[iplan][2]/2.0;
-    gMC->Gspos(cTagV,3,"UTI1", xpos,ypos,zpos,0,"ONLY");
-
-    ypos  = - fClength[iplan][2]/2.0;
-    gMC->Gspos(cTagV,4,"UTI1", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV, 1,"UTI1", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV, 3,"UTI2", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV, 5,"UTI3", xpos,ypos,zpos,0,"ONLY");
 
     ypos  = - fClength[iplan][2]/2.0 - fClength[iplan][1];
-    gMC->Gspos(cTagV,5,"UTI1", xpos,ypos,zpos,0,"ONLY");
-
-    ypos  = - fgkSlength/2.0 + kSCBwid/2.0;
-    gMC->Gspos(cTagV,6,"UTI1", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV, 2,"UTI1", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV, 4,"UTI2", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV, 6,"UTI3", xpos,ypos,zpos,0,"ONLY");
 
   }
 
@@ -1070,10 +1184,292 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
     zpos  = fgkVrocsm + fgkSMpltT - kSCHhgt/2.0 - fgkSheight/2.0 
           + (iplan+1) * (fgkCH + fgkVspace);
     gMC->Gspos(cTagV,1,"UTI1", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV,3,"UTI2", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV,5,"UTI3", xpos,ypos,zpos,0,"ONLY");
     ypos  = -ypos;
     gMC->Gspos(cTagV,2,"UTI1", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV,4,"UTI2", xpos,ypos,zpos,0,"ONLY");
+    gMC->Gspos(cTagV,6,"UTI3", xpos,ypos,zpos,0,"ONLY");
 
   }
+
+  //
+  // The aymmetric flat frame in the middle
+  //
+
+  // The envelope volume (aluminum)
+  parTRD[0]  =  87.60/2.0;
+  parTRD[1]  = 114.00/2.0;
+  parTRD[2]  =   1.20/2.0;
+  parTRD[3]  =  71.30/2.0;
+  gMC->Gsvolu("USDB","TRD1",idtmed[1301-1],parTRD,kNparTRD);
+  // Empty spaces (air)
+  parTRP[ 0] =   1.20/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  27.00/2.0;
+  parTRP[ 4] =  50.60/2.0;
+  parTRP[ 5] =   5.00/2.0;
+  parTRP[ 6] =   3.5;
+  parTRP[ 7] =  27.00/2.0;
+  parTRP[ 8] =  50.60/2.0;
+  parTRP[ 9] =   5.00/2.0;
+  parTRP[10] =   3.5;
+  gMC->Gsvolu("USD1","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       =  18.0;
+  ypos       =   0.0;
+  zpos       =   27.00/2.0 - 71.3/2.0;
+  gMC->Gspos("USD1",1,"USDB", xpos, ypos, zpos,matrix[2],"ONLY");
+  // Empty spaces (air)
+  parTRP[ 0] =   1.20/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  33.00/2.0;
+  parTRP[ 4] =   5.00/2.0;
+  parTRP[ 5] =  62.10/2.0;
+  parTRP[ 6] =   3.5;
+  parTRP[ 7] =  33.00/2.0;
+  parTRP[ 8] =   5.00/2.0;
+  parTRP[ 9] =  62.10/2.0;
+  parTRP[10] =   3.5;
+  gMC->Gsvolu("USD2","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       =  21.0;
+  ypos       =   0.0;
+  zpos       =  71.3/2.0 - 33.0/2.0;
+  gMC->Gspos("USD2",1,"USDB", xpos, ypos, zpos,matrix[2],"ONLY");
+  // Empty spaces (air)
+  parBOX[ 0] =  22.50/2.0;
+  parBOX[ 1] =   1.20/2.0;
+  parBOX[ 2] =  70.50/2.0;
+  gMC->Gsvolu("USD3","BOX ",idtmed[1302-1],parBOX,kNparBOX);
+  xpos       = -25.75;
+  ypos       =   0.0;
+  zpos       =   0.4;
+  gMC->Gspos("USD3",1,"USDB", xpos, ypos, zpos,        0,"ONLY");
+  // Empty spaces (air)
+  parTRP[ 0] =   1.20/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  25.50/2.0;
+  parTRP[ 4] =   5.00/2.0;
+  parTRP[ 5] =  65.00/2.0;
+  parTRP[ 6] =  -1.0;
+  parTRP[ 7] =  25.50/2.0;
+  parTRP[ 8] =   5.00/2.0;
+  parTRP[ 9] =  65.00/2.0;
+  parTRP[10] =  -1.0;
+  gMC->Gsvolu("USD4","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       =   2.0;
+  ypos       =   0.0;
+  zpos       =  -1.6;
+  gMC->Gspos("USD4",1,"USDB", xpos, ypos, zpos,matrix[6],"ONLY");
+  // Empty spaces (air)
+  parTRP[ 0] =   1.20/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  23.50/2.0;
+  parTRP[ 4] =  63.50/2.0;
+  parTRP[ 5] =   5.00/2.0;
+  parTRP[ 6] =  16.0;
+  parTRP[ 7] =  23.50/2.0;
+  parTRP[ 8] =  63.50/2.0;
+  parTRP[ 9] =   5.00/2.0;
+  parTRP[10] =  16.0;
+  gMC->Gsvolu("USD5","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       =  36.5;
+  ypos       =   0.0;
+  zpos       =  -1.5;
+  gMC->Gspos("USD5",1,"USDB", xpos, ypos, zpos,matrix[5],"ONLY");
+  // Empty spaces (air)
+  parTRP[ 0] =   1.20/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  70.50/2.0;
+  parTRP[ 4] =   4.50/2.0;
+  parTRP[ 5] =  16.50/2.0;
+  parTRP[ 6] =  -5.0;
+  parTRP[ 7] =  70.50/2.0;
+  parTRP[ 8] =   4.50/2.0;
+  parTRP[ 9] =  16.50/2.0;
+  parTRP[10] =  -5.0;
+  gMC->Gsvolu("USD6","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       = -43.7;
+  ypos       =   0.0;
+  zpos       =   0.4;
+  gMC->Gspos("USD6",1,"USDB", xpos, ypos, zpos,matrix[2],"ONLY");
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0;
+  zpos       =   0.0;
+  gMC->Gspos("USDB",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USDB",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USDB",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USDB",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USDB",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USDB",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Upper bar (aluminum)
+  parBOX[0] = 95.00/2.0;
+  parBOX[1] =  1.20/2.0;
+  parBOX[2] =  3.00/2.0;
+  gMC->Gsvolu("USD7","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0;
+  zpos       =   fgkSheight/2.0 - 3.20/2.0;
+  gMC->Gspos("USD7",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD7",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD7",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD7",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD7",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD7",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Lower bar (aluminum)
+  parBOX[0] = 90.22/2.0;
+  parBOX[1] =  1.20/2.0;
+  parBOX[2] =  1.90/2.0;
+  gMC->Gsvolu("USD8","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0;
+  zpos       =  -fgkSheight/2.0 + 2.35;
+  gMC->Gspos("USD8",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD8",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD8",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD8",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD8",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD8",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Lower bar (aluminum)
+  parBOX[0] = 82.60/2.0;
+  parBOX[1] =  1.20/2.0;
+  parBOX[2] =  1.40/2.0;
+  gMC->Gsvolu("USD9","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0;
+  zpos       =  -fgkSheight/2.0 + 1.40/2.0;
+  gMC->Gspos("USD9",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD9",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD9",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD9",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD9",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USD9",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Front sheet (aluminum)
+  parTRP[ 0] =   0.10/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  74.50/2.0;
+  parTRP[ 4] =  31.70/2.0;
+  parTRP[ 5] =  44.00/2.0;
+  parTRP[ 6] =  -5.0;
+  parTRP[ 7] =  74.50/2.0;
+  parTRP[ 8] =  31.70/2.0;
+  parTRP[ 9] =  44.00/2.0;
+  parTRP[10] =  -5.0;
+  gMC->Gsvolu("USDF","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       = -32.0;
+  ypos       =   fClength[5][2]/2.0 + 1.20/2.0 + 0.10/2.0;
+  zpos       =   0.0;
+  gMC->Gspos("USDF",1,"UTI1", xpos, ypos, zpos,matrix[2],"ONLY");
+  gMC->Gspos("USDF",2,"UTI1", xpos,-ypos, zpos,matrix[2],"ONLY");
+  gMC->Gspos("USDF",3,"UTI2", xpos, ypos, zpos,matrix[2],"ONLY");
+  gMC->Gspos("USDF",4,"UTI2", xpos,-ypos, zpos,matrix[2],"ONLY");
+  gMC->Gspos("USDF",5,"UTI3", xpos, ypos, zpos,matrix[2],"ONLY");
+  gMC->Gspos("USDF",6,"UTI3", xpos,-ypos, zpos,matrix[2],"ONLY");
+
+  //
+  // The flat frame in front of the chambers
+  //
+
+  // The envelope volume (aluminum)
+  parTRD[0]  =  90.00/2.0;
+  parTRD[1]  = 114.00/2.0;
+  parTRD[2]  =   1.50/2.0;
+  parTRD[3]  =  70.30/2.0;
+  gMC->Gsvolu("USCB","TRD1",idtmed[1301-1],parTRD,kNparTRD);
+  // Empty spaces (air)
+  parTRD[0]  =  87.00/2.0;
+  parTRD[1]  =  10.00/2.0;
+  parTRD[2]  =   1.50/2.0;
+  parTRD[3]  =  26.35/2.0;
+  gMC->Gsvolu("USC1","TRD1",idtmed[1302-1],parTRD,kNparTRD);
+  xpos       =  0.0;
+  ypos       =  0.0;
+  zpos       = 26.35/2.0 - 70.3/2.0;
+  gMC->Gspos("USC1",1,"USCB",xpos,ypos,zpos,0,"ONLY");
+  // Empty spaces (air)
+  parTRD[0]  =  10.00/2.0;
+  parTRD[1]  = 111.00/2.0;
+  parTRD[2]  =   1.50/2.0;
+  parTRD[3]  =  35.05/2.0;
+  gMC->Gsvolu("USC2","TRD1",idtmed[1302-1],parTRD,kNparTRD);
+  xpos       =  0.0;
+  ypos       =  0.0;
+  zpos       = 70.3/2.0 - 35.05/2.0;
+  gMC->Gspos("USC2",1,"USCB",xpos,ypos,zpos,0,"ONLY");
+  // Empty spaces (air)
+  parTRP[ 0] =   1.50/2.0;
+  parTRP[ 1] =   0.0;
+  parTRP[ 2] =   0.0;
+  parTRP[ 3] =  37.60/2.0;
+  parTRP[ 4] =  63.90/2.0;
+  parTRP[ 5] =   8.86/2.0;
+  parTRP[ 6] =  16.0;
+  parTRP[ 7] =  37.60/2.0;
+  parTRP[ 8] =  63.90/2.0;
+  parTRP[ 9] =   8.86/2.0;
+  parTRP[10] =  16.0;
+  gMC->Gsvolu("USC3","TRAP",idtmed[1302-1],parTRP,kNparTRP);
+  xpos       = -30.5;
+  ypos       =   0.0;
+  zpos       =  -2.0;
+  gMC->Gspos("USC3",1,"USCB", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("USC3",2,"USCB",-xpos, ypos, zpos,matrix[5],"ONLY");
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
+  zpos       =   0.0;
+  gMC->Gspos("USCB",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USCB",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USCB",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USCB",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USCB",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USCB",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Upper bar (aluminum)
+  parBOX[0] = 95.00/2.0;
+  parBOX[1] =  1.50/2.0;
+  parBOX[2] =  3.00/2.0;
+  gMC->Gsvolu("USC4","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
+  zpos       =   fgkSheight/2.0 - 3.00/2.0;
+  gMC->Gspos("USC4",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC4",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC4",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC4",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC4",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC4",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Lower bar (aluminum)
+  parBOX[0] = 90.22/2.0;
+  parBOX[1] =  1.50/2.0;
+  parBOX[2] =  2.20/2.0;
+  gMC->Gsvolu("USC5","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
+  zpos       =  -fgkSheight/2.0 + 2.70;
+  gMC->Gspos("USC5",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC5",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC5",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC5",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC5",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC5",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
+  // Lower bar (aluminum)
+  parBOX[0] = 82.60/2.0;
+  parBOX[1] =  1.50/2.0;
+  parBOX[2] =  1.60/2.0;
+  gMC->Gsvolu("USC6","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos       =   0.0;
+  ypos       =   fClength[5][2]/2.0 + fClength[5][1] + fClength[5][0];
+  zpos       =  -fgkSheight/2.0 + 1.60/2.0;
+  gMC->Gspos("USC6",1,"UTI1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC6",2,"UTI1", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC6",3,"UTI2", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC6",4,"UTI2", xpos,-ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC6",5,"UTI3", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("USC6",6,"UTI3", xpos,-ypos, zpos,        0,"ONLY");
 
   //
   // The long corner ledges
@@ -1116,8 +1512,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   ypos  =   0.0;
   zpos  =   fgkSheight/2.0 - fgkSMpltT - kSCLposzUb; 
   gMC->Gspos("USL2",1,"UTI1", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL2",3,"UTI2", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL2",5,"UTI3", xpos,ypos,zpos,        0,"ONLY");
   xpos  = -xpos;
   gMC->Gspos("USL2",2,"UTI1", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL2",4,"UTI2", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL2",6,"UTI3", xpos,ypos,zpos,        0,"ONLY");
 
   // Lower ledges 
   // Thickness of the corner ledges
@@ -1149,8 +1549,12 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   ypos  =   0.0;
   zpos  = - fgkSheight/2.0 + fgkSMpltT - kSCLposzLa;
   gMC->Gspos("USL3",1,"UTI1", xpos,ypos,zpos,matrix[2],"ONLY");
+  gMC->Gspos("USL3",3,"UTI2", xpos,ypos,zpos,matrix[2],"ONLY");
+  gMC->Gspos("USL3",5,"UTI3", xpos,ypos,zpos,matrix[2],"ONLY");
   xpos  = -xpos;
   gMC->Gspos("USL3",2,"UTI1", xpos,ypos,zpos,matrix[3],"ONLY");
+  gMC->Gspos("USL3",4,"UTI2", xpos,ypos,zpos,matrix[3],"ONLY");
+  gMC->Gspos("USL3",6,"UTI3", xpos,ypos,zpos,matrix[3],"ONLY");
   // Horizontal
   parSCL[0]  = kSCLwidLb /2.0;
   parSCL[1]  = fgkSlength/2.0;
@@ -1160,8 +1564,54 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   ypos  =   0.0;
   zpos  = - fgkSheight/2.0 + fgkSMpltT - kSCLposzLb;
   gMC->Gspos("USL4",1,"UTI1", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL4",3,"UTI2", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL4",5,"UTI3", xpos,ypos,zpos,        0,"ONLY");
   xpos  = -xpos;
   gMC->Gspos("USL4",2,"UTI1", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL4",4,"UTI2", xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("USL4",6,"UTI3", xpos,ypos,zpos,        0,"ONLY");
+
+  //
+  // Aluminum plates in the front part of the super modules
+  //
+
+  const Int_t kNparTrd = 4;
+  Float_t parTrd[kNparTrd];
+  parTrd[0] = fgkSwidth1/2.0 - 2.5;
+  parTrd[1] = fgkSwidth2/2.0 - 2.5;
+  parTrd[2] = fgkSMpltT /2.0;
+  parTrd[3] = fgkSheight/2.0 - 1.0;
+  gMC->Gsvolu("UTA1","TRD1",idtmed[1301-1],parTrd,kNparTrd);
+  xpos      =  0.0;
+  ypos      =  fgkSMpltT/2.0 - fgkFlength/2.0;
+  zpos      = -0.5;
+  gMC->Gspos("UTA1",1,"UTF1",xpos, ypos,zpos,        0,"ONLY");
+  gMC->Gspos("UTA1",2,"UTF2",xpos,-ypos,zpos,        0,"ONLY");
+
+  const Int_t kNparPlt = 3;
+  Float_t parPlt[kNparPlt];
+  parPlt[0] =  0.0;
+  parPlt[1] =  0.0;
+  parPlt[2] =  0.0;
+  gMC->Gsvolu("UTA2","BOX ",idtmed[1301-1],parPlt,0);
+  xpos      =  0.0;
+  ypos      =  0.0;
+  zpos      =  fgkSheight/2.0 - fgkSMpltT/2.0;
+  parPlt[0] = fgkSwidth2/2.0;
+  parPlt[1] = fgkFlength/2.0;
+  parPlt[2] = fgkSMpltT /2.0;
+  gMC->Gsposp("UTA2",1,"UTF2",xpos,ypos,zpos
+                    ,        0,"ONLY",parPlt,kNparPlt);
+  xpos      = (fgkSwidth1 + fgkSwidth2)/4.0;
+  ypos      =  0.0;
+  zpos      =  0.0;
+  parPlt[0] = fgkSMpltT /2.0;
+  parPlt[1] = fgkFlength/2.0;
+  parPlt[2] = fgkSheight/2.0;
+  gMC->Gsposp("UTA2",2,"UTF2", xpos,ypos,zpos
+                    ,matrix[0],"ONLY",parPlt,kNparPlt);
+  gMC->Gsposp("UTA2",3,"UTF2",-xpos,ypos,zpos
+                    ,matrix[1],"ONLY",parPlt,kNparPlt);
 
 }
 
@@ -1173,14 +1623,15 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   //
   // Names of the TRD services volumina
   //
-  //        UTCL    Cooling arterias (Al)
-  //        UTCW    Cooling arterias (Water)
+  //        UTC1    Cooling arterias (Al)
+  //        UTC2    Cooling arterias (Water)
   //        UUxx    Volumes for the services at the chambers (Air)
-  //        UTPW    Power bars       (Cu)
+  //        UTP1    Power bars       (Cu)
   //        UTCP    Cooling pipes    (Fe)
   //        UTCH    Cooling pipes    (Water)
   //        UTPL    Power lines      (Cu)
   //        UMCM    Readout MCMs     (G10/Cu/Si)
+  //        UTGD    Gas distribution box (V2A)
   //
 
   Int_t   iplan = 0;
@@ -1192,13 +1643,22 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
   Char_t  cTagV[5];
 
+  const Int_t kNparBox  = 3;
+  Float_t parBox[kNparBox];
+
+  const Int_t kNparTube = 3;
+  Float_t parTube[kNparTube];
+
   // The rotation matrices
-  const Int_t kNmatrix = 4;
+  const Int_t kNmatrix = 7;
   Int_t   matrix[kNmatrix];
   gMC->Matrix(matrix[0], 100.0,   0.0,  90.0,  90.0,  10.0,   0.0);
   gMC->Matrix(matrix[1],  80.0,   0.0,  90.0,  90.0,  10.0, 180.0);
   gMC->Matrix(matrix[2],   0.0,   0.0,  90.0,  90.0,  90.0,   0.0);
   gMC->Matrix(matrix[3], 180.0,   0.0,  90.0,  90.0,  90.0, 180.0);
+  gMC->Matrix(matrix[4],  90.0,   0.0,   0.0,   0.0,  90.0,  90.0);
+  gMC->Matrix(matrix[5], 100.0,   0.0,  90.0, 270.0,  10.0,   0.0);
+  gMC->Matrix(matrix[6],  80.0,   0.0,  90.0, 270.0,  10.0, 180.0);
     
   //
   // The cooling arterias
@@ -1215,37 +1675,100 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   const Float_t kCOLthk  =  0.1;
   const Int_t   kNparCOL =  3;
   Float_t parCOL[kNparCOL];
-  parCOL[0]  = kCOLwid   /2.0;
-  parCOL[1]  = fgkSlength/2.0;
-  parCOL[2]  = kCOLhgt   /2.0;
-  gMC->Gsvolu("UTCL","BOX ",idtmed[1308-1],parCOL,kNparCOL);
-  parCOL[0] -= kCOLthk;
-  parCOL[1]  = fgkSlength/2.0;
-  parCOL[2] -= kCOLthk;
-  gMC->Gsvolu("UTCW","BOX ",idtmed[1314-1],parCOL,kNparCOL);
+  parCOL[0] = 0.0;
+  parCOL[1] = 0.0;
+  parCOL[2] = 0.0;
+  gMC->Gsvolu("UTC1","BOX ",idtmed[1308-1],parCOL,0);
+  gMC->Gsvolu("UTC3","BOX ",idtmed[1308-1],parCOL,0);
+  parCOL[0] =  kCOLwid/2.0 - kCOLthk;
+  parCOL[1] = -1.0;
+  parCOL[2] =  kCOLhgt/2.0 - kCOLthk;
+  gMC->Gsvolu("UTC2","BOX ",idtmed[1314-1],parCOL,kNparCOL);
+  gMC->Gsvolu("UTC4","BOX ",idtmed[1314-1],parCOL,kNparCOL);
 
   xpos  = 0.0;
   ypos  = 0.0;
   zpos  = 0.0;
-  gMC->Gspos("UTCW",1,"UTCL", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTC2",1,"UTC1", xpos,ypos,zpos,0,"ONLY");
+  gMC->Gspos("UTC4",1,"UTC3", xpos,ypos,zpos,0,"ONLY");
 
   for (iplan = 1; iplan < kNplan; iplan++) { 
 
-    xpos  = fCwidth[iplan]/2.0 + kCOLwid/2.0 + kCOLposx;
-    ypos  = 0.0;
-    zpos  = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
-          + iplan * (fgkCH + fgkVspace);
-    gMC->Gspos("UTCL",iplan       ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
-    gMC->Gspos("UTCL",iplan+kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
+    // Along the chambers
+    xpos      = fCwidth[iplan]/2.0 + kCOLwid/2.0 + kCOLposx;
+    ypos      = 0.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
+              + iplan * (fgkCH + fgkVspace);
+    parCOL[0] = kCOLwid   /2.0;
+    parCOL[1] = fgkSlength/2.0;
+    parCOL[2] = kCOLhgt   /2.0;
+    gMC->Gsposp("UTC1",iplan         ,"UTI1", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC1",iplan+  kNplan,"UTI1",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC1",iplan+6*kNplan,"UTI2", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC1",iplan+7*kNplan,"UTI2",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC1",iplan+8*kNplan ,"UTI3", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC1",iplan+9*kNplan,"UTI3",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+
+    // Front of supermodules
+    xpos      = fCwidth[iplan]/2.0 + kCOLwid/2.0 + kCOLposx;
+    ypos      = 0.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + kCOLposz 
+              + iplan * (fgkCH + fgkVspace);
+    parCOL[0] = kCOLwid   /2.0;
+    parCOL[1] = fgkFlength/2.0;
+    parCOL[2] = kCOLhgt   /2.0;
+    gMC->Gsposp("UTC3",iplan+2*kNplan,"UTF1", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC3",iplan+3*kNplan,"UTF1",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC3",iplan+4*kNplan,"UTF2", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parCOL,kNparCOL);
+    gMC->Gsposp("UTC3",iplan+5*kNplan,"UTF2",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parCOL,kNparCOL);
 
   }
 
   // The upper most layer (reaching into TOF acceptance)
-  xpos  = fCwidth[5]/2.0 - kCOLhgt/2.0 - 1.3;
-  ypos  = 0.0;
-  zpos  = fgkSheight/2.0 - fgkSMpltT - 0.4 - kCOLwid/2.0; 
-  gMC->Gspos("UTCL",6       ,"UTI1", xpos,ypos,zpos,matrix[3],"ONLY");
-  gMC->Gspos("UTCL",6+kNplan,"UTI1",-xpos,ypos,zpos,matrix[3],"ONLY");
+  // Along the chambers
+  xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 1.3;
+  ypos      = 0.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.4 - kCOLwid/2.0; 
+  parCOL[0] = kCOLwid   /2.0;
+  parCOL[1] = fgkSlength/2.0;
+  parCOL[2] = kCOLhgt   /2.0;
+  gMC->Gsposp("UTC1",6         ,"UTI1", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC1",6+  kNplan,"UTI1",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC1",6+6*kNplan,"UTI2", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC1",6+7*kNplan,"UTI2",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC1",6+8*kNplan,"UTI3", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC1",6+9*kNplan,"UTI3",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  // Front of supermodules
+  xpos      = fCwidth[5]/2.0 - kCOLhgt/2.0 - 1.3;
+  ypos      = 0.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.4 - kCOLwid/2.0; 
+  parCOL[0] = kCOLwid   /2.0;
+  parCOL[1] = fgkFlength/2.0;
+  parCOL[2] = kCOLhgt   /2.0;
+  gMC->Gsposp("UTC3",6+2*kNplan,"UTF1", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC3",6+3*kNplan,"UTF1",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC3",6+4*kNplan,"UTF2", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
+  gMC->Gsposp("UTC3",6+5*kNplan,"UTF2",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parCOL,kNparCOL);
 
   //
   // The power bars
@@ -1257,28 +1780,114 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   const Float_t kPWRposz =  1.9;
   const Int_t   kNparPWR =  3;
   Float_t parPWR[kNparPWR];
-  parPWR[0] = kPWRwid   /2.0;
-  parPWR[1] = fgkSlength/2.0;
-  parPWR[2] = kPWRhgt   /2.0;
-  gMC->Gsvolu("UTPW","BOX ",idtmed[1325-1],parPWR,kNparPWR);
+  parPWR[0] = 0.0;
+  parPWR[1] = 0.0;
+  parPWR[2] = 0.0;
+  gMC->Gsvolu("UTP1","BOX ",idtmed[1325-1],parPWR,0);
+  gMC->Gsvolu("UTP3","BOX ",idtmed[1325-1],parPWR,0);
   
   for (iplan = 1; iplan < kNplan; iplan++) { 
-    
-    xpos  = fCwidth[iplan]/2.0 + kPWRwid/2.0 + kPWRposx;
-    ypos  = 0.0;
-    zpos  = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
-          + iplan * (fgkCH + fgkVspace);
-    gMC->Gspos("UTPW",iplan       ,"UTI1", xpos,ypos,zpos,matrix[0],"ONLY");
-    gMC->Gspos("UTPW",iplan+kNplan,"UTI1",-xpos,ypos,zpos,matrix[1],"ONLY");
+
+    // Along the chambers
+    xpos      = fCwidth[iplan]/2.0 + kPWRwid/2.0 + kPWRposx;
+    ypos      = 0.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
+              + iplan * (fgkCH + fgkVspace);
+    parPWR[0] = kPWRwid   /2.0;
+    parPWR[1] = fgkSlength/2.0;
+    parPWR[2] = kPWRhgt   /2.0;
+    gMC->Gsposp("UTP1",iplan         ,"UTI1", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP1",iplan+  kNplan,"UTI1",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP1",iplan+6*kNplan,"UTI2", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP1",iplan+7*kNplan,"UTI2",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP1",iplan+8*kNplan,"UTI3", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP1",iplan+9*kNplan,"UTI3",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+
+    // Front of supermodule
+    xpos      = fCwidth[iplan]/2.0 + kPWRwid/2.0 + kPWRposx;
+    ypos      = 0.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kPWRhgt/2.0 - fgkSheight/2.0 + kPWRposz 
+              + iplan * (fgkCH + fgkVspace);
+    parPWR[0] = kPWRwid   /2.0;
+    parPWR[1] = fgkFlength/2.0;
+    parPWR[2] = kPWRhgt   /2.0;
+    gMC->Gsposp("UTP3",iplan+2*kNplan,"UTF1", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP3",iplan+3*kNplan,"UTF1",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP3",iplan+4*kNplan,"UTF2", xpos,ypos,zpos
+                      ,matrix[0],"ONLY",parPWR,kNparPWR);
+    gMC->Gsposp("UTP3",iplan+5*kNplan,"UTF2",-xpos,ypos,zpos
+                      ,matrix[1],"ONLY",parPWR,kNparPWR);
 
   }
 
   // The upper most layer (reaching into TOF acceptance)
-  xpos  = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+  // Along the chambers
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+  ypos      = 0.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+  parPWR[0] = kPWRwid   /2.0;
+  parPWR[1] = fgkSlength/2.0;
+  parPWR[2] = kPWRhgt   /2.0;
+  gMC->Gsposp("UTP1",6         ,"UTI1", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP1",6+  kNplan,"UTI1",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP1",6+6*kNplan,"UTI2", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP1",6+7*kNplan,"UTI2",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP1",6+8*kNplan,"UTI3", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP1",6+9*kNplan,"UTI3",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  // Front of supermodules
+  xpos      = fCwidth[5]/2.0 + kPWRhgt/2.0 - 1.3;
+  ypos      = 0.0;
+  zpos      = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
+  parPWR[0] = kPWRwid   /2.0;
+  parPWR[1] = fgkFlength/2.0;
+  parPWR[2] = kPWRhgt   /2.0;
+  gMC->Gsposp("UTP3",6+2*kNplan,"UTF1", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP3",6+3*kNplan,"UTF1",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP3",6+4*kNplan,"UTF2", xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+  gMC->Gsposp("UTP3",6+5*kNplan,"UTF2",-xpos,ypos,zpos
+                    ,matrix[3],"ONLY",parPWR,kNparPWR);
+
+  //
+  // The gas tubes connecting the chambers in the super modules with holes
+  //
+
+  parTube[0] = 0.0;
+  parTube[1] = 2.2/2.0;
+  parTube[2] = fClength[5][2]/2.0 - fgkHspace/2.0;
+  gMC->Gsvolu("UTG1","TUBE",idtmed[1322-1],parTube,kNparTube);
+  parTube[0] = 0.0;
+  parTube[1] = 1.9/2.0;
+  parTube[2] = fClength[5][2]/2.0 - fgkHspace/2.0;
+  gMC->Gsvolu("UTG2","TUBE",idtmed[1309-1],parTube,kNparTube);
+  xpos  = 0.0;
   ypos  = 0.0;
-  zpos  = fgkSheight/2.0 - fgkSMpltT - 0.6 - kPWRwid/2.0; 
-  gMC->Gspos("UTPW",6       ,"UTI1", xpos,ypos,zpos,matrix[3],"ONLY");
-  gMC->Gspos("UTPW",6+kNplan,"UTI1",-xpos,ypos,zpos,matrix[3],"ONLY");
+  zpos  = 0.0;
+  gMC->Gspos("UTG2",1,"UTG1",xpos,ypos,zpos,0,"ONLY");
+  for (iplan = 0; iplan < kNplan; iplan++) { 
+    xpos      = fCwidth[iplan]/2.0 + kCOLwid/2.0 - 1.5;
+    ypos      = 0.0;
+    zpos      = fgkVrocsm + fgkSMpltT + kCOLhgt/2.0 - fgkSheight/2.0 + 5.0 
+              + iplan * (fgkCH + fgkVspace);
+    gMC->Gspos("UTG1",1+iplan,"UTI3", xpos, ypos, zpos,matrix[4],"ONLY");
+    gMC->Gspos("UTG1",7+iplan,"UTI3",-xpos, ypos, zpos,matrix[4],"ONLY");
+  }
 
   //
   // The volumes for the services at the chambers
@@ -1321,8 +1930,6 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // The cooling pipes inside the service volumes
   //
 
-  const Int_t kNparTube = 3;
-  Float_t parTube[kNparTube];
   // The cooling pipes
   parTube[0] =  0.0;
   parTube[1] =  0.0;
@@ -1340,8 +1947,6 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   gMC->Gspos("UTCH",1,"UTCP",xpos,ypos,zpos,0,"ONLY");
 
   // Position the cooling pipes in the mother volume
-  const Int_t kNpar = 3;
-  Float_t par[kNpar];
   for (icham = 0; icham < kNcham;   icham++) {
     for (iplan = 0; iplan < kNplan; iplan++) {
       Int_t   iDet    = GetDetectorSec(iplan,icham);
@@ -1356,11 +1961,11 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
                - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
         zpos   = 0.0 + 0.742/2.0;                 
 	// The cooling pipes
-        par[0] = 0.0;
-        par[1] = 0.3/2.0; // Thickness of the cooling pipes
-        par[2] = fCwidth[iplan]/2.0;
+        parTube[0] = 0.0;
+        parTube[1] = 0.3/2.0; // Thickness of the cooling pipes
+        parTube[2] = fCwidth[iplan]/2.0;
         gMC->Gsposp("UTCP",iCopy+iMCMrow,cTagV,xpos,ypos,zpos
-                          ,matrix[2],"ONLY",par,kNpar);
+                          ,matrix[2],"ONLY",parTube,kNparTube);
       }
     }
   }
@@ -1385,15 +1990,15 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
                       / ((Float_t) nMCMrow);
       sprintf(cTagV,"UU%02d",iDet);
       for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
-        xpos   = 0.0;
-        ypos   = (0.5 + iMCMrow) * ySize - 1.0 
-               - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
-        zpos   = -0.4 + 0.742/2.0;
-        par[0] = 0.0;
-        par[1] = 0.2/2.0; // Thickness of the power lines
-        par[2] = fCwidth[iplan]/2.0;
+        xpos       = 0.0;
+        ypos       = (0.5 + iMCMrow) * ySize - 1.0 
+                   - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
+        zpos       = -0.4 + 0.742/2.0;
+        parTube[0] = 0.0;
+        parTube[1] = 0.2/2.0; // Thickness of the power lines
+        parTube[2] = fCwidth[iplan]/2.0;
         gMC->Gsposp("UTPL",iCopy+iMCMrow,cTagV,xpos,ypos,zpos
-                          ,matrix[2],"ONLY",par,kNpar);
+                          ,matrix[2],"ONLY",parTube,kNparTube);
       }
     }
   }
@@ -1466,14 +2071,11 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
       sprintf(cTagV,"UU%02d",iDet);
       for (Int_t iMCMrow = 0; iMCMrow < nMCMrow; iMCMrow++) {
         for (Int_t iMCMcol = 0; iMCMcol < nMCMcol; iMCMcol++) {
-          xpos   = (0.5 + iMCMcol) * xSize + 1.0 
-                 - fCwidth[iplan]/2.0;
-          ypos   = (0.5 + iMCMrow) * ySize + 1.0 
-                 - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
-          zpos   = -0.4 + 0.742/2.0;
-          par[0] = 0.0;
-          par[1] = 0.2/2.0; // Thickness of the power lines
-          par[2] = fCwidth[iplan]/2.0;
+          xpos      = (0.5 + iMCMcol) * xSize + 1.0 
+                    - fCwidth[iplan]/2.0;
+          ypos      = (0.5 + iMCMrow) * ySize + 1.0 
+                    - fClength[iplan][icham]/2.0 + fgkHspace/2.0;
+          zpos      = -0.4 + 0.742/2.0;
           gMC->Gspos("UMCM",iCopy+iMCMrow*10+iMCMcol,cTagV
                            ,xpos,ypos,zpos,0,"ONLY");
 	}
@@ -1481,6 +2083,113 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
 
     }
   }
+
+  //
+  // Services in front of the super module
+  //
+
+  // Gas distribution box
+  parBox[0] = 14.50/2.0;
+  parBox[1] =  4.52/2.0;
+  parBox[2] =  5.00/2.0;
+  gMC->Gsvolu("UTGD","BOX ",idtmed[1308-1],parBox,kNparBox);
+  parBox[0] = 14.50/2.0;
+  parBox[1] =  4.00/2.0;
+  parBox[2] =  4.40/2.0;
+  gMC->Gsvolu("UTGI","BOX ",idtmed[1309-1],parBox,kNparBox);
+  parTube[0] = 0.0;
+  parTube[1] = 4.0/2.0;
+  parTube[2] = 8.0/2.0;
+  gMC->Gsvolu("UTGT","TUBE",idtmed[1308-1],parTube,kNparTube);
+  parTube[0] = 0.0;
+  parTube[1] = 3.4/2.0;
+  parTube[2] = 8.0/2.0;
+  gMC->Gsvolu("UTGG","TUBE",idtmed[1309-1],parTube,kNparTube);
+  xpos = 0.0;
+  ypos = 0.0;
+  zpos = 0.0;
+  gMC->Gspos("UTGI",1,"UTGD",xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("UTGG",1,"UTGT",xpos,ypos,zpos,        0,"ONLY");
+  xpos = 0.0;
+  ypos = 0.0;
+  zpos = 0.0;
+  gMC->Gspos("UTGD",1,"UTF1",xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("UTGD",2,"UTF2",xpos,ypos,zpos,        0,"ONLY");
+  xpos =  -3.0;
+  ypos =   0.0;
+  zpos =   6.5;
+  gMC->Gspos("UTGT",1,"UTF1",xpos,ypos,zpos,        0,"ONLY");
+  gMC->Gspos("UTGT",2,"UTF2",xpos,ypos,zpos,        0,"ONLY");
+  xpos = -11.25;
+  ypos =   0.0;
+  zpos =   0.5;
+  gMC->Gspos("UTGT",3,"UTF1",xpos,ypos,zpos,matrix[2],"ONLY");
+  gMC->Gspos("UTGT",4,"UTF2",xpos,ypos,zpos,matrix[2],"ONLY");
+  xpos =  11.25;
+  ypos =   0.0;
+  zpos =   0.5;
+  gMC->Gspos("UTGT",5,"UTF1",xpos,ypos,zpos,matrix[2],"ONLY");
+  gMC->Gspos("UTGT",6,"UTF2",xpos,ypos,zpos,matrix[2],"ONLY");
+
+  // Cooling manifolds
+  parBox[0]  =  5.0/2.0;
+  parBox[1]  = 23.0/2.0;
+  parBox[2]  = 70.0/2.0;
+  gMC->Gsvolu("UTCM","BOX ",idtmed[1302-1],parBox,kNparBox);
+  parBox[0]  =  5.0/2.0;
+  parBox[1]  =  5.0/2.0;
+  parBox[2]  = 70.0/2.0;
+  gMC->Gsvolu("UTCA","BOX ",idtmed[1308-1],parBox,kNparBox);
+  parBox[0]  =  5.0/2.0 - 0.3;
+  parBox[1]  =  5.0/2.0 - 0.3;
+  parBox[2]  = 70.0/2.0 - 0.3;
+  gMC->Gsvolu("UTCW","BOX ",idtmed[1314-1],parBox,kNparBox);
+  xpos       =  0.0;
+  ypos       =  0.0;
+  zpos       =  0.0;
+  gMC->Gspos("UTCW",1,"UTCA", xpos, ypos, zpos,        0,"ONLY");
+  xpos       =  0.0;
+  ypos       =  5.0/2.0 - 23.0/2.0;
+  zpos       =  0.0;
+  gMC->Gspos("UTCA",1,"UTCM", xpos, ypos, zpos,        0,"ONLY");
+  parTube[0] =  0.0;
+  parTube[1] =  3.0/2.0;
+  parTube[2] = 18.0/2.0;
+  gMC->Gsvolu("UTCH","TUBE",idtmed[1308-1],parTube,kNparTube);
+  parTube[0] =  0.0;
+  parTube[1] =  3.0/2.0 - 0.3;
+  parTube[2] = 18.0/2.0;
+  gMC->Gsvolu("UTCL","TUBE",idtmed[1314-1],parTube,kNparTube);
+  xpos       =  0.0;
+  ypos       =  0.0;
+  zpos       =  0.0;
+  gMC->Gspos("UTCL",1,"UTCH", xpos, ypos, zpos,        0,"ONLY");
+  xpos       =  0.0;
+  ypos       =  2.5;
+  zpos       = -70.0/2.0 + 7.0;
+  gMC->Gspos("UTCH",1,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",2,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",3,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",4,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",5,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",6,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",7,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  zpos      +=  7.0;
+  gMC->Gspos("UTCH",8,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+
+  xpos = 40.0;
+  ypos =  fgkFlength/2.0 - 23.0/2.0;
+  zpos =  0.0;
+  gMC->Gspos("UTCM",1,"UTF1", xpos, ypos, zpos,matrix[0],"ONLY");
+  gMC->Gspos("UTCM",2,"UTF1",-xpos, ypos, zpos,matrix[1],"ONLY");
+  gMC->Gspos("UTCM",3,"UTF2", xpos,-ypos, zpos,matrix[5],"ONLY");
+  gMC->Gspos("UTCM",4,"UTF2",-xpos,-ypos, zpos,matrix[6],"ONLY");
 
 }
 
@@ -1817,6 +2526,8 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
   fClusterMatrixArray = new TObjArray(kNdet);
   AliAlignObjParams o;
 
+  AliWarning("Start creating transformation matrices.");
+
   for (Int_t iLayer = AliGeomManager::kTRD1; iLayer <= AliGeomManager::kTRD6; iLayer++) {
     for (Int_t iModule = 0; iModule < AliGeomManager::LayerSize(iLayer); iModule++) {
 
@@ -1828,10 +2539,12 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
         path = pne->GetTitle();
       }
       if (!strstr(path,"ALIC")) {
+        AliError(Form("Not a valid path: %s\n",path));
         AliDebug(1,Form("Not a valid path: %s\n",path));
         continue;
       }
       if (!gGeoManager->cd(path)) {
+        AliError(Form("Cannot go to path: %s\n",path));
         continue;
       }
       TGeoHMatrix *m         = gGeoManager->GetCurrentMatrix();
@@ -1854,6 +2567,7 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       rotSector.RotateZ(sectorAngle);
       rotMatrix.MultiplyLeft(&rotSector.Inverse());
 
+      AliWarning(Form("Add matrix: %d\n",lid));
       fClusterMatrixArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
 
     }    
