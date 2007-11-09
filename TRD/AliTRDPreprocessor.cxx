@@ -175,7 +175,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
     if (nGraph [iAlias] == 0) {
       Log("No TGraph for this dcsDatapointAlias : not stored");
       results [iAlias] = kFALSE;
-      //error  = kTRUE;
+      error  = kTRUE;
       continue;
     }
 		

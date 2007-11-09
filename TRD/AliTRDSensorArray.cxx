@@ -62,6 +62,20 @@ AliTRDSensorArray::AliTRDSensorArray (const char * amanda,
 	fMinGraph 	= 0;
 	fValCut		= -1;
 	fDiffCut	= -1;
+	Int_t entries = fSensors->GetEntriesFast();
+	if(entries > 1){
+	  for(Int_t k = 0; k < entries; k++){
+	    TString name (Form(amanda, k));
+	    printf("name is %s of %d\n",(const char*)name,k);
+	    ((AliDCSSensor *) fSensors->UncheckedAt(k))->SetStringID(name);
+	  }
+	}
+	else{
+	  TString name (amanda);
+	  printf("name is %s\n",(const char*)name);
+	  ((AliDCSSensor *) fSensors->UncheckedAt(0))->SetStringID(name);
+	}
+
 }
 
 //_____________________________________________________________________________
@@ -128,74 +142,62 @@ TObjArray *  AliTRDSensorArray::GetList ()
 	
 	// now create and populate   
 	aH = new AliTRDSensorArray ("trd_chamberStatus%03d", "trd_chamberStatus", 
-								0.5, (TClonesArray*)listSensor540.Clone ());
+				    0.5, (TClonesArray*)listSensor540.Clone ());
 	list->Add (aH);
 	
-	aH = new AliTRDSensorArray ("trd_preTrigger", 		"trd_preTrigger", 
-								-1, (TClonesArray*)listSensor1.Clone ());
-	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofieHv", 			"trd_goofieHv",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofiePeakPos%02d",	"trd_goofiePeakPos",   
-								-1, (TClonesArray*)listSensor2.Clone ());
+				    -1, (TClonesArray*)listSensor2.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofiePeakArea%02d","trd_goofiePeakArea",   
-								-1, (TClonesArray*)listSensor2.Clone ());
+				    -1, (TClonesArray*)listSensor2.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofieTemp%02d", 	"trd_goofieTemp",  
-								-1, (TClonesArray*)listSensor2.Clone ());
+				    -1, (TClonesArray*)listSensor2.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofiePressure", 	"trd_goofiePressure",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofieVelocity", 	"trd_goofieVelocity",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofieGain%02d", 	"trd_goofieGain",  
-								-1, (TClonesArray*)listSensor2.Clone ());
+				    -1, (TClonesArray*)listSensor2.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofieCO2", 		"trd_goofieCO2",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_goofieN2", 			"trd_goofieN2", 
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_gasO2", 			"trd_gasO2",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_gasH2O", 			"trd_gasH2O",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_gasOverpressure", 	"trd_gasOverpressure",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_envTemp%03d", 		"trd_envTemp",  
-								-1, (TClonesArray*)listSensor540.Clone ());
+				    -1, (TClonesArray*)listSensor540.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_hvAnodeImon%03d", 	"trd_hvAnodeImon",	 
-								-1, (TClonesArray*)listSensor540.Clone ());
+				    -1, (TClonesArray*)listSensor540.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_hvDriftImon%03d", 	"trd_hvDriftImon",  
-								-1, (TClonesArray*)listSensor540.Clone ());
+				    -1, (TClonesArray*)listSensor540.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_hvAnodeUmon%03d",	"trd_hvAnodeUmon",  
-								-1, (TClonesArray*)listSensor540.Clone ());
+				    -1, (TClonesArray*)listSensor540.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_hvDriftUmon%03d", 	"trd_hvDriftUmon",  
-								-1, (TClonesArray*)listSensor540.Clone ());
+				    -1, (TClonesArray*)listSensor540.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_adcClkPhase", 		"trd_adcClkPhase", 
-								-1, (TClonesArray*)listSensor1.Clone ());
-	list->Add (aH);
-	aH = new AliTRDSensorArray ("CavernAtmosPressure", 	"CavernAtmosPressure", 
-								-1, (TClonesArray*)listSensor1.Clone ());
-	list->Add (aH);
-	aH = new AliTRDSensorArray ("LHCLuminosity", 		"LHCLuminosity",  
-								-1, (TClonesArray*)listSensor1.Clone ());
-	list->Add (aH);
-	aH = new AliTRDSensorArray ("L3Current", 			"L3Current",  
-								-1, (TClonesArray*)listSensor1.Clone ());
+				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	                          
 	return list;
