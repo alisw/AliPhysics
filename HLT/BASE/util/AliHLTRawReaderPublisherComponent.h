@@ -29,6 +29,10 @@
  * If no data specification is given, the equipment id is used as default.
  * A child class can implement @ref GetSpecificationFromEquipmentId to
  * provide a different rule.
+ *
+ * The component publishes one data block for each equipment id in the
+ * give range. If the RawReader does not provide any data, an empty data
+ * block consisting of the Common Data Header is produced. 
  * 
  * Component ID: \b AliRawReaderPublisher <br>
  * Library: \b libAliHLTUtil.
@@ -42,7 +46,7 @@
  * \li -minid  <i> id      </i>
  *      the minimum equipmentid including detector offset, e.g. 768 is TPC 0
  * \li -maxid  <i> id      </i>
- *      the maximum equipmentid including detector offset
+ *      the maximum equipmentid including detector offset (default = minid)
  * \li -verbose<br>
  *      print out some more info messages, mainly for the sake of tutorials
  * \li -datatype     <i> datatype   dataorigin </i> <br>

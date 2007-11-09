@@ -33,6 +33,7 @@
 #include "AliLog.h"
 #include <cerrno>
 #include <cassert>
+#include <list>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRawReaderPublisherComponent)
@@ -207,13 +208,13 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
   // see header file for class documentation
   int iResult=0;
   unsigned int offset=0;
-  AliHLTUInt8_t* pTgt=outputPtr;
   assert(outputPtr!=NULL || size==0);
   AliRawReader* pRawReader=GetRawReader();
   if (pRawReader) {
     pRawReader->Reset();
     pRawReader->SelectEquipment(-1, fMinEquId, fMaxEquId);
     AliInfo(Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
+    list<int> processedIds;
     while (pRawReader->ReadHeader() && (iResult>=0 || iResult==-ENOSPC)) {
       const AliRawDataHeader* pHeader=pRawReader->GetDataHeader();
       assert(pHeader!=NULL);
@@ -225,23 +226,16 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	AliError(Form("id %d returned from RawReader is outside range [%d,%d]", id, fMinEquId, fMaxEquId));
 	continue;
       }
+      processedIds.push_back(id);
       if (readSize<=size-offset) {
-	memcpy(pTgt, pHeader, sizeof(AliRawDataHeader));
-	pTgt+=sizeof(AliRawDataHeader);
-	if (readSize>0) {
-	  if (!pRawReader->ReadNext(pTgt, readSize-sizeof(AliRawDataHeader))) {
+	memcpy(outputPtr+offset, pHeader, sizeof(AliRawDataHeader));
+	if (readSize>sizeof(AliRawDataHeader)) {
+	  if (!pRawReader->ReadNext(outputPtr+offset+sizeof(AliRawDataHeader), readSize-sizeof(AliRawDataHeader))) {
 	    AliError(Form("error reading %d bytes from RawReader %p", readSize-sizeof(AliRawDataHeader), pRawReader));
 	    iResult=-ENODATA;
 	    break;
 	  }
-	  pTgt+=readSize-sizeof(AliRawDataHeader);
 	}
-      } else {
-	// we keep the loop going in order to collect the full size
-	fMaxSize=offset+readSize;
-	iResult=-ENOSPC;
-      }
-      if (iResult>=0) {
 	AliHLTComponentBlockData bd;
 	FillBlockData( bd );
 	bd.fOffset = offset;
@@ -253,10 +247,52 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	  bd.fSpecification=fSpecification;
 	}
 	outputBlocks.push_back( bd );
+      } else {
+	// we keep the loop going in order to collect the full size
+	fMaxSize=offset+readSize;
+	iResult=-ENOSPC;
       }
       offset+=readSize;
     }
-    if (offset<=size) size=offset;
+    if (processedIds.size()!=fMaxEquId-fMinEquId+1) {
+      // add further empty data blocks
+      AliRawDataHeader header;
+      header.fSize=sizeof(AliRawDataHeader);
+      processedIds.sort();
+      list<int>::iterator curr=processedIds.begin();
+      for (int id=fMinEquId; id<=fMaxEquId; id++) {
+	if (curr!=processedIds.end() && *curr<=id) {
+	  curr++;
+	} else {
+	  if (sizeof(AliRawDataHeader)<=size-offset) {
+	    HLTInfo("add empty data block for equipment id %d", id);
+	    memcpy(outputPtr+offset, &header, sizeof(AliRawDataHeader));
+	    AliHLTComponentBlockData bd;
+	    FillBlockData( bd );
+	    bd.fOffset = offset;
+	    bd.fSize = sizeof(AliRawDataHeader);
+	    bd.fDataType = fDataType;
+	    if (fSpecification == kAliHLTVoidDataSpec) {
+	      GetSpecificationFromEquipmentId(id, bd.fSpecification);
+	    } else {
+	      bd.fSpecification=fSpecification;
+	    }
+	    outputBlocks.push_back( bd );
+	  } else {
+	    // we keep the loop going in order to collect the full size
+	    fMaxSize=offset+sizeof(AliRawDataHeader);
+	    iResult=-ENOSPC;
+	  }
+	  offset+=sizeof(AliRawDataHeader);
+	}
+      }
+    }
+    if (offset<=size) {
+      size=offset;
+    } else {
+      size=0;
+      outputBlocks.clear();
+    }
   } else {
     AliErrorStream() << "RawReader uninitialized" << endl;
     iResult=-EFAULT;
