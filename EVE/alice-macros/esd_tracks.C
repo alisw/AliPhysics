@@ -33,11 +33,7 @@ Reve::Track* esd_make_track(Reve::TrackRnrStyle*   rnrStyle,
   char form[1000];
   sprintf(form,"Track %d", rt.index);
   track->SetName(form);
-  sprintf(form,"Index=%d, Label=%d\npT=%.3f, pZ=%.3f\nV=(%.3f, %.3f, %.3f)",
-	  index, rt.label,
-	  rt.sign*TMath::Hypot(rt.P.x, rt.P.y), rt.P.z,
-	  rt.V.x, rt.V.y, rt.V.z);
-  track->SetTitle(form);
+  track->SetStdTitle();
   return track;
 }
 

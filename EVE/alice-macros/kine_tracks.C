@@ -1,15 +1,7 @@
 // Import tracks from kinematics-tree / particle-stack.
 // Preliminary/minimal solution.
-#include "TParticlePDG.h"
 
-// PDG color indices
-static Color_t DefCol   = 30;
-static Color_t ECol     = 5;
-static Color_t MuCol    = 6;
-static Color_t GammaCol = 7; 
-static Color_t MesCol1  = 3;
-static Color_t MesCol2  = 38;
-static Color_t BarCol   = 10;
+#include "TParticlePDG.h"
 
 Reve::TrackList*
 kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
@@ -52,8 +44,9 @@ kine_tracks(Double_t min_pt  = 0.1,   Double_t min_p   = 0.2,
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), i);
       track->SetName(form);
-      if (pdg_col && p->GetPDG())
-	track->SetMainColor(get_pdg_color(p->GetPDG()->PdgCode()));
+      track->SetStdTitle();
+      set_track_color(track, pdg_col);
+
       gReve->AddRenderElement(track, cont);
 
       if (recurse)
@@ -101,8 +94,9 @@ void kine_daughters(Reve::Track* parent,  AliStack* stack,
       char form[1000];
       sprintf(form,"%s [%d]", dp->GetName(), d);
       dtrack->SetName(form);
-      if (pdg_col && dp->GetPDG())
-	dtrack->SetMainColor(get_pdg_color(dp->GetPDG()->PdgCode()));
+      dtrack->SetStdTitle();
+      set_track_color(dtrack, pdg_col);
+
       gReve->AddRenderElement(dtrack, parent);
 
       if (recurse)
@@ -111,10 +105,27 @@ void kine_daughters(Reve::Track* parent,  AliStack* stack,
   }
 }
 
+Color_t set_track_color(Reve::Track* t, Bool_t pdg_col)
+{
+  if (pdg_col)
+    t->SetMainColor(get_pdg_color(t->GetPdg()));
+  else
+    t->SetMainColor((Color_t)30);
+}
+
 Color_t get_pdg_color(Int_t pdg)
 {
-  Int_t pdga = TMath::Abs(pdg);
-  Color_t col = Reve::DefCol;
+  // PDG color indices
+  static const Color_t DefCol   = 30;
+  static const Color_t ECol     = 5;
+  static const Color_t MuCol    = 6;
+  static const Color_t GammaCol = 7; 
+  static const Color_t MesCol1  = 3;
+  static const Color_t MesCol2  = 38;
+  static const Color_t BarCol   = 10;
+
+  Int_t pdga  = TMath::Abs(pdg);
+  Color_t col = DefCol;
 
   // elementary  particles
   if (pdga < 100) {
@@ -127,7 +138,8 @@ Color_t get_pdg_color(Int_t pdg)
 	col = GammaCol; break;
     }
   }
-  else if (pdga < 100000){ 
+  // mesons and barions
+  else if (pdga < 100000) {
     Int_t i  = pdga;
     Int_t i0 = i%10; i /= 10;
     Int_t i1 = i%10; i /= 10; 
@@ -145,19 +157,23 @@ Color_t get_pdg_color(Int_t pdg)
       col = BarCol; // quarks: i1,i2, i3 (spin = i0))
     }
   }
+
   return col;
 }
 
-
-// Create mother and daughters tracks with given label.
+/******************************************************************************/
 
 Reve::RenderElement*
 kine_track(Int_t  label,
-	   Bool_t import_mother    = kTRUE,
-           Bool_t import_daughters = kTRUE,
+	   Bool_t import_mother    = kTRUE, Bool_t import_daughters = kTRUE,
+	   Bool_t pdg_col          = kTRUE, Bool_t recurse          = kTRUE,
            Reve::RenderElement* cont = 0)
 
 {
+  // Create mother and daughters tracks with given label.
+  // mother     -> particle with label
+  // daughters  -> daughters of label
+
   if (label < 0) {
     Warning("kine_track", "label not set.");
     return 0;
@@ -176,9 +192,9 @@ kine_track(Int_t  label,
 
   if (import_mother || (import_daughters && p->GetNDaughters()))
   {
-    Track* toptrack = 0;
-    TrackList* tracklist = 0;  
-    TrackRnrStyle* rs = 0;
+    Reve::Track* toptrack = 0;
+    Reve::TrackList* tracklist = 0;  
+    Reve::TrackRnrStyle* rs = 0;
 
     if (cont == 0)
     {
@@ -192,42 +208,39 @@ kine_track(Int_t  label,
       char tooltip[1000];
       sprintf(tooltip,"Ndaughters=%d", p->GetNDaughters());
       tlist->SetTitle(tooltip);
-      tlist->SelectByPt(0.2, 100);
-      rnrStyle->fMaxOrbs = 8;
+      rnrStyle->fMaxOrbs = 2;
       rnrStyle->SetEditPathMarks(kTRUE);
+
       gReve->AddRenderElement(cont);
       rs = tlist->GetRnrStyle();
     }
     else
     {
-      // check if argument is TrackList
+      // check if container is TrackList or Track (has rnr-style)
       Reve::Track* t = dynamic_cast<Reve::Track*>(cont);
-      if(t) 
-      {
+      if (t) {
 	rs = t->GetRnrStyle();
-      }
-      else
-      {
+      } else {
         Reve::TrackList* l = dynamic_cast<Reve::TrackList*>(cont);
-        if(l)
-	{
+        if (l)
 	  rs = l->GetRnrStyle();
-	}
         else
-	{
 	  Error("kine_tracks.C", "TrackRenderStyle not set.");
-	}
       }
     }
 
     if (import_mother)
     {
-      Track* track = new Reve::Track(p, label, rs);  
+      Reve::Track* track = new Reve::Track(p, label, rs);  
       char form[1000];
       sprintf(form,"%s [%d]", p->GetName(), label);
       track->SetName(form);
-      gReve->AddRenderElement(track, cont);
+      track->SetStdTitle();
+      set_track_color(track, pdg_col);
 
+      track->MakeTrack();
+      gReve->AddRenderElement(track, cont);
+      cont = track;
     }
 
     if (import_daughters && p->GetNDaughters()) 
@@ -235,12 +248,18 @@ kine_track(Int_t  label,
       for (int d=p->GetFirstDaughter(); d>0 && d<=p->GetLastDaughter(); ++d) 
       {	
 	TParticle* dp = stack->Particle(d);
-	Track* track = new Reve::Track(dp, d, rs);  
+	Reve::Track* track = new Reve::Track(dp, d, rs);  
 	char form[1000];
 	sprintf(form,"%s [%d]", dp->GetName(), d);
 	track->SetName(form);
+	track->SetStdTitle();
+	set_track_color(track, pdg_col);
+
         track->MakeTrack();
 	gReve->AddRenderElement(track, cont);
+
+	if (recurse)
+	  kine_daughters(track, stack, 0, 0, pdg_col, recurse);
       }
     }
   }
