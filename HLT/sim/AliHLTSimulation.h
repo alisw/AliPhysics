@@ -27,6 +27,7 @@
 #include "TString.h"
 class AliRunLoader;
 class AliHLTSystem;
+class AliRawReader;
 
 /**
  * @class AliHLTSimulation
@@ -59,10 +60,13 @@ class AliHLTSimulation : public TObject {
   /* current options */
   TString fOptions;                                                   //!transient
 
-  /*  HLT steering object */
+  /* HLT steering object */
   AliHLTSystem* fpSystem;                                             //!transient
 
-  ClassDef(AliHLTSimulation, 0)
+  /* RAW reader instance for chains which need RAW data as input */
+  AliRawReader* fpRawReader;                                            //!transient
+
+  ClassDef(AliHLTSimulation, 1)
 };
 
 #define ALIHLTSIMULATION_LIBRARY             "libHLTsim.so"

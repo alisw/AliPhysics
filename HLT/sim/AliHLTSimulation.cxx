@@ -23,10 +23,15 @@
 
 #include <cassert>
 #include <cerrno>
+#include "TObjArray.h"
+#include "TObjString.h"
 #include "AliHLTSimulation.h"
 #include "AliLog.h"
 #include "AliRunLoader.h"
 #include "AliHLTSystem.h"
+#include "AliRawReaderFile.h"
+#include "AliRawReaderDate.h"
+#include "AliRawReaderRoot.h"
 
 #if ALIHLTSIMULATION_LIBRARY_VERSION != LIBHLTSIM_VERSION
 #error library version in header file and lib*.pkg do not match
@@ -38,7 +43,8 @@ ClassImp(AliHLTSimulation);
 AliHLTSimulation::AliHLTSimulation()
   :
   fOptions(),
-  fpSystem(NULL)
+  fpSystem(NULL),
+  fpRawReader(NULL)
 {
   // see header file for class documentation
   // or
@@ -54,6 +60,10 @@ AliHLTSimulation::~AliHLTSimulation()
     delete fpSystem;
   }
   fpSystem=NULL;
+  if (fpRawReader) {
+    delete fpRawReader;
+  }
+  fpRawReader=NULL;
 }
 
 AliHLTSimulation* AliHLTSimulation::CreateInstance()
@@ -74,6 +84,7 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 {
   // init the simulation
   fOptions=options;
+  TString sysOp;
 
   if (!fpSystem) fpSystem=new AliHLTSystem;
   if (!fpSystem) {
@@ -85,7 +96,52 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     return -EFAULT;
   }
 
-  if (fpSystem->ScanOptions(options)<0) {
+  // scan options for specific entries
+  TObjArray* pTokens=fOptions.Tokenize(" ");
+  if (pTokens) {
+    int iEntries=pTokens->GetEntries();
+    for (int i=0; i<iEntries; i++) {
+      TString token=(((TObjString*)pTokens->At(i))->GetString());
+      if (token.Contains("rawfile=")) {
+	TString param=token.ReplaceAll("rawfile=", "");
+	if (param.EndsWith("/")) {
+	  AliInfo(Form("creating AliRawReaderFile (%s)", param.Data()));
+	  fpRawReader = new AliRawReaderFile(param);
+	} else if (param.EndsWith(".root")) {
+	  AliInfo(Form("creating AliRawReaderRoot (%s)", param.Data()));
+	  fpRawReader = new AliRawReaderRoot(param);
+	} else if (!param.IsNull()) {
+	  AliInfo(Form("creating AliRawReaderDate (%s)", param.Data()));
+	  fpRawReader = new AliRawReaderDate(param);
+	  fpRawReader->SelectEvents(7);
+	}
+	if (fpRawReader) {
+	    fpRawReader->RewindEvents();
+	    int count=0;
+	    for (; fpRawReader->NextEvent(); count++);
+	    if (count!=pRunLoader->GetNumberOfEvents()) {
+	      AliError(Form("missmatch in event count: runloader %d, rawreader %d; ignoring rawreader", 
+			    pRunLoader->GetNumberOfEvents(), count));
+	      count=0;
+	    }
+	    if (count>0) {
+	      fpRawReader->RewindEvents();
+	      fpRawReader->NextEvent();
+	    } else {
+	      delete fpRawReader;
+	      fpRawReader=NULL;
+	    }
+	}
+      } else {
+	if (sysOp.Length()>0) sysOp+=" ";
+	sysOp+=token;
+      }
+    }
+    delete pTokens;
+  }
+
+  // scan options
+  if (fpSystem->ScanOptions(sysOp.Data())<0) {
     AliError("error setting options for HLT system");
     return -EINVAL;	
   }
@@ -109,14 +165,23 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
     return -EINVAL;
   }
 
-  Int_t nEvents = pRunLoader->GetNumberOfEvents();
+  int nEvents = pRunLoader->GetNumberOfEvents();
   int iResult=0;
 
   if (fpSystem->CheckStatus(AliHLTSystem::kError)) {
     AliError("HLT system in error state");
     return -EFAULT;
   }
-  if ((iResult=fpSystem->Reconstruct(nEvents, pRunLoader, NULL))>=0) {
+
+  // Note: the rawreader is already placed at the first event
+  if ((iResult=fpSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
+    for (int i=1; i<nEvents; i++) {
+      if (fpRawReader && !fpRawReader->NextEvent()) {
+	AliError("missmatch in event count, rawreader corrupted");
+	break;
+      }
+      fpSystem->Reconstruct(1, pRunLoader, fpRawReader);
+    }
     // send specific 'event' to execute the stop sequence
     fpSystem->Reconstruct(0, NULL, NULL);
   }
