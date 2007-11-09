@@ -183,7 +183,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
   // Get the friend information
   cout<<"starting to read event "<<fCurEvent<<endl;
   //  fEvent->SetESDfriend(fEventFriend);
-  vector<int> tLabelTable;//to check labels
 	
   hbtEvent = new AliFemtoEvent;
   //setting basic things
@@ -285,7 +284,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	    	
       trackCopy->SetTrackId(esdtrack->GetID());
       trackCopy->SetFlags(esdtrack->GetStatus());
-      //trackCopy->SetLabel(esdtrack->GetLabel());
+      trackCopy->SetLabel(esdtrack->GetLabel());
 		
       //some stuff which could be useful 
       float impact[2];
