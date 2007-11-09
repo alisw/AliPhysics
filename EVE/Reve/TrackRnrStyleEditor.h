@@ -25,8 +25,9 @@ class TrackRnrStyleSubEditor;
 
 class TrackRnrStyleSubEditor : public TGVerticalFrame
 {
-friend class TrackRnrStyleEditor;
-friend class TrackListEditor;
+  friend class TrackRnrStyleEditor;
+  friend class TrackListEditor;
+
 private:
   TrackRnrStyleSubEditor(const TrackRnrStyleSubEditor&);            // Not implemented
   TrackRnrStyleSubEditor& operator=(const TrackRnrStyleSubEditor&); // Not implemented
@@ -34,26 +35,26 @@ private:
 protected:
   TrackRnrStyle       *fM;  
  
-  Reve::RGValuator*    fMaxR;
-  Reve::RGValuator*    fMaxZ;
-  Reve::RGValuator*    fMaxOrbits;
-  Reve::RGValuator*    fMinAng;
-  Reve::RGValuator*    fDelta;
+  Reve::RGValuator    *fMaxR;
+  Reve::RGValuator    *fMaxZ;
+  Reve::RGValuator    *fMaxOrbits;
+  Reve::RGValuator    *fMinAng;
+  Reve::RGValuator    *fDelta;
 
-  TGCheckButton*       fRnrFV;
+  TGCheckButton       *fRnrFV;
 
-  TGCompositeFrame*    fPMFrame;
-  TGButton*            fFitDaughters;
-  TGButton*            fFitReferences;
-  TGButton*            fFitDecay;
-  TGButton*            fRnrDaughters;
-  TGButton*            fRnrReferences;
-  TGButton*            fRnrDecay;
+  TGCompositeFrame    *fPMFrame;
+  TGButton            *fFitDaughters;
+  TGButton            *fFitReferences;
+  TGButton            *fFitDecay;
+  TGButton            *fRnrDaughters;
+  TGButton            *fRnrReferences;
+  TGButton            *fRnrDecay;
 
-  TGCompositeFrame*    fRefsCont;
+  TGCompositeFrame    *fRefsCont;
 
-  TAttMarkerEditor*    fPMAtt;
-  TAttMarkerEditor*    fFVAtt;
+  TAttMarkerEditor    *fPMAtt;
+  TAttMarkerEditor    *fFVAtt;
 
 public:
   TrackRnrStyleSubEditor(const TGWindow* p);
@@ -76,7 +77,7 @@ public:
 
   void CreateRefsContainer(TGVerticalFrame* p);
 
-  ClassDef(TrackRnrStyleSubEditor, 0) // Sub-editor for TrackRnrStyle
+  ClassDef(TrackRnrStyleSubEditor, 0) // Sub-editor for TrackRnrStyle.
 };
 
 /**************************************************************************/
@@ -91,8 +92,8 @@ private:
 
   void CreateRefTab();
 protected: 
-  TrackRnrStyle                   *fM; // fModel dynamic-casted to TrackRnrStyleEditor
-  TrackRnrStyleSubEditor          *fRSSubEditor;
+  TrackRnrStyle           *fM;           // Model object.
+  TrackRnrStyleSubEditor  *fRSSubEditor; // Render-style sub-editor.
 
 public:
   TrackRnrStyleEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
@@ -101,7 +102,7 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  ClassDef(TrackRnrStyleEditor, 1); // Editor for TrackRnrStyle
+  ClassDef(TrackRnrStyleEditor, 1); // Editor for TrackRnrStyle.
 }; // endclass TrackRnrStyleEditor
 
 }

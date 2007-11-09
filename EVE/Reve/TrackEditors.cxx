@@ -60,6 +60,8 @@ void TrackEditor::DoEditRnrStyle()
 {
   fGedEditor->SetModel(fGedEditor->GetPad(), fM->GetRnrStyle(), kButton1Down);
 }
+
+
 //______________________________________________________________________
 // TrackListEditor
 //

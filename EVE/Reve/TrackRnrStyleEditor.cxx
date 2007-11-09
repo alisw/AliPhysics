@@ -100,13 +100,16 @@ TrackRnrStyleSubEditor::TrackRnrStyleSubEditor(const TGWindow *p):
   AddFrame(fDelta, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
 {
+  // Create a frame containing track-reference controls under parent
+  // frame p.
+
   fRefsCont = new TGCompositeFrame(p, 80, 20, kVerticalFrame);
   fPMFrame  = new TGVerticalFrame(fRefsCont);
+  // Rendering control.
   {
-    // --- Rendering control
     TGGroupFrame* fitPM = new TGGroupFrame(fPMFrame, "PathMarks:", kLHintsTop | kLHintsCenterX);
     fitPM->SetTitlePos(TGGroupFrame::kLeft);
     fPMFrame->AddFrame( fitPM, new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 3, 3, 3, 3));
@@ -126,8 +129,8 @@ void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
     fFitReferences->Connect("Clicked()","Reve::TrackRnrStyleSubEditor", this, "DoFitPM()");  
     fFitDaughters->Connect("Clicked()","Reve::TrackRnrStyleSubEditor", this, "DoFitPM()");
   }
+  // Kinematics fitting.
   { 
-    // --- Kinematics fitting
     TGGroupFrame* rnrPM = new TGGroupFrame(fPMFrame, "PathMarks:", kLHintsTop | kLHintsCenterX);
     rnrPM->SetTitlePos(TGGroupFrame::kLeft);
     fPMFrame->AddFrame( rnrPM, new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 3, 3, 3, 3));
@@ -149,7 +152,7 @@ void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
   
     fRefsCont->AddFrame(fPMFrame, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
   }
-  // marker attributes
+  // Marker attributes.
   {
     fPMAtt = new TAttMarkerEditor(fRefsCont);
     TGFrameElement *el = (TGFrameElement*) fPMAtt->GetList()->First();
@@ -158,7 +161,7 @@ void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
     fRefsCont->AddFrame(fPMAtt, new TGLayoutHints(kLHintsTop, 1, 1, 3, 1));
   }
 
-  // FIRST VERTEX
+  // First vertex.
   TGCompositeFrame *title1 = new TGCompositeFrame(fRefsCont, 145, 10, 
 						  kHorizontalFrame | 
 						  kLHintsExpandX   | 
@@ -183,9 +186,11 @@ void TrackRnrStyleSubEditor::CreateRefsContainer(TGVerticalFrame* p)
   p->AddFrame(fRefsCont,new TGLayoutHints(kLHintsTop| kLHintsExpandX));
 }
 
-//______________________________________________________________________
+//______________________________________________________________________________
 void TrackRnrStyleSubEditor::SetModel(TrackRnrStyle* m)
 {
+  // Set model object.
+
   fM = m;
 
   fMaxR->SetValue(fM->fMaxR);
@@ -216,14 +221,19 @@ void TrackRnrStyleSubEditor::SetModel(TrackRnrStyle* m)
   fFVAtt->SetModel(&fM->fFVAtt);
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 void TrackRnrStyleSubEditor::Changed()
 {
+  // Update registered tracks and emit "Changed()" signal.
+
   fM->UpdateBackPtrItems();
   Emit("Changed()");
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
 void TrackRnrStyleSubEditor::DoMaxR()
 {
   fM->SetMaxR(fMaxR->GetValue());
@@ -254,7 +264,8 @@ void TrackRnrStyleSubEditor::DoDelta()
   Changed();
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
 void TrackRnrStyleSubEditor::DoFitPM()
 {
   TGButton* b = (TGButton *) gTQSender;
@@ -307,20 +318,25 @@ void TrackRnrStyleSubEditor::DoRnrFV()
 }
 
 
-//______________________________________________________________________
+//______________________________________________________________________________
 // TrackRnrStyleEditor
 //
+// GUI editor for TrackRnrStyle.
+// It's only a wrapper around a TrackRnrStyleSubEditor that holds actual
+// widgets.
 
 ClassImp(TrackRnrStyleEditor)
 
+//______________________________________________________________________________
 TrackRnrStyleEditor::TrackRnrStyleEditor(const TGWindow *p,
                                          Int_t width, Int_t height,
                                          UInt_t options, Pixel_t back) :
   TGedFrame(p, width, height, options | kVerticalFrame, back),
-
-  fM (0),
+  fM(0),
   fRSSubEditor(0)
 {
+  // Constructor.
+
   MakeTitle("RenderStyle");
 
   fRSSubEditor = new TrackRnrStyleSubEditor(this);
@@ -338,22 +354,28 @@ TrackRnrStyleEditor::TrackRnrStyleEditor(const TGWindow *p,
   title1->AddFrame(new TGHorizontal3DLine(title1),
 		   new TGLayoutHints(kLHintsExpandX, 5, 5, 7, 7));
   refsFrame->AddFrame(title1, new TGLayoutHints(kLHintsTop, 0, 0, 2, 0));
-   
+
   // path marks 
   fRSSubEditor->CreateRefsContainer(refsFrame);
   fRSSubEditor->fPMAtt->SetGedEditor((TGedEditor*)gReve->GetEditor()); 
   fRSSubEditor->fFVAtt->SetGedEditor((TGedEditor*)gReve->GetEditor());
 
+  fRSSubEditor->Connect("Changed()", "Reve::TrackRnrStyleEditor", this, "Update()");
 }
 
+//______________________________________________________________________________
 TrackRnrStyleEditor::~TrackRnrStyleEditor()
 {
+  // Destructor. Noop.
 }
 
-/**************************************************************************/
+/******************************************************************************/
 
+//______________________________________________________________________________
 void TrackRnrStyleEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<TrackRnrStyle*>(obj); 
   fRSSubEditor->SetModel(fM);
 }
