@@ -1,3 +1,10 @@
+2007-11-09  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* alice-macros/esd_tracks.C:
+	* alice-macros/kine_tracks.C:
+	Use function Track::SetStdLabel() for setting of tracks' tooltip.
+	Put in sync with Track ctx-menu functions.
+
 2007-11-08  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* alice-macros/esd_tracks.C:
