@@ -64,6 +64,8 @@
 
 #pragma link C++ class  AliRawDataErrorLog+;
 
+#pragma link C++ class  AliMeanVertex+;
+
 #endif
 
 
