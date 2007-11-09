@@ -37,6 +37,7 @@ Track::Track() :
   fV(),
   fP(),
   fBeta(0),
+  fPdg(0),
   fCharge(0),
   fLabel(kMinInt),
   fIndex(kMinInt),
@@ -52,6 +53,7 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   fV(t->Vx(), t->Vy(), t->Vz()),
   fP(t->Px(), t->Py(), t->Pz()),
   fBeta(t->P()/t->Energy()),
+  fPdg(0),
   fCharge(0),
   fLabel(label),
   fIndex(kMinInt),
@@ -63,8 +65,10 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
   fMainColorPtr = &fLineColor;
 
   TParticlePDG* pdgp = t->GetPDG();
-  if (pdgp)
+  if (pdgp) {
+    fPdg    = pdgp->PdgCode();
     fCharge = (Int_t) TMath::Nint(pdgp->Charge()/3);
+  }
 
   SetName(t->GetName());
 }
@@ -76,6 +80,7 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
   fV(t->Vx(), t->Vy(), t->Vz()),
   fP(t->Px(), t->Py(), t->Pz()),
   fBeta(t->P()/t->Energy()),
+  fPdg(0),
   fCharge(0),
   fLabel(t->label),
   fIndex(t->index),
@@ -102,6 +107,7 @@ Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
   fV(t->V),
   fP(t->P),
   fBeta(t->beta),
+  fPdg(0),
   fCharge(t->sign),
   fLabel(t->label),
   fIndex(t->index),
@@ -116,20 +122,13 @@ Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
 }
 
 //______________________________________________________________________________
-Track::~Track()
-{
-  SetRnrStyle(0);
-  for (vpPathMark_i i=fPathMarks.begin(); i!=fPathMarks.end(); ++i)
-    delete *i;
-}
-
-//______________________________________________________________________________
 Track::Track(const Track& t) :
   Line(),
   TQObject(),
   fV(t.fV),
   fP(t.fP),
   fBeta(t.fBeta),
+  fPdg(t.fPdg),
   fCharge(t.fCharge),
   fLabel(t.fLabel),
   fIndex(t.fIndex),
@@ -151,6 +150,29 @@ Track::Track(const Track& t) :
 }
 
 //______________________________________________________________________________
+Track::~Track()
+{
+  SetRnrStyle(0);
+  for (vpPathMark_i i=fPathMarks.begin(); i!=fPathMarks.end(); ++i)
+    delete *i;
+}
+
+/******************************************************************************/
+
+//______________________________________________________________________________
+void Track::SetStdTitle()
+{
+  // Set standard track title based on most data-member values.
+
+  TString idx(fIndex == kMinInt ? "<undef>" : Form("%d", fIndex));
+  TString lbl(fLabel == kMinInt ? "<undef>" : Form("%d", fLabel));
+  SetTitle(Form("Index=%s, Label=%s\nChg=%d, Pdg=%d\n"
+		"pT=%.3f, pZ=%.3f\nV=(%.3f, %.3f, %.3f)",
+		idx.Data(), lbl.Data(), fCharge, fPdg,
+		fP.Perp(), fP.z, fV.x, fV.y, fV.z));
+}
+
+//______________________________________________________________________________
 void Track::SetTrackParams(const Track& t)
 {
   // Copy track parameters from t.
@@ -159,6 +181,7 @@ void Track::SetTrackParams(const Track& t)
   fV         = t.fV;
   fP         = t.fP;
   fBeta      = t.fBeta;
+  fPdg       = t.fPdg;
   fCharge    = t.fCharge;
   fLabel     = t.fLabel;
   fIndex     = t.fIndex;
@@ -233,7 +256,7 @@ void Track::MakeTrack(Bool_t recurse)
   if ((TMath::Abs(fV.z) > RS.fMaxZ) || (fV.x*fV.x + fV.y*fV.y > RS.fMaxR*RS.fMaxR)) 
     goto make_polyline;
   
-  if (fCharge != 0 && TMath::Abs(RS.fMagField) > 1e-5 && fP.Perp2() > 1e-6)
+  if (fCharge != 0 && TMath::Abs(RS.fMagField) > 1e-5 && fP.Perp2() > 1e-12)
   {
     // Charged particle in magnetic field with non-zero pT.
 
@@ -442,13 +465,14 @@ void Track::ImportKine()
   }
 
   Reve::LoadMacro("kine_tracks.C");
-  gROOT->ProcessLine(Form("kine_track(%d, kFALSE, kTRUE, (Reve::RenderElement*)%p);", 
+  gROOT->ProcessLine(Form("kine_track(%d, kTRUE, kTRUE, kTRUE, kTRUE, (Reve::RenderElement*)%p);", 
 			  label, this));
 
 }
 
 //______________________________________________________________________________
-void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
+void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters,
+			       Bool_t colorPdg,     Bool_t recurse)
 {
   static const Exc_t eH("Track::ImportKineWithArgs ");
 
@@ -464,8 +488,8 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
   }
 
   Reve::LoadMacro("kine_tracks.C");
-  gROOT->ProcessLine(Form("kine_track(%d, %d, %d, (Reve::RenderElement*)%p);", 
-			   label, importMother, importDaugters, this));
+  gROOT->ProcessLine(Form("kine_track(%d, %d, %d, %d, %d, (Reve::RenderElement*)%p);", 
+			  label, importMother, importDaugters, colorPdg, recurse, this));
 }
 
 /******************************************************************************/
@@ -473,8 +497,21 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters)
 //______________________________________________________________________________
 void Track::PrintKineStack()
 {
+  static const Exc_t eH("Track::PrintKineStack ");
+
+  if (fLabel == kMinInt)
+    throw(eH + "label not set.");
+
+  Int_t label;
+  if (fLabel < 0) {
+    Warning(eH, "label negative, taking absolute value.");
+    label = -fLabel;
+  } else {
+    label = fLabel;
+  }
+
   Reve::LoadMacro("print_kine_from_label.C");
-  gROOT->ProcessLine(Form("print_kine_from_label(%d);", fLabel));
+  gROOT->ProcessLine(Form("print_kine_from_label(%d);", label));
 }
 
 //______________________________________________________________________________
@@ -595,6 +632,7 @@ void TrackRnrStyle::RebuildTracks()
   {
     track = dynamic_cast<Track*>(*i);
     track->MakeTrack();
+    track->ElementChanged();
     ++i;
   }
 }

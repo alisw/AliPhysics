@@ -37,6 +37,7 @@ protected:
   Reve::Vector      fV;          // Starting vertex
   Reve::Vector      fP;          // Starting momentum
   Double_t          fBeta;       // Relativistic beta factor
+  Int_t             fPdg;        // PDG code
   Int_t             fCharge;     // Charge in units of e0
   Int_t             fLabel;      // Simulation label
   Int_t             fIndex;      // Reconstruction index
@@ -49,9 +50,11 @@ public:
   Track(TParticle* t, Int_t label, TrackRnrStyle* rs);
   Track(Reve::MCTrack*  t, TrackRnrStyle* rs);
   Track(Reve::RecTrack* t, TrackRnrStyle* rs);
+  Track(const Track& t);
   virtual ~Track();
 
-  Track(const Track& t);
+  virtual void SetStdTitle();
+
   virtual void SetTrackParams(const Track& t);
   virtual void SetPathMarks  (const Track& t);
 
@@ -61,9 +64,13 @@ public:
   void SetRnrStyle(TrackRnrStyle* rs);
   void SetAttLineAttMarker(TrackList* tl);
 
-  Int_t GetLabel() const    { return fLabel; }
+  Int_t GetPdg()    const   { return fPdg;   }
+  void SetPdg(Int_t pdg)    { fPdg = pdg;    }
+  Int_t GetCharge() const   { return fCharge; }
+  void SetCharge(Int_t chg) { fCharge = chg; }
+  Int_t GetLabel()  const   { return fLabel; }
   void  SetLabel(Int_t lbl) { fLabel = lbl;  }
-  Int_t GetIndex() const    { return fIndex; }
+  Int_t GetIndex()  const   { return fIndex; }
   void  SetIndex(Int_t idx) { fIndex = idx;  }
 
   void          AddPathMark(Reve::PathMark* pm) { fPathMarks.push_back(pm); }
@@ -77,8 +84,8 @@ public:
   void ImportClusters();          // *MENU*
   void ImportClustersFromIndex(); // *MENU*
   void ImportKine();              // *MENU*
-  void ImportKineWithArgs(Bool_t importMother=kTRUE,
-			  Bool_t impDaugters =kTRUE); // *MENU*
+  void ImportKineWithArgs(Bool_t importMother=kTRUE, Bool_t impDaugters=kTRUE,
+			  Bool_t colorPdg    =kTRUE, Bool_t recurse    =kTRUE); // *MENU*
   void PrintKineStack();          // *MENU*
   void PrintPathMarks();          // *MENU*
 
