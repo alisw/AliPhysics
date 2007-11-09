@@ -326,11 +326,11 @@ TFile * AliQA::GetQAResultFile()
 		TString opt("") ; 
 		if ( !gSystem->AccessPathName(fileName) )
 			opt = "UPDATE" ; 
-		else 
+		else { 
 			if ( gSystem->AccessPathName(dirName) )
 				gSystem->mkdir(dirName) ; 
 			opt = "NEW" ; 
-
+		}
 		fgQAResultFile = TFile::Open(fileName, opt) ;   
 	}
 	
