@@ -42,23 +42,6 @@ class AliTRDtracker : public AliTracker {
 
  public:
 
-  // Histograms
-  TH1D *fHBackfit;   // Histogram for back propagation
-  TH1D *fHClSearch;  // Cluster search
-  TH1D *fHRefit;     // ???
-
-  TH1D *fHX;         // ???
-  TH1D *fHNCl;       // ???
-  TH1D *fHNClTrack;  // ???
-  TH1D *fHFindCl[4]; // ???
-  TH1D *fHMinYPos;   // ???
-  TH1D *fHMinYNeg;   // ???
-  TH1D *fHMinZ;      // ???
-
-  TH2D *fHMinD;      // ???
-  TH1D *fHDeltaX;    // ???
-  TH1D *fHXCl;       // ???
-
   void InitLogHists();
   void SaveLogHists();
 
@@ -248,6 +231,21 @@ class AliTRDtracker : public AliTracker {
   
   Bool_t                   fAddTRDseeds;                   // Something else
   Bool_t                   fNoTilt;                        // No tilt, or what?
+
+  // Histograms
+  TH1D                    *fHBackfit;                      // QA histogram
+  TH1D                    *fHClSearch;                     // QA histogram
+  TH1D                    *fHRefit;                        // QA histogram
+  TH1D                    *fHX;                            // QA histogram
+  TH1D                    *fHNCl;                          // QA histogram
+  TH1D                    *fHNClTrack;                     // QA histogram
+  TH1D                    *fHFindCl[4];                    // QA histogram
+  TH1D                    *fHMinYPos;                      // QA histogram
+  TH1D                    *fHMinYNeg;                      // QA histogram
+  TH1D                    *fHMinZ;                         // QA histogram
+  TH2D                    *fHMinD;                         // QA histogram
+  TH1D                    *fHDeltaX;                       // QA histogram
+  TH1D                    *fHXCl;                          // QA histogram
   
   Bool_t   AdjustSector(AliTRDtrack *track); 
   
