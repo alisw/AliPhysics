@@ -800,4 +800,8 @@
                 and GetSpread of AliSample.cxx extended for Y-values of histo data.
 09-nov-2007 NvE Graphical skymap facilities introduced in AliAstrolab, based on the
                 work by Garmt de Vries-Uiterweerd.
+09-nov-2007 GdV Automatic central meridian setting only activated when meridian
+                has a value smaller than -pi. This will allow also negative values
+                as user input.
+
 

@@ -2453,7 +2453,7 @@ void AliAstrolab::DisplaySignal(TString frame,TString mode,AliTimestamp* ts,Int_
  }
 
  // Automatic choice of central meridian if not selected by the user
- if (fMeridian<0)
+ if (fMeridian<-pi)
  {
   if (frame=="gal")
   {
@@ -2756,7 +2756,7 @@ void AliAstrolab::DisplaySignals(TString frame,TString mode,AliTimestamp* ts,TSt
 void AliAstrolab::SetCentralMeridian(Double_t phi,TString u)
 {
 // Set the central meridian for the sky display.
-// Setting a negative value will induce automatic meridian setting
+// Setting a value smaller than -pi will induce automatic meridian setting
 // in the display.
 // By default the central meridian is set at -999 in the constructor.
 //
