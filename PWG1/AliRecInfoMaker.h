@@ -75,8 +75,8 @@ private:
   TTree *fTreeCmpV0;                //! output tree with cmp V0
   //
   char  fFnGenTracks[1000];             //! input file name with gen tracks
-  TFile *fFileGenTracks;
-  TTree *fTreeGenTracks;
+  TFile *fFileGenTracks;                //! input files with generated tracks   
+  TTree *fTreeGenTracks;           //! tree with generated tracks
   TTree *fTreeGenKinks;            // tree with gen kinks
   TTree *fTreeGenV0;            // tree with gen V0
   //

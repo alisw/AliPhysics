@@ -141,7 +141,7 @@ TProfile prof("prof","prof",10,0.5,5);
 #include "TTree.h"
 #include "TStopwatch.h"
 #include "TVector3.h"
-#include "Getline.h"
+//#include "Getline.h"
 //
 //ALIROOT includes
 //
@@ -281,6 +281,9 @@ AliRecInfoMaker::AliRecInfoMaker(const char* fnGenTracks,
 ////////////////////////////////////////////////////////////////////////
 AliRecInfoMaker::~AliRecInfoMaker()
 {
+  //
+  // Destructor
+  //
   if (fLoader) {
     delete fLoader;
   }
@@ -290,7 +293,8 @@ AliRecInfoMaker::~AliRecInfoMaker()
 Int_t AliRecInfoMaker::SetIO()
 {
   //
-  // 
+  // SetIO  - Create the input trees
+  //
   CreateTreeCmp();
   if (!fTreeCmp) return 1;
   fParamTPC = GetTPCParam();
@@ -588,12 +592,14 @@ Int_t AliRecInfoMaker::TreeTLoop()
   //
   // load kinks to the memory
   for (Int_t i=0; i<nKinks;i++){
-    AliESDkink * kink =fEvent->GetKink(i);
+    //    AliESDkink * kink =
+    fEvent->GetKink(i);
     fSignedKinks[i]=0;
   }
   //
   for (Int_t i=0; i<nV0MIs;i++){
-    AliV0 * v0MI = (AliV0*)fEvent->GetV0(i);
+    //AliV0 * v0MI = 
+    (AliV0*)fEvent->GetV0(i);
     fSignedV0[i]=0;
   }
   
