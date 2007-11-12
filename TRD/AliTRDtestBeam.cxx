@@ -23,29 +23,29 @@
 #include <iostream>
 #include <fstream>
 
+/*
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-
-//#include <>
+*/
 
 ClassImp(AliTRDtestBeam)
 
-const Long_t AliTRDtestBeam::file_head_size = 544; // ?
-const Long_t AliTRDtestBeam::event_head_size = 68; //?
-const Long_t AliTRDtestBeam::ldc_head_size = 68; //?
-const Long_t AliTRDtestBeam::equip_head_size = 28; //
-const Int_t AliTRDtestBeam::vme_in =1; //VME event in
-const Int_t AliTRDtestBeam::sim_in =1; //Si-strips in
+const Long_t AliTRDtestBeam::fgkFileHeadSize = 544; // ?
+const Long_t AliTRDtestBeam::fgkEventHeadSize = 68; //?
+const Long_t AliTRDtestBeam::fgkLdcHeadSize = 68; //?
+const Long_t AliTRDtestBeam::fgkEquipHeadSize = 28; //
+const Int_t AliTRDtestBeam::fgkVmeIn =1; //VME event in
+const Int_t AliTRDtestBeam::fgkSimIn =1; //Si-strips in
 
 //typedef char byte;
 
 //offsets in bytes
-const Int_t AliTRDtestBeam::pos_run = 20; //run nr. (in file and event header)
-const Int_t AliTRDtestBeam::pos_length = 0; //event/equip. length
-const Int_t AliTRDtestBeam::pos_eqid = 8;  //equipment id.
-const Int_t AliTRDtestBeam::pos_sioff = 12;  //Si data size offset (3 extra words!!!)      
+const Int_t AliTRDtestBeam::fgkPosRun = 20; //run nr. (in file and event header)
+const Int_t AliTRDtestBeam::fgkPosLength = 0; //event/equip. length
+const Int_t AliTRDtestBeam::fgkEqId = 8;  //equipment id.
+const Int_t AliTRDtestBeam::fgkPosSiOff = 12;  //Si data size offset (3 extra words!!!)      
      
 using namespace std;
 
@@ -68,6 +68,9 @@ AliTRDtestBeam::AliTRDtestBeam() :
   fCher(0),
   fPb(0)
 {
+  //
+  // Standard construction
+  //
 
 }
 //____________________________________________________________________________ 
@@ -89,60 +92,81 @@ AliTRDtestBeam::AliTRDtestBeam(const char *filename) :
   fCher(0),
   fPb(0)
 {
+  //
+  // AliTRDtestBeam constructor
+  //
 
   fDataStream = new ifstream(filename, ifstream::in | ifstream::binary );
   cout << fDataStream->is_open() << endl;
   //fHeaderIsRead = kTRUE;
   fHeaderIsRead = kTRUE;
 
-  fFileHeader = new Char_t[file_head_size];
-  fEventHeader = new Char_t[event_head_size];
+  fFileHeader = new Char_t[fgkFileHeadSize];
+  fEventHeader = new Char_t[fgkEventHeadSize];
   fEventData = new Char_t[fLimit];
-}
- 
-//____________________________________________________________________________ 
 
-Int_t AliTRDtestBeam::NextEvent() {
+}
+
+//____________________________________________________________________________ 
+AliTRDtestBeam::~AliTRDtestBeam() 
+{
+  //
+  // Destructor
+  //
+
+  if (fDataStream)  delete fDataStream;
+  if (fEventHeader) delete fEventHeader;
+  if (fFileHeader)  delete fFileHeader;
+  if (fEventData)   delete fEventData;
+
+}
+
+//____________________________________________________________________________ 
+Int_t AliTRDtestBeam::NextEvent() 
+{
+  //
+  // Read the next event
+  //
   
-  Long_t data_size=0,ldc_off; //,ldc_id,ldc2_id;
-  Long_t ldc_size,eq_id; //,ev_l2;
-  Long_t event_nr,ev_l1;
+  Long_t dataSize=0,ldcOff; //,ldc_id,ldc2_id;
+  Long_t ldcSize,eqId; //,ev_l2;
+  Long_t eventNr,evL1;
   Long_t word;
   
   if ( !fHeaderIsRead ) {
-    fDataStream->read(fFileHeader, file_head_size);
+    fDataStream->read(fFileHeader, fgkFileHeadSize);
     if(fDataStream->fail()) {
       cerr << "Error reading file header! " << endl;	
       return false;
     }
-    cout  << " Run nr.  " << Int(pos_run, fFileHeader) << endl;    
+    cout  << " Run nr.  " << Int(fgkPosRun, fFileHeader) << endl;    
     fHeaderIsRead=kTRUE;
   }
 
-  fDataStream->read(fEventHeader, event_head_size);
+  fDataStream->read(fEventHeader, fgkEventHeadSize);
   if(fDataStream->fail()) {
     cerr << "End of file, Event " << fEventCount  << endl;	
     return false;
   }
   
-  data_size = Int(pos_length, fEventHeader)-event_head_size; //?
-  event_nr = Int((4+pos_run), fEventHeader); //ev.nr.
-  //cout << " Event " << event_nr <<" size "<< data_size <<endl;
+  dataSize = Int(fgkPosLength, fEventHeader)-fgkEventHeadSize; //?
+  eventNr = Int((4+fgkPosRun), fEventHeader); //ev.nr.
+  //cout << " Event " << eventNr <<" size "<< dataSize <<endl;
   
-    if (event_nr <= fEventCount-1) { //watch-out ...event counter starts at 1?
+    if (eventNr <= fEventCount-1) { //watch-out ...event counter starts at 1?
       cout << fEventCount << " End of file?, Event " << fEventCount << endl;	
       return false;
     }
-    //cout <<  "Run " << Int(pos_run, header)<< " , Event " <<event_nr <<endl;
+    //cout <<  "Run " << Int(fgkPosRun, header)<< " , Event " <<eventNr <<endl;
     
     // enough space for data?
-    if (fLimit < data_size) {
+    if (fLimit < dataSize) {
       delete[] fEventData;
-      fEventData = new Char_t[data_size];
-      fLimit = data_size;
+      fEventData = new Char_t[dataSize];
+      fLimit = dataSize;
     }
     
-    fDataStream->read(fEventData, data_size);
+    fDataStream->read(fEventData, dataSize);
     
     if(fDataStream->fail()) {
       cerr << "End of file, Event " << fEventCount; // << endl;	
@@ -151,40 +175,40 @@ Int_t AliTRDtestBeam::NextEvent() {
     
     //cout  << " ...IDs (size) : ";
     
-    ldc_off=0; // size of data from one DDL link
+    ldcOff=0; // size of data from one DDL link
     
     for ( size_t k = 0; k < 2; k++ ) { // 2 LDCs (DDL & VME)
       
-      ldc_size = Int(ldc_off+pos_length, fEventData); //
-      //ldc_size1=(ldc_size-ldc_head_size);
-      eq_id = Int(ldc_off+ldc_head_size+pos_eqid, fEventData);	    
-      //cout  << eq_id <<" ("<<ldc_size<<") ";	    
+      ldcSize = Int(ldcOff+fgkPosLength, fEventData); //
+      //ldcSize1=(ldcSize-fgkLdcHeadSize);
+      eqId = Int(ldcOff+fgkLdcHeadSize+fgkEqId, fEventData);	    
+      //cout  << eqId <<" ("<<ldcSize<<") ";	    
       
-      ev_l1 = Int((4+ldc_off+pos_run), fEventData); //ev.nr.
-      if ( ev_l1 != event_nr ){
-	//cerr << "Eq_id " <<eq_id<<" event nr. mismatch? " << event_nr <<" / "<< ev_l1 <<" ...LDC data size (header:68) " <<ldc_size<<endl;
+      evL1 = Int((4+ldcOff+fgkPosRun), fEventData); //ev.nr.
+      if ( evL1 != eventNr ){
+	//cerr << "eqId " <<eqId<<" event nr. mismatch? " << eventNr <<" / "<< evL1 <<" ...LDC data size (header:68) " <<ldcSize<<endl;
       }
       
-      if (eq_id == 1024) {  //DDL data
-	fDdlOff = ldc_off; //+ldc_head_size+equip_head_size + 32;
-	fDdlSize = ldc_size;
+      if (eqId == 1024) {  //DDL data
+	fDdlOff = ldcOff; //+fgkLdcHeadSize+fgkEquipHeadSize + 32;
+	fDdlSize = ldcSize;
       }
       
-      if (eq_id == 550) {  //Si-strip data (+QDC)
+      if (eqId == 550) {  //Si-strip data (+QDC)
 	//cout << "550" << endl;
-	fSiOff=ldc_off+ldc_head_size+equip_head_size+pos_sioff;
+	fSiOff=ldcOff+fgkLdcHeadSize+fgkEquipHeadSize+fgkPosSiOff;
 	word = Int(fSiOff, fEventData);
-	Short_t LenSi1 = (word >> 16) & 0xffff;
-	Short_t LenSi2 = word & 0xffff;
-	fQdcOff=fSiOff+4*(LenSi1+LenSi2+1)+equip_head_size+4; 
+	Short_t lenSi1 = (word >> 16) & 0xffff;
+	Short_t lenSi2 = word & 0xffff;
+	fQdcOff=fSiOff+4*(lenSi1+lenSi2+1)+fgkEquipHeadSize+4; 
       } 
-      else if (eq_id == 1182) {  //QDC first...
+      else if (eqId == 1182) {  //QDC first...
 	//cout << "1182" << endl;
-	fQdcOff=ldc_off+ldc_head_size+equip_head_size+pos_sioff;
-	fSiOff=fQdcOff+equip_head_size+4;
+	fQdcOff=ldcOff+fgkLdcHeadSize+fgkEquipHeadSize+fgkPosSiOff;
+	fSiOff=fQdcOff+fgkEquipHeadSize+4;
       }
       
-      ldc_off=ldc_size;
+      ldcOff=ldcSize;
       
     }
     //cout << endl;
@@ -198,8 +222,13 @@ Int_t AliTRDtestBeam::NextEvent() {
     fEventCount++; //event counter
     return true;
 }
+
 //____________________________________________________________________________
-Int_t AliTRDtestBeam::DecodeSi() {
+Int_t AliTRDtestBeam::DecodeSi() 
+{
+  //
+  // Decode the silicon detector
+  //
   
   if (fSiOff < 0) return 0;
   
@@ -226,7 +255,7 @@ Int_t AliTRDtestBeam::DecodeSi() {
   
   // reconstruction
 
-  int LenSiX = 640;
+  int aLenSiX = 640;
 
   int qmaxX; int amaxX;
   int qmaxY; int amaxY;
@@ -234,13 +263,13 @@ Int_t AliTRDtestBeam::DecodeSi() {
   qmaxX = 5;
   qmaxY = 5;
   amaxX = -1;
-  amaxY = -1+LenSiX;
+  amaxY = -1+aLenSiX;
  
   for( int i = 0; i < GetNSi1(); i++ ) {
  
     if (fSi1Address[i] == 0) continue; // noise
    
-    if (fSi1Address[i] < LenSiX ) {
+    if (fSi1Address[i] < aLenSiX ) {
       if( fSi1Charge[i] > qmaxX ) {
 	qmaxX = fSi1Charge[i];
 	amaxX = fSi1Address[i];
@@ -254,7 +283,7 @@ Int_t AliTRDtestBeam::DecodeSi() {
   }
   
   fX[0] = (float)(amaxX*0.05);  // [mm]
-  fY[0] = (float)((amaxY-LenSiX)*0.05);
+  fY[0] = (float)((amaxY-aLenSiX)*0.05);
   fQx[0] = (float)qmaxX;
   fQy[0] = (float)qmaxY;
   
@@ -262,14 +291,14 @@ Int_t AliTRDtestBeam::DecodeSi() {
   qmaxX = 5;
   qmaxY = 5;
   amaxX = -1;
-  amaxY = -1+LenSiX;
+  amaxY = -1+aLenSiX;
 
   for( int i = 0; i < GetNSi2(); i++ ) {
     
     if (fSi2Address[i] == 1279) continue; // noise
     if (fSi2Address[i] == 0) continue;    // noise
     
-    if(fSi2Address[i] < LenSiX) {
+    if(fSi2Address[i] < aLenSiX) {
       if( fSi2Charge[i] > qmaxX ) {
 	qmaxX = fSi2Charge[i];
 	amaxX = fSi2Address[i];
@@ -284,7 +313,7 @@ Int_t AliTRDtestBeam::DecodeSi() {
   }
   
   fX[1] = (float)(amaxX*0.05);  // [mm]
-  fY[1] = (float)((amaxY-LenSiX)*0.05);
+  fY[1] = (float)((amaxY-aLenSiX)*0.05);
   fQx[1] = (float)qmaxX;
   fQy[1] = (float)qmaxY;
   
@@ -296,10 +325,14 @@ Int_t AliTRDtestBeam::DecodeSi() {
 
   //cout << fCher << " " << fPb << endl;
   return 1;
+
 }
 //____________________________________________________________________________ 
-/**/
-AliTRDRawStreamTB *AliTRDtestBeam::GetTRDrawStream() {
+AliTRDRawStreamTB *AliTRDtestBeam::GetTRDrawStream() 
+{
+  //
+  // Get the TRD raw stream
+  //
   
   // needs AliTRDRawStreamTB  
   //cout << "Chamber reader:" << (Int_t)(fEventData+fDdlOff) << " " << fDdlSize << endl;
@@ -328,10 +361,13 @@ AliTRDRawStreamTB *AliTRDtestBeam::GetTRDrawStream() {
     
   */
 }
-/**/
-//____________________________________________________________________________ 
 
-Int_t AliTRDtestBeam::Int(Int_t i, Char_t *start) {
+//____________________________________________________________________________ 
+Int_t AliTRDtestBeam::Int(Int_t i, Char_t *start) 
+{
+  //
+  // ?????
+  //
   
   bool swap = kFALSE;
 
@@ -340,6 +376,7 @@ Int_t AliTRDtestBeam::Int(Int_t i, Char_t *start) {
     char p[] = {q[3], q[2], q[1], q[0]};
     return *((int*) p);
   } else return *((int*)(start+i));
+
 }
 
 //____________________________________________________________________________ 
