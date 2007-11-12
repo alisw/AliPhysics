@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
      histoEMDCorr[k]->Fit("gaus","Q","",BinMax[k]*YMax[k]/NBinsx[k]*0.7,BinMax[k]*YMax[k]/NBinsx[k]*1.25);
      fitfun[k] = histoEMDCorr[k]->GetFunction("gaus");
      MeanFitVal[k] = (Float_t) (fitfun[k]->GetParameter(1));
-     printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
+     //printf("\n\t Mean Value from gaussian fit = %f\n", MeanFitVal[k]);
   }
   //
    Float_t CalibCoeff[6];
