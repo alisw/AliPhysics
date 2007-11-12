@@ -73,9 +73,9 @@ class AliTRDCalibraFit : public TObject {
 	  void     ResetVectorFit();
 
   // Some functions
-	  Double_t *CalculPolynomeLagrange2(Double_t *x, Double_t *y);
-	  Double_t *CalculPolynomeLagrange3(Double_t *x, Double_t *y);
-	  Double_t *CalculPolynomeLagrange4(Double_t *x, Double_t *y);
+	  Double_t *CalculPolynomeLagrange2(Double_t *x, Double_t *y) const;
+	  Double_t *CalculPolynomeLagrange3(Double_t *x, Double_t *y) const;
+	  Double_t *CalculPolynomeLagrange4(Double_t *x, Double_t *y) const;
 
   // Fill the database
 	  AliTRDCalDet *CreateDetObjectVdrift(TObjArray *vectorFit, Bool_t perdetector = kFALSE);
@@ -139,27 +139,11 @@ class AliTRDCalibraFit : public TObject {
            Double_t GetScaleFitFactor() const                                { return fScaleFitFactor;         }
 
   // Vector Fit getter
-          TObjArray  GetVectorFit()                                          { return fVectorFit;              }
-	  TObjArray  GetVectorFit2()                                         { return fVectorFit2;             }
+          TObjArray  GetVectorFit() const                                    { return fVectorFit;              }
+	  TObjArray  GetVectorFit2() const                                   { return fVectorFit2;             }
 
 	  // AliTRDCalibraMode
 	  AliTRDCalibraMode *GetCalibraMode()                                { return fCalibraMode;            }
-
- private:
-  
-  static  Double_t PH(Double_t *x, Double_t *par);
-  static  Double_t AsymmGauss(Double_t *x, Double_t *par);
-  static  Double_t FuncLandauGaus(Double_t *x, Double_t *par);
-  static  Double_t LanGauFun(Double_t *x, Double_t *par);
-          TF1     *LanGauFit(TH1 *his, Double_t *fitrange, Double_t *startvalues
-                           , Double_t *parlimitslo, Double_t *parlimitshi, Double_t *fitparams
-                           , Double_t *fiterrors, Double_t *chiSqr, Int_t *ndf);
-          Int_t    LanGauPro(Double_t *params, Double_t &maxx, Double_t &fwhm);
-  static  Double_t GausConstant(Double_t *x, Double_t *par); 
-  
-  // This is a singleton, contructor is private!
-  AliTRDCalibraFit();
-  virtual ~AliTRDCalibraFit();
 
  protected:
 
@@ -332,6 +316,25 @@ class AliTRDCalibraFit : public TObject {
  // Instance of this class and so on
   static  AliTRDCalibraFit   *fgInstance;                     // Instance
   static  Bool_t             fgTerminated;                    // If terminated
+
+
+ private:
+  
+  static  Double_t PH(Double_t *x, Double_t *par);
+  static  Double_t AsymmGauss(Double_t *x, Double_t *par);
+  static  Double_t FuncLandauGaus(Double_t *x, Double_t *par);
+  static  Double_t LanGauFun(Double_t *x, Double_t *par);
+          TF1     *LanGauFit(TH1 *his, Double_t *fitrange, Double_t *startvalues
+			     , Double_t *parlimitslo, Double_t *parlimitshi, Double_t *fitparams
+			     , Double_t *fiterrors, Double_t *chiSqr, Int_t *ndf) const;
+          Int_t    LanGauPro(Double_t *params, Double_t &maxx, Double_t &fwhm);
+  static  Double_t GausConstant(Double_t *x, Double_t *par); 
+	  
+  // This is a singleton, contructor is private!
+  AliTRDCalibraFit();
+  virtual ~AliTRDCalibraFit();
+
+	  
 
     
   ClassDef(AliTRDCalibraFit,2)                 // TRD Calibration class

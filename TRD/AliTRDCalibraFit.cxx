@@ -46,24 +46,18 @@
 //                            
 //////////////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h>
 #include <TLine.h>
 #include <TH1I.h>
 #include <TStyle.h>
 #include <TProfile2D.h>
-#include <TFile.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
-#include <TGraph.h>
 #include <TObjArray.h>
 #include <TH1.h>
 #include <TH1F.h>
 #include <TF1.h>
-#include <TH2F.h>
 #include <TAxis.h>
-#include <TStopwatch.h>
 #include <TMath.h>
-#include <TLegend.h>
 #include <TDirectory.h>
 #include <TROOT.h>
 #include <TTreeStream.h>
@@ -72,7 +66,6 @@
 #include <TArrayF.h>
 
 #include "AliLog.h"
-#include "AliCDBManager.h"
 #include "AliMathBase.h"
 
 #include "AliTRDCalibraFit.h"
@@ -2706,7 +2699,7 @@ void AliTRDCalibraFit::FillFillLinearFitter()
     Float_t vs               = fCurrentCoef[1]; 
     Float_t vfE              = fCurrentCoefE;
     Float_t lorentzangler    = fCurrentCoef2[0];
-    Float_t Elorentzangler   = fCurrentCoefE2;
+    Float_t elorentzangler   = fCurrentCoefE2;
     Float_t lorentzangles    = fCurrentCoef2[1];
    
     (* fDebugStreamer) << "LinearFitter"<<
@@ -2720,7 +2713,7 @@ void AliTRDCalibraFit::FillFillLinearFitter()
       "vs="<<vs<<
       "vfE="<<vfE<<
       "lorentzangler="<<lorentzangler<<
-      "Elorentzangler="<<Elorentzangler<<
+      "Elorentzangler="<<elorentzangler<<
       "lorentzangles="<<lorentzangles<<
       "\n";  
   }
@@ -4308,7 +4301,7 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
 
 
   //Some parameters to initialise
-  Double_t widthLandau, widthGaus, MPV, Integral;
+  Double_t widthLandau, widthGaus, mPV, integral;
   Double_t chisquarel = 0.0;
   Double_t chisquareg = 0.0;
   projch->Fit("landau","0M+",""
@@ -4322,14 +4315,14 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
   widthGaus    = projch->GetFunction("gaus")->GetParameter(2);
   chisquareg = projch->GetFunction("gaus")->GetChisquare();
     
-  MPV = (projch->GetFunction("landau")->GetParameter(1))/2;
-  Integral = (projch->GetFunction("gaus")->Integral(0.3*mean,3*mean)+projch->GetFunction("landau")->Integral(0.3*mean,3*mean))/2;
+  mPV = (projch->GetFunction("landau")->GetParameter(1))/2;
+  integral = (projch->GetFunction("gaus")->Integral(0.3*mean,3*mean)+projch->GetFunction("landau")->Integral(0.3*mean,3*mean))/2;
   
   // Setting fit range and start values
   Double_t fr[2];
   //Double_t sv[4] = { l3P2, fChargeCoef[1], projch->Integral("width"), fG3P2 };
   //Double_t sv[4]   = { fL3P2, fChargeCoef[1], fL3P0, fG3P2 };
-  Double_t sv[4]   = { widthLandau, MPV, Integral, widthGaus};
+  Double_t sv[4]   = { widthLandau, mPV, integral, widthGaus};
   Double_t pllo[4] = { 0.001, 0.001, projch->Integral()/3, 0.001};
   Double_t plhi[4] = { 300.0, 300.0, 30*projch->Integral(), 300.0};
   Double_t fp[4]   = { 1.0, 1.0, 1.0, 1.0 };
@@ -4374,7 +4367,7 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
   }
 } 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(Double_t *x, Double_t *y)
+Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(Double_t *x, Double_t *y) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces trois points de degre 2
@@ -4396,7 +4389,7 @@ Double_t *AliTRDCalibraFit::CalculPolynomeLagrange2(Double_t *x, Double_t *y)
 }
 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(Double_t *x, Double_t *y)
+Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(Double_t *x, Double_t *y) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces quatre points de degre 3
@@ -4430,7 +4423,7 @@ Double_t *AliTRDCalibraFit::CalculPolynomeLagrange3(Double_t *x, Double_t *y)
 }
 
 //_____________________________________________________________________________
-Double_t *AliTRDCalibraFit::CalculPolynomeLagrange4(Double_t *x, Double_t *y)
+Double_t *AliTRDCalibraFit::CalculPolynomeLagrange4(Double_t *x, Double_t *y) const
 {
   //
   // Calcul the coefficients of the polynome passant par ces cinqs points de degre 4
@@ -4671,6 +4664,10 @@ Int_t AliTRDCalibraFit::GetSector(Int_t d) const
 //_______________________________________________________________________________
 void AliTRDCalibraFit::ResetVectorFit()
 {
+  //
+  // Reset the VectorFits
+  //
+
   fVectorFit.SetOwner();
   fVectorFit.Clear();
   fVectorFit2.SetOwner();
@@ -4853,7 +4850,7 @@ Double_t AliTRDCalibraFit::LanGauFun(Double_t *x, Double_t *par)
 TF1 *AliTRDCalibraFit::LanGauFit(TH1 *his, Double_t *fitrange, Double_t *startvalues
                                       , Double_t *parlimitslo, Double_t *parlimitshi
                                       , Double_t *fitparams, Double_t *fiterrors
-                                      , Double_t *chiSqr, Int_t *ndf)
+                                      , Double_t *chiSqr, Int_t *ndf) const
 {
   //
   // Function for the fit
@@ -4991,8 +4988,8 @@ Double_t AliTRDCalibraFit::GausConstant(Double_t *x, Double_t *par)
   // Gaus with identical mean
   //
 
-  Double_t Gauss   = par[0] * TMath::Gaus(x[0],0.0,par[1])+par[2];
+  Double_t gauss   = par[0] * TMath::Gaus(x[0],0.0,par[1])+par[2];
  
-  return Gauss;
+  return gauss;
 
 }
