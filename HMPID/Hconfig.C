@@ -401,7 +401,7 @@ void HmpConfig::WriteGen(FILE *pF)
       
   if(fGenBG->GetButton(kPythia)->GetState()==kButtonDown){//Pythia
     fprintf(pF,"  AliGenPythia *pP=new AliGenPythia(-1);\n");
-    fprintf(pF,"  pP->SetMomentumRange(0,999); pP->SetPhiRange(20,80); pP->SetThetaRange(75,115);\n");
+    fprintf(pF,"  pP->SetMomentumRange(0,999);\n");
     fprintf(pF,"  pP->SetYRange(-12,12);  pP->SetPtRange(0,1000);      pP->SetStrucFunc(kCTEQ4L);\n");
     fprintf(pF,"  pP->SetProcess(kPyMb);  pP->SetEnergyCMS(14000);\n");      
     fprintf(pF,"  pG->AddGenerator(pP,\"p\",1);\n\n");  
