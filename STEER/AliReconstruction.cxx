@@ -211,6 +211,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename, const char* cdb
   fFillTriggerESD(kTRUE),
 
   fCleanESD(kTRUE),
+  fV0DCAmax(3.),
+  fV0CsPmin(0.),
   fDmax(50.),
   fZmax(50.),
 
@@ -274,6 +276,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fFillTriggerESD(rec.fFillTriggerESD),
 
   fCleanESD(rec.fCleanESD),
+  fV0DCAmax(rec.fV0DCAmax),
+  fV0CsPmin(fV0CsPmin),
   fDmax(rec.fDmax),
   fZmax(rec.fZmax),
 

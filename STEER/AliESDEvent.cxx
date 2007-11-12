@@ -27,6 +27,7 @@
 #include "TRefArray.h"
 #include <TNamed.h>
 
+#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDVZERO.h"
@@ -381,6 +382,82 @@ void AliESDEvent::SetESDfriend(const AliESDfriend *ev) {
   }
 }
 
+Bool_t  AliESDEvent::RemoveKink(Int_t rm) {
+  // ---------------------------------------------------------
+  // Remove a kink candidate and references to it from ESD,
+  // if this candidate does not come from a reconstructed decay
+  // Not yet implemented...
+  // ---------------------------------------------------------
+  Int_t last=GetNumberOfKinks()-1;
+  if ((rm<0)||(rm>last)) return kFALSE;
+
+  return kTRUE;
+}
+
+Bool_t  AliESDEvent::RemoveV0(Int_t rm) {
+  // ---------------------------------------------------------
+  // Remove a V0 candidate and references to it from ESD,
+  // if this candidate does not come from a reconstructed decay
+  // ---------------------------------------------------------
+  Int_t last=GetNumberOfV0s()-1;
+  if ((rm<0)||(rm>last)) return kFALSE;
+
+  AliESDv0 *v0=GetV0(rm);
+  Int_t idxP=v0->GetPindex(), idxN=v0->GetNindex();
+
+  v0=GetV0(last);
+  Int_t lastIdxP=v0->GetPindex(), lastIdxN=v0->GetNindex();
+
+  Int_t used=0;
+
+  // Check if this V0 comes from a reconstructed decay
+  Int_t ncs=GetNumberOfCascades();
+  for (Int_t n=0; n<ncs; n++) {
+    AliESDcascade *cs=GetCascade(n);
+
+    Int_t csIdxP=cs->GetPindex();
+    Int_t csIdxN=cs->GetNindex();
+
+    if (idxP==csIdxP)
+       if (idxN==csIdxN) return kFALSE;
+
+    if (csIdxP==lastIdxP)
+       if (csIdxN==lastIdxN) used++;
+  }
+
+  //Replace the removed V0 with the last V0 
+  TClonesArray &a=*fV0s;
+  delete a.RemoveAt(rm);
+
+  if (rm==last) return kTRUE;
+
+  //v0 is pointing to the last V0 candidate... 
+  new (a[rm]) AliESDv0(*v0);
+  delete a.RemoveAt(last);
+
+  if (!used) return kTRUE;
+  
+
+  // Remap the indices of the daughters of reconstructed decays
+  for (Int_t n=0; n<ncs; n++) {
+    AliESDcascade *cs=GetCascade(n);
+
+
+    Int_t csIdxP=cs->GetPindex();
+    Int_t csIdxN=cs->GetNindex();
+
+    if (csIdxP==lastIdxP)
+      if (csIdxN==lastIdxN) {
+         cs->AliESDv0::SetIndex(1,idxP);
+         cs->AliESDv0::SetIndex(0,idxN);
+         used--;
+         if (!used) return kTRUE;
+      }
+  }
+
+  return kTRUE;
+}
+
 Bool_t  AliESDEvent::RemoveTrack(Int_t rm) {
   // ---------------------------------------------------------
   // Remove a track and references to it from ESD,
@@ -488,19 +565,53 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
   //
   // Remove the data which are not needed for the physics analysis.
   //
-  // If track's transverse parameter is larger than fDmax
+  // 1) Cleaning the V0 candidates
+  //    ---------------------------
+  //    If the cosine of the V0 pointing angle "csp" and 
+  //    the DCA between the daughter tracks "dca" does not satisfy 
+  //    the conditions 
+  //
+  //     csp > cleanPars[1] + dca/cleanPars[0]*(1.- cleanPars[1])
+  //
+  //    an attempt to remove this V0 candidate from ESD is made.
+  //
+  //    The V0 candidate gets removed if it does not belong to any 
+  //    recosntructed cascade decay
+  //
+  //    12.11.2007, optimal values: cleanPars[0]=0.5, cleanPars[1]=0.999
+  //
+  // 2) Cleaning the tracks
+  //    ----------------------
+  //    If track's transverse parameter is larger than cleanPars[2]
   //                       OR
-  //    track's longitudinal parameter is larger than fZmax
-  // an attempt to remove this track from ESD is made.
+  //    track's longitudinal parameter is larger than cleanPars[3]
+  //    an attempt to remove this track from ESD is made.
   //
-  // The track gets removed if it does not come 
-  // from a reconstructed decay
+  //    The track gets removed if it does not come 
+  //    from a reconstructed decay
   //
+  Bool_t rc=kFALSE;
 
-  Float_t dmax=cleanPars[0], zmax=cleanPars[1];
+  Float_t dcaMax=cleanPars[0];
+  Float_t cspMin=cleanPars[1];
+
+  Int_t nV0s=GetNumberOfV0s();
+  for (Int_t i=nV0s-1; i>=0; i--) {
+    AliESDv0 *v0=GetV0(i);
+
+    Float_t dca=v0->GetDcaV0Daughters();
+    Float_t csp=v0->GetV0CosineOfPointingAngle();
+    Float_t cspcut=cspMin + dca/dcaMax*(1.-cspMin);
+    if (csp > cspcut) continue;
+
+    if (RemoveV0(i)) rc=kTRUE;
+  }
+
+
+  Float_t dmax=cleanPars[2], zmax=cleanPars[3];
 
   const AliESDVertex *vertex=GetVertex();
-  Bool_t vtxOK=vertex->GetStatus(), rc=kFALSE;
+  Bool_t vtxOK=vertex->GetStatus();
   
   Int_t nTracks=GetNumberOfTracks();
   for (Int_t i=nTracks-1; i>=0; i--) {

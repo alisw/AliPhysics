@@ -85,8 +85,12 @@ public:
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
 		   
   void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
+  void SetV0DCAmax(Float_t d) {fV0DCAmax=d;}
+  void SetV0CsPmin(Float_t d) {fV0CsPmin=d;}
   void SetDmax(Float_t d) {fDmax=d;}
   void SetZmax(Float_t z) {fZmax=z;}
+  Float_t GetV0DCAmax() const {return fV0DCAmax;}
+  Float_t GetV0CsPmin() const {return fV0CsPmin;}
   Float_t GetDmax() const {return fDmax;}
   Float_t GetZmax() const {return fZmax;}
 
@@ -164,6 +168,8 @@ private:
 
   //*** Clean ESD flag and parameters *******************
   Bool_t         fCleanESD;      // clean ESD flag
+  Float_t        fV0DCAmax;      // max. allowed DCA between V0 daugthers 
+  Float_t        fV0CsPmin;      // min. allowed cosine of V0 pointing angle 
   Float_t        fDmax;          // max. allowed transverse impact parameter 
   Float_t        fZmax;          // max. allowed longitudinal impact parameter 
 
@@ -208,7 +214,7 @@ private:
 //  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
   Bool_t              fRunQA ;                        // Runs the QA at the end of simulation
 
-  ClassDef(AliReconstruction, 16)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 17)      // class for running the reconstruction
 };
 
 #endif

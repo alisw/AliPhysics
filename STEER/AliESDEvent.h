@@ -178,6 +178,8 @@ public:
 
 
   Bool_t Clean(Float_t *cleanPars);
+  Bool_t RemoveKink(Int_t i);
+  Bool_t RemoveV0(Int_t i);
   Bool_t RemoveTrack(Int_t i);
 
   AliESDtrack *GetTrack(Int_t i) const {
