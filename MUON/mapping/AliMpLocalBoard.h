@@ -41,11 +41,17 @@ class AliMpLocalBoard : public TNamed
            /// Return the slot Identifier in the given crate
     Int_t  GetSlot() const {return fSlot;}
 
+    /// set slot
+    void   SetSlot(Int_t slot) {fSlot = slot;}
+
     // Switches
     //
     Bool_t AddSwitch(Int_t swit);
     Int_t  GetNofSwitches() const;
     Int_t  GetSwitch(Int_t index) const;
+
+    void   SetSwitch(UInt_t swit) {fSwitch = swit;}
+    UInt_t  GetSwitch() const {return fSwitch;}
 
     // switch enum for local board (see PRR, chpt: 2.4.4)
     enum {kX2d, kX2m, kX2u, ///< (1) indicate a change of strip pitch in Y circuit
@@ -116,6 +122,7 @@ class AliMpLocalBoard : public TNamed
    Bool_t      fTC;       ///< Transverse connector
    TString     fCrate;    ///< Crate name
    AliMpArrayI fSwitches; ///< switches
+   UInt_t      fSwitch;   ///< switches in compact way
    Bool_t      fNotified; ///< notified flag (not copy card)
    AliMpArrayI fDEId;     ///< list of Detection element to which this local board is connected
    Int_t       fInputXfrom;///< local id of x3-4 inputs copied from (zero: not copied)
@@ -123,7 +130,7 @@ class AliMpLocalBoard : public TNamed
    Int_t       fInputYfrom;///< local id of y1-4 inputs copied from (zero: not copied)
    Int_t       fInputYto;  ///< local id of y1-4 inputs copied to (zero: not copied)
 
-  ClassDef(AliMpLocalBoard,1) //utility class for the motif type
+  ClassDef(AliMpLocalBoard,2) //utility class for the motif type
 };
 
 

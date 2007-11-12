@@ -44,6 +44,7 @@ AliMpLocalBoard::AliMpLocalBoard(Int_t id, const Char_t* name, Int_t slot)
       fTC(true),
       fCrate(),
       fSwitches(false),
+      fSwitch(0),
       fNotified(true),
       fDEId(false),
       fInputXfrom(0),
@@ -62,6 +63,7 @@ AliMpLocalBoard::AliMpLocalBoard(TRootIOCtor* /*ioCtor*/)
       fTC(),
       fCrate(),
       fSwitches(),
+      fSwitch(),
       fNotified(),
       fDEId(),
       fInputXfrom(0),
@@ -169,6 +171,8 @@ Bool_t AliMpLocalBoard::AddSwitch(Int_t swit)
     }
 
     fSwitches.Add(swit);
+    fSwitch <<= 1;
+    fSwitch |= (swit & 0x1);
     return true;
 }   
 
