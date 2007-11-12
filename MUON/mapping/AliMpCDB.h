@@ -26,8 +26,8 @@ class AliMpCDB : public  TObject {
     static Bool_t LoadMpSegmentation(Bool_t warn = false);
     static Bool_t LoadDDLStore(Bool_t warn = false);
 
-    static Bool_t WriteMpSegmentation();
-    static Bool_t WriteDDLStore();
+    static Bool_t WriteMpSegmentation(Bool_t readData = true);
+    static Bool_t WriteDDLStore(Bool_t readData= true);
      
   private:
     /// Not implemented

@@ -123,9 +123,11 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
 }    
 
 //______________________________________________________________________________
-Bool_t AliMpCDB::WriteMpSegmentation()
+Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData)
 {
 /// Write mapping segmentation in OCDB
+
+  if ( ! readData && ! AliMpSegmentation::Instance() ) return false;
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
@@ -137,14 +139,20 @@ Bool_t AliMpCDB::WriteMpSegmentation()
   cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   AliCDBId id("MUON/Calib/Mapping", 0, 9999999); 
 
-  AliMpSegmentation::ReadData(false);
+  if ( readData ) {
+    AliMpSegmentation::ReadData(false);
+    AliMpDDLStore::ReadData(false);
+  }
+  
   return cdbManager->Put(AliMpSegmentation::Instance(), id, cdbData);
 }
 
 //______________________________________________________________________________
-Bool_t AliMpCDB::WriteDDLStore()
+Bool_t AliMpCDB::WriteDDLStore(Bool_t readData)
 {
 /// Write mapping DDL store in OCDB
+
+  if ( ! readData && ! AliMpDDLStore::Instance() ) return false;
 
   AliCDBManager* cdbManager = AliCDBManager::Instance();
   if ( ! cdbManager->GetDefaultStorage() )
@@ -156,7 +164,9 @@ Bool_t AliMpCDB::WriteDDLStore()
   cdbData->SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   AliCDBId id("MUON/Calib/DDLStore", 0, 9999999); 
 
-  AliMpSegmentation::ReadData(false);
-  AliMpDDLStore::ReadData(false);
+  if ( readData ) {
+    AliMpSegmentation::ReadData(false);
+    AliMpDDLStore::ReadData(false);
+  }
   return cdbManager->Put(AliMpDDLStore::Instance(), id, cdbData);
 }   
