@@ -1223,7 +1223,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
 
   char fileName[256];
   sprintf(fileName, "Run%d.Event%d_%d.ESD.tag.root", 
-	  tag->GetRunId(),fFirstEvent,lastEvent);
+	  iInitRunNumber,fFirstEvent,lastEvent);
   AliInfo(Form("writing tags to file %s", fileName));
   AliDebug(1, Form("writing tags to file %s", fileName));
  
