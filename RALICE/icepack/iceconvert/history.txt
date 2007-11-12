@@ -138,4 +138,9 @@
 04-oct-2007 NvE New class IceDB2Root of Garmt de Vries-Uiterweerd introduced.
 08-oct-2007 NvE ADC (de)calibration function formula corrected for TWR data in IceDB2Root.
 08-oct-2007 NvE Manual OM id setting replaced by IceGOM::GetOMId in IceDB2Root.
-   
+12-nov-2007 NvE Class IceRootx introduced which contains the old version of the IceRoot
+                walnut->IcePack conversion. This version (slightly updated with bug fixes)
+                is kept to enable processing of the old walnut format (if needed).
+                The class IceRoot has been updated so that it matches the new walnut
+                data format.
+

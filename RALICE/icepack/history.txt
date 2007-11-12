@@ -125,5 +125,6 @@
                 IceMakeHits.cxx, IcePandel.cxx and IceXtalk.cxx.
 04-oct-2007 NvE New memberfunctions GetLevel and GetOMId introduced in class IceGOM
                 to enable retrieval and conversion of various (D)OM numbering schemes.
+12-nov-2007 GdV New version of IceMakeHits and IceCalibrate to handle IceCube DOMs.
 
                  

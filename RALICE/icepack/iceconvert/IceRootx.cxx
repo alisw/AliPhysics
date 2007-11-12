@@ -16,10 +16,12 @@
 // $Id$
 
 ///////////////////////////////////////////////////////////////////////////
-// Class IceRoot
+// Class IceRootx
 // Conversion of simple Root data into IceEvent data structures.
-// This class reads data from the simple Root files as output by Martijn
-// Duvoort's Walnut analyser.
+// This class reads data from the simple Root files as output by the
+// original version of Martijn Duvoort's Walnut analyser.
+// This class is only retained for backward compatibility. For output from
+// newer versions of the Walnut analyser, use IceRoot.
 // An indication of the active DAQ system is available in the IceEvent structure
 // via a device named "Daq". Here the various daq systems (TWR, Muon, ...)
 // from which the actual hits (ADC, LE, TOT) eventually will be composed
@@ -42,7 +44,7 @@
 // gSystem->Load("icepack");
 // gSystem->Load("iceconvert");
 //
-// IceRoot q("IceRoot","Simple Root data to IcePack data structure conversion");
+// IceRootx q("IceRootx","Simple Root data to IcePack data structure conversion");
 //
 // // Limit the number of entries for testing
 // q.SetMaxEvents(10);
@@ -76,15 +78,15 @@
 // q.ExecuteJob();
 //
 //--- Author: Garmt de Vries-Uiterweerd 13-Mar-2007 Utrecht University
-//- Modified: GdVU $Date$ Utrecht University
+//- Modified: GdV $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
  
-#include "IceRoot.h"
+#include "IceRootx.h"
 #include "Riostream.h"
 
-ClassImp(IceRoot) // Class implementation to enable ROOT I/O
+ClassImp(IceRootx) // Class implementation to enable ROOT I/O
 
-IceRoot::IceRoot(const char* name,const char* title) : AliJob(name,title)
+IceRootx::IceRootx(const char* name,const char* title) : AliJob(name,title)
 {
 // Default constructor.
 // By default maxevent=-1, split=0, bsize=32000, printfreq=1.
@@ -95,11 +97,9 @@ IceRoot::IceRoot(const char* name,const char* title) : AliJob(name,title)
  fPrintfreq=1;
  fInfiles=0;
  fOutfile=0;
- fCalfile=0;
- fTWRDaq=0;
 }
 ///////////////////////////////////////////////////////////////////////////
-IceRoot::~IceRoot()
+IceRootx::~IceRootx()
 {
 // Default destructor.
 
@@ -108,15 +108,9 @@ IceRoot::~IceRoot()
   delete fInfiles;
   fInfiles=0;
  }
-
- if (fCalfile)
- {
-  delete fCalfile;
-  fCalfile=0;
- }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetMaxEvents(Int_t n)
+void IceRootx::SetMaxEvents(Int_t n)
 {
 // Set the maximum number of events to be processed.
 // n=-1 implies processing of the complete input file, which is the default
@@ -124,43 +118,28 @@ void IceRoot::SetMaxEvents(Int_t n)
  fMaxevt=n;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetPrintFreq(Int_t f)
+void IceRootx::SetPrintFreq(Int_t f)
 {
 // Set the printfrequency to produce info every f events.
 // f=1 is the default initialisation in the constructor.
  if (f>=0) fPrintfreq=f;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetSplitLevel(Int_t split)
+void IceRootx::SetSplitLevel(Int_t split)
 {
 // Set the split level for the ROOT data file.
 // split=0 is the default initialisation in the constructor.
  if (split>=0) fSplit=split;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetBufferSize(Int_t bsize)
+void IceRootx::SetBufferSize(Int_t bsize)
 {
 // Set the buffer size for the ROOT data file.
 // bsize=32000 is the default initialisation in the constructor.
  if (bsize>=0) fBsize=bsize;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetInputFile(TString name)
-{
-// Set the simple Root data input file.
- if (!fInfiles)
- {
-  fInfiles=new TObjArray();
-  fInfiles->SetOwner();
- }
- fInfiles->Clear();
-
- TObjString* s=new TObjString();
- s->SetString(name);
- fInfiles->Add(s);
-}
-///////////////////////////////////////////////////////////////////////////
-void IceRoot::AddInputFile(TString name)
+void IceRootx::AddInputFile(TString name)
 {
 // Add the name of this simple Root data input file to the list to be processed.
 
@@ -175,54 +154,27 @@ void IceRoot::AddInputFile(TString name)
  fInfiles->Add(s);
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetOutputFile(TFile* ofile)
+void IceRootx::SetOutputFile(TFile* ofile)
 {
 // Set the output file for the ROOT data.
  if (fOutfile) delete fOutfile;
  fOutfile=ofile;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetOutputFile(TString name)
+void IceRootx::SetOutputFile(TString name)
 {
 // Create the output file for the ROOT data.
  if (fOutfile) delete fOutfile;
  fOutfile=new TFile(name.Data(),"RECREATE","Simple Root data in IceEvent structure");
 }
 ///////////////////////////////////////////////////////////////////////////
-TFile* IceRoot::GetOutputFile()
+TFile* IceRootx::GetOutputFile()
 {
 // Provide pointer to the ROOT output file.
  return fOutfile;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetCalibFile(TString name)
-{
-// Set the calibration ROOT file as created with IceCal2Root.
-// Note : this will overrule a previously attached database. 
- if (fCalfile) delete fCalfile;
- fCalfile=new TFile(name.Data());
-
- if(fCalfile){
-  fTWRDaq=(AliObjMatrix*)fCalfile->Get("TWRDaq-OMDBASE");
- }
- if(!fTWRDaq){
-  cout << "*IceRoot* Warning: no calibration available for TWR. TWR waveforms cannot be processed." << endl;
- }
-
-}
-///////////////////////////////////////////////////////////////////////////
-void IceRoot::SetOMdbase(AliObjMatrix* omdb)
-{
-// Set the calibration database as created with IceCal2Root.
-// Note : this will overrule a previously attached database. 
- fTWRDaq=omdb;
- if(!fTWRDaq){
-  cout << "*IceRoot* Warning: no calibration available for TWR. TWR waveforms cannot be processed." << endl;
- }
-
-}
-///////////////////////////////////////////////////////////////////////////
-void IceRoot::Exec(Option_t* opt)
+void IceRootx::Exec(Option_t* opt)
 {
 // Job to loop over the specified number of events and convert the 
 // simple Root data into the IceEvent structure.
@@ -243,14 +195,14 @@ void IceRoot::Exec(Option_t* opt)
 
  if (!fInfiles)
  {
-  cout << " *IceRoot Exec* No data input file(s) specified." << endl;
+  cout << " *IceRootx Exec* No data input file(s) specified." << endl;
   return;
  }
 
  Int_t ninfiles=fInfiles->GetEntries();
  if (!ninfiles)
  {
-  cout << " *IceRoot Exec* No data input file(s) specified." << endl;
+  cout << " *IceRootx Exec* No data input file(s) specified." << endl;
   return;
  }
 
@@ -298,72 +250,66 @@ void IceRoot::Exec(Option_t* opt)
  // Set DAQ device info
  AliDevice daq;
  daq.SetName("Daq");
- daq.AddNamedSlot("JEB");
- daq.AddNamedSlot("TWR");
+ daq.SetSlotName("TWR",1);
+ daq.SetSignal(1,1);
 
  // Trigger device
  AliDevice trig;
  trig.SetNameTitle("Trigger","Amanda/IceCube event triggers");
  AliSignal s;
- Char_t trigname[100];
 
- // Variables in the simple ROOT tree
- Int_t     pretrig=0;
- Int_t     trignr=0;
- Double_t* trigtime=0;
- Double_t* triglength=0;
- Char_t    trigsourceID[100][100];
- Char_t    trigtypeID[100][100];
- Char_t    trigsubtypeID[100][100];
- Double_t  dmaddtriggertime=0;
- Int_t     eventtimemjd=0;
- Int_t     eventtimemjds=0;
- Int_t     eventtimemjdns=0;
- Int_t     eventid=0;
- Int_t     runid=0;
- Int_t     String=0;
- Int_t     OM=0;
- Short_t   waveformtype=0; // 1 = TWR, 2 = non-merged ATWD (not supported), 3 = InIce merged ATWD, 4 = InIce FADC, 5 = IceTop merged ATWD, 6 = IceTop FADC
- UInt_t    baseline=0;
- Int_t     numberbinstwr=0;
- Int_t     startbin=0;
- UInt_t*   twrwaveform=0;
- Int_t     numberbinswaveform=0;
- Double_t  starttimewaveform=0;
- Double_t  binwidth=0;
- Short_t   source=0; // 0 = ATWD, 10 = FADC, 20 = TWR elec, 30 = TWR opt, 40 = etc
- Double_t* waveform=0;
- Int_t     ntracks=0;
- Double_t* trackx=0;
- Double_t* tracky=0;
- Double_t* trackz=0;
- Double_t* trackzenith=0;
- Double_t* trackazimuth=0;
- Double_t* trackenergy=0;
- Char_t    tracktype[10][100];
+ // Some variables
+ Double_t triggertime=0;
+ Int_t    eventtimemjd=0;
+ Int_t    eventtimemjds=0;
+ Int_t    eventtimemjdns=0;
+ Int_t    eventid=0;
+ Int_t    runid=0;
+ Int_t    String=0;
+ Int_t    OM=0;
+ Float_t  baseline=0;
+ Double_t binsize=10;
+ Short_t  type=0;
+ Int_t    numberbins=0;
+ Float_t  starttime=0;
+ Int_t    ntracks=0;
 
- // Some other variables
  Int_t nevt=0;
  Int_t lastevent=0;
  Int_t omid=0;
- Double_t starttime=0;
- Int_t extstop=0;
- Int_t twrbuffer=1024; // Number of bins in TWR
 
  TString hname;
  TH1F histo;
- IceAOM aom;
- IceIDOM idom;
- IceTDOM tdom;
- IceGOM* om=0;
- IceGOM* calom=0;
+ IceAOM om;
+ IceAOM* omx=0;
  AliTrack t;
  Double_t vec[3];
  AliPosition r;
  Ali3Vector p;
- AliSample sample;
 
  Float_t pi=acos(-1.);
+
+ Int_t firstomonstring[20];
+ firstomonstring[0]=0;
+ firstomonstring[1]=1;
+ firstomonstring[2]=21;
+ firstomonstring[3]=41;
+ firstomonstring[4]=61;
+ firstomonstring[5]=87;
+ firstomonstring[6]=123;
+ firstomonstring[7]=159;
+ firstomonstring[8]=195;
+ firstomonstring[9]=231;
+ firstomonstring[10]=267;
+ firstomonstring[11]=303;
+ firstomonstring[12]=345;
+ firstomonstring[13]=387;
+ firstomonstring[14]=429;
+ firstomonstring[15]=471;
+ firstomonstring[16]=513;
+ firstomonstring[17]=555;
+ firstomonstring[18]=597;
+ firstomonstring[19]=639;
 
  TFile* input=0;
 
@@ -380,16 +326,13 @@ void IceRoot::Exec(Option_t* opt)
 
   if (!input)
   {
-   cout << " *IceRoot Exec* No input file found with name : " << inputfile.Data() << endl;
+   cout << " *IceRootx Exec* No input file found with name : " << inputfile.Data() << endl;
    continue;
   }
 
   // Get simple Root tree
   fTree=(TTree*)input->Get("T");
-
-  fTree->SetBranchAddress("pretrig",&pretrig);
-  fTree->SetBranchAddress("trignr",&trignr);
-  fTree->SetBranchAddress("dmaddtriggertime",&dmaddtriggertime);
+  fTree->SetBranchAddress("triggertime",&triggertime);
   fTree->SetBranchAddress("eventtimemjd",&eventtimemjd);
   fTree->SetBranchAddress("eventtimemjds",&eventtimemjds);
   fTree->SetBranchAddress("eventtimemjdns",&eventtimemjdns);
@@ -397,61 +340,46 @@ void IceRoot::Exec(Option_t* opt)
   fTree->SetBranchAddress("runid",&runid);
   fTree->SetBranchAddress("String",&String);
   fTree->SetBranchAddress("OM",&OM);
-  fTree->SetBranchAddress("waveformtype",&waveformtype);
   fTree->SetBranchAddress("baseline",&baseline);
-  fTree->SetBranchAddress("numberbinstwr",&numberbinstwr);
-  fTree->SetBranchAddress("startbin",&startbin);
-  fTree->SetBranchAddress("numberbinswaveform",&numberbinswaveform);
-  fTree->SetBranchAddress("starttimewaveform",&starttimewaveform);
-  if(fTree->GetBranch("binwidth")) fTree->SetBranchAddress("binwidth",&binwidth);
-  fTree->SetBranchAddress("source",&source);
+  fTree->SetBranchAddress("type",&type);
+  fTree->SetBranchAddress("numberbins",&numberbins);
+  fTree->SetBranchAddress("starttime",&starttime);
   fTree->SetBranchAddress("ntracks",&ntracks);
+  if(fTree->GetBranch("binsize")) fTree->SetBranchAddress("binsize",&binsize);
 
-  Int_t ntrig=(Int_t)fTree->GetLeaf("trignr")->GetMaximum();
-  trigtime=new Double_t[ntrig+1];
-  fTree->SetBranchAddress("trigtime",trigtime);
-  triglength=new Double_t[ntrig+1];
-  fTree->SetBranchAddress("triglength",triglength);
-  fTree->SetBranchAddress("trigsourceID",trigsourceID);
-  fTree->SetBranchAddress("trigtypeID",trigtypeID);
-  fTree->SetBranchAddress("trigsubtypeID",trigsubtypeID);
-
-  Int_t nmaxbinstwr=(Int_t)fTree->GetLeaf("numberbinstwr")->GetMaximum();
-  twrwaveform=new UInt_t[nmaxbinstwr+1];
-  fTree->SetBranchAddress("twrwaveform",twrwaveform);
-
-  Int_t nmaxbinswaveform=(Int_t)fTree->GetLeaf("numberbinswaveform")->GetMaximum();
-  waveform=new Double_t[nmaxbinswaveform+1];
-  fTree->SetBranchAddress("waveform",waveform);
+  Int_t nmaxbins=(Int_t)fTree->GetLeaf("numberbins")->GetMaximum();
+  Float_t* wvform=new Float_t[nmaxbins+1];
+  fTree->SetBranchAddress("wvform",wvform);
 
   Int_t nmaxtracks=(Int_t)fTree->GetLeaf("ntracks")->GetMaximum();
-  trackx=new Double_t[nmaxtracks];
-  tracky=new Double_t[nmaxtracks];
-  trackz=new Double_t[nmaxtracks];
-  trackzenith=new Double_t[nmaxtracks];
-  trackazimuth=new Double_t[nmaxtracks];
-  trackenergy=new Double_t[nmaxtracks];
+  Float_t* trackx=new Float_t[nmaxtracks];
+  Float_t* tracky=new Float_t[nmaxtracks];
+  Float_t* trackz=new Float_t[nmaxtracks];
+  Double_t* trackenergy=new Double_t[nmaxtracks];
+  Float_t* trackzenith=new Float_t[nmaxtracks];
+  Float_t* trackazimuth=new Float_t[nmaxtracks];
+  Int_t* tracktype=new Int_t[nmaxtracks];
   fTree->SetBranchAddress("trackx",trackx);
   fTree->SetBranchAddress("tracky",tracky);
   fTree->SetBranchAddress("trackz",trackz);
+  fTree->SetBranchAddress("trackenergy",trackenergy);
   fTree->SetBranchAddress("trackzenith",trackzenith);
   fTree->SetBranchAddress("trackazimuth",trackazimuth);
-  fTree->SetBranchAddress("trackenergy",trackenergy);
   fTree->SetBranchAddress("tracktype",tracktype);
 
   // Prepare for loop over entries
   lastevent=0;
 
-  // Loop over waveforms in input tree
+  // Loop over waveforms in tree
   for(Int_t ientry=0; ientry<fTree->GetEntries(); ientry++)
   {
    fTree->GetEntry(ientry);
-
+   
    // If new event
    if(eventid!=lastevent)
    {
     // Write old event to tree (if it contains data)
-    if(evt->GetDevices("IceGOM"))
+    if(evt->GetDevices("IceAOM"))
     {
      // Invoke all available sub-tasks (if any) and write event to tree
      CleanTasks();
@@ -472,37 +400,18 @@ void IceRoot::Exec(Option_t* opt)
     evt->SetRunNumber(runid);
     evt->SetEventNumber(eventid);
     evt->SetMJD(eventtimemjd,eventtimemjds,eventtimemjdns,0);
-
-    // Daq: JEB for 2007 and later, TWR for 2006 and earlier
-    daq.Reset(1);
-    if(evt->GetDate()/10000 >= 2007)daq.SetSignal(1,"JEB");
-    else daq.SetSignal(1,"TWR");
     evt->AddDevice(daq);
 
     // Store trigger information
     trig.Reset(1);
-    for(Int_t itr=0; itr<trignr; itr++){
-     s.Reset(1);
-     sprintf(trigname,"%s/%s",trigsourceID[itr],trigtypeID[itr]);
-     s.SetName(trigname);
-     s.SetSlotName("trig_pulse_le",1);
-     s.SetSignal(trigtime[itr],1);
-     s.SetSlotName("trig_pulse_tot",2);
-     s.SetSignal(triglength[itr],2);
-     trig.AddHit(s);
-    }
-    // Add main trigger unless it is already present
-    // TODO: select most appropriate trigger as artificial "main"
-    // For now: select first trigger in event
-    if(!trig.GetHit("main")){
-     s.Reset(1);
-     s.SetName("main");
-     s.SetSlotName("trig_pulse_le",1);
-     s.SetSignal(trigtime[0],1);
-     s.SetSlotName("trig_pulse_tot",2);
-     s.SetSignal(triglength[0],2);
-     trig.AddHit(s);
-    }
+    s.Reset(1);
+    s.SetName("main");
+    s.SetTitle("First trigger for TWR time reference");
+    s.SetUniqueID(12);
+    s.SetSlotName("trig_pulse_le",1);
+    s.SetSignal(triggertime,1);
+    trig.AddHit(s);
+    //// TODO: store other triggers if available
     evt->AddDevice(trig);
 
     // Loop over all the tracks and add them to the current event
@@ -511,21 +420,6 @@ void IceRoot::Exec(Option_t* opt)
     for (Int_t itrack=0; itrack<ntracks; itrack++)
     {
      t.Reset();
-
-     TString tracktypestring(tracktype[itrack]);
-     // Monte Carlo track
-     if(tracktypestring.Index("MC")>=0){
-      nmctracks++;
-      t.SetId(-nmctracks);
-     }
-     // Reco track
-     if(tracktypestring.Index("MC")<0){
-      nrecotracks++;
-      t.SetId(nrecotracks);
-     }
-     // Track ID and name
-     t.SetName(tracktype[itrack]);
-     t.SetTitle(tracktype[itrack]);
 
      // Beginpoint of the track
      vec[0]=trackx[itrack];
@@ -536,7 +430,6 @@ void IceRoot::Exec(Option_t* opt)
 
      // Momentum in GeV/c
      vec[0]=trackenergy[itrack];
-     if(vec[0]==0 || vec[0]!=vec[0]) vec[0]=1; // Energy unknown: set default value of 1 GeV
      vec[1]=pi-trackzenith[itrack];
      vec[2]=trackazimuth[itrack]+pi;
      if(vec[2]>=2*pi) vec[2]-=2*pi;
@@ -547,176 +440,83 @@ void IceRoot::Exec(Option_t* opt)
      if(trackx[itrack]!=trackx[itrack] || tracky[itrack]!=tracky[itrack] || trackz[itrack]!=trackz[itrack] ||
         trackzenith[itrack]!=trackzenith[itrack] || trackazimuth[itrack]!=trackazimuth[itrack]){
       t.Reset();
-     } else {
-      // Add track to event
-      evt->AddTrack(t);
      }
+
+     // Track ID and name
+     // Monte Carlo track
+     if(tracktype[itrack]==7){
+      nmctracks++;
+      t.SetId(-nmctracks);
+     }
+     // Reco track
+     else {
+      nrecotracks++;
+      t.SetId(nrecotracks);
+     }
+     if(tracktype[itrack]==1) { t.SetName("I3CFIRST"); t.SetTitle("IceTray CFIRST track"); }
+     else if(tracktype[itrack]==2) { t.SetName("I3direct"); t.SetTitle("IceTray direct walk track"); }
+     else if(tracktype[itrack]==3) { t.SetName("I3Jams_cluster"); t.SetTitle("IceTray Jams cluster"); }
+     else if(tracktype[itrack]==4) { t.SetName("I3Jams_qual"); t.SetTitle("IceTray Jams quality"); }
+     else if(tracktype[itrack]==5) { t.SetName("I3TOIFit"); t.SetTitle("IceTray TOI fit"); }
+     else if(tracktype[itrack]==6) { t.SetName("I3line-direct"); t.SetTitle("IceTray line direct walk"); }
+     else if(tracktype[itrack]==7) { t.SetName("I3MCTrack"); t.SetTitle("I3MCTrack"); }
+     else { t.SetName("Unknown"); t.SetTitle("IceTray track of unknown type"); }
+
+     // Add track to event
+     evt->AddTrack(t);
     }
 
     // Remember event nr
     lastevent=eventid;
    }
 
-   if(waveformtype==1){
-    // Amanda module
-    omid=aom.GetOMId(String,OM);
-    if(omid==681) continue;  // Skip OM 681, which should never give data: avoid all risk of confusion
-    om=(IceGOM*)evt->GetIdDevice(omid);
-    if (!om)
-    {
-     aom.Reset(1);
-     aom.SetUniqueID(omid);
-     evt->AddDevice(aom);
-     om=(IceGOM*)evt->GetIdDevice(omid);
-    }
-    if (!om) continue;
+   // Get OM from event strcture, or create and add it
+   omid=firstomonstring[-String]+OM-1;
+   if(omid==681) continue;  // Skip OM 681, which should never give data: avoid all risk of confusion
+   omx=(IceAOM*)evt->GetIdDevice(omid);
+   if (!omx)
+   {
+    om.Reset(1);
+    om.SetUniqueID(omid);
+    evt->AddDevice(om);
+    omx=(IceAOM*)evt->GetIdDevice(omid);
    }
+   if (!omx) continue;
 
-   else if(waveformtype==2) {
-    // Non-merged waveforms not supported
-    cout << "IceRoot::Exec: Non-merged ATWD waveforms not supported in this module." << endl;
-    continue;
-   }
+   // Store baseline info
+   hname="BASELINE-WF";
+   hname+=omx->GetNwaveforms()+1;
+   omx->AddNamedSlot(hname);
+   omx->SetSignal(baseline,hname);
 
-   else if(waveformtype==3 || waveformtype==4) {
-    // InIce module
-    omid=idom.GetOMId(String,OM);
-    om=(IceGOM*)evt->GetIdDevice(omid);
-    if (!om)
-    {
-     idom.Reset(1);
-     idom.SetUniqueID(omid);
-     evt->AddDevice(idom);
-     om=(IceGOM*)evt->GetIdDevice(omid);
-    }
-    if (!om) continue;
-   }
-
-   else if(waveformtype==5 || waveformtype==6) {
-    // IceTop module
-    omid=tdom.GetOMId(String,OM);
-    om=(IceGOM*)evt->GetIdDevice(omid);
-    if (!om)
-    {
-     tdom.Reset(1);
-     tdom.SetUniqueID(omid);
-     evt->AddDevice(tdom);
-     om=(IceGOM*)evt->GetIdDevice(omid);
-    }
-    if (!om) continue;
-   }
-
-   else {
-    cout << "IceRoot::Exec: Unknown waveform type " << waveformtype << endl;
-    continue;
-   }
+   // Store readout type
+   omx->AddNamedSlot("READOUT");
+   if(type==0) omx->SetSignal(1,"READOUT");       // Electrical
+   else if(type==1) omx->SetSignal(2,"READOUT");  // Optical
+   else if(type==2) omx->SetSignal(3,"READOUT");  // Digital 
+   else omx->SetSignal(0,"READOUT");              // Unknown
 
    // Fill the waveform histogram with this fragment
+   hname="OM";
+   hname+=omid;
+   hname+="-WF";
+   hname+=omx->GetNwaveforms()+1;
 
-   // TWR waveform
-   if(waveformtype==1){
-    if(numberbinstwr>0){
-     histo.Reset();
-     // Store baseline info
-     hname="BASELINE-WF";
-     hname+=om->GetNwaveforms()+1;
-     om->AddNamedSlot(hname);
-     om->SetSignal(baseline,hname);
-     // Waveform name
-     hname="OM";
-     hname+=omid;
-     hname+="-WF";
-     hname+=om->GetNwaveforms()+1;
-     hname+="-TWR";
-     histo.SetName(hname.Data());
-     // Add waveform
-     calom=0;
-     if(fTWRDaq) calom=(IceGOM*)fTWRDaq->GetObject(omid,1);
-     if(!calom){
-      cout << "IceRoot: No calibration info for OM " << omid << ", skipping this waveform" << endl;
-      continue;
-     }
-     binwidth=calom->GetSignal("BINSIZE");
-     extstop=(Int_t)calom->GetSignal("EXTSTOP");
-     starttime=dmaddtriggertime+binwidth*(startbin-twrbuffer+extstop);
-     histo.SetBins(numberbinstwr,starttime,starttime+numberbinstwr*binwidth);
-     for (Int_t jbin=1; jbin<=numberbinstwr; jbin++)
-     {
-      histo.SetBinContent(jbin,(Float_t)baseline-(Float_t)twrwaveform[jbin-1]);
-     }
-     om->SetWaveform(&histo,om->GetNwaveforms()+1);
-    } else {
-     cout << "IceRoot::Exec: waveformtype=1, but numberbinstwr=0." << endl;
-    }
+   histo.Reset();
+   histo.SetName(hname.Data());
+   histo.SetBins(numberbins,triggertime+starttime,triggertime+starttime+numberbins*binsize);
+
+   for (Int_t jbin=1; jbin<=numberbins; jbin++)
+   {
+    histo.SetBinContent(jbin,baseline-wvform[jbin-1]);
    }
 
-   // Separate waveforms from DOM launch
-   else if(waveformtype==2){
-    // Non-merged waveforms not supported
-    cout << "IceRoot::Exec: Non-merged ATWD waveform found. You should never get to here anyway." << endl;
-    continue;
-   }
+   omx->SetWaveform(&histo,omx->GetNwaveforms()+1);
 
-   // Merged ATWD waveform
-   else if(waveformtype==3 || waveformtype==5){
-    if(numberbinswaveform>0){
-     histo.Reset();
-     hname="OM";
-     hname+=omid;
-     hname+="-WF";
-     hname+=om->GetNwaveforms()+1;
-     hname+="-ATWD";
-     histo.SetName(hname.Data());
-     starttime=starttimewaveform;
-     histo.SetBins(numberbinswaveform,starttime,starttime+numberbinswaveform*binwidth);
-     sample.Reset();
-     for (Int_t jbin=1; jbin<=numberbinswaveform; jbin++)
-     {
-      histo.SetBinContent(jbin,waveform[jbin-1]);
-     }
-     hname="BASELINE-WF";
-     hname+=om->GetNwaveforms()+1;
-     om->AddNamedSlot(hname);
-     om->SetSignal(sample.GetMedian(&histo,2),hname);
-     om->SetSignalError(sample.GetSpread(&histo,2),hname);
-     om->SetWaveform(&histo,om->GetNwaveforms()+1);
-    } else {
-     cout << "IceRoot::Exec: waveformtype=" << waveformtype << ", but numberbinswaveform=0." << endl;
-    }
-   }
-
-   // FADC waveform
-   else if(waveformtype==4 || waveformtype==6){
-    if(numberbinswaveform>0){
-     histo.Reset();
-     hname="OM";
-     hname+=omid;
-     hname+="-WF";
-     hname+=om->GetNwaveforms()+1;
-     hname+="-FADC";
-     histo.SetName(hname.Data());
-     starttime=starttimewaveform;
-     histo.SetBins(numberbinswaveform,starttime,starttime+numberbinswaveform*binwidth);
-     for (Int_t jbin=1; jbin<=numberbinswaveform; jbin++)
-     {
-      histo.SetBinContent(jbin,waveform[jbin-1]);
-     }
-     om->SetWaveform(&histo,om->GetNwaveforms()+1);
-    } else {
-     cout << "IceRoot::Exec: waveformtype=" << waveformtype << ", but numberbinswaveform=0." << endl;
-    }
-   }
-
-   // Unknown waveform type
-   else {
-    cout << "IceRoot::Exec: Unknown waveform type " << waveformtype << endl;
-    continue;
-   }
-
-  } // End of loop over waveforms in input tree
+  }
 
   // Write last event to tree
-  if(evt->GetDevices("IceGOM"))
+  if(evt->GetDevices("IceAOM"))
   {
    CleanTasks();
    ExecuteTasks(opt);
@@ -724,6 +524,7 @@ void IceRoot::Exec(Option_t* opt)
    if (fPrintfreq) { if (!(nevt%fPrintfreq)) evt->HeaderData(); }
    // Update event counter
    nevt++;
+   if (fMaxevt>-1 && nevt>=fMaxevt) break;
   }
 
   // Reset event
@@ -733,16 +534,14 @@ void IceRoot::Exec(Option_t* opt)
   input->Close();
 
   // Clean up
-  delete[] trigtime;
-  delete[] triglength;
-  delete[] twrwaveform;
-  delete[] waveform;
+  delete[] wvform;
   delete[] trackx;
   delete[] tracky;
   delete[] trackz;
+  delete[] trackenergy;
   delete[] trackzenith;
   delete[] trackazimuth;
-  delete[] trackenergy;
+  delete[] tracktype;
 
   // Stop looping over input files if max. nr. of events is reached
   if (fMaxevt>-1 && nevt>=fMaxevt)

@@ -27,7 +27,7 @@
 // A specific OM database may be attached by means of the SetOMdbase()
 // or SetCalibFile() memberfunctions.
 // Further details about the OM database can be found in the docs
-// of IceCal2Root.
+// of IceCal2Root and IceDB2Root.
 //
 // In the calibration procedure, all event data in memory is scanned and
 // replaced by calibrated data if a calibration function is present.
@@ -50,7 +50,7 @@
 // structure itself via the device named "IceCalibrate".
 //
 //--- Author: Nick van Eijndhoven 18-sep-2005 Utrecht University
-//- Modified: NvE $Date$ Utrecht University
+//- Modified: GdVU $Date$ Utrecht University
 ///////////////////////////////////////////////////////////////////////////
  
 #include "IceCalibrate.h"
@@ -62,7 +62,10 @@ IceCalibrate::IceCalibrate(const char* name,const char* title) : TTask(name,titl
 {
 // Default constructor.
  fCalfile=0;
- fOmdb=0;
+ fMuDaqDB=0;
+ fTWRDaqDB=0;
+ fJEBTDaqDB=0;
+ fJEBADaqDB=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceCalibrate::~IceCalibrate()
@@ -75,11 +78,16 @@ IceCalibrate::~IceCalibrate()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceCalibrate::SetOMdbase(AliObjMatrix* omdb)
+void IceCalibrate::SetOMdbase(AliObjMatrix* omdb, TString name)
 {
 // Set the pointer to the OM database.
+// The following names can be used: MuDaq, TWRDaq, JEBTDaq and JEBADaq.
 // Note : this will overrule a previously attached database. 
- fOmdb=omdb;
+ if(name=="MuDaq") fMuDaqDB=omdb;
+ else if(name=="TWRDaq") fTWRDaqDB=omdb;
+ else if(name=="JEBTDaq") fJEBTDaqDB=omdb;
+ else if(name=="JEBADaq") fJEBADaqDB=omdb;
+ else cout << "IceCalibrate::SetOMdbase Unknown database: " << name.Data() << endl;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCalibrate::SetCalibFile(TString name)
@@ -92,7 +100,11 @@ void IceCalibrate::SetCalibFile(TString name)
   fCalfile=0;
  }
  fCalfile=new TFile(name.Data());
- fOmdb=0;
+
+ fMuDaqDB=(AliObjMatrix*)fCalfile->Get("MuDaq-OMDBASE");
+ fTWRDaqDB=(AliObjMatrix*)fCalfile->Get("TWRDaq-OMDBASE");
+ fJEBTDaqDB=(AliObjMatrix*)fCalfile->Get("JEBTDaq-OMDBASE");
+ fJEBADaqDB=(AliObjMatrix*)fCalfile->Get("JEBADaq-OMDBASE");
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceCalibrate::Exec(Option_t* opt)
@@ -116,27 +128,23 @@ void IceCalibrate::Exec(Option_t* opt)
 
  Int_t mudaq=0;
  Int_t twrdaq=0;
+ Int_t jebdaq=0;
  AliSignal* daq=(AliSignal*)evt->GetDevice("Daq");
  mudaq=int(daq->GetSignal("Muon"));
  twrdaq=int(daq->GetSignal("TWR"));
-
- if (!fOmdb && fCalfile)
- {
-  if (mudaq)
-  {
-   fOmdb=(AliObjMatrix*)fCalfile->Get("MuDaq-OMDBASE");
-   // Next statement for compatibility with old calibration file format
-   if (!fOmdb) fOmdb=(AliObjMatrix*)fCalfile->Get("Cal-OMDBASE");
-  }
-  if (twrdaq) fOmdb=(AliObjMatrix*)fCalfile->Get("TWRDaq-OMDBASE");
- }
+ jebdaq=int(daq->GetSignal("JEB"));
 
  // Storage of the used parameters in the IceCalibrate device
  AliSignal params;
  params.SetNameTitle("IceCalibrate","IceCalibrate processor parameters");
- params.SetSlotName("Omdb",1);
-
- if (fOmdb) params.SetSignal(1,1);
+ params.AddNamedSlot("MuDaq-OMDBASE");
+ if (fMuDaqDB) params.SetSignal(1,"MuDaq-OMDBASE");
+ params.AddNamedSlot("TWRDaq-OMDBASE");
+ if (fTWRDaqDB) params.SetSignal(1,"TWRDaq-OMDBASE");
+ params.AddNamedSlot("JEBTDaq-OMDBASE");
+ if (fJEBTDaqDB) params.SetSignal(1,"JEBTDaq-OMDBASE");
+ params.AddNamedSlot("JEBADaq-OMDBASE");
+ if (fJEBADaqDB) params.SetSignal(1,"JEBADaq-OMDBASE");
 
  evt->AddDevice(params);
 
@@ -164,7 +172,17 @@ void IceCalibrate::Exec(Option_t* opt)
   id=ome->GetUniqueID();
 
   omd=0;
-  if (fOmdb) omd=(IceGOM*)fOmdb->GetObject(id,1);
+
+  // Amanda OM
+  if(ome->InheritsFrom("IceAOM")){
+   if(mudaq && fMuDaqDB) omd=(IceGOM*)fMuDaqDB->GetObject(id,1);
+   if(twrdaq && fTWRDaqDB) omd=(IceGOM*)fTWRDaqDB->GetObject(id,1);
+   if(jebdaq && fJEBTDaqDB) omd=(IceGOM*)fJEBTDaqDB->GetObject(id,1);
+  }
+  // IceCube DOM
+  if(ome->InheritsFrom("IceDOM")){
+   if(jebdaq && fJEBADaqDB) omd=(IceGOM*)fJEBADaqDB->GetObject(id,1);
+  }
 
   // Set global OM constants
   if (omd)
