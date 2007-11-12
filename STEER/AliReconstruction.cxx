@@ -1452,12 +1452,16 @@ Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
   AliInfo("Cleaning the ESD...");
   Int_t nTracks=esd->GetNumberOfTracks();
   AliInfo(Form("Number of ESD tracks before cleaning %d",nTracks));
+  Int_t nV0s=esd->GetNumberOfV0s();
+  AliInfo(Form("Number of ESD V0s before cleaning %d",nV0s));
 
-  Float_t cleanPars[]={fDmax,fZmax};
+  Float_t cleanPars[]={fV0DCAmax,fV0CsPmin,fDmax,fZmax};
   Bool_t rc=esd->Clean(cleanPars);
 
   nTracks=esd->GetNumberOfTracks();
   AliInfo(Form("Number of ESD tracks after cleaning %d",nTracks));
+  nV0s=esd->GetNumberOfV0s();
+  AliInfo(Form("Number of ESD V0s after cleaning %d",nV0s));
 
   return rc;
 }
