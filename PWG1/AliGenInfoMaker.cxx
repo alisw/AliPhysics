@@ -36,15 +36,15 @@ t->Exec();
 #include "Rtypes.h"
 #include "TFile.h"
 #include "TTree.h"
-#include "TChain.h"
-#include "TCut.h"
-#include "TString.h"
+//#include "TChain.h"
+//#include "TCut.h"
+//#include "TString.h"
 #include "TStopwatch.h"
 #include "TParticle.h"
-#include "TSystem.h"
-#include "TCanvas.h"
-#include "TGeometry.h"
-#include "TPolyLine3D.h"
+//#include "TSystem.h"
+//#include "TCanvas.h"
+//#include "TGeometry.h"
+//#include "TPolyLine3D.h"
 
 //ALIROOT includes
 #include "AliRun.h"
@@ -53,12 +53,12 @@ t->Exec();
 #include "AliTPCParam.h"
 #include "AliTPC.h"
 #include "AliTPCLoader.h"
-#include "AliDetector.h"
+//#include "AliDetector.h"
 #include "AliTrackReference.h"
 #include "AliTPCParamSR.h"
 #include "AliTracker.h"
-#include "AliMagF.h"
-#include "AliHelix.h"
+//#include "AliMagF.h"
+//#include "AliHelix.h"
 #include "AliTrackPointArray.h"
 
 #endif
@@ -172,6 +172,8 @@ AliGenInfoMaker::AliGenInfoMaker(const char * fnGalice, const char* fnRes,
 AliMCInfo * AliGenInfoMaker::MakeInfo(UInt_t i)
 {
   // 
+  // Make info structure for given particle index
+  //
   if (i<fNParticles) {
     if (fGenInfo[i]) return  fGenInfo[i];
     fGenInfo[i] = new AliMCInfo;  
@@ -185,6 +187,9 @@ AliMCInfo * AliGenInfoMaker::MakeInfo(UInt_t i)
 ////////////////////////////////////////////////////////////////////////
 AliGenInfoMaker::~AliGenInfoMaker()
 {
+  //
+  // Destructor
+  //
   
   if (fLoader){
     fLoader->UnloadgAlice();
@@ -196,7 +201,8 @@ AliGenInfoMaker::~AliGenInfoMaker()
 Int_t  AliGenInfoMaker::SetIO()
 {
   //
-  // 
+  // Set IO for given event 
+  //
   CreateTreeGenTracks();
   if (!fTreeGenTracks) return 1;
   //  AliTracker::SetFieldFactor(); 
@@ -230,6 +236,9 @@ Int_t AliGenInfoMaker::SetIO(Int_t eventNr)
 
 Int_t AliGenInfoMaker::CloseIOEvent()
 {
+  //
+  // Close IO for current event
+  //
   fLoader->UnloadHeader();
   fLoader->UnloadKinematics();
   fLoader->UnloadTrackRefs();
@@ -249,6 +258,11 @@ Int_t AliGenInfoMaker::CloseIO()
 ////////////////////////////////////////////////////////////////////////
 Int_t AliGenInfoMaker::Exec(Int_t nEvents, Int_t firstEventNr)
 {
+  //
+  // Execute action for 
+  // nEvents
+  // firstEventNr - first event number
+  //
   fNEvents = nEvents;
   fFirstEventNr = firstEventNr;
   return Exec();
@@ -257,6 +271,10 @@ Int_t AliGenInfoMaker::Exec(Int_t nEvents, Int_t firstEventNr)
 ////////////////////////////////////////////////////////////////////////
 Int_t AliGenInfoMaker::Exec()  
 {
+  //
+  // Make a comparision MC tree
+  // Connect MC information -TPArticle - AliTrackRefernces ...
+  //
   TStopwatch timer;
   timer.Start();
   Int_t status =SetIO();
@@ -310,6 +328,9 @@ Int_t AliGenInfoMaker::Exec()
 ////////////////////////////////////////////////////////////////////////
 void AliGenInfoMaker::CreateTreeGenTracks() 
 {
+  //
+  //
+  //
   fFileGenTracks = TFile::Open(fFnRes,"RECREATE");
   if (!fFileGenTracks) {
     cerr<<"Error in CreateTreeGenTracks: cannot open file "<<fFnRes<<endl;
@@ -349,6 +370,9 @@ void AliGenInfoMaker::CreateTreeGenTracks()
 ////////////////////////////////////////////////////////////////////////
 void AliGenInfoMaker::CloseOutputFile() 
 {
+  //
+  // Close Output files
+  //
   if (!fFileGenTracks) {
     cerr<<"File "<<fFnRes<<" not found as an open file."<<endl;
     return;
@@ -952,6 +976,9 @@ Int_t AliGenInfoMaker::TreeTRLoopNew()
 Float_t AliGenInfoMaker::TR2LocalX(AliTrackReference *trackRef,
 				    AliTPCParam *paramTPC) const {
 
+  //
+  // Transformation from Gloabal to local tacking system
+  //
   Float_t x[3] = { trackRef->X(),trackRef->Y(),trackRef->Z()};
   Int_t index[4];
   paramTPC->Transform0to1(x,index);
@@ -963,6 +990,9 @@ Float_t AliGenInfoMaker::TR2LocalX(AliTrackReference *trackRef,
 
 
 AliTPCParam * AliGenInfoMaker::GetTPCParam(){
+  //
+  // create default TPC parameters
+  //
   AliTPCParamSR * par = new AliTPCParamSR;
   par->Update();
   return par;
