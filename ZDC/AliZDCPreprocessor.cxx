@@ -100,11 +100,11 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
   md.SetComment("Alignment object for ZDC");
-  Bool_t resultAl = kFALSE;
+  Bool_t resultAl = kTRUE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
 // *************** From DAQ ******************
-Bool_t resPedCal = kFALSE, resECal = kFALSE, resRecPar = kFALSE;
+Bool_t resPedCal = kTRUE, resECal = kTRUE, resRecPar = kTRUE;
 // *****************************************************
 // [a] PEDESTALS -> Pedestal subtraction
 // *****************************************************
