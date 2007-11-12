@@ -72,6 +72,10 @@ protected:
   TVector2  fPc;                                //track position at PC
   
   AliHMPIDParam *fParam;                        //Pointer to AliHMPIDParam
+  
+private:
+  AliHMPIDRecon(const AliHMPIDRecon& r);              //dummy copy constructor
+  AliHMPIDRecon &operator=(const AliHMPIDRecon& r);   //dummy assignment operator
 //
   ClassDef(AliHMPIDRecon,0)
 };

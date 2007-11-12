@@ -94,7 +94,6 @@ public:
 
   static Int_t fgSigmas;   //sigma Cut
 
-  
 protected:
   static /*const*/ Float_t fgkMinPcX[6];                                                           //limits PC
   static /*const*/ Float_t fgkMinPcY[6];                                                           //limits PC
@@ -111,6 +110,10 @@ protected:
   Float_t fY;                         //y shift of LORS with respect to rotated MARS   
   Double_t fRadNmean;                 //C6F14 mean index as a running parameter
   
+private:
+  AliHMPIDParam(const AliHMPIDParam& r);              //dummy copy constructor
+  AliHMPIDParam &operator=(const AliHMPIDParam& r);   //dummy assignment operator
+      
   ClassDef(AliHMPIDParam,0)           //HMPID main parameters class
 };
 

@@ -35,11 +35,17 @@ public:
   static        void           FormClu (AliHMPIDCluster *pClu,AliHMPIDDigit *pDig,TClonesArray *pDigLst,TMatrixF *pPadMap);//cluster formation recursive algorithm
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
   inline Bool_t                IsDigSurvive(AliHMPIDDigit *pDig                                                     )const;//check for sigma cut
+  
   protected:
   Int_t     *fUserCut;                 // n sigmas for pedestals decided by the User for each chamber(if in OCDB)
   TObjArray *fDaqSig;                  // container for the pad pedestal sigmas
   TObjArray *fDig;                     // tmp list of digits
   TObjArray *fClu;                     // tmp list of clusters
+//
+  private:
+  AliHMPIDReconstructor(const AliHMPIDReconstructor& r);              //dummy copy constructor
+  AliHMPIDReconstructor &operator=(const AliHMPIDReconstructor& r);   //dummy assignment operator
+//  
   ClassDef(AliHMPIDReconstructor, 0)   // class for the HMPID reconstruction
 };
 

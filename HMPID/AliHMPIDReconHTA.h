@@ -61,7 +61,7 @@ public :
   Double_t PhTrkFit     ()const {return fPhTrkFit;}                                                //Getter of phi fitted of the track
 //
 protected:
-// HTA hidden track algorithm
+//
   Double_t fMipX;                              //mip X position for Hidden Track Algorithm  
   Double_t fMipY;                              //mip Y position for Hidden Track Algorithm
   Double_t fMipQ;                              //mip Q          for Hidden Track Algorithm
@@ -79,6 +79,10 @@ protected:
   
   AliHMPIDParam *fParam;                       //Pointer to AliHMPIDParam
   static TH2I* fgDatabase;                     //database for ring shapes
+//
+private:
+  AliHMPIDReconHTA(const AliHMPIDReconHTA& r);              //dummy copy constructor
+  AliHMPIDReconHTA &operator=(const AliHMPIDReconHTA& r);   //dummy assignment operator
 //
   ClassDef(AliHMPIDReconHTA,0)
 };
