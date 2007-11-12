@@ -133,7 +133,7 @@ void MUONTrack::PrintMUONTrackInfo()
   Int_t nparam;
   Float_t pt, bc, nbc, zc;
   AliMUONTrackParam *mtp;
-  TClonesArray *trackParamAtHit;
+  TClonesArray *trackParamAtCluster;
 
   if (!fTrack) {
     cout << "   ! no reconstructed track ..." << endl;
@@ -145,7 +145,7 @@ void MUONTrack::PrintMUONTrackInfo()
     cout << "   Track number " << fLabel << endl;
     cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << endl;
-    cout << "   Number of clusters       " << fTrack->GetNTrackHits() << endl;
+    cout << "   Number of clusters       " << fTrack->GetNClusters() << endl;
     cout << "   Match to trigger         " << fTrack->GetMatchTrigger() << endl;
     if (fTrack->GetMatchTrigger()) {
       cout << "   Chi2 tracking-trigger    " << fTrack->GetChi2MatchTrigger() << endl;
@@ -158,20 +158,20 @@ void MUONTrack::PrintMUONTrackInfo()
     cout << "   Track reference number " << fLabel << endl;
     cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
     cout << endl;
-    cout << "   Number of clusters       " << fTrack->GetNTrackHits() << endl;
+    cout << "   Number of clusters       " << fTrack->GetNClusters() << endl;
   }
  
-  trackParamAtHit = fTrack->GetTrackParamAtHit();
-  nparam = trackParamAtHit->GetEntries();
+  trackParamAtCluster = fTrack->GetTrackParamAtCluster();
+  nparam = trackParamAtCluster->GetEntries();
 
   cout << endl;
-  cout << "   TrackParamAtHit entries  " << nparam << "" << endl;
+  cout << "   trackParamAtCluster entries  " << nparam << "" << endl;
   cout << "   ---------------------------------------------------------------------------------------------------------------------------------" << endl;
   cout << "   Number   InvBendMom   BendSlope   NonBendSlope   BendCoord   NonBendCoord               Z        Px        Py        Pz         P" << endl;
 
   for (Int_t i = 0; i < nparam; i++) {
 
-    mtp = (AliMUONTrackParam*)trackParamAtHit->At(i);
+    mtp = (AliMUONTrackParam*)trackParamAtCluster->At(i);
 
     cout << 
       setw(9)<< setprecision(3) << 
@@ -514,15 +514,15 @@ void MUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
 
   for (Int_t i = 0; i < 28; i++) xr[i]=yr[i]=zr[i]=0.0;
   
-  Int_t nTrackHits = mtrack->GetNTrackHits();
+  Int_t nTrackHits = mtrack->GetNClusters();
   
   Bool_t hitChamber[14] = {kFALSE};
   Int_t iCha;
-  TClonesArray* trackParamAtHit = mtrack->GetTrackParamAtHit();
+  TClonesArray* trackParamAtCluster = mtrack->GetTrackParamAtCluster();
 
   for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
 
-    trackParam = (AliMUONTrackParam*) trackParamAtHit->At(iHit); 
+    trackParam = (AliMUONTrackParam*) trackParamAtCluster->At(iHit); 
     
     if (iHit == 0) {
       if (IsMUONTrack()) {
@@ -912,7 +912,7 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
   Double_t zMax = 0.0;
   Int_t  charge =   0;
   AliMUONTrackParam *trackParam = 0;
-  TClonesArray *trackParamAtHit = 0;
+  TClonesArray *trackParamAtCluster = 0;
 
   if (i2 == 9999) {
     zMax = zr[i1]+1.5*step;
@@ -920,16 +920,16 @@ void MUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1, Int_t
     zMax = zr[i2]+1.5*step;
   }
 
-  trackParamAtHit = fTrack->GetTrackParamAtHit();
+  trackParamAtCluster = fTrack->GetTrackParamAtCluster();
 
   if (IsMUONTrack()) {
-    trackParam = (AliMUONTrackParam*)trackParamAtHit->At(i1); 
+    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1); 
     charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
   }
   if (IsRefTrack()) {
     trackParam = fTrack->GetTrackParamAtVertex();
     charge = (Int_t)TMath::Sign(1.0,trackParam->GetInverseBendingMomentum());
-    trackParam = (AliMUONTrackParam*)trackParamAtHit->At(i1); 
+    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1); 
   }
   
   vect[0] = xr[i1];

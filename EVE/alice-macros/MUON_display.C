@@ -260,7 +260,7 @@ void MUON_ESD_tracks() {
 void MUON_Ref_tracks() {
 
   TString dataPath = TString(Alieve::gEvent->GetTitle());
-  dataPath.Append("/galice.root");
+  dataPath.Append("/");
 
   AliMUONRecoCheck recoCheck(dataPath.Data(),dataPath.Data());
   AliMUONVTrackStore* trackRefStore = recoCheck.ReconstructibleTracks(Alieve::gEvent->GetEventId());
