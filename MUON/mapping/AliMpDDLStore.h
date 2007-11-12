@@ -61,6 +61,9 @@ class AliMpDDLStore : public  TObject {
     /// Return trigger crates iterator
     TExMapIter GetTriggerCrateItr() const {return fTriggerCrates.GetIterator();}
 
+    /// Return trigger local board iterator
+    TExMapIter GetLocalBoardItr() const {return fLocalBoards.GetIterator();}
+
     /// Get an iterator to loop over bus patches
     TExMapIter GetBusPatchesIterator() const { return fBusPatches.GetIterator(); }
     
