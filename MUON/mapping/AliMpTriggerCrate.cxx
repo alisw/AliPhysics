@@ -59,18 +59,40 @@ TString AliMpTriggerCrate::GenerateName(Int_t crateId, Int_t ddlId, Int_t nofDDL
 //______________________________________________________________________________
 AliMpTriggerCrate::AliMpTriggerCrate(const Char_t* name, Int_t ddlId)
   : TNamed(name, "mapping trigger crate"),
+    fId(0),
     fDdlId(ddlId),
-    fLocalBoard(false)
+    fLocalBoard(false),
+    fMask(0),
+    fMode(0),
+    fCoinc(0)
  
 {
 /// Standard constructor
 }
 
 //______________________________________________________________________________
+AliMpTriggerCrate::AliMpTriggerCrate(const Char_t* name, UShort_t id, UShort_t mask, UShort_t mode, UShort_t coinc)
+  : TNamed(name, "mapping trigger crate"),
+    fId(id),
+    fDdlId(0),
+    fLocalBoard(false),
+    fMask(mask),
+    fMode(mode),
+    fCoinc(coinc)
+ 
+{
+/// Standard constructor for Shuttle + DA
+}
+
+//______________________________________________________________________________
 AliMpTriggerCrate::AliMpTriggerCrate(TRootIOCtor* /*ioCtor*/)
   : TNamed(),
+    fId(),
     fDdlId(),
-    fLocalBoard()
+    fLocalBoard(),
+    fMask(),
+    fMode(),
+    fCoinc()
 {
 /// Root IO constructor
 }
