@@ -27,7 +27,10 @@ class AliMUONRawClusterV2 : public AliMUONVCluster {
   
   virtual void Clear(Option_t* = "");
   
-	   /// Set coordinates (cm)
+	   /// Create a copy of the current cluster
+  virtual AliMUONRawClusterV2* CreateCopy() const {return new AliMUONRawClusterV2(*this);}
+  
+           /// Set coordinates (cm)
   virtual void     SetXYZ(Double_t x, Double_t y, Double_t z) {fX = x; fY = y; fZ = z;}
 	   /// Return coordinate X (cm)
   virtual Double_t GetX() const {return fX;}

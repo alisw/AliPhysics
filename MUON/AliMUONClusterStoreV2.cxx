@@ -135,6 +135,13 @@ Bool_t AliMUONClusterStoreV2::Add(const AliMUONVCluster& vCluster)
     return kFALSE;
   }
   
+  // check chamberId
+  Int_t chamberId = cluster->GetChamberId();
+  if (chamberId < 0 || chamberId >= AliMpConstants::NofTrackingChambers()) {
+    AliError(Form("ChamberId (%d) out of boundaries [0,%d[",chamberId,AliMpConstants::NofTrackingChambers()));
+    return 0x0;
+  }
+  
   // check that there is no cluster with the same Id
   if (FindObject(cluster->GetUniqueID())) {
     AliError("cluster store already contains a cluster with the same ID --> add() aborted");
@@ -153,6 +160,12 @@ Bool_t AliMUONClusterStoreV2::Add(const AliMUONVCluster& vCluster)
 AliMUONVCluster* AliMUONClusterStoreV2::Add(Int_t chamberId, Int_t detElemId, Int_t clusterIndex)
 {
   /// Add an empty cluster with an unique ID to this store
+  
+  // check chamberId
+  if (chamberId < 0 || chamberId >= AliMpConstants::NofTrackingChambers()) {
+    AliError(Form("ChamberId (%d) out of boundaries [0,%d[",chamberId,AliMpConstants::NofTrackingChambers()));
+    return 0x0;
+  }
   
   // check that there is no cluster with the same Id
   AliMUONVCluster *c = FindObject(AliMUONVCluster::BuildUniqueID(chamberId, detElemId, clusterIndex));

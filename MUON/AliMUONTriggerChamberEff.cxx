@@ -899,7 +899,7 @@ Bool_t AliMUONTriggerChamberEff::IsCleanTrack(AliMUONTriggerTrack *triggerTrack,
     
     while ( ( track = static_cast<AliMUONTrack*>(next()) ) )
     {
-	trackParam = *((AliMUONTrackParam*) (track->GetTrackParamAtHit()->Last()));
+	trackParam = *((AliMUONTrackParam*) (track->GetTrackParamAtCluster()->Last()));
 	AliMUONTrackExtrap::ExtrapToZ(&trackParam, AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
     
 	xTrack = trackParam.GetNonBendingCoor();

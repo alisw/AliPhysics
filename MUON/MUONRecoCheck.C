@@ -39,7 +39,7 @@
 Int_t TrackCheck( Bool_t *compTrack);
 
 void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", 
-                    char * filenameSim="galice_sim.root", char * filename="galice.root"){
+                    char * pathSim="./generated/", char * filename="galice.root"){
   
   // Utility macro to check the muon reconstruction. Reconstructed tracks are compared
   // to reference tracks. The reference tracks are built from AliTrackReference for the
@@ -47,14 +47,13 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
   
   Bool_t *compTrack;
   Bool_t compTrackOK[10];
-  Int_t nHitOK = 0;
+  Int_t nClusterOk = 0;
   Int_t testTrack = 0;	
   Int_t iTrack = 0;
   AliMUONTrack* trackOK(0x0);
   Int_t trackID = 0;
   Double_t sigma2Cut = 16;  // 4 sigmas cut, sigma2Cut = 4*4
   AliMUONTrackParam *trackParam;
-  TClonesArray *trackParamAtHit;
   Double_t x1,y1,z1,pX1,pY1,pZ1,p1;
   Double_t x2,y2,z2,pX2,pY2,pZ2,p2;
   
@@ -63,12 +62,12 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
   
   TH1F *hReconstructible = new TH1F("hReconstructible"," Nb of reconstructible tracks ",15,-0.5,14.5);
   TH1F *hReco = new TH1F("hReco"," Nb of reconstructed tracks / evt",15,-0.5,14.5);
-  TH1F *hNHitComp = new TH1F("hNHitComp"," Nb of compatible hits / track ",15,-0.5,14.5);
+  TH1F *hNClusterComp = new TH1F("hNClusterComp"," Nb of compatible clusters / track ",15,-0.5,14.5);
   TH1F *hTestTrack = new TH1F("hTestTrack"," Reconstruction requirement / track",15,-0.5,14.5);
   TH1F *hTrackRefID = new TH1F("hTrackRefID"," track reference ID ",100,-0.5,99.5);
   
-  TH1F *hResMomVertex = new TH1F("hMomVertex"," delta P vertex (GeV/c)",100,-10.,10);
-  TH1F *hResMomFirstHit = new TH1F("hMomFirstHit"," delta P first hit (GeV/c)",100,-10.,10);
+  TH1F *hResMomVertex = new TH1F("hResMomVertex"," delta P vertex (GeV/c)",100,-10.,10);
+  TH1F *hResMomFirstCluster = new TH1F("hResMomFirstCluster"," delta P first cluster (GeV/c)",100,-10.,10);
   
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
   if (!gGeoManager) {
@@ -87,7 +86,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
     
-  AliMUONRecoCheck rc(filename,filenameSim);
+  AliMUONRecoCheck rc(filename,pathSim);
   
   Int_t nevents = rc.NumberOfEvents();
   
@@ -135,10 +134,10 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
         
         if (iTrack > testTrack) 
         {
-          nHitOK = 0;
+          nClusterOk = 0;
           for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) 
           {
-            if (compTrack[ch]) nHitOK++;
+            if (compTrack[ch]) nClusterOk++;
             compTrackOK[ch] = compTrack[ch];
           }
           testTrack = iTrack;
@@ -152,7 +151,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
       
       if (testTrack == 4) {     // tracking requirements verified, track is found
         nReconstructibleTracksCheck++;
-        hNHitComp->Fill(nHitOK);
+        hNClusterComp->Fill(nClusterOk);
         trackParam = trackRef->GetTrackParamAtVertex();
         x1 = trackParam->GetNonBendingCoor();
         y1 = trackParam->GetBendingCoor();
@@ -164,7 +163,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
         
         // 	printf(" Ref. track at vertex: x,y,z: %f %f %f px,py,pz,p: %f %f %f %f \n",x1,y1,z1,pX1,pY1,pZ1,p1);
         trackReco = trackOK;
-        trackParam = new AliMUONTrackParam(*((AliMUONTrackParam*)(trackReco->GetTrackParamAtHit()->First())));
+        trackParam = new AliMUONTrackParam(*((AliMUONTrackParam*)(trackReco->GetTrackParamAtCluster()->First())));
         AliMUONTrackExtrap::ExtrapToVertex(trackParam,x1,y1,z1);
         x2 = trackParam->GetNonBendingCoor();
         y2 = trackParam->GetBendingCoor();
@@ -178,8 +177,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
         
         hResMomVertex->Fill(p2-p1);
         
-        trackParamAtHit =  trackRef->GetTrackParamAtHit();
-        trackParam = (AliMUONTrackParam*) trackParamAtHit->First();
+        trackParam = (AliMUONTrackParam*) trackRef->GetTrackParamAtCluster()->First();
         x1 = trackParam->GetNonBendingCoor();
         y1 = trackParam->GetBendingCoor();
         z1 = trackParam->GetZ();
@@ -187,9 +185,8 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
         pY1 = trackParam->Py();
         pZ1 = trackParam->Pz();
         p1  = trackParam->P();
-        // 	printf(" Ref. track at 1st hit: x,y,z: %f %f %f px,py,pz: %f %f %f \n",x1,y1,z1,pX1,pY1,pZ1);
-        trackParamAtHit =  trackOK->GetTrackParamAtHit();
-        trackParam = (AliMUONTrackParam*) trackParamAtHit->First();
+        // 	printf(" Ref. track at 1st cluster: x,y,z: %f %f %f px,py,pz: %f %f %f \n",x1,y1,z1,pX1,pY1,pZ1);
+        trackParam = (AliMUONTrackParam*) trackOK->GetTrackParamAtCluster()->First();
         x2 = trackParam->GetNonBendingCoor();
         y2 = trackParam->GetBendingCoor();
         z2 = trackParam->GetZ();
@@ -197,9 +194,9 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
         pY2 = trackParam->Py();
         pZ2 = trackParam->Pz();
         p2  = trackParam->P();
-        // 	printf(" Reconst. track at 1st hit: x,y,z: %f %f %f px,py,pz: %f %f %f \n",x2,y2,z2,pX2,pY2,pZ2);
+        // 	printf(" Reconst. track at 1st cluster: x,y,z: %f %f %f px,py,pz: %f %f %f \n",x2,y2,z2,pX2,pY2,pZ2);
         
-        hResMomFirstHit->Fill(p2-p1);
+        hResMomFirstCluster->Fill(p2-p1);
 	       
       }
     } // end loop track ref.
@@ -223,24 +220,18 @@ Int_t TrackCheck( Bool_t *compTrack)
   // Return number of validated conditions 
   // If all the tests are verified then TrackCheck = 4 (good track)
   Int_t iTrack = 0;
-  Int_t hitsInLastStations = 0;
+  Int_t nCompClustersInLastStations = 0;
   
   // apply reconstruction requirements
-  if (compTrack[0] || compTrack[1]) iTrack++; // at least one hit in st. 0
-  if (compTrack[2] || compTrack[3]) iTrack++; // at least one hit in st. 1
-  if (compTrack[4] || compTrack[5]) iTrack++; // at least one hit in st. 2
+  if (compTrack[0] || compTrack[1]) iTrack++; // at least one compatible cluster in st. 0
+  if (compTrack[2] || compTrack[3]) iTrack++; // at least one compatible cluster in st. 1
+  if (compTrack[4] || compTrack[5]) iTrack++; // at least one compatible cluster in st. 2
   for (Int_t ch = 6; ch < AliMUONConstants::NTrackingCh(); ch++) {
-    if (compTrack[ch]) hitsInLastStations++; 
+    if (compTrack[ch]) nCompClustersInLastStations++; 
   }
-  if (hitsInLastStations > 2) iTrack++; // at least 3 hits in st. 3 & 4
+  if (nCompClustersInLastStations > 2) iTrack++; // at least 3 compatible clusters in st. 3 & 4
   
   return iTrack;
   
 }
-
-
-
-
-
-
 

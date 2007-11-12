@@ -17,7 +17,7 @@
 #include <TObject.h>
 #include <TMatrixD.h>
 
-class AliMUONHitForRec;
+class AliMUONVCluster;
 class AliESDMuonTrack;
 
 class AliMUONTrackParam : public TObject 
@@ -104,30 +104,31 @@ class AliMUONTrackParam : public TObject
   const TMatrixD& GetSmoothCovariances() const;
   void            SetSmoothCovariances(const TMatrixD& covariances);
   
-  AliMUONHitForRec* GetHitForRecPtr() const;
-	/// set pointeur to associated HitForRec
-  void              SetHitForRecPtr(AliMUONHitForRec* hitForRec) {fHitForRecPtr = hitForRec;}
+        /// get pointeur to associated cluster
+  AliMUONVCluster* GetClusterPtr() const {return fClusterPtr;}
+	/// set pointeur to associated cluster
+  void             SetClusterPtr(AliMUONVCluster* cluster, Bool_t owner = kFALSE) {fClusterPtr = cluster; fOwnCluster = owner;}
   
-  	/// return kTRUE if the associated hit can be removed from the track it belongs to
+  	/// return kTRUE if the associated cluster can be removed from the track it belongs to
   Bool_t IsRemovable() const {return fRemovable;}
-  	/// set the flag telling whether the associated hit can be removed from the track it belongs to or not
+  	/// set the flag telling whether the associated cluster can be removed from the track it belongs to or not
   void   SetRemovable(Bool_t removable) {fRemovable = removable;}
   
-	/// return kTRUE if the associated hit alone in its chamber
+	/// return kTRUE if the associated cluster alone in its chamber
   Bool_t IsAloneInChamber() const {return fAloneInChamber;}
 	/// set the flag telling whether the associated hi alone in its chamber or not
   void   SetAloneInChamber(Bool_t aloneInChamber) {fAloneInChamber = aloneInChamber;}
   
-  /// return the chi2 of the track when the associated HitForRec was attached
+  /// return the chi2 of the track when the associated cluster was attached
   Double_t GetTrackChi2() const {return fTrackChi2;}
-  	/// set the chi2 of the track when the associated HitForRec was attached
+  	/// set the chi2 of the track when the associated cluster was attached
   void     SetTrackChi2(Double_t chi2) {fTrackChi2 = chi2;}
-  	/// return the local chi2 of the associated HitForRec with respect to the track
+  	/// return the local chi2 of the associated cluster with respect to the track
   Double_t GetLocalChi2() const {return fLocalChi2;}
-  	/// set the local chi2 of the associated HitForRec with respect to the track
+  	/// set the local chi2 of the associated cluster with respect to the track
   void     SetLocalChi2(Double_t chi2) {fLocalChi2 = chi2;}
   
-	/// necessary for sorting TClonesArray of TrackHit's
+	/// necessary for sorting TClonesArray of AliMUONTrackParam
   Bool_t IsSortable () const {return kTRUE;}
   Int_t Compare(const TObject* trackParam) const;
 
@@ -155,21 +156,22 @@ class AliMUONTrackParam : public TObject
   /// <X,InvP_yz> <SlopeX,InvP_yz> <Y,InvP_yz> <SlopeY,InvP_yz> <InvP_yz,InvP_yz>  </pre>
   mutable TMatrixD *fCovariances; ///< \brief Covariance matrix of track parameters 
   
-  mutable TMatrixD *fPropagator; //!< Jacobian used to extrapolate the track parameters and covariances to the actual z position
-  mutable TMatrixD *fExtrapParameters; //!< Track parameters extrapolated to the actual z position (not filtered by Kalman)
+  mutable TMatrixD *fPropagator;        //!< Jacobian used to extrapolate the track parameters and covariances to the actual z position
+  mutable TMatrixD *fExtrapParameters;  //!< Track parameters extrapolated to the actual z position (not filtered by Kalman)
   mutable TMatrixD *fExtrapCovariances; //!< Covariance matrix extrapolated to the actual z position (not filtered by Kalman)
   
-  mutable TMatrixD *fSmoothParameters; //!< Track parameters obtained using smoother
+  mutable TMatrixD *fSmoothParameters;  //!< Track parameters obtained using smoother
   mutable TMatrixD *fSmoothCovariances; //!< Covariance matrix obtained using smoother
   
-  AliMUONHitForRec *fHitForRecPtr; //!< Pointer to associated HitForRec if any
+  AliMUONVCluster *fClusterPtr; //!< Pointer to associated cluster if any
+  Bool_t           fOwnCluster; //!< Ownership of the associated cluster
   
-  Bool_t fRemovable; //!< kTRUE if the associated hit can be removed from the track it belongs to
+  Bool_t fRemovable; //!< kTRUE if the associated cluster can be removed from the track it belongs to
   
-  Bool_t fAloneInChamber; //!< kTRUE if the associated hit is alone in its chamber
+  Bool_t fAloneInChamber; //!< kTRUE if the associated cluster is alone in its chamber
 
-  Double_t fTrackChi2; //!< Chi2 of the track when the associated HitForRec was attached
-  Double_t fLocalChi2; //!< Local chi2 of the associated HitForRec with respect to the track
+  Double_t fTrackChi2; //!< Chi2 of the track when the associated cluster was attached
+  Double_t fLocalChi2; //!< Local chi2 of the associated cluster with respect to the track
   
   ClassDef(AliMUONTrackParam, 4) // Track parameters in ALICE dimuon spectrometer
 };

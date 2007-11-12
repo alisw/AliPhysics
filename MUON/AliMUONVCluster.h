@@ -23,6 +23,9 @@ class AliMUONVCluster : public TObject {
   
            /// Clear method (used by TClonesArray)
   virtual void Clear(Option_t*) = 0;
+
+           /// Create a copy of the current cluster
+  virtual AliMUONVCluster* CreateCopy() const = 0;
   
            /// Set coordinates (cm)
   virtual void     SetXYZ(Double_t x, Double_t y, Double_t z) = 0;

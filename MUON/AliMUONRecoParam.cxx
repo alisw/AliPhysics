@@ -93,7 +93,7 @@ void AliMUONRecoParam::SetLowFluxParam()
 {
   /// Set reconstruction parameters for low flux environment
   
-  fMinBendingMomentum = 3.;
+  fMinBendingMomentum = 0.5;
   fMaxBendingMomentum = 3000.;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;
@@ -116,7 +116,7 @@ void AliMUONRecoParam::SetHighFluxParam()
 {
   /// Set reconstruction parameters for high flux environment
   
-  fMinBendingMomentum = 3.;
+  fMinBendingMomentum = 0.5;
   fMaxBendingMomentum = 3000.;
   fNonBendingVertexDispersion = 10.;
   fBendingVertexDispersion = 10.;

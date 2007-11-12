@@ -19,7 +19,7 @@ class AliMillepede;
 class AliMUONGeometryTransformer;
 class AliMUONTrack;
 class AliMUONTrackParam;
-class AliMUONHitForRec;
+class AliMUONVCluster;
 
 class AliMUONAlignment:public TObject
 {
@@ -97,11 +97,10 @@ public:
 
   AliMillepede *fMillepede; ///< Detector independent alignment class
   
-  TClonesArray *fTrackParamAtHit; ///< Array of track parameters 
-  TClonesArray *fHitForRecAtHit;  ///< Array of track hits 
-  AliMUONTrack *fTrack;           ///< AliMUONTrack 
-  AliMUONHitForRec *fRecHit;      ///< AliMUONHitForRec
-  AliMUONTrackParam *fTrackParam; ///< Track parameters 
+  TClonesArray *fTrackParamAtCluster; ///< Array of track parameters 
+  AliMUONTrack *fTrack;               ///< AliMUONTrack 
+  AliMUONVCluster *fCluster;          ///< AliMUONVCluster
+  AliMUONTrackParam *fTrackParam;     ///< Track parameters 
 
   Int_t fNGlobal;  ///< Number of global parameters
   Int_t fNLocal;   ///< Number of local parameters

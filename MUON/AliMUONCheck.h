@@ -36,7 +36,6 @@ public:
   void CheckKine();
   void CheckTrackRef();
   void CheckOccupancy(Bool_t perDetEle =kFALSE) const;  
-  void CheckRecTracks() const;
   
   void SetEventsToCheck(Int_t firstEvent, Int_t lastEvent);
 

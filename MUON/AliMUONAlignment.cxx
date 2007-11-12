@@ -21,8 +21,8 @@
 ///
 /// MUON specific alignment class which interface to AliMillepede.   
 /// For each track ProcessTrack calculates the local and global derivatives
-/// at each hit and fill the corresponding local equations. Provide methods for
-/// fixing or constraining detection elements for best results. 
+/// at each cluster and fill the corresponding local equations. Provide methods
+/// for fixing or constraining detection elements for best results. 
 ///
 /// \author Bruce Becker, Javier Castillo
 //-----------------------------------------------------------------------------
@@ -30,7 +30,7 @@
 #include "AliMUONAlignment.h"
 #include "AliMUONTrack.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONHitForRec.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
@@ -64,10 +64,9 @@ AliMUONAlignment::AliMUONAlignment()
     fResCutInitial(100.), 
     fResCut(100.),
     fMillepede(0),
-    fTrackParamAtHit(0),
-    fHitForRecAtHit(0),
+    fTrackParamAtCluster(0),
     fTrack(0),
-    fRecHit(0),
+    fCluster(0),
     fTrackParam(0),
     fNGlobal(fgNDetElem*fgNParCh),
     fNLocal(4),
@@ -727,7 +726,7 @@ void AliMUONAlignment::SetNonLinear(Int_t iPar  /* set non linear flag */ ) {
 }
 
 void AliMUONAlignment::LocalEquationX() {
-  /// Define local equation for current track and hit in x coor. measurement
+  /// Define local equation for current track and cluster in x coor. measurement
   // set local derivatives
   SetLocalDerivative(0, fCosPhi);
   SetLocalDerivative(1, fCosPhi * (fTrackPos[2] - fTrackPos0[2]));
@@ -754,7 +753,7 @@ void AliMUONAlignment::LocalEquationX() {
 }
 
 void AliMUONAlignment::LocalEquationY() {
-  /// Define local equation for current track and hit in y coor. measurement
+  /// Define local equation for current track and cluster in y coor. measurement
   // set local derivatives
   SetLocalDerivative(0,-fSinPhi);
   SetLocalDerivative(1,-fSinPhi * (fTrackPos[2] - fTrackPos0[2]));
@@ -781,16 +780,16 @@ void AliMUONAlignment::LocalEquationY() {
 }
 
 void AliMUONAlignment::FillRecPointData() {
-  /// Get information of current hit
-  fClustPos[0] = fRecHit->GetNonBendingCoor();
-  fClustPos[1] = fRecHit->GetBendingCoor();
-  fClustPos[2] = fRecHit->GetZ();
+  /// Get information of current cluster
+  fClustPos[0] = fCluster->GetX();
+  fClustPos[1] = fCluster->GetY();
+  fClustPos[2] = fCluster->GetZ();
   fTransform->Global2Local(fDetElemId,fClustPos[0],fClustPos[1],fClustPos[2],
 			    fClustPosLoc[0],fClustPosLoc[1],fClustPosLoc[2]);
 }
 
 void AliMUONAlignment::FillTrackParamData() {
-  /// Get information of current track at current hit
+  /// Get information of current track at current cluster
   fTrackPos[0] = fTrackParam->GetNonBendingCoor();
   fTrackPos[1] = fTrackParam->GetBendingCoor();
   fTrackPos[2] = fTrackParam->GetZ();
@@ -805,7 +804,7 @@ void AliMUONAlignment::FillDetElemData() {
   Double_t lDetElemLocX = 0.;
   Double_t lDetElemLocY = 0.;
   Double_t lDetElemLocZ = 0.;
-  fDetElemId = fRecHit->GetDetElemId();
+  fDetElemId = fCluster->GetDetElemId();
   fDetElemNumber = fDetElemId%100;
   for (int iCh=0; iCh<fDetElemId/100-1; iCh++){
     fDetElemNumber += fgNDetElemCh[iCh];
@@ -815,22 +814,19 @@ void AliMUONAlignment::FillDetElemData() {
 }
 
 void AliMUONAlignment::ProcessTrack(AliMUONTrack * track) {
-  /// Process track; Loop over hits and set local equations
+  /// Process track; Loop over clusters and set local equations
   fTrack = track;
   // get tclones arrays.
-  fTrackParamAtHit = fTrack->GetTrackParamAtHit();
-  fHitForRecAtHit = fTrack->GetHitForRecAtHit();
+  fTrackParamAtCluster = fTrack->GetTrackParamAtCluster();
   
   // get size of arrays
-  Int_t nTrackParam = fTrackParamAtHit->GetEntries();
-  Int_t nHitForRec = fHitForRecAtHit->GetEntries();
+  Int_t nTrackParam = fTrackParamAtCluster->GetEntries();
   AliDebug(1,Form("Number of track param entries : %i ", nTrackParam));
-  AliDebug(1,Form("Number of hit for rec entries : %i ", nHitForRec));
 
-  for(Int_t iHit=0; iHit<nHitForRec; iHit++) {
-    fRecHit = (AliMUONHitForRec *) fHitForRecAtHit->At(iHit);
-    fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtHit()->At(iHit);
-    if (!fRecHit || !fTrackParam) continue;
+  for(Int_t iCluster=0; iCluster<nTrackParam; iCluster++) {
+    fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtCluster()->At(iCluster);
+    fCluster = fTrackParam->GetClusterPtr();
+    if (!fCluster || !fTrackParam) continue;
     // fill local variables for this position --> one measurement
     FillDetElemData();
     FillRecPointData();
@@ -844,21 +840,21 @@ void AliMUONAlignment::ProcessTrack(AliMUONTrack * track) {
     break;
   }
 
-  for(Int_t iHit=0; iHit<nHitForRec; iHit++) {
+  for(Int_t iCluster=0; iCluster<nTrackParam; iCluster++) {
     // and get new pointers
-    fRecHit = (AliMUONHitForRec *) fHitForRecAtHit->At(iHit);
-    fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtHit()->At(iHit);
-    if (!fRecHit || !fTrackParam) continue;
+    fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtCluster()->At(iCluster);
+    fCluster = fTrackParam->GetClusterPtr();
+    if (!fCluster || !fTrackParam) continue;
     // fill local variables for this position --> one measurement
     FillDetElemData();        
     FillRecPointData();
     FillTrackParamData();
 //     if (fDetElemId<500) continue;
-    AliDebug(1,Form("cluster: %i", iHit));
+    AliDebug(1,Form("cluster: %i", iCluster));
     AliDebug(1,Form("x: %f\t y: %f\t z: %f\t DetElemID: %i\t ", fClustPos[0], fClustPos[1], fClustPos[2], fDetElemId));
     AliDebug(1,Form("fDetElemPos[0]: %f\t fDetElemPos[1]: %f\t fDetElemPos[2]: %f\t DetElemID: %i\t ", fDetElemPos[0],fDetElemPos[1],fDetElemPos[2], fDetElemId));
 
-    AliDebug(1,Form("Track Parameter: %i", iHit));
+    AliDebug(1,Form("Track Parameter: %i", iCluster));
     AliDebug(1,Form("x: %f\t y: %f\t z: %f\t slopex: %f\t slopey: %f", fTrackPos[0], fTrackPos[1], fTrackPos[2], fTrackSlope[0], fTrackSlope[1]));
     AliDebug(1,Form("x0: %f\t y0: %f\t z0: %f\t slopex0: %f\t slopey0: %f", fTrackPos0[0], fTrackPos0[1], fTrackPos0[2], fTrackSlope0[0], fTrackSlope0[1]));
     

@@ -24,417 +24,386 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONRecoCheck.h"
-#include "AliMUONHitForRec.h"
+#include "AliMUONRawClusterV2.h"
 #include "AliMUONTrack.h"
 #include "AliMUONConstants.h"
-#include "AliMUONMCDataInterface.h"
 #include "AliMUONDataInterface.h"
+#include "AliMUONTrackStoreV1.h"
+
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
 #include "AliLog.h" 
-#include "AliMUONTrackStoreV1.h"
-#include <Riostream.h>
+
 #include <TParticle.h>
 #include <TParticlePDG.h>
+
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader, Char_t *chLoaderSim)
+AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader, Char_t *pathSim)
 : TObject(),
-fMCDataInterface(new AliMUONMCDataInterface(chLoaderSim)),
-fDataInterface(new AliMUONDataInterface(chLoader))
+fMCEventHandler(new AliMCEventHandler()),
+fDataInterface(new AliMUONDataInterface(chLoader)),
+fCurrentEvent(0),
+fTrackRefStore(0x0),
+fRecoTrackRefStore(0x0),
+fRecoTrackStore(0x0)
 {
   /// Normal ctor
+  fMCEventHandler->SetInputPath(pathSim);
+  fMCEventHandler->InitIO("");
 }
 
 //_____________________________________________________________________________
 AliMUONRecoCheck::~AliMUONRecoCheck()
 {
   /// Destructor
-  delete fMCDataInterface;
+  delete fMCEventHandler;
   delete fDataInterface;
+  ResetStores();
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackStore* 
-AliMUONRecoCheck::ReconstructedTracks(Int_t event)
+void AliMUONRecoCheck::ResetStores()
 {
-  /// Return the reconstructed track store for a given event
-  return fDataInterface->TrackStore(event);
+  /// Deletes all the store objects that have been created and resets the pointers to 0x0
+  delete fTrackRefStore;      fTrackRefStore = 0x0;
+  delete fRecoTrackRefStore;  fRecoTrackRefStore = 0x0;
+  delete fRecoTrackStore;     fRecoTrackStore = 0x0;
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackStore* 
-AliMUONRecoCheck::TrackRefs(Int_t event)
-{
-  /// Return a track store containing the track references (converted into 
-  /// MUONTrack objects) for a given event
-  return MakeTrackRefs(event);
-}
-
-//_____________________________________________________________________________
-AliMUONVTrackStore* 
-AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
-{
-  /// Return a track store containing the reconstructible tracks for a given event
-  AliMUONVTrackStore* tmp = MakeTrackRefs(event);
-  AliMUONVTrackStore* reconstructible = MakeReconstructibleTracks(*tmp);
-  delete tmp;
-  return reconstructible;
-}
-
-//_____________________________________________________________________________
-AliMUONVTrackStore*
-AliMUONRecoCheck::MakeTrackRefs(Int_t event)
-{
-  /// Make reconstructible tracks
-    
-  AliMUONVTrackStore* trackRefStore = new AliMUONTrackStoreV1;
-  
-  Int_t nTrackRef = fMCDataInterface->NumberOfTrackRefs(event);
-  
-  Int_t trackSave(-999);
-  Int_t iHitMin(0);
-  
-  Bool_t isNewTrack;
-    
-  AliStack* stack = fMCDataInterface->Stack(event);
-  Int_t max = stack->GetNtrack();
-  
-  for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; ++iTrackRef) 
-  {
-    TClonesArray* trackRefs = fMCDataInterface->TrackRefs(event,iTrackRef);
-    
-    iHitMin = 0;
-    isNewTrack = kTRUE;
-    
-    if (!trackRefs->GetEntries()) continue; 
-    
-    while (isNewTrack) {
-      
-      AliMUONTrack muonTrack;
-      
-      for (Int_t iHit = iHitMin; iHit < trackRefs->GetEntries(); ++iHit) 
-      {        
-        AliTrackReference* trackReference = static_cast<AliTrackReference*>(trackRefs->At(iHit));
-        
-        Float_t x = trackReference->X();
-        Float_t y = trackReference->Y();
-        Float_t z = trackReference->Z();
-        Float_t pX = trackReference->Px();
-        Float_t pY = trackReference->Py();
-        Float_t pZ = trackReference->Pz();
-        
-        Int_t track = trackReference->GetTrack();
-        
-        if ( track >= max )
-        {
-          AliWarningStream()
-          << "Track ID " << track 
-          << " larger than max number of particles " << max << endl;
-          isNewTrack = kFALSE;
-          break;
-        }
-        if (track != trackSave && iHit != 0) {
-          iHitMin = iHit;
-          trackSave = track;
-          break;
-        }
-        
-        Float_t bendingSlope = 0;
-        Float_t nonBendingSlope = 0;
-        Float_t inverseBendingMomentum = 0;
-        
-        AliMUONTrackParam trackParam;
-        
-        // track parameters at hit
-        trackParam.SetBendingCoor(y);
-        trackParam.SetNonBendingCoor(x);
-        trackParam.SetZ(z);
-        
-        if (TMath::Abs(pZ) > 0) 
-        {
-          bendingSlope = pY/pZ;
-          nonBendingSlope = pX/pZ;
-        }
-        Float_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
-        if (pYZ >0) inverseBendingMomentum = 1/pYZ; 
-        
-        trackParam.SetBendingSlope(bendingSlope);
-        trackParam.SetNonBendingSlope(nonBendingSlope);
-        trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
-        
-        AliMUONHitForRec hitForRec;
-        
-        hitForRec.SetBendingCoor(y);
-        hitForRec.SetNonBendingCoor(x);
-        hitForRec.SetZ(z);
-        hitForRec.SetBendingReso2(0.0); 
-        hitForRec.SetNonBendingReso2(0.0);
-        Int_t detElemId = hitForRec.GetDetElemId();
-        Int_t iChamber;
-        if (detElemId) 
-        {
-          iChamber = detElemId / 100 - 1; 
-        }
-        else 
-        {
-          iChamber = AliMUONConstants::ChamberNumber(z);
-        }
-        hitForRec.SetChamberNumber(iChamber);
-        
-        muonTrack.AddTrackParamAtHit(&trackParam,0);
-        muonTrack.AddHitForRecAtHit(&hitForRec);
-        muonTrack.SetTrackID(track);
-        
-        trackSave = track;
-        if (iHit == trackRefs->GetEntries()-1) isNewTrack = kFALSE;
-      }
-      
-      // track parameters at vertex 
-      TParticle* particle = stack->Particle(muonTrack.GetTrackID());
-      
-      if (particle) 
-      {        
-        Float_t x = particle->Vx();
-        Float_t y = particle->Vy();
-        Float_t z = particle->Vz();
-        Float_t pX = particle->Px();
-        Float_t pY = particle->Py();
-        Float_t pZ = particle->Pz();
-        
-        AliMUONTrackParam trackParam;
-        
-        trackParam.SetBendingCoor(y);
-        trackParam.SetNonBendingCoor(x);
-        trackParam.SetZ(z);
-        
-        Float_t bendingSlope = 0;
-        Float_t nonBendingSlope = 0;
-        Float_t inverseBendingMomentum = 0;
-                
-        if (TMath::Abs(pZ) > 0) 
-        {
-          bendingSlope = pY/pZ;
-          nonBendingSlope = pX/pZ;
-        }
-        
-        Float_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
-        if (pYZ >0) inverseBendingMomentum = 1/pYZ;       
-        
-        TParticlePDG* ppdg = particle->GetPDG(1);
-        Int_t charge = (Int_t)(ppdg->Charge()/3.0);
-        inverseBendingMomentum *= charge;
-        
-        trackParam.SetBendingSlope(bendingSlope);
-        trackParam.SetNonBendingSlope(nonBendingSlope);
-        trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
-        
-        muonTrack.SetTrackParamAtVertex(&trackParam);
-      }
-
-      trackRefStore->Add(muonTrack);
-    } // end while isNewTrack
-  }
-  
-  AliMUONVTrackStore* rv = CleanMuonTrackRef(*trackRefStore);
-  
-  delete trackRefStore;
-
-  return rv;
-}
-
-//_____________________________________________________________________________
-Int_t
-AliMUONRecoCheck::NumberOfEvents() const
+Int_t AliMUONRecoCheck::NumberOfEvents() const
 {
   /// Return the number of events
-  if ( fDataInterface ) 
-  {
-    return fDataInterface->NumberOfEvents();
-  }
+  if (fDataInterface->IsValid()) return fDataInterface->NumberOfEvents();
   return 0;
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackStore*
-AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore& trackRefs)
+AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event)
+{
+  /// Return the reconstructed track store for a given event
+  if (!fDataInterface->IsValid()) return new AliMUONTrackStoreV1();
+  
+  if (event != fCurrentEvent) {
+    ResetStores();
+    fCurrentEvent = event;
+  }
+  
+  if (fRecoTrackStore != 0x0) return fRecoTrackStore;
+  
+  fRecoTrackStore = new AliMUONTrackStoreV1();
+  
+  return fRecoTrackStore;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
+{
+  /// Return a track store containing the track references (converted into 
+  /// MUONTrack objects) for a given event
+  if (event != fCurrentEvent) {
+    ResetStores();
+    fCurrentEvent = event;
+  }
+  
+  if (fTrackRefStore != 0x0) return fTrackRefStore;
+  else {
+    if (!fMCEventHandler->GetEvent(event)) return 0x0;
+    MakeTrackRefs();
+    return fTrackRefStore;
+  }
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
+{
+  /// Return a track store containing the reconstructible tracks for a given event
+  if (event != fCurrentEvent) {
+    ResetStores();
+    fCurrentEvent = event;
+  }
+  
+  if (fRecoTrackRefStore != 0x0) return fRecoTrackRefStore;
+  else {
+    if (TrackRefs(event) == 0x0) return 0x0;
+    MakeReconstructibleTracks();
+    return fRecoTrackRefStore;
+  }
+}
+
+//_____________________________________________________________________________
+void AliMUONRecoCheck::MakeTrackRefs()
+{
+  /// Make reconstructible tracks
+  AliMUONVTrackStore *tmpTrackRefStore = new AliMUONTrackStoreV1();
+  
+  Double_t x, y, z, pX, pY, pZ, bendingSlope, nonBendingSlope, inverseBendingMomentum;
+  TParticle* particle;
+  TClonesArray* trackRefs;
+  Int_t nTrackRef = fMCEventHandler->MCEvent()->GetNumberOfTracks();
+  
+  // loop over simulated tracks
+  for (Int_t iTrackRef  = 0; iTrackRef < nTrackRef; ++iTrackRef) {
+    Int_t nHits = fMCEventHandler->GetParticleAndTR(iTrackRef, particle, trackRefs);
+    
+    // skip empty trackRefs
+    if (nHits < 1) continue;
+    
+    // skip trackRefs not in MUON
+    AliTrackReference* trackReference0 = static_cast<AliTrackReference*>(trackRefs->UncheckedAt(0));
+    if (trackReference0->DetectorId() != AliTrackReference::kMUON) continue;
+    
+    AliMUONTrack track;
+    
+    // get track parameters at particle's vertex
+    x = particle->Vx();
+    y = particle->Vy();
+    z = particle->Vz();
+    pX = particle->Px();
+    pY = particle->Py();
+    pZ = particle->Pz();
+    
+    // compute rest of track parameters at particle's vertex
+    bendingSlope = 0;
+    nonBendingSlope = 0;
+    inverseBendingMomentum = 0;
+    if (TMath::Abs(pZ) > 0) {
+      bendingSlope = pY/pZ;
+      nonBendingSlope = pX/pZ;
+    }
+    Double_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
+    if (pYZ >0) inverseBendingMomentum = 1/pYZ;
+    TParticlePDG* ppdg = particle->GetPDG(1);
+    Int_t charge = (Int_t)(ppdg->Charge()/3.0);
+    inverseBendingMomentum *= charge;
+    
+    // set track parameters at particle's vertex
+    AliMUONTrackParam trackParamAtVertex;
+    trackParamAtVertex.SetNonBendingCoor(x);
+    trackParamAtVertex.SetBendingCoor(y);
+    trackParamAtVertex.SetZ(z);
+    trackParamAtVertex.SetBendingSlope(bendingSlope);
+    trackParamAtVertex.SetNonBendingSlope(nonBendingSlope);
+    trackParamAtVertex.SetInverseBendingMomentum(inverseBendingMomentum);
+        
+    // add track parameters at vertex
+    track.SetTrackParamAtVertex(&trackParamAtVertex);
+    
+    // loop over simulated track hits
+    for (Int_t iHit = 0; iHit < nHits; ++iHit) {        
+      AliTrackReference* trackReference = static_cast<AliTrackReference*>(trackRefs->UncheckedAt(iHit));
+      
+      // Get track parameters of current hit
+      x = trackReference->X();
+      y = trackReference->Y();
+      z = trackReference->Z();
+      pX = trackReference->Px();
+      pY = trackReference->Py();
+      pZ = trackReference->Pz();
+      
+      // check chamberId of current trackReference
+      Int_t chamberId = AliMUONConstants::ChamberNumber(z);
+      if (chamberId < 0 || chamberId >= AliMUONConstants::NTrackingCh()) continue;
+      
+      // set hit parameters
+      AliMUONRawClusterV2 hit(chamberId, 0, 0);
+      hit.SetXYZ(x,y,z);
+      hit.SetErrXY(0.,0.);
+      
+      // compute track parameters at hit
+      Double_t bendingSlope = 0;
+      Double_t nonBendingSlope = 0;
+      Double_t inverseBendingMomentum = 0;
+      if (TMath::Abs(pZ) > 0) {
+	bendingSlope = pY/pZ;
+	nonBendingSlope = pX/pZ;
+      }
+      Double_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
+      if (pYZ >0) inverseBendingMomentum = 1/pYZ; 
+      inverseBendingMomentum *= charge;
+      
+      // set track parameters at hit
+      AliMUONTrackParam trackParam;
+      trackParam.SetNonBendingCoor(x);
+      trackParam.SetBendingCoor(y);
+      trackParam.SetZ(z);
+      trackParam.SetBendingSlope(bendingSlope);
+      trackParam.SetNonBendingSlope(nonBendingSlope);
+      trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
+      
+      // add track parameters at current hit to the track
+      track.AddTrackParamAtCluster(trackParam,hit,kTRUE);
+    }
+    
+    track.GetTrackParamAtCluster()->Sort();
+    track.SetTrackID(iTrackRef);
+    tmpTrackRefStore->Add(track);
+  }
+  
+  CleanMuonTrackRef(tmpTrackRefStore);
+  
+  delete tmpTrackRefStore;
+}
+
+//_____________________________________________________________________________
+void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore)
 {
   /// Re-calculate hits parameters because two AliTrackReferences are recorded for
   /// each chamber (one when particle is entering + one when particle is leaving 
   /// the sensitive volume) 
+  fTrackRefStore = new AliMUONTrackStoreV1();
   
-  Float_t maxGasGap = 1.; // cm 
-  AliMUONHitForRec *hitForRec, *hitForRec1, *hitForRec2;
-  AliMUONTrackParam *trackParam, *trackParam1, *trackParam2, *trackParamAtVertex;
-  TClonesArray *  hitForRecAtHit = 0;
-  TClonesArray *  trackParamAtHit = 0;
-  Float_t xRec,yRec,zRec;
-  Float_t xRec1,yRec1,zRec1;
-  Float_t xRec2,yRec2,zRec2;
-  Float_t bendingSlope,nonBendingSlope,bendingMomentum;
-  Float_t bendingSlope1,nonBendingSlope1,bendingMomentum1;
-  Float_t bendingSlope2,nonBendingSlope2,bendingMomentum2;
+  Double_t maxGasGap = 1.; // cm 
+  Double_t x, y, z, pX, pY, pZ, x1, y1, z1, pX1, pY1, pZ1, z2;
+  Double_t bendingSlope,nonBendingSlope,inverseBendingMomentum;
   
-  AliMUONVTrackStore* newMuonTrackRef = static_cast<AliMUONVTrackStore*>(trackRefs.Create());
-  Int_t iHit1;
-  Int_t iChamber = 0, detElemId = 0;
-  Int_t nRec = 0;
-  Int_t nTrackHits = 0;
+  // create iterator
+  TIter next(tmpTrackRefStore->CreateIterator());
   
-  hitForRec = new AliMUONHitForRec();
-  trackParam = new AliMUONTrackParam();
-  
-  TIter next(trackRefs.CreateIterator());
+  // loop over tmpTrackRef
   AliMUONTrack* track;
-  
-  while ( ( track = static_cast<AliMUONTrack*>(next())) ) 
-  {
-    hitForRecAtHit = track->GetHitForRecAtHit();
-    trackParamAtHit = track->GetTrackParamAtHit();
-    trackParamAtVertex = track->GetTrackParamAtVertex();
-    nTrackHits = hitForRecAtHit->GetEntriesFast();
-    AliMUONTrack trackNew;
-    iHit1 = 0;
-    while (iHit1 < nTrackHits) 
-    {
-      hitForRec1 = (AliMUONHitForRec*) hitForRecAtHit->At(iHit1); 
-      trackParam1 = (AliMUONTrackParam*) trackParamAtHit->At(iHit1); 
-      xRec1  = hitForRec1->GetNonBendingCoor();
-      yRec1  = hitForRec1->GetBendingCoor();
-      zRec1  = hitForRec1->GetZ();	
-      xRec   = xRec1;
-      yRec   = yRec1;
-      zRec   = zRec1;
-      bendingSlope1 = trackParam1->GetBendingSlope();
-      nonBendingSlope1 = trackParam1->GetNonBendingSlope();
-      bendingMomentum1 = 0;
-      if (TMath::Abs(trackParam1->GetInverseBendingMomentum()) > 0)
-        bendingMomentum1 = 1./trackParam1->GetInverseBendingMomentum();
-      bendingSlope = bendingSlope1;
-      nonBendingSlope = nonBendingSlope1;
-      bendingMomentum = bendingMomentum1;
-      nRec = 1;  
-      for (Int_t iHit2 = iHit1+1; iHit2 < nTrackHits; iHit2++)
-      {
-        hitForRec2 = (AliMUONHitForRec*) hitForRecAtHit->At(iHit2); 
-        trackParam2 = (AliMUONTrackParam*) trackParamAtHit->At(iHit2); 
-        xRec2  = hitForRec2->GetNonBendingCoor();
-        yRec2  = hitForRec2->GetBendingCoor();
-        zRec2  = hitForRec2->GetZ();	  
-        bendingSlope2 = trackParam2->GetBendingSlope();
-        nonBendingSlope2 = trackParam2->GetNonBendingSlope();
-        bendingMomentum2 = 0;
-        if (TMath::Abs(trackParam2->GetInverseBendingMomentum()) > 0)
-          bendingMomentum2 = 1./trackParam2->GetInverseBendingMomentum();
+  while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
+    
+    AliMUONTrack newTrack;
+    
+    // loop over tmpTrackRef's hits
+    Int_t iHit1 = 0;
+    Int_t nTrackHits = track->GetNClusters();
+    while (iHit1 < nTrackHits) {
+      AliMUONTrackParam *trackParam1 = (AliMUONTrackParam*) track->GetTrackParamAtCluster()->UncheckedAt(iHit1);
+      
+      // get track parameters at hit1
+      x1  = trackParam1->GetNonBendingCoor();
+      y1  = trackParam1->GetBendingCoor();
+      z1  = trackParam1->GetZ();
+      pX1 = trackParam1->Px();
+      pY1 = trackParam1->Py();
+      pZ1 = trackParam1->Pz();
+      
+      // prepare new track parameters
+      x  = x1;
+      y  = y1;
+      z  = z1;
+      pX = pX1;
+      pY = pY1;
+      pZ = pZ1;
+      
+      // loop over next tmpTrackRef's hits
+      Int_t nCombinedHits = 1;
+      for (Int_t iHit2 = iHit1+1; iHit2 < nTrackHits; iHit2++) {
+	AliMUONTrackParam *trackParam2 = (AliMUONTrackParam*) track->GetTrackParamAtCluster()->UncheckedAt(iHit2);
         
-        if ( TMath::Abs(zRec2-zRec1) < maxGasGap ) {
-          
-          nRec++;
-          xRec += xRec2;
-          yRec += yRec2;
-          zRec += zRec2;
-          bendingSlope += bendingSlope2;
-          nonBendingSlope += nonBendingSlope2;
-          bendingMomentum += bendingMomentum2;
+	// get z position of hit2
+	z2 = trackParam2->GetZ();
+	
+	// complete new track parameters if hit2 is on the same detection element
+        if ( TMath::Abs(z2-z1) < maxGasGap ) {
+	  x  += trackParam2->GetNonBendingCoor();
+	  y  += trackParam2->GetBendingCoor();
+	  z  += z2;
+	  pX += trackParam2->Px();
+	  pY += trackParam2->Py();
+	  pZ += trackParam2->Pz();
+	  nCombinedHits++;
           iHit1 = iHit2;
         }
         
-      } // end iHit2
-      xRec /= (Float_t)nRec;
-      yRec /= (Float_t)nRec;
-      zRec /= (Float_t)nRec;
-      bendingSlope /= (Float_t)nRec;
-      nonBendingSlope /= (Float_t)nRec;
-      bendingMomentum /= (Float_t)nRec;
+      }
       
-      hitForRec->SetNonBendingCoor(xRec);
-      hitForRec->SetBendingCoor(yRec);
-      hitForRec->SetZ(zRec);
-      detElemId = hitForRec->GetDetElemId();
-      if (detElemId) iChamber = detElemId / 100 - 1;
-      else iChamber = AliMUONConstants::ChamberNumber(zRec);
-      hitForRec->SetChamberNumber(iChamber);
-      hitForRec->SetBendingReso2(0.0); 
-      hitForRec->SetNonBendingReso2(0.0); 
-      trackParam->SetNonBendingCoor(xRec);
-      trackParam->SetBendingCoor(yRec);
-      trackParam->SetZ(zRec);
-      trackParam->SetNonBendingSlope(nonBendingSlope);
-      trackParam->SetBendingSlope(bendingSlope);
-      if (TMath::Abs(bendingMomentum) > 0)
-        trackParam->SetInverseBendingMomentum(1./bendingMomentum);
+      // finalize new track parameters
+      x  /= (Double_t)nCombinedHits;
+      y  /= (Double_t)nCombinedHits;
+      z  /= (Double_t)nCombinedHits;
+      pX /= (Double_t)nCombinedHits;
+      pY /= (Double_t)nCombinedHits;
+      pZ /= (Double_t)nCombinedHits;
+      bendingSlope = 0;
+      nonBendingSlope = 0;
+      inverseBendingMomentum = 0;
+      if (TMath::Abs(pZ) > 0) {
+	bendingSlope = pY/pZ;
+	nonBendingSlope = pX/pZ;
+      }
+      Double_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
+      if (pYZ >0) inverseBendingMomentum = 1/pYZ; 
+      inverseBendingMomentum *= trackParam1->GetCharge();
       
-      trackNew.AddHitForRecAtHit(hitForRec);
-      trackNew.AddTrackParamAtHit(trackParam,0);
+      // set hit parameters
+      AliMUONRawClusterV2 hit(trackParam1->GetClusterPtr()->GetChamberId(), 0, 0);
+      hit.SetXYZ(x,y,z);
+      hit.SetErrXY(0.,0.);
+      
+      // set new track parameters at new hit
+      AliMUONTrackParam trackParam;
+      trackParam.SetNonBendingCoor(x);
+      trackParam.SetBendingCoor(y);
+      trackParam.SetZ(z);
+      trackParam.SetBendingSlope(bendingSlope);
+      trackParam.SetNonBendingSlope(nonBendingSlope);
+      trackParam.SetInverseBendingMomentum(inverseBendingMomentum);
+      
+      // add track parameters at current hit to the track
+      newTrack.AddTrackParamAtCluster(trackParam,hit,kTRUE);
       
       iHit1++;
-    } // end iHit1
+    }
     
-    trackNew.SetTrackID(track->GetTrackID());
-    trackNew.SetTrackParamAtVertex(trackParamAtVertex);
-    newMuonTrackRef->Add(trackNew);
+    newTrack.GetTrackParamAtCluster()->Sort();
+    newTrack.SetTrackID(track->GetTrackID());
+    newTrack.SetTrackParamAtVertex(track->GetTrackParamAtVertex());
+    fTrackRefStore->Add(newTrack);
     
-  } // end trackRef
+  }
   
-  delete hitForRec;
-  delete trackParam;
-  return newMuonTrackRef;  
 }
 
 //_____________________________________________________________________________
-AliMUONVTrackStore*
-AliMUONRecoCheck::MakeReconstructibleTracks(const AliMUONVTrackStore& trackRefs)
+void AliMUONRecoCheck::MakeReconstructibleTracks()
 {
   /// Calculate the number of reconstructible tracks
+  fRecoTrackRefStore = new AliMUONTrackStoreV1();
   
-  AliMUONVTrackStore* reconstructibleStore = static_cast<AliMUONVTrackStore*>(trackRefs.Create());
+  // create iterator on trackRef
+  TIter next(fTrackRefStore->CreateIterator());
   
-  TClonesArray* hitForRecAtHit = NULL;
-  AliMUONHitForRec* hitForRec;
-  Float_t zRec;
-  Int_t nTrackHits;
-  Int_t isChamberInTrack[10];
-  Int_t iChamber = 0;
-  Bool_t isTrackOK = kTRUE;
-    
-  TIter next(trackRefs.CreateIterator());
+  // loop over trackRef
   AliMUONTrack* track;
-
-  while ( ( track = static_cast<AliMUONTrack*>(next()) ) )
-  {
-    hitForRecAtHit = track->GetHitForRecAtHit();
-    nTrackHits = hitForRecAtHit->GetEntriesFast();
-    for (Int_t ch = 0; ch < 10; ch++) isChamberInTrack[ch] = 0;
+  while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
     
-    for ( Int_t iHit = 0; iHit < nTrackHits; iHit++) {
-      hitForRec = (AliMUONHitForRec*) hitForRecAtHit->At(iHit); 
-      zRec  = hitForRec->GetZ();
-      iChamber = hitForRec->GetChamberNumber(); 
-      if (iChamber < 0 || iChamber > 10) continue;
-      isChamberInTrack[iChamber] = 1;
+    Bool_t* chamberInTrack = new Bool_t(AliMUONConstants::NTrackingCh());
+    for (Int_t iCh = 0; iCh < AliMUONConstants::NTrackingCh(); iCh++) chamberInTrack[iCh] = kFALSE;
+    
+    // loop over trackRef's hits to get hit chambers
+    Int_t nTrackHits = track->GetNClusters();
+    for (Int_t iHit = 0; iHit < nTrackHits; iHit++) {
+      AliMUONVCluster* hit = ((AliMUONTrackParam*) track->GetTrackParamAtCluster()->UncheckedAt(iHit))->GetClusterPtr(); 
+      chamberInTrack[hit->GetChamberId()] = kTRUE;
     } 
+    
     // track is reconstructible if the particle is depositing a hit
     // in the following chamber combinations:
+    Bool_t trackOK = kTRUE;
+    if (!chamberInTrack[0] && !chamberInTrack[1]) trackOK = kFALSE;
+    if (!chamberInTrack[2] && !chamberInTrack[3]) trackOK = kFALSE;
+    if (!chamberInTrack[4] && !chamberInTrack[5]) trackOK = kFALSE;
+    Int_t nHitsInLastStations = 0;
+    for (Int_t iCh = 6; iCh < AliMUONConstants::NTrackingCh(); iCh++)
+      if (chamberInTrack[iCh]) nHitsInLastStations++; 
+    if(nHitsInLastStations < 3) trackOK = kFALSE;
     
-    isTrackOK = kTRUE;
-    if (!isChamberInTrack[0] && !isChamberInTrack[1]) isTrackOK = kFALSE;
-    if (!isChamberInTrack[2] && !isChamberInTrack[3]) isTrackOK = kFALSE;
-    if (!isChamberInTrack[4] && !isChamberInTrack[5]) isTrackOK = kFALSE;
-    Int_t nHitsInLastStations=0;
-    for (Int_t ch = 6; ch < AliMUONConstants::NTrackingCh(); ch++)
-      if (isChamberInTrack[ch]) nHitsInLastStations++; 
-    if(nHitsInLastStations < 3) isTrackOK = kFALSE;
+    // Add reconstructible tracks to fRecoTrackRefStore
+    if (trackOK) fRecoTrackRefStore->Add(*track);
     
-    if (isTrackOK) 
-    {
-      reconstructibleStore->Add(*track);
-    }
+    delete [] chamberInTrack;
   }
 
-  return reconstructibleStore;
 }
 

@@ -43,7 +43,6 @@ void MUONCheck(Int_t firstEvent, Int_t lastEvent,
    check->CheckKine();
    check->CheckTrackRef();
    check->CheckOccupancy();
-   check->CheckRecTracks();
 
    // delete check;  
 }

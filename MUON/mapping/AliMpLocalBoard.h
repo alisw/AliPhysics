@@ -50,7 +50,9 @@ class AliMpLocalBoard : public TNamed
     Int_t  GetNofSwitches() const;
     Int_t  GetSwitch(Int_t index) const;
 
+            /// Set switch in a compact way
     void   SetSwitch(UInt_t swit) {fSwitch = swit;}
+            /// Get switch in a compact way
     UInt_t  GetSwitch() const {return fSwitch;}
 
     // switch enum for local board (see PRR, chpt: 2.4.4)

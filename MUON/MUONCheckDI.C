@@ -61,16 +61,16 @@ Int_t Compare(const TObject* a, const TObject* b)
 	{
 		const AliMUONTrack* ta = static_cast<const AliMUONTrack*>(a);
 		const AliMUONTrack* tb = static_cast<const AliMUONTrack*>(b);
-		if (ta->GetNTrackHits() < tb->GetNTrackHits()) return -1;
-		if (ta->GetNTrackHits() > tb->GetNTrackHits()) return 1;
+		if (ta->GetNClusters() < tb->GetNClusters()) return -1;
+		if (ta->GetNClusters() > tb->GetNClusters()) return 1;
 		if (ta->GetMatchTrigger() < tb->GetMatchTrigger()) return -1;
 		if (ta->GetMatchTrigger() > tb->GetMatchTrigger()) return 1;
 		if (ta->GetLoTrgNum() < tb->GetLoTrgNum()) return -1;
 		if (ta->GetLoTrgNum() > tb->GetLoTrgNum()) return 1;
 		if (ta->GetChi2MatchTrigger() < tb->GetChi2MatchTrigger()) return -1;
 		if (ta->GetChi2MatchTrigger() > tb->GetChi2MatchTrigger()) return 1;
-		const AliMUONTrackParam* tpa = static_cast<const AliMUONTrackParam*>(ta->GetTrackParamAtHit()->First());
-		const AliMUONTrackParam* tpb = static_cast<const AliMUONTrackParam*>(tb->GetTrackParamAtHit()->First());
+		const AliMUONTrackParam* tpa = static_cast<const AliMUONTrackParam*>(ta->GetTrackParamAtCluster()->First());
+		const AliMUONTrackParam* tpb = static_cast<const AliMUONTrackParam*>(tb->GetTrackParamAtCluster()->First());
 		if (tpa->GetNonBendingCoor() < tpb->GetNonBendingCoor()) return -1;
 		if (tpa->GetNonBendingCoor() > tpb->GetNonBendingCoor()) return 1;
 		if (tpa->GetNonBendingSlope() < tpb->GetNonBendingSlope()) return -1;

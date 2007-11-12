@@ -22,6 +22,11 @@
 /// reconstruct tracks from recpoints
 ///
 /// Actual tracking is performed by some AliMUONVTrackReconstructor children
+/// Tracking modes (ORIGINAL, KALMAN) and associated options and parameters
+/// can be changed by using:
+/// AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
+/// muonRecoParam->Set...(); // see methods in AliMUONRecoParam.h for details
+/// AliMUONReconstructor::SetRecoParam(muonRecoParam);
 ///
 /// \author Christian Finck and Laurent Aphecetche, SUBATECH Nantes
 //-----------------------------------------------------------------------------
@@ -34,7 +39,7 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackHitPattern.h"
 #include "AliMUONTrackParam.h"
-#include "AliMUONHitForRec.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackStoreV1.h"
@@ -200,7 +205,7 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
   
   while ( ( track = static_cast<AliMUONTrack*>(next()) ) )
   {
-    AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>((track->GetTrackParamAtHit())->First());
+    AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>((track->GetTrackParamAtCluster())->First());
     AliMUONTrackParam trackParamAtVtx(*trackParam);
     
     /// Extrapolate to vertex (which is set to (0,0,0) if not available, see above)
@@ -214,16 +219,15 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
     // at vertex
     trackParamAtVtx.SetParamFor(esdTrack);
     // global info
-    esdTrack.SetChi2(track->GetFitFMin());
-    esdTrack.SetNHit(track->GetNTrackHits());
+    esdTrack.SetChi2(track->GetGlobalChi2());
+    esdTrack.SetNHit(track->GetNClusters());
     esdTrack.SetLocalTrigger(track->GetLocalTrigger());
     esdTrack.SetChi2MatchTrigger(track->GetChi2MatchTrigger());
     esdTrack.SetHitsPatternInTrigCh(track->GetHitsPatternInTrigCh());
     // muon cluster map
-    AliMUONHitForRec* cluster = static_cast<AliMUONHitForRec*>((track->GetHitForRecAtHit())->First());
-    while (cluster) {
-      esdTrack.AddInMuonClusterMap(cluster->GetChamberNumber());
-      cluster = static_cast<AliMUONHitForRec*>((track->GetHitForRecAtHit())->After(cluster));
+    while (trackParam) {
+      esdTrack.AddInMuonClusterMap(trackParam->GetClusterPtr()->GetChamberId());
+      trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
     }
     
     // storing ESD MUON Track into ESD Event 

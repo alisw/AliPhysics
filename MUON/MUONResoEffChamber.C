@@ -277,7 +277,7 @@ void efficiencyThetaPhi( Int_t event2Check=0, char * filename="galice.root" )
       for ( iTrack = 0; iTrack < nTracks; ++iTrack )
       {
 	track       = (AliMUONTrack*) tracks ->At(iTrack)          ;
-	trackParams =                 track  ->GetTrackParamAtHit();
+	trackParams =                 track  ->GetTrackParamAtCluster();
 	hits        =                 track  ->GetHitForRecAtHit() ;
 	chamber     = firstChamber-1;
 	oldChamber  = -1;
@@ -542,7 +542,7 @@ void efficiencyThetaI( Int_t event2Check=0, char * filename="galice.root" )
       for ( iTrack = 0; iTrack < nTracks; ++iTrack )
       { 
 	track       = (AliMUONTrack*) tracks ->At(iTrack)          ;
-	trackParams =                 track  ->GetTrackParamAtHit();
+	trackParams =                 track  ->GetTrackParamAtCluster();
 	hits        =                 track  ->GetHitForRecAtHit() ;
 	chamber     = firstChamber - 1;
 	oldChamber  = -1;
@@ -765,7 +765,7 @@ void resolution( Int_t event2Check=0, char * filename="galice.root" )
       for ( iTrack = 0; iTrack < nTracks; ++iTrack )
       {
 	track       = (AliMUONTrack*) tracks ->At(iTrack)          ;
-	trackParams =                 track  ->GetTrackParamAtHit();
+	trackParams =                 track  ->GetTrackParamAtCluster();
 	hits        =                 track  ->GetHitForRecAtHit() ;
        
 	//Loop on hits
@@ -921,7 +921,7 @@ void resolutionPhi( Int_t event2Check=0, char * filename="galice.root" )
       for ( iTrack = 0; iTrack < nTracks; ++iTrack )
       {
 	track       = (AliMUONTrack*) tracks ->At(iTrack)          ;
-	trackParams =                 track  ->GetTrackParamAtHit();
+	trackParams =                 track  ->GetTrackParamAtCluster();
 	hits        =                 track  ->GetHitForRecAtHit() ;
        
 	//Loop on hits
@@ -1128,7 +1128,7 @@ void resolutionTheta( Int_t event2Check=0, char * filename="galice.root" )
       for ( iTrack = 0; iTrack < nTracks; ++iTrack )
       { 
 	track       = (AliMUONTrack*) tracks ->At(iTrack)          ;
-	trackParams =                 track  ->GetTrackParamAtHit();
+	trackParams =                 track  ->GetTrackParamAtCluster();
 	hits        =                 track  ->GetHitForRecAtHit() ;
        
 	//Loop on hits
@@ -1339,7 +1339,7 @@ void resolutionThetaI( Int_t event2Check=0, char * filename="galice.root" )
       for ( iTrack = 0; iTrack < nTracks; ++iTrack )
       {
 	track       = (AliMUONTrack*) tracks ->At(iTrack)          ;
-	trackParams =                 track  ->GetTrackParamAtHit();
+	trackParams =                 track  ->GetTrackParamAtCluster();
 	hits        =                 track  ->GetHitForRecAtHit() ;
        
 	//Loop on hits

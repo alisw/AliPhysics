@@ -17,7 +17,7 @@
 #include "AliMUONTrackParam.h" // object belongs to the class
 #include <TClonesArray.h>
 
-class AliMUONHitForRec;
+class AliMUONVCluster;
 class AliMUONObjectPair;
 
 class AliMUONTrack : public TObject 
@@ -30,89 +30,80 @@ class AliMUONTrack : public TObject
   AliMUONTrack& operator=(const AliMUONTrack& track); // assignment operator
 
 
-	/// return pointeur to track parameters at vertex
-  AliMUONTrackParam*         GetTrackParamAtVertex() {return &fTrackParamAtVertex;}
-	/// set track parameters at vertex
-  void                       SetTrackParamAtVertex(const AliMUONTrackParam* trackParam) {fTrackParamAtVertex = *trackParam;}
-
-	/// return array of track parameters at hit
-  TClonesArray*              GetTrackParamAtHit() const {return fTrackParamAtHit;}
-	/// reset array of track parameters at hit
-  void                       ResetTrackParamAtHit() { fTrackParamAtHit->Delete(); }
-  void                       AddTrackParamAtHit(const AliMUONTrackParam *trackParam, AliMUONHitForRec *hitForRec); 
-  void                       RemoveTrackParamAtHit(AliMUONTrackParam *trackParam);
-  void                       UpdateTrackParamAtHit();
-  void                       UpdateCovTrackParamAtHit();
+  /// return array of track parameters at cluster
+  TClonesArray* GetTrackParamAtCluster() const {return fTrackParamAtCluster;}
+  void          AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster &cluster, Bool_t copy = kFALSE); 
+  void          RemoveTrackParamAtCluster(AliMUONTrackParam *trackParam);
+  void          UpdateTrackParamAtCluster();
+  void          UpdateCovTrackParamAtCluster();
   
-	/// return array of hitForRec at hit
-  TClonesArray*              GetHitForRecAtHit() const {return fHitForRecAtHit;}
-	/// reset array of hitForRec at hit
-  void                       ResetHitForRecAtHit() { fHitForRecAtHit->Delete(); }
-  void                       AddHitForRecAtHit(const AliMUONHitForRec *hitForRec); 
+  /// return the number of clusters attached to the track
+  Int_t GetNClusters() const {return fTrackParamAtCluster->GetEntriesFast();}
 
-	/// return the number of hits attached to the track
-  Int_t                      GetNTrackHits() const {return fNTrackHits;}
-	/// set the number of hits attached to the track
-  void                       SetNTrackHits(Int_t nTrackHits) {fNTrackHits = nTrackHits;}
+  /// return kTrue if the vertex must be used to constrain the fit, kFalse if not
+  Bool_t FitWithVertex() const {return fFitWithVertex;}
+  /// set the flag telling whether the vertex must be used to constrain the fit or not
+  void   FitWithVertex(Bool_t fitWithVertex) { fFitWithVertex = fitWithVertex; }
+  /// return the vertex resolution square used during the tracking procedure
+  void   GetVertexErrXY2(Double_t &nonBendingErr2, Double_t &bendingErr2) const
+         { nonBendingErr2 = fVertexErrXY2[0]; bendingErr2 = fVertexErrXY2[1]; }
+  /// set the vertex resolution square used during the tracking procedure
+  void   SetVertexErrXY2(Double_t nonBendingErr2, Double_t bendingErr2)
+	 { fVertexErrXY2[0] = nonBendingErr2; fVertexErrXY2[1] = bendingErr2; }
 
-	/// return kTrue if the vertex must be used to constrain the fit, kFalse if not
-  Bool_t                     GetFitWithVertex() const {return fFitWithVertex;}
-	/// set the flag telling whether the vertex must be used to constrain the fit or not
-  void                       SetFitWithVertex(Bool_t fitWithVertex) { fFitWithVertex = fitWithVertex; }
-	/// return the vertex used during the tracking procedure
-  AliMUONHitForRec*          GetVertex() const {return fVertex;}
-  void                       SetVertex(const AliMUONHitForRec* vertex);
-
-	/// return kTrue if the multiple scattering must be accounted for in the fit, kFalse if not
-  Bool_t                     GetFitWithMCS() const {return fFitWithMCS;}
-	/// set the flag telling whether the multiple scattering must be accounted for in the fit or not
-  void                       SetFitWithMCS(Bool_t fitWithMCS) {fFitWithMCS = fitWithMCS;}
+  /// return kTrue if the multiple scattering must be accounted for in the fit, kFalse if not
+  Bool_t FitWithMCS() const {return fFitWithMCS;}
+  /// set the flag telling whether the multiple scattering must be accounted for in the fit or not
+  void   FitWithMCS(Bool_t fitWithMCS) {fFitWithMCS = fitWithMCS;}
   
-  Bool_t    ComputeHitWeights(TMatrixD* mcsCovariances = 0);
-  Bool_t    ComputeLocalChi2(Bool_t accountForMCS);
-  Double_t  ComputeGlobalChi2(Bool_t accountForMCS);
+  Bool_t   ComputeClusterWeights(TMatrixD* mcsCovariances = 0);
+  Bool_t   ComputeLocalChi2(Bool_t accountForMCS);
+  Double_t ComputeGlobalChi2(Bool_t accountForMCS);
 
-	/// return the minimum value of the function minimized by the fit
-  Double_t                   GetFitFMin() const {return fGlobalChi2;}
-	/// set the minimum value of the function minimized by the fit
-  void                       SetFitFMin(Double_t chi2) { fGlobalChi2 = chi2;}
+  /// return the minimum value of the function minimized by the fit
+  Double_t GetGlobalChi2() const {return fGlobalChi2;}
+  /// set the minimum value of the function minimized by the fit
+  void     SetGlobalChi2(Double_t chi2) { fGlobalChi2 = chi2;}
   
-  	/// return kTRUE if the track has been improved
-  Bool_t                     IsImproved() const {return fImproved;}
-	/// set the flag telling whether the track has been improved or not
-  void                       SetImproved(Bool_t improved) { fImproved = improved;}
+  /// return kTRUE if the track has been improved
+  Bool_t IsImproved() const {return fImproved;}
+  /// set the flag telling whether the track has been improved or not
+  void   SetImproved(Bool_t improved) { fImproved = improved;}
   
-        /// return 1,2,3 if track matches with trigger track, 0 if not
-  Int_t                      GetMatchTrigger(void) const {return fMatchTrigger;}
+  /// return 1,2,3 if track matches with trigger track, 0 if not
+  Int_t    GetMatchTrigger(void) const {return fMatchTrigger;}
   /// returns the local trigger number corresponding to the trigger track 
-  Int_t                      GetLoTrgNum(void) const {return floTrgNum;}
-	/// set the flag telling whether track matches with trigger track or not
-   void			     SetMatchTrigger(Int_t matchTrigger) {fMatchTrigger = matchTrigger;}
-   /// set the local trigger number corresponding to the trigger track
-   void			     SetLoTrgNum(Int_t loTrgNum) {floTrgNum = loTrgNum;}
-	/// return the chi2 of trigger/track matching 
-  Double_t                   GetChi2MatchTrigger(void) const {return fChi2MatchTrigger;}
-	/// set the chi2 of trigger/track matching 
-  void                       SetChi2MatchTrigger(Double_t chi2MatchTrigger) {fChi2MatchTrigger = chi2MatchTrigger;}
+  Int_t    GetLoTrgNum(void) const {return floTrgNum;}
+  /// set the flag telling whether track matches with trigger track or not
+  void	   SetMatchTrigger(Int_t matchTrigger) {fMatchTrigger = matchTrigger;}
+  /// set the local trigger number corresponding to the trigger track
+  void	   SetLoTrgNum(Int_t loTrgNum) {floTrgNum = loTrgNum;}
+  /// return the chi2 of trigger/track matching 
+  Double_t GetChi2MatchTrigger(void) const {return fChi2MatchTrigger;}
+  /// set the chi2 of trigger/track matching 
+  void     SetChi2MatchTrigger(Double_t chi2MatchTrigger) {fChi2MatchTrigger = chi2MatchTrigger;}
 
-  Int_t                      HitsInCommon(AliMUONTrack* track) const;
+  Int_t ClustersInCommon(AliMUONTrack* track) const;
 
-  Double_t                   GetNormalizedChi2() const;
+  Double_t GetNormalizedChi2() const;
 
-  Bool_t*                    CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut) const; // return array of compatible chamber
+  Bool_t* CompatibleTrack(AliMUONTrack* track, Double_t sigma2Cut) const; // return array of compatible chamber
   
-	/// return track number in TrackRefs
-  Int_t                      GetTrackID() const {return fTrackID;}
-	/// set track number in TrackRefs
-  void                       SetTrackID(Int_t trackID) {fTrackID = trackID;}
+  /// return track number in TrackRefs
+  Int_t GetTrackID() const {return fTrackID;}
+  /// set track number in TrackRefs
+  void  SetTrackID(Int_t trackID) {fTrackID = trackID;}
 
-        /// set word telling which trigger chambers where hit by track
-  UShort_t                   GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
-        /// set word telling which trigger chambers where hit by track
-  void                       SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
+  AliMUONTrackParam* GetTrackParamAtVertex();
+  void               SetTrackParamAtVertex(const AliMUONTrackParam* trackParam);
+
+  /// set word telling which trigger chambers where hit by track
+  UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
+  /// set word telling which trigger chambers where hit by track
+  void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
 
   /// set local trigger information for the matched trigger track
-  void SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt);
+  void  SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt);
   /// return local trigger information for the matched trigger track
   Int_t GetLocalTrigger(void) const { return fLocalTrigger;              }
   /// number of triggering circuit
@@ -128,29 +119,26 @@ class AliMUONTrack : public TObject
   /// high pt decision local trigger 
   Int_t LoHpt(void)    const  { return fLocalTrigger >> 24 & 0x03; }
 
-  void                       RecursiveDump(void) const; // Recursive dump (with track hits)
+  void RecursiveDump(void) const; // Recursive dump (with associated clusters)
 
-  virtual void               Print(Option_t* opt="") const;
+  virtual void Print(Option_t* opt="") const;
 
   virtual void Clear(Option_t* opt="");
 
 
  private:
  
-  AliMUONTrackParam fTrackParamAtVertex; //!< Track parameters at vertex
-  TClonesArray *fTrackParamAtHit; ///< Track parameters at hit
-  TClonesArray *fHitForRecAtHit; ///< Cluster parameters at hit
-  Int_t fNTrackHits; ///< Number of hits attached to the track
+  TClonesArray* fTrackParamAtCluster; ///< Track parameters at cluster
   
-  Bool_t fFitWithVertex; //!< kTRUE if using the vertex to constrain the fit, kFALSE if not
-  AliMUONHitForRec *fVertex; //!< Vertex used during the tracking procedure if required
+  Bool_t   fFitWithVertex;   //!< kTRUE if using the vertex to constrain the fit, kFALSE if not
+  Double_t fVertexErrXY2[2]; //!< Vertex resolution square used during the tracking procedure if required
   
   Bool_t fFitWithMCS; //!< kTRUE if accounting for multiple scattering in the fit, kFALSE if not
   
-  TMatrixD* fHitWeightsNonBending; //!< weights matrix, in non bending direction, of hits attached to the track
-  				   //!< (accounting for multiple scattering and hits resolution)
-  TMatrixD* fHitWeightsBending;    //!< weights matrix, in bending direction, of hits attached to the track
-  				   //!< (accounting for multiple scattering and hits resolution)
+  TMatrixD* fClusterWeightsNonBending; //!< weights matrix, in non bending direction, of clusters attached to the track
+				       //!< (accounting for multiple scattering and cluster resolution)
+  TMatrixD* fClusterWeightsBending;    //!< weights matrix, in bending direction, of clusters attached to the track
+				       //!< (accounting for multiple scattering and cluster resolution)
   
   Double_t fGlobalChi2; ///< Global chi2 of the track
   
@@ -164,17 +152,21 @@ class AliMUONTrack : public TObject
   Double_t fChi2MatchTrigger; ///< chi2 of trigger/track matching 
   
   Int_t fTrackID; ///< track ID = track number in TrackRefs
+  
+  AliMUONTrackParam* fTrackParamAtVertex; //!< Track parameters at vertex
+  
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
 
   Int_t fLocalTrigger;    ///< packed local trigger information
   
   
   // methods
-  Bool_t ComputeHitWeights(TMatrixD& hitWeightsNB, TMatrixD& hitWeightsB, TMatrixD* mcsCovariances = 0, AliMUONHitForRec* discardedHit = 0) const;
+  Bool_t ComputeClusterWeights(TMatrixD& clusterWeightsNB, TMatrixD& clusterWeightsB,
+			       TMatrixD* mcsCovariances = 0, AliMUONVCluster* discardedCluster = 0) const;
   void   ComputeMCSCovariances(TMatrixD& mcsCovariances) const;
   
   
-  ClassDef(AliMUONTrack, 7) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 8) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif

@@ -121,7 +121,7 @@ void AliMUONTrackHitPattern::GetHitPattern(AliMUONVTrackStore& trackStore,
     {
       pattern = 0;
       AliMUONTrackParam trackParam = (*(static_cast<AliMUONTrackParam*> 
-        (muonTrack->GetTrackParamAtHit()->Last())));
+        (muonTrack->GetTrackParamAtCluster()->Last())));
       
       for(Int_t ch=0; ch<4; ++ch)
       {

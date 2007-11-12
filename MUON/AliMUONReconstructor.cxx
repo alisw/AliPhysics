@@ -19,20 +19,19 @@
 ///
 /// Implementation of AliReconstructor for MUON subsystem.
 ///
-/// The behavior of the MUON reconstruction can be changed, besides
-/// the usual methods found in AliReconstruction (e.g. to disable tracking)
-/// by using AliReconstruction::SetOption("MUON",options)
-/// where options should be a space separated string.
+/// The clustering mode and the associated parameters can be changed by using
+/// AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
+/// muonRecoParam->Set...(); // see methods in AliMUONRecoParam.h for details
+/// AliMUONReconstructor::SetRecoParam(muonRecoParam);
 ///
-/// Valid options are :
-///
-/// SAVEDIGITS : if you want to save in the TreeD the *calibrated* digits
-///     that are used for the clustering
+/// Valid modes are :
 ///
 /// SIMPLEFIT : use the AliMUONClusterFinderSimpleFit clusterizer
 ///
-/// MLEM : another implementation of AZ, where preclustering is external (default)
-/// MLEMV3 : MLEM with preclustering=PRECLUSTERV2
+/// SIMPLEFITV3 : SIMPLEFIT with preclustering=PRECLUSTERV3
+///
+/// MLEM : use AliMUONClusterFinderMLEM and AliMUONPreClusterFinder for preclustering (default)
+/// MLEMV2 : MLEM with preclustering=PRECLUSTERV2
 /// MLEMV3 : MLEM with preclustering=PRECLUSTERV3
 ///
 /// PRECLUSTER : use only AliMUONPreClusterFinder. Only for debug as
@@ -47,13 +46,25 @@
 ///
 /// NOCLUSTERING : bypass completely the clustering stage
 ///
+/// ------
+///
+/// The behavior of the MUON reconstruction can also be changed, besides
+/// the usual methods found in AliReconstruction (e.g. to disable tracking)
+/// by using AliReconstruction::SetOption("MUON",options)
+/// where options should be a space separated string.
+///
+/// Valid options are :
+///
+/// SAVEDIGITS : if you want to save in the TreeD the *calibrated* digits
+///     that are used for the clustering
+///
+/// DIGITSTOREV1 : use the V1 implementation of the digitstore 
+/// DIGITSTOREV2R : use the V2R implementation of the digitstore 
+///
 /// NOLOCALRECONSTRUCTION : for debug, to disable local reconstruction (and hence
 /// "recover" old behavior)
 ///
 /// TRIGGERDISABLE : disable the treatment of MUON trigger
-///
-/// DIGITSTOREV1 : use the V1 implementation of the digitstore 
-/// DIGITSTOREV2R : use the V2R implementation of the digitstore 
 ///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
@@ -418,7 +429,6 @@ AliMUONReconstructor::CreateCalibrator() const
   
   TString opt(GetOption());
   opt.ToUpper();
-  Bool_t statusMap(kTRUE);
   
   if ( strstr(opt,"NOSTATUSMAP") )
   {

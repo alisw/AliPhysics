@@ -22,7 +22,7 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMUONTrackParam.h"
-#include "AliMUONHitForRec.h"
+#include "AliMUONVCluster.h"
 
 #include "AliESDMuonTrack.h"
 #include "AliLog.h"
@@ -46,7 +46,8 @@ AliMUONTrackParam::AliMUONTrackParam()
     fExtrapCovariances(0x0),
     fSmoothParameters(0x0),
     fSmoothCovariances(0x0),
-    fHitForRecPtr(0x0),
+    fClusterPtr(0x0),
+    fOwnCluster(kFALSE),
     fRemovable(kFALSE),
     fAloneInChamber(kTRUE),
     fTrackChi2(0.),
@@ -66,7 +67,8 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
     fExtrapCovariances(0x0),
     fSmoothParameters(0x0),
     fSmoothCovariances(0x0),
-    fHitForRecPtr(theMUONTrackParam.fHitForRecPtr),
+    fClusterPtr(0x0),
+    fOwnCluster(theMUONTrackParam.fOwnCluster),
     fRemovable(theMUONTrackParam.fRemovable),
     fAloneInChamber(theMUONTrackParam.fAloneInChamber),
     fTrackChi2(theMUONTrackParam.fTrackChi2),
@@ -79,6 +81,9 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
   if (theMUONTrackParam.fExtrapCovariances) fExtrapCovariances = new TMatrixD(*(theMUONTrackParam.fExtrapCovariances));
   if (theMUONTrackParam.fSmoothParameters) fSmoothParameters = new TMatrixD(*(theMUONTrackParam.fSmoothParameters));
   if (theMUONTrackParam.fSmoothCovariances) fSmoothCovariances = new TMatrixD(*(theMUONTrackParam.fSmoothCovariances));
+  
+  if(fOwnCluster) fClusterPtr = theMUONTrackParam.fClusterPtr->CreateCopy();
+  else fClusterPtr = theMUONTrackParam.fClusterPtr;
 }
 
   //_________________________________________________________________________
@@ -143,7 +148,9 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
     fSmoothCovariances = 0x0;
   }
   
-  fHitForRecPtr = theMUONTrackParam.fHitForRecPtr;
+  fOwnCluster = theMUONTrackParam.fOwnCluster;
+  if(fOwnCluster) fClusterPtr = theMUONTrackParam.fClusterPtr->CreateCopy();
+  else fClusterPtr = theMUONTrackParam.fClusterPtr;
   
   fRemovable = theMUONTrackParam.fRemovable;
   
@@ -165,28 +172,23 @@ AliMUONTrackParam::~AliMUONTrackParam()
   delete fExtrapCovariances;
   delete fSmoothParameters;
   delete fSmoothCovariances;
+  if(fOwnCluster) delete fClusterPtr;
 }
 
   //__________________________________________________________________________
 void
 AliMUONTrackParam::Clear(Option_t* /*opt*/)
 {
-  /// Delete the covariance matrix
+  /// clear memory
   DeleteCovariances();
   delete fPropagator; fPropagator = 0x0;
   delete fExtrapParameters; fExtrapParameters = 0x0;
   delete fExtrapCovariances; fExtrapCovariances = 0x0;
   delete fSmoothParameters; fSmoothParameters = 0x0;
   delete fSmoothCovariances; fSmoothCovariances = 0x0;
-}
-
-  //__________________________________________________________________________
-AliMUONHitForRec* AliMUONTrackParam::GetHitForRecPtr(void) const
-{
-/// return pointer to HitForRec attached to the current TrackParam
-/// this method should not be called when fHitForRecPtr == NULL
-  if (!fHitForRecPtr) AliWarning("fHitForRecPtr == NULL");
-  return fHitForRecPtr;
+  if(fOwnCluster) {
+    delete fClusterPtr; fClusterPtr = 0x0;
+  }
 }
 
   //_________________________________________________________________________
@@ -402,7 +404,7 @@ const TMatrixD& AliMUONTrackParam::GetPropagator() const
     fPropagator->UnitMatrix();
   }
   return *fPropagator;
-  }
+}
 
   //__________________________________________________________________________
 void AliMUONTrackParam::ResetPropagator()
@@ -499,12 +501,8 @@ void AliMUONTrackParam::SetSmoothCovariances(const TMatrixD& smoothCovariances)
 Int_t AliMUONTrackParam::Compare(const TObject* trackParam) const
 {
   /// "Compare" function to sort with decreasing Z (spectro. muon Z <0).
-  /// Returns 1 (0, -1) if Z of current TrackHit
-  /// is smaller than (equal to, larger than) Z of TrackHit
-  if (fHitForRecPtr) {
-    if (fHitForRecPtr->GetZ() != fZ)
-      AliWarning("track parameters are given at a different z position than the one of the corresponding hit");
-  }
+  /// Returns 1 (0, -1) if the current Z
+  /// is smaller than (equal to, larger than) Z of trackParam
   if (fZ < ((AliMUONTrackParam*)trackParam)->GetZ()) return(1);
   else if (fZ == ((AliMUONTrackParam*)trackParam)->GetZ()) return(0);
   else return(-1);

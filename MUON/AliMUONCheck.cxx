@@ -32,9 +32,6 @@
 
 #include "AliMUONCheck.h"
 #include "AliMUONConstants.h"
-#include "AliMUONTrack.h"
-#include "AliMUONTrackParam.h"
-#include "AliMUONTrackExtrap.h"
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONDataInterface.h"
 #include "AliMpCDB.h"
@@ -824,52 +821,6 @@ AliMUONCheck::CheckOccupancy(Bool_t perDetEle) const
        100.*((Float_t) totaloccupancyBending)/((Float_t) totalchannelsBending),
        100.*((Float_t) totaloccupancyNonBending)/((Float_t) totalchannelsNonBending)            );
 
-}
-
-//_____________________________________________________________________________
-void 
-AliMUONCheck::CheckRecTracks () const
-{
-  /// Reads and dumps rec tracks objects
-  
-  AliWarning("Reimplement me ? or use AliMUONDumper simply ?");
-  
-  //  // waiting for mag field in CDB 
-  //  AliInfoStream() << "Loading field map...\n";
-  //  if (!AliTracker::GetFieldMap()) {
-  //    AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
-  //    AliTracker::SetFieldMap(field, kFALSE);
-  //  }
-  //  
-  //  // Loading data
-  //  fLoader->LoadTracks("READ");
-  //  
-  //  Int_t endOfLoop = fLastEvent+1;
-  //  if ( fLastEvent == -1 ) endOfLoop = fRunLoader->GetNumberOfEvents();
-  //
-  //  for (Int_t ievent=fFirstEvent; ievent<endOfLoop; ievent++) {
-  //    fRunLoader->GetEvent(ievent);
-  //    
-  //    fRecData->SetTreeAddress("RT");
-  //    fRecData->GetRecTracks();
-  //    TClonesArray* recTracks = fRecData->RecTracks();
-  //    
-  //    Int_t nrectracks = (Int_t) recTracks->GetEntriesFast(); //
-  //    printf(">>> Event %d, Number of Recconstructed tracks %d \n",ievent, nrectracks);
-  //
-  //    // Set the magnetic field for track extrapolations
-  //    AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
-  //
-  //    // Loop over tracks
-  //    for (Int_t iRecTracks = 0; iRecTracks <  nrectracks;  iRecTracks++) {
-  //      AliMUONTrack* recTrack = (AliMUONTrack*) recTracks->At(iRecTracks);
-  //      AliMUONTrackParam* trackParam = (AliMUONTrackParam*) (recTrack->GetTrackParamAtHit())->First();
-  //      AliMUONTrackExtrap::ExtrapToZ(trackParam,0.);
-  //      recTrack->Print("full");
-  //    }
-  //    fRecData->ResetRecTracks();
-  //  }   
-  //  fLoader->UnloadTracks();
 }
 
 //_____________________________________________________________________________

@@ -11,29 +11,25 @@
 /// \brief Utility class to check reconstruction
 
 #include <TObject.h>
-#include "AliMUONTrack.h"
 
 class TClonesArray;
-class AliMUONMCDataInterface;
+class AliMCEventHandler;
 class AliMUONDataInterface;
 class AliMUONVTrackStore;
 
 class AliMUONRecoCheck : public TObject 
 {
 public:
-  AliMUONRecoCheck(Char_t *chLoader, Char_t *chLoaderSim);
+  AliMUONRecoCheck(Char_t *chLoader, Char_t *pathSim = "./");
   virtual ~AliMUONRecoCheck();
 
-  /// Return number of reconstructed tracks
+  Int_t NumberOfEvents() const;
+  
   AliMUONVTrackStore* ReconstructedTracks(Int_t event);
   
-  /// Return reference muon tracks
   AliMUONVTrackStore* TrackRefs(Int_t event);
 
-  /// Return reconstructible ref tracks
   AliMUONVTrackStore* ReconstructibleTracks(Int_t event);
-  
-  Int_t NumberOfEvents() const;
   
 private:
   /// Not implemented
@@ -41,26 +37,26 @@ private:
   /// Not implemented
   AliMUONRecoCheck& operator = (const AliMUONRecoCheck& rhs);
 
-  AliMUONVTrackStore* MakeReconstructibleTracks(const AliMUONVTrackStore& refTracks);
+  void ResetStores();
+  
+  void MakeTrackRefs();
+  
+  void CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore);
+  
+  void MakeReconstructibleTracks();
 
-  AliMUONVTrackStore* MakeTrackRefs(Int_t event);
-  
-  AliMUONVTrackStore* CleanMuonTrackRef(const AliMUONVTrackStore& refTracks);
-  
 private:
-    
-  AliMUONMCDataInterface* fMCDataInterface; ///< to access MC information
+  AliMCEventHandler* fMCEventHandler; ///< to access MC truth information
   AliMUONDataInterface* fDataInterface; ///< to access MUON data
+  
+  Int_t fCurrentEvent; ///< current event number
+  
+  AliMUONVTrackStore* fTrackRefStore;     ///< current simulated tracks (owner)
+  AliMUONVTrackStore* fRecoTrackRefStore; ///< current reconstructible tracks (owner)
+  AliMUONVTrackStore* fRecoTrackStore;    ///< current reconstructed tracks (owner)
   
   ClassDef(AliMUONRecoCheck, 0)   //Utility class to check reconstruction
 };
 
 #endif
-
-
-
-
-
-
-
 
