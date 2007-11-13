@@ -407,8 +407,12 @@ class AliHLTComponent : public AliHLTLogging {
 
   /**
    * Helper function to convert the data type to a string.
+   * @param type        data type structure
+   * @param mode        0 print string origin:type          <br>
+   *                    1 print chars                       <br>
+   *                    2 print numbers
    */
-  static string DataType2Text( const AliHLTComponentDataType& type );
+  static string DataType2Text( const AliHLTComponentDataType& type, int mode=0);
 
   /**
    * Helper function to print content of data type.
@@ -426,6 +430,47 @@ class AliHLTComponent : public AliHLTLogging {
    * structur.
    */
   void PrintComponentDataTypeInfo(const AliHLTComponentDataType& dt);
+
+  /**
+   * Fill AliHLTComponentBlockData structure with default values.
+   * @param blockData   reference to data structure
+   */
+  static void FillBlockData( AliHLTComponentBlockData& blockData );
+
+  /**
+   * Fill AliHLTComponentShmData structure with default values.
+   * @param shmData   reference to data structure
+   */
+  static void FillShmData( AliHLTComponentShmData& shmData );
+
+  /**
+   * Fill AliHLTComponentDataType structure with default values.
+   * @param dataType   reference to data structure
+   */
+  static void FillDataType( AliHLTComponentDataType& dataType );
+  
+  /**
+   * Copy data type structure
+   * Copies the value an AliHLTComponentDataType structure to another one
+   * @param[out] tgtdt   target structure
+   * @param[in] srcdt   source structure
+   */
+  static void CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt);
+
+  /**
+   * Set the ID and Origin of an AliHLTComponentDataType structure.
+   * The function sets the fStructureSize member and copies the strings
+   * to the ID and Origin. Only characters from the valid part of the string
+   * are copied, the rest is fille with 0's.
+   * Please note that the fID and fOrigin members are not strings, just arrays of
+   * chars of size @ref kAliHLTComponentDataTypefIDsize and
+   * @ref kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
+   * a terminating zero.
+   * @param tgtdt   target data type structure
+   * @param id      ID string
+   * @param origin  Origin string
+   */
+  static void SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin);
 
   /**
    * Stopwatch type for benchmarking.
@@ -512,47 +557,6 @@ class AliHLTComponent : public AliHLTLogging {
   int SetStopwatches(TObjArray* pStopwatches);
 
  protected:
-
-  /**
-   * Fill AliHLTComponentBlockData structure with default values.
-   * @param blockData   reference to data structure
-   */
-  void FillBlockData( AliHLTComponentBlockData& blockData ) const;
-
-  /**
-   * Fill AliHLTComponentShmData structure with default values.
-   * @param shmData   reference to data structure
-   */
-  void FillShmData( AliHLTComponentShmData& shmData ) const;
-
-  /**
-   * Fill AliHLTComponentDataType structure with default values.
-   * @param dataType   reference to data structure
-   */
-  void FillDataType( AliHLTComponentDataType& dataType ) const;
-  
-  /**
-   * Copy data type structure
-   * Copies the value an AliHLTComponentDataType structure to another one
-   * @param[out] tgtdt   target structure
-   * @param[in] srcdt   source structure
-   */
-  void CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTComponentDataType& srcdt);
-
-  /**
-   * Set the ID and Origin of an AliHLTComponentDataType structure.
-   * The function sets the fStructureSize member and copies the strings
-   * to the ID and Origin. Only characters from the valid part of the string
-   * are copied, the rest is fille with 0's.
-   * Please note that the fID and fOrigin members are not strings, just arrays of
-   * chars of size @ref kAliHLTComponentDataTypefIDsize and
-   * @ref kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
-   * a terminating zero.
-   * @param tgtdt   target data type structure
-   * @param id      ID string
-   * @param origin  Origin string
-   */
-  void SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin);
 
   /**
    * Default method for the internal initialization.

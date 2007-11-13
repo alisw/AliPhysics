@@ -231,11 +231,49 @@ void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char o
   strncat( output, type.fID, kAliHLTComponentDataTypefIDsize );
 }
 
-string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type )
+string AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, int mode)
 {
   // see header file for function documentation
   string out("");
-  
+
+  if (mode==2) {
+    int i=0;
+    char tmp[8];
+    for (i=0; i<kAliHLTComponentDataTypefOriginSize; i++) {
+      sprintf(tmp, "'%d", type.fOrigin[i]);
+      out+=tmp;
+    }
+    out+="':'";
+    for (i=0; i<kAliHLTComponentDataTypefIDsize; i++) {
+      sprintf(tmp, "%d'", type.fID[i]);
+      out+=tmp;
+    }
+    return out;
+  }
+
+  if (mode==1) {
+    int i=0;
+    char tmp[8];
+    for (i=0; i<kAliHLTComponentDataTypefOriginSize; i++) {
+      unsigned char* puc=(unsigned char*)type.fOrigin;
+      if ((puc[i])<32)
+	sprintf(tmp, "'\\%x", type.fOrigin[i]);
+      else
+	sprintf(tmp, "'%c", type.fOrigin[i]);
+      out+=tmp;
+    }
+    out+="':'";
+    for (i=0; i<kAliHLTComponentDataTypefIDsize; i++) {
+      unsigned char* puc=(unsigned char*)type.fID;
+      if (puc[i]<32)
+	sprintf(tmp, "\\%x'", type.fID[i]);
+      else
+	sprintf(tmp, "%c'", type.fID[i]);
+      out+=tmp;
+    }
+    return out;
+  }
+
   if (type==kAliHLTVoidDataType) {
     out="VOID:VOID";
   } else {
@@ -363,7 +401,7 @@ void AliHLTComponent::PrintDataTypeContent(AliHLTComponentDataType& dt, const ch
 	     dt.fOrigin[3]);
 }
 
-void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) const
+void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData )
 {
   // see header file for function documentation
   blockData.fStructSize = sizeof(blockData);
@@ -375,7 +413,7 @@ void AliHLTComponent::FillBlockData( AliHLTComponentBlockData& blockData ) const
   blockData.fSpecification = kAliHLTVoidDataSpec;
 }
 
-void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) const
+void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData )
 {
   // see header file for function documentation
   shmData.fStructSize = sizeof(shmData);
@@ -383,7 +421,7 @@ void AliHLTComponent::FillShmData( AliHLTComponentShmData& shmData ) const
   shmData.fShmID = gkAliHLTComponentInvalidShmID;
 }
 
-void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType ) const
+void AliHLTComponent::FillDataType( AliHLTComponentDataType& dataType )
 {
   // see header file for function documentation
   dataType=kAliHLTAnyDataType;
@@ -399,18 +437,8 @@ void AliHLTComponent::CopyDataType(AliHLTComponentDataType& tgtdt, const AliHLTC
 void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id, const char* origin) 
 {
   // see header file for function documentation
-  tgtdt.fStructSize = sizeof(AliHLTComponentDataType);
-  memset(&tgtdt.fID[0], 0, kAliHLTComponentDataTypefIDsize);
-  memset(&tgtdt.fOrigin[0], 0, kAliHLTComponentDataTypefOriginSize);
-
-  if ((int)strlen(id)>kAliHLTComponentDataTypefIDsize) {
-    HLTWarning("data type id %s is too long, truncated to %d", id, kAliHLTComponentDataTypefIDsize);
-  }
+  tgtdt=kAliHLTVoidDataType;
   strncpy(&tgtdt.fID[0], id, kAliHLTComponentDataTypefIDsize);
-
-  if ((int)strlen(origin)>kAliHLTComponentDataTypefOriginSize) {
-    HLTWarning("data type origin %s is too long, truncated to %d", origin, kAliHLTComponentDataTypefOriginSize);
-  }
   strncpy(&tgtdt.fOrigin[0], origin, kAliHLTComponentDataTypefOriginSize);
 }
 
