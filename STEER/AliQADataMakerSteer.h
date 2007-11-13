@@ -38,21 +38,23 @@ public:
 	virtual ~AliQADataMakerSteer() ; 
 	Bool_t Merge() ;  
     void   Reset() ;  
-	Bool_t Run(const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
-	Bool_t Run(AliRawReader * rawReader) ; 
+	Bool_t Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
+	Bool_t Run(const char * detectors, AliRawReader * rawReader) ; 
 	void   SetCycleLength(const AliQA::DETECTORINDEX det, const Int_t cycle) { fQACycles[det] = cycle ; }
-
+    void   SetRunLoader(AliRunLoader * rl) { fRunLoader = rl ; }
 private: 
-	Bool_t			 DoIt(const AliQA::TASKINDEX taskIndex, const  char * fileName = NULL) ;
+	Bool_t			 DoIt(const AliQA::TASKINDEX taskIndex) ;
 	AliLoader      * GetLoader(Int_t iDet) ; 
 	const Int_t      GetQACycles(const Int_t iDet) { return fQACycles[iDet] ; }
 	AliQADataMaker * GetQADataMaker(Int_t iDet) ; 
 	Bool_t			 Init(const AliQA::TASKINDEX taskIndex, const  char * fileName = NULL) ;
 	Bool_t           InitRunLoader() ; 
+	Bool_t           IsSelected(const char * detName)  ;
 	Bool_t           Finish(const AliQA::TASKINDEX taskIndex) ;
 
  
 	Bool_t			   fCycleSame ;                    //! true if 2 consecutive data making for a same detector   
+    TString            fDetectors ;                    //! list of active detectors 
 	AliESDEvent *      fESD ;                          //! current ESD
 	TTree *            fESDTree ;                      //! current ESD Tree
 	Bool_t             fFirst ;                        //! to search the detector QA data maker only once
