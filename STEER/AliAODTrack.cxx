@@ -16,8 +16,9 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//     AOD track base class
+//     AOD track implementation of AliVParticle
 //     Author: Markus Oldenburg, CERN
+//     Markus.Oldenburg@cern.ch
 //-------------------------------------------------------------------------
 
 #include "AliAODTrack.h"
@@ -350,11 +351,11 @@ template <class T> void AliAODTrack::SetP(const T *p, const Bool_t cartesian)
   if (p) {
     if (cartesian) {
       Double_t pt2 = p[0]*p[0] + p[1]*p[1];
-      Double_t P = TMath::Sqrt(pt2 + p[2]*p[2]);
+      Double_t pp  = TMath::Sqrt(pt2 + p[2]*p[2]);
       
       fMomentum[0] = TMath::Sqrt(pt2); // pt
       fMomentum[1] = (pt2 != 0.) ? TMath::Pi()+TMath::ATan2(-p[1], -p[0]) : -999; // phi
-      fMomentum[2] = (P != 0.) ? TMath::ACos(p[2]/P) : -999.; // theta
+      fMomentum[2] = (pp != 0.) ? TMath::ACos(p[2] / pp) : -999.; // theta
     } else {
       fMomentum[0] = p[0];  // pt
       fMomentum[1] = p[1];  // phi

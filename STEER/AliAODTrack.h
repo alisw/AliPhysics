@@ -6,12 +6,11 @@
 /* $Id$ */
 
 //-------------------------------------------------------------------------
-//     AOD track base class
+//     AOD track implementation of AliVParticle
 //     Author: Markus Oldenburg, CERN
 //-------------------------------------------------------------------------
 
 #include <TRef.h>
-#include <TParticle.h>
 
 #include "AliVParticle.h"
 #include "AliAODVertex.h"
