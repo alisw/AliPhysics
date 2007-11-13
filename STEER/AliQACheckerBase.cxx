@@ -200,9 +200,9 @@ void AliQACheckerBase::Run(AliQA::ALITASK index, TList * list)
 
   if ( rv <= 0.) 
     qa->Set(AliQA::kFATAL) ; 
-  else if ( rv > 0 && rv <= 0.2 )
+  else if ( rv > 0 && rv <= 0.0002 )
     qa->Set(AliQA::kERROR) ; 
-  else if ( rv > 0.2 && rv <= 0.5 )
+  else if ( rv > 0.0002 && rv <= 0.5 )
     qa->Set(AliQA::kWARNING) ;
   else if ( rv > 0.5 && rv < 1 ) 
     qa->Set(AliQA::kINFO) ; 
