@@ -620,7 +620,7 @@ Bool_t AliReconstruction::Run(const char* input)
   //QA 
   AliQADataMakerSteer qas ; 
   if ( fRunQA && fRawReader) 
-		qas.Run(fRawReader) ; 
+		qas.Run("ALL", fRawReader) ; 
  
  // checking the QA of previous steps
   CheckQA() ; 
@@ -992,9 +992,9 @@ Bool_t AliReconstruction::Run(const char* input)
 
   //QA 
   if ( fRunQA ) {
-	qas.Run(AliQA::kRECPOINTS) ;
-	qas.Reset() ;
-	qas.Run(AliQA::kESDS) ;
+	qas.Run(fRunLocalReconstruction.Data(), AliQA::kRECPOINTS) ;
+//	qas.Reset() ;
+	qas.Run(fRunTracking.Data(), AliQA::kESDS) ;
   }
   return kTRUE;
 }

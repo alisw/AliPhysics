@@ -537,11 +537,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
   }
 
-  //QA
-  if (fRunQA) 
-	if (!RunQA("ALL", AliQA::kHITS))
-		if (fStopOnError) 
-			return kFALSE ;   	
+
 
   // Set run number in CDBManager (if it is not already set in RunSimulation)
   if (!SetRunNumber()) if (fStopOnError) return kFALSE;
@@ -558,9 +554,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   // hits -> summable digits
   if (!fMakeSDigits.IsNull()) {
     if (!RunSDigitization(fMakeSDigits)) if (fStopOnError) return kFALSE;
-  //QA
-	if (fRunQA) 
-		RunQA(fMakeSDigits, AliQA::kSDIGITS) ;   
+ 
   }
   
 
@@ -569,12 +563,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (!RunDigitization(fMakeDigits, fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
     }
-    //QA
-	if (fRunQA) 
-		if (!RunQA(fMakeDigits, AliQA::kDIGITS) )   	
-			if (fStopOnError) 
-				return kFALSE ;   	
-  }
+   }
 
   // hits -> digits
   if (!fMakeDigitsFromHits.IsNull()) {
@@ -587,12 +576,6 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     if (!RunHitsDigitization(fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
     }
-	//QA
-	if (fRunQA) 
-		if( !RunQA(fMakeDigitsFromHits, AliQA::kDIGITS) )   	
-			if (fStopOnError) 
-				return kFALSE ;   	
-
   }
 
   // digits -> trigger
@@ -615,6 +598,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
 
+ // //QA
+//	if (fRunQA) {
+//		Bool_t rv = RunQA() ; 
+//		if (!rv)
+//			if (fStopOnError) 
+//				return kFALSE ;   	
+//	}
   return kTRUE;
 }
 
@@ -1469,12 +1459,21 @@ Bool_t AliSimulation::RunHLT()
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::RunQA(const char* detectors, AliQA::TASKINDEX task)
+Bool_t AliSimulation::RunQA()
 {
-// run the QA on summable digits pr digits
+	// run the QA on summable hits, digits or digits
 
-	  AliQADataMakerSteer qas ; 
-	  qas.Reset() ; 
-	  return qas.Run(task);	
+	AliQADataMakerSteer qas ; 
+    qas.SetRunLoader(gAlice->GetRunLoader()) ;
+
+	Bool_t rv =  qas.Run("ALL", AliQA::kHITS) ; 
+//	qas.Reset() ; 
+	rv *= qas.Run(fMakeSDigits.Data(), AliQA::kSDIGITS) ;   
+//	qas.Reset() ; 
+	rv *= qas.Run(fMakeDigits.Data(), AliQA::kDIGITS) ; 	
+//	qas.Reset() ; 
+	rv *= qas.Run(fMakeDigitsFromHits.Data(), AliQA::kDIGITS) ; 
+
+	return rv ; 
 }
 
