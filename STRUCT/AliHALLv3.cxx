@@ -83,8 +83,8 @@ void AliHALLv3::CreateGeometry()
   
   // Rotations
   // rotation by 90 deg in the y-z plane
-  TGeoRotation* rot000 = new TGeoRotation("rot000",  90., 0.,  0.,  0., 90., 90.);  
-  TGeoRotation* rot001 = new TGeoRotation("rot001", 270., 0., 90., 90.,  0.,  0.);  
+  TGeoRotation* rot000 = new TGeoRotation("rot000",  90., 0.,180.,  0.,    90., 90.);  
+  TGeoRotation* rot001 = new TGeoRotation("rot001", 270., 0., 90., 90.,   180.,  0.);  
 
   // Materials
   TGeoMedium* kMedCC     = gGeoManager->GetMedium("HALL_CC_C2");
