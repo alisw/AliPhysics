@@ -44,6 +44,7 @@
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
 //
+#include "AliSysInfo.h"
 #include "AliTPCSelectorESD.h" 
 
 
@@ -65,7 +66,7 @@ AliTPCSelectorESD::AliTPCSelectorESD(TTree *tree) :
    //
    //
    //if (somthing){  
-   fSysWatch  = new fstream("syswatch.log", ios_base::out|ios_base::trunc);
+   fSysWatch  = new fstream("syswatch2.log", ios_base::out|ios_base::trunc);
    fFileWatch = new fstream("filewatch.log", ios_base::out|ios_base::trunc);
    if (gProof) fDebugLevel = gProof->GetLogLevel();
    if (tree) fChain=tree;
@@ -380,12 +381,12 @@ Bool_t AliTPCSelectorESD::Notify()
   //
   // Print statistic to log file
   //
-  if (fname) {
-    (*fFileWatch) << endl;
-    (*fFileWatch) << hname   <<"\t"
-		  << fname   <<"\t";
-  }
-  DumpSysInfo(-1);
+//   if (fname) {
+//     (*fFileWatch) << endl;
+//     (*fFileWatch) << hname   <<"\t"
+// 		  << fname   <<"\t";
+//   }
+//   DumpSysInfo(-1);
   
   return kTRUE;
 }
@@ -401,7 +402,7 @@ void   AliTPCSelectorESD::DumpSysInfo(Int_t entry){
   if (fChain->GetCurrentFile()){
     fname = fChain->GetCurrentFile()->GetName();
   }
-  //
+  //   //
   if (fSysWatch){
     TTimeStamp stamp;
     CpuInfo_t  cpuInfo;
@@ -426,4 +427,5 @@ void   AliTPCSelectorESD::DumpSysInfo(Int_t entry){
 		 << procInfo.fCpuSys<<"\t"       //
 		 << endl;
   }
+  AliSysInfo::AddStamp(fname);
 }

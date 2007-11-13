@@ -49,7 +49,7 @@
 
 #include "AliTPCSelectorESD.h" 
 #include "AliTPCSelectorTracks.h" 
-
+#include "TProof.h"
 
 const char* AliTPCSelectorTracks::fgkOutputFileName = "Output.root";
 
@@ -94,12 +94,13 @@ void AliTPCSelectorTracks::InitComponent(){
   if (clusterParam != 0) printf("clusterParam found in fChain! \n");
   AliTPCcalibTracksCuts *cuts = (AliTPCcalibTracksCuts*)fChain->GetUserInfo()->FindObject("calibTracksCuts");
   if (cuts != 0) printf("cuts found in fChain! \n");
-  
-  fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
+  Int_t debugLevel=1;
+  if (gProof) debugLevel = gProof->GetLogLevel();
+    fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts,1);
    fOutput->AddLast(fCalibTracks);
    
-   fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks");
-   fOutput->AddLast(fCalibTracksGain);
+   //fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks");
+   //fOutput->AddLast(fCalibTracksGain);
    fInit=kTRUE;
 }
 
@@ -145,9 +146,9 @@ Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
     if (seed) { 
       fNClusters->Fill(seed->GetNumberOfClusters());
       //
-      //fCalibTracks->Process(seed, esdTrack);   // analysis is done in fCalibTracks
+      fCalibTracks->Process(seed, esdTrack);   // analysis is done in fCalibTracks
       //if (!AliTPCcalibTracksGain::AcceptTrack(seed)) {/*cerr << "not accepted" << endl;*/ continue; }
-      fCalibTracksGain->AddTrack(seed);
+      //fCalibTracksGain->AddTrack(seed);
     }
   }
   CleanESD();
@@ -180,7 +181,7 @@ void AliTPCSelectorTracks::Terminate()
 
 
    Info("Destructor","Destuctor");
-   delete fCalibTracksGain;
+   //delete fCalibTracksGain;
    delete fCalibTracks;
 //   printf ("Terminate... \n");
 //   if (!fOutput) return;
