@@ -13,19 +13,17 @@
 #endif
 void qamaker()
 {
+	const char * detectors = "ALL" ; 
+	const char * rawFileName = "raw.root" ; 
 	AliQADataMakerSteer qas ; 
 	TStopwatch timer;
 	timer.Start();
-	qas.Run(AliQA::kRAWS, "07000008224001.100.root");
-	qas.Run(AliQA::kHITS);
-	qas.Reset();
-	qas.Run(AliQA::kSDIGITS);
-	qas.Reset();
-	qas.Run(AliQA::kDIGITS);
-	qas.Reset();
-	qas.Run(AliQA::kRECPOINTS);
-	qas.Reset();
-	qas.Run(AliQA::kESDS);
+	qas.Run(detectors, AliQA::kRAWS, rawFileName);
+	qas.Run(detectors, AliQA::kHITS);
+	qas.Run(detectors, AliQA::kSDIGITS);
+	qas.Run(detectors, AliQA::kDIGITS);
+	qas.Run(detectors, AliQA::kRECPOINTS);
+	qas.Run(detectors, AliQA::kESDS);
 	timer.Stop();
 	timer.Print();
 }
