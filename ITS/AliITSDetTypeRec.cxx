@@ -158,15 +158,17 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
     fSegmentation = 0;
   }
   if(fCalibration){
-    AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSPD()))->GetResponse();    
-    AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSDD()))->GetResponse();
-    AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSSD()))->GetResponse();
-    if(rspd) delete rspd;
-    if(rsdd) delete rsdd;
-    if(rssd) delete rssd;
-    fCalibration->Delete();
-    delete fCalibration;
-    fCalibration = 0;
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+      AliITSresponse* rspd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSPD()))->GetResponse();    
+      AliITSresponse* rsdd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSDD()))->GetResponse();
+      AliITSresponse* rssd = ((AliITSCalibration*)fCalibration->At(GetITSgeom()->GetStartSSD()))->GetResponse();
+      if(rspd) delete rspd;
+      if(rsdd) delete rsdd;
+      if(rssd) delete rssd;
+      fCalibration->Delete();
+      delete fCalibration;
+      fCalibration = 0;
+    }
   }
   if(fPreProcess) delete fPreProcess;
   if(fPostProcess) delete fPostProcess;
