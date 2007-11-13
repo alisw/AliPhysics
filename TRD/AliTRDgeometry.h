@@ -44,6 +44,8 @@ class AliTRDgeometry : public AliGeometry {
 
   virtual Bool_t   RotateBack(Int_t det, Double_t *loc, Double_t *glb) const;
 
+          Bool_t   ChamberInGeometry(Int_t det);
+
           void     GroupChamber(Int_t iplan, Int_t icham, Int_t *idtmed);
           void     CreateFrame(Int_t *idtmed);
           void     CreateServices(Int_t *idtmed);

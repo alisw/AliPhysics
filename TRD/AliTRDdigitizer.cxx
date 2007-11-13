@@ -1215,7 +1215,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
     // Don't create noise in detectors that are switched off / not installed, etc.
     if (( calibration->IsChamberInstalled(iDet)) &&
         (!calibration->IsChamberMasked(iDet))    &&
-        ( fGeo->GetSMstatus(sector))) {
+        ( fGeo->ChamberInGeometry(iDet))) {
 
       // Get the calibration objects
       calGainFactorROC      = calibration->GetGainFactorROC(iDet);
@@ -1448,7 +1448,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
     // Don't create noise in detectors that are switched off / not installed, etc.
     if (( calibration->IsChamberInstalled(iDet)) &&
         (!calibration->IsChamberMasked(iDet))    &&
-        ( fGeo->GetSMstatus(sector))) {
+        ( fGeo->ChamberInGeometry(iDet))) {
 
       // Get the calibration objects
       calGainFactorROC      = calibration->GetGainFactorROC(iDet);

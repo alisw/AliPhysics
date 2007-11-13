@@ -1613,6 +1613,17 @@ void AliTRDgeometry::CreateFrame(Int_t *idtmed)
   gMC->Gsposp("UTA2",3,"UTF2",-xpos,ypos,zpos
                     ,matrix[1],"ONLY",parPlt,kNparPlt);
 
+  // Additional aluminum bar
+  parBOX[0] = 80.0/2.0;
+  parBOX[1] =  1.0/2.0;
+  parBOX[2] = 10.0/2.0;
+  gMC->Gsvolu("UTA3","BOX ",idtmed[1301-1],parBOX,kNparBOX);
+  xpos      =  0.0;
+  ypos      =  1.0/2.0 + fgkSMpltT - fgkFlength/2.0;
+  zpos      =  fgkSheight/2.0 - 1.5 - 10.0/2.0;
+  gMC->Gspos("UTA3",1,"UTF1", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("UTA3",2,"UTF2", xpos,-ypos, zpos,        0,"ONLY");
+
 }
 
 //_____________________________________________________________________________
@@ -2088,6 +2099,44 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   // Services in front of the super module
   //
 
+  // Gas in-/outlet pipes (INOX)
+  parTube[0] = 0.0;
+  parTube[1] = 0.0;
+  parTube[2] = 0.0;
+  gMC->Gsvolu("UTG3","TUBE",idtmed[1308-1],parTube,0);
+  // The gas inside the in-/outlet pipes (Xe)
+  parTube[0] =  0.0;
+  parTube[1] =  1.2/2.0;
+  parTube[2] = -1.0;
+  gMC->Gsvolu("UTG4","TUBE",idtmed[1309-1],parTube,kNparTube);
+  xpos = 0.0;
+  ypos = 0.0;
+  zpos = 0.0;
+  gMC->Gspos("UTG4",1,"UTG3",xpos,ypos,zpos,0,"ONLY");
+  for (iplan = 0; iplan < kNplan-1; iplan++) { 
+    xpos       = 0.0;
+    ypos       = fClength[iplan][2]/2.0 
+               + fClength[iplan][1] 
+               + fClength[iplan][0];
+    zpos       = 9.0 - fgkSheight/2.0
+               + iplan * (fgkCH + fgkVspace);
+    parTube[0] = 0.0;
+    parTube[1] = 1.5/2.0;
+    parTube[2] = fCwidth[iplan]/2.0 - 2.5;
+    gMC->Gsposp("UTG3",iplan+1         ,"UTI1", xpos, ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+    gMC->Gsposp("UTG3",iplan+1+1*kNplan,"UTI1", xpos,-ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+    gMC->Gsposp("UTG3",iplan+1+2*kNplan,"UTI2", xpos, ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+    gMC->Gsposp("UTG3",iplan+1+3*kNplan,"UTI2", xpos,-ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+    gMC->Gsposp("UTG3",iplan+1+4*kNplan,"UTI3", xpos, ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+    gMC->Gsposp("UTG3",iplan+1+5*kNplan,"UTI3", xpos,-ypos, zpos
+                      ,matrix[2],"ONLY",parTube,kNparTube);
+  }
+
   // Gas distribution box
   parBox[0] = 14.50/2.0;
   parBox[1] =  4.52/2.0;
@@ -2155,7 +2204,7 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   parTube[0] =  0.0;
   parTube[1] =  3.0/2.0;
   parTube[2] = 18.0/2.0;
-  gMC->Gsvolu("UTCH","TUBE",idtmed[1308-1],parTube,kNparTube);
+  gMC->Gsvolu("UTCO","TUBE",idtmed[1308-1],parTube,kNparTube);
   parTube[0] =  0.0;
   parTube[1] =  3.0/2.0 - 0.3;
   parTube[2] = 18.0/2.0;
@@ -2163,25 +2212,25 @@ void AliTRDgeometry::CreateServices(Int_t *idtmed)
   xpos       =  0.0;
   ypos       =  0.0;
   zpos       =  0.0;
-  gMC->Gspos("UTCL",1,"UTCH", xpos, ypos, zpos,        0,"ONLY");
+  gMC->Gspos("UTCL",1,"UTCO", xpos, ypos, zpos,        0,"ONLY");
   xpos       =  0.0;
   ypos       =  2.5;
   zpos       = -70.0/2.0 + 7.0;
-  gMC->Gspos("UTCH",1,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",1,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",2,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",2,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",3,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",3,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",4,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",4,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",5,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",5,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",6,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",6,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",7,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",7,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
   zpos      +=  7.0;
-  gMC->Gspos("UTCH",8,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
+  gMC->Gspos("UTCO",8,"UTCM", xpos, ypos, zpos,matrix[4],"ONLY");
 
   xpos = 40.0;
   ypos =  fgkFlength/2.0 - 23.0/2.0;
@@ -2539,7 +2588,6 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
         path = pne->GetTitle();
       }
       if (!strstr(path,"ALIC")) {
-        AliError(Form("Not a valid path: %s\n",path));
         AliDebug(1,Form("Not a valid path: %s\n",path));
         continue;
       }
@@ -2567,7 +2615,6 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       rotSector.RotateZ(sectorAngle);
       rotMatrix.MultiplyLeft(&rotSector.Inverse());
 
-      AliWarning(Form("Add matrix: %d\n",lid));
       fClusterMatrixArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
 
     }    
@@ -2577,3 +2624,22 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
 
 }
 
+//_____________________________________________________________________________
+Bool_t AliTRDgeometry::ChamberInGeometry(Int_t det)
+{
+  //
+  // Checks whether the given detector is part of the current geometry
+  //
+
+  if (!fClusterMatrixArray) {
+    CreateClusterMatrixArray();
+  }  
+
+  if (!GetClusterMatrix(det)) {
+    return kFALSE;
+  }
+  else {
+    return kTRUE;
+  }
+
+}

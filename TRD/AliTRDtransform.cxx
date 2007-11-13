@@ -201,8 +201,8 @@ void AliTRDtransform::SetDetector(Int_t det)
 }
 
 //_____________________________________________________________________________
-void AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
-			      , Int_t  /*coordinateType*/)
+Bool_t AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
+	  		        , Int_t  /*coordinateType*/)
 {
   //
   // Transforms the local cluster coordinates into calibrated 
@@ -240,7 +240,6 @@ void AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
 
   if (!fMatrix) {
 
-    AliWarning("No transformation matrix available!");
     x[0] = 0.0;
     x[1] = 0.0;
     x[2] = 0.0;
@@ -248,6 +247,8 @@ void AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
     x[4] = 0.0;
     x[5] = 0.0;
     i[2] = 0;
+
+    return kFALSE;
 
   }
   else {
@@ -302,6 +303,8 @@ void AliTRDtransform::Transform(Double_t *x, Int_t *i, UInt_t time
     x[4] = colSize*colSize * (clusterSigmaY2 + 1.0/12.0);
     x[5] = rowSize*rowSize / 12.0;                                       
     i[2] = TMath::Nint(timeT0Cal);
+
+    return kTRUE;
 
   }
 

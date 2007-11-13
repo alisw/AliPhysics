@@ -983,49 +983,52 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
           clusterRCT[0] = row;
           clusterRCT[1] = col;
           clusterRCT[2] = 0;
-	  fTransform->Transform(clusterXYZ,clusterRCT,((UInt_t) time),0);
 
-	  // Add the cluster to the output array
-	  // The track indices will be stored later 
-          Float_t clusterPos[3];
-          clusterPos[0] = clusterXYZ[0];
-          clusterPos[1] = clusterXYZ[1];
-          clusterPos[2] = clusterXYZ[2];
-	  Float_t clusterSig[2];
-	  clusterSig[0] = clusterXYZ[4];
-	  clusterSig[1] = clusterXYZ[5];
-          Double_t clusterCharge  = clusterXYZ[3];
-	  Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
-	  AliTRDcluster *cluster = new AliTRDcluster(idet
-						    ,clusterCharge
-						    ,clusterPos
-						    ,clusterSig
-						    ,0x0
-						    ,((Char_t) nPadCount)
-						    ,signals
-						    ,((UChar_t) col)
-						    ,((UChar_t) row)
-						    ,((UChar_t) time)
-						    ,clusterTimeBin
-						    ,clusterPosCol
-						    ,volid);
+	  if (fTransform->Transform(clusterXYZ,clusterRCT,((UInt_t) time),0)) {
 
-	  // Temporarily store the row, column and time bin of the center pad
-	  // Used to later on assign the track indices
-	  cluster->SetLabel( row,0);
-	  cluster->SetLabel( col,1);
-	  cluster->SetLabel(time,2);
+  	    // Add the cluster to the output array
+	    // The track indices will be stored later 
+            Float_t clusterPos[3];
+            clusterPos[0] = clusterXYZ[0];
+            clusterPos[1] = clusterXYZ[1];
+            clusterPos[2] = clusterXYZ[2];
+	    Float_t clusterSig[2];
+	    clusterSig[0] = clusterXYZ[4];
+	    clusterSig[1] = clusterXYZ[5];
+            Double_t clusterCharge  = clusterXYZ[3];
+	    Char_t   clusterTimeBin = ((Char_t) clusterRCT[2]);
+	    AliTRDcluster *cluster = new AliTRDcluster(idet
+		  				      ,clusterCharge
+						      ,clusterPos
+						      ,clusterSig
+						      ,0x0
+						      ,((Char_t) nPadCount)
+						      ,signals
+						      ,((UChar_t) col)
+						      ,((UChar_t) row)
+						      ,((UChar_t) time)
+						      ,clusterTimeBin
+						      ,clusterPosCol
+						      ,volid);
 
-	  RecPoints()->Add(cluster);
+	    // Temporarily store the row, column and time bin of the center pad
+	    // Used to later on assign the track indices
+	    cluster->SetLabel( row,0);
+	    cluster->SetLabel( col,1);
+	    cluster->SetLabel(time,2);
 
-	  // Store the index of the first cluster in the current ROC
-	  if (firstClusterROC < 0) 
-            {
-	      firstClusterROC = RecPoints()->GetEntriesFast() - 1;
-	    }
+	    RecPoints()->Add(cluster);
 
-	  // Count the number of cluster in the current ROC
-	  nClusterROC++;
+	    // Store the index of the first cluster in the current ROC
+	    if (firstClusterROC < 0) 
+              {
+	        firstClusterROC = RecPoints()->GetEntriesFast() - 1;
+	      }
+
+	    // Count the number of cluster in the current ROC
+	    nClusterROC++;
+
+	  } // if: Transform ok ?
 
         } // if: Maximum found ?
 
