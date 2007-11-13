@@ -48,20 +48,18 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
    * Set an active data segment.
    * the pointer will be handled in a container, no allocation, copy or
    * cleanup.
-   * @param offset  offset of the segment in the buffer
-   * @param size    size of the segment in the buffer
+   * @param segment segment descriptor
    * @return >=0 if succeeded
    */
-  int SetActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
+  int SetActiveDataSegment(AliHLTDataBuffer::AliHLTDataSegment segment);
 
   /**
    * Check whether there is an active data segment of certain size with
    * certain offset.
-   * @param offset  offset of the data segment in the data buffer
-   * @param size    size of the data segment in the data buffer
+   * @param segment segment descriptor
    * @return > if existend, 0 if not
    */
-  int CheckActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
+  int CheckActiveDataSegment(AliHLTDataBuffer::AliHLTDataSegment segment);
 
   /** find an active data segment of certain size with certain offset
    * will see if this is necessary
@@ -77,8 +75,9 @@ class AliHLTConsumerDescriptor : public TObject, public AliHLTLogging {
   int GetNofActiveSegments() {return fSegments.size();};
 
   /**
+   * @param segment segment descriptor
    */
-  int ReleaseActiveDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size);
+  int ReleaseActiveDataSegment(AliHLTDataBuffer::AliHLTDataSegment segment);
 
  private:
   /** copy constructor prohibited */

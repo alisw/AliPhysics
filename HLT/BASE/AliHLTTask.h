@@ -19,6 +19,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
+#include <vector>
 #include <TObject.h>
 #include <TList.h>
 #include "AliHLTDataTypes.h"
@@ -29,6 +30,9 @@ struct AliHLTComponentBlockData;
 class AliHLTComponent;
 class AliHLTComponentHandler;
 class AliHLTConfiguration;
+class AliHLTTask;
+
+typedef vector<AliHLTTask*> AliHLTTaskPList;
 
 /******************************************************************************/
 

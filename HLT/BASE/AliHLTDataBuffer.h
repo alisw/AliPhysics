@@ -25,9 +25,12 @@
 #include "AliHLTComponent.h"
 
 class AliHLTConsumerDescriptor;
+class AliHLTTask;
 
 /** list of AliHLTConsumerDescriptor pointers */
 typedef vector<AliHLTConsumerDescriptor*> AliHLTConsumerDescriptorPList;
+
+typedef AliHLTUInt8_t* AliHLTUInt8Pointer_t;
 
 /**
  * @class AliHLTDataBuffer
@@ -115,12 +118,24 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * The method is used by the consumer component.
    * @param pBlockDesc      descriptor of the data segment
    * @param pConsumer       the component which subscribes to the buffer
+   * @param pOwnerTask      task owning this buffer
    * @return: >0 if success, negative error code if failed <br>
    *          -EACCESS      the consumer state can not be changed (de-activated)
    *          -ENOENT       consumer has not subscribed to the buffer <br>
    *          -EINVAL       invalid parameter <br>
    */
-  int Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTComponent* pConsumer);
+  int Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTComponent* pConsumer,
+	      const AliHLTTask* pOwnerTask);
+
+  /**
+   * Register an input data block for forwarding.
+   * Consumer of this data buffer subscribe to forwarded data blocks in te same way.
+   * Forwarded data blocks are released when the last consumer has released the
+   * blocks.
+   * @param pSrcTask        original source task of the data block
+   * @param pBlockDesc      descriptor of the data segment
+   */
+  int Forward(AliHLTTask* pSrcTask, AliHLTComponentBlockData* pBlockDesc);
 
   /**
    * Get a target buffer of minimum size iMinSize.
@@ -211,31 +226,64 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    * @brief  Descriptor of a data segment within the buffer.
    */
   class AliHLTDataSegment {
-  friend class AliHLTDataBuffer;
-  friend class AliHLTConsumerDescriptor;
+    friend class AliHLTDataBuffer;
+    friend class AliHLTConsumerDescriptor;
   public:
     AliHLTDataSegment()
       :
-      fDataType(),
+      fDataType(kAliHLTVoidDataType),
+      fPtr(NULL),
       fSegmentOffset(0),
       fSegmentSize(0),
       fSpecification(0)
     {
-      memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
     }
-    AliHLTDataSegment(AliHLTUInt32_t offset, AliHLTUInt32_t size) 
+
+    AliHLTDataSegment(AliHLTUInt8_t* ptr, AliHLTUInt32_t offset, AliHLTUInt32_t size) 
       :
-      fDataType(),
+      fDataType(kAliHLTVoidDataType),
+      fPtr(ptr),
       fSegmentOffset(offset),
       fSegmentSize(size),
       fSpecification(0)
     {
-      memset(&fDataType, 0, sizeof(AliHLTComponentDataType));
     }
+
+    AliHLTDataSegment(void* ptr, AliHLTUInt32_t offset, AliHLTUInt32_t size) 
+      :
+      fDataType(kAliHLTVoidDataType),
+      fPtr((AliHLTUInt8_t*)ptr),
+      fSegmentOffset(offset),
+      fSegmentSize(size),
+      fSpecification(0)
+    {
+    }
+
+    AliHLTDataSegment(void* ptr, AliHLTUInt32_t offset, AliHLTUInt32_t size, AliHLTComponentDataType dt, AliHLTUInt32_t spec)
+      :
+      fDataType(dt),
+      fPtr((AliHLTUInt8_t*)ptr),
+      fSegmentOffset(offset),
+      fSegmentSize(size),
+      fSpecification(spec)
+    {
+    }
+
+    AliHLTUInt8_t* GetPtr() const {return (AliHLTUInt8_t*)*this;}
+
+    AliHLTUInt32_t GetSize() const {return fSegmentSize;}
+    
+    int operator==(const AliHLTDataSegment& seg) const
+    {
+      return (fPtr+fSegmentOffset==seg.fPtr+seg.fSegmentOffset) && (fSegmentSize==seg.fSegmentSize);
+    }
+    operator AliHLTUInt8_t*() const {return fPtr+fSegmentOffset;}
 
   private:
     /** the data type of this segment */
     AliHLTComponentDataType fDataType;                             // see above
+    /** pointer to the buffer */
+    AliHLTUInt8Pointer_t fPtr;                                     //!transient
     /** offset in byte within the data buffer */
     AliHLTUInt32_t fSegmentOffset;                                 // see above
     /** size of the actual content */
@@ -372,6 +420,12 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
 
   // flags indicating the state of the buffer
   AliHLTUInt32_t fFlags;                                           // see above
+
+  /** list of tasks with forwarded data blocks */
+  vector<AliHLTTask*> fForwardedSegmentSources;                    //! transient
+
+  /** list of forwarded block descriptors */
+  vector<AliHLTDataSegment> fForwardedSegments;                    //! transient
 
   //////////////////////////////////////////////////////////////////////////////
   // global buffer handling, internal use only

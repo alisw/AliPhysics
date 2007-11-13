@@ -33,6 +33,7 @@ using namespace std;
 #endif
 
 #include <cerrno>
+#include <cassert>
 #include <iostream>
 #include <string>
 #include "AliHLTTask.h"
@@ -438,7 +439,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
     int iInputDataVolume=0;
 
     AliHLTTask* pSrcTask=NULL;
-    TList subscribedTaskList;
+    AliHLTTaskPList subscribedTaskList;
     TObjLink* lnk=fListDependencies.FirstLink();
 
     // subscribe to all source tasks
@@ -464,7 +465,7 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	    iInputDataVolume+=fBlockDataArray[i+iSourceDataBlock].fSize;
 	    // put the source task as many times into the list as it provides data blocks
 	    // makes the bookkeeping for the data release easier
-	    subscribedTaskList.Add(pSrcTask);
+	    subscribedTaskList.push_back(pSrcTask);
 	  }
 	  HLTDebug("Task %s (%p) successfully subscribed to %d data block(s) of task %s (%p)", GetName(), this, iResult, pSrcTask->GetName(), pSrcTask);
 	  iSourceDataBlock+=iResult;	  
@@ -515,8 +516,25 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
       if (pTgtBuffer!=NULL || iOutputDataSize==0) {
 	iResult=pComponent->ProcessEvent(evtData, &fBlockDataArray[0], trigData, pTgtBuffer, size, outputBlockCnt, outputBlocks, edd);
 	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);
-	if (iResult>=0 && pTgtBuffer && outputBlocks) {
-	  iResult=fpDataBuffer->SetSegments(pTgtBuffer, outputBlocks, outputBlockCnt);
+	if (iResult>=0 && outputBlocks) {
+	  AliHLTComponentBlockDataList segments;
+	  for (int oblock=0; oblock<outputBlockCnt; oblock++) {
+	    int iblock=0;
+	    for (; iblock<evtData.fBlockCnt; iblock++) {
+	      if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
+		assert(subscribedTaskList[iblock]!=NULL);
+		if (subscribedTaskList[iblock]==NULL) continue;
+		HLTDebug("forward segment %d (source task %s %p) to data buffer %p", iblock, pSrcTask->GetName(), pSrcTask, fpDataBuffer);
+		fpDataBuffer->Forward(subscribedTaskList[iblock], &fBlockDataArray[iblock]);
+		subscribedTaskList[iblock]=NULL; // not to be released in the loop further down
+		break;
+	      }
+	    }
+	    if (iblock==evtData.fBlockCnt) segments.push_back(outputBlocks[oblock]);
+	  }
+	  if (pTgtBuffer && segments.size()>0) {
+	    iResult=fpDataBuffer->SetSegments(pTgtBuffer, &segments[0], segments.size());
+	  }
 	  delete [] outputBlocks; outputBlocks=NULL; outputBlockCnt=0;
 	} else {
 	  fpDataBuffer->Reset();
@@ -530,9 +548,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 
     // now release all buffers which we have subscribed to
     iSourceDataBlock=0;
-    lnk=subscribedTaskList.FirstLink();
-    while (lnk) {
-      pSrcTask=(AliHLTTask*)lnk->GetObject();
+    AliHLTTaskPList::iterator element;
+    while ((element=subscribedTaskList.begin())!=subscribedTaskList.end()) {
+      pSrcTask=*element;
       if (pSrcTask) {
 	int iTempRes=0;
 	if ((iTempRes=pSrcTask->Release(&fBlockDataArray[iSourceDataBlock], this))>=0) {
@@ -540,15 +558,11 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	} else {
 	  HLTError("Task %s (%p): realease of task %s (%p) failed with error %d", GetName(), this, pSrcTask->GetName(), pSrcTask, iTempRes);
 	}
-      } else {
-	HLTFatal("task %s (%p): internal error in ROOT list handling", GetName(), this);
-	if (iResult>=0) iResult=-EFAULT;
       }
-      subscribedTaskList.Remove(lnk);
-      lnk=subscribedTaskList.FirstLink();
+      subscribedTaskList.erase(element);
       iSourceDataBlock++;
     }
-    if (subscribedTaskList.GetSize()>0) {
+    if (subscribedTaskList.size()>0) {
       HLTError("task %s (%p): could not release all data buffers", GetName(), this);
     }
   } else {
@@ -621,7 +635,7 @@ int AliHLTTask::Release(AliHLTComponentBlockData* pBlockDesc, const AliHLTTask* 
   int iResult=0;
   if (pConsumerTask && pBlockDesc) {
     if (fpDataBuffer) {
-      iResult=fpDataBuffer->Release(pBlockDesc, pConsumerTask->GetComponent());
+      iResult=fpDataBuffer->Release(pBlockDesc, pConsumerTask->GetComponent(), this);
     } else {
       HLTFatal("internal data buffer missing");
       iResult=-EFAULT;
