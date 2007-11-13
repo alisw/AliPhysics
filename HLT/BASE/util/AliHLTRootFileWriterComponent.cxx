@@ -27,6 +27,9 @@
 #include "TFile.h"
 #include "TString.h"
 
+/** the global object for component registration */
+AliHLTRootFileWriterComponent gAliHLTRootFileWriterComponent;
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFileWriterComponent)
 

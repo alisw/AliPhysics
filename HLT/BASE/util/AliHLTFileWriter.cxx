@@ -253,7 +253,7 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
   for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
     //HLTDebug("block %d out of %d", n, evtData.fBlockCnt);
     TString filename;
-    HLTDebug("dataspec 0x%x", blocks[n].fSpecification);
+    //HLTDebug("dataspec 0x%x", blocks[n].fSpecification);
     iResult=BuildFileName(evtData.fEventID, n, blocks[n].fDataType, blocks[n].fSpecification, filename);
     ios::openmode filemode=(ios::openmode)0;
     if (fCurrentFileName.CompareTo(filename)==0) {

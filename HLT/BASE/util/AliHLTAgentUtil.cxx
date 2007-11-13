@@ -35,6 +35,7 @@
 #include "AliHLTRootFilePublisherComponent.h"
 #include "AliHLTFileWriter.h"
 #include "AliHLTFilePublisher.h"
+#include "AliHLTBlockFilterComponent.h"
 
 /** global instance for agent registration */
 AliHLTAgentUtil gAliHLTAgentUtil;
@@ -90,5 +91,6 @@ int AliHLTAgentUtil::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTRootFilePublisherComponent);
   pHandler->AddComponent(new AliHLTFileWriter);
   pHandler->AddComponent(new AliHLTFilePublisher);
+  pHandler->AddComponent(new AliHLTBlockFilterComponent);
   return 0;
 }
