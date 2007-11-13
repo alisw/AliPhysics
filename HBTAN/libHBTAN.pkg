@@ -2,7 +2,8 @@ SRCS          =       AliHBTWeights.cxx AliHBTCrab.cxx AliHBTAnalysis.cxx  \
 AliHBTPair.cxx  AliHBTAnalysisStavinskyMixing.cxx  \
 AliHBTFunction.cxx    AliHBTCorrelFctn.cxx  \
 AliHBTMonitorFunction.cxx       AliHBTTwoTrackEffFctn.cxx \
-AliHBTQResolutionFctns.cxx      AliHBTQDistributionFctns.cxx \
+AliHBTQResolutionFctns.cxx      AliHBTQDistributionVsQInvFctns.cxx AliHBTQDistributionVsKtFctns.cxx \
+AliHBTRDistributions.cxx \
 AliHBTMonDistributionFctns.cxx  AliHBTMonResolutionFctns.cxx \
 AliHBTLLWeights.cxx             AliHBTWeightFctn.cxx \
 AliHBTWeightsPID.cxx            AliHBTWeightTheorFctn.cxx \
