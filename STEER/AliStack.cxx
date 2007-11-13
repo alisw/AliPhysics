@@ -134,8 +134,8 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg, Float_t *pmom,
   //
   // Load a track on the stack
   //
-  // done     0 if the track has to be transported
-  //          1 if not
+  // done     1 if the track has to be transported
+  //          0 if not
   // parent   identifier of the parent track. -1 for a primary
   // pdg    particle code
   // pmom     momentum GeV/c
@@ -184,8 +184,8 @@ void AliStack::PushTrack(Int_t done, Int_t parent, Int_t pdg,
   //
   // Load a track on the stack
   //
-  // done        0 if the track has to be transported
-  //             1 if not
+  // done        1 if the track has to be transported
+  //             0 if not
   // parent      identifier of the parent track. -1 for a primary
   // pdg         particle code
   // kS          generation status code
