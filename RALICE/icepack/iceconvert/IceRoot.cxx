@@ -297,9 +297,7 @@ void IceRoot::Exec(Option_t* opt)
 
  // Set DAQ device info
  AliDevice daq;
- daq.SetName("Daq");
- daq.AddNamedSlot("JEB");
- daq.AddNamedSlot("TWR");
+ daq.SetNameTitle("Daq","Daq system used");
 
  // Trigger device
  AliDevice trig;
@@ -475,8 +473,14 @@ void IceRoot::Exec(Option_t* opt)
 
     // Daq: JEB for 2007 and later, TWR for 2006 and earlier
     daq.Reset(1);
-    if(evt->GetDate()/10000 >= 2007)daq.SetSignal(1,"JEB");
-    else daq.SetSignal(1,"TWR");
+    if(evt->GetDate()/10000 >= 2007){
+     daq.AddNamedSlot("JEB");
+     daq.SetSignal(1,"JEB");
+    }
+    else {
+     daq.AddNamedSlot("TWR");
+     daq.SetSignal(1,"TWR");
+    }
     evt->AddDevice(daq);
 
     // Store trigger information

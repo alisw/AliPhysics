@@ -143,4 +143,5 @@
                 is kept to enable processing of the old walnut format (if needed).
                 The class IceRoot has been updated so that it matches the new walnut
                 data format.
+13-nov-2007 GdV Bug fix in IceRoot by completely re-building the Daq device.
 
