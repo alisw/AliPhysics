@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.63  2007/11/02 10:53:16  acolla
+Protection added to AliShuttle::CopyFileLocally
+
 Revision 1.62  2007/10/31 18:23:13  acolla
 Furter developement on the Shuttle:
 
@@ -1635,11 +1638,12 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 			Bool_t success = ProcessCurrentDetector();
 			
 			gSystem->ChangeDirectory(wd.Data());
-			
-			gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
-			
+						
 			if (success) // Preprocessor finished successfully!
 			{ 
+				// remove temporary folder
+				gSystem->Exec(Form("rm -rf %s",tmpDir.Data()));
+				
 				// Update time_processed field in FXS DB
 				if (UpdateTable() == kFALSE)
 					Log("SHUTTLE", Form("Process - %s: Could not update FXS databases!", 
@@ -1858,6 +1862,13 @@ Bool_t AliShuttle::ProcessCurrentDetector()
 			}
 		}
 	}
+	
+	// save map into file, to help debugging in case of preprocessor error
+	TFile* f = TFile::Open("DCSMap.root","recreate");
+	f->cd();
+	dcsMap->Write("DCSMap", TObject::kSingleKey);
+	f->Close();
+	delete f;
 	
 	// DCS Archive DB processing successful. Call Preprocessor!
 	UpdateShuttleStatus(AliShuttleStatus::kPPStarted);
