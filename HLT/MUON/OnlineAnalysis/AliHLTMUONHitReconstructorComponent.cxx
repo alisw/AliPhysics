@@ -16,15 +16,14 @@
 
 /* $Id$ */
 
-///*
-//
-//  The HitRec Component is designed to deal the rawdata inputfiles to findout the 
-//  the reconstructed hits. The output is send to the output block for further 
-//  processing.
-//
-//  Author : Indranil Das ( indra.das@saha.ac.in || indra.ehep@gmail.com )
-// 
-//*/
+///
+///
+///  The HitRec Component is designed to deal the rawdata inputfiles to findout the 
+///  the reconstructed hits. The output is send to the output block for further 
+///  processing.
+///
+///  Author : Indranil Das ( indra.das@saha.ac.in || indra.ehep@gmail.com )
+///
 
 #include "AliHLTMUONRecHitsBlockStruct.h"
 #include "AliHLTMUONHitReconstructorComponent.h"
@@ -38,38 +37,46 @@
 #include <cerrno>
 #include <cassert>
 
-namespace
-{
-	// The global object used for automatic component registration, 
-	// Note DO NOT use this component for calculation!
-	AliHLTMUONHitReconstructorComponent gAliHLTMUONHitReconstructorComponent;
-}
-
 ClassImp(AliHLTMUONHitReconstructorComponent)
 
 
 AliHLTMUONHitReconstructorComponent::AliHLTMUONHitReconstructorComponent() :
+	AliHLTProcessor(),
 	fHitRec(NULL),
 	fDDLDir(""),
 	fDDL(0),
 	fReaderType(false),
 	fWarnForUnexpecedBlock(false)
 {
+	///
+	/// Default constructor.
+	///
 }
 
 
 AliHLTMUONHitReconstructorComponent::~AliHLTMUONHitReconstructorComponent()
 {
+	///
+	/// Default destructor.
+	///
 }
 
 const char* AliHLTMUONHitReconstructorComponent::GetComponentID()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the component ID.
+	///
+	
 	return AliHLTMUONConstants::HitReconstructorId();
 }
 
 
 void AliHLTMUONHitReconstructorComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
 {
+	///
+	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
+	///
+	
 	list.clear();
 	list.push_back( AliHLTMUONConstants::TrackingDDLRawDataType() );
 }
@@ -77,26 +84,42 @@ void AliHLTMUONHitReconstructorComponent::GetInputDataTypes( std::vector<AliHLTC
 
 AliHLTComponentDataType AliHLTMUONHitReconstructorComponent::GetOutputDataType()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the output data type.
+	///
+	
 	return AliHLTMUONConstants::RecHitsBlockDataType();
 }
 
 
 void AliHLTMUONHitReconstructorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
+	///
+	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
+	///
+	
 	constBase = sizeof(AliHLTMUONRecHitsBlockWriter::HeaderType);
 	inputMultiplier = 1;
 }
 
 
-// Spawn function, return new instance of this class
 AliHLTComponent* AliHLTMUONHitReconstructorComponent::Spawn()
 {
+	///
+	/// Inherited from AliHLTComponent. Creates a new object instance.
+	///
+	
 	return new AliHLTMUONHitReconstructorComponent;
 }
 
 
 int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 {
+	///
+	/// Inherited from AliHLTComponent.
+	/// Parses the command line parameters and initialises the component.
+	///
+	
   // perform initialization. We check whether our relative output size is specified in the arguments.
      
   HLTInfo("Initialising DHLT HitReconstruction Component");
@@ -226,6 +249,10 @@ int AliHLTMUONHitReconstructorComponent::DoInit(int argc, const char** argv)
 
 int AliHLTMUONHitReconstructorComponent::DoDeinit()
 {
+	///
+	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
+	///
+	
   if(fHitRec)
     delete fHitRec;
   
@@ -244,6 +271,10 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
+	///
+	/// Inherited from AliHLTProcessor. Processes the new event data.
+	///
+	
 	// Process an event
 	unsigned long totalSize = 0; // Amount of memory currently consumed in bytes.
 
@@ -355,6 +386,10 @@ int AliHLTMUONHitReconstructorComponent::DoEvent(
 
 bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(AliHLTMUONHitReconstructor::DHLTLut* lookupTable, const char* lutpath)
 {
+	///
+	/// Read in the lookup table from a text file.
+	///
+	
   if (fDDL < AliHLTMUONHitReconstructor::GetkDDLOffSet() ||
       fDDL >= AliHLTMUONHitReconstructor::GetkDDLOffSet() + AliHLTMUONHitReconstructor::GetkNofDDL()){
     HLTError("DDL number is out of range");
@@ -391,6 +426,10 @@ bool AliHLTMUONHitReconstructorComponent::ReadLookUpTable(AliHLTMUONHitReconstru
 
 bool AliHLTMUONHitReconstructorComponent::ReadBusPatchToDetElemFile(BusToDetElem& busToDetElem, BusToDDL& busToDDL, const char* buspatchmappath)
 {
+	///
+	/// Read in the lookup table for bus patch to detector element IDs from a text file.
+	///
+	
   char getLine[80];
   char temp;
   int detElem, minBusPatch, maxBusPatch, ddl;

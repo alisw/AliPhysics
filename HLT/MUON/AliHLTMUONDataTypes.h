@@ -55,7 +55,7 @@ struct AliHLTMUONDataBlockHeader
 
 
 /**
- * The sign of a particle.
+ * The sign/charge of a particle.
  */
 enum AliHLTMUONParticleSign
 {

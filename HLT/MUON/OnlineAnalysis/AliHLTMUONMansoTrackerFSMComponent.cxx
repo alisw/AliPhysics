@@ -17,13 +17,13 @@
 
 /* $Id$ */
 
-/**
- *  @file   AliHLTMUONMansoTrackerFSMComponent.cxx
- *  @author Artur Szostak <artursz@iafrica.com>,
- *          Indranil Das <indra.das@saha.ac.in>
- *  @date   
- *  @brief  Implementation of AliHLTMUONMansoTrackerFSMComponent class.
- */
+///
+///  @file   AliHLTMUONMansoTrackerFSMComponent.cxx
+///  @author Artur Szostak <artursz@iafrica.com>,
+///          Indranil Das <indra.das@saha.ac.in>
+///  @date   
+///  @brief  Implementation of AliHLTMUONMansoTrackerFSMComponent class.
+///
 
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
 #include "AliHLTMUONConstants.h"
@@ -34,15 +34,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
-
-namespace
-{
-	// The global object used for automatic component registration.
-	// Note DO NOT use this component for calculation!
-	AliHLTMUONMansoTrackerFSMComponent gAliHLTMUONMansoTrackerFSMComponent;
-
-} // end of namespace
-
 
 ClassImp(AliHLTMUONMansoTrackerFSMComponent);
 
@@ -55,17 +46,28 @@ AliHLTMUONMansoTrackerFSMComponent::AliHLTMUONMansoTrackerFSMComponent() :
 	fBlock(NULL),
 	fWarnForUnexpecedBlock(false)
 {
+	///
+	/// Default constructor.
+	///
 }
 
 
 AliHLTMUONMansoTrackerFSMComponent::~AliHLTMUONMansoTrackerFSMComponent()
 {
+	///
+	/// Default destructor.
+	///
+	
 	assert( fTracker == NULL );
 }
 
 
 const char* AliHLTMUONMansoTrackerFSMComponent::GetComponentID()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the component ID.
+	///
+	
 	return AliHLTMUONConstants::MansoTrackerFSMId();
 }
 
@@ -74,6 +76,10 @@ void AliHLTMUONMansoTrackerFSMComponent::GetInputDataTypes(
 		vector<AliHLTComponentDataType>& list
 	)
 {
+	///
+	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
+	///
+	
 	assert( list.empty() );
 	list.push_back( AliHLTMUONConstants::TriggerRecordsBlockDataType() );
 	list.push_back( AliHLTMUONConstants::RecHitsBlockDataType() );
@@ -82,6 +88,10 @@ void AliHLTMUONMansoTrackerFSMComponent::GetInputDataTypes(
 
 AliHLTComponentDataType AliHLTMUONMansoTrackerFSMComponent::GetOutputDataType()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the output data type.
+	///
+	
 	return AliHLTMUONConstants::MansoTracksBlockDataType();
 }
 
@@ -90,6 +100,10 @@ void AliHLTMUONMansoTrackerFSMComponent::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
+	///
+	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
+	///
+	
 	constBase = sizeof(AliHLTMUONMansoTracksBlockStruct);
 	inputMultiplier = 1;
 }
@@ -97,12 +111,21 @@ void AliHLTMUONMansoTrackerFSMComponent::GetOutputDataSize(
 
 AliHLTComponent* AliHLTMUONMansoTrackerFSMComponent::Spawn()
 {
+	///
+	/// Inherited from AliHLTComponent. Creates a new object instance.
+	///
+	
 	return new AliHLTMUONMansoTrackerFSMComponent;
 }
 
 
 int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 {
+	///
+	/// Inherited from AliHLTComponent.
+	/// Parses the command line parameters and initialises the component.
+	///
+	
 	fTracker = new AliHLTMUONMansoTrackerFSM();
 	fTracker->SetCallback(this);
 	
@@ -120,6 +143,10 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 
 int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 {
+	///
+	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
+	///
+	
 	if (fTracker != NULL)
 	{
 		delete fTracker;
@@ -138,6 +165,10 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
+	///
+	/// Inherited from AliHLTProcessor. Processes the new event data.
+	///
+	
 	Reset();
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
 	
@@ -303,6 +334,10 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 
 void AliHLTMUONMansoTrackerFSMComponent::Reset()
 {
+	///
+	/// Reset the track count and reconstructed hit data block arrays.
+	///
+	
 	DebugTrace("Resetting AliHLTMUONMansoTrackerFSMComponent.");
 
 	//fTracker->Reset();  // Not necessary here because it is done after every FindTrack call.
@@ -316,11 +351,18 @@ void AliHLTMUONMansoTrackerFSMComponent::Reset()
 
 
 void AliHLTMUONMansoTrackerFSMComponent::AddRecHits(
-		AliHLTUInt32_t specification,	
+		AliHLTUInt32_t specification,
 		const AliHLTMUONRecHitStruct* recHits,
 		AliHLTUInt32_t count
 	)
 {
+	///
+	/// Adds a new reconstructed hit data block to the internal list of blocks
+	/// for the tracker to process.
+	/// These lists will later be used when the tracker requests them through
+	/// the callback method 'RequestClusters'.
+	///
+	
 	DebugTrace("AliHLTMUONMansoTrackerFSMComponent::AddRecHits called with specification = 0x"
 		 << std::hex << specification << std::dec << " and count = "
 		 << count << " rec hits."
@@ -396,6 +438,12 @@ void AliHLTMUONMansoTrackerFSMComponent::RequestClusters(
 		AliHLTMUONChamberName chamber, const void* tag
 	)
 {
+	///
+	/// Inherited from AliHLTMUONMansoTrackerFSMCallback.
+	/// This is the call back method used by the tracker algorithm to request
+	/// clusters on a certain chamber.
+	///
+
 	DebugTrace("AliHLTMUONMansoTracker::RequestClusters(chamber = " << chamber << ")");
 	void* ctag = const_cast<void*>(tag);
 	int chNo = -1;
@@ -442,12 +490,23 @@ void AliHLTMUONMansoTrackerFSMComponent::EndOfClusterRequests(
 		AliHLTMUONMansoTrackerFSM* /*tracker*/
 	)
 {
+	///
+	/// Inherited from AliHLTMUONMansoTrackerFSMCallback.
+	/// Nothing special to do here.
+	///
+	
 	DebugTrace("End of cluster requests.");
 }
 
 
 void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* tracker)
 {
+	///
+	/// Inherited from AliHLTMUONMansoTrackerFSMCallback.
+	/// This is the call back method used by the tracker algorithm to declare
+	/// that a new track has been found.
+	///
+	
 	DebugTrace("AliHLTMUONMansoTrackerFSMComponent::FoundTrack()");
 	
 	AliHLTMUONMansoTracksBlockWriter* block =
@@ -474,5 +533,11 @@ void AliHLTMUONMansoTrackerFSMComponent::FoundTrack(AliHLTMUONMansoTrackerFSM* t
 
 void AliHLTMUONMansoTrackerFSMComponent::NoTrackFound(AliHLTMUONMansoTrackerFSM* /*tracker*/)
 {
+	///
+	/// Inherited from AliHLTMUONMansoTrackerFSMCallback.
+	/// Nothing special to do here.
+	///
+	
 	DebugTrace("No track found.");
 }
+

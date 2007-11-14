@@ -17,12 +17,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONTriggerReconstructorComponent.cxx
- * @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
- * @date
- * @brief  Implementation of the trigger DDL reconstructor component.
- */
+///
+/// @file   AliHLTMUONTriggerReconstructorComponent.cxx
+/// @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
+/// @date
+/// @brief  Implementation of the trigger DDL reconstructor component.
+///
 
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONTriggerReconstructor.h"
@@ -35,40 +35,46 @@
 #include <cassert>
 #include <fstream>
 
-namespace
-{
-	// This is a global object used for automatic component registration,
-	// do not use this for calculation.
-	AliHLTMUONTriggerReconstructorComponent gAliHLTMUONTriggerReconstructorComponent;
-
-} // end of namespace
-
-
 ClassImp(AliHLTMUONTriggerReconstructorComponent)
 
 
 AliHLTMUONTriggerReconstructorComponent::AliHLTMUONTriggerReconstructorComponent() :
+	AliHLTProcessor(),
 	fTrigRec(NULL),
 	fDDL(-1),
 	fWarnForUnexpecedBlock(false),
 	fSuppressPartialTrigs(false)
 {
+	///
+	/// Default constructor.
+	///
 }
 
 
 AliHLTMUONTriggerReconstructorComponent::~AliHLTMUONTriggerReconstructorComponent()
 {
+	///
+	/// Default destructor.
+	///
 }
 
 
 const char* AliHLTMUONTriggerReconstructorComponent::GetComponentID()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the component ID.
+	///
+	
 	return AliHLTMUONConstants::TriggerReconstructorId();
 }
 
 
 void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes( std::vector<AliHLTComponentDataType>& list)
 {
+	///
+	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
+	///
+	
 	list.clear();
 	list.push_back( AliHLTMUONConstants::TriggerDDLRawDataType() );
 }
@@ -76,6 +82,10 @@ void AliHLTMUONTriggerReconstructorComponent::GetInputDataTypes( std::vector<Ali
 
 AliHLTComponentDataType AliHLTMUONTriggerReconstructorComponent::GetOutputDataType()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the output data type.
+	///
+	
 	return AliHLTMUONConstants::TriggerRecordsBlockDataType();
 }
 
@@ -84,6 +94,10 @@ void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
+	///
+	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
+	///
+	
 	constBase = sizeof(AliHLTMUONTriggerRecordsBlockWriter::HeaderType);
 	inputMultiplier = 4;
 }
@@ -91,12 +105,21 @@ void AliHLTMUONTriggerReconstructorComponent::GetOutputDataSize(
 
 AliHLTComponent* AliHLTMUONTriggerReconstructorComponent::Spawn()
 {
+	///
+	/// Inherited from AliHLTComponent. Creates a new object instance.
+	///
+	
 	return new AliHLTMUONTriggerReconstructorComponent;
 }
 
 
 int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 {
+	///
+	/// Inherited from AliHLTComponent.
+	/// Parses the command line parameters and initialises the component.
+	///
+	
 	// perform initialization.
 	
 	HLTInfo("Initialising dHLT trigger reconstructor component.");
@@ -191,6 +214,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoInit(int argc, const char** argv)
 
 int AliHLTMUONTriggerReconstructorComponent::DoDeinit()
 {
+	///
+	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
+	///
+	
 	HLTInfo("Deinitialising dHLT trigger reconstructor component.");
 
 	if (fTrigRec != NULL)
@@ -211,6 +238,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		std::vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
+	///
+	/// Inherited from AliHLTProcessor. Processes the new event data.
+	///
+	
 	// Process an event
 	unsigned long totalSize = 0; // Amount of memory currently consumed in bytes.
 
@@ -334,6 +365,10 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 
 bool AliHLTMUONTriggerReconstructorComponent::ReadLookUpTable(const char* lutpath)
 {
+	///
+	/// Read in the lookup table from file.
+	///
+	
 	assert(fTrigRec != NULL);
 
 	fstream file;

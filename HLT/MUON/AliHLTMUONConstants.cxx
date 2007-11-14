@@ -50,7 +50,7 @@ AliHLTMUONConstants::fgkNilTriggerRecordStruct = {
 };
 
 const AliHLTMUONTrigRecInfoStruct
-AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {0, 0, 0, 0};
+AliHLTMUONConstants::fgkNilTrigRecInfoStruct = {0, {0, 0, 0, 0}, 0, 0};
 
 const AliHLTMUONTriggerChannelStruct
 AliHLTMUONConstants::fgkNilTriggerChannelStruct = {0, 0, 0, 0};

@@ -67,14 +67,6 @@ public:
 	AliHLTMUONTriggerRecordsSource();
 	virtual ~AliHLTMUONTriggerRecordsSource();
 	
-	virtual int GetEvent(
-			const AliHLTComponentEventData& evtData,
-			AliHLTComponentTriggerData& trigData,
-			AliHLTUInt8_t* outputPtr, 
-			AliHLTUInt32_t& size,
-			vector<AliHLTComponentBlockData>& outputBlocks
-		);
-	
 	virtual const char* GetComponentID();
 
 	virtual AliHLTComponentDataType GetOutputDataType();
@@ -87,6 +79,16 @@ protected:
 
 	virtual int DoInit(int argc, const char** argv);
 	virtual int DoDeinit();
+	
+	virtual int GetEvent(
+			const AliHLTComponentEventData& evtData,
+			AliHLTComponentTriggerData& trigData,
+			AliHLTUInt8_t* outputPtr, 
+			AliHLTUInt32_t& size,
+			vector<AliHLTComponentBlockData>& outputBlocks
+		);
+	
+	using AliHLTOfflineDataSource::GetEvent;
 	
 private:
 
@@ -107,9 +109,9 @@ private:
 
 	SelectionType fSelection; //! Indicates if we should publish from the left, right or whole XY plane.
 	
-	Int_t fCurrentEvent;  //! The current event index that is loaded.
-	                      //  -1 indicates that we should rather use the event
-	                      // numbers as given by the system.
+	Int_t fCurrentEventIndex;  //! The current event index that is loaded.
+	                           //  -1 indicates that we should rather use the event
+	                           // numbers as given by the system.
 	
 	ClassDef(AliHLTMUONTriggerRecordsSource, 0); // dHLT data source for trigger record data blocks.
 };

@@ -30,15 +30,7 @@
 #include "AliHLTMUONRecHit.h"
 #include "AliHLTMUONTriggerRecord.h"
 #include "AliHLTMUONMansoTrack.h"
-#include "TObjArray.h"
 #include <cassert>
-
-namespace
-{
-	// The global object used for automatic component registration.
-	// Note DO NOT use this component for calculation!
-	AliHLTMUONRootifierComponent gAliHLTMUONRootifierComponent;
-}
 
 ClassImp(AliHLTMUONEvent);
 ClassImp(AliHLTMUONRootifierComponent);
@@ -47,34 +39,57 @@ ClassImp(AliHLTMUONRootifierComponent);
 AliHLTMUONRootifierComponent::AliHLTMUONRootifierComponent() :
 	AliHLTProcessor()
 {
+	///
+	/// Default constructor.
+	///
 }
 
 
 AliHLTMUONRootifierComponent::~AliHLTMUONRootifierComponent()
 {
+	///
+	/// Default destructor.
+	///
 }
 
 
-int AliHLTMUONRootifierComponent::DoInit(int argc, const char** argv)
+int AliHLTMUONRootifierComponent::DoInit(int /*argc*/, const char** /*argv*/)
 {
+	///
+	/// Inherited from AliHLTComponent.
+	/// Parses the command line parameters and initialises the component.
+	///
+	
 	return 0;
 }
 
 
 int AliHLTMUONRootifierComponent::DoDeinit()
 {
+	///
+	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
+	///
+	
 	return 0;
 }
 
 
 const char* AliHLTMUONRootifierComponent::GetComponentID()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the component ID.
+	///
+	
 	return "MUONRootifier";
 }
 
 
 AliHLTComponentDataType AliHLTMUONRootifierComponent::GetOutputDataType()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the output data type.
+	///
+	
 	return kAliHLTAnyDataType;
 }
 
@@ -83,6 +98,10 @@ void AliHLTMUONRootifierComponent::GetInputDataTypes(
 		vector<AliHLTComponentDataType>& list
 	)
 {
+	///
+	/// Inherited from AliHLTProcessor. Returns the list of expected input data types.
+	///
+	
 	list.push_back(kAliHLTAnyDataType);
 }
 
@@ -91,6 +110,10 @@ void AliHLTMUONRootifierComponent::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
+	///
+	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
+	///
+	
 	constBase = 1024*1024;
 	inputMultiplier = 100;
 }
@@ -98,15 +121,23 @@ void AliHLTMUONRootifierComponent::GetOutputDataSize(
 
 AliHLTComponent* AliHLTMUONRootifierComponent::Spawn()
 {
+	///
+	/// Inherited from AliHLTComponent. Creates a new object instance.
+	///
+	
 	return new AliHLTMUONRootifierComponent();
 }
 
 
 int AliHLTMUONRootifierComponent::DoEvent(
 		const AliHLTComponentEventData& evtData,
-		AliHLTComponentTriggerData& trigData
+		AliHLTComponentTriggerData& /*trigData*/
 	)
 {
+	///
+	/// Inherited from AliHLTProcessor. Processes the new event data.
+	///
+	
 	AliHLTMUONEvent event(evtData.fEventID);
 
 	// First process the blocks of reconstructed hits and trigger records.
@@ -421,3 +452,16 @@ int AliHLTMUONRootifierComponent::DoEvent(
 	
 	return 0;
 }
+
+
+void AliHLTMUONEvent::Print(Option_t* option) const
+{
+	///
+	/// Inherited from TObject. Prints the contents of the event objects in fArray.
+	///
+	
+	cout << "################## EVENT: " << fEventId << " ##################" << endl;
+	for (Int_t i = 0; i < fArray.GetEntriesFast(); i++)
+		if (fArray[i] != NULL) fArray[i]->Print(option);
+}
+

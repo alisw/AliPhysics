@@ -6,12 +6,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONTriggerReconstructorComponent.h
- * @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
- * @date
- * @brief  A processing component for the dHLT trigger DDL reconstruction.
- */
+///
+/// @file   AliHLTMUONTriggerReconstructorComponent.h
+/// @author Indranil Das <indra.das@saha.ac.in>, Artur Szostak <artursz@iafrica.com>
+/// @date
+/// @brief  A processing component for the dHLT trigger DDL reconstruction.
+///
 
 #include "AliHLTProcessor.h"
 #include "AliHLTMUONDataTypes.h"
@@ -35,11 +35,11 @@ public:
 	// Public functions to implement AliHLTComponent's interface.
 	// These functions are required for the registration process
 
-	const char* GetComponentID();
-	void GetInputDataTypes( std::vector<AliHLTComponentDataType>& list);
-	AliHLTComponentDataType GetOutputDataType();
+	virtual const char* GetComponentID();
+	virtual void GetInputDataTypes( std::vector<AliHLTComponentDataType>& list);
+	virtual AliHLTComponentDataType GetOutputDataType();
 	virtual void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
-	AliHLTComponent* Spawn();
+	virtual AliHLTComponent* Spawn();
 
 protected:
 
@@ -58,8 +58,14 @@ protected:
 			AliHLTUInt32_t& size,
 			std::vector<AliHLTComponentBlockData>& outputBlocks
 		);
+	
+	using AliHLTProcessor::DoEvent;
 
 private:
+
+	// Do not allow copying of this class.
+	AliHLTMUONTriggerReconstructorComponent(const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
+	AliHLTMUONTriggerReconstructorComponent& operator = (const AliHLTMUONTriggerReconstructorComponent& /*obj*/);
 
 	bool ReadLookUpTable(const char* lutpath);
 	

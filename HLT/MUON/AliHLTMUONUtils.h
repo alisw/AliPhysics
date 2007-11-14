@@ -5,12 +5,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONUtils.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Class containing various dimuon HLT utility routines and macros.
- */
+///
+/// @file   AliHLTMUONUtils.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   
+/// @brief  Class containing various dimuon HLT utility routines and macros.
+///
 
 #include "AliHLTMUONDataTypes.h"
 

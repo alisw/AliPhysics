@@ -18,12 +18,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONRecHitsSource.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Class for generating reconstructed hits data blocks from AliRoot data.
- */
+///
+/// @file   AliHLTMUONRecHitsSource.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   
+/// @brief  Class for generating reconstructed hits data blocks from AliRoot data.
+///
 
 #include "AliHLTOfflineDataSource.h"
 
@@ -67,14 +67,6 @@ public:
 	AliHLTMUONRecHitsSource();
 	virtual ~AliHLTMUONRecHitsSource();
 	
-	virtual int GetEvent(
-			const AliHLTComponentEventData& evtData,
-			AliHLTComponentTriggerData& trigData,
-			AliHLTUInt8_t* outputPtr, 
-			AliHLTUInt32_t& size,
-			vector<AliHLTComponentBlockData>& outputBlocks
-		);
-	
 	virtual const char* GetComponentID();
 
 	virtual AliHLTComponentDataType GetOutputDataType();
@@ -87,6 +79,16 @@ protected:
 
 	virtual int DoInit(int argc, const char** argv);
 	virtual int DoDeinit();
+	
+	virtual int GetEvent(
+			const AliHLTComponentEventData& evtData,
+			AliHLTComponentTriggerData& trigData,
+			AliHLTUInt8_t* outputPtr, 
+			AliHLTUInt32_t& size,
+			vector<AliHLTComponentBlockData>& outputBlocks
+		);
+	
+	using AliHLTOfflineDataSource::GetEvent;
 	
 private:
 
@@ -118,9 +120,9 @@ private:
 	SelectionType fSelection; //! Indicates if we should publish from the left, right or whole XY plane.
 	bool fServeChamber[10]; //! Flag to indicate if hits from a given chamber should be published.
 	
-	Int_t fCurrentEvent;  //! The current event index that is loaded.
-	                      //  -1 indicates that we should rather use the event
-	                      // numbers as given by the system.
+	Int_t fCurrentEventIndex;  //! The current event index that is loaded.
+	                           //  -1 indicates that we should rather use the event
+	                           // numbers as given by the system.
 
 	ClassDef(AliHLTMUONRecHitsSource, 0); // dHLT data source for reconstructed hit data blocks.
 };

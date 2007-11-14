@@ -16,12 +16,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONRecHitsSource.cxx
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Implementation of the AliHLTMUONRecHitsSource component.
- */
+///
+/// @file   AliHLTMUONRecHitsSource.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   
+/// @brief  Implementation of the AliHLTMUONRecHitsSource component.
+///
 
 #include "AliHLTMUONRecHitsSource.h"
 #include "AliHLTMUONConstants.h"
@@ -37,20 +37,11 @@
 #include "mapping/AliMpCDB.h"
 #include "mapping/AliMpDEManager.h"
 #include "mapping/AliMpDetElement.h"
-#include "TClonesArray.h"
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
 #include <cassert>
 #include <new>
-
-namespace
-{
-	// The global object used for automatic component registration.
-	// Note DO NOT use this component for calculation!
-	AliHLTMUONRecHitsSource gAliHLTMUONRecHitsSource;
-}
-
 
 ClassImp(AliHLTMUONRecHitsSource);
 
@@ -60,8 +51,12 @@ AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 	fMCDataInterface(NULL),
 	fDataInterface(NULL),
 	fSelection(kWholePlane),
-	fCurrentEvent(0)
+	fCurrentEventIndex(0)
 {
+	///
+	/// Default constructor.
+	///
+
 	for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++)
 		fServeChamber[i] = false;
 }
@@ -69,6 +64,10 @@ AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 
 AliHLTMUONRecHitsSource::~AliHLTMUONRecHitsSource()
 {
+	///
+	/// Default destructor.
+	///
+	
 	assert( fMCDataInterface == NULL );
 	assert( fDataInterface == NULL );
 }
@@ -76,6 +75,11 @@ AliHLTMUONRecHitsSource::~AliHLTMUONRecHitsSource()
 
 int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 {
+	///
+	/// Inherited from AliHLTComponent.
+	/// Parses the command line parameters and initialises the component.
+	///
+
 	assert( fMCDataInterface == NULL );
 	assert( fDataInterface == NULL );
 	
@@ -83,7 +87,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 	bool simdata = false;
 	bool recdata = false;
 	bool chamberWasSet = false;
-	fCurrentEvent = 0;
+	fCurrentEventIndex = 0;
 	bool firstEventSet = false;
 	bool eventNumLitSet = false;
 	
@@ -168,7 +172,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 				));
 				return EINVAL;
 			}
-			fCurrentEvent = Int_t(num);
+			fCurrentEventIndex = Int_t(num);
 			firstEventSet = true;
 		}
 		else if (strcmp(argv[i], "-event_number_literal") == 0)
@@ -179,7 +183,7 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 					" override -firstevent."
 				);
 			}
-			fCurrentEvent = -1;
+			fCurrentEventIndex = -1;
 			eventNumLitSet = true;
 		}
 		else
@@ -276,18 +280,18 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 		}
 	}
 	
-	// Check that the fCurrentEvent number falls within the correct range.
+	// Check that the fCurrentEventIndex number falls within the correct range.
 	UInt_t maxevent = 0;
 	if (fMCDataInterface != NULL)
 		maxevent = UInt_t(fMCDataInterface->NumberOfEvents());
 	else if (fDataInterface != NULL)
 		maxevent = UInt_t(fDataInterface->NumberOfEvents());
-	if (fCurrentEvent != -1 and UInt_t(fCurrentEvent) >= maxevent and maxevent != 0)
+	if (fCurrentEventIndex != -1 and UInt_t(fCurrentEventIndex) >= maxevent and maxevent != 0)
 	{
-		fCurrentEvent = 0;
+		fCurrentEventIndex = 0;
 		HLTWarning(Form("The selected first event number (%d) was larger than"
 			" the available number of events (%d). Resetting the event"
-			" counter to zero.", fCurrentEvent, maxevent
+			" counter to zero.", fCurrentEventIndex, maxevent
 		));
 	}
 	
@@ -297,6 +301,10 @@ int AliHLTMUONRecHitsSource::DoInit(int argc, const char** argv)
 
 int AliHLTMUONRecHitsSource::DoDeinit()
 {
+	///
+	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
+	///
+	
 	if (fMCDataInterface != NULL)
 	{
 		delete fMCDataInterface;
@@ -313,12 +321,20 @@ int AliHLTMUONRecHitsSource::DoDeinit()
 
 const char* AliHLTMUONRecHitsSource::GetComponentID()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the component ID.
+	///
+	
 	return AliHLTMUONConstants::RecHitsSourceId();
 }
 
 
 AliHLTComponentDataType AliHLTMUONRecHitsSource::GetOutputDataType()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the output data type.
+	///
+	
 	return AliHLTMUONConstants::RecHitsBlockDataType();
 }
 
@@ -327,6 +343,10 @@ void AliHLTMUONRecHitsSource::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
+	///
+	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
+	///
+	
 	constBase = sizeof(AliHLTMUONRecHitsBlockStruct)
 		+ 256*16*sizeof(AliHLTMUONRecHitStruct);
 	inputMultiplier = 0;
@@ -335,6 +355,10 @@ void AliHLTMUONRecHitsSource::GetOutputDataSize(
 
 AliHLTComponent* AliHLTMUONRecHitsSource::Spawn()
 {
+	///
+	/// Inherited from AliHLTComponent. Creates a new object instance.
+	///
+	
 	return new AliHLTMUONRecHitsSource();
 }
 
@@ -347,6 +371,10 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
+	///
+	/// Inherited from AliHLTOfflineDataSource. Creates new event data blocks.
+	///
+	
 	assert( fMCDataInterface != NULL or fDataInterface != NULL );
 
 	// Check the size of the event descriptor structure.
@@ -365,20 +393,20 @@ int AliHLTMUONRecHitsSource::GetEvent(
 		return EINVAL;
 	}
 	
-	// Use the fEventID as the event number to load if fCurrentEvent == -1,
+	// Use the fEventID as the event number to load if fCurrentEventIndex == -1,
 	// check it and load that event with the runloader.
-	// If fCurrentEvent is a positive number then us it instead and
+	// If fCurrentEventIndex is a positive number then us it instead and
 	// increment it.
 	UInt_t eventnumber = UInt_t(evtData.fEventID);
 	UInt_t maxevent = fMCDataInterface != NULL ?
 		UInt_t(fMCDataInterface->NumberOfEvents())
 		: UInt_t(fDataInterface->NumberOfEvents());
-	if (fCurrentEvent != -1)
+	if (fCurrentEventIndex != -1)
 	{
-		eventnumber = UInt_t(fCurrentEvent);
-		fCurrentEvent++;
-		if (UInt_t(fCurrentEvent) >= maxevent)
-			fCurrentEvent = 0;
+		eventnumber = UInt_t(fCurrentEventIndex);
+		fCurrentEventIndex++;
+		if (UInt_t(fCurrentEventIndex) >= maxevent)
+			fCurrentEventIndex = 0;
 	}
 	if ( eventnumber >= maxevent )
 	{
@@ -558,6 +586,16 @@ int AliHLTMUONRecHitsSource::GetEvent(
 
 int AliHLTMUONRecHitsSource::ParseChamberString(const char* str)
 {
+	///
+	/// Parses a string with the following format:
+	///   <number>|<number>-<number>[,<number>|<number>-<number>]...
+	/// For example: 1  1,2,3  1-2   1,2-4,5  etc...
+	/// Flags in the fServeChamber will be set to 'true' for all appropriate
+	/// values parsed.
+	/// @param str  The string to parse.
+	/// @return  Zero on success and EINVAL if there is a parse error.
+	///
+	
 	char* end = const_cast<char*>(str);
 	long lastChamber = -1;
 	do

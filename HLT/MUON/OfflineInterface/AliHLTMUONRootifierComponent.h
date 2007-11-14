@@ -17,6 +17,7 @@
 
 // Temporary solution for grouping together objects for the same event.
 #include "TObjArray.h"
+
 class AliHLTMUONEvent : public TObject
 {
 public:
@@ -35,17 +36,12 @@ public:
 	// Takes ownership of the object.
 	void Add(TObject* obj) { fArray.Add(obj); }
 	
-	virtual void Print(Option_t* option = NULL) const
-	{
-		cout << "################## EVENT: " << fEventId << " ##################" << endl;
-		for (Int_t i = 0; i < fArray.GetEntriesFast(); i++)
-			if (fArray[i] != NULL) fArray[i]->Print(option);
-	}
+	virtual void Print(Option_t* option = NULL) const;
 
 private:
 
-	AliHLTEventID_t fEventId;
-	TObjArray fArray;
+	AliHLTEventID_t fEventId;  // The event ID.
+	TObjArray fArray;          // Array of event objects.
 	
 	ClassDef(AliHLTMUONEvent, 1); // Container class for dHLT event results.
 };
@@ -61,8 +57,6 @@ public:
 	AliHLTMUONRootifierComponent();
 	virtual ~AliHLTMUONRootifierComponent();
 	
-	int DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
-	
 	virtual const char* GetComponentID();
 
 	virtual void GetInputDataTypes(vector<AliHLTComponentDataType>& list);
@@ -76,6 +70,8 @@ protected:
 
 	virtual int DoInit(int argc, const char** argv);
 	virtual int DoDeinit();
+	virtual int DoEvent(const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+	using AliHLTProcessor::DoEvent;
 	
 private:
 

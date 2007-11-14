@@ -51,9 +51,6 @@
 
 namespace
 {
-	// The global object used for automatic component registration.
-	// Note DO NOT use this component for calculation!
-	AliHLTMUONTriggerRecordsSource gAliHLTMUONTriggerRecordsSource;
 	
 	//TODO: The following method should be in MUON/mapping
 	Int_t FindDDLOfDetElement(Int_t detElemId)
@@ -94,13 +91,20 @@ AliHLTMUONTriggerRecordsSource::AliHLTMUONTriggerRecordsSource() :
 	fDataInterface(NULL),
 	fBuildFromHits(false),
 	fSelection(kWholePlane),
-	fCurrentEvent(0)
+	fCurrentEventIndex(0)
 {
+	///
+	/// Default constructor.
+	///
 }
 
 
 AliHLTMUONTriggerRecordsSource::~AliHLTMUONTriggerRecordsSource()
 {
+	///
+	/// Default destructor.
+	///
+	
 	assert( fMCDataInterface == NULL );
 	assert( fDataInterface == NULL );
 }
@@ -108,6 +112,11 @@ AliHLTMUONTriggerRecordsSource::~AliHLTMUONTriggerRecordsSource()
 
 int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 {
+	///
+	/// Inherited from AliHLTComponent.
+	/// Parses the command line parameters and initialises the component.
+	///
+	
 	assert( fMCDataInterface == NULL );
 	assert( fDataInterface == NULL );
 	
@@ -115,7 +124,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 	bool hitdata = false;
 	bool simdata = false;
 	bool recdata = false;
-	fCurrentEvent = 0;
+	fCurrentEventIndex = 0;
 	bool firstEventSet = false;
 	bool eventNumLitSet = false;
 	
@@ -187,7 +196,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 				));
 				return EINVAL;
 			}
-			fCurrentEvent = Int_t(num);
+			fCurrentEventIndex = Int_t(num);
 			firstEventSet = true;
 		}
 		else if (strcmp(argv[i], "-event_number_literal") == 0)
@@ -198,7 +207,7 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 					" override -firstevent."
 				);
 			}
-			fCurrentEvent = -1;
+			fCurrentEventIndex = -1;
 			eventNumLitSet = true;
 		}
 		else
@@ -283,18 +292,18 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 		}
 	}
 	
-	// Check that the fCurrentEvent number falls within the correct range.
+	// Check that the fCurrentEventIndex number falls within the correct range.
 	UInt_t maxevent = 0;
 	if (fMCDataInterface != NULL)
 		maxevent = UInt_t(fMCDataInterface->NumberOfEvents());
 	else if (fDataInterface != NULL)
 		maxevent = UInt_t(fDataInterface->NumberOfEvents());
-	if (fCurrentEvent != -1 and UInt_t(fCurrentEvent) >= maxevent and maxevent != 0)
+	if (fCurrentEventIndex != -1 and UInt_t(fCurrentEventIndex) >= maxevent and maxevent != 0)
 	{
-		fCurrentEvent = 0;
+		fCurrentEventIndex = 0;
 		HLTWarning(Form("The selected first event number (%d) was larger than"
 			" the available number of events (%d). Resetting the event"
-			" counter to zero.", fCurrentEvent, maxevent
+			" counter to zero.", fCurrentEventIndex, maxevent
 		));
 	}
 	
@@ -304,6 +313,10 @@ int AliHLTMUONTriggerRecordsSource::DoInit(int argc, const char** argv)
 
 int AliHLTMUONTriggerRecordsSource::DoDeinit()
 {
+	///
+	/// Inherited from AliHLTComponent. Performs a cleanup of the component.
+	///
+	
 	if (fMCDataInterface != NULL)
 	{
 		delete fMCDataInterface;
@@ -320,12 +333,20 @@ int AliHLTMUONTriggerRecordsSource::DoDeinit()
 
 const char* AliHLTMUONTriggerRecordsSource::GetComponentID()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the component ID.
+	///
+	
 	return AliHLTMUONConstants::TriggerRecordsSourceId();
 }
 
 
 AliHLTComponentDataType AliHLTMUONTriggerRecordsSource::GetOutputDataType()
 {
+	///
+	/// Inherited from AliHLTComponent. Returns the output data type.
+	///
+	
 	return AliHLTMUONConstants::TriggerRecordsBlockDataType();
 }
 
@@ -334,6 +355,10 @@ void AliHLTMUONTriggerRecordsSource::GetOutputDataSize(
 		unsigned long& constBase, double& inputMultiplier
 	)
 {
+	///
+	/// Inherited from AliHLTComponent. Returns an estimate of the expected output data size.
+	///
+	
 	constBase = sizeof(AliHLTMUONTriggerRecordsBlockStruct) +
 		sizeof(AliHLTMUONTriggerRecordStruct) * AliMUONConstants::NTriggerCircuit();
 	inputMultiplier = 0;
@@ -342,6 +367,10 @@ void AliHLTMUONTriggerRecordsSource::GetOutputDataSize(
 
 AliHLTComponent* AliHLTMUONTriggerRecordsSource::Spawn()
 {
+	///
+	/// Inherited from AliHLTComponent. Creates a new object instance.
+	///
+	
 	return new AliHLTMUONTriggerRecordsSource();
 }
 
@@ -354,6 +383,10 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 		vector<AliHLTComponentBlockData>& outputBlocks
 	)
 {
+	///
+	/// Inherited from AliHLTOfflineDataSource. Creates new event data blocks.
+	///
+	
 	assert( fMCDataInterface != NULL or fDataInterface != NULL );
 
 	AliHLTInt32_t trigRecId = 0;
@@ -374,20 +407,20 @@ int AliHLTMUONTriggerRecordsSource::GetEvent(
 		return EINVAL;
 	}
 	
-	// Use the fEventID as the event number to load if fCurrentEvent == -1,
+	// Use the fEventID as the event number to load if fCurrentEventIndex == -1,
 	// check it and load that event with the runloader.
-	// If fCurrentEvent is a positive number then us it instead and
+	// If fCurrentEventIndex is a positive number then us it instead and
 	// increment it.
 	UInt_t eventnumber = UInt_t(evtData.fEventID);
 	UInt_t maxevent = fMCDataInterface != NULL ?
 		UInt_t(fMCDataInterface->NumberOfEvents())
 		: UInt_t(fDataInterface->NumberOfEvents());
-	if (fCurrentEvent != -1)
+	if (fCurrentEventIndex != -1)
 	{
-		eventnumber = UInt_t(fCurrentEvent);
-		fCurrentEvent++;
-		if (UInt_t(fCurrentEvent) >= maxevent)
-			fCurrentEvent = 0;
+		eventnumber = UInt_t(fCurrentEventIndex);
+		fCurrentEventIndex++;
+		if (UInt_t(fCurrentEventIndex) >= maxevent)
+			fCurrentEventIndex = 0;
 	}
 	if ( eventnumber >= maxevent )
 	{

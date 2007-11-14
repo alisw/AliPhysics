@@ -19,14 +19,14 @@
 
 /* $Id$ */
 
-/**
- *  @file   AliHLTMUONMansoTrackerFSMComponent.h
- *  @author Artur Szostak <artursz@iafrica.com>,
- *          Indranil Das <indra.das@saha.ac.in>
- *  @date   
- *  @brief  Tracker component for the dimuon HLT using the Manso algorithm
- *          implemented as a finite state machine.
- */
+///
+///  @file   AliHLTMUONMansoTrackerFSMComponent.h
+///  @author Artur Szostak <artursz@iafrica.com>,
+///          Indranil Das <indra.das@saha.ac.in>
+///  @date   
+///  @brief  Tracker component for the dimuon HLT using the Manso algorithm
+///          implemented as a finite state machine.
+///
 
 #include "AliHLTProcessor.h"
 #include "AliHLTMUONDataTypes.h"
@@ -80,9 +80,9 @@ protected:
 	// Protected functions to implement the AliHLTProcessor interface.
 	// These functions provide initialization as well as the actual processing
 	// capabilities of the component. 
-	int DoInit(int argc, const char** argv);
-	int DoDeinit();
-	int DoEvent(
+	virtual int DoInit(int argc, const char** argv);
+	virtual int DoDeinit();
+	virtual int DoEvent(
 			const AliHLTComponentEventData& evtData,
 			const AliHLTComponentBlockData* blocks,
 			AliHLTComponentTriggerData& trigData,
@@ -90,8 +90,14 @@ protected:
 			AliHLTUInt32_t& size,
 			std::vector<AliHLTComponentBlockData>& outputBlocks
 		);
+	
+	using AliHLTProcessor::DoEvent;
 
 private:
+
+	// Do not allow copying of this class.
+	AliHLTMUONMansoTrackerFSMComponent(const AliHLTMUONMansoTrackerFSMComponent& /*obj*/);
+	AliHLTMUONMansoTrackerFSMComponent& operator = (const AliHLTMUONMansoTrackerFSMComponent& /*obj*/);
 
 	void Reset();
 	
