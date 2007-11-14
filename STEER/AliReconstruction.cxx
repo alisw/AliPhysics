@@ -277,7 +277,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fCleanESD(rec.fCleanESD),
   fV0DCAmax(rec.fV0DCAmax),
-  fV0CsPmin(fV0CsPmin),
+  fV0CsPmin(rec.fV0CsPmin),
   fDmax(rec.fDmax),
   fZmax(rec.fZmax),
 
