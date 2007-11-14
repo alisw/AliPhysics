@@ -110,6 +110,40 @@ AliObjMatrix::~AliObjMatrix()
  }
 }
 ///////////////////////////////////////////////////////////////////////////
+AliObjMatrix::AliObjMatrix(const AliObjMatrix& m) : TNamed(m)
+{
+// Copy constructor
+
+ fRows=0;
+ fMaxrow=0;
+ fMaxcol=0;
+ fObjects=0;
+
+ fOwn=m.fOwn;
+ fSwap=m.fSwap;
+
+ Int_t maxrow=m.GetMaxRow();
+ Int_t maxcol=m.GetMaxColumn();
+ for (Int_t irow=1; irow<=maxrow; irow++)
+ {
+  for (Int_t icol=1; icol<=maxcol; icol++)
+  {
+   TObject* obj=m.GetObject(irow,icol);
+   if (obj)
+   {
+    if (!fOwn)
+    {
+     EnterObject(irow,icol,obj);
+    }
+    else
+    {
+     EnterObject(irow,icol,obj->Clone());
+    }
+   }
+  }
+ }
+}
+///////////////////////////////////////////////////////////////////////////
 void AliObjMatrix::Reset()
 {
 // Reset the whole matrix structure.
@@ -728,5 +762,20 @@ Int_t AliObjMatrix::GetIndices(TObject* obj,TArrayI& rows,Int_t col) const
  rows.Set(jref);
 
  return jref;
+}
+///////////////////////////////////////////////////////////////////////////
+TObject* AliObjMatrix::Clone(const char* name) const
+{
+// Make a deep copy of the current object and provide the pointer to the copy.
+// This memberfunction enables automatic creation of new objects of the
+// correct type depending on the object type, a feature which may be very useful
+// for containers when adding objects in case the container owns the objects.
+
+ AliObjMatrix* m=new AliObjMatrix(*this);
+ if (name)
+ {
+  if (strlen(name)) m->SetName(name);
+ }
+ return m;
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -252,7 +252,7 @@ AliObjMatrix* IceDB2Root::GetOMdbase(TString name)
 
  if (name=="MuDaq") return fMuDaqdb;
  if (name=="TWRDaq") return fTWRDaqdb;
- if (name=="JEBTDaq") return fTWRDaqdb; // Update this line when different calibration constants are needed for JEBTDaq
+ if (name=="JEBTDaq") return fJEBTDaqdb;
  if (name=="JEBADaq") return fJEBADaqdb;
  return 0;
 }
@@ -1205,18 +1205,17 @@ void IceDB2Root::GetJEBTDaqData()
  // The JEBTDaq OM database object
  if (fJEBTDaqdb)
  {
-  fJEBTDaqdb->Reset();
+  delete fJEBTDaqdb;
+  fJEBTDaqdb=0;
  }
- else
+
+ // Copy TWRDaq database to JEBTDaq database via the Clone() function
+ if(!fTWRDaqdb) GetTWRDaqData();
+ if(fTWRDaqdb)
  {
-  fJEBTDaqdb=new AliObjMatrix();
-  fJEBTDaqdb->SetOwner();
+  fJEBTDaqdb=(AliObjMatrix*)fTWRDaqdb->Clone();
+  fJEBTDaqdb->SetNameTitle("JEBTDaq-OMDBASE","The JEBTDaq OM geometry, calib. etc... database");
  }
-
- // Copy TWRDaq database to JEBTDaq database
- fTWRDaqdb->Copy(*fJEBTDaqdb);
- fJEBTDaqdb->SetNameTitle("JEBTDaq-OMDBASE","The JEBTDaq OM geometry, calib. etc... database");
-
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceDB2Root::GetJEBADaqData()

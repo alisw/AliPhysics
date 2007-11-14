@@ -144,4 +144,7 @@
                 The class IceRoot has been updated so that it matches the new walnut
                 data format.
 13-nov-2007 GdV Bug fix in IceRoot by completely re-building the Daq device.
+14-nov-2007 NvE Bug fix in IceDB2Root in the creation of the JEBTDaq database.
+                The new Clone() memberfunction of AliObjMatrix is now used and a memory
+                leak has been removed. Also GetOMdbase() has been updated for JEBTDaq.
 

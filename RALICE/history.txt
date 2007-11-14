@@ -803,5 +803,6 @@
 09-nov-2007 GdV Automatic central meridian setting only activated when meridian
                 has a value smaller than -pi. This will allow also negative values
                 as user input.
+14-nov-2007 NvE Copy constructor and Clone() memberfunction introduced in AliObjMatrix.
 
 

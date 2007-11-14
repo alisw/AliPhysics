@@ -14,6 +14,8 @@ class AliObjMatrix : public TNamed
  public:
   AliObjMatrix();                                                   // Default constructor
   virtual ~AliObjMatrix();                                          // Default destructor
+  AliObjMatrix(const AliObjMatrix& m);                              // Copy constructor
+  virtual TObject* Clone(const char* name="") const;                // Make a deep copy and provide its pointer
   virtual void Reset();                                             // Reset the whole matrix structure
   virtual void SetOwner(Int_t own=1);                               // Set the owner flag for the stored objects
   virtual Int_t GetOwner() const;                                   // Provide the owner flag for the stored objects
@@ -41,6 +43,6 @@ class AliObjMatrix : public TNamed
   Int_t fMaxcol;       // The maximum column number index
   TObjArray* fObjects; // Linear reference array for fast looping over the stored objects
  
- ClassDef(AliObjMatrix,6) // Handling of a matrix structure of objects.
+ ClassDef(AliObjMatrix,7) // Handling of a matrix structure of objects.
 };
 #endif
