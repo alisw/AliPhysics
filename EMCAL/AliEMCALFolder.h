@@ -3,10 +3,16 @@
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 
-/* $Log$
-/* Revision 1.2  2007/09/11 19:38:15  pavlinov
-/* added pi0 calibration, linearity, shower profile
-/* */
+/* History of cvs commits:
+ *
+* $Log$
+* Revision 1.3  2007/10/16 14:36:39  pavlinov
+* fixed code violation (almost)
+*
+* Revision 1.2  2007/09/11 19:38:15  pavlinov
+* added pi0 calibration, linearity, shower profile
+*
+*/
 
 //_________________________________________________________________________
 //  Top EMCAL folder - keep everyrhing for calibration task

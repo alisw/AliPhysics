@@ -12,29 +12,34 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/* History of cvs commits:
+ *
+* $Log$
+* Revision 1.6  2007/10/16 14:36:39  pavlinov
+* fixed code violation (almost)
+*
+* Revision 1.5  2007/10/15 18:04:07  pavlinov
+* quick fix
+*
+* Revision 1.4  2007/10/15 15:50:58  pavlinov
+* fixed code violation
+*
+* Revision 1.3  2007/10/09 08:46:10  hristov
+* The data members fEMCALClusterCluster and fPHOSCluster are removed from AliESDCaloCluster, the fClusterType is used to select PHOS or EMCAL clusters. Changes, needed to use correctly the new AliESDCaloCluster. (Christian)
+*
+* Revision 1.2  2007/09/11 19:38:15  pavlinov
+* added pi0 calibration, linearity, shower profile
+* co: warning: ` $Log' is obsolescent; use ` * $Log'.
+* Revision 1.1  2007/08/08 15:58:01  hristov
+* New calibration classes. (Aleksei)
+ */
 
-/* $Log$
-/* Revision 1.5  2007/10/15 18:04:07  pavlinov
-/* quick fix
-/*
-/* Revision 1.4  2007/10/15 15:50:58  pavlinov
-/* fixed code violation
-/*
-/* Revision 1.3  2007/10/09 08:46:10  hristov
-/* The data members fEMCALClusterCluster and fPHOSCluster are removed from AliESDCaloCluster, the fClusterType is used to select PHOS or EMCAL clusters. Changes, needed to use correctly the new AliESDCaloCluster. (Christian)
-/*
-/* Revision 1.2  2007/09/11 19:38:15  pavlinov
-/* added pi0 calibration, linearity, shower profile
-/*co: warning: `/* $Log' is obsolescent; use ` * $Log'.
- * Revision 1.1  2007/08/08 15:58:01  hristov
- * New calibration classes. (Aleksei)
- * */
 //_________________________________________________________________________
 // This is selector for making a set of histogramms from ESD for rec.points
-//*--  Authors: Aleksei Pavlinov (WSU) 
-//*--  Feb 17, 2007 - Sep 11, 2007
-//*--  Pi0 calibration
-//*--  Recalibration, linearity, shower profile 
+//--  Authors: Aleksei Pavlinov (WSU) 
+//--  Feb 17, 2007 - Sep 11, 2007
+//--  Pi0 calibration
+//--  Recalibration, linearity, shower profile 
 //_________________________________________________________________________
 
 #include "AliEMCALRecPointsQaESDSelector.h"

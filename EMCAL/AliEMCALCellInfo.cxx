@@ -13,10 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$
-/* Revision 1.1  2007/09/12 11:19:24  pavlinov
-/* added pi0 calibration, linearity, shower profile
-/* */
+/* History of cvs commits:
+ *
+* $Log$
+* Revision 1.2  2007/10/16 14:36:39  pavlinov
+* fixed code violation (almost)
+*
+* Revision 1.1  2007/09/12 11:19:24  pavlinov
+* added pi0 calibration, linearity, shower profile
+*
+*/
 
 // Aug 1, 2007 - cells information in one place
 #include "AliEMCALCellInfo.h"
