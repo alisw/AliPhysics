@@ -212,14 +212,11 @@ $(@PACKAGE@LIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
-	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
-	  export TMPDIR; mkdir -p $$TMPDIR ; cd $$TMPDIR ; \
-	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
-	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
-	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
+	  cd $(@MODULE@DIRO) ;\
+	  $(SHLD) $(@PACKAGE@SOFLAGS) -o $(CURDIR)/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(SHLIB);\
 	  chmod a-w $(CURDIR)/$@ ;\
-	  cd $(ALICE_ROOT) ; \rm -rf $$TMPDIR
+	  cd $(ALICE_ROOT)
 endif
 
 ifneq ($(DYEXT),)
@@ -227,13 +224,11 @@ $(@PACKAGE@DLIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking library $@ *****"
 endif
-	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
-	  export TMPDIR; mkdir -p $$TMPDIR ; cd $$TMPDIR ; \
-	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
-	  $(DYLD) $(@PACKAGE@DYFLAGS) -o $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
+	  cd $(@MODULE@DIRO) ;\
+	  $(DYLD) $(@PACKAGE@DYFLAGS) -o $(CURDIR)/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(DYLIB);\
 	  chmod a-w $(CURDIR)/$@ ;\
-	  cd $(ALICE_ROOT) ; \rm -rf $$TMPDIR
+	  cd $(ALICE_ROOT) 
 endif
 
 #------------------------------------------------------------------------
@@ -242,14 +237,10 @@ $(@PACKAGE@ALIB):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
 ifndef ALIQUIET
 	  @echo "***** Linking static library $@ *****"
 endif
-	  $(MUTE)TMPDIR=/tmp/@MODULE@$$$$.`date +%M%S` ; \
-	  export TMPDIR; mkdir -p $$TMPDIR ; cd $$TMPDIR ; \
-	  find $(CURDIR)/@MODULE@/tgt_$(ALICE_TARGET) -name '*.o' -exec ln -s {} . \; ;\
 	  \rm -f $(CURDIR)/$@ ;\
-	  TMPLIB=$(notdir $(@PACKAGE@LIB)); export TMPLIB;\
-	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(notdir $(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
-      cd $(CURDIR) ; \rm -rf $$TMPDIR
-	  $(MUTE)chmod a-w $@
+	  cd $(@MODULE@DIRO) ;\
+	  $(ALLD) $(ALFLAGS) $(CURDIR)/$@ $(patsubst $(@MODULE@DIRO)/%,%,$(@PACKAGE@O) $(@PACKAGE@DO))  $(@PACKAGE@ELIBSDIR) $(@PACKAGE@ELIBS) $(ALLIB);\
+          cd $(ALICE_ROOT)
 
 
 $(@PACKAGE@BIN):$(@PACKAGE@O) $(@PACKAGE@DO) @MODULE@/module.mk
