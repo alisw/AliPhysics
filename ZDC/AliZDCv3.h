@@ -22,6 +22,7 @@ public:
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  DrawModule() const;
+  virtual void  AddAlignableVolumes() const;
   virtual void  Init();
   virtual void  InitTables();
   virtual void  StepManager();
@@ -37,7 +38,7 @@ protected:
   Int_t   fMedSensZEM;        // Sensitive medium for EM ZDC
   Int_t   fMedSensGR;         // Other sensitive medium
   Int_t   fMedSensPI;         // Beam pipe and magnet coils
-  Int_t   fMedSensCu;         // Cu materials along beam pipe
+  Int_t   fMedSensTDI;        // Cu materials along beam pipe
   
   // Parameters for light tables
   Int_t   fNalfan;	      // Number of Alfa (neutrons)
@@ -52,10 +53,10 @@ protected:
   // (other parameters are defined in CreateZDC())
   Float_t fDimZN[3];	// Dimensions of proton detector
   Float_t fDimZP[3];	// Dimensions of proton detector
-  Float_t fPosZN1[3];   // Position of neutron detector
-  Float_t fPosZN2[3];   // Position of neutron detector *** Left  
-  Float_t fPosZP1[3]; 	// Position of proton detector
-  Float_t fPosZP2[3]; 	// Position of proton detector *** Left
+  Float_t fPosZNC[3];   // Position of neutron detector side C
+  Float_t fPosZNA[3];   // Position of neutron detector side A  
+  Float_t fPosZPC[3]; 	// Position of proton detector side C
+  Float_t fPosZPA[3]; 	// Position of proton detector side A
   Float_t fFibZN[3]; 	// Fibers for neutron detector
   Float_t fFibZP[3];  	// Fibers for proton detector
 
@@ -65,10 +66,12 @@ protected:
   Float_t fPosZEM[3]; // Position of EM detector
   Float_t fZEMLength; // ZEM length
   
-  // Parameters for tracking studies
-  Int_t fpLostIT, fpLostD1, fpLostTDI, fpDetected; // For proton acceptance
+  // Parameters for proton accepancy studies
+  Int_t fpLostITC, fpLostD1C, fpDetectedC, fnDetectedC; // Side C
+  Int_t fpLostITA, fpLostD1A, fpLostTDI, fpDetectedA, fnDetectedA; // Side A
   
-   ClassDef(AliZDCv3,1)  // Zero Degree Calorimeter version 1
+  
+   ClassDef(AliZDCv3,2)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif
