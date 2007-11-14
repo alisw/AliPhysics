@@ -29,7 +29,6 @@
 
 // --- ROOT system
 #include <TBRIK.h>
-#include <TLorentzVector.h>
 #include <TMath.h>
 #include <TNode.h>
 #include <TRandom.h>
