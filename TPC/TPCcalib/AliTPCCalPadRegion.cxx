@@ -33,6 +33,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCCalPadRegion.h"
+#include "AliTPCROC.h"
 
 ClassImp(AliTPCCalPadRegion);
 
@@ -83,5 +84,34 @@ void AliTPCCalPadRegion::GetPadRegionCenterLocal(UInt_t padType, Double_t* xy) {
    // Return the center of the pad size region in local
    // coordinates as an Double_t array xy of length 2.
    //
-   Error("GetPadRegionCenterLocal", "Not yet implemented.");
+   
+   Float_t centerPad[3] = {0};
+   AliTPCROC* tpcROC = AliTPCROC::Instance();
+
+   Int_t IOROC = (padType == 0) ? 0 : tpcROC->GetNInnerSector();
+   //tpcROC->GetPositionLocal(IOROC, tpcROC->GetNRows(IOROC)/2, tpcROC->GetNPads(IOROC, tpcROC->GetNRows(IOROC)/2)/2, centerPad);  // use this instead of the switch statement if you want to calculate the center of the ROC and not the center of the regions with the same pad size
+   switch (padType) {
+      case 0:  // short pads
+         tpcROC->GetPositionLocal(IOROC, tpcROC->GetNRows(IOROC)/2, tpcROC->GetNPads(IOROC, tpcROC->GetNRows(IOROC)/2)/2, centerPad);
+         break;
+      case 1:  // medium pads
+         tpcROC->GetPositionLocal(IOROC, 64/2, tpcROC->GetNPads(IOROC, 64/2)/2, centerPad);
+         break;
+      case 2:  // long pads
+         tpcROC->GetPositionLocal(IOROC, 64+32/2, tpcROC->GetNPads(IOROC, 64+32/2)/2, centerPad);
+         break;
+   }
+
+   xy[0] = centerPad[0];
+   xy[1] = centerPad[1];
 }
+
+/*UInt_t AliTPCCalPadRegion::GetStartRow(UInt_t padType) {
+   //
+   // Returns the index of the 
+   //
+}
+
+UInt_t AliTPCCalPadRegion::GetEndRow(UInt_t padType) {
+
+}*/

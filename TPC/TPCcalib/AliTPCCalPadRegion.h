@@ -14,9 +14,9 @@ public:
    AliTPCCalPadRegion();
    AliTPCCalPadRegion(const AliTPCCalPadRegion& obj);
    AliTPCCalPadRegion(const char *name, const char *title);
-   AliTPCCalPadRegion(const TString &name, const TString &title) : TNamed(name, title) { AliTPCCalPadRegion(name.Data(), title.Data()); }
+   //AliTPCCalPadRegion(const TString &name, const TString &title) : TNamed(name, title) { }
    virtual ~AliTPCCalPadRegion() { delete fObjects; }
-   AliTPCCalPadRegion& operator=(const AliTPCCalPadRegion& obj);
+   AliTPCCalPadRegion& operator=(const AliTPCCalPadRegion& rhs);
    
    virtual TObject*   GetObject(UInt_t segment, UInt_t padType)
       { return BoundsOk("GetObject", segment, padType) ? fObjects->At(segment+fgkNSegments*padType) : 0x0; }
@@ -26,7 +26,9 @@ public:
    virtual TIterator* MakeIterator(Bool_t direction = kIterForward) const { return fObjects->MakeIterator(direction); }
    static  UInt_t     GetNSegments() { return fgkNSegments; }
    static  UInt_t     GetNPadTypes() { return fgkNPadTypes; }
-   void       GetPadRegionCenterLocal(UInt_t padType, Double_t* xy);
+   static  void       GetPadRegionCenterLocal(UInt_t padType, Double_t* xy);
+//   static  UInt_t     GetStartRow(UInt_t padType);
+//   static  UInt_t     GetEndRow(UInt_t padType);
     
 protected:
    virtual Bool_t BoundsOk(const char* where, UInt_t segment, UInt_t padType) const

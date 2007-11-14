@@ -13,6 +13,7 @@
 #pragma link C++ class  AliTPCcalibTracks+;
 #pragma link C++ class  AliTPCcalibTracksCuts+;
 #pragma link C++ class  AliTPCcalibTracksGain+;
+#pragma link C++ class  AliTPCFitPad+;
 #pragma link C++ class  AliTPCCalPadRegion+;
 
 #pragma link C++ class  AliTPCSelectorESD+;

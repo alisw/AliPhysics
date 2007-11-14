@@ -1,6 +1,6 @@
 
 SRCS = AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx  \
-        AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx   AliTPCCalPadRegion.cxx
+        AliTPCSelectorESD.cxx   AliTPCSelectorTracks.cxx   AliTPCCalPadRegion.cxx AliTPCFitPad.cxx
        
 
 HDRS:= $(SRCS:.cxx=.h) 

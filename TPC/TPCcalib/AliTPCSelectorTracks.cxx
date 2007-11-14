@@ -119,8 +119,8 @@ void AliTPCSelectorTracks::InitComponent(){
   fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
   fOutput->AddLast(fCalibTracks);
    
-   //fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks");
-   //fOutput->AddLast(fCalibTracksGain);
+  fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks", cuts);
+   fOutput->AddLast(fCalibTracksGain);
    fInit=kTRUE;
 }
 
@@ -168,8 +168,7 @@ Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
       fNClusters->Fill(seed->GetNumberOfClusters());
       //
       fCalibTracks->Process(seed, esdTrack);   // analysis is done in fCalibTracks
-      //if (!AliTPCcalibTracksGain::AcceptTrack(seed)) {/*cerr << "not accepted" << endl;*/ continue; }
-      //fCalibTracksGain->AddTrack(seed);
+      fCalibTracksGain->Process(seed);
     }
   }
   CleanESD();
@@ -196,13 +195,14 @@ void AliTPCSelectorTracks::Terminate()
 //       }
 //    }   
    TFile file(fgkOutputFileName, "recreate");
+   fCalibTracksGain->Evaluate();
    fOutput->Write();
    file.Close();
    printf("Successfully written file to '%s'.", fgkOutputFileName);
 
 
    Info("Destructor","Destuctor");
-   //delete fCalibTracksGain;
+   delete fCalibTracksGain;
    delete fCalibTracks;
 //   printf ("Terminate... \n");
 //   if (!fOutput) return;
