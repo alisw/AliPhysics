@@ -196,6 +196,7 @@ void RunChain(
 		sys.SetGlobalLoggingLevel(kHLTLogError);
 	}
 	
+	sys.LoadComponentLibraries("libAliHLTUtil.so");
 	sys.LoadComponentLibraries("libAliHLTMUON.so");
 
 	// The DDL file publishers are only needed if we create the ddlreco or
@@ -267,8 +268,8 @@ void RunChain(
 		AliHLTConfiguration recDDL18("recDDL18", "MUONHitReconstructor", "pubDDL18", TString("-ddl 18 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut18.dat"));
 		AliHLTConfiguration recDDL19("recDDL19", "MUONHitReconstructor", "pubDDL19", TString("-ddl 19 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut19.dat"));
 		AliHLTConfiguration recDDL20("recDDL20", "MUONHitReconstructor", "pubDDL20", TString("-ddl 20 -buspatchmap ") + lutDir + TString("/BusToDetElem.dat -lut ") + lutDir + TString("/Lut20.dat"));	
-		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -lut ") + lutDir + TString("/Lut21.dat"));
-		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -lut ") + lutDir + TString("/Lut22.dat"));
+		AliHLTConfiguration recDDL21("recDDL21", "MUONTriggerReconstructor", "pubDDL21", TString("-ddl 21 -lut ") + lutDir + TString("/Lut21.dat -suppress_partial_triggers"));
+		AliHLTConfiguration recDDL22("recDDL22", "MUONTriggerReconstructor", "pubDDL22", TString("-ddl 22 -lut ") + lutDir + TString("/Lut22.dat -suppress_partial_triggers"));
 	}
 
 	TString startEventStr = "-firstevent ";
