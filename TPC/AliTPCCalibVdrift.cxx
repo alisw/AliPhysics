@@ -111,9 +111,9 @@ Double_t AliTPCCalibVdrift::VdriftLinearHyperplaneApprox(Double_t dE, Double_t d
   // linear Hyperplane approximation (~ Taylorapproximation of 1st order)
   //
 
-  Double_t Vdrift = (dE*kdvdE+dT*kdvdT+dP*kdvdP+dCco2*kdvdCco2+dCn2*kdvdCn2);
+  Double_t vdrift = (dE*kdvdE+dT*kdvdT+dP*kdvdP+dCco2*kdvdCco2+dCn2*kdvdCn2);
   
-  return Vdrift; 
+  return vdrift; 
 
 }
 //_____________________________________________________________________________
@@ -145,10 +145,10 @@ Double_t AliTPCCalibVdrift::GetVdriftChange(Double_t x, Double_t y, Double_t z, 
   // FIXME: READ REAL PRESSURE SENSOR  
   //        through TObject *fSensPres; 
   //        e.g. Double_t PO = fSensPres->GetValue(timeSec);  
-  Double_t P0 = 744;
+  Double_t p0 = 744;
   // recalculate Pressure according to height in TPC and transform to
   // TORR (with simplified hydrostatic formula)   
-  Double_t dP = P0 - krho*kg*y/10000 /1000*760 - kstdP;
+  Double_t dP = p0 - krho*kg*y/10000 /1000*760 - kstdP;
    
   // Get GasComposition
   // FIXME: include Goofy values for CO2 and N2 conzentration out of DCS? 
@@ -176,16 +176,16 @@ Double_t AliTPCCalibVdrift::GetMeanZVdriftChange(Double_t x, Double_t y, UInt_t 
   
   Int_t nPoints = 5;
  
-  Double_t VdriftSum = 0;
+  Double_t vdriftSum = 0;
 
   for (Int_t i = 0; i<nPoints; i++) {
     Double_t z = (Double_t)i/(nPoints-1)*500-250;
-    VdriftSum = VdriftSum + GetVdriftChange(x, y, z, timeSec);
+    vdriftSum = vdriftSum + GetVdriftChange(x, y, z, timeSec);
   }
   
-  Double_t MeanZVdrift = VdriftSum/nPoints;
+  Double_t meanZVdrift = vdriftSum/nPoints;
 
-  return MeanZVdrift;
+  return meanZVdrift;
 
 }
 
@@ -198,17 +198,17 @@ TGraph *AliTPCCalibVdrift::MakeGraphMeanZVdriftChange(Double_t x, Double_t y, In
   // Z direction at given x and y position
   //
 
-  UInt_t StartTime = fSensTemp->GetStartTime();
-  UInt_t EndTime = fSensTemp->GetEndTime();
+  UInt_t startTime = fSensTemp->GetStartTime();
+  UInt_t endTime = fSensTemp->GetEndTime();
   
-  UInt_t stepTime = (EndTime - StartTime)/nPoints;
+  UInt_t stepTime = (endTime - startTime)/nPoints;
 
 
   Double_t *xvec = new Double_t[nPoints];
   Double_t *yvec = new Double_t[nPoints];
 
   for (Int_t ip=0; ip<nPoints; ip++) {
-    xvec[ip] = StartTime+ip*stepTime;
+    xvec[ip] = startTime+ip*stepTime;
     yvec[ip] = GetMeanZVdriftChange(x, y, ip*stepTime);
   }
 
