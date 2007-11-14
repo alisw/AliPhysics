@@ -48,6 +48,7 @@
 #include "AliTOFtracker.h"
 #include "AliTOFtrack.h"
 
+#include "AliCDBManager.h"
 extern TGeoManager *gGeoManager;
 extern TROOT *gROOT;
 
