@@ -160,7 +160,9 @@ AliTOFtrackerV1::~AliTOFtrackerV1() {
 
   SaveCheckHists();
 
-  delete fRecoParam; 
+  if(!(AliCDBManager::Instance()->GetCacheFlag())){
+    delete fRecoParam;
+  }
   delete fPid; 
   delete fHDigClusMap;
   delete fHDigNClus;
