@@ -1,9 +1,17 @@
-#ifndef ALITPC_EXB_EXACT
-#define ALITPC_EXB_EXACT
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+////
+// An exact implementation of the ExB effect.
+////
+
+#ifndef ALITPCEXBEXACT_H
+#define ALITPCEXBEXACT_H
 
 #include "AliTPCExB.h"
-#include "AliFieldMap.h"
-#include "AliMagF.h"
+
+class AliFieldMap;
+class AliMagF;
 
 class AliTPCExBExact:public AliTPCExB  {
 public:
@@ -24,8 +32,8 @@ private:
   AliTPCExBExact(const AliTPCExBExact&); // don't copy me
   void TestThisBeautifulObjectGeneric(const char* fileName);
   void CreateLookupTable();
-  void GetE(Double_t *E,const Double_t *x) const;
-  void GetB(Double_t *B,const Double_t *x) const;
+  void GetE(Double_t *e,const Double_t *x) const;
+  void GetB(Double_t *b,const Double_t *x) const;
   void Motion(const Double_t *x,Double_t t,Double_t *dxdt) const;
   void CalculateDistortion(const Double_t *x,Double_t *dist) const;
   void DGLStep(Double_t *x,Double_t t,Double_t h) const;

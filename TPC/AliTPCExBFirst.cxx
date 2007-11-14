@@ -1,4 +1,27 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+////
+// This implementation AliTPCExB is using an aproximate calculation of the ExB
+// effect. Therefore the drift ODE is Taylor expanded and only the first
+// order part is taken.
+////
+
 #include "TMath.h"
+#include "AliFieldMap.h"
+#include "AliMagF.h"
 #include "TTreeStream.h"
 #include "AliTPCExBFirst.h"
 
@@ -87,26 +110,26 @@ void AliTPCExBFirst::Correct(const Double_t *position,Double_t *corrected) {
   //
   // correct for the distortion
   //
-  Double_t Bx,By;
-  GetMeanFields(position[0],position[1],position[2],&Bx,&By);
+  Double_t bx,by;
+  GetMeanFields(position[0],position[1],position[2],&bx,&by);
   if (position[2]>0.) {
-    Double_t Bxe,Bye;
-    GetMeanFields(position[0],position[1],250.,&Bxe,&Bye);
+    Double_t bxe,bye;
+    GetMeanFields(position[0],position[1],250.,&bxe,&bye);
     if (position[2]!=250.) {
-      Bx=(500.*Bxe-(position[2]+250.)*Bx)/(250.-position[2]);
-      By=(500.*Bye-(position[2]+250.)*By)/(250.-position[2]);
+      bx=(500.*bxe-(position[2]+250.)*bx)/(250.-position[2]);
+      by=(500.*bye-(position[2]+250.)*by)/(250.-position[2]);
     }
     else {
-      Bx=Bxe;
-      By=Bye;
+      bx=bxe;
+      by=bye;
     }
   }
   
   Double_t mu=fDriftVelocity/fgkDriftField;
   Double_t wt=mu*fkMeanBz;
   
-  corrected[0]=mu*(wt*Bx-By)/(1.+wt*wt);
-  corrected[1]=mu*(wt*By+Bx)/(1.+wt*wt);
+  corrected[0]=mu*(wt*bx-by)/(1.+wt*wt);
+  corrected[1]=mu*(wt*by+bx)/(1.+wt*wt);
   
   if (position[2]>0.) {
     corrected[0]*=(250.-position[2]);
@@ -166,8 +189,8 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
   // THIS IS PRIVATE! (a helper for the constructor)
   //
   fkNMean=fkNX*fkNY*fkNZ;
-  fkMeanBx=new Float_t[fkNMean];
-  fkMeanBy=new Float_t[fkNMean];
+  fkMeanBx=new Double_t[fkNMean];
+  fkMeanBy=new Double_t[fkNMean];
 
   Double_t x[3];
   Double_t nBz=0;
@@ -176,29 +199,25 @@ void AliTPCExBFirst::ConstructCommon(const AliFieldMap *bFieldMap,
     x[0]=fkXMin+i*(fkXMax-fkXMin)/(fkNX-1);
     for (int j=0;j<fkNY;++j) {
       x[1]=fkYMin+j*(fkYMax-fkYMin)/(fkNY-1);
-      Double_t R=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
-      Double_t Bx=0.,By=0.;
+      Double_t r=TMath::Sqrt(x[0]*x[0]+x[1]*x[1]);
+      Double_t bx=0.,by=0.;
       for (int k=0;k<fkNZ;++k) {
 	x[2]=fkZMin+k*(fkZMax-fkZMin)/(fkNZ-1);
-	Float_t B[3];
+	Float_t b[3];
 	// the x is not const in the Field function...
 	Float_t xt[3];
 	for (int l=0;l<3;++l) xt[l]=x[l];
 	// that happens due to the lack of a sophisticated class design:
 	if (bFieldMap!=0)
-	  bFieldMap->Field(xt,B);
+	  bFieldMap->Field(xt,b);
 	else 
-	  bField->Field(xt,B);
-	Bx+=B[0]/10.;
-	By+=B[1]/10.;
-	/*old
-	fkMeanBx[(k*fkNY+j)*fkNX+i]=Bx/(k+1);
-	fkMeanBy[(k*fkNY+j)*fkNX+i]=By/(k+1);
-	*/
-	fkMeanBx[(k*fkNY+j)*fkNX+i]=Bx;
-	fkMeanBy[(k*fkNY+j)*fkNX+i]=By;
-	if (90.<=R&&R<=250.) {
-	  fkMeanBz+=B[2]/10.;
+	  bField->Field(xt,b);
+	bx+=b[0]/10.;
+	by+=b[1]/10.;
+	fkMeanBx[(k*fkNY+j)*fkNX+i]=bx;
+	fkMeanBy[(k*fkNY+j)*fkNX+i]=by;
+	if (90.<=r&&r<=250.) {
+	  fkMeanBz+=b[2]/10.;
 	  ++nBz;
 	}
       }
