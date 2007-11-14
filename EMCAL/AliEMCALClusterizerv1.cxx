@@ -338,7 +338,7 @@ void AliEMCALClusterizerv1::Init()
   else 
     fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaulGeometryName());
 
-  AliInfo(Form("geom 0x%x",fGeom));
+  AliDebug(1,Form("geom 0x%x",fGeom));
 
   if(!gMinuit) 
     gMinuit = new TMinuit(100) ;

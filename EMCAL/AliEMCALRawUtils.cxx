@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.6  2007/11/01 01:23:51  mvl
+ * Removed call to SetOldRCUFormat, which is only needed for testbeam data
+ *
  * Revision 1.5  2007/11/01 01:20:33  mvl
  * Further improvement of peak finding; more robust fit
  *
@@ -211,8 +214,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
   reader->Select("EMCAL");
   //in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
   
-  cout << "Stream set up" << endl;
-
   // reading is from previously existing AliEMCALGetter.cxx
   // ReadRaw method
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);

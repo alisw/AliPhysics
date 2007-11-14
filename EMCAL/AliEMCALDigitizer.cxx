@@ -267,7 +267,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     AliFatal("Could not get AliRun from runLoader");
 
   if(isTrd1Geom < 0) { 
-    AliInfo(Form(" get Geometry %s : %s ", geom->GetName(),geom->GetTitle()));
+    AliDebug(1, Form(" get Geometry %s : %s ", geom->GetName(),geom->GetTitle()));
     TString ng(geom->GetName());
     isTrd1Geom = 0;
     if(ng.Contains("SHISH") &&  ng.Contains("TRD1")) isTrd1Geom = 1;
