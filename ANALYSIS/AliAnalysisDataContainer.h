@@ -105,11 +105,15 @@ protected:
 class AliAnalysisDataWrapper : public TNamed {
 
 public:
+
+enum EAnalysisWrapperFlags {
+   kDeleteData = BIT(14)
+};     
    AliAnalysisDataWrapper() : TNamed(), fData(NULL) {}
-   AliAnalysisDataWrapper(TObject *data) : TNamed(), fData(data) {}
+   AliAnalysisDataWrapper(TObject *data);
    AliAnalysisDataWrapper(const AliAnalysisDataWrapper &other) 
                         : TNamed(other), fData(other.fData) {}
-   virtual ~AliAnalysisDataWrapper() {}
+   virtual ~AliAnalysisDataWrapper();
    
    // Assignment
    AliAnalysisDataWrapper &operator=(const AliAnalysisDataWrapper &other);
@@ -117,6 +121,7 @@ public:
    TObject                  *Data() const {return fData;}
    // Merging
    virtual Long64_t          Merge(TCollection *list);
+   void                      SetDeleteData(Bool_t flag=kTRUE) {TObject::SetBit(kDeleteData,flag);}
 
 protected:
    TObject                  *fData;       // Wrapped data

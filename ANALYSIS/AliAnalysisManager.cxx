@@ -334,8 +334,14 @@ void AliAnalysisManager::PackOutput(TList *target)
       TIter next(fOutputs);
       AliAnalysisDataContainer *output;
       while ((output=(AliAnalysisDataContainer*)next())) {
-         if (fDebug > 1) printf("   Packing container %s...\n", output->GetName());
-         if (output->GetData()) target->Add(output->ExportData());
+         if (output->GetData()) {
+            if (output->GetProducer()->IsPostEventLoop()) continue;
+            AliAnalysisDataWrapper *wrap = output->ExportData();
+            // Output wrappers must delete data after merging (AG 13/11/07)
+            wrap->SetDeleteData(kTRUE);
+            if (fDebug > 1) printf("   Packing container %s...\n", output->GetName());
+            target->Add(wrap);
+         }   
       }
    } 
    if (fDebug > 1) {
@@ -355,6 +361,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
    AliAnalysisDataWrapper   *wrap;
    Int_t icont = 0;
    while ((cont=(AliAnalysisDataContainer*)next())) {
+      if (cont->GetProducer()->IsPostEventLoop()) continue;
       wrap = (AliAnalysisDataWrapper*)source->FindObject(cont->GetName());
       if (!wrap && fDebug>1) {
          printf("(WW) ImportWrappers: container %s not found in analysis output !\n", cont->GetName());

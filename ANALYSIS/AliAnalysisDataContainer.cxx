@@ -373,10 +373,28 @@ void AliAnalysisDataContainer::ImportData(AliAnalysisDataWrapper *pack)
    if (pack) {
       fData = pack->Data();
       fDataReady = kTRUE;
+      // Imported wrappers do not own data anymore (AG 13-11-07)
+      pack->SetDeleteData(kFALSE);
    }   
 }      
       
 ClassImp (AliAnalysisDataWrapper)
+
+//______________________________________________________________________________
+AliAnalysisDataWrapper::AliAnalysisDataWrapper(TObject *data)
+                       :TNamed(),
+                        fData(data)
+{
+// Ctor.
+   if (data) SetName(data->GetName());
+}
+
+//______________________________________________________________________________
+AliAnalysisDataWrapper::~AliAnalysisDataWrapper()
+{
+// Dtor.
+   if (fData && TObject::TestBit(kDeleteData)) delete fData;
+}   
 
 //______________________________________________________________________________
 AliAnalysisDataWrapper &AliAnalysisDataWrapper::operator=(const AliAnalysisDataWrapper &other)
@@ -397,9 +415,9 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
    if (!fData) return 0;
    if (!list || list->IsEmpty()) return 1;
 
-   printf("Merging %d data wrappers %s\n", list->GetSize()+1, GetName());
    TMethodCall callEnv;
    if (fData->InheritsFrom(TSeqCollection::Class())) {
+//      printf("Collection wrapper %s 0x%lx (owner=%d) merge with:\n", GetName(), (ULong_t)this, TObject::TestBit(kDeleteData));
       TSeqCollection *coll = (TSeqCollection*)fData;
       if (coll->IsEmpty()) return 0;
       Int_t nentries = coll->GetEntries();
@@ -414,6 +432,7 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
          next.Reset();
          // Loop wrappers coming in the 'to merge with' list
          while ((crt=(AliAnalysisDataWrapper*)next())) {
+//            printf("  %s 0x%lx (owner=%d)\n", crt->GetName(), (ULong_t)crt, crt->TestBit(AliAnalysisDataWrapper::kDeleteData));
             collcrt = (TSeqCollection*)crt->Data();
             list1->Add(new AliAnalysisDataWrapper(collcrt->At(i)));
          }
@@ -438,7 +457,9 @@ Long64_t AliAnalysisDataWrapper::Merge(TCollection *list)
    // Make a list where to temporary store the data to be merged.
    TList *collectionData = new TList();
    Int_t count = 0; // object counter
+//   printf("Wrapper %s 0x%lx (owner=%d) merged with:\n", GetName(), (ULong_t)this, TObject::TestBit(kDeleteData));
    while ((cont=(AliAnalysisDataWrapper*)next1())) {
+//      printf("   %s 0x%lx (owner=%d)\n", cont->GetName(), (ULong_t)cont, cont->TestBit(AliAnalysisDataWrapper::kDeleteData));
       TObject *data = cont->Data();
       if (!data) continue;
       collectionData->Add(data);
