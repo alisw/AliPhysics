@@ -25,7 +25,6 @@ class AliQADataMakerSteer ;
 class AliSimulation: public TNamed {
 public:
   AliSimulation(const char* configFileName = "Config.C",
-  		const char* cdbUri = "local://$ALICE_ROOT",
 		const char* name = "AliSimulation", 
 		const char* title = "generation, simulation and digitization");
   AliSimulation(const AliSimulation& sim);
@@ -69,12 +68,13 @@ public:
 
   Bool_t         MisalignGeometry(AliRunLoader *runLoader = NULL);
 
-  Bool_t         SetRunNumber();
+  void           SetRunNumber(Int_t run);
+  void           SetSeed(Int_t seed);
+    
+  void 		 ProcessEnvironmentVars();
 		   
   // CDB storage activation
-  void InitCDBStorage();
   void SetDefaultStorage(const char* uri);
-  void SetRemoteStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
 
   virtual Bool_t Run(Int_t nEvents = 0);
@@ -107,6 +107,10 @@ public:
   void        SetQA(const Bool_t val) { fRunQA = val ; } 
   
 private:
+  void 		 InitCDB();
+  void 		 InitRunNumber();
+  void 		 SetCDBLock();
+  Bool_t         SetRunNumberFromData();
   AliRunLoader*  LoadRun(const char* mode = "UPDATE") const;
   Int_t          GetNSignalPerBkgrd(Int_t nEvents = 0) const;
   Bool_t         IsSelected(TString detName, TString& detectors) const;
@@ -136,9 +140,14 @@ private:
   Bool_t         fUseBkgrdVertex;     // use vertex from background in case of merging
   Bool_t         fRegionOfInterest;   // digitization in region of interest
 
-  TString 	 fCDBUri;	      // Uri of the default CDB storage
-  TString 	 fRemoteCDBUri;	      // Uri of the remote CDB storage
-  TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
+  TString 	 fCDBUri;	      //! Uri of the default CDB storage
+  TObjArray      fSpecCDBUri;         //! Array with detector specific CDB storages
+  Int_t 	 fRun; 		      //! Run number, will be passed to CDB and gAlice!!
+  Int_t 	 fSeed;               //! Seed for random number generator 
+  Bool_t 	 fInitCDBCalled;      //! flag to check if CDB storages are already initialized
+  Bool_t 	 fInitRunNumberCalled;  //! flag to check if run number is already initialized
+  Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
+  
   Bool_t         fEmbeddingFlag;      // Flag for embedding
   
   //QA stuff

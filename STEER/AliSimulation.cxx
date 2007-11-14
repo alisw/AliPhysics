@@ -146,7 +146,7 @@ AliSimulation *AliSimulation::fgInstance = 0;
 const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"};
 
 //_____________________________________________________________________________
-AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
+AliSimulation::AliSimulation(const char* configFileName,
 			     const char* name, const char* title) :
   TNamed(name, title),
 
@@ -171,9 +171,13 @@ AliSimulation::AliSimulation(const char* configFileName, const char* cdbUri,
   fAlignObjArray(NULL),
   fUseBkgrdVertex(kTRUE),
   fRegionOfInterest(kFALSE),
-  fCDBUri(cdbUri),
-  fRemoteCDBUri(""),
+  fCDBUri(""),
   fSpecCDBUri(),
+  fRun(-1),
+  fSeed(0),
+  fInitCDBCalled(kFALSE),
+  fInitRunNumberCalled(kFALSE),
+  fSetRunNumberFromDataCalled(kFALSE),
   fEmbeddingFlag(kFALSE),
   fRunQA(kTRUE), 
   fRunHLT("default")
@@ -213,8 +217,12 @@ AliSimulation::AliSimulation(const AliSimulation& sim) :
   fUseBkgrdVertex(sim.fUseBkgrdVertex),
   fRegionOfInterest(sim.fRegionOfInterest),
   fCDBUri(sim.fCDBUri),
-  fRemoteCDBUri(sim.fRemoteCDBUri),
   fSpecCDBUri(),
+  fRun(-1),
+  fSeed(0),
+  fInitCDBCalled(sim.fInitCDBCalled),
+  fInitRunNumberCalled(sim.fInitRunNumberCalled),
+  fSetRunNumberFromDataCalled(sim.fSetRunNumberFromDataCalled),
   fEmbeddingFlag(sim.fEmbeddingFlag),
   fRunQA(kTRUE), 
   fRunHLT(sim.fRunHLT)
@@ -282,11 +290,14 @@ void AliSimulation::SetNumberOfEvents(Int_t nEvents)
 }
 
 //_____________________________________________________________________________
-void AliSimulation::InitCDBStorage()
+void AliSimulation::InitCDB()
 {
 // activate a default CDB storage
 // First check if we have any CDB storage set, because it is used 
 // to retrieve the calibration and alignment constants
+
+  if (fInitCDBCalled) return;
+  fInitCDBCalled = kTRUE;
 
   AliCDBManager* man = AliCDBManager::Instance();
   if (man->IsDefaultStorageSet())
@@ -295,32 +306,24 @@ void AliSimulation::InitCDBStorage()
     AliWarning("Default CDB storage has been already set !");
     AliWarning(Form("Ignoring the default storage declared in AliSimulation: %s",fCDBUri.Data()));
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    fCDBUri = "";
+    fCDBUri = man->GetDefaultStorage()->GetURI();
   }
   else {
-    AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    AliDebug(2, Form("Default CDB storage is set to: %s",fCDBUri.Data()));
-    AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    if (fCDBUri.Length() > 0) 
+    {
+    	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	AliDebug(2, Form("Default CDB storage is set to: %s", fCDBUri.Data()));
+    	AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    } else {
+    	fCDBUri="local://$ALICE_ROOT";
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	AliWarning("Default CDB storage not yet set !!!!");
+    	AliWarning(Form("Setting it now to: %s", fCDBUri.Data()));
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    		
+    }
     man->SetDefaultStorage(fCDBUri);
   }
-
-  // Remote storage (the Grid storage) is used if it is activated
-  // and if the object is not found in the default storage
-  // OBSOLETE: Removed
-  //   if (man->IsRemoteStorageSet())
-  //   {
-  //     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  //     AliWarning("Remote CDB storage has been already set !");
-  //     AliWarning(Form("Ignoring the remote storage declared in AliSimulation: %s",fRemoteCDBUri.Data()));
-  //     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  //     fRemoteCDBUri = "";
-  //   }
-  //   else {
-  //     AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  //     AliDebug(2, Form("Remote CDB storage is set to: %s",fRemoteCDBUri.Data()));
-  //     AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  //     man->SetRemoteStorage(fRemoteCDBUri);
-  //   }
 
   // Now activate the detector specific CDB storage locations
   for (Int_t i = 0; i < fSpecCDBUri.GetEntriesFast(); i++) {
@@ -331,7 +334,53 @@ void AliSimulation::InitCDBStorage()
     AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     man->SetSpecificStorage(obj->GetName(), obj->GetTitle());
   }
+      
+}
+
+//_____________________________________________________________________________
+void AliSimulation::InitRunNumber(){
+// check run number. If not set, set it to 0 !!!!
+  
+  if (fInitRunNumberCalled) return;
+  fInitRunNumberCalled = kTRUE;
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (man->GetRun() >= 0)
+  {
+    if(fRun >= 0) {
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	AliWarning(Form("Run number is already set in AliCDBManager: %d !", man->GetRun()));
+    	AliWarning(Form("Ignoring the run number declared in AliSimulation: %d", fRun));
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    }
+    fRun = man->GetRun();
+  }
+  else {
+    if(fRun >= 0) {
+    	AliDebug(2,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	AliDebug(2, Form("Setting CDB run number to: %d",fRun));
+    	AliDebug(2, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    } else {
+    	fRun=0;
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	AliWarning("Run number not yet set !!!!");
+    	AliWarning(Form("Setting it now to: %d", fRun));
+    	AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    	
+    }
+    man->SetRun(fRun);
+  }
+
   man->Print();
+
+}
+
+//_____________________________________________________________________________
+void AliSimulation::SetCDBLock() {
+  // Set CDB lock: from now on it is forbidden to reset the run number
+  // or the default storage or to activate any further storage!
+  
+  AliCDBManager::Instance()->SetLock(1);
 }
 
 //_____________________________________________________________________________
@@ -340,17 +389,6 @@ void AliSimulation::SetDefaultStorage(const char* uri) {
 // Activate it later within the Run() method
 
   fCDBUri = uri;
-
-}
-
-//_____________________________________________________________________________
-void AliSimulation::SetRemoteStorage(const char* uri) {
-// Store the desired remote CDB storage location
-// Activate it later within the Run() method
-// Remote storage (the Grid storage) is used if it is activated
-// and if the object is not found in the default storage (the local cache)
-
-  fRemoteCDBUri = uri;
 
 }
 
@@ -369,6 +407,67 @@ void AliSimulation::SetSpecificStorage(const char* calibType, const char* uri) {
   if (obj) fSpecCDBUri.Remove(obj);
   fSpecCDBUri.Add(new TNamed(calibType, uri));
 
+}
+
+//_____________________________________________________________________________
+void AliSimulation::SetRunNumber(Int_t run)
+{
+// sets run number
+// Activate it later within the Run() method
+
+	fRun = run;
+}
+
+//_____________________________________________________________________________
+void AliSimulation::SetSeed(Int_t seed)
+{
+// sets seed number
+// Activate it later within the Run() method
+
+	fSeed = seed;
+}
+
+//_____________________________________________________________________________
+Bool_t AliSimulation::SetRunNumberFromData()
+{
+  // Set the CDB manager run number
+  // The run number is retrieved from gAlice
+
+    if (fSetRunNumberFromDataCalled) return kTRUE;
+    fSetRunNumberFromDataCalled = kTRUE;    
+  
+    AliCDBManager* man = AliCDBManager::Instance();
+    Int_t runData = -1, runCDB = -1;
+  
+    AliRunLoader* runLoader = LoadRun("READ");
+    if (!runLoader) return kFALSE;
+    else {
+    	runData = runLoader->GetAliRun()->GetHeader()->GetRun();
+	delete runLoader;
+    }
+  
+    runCDB = man->GetRun();
+    if(runCDB >= 0) {
+	if (runCDB != runData) {
+    		AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    		AliWarning(Form("A run number was previously set in AliCDBManager: %d !", runCDB));
+    		AliWarning(Form("It will be replaced with the run number got from run header: %d !", runData));
+    		AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");	
+	}
+   	
+    }
+      
+    man->SetRun(runData);
+    fRun = runData;
+    
+    if(man->GetRun() < 0) {
+    	AliError("Run number not properly initalized!");
+	return kFALSE;
+    }
+  
+    man->Print();
+    
+    return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -423,13 +522,19 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
     AliError("Can't apply the misalignment! Geometry is not loaded or it is still opened!");
     return kFALSE;
   }  
+  
+  // initialize CDB storage, run number, set CDB lock
+  InitCDB();
+//  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  SetCDBLock();
+    
   Bool_t delRunLoader = kFALSE;
   if (!runLoader) {
     runLoader = LoadRun("READ");
     if (!runLoader) return kFALSE;
     delRunLoader = kTRUE;
   }
-
+  
   // Export ideal geometry 
   if(!gAlice->IsRootGeometry()) AliGeomManager::GetGeometry()->Export("geometry.root");
 
@@ -483,25 +588,6 @@ Bool_t AliSimulation::MisalignGeometry(AliRunLoader *runLoader)
   return kTRUE;
 }
 
-
-//_____________________________________________________________________________
-Bool_t AliSimulation::SetRunNumber()
-{
-  // Set the CDB manager run number
-  // The run number is retrieved from gAlice
-
-  if(AliCDBManager::Instance()->GetRun() < 0) {
-    AliRunLoader* runLoader = LoadRun("READ");
-    if (!runLoader) return kFALSE;
-    else {
-      AliCDBManager::Instance()->SetRun(runLoader->GetAliRun()->GetRunNumber());
-      AliInfo(Form("Run number: %d",AliCDBManager::Instance()->GetRun()));
-      delete runLoader;
-    }
-  }
-  return kTRUE;
-}
-
 //_____________________________________________________________________________
 void AliSimulation::MergeWith(const char* fileName, Int_t nSignalPerBkgrd)
 {
@@ -526,21 +612,32 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 // run the generation, simulation and digitization
 
  
-   AliCodeTimerAuto("")
+  AliCodeTimerAuto("")
   
-  InitCDBStorage();
+  // Load run number and seed from environmental vars
+  ProcessEnvironmentVars();
 
+  gRandom->SetSeed(fSeed);
+   
   if (nEvents > 0) fNEvents = nEvents;
 
   // generation and simulation -> hits
   if (fRunGeneration) {
     if (!RunSimulation()) if (fStopOnError) return kFALSE;
   }
-
-
-
-  // Set run number in CDBManager (if it is not already set in RunSimulation)
-  if (!SetRunNumber()) if (fStopOnError) return kFALSE;
+           
+  // initialize CDB storage from external environment
+  // (either CDB manager or AliSimulation setters),
+  // if not already done in RunSimulation()
+  InitCDB();
+  
+  // Set run number in CDBManager from data 
+  // From this point on the run number must be always loaded from data!
+  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  
+  // Set CDB lock: from now on it is forbidden to reset the run number
+  // or the default storage or to activate any further storage!
+  SetCDBLock();
 
   // If RunSimulation was not called, load the geometry and misalign it
   if (!AliGeomManager::GetGeometry()) {
@@ -558,13 +655,16 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   }
   
 
-  // summable digits -> digits
+  
+  // summable digits -> digits  
   if (!fMakeDigits.IsNull()) {
     if (!RunDigitization(fMakeDigits, fMakeDigitsFromHits)) {
       if (fStopOnError) return kFALSE;
     }
    }
 
+  
+  
   // hits -> digits
   if (!fMakeDigitsFromHits.IsNull()) {
     if (fBkgrdFileNames && (fBkgrdFileNames->GetEntriesFast() > 0)) {
@@ -578,11 +678,15 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
 
+  
+  
   // digits -> trigger
   if (!RunTrigger(fMakeTrigger)) {
     if (fStopOnError) return kFALSE;
   }
 
+  
+  
   // digits -> raw data
   if (!fWriteRawData.IsNull()) {
     if (!WriteRawData(fWriteRawData, fRawDataFileName, 
@@ -591,13 +695,15 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     }
   }
 
+  
+  
   // run HLT simulation
   if (!fRunHLT.IsNull()) {
     if (!RunHLT()) {
       if (fStopOnError) return kFALSE;
     }
   }
-
+  
  // //QA
 //	if (fRunQA) {
 //		Bool_t rv = RunQA() ; 
@@ -605,6 +711,10 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 //			if (fStopOnError) 
 //				return kFALSE ;   	
 //	}
+
+  // Cleanup of CDB manager: cache and active storages!
+  AliCDBManager::Instance()->ClearCache();
+
   return kTRUE;
 }
 
@@ -615,6 +725,19 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
 
   AliCodeTimerAuto("")
 
+  // initialize CDB storage from external environment
+  // (either CDB manager or AliSimulation setters),
+  // if not already done in RunSimulation()
+  InitCDB();
+  
+  // Set run number in CDBManager from data 
+  // From this point on the run number must be always loaded from data!
+  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  
+  // Set CDB lock: from now on it is forbidden to reset the run number
+  // or the default storage or to activate any further storage!
+  SetCDBLock();
+   
    AliRunLoader* runLoader = LoadRun("READ");
    if (!runLoader) return kFALSE;
    TString des = descriptors;
@@ -666,6 +789,12 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   AliCodeTimerAuto("")
 
+  // initialize CDB storage and run number from external environment
+  // (either CDB manager or AliSimulation setters)
+  InitCDB();
+  InitRunNumber();
+  SetCDBLock();
+  
   if (!gAlice) {
     AliError("no gAlice object. Restart aliroot and try again.");
     return kFALSE;
@@ -680,7 +809,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
   StdoutToAliInfo(StderrToAliError(
     gAlice->Init(fConfigFileName.Data());
   ););
-
+  
   // Get the trigger descriptor string
   // Either from AliSimulation or from
   // gAlice
@@ -701,7 +830,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
              return kFALSE;
   }
   SetGAliceFile(runLoader->GetFileName());
- 
+      
   // Misalign geometry
 #if ROOT_VERSION_CODE < 331527
   AliGeomManager::SetGeometry(gGeoManager);
@@ -774,7 +903,6 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   delete runLoader;
 
-
   return kTRUE;
 }
 
@@ -785,6 +913,11 @@ Bool_t AliSimulation::RunSDigitization(const char* detectors)
 
   AliCodeTimerAuto("")
 
+  // initialize CDB storage, run number, set CDB lock
+  InitCDB();
+  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  SetCDBLock();
+  
   AliRunLoader* runLoader = LoadRun();
   if (!runLoader) return kFALSE;
 
@@ -821,6 +954,11 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
 
   AliCodeTimerAuto("")
 
+  // initialize CDB storage, run number, set CDB lock
+  InitCDB();
+  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  SetCDBLock();
+  
   while (AliRunLoader::GetRunLoader()) delete AliRunLoader::GetRunLoader();
   if (gAlice) delete gAlice;
   gAlice = NULL;
@@ -882,6 +1020,11 @@ Bool_t AliSimulation::RunHitsDigitization(const char* detectors)
 
   AliCodeTimerAuto("")
 
+  // initialize CDB storage, run number, set CDB lock
+  InitCDB();
+  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  SetCDBLock();
+  
   AliRunLoader* runLoader = LoadRun("READ");
   if (!runLoader) return kFALSE;
 
@@ -1143,6 +1286,7 @@ AliRunLoader* AliSimulation::LoadRun(const char* mode) const
     return NULL;
   }
   runLoader->LoadgAlice();
+  runLoader->LoadHeader();
   gAlice = runLoader->GetAliRun();
   if (!gAlice) {
     AliError(Form("no gAlice object found in file %s", 
@@ -1237,6 +1381,7 @@ Bool_t AliSimulation::IsSelected(TString detName, TString& detectors) const
   return result;
 }
 
+//_____________________________________________________________________________
 Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* esdFileName) 
 {
 //
@@ -1259,9 +1404,9 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     StdoutToAliInfo(StderrToAliError(gAlice->Init(fConfigFileName.Data());););
 //
 //  Initialize CDB     
-    InitCDBStorage();
-    AliCDBManager* man = AliCDBManager::Instance();
-    man->SetRun(0); // Should this come from rawdata header ?
+    InitCDB();
+    //AliCDBManager* man = AliCDBManager::Instance();
+    //man->SetRun(0); // Should this come from rawdata header ?
     
     Int_t iDet;
     //
@@ -1399,6 +1544,11 @@ Bool_t AliSimulation::RunHLT()
   AliRunLoader* pRunLoader = LoadRun("READ");
   if (!pRunLoader) return kFALSE;
 
+  // initialize CDB storage, run number, set CDB lock
+  InitCDB();
+  if (!SetRunNumberFromData()) if (fStopOnError) return kFALSE;
+  SetCDBLock();
+  
   // load the library dynamically
   gSystem->Load(ALIHLTSIMULATION_LIBRARY);
 
@@ -1477,3 +1627,41 @@ Bool_t AliSimulation::RunQA()
 	return rv ; 
 }
 
+//_____________________________________________________________________________
+void AliSimulation::ProcessEnvironmentVars()
+{
+// Extract run number and random generator seed from env variables
+
+    AliInfo("Processing environment variables");
+    
+    // Random Number seed
+    
+    // first check that seed is not already set
+    if (fSeed == 0) {
+    	if (gSystem->Getenv("CONFIG_SEED")) {
+     	 	fSeed = atoi(gSystem->Getenv("CONFIG_SEED"));
+    	}
+    } else {
+    	if (gSystem->Getenv("CONFIG_SEED")) {
+    		AliInfo(Form("Seed for random number generation already set (%d)"
+			     ": CONFIG_SEED variable ignored!", fSeed));
+    	}
+    }
+   
+    AliInfo(Form("Seed for random number generation = %d ", fSeed)); 
+
+    // Run Number
+    
+    // first check that run number is not already set
+    if(fRun < 0) {    
+    	if (gSystem->Getenv("DC_RUN")) {
+		fRun = atoi(gSystem->Getenv("DC_RUN"));
+    	}
+    } else {
+    	if (gSystem->Getenv("DC_RUN")) {
+    		AliInfo(Form("Run number already set (%d): DC_RUN variable ignored!", fRun));
+    	}
+    }
+    
+    AliInfo(Form("Run number = %d", fRun)); 
+}

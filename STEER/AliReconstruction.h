@@ -37,7 +37,6 @@ class AliQADataMaker;
 class AliReconstruction: public TNamed {
 public:
   AliReconstruction(const char* gAliceFilename = "galice.root",
-  		    const char* cdbUri = "local://$ALICE_ROOT",
 		    const char* name = "AliReconstruction", 
 		    const char* title = "reconstruction");
   AliReconstruction(const AliReconstruction& rec);
@@ -96,13 +95,10 @@ public:
 
   void           SetCheckPointLevel(Int_t checkPointLevel)
     {fCheckPointLevel = checkPointLevel;}
+  
   // CDB storage activation
-  void InitCDBStorage();
   void SetDefaultStorage(const char* uri);
-  void SetRemoteStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
-
-  Bool_t SetRunNumber();
 
   Bool_t MisalignGeometry(const TString& detectors);
 
@@ -120,6 +116,9 @@ public:
 //  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
 
 private:
+  void 		 InitCDB();
+  void 		 SetCDBLock();
+  Bool_t         SetRunNumberFromData();
   Bool_t         RunLocalReconstruction(const TString& detectors);
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
@@ -206,8 +205,9 @@ private:
   TObjArray* 	 fAlignObjArray;      // array with the alignment objects to be applied to the geometry
 
   TString	 fCDBUri;	      // Uri of the default CDB storage
-  TString	 fRemoteCDBUri;	      // Uri of the remote CDB storage
   TObjArray      fSpecCDBUri;         // Array with detector specific CDB storages
+  Bool_t 	 fInitCDBCalled;               //! flag to check if CDB storages are already initialized
+  Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
 //  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
