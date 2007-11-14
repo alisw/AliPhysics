@@ -32,6 +32,7 @@ class AliStack;
 
 
 class AliRun : public TNamed {
+
 public:
    // Creators - distructors
    AliRun();
@@ -52,7 +53,6 @@ public:
    void           AddModule(AliModule* mod);
    Int_t          GetEvNumber() const;
    Int_t          GetRunNumber() const {return fRun;}
-   void           SetRunNumber(Int_t run) {fRun=run;}
    void           SetEventNrInRun(Int_t event) {fEventNrInRun=event;}
    Int_t          GetEventNrInRun() const {return fEventNrInRun;}
    Int_t          GetEventsPerRun() const {return fEventsPerRun;}
@@ -110,15 +110,10 @@ public:
    // Delegations
    virtual  void  ResetHits();
    virtual  AliGenerator* Generator() const;
-
-
-
-// Added by Alberto Colla
-
+   
    Bool_t         IsFileAccessible(Char_t* name, EAccessMode mode = kFileExists);
    static   Bool_t   IsFileAccessible(const char* fnam, EAccessMode mode = kFileExists);
-// Added by Alberto Colla
-
+   
    //
    // End of MC Application
 
@@ -146,6 +141,7 @@ public:
     }
 
 protected:
+  void           SetRunNumber(Int_t run) {fRun=run;}
   virtual  void  Tree2Tree(Option_t *option, const char *detector=0);
   Int_t          fRun;               //! Current run number
   Int_t          fEvent;             //! Current event number (from 1)
@@ -164,7 +160,7 @@ protected:
   TRandom       *fRandom;            //  Pointer to the random number generator
   TString        fBaseFileName;      //  Name of the base root file
   Bool_t         fIsRootGeometry;    //! Flag telling if the geometry is loaded from file
-  Bool_t         fGeometryFromCDB;  //! Flag telling if the geometry is to be loaded from OCDB
+  Bool_t         fGeometryFromCDB;   //! Flag telling if the geometry is to be loaded from OCDB
   TString        fGeometryFileName;  //! Name of the geometry file
   TString        fTriggerDescriptor; //  Trigger descriptor identifier
   AliRunLoader  *fRunLoader;         //!run getter - written as a separate object

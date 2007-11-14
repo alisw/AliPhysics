@@ -73,7 +73,7 @@ ClassImp(AliRun)
 
 //_______________________________________________________________________
 AliRun::AliRun():
-  fRun(0),
+  fRun(-1),
   fEvent(0),
   fEventNrInRun(0),
   fEventsPerRun(0),
@@ -100,12 +100,13 @@ AliRun::AliRun():
   //
   AliConfig::Instance();//skowron 29 Feb 2002
                         //ensures that the folder structure is build
+
 }
 
 //_______________________________________________________________________
 AliRun::AliRun(const AliRun& arun):
   TNamed(arun),
-  fRun(0),
+  fRun(-1),
   fEvent(0),
   fEventNrInRun(0),
   fEventsPerRun(0),
@@ -136,7 +137,7 @@ AliRun::AliRun(const AliRun& arun):
 //_____________________________________________________________________________
 AliRun::AliRun(const char *name, const char *title):
   TNamed(name,title),
-  fRun(0),
+  fRun(-1),
   fEvent(0),
   fEventNrInRun(0),
   fEventsPerRun(0),
@@ -295,7 +296,8 @@ void AliRun::SetGeometryFromCDB()
 {
   // Set the loading of geometry from cdb instead of creating it
   // A default CDB storage needs to be set before this method is called
-  if(AliCDBManager::Instance()->IsDefaultStorageSet()){
+  if(AliCDBManager::Instance()->IsDefaultStorageSet() &&
+  	AliCDBManager::Instance()->GetRun() >= 0){
     SetRootGeometry();
     fGeometryFromCDB = kTRUE;
   }else{
@@ -576,9 +578,11 @@ void AliRun::InitMC(const char *setup)
   gROOT->LoadMacro(setup);
   gInterpreter->ProcessLine(fConfigFunction.Data());
 
-  // Set the run number in the CDB manager as assigned from
-  // constructor or from config file 
-  AliCDBManager::Instance()->SetRun(GetRunNumber());
+  if(AliCDBManager::Instance()->GetRun() >= 0) { 
+  	SetRunNumber(AliCDBManager::Instance()->GetRun());
+  } else {
+  	AliWarning("Run number not initialized!!");
+  }
   
   fRunLoader->CdGAFile();
     
@@ -980,7 +984,6 @@ void AliRun::AddModule(AliModule* mod)
   fNdets++;
 }
 
-// added by Alberto Colla
 //_____________________________________________________________________________
 /*inline*/ Bool_t AliRun::IsFileAccessible(const char* fnam, EAccessMode mode)
 { return !gSystem->AccessPathName(fnam,mode);}

@@ -36,7 +36,7 @@ ClassImp(AliHeader)
 
 //_______________________________________________________________________
 AliHeader::AliHeader():
-  fRun(0),
+  fRun(-1),
   fNvertex(0),
   fNprimary(0),
   fNtrack(0),
@@ -54,7 +54,7 @@ AliHeader::AliHeader():
 //_______________________________________________________________________
 AliHeader::AliHeader(const AliHeader& head):
   TObject(head),
-  fRun(0),
+  fRun(-1),
   fNvertex(0),
   fNprimary(0),
   fNtrack(0),
