@@ -198,7 +198,7 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
   CoG();                                                                                 //First calculate CoG for the given cluster
   Int_t iCluCnt=pCluLst->GetEntriesFast();                                               //get current number of clusters already stored in the list by previous operations
   if(isTryUnfold==kFALSE || Size()==1) {                                                 //if cluster contains single pad there is no way to improve the knowledge 
-    (isTryUnfold)?fSt=kSi1:fSt=kNot;
+    fSt = (isTryUnfold) ? kSi1: kNot;
     new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);  //add this raw cluster 
     return 1;
   } 
