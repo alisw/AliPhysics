@@ -14,9 +14,12 @@
  **************************************************************************/
 
 //_________________________________________________________________________
-// An analysis task to check the PHOS/EMCAL simulated trigger
+// An analysis task to check the trigger data in ESD
+// Creates an ntuple for 2x2 and NxN triggers
+// Each ntuple connects the maximum trigger amplitudes 
+// and its positions with reconstructed clusters
 //
-//*-- Yves Schutz & Gustavo Conesa Balbastre
+//*-- Yves Schutz (CERN) & Gustavo Conesa Balbastre (INFN-LNF)
 //////////////////////////////////////////////////////////////////////////////
 
 #include <TChain.h>
@@ -175,18 +178,18 @@ void AliAnaCaloTrigger::Exec(Option_t *)
 
   if( triggerAmplitudes && triggerPosition ){
   // trigger amplitudes
-  const Float_t a22    = static_cast<Float_t>(triggerAmplitudes->At(0)) ; 
-  const Float_t a22O   = static_cast<Float_t>(triggerAmplitudes->At(1)) ; 
-  const Float_t aNN    = static_cast<Float_t>(triggerAmplitudes->At(2)) ; 
-  const Float_t aNNO   = static_cast<Float_t>(triggerAmplitudes->At(3)) ; 
+  const Float_t ka22    = static_cast<Float_t>(triggerAmplitudes->At(0)) ; 
+  const Float_t ka22O   = static_cast<Float_t>(triggerAmplitudes->At(1)) ; 
+  const Float_t kaNN    = static_cast<Float_t>(triggerAmplitudes->At(2)) ; 
+  const Float_t kaNNO   = static_cast<Float_t>(triggerAmplitudes->At(3)) ; 
 
   // trigger position
-  const Float_t x22  =  static_cast<Float_t>(triggerPosition->At(0)) ; 
-  const Float_t y22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
-  const Float_t z22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
-  const Float_t xNN  =  static_cast<Float_t>(triggerPosition->At(3)) ; 
-  const Float_t yNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
-  const Float_t zNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
+  const Float_t kx22  =  static_cast<Float_t>(triggerPosition->At(0)) ; 
+  const Float_t ky22  =  static_cast<Float_t>(triggerPosition->At(1)) ;
+  const Float_t kz22  =  static_cast<Float_t>(triggerPosition->At(2)) ;
+  const Float_t kxNN  =  static_cast<Float_t>(triggerPosition->At(3)) ; 
+  const Float_t kyNN  =  static_cast<Float_t>(triggerPosition->At(4)) ;
+  const Float_t kzNN  =  static_cast<Float_t>(triggerPosition->At(5)) ; 
   
   Float_t enMax       = 0. ;
   Float_t phEnMax     = 0. ;
@@ -195,8 +198,8 @@ void AliAnaCaloTrigger::Exec(Option_t *)
   Float_t phEtaMax    = 0.5 ;
   Float_t phPhiMax    = 0. ; 
   
-  TVector3 vpos22(x22, y22, z22) ;
-  TVector3 vposNN(xNN, yNN, zNN) ;
+  TVector3 vpos22(kx22, ky22, kz22) ;
+  TVector3 vposNN(kxNN, kyNN, kzNN) ;
   Float_t eta22 = vpos22.Eta() ; 
   Float_t phi22 = vpos22.Phi() * TMath::RadToDeg() + 360. ; 
   Float_t etaNN = vposNN.Eta() ; 
@@ -238,8 +241,8 @@ void AliAnaCaloTrigger::Exec(Option_t *)
       }
     }//if cluster
     
-    fNtTrigger22->Fill(a22, a22O, enMax, phEnMax, eta22, phi22, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
-    fNtTriggerNN->Fill(aNN, aNNO, enMax, phEnMax, etaNN, phiNN, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
+    fNtTrigger22->Fill(ka22, ka22O, enMax, phEnMax, eta22, phi22, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
+    fNtTriggerNN->Fill(kaNN, kaNNO, enMax, phEnMax, etaNN, phiNN, etaMax, phiMax * TMath::RadToDeg() + 360., phEtaMax, phPhiMax * TMath::RadToDeg() + 360.);
   }//CaloCluster loop
   
   }//If trigger arrays filled

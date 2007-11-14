@@ -3,18 +3,24 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
-// An analysis task to check the PHOS photon data in simulated data
+// An analysis task to check the trigger data in ESD with MC data
+// Creates an ntuple for 2x2 and NxN triggers
+// Each ntuple connects the maximum trigger amplitudes 
+// and its positions with reconstructed clusters and MC
 //
-//*-- Yves Schutz 
+//*-- Yves Schutz (CERN) & Gustavo Conesa Balbastre (INFN-LNF)
 //////////////////////////////////////////////////////////////////////////////
 
 #include "AliAnalysisTask.h"  
 
-class AliESDEvent ; 
+class TFile ;
 class TNtuple ;
 class TH1D ; 
 class TH1I ; 
 class TChain;
+
+class AliMCEvent ;
+class AliESDEvent ; 
 
 class AliAnaCaloTriggerMC : public AliAnalysisTask {
 
@@ -42,8 +48,8 @@ private:
   TString fCalorimeter ; // "PHOS" or "EMCAL"
 
   // Histograms
-  TNtuple * fNtTrigger22 ;
-  TNtuple * fNtTriggerNN ;
+  TNtuple * fNtTrigger22 ; //Ntuple with 2x2 max dig amplitude and MC particle and cluster energy, and positions.
+  TNtuple * fNtTriggerNN ; //Ntuple with NxN max dig amplitude  and MC particle and cluster energy, and positions.
 
   ClassDef(AliAnaCaloTriggerMC, 1); // a photon analysis task 
 };
