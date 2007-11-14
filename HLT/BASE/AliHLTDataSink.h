@@ -76,7 +76,7 @@ class AliHLTDataSink : public AliHLTComponent {
    */
   void GetOutputDataSize( unsigned long& constBase, double& inputMultiplier );
 
- private:
+ protected:
 
   /**
    * The low-level data processing method for the component.
