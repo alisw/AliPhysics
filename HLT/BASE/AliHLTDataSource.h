@@ -73,7 +73,7 @@ class AliHLTDataSource : public AliHLTComponent {
    */
   void GetInputDataTypes( vector<AliHLTComponentDataType>& list);
 
- private:
+ protected:
 
   /**
    * The low-level data processing method for the component.
