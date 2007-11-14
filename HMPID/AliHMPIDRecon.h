@@ -31,7 +31,7 @@ public :
   void     CkovAngle    (AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t nmean, Double_t qthre);  //reconstructed Theta Cerenkov
   Bool_t   FindPhotCkov (Double_t cluX,Double_t cluY,Double_t &thetaCer,Double_t &phiCer    );     //find ckov angle for single photon candidate
   Double_t FindRingCkov (Int_t iNclus                                                       );     //best ckov for ring formed by found photon candidates
-  Double_t FindRingArea (Double_t ckovAng                                                   )const;//estimated area of delta ring in cm^2 to weight Hough Transform
+  void     FindRingGeom (Double_t ckovAng,Int_t level=1                                     );     //estimated area of ring in cm^2 and portion accepted by geometry
   TVector2 IntWithEdge  (TVector2 p1,TVector2 p2                                            )const;//find intercection between plane and lines of 2 thetaC
   Int_t    FlagPhot     (Double_t ckov                                                      );     //is photon ckov near most probable track ckov
   Double_t HoughResponse(                                                                   );     //most probable track ckov angle
@@ -39,9 +39,14 @@ public :
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
   TVector2 TracePhot    (Double_t ckovTh,Double_t ckovPh                                    )const;//trace photon created by track to PC 
   TVector2 TraceForward (TVector3 dirCkov                                                   )const;//tracing forward a photon from (x,y) to PC
-  void     RecPhot      (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               );     //theta,phi cerenkov reconstructed
+  void     Lors2Trs     (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               )const;//LORS to TRS 
+  void     Trs2Lors     (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               )const;//TRS to LORS
   TVector2 GetMip       (                                                                   ) 
                         {return fMipPos;}                                                          //mip coordinates
+  Double_t GetRingArea  (                                                                   )
+                        {return fRingArea;}                                                        //area of the current ring in cm^2 
+  Double_t GetRingAcc   (                                                                   )
+                        {return fRingAcc;}                                                         //portion of the ring ([0,1]) accepted by geometry.To scale n. of photons 
   void     SetTrack     (Double_t xRad,Double_t yRad,Double_t theta,Double_t phi            )
                                 {fTrkDir.SetMagThetaPhi(1,theta,phi);  fTrkPos.Set(xRad,yRad);}    //set track parameter at RAD
   void     SetImpPC     (Double_t xPc,Double_t yPc                                          )
@@ -66,18 +71,20 @@ protected:
   Float_t   fDTheta;                            // Step for sliding window
   Float_t   fWindowWidth;                       // Hough width of sliding window
   
-  TVector3  fTrkDir;                            //track direction in LORS at RAD
-  TVector2  fTrkPos;                            //track positon in LORS at RAD
-  TVector2  fMipPos;                            //mip positon for a given track
-  TVector2  fPc;                                //track position at PC
+  Double_t  fRingArea;                          // area of a given ring
+  Double_t  fRingAcc;                           // fraction of the ring accepted by geometry
+  TVector3  fTrkDir;                            // track direction in LORS at RAD
+  TVector2  fTrkPos;                            // track positon in LORS at RAD
+  TVector2  fMipPos;                            // mip positon for a given track
+  TVector2  fPc;                                // track position at PC
   
-  AliHMPIDParam *fParam;                        //Pointer to AliHMPIDParam
+  AliHMPIDParam *fParam;                        // Pointer to AliHMPIDParam
   
 private:
   AliHMPIDRecon(const AliHMPIDRecon& r);              //dummy copy constructor
   AliHMPIDRecon &operator=(const AliHMPIDRecon& r);   //dummy assignment operator
 //
-  ClassDef(AliHMPIDRecon,0)
+  ClassDef(AliHMPIDRecon,1)
 };
 
 #endif // #ifdef AliHMPIDRecon_cxx

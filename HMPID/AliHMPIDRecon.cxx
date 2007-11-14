@@ -116,18 +116,20 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Double_t n
   }//clusters loop
   fMipPos.Set(mipX,mipY);
   if(fPhotCnt<=3) pTrk->SetHMPIDsignal(kNoPhotAccept);                                        //no reconstruction with <=3 photon candidates
-  Int_t iNacc=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
-  pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNacc);                                                    //store mip info 
+  Int_t iNrec=FlagPhot(HoughResponse());                                                      //flag photons according to individual theta ckov with respect to most probable
+  pTrk->SetHMPIDmip(mipX,mipY,mipQ,iNrec);                                                    //store mip info 
 
   if(mipId==-1)              {pTrk->SetHMPIDsignal(kMipQdcCut);  return;}                     //no clusters with QDC more the threshold at all
   if(dMin>fParam->DistCut()) {pTrk->SetHMPIDsignal(kMipDistCut); return;}                     //closest cluster with enough charge is still too far from intersection
   pTrk->SetHMPIDcluIdx(chId,mipId);                                                           //set index of cluster
-  if(iNacc<1){
-    pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates is accepted
+  if(iNrec<1){
+    pTrk->SetHMPIDsignal(kNoPhotAccept);                                                      //no photon candidates are accepted
   }
   else {
-    pTrk->SetHMPIDsignal(FindRingCkov(pCluLst->GetEntries()));                                //find best Theta ckov for ring i.e. track
-    pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //errors squared
+    Double_t thetaC = FindRingCkov(pCluLst->GetEntries());                                    //find the best reconstructed theta Cherenkov
+//    FindRingGeom(thetaC,2);
+    pTrk->SetHMPIDsignal(thetaC);                                                             //store theta Cherenkov
+    pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //store errors squared
   }
 
   DeleteVars();
@@ -164,7 +166,7 @@ Bool_t AliHMPIDRecon::FindPhotCkov(Double_t cluX,Double_t cluY,Double_t &thetaCe
     else if(dist<-kTol) ckov2=ckov;                           //cluster @ smaller ckov
     else{                                                     //precision achived: ckov in DRS found
       dirCkov.SetMagThetaPhi(1,ckov,phi);                     //
-      RecPhot(dirCkov,thetaCer,phiCer);                       //find ckov (in TRS:the effective Cherenkov angle!)
+      Lors2Trs(dirCkov,thetaCer,phiCer);                       //find ckov (in TRS:the effective Cherenkov angle!)
       return kTRUE;
     }
   }
@@ -190,16 +192,17 @@ TVector2 AliHMPIDRecon::TraceForward(TVector3 dirCkov)const
   return pos;
 }//TraceForward()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDRecon::RecPhot(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer)
+void AliHMPIDRecon::Lors2Trs(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer)const
 {
   //Theta Cerenkov reconstruction 
-  // Arguments: (x,y) of initial point in LORS, dirCkov photon vector in LORS
-  //   Returns: thetaCer theta cerenkov reconstructed
+  // Arguments: dirCkov photon vector in LORS
+  //   Returns: thetaCer of photon in TRS
+  //              phiCer of photon in TRS
 //  TVector3 dirTrk;
 //  dirTrk.SetMagThetaPhi(1,fTrkDir.Theta(),fTrkDir.Phi());
 //  Double_t thetaCer = TMath::ACos(dirCkov*dirTrk);
-  TRotation mtheta;   mtheta.RotateY(- fTrkDir.Theta());
-  TRotation mphi;       mphi.RotateZ(- fTrkDir.Phi());
+  TRotation mtheta;   mtheta.RotateY(-fTrkDir.Theta());
+  TRotation mphi;       mphi.RotateZ(-fTrkDir.Phi());
   TRotation mrot=mtheta*mphi;
   TVector3 dirCkovTRS;
   dirCkovTRS=mrot*dirCkov;
@@ -207,21 +210,44 @@ void AliHMPIDRecon::RecPhot(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer
   thetaCer= dirCkovTRS.Theta();                                        //actual value of thetaCerenkov of the photon
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
+void AliHMPIDRecon::Trs2Lors(TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer)const
+{
+  //Theta Cerenkov reconstruction 
+  // Arguments: dirCkov photon vector in TRS
+  //   Returns: thetaCer of photon in LORS
+  //              phiCer of photon in LORS
+  TRotation mtheta;   mtheta.RotateY(fTrkDir.Theta());
+  TRotation mphi;       mphi.RotateZ(fTrkDir.Phi());
+  TRotation mrot=mphi*mtheta;
+  TVector3 dirCkovLORS;
+  dirCkovLORS=mrot*dirCkov;
+  phiCer  = dirCkovLORS.Phi();                                          //actual value of the phi of the photon
+  thetaCer= dirCkovLORS.Theta();                                        //actual value of thetaCerenkov of the photon
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AliHMPIDRecon::FindRingGeom(Double_t ckovAng,Int_t level)
 {
 // Find area covered in the PC acceptance
-// Arguments: ckovAng - cerenkov angle     
+// Arguments: ckovAng - cerenkov angle
+//            level   - precision in finding area and portion of ring accepted (multiple of 50)
 //   Returns: area of the ring in cm^2 for given theta ckov
    
-  const Int_t kN=50;
-  TVector2 pos1;
+  Int_t kN=50*level;
+  Int_t nPoints = 0;
   Double_t area=0;
+  
   Bool_t first=kFALSE;
+  TVector2 pos1;
+  
   for(Int_t i=0;i<kN;i++){
    if(!first) {
-     pos1=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));                                     //find a good trace for the first photon
+      pos1=TracePhot(ckovAng,Double_t(TMath::TwoPi()*(i+1)/kN));                                    //find a good trace for the first photon
      if(pos1.X()==-999) continue;                                                                   //no area: open ring 	          
-     if(!fParam->IsInside(pos1.X(),pos1.Y(),0)) pos1 = IntWithEdge(fMipPos,pos1);                   // ffind the very first intersection...
+     if(!fParam->IsInside(pos1.X(),pos1.Y(),0)) {
+       pos1 = IntWithEdge(fMipPos,pos1);                                                            // find the very first intersection...
+     } else {
+       if(!AliHMPIDParam::IsInDead(pos1.X(),pos1.Y())) nPoints++;                                   //photon is accepted if not in dead zone
+     }
      first=kTRUE;
      continue;
    }
@@ -229,14 +255,17 @@ Double_t AliHMPIDRecon::FindRingArea(Double_t ckovAng)const
    if(pos2.X()==-999) continue;                                                                     //no area: open ring 	     
    if(!fParam->IsInside(pos2.X(),pos2.Y(),0)) {
      pos2 = IntWithEdge(fMipPos,pos2);
+   } else {
+     if(!AliHMPIDParam::IsInDead(pos2.X(),pos2.Y())) nPoints++;                                     //photon is accepted if not in dead zone
    }
    area+=TMath::Abs((pos1-fMipPos).X()*(pos2-fMipPos).Y()-(pos1-fMipPos).Y()*(pos2-fMipPos).X());   //add area of the triangle... 	     
    pos1 = pos2;
   }
-//---  find points from ring
+//---  find area and length of the ring;
+  fRingAcc = (Double_t)nPoints/(Double_t)kN;
   area*=0.5;
-  return area;
-}//FindRingArea()
+  fRingArea = area;
+}//FindRingGeom()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector2 AliHMPIDRecon::IntWithEdge(TVector2 p1,TVector2 p2)const
 {
@@ -340,14 +369,13 @@ TVector2 AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi)const
 // Trace a single Ckov photon from emission point somewhere in radiator up to photocathode taking into account ref indexes of materials it travereses
 // Arguments: ckovThe,ckovPhi- photon ckov angles in TRS, [rad]
 //   Returns: distance between photon point on PC and track projection  
-  TRotation mtheta;   mtheta.RotateY(fTrkDir.Theta());
-  TRotation mphi;       mphi.RotateZ(fTrkDir.Phi());  
-  TRotation mrot=mphi*mtheta;
-  TVector3  dirCkov,dirCkovTors;   
-
-  dirCkovTors.SetMagThetaPhi(1,ckovThe,ckovPhi);                    //initially photon is directed according to requested ckov angle
-  dirCkov=mrot*dirCkovTors;                                         //now we know photon direction in LORS
-  return TraceForward(dirCkov);
+  
+  Double_t theta,phi;
+  TVector3  dirTRS,dirLORS;   
+  dirTRS.SetMagThetaPhi(1,ckovThe,ckovPhi);                     //photon in TRS
+  Trs2Lors(dirTRS,theta,phi);
+  dirLORS.SetMagThetaPhi(1,theta,phi);                          //photon in LORS
+  return TraceForward(dirLORS);                                 //now foward tracing
 }//TracePhot()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRecon::Propagate(const TVector3 dir,TVector3 &pos,Double_t z)const
@@ -399,7 +427,11 @@ Double_t AliHMPIDRecon::HoughResponse()
     Double_t weight=1.;
     if(fIsWEIGHT){
       Double_t lowerlimit = ((Double_t)bin)*fDTheta - 0.5*fDTheta;  Double_t upperlimit = ((Double_t)bin)*fDTheta + 0.5*fDTheta;
-      Double_t diffArea = FindRingArea(upperlimit)-FindRingArea(lowerlimit);
+      FindRingGeom(lowerlimit);
+      Double_t areaLow  = GetRingArea();
+      FindRingGeom(upperlimit);
+      Double_t areaHigh = GetRingArea();
+      Double_t diffArea = areaHigh - areaLow;
       if(diffArea>0) weight = 1./diffArea;
     }
     photsw->Fill(angle,weight);
