@@ -70,7 +70,7 @@ class AliHLTProcessor : public AliHLTComponent {
    */
   TComponentType GetComponentType() { return AliHLTComponent::kProcessor;}
 
- private:
+ protected:
   /**
    * The low-level data processing method for the component.
    * This is the custom processing method and can be overloaded by 
