@@ -12,21 +12,26 @@
 //  Super Module folder
 //  Initial version was created with TDataSet staf
 //  TObjectSet -> TFolder; Sep 6, 2007
-
+//
+//
 
 #include <TFolder.h>
 
 class TList;
+class TStyle ;
+class TROOT;
+
 class AliEMCALCell;
 
 class AliEMCALSuperModule : public TFolder {
 
  public:
   
-  AliEMCALSuperModule(); 
-  AliEMCALSuperModule(const Int_t m, const char* title="Emcal Super Module");
-
-  virtual ~AliEMCALSuperModule();
+  AliEMCALSuperModule();  // default ctor
+  AliEMCALSuperModule(const Int_t m, const char* title="Emcal Super Module");//ctor
+  AliEMCALSuperModule( const AliEMCALSuperModule & sm);// cpy ctor
+  AliEMCALSuperModule &operator = (const AliEMCALSuperModule & sm);// cpy assignment
+  virtual ~AliEMCALSuperModule();//virtual dtor
 
   void Init();
   void   AddCellToEtaRow(AliEMCALCell *cell, const Int_t etaRow);
@@ -46,7 +51,7 @@ class AliEMCALSuperModule : public TFolder {
   //
   TObject* fParent; // parent
   TList*   fLh;     // List of hists
-  Int_t    fSMNumber;
+  Int_t    fSMNumber; //Super Module Number
 
   ClassDef(AliEMCALSuperModule,2) // EMCAL SuperModule
     

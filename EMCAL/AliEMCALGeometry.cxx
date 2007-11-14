@@ -36,7 +36,7 @@
 
 #include <assert.h>
 
-// --- AliRoot header files ---
+// --- Root header files ---
 #include <Riostream.h>
 #include <TBrowser.h>
 #include <TClonesArray.h>
@@ -412,7 +412,6 @@ void AliEMCALGeometry::Init(void){
   if(fGeoName.Contains("WSUC")) fNumberOfSuperModules = 1; // Jul 12, 2007
 
   fgInit = kTRUE; 
-  AliInfo(" is ended");  
 }
 
 void AliEMCALGeometry::PrintGeometry()
@@ -500,7 +499,6 @@ void AliEMCALGeometry::PrintGeometry()
       }
     }
   }
-  cout<<endl;
 }
 
 void AliEMCALGeometry::PrintCellIndexes(Int_t absId, int pri, char *tit)
@@ -855,7 +853,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
 
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
-  const Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
   static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
@@ -868,7 +866,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   if(nSupMod<10) {
     yr = fCentersOfCellsPhiDir.At(iphi);
   } else {
-    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
+    yr = fCentersOfCellsPhiDir.At(iphi + kphiIndexShift);
   }
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
 
@@ -912,7 +910,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
 
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
-  const  Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  const  Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
   static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   static Int_t iphim, ietam;
   static AliEMCALShishKebabTrd1Module *mod = 0;
@@ -931,7 +929,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   if(nSupMod<10) {
     yr = fCentersOfCellsPhiDir.At(iphi);
   } else {
-    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
+    yr = fCentersOfCellsPhiDir.At(iphi + kphiIndexShift);
   }
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
 
@@ -953,7 +951,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Int_t maxAbsId, Double
 
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
-  const  Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  const  Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
   static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   static Int_t iphim, ietam;
   static AliEMCALShishKebabTrd1Module *mod = 0;
@@ -995,7 +993,7 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Int_t maxAbsId, Double
   if(nSupMod<10) {
     yr = fCentersOfCellsPhiDir.At(iphi);
   } else {
-    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
+    yr = fCentersOfCellsPhiDir.At(iphi + kphiIndexShift);
   }
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
 
@@ -1050,7 +1048,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
   fCentersOfCellsPhiDir.Set(fNPhi*fNPHIdiv);
   fPhiCentersOfCells.Set(fNPhi*fNPHIdiv);
 
-  Double_t R0 = GetIPDistance() + GetLongModuleSize()/2.;
+  Double_t r0 = GetIPDistance() + GetLongModuleSize()/2.;
   for(Int_t it=0; it<fNPhi; it++) { // cycle on modules
     ytCenterModule = -fParSM[1] + fPhiModuleSize*(2*it+1)/2;  // center of module
     for(Int_t ic=0; ic<fNPHIdiv; ic++) { // cycle on cells in module
@@ -1065,7 +1063,7 @@ void AliEMCALGeometry::CreateListOfTrd1Modules()
       // Define grid on phi direction
       // Grid is not the same for different eta bin;
       // Effect is small but is still here
-      phi = TMath::ATan2(ytCenterCell, R0);
+      phi = TMath::ATan2(ytCenterCell, r0);
       fPhiCentersOfCells.AddAt(phi, ind);
 
       AliDebug(2,Form(" ind %2.2i : y %8.3f ", ind, fCentersOfCellsPhiDir.At(ind))); 
@@ -1349,19 +1347,22 @@ AliEMCALShishKebabTrd1Module* AliEMCALGeometry::GetShishKebabModule(Int_t neta) 
   return trd1;
 }
 
-void AliEMCALGeometry::Browse(TBrowser* b)
+void AliEMCALGeometry::Browse(TBrowser* b) const
 {
+  //Browse the modules
   if(fShishKebabTrd1Modules) b->Add(fShishKebabTrd1Modules);
 }
 
 Bool_t AliEMCALGeometry::IsFolder() const
 {
+  //Check if fShishKebabTrd1Modules is in folder
   if(fShishKebabTrd1Modules) return kTRUE;
   else                       return kFALSE;
 }
 
 Double_t AliEMCALGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
 {
+  //returns center of supermodule in phi 
   static int i = nsupmod/2;
   return fPhiCentersOfSM[i];
 

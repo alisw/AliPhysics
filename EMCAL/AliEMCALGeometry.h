@@ -20,14 +20,20 @@ class TObjArray;
 class TVector3;
 class TGeoMatrix;
 class TParticle ; 
+class TClonesArray ;
+#include <TMath.h>
+#include <TArrayD.h>
+class assert;
+class Riostream;
+class TClonesArray;
+class TGeoNode;
+class TGeoManager;
+
+// --- AliRoot header files ---
 class AliEMCALGeometry;
 class AliEMCALShishKebabTrd1Module;
 class AliEMCALRecPoint;
-class TClonesArray ;
-
-// --- AliRoot header files ---
-#include <TArrayD.h>
-#include <TMath.h>
+class AliEMCALDigit;
 
 #include "AliGeometry.h"
 
@@ -47,7 +53,7 @@ public:
   static Char_t* GetDefaulGeometryName() {return fgDefaultGeometryName;}
   void PrintGeometry();                                           //*MENU*  
   void PrintCellIndexes(Int_t absId=0, int pri=0, char *tit="");  //*MENU*
-  virtual void Browse(TBrowser* b);
+  virtual void Browse(TBrowser* b) const ;
   virtual Bool_t  IsFolder() const;
 
   void GetCellPhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int_t iphitru, Int_t ietatru, Int_t &ietaSM, Int_t &iphiSM) const ; // Tranforms Eta-Phi Cell index in TRU into Eta-Phi index in Super Module
@@ -306,9 +312,8 @@ private:
   char *fAdditionalOpts[6];  //! some additional options for the geometry type and name
   int  fNAdditionalOpts;     //! size of additional options parameter
 
-  // Options for Geant (MIP business) - will call in AliEMCAL
-  Int_t fILOSS;
-  Int_t fIHADR;
+  Int_t fILOSS; // Options for Geant (MIP business) - will call in AliEMCAL
+  Int_t fIHADR; // Options for Geant (MIP business) - will call in AliEMCAL
 
   ClassDef(AliEMCALGeometry, 13) // EMCAL geometry class 
 };

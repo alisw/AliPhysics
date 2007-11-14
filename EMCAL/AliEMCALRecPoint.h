@@ -11,6 +11,12 @@
 
 // --- ROOT system ---
 #include <TVector3.h>
+class TGeoManager;
+class TGeoPhysicalNode;
+class TPad;
+class TPaveText;
+class TGraph;
+class Riostream;
 
 // --- Standard library ---
 
@@ -20,6 +26,7 @@
 class AliEMCALDigit;
 class AliDigitNew;
 class AliEMCALGeometry;
+class  AliEMCALHit;
 
 class AliEMCALRecPoint : public AliCluster {
 
@@ -35,7 +42,7 @@ class AliEMCALRecPoint : public AliCluster {
 
   virtual ~AliEMCALRecPoint();
 
-  virtual void    AddDigit(AliDigitNew &){ 
+  virtual void    AddDigit(AliDigitNew &) const { 
     Fatal("AddDigit", "use AddDigit(AliEMCALDigit & digit, Float_t Energy )") ; 
   }
   virtual void    AddDigit(AliEMCALDigit & digit, Float_t Energy); 
@@ -88,8 +95,8 @@ class AliEMCALRecPoint : public AliCluster {
   Int_t       GetMultiplicityAtLevel(Float_t level) const ;  // computes multiplicity of digits with 
   Int_t *     GetAbsId() const {return fAbsIdList;}
   Int_t       GetAbsId(int i) const {if(i>=0 && i<fMulDigit)return fAbsIdList[i]; else return -1;}
-  Int_t       GetAbsIdMaxDigit() {return GetAbsId(fDigitIndMax);}
-  Int_t       GetIndMaxDigit() {return fDigitIndMax;}
+  Int_t       GetAbsIdMaxDigit() const {return GetAbsId(fDigitIndMax);}
+  Int_t       GetIndMaxDigit() const {return fDigitIndMax;}
   void        SetIndMaxDigit(const Int_t ind) {fDigitIndMax = ind;}
   void            SetIndexInList(Int_t val) { fIndexInList = val ; }
 

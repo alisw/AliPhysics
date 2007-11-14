@@ -14,13 +14,18 @@
  **************************************************************************/
 
 /* 
-$Log$ 
+$Log$
+Revision 1.2  2007/09/11 19:38:15  pavlinov
+added pi0 calibration, linearity, shower profile
+ 
 */
 
 //_________________________________________________________________________
 // Top EMCAL folder which will keep all information about EMCAL itself,
 // super Modules (SM), modules, towers, set of hists and so on.
 //  TObjectSet -> TFolder; Sep 6, 2007
+//
+//
 //
 //*-- Author: Aleksei Pavlinov (WSU, Detroit, USA) 
 
@@ -45,12 +50,32 @@ ClassImp(AliEMCALSuperModule)
 AliEMCALSuperModule::AliEMCALSuperModule() : TFolder()
 , fParent(0),fLh(0),fSMNumber(0)
 {
+  //default ctor
 }
 
 AliEMCALSuperModule::AliEMCALSuperModule(const Int_t m, const char* title) : 
 TFolder(Form("SM%2.2i",m), title)
 , fParent(0),fLh(0),fSMNumber(m)
 { 
+  //ctor
+} 
+
+AliEMCALSuperModule::AliEMCALSuperModule(const AliEMCALSuperModule &sm) : 
+TFolder(), fParent(sm.fParent),fLh(sm.fLh),fSMNumber(sm.fSMNumber)
+{ 
+  //copy ctor
+} 
+
+AliEMCALSuperModule & AliEMCALSuperModule::operator =(const AliEMCALSuperModule &sm)
+{ 
+    // assignment operator
+//   if(this == &sm)return *this;
+//   ((TObject *)this)->operator=(sm);
+
+  fParent = sm.fParent; 
+  fLh = sm.fLh;
+  fSMNumber = sm.fSMNumber;
+
 } 
 
 AliEMCALSuperModule::~AliEMCALSuperModule()
@@ -60,6 +85,8 @@ AliEMCALSuperModule::~AliEMCALSuperModule()
 
 void AliEMCALSuperModule::Init()
 {
+  //Initialization method
+
   if(GetHists()==0) {
     fLh = BookHists();
     Add(fLh);
@@ -68,6 +95,7 @@ void AliEMCALSuperModule::Init()
 
 void  AliEMCALSuperModule::AddCellToEtaRow(AliEMCALCell *cell, const Int_t etaRow)
 {
+  //Adds cells to corresponding Super module Eta Row
   static TFolder *set;
   set = dynamic_cast<TFolder*>(FindObject(Form("ETA%2.2i",etaRow))); 
   if(set==0) {
@@ -79,6 +107,8 @@ void  AliEMCALSuperModule::AddCellToEtaRow(AliEMCALCell *cell, const Int_t etaRo
 
 void AliEMCALSuperModule::FitForAllCells()
 {
+  //Fit histograms of each cell
+
   Int_t ncells=0;
   for(int eta=0; eta<48; eta++) { // eta row
     TFolder *setEta = dynamic_cast<TFolder*>(FindObject(Form("ETA%2.2i",eta)));
@@ -109,6 +139,7 @@ void AliEMCALSuperModule::FitForAllCells()
 
 void AliEMCALSuperModule::FitEffMassHist()
 {
+  //Fit effective mass histogram
   TH1* h = (TH1*)GetHists()->At(0);
   AliEMCALCell::FitHist(h, GetName());
 }
@@ -116,6 +147,7 @@ void AliEMCALSuperModule::FitEffMassHist()
 
 void AliEMCALSuperModule::PrintInfo()
 {
+  //Print
   printf(" Super Module :   %s    :   %i \n", GetName(), fSMNumber);
   printf(" # of active cells                %i \n", GetNumberOfCells());
   TH1* h = (TH1*)GetHists()->At(0);
@@ -124,6 +156,7 @@ void AliEMCALSuperModule::PrintInfo()
 
 void AliEMCALSuperModule::DrawCC(int iopt)
 {
+  //Draw different cell histograms
   TCanvas *c=0; 
   if(iopt==1) c = new TCanvas("ccInOut","ccInOut");
  
@@ -159,6 +192,7 @@ void AliEMCALSuperModule::DrawCC(int iopt)
 
 Int_t AliEMCALSuperModule::GetNumberOfCells()
 {
+  //Returns number of cells in SM
   Int_t ncells=0;
   TList* l = (TList*)GetListOfFolders();
   for(int eta=0; eta<l->GetSize(); eta++) { // cycle on eta row
@@ -173,11 +207,13 @@ Int_t AliEMCALSuperModule::GetNumberOfCells()
 
 TList* AliEMCALSuperModule::BookHists()
 {
+  //Initializes histograms
+
   gROOT->cd();
   TH1::AddDirectory(1);
 
-  AliEMCALFolder* EMCAL = (AliEMCALFolder*)GetParent(); 
-  Int_t it = EMCAL->GetIterationNumber();
+  AliEMCALFolder* emcal = (AliEMCALFolder*)GetParent(); 
+  Int_t it = emcal->GetIterationNumber();
 
   new TH1F("00_EffMass",  "effective mass of #gamma,#gamma(m_{#pi^{0}}=134.98 MeV) ", 250,0.0,0.5);
   new TH1F("01_CCInput",  "input CC dist.(MEV) ", 200, 5., 25.);

@@ -155,6 +155,8 @@ AliEMCALRecPoint::~AliEMCALRecPoint()
 //____________________________________________________________________________
 AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
 {
+  // assignment operator
+
   if(&rp == this) return *this;
 
   fGeomPtr = rp.fGeomPtr;
@@ -711,15 +713,15 @@ void AliEMCALRecPoint::GetDeffW0(const Double_t esum , Double_t &deff,  Double_t
   // Look to:  http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/CALIB/GEOMCORR/deffandW0VaEgamma_2.gif
   //
   static Double_t e=0.0;
-  const  Double_t dp0=9.25147, dp1=1.16700; // Hard coded now
-  const  Double_t wp0=4.83713, wp1=-2.77970e-01, wp2 = 4.41116;
+  const  Double_t kdp0=9.25147, kdp1=1.16700; // Hard coded now
+  const  Double_t kwp0=4.83713, kwp1=-2.77970e-01, kwp2 = 4.41116;
 
   // No extrapolation here
   e = esum<0.5?0.5:esum;
   e = e>100.?100.:e;
 
-  deff = dp0 + dp1*TMath::Log(e);
-  w0   = wp0 / (1. + TMath::Exp(wp1*(e+wp2)));
+  deff = kdp0 + kdp1*TMath::Log(e);
+  w0   = kwp0 / (1. + TMath::Exp(kwp1*(e+kwp2)));
   //printf("<I> AliEMCALRecPoint::GetDeffW0 esum %5.2f : deff %5.2f : w0 %5.2f \n", esum, deff, w0); 
 }
 
@@ -1157,7 +1159,7 @@ Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
   // key  =  0(gamma, default)
   //     !=  0(electron)
   static Double_t ca = 4.82;  // shower max parameter - first guess; ca=TMath::Log(1000./8.07)
-  static Double_t X0 = 1.23;  // radiation lenght (cm)
+  static Double_t x0 = 1.23;  // radiation lenght (cm)
   static Double_t tmax = 0.;   // position of electromagnetic shower max in cm
 
   tmax = 0.0;
@@ -1165,7 +1167,7 @@ Double_t AliEMCALRecPoint::TmaxInCm(const Double_t e , const Int_t key)
     tmax = TMath::Log(e) + ca;
     if      (key==0) tmax += 0.5; 
     else             tmax -= 0.5;
-    tmax *= X0; // convert to cm
+    tmax *= x0; // convert to cm
   }
   return tmax;
 }
@@ -1228,6 +1230,7 @@ void AliEMCALRecPoint::Print(Option_t *opt) const
 //___________________________________________________________
 Double_t  AliEMCALRecPoint::GetPointEnergy() const
 {
+  //Returns energy ....
   static double e;
   e=0.0;
   for(int ic=0; ic<GetMultiplicity(); ic++) e += double(fEnergyList[ic]);
