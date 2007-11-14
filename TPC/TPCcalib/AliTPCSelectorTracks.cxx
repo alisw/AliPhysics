@@ -85,19 +85,39 @@ void AliTPCSelectorTracks::InitComponent(){
   // they have to be added in the following manner:
   //    chain->GetUserInfo()->AddLast(clusterParam);
   //    chain->GetUserInfo()->AddLast(cuts);
-  //
+  // 
+  static Int_t counter=0;
   if (!fChain){
-    printf("EROOR - chain not initialized\n");
+    Error("InitComponent","EROOR - chain not initialized\n");
   }
- 
- AliTPCClusterParam *clusterParam  = (AliTPCClusterParam*)fChain->GetUserInfo()->FindObject("AliTPCClusterParam");
-  if (clusterParam != 0) printf("clusterParam found in fChain! \n");
+  Info("InitComponent",Form("Selector initialization No\t%d\n", counter));
+  counter++;
+  //
+  
+
+  AliTPCClusterParam *clusterParam  = (AliTPCClusterParam*)fChain->GetUserInfo()->FindObject("AliTPCClusterParam");
+  //
+  if (clusterParam == 0) Error("InitComponent","CLUSTER PARAM NOT FOUND IN CHAIN! \n");
+  //
   AliTPCcalibTracksCuts *cuts = (AliTPCcalibTracksCuts*)fChain->GetUserInfo()->FindObject("calibTracksCuts");
-  if (cuts != 0) printf("cuts found in fChain! \n");
-  Int_t debugLevel=1;
-  if (gProof) debugLevel = gProof->GetLogLevel();
-    fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts,1);
-   fOutput->AddLast(fCalibTracks);
+  if (cuts != 0) Info("InitComponent","cuts found in fChain! \n");
+  else{
+    Error("InitComponent","CUTS NOT FOUND IN CHAIN\n");
+  }
+  if (clusterParam==0 && fInput){
+    clusterParam = (AliTPCClusterParam*)fInput->FindObject("AliTPCClusterParam");
+    Error("InitComponent","CLUSTER PARAM NOT FOUND IN PROOF\n");
+  }
+  if (cuts==0 &&fInput ){    
+    cuts = (AliTPCcalibTracksCuts*)fInput->FindObject("calibTracksCuts");
+    Error("InitComponent","CUTS NOT FOUND IN PROOF\n");
+  }
+  if (!cuts || !clusterParam) {
+    if (fInput) fInput->Print();
+    return;
+  }
+  fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
+  fOutput->AddLast(fCalibTracks);
    
    //fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks");
    //fOutput->AddLast(fCalibTracksGain);
@@ -122,6 +142,7 @@ Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
   //
   //
   if (!fInit) InitComponent();
+  if (!fInit) return 0;
   Int_t status = ReadEvent(entry);
   if (status<0) return status; 
   Int_t ntracks = (fESD) ? fESD->GetNumberOfTracks() : fESDevent->GetNumberOfTracks();     
