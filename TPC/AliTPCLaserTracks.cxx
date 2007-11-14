@@ -327,6 +327,9 @@ void AliTPCLaserTracks::WriteTreeDesignData()
 //_______________________________________________________________________
 TPolyLine3D* AliTPCLaserTracks::GetLine()
 {
+  //
+  // Make a polilyne object oout of the points
+  //
    if ( fNpoints ) return new TPolyLine3D(fNpoints,fXarr,fYarr,fZarr);
 
     return 0x0;
@@ -335,7 +338,10 @@ TPolyLine3D* AliTPCLaserTracks::GetLine()
 //_______________________________________________________________________
 TObjArray* AliTPCLaserTracks::GetLines(Char_t* file, Char_t *cuts)
 {
-
+  //
+  // Read the input files with the laser track 
+  // Make a array of polylines for visualization
+  
     TObjArray *array = new TObjArray;
 
     TFile *f = TFile::Open(file,"read");
@@ -446,7 +452,7 @@ AliTPCLaserTracks::~AliTPCLaserTracks()
     //
 
 //    if ( fP ) delete fP;
-    if ( fXarr ) delete fXarr;
-    if ( fYarr ) delete fYarr;
-    if ( fZarr ) delete fZarr;
+    if ( fXarr ) delete [] fXarr;
+    if ( fYarr ) delete [] fYarr;
+    if ( fZarr ) delete [] fZarr;
 }

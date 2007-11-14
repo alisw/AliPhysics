@@ -8,12 +8,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 class TString;
-//class TPolyLine3D;
+class TPolyLine3D;
 class TObjArray;
 class TGraph;
 class TVector3;
 
-#include <TPolyLine3D.h>
 
 ////////////////////////////////////////////////////////////////////////
 //              Class AliTPCLaserTracks
@@ -27,17 +26,17 @@ public:
     AliTPCLaserTracks(const AliTPCLaserTracks &param); // copy constructor
     AliTPCLaserTracks &operator = (const AliTPCLaserTracks & param);
 
-    Int_t GetId()    {return fId;     }
-    Int_t GetSide()  {return fSide;   }
-    Int_t GetRod()   {return fRod;    }
-    Int_t GetBundle(){return fBundle; }
-    Int_t GetBeam()  {return fBeam;   }
+    Int_t GetId()    const {return fId;     }
+    Int_t GetSide()  const {return fSide;   }
+    Int_t GetRod()   const {return fRod;    }
+    Int_t GetBundle() const {return fBundle; }
+    Int_t GetBeam()  const {return fBeam;   }
 
-    Double_t GetX()    {return fX;    }
-    Double_t GetY()    {return fY;    }
-    Double_t GetZ()    {return fZ;    }
-    Double_t GetPhi()  {return fPhi;  }
-    Double_t GetTheta(){return fTheta;}
+    Double_t GetX()  const  {return fX;    }
+    Double_t GetY()  const   {return fY;    }
+    Double_t GetZ()  const  {return fZ;    }
+    Double_t GetPhi() const  {return fPhi;  }
+    Double_t GetTheta() const{return fTheta;}
 
     TPolyLine3D *GetLine();
     Int_t SetPoint(Int_t point, Double_t x, Double_t y, Double_t z);
