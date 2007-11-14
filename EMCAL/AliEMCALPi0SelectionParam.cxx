@@ -13,14 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Log$
-/* Revision 1.2  2007/09/11 19:38:15  pavlinov
-/* added pi0 calibration, linearity, shower profile
-/*co: warning: `/* $Log' is obsolescent; use ` * $Log'.
+/* History of cvs commits:
+*
+* $Log$
+* Revision 1.3  2007/10/16 14:36:39  pavlinov
+* fixed code violation (almost)
+*
+* Revision 1.2  2007/09/11 19:38:15  pavlinov
+* added pi0 calibration, linearity, shower profile
+* co: warning: `$Log' is obsolescent; use ` * $Log'.
 
- * Revision 1.1  2007/08/08 15:58:01  hristov
- * New calibration classes. They depend on TTable, so libTable.so is added to the list of Root libraries. (Aleksei)
- * */
+* Revision 1.1  2007/08/08 15:58:01  hristov
+* New calibration classes. They depend on TTable, so libTable.so is added to the list of Root libraries. (Aleksei)
+*/
 
 //_________________________________________________________________________
 //    Set of parameters for pi0 selection 
