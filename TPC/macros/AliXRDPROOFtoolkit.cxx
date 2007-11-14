@@ -6,21 +6,27 @@
   Example usage:
   Load toolkit
   gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros")
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx++")
+  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
 
   1. 
   Retrieve the list of files : POSSIBLE ONLY FOR USER WITH LOGIN ACCESS TO THE XRD MACHINES 
 
   AliXRDPROOFtoolkit tool;
-  tool.ListOfFiles("pp.txt","/data.local2/sma/sim/v4-05-Rev-03/pp", "AliESDs.root", kTRUE);
+  tool.ListOfFiles("all.txt","/data.local2/sma/sim/v4-06-Rev-03/pp*", "AliESDs.root", kFALSE);
+  tool.ListOfFiles("pp.txt","/data.local2/sma/sim/v4-06-Rev-03/pp", "AliESDs.root", kFALSE);
+
+  tool.ListOfFiles("pp64.txt","/data.local2/sma/sim/v4-06-Rev-03/pp64", "AliESDs.root", kFALSE);
+  tool.ListOfFiles("pp64m.txt","/data.local2/sma/sim/v4-06-Rev-03/pp64", "AliESDs.root", kTRUE);
   
   // check the list
-  AliXRDPROOFtoolkit::FilterList("pp.txt","AliESDs.root esdTree",0)  
+  AliXRDPROOFtoolkit::FilterList("pp.txt","AliESDs.root esdTree AliESDfriends.root * Kinematics.root *",0)  
+  AliXRDPROOFtoolkit::FilterList("pp.txt","AliESDs.root esdTree AliESDfriends.root * Kinematics.root *",1) 
+
   2. 
   
   AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("pp.txt","esdTree",10)
-  chain->Draw("fTPCncls");
+  TChain * chain = tool.MakeChain("pp.txt","esdTree",0,10)
+  chain->Draw("fTPCnclsF");
 
   
   3. Process logs - ONLY priority users - with ssh acces
@@ -61,7 +67,8 @@ AliXRDPROOFtoolkit::AliXRDPROOFtoolkit () : TObject ()
   //
   // Default  -GSI specific setup
   //
-  for(Int_t i=256;i<268;i++)
+  for(Int_t i=255;i<269;i++)
+  //for(Int_t i=259;i<260;i++)
     listeMachine.push_back(new TString(Form("lxb%d.gsi.de", i)));
   fUserGroup = gSystem->GetUserInfo();
   fUserName = fUserGroup->fUser;       
@@ -116,7 +123,7 @@ Bool_t AliXRDPROOFtoolkit::ListOfFiles(const char*fileName, const char*path, con
   gSystem->Exec(Form("echo  >%s",fileName));
   for(UInt_t i=0; i<listeMachine.size(); i++){
     if (displayMachine){
-      sprintf(filterXRD,"sed s/\\\\/data.local2/root:\\\\/\\\\/%s.gsi.de:1094\\\\//",listeMachine[i]->Data());
+      sprintf(filterXRD,"sed s/\\\\/data.local2/root:\\\\/\\\\/%s:1094\\\\//",listeMachine[i]->Data());
     }
     cout<<"Inspecting "<<listeMachine[i]->Data()<<" ..."<<endl;
     sprintf(command,"lsrun -m %s   find %s | grep %s | %s >> %s", listeMachine[i]->Data(), path, filter, filterXRD,fileName);
@@ -125,7 +132,6 @@ Bool_t AliXRDPROOFtoolkit::ListOfFiles(const char*fileName, const char*path, con
   }
   return kTRUE;
 }
-
 
 
 TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, const char *fName, Int_t maxFiles, Int_t startFile)
@@ -582,15 +588,21 @@ Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeNa
   //		   -3 - tree not present
   //               -4 - branch not present
   TFile * file = TFile::Open(fileName);
-  if (!file) return -1;
-  if (file->IsZombie()) {delete file; return -2;};
-  if (treeName="*") return 0;
+  if (!file) { return -1;}
+  if (file->IsZombie()) {file->Close(); delete file; return -2;};
+
+  TString TrName(treeName);
+  if (TrName=="*") {
+    //cout <<"        treename ==== *"<<endl;;
+    file->Close(); delete file; 
+    return 0;
+  }
   TTree * tree = (TTree*)file->Get(treeName);
-  if (!tree) return -3;
+  if (!tree) {file->Close(); delete file; return -3;}
   TBranch * branch = 0;
   if (branchName) {
     branch = tree->GetBranch(branchName);
-    if (!branch) return -4;
+    if (!branch) {file->Close(); delete file; return -4;}
   }
   //
   tree->SetBranchStatus("*",1);
@@ -605,9 +617,11 @@ Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeNa
   }catch ( ... ) {
     printf("PROBLEM\n");  
     // never catched  - as there is no exception in the ROOT IO
+    file->Close(); delete file;
     return 1 ;
   }
 
+  file->Close(); delete file;
   return 0;
 }
 
@@ -657,7 +671,10 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
       char fname[1000];
       //if (isZip) sprintf(fname,
       sprintf(fname, "%s/%s",dirname,array->At(i)->GetName());
+      printf("\nFile to be checked %s/%s",dirname,array->At(i)->GetName());
+      //cout <<"\n arguments: "<< array->At(i+1)->GetName()<<" "<<checkLevel<<endl;
       Int_t cstatus = CheckTreeInFile(fname, array->At(i+1)->GetName(), checkLevel,0);
+      //printf("  CheckTreeInFile returns %d",cstatus);
       if (cstatus!=0) {
 	status = cstatus; 
 	break;
