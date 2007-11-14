@@ -51,24 +51,52 @@ class  AliDetector;
 ClassImp(AliZDCv2)
 
 //_____________________________________________________________________________
-AliZDCv2::AliZDCv2() : AliZDC()
+AliZDCv2::AliZDCv2() :
+  AliZDC(),
+  fMedSensF1(0),
+  fMedSensF2(0),
+  fMedSensZP(0),
+  fMedSensZN(0),
+  fMedSensZEM(0),
+  fMedSensGR(0),
+  fMedSensPI(0),
+  fMedSensTDI(0), 
+  fNalfan(0),
+  fNalfap(0),
+  fNben(0),  
+  fNbep(0),
+  fZEMLength(0),
+  fpLostIT(0), 
+  fpLostD1(0), 
+  fpDetected(0),
+  fnDetected(0)
 {
   //
   // Default constructor for Zero Degree Calorimeter
   //
   
-  fMedSensF1  = 0;
-  fMedSensF2  = 0;
-  fMedSensZN  = 0;
-  fMedSensZP  = 0;
-  fMedSensZEM = 0;
-  fMedSensGR  = 0;
-
 }
  
 //_____________________________________________________________________________
 AliZDCv2::AliZDCv2(const char *name, const char *title)
-  : AliZDC(name,title)
+  : AliZDC(name,title),
+  fMedSensF1(0),
+  fMedSensF2(0),
+  fMedSensZP(0),
+  fMedSensZN(0),
+  fMedSensZEM(0),
+  fMedSensGR(0),
+  fMedSensPI(0),
+  fMedSensTDI(0), 
+  fNalfan(90),
+  fNalfap(90),
+  fNben(18),  
+  fNbep(28), 
+  fpLostIT(0), 
+  fpLostD1(0), 
+  fpDetected(0),
+  fnDetected(0)
+
 {
   //
   // Standard constructor for Zero Degree Calorimeter 
