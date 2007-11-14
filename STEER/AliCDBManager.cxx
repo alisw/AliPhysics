@@ -90,12 +90,12 @@ AliCDBManager::AliCDBManager():
   fStorageMap(0),
   fShortLived(0),
   fDefaultStorage(NULL),
-  fRemoteStorage(NULL),
   fDrainStorage(NULL),
   fCondParam(0),
   fRefParam(0),
   fRun(-1),
-  fCache(kTRUE)
+  fCache(kTRUE),
+  fLock(kFALSE)
 {
 // default constuctor
 	fFactories.SetOwner(1);
@@ -117,7 +117,6 @@ AliCDBManager::~AliCDBManager() {
 	fFactories.Delete();
 	fDrainStorage = 0x0;
 	fDefaultStorage = 0x0;
-  	fRemoteStorage = 0x0;
 	delete fStorageMap; fStorageMap = 0;
 	delete fIds; fIds = 0;
 	delete fCondParam;
@@ -177,7 +176,7 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 //_____________________________________________________________________________
 AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
 // get storage object from URI string
-	
+		
 	AliCDBParam* param = CreateParameter(dbString);
 	if (!param) {
 		AliError(Form("Failed to activate requested storage! Check URI: %s", dbString));
@@ -193,7 +192,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const char* dbString) {
 //_____________________________________________________________________________
 AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 // get storage object from AliCDBParam object
-
+	
 	// if the list of active storages already contains
 	// the requested storage, return it
 	AliCDBStorage* aStorage = GetActiveStorage(param);
@@ -201,6 +200,14 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
 		return aStorage;
 	}
 
+	// if lock is ON, cannot activate more storages!
+	if(fLock) {
+		if (fDefaultStorage) {
+			AliFatal("Lock is ON, and default storage is already set: "
+				"cannot reset it or activate more storages!");
+		}
+	}	
+	
 	TIter iter(&fFactories);
 
         AliCDBStorageFactory* factory=0;
@@ -285,7 +292,7 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const char* dbString) {
 // sets default storage from URI string
-
+	
 	AliInfo(Form("Setting Default storage to: %s",dbString));
 	AliCDBStorage* bckStorage = fDefaultStorage;
 
@@ -305,7 +312,7 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 // set default storage from AliCDBParam object
-
+	
 	AliCDBStorage* bckStorage = fDefaultStorage;
 
 	fDefaultStorage = GetStorage(param);
@@ -324,7 +331,20 @@ void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 //_____________________________________________________________________________
 void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 // set default storage from another active storage
-
+	
+	// if lock is ON, cannot activate more storages!
+	if(fLock) {
+		if (fDefaultStorage) {
+			AliFatal("Lock is ON, and default storage is already set: "
+				"cannot reset it or activate more storages!");
+		}
+	}	
+	
+	if (!storage) {
+		UnsetDefaultStorage();
+		return;
+	}
+	
 	AliCDBStorage* bckStorage = fDefaultStorage;
 
 	fDefaultStorage = storage;
@@ -339,29 +359,24 @@ void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 	}
 	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
-//_____________________________________________________________________________
-void AliCDBManager::SetRemoteStorage(const char* dbString) {
-// sets remote storage from URI string
-// Remote storage is queried if it is activated and if object was not found in default storage
-
-	AliInfo(Form("Setting remote storage to: %s",dbString));
-	fRemoteStorage = GetStorage(dbString);
-}
 
 //_____________________________________________________________________________
-void AliCDBManager::SetRemoteStorage(const AliCDBParam* param) {
-// set remote storage from AliCDBParam object
-// Remote storage is queried if it is activated and if object was not found in default storage
-
-	fRemoteStorage = GetStorage(param);
-}
-
-//_____________________________________________________________________________
-void AliCDBManager::SetRemoteStorage(AliCDBStorage* storage) {
-// set remote storage from another active storage
-// Remote storage is queried if it is activated and if object was not found in default storage
-
-	fRemoteStorage = storage;
+void AliCDBManager::UnsetDefaultStorage() {
+// Unset default storage
+	
+	// if lock is ON, action is forbidden!
+	if(fLock) {
+		if (fDefaultStorage) {
+			AliFatal("Lock is ON: cannot unset default storage!");
+		}
+	}
+	
+	if (fDefaultStorage) {
+		AliWarning("Clearing cache!");
+		ClearCache();
+	}
+	
+	fDefaultStorage = 0x0;
 }
 
 //_____________________________________________________________________________
@@ -501,9 +516,11 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
                 return NULL;
 	}
 
- 	if(fCache && query.GetFirstRun() != fRun)
+	if(fLock && query.GetFirstRun() != fRun)
+		AliFatal("Lock is ON: cannot use different run number than the internal one!");
+	
+	if(fCache && query.GetFirstRun() != fRun)
 		AliWarning("Run number explicitly set in query: CDB cache temporarily disabled!");
-
 
   	AliCDBEntry *entry=0;
 
@@ -519,13 +536,13 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 	// Entry is not in cache -> retrieve it from CDB and cache it!!
 	AliCDBStorage *aStorage=0;
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
-	Bool_t usedDefStorage=kTRUE;
+//	Bool_t usedDefStorage=kTRUE;
 
 	if(aPar) {
 		aStorage=GetStorage(aPar);
 		TString str = aPar->GetURI();
 		AliDebug(2,Form("Looking into storage: %s",str.Data()));
-		usedDefStorage=kFALSE;
+//		usedDefStorage=kFALSE;
 
 	} else {
 		aStorage=GetDefaultStorage();
@@ -533,11 +550,6 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 	}
 
 	entry = aStorage->Get(query);
-
-	if (!entry && usedDefStorage && IsRemoteStorageSet()) {
-		AliWarning(Form("Object not found in default storage: Looking into remote storage!"));
-		entry = fRemoteStorage->Get(query);
-	}
 
  	if(entry && fCache && (query.GetFirstRun() == fRun)){
 		CacheEntry(query.GetPath(), entry);
@@ -692,6 +704,9 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 		return NULL;
 	}
 
+	if(fLock && query.GetFirstRun() != fRun)
+		AliFatal("Lock is ON: cannot use different run number than the internal one!");
+	
 	AliCDBParam *aPar=SelectSpecificStorage(query.GetPath());
 
 	AliCDBStorage *aStorage;
@@ -884,10 +899,14 @@ void AliCDBManager::SetRun(Int_t run)
 {
 // Sets current run number.
 // When the run number changes the caching is cleared.
-  
+  	
 	if (fRun == run)
 		return;
   
+	if(fLock && fRun >= 0) {
+		AliFatal("Lock is ON, cannot reset run number!");
+	}	
+		
 	fRun = run;
 	ClearCache();
 	QueryCDB();
@@ -897,10 +916,23 @@ void AliCDBManager::SetRun(Int_t run)
 void AliCDBManager::ClearCache(){
 // clear AliCDBEntry cache
 
-	AliDebug(2,Form("Clearing cache!"));
+	AliDebug(2, Form("Cache entries to be deleted: %d",fEntryCache.GetEntries()));
+	
+	/*
+	// To clean entries one by one
+	TIter iter(fEntryCache.GetTable());
+	TPair* pair=0;
+	while((pair= dynamic_cast<TPair*> (iter.Next()))){
+	
+		TObjString* key = dynamic_cast<TObjString*> (pair->Key());
+		AliCDBEntry* entry = dynamic_cast<AliCDBEntry*> (pair->Value());
+		AliDebug(2, Form("Deleting entry: %s", key->GetName()));
+		if (entry) delete entry;
+		delete fEntryCache.Remove(key);
+	}
+	*/
 	fEntryCache.DeleteAll();
-	AliDebug(2,Form("Cache entries: %d",fEntryCache.GetEntries()));
-
+	AliDebug(2, Form("After deleting - Cache entries: %d",fEntryCache.GetEntries()));
 }
 
 //_____________________________________________________________________________
@@ -1068,6 +1100,16 @@ Bool_t AliCDBManager::IsShortLived(const char* path)
 
 	return fShortLived->Contains(path);
 
+}
+
+//______________________________________________________________________________________________
+void AliCDBManager::SetLock(Bool_t lock){
+
+	if(fLock == kTRUE && lock == kFALSE) {
+		AliFatal("Lock is ON: cannot reset it!");
+	}
+	
+	fLock=lock;
 }
 
 ///////////////////////////////////////////////////////////
