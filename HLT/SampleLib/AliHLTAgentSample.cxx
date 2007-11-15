@@ -62,8 +62,8 @@ AliHLTAgentSample::~AliHLTAgentSample()
 }
 
 int AliHLTAgentSample::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					    AliRawReader* rawReader,
-					    AliRunLoader* runloader) const
+					    AliRawReader* /*rawReader*/,
+					    AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
 
@@ -96,8 +96,8 @@ int AliHLTAgentSample::CreateConfigurations(AliHLTConfigurationHandler* handler,
   return 0;
 }
 
-const char* AliHLTAgentSample::GetReconstructionChains(AliRawReader* rawReader,
-						       AliRunLoader* runloader) const
+const char* AliHLTAgentSample::GetReconstructionChains(AliRawReader* /*rawReader*/,
+						       AliRunLoader* /*runloader*/) const
 {
   // see header file for class documentation
   return "sample-sink1 sample-offsnk";
@@ -117,3 +117,4 @@ int AliHLTAgentSample::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTDummyComponent);
   return 0;
 }
+

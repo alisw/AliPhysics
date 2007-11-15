@@ -87,6 +87,8 @@ class AliHLTSampleOfflineSinkComponent : public AliHLTOfflineDataSink {
   int DumpEvent(const AliHLTComponentEventData& evtData,
 		AliHLTComponentTriggerData& trigData);
 
+  using AliHLTOfflineDataSink::DumpEvent;
+
  private:
   ClassDef(AliHLTSampleOfflineSinkComponent, 0);
 };

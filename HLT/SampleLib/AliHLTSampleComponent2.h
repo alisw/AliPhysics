@@ -43,6 +43,8 @@ public:
 		       AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 
+  using AliHLTProcessor::DoEvent;
+
 private:
 
   ClassDef(AliHLTSampleComponent2, 0)

@@ -100,8 +100,8 @@ int AliHLTRootFilePublisherComponent::OpenFiles()
   return iResult;
 }
 
-int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& evtData,
-						AliHLTComponentTriggerData& trigData,
+int AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData& /*evtData*/,
+						AliHLTComponentTriggerData& /*trigData*/,
 						AliHLTUInt8_t* /*outputPtr*/, 
 						AliHLTUInt32_t& /*size*/,
 						vector<AliHLTComponentBlockData>& /*outputBlocks*/ )

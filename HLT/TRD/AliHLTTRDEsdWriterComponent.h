@@ -54,6 +54,8 @@ class AliHLTTRDEsdWriterComponent : public AliHLTRootFileWriterComponent
 			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& trigData );
 
+  using AliHLTRootFileWriterComponent::DumpEvent;
+
   /**
    * Scan one argument and adjacent parameters.
    * @param argc           size of the argument array

@@ -55,6 +55,8 @@ class AliHLTTRDTrackerComponent : public AliHLTProcessor
 /* 		     AliHLTUInt32_t& size, vector<AliHLTComponent_BlockData>& outputBlocks ); */
 	int DoEvent( const AliHLTComponentEventData & evtData,
 		     AliHLTComponentTriggerData & trigData );
+
+	using AliHLTProcessor::DoEvent;
 	
     private:
 

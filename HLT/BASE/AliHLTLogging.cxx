@@ -386,7 +386,7 @@ AliHLTComponentLogSeverity AliHLTLogging::GetLocalLoggingLevel()
   return fLocalLogFilter;
 }
 
-int AliHLTLogging::CheckGroup(const char* originClass) const
+int AliHLTLogging::CheckGroup(const char* /*originClass*/) const
 {
   // see header file for class documentation
 

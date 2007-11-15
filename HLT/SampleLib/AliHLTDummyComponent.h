@@ -48,6 +48,8 @@ class AliHLTDummyComponent : public AliHLTProcessor
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks );
 	
+	using AliHLTProcessor::DoEvent;
+
     private:
 
 	// The size of the output data produced, as a percentage of the input data's size.

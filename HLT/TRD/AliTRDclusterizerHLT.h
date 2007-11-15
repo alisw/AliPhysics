@@ -32,6 +32,7 @@ class AliTRDclusterizerHLT : public AliTRDclusterizer
   virtual void     Copy(TObject &c) const;
   //virtual Bool_t   MakeClusters();
   virtual Bool_t   ReadDigits(AliRawReaderMemory* rawReader);
+  using AliTRDclusterizer::ReadDigits;
   //virtual Bool_t   TreeClusters(Int_t idet);
   virtual Bool_t   InitClusterTree();
   virtual Bool_t   InsertClusters(TObjArray *tobjarr, Int_t idet);

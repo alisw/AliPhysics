@@ -440,11 +440,11 @@ void AliHLTComponent::SetDataType(AliHLTComponentDataType& tgtdt, const char* id
   tgtdt.fStructSize=sizeof(AliHLTComponentDataType);
   if (id) {
     memset(&tgtdt.fID[0], 0, kAliHLTComponentDataTypefIDsize);
-    strncpy(&tgtdt.fID[0], id, strlen(id)<kAliHLTComponentDataTypefIDsize?strlen(id):kAliHLTComponentDataTypefIDsize);
+    strncpy(&tgtdt.fID[0], id, strlen(id)<(size_t)kAliHLTComponentDataTypefIDsize?strlen(id):kAliHLTComponentDataTypefIDsize);
   }
   if (origin) {
     memset(&tgtdt.fOrigin[0], 0, kAliHLTComponentDataTypefOriginSize);
-    strncpy(&tgtdt.fOrigin[0], origin, strlen(origin)<kAliHLTComponentDataTypefOriginSize?strlen(origin):kAliHLTComponentDataTypefOriginSize);
+    strncpy(&tgtdt.fOrigin[0], origin, strlen(origin)<(size_t)kAliHLTComponentDataTypefOriginSize?strlen(origin):kAliHLTComponentDataTypefOriginSize);
   }
 }
 

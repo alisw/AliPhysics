@@ -518,8 +518,8 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 	HLTDebug("task %s: component %s ProcessEvent finnished (%d): size=%d blocks=%d", GetName(), pComponent->GetComponentID(), iResult, size, outputBlockCnt);
 	if (iResult>=0 && outputBlocks) {
 	  AliHLTComponentBlockDataList segments;
-	  for (int oblock=0; oblock<outputBlockCnt; oblock++) {
-	    int iblock=0;
+	  for (AliHLTUInt32_t oblock=0; oblock<outputBlockCnt; oblock++) {
+	    AliHLTUInt32_t iblock=0;
 	    for (; iblock<evtData.fBlockCnt; iblock++) {
 	      if (fBlockDataArray[iblock].fPtr==outputBlocks[oblock].fPtr) {
 		assert(subscribedTaskList[iblock]!=NULL);

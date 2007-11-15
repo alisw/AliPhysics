@@ -199,8 +199,8 @@ int AliHLTRawReaderPublisherComponent::DoDeinit()
   return iResult;
 }
 
-int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& evtData, 
-						AliHLTComponentTriggerData& trigData, 
+int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& /*evtData*/, 
+						AliHLTComponentTriggerData& /*trigData*/, 
 						AliHLTUInt8_t* outputPtr, 
 						AliHLTUInt32_t& size, 
 						vector<AliHLTComponentBlockData>& outputBlocks)
@@ -254,7 +254,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       }
       offset+=readSize;
     }
-    if (processedIds.size()!=fMaxEquId-fMinEquId+1) {
+    if (processedIds.size()!=size_t(fMaxEquId-fMinEquId+1)) {
       // add further empty data blocks
       AliRawDataHeader header;
       header.fSize=sizeof(AliRawDataHeader);

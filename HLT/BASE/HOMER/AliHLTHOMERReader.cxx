@@ -309,7 +309,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostname
 	}
     }
 
-AliHLTHOMERReader::AliHLTHOMERReader( const void* pBuffer, int size )
+AliHLTHOMERReader::AliHLTHOMERReader( const void* /*pBuffer*/, int /*size*/ )
   :
   AliHLTMonitoringReader(),
   fCurrentEventType(~(homer_uint64)0),
@@ -709,7 +709,7 @@ int AliHLTHOMERReader::AddDataSource( void* pBuffer, int size, DataSource& sourc
 // a buffer data source is like a shm source apart from the shm attach and detach
 // procedure. Furthermore, the size indicator at the beginning of the buffer is not
 // cleared right before sources are read but after the reading.
-    int ret;
+    //int ret;
     if ( !pBuffer || size<=0) return EINVAL;
 
     char* tmpchar = new char[ MAXHOSTNAMELEN+1 ];

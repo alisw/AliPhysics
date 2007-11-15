@@ -189,10 +189,11 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   // search for the writer with the biggest data volume in order to allocate the
   // output buffer of sufficient size
   vector<int> sorted;
-  for (int i=0; i<fWriters.size(); i++) {
+  for (size_t i=0; i<fWriters.size(); i++) {
     assert(fWriters[i]);
     if (fWriters[i]) {
-      if (sorted.size()>=0 && fWriters[i]->GetTotalMemorySize()>fWriters[sorted[0]]->GetTotalMemorySize()) {
+      //TODO: sorted.size() can never ever ever be negative. Please check the logic.
+      if (/*sorted.size()>=0 &&*/ fWriters[i]->GetTotalMemorySize()>fWriters[sorted[0]]->GetTotalMemorySize()) {
 	sorted.insert(sorted.begin(), i);
       } else {
 	sorted.push_back(i);
@@ -214,14 +215,14 @@ int AliHLTOUTComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEven
   return iResult;
 }
 
-int AliHLTOUTComponent::ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliHLTUInt32_t size)
+int AliHLTOUTComponent::ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliHLTUInt32_t /*size*/)
 {
   // see header file for class documentation
   int iResult=-ENOENT;
   assert(list.size()>0);
   if (list.size()==0) return iResult;
   vector<int> writers;
-  int i=0;
+  size_t i=0;
   for (i=0; i<list.size(); i++) {
     if (list[i]->GetTotalMemorySize()==0)
       writers.push_back(i);
@@ -252,7 +253,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
 {
   // see header file for class documentation
   int iResult=0;
-  int bufferSize=0;
+  unsigned int bufferSize=0;
 
   // space for common data header
   bufferSize+=sizeof(AliRawDataHeader);
@@ -294,14 +295,16 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   return iResult;
 }
 
-int AliHLTOUTComponent::WriteDigits(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int bufferSize)
+//TODO: Please consider making bufferSize unsigned int and not just int.
+int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/, int /*hltddl*/, const AliHLTUInt8_t* /*pBuffer*/, int /*bufferSize*/)
 {
   // see header file for class documentation
   int iResult=0;
   return iResult;
 }
 
-int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* runLoader, int hltddl, const AliHLTUInt8_t* pBuffer, int bufferSize)
+//TODO: Please consider making bufferSize unsigned int and not just int.
+int AliHLTOUTComponent::WriteRawFile(int /*eventNo*/, AliRunLoader* /*runLoader*/, int hltddl, const AliHLTUInt8_t* pBuffer, int bufferSize)
 {
   // see header file for class documentation
   int iResult=0;

@@ -90,7 +90,7 @@ int AliHLTOUTRawReader::GetDataBuffer(AliHLTUInt32_t index, const AliHLTUInt8_t*
   // see header file for class documentation
   int iResult=0;
   if (fpManager) {
-    AliHLTUInt32_t id=index>>fgkIdShift;
+    Int_t id = Int_t(index>>fgkIdShift);
     AliHLTUInt32_t blockNo=index&((0x1<<fgkIdShift)-1);
 
     // block from the same ddl requested?

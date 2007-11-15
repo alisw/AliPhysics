@@ -64,6 +64,8 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
 		 const AliHLTComponentBlockData* blocks, 
 		 AliHLTComponentTriggerData& trigData );
 
+  using AliHLTDataSink::DumpEvent;
+
   /**
    * Fill ESD for one event.
    * @param eventNo       event No. \em Note: this is an internal enumeration of the

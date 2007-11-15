@@ -132,7 +132,7 @@ int AliHLTDummyComponent::DoDeinit()
     }
 
 int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-				      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+				      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
     Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );

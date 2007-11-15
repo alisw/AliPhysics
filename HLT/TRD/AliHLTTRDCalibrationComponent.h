@@ -61,6 +61,9 @@ class AliHLTTRDCalibrationComponent : public AliHLTCalibrationProcessor
 /* 					 vector<AliHLTComponent_BlockData>& outputBlocks); */
 	virtual Int_t ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
 	virtual Int_t ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+
+	using AliHLTCalibrationProcessor::ProcessCalibration;
+	using AliHLTCalibrationProcessor::ShipDataToFXS;
 	
     private:
 

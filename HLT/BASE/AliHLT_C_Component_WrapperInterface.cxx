@@ -66,7 +66,7 @@ int AliHLT_C_Component_LoadLibrary( const char* libraryPath )
   return gComponentHandler_C->LoadLibrary( libraryPath );
 }
 
-int AliHLT_C_Component_UnloadLibrary( const char* libraryPath )
+int AliHLT_C_Component_UnloadLibrary( const char* /*libraryPath*/ )
 {
   if ( !gComponentHandler_C )
     return ENXIO;

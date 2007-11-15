@@ -742,7 +742,7 @@ int AliHLTSystem::ScanOptions(const char* options)
   // see header file for class documentation
   int iResult=0;
   if (options) {
-    AliHLTComponentHandler::TLibraryMode libMode=AliHLTComponentHandler::kDynamic;
+    //AliHLTComponentHandler::TLibraryMode libMode=AliHLTComponentHandler::kDynamic;
     TString libs("");
     TString alloptions(options);
     TObjArray* pTokens=alloptions.Tokenize(" ");

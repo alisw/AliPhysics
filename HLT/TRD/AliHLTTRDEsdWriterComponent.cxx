@@ -34,6 +34,7 @@ ClassImp(AliHLTTRDEsdWriterComponent)
 
 AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
   :
+  AliHLTRootFileWriterComponent(),
   fTree(NULL),
   fESD(NULL)
 {
@@ -46,6 +47,7 @@ AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent()
 
 AliHLTTRDEsdWriterComponent::AliHLTTRDEsdWriterComponent(const AliHLTTRDEsdWriterComponent&)
   :
+  AliHLTRootFileWriterComponent(),
   fTree(NULL),
   fESD(NULL)
 {
@@ -102,8 +104,8 @@ int AliHLTTRDEsdWriterComponent::CloseWriter()
   return iResult;
 }
 
-int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
-					    const AliHLTComponentBlockData* blocks, 
+int AliHLTTRDEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& /*evtData*/,
+					    const AliHLTComponentBlockData* /*blocks*/, 
 					    AliHLTComponentTriggerData& trigData )
 {
   // see header file for class documentation

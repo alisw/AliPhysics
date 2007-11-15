@@ -67,7 +67,7 @@ AliHLTComponent* AliHLTSampleOfflineSinkComponent::Spawn()
   return new AliHLTSampleOfflineSinkComponent;
 }
 
-int AliHLTSampleOfflineSinkComponent::DoInit( int argc, const char** argv )
+int AliHLTSampleOfflineSinkComponent::DoInit( int /*argc*/, const char** /*argv*/ )
 {
   // see header file for class documentation
   int iResult=0;
@@ -81,8 +81,8 @@ int AliHLTSampleOfflineSinkComponent::DoDeinit()
   return iResult;
 }
 
-int AliHLTSampleOfflineSinkComponent::DumpEvent(const AliHLTComponentEventData& evtData,
-						AliHLTComponentTriggerData& trigData)
+int AliHLTSampleOfflineSinkComponent::DumpEvent(const AliHLTComponentEventData& /*evtData*/,
+						AliHLTComponentTriggerData& /*trigData*/)
 {
   // see header file for class documentation
   int iResult=0;
@@ -95,10 +95,11 @@ int AliHLTSampleOfflineSinkComponent::DumpEvent(const AliHLTComponentEventData& 
   return iResult;
 }
 
-int AliHLTSampleOfflineSinkComponent::FillESD(int eventNo, AliRunLoader* runLoader, AliESDEvent* esd) 
+int AliHLTSampleOfflineSinkComponent::FillESD(int eventNo, AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/) 
 {
   // see header file for class documentation
   int iResult=0;
   AliInfoStream() << "event " << eventNo << endl;
   return iResult;
 }
+

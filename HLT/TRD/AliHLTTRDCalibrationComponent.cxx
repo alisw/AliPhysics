@@ -174,7 +174,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration( const AliHLTComponentEv
 //   Logging( kHLTLogInfo, "HLT::TRDCalibration::ProcessCalibration", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
   Logging( kHLTLogDebug, "HLT::TRDCalibration::ProcessCalibration", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
-  unsigned long totalSize = 0;
+  //unsigned long totalSize = 0;
 
   //implement a usage of the following
 //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
@@ -196,7 +196,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration( const AliHLTComponentEv
   return 0;
 }
 
-Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData)
+Int_t AliHLTTRDCalibrationComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/)
 {
   //Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
   //ireturn = PushToFXS(object, "TRD ", "TRDCalib", "1024 ");
