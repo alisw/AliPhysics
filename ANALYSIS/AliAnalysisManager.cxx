@@ -302,9 +302,9 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
    if (fDebug > 1) {
       cout << "->AliAnalysisManager::Process()" << endl;
    }
-   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent();
-   if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent();
-   if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent();
+   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
+   if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
+   if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
    
    GetEntry(entry);
    ExecAnalysis();
@@ -764,11 +764,13 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          return;
       }   
       cont->SetData(fTree); // This will notify all consumers
+      Long64_t entry = fTree->GetTree()->GetReadEntry();
+      
 //
 //    Call BeginEvent() for optional input/output and MC services 
-      if (fInputEventHandler)   fInputEventHandler  ->BeginEvent();
-      if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent();
-      if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent();
+      if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
+      if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
+      if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
 //
 //    Execute the tasks
       TIter next1(cont->GetConsumers());
@@ -790,9 +792,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    // The event loop is not controlled by TSelector   
 //
 //  Call BeginEvent() for optional input/output and MC services 
-   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent();
-   if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent();
-   if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent();
+   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(-1);
+   if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(-1);
+   if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(-1);
    TIter next2(fTopTasks);
    while ((task=(AliAnalysisTask*)next2())) {
       task->SetActive(kTRUE);

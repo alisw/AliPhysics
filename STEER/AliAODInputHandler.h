@@ -20,7 +20,6 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODInputHandler(const char* name, const char* title);
     virtual ~AliAODInputHandler();
     virtual Bool_t       InitIO(Option_t* opt);
-    virtual Bool_t       BeginEvent() {return kTRUE;}
     AliAODEvent         *GetEvent() const {return fEvent;}    
  private:
     AliAODEvent    *fEvent;   //! Pointer to the event 

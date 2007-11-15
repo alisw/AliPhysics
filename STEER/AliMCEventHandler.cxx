@@ -195,15 +195,21 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
     return ok;
 }
 
-Bool_t AliMCEventHandler::BeginEvent()
+Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 { 
     // Read the next event
-    fEvent++;
-    if (fEvent >= fNEvent) {
-	AliWarning(Form("AliMCEventHandler: Event number out of range %5d\n", fEvent));
+    if (entry == -1) {
+	fEvent++;
+	entry = fEvent;
+    } else {
+	fEvent = entry;
+    }
+
+    if (entry >= fNEvent) {
+	AliWarning(Form("AliMCEventHandler: Event number out of range %5d\n", entry));
 	return kFALSE;
     }
-    return GetEvent(fEvent);
+    return GetEvent(entry);
 }
 
 Int_t AliMCEventHandler::GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs)

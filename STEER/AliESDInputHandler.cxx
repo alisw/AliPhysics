@@ -56,7 +56,7 @@ Bool_t AliESDInputHandler::InitIO(Option_t* opt)
     return kTRUE;
 }
 
-Bool_t AliESDInputHandler::BeginEvent()
+Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
 {
     // Copy from old to new format if necessary
     AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
