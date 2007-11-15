@@ -22,19 +22,25 @@
 // In case an event has been rejected by an AliEventSelector (based) processor,
 // this task (and its sub-tasks) is not executed.
 //
+// Note : Amanda OMs and InIce DOMs are treated seperately, which means that
+//        for events with both OMs and DOMs firing, 2 linefit tracks will
+//        be produced. The 2 linefit tracks can be distinguished on basis of
+//        their name as explained below. 
+//
 // The procedure is based on the method described in the Amanda publication
 // in Nuclear Instruments and Methods A524 (2004) 179-180.
 // To prevent waisting CPU time in trying to reconstruct (high-energy) cascade
 // events, or to select specifically reconstruction of low multiplicity events,
-// the user may invoke the memberfunctions SetMaxModA() and SetMinModA.
+// the user may invoke the memberfunctions SetMaxModA() and SetMinModA
+// (or the InIce equivalents).
 // This allows selection of events for processing with a certain maximum
-// and/or minimum number of good Amanda OMs firing.
-// By default the minimum and maximum are set to 0 and 999, respectively,
+// and/or minimum number of good (D)OMs firing.
+// By default the minimum and maximum are set to 0 and 999999, respectively,
 // in the constructor, which implies no multiplicity selection. 
-// The maximum number of good hits per Amanda OM to be used for the reconstruction
-// can be specified via the memberfunction SetMaxHitsA().
-// By default all good hits of each Amanda OM are used but the user may want
-// to restrict this number to the first n hits of each Amanda OM to account
+// The maximum number of good hits per (D)OM to be used for the reconstruction
+// can be specified via the memberfunction SetMaxHitsA() or SetMaxHitsI().
+// By default all good hits of each (D)OM are used but the user may want
+// to restrict this number to the first n hits of each (D)OM to account
 // for possible noise and/or afterpulse signals that are not recognised by the
 // hit cleaning procedure.
 //
@@ -42,11 +48,13 @@
 // structure itself via the device named "IceLinefit".
 //
 // The reconstructed track is stored in the IceEvent structure with as
-// default "IceLinefit" as the name of the track.
+// default "IceLinefitA" of "IceLinefitI" as the name of the track
+// for an Amanda (OM) or InIce (DOM) track, respectively.
 // This track name identifier can be modified by the user via the
 // SetTrackName() memberfunction. This will allow unique identification
 // of tracks which are produced when re-processing existing data with
 // different criteria.
+// Note that a suffix "A" or "I" will always be generated automatically.
 // The track 3-momentum is set to the reconstructed velocity, normalised
 // to 1 GeV. The mass and charge of the track are left 0.
 // The r0 and t0 can be obtained from the reference point of the track,
@@ -79,9 +87,13 @@ ClassImp(IceLinefit) // Class implementation to enable ROOT I/O
 IceLinefit::IceLinefit(const char* name,const char* title) : TTask(name,title)
 {
 // Default constructor.
- fMaxmodA=999;
+ fEvt=0;
+ fMaxmodA=999999;
  fMinmodA=0;
  fMaxhitsA=0;
+ fMaxmodI=999999;
+ fMinmodI=0;
+ fMaxhitsI=0;
  fTrackname="IceLinefit";
  fCharge=0;
 }
@@ -99,7 +111,7 @@ void IceLinefit::SetMaxModA(Int_t nmax)
 // with this linefit tracking to prevent waisting cpu time for cases
 // in which tracking doesn't make sense anyhow.
 // Furthermore it allows selection of low multiplicity events for processing.
-// By default the maximum number of Amanda modules is set to 999 in the ctor,
+// By default the maximum number of Amanda modules is set to 999999 in the ctor,
 // which implies no selection on maximum module multiplicity.
 // See also the memberfunction SetMinModA().
  fMaxmodA=nmax;
@@ -132,6 +144,47 @@ void IceLinefit::SetMaxHitsA(Int_t nmax)
  fMaxhitsA=nmax;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IceLinefit::SetMaxModI(Int_t nmax)
+{
+// Set the maximum number of good InIce DOMs that may have fired
+// in order to process this event.
+// This allows suppression of processing (high-energy) cascade events
+// with this linefit tracking to prevent waisting cpu time for cases
+// in which tracking doesn't make sense anyhow.
+// Furthermore it allows selection of low multiplicity events for processing.
+// By default the maximum number of InIce DOMs is set to 999999 in the ctor,
+// which implies no selection on maximum module multiplicity.
+// See also the memberfunction SetMinModI().
+ fMaxmodI=nmax;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceLinefit::SetMinModI(Int_t nmin)
+{
+// Set the minimum number of good InIce DOMs that must have fired
+// in order to process this event.
+// This allows selection of a minimal multiplicity for events to be processed.
+// By default the minimum number of InIce DOMs is set to 0 in the ctor,
+// which implies no selection on minimum module multiplicity.
+// See also the memberfunction SetMaxModI().
+ fMinmodI=nmin;
+}
+///////////////////////////////////////////////////////////////////////////
+void IceLinefit::SetMaxHitsI(Int_t nmax)
+{
+// Set the maximum number of good hits per InIce DOM to be processed.
+//
+// Special values :
+// nmax = 0 : No maximum limit set; all good hits will be processed
+//      < 0 : No hits will be processed
+//
+// In case the user selects a maximum number of good hits per module, all the
+// hits of each module will be ordered w.r.t. increasing hit time (LE).
+// This allows selection of processing e.g. only the first good hits etc...
+// By default the maximum number of hits per InIce DOM is set to 0 in the ctor,
+// which implies just processing all good hits without any maximum limit.
+ fMaxhitsI=nmax;
+}
+///////////////////////////////////////////////////////////////////////////
 void IceLinefit::SetTrackName(TString s)
 {
 // Set (alternative) name identifier for the produced first guess tracks.
@@ -160,11 +213,11 @@ void IceLinefit::Exec(Option_t* opt)
 
  if (!parent) return;
 
- IceEvent* evt=(IceEvent*)parent->GetObject("IceEvent");
- if (!evt) return;
+ fEvt=(IceEvent*)parent->GetObject("IceEvent");
+ if (!fEvt) return;
 
  // Only process accepted events
- AliDevice* seldev=(AliDevice*)evt->GetDevice("AliEventSelector");
+ AliDevice* seldev=(AliDevice*)fEvt->GetDevice("AliEventSelector");
  if (seldev)
  {
   if (seldev->GetSignal("Select") < 0.1) return;
@@ -173,20 +226,35 @@ void IceLinefit::Exec(Option_t* opt)
  // Enter the reco parameters as a device in the event
  AliSignal params;
  params.SetNameTitle("IceLinefit","IceLinefit reco parameters");
- params.SetSlotName("MaxmodA",1);
- params.SetSlotName("MinmodA",2);
- params.SetSlotName("MaxhitsA",3);
+ params.AddNamedSlot("MaxmodA");
+ params.AddNamedSlot("MinmodA");
+ params.AddNamedSlot("MaxhitsA");
+ params.AddNamedSlot("MaxmodI");
+ params.AddNamedSlot("MinmodI");
+ params.AddNamedSlot("MaxhitsI");
 
- params.SetSignal(fMaxmodA,1);
- params.SetSignal(fMinmodA,2);
- params.SetSignal(fMaxhitsA,3);
+ params.SetSignal(fMaxmodA,"MaxmodA");
+ params.SetSignal(fMinmodA,"MinmodA");
+ params.SetSignal(fMaxhitsA,"MaxhitsA");
+ params.SetSignal(fMaxmodI,"MaxmodI");
+ params.SetSignal(fMinmodI,"MinmodI");
+ params.SetSignal(fMaxhitsI,"MaxhitsI");
 
- evt->AddDevice(params);
+ fEvt->AddDevice(params);
+
+ // Perform linefit reconstruction for the various hits
+ Amanda();
+ InIce();
+}
+///////////////////////////////////////////////////////////////////////////
+void IceLinefit::Amanda()
+{
+// Implementation of the linefit reconstruction for Amanda OMs.
 
  if (fMaxhitsA<0) return;
 
  // Fetch all fired Amanda OMs for this event
- TObjArray* aoms=evt->GetDevices("IceAOM");
+ TObjArray* aoms=fEvt->GetDevices("IceAOM");
  if (!aoms) return;
  Int_t naoms=aoms->GetEntries();
  if (!naoms) return;
@@ -277,14 +345,16 @@ void IceLinefit::Exec(Option_t* opt)
  temp=v*sumt;
  r=sumr-temp;
 
+ TString name=fTrackname;
+ name+="A";
  AliTrack t; 
- t.SetNameTitle(fTrackname.Data(),"IceLinefit linefit track");
+ t.SetNameTitle(name.Data(),"IceLinefit Amanda track");
  t.SetCharge(fCharge);
- evt->AddTrack(t);
- AliTrack* trk=evt->GetTrack(evt->GetNtracks());
+ fEvt->AddTrack(t);
+ AliTrack* trk=fEvt->GetTrack(fEvt->GetNtracks());
  if (!trk) return;
 
- trk->SetId(evt->GetNtracks(1)+1);
+ trk->SetId(fEvt->GetNtracks(1)+1);
 
  Ali3Vector p;
  Float_t vec[3];
@@ -294,7 +364,141 @@ void IceLinefit::Exec(Option_t* opt)
 
  AliPosition r0;
  r0.SetPosition(r);
- r0.SetTimestamp((AliTimestamp&)*evt);
+ r0.SetTimestamp((AliTimestamp&)*fEvt);
+ AliTimestamp* t0=r0.GetTimestamp();
+ t0->Add(0,0,(int)sumt);
+
+ trk->Set3Momentum(p);
+ trk->SetReferencePoint(r0);
+ trk->SetTimestamp(*t0);
+ trk->SetFitDetails(fitstats);
+
+ // Link the used hits to the track (and vice versa)
+ for (Int_t i=0; i<nused; i++)
+ {
+  sx=(AliSignal*)hits.At(i);
+  if (sx) sx->AddTrack(*trk);
+ } 
+}
+///////////////////////////////////////////////////////////////////////////
+void IceLinefit::InIce()
+{
+// Implementation of the linefit reconstruction for InIce DOMs.
+
+ if (fMaxhitsI<0) return;
+
+ // Fetch all fired InIce DOMs for this event
+ TObjArray* idoms=fEvt->GetDevices("IceIDOM");
+ if (!idoms) return;
+ Int_t nidoms=idoms->GetEntries();
+ if (!nidoms) return;
+
+ // Check for the minimum and/or maximum number of good fired InIce DOMs
+ Int_t ngood=0;
+ for (Int_t idom=0; idom<nidoms; idom++)
+ {
+  IceGOM* omx=(IceGOM*)idoms->At(idom);
+  if (!omx) continue;
+  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
+  ngood++;
+ } 
+ if (ngood<fMinmodI || ngood>fMaxmodI) return;
+
+ const Float_t c=0.299792; // Light speed in vacuum in meters per ns
+
+ AliSignal* sx=0;
+ Ali3Vector rom,sumr;
+ Ali3Vector rt,sumrt;
+ Float_t thit;
+ Float_t sumt=0,sumt2=0;
+ TObjArray hits;
+ TObjArray* ordered;
+ Int_t nh;
+
+ // Loop over all DOMs and hits to determine the linefit parameters.
+ // Also all the used hits are recorded for association with the track.
+ for (Int_t idom=0; idom<nidoms; idom++)
+ {
+  IceGOM* omx=(IceGOM*)idoms->At(idom);
+  if (!omx) continue;
+  if (omx->GetDeadValue("LE")) continue;
+  rom=(Ali3Vector)omx->GetPosition();
+  // Use the specified good hits of this DOM
+  ordered=0;
+  if (fMaxhitsI>0 && omx->GetNhits()>fMaxhitsI) ordered=omx->SortHits("LE",1,0,7);
+  nh=0;
+  for (Int_t ih=1; ih<=omx->GetNhits(); ih++)
+  {
+   if (ordered)
+   {
+    if (nh>=fMaxhitsI) break;
+    sx=(AliSignal*)ordered->At(ih-1);
+   }
+   else
+   {
+    sx=omx->GetHit(ih);
+   }
+   if (!sx) continue;
+   if (sx->GetDeadValue("ADC") || sx->GetDeadValue("LE") || sx->GetDeadValue("TOT")) continue;
+
+   thit=sx->GetSignal("LE",7);
+   rt=rom*thit;
+   sumr+=rom;
+   sumrt+=rt;
+   sumt+=thit;
+   sumt2+=thit*thit;
+
+   // Record this hit for association with the track
+   hits.Add(sx);
+   nh++;
+  }
+ }
+
+ Int_t nused=hits.GetEntries();
+ if (!nused) return;
+
+ sumr/=float(nused);
+ sumrt/=float(nused);
+ sumt/=float(nused);
+ sumt2/=float(nused);
+
+ Ali3Vector v;
+ Ali3Vector temp;
+ temp=sumr*sumt;
+ v=sumrt-temp;
+ Float_t dum=sumt2-(sumt*sumt);
+ if (dum) v/=dum;
+
+ Float_t beta=v.GetNorm()/c;
+ AliSignal fitstats;
+ fitstats.SetNameTitle("Fitstats","Fit stats for IceLinefit");
+ fitstats.SetSlotName("Beta",1);
+ fitstats.SetSignal(beta,1);
+
+ Ali3Vector r;
+ temp=v*sumt;
+ r=sumr-temp;
+
+ TString name=fTrackname;
+ name+="I";
+ AliTrack t; 
+ t.SetNameTitle(name.Data(),"IceLinefit InIce track");
+ t.SetCharge(fCharge);
+ fEvt->AddTrack(t);
+ AliTrack* trk=fEvt->GetTrack(fEvt->GetNtracks());
+ if (!trk) return;
+
+ trk->SetId(fEvt->GetNtracks(1)+1);
+
+ Ali3Vector p;
+ Float_t vec[3];
+ v.GetVector(vec,"sph");
+ vec[0]=1;
+ p.SetVector(vec,"sph");
+
+ AliPosition r0;
+ r0.SetPosition(r);
+ r0.SetTimestamp((AliTimestamp&)*fEvt);
  AliTimestamp* t0=r0.GetTimestamp();
  t0->Add(0,0,(int)sumt);
 

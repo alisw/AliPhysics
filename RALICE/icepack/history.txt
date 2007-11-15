@@ -126,5 +126,8 @@
 04-oct-2007 NvE New memberfunctions GetLevel and GetOMId introduced in class IceGOM
                 to enable retrieval and conversion of various (D)OM numbering schemes.
 12-nov-2007 GdV New version of IceMakeHits and IceCalibrate to handle IceCube DOMs.
+15-nov-2007 NvE Processor IceLinefit updated to treat also InIce DOMs.
+                Note that the generated IceLinefit tracks now automatically get a suffix
+                "A" or "I" in the trackname to indicate Amanda (OM) or InIce (DOM) tracks, resp.
 
                  
