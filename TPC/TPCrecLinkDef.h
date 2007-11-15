@@ -44,6 +44,7 @@
 #pragma link C++ class AliTPCReconstructor+;
 #pragma link C++ class AliTPCRecoParam+;
 #pragma link C++ class AliTPCClusterParam+;
+#pragma link C++ class AliTPCTracklet+;
 
 #endif
 

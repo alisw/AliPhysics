@@ -6,7 +6,9 @@ SRCS:=  AliTPCcluster.cxx \
 	AliTPCtrack.cxx AliTPCtracker.cxx \
 	AliTPCpolyTrack.cxx  AliTPCseed.cxx AliTPCtrackerMI.cxx \
 	AliTPCPid.cxx AliTPCtrackPid.cxx AliTPCpidESD.cxx \
-	AliTPCReconstructor.cxx AliTPCRecoParam.cxx AliTPCClusterParam.cxx 
+	AliTPCReconstructor.cxx AliTPCRecoParam.cxx AliTPCClusterParam.cxx  \
+        AliTPCTracklet.cxx
+
         
 HDRS:= $(SRCS:.cxx=.h)
 
