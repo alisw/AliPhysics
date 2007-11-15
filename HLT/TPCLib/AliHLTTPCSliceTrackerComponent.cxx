@@ -126,7 +126,7 @@ void AliHLTTPCSliceTrackerComponent::SetTrackerParam(Int_t phiSegments, Int_t et
 				   Double_t minPtFit, Double_t maxangle,
 				   Double_t goodDist, Double_t hitChi2Cut,
 				   Double_t goodHitChi2, Double_t trackChi2Cut,
-				   Int_t maxdist, Double_t maxphi,Double_t maxeta, bool vertexConstraints )
+				   Int_t maxdist, Double_t maxphi,Double_t maxeta, bool /*vertexConstraints*/ )
     {
   // see header file for class documentation
     //fTracker->SetClusterFinderParam( fXYClusterError, fZClusterError, kTRUE ); // ??
@@ -463,7 +463,7 @@ int AliHLTTPCSliceTrackerComponent::DoDeinit()
 }
 
 int AliHLTTPCSliceTrackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
     {
   // see header file for class documentation

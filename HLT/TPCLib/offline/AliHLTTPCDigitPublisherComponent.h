@@ -83,6 +83,9 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
   virtual AliHLTComponent* Spawn();
 
  protected:
+
+  using AliHLTOfflineDataSource::GetEvent;
+
   /**
    * Init method.
    */

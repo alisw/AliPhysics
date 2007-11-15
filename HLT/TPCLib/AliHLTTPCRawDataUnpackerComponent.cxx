@@ -153,7 +153,7 @@ int AliHLTTPCRawDataUnpackerComponent::DoDeinit()
 }
 
 int AliHLTTPCRawDataUnpackerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   // see header file for class documentation

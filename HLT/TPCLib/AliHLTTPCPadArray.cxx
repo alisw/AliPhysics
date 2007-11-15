@@ -188,13 +188,13 @@ void AliHLTTPCPadArray::FindClusters(Int_t match)
     for(Int_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
       AliHLTTPCPad *tmp1=fRowPadVector[row][pad];
       AliHLTTPCPad *tmp2=fRowPadVector[row][pad+1];
-      for(Int_t c1=0;c1<tmp1->fClusterCandidates.size();c1++){
+      for(size_t c1=0;c1<tmp1->fClusterCandidates.size();c1++){
 
 	if(tmp1->fUsedClusterCandidates[c1]){
 	  continue;
 	}
 
-	for(Int_t c2=0;c2<tmp2->fClusterCandidates.size();c2++){
+	for(size_t c2=0;c2<tmp2->fClusterCandidates.size();c2++){
 
 	  if(tmp2->fUsedClusterCandidates[c2]){
 	    continue;
@@ -230,7 +230,7 @@ void AliHLTTPCPadArray::FindClusters(Int_t match)
 	    tmpCluster.fMean         = tmp2->fClusterCandidates[c2].fMean;
 	    totalChargeOfPreviousCandidate = tmp2->fClusterCandidates[c2].fTotalCharge;
 
-	    int rowNumber=row;
+	    //int rowNumber=row;
 	    int lastPad=pad+1;
 	    nClusters++;
 	    Int_t doBreak=0;
@@ -239,7 +239,7 @@ void AliHLTTPCPadArray::FindClusters(Int_t match)
 	      if(morePads>lastPad+1){
 		break;
 	      }
-	      for(Int_t cx=0;cx<tmpx->fClusterCandidates.size();cx++){
+	      for(size_t cx=0;cx<tmpx->fClusterCandidates.size();cx++){
 		if(tmpx->fUsedClusterCandidates[cx]){
 		  continue;
 		}
@@ -277,7 +277,7 @@ void AliHLTTPCPadArray::FindClusters(Int_t match)
 	      }
 	    }
 	    
-	    if(tmpCluster.fTotalCharge<fThreshold){
+	    if(tmpCluster.fTotalCharge< UInt_t(fThreshold)){
 	      nClusters--;
 	    }
 	    else{
@@ -395,7 +395,7 @@ void AliHLTTPCPadArray::FindClusters(Int_t match)
 void AliHLTTPCPadArray::PrintClusters()
 {
   // see header file for class documentation
-  for(int i=0;i<fClusters.size();i++){
+  for(size_t i=0;i<fClusters.size();i++){
     cout<<"Cluster number: "<<i<<endl;
     cout<<"Row: "<<fClusters[i].fRowNumber<<" Pad: "<<fClusters[i].fFirstPad<<endl;
     cout<<"Total Charge: "<<fClusters[i].fTotalCharge<<endl;

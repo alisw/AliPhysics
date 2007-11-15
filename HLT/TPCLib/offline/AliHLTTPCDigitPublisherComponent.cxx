@@ -197,8 +197,8 @@ int AliHLTTPCDigitPublisherComponent::DoDeinit()
   return iResult;
 }
 
-int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& evtData,
-					       AliHLTComponentTriggerData& trigData,
+int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& /*evtData*/,
+					       AliHLTComponentTriggerData& /*trigData*/,
 					       AliHLTUInt8_t* outputPtr, 
 					       AliHLTUInt32_t& size,
 					       vector<AliHLTComponentBlockData>& outputBlocks)

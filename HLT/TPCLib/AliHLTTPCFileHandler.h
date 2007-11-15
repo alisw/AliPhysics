@@ -92,7 +92,13 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
    * @return pointer to array, size in nrow <br>
    *         NULL in case of failure, required size in pTgtSize
    */
-  AliHLTTPCDigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0, Byte_t* tgtBuffer=NULL, UInt_t* pTgtSize=NULL);
+  //TODO: Check that the following change works. It should, but just double check.
+  AliHLTTPCDigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event, Byte_t* tgtBuffer, UInt_t* pTgtSize=NULL);
+
+  AliHLTTPCDigitRowData *AliDigits2Memory(UInt_t & nrow,Int_t event=0)
+  {
+    return AliDigits2Memory(nrow, event, NULL, NULL);
+  }
 
   /**
    * Convert and filetr AliDigits from AliRoot file to HLT Digit data in memory.

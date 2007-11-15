@@ -19,6 +19,7 @@ class AliHLTTPCModelTrack : public AliHLTTPCTrack {
   void FillModel();
   void FillTrack();
   void Print(Bool_t everything=kTRUE);
+  using AliHLTTPCTrack::Print;
   void Set(AliHLTTPCTrack *tpt);
 
   void SetPadHit(Int_t row,Float_t f);

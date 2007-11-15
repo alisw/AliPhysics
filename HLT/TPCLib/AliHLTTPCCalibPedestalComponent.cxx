@@ -196,7 +196,7 @@ Int_t AliHLTTPCCalibPedestalComponent::DeinitCalibration() {
 /*
  * --- setter for rcuformat need in AliTPCCalibPedestal class
  */
-Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
   
   const AliHLTComponentBlockData* iter = NULL;

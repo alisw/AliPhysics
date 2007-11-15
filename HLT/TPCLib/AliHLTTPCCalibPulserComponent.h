@@ -58,6 +58,9 @@ class AliHLTTPCCalibPulserComponent : public AliHLTCalibrationProcessor
       AliHLTComponent* Spawn();
 
     protected:
+
+      using AliHLTCalibrationProcessor::ProcessCalibration;
+      using AliHLTCalibrationProcessor::ShipDataToFXS;
       
       // Protected functions to implement AliHLTComponent's interface.
       // These functions provide initialization as well as the actual processing

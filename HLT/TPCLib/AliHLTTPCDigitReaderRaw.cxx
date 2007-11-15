@@ -623,7 +623,7 @@ Bool_t AliHLTTPCDigitReaderRaw::ApplyMapping()
 }
 
 
-Int_t AliHLTTPCDigitReaderRaw::GetRow( unsigned patch, unsigned hwAddr )
+Int_t AliHLTTPCDigitReaderRaw::GetRow( unsigned /*patch*/, unsigned hwAddr )
 {
   // see header file for class documentation
 
@@ -655,7 +655,7 @@ Int_t AliHLTTPCDigitReaderRaw::GetRow( unsigned patch, unsigned hwAddr )
     }
 }
 
-Int_t AliHLTTPCDigitReaderRaw::GetPad( unsigned patch, unsigned hwAddr )
+Int_t AliHLTTPCDigitReaderRaw::GetPad( unsigned /*patch*/, unsigned hwAddr )
 {
   // see header file for class documentation
 

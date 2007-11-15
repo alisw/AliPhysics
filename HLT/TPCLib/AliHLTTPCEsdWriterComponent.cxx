@@ -91,7 +91,7 @@ int AliHLTTPCEsdWriterComponent::CloseWriter()
 
 int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 					    const AliHLTComponentBlockData* blocks, 
-					    AliHLTComponentTriggerData& trigData )
+					    AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
   int iResult=0;

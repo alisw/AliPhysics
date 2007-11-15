@@ -128,7 +128,7 @@ AliHLTTPCPad::~AliHLTTPCPad()
    delete [] pData;
   }
   if (fSignalPositionArray) {
-    AliHLTTPCSignal_t* pData=fSignalPositionArray;
+    //AliHLTTPCSignal_t* pData=fSignalPositionArray;
     fSignalPositionArray=NULL;
     //   delete [] pData;
   }
@@ -386,7 +386,7 @@ AliHLTTPCSignal_t AliHLTTPCPad::GetCorrectedData(Int_t bin) const
   return data;
 }
 
-AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t bin) const
+AliHLTTPCSignal_t AliHLTTPCPad::GetBaseLine(Int_t /*bin*/) const //TODO: Why is bin being ignored?
 {
   // see header file for class documentation
   AliHLTTPCSignal_t val=0;

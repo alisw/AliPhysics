@@ -112,7 +112,7 @@ void AliHLTTPCGlobalMergerComponent::SetMergerParameters(Double_t maxy,Double_t 
   fGlobalMerger->SetParameter( maxy, maxz, maxkappa, maxpsi, maxtgl );
 }
 
-int AliHLTTPCGlobalMergerComponent::DoInit( int argc, const char** argv )
+int AliHLTTPCGlobalMergerComponent::DoInit( int /*argc*/, const char** /*argv*/ )
 {
   // see header file for class documentation
   if ( fGlobalMerger || fVertex )
@@ -136,7 +136,7 @@ int AliHLTTPCGlobalMergerComponent::DoDeinit()
 }
 
 int AliHLTTPCGlobalMergerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks )
 {
   // see header file for class documentation

@@ -123,6 +123,7 @@ private:
 
   Int_t fLastRow;                                                  //! transient
 
+  //TODO: I suggest making the following UInt_t if it is never supposed to be negative.
   Int_t fThreshold;                                                //! transient
 
   Int_t* fNumberOfPadsInRow;                                       //! transient

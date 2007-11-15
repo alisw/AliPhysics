@@ -110,7 +110,7 @@ const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
   return NULL;
 }
 
-int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
+int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* /*pHandler*/) const
 {
   return 0;
 }

@@ -383,7 +383,7 @@ Bool_t AliHLTTPCFileHandler::CreateIndex()
     LOG(AliHLTTPCLog::kInformational,"AliHLTTPCFileHandler::CreateIndex","Index")
       <<"Starting to create index, this can take a while."<<ENDLOG;
 
-    Int_t lslice,lrow;
+    //Int_t lslice,lrow;
     for(Int_t n=0; n<fDigitsTree->GetEntries(); n++) {
       Int_t sector, row;
       Int_t lslice,lrow;

@@ -78,6 +78,8 @@ class AliHLTTPCGlobalMergerComponent : public AliHLTProcessor
 	int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, AliHLTComponentBlockDataList& outputBlocks );
+
+	using AliHLTProcessor::DoEvent;
 	
     private:
       /** copy constructor prohibited */

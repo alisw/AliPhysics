@@ -207,7 +207,7 @@ Int_t AliHLTTPCCalibPulserComponent::DeinitCalibration() {
 /*
  * --- setter for rcuformat need in AliTPCCalibPulser class
  */
-Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
+Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
   
   const AliHLTComponentBlockData* iter = NULL;

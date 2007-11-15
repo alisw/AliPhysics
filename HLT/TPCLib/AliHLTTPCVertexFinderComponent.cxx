@@ -56,6 +56,7 @@ ClassImp(AliHLTTPCVertexFinderComponent);
 
 AliHLTTPCVertexFinderComponent::AliHLTTPCVertexFinderComponent()
   :
+  AliHLTProcessor(),
   fVertexFinder(NULL)
 {
   // see header file for class documentation
@@ -67,6 +68,7 @@ AliHLTTPCVertexFinderComponent::AliHLTTPCVertexFinderComponent()
 
 AliHLTTPCVertexFinderComponent::AliHLTTPCVertexFinderComponent(const AliHLTTPCVertexFinderComponent&)
   :
+  AliHLTProcessor(),
   fVertexFinder(NULL)
 {
   // see header file for class documentation
@@ -119,7 +121,7 @@ AliHLTComponent* AliHLTTPCVertexFinderComponent::Spawn()
   return new AliHLTTPCVertexFinderComponent;
 }
 
-int AliHLTTPCVertexFinderComponent::DoInit( int argc, const char** argv )
+int AliHLTTPCVertexFinderComponent::DoInit( int /*argc*/, const char** /*argv*/ )
 {
   // see header file for class documentation
   if ( fVertexFinder )
@@ -140,7 +142,7 @@ int AliHLTTPCVertexFinderComponent::DoDeinit()
 }
 
 int AliHLTTPCVertexFinderComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   // see header file for class documentation

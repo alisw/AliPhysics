@@ -38,6 +38,7 @@ public:
    * @param slice  sector no
    */  
   int InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice);
+  using AliHLTTPCDigitReader::InitBlock;
 
   /**
    * place the reader at the next signal

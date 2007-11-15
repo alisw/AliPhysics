@@ -24,6 +24,7 @@ using namespace std;
 
 AliHLTTPCClusters::AliHLTTPCClusters()
   :
+  AliHLTLogging(),
   fTotalCharge(0),
   fPad(0),
   fTime(0),
@@ -47,6 +48,7 @@ AliHLTTPCClusters::AliHLTTPCClusters()
 
 AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src)
   :
+  AliHLTLogging(),
   fTotalCharge(src.fTotalCharge),
   fPad(src.fPad),
   fTime(src.fTime),

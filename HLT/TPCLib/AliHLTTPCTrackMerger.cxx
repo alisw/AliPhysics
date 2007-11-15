@@ -37,7 +37,8 @@ using namespace std;
 
 ClassImp(AliHLTTPCTrackMerger)
 
-AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(){
+AliHLTTPCTrackMerger::AliHLTTPCTrackMerger() : AliHLTTPCMerger()
+{
   //Default constructor
   Is2Global(kFALSE);
   fSlow = kFALSE;
@@ -60,7 +61,7 @@ AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(Int_t nsubsectors) : AliHLTTPCMerger(
   
 }
 
-AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&)
+AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&) : AliHLTTPCMerger()
 {
   // dummy copy constructor
   //HLTFatal("copy constructor untested");

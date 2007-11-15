@@ -596,7 +596,7 @@ void AliHLTTPCTrack::GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestX,
   closestZ = GetFirstPointZ() - stot*GetTgl();
 }
 
-void AliHLTTPCTrack::Print() const
+void AliHLTTPCTrack::Print(Option_t* /*option*/) const
 { 
 //print out parameters of track
 

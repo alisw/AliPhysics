@@ -39,6 +39,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
    * @param track   pointer to source track
    */
   virtual void Copy(AliHLTTPCTrack* track);
+  using AliTPCtrack::Copy;  //TODO: Check if "virtual void Copy(TObject*)" does what it is supposed to do.
 
   /**
    * Compare two tracks by the number of hits
@@ -47,6 +48,7 @@ class AliHLTTPCTrack : public AliTPCtrack {
    *        -1 if this < track
    */
   virtual Int_t Compare(const AliHLTTPCTrack *track) const;
+  using AliTPCtrack::Compare;  //TODO: Check if "virtual Int_t Compare(TObject*)" does what it is supposed to do.
 
   /**
    * Fit the assigned spacepoints to a helix.
@@ -65,7 +67,8 @@ class AliHLTTPCTrack : public AliTPCtrack {
   void GetClosestPoint(AliHLTTPCVertex *vertex,Double_t &closestX,Double_t &closestY,Double_t &closestZ);
   void Rotate(Int_t slice,Bool_t tolocal=kFALSE);
   Bool_t IsLocal() const {return fIsLocal;}
-  void Print() const;
+  virtual void Print(Option_t* option = "") const;
+  using AliTPCtrack::Print;
 
   // getter
   Double_t GetFirstPointX() const {return fFirstPoint[0];}
