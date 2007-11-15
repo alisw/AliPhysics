@@ -21,8 +21,8 @@
 /* Version   Description
  *   1       first version until June 07; implicite, not tagged
  *   2       introduced June 07, enhanced/cleaned/arranged structure
- *   3       2007-11-15 RAW DDL data type added, some inconsistencies fixed
- *           ('void' and 'any' origins)
+ *   3       2007-11-15 RAW DDL data type added; some inconsistencies fixed
+ *           ('void' and 'any' origins); added signed HLT basic data types
  */
 #define ALIHLT_DATA_TYPES_VERSION 2
 
@@ -120,11 +120,23 @@ extern "C" {
 
   typedef unsigned char AliHLTUInt8_t;
 
+  typedef signed char AliHLTInt8_t;
+
   typedef unsigned short AliHLTUInt16_t;
+
+  typedef signed short AliHLTInt16_t;
 
   typedef unsigned int AliHLTUInt32_t;
 
+  typedef signed int AliHLTInt32_t;
+
   typedef unsigned long long AliHLTUInt64_t;
+
+  typedef signed long long AliHLTInt64_t;
+
+  typedef float AliHLTFloat32_t;
+
+  typedef double AliHLTFloat64_t;
 
   typedef AliHLTUInt64_t AliHLTEventID_t;
 
