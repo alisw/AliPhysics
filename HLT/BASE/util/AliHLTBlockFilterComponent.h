@@ -94,6 +94,8 @@ class AliHLTBlockFilterComponent : public AliHLTProcessor
 	       AliHLTUInt8_t* outputPtr, 
 	       AliHLTUInt32_t& size,
 	       AliHLTComponentBlockDataList& outputBlocks );
+  
+  using AliHLTProcessor::DoEvent;
 
   /**
    * Component initialisation and argument scan.

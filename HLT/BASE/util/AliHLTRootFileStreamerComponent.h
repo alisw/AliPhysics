@@ -95,6 +95,8 @@ class AliHLTRootFileStreamerComponent : public AliHLTProcessor
    * @return neg. error code if failed
    */
   int DoEvent( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData);
+  
+  using AliHLTProcessor::DoEvent;
 
  private:
   /** not a valid copy constructor, defined according to effective C++ style */

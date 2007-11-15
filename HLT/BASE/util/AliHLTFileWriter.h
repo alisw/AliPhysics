@@ -127,6 +127,8 @@ class AliHLTFileWriter : public AliHLTDataSink  {
 			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& trigData );
 
+  using AliHLTDataSink::DumpEvent;
+
   /**
    * Scan one argument and adjacent parameters.
    * Can be overloaded by child classes in order to add additional arguments

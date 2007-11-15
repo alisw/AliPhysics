@@ -77,6 +77,8 @@ class AliHLTRootFilePublisherComponent : public AliHLTFilePublisher  {
 		AliHLTUInt32_t& size,
 		vector<AliHLTComponentBlockData>& outputBlocks);
 
+  using AliHLTFilePublisher::GetEvent;
+
   /**
    * Scan one argument and adjacent parameters.
    * Can be overloaded by child classes in order to add additional arguments

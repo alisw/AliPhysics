@@ -108,6 +108,8 @@ class AliHLTFilePublisher : public AliHLTDataSource  {
 		        AliHLTUInt32_t& size,
 		        AliHLTComponentBlockDataList& outputBlocks );
 
+  using AliHLTDataSource::GetEvent;
+
   /**
    * Scan one argument and adjacent parameters.
    * Can be overloaded by child classes in order to add additional arguments

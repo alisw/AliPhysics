@@ -127,6 +127,8 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
 		AliHLTUInt32_t& size,
 		vector<AliHLTComponentBlockData>& outputBlocks );
 
+  using AliHLTOfflineDataSource::GetEvent;
+
  protected:
   virtual int GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t &specification) const;
 

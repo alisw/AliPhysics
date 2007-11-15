@@ -71,6 +71,8 @@ class AliHLTRootFileWriterComponent : public AliHLTFileWriter
   virtual int DumpEvent( const AliHLTComponentEventData& evtData,
 			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& trigData );
+  
+  using AliHLTFileWriter::DumpEvent;
 
   /**
    * Scan one argument and adjacent parameters.

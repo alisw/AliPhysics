@@ -109,6 +109,8 @@ class AliHLTLoaderPublisherComponent : public AliHLTOfflineDataSource {
   int GetEvent(const AliHLTComponentEventData& evtData,
 	       AliHLTComponentTriggerData& trigData);
 
+  using AliHLTOfflineDataSource::GetEvent;
+
  private:
   /** copy constructor prohibited */
   AliHLTLoaderPublisherComponent(const AliHLTLoaderPublisherComponent&);
