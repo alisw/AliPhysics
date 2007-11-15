@@ -102,8 +102,8 @@ void
 
 int 
 AliHLTPHOSMIPCounterComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-					vector<AliHLTComponentBlockData>& outputBlocks)
+					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/, //TODO: I think size should be set to zero when returning from this method if not data was written to the output buffer.
+					vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
    //Do event
   int digitCount = 0;
@@ -131,7 +131,7 @@ AliHLTPHOSMIPCounterComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   if(fEvtCnt % fInterval == 0)
   {
     printf("Event #: %d -- Number of MIPs the last %d events: %d -- Which gives a rate of: %f\n",
-	   fInterval, fMIPCountInterval, (Float_t)fMIPCountInterval/(Float_t)fInterval);   
+	   fEvtCnt, fInterval, Int_t(fMIPCountInterval), ((Float_t)fMIPCountInterval/(Float_t)fInterval));   //TODO: check that the proper things are being written to screen.
     fIntervalHistPtr->Fill(fMIPCountInterval);
     fRateHistPtr->Fill((Float_t)fMIPCountInterval/(Float_t)fInterval);
     fMIPCountInterval = 0;

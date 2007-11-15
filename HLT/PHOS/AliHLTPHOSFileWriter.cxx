@@ -20,7 +20,7 @@ AliHLTPHOSFileWriter::~AliHLTPHOSFileWriter()
 
 //_________________________________________________________________________________________________
 void
-AliHLTPHOSFileWriter::SetDirectory(string& directory)
+AliHLTPHOSFileWriter::SetDirectory(string& /*directory*/)
 {
 
 }

@@ -48,7 +48,7 @@ AliHLTPHOSRcuTreeMaker::MakeDigitArray(AliHLTPHOSRcuDigitContainerDataStruct *di
   AliHLTPHOSDigit *digit = 0;
   AliHLTPHOSDigitDataStruct *digitStruct = 0;
 
-  for(Int_t i = 0; i < digitContainer->fNDigits; i++)
+  for(UInt_t i = 0; i < digitContainer->fNDigits; i++)
     {
       digitStruct = &(digitContainer->fDigitDataStruct[i]);
       digit = (AliHLTPHOSDigit*)fDigitArrayPtr->New(i + nDigits);

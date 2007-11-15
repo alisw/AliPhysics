@@ -41,7 +41,7 @@ AliHLTPHOSFileWriterComponent::AliHLTPHOSFileWriterComponent():  AliHLTFileWrite
   /* 
    *Default constructor
    */
-  for(int i=0; i<N_DATATYPES; i++)
+  for(unsigned int i=0; i<N_DATATYPES; i++)
     {
       fDataTypesToFile[i] = kAliHLTVoidDataType;
     }
@@ -75,7 +75,7 @@ AliHLTPHOSFileWriterComponent::AddDataType(string dataType)
   //comment
   int ret = -1;
   int tmpCnt = 0;
-  for(int i=0; i< N_DATATYPES; i++)
+  for(unsigned int i=0; i< N_DATATYPES; i++)
     {
       if( fDataTypesToFile[i] != kAliHLTVoidDataType)
 	{
@@ -171,7 +171,7 @@ AliHLTPHOSFileWriterComponent::IsRegisteredDataType(const AliHLTComponentDataTyp
 {
   // see header file for documentation
   Bool_t tmp = kFALSE;
-  for(int i =0; i<N_DATATYPES; i++)
+  for(unsigned int i =0; i<N_DATATYPES; i++)
     {
       if((fDataTypesToFile[i] == dataType) && (dataType !=  kAliHLTVoidDataType))
 	{

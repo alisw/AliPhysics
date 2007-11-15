@@ -32,6 +32,9 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
   virtual AliHLTComponent* Spawn();
   virtual const char* GetComponentID();
 
+ protected:
+  using AliHLTPHOSRcuProcessor::DoEvent;
+
  private:
   int fHistoWriteFrequency;
 

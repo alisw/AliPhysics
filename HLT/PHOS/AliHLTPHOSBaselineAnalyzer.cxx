@@ -34,8 +34,8 @@ ClassImp(AliHLTPHOSBaselineAnalyzer);
 AliHLTPHOSBaselineAnalyzer::AliHLTPHOSBaselineAnalyzer() : 
   AliHLTPHOSBase(),
   fSampleStart(5),
-  fMaxSignal(0),
-  fMaxCrazyDifference(0),	    
+  fMaxCrazyDifference(0),	
+  fMaxSignal(0),    
   fTreePtr(0),
   fSanityInspector(0)	   
 {  
@@ -44,11 +44,11 @@ AliHLTPHOSBaselineAnalyzer::AliHLTPHOSBaselineAnalyzer() :
   
   char histName[128];
   char histTitle[128];
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
   {
-    for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+    for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
     {
-      for(Int_t gain = 0; gain < N_GAINS; gain++)
+      for(UInt_t gain = 0; gain < N_GAINS; gain++)
       { 
 	sprintf(histName, "sample_value_channel_x_col_%d_z_row_%d_gain_%d", x, z, gain);
 	sprintf(histTitle, "Distribution of Sample Values for Channel X: %d - Z: %d - Gain: %d", x, z, gain);
@@ -159,11 +159,11 @@ void
 AliHLTPHOSBaselineAnalyzer::CalculateChannelsBaselineRMS()
 {
   //comment
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
   {
-    for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+    for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
     {
-      for(Int_t gain = 0; gain < N_GAINS; gain++)
+      for(UInt_t gain = 0; gain < N_GAINS; gain++)
       {
 	fRMSHistogramPtr->Fill(fChannelHistogramsPtr[x][z][gain]->GetRMS());  
 	if(gain == 1)
@@ -199,11 +199,11 @@ AliHLTPHOSBaselineAnalyzer::FillTree()
   AliHLTPHOSBaseline *baseline;
   Int_t n = 0;
 
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
-	  for(Int_t gain = 0; gain < N_GAINS; gain++)
+	  for(UInt_t gain = 0; gain < N_GAINS; gain++)
 	    {
 	      baseline = (AliHLTPHOSBaseline*)fBaselineArrayPtr->New(n);
 	      baseline->SetX(x);
@@ -234,11 +234,11 @@ AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
   //comment
   TFile *file = TFile::Open(filename, "recreate");
   
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
   {
-    for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+    for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
     {
-      for(Int_t gain = 0; gain < N_GAINS; gain++)
+      for(UInt_t gain = 0; gain < N_GAINS; gain++)
       {
 	fChannelHistogramsPtr[x][z][gain]->Write();
       }
@@ -268,11 +268,11 @@ void
 AliHLTPHOSBaselineAnalyzer::ResetBaselines()
 {
   //comment
-   for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+   for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
-	  for(Int_t gain = 0; gain < N_GAINS; gain++)
+	  for(UInt_t gain = 0; gain < N_GAINS; gain++)
 	    {
 	      fBaselines[x][z][gain] = 0;    
 	    }
@@ -290,11 +290,11 @@ AliHLTPHOSBaselineAnalyzer::ResetChannelCount()
 void 
 AliHLTPHOSBaselineAnalyzer::ResetAccumulatedBaselines()
 {
-   for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+   for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
-	  for(Int_t gain = 0; gain < N_GAINS; gain++)
+	  for(UInt_t gain = 0; gain < N_GAINS; gain++)
 	    {
 	     fAccumulatedBaselines[x][z][gain][0] = 0;
 	     fAccumulatedBaselines[x][z][gain][1] = 0;
@@ -317,11 +317,11 @@ AliHLTPHOSBaselineAnalyzer::SetMaxCrazyDifference(Int_t diff)
 void 
 AliHLTPHOSBaselineAnalyzer::SetChannelsHistograms(TH1F *channelLowGainHistArray[N_XCOLUMNS_MOD][N_ZROWS_MOD], TH1F *channelHighGainHistArray[N_XCOLUMNS_MOD][N_ZROWS_MOD])
 { 
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
   {
-    for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+    for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
     {
-      for(Int_t gain = 0; gain < N_GAINS; gain++)
+      for(UInt_t gain = 0; gain < N_GAINS; gain++)
       { 
 	fChannelLowGainHistogramsPtr[x][z][gain] = channelLowGainHistArray[x][z][gain];
 	fChannelHighGainHistogramsPtr[x][z][gain] = channelHighGainHistArray[x][z][gain];

@@ -63,7 +63,7 @@ AliHLTPHOSRawAnalyzerKLevel::~AliHLTPHOSRawAnalyzerKLevel()
 **/
 //________________________________________________________________________________________________________
 void 
-AliHLTPHOSRawAnalyzerKLevel::Evaluate(int start, int length)
+AliHLTPHOSRawAnalyzerKLevel::Evaluate(int /*start*/, int /*length*/)
 {
   //thats all 
 } //end FitKLevel

@@ -110,8 +110,8 @@ AliHLTPHOSRcuTreeMakerComponent::GetOutputDataSize(unsigned long& constBase, dou
 
 int 
 AliHLTPHOSRcuTreeMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-					std::vector<AliHLTComponentBlockData>& outputBlocks)
+					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,  //TODO: I think size should be set to zero when returning from this method if not data was written to the output buffer.
+					std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 
 {
   //Do event
@@ -130,7 +130,7 @@ AliHLTPHOSRcuTreeMakerComponent::DoEvent(const AliHLTComponentEventData& evtData
       if ( iter->fDataType == AliHLTPHOSDefinitions::fgkAliHLTDigitDataType )
 
         {
-          digitEvent == true;
+          digitEvent = true;
           nDigits  = fTreeMakerPtr->MakeDigitArray ( reinterpret_cast<AliHLTPHOSRcuDigitContainerDataStruct*> ( iter->fPtr ), totalDigits );
           totalDigits += nDigits;
 	  //cout << totalDigits << endl;
@@ -177,7 +177,7 @@ AliHLTPHOSRcuTreeMakerComponent::DoInit ( int argc, const char** argv )
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);
     
   fstream runNbFile;
-  Int_t newRunNb;
+  //Int_t newRunNb;
   runNbFile.open("/opt/HLT-public/rundir/runNumber.txt");
   runNbFile >> fRunNb;
   runNbFile.close();

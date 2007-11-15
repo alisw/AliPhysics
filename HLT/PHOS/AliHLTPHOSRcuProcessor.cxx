@@ -107,7 +107,7 @@ AliHLTPHOSRcuProcessor::ScanArguments(int argc, const char** argv)
 }
 
 void 
-AliHLTPHOSRcuProcessor::SetCoordinates(AliHLTUInt16_t equippmentID)
+AliHLTPHOSRcuProcessor::SetCoordinates(AliHLTUInt16_t /*equippmentID*/)
 {
   int rcuIndex =  (fkEquippmentID - 1792)%N_RCUS_PER_MODULE;
   fModuleID = (fkEquippmentID  -1792 -rcuIndex)/N_RCUS_PER_MODULE;

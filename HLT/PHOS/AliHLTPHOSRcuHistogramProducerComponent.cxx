@@ -34,7 +34,8 @@ AliHLTPHOSRcuHistogramProducerComponent gAliHLTPHOSRcuHistogramProducerComponent
 * and it fills the histograms with amplitudes per channel.               * 
 * Usage example see in PHOS/macros/Shuttle/AliPHOSCalibHistoProducer.C   *
 **************************************************************************/
-AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent():AliHLTPHOSRcuProcessor(), fRcuHistoProducerPtr(0), fHistoWriteFrequency(100)
+AliHLTPHOSRcuHistogramProducerComponent:: AliHLTPHOSRcuHistogramProducerComponent() :
+  AliHLTPHOSRcuProcessor(), fHistoWriteFrequency(100), fRcuHistoProducerPtr(0), fOutPtr(NULL)
 {
   //Default constructor
 } 
@@ -97,7 +98,7 @@ AliHLTPHOSRcuHistogramProducerComponent::GetOutputDataSize(unsigned long& constB
 
 
 int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //  cout << "AliHLTPHOSRcuHistogramProducerComponent::DoEven TP0"   << endl;
@@ -149,11 +150,11 @@ int  AliHLTPHOSRcuHistogramProducerComponent::DoEvent( const AliHLTComponentEven
   fOutPtr->fRcuZ     = fRcuZ;
 
 
-  for(int x=0; x < N_XCOLUMNS_RCU; x ++)
+  for(unsigned int x=0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(int z=0; z < N_ZROWS_RCU; z ++)
+      for(unsigned int z=0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(int gain =0;  gain < N_GAINS; gain ++)
+	  for(unsigned int gain =0;  gain < N_GAINS; gain ++)
 	    {
 	      fOutPtr->fAccumulatedEnergies[x][z][gain] = innPtr.fAccumulatedEnergies[x][z][gain];
 	      fOutPtr->fHits[x][z][gain] = innPtr.fHits[x][z][gain];

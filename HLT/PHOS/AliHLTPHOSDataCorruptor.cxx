@@ -51,7 +51,7 @@ AliHLTPHOSDataCorruptor::~AliHLTPHOSDataCorruptor()
  * @param N  the number of samples in the array
  */
 void
-AliHLTPHOSDataCorruptor::MakeCorruptedData(Double_t *dataArray, int N)
+AliHLTPHOSDataCorruptor::MakeCorruptedData(Double_t * /*dataArray*/, int /*N*/)
 {
   
 

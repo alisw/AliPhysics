@@ -35,7 +35,7 @@ AliHLTPHOSDDLDecoderComponent  gAliHLTPHOSDDLDecoderComponent;
 
 
 AliHLTPHOSDDLDecoderComponent::AliHLTPHOSDDLDecoderComponent():AliHLTPHOSRcuProcessor(), 
-							       fOutPtr(0), fDataCorruptorPtr(0), fDecoderPtr(0), fAltroDataPtr(0), fMapperPtr(0)
+							       fDataCorruptorPtr(0), fOutPtr(0), fDecoderPtr(0), fAltroDataPtr(0), fMapperPtr(0)
 {
   //Default constructor
   fDataCorruptorPtr = new AliHLTPHOSDataCorruptor();
@@ -98,14 +98,14 @@ AliHLTPHOSDDLDecoderComponent::GetOutputDataSize(unsigned long& constBase, doubl
 
 int
 AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
-					      AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
+					      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 					      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //comment
   cout <<"AliHLTPHOSDDLDecoderComponent::DoEvent()" << endl;
 
-  Int_t sampleCnt         = 0;
-  Int_t processedChannels = 0;
+  //Int_t sampleCnt         = 0;
+  //Int_t processedChannels = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
   UInt_t tSize            = 0;
@@ -199,7 +199,7 @@ AliHLTPHOSDDLDecoderComponent::DoEvent( const AliHLTComponentEventData& evtData,
       fOutPtr->fNValidChannels = tmpChannelCnt-1;
       //      cout <<  "AliHLTPHOSDDLDecoderComponent::DoEven: setting  fOutPtr->fNValidChannels ="  << tmpChannelCnt-1<<endl;
 
-      int tmpSampleCnt=0;
+      //int tmpSampleCnt=0;
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
       bd.fOffset = offset;

@@ -33,6 +33,8 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
+  using AliHLTPHOSRcuProcessor::DoEvent;
+
   void Reset();
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
   void SetBaselines(const char* baselineFile);

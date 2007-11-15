@@ -46,7 +46,7 @@ public:
   void SetX(Int_t x) { fX = x; }
   void SetZ(Int_t z) { fZ = z; }
   void SetGain(Int_t gain) { fGain = gain; }
-  void SetEntries(Int_t entries) { fEntries = 0; }
+  void SetEntries(Int_t /*entries*/) { fEntries = 0; }  //TODO: should we not set fEntries to entries? is this a bug?
 
   Float_t GetBaseline() { return fBaseline; }  
   Int_t GetX() { return fX; }

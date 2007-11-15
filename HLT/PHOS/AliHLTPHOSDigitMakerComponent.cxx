@@ -98,12 +98,12 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
   UInt_t tSize            = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
-  Int_t nRecPoints        = 0;
-  Int_t index             = 0;
+  //Int_t nRecPoints        = 0;
+  //Int_t index             = 0;
   
-  Int_t fileCount = 0;
+  //Int_t fileCount = 0;
   Int_t digitCount = 0;
-  char filename [50];
+  //char filename [50];
 
 
   AliHLTUInt8_t* outBPtr;

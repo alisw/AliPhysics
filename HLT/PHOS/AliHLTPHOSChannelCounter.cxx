@@ -45,11 +45,11 @@ AliHLTPHOSChannelCounter::AliHLTPHOSChannelCounter() :
   fHistLowRatioPtr = new TH2F("lowoutofsync", "Low gain channel count divided by number of events", 
 			     64, 0, 63, 56, 0, 56); 
   
-   for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+   for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
      {
-       for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+       for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	 {
-	   for(Int_t gain = 0; gain < 2; gain++)
+	   for(UInt_t gain = 0; gain < 2; gain++)
 	     {
 	       fChannelArrayPtr[x][z][gain] = 0;
 	     }
@@ -67,11 +67,11 @@ AliHLTPHOSChannelCounter::CountChannels(AliHLTPHOSRcuCellEnergyDataStruct* chann
 {
   //comment
   Int_t tmp[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
   {
-    for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+    for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
     {
-      for(Int_t gain = 0; gain < 2; gain++)
+      for(UInt_t gain = 0; gain < 2; gain++)
       {
 	tmp[x][z][gain] = 0;
       }
@@ -85,11 +85,11 @@ AliHLTPHOSChannelCounter::CountChannels(AliHLTPHOSRcuCellEnergyDataStruct* chann
 	  [validDataPtr->fZ + channelDataPtr->fRcuZ*N_ZROWS_RCU]
 	  [validDataPtr->fGain]++;
     }
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
-       for(Int_t z = 0; z < N_ZROWS_MOD; z++)
+       for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
 	{
-	  for(Int_t gain = 0; gain < N_ZROWS_MOD; gain++)
+	  for(UInt_t gain = 0; gain < N_ZROWS_MOD; gain++)
 	  {
 	    if(tmp[x][z][gain] > 1)
 	      fChannelArrayPtr[x][z][gain] = fChannelArrayPtr[x][z][gain] + 1;
@@ -103,14 +103,14 @@ AliHLTPHOSChannelCounter::PrintOutOfSyncChannels(Int_t nEvents)
 {
   //comment
   printf("After %d events:\n", nEvents);
-  for(Int_t x = 0; x < N_XCOLUMNS_MOD; x++)
-  //for(Int_t x = 0; x < 63; x++)
+  for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
+  //for(UInt_t x = 0; x < 63; x++)
     {
-      for(Int_t z = 0; z < N_ZROWS_MOD; z++)
-      //for(Int_t z = 0; z < 55; z++)
+      for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
+      //for(UInt_t z = 0; z < 55; z++)
 	{
-	  for(Int_t gain = 0; gain < N_GAINS; gain++)
-	  //for(Int_t gain = 0; gain < 2; gain++)
+	  for(UInt_t gain = 0; gain < N_GAINS; gain++)
+	  //for(UInt_t gain = 0; gain < 2; gain++)
 	    {
 	      printf("x = %d -- z = %d -- gain = %d:   %d\n", x, z, gain, (fChannelArrayPtr[x][z][gain]));
 	    }
@@ -133,7 +133,7 @@ AliHLTPHOSChannelCounter::FillHistograms(Int_t nEvents)
 	  for(Int_t gain = 0; gain < 2; gain++)
 	    {
 	      
-	      if(gain = 0)
+	      if(gain == 0)  //TODO: this line was "if(gain = 0)" I presume that was a bug. Please check.
 		{
 		  fHistHighGainPtr->SetBinContent(x, z, fChannelArrayPtr[x][z][gain]);
 		  fHistHighRatioPtr->SetBinContent(x, z, fChannelArrayPtr[x][z][gain]/(float)nEvents);

@@ -98,7 +98,7 @@ AliHLTPHOSPulseGenerator::AddPretriggerSamples(double baselineLevel, double *sam
 
 
 double *
-AliHLTPHOSPulseGenerator::GetPulse(double a, double t0)
+AliHLTPHOSPulseGenerator::GetPulse(double /*a*/, double /*t0*/)
 {
   //See header file for documentation
   return fDataPtr;

@@ -42,7 +42,7 @@ AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS():AliHLTPHOSRawAnalyzer()
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
 //_____________________________________________________________________________________________________
-AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double *dtaPtr, double fs):AliHLTPHOSRawAnalyzer() 
+AliHLTPHOSRawAnalyzerLMS::AliHLTPHOSRawAnalyzerLMS(double * /*dtaPtr*/, double fs):AliHLTPHOSRawAnalyzer() 
 {
   //  fFloatDataPtr = dtaPtr;  
 
@@ -59,7 +59,7 @@ AliHLTPHOSRawAnalyzerLMS::~AliHLTPHOSRawAnalyzerLMS()
 
 //_____________________________________________________________________________________________________
 void 
-AliHLTPHOSRawAnalyzerLMS::Evaluate(int start, int length)
+AliHLTPHOSRawAnalyzerLMS::Evaluate(int /*start*/, int /*length*/)
 {
 
 } //end FitLMS

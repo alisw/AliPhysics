@@ -112,8 +112,8 @@ AliHLTPHOSSandboxComponent::DoProcessing(const AliHLTComponentEventData& evtData
 */
 int 
 AliHLTPHOSSandboxComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-				    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-				    vector<AliHLTComponentBlockData>& outputBlocks)
+				    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/, //TODO: I think size should be set to zero when returning from this method if not data was written to the output buffer.
+				    vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
    //Do event
   
@@ -155,7 +155,7 @@ AliHLTPHOSSandboxComponent::DoEvent(const AliHLTComponentEventData& evtData, con
 
 
 int
-AliHLTPHOSSandboxComponent::DoInit(int argc, const char** argv )
+AliHLTPHOSSandboxComponent::DoInit(int argc, const char** /*argv*/ )
 {
   //Do initialization
 

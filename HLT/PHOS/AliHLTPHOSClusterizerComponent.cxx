@@ -178,7 +178,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   UInt_t mysize           = 0;
   Int_t nRecPoints        = 0;
   Int_t nDigits           = 0;
-  Int_t index             = 0;
+  //Int_t index             = 0;
   Int_t j =0;
 
   AliHLTUInt8_t* outBPtr;
@@ -199,7 +199,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
           //	  cout << "Warning: data type is not fgkAliHLTDigitDataType " << endl;
           continue;
         }
-      for (Int_t i = 0; i < digitContainerPtr->fNDigits; i++)
+      for (UInt_t i = 0; i < digitContainerPtr->fNDigits; i++)
         {
 	  if(fNoCrazyness && digitContainerPtr->fDigitDataStruct[i].fCrazyness)
 	    continue;

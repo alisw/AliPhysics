@@ -99,7 +99,7 @@ AliHLTPHOSRawAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, doub
 //AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventD  //  AliHLTPHOSRcuCellEnergyDebugDataStruct* fOutPtr;ata& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData, 
 //					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 int 
-AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& trigData, 
+AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, AliHLTComponentTriggerData& /*trigData*/, 
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //comment
@@ -108,7 +108,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
   UInt_t tSize            = 0;
   Float_t baseline = 0;
   AliHLTUInt8_t* outBPtr;
-  AliHLTAltroBunch *bunchPtr;
+  //AliHLTAltroBunch *bunchPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
@@ -130,7 +130,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       mysize = 0;
       offset = tSize;
       //      cout <<"TP1"<< endl;
-      Int_t *dt = (Int_t*)(reinterpret_cast<UChar_t*>( iter->fPtr ));
+      //Int_t *dt = (Int_t*)(reinterpret_cast<UChar_t*>( iter->fPtr ));
       //      cout <<"TP2"<< endl;
       Int_t crazyness = 0;
 
@@ -308,13 +308,13 @@ void
 AliHLTPHOSRawAnalyzerComponent::Reset()
 {
   //comment
-  for(int mod = 0; mod < N_MODULES; mod ++)
+  for(unsigned int mod = 0; mod < N_MODULES; mod ++)
     {
-      for(int row = 0; row < N_ZROWS_MOD; row ++)
+      for(unsigned int row = 0; row < N_ZROWS_MOD; row ++)
 	{
-	  for(int col = 0; col < N_XCOLUMNS_MOD; col ++)
+	  for(unsigned int col = 0; col < N_XCOLUMNS_MOD; col ++)
 	    {
-	      for(int gain = 0; gain < N_GAINS; gain ++ )
+	      for(unsigned int gain = 0; gain < N_GAINS; gain ++ )
 		{
 		  fMaxValues[mod][row][col][gain] = 0;
 		}
@@ -351,9 +351,9 @@ AliHLTPHOSRawAnalyzerComponent::SetBaselines(const char* file)
   for(Int_t i = 0; i < baselineArray->GetEntriesFast(); i++)
     {
       baseline = (AliHLTPHOSBaseline*)baselineArray->At(i);
-      if((baseline->GetX() < ((fRcuX + 1)*N_XCOLUMNS_RCU)) && (baseline->GetX() >= fRcuX*N_XCOLUMNS_RCU))
+      if((baseline->GetX() < (Int_t)((fRcuX + 1)*N_XCOLUMNS_RCU)) && (baseline->GetX() >= (Int_t)(fRcuX*N_XCOLUMNS_RCU)))
 	{
-	  if((baseline->GetZ() < ((fRcuZ + 1)*N_ZROWS_RCU)) && (baseline->GetZ() >= fRcuZ*N_ZROWS_RCU))
+	  if((baseline->GetZ() < (Int_t)((fRcuZ + 1)*N_ZROWS_RCU)) && (baseline->GetZ() >= (Int_t)(fRcuZ*N_ZROWS_RCU)))
 	    {
 	      fBaselines[baseline->GetX() - fRcuX*N_XCOLUMNS_RCU][baseline->GetZ() - fRcuZ*N_ZROWS_RCU][baseline->GetGain()] = baseline->GetBaseline();
 	      //	      cout <<  fBaselines[baseline->GetX() - fRcuX*N_XCOLUMNS_RCU][baseline->GetZ() - fRcuZ*N_ZROWS_RCU][baseline->GetGain()] << endl;

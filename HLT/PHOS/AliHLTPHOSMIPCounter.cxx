@@ -44,7 +44,7 @@ AliHLTPHOSMIPCounter::CountMIPs(AliHLTPHOSDigitContainerDataStruct* digitContain
   Bool_t IsMIP = true;
   Int_t *dataPtr = 0;
   AliHLTPHOSDigitDataStruct *digitPtr;
-  for(Int_t i = 0; i < digitContainerPtr->fNDigits; i++)
+  for(UInt_t i = 0; i < digitContainerPtr->fNDigits; i++)
   {
     digitPtr = &(digitContainerPtr->fDigitDataStruct[i]);
     dataPtr = digitPtr->fData;

@@ -40,6 +40,8 @@ class AliHLTPHOSDDLDecoderComponent:public AliHLTPHOSRcuProcessor
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
 
+ protected:
+  using AliHLTPHOSRcuProcessor::DoEvent;
 
  private:
   AliHLTPHOSDataCorruptor *fDataCorruptorPtr;                  /**<Pointer to data corruptor*/

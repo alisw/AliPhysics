@@ -36,7 +36,7 @@ AliHLTPHOSRawAnalyzer::~AliHLTPHOSRawAnalyzer()
 * @param dtaPtr Data array for wich a subarray will be taken to perform the fit
 * @param fs the sampling frequency in entities of MHz. Needed in order to calculate physical time
 **/
-AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs): AliHLTPHOSBase(), fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
+AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double * /*dtaPtr*/, double fs): AliHLTPHOSBase(), fIntDataPtr(0), fSampleFrequency(10), fTau(2), fDTof(99999), fDAmpl(99999), fStartIndex(0)
 {
   fSampleFrequency = fs;
 } //end  
@@ -51,7 +51,7 @@ AliHLTPHOSRawAnalyzer::AliHLTPHOSRawAnalyzer(double *dtaPtr, double fs): AliHLTP
 * @param N the number of pretrigger samples used to calculate the baseline.
 **/
 void 
-AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
+AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, int /*N*/)
 {
   cout << "Baseline correction not yet implemeted" << endl;
 } //end BaselineCorrection
@@ -64,7 +64,7 @@ AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, int N)
 * @param baselineValue the basline value to subtract..
 **/
 void 
-AliHLTPHOSRawAnalyzer::BaselineCorrection(double *dataPtr, double baselineValue)
+AliHLTPHOSRawAnalyzer::BaselineCorrection(double * /*dataPtr*/, double baselineValue)
 {
   printf("\nbaselineValue = %f\n", baselineValue);
   cout << "Baseline correction not yet implemeted" << endl;
@@ -120,7 +120,7 @@ AliHLTPHOSRawAnalyzer::SetSampleFreq(double freq)
 }
 
 int 
-AliHLTPHOSRawAnalyzer::FindStartIndex(double treshold)
+AliHLTPHOSRawAnalyzer::FindStartIndex(double /*treshold*/)
 {
   cout << "Find Start index not yet implemented" << endl;
   return 0;
@@ -144,7 +144,7 @@ AliHLTPHOSRawAnalyzer::MakeInitialGuess()
  * @param treshold The index of the first value above treshold is ntaken to be the first value.
  **/
 void 
-AliHLTPHOSRawAnalyzer::MakeInitialGuess(int treshold)
+AliHLTPHOSRawAnalyzer::MakeInitialGuess(int /*treshold*/)
 {
   cout << "Make initial guess not yet implemeted" << endl;  
 }
@@ -159,7 +159,7 @@ AliHLTPHOSRawAnalyzer::SetStartIndex(int index)
 
 
 void 
-AliHLTPHOSRawAnalyzer::SetTVector(Double_t *tVector, Int_t size)
+AliHLTPHOSRawAnalyzer::SetTVector(Double_t * /*tVector*/, Int_t /*size*/)
 {
   cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetTVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
 }
@@ -167,7 +167,7 @@ AliHLTPHOSRawAnalyzer::SetTVector(Double_t *tVector, Int_t size)
 
 
 void
-AliHLTPHOSRawAnalyzer::SetAVector(Double_t *aVector, Int_t size)
+AliHLTPHOSRawAnalyzer::SetAVector(Double_t * /*aVector*/, Int_t /*size*/)
 {
  cout <<"ERROR: AliHLTPHOSRawAnalyzer::SetAVector:  You cannot set the peakfindervector here, must be set in derived class peakfinder"<<endl;
 }

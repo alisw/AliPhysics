@@ -53,6 +53,7 @@ class AliHLTPHOSPhysicsAnalyzerSpectrumComponent: public AliHLTPHOSProcessor // 
   Int_t DoInit(int argc, const char** argv);
   Int_t Deinit();
   Int_t DoDeinit();
+  using AliHLTPHOSProcessor::DoEvent;
   
  private:
   

@@ -57,7 +57,7 @@ AliHLTPHOSRawAnalyzerChiSquareFit::~AliHLTPHOSRawAnalyzerChiSquareFit()
 * @param length the number of samples to use starting from index 
 **/
 void 
-AliHLTPHOSRawAnalyzerChiSquareFit::Evaluate(int start, int length)
+AliHLTPHOSRawAnalyzerChiSquareFit::Evaluate(int /*start*/, int /*length*/)
 {
   /*
 

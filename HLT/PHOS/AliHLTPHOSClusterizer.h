@@ -2,7 +2,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Oystein Djuvsland                                                      *
+ * Primary Authors: Oystein Djuvsland                                     *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -19,12 +19,12 @@
 #include "AliHLTPHOSBase.h"
 #include "AliPHOSGetter.h"
 
-#include "AliHLTPHOSRecPointContainerStruct.h";
-#include "AliHLTPHOSRecPointDataStruct.h";
-#include "AliHLTPHOSDigitContainerDataStruct.h";
-#include "AliHLTPHOSDigitDataStruct.h";
+#include "AliHLTPHOSRecPointContainerStruct.h"
+#include "AliHLTPHOSRecPointDataStruct.h"
+#include "AliHLTPHOSDigitContainerDataStruct.h"
+#include "AliHLTPHOSDigitDataStruct.h"
 
-#include "AliPHOSGeometry.h";
+#include "AliPHOSGeometry.h"
 
 class TClonesArray;
 class AliPHOSDigit;

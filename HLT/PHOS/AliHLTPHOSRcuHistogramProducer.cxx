@@ -118,7 +118,7 @@ AliHLTPHOSRcuHistogramProducer::Init()
   int geomz;
     
 
-  for(int gain=0; gain< N_GAINS; gain++)
+  for(unsigned int gain=0; gain< N_GAINS; gain++)
     {
       sprintf(tmpHistoName, "DeadChanneMap_Module%d_rcuz%d_rcux%d_gain%d",(int)fModuleID,  fRcuZ, fRcuX, gain);
       //    fDeadChannelMapHistogramPtrs[gain] = new TH2D( tmpHistoName, tmpHistoName, N_BINS, XBIN_LOW, XBIN_UP);
@@ -135,11 +135,11 @@ AliHLTPHOSRcuHistogramProducer::Init()
 
 
 
-  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      geomx = x + N_XCOLUMNS_RCU*fRcuX;
 	      geomz = z + N_ZROWS_RCU*fRcuZ;
@@ -257,11 +257,11 @@ void
 AliHLTPHOSRcuHistogramProducer::FillLiveChannelHistograms()
 {
   //comment
-  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(unsigned int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      fDeadChannelMapHistogramPtrs[gain]->SetBinContent(x ,z , fCellAccEnergy.fDeadChannelMap[x][z][gain]);
 	    }
@@ -274,11 +274,11 @@ void
 AliHLTPHOSRcuHistogramProducer::Reset()
 {
   //See header file for documentation
-  for(int x = 0; x < N_XCOLUMNS_RCU; x ++)
+  for(unsigned int x = 0; x < N_XCOLUMNS_RCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      fEnergyAverageValues[x][z][gain] = 0; 
 	      fAccumulatedValues[x][z][gain]   = 0;
@@ -289,7 +289,7 @@ AliHLTPHOSRcuHistogramProducer::Reset()
 	} 
     }
   
-  for(int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
+  for(unsigned int i = 0; i <ALTRO_MAX_SAMPLES;  i++)
     {
       fTmpChannelData[i] = 0;
     }
@@ -358,11 +358,11 @@ AliHLTPHOSRcuHistogramProducer::WriteAllHistograms(char *opt)
 
   cout <<"printing histograms"<< endl;
 
-  for(int x = 0; x <  N_XCOLUMNS_RCU; x ++)
+  for(unsigned int x = 0; x <  N_XCOLUMNS_RCU; x ++)
     {
-      for(int z = 0; z < N_ZROWS_RCU; z ++)
+      for(unsigned int z = 0; z < N_ZROWS_RCU; z ++)
 	{
-	  for(int gain = 0; gain < N_GAINS; gain ++)
+	  for(unsigned int gain = 0; gain < N_GAINS; gain ++)
 	    {
 	      //     cout << "the number of entries is " <<fEnergyHistogramPtrs[x][z][gain]->GetEntries()<< endl;
 	      fEnergyHistogramPtrs[x][z][gain]->Write();
@@ -413,11 +413,11 @@ AliHLTPHOSRcuHistogramProducer::ScanTimeString(char *timeString)
   int min;
   int sec;
   int year;
-  char sDate[5];
-  char sHour[5];
-  char sMin[5];
-  char sSec[5];
-  char sYear[10];
+  //char sDate[5];
+  //char sHour[5];
+  //char sMin[5];
+  //char sSec[5];
+  //char sYear[10];
   sscanf(timeString, "%s %s %d %d:%d:%d %d\n", day, month, &date, &hour, &min, &sec, &year);
   
 }

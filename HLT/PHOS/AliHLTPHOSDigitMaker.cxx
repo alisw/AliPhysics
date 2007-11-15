@@ -27,8 +27,8 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   fDigitPtr(0),
   // fDigitStructPtr(0),
   fDigitCount(0), 
-  fDigitThreshold(0),
-  fNrPresamples(10)
+  fNrPresamples(10),
+  fDigitThreshold(0)
 {
  
 }

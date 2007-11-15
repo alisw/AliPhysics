@@ -2,7 +2,7 @@
  * This file is property of and copyright by the ALICE HLT Project        * 
  * All rights reserved.                                                   *
  *                                                                        *
- * Primary Authors: Oystein Djuvsland                                                      *
+ * Primary Authors: Oystein Djuvsland                                     *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -55,7 +55,7 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
 }//end
 
 
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &)
+AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : AliHLTPHOSBase()
 {
   //Copy constructor, not implemented
 }//end
@@ -223,7 +223,7 @@ AliHLTPHOSClusterizer::CalculateCenterOfGravity()
   // Calculates the center of gravity in the local PHOS-module coordinates 
   Float_t wtot = 0.;
  
-  Int_t relid[4];
+  //Int_t relid[4];
 
   Float_t x = 0.;
   Float_t z = 0.;
@@ -233,10 +233,10 @@ AliHLTPHOSClusterizer::CalculateCenterOfGravity()
   AliHLTPHOSRecPointDataStruct *recPoint = 0;
   AliHLTPHOSDigitDataStruct *digit = 0;
 
-  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
+  //AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
-  Int_t iDigit = 0;
-  Int_t iRecPoint = 0;
+  UInt_t iDigit = 0;
+  UInt_t iRecPoint = 0;
 
   for(iRecPoint=0; iRecPoint<fRecPointContainerPtr->fNRecPoints; iRecPoint++) 
     {
