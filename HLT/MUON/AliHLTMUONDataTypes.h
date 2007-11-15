@@ -33,11 +33,6 @@
 extern "C"
 {
 
-typedef signed char AliHLTInt8_t;
-typedef signed int AliHLTInt32_t;
-typedef float AliHLTFloat32_t;
-typedef double AliHLTFloat64_t;
-
 /**
  * The common internal dimuon HLT data block header.
  * These headers help to identify the data block when it is written to disk and
