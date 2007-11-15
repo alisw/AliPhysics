@@ -1,6 +1,12 @@
 #ifndef ALIHLTTPCCLUSTERS_H
 #define ALIHLTTPCCLUSTERS_H
 
+// see delow for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTLogging.h"
 
 class AliHLTTPCClusters : public AliHLTLogging {

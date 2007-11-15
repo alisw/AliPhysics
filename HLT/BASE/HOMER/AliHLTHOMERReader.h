@@ -247,7 +247,6 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
       enum DataSourceType { kUndef=0, kTCP, kShm, kBuf};
 	struct DataSource
 	    {
-		DataSource() { fType = kUndef; };
 	        DataSourceType fType; // source type (TCP or Shm)
 		unsigned fNdx; // This source's index
 		const char* fHostname; // Filled for both Shm and TCP
@@ -274,7 +273,7 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader
 	int ReadNextEvent( bool useTimeout, unsigned long timeout );
 	void ReleaseCurrentEvent();
 	int TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeout );
-	int TriggerShmSource( DataSource& source, bool useTimeout, unsigned long timeout );
+	int TriggerShmSource( DataSource& source, bool useTimeout, unsigned long timeout ) const;
 	int ReadDataFromTCPSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout );
 	int ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout );
 	int ParseSourceData( DataSource& source );

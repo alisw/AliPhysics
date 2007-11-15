@@ -22,6 +22,12 @@
     @brief  Implementation of HLT module management.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -41,10 +47,10 @@ using namespace std;
 #include <TStopwatch.h>
 //#include <TSystem.h>
 #include <TROOT.h>
-#include <TInterpreter.h>
+//#include <TInterpreter.h>
 
 /** HLT default component libraries */
-const char* kHLTDefaultLibs[]= {
+const char* AliHLTSystem::fgkHLTDefaultLibs[]= {
   "libAliHLTUtil.so", 
   "libAliHLTTPC.so", 
   //  "libAliHLTSample.so",
@@ -119,8 +125,11 @@ int AliHLTSystem::fgNofInstances=0;
 int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
 {
   // see header file for class documentation
+  HLTLogKeyword("configuration handling");
   int iResult=0;
   if (pConf) {
+    HLTError("function not yet implemented");
+    iResult=-ENOSYS;
   } else {
     iResult=-EINVAL;
   }
@@ -130,10 +139,13 @@ int AliHLTSystem::AddConfiguration(AliHLTConfiguration* pConf)
 int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfiguration* pPrec)
 {
   // see header file for class documentation
+  HLTLogKeyword("configuration handling");
   int iResult=0;
   if (pConf) {
     if (pPrec) {
       // find the position
+      HLTError("function not yet implemented");
+      iResult=-ENOSYS;
     }
   } else {
     iResult=-EINVAL;
@@ -144,8 +156,11 @@ int AliHLTSystem::InsertConfiguration(AliHLTConfiguration* pConf, AliHLTConfigur
 int AliHLTSystem::DeleteConfiguration(AliHLTConfiguration* pConf)
 {
   // see header file for class documentation
+  HLTLogKeyword("configuration handling");
   int iResult=0;
   if (pConf) {
+    HLTError("function not yet implemented");
+    iResult=-ENOSYS;
   } else {
     iResult=-EINVAL;
   }
@@ -798,7 +813,7 @@ int AliHLTSystem::ScanOptions(const char* options)
 
     if (iResult>=0) {
       if (libs.IsNull()) {
-	const char** deflib=kHLTDefaultLibs;
+	const char** deflib=fgkHLTDefaultLibs;
 	while (*deflib) {
 	  libs+=*deflib++;
 	  libs+=" ";
@@ -972,6 +987,7 @@ void* AliHLTSystem::FindDynamicSymbol(const char* library, const char* symbol)
 
 void AliHLTSystem::SetFrameworkLog(AliHLTComponentLogSeverity level) 
 {
+  // see header file for class documentation
   SetLocalLoggingLevel(level);
   if (fpComponentHandler) fpComponentHandler->SetLocalLoggingLevel(level);
   if (fpConfigurationHandler) fpConfigurationHandler->SetLocalLoggingLevel(level);

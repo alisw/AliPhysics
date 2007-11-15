@@ -35,10 +35,12 @@ class AliHLTTPCLog  {
   public:
   enum TLogLevel { kNone = 0, kBenchmark=0x01,kDebug= 0x02, kInformational = 0x04, kWarning = 0x08, kError = 0x10 , kFatal = 0x20, kPrimary = 0x80, kAll = 0xBF };
 
+ private:
   /** not used */
   static const char* kEnd;                                         //! transient
   /** not used */
   static const char* kPrec;                                        //! transient
+ public:
   /** stream manipulator for hex output, but empty in the implementation */
   static const char* kHex;                                         //! transient
   /** stream manipulator for decimal output, but empty in the implementation */

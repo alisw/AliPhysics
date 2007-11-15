@@ -12,6 +12,12 @@
     @brief  A pedestal calibration component for the TPC.
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTCalibrationProcessor.h"
 #include "AliHLTTPCDefinitions.h"
 

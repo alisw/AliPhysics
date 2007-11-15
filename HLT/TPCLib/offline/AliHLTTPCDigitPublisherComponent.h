@@ -13,6 +13,12 @@
     @brief  TPC digit publisher component (input from offline).
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTOfflineDataSource.h"
 
 class AliHLTTPCFileHandler;
@@ -119,13 +125,13 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
   int                     fMinPart;                                //!transient
 
   /** instance of the file handler */
-  static AliHLTTPCFileHandler*   fpFileHandler;                    //!transient
+  static AliHLTTPCFileHandler*   fgpFileHandler;                   //!transient
 
   /** no of file handler instances */
-  static int              fFileHandlerInstances;                   //!transient
+  static int              fgFileHandlerInstances;                  //!transient
 
   /** event no the file handler is currently initialized for */
-  static int              fCurrEvent;                              //!transient
+  static int              fgCurrEvent;                             //!transient
 
   ClassDef(AliHLTTPCDigitPublisherComponent, 0);
 };

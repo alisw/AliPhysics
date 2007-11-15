@@ -83,6 +83,9 @@ DICTHEADERS			=  $(CLASS_HDRS)
 
 CLEANFILES			+= $(DICTFILES)
 
+# the rootcint buffer for macros is limited to 1024 characters
+# we have to filter out some of the defines
+DEFFILTER			= -DPACKAGE*
 
 # as the first step of the migration of the HOMER library to
 # AliRoot we leave the class names as they are but change the
@@ -92,7 +95,10 @@ $(DICTCPP:.cxx=.h): $(DICTCPP)
 	if test $@ ; then : ; else rm -f $< ; $(MAKE) $(MAKEFLAGS) $< ; fi 
 
 $(DICTCPP): $(DICTHEADERS:%=$(srcdir)/%) $(MODULE_DHDR)
-	if [ -x $(ROOTCINT) ]; then $(ROOTCINT) -f $@ -c $(CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(foreach i, $(DICTINCLUDE), $(i)) $^ ; fi
+	if [ -x $(ROOTCINT) ]; then $(ROOTCINT) -f $@ -c $(CPPFLAGS) $(AM_CPPFLAGS) \
+	 `for i in $(DEFS);do case $$i in $(foreach def, $(DEFFILTER), $(def) |) -DVERSION*);; *) echo -n " $$i";; esac; done` \
+	 $(foreach i, $(DICTINCLUDE), $(i)) \
+	 $^ ; fi
 
 # include $(top_srcdir)/make.dict
 

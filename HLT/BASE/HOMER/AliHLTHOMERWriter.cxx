@@ -141,7 +141,7 @@ void AliHLTHOMERWriter::Copy( void* destination, homer_uint64 eventType, homer_u
 homer_uint8 AliHLTHOMERWriter::DetermineUInt64Alignment()
     {
     // see header file for class documentation
-    HOMERWriterAlignment64TestStructure test;
+    AliHLTHOMERWriterAlignment64TestStructure test;
     if ( (unsigned long)(&test.f64Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
 	// Alignment is beyond 64 bit, this is, to the best of my knowledge, currently unheard of.
@@ -171,7 +171,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt64Alignment()
 homer_uint8 AliHLTHOMERWriter::DetermineUInt32Alignment()
     {
     // see header file for class documentation
-    HOMERWriterAlignment32TestStructure test;
+    AliHLTHOMERWriterAlignment32TestStructure test;
     if ( (unsigned long)(&test.f32Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
 	// Alignment is beyond 64 bit, this is, to the best of my knowledge, currently unheard of.
@@ -201,7 +201,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt32Alignment()
 homer_uint8 AliHLTHOMERWriter::DetermineUInt16Alignment()
     {
     // see header file for class documentation
-    HOMERWriterAlignment16TestStructure test;
+    AliHLTHOMERWriterAlignment16TestStructure test;
     if ( (unsigned long)(&test.f16Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
 	// Alignment is beyond 64 bit, this is, to the best of my knowledge, currently unheard of.
@@ -231,7 +231,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt16Alignment()
 homer_uint8 AliHLTHOMERWriter::DetermineUInt8Alignment()
     {
     // see header file for class documentation
-    HOMERWriterAlignment8TestStructure test;
+    AliHLTHOMERWriterAlignment8TestStructure test;
     if ( (unsigned long)(&test.f8Test64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
 	// Alignment is beyond 64 bit, this is, to the best of my knowledge, currently unheard of.
@@ -261,7 +261,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineUInt8Alignment()
 homer_uint8 AliHLTHOMERWriter::DetermineDoubleAlignment()
     {
     // see header file for class documentation
-    HOMERWriterAlignmentDoubleTestStructure test;
+    AliHLTHOMERWriterAlignmentDoubleTestStructure test;
     if ( (unsigned long)(&test.fDoubleTest64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
 	// Alignment is beyond 64 bit, this is, to the best of my knowledge, currently unheard of.
@@ -291,7 +291,7 @@ homer_uint8 AliHLTHOMERWriter::DetermineDoubleAlignment()
 homer_uint8 AliHLTHOMERWriter::DetermineFloatAlignment()
     {
     // see header file for class documentation
-    HOMERWriterAlignmentFloatTestStructure test;
+    AliHLTHOMERWriterAlignmentFloatTestStructure test;
     if ( (unsigned long)(&test.fFloatTest64) != ((unsigned long)(&test.f64Fill))+sizeof(test.f64Fill) )
 	{
 	// Alignment is beyond 64 bit, this is, to the best of my knowledge, currently unheard of.

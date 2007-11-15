@@ -22,6 +22,12 @@
     @brief  TPC digit publisher component (input from offline).
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #include "AliHLTTPCDigitPublisherComponent.h"
 #include "AliRunLoader.h"
 #include "AliLog.h"
@@ -49,14 +55,14 @@ AliHLTTPCDigitPublisherComponent::AliHLTTPCDigitPublisherComponent()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
-AliHLTTPCFileHandler* AliHLTTPCDigitPublisherComponent::fpFileHandler=NULL;
-int AliHLTTPCDigitPublisherComponent::fFileHandlerInstances=0;
-int AliHLTTPCDigitPublisherComponent::fCurrEvent=-1;
+AliHLTTPCFileHandler* AliHLTTPCDigitPublisherComponent::fgpFileHandler=NULL;
+int AliHLTTPCDigitPublisherComponent::fgFileHandlerInstances=0;
+int AliHLTTPCDigitPublisherComponent::fgCurrEvent=-1;
 
 AliHLTTPCDigitPublisherComponent::~AliHLTTPCDigitPublisherComponent()
 {
   // see header file for class documentation
-  if (fpFileHandler!=NULL && fFileHandlerInstances<=0) {
+  if (fgpFileHandler!=NULL && fgFileHandlerInstances<=0) {
     HLTWarning("improper state, de-initialization missing");
     DoDeinit();
   }
@@ -144,16 +150,16 @@ int AliHLTTPCDigitPublisherComponent::DoInit( int argc, const char** argv )
   // fetch runLoader instance from interface
   AliRunLoader* pRunLoader=GetRunLoader();
   if (pRunLoader) {
-    if (fpFileHandler==NULL) {
-      fpFileHandler=new AliHLTTPCFileHandler;
-      fCurrEvent=-1;
-      fFileHandlerInstances=1;
+    if (fgpFileHandler==NULL) {
+      fgpFileHandler=new AliHLTTPCFileHandler;
+      fgCurrEvent=-1;
+      fgFileHandlerInstances=1;
     } else {
-      fFileHandlerInstances++;
-      //HLTDebug("publisher %p: %d references to file handler instance", this, fFileHandlerInstances);
+      fgFileHandlerInstances++;
+      //HLTDebug("publisher %p: %d references to file handler instance", this, fgFileHandlerInstances);
     }
-    if (fpFileHandler) {
-      if (!fpFileHandler->SetAliInput(pRunLoader)) {
+    if (fgpFileHandler) {
+      if (!fgpFileHandler->SetAliInput(pRunLoader)) {
 	iResult=-EFAULT;
       }
     } else {
@@ -171,22 +177,22 @@ int AliHLTTPCDigitPublisherComponent::DoDeinit()
 {
   // see header file for class documentation
   int iResult=0;
-  if (fCurrEvent>=0) {
-    fpFileHandler->FreeDigitsTree();
-    fCurrEvent=-1;
+  if (fgCurrEvent>=0) {
+    fgpFileHandler->FreeDigitsTree();
+    fgCurrEvent=-1;
   }
-  //HLTDebug("publisher %p: %d references to file handler instance", this, fFileHandlerInstances);
-  if (--fFileHandlerInstances==0 && fpFileHandler!=NULL) {
+  //HLTDebug("publisher %p: %d references to file handler instance", this, fgFileHandlerInstances);
+  if (--fgFileHandlerInstances==0 && fgpFileHandler!=NULL) {
     try {
-      if (fpFileHandler) {
-	delete fpFileHandler;
+      if (fgpFileHandler) {
+	delete fgpFileHandler;
       }
     }
     catch (...) {
       HLTFatal("exeption during object cleanup");
       iResult=-EFAULT;
     }
-    fpFileHandler=NULL;
+    fgpFileHandler=NULL;
   }
   return iResult;
 }
@@ -204,20 +210,20 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData& e
     return -EFAULT;
   }
 
-  if (fpFileHandler) {
+  if (fgpFileHandler) {
     int event=GetEventCount();
     AliHLTTPCUnpackedRawData* pTgt=reinterpret_cast<AliHLTTPCUnpackedRawData*>(outputPtr);
     if (pTgt) {
       UInt_t nrow=0;
       UInt_t tgtSize=size-sizeof(AliHLTTPCUnpackedRawData);
-      if (fCurrEvent>=0 && fCurrEvent!=event) {
-	HLTDebug("new event %d, free digit tree for event %d", event, fCurrEvent);
-	fpFileHandler->FreeDigitsTree();
+      if (fgCurrEvent>=0 && fgCurrEvent!=event) {
+	HLTDebug("new event %d, free digit tree for event %d", event, fgCurrEvent);
+	fgpFileHandler->FreeDigitsTree();
       }
-      fCurrEvent=event;
+      fgCurrEvent=event;
       HLTDebug("converting digits for slice %d partition %d", fMinSlice, fMinPart);
-      fpFileHandler->Init(fMinSlice,fMinPart);
-      AliHLTTPCDigitRowData* pData=fpFileHandler->AliDigits2Memory(nrow, event, reinterpret_cast<Byte_t*>(pTgt->fDigits), &tgtSize);
+      fgpFileHandler->Init(fMinSlice,fMinPart);
+      AliHLTTPCDigitRowData* pData=fgpFileHandler->AliDigits2Memory(nrow, event, reinterpret_cast<Byte_t*>(pTgt->fDigits), &tgtSize);
       if (pData==NULL && tgtSize>0 && tgtSize>fMaxSize) {
 	HLTDebug("target buffer too small: %d byte required, %d available", tgtSize+sizeof(AliHLTTPCUnpackedRawData), size);
 	// indicate insufficient buffer size, on occasion the frameworks calls

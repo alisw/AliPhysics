@@ -118,7 +118,7 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
 
 
         /** test structure for the alignment determination of 64 bit variables */
-        struct HOMERWriterAlignment64TestStructure
+        struct AliHLTHOMERWriterAlignment64TestStructure
         {
         	homer_uint64 f64Fill;   // !
         	homer_uint64 f64Test64; // !
@@ -130,7 +130,7 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
         	homer_uint64 f64Test8;  // !
         };
         /** test structure for the alignment determination of 32 bit variables */
-        struct HOMERWriterAlignment32TestStructure
+        struct AliHLTHOMERWriterAlignment32TestStructure
         {
         	homer_uint64 f64Fill;   // !
         	homer_uint32 f32Test64; // !
@@ -142,7 +142,7 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
         	homer_uint32 f32Test8;  // !
         };
         /** test structure for the alignment determination of 16 bit variables */
-        struct HOMERWriterAlignment16TestStructure
+        struct AliHLTHOMERWriterAlignment16TestStructure
         {
         	homer_uint64 f64Fill;   // !
             	homer_uint16 f16Test64; // !
@@ -154,7 +154,7 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
         	homer_uint16 f16Test8;  // !
         };
         /** test structure for the alignment determination of 8 bit variables */
-        struct HOMERWriterAlignment8TestStructure
+        struct AliHLTHOMERWriterAlignment8TestStructure
         {
         	homer_uint64 f64Fill; // !
         	homer_uint8 f8Test64; // !
@@ -166,7 +166,7 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
         	homer_uint8 f8Test8;  // !
         };
         /** test structure for the alignment determination of double type variables */
-        struct HOMERWriterAlignmentDoubleTestStructure
+        struct AliHLTHOMERWriterAlignmentDoubleTestStructure
         {
         	homer_uint64 f64Fill; // !
         	double fDoubleTest64; // !
@@ -178,7 +178,7 @@ class AliHLTHOMERWriter : public AliHLTMonitoringWriter
         	double fDoubleTest8;  // !
         };
         /** test structure for the alignment determination of float type variables */
-        struct HOMERWriterAlignmentFloatTestStructure
+        struct AliHLTHOMERWriterAlignmentFloatTestStructure
         {
         	homer_uint64 f64Fill; // !
         	float fFloatTest64;   // !

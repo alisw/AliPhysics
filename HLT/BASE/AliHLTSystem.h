@@ -340,7 +340,7 @@ class AliHLTSystem : public AliHLTLogging {
   int BuildTaskListsFromReconstructionChains(AliRawReader* rawReader, 
 					     AliRunLoader* runloader=NULL);
 
-  enum AliHLTSystemState_t {
+  enum AliHLTSystemState {
     kUninitialized       = 0x0,
     kLibrariesLoaded     = 0x1,
     kConfigurationLoaded = 0x2,
@@ -353,14 +353,14 @@ class AliHLTSystem : public AliHLTLogging {
 
   /**
    * Check status of the system.
-   * @param flag          AliHLTSystemState_t value to check for
+   * @param flag          AliHLTSystemState value to check for
    * @return 1 if set, 0 if not
    */
   int CheckStatus(int flag);
 
   /**
    * Get the current status.
-   * @return status flags of @ref AliHLTSystemState_t
+   * @return status flags of @ref AliHLTSystemState
    */
   int GetStatusFlags();
 
@@ -405,17 +405,19 @@ class AliHLTSystem : public AliHLTLogging {
   /** chains to be run during reconstruction */
   TString fChains;                                                 //!transient
 
-  /* array of stopwatches */
+  /** array of stopwatches */
   TObjArray* fStopwatches;                                         //!transient
 
-  /* number of events processed in total */                        
+  /** number of events processed in total */                        
   int fEventCount;                                                 //!transient
 
-  /* number of events processed successfully */
+  /** number of events processed successfully */
   int fGoodEvents;                                                 //!transient
 
- private:
-  ClassDef(AliHLTSystem, 4);
+  /** array of default libraries */
+  static const char* fgkHLTDefaultLibs[];                          //!transient
+
+  ClassDef(AliHLTSystem, 5);
 };
 
 #endif

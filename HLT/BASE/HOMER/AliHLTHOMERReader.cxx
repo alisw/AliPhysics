@@ -43,15 +43,15 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTHOMERReader.h"
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+//#include <stdio.h>
+#include <cstring>
+#include <cerrno>
 #include <netdb.h>
 extern int h_errno;
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
+//#include <sys/types.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
+//#include <netinet/tcp.h>
 #include <unistd.h>
 #include <rpc/types.h>
 #include <fcntl.h>
@@ -599,6 +599,7 @@ bool AliHLTHOMERReader::AllocDataSources( unsigned int sourceCnt )
     fDataSources = new DataSource[ sourceCnt ];
     if ( !fDataSources )
 	return false;
+    memset(fDataSources, 0, sizeof(DataSource)*sourceCnt);
     fDataSourceCnt = 0;
     fDataSourceMaxCnt = sourceCnt;
     return true;
@@ -938,7 +939,7 @@ int AliHLTHOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, un
     return 0;
     }
 
-int AliHLTHOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long )
+int AliHLTHOMERReader::TriggerShmSource( DataSource& source, bool, unsigned long ) const
     {
 // see header file for class documentation
 // clear the size indicator in the first 4 bytes of the buffer to request data

@@ -20,6 +20,12 @@
     @brief  A pulser calibration component for the TPC.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -207,7 +213,7 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
   const AliHLTComponentBlockData* iter = NULL;
 
   AliHLTUInt8_t slice=0, patch=0;
-  Int_t DDLid = 0;
+  Int_t ddlId = 0;
     
   // ** Loop over all input blocks and specify which data format should be read - only select Raw Data
   iter = GetFirstInputBlock( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
@@ -226,10 +232,10 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
     slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
     patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
 
-    if (patch < 2) DDLid = 768 + (2 * slice) + patch;
-    else DDLid = 838 + (4*slice) + patch;
+    if (patch < 2) ddlId = 768 + (2 * slice) + patch;
+    else ddlId = 838 + (4*slice) + patch;
 
-    HLTDebug ( "Input Raw Data - Slice/Patch: %d/%d - EquipmentID : %d.", slice, patch, DDLid );
+    HLTDebug ( "Input Raw Data - Slice/Patch: %d/%d - EquipmentID : %d.", slice, patch, ddlId );
 
     // ** Get min and max patch, used for output specification
     if ( patch < fMinPatch ) fMinPatch =  patch;
@@ -237,7 +243,7 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
 
     // ** Init TPCRawStream
     fRawReader->SetMemory( reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize );
-    fRawReader->SetEquipmentID(DDLid);
+    fRawReader->SetEquipmentID(ddlId);
 
     fRawStream = new AliTPCRawStream( fRawReader );
     fRawStream->SetOldRCUFormat( fRCUFormat );
