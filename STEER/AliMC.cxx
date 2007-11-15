@@ -522,7 +522,7 @@ void AliMC::BeginEvent()
   //  Reset all Detectors & kinematics & make/reset trees
   //
     
-  runloader->GetHeader()->Reset(gAlice->GetRunNumber(),gAlice->GetEvNumber(),
+  runloader->GetHeader()->Reset(AliCDBManager::Instance()->GetRun(),gAlice->GetEvNumber(),
 				gAlice->GetEventNrInRun());
 //  fRunLoader->WriteKinematics("OVERWRITE");  is there any reason to rewrite here since MakeTree does so
 
