@@ -24,7 +24,7 @@
  *   3       2007-11-15 RAW DDL data type added; some inconsistencies fixed
  *           ('void' and 'any' origins); added signed HLT basic data types
  */
-#define ALIHLT_DATA_TYPES_VERSION 2
+#define ALIHLT_DATA_TYPES_VERSION 3
 
 //////////////////////////////////////////////////////////////////////////
 //
