@@ -1238,7 +1238,6 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*conpar[0];
   
   // Flange: second support for the trousers
-  printf("\n	Flange: second support for the trousers \n");
   boxpar[0] = 25.9/2.;
   boxpar[1] = 9.4/2.;
   boxpar[2] = 1./2.;
@@ -2005,17 +2004,28 @@ void AliZDCv3::AddAlignableVolumes() const
  // name with the corresponding volume path. Needs to be syncronized with
  // eventual changes in the geometry.
  //
- TString volpath1 = "ALIC_1/ZDC_1/ZNEU_1";
- TString volpath2 = "ALIC_1/ZDC_1/ZPRO_1";
+ TString volpath1 = "ALIC_1/ZDCC_1/ZNEU_1";
+ TString volpath2 = "ALIC_1/ZDCC_1/ZPRO_1";
+ TString volpath3 = "ALIC_1/ZDCA_1/ZNEU_2";
+ TString volpath4 = "ALIC_1/ZDCA_1/ZPRO_2";
 
- TString symname1="ZDC/NeutronZDC";
- TString symname2="ZDC/ProtonZDC";
+ TString symname1="ZDC/NeutronZDC_C";
+ TString symname2="ZDC/ProtonZDC_C";
+ TString symname3="ZDC/NeutronZDC_A";
+ TString symname4="ZDC/ProtonZDC_A";
 
  if(!gGeoManager->SetAlignableEntry(symname1.Data(),volpath1.Data()))
      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname1.Data(),volpath1.Data()));
 
  if(!gGeoManager->SetAlignableEntry(symname2.Data(),volpath2.Data()))
      AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname2.Data(),volpath2.Data()));
+
+ if(!gGeoManager->SetAlignableEntry(symname3.Data(),volpath3.Data()))
+     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname1.Data(),volpath1.Data()));
+
+ if(!gGeoManager->SetAlignableEntry(symname4.Data(),volpath4.Data()))
+     AliFatal(Form("Alignable entry %s not created. Volume path %s not valid",   symname2.Data(),volpath2.Data()));
+
 }
 
 
