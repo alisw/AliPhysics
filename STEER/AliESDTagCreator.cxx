@@ -1194,12 +1194,6 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName("default");
-
-  AliRunTag *tag = new AliRunTag();
-  AliEventTag *evTag = new AliEventTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
-  btag->SetCompressionLevel(9);
   
   AliInfo(Form("Creating the ESD tags......."));	
 
@@ -1229,6 +1223,12 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
  
   TFile* ftag = TFile::Open(fileName, "recreate");
  
+  AliRunTag *tag = new AliRunTag();
+  AliEventTag *evTag = new AliEventTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  btag->SetCompressionLevel(9);
+
   if(fLastEvent != -1) iNumberOfEvents = fLastEvent + 1;
   for (Int_t iEventNumber = fFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;

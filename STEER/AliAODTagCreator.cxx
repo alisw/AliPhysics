@@ -193,11 +193,6 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
   Int_t nMu1GeV, nMu3GeV, nMu10GeV;
   Int_t nEl1GeV, nEl3GeV, nEl10GeV;
   Float_t maxPt = .0, meanPt = .0, totalP = .0;
-
-  AliRunTag *tag = new AliRunTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
-  btag->SetCompressionLevel(9);
   
   //reading the esd tag file
   TChain *oldTagTree = new TChain("T");
@@ -210,14 +205,6 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
     if (strstr(name,tagPattern)) oldTagTree->Add(name);  
   }//directory loop
   AliInfo(Form("Chained tag files: %d",oldTagTree->GetEntries()));
-
-  //reading the esd tag file
-  AliRunTag *oldtag = new AliRunTag();
-  TString tagFilename;
-  oldTagTree->SetBranchAddress("AliTAG",&oldtag);
-  oldTagTree->GetEntry(0);
-  tag->CopyStandardContent(oldtag);
-  const TClonesArray *evTagList = oldtag->GetEventTags();
 
   AliInfo(Form("Creating the AOD tags......."));	
 
@@ -240,11 +227,24 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
 
   char fileName[256];
   sprintf(fileName, "Run%d.Event%d_%d.AOD.tag.root", 
-	  tag->GetRunId(),fFirstEvent,lastEvent );
+	  aod->GetRunNumber(),fFirstEvent,lastEvent );
   AliInfo(Form("writing tags to file %s", fileName));
   AliDebug(1, Form("writing tags to file %s", fileName));
  
   TFile* ftag = TFile::Open(fileName, "recreate");
+
+  AliRunTag *tag = new AliRunTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  btag->SetCompressionLevel(9);
+
+  //reading the esd tag file
+  AliRunTag *oldtag = new AliRunTag();
+  TString tagFilename;
+  oldTagTree->SetBranchAddress("AliTAG",&oldtag);
+  oldTagTree->GetEntry(0);
+  tag->CopyStandardContent(oldtag);
+  const TClonesArray *evTagList = oldtag->GetEventTags();
 
   // loop over events
   Int_t nEvents = aodTree->GetEntries();
