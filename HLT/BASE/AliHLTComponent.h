@@ -461,11 +461,13 @@ class AliHLTComponent : public AliHLTLogging {
    * Set the ID and Origin of an AliHLTComponentDataType structure.
    * The function sets the fStructureSize member and copies the strings
    * to the ID and Origin. Only characters from the valid part of the string
-   * are copied, the rest is fille with 0's.
+   * are copied, the rest is filled with 0's. <br>
    * Please note that the fID and fOrigin members are not strings, just arrays of
    * chars of size @ref kAliHLTComponentDataTypefIDsize and
    * @ref kAliHLTComponentDataTypefOriginSize respectively and not necessarily with
-   * a terminating zero.
+   * a terminating zero. <br>
+   * It is possible to pass NULL pointers as id or origin argument, in that case they
+   * are just ignored.
    * @param tgtdt   target data type structure
    * @param id      ID string
    * @param origin  Origin string
