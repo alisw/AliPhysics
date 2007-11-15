@@ -28,7 +28,7 @@ ClassImp(AliZDCHit)
 //_____________________________________________________________________________
 AliZDCHit::AliZDCHit() :
 //  AliHit(shunt, track),
-  fPrimKinEn(00),
+  fPrimKinEn(0.),
   fXImpact(0.),
   fYImpact(0.),
   fSFlag(0),
@@ -40,6 +40,7 @@ AliZDCHit::AliZDCHit() :
   //
   // Default constructor
   //
+  for(Int_t i=0; i<2; i++) fVolume[i] = 0;
 }
 
 //_____________________________________________________________________________
