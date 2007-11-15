@@ -176,7 +176,9 @@ const homer_uint8 kHOMERBigEndianByteOrder    = 2;
     const homer_uint8 kHOMERNativeByteOrder = kHOMERLittleEndianByteOrder;
 #warning Assuming little endian format for __CINT__
 #else
-#error Byte format (little/big endian) currently not defined for platforms other than intel i386 compatible, x86-64 (AMD64) and arm...
+    const homer_uint8 kHOMERNativeByteOrder = kHOMERLittleEndianByteOrder;
+#warning Assuming little endian format for unknown architecture
+//#error Byte format (little/big endian) currently not defined for platforms other than intel i386 compatible, x86-64 (AMD64) and arm...
 #endif
 #endif
 #endif
