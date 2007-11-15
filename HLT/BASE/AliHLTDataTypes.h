@@ -21,6 +21,8 @@
 /* Version   Description
  *   1       first version until June 07; implicite, not tagged
  *   2       introduced June 07, enhanced/cleaned/arranged structure
+ *   3       2007-11-15 RAW DDL data type added, some inconsistencies fixed
+ *           ('void' and 'any' origins)
  */
 #define ALIHLT_DATA_TYPES_VERSION 2
 
@@ -35,9 +37,13 @@ const int kAliHLTComponentDataTypefOriginSize=4;
 
 
 /** invalid data origin */
+# define kAliHLTDataOriginVoid "\0\0\0"
+/** old invalid data origin, kept for backward compatibility */
 # define kAliHLTVoidDataOrigin "\0\0\0"
 
-/** special id for any data type origin */
+/** wildcard data type origin */
+# define kAliHLTDataOriginAny "***"
+/** old wildcard data type origin, kept for backward compatibility */
 # define kAliHLTAnyDataOrigin "***"
 
 /** HLT out */
@@ -76,6 +82,9 @@ const int kAliHLTComponentDataTypefIDsize=8;
 
 /** special id for any data type id */
 # define kAliHLTAnyDataTypeID "*******"
+
+/** DDL RAW data */
+# define kAliHLTDDLRawDataTypeID   {'D','D','L','_','R','A','W',' '}
 
 /** calibration data for file exchange subscriber */
 # define kAliHLTFXSCalibDataTypeID {'F','X','S','_','C','A','L',' '}
@@ -305,7 +314,7 @@ extern "C" {
   const AliHLTComponentDataType kAliHLTVoidDataType = {
     sizeof(AliHLTComponentDataType),
     kAliHLTVoidDataTypeID,
-    kAliHLTVoidDataOrigin
+    kAliHLTDataOriginVoid
   };
 
   // there is currently a problem with rootcint if the predefined ids
@@ -316,7 +325,7 @@ extern "C" {
   const AliHLTComponentDataType kAliHLTAnyDataType = {
     sizeof(AliHLTComponentDataType),
     kAliHLTAnyDataTypeID,
-    kAliHLTAnyDataOrigin
+    kAliHLTDataOriginAny
   };
 
   /** multiple output data types */
@@ -336,6 +345,9 @@ extern "C" {
 
   /** Event type specification */
   extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
+
+/** RAW DDL data specification, data publisher will set type id and origin correctly */
+  extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
 
   //////////////////////////////////////////////////////////////////////////
   //

@@ -69,3 +69,10 @@ const AliHLTComponentDataType kAliHLTDataTypeEvent  = {
   kAliHLTEventDataTypeID,
   kAliHLTDataOriginPrivate
 };
+
+/** RAW DDL data specification, data publisher will set type id and origin correctly */
+const AliHLTComponentDataType kAliHLTDataTypeDDLRaw = {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTDDLRawDataTypeID,
+  kAliHLTDataOriginAny
+};
