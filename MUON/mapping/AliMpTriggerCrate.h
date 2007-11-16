@@ -30,7 +30,7 @@ class AliMpTriggerCrate : public  TNamed {
     // methods 
     Bool_t AddLocalBoard(Int_t localBoardId);
 
-    // get methods
+    /// get methods
     Int_t  GetDdlId() const;
     UShort_t GetId()  const;
     UShort_t GetMask() const;
@@ -40,7 +40,9 @@ class AliMpTriggerCrate : public  TNamed {
     Int_t  GetLocalBoardId(Int_t index) const;
     Bool_t HasLocalBoard(Int_t localBoardId) const;
     
-
+    /// set methods
+    void SetDdlId(Int_t ddl) {fDdlId = ddl;}
+    
   private:
     /// Not implemented
     AliMpTriggerCrate();

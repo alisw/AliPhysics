@@ -41,11 +41,18 @@ TString AliMpTriggerCrate::GenerateName(Int_t crateId, Int_t ddlId, Int_t nofDDL
 /// Generate name
 
   TString name;
-  // \todo parameterise this
-  if (crateId == 23)
+
+  if (crateId < 2)
+    name = Form("%d", crateId+1);
+  
+  if (crateId == 2)
       name = "2-3";
-  else 
+  
+  if (crateId > 2)
       name = Form("%d", crateId);
+  
+  if (crateId > 7)
+    printf("crateId index too large\n");
  
   if (ddlId == nofDDLs)
       name.Append("R");
