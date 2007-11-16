@@ -63,7 +63,8 @@ const TString AliMpFiles::fgkManuToSerial ="_manu";
 const TString AliMpFiles::fgkPadPosPrefix  = "padPos"; 
 const TString AliMpFiles::fgkDataExt = ".dat";      
 const TString AliMpFiles::fgkBergToGCFileName = "/bergToGC"; 
-const TString AliMpFiles::fgkTriggerLocalBoards = "crate";
+const TString AliMpFiles::fgkTriggerLocalBoards = "RegionalCrate";
+const TString AliMpFiles::fgkTriggerGlobalBoards = "GlobalCrate";
 const TString AliMpFiles::fgkBusPatchFileName = "DetElemIdToBusPatch";
 const TString AliMpFiles::fgkBusPatchLengthFileName = "BusPatchLength";
 //______________________________________________________________________________
@@ -190,6 +191,15 @@ TString AliMpFiles::LocalTriggerBoardMapping()
 
   return GetTop() + fgkDataDir + StationDataDir(AliMp::kStationTrigger) 
           + fgkTriggerLocalBoards + fgkDataExt;;
+}
+
+//______________________________________________________________________________
+TString AliMpFiles::GlobalTriggerBoardMapping()
+{
+/// Return path to data file with local trigger board mapping.
+
+  return GetTop() + fgkDataDir + StationDataDir(AliMp::kStationTrigger) 
+      + fgkTriggerGlobalBoards + fgkDataExt;;
 }
 
 //_____________________________________________________________________________

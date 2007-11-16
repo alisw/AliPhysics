@@ -49,7 +49,8 @@ class AliMpFiles : public TObject
     // trigger
     //
     static TString LocalTriggerBoardMapping();
-  
+    static TString GlobalTriggerBoardMapping();
+    
     // slats
     //
     static TString SlatFilePath(AliMp::StationType stationType, 
@@ -115,6 +116,7 @@ class AliMpFiles : public TObject
     static const TString fgkDataExt;       ///< file extension
     static const TString fgkBergToGCFileName;  ///< BergToGC mapping file name
     static const TString fgkTriggerLocalBoards;///<  local board name to id mapping
+    static const TString fgkTriggerGlobalBoards;///<  global board name to id mapping
     static const TString fgkBusPatchFileName;  ///< DetElemIdToBusPatch file name
     static const TString fgkBusPatchLengthFileName;///< BusPatch length file name
 
