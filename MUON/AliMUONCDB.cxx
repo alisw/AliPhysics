@@ -30,11 +30,6 @@
 
 #include "AliMUONCDB.h"
 
-#include "AliCodeTimer.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "AliDCSValue.h"
-#include "AliLog.h"
 #include "AliMUON1DArray.h"
 #include "AliMUON1DMap.h"
 #include "AliMUON2DMap.h"
@@ -47,6 +42,7 @@
 #include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
+
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
@@ -58,6 +54,13 @@
 #include "AliMpSegmentation.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+
+#include "AliCodeTimer.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliDCSValue.h"
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <TArrayI.h>
 #include <TClass.h>
@@ -160,7 +163,10 @@ AliMUONCDB::AliMUONCDB(const char* cdbpath)
   fMaxNofChannelsToGenerate(-1)
 {
   /// ctor
-    AliMpDDLStore::ReadData();
+    // Load mapping
+    if ( ! AliMpCDB::LoadMpSegmentation() ) {
+      AliFatal("Could not access mapping from OCDB !");
+    }
 }
 
 //_____________________________________________________________________________
