@@ -268,7 +268,7 @@ class AliHLTComponentHandler : public AliHLTLogging {
    * Compound descriptor for component libraries
    */
   struct AliHLTLibHandle {
-    AliHLTLibHandle() : fHandle(NULL), fName(NULL) {}
+    AliHLTLibHandle() : fHandle(NULL), fName(NULL), fMode(kDynamic) {}
     /** dlopen handle */
     void* fHandle;                                                 //! transient
     /** name of the library, casted to TString* before use */

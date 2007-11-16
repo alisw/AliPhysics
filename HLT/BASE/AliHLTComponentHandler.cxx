@@ -54,7 +54,8 @@ AliHLTComponentHandler::AliHLTComponentHandler()
   fScheduleList(),
   fLibraryList(),
   fEnvironment(),
-  fOwnedComponents()
+  fOwnedComponents(),
+  fLibraryMode(kDynamic)
 {
   // see header file for class documentation
   // or
@@ -72,7 +73,8 @@ AliHLTComponentHandler::AliHLTComponentHandler(AliHLTComponentEnvironment* pEnv)
   fScheduleList(),
   fLibraryList(),
   fEnvironment(),
-  fOwnedComponents()
+  fOwnedComponents(),
+  fLibraryMode(kDynamic)
 {
   // see header file for class documentation
   if (pEnv) {

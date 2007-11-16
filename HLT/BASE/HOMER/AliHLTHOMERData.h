@@ -203,8 +203,8 @@ class HOMERBlockDescriptor
 		}
 
 	HOMERBlockDescriptor( void* header = 0 )
+	  : fHeader(header)
 		{
-		fHeader = header;
 		}
 	void UseHeader( void* header )
 		{
