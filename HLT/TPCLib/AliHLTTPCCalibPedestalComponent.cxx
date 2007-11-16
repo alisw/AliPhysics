@@ -214,8 +214,8 @@ Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponent
     DataType2Text( iter->fDataType, tmp1 );
     DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
 
-    HLTDebug ( "Event received - Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
-	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+//     HLTDebug ( "Event received - Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
+// 	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
     // ** Get DDL ID in order to tell the memory reader which slice/patch to use
     slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
