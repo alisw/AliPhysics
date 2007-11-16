@@ -24,7 +24,7 @@ public:
   AliPMDQATask(const  AliPMDQATask& ta) ;  
 
   virtual ~AliPMDQATask() ;
-  AliPMDQATask& AliPMDQATask::operator = (const AliPMDQATask& ap) ; 
+  AliPMDQATask& operator = (const AliPMDQATask& ap) ; 
 
   virtual void Exec(Option_t * opt = "") ;
   virtual void ConnectInputData(Option_t *);
