@@ -33,7 +33,7 @@
 // Ch. Finck (20.08.07)
 
 void MUONGenerateMtgRegFile(Int_t mode = 2, Int_t coinc = 0, UInt_t defaultMask = 0xFFFF, 
-			    Int_t version = 1, TString name =  "MtgRegionalCrate" )
+			    Int_t version = 20, TString name =  "MtgRegionalCrate" )
 {
     // mode = 0,1; 2; 3 -> writing mode no filter; mask; overwrite
     // coinc = 0,1 -> coincidence 3/4, 4/4
@@ -84,16 +84,20 @@ void MUONGenerateMtgRegFile(Int_t mode = 2, Int_t coinc = 0, UInt_t defaultMask 
 	  // get local board object
 	  AliMpLocalBoard* localBoard = ddlStore->GetLocalBoard(localId);
 
-	  // pack switches
-	  UInt_t switchs = 0;
-	  if (localBoard->IsNotified()) {
-	    Int_t nSwitch = localBoard->GetNofSwitches(); 
-	    for (Int_t i = 0; i < nSwitch; ++i) 
-		switchs |= (localBoard->GetSwitch(i) << nSwitch-i-1);
-	  }
 	  // print out some info from local board
-	  fprintf(fp, "%02d %s %03d %03x\n", localBoard->GetSlot()-1, localBoard->GetName(), localId, switchs);
-	
+          fprintf(fp, "%02d %s %03d %03x\n", localBoard->GetSlot(), localBoard->GetName(), 
+                  localId, localBoard->GetSwitch());
+          
+          // print DE id
+          fprintf(fp, " ");
+          for (Int_t i = 0; i < localBoard->GetNofDEs(); ++i)
+            fprintf(fp, "%4d ", localBoard->GetDEId(i));
+          fprintf(fp, "\n");
+          
+          // print copy card numbers
+          fprintf(fp, " %4d %4d", localBoard->GetInputXfrom(), localBoard->GetInputXto());
+          fprintf(fp, " %4d %4d", localBoard->GetInputYfrom(), localBoard->GetInputYto());
+          fprintf(fp, " %4d\n",   localBoard->GetTC());
 	}
       }
     }
