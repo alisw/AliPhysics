@@ -342,10 +342,10 @@ void AliITSsimulationSDD::SDigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     if( !nhits ) return;
 
     InitSimulationModule( md, ev );
-    HitsToAnalogDigits( mod );
-    ChargeToSignal( fModule,kFALSE ); // - Process signal without add noise
+    HitsToAnalogDigits( mod );  // fills fHitMap2 which is = fHitSigmap2
+    ChargeToSignal( fModule,kFALSE,kTRUE ); // - Process signal adding gain without adding noise
     fHitMap2 = fHitNoiMap2;   // - Swap to noise map
-    ChargeToSignal( fModule,kTRUE );  // - Process only noise
+    ChargeToSignal( fModule,kTRUE,kFALSE );  // - Process only noise
     fHitMap2 = fHitSigMap2;   // - Return to signal map
     WriteSDigits();
     ClearMaps();
@@ -400,7 +400,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
     InitSimulationModule( md, ev );
 
     if( !nhits && fCheckNoise ) {
-        ChargeToSignal( fModule,kTRUE );  // process noise
+        ChargeToSignal( fModule,kTRUE,kFALSE );  // process noise
         GetNoise();
         ClearMaps();
         return;
@@ -408,7 +408,7 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
         if( !nhits ) return;
         
     HitsToAnalogDigits( mod );
-    ChargeToSignal( fModule,kTRUE );  // process signal + noise
+    ChargeToSignal( fModule,kTRUE,kTRUE );  // process signal + noise
 
     for( Int_t i=0; i<fNofMaps; i++ ) {
         for( Int_t j=0; j<fMaxNofSamples; j++ ) {
@@ -432,7 +432,6 @@ void AliITSsimulationSDD::DigitiseModule(AliITSmodule *mod,Int_t md,Int_t ev){
 void AliITSsimulationSDD::FinishDigits() {
     // introduce the electronics effects and do zero-suppression if required
 
-    ApplyDeadChannels(fModule);
     if( fCrosstalkFlag ) ApplyCrosstalk(fModule);
 
     AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(fModule);
@@ -701,103 +700,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
         } // end loop over "sub-hits"
     } // end loop over hits
 }
-/*
-//______________________________________________________________________
-void AliITSsimulationSDD::ListOfFiredCells(Int_t *arg,Double_t timeAmplitude,
-					   TObjArray *alist,TClonesArray *padr){
-    // Returns the list of "fired" cells.
 
-    Int_t index     = arg[0];
-    Int_t ik        = arg[1];
-    Int_t idtrack   = arg[2];
-    Int_t idhit     = arg[3];
-    Int_t counter   = arg[4];
-    Int_t countadr  = arg[5];
-    Double_t charge = timeAmplitude;
-    charge += fHitMap2->GetSignal(index,ik-1);
-    fHitMap2->SetHit(index, ik-1, charge);
-
-    Int_t digits[3];
-    Int_t it = (Int_t)((ik-1)/fScaleSize);
-    digits[0] = index;
-    digits[1] = it;
-    digits[2] = (Int_t)timeAmplitude;
-    Float_t phys;
-    if (idtrack >= 0) phys = (Float_t)timeAmplitude;
-    else phys = 0;
-
-    Double_t cellcharge = 0.;
-    AliITSTransientDigit* pdigit;
-    // build the list of fired cells and update the info
-    if (!fHitMap1->TestHit(index, it)) {
-        new((*padr)[countadr++]) TVector(3);
-        TVector &trinfo=*((TVector*) (*padr)[countadr-1]);
-        trinfo(0) = (Float_t)idtrack;
-        trinfo(1) = (Float_t)idhit;
-        trinfo(2) = (Float_t)timeAmplitude;
-      
-        alist->AddAtAndExpand(new AliITSTransientDigit(phys,digits),counter);
-        fHitMap1->SetHit(index, it, counter);
-        counter++;
-        pdigit=(AliITSTransientDigit*)alist->At(alist->GetLast());
-        // list of tracks
-        TObjArray *trlist=(TObjArray*)pdigit->TrackList();
-        trlist->Add(&trinfo);
-    } else {
-        pdigit = (AliITSTransientDigit*) fHitMap1->GetHit(index, it);
-        for(Int_t kk=0;kk<fScaleSize;kk++) {
-            cellcharge += fHitMap2->GetSignal(index,fScaleSize*it+kk);
-        }  // end for kk
-        // update charge
-        (*pdigit).fSignal = (Int_t)cellcharge;
-        (*pdigit).fPhysics += phys;                        
-        // update list of tracks
-        TObjArray* trlist = (TObjArray*)pdigit->TrackList();
-        Int_t lastentry = trlist->GetLast();
-        TVector *ptrkp = (TVector*)trlist->At(lastentry);
-        TVector &trinfo = *ptrkp;
-        Int_t lasttrack = Int_t(trinfo(0));
-        Float_t lastcharge=(trinfo(2));
-        if (lasttrack==idtrack ) {
-            lastcharge += (Float_t)timeAmplitude;
-            trlist->RemoveAt(lastentry);
-            trinfo(0) = lasttrack;
-            trinfo(1) = idhit;
-            trinfo(2) = lastcharge;
-            trlist->AddAt(&trinfo,lastentry);
-        } else {                  
-            new((*padr)[countadr++]) TVector(3);
-            TVector &trinfo=*((TVector*) (*padr)[countadr-1]);
-            trinfo(0) = (Float_t)idtrack;
-            trinfo(1) = (Float_t)idhit;
-            trinfo(2) = (Float_t)timeAmplitude;
-            trlist->Add(&trinfo);
-        } // end if lasttrack==idtrack
-
-        if(AliDebugLevel()){
-            // check the track list - debugging
-            Int_t trk[20], htrk[20];
-            Float_t chtrk[20];  
-            Int_t nptracks = trlist->GetEntriesFast();
-            if (nptracks > 2) {
-                Int_t tr;
-                for (tr=0;tr<nptracks;tr++) {
-                    TVector *pptrkp = (TVector*)trlist->At(tr);
-                    TVector &pptrk  = *pptrkp;
-                    trk[tr]   = Int_t(pptrk(0));
-                    htrk[tr]  = Int_t(pptrk(1));
-                    chtrk[tr] = (pptrk(2));
-                    cout << "nptracks "<<nptracks << endl;
-                } // end for tr
-            } // end if nptracks
-        } // end if AliDebugLevel()
-    } //  end if pdigit
-
-    // update counter and countadr for next call.
-    arg[4] = counter;
-    arg[5] = countadr;
-}
-*/
 //____________________________________________
 void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     // Adds a Digit.
@@ -843,115 +746,76 @@ void AliITSsimulationSDD::AddDigit( Int_t i, Int_t j, Int_t signal ) {
     delete [] charges;
 }
 //______________________________________________________________________
-void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise) {
-    // add baseline, noise, electronics and ADC saturation effects
+void AliITSsimulationSDD::ChargeToSignal(Int_t mod,Bool_t bAddNoise, Bool_t bAddGain) {
+  // add baseline, noise, gain, electronics and ADC saturation effects
+  // apply dead channels
 
-    char opt1[20], opt2[20];
-    AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(mod);
-    res->GetParamOptions(opt1,opt2);
-    Double_t baseline=0; 
-    Double_t noise=0; 
+  char opt1[20], opt2[20];
+  AliITSCalibrationSDD* res = (AliITSCalibrationSDD*)GetCalibrationModel(mod);
+  res->GetParamOptions(opt1,opt2);
+  Double_t baseline=0; 
+  Double_t noise=0; 
+  Double_t gain=0; 
+  Float_t contrib=0;
+  Int_t i,k,kk;
+  Float_t maxadc = res->GetMaxAdc();    
 
-    Float_t contrib=0;
-    Int_t i,k,kk;
-    Float_t maxadc = res->GetMaxAdc();    
+  for (i=0;i<fNofMaps;i++) {
+    if( !fAnodeFire[i] ) continue;
+    baseline = res->GetBaseline(i);
+    noise = res->GetNoise(i);
+    gain = res->GetChannelGain(i);
+    if(res->IsDead()) gain=0;
+    for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
+      fInZR[k]  = fHitMap2->GetSignal(i,k);
+      if(bAddGain) fInZR[k]*=gain;
+      if( bAddNoise ) {
+	contrib   = (baseline + noise*gRandom->Gaus());
+	fInZR[k] += contrib;
+      }
+      fInZI[k]  = 0.;
+    } // end for k
     if(!fDoFFT) {
-        for (i=0;i<fNofMaps;i++) {
-            if( !fAnodeFire[i] ) continue;
-	    baseline = res->GetBaseline(i);
-	    noise = res->GetNoise(i);
-	    
-            for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
-                fInZR[k]  = fHitMap2->GetSignal(i,k);
-                if( bAddNoise ) {
-                    contrib   = (baseline + noise*gRandom->Gaus());
-                    fInZR[k] += contrib;
-                }
-            } // end for k
-            for(k=0; k<fMaxNofSamples; k++) {
-                Double_t newcont = 0.;
-                Double_t maxcont = 0.;
-                for(kk=0;kk<fScaleSize;kk++) {
-                    newcont = fInZR[fScaleSize*k+kk];
-                    if(newcont > maxcont) maxcont = newcont;
-                } // end for kk
-		newcont = maxcont;
-                if (newcont >= maxadc) newcont = maxadc -1;
-                if(newcont >= baseline){
-                    Warning("","newcont=%d>=baseline=%d",newcont,baseline);
-                } // end if
-                // back to analog: ?
-                fHitMap2->SetHit(i,k,newcont);
-            }  // end for k
-        } // end for i loop over anodes
-        return;
-    } // end if DoFFT
-
-    for (i=0;i<fNofMaps;i++) {
-        if( !fAnodeFire[i] ) continue;
-	baseline = res->GetBaseline(i);
-	noise = res->GetNoise(i);
-	for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
-            fInZR[k]  = fHitMap2->GetSignal(i,k);
-            if( bAddNoise ) {
-                contrib   = (baseline + noise*gRandom->Gaus());
-                fInZR[k] += contrib;
-            }
-            fInZI[k]  = 0.;
-        } // end for k
-        FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
-        for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
-            Double_t rw = fElectronics->GetTraFunReal(k);
-            Double_t iw = fElectronics->GetTraFunImag(k);
-            fOutZR[k]   = fInZR[k]*rw - fInZI[k]*iw;
-            fOutZI[k]   = fInZR[k]*iw + fInZI[k]*rw;
-        } // end for k
-        FastFourierTransform(fElectronics,&fOutZR[0],&fOutZI[0],-1);
-        for(k=0; k<fMaxNofSamples; k++) {
-            Double_t newcont1 = 0.;
-            Double_t maxcont1 = 0.;
-            for(kk=0;kk<fScaleSize;kk++) {
-                newcont1 = fOutZR[fScaleSize*k+kk];
-                if(newcont1 > maxcont1) maxcont1 = newcont1;
-            } // end for kk
-            newcont1 = maxcont1;
-            if (newcont1 >= maxadc) newcont1 = maxadc -1;
-            fHitMap2->SetHit(i,k,newcont1);
-        } // end for k
-    } // end for i loop over anodes
-    return;
+      for(k=0; k<fMaxNofSamples; k++) {
+	Double_t newcont = 0.;
+	Double_t maxcont = 0.;
+	for(kk=0;kk<fScaleSize;kk++) {
+	  newcont = fInZR[fScaleSize*k+kk];
+	  if(newcont > maxcont) maxcont = newcont;
+	} // end for kk
+	newcont = maxcont;
+	if (newcont >= maxadc) newcont = maxadc -1;
+	if(newcont >= baseline){
+	  Warning("","newcont=%d>=baseline=%d",newcont,baseline);
+	} // end if
+	  // back to analog: ?
+	fHitMap2->SetHit(i,k,newcont);
+      }  // end for k
+    }else{
+      FastFourierTransform(fElectronics,&fInZR[0],&fInZI[0],1);
+      for(k=0; k<fScaleSize*fMaxNofSamples; k++) {
+	Double_t rw = fElectronics->GetTraFunReal(k);
+	Double_t iw = fElectronics->GetTraFunImag(k);
+	fOutZR[k]   = fInZR[k]*rw - fInZI[k]*iw;
+	fOutZI[k]   = fInZR[k]*iw + fInZI[k]*rw;
+      } // end for k
+      FastFourierTransform(fElectronics,&fOutZR[0],&fOutZI[0],-1);
+      for(k=0; k<fMaxNofSamples; k++) {
+	Double_t newcont1 = 0.;
+	Double_t maxcont1 = 0.;
+	for(kk=0;kk<fScaleSize;kk++) {
+	  newcont1 = fOutZR[fScaleSize*k+kk];
+	  if(newcont1 > maxcont1) maxcont1 = newcont1;
+	} // end for kk
+	newcont1 = maxcont1;
+	if (newcont1 >= maxadc) newcont1 = maxadc -1;
+	fHitMap2->SetHit(i,k,newcont1);
+      } // end for k
+    }
+  } // end for i loop over anodes
+  return;
 }
-//____________________________________________________________________
-void AliITSsimulationSDD::ApplyDeadChannels(Int_t mod) {    
-    // Set dead channel signal to zero
-    AliITSCalibrationSDD * calibr = (AliITSCalibrationSDD *)GetCalibrationModel(mod);
-    AliITSsegmentationSDD* seg = (AliITSsegmentationSDD*)GetSegmentationModel(1);
-    // nothing to do
-    if( calibr->IsDead() ||   
-        ( calibr->GetDeadChips() == 0 &&
-	  calibr->GetDeadChannels() == 0 ) ) return;  
-    
-    // static AliITS *iTS = (AliITS*)gAlice->GetModule( "ITS" );
 
-    Int_t fMaxNofSamples = seg->Npx();    
-    // AliITSgeom *geom = iTS->GetITSgeom();
-    // Int_t firstSDDMod = geom->GetStartDet( 1 );
-    // loop over wings
-    for( Int_t j=0; j<2; j++ ) {
-      // Int_t mod = (fModule-firstSDDMod)*2 + j;
-      for( Int_t u=0; u<calibr->Chips(); u++ )
-	for( Int_t v=0; v<calibr->Channels(); v++ ) {
-	  Float_t gain = calibr->Gain(j, u, v );
-	  for( Int_t k=0; k<fMaxNofSamples; k++ ) {
-	    Int_t i = j*calibr->Chips()*calibr->Channels() +
-	      u*calibr->Channels() + 
-	      v;
-	    Double_t signal =  gain * fHitMap2->GetSignal( i, k );
-	    fHitMap2->SetHit( i, k, signal );  ///
-	  }
-	}
-    } 
-}
 //______________________________________________________________________
 void AliITSsimulationSDD::ApplyCrosstalk(Int_t mod) {
     // function add the crosstalk effect to signal

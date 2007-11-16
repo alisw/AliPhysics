@@ -85,10 +85,8 @@ class AliITSsimulationSDD : public AliITSsimulation {
     // Set the output file name - for 1D encoding 
     virtual void SetFileName(const char *filnam) {fFileName=filnam;}
 
-    // add baseline, noise, electronics and ADC saturation effects
-    void ChargeToSignal(Int_t mod,Bool_t bAddNoise=kFALSE);
-    // add dead channels
-    void ApplyDeadChannels(Int_t mod);
+    // add baseline, noise, gain, electronics and ADC saturation effects
+    void ChargeToSignal(Int_t mod,Bool_t bAddNoise=kFALSE, Bool_t bAddGain=kTRUE);
     // add crosstalk effect
     void ApplyCrosstalk(Int_t mod);
     

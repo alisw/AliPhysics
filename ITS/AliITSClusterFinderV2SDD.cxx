@@ -75,14 +75,18 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      d=(AliITSdigitSDD*)digits->UncheckedAt(i);
      Int_t y=d->GetCoord2()+1;   //y
      Int_t z=d->GetCoord1()+1;   //z
-     Int_t q=d->GetSignal();
+     Float_t gain=cal->GetChannelGain(d->GetCoord1());
+     Float_t charge=d->GetSignal();
+
      if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
        Float_t baseline = cal->GetBaseline(d->GetCoord1());
-       if(q>baseline) q-=(Int_t)baseline;
-       else q=0;
+       if(charge>baseline) charge-=baseline;
+       else charge=0;
      }
-     if(q<cal->GetThresholdAnode(d->GetCoord1())) continue;
-     //if (q<3) continue;
+
+     if(gain>0) charge/=gain;
+     if(charge<cal->GetThresholdAnode(d->GetCoord1())) continue;
+     Int_t q=(Int_t)(charge+0.5);
 
      if (z <= nAnodes){
        bins[0][y*nzBins+z].SetQ(q);
@@ -293,12 +297,15 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());    
       AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
       const char *option=res->ZeroSuppOption();
-      Int_t q=input->GetSignal();
+      Float_t charge=input->GetSignal();
+      Float_t gain=cal->GetChannelGain(input->GetCoord1());
       if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
 	Float_t baseline = cal->GetBaseline(input->GetCoord1());
-	if(q>baseline) q-=(Int_t)baseline;
-	else q=0;
+	if(charge>baseline) charge-=baseline;
+	else charge=0;
       }
+      if(gain>0) charge/=gain;
+      Int_t q=(Int_t)(charge+0.5);
       if(q>=cal->GetThresholdAnode(input->GetCoord1())) {
 	Int_t iz = input->GetCoord1()+1;
 	Int_t side = ((AliITSRawStreamSDD*)input)->GetChannel();
