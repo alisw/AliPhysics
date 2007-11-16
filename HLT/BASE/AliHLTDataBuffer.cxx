@@ -471,7 +471,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::CreateRawBuffer(AliHLTUInt3
   }
   if (pRawBuffer!=NULL && fgkSafetyPatternSize>0) {
     //fgLogging.Logging(kHLTLogDebug, "AliHLTDataBuffer::CreateRawBuffer", "data buffer handling", "writing safety pattern to %p offset %d", (*buffer)->GetPointer(), (*buffer)->GetUsedSize());
-    //int res=pRawBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
+    int res=pRawBuffer->WritePattern(fgkSafetyPattern, fgkSafetyPatternSize);
     assert(res>=0);
   }
   return pRawBuffer;
