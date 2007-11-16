@@ -1203,11 +1203,9 @@ void TFluka::InitPhysics()
 //
 // Construct file names
     FILE *pFlukaVmcCoreInp, *pFlukaVmcFlukaMat, *pFlukaVmcInp;
-    TString sFlukaVmcCoreInp = getenv("ALICE_ROOT");
-    sFlukaVmcCoreInp +="/TFluka/input/";
     TString sFlukaVmcTmp = "flukaMat.inp";
     TString sFlukaVmcInp = GetInputFileName();
-    sFlukaVmcCoreInp += GetCoreInputFileName();
+    TString sFlukaVmcCoreInp = GetCoreInputFileName();
     
 // Open files 
     if ((pFlukaVmcCoreInp = fopen(sFlukaVmcCoreInp.Data(),"r")) == NULL) {
@@ -1339,7 +1337,10 @@ void TFluka::SetMaxStep(Double_t step)
     
 //    Int_t mreg=0, latt=0;
 //    fGeom->GetCurrentRegion(mreg, latt);
+
+    
     Int_t mreg = fGeom->GetCurrentRegion();
+    printf("SetMaxStep %5d %13.3f\n", mreg, step);
     STEPSZ.stepmx[mreg - 1] = step;
 }
 

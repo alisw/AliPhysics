@@ -16,6 +16,7 @@ ln -s fluka.out fort.11
 
 #Link FlukaConfig.C as Config.C
 ln -fs $ALICE_ROOT/TFluka/macro/FlukaConfig.C Config.C
+ln -fs $ALICE_ROOT/TFluka/input/coreFlukaVmc.inp coreFlukaVmc.inp
 echo 'Execute: gAlice->Init() OR gAlice->RunMC() at the ROOT prompt'
 # Launch aliroot
 aliroot
