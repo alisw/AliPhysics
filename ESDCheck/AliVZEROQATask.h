@@ -5,27 +5,32 @@
 //___________________________________________________________________________
 //
 //   An analysis task to check the VZERO data in simulated data
+//   An analysis task to check the VZERO data in simulated data
+//   An analysis task to check the VZERO data in simulated data
+//   An analysis task to check the VZERO data in simulated data
 //
 //___________________________________________________________________________
 
-#include <TTree.h> 
 #include "AliAnalysisTask.h" 
 
 class AliESD; 
 class TH1I; 
+class TTree ; 
 
 class AliVZEROQATask : public AliAnalysisTask {
 
 public:
   AliVZEROQATask(const char *name);
+  AliVZEROQATask(const AliVZEROQATask& ta) ;  
   virtual  ~AliVZEROQATask();
-   
+  AliVZEROQATask& AliVZEROQATask::operator = (const AliVZEROQATask& ap) ; 
+
   virtual void Exec(Option_t * opt = "");
   virtual void ConnectInputData(Option_t *); 
   virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "");
 
-public:
+private:
   
   TTree   * fChain;             //! pointer to the analyzed TTree or TChain
   AliESD  * fESD;               //! declaration of leave types

@@ -25,7 +25,6 @@
 #include <TCanvas.h>
 #include <TChain.h>
 #include <TFile.h> 
-#include <TH1F.h>
 #include <TH2F.h>
 #include <TLine.h> 
 #include <TROOT.h>
@@ -86,6 +85,63 @@ AliPMDQATask::AliPMDQATask(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+}
+
+//______________________________________________________________________________
+AliPMDQATask::AliPMDQATask(const  AliPMDQATask& ta) : 
+AliAnalysisTask(ta.GetName(), ""),  
+fChain(ta.fChain),
+fESD(ta.fESD), 
+fhPMDP1(ta.fhPMDP1),
+fhPMDC2(ta.fhPMDC2),
+fhPMDP2(ta.fhPMDP2),
+fhPMDC3(ta.fhPMDC3),
+fhPMDP3(ta.fhPMDP3),
+fhPMDP4(ta.fhPMDP4),
+fhPMDC5(ta.fhPMDC5),
+fhPMDP5(ta.fhPMDP5),
+fhPMDCP0(ta.fhPMDCP0),
+fhPMDCP1(ta.fhPMDCP1),
+fhPMDCP2(ta.fhPMDCP2),
+fhPMDCP3(ta.fhPMDCP3),
+fhPMDCP4(ta.fhPMDCP4),
+fhPMDSM1(ta.fhPMDSM1),
+fhPMDSM2(ta.fhPMDSM2),
+fhPMDSM3(ta.fhPMDSM3),
+fhPMDSM4(ta.fhPMDSM4),
+fhPMDSM5(ta.fhPMDSM5),
+fhPMDSM6(ta.fhPMDSM6),
+fhPMDSM7(ta.fhPMDSM7),
+fhPMDSM8(ta.fhPMDSM8),
+fhPMDSM9(ta.fhPMDSM9),
+fhPMDSM10(ta.fhPMDSM10),
+fhPMDSM11(ta.fhPMDSM11),
+fhPMDSM12(ta.fhPMDSM12),
+fhPMDSM13(ta.fhPMDSM13),
+fhPMDSM14(ta.fhPMDSM14),
+fhPMDSM15(ta.fhPMDSM15),
+fhPMDSM16(ta.fhPMDSM16),
+fhPMDSM17(ta.fhPMDSM17),
+fhPMDSM18(ta.fhPMDSM18),
+fhPMDSM19(ta.fhPMDSM19),
+fhPMDSM20(ta.fhPMDSM20),
+fhPMDSM21(ta.fhPMDSM21),
+fhPMDSM22(ta.fhPMDSM22),
+fhPMDSM23(ta.fhPMDSM23),
+fhPMDSM24(ta.fhPMDSM24),
+fhPMDSM (ta.fhPMDSM)
+{
+	// copy constructor
+}
+
+//_____________________________________________________________________________
+AliPMDQATask& AliPMDQATask::operator = (const AliPMDQATask& ap)
+{
+	// assignment operator
+	
+	this->~AliPMDQATask();
+	new(this) AliPMDQATask(ap);
+	return *this;
 }
 
 //______________________________________________________________________________
@@ -602,7 +658,7 @@ void AliPMDQATask::Terminate(Option_t *)
 }
 
 //______________________________________________________________________________
-void AliPMDQATask::CalculateSMN( Float_t clsX, Float_t clsY, Int_t & smn)
+void AliPMDQATask::CalculateSMN( Float_t clsX, Float_t clsY, Int_t & smn) const 
 {
   Double_t xcon[96] = {75.133, 54.204, 53.254, 32.326, 31.376,10.447,
 		       75.133, 54.204, 53.254, 32.326, 31.376,10.447,
@@ -721,7 +777,7 @@ void AliPMDQATask::CalculateSMN( Float_t clsX, Float_t clsY, Int_t & smn)
  }
 
 //______________________________________________________________________________
-void AliPMDQATask::DrawPMDBoundary()
+void AliPMDQATask::DrawPMDBoundary() const 
 {
   // Draw PMD boundaries 
   
@@ -735,7 +791,7 @@ void AliPMDQATask::DrawPMDBoundary()
 }
 
 //______________________________________________________________________________
-void AliPMDQATask::DrawPMDBoundarySM1()
+void AliPMDQATask::DrawPMDBoundarySM1() const 
 {
   // Draw boundaries of Super Module 1 
 
@@ -749,7 +805,7 @@ void AliPMDQATask::DrawPMDBoundarySM1()
 }
 
 //______________________________________________________________________________
-void AliPMDQATask::DrawPMDBoundarySM2()
+void AliPMDQATask::DrawPMDBoundarySM2() const 
 {
   // Draw boundaries of Super Module 2 
 
@@ -764,7 +820,7 @@ void AliPMDQATask::DrawPMDBoundarySM2()
 
 
 //______________________________________________________________________________
-void AliPMDQATask::DrawPMDBoundarySM3()
+void AliPMDQATask::DrawPMDBoundarySM3() const 
 {
   // Draw boundaries of Super Module 3 
 
@@ -778,7 +834,7 @@ void AliPMDQATask::DrawPMDBoundarySM3()
 }
 
 //______________________________________________________________________________
-void AliPMDQATask::DrawPMDBoundarySM4()
+void AliPMDQATask::DrawPMDBoundarySM4() const 
 {
   // Draw boundaries of Super Module 4 
 

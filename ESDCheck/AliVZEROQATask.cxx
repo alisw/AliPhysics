@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
+ *                                                                              *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -16,6 +16,10 @@
 /* $Id$ */
 //
 // An analysis task to check the ESD VZERO data in simulated data
+// An analysis task to check the ESD VZERO data in simulated data
+// An analysis task to check the ESD VZERO data in simulated data
+// An analysis task to check the ESD VZERO data in simulated data
+// An analysis task to check the ESD VZERO data in simulated data
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -23,11 +27,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TH1.h>
-#include <TH1F.h>
-#include <TH1I.h>
 #include <TCanvas.h>
-#include <TLegend.h> 
-#include <TVector3.h> 
 #include <TFile.h> 
 #include <TString.h> 
 
@@ -53,6 +53,30 @@ AliVZEROQATask::AliVZEROQATask(const char *name) :
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+}
+
+AliVZEROQATask::AliVZEROQATask(const AliVZEROQATask& ta) : 
+AliAnalysisTask(ta.GetName(),""),  
+fChain(ta.fChain),
+fESD(ta.fESD),
+fOutputContainer(ta.fOutputContainer), 
+fhVZERONbPMA(ta.fhVZERONbPMA),
+fhVZERONbPMC(ta.fhVZERONbPMC),
+fhVZEROMultA(ta.fhVZEROMultA),
+fhVZEROMultC(ta.fhVZEROMultC)
+
+{
+	// copy constructor
+}
+
+//_____________________________________________________________________________
+AliVZEROQATask& AliVZEROQATask::operator = (const AliVZEROQATask& ap)
+{
+	// assignment operator
+	
+	this->~AliVZEROQATask();
+	new(this) AliVZEROQATask(ap);
+	return *this;
 }
 
 //______________________________________________________________________________

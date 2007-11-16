@@ -4,35 +4,40 @@
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
 // An analysis task to check the PMD  data in simulated data
+// An analysis task to check the PMD  data in simulated data
+// An analysis task to check the PMD  data in simulated data
 //
 //*-- Yves Schutz 
 //////////////////////////////////////////////////////////////////////////////
 
-#include <TTree.h> 
 #include "AliAnalysisTask.h"  
 
 class AliESD ; 
 class TH2F ; 
 class TH1F ; 
+class TTree ; 
 
 class AliPMDQATask : public AliAnalysisTask {
 
 public:
   AliPMDQATask(const char *name) ;
+  AliPMDQATask(const  AliPMDQATask& ta) ;  
+
   virtual ~AliPMDQATask() ;
-   
+  AliPMDQATask& AliPMDQATask::operator = (const AliPMDQATask& ap) ; 
+
   virtual void Exec(Option_t * opt = "") ;
   virtual void ConnectInputData(Option_t *);
   virtual void CreateOutputObjects();
   virtual void Terminate(Option_t * opt = "") ;
 
 private:
-  void CalculateSMN( Float_t clsX, Float_t clsY, Int_t & smn) ; 
-  void DrawPMDBoundary() ;
-  void DrawPMDBoundarySM1() ;
-  void DrawPMDBoundarySM2() ;
-  void DrawPMDBoundarySM3() ;
-  void DrawPMDBoundarySM4() ;
+  void CalculateSMN( Float_t clsX, Float_t clsY, Int_t & smn) const ; 
+  void DrawPMDBoundary() const ;
+  void DrawPMDBoundarySM1() const ;
+  void DrawPMDBoundarySM2() const  ;
+  void DrawPMDBoundarySM3() const ;
+  void DrawPMDBoundarySM4() const ;
 
 private:
   TTree   * fChain ;            //!pointer to the analyzed TTree or TChain
