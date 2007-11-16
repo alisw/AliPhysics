@@ -147,7 +147,15 @@ void AliMUONPairLight::SetProcess(){
 	return;
       }
     }
-  }  
+  }
+
+  //now, check if we have a correlated pi/K:
+  if(this->IsDimuonFromCorrPiK()){
+    this->SetCorrelated(kTRUE); 
+    this->SetCauseOfCorrelation(mu1->GetParentPDGCode(0));
+    fCreationProcess = -1;
+  }
+
   // if Open Beauty/Charm we can have 3 creation processes 
   // (pair creation [0], gluon splitting [1] or flavour excitation [2])
   // 1.) gluon splitting: gluon (stored with index 2, id=21) must be the same 
@@ -172,6 +180,7 @@ void AliMUONPairLight::SetProcess(){
       }
     }
   }
+
   Int_t line1 = mu1->GetQuarkPythiaLine(2); //[2] ... very first quark
   Int_t line2 = mu2->GetQuarkPythiaLine(2); 
 
@@ -204,8 +213,8 @@ void AliMUONPairLight::SetProcess(){
     }
   }
 
-
-  // 3.)flavour excitation:
+  // 3.)flavour excitation: if pythia line 6 of one track *and* pythia line 7 of second track
+  // are filled with a Q and Qbar and if in addition there is another heavy quark in line(s) 4 and/or 5
   Int_t line2or3[2] = {-1, -1}; //holds the index of g/q in line 2 or 3
   Int_t flavourLine2or3[2] = {-1, -1};
   for (Int_t imoth1 = 3; imoth1>=0; imoth1--) { 
@@ -250,6 +259,54 @@ void AliMUONPairLight::SetProcess(){
       //among which there are mostly soft particles)
       if(flavPar1 == flavPar2){
 
+	this->SetCorrelated(kTRUE);
+	fCreationProcess = 1;
+	if(GetCauseOfCorrelation() == -1){
+	  this->SetCauseOfCorrelation(mu1->GetQuarkPDGCode(1));
+	}
+	return;
+      }
+    }
+  }
+
+  //in initial-state-radiation produced QQbar events the "mother quark"
+  //is acknowledged as the second quark [1] and sits in line 2 or 3
+  //is part of gluon splitting
+  line1 = mu1->GetQuarkPythiaLine(1); //[1] ... direct mother quark of outgoing quark in [0]
+  line2 = mu2->GetQuarkPythiaLine(1); 
+  if(line1 == line2 && (line1 == 2 || line1 == 3)){
+    if((TMath::Abs(mu1->GetQuarkPDGCode(0)) == 4 && TMath::Abs(mu2->GetQuarkPDGCode(0)) == 4) ||
+       (TMath::Abs(mu1->GetQuarkPDGCode(0)) == 5 && TMath::Abs(mu2->GetQuarkPDGCode(0)) == 5)){
+
+      //now, check also that the string fragmented into two hadrons
+      //of the same flavour (string usually splits into many hadrons
+      //among which there are mostly soft particles)
+      if(flavPar1 == flavPar2){
+	
+	this->SetCorrelated(kTRUE);
+	fCreationProcess = 1;
+	if(GetCauseOfCorrelation() == -1){
+	  this->SetCauseOfCorrelation(mu1->GetQuarkPDGCode(1)); //should be flagged as initial state radiation?
+	}
+	return;
+      }
+    }
+  }
+
+  //in final-state-radiation produced QQbar events the "mother quark"
+  //is acknowledged as the first quark [1] and sits in line 6 or 7
+  //is part of gluon splitting
+  line1 = mu1->GetQuarkPythiaLine(1); //[1] ... direct mother quark 
+  line2 = mu2->GetQuarkPythiaLine(1); 
+  if(line1 == line2 && (line1 == 6 || line1 == 7)){
+    if((TMath::Abs(mu1->GetQuarkPDGCode(0)) == 4 && TMath::Abs(mu2->GetQuarkPDGCode(0)) == 4) ||
+       (TMath::Abs(mu1->GetQuarkPDGCode(0)) == 5 && TMath::Abs(mu2->GetQuarkPDGCode(0)) == 5)){
+
+      //now, check also that the string fragmented into two hadrons
+      //of the same flavour (string usually splits into many hadrons
+      //among which there are mostly soft particles)
+      if(flavPar1 == flavPar2){
+	
 	this->SetCorrelated(kTRUE);
 	fCreationProcess = 1;
 	if(GetCauseOfCorrelation() == -1){
@@ -336,8 +393,8 @@ void AliMUONPairLight::PrintInfo(Option_t* opt){
     printf("Generated:     Px = %1.3f, Py = %1.3f, Pz = %1.3f\n", momGen.Px(), momGen.Py(), momGen.Pz());
     printf("Reconstructed: Px = %1.3f, Py = %1.3f, Pz = %1.3f\n", momRec.Px(), momRec.Py(), momRec.Pz());
     //rapidity, pT, angles, ...
-    printf("Rec. variables: pT %1.3f, pseudo-rapidity %1.3f, openingAngle %1.3f (%1.3f degree), theta %1.3f (%1.3f degree), phi %1.3f (%1.3f degree)\n", 
-	   momRec.Pt(), momRec.Eta(), 
+    printf("Rec. variables: mass %1.3f, pT %1.3f, pseudo-rapidity %1.3f, openingAngle %1.3f (%1.3f degree), theta %1.3f (%1.3f degree), phi %1.3f (%1.3f degree)\n", 
+	   momRec.M(), momRec.Pt(), momRec.Eta(), 
 	   TMath::Pi()/180.*this->GetOpeningAngle(), this->GetOpeningAngle(), 
 	   momRec.Theta(), 180./TMath::Pi() * momRec.Theta(), 
 	   momRec.Phi(), 180./TMath::Pi() * momRec.Phi());
@@ -356,4 +413,17 @@ Double_t AliMUONPairLight::GetOpeningAngle() {
   Double_t modMu1 = pRecMu13.Mag();
   Double_t theta = (TMath::ACos(scalar/(modMu0*modMu1)))*(180./TMath::Pi());
   return theta; 
+}
+//================================================
+Bool_t AliMUONPairLight::IsDimuonFromCorrPiK(){
+  ///check if we have a correlated pi/K
+
+  AliMUONTrackLight *mu0 = this->GetMuon(0), *mu1 = this->GetMuon(1);
+  Bool_t fromSameLine = kFALSE;
+  if (mu0->IsParentPionOrKaon() &&
+      mu1->IsParentPionOrKaon() &&
+      mu1->GetQuarkPythiaLine() == mu0->GetQuarkPythiaLine()
+      ) fromSameLine = kTRUE;
+
+  return fromSameLine;
 }
