@@ -66,13 +66,13 @@ AliTRDSensorArray::AliTRDSensorArray (const char * amanda,
 	if(entries > 1){
 	  for(Int_t k = 0; k < entries; k++){
 	    TString name (Form(amanda, k));
-	    printf("name is %s of %d\n",(const char*)name,k);
+	    //printf("name is %s of %d\n",(const char*)name,k);
 	    ((AliDCSSensor *) fSensors->UncheckedAt(k))->SetStringID(name);
 	  }
 	}
 	else{
 	  TString name (amanda);
-	  printf("name is %s\n",(const char*)name);
+	  //printf("name is %s\n",(const char*)name);
 	  ((AliDCSSensor *) fSensors->UncheckedAt(0))->SetStringID(name);
 	}
 
@@ -176,6 +176,9 @@ TObjArray *  AliTRDSensorArray::GetList ()
 				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_gasH2O", 			"trd_gasH2O",  
+				    -1, (TClonesArray*)listSensor1.Clone ());
+	list->Add (aH);
+	aH = new AliTRDSensorArray ("trd_gasCO2", 			"trd_gasCO2",  
 				    -1, (TClonesArray*)listSensor1.Clone ());
 	list->Add (aH);
 	aH = new AliTRDSensorArray ("trd_gasOverpressure", 	"trd_gasOverpressure",  
