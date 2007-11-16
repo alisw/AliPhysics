@@ -16,6 +16,7 @@ class TClonesArray;
 class AliMCEventHandler;
 class AliMUONDataInterface;
 class AliMUONVTrackStore;
+class AliESDEvent;
 
 class AliMUONRecoCheck : public TObject 
 {
@@ -23,13 +24,26 @@ public:
   AliMUONRecoCheck(Char_t *chLoader, Char_t *pathSim = "./");
   virtual ~AliMUONRecoCheck();
 
-  Int_t NumberOfEvents() const;
-  
+  /// Return the list of reconstructed tracks
   AliMUONVTrackStore* ReconstructedTracks(Int_t event);
   
+  /// Create and return a list of reconstructed tracks from ESD data.
+  static AliMUONVTrackStore* ReconstructedTracks(AliESDEvent* esd, Bool_t padMissing = kFALSE);
+  
+  /// Return reference muon tracks
   AliMUONVTrackStore* TrackRefs(Int_t event);
 
+  /// Return reconstructible reference tracks
   AliMUONVTrackStore* ReconstructibleTracks(Int_t event);
+  
+  /// Return the total number of events.
+  Int_t NumberOfEvents() const;
+  
+  /// Return the interface to the reconstructed data.
+  AliMUONDataInterface* GetDataInterface() { return fDataInterface; };
+  
+  /// Return the interface to the Monte Carlo data.
+  AliMCEventHandler* GetMCEventHandler() { return fMCEventHandler; };
   
 private:
   /// Not implemented

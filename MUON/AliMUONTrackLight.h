@@ -95,7 +95,7 @@ class AliMUONTrackLight : public TObject {
   void SetTriggered(Bool_t isTriggered) { fIsTriggered = isTriggered; } 
   /// Return flag for trigger  
   Bool_t IsTriggered() const { return fIsTriggered; } 
-  TParticle* FindRefTrack(AliMUONTrack* trackReco, AliMUONVTrackStore* trackRefArray, AliStack* stack);
+  TParticle* FindRefTrack(AliMUONTrack* trackReco, AliMUONVTrackStore* trackRefArray, AliStack* stack, Bool_t tempfix = kFALSE);
   Int_t TrackCheck(Bool_t *compTrack);
   /// Return acually filled no. of *fragmented* parents 
   Int_t GetNParents() const {return fNParents;}

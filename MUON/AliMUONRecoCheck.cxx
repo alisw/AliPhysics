@@ -23,6 +23,12 @@
 /// hit in chamber (0..9) and from kinematics for the vertex parameters.     
 //-----------------------------------------------------------------------------
 
+// 13 Nov 2007:
+// Added a method to create a list of reconstructed AliMUONTrack objects from
+// ESD data. This is necessary since the track objects that are actually created
+// during offline reconstruction are no longer stored to disk.
+//  - Artur Szostak <artursz@iafrica.com>
+
 #include "AliMUONRecoCheck.h"
 #include "AliMUONRawClusterV2.h"
 #include "AliMUONTrack.h"
@@ -34,12 +40,15 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
-#include "AliLog.h" 
+#include "AliLog.h"
+#include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
 
 #include <TParticle.h>
 #include <TParticlePDG.h>
-
 #include <Riostream.h>
+
+#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRecoCheck)
@@ -102,6 +111,85 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event)
   fRecoTrackStore = new AliMUONTrackStoreV1();
   
   return fRecoTrackStore;
+}
+
+//_____________________________________________________________________________
+AliMUONVTrackStore*
+AliMUONRecoCheck::ReconstructedTracks(AliESDEvent* esd, Bool_t padMissing)
+{
+  /// Create and return a list of reconstructed tracks from ESD data.
+  /// Note: the returned object must be deleted by the caller with the delete operator!
+  /// For example:
+  ///
+  ///   AliMUONVTrackStore* tracks = AliMUONRecoCheck::ReconstructedTracks(esd);
+  ///   delete tracks;
+  ///
+  /// If the padMissing flag is set to kTRUE then the missing hits on chambers [2..14]
+  /// are added with the coordinate (0, 0, 0). This should be fixed in the MUON ESD
+  /// structure, hopefully soon.
+  
+  assert( esd != NULL );
+  
+  AliMUONVTrackStore* store = new AliMUONTrackStoreV1;
+  
+  Int_t nTracks = Int_t(esd->GetNumberOfMuonTracks());
+  for (Int_t i = 0; i < nTracks; i++)
+  {
+    AliESDMuonTrack* esdTrack = esd->GetMuonTrack(i);
+    AliMUONTrack track;
+    
+    // Fill the track parameters at the vertex.
+    AliMUONTrackParam vertexParams, ch1Params;
+    vertexParams.GetParamFrom(*esdTrack);
+    ch1Params.GetParamFromUncorrected(*esdTrack);
+    ch1Params.GetCovFrom(*esdTrack);
+    
+    // Create the hit on chamber 1 (assume the same values as uncorrected track params)
+    AliMUONRawClusterV2 hit(0, 0, 0); // ChamberID = 0, but unknown DE or cluster index so set those to zero.
+    hit.SetXYZ(ch1Params.GetNonBendingCoor(), ch1Params.GetBendingCoor(), ch1Params.GetZ());
+    hit.SetErrXY(AliMUONConstants::DefaultNonBendingReso(), AliMUONConstants::DefaultBendingReso());
+
+    track.SetTrackParamAtVertex(&vertexParams);
+    track.AddTrackParamAtCluster(ch1Params, hit, kTRUE);
+    
+    if (padMissing)
+    {
+      // We need to add fake hits so that AliMUONTrack::CompatibleTrack will be able to
+      // match these tracks to the reference tracks returned by the TrackRefs method.
+      for (Int_t chamber = 1; chamber < AliMUONConstants::NTrackingCh(); chamber++)
+      {
+        if (esdTrack->IsInMuonClusterMap(chamber))
+        {
+          AliMUONTrackParam fakeParams;
+          fakeParams.SetZ(AliMUONConstants::DefaultChamberZ(chamber));
+          fakeParams.SetBendingCoor(0);
+          fakeParams.SetNonBendingCoor(0);
+          AliMUONRawClusterV2 fakeHit(chamber, 0, 0); // Unknown DE or cluster index so set to zero.
+          fakeHit.SetXYZ(0, 0, AliMUONConstants::DefaultChamberZ(chamber));
+          fakeHit.SetErrXY(AliMUONConstants::DefaultNonBendingReso(), AliMUONConstants::DefaultBendingReso());
+          track.AddTrackParamAtCluster(fakeParams, fakeHit, kTRUE);
+        }
+      }
+      for (Int_t chamber = AliMUONConstants::NTrackingCh(); chamber < AliMUONConstants::NCh(); chamber++)
+      {
+        Int_t bit = 3 - (chamber - AliMUONConstants::NTrackingCh());
+        if ( ((esdTrack->GetHitsPatternInTrigCh() >> bit) & 0x11) != 0 )
+        {
+          AliMUONTrackParam fakeParams;
+          fakeParams.SetZ(AliMUONConstants::DefaultChamberZ(chamber));
+          fakeParams.SetBendingCoor(0);
+          fakeParams.SetNonBendingCoor(0);
+          AliMUONRawClusterV2 fakeHit(chamber, 0, 0); // Unknown DE or cluster index so set to zero.
+          fakeHit.SetXYZ(0, 0, AliMUONConstants::DefaultChamberZ(chamber));
+          fakeHit.SetErrXY(1, 1);
+          track.AddTrackParamAtCluster(fakeParams, fakeHit, kTRUE);
+        }
+      }
+    }
+    store->Add(track);
+  }
+  
+  return store;
 }
 
 //_____________________________________________________________________________
