@@ -651,7 +651,8 @@ void TFluka::Gstpar(Int_t itmed, const char* param, Double_t parval) {
        strncmp(param, "HADR",  4) == 0 ||
        strncmp(param, "LOSS",  4) == 0 ||
        strncmp(param, "MULS",  4) == 0 ||
-       strncmp(param, "RAYL",  4) == 0) 
+       strncmp(param, "RAYL",  4) == 0 ||
+       strncmp(param, "STRA",  4) == 0) 
    {
        process = kTRUE;
    } 
@@ -1340,7 +1341,6 @@ void TFluka::SetMaxStep(Double_t step)
 
     
     Int_t mreg = fGeom->GetCurrentRegion();
-    printf("SetMaxStep %5d %13.3f\n", mreg, step);
     STEPSZ.stepmx[mreg - 1] = step;
 }
 
@@ -1980,9 +1980,25 @@ Bool_t   TFluka::IsTrackStop() const
 //______________________________________________________________________________ 
 Bool_t   TFluka::IsTrackAlive() const
 {
-// means not disappeared or not out
-  if (IsTrackDisappeared() || IsTrackOut() ) return 0;
-  else return 1;
+// Means not disappeared or not out
+    FlukaProcessCode_t icode = GetIcode();
+    
+    if (IsTrackOut()               || 
+	IsTrackStop()              ||
+	icode == kKASKADinelint    || // inelastic interaction
+	icode == kKASKADdecay      || // particle decay
+	icode == kEMFSCOanniflight || // in-flight annihilation
+	icode == kEMFSCOannirest   || // annihilation at rest
+	icode == kEMFSCOpair       || // pair production
+	icode == kEMFSCOphotoel    || // Photoelectric effect
+	icode == kKASNEUhadronic      // hadronic interaction
+	) 
+    {
+	// Exclude the cases for which the particle has disappeared (paused) but will reappear later (= alive).
+	return 0;
+    } else {
+	return 1;
+    }
 }
 
 //
