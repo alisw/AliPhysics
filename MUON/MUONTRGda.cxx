@@ -47,6 +47,7 @@ extern "C" {
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVStore.h"
 #include "AliMUONCalibParamND.h"
+#include "AliMUONCalibParamNI.h"
 #include "AliMUON1DArray.h"
 #include "AliMUONTriggerIO.h"
 
@@ -101,7 +102,7 @@ Int_t gPrintLevel = 0;
 
 AliMUONVStore* gLocalMasks    = 0x0;
 AliMUONVStore* gRegionalMasks = 0x0;
-AliMUONVCalibParam* globalMasks = 0x0;
+AliMUONVCalibParam* gGlobalMasks = 0x0;
 
 AliMUONTriggerIO gTriggerIO;
 
@@ -109,7 +110,7 @@ AliMUONVStore* gPatternStore =  new AliMUON1DArray(gkNLocalBoard+9);
 
 Char_t gHistoFileName[256];
 
-Float_t gkThreshold = 0.8;
+Float_t gkThreshold = 0.2;
 
 //__________________________________________________________________
 void UpdateLocalMask(Int_t localBoardId, Int_t connector, Int_t strip)
@@ -414,14 +415,14 @@ void ReadMaskFiles()
     // read mask files
     gLocalMasks    = new AliMUON1DArray(gkNLocalBoard+9);
     gRegionalMasks = new AliMUON1DArray(16);
-
+    gGlobalMasks   = new AliMUONCalibParamNI(1,2,1,0,0);
 
     TString localFile    = gLocalMaskFileName;
     TString regionalFile = gRegionalFileName;
     TString globalFile   = gGlobalFileName;
 
     gTriggerIO.ReadMasks(localFile.Data(), regionalFile.Data(), globalFile.Data(),
-			 gLocalMasks, gRegionalMasks, globalMasks, false);			
+			 gLocalMasks, gRegionalMasks, gGlobalMasks, false);			
 }
 //__________
 void MakePattern(Int_t localBoardId, TArrayS& xPattern,  TArrayS& yPattern)
@@ -577,8 +578,7 @@ void MakePatternStore(Bool_t pedestal = true)
       // write last current file
       WriteLastCurrentFile();
 
-      gTriggerIO.WriteMasks(gLocalMaskFileName, gRegionalFileName, " ", gLocalMasks, gRegionalMasks , 0);
-
+      gTriggerIO.WriteMasks(gLocalMaskFileName, gRegionalFileName, gGlobalFileName, gLocalMasks, gRegionalMasks, gGlobalMasks);
     }
 }
 
@@ -596,7 +596,6 @@ int main(Int_t argc, Char_t **argv)
     Int_t maxEvents  = 1000000;
     Char_t inputFile[256];
     TString flatOutputFile;
-    TString configFile;
 
 // option handler
 
@@ -613,9 +612,9 @@ int main(Int_t argc, Char_t **argv)
 	  i++;
 	  sprintf(inputFile,argv[i]);
 	  break;
-      case 'c' : 
+      case 't' : 
 	  i++;
-	  configFile = argv[i];
+          gkThreshold = atof(argv[i]);
 	  break;
       case 'e' : 
 	  i++;
@@ -650,6 +649,7 @@ int main(Int_t argc, Char_t **argv)
 	  printf("\n-r <root file>            (default = %s)",gHistoFileName); 
 	  printf("\n");
 	  printf("\n Options");
+          printf("\n-t <threshold values>     (default = %3.1f)",gkThreshold);
 	  printf("\n-d <print level>          (default = %d)",gPrintLevel);
 	  printf("\n-s <skip events>          (default = %d)",skipEvents);
 	  printf("\n-n <max events>           (default = %d)",maxEvents);
@@ -804,8 +804,9 @@ int main(Int_t argc, Char_t **argv)
     if (gCommand.Contains("ped")) 
 	MakePatternStore();
 
-    if (gCommand.Contains("cal")) 
-	MakePatternStore(false);
+    if (gCommand.Contains("cal"))
+      printf("Options %s disabled",  gCommand.Data());
+    //	MakePatternStore(false);
 
     if (!ExportFiles())
 	return -1;
@@ -821,7 +822,7 @@ int main(Int_t argc, Char_t **argv)
 
     delete gLocalMasks;
     delete gRegionalMasks;
-    delete globalMasks; // in case
+    delete gGlobalMasks; // in case
     delete gPatternStore;
 
     return status;
