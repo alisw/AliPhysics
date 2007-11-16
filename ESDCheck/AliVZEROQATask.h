@@ -23,7 +23,7 @@ public:
   AliVZEROQATask(const char *name);
   AliVZEROQATask(const AliVZEROQATask& ta) ;  
   virtual  ~AliVZEROQATask();
-  AliVZEROQATask& AliVZEROQATask::operator = (const AliVZEROQATask& ap) ; 
+  AliVZEROQATask& operator = (const AliVZEROQATask& ap) ; 
 
   virtual void Exec(Option_t * opt = "");
   virtual void ConnectInputData(Option_t *); 
