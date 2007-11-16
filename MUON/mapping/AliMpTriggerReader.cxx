@@ -29,6 +29,7 @@
 #include "AliMpHelper.h"
 #include "AliMpSt345Reader.h"
 #include "AliMpTrigger.h"
+#include "AliMpConstants.h"
 
 #include "AliLog.h"
 
@@ -546,6 +547,8 @@ AliMpTriggerReader::ReadLocalBoardMapping()
 
   fLocalBoardMap.DeleteAll();
   
+  UShort_t mask;
+  
   ifstream in(filename.Data());
   if (!in.good())
   {
@@ -554,27 +557,38 @@ AliMpTriggerReader::ReadLocalBoardMapping()
   else
   {
     char line[80];
+    Char_t localBoardName[20];
+    Int_t j,localBoardId;
+    UInt_t switches;
     
-    while ( in.getline(line,80) )
+    while (!in.eof())
     {
-      if ( line[0] == '#' ) continue;
+      for (Int_t i = 0; i < 4; ++i)
+        if (!in.getline(line,80)) continue; //skip 4 first lines
+ 
+      // read mask
+      if (!in.getline(line,80)) break;
+      sscanf(line,"%hx",&mask);
       
-      TString sline(line);
-      if ( sline.Contains("Board") )
-      {
-        TObjArray* tokens = sline.Tokenize(' ');
-        TString& number = ((TObjString*)(tokens->At(1)))->String();
-        Int_t n = atoi(number.Data());
-        if ( n > 0 ) 
+      for ( Int_t i = 0; i < 16; ++i ) 
+      {      
+        if ( (mask >> i ) & 0x1 )
         {
-          TString& name = ((TObjString*)(tokens->At(4)))->String();
-          fLocalBoardMap.Add(new TObjString(name), new TObjString(number));
-          AliDebugClass(10,Form("Board %s has number %s\n",name.Data(),number.Data()));
-        }
-        delete tokens;
+          if (!in.getline(line,80)) break; 
+          sscanf(line,"%02d %s %03d %03x", &j, localBoardName, &localBoardId, &switches);
+          if (localBoardId <= AliMpConstants::NofLocalBoards()) 
+          {
+            fLocalBoardMap.Add(new TObjString(localBoardName), new TObjString(Form("%d",localBoardId)));
+            AliDebugClass(10,Form("Board %s has number %d\n", localBoardName, localBoardId));
+          }
+          // skip 2 following lines
+          if (!in.getline(line,80)) break; 
+          if (!in.getline(line,80)) break; 
+         }
       }
     }      
   }
+
   in.close();
 }
 
