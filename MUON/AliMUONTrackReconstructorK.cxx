@@ -1082,7 +1082,13 @@ void AliMUONTrackReconstructorK::ImproveTracks()
       trackParamAtCluster = (AliMUONTrackParam*)track->GetTrackParamAtCluster()->First();
       while (trackParamAtCluster) {
         
-        // Pick up cluster with the worst chi2
+	// save parameters into smooth parameters in case of smoother did not work properly
+	if (AliMUONReconstructor::GetRecoParam()->UseSmoother() && !smoothed) {
+	  trackParamAtCluster->SetSmoothParameters(trackParamAtCluster->GetParameters());
+	  trackParamAtCluster->SetSmoothCovariances(trackParamAtCluster->GetCovariances());
+        }
+	
+	// Pick up cluster with the worst chi2
         localChi2 = trackParamAtCluster->GetLocalChi2();
         if (localChi2 > worstLocalChi2) {
           worstLocalChi2 = localChi2;
@@ -1195,7 +1201,7 @@ void AliMUONTrackReconstructorK::Finalize()
       smoothed = kFALSE;
       if (AliMUONReconstructor::GetRecoParam()->UseSmoother()) smoothed = RunSmoother(*track);
       if (!smoothed) track->UpdateCovTrackParamAtCluster();
-    }
+    } else smoothed = AliMUONReconstructor::GetRecoParam()->UseSmoother();
     
     // copy smoothed parameters and covariances if any
     if (smoothed) {
