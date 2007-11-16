@@ -707,6 +707,12 @@ void AliMUONTriggerEfficiencyCells::DisplayEfficiency(Bool_t perSlat, const Char
 //__________________________________________________________________________
 Bool_t AliMUONTriggerEfficiencyCells::GetListsForCheck(const Char_t* geoFilename)
 {
+  //
+  /// Getting histograms for efficiency, 
+  /// map of fired strips entering efficiency calculations,
+  /// fits for checking switched-off elements in chambers.
+  //
+
   const Int_t kNumOfBoards = AliMpConstants::NofLocalBoards();
   const Float_t kChi2RedMax = 1.5;
   const Float_t kDummyFired = 1e-5;

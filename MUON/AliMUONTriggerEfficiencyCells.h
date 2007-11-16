@@ -39,6 +39,7 @@ public:
   void DisplayEfficiency(Bool_t perSlat=kFALSE, const Char_t* geoFilename="geometry.root");
   Bool_t SumRunEfficiency(const AliMUONTriggerEfficiencyCells &other);
 
+  /// Set the list of fired strips
   void SetFiredStrips(TList *firedStrips){fFiredStrips = firedStrips;}
   void CheckFiredStrips(const Char_t *geoFilename="geometry.root");
                                 // Check for strips with lower counts than others:
@@ -83,10 +84,10 @@ private:
     TList *fNoCountHistoList; ///<list of efficiency denominators
     TList *fFiredStrips; ///<list of fired strips for efficiency check
 
-    TList *fDisplayHistoList; //! list of efficiency histograms for display
-    TList *fBoardLabelList; //! list of board labels for display
-    TList *fFiredFitHistoList; //! list of fired strips for checks
-    TList *fFiredDisplayHistoList; //! list of fired strips for display
+    TList *fDisplayHistoList; //!< list of efficiency histograms for display
+    TList *fBoardLabelList; //!< list of board labels for display
+    TList *fFiredFitHistoList; //!< list of fired strips for checks
+    TList *fFiredDisplayHistoList; //!< list of fired strips for display
 
     ClassDef(AliMUONTriggerEfficiencyCells,5) // Trigger efficiency store
 };

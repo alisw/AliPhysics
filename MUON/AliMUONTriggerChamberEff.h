@@ -74,7 +74,9 @@ protected:
     
 private:
     void CheckConstants() const;
+    /// Get max number of strips along x
     inline Int_t GetMaxX(Int_t cath){return (cath==0) ? 7 : 112;}
+    /// Get max number of strips along x
     inline Int_t GetMaxY(Int_t cath){return (cath==0) ? 64 : 1;}
 
     const AliMUONGeometryTransformer* fTransformer; //!< geometry transformer
