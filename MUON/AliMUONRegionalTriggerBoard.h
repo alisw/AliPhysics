@@ -33,13 +33,15 @@ class AliMUONRegionalTriggerBoard : public AliMUONTriggerBoard
       /// Set Local trigger inputs
       virtual void SetLocalResponse(UShort_t val[16]) {for (Int_t i=0;i<16;i++) fLocalResponse[i] = val[i];}
 
+      /// response of the algorithm
       virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres, Int_t level);
 
-      void Mask(Int_t index, UShort_t mask);
+      /// set local boards enable
+      void Mask(UShort_t mask);
       
    private:
       UShort_t fLocalResponse[16]; ///< Local trigger inputs
-      UShort_t fMask[16];          ///< Entry mask
+      UShort_t fMask;              ///< Entry mask
       
       ClassDef(AliMUONRegionalTriggerBoard,1) // Regional trigger - real HW algorithm is implemented
 };

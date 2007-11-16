@@ -74,6 +74,7 @@
 #include <TSystem.h>
 #include <TMath.h>
 
+
 /// \cond CLASSIMP
 ClassImp(AliMUONCDB)
 /// \endcond
@@ -695,19 +696,18 @@ AliMUONCDB::MakeLocalTriggerMaskStore(AliMUONVStore& localBoardMasks) const
 Int_t
 AliMUONCDB::MakeRegionalTriggerMaskStore(AliMUONVStore& rtm) const
 {
-  /// Make a regional trigger masks store. All masks are set to 3F
+  /// Make a regional trigger masks store. Mask is set to FFFF for each local board (Ch.F.)
   
   AliCodeTimerAuto("");
   
   Int_t ngenerated(0);
   for ( Int_t i = 0; i < 16; ++i )
   {
-    AliMUONVCalibParam* regionalBoard = new AliMUONCalibParamNI(1,16,i,0,0);
-    for ( Int_t j = 0; j < 16; ++j )
-    {
-      regionalBoard->SetValueAsInt(j,0,0x3F);
-      ++ngenerated;
-    }
+    AliMUONVCalibParam* regionalBoard = new AliMUONCalibParamNI(1,1,i,0,0);
+
+    regionalBoard->SetValueAsInt(0,0,0xFFFF);
+    ++ngenerated;
+      
     rtm.Add(regionalBoard);
   }
   
@@ -718,15 +718,15 @@ AliMUONCDB::MakeRegionalTriggerMaskStore(AliMUONVStore& rtm) const
 Int_t 
 AliMUONCDB::MakeGlobalTriggerMaskStore(AliMUONVCalibParam& gtm) const
 {
-  /// Make a global trigger masks store. All masks set to FFF
+  /// Make a global trigger masks store. All masks (disable) set to 0x00 for each Darc board (Ch.F.)
   
   AliCodeTimerAuto("");
   
   Int_t ngenerated(0);
   
-  for ( Int_t j = 0; j < 16; ++j )
+  for ( Int_t j = 0; j < 2; ++j )
   {
-    gtm.SetValueAsInt(j,0,0xFFF);
+    gtm.SetValueAsInt(j,0,0x00);
     ++ngenerated;
   }
   return ngenerated;
@@ -920,7 +920,7 @@ AliMUONCDB::WriteGlobalTriggerMasks(Int_t startRun, Int_t endRun)
 {  
   /// Write global trigger masks to OCDB
   
-  AliMUONVCalibParam* gtm = new AliMUONCalibParamNI(1,16,1,0,0);
+  AliMUONVCalibParam* gtm = new AliMUONCalibParamNI(1,2,1,0,0);
 
   Int_t ngenerated = MakeGlobalTriggerMaskStore(*gtm);
   AliInfo(Form("Ngenerated = %d",ngenerated));

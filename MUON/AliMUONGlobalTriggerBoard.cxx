@@ -21,9 +21,9 @@
 /// - inputs are regional responses
 /// - output is a 12-bit word
 /// - 4 bits per trigger level
-/// \todo Change member functions comments in capital letters to normal text
 ///
-/// \author Rachid Guernane (LPCCFd)
+/// \author Rachid Guernane (LPCCFd), 
+/// Corrected by Christian Finck (Subatech)
 //-----------------------------------------------------------------------------
 
 #include "AliMUONGlobalTriggerBoard.h"
@@ -32,10 +32,12 @@
 
 #include <Riostream.h>
 
+/// \cond CLASSIMP
 ClassImp(AliMUONGlobalTriggerBoard)
+/// \endcond
 
 //___________________________________________
-AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard()
+AliMUONGlobalTriggerBoard::AliMUONGlobalTriggerBoard(): AliMUONTriggerBoard()
 {
 /// Default constructor
 
@@ -59,30 +61,40 @@ AliMUONGlobalTriggerBoard::~AliMUONGlobalTriggerBoard()
 //___________________________________________
 void AliMUONGlobalTriggerBoard::Mask(Int_t index, UShort_t mask)
 {
-  /// MASK GLOBAL TRIGGER BOARD INPUT index WITH VALUE mask
-  if ( index>=0 && index < 16 ) 
+  /// mask global trigger board input index with value mask
+  if ( index>=0 && index < 2 ) 
   {
     fMask[index]=mask;
   }
   else
   {
-    AliError(Form("Index %d out of bounds (max %d)",index,16));
+    AliError(Form("Index %d out of bounds (max %d)",index,2));
   }  
 }
 
 //___________________________________________
 void AliMUONGlobalTriggerBoard::Response()
 {
-   /// COMPUTE THE GLOBAL TRIGGER BOARD
-   /// RESPONSE ACCORDING TO THE Algo() METHOD
+   /// compute the global trigger board
+   /// response according to the algo() method
 // output from global trigger algorithm
 // [+, -, LS, US] * [Hpt, Lpt]
 // transformed to [usHpt, usLpt, lsHpt, lsLpt, sHpt, sLpt] according
 // to Global Trigger Unit user manual
 
    Int_t t[16];
-   for (Int_t i=0;i<16;i++) t[i] = fRegionalResponse[i] & fMask[i];
 
+   for (Int_t i = 0; i < 16; ++i) 
+   {
+     Int_t index = i/8;
+     Int_t shift = i % 8;
+     UShort_t enable = !((fMask[index] >> shift) & 0x1);
+     if (enable)
+      t[i] = fRegionalResponse[i];
+     else
+       t[i] = 0;
+   }
+   
    Int_t rank = 8;
 
    for (Int_t i=0;i<4;i++)
@@ -122,7 +134,7 @@ void AliMUONGlobalTriggerBoard::Response()
 //___________________________________________
 UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
 {
-   /// GLOBAL TRIGGER ALGORITHM
+   /// global trigger algorithm
    TBits a(8), b(8); a.Set(8,&i); b.Set(8,&j);
 
    TBits trg1(2), trg2(2), trg(2);
@@ -173,7 +185,7 @@ UShort_t AliMUONGlobalTriggerBoard::Algo(UShort_t i, UShort_t j, char *thres)
 //___________________________________________
 void AliMUONGlobalTriggerBoard::Scan(Option_t*) const
 {
-  /// PRINT GLOBAL TRIGGER OUTPUT 
+  /// print global trigger output 
   TBits w(8); w.Set(8,&fResponse);
 
 // TRG[1:0]
@@ -230,4 +242,3 @@ void AliMUONGlobalTriggerBoard::Scan(Option_t*) const
    printf("\n");
 }
 
-ClassImp(AliMUONGlobalTriggerBoard)

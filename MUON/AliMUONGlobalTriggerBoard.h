@@ -26,22 +26,25 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
 
       virtual void     Response();
 
+                       /// response of the algorithm
       virtual UShort_t Algo(UShort_t i, UShort_t j, char *thres);
                       
                        /// Reset regional board responses
       virtual void     Reset() {for (Int_t i=0; i<16; i++) fRegionalResponse[i] = 0;}
 
+                       /// scan response of regional boards
       virtual void     Scan(Option_t *option) const;
 
                        /// \todo add comment
       virtual void     Resp(Option_t*) const {}
 
+                      /// Set mask (disable) for regional boards
       void Mask(Int_t index, UShort_t mask);
       
    private:
 
-      UShort_t fRegionalResponse[16]; ///< REGIONAL BOARD RESPONSES
-      UShort_t fMask[16];             ///< MASK
+      UShort_t fRegionalResponse[16]; ///< Regional board responses
+      UShort_t fMask[2];              ///< Mask
 
    ClassDef(AliMUONGlobalTriggerBoard,1) //Global trigger board
 };

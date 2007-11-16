@@ -35,9 +35,6 @@ class AliMUONTriggerBoard : public TNamed
       /// Return response
       virtual UShort_t GetResponse() const {return fResponse;}
 
-      /// \todo add comment 
-      virtual void Mask(Int_t index, UShort_t mask) = 0;
-      
    protected:
       Int_t fSlot;                ///< SLOT NUMBER IN CRATE
 

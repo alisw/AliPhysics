@@ -451,11 +451,9 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 
     AliMUONVCalibParam* regionalBoardMasks = calibData->RegionalTriggerBoardMasks(irb);
     
-    for ( Int_t i = 0; i < regionalBoardMasks->Size(); ++i )
-    {
-      UShort_t rmask = static_cast<UShort_t>(regionalBoardMasks->ValueAsInt(i) & 0x3F);
-      regb->Mask(i,rmask);
-    }
+    UShort_t rmask = static_cast<UShort_t>(regionalBoardMasks->ValueAsInt(0) & 0xFFFF);
+
+    regb->Mask(rmask);
     
     for (Int_t j = 1; j < boards->GetEntries(); j++)
     {
@@ -479,7 +477,7 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
   AliMUONVCalibParam* globalBoardMasks = calibData->GlobalTriggerBoardMasks();
   for ( Int_t i = 0; i < globalBoardMasks->Size(); ++i )
   {
-    UShort_t gmask = static_cast<UShort_t>(globalBoardMasks->ValueAsInt(i) & 0xFFF);
+    UShort_t gmask = static_cast<UShort_t>(globalBoardMasks->ValueAsInt(i) & 0xFF);
     fGlobalTriggerBoard->Mask(i,gmask);
   }
 }
