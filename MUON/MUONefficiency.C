@@ -175,6 +175,8 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
   Double_t fXVertex=0;
   Double_t fYVertex=0;
   Double_t fZVertex=0;
+  Double_t errXVtx=0;
+  Double_t errYVtx=0;
 
   Double_t fPxRec1, fPyRec1, fPzRec1, fE1;
   Double_t fPxRec2, fPyRec2, fPzRec2, fE2;
@@ -322,6 +324,8 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
       fZVertex = Vertex->GetZv();
       fYVertex = Vertex->GetYv();
       fXVertex = Vertex->GetXv();      
+      errXVtx = Vertex->GetXRes();
+      errYVtx = Vertex->GetYRes();
     }
     hPrimaryVertex->Fill(fZVertex);
     
@@ -343,11 +347,11 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
       // extrapolate to vertex if required and available
       if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
         trackParam.GetParamFromUncorrected(*muonTrack);
-	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex, errXVtx, errYVtx);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
         trackParam.GetParamFromUncorrected(*muonTrack);
-	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
 
@@ -406,11 +410,11 @@ Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geom
 	  // extrapolate to vertex if required and available
 	  if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
 	    trackParam.GetParamFromUncorrected(*muonTrack2);
-	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
+	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex, errXVtx, errYVtx);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
             trackParam.GetParamFromUncorrected(*muonTrack2);
-	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
+	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
 

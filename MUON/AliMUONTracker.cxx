@@ -190,10 +190,13 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
   
   // Get vertex 
   Double_t vertex[3] = {0};
+  Double_t errXVtx = 0., errYVtx = 0.;
   const AliESDVertex* esdVert = esd->GetVertex(); 
   if (esdVert->GetNContributors()) 
   {
     esdVert->GetXYZ(vertex);
+    errXVtx = esdVert->GetXRes();
+    errYVtx = esdVert->GetYRes();
     AliDebug(1,Form("found vertex (%e,%e,%e)",vertex[0],vertex[1],vertex[2]));
   }
   
@@ -209,7 +212,7 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
     AliMUONTrackParam trackParamAtVtx(*trackParam);
     
     /// Extrapolate to vertex (which is set to (0,0,0) if not available, see above)
-    AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0],vertex[1],vertex[2]);
+    AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0],vertex[1],vertex[2],errXVtx,errYVtx);
     
     // setting data member of ESD MUON
     

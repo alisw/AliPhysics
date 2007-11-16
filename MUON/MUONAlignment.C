@@ -187,7 +187,7 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
       TIter next(trackStore->CreateIterator());
       while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
 	AliMUONTrackParam trackParam(*((AliMUONTrackParam*)(track->GetTrackParamAtCluster()->First())));
-	AliMUONTrackExtrap::ExtrapToVertex(&trackParam,0.,0.,0.);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam,0.,0.,0.,0.,0.);
 	Double_t invBenMom = trackParam.GetInverseBendingMomentum();
 	fInvBenMom->Fill(invBenMom);
 	fBenMom->Fill(1./invBenMom);

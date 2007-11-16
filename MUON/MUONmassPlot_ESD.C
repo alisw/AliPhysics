@@ -64,7 +64,7 @@
 
 // Add parameters and histograms for analysis 
 
-Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
+Bool_t MUONmassPlot(char* filename = "generated/galice.root", Int_t ExtrapToVertex = -1, char* geoFilename = "geometry.root", 
 		  Int_t FirstEvent = 0, Int_t LastEvent = 10000, char* esdFileName = "AliESDs.root", Int_t ResType = 553, 
                   Float_t Chi2Cut = 100., Float_t PtCutMin = 1., Float_t PtCutMax = 10000.,
                   Float_t massMin = 9.17,Float_t massMax = 9.77)
@@ -129,6 +129,8 @@ Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -
   Double_t fZVertex=0;
   Double_t fYVertex=0;
   Double_t fXVertex=0;
+  Double_t errXVtx=0;
+  Double_t errYVtx=0;
  
   TLorentzVector fV1, fV2, fVtot;
 
@@ -202,6 +204,8 @@ Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -
       fZVertex = Vertex->GetZv();
       fYVertex = Vertex->GetYv();
       fXVertex = Vertex->GetXv();
+      errXVtx = Vertex->GetXRes();
+      errYVtx = Vertex->GetYRes();
     }
     hPrimaryVertex->Fill(fZVertex);
 
@@ -220,11 +224,11 @@ Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -
       // extrapolate to vertex if required and available
       if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
         trackParam.GetParamFromUncorrected(*muonTrack);
-	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex, errXVtx, errYVtx);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
         trackParam.GetParamFromUncorrected(*muonTrack);
-	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
+	AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
 	trackParam.SetParamFor(*muonTrack); // put the new parameters in this copy of AliESDMuonTrack
       }
 
@@ -273,11 +277,11 @@ Bool_t MUONmassPlot(char* filename = "galice_sim.root", Int_t ExtrapToVertex = -
 	  // extrapolate to vertex if required and available
 	  if (ExtrapToVertex > 0 && Vertex->GetNContributors()) {
 	    trackParam.GetParamFromUncorrected(*muonTrack2);
-	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex);
+	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, fXVertex, fYVertex, fZVertex, errXVtx, errYVtx);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  } else if ((ExtrapToVertex > 0 && !Vertex->GetNContributors()) || ExtrapToVertex == 0){
             trackParam.GetParamFromUncorrected(*muonTrack2);
-	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0.);
+	    AliMUONTrackExtrap::ExtrapToVertex(&trackParam, 0., 0., 0., 0., 0.);
 	    trackParam.SetParamFor(*muonTrack2); // put the new parameters in this copy of AliESDMuonTrack
 	  }
 	  

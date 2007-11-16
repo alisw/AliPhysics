@@ -15,6 +15,7 @@
 //////////////////////////////////////////////////////////////
 
 #include <TObject.h>
+#include <TMatrixD.h>
 
 class AliMagF;
 class AliMUONTrackParam;
@@ -33,13 +34,34 @@ class AliMUONTrackExtrap : public TObject
   static Double_t GetImpactParamFromBendingMomentum(Double_t bendingMomentum);
   static Double_t GetBendingMomentumFromImpactParam(Double_t impactParam);
   
+  // Linearly extrapolate track parameters and covariances
   static void LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd);
+  
+  // Extrapolate track parameters in magnetic field
   static void ExtrapToZ(AliMUONTrackParam *trackParam, Double_t zEnd);
+  
+  // Extrapolate track parameters and covariances in magnetic field
   static void ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator = kFALSE);
-  static void ExtrapToStation(AliMUONTrackParam *trackParamIn, Int_t station, AliMUONTrackParam *trackParamOut);
+  
+  // Extrapolate track parameters to vertex, corrected for multiple scattering and energy loss effects
+  // Add branson correction resolution and energy loss fluctuation to parameter covariances
+  static void ExtrapToVertex(AliMUONTrackParam* trackParam,
+                             Double_t xVtx, Double_t yVtx, Double_t zVtx,
+                             Double_t errXVtx, Double_t errYVtx);
+  
+  // Extrapolate track parameters to vertex, corrected for multiple scattering effects only
+  // Add branson correction resolution to parameter covariances
+  static void ExtrapToVertexWithoutELoss(AliMUONTrackParam* trackParam,
+					 Double_t xVtx, Double_t yVtx, Double_t zVtx,
+					 Double_t errXVtx, Double_t errYVtx);
+  
+  // Extrapolate track parameters to vertex, corrected for energy loss effects only
+  // Add dispersion due to multiple scattering and energy loss fluctuation to parameter covariances
+  static void ExtrapToVertexWithoutBranson(AliMUONTrackParam* trackParam, Double_t zVtx);
+  
+  // Extrapolate track parameters to vertex without multiple scattering and energy loss corrections
+  // Add dispersion due to multiple scattering to parameter covariances
   static void ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx);
-  static void ExtrapToVertex(AliMUONTrackParam *trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx,
-  			     Bool_t CorrectForMCS = kTRUE, Bool_t CorrectForEnergyLoss = kTRUE);
   
   static Double_t TotalMomentumEnergyLoss(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx);
   
@@ -69,11 +91,26 @@ class AliMUONTrackExtrap : public TObject
   static void ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t forwardBackward, Double_t *v3);
   static void RecoverTrackParam(Double_t *v3, Double_t Charge, AliMUONTrackParam* trackParam);
   
+  static void ExtrapToVertex(AliMUONTrackParam* trackParam,
+                             Double_t xVtx, Double_t yVtx, Double_t zVtx,
+                             Double_t errXVtx, Double_t errYVtx,
+                             Bool_t correctForMCS, Bool_t correctForEnergyLoss);
+  
   static void AddMCSEffectInAbsorber(AliMUONTrackParam* trackParam, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2);
-  static void GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal, Double_t &pathLength,
-					 Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho, Double_t &totalELoss);
+  static void CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
+                                         Double_t xVtx, Double_t yVtx, Double_t zVtx,
+                                         Double_t errXVtx, Double_t errYVtx,
+                                         Double_t absZBeg, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2);
+  static void CorrectELossEffectInAbsorber(AliMUONTrackParam* param, Double_t eLoss, Double_t sigmaELoss2);
+  static void GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal,
+                                         Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
+                                         Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2);
   
   static Double_t BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
+  static Double_t EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ);
+  
+  static void Cov2CovP(const TMatrixD &param, TMatrixD &cov);
+  static void CovP2Cov(const TMatrixD &param, TMatrixD &cov);
   
   static void ExtrapOneStepHelix(Double_t charge, Double_t step, Double_t *vect, Double_t *vout);
   static void ExtrapOneStepHelix3(Double_t field, Double_t step, Double_t *vect, Double_t *vout);

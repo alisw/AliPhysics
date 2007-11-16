@@ -164,7 +164,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
         // 	printf(" Ref. track at vertex: x,y,z: %f %f %f px,py,pz,p: %f %f %f %f \n",x1,y1,z1,pX1,pY1,pZ1,p1);
         trackReco = trackOK;
         trackParam = new AliMUONTrackParam(*((AliMUONTrackParam*)(trackReco->GetTrackParamAtCluster()->First())));
-        AliMUONTrackExtrap::ExtrapToVertex(trackParam,x1,y1,z1);
+        AliMUONTrackExtrap::ExtrapToVertex(trackParam,x1,y1,z1,0.,0.);
         x2 = trackParam->GetNonBendingCoor();
         y2 = trackParam->GetBendingCoor();
         z2 = trackParam->GetZ();

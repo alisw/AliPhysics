@@ -29,7 +29,6 @@
 #include "AliMagF.h" 
 
 #include <TMath.h>
-#include <TMatrixD.h>
 #include <TGeoManager.h>
 
 #include <Riostream.h>
@@ -44,7 +43,7 @@ const Int_t    AliMUONTrackExtrap::fgkMaxStepNumber = 5000;
 const Double_t AliMUONTrackExtrap::fgkHelixStepLength = 6.;
 const Double_t AliMUONTrackExtrap::fgkRungeKuttaMaxResidue = 0.002;
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingMomentum)
 {
   /// Returns impact parameter at vertex in bending plane (cm),
@@ -67,7 +66,7 @@ Double_t AliMUONTrackExtrap::GetImpactParamFromBendingMomentum(Double_t bendingM
   return (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / bendingMomentum);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactParam)
 {
   /// Returns signed bending momentum in bending plane (GeV/c),
@@ -90,7 +89,7 @@ Double_t AliMUONTrackExtrap::GetBendingMomentumFromImpactParam(Double_t impactPa
   return (-0.0003 * simpleBValue * simpleBLength * simpleBPosition / impactParam);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Track parameters (and their covariances if any) linearly extrapolated to the plane at "zEnd".
@@ -118,7 +117,7 @@ void AliMUONTrackExtrap::LinearExtrapToZ(AliMUONTrackParam* trackParam, Double_t
   
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Interface to track parameter extrapolation to the plane at "Z" using Helix or Rungekutta algorithm.
@@ -127,7 +126,7 @@ void AliMUONTrackExtrap::ExtrapToZ(AliMUONTrackParam* trackParam, Double_t zEnd)
   else AliMUONTrackExtrap::ExtrapToZRungekutta(trackParam,zEnd);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Track parameter extrapolation to the plane at "Z" using Helix algorithm.
@@ -150,7 +149,7 @@ void AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t 
     stepNumber++;
     ExtrapOneStepHelix(chargeExtrap, fgkHelixStepLength, v3, v3New);
     if ((-forwardBackward * (v3New[2] - zEnd)) > 0.0) break; // one is beyond Z spectro. z<0
-    // better use TArray ????
+							     // better use TArray ????
     for (i3 = 0; i3 < 7; i3++) {v3[i3] = v3New[i3];}
   }
   // check fgkMaxStepNumber ????
@@ -180,7 +179,7 @@ void AliMUONTrackExtrap::ExtrapToZHelix(AliMUONTrackParam* trackParam, Double_t 
   RecoverTrackParam(v3, chargeExtrap * forwardBackward, trackParam);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Double_t zEnd)
 {
   /// Track parameter extrapolation to the plane at "Z" using Rungekutta algorithm.
@@ -202,7 +201,7 @@ void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Doub
     dZ = zEnd - trackParam->GetZ();
     // step lenght assuming linear trajectory
     step = dZ * TMath::Sqrt(1.0 + trackParam->GetBendingSlope()*trackParam->GetBendingSlope() +
-    			    trackParam->GetNonBendingSlope()*trackParam->GetNonBendingSlope());
+			    trackParam->GetNonBendingSlope()*trackParam->GetNonBendingSlope());
     ConvertTrackParamForExtrap(trackParam, forwardBackward, v3);
     do { // reduce step lenght while zEnd oversteped
       if (stepNumber > fgkMaxStepNumber) {
@@ -224,7 +223,7 @@ void AliMUONTrackExtrap::ExtrapToZRungekutta(AliMUONTrackParam* trackParam, Doub
   trackParam->SetZ(zEnd);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::ConvertTrackParamForExtrap(AliMUONTrackParam* trackParam, Double_t forwardBackward, Double_t *v3)
 {
   /// Set vector of Geant3 parameters pointed to by "v3" from track parameters in trackParam.
@@ -241,7 +240,7 @@ void AliMUONTrackExtrap::ConvertTrackParamForExtrap(AliMUONTrackParam* trackPara
   v3[4] = trackParam->GetBendingSlope() * v3[5]; // PY/PTOT
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::RecoverTrackParam(Double_t *v3, Double_t charge, AliMUONTrackParam* trackParam)
 {
   /// Set track parameters in trackParam from Geant3 parameters pointed to by "v3",
@@ -256,7 +255,7 @@ void AliMUONTrackExtrap::RecoverTrackParam(Double_t *v3, Double_t charge, AliMUO
   trackParam->SetNonBendingSlope(v3[3]/v3[5]);
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zEnd, Bool_t updatePropagator)
 {
   /// Track parameters and their covariances extrapolated to the plane at "zEnd".
@@ -323,123 +322,30 @@ void AliMUONTrackExtrap::ExtrapToZCov(AliMUONTrackParam* trackParam, Double_t zE
   
   // Update the propagator if required
   if (updatePropagator) trackParam->UpdatePropagator(jacob);
-  
 }
 
-  //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToStation(AliMUONTrackParam* trackParamIn, Int_t station, AliMUONTrackParam *trackParamOut)
-{
-  /// Track parameters extrapolated from "trackParamIn" to both chambers of the station(0..) "station"
-  /// are returned in the array (dimension 2) of track parameters pointed to by "TrackParamOut"
-  /// (index 0 and 1 for first and second chambers).
-  Double_t extZ[2], z1, z2;
-  Int_t i1 = -1, i2 = -1; // = -1 to avoid compilation warnings
-  // range of station to be checked ????
-  z1 = AliMUONConstants::DefaultChamberZ(2 * station);
-  z2 = AliMUONConstants::DefaultChamberZ(2 * station + 1);
-  // First and second Z to extrapolate at
-  if ((z1 > trackParamIn->GetZ()) && (z2 > trackParamIn->GetZ())) {i1 = 0; i2 = 1;}
-  else if ((z1 < trackParamIn->GetZ()) && (z2 < trackParamIn->GetZ())) {i1 = 1; i2 = 0;}
-  else {
-    cout<<"E-AliMUONTrackExtrap::ExtrapToStation: Starting Z ("<<trackParamIn->GetZ()
-    	<<") in between z1 ("<<z1<<") and z2 ("<<z2<<") of station(0..)"<<station<<endl;
-    exit(-1);
-  }
-  extZ[i1] = z1;
-  extZ[i2] = z2;
-  // copy of track parameters
-  trackParamOut[i1] = *trackParamIn;
-  // first extrapolation
-  ExtrapToZ(&(trackParamOut[i1]),extZ[0]);
-  trackParamOut[i2] = trackParamOut[i1];
-  // second extrapolation
-  ExtrapToZ(&(trackParamOut[i2]),extZ[1]);
-  return;
-}
-
-  //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx)
-{
-  /// Extrapolation to the vertex (at the z position "zVtx") without Branson and energy loss corrections.
-  /// Returns the track parameters resulting from the extrapolation in the current TrackParam.
-  /// Include multiple Coulomb scattering effects in trackParam covariances.
-  
-  if (trackParam->GetZ() == zVtx) return; // nothing to be done if already at vertex
-  
-  if (trackParam->GetZ() > zVtx) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertexUncorrected: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream the vertex (zVtx = "<<zVtx<<")"<<endl;
-    exit(-1);
-  }
-  
-  // Check the vertex position relatively to the absorber
-  if (zVtx < AliMUONConstants::AbsZBeg() && zVtx > AliMUONConstants::AbsZEnd()) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") inside the front absorber ("<<AliMUONConstants::AbsZBeg()<<","<<AliMUONConstants::AbsZEnd()<<")"<<endl;
-  } else if (zVtx < AliMUONConstants::AbsZEnd() ) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") downstream the front absorber (zAbsorberEnd = "<<AliMUONConstants::AbsZEnd()<<")"<<endl;
-    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,zVtx);
-    else ExtrapToZ(trackParam,zVtx);
-    return;
-  }
-  
-  // Check the track position relatively to the absorber and extrapolate track parameters to the end of the absorber if needed
-  if (trackParam->GetZ() > AliMUONConstants::AbsZBeg()) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream the front absorber (zAbsorberBegin = "<<AliMUONConstants::AbsZBeg()<<")"<<endl;
-    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,zVtx);
-    else ExtrapToZ(trackParam,zVtx);
-    return;
-  } else if (trackParam->GetZ() > AliMUONConstants::AbsZEnd()) { // spectro. (z<0)
-    cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") inside the front absorber ("<<AliMUONConstants::AbsZBeg()<<","<<AliMUONConstants::AbsZEnd()<<")"<<endl;
-  } else {
-    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,AliMUONConstants::AbsZEnd());
-    else ExtrapToZ(trackParam,AliMUONConstants::AbsZEnd());
-  }
-  
-  // Then add MCS effect in absorber to the parameters covariances
-  AliMUONTrackParam trackParamIn(*trackParam);
-  ExtrapToZ(&trackParamIn, TMath::Min(zVtx, AliMUONConstants::AbsZBeg()));
-  Double_t trackXYZIn[3];
-  trackXYZIn[0] = trackParamIn.GetNonBendingCoor();
-  trackXYZIn[1] = trackParamIn.GetBendingCoor();
-  trackXYZIn[2] = trackParamIn.GetZ();
-  Double_t trackXYZOut[3];
-  trackXYZOut[0] = trackParam->GetNonBendingCoor();
-  trackXYZOut[1] = trackParam->GetBendingCoor();
-  trackXYZOut[2] = trackParam->GetZ();
-  Double_t pathLength = 0.;
-  Double_t f0 = 0.;
-  Double_t f1 = 0.;
-  Double_t f2 = 0.;
-  Double_t meanRho = 0.;
-  Double_t totalELoss = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,trackParam->P(),pathLength,f0,f1,f2,meanRho,totalELoss);
-  AddMCSEffectInAbsorber(trackParam,pathLength,f0,f1,f2);
-  
-  // finally go to the vertex
-  ExtrapToZCov(trackParam,zVtx);
-  
-}
-
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2)
 {
   /// Add to the track parameter covariances the effects of multiple Coulomb scattering
-  /// at the end of the front absorber using the absorber correction parameters
+  /// The absorber correction parameters are supposed to be calculated at the current track z-position
   
   // absorber related covariance parameters
   Double_t bendingSlope = param->GetBendingSlope();
   Double_t nonBendingSlope = param->GetNonBendingSlope();
   Double_t inverseBendingMomentum = param->GetInverseBendingMomentum();
   Double_t alpha2 = 0.0136 * 0.0136 * inverseBendingMomentum * inverseBendingMomentum * (1.0 + bendingSlope * bendingSlope) /
-  					(1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); // velocity = 1
+                    (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); // velocity = 1
   Double_t varCoor = alpha2 * (pathLength * pathLength * f0 - 2. * pathLength * f1 + f2);
   Double_t covCorrSlope = alpha2 * (pathLength * f0 - f1);
   Double_t varSlop = alpha2 * f0;
   
+  // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeX
+  Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+  Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
+                            (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+  
+  // Set MCS covariance matrix
   TMatrixD newParamCov(param->GetCovariances());
   // Non bending plane
   newParamCov(0,0) += varCoor;       newParamCov(0,1) += covCorrSlope;
@@ -447,18 +353,121 @@ void AliMUONTrackExtrap::AddMCSEffectInAbsorber(AliMUONTrackParam* param, Double
   // Bending plane
   newParamCov(2,2) += varCoor;       newParamCov(2,3) += covCorrSlope;
   newParamCov(3,2) += covCorrSlope;  newParamCov(3,3) += varSlop;
+  // Inverse bending momentum (due to dependences with bending and non bending slopes)
+  newParamCov(4,0) += dqPxydSlopeX * covCorrSlope; newParamCov(0,4) += dqPxydSlopeX * covCorrSlope;
+  newParamCov(4,1) += dqPxydSlopeX * varSlop;      newParamCov(1,4) += dqPxydSlopeX * varSlop;
+  newParamCov(4,2) += dqPxydSlopeY * covCorrSlope; newParamCov(2,4) += dqPxydSlopeY * covCorrSlope;
+  newParamCov(4,3) += dqPxydSlopeY * varSlop;      newParamCov(3,4) += dqPxydSlopeY * varSlop;
+  newParamCov(4,4) += (dqPxydSlopeX*dqPxydSlopeX + dqPxydSlopeY*dqPxydSlopeY) * varSlop;
   
   // Set new covariances
   param->SetCovariances(newParamCov);
-  
 }
 
-  //__________________________________________________________________________
-void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal, Double_t &pathLength,
-						    Double_t &f0, Double_t &f1, Double_t &f2, Double_t &meanRho, Double_t &totalELoss)
+//__________________________________________________________________________
+void AliMUONTrackExtrap::CorrectMCSEffectInAbsorber(AliMUONTrackParam* param,
+						    Double_t xVtx, Double_t yVtx, Double_t zVtx,
+						    Double_t errXVtx, Double_t errYVtx,
+						    Double_t absZBeg, Double_t pathLength, Double_t f0, Double_t f1, Double_t f2)
+{
+  /// Correct parameters and corresponding covariances using Branson correction
+  /// - input param are parameters and covariances at the end of absorber
+  /// - output param are parameters and covariances at vertex
+  /// Absorber correction parameters are supposed to be calculated at the current track z-position
+  
+  // Position of the Branson plane (spectro. (z<0))
+  Double_t zB = (f1>0.) ? absZBeg - f2/f1 : 0.;
+  
+  // Add MCS effects to current parameter covariances
+  AddMCSEffectInAbsorber(param, pathLength, f0, f1, f2);
+  
+  // Get track parameters and covariances in the Branson plane corrected for magnetic field effect
+  ExtrapToZCov(param,zVtx);
+  LinearExtrapToZ(param,zB);
+  
+  // compute track parameters at vertex
+  TMatrixD newParam(5,1);
+  newParam(0,0) = xVtx;
+  newParam(1,0) = (param->GetNonBendingCoor() - xVtx) / (zB - zVtx);
+  newParam(2,0) = yVtx;
+  newParam(3,0) = (param->GetBendingCoor() - yVtx) / (zB - zVtx);
+  newParam(4,0) = param->GetCharge() / param->P() *
+                  TMath::Sqrt(1.0 + newParam(1,0)*newParam(1,0) + newParam(3,0)*newParam(3,0)) /
+		  TMath::Sqrt(1.0 + newParam(3,0)*newParam(3,0));
+  
+  // Get covariances in (X, SlopeX, Y, SlopeY, q*PTot) coordinate system
+  TMatrixD paramCovP(param->GetCovariances());
+  Cov2CovP(param->GetParameters(),paramCovP);
+  
+  // Get the covariance matrix in the (XVtx, X, YVtx, Y, q*PTot) coordinate system
+  TMatrixD paramCovVtx(5,5);
+  paramCovVtx.Zero();
+  paramCovVtx(0,0) = errXVtx * errXVtx;
+  paramCovVtx(1,1) = paramCovP(0,0);
+  paramCovVtx(2,2) = errYVtx * errYVtx;
+  paramCovVtx(3,3) = paramCovP(2,2);
+  paramCovVtx(4,4) = paramCovP(4,4);
+  paramCovVtx(1,3) = paramCovP(0,2);
+  paramCovVtx(3,1) = paramCovP(2,0);
+  paramCovVtx(1,4) = paramCovP(0,4);
+  paramCovVtx(4,1) = paramCovP(4,0);
+  paramCovVtx(3,4) = paramCovP(2,4);
+  paramCovVtx(4,3) = paramCovP(4,2);
+  
+  // Jacobian of the transformation (XVtx, X, YVtx, Y, q*PTot) -> (XVtx, SlopeXVtx, YVtx, SlopeYVtx, q*PTotVtx)
+  TMatrixD jacob(5,5);
+  jacob.UnitMatrix();
+  jacob(1,0) = - 1. / (zB - zVtx);
+  jacob(1,1) = 1. / (zB - zVtx);
+  jacob(3,2) = - 1. / (zB - zVtx);
+  jacob(3,3) = 1. / (zB - zVtx);
+  
+  // Compute covariances at vertex in the (XVtx, SlopeXVtx, YVtx, SlopeYVtx, q*PTotVtx) coordinate system
+  TMatrixD tmp(paramCovVtx,TMatrixD::kMultTranspose,jacob);
+  TMatrixD newParamCov(jacob,TMatrixD::kMult,tmp);
+  
+  // Compute covariances at vertex in the (XVtx, SlopeXVtx, YVtx, SlopeYVtx, q/PyzVtx) coordinate system
+  CovP2Cov(newParam,newParamCov);
+  
+  // Set parameters and covariances at vertex
+  param->SetParameters(newParam);
+  param->SetZ(zVtx);
+  param->SetCovariances(newParamCov);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::CorrectELossEffectInAbsorber(AliMUONTrackParam* param, Double_t eLoss, Double_t sigmaELoss2)
+{
+  /// Correct parameters for energy loss and add energy loss fluctuation effect to covariances
+  
+  // Get parameter covariances in (X, SlopeX, Y, SlopeY, q*PTot) coordinate system
+  TMatrixD newParamCov(param->GetCovariances());
+  Cov2CovP(param->GetParameters(),newParamCov);
+  
+  // Add effects of energy loss fluctuation to covariances
+  newParamCov(4,4) += sigmaELoss2;
+  
+  // Compute new parameters corrected for energy loss
+  Double_t nonBendingSlope = param->GetNonBendingSlope();
+  Double_t bendingSlope = param->GetBendingSlope();
+  param->SetInverseBendingMomentum(param->GetCharge() / (param->P() + eLoss) *
+				   TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
+				   TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
+  
+  // Get new parameter covariances in (X, SlopeX, Y, SlopeY, q/Pyz) coordinate system
+  CovP2Cov(param->GetParameters(),newParamCov);
+  
+  // Set new parameter covariances
+  param->SetCovariances(newParamCov);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Double_t trackXYZOut[3], Double_t pTotal,
+						    Double_t &pathLength, Double_t &f0, Double_t &f1, Double_t &f2,
+						    Double_t &meanRho, Double_t &totalELoss, Double_t &sigmaELoss2)
 {
   /// Parameters used to correct for Multiple Coulomb Scattering and energy loss in absorber
-  /// Calculated assuming a linear propagation between track positions trackXYZIn and trackXYZOut
+  /// Calculated assuming a linear propagation from trackXYZIn to trackXYZOut (order is important)
   // pathLength: path length between trackXYZIn and trackXYZOut (cm)
   // f0:         0th moment of z calculated with the inverse radiation-length distribution
   // f1:         1st moment of z calculated with the inverse radiation-length distribution
@@ -473,6 +482,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   f2 = 0.;
   meanRho = 0.;
   totalELoss = 0.;
+  sigmaELoss2 = 0.;
   
   // Check whether the geometry is available
   if (!gGeoManager) {
@@ -547,6 +557,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
     f2 += (dzE*dzE*dzE - dzB*dzB*dzB) / b[2] / b[2] / b[2] / x0 / 3.;
     meanRho += localPathLength * rho;
     totalELoss += BetheBloch(pTotal, localPathLength, rho, atomicA, atomicZ);
+    sigmaELoss2 += EnergyLossFluctuation2(pTotal, localPathLength, rho, atomicA, atomicZ);
     
     // prepare next step
     zB = zE;
@@ -556,7 +567,7 @@ void AliMUONTrackExtrap::GetAbsorberCorrectionParam(Double_t trackXYZIn[3], Doub
   meanRho /= pathLength;
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 Double_t AliMUONTrackExtrap::GetMCSAngle2(const AliMUONTrackParam& param, Double_t dZ, Double_t x0)
 {
   /// Return the angular dispersion square due to multiple Coulomb scattering
@@ -566,8 +577,8 @@ Double_t AliMUONTrackExtrap::GetMCSAngle2(const AliMUONTrackParam& param, Double
   Double_t bendingSlope = param.GetBendingSlope();
   Double_t nonBendingSlope = param.GetNonBendingSlope();
   Double_t inverseTotalMomentum2 = param.GetInverseBendingMomentum() * param.GetInverseBendingMomentum() *
-  				   (1.0 + bendingSlope * bendingSlope) /
-			  	   (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); 
+                                   (1.0 + bendingSlope * bendingSlope) /
+                                   (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); 
   // Path length in the material
   Double_t pathLength = TMath::Abs(dZ) * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
   // relativistic velocity
@@ -578,7 +589,7 @@ Double_t AliMUONTrackExtrap::GetMCSAngle2(const AliMUONTrackParam& param, Double
   return theta02 * theta02 * inverseTotalMomentum2 * pathLength / x0;
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Double_t x0)
 {
   /// Add to the track parameter covariances the effects of multiple Coulomb scattering
@@ -587,9 +598,10 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
   
   Double_t bendingSlope = param->GetBendingSlope();
   Double_t nonBendingSlope = param->GetNonBendingSlope();
-  Double_t inverseTotalMomentum2 = param->GetInverseBendingMomentum() * param->GetInverseBendingMomentum() *
-  				   (1.0 + bendingSlope * bendingSlope) /
-			  	   (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); 
+  Double_t inverseBendingMomentum = param->GetInverseBendingMomentum();
+  Double_t inverseTotalMomentum2 = inverseBendingMomentum * inverseBendingMomentum *
+                                   (1.0 + bendingSlope * bendingSlope) /
+                                   (1.0 + bendingSlope *bendingSlope + nonBendingSlope * nonBendingSlope); 
   // Path length in the material
   Double_t pathLength = TMath::Abs(dZ) * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
   Double_t pathLength2 = pathLength * pathLength;
@@ -603,7 +615,12 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
   Double_t varSlop 	= theta02;
   Double_t covCorrSlope = pathLength * theta02 / 2.;
   
-  // Add effects of multiple Coulomb scattering in track parameter covariances
+  // compute derivative d(q/Pxy) / dSlopeX and d(q/Pxy) / dSlopeX
+  Double_t dqPxydSlopeX = inverseBendingMomentum * nonBendingSlope / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+  Double_t dqPxydSlopeY = - inverseBendingMomentum * nonBendingSlope*nonBendingSlope * bendingSlope /
+			    (1. + bendingSlope*bendingSlope) / (1. + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope);
+  
+  // Set MCS covariance matrix
   TMatrixD newParamCov(param->GetCovariances());
   // Non bending plane
   newParamCov(0,0) += varCoor;       newParamCov(0,1) += covCorrSlope;
@@ -611,66 +628,83 @@ void AliMUONTrackExtrap::AddMCSEffect(AliMUONTrackParam *param, Double_t dZ, Dou
   // Bending plane
   newParamCov(2,2) += varCoor;       newParamCov(2,3) += covCorrSlope;
   newParamCov(3,2) += covCorrSlope;  newParamCov(3,3) += varSlop;
+  // Inverse bending momentum (due to dependences with bending and non bending slopes)
+  newParamCov(4,0) += dqPxydSlopeX * covCorrSlope; newParamCov(0,4) += dqPxydSlopeX * covCorrSlope;
+  newParamCov(4,1) += dqPxydSlopeX * varSlop;      newParamCov(1,4) += dqPxydSlopeX * varSlop;
+  newParamCov(4,2) += dqPxydSlopeY * covCorrSlope; newParamCov(2,4) += dqPxydSlopeY * covCorrSlope;
+  newParamCov(4,3) += dqPxydSlopeY * varSlop;      newParamCov(3,4) += dqPxydSlopeY * varSlop;
+  newParamCov(4,4) += (dqPxydSlopeX*dqPxydSlopeX + dqPxydSlopeY*dqPxydSlopeY) * varSlop;
   
   // Set new covariances
   param->SetCovariances(newParamCov);
 }
 
-  //__________________________________________________________________________
-void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx,
-					Bool_t CorrectForMCS, Bool_t CorrectForEnergyLoss)
+//__________________________________________________________________________
+void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
+					Double_t xVtx, Double_t yVtx, Double_t zVtx,
+					Double_t errXVtx, Double_t errYVtx,
+					Bool_t correctForMCS, Bool_t correctForEnergyLoss)
 {
-  /// Extrapolation to the vertex.
-  /// Returns the track parameters resulting from the extrapolation of the current TrackParam.
-  /// Changes parameters according to Branson correction through the absorber and energy loss
+  /// Main method for extrapolation to the vertex:
+  /// Returns the track parameters and covariances resulting from the extrapolation of the current trackParam
+  /// Changes parameters and covariances according to multiple scattering and energy loss corrections:
+  /// if correctForMCS=kTRUE:  compute parameters using Branson correction and add correction resolution to covariances
+  /// if correctForMCS=kFALSE: add parameter dispersion due to MCS in parameter covariances
+  /// if correctForEnergyLoss=kTRUE:  correct parameters for energy loss and add energy loss fluctuation to covariances
+  /// if correctForEnergyLoss=kFALSE: do nothing about energy loss
   
   if (trackParam->GetZ() == zVtx) return; // nothing to be done if already at vertex
   
   if (trackParam->GetZ() > zVtx) { // spectro. (z<0)
-    cout<<"F-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream the vertex (zVtx = "<<zVtx<<")"<<endl;
-    exit(-1);
-  }
-  
-  // Check if correction required
-  if (!CorrectForMCS && !CorrectForEnergyLoss) {
-    ExtrapToZ(trackParam,zVtx);
+    cout<<"E-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
+        <<") upstream the vertex (zVtx = "<<zVtx<<")"<<endl;
     return;
   }
   
   // Check the vertex position relatively to the absorber
   if (zVtx < AliMUONConstants::AbsZBeg() && zVtx > AliMUONConstants::AbsZEnd()) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") inside the front absorber ("<<AliMUONConstants::AbsZBeg()<<","<<AliMUONConstants::AbsZEnd()<<")"<<endl;
+        <<") inside the front absorber ("<<AliMUONConstants::AbsZBeg()<<","<<AliMUONConstants::AbsZEnd()<<")"<<endl;
   } else if (zVtx < AliMUONConstants::AbsZEnd() ) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Ending Z ("<<zVtx
-    	<<") downstream the front absorber (zAbsorberEnd = "<<AliMUONConstants::AbsZEnd()<<")"<<endl;
-    ExtrapToZ(trackParam,zVtx);
+        <<") downstream the front absorber (zAbsorberEnd = "<<AliMUONConstants::AbsZEnd()<<")"<<endl;
+    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,zVtx);
+    else ExtrapToZ(trackParam,zVtx);
     return;
   }
   
   // Check the track position relatively to the absorber and extrapolate track parameters to the end of the absorber if needed
   if (trackParam->GetZ() > AliMUONConstants::AbsZBeg()) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") upstream the front absorber (zAbsorberBegin = "<<AliMUONConstants::AbsZBeg()<<")"<<endl;
-    ExtrapToZ(trackParam,zVtx);
+        <<") upstream the front absorber (zAbsorberBegin = "<<AliMUONConstants::AbsZBeg()<<")"<<endl;
+    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,zVtx);
+    else ExtrapToZ(trackParam,zVtx);
     return;
   } else if (trackParam->GetZ() > AliMUONConstants::AbsZEnd()) { // spectro. (z<0)
     cout<<"W-AliMUONTrackExtrap::ExtrapToVertex: Starting Z ("<<trackParam->GetZ()
-    	<<") inside the front absorber ("<<AliMUONConstants::AbsZBeg()<<","<<AliMUONConstants::AbsZEnd()<<")"<<endl;
+        <<") inside the front absorber ("<<AliMUONConstants::AbsZBeg()<<","<<AliMUONConstants::AbsZEnd()<<")"<<endl;
   } else {
-    ExtrapToZ(trackParam,AliMUONConstants::AbsZEnd());
+    if (trackParam->CovariancesExist()) ExtrapToZCov(trackParam,AliMUONConstants::AbsZEnd());
+    else ExtrapToZ(trackParam,AliMUONConstants::AbsZEnd());
   }
   
-  // Get absorber correction parameters assuming linear propagation from vertex to the track position
+  // Get absorber correction parameters assuming linear propagation in absorber
   Double_t trackXYZOut[3];
   trackXYZOut[0] = trackParam->GetNonBendingCoor();
   trackXYZOut[1] = trackParam->GetBendingCoor();
   trackXYZOut[2] = trackParam->GetZ();
   Double_t trackXYZIn[3];
-  trackXYZIn[2] = TMath::Min(zVtx, AliMUONConstants::AbsZBeg()); // spectro. (z<0)
-  trackXYZIn[0] = trackXYZOut[0] + (xVtx - trackXYZOut[0]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
-  trackXYZIn[1] = trackXYZOut[1] + (yVtx - trackXYZOut[1]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
+  if (correctForMCS) { // assume linear propagation until the vertex
+    trackXYZIn[2] = TMath::Min(zVtx, AliMUONConstants::AbsZBeg()); // spectro. (z<0)
+    trackXYZIn[0] = trackXYZOut[0] + (xVtx - trackXYZOut[0]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
+    trackXYZIn[1] = trackXYZOut[1] + (yVtx - trackXYZOut[1]) / (zVtx - trackXYZOut[2]) * (trackXYZIn[2] - trackXYZOut[2]);
+  } else {
+    AliMUONTrackParam trackParamIn(*trackParam);
+    ExtrapToZ(&trackParamIn, TMath::Min(zVtx, AliMUONConstants::AbsZBeg()));
+    trackXYZIn[0] = trackParamIn.GetNonBendingCoor();
+    trackXYZIn[1] = trackParamIn.GetBendingCoor();
+    trackXYZIn[2] = trackParamIn.GetZ();
+  }
   Double_t pTot = trackParam->P();
   Double_t pathLength = 0.;
   Double_t f0 = 0.;
@@ -678,56 +712,87 @@ void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam, Double_t 
   Double_t f2 = 0.;
   Double_t meanRho = 0.;
   Double_t deltaP = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,deltaP);
+  Double_t sigmaDeltaP2 = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,deltaP,sigmaDeltaP2);
   
-  // Correct for half of energy loss
-  Double_t nonBendingSlope, bendingSlope;
-  Double_t charge = TMath::Sign(Double_t(1.0), trackParam->GetInverseBendingMomentum());      
-  if (CorrectForEnergyLoss) {
-    pTot += 0.5 * deltaP;
-    nonBendingSlope = trackParam->GetNonBendingSlope();
-    bendingSlope = trackParam->GetBendingSlope();
-    trackParam->SetInverseBendingMomentum(charge / pTot *
-  	  TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
-  	  TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
-  }
-  
-  if (CorrectForMCS) {
-    // Position of the Branson plane (spectro. (z<0))
-    Double_t zB = (f1>0.) ? trackXYZIn[2] - f2/f1 : 0.;
+  // Compute track parameters and covariances at vertex according to correctForMCS and correctForEnergyLoss flags
+  if (correctForMCS) {
     
-    // Get track position in the Branson plane corrected for magnetic field effect
-    ExtrapToZ(trackParam,zVtx);
-    Double_t xB = trackParam->GetNonBendingCoor() + (zB - zVtx) * trackParam->GetNonBendingSlope();
-    Double_t yB = trackParam->GetBendingCoor()    + (zB - zVtx) * trackParam->GetBendingSlope();
+    if (correctForEnergyLoss) {
+      
+      // Correct for multiple scattering and energy loss
+      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      CorrectMCSEffectInAbsorber(trackParam, xVtx, yVtx, zVtx, errXVtx, errYVtx,
+				 trackXYZIn[2], pathLength, f0, f1, f2);
+      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      
+    } else {
+      
+      // Correct for multiple scattering
+      CorrectMCSEffectInAbsorber(trackParam, xVtx, yVtx, zVtx, errXVtx, errYVtx,
+				 trackXYZIn[2], pathLength, f0, f1, f2);
+    }
     
-    // Get track slopes corrected for multiple scattering (spectro. (z<0))
-    nonBendingSlope = (zB<0.) ? (xB - xVtx) / (zB - zVtx) : trackParam->GetNonBendingSlope();
-    bendingSlope    = (zB<0.) ? (yB - yVtx) / (zB - zVtx) : trackParam->GetBendingSlope();
-    
-    // Set track parameters at vertex
-    trackParam->SetNonBendingCoor(xVtx);
-    trackParam->SetBendingCoor(yVtx);
-    trackParam->SetZ(zVtx);
-    trackParam->SetNonBendingSlope(nonBendingSlope);
-    trackParam->SetBendingSlope(bendingSlope);
   } else {
-    ExtrapToZ(trackParam,zVtx);
-    nonBendingSlope = trackParam->GetNonBendingSlope();
-    bendingSlope = trackParam->GetBendingSlope();
+    
+    if (correctForEnergyLoss) {
+      
+      // Correct for energy loss
+      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
+      ExtrapToZCov(trackParam, trackXYZIn[2]);
+      CorrectELossEffectInAbsorber(trackParam, 0.5*deltaP, 0.5*sigmaDeltaP2);
+      ExtrapToZCov(trackParam, zVtx);
+      
+    } else {
+      
+      // Correct for multiple scattering and energy loss
+      AddMCSEffectInAbsorber(trackParam, pathLength, f0, f1, f2);
+      ExtrapToZCov(trackParam, zVtx);
+      
+    }
+    
   }
-  
-  // Correct for second half of energy loss
-  if (CorrectForEnergyLoss) pTot += 0.5 * deltaP;
-  
-  // Set track parameters at vertex
-  trackParam->SetInverseBendingMomentum(charge / pTot *
-        TMath::Sqrt(1.0 + nonBendingSlope*nonBendingSlope + bendingSlope*bendingSlope) /
-        TMath::Sqrt(1.0 + bendingSlope*bendingSlope));
   
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
+void AliMUONTrackExtrap::ExtrapToVertex(AliMUONTrackParam* trackParam,
+					Double_t xVtx, Double_t yVtx, Double_t zVtx,
+					Double_t errXVtx, Double_t errYVtx)
+{
+  /// Extrapolate track parameters to vertex, corrected for multiple scattering and energy loss effects
+  /// Add branson correction resolution and energy loss fluctuation to parameter covariances
+  ExtrapToVertex(trackParam, xVtx, yVtx, zVtx, errXVtx, errYVtx, kTRUE, kTRUE);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::ExtrapToVertexWithoutELoss(AliMUONTrackParam* trackParam,
+						    Double_t xVtx, Double_t yVtx, Double_t zVtx,
+						    Double_t errXVtx, Double_t errYVtx)
+{
+  /// Extrapolate track parameters to vertex, corrected for multiple scattering effects only
+  /// Add branson correction resolution to parameter covariances
+  ExtrapToVertex(trackParam, xVtx, yVtx, zVtx, errXVtx, errYVtx, kTRUE, kFALSE);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(AliMUONTrackParam* trackParam, Double_t zVtx)
+{
+  /// Extrapolate track parameters to vertex, corrected for energy loss effects only
+  /// Add dispersion due to multiple scattering and energy loss fluctuation to parameter covariances
+  ExtrapToVertex(trackParam, 0., 0., zVtx, 0., 0., kFALSE, kTRUE);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::ExtrapToVertexUncorrected(AliMUONTrackParam* trackParam, Double_t zVtx)
+{
+  /// Extrapolate track parameters to vertex without multiple scattering and energy loss corrections
+  /// Add dispersion due to multiple scattering to parameter covariances
+  ExtrapToVertex(trackParam, 0., 0., zVtx, 0., 0., kFALSE, kFALSE);
+}
+
+//__________________________________________________________________________
 Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(AliMUONTrackParam* trackParam, Double_t xVtx, Double_t yVtx, Double_t zVtx)
 {
   /// Calculate the total momentum energy loss in-between the track position and the vertex assuming a linear propagation
@@ -756,12 +821,13 @@ Double_t AliMUONTrackExtrap::TotalMomentumEnergyLoss(AliMUONTrackParam* trackPar
   Double_t f2 = 0.;
   Double_t meanRho = 0.;
   Double_t totalELoss = 0.;
-  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,totalELoss);
+  Double_t sigmaELoss2 = 0.;
+  GetAbsorberCorrectionParam(trackXYZIn,trackXYZOut,pTot,pathLength,f0,f1,f2,meanRho,totalELoss,sigmaELoss2);
   
   return totalELoss;
 }
 
-  //__________________________________________________________________________
+//__________________________________________________________________________
 Double_t AliMUONTrackExtrap::BetheBloch(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ)
 {
   /// Returns the mean total momentum energy loss of muon with total momentum='pTotal'
@@ -776,9 +842,74 @@ Double_t AliMUONTrackExtrap::BetheBloch(Double_t pTotal, Double_t pathLength, Do
   Double_t w = k * rho * pathLength * atomicZ / atomicA / beta2;
   
   if (beta2/(1-beta2)>3.5*3.5)
-     return w * (log(2.*eMass*3.5/(i*atomicZ)) + 0.5*log(beta2/(1-beta2)) - beta2);
-
+    return w * (log(2.*eMass*3.5/(i*atomicZ)) + 0.5*log(beta2/(1-beta2)) - beta2);
+  
   return w * (log(2.*eMass*beta2/(1-beta2)/(i*atomicZ)) - beta2);
+}
+
+//__________________________________________________________________________
+Double_t AliMUONTrackExtrap::EnergyLossFluctuation2(Double_t pTotal, Double_t pathLength, Double_t rho, Double_t atomicA, Double_t atomicZ)
+{
+  /// Returns the total momentum energy loss fluctuation of muon with total momentum='pTotal'
+  /// in the absorber layer of lenght='pathLength', density='rho', A='atomicA' and Z='atomicZ'
+  Double_t muMass = 0.105658369; // GeV
+  //Double_t eMass = 0.510998918e-3; // GeV
+  Double_t k = 0.307075e-3; // GeV.g^-1.cm^2
+  Double_t p2=pTotal*pTotal;
+  Double_t beta2=p2/(p2 + muMass*muMass);
+  
+  Double_t fwhm = 2. * k * rho * pathLength * atomicZ / atomicA / beta2; // FWHM of the energy loss Landau distribution
+  Double_t sigma2 = fwhm * fwhm / (8.*log(2.)); // gaussian: fwmh = 2 * srqt(2*ln(2)) * sigma (i.e. fwmh = 2.35 * sigma)
+  
+  //sigma2 = k * rho * pathLength * atomicZ / atomicA * eMass; // sigma2 of the energy loss gaussian distribution
+  
+  return sigma2;
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::Cov2CovP(const TMatrixD &param, TMatrixD &cov)
+{
+  /// change coordinate system: (X, SlopeX, Y, SlopeY, q/Pyz) -> (X, SlopeX, Y, SlopeY, q*PTot)
+  /// parameters (param) are given in the (X, SlopeX, Y, SlopeY, q/Pyz) coordinate system
+  
+  // charge * total momentum
+  Double_t qPTot = TMath::Sqrt(1. + param(1,0)*param(1,0) + param(3,0)*param(3,0)) /
+                   TMath::Sqrt(1. + param(3,0)*param(3,0)) / param(4,0);
+  
+  // Jacobian of the opposite transformation
+  TMatrixD jacob(5,5);
+  jacob.UnitMatrix();
+  jacob(4,1) = qPTot * param(1,0) / (1. + param(1,0)*param(1,0) + param(3,0)*param(3,0));
+  jacob(4,3) = - qPTot * param(1,0) * param(1,0) * param(3,0) /
+                 (1. + param(3,0)*param(3,0)) / (1. + param(1,0)*param(1,0) + param(3,0)*param(3,0));
+  jacob(4,4) = - qPTot / param(4,0);
+  
+  // compute covariances in new coordinate system
+  TMatrixD tmp(cov,TMatrixD::kMultTranspose,jacob);
+  cov.Mult(jacob,tmp);
+}
+
+//__________________________________________________________________________
+void AliMUONTrackExtrap::CovP2Cov(const TMatrixD &param, TMatrixD &covP)
+{
+  /// change coordinate system: (X, SlopeX, Y, SlopeY, q*PTot) -> (X, SlopeX, Y, SlopeY, q/Pyz)
+  /// parameters (param) are given in the (X, SlopeX, Y, SlopeY, q/Pyz) coordinate system
+  
+  // charge * total momentum
+  Double_t qPTot = TMath::Sqrt(1. + param(1,0)*param(1,0) + param(3,0)*param(3,0)) /
+                   TMath::Sqrt(1. + param(3,0)*param(3,0)) / param(4,0);
+  
+  // Jacobian of the transformation
+  TMatrixD jacob(5,5);
+  jacob.UnitMatrix();
+  jacob(4,1) = param(4,0) * param(1,0) / (1. + param(1,0)*param(1,0) + param(3,0)*param(3,0));
+  jacob(4,3) = - param(4,0) * param(1,0) * param(1,0) * param(3,0) /
+                 (1. + param(3,0)*param(3,0)) / (1. + param(1,0)*param(1,0) + param(3,0)*param(3,0));
+  jacob(4,4) = - param(4,0) / qPTot;
+  
+  // compute covariances in new coordinate system
+  TMatrixD tmp(covP,TMatrixD::kMultTranspose,jacob);
+  covP.Mult(jacob,tmp);
 }
 
  //__________________________________________________________________________
@@ -1225,13 +1356,13 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
 }
 
 //___________________________________________________________
- void  AliMUONTrackExtrap::GetField(Double_t *Position, Double_t *Field)
+void  AliMUONTrackExtrap::GetField(Double_t *Position, Double_t *Field)
 {
   /// interface for arguments in double precision (Why ? ChF)
   Float_t x[3], b[3];
-
+  
   x[0] = Position[0]; x[1] = Position[1]; x[2] = Position[2];
-
+  
   if (fgkField) fgkField->Field(x,b);
   else {
     cout<<"F-AliMUONTrackExtrap::GetField: fgkField = 0x0"<<endl;
@@ -1239,6 +1370,6 @@ void AliMUONTrackExtrap::ExtrapOneStepRungekutta(Double_t charge, Double_t step,
   }
   
   Field[0] = b[0]; Field[1] = b[1]; Field[2] = b[2];
-
+  
   return;
 }

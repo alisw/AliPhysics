@@ -142,7 +142,7 @@ void AliMUONTrackLight::FillFromAliMUONTrack(AliMUONTrack *trackReco,Double_t zv
   /// this method sets the muon reconstructed momentum according to the value given by AliMUONTrack
   AliMUONTrackParam trPar(*((AliMUONTrackParam*) (trackReco->GetTrackParamAtCluster()->First())));
   //  AliMUONTrackParam *trPar  = trackReco->GetTrackParamAtVertex();
-  AliMUONTrackExtrap::ExtrapToVertex(&trPar,0.,0.,0.);
+  AliMUONTrackExtrap::ExtrapToVertex(&trPar,0.,0.,0.,0.,0.);
   this->SetCharge(Int_t(TMath::Sign(1.,trPar.GetInverseBendingMomentum())));
   this->SetPxPyPz(trPar.Px(),trPar.Py(), trPar.Pz()); 
   this->SetTriggered(trackReco->GetMatchTrigger()); 
