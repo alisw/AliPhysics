@@ -98,6 +98,7 @@ int AliHLTOUT::FindAndSelectDataBlock()
       // TODO: check the byte order on the current system and the byte order of the
       // data block, print warning when missmatch and user did not check
       //AliHLTOUTByteOrder_t blockBO=CheckByteOrder();
+      CheckByteOrder();
       /*
 	if (blockBO!=fByteOrder) {
 	SetStatusFlag(kByteOrderWarning);
