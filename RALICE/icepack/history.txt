@@ -129,5 +129,9 @@
 15-nov-2007 NvE Processor IceLinefit updated to treat also InIce DOMs.
                 Note that the generated IceLinefit tracks now automatically get a suffix
                 "A" or "I" in the trackname to indicate Amanda (OM) or InIce (DOM) tracks, resp.
-
+16-nov-2007 NvE Processor IceDwalk updated to treat also InIce DOMs.
+                Note that the generated IceDwalk tracks now automatically get a suffix
+                "A" or "I" in the trackname to indicate Amanda (OM) or InIce (DOM) tracks, resp.
+                Also the memberfunctions SetMaxModA(), SetMaxModI() etc... of IceLinefit
+                have been integrated in memberfunctions SetMaxMod() etc... 
                  

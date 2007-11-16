@@ -22,6 +22,11 @@
 // In case an event has been rejected by an AliEventSelector (based) processor,
 // this task (and its sub-tasks) is not executed.
 //
+// Note : Amanda OMs and InIce DOMs are treated seperately, which means that
+//        for events with both OMs and DOMs firing, 2 direct walk tracks will
+//        be produced. The 2 direct walk tracks can be distinguished on basis of
+//        their name as explained below. 
+//
 // The procedure is based on the method described in the Amanda publication
 // in Nuclear Instruments and Methods A524 (2004) 179-180.
 // However, the Amanda method has been extended with the intention to
@@ -40,14 +45,14 @@
 // and v_group is activated in the constructor of this class.
 // To prevent waisting CPU time in trying to reconstruct (high-energy) cascade
 // events, or to select specifically reconstruction of low multiplicity events,
-// the user may invoke the memberfunctions SetMaxModA() and SetMinModA().
+// the user may invoke the memberfunctions SetMaxMod() and SetMinMod().
 // This allows selection of events for processing with a certain maximum and/or
-// minimum number of good Amanda OMs firing.
-// By default the minimum and maximum are set to 0 and 999, respectively,
+// minimum number of good (D)OMs firing.
+// By default the minimum and maximum are set to 0 and 999999, respectively,
 // in the constructor, which implies no multiplicity selection. 
-// The maximum number of good hits per Amanda OM to be used for the reconstruction
-// can be specified via the memberfunction SetMaxHitsA().
-// By default only the first good hit of each Amanda OM is used.
+// The maximum number of good hits per (D)OM to be used for the reconstruction
+// can be specified via the memberfunction SetMaxHits().
+// By default only the first good hit of each (D)OM is used.
 // Note that when all the good hits of an OM are used, this may lead to large
 // processing time in case many noise and/or afterpulse signals are not
 // recognised by the hit cleaning procedure.
@@ -219,11 +224,14 @@
 //    (i.e. reference point) of the track.
 //
 //    All these tracks will be stored in the IceEvent structure with as
-//    default "IceDwalk" as the name of the track.
+//    default the Classname of the producing processor as the name of the track.
+//    A suffix "A" for an Amanda (OM) track or a suffix "I" for an InIce (DOM) track
+//    will be added to the name automatically.
 //    This track name identifier can be modified by the user via the
 //    SetTrackName() memberfunction. This will allow unique identification
 //    of tracks which are produced when re-processing existing data with
 //    different criteria.
+//    Note that a suffix "A" or "I" will always be generated automatically.
 //    By default the charge of the produced tracks is set to 0, since
 //    no distinction can be made between positive or negative tracks.
 //    However, the user can define the track charge by invokation
@@ -262,20 +270,34 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
 // is initialised as half the value of the angular separation parameter
 // for track candidate clustering.    
  fEvt=0;
- fDmin=75;
- fDtmarg=0;
- fMaxdhit=3.07126;
- fTangmax=15;
- fTdistmax=20;
- fTinvol=1;
- fJangmax=fTangmax/2.;
- fJiterate=1;
- fJdistmax=30;
- fJinvol=1;
- fMaxmodA=999;
+ fDminA=75;
+ fDminI=75;
+ fDtmargA=0;
+ fDtmargI=0;
+ fMaxdhitA=3.07126;
+ fMaxdhitI=3.07126;
+ fTangmaxA=15;
+ fTangmaxI=15;
+ fTdistmaxA=20;
+ fTdistmaxI=20;
+ fTinvolA=1;
+ fTinvolI=1;
+ fJangmaxA=fTangmaxA/2.;
+ fJangmaxI=fTangmaxI/2.;
+ fJiterateA=1;
+ fJiterateI=1;
+ fJdistmaxA=30;
+ fJdistmaxI=30;
+ fJinvolA=1;
+ fJinvolI=1;
+ fMaxmodA=999999;
+ fMaxmodI=999999;
  fMinmodA=0;
+ fMinmodI=0;
  fMaxhitsA=1;
- fVgroup=1;
+ fMaxhitsI=1;
+ fVgroupA=1;
+ fVgroupI=1;
  fTrackname="";
  fCharge=0;
 }
@@ -285,47 +307,94 @@ IceDwalk::~IceDwalk()
 // Default destructor.
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetDmin(Float_t d)
+void IceDwalk::SetDmin(Float_t d,TString s)
 {
 // Set minimum hit distance (in m) to form a track element.
 // In the constructor the default has been set to 75 meter.
- fDmin=d;
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+ 
+ if (s=="A") fDminA=d;
+ if (s=="I") fDminI=d;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetDtmarg(Int_t dt)
+void IceDwalk::SetDtmarg(Int_t dt,TString s)
 {
 // Set maximum hit time difference margin (in ns) for track elements.
 // In the constructor the default has been set to 0 ns.
- fDtmarg=dt;
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+
+ if (s=="A") fDtmargA=dt;
+ if (s=="I") fDtmargI=dt;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMaxDhit(Float_t d)
+void IceDwalk::SetMaxDhit(Float_t d,TString s)
 {
 // Set maximum distance (in scattering length) for a hit to get associated.
 // In the constructor the default has been set to 2 lambda_scat.
- fMaxdhit=d;
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+
+ if (s=="A") fMaxdhitA=d;
+ if (s=="I") fMaxdhitI=d;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetTangmax(Float_t ang)
+void IceDwalk::SetTangmax(Float_t ang,TString s)
 {
 // Set maximum angular separation (in deg) for track candidate clustering
 // into jets.
 // In the constructor the default has been set to 15 deg, in accordance
 // to NIM A524 (2004) 180.
 //
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+//
 // Note : This function also sets automatically the value of the maximum
 //        angular separation for jet merging into 1 single track to ang/2.
 //        In order to specify a different max. jet merging separation angle,
 //        one has to invoke the memberfunction SetJangmax afterwards.
  
- fTangmax=ang;
- fJangmax=ang/2.;
+ if (s=="A")
+ {
+  fTangmaxA=ang;
+  fJangmaxA=ang/2.;
+ }
+ 
+ if (s=="I")
+ {
+  fTangmaxI=ang;
+  fJangmaxI=ang/2.;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetTdistmax(Float_t d,Int_t invol)
+void IceDwalk::SetTdistmax(Float_t d,TString s,Int_t invol)
 {
 // Set maximum distance (in m) of the two track candidates in the track
 // clustering process.
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+//
 // The distance between the two tracks can be determined restricted to the
 // detector volume (invol=1) or in the overall space (invol=0).  
 // The former will prevent clustering of (nearly) parallel tracks which cross
@@ -336,14 +405,30 @@ void IceDwalk::SetTdistmax(Float_t d,Int_t invol)
 // At invokation of this memberfunction the default is invol=1.
 // In the constructor the default has been set to 20 meter with invol=1.
  
- fTdistmax=d;
- fTinvol=invol;
+ if (s=="A")
+ {
+  fTdistmaxA=d;
+  fTinvolA=invol;
+ }
+ 
+ if (s=="I")
+ {
+  fTdistmaxI=d;
+  fTinvolI=invol;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetJangmax(Float_t ang,Int_t iter)
+void IceDwalk::SetJangmax(Float_t ang,TString s,Int_t iter)
 {
 // Set angular separation (in deg) within which jets are merged into 1
 // single track.
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+//
 // The merging process is a dynamic procedure and can be carried out by
 // iteration (iter=1) until no further merging of the various jets occurs anymore.
 // However, by specification of iter=0 the user can also select to go only
@@ -365,13 +450,29 @@ void IceDwalk::SetJangmax(Float_t ang,Int_t iter)
 //     This situation resembles the standard Sieglinde direct walk processing
 //     and as such can be used to perform comparison studies.
 
- fJangmax=ang;
- fJiterate=iter;
+ if (s=="A")
+ {
+  fJangmaxA=ang;
+  fJiterateA=iter;
+ }
+
+ if (s=="I")
+ {
+  fJangmaxI=ang;
+  fJiterateI=iter;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetJdistmax(Float_t d,Int_t invol)
+void IceDwalk::SetJdistmax(Float_t d,TString s,Int_t invol)
 {
 // Set maximum distance (in m) of the two jets in the jet merging process.
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+//
 // The distance between the two jets can be determined restricted to the
 // detector volume (invol=1) or in the overall space (invol=0).  
 // The former will prevent clustering of (nearly) parallel tracks which cross
@@ -382,13 +483,22 @@ void IceDwalk::SetJdistmax(Float_t d,Int_t invol)
 // At invokation of this memberfunction the default is invol=1.
 // In the constructor the default has been set to 30 meter with invol=1.
  
- fJdistmax=d;
- fJinvol=invol;
+ if (s=="A")
+ {
+  fJdistmaxA=d;
+  fJinvolA=invol;
+ }
+ 
+ if (s=="I")
+ {
+  fJdistmaxI=d;
+  fJinvolI=invol;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMaxModA(Int_t nmax)
+void IceDwalk::SetMaxMod(Int_t nmax,TString s)
 {
-// Set the maximum number of good Amanda modules that may have fired
+// Set the maximum number of good (D)OMs that may have fired
 // in order to process this event.
 // This allows suppression of processing (high-energy) cascade events
 // with this direct walk tracking to prevent waisting cpu time for cases
@@ -396,24 +506,42 @@ void IceDwalk::SetMaxModA(Int_t nmax)
 // Furthermore it allows selection of low multiplicity events for processing.
 // By default the maximum number of Amanda modules is set to 999 in the ctor,
 // which implies no selection on maximum module multiplicity.
-// See also the memberfunction SetMinModA().
- fMaxmodA=nmax;
+// See also the memberfunction SetMinMod().
+//
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+
+ if (s=="A") fMaxmodA=nmax;
+ if (s=="I") fMaxmodI=nmax;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMinModA(Int_t nmin)
+void IceDwalk::SetMinMod(Int_t nmin,TString s)
 {
-// Set the minimum number of good Amanda modules that must have fired
+// Set the minimum number of good (D)OMs that must have fired
 // in order to process this event.
 // This allows selection of a minimal multiplicity for events to be processed.
 // By default the minimum number of Amanda modules is set to 0 in the ctor,
 // which implies no selection on minimum module multiplicity.
-// See also the memberfunction SetMaxModA().
- fMinmodA=nmin;
+// See also the memberfunction SetMaxMod().
+//
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+
+ if (s=="A") fMinmodA=nmin;
+ if (s=="I") fMinmodI=nmin;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetMaxHitsA(Int_t nmax)
+void IceDwalk::SetMaxHits(Int_t nmax,TString s)
 {
-// Set the maximum number of good hits per Amanda module to be processed.
+// Set the maximum number of good hits per (D)OM to be processed.
 //
 // Special values :
 // nmax = 0 : No maximum limit set; all good hits will be processed
@@ -422,21 +550,39 @@ void IceDwalk::SetMaxHitsA(Int_t nmax)
 // In case the user selects a maximum number of good hits per module, all the
 // hits of each module will be ordered w.r.t. increasing hit time (LE).
 // This allows selection of processing e.g. only the first hits etc...
-// By default the maximum number of hits per Amanda modules is set to 1 in the ctor,
-// which implies processing only the first good hit of each Amanda OM.
- fMaxhitsA=nmax;
+// By default the maximum number of hits per (D)OM is set to 1 in the ctor,
+// which implies processing only the first good hit of each (D)OM.
+//
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+
+ if (s=="A") fMaxhitsA=nmax;
+ if (s=="I") fMaxhitsI=nmax;
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SetVgroupUsage(Int_t flag)
+void IceDwalk::SetVgroupUsage(Int_t flag,TString s)
 {
 // (De)activate the distinction between v_phase and v_group of the Cherenkov light.
 //
 // flag = 0 : No distinction between v_phase and v_group
 //      = 1 : Separate treatment of v_phase and v_group
 //
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// The default is s="A" for backward compatibility.
+//
 // By default the distinction between v_phase and v_group is activated
 // in the constructor of this class.
- fVgroup=flag;
+
+ if (s=="A") fVgroupA=flag;
+ if (s=="I") fVgroupI=flag;
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceDwalk::SetTrackName(TString s)
@@ -480,37 +626,76 @@ void IceDwalk::Exec(Option_t* opt)
  // Enter the reco parameters as a device in the event
  AliSignal params;
  params.SetNameTitle(ClassName(),"Reco parameters");
- params.SetSlotName("Dmin",1);
- params.SetSlotName("Dtmarg",2);
- params.SetSlotName("Maxdhit",3);
- params.SetSlotName("Tangmax",4);
- params.SetSlotName("Tdistmax",5);
- params.SetSlotName("Tinvol",6);
- params.SetSlotName("Jangmax",7);
- params.SetSlotName("Jiterate",8);
- params.SetSlotName("Jdistmax",9);
- params.SetSlotName("Jinvol",10);
- params.SetSlotName("MaxmodA",11);
- params.SetSlotName("MinmodA",12);
- params.SetSlotName("MaxhitsA",13);
- params.SetSlotName("Vgroup",14);
+ params.AddNamedSlot("DminA");
+ params.AddNamedSlot("DtmargA");
+ params.AddNamedSlot("MaxdhitA");
+ params.AddNamedSlot("TangmaxA");
+ params.AddNamedSlot("TdistmaxA");
+ params.AddNamedSlot("TinvolA");
+ params.AddNamedSlot("JangmaxA");
+ params.AddNamedSlot("JiterateA");
+ params.AddNamedSlot("JdistmaxA");
+ params.AddNamedSlot("JinvolA");
+ params.AddNamedSlot("MaxmodA");
+ params.AddNamedSlot("MinmodA");
+ params.AddNamedSlot("MaxhitsA");
+ params.AddNamedSlot("VgroupA");
 
- params.SetSignal(fDmin,1);
- params.SetSignal(fDtmarg,2);
- params.SetSignal(fMaxdhit,3);
- params.SetSignal(fTangmax,4);
- params.SetSignal(fTdistmax,5);
- params.SetSignal(fTinvol,6);
- params.SetSignal(fJangmax,7);
- params.SetSignal(fJiterate,8);
- params.SetSignal(fJdistmax,9);
- params.SetSignal(fJinvol,10);
- params.SetSignal(fMaxmodA,11);
- params.SetSignal(fMinmodA,12);
- params.SetSignal(fMaxhitsA,13);
- params.SetSignal(fVgroup,14);
+ params.SetSignal(fDminA,"DminA");
+ params.SetSignal(fDtmargA,"DtmargA");
+ params.SetSignal(fMaxdhitA,"MaxhitA");
+ params.SetSignal(fTangmaxA,"TangmaxA");
+ params.SetSignal(fTdistmaxA,"TdistmaxA");
+ params.SetSignal(fTinvolA,"TinvolA");
+ params.SetSignal(fJangmaxA,"JangmaxA");
+ params.SetSignal(fJiterateA,"JiterateA");
+ params.SetSignal(fJdistmaxA,"JdistmaxA");
+ params.SetSignal(fJinvolA,"JinvolA");
+ params.SetSignal(fMaxmodA,"MaxmodA");
+ params.SetSignal(fMinmodA,"MinmodA");
+ params.SetSignal(fMaxhitsA,"MaxhitsA");
+ params.SetSignal(fVgroupA,"VgroupA");
+
+ params.AddNamedSlot("DminI");
+ params.AddNamedSlot("DtmargI");
+ params.AddNamedSlot("MaxdhitI");
+ params.AddNamedSlot("TangmaxI");
+ params.AddNamedSlot("TdistmaxI");
+ params.AddNamedSlot("TinvolI");
+ params.AddNamedSlot("JangmaxI");
+ params.AddNamedSlot("JiterateI");
+ params.AddNamedSlot("JdistmaxI");
+ params.AddNamedSlot("JinvolI");
+ params.AddNamedSlot("MaxmodI");
+ params.AddNamedSlot("MinmodI");
+ params.AddNamedSlot("MaxhitsI");
+ params.AddNamedSlot("VgroupI");
+
+ params.SetSignal(fDminI,"DminI");
+ params.SetSignal(fDtmargI,"DtmargI");
+ params.SetSignal(fMaxdhitI,"MaxhitI");
+ params.SetSignal(fTangmaxI,"TangmaxI");
+ params.SetSignal(fTdistmaxI,"TdistmaxI");
+ params.SetSignal(fTinvolI,"TinvolI");
+ params.SetSignal(fJangmaxI,"JangmaxI");
+ params.SetSignal(fJiterateI,"JiterateI");
+ params.SetSignal(fJdistmaxI,"JdistmaxI");
+ params.SetSignal(fJinvolI,"JinvolI");
+ params.SetSignal(fMaxmodI,"MaxmodI");
+ params.SetSignal(fMinmodI,"MinmodI");
+ params.SetSignal(fMaxhitsI,"MaxhitsI");
+ params.SetSignal(fVgroupI,"VgroupI");
 
  fEvt->AddDevice(params);
+
+ // Perform the various reconstructions
+ Amanda();
+ InIce();
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::Amanda()
+{
+// The direct walk track reconstruction for Amanda OM signals.
 
  if (fMaxhitsA<0) return;
 
@@ -603,7 +788,7 @@ void IceDwalk::Exec(Option_t* opt)
    r12=r2-r1;
    dist=r12.GetNorm();
 
-   if (dist<=fDmin) continue;
+   if (dist<=fDminA) continue;
 
    // Select all the good hits of this second OM
    hits2.Clear();
@@ -637,7 +822,7 @@ void IceDwalk::Exec(Option_t* opt)
    r12/=dist;
 
    // Check all hit pair combinations of these two OMs for possible track elements  
-   dtmax=dist/c+float(fDtmarg);
+   dtmax=dist/c+float(fDtmargA);
    for (Int_t ih1=0; ih1<nh1; ih1++) // Hits of first OM
    {
     sx1=(AliSignal*)hits1.At(ih1);
@@ -669,7 +854,7 @@ void IceDwalk::Exec(Option_t* opt)
  // Association of hits to the various track elements.
  Float_t qmax=0;
  Int_t nahmax=0;
- AssociateHits(tes,hits,qmax,nahmax);
+ AssociateHits(tes,hits,fVgroupA,fMaxdhitA,qmax,nahmax);
 
  // Selection on quality (Q value) in case of multiple track candidates
  SelectQvalue(tes,qmax);
@@ -680,7 +865,7 @@ void IceDwalk::Exec(Option_t* opt)
  // Clustering of track candidates into jets
  TObjArray jets;
  jets.SetOwner();
- ClusterTracks(tes,jets,qmax);
+ ClusterTracks(tes,jets,fTangmaxA,fTinvolA,fTdistmaxA,qmax);
 
  Int_t njets=jets.GetEntries();
  if (!njets) return;
@@ -689,14 +874,212 @@ void IceDwalk::Exec(Option_t* opt)
  ordered=fEvt->SortJets(-2,&jets);
  TObjArray jets2(*ordered);
 
- // Merging f jets
- MergeJets(jets2);
+ // Merging of jets
+ MergeJets(jets2,fJangmaxA,fJdistmaxA,fJinvolA,fJiterateA);
 
  // Production and storage of the final tracks
- StoreTracks(jets2);
+ TString name=fTrackname;
+ if (name=="") name=ClassName();
+ name+="A";
+ TString title=ClassName();
+ title+=" Amanda track";
+ StoreTracks(jets2,fJangmaxA,name,title);
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Float_t& qmax,Int_t& nahmax)
+void IceDwalk::InIce()
+{
+// The direct walk track reconstruction for InIce DOM signals.
+
+ if (fMaxhitsI<0) return;
+
+ // Fetch all fired InIce DOMs for this event
+ TObjArray* idoms=fEvt->GetDevices("IceIDOM");
+ if (!idoms) return;
+ Int_t nidoms=idoms->GetEntries();
+ if (!nidoms) return;
+
+ // Check for the minimum and/or maximum number of good fired Amanda OMs
+ Int_t ngood=0;
+ for (Int_t idom=0; idom<nidoms; idom++)
+ {
+  IceGOM* omx=(IceGOM*)idoms->At(idom);
+  if (!omx) continue;
+  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
+  ngood++;
+ } 
+ if (ngood<fMinmodI || ngood>fMaxmodI) return;
+
+ const Float_t c=0.299792458; // Light speed in vacuum in meters per ns
+
+ // Storage of track elements.
+ TObjArray tes;
+ tes.SetOwner();
+
+ AliPosition r1;
+ AliPosition r2;
+ Ali3Vector r12;
+ Ali3Vector rsum;
+ AliPosition r0;
+ TObjArray hits1;
+ TObjArray hits2;
+ Int_t nh1,nh2;
+ AliSignal* sx1=0;
+ AliSignal* sx2=0;
+ Float_t dist=0;
+ Float_t t1,t2,dt,t0;
+ Float_t dtmax;
+ TObjArray hits;
+ TObjArray* ordered;
+
+ // Check the hits of Amanda OM pairs for possible track elements.
+ // Also all the good hits are stored in the meantime (to save CPU time)
+ // for hit association with the various track elements lateron.
+ AliTrack* te=0;
+ for (Int_t i1=0; i1<nidoms; i1++) // First DOM of the pair
+ {
+  IceGOM* omx1=(IceGOM*)idoms->At(i1);
+  if (!omx1) continue;
+  if (omx1->GetDeadValue("LE")) continue;
+  r1=omx1->GetPosition();
+  // Select all the good hits of this first DOM
+  hits1.Clear();
+  // Determine the max. number of hits to be processed for this DOM
+  ordered=0;
+  if (fMaxhitsI>0 && omx1->GetNhits()>fMaxhitsI) ordered=omx1->SortHits("LE",1,0,7);
+  nh1=0;
+  for (Int_t j1=1; j1<=omx1->GetNhits(); j1++)
+  {
+   if (ordered)
+   {
+    if (nh1>=fMaxhitsI) break;
+    sx1=(AliSignal*)ordered->At(j1-1);
+   }
+   else
+   {
+    sx1=omx1->GetHit(j1);
+   }
+   if (!sx1) continue;
+   if (sx1->GetDeadValue("ADC") || sx1->GetDeadValue("LE") || sx1->GetDeadValue("TOT")) continue;
+   hits1.Add(sx1);
+   // Also store all good hits in the total hit array
+   hits.Add(sx1);
+   nh1++;
+  }
+
+  // No further pair to be formed with the last DOM in the list 
+  if (i1==(nidoms-1)) break;
+
+  nh1=hits1.GetEntries();
+  if (!nh1) continue;
+
+  for (Int_t i2=i1+1; i2<nidoms; i2++) // Second DOM of the pair
+  {
+   IceGOM* omx2=(IceGOM*)idoms->At(i2);
+   if (!omx2) continue;
+   if (omx2->GetDeadValue("LE")) continue;
+   r2=omx2->GetPosition();
+   r12=r2-r1;
+   dist=r12.GetNorm();
+
+   if (dist<=fDminI) continue;
+
+   // Select all the good hits of this second DOM
+   hits2.Clear();
+   // Determine the max. number of hits to be processed for this DOM
+   ordered=0;
+   if (fMaxhitsI>0 && omx2->GetNhits()>fMaxhitsI) ordered=omx2->SortHits("LE",1,0,7);
+   nh2=0;
+   for (Int_t j2=1; j2<=omx2->GetNhits(); j2++)
+   {
+    if (ordered)
+    {
+     if (nh2>=fMaxhitsI) break;
+     sx2=(AliSignal*)ordered->At(j2-1);
+    }
+    else
+    {
+     sx2=omx2->GetHit(j2);
+    }
+    if (!sx2) continue;
+    if (sx2->GetDeadValue("ADC") || sx2->GetDeadValue("LE") || sx2->GetDeadValue("TOT")) continue;
+    hits2.Add(sx2);
+    nh2++;
+   }
+ 
+   nh2=hits2.GetEntries();
+   if (!nh2) continue;
+
+   // Position r0 in between the two DOMs and normalised relative direction r12
+   rsum=(r1+r2)/2.;
+   r0.SetPosition((Ali3Vector&)rsum);
+   r12/=dist;
+
+   // Check all hit pair combinations of these two DOMs for possible track elements  
+   dtmax=dist/c+float(fDtmargI);
+   for (Int_t ih1=0; ih1<nh1; ih1++) // Hits of first DOM
+   {
+    sx1=(AliSignal*)hits1.At(ih1);
+    if (!sx1) continue;
+    for (Int_t ih2=0; ih2<nh2; ih2++) // Hits of second DOM
+    {
+     sx2=(AliSignal*)hits2.At(ih2);
+     if (!sx2) continue;
+     t1=sx1->GetSignal("LE",7);
+     t2=sx2->GetSignal("LE",7);
+     dt=t2-t1;
+     t0=(t1+t2)/2.;
+
+     if (fabs(dt)>=dtmax) continue;
+
+     te=new AliTrack();
+     tes.Add(te);
+     if (dt<0) r12*=-1.;
+     r0.SetTimestamp((AliTimestamp&)*fEvt);
+     AliTimestamp* tsx=r0.GetTimestamp();
+     tsx->Add(0,0,(int)t0);
+     te->SetReferencePoint(r0);
+     te->Set3Momentum(r12);
+    }
+   }
+  } // end of loop over the second OM of the pair
+ } // end of loop over first OM of the pair
+
+ // Association of hits to the various track elements.
+ Float_t qmax=0;
+ Int_t nahmax=0;
+ AssociateHits(tes,hits,fVgroupI,fMaxdhitI,qmax,nahmax);
+
+ // Selection on quality (Q value) in case of multiple track candidates
+ SelectQvalue(tes,qmax);
+
+ Int_t nte=tes.GetEntries();
+ if (!nte) return;
+
+ // Clustering of track candidates into jets
+ TObjArray jets;
+ jets.SetOwner();
+ ClusterTracks(tes,jets,fTangmaxI,fTinvolI,fTdistmaxI,qmax);
+
+ Int_t njets=jets.GetEntries();
+ if (!njets) return;
+
+ // Order the jets w.r.t. decreasing quality value
+ ordered=fEvt->SortJets(-2,&jets);
+ TObjArray jets2(*ordered);
+
+ // Merging of jets
+ MergeJets(jets2,fJangmaxI,fJdistmaxI,fJinvolI,fJiterateI);
+
+ // Production and storage of the final tracks
+ TString name=fTrackname;
+ if (name=="") name=ClassName();
+ name+="I";
+ TString title=ClassName();
+ title+=" InIce track";
+ StoreTracks(jets2,fJangmaxI,name,title);
+}
+///////////////////////////////////////////////////////////////////////////
+void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t maxdhit,Float_t& qmax,Int_t& nahmax)
 {
  // Association of hits to the various track elements.
 
@@ -709,7 +1092,7 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Float_t& qmax,Int_t&
 
  // Angular reduction of complement of thetac due to v_phase and v_group difference
  Float_t alphac=0;
- if (fVgroup) alphac=atan((1.-npice/ngice)/sqrt(npice*npice-1.));
+ if (vgroup) alphac=atan((1.-npice/ngice)/sqrt(npice*npice-1.));
 
  Int_t nte=tes.GetEntries();
  Int_t nh=hits.GetEntries();
@@ -785,7 +1168,7 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Float_t& qmax,Int_t&
 
    d=d/sin(thetac); // The distance traveled by a cherenkov photon
 
-   if (tres<-30 || tres>300 || d>fMaxdhit*lambda) continue;
+   if (tres<-30 || tres>300 || d>maxdhit*lambda) continue;
 
    // Associate this hit to the TE
    te->AddSignal(*sx1);
@@ -902,7 +1285,7 @@ void IceDwalk::SelectQvalue(TObjArray& tes,Float_t qmax)
  tes.Compress();
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax)
+void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_t tinvol,Float_t tdistmax,Float_t qmax)
 {
  // Cluster track candidates within a certain opening angle into jets.
  // Also the track should be within a certain maximum distance of the
@@ -943,13 +1326,13 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax)
    AliTrack* te2=(AliTrack*)tes.At(jtc2);
    if (!te2) continue;
    ang=te->GetOpeningAngle(*te2,"deg");
-   if (ang<=fTangmax)
+   if (ang<=tangmax)
    {
     AliPosition* x2=te2->GetReferencePoint();
     if (!x2) continue;
     AliTimestamp* ts2=x2->GetTimestamp();
     if (!ts2) continue;
-    if (!fTinvol)
+    if (!tinvol)
     {
      dist=te->GetDistance(te2);
     }
@@ -959,7 +1342,7 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax)
      dist2=te2->GetDistance(x1);
      if (dist2<dist) dist=dist2;
     }
-    if (dist<=fTdistmax)
+    if (dist<=tdistmax)
     {
      x2->GetPosition(vec,"car");
      pos.Enter(vec[0],vec[1],vec[2]);
@@ -985,7 +1368,7 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax)
   jx->SetReferencePoint(r0);
 
   // Store this jet for further processing if ntracks>1
-  if (jx->GetNtracks() > 1 || fTangmax<=0)
+  if (jx->GetNtracks() > 1 || tangmax<=0)
   {
    jets.Add(jx);
    nah=jx->GetNsignals();
@@ -1028,7 +1411,7 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t qmax)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::MergeJets(TObjArray& jets2)
+void IceDwalk::MergeJets(TObjArray& jets2,Float_t jangmax,Float_t jdistmax,Int_t jinvol,Int_t jiterate)
 {
  // Merge jets within a certain opening to provide the final track(s).
  // Also the jet should be within a certain maximum distance of the
@@ -1049,7 +1432,7 @@ void IceDwalk::MergeJets(TObjArray& jets2)
  AliPosition r0;
  Float_t vec[3],err[3];
  Float_t sortval;
- if (fJangmax>=0)
+ if (jangmax>=0)
  {
   while (merged)
   {
@@ -1078,9 +1461,9 @@ void IceDwalk::MergeJets(TObjArray& jets2)
      AliTimestamp* ts2=x2->GetTimestamp();
      if (!ts2) continue;
      ang=jx1->GetOpeningAngle(*jx2,"deg");
-     if (ang<=fJangmax)
+     if (ang<=jangmax)
      {
-      if (!fJinvol)
+      if (!jinvol)
       {
        dist=jx1->GetDistance(jx2);
       }
@@ -1090,7 +1473,7 @@ void IceDwalk::MergeJets(TObjArray& jets2)
        dist2=jx2->GetDistance(x1);
        if (dist2<dist) dist=dist2;
       }
-      if (dist<=fJdistmax)
+      if (dist<=jdistmax)
       {
        x2->GetPosition(vec,"car");
        pos.Enter(vec[0],vec[1],vec[2]);
@@ -1103,7 +1486,7 @@ void IceDwalk::MergeJets(TObjArray& jets2)
         jx1->AddTrack(te);
        }
        jets2.RemoveAt(jet2);
-       if (fJiterate) merged=1;
+       if (jiterate) merged=1;
       }
      }
     } // End of jet2 loop
@@ -1153,7 +1536,7 @@ void IceDwalk::MergeJets(TObjArray& jets2)
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::StoreTracks(TObjArray& jets2)
+void IceDwalk::StoreTracks(TObjArray& jets2,Float_t jangmax,TString name,TString title)
 {
  // Store every jet as a reconstructed track in the event structure.
  // The jet 3-momentum (normalised to 1) and reference point
@@ -1167,12 +1550,8 @@ void IceDwalk::StoreTracks(TObjArray& jets2)
  // the standard Sieglinde processing.
 
  Int_t njets=jets2.GetEntries();
-
- if (fTrackname=="") fTrackname=ClassName();
- TString title=ClassName();
- title+=" reco track";
  AliTrack t; 
- t.SetNameTitle(fTrackname.Data(),title.Data());
+ t.SetNameTitle(name.Data(),title.Data());
  t.SetCharge(fCharge);
  Ali3Vector p;
  for (Int_t jet=0; jet<njets; jet++)
@@ -1205,7 +1584,7 @@ void IceDwalk::StoreTracks(TObjArray& jets2)
   // Only take the jet with the highest quality number
   // (i.e. the first jet in the list) when the user had selected
   // this reconstruction mode.
-  if (fJangmax<0) break;
+  if (jangmax<0) break;
  }
 }
 ///////////////////////////////////////////////////////////////////////////
