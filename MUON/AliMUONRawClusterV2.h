@@ -28,7 +28,7 @@ class AliMUONRawClusterV2 : public AliMUONVCluster {
   virtual void Clear(Option_t* = "");
   
 	   /// Create a copy of the current cluster
-  virtual AliMUONRawClusterV2* CreateCopy() const {return new AliMUONRawClusterV2(*this);}
+  virtual AliMUONRawClusterV2* Clone(const char* = "") const {return new AliMUONRawClusterV2(*this);}
   
            /// Set coordinates (cm)
   virtual void     SetXYZ(Double_t x, Double_t y, Double_t z) {fX = x; fY = y; fZ = z;}

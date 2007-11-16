@@ -82,7 +82,7 @@ AliMUONTrackParam::AliMUONTrackParam(const AliMUONTrackParam& theMUONTrackParam)
   if (theMUONTrackParam.fSmoothParameters) fSmoothParameters = new TMatrixD(*(theMUONTrackParam.fSmoothParameters));
   if (theMUONTrackParam.fSmoothCovariances) fSmoothCovariances = new TMatrixD(*(theMUONTrackParam.fSmoothCovariances));
   
-  if(fOwnCluster) fClusterPtr = theMUONTrackParam.fClusterPtr->CreateCopy();
+  if(fOwnCluster) fClusterPtr = static_cast<AliMUONVCluster*>(theMUONTrackParam.fClusterPtr->Clone());
   else fClusterPtr = theMUONTrackParam.fClusterPtr;
 }
 
@@ -149,7 +149,7 @@ AliMUONTrackParam& AliMUONTrackParam::operator=(const AliMUONTrackParam& theMUON
   }
   
   fOwnCluster = theMUONTrackParam.fOwnCluster;
-  if(fOwnCluster) fClusterPtr = theMUONTrackParam.fClusterPtr->CreateCopy();
+  if(fOwnCluster) fClusterPtr = static_cast<AliMUONVCluster*>(theMUONTrackParam.fClusterPtr->Clone());
   else fClusterPtr = theMUONTrackParam.fClusterPtr;
   
   fRemovable = theMUONTrackParam.fRemovable;

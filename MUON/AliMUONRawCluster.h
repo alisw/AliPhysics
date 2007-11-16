@@ -30,7 +30,7 @@ public:
    virtual void Clear(Option_t* = "") {}
    
            /// Create a copy of the current cluster
-   virtual AliMUONRawCluster* CreateCopy() const {return new AliMUONRawCluster(*this);}
+   virtual AliMUONRawCluster* Clone(const char* = "") const {return new AliMUONRawCluster(*this);}
    
            /// Set coordinates (cm)
   virtual void     SetXYZ(Double_t x, Double_t y, Double_t z) {fX[0] = x; fY[0] = y; fZ[0] = z;}

@@ -343,7 +343,7 @@ void AliMUONTrack::AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, A
   
   // link parameters with the associated cluster or its copy
   if (copy) {
-    AliMUONVCluster *clusterCopy = cluster.CreateCopy();
+    AliMUONVCluster *clusterCopy = static_cast<AliMUONVCluster*>(cluster.Clone());
     trackParamAtCluster->SetClusterPtr(clusterCopy, kTRUE);
   } else trackParamAtCluster->SetClusterPtr(&cluster);
 }
