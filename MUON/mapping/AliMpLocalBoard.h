@@ -46,12 +46,10 @@ class AliMpLocalBoard : public TNamed
 
     // Switches
     //
-    Bool_t AddSwitch(Int_t swit);
-    Int_t  GetNofSwitches() const;
+            /// Get switch bit wise (return a inteter for backware compatibility)
     Int_t  GetSwitch(Int_t index) const;
-
             /// Set switch in a compact way
-    void   SetSwitch(UInt_t swit) {fSwitch = swit;}
+    void   SetSwitch(UInt_t swit);
             /// Get switch in a compact way
     UInt_t  GetSwitch() const {return fSwitch;}
 
@@ -85,7 +83,8 @@ class AliMpLocalBoard : public TNamed
              /// Return notified flag (not copy card) 
     Bool_t   IsNotified() const {return fNotified;}
 
-    // given position (line, col)
+    
+    /// given position (line, col)
     AliMpIntPair GetPosition() const;
 
     // Id to be copy to or from
@@ -120,10 +119,8 @@ class AliMpLocalBoard : public TNamed
    
    Int_t       fId;       ///< Identifier (unique)
    Int_t       fSlot;     ///< Slot Identifier in the given crate 
-
    Bool_t      fTC;       ///< Transverse connector
    TString     fCrate;    ///< Crate name
-   AliMpArrayI fSwitches; ///< switches
    UInt_t      fSwitch;   ///< switches in compact way
    Bool_t      fNotified; ///< notified flag (not copy card)
    AliMpArrayI fDEId;     ///< list of Detection element to which this local board is connected
@@ -132,7 +129,7 @@ class AliMpLocalBoard : public TNamed
    Int_t       fInputYfrom;///< local id of y1-4 inputs copied from (zero: not copied)
    Int_t       fInputYto;  ///< local id of y1-4 inputs copied to (zero: not copied)
 
-  ClassDef(AliMpLocalBoard,2) //utility class for the motif type
+  ClassDef(AliMpLocalBoard,3) //utility class for the motif type
 };
 
 

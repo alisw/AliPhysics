@@ -43,7 +43,6 @@ AliMpLocalBoard::AliMpLocalBoard(Int_t id, const Char_t* name, Int_t slot)
       fSlot(slot),
       fTC(true),
       fCrate(),
-      fSwitches(false),
       fSwitch(0),
       fNotified(true),
       fDEId(false),
@@ -62,7 +61,6 @@ AliMpLocalBoard::AliMpLocalBoard(TRootIOCtor* /*ioCtor*/)
       fSlot(),
       fTC(),
       fCrate(),
-      fSwitches(),
       fSwitch(),
       fNotified(),
       fDEId(),
@@ -158,44 +156,24 @@ Bool_t  AliMpLocalBoard::HasDEId(Int_t detElemId) const
 }
 
 //______________________________________________________________________________
-Bool_t AliMpLocalBoard::AddSwitch(Int_t swit)
+void AliMpLocalBoard::SetSwitch(UInt_t swit) 
 {
-/// Add a swicth for the given local board
-/// Return true if switch was added
-
-    if ( swit > 1 ) {
-      AliWarningStream() 
-	  << "Invalid value for switch = " << swit 
-	  << endl;
-      return false;
-    }
-
-    fSwitches.Add(swit);
-    fSwitch <<= 1;
-    fSwitch |= (swit & 0x1);
-    return true;
-}   
-
-
-//______________________________________________________________________________
-Int_t AliMpLocalBoard::GetNofSwitches() const
-{  
-/// Return the number switches in this local board
-
-  return fSwitches.GetSize(); 
+/// set compact switch 
+  
+  fSwitch = swit;
+ 
 }
 
 //______________________________________________________________________________
 Int_t  AliMpLocalBoard::GetSwitch(Int_t index) const
 {
-/// Return switch by index (in loop)
+/// Return switch bit wise
 
-    if (index < fSwitches.GetSize())
-	return fSwitches.GetValue(index);
-    else 
+    if (index > 9) {
 	AliWarning("Switch index too large");
-
-    return -1;
+        return -1;
+    }
+    return  (fSwitch >> 9-index) & 0x1;
 }
 
 //______________________________________________________________________________
