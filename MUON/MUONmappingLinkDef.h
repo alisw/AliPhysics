@@ -115,6 +115,7 @@
 #pragma link C++ class  AliMpDEIterator+;
 #pragma link C++ class  AliMpDEManager+;
 #pragma link C++ class  AliMpBusPatch+;
+#pragma link C++ class  AliMpGlobalCrate+;
 #pragma link C++ class  AliMpTriggerCrate+;
 #pragma link C++ class  AliMpLocalBoard+;
 #pragma link C++ class  AliMpDDL+;
