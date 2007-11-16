@@ -52,7 +52,8 @@ SRCS= AliTRDarrayI.cxx \
       AliTRDtrigger.cxx \
       AliTRDltuTracklet.cxx \
       AliTRDgtuTrack.cxx \
-      AliTRDmodule.cxx 
+      AliTRDmodule.cxx \
+      AliTRDhit.cxx
 
 HDRS= $(SRCS:.cxx=.h)
 

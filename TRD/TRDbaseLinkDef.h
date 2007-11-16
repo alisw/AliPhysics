@@ -82,4 +82,6 @@
 #pragma link C++ class  AliTRDgtuTrack+;
 #pragma link C++ class  AliTRDmodule+;
 
+#pragma link C++ class  AliTRDhit+;
+
 #endif
