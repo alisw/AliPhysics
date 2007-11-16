@@ -22,6 +22,7 @@
 
 #include <Riostream.h>
 #include "AliMpExMap.h"
+#include "AliMpGlobalCrate.h"
 
 class AliMUONTriggerLut;
 class AliMUONVCalibParam;
@@ -65,7 +66,7 @@ public:
   AliMpTriggerCrate* GetTriggerCrate(TString crateName, Bool_t warn = true) const;
   AliMpLocalBoard*   GetLocalBoard(Int_t localBoardId, Bool_t warn = true) const;
 
-  void UpdateMapping() const;
+  void UpdateMapping(Bool_t writeFile = true) const;
 
 private:
   
@@ -80,26 +81,30 @@ private:
   /// Return number of local boards
   Int_t NofLocalBoards() const { return fNofLocalBoards; }
   
-  Int_t ReadRegional(const char* regionalFile, AliMUONVStore* regionalMasks, Bool_t warn = true);
+  Int_t  ReadGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks);
+
+  Bool_t WriteGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks) const;
+
+  Int_t  ReadRegional(const char* regionalFile, AliMUONVStore* regionalMasks, Bool_t warn = true);
 
   Bool_t WriteRegional(const char* regionalFile, AliMUONVStore* regionalMasks) const;
 
-  Int_t ReadLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
+  Int_t  ReadLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
   
   Bool_t WriteLocalMasks(const char* localFile, AliMUONVStore& localMasks) const;
 
-  void ReadLocalLUT(AliMUONTriggerLut& lut, Int_t localBoardId, FILE* flut);
+  void   ReadLocalLUT(AliMUONTriggerLut& lut, Int_t localBoardId, FILE* flut);
   
-  void WriteLocalLUT(const AliMUONTriggerLut& lut, Int_t localBoardId, 
+  void   WriteLocalLUT(const AliMUONTriggerLut& lut, Int_t localBoardId, 
                        FILE* flut);
     
   
 private:
-  TArrayI fLocalBoardIds; //!< order of the localboards
-  Int_t fNofLocalBoards; //!< number of local boards
-  AliMpExMap    fTriggerCrates;  //!< The map of trigger crate per their ID
-  AliMpExMap    fLocalBoards;    ///< The map of local board per their ID
-
+  TArrayI             fLocalBoardIds;  //!< order of the localboards
+  Int_t               fNofLocalBoards; //!< number of local boards
+  AliMpExMap          fTriggerCrates;  //!< The map of trigger crate per their ID
+  AliMpExMap          fLocalBoards;    //!< The map of local board per their ID
+  AliMpGlobalCrate    fGlobalCrate;  //!< Global crate object
   
   ClassDef(AliMUONTriggerIO,1) // Read/Write trigger masks and LUT to/from online files
 };
