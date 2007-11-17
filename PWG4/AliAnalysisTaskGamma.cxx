@@ -24,6 +24,7 @@
 // analysis
 #include "AliAnalysisTaskGamma.h"
 #include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliAnaGamma.h"
@@ -89,7 +90,7 @@ void AliAnalysisTaskGamma::CreateOutputObjects()
   // Create the output container
   
   //AODs
-  OpenFile(0);
+//  OpenFile(0);
   AliAODHandler* handler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   fAOD   = handler->GetAOD();
   fTreeG = handler->GetTree();
@@ -124,12 +125,14 @@ void AliAnalysisTaskGamma::Init()
   fAna->Init();
   
   //In case of MC analysis
+/*
+  // NOT ALLOWED TO SET MC HANDLER FROM WITHIN AN ANALYSIS TASK !!! (MG)
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype == AliGammaReader::kMC || datatype == AliGammaReader::kMCData ){
     AliMCEventHandler * mc = new AliMCEventHandler();
     (AliAnalysisManager::GetAnalysisManager())->SetMCtruthEventHandler(mc);
   }
-  
+*/  
   AliDebug(1,"End");
   
 }
@@ -140,10 +143,9 @@ void AliAnalysisTaskGamma::ConnectInputData(Option_t */*option*/)
   // Connect the input data
   //
   AliDebug(1,"ConnectInputData() ");
+  AliESDInputHandler* esdH = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  fESD = esdH->GetEvent();
   fChain = (TChain*)GetInputData(0);
-  fESD = new AliESDEvent();
-  fESD->ReadFromTree(fChain);
-  
 }
 
 //_____________________________________________________
