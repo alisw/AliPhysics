@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.1  2007/10/29 13:50:39  gustavo
+ * New class for particle selection
+ *
  *
  *
  */
@@ -85,11 +88,7 @@ AliAnaGammaSelection & AliAnaGammaSelection::operator = (const AliAnaGammaSelect
 //____________________________________________________________________________
 AliAnaGammaSelection::~AliAnaGammaSelection() 
 {
-  // Remove all pointers
-  
-  delete fntEMCAL    ;  
-  delete fntPHOS    ;  
-  delete fntCTS    ;  
+   // Remove all pointers except analysis output pointers.
 
 }
 
@@ -117,7 +116,7 @@ TList *  AliAnaGammaSelection::GetCreateOutputObjects()
   fntCTS = new TNtuple("ntCTS", "Tree of CTS particles before selection", "pt:phi:eta:pdg:status:ptprimary:phiprimary:etaprimary:pdgprimary:statusprimary");
   //outputContainer->Add(fntCTS) ;
   
-  gROOT->cd();
+//  gROOT->cd();
 
   return outputContainer ;
 

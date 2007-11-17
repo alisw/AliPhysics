@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.6  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -146,18 +149,7 @@ AliAnaGammaDirect & AliAnaGammaDirect::operator = (const AliAnaGammaDirect & sou
 //____________________________________________________________________________
 AliAnaGammaDirect::~AliAnaGammaDirect() 
 {
-  // Remove all pointers
-  
-  delete fhNGamma    ;  
-  delete fhPhiGamma  ; 
-  delete fhEtaGamma   ;  
-  delete fhConeSumPt ;
-  delete fntuplePrompt    ;  
-
-  //kSeveralIC
-  delete [] fhPtThresIsolated ;
-  delete [] fhPtSumIsolated ;
-  delete [] fntSeveralIC ;
+  // Remove all pointers except analysis output pointers.
 
 }
 
@@ -224,7 +216,7 @@ TList *  AliAnaGammaDirect::GetCreateOutputObjects()
     }//ipt loop
   }
 
-  gROOT->cd();
+//  gROOT->cd();
 
   return outputContainer ;
 
@@ -301,7 +293,7 @@ void AliAnaGammaDirect::GetPromptGamma(TClonesArray * plCalo, TClonesArray * plC
     }
 
     //Fill ntuple with cluster / MC data
-    gROOT->cd();
+//    gROOT->cd();
     fntuplePrompt->Fill(ptcluster,phicluster,etacluster,pdgcluster,statuscluster,ptprimary,phiprimary, etaprimary,pdgprimary,statusprimary);
   }
   else
@@ -450,7 +442,7 @@ void  AliAnaGammaDirect::MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArr
 	fhPtThresIsolated[icone][ipt]->Fill(ptC); 
       }//pt thresh loop
       fhPtSumIsolated[icone]->Fill(ptC,coneptsum) ;
-      gROOT->cd();
+//      gROOT->cd();
       fntSeveralIC[icone]->Fill(ptC,pCandidate->Phi(),pCandidate->Eta(), coneptsum,type,ncone[icone][0],ncone[icone][1],ncone[icone][2],ncone[icone][3],ncone[icone][4],ncone[icone][5]);
     }//cone size loop
   }//found high energy gamma in the event
