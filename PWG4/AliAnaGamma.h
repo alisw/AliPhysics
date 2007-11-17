@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.2  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -101,16 +104,16 @@ public:
  private:
   
   //General Data members
-  TList  *fOutputContainer ; //! output data container
+  TList  *fOutputContainer ; // output data container
   Int_t      fAnaType; //Analysis type to be done
   TString fCalorimeter; //Prompt photon detector
   TObject * fData ; //! ESD
   TObject * fKine ; //! Stack
-  AliGammaReader *      fReader ; //! Pointer to reader 
-  AliAnaGammaDirect *   fGammaDirect ; //! Pointer to prompt gamma algorithm 
-  AliAnaGammaCorrelation *   fGammaCorrelation ; //! Pointer to gamma correlation algorithm
-  AliAnaGammaSelection *   fGammaSelection ; //! Pointer to gamma selection algorithm
-  AliNeutralMesonSelection *  fNeutralMesonSelection ; //! Pointer to pair selection for pi0 identification.
+  AliGammaReader *      fReader ; // Pointer to reader 
+  AliAnaGammaDirect *   fGammaDirect ; // Pointer to prompt gamma algorithm 
+  AliAnaGammaCorrelation *   fGammaCorrelation ; // Pointer to gamma correlation algorithm
+  AliAnaGammaSelection *   fGammaSelection ; // Pointer to gamma selection algorithm
+  AliNeutralMesonSelection *  fNeutralMesonSelection ; // Pointer to pair selection for pi0 identification.
   TClonesArray* fAODclusters;        //! reconstructed jets
   Int_t         fNAODclusters;       //! number of reconstructed jets
 

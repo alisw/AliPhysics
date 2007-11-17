@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.2  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -123,18 +126,21 @@ AliAnaGamma & AliAnaGamma::operator = (const AliAnaGamma & source)
 //____________________________________________________________________________
 AliAnaGamma::~AliAnaGamma() 
 {
-  // Remove all pointers
+  // Remove all pointers.
 
-  fOutputContainer->Clear() ; 
-  delete fOutputContainer ;
+  // Protection added in case of NULL pointers (MG)
+  if (fOutputContainer) {
+     fOutputContainer->Clear();
+     delete fOutputContainer ;
+  }   
 
-  delete fData ; 
-  delete fKine ;
-  delete fReader ;
-  delete fGammaDirect ;
-  delete fGammaCorrelation ;
-  delete fGammaSelection ;
-  delete fNeutralMesonSelection ;
+  if (fData) delete fData ; 
+  if (fKine) delete fKine ;
+  if (fReader) delete fReader ;
+  if (fGammaDirect) delete fGammaDirect ;
+  if (fGammaCorrelation) delete fGammaCorrelation ;
+  if (fGammaSelection) delete fGammaSelection ;
+  if (fNeutralMesonSelection) delete fNeutralMesonSelection ;
 
 }
 
