@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.2  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -84,11 +87,7 @@ AliAnaGammaJetFinder & AliAnaGammaJetFinder::operator = (const AliAnaGammaJetFin
 //____________________________________________________________________________
 AliAnaGammaJetFinder::~AliAnaGammaJetFinder() 
 {
- 
-  delete fhDeltaEtaJet ;
-  delete fhDeltaPhiJet ;
-  delete fhDeltaPtJet ;
-  delete fhPtRatJet ;
+   // Remove all pointers except analysis output pointers.
  
 }
 

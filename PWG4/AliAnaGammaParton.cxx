@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/09/26 11:07:19  schutz
+ * Update classes for the new analysis framwork
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -80,11 +83,8 @@ AliAnaGammaParton & AliAnaGammaParton::operator = (const AliAnaGammaParton & sou
 //____________________________________________________________________________
 AliAnaGammaParton::~AliAnaGammaParton() 
 {
- 
-  delete fhDeltaEtaParton ;
-  delete fhDeltaPhiParton ;
-  delete fhDeltaPtParton ;
-  delete fhPtRatParton ;
+  // Remove all pointers except analysis output pointers.
+
  
 }
 

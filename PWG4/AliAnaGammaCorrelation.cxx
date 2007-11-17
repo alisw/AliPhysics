@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.2  2007/08/17 12:40:04  schutz
+ * New analysis classes by Gustavo Conesa
+ *
  * Revision 1.1.2.1  2007/07/26 10:32:09  schutz
  * new analysis classes in the the new analysis framework
  *
@@ -103,11 +106,7 @@ AliAnaGammaCorrelation & AliAnaGammaCorrelation::operator = (const AliAnaGammaCo
 //____________________________________________________________________________
 AliAnaGammaCorrelation::~AliAnaGammaCorrelation() 
 {
-  // Remove all pointers
-  fOutputContainer->Clear();
-  delete fOutputContainer;
-
-  delete fNeutralMesonSelection ;
+   // Remove all pointers except analysis output pointers.
  
 }
 

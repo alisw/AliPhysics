@@ -103,10 +103,9 @@ AliAnaCaloTriggerMC & AliAnaCaloTriggerMC::operator = (const AliAnaCaloTriggerMC
 AliAnaCaloTriggerMC::~AliAnaCaloTriggerMC()
 {
   // dtor
-  fOutputContainer->Clear() ; 
-  delete fOutputContainer ;
-  delete fNtTrigger22 ; 
-  delete fNtTriggerNN ; 
+  //  fOutputContainer->Clear() ; 
+  //  delete fOutputContainer ;
+
 }
 
 

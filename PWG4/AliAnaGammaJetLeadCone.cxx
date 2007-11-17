@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.2  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -214,46 +217,8 @@ AliAnaGammaJetLeadCone & AliAnaGammaJetLeadCone::operator = (const AliAnaGammaJe
 //____________________________________________________________________________
 AliAnaGammaJetLeadCone::~AliAnaGammaJetLeadCone() 
 {
- 
-  delete fhChargedRatio  ; 
-  delete fhNeutralRatio   ; 
+   // Remove all pointers except analysis output pointers.
 
-  delete fhPhiCharged  ;  
-  delete fhPhiNeutral   ; 
-  delete fhEtaCharged  ; 
-  delete fhEtaNeutral  ; 
-  delete fhDeltaPhiGammaCharged  ;  
-  delete fhDeltaPhiGammaNeutral   ; 
-  delete fhDeltaEtaGammaCharged  ; 
-  delete fhDeltaEtaGammaNeutral  ; 
-  
-  delete fhAnglePairLeading  ; 
-  delete fhInvMassPairLeading  ; 
-  delete fhNBkg   ; 
-  delete fhNLeading  ; 
-  delete fhNJet  ; 
-  delete fhJetRatio  ; 
-  delete fhJetPt   ; 
-  delete fhBkgRatio   ; 
-  delete fhBkgPt  ; 
-  delete fhJetFragment  ; 
-  delete fhBkgFragment  ; 
-  delete fhJetPtDist  ; 
-  delete fhBkgPtDist  ; 
-  
-  delete [] fhJetRatios;  
-  delete [] fhJetPts;  
-  delete [] fhBkgRatios;
-  delete [] fhBkgPts;  
-
-  delete [] fhNLeadings;
-  delete [] fhNJets;  
-  delete [] fhNBkgs;
-  
-  delete [] fhJetFragments;
-  delete [] fhBkgFragments;
-  delete [] fhJetPtDists;
-  delete [] fhBkgPtDists;
 }
 
 

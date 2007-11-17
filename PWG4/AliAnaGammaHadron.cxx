@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.7  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  * Revision 1.5  2007/08/17 12:40:04  schutz
  * New analysis classes by Gustavo Conesa
  *
@@ -102,20 +105,7 @@ AliAnaGammaHadron & AliAnaGammaHadron::operator = (const AliAnaGammaHadron & sou
 //____________________________________________________________________________
 AliAnaGammaHadron::~AliAnaGammaHadron() 
 {
-  
-  delete fhPhiCharged  ;  
-  delete fhPhiNeutral   ; 
-  delete fhEtaCharged  ; 
-  delete fhEtaNeutral  ; 
-  delete fhDeltaPhiGammaCharged  ;  
-  delete fhDeltaPhiGammaNeutral   ; 
-  delete fhDeltaEtaGammaCharged  ; 
-  delete fhDeltaEtaGammaNeutral  ; 
-  delete fhDeltaPhiChargedPt  ;
-
-  delete fhCorrelationGammaNeutral  ; 
-  delete fhCorrelationGammaCharged  ;
- 
+  // Remove all pointers except analysis output pointers.
 }
 
 
