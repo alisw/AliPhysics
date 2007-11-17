@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.4  2007/10/29 13:48:42  gustavo
+ * Corrected coding violations
+ *
  *
  */
 
@@ -203,7 +206,6 @@ void AliGammaMCReader::CreateParticleList(TObject * data, TObject *,
     
   for (iParticle=0 ; iParticle <  stack->GetNprimary() ; iParticle++) {
     TParticle * particle = stack->Particle(iParticle); 
-    
 
     //Keep partons
     if(particle->GetStatusCode() == 21 && iParticle>=2){//All partons, not nucleus
@@ -236,7 +238,7 @@ void AliGammaMCReader::CreateParticleList(TObject * data, TObject *,
 	  }
 	  else{
 	    //Take out some particles like neutrinos
-	    if(!SkipNeutralParticles(particle->GetPdgCode())){
+	    if(!SkipNeutralParticles(particle->GetPdgCode()) && !particle->IsPrimary()){ // protection added (MG)
 	      TParticle * pmother =stack->Particle(particle->GetFirstMother());	   	       
 	      if(IsInPHOS(particle->Phi(),particle->Eta())){
 		if(particle->GetPdgCode()==22)SetPhotonStatus(particle,pmother);     
