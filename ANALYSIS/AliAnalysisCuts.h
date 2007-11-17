@@ -4,6 +4,8 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */
+
 // Base class for analysis cuts
 // Author Andreas Morsch
 // andreas.morsch@cern.ch
@@ -18,8 +20,9 @@ class AliAnalysisCuts : public TNamed
     AliAnalysisCuts(const AliAnalysisCuts& obj);  
     virtual ~AliAnalysisCuts() {;}
     virtual Bool_t IsSelected(TObject* obj) = 0;
+    virtual void   Init() {;}
  private:
-    ClassDef(AliAnalysisCuts, 1); // Base class for filter decisions on ESD objects
+    ClassDef(AliAnalysisCuts, 2); // Base class for filter decisions on ESD objects
 };
  
 #endif

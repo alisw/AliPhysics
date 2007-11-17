@@ -12,6 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */
  
 // Base class for analysis cuts
 // Author Andreas Morsch

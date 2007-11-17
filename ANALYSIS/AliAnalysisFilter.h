@@ -3,6 +3,9 @@
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */
+
 //
 // Manager class for filter decisions based on cuts
 // Author: Andreas Morsch
@@ -21,9 +24,10 @@ class AliAnalysisFilter : public TNamed
     virtual ~AliAnalysisFilter() {;}
     virtual UInt_t IsSelected(TObject* obj);
     virtual void AddCuts(AliAnalysisCuts* cuts);
+    virtual void Init();
  private:
     TList* fCuts;    // List of cuts
-    ClassDef(AliAnalysisFilter, 1); // Manager class for filter decisions
+    ClassDef(AliAnalysisFilter, 2); // Manager class for filter decisions
 };
  
 #endif

@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //
 // Manager class for filter decisions based on cuts
 // The filter contains a list of sets of cuts.
@@ -69,6 +71,15 @@ UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
     }  
 
     return result;
+}
+
+void AliAnalysisFilter::Init()
+{
+    //
+    // Loop over all set of cuts and call Init
+    TIter next(fCuts);
+    AliAnalysisCuts *cuts;
+    while((cuts = (AliAnalysisCuts*)next())) cuts->Init();
 }
 
 void AliAnalysisFilter::AddCuts(AliAnalysisCuts* cuts)
