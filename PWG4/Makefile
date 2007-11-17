@@ -7,7 +7,7 @@ ALICEINC      = -I.
 
 ### define include dir for local case and par case
 ifneq ($(ANALYSIS_INCLUDE),)
-  ALICEINC += -I../$(ESD_INCLUDE) -I../$(AOD_INCLUDE) -I../$(ANALYSIS_INCLUDE)
+  ALICEINC += -I../$(ESD_INCLUDE) -I../$(AOD_INCLUDE) -I../$(ANALYSIS_INCLUDE) -I../$(STEERBase_INCLUDE)
 else
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
