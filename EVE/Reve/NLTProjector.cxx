@@ -11,53 +11,47 @@
 
 using namespace Reve;
 
+Float_t NLTProjection::fgEps = 0.005f;
+
+//______________________________________________________________________________
+// NLTProjection
+//
+// Base-class for non-linear projection of 3D point.
+// Enables to define an external center of distortion and a scale to
+// fixate a bounding box of a projected point.
+
+
 ClassImp(Reve::NLTProjection)
 
-Float_t NLTProjection::fgEps = 0.005f;
- 
-NLTProjection::NLTProjection(Vector& center) : 
+//______________________________________________________________________________
+NLTProjection::NLTProjection(Vector& center) :
   fType(PT_Unknown),
   fGeoMode(GM_Unknown),
   fName(0),
   fCenter(center.x, center.y, center.z),
-  fDistortion(0.0f), 
-  fFixedRadius(300), 
+  fDistortion(0.0f),
+  fFixedRadius(300),
   fScale(1.0f)
-{}
+{
+  // Constructor.
+}
 
 //______________________________________________________________________________
 void NLTProjection::ProjectVector(Vector& v)
 {
+  // Project Reve::Vector.
+
   ProjectPoint(v.x, v.y, v.z);
-}
-
-//______________________________________________________________________________
-Vector* NLTProjection::Project(Vector* origPnts, Int_t Npnts, Bool_t copy)
-{
-  Vector* pnts = 0; 
-  if(copy) 
-  {
-    pnts = new Vector[Npnts];
-    memcpy(pnts, origPnts, Npnts*sizeof(Vector));
-  }
-  else
-  { 
-    pnts =  origPnts;
-  }
-
-  for(Int_t i = 0; i<Npnts; i++)
-  {
-    ProjectPoint(pnts[i].x, pnts[i].y, pnts[i].z);
-  }
-  return pnts;
 }
 
 //______________________________________________________________________________
 void NLTProjection::UpdateLimit()
 {
+  // Update convergence in +inf and -inf.
+
   if ( fDistortion == 0.0f )
     return;
- 
+
   Float_t lim =  1.0f/fDistortion + fFixedRadius;
   Float_t* c = GetProjectedCenter();
   fUpLimit.Set(lim + c[0], lim + c[1], c[2]);
@@ -67,10 +61,9 @@ void NLTProjection::UpdateLimit()
 //______________________________________________________________________________
 void NLTProjection::SetDistortion(Float_t d)
 {
-  // Prevent scaling down whole projected scene.
-  // Point at fixe distance shold be on constant screen coorinate. 
+  // Set distortion.
 
-  fDistortion=d; 
+  fDistortion=d;
   fScale = 1+fFixedRadius*fDistortion;
   UpdateLimit();
 }
@@ -78,15 +71,18 @@ void NLTProjection::SetDistortion(Float_t d)
 //______________________________________________________________________________
 void NLTProjection::SetFixedRadius(Float_t r)
 {
+  // Set fixed radius.
 
   fFixedRadius=r;
-  fScale = 1+fFixedRadius*fDistortion;
+  fScale = 1 + fFixedRadius*fDistortion;
   UpdateLimit();
 }
 
 //______________________________________________________________________________
 void NLTProjection::SetDirectionalVector(Int_t screenAxis, Vector& vec)
 {
+  // Get vector for axis in a projected space.
+
   for (Int_t i=0; i<3; i++)
   {
     vec[i] = (i==screenAxis) ? 1. : 0.;
@@ -96,7 +92,8 @@ void NLTProjection::SetDirectionalVector(Int_t screenAxis, Vector& vec)
 //______________________________________________________________________________
 Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
 {
-  // move on unprojected axis, find when projected value is geiven screen values(sv)
+  // Inverse projection.
+
   static const Exc_t eH("NLTProjector::GetValForScreenPos ");
 
   Float_t xL, xM, xR;
@@ -106,7 +103,6 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
     throw(eH + Form("screen value '%f' out of limit '%f'.", sv, sv > 0 ? fUpLimit[i] : fLowLimit[i]));
 
   Vector zero; ProjectVector(zero);
-  // printf("NLTProjection::GetValForScreenPos %d sv %f , zero %f\n",i,  sv, zero[i]);
   // search from -/+ infinity according to sign of screen value
   if (sv > zero[i])
   {
@@ -135,14 +131,13 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
     return 0.0f;
   }
 
-  // printf("start bisection %f %f sv %f\n", xL, xR, sv);
-  do 
-  {  
+  do
+  {
     xM = 0.5f * (xL + xR);
     V.Mult(DirVec, xM);
     ProjectVector(V);
-    if (V[i] > sv) 
-      xR = xM; 
+    if (V[i] > sv)
+      xR = xM;
     else
       xL = xM;
   } while(TMath::Abs(V[i] - sv) >= fgEps);
@@ -153,39 +148,49 @@ Float_t NLTProjection::GetValForScreenPos(Int_t i, Float_t sv)
 //______________________________________________________________________________
 Float_t NLTProjection::GetScreenVal(Int_t i, Float_t x)
 {
-  Vector dv; 
+  // Project point on given axis and return projected value.
+
+  Vector dv;
   SetDirectionalVector(i, dv); dv = dv*x;
   ProjectVector(dv);
   return dv[i];
 }
 
+//______________________________________________________________________________
+//
+// NLTRhoZ
+//
+// Transformation from 3D to 2D. X axis represent Z coordinate. Y axis have value of
+// radius with a sign of Y coordinate.
 
-/**************************************************************************/
-/**************************************************************************/
 
-ClassImp(Reve::RhoZ)
+ClassImp(Reve::NLTRhoZ)
 
 //______________________________________________________________________________
-void RhoZ::SetCenter(Vector& v)
+void NLTRhoZ::SetCenter(Vector& v)
 {
+  // Set center of distortion (virtual method).
+
   fCenter = v;
 
-  fCenterR = TMath::Sqrt(v.x*v.x+v.y*v.y);
+  Float_t R = TMath::Sqrt(v.x*v.x+v.y*v.y);
   fProjectedCenter.x = fCenter.z;
-  fProjectedCenter.y = TMath::Sign(fCenterR, fCenter.y);
+  fProjectedCenter.y = TMath::Sign(R, fCenter.y);
   fProjectedCenter.z = 0;
   UpdateLimit();
 }
 
 //______________________________________________________________________________
-void RhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,  PProc_e proc )
+void NLTRhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,  PProc_e proc )
 {
+  // Project point.
+
   using namespace TMath;
 
   if(proc == PP_Plane || proc == PP_Full)
   {
     // project
-    y = Sign((Float_t)Sqrt(x*x+y*y), y); 
+    y = Sign((Float_t)Sqrt(x*x+y*y), y);
     x = z;
   }
   if(proc == PP_Distort || proc == PP_Full)
@@ -204,21 +209,24 @@ void RhoZ::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,  PProc_e proc )
 }
 
 //______________________________________________________________________________
-void RhoZ::SetDirectionalVector(Int_t screenAxis, Vector& vec)
+void NLTRhoZ::SetDirectionalVector(Int_t screenAxis, Vector& vec)
 {
-  if(screenAxis == 0) 
+  // Get direction in the unprojected space for axis index in the projected space.
+  // This is virtual method from base-class NLTProjection.
+
+  if(screenAxis == 0)
     vec.Set(0., 0., 1);
-  else 
+  else if (screenAxis == 1)
     vec.Set(0., 1., 0);
 
 }
 //______________________________________________________________________________
-Bool_t RhoZ::AcceptSegment(Vector& v1, Vector& v2, Float_t tolerance) 
+Bool_t NLTRhoZ::AcceptSegment(Vector& v1, Vector& v2, Float_t tolerance)
 {
+  // Check if segment of two projected points is valid.
+
   Float_t a = fProjectedCenter.y;
-  
   Bool_t val = kTRUE;
-  //  printf("accept segment y1:: %f, y2:: %f, center:: %f \n", v1.y ,v2.y, a);
   if((v1.y <  a && v2.y > a) || (v1.y > a && v2.y < a))
   {
     val = kFALSE;
@@ -233,19 +241,24 @@ Bool_t RhoZ::AcceptSegment(Vector& v1, Vector& v2, Float_t tolerance)
       {
 	if (a2 < tolerance) { v2.y = a; val = kTRUE; }
       }
-    } 
+    }
   }
-  // printf("accept segment y1:: %f, y2:: %f, VAL %d \n", v1.y ,v2.y, val);
   return val;
 }
 
-/**************************************************************************/
-/**************************************************************************/
-ClassImp(Reve:: CircularFishEye)
 //______________________________________________________________________________
-void  CircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e proc) 
+//
+// NLTCircularFishEye
+//
+// XY projection with distortion around given center.
+
+ClassImp(Reve:: NLTCircularFishEye)
+
+//______________________________________________________________________________
+void  NLTCircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e proc)
 {
-  // point look at from external origin
+  // Project point.
+
   using namespace TMath;
 
   if(proc !=  PP_Plane)
@@ -262,11 +275,13 @@ void  CircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e 
   z = 0.0f;
 }
 
-/**************************************************************************/
-/**************************************************************************/
-//______________________________________________________________________
+//______________________________________________________________________________
+//
 // NLTProjector
 //
+// Recursively projects RenderElement and draws axis in the projected scene.
+// It enables to interactivly set NLTProjection parameters and updates
+// projected scene accordingly.
 
 ClassImp(NLTProjector)
 
@@ -274,7 +289,7 @@ NLTProjector::NLTProjector():
   RenderElementList("NLTProjector",""),
 
   fProjection (0),
-   
+
   fDrawCenter(kFALSE),
   fDrawOrigin(kFALSE),
 
@@ -284,18 +299,25 @@ NLTProjector::NLTProjector():
 
   fCurrentDepth(0)
 {
-  SetProjection(NLTProjection::PT_CFishEye, 0);
+  // Constructor.
+
+  fProjection  = new NLTCircularFishEye(fCenter);
+  UpdateName();
 }
 
 //______________________________________________________________________________
 NLTProjector::~NLTProjector()
 {
+  // Destructor.
+
   if(fProjection) delete fProjection;
 }
 
 //______________________________________________________________________________
 void NLTProjector::UpdateName()
 {
+  // Updates name to have consitent information with prjection.
+
   SetName(Form ("%s (%3.1f)", fProjection->GetName(), fProjection->GetDistortion()*1000));
   UpdateItems();
 }
@@ -303,6 +325,8 @@ void NLTProjector::UpdateName()
 //______________________________________________________________________________
 void NLTProjector::SetProjection(NLTProjection::PType_e type, Float_t distort)
 {
+  // Set projection type and distortion.
+
   static const Exc_t eH("NLTProjector::SetProjection ");
 
   delete fProjection;
@@ -312,12 +336,12 @@ void NLTProjector::SetProjection(NLTProjection::PType_e type, Float_t distort)
   {
     case NLTProjection::PT_CFishEye:
     {
-      fProjection  = new CircularFishEye(fCenter);
+      fProjection  = new NLTCircularFishEye(fCenter);
       break;
     }
     case NLTProjection::PT_RhoZ:
     {
-      fProjection  = new RhoZ(fCenter);
+      fProjection  = new NLTRhoZ(fCenter);
       break;
     }
     default:
@@ -327,30 +351,22 @@ void NLTProjector::SetProjection(NLTProjection::PType_e type, Float_t distort)
   fProjection->SetDistortion(distort);
   UpdateName();
 }
-
-//______________________________________________________________________________
-void NLTProjector::SetProjection(NLTProjection* p)
-{
-  delete fProjection;
-  fProjection = p;
-  UpdateName();
-}
-
 //______________________________________________________________________________
 void NLTProjector::SetCenter(Float_t x, Float_t y, Float_t z)
 {
+  // Set projection center and rebuild projected scene.
+
   fCenter.Set(x, y, z);
-
-  // update projection
   fProjection->SetCenter(fCenter);
-
-  // rebuild the scene
   ProjectChildren();
 }
 
 //______________________________________________________________________________
 Bool_t NLTProjector::HandleElementPaste(RenderElement* el)
 {
+  // React to element being pasted or dnd-ed.
+  // Return true if redraw is needed (virtual method).
+
   size_t n_children  = fChildren.size();
   ImportElements(el);
   return n_children != fChildren.size();
@@ -359,6 +375,8 @@ Bool_t NLTProjector::HandleElementPaste(RenderElement* el)
 //______________________________________________________________________________
 Bool_t NLTProjector::ShouldImport(RenderElement* rnr_el)
 {
+  // Returns true if rnr_el or any of its children is NTLProjectable.
+
   if (rnr_el->IsA()->InheritsFrom(NLTProjectable::Class()))
     return kTRUE;
   for (List_i i=rnr_el->BeginChildren(); i!=rnr_el->EndChildren(); ++i)
@@ -370,6 +388,9 @@ Bool_t NLTProjector::ShouldImport(RenderElement* rnr_el)
 //______________________________________________________________________________
 void NLTProjector::ImportElementsRecurse(RenderElement* rnr_el, RenderElement* parent)
 {
+  // If rnr_el is NLTProjectable add projected instance else add plain RenderElementList
+  // to parent. Call same function on rnr_el children.
+
   if (ShouldImport(rnr_el))
   {
     RenderElement  *new_re = 0;
@@ -384,7 +405,7 @@ void NLTProjector::ImportElementsRecurse(RenderElement* rnr_el, RenderElement* p
     }
     else
     {
-      new_re = new RenderElementList;      
+      new_re = new RenderElementList;
     }
     TObject *tobj   = rnr_el->GetObject();
     new_re->SetRnrElNameTitle(Form("NLT %s", tobj->GetName()),
@@ -396,12 +417,13 @@ void NLTProjector::ImportElementsRecurse(RenderElement* rnr_el, RenderElement* p
     for (List_i i=rnr_el->BeginChildren(); i!=rnr_el->EndChildren(); ++i)
       ImportElementsRecurse(*i, new_re);
   }
-
 }
 
 //______________________________________________________________________________
 void NLTProjector::ImportElements(RenderElement* rnr_el)
 {
+  // Recursively import elements and update projection on the projected objects.
+
   ImportElementsRecurse(rnr_el, this);
   ProjectChildren();
 }
@@ -409,12 +431,14 @@ void NLTProjector::ImportElements(RenderElement* rnr_el)
 //______________________________________________________________________________
 void NLTProjector::ProjectChildrenRecurse(RenderElement* rnr_el)
 {
+  // Go recursively through rnr_el tree and call UpdateProjection() on NLTProjected.
+
   NLTProjected* pted = dynamic_cast<NLTProjected*>(rnr_el);
   if (pted)
   {
     pted->UpdateProjection();
     TAttBBox* bb = dynamic_cast<TAttBBox*>(pted);
-    if(bb) 
+    if(bb)
     {
       Float_t* b = bb->AssertBBox();
       BBoxCheckPoint(b[0], b[2], b[4]);
@@ -430,6 +454,9 @@ void NLTProjector::ProjectChildrenRecurse(RenderElement* rnr_el)
 //______________________________________________________________________________
 void NLTProjector::ProjectChildren()
 {
+  // Project children recursevly, update BBox and notify ReveManger
+  // the scenes have chenged.
+
   BBoxZero();
   ProjectChildrenRecurse(this);
   AssertBBoxExtents(0.1);
@@ -449,6 +476,8 @@ void NLTProjector::ProjectChildren()
 //______________________________________________________________________________
 void NLTProjector::Paint(Option_t* /*option*/)
 {
+  // Paint this object. Only direct rendering is supported.
+
   static const Exc_t eH("NLTProjector::Paint ");
   TBuffer3D buff(TBuffer3DTypes::kGeneric);
 
