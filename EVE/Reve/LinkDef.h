@@ -127,8 +127,8 @@
 #pragma link C++ class Reve::NLTProjectable+;
 #pragma link C++ class Reve::NLTProjected+;
 #pragma link C++ class Reve::NLTProjection+;
-#pragma link C++ class Reve::RhoZ+;
-#pragma link C++ class Reve::CircularFishEye+;
+#pragma link C++ class Reve::NLTRhoZ+;
+#pragma link C++ class Reve::NLTCircularFishEye+;
 
 #pragma link C++ class Reve::NLTProjector+;
 #pragma link C++ class Reve::NLTProjectorEditor+;
