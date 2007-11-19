@@ -21,6 +21,8 @@ CLASS_HDRS:=  	AliHLTComponent.h \
 		AliHLTOfflineDataSink.h \
 		AliHLTModuleAgent.h \
 		AliHLTHOMERLibManager.h \
+		AliHLTHOMERBlockDesc.h \
+		AliHLTHOMERSourceDesc.h \
 		AliHLTOUT.h \
 		AliHLTOUTHomerBuffer.h \
 		AliHLTOUTHandler.h \
