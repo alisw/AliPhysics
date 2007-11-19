@@ -31,7 +31,9 @@ ClassImp(AliT0Trigger)
 
 //----------------------------------------------------------------------
 AliT0Trigger::AliT0Trigger()
-  : AliTriggerDetector() 
+  : AliTriggerDetector(),
+    fT0(0x0),
+    fDigits(0x0)
 {
    SetName("T0");
    CreateInputs();
@@ -83,7 +85,8 @@ void AliT0Trigger::Trigger()
 
   if (besttimeA > 0 && besttimeA <99999  )  SetInput("START_A_L0");
   if (besttimeC>0  && besttimeC<99999)   SetInput("START_C_L0"); 
-  if (timeDiff >5500 && timeDiff < 6500)       SetInput("START_Vertex_L0");
+  //6093 corrsponds to vertex -20cm, 6202 vertex +20 with delay 150nc eqalized on the TVDC unit 
+  if (timeDiff >6090 && timeDiff < 6210)       SetInput("START_Vertex_L0");
   if (sumMult > 175)                           SetInput("START_Centr_L0");
   if (sumMult>155 && sumMult <= 175)           SetInput("START_SemiCentral_L0");;
 
