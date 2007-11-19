@@ -35,23 +35,31 @@ UInt_t AliHMPIDPreprocessor::Process(TMap* pMap)
 // Process all information from DCS and DAQ
 // Arguments: pMap- map of DCS aliases
 // Returns: 0 on success or 1 on error (opposite to Store!)
-  
-  Log("HMPID - Process in Preprocessor started");
-  if(! pMap) {Log(" - Not map of DCS aliases for HMPID - ");return 1;}   
-  
+
   TString runType = GetRunType();
   Log(Form(" AliHMPIDPreprocessor: RunType is %s",runType.Data()));
-  Bool_t result1,result2;
-  if (runType == "PEDESTAL_RUN"){
-    result1 = ProcPed(); return !result1;
-  } else if ( runType == "PHYSICS" ){
-    result1 = ProcPed(); 
-    result2 = ProcDcs(pMap); return !(result1&&result2);
-  } else {
-    Log("HMPID - Nothing to do with preprocessor for HMPID, bye!");
-  return kFALSE;
-  }
   
+// start to check event type and procedures
+  
+  Log("HMPID - Process in Preprocessor started");
+  if(! pMap) {
+    Log("HMPID - ERROR - Not map of DCS aliases for HMPID - ");             return kTRUE;   // error in the DCS mapped aliases
+  }   
+  if (runType == "PEDESTAL_RUN"){
+    if (!ProcPed()){
+    	Log("HMPID - ERROR - Pedestal processing failed!!");                return kTRUE;   // error in pedestal processing
+    } else {
+    	Log("HMPID - Pedestal processing successful!!");                    return kFALSE;  // ok for pedestals
+    }
+  } else if ( runType == "PHYSICS" ){
+    if (!ProcDcs(pMap)){
+    	Log("HMPID - ERROR - DCS processing failed!!");                     return kTRUE;   // error in DCS processing
+    } else {
+    	Log("HMPID - DCS processing successful!!");                         return kFALSE;  // ok for DCS
+    }
+  } else {
+    Log("HMPID - Nothing to do with preprocessor for HMPID, bye!");         return kFALSE;  // ok - nothing done
+  }
 }//Process()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
@@ -152,7 +160,7 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
 
   if(!pLdc) {
         Log("ERROR: Retrieval of sources for pedestals failed!");
-        return 1;}
+        return kFALSE;}
 
   Log(Form("HMPID - Pedestal files to be read --> %i LDCs for HMPID",pLdc->GetEntries()));
   
@@ -164,7 +172,7 @@ Bool_t AliHMPIDPreprocessor::ProcPed()
 
   if(fileName.Length()==0) {
         Log("ERROR retrieving pedestal file!");
-        return 1;  }
+        return kFALSE;  }
 
   gSystem->Exec(Form("tar xf %s",fileName.Data()));
 
