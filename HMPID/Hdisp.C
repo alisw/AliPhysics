@@ -2,9 +2,11 @@
 
 #include <TSystem.h>
 #include <TFile.h>
+#include <TVirtualX.h>
 #include <TTree.h>
 #include <TButton.h>
 #include <TCanvas.h>
+#include <TStyle.h>
 #include <TString.h>
 #include <TClonesArray.h>
 #include <TParticle.h>
@@ -25,14 +27,12 @@
 #include "AliHMPIDCluster.h"
 #include "AliTracker.h"
 
-#include <TChain.h>
-
 #endif
 
 TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=-1; Int_t fNevt=0;                      
 TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];
                                   TClonesArray *fSdiLst; 
-TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TPolyMarker *fRenDig[7];    
+TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TBox *fRenDig[7][160*144]; TBox *fBox[7][160*144];   
 TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];    
 TFile *fEsdFile; TTree *fEsdTree; AliESDEvent  *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
 TFile *fCosFile; TTree *fCosTree;
@@ -48,8 +48,11 @@ TString fStEsd    = "ON";
 
 Int_t fTimeArrow = 1;
 
+Int_t fMaxCharge = 200;  //maximum charge to saturate color to red
+
 AliRunLoader *gAL=0; 
 
+Int_t nDigs[7];
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CreateContainers()
 {//to create all containers
@@ -63,13 +66,18 @@ void CreateContainers()
 void CreateRenders()
 {
   for(Int_t ch=0;ch<7;ch++){
-    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);  fRenMip[ch]->SetMarkerColor(kRed);
-    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);      fRenCko[ch]->SetMarkerColor(kRed);
-    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);     fRenFee[ch]->SetMarkerColor(kRed);
-    fRenDig[ch]=new TPolyMarker; fRenDig[ch]->SetMarkerStyle(kOpenSquare);      fRenDig[ch]->SetMarkerColor(kGreen);    
-    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);            fRenClu[ch]->SetMarkerColor(kBlue);
+    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);  fRenMip[ch]->SetMarkerColor(kBlack);
+    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);      fRenCko[ch]->SetMarkerColor(kBlack);
+    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);     fRenFee[ch]->SetMarkerColor(kBlack);
+    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);            fRenClu[ch]->SetMarkerColor(kMagenta);
     fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);            fRenTxC[ch]->SetMarkerColor(kRed);      fRenTxC[ch]->SetMarkerSize(3);
     fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);    fRenRin[ch]->SetMarkerColor(kMagenta);
+    for(Int_t iDig=0;iDig<160*144;iDig++) {
+      fRenDig[ch][iDig] = new TBox;
+      fRenDig[ch][iDig]->SetFillStyle(1);
+      fBox[ch][iDig] = new TBox;
+      fBox[ch][iDig]->SetFillStyle(0);
+    }
   }
 }//CreateRenders()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -81,7 +89,7 @@ void ClearRenders()
     fRenMip[ch]->SetPolyMarker(0); 
     fRenCko[ch]->SetPolyMarker(0); 
     fRenFee[ch]->SetPolyMarker(0); 
-    fRenDig[ch]->SetPolyMarker(0); 
+    nDigs[ch] = 0;
     fRenClu[ch]->SetPolyMarker(0); 
   }
 }//ClearRenders()
@@ -155,32 +163,42 @@ void DrawLegend()
     nMip+=fRenMip[ch]->GetLastPoint()+1;
     nCko+=fRenCko[ch]->GetLastPoint()+1;
     nFee+=fRenFee[ch]->GetLastPoint()+1;
-    nDig+=fRenDig[ch]->GetLastPoint()+1;
     nClu+=fRenClu[ch]->GetLastPoint()+1;
+    nDig+=nDigs[ch];
   }
   TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
   pLeg->SetHeader(Form("Event %i Total %i",fEvt,fNevt));
-  pLeg->AddEntry(fRenTxC[0],Form("TRKxPC %i"     ,nTxC),"p");
-  pLeg->AddEntry(fRenMip[0],Form("Mip hits %i"   ,nMip),"p");    
-  pLeg->AddEntry(fRenCko[0],Form("Ckov hits %i"  ,nCko),"p");    
-  pLeg->AddEntry(fRenFee[0],Form("Feed hits %i"  ,nFee),"p");    
-  pLeg->AddEntry(fRenDig[0],Form("Digs %i"       ,nDig),"p");    
-  pLeg->AddEntry(fRenClu[0],Form("Clus %i"       ,nClu),"p");    
+  pLeg->AddEntry(fRenTxC[0],   Form("TRKxPC %i"     ,nTxC),"p");
+  pLeg->AddEntry(fRenMip[0],   Form("Mip hits %i"   ,nMip),"p");    
+  pLeg->AddEntry(fRenCko[0],   Form("Ckov hits %i"  ,nCko),"p");    
+  pLeg->AddEntry(fRenFee[0],   Form("Feed hits %i"  ,nFee),"p");    
+  pLeg->AddEntry(fRenDig[0][0],Form("Digs %i"       ,nDig),"p");    
+  pLeg->AddEntry(fRenClu[0],   Form("Clus %i"       ,nClu),"p");    
   pLeg->Draw();
 }//DrawLegend()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Draw()
 {//draws all the objects of current event in given canvas
   Int_t iPadN[7]={9,8,6,5,4,2,1};
+  Int_t sampleCol = fMaxCharge/gStyle->GetNumberOfColors();
   for(Int_t iCh=0;iCh<7;iCh++){//chambers loop    
     fCanvas->cd(iPadN[iCh]);
     gPad->SetEditable(kTRUE); gPad->Clear(); DrawChamber(iCh);
+    
+    if(fStDig   =="ON") {
+      for(Int_t iDig=0;iDig<nDigs[iCh];iDig++) {
+        Int_t charge = fRenDig[iCh][iDig]->GetUniqueID();
+        Int_t color = charge/sampleCol;if(color>=fMaxCharge) color = gStyle->GetNumberOfColors()-1;
+        fRenDig[iCh][iDig]->SetFillColor(gStyle->GetColorPalette(color));
+        fRenDig[iCh][iDig]->Draw();
+        fBox[iCh][iDig]->Draw();
+      }
+    }
     if(fStEsd   =="ON") fRenTxC[iCh]->Draw();
     if(fStHitMip=="ON") fRenMip[iCh]->Draw();
     if(fStHitFee=="ON") fRenFee[iCh]->Draw();
     if(fStHitCko=="ON") fRenCko[iCh]->Draw();
     if(fStEsd   =="ON") fRenRin[iCh]->Draw();
-    if(fStDig   =="ON") fRenDig[iCh]->Draw();
     if(fStClu   =="ON") fRenClu[iCh]->Draw();
     gPad->SetEditable(kFALSE);
   }//chambers loop
@@ -213,9 +231,19 @@ void RenderDig(TObjArray *pDigLst)
 {//used by ReadEvent() and SimulateEvent() to render digs to Tbox structures, one per chamber
   for(Int_t iCh=0;iCh<=6;iCh++){                                    //chambers loop   
     TClonesArray *pDigCham=(TClonesArray*)pDigLst->At(iCh);         //get digs list for this chamber
+    nDigs[iCh] = 0;
     for(Int_t iDig=0;iDig<pDigCham->GetEntries();iDig++){            //digs loop
       AliHMPIDDigit *pDig = (AliHMPIDDigit*)pDigCham->At(iDig); Float_t x=pDig->LorsX(); Float_t y=pDig->LorsY();    //get current hit        
-      fRenDig[iCh]->SetNextPoint(x,y);
+      fRenDig[iCh][iDig]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
+      fRenDig[iCh][iDig]->SetX2(x+0.5*AliHMPIDParam::SizePadX());
+      fRenDig[iCh][iDig]->SetY1(y-0.5*AliHMPIDParam::SizePadY());
+      fRenDig[iCh][iDig]->SetY2(y+0.5*AliHMPIDParam::SizePadY());
+      fRenDig[iCh][iDig]->SetUniqueID((Int_t)pDig->Q());
+      fBox[iCh][iDig]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
+      fBox[iCh][iDig]->SetX2(x+0.5*AliHMPIDParam::SizePadX());
+      fBox[iCh][iDig]->SetY1(y-0.5*AliHMPIDParam::SizePadY());
+      fBox[iCh][iDig]->SetY2(y+0.5*AliHMPIDParam::SizePadY());
+      nDigs[iCh]++;
     }//Digit loop
   }//hits loop for this entry
 }//RenderHits()
@@ -243,11 +271,10 @@ void RenderEsd(AliESDEvent *pEsd)
     Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);              //find again intersection of track with PC--> it is not stored in ESD!
     fRenTxC[ch]->SetNextPoint(xPc,yPc);                                            //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
-//    Printf("RenderEsd: thetaC %f",ckov);
     if(ckov>0){
       rec.SetTrack(xRa,yRa,thRa,phRa);
-      for(Int_t j=0;j<100;j++){
-        TVector2 pos; pos=rec.TracePhot(ckov,j*0.0628);
+      for(Int_t j=0;j<500;j++){
+        TVector2 pos; pos=rec.TracePhot(ckov,j*6.28/500.);
        if(!AliHMPIDParam::IsInDead(pos.X(),pos.Y())) fRenRin[ch]->SetNextPoint(pos.X(),pos.Y());
       }      
     }//if ckov is valid
@@ -304,25 +331,29 @@ void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 {
+  Int_t iChamN[9]={6,5,-1,4,3,2,-1,1,0};
   if(evt!=5 && evt!=6) return; //5- zoom in 6-zoom out
   const Int_t minZoom=64;
   const Int_t maxZoom=2;
-  static Int_t zoom=minZoom; //zoom level
-  if(evt==5&&zoom==maxZoom) return; 
-  if(evt==6&&zoom==minZoom) return; 
+  static Int_t zoom[7]={64,64,64,64,64,64,64}; //zoom level
   
  // if(!obj->IsA()->InheritsFrom("TPad")) return;  //current object is not pad
   TVirtualPad *pPad=gPad->GetSelectedPad();
-  if(pPad->GetNumber()==3 || pPad->GetNumber()==7) return; //current pad is wrong
-
- // Printf("evt=%i (%i,%i) %s",evt,px,py,obj->GetName());
+  Int_t padN = pPad->GetNumber()-1;
+  if(padN<0 || padN>8) return;
+  
+  Int_t iCh = iChamN[padN];
+  if(iCh < 0) return;
+  
+  if(evt==5&&zoom[iCh]==maxZoom) return; 
+  if(evt==6&&zoom[iCh]==minZoom) return; 
     
   Float_t x=pPad->AbsPixeltoX(px); Float_t y=pPad->AbsPixeltoY(py); 
  
-  if(evt==5){ zoom=zoom/2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);} //zoom in
-  else      { zoom=zoom*2;     pPad->Range(x-zoom*2,y-zoom*2,x+zoom*2,y+zoom*2);} //zoom out 
-  if(zoom==minZoom) pPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5);
-  ((TCanvas *)gTQSender)->SetTitle(Form("zoom x%i",minZoom/zoom));
+  if(evt==5){ zoom[iCh]=zoom[iCh]/2;     pPad->Range(x-zoom[iCh]*2,y-zoom[iCh]*2,x+zoom[iCh]*2,y+zoom[iCh]*2);} //zoom in
+  else      { zoom[iCh]=zoom[iCh]*2;     pPad->Range(x-zoom[iCh]*2,y-zoom[iCh]*2,x+zoom[iCh]*2,y+zoom[iCh]*2);} //zoom out 
+  if(zoom[iCh]==minZoom) pPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5);
+  ((TCanvas *)gTQSender)->SetTitle(Form("zoom x%i",minZoom/zoom[iCh]));
   pPad->Modified();
   pPad->Update();                                              
 }
@@ -382,6 +413,7 @@ void SimulateEvent()
 void GetEvent()
 {
   ClearRenders();
+  CheckStatus();
   switch(fType){
     case 1: ReadEvent();break;
 //    case 2: ReadCosmic(); break;
@@ -452,10 +484,12 @@ void Hdisp()
     fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
   }            
 
-  fCanvas=new TCanvas("all","",-1024,768);fCanvas->SetWindowSize(1024,768);
+  fCanvas=new TCanvas("all","",1024,768);fCanvas->SetWindowSize(1024,768);
+  fCanvas->ToggleEventStatus();
   fCanvas->Divide(3,3,0,0);//  pAll->ToggleEditor();
   fCanvas->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,0,"DoZoom(Int_t,Int_t,Int_t,TObject*)");
   fCanvas->cd(7); 
+  gStyle->SetPalette(1,0);
   switch(fType){
     case 1: fCanvas->SetTitle(title.Data());                      
                          TButton *pNxtBtn = new TButton("Next"      ,"NextEvent()"   ,0.0,0.0,0.3,0.1); pNxtBtn->Draw(); 
@@ -464,13 +498,22 @@ void Hdisp()
             if(fDigFile){TButton *pDigBtn = new TButton("Print digs","PrintDigs()"   ,0.0,0.4,0.3,0.5); pDigBtn->Draw();}  
             if(fCluFile){TButton *pCluBtn = new TButton("Print clus","PrintClus()"   ,0.0,0.6,0.3,0.7); pCluBtn->Draw();} 
             if(fEsdFile){TButton *pEsdBtn = new TButton("Print ESD ","PrintEsd()"    ,0.0,0.8,0.3,0.9); pEsdBtn->Draw();}
-            if(fHitFile){      fHitMipBok = new TButton(Form("Mip  %s",fStHitMip.Data()),"SwitchHitMip()",0.3,0.16,0.6,0.22); fHitMipBok->Draw();}  
+            if(fHitFile){      fHitMipBok = new TButton(Form("Mip  %s",fStHitMip.Data()),"SwitchHitMip()",0.3,0.16,0.6,0.22); fHitMipBok->Draw();}
             if(fHitFile){      fHitCkoBok = new TButton(Form("Ckov %s",fStHitCko.Data()),"SwitchHitCko()",0.3,0.22,0.6,0.28); fHitCkoBok->Draw();}  
             if(fHitFile){      fHitFeeBok = new TButton(Form("Fdbk %s",fStHitFee.Data()),"SwitchHitFee()",0.3,0.28,0.6,0.34); fHitFeeBok->Draw();}  
             if(fDigFile){         fDigBok = new TButton(fStDig      ,"SwitchDigs()"  ,0.3,0.4,0.6,0.5); fDigBok->Draw();}  
             if(fCluFile){         fCluBok = new TButton(fStClu      ,"SwitchClus()"  ,0.3,0.6,0.6,0.7); fCluBok->Draw();} 
             if(fEsdFile){         fEsdBok = new TButton(fStEsd      ,"SwitchEsd()"   ,0.3,0.8,0.6,0.9); fEsdBok->Draw();}
-                         TButton *pEnd    = new TButton("Quit"      ,"End()"         ,0.6,0.0,0.9,0.1); pEnd->Draw();
+
+            if(fHitFile){TButton *fHitMipOnly = new TButton(" Only ","OnlyHitMip()",0.6,0.16,0.9,0.22); fHitMipOnly->Draw();}  
+            if(fHitFile){TButton *fHitCkoOnly = new TButton(" Only ","OnlyHitCko()",0.6,0.22,0.9,0.28); fHitCkoOnly->Draw();}  
+            if(fHitFile){TButton *fHitFeeOnly = new TButton(" Only ","OnlyHitFee()",0.6,0.28,0.9,0.34); fHitFeeOnly->Draw();}  
+            if(fDigFile){TButton *fDigOnly    = new TButton(" Only ","OnlyDigs()"  ,0.6,0.40,0.9,0.50); fDigOnly->Draw();}  
+            if(fCluFile){TButton *fCluOnly    = new TButton(" Only ","OnlyClus()"  ,0.6,0.60,0.9,0.70); fCluOnly->Draw();} 
+            if(fEsdFile){TButton *fEsdOnly    = new TButton(" Only ","OnlyEsd()"   ,0.6,0.80,0.9,0.90); fEsdOnly->Draw();}
+                         TButton *fAll        = new TButton(" ALL  ","All()"       ,0.5,0.90,0.7,1.00); fAll->Draw();
+            
+                                     TButton *pEnd    = new TButton("Quit"      ,"End()"         ,0.6,0.0,0.9,0.1); pEnd->Draw();
     break;
     case 2: fCanvas->SetTitle("COSMIC");
                          TButton *pCosBtn = new TButton("Next"      ,"NextEvent()",0.0,0.0,0.3,0.1); pCosBtn->Draw(); 
@@ -488,6 +531,13 @@ void Hdisp()
             if(fDigFile){         fDigBok = new TButton(fStDig      ,"SwitchDigs()"  ,0.3,0.4,0.6,0.5); fDigBok->Draw();}  
             if(fCluFile){         fCluBok = new TButton(fStClu      ,"SwitchClus()"  ,0.3,0.6,0.6,0.7); fCluBok->Draw();} 
             if(fEsdFile){         fEsdBok = new TButton(fStEsd      ,"SwitchEsd()"   ,0.3,0.8,0.6,0.9); fEsdBok->Draw();}
+            
+            if(fHitFile){TButton *fHitMipOnly = new TButton(" Only ","OnlyHitMip()",0.6,0.16,0.9,0.22); fHitMipOnly->Draw();}  
+            if(fHitFile){TButton *fHitCkoOnly = new TButton(" Only ","OnlyHitCko()",0.6,0.22,0.9,0.28); fHitCkoOnly->Draw();}  
+            if(fHitFile){TButton *fHitFeeOnly = new TButton(" Only ","OnlyHitFee()",0.6,0.28,0.9,0.34); fHitFeeOnly->Draw();}  
+            if(fDigFile){TButton *fDigOnly    = new TButton(" Only ","OnlyDigs()"  ,0.6,0.40,0.9,0.50); fDigOnly->Draw();}  
+            if(fCluFile){TButton *fCluOnly    = new TButton(" Only ","OnlyClus()"  ,0.6,0.60,0.9,0.70); fCluOnly->Draw();} 
+            if(fEsdFile){TButton *fEsdOnly    = new TButton(" Only ","OnlyEsd()"   ,0.6,0.80,0.9,0.90); fEsdOnly->Draw();}
     break;
   }
     
@@ -528,6 +578,86 @@ void SwitchClus()
 void SwitchEsd()
 {
   fStEsd=(fStEsd=="OFF")? "ON":"OFF";
+   GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AllNo()
+{
+  fStHitMip = "OFF";
+  fStHitCko = "OFF";
+  fStHitFee = "OFF";
+  fStDig    = "OFF";
+  fStClu    = "OFF";
+  fStEsd    = "OFF";
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void AllYes()
+{
+  if(fHitFile) fStHitMip = "ON";
+  if(fHitFile) fStHitCko = "ON";
+  if(fHitFile) fStHitFee = "ON";
+  if(fDigFile) fStDig    = "ON";
+  if(fCluFile) fStClu    = "ON";
+  if(fEsdFile) fStEsd    = "ON";
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void All()
+{
+  AllYes();
   GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OnlyHitMip()
+{
+  AllNo();
+  fStHitMip = "ON";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OnlyHitCko()
+{
+  AllNo();
+  fStHitCko = "ON";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OnlyHitFee()
+{
+  AllNo();
+  fStHitFee = "ON";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OnlyDigs()
+{
+  AllNo();
+  fStDig    = "ON";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OnlyClus()
+{
+  AllNo();
+  fStClu    = "ON";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void OnlyEsd()
+{
+  AllNo();
+  fStEsd    = "ON";
+  GetEvent();
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void CheckStatus()
+{
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  if(fStHitMip=="OFF") {fHitMipBok->SetFillColor(kRed);} else {fHitMipBok->SetFillColor(18);}
+  if(fStHitCko=="OFF") {fHitCkoBok->SetFillColor(kRed);} else {fHitCkoBok->SetFillColor(18);}
+  if(fStHitFee=="OFF") {fHitFeeBok->SetFillColor(kRed);} else {fHitFeeBok->SetFillColor(18);}
+  if(fStDig   =="OFF") {fDigBok->SetFillColor(kRed);} else {fDigBok->SetFillColor(18);}
+  if(fStClu   =="OFF") {fCluBok->SetFillColor(kRed);} else {fCluBok->SetFillColor(18);}
+  if(fStEsd   =="OFF") {fEsdBok->SetFillColor(kRed);} else {fEsdBok->SetFillColor(18);}
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
