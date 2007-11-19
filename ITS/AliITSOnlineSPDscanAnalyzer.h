@@ -29,7 +29,7 @@ class AliITSOnlineSPDscanAnalyzer {
 
   AliITSOnlineSPDscanAnalyzer& operator=(const AliITSOnlineSPDscanAnalyzer& handle);
 
-  Bool_t     IsModuleScanned(UInt_t module) const;
+  Bool_t     IsChipPresent(UInt_t hs, UInt_t chipNr);
   Bool_t     IsOverWriteSet() const {return fOverWrite;}
   void       SetCalibHandler(AliITSOnlineCalibrationSPDhandler *handler) {fHandler=handler;}
   void       SetParam(const Char_t *pname, const Char_t *pval);

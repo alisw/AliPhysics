@@ -251,12 +251,13 @@ void AliITSOnlineSPDscanAnalyzer::ReadParamsFromLocation(const Char_t *dirName) 
   }
 }
 
-Bool_t AliITSOnlineSPDscanAnalyzer::IsModuleScanned(UInt_t module) const {
-  // is this module scanned?
-  if (module<240) {
-    return fbModuleScanned[module];
+Bool_t AliITSOnlineSPDscanAnalyzer::IsChipPresent(UInt_t hs, UInt_t chipNr) {
+  // is the chip present?
+  if (fScanObj==NULL) {
+    Warning("AliITSOnlineSPDscanAnalyzer::IsChipPresent","No data!");
+    return kFALSE;
   }
-  return kFALSE;
+  return fScanObj->GetChipPresent(hs,chipNr);
 }
 
 Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(/*Char_t *oldcalibDir*/) {
@@ -283,13 +284,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessDeadPixels(/*Char_t *oldcalibDir*/) {
   for (UInt_t hs=0; hs<6; hs++) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       if (fScanObj->GetChipPresent(hs,chipNr) && fScanObj->GetAverageMultiplicity(0,hs,chipNr)>0) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs,chipNr);
-	if (!fbModuleScanned[module]) {
-	  fbModuleScanned[module]=kTRUE;
-	  //	  fHandler[module]->SetFileLocation(oldcalibDir);
-	  //	  fHandler[module]->ReadFromFile(module);
-	  if (fOverWrite) {fHandler->ResetDeadForChip(routerNr,hs,chipNr);}
-	}
+	if (fOverWrite) {fHandler->ResetDeadForChip(routerNr,hs,chipNr);}
 	for (UInt_t col=0; col<32; col++) {
 	  for (UInt_t row=rowStart; row<=rowEnd; row++) {
 	    if (col!=1 && col!=9 && col!=17 && col!=25) { //exclude test columns!!!
@@ -333,11 +328,7 @@ Bool_t AliITSOnlineSPDscanAnalyzer::ProcessNoisyPixels(/*Char_t *oldcalibDir*/) 
   for (UInt_t hs=0; hs<6; hs++) {
     for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       if (fScanObj->GetChipPresent(hs,chipNr)) { // check the status of the chippresent parameter in the mood header!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	UInt_t module = AliITSRawStreamSPD::GetModuleNumber(routerNr,hs,chipNr);
-	if (!fbModuleScanned[module]) {
-	  fbModuleScanned[module]=kTRUE;
-	  if (fOverWrite) {fHandler->ResetNoisyForChip(routerNr,hs,chipNr);}
-	}
+	if (fOverWrite) {fHandler->ResetNoisyForChip(routerNr,hs,chipNr);}
 	for (UInt_t col=0; col<32; col++) {
 	  for (UInt_t row=0; row<256; row++) {
 	    if (fScanObj->GetHitsEfficiency(0,hs,chipNr,col,row)>fNoiseThreshold) {

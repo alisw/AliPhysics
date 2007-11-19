@@ -22,6 +22,7 @@
 #include "AliCDBEntry.h"
 #endif
 
+/* $Id$ */
 //____________________________________________________________________________________________
 AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
   fFileLocation(".")
@@ -639,7 +640,7 @@ void AliITSOnlineCalibrationSPDhandler::GenerateDCSConfigFile(const Char_t* file
   dcsfile << "RunNumber=" << "0" << "\n"; // dummy value
   dcsfile << "Type=" << "4" << "\n";
   dcsfile << "Router=" << "0" << "\n"; // dummy value
-  dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values
+  dcsfile << "ActualDetConfiguration=" << "0,-1,-1\n"; // dummy values
   dcsfile << "[NOISY]\n";
   for (UInt_t module=0; module<240; module++) {
     UInt_t headkey=20*10*6;

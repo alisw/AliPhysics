@@ -45,19 +45,23 @@ int main(int argc, char **argv) {
   }
 
   // directory structure, hard coded
-  char *saveDirDeadToFXS     = "./calibResults/DeadToFXS";        // may NOT delete content
+  char *saveDirDead          = "./calibResults/Dead";             // may NOT delete content
+  char *saveDirDeadToFXS     = "./calibResults/DeadToFXS";        //     may delete content
   char *saveDirDeadRef       = "./calibResults/DeadReference";    //     may delete content
   char *saveDirDeadRefTmp    = "./calibResults/DeadReferenceTmp"; // may NOT delete content
   char *saveDirNoisyToFXS    = "./calibResults/NoisyToFXS";       //     may delete content
   char *saveDirNoisyRef      = "./calibResults/NoisyReference";   //     may delete content
+  char *saveDirIdsToFXS      = "./calibResults/IdsToFXS";         //     may delete content
   char *configFilesDir       = "./configFiles";                   //     may delete content
   // make sure the directory structure is put up correctly:
   system("mkdir ./calibResults >& /dev/null");
+  system("mkdir ./calibResults/Dead >& /dev/null");
   system("mkdir ./calibResults/DeadToFXS >& /dev/null");
   system("mkdir ./calibResults/DeadReference >& /dev/null");
   system("mkdir ./calibResults/DeadReferenceTmp >& /dev/null");
   system("mkdir ./calibResults/NoisyToFXS >& /dev/null");
   system("mkdir ./calibResults/NoisyReference >& /dev/null");
+  system("mkdir ./calibResults/IdsToFXS >& /dev/null");
   system("mkdir ./configFiles >& /dev/null");
   // parameters config file
   TString paramsFileName = Form("%s/physics_params.txt",configFilesDir);
@@ -268,14 +272,14 @@ int main(int argc, char **argv) {
   TString command;
   command = Form("cd %s; rm -f *",saveDirNoisyToFXS);
   system(command.Data());
-  // delete dead.tar file
-  command = Form("cd %s; rm -f dead.tar",saveDirDeadToFXS);
+  // clear deadToFXS dir:
+  command = Form("cd %s; rm -f *",saveDirDeadToFXS);
   system(command.Data());
 
 
   // create calibration handler and read dead from previous calibrations
   AliITSOnlineCalibrationSPDhandler* handler = new AliITSOnlineCalibrationSPDhandler();
-  handler->SetFileLocation(saveDirDeadToFXS);
+  handler->SetFileLocation(saveDirDead);
   handler->ReadDeadFromFiles();
 
 
@@ -328,14 +332,13 @@ int main(int argc, char **argv) {
       }
     }
     // remove noisy pixels from dead hitmap
-    for (UInt_t iModule=0; iModule<12; iModule++) {
-      UInt_t module = AliITSRawStreamSPD::GetModuleNumber(eqId,iModule);
-      for (UInt_t ind=0; ind<handler->GetNrNoisy(module); ind++) {
-	UInt_t hs   = handler->GetNoisyHSAt(module,ind);
-	UInt_t chip = handler->GetNoisyChipAt(module,ind);
-	UInt_t col  = handler->GetNoisyColAt(module,ind);
-	UInt_t row  = handler->GetNoisyRowAt(module,ind);
-	physObj->AddHits(hs,chip,col,row,-noisyAnalyzer->GetOnlinePhys()->GetHits(hs,chip,col,row));
+    for (UInt_t hs=0; hs<6; hs++) {
+      for (UInt_t chip=0; chip<10; chip++) {
+	for (UInt_t ind=0; ind<handler->GetNrNoisyC(eqId,hs,chip); ind++) {
+	  UInt_t col  = handler->GetNoisyColAtC(eqId,hs,chip,ind);
+	  UInt_t row  = handler->GetNoisyRowAtC(eqId,hs,chip,ind);
+	  physObj->AddHits(hs,chip,col,row,-noisyAnalyzer->GetOnlinePhys()->GetHits(hs,chip,col,row));
+	}
       }
     }
 
@@ -413,96 +416,171 @@ int main(int argc, char **argv) {
 
   
   printf("Dead search finished. %d dead pixels in total.\n%d chips (%d) had enough statistics. %d chips were dead. %d chips were inefficient.\n",handler->GetNrDead(),nrEnoughStatChips,nrEqActiveDead*60,nrDeadChips,nrInefficientChips);
+  handler->SetFileLocation(saveDirDead);
+  handler->WriteDeadToFilesAlways();
+
   handler->SetFileLocation(saveDirDeadToFXS);
   handler->WriteDeadToFilesAlways();
-  
+// *** old code (used if not all dead data should be uploaded)
+//  UInt_t nrDeadFilesToTar = 0;
+//  handler->SetFileLocation(saveDirDeadToFXS);
+//  for (UInt_t eqId=0; eqId<20; eqId++) {
+//    if (eqActiveDead[eqId]) {
+//      handler->WriteDeadToFile(eqId);
+//      nrDeadFilesToTar++;
+//    }
+//  }
+//***  
 
-
-
-
-
+  TString idsFXSFileName = Form("%s/FXSids_run_%d.txt",saveDirIdsToFXS,runNr);
+  ofstream idsFXSfile;
+  idsFXSfile.open(idsFXSFileName.Data());
 
 
   // if there is no chip in category "needsMoreStat"
   if (nrEnoughStatChips+nrDeadChips+nrInefficientChips == nrEqActiveDead*60) {
     // calibration is complete
     printf("Dead calibration is complete.\n");
+
+
+
+    // send reference data for dead pixels to FXS
+    TString tarFiles = "";
     for (UInt_t eqId=0; eqId<20; eqId++) {
       if (eqActiveDead[eqId]) {
-	TString fileName = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
-//!!!	// find out the run span
-//!!!	AliITSOnlineSPDphys* physObj = new AliITSOnlineSPDphys(fileName.Data());
-//!!!	UInt_t nrRuns = physObj->GetNrRuns();
-//!!!	UInt_t firstRun = physObj->GetRunNr(0);
-//!!!	UInt_t lastRun = physObj->GetRunNr(nrRuns-1);
-//!!!	delete physObj;
 	// move file to ref dir
+	TString fileName = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
 	TString newFileName = Form("%s/SPDphys_dead_run_%d_%d_eq_%d.root",saveDirDeadRef,firstRunNrDead,runNr,eqId);
 	TString command = Form("mv -f %s %s",fileName.Data(),newFileName.Data());
 	system(command.Data());
-#ifndef SPD_DA_OFF
-	// send ref data to FXS
-	TString id = Form("SPD_ref_phys_dead_%d",eqId);
-	Int_t status = daqDA_FES_storeFile(newFileName.Data(),id.Data());
-	if (status!=0) {
-	  printf("Failed to export file %s , status %d\n",newFileName.Data(),status);
-	  return -1;
-	}
-#endif
-      }
-      else {
-	TString command = Form("rm -f %s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
-	system(command.Data());
+
+	tarFiles.Append(Form("SPDphys_dead_run_%d_%d_eq_%d.root ",firstRunNrDead,runNr,eqId));
       }
     }
-  }
-
-  // send reference data for this run to FXS
+    TString send_command = Form("cd %s; tar -cf ref_phys_dead.tar %s",saveDirDeadRef,tarFiles.Data());
+    system(send_command.Data());
+    TString fileName = Form("%s/ref_phys_dead.tar",saveDirDeadRef);
+    TString id = "SPD_ref_phys_dead";
 #ifndef SPD_DA_OFF
-  for (UInt_t eqId=0; eqId<20; eqId++) {
-    if (eqActiveNoisy[eqId]) {
-      TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
-      TString id = Form("SPD_ref_phys_%d",eqId);
-      Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
-      if (status!=0) {
-	printf("Failed to export file %s , status %d\n",fileName.Data(),status);
-	return -1;
-      }
-    }
-  }
-#endif
-
-  // send dead files to FXS
-  // send a tared file of all the dead files
-  TString send_command = Form("cd %s; tar -cf dead_phys.tar *",saveDirDeadToFXS);
-  //  printf("\n\n%s\n\n",command.Data());
-  system(send_command.Data());
-#ifndef SPD_DA_OFF
-  TString fileName = Form("%s/dead_phys.tar",saveDirDeadToFXS);
-  TString id = "SPD_phys_dead";
-  Int_t send_status = daqDA_FES_storeFile(fileName.Data(),id.Data());
-  if (send_status!=0) {
-    printf("Failed to export file %s , status %d\n",fileName.Data(),send_status);
-    return -1;
-  }
-#endif
-
-  // send noisy files to FXS
-  if (handler->GetNrNoisy()>0) { // there must be at least one file created
-    // send a tared file of all the noisy files
-    TString command = Form("cd %s; tar -cf noisy_phys.tar *",saveDirNoisyToFXS);
-    //    printf("\n\n%s\n\n",command.Data());
-    system(command.Data());
-#ifndef SPD_DA_OFF
-    TString fileName = Form("%s/noisy_phys.tar",saveDirNoisyToFXS);
-    TString id = "SPD_phys_noisy";
     Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
     if (status!=0) {
       printf("Failed to export file %s , status %d\n",fileName.Data(),status);
       return -1;
     }
 #endif
+    idsFXSfile << Form("%s\n",id.Data());
+//    for (UInt_t eqId=0; eqId<20; eqId++) { // OLD CODE NOT TARED
+//      if (eqActiveDead[eqId]) {
+//	TString fileName = Form("%s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
+//	// move file to ref dir
+//	TString newFileName = Form("%s/SPDphys_dead_run_%d_%d_eq_%d.root",saveDirDeadRef,firstRunNrDead,runNr,eqId);
+//	TString command = Form("mv -f %s %s",fileName.Data(),newFileName.Data());
+//	system(command.Data());
+//	// send ref data to FXS
+//	TString id = Form("SPD_ref_phys_dead_%d",eqId);
+//#ifndef SPD_DA_OFF
+//	Int_t status = daqDA_FES_storeFile(newFileName.Data(),id.Data());
+//	if (status!=0) {
+//	  printf("Failed to export file %s , status %d\n",newFileName.Data(),status);
+//	  return -1;
+//	}
+//#endif
+//	idsFXSfile << Form("%s\n",id.Data());
+//      }
+//      else {
+//	TString command = Form("rm -f %s/SPDphys_dead_run_0_0_eq_%d.root",saveDirDeadRefTmp,eqId);
+//	system(command.Data());
+//      }
+//    }
   }
+
+
+  // send reference data for this run to FXS
+  TString tarFiles = "";
+  for (UInt_t eqId=0; eqId<20; eqId++) {
+    if (eqActiveNoisy[eqId]) {
+      tarFiles.Append(Form("SPDphys_run_%d_eq_%d.root ",runNr,eqId));
+    }
+  }
+  TString send_command = Form("cd %s; tar -cf ref_phys.tar %s",saveDirNoisyRef,tarFiles.Data());
+  system(send_command.Data());
+  TString fileName = Form("%s/ref_phys.tar",saveDirNoisyRef);
+  TString id = "SPD_ref_phys";
+#ifndef SPD_DA_OFF
+  Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+  if (status!=0) {
+    printf("Failed to export file %s , status %d\n",fileName.Data(),status);
+    return -1;
+  }
+#endif
+  idsFXSfile << Form("%s\n",id.Data());
+
+
+//  // send reference data for this run to FXS - OLD CODE NOT TARED
+//  for (UInt_t eqId=0; eqId<20; eqId++) {
+//    if (eqActiveNoisy[eqId]) {
+//      TString fileName = Form("%s/SPDphys_run_%d_eq_%d.root",saveDirNoisyRef,runNr,eqId);
+//      TString id = Form("SPD_ref_phys_%d",eqId);
+//#ifndef SPD_DA_OFF
+//      Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+//      if (status!=0) {
+//	printf("Failed to export file %s , status %d\n",fileName.Data(),status);
+//	return -1;
+//      }
+//      idsFXSfile << Form("%s\n",id.Data());
+//    }
+//  }
+//#endif
+
+
+  // send dead pixels to FXS
+  //  if (nrDeadFilesToTar>0) { //*** old code (used if not all dead data should be uploaded)
+  // send a tared file of all the dead files
+  send_command = Form("cd %s; tar -cf dead_phys.tar *",saveDirDeadToFXS);
+  //  printf("\n\n%s\n\n",command.Data());
+  system(send_command.Data());
+  fileName = Form("%s/dead_phys.tar",saveDirDeadToFXS);
+  id = "SPD_phys_dead";
+#ifndef SPD_DA_OFF
+  Int_t send_status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+  if (send_status!=0) {
+    printf("Failed to export file %s , status %d\n",fileName.Data(),send_status);
+    return -1;
+  }
+#endif
+  idsFXSfile << Form("%s\n",id.Data());
+  //  } //*** old code (used if not all dead data should be uploaded)
+
+
+  // send noisy pixels to FXS
+  if (handler->GetNrNoisy()>0) { // there must be at least one file created
+    // send a tared file of all the noisy files
+    TString command = Form("cd %s; tar -cf noisy_phys.tar *",saveDirNoisyToFXS);
+    //    printf("\n\n%s\n\n",command.Data());
+    system(command.Data());
+    TString fileName = Form("%s/noisy_phys.tar",saveDirNoisyToFXS);
+    TString id = "SPD_phys_noisy";
+#ifndef SPD_DA_OFF
+    Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+    if (status!=0) {
+      printf("Failed to export file %s , status %d\n",fileName.Data(),status);
+      return -1;
+    }
+#endif
+    idsFXSfile << Form("%s\n",id.Data());
+  }
+
+
+  // send ids file to FXS
+  idsFXSfile.close();
+  id = "SPD_id_list";
+#ifndef SPD_DA_OFF
+  Int_t status = daqDA_FES_storeFile(idsFXSFileName.Data(),id.Data());
+  if (status!=0) {
+    printf("Failed to export file %s , status %d\n",fileName.Data(),status);
+    return -1;
+  }
+#endif
 
 
 

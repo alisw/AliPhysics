@@ -54,13 +54,16 @@ int main(int argc, char **argv) {
   char *saveDirNoisyToFXS    = "./calibResults/ScanNoisyToFXS";     //     may delete content
   char *saveDirDCSconfigToFXS= "./calibResults/ScanDCSconfigToFXS"; //     may delete content
   char *saveDirRef           = "./calibResults/ScanReference";      //     may delete content
+  char *saveDirIdsToFXS      = "./calibResults/IdsToFXS";           //     may delete content
   char *configFilesDir       = "./configFiles";                     //     may delete content
+
   // make sure the directory structure is correct:
   system("mkdir ./calibResults >& /dev/null");
   system("mkdir ./calibResults/ScanNoisy >& /dev/null");
   system("mkdir ./calibResults/ScanNoisyToFXS >& /dev/null");
   system("mkdir ./calibResults/ScanDCSconfigToFXS >& /dev/null");
   system("mkdir ./calibResults/ScanReference >& /dev/null");
+  system("mkdir ./calibResults/IdsToFXS >& /dev/null");
   system("mkdir ./configFiles >& /dev/null");
   // prameters config files
   TString paramsFileName = Form("%s/standal_params.txt",configFilesDir);
@@ -466,6 +469,7 @@ int main(int argc, char **argv) {
     }
   }
 
+  Bool_t reset_made = kFALSE;
 
   // *** *** *** start loop over equipments (eq_id)
   for (int eqId=0; eqId<20; eqId++) {
@@ -498,9 +502,16 @@ int main(int argc, char **argv) {
     }
 
     else if (type==NOISE) {
-      // read previous noisy list
+      // read previous noisy list (clear if overwriting)
       handler->SetFileLocation(saveDirNoisy);
-      handler->ReadFromFiles();
+      if (analyzer->IsOverWriteSet() && !reset_made) {
+	handler->ResetNoisy();
+	handler->WriteToFilesAlways();
+	reset_made=kTRUE;
+      }
+      else {
+	handler->ReadFromFiles();
+      }
       if (analyzer->ProcessNoisyPixels(/*saveDirNoisy*/)) {
 	if (permstatus==0) {
 	  handler->AddNoisyFrom(handlerPermNoisy);
@@ -516,29 +527,26 @@ int main(int argc, char **argv) {
 	dcsfile << "ActualDetConfiguration=" << "0,-1,-1\n"; // dummy values for now
 	dcsfile << "[NOISY]\n";
 	nrDCSconfigFilesProduced++;
-	for (UInt_t iModule=0; iModule<12; iModule++) {
-	  UInt_t module = AliITSRawStreamSPD::GetModuleNumber(eqId,iModule);	  
-	  UInt_t nrNoisy = handler->GetNrNoisy(module);
-	  if (analyzer->IsModuleScanned(module) || analyzer->IsOverWriteSet()) {
-	    UInt_t headkey=20*10*6;
-	    for (UInt_t ind=0; ind<nrNoisy; ind++) {
-	      UInt_t nEqId = handler->GetNoisyEqIdAt(module,ind);
-	      UInt_t nHs = handler->GetNoisyHSAt(module,ind);
-	      UInt_t nChip = handler->GetNoisyChipAt(module,ind);
-	      UInt_t newkey = nEqId*10*6 + nHs*10 + nChip;
-	      if (newkey!=headkey) { // print eqId,hs,chip_header
-		headkey = newkey;
-		dcsfile << "-" << nEqId << "," << nHs << "," << nChip << "\n";
+
+	for (UInt_t hs=0; hs<6; hs++) {
+	  for (UInt_t chip=0; chip<10; chip++) {
+	    if (analyzer->IsChipPresent(hs,chip) || analyzer->IsOverWriteSet()) {
+	      dcsfile << "-" << eqId << "," << hs << "," << chip << "\n";
+	      UInt_t nrNoisy = handler->GetNrNoisyC(eqId,hs,chip);
+	      for (UInt_t ind=0; ind<nrNoisy; ind++) {
+		UInt_t col = handler->GetNoisyColAtC(eqId,hs,chip,ind);
+		UInt_t row = handler->GetNoisyRowAtC(eqId,hs,chip,ind);
+		dcsfile << col << "," << row << "\n";
 	      }
-	      dcsfile << handler->GetNoisyColAt(module,ind) << "," << handler->GetNoisyRowAt(module,ind) << "\n";
 	    }
-	    handler->SetFileLocation(saveDirNoisy);
-	    handler->WriteNoisyToFile(module);
-	    handler->SetFileLocation(saveDirNoisyToFXS);
-	    handler->WriteNoisyToFile(module);
-	    nrNoisyFilesProduced++;
 	  }
 	}
+	handler->SetFileLocation(saveDirNoisy);
+	handler->WriteNoisyToFile(eqId);
+	handler->SetFileLocation(saveDirNoisyToFXS);
+	handler->WriteNoisyToFile(eqId);
+	nrNoisyFilesProduced++;
+	
 	dcsfile.close();
       }
     }
@@ -552,12 +560,9 @@ int main(int argc, char **argv) {
       dcsfile << "RunNumber=" << runNr << "\n";
       dcsfile << "Type=" << type << "\n";
       dcsfile << "Router=" << routerNr << "\n";
-      dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
+      dcsfile << "ActualDetConfiguration=" << "0,-1,-1\n"; // dummy values for now
       dcsfile << "[DACvalues]\n";
       nrDCSconfigFilesProduced++;
-      //      TString ofileName = Form("%s/minth_eq_%d.txt",saveDirParameters,eqId);
-      //      ofstream ofile;
-      //      ofile.open (ofileName.Data());
       for (UInt_t hs=0; hs<6; hs++) {
 	for (UInt_t chipNr=0; chipNr<10; chipNr++) {
 	  Int_t minTh = -1;
@@ -570,12 +575,8 @@ int main(int argc, char **argv) {
 	      printf("MinTh failed for Eq %d , HS %d , Chip %d\n",eqId,hs,chipNr);
 	    }
 	  }
-	  //	  ofile << minTh;
-	  //	  ofile << "\t";
 	}
-	//	ofile << "\n";
       }
-      //      ofile.close();
       dcsfile.close();
     }
 
@@ -591,9 +592,6 @@ int main(int argc, char **argv) {
       dcsfile << "ActualDetCoonfiguration=" << "0,-1,-1\n"; // dummy values for now
       dcsfile << "[DACvalues]\n";
       nrDCSconfigFilesProduced++;
-//      TString ofileName = Form("%s/delay_eq_%d.txt",saveDirParameters,eqId);
-//      ofstream ofile;
-//      ofile.open (ofileName.Data());
       for (UInt_t hs=0; hs<6; hs++) {
 	for (UInt_t chipNr=0; chipNr<10; chipNr++) {
 	  Int_t clockCycle = -1;
@@ -612,12 +610,8 @@ int main(int argc, char **argv) {
 	      printf("Delay failed for Eq %d , HS %d , Chip %d\n",eqId,hs,chipNr);
 	    }
 	  }
-	  //	  ofile << delayCtrl << "/" << miscCtrl;
-	  //	  ofile << "\t";
 	}
-	//	ofile << "\n";
       }
-      //      ofile.close();
       dcsfile.close();
     }
 
@@ -632,11 +626,16 @@ int main(int argc, char **argv) {
   }
   // *** *** *** end loop over equipments (eq_id)
 
+
   delete handler;
   if (handlerPermNoisy!=NULL) {
     delete handlerPermNoisy;
   }
 
+
+  TString idsFXSFileName = Form("%s/FXSids_run_%d.txt",saveDirIdsToFXS,runNr);
+  ofstream idsFXSfile;
+  idsFXSfile.open(idsFXSFileName.Data());
 
 
 
@@ -646,15 +645,16 @@ int main(int argc, char **argv) {
     TString command = Form("cd %s; tar -cf noisy_scan.tar *",saveDirNoisyToFXS);
     //    printf("\n\n%s\n\n",command.Data());
     system(command.Data());
-#ifndef SPD_DA_OFF
     TString fileName = Form("%s/noisy_scan.tar",saveDirNoisyToFXS);
     TString id = "SPD_scan_noisy";
+#ifndef SPD_DA_OFF
     Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
     if (status!=0) {
       printf("Failed to export file %s , status %d\n",fileName.Data(),status);
       return -1;
     }
 #endif
+    idsFXSfile << Form("%s\n",id.Data());
   }
 
   // send dcs config files to FXS
@@ -663,33 +663,36 @@ int main(int argc, char **argv) {
     TString command = Form("cd %s; tar -cf dcsConfig.tar *",saveDirDCSconfigToFXS);
     //    printf("\n\n%s\n\n",command.Data());
     system(command.Data());
-#ifndef SPD_DA_OFF
     TString fileName = Form("%s/dcsConfig.tar",saveDirDCSconfigToFXS);
     TString id = "SPD_dcsConfig";
+#ifndef SPD_DA_OFF
     Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
     if (status!=0) {
       printf("Failed to export file %s , status %d\n",fileName.Data(),status);
       return -1;
     }
 #endif
+    //idsFXSfile << Form("%s\n",id.Data()); // do NOT write this id (this is not for preprocessor)
   }
 
   // send reference data to FXS
-#ifndef SPD_DA_OFF
   for (UInt_t eqId=0; eqId<20; eqId++) {
     if (bScanInit[eqId]) {
       TString fileName = Form("%s/SPDcal_run_%d_eq_%d.root",saveDirRef,runNr,eqId);
       TString id = Form("SPD_ref_scan_%d",eqId);
+#ifndef SPD_DA_OFF
       Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
       if (status!=0) {
 	printf("Failed to export file %s , status %d\n",fileName.Data(),status);
 	return -1;
       }
+#endif
+      idsFXSfile << Form("%s\n",id.Data());
     }
   }
-#endif
 
 
+  idsFXSfile.close();
 
 
 

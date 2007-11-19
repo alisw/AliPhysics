@@ -7,7 +7,10 @@
 //                                           //
 ///////////////////////////////////////////////
 
+/* $Id$ */
+
 #include "AliPreprocessor.h"
+#include <TList.h>
 
 class AliITSPreprocessorSPD : public AliPreprocessor
 {
@@ -20,6 +23,9 @@ class AliITSPreprocessorSPD : public AliPreprocessor
     virtual UInt_t Process(TMap* dcsAliasMap);
 
   private:
+    TList  fIdList; // list of ids for files that should be retrieved from FXS
+    Bool_t RemoveIdFromList(const Char_t *id);
+    Bool_t StoreRefFromTarForId(const Char_t *id);
 
     ClassDef(AliITSPreprocessorSPD, 0);
 };
