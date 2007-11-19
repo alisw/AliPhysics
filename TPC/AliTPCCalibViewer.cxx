@@ -18,6 +18,19 @@
 //                                                                           //
 //  Class for viewing/visualizing TPC calibration data                       //
 //  base on  TTree functionality for visualization                           //
+//                                                                           //
+//  Create a list of AliTPCCalPads, arrange them in an TObjArray.            //
+//  Pass this TObjArray to MakeTree and create the calibration Tree          //
+//  While craating this tree some statistical information are calculated     //
+//  Open the viewer with this Tree: AliTPCCalibViewer v("CalibTree.root")    //
+//  Have fun!                                                                //
+//  EasyDraw("CETmean~-CETmean_mean", "A", "(CETmean~-CETmean_mean)>0")      //
+//                                                                           //
+//  If you like to click, we recommand you the                               //
+//    AliTPCCalibViewerGUI                                                   //
+//                                                                           //
+//    THE DOCUMENTATION IS STILL NOT COMPLETED !!!!                          //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 //
@@ -31,6 +44,7 @@
 #include <TCanvas.h>
 #include <TROOT.h>
 #include <TStyle.h>
+#include <TH1.h> 
 #include <TH1F.h>
 #include <THashTable.h>
 #include <TObjString.h>
@@ -179,15 +193,20 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
   // drawOptions: draw options like 'same'
   // writeDrawCommand: write the command, that is passed to TTree::Draw
   //
+
    TString drawStr(drawCommand);
    TString sectorStr(sector);
    sectorStr.ToUpper();
    TString cutStr("");
-   TString drawOptionsStr("profcolz ");
+   //TString drawOptionsStr("profcolz ");
+   TString drawOptionsStr("");
    TRandom rnd(0);
    Int_t rndNumber = rnd.Integer(10000);
-   if (drawOptions && drawOptions != "")
+
+   if (drawOptions && strcmp(drawOptions, "") != 0)
       drawOptionsStr += drawOptions;
+   else
+      drawOptionsStr += "profcolz";
 
    if (sectorStr == "A") {
       drawStr += ":gy.fElements:gx.fElements>>prof";
@@ -235,6 +254,7 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, const char* sector, c
    return fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
 }
 
+
 Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
   //
   // easy drawing of data, use '~' for abbreviation of '.fElements'
@@ -252,6 +272,7 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const c
    Error("EasyDraw","The TPC contains only sectors between 0 and 71.");
    return -1;
 }
+
 
 //_____________________________________________________________________________
 Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
@@ -300,6 +321,7 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, const char* sector,
    return fTree->Draw(drawStr.Data(), cutStr.Data(), drawOptionsStr.Data());
 }
 
+
 Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const char* cuts, const char* drawOptions, Bool_t writeDrawCommand) const {
   //
   // easy drawing of data, use '~' for abbreviation of '.fElements'
@@ -319,234 +341,737 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const
   return -1;
 }
 
-//_____________________________________________________________________________
-Int_t AliTPCCalibViewer::DrawHisto1D(const char* type, Int_t sector, TVectorF& nsigma, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
-  //
-  // draws a 1-dimensional histogram of 'type' for sector 'sector'
-  // TVectorF nsigma: Specifies, for which distances from the mean/median/LTM lines should be drawn, in units of sigma
-  // example: nsigma={2, 4, 6}: Three lines will be drawn, distance to mean/median/LTM: 2, 3 and 6 sigma
-  // plotMean, plotMedian, plotLTM: specifies, if mean, median and LTM should be drawn as lines into the histogram
-  //
 
-   TString typeStr(type);
-   TString sectorStr("sector==");
-   sectorStr += sector;
+Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, Int_t sector, const char* cuts, const char *sigmas, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
+   // 
+   // Easy drawing of data, in principle the same as EasyDraw1D
+   // Difference: A line for the mean / median / LTM is drawn 
+   // in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
+   // example: sigmas = "2; 4; 6;"  at Begin_Latex 2 #sigma End_Latex, Begin_Latex 4 #sigma End_Latex and Begin_Latex 6 #sigma End_Latex  a line is drawn.
+   // "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
+   // 
+   if (sector >= 0 && sector < 72) {
+      char sectorChr[3];
+      sprintf(sectorChr, "%i", sector);
+      return DrawHisto1D(drawCommand, sectorChr, cuts, sigmas, plotMean, plotMedian, plotLTM);
+   }
+   Error("DrawHisto1D","The TPC contains only sectors between 0 and 71.");
+   return -1;
+}   
 
-   TCanvas* canvas = ((TCanvas*)gROOT->GetListOfCanvases()->Last());
+
+Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* sector, const char* cuts, const char *sigmas, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
+   // 
+   // Easy drawing of data, in principle the same as EasyDraw1D
+   // Difference: A line for the mean / median / LTM is drawn 
+   // in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
+   // example: sigmas = "2; 4; 6;"  at Begin_Latex 2 #sigma End_Latex, Begin_Latex 4 #sigma End_Latex and Begin_Latex 6 #sigma End_Latex  a line is drawn.
+   // "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
+   // 
    Int_t oldOptStat = gStyle->GetOptStat();
    gStyle->SetOptStat(0000000);
-
-   if (!canvas) {
-      canvas = new TCanvas();
-      fListOfObjectsToBeDeleted->Add(canvas);
+   Double_t ltmFraction = 0.8;
+   
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TVectorF nsigma(sigmasTokens->GetEntriesFast());
+   for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
+      TString str(((TObjString*)sigmasTokens->At(i))->GetString());
+      Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
+      nsigma[i] = sig;
    }
    
+   TString drawStr(drawCommand);
+   drawStr += " >> tempHist";
+   Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts);
+   TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
+   // FIXME is this histogram deleted automatically?
+   Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
+   
+   Double_t mean = TMath::Mean(entries, values);
+   Double_t median = TMath::Median(entries, values);
+   Double_t sigma = TMath::RMS(entries, values);
+   Double_t maxY = htemp->GetMaximum();
+   
    char c[500];
-   sprintf(c, "%s, sector: %i", type, sector);
-   TLegend * legend = new TLegend(.8,.6, .99, .99, c);
+   TLegend * legend = new TLegend(.7,.7, .99, .99, "Statistical information");
+//    sprintf(c, "%s, sector: %i", type, sector);
    fListOfObjectsToBeDeleted->Add(legend);
 
-   Int_t nentries = fTree->Draw((typeStr+".fElements").Data(), sectorStr.Data(), "");
-   ((TH1F*)canvas->GetPrimitive("htemp"))->SetTitle("");
-      
-   //****************************************************************
-   //!!!!!!!!!!!!!!!!! Needs further investigaton !!!!!!!!!!!!!!!!!!!
-   //****************************************************************
-   //fListOfObjectsToBeDeleted->Add(canvas->GetPrimitive("htemp"));
-/*
-  By default the temporary histogram created is called "htemp", but only in
-  the one dimensional Draw("e1") it contains the TTree's data points. For
-  a two dimensional Draw, the data is filled into a TGraph which is named
-  "Graph". They can be retrieved by calling
-    TH1F *htemp = (TH1F*)gPad->GetPrimitive("htemp"); // 1D
-    TGraph *graph = (TGraph*)gPad->GetPrimitive("Graph"); // 2D
-*/
-   
-   canvas->Update();
-   Double_t sigma = 0;
-
    if (plotMean) {
-      fTree->Draw((typeStr+"_Mean").Data(), sectorStr.Data(), "goff");
-      Double_t lineX = fTree->GetV1()[0];
-      fTree->Draw((typeStr+"_RMS").Data(), sectorStr.Data(), "goff");
-      sigma = fTree->GetV1()[0];
-      TLine* line = new TLine(lineX, 0, lineX, canvas->GetUymax());
+      // draw Mean
+      TLine* line = new TLine(mean, 0, mean, maxY);
       fListOfObjectsToBeDeleted->Add(line);
       line->SetLineColor(kRed);
       line->SetLineWidth(2);
       line->SetLineStyle(1);
       line->Draw();
-      sprintf(c, "Mean: %f", lineX);
+      sprintf(c, "Mean: %f", mean);
       legend->AddEntry(line, c, "l");
-
+      // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-         TLine* linePlusSigma = new TLine(lineX+nsigma[i]*sigma, 0, lineX+nsigma[i]*sigma, canvas->GetUymax());
+         TLine* linePlusSigma = new TLine(mean + nsigma[i] * sigma, 0, mean + nsigma[i] * sigma, maxY);
          fListOfObjectsToBeDeleted->Add(linePlusSigma);
          linePlusSigma->SetLineColor(kRed);
-         linePlusSigma->SetLineStyle(2+i);
+         linePlusSigma->SetLineStyle(2 + i);
          linePlusSigma->Draw();
-   
-         TLine* lineMinusSigma = new TLine(lineX-nsigma[i]*sigma, 0, lineX-nsigma[i]*sigma, canvas->GetUymax());
+         TLine* lineMinusSigma = new TLine(mean - nsigma[i] * sigma, 0, mean - nsigma[i] * sigma, maxY);
          fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kRed);
-         lineMinusSigma->SetLineStyle(2+i);
+         lineMinusSigma->SetLineStyle(2 + i);
          lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i]*sigma));
-	 std::cout << "nsigma-char*: " << c << std::endl;
+         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma));
          legend->AddEntry(lineMinusSigma, c, "l");
       }
    }
-
    if (plotMedian) {
-      fTree->Draw((typeStr+"_Median").Data(), sectorStr.Data(), "goff");
-      Double_t lineX = fTree->GetV1()[0];
-      fTree->Draw((typeStr+"_RMS").Data(), sectorStr.Data(), "goff");
-      sigma = fTree->GetV1()[0];
-      TLine* line = new TLine(lineX, 0, lineX, canvas->GetUymax());
+      // draw median
+      TLine* line = new TLine(median, 0, median, maxY);
       fListOfObjectsToBeDeleted->Add(line);
       line->SetLineColor(kBlue);
       line->SetLineWidth(2);
       line->SetLineStyle(1);
       line->Draw();
-      sprintf(c, "Median: %f", lineX);
+      sprintf(c, "Median: %f", median);
       legend->AddEntry(line, c, "l");
-      
+      // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-         TLine* linePlusSigma = new TLine(lineX+nsigma[i]*sigma, 0, lineX+nsigma[i]*sigma, canvas->GetUymax());
+         TLine* linePlusSigma = new TLine(median + nsigma[i] * sigma, 0, median + nsigma[i]*sigma, maxY);
          fListOfObjectsToBeDeleted->Add(linePlusSigma);
          linePlusSigma->SetLineColor(kBlue);
-         linePlusSigma->SetLineStyle(2+i);
+         linePlusSigma->SetLineStyle(2 + i);
          linePlusSigma->Draw();
-   
-         TLine* lineMinusSigma = new TLine(lineX-nsigma[i]*sigma, 0, lineX-nsigma[i]*sigma, canvas->GetUymax());
+         TLine* lineMinusSigma = new TLine(median - nsigma[i] * sigma, 0, median - nsigma[i]*sigma, maxY);
          fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kBlue);
-         lineMinusSigma->SetLineStyle(2+i);
+         lineMinusSigma->SetLineStyle(2 + i);
          lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i]*sigma));
+         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma));
          legend->AddEntry(lineMinusSigma, c, "l");
       }
    }
-   
    if (plotLTM) {
-      fTree->Draw((typeStr+"_LTM").Data(), sectorStr.Data(), "goff");
-      Double_t lineX = fTree->GetV1()[0];
-      fTree->Draw((typeStr+"_RMS_LTM").Data(), sectorStr.Data(), "goff");
-      sigma = fTree->GetV1()[0];
-      TLine* line = new TLine(lineX, 0, lineX, canvas->GetUymax());
+      // draw LTM
+      Double_t ltmRms = 0;
+      Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
+      TLine* line = new TLine(ltm, 0, ltm, maxY);
       fListOfObjectsToBeDeleted->Add(line);
       line->SetLineColor(kGreen+2);
       line->SetLineWidth(2);
       line->SetLineStyle(1);
       line->Draw();
-      sprintf(c, "LTM: %f", lineX);
+      sprintf(c, "LTM: %f", ltm);
       legend->AddEntry(line, c, "l");
-
+      // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-         TLine* linePlusSigma = new TLine(lineX+nsigma[i]*sigma, 0, lineX+nsigma[i]*sigma, canvas->GetUymax());
+         TLine* linePlusSigma = new TLine(ltm + nsigma[i] * ltmRms, 0, ltm + nsigma[i] * ltmRms, maxY);
          fListOfObjectsToBeDeleted->Add(linePlusSigma);
          linePlusSigma->SetLineColor(kGreen+2);
          linePlusSigma->SetLineStyle(2+i);
          linePlusSigma->Draw();
    
-         TLine* lineMinusSigma = new TLine(lineX-nsigma[i]*sigma, 0, lineX-nsigma[i]*sigma, canvas->GetUymax());
+         TLine* lineMinusSigma = new TLine(ltm - nsigma[i] * ltmRms, 0, ltm - nsigma[i] * ltmRms, maxY);
          fListOfObjectsToBeDeleted->Add(lineMinusSigma);
          lineMinusSigma->SetLineColor(kGreen+2);
          lineMinusSigma->SetLineStyle(2+i);
          lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f", (Int_t)(nsigma[i]), (Float_t)(nsigma[i]*sigma));
+         sprintf(c, "%i #sigma = %f", (Int_t)(nsigma[i]), (Float_t)(nsigma[i] * ltmRms));
          legend->AddEntry(lineMinusSigma, c, "l");
       }
    }
+   if (!plotMean && !plotMedian && !plotLTM) return -1;
    legend->Draw();
    gStyle->SetOptStat(oldOptStat);
-   return nentries;
+   return 1;
 }
 
-//_____________________________________________________________________________
-void AliTPCCalibViewer::SigmaCut(const char* type, Int_t sector, Float_t sigmaMax, Float_t sigmaStep, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
-  //
-  // Creates a histogram, where you can see, how much of the data are inside sigma-intervals around the mean/median/LTM
-  // type: For which type of data the histogram is generated, e.g. 'CEQmean'
-  // sector: For which sector the histogram is generated
-  // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated
-  // sigmaStep: the binsize of the generated histogram
-  // plotMean/plotMedian/plotLTM: specifies where to put the center
-  //
-   Int_t oldOptStat = gStyle->GetOptStat();
-   gStyle->SetOptStat(0000000);
 
-   TString typeStr(type);
-   TString sectorStr("sector==");
-   sectorStr += sector;
-   Int_t entries = fTree->Draw((typeStr+".fElements").Data(), sectorStr.Data(), "goff");
-   char headline[500];
-   sprintf(headline, "%s in sector %i; Multiples of #sigma; Fraction of used pads", type, sector);
-   TH1F *histMean =   new TH1F("histMean",headline, (Int_t)(sigmaMax/sigmaStep+1), 0, sigmaMax+sigmaStep);
-   sprintf(headline, "%s in sector %i; Multiples of #sigma; Fraction of used pads", type, sector);
-   TH1F *histMedian = new TH1F("histMedian",headline, (Int_t)(sigmaMax/sigmaStep+1), 0, sigmaMax+sigmaStep);
-   sprintf(headline, "%s in sector %i; Multiples of #sigma; Fraction of used pads", type, sector);
-   TH1F *histLTM =    new TH1F("histLTM",headline, (Int_t)(sigmaMax/sigmaStep+1), 0, sigmaMax+sigmaStep);                                                                   
-   histMean->SetDirectory(0);
-   histMedian->SetDirectory(0);
-   histLTM->SetDirectory(0);
-   fListOfObjectsToBeDeleted->Add(histMean);
-   fListOfObjectsToBeDeleted->Add(histMedian);
-   fListOfObjectsToBeDeleted->Add(histLTM);
-
-   
-   // example-cut: sector==34 && TMath::Abs(CEQmean.fElements - CEQmean_Mean) < nsigma * CEQmean_RMS
-   for (Float_t nsigma = 0; nsigma <= sigmaMax; nsigma += sigmaStep) {
-     std::cout << "Calculating histograms,  step: " << (Int_t)(nsigma/sigmaStep) << " of: " << (Int_t)(sigmaMax/sigmaStep) << "\r" << std::flush;
-      char cuts[5000];
-      
-      if (plotMean) {
-         sprintf(cuts, "sector==%i && ( %s.fElements - %s_Median) < %f * %s_RMS", sector, type, type, nsigma, type );
-         sprintf(cuts,         "%s && (-%s.fElements + %s_Median) < %f * %s_RMS",   cuts, type, type, nsigma, type );
-         Float_t value = (Float_t)fTree->Draw((typeStr+".fElements").Data(), cuts, "goff")/entries;
-         histMean->Fill(nsigma, value);
-      }
-      if (plotMedian) {
-         sprintf(cuts, "sector==%i && ( %s.fElements - %s_Mean) < %f * %s_RMS", sector, type, type, nsigma, type );
-         sprintf(cuts,         "%s && (-%s.fElements + %s_Mean) < %f * %s_RMS",   cuts, type, type, nsigma, type );
-         Float_t value = (Float_t)fTree->Draw((typeStr+".fElements").Data(), cuts, "goff")/entries;
-         histMedian->Fill(nsigma, value);
-      }
-      if (plotLTM) {
-         sprintf(cuts, "sector==%i && ( %s.fElements - %s_LTM) < %f * %s_RMS_LTM", sector, type, type, nsigma, type );
-         sprintf(cuts,         "%s && (-%s.fElements + %s_LTM) < %f * %s_RMS_LTM",   cuts, type, type, nsigma, type );
-         Float_t value = (Float_t)fTree->Draw((typeStr+".fElements").Data(), cuts, "goff")/entries;
-         histLTM->Fill(nsigma, value);
-      }
+Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, Int_t sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
+   //
+   // Creates a histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
+   // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'array', 'n' specifies the length of the array
+   // 'mean' and 'sigma' are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in 'array', to be specified by the user
+   // 'nbins': number of bins, 'binLow': first bin, 'binUp': last bin
+   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
+   // sigmaStep: the binsize of the generated histogram
+   // Begin_Latex 
+   // f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx }{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+   // End_Latex
+   // 
+   //
+   // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
+   // around the mean/median/LTM
+   // with drawCommand, sector and cuts you specify your input data, see EasyDraw
+   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
+   // sigmaStep: the binsize of the generated histogram
+   // plotMean/plotMedian/plotLTM: specifies where to put the center
+   //
+   if (sector >= 0 && sector < 72) {
+      char sectorChr[3];
+      sprintf(sectorChr, "%i", sector);
+      return SigmaCut(drawCommand, sectorChr, cuts, sigmaMax, plotMean, plotMedian, plotLTM, pm, sigmas, sigmaStep);
    }
+   Error("SigmaCut","The TPC contains only sectors between 0 and 71.");
+   return -1;
+}
+
+
+Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
+   //
+   // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
+   // around the mean/median/LTM
+   // with drawCommand, sector and cuts you specify your input data, see EasyDraw
+   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
+   // sigmaStep: the binsize of the generated histogram
+   // plotMean/plotMedian/plotLTM: specifies where to put the center
+   //
+  
+   Double_t ltmFraction = 0.8;
    
-   char c[500];
-   sprintf(c, "Sigma Cut");
-   TLegend * legend = new TLegend(.85,.8, .99, .99, c);
+   TString drawStr(drawCommand);
+   drawStr += " >> tempHist";
+   
+   Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
+   TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
+   // FIXME is this histogram deleted automatically?
+   Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
+   
+   Double_t mean = TMath::Mean(entries, values);
+   Double_t median = TMath::Median(entries, values);
+   Double_t sigma = TMath::RMS(entries, values);
+   
+   TLegend * legend = new TLegend(.7,.7, .99, .99, "Cumulative");
    fListOfObjectsToBeDeleted->Add(legend);
+   TH1F *cutHistoMean = 0;
+   TH1F *cutHistoMedian = 0;
+   TH1F *cutHistoLTM = 0;
    
-   if (plotMean){
-      histMean->SetLineColor(kBlack);
-      sprintf(c, "Mean");
-      legend->AddEntry(histMean, c, "l");
-      histMean->Draw();
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TVectorF nsigma(sigmasTokens->GetEntriesFast());
+   for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
+      TString str(((TObjString*)sigmasTokens->At(i))->GetString());
+      Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
+      nsigma[i] = sig;
    }
-   if (plotMedian){
-      histMedian->SetLineColor(kRed);
-      sprintf(c, "Median");
-      legend->AddEntry(histMedian, c, "l");
-      histMedian->Draw("same");
+  
+   if (plotMean) {
+      cutHistoMean = AliTPCCalibViewer::SigmaCut(htemp, mean, sigma, sigmaMax, sigmaStep, pm);
+      if (cutHistoMean) {
+         fListOfObjectsToBeDeleted->Add(cutHistoMean);
+         cutHistoMean->SetLineColor(kRed);
+         legend->AddEntry(cutHistoMean, "Mean", "l");
+         cutHistoMean->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         cutHistoMean->Draw();
+         DrawLines(cutHistoMean, nsigma, legend, kRed, pm);
+      } // if (cutHistoMean)
+       
    }
-   if (plotLTM){
-      histLTM->SetLineColor(kBlue);
-      sprintf(c, "LTM");
-      legend->AddEntry(histLTM, c, "l");
-      histLTM->Draw("same");
-   }   
-
+   if (plotMedian) {
+      cutHistoMedian = AliTPCCalibViewer::SigmaCut(htemp, median, sigma, sigmaMax, sigmaStep, pm);
+      if (cutHistoMedian) {
+         fListOfObjectsToBeDeleted->Add(cutHistoMedian);
+         cutHistoMedian->SetLineColor(kBlue);
+         legend->AddEntry(cutHistoMedian, "Median", "l");
+         cutHistoMedian->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && cutHistoMean) cutHistoMedian->Draw("same");
+            else cutHistoMedian->Draw();
+         DrawLines(cutHistoMedian, nsigma, legend, kBlue, pm);
+      }  // if (cutHistoMedian)
+   }
+   if (plotLTM) {
+      Double_t ltmRms = 0;
+      Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
+      cutHistoLTM = AliTPCCalibViewer::SigmaCut(htemp, ltm, ltmRms, sigmaMax, sigmaStep, pm);
+      if (cutHistoLTM) {
+         fListOfObjectsToBeDeleted->Add(cutHistoLTM);
+         cutHistoLTM->SetLineColor(kGreen+2);
+         legend->AddEntry(cutHistoLTM, "LTM", "l");
+         cutHistoLTM->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && cutHistoMean || plotMedian && cutHistoMedian) cutHistoLTM->Draw("same");
+            else cutHistoLTM->Draw();
+         DrawLines(cutHistoLTM, nsigma, legend, kGreen+2, pm);
+      }
+   }
+   if (!plotMean && !plotMedian && !plotLTM) return -1;
    legend->Draw();
-   gStyle->SetOptStat(oldOptStat);
+   return 1;
 }
+
+
+
+
+Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
+   //
+   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
+   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
+   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
+   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   // The actual work is done on the array.
+   /* Begin_Latex 
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+      End_Latex  
+   */
+   if (sector >= 0 && sector < 72) {
+      char sectorChr[3];
+      sprintf(sectorChr, "%i", sector);
+      return Integrate(drawCommand, sectorChr, cuts, sigmaMax, plotMean, plotMedian, plotLTM, sigmas, sigmaStep);
+   }
+   Error("Integrate","The TPC contains only sectors between 0 and 71.");
+   return -1;
+   
+}
+
+
+Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
+   //
+   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
+   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
+   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
+   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   // The actual work is done on the array.
+   /* Begin_Latex 
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+      End_Latex  
+   */
+   
+   Double_t ltmFraction = 0.8;
+   
+   TString drawStr(drawCommand);
+   drawStr += " >> tempHist";
+   
+   Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
+   TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
+   // FIXME is this histogram deleted automatically?
+   Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
+   
+   Double_t mean = TMath::Mean(entries, values);
+   Double_t median = TMath::Median(entries, values);
+   Double_t sigma = TMath::RMS(entries, values);
+    
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TVectorF nsigma(sigmasTokens->GetEntriesFast());
+   for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
+      TString str(((TObjString*)sigmasTokens->At(i))->GetString());
+      Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
+      nsigma[i] = sig;
+   }
+  
+   TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
+   fListOfObjectsToBeDeleted->Add(legend);
+   TH1F *integralHistoMean = 0;
+   TH1F *integralHistoMedian = 0;
+   TH1F *integralHistoLTM = 0;
+  
+   if (plotMean) {
+      integralHistoMean = AliTPCCalibViewer::Integrate(htemp, mean, sigma, sigmaMax, sigmaStep);
+      if (integralHistoMean) {
+         fListOfObjectsToBeDeleted->Add(integralHistoMean);
+         integralHistoMean->SetLineColor(kRed);
+         legend->AddEntry(integralHistoMean, "Mean", "l");
+         integralHistoMean->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         integralHistoMean->Draw();
+         DrawLines(integralHistoMean, nsigma, legend, kRed, kTRUE);
+      }
+   }
+   if (plotMedian) {
+      integralHistoMedian = AliTPCCalibViewer::Integrate(htemp, median, sigma, sigmaMax, sigmaStep);
+      if (integralHistoMedian) {
+         fListOfObjectsToBeDeleted->Add(integralHistoMedian);
+         integralHistoMedian->SetLineColor(kBlue);
+         legend->AddEntry(integralHistoMedian, "Median", "l");
+         integralHistoMedian->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && integralHistoMean) integralHistoMedian->Draw("same");
+            else integralHistoMedian->Draw();
+         DrawLines(integralHistoMedian, nsigma, legend, kBlue, kTRUE);
+      }
+   }
+   if (plotLTM) {
+      Double_t ltmRms = 0;
+      Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
+      integralHistoLTM = AliTPCCalibViewer::Integrate(htemp, ltm, ltmRms, sigmaMax, sigmaStep);
+      if (integralHistoLTM) {
+         fListOfObjectsToBeDeleted->Add(integralHistoLTM);
+         integralHistoLTM->SetLineColor(kGreen+2);
+         legend->AddEntry(integralHistoLTM, "LTM", "l");
+         integralHistoLTM->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && integralHistoMean || plotMedian && integralHistoMedian) integralHistoLTM->Draw("same");
+            else integralHistoLTM->Draw();
+         DrawLines(integralHistoLTM, nsigma, legend, kGreen+2, kTRUE);
+      }
+   }
+   if (!plotMean && !plotMedian && !plotLTM) return -1;
+   legend->Draw();
+   return 1;
+}
+
+
+void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
+   // 
+   // Private function for SigmaCut(...) and Integrate(...)
+   // Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
+   // 
+   
+   // start to draw the lines, loop over requested sigmas
+   char c[500];
+   for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+      if (!pm) { 
+         Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
+         TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
+         fListOfObjectsToBeDeleted->Add(lineUp);
+         lineUp->SetLineColor(color);
+         lineUp->SetLineStyle(2 + i);
+         lineUp->Draw();
+         TLine* lineLeft = new TLine(nsigma[i], histogram->GetBinContent(bin), 0, histogram->GetBinContent(bin));
+         fListOfObjectsToBeDeleted->Add(lineLeft);
+         lineLeft->SetLineColor(color);
+         lineLeft->SetLineStyle(2 + i);
+         lineLeft->Draw();
+         sprintf(c, "Fraction(%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
+         legend->AddEntry(lineLeft, c, "l");
+      }
+      else { // if (pm)
+         Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
+         TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
+         fListOfObjectsToBeDeleted->Add(lineUp1);
+         lineUp1->SetLineColor(color);
+         lineUp1->SetLineStyle(2 + i);
+         lineUp1->Draw();
+         TLine* lineLeft1 = new TLine(nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
+         fListOfObjectsToBeDeleted->Add(lineLeft1);
+         lineLeft1->SetLineColor(color);
+         lineLeft1->SetLineStyle(2 + i);
+         lineLeft1->Draw();
+         sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
+         legend->AddEntry(lineLeft1, c, "l");
+         bin = histogram->GetXaxis()->FindBin(-nsigma[i]);
+         TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], histogram->GetBinContent(bin));
+         fListOfObjectsToBeDeleted->Add(lineUp2);
+         lineUp2->SetLineColor(color);
+         lineUp2->SetLineStyle(2 + i);
+         lineUp2->Draw();
+         TLine* lineLeft2 = new TLine(-nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
+         fListOfObjectsToBeDeleted->Add(lineLeft2);
+         lineLeft2->SetLineColor(color);
+         lineLeft2->SetLineStyle(2 + i);
+         lineLeft2->Draw();
+         sprintf(c, "Fraction(-%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
+         legend->AddEntry(lineLeft2, c, "l");
+      }
+   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
+}
+
+
+
+
+
+
+/////////////////
+// Array tools //
+/////////////////
+
+
+Int_t AliTPCCalibViewer::GetBin(Float_t value, Int_t nbins, Double_t binLow, Double_t binUp){
+   // Returns the 'bin' for 'value'
+   // The interval between 'binLow' and 'binUp' is divided into 'nbins' equidistant bins
+   // avoid index out of bounds error: 'if (bin < binLow) bin = binLow' and vice versa
+   /* Begin_Latex
+         GetBin(value) = #frac{nbins - 1}{binUp - binLow} #upoint (value - binLow) +1
+      End_Latex
+   */
+   
+   Int_t bin =  TMath::Nint( (Float_t)(value - binLow) / (Float_t)(binUp - binLow) * (nbins-1) ) + 1;
+   // avoid index out of bounds:   
+   if (value < binLow) bin = 0;
+   if (value > binUp)  bin = nbins + 1;
+   return bin;
+   
+}   
+
+
+Double_t AliTPCCalibViewer::GetLTM(Int_t n, Double_t *array, Double_t *sigma, Double_t fraction){
+   //
+   //  returns the LTM and sigma
+   //
+   Double_t *ddata = new Double_t[n];
+   Double_t mean = 0, lsigma = 0;
+   UInt_t nPoints = 0;
+   for (UInt_t i = 0; i < (UInt_t)n; i++) {
+         ddata[nPoints]= array[nPoints];
+         nPoints++;
+   }
+   Int_t hh = TMath::Min(TMath::Nint(fraction * nPoints), Int_t(n));
+   AliMathBase::EvaluateUni(nPoints, ddata, mean, lsigma, hh);
+   if (sigma) *sigma = lsigma;
+   delete [] ddata;
+   return mean;
+}
+
+
+TH1F* AliTPCCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm) {
+   //
+   // Creates a cumulative histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
+   // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'histogram'
+   // 'mean' and 'sigma' are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in 'histogram', to be specified by the user
+   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
+   // sigmaStep: the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   // pm: Decide weather Begin_Latex t > 0 End_Latex (first case) or Begin_Latex t End_Latex arbitrary (secound case)
+   // The actual work is done on the array.
+   /* Begin_Latex 
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx + #int_{#mu}^{#mu - t #sigma} f(x, #mu, #sigma) dx }{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx } ,    for  t > 0    
+         or      
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{#mu}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+      End_Latex  
+      begin_macro(source)
+      {
+         Float_t mean = 0;
+         Float_t sigma = 1.5;
+         Float_t sigmaMax = 4;
+         gROOT->SetStyle("Plain");
+         TH1F *distribution = new TH1F("Distribution", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
+         TRandom rand(23);
+         for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
+         Float_t *ar = distribution->GetArray();
+         
+         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas", "", 350, 350);
+         macro_example_canvas->Divide(0,3);
+         TVirtualPad *pad1 = macro_example_canvas->cd(1);
+         pad1->SetGridy();
+         pad1->SetGridx();
+         distribution->Draw();
+         TVirtualPad *pad2 = macro_example_canvas->cd(2);
+         pad2->SetGridy();
+         pad2->SetGridx();
+         
+         TH1F *shist = AliTPCCalibViewer::SigmaCut(distribution, mean, sigma, sigmaMax);
+         shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
+         shist->Draw();  
+         TVirtualPad *pad3 = macro_example_canvas->cd(3);
+         pad3->SetGridy();
+         pad3->SetGridx();
+         TH1F *shistPM = AliTPCCalibViewer::SigmaCut(distribution, mean, sigma, sigmaMax, -1, kTRUE);
+         shistPM->Draw();   
+         return macro_example_canvas;
+      }  
+      end_macro
+   */ 
+   
+   Float_t *array = histogram->GetArray();
+   Int_t    nbins = histogram->GetXaxis()->GetNbins();
+   Float_t binLow = histogram->GetXaxis()->GetXmin();
+   Float_t binUp  = histogram->GetXaxis()->GetXmax();
+   return AliTPCCalibViewer::SigmaCut(nbins, array, mean, sigma, nbins, binLow, binUp, sigmaMax, sigmaStep, pm);
+}   
+   
+
+
+TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Float_t *array, Float_t mean, Float_t sigma, Int_t nbins, Float_t binLow, Float_t binUp, Float_t sigmaMax, Float_t sigmaStep, Bool_t pm){
+   //
+   // Creates a histogram Begin_Latex S(t, #mu, #sigma) End_Latex, where you can see, how much of the data are inside sigma-intervals around the mean value
+   // The data of the distribution Begin_Latex f(x, #mu, #sigma) End_Latex are given in 'array', 'n' specifies the length of the array
+   // 'mean' and 'sigma' are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in 'array', to be specified by the user
+   // 'nbins': number of bins, 'binLow': first bin, 'binUp': last bin
+   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma, Begin_Latex t #sigma End_Latex)
+   // sigmaStep: the binsize of the generated histogram
+   // Here the actual work is done.
+   
+   if (sigma == 0) return 0;
+   Float_t binWidth = (binUp-binLow)/(nbins - 1);
+   if (sigmaStep <= 0) sigmaStep = binWidth;
+   Int_t kbins = (Int_t)(sigmaMax * sigma / sigmaStep) + 1; // + 1  due to overflow bin in histograms
+   if (pm) kbins = 2 * (Int_t)(sigmaMax * sigma / sigmaStep) + 1;
+   Float_t kbinLow = !pm ? 0 : -sigmaMax;
+   Float_t kbinUp  = sigmaMax;
+   TH1F *hist = new TH1F("sigmaCutHisto","Cumulative; Multiples of #sigma; Fraction of included data", kbins, kbinLow, kbinUp); 
+   hist->SetDirectory(0);
+   hist->Reset();
+   
+   // calculate normalization
+   Double_t normalization = 0;
+   for (Int_t i = 0; i <= n; i++) {
+        normalization += array[i];
+   }
+   
+   // given units: units from given histogram
+   // sigma units: in units of sigma
+   // iDelta: integrate in interval (mean +- iDelta), given units
+   // x:      ofset from mean for integration, given units
+   // hist:   needs 
+   
+//    printf("nbins: %i, binLow: %f, binUp: %f \n", nbins, binLow, binUp);
+   // fill histogram
+   for (Float_t iDelta = 0; iDelta <= sigmaMax * sigma; iDelta += sigmaStep) {
+      // integrate array
+      Double_t valueP = array[GetBin(mean, nbins, binLow, binUp)];
+      Double_t valueM = array[GetBin(mean-binWidth, nbins, binLow, binUp)];
+      // add bin of mean value only once to the histogram
+//       printf("++ adding bins: ");
+      for (Float_t x = binWidth; x <= iDelta; x += binWidth) {
+         valueP += (mean + x <= binUp)  ? array[GetBin(mean + x, nbins, binLow, binUp)] : 0;
+         valueM += (mean-binWidth - x >= binLow) ? array[GetBin(mean-binWidth - x, nbins, binLow, binUp)] : 0; 
+//          printf("%i, ", GetBin(mean + x, nbins, binLow, binUp));        
+      }
+//       printf("\n");
+      if (valueP / normalization > 100) printf("+++ Error, value to big: %f, normalization with %f will fail  +++ \n", valueP, normalization);
+      if (valueP / normalization > 100) return hist;
+      if (valueM / normalization > 100) printf("+++ Error, value to big: %f, normalization with %f will fail  +++ \n", valueM, normalization);
+      if (valueM / normalization > 100) return hist;
+      valueP = (valueP / normalization);
+      valueM = (valueM / normalization);
+      if (pm) {
+         Int_t bin = GetBin(iDelta/sigma, kbins, kbinLow, kbinUp);
+         hist->SetBinContent(bin, valueP);
+         bin = GetBin(-iDelta/sigma, kbins, kbinLow, kbinUp);
+         hist->SetBinContent(bin, valueM);
+      }
+      else { // if (!pm)
+         Int_t bin = GetBin(iDelta/sigma, kbins, kbinLow, kbinUp);
+         hist->SetBinContent(bin, valueP + valueM);
+//          printf("  first integration bin: %i, last integration bin in + direction: %i \n", GetBin(mean+binWidth, nbins, binLow, binUp), GetBin(iDelta, nbins, binLow, binUp));
+//          printf("  first integration bin: %i, last integration bin in - direction: %i \n", GetBin(mean+binWidth, nbins, binLow, binUp), GetBin(-iDelta, nbins, binLow, binUp));
+//          printf("  value: %f, normalization: %f, iDelta: %f, Bin: %i \n", valueP+valueM, normalization, iDelta, bin);
+      }
+   }
+   //hist->SetMaximum(0.7);
+   if (!pm) hist->SetMaximum(1.2);
+   return hist;
+}
+
+
+TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, Double_t *xbins, Double_t sigmaMax){
+   // 
+   // SigmaCut for variable binsize
+   // NOT YET IMPLEMENTED !!!
+   // 
+   printf("SigmaCut with variable binsize, Not yet implemented\n");
+   // avoid compiler warnings:
+   n=n;
+   mean=mean;
+   sigma=sigma;
+   nbins=nbins;
+   sigmaMax=sigmaMax;
+   array=array;
+   xbins=xbins;
+   
+   return 0;
+}   
+
+
+TH1F* AliTPCCalibViewer::Integrate(TH1F *histogram, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
+   //
+   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
+   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
+   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
+   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   // The actual work is done on the array.
+   /* Begin_Latex 
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+      End_Latex  
+      begin_macro(source)
+      {
+         Float_t mean = 0;
+         Float_t sigma = 1.5;
+         Float_t sigmaMax = 4;
+         gROOT->SetStyle("Plain");
+         TH1F *distribution = new TH1F("Distribution", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
+         TRandom rand(23);
+         for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
+         Float_t *ar = distribution->GetArray();
+         
+         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas", "", 350, 350);
+         macro_example_canvas->Divide(0,2);
+         TVirtualPad *pad1 = macro_example_canvas->cd(1);
+         pad1->SetGridy();
+         pad1->SetGridx();
+         distribution->Draw();
+         TVirtualPad *pad2 = macro_example_canvas->cd(2);
+         pad2->SetGridy();
+         pad2->SetGridx();
+         TH1F *shist = AliTPCCalibViewer::Integrate(distribution, mean, sigma, sigmaMax);
+         shist->SetNameTitle("Cumulative","Cumulative S(t, #mu, #sigma)");
+         shist->Draw();  
+         
+         return macro_example_canvas;
+      }  
+      end_macro
+   */ 
+
+   
+   Float_t *array = histogram->GetArray();
+   Int_t    nbins = histogram->GetXaxis()->GetNbins();
+   Float_t binLow = histogram->GetXaxis()->GetXmin();
+   Float_t binUp  = histogram->GetXaxis()->GetXmax();
+   return AliTPCCalibViewer::Integrate(nbins, array, nbins, binLow, binUp, mean, sigma, sigmaMax, sigmaStep);
+}   
+
+
+TH1F* AliTPCCalibViewer::Integrate(Int_t n, Float_t *array, Int_t nbins, Float_t binLow, Float_t binUp, Float_t mean, Float_t sigma, Float_t sigmaMax, Float_t sigmaStep){
+   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
+   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
+   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
+   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   // Here the actual work is done.
+      
+   Bool_t givenUnits = kTRUE;
+   if (sigma != 0 && sigmaMax != 0) givenUnits = kFALSE;
+   if (givenUnits) {
+      sigma = 1;
+      sigmaMax = (binUp - binLow) / 2.;
+   }
+   
+   Float_t binWidth = (binUp-binLow)/(nbins - 1);
+   if (sigmaStep <= 0) sigmaStep = binWidth;
+   Int_t kbins =  (Int_t)(sigmaMax * sigma / sigmaStep) + 1;  // + 1  due to overflow bin in histograms
+   Float_t kbinLow = givenUnits ? binLow : -sigmaMax;
+   Float_t kbinUp  = givenUnits ? binUp  : sigmaMax;
+   TH1F *hist = 0; 
+   if (givenUnits)  hist = new TH1F("integratedHisto","Integrated Histogram; Given x; Fraction of included data", kbins, kbinLow, kbinUp); 
+   if (!givenUnits) hist = new TH1F("integratedHisto","Integrated Histogram; Multiples of #sigma; Fraction of included data", kbins, kbinLow, kbinUp); 
+   hist->SetDirectory(0);
+   hist->Reset();
+   
+   // calculate normalization
+ //  printf("calculating normalization, integrating from bin 1 to %i \n", n);
+   Double_t normalization = 0;
+   for (Int_t i = 1; i <= n; i++) {
+        normalization += array[i];
+   }
+ //  printf("normalization: %f \n", normalization);
+   
+   // given units: units from given histogram
+   // sigma units: in units of sigma
+   // iDelta: integrate in interval (mean +- iDelta), given units
+   // x:      ofset from mean for integration, given units
+   // hist:   needs 
+   
+   // fill histogram
+   for (Float_t iDelta = mean - sigmaMax * sigma; iDelta <= mean + sigmaMax * sigma; iDelta += sigmaStep) {
+      // integrate array
+      Double_t value = 0;
+      for (Float_t x = mean - sigmaMax * sigma; x <= iDelta; x += binWidth) {
+         value += (x <= binUp && x >= binLow)  ? array[GetBin(x, nbins, binLow, binUp)] : 0;
+      }
+      if (value / normalization > 100) printf("+++ Error, value to big: %f, normalization with %f will fail  +++ \n", value, normalization);
+      if (value / normalization > 100) return hist;
+      Int_t bin = GetBin(iDelta/sigma, kbins, kbinLow, kbinUp);
+    //  printf("first integration bin: %i, last integration bin: %i \n", GetBin(mean - sigmaMax * sigma, nbins, binLow, binUp), GetBin(iDelta, nbins, binLow, binUp));
+    //  printf("value: %f, normalization: %f, normalized value: %f, iDelta: %f, Bin: %i \n", value, normalization, value/normalization, iDelta, bin);
+      value = (value / normalization);
+      hist->SetBinContent(bin, value);
+   }
+   return hist;
+}
+
+
+
+
+
+////////////////////////
+// end of Array tools //
+////////////////////////
+
 
 
 //_____________________________________________________________________________
@@ -625,7 +1150,7 @@ TObjArray* AliTPCCalibViewer::GetListOfVariables(Bool_t printList) {
 }
 
 
-TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) {
+TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) const{
   //
   // produces a list of available variables for normalization in the tree
   // printList: print the list to the screen, after the scan is done
@@ -642,6 +1167,8 @@ TObjArray* AliTPCCalibViewer::GetListOfNormalizationVariables(Bool_t printList) 
    arr->Add(new TObjString("GFitIntern_Par.fElements"));
    arr->Add(new TObjString("FitLinLocal"));
    arr->Add(new TObjString("FitLinGlobal"));
+   arr->Add(new TObjString("FitParLocal"));
+   arr->Add(new TObjString("FitParGlobal"));
 
    if (printList) {
       TIterator* iter = arr->MakeIterator();
@@ -759,7 +1286,6 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
 }
 
 
-
 void AliTPCCalibViewer::MakeTreeWithObjects(const char * fileName, TObjArray * array, const char * mapFileName) {
   //
   // Write tree with all available information
@@ -788,11 +1314,11 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char * fileName, TObjArray * a
       
       mapNames = new TString[mapEntries];
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
-         TString ROCname(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
-         ROCname.Remove(ROCname.Length()-4, 4);
-         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((ROCname + "IROC").Data()), ivalue);
-         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((ROCname + "OROC").Data()), ivalue);
-         mapNames[ivalue].Append(ROCname);
+         TString rocName(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
+         rocName.Remove(rocName.Length()-4, 4);
+         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "IROC").Data()), ivalue);
+         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "OROC").Data()), ivalue);
+         mapNames[ivalue].Append(rocName);
       }
       
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
@@ -908,13 +1434,20 @@ void AliTPCCalibViewer::MakeTreeWithObjects(const char * fileName, TObjArray * a
    }
 }
 
+
 void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const char * mapFileName, AliTPCCalPad* outlierPad, Float_t ltmFraction) {
   //
   // Write a tree with all available information
-  // im mapFileName is speciefied, the Map information are also written to the tree
+  // if mapFileName is speciefied, the Map information are also written to the tree
   // pads specified in outlierPad are not used for calculating statistics
-  //  - the same function as AliTPCCalPad::MakeTree - 
-  //
+  // The following statistical information on the basis of a ROC are calculated: 
+  // "_Median", "_Mean", "_LTM", "_RMS_LTM"
+  // "_Median_OutlierCutted", "_Mean_OutlierCutted", "_RMS_OutlierCutted", "_LTM_OutlierCutted", "_RMS_LTM_OutlierCutted"
+  // The following position variables are available:
+  // "row", "pad", "lx", "ly", "gx", "gy", "rpad", "channel"
+  // 
+  // The tree out of this function is the basis for the AliTPCCalibViewer and the AliTPCCalibViewerGUI.
+   
    AliTPCROC* tpcROCinstance = AliTPCROC::Instance();
 
    TObjArray* mapIROCs = 0;
@@ -936,11 +1469,11 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
       
       mapNames = new TString[mapEntries];
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
-         TString ROCname(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
-         ROCname.Remove(ROCname.Length()-4, 4);
-         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((ROCname + "IROC").Data()), ivalue);
-         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((ROCname + "OROC").Data()), ivalue);
-         mapNames[ivalue].Append(ROCname);
+         TString rocName(((TKey*)(listOfROCs->At(ivalue*2)))->GetName());
+         rocName.Remove(rocName.Length()-4, 4);
+         mapIROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "IROC").Data()), ivalue);
+         mapOROCs->AddAt((AliTPCCalROC*)mapFile.Get((rocName + "OROC").Data()), ivalue);
+         mapNames[ivalue].Append(rocName);
       }
       
       for (Int_t ivalue = 0; ivalue < mapEntries; ivalue++) {
@@ -956,7 +1489,8 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
    } //  if (mapFileName)
   
    TTreeSRedirector cstream(fileName);
-   Int_t arrayEntries = array->GetEntries();
+   Int_t arrayEntries = 0;
+   if (array) arrayEntries = array->GetEntries();
    
    TString* names = new TString[arrayEntries];
    for (Int_t ivalue = 0; ivalue < arrayEntries; ivalue++)
