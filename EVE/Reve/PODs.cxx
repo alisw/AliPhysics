@@ -12,7 +12,6 @@ void Reve::DisablePODTObjectStreamers()
 
   // MCTrack derives from TParticle 
   TParticle::Class()->IgnoreTObjectStreamer(true);
-  MCTrackRef::Class()->IgnoreTObjectStreamer(true);
 
   Hit::Class()->IgnoreTObjectStreamer(true);
   Cluster::Class()->IgnoreTObjectStreamer(true);
