@@ -38,7 +38,7 @@ public:
   TGeoVolumeAssembly* GetLadderSegment(Int_t i){return fladdersegment[i];}; // Get Ladder Segment
   TGeoVolumeAssembly* GetEndLadderSegment(Int_t i){return fendladdersegment[i];}; // Get End Ladder Segment 
   TGeoVolume* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
-  TGeoVolume* GetLayer(Int_t i)const {return i==5? fSSDLayer5 : fSSDLayer6;}; // Get Layer
+  TGeoVolumeAssembly* GetLayer(Int_t i)const {return i==5? fSSDLayer5 : fSSDLayer6;}; // Get Layer
   TGeoVolume** GetEndCapAssembly();     // End Cap Assembly
   void SetLadderSegment();				// Set Ladder Elementary Segment 
   void SetEndLadderSegment();			// Set End Ladder Segment
@@ -566,8 +566,8 @@ private:
   // SSD Layer
   ///////////////////////////////////
   static const Int_t fgklayernumber = 2; // Layer Number
-  TGeoVolume* fSSDLayer5;				 // SSD Layer 5
-  TGeoVolume* fSSDLayer6;	             // SSD Layer 6
+  TGeoVolumeAssembly* fSSDLayer5;		 // SSD Layer 5
+  TGeoVolumeAssembly* fSSDLayer6;	     // SSD Layer 6
   TGeoHMatrix** flayermatrix[fgklayernumber]; // Layer Transformations
   /////////////////////////////////////////////////////////////////////////
   // Mother Volume 
@@ -584,7 +584,7 @@ private:
   /////////////////////////////////////////////////////////////////////////
   // End Cap Support + End Cap Assembly
   /////////////////////////////////////////////////////////////////////////
-  TGeoVolume* fgkEndCapSupportSystem[4]; // End Cap Support + End Cap Assembly
+  TGeoVolume** fgkEndCapSupportSystem; // End Cap Support + End Cap Assembly
   /////////////////////////////////////////////////////////////////////////
   // Color Display 
   /////////////////////////////////////////////////////////////////////////

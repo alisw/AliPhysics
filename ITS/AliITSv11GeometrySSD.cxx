@@ -528,6 +528,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   fMotherVol(),
   fLay5LadderSupportRing(),
   fLay6LadderSupportRing(),
+  fgkEndCapSupportSystem(),
   fColorCarbonFiber(4),
   fColorRyton(5),
   fColorPhynox(14),
@@ -590,6 +591,7 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
   fMotherVol(s.fMotherVol),
   fLay5LadderSupportRing(s.fLay5LadderSupportRing),
   fLay6LadderSupportRing(s.fLay6LadderSupportRing),
+  fgkEndCapSupportSystem(s.fgkEndCapSupportSystem),
   fColorCarbonFiber(s.fColorCarbonFiber),
   fColorRyton(s.fColorRyton),
   fColorPhynox(s.fColorPhynox),
@@ -4173,7 +4175,7 @@ void AliITSv11GeometrySSD::SetEndLadderSegment(){
        fendladdersegment[i]->AddNode(fendladdermountingblock,i+1,
  									 fendladdermountingblockcombitrans[i]);
   /////////////////////////////////////////////////////////////
-  // End Ladder Mounting Block
+  // End Ladder Mounting Block Clip
   /////////////////////////////////////////////////////////////
   for(Int_t i=0; i<fgkendladdermountingblocknumber; i++)
 	for(Int_t j=0; j<2; j++)
@@ -4354,121 +4356,8 @@ void AliITSv11GeometrySSD::SetLayer(){
   /////////////////////////////////////////////////////////////
   // Generating mother volumes for Layer5 and Layer6
   /////////////////////////////////////////////////////////////
-  TGeoXtru* ssdladdermothershape = (TGeoXtru*)fladder[0]->GetShape();
-  TGeoXtru* layercontainershape[fgklayernumber];
-  for(Int_t i=0; i<fgklayernumber; i++) layercontainershape[i] = new TGeoXtru(2);
-  const Int_t kladdercontainernumber = 8;
-  TVector3* laddercontainervertex[kladdercontainernumber];
-  for(Int_t i=0; i<kladdercontainernumber; i++) laddercontainervertex[i] = 
-		new TVector3(ssdladdermothershape->GetX(i),
-					 ssdladdermothershape->GetY(i)-ssdladdermothershape->GetY(0));
-  TVector3** transvector[fgklayernumber];	
-  Double_t layerradius = 0.;
-  Double_t layerladderangleposition[fgklayernumber] = 
-		{360./fgkSSDLay5LadderNumber,360./fgkSSDLay6LadderNumber};
-  Double_t** rotationangle = new Double_t*[fgklayernumber];
-  for(Int_t i=0; i<fgklayernumber; i++) rotationangle[i] = 
-									new Double_t[kssdlayladdernumber[i]];
-  for(Int_t i=0; i<fgklayernumber; i++) transvector[i] = new TVector3*[kssdlayladdernumber[i]];	
-  for(Int_t i=0; i<fgklayernumber; i++)
-	for(Int_t j=0; j<kssdlayladdernumber[i]; j++){
-		switch(i){
-			case 0: //Ladder of Layer5  
-			layerradius = (j%2==0 ? fgkSSDLay5RadiusMin: fgkSSDLay5RadiusMax);
-			break;
-			case 1: //Ladder of Layer6 
-			layerradius = (j%2==0 ? fgkSSDLay6RadiusMin: fgkSSDLay6RadiusMax);
-			break;
-		}
-		transvector[i][j] = new TVector3(layerradius*CosD(90.0+j*layerladderangleposition[i]),
-							  layerradius*SinD(90.0+j*layerladderangleposition[i]));
-		rotationangle[i][j] = j*layerladderangleposition[i]*TMath::DegToRad();
-	}
-  TVector3** layercontainervertex[fgklayernumber];
-  for(Int_t i=0; i<fgklayernumber; i++) layercontainervertex[i] = 
-					new TVector3*[5*(1+kssdlayladdernumber[i])];
-  Int_t uplayerindex[2] = {0,7};
-  Int_t downlayerindex[4] = {1,0,7,6};
-  for(Int_t i=0; i<fgklayernumber; i++){
-	Int_t vertexindex = 0; 
-	layercontainervertex[i][0] = new TVector3(0.,laddercontainervertex[0]->Y()); 
-	layercontainervertex[i][1] = new TVector3(0.,laddercontainervertex[3]->Y());
-	layercontainervertex[i][2] = new TVector3(*laddercontainervertex[3]);
-	for(Int_t j=0; j<3; j++){
-		layercontainervertex[i][j]->RotateZ(rotationangle[i][0]);
-	   *layercontainervertex[i][j] += *transvector[i][0];
-		vertexindex++;
-	}
-	for(Int_t j=1; j<kssdlayladdernumber[i]; j++){
-		for(Int_t l=0; l<2; l++){
-			layercontainervertex[i][vertexindex] = new TVector3(l==0?
-												 * laddercontainervertex[4]:
-												 * laddercontainervertex[3]); 
-			layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][j]);
-		   *layercontainervertex[i][vertexindex] += *transvector[i][j];
-			vertexindex++;
-		}
-	}
-	layercontainervertex[i][vertexindex] = new TVector3(*laddercontainervertex[4]);
-	layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][0]);
-	*layercontainervertex[i][vertexindex]+= *transvector[i][0];
-	layercontainervertex[i][vertexindex+1] = new TVector3(*layercontainervertex[i][1]);
-	layercontainervertex[i][vertexindex+2] = new TVector3(*layercontainervertex[i][0]);
-	vertexindex+=3;
-    for(Int_t j=0; j<2; j++){
-		layercontainervertex[i][vertexindex] = new TVector3(*laddercontainervertex[7-j]);
-		layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][0]);
-		*layercontainervertex[i][vertexindex] += *transvector[i][0];
-		vertexindex++;
-	}
-	for(Int_t j=1; j<kssdlayladdernumber[i]; j++){
-		if(j%2!=0){
-			for(Int_t l=0; l<2; l++){
-				layercontainervertex[i][vertexindex] = new TVector3(*laddercontainervertex[uplayerindex[l]]);
-				layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][kssdlayladdernumber[i]-j]);
-			   *layercontainervertex[i][vertexindex] += *transvector[i][kssdlayladdernumber[i]-j];
-				vertexindex++;
-			}
-		}
-		else{
-			for(Int_t l=0; l<4; l++){
-				layercontainervertex[i][vertexindex] = 
-							new TVector3(*laddercontainervertex[downlayerindex[l]]);
-				layercontainervertex[i][vertexindex]->RotateZ(rotationangle[i][kssdlayladdernumber[i]-j]);
-			   *layercontainervertex[i][vertexindex] += *transvector[i][kssdlayladdernumber[i]-j];
-				vertexindex++;
-			}
-		}
-	}
-	layercontainervertex[i][vertexindex] = 
-					new TVector3(*laddercontainervertex[1]); 
-	layercontainervertex[i][vertexindex+1] = 
-					new TVector3(*laddercontainervertex[0]); 
-	for(Int_t j=0; j<2; j++){
-		layercontainervertex[i][vertexindex+j]->RotateZ(rotationangle[i][0]);
-	   *layercontainervertex[i][vertexindex+j] += *transvector[i][0];
-	}
-	layercontainervertex[i][vertexindex+2] = 
-					new TVector3(*layercontainervertex[i][0]); 
-  }
-  Double_t** xlayervertex = new Double_t*[fgklayernumber];
-  Double_t** ylayervertex = new Double_t*[fgklayernumber];
-  for(Int_t i=0; i<fgklayernumber; i++){ 
-	xlayervertex[i] = new Double_t[5*(1+kssdlayladdernumber[i])]; 
-	ylayervertex[i] = new Double_t[5*(1+kssdlayladdernumber[i])]; 
-  }
-  for(Int_t i=0; i<fgklayernumber; i++)
-	for(Int_t j=0; j<5*(1+kssdlayladdernumber[i]); j++){
-		xlayervertex[i][j] = layercontainervertex[i][j]->X();
-		ylayervertex[i][j] = layercontainervertex[i][j]->Y();
-	}
-  for(Int_t i=0; i<fgklayernumber; i++){
-	layercontainershape[i]->DefinePolygon(5*(1+kssdlayladdernumber[i]),xlayervertex[i],ylayervertex[i]);
-    layercontainershape[i]->DefineSection(0,-0.5*(i==0?fgkSSDLay5LadderLength:fgkSSDLay6LadderLength));
-    layercontainershape[i]->DefineSection(1,0.5*(i==0?fgkSSDLay5LadderLength:fgkSSDLay6LadderLength));
-  }
-  fSSDLayer5 = new TGeoVolume("ITSssdLayer5",layercontainershape[0],fSSDAir);  
-  fSSDLayer6 = new TGeoVolume("ITSssdLayer6",layercontainershape[1],fSSDAir);  
+  fSSDLayer5 = new TGeoVolumeAssembly("ITSssdLayer5");  
+  fSSDLayer6 = new TGeoVolumeAssembly("ITSssdLayer6");  
   Int_t *ladderindex[fgklayernumber];
   Int_t index[fgklayernumber] = {8,9};
   for(Int_t i=0; i<fgklayernumber; i++) ladderindex[i] = new Int_t[kssdlayladdernumber[i]];
@@ -4482,26 +4371,6 @@ void AliITSv11GeometrySSD::SetLayer(){
   /////////////////////////////////////////////////////////////
   // Deallocating memory
   /////////////////////////////////////////////////////////////
-  for(Int_t i=0; i<kladdercontainernumber; i++) delete laddercontainervertex[i];
-  for(Int_t i=0; i<fgklayernumber; i++){
-	for(Int_t j=0; j<kssdlayladdernumber[i]; j++) delete transvector[i][j];
-	delete [] transvector[i];
-  }
-  for(Int_t i=0; i<fgklayernumber; i++){
-	delete [] rotationangle[i];
-  }
-  delete rotationangle;		
-  for(Int_t i=0; i<fgklayernumber; i++){
-	for(Int_t j=0; j<5*(1+kssdlayladdernumber[i]); j++)
-		delete layercontainervertex[i][j];
-	delete [] layercontainervertex[i];
-  }		
-  for(Int_t i=0; i<fgklayernumber; i++){ 
-	delete [] xlayervertex[i];
-	delete [] ylayervertex[i];
-  }
-  delete xlayervertex;
-  delete ylayervertex;
   for(Int_t i=0; i<fgklayernumber; i++) delete ladderindex[i];
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -7144,6 +7013,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 											   +2.*endcapassemblycenter[2])
 											   /CosD(0.5*upedgeangle[i]));
   }
+  fgkEndCapSupportSystem = new TGeoVolume*[4];
   fgkEndCapSupportSystem[0] = new TGeoVolume("EndCapSupportSystemLayer5Sx",
 									  endcapsupportsystemshape[0],fSSDAir);	
   fgkEndCapSupportSystem[1] = new TGeoVolume("EndCapSupportSystemLayer5Dx",
@@ -7212,8 +7082,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
     printf("Error::AliITSv11GeometrySSD: Can't insert end cap support of layer5, mother is null!\n");
     return;
   };
-  if(!fgkEndCapSupportSystem[0]) SetEndCapSupportAssembly();
-  if(!fgkEndCapSupportSystem[1]) SetEndCapSupportAssembly();
+  if(!fgkEndCapSupportSystem) SetEndCapSupportAssembly();
   TGeoTranslation* endcapsupportsystemITSCentertrans[2];
   endcapsupportsystemITSCentertrans[0] = new TGeoTranslation(0.,0.,
 												fgkEndCapSupportCenterLay5ITSPosition
@@ -7244,8 +7113,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
     printf("Error::AliITSv11GeometrySSD: Can't insert end cap support of layer6, mother is null!\n");
     return;
   };
-  if(!fgkEndCapSupportSystem[2]) SetEndCapSupportAssembly();
-  if(!fgkEndCapSupportSystem[3]) SetEndCapSupportAssembly();
+  if(!fgkEndCapSupportSystem) SetEndCapSupportAssembly();
   TGeoTranslation* endcapsupportsystemITSCentertrans[2];
   endcapsupportsystemITSCentertrans[0] = new TGeoTranslation(0.,0.,
 												fgkEndCapSupportCenterLay6ITSPosition
@@ -7564,3 +7432,4 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   fCreateMaterials = kTRUE;
 }
 /////////////////////////////////////////////////////////////////////
+

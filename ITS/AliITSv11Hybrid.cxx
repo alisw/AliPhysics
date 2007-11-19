@@ -33,6 +33,9 @@
 
 
 // $Log$
+// Revision 1.9  2007/10/21 19:22:53  masera
+// Coding conventions
+//
 // Revision 1.8  2007/10/21 18:59:10  masera
 // SPD new geometry added to Hybrid V11
 //
@@ -985,6 +988,10 @@ void AliITSv11Hybrid::CreateGeometry() {
   if (AliITSInitGeometry::SSDIsTGeoNative()) {
     fSSDgeom->Layer5(vITS);
     fSSDgeom->Layer6(vITS);
+    fSSDgeom->LadderSupportLayer5(vITS);
+    fSSDgeom->LadderSupportLayer6(vITS);
+	fSSDgeom->EndCapSupportSystemLayer6(vITS);
+	fSSDgeom->EndCapSupportSystemLayer5(vITS);
   }
 }
 
