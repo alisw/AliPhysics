@@ -14,7 +14,7 @@
 void CreateTags() {
   //___________________________________//
   //create an AliTagCreator object
-  AliTagCreator *t = new AliTagCreator(); 
+  AliESDTagCreator *t = new AliESDTagCreator(); 
     
   //___________________________________//
   //_____ Storage of the tag files:____//
@@ -30,12 +30,12 @@ void CreateTags() {
   //________Locally stored ESDs________//
   //___________________________________//
   //create the tag files for the locally stored ESDs
-  t->ReadLocalCollection("/home/pchrist/ALICE/PDC06/pp/data/14TeV");
+  t->ReadLocalCollection("../PDC07");
 
   //___________________________________//
   //___________Merge the tags__________//
   //___________________________________//
   //Merge the tags and store the merged file
-  t->MergeTags();
+  t->MergeTags("ESD");
 }
 
