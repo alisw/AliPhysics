@@ -31,8 +31,8 @@ void loadlibs ()
   gSystem->Load("libAOD");
   
   gSystem->Load("libRAWDatarec");
-  gSystem->Load("libSTEER"); 
   gSystem->Load("libCDB");
+  gSystem->Load("libSTEER"); 
   
   gSystem->Load("libPhysics");
   gSystem->Load("libMUONmapping");
