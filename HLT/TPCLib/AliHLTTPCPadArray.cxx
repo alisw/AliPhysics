@@ -146,32 +146,74 @@ Int_t AliHLTTPCPadArray::ReadData()
   switch (fPatch){
   case 0:
     while(fDigitReader->Next()){
-      fRowPadVector[fDigitReader->GetRow()-fFirstRow][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+      UInt_t row  = fDigitReader->GetRow();
+      UInt_t pad  = fDigitReader->GetPad();
+      UInt_t time = fDigitReader->GetTime();
+      if(row<fNumberOfRows){
+	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	}
+      }
     }
     break;
   case 1:
     while(fDigitReader->Next()){
-      fRowPadVector[fDigitReader->GetRow()-fFirstRow][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());      
+      UInt_t row  = fDigitReader->GetRow()-fFirstRow;
+      UInt_t pad  = fDigitReader->GetPad();
+      UInt_t time = fDigitReader->GetTime();
+      if(row<fNumberOfRows){
+	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal()); 
+	}
+      }     
     }
     break;
   case 2:
     while(fDigitReader->Next()){
-      fRowPadVector[fDigitReader->GetRow()][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+      UInt_t row=fDigitReader->GetRow();
+      UInt_t pad=fDigitReader->GetPad();
+      UInt_t time= fDigitReader->GetTime();
+      if(row<fNumberOfRows){
+	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	  fRowPadVector[fDigitReader->GetRow()][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+	}
+      }
     }
     break;
   case 3:
     while(fDigitReader->Next()){
-      fRowPadVector[fDigitReader->GetRow()-27][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+      UInt_t row=fDigitReader->GetRow()-27;
+      UInt_t pad=fDigitReader->GetPad();
+      UInt_t time= fDigitReader->GetTime();
+      if(row<fNumberOfRows){
+	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	}
+      }
     }
     break;
   case 4:
     while(fDigitReader->Next()){
-      fRowPadVector[fDigitReader->GetRow()-54][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+      UInt_t row=fDigitReader->GetRow()-54;
+      UInt_t pad=fDigitReader->GetPad();
+      UInt_t time= fDigitReader->GetTime();
+      if(row<fNumberOfRows){
+	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	}
+      }
     }
     break;
   case 5:
     while(fDigitReader->Next()){
-      fRowPadVector[fDigitReader->GetRow()-76][fDigitReader->GetPad()]->SetDataSignal(fDigitReader->GetTime(),fDigitReader->GetSignal());
+      UInt_t row=fDigitReader->GetRow()-76;
+      UInt_t pad=fDigitReader->GetPad();
+      UInt_t time= fDigitReader->GetTime();
+      if(row<fNumberOfRows){
+	if(pad<fNumberOfPadsInRow[row]&&time<AliHLTTPCTransform::GetNTimeBins()){
+	  fRowPadVector[row][pad]->SetDataSignal(time,fDigitReader->GetSignal());
+	}
+      }
     }
     break;
   }
