@@ -1,3 +1,11 @@
+2007-11-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* LinkDef.h:
+	Rename class RhoZ and CircularFishEye to NLTRhoZ and NLTCircularFishEye.
+
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+
 2007-11-09  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* Track.cxx:
