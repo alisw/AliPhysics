@@ -79,7 +79,7 @@ public:
   Vector& Mult(const Vector&a, Float_t af) { x = a.x*af; y = a.y*af; z = a.z*af; return *this; }
 
 
-  ClassDef(Vector, 1);
+  ClassDef(Vector, 1); // VSD float three-vector.
 };
 
 inline Float_t Vector::Phi() const
@@ -130,7 +130,7 @@ class PathMark
 
   const char* type_name();
 
-  ClassDef(PathMark, 1);
+  ClassDef(PathMark, 1); // VSD special-point on track.
 };
 
 /**************************************************************************/
@@ -159,30 +159,7 @@ public:
 
   void ResetPdgCode() { fPdgCode = 0; }
 
-  ClassDef(MCTrack, 1);
-};
-
-
-/**************************************************************************/
-// MCTrackRef
-/**************************************************************************/
-
-// Not used.
-
-class MCTrackRef : public TObject
-{
-public:
-  Int_t   label;
-  Int_t   status;
-  Vector  V;
-  Vector  P;
-  Float_t length;
-  Float_t time;
-
-  MCTrackRef() : label(-1), status(-1), V(), P(), length(0), time(0) {}
-  virtual ~MCTrackRef() {}
-
-  ClassDef(MCTrackRef, 1)
+  ClassDef(MCTrack, 1); // VSD Monte Carlo track.
 };
 
 
@@ -203,15 +180,15 @@ public:
   UShort_t det_id;    // Custom detector id
   UShort_t subdet_id; // Custom sub-detector id
   Int_t    label;     // Label of particle that produced the hit
-  Int_t    eva_label;
-  Vector   V;         // Vertex
+  Int_t    eva_label; // Label of primary particle, ancestor of label
+  Vector   V;         // Hit position
 
-  // ?? Float_t charge. Probably specific.
+  // Float_t charge; Probably specific.
 
   Hit() : det_id(0), subdet_id(0), label(0), eva_label(0), V() {}
   virtual ~Hit() {}
 
-  ClassDef(Hit, 1);
+  ClassDef(Hit, 1); // VSD Monte Carlo hit.
 };
 
 
@@ -238,7 +215,7 @@ public:
   Cluster() : det_id(0), subdet_id(0), V() { label[0] = label[1] = label [2] = 0; }
   virtual ~Cluster() {}
 
-  ClassDef(Cluster, 1);
+  ClassDef(Cluster, 1); // VSD reconstructed cluster.
 };
 
 
@@ -252,7 +229,7 @@ public:
   Int_t   label;       // Label of the track
   Int_t   index;       // Index of the track (in some source array)
   Int_t   status;      // Status as exported from reconstruction
-  Int_t   sign;
+  Int_t   sign;        // Charge of the track
   Vector  V;           // Start vertex from reconstruction
   Vector  P;           // Reconstructed momentum at start vertex
   Float_t beta;
@@ -264,7 +241,7 @@ public:
 
   Float_t Pt() { return P.Perp(); }
 
-  ClassDef(RecTrack, 1);
+  ClassDef(RecTrack, 1); // VSD reconstructed track.
 };
 
 // Another class with specified points/clusters
@@ -285,7 +262,7 @@ public:
   RecKink() : RecTrack(), label_sec(0), V_end(), V_kink(), P_sec() {}
   virtual ~RecKink() {}
 
-  ClassDef(RecKink, 1);
+  ClassDef(RecKink, 1); // VSD reconstructed track.
 };
 
 
@@ -316,7 +293,7 @@ public:
   { d_label[0] = d_label[1] = 0; }
   virtual ~RecV0() {}
 
-  ClassDef(RecV0, 1);
+  ClassDef(RecV0, 1); // VSD reconstructed V0.
 };
 
 /**************************************************************************/
@@ -340,13 +317,13 @@ public:
               label(0), n_hits(0), n_clus(0) {}
   virtual ~GenInfo() {}
 
-  ClassDef(GenInfo, 1);
+  ClassDef(GenInfo, 1); // VSD cross-reference of sim/rec data per particle.
 };
 
 /**************************************************************************/
 /**************************************************************************/
 
-// This whole construction is highly embarrassing. It requires
+// This whole construction is somewhat doubtable. It requires
 // shameless copying of experiment data. What is good about this
 // scheme:
 //

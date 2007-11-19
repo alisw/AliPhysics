@@ -54,7 +54,7 @@ public:
   void DoUnderflowAction(Int_t mode);
   void DoOverflowAction(Int_t mode);
 
-  ClassDef(RGBAPaletteSubEditor, 1); // SubEditor for RGBAPalette
+  ClassDef(RGBAPaletteSubEditor, 1); // Sub-editor for RGBAPalette class.
 }; // endclass RGBAPaletteSubEditor
 
 
@@ -77,7 +77,7 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  ClassDef(RGBAPaletteEditor, 1); // Editor for RGBAPalette
+  ClassDef(RGBAPaletteEditor, 1); // Editor for RGBAPalette class.
 }; // endclass RGBAPaletteEditor
 
 }

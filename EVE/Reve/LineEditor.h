@@ -20,10 +20,10 @@ private:
   LineEditor& operator=(const LineEditor&); // Not implemented
 
 protected:
-  Line* fM; // fModel dynamic-casted to LineEditor
+  Line              *fM;          // Model object.
 
-  TGCheckButton     *fRnrLine;
-  TGCheckButton     *fRnrPoints;
+  TGCheckButton     *fRnrLine;    // Checkbox for line-rendering.
+  TGCheckButton     *fRnrPoints;  // Checkbox for point-rendering.
 
 public:
   LineEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -34,7 +34,7 @@ public:
   void DoRnrLine();
   void DoRnrPoints();
 
-  ClassDef(LineEditor, 1); // Editor for Line
+  ClassDef(LineEditor, 1); // Editor for Line class.
 }; // endclass LineEditor
 
 }

@@ -16,6 +16,11 @@ namespace Reve {
 
 class ZTrans;
 
+
+/******************************************************************************/
+// RenderElement
+/******************************************************************************/
+
 class RenderElement
 {
   friend class ReveManager;
@@ -43,7 +48,7 @@ public:
     bool operator<(const ListTreeInfo& x) const
     { return fTree == x.fTree ? fItem < x.fItem : fTree < x.fTree; }
 
-    ClassDef(ListTreeInfo, 0);
+    ClassDef(ListTreeInfo, 0); // Structure agregating data for a render element image in a list tree.
   };
 
   static const TGPicture*                      fgRnrIcons[4];
@@ -59,17 +64,17 @@ public:
 protected:
   // TRef     fSource;
 
-  Bool_t   fRnrSelf;
-  Bool_t   fRnrChildren;
-  Color_t* fMainColorPtr;
+  Bool_t   fRnrSelf;              // Render this element.
+  Bool_t   fRnrChildren;          // Render children of this element.
+  Color_t* fMainColorPtr;         // Pointer to main-color variable.
 
-  sLTI_t fItems;
-  List_t fParents;
+  sLTI_t fItems;                  // Set of list-tree-items.
+  List_t fParents;                // List of parents.
 
-  Bool_t fDestroyOnZeroRefCnt;
-  Int_t  fDenyDestroy;
+  Bool_t fDestroyOnZeroRefCnt;    // Auto-destruct when ref-count reaches zero.
+  Int_t  fDenyDestroy;            // Deny-destroy count.
 
-  List_t fChildren;
+  List_t fChildren;               // List of children.
 
 public:
   RenderElement();
@@ -159,8 +164,8 @@ public:
   virtual Bool_t HandleElementPaste(RenderElement* el);
   virtual void   ElementChanged(Bool_t update_scenes=kTRUE, Bool_t redraw=kFALSE);
 
-  virtual Bool_t CanEditRnrElement()   { return kTRUE; }
-  virtual Bool_t GetRnrSelf() const { return fRnrSelf; }
+  virtual Bool_t CanEditRnrElement()    { return kTRUE; }
+  virtual Bool_t GetRnrSelf()     const { return fRnrSelf; }
   virtual Bool_t GetRnrChildren() const { return fRnrChildren; }
   virtual void   SetRnrSelf(Bool_t rnr);
   virtual void   SetRnrChildren(Bool_t rnr);
@@ -184,10 +189,13 @@ public:
   static  const TGPicture* GetCheckBoxPicture(Bool_t rnrElement, Bool_t rnrDaughter);
   virtual const TGPicture* GetListTreeIcon() { return fgListTreeIcons[0]; }
 
-  ClassDef(RenderElement, 1);
+  ClassDef(RenderElement, 1); // Base class for visualization elements.
 }; // endclass RenderElement
 
-/**************************************************************************/
+
+/******************************************************************************/
+// RenderElementObjPtr
+/******************************************************************************/
 
 class RenderElementObjPtr : public RenderElement,
                             public TObject
@@ -196,8 +204,8 @@ class RenderElementObjPtr : public RenderElement,
   RenderElementObjPtr& operator=(const RenderElementObjPtr&); // Not implemented
 
 protected:
-  TObject* fObject;
-  Bool_t   fOwnObject;
+  TObject* fObject;     // External object holding the visual data.
+  Bool_t   fOwnObject;  // Is object owned / should be deleted on destruction.
 
 public:
   RenderElementObjPtr(TObject* obj, Bool_t own=kTRUE);
@@ -210,18 +218,21 @@ public:
   Bool_t GetOwnObject() const   { return fOwnObject; }
   void   SetOwnObject(Bool_t o) { fOwnObject = o; }
 
-  ClassDef(RenderElementObjPtr, 1);
+  ClassDef(RenderElementObjPtr, 1); // Render element with external TObject as visualization data holder.
 }; // endclass RenderElementObjPtr
 
-/**************************************************************************/
+
+/******************************************************************************/
+// RenderElementList
+/******************************************************************************/
 
 class RenderElementList : public RenderElement,
                           public TNamed
 {
 protected:
-  Color_t   fColor;
-  Bool_t    fDoColor;
-  TClass   *fChildClass;
+  Color_t   fColor;       // Color of the object.
+  Bool_t    fDoColor;     // Should serve fColor as the main color of the object.
+  TClass   *fChildClass;  // Class of acceptable children, others are rejected.
 
 public:
   RenderElementList(const Text_t* n="RenderElementList", const Text_t* t="",
@@ -235,7 +246,7 @@ public:
 
   virtual Bool_t AcceptRenderElement(RenderElement* el);
 
-  ClassDef(RenderElementList, 1);
+  ClassDef(RenderElementList, 1); // List of render elements.
 };
 
 }

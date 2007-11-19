@@ -122,7 +122,7 @@ public:
   // ?? Should we emit some *SIGNALS* ??
   // ?? Should we have a RendererTimeStamp ??
 
-  ClassDef(RGBAPalette, 1);
+  ClassDef(RGBAPalette, 1); // A generic mapping from value to RGBA color.
 }; // endclass RGBAPalette
 
 

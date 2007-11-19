@@ -22,9 +22,9 @@ class PointSetArrayEditor : public TGedFrame
   PointSetArrayEditor& operator=(const PointSetArrayEditor&); // Not implemented
 
 protected:
-  PointSetArray* fM; // fModel dynamic-casted to PointSetArrayEditor
+  PointSetArray          *fM;       // Model object.
 
-  Reve::RGDoubleValuator* fRange;
+  Reve::RGDoubleValuator *fRange;   // Control for displayed range of the separating quantity.
 
 public:
   PointSetArrayEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30,
@@ -35,7 +35,7 @@ public:
 
   void DoRange();
 
-  ClassDef(PointSetArrayEditor, 1); // Editor for PointSetArray
+  ClassDef(PointSetArrayEditor, 1); // Editor for PointSetArray class.
 }; // endclass PointSetArrayEditor
 
 }

@@ -85,10 +85,10 @@ protected:
   Int_t        fDefPointSetCapacity;  //  Default capacity of subjugated PointSet's.
   Int_t        fNBins;                //  Number of subjugated PointSet's.
   Int_t        fLastBin;              //! Index of the last filled PointSet.
-  Double_t     fMin, fCurMin;
-  Double_t     fMax, fCurMax;
-  Double_t     fBinWidth;
-  TString      fQuantName;
+  Double_t     fMin, fCurMin;         //  Overall and current minimum value of the separating quantity.
+  Double_t     fMax, fCurMax;         //  Overall and current maximum value of the separating quantity.
+  Double_t     fBinWidth;             //  Separating quantity bin-width.
+  TString      fQuantName;            //  Name of the separating quantity.
 
 public:
   PointSetArray(const Text_t* name="PointSetArray", const Text_t* title="");
@@ -127,7 +127,7 @@ public:
 
   void SetRange(Double_t min, Double_t max);
 
-  ClassDef(PointSetArray, 1);
+  ClassDef(PointSetArray, 1); // Array of centrally managed PointSet's.
 };
 
 /**************************************************************************/
@@ -149,7 +149,7 @@ public:
 
   virtual void UpdateProjection();
 
-  ClassDef(NLTPointSet, 1);
+  ClassDef(NLTPointSet, 1); // NLT projected PointSet.
 }; // endclass NLTPointSet
 
 }

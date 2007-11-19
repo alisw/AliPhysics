@@ -22,14 +22,14 @@ private:
   GridStepperSubEditor& operator=(const GridStepperSubEditor&); // Not implemented
 
 protected:
-  GridStepper   *fM;
+  GridStepper   *fM;    // Model object.
 
-  RGValuator    *fNx;
-  RGValuator    *fNy;
-  RGValuator    *fNz;    
-  RGValuator    *fDx; 
-  RGValuator    *fDy; 
-  RGValuator    *fDz;
+  RGValuator    *fNx;   // Number of slots along x.
+  RGValuator    *fNy;   // Number of slots along y.
+  RGValuator    *fNz;   // Number of slots along z.
+  RGValuator    *fDx;   // Step in the x direction.
+  RGValuator    *fDy;   // Step in the y direction.
+  RGValuator    *fDz;   // Step in the z direction.
 
 public:
   GridStepperSubEditor(const TGWindow* p);
@@ -42,7 +42,7 @@ public:
   void DoNs();
   void DoDs();
 
-  ClassDef(GridStepperSubEditor, 0) // Sub-editor for GridStepper
+  ClassDef(GridStepperSubEditor, 0) // Sub-editor for GridStepper class.
 };
 
 
@@ -53,8 +53,8 @@ private:
   GridStepperEditor& operator=(const GridStepperEditor&); // Not implemented
 
 protected:
-  GridStepper            *fM;  // fModel dynamic-casted to GridStepper
-  GridStepperSubEditor   *fSE;
+  GridStepper            *fM;   // Model object.
+  GridStepperSubEditor   *fSE;  // Sub-editor containg GUI controls.
 
 public:
   GridStepperEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options=kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -62,7 +62,7 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  ClassDef(GridStepperEditor, 0) // Editor for GridStepper
+  ClassDef(GridStepperEditor, 0) // Editor for GridStepper class.
 };
 
 }

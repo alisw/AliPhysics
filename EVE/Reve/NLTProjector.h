@@ -98,9 +98,11 @@ public:
   ClassDef(NLTCircularFishEye, 0); // XY non-linear projection.
 };
 
+
 /**************************************************************************/
 //  NLTProjector
 /**************************************************************************/
+
 class NLTProjector : public RenderElementList,
 		     public TAttBBox,
                      public TAtt3D
@@ -159,7 +161,7 @@ public:
   virtual void    ComputeBBox();
   virtual void    Paint(Option_t* option = "");
 
-  ClassDef(NLTProjector, 0); // Project NLTProjectable object.
+  ClassDef(NLTProjector, 0); // Manages and steers NLT projections.
 };
 
 }

@@ -44,7 +44,8 @@ public:
   virtual void Paint(Option_t* option = "");
 
   virtual const TGPicture* GetListTreeIcon() { return RenderElement::fgListTreeIcons[2]; }
-  ClassDef(Scene, 0);
+
+  ClassDef(Scene, 0); // Reve representation of TGLScene.
 }; // endclass Scene
 
 
@@ -67,7 +68,7 @@ public:
   void RepaintChangedScenes();
   void RepaintAllScenes();
 
-  ClassDef(SceneList, 0);
+  ClassDef(SceneList, 0); // List of Scenes.
 }; // endclass SceneList
 
 }

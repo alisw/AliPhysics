@@ -9,6 +9,9 @@
 //______________________________________________________________________
 // TriangleSetGL
 //
+// GL-renderer for TriangleSet class.
+//
+// See also: TGLObject, TGLLogicalShape.
 
 using namespace Reve;
 
@@ -16,16 +19,22 @@ ClassImp(TriangleSetGL)
 
 TriangleSetGL::TriangleSetGL() : TGLObject(), fM(0)
 {
+  // Constructor.
+
   // fDLCache = false; // Disable display list.
 }
 
 TriangleSetGL::~TriangleSetGL()
-{}
+{
+  // Destructor.
+}
 
 /**************************************************************************/
 
 Bool_t TriangleSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 {
+  // Set model object.
+
   if(SetModelCheckClass(obj, TriangleSet::Class())) {
     fM = dynamic_cast<TriangleSet*>(obj);
     return kTRUE;
@@ -35,6 +44,8 @@ Bool_t TriangleSetGL::SetModel(TObject* obj, const Option_t* /*opt*/)
 
 void TriangleSetGL::SetBBox()
 {
+  // Set bounding-box from the model.
+
   // !! This ok if master sub-classed from TAttBBox
   SetAxisAlignedBBox(((TriangleSet*)fExternalObj)->AssertBBox());
 }
@@ -43,6 +54,8 @@ void TriangleSetGL::SetBBox()
 
 void TriangleSetGL::DirectDraw(TGLRnrCtx & /*rnrCtx*/) const
 {
+  // Low-level GL rendering.
+
   TriangleSet& TS = *fM;
   Bool_t isScaled = TS.fHMTrans.IsScale();
 

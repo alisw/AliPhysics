@@ -49,7 +49,7 @@ public:
   void DoEditTrans();
   void DoTransChanged();
 
-  ClassDef(ZTransSubEditor, 0)
+  ClassDef(ZTransSubEditor, 0); // Sub-editor for ZTrans class.
 };
 
 class ZTransEditor : public TGedFrame
@@ -59,10 +59,7 @@ private:
   ZTransEditor& operator=(const ZTransEditor&); // Not implemented
 
 protected:
-  ZTrans* fM; // fModel dynamic-casted to ZTransEditor
-
-  // Declare widgets
-  // TGSomeWidget*   fXYZZ;
+  ZTrans* fM; // Model object.
 
 public:
   ZTransEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -70,10 +67,7 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  // Declare callback/slot methods
-  // void DoXYZZ();
-
-  ClassDef(ZTransEditor, 1); // Editor for ZTrans
+  ClassDef(ZTransEditor, 1); // Editor for ZTrans class.
 }; // endclass ZTransEditor
 
 }

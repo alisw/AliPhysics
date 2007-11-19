@@ -18,7 +18,7 @@ private:
   TriangleSetGL& operator=(const TriangleSetGL&); // Not implemented
 
 protected:
-  TriangleSet* fM; // fModel dynamic-casted to TriangleSetGL
+  TriangleSet* fM; // Model object.
 
   virtual void DirectDraw(TGLRnrCtx & rnrCtx) const;
 
@@ -33,7 +33,7 @@ public:
   // virtual Bool_t SupportsSecondarySelect() const { return kTRUE; }
   // virtual void ProcessSelection(UInt_t* ptr, TGLViewer*, TGLScene*);
 
-  ClassDef(TriangleSetGL, 0);
+  ClassDef(TriangleSetGL, 0); // GL-renderer for TriangleSet class.
 }; // endclass TriangleSetGL
 
 }

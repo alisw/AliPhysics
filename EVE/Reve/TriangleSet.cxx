@@ -39,6 +39,7 @@ using namespace Reve;
 // If input is composed from triangles with direct vertex coordinates
 // one should consider finding all occurences of the same vertex
 // and specifying it only once.
+//
 
 ClassImp(TriangleSet)
 
@@ -50,6 +51,8 @@ TriangleSet::TriangleSet(Int_t nv, Int_t nt, Bool_t norms, Bool_t cols) :
   fColor   (2),  fTransp(0),
   fHMTrans ()
 {
+  // Constructor.
+
   fVerts  = new Float_t[3*fNVerts];
   fTrings = new Int_t  [3*fNTrings];
   fTringNorms = (norms) ? new Float_t[3*fNTrings] : 0;
@@ -58,6 +61,8 @@ TriangleSet::TriangleSet(Int_t nv, Int_t nt, Bool_t norms, Bool_t cols) :
 
 TriangleSet::~TriangleSet()
 {
+  // Destructor.
+
   delete [] fVerts;
   delete [] fTrings;
   delete [] fTringNorms;
@@ -68,6 +73,8 @@ TriangleSet::~TriangleSet()
 
 void TriangleSet::GenerateTriangleNormals()
 {
+  // Generate triangle normals via cross product of triangle edges.
+
   if (fTringNorms == 0)  fTringNorms = new Float_t[3*fNTrings];
 
   TVector3 e1, e2, n;
@@ -88,6 +95,8 @@ void TriangleSet::GenerateTriangleNormals()
 
 void TriangleSet::GenerateRandomColors()
 {
+  // Assign random colors to all triangles.
+
   if (fTringCols == 0)  fTringCols = new UChar_t[3*fNTrings];
 
   TRandom r;
@@ -104,6 +113,9 @@ void TriangleSet::GenerateRandomColors()
 void TriangleSet::GenerateZNormalColors(Float_t fac, Int_t min, Int_t max,
 					Bool_t interp, Bool_t wrap)
 {
+  // Generate triangle colors by the z-component of the normal.
+  // Current palette is taken from gStyle.
+
   if (fTringCols  == 0)  fTringCols = new UChar_t[3*fNTrings];
   if (fTringNorms == 0)  GenerateTriangleNormals();
 

@@ -273,15 +273,15 @@ private:
   TrackCounter& operator=(const TrackCounter&); // Not implemented
 
 protected:
-  Int_t fBadLineStyle;
-  Int_t fClickAction;
+  Int_t fBadLineStyle;  // Line-style used for secondary/bad tracks.
+  Int_t fClickAction;   // Action to take when a track is ctrl-clicked.
 
-  Int_t fEventId;
+  Int_t fEventId;       // Current event-id.
 
-  Int_t fAllTracks;
-  Int_t fGoodTracks;
+  Int_t fAllTracks;     // Counter of all tracks.
+  Int_t fGoodTracks;    // Counter of good tracks.
 
-  TList fTrackLists;
+  TList fTrackLists;    // List of TrackLists registered for management.
 
 public:
   TrackCounter(const Text_t* name="TrackCounter", const Text_t* title="");

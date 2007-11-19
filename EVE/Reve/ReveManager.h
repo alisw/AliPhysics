@@ -166,7 +166,7 @@ public:
   void SetStatusLine(const char* text);
   void ThrowException(const char* text="foo");
 
-  ClassDef(ReveManager, 0);
+  ClassDef(ReveManager, 0); // Reve application manager.
 };
 
 } // namespace Reve

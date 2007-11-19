@@ -82,7 +82,7 @@ public:
 
   static TriangleSet* ReadTrivialFile(const char* file);
 
-  ClassDef(TriangleSet, 0)
+  ClassDef(TriangleSet, 0); // Generic triangle mesh or soup.
 }; // endclass TriangleSet
 
 }

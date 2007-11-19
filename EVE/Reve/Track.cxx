@@ -44,7 +44,9 @@ Track::Track() :
   fPathMarks(),
 
   fRnrStyle(0)
-{}
+{
+  // Default constructor.
+}
 
 //______________________________________________________________________________
 Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
@@ -61,6 +63,8 @@ Track::Track(TParticle* t, Int_t label, TrackRnrStyle* rs):
 
   fRnrStyle(0)
 {
+  // Constructor from TParticle.
+
   SetRnrStyle(rs);
   fMainColorPtr = &fLineColor;
 
@@ -88,6 +92,8 @@ Track::Track(Reve::MCTrack* t, TrackRnrStyle* rs):
 
   fRnrStyle(0)
 {
+  // Constructor from Reve Monte Carlo track.
+
   SetRnrStyle(rs);
   fMainColorPtr = &fLineColor;
 
@@ -115,6 +121,8 @@ Track::Track(Reve::RecTrack* t, TrackRnrStyle* rs) :
 
   fRnrStyle(0)
 {
+  // Constructor from Reve reconstructed track.
+
   SetRnrStyle(rs);
   fMainColorPtr = &fLineColor;
 
@@ -152,6 +160,8 @@ Track::Track(const Track& t) :
 //______________________________________________________________________________
 Track::~Track()
 {
+  // Destructor.
+
   SetRnrStyle(0);
   for (vpPathMark_i i=fPathMarks.begin(); i!=fPathMarks.end(); ++i)
     delete *i;
@@ -215,7 +225,10 @@ void Track::SetPathMarks(const Track& t)
 //______________________________________________________________________________
 void Track::SetRnrStyle(TrackRnrStyle* rs)
 {
- if (fRnrStyle == rs) return;
+  // Set track's render style.
+  // Reference counts of old and new render-style are updated.
+
+  if (fRnrStyle == rs) return;
   if (fRnrStyle) fRnrStyle->DecRefCount(this);
   fRnrStyle = rs;
   if (fRnrStyle) rs->IncRefCount(this);
@@ -226,6 +239,8 @@ void Track::SetRnrStyle(TrackRnrStyle* rs)
 //______________________________________________________________________________
 void Track::SetAttLineAttMarker(TrackList* tl)
 {
+  // Set line and marker attributes from TrackList.
+
   SetLineColor(tl->GetLineColor());
   SetLineStyle(tl->GetLineStyle());
   SetLineWidth(tl->GetLineWidth());
@@ -240,6 +255,10 @@ void Track::SetAttLineAttMarker(TrackList* tl)
 //______________________________________________________________________________
 void Track::MakeTrack(Bool_t recurse)
 {
+  // Calculate track representation based on track data and current
+  // settings of the render-style.
+  // If recurse is true, descend into children.
+
   TrackRnrStyle& RS((fRnrStyle != 0) ? *fRnrStyle : TrackRnrStyle::fgDefStyle);
 
   Float_t px = fP.x, py = fP.y, pz = fP.z;  
@@ -394,6 +413,8 @@ make_polyline:
 //______________________________________________________________________________
 TClass* Track::ProjectedClass() const
 {
+  // Virtual from NLTProjectable, return NLTTrack class.
+
   return NLTTrack::Class();
 }
 
@@ -412,6 +433,8 @@ struct cmp_pathmark
 //______________________________________________________________________________
 void Track::SortPathMarksByTime()
 {
+  // Sort registerd pat-marks by time.
+
   std::sort(fPathMarks.begin(), fPathMarks.end(), cmp_pathmark());
 }
 
@@ -420,6 +443,9 @@ void Track::SortPathMarksByTime()
 //______________________________________________________________________________
 void Track::ImportHits()
 {
+  // Import hits with same label as the track.
+  // Uses macro "hits_from_label.C".
+
   Reve::LoadMacro("hits_from_label.C");
   gROOT->ProcessLine(Form("hits_from_label(%d, (Reve::RenderElement*)%p);", 
 			  fLabel, this));
@@ -428,6 +454,9 @@ void Track::ImportHits()
 //______________________________________________________________________________
 void Track::ImportClusters()
 {
+  // Import clusters with same label as the track.
+  // Uses macro "clusters_from_label.C".
+
   Reve::LoadMacro("clusters_from_label.C");
   gROOT->ProcessLine(Form("clusters_from_label(%d, (Reve::RenderElement*)%p);", 
 			  fLabel, this));
@@ -436,6 +465,9 @@ void Track::ImportClusters()
 //______________________________________________________________________________
 void Track::ImportClustersFromIndex()
 {
+  // Import clusters marked with same reconstructed track index as the track.
+  // Uses macro "clusters_from_index.C".
+
   static const Exc_t eH("Track::ImportClustersFromIndex ");
 
   if (fIndex == kMinInt)
@@ -451,6 +483,9 @@ void Track::ImportClustersFromIndex()
 //______________________________________________________________________________
 void Track::ImportKine()
 {
+  // Import kinematics of the track's label recursively.
+  // Uses macro "kine_tracks.C".
+
   static const Exc_t eH("Track::ImportKine ");
 
   if (fLabel == kMinInt)
@@ -474,6 +509,14 @@ void Track::ImportKine()
 void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters,
 			       Bool_t colorPdg,     Bool_t recurse)
 {
+  // Import kinematics of the track's label. Arguments steer the
+  // import process:
+  //   importMother     import particle with track's label
+  //   importDaugters   import direct daughters of label
+  //   colorPdg         color kinematics by PDG code
+  //   recurse          recursive import of daughters' daughters
+  // Uses macro "kine_tracks.C".
+
   static const Exc_t eH("Track::ImportKineWithArgs ");
 
   if (fLabel == kMinInt)
@@ -497,6 +540,9 @@ void Track::ImportKineWithArgs(Bool_t importMother, Bool_t importDaugters,
 //______________________________________________________________________________
 void Track::PrintKineStack()
 {
+  // Print kinematics pertaining to track's label.
+  // Uses macro "print_kine_from_label.C".
+
   static const Exc_t eH("Track::PrintKineStack ");
 
   if (fLabel == kMinInt)
@@ -517,6 +563,8 @@ void Track::PrintKineStack()
 //______________________________________________________________________________
 void Track::PrintPathMarks()
 {
+  // Print registered path-marks.
+
   static const Exc_t eH("Track::PrintPathMarks ");
 
   printf("Track '%s', number of path marks %d, label %d\n",
@@ -539,12 +587,18 @@ void Track::PrintPathMarks()
 //______________________________________________________________________________
 void Track::CtrlClicked(Reve::Track* track)
 {
+  // Emits "CtrlClicked(Reve::Track*)" signal.
+  // Called from TrackGL on secondary-selection.
+
   Emit("CtrlClicked(Reve::Track*)", (Long_t)track);
 }
 
 //______________________________________________________________________________
 void Track::SetLineStyle(Style_t lstyle)
 {
+  // Set line-style of the track.
+  // The style is propagated to projected tracks.
+
   TAttLine::SetLineStyle(lstyle);
   std::list<NLTProjected*>::iterator pi = fProjectedList.begin();
   while (pi != fProjectedList.end())
@@ -1155,6 +1209,10 @@ void TrackList::SetMarkerSize(Size_t size, RenderElement* el)
 //______________________________________________________________________________
 void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 {
+  // Select visibility of tracks by transverse momentum.
+  // If data-member fRecurse is set, the selection is applied
+  // recursively to all children.
+
   fMinPt = min_pt;
   fMaxPt = max_pt;
 
@@ -1174,6 +1232,8 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt)
 //______________________________________________________________________________
 void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt, RenderElement* el)
 {
+  // Select visibility of el's children tracks by transverse momentum.
+
   const Float_t minptsq = min_pt*min_pt;
   const Float_t maxptsq = max_pt*max_pt;
 
@@ -1194,6 +1254,10 @@ void TrackList::SelectByPt(Float_t min_pt, Float_t max_pt, RenderElement* el)
 //______________________________________________________________________________
 void TrackList::SelectByP(Float_t min_p, Float_t max_p)
 {
+  // Select visibility of tracks by momentum.
+  // If data-member fRecurse is set, the selection is applied
+  // recursively to all children.
+
   fMinP = min_p;
   fMaxP = max_p;
 
@@ -1213,6 +1277,8 @@ void TrackList::SelectByP(Float_t min_p, Float_t max_p)
 //______________________________________________________________________________
 void TrackList::SelectByP(Float_t min_p, Float_t max_p, RenderElement* el)
 {
+  // Select visibility of el's children tracks by momentum.
+
   const Float_t minpsq = min_p*min_p;
   const Float_t maxpsq = max_p*max_p;
 
@@ -1277,6 +1343,8 @@ Track* TrackList::FindTrackByIndex(Int_t index)
 //______________________________________________________________________________
 void TrackList::ImportHits()
 {
+  // Import hits for all track.
+
   for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportHits();
   }
@@ -1285,6 +1353,8 @@ void TrackList::ImportHits()
 //______________________________________________________________________________
 void TrackList::ImportClusters()
 {
+  // Import clusters for all track.
+
   for (List_i i=fChildren.begin(); i!=fChildren.end(); ++i) {
     ((Track*)(*i))->ImportClusters();
   }
@@ -1295,6 +1365,8 @@ void TrackList::ImportClusters()
 //______________________________________________________________________________
 TClass* TrackList::ProjectedClass() const
 {
+  // Virtual from NLTProjectable, returns NLTTrackList class.
+
   return NLTTrackList::Class();
 }
 
@@ -1307,11 +1379,20 @@ TClass* TrackList::ProjectedClass() const
 //______________________________________________________________________________
 // TrackCounter
 //
+// Provides event-based method for tagging of good / bad (or primary /
+// secondary) tracks. A report can be written into a text file.
+//
+// Track status is toggled by using secondary-selection / ctrl-click
+// functionality of the GL viewer.
+//
+// Some of the functionality is implemented in TrackCounterEditor
+// class.
 
 ClassImp(TrackCounter)
 
 TrackCounter* TrackCounter::fgInstance = 0;
 
+//______________________________________________________________________________
 TrackCounter::TrackCounter(const Text_t* name, const Text_t* title) :
   RenderElement(),
   TNamed(name, title),
@@ -1322,21 +1403,31 @@ TrackCounter::TrackCounter(const Text_t* name, const Text_t* title) :
   fGoodTracks   (0),
   fTrackLists   ()
 {
+  // Constructor.
+  // Connects to global signal "Reve::Track", "CtrlClicked(Reve::Track*)".
+
   if (fgInstance == 0) fgInstance = this;
   TQObject::Connect("Reve::Track", "CtrlClicked(Reve::Track*)",
 		    "Reve::TrackCounter", this, "DoTrackAction(Reve::Track*)");
 }
 
+//______________________________________________________________________________
 TrackCounter::~TrackCounter()
 {
+  // Destructor.
+  // Disconnect from the global track signals.
+
   TQObject::Disconnect("Reve::Track", "DoTrackAction(Reve::Track*)");
   if (fgInstance == this) fgInstance = 0;
 }
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void TrackCounter::Reset()
 {
+  // Reset internal track-counters and track-list.
+
   printf("TrackCounter::Reset()\n");
   fAllTracks  = 0;
   fGoodTracks = 0;
@@ -1347,10 +1438,12 @@ void TrackCounter::Reset()
   fTrackLists.Clear("nodelete");
 }
 
+//______________________________________________________________________________
 void TrackCounter::RegisterTracks(TrackList* tlist, Bool_t goodTracks)
 {
-  // printf("TrackCounter::RegisterTracks '%s', %s\n",
-  //   tlist->GetObject()->GetName(), goodTracks ? "good" : "bad");
+  // Register tracks from tlist and tlist itself.
+  // If goodTracks is true, they are considered as primary/good
+  // tracks.
 
   tlist->IncDenyDestroy();
   fTrackLists.Add(tlist);
@@ -1373,11 +1466,17 @@ void TrackCounter::RegisterTracks(TrackList* tlist, Bool_t goodTracks)
   }
 }
 
+//______________________________________________________________________________
 void TrackCounter::DoTrackAction(Track* track)
 {
-  // !!!! No check done if ok.
-  // !!!! Should also override RemoveElementLocal
-  // !!!! But then ... should also store local information if track is ok.
+  // Slot called when track is ctrl-clicked.
+  //
+  // No check is done if track actually belongs to one of the
+  // registered track-lists.
+  //
+  // Probably it would be safer to copy good/bad tracks into special
+  // sub-containers.
+  // In this case one should also override RemoveElementLocal.
 
   switch (fClickAction)
   {
@@ -1419,8 +1518,14 @@ void TrackCounter::DoTrackAction(Track* track)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void TrackCounter::OutputEventTracks(FILE* out)
 {
+  // Print good-track summary into a plain-text file by iteration
+  // through all registered track-lists.
+  // State of each track is determined by its line-style, it is
+  // considered a good track if it's line style is solid.
+
   if (out == 0)
   {
     out = stdout;

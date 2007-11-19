@@ -23,8 +23,8 @@ private:
   VoidCPlex& operator=(const VoidCPlex&); // Not implemented
 
 protected:
-  Int_t fS; // Size of atom
-  Int_t fN; // Number of atoms in a chunk
+  Int_t fS;        // Size of atom
+  Int_t fN;        // Number of atoms in a chunk
 
   Int_t fSize;     // Size of container, number of atoms
   Int_t fVecSize;  // Number of allocated chunks
@@ -80,9 +80,11 @@ public:
     Int_t   index()      { return fAtomIndex; }
   };
 
-
-  ClassDef(VoidCPlex, 1)
+  ClassDef(VoidCPlex, 1); // Vector-like container with chunked memory allocation.
 };
+
+
+/******************************************************************************/
 
 inline Char_t* VoidCPlex::NewAtom()
 {
@@ -111,7 +113,7 @@ inline Bool_t VoidCPlex::iterator::next()
 
 
 /**************************************************************************/
-// Some-class CPlex
+// Templated some-class CPlex
 /**************************************************************************/
 
 template<class T>
@@ -131,7 +133,7 @@ public:
   T* At(Int_t idx)  { return reinterpret_cast<T*>(Atom(idx)); }
   T& Ref(Int_t idx) { return *At(idx); }
 
-  ClassDef(CPlex, 1)
+  ClassDef(CPlex, 1); // Templated class for specific atom classes (given as template argument).
 }; // endclass CPlex
 
 }

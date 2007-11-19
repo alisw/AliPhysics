@@ -13,13 +13,13 @@ using namespace Reve;
 
 Float_t NLTProjection::fgEps = 0.005f;
 
+
 //______________________________________________________________________________
 // NLTProjection
 //
 // Base-class for non-linear projection of 3D point.
 // Enables to define an external center of distortion and a scale to
 // fixate a bounding box of a projected point.
-
 
 ClassImp(Reve::NLTProjection)
 
@@ -156,13 +156,12 @@ Float_t NLTProjection::GetScreenVal(Int_t i, Float_t x)
   return dv[i];
 }
 
+
 //______________________________________________________________________________
-//
 // NLTRhoZ
 //
 // Transformation from 3D to 2D. X axis represent Z coordinate. Y axis have value of
 // radius with a sign of Y coordinate.
-
 
 ClassImp(Reve::NLTRhoZ)
 
@@ -246,22 +245,23 @@ Bool_t NLTRhoZ::AcceptSegment(Vector& v1, Vector& v2, Float_t tolerance)
   return val;
 }
 
+
 //______________________________________________________________________________
-//
 // NLTCircularFishEye
 //
 // XY projection with distortion around given center.
 
-ClassImp(Reve:: NLTCircularFishEye)
+ClassImp(Reve::NLTCircularFishEye)
 
 //______________________________________________________________________________
-void  NLTCircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc_e proc)
+void NLTCircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z,
+				      PProc_e proc)
 {
   // Project point.
 
   using namespace TMath;
 
-  if(proc !=  PP_Plane)
+  if (proc != PP_Plane)
   {
     x -= fCenter.x;
     y -= fCenter.y;
@@ -275,15 +275,16 @@ void  NLTCircularFishEye::ProjectPoint(Float_t& x, Float_t& y, Float_t& z, PProc
   z = 0.0f;
 }
 
+
+ClassImp(NLTProjector)
+
 //______________________________________________________________________________
-//
 // NLTProjector
 //
 // Recursively projects RenderElement and draws axis in the projected scene.
 // It enables to interactivly set NLTProjection parameters and updates
 // projected scene accordingly.
 
-ClassImp(NLTProjector)
 
 NLTProjector::NLTProjector():
   RenderElementList("NLTProjector",""),
@@ -507,4 +508,3 @@ void NLTProjector::ComputeBBox()
 
   BBoxInit();
 }
-

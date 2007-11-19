@@ -21,6 +21,7 @@ using namespace Reve;
 
 ClassImp(PointSetArrayEditor)
 
+//______________________________________________________________________________
 PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p,
 					 Int_t width, Int_t height,
 					 UInt_t options, Pixel_t back) :
@@ -28,6 +29,8 @@ PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p,
   fM(0),
   fRange(0)
 {
+  // Constructor.
+
   fM = 0;
   MakeTitle("PointSetArray");
 
@@ -41,13 +44,19 @@ PointSetArrayEditor::PointSetArrayEditor(const TGWindow *p,
   AddFrame(fRange, new TGLayoutHints(kLHintsTop, 1, 1, 2, 1));
 }
 
+//______________________________________________________________________________
 PointSetArrayEditor::~PointSetArrayEditor()
-{}
+{
+  // Destructor.
+}
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void PointSetArrayEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<PointSetArray*>(obj);
 
   // printf("FullRange(%f, %f) Selected(%f,%f)\n",
@@ -59,8 +68,11 @@ void PointSetArrayEditor::SetModel(TObject* obj)
 
 /**************************************************************************/
 
+//______________________________________________________________________________
 void PointSetArrayEditor::DoRange()
 {
+  // Slot for setting the range of the separating quantity.
+
   fM->SetRange(fRange->GetMin(), fRange->GetMax());
   Update();
 }

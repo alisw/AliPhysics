@@ -45,7 +45,7 @@ public:
 
   virtual const TGPicture* GetListTreeIcon() { return RenderElement::fgListTreeIcons[1]; }
 
-  ClassDef(Viewer, 0);
+  ClassDef(Viewer, 0); // Reve representation of TGLViewer.
 }; // endclass Viewer
 
 
@@ -70,7 +70,7 @@ public:
 
   void SceneDestructing(Scene* scene);
 
-  ClassDef(ViewerList, 0);
+  ClassDef(ViewerList, 0); // List of Viewers.
 }; // endclass ViewerList
 
 }

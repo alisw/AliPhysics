@@ -71,6 +71,8 @@ ReveManager::ReveManager(UInt_t w, UInt_t h) :
 
   fGeometries     ()
 {
+  // Constructor.
+
   static const Exc_t eH("ReveManager::ReveManager ");
 
   if (gReve != 0)
@@ -141,12 +143,16 @@ ReveManager::ReveManager(UInt_t w, UInt_t h) :
 }
 
 ReveManager::~ReveManager()
-{}
+{
+  // Destructor.
+}
 
 /**************************************************************************/
 
 TCanvas* ReveManager::AddCanvasTab(const char* name)
 {
+  // Add a new canvas tab.
+
   fBrowser->StartEmbedding(1, -1);
   TCanvas* c = new TCanvas;
   fBrowser->StopEmbedding();
@@ -157,16 +163,23 @@ TCanvas* ReveManager::AddCanvasTab(const char* name)
 
 TGWindow* ReveManager::GetMainWindow() const
 {
+  // Get the main window, i.e. the first created reve-browser.
+
   return fBrowser;
 }
 
 TGLViewer* ReveManager::GetGLViewer() const
 {
+  // Get default TGLViewer.
+
   return fViewer->GetGLViewer();
 }
 
-Viewer* ReveManager::SpawnNewViewer(const Text_t* name, const Text_t* title, Bool_t embed)
+Viewer* ReveManager::SpawnNewViewer(const Text_t* name, const Text_t* title,
+				    Bool_t embed)
 {
+  // Create a new GL viewer.
+
   Viewer* v = new Viewer(name, title);
 
   if (embed)  fBrowser->StartEmbedding(1);
@@ -179,6 +192,8 @@ Viewer* ReveManager::SpawnNewViewer(const Text_t* name, const Text_t* title, Boo
 
 Scene* ReveManager::SpawnNewScene(const Text_t* name, const Text_t* title)
 {
+  // Create a new scene.
+
   Scene* s = new Scene(name, title);
   AddRenderElement(s, fScenes);
   return s;
@@ -210,12 +225,17 @@ void ReveManager::EditRenderElement(RenderElement* rnr_element)
 
 void ReveManager::RegisterRedraw3D()
 {
+  // Register a request for 3D redraw.
+
   fRedrawTimer.Start(0, kTRUE);
   fTimerActive = true;
 }
 
 void ReveManager::DoRedraw3D()
 {
+  // Perform 3D redraw of scenes and viewers whose contents has
+  // changed.
+
   // printf("ReveManager::DoRedraw3D redraw triggered\n");
 
   fScenes ->RepaintChangedScenes();
@@ -229,6 +249,8 @@ void ReveManager::DoRedraw3D()
 
 void ReveManager::FullRedraw3D(Bool_t resetCameras, Bool_t dropLogicals)
 {
+  // Perform 3D redraw of all scenes and viewers.
+
   fScenes ->RepaintAllScenes();
   fViewers->RepaintAllViewers(resetCameras, dropLogicals);
 }
@@ -327,43 +349,22 @@ TGListTreeItem* ReveManager::AddEvent(EventBase* event)
 TGListTreeItem* ReveManager::AddRenderElement(RenderElement* rnr_element,
 					     RenderElement* parent)
 {
-  static const Exc_t eH("ReveManager::AddRenderElement ");
-
-  if (parent && ! parent->AcceptRenderElement(rnr_element)) {
-    throw(eH + Form("parent '%s' rejects '%s'.",
-                    parent->GetRnrElName(), rnr_element->GetRnrElName()));
-  }
-
   if (parent == 0) {
     if (fCurrentEvent == 0)
       AddEvent(new EventBase("Event", "Auto-created event directory"));
     parent = fCurrentEvent;
   }
 
-  TGListTreeItem* newitem = parent->AddElement(rnr_element);
-
-  return newitem;
+  return parent->AddElement(rnr_element);
 }
 
 TGListTreeItem* ReveManager::AddGlobalRenderElement(RenderElement* rnr_element,
-						   RenderElement* parent)
+                                                    RenderElement* parent)
 {
-  static const Exc_t eH("ReveManager::AddGlobalRenderElement ");
-
-  if (parent && ! parent->AcceptRenderElement(rnr_element)) {
-    throw(eH + "parent '%s' rejects '%s'.",
-	  parent->GetObject()->GetName(), rnr_element->GetObject()->GetName());
-  }
-
   if (parent == 0)
     parent = fGlobalScene;
 
-  parent->AddElement(rnr_element);
-
-  TGListTreeItem* newitem =
-    rnr_element->AddIntoListTrees(parent);
-
-  return newitem;
+  return parent->AddElement(rnr_element);
 }
 
 /**************************************************************************/
@@ -399,9 +400,8 @@ void ReveManager::RenderElementChecked(RenderElement* rnrEl, Bool_t state)
 {
   rnrEl->SetRnrState(state);
 
-  if(fEditor->GetModel() == rnrEl->GetEditorObject()) {
+  if (fEditor->GetModel() == rnrEl->GetEditorObject())
     fEditor->DisplayRenderElement(rnrEl);
-  }
 
   rnrEl->ElementChanged();
 }
@@ -411,7 +411,7 @@ void ReveManager::RenderElementChecked(RenderElement* rnrEl, Bool_t state)
 void ReveManager::NotifyBrowser(TGListTreeItem* parent_lti)
 {
   TGListTree* lt = GetListTree();
-  if(parent_lti)
+  if (parent_lti)
     lt->OpenItem(parent_lti);
   lt->ClearViewPort();
 }
@@ -436,14 +436,14 @@ TGeoManager* ReveManager::GetGeometry(const TString& filename)
 	 filename.Data(), exp_filename.Data());
 
   std::map<TString, TGeoManager*>::iterator g = fGeometries.find(filename);
-  if(g != fGeometries.end()) {
+  if (g != fGeometries.end()) {
     return g->second;
   } else {
-    if(gSystem->AccessPathName(exp_filename, kReadPermission))
+    if (gSystem->AccessPathName(exp_filename, kReadPermission))
       throw(eH + "file '" + exp_filename + "' not readable.");
     gGeoManager = 0;
     TGeoManager::Import(filename); 
-    if(gGeoManager == 0)
+    if (gGeoManager == 0)
       throw(eH + "GeoManager import failed.");
     gGeoManager->GetTopVolume()->VisibleDaughters(1);
 
@@ -452,7 +452,7 @@ TGeoManager* ReveManager::GetGeometry(const TString& filename)
       TFile f(exp_filename, "READ");
       TObjArray* collist = (TObjArray*) f.Get("ColorList");
       f.Close();
-      if(collist != 0) {
+      if (collist != 0) {
 	TIter next(gGeoManager->GetListOfVolumes());
 	TGeoVolume* vol;
 	while ((vol = (TGeoVolume*) next()) != 0)

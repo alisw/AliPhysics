@@ -104,7 +104,7 @@ public:
 
   virtual TClass* ProjectedClass() const;
 
-  ClassDef(StraightLineSet, 1);
+  ClassDef(StraightLineSet, 1); // Set of lines and optional markers.
 }; // endclass StraightLineSet
 
 
@@ -130,7 +130,7 @@ public:
 
   virtual void UpdateProjection();
 
-  ClassDef(NLTSLineSet, 1);
+  ClassDef(NLTSLineSet, 1); // NLT projected StraightLineSet.
 }; // endclass NLTSLineSet
 
 } // Reve

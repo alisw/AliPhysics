@@ -39,7 +39,6 @@
 #pragma link C++ class Reve::Vector+;
 #pragma link C++ class Reve::PathMark+;
 #pragma link C++ class Reve::MCTrack+;
-#pragma link C++ class Reve::MCTrackRef+;
 #pragma link C++ class Reve::Hit+;
 #pragma link C++ class Reve::Cluster+;
 #pragma link C++ class Reve::RecTrack+;

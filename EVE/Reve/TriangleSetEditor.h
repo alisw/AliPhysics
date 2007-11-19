@@ -21,9 +21,9 @@ private:
   TriangleSetEditor& operator=(const TriangleSetEditor&); // Not implemented
 
 protected:
-  TriangleSet* fM; // fModel dynamic-casted to TriangleSetEditor
+  TriangleSet     *fM;        // Model object.
 
-  ZTransSubEditor *fHMTrans;
+  ZTransSubEditor *fHMTrans;  // Sub-editor of transforamtion matrix.
 
 public:
   TriangleSetEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
@@ -31,7 +31,7 @@ public:
 
   virtual void SetModel(TObject* obj);
 
-  ClassDef(TriangleSetEditor, 1); // Editor for TriangleSet
+  ClassDef(TriangleSetEditor, 1); // Editor for TriangleSet class.
 }; // endclass TriangleSetEditor
 
 }

@@ -8,6 +8,8 @@ using namespace Reve;
 //______________________________________________________________________
 // GridStepper
 //
+// Provide position coordinates for regular-grid placement of objects.
+//
 
 ClassImp(GridStepper)
 
@@ -51,19 +53,19 @@ void GridStepper::Subtract(GridStepper& s)
 }
 /**************************************************************************/
 
-bool GridStepper::Step()
+Bool_t GridStepper::Step()
 {
   (*ns[0])++;
-  if(*ns[0] >= *ls[0]) {
+  if (*ns[0] >= *ls[0]) {
     *ns[0] = 0; (*ns[1])++;
-    if(*ns[1] >= *ls[1]) {
+    if (*ns[1] >= *ls[1]) {
       *ns[1] = 0; (*ns[2])++;
-      if(*ns[2] >= *ls[2]) {
-	return false;
+      if (*ns[2] >= *ls[2]) {
+	return kFALSE;
       }
     }
   }
-  return true;
+  return kTRUE;
 }
 
 /**************************************************************************/

@@ -40,7 +40,7 @@ public:
   virtual Bool_t AcceptRenderElement(RenderElement* el);
   virtual Bool_t HandleElementPaste(RenderElement* el);
 
-  ClassDef(SceneInfo, 0);
+  ClassDef(SceneInfo, 0); // Reve representation of TGLSceneInfo.
 }; // endclass SceneInfo
 
 }

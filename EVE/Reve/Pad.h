@@ -23,7 +23,7 @@ public:
   virtual TVirtualViewer3D *GetViewer3D(Option_t * /*type*/ = "")
   { return fViewer3D; }
 
-  ClassDef(Pad, 1); // Wrapper for TPad
+  ClassDef(Pad, 1); // Internal Reve pad (sub-class of TPad).
 };
 
 }
