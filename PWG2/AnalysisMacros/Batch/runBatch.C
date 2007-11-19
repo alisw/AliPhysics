@@ -31,11 +31,10 @@ void runBatch() {
   setupPar("ANALYSIS");
   gSystem->Load("libANALYSIS.so");
 
-  gROOT->LoadMacro("AliAnalysisTaskPt.cxx+");
-
   //CreateXML();
   
   //ANALYSIS PART
+  gROOT->LoadMacro("AliAnalysisTaskPt.cxx+");
   const char *collectionfile = "wn.xml";
 
   //____________________________________________//
