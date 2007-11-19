@@ -15,7 +15,9 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFAlignment.cxx \
 	AliTOFPreprocessor.cxx \
         AliTOFDataDCS.cxx \
-        AliTOFFormatDCS.cxx 
+        AliTOFFormatDCS.cxx \
+        AliTOFQADataMaker.cxx \
+        AliTOFQAChecker.cxx 
 
 
 HDRS:= $(SRCS:.cxx=.h)

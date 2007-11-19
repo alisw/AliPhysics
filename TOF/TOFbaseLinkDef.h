@@ -23,5 +23,7 @@
 #pragma link C++ class  AliTOFPreprocessor+;
 #pragma link C++ class  AliTOFDataDCS+;
 #pragma link C++ class  AliTOFFormatDCS+;
+#pragma link C++ class  AliTOFQADataMaker+;
+#pragma link C++ class  AliTOFQAChecker+;
 
 #endif
