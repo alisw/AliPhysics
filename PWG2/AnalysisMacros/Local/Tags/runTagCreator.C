@@ -2,9 +2,11 @@ void runTagCreator() {
   TStopwatch timer;
   timer.Start();
   gSystem->Load("libTree.so");
-   //____________________________________________________//
-  //_____________Setting up ESD.par_____________________//
   //____________________________________________________//
+  //_____________Setting up par files___________________//
+  //____________________________________________________//
+  setupPar("STEERBase");
+  gSystem->Load("libSTEERBase.so");
   setupPar("ESD");
   gSystem->Load("libVMC.so");
   gSystem->Load("libESD.so");
