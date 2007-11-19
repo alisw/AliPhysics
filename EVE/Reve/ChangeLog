@@ -1,3 +1,42 @@
+2007-11-19  Matevz Tadel  <matevz.tadel@cern.ch>
+
+	* BoxSet.cxx:
+	* GridStepper.cxx:
+	* GridStepper.h:
+	* GridStepperEditor.h:
+	* LineEditor.h:
+	* LinkDef.h:
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	* NLTProjector.cxx:
+	* PODs.h:
+	* Pad.cxx:
+	* Pad.h:
+	* Plex.h:
+	* PointSet.cxx:
+	* PointSet.h:
+	* PointSetArrayEditor.cxx:
+	* PointSetArrayEditor.h:
+	* RGBAPalette.h:
+	* RGBAPaletteEditor.h:
+	* RenderElement.cxx:
+	* RenderElement.h:
+	* ReveManager.cxx:
+	* ReveManager.h:
+	* Scene.h:
+	* SceneInfo.h:
+	* StraightLineSet.h:
+	* Track.cxx:
+	* Track.h:
+	* TriangleSet.cxx:
+	* TriangleSet.h:
+	* TriangleSetEditor.h:
+	* TriangleSetGL.cxx:
+	* TriangleSetGL.h:
+	* Viewer.h:
+	* ZTransEditor.h:
+	Add some class docs.
+
 2007-11-19  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
 
 	* LinkDef.h:
@@ -5,6 +44,7 @@
 
 	* NLTProjector.cxx:
 	* NLTProjector.h:
+	Document members and functions.
 
 2007-11-09  Matevz Tadel  <matevz.tadel@cern.ch>
 
