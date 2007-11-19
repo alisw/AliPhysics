@@ -281,7 +281,7 @@ Reve::RenderElementList* esd_tracks_vertex_cut()
     //PH on some platforms (alphalinuxgcc, solariscc5, etc.)
     //PH    track->SetName(Form("track %d, sigma=%5.3f", at->GetLabel(), s));
     char form[1000];
-    sprintf(form,"Track idx=%d, sigma=%5.3f", at->GetIndex(), s);
+    sprintf(form,"Track idx=%d, sigma=%5.3f", at->GetID(), s);
     track->SetName(form);
     gReve->AddRenderElement(track, tlist);
   }
