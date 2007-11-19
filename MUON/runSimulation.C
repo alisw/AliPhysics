@@ -31,9 +31,9 @@ void runSimulation(int run, int seed, int nevents, const char* config)
 // AliCDBManager* man = AliCDBManager::Instance();
 // man->SetDefaultStorage("local://$ALICE_ROOT");
 // man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
-  gRandom->SetSeed(seed);
-  AliCDBManager::Instance()->SetRun(run);
   AliSimulation MuonSim(config);
+  MuonSim.SetRunNumber(run);
+  MuonSim.SetSeed(seed);
   MuonSim.SetMakeTrigger("MUON");
   MuonSim.SetWriteRawData("MUON","raw.root",kTRUE);
   MuonSim.Run(nevents);
