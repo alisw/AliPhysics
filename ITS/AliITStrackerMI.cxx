@@ -451,7 +451,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   for (fPass=0; fPass<2; fPass++) {
      Int_t &constraint=fConstraint[fPass]; if (constraint<0) continue;
      for (fCurrentEsdTrack=0; fCurrentEsdTrack<nentr; fCurrentEsdTrack++) {
-       //cerr<<fPass<<"    "<<fCurrentEsdTrack<<'\r';
+       //cerr<<fPass<<"    "<<fCurrentEsdTrack<<'\n';
        AliITStrackMI *t=(AliITStrackMI*)itsTracks.UncheckedAt(fCurrentEsdTrack);
        if (t==0) continue;              //this track has been already tracked
        if (t->GetReconstructed()&&(t->GetNUsed()<1.5)) continue;  //this track was  already  "succesfully" reconstructed
@@ -774,6 +774,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   Double_t xyzVtx[]={GetX(),GetY(),GetZ()};
   Double_t ersVtx[]={GetSigmaX(),GetSigmaY(),GetSigmaZ()};
 
+
   AliESDtrack * esd = otrack->GetESDtrack();
   if (esd->GetV0Index(0)>0) {
     // TEMPORARY SOLLUTION: map V0 indexes to point to proper track
@@ -819,14 +820,14 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   //
   // follow prolongations
   for (Int_t ilayer=5; ilayer>=0; ilayer--) {
+    fI = ilayer;
     //
-    AliITSlayer &layer=fgLayers[ilayer]; 
-    Double_t r=layer.GetR();    
-    Double_t deltar=(ilayer<2 ? 0.10*r : 0.05*r);
+    AliITSlayer &layer=fgLayers[ilayer];
+    Double_t r = layer.GetR(); 
     ntracks[ilayer]=0;
     //
     //
-   Int_t nskipped=0;
+    Int_t nskipped=0;
     Float_t nused =0;
     for (Int_t itrack =0; itrack<ntracks[ilayer+1]; itrack++) {
       //set current track
@@ -846,30 +847,41 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       if (ilayer==1) 
 	if(!CorrectForShieldMaterial(&currenttrack1,"SPD","inward")) continue;
 
+      // detector number
       Double_t phi,z;
       if (!currenttrack1.GetPhiZat(r,phi,z)) continue;
-
       Int_t idet=layer.FindDetectorIndex(phi,z);
-      if (idet<0) continue;
-      
-      //propagate to the intersection
-      const AliITSdetector &det=layer.GetDetector(idet);
-      new(&currenttrack2)  AliITStrackMI(currenttrack1);
 
       Double_t trackGlobXYZ1[3];
       currenttrack1.GetXYZ(trackGlobXYZ1);
 
+      // Get the budget to the primary vertex for the current track being prolonged
+      Double_t budgetToPrimVertex = GetEffectiveThickness();
+
+      // check if we allow a prolongation without point
+      Int_t skip = SkipLayer(&currenttrack1,ilayer,idet);
+      if (skip) {
+	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
+	// apply correction for material of the current layer
+	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
+	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
+	vtrack->SetClIndex(ilayer,0);
+	if(constrain) vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
+	ntracks[ilayer]++;
+	continue;  //if (skip==1 || skip==2) continue;
+      }
+
+      // track outside layer acceptance in z
+      if (idet<0) continue;
+      
+      //propagate to the intersection with the detector plane
+      const AliITSdetector &det=layer.GetDetector(idet);
+      new(&currenttrack2)  AliITStrackMI(currenttrack1);
       if (!currenttrack1.Propagate(det.GetPhi(),det.GetR())) continue;
       currenttrack2.Propagate(det.GetPhi(),det.GetR());
       currenttrack1.SetDetectorIndex(idet);
       currenttrack2.SetDetectorIndex(idet);
       
-      fI = ilayer;
-      // Get the budget to the primary vertex and between the two layers
-      // for the current track being prolonged (before searching for clusters
-      // on this layer)
-      Double_t budgetToPrimVertex = GetEffectiveThickness();
-
       //***************
       // DEFINITION OF SEARCH ROAD FOR CLUSTERS SELECTION
       //
@@ -899,11 +911,12 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	dy = TMath::Sqrt(dy*dy+deltaXNeighbDets*deltaXNeighbDets*snp*snp);
       } // boundary
       
-      // road in global (rphi,z)
+      // road in global (rphi,z) [i.e. in tracking ref. system]
       Double_t zmin = currenttrack1.GetZ() - dz; 
       Double_t zmax = currenttrack1.GetZ() + dz;
       Double_t ymin = currenttrack1.GetY() + r*det.GetPhi() - dy;
       Double_t ymax = currenttrack1.GetY() + r*det.GetPhi() + dy;
+
       // select clusters in road
       layer.SelectClusters(zmin,zmax,ymin,ymax); 
       //********************
@@ -1006,21 +1019,24 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  } //apply vertex constrain	  	  
 	  ntracks[ilayer]++;
 	}  // create new hypothesis
-      } // loop over possible cluster prolongation      
-      if (constrain&&itrack<2&&currenttrack1.GetNSkipped()==0 && deadzone==0&&ntracks[ilayer]<100) {	
-	// Bring the track beyond the material
-	currenttrack1.AliExternalTrackParam::PropagateTo(currenttrack1.GetX()-deltar,GetBz());
+      } // loop over possible prolongations 
+     
+      // allow one prolongation without clusters
+      if (constrain && itrack<=1 && currenttrack1.GetNSkipped()==0 && deadzone==0 && ntracks[ilayer]<100) {
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
+	// apply correction for material of the current layer
+	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetClIndex(ilayer,0);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	vtrack->IncrementNSkipped();
 	ntracks[ilayer]++;
       }
 
-      if (constrain&&itrack<1&&TMath::Abs(currenttrack1.GetTgl())>1.1) {  //big theta - for low flux
-	// Bring the track beyond the material
-	currenttrack1.AliExternalTrackParam::PropagateTo(currenttrack1.GetX()-deltar,GetBz());
+      // allow one prolongation without clusters for tracks with |tgl|>1.1
+      if (constrain && itrack==0 && TMath::Abs(currenttrack1.GetTgl())>1.1) {  //big theta - for low flux
 	AliITStrackMI* vtrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(currenttrack1);
+	// apply correction for material of the current layer
+	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetClIndex(ilayer,0);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
@@ -2131,7 +2147,13 @@ Double_t AliITStrackerMI::GetNormalizedChi2(AliITStrackMI * track, Int_t mode)
   //
   Double_t match = TMath::Sqrt(track->GetChi22());
   if (track->GetConstrain())  match/=track->GetNumberOfClusters();
-  if (!track->GetConstrain()) match/=track->GetNumberOfClusters()-2.;
+  if (!track->GetConstrain()) { 
+    if (track->GetNumberOfClusters()>2) {
+      match/=track->GetNumberOfClusters()-2.;
+    } else {
+      match=0;
+    }
+  }
   if (match<0) match=0;
   Float_t deadzonefactor = (track->GetNDeadZone()>0) ? 3*(1.1-track->GetDeadZoneProbability()):0.;
   Double_t normchi2 = 2*track->GetNSkipped()+match+deadzonefactor+(1+(2*track->GetNSkipped()+deadzonefactor)/track->GetNumberOfClusters())*
@@ -4692,10 +4714,26 @@ void AliITStrackerMI::DeleteTrksMaterialLUT() {
   return;
 }
 //------------------------------------------------------------------------
+Int_t AliITStrackerMI::SkipLayer(AliITStrackMI *track,
+				 Int_t ilayer,Int_t idet) const {
+  //-----------------------------------------------------------------
+  // This method is used to decide whether to allow a prolongation 
+  // without clusters, because we want to skip the layer.
+  // In this case the return value is > 0:
+  // return 1: the user requested to skip a layer
+  // return 2: track outside z acceptance of SSD/SDD and will cross both SPD
+  //-----------------------------------------------------------------
 
+  if (AliITSReconstructor::GetRecoParam()->GetLayersToSkip(ilayer)) return 1;
 
+  if (idet<0 && ilayer>1 && AliITSReconstructor::GetRecoParam()->GetExtendedEtaAcceptance()) {
+    // check if track will cross SPD outer layer
+    Double_t phiAtSPD2,zAtSPD2;
+    if(track->GetPhiZat(fgLayers[1].GetR(),phiAtSPD2,zAtSPD2)) {
+      if (TMath::Abs(zAtSPD2)<2.*AliITSRecoParam::GetSPDdetzlength()) return 2;
+    }
+  }
 
-
-
-
-
+  return 0;
+}
+//------------------------------------------------------------------------

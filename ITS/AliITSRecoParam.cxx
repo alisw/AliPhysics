@@ -97,13 +97,15 @@ fXPassDeadZoneHits(0),
 fUseTGeoInTracker(0),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
-fFindV0s(kTRUE),
-fFactorSAWindowSizes(1.)
+fExtendedEtaAcceptance(kFALSE),
+fFactorSAWindowSizes(1.),
+fFindV0s(kTRUE)
 {
   //
   // constructor
   //
   SetLayersParameters();
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fLayersToSkip[i]=0;
   SetUseTGeoInTracker(0);
   SetAllowSharedClusters(kTRUE);
   SetFindV0s(kTRUE);
@@ -225,7 +227,8 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   //
   AliITSRecoParam *param = new AliITSRecoParam();
 
-  param->SetFactorSAWindowSizes(3.);
+  // larger seach windows for SA (in case of large misalignments)
+  param->SetFactorSAWindowSizes(3.); 
 
   param->fMaxSnp = 0.95;
 

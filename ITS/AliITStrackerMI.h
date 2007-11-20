@@ -219,6 +219,7 @@ protected:
   Int_t CorrectForShieldMaterial(AliITStrackMI *t, TString shield, TString direction="inward");
   Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
+  Int_t SkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
   AliITStrackMI fTracks[AliITSgeomTGeo::kNLayers];      // track estimations at the ITS layers

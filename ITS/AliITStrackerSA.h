@@ -40,7 +40,9 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t FindTracks(AliESDEvent* event);
 
   AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex);
-  AliITStrackV2* FitShortTrack(AliITStrackSA* tr,Double_t *primaryVertex,Int_t innLay);
+  AliITStrackV2* FitShortTrack(AliITStrackSA* tr,Double_t *primaryVertex,
+			       Int_t innLay);
+  AliITStrackV2* FitJumpyTrack(AliITStrackSA* tr,Double_t *primaryVertex);
   Int_t FindTrackLowChiSquare(TObjArray* tracklist, Int_t dim) const;
   Int_t LoadClusters(TTree *cf) {Int_t rc=AliITStrackerMI::LoadClusters(cf); SetClusterTree(cf); SetSixPoints(kTRUE); return rc;}
   void SetVertex(AliESDVertex *vtx){fVert = vtx;}

@@ -123,15 +123,20 @@ class AliITSRecoParam : public TObject
   void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
   Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
+  void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
+  Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
 
+  void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
+  Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
 
   void   SetFindV0s(Bool_t find=kTRUE) { fFindV0s=find; return; }
   Bool_t GetFindV0s() const { return fFindV0s; }
 
-  void SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
-  Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
+  void   SetLayersParameters();
 
-  void SetLayersParameters();
+  void   SetLayerToSkip(Int_t i) { fLayersToSkip[i]=1; return; }
+  Int_t  GetLayersToSkip(Int_t i) const { return fLayersToSkip[i]; }
+
   //
 
   enum {fgkMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
@@ -172,6 +177,8 @@ class AliITSRecoParam : public TObject
   static const Double_t fgkDeltaXNeighbDets;  // max difference in radius between neighbouring detectors 
   static const Double_t fgkSPDdetzlength;     // SPD ladder length in z
   static const Double_t fgkSPDdetxlength;     // SPD ladder length in x
+
+  Int_t fLayersToSkip[AliITSgeomTGeo::kNLayers]; // array with layers to skip (MI,SA)
 
   // spatial resolutions of the detectors
   Double_t fSigmaY2[AliITSgeomTGeo::kNLayers]; // y
@@ -234,10 +241,10 @@ class AliITSRecoParam : public TObject
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
+  Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
+  Double_t fFactorSAWindowSizes; // larger window sizes in SA
 
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
-
-  Double_t fFactorSAWindowSizes; // larger window sizes in SA
 
   ClassDef(AliITSRecoParam,1) // ITS reco parameters
 };
