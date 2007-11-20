@@ -9,15 +9,19 @@ void MakeZDCResMisAlignment(){
   Double_t dx=0., dy=0.05, dz=0.;
   Double_t dpsi=0., dtheta=0., dphi=0.;
 
-  const char *ZDCn="ZDC/NeutronZDC";
-  const char *ZDCp="ZDC/ProtonZDC";
+  const char *ZDCCn="ZDC/NeutronZDC_C";
+  const char *ZDCCp="ZDC/ProtonZDC_C";
+  const char *ZDCAn="ZDC/NeutronZDC_A";
+  const char *ZDCAp="ZDC/ProtonZDC_A";
 
   UShort_t iIndex=0;
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
-  new(alobj[0]) AliAlignObjParams(ZDCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
-  new(alobj[1]) AliAlignObjParams(ZDCp, volid, dx, dy, dz, dpsi, dtheta, dphi,kTRUE);
+  new(alobj[0]) AliAlignObjParams(ZDCCn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[1]) AliAlignObjParams(ZDCCp, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[0]) AliAlignObjParams(ZDCAn, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
+  new(alobj[1]) AliAlignObjParams(ZDCAp, volid, dx, dy, dz, dpsi, dtheta, dphi, kTRUE);
 
   if( TString(gSystem->Getenv("TOCDB")) != TString("kTRUE") ){
     // save in file
