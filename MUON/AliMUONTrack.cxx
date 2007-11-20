@@ -464,8 +464,8 @@ Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
     AliMUONTrackParam* trackParamAtCluster1;
     AliMUONVCluster *cluster, *discardedCluster;
     Int_t iCluster1, iCluster2, iCurrentCluster1, iCurrentCluster2;
-    TMatrixD ClusterWeightsNB(nClusters-1,nClusters-1);
-    TMatrixD ClusterWeightsB(nClusters-1,nClusters-1);
+    TMatrixD clusterWeightsNB(nClusters-1,nClusters-1);
+    TMatrixD clusterWeightsB(nClusters-1,nClusters-1);
     Double_t *dX = new Double_t[nClusters-1];
     Double_t *dY = new Double_t[nClusters-1];
     Double_t globalChi2b;
@@ -475,7 +475,7 @@ Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
       discardedCluster = trackParamAtCluster->GetClusterPtr();
       
       // Recompute cluster weights without the current cluster
-      if (!ComputeClusterWeights(ClusterWeightsNB, ClusterWeightsB, &mcsCovariances, discardedCluster)) {
+      if (!ComputeClusterWeights(clusterWeightsNB, clusterWeightsB, &mcsCovariances, discardedCluster)) {
   	AliWarning("cannot take into account the multiple scattering effects");
 	delete [] dX;
 	delete [] dY;
@@ -502,17 +502,17 @@ Bool_t AliMUONTrack::ComputeLocalChi2(Bool_t accountForMCS)
           if (cluster == discardedCluster) continue;
           
           // Add contribution from covariances
-          globalChi2b += (ClusterWeightsNB(iCurrentCluster1, iCurrentCluster2) +
-        		  ClusterWeightsNB(iCurrentCluster2, iCurrentCluster1)) * dX[iCurrentCluster1] * dX[iCurrentCluster2] +
-        		 (ClusterWeightsB(iCurrentCluster1, iCurrentCluster2) +
-        		  ClusterWeightsB(iCurrentCluster2, iCurrentCluster1)) * dY[iCurrentCluster1] * dY[iCurrentCluster2];
+          globalChi2b += (clusterWeightsNB(iCurrentCluster1, iCurrentCluster2) +
+        		  clusterWeightsNB(iCurrentCluster2, iCurrentCluster1)) * dX[iCurrentCluster1] * dX[iCurrentCluster2] +
+        		 (clusterWeightsB(iCurrentCluster1, iCurrentCluster2) +
+        		  clusterWeightsB(iCurrentCluster2, iCurrentCluster1)) * dY[iCurrentCluster1] * dY[iCurrentCluster2];
           
           iCurrentCluster2++;
     	}
         
         // Add contribution from variances
-    	globalChi2b += ClusterWeightsNB(iCurrentCluster1, iCurrentCluster1) * dX[iCurrentCluster1] * dX[iCurrentCluster1] +
-        	       ClusterWeightsB(iCurrentCluster1, iCurrentCluster1) * dY[iCurrentCluster1] * dY[iCurrentCluster1];
+    	globalChi2b += clusterWeightsNB(iCurrentCluster1, iCurrentCluster1) * dX[iCurrentCluster1] * dX[iCurrentCluster1] +
+        	       clusterWeightsB(iCurrentCluster1, iCurrentCluster1) * dY[iCurrentCluster1] * dY[iCurrentCluster1];
     	
         iCurrentCluster1++;
       }
@@ -636,7 +636,7 @@ Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD* mcsCovariances)
 }
 
   //__________________________________________________________________________
-Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD& ClusterWeightsNB, TMatrixD& ClusterWeightsB,
+Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD& clusterWeightsNB, TMatrixD& clusterWeightsB,
 					   TMatrixD* mcsCovariances, AliMUONVCluster* discardedCluster) const
 {
   /// Compute the weight matrices, in non bending and bending direction,
@@ -656,11 +656,11 @@ Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD& ClusterWeightsNB, TMatrixD&
   
   // Resize the weights matrices; alocate memory
   if (discardedCluster) {
-    ClusterWeightsNB.ResizeTo(nClusters-1,nClusters-1);
-    ClusterWeightsB.ResizeTo(nClusters-1,nClusters-1);
+    clusterWeightsNB.ResizeTo(nClusters-1,nClusters-1);
+    clusterWeightsB.ResizeTo(nClusters-1,nClusters-1);
   } else {
-    ClusterWeightsNB.ResizeTo(nClusters,nClusters);
-    ClusterWeightsB.ResizeTo(nClusters,nClusters);
+    clusterWeightsNB.ResizeTo(nClusters,nClusters);
+    clusterWeightsB.ResizeTo(nClusters,nClusters);
   }
   
   // Define variables
@@ -682,25 +682,25 @@ Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD& ClusterWeightsNB, TMatrixD&
       if (cluster2 == discardedCluster) continue;
       
       // Fill with MCS covariances
-      ClusterWeightsNB(iCurrentCluster1, iCurrentCluster2) = (*mcsCovariances)(iCluster1,iCluster2);
+      clusterWeightsNB(iCurrentCluster1, iCurrentCluster2) = (*mcsCovariances)(iCluster1,iCluster2);
       
       // Equal contribution from multiple scattering in non bending and bending directions
-      ClusterWeightsB(iCurrentCluster1, iCurrentCluster2) = ClusterWeightsNB(iCurrentCluster1, iCurrentCluster2);
+      clusterWeightsB(iCurrentCluster1, iCurrentCluster2) = clusterWeightsNB(iCurrentCluster1, iCurrentCluster2);
       
       // Add contribution from cluster resolution to diagonal element and symmetrize the matrix
       if (iCurrentCluster1 == iCurrentCluster2) {
 	
 	// In non bending plane
-        ClusterWeightsNB(iCurrentCluster1, iCurrentCluster1) += cluster1->GetErrX2();
+        clusterWeightsNB(iCurrentCluster1, iCurrentCluster1) += cluster1->GetErrX2();
 	// In bending plane
-	ClusterWeightsB(iCurrentCluster1, iCurrentCluster1) += cluster1->GetErrY2();
+	clusterWeightsB(iCurrentCluster1, iCurrentCluster1) += cluster1->GetErrY2();
 	
       } else {
 	
 	// In non bending plane
-	ClusterWeightsNB(iCurrentCluster2, iCurrentCluster1) = ClusterWeightsNB(iCurrentCluster1, iCurrentCluster2);
+	clusterWeightsNB(iCurrentCluster2, iCurrentCluster1) = clusterWeightsNB(iCurrentCluster1, iCurrentCluster2);
 	// In bending plane
-	ClusterWeightsB(iCurrentCluster2, iCurrentCluster1) = ClusterWeightsB(iCurrentCluster1, iCurrentCluster2);
+	clusterWeightsB(iCurrentCluster2, iCurrentCluster1) = clusterWeightsB(iCurrentCluster1, iCurrentCluster2);
 	
       }
       
@@ -711,13 +711,13 @@ Bool_t AliMUONTrack::ComputeClusterWeights(TMatrixD& ClusterWeightsNB, TMatrixD&
   }
     
   // Inversion of covariance matrices to get the weights
-  if (ClusterWeightsNB.Determinant() != 0 && ClusterWeightsB.Determinant() != 0) {
-    ClusterWeightsNB.Invert();
-    ClusterWeightsB.Invert();
+  if (clusterWeightsNB.Determinant() != 0 && clusterWeightsB.Determinant() != 0) {
+    clusterWeightsNB.Invert();
+    clusterWeightsB.Invert();
   } else {
     AliWarning(" Determinant = 0");
-    ClusterWeightsNB.ResizeTo(0,0);
-    ClusterWeightsB.ResizeTo(0,0);
+    clusterWeightsNB.ResizeTo(0,0);
+    clusterWeightsB.ResizeTo(0,0);
     if(deleteMCSCov) delete mcsCovariances;
     return kFALSE;
   }
