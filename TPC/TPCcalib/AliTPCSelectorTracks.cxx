@@ -136,6 +136,19 @@ void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
 }
 
 
+void AliTPCSelectorTracks::SlaveTerminate()
+{
+   // The SlaveTerminate() function is called after all entries or objects
+   // have been processed. When running with PROOF SlaveTerminate() is called
+   // on each slave server.
+  printf ("SlaveTerminate.. \n");
+  printf ("Terminate CalibTrackGain.. \n");
+  if (fCalibTracksGain) fCalibTracksGain->Terminate();
+}
+
+
+
+
 Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
 {
   //
@@ -193,17 +206,18 @@ void AliTPCSelectorTracks::Terminate()
 //          for (UInt_t iFitType = 0; iFitType < 3; iFitType++)
 //             fCalibTracksGain->Evaluate(iSegment, iPadType, iFitType);
 //       }
-//    }   
+//    }    
    TFile file(fgkOutputFileName, "recreate");
-   fCalibTracksGain->Evaluate();
+   fCalibTracksGain  = (AliTPCcalibTracksGain*)fOutput->FindObject("calibTracksGain");
+   if (fCalibTracksGain) fCalibTracksGain->Evaluate();
    fOutput->Write();
    file.Close();
    printf("Successfully written file to '%s'.", fgkOutputFileName);
-
+ 
 
    Info("Destructor","Destuctor");
-   delete fCalibTracksGain;
-   delete fCalibTracks;
+   //delete fCalibTracksGain;
+   //delete fCalibTracks;
 //   printf ("Terminate... \n");
 //   if (!fOutput) return;
 //   TFile file("Output.root","recreate");

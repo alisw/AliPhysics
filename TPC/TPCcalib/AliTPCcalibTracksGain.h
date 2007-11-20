@@ -39,7 +39,7 @@ private:
    public:
       PreProcess(AliTPCseed* seed);
       virtual ~PreProcess();
-
+      
       AliTPCseed* GetSeed() { return fSeed; }
       Double_t    GetAngleTrackPadrow(UInt_t segment, UInt_t padType) { return fAngleTrackPadrow[segment + 36*padType]; }
       Double_t    GetAngleTrackBeam(UInt_t segment, UInt_t padType) { return fAngleTrackBeam[segment + 36*padType]; }
@@ -77,6 +77,7 @@ public:
    static void testSeed(char* file = "/d/alice07/sma/v4-06-Rev-03/pp/0201/AliESDs.root", Int_t entry = 87, Int_t track = 0); // LOESCH MICH ODER DU WIRST UNTERGEHEN
    static void     AddInfo(TChain * chain, char* fileName);
    Int_t          AcceptTrack(AliTPCseed* track);
+  void Terminate();
    //Bool_t          AcceptCluster(AliTPCclusterMI* cluster);
    void            Add(AliTPCcalibTracksGain* cal);
    void            AddTrack(AliTPCseed* seed);

@@ -22,6 +22,7 @@ public :
    AliTPCSelectorTracks(TTree *tree=0);
   virtual ~AliTPCSelectorTracks();
    virtual void    SlaveBegin(TTree *tree);
+   virtual void    SlaveTerminate();
    virtual Int_t   ProcessIn(Long64_t entry);
    virtual void    Terminate();
   void InitComponent();

@@ -79,6 +79,7 @@
 
 #include <TPDGCode.h>
 #include <TStyle.h>
+#include "TSystem.h"
 #include "TMatrixD.h"
 #include "TTreeStream.h"
 #include "TF1.h"
@@ -244,7 +245,7 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
    //
    // Destructor.
    //
-   
+  Info("Destructor","");
    if (fSimpleFitter) delete fSimpleFitter;
    if (fSqrtFitter) delete fSqrtFitter;
    if (fLogFitter) delete fLogFitter;
@@ -259,6 +260,21 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
 
    if (fDebugCalPadRaw) delete fDebugCalPadRaw;
    if (fDebugCalPadCorr) delete fDebugCalPadCorr;
+}
+
+void AliTPCcalibTracksGain::Terminate(){
+  //
+  // Close Debug streamer
+  //
+  Evaluate();
+  if (fDebugStream){
+    delete fDebugStream;
+    fDebugStream=0;
+  }
+  char *prefix = "/d/alice11/miranov/simulHEAD0907/pp/calib/";
+  char command[4000];
+  sprintf(command,"mv TPCCalibTracksGain.root %s/%s_TPCCalibTracksGain.root", prefix, gSystem->HostName());
+  gSystem->Exec(command);
 }
 
 void AliTPCcalibTracksGain::AddInfo(TChain* chain, char* fileName) {
