@@ -41,7 +41,7 @@ class AliRawReaderMemory: public AliRawReader {
     virtual UInt_t   GetGDCId() const {return 0;};
     virtual UInt_t   GetTimestamp() const {return 0;};
 
-    virtual Int_t    GetEquipmentSize() const {return 0;};
+    virtual Int_t    GetEquipmentSize() const {return fBufferSize;};
     virtual Int_t    GetEquipmentType() const {return 0;};
     virtual Int_t    GetEquipmentId() const {return fEquipmentId;};
     virtual const UInt_t* GetEquipmentAttributes() const {return NULL;};
@@ -77,3 +77,4 @@ class AliRawReaderMemory: public AliRawReader {
 };
 
 #endif
+

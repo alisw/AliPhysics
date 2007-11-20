@@ -82,7 +82,10 @@ Bool_t AliRawReaderMemory::ReadHeader()
     
     // Check that the header is sane, that is the size does not go past the buffer.
     // Otherwise try again at the next word location.
-    if (fHeader->fSize == 0 or fPosition+fCount+fHeader->fSize > fBufferSize) {
+    if ( ( (fHeader->fSize == 0) || 
+	   ((Int_t)fPosition + fCount + (Int_t)fHeader->fSize > (Int_t)fBufferSize ) ) 
+	 && fHeader->fSize != 0xFFFFFFFF) {
+
       if (fPosition + sizeof(UInt_t) <= fBufferSize) {
         fPosition += sizeof(UInt_t);
         continue;
@@ -97,7 +100,7 @@ Bool_t AliRawReaderMemory::ReadHeader()
     if (fHeader->fSize != 0xFFFFFFFF) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
     } else {
-      fCount = fBufferSize - fPosition - sizeof(AliRawDataHeader);
+      fCount = fBufferSize - sizeof(AliRawDataHeader);
     }
   } while (!IsSelected());
 
