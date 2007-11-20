@@ -28,7 +28,8 @@ ClassImp(AliInputEventHandler)
 
 //______________________________________________________________________________
 AliInputEventHandler::AliInputEventHandler() :
-  AliVEventHandler()
+    AliVEventHandler(),
+    fTree(0)
 {
   // default constructor
 }
