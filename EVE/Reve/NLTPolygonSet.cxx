@@ -23,9 +23,15 @@ namespace {
 }
 
 
+//______________________________________________________________________________
+// NLTPolygonSet
+//
+// A set of projected polygons.
+// Used for storage of projected geometrical shapes.
+
 ClassImp(NLTPolygonSet)
 
-/**************************************************************************/
+//______________________________________________________________________________
 NLTPolygonSet::NLTPolygonSet(const Text_t* n, const Text_t* t) :
   RenderElementList(n, t),
 
@@ -45,13 +51,15 @@ NLTPolygonSet::NLTPolygonSet(const Text_t* n, const Text_t* t) :
   SetMainColorPtr(&fFillColor);
 }
 
-/**************************************************************************/
-
+//______________________________________________________________________________
 NLTPolygonSet::~NLTPolygonSet()
 {
   ClearPolygonSet();
 }
 
+/******************************************************************************/
+
+//______________________________________________________________________________
 void NLTPolygonSet::ClearPolygonSet()
 {
   // delete polygon vertex indices
@@ -67,7 +75,7 @@ void NLTPolygonSet::ClearPolygonSet()
   fSurf = 0;
 }
 
-/**************************************************************************/
+//______________________________________________________________________________
 void NLTPolygonSet::SetProjection(NLTProjector* proj, NLTProjectable* model)
 {
   NLTProjected::SetProjection(proj, model);
@@ -83,7 +91,7 @@ void NLTPolygonSet::SetProjection(NLTProjector* proj, NLTProjectable* model)
   }
 }
 
-/**************************************************************************/
+//______________________________________________________________________________
 void NLTPolygonSet::UpdateProjection()
 {
   if(fBuff == 0) return;
@@ -258,7 +266,7 @@ void NLTPolygonSet::MakePolygonsFromBP()
     }
     bpols += (Nseg+2);
   }
-}// MakePolygonsFromBP
+}
 
 //______________________________________________________________________________
 void NLTPolygonSet::MakePolygonsFromBS()
@@ -328,10 +336,11 @@ void NLTPolygonSet::MakePolygonsFromBS()
     };
     AddPolygon(pp, fPolsBS);
   }
-}//MakePolygonsFromBS
+}
 
+/******************************************************************************/
 
-/**************************************************************************/
+//______________________________________________________________________________
 void  NLTPolygonSet::ProjectBuffer3D()
 {
   //DumpBuffer3D();
@@ -376,7 +385,7 @@ void  NLTPolygonSet::ProjectBuffer3D()
   ResetBBox();
 }
 
-/**************************************************************************/
+//______________________________________________________________________________
 void NLTPolygonSet::ComputeBBox()
 {
   BBoxInit();
@@ -385,7 +394,7 @@ void NLTPolygonSet::ComputeBBox()
   AssertBBoxExtents(0.1);
 }
 
-/**************************************************************************/
+//______________________________________________________________________________
 void NLTPolygonSet::Paint(Option_t* )
 {
   if(fNPnts == 0) return;
@@ -406,7 +415,9 @@ void NLTPolygonSet::Paint(Option_t* )
   }
 }
 
-/**************************************************************************/
+/******************************************************************************/
+
+//______________________________________________________________________________
 void NLTPolygonSet::DumpPolys() const
 {
   printf("NLTPolygonSet %d polygons\n", fPols.size());

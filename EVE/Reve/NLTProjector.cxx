@@ -20,6 +20,7 @@ using namespace Reve;
 
 ClassImp(NLTProjector)
 
+//______________________________________________________________________________
 NLTProjector::NLTProjector():
   RenderElementList("NLTProjector",""),
 
@@ -227,11 +228,10 @@ void NLTProjector::Paint(Option_t* /*option*/)
     Error(eH, "only direct GL rendering supported.");
 }
 
-
 //______________________________________________________________________________
 void NLTProjector::ComputeBBox()
 {
-  // Fill bounding-box information in base-class TAttBBox (virtual method).
+  // Virtual from TAttBBox; fill bounding-box information.
 
   static const Exc_t eH("NLTProjector::ComputeBBox ");
 
