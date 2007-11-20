@@ -462,7 +462,7 @@ int main(int argc, char **argv) {
     TString fileName = Form("%s/ref_phys_dead.tar",saveDirDeadRef);
     TString id = "SPD_ref_phys_dead";
 #ifndef SPD_DA_OFF
-    Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+    status = daqDA_FES_storeFile(fileName.Data(),id.Data());
     if (status!=0) {
       printf("Failed to export file %s , status %d\n",fileName.Data(),status);
       return -1;
@@ -507,7 +507,7 @@ int main(int argc, char **argv) {
   TString fileName = Form("%s/ref_phys.tar",saveDirNoisyRef);
   TString id = "SPD_ref_phys";
 #ifndef SPD_DA_OFF
-  Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+  status = daqDA_FES_storeFile(fileName.Data(),id.Data());
   if (status!=0) {
     printf("Failed to export file %s , status %d\n",fileName.Data(),status);
     return -1;
@@ -561,7 +561,7 @@ int main(int argc, char **argv) {
     TString fileName = Form("%s/noisy_phys.tar",saveDirNoisyToFXS);
     TString id = "SPD_phys_noisy";
 #ifndef SPD_DA_OFF
-    Int_t status = daqDA_FES_storeFile(fileName.Data(),id.Data());
+    status = daqDA_FES_storeFile(fileName.Data(),id.Data());
     if (status!=0) {
       printf("Failed to export file %s , status %d\n",fileName.Data(),status);
       return -1;
@@ -575,7 +575,7 @@ int main(int argc, char **argv) {
   idsFXSfile.close();
   id = "SPD_id_list";
 #ifndef SPD_DA_OFF
-  Int_t status = daqDA_FES_storeFile(idsFXSFileName.Data(),id.Data());
+  status = daqDA_FES_storeFile(idsFXSFileName.Data(),id.Data());
   if (status!=0) {
     printf("Failed to export file %s , status %d\n",fileName.Data(),status);
     return -1;
