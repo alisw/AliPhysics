@@ -1,3 +1,17 @@
+2007-11-20  Alja Mrak-Tadel  <Alja.Mrak.Tadel@cern.ch>
+
+	* NLTBases.cxx:
+	* NLTBases.h:
+	* NLTProjectorEditor.cxx:
+	* NLTProjectorEditor.h:
+	Add some  docs.
+
+	* NLTProjections.cxx:
+	* NLTProjections.h:
+	* NLTProjector.cxx:
+	* NLTProjector.h:
+	Put projections classes to new files.
+	
 2007-11-19  Matevz Tadel  <matevz.tadel@cern.ch>
 
 	* BoxSet.cxx:
