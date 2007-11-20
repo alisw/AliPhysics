@@ -40,7 +40,7 @@
 ClassImp(AliMUONRawStreamTrigger)
 /// \endcond
 
-const Int_t AliMUONRawStreamTrigger::fMaxDDL = 2;
+const Int_t AliMUONRawStreamTrigger::fgkMaxDDL = 2;
 
 //___________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
@@ -125,7 +125,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
   // loop over the two ddl's
 
-  while ( fDDL < fMaxDDL ) {
+  while ( fDDL < fgkMaxDDL ) {
     fRawReader->Reset();
     fRawReader->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
     if (fRawReader->ReadHeader()) break;
@@ -133,7 +133,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
     ++fDDL;
   }
 
-  if (fDDL >= fMaxDDL) {
+  if (fDDL >= fgkMaxDDL) {
     fDDL = 0;
     return kFALSE;
   }

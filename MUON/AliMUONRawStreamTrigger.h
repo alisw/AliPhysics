@@ -28,7 +28,7 @@ class AliMUONRawStreamTrigger: public TObject {
     virtual Bool_t   NextDDL();
 
     /// Return maximum number of DDLs
-    Int_t GetMaxDDL() const {return fMaxDDL;}
+    Int_t GetMaxDDL() const {return fgkMaxDDL;}
     /// Return maximum number of regional cards in DATE file
     Int_t GetMaxReg() const {return fPayload->GetMaxReg();}
     /// Return maximum number of local cards in DATE file
@@ -78,7 +78,7 @@ class AliMUONRawStreamTrigger: public TObject {
     Bool_t fNextDDL;      ///< flag for next DDL to be read
     Bool_t fEnableErrorLogger; //!< flag to enable the error info logger
 
-    static const Int_t  fMaxDDL;       ///< maximum number of DDLs
+    static const Int_t  fgkMaxDDL;       ///< maximum number of DDLs
 
     ClassDef(AliMUONRawStreamTrigger, 4)    // base class for reading MUON trigger rawdata
 };
