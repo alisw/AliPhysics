@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-default-target: libPWG2.so libPWG2ebye.so libPWG2flow.so libPWG2femtoscopy.so libPWG2femtoscopyUser.so
+default-target: libPWG2.so libPWG2ebye.so libPWG2flow.so libPWG2femtoscopy.so libPWG2femtoscopyUser.so libPWG2spectra.so
 
 ALICEINC      = -I.
 
@@ -10,6 +10,9 @@ ALICEINC      = -I.
 ifneq ($(ALICE_ROOT),)
   ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PYTHIA6 -I$(ALICE_ROOT)/EVGEN -I$(ALICE_ROOT)/RAW -I$(ALICE_ROOT)/TPC
 else
+  ifneq ($(STEERBase_INCLUDE),)
+    ALICEINC += -I../$(STEERBase_INCLUDE)
+  endif
   ifneq ($(ESD_INCLUDE),)
     ALICEINC += -I../$(ESD_INCLUDE)
   endif
@@ -110,6 +113,29 @@ endif
 	@echo "done"
 
 G__PWG2ebye.cxx G__PWG2ebye.h: $(HDRS_PWG2ebye) $(DHDR_PWG2ebye)
+	@echo "Generating dictionary ..."
+	rootcint -f $@ -c $(ALICEINC) $^
+
+## libPWG0spectra part
+include libPWG2spectra.pkg
+
+DHDR_PWG2spectra := $(DHDR)
+HDRS_PWG2spectra := $(HDRS)
+SRCS_PWG2spectra := $(SRCS) G__PWG2spectra.cxx
+OBJS_PWG2spectra := $(SRCS_PWG2spectra:.cxx=.o)
+
+libPWG2spectra.so: $(OBJS_PWG2spectra)
+	@echo "Linking" $@ ...
+	@/bin/rm -f $@
+ifeq ($(PLATFORM),macosx)
+	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+else
+	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+endif
+	@chmod a+x $@
+	@echo "done"
+
+G__PWG2spectra.cxx G__PWG2spectra.h: $(HDRS_PWG2spectra) $(DHDR_PWG2spectra)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 

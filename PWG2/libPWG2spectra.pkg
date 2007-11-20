@@ -1,0 +1,10 @@
+SRCS=SPECTRA/AliProtonAnalysis.cxx
+
+HDRS= $(SRCS:.cxx=.h) 
+
+DHDR:=PWG2spectraLinkDef.h
+
+EXPORT:=
+
+EINCLUDE:= 
+
