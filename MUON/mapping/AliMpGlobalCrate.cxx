@@ -66,17 +66,13 @@ AliMpGlobalCrate::AliMpGlobalCrate()
     fGlobalVmeAddr(0x0),
     fFetVmeAddr(0x0)
 {
+/// Standard constructor
 
   for (Int_t i = 0; i < fgkGlobalNofRegisters; ++i)
     fGlobalRegisters[i] = 0;
   
   for (Int_t j = 0; j < fgkFetNofRegisters; ++j)
     fFetRegisters[j] = 0;
-   
-
- 
-
-/// Standard constructor
 }
 
 //______________________________________________________________________________
