@@ -207,7 +207,7 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
   {
     AliMUONPad* pad = cluster.Pad(j);
     //if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
-    if ( pad->Status() != AliMUONClusterFinderMLEM::fgkUseForFit) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::GetUseForFitFlag()) continue;
     if (iflag == 0) {
       if ( pad->IsReal() ) npads++; // exclude virtual pads
       qTot += pad->Charge(); 
@@ -270,7 +270,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     AliMUONPad* pad = cluster.Pad(i);
     if ( !pad->IsReal() ) ++nVirtual;
     //if ( pad->Status() !=1 || pad->IsSaturated() ) continue;
-    if ( pad->Status() != AliMUONClusterFinderMLEM::fgkUseForFit ) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::GetUseForFitFlag() ) continue;
     if ( pad->IsReal() )
     {
       ++npads;
@@ -334,7 +334,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   
   // Get number of pads in X and Y 
   //const Int_t kStatusToTest(1);
-  const Int_t kStatusToTest(AliMUONClusterFinderMLEM::fgkUseForFit);
+  const Int_t kStatusToTest(AliMUONClusterFinderMLEM::GetUseForFitFlag());
   
   AliMpIntPair nofPads = cluster.NofPads(kStatusToTest);
   Int_t nInX = nofPads.GetFirst();
@@ -345,7 +345,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
     for (Int_t j = 0; j < cluster.Multiplicity(); ++j) {
       AliMUONPad *pad = cluster.Pad(j);
       //if (pad->Status() == 1 && !pad->IsSaturated()) npadOK++;
-      if (pad->Status() == AliMUONClusterFinderMLEM::fgkUseForFit && !pad->IsSaturated()) npadOK++;
+      if (pad->Status() == AliMUONClusterFinderMLEM::GetUseForFitFlag() && !pad->IsSaturated()) npadOK++;
     }
     cout << " Number of pads to fit: " << npadOK << endl;
     cout << " nInX and Y: " << nInX << " " << nInY << endl;
@@ -945,9 +945,9 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
           AliMUONPad* pad = cluster.Pad(j);
           //if ( pad->Status()==1 ) pad->SetStatus(0);
           //if ( pad->Status()==-9) pad->SetStatus(-5);
-          if ( pad->Status() == AliMUONClusterFinderMLEM::fgkUseForFit ||
-	       pad->Status() == AliMUONClusterFinderMLEM::fgkCoupled) 
-	    pad->SetStatus(AliMUONClusterFinderMLEM::fgkZero);
+          if ( pad->Status() == AliMUONClusterFinderMLEM::GetUseForFitFlag() ||
+	       pad->Status() == AliMUONClusterFinderMLEM::GetCoupledFlag()) 
+	    pad->SetStatus(AliMUONClusterFinderMLEM::GetZeroFlag());
         }
         // Merge the failed cluster candidates (with too few pads to fit) with 
         // the one with the strongest coupling
@@ -973,8 +973,8 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
         AliMUONPad* pad = cluster.Pad(j);
 	//if ( pad->Status()==1 ) pad->SetStatus(-2);
 	//if ( pad->Status()==-9) pad->SetStatus(-5);
-	if ( pad->Status() == AliMUONClusterFinderMLEM::fgkUseForFit ) 
-	  pad->SetStatus(AliMUONClusterFinderMLEM::fgkModified);
+	if ( pad->Status() == AliMUONClusterFinderMLEM::GetUseForFitFlag() ) 
+	  pad->SetStatus(AliMUONClusterFinderMLEM::GetModifiedFlag());
       }
       
       // Sort the clusters (move to the right the used ones)
@@ -1014,7 +1014,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
         {
           AliMUONPad* pad = cluster.Pad(j);
           //if ( pad->Status() != -2) continue;
-          if ( pad->Status() != AliMUONClusterFinderMLEM::fgkModified) continue;
+          if ( pad->Status() != AliMUONClusterFinderMLEM::GetModifiedFlag()) continue;
           for (Int_t iclust=0; iclust<nCoupled; ++iclust) 
           {
             indx = clustNumb[iclust];
@@ -1030,7 +1030,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
             }
           }
           //pad->SetStatus(-8);
-          pad->SetStatus(AliMUONClusterFinderMLEM::fgkOver);
+          pad->SetStatus(AliMUONClusterFinderMLEM::GetOverFlag());
         } // for (Int_t j=0; j<npad;
       } // if (nCoupled > 3)
     } // while (nCoupled > 0)
@@ -1103,7 +1103,7 @@ AliMUONClusterSplitterMLEM::Merge(const AliMUONCluster& cluster,
     {
       AliMUONPad* pad = cluster.Pad(j);
       //if ( pad->Status() < 0 && pad->Status() != -5 ) continue;// exclude used pads
-      if ( pad->Status() != AliMUONClusterFinderMLEM::fgkZero) continue;// exclude used pads
+      if ( pad->Status() != AliMUONClusterFinderMLEM::GetZeroFlag()) continue;// exclude used pads
         aijclupad(imax,j) += aijclupad(indx,j);
         aijclupad(indx,j) = 0;
     }
@@ -1231,9 +1231,9 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
         ++nOK; // pad to be used in fit
       }      
       */
-      if ( pad->Status() != AliMUONClusterFinderMLEM::fgkZero 
+      if ( pad->Status() != AliMUONClusterFinderMLEM::GetZeroFlag() 
 	   || pad->IsSaturated() ) continue; // used pads and overflows
-      pad->SetStatus(AliMUONClusterFinderMLEM::fgkUseForFit);
+      pad->SetStatus(AliMUONClusterFinderMLEM::GetUseForFitFlag());
       ++nOK; // pad to be used in fit
 
       if (nCoupled > 3) 
@@ -1257,7 +1257,7 @@ AliMUONClusterSplitterMLEM::SelectPad(const AliMUONCluster& cluster,
     if (padpix[j] < fgkCouplMin) continue;
     aaa += padpix[j];
     //cluster.Pad(j)->SetStatus(-1); // exclude pads with strong coupling to the other clusters
-    cluster.Pad(j)->SetStatus(AliMUONClusterFinderMLEM::fgkCoupled); // exclude pads with strong coupling to the other clusters
+    cluster.Pad(j)->SetStatus(AliMUONClusterFinderMLEM::GetCoupledFlag()); // exclude pads with strong coupling to the other clusters
     nOK--;
   }
   delete [] padpix; 
@@ -1278,7 +1278,7 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
   {
     AliMUONPad* pad = cluster.Pad(j);
     //if ( pad->Status() != -1 ) continue;
-    if ( pad->Status() != AliMUONClusterFinderMLEM::fgkCoupled ) continue;
+    if ( pad->Status() != AliMUONClusterFinderMLEM::GetCoupledFlag() ) continue;
     if (fNpar != 0) 
     {
       charge = 0;
@@ -1294,9 +1294,9 @@ AliMUONClusterSplitterMLEM::UpdatePads(const AliMUONCluster& cluster,
     } // if (fNpar != 0)
     
     //if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(0); 
-    if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(AliMUONClusterFinderMLEM::fgkZero); 
+    if (pad->Charge() > 6 /*fgkZeroSuppression*/) pad->SetStatus(AliMUONClusterFinderMLEM::GetZeroFlag()); 
     // return pad for further using // FIXME: remove usage of zerosuppression here
-    else pad->SetStatus(AliMUONClusterFinderMLEM::fgkOver); // do not use anymore
+    else pad->SetStatus(AliMUONClusterFinderMLEM::GetOverFlag()); // do not use anymore
     
   } // for (Int_t j=0;
 }  

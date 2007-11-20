@@ -45,12 +45,19 @@ public:
   virtual void Paint(Option_t* opt="");
 
   // Status flags for pads
-  static const Int_t fgkZero; ///< pad "basic" state
-  static const Int_t fgkMustKeep; ///< do not kill (for pixels)
-  static const Int_t fgkUseForFit; ///< should be used for fit
-  static const Int_t fgkOver; ///< processing is over
-  static const Int_t fgkModified; ///< modified pad charge 
-  static const Int_t fgkCoupled; ///< coupled pad  
+
+               /// Return pad "basic" state flag
+  static Int_t GetZeroFlag()       { return fgkZero; }
+               /// Return do not kill flag
+  static Int_t GetMustKeepFlag()   { return fgkMustKeep; }
+               /// Return should be used for fit flag
+  static Int_t GetUseForFitFlag()  { return fgkUseForFit; }
+               /// Return processing is over flag
+  static Int_t GetOverFlag()       { return fgkOver; }
+               /// Return modified pad charge flag
+  static Int_t GetModifiedFlag()   { return fgkModified; }
+               /// Return coupled pad flag
+  static Int_t GetCoupledFlag()    { return fgkCoupled; }
   
 private:
   /// Not implemented
@@ -103,7 +110,14 @@ private:
   void MaskPeaks(Int_t mask);
 
 private:
-    
+  // Status flags for pads
+  static const Int_t fgkZero; ///< pad "basic" state
+  static const Int_t fgkMustKeep; ///< do not kill (for pixels)
+  static const Int_t fgkUseForFit; ///< should be used for fit
+  static const Int_t fgkOver; ///< processing is over
+  static const Int_t fgkModified; ///< modified pad charge 
+  static const Int_t fgkCoupled; ///< coupled pad  
+      
   // Some constants
   static const Double_t fgkZeroSuppression; ///< average zero suppression value
   static const Double_t fgkDistancePrecision; ///< used to check overlaps and so on
