@@ -32,7 +32,11 @@ class AliMUONStringIntMap : public TObject
     virtual void Clear(Option_t* /*option*/ ="");
     virtual void Print(const char* /*option*/ = "") const;
     void Print(const TString& key, ofstream& out) const;
-    
+
+    // Methods for iterating over all elements    
+    Bool_t  Next(TString& first, Int_t& second);
+    void    ResetItr();
+
   protected:
     /// Not implemented
     AliMUONStringIntMap(const AliMUONStringIntMap& rhs);
@@ -44,8 +48,9 @@ class AliMUONStringIntMap : public TObject
     Int_t      fNofItems;    ///< number of items
     TObjArray  fFirstArray;  ///< first item array
     TArrayI    fSecondArray; ///< second item array
- 
-  ClassDef(AliMUONStringIntMap,1)  // motif map
+    Int_t      fCurrentIndex;///< current index
+
+  ClassDef(AliMUONStringIntMap,2)  // motif map
 };    
 
 #endif //ALI_MUON_STRING_INT_MAP_H

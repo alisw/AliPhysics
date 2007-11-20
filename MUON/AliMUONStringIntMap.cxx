@@ -38,7 +38,8 @@ AliMUONStringIntMap::AliMUONStringIntMap()
  : TObject(),
    fNofItems(0),
    fFirstArray(100),
-   fSecondArray(100)
+   fSecondArray(100),
+   fCurrentIndex(0)
 {
 /// Standard constructor
 
@@ -172,3 +173,30 @@ void AliMUONStringIntMap::Print(const TString& key, ofstream& out) const
 	 << endl;
   }
 }  	 
+
+//______________________________________________________________________________
+Bool_t  AliMUONStringIntMap::Next(TString& first, Int_t& second)
+{
+/// Iterator: next method.
+/// Returns false if the iterator reached the end.
+
+ 
+  if ( fCurrentIndex >= fNofItems ) return false;
+  
+  TObjString* objString = (TObjString*)fFirstArray.At(fCurrentIndex);
+  first = objString->GetString();
+  
+  second = fSecondArray.At(fCurrentIndex);
+  
+  ++fCurrentIndex;
+  
+  return true;
+}  
+
+//______________________________________________________________________________
+void  AliMUONStringIntMap::ResetItr()
+{
+/// Reset iterator
+ 
+  fCurrentIndex = 0;
+}  
