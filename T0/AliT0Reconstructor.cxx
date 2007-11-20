@@ -38,21 +38,15 @@
 #include <TArrayI.h>
 #include <TGraph.h>
 #include <TMath.h>
-//#include <TGeoManager.h>
-//#include <TClonesArray.h>
-//#include <TString.h>
-//#include <TGeoPNEntry.h>
-//#include <TGeoPhysicalNode.h>
-//#include  <TGeoHMatrix.h>
 
 ClassImp(AliT0Reconstructor)
 
   AliT0Reconstructor:: AliT0Reconstructor(): AliReconstructor(),
-  fZposition(0),
-  fParam(NULL),
-  fAmpLEDrec(),
-  fdZ_A(0),
-  fdZ_C(0)
+					     fdZonA(0),
+					     fdZonC(0),
+					     fZposition(0),
+					     fParam(NULL),
+					     fAmpLEDrec()
 {
  AliDebug(1,"Start reconstructor ");
   
@@ -63,20 +57,20 @@ ClassImp(AliT0Reconstructor)
     fAmpLEDrec.AddAtAndExpand(gr,i) ;  
     fTime0vertex[i]= fParam->GetTimeDelayDA(i);
   }
-  fdZ_C = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
-  fdZ_A = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
+  fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
+  fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
 
 }
 //____________________________________________________________________
 
 AliT0Reconstructor::AliT0Reconstructor(const AliT0Reconstructor &r):
   AliReconstructor(r),
-  fZposition(0),
-  fParam(NULL),
-  fAmpLEDrec(),
-  fdZ_A(0),
-  fdZ_C(0)
-{
+					     fdZonA(0),
+					     fdZonC(0),
+					     fZposition(0),
+					     fParam(NULL),
+					     fAmpLEDrec()
+ {
   //
   // AliT0Reconstructor copy constructor
   //
@@ -125,8 +119,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
   }else{
-    cerr<<"EXEC Branch T0 digits not found"<<endl;
-    return;
+    AliError(Form("EXEC Branch T0 digits not found"));
+     return;
   }
   
   digitsTree->GetEvent(0);
@@ -192,7 +186,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   if(besttimeA !=999999 && besttimeC != 999999 ){
     timeDiff =(besttimeC - besttimeA)*channelWidth;
     meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;
-    vertex = c*(timeDiff)/2. + (fdZ_A - fdZ_C)/2; //-(lenr-lenl))/2;
+    vertex = c*(timeDiff)/2. + (fdZonA - fdZonC)/2; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));
@@ -313,7 +307,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   if(besttimeA !=999999 && besttimeC != 999999 ){
     timeDiff = (besttimeC - besttimeA)*channelWidth;
     meanTime = (meanT0 - (besttimeA + besttimeC)/2) * channelWidth;   
-    vertex = c*(timeDiff)/2. + (fdZ_A - fdZ_C)/2; //-(lenr-lenl))/2;
+    vertex = c*(timeDiff)/2. + (fdZonA - fdZonC)/2; //-(lenr-lenl))/2;
     AliDebug(1,Form("  timeDiff %f ps,  meanTime %f ps, vertex %f cm",timeDiff, meanTime,vertex ));
     frecpoints->SetVertex(vertex);
     frecpoints->SetMeanTime(Int_t(meanTime));
@@ -361,26 +355,24 @@ void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, Ali
   if (brRec) {
     brRec->SetAddress(&frecpoints);
   }else{
-    cerr<<"EXEC Branch T0 rec not found"<<endl;
-    // exit(111);
+    AliError(Form("EXEC Branch T0 rec not found"));
     return;
   } 
     
     brRec->GetEntry(0);
-    Float_t timeStart, Zposition, amp[24], time[24];
-    Int_t i;
-    Zposition = frecpoints -> GetVertex();
-    timeStart = frecpoints -> GetMeanTime() ;
-    for ( i=0; i<24; i++) {
+    Float_t amp[24], time[24];
+    Float_t  zPosition = frecpoints -> GetVertex();
+    Float_t timeStart = frecpoints -> GetMeanTime() ;
+    for ( Int_t i=0; i<24; i++) {
       time[i] = Float_t (frecpoints -> GetTime(i)); // ps to ns
       amp[i] = frecpoints -> GetAmp(i);
     }
-    pESD->SetT0zVertex(Zposition); //vertex Z position 
+    pESD->SetT0zVertex(zPosition); //vertex Z position 
     pESD->SetT0(timeStart);        // interaction time 
     pESD->SetT0time(time);         // best TOF on each PMT 
     pESD->SetT0amplitude(amp);     // number of particles(MIPs) on each PMT
  
-    AliDebug(1,Form(" Z position %f cm,  T0  %f ps",Zposition , timeStart));
+    AliDebug(1,Form(" Z position %f cm,  T0  %f ps",zPosition , timeStart));
 
 } // vertex in 3 sigma
 

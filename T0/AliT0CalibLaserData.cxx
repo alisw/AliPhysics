@@ -1,3 +1,27 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/* $Id:  */
+
+//____________________________________________________________________
+//                                                                          
+// T0 - T0. 
+//
+// This class privides GIU service for reading RAW data from Laser
+// during electronics test 
+//                                                       
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TMap.h"
@@ -51,6 +75,10 @@ AliT0CalibLaserData::~AliT0CalibLaserData()
 
 void AliT0CalibLaserData::ReadHistSize(Int_t rNumber)
 {
+  //build GUI frame for reading:
+  // - run number
+  // - histograms rates
+
     fRunNumber = rNumber;
     
     TGMainFrame* fMain = new TGMainFrame(0,1500,1500);
@@ -138,21 +166,25 @@ void AliT0CalibLaserData::ReadHistSize(Int_t rNumber)
     
 void AliT0CalibLaserData::DoOk()
 {
-    printf("it worked !\n");
+ 
     //    delete fMain;
     fRunNumber = Int_t (fEntries[18]->GetNumber());
-    cout<<" RUN NUMBER "<<fRunNumber<<endl;
-    for( int i=0; i<18; i++ ) fHistLimits[i] = fEntries[i]->GetNumber();
-    for( int i=0; i<18; i++ ) cout<<fHistLimits[i]<<" ";
-    cout<<endl;
+    printf(" RUN NUMBER %i\n",fRunNumber);
+    for( int i=0; i<18; i++ ) 
+      fHistLimits[i] = fEntries[i]->GetNumber();
+ 
     ReadData();
 }
 
 void AliT0CalibLaserData::ReadData()
 {
+  // reading RAW data from test LCS
+  // filling histograms
+  // fillinf tree
+
 
       TH1F *hChannel[105];  TH1F *hQTC[12];  
-      TH2F *hCFD_QTC[12]; TH2F *hCFD_LED[12]; TH1F *h1CFD_LED[12];
+      TH2F *hCFDvsQTC[12]; TH2F *hCFDvsLED[12]; TH1F *h1CFDminLED[12];
       TH1F *hmpd[12];
       Int_t allData[110][5];
       Int_t numberOfHits[105];
@@ -189,7 +221,7 @@ void AliT0CalibLaserData::ReadData()
 	    b[key]=digitsTree->Branch(names[key].Data(),&channels[key], type);
 	   }
 	  else
-	    {cout<<iline<<" no such value "<<endl;}
+	    {printf(" no such value %i \n", iline);}
 
 	} 
       for(Int_t ic=0; ic<12; ic++) {
@@ -197,18 +229,17 @@ void AliT0CalibLaserData::ReadData()
 	  sprintf(buf1,"QTC%i",ic+1);
 	  sprintf(buf2,"CFDvsQTC%i",ic+1);
 	  sprintf(buf3,"CFDvsLED%i",ic+1);
-	  sprintf(buf4,"LED_CFD%i",ic+1);
+	  sprintf(buf4,"LEDminCFD%i",ic+1);
 	  sprintf(buf7,"mpd%i",ic+1);
 
 	  hQTC[ic] = new TH1F(buf1,"QTC",(Int_t)fHistLimits[2],fHistLimits[0],fHistLimits[1]);
-	  cout<<" hQTC "<<fHistLimits[2]<<" "<<fHistLimits[0]<<" "<<fHistLimits[1]<<endl;
-	  h1CFD_LED[ic] = new TH1F(buf4,"LED - CFD",(Int_t)fHistLimits[5],fHistLimits[3],fHistLimits[4]);
-	  cout<<" hLED-CFD  "<<fHistLimits[5]<<" "<<fHistLimits[3]<<" "<<fHistLimits[4]<<endl;
+	  h1CFDminLED[ic] = new TH1F(buf4,"LED - CFD",(Int_t)fHistLimits[5],fHistLimits[3],fHistLimits[4]);
+
 	  hmpd[ic] = new TH1F(buf7,"mpd",20000,-10000.0,10000.0);
-	  hCFD_QTC[ic] = new TH2F(buf2,"CFD vs	QTC",
+	  hCFDvsQTC[ic] = new TH2F(buf2,"CFD vs	QTC",
 	  	                 (Int_t)fHistLimits[8],fHistLimits[6],fHistLimits[7],
 		                 (Int_t)fHistLimits[11],fHistLimits[9],fHistLimits[10]);
-	  hCFD_LED[ic] = new TH2F(buf3,"CFD vs LED-CFD",
+	  hCFDvsLED[ic] = new TH2F(buf3,"CFD vs LED-CFD",
 	                         (Int_t)fHistLimits[14],fHistLimits[12],fHistLimits[13],
 	                         (Int_t)fHistLimits[17],fHistLimits[15],fHistLimits[16]);
 
@@ -217,7 +248,6 @@ void AliT0CalibLaserData::ReadData()
 
 
       }
-      //   cout<<" hist created "<<endl;
 
       TH1F*hEffCFD= new TH1F("hEffCFD","Effeciency",50,-0.25,24.25);
       TH1F*hEffLED= new TH1F("hEffLED","Effeciency",50,-0.25,24.25);
@@ -252,8 +282,7 @@ void AliT0CalibLaserData::ReadData()
       
        if(event%1000 == 0) printf("Event:%d\n",event);
 
-          if(event > 200000) break;
-	//  cout<<"!!!!  Event Number "<< event-2<<endl;
+       //          if(event > 200000) break;
 
 	    for (Int_t it = 0; it<24; it=it+2)
 	      {
@@ -262,17 +291,14 @@ void AliT0CalibLaserData::ReadData()
 		if(allData[it+25][iHit] != 0 && allData[it+26][iHit] !=0)
 		  {
 		    Int_t cc=it/2;
-		    // if( allData[56][0]-allData[0][0] > 0) 
 		    hQTC[cc]->Fill(allData[it+25][iHit]-allData[it+26][iHit]);
-//		    if( allData[55][0]-allData[0][0] > 0) hQTCc[cc]->Fill(allData[it+26][iHit]-allData[it+25][iHit]);
 		    hmpd[cc]->Fill(allData[it+26][iHit]-allData[it+25][iHit]);
-		    if(allData[cc+1][iHit] != 0 ) hCFD_QTC[cc]->Fill(allData[it+25][iHit]-allData[it+26][iHit],allData[cc+1][iHit]-allData[0][0]);
+		    if(allData[cc+1][iHit] != 0 ) hCFDvsQTC[cc]->Fill(allData[it+25][iHit]-allData[it+26][iHit],allData[cc+1][iHit]-allData[0][0]);
 		    if(allData[cc+1][iHit] != 0 && allData[cc+13][iHit]!=0 ) 
 		      {
-			hCFD_LED[cc]->Fill(allData[cc+13][iHit]-allData[cc+1][iHit],allData[cc+1][iHit]-allData[0][0]);  
-			h1CFD_LED[cc]->Fill(allData[cc+13][iHit]-allData[cc+1][iHit]);
+			hCFDvsLED[cc]->Fill(allData[cc+13][iHit]-allData[cc+1][iHit],allData[cc+1][iHit]-allData[0][0]);  
+			h1CFDminLED[cc]->Fill(allData[cc+13][iHit]-allData[cc+1][iHit]);
 		      }
-		    //  cout<<allData[cc+1][iHit]-allData[0][0]<<" "<<cc<<endl;
 		  }
 	      }
 	  }
@@ -300,21 +326,20 @@ void AliT0CalibLaserData::ReadData()
 
      if (event>1)
 	{
-	  cout<<"efficiency for "<<event<<" events"<<endl;
+	  printf("efficiency for %i events \n",event);
 	  for (Int_t i0=1; i0<13;  i0++)
 	    {
-
-	      cout<<names[i0].Data()<<" "<<Float_t(numberOfHits[i0])/Float_t(event)<<" ";
-	      cout<<names[i0+13].Data()<<" "<<Float_t(numberOfHits[i0])/Float_t(event)<<" ";
-	      cout<<names[i0+57].Data()<<" "<<Float_t(numberOfHits[i0])/Float_t(event)<<" ";
-	      cout<<names[i0+69].Data()<<" "<<Float_t(numberOfHits[i0])/Float_t(event)<<endl;
+	      printf("%s  %f  %s  %f %s  %f  %s  %f \n",
+		     names[i0].Data(), Float_t(numberOfHits[i0])/Float_t(event),
+		     names[i0+13].Data(),Float_t(numberOfHits[i0+13])/Float_t(event),
+		     names[i0+57].Data(),Float_t(numberOfHits[i0+57])/Float_t(event),
+		     names[i0+69].Data(),Float_t(numberOfHits[i0+69])/Float_t(event));
 
 	      hEffCFD->Fill(i0,Float_t(numberOfHits[i0])  / Float_t(event));
 	      hEffLED->Fill(i0,Float_t(numberOfHits[i0+13]) / Float_t(event));
 	      hEffCFD->Fill(i0+12,Float_t(numberOfHits[i0+57]) /Float_t(event));
 	      hEffLED->Fill(i0+12,Float_t(numberOfHits[i0+69]) /Float_t(event));
 	    }
-	  cout<<endl;
 
 	  for (Int_t i0=0; i0<24;  i0=i0+2)
 	    {
@@ -322,12 +347,12 @@ void AliT0CalibLaserData::ReadData()
 	      hEffQT0->Fill(i0, Float_t (numberOfHits[i0]+26) / Float_t(event));
 	      hEffQT1->Fill((i0+12), Float_t (numberOfHits[i0]+81) /  Float_t(event));
 	      hEffQT0->Fill((i0+12), Float_t (numberOfHits[i0]+82) /  Float_t(event));
-	      cout<<names[i0+25].Data()<<" "<<Float_t(numberOfHits[i0+25])/Float_t(event)<<" ";
-	      cout<<names[i0+26].Data()<<" "<<Float_t(numberOfHits[i0+26])/Float_t(event)<<" ";
-	      cout<<names[i0+81].Data()<<" "<<Float_t(numberOfHits[i0]+81)/Float_t(event)<<" ";
-	      cout<<names[i0+82].Data()<<" "<<Float_t(numberOfHits[i0]+82)/Float_t(event)<<endl;
 
-
+	      printf("%s  %f  %s  %f %s  %f  %s  %f \n",
+		     names[i0+25].Data(), Float_t(numberOfHits[i0+25])/Float_t(event),
+		     names[i0+26].Data(),Float_t(numberOfHits[i0+26])/Float_t(event),
+		     names[i0+81].Data(),Float_t(numberOfHits[i0+81])/Float_t(event),
+		     names[i0+82].Data(),Float_t(numberOfHits[i0+82])/Float_t(event));
 	    }
 	}	      
 
@@ -336,8 +361,7 @@ void AliT0CalibLaserData::ReadData()
      sprintf(filehist,"t0tree%i.root",fRunNumber);
      //  sprintf(filehist,"test.root",runNumber);
      TFile *hist = new TFile(filehist,"RECREATE");
-      cout<<" writing hist in file "<<filehist<<endl;
-      hist->cd();
+       hist->cd();
       //  digitsTree->Write("",TObject::kOverwrite);
 
       hEffCFD->Write();
@@ -351,11 +375,9 @@ void AliT0CalibLaserData::ReadData()
 	{
 	  hQTC[i]->Write();
 	  hmpd[i]->Write();
-	  hCFD_QTC[i]->Write();
-	  hCFD_LED[i]->Write();
-	  h1CFD_LED[i]->Write();
+	  hCFDvsQTC[i]->Write();
+	  hCFDvsLED[i]->Write();
+	  h1CFDminLED[i]->Write();
 	}
-     
-      cout<<" hist in file"<<endl;
-
+      
 }

@@ -1,15 +1,25 @@
 #ifndef ALIT0RAWREADER_H
 #define ALIT0RAWREADER_H
+/***************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
+ * reserved. 
+ *
+ * Alla Maevskaya INR RAS alla@inr.ru
+ *
+ * See cxx source for full Copyright notice                               
+ ***************************************************************************/
+
  
 #include <TTask.h>
-#include <Riostream.h>
 #include "AliRawReader.h"
 #include "AliT0Parameters.h"
- 
+
+  
 class AliT0RawReader : public TTask {
   public :
 
-  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kFALSE) ;
+    //  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kFALSE) ;
+  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kTRUE) ;
 
   virtual  ~AliT0RawReader();
   AliT0RawReader(const AliT0RawReader& o): TTask(o),
@@ -26,8 +36,8 @@ class AliT0RawReader : public TTask {
   Bool_t  Next(); //read next raw digit
   Int_t            GetPosition();
   UInt_t         GetNextWord();
-  Int_t GetData(Int_t channel, Int_t hit) {return fAllData[channel][hit];}
-  //  void SetNumberOfTRM(Int_t trm=2) {fNTRM=trm;}
+  Int_t GetData( Int_t channel, Int_t hit) {return fAllData[channel][hit];}
+
 
   enum ET0RawReaderError {
     kIncorrectDataSize = 1,
@@ -49,11 +59,10 @@ class AliT0RawReader : public TTask {
   AliRawReader*    fRawReader;    // object for reading the raw data
   UChar_t*         fData;         // raw data
   Int_t            fPosition;     // current (32 bit) position in fData
-  AliT0Parameters *fParam;
-//  Int_t            fNTRM; //number of TRMs, 1 - testbeam; 2 - simulation
-  Bool_t           fIsOnline;
+  AliT0Parameters *fParam;       // instanse of  Parameters class
+  Bool_t           fIsOnline;     // for case online DA usage
   
-  Int_t fAllData[110][5];
+  Int_t            fAllData[110][5]; // container for raw data
   
  ClassDef(AliT0RawReader,2) //class for reading T0 Raw data
 };

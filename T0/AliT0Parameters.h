@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
  * reserved. 
  *
- * Latest changes by Christian Holm Christensen <cholm@nbi.dk>
+ * Alla Maevskaya INR RAS alla@inr.ru
  *
  * See cxx source for full Copyright notice                               
  */

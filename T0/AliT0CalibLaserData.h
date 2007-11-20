@@ -1,9 +1,13 @@
 #ifndef AliT0CalibLaserData_H
 #define AliT0CalibLaserData_H
-
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
-
+/***************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights
+ * reserved. 
+ *
+ * Alla Maevskaya INR RAS alla@inr.ru
+ *
+ * See cxx source for full Copyright notice                               
+ ***************************************************************************/
 #include "TGNumberEntry.h"
 #include "TObject.h"
 
@@ -20,10 +24,9 @@ class AliT0CalibLaserData : public TObject
   void            ReadData();
 
  private:
- // void            ReadData();
-  Int_t           fRunNumber;
-  TGNumberEntry * fEntries[30];
-  double          fHistLimits[30];
+  Int_t           fRunNumber;       // run number
+  TGNumberEntry * fEntries[30];     //for GUI
+  double          fHistLimits[30];  // histogram limits
 
   ClassDef(AliT0CalibLaserData,1)
 };
