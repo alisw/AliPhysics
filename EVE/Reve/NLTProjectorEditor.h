@@ -22,14 +22,16 @@ private:
   NLTProjectorEditor& operator=(const NLTProjectorEditor&); // Not implemented
 
 protected:
-  NLTProjector  *fM; // fModel dynamic-casted to NLTProjectorEditor
+  NLTProjector    *fM; // fModel dynamic-casted to NLTProjectorEditor
 
-  TGComboBox    *fType;
-  RGValuator    *fDistortion;
-  RGValuator    *fFixedRadius;
-  RGValuator    *fCurrentDepth;
+  // projection
+  TGComboBox      *fType;
+  RGValuator      *fDistortion;
+  RGValuator      *fFixedRadius;
+  RGValuator      *fCurrentDepth;
 
-  TGVerticalFrame *fCenterFrame;
+  // center 
+  TGVerticalFrame *fCenterFrame;  // Parent frame for projection center interface.
   TGCheckButton   *fDrawCenter;
   TGCheckButton   *fDrawOrigin;
   RGValuator      *fCenterX;
@@ -37,15 +39,17 @@ protected:
   RGValuator      *fCenterZ;
 
   // axis
-  TGColorSelect *fAxisColor;
-  TGComboBox    *fSIMode;
-  TGNumberEntry *fSILevel;
+  TGColorSelect   *fAxisColor;
+  TGComboBox      *fSIMode;
+  TGNumberEntry   *fSILevel;
 
 public:
   NLTProjectorEditor(const TGWindow* p=0, Int_t width=170, Int_t height=30, UInt_t options = kChildFrame, Pixel_t back=GetDefaultFrameBackground());
-  virtual ~NLTProjectorEditor();
+  virtual ~NLTProjectorEditor(){}
 
   virtual void SetModel(TObject* obj);
+
+  // Declare callback/slot methods
 
   void DoSplitInfoMode(Int_t type);
   void DoSplitInfoLevel();
@@ -59,7 +63,7 @@ public:
   void DoDrawOrigin();
   void DoCenter();
 
-  ClassDef(NLTProjectorEditor, 0); // Editor for NLTProjector
+  ClassDef(NLTProjectorEditor, 0); // Editor for NLTProjector.
 }; // endclass NLTProjectorEditor
 
 }

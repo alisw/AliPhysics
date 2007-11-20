@@ -17,10 +17,12 @@ using namespace Reve;
 //______________________________________________________________________
 // NLTProjectorEditor
 //
+// GUI editor for class NLTProjector.
+//
 
 ClassImp(NLTProjectorEditor)
 
-  NLTProjectorEditor::NLTProjectorEditor(const TGWindow *p,
+NLTProjectorEditor::NLTProjectorEditor(const TGWindow *p,
 					 Int_t width, Int_t height,
 					 UInt_t options, Pixel_t back) :
     TGedFrame(p, width, height, options | kVerticalFrame, back),
@@ -41,6 +43,8 @@ ClassImp(NLTProjectorEditor)
     fSIMode(0),
     fSILevel(0)
 {
+  // Constructor.
+
   MakeTitle("NLTProjection");
   {
     TGHorizontalFrame* f = new TGHorizontalFrame(this);
@@ -204,13 +208,11 @@ ClassImp(NLTProjectorEditor)
   fCenterFrame->AddFrame(fCenterZ, new TGLayoutHints(kLHintsTop, 1, 1, 1, 1));
 }
 
-NLTProjectorEditor::~NLTProjectorEditor()
-{}
-
-/**************************************************************************/
-
+//______________________________________________________________________________
 void NLTProjectorEditor::SetModel(TObject* obj)
 {
+  // Set model object.
+
   fM = dynamic_cast<NLTProjector*>(obj);
 
   fAxisColor->SetColor(TColor::Number2Pixel(fM->GetAxisColor()), kFALSE);
@@ -229,71 +231,97 @@ void NLTProjectorEditor::SetModel(TObject* obj)
   fCenterZ->SetValue(fM->GetCenter().z);
 }
 
-/**************************************************************************/
-
+//______________________________________________________________________________
 void NLTProjectorEditor::DoType(Int_t type)
 {
+  // Slot for setting of projection type.
+
   fM->SetProjection((NLTProjection::PType_e)type, 0.001f * fDistortion->GetValue());
   fM->ProjectChildren();
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoDistortion()
 {
+  // Slot for setting distortion.
+
   fM->GetProjection()->SetDistortion(0.001f * fDistortion->GetValue());
   fM->UpdateName();
   fM->ProjectChildren();
   Update();
 }
 
-void NLTProjectorEditor::DoFixedRadius()
+//______________________________________________________________________________
+ void NLTProjectorEditor::DoFixedRadius()
 {
+  // Slot for setting fixed radius.
+
   fM->GetProjection()->SetFixedRadius(fFixedRadius->GetValue());
   fM->ProjectChildren();
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoCurrentDepth()
 {
+  // Slot for setting current depth.
+
   fM->SetCurrentDepth(fCurrentDepth->GetValue());
   fM->ProjectChildren();
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoCenter()
 {
+  // Slot for setting center of distortion.
+ 
   fM->SetCenter(fCenterX->GetValue(), fCenterY->GetValue(), fCenterZ->GetValue());
-
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoDrawOrigin()
 {
+  // Slot for setting draw of origin.
+
   fM->SetDrawOrigin(fDrawOrigin->IsOn());
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoDrawCenter()
 {
+  // Slot for setting draw of center.
+
   fM->SetDrawCenter(fDrawCenter->IsOn());
   Update();
 }
-/**************************************************************************/
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoSplitInfoMode(Int_t type)
 {
+  // Slot for setting split info mode.
+
   fM->SetSplitInfoMode(type);
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoSplitInfoLevel()
 {
+  // Slot for setting tick-mark density.
+
   fM->SetSplitInfoLevel((Int_t)fSILevel->GetNumber());
   Update();
 }
 
+//______________________________________________________________________________
 void NLTProjectorEditor::DoAxisColor(Pixel_t pixel)
 {
+  // Slot for setting axis color.
+
   fM->SetAxisColor(Color_t(TColor::GetColor(pixel)));
   Update();
 }

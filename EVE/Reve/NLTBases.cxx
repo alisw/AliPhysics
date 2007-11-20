@@ -1,20 +1,24 @@
 // $Header$
 
-#include "NLTBases.h"
-#include "Reve/NLTPolygonSet.h"
+#include <Reve/NLTPolygonSet.h>
+#include <Reve/NLTBases.h>
 
 using namespace Reve;
 
 //______________________________________________________________________________
 // NLTProjectable
 //
+// Abstract base-class for non-linear projectable objects. Creates TClass instance 
+// for the projected class and keeps references to the projected objects.
+//
+//  See also NLTProjector::ImportElements().
 
 ClassImp(NLTProjectable)
 
 //______________________________________________________________________________
 NLTProjectable::NLTProjectable()
 {
-  // Default constructor.
+  // Comstructor.
 }
 
 //______________________________________________________________________________
@@ -33,6 +37,7 @@ NLTProjectable::~NLTProjectable()
 //______________________________________________________________________________
 // NLTProjected
 //
+//
 
 ClassImp(NLTProjected)
 
@@ -42,7 +47,7 @@ NLTProjected::NLTProjected() :
   fProjectable (0),
   fDepth       (0)
 {
-  // Default constructor.
+  // Constructor.
 }
 
 //______________________________________________________________________________

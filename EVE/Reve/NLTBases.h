@@ -14,6 +14,14 @@ namespace Reve {
 class NLTProjected;
 class NLTProjector;
 
+////////////////////////////////////////////////////////////////
+//                                                            //
+// NLTProjectable                                             //
+//                                                            //
+// Abstract base class for non-linear projectable objects.    //
+//                                                            //
+////////////////////////////////////////////////////////////////
+
 class NLTProjectable
 {
 private:
@@ -21,8 +29,7 @@ private:
   NLTProjectable& operator=(const NLTProjectable&); // Not implemented
 
 protected:
-  // Eventually, references to all projected instances.
-  std::list<NLTProjected*> fProjectedList;
+  std::list<NLTProjected*> fProjectedList; // references to projected instances.
 
 public:
   NLTProjectable();
@@ -33,10 +40,16 @@ public:
   virtual void AddProjected(NLTProjected* p)    { fProjectedList.push_back(p); }
   virtual void RemoveProjected(NLTProjected* p) { fProjectedList.remove(p); }
 
-  ClassDef(NLTProjectable, 0);
+  ClassDef(NLTProjectable, 0); // Abstract base class for non-linear projectable objects.  
 }; // endclass NLTProjectable
 
-/**************************************************************************/
+////////////////////////////////////////////////////////////////
+//                                                            //
+// NLTProjected                                               //
+//                                                            //
+// Abstract base class for non-linear projected objects.      //
+//                                                            //
+////////////////////////////////////////////////////////////////
 
 class NLTProjected
 {
@@ -45,10 +58,9 @@ private:
   NLTProjected& operator=(const NLTProjected&); // Not implemented
 
 protected:
-  NLTProjector   *fProjector;
-  NLTProjectable *fProjectable;
-
-  Float_t         fDepth;
+  NLTProjector   *fProjector;     // manager
+  NLTProjectable *fProjectable;   // link to original object
+  Float_t         fDepth;         // z coordinate
 
 public:
   NLTProjected();
@@ -61,7 +73,7 @@ public:
 
   virtual void UpdateProjection() = 0;
 
-  ClassDef(NLTProjected, 0);
+  ClassDef(NLTProjected, 0); // Abstract base class for non-linear projected object. 
 }; // endclass NLTProjected
 
 }
