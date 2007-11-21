@@ -53,6 +53,7 @@ ClassImp(AliESDTagCreator)
     AliTagCreator(),
     fChain(new TChain("esdTree")), fGUIDList(new TList()), 
     fMD5List(new TList()), fTURLList(new TList()), 
+    fBranches(""),
     meminfo(new MemInfo_t) {
   //==============Default constructor for a AliESDTagCreator================
 }
@@ -102,6 +103,10 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
   
   AliInfo(Form("ESD chain created......."));	
   AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+  //
+  // Switch of branches on user request
+  SwitchOffBranches();
+	
   CreateTag(fChain,"grid");
   
   return kTRUE;
@@ -143,6 +148,11 @@ Bool_t AliESDTagCreator::ReadLocalCollection(const char *localpath) {
 
   AliInfo(Form("ESD chain created......."));	
   AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+
+  //
+  // Switch of branches on user request
+  SwitchOffBranches();
+
   CreateTag(fChain,"local");
 
   return kTRUE;
@@ -176,6 +186,11 @@ Bool_t AliESDTagCreator::ReadCAFCollection(const char *filename) {
 
   AliInfo(Form("ESD chain created......."));	
   AliInfo(Form("Chain entries: %d",fChain->GetEntries()));	
+
+  //
+  // Switch of branches on user request
+  SwitchOffBranches();
+  
   CreateTag(fChain,"proof");
 
   return kTRUE;
@@ -1194,6 +1209,12 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
   Int_t fVertexflag;
   Int_t iRunNumber = 0;
   TString fVertexName("default");
+
+  AliRunTag *tag = new AliRunTag();
+  AliEventTag *evTag = new AliEventTag();
+  TTree ttag("T","A Tree with event tags");
+  TBranch * btag = ttag.Branch("AliTAG", &tag);
+  btag->SetCompressionLevel(9);
   
   AliInfo(Form("Creating the ESD tags......."));	
 
@@ -1217,18 +1238,12 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
 
   char fileName[256];
   sprintf(fileName, "Run%d.Event%d_%d.ESD.tag.root", 
-	  iInitRunNumber,fFirstEvent,lastEvent);
+	  tag->GetRunId(),fFirstEvent,lastEvent);
   AliInfo(Form("writing tags to file %s", fileName));
   AliDebug(1, Form("writing tags to file %s", fileName));
  
   TFile* ftag = TFile::Open(fileName, "recreate");
  
-  AliRunTag *tag = new AliRunTag();
-  AliEventTag *evTag = new AliEventTag();
-  TTree ttag("T","A Tree with event tags");
-  TBranch * btag = ttag.Branch("AliTAG", &tag);
-  btag->SetCompressionLevel(9);
-
   if(fLastEvent != -1) iNumberOfEvents = fLastEvent + 1;
   for (Int_t iEventNumber = fFirstEvent; iEventNumber < iNumberOfEvents; iEventNumber++) {
     ntrack = 0;
@@ -1448,3 +1463,16 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
   delete evTag;
 }
 
+void AliESDTagCreator::SwitchOffBranches() const
+{
+  //
+  // Switch of branches on user request
+    TObjArray * tokens = fBranches.Tokenize(" ");
+    Int_t ntok = tokens->GetEntries();
+    for (Int_t i = 0; i < ntok; i++) 
+    {
+	TString str = ((TObjString*) tokens->At(i))->GetString();
+	fChain->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
+	AliInfo(Form("Branch %s switched off \n", str.Data()));
+    }
+}
