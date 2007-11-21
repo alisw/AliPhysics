@@ -141,14 +141,14 @@ void AliT0QADataMaker::InitHits()
 {
   // create Hits histograms in Hits subdir
   TString timename;
-  timename ="hHitTime";
   TH1F *    fhHitsTime[24];
   for (Int_t i=0; i<24; i++)
     {
+      timename ="hHitTime";
       timename += i;
-      if(i<12)  fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,2,3);
+      if(i<12)  fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,2000,3000);
       else  
-	fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,12,13);
+	fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,12000,13000);
       Add2HitsList( fhHitsTime[i],i);
     }
   /*
@@ -176,22 +176,22 @@ void AliT0QADataMaker::InitDigits()
   */
   
   TString timename, ampname, qtcname;
-  timename ="hDigCFD";
-  ampname = "hDigLED";
-  qtcname = "hDigQTC";
 
   TH1F *fhDigCFD[24]; TH1F * fhDigLEDamp[24]; TH1F *fhDigQTC[24];
 
   for (Int_t i=0; i<24; i++)
     {
+      timename ="hDigCFD";
+      ampname = "hDigLED";
+      qtcname = "hDigQTC";
       timename += i;
       ampname += i;
       qtcname += i;
-      fhDigCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,1000);
+      fhDigCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,5000);
       Add2DigitsList( fhDigCFD[i],i);
-      fhDigLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,100,1000);
+      fhDigLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,120000,150000);
       Add2DigitsList( fhDigLEDamp[i],i+24);
-      fhDigQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,1000);
+      fhDigQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,500);
       Add2DigitsList( fhDigQTC[i],i+48);
      }
   
@@ -219,20 +219,20 @@ void AliT0QADataMaker::InitRecPoints()
   */ 
   
   TString timename,ampname, qtcname;
-  timename ="hRecCFD";
-  ampname = "hRecLED";
-  qtcname = "hRecQTC";
   TH1F *fhRecCFD[24]; TH1F *fhRecLEDAmp[24];  TH1F * fhRecQTC[24];
   for (Int_t i=0; i<24; i++)
     {
+      timename ="hRecCFD";
+      ampname = "hRecLED";
+      qtcname = "hRecQTC";
       timename += i;
       ampname += i;
       qtcname += i;
-      fhRecCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,1000);
+      fhRecCFD[i] = new TH1F(timename.Data(), timename.Data(),100,0,1000);
      Add2RecPointsList ( fhRecCFD[i],i);
-      fhRecLEDAmp[i] = new TH1F(ampname.Data(), ampname.Data(),100,100,1000);
+      fhRecLEDAmp[i] = new TH1F(ampname.Data(), ampname.Data(),100,0,200);
     Add2RecPointsList ( fhRecLEDAmp[i],i+24);
-      fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,1000);
+      fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,0,200);
     Add2RecPointsList ( fhRecQTC[i],i+48);
      }
    
@@ -246,7 +246,7 @@ void AliT0QADataMaker::InitRecPoints()
 void AliT0QADataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
-  TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,500,600);
+  TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,0,100);
   Add2ESDsList(fhESDMean, 0) ;
  TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
   Add2ESDsList(fhESDVertex, 1) ;
@@ -254,24 +254,46 @@ void AliT0QADataMaker::InitESDs()
 
 }
 //____________________________________________________________________________
-void AliT0QADataMaker::MakeHits(TObject * data)
+
+void AliT0QADataMaker::MakeHits(TTree *hitTree)
 {
   //fills QA histos for Hits
-  TClonesArray * hits = dynamic_cast<TClonesArray *>(data) ; 
-  if (!hits){
-    AliError("Wrong type of hits container") ; 
+  TClonesArray * hits = new TClonesArray("AliT0hit", 1000);
+  
+  TBranch * branch = hitTree->GetBranch("T0") ;
+  if ( ! branch ) {
+    AliWarning("T0 branch in Hit Tree not found") ;
   } else {
-    TIter next(hits); 
-    AliT0hit * hit ; 
-    while ( (hit = dynamic_cast<AliT0hit *>(next())) ) {
-      Int_t pmt=hit->Pmt();
-      GetHitsData(pmt)->Fill(pmt,hit->Time()) ;
+
+   if (branch) {
+      branch->SetAddress(&hits);
+    }else{
+      AliError("Branch T0 hit not found");
+      exit(111);
+    } 
+    Int_t ntracks    = (Int_t) hitTree->GetEntries();
+    
+    if (ntracks<=0) return;
+    // Start loop on tracks in the hits containers
+    for (Int_t track=0; track<ntracks;track++) {
+      branch->GetEntry(track);
+      Int_t nhits = hits->GetEntriesFast();
+      for (Int_t ihit=0;ihit<nhits;ihit++) 
+	{
+	  AliT0hit  * startHit   = (AliT0hit*) hits->UncheckedAt(ihit);
+	  if (!startHit) {
+ 	    AliError("The unchecked hit doesn't exist");
+	    break;
+	  }
+	  Int_t pmt=startHit->Pmt();
+	  GetHitsData(pmt)->Fill(startHit->Time()) ;
+	}
     }
-  } 
+  }
 }
 
 //____________________________________________________________________________
-void AliT0QADataMaker::MakeDigits( TObject * data)
+void AliT0QADataMaker::MakeDigits( TTree *digitsTree)
 {
   //fills QA histos for Digits
  
@@ -281,31 +303,33 @@ void AliT0QADataMaker::MakeDigits( TObject * data)
   TArrayI *digQT1 = new TArrayI(24);
   Int_t refpoint=0;
 
-  TClonesArray * digits = dynamic_cast<TClonesArray *>(data) ; 
-  
-  if ( !digits) {
-    AliError("Wrong type of digits container") ; 
-  } else {
-    TIter next(digits) ; 
-    AliT0digit * digit ; 
-    while ( (digit = dynamic_cast<AliT0digit *>(next())) ) {
-      digit->GetTimeCFD(*digCFD);
-      digit->GetTimeLED(*digLED);
-      digit->GetQT0(*digQT0);
-      digit->GetQT1(*digQT1);
-      refpoint =  digit->RefPoint();
-      for (Int_t i=0; i<24; i++)
-	{
-	  if (digCFD->At(i)>0) {
-	    Int_t cfd=digCFD->At(i)- refpoint;
-	    GetDigitsData(i) ->Fill(i,cfd);
-	    GetDigitsData(i+24) -> Fill(i, digLED->At(i) - digCFD->At(i));
-	    GetDigitsData(i+48) -> Fill(i, digQT1->At(i) - digQT0->At(i));
-	    //	    fhDigEff->Fill(i);
-	  }
-	}  
-    }
+   TBranch *brDigits=digitsTree->GetBranch("T0");
+  AliT0digit *fDigits = new AliT0digit() ;
+  if (brDigits) {
+    brDigits->SetAddress(&fDigits);
+  }else{
+    AliError(Form("EXEC Branch T0 digits not found"));
+     return;
   }
+  
+  digitsTree->GetEvent(0);
+  digitsTree->GetEntry(0);
+  brDigits->GetEntry(0);
+  fDigits->GetTimeCFD(*digCFD);
+  fDigits->GetTimeLED(*digLED);
+  fDigits->GetQT0(*digQT0);
+  fDigits->GetQT1(*digQT1);
+  refpoint = fDigits->RefPoint();
+   for (Int_t i=0; i<24; i++)
+    {
+      if (digCFD->At(i)>0) {
+	Int_t cfd=digCFD->At(i)- refpoint;
+	GetDigitsData(i) ->Fill(cfd);
+	GetDigitsData(i+24) -> Fill(digLED->At(i) - digCFD->At(i));
+	GetDigitsData(i+48) -> Fill(digQT1->At(i) - digQT0->At(i));
+      }
+    }  
+      
   delete digCFD;
   delete digLED;
   delete digQT0;

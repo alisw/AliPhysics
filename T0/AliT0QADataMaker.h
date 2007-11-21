@@ -18,6 +18,7 @@
 
 class TH1F ; 
 class TH2F ;
+class TClonesArray;
 
 // --- Standard library ---
 #include <TString.h>
@@ -38,8 +39,9 @@ private:
   virtual void   InitDigits() ;    //book Digit QA histo
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
-  virtual void   MakeHits(TObject * hits) ;       //Fill hit QA histo
-  virtual void   MakeDigits(TObject * digits) ;   //Fill Digit QA histo
+  //  virtual void   MakeHits(TClonesArray * hits) ;       //Fill hit QA histo
+  virtual void   MakeHits(TTree * hits) ;       //Fill hit QA histo
+  virtual void   MakeDigits(TTree* digitsTree) ;   //Fill Digit QA histo
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * list) ;

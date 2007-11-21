@@ -160,6 +160,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   Int_t threshold =50; //photoelectrons
   Float_t zdetA, zdetC;
   Int_t sumMultCoeff = 100;
+  Int_t refpoint=0;
   TH1F *hr;
 
 
@@ -333,10 +334,11 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 		      sumMult, fSumMult, fSumMult*channelWidth));
     }
 
-      fT0->AddDigit(bestATDC,bestCTDC,meanTime,timeDiff,fSumMult,
+    fT0->AddDigit(bestATDC,bestCTDC,meanTime,timeDiff,fSumMult, refpoint,
 		       ftimeCFD,fADC0,ftimeLED,fADC);
      
-      AliDebug(10,Form(" Digits wrote bestATDC %i bestCTDC %i  meanTime %i  timeDiff %i fSumMult %i ", bestATDC,bestCTDC,meanTime,timeDiff,fSumMult ));
+    
+      AliDebug(10,Form(" Digits wrote refpoint %i bestATDC %i bestCTDC %i  meanTime %i  timeDiff %i fSumMult %i ",refpoint ,bestATDC,bestCTDC,meanTime,timeDiff,fSumMult ));
     pOutStartLoader->UnloadHits();
   } //input streams loop
   

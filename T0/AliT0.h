@@ -33,7 +33,7 @@ public:
    virtual void   AddHit(Int_t track, Int_t *vol, Float_t *hits);
    virtual void AddDigit(Int_t *, Int_t *) {};
    virtual void   AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
-			Int_t timediff, Int_t sumMult,
+			   Int_t timediff, Int_t sumMult, Int_t refpoint,
 			   TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp);
    virtual void   BuildGeometry();
    virtual void   CreateGeometry(){}
@@ -57,7 +57,8 @@ public:
    void  Raw2Digits (AliRawReader *reader,TTree* digitsTree);
    virtual AliTriggerDetector* CreateTriggerDetector() const 
      { return new  AliT0Trigger(); }
-
+   
+   virtual void  Raw2Digits() {}
 
 protected:
    Int_t fIdSens;    // Sensetive Cherenkov photocathode

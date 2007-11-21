@@ -135,7 +135,7 @@ void AliT0::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 //_____________________________________________________________________________
 
 void AliT0::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime, 
-			Int_t timediff, Int_t sumMult,
+		     Int_t timediff, Int_t sumMult, Int_t refpoint,
 			TArrayI *timeCFD, TArrayI *qt0, TArrayI *timeLED, TArrayI *qt1)
 {
   
@@ -154,6 +154,7 @@ void AliT0::AddDigit(Int_t besttimeright, Int_t besttimeleft, Int_t meantime,
   fDigits->SetTimeLED(*timeLED);
   fDigits->SetQT0(*qt0);
   fDigits->SetQT1(*qt1);
+  fDigits->SetRefPoint(refpoint);
 }
 
 
