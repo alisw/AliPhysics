@@ -249,7 +249,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
   Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
   Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
 
-  AliHLTUInt32_t fDblock_Specification = 0;
+  AliHLTUInt32_t dBlockSpecification = 0;
 
   //implement a usage of the following
 //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
@@ -261,7 +261,7 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
   AliHLTComponentBlockData *dblock = (AliHLTComponentBlockData *)GetFirstInputBlock( AliHLTTRDDefinitions::fgkClusterDataType );
   if (dblock != 0)
     {
-      fDblock_Specification = dblock->fSpecification;
+      dBlockSpecification = dblock->fSpecification;
     }
   else
     {
@@ -337,15 +337,15 @@ int AliHLTTRDTrackerComponent::DoEvent( const AliHLTComponentEventData & evtData
 //       Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Track 0x%x NcalibObjects %d", track, nCalibObjects);
 
       Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "Track %d 0x%x Pt %1.2f", it, track, track->Pt());
-      PushBack(track, AliHLTTRDDefinitions::fgkTRDSATracksDataType, ++fDblock_Specification);
+      PushBack(track, AliHLTTRDDefinitions::fgkTRDSATracksDataType, ++dBlockSpecification);
 //       if (calibra->GetMItracking())
 //  	{
 //  	  calibra->UpdateHistograms(track);
 // 	}
     }
 
-  //PushBack(esd, AliHLTTRDDefinitions::fgkTRDSAEsdDataType, fDblock_Specification);
-  //PushBack(esdFriend, AliHLTTRDDefinitions::fgkTRDSAEsdDataType, fDblock_Specification);
+  //PushBack(esd, AliHLTTRDDefinitions::fgkTRDSAEsdDataType, dBlockSpecification);
+  //PushBack(esdFriend, AliHLTTRDDefinitions::fgkTRDSAEsdDataType, dBlockSpecification);
 
   //no receiver defined yet(!)
   //Logging( kHLTLogInfo, "HLT::TRDTracker::DoEvent", "DONE", "now deleting");

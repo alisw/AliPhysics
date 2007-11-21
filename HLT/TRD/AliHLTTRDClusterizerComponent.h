@@ -56,6 +56,10 @@ class AliHLTTRDClusterizerComponent : public AliHLTProcessor
 	using AliHLTProcessor::DoEvent;
 	
     private:
+	/** copy constructor prohibited */
+	AliHLTTRDClusterizerComponent(const AliHLTTRDClusterizerComponent&);
+	/** assignment operator prohibited */
+	AliHLTTRDClusterizerComponent& operator=(const AliHLTTRDClusterizerComponent&);
 
 	// The size of the output data produced, as a percentage of the input data's size.
 	// Can be greater than 100 (%)

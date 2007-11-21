@@ -21,6 +21,12 @@
     @date   
     @brief  A TRDClusterizer processing component for the HLT. */
 
+// see header file for class documentation                                   //
+// or                                                                        //
+// refer to README to build package                                          //
+// or                                                                        //
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt                          //
+
 #if __GNUC__ >= 3
 using namespace std;
 #endif
@@ -237,7 +243,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   Logging( kHLTLogDebug, "HLT::TRDClusterizer::DoEvent", "BLOCKS", "NofBlocks %lu", evtData.fBlockCnt );
   // Process an event
   unsigned long totalSize = 0;
-  AliHLTUInt32_t fDblock_Specification = 0;
+  AliHLTUInt32_t dBlockSpecification = 0;
 
   //implement a usage of the following
 //   AliHLTUInt32_t triggerDataStructSize = trigData.fStructSize;
@@ -264,8 +270,8 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
  		   blocks[i].fDataType, AliHLTTRDDefinitions::fgkDDLRawDataType);
 	  continue;
 	}
-      fDblock_Specification = blocks[i].fSpecification;
-//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CHECKSPEC", "fDblock_Spec %d %d", i, fDblock_Specification);
+      dBlockSpecification = blocks[i].fSpecification;
+//       Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "CHECKSPEC", "fDblock_Spec %d %d", i, dBlockSpecification);
       unsigned long blockSize = blocks[i].fSize;
       totalSize += blockSize;
     }
@@ -358,7 +364,7 @@ int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponent_EventData& evt
   // put the tree into output blocks of TObjArrays
   TTree *fcTree = fClusterizer->GetClusterTree();
   
-  PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, fDblock_Specification);
+  PushBack(fcTree, AliHLTTRDDefinitions::fgkClusterDataType, dBlockSpecification);
   
   Logging( kHLTLogInfo, "HLT::TRDClusterizer::DoEvent", "DONE", "Output size %d", size);
   return 0;

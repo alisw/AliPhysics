@@ -52,9 +52,9 @@ class AliHLTDummyComponent : public AliHLTProcessor
 
     private:
 
-	// The size of the output data produced, as a percentage of the input data's size.
-	// Can be greater than 100 (%)
-	unsigned fOutputPercentage;
+	/** The size of the output data produced, as a percentage of the input data's size.
+	    Can be greater than 100 (%) */
+	unsigned fOutputPercentage; // see above
 	
 	ClassDef(AliHLTDummyComponent, 0)
 

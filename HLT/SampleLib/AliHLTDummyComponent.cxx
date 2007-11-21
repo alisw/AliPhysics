@@ -39,19 +39,27 @@ AliHLTDummyComponent::AliHLTDummyComponent()
   :
     fOutputPercentage(100) // By default we copy to the output exactly what we got as input
     {
+    // see header file for class documentation
+    // or
+    // refer to README to build package
+    // or
+    // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
     }
 
 AliHLTDummyComponent::~AliHLTDummyComponent()
     {
+    // see header file for class documentation
     }
 
 const char* AliHLTDummyComponent::GetComponentID()
     {
+    // see header file for class documentation
     return "Dummy"; // The ID of this component
     }
 
 void AliHLTDummyComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
     {
+    // see header file for class documentation
       /* in order to be backward compatible we have to keep the old code, at
        * least for a while. Remember to use the new const kAliHLTVoidDataType
        * if you are using a more recent AliRoot version (from Jan 07)
@@ -67,6 +75,7 @@ void AliHLTDummyComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& l
 
 AliHLTComponentDataType AliHLTDummyComponent::GetOutputDataType()
     {
+    // see header file for class documentation
       /* in order to be backward compatible we have to keep the old code, at
        * least for a while. Remember to use the new const kAliHLTVoidDataType
        * if you are using a more recent AliRoot version (from Jan 07)
@@ -81,6 +90,7 @@ AliHLTComponentDataType AliHLTDummyComponent::GetOutputDataType()
 
 void AliHLTDummyComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
     {
+    // see header file for class documentation
     constBase = 0;
     inputMultiplier = ((double)fOutputPercentage)/100.0;
     }
@@ -90,6 +100,7 @@ void AliHLTDummyComponent::GetOutputDataSize( unsigned long& constBase, double& 
 // Spawn function, return new instance of this class
 AliHLTComponent* AliHLTDummyComponent::Spawn()
     {
+    // see header file for class documentation
     return new AliHLTDummyComponent;
     }
 
@@ -128,6 +139,7 @@ int AliHLTDummyComponent::DoInit( int argc, const char** argv )
 
 int AliHLTDummyComponent::DoDeinit()
     {
+    // see header file for class documentation
     return 0;
     }
 
@@ -135,6 +147,7 @@ int AliHLTDummyComponent::DoEvent( const AliHLTComponentEventData& evtData, cons
 				      AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, 
 				      AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
     {
+    // see header file for class documentation
     Logging( kHLTLogInfo, "HLT::Dummy::DoEvent", "Output percentage set", "Output percentage set to %lu %%", fOutputPercentage );
     // Process an event
     unsigned long totalSize = 0;
