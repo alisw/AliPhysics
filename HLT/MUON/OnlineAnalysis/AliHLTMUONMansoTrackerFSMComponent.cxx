@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
+#include <new>
 
 ClassImp(AliHLTMUONMansoTrackerFSMComponent);
 
@@ -44,11 +45,18 @@ AliHLTMUONMansoTrackerFSMComponent::AliHLTMUONMansoTrackerFSMComponent() :
 	fTracker(NULL),
 	fTrackCount(0),
 	fBlock(NULL),
+	fRecHitBlockArraySize(0),
 	fWarnForUnexpecedBlock(false)
 {
 	///
 	/// Default constructor.
 	///
+	
+	for (Int_t i = 0; i < 4; i++)
+	{
+		fRecHitBlockCount[i] = 0;
+		fRecHitBlock[i] = NULL;
+	}
 }
 
 
@@ -59,6 +67,7 @@ AliHLTMUONMansoTrackerFSMComponent::~AliHLTMUONMansoTrackerFSMComponent()
 	///
 	
 	assert( fTracker == NULL );
+	assert( fRecHitBlock[0] == NULL );
 }
 
 
@@ -126,7 +135,15 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	/// Parses the command line parameters and initialises the component.
 	///
 	
-	fTracker = new AliHLTMUONMansoTrackerFSM();
+	try
+	{
+		fTracker = new AliHLTMUONMansoTrackerFSM();
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the tracker component.");
+		return -ENOMEM;
+	}
 	fTracker->SetCallback(this);
 	
 	fWarnForUnexpecedBlock = false;
@@ -135,6 +152,30 @@ int AliHLTMUONMansoTrackerFSMComponent::DoInit(int argc, const char** argv)
 	{
 		if (strcmp(argv[i], "-warn_on_unexpected_block") == 0)
 			fWarnForUnexpecedBlock = true;
+	}
+	
+	const int initArraySize = 10;
+	// allocate some initial memory for the reconstructed hit arrays.
+	try
+	{
+		fRecHitBlock[0] = new AliRecHitBlockInfo[initArraySize*4];
+	}
+	catch (const std::bad_alloc&)
+	{
+		HLTError("Could not allocate more memory for the reconstructed hit arrays.");
+		return -ENOMEM;
+	}
+	// Only set the arrays' size once we have successfully allocated the memory for the arrays.
+	fRecHitBlockArraySize = initArraySize;
+	// Now we need to set the pointers fRecHitBlock[i] {i>0} relative to fRecHitBlock[0].
+	for (Int_t i = 1; i < 4; i++)
+	{
+		fRecHitBlock[i] = fRecHitBlock[i-1] + fRecHitBlockArraySize;
+	}
+	// And reset the number of records actually stored in the arrays.
+	for (Int_t i = 0; i < 4; i++)
+	{
+		fRecHitBlockCount[i] = 0;
 	}
 	
 	return 0;
@@ -152,6 +193,19 @@ int AliHLTMUONMansoTrackerFSMComponent::DoDeinit()
 		delete fTracker;
 		fTracker = NULL;
 	}
+	
+	// Remember that only fRecHitBlock[0] stores the pointer to the allocated memory.
+	// The other pointers are just reletive to this.
+	if (fRecHitBlock[0] != NULL)
+		delete [] fRecHitBlock[0];
+	
+	fRecHitBlockArraySize = 0;
+	for (Int_t i = 0; i < 4; i++)
+	{
+		fRecHitBlockCount[i] = 0;
+		fRecHitBlock[i] = NULL;
+	}
+	
 	return 0;
 }
 
@@ -172,6 +226,43 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 	Reset();
 	AliHLTUInt32_t specification = 0;  // Contains the output data block spec bits.
 	
+	// Resize the rec hit arrays if we need to. To guarantee that they will not overflow
+	// we need to make sure each array is at least as big as the number of input data block.
+	if (fRecHitBlockArraySize < evtData.fBlockCnt)
+	{
+		// Release the old memory block and allocate more memory.
+		delete [] fRecHitBlock[0];
+		// Reset the number of records actually stored in the arrays.
+		for (Int_t i = 0; i < 4; i++)
+		{
+			fRecHitBlockCount[i] = 0;
+		}
+		
+		try
+		{
+			fRecHitBlock[0] = new AliRecHitBlockInfo[evtData.fBlockCnt*4];
+		}
+		catch (const std::bad_alloc&)
+		{
+			HLTError("Could not allocate more memory for the reconstructed hit arrays.");
+			// Ok so now we need to clear all the pointers because we actually
+			// deleted the memory.
+			fRecHitBlockArraySize = 0;
+			for (Int_t i = 0; i < 4; i++)
+			{
+				fRecHitBlock[i] = NULL;
+			}
+			return -ENOMEM;
+		}
+		// Only set the arrays' size once we have successfully allocated the memory for the arrays.
+		fRecHitBlockArraySize = evtData.fBlockCnt;
+		// Now we need to set the pointers fRecHitBlock[i] {i>0} relative to fRecHitBlock[0].
+		for (Int_t i = 1; i < 4; i++)
+		{
+			fRecHitBlock[i] = fRecHitBlock[i-1] + fRecHitBlockArraySize;
+		}
+	}
+	
 	AliHLTMUONMansoTracksBlockWriter block(outputPtr, size);
 	fBlock = &block;
 	
@@ -184,7 +275,7 @@ int AliHLTMUONMansoTrackerFSMComponent::DoEvent(
 			size, sizeof(AliHLTMUONMansoTracksBlockWriter::HeaderType)
 		);
 		size = 0; // Important to tell framework that nothing was generated.
-		return ENOBUFS;
+		return -ENOBUFS;
 	}
 
 	// Loop over all input blocks in the event and add the ones that contain
@@ -345,7 +436,7 @@ void AliHLTMUONMansoTrackerFSMComponent::Reset()
 	fBlock = NULL;  // Do not delete. Already done implicitly at the end of DoEvent.
 	for (int i = 0; i < 4; i++)
 	{
-		fRecHitBlock[i].erase(fRecHitBlock[i].begin(), fRecHitBlock[i].end());
+		fRecHitBlockCount[i] = 0;
 	}
 }
 
@@ -424,10 +515,10 @@ void AliHLTMUONMansoTrackerFSMComponent::AddRecHits(
 		<< (int)chamber	<< " to the internal arrays."
 	);
 	
-	RecHitBlockInfo info;
-	info.fCount = count;
-	info.fData = recHits;
-	fRecHitBlock[chamber-7].push_back(info);
+	assert( fRecHitBlockCount[chamber-7] < fRecHitBlockArraySize );
+	AliRecHitBlockInfo info(count, recHits);
+	fRecHitBlock[chamber-7][fRecHitBlockCount[chamber-7]] = info;
+	fRecHitBlockCount[chamber-7]++;
 }
 
 
@@ -447,26 +538,31 @@ void AliHLTMUONMansoTrackerFSMComponent::RequestClusters(
 	DebugTrace("AliHLTMUONMansoTracker::RequestClusters(chamber = " << chamber << ")");
 	void* ctag = const_cast<void*>(tag);
 	int chNo = -1;
-	std::vector<RecHitBlockInfo>* recHitsBlock = NULL;
+	AliHLTUInt32_t recHitsCount = 0;
+	AliRecHitBlockInfo* recHitsBlock = NULL;
 	switch (chamber)
 	{
 	case kChamber7:
-		recHitsBlock = &fRecHitBlock[0];
+		recHitsCount = fRecHitBlockCount[0];
+		recHitsBlock = fRecHitBlock[0];
 		chNo = 7;
 		break;
 
 	case kChamber8:
-		recHitsBlock = &fRecHitBlock[1];
+		recHitsCount = fRecHitBlockCount[1];
+		recHitsBlock = fRecHitBlock[1];
 		chNo = 8;
 		break;
 
 	case kChamber9:
-		recHitsBlock = &fRecHitBlock[2];
+		recHitsCount = fRecHitBlockCount[2];
+		recHitsBlock = fRecHitBlock[2];
 		chNo = 9;
 		break;
 
 	case kChamber10:
-		recHitsBlock = &fRecHitBlock[3];
+		recHitsCount = fRecHitBlockCount[3];
+		recHitsBlock = fRecHitBlock[3];
 		chNo = 10;
 		break;
 
@@ -474,10 +570,10 @@ void AliHLTMUONMansoTrackerFSMComponent::RequestClusters(
 	}
 	
 	DebugTrace("Returning requested hits for chamber " << chNo << ":");
-	for (AliHLTUInt32_t i = 0; i < recHitsBlock->size(); i++)
-	for (AliHLTUInt32_t j = 0; j < (*recHitsBlock)[i].fCount; j++)
+	for (AliHLTUInt32_t i = 0; i < recHitsCount; i++)
+	for (AliHLTUInt32_t j = 0; j < recHitsBlock[i].Count(); j++)
 	{
-		const AliHLTMUONRecHitStruct* hit = &((*recHitsBlock)[i].fData[j]);
+		const AliHLTMUONRecHitStruct* hit = &(recHitsBlock[i].Data()[j]);
 		if (left < hit->fX and hit->fX < right and bottom < hit->fY and hit->fY < top)
 			tracker->ReturnClusters(ctag, hit, 1);
 	}

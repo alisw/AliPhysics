@@ -102,7 +102,7 @@ private:
 	void Reset();
 	
 	void AddRecHits(
-			AliHLTUInt32_t specification,	
+			AliHLTUInt32_t specification,
 			const AliHLTMUONRecHitStruct* recHits,
 			AliHLTUInt32_t count
 		);
@@ -112,13 +112,43 @@ private:
 	AliHLTUInt32_t fTrackCount;  //! Number of tracks currently found.
 	/*AliHLTMUONMansoTracksBlockWriter*/void* fBlock;  //! The current data block we are writing.
 	
-	struct RecHitBlockInfo
+	class AliRecHitBlockInfo
 	{
+	public:
+	
+		AliRecHitBlockInfo(AliHLTUInt32_t count = 0, const AliHLTMUONRecHitStruct* data = NULL) :
+			fCount(count), fData(data)
+		{}
+	
+		// Perform a shallow copy.
+		AliRecHitBlockInfo(const AliRecHitBlockInfo& obj) :
+			fCount(obj.fCount), fData(obj.fData)
+		{}
+		
+		AliRecHitBlockInfo& operator = (const AliRecHitBlockInfo& obj)
+		{
+			fCount = obj.fCount;
+			fData = obj.fData;
+			return *this;
+		}
+		
+		AliHLTUInt32_t Count() const { return fCount; }
+		const AliHLTMUONRecHitStruct* Data() const { return fData; }
+	
+	private:
 		AliHLTUInt32_t fCount;  // Number of elements in fData.
 		const AliHLTMUONRecHitStruct* fData; // Pointer to the array of rec hits.
 	};
 	
-	std::vector<RecHitBlockInfo> fRecHitBlock[4];  //! Arrays of rec hit block data.
+	//std::vector<AliRecHitBlockInfo> fRecHitBlock[4];  //! Arrays of rec hit block data.
+	AliHLTUInt32_t fRecHitBlockArraySize;  // The array size of each array in fRecHitBlock.
+	AliHLTUInt32_t fRecHitBlockCount[4];   // The number of records actually stored in fRecHitBlock[i].
+	// The following are 4 dynamic arrays of AliRecHitBlockInfo structures.
+	// These arrays will all have the same size = fRecHitBlockArraySize.
+	// The array itself is actually allocated only once and the pointer stored in fRecHitBlock[0],
+	// while the other pointers fRecHitBlock[i] {i>0} will just be set relative to fRecHitBlock[0].
+	// The allocated memory is: 4 * fRecHitBlockArraySize * sizeof(AliRecHitBlockInfo).
+	AliRecHitBlockInfo* fRecHitBlock[4];  //! Arrays of rec hit block data.
 
 	bool fWarnForUnexpecedBlock;  // Flag indicating if we should log a warning if we got a block of an unexpected type.
 	
