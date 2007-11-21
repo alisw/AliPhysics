@@ -40,7 +40,7 @@ AliAlignObj::AliAlignObj():
 {
   // default constructor
   for(Int_t i=0; i<6; i++) fDiag[i]=-999.;
-  for(Int_t i=0; i<21; i++) fODia[i]=-999.;
+  for(Int_t i=0; i<15; i++) fODia[i]=-999.;
 }
 
 //_____________________________________________________________________________
@@ -52,7 +52,7 @@ AliAlignObj::AliAlignObj(const char* symname, UShort_t voluid) :
   // standard constructor
   //
   for(Int_t i=0; i<6; i++) fDiag[i]=-999.;
-  for(Int_t i=0; i<21; i++) fODia[i]=-999.;
+  for(Int_t i=0; i<15; i++) fODia[i]=-999.;
 }
 
 //_____________________________________________________________________________
@@ -74,7 +74,7 @@ AliAlignObj::AliAlignObj(const AliAlignObj& theAlignObj) :
 {
   //copy constructor
   for(Int_t i=0; i<6; i++) fDiag[i]=theAlignObj.fDiag[i];
-  for(Int_t i=0; i<21; i++) fODia[i]=theAlignObj.fODia[i];
+  for(Int_t i=0; i<15; i++) fODia[i]=theAlignObj.fODia[i];
 }
 
 //_____________________________________________________________________________
@@ -85,7 +85,7 @@ AliAlignObj &AliAlignObj::operator =(const AliAlignObj& theAlignObj)
   fVolPath = theAlignObj.GetSymName();
   fVolUID = theAlignObj.GetVolUID();
   for(Int_t i=0; i<6; i++) fDiag[i]=theAlignObj.fDiag[i];
-  for(Int_t i=0; i<21; i++) fODia[i]=theAlignObj.fODia[i];
+  for(Int_t i=0; i<15; i++) fODia[i]=theAlignObj.fODia[i];
   return *this;
 }
 
@@ -101,8 +101,11 @@ AliAlignObj &AliAlignObj::operator*=(const AliAlignObj& theAlignObj)
   theAlignObj.GetMatrix(m2);
   m1.MultiplyLeft(&m2);
   SetMatrix(m1);
-  // temporary solution: consider parameters indipendent 
-  for(Int_t i=0; i<6; i++)  fDiag[i] = TMath::Sqrt((fDiag[i]*fDiag[i])+(theAlignObj.fDiag[i]*theAlignObj.fDiag[i]));
+  // temporary solution: the covariance matrix of the resulting combined object
+  // is set equal to the covariance matrix of the right operand
+  // (not to be used for combining alignment objects for different levels)
+  for(Int_t i=0; i<6; i++)  fDiag[i] = theAlignObj.fDiag[i];
+  for(Int_t i=0; i<15; i++)  fODia[i] = theAlignObj.fODia[i];  
   return *this;
 }
 
@@ -327,12 +330,12 @@ Bool_t AliAlignObj::MatrixToAngles(const Double_t *rot, Double_t *angles) const
 }
 
 //______________________________________________________________________________
-void AliAlignObj::Transform(AliTrackPoint &p) const
+void AliAlignObj::Transform(AliTrackPoint &p, Bool_t copycov) const
 {
   // The method transforms the space-point coordinates using the
   // transformation matrix provided by the AliAlignObj
-  // The covariance matrix is not affected since we assume
-  // that the transformations are sufficiently small
+  // In case the copycov flag is set to kTRUE, the covariance matrix 
+  // of the alignment object is copied into the space-point
   //
   if (fVolUID != p.GetVolumeID())
     AliWarning(Form("Alignment object ID is not equal to the space-point ID (%d != %d)",fVolUID,p.GetVolumeID())); 
@@ -350,6 +353,12 @@ void AliAlignObj::Transform(AliTrackPoint &p) const
                 xyzin[1]*rot[3*i+1]+
                 xyzin[2]*rot[3*i+2];
   p.SetXYZ(xyzout);
+
+  if(copycov){
+    TMatrixDSym covmat(6);
+    GetCovMatrix(covmat); 
+    p.SetAlignCovMatrix(covmat);
+  }
   
 }
 

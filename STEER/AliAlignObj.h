@@ -77,7 +77,7 @@ class AliAlignObj : public TObject {
 
   virtual AliAlignObj& Inverse() const=0;
 
-  void  Transform(AliTrackPoint &p) const;
+  void  Transform(AliTrackPoint &p, Bool_t copycov=kFALSE) const;
   void  Transform(AliTrackPointArray &array) const;
 
   void  Print(Option_t *) const;
