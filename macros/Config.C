@@ -56,7 +56,8 @@ void Config()
     // Theta range given through pseudorapidity limits 22/6/2001
 
     // Set Random Number seed
-  gRandom->SetSeed(123456); // Set 0 to use the currecnt time
+  //gRandom->SetSeed(123456); // Set 0 to use the current time
+  
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
 
@@ -66,11 +67,6 @@ void Config()
 #endif
 
     new     TGeant3TGeo("C++ Interface to Geant3");
-
-    if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
-      AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
-      AliCDBManager::Instance()->SetRun(0);
-    }
 
     AliRunLoader* rl=0x0;
 
@@ -87,8 +83,35 @@ void Config()
     rl->SetCompressionLevel(2);
     rl->SetNumberOfEventsPerFile(3);
     gAlice->SetRunLoader(rl);
+    
     // gAlice->SetGeometryFromFile("geometry.root");
-    // gAlice->SetGeometryFromCDB();
+
+    // Uncomment if you want to load geometry from OCDB!   >>>>
+/*    
+    if(!AliCDBManager::Instance()->IsDefaultStorageSet()){
+	 cout << "#####################################################" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#     WARNING: CDB DEFAULT STORAGE NOT SET !!!      #" << endl;
+	 cout << "#     SETTING IT TO local://$ALICE_ROOT !!!         #" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#####################################################" << endl;
+          
+         AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+    }
+    
+    if(AliCDBManager::Instance()->GetRun() < 0){
+	 cout << "#####################################################" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#     WARNING: RUN NUMBER NOT SET !!!               #" << endl;
+	 cout << "#     SETTING IT TO 0 !!!                           #" << endl;
+	 cout << "#                                                   #" << endl;
+	 cout << "#####################################################" << endl;
+          
+         AliCDBManager::Instance()->SetRun(0);
+    }
+    gAlice->SetGeometryFromCDB();
+*/
+    // Uncomment if you want to load geometry from OCDB!   <<<<
 
     // Set the trigger configuration
     gAlice->SetTriggerDescriptor("Pb-Pb");
