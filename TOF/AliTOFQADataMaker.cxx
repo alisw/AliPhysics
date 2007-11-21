@@ -222,9 +222,11 @@ void AliTOFQADataMaker::MakeHits(TClonesArray * hits)
   Int_t out[5];
 
   Int_t nentries=hits->GetEntriesFast();
-  if(nentries==0)nentries=-1;
-  GetHitsData(0)->Fill(TMath::Log10(nentries)) ; 
-
+  if(nentries==0) {
+    GetHitsData(0)->Fill(-1.) ; 
+  } else{
+    GetHitsData(0)->Fill(TMath::Log10(nentries)) ; 
+  }
   TIter next(hits) ; 
   AliTOFhitT0 * hit ; 
   while ( (hit = dynamic_cast<AliTOFhitT0 *>(next())) ) {
@@ -293,8 +295,12 @@ void AliTOFQADataMaker::MakeDigits(TClonesArray * digits)
   Int_t out[5];
 
   Int_t nentries=digits->GetEntriesFast();
-  if(nentries==0)nentries=-1;
-  GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+  if(nentries==0){
+    GetDigitsData(0)->Fill(-1.) ; 
+  }else{
+    GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+  } 
+
   TIter next(digits) ; 
   AliTOFdigit * digit ; 
   while ( (digit = dynamic_cast<AliTOFdigit *>(next())) ) {
@@ -344,8 +350,11 @@ void AliTOFQADataMaker::MakeSDigits(TClonesArray * sdigits)
   Int_t out[5];
 
   Int_t nentries=sdigits->GetEntriesFast();
-  if(nentries==0)nentries=-1;
-  GetSDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+  if(nentries==0){
+    GetSDigitsData(0)->Fill(-1.) ; 
+  }else{
+    GetSDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
+  } 
 
   TIter next(sdigits) ; 
   AliTOFSDigit * sdigit ; 
@@ -428,9 +437,11 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
   } // DDL Loop
   
   Int_t nentries=ntof;
-  if(nentries==0)nentries=-1;
-  GetRawsData(0)->Fill(TMath::Log10(nentries)) ; 
-
+  if(nentries==0){
+    GetRawsData(0)->Fill(-1.) ; 
+  }else{
+    GetRawsData(0)->Fill(TMath::Log10(nentries)) ; 
+  }
 }
 
 //____________________________________________________________________________
@@ -452,33 +463,36 @@ void AliTOFQADataMaker::MakeRecPoints(TTree * clustersTree)
     return;
   }
 
-  TObjArray * clusters = new TObjArray(100) ;
+  TClonesArray dummy("AliTOFcluster",10000), *clusters=&dummy;
   branch->SetAddress(&clusters);
-  clustersTree->GetEvent(0);
 
+  // Import the tree
+  clustersTree->GetEvent(0);  
+  
   Int_t nentries=clusters->GetEntriesFast();
-  if(nentries==0)nentries=-1;
-  GetRecPointsData(0)->Fill(TMath::Log10(nentries)) ; 
-
+  if(nentries==0){
+    GetRecPointsData(0)->Fill(-1.) ; 
+  }else{
+    GetRecPointsData(0)->Fill(TMath::Log10(nentries)) ; 
+  } 
+ 
   TIter next(clusters) ; 
   AliTOFcluster * c ; 
   while ( (c = dynamic_cast<AliTOFcluster *>(next())) ) {
     GetRecPointsData(1)->Fill(c->GetTDC()*tdc2ns);
     GetRecPointsData(2)->Fill(c->GetTDCRAW()*tdc2ns);
     GetRecPointsData(3)->Fill(c->GetToT()*tot2ns);
-
+    
     in[0] = c->GetDetInd(0);
     in[1] = c->GetDetInd(1);
     in[2] = c->GetDetInd(2);
     in[3] = c->GetDetInd(4); //X and Z indeces inverted in RecPoints
     in[4] = c->GetDetInd(3); //X and Z indeces inverted in RecPoints
-
+    
     GetMapIndeces(in,out);
     GetRecPointsData(4)->Fill(out[0],out[1]);
-
+    
   }
-  clusters->Delete();
-  delete clusters;
 }
 
 //____________________________________________________________________________
@@ -508,8 +522,12 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
   }
   
   Int_t nentries=ntof;
-  if(nentries==0)nentries=-1;
-  GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
+  if(nentries==0){
+    GetESDsData(0)->Fill(-1.) ;
+  }else{
+    GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
+  }
+
   if(ntof>0)GetESDsData(4)->Fill(ntofpid/ntof) ;
 
 }
