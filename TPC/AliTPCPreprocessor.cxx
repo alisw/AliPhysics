@@ -37,6 +37,7 @@ const Int_t kValCutTemp = 100;               // discard temperatures > 100 degre
 const Int_t kDiffCutTemp = 5;	             // discard temperature differences > 5 degrees
 const TString kPedestalRunType = "PEDESTAL_RUN";  // pedestal run identifier
 const TString kPulserRunType = "PULSER_RUN";   // pulser run identifier
+const TString kPhysicsRunType = "PHYSICS";   // physics run identifier
 const TString kAmandaTemp = "tpc_PT_%d.Temperature"; // Amanda string for temperature entries
 const Double_t kFitFraction = 0.7;                 // Fraction of DCS sensor fits required              
 
@@ -51,7 +52,7 @@ ClassImp(AliTPCPreprocessor)
 //______________________________________________________________________________________________
 AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
   AliPreprocessor("TPC",shuttle),
-  fConfEnv(0), fTemp(0), fConfigOK(kTRUE), fROC(0)
+  fConfEnv(0), fTemp(0), fHighVoltage(0), fConfigOK(kTRUE), fROC(0)
 {
   // constructor
   fROC = AliTPCROC::Instance();
@@ -59,7 +60,7 @@ AliTPCPreprocessor::AliTPCPreprocessor(AliShuttleInterface* shuttle) :
 //______________________________________________________________________________________________
 // AliTPCPreprocessor::AliTPCPreprocessor(const AliTPCPreprocessor& org) :
 //   AliPreprocessor(org),
-//   fConfEnv(0), fTemp(0), fConfigOK(kTRUE)
+//   fConfEnv(0), fTemp(0), fHighVoltage(0), fConfigOK(kTRUE)
 // {
 //   // copy constructor not implemented
 //   //   -- missing underlying copy constructor in AliPreprocessor
@@ -75,6 +76,7 @@ AliTPCPreprocessor::~AliTPCPreprocessor()
   // destructor
 
   delete fTemp;
+  delete fHighVoltage;
 }
 //______________________________________________________________________________________________
 AliTPCPreprocessor& AliTPCPreprocessor::operator = (const AliTPCPreprocessor& )
@@ -121,6 +123,20 @@ void AliTPCPreprocessor::Initialize(Int_t run, UInt_t startTime,
 	fTemp->SetDiffCut(kDiffCutTemp);
 
 
+  // High voltage measurements
+
+      if (false) {    // high voltage maps not yet implemented...
+        confTree=0;
+        entry=0;
+        entry = GetFromOCDB("Config", "HighVoltage");
+        if (entry) confTree = (TTree*) entry->GetObject();
+        if ( confTree==0 ) {
+           Log("AliTPCPreprocsessor: High Voltage Config OCDB entry missing.\n");
+           fConfigOK = kFALSE;
+           return;
+        }
+        fHighVoltage = new AliDCSSensorArray(fStartTime, fEndTime, confTree);
+      }
 }
 
 //______________________________________________________________________________________________
@@ -142,6 +158,15 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   UInt_t tempResult = MapTemperature(dcsAliasMap);
   UInt_t result=tempResult;
 
+  // High Voltage recordings
+
+
+ if (false) {   // High Voltage maps not yet implemented..
+ 
+  UInt_t hvResult = MapHighVoltage(dcsAliasMap);
+  result+=hvResult;
+
+ }
 
   // Other calibration information will be retrieved through FXS files
   //  examples:
@@ -179,7 +204,7 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
 
   // Central Electrode processing
 
-  if( false ) {    // CE input file not generated yet
+  if( runType == kPhysicsRunType ) {    // CE input file not generated yet
     Int_t ceSource = AliShuttleInterface::kDAQ;
     TString source = fConfEnv->GetValue("CE","DAQ");
     source.ToUpper();
@@ -231,6 +256,45 @@ UInt_t AliTPCPreprocessor::MapTemperature(TMap* dcsAliasMap)
 
 }
 
+//______________________________________________________________________________________________
+UInt_t AliTPCPreprocessor::MapHighVoltage(TMap* dcsAliasMap)
+{
+
+   // extract DCS HV maps. Perform fits to save space
+
+  UInt_t result=0;
+  TMap *map = fHighVoltage->ExtractDCS(dcsAliasMap);
+  if (map) {
+    fHighVoltage->MakeSplineFit(map);
+    Double_t fitFraction = fHighVoltage->NumFits()/fHighVoltage->NumSensors(); 
+    if (fitFraction > kFitFraction ) {
+      AliInfo(Form("High volatge recordings extracted, fits performed.\n"));
+    } else { 
+      Log ("Too few high voltage recordings fitted. \n");
+      result = 9;
+    }
+  } else {
+    Log("No high voltage recordings extracted. \n");
+    result=9;
+  }
+  delete map;
+  // Now store the final CDB file
+
+  if ( result == 0 ) {
+        AliCDBMetaData metaData;
+	metaData.SetBeamPeriod(0);
+	metaData.SetResponsible("Haavard Helstrup");
+	metaData.SetComment("Preprocessor AliTPC data base entries.");
+
+	Bool_t storeOK = Store("Calib", "HighVoltage", fHighVoltage, &metaData, 0, kFALSE);
+        if ( !storeOK )  result=1;
+
+   }
+
+   return result;
+
+}
+
 
 //______________________________________________________________________________________________
 
@@ -266,6 +330,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 
 //  loop through all files from LDCs
 
+    Bool_t changed=false;
     UInt_t index = 0;
     while (list->At(index)!=NULL) {
      TObjString* fileNameEntry = (TObjString*) list->At(index);
@@ -288,6 +353,7 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 
         //  replace entries for the sectors available in the present file
 
+        changed=true;
         for (Int_t sector=0; sector<nSectors; sector++) {
            AliTPCCalROC *rocPed=calPed->GetCalRocPedestal(sector, kFALSE);
            if ( rocPed )  calPadPed->SetCalROC(rocPed,sector);
@@ -300,16 +366,17 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 //
 //  Store updated pedestal entry to OCDB
 //
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetResponsible("Haavard Helstrup");
-    metaData.SetComment("Preprocessor AliTPC data base entries.");
-
-    Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE);
-    if ( !storeOK ) ++result;
-    storeOK = Store("Calib", "PadNoise", calPadRMS, &metaData, 0, kTRUE);
-    if ( !storeOK ) ++result;
-
+    if (changed) {
+     AliCDBMetaData metaData;
+     metaData.SetBeamPeriod(0);
+     metaData.SetResponsible("Haavard Helstrup");
+     metaData.SetComment("Preprocessor AliTPC data base entries."); 
+ 
+     Bool_t storeOK = Store("Calib", "Pedestals", calPadPed, &metaData, 0, kTRUE);
+     if ( !storeOK ) ++result;
+     storeOK = Store("Calib", "PadNoise", calPadRMS, &metaData, 0, kTRUE);
+     if ( !storeOK ) ++result;
+    }
   } else {
     Log ("Error: no entries in input file list!");
     result = 1;
@@ -364,6 +431,7 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
 
 //  loop through all files from LDCs
 
+    Bool_t changed=false;
     UInt_t index = 0;
     while (list->At(index)!=NULL) {
      TObjString* fileNameEntry = (TObjString*) list->At(index);
@@ -386,6 +454,7 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
 
         //  replace entries for the sectors available in the present file
 
+        changed=true;
         for (Int_t sector=0; sector<nSectors; sector++) {
            AliTPCCalROC *rocTmean=calPulser->GetCalRocT0(sector);
            if ( rocTmean )  pulserTmean->SetCalROC(rocTmean,sector);
@@ -400,14 +469,15 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
 //
 //  Store updated pedestal entry to OCDB
 //
-    AliCDBMetaData metaData;
-    metaData.SetBeamPeriod(0);
-    metaData.SetResponsible("Haavard Helstrup");
-    metaData.SetComment("Preprocessor AliTPC data base entries.");
+    if (changed) {
+     AliCDBMetaData metaData;
+     metaData.SetBeamPeriod(0);
+     metaData.SetResponsible("Haavard Helstrup");
+     metaData.SetComment("Preprocessor AliTPC data base entries.");
 
-    Bool_t storeOK = Store("Calib", "Pulser", pulserObjects, &metaData, 0, kTRUE);
-    if ( !storeOK ) ++result;
-    
+     Bool_t storeOK = Store("Calib", "Pulser", pulserObjects, &metaData, 0, kTRUE);
+     if ( !storeOK ) ++result;
+    }  
   } else {
     Log ("Error: no entries in input file list!");
     result = 1;
