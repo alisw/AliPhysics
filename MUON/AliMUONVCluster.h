@@ -51,7 +51,7 @@ class AliMUONVCluster : public TObject {
   
            /// Build a single integer with id information
   static  UInt_t   BuildUniqueID(Int_t chamberId, Int_t detElemId, Int_t clusterIndex)
-			{return ((chamberId << 28) | (detElemId << 17) | (clusterIndex));}
+			{return (((chamberId & 0xF) << 28) | ((detElemId & 0x7FF) << 17) | (clusterIndex & 0x1FFFF));}
            /// Return chamber id (0..), part of the uniqueID
   static  Int_t    GetChamberId(UInt_t uniqueID)    {return (uniqueID & 0xF0000000) >> 28;}
            /// Return detection element id, part of the uniqueID
