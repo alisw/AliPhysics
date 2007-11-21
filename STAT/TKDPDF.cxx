@@ -66,7 +66,7 @@ TKDPDF::TKDPDF(TTree *t, const Char_t *var, const Char_t *cut, UInt_t bsize, Lon
 			//Info("TKDPDF(TTree*, const Char_t, const Char_t, UInt_t)", Form("Allocating %d data points in %d dimensions.", fNpoints, fNDim));
 			fData = new Float_t*[fNDim];
 			for(int idim=0; idim<fNDim; idim++) fData[idim] = new Float_t[fNpoints];
-			kDataOwner = kTRUE;
+			fDataOwner = kTRUE;
 		}
 		v = t->GetV1();
 		for(int ip=0; ip<fNpoints; ip++) fData[idim][ip] = (Float_t)v[ip];

@@ -9,7 +9,7 @@ templateClassImp(TKDTree)
 //////////////////////////////////////////////////////////////////////
 // Memory setup of protected data members:
 // 
-// 	kDataOwner;  // Toggle ownership of the data
+// 	fDataOwner;  // Toggle ownership of the data
 // 	fNnodes:
 //  size of branch node array, and index of first terminal node
 // 	fNDim;       // number of variables
@@ -35,7 +35,7 @@ templateClassImp(TKDTree)
 template <typename  Index, typename Value>
 TKDTree<Index, Value>::TKDTree() :
 	TObject()
-	,kDataOwner(kFALSE)
+	,fDataOwner(kFALSE)
 	,fNnodes(0)
 	,fNDim(0)
 	,fNDimm(0)
@@ -64,7 +64,7 @@ TKDTree<Index, Value>::TKDTree() :
 template <typename  Index, typename Value>
 TKDTree<Index, Value>::TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **data) :
 	TObject()
-	,kDataOwner(kFALSE)
+	,fDataOwner(kFALSE)
 	,fNnodes(0)
 	,fNDim(ndim)
 	,fNDimm(2*ndim)
@@ -94,6 +94,7 @@ TKDTree<Index, Value>::TKDTree(Index npoints, Index ndim, UInt_t bsize, Value **
 template <typename  Index, typename Value>
 TKDTree<Index, Value>::~TKDTree()
 {
+  // Destructor
 	if (fIndBuffer) delete [] fIndBuffer;
 	if (fDistBuffer) delete [] fDistBuffer;
 	if (fkNNdist) delete [] fkNNdist;
@@ -103,7 +104,7 @@ TKDTree<Index, Value>::~TKDTree()
 	if (fIndPoints) delete [] fIndPoints;
 	if (fRange) delete [] fRange;
 	if (fBoundaries) delete [] fBoundaries;
-	if (kDataOwner && fData){
+	if (fDataOwner && fData){
 		for(int idim=0; idim<fNDim; idim++) delete [] fData[idim];
 		delete [] fData;
 	}
@@ -674,7 +675,7 @@ void TKDTree<Index, Value>::SetData(Index npoints, Index ndim, UInt_t bsize, Val
 
 //_________________________________________________________________
 template <typename  Index, typename Value>
-void TKDTree<Index, Value>::Spread(Index ntotal, Value *a, Index *index, Value &min, Value &max)
+void TKDTree<Index, Value>::Spread(Index ntotal, Value *a, Index *index, Value &min, Value &max) const
 {
   //Value min, max;
   Index i;
@@ -689,7 +690,7 @@ void TKDTree<Index, Value>::Spread(Index ntotal, Value *a, Index *index, Value &
 
 //_________________________________________________________________
 template <typename  Index, typename Value>
-Value TKDTree<Index, Value>::KOrdStat(Index ntotal, Value *a, Index k, Index *index)
+Value TKDTree<Index, Value>::KOrdStat(Index ntotal, Value *a, Index k, Index *index) const
 {
   //
    //copy of the TMath::KOrdStat because I need an Index work array
