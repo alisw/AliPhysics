@@ -40,30 +40,32 @@
 #include "AliT0hit.h"
 #include "AliT0RecPoint.h"
 #include "AliT0QADataMaker.h"
+#include "AliQAChecker.h"
 
 ClassImp(AliT0QADataMaker)
            
 //____________________________________________________________________________ 
   AliT0QADataMaker::AliT0QADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kT0), "T0 Quality Assurance Data Maker"),
+  AliQADataMaker(AliQA::GetDetName(AliQA::kT0), "T0 Quality Assurance Data Maker")
   //  fhHitsTime(0x0),
   // fhHitsAmp(0x0),
-  fhHitsEff(0x0),
+  // fhHitsEff(0x0),
   //  fhDigCFD(0x0),
   //  fhDigLEDamp(0x0),
   //  fhDigQTC(0x0),
-  fhDigMean(0x0),
-  fhDigEff(0x0),
+  // fhDigMean(0x0),
+  //  fhDigEff(0x0),
   //  fhRecCFD(0x0),
   //  fhRecLEDamp(0x0),
   //  fhRecQTC(0x0),
-  fhRecMean(0x0),
-  fhRecEff(0x0),
-  fhESDMean(0x0),
-  fhESDVertex(0x0)
+  //  fhRecMean(0x0),
+  //  fhRecEff(0x0),
+  //  fhESDMean(0x0),
+  //  fhESDVertex(0x0)
 
 {
   // ctor
+  /*
   for(Int_t i=0; i<24; i++) {
     fhHitsTime[i]=0x0;
    fhDigCFD[i]=0x0;
@@ -72,6 +74,7 @@ ClassImp(AliT0QADataMaker)
     fhRecLEDamp[i]=0x0;
     fhRecQTC[i]=0x0;
   }
+  */
  //   fDetectorDir = fOutput->GetDirectory(GetName()) ;  
 //   if (!fDetectorDir) 
 //     fDetectorDir = fOutput->mkdir(GetName()) ;  
@@ -79,23 +82,24 @@ ClassImp(AliT0QADataMaker)
 
 //____________________________________________________________________________ 
 AliT0QADataMaker::AliT0QADataMaker(const AliT0QADataMaker& qadm) :
-  AliQADataMaker(), 
+  AliQADataMaker() 
  //  fhHitsTime(0x0),
-  fhHitsEff(0x0),
+ // fhHitsEff(0x0),
   //  fhDigCFD(0x0),
   //  fhDigLEDamp(0x0),
   //  fhDigQTC(0x0),
-  fhDigMean(0x0),
-  fhDigEff(0x0),
+  // fhDigMean(0x0),
+  // fhDigEff(0x0),
   //  fhRecCFD(0x0),
   //  fhRecLEDamp(0x0),
   //  fhRecQTC(0x0),
-  fhRecMean(0x0),
-  fhRecEff(0x0),
-  fhESDMean(0x0),
-  fhESDVertex(0x0)
+  // fhRecMean(0x0),
+  // fhRecEff(0x0),
+  // //  fhESDMean(0x0),
+  // fhESDVertex(0x0)
 {
   //copy ctor 
+  /*
   for(Int_t i=0; i<24; i++) {
     fhHitsTime[i]=0x0;
     fhDigCFD[i]=0x0;
@@ -104,7 +108,7 @@ AliT0QADataMaker::AliT0QADataMaker(const AliT0QADataMaker& qadm) :
     fhRecLEDamp[i]=0x0;
     fhRecQTC[i]=0x0;
   }
-
+  */
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
 }
@@ -117,6 +121,20 @@ AliT0QADataMaker& AliT0QADataMaker::operator = (const AliT0QADataMaker& qadm )
   new(this) AliT0QADataMaker(qadm);
   return *this;
 }
+//____________________________________________________________________________
+void AliT0QADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
+{
+  //Detector specific actions at end of cycle
+  // do the QA checking
+  AliQAChecker::Instance()->Run(AliQA::kT0, task, list) ;
+}
+
+//____________________________________________________________________________
+void AliT0QADataMaker::StartOfDetectorCycle()
+{
+  //Detector specific actions at start of cycle
+
+}
  
 //____________________________________________________________________________ 
 void AliT0QADataMaker::InitHits()
@@ -124,36 +142,64 @@ void AliT0QADataMaker::InitHits()
   // create Hits histograms in Hits subdir
   TString timename;
   timename ="hHitTime";
+  TH1F *    fhHitsTime[24];
   for (Int_t i=0; i<24; i++)
     {
       timename += i;
-       if(i<12)  fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,2,3);
-     else  
-       fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,12,13);
+      if(i<12)  fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,2,3);
+      else  
+	fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,12,13);
+      Add2HitsList( fhHitsTime[i],i);
     }
-  fhHitsEff = new TH1F("hHitsEff", "Hits Efficiency", 25,-0.5,24.5);
+  /*
+  TH2F *fhHitsEffA = new TH2F("hHitsEffA", "Hits Efficiency A side", 25,-0.5,24.5, 100,12,13 );
+  Add2HitsList(fhHitsEffA,0);
+  TH2F *fhHitsEffC = new TH2F("hHitsEffC", "Hits Efficiency C side", 25,-0.5,24.5, 100,2,3 );
+  Add2HitsList(fhHitsEffC,1);
+  */
 }
 
 //____________________________________________________________________________ 
 void AliT0QADataMaker::InitDigits()
 {
   // create Digits histograms in Digits subdir
+
+  /*
+  TH2F * fhDigCFD = new TH2F("fhDigCFD", " CFD digits",25,-0.5,24.5,100,100,1000);
+  Add2DigitsList( fhDigCFD,0);
+  TH2F *fhDigLEDamp = new TH2F("fhDigLEDamp", " LED-CFD digits",25,-0.5,24.5,100,100,1000);
+  Add2DigitsList( fhDigLEDamp,1);
+  TH2F * fhDigQTC = new TH2F("fhDigQTC", " QTC digits",25,-0.5,24.5,100,100,1000);
+  Add2DigitsList( fhDigQTC,2);
+  TH1F * fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
+  Add2DigitsList( fhDigMean,23);
+  */
+  
   TString timename, ampname, qtcname;
   timename ="hDigCFD";
   ampname = "hDigLED";
   qtcname = "hDigQTC";
+
+  TH1F *fhDigCFD[24]; TH1F * fhDigLEDamp[24]; TH1F *fhDigQTC[24];
+
   for (Int_t i=0; i<24; i++)
     {
       timename += i;
       ampname += i;
       qtcname += i;
       fhDigCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,1000);
+      Add2DigitsList( fhDigCFD[i],i);
       fhDigLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,100,1000);
+      Add2DigitsList( fhDigLEDamp[i],i+24);
       fhDigQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,1000);
-    }
-  fhDigEff = new TH1F("hDigEff","digits efficiency", 25,-0.5,24.5);
-  fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
-
+      Add2DigitsList( fhDigQTC[i],i+48);
+     }
+  
+  TH1F* fhDigEff = new TH1F("hDigEff","digits efficiency", 25,-0.5,24.5);
+  Add2DigitsList( fhDigEff,72);
+  TH1F* fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
+  Add2DigitsList( fhDigMean,73);
+  
 }
 
 //____________________________________________________________________________ 
@@ -161,31 +207,49 @@ void AliT0QADataMaker::InitDigits()
 void AliT0QADataMaker::InitRecPoints()
 {
   // create cluster histograms in RecPoint subdir
- 
-  // create Digits histograms in Digits subdir
+  /* 
+ TH2F * fhRecCFD = new TH2F("fhRecCFD", " CFD reconstructed",25,-0.5,24.5,100,12,13);
+  Add2DigitsList( fhRecCFD,0);
+  TH2F *fhRecLEDamp = new TH2F("fhRecLEDamp", " amplitude LED reconstructed",25,-0.5,24.5,100,1000,1000);
+  Add2DigitsList( fhRecLEDamp,1);
+ TH2F * fhRecQTC = new TH2F("fhRecQTC", " amplitude QTC reconstructed",25,-0.5,24.5,100,1000,1000);
+  Add2DigitsList( fhRecQTC,2);
+ TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
+  Add2DigitsList( fhRecMean,3);
+  */ 
+  
   TString timename,ampname, qtcname;
   timename ="hRecCFD";
   ampname = "hRecLED";
   qtcname = "hRecQTC";
+  TH1F *fhRecCFD[24]; TH1F *fhRecLEDAmp[24];  TH1F * fhRecQTC[24];
   for (Int_t i=0; i<24; i++)
     {
       timename += i;
       ampname += i;
       qtcname += i;
       fhRecCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,1000);
-      fhRecLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,100,1000);
+     Add2RecPointsList ( fhRecCFD[i],i);
+      fhRecLEDAmp[i] = new TH1F(ampname.Data(), ampname.Data(),100,100,1000);
+    Add2RecPointsList ( fhRecLEDAmp[i],i+24);
       fhRecQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,1000);
-    }
-  fhRecEff = new TH1F("hRecEff","Efficiency rec.points",25,-0.5,24.5);
-  fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
-
+    Add2RecPointsList ( fhRecQTC[i],i+48);
+     }
+   
+  TH1F *fhRecEff = new TH1F("hRecEff","Efficiency rec.points",25,-0.5,24.5);
+ Add2RecPointsList ( fhRecEff,72);
+  TH1F * fhRecMean = new TH1F("hRecMean"," reconstructed mean signal",100,500,600);
+ Add2RecPointsList( fhRecMean,73);
+  
 }
 //____________________________________________________________________________
 void AliT0QADataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
-  fhESDMean = new TH1F("hESDmean"," ESD mean",100,500,600);
-  fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
+  TH1F *fhESDMean = new TH1F("hESDmean"," ESD mean",100,500,600);
+  Add2ESDsList(fhESDMean, 0) ;
+ TH1F * fhESDVertex = new TH1F("hESDvertex","EAD vertex",100,-50,50);
+  Add2ESDsList(fhESDVertex, 1) ;
 
 
 }
@@ -201,9 +265,8 @@ void AliT0QADataMaker::MakeHits(TObject * data)
     AliT0hit * hit ; 
     while ( (hit = dynamic_cast<AliT0hit *>(next())) ) {
       Int_t pmt=hit->Pmt();
-      fhHitsTime[pmt]->Fill(hit->Time()) ;
-       fhHitsEff->Fill(pmt);
-   }
+      GetHitsData(pmt)->Fill(pmt,hit->Time()) ;
+    }
   } 
 }
 
@@ -211,6 +274,7 @@ void AliT0QADataMaker::MakeHits(TObject * data)
 void AliT0QADataMaker::MakeDigits( TObject * data)
 {
   //fills QA histos for Digits
+ 
   TArrayI *digCFD = new TArrayI(24);
   TArrayI *digLED = new TArrayI(24);
   TArrayI *digQT0 = new TArrayI(24);
@@ -234,10 +298,10 @@ void AliT0QADataMaker::MakeDigits( TObject * data)
 	{
 	  if (digCFD->At(i)>0) {
 	    Int_t cfd=digCFD->At(i)- refpoint;
-	    fhDigCFD[i] -> Fill(cfd);
-	    fhDigLEDamp[i] -> Fill(digLED->At(i) - digCFD->At(i));
-	    fhDigQTC [i]-> Fill(digQT1->At(i) - digQT0->At(i));
-	    fhDigEff->Fill(i);
+	    GetDigitsData(i) ->Fill(i,cfd);
+	    GetDigitsData(i+24) -> Fill(i, digLED->At(i) - digCFD->At(i));
+	    GetDigitsData(i+48) -> Fill(i, digQT1->At(i) - digQT0->At(i));
+	    //	    fhDigEff->Fill(i);
 	  }
 	}  
     }
@@ -272,12 +336,12 @@ void AliT0QADataMaker::MakeRecPoints(TTree * clustersTree)
   brRec->GetEntry(0);
   
   for ( Int_t i=0; i<24; i++) {
-    fhRecCFD[i] -> Fill(frecpoints -> GetTime(i)); 
-    fhRecQTC[i] -> Fill(frecpoints -> GetAmp(i));
-    fhRecLEDamp[i] -> Fill( frecpoints->AmpLED(i));
-    if(frecpoints -> GetTime(i) > 0) fhRecEff->Fill(i);
+    GetRecPointsData(i) -> Fill(frecpoints -> GetTime(i)); 
+    GetRecPointsData(i+24) -> Fill(frecpoints -> GetAmp(i));
+    GetRecPointsData(i+48) -> Fill(frecpoints->AmpLED(i));
+    //  if(frecpoints -> GetTime(i) > 0) fhRecEff->Fill(i);
   }
-  fhRecMean->Fill(frecpoints->GetMeanTime());
+     GetRecPointsData(72) ->Fill(frecpoints->GetMeanTime());
   
 }
 
@@ -286,8 +350,8 @@ void AliT0QADataMaker::MakeESDs(AliESDEvent * esd)
 {
   //fills QA histos for ESD
 
-  fhESDMean -> Fill(esd->GetT0());
-  fhESDVertex -> Fill(esd->GetT0zVertex());
+  GetESDsData(0) -> Fill(esd->GetT0());
+  GetESDsData(1)-> Fill(esd->GetT0zVertex());
 
 }
 

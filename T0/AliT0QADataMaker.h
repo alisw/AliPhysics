@@ -42,7 +42,9 @@ private:
   virtual void   MakeDigits(TObject * digits) ;   //Fill Digit QA histo
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
-
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * list) ;
+  virtual void   StartOfDetectorCycle() ;
+  /*
   TH1F *fhHitsTime[24];
   TH1F *fhHitsEff;
 
@@ -60,7 +62,7 @@ private:
 
   TH1F *fhESDMean;
   TH1F *fhESDVertex;
-
+  */
   ClassDef(AliT0QADataMaker,1)  // description 
 
 };
