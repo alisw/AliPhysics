@@ -29,6 +29,7 @@
 #pragma link C++ class AliJetFillUnitArrayTracks+;
 #pragma link C++ class AliJetFillUnitArrayEMCalDigits+;
 #pragma link C++ class AliJetDummyGeo+;
+#pragma link C++ class AliJetDummyShishKebabTrd1Module+;
 #pragma link C++ class AliAnalysisTaskJets+;
 #pragma link C++ class AliDAJetFinder+;
 #pragma link C++ class AliDAJetHeader+;

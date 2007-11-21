@@ -16,11 +16,13 @@
 //
 // Temporarily added to define part of the EMCal geometry
 // necessary for the jet finder
-// Author: Magali Estienne
-// Magali.Estienne@cern.ch
+//
+// M. Estienne
 //
 
+#include <Riostream.h>
 #include <assert.h>
+#include <TList.h>
 
 // --- Root header files ---
 #include <TVector3.h>
@@ -29,47 +31,60 @@
 #include <TGeoNode.h>
 
 // --- AliRoot header files ---
+#include "AliLog.h"
 #include "AliJetDummyGeo.h"
+#include "AliJetDummyShishKebabTrd1Module.h"
 
 ClassImp(AliJetDummyGeo)
 
 AliJetDummyGeo::AliJetDummyGeo():
-    TObject(),
-    fArm1PhiMin(80.0), 
-    fArm1PhiMax(200.0),
-    fArm1EtaMin(-0.7), 
-    fArm1EtaMax(+0.7), 
-    fNumberOfSuperModules(12), 
-    fSteelFrontThick(0.0), 
-    fIPDistance(428.0), 
-    fZLength(),
-    fPhiGapForSM(2.), 
-    fNPhi(12),       
-    fNZ(24),      
-    fPhiModuleSize(12.26 - fPhiGapForSM / Float_t(fNPhi)), 
-    fEtaModuleSize(fPhiModuleSize), 
-    fNPHIdiv(2), 
-    fNETAdiv(2), 
-    fNECLayers(77), 
-    fECScintThick(0.16), 
-    fECPbRadThickness(0.16), 
-    fSampling(12.327),
-    fTrd1Angle(1.5), 
-    fNCellsInModule(fNPHIdiv*fNETAdiv), 
-    fNCellsInSupMod(fNCellsInModule*fNPhi*fNZ), 
-    fNCells(fNCellsInSupMod*fNumberOfSuperModules-fNCellsInSupMod), 
-    fLongModuleSize(fNECLayers*(fECScintThick + fECPbRadThickness)), 
-    f2Trd1Dx2(fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.)), 
-    fShellThickness(TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2)+fSteelFrontThick),
-    fEtaMaxOfTRD1(0.67064) // Value extracted from ShishKebab
+  fArm1EtaMin(-0.7), 
+  fArm1EtaMax(+0.7), 
+  fArm1PhiMin(80.0), 
+  fArm1PhiMax(200.0),
+  fNumberOfSuperModules(12), 
+  fSteelFrontThick(0.0), 
+  fLateralSteelStrip(0.01),
+  fIPDistance(428.0), 
+  fPhiGapForSM(2.), 
+  fNPhi(12),       
+  fNZ(24),      
+  fPhiModuleSize(12.26 - fPhiGapForSM / Float_t(fNPhi)), 
+  fEtaModuleSize(fPhiModuleSize),
+  fNPHIdiv(2), 
+  fNETAdiv(2), 
+  fPhiTileSize(fPhiModuleSize/Double_t(fNPHIdiv) - fLateralSteelStrip),
+  fEtaTileSize(fEtaModuleSize/Double_t(fNETAdiv) - fLateralSteelStrip),
+  fNECLayers(77), 
+  fECScintThick(0.16), 
+  fECPbRadThickness(0.16), 
+  fSampling(12.327),
+  fTrd1Angle(1.5), 
+  fNCellsInModule(fNPHIdiv*fNETAdiv), 
+  fNCellsInSupMod(fNCellsInModule*fNPhi*fNZ), 
+  fNCells(fNCellsInSupMod*fNumberOfSuperModules-fNCellsInSupMod), 
+  fLongModuleSize(fNECLayers*(fECScintThick + fECPbRadThickness)), 
+  f2Trd1Dx2(fEtaModuleSize + 2.*fLongModuleSize*TMath::Tan(fTrd1Angle*TMath::DegToRad()/2.)), 
+  fShellThickness(TMath::Sqrt(fLongModuleSize*fLongModuleSize + f2Trd1Dx2*f2Trd1Dx2)+fSteelFrontThick),
+  fZLength(2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax)),
+  fEtaMaxOfTRD1(0.), 
+  fPhiBoundariesOfSM(0),
+  fPhiCentersOfSM(0),
+  fCentersOfCellsEtaDir(0),
+  fCentersOfCellsXDir(0),
+  fCentersOfCellsPhiDir(0),
+  fEtaCentersOfCells(0),
+  fPhiCentersOfCells(0),
+  fShishKebabTrd1Modules(0),
+  fDebug(0)
 {
   // Constructor
+
   // Local coordinates
   fParSM[0] = GetShellThickness()/2.;        
   fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
   fParSM[2] = 350./2.;
 
-  fZLength    = 2.*ZFromEtaR(fIPDistance+fShellThickness,fArm1EtaMax); // Z coverage
   fEnvelop[0] = fIPDistance; // mother volume inner radius
   fEnvelop[1] = fIPDistance + fShellThickness; // mother volume outer r.
   fEnvelop[2] = 1.00001*fZLength; // add some padding for mother volume. 
@@ -80,7 +95,7 @@ AliJetDummyGeo::AliJetDummyGeo():
   fPhiBoundariesOfSM[0] = TMath::PiOver2() - TMath::ATan2(fParSM[1] , fIPDistance); // 1th and 2th modules)
   fPhiBoundariesOfSM[1] = TMath::PiOver2() + TMath::ATan2(fParSM[1] , fIPDistance);
   fPhiCentersOfSM[0]    = TMath::PiOver2();
-  for(int i=1; i<=4; i++) { // from 2th ro 9th
+  for(Int_t i=1; i<=4; i++) { // from 2th ro 9th
     fPhiBoundariesOfSM[2*i]   = fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*i;
     fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[1] + 20.*TMath::DegToRad()*i;
     fPhiCentersOfSM[i]        = fPhiCentersOfSM[0]    + 20.*TMath::DegToRad()*i;
@@ -89,19 +104,11 @@ AliJetDummyGeo::AliJetDummyGeo():
   fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
   fPhiCentersOfSM[5]     = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
 
-  //  for(int i=0; i<fNumberOfSuperModules; i++) fMatrixOfSM[i] = 0;
-
-  fCentersOfCellsEtaDir.Set(fNZ*fNETAdiv);
-  fCentersOfCellsXDir.Set(fNZ*fNETAdiv);
-  fCentersOfCellsPhiDir.Set(fNPhi*fNPHIdiv);
-  fEtaCentersOfCells.Set(fNZ*fNETAdiv*fNPhi*fNPHIdiv);
-  fPhiCentersOfCells.Set(fNPhi*fNPHIdiv);
-
-  int nphism  = GetNumberOfSuperModules()/2;
-  double dphi = (GetArm1PhiMax() - GetArm1PhiMin())/nphism;
-  double rpos = (GetEnvelop(0) + GetEnvelop(1))/2.;
-  double phi, phiRad, xpos, ypos, zpos;
-  for(int i=0; i<nphism; i++){
+  Int_t nphism  = GetNumberOfSuperModules()/2;
+  Double_t dphi = (GetArm1PhiMax() - GetArm1PhiMin())/nphism;
+  Double_t rpos = (GetEnvelop(0) + GetEnvelop(1))/2.;
+  Double_t phi, phiRad, xpos, ypos, zpos;
+  for(Int_t i=0; i<nphism; i++){
     phi    = GetArm1PhiMin() + dphi*(2*i+1)/2.; // phi= 90, 110, 130, 150, 170, 190
     phiRad = phi*TMath::Pi()/180.;
     xpos = rpos * TMath::Cos(phiRad);
@@ -112,49 +119,95 @@ AliJetDummyGeo::AliJetDummyGeo():
       ypos -= (fParSM[1]/2. * TMath::Cos(phiRad));
     }
     // pozitive z
-    int ind = 2*i;
+    Int_t ind = 2*i;
     TGeoRotation *geoRot0 = new TGeoRotation("geoRot0", 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
     fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
 					  xpos,ypos, zpos, geoRot0);
     // negaive z
     ind++;
-    double phiy = 90. + phi + 180.;
+    Double_t phiy = 90. + phi + 180.;
     if(phiy>=360.) phiy -= 360.;
     TGeoRotation *geoRot1 = new TGeoRotation("geoRot1", 90.0, phi, 90.0, phiy, 180.0, 0.0);
     fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
 					  xpos,ypos,-zpos, geoRot1);
   } // for
 
+  CreateListOfTrd1Modules();
+
+  if(fDebug > 0){
+    for(Int_t i=0; i<6; i++){
+      cout << "fMatrixOfSM[" << i << "]: " << fMatrixOfSM[i] << endl;
+    }
+    cout << "fArm1EtaMin: " << fArm1EtaMin << endl;
+    cout << "fArm1EtaMax: " << fArm1EtaMax << endl;
+    cout << "fArm1PhiMin: " << fArm1PhiMin << endl;
+    cout << "fArm1PhiMax: " << fArm1PhiMax << endl;
+    cout << "fNumberOfSuperModules: " << fNumberOfSuperModules << endl;
+    cout << "fSteelFrontThick: " << fSteelFrontThick << endl;
+    cout << "fIPDistance: " << fIPDistance  << endl;
+    cout << "fZLength: " << fZLength << endl;
+    cout << "fPhiGapForSM: " << fPhiGapForSM << endl;
+    cout << "fNPhi: " << fNPhi << endl;
+    cout << "fNZ: " << fNZ << endl;
+    cout << "fPhiModuleSize: " << fPhiModuleSize << endl;
+    cout << "fEtaModuleSize: " << fEtaModuleSize << endl;
+    cout << "fNPHIdiv: " << fNPHIdiv << endl;
+    cout << "fNETAdiv: " << fNETAdiv << endl;
+    cout << "fNECLayers: " << fNECLayers << endl;
+    cout << "fECScintThick: " <<  fECScintThick << endl;
+    cout << "fECPbRadThickness: " << fECPbRadThickness << endl;
+    cout << "fSampling: " << fSampling << endl;
+    cout << "fTrd1Angle: " << fTrd1Angle << endl;
+    cout << "fNCellsInModule: " << fNCellsInModule << endl;
+    cout << "fNCellsInSupMod: " << fNCellsInSupMod << endl;
+    cout << "fNCells: " << fNCells << endl;
+    cout << "fLongModuleSize: " <<  fLongModuleSize << endl;
+    cout << "f2Trd1Dx2: " << f2Trd1Dx2 << endl;
+    cout << "fShellThickness: " << fShellThickness << endl;
+    cout << "fEtaMaxOfTRD1: " << fEtaMaxOfTRD1 << endl;
+  }
 }
 
 AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
-    TObject(),  
-    fArm1PhiMin(geom.fArm1PhiMin),
-    fArm1PhiMax(geom.fArm1PhiMax),
-    fArm1EtaMin(geom.fArm1EtaMin),
-    fArm1EtaMax(geom.fArm1EtaMax),
-    fNumberOfSuperModules(geom.fNumberOfSuperModules),
-    fSteelFrontThick(geom.fSteelFrontThick),
-    fIPDistance(geom.fIPDistance),
-    fPhiGapForSM(geom.fPhiGapForSM),
-    fNPhi(geom.fNPhi),
-    fNZ(geom.fNZ),
-    fPhiModuleSize(geom.fPhiModuleSize),
-    fEtaModuleSize(geom.fEtaModuleSize),
-    fNPHIdiv(geom.fNPHIdiv),
-    fNETAdiv(geom.fNETAdiv),
-    fNECLayers(geom.fNECLayers),
-    fECScintThick(geom.fECScintThick),
-    fECPbRadThickness(geom.fECPbRadThickness),
-    fSampling(geom.fSampling),
-    fTrd1Angle(geom.fTrd1Angle),
-    fNCellsInModule(geom.fNCellsInModule),
-    fNCellsInSupMod(geom.fNCellsInSupMod),
-    fNCells(geom.fNCells),
-    fLongModuleSize(geom.fLongModuleSize),
-    f2Trd1Dx2(geom.f2Trd1Dx2),
-    fShellThickness(geom.fShellThickness),
-    fEtaMaxOfTRD1(geom.fEtaMaxOfTRD1) 
+  fArm1EtaMin(geom.fArm1EtaMin), 
+  fArm1EtaMax(geom.fArm1EtaMax), 
+  fArm1PhiMin(geom.fArm1PhiMin), 
+  fArm1PhiMax(geom.fArm1PhiMax),
+  fNumberOfSuperModules(geom.fNumberOfSuperModules), 
+  fSteelFrontThick(geom.fSteelFrontThick), 
+  fLateralSteelStrip(geom.fLateralSteelStrip),
+  fIPDistance(geom.fIPDistance), 
+  fPhiGapForSM(geom.fPhiGapForSM), 
+  fNPhi(geom.fNPhi),       
+  fNZ(geom.fNZ),      
+  fPhiModuleSize(geom.fPhiModuleSize), 
+  fEtaModuleSize(geom.fEtaModuleSize),
+  fNPHIdiv(geom.fNPHIdiv), 
+  fNETAdiv(geom.fNETAdiv), 
+  fPhiTileSize(geom.fPhiTileSize),
+  fEtaTileSize(geom.fEtaTileSize),
+  fNECLayers(geom.fNECLayers), 
+  fECScintThick(geom.fECScintThick), 
+  fECPbRadThickness(geom.fECPbRadThickness), 
+  fSampling(geom.fSampling),
+  fTrd1Angle(geom.fTrd1Angle), 
+  fNCellsInModule(geom.fNCellsInModule), 
+  fNCellsInSupMod(geom.fNCellsInSupMod), 
+  fNCells(geom.fNCells),
+  fLongModuleSize(geom.fLongModuleSize),
+  f2Trd1Dx2(geom.f2Trd1Dx2),
+  fShellThickness(geom.fShellThickness),
+  fZLength(geom.fZLength),
+  fEtaMaxOfTRD1(geom.fEtaMaxOfTRD1),
+  fPhiBoundariesOfSM(geom.fPhiBoundariesOfSM),
+  fPhiCentersOfSM(geom.fPhiCentersOfSM),
+  fCentersOfCellsEtaDir(geom.fCentersOfCellsEtaDir),
+  fCentersOfCellsXDir(geom.fCentersOfCellsXDir),
+  fCentersOfCellsPhiDir(geom.fCentersOfCellsPhiDir),
+  fEtaCentersOfCells(geom.fEtaCentersOfCells),
+  fPhiCentersOfCells(geom.fPhiCentersOfCells),
+  fShishKebabTrd1Modules(geom.fShishKebabTrd1Modules),
+  fDebug(geom.fDebug)
 {
   // Constructor
   // Local coordinates
@@ -162,13 +215,17 @@ AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
   fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
   fParSM[2] = 350./2.;
 
+  fEnvelop[0] = fIPDistance; // mother volume inner radius
+  fEnvelop[1] = fIPDistance + fShellThickness; // mother volume outer r.
+  fEnvelop[2] = 1.00001*fZLength; // add some padding for mother volume. 
+
   // SM phi boundaries - (0,1),(2,3) .. (10,11) - has the same boundaries; Nov 7, 2006 
   fPhiBoundariesOfSM.Set(fNumberOfSuperModules);
   fPhiCentersOfSM.Set(fNumberOfSuperModules/2);
   fPhiBoundariesOfSM[0] = TMath::PiOver2() - TMath::ATan2(fParSM[1] , fIPDistance); // 1th and 2th modules)
   fPhiBoundariesOfSM[1] = TMath::PiOver2() + TMath::ATan2(fParSM[1] , fIPDistance);
   fPhiCentersOfSM[0]    = TMath::PiOver2();
-  for(int i=1; i<=4; i++) { // from 2th ro 9th
+  for(Int_t i=1; i<=4; i++) { // from 2th ro 9th
     fPhiBoundariesOfSM[2*i]   = fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*i;
     fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[1] + 20.*TMath::DegToRad()*i;
     fPhiCentersOfSM[i]        = fPhiCentersOfSM[0]    + 20.*TMath::DegToRad()*i;
@@ -177,19 +234,11 @@ AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
   fPhiBoundariesOfSM[10] = fPhiBoundariesOfSM[11] - TMath::ATan2((fParSM[1]) , fIPDistance);
   fPhiCentersOfSM[5]     = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
 
-  //  for(int i=0; i<fNumberOfSuperModules; i++) fMatrixOfSM[i] = 0;
-
-  fCentersOfCellsEtaDir.Set(fNZ*fNETAdiv);
-  fCentersOfCellsXDir.Set(fNZ*fNETAdiv);
-  fCentersOfCellsPhiDir.Set(fNPhi*fNPHIdiv);
-  fEtaCentersOfCells.Set(fNZ*fNETAdiv*fNPhi*fNPHIdiv);
-  fPhiCentersOfCells.Set(fNPhi*fNPHIdiv);
-
-  int nphism  = GetNumberOfSuperModules()/2;
-  double dphi = (GetArm1PhiMax() - GetArm1PhiMin())/nphism;
-  double rpos = (GetEnvelop(0) + GetEnvelop(1))/2.;
-  double phi, phiRad, xpos, ypos, zpos;
-  for(int i=0; i<nphism; i++){
+  Int_t nphism  = GetNumberOfSuperModules()/2;
+  Double_t dphi = (GetArm1PhiMax() - GetArm1PhiMin())/nphism;
+  Double_t rpos = (GetEnvelop(0) + GetEnvelop(1))/2.;
+  Double_t phi, phiRad, xpos, ypos, zpos;
+  for(Int_t i=0; i<nphism; i++){
     phi    = GetArm1PhiMin() + dphi*(2*i+1)/2.; // phi= 90, 110, 130, 150, 170, 190
     phiRad = phi*TMath::Pi()/180.;
     xpos = rpos * TMath::Cos(phiRad);
@@ -200,13 +249,13 @@ AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
       ypos -= (fParSM[1]/2. * TMath::Cos(phiRad));
     }
     // pozitive z
-    int ind = 2*i;
+    Int_t ind = 2*i;
     TGeoRotation *geoRot0 = new TGeoRotation("geoRot0", 90.0, phi, 90.0, 90.0+phi, 0.0, 0.0);
     fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
 					  xpos,ypos, zpos, geoRot0);
     // negaive z
     ind++;
-    double phiy = 90. + phi + 180.;
+    Double_t phiy = 90. + phi + 180.;
     if(phiy>=360.) phiy -= 360.;
     TGeoRotation *geoRot1 = new TGeoRotation("geoRot1", 90.0, phi, 90.0, phiy, 180.0, 0.0);
     fMatrixOfSM[ind] = new TGeoCombiTrans(Form("EmcalSM%2.2i",ind),
@@ -217,11 +266,15 @@ AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
 
   } // for
 
+  CreateListOfTrd1Modules();
+
 }
 
+//------------------------------------------------------------------------------------
 AliJetDummyGeo::~AliJetDummyGeo()
 {
   // Destructor
+  delete [] fMatrixOfSM;
 }
 
 //------------------------------------------------------------------------------------
@@ -237,7 +290,7 @@ void AliJetDummyGeo::EtaPhiFromIndex(Int_t absId, Float_t& eta, Float_t& phi)
 }
 
 //------------------------------------------------------------------------------------
-void AliJetDummyGeo::GetGlobal(const Double_t *loc, Double_t *glob, int ind) const
+void AliJetDummyGeo::GetGlobal(const Double_t *loc, Double_t *glob, Int_t ind) const
 {
   // Figure out the global numbering of a given supermodule from the
   // local numbering
@@ -250,11 +303,11 @@ void AliJetDummyGeo::GetGlobal(const Double_t *loc, Double_t *glob, int ind) con
 }
 
 //------------------------------------------------------------------------------------
-void AliJetDummyGeo::GetGlobal(Int_t absId , double glob[3]) const
+void AliJetDummyGeo::GetGlobal(Int_t absId , Double_t glob[3]) const
 { 
   // Alice numbering scheme - Jun 03, 2006
   static Int_t nSupMod, nModule, nIphi, nIeta;
-  static double loc[3];
+  static Double_t loc[3];
 
   glob[0]=glob[1]=glob[2]=0.0; // bad case
   if(RelPosCellInSModule(absId, loc)) {
@@ -298,7 +351,7 @@ Bool_t AliJetDummyGeo::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &
 
   // Shift index taking into account the difference between standard SM 
   // and SM of half size in phi direction
-  const Int_t kPhiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
+  const Int_t phiIndexShift = fCentersOfCellsPhiDir.GetSize()/4; // Nov 22, 2006; was 6 for cas 2X2
   static Int_t nSupMod, nModule, nIphi, nIeta, iphi, ieta;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
@@ -311,7 +364,7 @@ Bool_t AliJetDummyGeo::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t &
   if(nSupMod<10) {
     yr = fCentersOfCellsPhiDir.At(iphi);
   } else {
-    yr = fCentersOfCellsPhiDir.At(iphi + kPhiIndexShift);
+    yr = fCentersOfCellsPhiDir.At(iphi + phiIndexShift);
   }
 
   return kTRUE;
@@ -360,7 +413,7 @@ Bool_t AliJetDummyGeo::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nModule,In
 }
 
 //------------------------------------------------------------------------------------
-void AliJetDummyGeo::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta, int &iphi, int &ieta) const
+void AliJetDummyGeo::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, Int_t nIphi, Int_t nIeta, Int_t &iphi, Int_t &ieta) const
 { 
   // 
   // Added nSupMod; Nov 25, 05
@@ -387,7 +440,7 @@ void AliJetDummyGeo::GetCellPhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule, I
 
 
 //------------------------------------------------------------------------------------
-void AliJetDummyGeo::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule,  int &iphim, int &ietam) const
+void AliJetDummyGeo::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModule,  Int_t &iphim, Int_t &ietam) const
 { 
   // added nSupMod; - 19-oct-05 !
   // Alice numbering scheme        - Jun 01,2006 
@@ -545,6 +598,136 @@ Bool_t AliJetDummyGeo::GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, 
 }
 
 //------------------------------------------------------------------------------------
+void AliJetDummyGeo::CreateListOfTrd1Modules()
+{
+  // Generate the list of Trd1 modules
+  // which will make up the EMCAL
+  // geometry
+
+  AliJetDummyShishKebabTrd1Module *mod=0, *mTmp=0; // current module
+  if(fShishKebabTrd1Modules == 0) {
+    fShishKebabTrd1Modules = new TList;
+    fShishKebabTrd1Modules->SetName("ListOfTRD1");
+    for(Int_t iz=0; iz< GetNZ(); iz++) { 
+      if(iz==0) { 
+        mod  = new AliJetDummyShishKebabTrd1Module(TMath::Pi()/2.,this);
+      } else {
+        mTmp  = new AliJetDummyShishKebabTrd1Module(*mod);
+        mod   = mTmp;
+      }
+      fShishKebabTrd1Modules->Add(mod);
+    }
+  } else {
+    printf(" Already exits : ");
+  }
+  mod = (AliJetDummyShishKebabTrd1Module*)fShishKebabTrd1Modules->At(fShishKebabTrd1Modules->GetSize()-1);
+  fEtaMaxOfTRD1 = mod->GetMaxEtaOfModule(0);
+
+  //  printf(" fShishKebabTrd1Modules has %i modules : max eta %5.4f \n", 
+  //		  fShishKebabTrd1Modules->GetSize(),fEtaMaxOfTRD1);
+
+  // Feb 20,2006;
+  // Jun 01, 2006 - ALICE numbering scheme
+  // define grid for cells in eta(z) and x directions in local coordinates system of SM
+  // Works just for 2x2 case only -- ?? start here
+  // 
+  //
+  // Define grid for cells in phi(y) direction in local coordinates system of SM
+  // as for 2X2 as for 3X3 - Nov 8,2006
+  // 
+
+  //  printf(" Cells grid in phi directions : size %i\n", fCentersOfCellsPhiDir.GetSize());
+
+  Int_t ind=0; // this is phi index
+  Int_t ieta=0, nModule=0, iphiTemp;
+  Double_t xr, zr, theta, phi, eta, r, x,y;
+  TVector3 vglob;
+  Double_t ytCenterModule=0.0, ytCenterCell=0.0;
+
+  fCentersOfCellsPhiDir.Set(fNPhi*fNPHIdiv);
+  fPhiCentersOfCells.Set(fNPhi*fNPHIdiv);
+
+  Double_t R0 = GetIPDistance() + GetLongModuleSize()/2.;
+  for(Int_t it=0; it<fNPhi; it++) { // cycle on modules
+    ytCenterModule = -fParSM[1] + fPhiModuleSize*(2*it+1)/2;  // center of module
+    for(Int_t ic=0; ic<fNPHIdiv; ic++) { // cycle on cells in module
+      if(fNPHIdiv==2) {
+        ytCenterCell = ytCenterModule + fPhiTileSize *(2*ic-1)/2.;
+      } else if(fNPHIdiv==3){
+        ytCenterCell = ytCenterModule + fPhiTileSize *(ic-1);
+      } else if(fNPHIdiv==1){
+        ytCenterCell = ytCenterModule;
+      }
+      fCentersOfCellsPhiDir.AddAt(ytCenterCell,ind);
+      // Define grid on phi direction
+      // Grid is not the same for different eta bin;
+      // Effect is small but is still here
+      phi = TMath::ATan2(ytCenterCell, R0);
+      fPhiCentersOfCells.AddAt(phi, ind);
+
+      //      printf(" ind %2.2i : y %8.3f ", ind, fCentersOfCellsPhiDir.At(ind)); 
+      ind++;
+    }
+  }
+
+  fCentersOfCellsEtaDir.Set(fNZ *fNETAdiv);
+  fCentersOfCellsXDir.Set(fNZ *fNETAdiv);
+  fEtaCentersOfCells.Set(fNZ *fNETAdiv * fNPhi*fNPHIdiv);
+  if(fDebug>1) AliInfo(Form(" Cells grid in eta directions : size %i\n", fCentersOfCellsEtaDir.GetSize()));
+  for(Int_t it=0; it<fNZ; it++) {
+    AliJetDummyShishKebabTrd1Module *trd1 = GetShishKebabModule(it);
+    nModule = fNPhi*it;
+    for(Int_t ic=0; ic<fNETAdiv; ic++) {
+      if(fNPHIdiv==2) {
+        trd1->GetCenterOfCellInLocalCoordinateofSM(ic, xr, zr);      // case of 2X2
+        GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
+      } if(fNPHIdiv==3) {
+        trd1->GetCenterOfCellInLocalCoordinateofSM_3X3(ic, xr, zr);  // case of 3X3
+        GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
+      } if(fNPHIdiv==1) {
+        trd1->GetCenterOfCellInLocalCoordinateofSM_1X1(xr, zr);      // case of 1X1
+        GetCellPhiEtaIndexInSModule(0, nModule, 0, ic, iphiTemp, ieta); 
+      }
+      fCentersOfCellsXDir.AddAt(Float_t(xr) - fParSM[0],ieta);
+      fCentersOfCellsEtaDir.AddAt(Float_t(zr) - fParSM[2],ieta);
+      // Define grid on eta direction for each bin in phi
+      for(Int_t iphi=0; iphi<fCentersOfCellsPhiDir.GetSize(); iphi++) {
+        x = xr + trd1->GetRadius();
+        y = fCentersOfCellsPhiDir[iphi];
+        r = TMath::Sqrt(x*x + y*y + zr*zr);
+        theta = TMath::ACos(zr/r);
+        eta   = AliJetDummyShishKebabTrd1Module::ThetaToEta(theta);
+	//        ind   = ieta*fCentersOfCellsPhiDir.GetSize() + iphi;
+        ind   = iphi*fCentersOfCellsEtaDir.GetSize() + ieta;
+        fEtaCentersOfCells.AddAt(eta, ind);
+      }
+      //printf(" ieta %i : xr + trd1->GetRadius() %f : zr %f : eta %f \n", ieta, xr + trd1->GetRadius(), zr, eta);
+    }
+  }
+
+  if(fDebug>1){
+    for(Int_t i=0; i<fCentersOfCellsEtaDir.GetSize(); i++) {
+      AliInfo(Form(" ind %2.2i : z %8.3f : x %8.3f", i+1, 
+		   fCentersOfCellsEtaDir.At(i),fCentersOfCellsXDir.At(i)));
+    }
+  }
+}
+
+//------------------------------------------------------------------------------------
+AliJetDummyShishKebabTrd1Module* AliJetDummyGeo::GetShishKebabModule(Int_t neta)
+{
+  // This method was too long to be included in the header file - the
+  // rule checker complained about it's length, so we move it here. It
+  // returns the shishkebabmodule at a given eta index point.
+
+  static AliJetDummyShishKebabTrd1Module* trd1=0;
+  if(fShishKebabTrd1Modules && neta>=0 && neta<fShishKebabTrd1Modules->GetSize()) {
+    trd1 = (AliJetDummyShishKebabTrd1Module*)fShishKebabTrd1Modules->At(neta);
+  } else trd1 = 0;
+  return trd1;
+}
+
+//------------------------------------------------------------------------------------
 void  AliJetDummyGeo::GetTransformationForSM()
 {
   // Uses the geometry manager to load the transformation matrix
@@ -555,7 +738,7 @@ void  AliJetDummyGeo::GetTransformationForSM()
   static Bool_t transInit=kFALSE;
   if(transInit) return;
 
-  int i=0;
+  Int_t i=0;
   if(gGeoManager == 0) {
     Info("CreateTransformationForSM() "," Load geometry : TGeoManager::Import()");
     assert(0);
@@ -577,12 +760,12 @@ void  AliJetDummyGeo::GetTransformationForSM()
     GetNameOfEMCALEnvelope());
     assert(0);
   }
-  printf(" i %i : EMCAL Envelope is %s : #SM %i \n", i, xen1->GetName(), xen1->GetNdaughters());
+  AliInfo(Form(" i %i : EMCAL Envelope is %s : #SM %i \n", i, xen1->GetName(), xen1->GetNdaughters()));
   for(i=0; i<xen1->GetNdaughters(); i++) {
     TGeoNodeMatrix *sm = (TGeoNodeMatrix*)xen1->GetDaughter(i);
     fMatrixOfSM[i] = sm->GetMatrix();
   }
-  printf("transInit %d: ", transInit);
+  AliInfo(Form("transInit %d: ", transInit));
   transInit = kTRUE;
 }
 
