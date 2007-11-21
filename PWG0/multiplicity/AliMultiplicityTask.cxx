@@ -403,9 +403,6 @@ void AliMultiplicityTask::Exec(Option_t*)
     }
   }// end of mc particle
 
-  // FAKE
-  return;
-
   fMultiplicity->FillGenerated(vtxMC[2], eventTriggered, eventVertex, (Int_t) nMCTracks05, (Int_t) nMCTracks09, (Int_t) nMCTracks15, (Int_t) nMCTracks20, (Int_t) nMCTracksAll);
 
   if (!eventTriggered || !eventVertex)

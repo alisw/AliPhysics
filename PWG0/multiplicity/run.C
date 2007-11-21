@@ -62,7 +62,7 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   // Enable MC event handler
   AliMCEventHandler* handler = new AliMCEventHandler;
   handler->SetReadTR(kFALSE);
-  //mgr->SetMCtruthEventHandler(handler);
+  mgr->SetMCtruthEventHandler(handler);
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
@@ -85,12 +85,4 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   mgr->InitAnalysis();
   mgr->PrintStatus();
   mgr->StartAnalysis((aProof) ? "proof" : "local", chain);
-}
-
-void runAll()
-{
-  run("part1.txt", 1000000, 0, kFALSE, kTRUE);
-  gSystem->Exec("mv multiplicityMC.root multiplicityMC_1.root");
-  run("part2.txt", 1000000, 0, kFALSE, kTRUE);
-  gSystem->Exec("mv multiplicityMC.root multiplicityMC_2.root");
 }
