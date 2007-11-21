@@ -24,6 +24,7 @@ SRCS = 	AliITSDetTypeRec.cxx \
 		AliITSVertexer3D.cxx \
 		AliITSVertexerZ.cxx \
 		AliITSVertexerFast.cxx \
+		AliITSMeanVertexer.cxx \
 		AliITSZPoint.cxx \
 		AliITSPid.cxx \
 		AliITStrackV2Pid.cxx \

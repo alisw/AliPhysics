@@ -45,6 +45,7 @@
 #pragma link C++ class  AliITSVertexerCosmics+;
 #pragma link C++ class  AliITSVertexerZ+;
 #pragma link C++ class  AliITSVertexer3D+;
+#pragma link C++ class  AliITSMeanVertexer+;
 #pragma link C++ class  AliITSZPoint+;
 
 // Classes for neural tracking
