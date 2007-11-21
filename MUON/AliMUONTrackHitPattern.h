@@ -39,8 +39,7 @@ public:
                                Float_t dpx, Float_t dpy, 
                                const AliMUONTrackParam& trackParam) const;
     
-    void GetPosUncertainty(const AliMUONTrackParam& trackParm, Float_t zChamber,
-                           Float_t &sigmaX, Float_t &sigmaY, Float_t &sigmaMS) const;
+    void ApplyMCSCorrections(AliMUONTrackParam& trackParam) const;
 
     Bool_t TriggerDigits(const AliMUONVTriggerStore& triggerStore, 
                          AliMUONVDigitStore& digitStore) const;

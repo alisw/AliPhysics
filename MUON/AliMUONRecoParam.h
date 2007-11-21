@@ -71,6 +71,11 @@ class AliMUONRecoParam : public TObject
   Bool_t   ImproveTracks() const {return fImproveTracks;}
   /// return the cut in sigma to apply on cluster (local chi2) during track improvement
   Double_t GetSigmaCutForImprovement() const {return fSigmaCutForImprovement;}
+
+  /// set the cut in sigma to apply on track during trigger hit pattern search
+  void     SetSigmaCutForTrigger(Double_t val) {fSigmaCutForTrigger = val;} 
+  /// return the cut in sigma to apply on track during trigger hit pattern search
+  Double_t GetSigmaCutForTrigger() const {return fSigmaCutForTrigger;}
   
   /// set the maximum normalized chi2 of tracking/trigger track matching
   void     SetMaxNormChi2MatchTrigger(Double_t val) {fMaxNormChi2MatchTrigger = val;} 
@@ -124,8 +129,10 @@ class AliMUONRecoParam : public TObject
   Double32_t fMaxBendingDistanceToTrack;    ///< maximum distance to the track to search for compatible cluster(s) in bending direction
   
   Double32_t fSigmaCutForTracking; ///< cut in sigma to apply on cluster (local chi2) and track (global chi2) during tracking
-  
+
   Double32_t fSigmaCutForImprovement; ///< cut in sigma to apply on cluster (local chi2) during track improvement
+  
+  Double32_t fSigmaCutForTrigger; ///< cut in sigma to apply on track during trigger hit pattern search
   
   Double32_t fMaxNormChi2MatchTrigger; ///< maximum normalized chi2 of tracking/trigger track matching
   

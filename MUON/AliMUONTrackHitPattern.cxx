@@ -24,13 +24,13 @@
 ///
 /// To each track, a hit pattern for trigger chambers is set.
 /// The hit pattern is a UShort_t with 8 bits used:
-///
+///                                                                      <pre>
 ///            1  1  0  1    1  1  0  1
 ///           |           |            |
 ///            ----------- ------------
 /// chamber:  11 12 13 14 | 11 12 13 14
 /// cathode:    bending   | non-bending
-///
+///                                                                      </pre>
 /// The main method is:
 /// * GetHitPattern
 ///
@@ -55,6 +55,9 @@
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpDEManager.h"
+#include "AliMUONReconstructor.h"
+#include "AliMUONRecoParam.h"
 
 #include "AliMagF.h"
 #include "AliLog.h"
@@ -103,7 +106,7 @@ void AliMUONTrackHitPattern::GetHitPattern(AliMUONVTrackStore& trackStore,
     /// Loops on reco tracks, extrapolates them to trigger chambers
     /// and searches for matching digits
     //
-    
+
     const Int_t kMask[2][4]= {{0x80, 0x40, 0x20, 0x10},
                               {0x08, 0x04, 0x02, 0x01}};
     Bool_t isMatch[2];
@@ -116,21 +119,25 @@ void AliMUONTrackHitPattern::GetHitPattern(AliMUONVTrackStore& trackStore,
     
     AliMUONTrack* muonTrack;
     TIter next(trackStore.CreateIterator());
-    
+
+    const Int_t kNTrackingCh = AliMUONConstants::NTrackingCh();
+
     while ( ( muonTrack = static_cast<AliMUONTrack*>(next()) ) )
     {
       pattern = 0;
-      AliMUONTrackParam trackParam = (*(static_cast<AliMUONTrackParam*> 
-        (muonTrack->GetTrackParamAtCluster()->Last())));
-      
+      AliMUONTrackParam trackParam(*((AliMUONTrackParam*) (muonTrack->GetTrackParamAtCluster()->Last())));
+
+      ApplyMCSCorrections(trackParam);
+
       for(Int_t ch=0; ch<4; ++ch)
       {
-        AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(10+ch));
-        FindPadMatchingTrack(digitStore,trackParam, isMatch, ch);
+	Int_t iChamber = kNTrackingCh+ch;
+        AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(iChamber));
+        FindPadMatchingTrack(digitStore, trackParam, isMatch, iChamber);
         for(Int_t cath=0; cath<2; ++cath)
         {
           if(isMatch[cath]) pattern |= kMask[cath][ch];
-	    }
+	}
       }
       muonTrack->SetHitsPatternInTrigCh(pattern);
     }
@@ -141,7 +148,7 @@ void AliMUONTrackHitPattern::GetHitPattern(AliMUONVTrackStore& trackStore,
 void 
 AliMUONTrackHitPattern::FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
                                              const AliMUONTrackParam& trackParam,
-                                             Bool_t isMatch[2], Int_t /*iChamber*/) const
+                                             Bool_t isMatch[2], Int_t iChamber) const
 {
     //
     /// Given track position, searches for matching digits.
@@ -157,10 +164,12 @@ AliMUONTrackHitPattern::FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
 
     TIter next(digitStore.CreateIterator());
     AliMUONVDigit* mDigit;
-    
+
     while ( ( mDigit = static_cast<AliMUONVDigit*>(next()) ) )
     {
       Int_t currDetElemId = mDigit->DetElemId();
+      Int_t currCh = AliMpDEManager::GetChamberId(currDetElemId);
+      if(currCh!=iChamber) continue;
       Int_t cathode = mDigit->Cathode();
       Int_t ix = mDigit->PadX();
       Int_t iy = mDigit->PadY();
@@ -177,6 +186,7 @@ AliMUONTrackHitPattern::FindPadMatchingTrack(AliMUONVDigitStore& digitStore,
       Float_t matchDist = MinDistanceFromPad(xpad, ypad, zpad, dpx, dpy, trackParam);
       if(matchDist>minMatchDist[cathode])continue;
       isMatch[cathode] = kTRUE;
+      if(isMatch[0] && isMatch[1]) break;
       minMatchDist[cathode] = matchDist;
     }
 }
@@ -191,59 +201,48 @@ AliMUONTrackHitPattern::MinDistanceFromPad(Float_t xPad, Float_t yPad, Float_t z
     //
     /// Decides if the digit belongs to the track.
     //
-    Float_t xTrackAtPad = trackParam.GetNonBendingCoor();
-    Float_t yTrackAtPad = trackParam.GetBendingCoor();
 
-    Float_t sigmaX, sigmaY, sigmaMS;
-    GetPosUncertainty(trackParam, zPad, sigmaX, sigmaY, sigmaMS);
+    AliMUONTrackParam trackParamAtPadZ(trackParam);
+    AliMUONTrackExtrap::ExtrapToZCov(&trackParamAtPadZ, zPad);
 
-    Float_t maxDistX = 3.*(sigmaX + sigmaMS); // in cm
-    Float_t maxDistY = 3.*(sigmaY + sigmaMS); // in cm
+    Float_t xTrackAtPad = trackParamAtPadZ.GetNonBendingCoor();
+    Float_t yTrackAtPad = trackParamAtPadZ.GetBendingCoor();
+
+    const Float_t kNSigma = AliMUONReconstructor::GetRecoParam()->GetSigmaCutForTrigger();
+
+    const TMatrixD& kCovParam = trackParamAtPadZ.GetCovariances();
+    
+    Float_t sigmaX = TMath::Sqrt(kCovParam(0,0));
+    Float_t sigmaY = TMath::Sqrt(kCovParam(2,2));
+
+    Float_t maxDistX = kNSigma * sigmaX; // in cm
+    Float_t maxDistY = kNSigma * sigmaY; // in cm
 
     Float_t deltaX = TMath::Abs(xPad-xTrackAtPad)-dpx;
     Float_t deltaY = TMath::Abs(yPad-yTrackAtPad)-dpy;
 
     Float_t matchDist = 99999.;
     if(deltaX<=maxDistX && deltaY<=maxDistY) matchDist = TMath::Max(deltaX, deltaY);
+
     return matchDist;
 }
 
 
 //______________________________________________________________________________
 void 
-AliMUONTrackHitPattern::GetPosUncertainty(const AliMUONTrackParam& trackParam,
-                                          Float_t zChamber, 
-                                          Float_t &sigmaX, Float_t &sigmaY, 
-                                          Float_t &sigmaMS) const
+AliMUONTrackHitPattern::ApplyMCSCorrections(AliMUONTrackParam& trackParam) const
 {
-    //
-    /// Returns uncertainties on extrapolated position.
-    /// Takes into account Branson plane corrections in the iron wall.
-    //
+  //
+  /// Returns uncertainties on extrapolated position.
+  /// Takes into account Branson plane corrections in the iron wall.
+  //
 
-    const Float_t kAlpha = 0.1123; // GeV/c
-    
-    // Find a better way to get such parameters ???
-    const Float_t kZFilterIn = 1471.; // From STRUCT/SHILConst2.h
-    const Float_t kZFilterOut = kZFilterIn + 120.; // From STRUCT/SHILConst2.h
-    
-    const Float_t kZBranson = - (kZFilterIn + (kZFilterOut - kZFilterIn)*2./3. ); // - sign because distance are positive
-    Float_t zDistFromWall = TMath::Abs(zChamber - kZBranson);
-    Float_t zDistFromLastTrackCh = TMath::Abs(zChamber - AliMUONConstants::DefaultChamberZ(9));
+  const Float_t kZFilterOut = AliMUONConstants::MuonFilterZEnd();
+  const Float_t kFilterThickness = TMath::Abs(kZFilterOut-AliMUONConstants::MuonFilterZBeg()); // cm
 
-    const TMatrixD& kCovParam = trackParam.GetCovariances();
-    
-    sigmaX = kCovParam(0,0);
-    sigmaY = kCovParam(2,2);
-
-    // If covariance matrix is not extrapolated, use "reasonable" errors
-    // (To be removed as soon as covariance matrix is correctly propagated).
-    if (sigmaX==0.)sigmaX = 0.003 * zDistFromLastTrackCh;
-    if (sigmaY==0.)sigmaY = 0.004 * zDistFromLastTrackCh;
-
-    Float_t p = trackParam.P();
-    Float_t thetaMS = kAlpha/p;
-    sigmaMS = zDistFromWall * TMath::Tan(thetaMS);
+  AliMUONTrackExtrap::ExtrapToZCov(&trackParam, kZFilterOut);
+  AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0());
+  return;
 }
 
 

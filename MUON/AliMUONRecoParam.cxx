@@ -46,6 +46,7 @@ AliMUONRecoParam::AliMUONRecoParam()
   fMaxBendingDistanceToTrack(0.),
   fSigmaCutForTracking(0.),
   fSigmaCutForImprovement(0.),
+  fSigmaCutForTrigger(0.),
   fMaxNormChi2MatchTrigger(0.),
   fTrackAllTracks(kFALSE),
   fRecoverTracks(kFALSE),
@@ -101,6 +102,7 @@ void AliMUONRecoParam::SetLowFluxParam()
   fMaxBendingDistanceToTrack = 2.;
   fSigmaCutForTracking = 6.;
   fSigmaCutForImprovement = 5.;
+  fSigmaCutForTrigger = 8.;
   fMaxNormChi2MatchTrigger = 16.;
   fTrackAllTracks = kTRUE;
   fRecoverTracks = kTRUE;
@@ -124,6 +126,7 @@ void AliMUONRecoParam::SetHighFluxParam()
   fMaxBendingDistanceToTrack = 2.;
   fSigmaCutForTracking = 6.;
   fSigmaCutForImprovement = 5.;
+  fSigmaCutForTrigger = 8.;
   fMaxNormChi2MatchTrigger = 16.;
   fTrackAllTracks = kTRUE;
   fRecoverTracks = kTRUE;
@@ -156,6 +159,8 @@ void AliMUONRecoParam::Print(Option_t *option) const
   cout<<Form("Maximum distance to track = (%5.2f,%5.2f)",fMaxNonBendingDistanceToTrack,fMaxBendingDistanceToTrack)<<endl;
   
   cout<<Form("Sigma cut for tracking = %5.2f",fSigmaCutForTracking)<<endl;
+
+  cout<<Form("Sigma cut for trigger hit pattern = %5.2f",fSigmaCutForTrigger)<<endl;
   
   if (fTrackAllTracks) cout<<"Track all the possible candidates"<<endl;
   else cout<<"Track only the best candidates"<<endl;

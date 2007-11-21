@@ -715,16 +715,39 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
 {
   /// Try to match track from tracking system with trigger track
   AliCodeTimerAuto("");
-  
-  static const Double_t kDistSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
-  
+
+  const Double_t kDeltaZ = TMath::Abs(AliMUONConstants::DefaultChamberZ(12) - AliMUONConstants::DefaultChamberZ(10));
+
+  //static const Double_t kDistSigma[3]={1,1,0.02}; // sigma of distributions (trigger-track) X,Y,slopeY
+  // sigma of distributions (trigger-track) X,Y,slopeY
+  const Double_t kDistSigma[3]={AliMUONConstants::TriggerNonBendingReso(),
+				AliMUONConstants::TriggerBendingReso(),
+				1.414 * AliMUONConstants::TriggerBendingReso()/kDeltaZ};
+
+  const Double_t kTrigNonBendReso = AliMUONConstants::TriggerNonBendingReso();
+  const Double_t kTrigBendReso = AliMUONConstants::TriggerBendingReso();
+  const Double_t kTrigSlopeBendReso = 1.414 * AliMUONConstants::TriggerBendingReso()/kDeltaZ;
+  const Double_t kTrigCovSlopeBend = - kTrigBendReso * kTrigBendReso / kDeltaZ;
+
+  // Covariance matrix 3x3 (X,Y,slopeY) for trigger tracks
+  TMatrixD trigCov(3,3);
+  trigCov.Zero();
+  trigCov(0,0) = kTrigNonBendReso * kTrigNonBendReso;
+  trigCov(1,1) = kTrigBendReso * kTrigBendReso;
+  trigCov(2,2) = kTrigSlopeBendReso * kTrigSlopeBendReso;
+  trigCov(1,2) = trigCov(2,1) = kTrigCovSlopeBend;
+
   Int_t matchTrigger;
   Int_t loTrgNum(-1);
-  Double_t distTriggerTrack[3];
+  Double_t distTriggerTrack[3], sigma2[3];
   Double_t xTrack, yTrack, ySlopeTrack, chi2MatchTrigger, minChi2MatchTrigger, chi2;
 
   TIter itTrack(trackStore.CreateIterator());
   AliMUONTrack* track;
+
+  const Float_t kZFilterOut = AliMUONConstants::MuonFilterZEnd();
+  const Float_t kFilterThickness = TMath::Abs(kZFilterOut-AliMUONConstants::MuonFilterZBeg()); // cm
+  const Int_t kFirstTrigCh = AliMUONConstants::NTrackingCh();
   
   while ( ( track = static_cast<AliMUONTrack*>(itTrack()) ) )
   {
@@ -735,22 +758,65 @@ void AliMUONVTrackReconstructor::ValidateTracksWithTrigger(AliMUONVTrackStore& t
     Double_t doubleChi2 = -1.;
     
     AliMUONTrackParam trackParam(*((AliMUONTrackParam*) (track->GetTrackParamAtCluster()->Last())));
-    AliMUONTrackExtrap::ExtrapToZ(&trackParam, AliMUONConstants::DefaultChamberZ(10)); // extrap to 1st trigger chamber
+
+    AliMUONTrackExtrap::ExtrapToZCov(&trackParam, kZFilterOut); // Extrap to muon filter end
+    AliMUONTrackExtrap::AddMCSEffect(&trackParam, kFilterThickness, AliMUONConstants::MuonFilterX0()); // Add MCS effects
+    AliMUONTrackExtrap::ExtrapToZCov(&trackParam, AliMUONConstants::DefaultChamberZ(kFirstTrigCh)); // extrap to 1st trigger chamber
+
+    const TMatrixD& kParamCov = trackParam.GetCovariances();
     
     xTrack = trackParam.GetNonBendingCoor();
     yTrack = trackParam.GetBendingCoor();
     ySlopeTrack = trackParam.GetBendingSlope();
+
+    // Covariance matrix 3x3 (X,Y,slopeY) for tracker tracks
+    TMatrixD trackCov(3,3);
+    trackCov.Zero();
+    trackCov(0,0) = kParamCov(0,0);
+    trackCov(1,1) = kParamCov(2,2);
+    trackCov(2,2) = kParamCov(3,3);
+    trackCov(1,2) = kParamCov(2,3);
+    trackCov(2,1) = kParamCov(3,2);
+
+    TMatrixD sumCov(trackCov,TMatrixD::kPlus,trigCov);
+
+    Bool_t isCovOK = kTRUE;
+
+    if (sumCov.Determinant() != 0) {
+      sumCov.Invert();
+    } else {
+      AliWarning(" Determinant = 0");
+      isCovOK = kFALSE;
+      sigma2[0] = kParamCov(0,0);
+      sigma2[1] = kParamCov(2,2);
+      sigma2[2] = kParamCov(3,3);
+      for (Int_t iVar = 0; iVar < 3; iVar++) sigma2[iVar] += kDistSigma[iVar] * kDistSigma[iVar];
+    }
+
     minChi2MatchTrigger = 999.;
-    
+
     AliMUONTriggerTrack *triggerTrack;
     TIter itTriggerTrack(triggerTrackStore.CreateIterator());
     while ( ( triggerTrack = static_cast<AliMUONTriggerTrack*>(itTriggerTrack() ) ) )
     {
-      distTriggerTrack[0] = (triggerTrack->GetX11()-xTrack)/kDistSigma[0];
-      distTriggerTrack[1] = (triggerTrack->GetY11()-yTrack)/kDistSigma[1];
-      distTriggerTrack[2] = (TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack)/kDistSigma[2];
-      chi2 = 0.;
-      for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar];
+      distTriggerTrack[0] = triggerTrack->GetX11()-xTrack;
+      distTriggerTrack[1] = triggerTrack->GetY11()-yTrack;
+      distTriggerTrack[2] = TMath::Tan(triggerTrack->GetThetay())-ySlopeTrack;
+
+      if(isCovOK){
+	TMatrixD paramDiff(3,1);
+	for(Int_t iVar = 0; iVar < 3; iVar++)
+	  paramDiff(iVar,0) = distTriggerTrack[iVar];
+	
+      	TMatrixD tmp(sumCov,TMatrixD::kMult,paramDiff);
+	TMatrixD chi2M(paramDiff,TMatrixD::kTransposeMult,tmp);
+	chi2 = chi2M(0,0);
+      }
+      else {
+	chi2 = 0.;
+	for (Int_t iVar = 0; iVar < 3; iVar++) chi2 += distTriggerTrack[iVar]*distTriggerTrack[iVar]/sigma2[iVar];
+      }
+
       chi2 /= 3.; // Normalized Chi2: 3 degrees of freedom (X,Y,slopeY)
       if (chi2 < AliMUONReconstructor::GetRecoParam()->GetMaxNormChi2MatchTrigger()) 
       {

@@ -92,6 +92,17 @@ class AliMUONConstants : public TObject {
     static const Double_t DefaultBendingReso() {return fgkDefaultBendingReso;}
     /// Return default chamber resolution**2 in bending direction
     static const Double_t DefaultBendingReso2() {return fgkDefaultBendingReso*fgkDefaultBendingReso;}
+    /// Return default trigger chamber resolution in non bending direction
+    static const Double_t TriggerNonBendingReso() {return fgkTriggerNonBendingReso;}
+    /// Return default trigger chamber resolution in bending direction
+    static const Double_t TriggerBendingReso() {return fgkTriggerBendingReso;}
+    /// Return z-position of muon filter begining
+    static const Double_t MuonFilterZBeg() {return fgkMuonFilterZBeg;}
+    /// Return z-position of muon filter end
+    static const Double_t MuonFilterZEnd() {return fgkMuonFilterZEnd;}
+    /// Return radiation length (in cm) of muon filter
+    static const Double_t MuonFilterX0() {return fgkMuonFilterX0;}
+
     
  protected:
     /// Default constructor
@@ -141,6 +152,13 @@ class AliMUONConstants : public TObject {
     
     static const Double_t fgkDefaultNonBendingReso; ///< default chamber resolution in the non-bending direction
     static const Double_t fgkDefaultBendingReso; ///< default chamber resolution in the bending direction
+
+    static const Double_t fgkTriggerNonBendingReso; ///< default trigger chamber resolution in the non-bending direction
+    static const Double_t fgkTriggerBendingReso; ///< default trigger chamber resolution in the bending direction
+    
+    static const Double_t fgkMuonFilterZBeg; ///< z-position of the begining of the muon filter
+    static const Double_t fgkMuonFilterZEnd; ///< z-position of the end of the muon filter
+    static const Double_t fgkMuonFilterX0; ///< x0 of the muon filter
     
     ClassDef(AliMUONConstants, 0) // MUON global constants 
 };

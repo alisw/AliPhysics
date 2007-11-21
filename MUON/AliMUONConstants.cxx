@@ -102,6 +102,15 @@ const Double_t AliMUONConstants::fgkAbsZEnd = -505.;
 const Double_t AliMUONConstants::fgkDefaultNonBendingReso = 0.144;
 const Double_t AliMUONConstants::fgkDefaultBendingReso = 0.01;
 
+// Default trigger chamber resolution (cm)
+const Double_t AliMUONConstants::fgkTriggerNonBendingReso = 1.;
+const Double_t AliMUONConstants::fgkTriggerBendingReso = 1.;
+
+// Defaults parameters for muon filter (19/11/07)
+const Double_t AliMUONConstants::fgkMuonFilterZBeg = -1471.;
+const Double_t AliMUONConstants::fgkMuonFilterZEnd = -1471.-120.;
+const Double_t AliMUONConstants::fgkMuonFilterX0 = 1.76;
+
 // Defaults parameters for track reconstruction
 Double_t  AliMUONConstants::fgChamberThicknessInX0 = 0.03;
 
