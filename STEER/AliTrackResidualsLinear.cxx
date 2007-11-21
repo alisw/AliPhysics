@@ -283,7 +283,7 @@ Bool_t AliTrackResidualsLinear::Update()
   }
     
 
-  //
+ 
   fChi2 = fFitter->GetChisquare();
   fNdf -= 6;
   TVectorD vector(7);
@@ -296,14 +296,27 @@ Bool_t AliTrackResidualsLinear::Update()
   fParams[5] = vector[6];
   TMatrixD covar(7,7);
   fFitter->GetCovarianceMatrix(covar);
-  for (Int_t i0=0; i0 <6; i0++)
+  
+  for (Int_t i0=0; i0 <6; i0++){
     for (Int_t j0=0; j0 <6; j0++){
       fCovar[i0*6+j0] = covar(i0+1,j0+1);
     }
-  //
+  }
+  Double_t covmatrarray[21];
+  for(Int_t j=0;j<6;j++){
+    for(Int_t i=j;i<6;i++){
+      covmatrarray[i*(i+1)/2+j]=fCovar[i+6*j];
+    }
+  }
+
+ 
   fAlignObj->SetPars(fParams[0], fParams[1], fParams[2],
 		     TMath::RadToDeg()*fParams[3],
 		     TMath::RadToDeg()*fParams[4],
 		     TMath::RadToDeg()*fParams[5]);
+  fAlignObj->SetCorrMatrix(covmatrarray);
+  
   return kTRUE;
 }
+
+

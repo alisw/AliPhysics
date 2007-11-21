@@ -26,6 +26,8 @@
 #include "AliTrackPointArray.h"
 #include "AliTrackResidualsChi2.h"
 
+
+
 void TrackResidualsChi2Fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *x, Int_t iflag);
 
 
@@ -91,8 +93,47 @@ Bool_t AliTrackResidualsChi2::Minimize()
   Double_t amin,edm,errdef;
   Int_t nvpar,nparx,icstat;
   icstat = fitter->GetStats(amin,edm,errdef,nvpar,nparx);
-  fChi2 = amin; fNdf -= nvpar;
 
+   //Construct the covariance matrix for AlignObj
+  Double_t *cov=fitter->GetCovarianceMatrix(); 
+  Int_t unfixedparam=6;
+  Int_t fixedparamat[6]={0,0,0,0,0,0};
+  if(fBFixed[0]==kTRUE){
+    unfixedparam--;
+    fixedparamat[0]=1;
+  }
+  for(Int_t j=1;j<6;j++){
+    if(fBFixed[j]==kTRUE){
+      unfixedparam--;
+      fixedparamat[j]=fixedparamat[j-1]+1;
+    }
+    else fixedparamat[j]=fixedparamat[j-1];
+  }
+  
+  Double_t cov2[36];
+  for(Int_t i=0;i<6;i++){
+    for(Int_t j=0;j<6;j++){
+      if(fBFixed[i]==kTRUE||fBFixed[j]==kTRUE){
+       	cov2[i+6*j]=0.;
+      }
+      else cov2[i+6*j]=cov[i-fixedparamat[i]+6*(j-fixedparamat[j])];
+    
+    }
+  }
+  
+  Double_t covmatrarray[21];
+  for(Int_t j=0;j<6;j++){
+    for(Int_t i=j;i<6;i++){
+      covmatrarray[i*(i+1)/2+j]=cov2[i+6*j];
+    }
+  }
+  
+  //  printf("covar 2:  %.10f  \n   %.10f ; %.10f ;  \n; %.10f;  %.10f;  %.10f; \n  %.10f; %.10f;  %.10f;  %.10f;  \n  %.10f ; %.10f  ;  %.10f  ;  %.10f  ;  %.10f \n %.10f ;  %.10f ;  %.10f  ;  %.10f  ;  %.10f  ;  %.10f   ;\n",covmatrarray[0],covmatrarray[1],covmatrarray[2],covmatrarray[3],covmatrarray[4],covmatrarray[5],covmatrarray[6],covmatrarray[7],covmatrarray[8],covmatrarray[9],covmatrarray[10],covmatrarray[11],covmatrarray[12],covmatrarray[13],covmatrarray[14],covmatrarray[15],covmatrarray[16],covmatrarray[17],covmatrarray[18],covmatrarray[19],covmatrarray[20]);
+  
+  
+  fAlignObj->SetCorrMatrix(covmatrarray);
+  fChi2 = amin; fNdf -= nvpar;
+  
   return kTRUE;
 }
 
@@ -123,3 +164,5 @@ void AliTrackResidualsChi2::Chi2(Int_t & /* npar */, Double_t * /* gin */, Doubl
   }
   f = chi2;
 }
+
+

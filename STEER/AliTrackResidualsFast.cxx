@@ -30,6 +30,9 @@
 #include "AliTrackPointArray.h"
 #include "AliTrackResidualsFast.h"
 
+#include <TMatrixDSym.h>
+#include <TMatrixDSymEigen.h>
+
 ClassImp(AliTrackResidualsFast)
 
 //______________________________________________________________________________
@@ -127,7 +130,11 @@ void AliTrackResidualsFast::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
   mcovp(1,0) = covp[1]; mcovp(1,1) = covp[3]; mcovp(1,2) = covp[4];
   mcovp(2,0) = covp[2]; mcovp(2,1) = covp[4]; mcovp(2,2) = covp[5];
   TMatrixDSym msum = mcov + mcovp;
+
+
   msum.Invert();
+
+
   if (!msum.IsValid()) return;
 
   TMatrixD        sums(3,1);
@@ -140,7 +147,7 @@ void AliTrackResidualsFast::AddPoints(AliTrackPoint &p, AliTrackPoint &pprime)
   mf(0,0) = 1;      mf(1,0) = 0;       mf(2,0) = 0;
   mf(0,1) = 0;      mf(1,1) = 1;       mf(2,1) = 0;
   mf(0,2) = 0;      mf(1,2) = 0;       mf(2,2) = 1;
-  mf(0,3) = 0;      mf(1,3) =-xyz[2];  mf(2,3) = xyz[1];
+  mf(0,3) = 0;      mf(1,3) = -xyz[2]; mf(2,3) = xyz[1];
   mf(0,4) = xyz[2]; mf(1,4) = 0;       mf(2,4) =-xyz[0];
   mf(0,5) =-xyz[1]; mf(1,5) = xyz[0];  mf(2,5) = 0;
   TMatrixD        mft = mf.T(); mf.T();
@@ -216,17 +223,36 @@ Bool_t AliTrackResidualsFast::Update()
   sums(0,0)    = fSum[21]; sums(0,1) = fSum[22]; sums(0,2) = fSum[23];
   sums(0,3)    = fSum[24]; sums(0,4) = fSum[25]; sums(0,5) = fSum[26];
 
+ 
   smatrix.Invert();
-  if (!smatrix.IsValid()) return kFALSE;
 
+  if (!smatrix.IsValid()) {
+    printf("Minimization Failed! \n");
+    return kFALSE;
+  }
+
+  Double_t covmatrarray[21];
+  
+    for(Int_t i=0;i<6;i++){
+      for(Int_t j=0;j<=i;j++){
+	if(TMath::Abs(smatrix(i,j)/TMath::Sqrt(TMath::Abs(smatrix(i,i)*smatrix(j,j))))>1.01)printf("Too large Correlation number!\n");
+	covmatrarray[i*(i+1)/2+j]=smatrix(i,j);
+      }
+    }
+    
   TMatrixD res = sums*smatrix;
   fAlignObj->SetPars(res(0,0),res(0,1),res(0,2),
 		     TMath::RadToDeg()*res(0,3),
 		     TMath::RadToDeg()*res(0,4),
 		     TMath::RadToDeg()*res(0,5));
+  
+  fAlignObj->SetCorrMatrix(covmatrarray);
   TMatrixD  tmp = res*sums.T();
   fChi2 = fSumR - tmp(0,0);
   fNdf -= 6;
-
+  
   return kTRUE;
 }
+
+
+
