@@ -70,18 +70,19 @@ public:
    
    AliTPCcalibTracksGain();
    AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj);
-   AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, AliTPCcalibTracksGain* prevIter = 0);
+   AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* debugStreamPrefix = 0, AliTPCcalibTracksGain* prevIter = 0);
    virtual ~AliTPCcalibTracksGain();
    AliTPCcalibTracksGain& operator=(const AliTPCcalibTracksGain& rhs);
    
    static void testSeed(char* file = "/d/alice07/sma/v4-06-Rev-03/pp/0201/AliESDs.root", Int_t entry = 87, Int_t track = 0); // LOESCH MICH ODER DU WIRST UNTERGEHEN
-   static void     AddInfo(TChain * chain, char* fileName);
+   static void     AddInfo(TChain* chain, char* debugStreamPrefix = 0, char* prevIterFileName = 0);
    Int_t          AcceptTrack(AliTPCseed* track);
-  void Terminate();
+   void            Terminate();
    //Bool_t          AcceptCluster(AliTPCclusterMI* cluster);
    void            Add(AliTPCcalibTracksGain* cal);
    void            AddTrack(AliTPCseed* seed);
    void            AddCluster(AliTPCclusterMI* cluster, AliTPCcalibTracksGain::PreProcess& preProc);
+   void            AddCluster2(AliTPCclusterMI* cluster, Float_t momenta, Float_t mdedx, Int_t padType, Float_t xcenter, TVectorD dedxQ, TVectorD dedxM, Float_t fraction, Float_t fraction2, Float_t dedge, TVectorD parY, TVectorD parZ, TVectorD meanPos);
    void            Process(AliTPCseed* seed);
    Long64_t        Merge(TCollection *list);
    void            Evaluate(Bool_t robust = kFALSE, Double_t frac = -1.);
@@ -112,13 +113,14 @@ public:
    AliTPCFitPad*     fSimpleFitter;         // simple fitter for short pads
    AliTPCFitPad*     fSqrtFitter;           // sqrt fitter for medium pads
    AliTPCFitPad*     fLogFitter;            // log fitter for long pads
+   AliTPCFitPad*     fSingleSectorFitter;   // just for debugging
 
-   TLinearFitter*    fZFitter;              // fitter for getting the parametrisation for the z dependence of the charges
    AliTPCcalibTracksGain* fPrevIter;        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)
    
    UInt_t            fNShortClusters[36];   // number of clusters registered on short pads
    UInt_t            fNMediumClusters[36];  // number of clusters registered on medium pads
    UInt_t            fNLongClusters[36];    // number of clusters registered on long pads
+   TObjString*       fDebugStreamPrefix;    // pathname of the final location of the debug stream file (may also be an xrootd directory)
    AliTPCcalibTracksCuts* fCuts;            // cuts that are used for sieving the tracks used for calibration
 
    static       AliTPCParamSR* fgTPCparam;              //! helper object for geometry related operations

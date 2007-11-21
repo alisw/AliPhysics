@@ -72,7 +72,6 @@ AliTPCSelectorTracks::~AliTPCSelectorTracks(){
   //
 }
 
-
 void AliTPCSelectorTracks::InitComponent(){
   //
   // Init Components
@@ -88,7 +87,7 @@ void AliTPCSelectorTracks::InitComponent(){
   // 
   static Int_t counter=0;
   if (!fChain){
-    Error("InitComponent","EROOR - chain not initialized\n");
+    Error("InitComponent","ERROR - chain not initialized\n");
   }
   Info("InitComponent",Form("Selector initialization No\t%d\n", counter));
   counter++;
@@ -116,12 +115,16 @@ void AliTPCSelectorTracks::InitComponent(){
     if (fInput) fInput->Print();
     return;
   }
+   
   fCalibTracks = new AliTPCcalibTracks("calibTracks", "Resolution calibration object for tracks", clusterParam, cuts);
   fOutput->AddLast(fCalibTracks);
    
-  fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks", cuts);
-   fOutput->AddLast(fCalibTracksGain);
-   fInit=kTRUE;
+  AliTPCcalibTracksGain* prevIter = (AliTPCcalibTracksGain*)fChain->GetUserInfo()->FindObject("calibTracksGain");
+  if (!prevIter) Info("InitComponent", "Previous iteration of calibTracksGain not found, continuing without.");
+  TNamed* debugStreamPrefix = (TNamed*)fChain->GetUserInfo()->FindObject("debugStreamPrefix");
+  fCalibTracksGain = new AliTPCcalibTracksGain("calibTracksGain", "Gain calibration object for tracks", cuts, debugStreamPrefix, prevIter);
+  fOutput->AddLast(fCalibTracksGain);
+  fInit=kTRUE;
 }
 
 void AliTPCSelectorTracks::SlaveBegin(TTree * tree)
@@ -142,7 +145,7 @@ void AliTPCSelectorTracks::SlaveTerminate()
    // have been processed. When running with PROOF SlaveTerminate() is called
    // on each slave server.
   printf ("SlaveTerminate.. \n");
-  printf ("Terminate CalibTrackGain.. \n");
+  printf ("Terminate CalibTracksGain.. \n");
   if (fCalibTracksGain) fCalibTracksGain->Terminate();
 }
 
@@ -151,42 +154,41 @@ void AliTPCSelectorTracks::SlaveTerminate()
 
 Int_t AliTPCSelectorTracks::ProcessIn(Long64_t entry)
 {
-  //
-  //
-  //
+   //
+   //
+   //
   if (!fInit) InitComponent();
   if (!fInit) return 0;
   Int_t status = ReadEvent(entry);
   if (status<0) return status; 
   Int_t ntracks = (fESD) ? fESD->GetNumberOfTracks() : fESDevent->GetNumberOfTracks();     
-  //
-  //
-  // USER code to go here
-  //
-  AliTPCseed *seed;
-  
-  for (Int_t tr = 0; tr < ntracks; tr++){ 
-    AliESDtrack *esdTrack = fESD ? (AliESDtrack*) fESD->GetTrack(tr): (AliESDtrack*) fESDevent->GetTrack(tr);
-    AliESDfriendTrack *friendtrack = (AliESDfriendTrack*) esdTrack->GetFriendTrack();
-    seed = 0; 
-    TObject *cobject=0;
-    for (Int_t i=0;;i++){
-      cobject = friendtrack->GetCalibObject(i);
-      if (!cobject) break;
-      seed = dynamic_cast<AliTPCseed*>(cobject);
-      if (seed) break;
-    }
-
-    if (seed) { 
-      fNClusters->Fill(seed->GetNumberOfClusters());
-      //
-      fCalibTracks->Process(seed, esdTrack);   // analysis is done in fCalibTracks
-      fCalibTracksGain->Process(seed);
-    }
-  }
-  CleanESD();
-  return 0;
-  
+   //
+   //
+   // USER code to go here
+   //
+   AliTPCseed *seed;
+   
+   for (Int_t tr = 0; tr < ntracks; tr++){ 
+      AliESDtrack *esdTrack = fESD ? (AliESDtrack*) fESD->GetTrack(tr): (AliESDtrack*) fESDevent->GetTrack(tr);
+      AliESDfriendTrack *friendtrack = (AliESDfriendTrack*) esdTrack->GetFriendTrack();
+      seed = 0;
+      TObject *cobject = 0;
+      for (Int_t i = 0; ; i++){
+         cobject = friendtrack->GetCalibObject(i);
+         if (!cobject) break;
+         seed = dynamic_cast<AliTPCseed*>(cobject);
+         if (seed) break;
+      }
+      
+      if (seed) {
+         fNClusters->Fill(seed->GetNumberOfClusters());
+         //
+         fCalibTracks->Process(seed, esdTrack);   // analysis is done in fCalibTracks
+         fCalibTracksGain->Process(seed);
+      }
+   }
+   CleanESD();
+   return 0;
 }
 
 
@@ -199,16 +201,10 @@ void AliTPCSelectorTracks::Terminate()
 
    if (!fOutput) return;
    
-   // evaluate all fitters before saving them, because it doesn't seem to be possible
-   // to evaluate a TLinearFitter after it has been loaded from a root file
-  //  for (UInt_t iSegment = 0; iSegment < 36; iSegment++) {
-//       for (UInt_t iPadType = 0; iPadType < 3; iPadType++) {
-//          for (UInt_t iFitType = 0; iFitType < 3; iFitType++)
-//             fCalibTracksGain->Evaluate(iSegment, iPadType, iFitType);
-//       }
-//    }    
    TFile file(fgkOutputFileName, "recreate");
    fCalibTracksGain  = (AliTPCcalibTracksGain*)fOutput->FindObject("calibTracksGain");
+   // evaluate all fitters before saving them, because it doesn't seem to be possible
+   // to evaluate a TLinearFitter after it has been loaded from a root file
    if (fCalibTracksGain) fCalibTracksGain->Evaluate();
    fOutput->Write();
    file.Close();

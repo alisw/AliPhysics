@@ -20,12 +20,12 @@ class AliTPCcalibTracksGain;
 class AliTPCSelectorTracks : public AliTPCSelectorESD {
 public :
    AliTPCSelectorTracks(TTree *tree=0);
-  virtual ~AliTPCSelectorTracks();
+   virtual ~AliTPCSelectorTracks();
    virtual void    SlaveBegin(TTree *tree);
    virtual void    SlaveTerminate();
    virtual Int_t   ProcessIn(Long64_t entry);
    virtual void    Terminate();
-  void InitComponent();
+   void InitComponent();
 
 private:
   Bool_t            fInit;                 //! flag - component initialized

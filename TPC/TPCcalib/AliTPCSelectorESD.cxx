@@ -386,7 +386,7 @@ Bool_t AliTPCSelectorESD::Notify()
 //     (*fFileWatch) << hname   <<"\t"
 // 		  << fname   <<"\t";
 //   }
-//   DumpSysInfo(-1);
+  DumpSysInfo(-1);
   
   return kTRUE;
 }

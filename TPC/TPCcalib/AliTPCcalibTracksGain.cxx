@@ -150,8 +150,9 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
    fSimpleFitter(0),
    fSqrtFitter(0),
    fLogFitter(0),
-   fZFitter(0),
+   fSingleSectorFitter(0),
    fPrevIter(0),
+   fDebugStreamPrefix(0),
    fCuts(0)
 {
    //
@@ -171,8 +172,9 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
    fSimpleFitter = new AliTPCFitPad(*(obj.fSimpleFitter));
    fSqrtFitter = new AliTPCFitPad(*(obj.fSqrtFitter));
    fLogFitter = new AliTPCFitPad(*(obj.fLogFitter));
-   fZFitter = new TLinearFitter(*(obj.fZFitter));
+   fSingleSectorFitter = new AliTPCFitPad(*(obj.fSingleSectorFitter));
    fPrevIter = new AliTPCcalibTracksGain(*(obj.fPrevIter));
+   fDebugStreamPrefix = new TObjString(*(obj.fDebugStreamPrefix));
    fCuts = new AliTPCcalibTracksCuts(*(obj.fCuts));
 }
 
@@ -188,14 +190,15 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
       fSimpleFitter = new AliTPCFitPad(*(rhs.fSimpleFitter));
       fSqrtFitter = new AliTPCFitPad(*(rhs.fSqrtFitter));
       fLogFitter = new AliTPCFitPad(*(rhs.fLogFitter));
-      fZFitter = new TLinearFitter(*(rhs.fZFitter));
+      fSingleSectorFitter = new AliTPCFitPad(*(rhs.fSingleSectorFitter));
       fPrevIter = new AliTPCcalibTracksGain(*(rhs.fPrevIter));
+      fDebugStreamPrefix = new TObjString(*(rhs.fDebugStreamPrefix));
       fCuts = new AliTPCcalibTracksCuts(*(rhs.fCuts));
    }
    return *this;
 }
 
-AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, AliTPCcalibTracksGain* prevIter) :
+AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* debugStreamPrefix, AliTPCcalibTracksGain* prevIter) :
    TNamed(name, title),
    fDebugCalPadRaw(0),
    fDebugCalPadCorr(0),
@@ -203,8 +206,9 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    fSimpleFitter(0),
    fSqrtFitter(0),
    fLogFitter(0),
-   fZFitter(0),
+   fSingleSectorFitter(0),
    fPrevIter(0),
+   fDebugStreamPrefix(0),
    fCuts(0)
 {
    //
@@ -215,17 +219,14 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    G__SetCatchException(0);
 
    fCuts = cuts;
+   if (debugStreamPrefix) fDebugStreamPrefix = new TObjString(debugStreamPrefix->GetTitle());
    fPrevIter = prevIter;
 
-   fSimpleFitter = new AliTPCFitPad(6, "hyp5", "");
-   fSqrtFitter   = new AliTPCFitPad(6, "hyp5", "");
-   fLogFitter    = new AliTPCFitPad(6, "hyp5", "");
+   fSimpleFitter = new AliTPCFitPad(7, "hyp6", "");
+   fSqrtFitter   = new AliTPCFitPad(7, "hyp6", "");
+   fLogFitter    = new AliTPCFitPad(7, "hyp6", "");
+   fSingleSectorFitter = new AliTPCFitPad(7, "hyp6", ""); // just for debugging
 
-   fZFitter      = new TLinearFitter(2, "hyp1", "");
-   // workaround for TLinearFitter
-   Double_t workaround = 3.141592;
-   fZFitter->AddPoint(&workaround, 31.41592);
-   fZFitter->ClearPoints();
 
    // just for debugging
    fTotalTracks     = 0;
@@ -249,8 +250,8 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
    if (fSimpleFitter) delete fSimpleFitter;
    if (fSqrtFitter) delete fSqrtFitter;
    if (fLogFitter) delete fLogFitter;
+   if (fSingleSectorFitter) delete fSingleSectorFitter;
 
-   if (fZFitter) delete fZFitter;
 
    if (fDebugStream) {
       //fDebugStream->GetFile()->Close();
@@ -258,47 +259,71 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
       delete fDebugStream;
    }
 
+   if (fDebugStreamPrefix) delete fDebugStreamPrefix;
+
    if (fDebugCalPadRaw) delete fDebugCalPadRaw;
    if (fDebugCalPadCorr) delete fDebugCalPadCorr;
 }
 
 void AliTPCcalibTracksGain::Terminate(){
-  //
-  // Close Debug streamer
-  //
-  Evaluate();
-  if (fDebugStream){
-    delete fDebugStream;
-    fDebugStream=0;
-  }
-  char *prefix = "/d/alice11/miranov/simulHEAD0907/pp/calib/";
-  char command[4000];
-  sprintf(command,"mv TPCCalibTracksGain.root %s/%s_TPCCalibTracksGain.root", prefix, gSystem->HostName());
-  gSystem->Exec(command);
+   //
+   // Close Debug streamer
+   //
+   Evaluate();
+   if (fDebugStream) {
+     delete fDebugStream;
+     fDebugStream = 0;
+   }
+
+   if (fDebugStreamPrefix) {
+      TString debugStreamPrefix = fDebugStreamPrefix->GetString();
+      TString destFile("");
+      destFile += debugStreamPrefix;
+      destFile += "/";
+      destFile += gSystem->HostName();
+      destFile += "_TPCCalibTracksGain.root";
+      if (debugStreamPrefix.BeginsWith("root://")) {
+         TFile::Cp("TPCCalibTracksGain.root", destFile.Data());
+      } else {
+         TString command("mv TPCCalibTracksGain.root ");
+         command += destFile;
+         gSystem->Exec(command.Data());
+      }
+      //char *prefix = "/d/alice11/miranov/simulHEAD0907/pp/calib/";
+      //char command[4000];
+      //sprintf(command,"mv TPCCalibTracksGain.root %s/%s_TPCCalibTracksGain.root", prefix, gSystem->HostName());
+      //gSystem->Exec(command);
+   }
 }
 
-void AliTPCcalibTracksGain::AddInfo(TChain* chain, char* fileName) {
+void AliTPCcalibTracksGain::AddInfo(TChain* chain, char* debugStreamPrefix, char* prevIterFileName) {
    // 
    // Add some parameters from a previous run (AliTPCcalibTracksGain object contained
    // in root file fileName) to the chain.
    // Note: The parameters are *not* added to this class, you need to do it later by retrieving
    // the parameters from the chain and passing them to the constructor!
    //
-   
-   TFile paramFile(fileName);
-   if (paramFile.IsZombie()) {
-      printf("File %s not found. Continuing without z dependence parametrisation.\n", fileName);
-      return;
+
+   if (debugStreamPrefix) {
+      TNamed* objDebugStreamPrefix = new TNamed("debugStreamPrefix", debugStreamPrefix);
+      chain->GetUserInfo()->AddLast((TObject*)objDebugStreamPrefix);
    }
    
-   AliTPCcalibTracksGain *prevIter = (AliTPCcalibTracksGain*)paramFile.Get("calibTracksGain");
-   if (prevIter) {
-      //TVectorD* param = new TVectorD(2);
-      //prevIter->fZFitter->GetParameters(*param);
-      //chain->GetUserInfo()->AddLast((TObject*)param);
-      chain->GetUserInfo()->AddLast((TObject*)prevIter);
-   } else
-      printf("No calibTracksGain object found. Continuing without z dependence parametrisation.\n");
+   if (prevIterFileName) {
+      TFile paramFile(prevIterFileName);
+      if (paramFile.IsZombie()) {
+         printf("File %s not found. Continuing without z dependence parametrisation.\n", prevIterFileName);
+         return;
+      }
+      
+      AliTPCcalibTracksGain *prevIter = (AliTPCcalibTracksGain*)paramFile.Get("calibTracksGain");
+      if (prevIter) {
+         //TVectorD* param = new TVectorD(2);
+         //chain->GetUserInfo()->AddLast((TObject*)param);
+         chain->GetUserInfo()->AddLast((TObject*)prevIter);
+      } else
+         printf("No calibTracksGain object found. Continuing without z dependence parametrisation.\n");
+   }
 }
 
 Int_t AliTPCcalibTracksGain::AcceptTrack(AliTPCseed* track) {
@@ -310,11 +335,11 @@ Int_t AliTPCcalibTracksGain::AcceptTrack(AliTPCseed* track) {
    // The corresponding cut values are specified in the fCuts member.
    //
    
-   if (track->GetNumberOfClusters() < fCuts->GetMinClusters()) return 1;
-   if ((TMath::Abs(track->GetY() / track->GetX()) > fCuts->GetEdgeYXCutNoise())
-      && (TMath::Abs(track->GetTgl()) < fCuts->GetEdgeThetaCutNoise())) return 2;
-   if (track->GetNumberOfClusters() / (track->GetNFoundable()+1.) < fCuts->GetMinRatio()) return 3;
-   if (TMath::Abs(track->GetSigned1Pt()) > fCuts->GetMax1pt()) return 4;
+  //  if (track->GetNumberOfClusters() < fCuts->GetMinClusters()) return 1;
+//    if ((TMath::Abs(track->GetY() / track->GetX()) > fCuts->GetEdgeYXCutNoise())
+//       && (TMath::Abs(track->GetTgl()) < fCuts->GetEdgeThetaCutNoise())) return 2;
+//    if (track->GetNumberOfClusters() / (track->GetNFoundable()+1.) < fCuts->GetMinRatio()) return 3;
+//    if (TMath::Abs(track->GetSigned1Pt()) > fCuts->GetMax1pt()) return 4;
    
    //if (track->GetPt() < 50.) return kFALSE;
    return 0;
@@ -364,18 +389,16 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
    if (!list || list->IsEmpty()) return -1;
    
    // reset the data members first
-   if (fSimpleFitter) delete fSimpleFitter;
-   if (fSqrtFitter)   delete fSqrtFitter;
-   if (fLogFitter)    delete fLogFitter;
-   if (fZFitter)      delete fZFitter;
-   fSimpleFitter = new AliTPCFitPad(6, "hyp5", "");
-   fSqrtFitter   = new AliTPCFitPad(6, "hyp5", "");
-   fLogFitter    = new AliTPCFitPad(6, "hyp5", "");
-   fZFitter      = new TLinearFitter(2, "hyp1", "");
-   // workaround for TLinearFitter
-   Double_t workaround = 3.141592;
-   fZFitter->AddPoint(&workaround, 31.41592);
-   fZFitter->ClearPoints();
+   //if (fSimpleFitter) delete fSimpleFitter;
+   //if (fSqrtFitter)   delete fSqrtFitter;
+   //if (fLogFitter)    delete fLogFitter;
+   //if (fSingleSectorFitter) delete fSingleSectorFitter;  // just for debugging
+   if (!fSimpleFitter) {
+     fSimpleFitter = new AliTPCFitPad(7, "hyp6", "");
+     fSqrtFitter   = new AliTPCFitPad(7, "hyp6", "");
+     fLogFitter    = new AliTPCFitPad(7, "hyp6", "");
+     fSingleSectorFitter = new AliTPCFitPad(7, "hyp6", "");  // just for debugging
+   }
 
    // this will be gone for the a new ROOT version > v5-17-05
    for (UInt_t i = 0; i < 36; i++) {
@@ -413,7 +436,7 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    fSimpleFitter->Add(cal->fSimpleFitter);
    fSqrtFitter->Add(cal->fSqrtFitter);
    fLogFitter->Add(cal->fLogFitter);
-   fZFitter->Add(cal->fZFitter);
+   fSingleSectorFitter->Add(cal->fSingleSectorFitter);  // just for debugging
 
    // this will be gone for the a new ROOT version > v5-17-05
    for (UInt_t iSegment = 0; iSegment < 36; iSegment++) {
@@ -428,7 +451,7 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    fDebugCalPadRaw->Add(cal->fDebugCalPadRaw);
    fDebugCalPadCorr->Add(cal->fDebugCalPadCorr);
 
-   // Let's see later what to do with fCuts and fDebugStream
+   // Let's see later what to do with fCuts and fDebugStream and fDebugStreamPrefix
 }
 
 void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
@@ -440,11 +463,70 @@ void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
    if (!fDebugStream) fDebugStream = new TTreeSRedirector(fgkDebugStreamFileName);
    DumpTrack(seed);
 
-   AliTPCcalibTracksGain::PreProcess preProc(seed);
+   /*AliTPCcalibTracksGain::PreProcess preProc(seed);
    for (Int_t iCluster = 0; iCluster < 159; iCluster++) {
       AliTPCclusterMI* cluster = seed->GetClusterPointer(iCluster);
       if (cluster && preProc.IsClusterAccepted(iCluster)) AddCluster(cluster, preProc);
+   }*/
+}
+   
+void AliTPCcalibTracksGain::AddCluster2(AliTPCclusterMI* cluster, Float_t momenta, Float_t mdedx, Int_t padType,
+            Float_t xcenter, TVectorD dedxQ, TVectorD dedxM, Float_t fraction, Float_t fraction2, Float_t dedge,
+            TVectorD parY, TVectorD parZ, TVectorD meanPos) {
+   if (!cluster) {
+      Error("AddCluster", "Cluster not valid.");
+      return;
    }
+
+   if (dedge < 3.) return;
+   if (fraction2 > 0.7) return;
+
+   //Int_t padType = GetPadType(cluster->GetX());
+   Double_t xx[6];
+   //Double_t centerPad[2] = {0};
+   //AliTPCFitPad::GetPadRegionCenterLocal(padType, centerPad);
+   //xx[0] = cluster->GetX() - centerPad[0];
+   //xx[1] = cluster->GetY() - centerPad[1];
+   xx[0] = cluster->GetX() - xcenter;
+   xx[1] = cluster->GetY();
+   xx[2] = xx[0] * xx[0];
+   xx[3] = xx[1] * xx[1];
+   xx[4] = xx[0] * xx[1];
+   xx[5] = TMath::Abs(cluster->GetZ()) - TMath::Abs(meanPos[4]);
+
+   Int_t segment = cluster->GetDetector() % 36;
+   Double_t q = fgkUseTotalCharge ? ((Double_t)(cluster->GetQ())) : ((Double_t)(cluster->GetMax()));  // note: no normalization to pad size!
+
+   // just for debugging
+   Int_t row = 0;
+   Int_t pad = 0;
+   GetRowPad(cluster->GetX(), cluster->GetY(), row, pad);
+   fDebugCalPadRaw->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadRaw->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
+   
+   // correct charge by normalising to mean charge per track
+   q /= dedxQ[2];
+
+   // correct charge for dependency on z distance using previous iteration
+   
+   // just for debugging
+   fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
+
+   Double_t sqrtQ = TMath::Sqrt(q);
+   Double_t logQ = fgkM * TMath::Log(1 + q / fgkM);
+   fSimpleFitter->GetFitter(segment, padType)->AddPoint(xx, q);
+   fSqrtFitter->GetFitter(segment, padType)->AddPoint(xx, sqrtQ);
+   fLogFitter->GetFitter(segment, padType)->AddPoint(xx, logQ);
+   fSingleSectorFitter->GetFitter(0, padType)->AddPoint(xx, q);  // just for debugging
+
+   Double_t zz = TMath::Abs(cluster->GetZ()) - TMath::Abs(meanPos[4]);
+   
+   // this will be gone for the a new ROOT version > v5-17-05
+   if (padType == kShortPads)
+      fNShortClusters[segment]++;
+   else if (padType == kMediumPads)
+      fNMediumClusters[segment]++;
+   else if (padType == kLongPads)
+      fNLongClusters[segment]++;
 }
 
 void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, AliTPCcalibTracksGain::PreProcess& preProc) {
@@ -505,11 +587,6 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, AliTPCcalibTrac
    //q /= (1 + 0.36 * TMath::Abs(1/TMath::Tan(preProc.GetAngleTrackPadrow(segment, padType))));
 
    // correct charge for dependency on z distance using previous iteration
-   if (fPrevIter) {
-      TVectorD param(2);
-      fPrevIter->fZFitter->GetParameters(param);
-      q /= param[0] + param[1] * (TMath::Abs(cluster->GetZ()) - TMath::Abs(preProc.GetMeanZ(segment, padType)));
-   }
    
    // just for debugging
    fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->SetValue(row, pad, q + fDebugCalPadCorr->GetCalROC(cluster->GetDetector())->GetValue(row, pad));
@@ -521,7 +598,6 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, AliTPCcalibTrac
    fLogFitter->GetFitter(segment, padType)->AddPoint(xx, logQ);
 
    Double_t zz = TMath::Abs(cluster->GetZ()) - TMath::Abs(preProc.GetMeanZ(segment, padType));
-   fZFitter->AddPoint(&zz, q);
    
    // this will be gone for the a new ROOT version > v5-17-05
    if (padType == kShortPads)
@@ -543,8 +619,7 @@ void AliTPCcalibTracksGain::Evaluate(Bool_t robust, Double_t frac) {
    fSimpleFitter->Evaluate(robust, frac);
    fSqrtFitter->Evaluate(robust, frac);
    fLogFitter->Evaluate(robust, frac);
-   if (robust) fZFitter->EvalRobust(frac);
-   else        fZFitter->Eval();
+   fSingleSectorFitter->Evaluate(robust, frac);  // just for debugging
 }
 
 Int_t AliTPCcalibTracksGain::Evaluate(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD* fitParam, TVectorD* fitError, Double_t* redChi2, Bool_t robust, Double_t frac) {
@@ -602,7 +677,7 @@ AliTPCCalPad* AliTPCcalibTracksGain::CreateFitCalPad(UInt_t fitType, Bool_t undo
 }
 
 AliTPCCalROC* AliTPCcalibTracksGain::CreateFitCalROC(UInt_t sector, UInt_t fitType, Bool_t undoTransformation, Bool_t normalizeToPadSize) {
-   TVectorD par(6);
+   TVectorD par(7);
    if (sector < 36) {
       GetParameters(sector % 36, 0, fitType, par);
       return CreateFitCalROC(sector, 0, par, fitType, undoTransformation, normalizeToPadSize);
@@ -795,6 +870,8 @@ TLinearFitter* AliTPCcalibTracksGain::GetFitter(UInt_t segment, UInt_t padType, 
          return fSqrtFitter->GetFitter(segment, padType);
       case kLogFitter:
          return fLogFitter->GetFitter(segment, padType);
+      case 3:  // just for debugging
+         return fSingleSectorFitter->GetFitter(0, padType);
    }
    return 0;
 }
@@ -1022,6 +1099,8 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* r
       Float_t fraction2 = Float_t(inonEdge) / Float_t(nclustersNE);
       Float_t momenta = track->GetP();
       Float_t mdedx = track->GetdEdx();
+
+      AddCluster2(cluster, momenta, mdedx, padType, xcenter, dedxQ, dedxM, fraction, fraction2, dedge, parY, parZ, meanPos);
 
       (*fDebugStream) << "dEdx" <<
          "Cl.=" << cluster <<           // cluster of interest
