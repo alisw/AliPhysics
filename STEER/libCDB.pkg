@@ -2,7 +2,7 @@ SRCS          = AliCDBEntry.cxx AliCDBId.cxx AliCDBMetaData.cxx \
 AliCDBPath.cxx AliCDBRunRange.cxx AliCDBManager.cxx \
 AliCDBStorage.cxx AliCDBLocal.cxx AliCDBDump.cxx AliCDBGrid.cxx \
 AliDCSValue.cxx AliDCSSensor.cxx AliDCSSensorArray.cxx \
-AliDCSGenDB.cxx \
+AliDCSGenDB.cxx AliSplineFit.cxx \
 AliPreprocessor.cxx AliShuttleInterface.cxx \
 AliGRPPreprocessor.cxx AliGRPDCS.cxx
 
@@ -14,7 +14,7 @@ EXPORT:= AliCDBEntry.h AliCDBId.h AliCDBMetaData.h \
 AliCDBPath.h AliCDBRunRange.h AliCDBManager.h \
 AliCDBStorage.h AliCDBLocal.h AliCDBDump.h AliCDBGrid.h \
 AliDCSValue.h AliDCSSensor.h AliDCSSensorArray.h \
-AliDCSGenDB.h \
+AliDCSGenDB.h AliSplineFit.h \
 AliPreprocessor.h  AliShuttleInterface.h \
 AliGRPPreprocessor.h AliGRPDCS.h
 

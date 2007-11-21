@@ -37,7 +37,7 @@ AliCTPRawStream.cxx \
 AliMathBase.cxx AliSignalProcesor.cxx \
 AliTracker.cxx AliCluster.cxx AliCluster3D.cxx \
 AliHelix.cxx AliV0.cxx AliKink.cxx \
-AliSelectorRL.cxx AliSplineFit.cxx \
+AliSelectorRL.cxx \
 AliMagFMapsV1.cxx \
 AliSurveyObj.cxx AliSurveyPoint.cxx \
 AliCodeTimer.cxx \

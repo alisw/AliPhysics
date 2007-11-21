@@ -121,8 +121,6 @@
 
 #pragma link C++ class  AliSelectorRL+;
 
-#pragma link C++ class  AliSplineFit+;
-
 #pragma link C++ class AliSurveyObj+;
 #pragma link C++ class AliSurveyPoint+;
 
