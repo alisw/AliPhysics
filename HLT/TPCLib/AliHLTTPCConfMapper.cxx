@@ -59,7 +59,13 @@ AliHLTTPCConfMapper::AliHLTTPCConfMapper()
   fEtaMax(0),
   fRowMin(0),
   fRowMax(0),
-  fVertexConstraint(kTRUE)
+  fVertexConstraint(kTRUE),
+  fGoodDist(0.0),
+  fMaxPhi(0.0),
+  fMaxEta(0.0),
+  fMainVertexTracks(0),
+  fClustersUnused(0)
+
 {
   //Default constructor
   fParamSet[0]=0;

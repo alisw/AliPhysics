@@ -44,6 +44,20 @@ using namespace std;
 ClassImp(AliHLTTPCMerger)
 
 AliHLTTPCMerger::AliHLTTPCMerger()
+  :
+  fCurrentTracks(0),
+  fSlice(0), // TODO its not quite clear were this member is set
+  fVertex(NULL),
+  f2Global(false), // TODO: initialization was missing at all, assuming false for the moment
+  fMaxY(0.0),
+  fMaxZ(0.0),
+  fMaxKappa(0.0),
+  fMaxPsi(0.0),
+  fMaxTgl(0.0),
+  fTrackType(0),
+  fInTrack(NULL),
+  fNIn(0),
+  fOutTrack(NULL)
 {
   //Default constructor
   fInTrack=0;

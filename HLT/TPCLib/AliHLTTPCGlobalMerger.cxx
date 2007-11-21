@@ -37,13 +37,14 @@ using namespace std;
 ClassImp(AliHLTTPCGlobalMerger)
 
 AliHLTTPCGlobalMerger::AliHLTTPCGlobalMerger()
+  :
+  fNSlices(0),
+  fFirst(0),
+  fLast(0)
 {
   //Default constructor. Use Setup to specify and setup the necessary parameters and arrays.
   Is2Global(kTRUE);
   SetParameter(0,0,0,0,0);
-  fNSlices=0;
-  fFirst=0;
-  fLast=0;
 }
 
 

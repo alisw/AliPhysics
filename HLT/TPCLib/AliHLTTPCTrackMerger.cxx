@@ -37,41 +37,35 @@ using namespace std;
 
 ClassImp(AliHLTTPCTrackMerger)
 
-AliHLTTPCTrackMerger::AliHLTTPCTrackMerger() : AliHLTTPCMerger()
+AliHLTTPCTrackMerger::AliHLTTPCTrackMerger() 
+  :
+  AliHLTTPCMerger(),
+  fSubSector(0),
+  fNSubSector(0),
+  fRowMin(NULL),
+  fRowMax(NULL),
+  fSlow(0)
 {
   //Default constructor
   Is2Global(kFALSE);
-  fSlow = kFALSE;
   SetParameter();
-  fRowMin = 0;
-  fRowMax = 0;
 }
 
 
-AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(Int_t nsubsectors) : AliHLTTPCMerger()
+AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(Int_t nsubsectors) 
+  :
+  AliHLTTPCMerger(),
+  fSubSector(0),
+  fNSubSector(nsubsectors),
+  fRowMin(new Int_t[nsubsectors]),
+  fRowMax(new Int_t[nsubsectors]),
+  fSlow(0)
 {
   //Constructor.
   InitMerger(nsubsectors);
-  fNSubSector = nsubsectors;
   Is2Global(kFALSE);
   fSlow = kFALSE;
   SetParameter();
-  fRowMin = new Int_t[nsubsectors];
-  fRowMax = new Int_t[nsubsectors];
-  
-}
-
-AliHLTTPCTrackMerger::AliHLTTPCTrackMerger(const AliHLTTPCTrackMerger&) : AliHLTTPCMerger()
-{
-  // dummy copy constructor
-  //HLTFatal("copy constructor untested");
-}
-
-AliHLTTPCTrackMerger& AliHLTTPCTrackMerger::operator=(const AliHLTTPCTrackMerger&)
-{ 
-  // dummy assignment operator
-  //HLTFatal("assignment operator untested");
-  return *this;
 }
 
 AliHLTTPCTrackMerger::~AliHLTTPCTrackMerger(){
