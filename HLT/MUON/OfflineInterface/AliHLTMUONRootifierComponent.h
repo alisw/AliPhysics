@@ -6,12 +6,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONRootifierComponent.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Component for converting dHLT raw data into ROOT objects.
- */
+///
+/// @file   AliHLTMUONRootifierComponent.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   
+/// @brief  Component for converting dHLT raw data into ROOT objects.
+///
 
 #include "AliHLTProcessor.h"
 

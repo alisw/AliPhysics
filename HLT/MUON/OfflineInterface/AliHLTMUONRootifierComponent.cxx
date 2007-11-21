@@ -16,12 +16,12 @@
 
 /* $Id$ */
 
-/**
- * @file   AliHLTMUONRootifierComponent.cxx
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  Implementation of the AliHLTMUONRootifierComponent component.
- */
+///
+/// @file   AliHLTMUONRootifierComponent.cxx
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   
+/// @brief  Implementation of the AliHLTMUONRootifierComponent component.
+///
 
 #include "AliHLTMUONRootifierComponent.h"
 #include "AliHLTMUONConstants.h"
