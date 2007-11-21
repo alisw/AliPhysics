@@ -367,7 +367,7 @@ AliHLTUInt32_t AliHLTTPCDigitReaderRaw::GetRCUTrailer( unsigned offset ) const
 bool AliHLTTPCDigitReaderRaw::NextAltroBlock()
 {
   // see header file for class documentation
-    if (fBufferSize<=0) return 0;
+    if (fBufferSize<=32) return 0;
     bool first = false;
     if ( !fAltroBlockLengthBytes )
 	{
