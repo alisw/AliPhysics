@@ -154,13 +154,13 @@ UInt_t AliPHOSPreprocessor::Process(TMap* /*valueSet*/)
 	  if(histo) {
 	    coeff = histo->GetMean()/refMean;
 	    if(coeff>0)
-	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.001/coeff);
+	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1./coeff);
 	    else 
-	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.001);
+	      calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.);
 	    AliInfo(Form("mod %d col %d row %d  coeff %f\n",mod,col,row,coeff));
 	  }
 	  else
-	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,0.001); 
+	    calibData.SetADCchannelEmc(mod+1,col+1,row+1,1.); 
 	}
       }
     }
