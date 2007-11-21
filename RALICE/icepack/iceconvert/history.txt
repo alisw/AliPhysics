@@ -147,4 +147,7 @@
 14-nov-2007 NvE Bug fix in IceDB2Root in the creation of the JEBTDaq database.
                 The new Clone() memberfunction of AliObjMatrix is now used and a memory
                 leak has been removed. Also GetOMdbase() has been updated for JEBTDaq.
+19-nov-2007 GdV IceDB2Root extended to provide also the global time offsets for Amanda
+                modules w.r.t to the InIce triggers.
+21-nov-2007 GdV Global time offset corrections for real data performed in IceRoot. 
 

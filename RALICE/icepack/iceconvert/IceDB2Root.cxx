@@ -1198,24 +1198,437 @@ void IceDB2Root::GetTWRDaqData()
 void IceDB2Root::GetJEBTDaqData()
 {
 // Obtain all the JEB TWRDaq geometry, calibration and Xtalk data.
-// For the time being, the JEBTDaq database is just a copy of the
-// TWRDaq database. If different calibrations are needed in the 
-// future, this member function can be updated accordingly.
+
+ // Connect to the DB server
+ TSQLServer* server=TSQLServer::Connect(fDBName.Data(),fUser.Data(),fPassword.Data()); 
+ if (!server)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Database " << fDBName.Data() << " could not be accessed." << endl;
+  return;
+ }
 
  // The JEBTDaq OM database object
  if (fJEBTDaqdb)
  {
-  delete fJEBTDaqdb;
-  fJEBTDaqdb=0;
+  fJEBTDaqdb->Reset();
+ }
+ else
+ {
+  fJEBTDaqdb=new AliObjMatrix();
+  fJEBTDaqdb->SetNameTitle("JEBTDaq-OMDBASE","The JEBTDaq OM geometry, calib. etc... database");
+  fJEBTDaqdb->SetOwner();
  }
 
- // Copy TWRDaq database to JEBTDaq database via the Clone() function
- if(!fTWRDaqdb) GetTWRDaqData();
- if(fTWRDaqdb)
+ // Prescription of the various (de)calibration functions
+
+ // Conversion of adc to charge in nC
+ // Volt per digit = 5/4096    Assumed capacitance = 20 pF
+ // Charge (in nC) is adc*(5./4096.)*0.02
+ // The database calibration constant is the amount of nC per photon electron (nC/PE)
+ TF1 fadccal("fadccal","x*(5./4096.)/(50.*[0])");
+ TF1 fadcdecal("fadcdecal","x*(50.*[0])/(5./4096.)");
+ fadccal.SetParName(0,"nC/PE");
+ fadcdecal.SetParName(0,"nC/PE");
+
+ TF1 ftdccal("ftdccal","x-[0]");
+ TF1 ftdcdecal("ftdcdecal","x+[0]");
+ ftdccal.SetParName(0,"T0");
+ ftdcdecal.SetParName(0,"T0");
+
+ TF1 ftotcal("ftotcal","x");
+ TF1 ftotdecal("ftotdecal","x");
+
+ // The cross talk probability function
+ TF1 fxtalkp("fxtalkp","(1.+[2]-[2]+[3]-[3])/(1.+exp(([0]-x)/[1]))");
+ fxtalkp.SetParName(0,"C");
+ fxtalkp.SetParName(1,"B");
+ fxtalkp.SetParName(2,"dLE-min");
+ fxtalkp.SetParName(3,"dLE-max");
+
+ // The basic OM contents
+ IceAOM om;
+
+ // Slots to hold the various (de)calibration functions
+ om.AddNamedSlot("ADC");
+ om.AddNamedSlot("LE");
+ om.AddNamedSlot("TOT");
+ // Slots with hardware parameters
+ om.AddNamedSlot("TYPE"); // -1=unknown 0=std_coax 1=std_twisted/std_hybrid 2=desy_hybrid 3=uci_fiber 4=lbl_dom 5=dAOM_ld 6=dAOM_led 9=desy_active_fiber
+ om.AddNamedSlot("ORIENT");
+ om.AddNamedSlot("THRESH");
+ om.AddNamedSlot("SENSIT");
+ om.AddNamedSlot("READOUT"); // 0=unknown 1=electrical 2=optical 3=digital
+ om.AddNamedSlot("BINSIZE");
+ om.AddNamedSlot("EXTSTOP");
+ om.AddNamedSlot("GLOBALT0");
+ om.AddNamedSlot("TWRI3OFFSET");
+
+ // Default values
+ Float_t type=-1;
+ om.SetSignal(type,"TYPE");
+ Float_t costh=0;
+ om.SetSignal(costh,"ORIENT");
+ Float_t thresh=0;
+ om.SetSignal(thresh,"THRESH");
+ Float_t sensit=1;
+ om.SetSignal(sensit,"SENSIT");
+ Float_t readout=0;
+ om.SetSignal(readout,"READOUT");
+ Float_t binsize=0;
+ om.SetSignal(binsize,"BINSIZE");
+ Float_t stopdelay=0;
+ om.SetSignal(stopdelay,"EXTSTOP");
+ Float_t globalt0=0;
+ om.SetSignal(globalt0,"GLOBALT0");
+ Float_t twri3offset=0;
+ om.SetSignal(twri3offset,"TWRI3OFFSET");
+
+ // Variables needed
+ TSQLStatement* st;
+ IceAOM* omx=0;
+ Int_t omid;
+ Double_t pos[3]={0,0,0};
+ Float_t peArea, twrT0;
+ Int_t jtrans,jrec;
+ Float_t c, b, dlemin, dlemax;
+ TF1* fcal=0;
+ TF1* fdecal=0;
+ AliTimestamp validitystart, validityend;
+ Int_t revision[682];
+
+ // Get global TWR time offsets
+ st=server->Statement("SELECT TWRGlobalT0, TWRI3TimeOffset FROM AmandaTWRGlobalConstants;");
+ if (!st)
  {
-  fJEBTDaqdb=(AliObjMatrix*)fTWRDaqdb->Clone();
-  fJEBTDaqdb->SetNameTitle("JEBTDaq-OMDBASE","The JEBTDaq OM geometry, calib. etc... database");
+  cout << " *IceDB2Root GetJEBTDaqData* Global TWR time offsets could not be read from DB" << endl;
  }
+ else {
+  st->Process();
+  st->StoreResult();
+  st->NextResultRow();
+  globalt0=st->GetDouble(0);
+  twri3offset=st->GetDouble(1);
+ }
+
+ // Get positions of Amanda OMs in IceCube coordinates
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, OmId, X, Y, Z, AmandaOm.TypeId, Orientation FROM GeometryOm INNER JOIN AmandaOm INNER JOIN CalibrationDetail WHERE GeometryOm.StringId=AmandaOm.StringId AND GeometryOm.TubeId=AmandaOm.TubeId AND GeometryOm.CaId=CalibrationDetail.CaId AND CalibrationDetail.TypeId=2;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Positions could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   omid=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[omid]=st->GetInt(2);
+    // Get OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(omid,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(omid);
+     fJEBTDaqdb->EnterObject(omid,1,omx);
+    }
+    // Enter calibration values
+    pos[0]=st->GetDouble(4);
+    pos[1]=st->GetDouble(5);
+    pos[2]=st->GetDouble(6);
+    omx->SetPosition(pos,"car");
+    type=(Float_t)st->GetInt(7);
+    omx->SetSignal(type,"TYPE");
+    costh=(Float_t)st->GetInt(8);
+    omx->SetSignal(costh,"ORIENT");
+    if(globalt0) omx->SetSignal(globalt0,"GLOBALT0");
+    if(twri3offset) omx->SetSignal(twri3offset,"TWRI3OFFSET");
+   }
+  }
+ }
+
+ // Get sensitivity/threshold of Amanda OMs
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, om_id, sc_sensit, sc_thresh FROM AmandaStatusOm INNER JOIN CalibrationDetail WHERE AmandaStatusOm.ca_id=CalibrationDetail.CaId AND CalibrationDetail.TypeId=804;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Sensitivity/threshold could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   omid=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[omid]=st->GetInt(2);
+    // Get OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(omid,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(omid);
+     fJEBTDaqdb->EnterObject(omid,1,omx);
+    }
+    // Enter calibration values
+    thresh=(Float_t)st->GetDouble(4);
+    sensit=(Float_t)st->GetDouble(5);
+    omx->SetSignal(thresh,"THRESH");
+    omx->SetSignal(sensit,"SENSIT");
+   }
+  }
+ }
+
+ // Get readout types of Amanda OMs
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, OmId, CableType FROM AmandaTWRCableType INNER JOIN AmandaOm INNER JOIN CalibrationDetail WHERE AmandaTWRCableType.StringId=AmandaOm.StringId AND AmandaTWRCableType.TubeId=AmandaOm.TubeId AND AmandaTWRCableType.CaId=CalibrationDetail.CaId AND CalibrationDetail.TypeId=853;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Readout types could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   omid=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[omid]=st->GetInt(2);
+    // Get OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(omid,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(omid);
+     fJEBTDaqdb->EnterObject(omid,1,omx);
+    }
+    // Enter calibration values
+    if(st->GetUInt(4) == 0) readout=1;        // Electrical
+    else if(st->GetUInt(4) == 10) readout=2;  // Optical
+    else readout=0;                           // Unknown
+    omx->SetSignal(readout,"READOUT");
+   }
+  }
+ }
+
+ // Get bin sizes and stop delays types of TWRs
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, OmId, BinSize, StopDelay FROM AmandaTWRStandard INNER JOIN AmandaOm INNER JOIN CalibrationDetail WHERE AmandaTWRStandard.StringId=AmandaOm.StringId AND AmandaTWRStandard.TubeId=AmandaOm.TubeId AND AmandaTWRStandard.CaId=CalibrationDetail.CaId AND CalibrationDetail.TypeId=852;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Bin size and stop delays could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   omid=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[omid]=st->GetInt(2);
+    // Get OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(omid,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(omid);
+     fJEBTDaqdb->EnterObject(omid,1,omx);
+    }
+    // Enter calibration values
+    binsize=(Float_t)st->GetInt(4);
+    stopdelay=(Float_t)st->GetInt(5);
+    omx->SetSignal(binsize,"BINSIZE");
+    omx->SetSignal(stopdelay,"EXTSTOP");
+   }
+  }
+ }
+
+ // Get JEBTDaq amplitude and time calibration constants
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, OmId, peArea, twrT0 FROM AmandaTWRCalibration INNER JOIN AmandaOm INNER JOIN CalibrationDetail WHERE AmandaTWRCalibration.StringId=AmandaOm.StringId AND AmandaTWRCalibration.TubeId=AmandaOm.TubeId AND AmandaTWRCalibration.CaId=CalibrationDetail.CaId AND CalibrationDetail.TypeId=854;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Bin size and stop delays could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   omid=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[omid]=st->GetInt(2);
+    // Get OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(omid,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(omid);
+     fJEBTDaqdb->EnterObject(omid,1,omx);
+    }
+    // Set calibration functions
+    omx->SetCalFunction(&fadccal,1);
+    omx->SetDecalFunction(&fadcdecal,1);
+    omx->SetCalFunction(&ftdccal,2);
+    omx->SetDecalFunction(&ftdcdecal,2);
+    omx->SetCalFunction(&ftotcal,3);
+    omx->SetDecalFunction(&ftotdecal,3);
+    // Get calibration values
+    peArea=(Float_t)st->GetDouble(4);
+    twrT0=(Float_t)st->GetDouble(5);
+    // Flag amplitude slots of bad OMs as dead and don't provide amplitude (de)calib functions
+    if (peArea<=0 || omx->GetSignal("BINSIZE")<=0)
+    {
+     omx->SetDead(1);
+     omx->SetCalFunction(0,1);
+     omx->SetDecalFunction(0,1);
+    }
+    // Set amplitude calibration function parameters
+    fcal=omx->GetCalFunction(1);
+    fdecal=omx->GetDecalFunction(1);
+    if (fcal)
+    {
+     // peArea as read from the DB is the factor that converts the integrated
+     // area under the peak to the number of pe, that is, the sum over all bins
+     // of ADC*binsize. In IcePack, we simply add up the bin contents of the
+     // peak, without multiplying by binsize. Hence, the calibration factor is 
+     // peArea/binsize, rather than peArea.
+     fcal->SetParameter(0,peArea/omx->GetSignal("BINSIZE"));
+    }
+    if (fdecal)
+    {
+     fdecal->SetParameter(0,peArea/omx->GetSignal("BINSIZE"));
+     if (!peArea) fdecal->SetParameter(0,1);
+    }
+    // Flag LE slots of bad OMs as dead and don't provide time (de)calib functions
+    if (twrT0<=0)
+    {
+     omx->SetDead(2);
+     omx->SetCalFunction(0,2);
+     omx->SetDecalFunction(0,2);
+    }
+    // Set time calibration function parameters
+    fcal=omx->GetCalFunction(2);
+    fdecal=omx->GetDecalFunction(2);
+    if (fcal)
+    {
+     fcal->SetParameter(0,twrT0);
+    }
+    if (fdecal)
+    {
+     fdecal->SetParameter(0,twrT0);
+    }
+   }
+  }
+ }
+
+ // Get Xtalk probability constants
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, om_talker_id, om_receiver_id, threshold, width, timelow, timehigh FROM AmandaXtalkOm INNER JOIN CalibrationDetail WHERE AmandaXtalkOm.ca_id=CalibrationDetail.CaId AND CalibrationDetail.TypeId=807;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Xtalk probability constants could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   jtrans=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[jtrans]=st->GetInt(2);
+    jrec=st->GetInt(4);
+    // Get transmitter OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(jtrans,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(jtrans);
+     fJEBTDaqdb->EnterObject(jtrans,1,omx);
+    }
+    // Get calibration values
+    c=(Float_t)st->GetDouble(5);
+    b=(Float_t)st->GetDouble(6);
+    dlemin=(Float_t)st->GetDouble(7);
+    dlemax=(Float_t)st->GetDouble(8);
+    // Make Xtalk probability function and set parameters
+    TF1* fx=new TF1(fxtalkp);
+    fx->SetParameter(0,c);
+    if (b) fx->SetParameter(1,b);
+    else fx->SetParameter(1,1);
+    fx->SetParameter(2,dlemin);
+    fx->SetParameter(3,dlemax);
+    fJEBTDaqdb->EnterObject(jtrans,jrec+1,fx);
+   }
+  }
+ }
+
+ // Flag OMs in bad OM list as dead
+ for(omid=0; omid<=681; omid++) revision[omid]=0;
+ st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, om_id FROM AmandaBadOm INNER JOIN CalibrationDetail WHERE AmandaBadOm.ca_id=CalibrationDetail.CaId AND CalibrationDetail.TypeId=803;");
+ if (!st)
+ {
+  cout << " *IceDB2Root GetJEBTDaqData* Bad OM list could not be read from DB" << endl;
+ }
+ else {
+  st->Process();
+  st->StoreResult();
+  while(st->NextResultRow())
+  {
+   // Only get calibrations with correct validity range, and update with latest revision in case of several valid calibrations
+   validitystart.SetUT(st->GetYear(0),st->GetMonth(0),st->GetDay(0),st->GetHour(0),st->GetMinute(0),st->GetSecond(0));
+   validityend.SetUT(st->GetYear(1),st->GetMonth(1),st->GetDay(1),st->GetHour(1),st->GetMinute(1),st->GetSecond(1));
+   omid=st->GetInt(3);
+   if(validitystart.GetDifference(fTime,"d",1)>0 && validityend.GetDifference(fTime,"d",1)<0 && st->GetInt(2) > revision[omid])
+   {
+    revision[omid]=st->GetInt(2);
+    // Get OM, create a new one if necessary
+    omx=(IceAOM*)fJEBTDaqdb->GetObject(omid,1);
+    if (!omx)
+    {
+     omx=new IceAOM(om);
+     omx->SetUniqueID(omid);
+     fJEBTDaqdb->EnterObject(omid,1,omx);
+    }
+    // Flag OMs as dead
+    omx->SetDead(1);
+    omx->SetCalFunction(0,1);
+    omx->SetDecalFunction(0,1);
+    omx->SetDead(2);
+    omx->SetCalFunction(0,2);
+    omx->SetDecalFunction(0,2);
+    omx->SetDead(3);
+    omx->SetCalFunction(0,3);
+    omx->SetDecalFunction(0,3);
+   }
+  }
+ }
+ 
 }
 ///////////////////////////////////////////////////////////////////////////
 void IceDB2Root::GetJEBADaqData()
@@ -1273,9 +1686,10 @@ void IceDB2Root::GetJEBADaqData()
  IceDOM* omx=0;
  Int_t omid;
  Double_t pos[3]={0,0,0};
- Float_t peArea;
- TF1* fcal=0;
- TF1* fdecal=0;
+////TODO: declare these variables once amplitude calibration becomes available
+// Float_t peArea;
+// TF1* fcal=0;
+// TF1* fdecal=0;
  AliTimestamp validitystart, validityend;
  const Int_t maxomid=8064;
  Int_t revision[maxomid+1];
@@ -1320,6 +1734,7 @@ void IceDB2Root::GetJEBADaqData()
 
  // Get JEBADaq amplitude calibration constants
  //// TODO: Insert correct table and field names and use correct calibration type
+ /*
  for(omid=0; omid<=maxomid; omid++) revision[omid]=0;
  st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, StringId, TubeId, XXXpeArea FROM XXXampl INNER JOIN CalibrationDetail WHERE StringId>0 AND XXXampl.CaId=CalibrationDetail.CaId AND CalibrationDetail.TypeId=XXX;");
  if (!st)
@@ -1374,9 +1789,11 @@ void IceDB2Root::GetJEBADaqData()
    }
   }
  }
+ */
 
  /*
  // Flag OMs in bad OM list as dead
+ //// TODO: Insert correct table and field names and use correct calibration type
  for(omid=0; omid<=maxomid; omid++) revision[omid]=0;
  st=server->Statement("SELECT ValidityStartDate, ValidityEndDate, RevisionId, StringId, TubeId FROM XXXBadOm INNER JOIN CalibrationDetail WHERE StringId>0 AND XXXBadOm.CaId=CalibrationDetail.CaId AND CalibrationDetail.TypeId=XXX;");
  if (!st)

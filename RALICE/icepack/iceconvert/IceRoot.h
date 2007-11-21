@@ -9,6 +9,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TLeaf.h"
+#include "TMath.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -42,16 +43,16 @@ class IceRoot : public AliJob
   virtual void Exec(Option_t* opt);      // Perform the format conversion
 
  protected :
-  Int_t fSplit;          // The split level of the produced ROOT data file
-  Int_t fBsize;          // The buffersize of the produced ROOT data file
-  Int_t fMaxevt;         // The maximum number of events to be processed
-  Int_t fPrintfreq;      // The event info printing frequency
-  TObjArray* fInfiles;   // Names of all the simple Root data input files
-  TFile* fOutfile;       // The ROOT output file
-  TFile* fCalfile;       // The (optional) calibration input file in ROOT format
-  AliObjMatrix* fTWRDaq; // The (optional) TWR calibration database
-  TTree* fTree;          // Tree with simple Root data
+  Int_t fSplit;           // The split level of the produced ROOT data file
+  Int_t fBsize;           // The buffersize of the produced ROOT data file
+  Int_t fMaxevt;          // The maximum number of events to be processed
+  Int_t fPrintfreq;       // The event info printing frequency
+  TObjArray* fInfiles;    // Names of all the simple Root data input files
+  TFile* fOutfile;        // The ROOT output file
+  TFile* fCalfile;        // The (optional) calibration input file in ROOT format
+  AliObjMatrix* fJEBTDaq; // The (optional) JEB TWR calibration database
+  TTree* fTree;           // Tree with simple Root data
 
- ClassDef(IceRoot,3) // Job for conversion of simple Root data into IceEvent data structures.
+ ClassDef(IceRoot,4) // Job for conversion of simple Root data into IceEvent data structures.
 };
 #endif

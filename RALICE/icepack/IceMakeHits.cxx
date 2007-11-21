@@ -314,6 +314,13 @@ void IceMakeHits::Amanda()
   if (!omx) continue;
   // Remove all existing hits of this OM 
   omx->RemoveHits();
+  // Reset (de)calibration functions to indicate uncalibrated data
+  omx->SetCalFunction(0,"ADC");
+  omx->SetCalFunction(0,"LE");
+  omx->SetCalFunction(0,"TOT");
+  omx->SetDecalFunction(0,"ADC");
+  omx->SetDecalFunction(0,"LE");
+  omx->SetDecalFunction(0,"TOT");
   // Should we skip OMs that we know from the dbase to have problems ?
 ////  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
 
@@ -559,6 +566,13 @@ void IceMakeHits::IceCube()
   if (!omx) continue;
   // Remove all existing hits of this OM 
   omx->RemoveHits();
+  // Reset (de)calibration functions to indicate uncalibrated data
+  omx->SetCalFunction(0,"ADC");
+  omx->SetCalFunction(0,"LE");
+  omx->SetCalFunction(0,"TOT");
+  omx->SetDecalFunction(0,"ADC");
+  omx->SetDecalFunction(0,"LE");
+  omx->SetDecalFunction(0,"TOT");
   // Should we skip OMs that we know from the dbase to have problems ?
 ////  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
 
@@ -766,14 +780,4 @@ void IceMakeHits::IceCube()
  delete[] tot;
  delete[] index;
 }
-///////////////////////////////////////////////////////////////////////////
-//void IceMakeHits::InIce()
-//{
-// Hit extraction from IceTop InIce ATWD data.
-//}
-///////////////////////////////////////////////////////////////////////////
-//void IceMakeHits::IceTop()
-//{
-// Hit extraction from IceTop ATWD data.
-//}
 ///////////////////////////////////////////////////////////////////////////

@@ -134,4 +134,7 @@
                 "A" or "I" in the trackname to indicate Amanda (OM) or InIce (DOM) tracks, resp.
                 Also the memberfunctions SetMaxModA(), SetMaxModI() etc... of IceLinefit
                 have been integrated in memberfunctions SetMaxMod() etc... 
+21-nov-2007 NvE (De)calibration functions reset to 0 in IceMakeHits to indicate uncalibrated
+                data. This will allow correct re-processing of IceMakeHits on already calibrated
+                signals.
                  

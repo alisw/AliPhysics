@@ -55,8 +55,6 @@ class IceMakeHits : public TTask
   Float_t fThresholdI;           // The threshold to be used in analysis of narrow pulses in InIce ATWD hit extraction
   void Amanda();                 // Hit extraction from Amanda TWR data
   void IceCube();                // Hit extraction from IceCube ATWD data
-//  void InIce();                  // Hit extraction from IceCube InIce ATWD data
-//  void IceTop();                 // Hit extraction from IceTop ATWD data
 
  ClassDef(IceMakeHits,3) // TTask derived class to perform hit extraction from waveforms
 };

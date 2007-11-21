@@ -44,6 +44,9 @@
 //
 // IceRoot q("IceRoot","Simple Root data to IcePack data structure conversion");
 //
+// // Specify the relevant calibration file
+// q.SetCalibFile("calib2006.root");
+//
 // // Limit the number of entries for testing
 // q.SetMaxEvents(10);
 //
@@ -96,7 +99,7 @@ IceRoot::IceRoot(const char* name,const char* title) : AliJob(name,title)
  fInfiles=0;
  fOutfile=0;
  fCalfile=0;
- fTWRDaq=0;
+ fJEBTDaq=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceRoot::~IceRoot()
@@ -198,14 +201,15 @@ TFile* IceRoot::GetOutputFile()
 void IceRoot::SetCalibFile(TString name)
 {
 // Set the calibration ROOT file as created with IceCal2Root.
-// Note : this will overrule a previously attached database. 
+// Note: this will overrule a previously attached database. 
+// In case no calibration file is specified, TWR waveforms cannot be processed.
  if (fCalfile) delete fCalfile;
  fCalfile=new TFile(name.Data());
 
  if(fCalfile){
-  fTWRDaq=(AliObjMatrix*)fCalfile->Get("TWRDaq-OMDBASE");
+  fJEBTDaq=(AliObjMatrix*)fCalfile->Get("JEBTDaq-OMDBASE");
  }
- if(!fTWRDaq){
+ if(!fJEBTDaq){
   cout << "*IceRoot* Warning: no calibration available for TWR. TWR waveforms cannot be processed." << endl;
  }
 
@@ -214,9 +218,10 @@ void IceRoot::SetCalibFile(TString name)
 void IceRoot::SetOMdbase(AliObjMatrix* omdb)
 {
 // Set the calibration database as created with IceCal2Root.
-// Note : this will overrule a previously attached database. 
- fTWRDaq=omdb;
- if(!fTWRDaq){
+// Note: this will overrule a previously attached database. 
+// In case no calibration database is specified, TWR waveforms cannot be processed.
+ fJEBTDaq=omdb;
+ if(!fJEBTDaq){
   cout << "*IceRoot* Warning: no calibration available for TWR. TWR waveforms cannot be processed." << endl;
  }
 
@@ -252,6 +257,11 @@ void IceRoot::Exec(Option_t* opt)
  {
   cout << " *IceRoot Exec* No data input file(s) specified." << endl;
   return;
+ }
+
+ // Warning in case no calibration DB is specified
+ if(!fJEBTDaq){
+  cout << "*IceRoot* Warning: no calibration available for TWR. TWR waveforms cannot be processed." << endl;
  }
 
  // Create output tree if necessary
@@ -313,7 +323,6 @@ void IceRoot::Exec(Option_t* opt)
  Char_t    trigsourceID[100][100];
  Char_t    trigtypeID[100][100];
  Char_t    trigsubtypeID[100][100];
- Double_t  dmaddtriggertime=0;
  Int_t     eventtimemjd=0;
  Int_t     eventtimemjds=0;
  Int_t     eventtimemjdns=0;
@@ -322,6 +331,7 @@ void IceRoot::Exec(Option_t* opt)
  Int_t     String=0;
  Int_t     OM=0;
  Short_t   waveformtype=0; // 1 = TWR, 2 = non-merged ATWD (not supported), 3 = InIce merged ATWD, 4 = InIce FADC, 5 = IceTop merged ATWD, 6 = IceTop FADC
+ Short_t   twreventnr=0;
  UInt_t    baseline=0;
  Int_t     numberbinstwr=0;
  Int_t     startbin=0;
@@ -338,7 +348,7 @@ void IceRoot::Exec(Option_t* opt)
  Double_t* trackzenith=0;
  Double_t* trackazimuth=0;
  Double_t* trackenergy=0;
- Char_t    tracktype[10][100];
+ Char_t    tracktype[100][100];
 
  // Some other variables
  Int_t nevt=0;
@@ -346,7 +356,8 @@ void IceRoot::Exec(Option_t* opt)
  Int_t omid=0;
  Double_t starttime=0;
  Int_t extstop=0;
- Int_t twrbuffer=1024; // Number of bins in TWR
+ Float_t twrtime=10240; // Number of bins in TWR
+ Int_t twrbuffer=0;
 
  TString hname;
  TH1F histo;
@@ -364,6 +375,24 @@ void IceRoot::Exec(Option_t* opt)
  Float_t pi=acos(-1.);
 
  TFile* input=0;
+
+ Double_t* twreventtimes=0;
+ Int_t nrtwrevents=0;
+ Int_t* twreventorder=0;
+
+ // Get global TWR time offsets from DB
+ Float_t globalt0=0;
+ Float_t twri3offset=0;
+ if(fJEBTDaq){
+  for(Int_t row=1; row<=fJEBTDaq->GetMaxRow(); row++){
+   calom=(IceGOM*)fJEBTDaq->GetObject(row,1);
+   if(calom){
+    globalt0=calom->GetSignal("GLOBALT0");
+    twri3offset=calom->GetSignal("TWRI3OFFSET");
+    break;
+   }
+  }
+ }
 
  for (Int_t ifile=0; ifile<ninfiles; ifile++)
  {
@@ -387,7 +416,6 @@ void IceRoot::Exec(Option_t* opt)
 
   fTree->SetBranchAddress("pretrig",&pretrig);
   fTree->SetBranchAddress("trignr",&trignr);
-  fTree->SetBranchAddress("dmaddtriggertime",&dmaddtriggertime);
   fTree->SetBranchAddress("eventtimemjd",&eventtimemjd);
   fTree->SetBranchAddress("eventtimemjds",&eventtimemjds);
   fTree->SetBranchAddress("eventtimemjdns",&eventtimemjdns);
@@ -396,6 +424,7 @@ void IceRoot::Exec(Option_t* opt)
   fTree->SetBranchAddress("String",&String);
   fTree->SetBranchAddress("OM",&OM);
   fTree->SetBranchAddress("waveformtype",&waveformtype);
+  fTree->SetBranchAddress("twreventnr",&twreventnr);
   fTree->SetBranchAddress("baseline",&baseline);
   fTree->SetBranchAddress("numberbinstwr",&numberbinstwr);
   fTree->SetBranchAddress("startbin",&startbin);
@@ -444,7 +473,6 @@ void IceRoot::Exec(Option_t* opt)
   for(Int_t ientry=0; ientry<fTree->GetEntries(); ientry++)
   {
    fTree->GetEntry(ientry);
-
    // If new event
    if(eventid!=lastevent)
    {
@@ -482,32 +510,6 @@ void IceRoot::Exec(Option_t* opt)
      daq.SetSignal(1,"TWR");
     }
     evt->AddDevice(daq);
-
-    // Store trigger information
-    trig.Reset(1);
-    for(Int_t itr=0; itr<trignr; itr++){
-     s.Reset(1);
-     sprintf(trigname,"%s/%s",trigsourceID[itr],trigtypeID[itr]);
-     s.SetName(trigname);
-     s.SetSlotName("trig_pulse_le",1);
-     s.SetSignal(trigtime[itr],1);
-     s.SetSlotName("trig_pulse_tot",2);
-     s.SetSignal(triglength[itr],2);
-     trig.AddHit(s);
-    }
-    // Add main trigger unless it is already present
-    // TODO: select most appropriate trigger as artificial "main"
-    // For now: select first trigger in event
-    if(!trig.GetHit("main")){
-     s.Reset(1);
-     s.SetName("main");
-     s.SetSlotName("trig_pulse_le",1);
-     s.SetSignal(trigtime[0],1);
-     s.SetSlotName("trig_pulse_tot",2);
-     s.SetSignal(triglength[0],2);
-     trig.AddHit(s);
-    }
-    evt->AddDevice(trig);
 
     // Loop over all the tracks and add them to the current event
     Int_t nrecotracks=0;
@@ -556,6 +558,61 @@ void IceRoot::Exec(Option_t* opt)
       evt->AddTrack(t);
      }
     }
+
+    // Store trigger information
+    if (twreventtimes) delete[] twreventtimes;
+    twreventtimes=new Double_t[trignr];
+    if (twreventorder) delete[] twreventorder;
+    twreventorder=new Int_t[trignr];
+    nrtwrevents=0;
+    trig.Reset(1);
+    // Loop over triggers
+    for(Int_t itr=0; itr<trignr; itr++){
+     // For TWR events:
+     if(TString(trigsourceID[itr])=="AMANDA_TWR_DAQ"){
+      // Add global time offset if there are no MC tracks (i.e. if the data are real data)
+      if(!nmctracks) trigtime[itr]-=globalt0+twri3offset;
+      // Check if this trigger belongs to a new event
+      Int_t newevent=1;
+      for(Int_t itwrevent=0; itwrevent<nrtwrevents; itwrevent++){
+       if(fabs(trigtime[itr]-twreventtimes[itwrevent])<1500){
+        newevent=0;
+        break;
+       }
+      }
+      // Add new TWR event time
+      if(newevent){
+       twreventtimes[nrtwrevents]=trigtime[itr];
+       nrtwrevents++;
+      }
+     }
+
+     // Add this trigger to trigger device
+     s.Reset(1);
+     sprintf(trigname,"%s/%s",trigsourceID[itr],trigtypeID[itr]);
+     s.SetName(trigname);
+     s.SetSlotName("trig_pulse_le",1);
+     s.SetSignal(trigtime[itr],1);
+     s.SetSlotName("trig_pulse_tot",2);
+     s.SetSignal(triglength[itr],2);
+     trig.AddHit(s);
+    } // End of loop over triggers
+
+    TMath::Sort(nrtwrevents,twreventtimes,twreventorder,0);
+
+    // Add main trigger unless it is already present
+    // TODO: select most appropriate trigger as artificial "main"
+    // For now: select first trigger in event
+    if(!trig.GetHit("main")){
+     s.Reset(1);
+     s.SetName("main");
+     s.SetSlotName("trig_pulse_le",1);
+     s.SetSignal(trigtime[0],1);
+     s.SetSlotName("trig_pulse_tot",2);
+     s.SetSignal(triglength[0],2);
+     trig.AddHit(s);
+    }
+    evt->AddDevice(trig);
 
     // Remember event nr
     lastevent=eventid;
@@ -616,10 +673,9 @@ void IceRoot::Exec(Option_t* opt)
    }
 
    // Fill the waveform histogram with this fragment
-
    // TWR waveform
-   if(waveformtype==1){
-    if(numberbinstwr>0){
+   if(waveformtype==1){ 
+    if(numberbinstwr>0 && twreventnr<nrtwrevents){
      histo.Reset();
      // Store baseline info
      hname="BASELINE-WF";
@@ -635,14 +691,19 @@ void IceRoot::Exec(Option_t* opt)
      histo.SetName(hname.Data());
      // Add waveform
      calom=0;
-     if(fTWRDaq) calom=(IceGOM*)fTWRDaq->GetObject(omid,1);
+     if(fJEBTDaq) calom=(IceGOM*)fJEBTDaq->GetObject(omid,1);
      if(!calom){
       cout << "IceRoot: No calibration info for OM " << omid << ", skipping this waveform" << endl;
       continue;
      }
      binwidth=calom->GetSignal("BINSIZE");
+     if(binwidth<=0){
+      cout << "IceRoot: Zero bin width for OM " << omid << ", skipping this waveform" << endl;
+      continue;
+     }
+     twrbuffer=(Int_t)(twrtime/binwidth);
      extstop=(Int_t)calom->GetSignal("EXTSTOP");
-     starttime=dmaddtriggertime+binwidth*(startbin-twrbuffer+extstop);
+     starttime=twreventtimes[twreventorder[twreventnr]]+binwidth*(startbin-twrbuffer+extstop);
      histo.SetBins(numberbinstwr,starttime,starttime+numberbinstwr*binwidth);
      for (Int_t jbin=1; jbin<=numberbinstwr; jbin++)
      {
@@ -650,7 +711,7 @@ void IceRoot::Exec(Option_t* opt)
      }
      om->SetWaveform(&histo,om->GetNwaveforms()+1);
     } else {
-     cout << "IceRoot::Exec: waveformtype=1, but numberbinstwr=0." << endl;
+     cout << "IceRoot::Exec: waveformtype=1, but numberbinstwr=0 or nrtwrevents=0." << endl;
     }
    }
 
@@ -737,16 +798,26 @@ void IceRoot::Exec(Option_t* opt)
   input->Close();
 
   // Clean up
-  delete[] trigtime;
-  delete[] triglength;
-  delete[] twrwaveform;
-  delete[] waveform;
-  delete[] trackx;
-  delete[] tracky;
-  delete[] trackz;
-  delete[] trackzenith;
-  delete[] trackazimuth;
-  delete[] trackenergy;
+  if (trigtime) delete[] trigtime;
+  if (triglength) delete[] triglength;
+  if (twrwaveform) delete[] twrwaveform;
+  if (waveform) delete[] waveform;
+  if (trackx) delete[] trackx;
+  if (tracky) delete[] tracky;
+  if (trackz) delete[] trackz;
+  if (trackzenith) delete[] trackzenith;
+  if (trackazimuth) delete[] trackazimuth;
+  if (trackenergy) delete[] trackenergy;
+  if (twreventtimes)
+  {
+   delete[] twreventtimes;
+   twreventtimes=0;
+  }
+  if (twreventorder)
+  {
+   delete[] twreventorder;
+   twreventorder=0;
+  }
 
   // Stop looping over input files if max. nr. of events is reached
   if (fMaxevt>-1 && nevt>=fMaxevt)
