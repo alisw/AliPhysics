@@ -5,20 +5,13 @@
 include $(MODDIR)/hlt.conf
 
 CLASS_HDRS:=	\
-		  AliHLTAltroBunch.h \
-		  AliHLTAltroData.h \
 		  AliHLTPHOSBase.h \
-		  AliHLTPHOSCellEnergiesFileWriter.h \
 		  AliHLTPHOSClusterizer.h \
 		  AliHLTPHOSClusterizerComponent.h \
-		  AliHLTPHOSDDLDecoderComponent.h \
-		  AliHLTPHOSDDLPackedFileWriter.h \
 		  AliHLTPHOSDataCorruptor.h \
 		  AliHLTPHOSDataQualityMonitor.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSEmcCalibData.h \
-		  AliHLTPHOSFileWriter.h \
-		  AliHLTPHOSFileWriterComponent.h \
 		  AliHLTPHOSPhysicsAnalyzer.h \
 		  AliHLTPHOSPhysicsAnalyzerPeakFitter.h \
 		  AliHLTPHOSPhysicsAnalyzerSpectrum.h \
@@ -37,7 +30,6 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSRcuHistogramProducer.h \
 		  AliHLTPHOSRcuHistogramProducerComponent.h \
 		  AliHLTPHOSRcuProcessor.h \
-		  AliHLTDDLDecoder.h \
 		  AliHLTPHOSMapper.h \
 		  AliHLTPHOSRawAnalyzerPeakFinder.h \
 		  AliHLTPHOSSanityInspector.h \
@@ -67,7 +59,6 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
 		  AliHLTPHOSConstants.h \
-		  AliHLTAltroBunch.h \
 		  AliHLTPHOSRecPointListDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSClusterDataStruct.h \
