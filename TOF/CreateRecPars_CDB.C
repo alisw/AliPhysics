@@ -3,10 +3,9 @@ void CreateRecPars_CDB(){
   // write it on CDB
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE");
-  AliTOFGeometry *geom = new AliTOFGeometryV5(); 
-  AliTOFcalib *tofcalib = new AliTOFcalib(geom);
+  AliTOFcalib *tofcalib = new AliTOFcalib();
   AliTOFRecoParam *param = new AliTOFRecoParam();
-  tofcalib->WriteRecParOnCDB("TOF/Calib",0,0,param);
+  tofcalib->WriteRecParOnCDB("TOF/Calib",0,999999999,param);
 }
 
 
