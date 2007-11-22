@@ -189,3 +189,5 @@ const char* AliHLTMUONConstants::fgkTriggerReconstructorId = "MUONTriggerReconst
 const char* AliHLTMUONConstants::fgkHitReconstructorId = "MUONHitReconstructor";
 const char* AliHLTMUONConstants::fgkMansoTrackerFSMId = "MUONMansoTrackerFSM";
 const char* AliHLTMUONConstants::fgkDecisionComponentId = "MUONDecisionComponent";
+const char* AliHLTMUONConstants::fgkTriggerCalibratorId = "MUONTriggerCalibrator";
+const char* AliHLTMUONConstants::fgkTrackerCalibratorId = "MUONTrackerCalibrator";

@@ -29,6 +29,8 @@
 #include "AliHLTMUONHitReconstructorComponent.h"
 #include "AliHLTMUONTriggerReconstructorComponent.h"
 #include "AliHLTMUONMansoTrackerFSMComponent.h"
+#include "AliHLTMUONTriggerCalibratorComponent.h"
+#include "AliHLTMUONTrackerCalibratorComponent.h"
 #include "AliRunLoader.h"
 
 // The single global instance of the dimuon HLT agent.
@@ -117,6 +119,8 @@ int AliHLTMUONAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 	pHandler->AddComponent(new AliHLTMUONHitReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONTriggerReconstructorComponent);
 	pHandler->AddComponent(new AliHLTMUONMansoTrackerFSMComponent);
+	pHandler->AddComponent(new AliHLTMUONTriggerCalibratorComponent);
+	pHandler->AddComponent(new AliHLTMUONTrackerCalibratorComponent);
 	return 0;
 }
 

@@ -16,13 +16,13 @@
 
 /* $Id$ */
 
-/**
- * @file   HLTMUONLinkDef.h
- * @author Artur Szostak <artursz@iafrica.com>
- * @date   
- * @brief  The linkdef file for rootcint to build a ROOT dictionary of
- *         the dimuon HLT classes exposed to AliRoot.
- */
+///
+/// @file   HLTMUONLinkDef.h
+/// @author Artur Szostak <artursz@iafrica.com>
+/// @date   
+/// @brief  The linkdef file for rootcint to build a ROOT dictionary of
+///         the dimuon HLT classes exposed to AliRoot.
+///
 
 #ifdef __CINT__
 
@@ -46,8 +46,10 @@
 #pragma link C++ class AliHLTMUONTriggerRecord+;
 #pragma link C++ class AliHLTMUONMansoTrack+;
 #pragma link C++ class AliHLTMUONRootifierComponent+;
+#pragma link C++ class AliHLTMUONTriggerCalibratorComponent+;
+#pragma link C++ class AliHLTMUONTrackerCalibratorComponent+;
 
-// The following is temporary:
+//TODO: The following is temporary.
 #pragma link C++ class AliHLTMUONEvent+;
 
 #endif // __CINT__

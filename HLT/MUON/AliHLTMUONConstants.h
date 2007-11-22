@@ -201,6 +201,16 @@ public:
 	{
 		return fgkDecisionComponentId;
 	}
+	
+	static const char* TriggerCalibratorId()
+	{
+		return fgkTriggerCalibratorId;
+	}
+	
+	static const char* TrackerCalibratorId()
+	{
+		return fgkTrackerCalibratorId;
+	}
 
 private:
 
@@ -245,6 +255,8 @@ private:
 	static const char* fgkHitReconstructorId; // Centre of gravity cluster finder component name.
 	static const char* fgkMansoTrackerFSMId; // Manso tracker FSM implementation component name.
 	static const char* fgkDecisionComponentId; // dHLT decision component name.
+	static const char* fgkTriggerCalibratorId; // Trigger calibration component name.
+	static const char* fgkTrackerCalibratorId; // Tracking stations calibration component name.
 };
 
 #endif // ALIHLTMUONCONSTANTS_H
