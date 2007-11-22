@@ -470,6 +470,92 @@ void AliMUONSt1GeometryBuilderV2::CreateInnerLayers()
 }
 
 //______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::CreateSpacer0()
+{
+/// The spacer volumes are defined according to the input prepared by Nicole Willis
+/// without any modifications
+///                                                                       <pre>
+/// No.    Type  Material Center (mm)            Dimensions (mm) (half lengths)
+///  5     BOX   EPOXY    408.2  430.4 522.41    5.75  1.5   25.5
+///  5P    BOX   EPOXY    408.2  445.4 522.41    5.75  1.5   25.5
+///  6     BOX   EPOXY    408.2  437.9 519.76    5.75  15.0   1.0
+///  6P    BOX   EPOXY    408.2  437.9 525.06    5.75  15.0   1.0
+///  7     CYL   INOX     408.2  437.9 522.41    r=3.0  hz=20.63
+
+  // tracking medias
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
+  Int_t idFrameEpoxy = idtmed[1123]; // medium 24 = Frame Epoxy ME730  // was 20 not 16
+  Int_t idInox = idtmed[1128];       // medium 29 Stainless Steel (18%Cr,9%Ni,Fe) // was 21 not 17
+
+  GReal_t par[3];
+  par[0] = 0.575;
+  par[1] = 0.150;
+  par[2] = 2.550;
+  gMC->Gsvolu("Spacer05","BOX",idFrameEpoxy,par,3);
+
+  par[0] = 0.575;
+  par[1] = 1.500;
+  par[2] = 0.100;
+  gMC->Gsvolu("Spacer06","BOX",idFrameEpoxy,par,3);
+
+  par[0] = 0.000;
+  par[1] = 0.300;
+  par[2] = 2.063;
+  gMC->Gsvolu("Spacer07","TUBE",idInox,par,3);
+}  
+
+
+//______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::CreateSpacer()
+{
+/// The spacer volumes are defined according to the input prepared by Nicole Willis
+/// with modifications needed to fit into existing geometry.
+///                                                                       <pre>
+/// No.    Type  Material Center (mm)            Dimensions (mm) (half lengths)
+///  5     BOX   EPOXY    408.2  430.4 522.41    5.75  1.5   25.5
+///  5P    BOX   EPOXY    408.2  445.4 522.41    5.75  1.5   25.5
+///  6     BOX   EPOXY    408.2  437.9 519.76    5.75  15.0   1.0
+///  6P    BOX   EPOXY    408.2  437.9 525.06    5.75  15.0   1.0
+///  7     CYL   INOX     408.2  437.9 522.41    r=3.0  hz=20.63
+///                                                                      </pre>
+/// To fit in existing volumes the volumes 5 and 7 are represented by 2 volumes
+/// with half size in z (5A, &A); the dimensions of the volume 5A were also modified
+/// to avoid overlaps (x made smaller, y larger to abotain the identical volume)   
+
+  // tracking medias
+  Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
+  Int_t idFrameEpoxy = idtmed[1123]; // medium 24 = Frame Epoxy ME730  // was 20 not 16
+  Int_t idInox = idtmed[1128];       // medium 29 Stainless Steel (18%Cr,9%Ni,Fe) // was 21 not 17
+
+  //GReal_t par[3];
+  //par[0] = 0.575;
+  //par[1] = 0.150;
+  //par[2] = 2.550;
+  //gMC->Gsvolu("Spacer5","BOX",idFrameEpoxy,par,3);
+
+  GReal_t par[3];
+  par[0] = 0.510;
+  par[1] = 0.170;
+  par[2] = 1.275;
+  gMC->Gsvolu("Spacer5A","BOX",idFrameEpoxy,par,3);
+
+  par[0] = 0.575;
+  par[1] = 1.500;
+  par[2] = 0.100;
+  gMC->Gsvolu("Spacer6","BOX",idFrameEpoxy,par,3);
+
+  //par[0] = 0.000;
+  //par[1] = 0.300;
+  //par[2] = 2.063;
+  //gMC->Gsvolu("Spacer7","TUBE",idInox,par,3);
+
+  par[0] = 0.000;
+  par[1] = 0.300;
+  par[2] = 1.0315;
+  gMC->Gsvolu("Spacer7A","TUBE",idInox,par,3);
+}  
+
+//______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 {
 /// Create the quadrant (bending and non-bending planes)
@@ -625,6 +711,41 @@ void AliMUONSt1GeometryBuilderV2::CreatePlaneSegment(Int_t segNumber,
 /// and the mother board.)
   
   CreateFoamBox(segNumber,dimensions);
+  
+  // Place spacer in the concrete plane segments:
+  // S225 (in S025), S267 (in S067) in chamber1 and S309 (in S109). S351(in S151) 
+  // in chamber2
+  // The segments were found as those which caused overlaps when we placed
+  // the spacer in global coordinates via PlaceSpacer0 
+  //
+  //    <posXYZ   X_Y_Z=" 12.6000;   0.75000;   0.0000"> <volume name="Spacer5A"/>
+  //    <posXYZ   X_Y_Z=" 12.6000;  -0.75000;   0.0000"> <volume name="Spacer5A"/>
+  //    <posXYZ   X_Y_Z=" 12.6000;   0.0000;    1.1515"> <volume name="Spacer6"/>
+  //    <posXYZ   X_Y_Z=" 12.6000;   0.0000;    0.0000"> <volume name="Spacer7A"/>
+
+  if ( FoamBoxName(segNumber) == "S225" || 
+       FoamBoxName(segNumber) == "S267" ||
+       FoamBoxName(segNumber) == "S309" ||
+       FoamBoxName(segNumber) == "S351"    )  
+  {
+    GReal_t posX = 12.6;
+    GReal_t posY = 0.75;
+    GReal_t posZ = 0.0;
+    gMC->Gspos("Spacer5A", 1, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
+
+    posY = -0.75;
+    gMC->Gspos("Spacer5A", 2, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
+
+    posY = 0.0;
+    posZ = 1.1515;
+    if ( FoamBoxName(segNumber) == "S267" || 
+         FoamBoxName(segNumber) == "S351" ) posZ *= -1.0;    
+    gMC->Gspos("Spacer6",  1, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
+
+    posY = 0.0;
+    posZ = 0.0;
+    gMC->Gspos("Spacer7A", 1, FoamBoxName(segNumber).Data(), posX, posY, posZ,0, "ONLY");
+  }  
 
   for (Int_t holeNum=0;holeNum<nofHoles;holeNum++) {
     GReal_t posX = ((2.*holeNum+1.)/nofHoles-1.)*dimensions.X();
@@ -2150,6 +2271,50 @@ void AliMUONSt1GeometryBuilderV2::PlaceInnerLayers(Int_t chamber)
   gMC->Gspos("SK1C", 2+dpos ,QuadrantMLayerName(chamber),x,y,-zc,0,"ONLY");
 }
 
+
+//______________________________________________________________________________
+void AliMUONSt1GeometryBuilderV2::PlaceSpacer0(Int_t chamber)
+{
+/// Place the spacer defined in global positions
+/// !! This method should be used only to find out the right mother volume
+/// for the spacer if geometry is changed and the plane segment volumes
+/// will change their numbering
+
+  // Global position of mother volume for the QuadrantMLayer
+  // SQM1: (-2.6, -2.6, -522.41)
+  // SQM2: (-2.6, -2.6, -541.49)
+  GReal_t mx =  2.6;
+  GReal_t my = -2.6;
+  GReal_t mz =  522.41;
+  
+  GReal_t x, y, z;
+  x = 40.82  - mx;
+  y = 43.04  - my;
+  z = 522.41 - mz;
+  cout << "spacer05 pos1: " << x << ", " << y << ", " << z << endl;
+  gMC->Gspos("Spacer05", 1, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
+
+  y = 44.54  - my;
+  cout << "spacer05 pos2: " << x << ", " << y << ", " << z << endl;
+  gMC->Gspos("Spacer05", 2, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
+
+  x = 40.82  - mx;
+  y = 43.79  - my;
+  z = 519.76 - mz;
+  cout << "spacer06 pos1: " << x << ", " << y << ", " << z << endl;
+  gMC->Gspos("Spacer06", 1, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
+
+  z = 525.06 - mz;
+  cout << "spacer06 pos2: " << x << ", " << y << ", " << z << endl;
+  gMC->Gspos("Spacer06", 2, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
+
+  x = 40.82  - mx;
+  y = 43.79  - my;
+  z = 522.41 - mz;
+  cout << "spacer07 pos1: " << x << ", " << y << ", " << z << endl;
+  gMC->Gspos("Spacer07", 1, QuadrantMLayerName(chamber), x, y, z, 0, "ONLY");
+}
+
 //______________________________________________________________________________
 void AliMUONSt1GeometryBuilderV2::PlaceSector(const AliMpSector* sector,
                             SpecialMap specialMap, 
@@ -2471,6 +2636,8 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
   CreateHole();
   CreateDaughterBoard();
   CreateInnerLayers();
+  // CreateSpacer0();
+  CreateSpacer();
   
   // Create reflexion matrices
   //
@@ -2571,6 +2738,13 @@ void AliMUONSt1GeometryBuilderV2::CreateGeometry()
       GetEnvelopes(ich-1)
         ->AddEnvelopeConstituent(QuadrantFLayerName(ich), QuadrantEnvelopeName(ich,i), 
 	             i+1, TGeoTranslation(posx2, posy2, posz2)); 
+    
+      // Place spacer in global coordinates in the first non rotated quadrant
+      // if ( detElemId[i] == 0 ) PlaceSpacer0(ich);
+               // !! This placement should be used only to find out the right mother volume
+               // for the spacer if geometry is changed and the plane segment volumes
+               // will change their numbering
+               // The call to the method CreateSpacer0(); above haa to be uncommented, too
    }
  }     
 }

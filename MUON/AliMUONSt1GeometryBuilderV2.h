@@ -129,6 +129,8 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     void CreateHole();
     void CreateDaughterBoard();
     void CreateInnerLayers();
+    void CreateSpacer0();
+    void CreateSpacer();
     void CreateQuadrant(Int_t chamber);
     void CreateFoamBox(Int_t segNumber, const TVector2& dimensions);
     void CreatePlaneSegment(Int_t segNumber, const TVector2& dimensions,
@@ -136,6 +138,7 @@ class AliMUONSt1GeometryBuilderV2 : public AliMUONVGeometryBuilder
     void CreateFrame(Int_t chamber);
 
     void PlaceInnerLayers(Int_t chamber);
+    void PlaceSpacer0(Int_t chamber);
     void PlaceSector(const AliMpSector* sector, SpecialMap specialMap,
                      const TVector3& where, Bool_t reflectZ, Int_t chamber);
 		     
