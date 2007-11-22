@@ -222,7 +222,7 @@ void AliTOFQADataMaker::MakeHits(TClonesArray * hits)
   Int_t out[5];
 
   Int_t nentries=hits->GetEntriesFast();
-  if(nentries==0) {
+  if(nentries<=0) {
     GetHitsData(0)->Fill(-1.) ; 
   } else{
     GetHitsData(0)->Fill(TMath::Log10(nentries)) ; 
@@ -295,7 +295,7 @@ void AliTOFQADataMaker::MakeDigits(TClonesArray * digits)
   Int_t out[5];
 
   Int_t nentries=digits->GetEntriesFast();
-  if(nentries==0){
+  if(nentries<=0){
     GetDigitsData(0)->Fill(-1.) ; 
   }else{
     GetDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
@@ -350,7 +350,7 @@ void AliTOFQADataMaker::MakeSDigits(TClonesArray * sdigits)
   Int_t out[5];
 
   Int_t nentries=sdigits->GetEntriesFast();
-  if(nentries==0){
+  if(nentries<=0){
     GetSDigitsData(0)->Fill(-1.) ; 
   }else{
     GetSDigitsData(0)->Fill(TMath::Log10(nentries)) ; 
@@ -437,7 +437,7 @@ void AliTOFQADataMaker::MakeRaws(AliRawReader* rawReader)
   } // DDL Loop
   
   Int_t nentries=ntof;
-  if(nentries==0){
+  if(nentries<=0){
     GetRawsData(0)->Fill(-1.) ; 
   }else{
     GetRawsData(0)->Fill(TMath::Log10(nentries)) ; 
@@ -470,7 +470,7 @@ void AliTOFQADataMaker::MakeRecPoints(TTree * clustersTree)
   clustersTree->GetEvent(0);  
   
   Int_t nentries=clusters->GetEntriesFast();
-  if(nentries==0){
+  if(nentries<=0){
     GetRecPointsData(0)->Fill(-1.) ; 
   }else{
     GetRecPointsData(0)->Fill(TMath::Log10(nentries)) ; 
@@ -522,7 +522,7 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
   }
   
   Int_t nentries=ntof;
-  if(nentries==0){
+  if(nentries<=0){
     GetESDsData(0)->Fill(-1.) ;
   }else{
     GetESDsData(0)->Fill(TMath::Log10(nentries)) ;
