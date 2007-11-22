@@ -89,4 +89,34 @@ AliMUONLogger::Print(Option_t* opt) const
     cout << "No message" << endl;
   }
 }
+  
+//_____________________________________________________________________________
+void
+AliMUONLogger::Print(TString& key, ofstream& out) const
+{
+  /// print out into a given streamer with a key word in front of the message
+  fLog->Print(key, out); 
+
+      
+}
+   
+//_____________________________________________________________________________
+void 
+AliMUONLogger::ResetItr()
+{
+  /// call reset iterator method
+  fLog->ResetItr();
+     
+}
+ 
+//_____________________________________________________________________________
+Bool_t 
+AliMUONLogger::Next(TString& msg, Int_t& occurance)
+{
+  /// call next iterator method
+  return fLog->Next(msg, occurance);
+     
+}
+    
+    
 

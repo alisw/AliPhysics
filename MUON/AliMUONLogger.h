@@ -12,8 +12,14 @@
 /// 
 //  Author Laurent Aphecetche
 
+#include <Riostream.h>
+
 #ifndef ROOT_TObject
 #  include "TObject.h"
+#endif
+
+#ifndef ROOT_TString
+#  include "TString.h"
 #endif
 
 class AliMUONStringIntMap;
@@ -24,9 +30,14 @@ public:
   AliMUONLogger(Int_t maxNumberOfEntries=-1);
   virtual ~AliMUONLogger();
   
-  Int_t Log(const char* message);
+  Int_t  Log(const char* message);
   
-  void Print(Option_t* opt="") const;
+  void   Print(Option_t* opt="") const;
+  
+  void   Print(TString& key, ofstream& out) const;
+  
+  Bool_t Next(TString& msg, Int_t& occurance);
+  void   ResetItr();
   
 private:
   /// Not implemented
