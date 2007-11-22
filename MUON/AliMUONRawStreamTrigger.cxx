@@ -20,21 +20,30 @@
 /// This class provides access to MUON digits in raw data.
 ///
 /// It loops over all MUON digits in the raw data given by the AliRawReader.
-/// The Next method goes to the next digit. If there are no digits left
-/// it returns kFALSE(under develpment).
+/// The Next method goes to the next local response. If there are no local response left
+/// it returns kFALSE.
 /// It can loop also over DDL and store the decoded rawdata in TClonesArrays
 /// in payload class.
 /// 
-/// First version implement for Trigger
+/// Version implement for Trigger
 /// \author Christian Finck
 //-----------------------------------------------------------------------------
 
+#include <TArrayS.h>
+
 #include "AliMUONRawStreamTrigger.h"
+#include "AliMUONDarcHeader.h"
+#include "AliMUONRegHeader.h"
+#include "AliMUONLocalStruct.h"
+#include "AliMUONDDLTrigger.h"
+#include "AliMUONLogger.h"
 
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
+
+#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRawStreamTrigger)
@@ -44,13 +53,17 @@ const Int_t AliMUONRawStreamTrigger::fgkMaxDDL = 2;
 
 //___________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
-  : TObject(),
-    fRawReader(0x0),
+:   AliMUONRawStream(),
     fPayload(new AliMUONPayloadTrigger()),
-    fDDL(0),
-    fSubEntries(0),
-    fNextDDL(kTRUE),
-    fEnableErrorLogger(kFALSE)
+    fCurrentDDL(0x0),
+    fCurrentDDLIndex(fgkMaxDDL),
+    fCurrentDarcHeader(0x0),
+    fCurrentRegHeader(0x0),
+    fCurrentRegHeaderIndex(0),
+    fCurrentLocalStruct(0x0),
+    fCurrentLocalStructIndex(0),
+    fLocalStructRead(kFALSE),
+    fDDL(0)
 {
   ///
   /// create an object to read MUON raw digits
@@ -62,13 +75,17 @@ AliMUONRawStreamTrigger::AliMUONRawStreamTrigger()
 
 //_________________________________________________________________
 AliMUONRawStreamTrigger::AliMUONRawStreamTrigger(AliRawReader* rawReader)
-  : TObject(),
-    fRawReader(rawReader),
+  : AliMUONRawStream(rawReader),
     fPayload(new AliMUONPayloadTrigger()),
-    fDDL(0),
-    fSubEntries(0),
-    fNextDDL(kTRUE),
-    fEnableErrorLogger(kFALSE)
+    fCurrentDDL(0x0),
+    fCurrentDDLIndex(fgkMaxDDL),
+    fCurrentDarcHeader(0x0),
+    fCurrentRegHeader(0x0),
+    fCurrentRegHeaderIndex(0),
+    fCurrentLocalStruct(0x0),
+    fCurrentLocalStructIndex(0),
+    fLocalStructRead(kFALSE),
+    fDDL(0)
 {
   ///
   /// ctor with AliRawReader as argument
@@ -87,37 +104,227 @@ AliMUONRawStreamTrigger::~AliMUONRawStreamTrigger()
 }
 
 //_____________________________________________________________
-Bool_t AliMUONRawStreamTrigger::Next()
+Bool_t AliMUONRawStreamTrigger::Next(UChar_t& id,   UChar_t& dec,      Bool_t& trigY, 
+				     UChar_t& yPos, UChar_t& sXDev,    UChar_t& xDev,
+				     UChar_t& xPos, Bool_t& triggerY,  Bool_t& triggerX,
+				     TArrayS& xPattern, TArrayS& yPattern)
 {
-/// read the next raw digit (buspatch structure)
-/// returns kFALSE if there is no digit left
+  ///
+  /// read the next raw digit (local structure)
+  /// returns kFALSE if there is no digit left
+  /// Should call First() before this method to start the iteration.
+  ///
+  
+  if ( IsDone() ) return kFALSE;
+  
+  if ( fLocalStructRead ) {
 
-//   if (fNextDDL){
-//     if(!NextDDL()) return kFALSE;
-//   }
-//   Int_t nEntries = fDDLTrigger->GetBusPatchEntries();
+    Bool_t ok = GetNextLocalStruct();
+    if (!ok)
+    {
+      // this is the end
+      return kFALSE;
+    } 
+  }
 
-//   if (fSubEntries < nEntries) {
-//     fLocalStruct =  (AliMUONLocalStruct*)fDDLTrigger->GetBusPatchEntry(fSubEntries);
-//     fSubEntries++;
-//     fNextDDL = kFALSE;
-//     return kTRUE;
-//   } else {
-//     fDDLTrigger->GetBusPatchArray()->Delete();
-//     fSubEntries = 0;
-//     fNextDDL = kTRUE;
-//     return Next(); 
-//   }
+  fLocalStructRead = kTRUE;
 
-  return kFALSE;
+  id    = fCurrentLocalStruct->GetId();
+  dec   = fCurrentLocalStruct->GetDec(); 
+  trigY = fCurrentLocalStruct->GetTrigY();
+  yPos  = fCurrentLocalStruct->GetYPos();
+  sXDev = fCurrentLocalStruct->GetSXDev();
+  xDev  = fCurrentLocalStruct->GetXDev();
+  xPos  = fCurrentLocalStruct->GetXPos();
+
+  triggerX = fCurrentLocalStruct->GetTriggerX();
+  triggerY = fCurrentLocalStruct->GetTriggerY();
+
+  fCurrentLocalStruct->GetXPattern(xPattern);
+  fCurrentLocalStruct->GetYPattern(yPattern);
+
+  return kTRUE;
+}
+
+//______________________________________________________
+Bool_t AliMUONRawStreamTrigger::IsDone() const
+{
+  /// Whether the iteration is finished or not
+  return (fCurrentLocalStruct==0);
+}
+
+//______________________________________________________
+void AliMUONRawStreamTrigger::First()
+{
+  /// Initialize the iteration process.
+  
+  fCurrentDDLIndex = -1;
+  // Must reset all the pointers because if we return before calling
+  // GetNextLocalStruct() the user might call CurrentDDL(), CurrentBlockHeader(),
+  // CurrentRegHeader() or CurrentLocalStruct() which should return reasonable
+  // results in that case.
+  fCurrentDDL         = 0;
+  fCurrentDarcHeader  = 0;
+  fCurrentRegHeader   = 0;
+  fCurrentLocalStruct = 0;
+  
+  // Find the first non-empty structure
+  if (not GetNextDDL()) return;
+  if (not GetNextRegHeader()) return;
+  GetNextLocalStruct();
+}
+
+//______________________________________________________
+Bool_t AliMUONRawStreamTrigger::GetNextDDL()
+{
+  /// Returns the next DDL present
+  
+  assert( GetReader() != 0 );
+  
+  Bool_t kFound(kFALSE);
+  
+  while ( fCurrentDDLIndex < fgkMaxDDL-1 && !kFound ) 
+  {
+    ++fCurrentDDLIndex;
+    GetReader()->Reset();
+    GetReader()->Select("MUONTRG",fCurrentDDLIndex,fCurrentDDLIndex);
+    if ( GetReader()->ReadHeader() ) 
+    {
+      kFound = kTRUE;
+    }
+  }
+  
+  if ( !kFound ) 
+  {
+    // fCurrentDDLIndex is set to fgkMaxDDL so that we exit the above loop immediately
+    // for a subsequent call to this method, unless NextEvent is called in between.
+    fCurrentDDLIndex = fgkMaxDDL;
+    // We have not actually been able to complete the loading of the new DDL so
+    // we are still on the old one. In this case we do not need to reset fCurrentDDL.
+    //fCurrentDDL = 0;
+    return kFALSE;
+  }
+  
+  Int_t totalDataWord  = GetReader()->GetDataSize(); // in bytes
+  
+  AliDebug(3, Form("DDL Number %d totalDataWord %d\n", fCurrentDDLIndex,
+                   totalDataWord));
+
+  UInt_t *buffer = new UInt_t[totalDataWord/4];
+  
+  if ( !GetReader()->ReadNext((UChar_t*)buffer, totalDataWord) )
+  {
+    // We have not actually been able to complete the loading of the new DDL so
+    // we are still on the old one. In this case we do not need to reset fCurrentDDL.
+    //fCurrentDDL = 0;
+    delete [] buffer;
+    return kFALSE;
+  }
+
+#ifndef R__BYTESWAP  
+  swap(buffer, totalDataWord); // swap needed for mac power pc
+#endif
+
+  fPayload->ResetDDL();
+  
+  Bool_t ok = fPayload->Decode(buffer);
+  
+  if (IsErrorLogger()) AddErrorMessage();
+
+  delete[] buffer;
+  
+  fCurrentDDL = fPayload->GetDDLTrigger();
+  
+  fCurrentDarcHeader = fCurrentDDL->GetDarcHeader();
+  
+  fCurrentRegHeaderIndex = -1;
+
+
+  return ok;
+}
+
+
+//______________________________________________________
+Bool_t AliMUONRawStreamTrigger::GetNextRegHeader()
+{
+  /// Returns the next Reg Header present
+
+  assert( fCurrentDarcHeader != 0 );
+  assert( fCurrentDDL != 0 );
+
+  fCurrentRegHeader = 0;
+  
+  Int_t i = fCurrentRegHeaderIndex;
+  
+  while ( fCurrentRegHeader == 0 && i < fCurrentDarcHeader->GetRegHeaderEntries()-1 )
+  {
+    ++i;
+    fCurrentRegHeader = fCurrentDarcHeader->GetRegHeaderEntry(i);
+  }
+     
+  if ( !fCurrentRegHeader ) 
+  {
+    Bool_t ok = GetNextDDL();
+    if (!ok) 
+    {
+      return kFALSE;
+    }
+    else
+    {
+      return GetNextRegHeader();
+    }
+  }
+  
+  fCurrentRegHeaderIndex = i;
+  
+  fCurrentLocalStructIndex = -1;
+  
+  return kTRUE;
+}
+
+//______________________________________________________
+Bool_t AliMUONRawStreamTrigger::GetNextLocalStruct()
+{
+  /// Find the next non-empty local structure
+  
+  assert( fCurrentRegHeader != 0 );
+  
+  fCurrentLocalStruct = 0;
+
+  Int_t i = fCurrentLocalStructIndex;
+  
+  while ( fCurrentLocalStruct == 0 && i < fCurrentRegHeader->GetLocalEntries()-1 ) 
+  {
+    ++i;
+    fCurrentLocalStruct = fCurrentRegHeader->GetLocalEntry(i);
+  }
+    
+  if ( !fCurrentLocalStruct ) 
+  {
+    Bool_t ok = GetNextRegHeader();
+    if (!ok)
+    {
+      return kFALSE;
+    }
+    else
+    {
+      return GetNextLocalStruct();
+    }
+  }
+  
+  fCurrentLocalStructIndex = i;
+  
+  fLocalStructRead = kFALSE;
+  
+  return kTRUE;
 }
 
 //______________________________________________________
 Bool_t AliMUONRawStreamTrigger::NextDDL()
 {
   /// reading tracker DDL
-  /// store buspatch info into Array
-  /// store only non-empty structures (buspatch info with datalength !=0)
+  /// store local info into Array
+  /// store only non-empty structures
 
   // reset TClones
   fPayload->ResetDDL();
@@ -126,9 +333,9 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
   // loop over the two ddl's
 
   while ( fDDL < fgkMaxDDL ) {
-    fRawReader->Reset();
-    fRawReader->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
-    if (fRawReader->ReadHeader()) break;
+    GetReader()->Reset();
+    GetReader()->Select("MUONTRG", fDDL, fDDL);  //Select the DDL file to be read  
+    if (GetReader()->ReadHeader()) break;
     AliDebug(3,Form("Skipping DDL %d which does not seem to be there",fDDL));
     ++fDDL;
   }
@@ -140,15 +347,19 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
   AliDebug(3, Form("DDL Number %d\n", fDDL ));
 
-  Int_t totalDataWord = fRawReader->GetDataSize(); // in bytes
+  Int_t totalDataWord = GetReader()->GetDataSize(); // in bytes
 
   UInt_t *buffer = new UInt_t[totalDataWord/4];
 
   // check not necessary yet, but for future developments
-  if (!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE; 
+  if (!GetReader()->ReadNext((UChar_t*)buffer, totalDataWord)) return kFALSE; 
   
+#ifndef R__BYTESWAP  
+  swap(buffer, totalDataWord); // swap needed for mac power pc
+#endif
+
   fPayload->Decode(buffer);
-  if (fEnableErrorLogger) AddErrorMessage();
+  if (IsErrorLogger()) AddErrorMessage();
 
   fDDL++;
 
@@ -177,16 +388,23 @@ void AliMUONRawStreamTrigger::AddErrorMessage()
 {
 /// add message into logger of AliRawReader per event
 
-    for (Int_t i = 0; i < fPayload->GetDarcEoWErrors(); ++i)
-	fRawReader->AddMajorErrorLog(kDarcEoWErr, "Wrong end of Darc word structure");
+  TString msg = 0;
+  Int_t occurance = 0;
+  AliMUONLogger* log = fPayload->GetErrorLogger();
+  
+  log->ResetItr();
+  while(log->Next(msg, occurance))
+  { 
+    if (msg.Contains("Darc"))
+      GetReader()->AddMajorErrorLog(kDarcEoWErr, msg.Data());
 
-   for (Int_t i = 0; i < fPayload->GetGlobalEoWErrors(); ++i)
-	fRawReader->AddMajorErrorLog(kGlobalEoWErr, "Wrong end of Global word structure");
+    if (msg.Contains("Global"))
+      GetReader()->AddMajorErrorLog(kGlobalEoWErr, msg.Data());
 
-   for (Int_t i = 0; i < fPayload->GetRegEoWErrors(); ++i)
-	fRawReader->AddMajorErrorLog(kRegEoWErr, "Wrong end of Regional word structure");
+    if (msg.Contains("Regional"))
+      GetReader()->AddMajorErrorLog(kRegEoWErr, msg.Data());
 
-   for (Int_t i = 0; i < fPayload->GetLocalEoWErrors(); ++i)
-	fRawReader->AddMajorErrorLog(kLocalEoWErr, "Wrong end of Local word structure");
-
+    if (msg.Contains("Local"))
+      GetReader()->AddMajorErrorLog(kLocalEoWErr, msg.Data());
+  }
 }

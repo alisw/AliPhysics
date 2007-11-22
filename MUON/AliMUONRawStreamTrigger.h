@@ -13,18 +13,43 @@
 
 #include <TObject.h>
 #include "AliMUONPayloadTrigger.h"
+#include "AliMUONRawStream.h"
+class TArrayS;
 
 class AliRawReader;
 class AliMUONDDLTrigger;
+class AliMUONDarcHeader;
+class AliMUONRegkHeader;
+class AliMUONLocalStruct;
 
-
-class AliMUONRawStreamTrigger: public TObject {
+class AliMUONRawStreamTrigger: public AliMUONRawStream {
   public :
     AliMUONRawStreamTrigger();
     AliMUONRawStreamTrigger(AliRawReader* rawReader);
     virtual ~AliMUONRawStreamTrigger();
 
-    virtual Bool_t   Next();
+    /// Initialize iterator
+    void First();
+
+   /// Returns current DDL object during iteration
+    AliMUONDDLTrigger* CurrentDDL() const { return fCurrentDDL; }
+    
+    /// Returns current DarcHeader object during iteration
+    AliMUONDarcHeader* CurrentDarcHeader() const { return fCurrentDarcHeader; }
+    
+    /// Returns current RegHeader object during iteration
+    AliMUONRegHeader* CurrentRegHeader() const { return fCurrentRegHeader; }
+    
+    /// Returns current LocalStruct object during iteration
+    AliMUONLocalStruct* CurrentLocalStruct() const { return fCurrentLocalStruct; }
+    
+    /// Advance one step in the iteration. Returns false if finished.
+    virtual Bool_t Next(UChar_t& id,   UChar_t& dec,     Bool_t& trigY, 
+			UChar_t& yPos, UChar_t& sXDev,   UChar_t& xDev,
+			UChar_t& xPos, Bool_t& triggerY, Bool_t& triggerX,
+			TArrayS& xPattern, TArrayS& yPattern);
+
+
     virtual Bool_t   NextDDL();
 
     /// Return maximum number of DDLs
@@ -37,24 +62,24 @@ class AliMUONRawStreamTrigger: public TObject {
     void SetMaxReg(Int_t reg);
     void SetMaxLoc(Int_t loc);
 
-    /// Set object for reading the raw data
-    void SetReader(AliRawReader* rawReader) {fRawReader = rawReader;}
-
     /// Return pointer for DDL structure
     AliMUONDDLTrigger* GetDDLTrigger() const {return fPayload->GetDDLTrigger();}
+
+    /// Return number of DDL
+    Int_t GetDDL() const {return fDDL - 1;}
 
     /// Return pointer for payload
     AliMUONPayloadTrigger*  GetPayLoad()    const {return fPayload;}
 
-    /// Return number of DDL
-    Int_t              GetDDL()        const {return fDDL - 1;}
+    /// Whether the iteration is finished or not
+    Bool_t IsDone() const;
 
     /// add error message into error logger
     void AddErrorMessage();
 
-    /// Enable error info logger
-    void EnabbleErrorLogger() {fEnableErrorLogger = kTRUE;}
-
+    /// Disable Warnings
+    void DisableWarnings() {fPayload->DisableWarnings();}
+    
     /// error numbers
     enum rawStreamTriggerError {
       kDarcEoWErr   = 6, ///< end of Darc word error 
@@ -70,11 +95,24 @@ class AliMUONRawStreamTrigger: public TObject {
     /// Not implemented
     AliMUONRawStreamTrigger& operator = (const AliMUONRawStreamTrigger& stream);
 
-    AliRawReader*    fRawReader;     ///< object for reading the raw data
-    AliMUONPayloadTrigger* fPayload; ///< pointer to payload decoder
+    Bool_t GetNextDDL();
+    Bool_t GetNextRegHeader();
+    Bool_t GetNextLocalStruct();
 
-    Int_t  fDDL;          ///< number of DDL
-    Int_t  fSubEntries;   ///< entries of buspatch structure
+ private:
+
+    AliMUONPayloadTrigger* fPayload; ///< pointer to payload decoder
+    AliMUONDDLTrigger* fCurrentDDL;          //!< for iterator: current ddl ptr
+    Int_t fCurrentDDLIndex;                  //!< for iterator: current ddl index
+    AliMUONDarcHeader* fCurrentDarcHeader;   //!< for iterator: current darc ptr
+    AliMUONRegHeader* fCurrentRegHeader;     //!< for iterator: current reg ptr
+    Int_t fCurrentRegHeaderIndex;            //!< for iterator: current reg index    
+    AliMUONLocalStruct* fCurrentLocalStruct; //!< for iterator: current local ptr
+    Int_t fCurrentLocalStructIndex;          //!< for iterator: current local index    
+    Bool_t fLocalStructRead;                 //!< flag for read out local structure
+    Int_t fDDL;                              //!< number of DDL    
+
+
     Bool_t fNextDDL;      ///< flag for next DDL to be read
     Bool_t fEnableErrorLogger; //!< flag to enable the error info logger
 
