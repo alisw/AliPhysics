@@ -192,6 +192,65 @@ public:
 		);
 
 	/**
+	 * This method converts the DDL number for the muon spectrometer in the
+	 * range [0..21] to the equipment ID number.
+	 * @param ddlNo  The DDL number in the range [0..21].
+	 * @return  Returns the equipment ID number or -1 if ddlNo was invalid.
+	 */
+	static AliHLTInt32_t DDLNumberToEquipId(AliHLTInt32_t ddlNo);
+	
+	/**
+	 * This method converts the equipment ID number for a muon spectrometer
+	 * DDL to the DDL number in the range [0..21].
+	 * @param id  The equipment ID of the DDL.
+	 * @return  Returns the DDL number in the range [0..21] or -1 if the
+	 *          equipment ID was invalid.
+	 */
+	static AliHLTInt32_t EquipIdToDDLNumber(AliHLTInt32_t id);
+	
+	/**
+	 * This method converts a 32 bit data block specification for a MUON-HLT
+	 * data block into its corresponding DDL equipment ID number.
+	 * It is assumed that the specification is for a data block comming from
+	 * a single DDL source. If more than one DDL contributed to the data block
+	 * then -1 is returned.
+	 * @param spec  The 32 bit specification for a data block.
+	 * @return  Returns the equipment ID corresponding to the specification
+	 *          or -1 if the specification was invalid.
+	 */
+	static AliHLTInt32_t SpecToEquipId(AliHLTUInt32_t spec);
+	
+	/**
+	 * This method converts a equipment ID number for a DDL into its corresponding
+	 * 32 bit data block specification for the MUON-HLT.
+	 * @param id  The equipment ID number of the DDL.
+	 * @return  Returns the 32 bit data block specification or 0x0 if the
+	 *          equipment ID was invalid.
+	 */
+	static AliHLTUInt32_t EquipIdToSpec(AliHLTInt32_t id);
+	
+	/**
+	 * This method converts a 32 bit data block specification for a MUON-HLT
+	 * data block into its corresponding DDL number in the range [0..21].
+	 * It is assumed that the specification is for a data block comming from
+	 * a single DDL source. If more than one DDL contributed to the data block
+	 * then -1 is returned.
+	 * @param spec  The 32 bit specification for a data block.
+	 * @return  Returns the corresponding DDL number for the specification
+	 *          or -1 if the specification was invalid.
+	 */
+	static AliHLTInt32_t SpecToDDLNumber(AliHLTUInt32_t spec);
+	
+	/**
+	 * This method converts a DDL number in the range [0..21] into its
+	 * corresponding 32 bit data block specification for the MUON-HLT.
+	 * @param ddlNo  The equipment ID number of the DDL.
+	 * @return  Returns the 32 bit data block specification or 0x0 if the
+	 *          DDL number was invalid (out of range).
+	 */
+	static AliHLTUInt32_t DDLNumberToSpec(AliHLTInt32_t ddlNo);
+
+	/**
 	 * These codes indicate the reason why a data block failed its
 	 * validity check.
 	 */

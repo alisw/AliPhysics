@@ -228,6 +228,150 @@ void AliHLTMUONUtils::UnpackSpecBits(
 }
 
 
+AliHLTInt32_t AliHLTMUONUtils::DDLNumberToEquipId(AliHLTInt32_t ddlNo)
+{
+	///
+	/// This method converts the DDL number for the muon spectrometer in the
+	/// range [0..21] to the equipment ID number.
+	/// @param ddlNo  The DDL number in the range [0..21].
+	/// @return  Returns the equipment ID number or -1 if ddlNo was invalid.
+	///
+	
+	if (0 <= ddlNo and ddlNo <= 19)
+	{
+		return 2560 + ddlNo;
+	}
+	else if (20 <= ddlNo and ddlNo <= 21)
+	{
+		return 2816 + (ddlNo - 20);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
+AliHLTInt32_t AliHLTMUONUtils::EquipIdToDDLNumber(AliHLTInt32_t id)
+{
+	///
+	/// This method converts the equipment ID number for a muon spectrometer
+	/// DDL to the DDL number in the range [0..21].
+	/// @param id  The equipment ID of the DDL.
+	/// @return  Returns the DDL number in the range [0..21] or -1 if the
+	///          equipment ID was invalid.
+	///
+	
+	if (2560 <= id and id <= 2560+19)
+	{
+		return id - 2560;
+	}
+	else if (2816 <= id and id <= 2817)
+	{
+		return id - 2816 + 20;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
+AliHLTInt32_t AliHLTMUONUtils::SpecToEquipId(AliHLTUInt32_t spec)
+{
+	///
+	/// This method converts a 32 bit data block specification for a MUON-HLT
+	/// data block into its corresponding DDL equipment ID number.
+	/// It is assumed that the specification is for a data block comming from
+	/// a single DDL source. If more than one DDL contributed to the data block
+	/// then -1 is returned.
+	/// @param spec  The 32 bit specification for a data block.
+	/// @return  Returns the equipment ID corresponding to the specification
+	///          or -1 if the specification was invalid.
+	///
+	
+	for (AliHLTInt32_t ddlNo = 0; ddlNo < 20; ddlNo++)
+	{
+		if (spec == AliHLTUInt32_t(0x1 << ddlNo))
+			return ddlNo + 2560;
+	}
+	for (AliHLTInt32_t ddlNo = 20; ddlNo < 22; ddlNo++)
+	{
+		if (spec == AliHLTUInt32_t(0x1 << ddlNo))
+			return ddlNo - 20 + 2816;
+	}
+	return -1;
+}
+
+
+AliHLTUInt32_t AliHLTMUONUtils::EquipIdToSpec(AliHLTInt32_t id)
+{
+	///
+	/// This method converts a equipment ID number for a DDL into its corresponding
+	/// 32 bit data block specification for the MUON-HLT.
+	/// @param id  The equipment ID number of the DDL.
+	/// @return  Returns the 32 bit data block specification or 0x0 if the
+	///          equipment ID was invalid.
+	///
+	
+	if (2560 <= id and id <= 2560+19)
+	{
+		return 0x1 << (id - 2560);
+	}
+	else if (2816 <= id and id <= 2817)
+	{
+		return 0x1 << (id - 2816 + 20);
+	}
+	else
+	{
+		return 0x0;
+	}
+}
+
+
+AliHLTInt32_t AliHLTMUONUtils::SpecToDDLNumber(AliHLTUInt32_t spec)
+{
+	///
+	/// This method converts a 32 bit data block specification for a MUON-HLT
+	/// data block into its corresponding DDL number in the range [0..21].
+	/// It is assumed that the specification is for a data block comming from
+	/// a single DDL source. If more than one DDL contributed to the data block
+	/// then -1 is returned.
+	/// @param spec  The 32 bit specification for a data block.
+	/// @return  Returns the corresponding DDL number for the specification
+	///          or -1 if the specification was invalid.
+	///
+	
+	for (AliHLTInt32_t ddlNo = 0; ddlNo < 22; ddlNo++)
+	{
+		if (spec == AliHLTUInt32_t(0x1 << ddlNo))
+			return ddlNo;
+	}
+	return -1;
+}
+
+
+AliHLTUInt32_t AliHLTMUONUtils::DDLNumberToSpec(AliHLTInt32_t ddlNo)
+{
+	///
+	/// This method converts a DDL number in the range [0..21] into its
+	/// corresponding 32 bit data block specification for the MUON-HLT.
+	/// @param ddlNo  The equipment ID number of the DDL.
+	/// @return  Returns the 32 bit data block specification or 0x0 if the
+	///          DDL number was invalid (out of range).
+	///
+	
+	if (0 <= ddlNo and ddlNo <= 21)
+	{
+		return 0x1 << ddlNo;
+	}
+	else
+	{
+		return 0x0;
+	}
+}
+
+
 bool AliHLTMUONUtils::HeaderOk(
 		const AliHLTMUONTriggerRecordsBlockStruct& block,
 		WhyNotValid* reason
