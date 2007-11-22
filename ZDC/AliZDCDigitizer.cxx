@@ -250,7 +250,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
            digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sector[0], sector[1], res);
       	}
-	/*printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	/*printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
 	     sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
 	*/
 	//
@@ -266,7 +266,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
              digiL[res] = Phe2ADCch(sectorL[0], sectorL[1], pm[sector[0]-1][sector[1]], res) 
 	            + Pedestal(sectorL[0], sectorL[1], res);
       	   }
-	   /*printf("\t DIGIT added -> det = %d, quad = %d - digi[0,1] = [%d, %d]\n",
+	   /*printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
 	         sectorL[0], sectorL[1], digiL[0], digiL[1]); // Chiara debugging!
 	   */
 	   //
@@ -457,7 +457,7 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
   Int_t vADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
-  //printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,ADCch);
+  //printf("\t Phe2ADCch -> det %d quad %d - phe %.0f  ADC %d\n", Det,Quad,Light,vADCch);
 
   return vADCch;
 }
@@ -474,17 +474,19 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
     Float_t meanPed, pedWidth;
     Int_t index=0;
     if(Quad!=5){
-      if(Det==1 || Det==2)	index = 10*(Det-1)+Quad+5*Res;	 // ZN1, ZP1
-      else if(Det==3)		index = 10*(Det-1)+(Quad-1)+Res; // ZEM
-      else if(Det==4 || Det==5)	index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
+      if(Det==1)	index = Quad+24*Res;	  // ZN1
+      else if(Det==2)	index = (Quad+5)+24*Res;  // ZP1
+      else if(Det==3)	index = (Quad+9)+24*Res;  // ZEM
+      else if(Det==4)	index = (Quad+12)+24*Res; // ZN2
+      else if(Det==5)	index = (Quad+17)+24*Res; // ZP2
     }
-    else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
+    else index = (Det-1)/3+22+24*Res; // Reference PMs
     //
     meanPed = fPedData->GetMeanPed(index);
     pedWidth = fPedData->GetMeanPedWidth(index);
     pedValue = gRandom->Gaus(meanPed,pedWidth);
     //
-    /*printf("\t Pedestal -> det = %d, quad = %d, res = %d - Ped[%d] = %d\n",
+    /*printf("\t  AliZDCDigitizer::Pedestal -> det %d quad %d res %d - Ped[%d] = %d\n",
   	Det, Quad, Res, index,(Int_t) pedValue); // Chiara debugging!
     */
   }

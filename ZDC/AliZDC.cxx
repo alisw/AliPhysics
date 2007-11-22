@@ -576,10 +576,10 @@ void AliZDC::Digits2Raw()
   }
   //
   /*
-  for(Int_t i=0;i<24;i++) printf("\t ADCData1[%d] = %x\n",i,lADCData1[i]);
-  for(Int_t i=0;i<20;i++) printf("\t ADCData2[%d] = %x\n",i,lADCData2[i]);
-  for(Int_t i=0;i<24;i++) printf("\t ADCData3[%d] = %x\n",i,lADCData3[i]);
-  for(Int_t i=0;i<20;i++) printf("\t ADCData4[%d] = %x\n",i,lADCData4[i]);
+  for(Int_t i=0;i<knADCData1;i++) printf("\t ADCData1[%d] = %x\n",i,lADCData1[i]);
+  for(Int_t i=0;i<knADCData2;i++) printf("\t ADCData2[%d] = %x\n",i,lADCData2[i]);
+  for(Int_t i=0;i<knADCData1;i++) printf("\t ADCData3[%d] = %x\n",i,lADCData3[i]);
+  for(Int_t i=0;i<knADCData2;i++) printf("\t ADCData4[%d] = %x\n",i,lADCData4[i]);
   */
  
   // End of Block
@@ -710,13 +710,15 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   //
   Float_t pedValue;
   Float_t meanPed, pedWidth;
-  Int_t index=0;
-  if(Quad!=5){
-    if(Det==1 || Det==2)      index = 10*(Det-1)+Quad+5*Res;   // ZN1, ZP1
-    else if(Det==3)	      index = 10*(Det-1)+(Quad-1)+Res; // ZEM
-    else if(Det==4 || Det==5) index = 10*(Det-2)+Quad+5*Res+4; // ZN2, ZP2
-  }
-  else index = 10*(Quad-1)+(Det-1)*1/3+2*Res+4; // Reference PMs
+    Int_t index=0;
+    if(Quad!=5){
+      if(Det==1)	index = Quad+24*Res;	   // ZN1
+      else if(Det==2)	index = (Quad+5)+24*Res;	   // ZP1
+      else if(Det==3)	index = (Quad+9)+24*Res; // ZEM
+      else if(Det==4)	index = (Quad+12)+24*Res; // ZN2
+      else if(Det==5)	index = (Quad+17)+24*Res; // ZP2
+    }
+    else index = (Det-1)/3+22+24*Res; // Reference PMs
   //
   //
   meanPed = calibPed->GetMeanPed(index);
