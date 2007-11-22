@@ -26,7 +26,7 @@ public:
   
   enum EDetectors {kPIPE=1,kITS,kTPC,kTRD,kTOF,kFRAME,kMAG,kACORDE,kHALL,kPHOS,kT0,kFMD,kABSO,kPMD,kDIPO,kEMCAL,kVZERO,kMUON,kZDC,kSHILD};
   enum EProcesses {kDCAY=1,kPAIR,kCOMP,kPHOT,kPFIS,kDRAY,kANNI,kBREM,kMUNU,kCKOV,kHADR,kLOSS,kMULS,kRAYL,kALL};
-  enum EBatchFlags{kAll=55,kHmp,kDdl,kDat,kRoo,kVtx,kTrk,kHlt,kPid,kAln};
+  enum EBatchFlags{kAll=55,kHmp,kDdl,kDat,kRoo,kVtx,kTrk,kHlt,kPid,kAln,kRecoPar};
   enum EMagField  {kFld0,kFld2,kFld4,kFld5,kFld_2,kFld_4,kFld_5};
   
   Float_t Eta2Theta      (Float_t arg)  const{return (180./TMath::Pi())*2.*TMath::ATan(TMath::Exp(-arg));}
@@ -513,6 +513,9 @@ void HmpConfig::GuiBatch(TGHorizontalFrame *pMainF)
     new TGRadioButton(fCluBG,  "No Clusters"     ,kNo     );  
     new TGRadioButton(fCluBG,  "Clusters CORE"   ,kAll    );  
     new TGRadioButton(fCluBG,  "Clusters HMPID"  ,kHmp    );   
+
+    new TGCheckButton(fTrkBG,  "Apply RecoParam" ,kRecoPar);  
+
     new TGCheckButton(fTrkBG,  "Load Align data" ,kAln    );  
     new TGCheckButton(fTrkBG,  "Prim vertex"     ,kVtx    );  
     new TGCheckButton(fTrkBG,  "ESD tracks"      ,kTrk    );  
@@ -569,6 +572,7 @@ void HmpConfig::SlotRec(Bool_t isChk)
     fCluBG->GetButton(kAll)->SetState(kButtonEngaged);
     fCluBG->GetButton(kHmp)->SetState(kButtonDown);
     
+    fTrkBG->GetButton(kRecoPar)->SetState(kButtonEngaged);
     fTrkBG->GetButton(kAln)->SetState(kButtonEngaged);
     fTrkBG->GetButton(kVtx)->SetState(kButtonEngaged);
     fTrkBG->GetButton(kTrk)->SetState(kButtonEngaged);
@@ -583,6 +587,7 @@ void HmpConfig::SlotRec(Bool_t isChk)
     fCluBG->GetButton(kAll)->SetState(kButtonDisabled);
     fCluBG->GetButton(kHmp)->SetState(kButtonDisabled);
     
+    fTrkBG->GetButton(kRecoPar)->SetState(kButtonDisabled);
     fTrkBG->GetButton(kAln)->SetState(kButtonDisabled);
     fTrkBG->GetButton(kVtx)->SetState(kButtonDisabled);
     fTrkBG->GetButton(kTrk)->SetState(kButtonDisabled);
@@ -645,6 +650,16 @@ void HmpConfig::WriteBatch()
   if(fRecB->GetState()){
                                                     fprintf(fp,"  AliReconstruction *pRec=new AliReconstruction;\n");
                                                     
+    //---------------------------------------------
+    if     (fTrkBG->GetButton(kRecoPar)->GetState())
+      { 
+         fprintf(fp,"  AliHMPIDRecoParam * hmpidRecoParam = AliHMPIDRecoParam::GetUserModeParam(); //Get the HMPID reco param\n"); 
+         fprintf(fp,"  hmpidRecoParam->SetUserCutMode(kFALSE);                                     //Switch to RecoParam from OCDB cuts\n");
+         fprintf(fp,"  hmpidRecoParam->SetUserCut(4,4,4,4,4,4,4);                                  //eg cut for UserCutSigma (Values: ch0, ch1, ..,ch6)\n");
+         fprintf(fp,"  AliHMPIDReconstructor::SetRecoParam(hmpidRecoParam);                        //Pass the RecoPar to the Reconstructor\n");
+      }
+    //---------------------------------------------                                                    
+                                                    
     if     (fInpBG->GetButton(kNo )->GetState())    fprintf(fp,"  pRec->SetInput(\"\");                       //from digits\n");   
     else if(fInpBG->GetButton(kDdl)->GetState())    fprintf(fp,"  pRec->SetInput(\"./\");                     //from raw data in DDL format\n");                                            
     else if(fInpBG->GetButton(kDat)->GetState())    fprintf(fp,"  pRec->SetInput(\"raw.date\");          //from raw data in DATE format\n");                                            
@@ -653,6 +668,8 @@ void HmpConfig::WriteBatch()
     if     (fCluBG->GetButton(kAll) ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"%s\");   //clusters for all detectors\n",det.Data());
     else if(fCluBG->GetButton(kHmp) ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"HMPID\"); //clusters for HMPID only\n");
     else if(fCluBG->GetButton(kNo)  ->GetState())   fprintf(fp,"  pRec->SetRunLocalReconstruction(\"\");      //no clusters\n");
+    
+    
     
     if     (fTrkBG->GetButton(kAln)->GetState())    fprintf(fp,"  pRec->SetLoadAlignData(\"%s\");            //with misalignment\n",det.Data());     
     else                                            fprintf(fp,"  pRec->SetLoadAlignData(\"\");               //no misalignment\n");     

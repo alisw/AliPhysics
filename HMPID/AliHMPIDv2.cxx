@@ -49,10 +49,29 @@ void AliHMPIDv2::AddAlignableVolumes()const
   Double_t trans[3]={0.5*131.24,0.5*126.16,0};                            //translation from LORS to TGeo RS (half size AllX, half size allY,0)
   pGm->SetTranslation(trans);
  
-  for(Int_t i=AliHMPIDParam::kMinCh;i<=AliHMPIDParam::kMaxCh;i++) {
-      TGeoPNEntry *pPn=gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",i),Form("ALIC_1/Hmp_%i",i)); 
-      if(pPn) pPn->SetMatrix(pGm); 
-    }
+  Double_t ph[7]={10.,10., 30.,30.,30. ,50.,50};
+
+  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      gGeoManager->SetAlignableEntry(Form("/HMPID/Chamber%i",iCh),Form("ALIC_1/Hmp_%i",iCh));  //aligment without AliCluster3D
+      //Get Tracking To Local matrcies for alignment with AliCluster3D
+      TGeoPNEntry *eCh = gGeoManager->GetAlignableEntry(Form("/HMPID/Chamber%i",iCh));
+      if (eCh) {
+	const char *path = eCh->GetTitle();
+	if (!gGeoManager->cd(path)) {
+	  AliFatal(Form("Volume path %s not valid!",path));
+	}
+      TGeoHMatrix *globMatrix = gGeoManager->GetCurrentMatrix();
+      //Double_t phi = 20.0 * ((iCh+1) / 3) + 10.0;
+      Double_t phi = ph[iCh];
+      TGeoHMatrix *t2l  = new TGeoHMatrix();
+      t2l->RotateZ(phi);
+      t2l->MultiplyLeft(&(globMatrix->Inverse()));
+      eCh->SetMatrix(t2l);
+    }//eCh
+    else {
+	AliError(Form("Alignable entry /HMPID/Chamber%i is not valid!",iCh));
+      }
+    }//iCh loop
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv2::CreateMaterials()

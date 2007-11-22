@@ -26,8 +26,10 @@
 #include <AliESDEvent.h>           //FillEsd()
 #include <AliRawReader.h>          //Reconstruct() for raw digits
 #include "AliHMPIDRawStream.h"     //ConvertDigits()
+#include "AliHMPIDRecoParam.h"     //ctor
 ClassImp(AliHMPIDReconstructor)
 
+AliHMPIDRecoParam* AliHMPIDReconstructor::fgkRecoParam =0;  // 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fDaqSig(0),fDig(0),fClu(0)
 {
@@ -45,17 +47,25 @@ AliHMPIDReconstructor::AliHMPIDReconstructor():AliReconstructor(),fUserCut(0),fD
     pClus->SetUniqueID(i);
     fClu->AddAt(pClus,i);
   }
-  
+
+   if(fgkRecoParam!=0x0 && fgkRecoParam->GetUserCutMode()==kFALSE)
+  {
+      for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) {
+      fUserCut[iCh] = fgkRecoParam->GetUserCut(iCh);
+      Printf("HMPID: UserCut successfully loaded (from RecoParam) for chamber %i -> %i ",iCh,fUserCut[iCh]);
+   }
+  }  
+  else {
   AliCDBEntry *pUserCutEnt =AliCDBManager::Instance()->Get("HMPID/Calib/UserCut");    //contains TObjArray of 14 TObject with n. of sigmas to cut charge 
   if(pUserCutEnt) {
     TObjArray *pUserCut = (TObjArray*)pUserCutEnt->GetObject(); 
     for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop 
       fUserCut[iCh] = pUserCut->At(iCh)->GetUniqueID();
-      Printf("HMPID: UserCut successfully loaded for chamber %i -> %i ",iCh,fUserCut[iCh]);
+      Printf("HMPID: UserCut successfully loaded (from OCDB) for chamber %i -> %i ",iCh,fUserCut[iCh]);
     }
+   }
   }
-
-  
+   
   AliCDBEntry *pDaqSigEnt =AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
   if(!pDaqSigEnt) AliFatal("No pedestals from DAQ!");
   fDaqSig = (TObjArray*)pDaqSigEnt->GetObject();

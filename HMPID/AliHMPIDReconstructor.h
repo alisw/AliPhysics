@@ -8,6 +8,7 @@
 #include <AliReconstructor.h>        //base class
 #include "AliHMPIDTracker.h"         //CreateTracker()
 #include "AliHMPIDDigit.h"           //Dig2Clu(), UseDig()
+#include "AliHMPIDRecoParam.h"       //Init
 
 #include <TMatrixF.h>                //UseDig()
 #include <TClonesArray.h>            //UseDig()
@@ -36,7 +37,12 @@ public:
   static inline AliHMPIDDigit* UseDig  (Int_t padX,Int_t padY,                    TClonesArray *pDigLst,TMatrixF *pDigMap);//use this pad's digit to form a cluster
   inline Bool_t                IsDigSurvive(AliHMPIDDigit *pDig                                                     )const;//check for sigma cut
   
+  void SetRecoParam(AliHMPIDRecoParam *recopar){ fgkRecoParam = recopar;}
+  static const AliHMPIDRecoParam* GetRecoParam(){ return fgkRecoParam;}
+
+  
   protected:
+  static AliHMPIDRecoParam*  fgkRecoParam;      // Pointer to HMPID RecoParams
   Int_t     *fUserCut;                 // n sigmas for pedestals decided by the User for each chamber(if in OCDB)
   TObjArray *fDaqSig;                  // container for the pad pedestal sigmas
   TObjArray *fDig;                     // tmp list of digits
@@ -46,10 +52,10 @@ public:
   AliHMPIDReconstructor(const AliHMPIDReconstructor& r);              //dummy copy constructor
   AliHMPIDReconstructor &operator=(const AliHMPIDReconstructor& r);   //dummy assignment operator
 //  
-  ClassDef(AliHMPIDReconstructor, 0)   // class for the HMPID reconstruction
+  ClassDef(AliHMPIDReconstructor, 1)   // class for the HMPID reconstruction
 };
 
-//__________________________________________________________________________________________________
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDDigit* AliHMPIDReconstructor::UseDig(Int_t padX,Int_t padY,TClonesArray *pDigLst,TMatrixF *pPadMap)
 {
 //Digit map contains a matrix if digit numbers.

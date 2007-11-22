@@ -19,13 +19,63 @@
 #include <TMarker.h>         //Draw()
 
 #include "AliLog.h"          //FitFunc()
-
 #include "AliHMPIDCluster.h"  //class header
 
 Bool_t AliHMPIDCluster::fgDoCorrSin=kTRUE;
 
 ClassImp(AliHMPIDCluster)
     
+
+void AliHMPIDCluster::SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  )
+{
+  //------------------------------------------------------------------------
+  //Set the cluster properties for the AliCluster3D part
+  //------------------------------------------------------------------------
+
+  //Get the volume ID from the previously set PNEntry
+  UShort_t volId=AliGeomManager::LayerToVolUID(AliGeomManager::kHMPID,iCh);
+
+  
+  //get L->T cs matrix for a given chamber
+  const TGeoHMatrix *t2l= AliGeomManager::GetTracking2LocalMatrix(volId);
+
+  
+
+  //transformation from the pad cs to local
+  xL -= 0.5*AliHMPIDParam::SizeAllX();      //size of all pads with dead zones included
+  yL -= 0.5*AliHMPIDParam::SizeAllY();
+
+  // Get the position in the tracking cs
+  Double_t posL[3]={xL, yL, 0.};            //this is the LORS of HMPID
+  Double_t posT[3];
+  t2l->MasterToLocal(posL,posT);
+
+ //Get the cluster covariance matrix in the tracking cs
+  Double_t covL[9] = {
+    0.8*0.8/12., 0.,            0.0,                 //pad size X
+    0.,          0.84*0.84/12., 0.0,                 //pad size Y
+    0.,          0.,            0.1,                 //just 1 , no Z dimension ???
+  };
+                
+  TGeoHMatrix m;
+  m.SetRotation(covL);
+  m.Multiply(t2l);
+  m.MultiplyLeft(&t2l->Inverse());
+  Double_t *covT = m.GetRotationMatrix();
+
+  new(this) AliCluster3D(volId,            // Can be done safer
+       posT[0],posT[1],posT[2],
+       covT[0],covT[1],covT[2],
+	       covT[4],covT[5],
+		       covT[8], 
+			  0x0);            // No MC labels ?
+}
+
+
+AliHMPIDCluster::~AliHMPIDCluster(){
+  if(fDigs) delete fDigs; fDigs=0;
+  }
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::CoG()
 {
@@ -63,6 +113,9 @@ void AliHMPIDCluster::CoG()
   fChi2=0;                                                  // no Chi2 to find
   fNlocMax=0;                                               // proper status from this method
   fSt=kCoG;
+  
+  SetClusterParams(fX,fY,fCh);                              //need to fill the AliCluster3D part
+ 
 }//CoG()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDCluster::CorrSin() 
@@ -198,7 +251,8 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
   CoG();                                                                                 //First calculate CoG for the given cluster
   Int_t iCluCnt=pCluLst->GetEntriesFast();                                               //get current number of clusters already stored in the list by previous operations
   if(isTryUnfold==kFALSE || Size()==1) {                                                 //if cluster contains single pad there is no way to improve the knowledge 
-    fSt = (isTryUnfold) ? kSi1: kNot;
+    fSt = (isTryUnfold)? kSi1: kNot;
+    SetClusterParams(fX,fY,fCh);  
     new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);  //add this raw cluster 
     return 1;
   } 
@@ -269,7 +323,8 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
  }
 
 // case 2 -> loc max found. Check # of loc maxima 
- if ( fNlocMax >= kMaxLocMax)  {                                                          // if # of local maxima exceeds kMaxLocMax...
+ if ( fNlocMax >= kMaxLocMax)  { 
+   SetClusterParams(fX,fY,fCh);                                                           // if # of local maxima exceeds kMaxLocMax...
    fSt = kMax;   new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);                      //...add this raw cluster  
    } else {                                                                               //or resonable number of local maxima to fit and user requested it
   // Now ready for minimization step
@@ -304,7 +359,9 @@ Int_t AliHMPIDCluster::Solve(TClonesArray *pCluLst,Bool_t isTryUnfold)
         if ( !IsInPc()) fSt = kEdg;                                                      // if Out of Pc
         if(fSt==kNoLoc) fNlocMax=0;                                                      // if with no loc max (pads with same charge..)
       }
+      SetClusterParams(fX,fY,fCh);                                                      //need to fill the AliCluster3D part
       new ((*pCluLst)[iCluCnt++]) AliHMPIDCluster(*this);	                         //add new unfolded cluster
+      
    }
  }
 
