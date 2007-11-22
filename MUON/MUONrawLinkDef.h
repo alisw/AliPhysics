@@ -21,6 +21,7 @@
 #pragma link C++ class AliMUONPayloadTracker+;
 #pragma link C++ class AliMUONRawStreamTracker+;
 #pragma link C++ class AliMUONRawStreamTrigger+;
+#pragma link C++ class AliMUONRawStream+;
 
 #endif
 
