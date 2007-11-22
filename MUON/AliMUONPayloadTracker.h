@@ -12,12 +12,14 @@
 //  Author Christian Finck
 
 #include <TObject.h>
-#include <TArrayI.h>
+#include <TString.h>
+
 
 class AliMUONDDLTracker;
 class AliMUONBusStruct;
 class AliMUONDspHeader;
 class AliMUONBlockHeader;
+class AliMUONLogger;
 
 class AliMUONPayloadTracker: public TObject {
   public :
@@ -51,14 +53,18 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONDDLTracker*      GetDDLTracker()   const {return fDDLTracker;}
 
     /// Get number of parity errors
-    Int_t   GetParityErrors() const {return fParityErrBus.GetSize();} // for online
-    /// Get parity errors in buspatch
-    TArrayI GetParityErrBus() const {return fParityErrBus;} // for MOOD
+    Int_t   GetParityErrors() const {return fParityErrors;} // for online
     /// Get number of glitch errors
     Int_t   GetGlitchErrors() const {return fGlitchErrors;}
     /// Get number of padding word errors
     Int_t   GetPaddingErrors() const {return fPaddingErrors;}
 
+    /// Get Error logger
+    AliMUONLogger* GetErrorLogger() const {return fLog;}
+    
+    /// set warnings flag
+    void DisableWarnings() {fWarnings = kFALSE;} 
+   
   private :
     /// Not implemented
     AliMUONPayloadTracker(const AliMUONPayloadTracker& stream);
@@ -66,7 +72,7 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONPayloadTracker& operator = (const AliMUONPayloadTracker& stream);
 
     Bool_t CheckDataParity();
-    void   AddParityErrBus(Int_t buspatch);
+    void   AddErrorMessage(const Char_t* msg);
 
     Int_t  fBusPatchId;   ///< entry of buspatch structure
     Int_t  fDspId;        ///< entry of Dsp header
@@ -82,11 +88,13 @@ class AliMUONPayloadTracker: public TObject {
     AliMUONBlockHeader*     fBlockHeader;     //!< pointer for block structure 
     AliMUONDspHeader*       fDspHeader;       //!< pointer for dsp structure 
 
-    TArrayI fParityErrBus;                    //!< list of buspatch with at least one parity errors;
+    AliMUONLogger* fLog;                      //!< Map of errors msg;
+    Int_t   fParityErrors;                    //!< number of parity errors;
     Int_t   fGlitchErrors;                    //!< number of glitch errors;
     Int_t   fPaddingErrors;                   //!< number of padding word errors;
+    Bool_t  fWarnings;                        //!< flag to enable/disable warnings
 
-    ClassDef(AliMUONPayloadTracker, 3)    // base class for reading MUON raw digits
+    ClassDef(AliMUONPayloadTracker, 4)    // base class for reading MUON raw digits
 };
 
 #endif

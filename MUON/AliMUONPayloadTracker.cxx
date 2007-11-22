@@ -23,6 +23,8 @@
 /// \author Christian Finck
 //-----------------------------------------------------------------------------
 
+#include <TObjString.h>
+
 #include "AliMUONPayloadTracker.h"
 
 #include "AliMUONDspHeader.h"
@@ -30,6 +32,7 @@
 #include "AliMUONBusStruct.h"
 #include "AliMUONDDLTracker.h"
 
+#include "AliMUONLogger.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -49,9 +52,11 @@ AliMUONPayloadTracker::AliMUONPayloadTracker()
     fBusStruct(new AliMUONBusStruct()),
     fBlockHeader(new AliMUONBlockHeader()),
     fDspHeader(new AliMUONDspHeader()),
-    fParityErrBus(),
+    fLog(new AliMUONLogger(1000)),
+    fParityErrors(0),
     fGlitchErrors(0),
-    fPaddingErrors(0)
+    fPaddingErrors(0),
+    fWarnings(kTRUE)
 {
   ///
   /// create an object to decode MUON payload
@@ -69,6 +74,7 @@ AliMUONPayloadTracker::~AliMUONPayloadTracker()
   delete fBusStruct;
   delete fBlockHeader;
   delete fDspHeader;
+  delete fLog;
 }
 
 //______________________________________________________
@@ -128,15 +134,17 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
       totalDspSize = fDspHeader->GetTotalLength();
 
       if (fDspHeader->GetErrorWord()) {
-	fDspHeader->Print("");
+//	fDspHeader->Print("");
 	if ( fDspHeader->GetErrorWord() == (0x000000B1 |  fBlockHeader->GetDspId())
 	     ||  fDspHeader->GetErrorWord() == (0x00000091 |  fBlockHeader->GetDspId()) ){
 	  // an event with a glitch in the readout  has been detected
 	  // it means that somewhere a 1 byte word has been randomly inserted
 	  // all the readout sequence is shifted  untill the next event 
-
-	  AliWarning(Form("Glitch in data detected, skipping event ")); 
-
+   
+          Char_t* msg = Form("Glitch error detected in DSP %d, skipping event ", fBlockHeader->GetDspId());
+          
+          if (fWarnings) AliWarning(msg); 
+          AddErrorMessage(msg);
 	  fGlitchErrors++;
 	  return kFALSE ; 
 	}	
@@ -176,15 +184,12 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 	    fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
 	    fBusStruct->SetDspId(iDsp);
 
-	    // check parity (old version)
-// 	    if(!CheckDataParity())
-// 		AddParityErrBus(fBusStruct->GetBusPatchId());
+	    // check parity
+            if(!CheckDataParity()) {
+                fParityErrors++;
+                return kFALSE;
+             }
 
-	    // check parity  // JLC (modified Chistian 10/10/07)
-	    if(!CheckDataParity()) {
-	      AddParityErrBus(fBusStruct->GetBusPatchId());
-	      return kFALSE;
-	    } 
 
 	    // copy in TClonesArray
 	    fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
@@ -203,12 +208,15 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 
       // skipping additionnal word if padding
       if (fDspHeader->GetPaddingWord() == 1) {
-	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord())
+	if (buffer[index++] != fDspHeader->GetDefaultPaddingWord()) {
 
-	    AliWarning(Form("Error in padding word for iBlock %d, iDsp %d, iBus %d\n", 
-			  iBlock, iDsp, iBusPatch));
-
-	fPaddingErrors++;
+          Char_t *msg = Form("Padding word error for iBlock %d, iDsp %d, iBus %d\n", 
+                      iBlock, iDsp, iBusPatch);
+        
+          if (fWarnings) AliWarning(msg);
+          AddErrorMessage(msg);
+          fPaddingErrors++;
+	}
       }
 
       index = indexDsp + totalDspSize;
@@ -237,9 +245,9 @@ void AliMUONPayloadTracker::ResetDDL()
   /// after each DDL
   ///
   fDDLTracker->GetBlkHeaderArray()->Delete();
-  fGlitchErrors = 0;
+  fGlitchErrors  = 0;
   fPaddingErrors = 0;
-  fParityErrBus.Reset();
+  fParityErrors  = 0;
 
 }
 
@@ -274,9 +282,14 @@ Bool_t AliMUONPayloadTracker::CheckDataParity()
     // Check
     if (parity != fBusStruct->GetParity(idata)) {
 
-      AliWarning(Form("Parity error in word %d for manuId %d and channel %d\n", 
-		      idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata)));
-
+      Char_t* msg = Form("Parity error in word %d for manuId %d and channel %d in buspatch %d\n", 
+                          idata, fBusStruct->GetManuId(idata), fBusStruct->GetChannelId(idata),
+                          fBusStruct->GetBusPatchId());
+      
+      if (fWarnings) AliWarning(msg);
+      AddErrorMessage(msg);
+      fParityErrors++;
+      
       return kFALSE;
 		     
     }
@@ -285,9 +298,16 @@ Bool_t AliMUONPayloadTracker::CheckDataParity()
 }
 
 //______________________________________________________
-void AliMUONPayloadTracker::AddParityErrBus(Int_t buspatch)
+void AliMUONPayloadTracker::AddErrorMessage(const Char_t* msg)
 {
-/// adding bus with at least on parity error
-    fParityErrBus.Set(fParityErrBus.GetSize() + 1);
-    fParityErrBus.AddAt(buspatch, fParityErrBus.GetSize() - 1);
+/// adding message to logger
+ 
+    TString tmp(msg);
+  
+    Int_t pos = tmp.First("\n");
+    tmp[pos] = 0;
+    
+    fLog->Log(tmp.Data());
 }
+
+          
