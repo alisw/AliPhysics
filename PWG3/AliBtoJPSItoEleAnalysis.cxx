@@ -37,6 +37,9 @@
 #include "AliBtoJPSItoEle.h"
 #include "AliBtoJPSItoEleAnalysis.h"
 #include "AliLog.h"
+#include "AliKFParticleBase.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
 
 typedef struct {
   Int_t lab;
@@ -62,7 +65,10 @@ fPID("TRDTPCparam"),
 fPtCut(0.),
 fd0Cut(0.), 
 fMassCut(1000.),
-fPidCut(0.)
+fPidCut(0.),
+//fKFPrimVertex(kFALSE),
+//fKFTopConstr(kFALSE),
+fKFSecondVertex(kFALSE)
 {
   // Default constructor
 
@@ -195,6 +201,27 @@ void AliBtoJPSItoEleAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
   }
   event->ReadFromTree(tree);
 
+/*  if (fKFPrimVertex)
+  AliRunLoader* runLoader = 0;
+  {
+    if (gAlice) {
+      delete gAlice->GetRunLoader();
+      delete gAlice;
+      gAlice=0;
+    }
+    runLoader = AliRunLoader::Open(galName.Data());
+    if (runLoader == 0x0) {
+      cerr<<"Can not open session"<<endl;
+      return;
+    }
+    cout << "Ok open galice.root" << endl;
+    runLoader->LoadgAlice();
+
+    gAlice = runLoader->GetAliRun();
+    runLoader->LoadKinematics();
+    runLoader->LoadHeader();
+  } */
+
   // loop on events in file
   for(Int_t iEvent = evFirst; iEvent < tree->GetEntries(); iEvent++) {
     if(iEvent > evLast) break;
@@ -230,6 +257,87 @@ void AliBtoJPSItoEleAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 
     nBrec1ev = 0;
 
+/*
+//===================== PRIMARY VERTEX USING KF METHODS ==========================//
+
+if (fKFPrimVertex)
+{
+  AliStack* stack = runLoader->Stack();
+
+  class TESDTrackInfo
+    {
+    public:
+    TESDTrackInfo(){}
+    AliKFParticle fParticle; // KFParticle constructed from ESD track
+    //Bool_t fPrimUsedFlag;    // flag says that the particle was used for primary vertex fit
+    Bool_t fOK;              // is the track good enough
+    Int_t mcPDG;             // Monte Carlo PDG code of the particle
+    Int_t mcMotherID;        // Monte Carlo ID of its mother
+    };
+
+ // TESDTrackInfo ESDTrackInfo[trkEntries];
+  TESDTrackInfo ESDTrackInfo[1000];
+  for (Int_t iTr=0; iTr<trkEntries; iTr++)
+    {
+      TESDTrackInfo &info = ESDTrackInfo[iTr];
+      info.fOK = 0;
+      //info.fPrimUsedFlag = 0;
+      info.mcPDG = -1;
+      info.mcMotherID = -1;
+
+      // track quality check
+
+      AliESDtrack *pTrack = event->GetTrack(iTr);
+      if( !pTrack  ) continue;
+      if (pTrack->GetKinkIndex(0)>0) continue;
+      if ( !( pTrack->GetStatus()&AliESDtrack::kITSrefit ) ) continue;
+      //Int_t indi[12];
+      //if( pTrack->GetITSclusters(indi) <5 ) continue;
+      //Int_t PDG = ( pTrack->GetSigned1Pt() <0 ) ?321 :211;
+
+      // take MC PDG
+
+      Int_t mcID = TMath::Abs(pTrack->GetLabel());
+      TParticle * part = stack->Particle(TMath::Abs(mcID));
+      info.mcPDG = part->GetPdgCode();
+      Int_t PDG = info.mcPDG;
+      if( mcID>=0 ) info.mcMotherID = part->GetFirstMother();
+
+
+      // Construct KFParticle for the track
+
+      info.fParticle = AliKFParticle( *pTrack, PDG );
+      info.fOK = 1;
+    }
+
+    // Find event primary vertex with KF methods
+
+   AliKFVertex primVtx;
+    {
+   // const AliKFParticle * vSelected[trkEntries]; // Selected particles for vertex fit
+   // Int_t vIndex[trkEntries];                    // Indices of selected particles
+   // Bool_t vFlag[trkEntries];                    // Flags returned by the vertex finder
+   const AliKFParticle * vSelected[1000]; // Selected particles for vertex fit
+   Int_t vIndex[1000];                    // Indices of selected particles
+   Bool_t vFlag[1000];                    // Flags returned by the vertex finder
+
+    Int_t nSelected = 0;
+    for( Int_t i = 0; i<trkEntries; i++){
+      if(ESDTrackInfo[i].fOK ){
+        vSelected[nSelected] = &(ESDTrackInfo[i].fParticle);
+        vIndex[nSelected] = i;
+        nSelected++;
+      }
+    }
+    primVtx.ConstructPrimaryVertex( vSelected, nSelected, vFlag, 3. );
+    //for( Int_t i = 0; i<nSelected; i++){
+    //  if( vFlag[i] ) ESDTrackInfo[vIndex[i]].fPrimUsedFlag = 1;
+    //}
+    if( primVtx.GetNDF() <1 ) return; // Less then two tracks in primary vertex
+    }
+
+}*/
+
     // LOOP ON  POSITIVE  TRACKS
     for(iTrkP=0; iTrkP<nTrksP; iTrkP++) {
       if(iTrkP%1==0) printf("  Processing positive track number %d of %d\n",iTrkP,nTrksP);
@@ -257,12 +365,25 @@ void AliBtoJPSItoEleAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 	AliESDv0 vertex2(nt,trkNum[0],pt,trkNum[1]);
 	  
 	// get position of the secondary vertex
-	vertex2.GetXYZ(v2[0],v2[1],v2[2]);
-        vertex2.GetPPxPyPz(mom[0],mom[1],mom[2]);
-        vertex2.GetNPxPyPz(mom[3],mom[4],mom[5]);
-	// impact parameters of the tracks w.r.t. the primary vertex
-	// d0[0] =  10000.*pt.GetD(fV1[0],fV1[1],b);
-	// d0[1] = -10000.*nt.GetD(fV1[0],fV1[1],b);
+
+        if (fKFSecondVertex){
+          //Define the AliKFParticle Objects
+          AliKFParticle trackP = AliKFParticle(pt,-11);
+          AliKFParticle trackN = AliKFParticle(nt,11);
+          //Construct the V0like mother
+          AliKFParticle V0(trackP,trackN);
+          //Get global position of the secondary vertex using KF methods
+          v2[0] = V0.GetX();
+          v2[1] = V0.GetY();
+          v2[2] = V0.GetZ();
+          mom[0] = trackP.GetPx(); mom[1] = trackP.GetPy(); mom[2] = trackP.GetPz();
+          mom[3] = trackN.GetPx(); mom[4] = trackN.GetPy(); mom[5] = trackN.GetPz();
+        }else{
+          //Get position of the secondary vertex
+          vertex2.GetXYZ(v2[0],v2[1],v2[2]);
+          vertex2.GetPPxPyPz(mom[0],mom[1],mom[2]);
+          vertex2.GetNPxPyPz(mom[3],mom[4],mom[5]);
+        }
 	goodVtx1 = kTRUE;
 	
 	// no vertexing if DeltaMass > fMassCut 
@@ -283,6 +404,28 @@ void AliBtoJPSItoEleAnalysis::FindCandidates(Int_t evFirst,Int_t evLast,
 	  }
 	}
        
+/*      if (fKFSecondVertex&&fKFTopConstr&&fKFPrimVertex){
+//====================== TOPOLOGICAL CONSTRAINT !!=====================================
+        //Primary vertex constructed from ESD using KF methods!!!
+        AliKFVertex primVtxCopy(*(event->GetPrimaryVertex()));
+
+        //Subtract Daughters from primary vertex
+        primVtxCopy -= trackP;
+        primVtxCopy -= trackN;
+
+        //Add V0 to the vertex in order to improve primary vertex resolution
+        primVtxCopy += V0;
+
+        //Set production vertex for V0
+        V0.SetProductionVertex(primVtxCopy);
+
+        //Recalculate primary vertex
+        fV1[0] = primVtxCopy.GetX();
+        fV1[1] = primVtxCopy.GetY();
+        fV1[2] = primVtxCopy.GetZ();
+//=====================================================================================
+        }*/
+
 	// impact parameters of the tracks w.r.t. the primary vertex
 	d0[0] =  10000.*pt.GetD(fV1[0],fV1[1],b);
 	d0[1] = -10000.*nt.GetD(fV1[0],fV1[1],b);
@@ -693,11 +836,18 @@ void AliBtoJPSItoEleAnalysis::SimulationInfo(TTree *treeBin,TTree *treeBout) con
      ) theB->SetSignal();
 
     else if (  // here consider the case of primary J/psi 
-      gmumlab[0]<0 && gmumlab[1]<0 && 
        mumpdg[0]==443 && mumpdg[1]== 443 &&
+       pdg[0]==-11 && pdg[1]==11 &&
        mumlab[0]==mumlab[1] &&
        reftrk.mumprongs==2 &&
-       pdg[0]==-11 && pdg[1]==11
+       ( gmumlab[0]<0                     ||   // really primary J/psi (without family. e.g. from Cocktail)
+         TMath::Abs(gmumpdg[0])==100443   ||   // from Psi(2S)
+         TMath::Abs(gmumpdg[0])==10441    ||   // from Csi_c0(1P)
+         TMath::Abs(gmumpdg[0])==20443    ||   // from Csi_c1(1P)
+         TMath::Abs(gmumpdg[0])==10443    ||   // from h_c(1P)
+         TMath::Abs(gmumpdg[0])==445      ||   // from Csi_c2(1P)
+         (gmumpdg[0]>=81 && gmumpdg[0]<=100)   // this is for MC internal use (e.g. J/psi from string)
+       )
      ) theB->SetJpsiPrimary();
 
     // if(!fOnlySignal || theB->IsSignal()) treeBout->Fill();  
@@ -715,7 +865,6 @@ void AliBtoJPSItoEleAnalysis::SimulationInfo(TTree *treeBin,TTree *treeBout) con
 
   return;
 }
-
 
 
 

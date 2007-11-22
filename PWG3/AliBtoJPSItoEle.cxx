@@ -29,29 +29,31 @@
 #include <TCanvas.h>
 #include <TPaveLabel.h>
 #include <TVector3.h>
+#include <TString.h>
 
 #include "AliBtoJPSItoEle.h"
 
 ClassImp(AliBtoJPSItoEle)
 
 //----------------------------------------------------------------------------
-AliBtoJPSItoEle::AliBtoJPSItoEle():
-fSignal(kFALSE),
-fJpsiPrimary(kFALSE),
-fEvent(0),
-fV1x(0.),
-fV1y(0.),
-fV1z(0.),
-fV2x(0.),
-fV2y(0.),
-fV2z(0.),
-fDCA(0.),
-fWgtJPsi(0.)
-{
+AliBtoJPSItoEle::AliBtoJPSItoEle() {
   // Default constructor
   
+  fSignal = kFALSE;
+  fJpsiPrimary = kFALSE;
+
+  fEvent = 0;
+
   fTrkNum[0] = 0;
   fTrkNum[1] = 0;
+
+  fV1x = 0.;
+  fV1y = 0.;
+  fV1z = 0.;
+  fV2x = 0.;
+  fV2y = 0.;
+  fV2z = 0.;
+  fDCA = 0.;
 
   fPx[0] = 0.;
   fPy[0] = 0.;
@@ -77,28 +79,30 @@ fWgtJPsi(0.)
   fTagNid[0] = 0.;
   fTagNid[1] = 0.;
 
+  fWgtJPsi=0;
+
 }
 //----------------------------------------------------------------------------
 AliBtoJPSItoEle::AliBtoJPSItoEle(Int_t ev,Int_t trkNum[2],
 		       Double_t v1[3],Double_t v2[3], 
 		       Double_t dca,
-		       Double_t mom[6],Double_t d0[2]):
-fSignal(kFALSE),
-fJpsiPrimary(kFALSE),
-fEvent(ev),
-fV1x(v1[0]),
-fV1y(v1[1]),
-fV1z(v1[2]),
-fV2x(v2[0]),
-fV2y(v2[1]),
-fV2z(v2[2]),
-fDCA(dca),
-fWgtJPsi(0.)
-{
+		       Double_t mom[6],Double_t d0[2]) {
   // Constructor
 
+  fSignal = kFALSE;
+  fJpsiPrimary = kFALSE;
+
+  fEvent = ev;
   fTrkNum[0] = trkNum[0];
   fTrkNum[1] = trkNum[1];
+
+  fV1x = v1[0];
+  fV1y = v1[1];
+  fV1z = v1[2];
+  fV2x = v2[0];
+  fV2y = v2[1];
+  fV2z = v2[2];
+  fDCA = dca;
 
   fPx[0] = mom[0];
   fPy[0] = mom[1];
@@ -123,9 +127,15 @@ fWgtJPsi(0.)
   fTagKa[1]  = 0.;
   fTagNid[0] = 0.;
   fTagNid[1] = 0.;
+
+  fWgtJPsi=0;
 }
 //----------------------------------------------------------------------------
 AliBtoJPSItoEle::~AliBtoJPSItoEle() {}
+//____________________________________________________________________________
+AliBtoJPSItoEle::AliBtoJPSItoEle( const AliBtoJPSItoEle& btoJpsi):TObject(btoJpsi) {
+  // dummy copy constructor
+}
 //----------------------------------------------------------------------------
 void AliBtoJPSItoEle::ApplyPID(TString pidScheme) {
   // Applies particle identification
@@ -380,6 +390,14 @@ void AliBtoJPSItoEle::SetPIDresponse(Double_t resp0[5],Double_t resp1[5]) {
   return;
 } 
 //-----------------------------------------------------------------------------
+Double_t AliBtoJPSItoEle::GetTagEl(Int_t child) const {
+  // Get tag probabilities for electrons
+                                                                                                                          
+  if(child!=0 && child !=1) return -1;
+
+  return fTagEl[child];
+}
+//-----------------------------------------------------------------------------
 void AliBtoJPSItoEle::GetPIDresponse(Double_t resp0[5],Double_t resp1[5]) const {
   // Get combined PID detector response probabilities
                                                                                                                           
@@ -412,15 +430,17 @@ Double_t AliBtoJPSItoEle::TRDTPCCombinedPIDParametrization(Double_t p) const {
   Double_t p3=0.007;
   value=p2+p3*(1.-exp(-TMath::Power(p/p1,4.)));
 
-// Better estimation based on TRD test beam (as presented by Andrea at Munster)
   value/=0.01; // here remove from TPC+TRD the TRD contribution estimated to be 0.01
-  if (p<10.) value*=(1.32-0.18*p+0.076*p*p-0.0037*p*p*p)/100.;
-  if (p>10.) value*=(0.48+0.287*p)/100.;
+// Better estimation based on TRD test beam (as presented by Andrea at Munster)
+//  if (p<10.) value*=(1.32-0.18*p+0.076*p*p-0.0037*p*p*p)/100.;
+//  if (p>10.) value*=(0.48+0.287*p)/100.;
+// From Silvia MASCIOCCHI (Darmstadt) at PWG3 AliceWeek October 2007
+  if (p<10.) value*=(0.44-0.06*p+0.031*p*p-0.0008*p*p*p)/100.;
+  if (p>10.) value*=(-0.67+0.28*p)/100.;
 
   return value;
 }
 //----------------------------------------------------------------------------
-
 
 
 
