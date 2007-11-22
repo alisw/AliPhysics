@@ -53,15 +53,17 @@ class AliESDTagCreator : public AliTagCreator {
   void CreateTag(TChain *chain, const char* type);
   void CreateTag(TFile* file, const char *guid, const char *md5, const char *turl, Long64_t size, Int_t Counter);
   void CreateTag(TFile* file, const char *filepath, Int_t Counter);
+
  private:
   void SwitchOffBranches() const;
- private:
-  TChain *fChain;     //chain of esd files
-  TList  *fGUIDList;  //TList of guid TObjString
-  TList  *fMD5List;   //TList of md5 TObjString
-  TList  *fTURLList;  //TList of turl TObjString
+  
+  TChain *fChain; //chain of esd files
+  TList  *fGUIDList; //TList of guid TObjString
+  TList  *fMD5List; //TList of md5 TObjString
+  TList  *fTURLList; //TList of turl TObjString
   TString fBranches;  //List of branches to be switched off (separated by space
   MemInfo_t *meminfo; //mem info
+
   ClassDef(AliESDTagCreator,0)  
 };
 
