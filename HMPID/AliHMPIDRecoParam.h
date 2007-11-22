@@ -24,7 +24,7 @@ class AliHMPIDRecoParam : public TNamed
   virtual ~AliHMPIDRecoParam();                                                         //dtor
   
   Bool_t   GetRecoMode(            )       const  { return fRecoMode;       }
-  inline  Int_t  GetUserCut(Int_t iCh    );
+  inline  Int_t  GetUserCut(Int_t iCh    ) const;
   Bool_t   GetUserCutMode(         )       const  { return fUserCutMode;    }
 
   void    SetRecoMode(Bool_t recoMode)           { fRecoMode=recoMode; }
@@ -60,7 +60,7 @@ void AliHMPIDRecoParam::SetUserCut(Int_t ucCh0,Int_t ucCh1,Int_t ucCh2,Int_t ucC
   fUserCut[6]=ucCh6;     
 } //SetUserCut()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
-Int_t  AliHMPIDRecoParam::GetUserCut(Int_t iCh)
+Int_t  AliHMPIDRecoParam::GetUserCut(Int_t iCh)const
 {
   //
   //Return the UserCut for a given chamber
