@@ -52,7 +52,6 @@ fHighMultFOThreshold(190){
 
   //standard constructor
   SetName("ITS");
-  CreateInputs();
 
   // set parameters to define trigger condition thresholds
   //fGlobalFOThreshold = 1;
@@ -67,8 +66,8 @@ void AliITSTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "ITS_SPD_GFO_L0",     "Global, Fast OR all detectors", 0x01 ) );
-   fInputs.AddLast( new AliTriggerInput( "ITS_SPD_HMULT_L0",   "High Multiplicity",             0x02 ) );
+   fInputs.AddLast( new AliTriggerInput( "SPD_GFO_L0",     "SPD", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "SPD_HMULT_L0",   "SPD", 0 ) );
 
 }
 
@@ -150,10 +149,10 @@ void AliITSTrigger::MultiplicityTriggers(TObjArray* digDet, TTree* treeD, AliITS
 
   // produce input trigger condition
   if (totalNumberOfFO>=fGlobalFOThreshold) 
-    SetInput( "ITS_SPD_GFO_L0" );
+    SetInput( "SPD_GFO_L0" );
 
   if (totalNumberOfFOLay1>=fHighMultFOThreshold) 
-    SetInput( "ITS_SPD_HMULT_L0" );
+    SetInput( "SPD_HMULT_L0" );
 
   return;
 

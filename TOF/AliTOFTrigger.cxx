@@ -148,12 +148,12 @@ void AliTOFTrigger::CreateInputs()
   // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","Cosmic Multimuon Topology",0x01));
-   fInputs.AddLast(new AliTriggerInput("TOF_pp_MB_L0","pp Minimum Bias",0x02));
-   fInputs.AddLast(new AliTriggerInput("TOF_UltraPer_Coll_L0","Ultra Peripheral Collisions",0x04));
+   fInputs.AddLast(new AliTriggerInput("TOF_Cosmic_MultiMuon_L0","TOF",0));
+   fInputs.AddLast(new AliTriggerInput("TOF_pp_MB_L0","TOF",0));
+   fInputs.AddLast(new AliTriggerInput("TOF_UltraPer_Coll_L0","TOF",0));
 
-   fInputs.AddLast(new AliTriggerInput("TOF_High_Mult_L0","High Multiplicity",0x08));
-   fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","Jet Search",0x10));
+   fInputs.AddLast(new AliTriggerInput("TOF_High_Mult_L0","TOF",0));
+   fInputs.AddLast(new AliTriggerInput("TOF_Jet_L1","TOF",0));
 }
 
 //----------------------------------------------------------------------

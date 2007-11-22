@@ -47,11 +47,11 @@ void AliT0Trigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "START_A_L0", "Signal on T0-A",  0x0100 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_C_L0", "Signal on T0-C", 0x0200 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_Vertex_L0", " Vertex T0-C&T0-A ", 0x0400 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_Centr_L0", "Centrality central",  0x0800 ) );
-   fInputs.AddLast( new AliTriggerInput( "START_SemiCentral_L0", "Centrality semicentral",  0x1000 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_A_L0", "T0",  0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_C_L0", "T0", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_Vertex_L0", "T0", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_Centr_L0", "T0",  0 ) );
+   fInputs.AddLast( new AliTriggerInput( "T0_SemiCentral_L0", "T0",  0 ) );
 }
 
 //----------------------------------------------------------------------
@@ -83,12 +83,12 @@ void AliT0Trigger::Trigger()
   Int_t   timeDiff = fDigits->TimeDiff();
   Int_t    sumMult=   fDigits->SumMult();
 
-  if (besttimeA > 0 && besttimeA <99999  )  SetInput("START_A_L0");
-  if (besttimeC>0  && besttimeC<99999)   SetInput("START_C_L0"); 
+  if (besttimeA > 0 && besttimeA <99999  )  SetInput("T0_A_L0");
+  if (besttimeC>0  && besttimeC<99999)   SetInput("T0_C_L0"); 
   //6093 corrsponds to vertex -20cm, 6202 vertex +20 with delay 150nc eqalized on the TVDC unit 
-  if (timeDiff >6090 && timeDiff < 6210)       SetInput("START_Vertex_L0");
-  if (sumMult > 175)                           SetInput("START_Centr_L0");
-  if (sumMult>155 && sumMult <= 175)           SetInput("START_SemiCentral_L0");;
+  if (timeDiff >6090 && timeDiff < 6210)       SetInput("T0_Vertex_L0");
+  if (sumMult > 175)                           SetInput("T0_Centr_L0");
+  if (sumMult>155 && sumMult <= 175)           SetInput("T0_SemiCentral_L0");;
 
    
 }

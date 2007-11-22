@@ -139,10 +139,10 @@ void AliEMCALTrigger::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   fInputs.AddLast( new AliTriggerInput( "EMCAL_L0",       "EMCAL L0", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "EMCAL_JetHPt_L1","EMCAL Jet High Pt L1",   0x04 ) );
-   fInputs.AddLast( new AliTriggerInput( "EMCAL_JetMPt_L1","EMCAL Jet Medium Pt L1", 0x08 ) );
-   fInputs.AddLast( new AliTriggerInput( "EMCAL_JetLPt_L1","EMCAL Jet Low Pt L1",    0x016 ) );
+   fInputs.AddLast( new AliTriggerInput( "EMCAL_L0",       "EMCAL", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "EMCAL_JetHPt_L1","EMCAL", 1 ) );
+   fInputs.AddLast( new AliTriggerInput( "EMCAL_JetMPt_L1","EMCAL", 1 ) );
+   fInputs.AddLast( new AliTriggerInput( "EMCAL_JetLPt_L1","EMCAL", 1 ) );
  
 }
 

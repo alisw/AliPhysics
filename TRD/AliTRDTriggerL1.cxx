@@ -57,26 +57,26 @@ void AliTRDTriggerL1::CreateInputs()
   //
 
   fInputs.AddLast(new AliTriggerInput("TRD_Unlike_EPair_L1"
-                                     ,"Unlike electron pair"
-                                     ,0x01 ));
+                                     ,"TRD"
+                                     ,1 ));
   fInputs.AddLast(new AliTriggerInput("TRD_Like_EPair_L1"
-                                     ,"Like electron pair"
-                                     ,0x02 ));
+                                     ,"TRD"
+                                     ,1 ));
   fInputs.AddLast(new AliTriggerInput("TRD_Jet_LPt_L1"
-                                     ,"Jet low pt"
-                                     ,0x04 ));
+                                     ,"TRD"
+                                     ,1 ));
   fInputs.AddLast(new AliTriggerInput("TRD_Jet_HPt_L1"
-                                     ,"Jet high pt"
-                                     ,0x08 ));
+                                     ,"TRD"
+                                     ,1 ));
   fInputs.AddLast(new AliTriggerInput("TRD_Electron_L1"
-                                     ,"Single electron"
-                                     ,0x10 ));
+                                     ,"TRD"
+                                     ,1 ));
   fInputs.AddLast(new AliTriggerInput("TRD_HadrLPt_L1"
-                                     ,"Single hadron low pt "
-                                     ,0x20 ));
+                                     ,"TRD"
+                                     ,1 ));
   fInputs.AddLast(new AliTriggerInput("TRD_HadrHPt_L1"
-                                     ,"Single hadron high pt"
-                                     ,0x40 ));
+                                     ,"TRD"
+                                     ,1 ));
 
 }
 

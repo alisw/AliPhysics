@@ -145,11 +145,13 @@ void AliPHOSTrigger::CreateInputs()
    
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
+
+   TString name = GetName();
    
-   fInputs.AddLast( new AliTriggerInput( "PHOS_L0",       "PHOS L0", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( "PHOS_JetHPt_L1","PHOS Jet High Pt L1", 0x04 ) );
-   fInputs.AddLast( new AliTriggerInput( "PHOS_JetMPt_L1","PHOS Jet Medium Pt L1", 0x08 ) );
-   fInputs.AddLast( new AliTriggerInput( "PHOS_JetLPt_L1","PHOS Jet Low Pt L1", 0x016 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_L0",       name, 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_JetHPt_L1",name, 1 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_JetMPt_L1",name, 1 ) );
+   fInputs.AddLast( new AliTriggerInput( "PHOS_JetLPt_L1",name, 1 ) );
  
 }
 

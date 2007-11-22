@@ -44,10 +44,10 @@ void AliACORDETrigger::CreateInputs()
   // two acorde triggers, single muon and multicoincidence
   fInputs.AddLast( new 
 		   AliTriggerInput( "ACORDE_SINGLE", 
-				    "At least one digit in ACORDE", 0x01 ) );
+				    "ACORDE", 0 ) );
   fInputs.AddLast( new 
 		   AliTriggerInput( "ACORDE_MULTI",
-				    "At least M digits in ACORDE", 0x02 ) );
+				    "ACORDE", 0 ) );
 }
 
 void AliACORDETrigger::Trigger()
