@@ -97,7 +97,7 @@ AliHLTPHOSRawAnalyzer::GetEnergy() const
  * Set data array. Overrides data data array set in the constructor.
  **/
 void 
-AliHLTPHOSRawAnalyzer::SetData(UInt_t *data)
+AliHLTPHOSRawAnalyzer::SetData(const UInt_t *data) 
 {
   fIntDataPtr = data;
 }
@@ -106,7 +106,7 @@ AliHLTPHOSRawAnalyzer::SetData(UInt_t *data)
  * Set data array. Overrides data data array set in the constructor.
  **/
 void 
-AliHLTPHOSRawAnalyzer::SetData(double *data)
+AliHLTPHOSRawAnalyzer::SetData(const double *data) 
 {
   fFloatDataPtr = data;
 }

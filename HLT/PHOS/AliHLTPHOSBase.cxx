@@ -24,8 +24,7 @@
 AliHLTPHOSBase::AliHLTPHOSBase(): AliHLTPHOSConfig(),  
 				  AliHLTPHOSAltroConfig()
 {
-  //  fConfigPtr = new AliHLTPHOSConfig();
-  //  fAltroConfigPtr = new AliHLTPHOSAltroConfig();
+
 }
 
 
@@ -34,3 +33,20 @@ AliHLTPHOSBase::~AliHLTPHOSBase()
 
 }
 
+
+bool
+AliHLTPHOSBase::CheckFile(const char *fileName, const char *opt) const
+{
+  FILE *fp = fopen(fileName, opt);
+
+  if(fp == 0)
+    {
+      cout <<"Error: from" << typeid(*this).name()  <<"could not open file: "<< fileName <<endl; 
+      return false;
+     }
+  else
+    {
+      fclose(fp); 
+      return true;
+    }
+}

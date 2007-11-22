@@ -9,10 +9,11 @@ class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSRcuChannelDataStruct;
 class AliHLTPHOSMapper;
-class AliHLTDDLDecoder;
-class AliHLTAltroData;
-class AliHLTAltroBunch;
 class AliHLTPHOSSanityInspector;
+class  AliAltroDecoder;      // decoder for altro payload
+class  AliAltroData;         // container for altro payload
+class  AliAltroBunch;        // container for altro bunches
+
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
 {
@@ -41,18 +42,16 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   Bool_t fSendChannelData;       /**<wether or not to send raw data from the component into shared memory*/
   Double_t fTmpChannelData[ALTRO_MAX_SAMPLES];                        /**<temporary variable to store raw samples from a single altro channel*/
   Double_t fMaxValues[N_MODULES][N_ZROWS_MOD][N_XCOLUMNS_MOD][N_GAINS]; /**<array to store cell energies*/
-  // AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;         /**<Pointer to outputbuffer to write results from the component into shared memory*/
 
   AliHLTPHOSRcuCellEnergyDataStruct* fOutPtr;  //comment
-  AliHLTPHOSMapper *fMapperPtr; //comment
-  AliHLTDDLDecoder *fDecoderPtr; //comment
-  AliHLTAltroData  *fAltroDataPtr; //comment
-  AliHLTAltroBunch *fAltroBunchPtr; //comment
+  AliHLTPHOSMapper *fMapperPtr; //Mapping from harware address to geometrical address
   AliHLTPHOSSanityInspector *fSanityInspectorPtr; //comment
   Bool_t fUseBaselineSubtraction; //comment
   Float_t fBaselines[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
-  int fDebugCnt; //comment
-  
+  //  int fDebugCnt; //comment
+  AliAltroDecoder *fDecoderPtr;           // decoder for altro payload
+  AliAltroData    *fAltroDataPtr;         // container for altro payload
+  AliAltroBunch   *fAltroBunchPtr;        // container for altro bunches
 };
 #endif
 

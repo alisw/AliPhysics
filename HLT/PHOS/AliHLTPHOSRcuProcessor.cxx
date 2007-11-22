@@ -17,9 +17,10 @@
  **************************************************************************/
 #include "AliHLTPHOSRcuProcessor.h"
 
-AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor(): fkEquippmentID(0)
+AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor():AliHLTPHOSProcessor(), 
+						 fkEquippmentID(0)
 {
-
+  //  cout << "AliHLTPHOSRcuProcessor::AliHLTPHOSRcuProcessor() "<< endl;
 }
 
 AliHLTPHOSRcuProcessor::~AliHLTPHOSRcuProcessor()

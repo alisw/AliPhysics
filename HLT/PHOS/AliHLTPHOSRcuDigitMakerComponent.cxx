@@ -93,6 +93,8 @@ AliHLTPHOSRcuDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtDat
 					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
+  cout << "AliHLTPHOSRcuDigitMakerComponent::DoEven TP1"  << endl;
+
    //Do event
      
   UInt_t tSize            = 0;
@@ -110,10 +112,12 @@ AliHLTPHOSRcuDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtDat
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = 0; 
   unsigned long ndx; 
+
+ cout << "AliHLTPHOSRcuDigitMakerComponent::DoEven TP2"  << endl;
   fDigitContainerPtr = (AliHLTPHOSRcuDigitContainerDataStruct*)outBPtr;
   //fDigitMakerPtr->SetDigitContainerStruct(fDigitContainerPtr);
   fDigitMakerPtr->SetDigitContainerStruct((AliHLTPHOSRcuDigitContainerDataStruct*)outBPtr);
-
+ cout << "AliHLTPHOSRcuDigitMakerComponent::DoEven TP3"  << endl;
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
@@ -124,6 +128,9 @@ AliHLTPHOSRcuDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtDat
 	  continue;
 
 	}
+      
+      
+
       digitCount = fDigitMakerPtr->MakeDigits(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
     }
   fEvtCnt++;

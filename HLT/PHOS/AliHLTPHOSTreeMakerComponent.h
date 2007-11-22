@@ -62,9 +62,9 @@ class AliHLTPHOSTreeMakerComponent : public AliHLTPHOSProcessor
  private:  
   AliHLTPHOSTreeMaker *fTreeMakerPtr; //comment
   TTree *fDigitTreePtr; //comment
-  UInt_t fEventCount; //comment
+  //  UInt_t fEventCount; //comment
   UInt_t fWriteInterval; //comment
-  UInt_t fRunNb; //comment
+  //  UInt_t fRunNb; //comment
   char *fDirectory; //comment
  
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type

@@ -17,25 +17,17 @@
 #define ALIHLTPHOSSANITYINSPECTOR_H
 
 #include "AliHLTPHOSBase.h"
-//#include "AliHLTAltroData.h"
 #include "Rtypes.h"
-
-class AliHLTAltroData;
 
 class AliHLTPHOSSanityInspector : public AliHLTPHOSBase
 {
   
 public:
   AliHLTPHOSSanityInspector();
-  
   virtual ~AliHLTPHOSSanityInspector();
-   
-  Int_t CheckInsanity(UInt_t* data, Int_t nSamples);
-  Int_t CheckInsanity(Int_t* data, Int_t nSamples);
-  
+  const Int_t CheckInsanity(const UInt_t* data, const Int_t nSamples) const;
   Int_t CheckAndHealInsanity(UInt_t* data, Int_t nSamples);  //Not completely reliable
   Int_t CheckAndHealInsanity(Int_t* data, Int_t nSamples);  //Not completely reliable
-
   void SetMaxDifference(Int_t maxDiff) { fMaxDifference = maxDiff; }
     
 private:

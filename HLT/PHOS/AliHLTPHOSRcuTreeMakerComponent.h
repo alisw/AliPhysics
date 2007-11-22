@@ -49,6 +49,8 @@ class AliHLTPHOSRcuTreeMakerComponent : public AliHLTPHOSRcuProcessor
   
   AliHLTComponent* Spawn();
 
+
+  void FUCK();
   void Write(); 
   void ResetTrees();
    
@@ -63,9 +65,11 @@ class AliHLTPHOSRcuTreeMakerComponent : public AliHLTPHOSRcuProcessor
  private:  
   AliHLTPHOSRcuTreeMaker *fTreeMakerPtr;  //comment
   TTree *fDigitTreePtr; //comment
-  UInt_t fEventCount; //comment
+
+
+  //  UInt_t fEventCount; //comment
   UInt_t fWriteInterval; //comment
-  UInt_t fRunNb; //comment
+  //  UInt_t fRunNb; //comment
   char *fDirectory; //comment
  
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type

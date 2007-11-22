@@ -16,9 +16,6 @@
 #define ALIHLTPHOSDIGITMAKERCOMPONENT_H
 
 #include "AliHLTPHOSProcessor.h"
-//#include "AliHLTPHOSDigitMaker.h"
-//#include "TTree.h"
-//#include "TClonesArray.h"
 
 
 class AliHLTPHOSDigitMaker;
@@ -56,8 +53,8 @@ protected:
 private:
   AliHLTPHOSDigitMaker *fDigitMakerPtr; //comment
   AliHLTPHOSDigitContainerDataStruct *fDigitContainerPtr; //comment
-  UInt_t fEvtCnt; //comment
-  Int_t fRunNb; //comment
+  //  UInt_t fEvtCnt; //comment
+  //  Int_t fRunNb; //comment
 
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
 

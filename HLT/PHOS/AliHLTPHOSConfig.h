@@ -28,9 +28,14 @@ public:
   virtual ~AliHLTPHOSConfig();
   void SetSoftwareBaselineSubtraction(bool isSoftwareBaselineSubtraction);
   void PrintDefaultValues();
+  
 
 protected:
   bool fIsSoftwareBaselineSubtraction;
+  //  int fRunNumber;
+  
+ private:
+  //  void ScanRunNumberFromFile();
 };
 
 #endif

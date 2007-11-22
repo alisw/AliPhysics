@@ -34,6 +34,7 @@ public:
 
   Int_t MakeDigitArray(AliHLTPHOSDigitContainerDataStruct* digitContainer, Int_t nDigits);
 
+
   void FillDigitTree();
   
   void ResetDigitTree() { fDigitTreePtr->Reset(); }

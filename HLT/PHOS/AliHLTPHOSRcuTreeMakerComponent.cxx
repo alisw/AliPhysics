@@ -16,6 +16,9 @@
 
  
 #include "AliHLTPHOSRcuTreeMakerComponent.h"
+
+#include "AliHLTPHOSRcuDigitContainerDataStruct.h"
+
 #include "AliHLTPHOSRcuTreeMaker.h"
 #include "AliHLTPHOSRcuProcessor.h"
 #include "AliHLTPHOSDigitDataStruct.h"
@@ -34,7 +37,8 @@ AliHLTPHOSRcuTreeMakerComponent gAliHLTPHOSRcuTreeMakerComponent;
 AliHLTPHOSRcuTreeMakerComponent::AliHLTPHOSRcuTreeMakerComponent() :
   AliHLTPHOSRcuProcessor(),
   fDigitTreePtr(0),
-  fEventCount(0),
+  fTreeMakerPtr(0), 
+  //  fEventCount(0),
   fWriteInterval(1000)
 {
   //comment
@@ -114,6 +118,8 @@ AliHLTPHOSRcuTreeMakerComponent::DoEvent(const AliHLTComponentEventData& evtData
 					std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 
 {
+
+  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0 " << endl;
   //Do event
 
   Bool_t digitEvent;
@@ -122,34 +128,86 @@ AliHLTPHOSRcuTreeMakerComponent::DoEvent(const AliHLTComponentEventData& evtData
 
   const AliHLTComponentBlockData* iter = 0;
   unsigned long ndx;
-
+ cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.1 " << endl;
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks + ndx;
-
+      cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.2 " << endl;
       if ( iter->fDataType == AliHLTPHOSDefinitions::fgkAliHLTDigitDataType )
 
         {
-          digitEvent = true;
-          nDigits  = fTreeMakerPtr->MakeDigitArray ( reinterpret_cast<AliHLTPHOSRcuDigitContainerDataStruct*> ( iter->fPtr ), totalDigits );
-          totalDigits += nDigits;
-	  //cout << totalDigits << endl;
-          continue;
+	   cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.2 " << endl;
+	   digitEvent = true;
+	   cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.3 " << endl;
+
+	   //	   fTreeMakerPtr = new AliHLTPHOSRcuTreeMaker();
+
+	   if( iter->fPtr == 0)
+	     {
+	       cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.3.1 " << endl;
+	       cout << "ERROR" << endl;
+	       cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.3.2 " << endl;
+	     }
+	   else
+	     {
+	      cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.3.3 " << endl;
+	      
+	      //	      fTreeMakerPtr = new AliHLTPHOSRcuTreeMaker();
+	      
+	      if(fTreeMakerPtr == 0 )
+		{
+		  //	  cout << "FUCK" << endl;
+		}  
+	      else
+		{
+		  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.3.4, -1 " << endl;
+		  //	      nDigits  = fTreeMakerPtr->MakeDigitArray ( reinterpret_cast<AliHLTPHOSRcuDigitContainerDataStruct*> ( iter->fPtr ), totalDigits );
+		  //
+
+		  nDigits  = fTreeMakerPtr->MakeDigitArray ( reinterpret_cast<AliHLTPHOSRcuDigitContainerDataStruct*> ( iter->fPtr ), totalDigits );
+
+		  //	  AliHLTPHOSRcuDigitContainerDataStruct *tmp = new  AliHLTPHOSRcuDigitContainerDataStruct();
+		  
+		  //	  nDigits  = fTreeMakerPtr->MakeDigitArray(tmp, totalDigits );
+
+		  //  nDigits  = fTreeMakerPtr->MakeDigitArray ( (AliHLTPHOSRcuDigitContainerDataStruct*) ( iter->fPtr ), totalDigits );
+
+		  fTreeMakerPtr->FUCK();
+		  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.3.4 " << endl;
+	     
+		}
+	     }
+
+	   cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.4 " << endl;
+	   totalDigits += nDigits;
+	   //cout << totalDigits << endl;
+	   cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.5 " << endl;
+	   continue;
         }
+     
       if ( iter->fDataType == AliHLTPHOSDefinitions::fgkAliHLTClusterDataType )
         {
-          //
+	  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP0.6 " << endl;
+       //
         }
     }
-  fEventCount++;
-  fTreeMakerPtr->FillDigitTree();
-  
-  if(fEventCount%fWriteInterval == 0)
-    {
-      Write();
-      ResetTrees();
-    }
 
+  //  fEventCount++;
+  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP1 " << endl;
+  fPhosEventCount++;
+
+  fTreeMakerPtr->FillDigitTree();
+  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP2 " << endl;  
+  //  if(fEventCount%fWriteInterval == 0)
+  if(fPhosEventCount%fWriteInterval == 0)
+    {
+      cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP3 " << endl;
+      Write();
+      cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP4 " << endl;
+      ResetTrees();
+      cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP5 " << endl;
+    }
+  cout << "AliHLTPHOSRcuTreeMakerComponent::DoEvent TP6 " << endl;
 return 0;
 
 }
@@ -176,17 +234,17 @@ AliHLTPHOSRcuTreeMakerComponent::DoInit ( int argc, const char** argv )
 
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);
     
-  fstream runNbFile;
+  //  fstream runNbFile;
   //Int_t newRunNb;
-  runNbFile.open("/opt/HLT-public/rundir/runNumber.txt");
-  runNbFile >> fRunNb;
-  runNbFile.close();
+  //  runNbFile.open("/opt/HLT-public/rundir/runNumber.txt");
+  //  runNbFile >> fRunNb;
+  //  runNbFile.close();
   /*  newRunNb = fRunNb + 1;
   runNbFile.open("/opt/HLT-public/rundir/runNumber.txt");
   runNbFile << newRunNb;
   runNbFile.close();*/
   
-  cout << endl << "Run number is: " << fRunNb  << "  -- Check that this is correct!!!\n";
+  cout << endl << "Run number is: " << fRunNumber  << "  -- Check that this is correct!!!\n" << endl;
 
   return 0;
   
@@ -207,7 +265,8 @@ AliHLTPHOSRcuTreeMakerComponent::Write()
   cout << "Writing file...";
 
   char filename [256];
-  sprintf(filename, "%s/run%d_%d_digitTree_mod%d_rcuX%d_rcuZ%d_.root", fDirectory, fRunNb,(fEventCount/fWriteInterval - 1), fModuleID, fRcuX, fRcuZ);
+  //  sprintf(filename, "%s/run%d_%d_digitTree_mod%d_rcuX%d_rcuZ%d_.root", fDirectory, fRunNb,(fEventCount/fWriteInterval - 1), fModuleID, fRcuX, fRcuZ);
+  sprintf(filename, "%s/run%d_%d_digitTree_mod%d_rcuX%d_rcuZ%d_.root", fDirectory, fRunNumber,(fPhosEventCount/fWriteInterval - 1), fModuleID, fRcuX, fRcuZ);
   TFile *outfile = new TFile(filename,"recreate");
   fDigitTreePtr->Write();
   delete outfile;
@@ -225,9 +284,7 @@ AliHLTPHOSRcuTreeMakerComponent::ResetTrees()
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);
 }
   
-  
-  
-  
+
   
   
   

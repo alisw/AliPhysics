@@ -25,6 +25,8 @@
 
 ClassImp(AliHLTPHOSTreeMaker);
 
+
+
 AliHLTPHOSTreeMaker::AliHLTPHOSTreeMaker() :
   AliHLTPHOSBase(),
   fDigitArrayPtr(0),
@@ -38,8 +40,10 @@ AliHLTPHOSTreeMaker::AliHLTPHOSTreeMaker() :
 
 }
 
+
 AliHLTPHOSTreeMaker::~AliHLTPHOSTreeMaker()
 {
+
 }
 
 Int_t

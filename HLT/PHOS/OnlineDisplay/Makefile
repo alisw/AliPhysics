@@ -9,6 +9,7 @@ HeadSuf		= h
 #		-lGeom -lGpad -lGraf -lGuiBld -lGui -lMatrix\
 #		-lRint -lRootAuth  -lThread -lVMC
 
+
 ROOTLIBS	= `root-config --libs --glibs`
 
 ###ALIROOTLIBS	= -L$(ALICE_ROOT)/lib/tgt_$(ALICE_TARGET) -lESD -lSTEER -lRAWDatarec   -lRAWDatabase 
@@ -17,7 +18,8 @@ ALIROOTLIBS	= -L$(ALIHLT_TOPDIR)/build/lib  -lHLTbase  -lAliHLTPHOS  -L$(ALICE_R
 
 #HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-x86_64-debug -lHOMER
 #HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-i686/  -lHOMER
-HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-x86_64-debug -lHOMER
+#HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-x86_64-debug -lHOMER
+HLTLIBS		=-L$(ALIHLT_DC_DIR)/lib/Linux-i686-debug -lHOMER
 
 HOMERINCLUDE	=$(ALIHLT_DC_DIR)/src/Util/HOMER/include 
 

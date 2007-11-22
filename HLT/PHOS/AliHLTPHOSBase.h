@@ -31,14 +31,12 @@ using namespace PhosHLTConst;
 using namespace std;
 
 
-class AliHLTPHOSConfig;
-class AliHLTPHOSAltroConfig;
-
 class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
 {
-public:
+ public:
   AliHLTPHOSBase();
   virtual ~AliHLTPHOSBase();
+  bool CheckFile(const char *fileName, const char *opt) const;
 
 
   template<typename T> 
@@ -53,7 +51,6 @@ public:
 	  }
 
 	cout << array[i]<< "\t";
-
       }
   }
 
@@ -69,8 +66,6 @@ public:
   template<typename T> 
   T  MaxValue(T *array, int N)
   {
-    //   Double_t tmpMax = 0;
-      
     T tmpMax = 0;
 
     for(int i = 0; i < N; i++)

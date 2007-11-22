@@ -1,7 +1,7 @@
+#include  "AliAltroDecoder.h"    // decoder for altro payload
+#include  "AliAltroData.h"       // container for altro payload
+#include  "AliAltroBunch.h"      // container for altro bunches
 
-#include "AliHLTDDLDecoder.h"
-
-#include "AliHLTAltroData.h"
 #include "Rtypes.h"
 #include <iostream>
 #include <fstream>
@@ -10,6 +10,7 @@
 #include <time.h>
 #include "stdio.h"
 
+#define MIN_BUNCH_SIZE 0
 
 using namespace std;
 
@@ -22,13 +23,13 @@ int main(int argc, const char** argv)
   clock_t  start;
   clock_t  end;
 
-  AliHLTAltroData altrodata;
-  AliHLTAltroBunch *altrobunchPtr = new AliHLTAltroBunch;
+  AliAltroData altrodata;
+  AliAltroBunch *altrobunchPtr = new AliAltroBunch;
 
   ifstream fin;
   int length;
   
-  AliHLTDDLDecoder *decoder = new AliHLTDDLDecoder();
+  AliAltroDecoder *decoder = new AliAltroDecoder();
   
   fin.open(argv[1], ios::binary);
   
@@ -55,30 +56,35 @@ int main(int argc, const char** argv)
       while(decoder->NextChannel(&altrodata) == true && channelCnt < 10)
 	{
 	  channelCnt ++;
-  decoder->PrintInfo(altrodata, altrodata.fDataSize +4);	   
-	 
-	  if(  altrodata.fDataSize != 0 )
+
+	  //	  decoder->PrintInfo(altrodata, altrodata.GetDataSize() +4);
+
+	  if(  altrodata.GetDataSize() != 0 )
 	    {
 	      cnt = 0;
 	      
 	      while( altrodata.NextBunch(altrobunchPtr) == true)
 		{
-		  printf("\n");
+		  //		  printf("\n");
 
-		  if(cnt < 5)
+		  if(altrobunchPtr->GetBunchSize() > MIN_BUNCH_SIZE)
 		    { 
 		      printf("\n");
 		      cout <<"cnt = "<< cnt <<endl;
-		      cout << "altrobunch.fDataSize = "    << altrobunchPtr->fBunchSize   << endl;
-		      cout << "altrobunch.fEndTimeBin = "  << altrobunchPtr->fEndTimeBin  << endl;
-		     
-		      for(int i=0; i<altrobunchPtr->fBunchSize+20; i++)
+		      cout << "altrobunch.fDataSize = "      << altrobunchPtr->GetBunchSize()   << endl;
+		      cout << "altrobunch.fEndTimeBin = "    << altrobunchPtr->GetEndTimeBin()  << endl;
+		      cout << "altrobunch.fStartTimeBin = "  << altrobunchPtr->GetStartTimeBin()  << endl;
+
+		      for(int i=0; i<altrobunchPtr->GetBunchSize() + 20; i++)
 			{
 			  if(i != 0 && i%4==0)
 			    {
 			      printf("\n");
 			    }
-			  printf("%d\t", altrobunchPtr->fData[i]);
+			  
+			  //			  printf("%d\t", altrobunchPtr->fData[i]);
+			  printf("%d\t", (altrobunchPtr->GetData())[i]); 
+
 			}
 			
 		      printf("\n\n");

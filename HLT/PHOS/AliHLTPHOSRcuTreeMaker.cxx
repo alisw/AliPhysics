@@ -25,6 +25,12 @@
 
 ClassImp(AliHLTPHOSRcuTreeMaker);
 
+void
+AliHLTPHOSRcuTreeMaker::FUCK()
+{
+  cout << "AliHLTPHOSTreeMaker::FUCK"  << endl;
+}
+
 AliHLTPHOSRcuTreeMaker::AliHLTPHOSRcuTreeMaker() :
   AliHLTPHOSBase(),
   fDigitArrayPtr(0),

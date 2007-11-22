@@ -22,8 +22,8 @@ class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
   float GetTiming() const;
   float GetEnergy() const;
 
-  void SetData(double *data);
-  void SetData(UInt_t *data);
+  void SetData(const double *data);
+  void SetData(const UInt_t *data);
 
   void SetSampleFreq(double freq);
   void SetStartIndex(int startIndex);
@@ -35,8 +35,12 @@ class AliHLTPHOSRawAnalyzer: public AliHLTPHOSBase
   virtual void Evaluate(Int_t start = 0, Int_t lenght = 100) = 0;
 
  protected:
-  Double_t   *fFloatDataPtr;   /**<Float representation of data that should be fitted */
-  UInt_t     *fIntDataPtr;     /**<data that should be fitted */
+  //  mutable  Double_t   *fFloatDataPtr;   /**<Float representation of data that should be fitted */
+  //  mutable  UInt_t     *fIntDataPtr;     /**<data that should be fitted */
+  mutable const Double_t   *fFloatDataPtr;   /**<Float representation of data that should be fitted */
+  mutable const unsigned int     *fIntDataPtr;     /**<data that should be fitted */
+  //  mutable const UInt_t     *fIntDataPtr;     /**<data that should be fitted */
+  
   double     fSampleFrequency; /**<The ADC sample frequency in MHz used under data taking */
   double     fDTofGuess;       /**<Initial guess for t0*/
   double     fDAmplGuess;      /**<Initial guess for amplitude*/

@@ -30,8 +30,8 @@ AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
 
 AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   AliHLTPHOSProcessor(),
-  fDigitMakerPtr(0),
-  fEvtCnt(0)
+  fDigitMakerPtr(0)
+  //  fEvtCnt(0)
 {
   //comment
 }
@@ -94,17 +94,11 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
    //Do event
-     
   UInt_t tSize            = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
-  //Int_t nRecPoints        = 0;
-  //Int_t index             = 0;
-  
-  //Int_t fileCount = 0;
   Int_t digitCount = 0;
-  //char filename [50];
-
+  //  cout << " AliHLTPHOSDigitMakerComponent::DoEven  fEvtCnt = " << fEvtCnt <<endl; 
 
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
@@ -126,7 +120,8 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 	}
       digitCount = fDigitMakerPtr->MakeDigits(reinterpret_cast<AliHLTPHOSRcuCellEnergyDataStruct*>(iter->fPtr));
     }
-  fEvtCnt++;
+
+  fPhosEventCount++;
   
   mysize = 0;
   offset = tSize;
@@ -154,9 +149,9 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       
   fDigitMakerPtr->Reset();
   
-  if(fEvtCnt % 10 == 0)
+  if(fPhosEventCount % 10 == 0)
     {
-      cout << "Event #: " << fEvtCnt << endl;
+      cout << "Event #: " << fPhosEventCount << endl;
       cout << "  - Number of digits found: " << digitCount << endl;
     }
   

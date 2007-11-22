@@ -25,6 +25,8 @@ class AliHLTPHOSRcuDigitContainerDataStruct;
 class TClonesArray;
 //class TTree;
 
+
+
 class AliHLTPHOSRcuTreeMaker : public AliHLTPHOSBase
 {
 public:
@@ -33,7 +35,7 @@ public:
   ~AliHLTPHOSRcuTreeMaker();
 
   Int_t MakeDigitArray(AliHLTPHOSRcuDigitContainerDataStruct* digitContainer, Int_t nDigits);
-
+  void FUCK();
   void FillDigitTree();
   
   void ResetDigitTree() { fDigitTreePtr->Reset(); }
