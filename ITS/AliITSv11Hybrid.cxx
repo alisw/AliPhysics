@@ -33,6 +33,9 @@
 
 
 // $Log$
+// Revision 1.10  2007/11/19 17:01:26  masera
+// SSD ladder supports + endcaps systems (E. Cattaruzza)
+//
 // Revision 1.9  2007/10/21 19:22:53  masera
 // Coding conventions
 //
@@ -2780,11 +2783,20 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   dits[2] = 39.4;      
   gMC->Gsvolu("ICY1", "TUBE", idtmed[208], dits, 3);
          
-  // --- Define volume of second cylinder between SDD and SSD --------------
-  dits[0] = (59.5-0.128)/2.;      
+  // --- Define volumes of second cylinder between SDD and SSD ------------
+  // --- (from B. Giraudo plots - M.S. 20 Nov 2007)
+  dits[0] = 59.5/2. - 0.06;
   dits[1] = 59.5/2.;
-  dits[2] = 56.2;      // was 57
+  dits[2] = 102/2.;      // was 57
   gMC->Gsvolu("ICY2", "TUBE", idtmed[208], dits, 3);
+
+  dits[1] = dits[0];
+  dits[0] = dits[1] - 0.5;
+  gMC->Gsvolu("ICY3", "TUBE", idtmed[267], dits, 3);
+
+  dits[1] = dits[0];
+  dits[0] = dits[1] - 0.06;
+  gMC->Gsvolu("ICY4", "TUBE", idtmed[208], dits, 3);
 
   // --- Define volumes of SDD cone ---------------------------------- 
 
@@ -4183,6 +4195,8 @@ void AliITSv11Hybrid::CreateOldGeometry(){
   if (! AliITSInitGeometry::SDDconeIsTGeoNative()) {
   gMC->Gspos("ICY1",1,"IS02",0.0,0.0,0.,0,"ONLY");    
   gMC->Gspos("ICY2",1,"IS01",0.0,0.0,0.,0,"ONLY");    
+  gMC->Gspos("ICY3",1,"IS01",0.0,0.0,0.,0,"ONLY");    
+  gMC->Gspos("ICY4",1,"IS01",0.0,0.0,0.,0,"ONLY");    
 
   // --- Place volumes of SDD cone ---------------------------------- 
   
@@ -5122,8 +5136,8 @@ void AliITSv11Hybrid::CreateMaterials(){
       // rohacell: C9 H13 N1 O2
     Float_t arohac[4] = {12.01,  1.01, 14.010, 16.};
     Float_t zrohac[4] = { 6.,    1.,    7.,     8.};
-    Float_t wrohac[4] = { 9.,   13.,    1.,     2.};
-    Float_t drohac    = 0.05;
+    Float_t wrohac[4] = { 14.,   10.,    2.,     6.};
+    Float_t drohac    = 0.052;
 
     // If he/she means stainless steel (inox) + Aluminium and Zeff=15.3383 then
 //
