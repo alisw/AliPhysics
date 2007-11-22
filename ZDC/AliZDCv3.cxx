@@ -878,7 +878,6 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*tubpar[2];
   
   //---------------- INSERT TDI INSIDE Q13T -----------------------------------    
-  printf("\n	START DEFINING TDI INSIDE Q13T\n");    
   boxpar[0] = 11.0/2.;
   boxpar[1] = 9.0/2.;
   boxpar[2] = 540.0/2.;
@@ -1137,9 +1136,7 @@ void AliZDCv3::CreateBeamLine()
   zd2 += 2.*tubpar[2];
   
   // simulation of the trousers (VCTYB)
-  // (last design -mail 3/6/05) 
-  printf("\n	*** START OF TROUSERS SECTION\n");
-    
+  // (last design -mail 3/6/05)     
   // pipe: a tube (ID = 196. OD = 200.)
   tubpar[0] = 19.6/2.;
   tubpar[1] = 20.0/2.;
