@@ -45,6 +45,10 @@ class AliBtoJPSItoEleAnalysis : public TNamed {
 		 Double_t cut7=100000000.,Double_t cut8=-1.1); 
   void SetBCuts(const Double_t cuts[9]); 
   void SetPID(const Char_t * pid="TRDTPCparam") { fPID=pid; }
+//  void SetKFPrimVertex() { fKFPrimVertex=kTRUE; }          //new setter
+   void SetKFSecondVertex() {fKFSecondVertex=kTRUE;}         //new setter
+   void UnSetKFSecondVertex() {fKFSecondVertex=kFALSE;}      //new setter
+//  void SetKFTopConstr() { fKFTopConstr=kTRUE; }            //new setter
   //
  private:
   //
@@ -59,6 +63,9 @@ class AliBtoJPSItoEleAnalysis : public TNamed {
   Double_t fd0Cut;   // minimum track |rphi impact parameter| (in micron) 
   Double_t fMassCut; // maximum of |InvMass-M(J/Psi)| (in GeV)
   Double_t fPidCut; // min. pid probability as an electron
+  Bool_t   fKFSecondVertex;  // flag for Kalmann Filter reco of secondary vertex
+//  Bool_t   fKFTopConstr;     // flag for Kalmann Filter topological constraint in primary vtx reco
+//  Bool_t   fKFPrimVertex;    // flag for Kalmann Filter reco of primary vertex
   Double_t fBCuts[9]; // cuts on b candidates (see SetBCuts())
                        // (to be passed to function AliBtoJPSItoEle::Select())
                        // 0 = inv. mass half width [GeV]   
@@ -82,11 +89,10 @@ class AliBtoJPSItoEleAnalysis : public TNamed {
   void     SimulationInfo(TTree *treeBin,TTree *treeBout) const;
   Bool_t   SingleTrkCuts(const AliESDtrack& trk, Double_t b) const;
   //
-  ClassDef(AliBtoJPSItoEleAnalysis,1)  // Reconstruction of B->JPSI-> e+e- candidates class
+  ClassDef(AliBtoJPSItoEleAnalysis,2)  // Reconstruction of B->JPSI-> e+e- candidates class
 };
 
 
 #endif
-
 
 

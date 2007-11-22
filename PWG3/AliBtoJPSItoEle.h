@@ -36,6 +36,7 @@ class AliBtoJPSItoEle : public TObject {
 	     Double_t v1[3],Double_t v2[3],Double_t dca,
 	     Double_t mom[6],Double_t d0[2]);
   virtual ~AliBtoJPSItoEle();
+  AliBtoJPSItoEle(const AliBtoJPSItoEle& btoJpsi);
 
   Double_t Alpha() const { return (Ql(0)-Ql(1))/(Ql(0)+Ql(1)); }
   void     ApplyPID(TString pidScheme="TRDTPCparam");
@@ -57,6 +58,7 @@ class AliBtoJPSItoEle : public TObject {
   Int_t    GetPdgMum(Int_t child) const {return fMum[child]; }
   Int_t    GetPdgGMum(Int_t child) const {return fGMum[child]; }
   void     GetPIDresponse(Double_t resp0[5],Double_t resp1[5]) const; 
+  Double_t GetTagEl(Int_t child) const; 
   void     GetWgts(Double_t &WgtJPsi) const;
   void     GetPrimaryVtx(Double_t vtx[3]) const 
     { vtx[0]=fV1x; vtx[1]=fV1y; vtx[2]=fV1z; }
@@ -140,7 +142,6 @@ class AliBtoJPSItoEle : public TObject {
 };
 
 #endif
-
 
 
 
