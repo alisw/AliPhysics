@@ -33,11 +33,16 @@
 #include "AliMUONDDLTrigger.h"
 #include "AliMpTriggerCrate.h"
 #include "AliMpDDLStore.h"
+#include "AliMpCDB.h"
+
+#include "TStopwatch.h"
+
+
 #endif
 
 // Macro to read rawdata for trigger
 // Ch. Finck, Subatech, April. 2006
-//
+// Implement "digits" iterator
 // This macro is interface with AliRawReader for RAW
 // The different stucture of the patload are readout and stored in TClonesArray
 // with AliMUONRawStreamTrigger classe.
@@ -46,26 +51,35 @@
 // AliMUONDarcHeader, AliMUONRegHeader, AliMUONLocalStruct.
 // The class AliMUONDDLTrigger manages the structure containers.
 // The number of structures in the rawdata file could be set.
+// The DATE format reading is no more supported please use the MUONTRGda code
 
 void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1, TString fileName = "./")
 {
+   
+   TStopwatch timer;
+   timer.Start(kTRUE);
+
    AliRawReader* rawReader = 0x0;
 
    if (fileName.EndsWith("/")) {
      rawReader = new AliRawReaderFile(fileName);// DDL files
    } else if (fileName.EndsWith(".root")) {
      rawReader = new AliRawReaderRoot(fileName);
-   } else if (!fileName.IsNull()) {
-     rawReader = new AliRawReaderDate(fileName);// DATE file
-   }
+   } 
+    
+   
+   // Load mapping
+     if ( ! AliMpCDB::LoadDDLStore() ) {
+       printf("Could not access mapping from OCDB !\n");
+     }
 
    // raw stream
    AliMUONRawStreamTrigger* rawStream   = new AliMUONRawStreamTrigger(rawReader);
 
-   // set the number of DDL reg & local that are PRESENT in the rawdata file
+   // set the number ofreg & local that are PRESENT in the rawdata file
    // it's NOT the number to be read.
-   // default wise set to 2, 8, 16 respectively.
-   rawStream->SetMaxReg(2);
+   // default wise set to 8, 16 respectively.
+   //    rawStream->SetMaxReg(2);
    //    rawStream->SetMaxLoc(xx);
 
    // containers
@@ -102,7 +116,7 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
        Int_t nReg = darcHeader->GetRegHeaderEntries();
        for(Int_t iReg = 0; iReg < nReg ;iReg++){   //REG loop
 
-	 printf("RegionalId %d\n", iReg);
+//	 printf("RegionalId %d\n", iReg);
 
 	 regHeader =  darcHeader->GetRegHeaderEntry(iReg);
 	 //  printf("Reg length %d\n",regHeader->GetHeaderLength());
@@ -122,17 +136,17 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
 	   if ( !iLocCard ) continue; // empty slot
 
 	   // check if trigger 
-	   if (localStruct->GetTriggerX() 
+ 	   if (localStruct->GetTriggerX() 
 	       || localStruct->GetTriggerY()) { // no empty data
 
+	     printf("LocalId %d\n", localStruct->GetId());
 
-	       printf("LocalId %d\n", localStruct->GetId());
-
-	       Int_t loStripX  = (Int_t)localStruct->GetXPos();
-	       Int_t loStripY  = (Int_t)localStruct->GetYPos();
-	       Int_t loDev     = (Int_t)localStruct->GetXDev();
-	    
+	     Int_t loStripX  = (Int_t)localStruct->GetXPos();
+	     Int_t loStripY  = (Int_t)localStruct->GetYPos();
+	     Int_t loDev     = (Int_t)localStruct->GetXDev();
+	       
 	     printf("iLocCard: %d, XPos: %d, YPos: %d Dev: %d\n", iLocCard, loStripX, loStripY, loDev);
+
 	   }
 	 } // iLocal
        } // iReg
@@ -141,4 +155,78 @@ void MUONRawStreamTrigger(Int_t maxEvent = 1, Int_t minDDL = 0, Int_t maxDDL = 1
 
    delete rawReader;
    delete rawStream;
+
+   timer.Print();
+
+}
+
+
+void MUONRawStreamTriggerSimple(Int_t maxEvent = 1, TString fileName = "./")
+{
+  /// Reads the raw data in fileName, using a simplified interface (iterator
+  /// over local structure response).
+
+  TStopwatch timer;
+  timer.Start(kTRUE);
+
+   AliRawReader* rawReader = 0x0;
+
+   if (fileName.EndsWith("/")) {
+     rawReader = new AliRawReaderFile(fileName);// DDL files
+   } else if (fileName.EndsWith(".root")) {
+     rawReader = new AliRawReaderRoot(fileName);
+   } 
+
+   // raw stream
+   AliMUONRawStreamTrigger* rawStream   = new AliMUONRawStreamTrigger(rawReader);
+
+   // set the number of reg & local that are PRESENT in the rawdata file
+   // it's NOT the number to be read.
+   // default wise set to 8, 16 respectively.
+   //    rawStream->SetMaxReg(2);
+   //    rawStream->SetMaxLoc(xx);
+
+   UChar_t id;   
+   UChar_t dec;
+   Bool_t trigY; 
+   UChar_t yPos; 
+   UChar_t sXDev; 
+   UChar_t xDev;
+   UChar_t xPos;
+
+   Bool_t triggerX; 
+   Bool_t triggerY; 
+
+ 
+   TArrayS xPattern; 
+   TArrayS yPattern;
+
+   // Loop over events  
+   Int_t iEvent = 0;
+
+   while (rawReader->NextEvent()) {
+
+     if (iEvent == maxEvent)
+	 break;
+
+     printf("Event %d\n",iEvent++);
+
+     rawStream->First();
+
+     // read while there are digits
+     while( rawStream->Next(id, dec, trigY, yPos, sXDev, xDev, xPos,
+			    triggerX, triggerY, xPattern, yPattern) ) 
+     {
+       if ( triggerX || triggerY )  // no empty data
+	   printf("iLocCard: %d, XPos: %d, YPos: %d Dev: %d\n", id, xPos, yPos, xDev);
+
+     }// Next
+  
+   }// NextEvent
+
+   delete rawReader;
+   delete rawStream;
+
+   timer.Print();
+
 }
