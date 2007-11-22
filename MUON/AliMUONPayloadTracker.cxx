@@ -176,9 +176,15 @@ Bool_t AliMUONPayloadTracker::Decode(UInt_t* buffer, Int_t totalDDLSize)
 	    fBusStruct->SetBlockId(iBlock); // could be usefull in future applications ?
 	    fBusStruct->SetDspId(iDsp);
 
-	    // check parity
-	    if(!CheckDataParity())
-		AddParityErrBus(fBusStruct->GetBusPatchId());
+	    // check parity (old version)
+// 	    if(!CheckDataParity())
+// 		AddParityErrBus(fBusStruct->GetBusPatchId());
+
+	    // check parity  // JLC (modified Chistian 10/10/07)
+	    if(!CheckDataParity()) {
+	      AddParityErrBus(fBusStruct->GetBusPatchId());
+	      return kFALSE;
+	    } 
 
 	    // copy in TClonesArray
 	    fDDLTracker->AddBusPatch(*fBusStruct, iBlock, iDsp);
