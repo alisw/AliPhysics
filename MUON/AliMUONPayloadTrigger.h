@@ -16,6 +16,8 @@
 class AliMUONDDLTrigger;
 class AliMUONLocalStruct;
 class AliMUONRegHeader;
+class AliMUONLogger;
+class AliMUONLogger;
 
 class AliMUONPayloadTrigger: public TObject {
   public :
@@ -50,13 +52,20 @@ class AliMUONPayloadTrigger: public TObject {
     /// Get number of end of local word errors
     Int_t   GetLocalEoWErrors() const {return fLocalEoWErrors;}
 
-
+   /// Get Error logger
+    AliMUONLogger* GetErrorLogger() const {return fLog;}
+    
+    /// set warnings flag
+    void DisableWarnings() {fWarnings = kFALSE;} 
+    
   private :
     /// Not implemented
     AliMUONPayloadTrigger(const AliMUONPayloadTrigger& stream);
     /// Not implemented
     AliMUONPayloadTrigger& operator = (const AliMUONPayloadTrigger& stream);
 
+    void   AddErrorMessage(const Char_t* msg);
+    
     Int_t fMaxReg;        ///< maximum number of regional cards in DATE file
     Int_t fMaxLoc;        ///< maximum number of local cards in DATE file
 
@@ -64,11 +73,12 @@ class AliMUONPayloadTrigger: public TObject {
     AliMUONRegHeader*        fRegHeader;    //!< pointer for regional structure
     AliMUONLocalStruct*      fLocalStruct;  //!< pointer to local structure
 
+    AliMUONLogger* fLog;                      //!< Map of errors msg;
     Int_t   fDarcEoWErrors;                 //!< number of end of DARC word errors;
     Int_t   fGlobalEoWErrors;               //!< number of end of global word errors;
     Int_t   fRegEoWErrors;                  //!< number of end of regional word errors;
     Int_t   fLocalEoWErrors;                //!< number of end of local word errors;
-
+    Bool_t  fWarnings;                        //!< flag to enable/disable warnings
     ClassDef(AliMUONPayloadTrigger, 2)    // base class for reading MUON trigger rawdata
 };
 

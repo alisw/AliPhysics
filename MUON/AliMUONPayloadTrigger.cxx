@@ -32,6 +32,7 @@
 #include "AliMUONRegHeader.h"
 #include "AliMUONLocalStruct.h"
 #include "AliMUONDDLTrigger.h"
+#include "AliMUONLogger.h"
 
 #include "AliLog.h"
 
@@ -46,10 +47,12 @@ AliMUONPayloadTrigger::AliMUONPayloadTrigger()
     fDDLTrigger(new AliMUONDDLTrigger()),
     fRegHeader(new AliMUONRegHeader()), 
     fLocalStruct(new AliMUONLocalStruct()),
+    fLog(new AliMUONLogger(1000)),
     fDarcEoWErrors(0),
     fGlobalEoWErrors(0),
     fRegEoWErrors(0),
-    fLocalEoWErrors(0)
+    fLocalEoWErrors(0),
+    fWarnings(kTRUE)
 {
   ///
   /// create an object to read MUON raw digits
@@ -67,6 +70,7 @@ AliMUONPayloadTrigger::~AliMUONPayloadTrigger()
   delete fDDLTrigger;
   delete fLocalStruct;
   delete fRegHeader;
+  delete fLog;
 }
 
 
@@ -104,8 +108,10 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
   if (buffer[index++] != darcHeader->GetEndOfDarc()) {
 
-      AliWarning(Form("Wrong end of Darc word %x instead of %x\n",
-		    buffer[index-1], darcHeader->GetEndOfDarc()));
+      const Char_t* msg = Form("Wrong end of Darc word %x instead of %x\n",
+		    buffer[index-1], darcHeader->GetEndOfDarc());
+      if (fWarnings) AliWarning(msg);
+      AddErrorMessage(msg);
       fDarcEoWErrors++;
   }
   // 4 words of global board input + Global board output
@@ -120,8 +126,10 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
   if (buffer[index++] != darcHeader->GetEndOfGlobal()) {
 
-      AliWarning(Form("Wrong end of Global word %x instead of %x\n",
-		      buffer[index-1], darcHeader->GetEndOfGlobal()));
+      const Char_t* msg = Form("Wrong end of Global word %x instead of %x\n",
+		      buffer[index-1], darcHeader->GetEndOfGlobal());
+      if (fWarnings) AliWarning(msg);
+      AddErrorMessage(msg);
       fGlobalEoWErrors++;
   }
   // 8 regional boards
@@ -139,8 +147,10 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
     if (buffer[index++] != fRegHeader->GetEndOfReg()) {
 
-      AliWarning(Form("Wrong end of Reg word %x instead of %x\n",
-		    buffer[index-1], fRegHeader->GetEndOfReg()));
+      const Char_t* msg = Form("Wrong end of Regional word %x instead of %x\n",
+		    buffer[index-1], fRegHeader->GetEndOfReg());
+      if (fWarnings) AliWarning(msg);
+      AddErrorMessage(msg);
       fRegEoWErrors++;
     }
     // 16 local cards per regional board
@@ -160,8 +170,11 @@ Bool_t AliMUONPayloadTrigger::Decode(UInt_t *buffer)
 
       if (buffer[index++] != fLocalStruct->GetEndOfLocal()) {
 
-	AliWarning(Form("Wrong end of local word %x instead of %x\n",
-			buffer[index-1], fLocalStruct->GetEndOfLocal()));
+        const Char_t* msg = Form("Wrong end of Local word %x instead of %x\n",
+                                 buffer[index-1], fLocalStruct->GetEndOfLocal());
+        
+        if (fWarnings) AliWarning(msg);
+        AddErrorMessage(msg);
 	fLocalEoWErrors++;
       }
       // fill only if card notified
@@ -207,3 +220,17 @@ void AliMUONPayloadTrigger::SetMaxLoc(Int_t loc)
   if (loc > 16) loc = 16;
   fMaxLoc = loc;
 }
+
+//______________________________________________________
+void AliMUONPayloadTrigger::AddErrorMessage(const Char_t* msg)
+{
+/// adding message to logger
+ 
+  TString tmp(msg);
+  
+  Int_t pos = tmp.First("\n");
+  tmp[pos] = 0;
+    
+  fLog->Log(tmp.Data());
+}
+
