@@ -25,8 +25,13 @@ AliGeomManager.cxx \
 AliAlignObj.cxx AliAlignObjParams.cxx AliAlignObjMatrix.cxx \
 AliTriggerInput.cxx \
 AliTriggerDetector.cxx \
-AliTriggerCondition.cxx \
+AliTriggerConfiguration.cxx \
+AliTriggerBCMask.cxx \
+AliTriggerInteraction.cxx \
 AliTriggerDescriptor.cxx \
+AliTriggerClass.cxx \
+AliTriggerCluster.cxx \
+AliTriggerPFProtection.cxx \
 AliCentralTrigger.cxx AliRieman.cxx\
 AliTrackFitter.cxx AliTrackFitterRieman.cxx AliTrackFitterKalman.cxx\
 AliTrackFitterStraight.cxx\

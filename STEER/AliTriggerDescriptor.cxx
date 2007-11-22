@@ -13,411 +13,188 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class for running and define a Trigger Descriptor 
+// This class which defines the trigger descriptor objects
 //
-// A Trigger Descriptor define a trigger setup for specific runnign
-// condition (Pb-Pb, p-p, p-A, Calibration, etc).
-// It keep:
-//    - cluster detector (List of detectors involved)
-//    - List of conditions
-//
-// Descriptors could be create in advance and store in a file.
-//
-//   Example how to create a Trigger Descriptor:
-//
-//   AliTriggerDescriptor descrip( "TEST", "Test Descriptor" );
-//
-//   // Define a Cluster Detector
-//   descrip.AddDetectorCluster( "VZERO ZDC MUON" );
-//
-//   // Define the trigger conditions (see AliTriggerCondition.cxx)
-//   descrip.AddCondition( "VZERO_TEST1_L0 & MUON_SPlus_LPt_L0 & ZDC_TEST2_L0", // condition
-//                         "VO1_M1_ZDC2",      // short name
-//                         "Dummy",            // short description
-//                          0x0100 );          // class mask (set one bit)
-//
-//   descrip.AddCondition( "VZERO_TEST2_L0 & MUON_SMinus_HPt_L0 & ZDC_TEST1_L0",
-//                         "VO2_M3_ZDC1",
-//                         "Dummy",
-//                          0x0200 );
-//
-//   descrip.AddCondition( "VZERO_TEST3_L0 | MUON_Unlike_LPt_L0 | ZDC_TEST3_L0",
-//                         "VO3_M1_ZDC3",
-//                         "Dummy",
-//                          0x0400 );
-//   descrip.CheckInputsConditions("Config.C");
-//   descrip.Print();
-//
-//   // save the descriptor to file 
-//   // (default file name $ALICE_ROOT/data/triggerDescriptor.root)
-//   descrip.WriteDescriptor(); or descrip.WriteDescriptor( filename );
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <TString.h>
+#include <Riostream.h>
 #include <TObjArray.h>
-#include <TSystem.h>
-#include <TKey.h>
-#include <TList.h>
-#include <TMap.h>
-#include <TFile.h>
+#include <TObjString.h>
 
 #include "AliLog.h"
-#include "AliRun.h"
-#include "AliRunLoader.h"
-#include "AliModule.h"
-
-#include "AliCDBManager.h"
-#include "AliCDBPath.h"
-#include "AliCDBEntry.h"
-
-#include "AliTriggerInput.h"
-#include "AliTriggerDetector.h"
-#include "AliTriggerCondition.h"
 #include "AliTriggerDescriptor.h"
-
+#include "AliTriggerInput.h"
+#include "AliTriggerInteraction.h"
 
 ClassImp(AliTriggerDescriptor)
 
 //_____________________________________________________________________________
-const char* AliTriggerDescriptor::fgkDetectorName[AliTriggerDescriptor::fgkNDetectors] =
-             { "ITS", "TRD", "PHOS", "EMCAL", "MUON", "ZDC", "T0", "VZERO", "ACORDE", "TOF" };
-
-const TString AliTriggerDescriptor::fgkDescriptorFileName("/data/triggerDescriptors.root");
-
-//_____________________________________________________________________________
 AliTriggerDescriptor::AliTriggerDescriptor():
-  TNamed(),
-  fDetectorCluster(""),
-  fConditions()
+  TNamed()
 {
+  // Default constructor
 }
 
 //_____________________________________________________________________________
-AliTriggerDescriptor::AliTriggerDescriptor( TString & name, TString & description ):
-  TNamed( name, description ),
-  fDetectorCluster(""),
-  fConditions()
+AliTriggerDescriptor::AliTriggerDescriptor( TString & name, TString &cond ):
+  TNamed( name, cond )
 {
+  // Constructor
 }
-
 //_____________________________________________________________________________
-AliTriggerDescriptor::AliTriggerDescriptor( const AliTriggerDescriptor& des ):
-  TNamed( des ),
-  fDetectorCluster( des.fDetectorCluster ),
-  fConditions()
+AliTriggerDescriptor::~AliTriggerDescriptor() 
+{ 
+  // Destructor
+}
+//_____________________________________________________________________________
+AliTriggerDescriptor::AliTriggerDescriptor( const AliTriggerDescriptor& desc ):
+  TNamed( desc )
 {
    // Copy constructor
-   Int_t ncond = des.fConditions.GetEntriesFast();
-   for( Int_t j=0; j<ncond; j++ ) {
-      AddCondition( new AliTriggerCondition( *(AliTriggerCondition*)(des.fConditions.At( j )) ) );
-   }
 }
 
 //______________________________________________________________________________
-AliTriggerDescriptor& AliTriggerDescriptor::operator=(const AliTriggerDescriptor& des)
+AliTriggerDescriptor& AliTriggerDescriptor::operator=(const AliTriggerDescriptor& desc)
 {
    // AliTriggerDescriptor assignment operator.
 
-   if (this != &des) {
-      TNamed::operator=(des);
-      fDetectorCluster = des.fDetectorCluster;
-      fConditions.Delete();
-      Int_t ncond = des.fConditions.GetEntriesFast();
-      for( Int_t j=0; j<ncond; j++ ) {
-         AddCondition( new AliTriggerCondition( *(AliTriggerCondition*)(des.fConditions.At( j )) ) );
-      }
+   if (this != &desc) {
+      TNamed::operator=(desc);
    }
    return *this;
 }
 
 //_____________________________________________________________________________
-Bool_t AliTriggerDescriptor::AddDetectorCluster( TString & cluster )
+Bool_t AliTriggerDescriptor::CheckInputsAndFunctions(const TObjArray &inputs, const TObjArray &functions) const
 {
-   // Add a List of Detectors to be read together (Detector Cluster)
-   // Ej "TO VO ZDC MUON" or "ALL"
+  // Check the existance of trigger inputs and functions
+  // and the logic used.
+  // Return false in case of wrong interaction
+  // definition.
 
-   TString olddet = fDetectorCluster;
-   TString newdet = cluster;
-   for( Int_t iDet = 0; iDet < fgkNDetectors; iDet++ ) {
-      if( IsSelected( fgkDetectorName[iDet], newdet ) && !IsSelected( fgkDetectorName[iDet], olddet ) ) {
-         // Add the detector
-         fDetectorCluster.Append( " " );
-         fDetectorCluster.Append( fgkDetectorName[iDet] );
+   TString condition( GetTitle() );
+   TObjArray* tokens = condition.Tokenize(" !&|()\t");
+
+   Bool_t IsInput = kFALSE;
+
+   Int_t ntokens = tokens->GetEntriesFast();
+   for( Int_t i=0; i<ntokens; i++ ) {
+      TObjString* iname = (TObjString*)tokens->At( i );
+      if (functions.FindObject(iname->String())) {
+	// Logical function of the first 4 inputs
+	if (IsInput) {
+	  AliError("Logical functions can not follow inputs, they are always declared first !");
+	  delete tokens;
+	  return kFALSE;
+	}
+	IsInput = kFALSE;
+	continue;
       }
-   }
-
-   // check if there are no trigger detectors (E.g. TPC)
-   if ((newdet.CompareTo("ALL") != 0) && !newdet.IsNull()) {
-      AliError( Form("the following detectors are not trigger detectors: %s",
-                newdet.Data() ) );
+      if (inputs.FindObject(iname->String())) {
+	// already a trigger input
+	IsInput = kTRUE;
+	continue;
+      }
+      AliError(Form("Invalid trigger input or function (%s)",iname->String().Data()));
+      delete tokens;
       return kFALSE;
    }
 
+   delete tokens;
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliTriggerDescriptor::AddCondition( TString & cond, TString & name, TString & description, ULong64_t mask   )
+Bool_t AliTriggerDescriptor::IsActive(const TObjArray &inputs, const TObjArray &functions) const
 {
-   // Add a new condition
-   AliTriggerCondition* acond = new AliTriggerCondition( cond, name, description, mask );
-   fConditions.AddLast( acond );
+  // Check if the trigger inputs and functions
+  // are active
+  // Return false in case one or more inputs
+  // are disabled
+   TString condition( GetTitle() );
+   TObjArray* tokens = condition.Tokenize(" !&|()\t");
+
+   Int_t ntokens = tokens->GetEntriesFast();
+   for( Int_t i=0; i<ntokens; i++ ) {
+      TObjString* iname = (TObjString*)tokens->At( i );
+      AliTriggerInteraction *interact = (AliTriggerInteraction *)functions.FindObject(iname->String());
+      if (interact) {
+	if (!interact->IsActive(inputs)) {
+	  AliWarning(Form("The descriptor (%s) will be disabled, because the function (%s) is disabled",
+			  GetName(),iname->String().Data()));
+	  delete tokens;
+	  return kFALSE;
+	}
+	continue;
+      }
+      AliTriggerInput *inp = (AliTriggerInput *)inputs.FindObject(iname->String());
+      if (inp) {
+	if (!inp->IsActive()) {
+	  AliWarning(Form("The descriptor (%s) will be disabled, because the input (%s) is disabled",
+			  GetName(),iname->String().Data()));
+	  delete tokens;
+	  return kFALSE;
+	}
+	continue;
+      }
+      AliError(Form("Desciptor (%s) contains invalid trigger input or function (%s)",
+		    GetName(),iname->String().Data()));
+      delete tokens;
+      return kFALSE;
+   }
+
+   delete tokens;
+   return kTRUE;
+
 }
 
 //_____________________________________________________________________________
-AliTriggerDescriptor* AliTriggerDescriptor::LoadDescriptor( TString & descriptor, const char* filename )
+Bool_t AliTriggerDescriptor::Trigger( const TObjArray &inputs, const TObjArray &functions) const
 {
-   // Load one pre-created Descriptors from database/file that match
-   // with the input string 'descriptor'
-   // Ej: "Pb-Pb" or "p-p-DIMUON CALIBRATION-CENTRAL-BARREL"
-   // Load the selected descriptor
-  /*TString path;
-   if( !filename[0] ) {
-      path += gSystem->Getenv("ALICE_ROOT");
-      path += fgkDescriptorFileName;
-   }
-   else
-      path += filename;
+  // Check if the inputs and functions 
+  // satify the descriptor conditions 
 
-   if( gSystem->AccessPathName( path.Data() ) ) {
-      AliErrorGeneral( "AliTriggerDescriptor", Form( "file (%s) not found", path.Data() ) );
-      return NULL;
-   }
+  TString condition( GetTitle() );
+  TObjArray* tokens = condition.Tokenize(" !&|()\t");
 
-   TFile file( path.Data(), "READ" );
-   AliTriggerDescriptor* des = (AliTriggerDescriptor*)(file.Get( descriptor.Data() ));
-
-   file.Close();
-
-   return des;*/
-  AliTriggerDescriptor *des = 0x0;
-  cout<<"GETTING TRIGGER DESCRIPTORS FROM CDB!!!"<<endl;
- 
-  AliCDBPath path("GRP","CTP","Trigger");
-	
-  AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
-  if(!entry) AliFatalClass("Couldn't load trigger description data from CDB!");
-
-  TList *list = (TList *) entry->GetObject();
-  for(Int_t i =  0; i < list->GetEntries(); i++) {
-    TMap *map = (TMap *)list->At(i);
-    des = (AliTriggerDescriptor *)map->GetValue(descriptor.Data());
-    if(des) return des;
+  Int_t ntokens = tokens->GetEntriesFast();
+  for( Int_t i=0; i<ntokens; i++ ) {
+    TObjString* iname = (TObjString*)tokens->At( i );
+    AliTriggerInteraction *interact = (AliTriggerInteraction *)functions.FindObject(iname->String());
+    if (interact) {
+      if (!interact->Trigger(inputs)) {
+	delete tokens;
+	return kFALSE;
+      }
+      continue;
+    }
+    AliTriggerInput *inp = (AliTriggerInput *)inputs.FindObject(iname->String());
+    if (inp) {
+      if (!inp->Status()) {
+	delete tokens;
+	return kFALSE;
+      }
+      continue;
+    }
+    AliError(Form("Desciptor (%s) contains invalid trigger input or function (%s)",
+		  GetName(),iname->String().Data()));
+    delete tokens;
+    return kFALSE;
   }
 
-  return des;
+  delete tokens;
+  return kTRUE;
+
 }
 
 //_____________________________________________________________________________
-TObjArray* AliTriggerDescriptor::GetAvailableDescriptors( const char* filename )
-{
-   // Return an array of descriptor in the file
-
-   TString path;
-   if( !filename[0] ) {
-      path += gSystem->Getenv( "ALICE_ROOT" );
-      path += fgkDescriptorFileName;
-   }
-   else
-      path += filename;
-
-   if( gSystem->AccessPathName( path.Data() ) ) {
-      AliErrorGeneral( "AliTriggerDescriptor", Form( "file (%s) not found", path.Data() ) );
-      return NULL;
-   }
-
-   TObjArray* desArray = new TObjArray();
-
-   TFile file( path.Data(), "READ" );
-   if( file.IsZombie() ) {
-      AliErrorGeneral( "AliTriggerDescriptor", Form( "Error opening file (%s)", path.Data() ) );
-      return NULL;
-   }
-
-   file.ReadAll();
-
-   TKey* key;
-   TIter next( file.GetListOfKeys() );
-   while( (key = (TKey*)next()) ) {
-      TObject* obj = key->ReadObj();
-      if( obj->InheritsFrom( "AliTriggerDescriptor" ) ) {
-         desArray->AddLast( obj );
-      }
-   }
-   file.Close();
-
-   return desArray;
-}
-
-//_____________________________________________________________________________
-void AliTriggerDescriptor::WriteDescriptor( const char* filename )
-{
-   // Load one pre-created Descriptors from database/file that match
-   // with the input string 'descriptor'
-   // Ej: "Pb-Pb" or "p-p-DIMUON CALIBRATION-CENTRAL-BARREL"
-
-   // Load the selected descriptor
-   TString path;
-   if( !filename[0] ) {
-      path += gSystem->Getenv("ALICE_ROOT");
-      path += fgkDescriptorFileName;
-   }
-   else
-      path += filename;
-
-   TFile file( path.Data(), "UPDATE" );
-   if( file.IsZombie() ) {
-      AliErrorGeneral( "AliTriggerDescriptor", 
-                        Form( "Can't open file (%s)", path.Data() ) );
-      return;
-   }
-
-   Bool_t result = (Write( GetName(), TObject::kOverwrite ) != 0);
-   if( !result )
-      AliErrorGeneral( "AliTriggerDescriptor",
-                        Form( "Can't write entry to file <%s>!", path.Data() ) );
-   file.Close();
-}
-
-//_____________________________________________________________________________
-Bool_t AliTriggerDescriptor::CheckInputsConditions( TString& configfile )
-{
-   // To be used on the pre-creation of Descriptors to check if the
-   // conditions have valid inputs names.
-   //
-   // Initiate detectors modules from a Config file
-   // Ask to each active module present in the fDetectorCluster
-   // to create a Trigger detector and retrive the inputs from it
-   // to create a list of inputs.
-   // Each condition in the descriptor is then checked agains 
-   // the list of inputs
-
-
-   if (!gAlice) {
-      AliError( "no gAlice object. Restart aliroot and try again." );
-      return kFALSE;
-   }
-   if (gAlice->Modules()->GetEntries() > 0) {
-      AliError( "gAlice was already run. Restart aliroot and try again." );
-      return kFALSE;
-   }
-
-   AliInfo( Form( "initializing gAlice with config file %s",
-            configfile.Data() ) );
-   StdoutToAliInfo( StderrToAliError(
-      gAlice->Init( configfile.Data() );
-   ););
-
-   AliRunLoader* runLoader = gAlice->GetRunLoader();
-   if( !runLoader ) {
-      AliError( Form( "gAlice has no run loader object. "
-                      "Check your config file: %s", configfile.Data() ) );
-      return kFALSE;
-   }
-
-   // get the possible inputs to check the condition
-   TObjArray inputs;
-   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
-
-   TString detStr = fDetectorCluster;
-   for( Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++ ) {
-      AliModule* det = (AliModule*) detArray->At(iDet);
-      if( !det || !det->IsActive() ) continue;
-      if( IsSelected( det->GetName(), detStr ) ) {
-         AliInfo( Form( "Creating inputs for %s", det->GetName() ) );
-         AliTriggerDetector* dtrg = det->CreateTriggerDetector();
-         dtrg->CreateInputs();
-         TObjArray* detInp = dtrg->GetInputs();
-         for( Int_t i=0; i<detInp->GetEntriesFast(); i++ ) {
-            AliInfo( Form( "Adding input %s", ((AliTriggerInput*)detInp->At(i))->GetName() ) );
-            inputs.AddLast( detInp->At(i) );
-         }
-      }
-   }
-
-   // check if the condition is compatible with the triggers inputs
-   Int_t ncond = fConditions.GetEntriesFast();
-   Bool_t check = kTRUE;
-   ULong64_t mask = 0L;
-   for( Int_t j=0; j<ncond; j++ ) {
-      AliTriggerCondition* cond = (AliTriggerCondition*)(fConditions.At( j ));
-      if( !(cond->CheckInputs( inputs )) ) check = kFALSE;
-      else AliInfo( Form( "Condition (%s) inputs names OK, class mask (0x%Lx)",
-                    cond->GetName(), cond->GetMask( ) ) );
-      // check if condition mask is duplicated
-      if( mask & cond->GetMask() ) {
-         AliError( Form("Condition (%s). The class mask (0x%Lx) is ambiguous. It was previous defined",
-                   cond->GetName(), cond->GetMask()  ) );
-         check = kFALSE;
-      }
-      mask |= cond->GetMask();
-   }
-
-   return check;
-}
-
-
-//_____________________________________________________________________________
-void AliTriggerDescriptor::Print( const Option_t*  ) const
+void AliTriggerDescriptor::Print( const Option_t* ) const
 {
    // Print
-   cout << "Trigger Descriptor:"  << endl;
-   cout << "  Name:             " << GetName() << endl; 
-   cout << "  Description:      " << GetTitle() << endl;
-   cout << "  Detector Cluster: " << fDetectorCluster << endl;
-
-//   Int_t ninputs = fInputs->GetEntriesFast();
-//   for( Int_t i=0; i<ninputs; i++ ) {
-//      AliTriggerInput* in = (AliTriggerInput*)fInputs->At(i)
-//      in->Print();
-//   }
-
-   Int_t ncond = fConditions.GetEntriesFast();
-   for( Int_t i=0; i<ncond; i++ ) {
-      AliTriggerCondition* in = (AliTriggerCondition*)fConditions.At(i);
-      in->Print();
-   }
-   cout << endl;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Helper method
-
-//_____________________________________________________________________________
-Bool_t AliTriggerDescriptor::IsSelected( TString detName, TString& detectors ) const
-{
-   // check whether detName is contained in detectors
-   // if yes, it is removed from detectors
-
-   // check if all detectors are selected
-   if( (detectors.CompareTo("ALL") == 0 ) ||
-        detectors.BeginsWith("ALL ") ||
-        detectors.EndsWith(" ALL") ||
-        detectors.Contains(" ALL ") ) {
-      detectors = "ALL";
-      return kTRUE;
-   }
-
-   // search for the given detector
-   Bool_t result = kFALSE;
-   if( (detectors.CompareTo( detName ) == 0) ||
-        detectors.BeginsWith( detName+" " ) ||
-        detectors.EndsWith( " "+detName ) ||
-        detectors.Contains( " "+detName+" " ) ) {
-      detectors.ReplaceAll( detName, "" );
-      result = kTRUE;
-   }
-
-   // clean up the detectors string
-   while( detectors.Contains("  ") )  detectors.ReplaceAll( "  ", " " );
-   while( detectors.BeginsWith(" ") ) detectors.Remove( 0, 1 );
-   while( detectors.EndsWith(" ") )   detectors.Remove( detectors.Length()-1, 1 );
-
-   return result;
+  cout << "Trigger Descriptor:" << endl;
+  cout << "  Name:             " << GetName() << endl;
+  cout << "  Logic:            " << GetTitle() << endl;
 }

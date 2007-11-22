@@ -22,15 +22,16 @@ class AliTriggerDetector : public TNamed {
 
 public:
                           AliTriggerDetector();
-               virtual   ~AliTriggerDetector() { fInputs.SetOwner(); fInputs.Delete(); }
+               virtual   ~AliTriggerDetector();
+	       AliTriggerDetector(const AliTriggerDetector & de );
 
+                  void    CreateInputs(const TObjArray& inputs);
           virtual void    CreateInputs();
           virtual void    Trigger();
   //  Setters
                   void    AddInput( TObject * input ) { fInputs.AddLast( input ); }
                   void    SetInput( TString & name );
                   void    SetInput( const char * name );
-                  void    SetInput( Int_t mask );
   //  Getters
              TObjArray*   GetInputs() { return &fInputs; }
                 Long_t    GetMask() const { return fMask; }
@@ -46,6 +47,9 @@ public:
 protected:
                 Long_t    fMask;      // Trigger Mask ( bitwise OR of trigger inputs )
              TObjArray    fInputs;    // Array of Triggers Inputs (AliTriggerInput class)
+
+private:
+	     AliTriggerDetector&   operator=(const AliTriggerDetector& de);
 
    ClassDef( AliTriggerDetector, 1 )  // Base Class for Detector specific Trigger
 };

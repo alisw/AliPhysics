@@ -30,40 +30,63 @@
 #include <TNamed.h>
 #endif
 
+#include "AliDAQ.h"
+
 class AliTriggerInput : public TNamed {
 
 public:
                           AliTriggerInput(): TNamed(),
-                                             fMask( 0 ),
-                                             fValue( 0 ) {}
-                          AliTriggerInput( TString name, TString description, Long_t mask )
-                                           : TNamed( name.Data(), description.Data() ),
-                                             fMask( mask ),
-                                             fValue( 0 ) {}
+			    fMask( 0 ),
+			    fValue( 0 ),
+			    fSignature( -1),
+			    fLevel(0),
+			    fDetectorId(-1),
+			    fIsActive(kFALSE)
+			    {}
+                          AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature = -1, Char_t number = -1);
                           AliTriggerInput( AliTriggerInput & inp )
-                                           : TNamed( inp ),
-                                             fMask( inp.fMask ),
-                                             fValue( inp.fValue ) {}
+			    : TNamed( inp ),
+			    fMask( inp.fMask ),
+			    fValue( inp.fValue ),
+			    fSignature( inp.fSignature ),
+			    fLevel( inp.fLevel),
+			    fDetectorId( inp.fDetectorId),
+			    fIsActive(kFALSE)
+			    {}
                virtual   ~AliTriggerInput() {}
 
   //  Setters
-          virtual void    Set()   { fValue = fMask; }
-          virtual void    Reset() { fValue = 0; }
+                  void    Set()   { if (fIsActive) fValue = fMask; }
+                  void    Reset() { fValue = 0; }
+         	  void    Enable() { fIsActive = kTRUE; }
 
   //  Getters
                 Bool_t    Status() const   { return (Bool_t)fValue; }
-                Long_t    GetValue() const { return fValue; }
-                 Int_t    GetMask() const  { return fMask; }
-  //             ULong_t    Hash() const { return TMath::Hash( GetName().Data() ); };
+             ULong64_t    GetValue() const { return fValue; }
+             ULong64_t    GetMask() const  { return fMask; }
+	        Int_t     GetSignature() const { return fSignature; }
+	       TString    GetInputName() const { return GetName(); }
+               TString    GetDetector() const { return GetTitle(); }
+	       TString    GetModule() const;
+	        Char_t    GetDetectorId() const { return fDetectorId; }
+	       UChar_t    GetLevel() const { return fLevel; }
+	        Bool_t    IsActive() const { return fIsActive; }
 
-           virtual void    Print( const Option_t* opt ="" ) const;
+           virtual void   Print( const Option_t* opt ="" ) const;
 
+	   static Bool_t  fgkIsTriggerDetector[AliDAQ::kNDetectors]; // List of trigger detectors
+   static  const char*    fgkCTPDetectorName[AliDAQ::kNDetectors];
+   static  const char*    fgkOfflineModuleName[AliDAQ::kNDetectors];
 protected:
-                Long_t    fMask;        //  Trigger ID mask (1 bit)
-                Long_t    fValue;       //  Trigger Signal (0 = false, > 1 = true = fMask )
-     //          Int_t      fLevel;       //  Trigger Level (L0, L1, L2)
+             ULong64_t    fMask;                //  Trigger ID mask (1 bit)
+             ULong64_t    fValue;               //  Trigger Signal (0 = false, > 1 = true = fMask )
+		Int_t     fSignature;           //  8 bit signature (internal CTP inputs can have longer signature)
+		UChar_t   fLevel;               //  L0, L1 or L2
+		Char_t    fDetectorId;          //  Alice-wide detector id, see AliDAQ class for details
+	        Bool_t    fIsActive;            //  Is trigger input active (during simulation)
+//                  void    fDectParameterTable;  //-> link to detector parameter table????
 
-   ClassDef( AliTriggerInput, 1 )  // Define a Trigger Input
+   ClassDef( AliTriggerInput, 3 )  // Define a Trigger Input
 };
 
 

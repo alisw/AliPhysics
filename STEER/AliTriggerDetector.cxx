@@ -53,6 +53,80 @@ AliTriggerDetector::AliTriggerDetector() :
 }
 
 //_____________________________________________________________________________
+AliTriggerDetector::AliTriggerDetector(const AliTriggerDetector & de ):
+  TNamed(de),
+  fMask(de.fMask),
+  fInputs(de.fInputs)
+{
+  // Copy constructor
+  
+}
+
+//_____________________________________________________________________________
+AliTriggerDetector::~AliTriggerDetector()
+{
+  // Destructor
+  // Delete only inputs that are not
+  // associated to the CTP
+  Int_t ninputs = fInputs.GetEntriesFast();
+  for(Int_t i = 0; i < ninputs; i++) {
+    AliTriggerInput *inp = (AliTriggerInput *)fInputs.At(i);
+    if (inp->GetSignature() == -1 &&
+	inp->GetMask() == 0)
+      delete fInputs.RemoveAt(i);
+  }
+}
+
+//_____________________________________________________________________________
+void AliTriggerDetector::CreateInputs(const TObjArray &inputs)
+{
+   // Define the inputs to the Central Trigger Processor
+   // This is a dummy version 
+   
+   // Check if we have to create the inputs first
+   if( fInputs.GetEntriesFast() == 0 ) {
+     // Create the inputs that the detector can provide
+     CreateInputs();
+   }
+
+   TString name = GetName();
+
+   // Pointer to the available inputs provided by the detector
+   TObjArray* availInputs = &fInputs;
+
+   Int_t ninputs = inputs.GetEntriesFast();
+   for( Int_t j=0; j<ninputs; j++ ) {
+     AliTriggerInput *inp = (AliTriggerInput*)inputs.At(j);
+     if ( name.CompareTo(inp->GetModule().Data()) ) continue;
+
+     TObject *tempObj = availInputs->FindObject(inp->GetInputName().Data());
+     if ( tempObj ) {
+       Int_t tempIndex = availInputs->IndexOf(tempObj);
+       delete availInputs->Remove(tempObj);
+       fInputs.AddAt( inp, tempIndex );
+       inp->Enable();
+       AliInfo(Form("Trigger input (%s) is found in the CTP configuration. Therefore it is enabled for trigger detector (%s)",
+		    inp->GetInputName().Data(),name.Data()));
+     }
+     else {
+       AliWarning(Form("Trigger Input (%s) is not implemented for the trigger detector (%s) ! It will be disabled !",
+		       inp->GetInputName().Data(),name.Data()));
+     }
+   }
+
+   for( Int_t j=0; j<fInputs.GetEntriesFast(); j++ ) {
+     AliTriggerInput *inp = (AliTriggerInput *)fInputs.At(j);
+     if (inp->GetSignature() == -1 &&
+	 inp->GetMask() == 0)
+       inp->Enable();
+       AliInfo(Form("Trigger input (%s) was not found in the CTP configuration. Therefore it will be run in a stand-alone mode",
+		    inp->GetInputName().Data()));
+   }
+
+   fInputs.SetOwner(kFALSE);
+}
+
+//_____________________________________________________________________________
 void AliTriggerDetector::CreateInputs()
 {
    // Define the inputs to the Central Trigger Processor
@@ -61,10 +135,9 @@ void AliTriggerDetector::CreateInputs()
    // Do not create inputs again!!
    if( fInputs.GetEntriesFast() > 0 ) return;
    
-   TString name = GetName();
-   fInputs.AddLast( new AliTriggerInput( name+"_TEST1_L0", "Dummy input 1", 0x01 ) );
-   fInputs.AddLast( new AliTriggerInput( name+"_TEST2_L0", "Dummy input 2", 0x02 ) );
-   fInputs.AddLast( new AliTriggerInput( name+"_TEST3_L0", "Dummy input 3", 0x04 ) );
+   fInputs.AddLast( new AliTriggerInput( "TEST1_L0", "TEST", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "TEST2_L0", "TEST", 0 ) );
+   fInputs.AddLast( new AliTriggerInput( "TEST3_L0", "TEST", 0 ) );
 }
 
 //_____________________________________________________________________________
@@ -120,21 +193,6 @@ void AliTriggerDetector::SetInput( const char * name )
       fMask |= in->GetValue();
    } else
       AliError( Form( "There is not input named %s", name ) );
-}
-
-//_____________________________________________________________________________
-void AliTriggerDetector::SetInput( Int_t mask )
-{
-   // Set Input by mask
-   Int_t nInputs = fInputs.GetEntriesFast();
-   for( Int_t j=0; j<nInputs; j++ ) {
-      AliTriggerInput* in = (AliTriggerInput*)fInputs.At( j );
-      if( in->GetMask() == mask ) { 
-         in->Set();
-         fMask |= in->GetValue();
-         break;
-      }
-   }
 }
 
 //_____________________________________________________________________________

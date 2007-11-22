@@ -34,7 +34,7 @@ public:
                                           fOperator(exp.fOperator)  {}
          AliExpression&    operator=(const AliExpression& exp);
 
-        virtual Bool_t     Value( TObjArray & vars );
+        virtual Bool_t     Value( const TObjArray & vars );
        virtual TString     Unparse() const;
 
                 TString    fVname;   // Variable name
@@ -64,7 +64,7 @@ class AliVariableExpression: public AliExpression {
 public:
                      AliVariableExpression( TString a ): AliExpression() { fVname = a; };
                     ~AliVariableExpression() {}
-   virtual Bool_t    Value( TObjArray& pgm );
+   virtual Bool_t    Value( const TObjArray& pgm );
   virtual TString    Unparse() const { return fVname; }
 
    ClassDef( AliVariableExpression, 2 )  // Class to define a variable expression

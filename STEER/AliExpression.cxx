@@ -20,7 +20,7 @@
 //  AliExpression Class                                                      //                                                                           //
 //                                                                           //
 //  Helper class to evaluate the condition expressions in                    //
-//  AliTriggerCondition                                                      //
+//  AliTrigger* classes                                                      //
 //  Implements a simple recursive-descent parser                             //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ AliExpression::AliExpression( int op, AliExpression* a ) :
 }
 
 //______________________________________________________________________________
-Bool_t AliExpression::Value( TObjArray &vars )
+Bool_t AliExpression::Value( const TObjArray &vars )
 {
    //  Evaluate the expression
    if ( fArg2 == 0 && fVname.IsNull() ) {
@@ -354,7 +354,7 @@ AliExpression* AliExpression::Expression( TObjArray &st,Int_t &i )
 ClassImp( AliVariableExpression )
 
 //______________________________________________________________________________
-Bool_t AliVariableExpression::Value( TObjArray& pgm )
+Bool_t AliVariableExpression::Value( const TObjArray& pgm )
 {
    // return the value
    TObject* dd = pgm.FindObject( fVname.Data() );

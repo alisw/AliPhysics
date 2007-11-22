@@ -19,6 +19,7 @@
 //
 //
 ///////////////////////////////////////////////////////////////////////////////
+#include <Riostream.h>
 
 #include "AliTriggerBCMask.h"
 
@@ -33,11 +34,19 @@ AliTriggerBCMask::AliTriggerBCMask():
 }
 
 //_____________________________________________________________________________
-AliTriggerBCMask::AliTriggerMask( TString & name, UChar_t *mask ):
+AliTriggerBCMask::AliTriggerBCMask( TString & name ):
   TNamed( name, name )
 {
   // Constructor
-  for (Int_t i = 0; i < kNBytesPerBCMask; i++) fBCMask[i] = mask[i];
+  for (Int_t i = 0; i < kNBytesPerBCMask; i++) fBCMask[i] = 255;
+}
+
+//_____________________________________________________________________________
+AliTriggerBCMask::AliTriggerBCMask( TString & name, TString & mask ):
+  TNamed( name, mask )
+{
+  // Constructor
+  CreateMask(mask);
 }
 //_____________________________________________________________________________
 AliTriggerBCMask::~AliTriggerBCMask() 
@@ -46,7 +55,7 @@ AliTriggerBCMask::~AliTriggerBCMask()
 }
 //_____________________________________________________________________________
 AliTriggerBCMask::AliTriggerBCMask( const AliTriggerBCMask& mask ):
-  TNamed( mask ),
+  TNamed( mask )
 {
    // Copy constructor
   for (Int_t i = 0; i < kNBytesPerBCMask; i++) fBCMask[i] = mask.fBCMask[i];
@@ -65,7 +74,7 @@ AliTriggerBCMask& AliTriggerBCMask::operator=(const AliTriggerBCMask& mask)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTriggerBCMask::GetMask( UShort_t index)
+Bool_t AliTriggerBCMask::GetMask( UShort_t index) const
 {
   // Return true or false whenever the mask is active
   // for the bunch-crossing # = index
@@ -73,4 +82,13 @@ Bool_t AliTriggerBCMask::GetMask( UShort_t index)
   if (position >= kNBytesPerBCMask) return kFALSE;
   UChar_t offset = index%8;
   return (fBCMask[position] & (0x1 << offset));
+}
+
+//_____________________________________________________________________________
+void AliTriggerBCMask::Print( const Option_t* ) const
+{
+   // Print
+  cout << "Trigger bunch-crossing mask:" << endl;
+  cout << "  Name:                      " << GetName() << endl;
+  cout << "  Mask:                      " << GetTitle() << endl;
 }

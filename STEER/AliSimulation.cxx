@@ -713,7 +713,7 @@ Bool_t AliSimulation::Run(Int_t nEvents)
 }
 
 //_____________________________________________________________________________
-Bool_t AliSimulation::RunTrigger(const char* descriptors)
+Bool_t AliSimulation::RunTrigger(const char* config)
 {
   // run the trigger
 
@@ -734,28 +734,27 @@ Bool_t AliSimulation::RunTrigger(const char* descriptors)
    
    AliRunLoader* runLoader = LoadRun("READ");
    if (!runLoader) return kFALSE;
-   TString des = descriptors;
+   TString trconfiguration = config;
 
-   if (des.IsNull()) {
+   if (trconfiguration.IsNull()) {
      if (gAlice->GetTriggerDescriptor() != "") {
-       des = gAlice->GetTriggerDescriptor();
+       trconfiguration = gAlice->GetTriggerDescriptor();
      }
-     else {
-       AliWarning("No trigger descriptor is specified. Skipping the trigger simulation...");
-       return kTRUE;
-     }
+     else
+       AliWarning("No trigger descriptor is specified. Loading the one that is the CDB.");
    }
 
    runLoader->MakeTree( "GG" );
    AliCentralTrigger* aCTP = runLoader->GetTrigger();
-  // Load Descriptors
-   aCTP->LoadDescriptor( des );
+   // Load Configuration
+   if (!aCTP->LoadConfiguration( trconfiguration ))
+     return kFALSE;
 
-  // digits -> trigger
+   // digits -> trigger
    if( !aCTP->RunTrigger( runLoader ) ) {
       if (fStopOnError) {
-    //  delete aCTP;
-         return kFALSE;
+	//  delete aCTP;
+	return kFALSE;
       }
    }
 

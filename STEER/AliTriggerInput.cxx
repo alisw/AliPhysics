@@ -28,7 +28,8 @@
 //
 //    The name must be globaly unique. Spaces are not allowed.
 //    As convention should start with detector name then an id
-//    and the trigger level (L0, L1, L2)
+//    and the trigger level (L0, L1, L2) separated by "_"
+//    for valid detector names see AliTriggerCluster::fgkDetectorName
 //
 //    A maximun of 60 inputs trigger are allow.
 //    So, the id mask should set only bit from the position 1 to 60.
@@ -36,10 +37,93 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+#include <TMath.h>
 
+#include "AliLog.h"
 #include "AliTriggerInput.h"
 
 ClassImp( AliTriggerInput )
+
+Bool_t AliTriggerInput::fgkIsTriggerDetector[AliDAQ::kNDetectors] = {1,0,0,0,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,0};
+const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
+  "SPD",
+  "SDD",
+  "SSD",
+  "TPC",
+  "TRD",
+  "TOF",
+  "HMPID",
+  "PHOS",
+  "CPV",
+  "PMD",
+  "MUON_TRK",
+  "MUON_TRG",
+  "FMD",
+  "T0",
+  "V0",
+  "ZDC",
+  "ACORDE",
+  "CTP",
+  "EMCal",
+  "HLT"
+};
+
+const char* AliTriggerInput::fgkOfflineModuleName[AliDAQ::kNDetectors] = {
+  "ITS",
+  "ITS",
+  "ITS",
+  "TPC",
+  "TRD",
+  "TOF",
+  "HMPID",
+  "PHOS",
+  "CPV",
+  "PMD",
+  "MUON",
+  "MUON",
+  "FMD",
+  "T0",
+  "VZERO",
+  "ZDC",
+  "ACORDE",
+  "CTP",
+  "EMCAL",
+  "HLT"
+};
+
+//_____________________________________________________________________________
+  AliTriggerInput::AliTriggerInput( TString name, TString det, UChar_t level, Int_t signature, Char_t number ):
+    TNamed( name.Data(), det.Data() ),
+    fMask((number >= 0) ? 1 << number : 0 ),
+    fValue(0),
+    fSignature(signature),
+    fLevel(level),
+    fDetectorId(-1),
+    fIsActive(kFALSE)
+{
+   //  Standard constructor
+   //
+   //    The name must be globaly unique. Spaces are not allowed.
+   //    For valid detector names see AliDAQ::fgkDetectorName
+
+   // Check for valid detector name
+   Int_t iDet = 0;
+   for( iDet = 0; iDet < AliDAQ::kNDetectors; iDet++ ) {
+     if( !fgkIsTriggerDetector[iDet] ) continue;
+      if( det.CompareTo( fgkCTPDetectorName[iDet] ) == 0 ) {
+	fTitle = AliDAQ::DetectorName(iDet);
+	fDetectorId = iDet;
+	break;
+      }
+      if( det.CompareTo( AliDAQ::DetectorName(iDet) ) == 0 ) {
+	fDetectorId = iDet;
+	break;
+      }
+   }
+   if( iDet == AliDAQ::kNDetectors ) {
+      AliError( Form( "%s is not a valid trigger input, it must contain a valid trigger detector name instead of (%s)", name.Data(), det.Data() ) );
+   }
+}
 
 //_____________________________________________________________________________
 void AliTriggerInput::Print( const Option_t* ) const
@@ -47,6 +131,29 @@ void AliTriggerInput::Print( const Option_t* ) const
    // Print
    cout << "Trigger Input:" << endl; 
    cout << "  Name:        " << GetName() << endl;
-   cout << "  Description: " << GetTitle() << endl;
-   cout << "  Value:       " << hex << "Ox" << fValue << dec << endl;
+   cout << "  Detector:    " << GetTitle() << "(Id=" << (Int_t)fDetectorId << ")" << endl;
+   cout << "  Level:       " << fLevel << endl;
+   cout << "  Signature:   " << fSignature << endl;
+   cout << "  Number:      " << (Int_t)TMath::Log2(fMask) << endl;
+   if (IsActive())
+     cout << "   Input is active      " << endl;
+   else
+     cout << "   Input is not active  " << endl;
+   if (Status())
+     cout << "   Input is fired      " << endl;
+   else
+     cout << "   Input is not fired  " << endl;
+}
+
+//_____________________________________________________________________________
+TString AliTriggerInput::GetModule() const
+{
+  // Get the detector module name (in AliRoot simulation sense)
+  TString name = "";
+  if (fDetectorId >= 0 && fDetectorId < AliDAQ::kNDetectors)
+    name = fgkOfflineModuleName[(Int_t)fDetectorId];
+  else
+    AliError(Form("Invalid detector Id (%d)",(Int_t)fDetectorId));
+
+  return name;
 }

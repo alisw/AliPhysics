@@ -20,12 +20,12 @@
 // This class for running the Central Trigger Processor                      //
 //                                                                           //
 //                                                                           //
-//    Load Descriptors                                                       //
-//    Make a list the trigger detectors involve from the descriptors         //
+//    Load Configuration                                                     //
+//    Make a list the trigger detectors involved (from the classes)          //
 //    For the each event                                                     //
 //           Run the Trigger for the each detector                           //
 //           Get the inputs                                                  //
-//           Check the condition classes                                     //
+//           Check the trigger classes                                       //
 //           Create the class mask                                           //
 //           Save result                                                     //
 //                                                                           //
@@ -46,12 +46,16 @@
 
 #include "AliTriggerInput.h"
 #include "AliTriggerDetector.h"
-#include "AliTriggerCondition.h"
-#include "AliTriggerDescriptor.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
+#include "AliTriggerCluster.h"
 #include "AliCentralTrigger.h"
 #include "AliDetectorEventHeader.h"
 #include "AliHeader.h"
 
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+#include "AliCDBEntry.h"
 
 ClassImp( AliCentralTrigger )
 
@@ -59,73 +63,53 @@ ClassImp( AliCentralTrigger )
 AliCentralTrigger::AliCentralTrigger() :
    TObject(),
    fClassMask(0),
-   fDescriptors(),
-   fInputs()
+   fClusterMask(0),
+   fConfiguration(NULL)
 {
    // Default constructor
-//   LoadDescriptor("Pb-Pb");
 }
 
 //_____________________________________________________________________________
-AliCentralTrigger::AliCentralTrigger( TString & descriptor ) :
+AliCentralTrigger::AliCentralTrigger( TString & config ) :
    TObject(),
    fClassMask(0),
-   fDescriptors(),
-   fInputs()
+   fClusterMask(0),
+   fConfiguration(NULL)
 {
    // Default constructor
-   LoadDescriptor( descriptor );
-}
-
-//_____________________________________________________________________________
-AliCentralTrigger::AliCentralTrigger( const AliCentralTrigger& ctp ):
-   TObject( ctp ),
-   fClassMask( ctp.fClassMask ),
-   fDescriptors(),
-   fInputs()
-{
-   // Copy constructor
-
-   Int_t ndes = ctp.fDescriptors.GetEntriesFast();
-   for( Int_t j=0; j<ndes; j++ ) {
-      fDescriptors.AddLast( new AliTriggerDescriptor( *(AliTriggerDescriptor*)(ctp.fDescriptors.At( j )) ) );
-   }
-
-   Int_t nInp = ctp.fInputs.GetEntriesFast();
-   for( Int_t j=0; j<nInp; j++ ) {
-      fInputs.AddLast( new AliTriggerInput( *(AliTriggerInput*)(ctp.fInputs.At( j )) ) );
-   }
+   LoadConfiguration( config );
 }
 
 //_____________________________________________________________________________
 AliCentralTrigger::~AliCentralTrigger()
 {
-   // Destructor
-   DeleteDescriptors();
+  // Destructor
+  DeleteConfiguration();
 }
 
 //_____________________________________________________________________________
-void AliCentralTrigger::DeleteDescriptors()
+void AliCentralTrigger::DeleteConfiguration()
 {
-   // Reset Descriptors
-   fClassMask = 0;
-   fDescriptors.SetOwner();
-   fDescriptors.Delete();
+  // Delete the active configuration
+  fClassMask = 0;
+  fClusterMask = 0;
+  if (fConfiguration) delete fConfiguration;
 }
 
 //_____________________________________________________________________________
 void AliCentralTrigger::Reset()
 {
-   // Reset Class Mask and conditions
+   // Reset Class Mask and classes
    fClassMask = 0;
-   Int_t ndes = fDescriptors.GetEntriesFast();
-   for( Int_t i=0; i<ndes; i++ ) {
-      TObjArray* condArray = ((AliTriggerDescriptor*)fDescriptors.At( i ))->GetTriggerConditions();
-      Int_t ncond = condArray->GetEntriesFast();
-      for( Int_t j=0; j<ncond; j++ ) {
-         AliTriggerCondition* cond = (AliTriggerCondition*)condArray->At( j );
-         cond->Reset();
-      }
+   fClusterMask = 0;
+
+   if (fConfiguration) {
+     const TObjArray& classesArray = fConfiguration->GetClasses();
+     Int_t nclasses = classesArray.GetEntriesFast();
+     for( Int_t j=0; j<nclasses; j++ ) {
+       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
+       trclass->Reset();
+     }
    }
 }
 
@@ -150,98 +134,70 @@ void AliCentralTrigger::MakeBranch( TString name, TTree * tree )
 }
 
 //_____________________________________________________________________________
-Bool_t AliCentralTrigger::LoadDescriptor( TString & descriptor )
+Bool_t AliCentralTrigger::LoadConfiguration( TString & config )
 {
-   // Load one or more pre-created Descriptors from database/file that match
-   // with the input string 'descriptor'
-   // Ej: "Pb-Pb" or "p-p-DIMUON CALIBRATION-CENTRAL-BARREL"
+   // Load one and only one pre-created COnfiguration from database/file that match
+   // with the input string 'config'
+   // Ej: "p-p", "Pb-Pb" or "p-p-DIMUON CALIBRATION-CENTRAL-BARREL"
 
-   // Delete any descriptor
-   Reset();
+   // Delete the active configuration, if any
+  DeleteConfiguration();
 
-   // Load the selected descriptors
-   TObjArray* desArray = descriptor.Tokenize( " " );
-   Int_t ndes = desArray->GetEntriesFast();
-   for( Int_t i=0; i<ndes; i++ ) {
-      TObjString* val = (TObjString*)desArray->At( i );
-      AliTriggerDescriptor* des = AliTriggerDescriptor::LoadDescriptor( val->String() );
-      if( des ) 
-         fDescriptors.AddLast( des );
-      else
-         AliWarning( Form( "Descriptor (%s) not found", val->String().Data() ) );
+   // Load the selected configuration
+   if (!config.IsNull()) {
+     fConfiguration = AliTriggerConfiguration::LoadConfiguration( config );
+     if(fConfiguration)
+       return kTRUE;
+     else {
+       AliError( Form( "Valid TriggerConfiguration (%s) is not found ! Disabling the trigger simulation !", config.Data() ) );
+       return kFALSE;
+     }
    }
-   Bool_t desfound = kTRUE;
-   if( fDescriptors.GetEntriesFast() == 0 ) desfound = kFALSE;
+   else {
+     // Load one and only one trigger descriptor from CDB
+     AliInfo( "GETTING TRIGGER DESCRIPTORS FROM CDB!!!" );
+ 
+     AliCDBPath path( "GRP", "CTP", "Config" );
+	
+     AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+     if( !entry ) AliFatal( "Couldn't load trigger description data from CDB!" );
 
-   delete desArray;
-
-   return desfound;
+     fConfiguration = (AliTriggerConfiguration *)entry->GetObject();
+     if(fConfiguration)
+       return kTRUE;
+     else {
+       AliError( "No valid configuration is found in the CDB ! Disabling the trigger simulation !" );
+       return kFALSE;
+     }
+   }
 }
 
 //_____________________________________________________________________________
 TString AliCentralTrigger::GetDetectors()
 {
-   // return TString with the detectors to be trigger
-   // merging detectors from all descriptors
+   // return TString with the detectors (modules) to be used for triggering
 
    TString result;
 
-   Int_t ndes = fDescriptors.GetEntriesFast();
-   for( Int_t i=0; i<ndes; i++ ) {
-      TString detStr = ((AliTriggerDescriptor*)fDescriptors.At( i ))->GetDetectorCluster();
-      TObjArray* det = detStr.Tokenize(" ");
-      Int_t ndet = det->GetEntriesFast();
-      for( Int_t j=0; j<ndet; j++ ) {
-         if( result.Contains( ((TObjString*)det->At(j))->String() ) )continue;
-         result.Append( " " );
-         result.Append( ((TObjString*)det->At(j))->String() );
-      }
-   }
+   if (fConfiguration)
+     result = fConfiguration->GetTriggeringModules();
 
    return result;
 }
 
 //_____________________________________________________________________________
-UChar_t AliCentralTrigger::GetClusterMask()
-{
-   // Return the detector cluster mask following
-   // table 4.3 pag 60, TDR Trigger and DAQ
-
-   TString detStr = GetDetectors();
-   TObjArray* det = detStr.Tokenize(" ");
-   Int_t ndet = det->GetEntriesFast();
-
-   UInt_t idmask = 0;
-   if( ndet >= 8 ) {  // All detectors, should be 9 but ACORDE is not implemented yet
-      idmask = 1;
-      return idmask;
-   }
-
-   if( ndet >= 7 && !detStr.Contains("MUON") ) {  // Central Barrel, All but MUON
-      idmask = 2;
-      return idmask;
-   }
-
-   if( detStr.Contains("MUON") && detStr.Contains("T0") ) {  // MUON arm
-      idmask = 4;
-      return idmask;
-   }
-
-   return idmask; // 0 something else!!!
-}
-//_____________________________________________________________________________
 Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
 {
    // run the trigger
 
-   if( fDescriptors.GetEntriesFast() == 0 ) {
-      AliError( "not trigger descriptor loaded, skipping trigger" );
+   if( !fConfiguration ) {
+      AliError( "No trigger configuration loaded, skipping trigger" );
       return kFALSE;
    }
 
    TTree *tree = runLoader->TreeCT();
    if( !tree ) {
-      AliError( "not folder with trigger loaded, skipping trigger" );
+      AliError( "No folder with trigger loaded, skipping trigger" );
       return kFALSE;
    }
 
@@ -254,7 +210,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
       runLoader->GetEvent( iEvent );
       // Get detectors involve
       TString detStr = GetDetectors();
-      AliInfo( Form(" Cluster Detectors %s \n", detStr.Data() ) );
+      AliInfo( Form(" Triggering Detectors %s \n", detStr.Data() ) );
       TObjArray* detArray = runLoader->GetAliRun()->Detectors();
       // Reset Mask
       fClassMask = 0;
@@ -266,18 +222,13 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
 
             AliInfo( Form("Triggering from digits for %s", det->GetName() ) );
             AliTriggerDetector* trgdet = det->CreateTriggerDetector();
-            trgdet->CreateInputs();
+            trgdet->CreateInputs(fConfiguration->GetInputs());
             TStopwatch stopwatchDet;
             stopwatchDet.Start();
             trgdet->Trigger();
             AliInfo( Form("Execution time for %s: R:%.2fs C:%.2fs",
                      det->GetName(), stopwatchDet.RealTime(), stopwatchDet.CpuTime() ) );
 
-            // Get the inputs
-            TObjArray* detInp = trgdet->GetInputs();
-            for( Int_t i=0; i<detInp->GetEntriesFast(); i++ ) {
-               fInputs.AddLast( detInp->At(i) );
-            }
             trgdetArray.AddLast( trgdet );
 
             // Write trigger detector in Event folder in Digits file
@@ -304,8 +255,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
       }
 
       // Check trigger conditions and create the trigger class mask
-      CheckConditions();
-      fInputs.Clear();
+      TriggerClasses();
 
       // Clear trigger detectors
       trgdetArray.SetOwner();
@@ -333,42 +283,37 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader )
 }
 
 //_____________________________________________________________________________
-ULong64_t AliCentralTrigger::CheckConditions()
+ULong64_t AliCentralTrigger::TriggerClasses()
 {
-   // Check trigger conditions and create the trigger class mask
-
-   Int_t ndes = fDescriptors.GetEntriesFast();
-   for( Int_t i=0; i<ndes; i++ ) {
-      TObjArray* condArray = ((AliTriggerDescriptor*)fDescriptors.At( i ))->GetTriggerConditions();
-      Int_t ncond = condArray->GetEntriesFast();
-      for( Int_t j=0; j<ncond; j++ ) {
-         AliTriggerCondition* cond = (AliTriggerCondition*)condArray->At( j );
-         if( !cond->CheckInputs( fInputs ) ) {
-	   AliError( Form("Condition %s is not OK",cond->GetName()));
-	 //JF continue;
-	 }
-         cond->Trigger( fInputs );
-    //     cond->Print();
-         fClassMask |= cond->GetValue();
-      }
-   }
-   return fClassMask;
+  // Check trigger conditions and create the trigger class
+  // and trigger cluster masks
+  if (fConfiguration) {
+    const TObjArray& classesArray = fConfiguration->GetClasses();
+    Int_t nclasses = classesArray.GetEntriesFast();
+    for( Int_t j=0; j<nclasses; j++ ) {
+      AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
+      trclass->Trigger( fConfiguration->GetInputs(), fConfiguration->GetFunctions() );
+      fClassMask |= trclass->GetValue();
+      if (trclass->GetStatus())
+	fClusterMask |= (trclass->GetCluster())->GetClusterMask();
+    }
+  }
+  return fClassMask;
 }
 //_____________________________________________________________________________
-TObjArray* AliCentralTrigger::GetResultConditions()
+TObjArray* AliCentralTrigger::GetFiredClasses() const
 {
    // return only the true conditions
 
    TObjArray* result = new TObjArray();
 
-   Int_t ndes = fDescriptors.GetEntriesFast();
-   for( Int_t i=0; i<ndes; i++ ) {
-      TObjArray* condArray = ((AliTriggerDescriptor*)fDescriptors.At( i ))->GetTriggerConditions();
-      Int_t ncond = condArray->GetEntriesFast();
-      for( Int_t j=0; j<ncond; j++ ) {
-         AliTriggerCondition* cond = (AliTriggerCondition*)condArray->At( j );
-         if( cond->GetStatus() ) result->AddLast( cond );
-      }
+   if (fConfiguration) {
+     const TObjArray& classesArray = fConfiguration->GetClasses();
+     Int_t nclasses = classesArray.GetEntriesFast();
+     for( Int_t j=0; j<nclasses; j++ ) {
+       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
+       if( trclass->GetStatus() ) result->AddLast( trclass );
+     }
    }
 
    return result;
@@ -380,12 +325,7 @@ void AliCentralTrigger::Print( const Option_t*  ) const
    // Print
    cout << "Central Trigger: " << endl;
    cout << "  Trigger Class Mask: 0x" << hex << fClassMask << dec << endl;
-
-   Int_t ndes = fDescriptors.GetEntriesFast();
-   for( Int_t i=0; i<ndes; i++ ) {
-      AliTriggerDescriptor* des = (AliTriggerDescriptor*)fDescriptors.At( i );
-      if( des ) des->Print();
-   }
+   if (fConfiguration) fConfiguration->Print();
    cout << endl;
 }
 

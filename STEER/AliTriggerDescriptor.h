@@ -4,68 +4,35 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// This class for running a Trigger Descriptor                               //
+// This class represents the CTP descriptor objects                          //
 //                                                                           //
-//                                                                           //
-// A Trigger Descriptor define a trigger setup for specific runnign
-// condition (Pb-Pb, p-p, p-A, Calibration, etc).
-// It keep:
-//    - cluster detector (List of detectors involved)
-//    - List of conditions                              
+// The Descriptor consists of Name and 1 or Logical function of 4 CTP inputs+//
+// additional inputs (added with an AND operator)                            // 
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-class TNamed;
+#include <TNamed.h>
 
-class TString;
-class TObjArray;
-class AliRunLoader;
 
 class AliTriggerDescriptor : public TNamed {
 
 public:
                           AliTriggerDescriptor();
-                          AliTriggerDescriptor( TString & name, TString & description );
-                          AliTriggerDescriptor( const AliTriggerDescriptor& des );
-               virtual   ~AliTriggerDescriptor() { fConditions.SetOwner(); fConditions.Delete(); }
-  AliTriggerDescriptor&   operator=(const AliTriggerDescriptor& des);
+                          AliTriggerDescriptor( TString & name, TString & cond );
+                          AliTriggerDescriptor( const AliTriggerDescriptor& desc );
+               virtual   ~AliTriggerDescriptor();
+  AliTriggerDescriptor&   operator=(const AliTriggerDescriptor& desc);
 
-   //  Setters
-                Bool_t    AddDetectorCluster( TString & cluster );
-                  void    AddCondition( TString & cond,  TString & name,
-                                        TString & description, ULong64_t mask  );
-                  void    AddCondition( AliTriggerCondition* cond ) { fConditions.AddLast( cond ); }
-  //  Getters
-               TString    GetDetectorCluster() const { return fDetectorCluster; }
-             TObjArray*   GetTriggerConditions() { return &fConditions; }
-                Bool_t    CheckInputsConditions( TString & configfile );
-                  void    Print( const Option_t* opt ="" ) const;
-  //  Descriptors Database (root file)
-                  void    WriteDescriptor( const char* filename="" );
-      static TObjArray*   GetAvailableDescriptors( const char* filename="" );
-      static
-  AliTriggerDescriptor*   LoadDescriptor( TString & des, const char* filename="" );
-  //TODO       static Bool_t    RemoveDescriptor( AliTriggerDescriptor* descriptor, const char* filename="" );
-  //TODO       static Bool_t    RemoveDescriptor( TString* descriptor, const char* filename="" );
-
-protected:
-      //         TString    fRunCondition;       // Running modes Ej. Pb-Pb, p-p, p-A
-               TString    fDetectorCluster;    // Array of Detector Trigger
-             TObjArray    fConditions;         // Array of Trigger Condition (AliTriggerCondition)
-               
-    static const Int_t    fgkNDetectors = 10;             //! number possible trigger detectors
-     static const char*   fgkDetectorName[fgkNDetectors]; //! names of detectors
-
+                  Bool_t  CheckInputsAndFunctions(const TObjArray &inputs,const TObjArray &functions) const;
+                  Bool_t  IsActive(const TObjArray &inputs,const TObjArray &functions) const;
+		  Bool_t  Trigger( const TObjArray &inputs, const TObjArray &functions) const;
+           virtual void   Print( const Option_t* opt ="" ) const;
 private:
-                Bool_t    IsSelected( TString detName, TString & detectors ) const;
-  static const TString    fgkDescriptorFileName;        //! name of default descriptors file
 
-   ClassDef( AliTriggerDescriptor, 2 )  // Define a trigger descriptor
+  ClassDef( AliTriggerDescriptor, 1 )  // Define a trigger descriptor object
 };
 
 #endif
