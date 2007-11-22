@@ -497,7 +497,7 @@ AliMUONDataInterface::NtupleTrigger(const char* treeLetter)
   {
     if (ievent%100==0) AliInfo(Form("Processing event %d\n",ievent));
     
-    AliMUONVTriggerStore* triggerStore = TriggerStore(ievent);
+    AliMUONVTriggerStore* triggerStore = TriggerStore(ievent,treeLetter);
     
     if (!triggerStore)
     {
