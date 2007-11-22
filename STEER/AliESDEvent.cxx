@@ -984,7 +984,7 @@ void AliESDEvent::CopyFromOldESD()
      // Run
     SetRunNumber(fESDOld->GetRunNumber());
     SetPeriodNumber(fESDOld->GetPeriodNumber());
-    SetMagneticField(fESDRun->GetMagneticField());
+    SetMagneticField(fESDOld->GetMagneticField());
   
     // leave out diamond ...
     // SetDiamond(const AliESDVertex *vertex) { fESDRun->SetDiamond(vertex);}
