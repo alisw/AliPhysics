@@ -40,7 +40,8 @@ class AliAODEvent : public AliVEvent {
 		       kAODv0,
 		       kAODTracklets,
 		       kAODJets,
-		       kAODCaloCells,
+		       kAODEmcalCells,
+		       kAODPhosCells,
 		       kAODCaloClusters,
 		       kAODFmdClusters,
 		       kAODPmdClusters,
@@ -150,7 +151,8 @@ class AliAODEvent : public AliVEvent {
   AliAODTracklets *GetTracklets() const { return fTracklets; }
 
   // -- Calorimeter Cells
-  AliAODCaloCells *GetCaloCells() const { return fCaloCells; }
+  AliAODCaloCells *GetEmcalCells() const { return fEmcalCells; }
+  AliAODCaloCells *GetPhosCells() const { return fPhosCells; }
 
   // -- Services
   void    CreateStdContent();
@@ -180,7 +182,8 @@ class AliAODEvent : public AliVEvent {
   TClonesArray    *fV0s;          //! V0s
   AliAODTracklets *fTracklets;    //! SPD tracklets
   TClonesArray    *fJets;         //! jets
-  AliAODCaloCells *fCaloCells;    //! EMCAL and PHOS calorimenter cells
+  AliAODCaloCells *fEmcalCells;   //! EMCAL calorimenter cells
+  AliAODCaloCells *fPhosCells;    //! PHOS calorimenter cells
   TClonesArray    *fCaloClusters; //! calorimeter clusters
   TClonesArray    *fFmdClusters;  //! FMDclusters
   TClonesArray    *fPmdClusters;  //! PMDclusters

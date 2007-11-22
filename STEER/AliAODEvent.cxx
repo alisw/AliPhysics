@@ -35,7 +35,8 @@ ClassImp(AliAODEvent)
 						      "v0s",
 						      "tracklets",
 						      "jets",
-						      "caloCells",
+						      "emcalCells",
+						      "phosCells",
 						      "caloClusters",
 						      "fmdClusters",
 						      "pmdClusters"
@@ -50,7 +51,8 @@ AliAODEvent::AliAODEvent() :
   fV0s(0),
   fTracklets(0),
   fJets(0),
-  fCaloCells(0),
+  fEmcalCells(0),
+  fPhosCells(0),
   fCaloClusters(0),
   fFmdClusters(0),
   fPmdClusters(0)
@@ -95,6 +97,7 @@ void AliAODEvent::CreateStdContent()
   AddObject(new TClonesArray("AliAODv0", 0));
   AddObject(new AliAODTracklets());
   AddObject(new TClonesArray("AliAODJet", 0));
+  AddObject(new AliAODCaloCells());
   AddObject(new AliAODCaloCells());
   AddObject(new TClonesArray("AliAODCaloCluster", 0));
   AddObject(new TClonesArray("AliAODFmdCluster", 0));
@@ -141,7 +144,8 @@ void AliAODEvent::GetStdContent()
   fV0s           = (TClonesArray*)fAODObjects->FindObject("v0s");
   fTracklets     = (AliAODTracklets*)fAODObjects->FindObject("tracklets");
   fJets          = (TClonesArray*)fAODObjects->FindObject("jets");
-  fCaloCells     = (AliAODCaloCells*)fAODObjects->FindObject("caloCells");
+  fEmcalCells    = (AliAODCaloCells*)fAODObjects->FindObject("emcalCells");
+  fPhosCells     = (AliAODCaloCells*)fAODObjects->FindObject("phosCells");
   fCaloClusters  = (TClonesArray*)fAODObjects->FindObject("caloClusters");
   fFmdClusters   = (TClonesArray*)fAODObjects->FindObject("fmdClusters");
   fPmdClusters   = (TClonesArray*)fAODObjects->FindObject("pmdClusters");
@@ -195,10 +199,11 @@ void AliAODEvent::ClearStd()
   fV0s           ->Clear();
   fTracklets     ->DeleteContainer();
   fJets          ->Delete();
-  fCaloCells     ->DeleteContainer();
-  fCaloClusters ->Clear();
-  fFmdClusters  ->Clear();
-  fPmdClusters  ->Clear();
+  fEmcalCells    ->DeleteContainer();
+  fPhosCells     ->DeleteContainer();
+  fCaloClusters  ->Clear();
+  fFmdClusters   ->Clear();
+  fPmdClusters   ->Clear();
 }
 
 //______________________________________________________________________________

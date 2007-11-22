@@ -2671,11 +2671,11 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       caloCluster->SetCaloCluster(); // to be refined!
 
     } 
-	caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
-	// end of loop on calo clusters
+    caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
+    // end of loop on calo clusters
 
     // fill EMC cell info
-    AliAODCaloCells &EMCCells = *(aod->GetCaloCells());
+    AliAODCaloCells &EMCCells = *(aod->GetEmcalCells());
     EMCCells.CreateContainer(nEMCCells);
     EMCCells.SetType(AliAODCaloCells::kEMCAL);
     for (Int_t iCell = 0; iCell < nEMCCells; iCell++) {      

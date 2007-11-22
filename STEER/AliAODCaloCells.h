@@ -63,7 +63,7 @@ Bool_t AliAODCaloCells::GetCell(Short_t pos, Short_t &cellNumber, Double_t &ampl
     amplitude = fAmplitude[pos];
     return kTRUE;
   } else {
-    Error("GetCell","Invalid cell array index %d", pos);
+    Warning("GetCell","Invalid cell array index %d", pos);
     return kFALSE;
   }
 }
@@ -77,10 +77,10 @@ Double_t AliAODCaloCells::GetCellAmplitude(Short_t cellNumber)
   }
 
   Short_t pos = TMath::BinarySearch(fNCells, fCellNumber, cellNumber);
-  if (pos>=0 && pos == cellNumber) {
+  if (pos>=0 && fCellNumber[pos] == cellNumber) {
     return fAmplitude[pos];
   } else {
-    Error("GetCellAmplitude","Wrong cell array index %d", pos);
+    Warning("GetCellAmplitude","Wrong cell array index %d", pos);
     return 0.;
   }
 }
@@ -91,7 +91,7 @@ Double_t AliAODCaloCells::GetAmplitude(Short_t pos) const
   if (pos>=0 && pos<fNCells) {
     return fAmplitude[pos];
   } else {
-    Error("GetAmplitude","Invalid cell array index %d", pos);
+    Warning("GetAmplitude","Invalid cell array index %d", pos);
     return 0.;
   }
 }
@@ -102,7 +102,7 @@ Short_t AliAODCaloCells::GetCellNumber(Short_t pos) const
   if (pos>=0 && pos<fNCells) {
     return fCellNumber[pos];
   } else {
-    Error("GetCellNumber","Invalid cell array index %d", pos);
+    Warning("GetCellNumber","Invalid cell array index %d", pos);
     return fNCells;
   }
 }
