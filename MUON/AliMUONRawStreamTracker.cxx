@@ -22,17 +22,18 @@
 ///
 /// It loops over all MUON digits in the raw data given by the AliRawReader.
 /// The Next method goes to the next digit. If there are no digits left
-/// it returns kFALSE (under develpment)
+/// it returns kFALSE
 /// It can loop also over DDL and store the decoded rawdata in TClonesArray
 /// in Payload class.
 /// 
-/// Version implement for Tracker
+/// Implement for Tracker
 ///
 /// \author Christian Finck & Laurent Aphecetche
 //-----------------------------------------------------------------------------
 
 #include "AliMUONRawStreamTracker.h"
 
+#include "AliMUONLogger.h"
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
 #include "AliDAQ.h"
@@ -49,22 +50,23 @@
 ClassImp(AliMUONRawStreamTracker)
 /// \endcond
 
+const Int_t AliMUONRawStreamTracker::fgkMaxDDL = 20;
+
+
+//___________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker()
-: TObject(),
-  fRawReader(0x0),
-  fDDL(0),
-  fMaxDDL(20),
-  fPayload(new AliMUONPayloadTracker()),
-  fCurrentDDL(0),
-  fCurrentDDLIndex(fMaxDDL),
-  fCurrentBlockHeader(0),
-  fCurrentBlockHeaderIndex(0),
-  fCurrentDspHeader(0),
-  fCurrentDspHeaderIndex(0),
-  fCurrentBusStruct(0),
-  fCurrentBusStructIndex(0),
-  fCurrentDataIndex(0),
-  fEnableErrorLogger(kFALSE)
+ : AliMUONRawStream(),
+   fPayload(new AliMUONPayloadTracker()),
+   fCurrentDDL(0),
+   fCurrentDDLIndex(fgkMaxDDL),
+   fCurrentBlockHeader(0),
+   fCurrentBlockHeaderIndex(0),
+   fCurrentDspHeader(0),
+   fCurrentDspHeaderIndex(0),
+   fCurrentBusStruct(0),
+   fCurrentBusStructIndex(0),
+   fCurrentDataIndex(0),
+   fDDL(0)
 {
   ///
   /// create an object to read MUON raw digits
@@ -76,13 +78,10 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker()
 
 //_________________________________________________________________
 AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
-: TObject(),
-  fRawReader(rawReader),
-  fDDL(0),
-  fMaxDDL(20),
+: AliMUONRawStream(rawReader),
   fPayload(new AliMUONPayloadTracker()),
-  fCurrentDDL(0L),
-  fCurrentDDLIndex(fMaxDDL),
+  fCurrentDDL(0),
+  fCurrentDDLIndex(fgkMaxDDL),
   fCurrentBlockHeader(0),
   fCurrentBlockHeaderIndex(0),
   fCurrentDspHeader(0),
@@ -90,7 +89,7 @@ AliMUONRawStreamTracker::AliMUONRawStreamTracker(AliRawReader* rawReader)
   fCurrentBusStruct(0),
   fCurrentBusStructIndex(0),
   fCurrentDataIndex(0),
-  fEnableErrorLogger(kFALSE)
+  fDDL(0)
 {
   ///
   /// ctor with AliRawReader as argument
@@ -183,16 +182,16 @@ AliMUONRawStreamTracker::GetNextDDL()
 {
   /// Returns the next DDL present
   
-  assert( fRawReader != 0 );
+  assert( GetReader() != 0 );
   
   Bool_t kFound(kFALSE);
   
-  while ( fCurrentDDLIndex < fMaxDDL-1 && !kFound ) 
+  while ( fCurrentDDLIndex < fgkMaxDDL-1 && !kFound ) 
   {
     ++fCurrentDDLIndex;
-    fRawReader->Reset();
-    fRawReader->Select("MUONTRK",fCurrentDDLIndex,fCurrentDDLIndex);
-    if ( fRawReader->ReadHeader() ) 
+    GetReader()->Reset();
+    GetReader()->Select("MUONTRK",fCurrentDDLIndex,fCurrentDDLIndex);
+    if ( GetReader()->ReadHeader() ) 
     {
       kFound = kTRUE;
     }
@@ -200,23 +199,23 @@ AliMUONRawStreamTracker::GetNextDDL()
   
   if ( !kFound ) 
   {
-    // fCurrentDDLIndex is set to fMaxDDL so that we exit the above loop immediately
+    // fCurrentDDLIndex is set to fgkMaxDDL so that we exit the above loop immediately
     // for a subsequent call to this method, unless NextEvent is called in between.
-    fCurrentDDLIndex = fMaxDDL;
+    fCurrentDDLIndex = fgkMaxDDL;
     // We have not actually been able to complete the loading of the new DDL so
     // we are still on the old one. In this case we do not need to reset fCurrentDDL.
     //fCurrentDDL = 0;
     return kFALSE;
   }
   
-  Int_t totalDataWord  = fRawReader->GetDataSize(); // in bytes
+  Int_t totalDataWord  = GetReader()->GetDataSize(); // in bytes
   
   AliDebug(3, Form("DDL Number %d totalDataWord %d\n", fCurrentDDLIndex,
                    totalDataWord));
-  
+
   UInt_t *buffer = new UInt_t[totalDataWord/4];
   
-  if ( !fRawReader->ReadNext((UChar_t*)buffer, totalDataWord) )
+  if ( !GetReader()->ReadNext((UChar_t*)buffer, totalDataWord) )
   {
     // We have not actually been able to complete the loading of the new DDL so
     // we are still on the old one. In this case we do not need to reset fCurrentDDL.
@@ -226,9 +225,13 @@ AliMUONRawStreamTracker::GetNextDDL()
   }
   fPayload->ResetDDL();
   
+#ifndef R__BYTESWAP  
+  swap(buffer, totalDataWord); // swap needed for mac power pc
+#endif
+
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
   
-  if (fEnableErrorLogger) AddErrorMessage();
+  if (IsErrorLogger()) AddErrorMessage();
 
   delete[] buffer;
   
@@ -358,20 +361,20 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
 {
   /// reading tracker DDL
   
-  assert( fRawReader != 0 );
+  assert( GetReader() != 0 );
   
   fPayload->ResetDDL();
   
-  while ( fDDL < 20 ) 
+  while ( fDDL < fgkMaxDDL ) 
   {
-    fRawReader->Reset();
-    fRawReader->Select("MUONTRK", fDDL, fDDL);  //Select the DDL file to be read  
-    if (fRawReader->ReadHeader()) break;
+    GetReader()->Reset();
+    GetReader()->Select("MUONTRK", fDDL, fDDL);  //Select the DDL file to be read  
+    if (GetReader()->ReadHeader()) break;
     AliDebug(3,Form("Skipping DDL %d which does not seem to be there",fDDL));
     ++fDDL;
   }
   
-  if ( fDDL == 20 ) 
+  if ( fDDL == fgkMaxDDL ) 
   {
     fDDL = 0;
     return kFALSE;
@@ -379,33 +382,29 @@ Bool_t AliMUONRawStreamTracker::NextDDL()
   
   AliDebug(3, Form("DDL Number %d\n", fDDL ));
   
-  Int_t totalDataWord  = fRawReader->GetDataSize(); // in bytes
+  Int_t totalDataWord  = GetReader()->GetDataSize(); // in bytes
   
   UInt_t *buffer = new UInt_t[totalDataWord/4];
-  
-  if(!fRawReader->ReadNext((UChar_t*)buffer, totalDataWord))
+
+  if(!GetReader()->ReadNext((UChar_t*)buffer, totalDataWord))
   {
     delete[] buffer;
     return kFALSE;
   }
+
+#ifndef R__BYTESWAP  
+  swap(buffer, totalDataWord); // swap needed for mac power pc
+#endif
   
   Bool_t ok = fPayload->Decode(buffer, totalDataWord/4);
 
-  if (fEnableErrorLogger) AddErrorMessage();
+  if ( IsErrorLogger()) AddErrorMessage();
 
   delete[] buffer;
   
   fDDL++;
   
   return ok;
-}
-
-//______________________________________________________
-void AliMUONRawStreamTracker::SetMaxDDL(Int_t ddl) 
-{
-  /// set DDL number
-  if (ddl > 20) ddl = 20;
-  fMaxDDL = ddl;
 }
 
 //______________________________________________________
@@ -418,18 +417,40 @@ void AliMUONRawStreamTracker::SetMaxBlock(Int_t blk)
 //______________________________________________________
 void AliMUONRawStreamTracker::AddErrorMessage()
 {
-/// add message into logger of AliRawReader per event
+  /// add message into logger of AliRawReader per event
 
-    assert( fRawReader != 0 );
+    assert( GetReader() != 0 );
+    TString msg = 0;
+    Int_t occurance = 0;
+    AliMUONLogger* log = fPayload->GetErrorLogger();
+    
+    log->ResetItr();
+    while(log->Next(msg, occurance))
+    { 
+      if (msg.Contains("Parity"))
+         GetReader()->AddMinorErrorLog(kParityErr, msg.Data());
 
-    for (Int_t i = 0; i < fPayload->GetParityErrors(); ++i)
-	fRawReader->AddMinorErrorLog(kParityErr, Form("Parity error for buspatch %s",  
-						      fPayload->GetParityErrBus()[i]));
+      if (msg.Contains("Glitch"))
+        GetReader()->AddMajorErrorLog(kGlitchErr, msg.Data());
 
-    for (Int_t i = 0; i < fPayload->GetGlitchErrors(); ++i)
-	fRawReader->AddMajorErrorLog(kGlitchErr, "Glitch error occurs skip event");
-
-    for (Int_t i = 0; i < fPayload->GetPaddingErrors(); ++i)
-	fRawReader->AddMinorErrorLog(kPaddingWordErr, "Padding word error");
-
+      if (msg.Contains("Padding"))
+        GetReader()->AddMinorErrorLog(kPaddingWordErr, msg.Data());
+    }
 }
+
+//______________________________________________________
+Bool_t AliMUONRawStreamTracker::IsErrorMessage() const
+{
+  /// true if there is any error/warning 
+  if (GetPayLoad()->GetParityErrors() || 
+        GetPayLoad()->GetGlitchErrors() || 
+        GetPayLoad()->GetPaddingErrors())
+    return kTRUE;
+  
+  return kFALSE;
+}  
+    
+    
+    
+    
+

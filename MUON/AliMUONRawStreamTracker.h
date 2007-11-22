@@ -13,6 +13,7 @@
 
 #include <TObject.h>
 #include "AliMUONPayloadTracker.h"
+#include "AliMUONRawStream.h"
 
 class AliRawReader;
 class AliMUONDDLTracker;
@@ -20,7 +21,7 @@ class AliMUONDspHeader;
 class AliMUONBusStruct;
 class AliMUONBlockHeader;
 
-class AliMUONRawStreamTracker: public TObject {
+class AliMUONRawStreamTracker: public AliMUONRawStream {
   public :
     AliMUONRawStreamTracker();
     AliMUONRawStreamTracker(AliRawReader* rawReader);
@@ -48,8 +49,8 @@ class AliMUONRawStreamTracker: public TObject {
     
     virtual Bool_t NextDDL();
 
-    /// Return maximum number of DDL in DATE file
-    Int_t GetMaxDDL()   const {return fMaxDDL;}
+    /// Return maximum number of DDLs
+    Int_t GetMaxDDL() const {return fgkMaxDDL;}
     /// Return maximum number of block per DDL in DATE file
     Int_t GetMaxBlock() const {return  fPayload->GetMaxBlock();}
     /// Return maximum number of Dsp per block in DATE file
@@ -58,7 +59,6 @@ class AliMUONRawStreamTracker: public TObject {
     Int_t GetMaxBus()   const {return  fPayload->GetMaxBus();}
 
     // check input before assigment
-    void SetMaxDDL(Int_t ddl);
     void SetMaxBlock(Int_t blk);
 
     /// Set maximum number of Dsp per block in DATE file
@@ -68,27 +68,26 @@ class AliMUONRawStreamTracker: public TObject {
     /// does not check, done via BusPatchManager
     void SetMaxBus(Int_t bus) {fPayload->SetMaxBus(bus);}
 
-    /// Set object for reading the raw data
-    void SetReader(AliRawReader* rawReader) {fRawReader = rawReader;}
-
     /// Return pointer for DDL
     AliMUONDDLTracker*      GetDDLTracker() const {return fPayload->GetDDLTracker();}
+
+    /// Return number of DDL
+    Int_t GetDDL() const {return fDDL - 1;}
 
     /// Return pointer for payload
     AliMUONPayloadTracker*  GetPayLoad()    const {return fPayload;}
 
-    /// Return number of DDL
-    Int_t                   GetDDL()        const {return fDDL - 1;}
-
     /// Whether the iteration is finished or not
     Bool_t IsDone() const;
 
-
     /// add error message into error logger
     void AddErrorMessage();
-
-    /// Enable error info logger
-    void EnabbleErrorLogger() {fEnableErrorLogger = kTRUE;}
+    
+    /// Disable Warnings
+    void DisableWarnings() {fPayload->DisableWarnings();}
+    
+    /// check error/Warning presence
+    Bool_t IsErrorMessage() const;
 
     /// error numbers
     enum rawStreamTrackerError {
@@ -110,23 +109,21 @@ class AliMUONRawStreamTracker: public TObject {
 
  
  private:
-    AliRawReader*    fRawReader;    ///< object for reading the raw data  
-    Int_t  fDDL;          ///< number of DDL    
-    Int_t  fMaxDDL;       ///< maximum number of DDL in DATE file    
-    AliMUONPayloadTracker* fPayload; ///< pointer to payload decoder
-    
-    AliMUONDDLTracker* fCurrentDDL; //!< for iterator: current ddl ptr
-    Int_t fCurrentDDLIndex; //!< for iterator: current ddl index
+
+    AliMUONPayloadTracker* fPayload;         ///< pointer to payload decoder
+    AliMUONDDLTracker* fCurrentDDL;          //!< for iterator: current ddl ptr
+    Int_t fCurrentDDLIndex;                  //!< for iterator: current ddl index
     AliMUONBlockHeader* fCurrentBlockHeader; //!< for iterator: current block ptr
-    Int_t fCurrentBlockHeaderIndex; //!< for iterator: current block index    
-    AliMUONDspHeader* fCurrentDspHeader; //!< for iterator: current dsp ptr
-    Int_t fCurrentDspHeaderIndex; //!< for iterator: current dsp index    
-    AliMUONBusStruct* fCurrentBusStruct; //!< for iterator: current bus ptr
-    Int_t fCurrentBusStructIndex; //!< for iterator: current bus index    
-    Int_t fCurrentDataIndex; //!< for iterator: current data index
-    Bool_t fEnableErrorLogger; //!< flag to enable the error info logger
-    
-    ClassDef(AliMUONRawStreamTracker, 3)    // base class for reading MUON raw digits
+    Int_t fCurrentBlockHeaderIndex;          //!< for iterator: current block index    
+    AliMUONDspHeader* fCurrentDspHeader;     //!< for iterator: current dsp ptr
+    Int_t fCurrentDspHeaderIndex;            //!< for iterator: current dsp index    
+    AliMUONBusStruct* fCurrentBusStruct;     //!< for iterator: current bus ptr
+    Int_t fCurrentBusStructIndex;            //!< for iterator: current bus index    
+    Int_t fCurrentDataIndex;                 //!< for iterator: current data index
+    Int_t  fDDL;                             //!< number of DDL    
+    static const Int_t  fgkMaxDDL;           //!< maximum number of DDLs
+
+    ClassDef(AliMUONRawStreamTracker, 4)    // base class for reading MUON raw digits
 };
 
 #endif
