@@ -38,6 +38,7 @@ extern "C" {
 #include <stdlib.h>
 
 //AliRoot
+#include "AliMUONLogger.h"
 #include "AliMUONRawStreamTracker.h"
 #include "AliMUONDspHeader.h"
 #include "AliMUONBlockHeader.h"
@@ -365,7 +366,7 @@ void MakeGainStore()
       tree->GetEvent(i);
 //       std::cout << map[i] << " " << run[i] << std::endl;
     }
-    gRunNumber=(Double_t)run[0]->GetFirst();
+    gRunNumber=(UInt_t)run[0]->GetFirst();
 
     // some print
     cout<<"\n ********  MUONTRKda for Gain computing (Run = " << gRunNumber << ")\n" << endl;
@@ -1044,7 +1045,8 @@ int main(Int_t argc, Char_t **argv)
   UShort_t manuId;  
   UChar_t channelId;
   UShort_t charge;
-
+  TString key("MUONTRKda :");
+  
   if (gCommand.CompareTo("comp") != 0)
     {
       cout << "\nMUONTRKda : Reading data from file " << inputFile <<endl;
@@ -1120,6 +1122,7 @@ int main(Int_t argc, Char_t **argv)
 
 	  // decoding MUON payload
 	  AliMUONRawStreamTracker* rawStream  = new AliMUONRawStreamTracker(rawReader);
+          rawStream->DisableWarnings();
 
 	  // loops over DDL 
 	  rawStream->First();  // if GlitchError ? what we are doing ?
@@ -1135,14 +1138,16 @@ int main(Int_t argc, Char_t **argv)
 		  
 	  } // Next digit
 
-	  // if parity error do not count event // JLC (modified: Christian 11/10/07)
-	  if (!rawStream->GetPayLoad()->GetParityErrBus().GetSize() &&  !rawStream->GetPayLoad()->GetGlitchErrors()
-	      &&  !rawStream->GetPayLoad()->GetPaddingErrors()) {
-	    gNEvents++;
-	  }
-	  if (rawStream->GetPayLoad()->GetGlitchErrors())gGlitchErrors++;
-	  if (rawStream->GetPayLoad()->GetParityErrBus().GetSize())gParityErrors++;
-	  if (rawStream->GetPayLoad()->GetPaddingErrors())gPaddingErrors++;
+          if (!rawStream->IsErrorMessage()) {
+            gNEvents++;
+          }
+          
+          if (rawStream->GetPayLoad()->GetGlitchErrors())  gGlitchErrors++;
+          if (rawStream->GetPayLoad()->GetParityErrors())  gParityErrors++;
+          if (rawStream->GetPayLoad()->GetPaddingErrors()) gPaddingErrors++;
+
+          AliMUONLogger* log = rawStream->GetPayLoad()->GetErrorLogger();
+          log->Print(key, filcout);
 
 	  delete rawReader;
 	  delete rawStream;
