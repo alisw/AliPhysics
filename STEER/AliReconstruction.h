@@ -112,8 +112,9 @@ public:
   void ESDFile2AODFile(TFile* esdFile, TFile* aodFile);
 
   // Quality Assurance 
-//  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
-//  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+  virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
+  void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
+  void    SetQAInLoop() { fQAInLoop = kTRUE ; } 
 
 private:
   void 		 InitCDB();
@@ -147,10 +148,10 @@ private:
 
   //Quality Assurance
   Int_t                GetDetIndex(const char * detector);
-//  AliQADataMaker*      GetQADataMaker(Int_t iDet);
-//  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
+  AliQADataMaker*      GetQADataMaker(Int_t iDet);
+  const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
-  void        SetQA(const Bool_t val) { fRunQA = val ; } 
+  void                 SetQA(const Bool_t val) { fRunQA = val ; } 
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -210,9 +211,10 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-//  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
-//  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
+  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
+  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
   Bool_t              fRunQA ;                        // Runs the QA at the end of simulation
+  Bool_t              fQAInLoop ; 	                  // option to run QA in the event loop
 
   ClassDef(AliReconstruction, 17)      // class for running the reconstruction
 };
