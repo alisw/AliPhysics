@@ -11,6 +11,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TH3F.h>
 
 #include <TSelector.h>
 #include <TFile.h>
@@ -29,12 +30,16 @@ ClassImp(AliTestESDtrackCutsSelector)
 AliTestESDtrackCutsSelector::AliTestESDtrackCutsSelector() :
   AliSelectorRL(),
   fEsdTrackCutsAll(0),
+  fEsdTrackCutsNoVtx(0),
   fEsdTrackCutsPri(0),
   fEsdTrackCutsSec(0),
   fEsdTrackCutsPlusZ(0),
   fEsdTrackCutsMinusZ(0),
   fEsdTrackCutsPos(0),
-  fEsdTrackCutsNeg(0)
+  fEsdTrackCutsNeg(0),
+  fPIDAfterCutNoVtx(0),
+  fPIDAfterCutAll(0),
+  fVertex(0)
 {
   //
   // Constructor. Initialization of pointers
@@ -77,6 +82,9 @@ void AliTestESDtrackCutsSelector::ReadUserObjects(TTree* tree)
   if (!fEsdTrackCutsAll)
      AliDebug(AliLog::kError, "ERROR: Could not read fEsdTrackCutsAll from input list.");
 
+  fEsdTrackCutsNoVtx =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsNoVtx"));
+  fEsdTrackCutsNoVtx->SetRequireSigmaToVertex(kFALSE);
+
   fEsdTrackCutsPri =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsPri"));
   fEsdTrackCutsSec =    dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsSec"));
   fEsdTrackCutsPlusZ =  dynamic_cast<AliESDtrackCuts*> (fEsdTrackCutsAll->Clone("fEsdTrackCutsPlusZ"));
@@ -94,6 +102,11 @@ void AliTestESDtrackCutsSelector::SlaveBegin(TTree* tree)
   AliSelectorRL::SlaveBegin(tree);
 
   ReadUserObjects(tree);
+
+  fPIDAfterCutNoVtx = new TH1F("fPIDAfterCutNoVtx", "fPIDAfterCutNoVtx", 5001, -2500.5, 2500.5);
+  fPIDAfterCutAll   = new TH1F("fPIDAfterCutAll", "fPIDAfterCutAll", 5001, -2500.5, 2500.5);
+
+  fVertex = new TH3F("fVertex", "fVertex", 100, -10, 10, 100, -10, 10, 100, -10, 10);
 }
 
 void AliTestESDtrackCutsSelector::Init(TTree* tree)
@@ -172,7 +185,7 @@ Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
 
     AliESDtrack* esdTrack = fESD->GetTrack(t);
 
-    fEsdTrackCutsAll->AcceptTrack(esdTrack);
+    Bool_t passed = fEsdTrackCutsAll->AcceptTrack(esdTrack);
 
     // using the properties of the mc particle
     Int_t label = TMath::Abs(esdTrack->GetLabel());
@@ -189,7 +202,17 @@ Bool_t AliTestESDtrackCutsSelector::Process(Long64_t entry)
     if (label < nPrim)
       fEsdTrackCutsPri->AcceptTrack(esdTrack);
     else
+    {
       fEsdTrackCutsSec->AcceptTrack(esdTrack);
+      if (passed)
+      {
+        fPIDAfterCutAll->Fill(particle->GetPdgCode());
+        fVertex->Fill(particle->Vx(), particle->Vy(), particle->Vz());
+      }
+
+      if (fEsdTrackCutsNoVtx->AcceptTrack(esdTrack))
+        fPIDAfterCutNoVtx->Fill(particle->GetPdgCode());
+    }
 
     TParticlePDG* pdgPart = particle->GetPDG();
     if (pdgPart)
@@ -225,12 +248,16 @@ void AliTestESDtrackCutsSelector::SlaveTerminate()
   }
 
   fOutput->Add(fEsdTrackCutsAll);
+  fOutput->Add(fEsdTrackCutsNoVtx);
   fOutput->Add(fEsdTrackCutsPri);
   fOutput->Add(fEsdTrackCutsSec);
   fOutput->Add(fEsdTrackCutsPlusZ);
   fOutput->Add(fEsdTrackCutsMinusZ);
   fOutput->Add(fEsdTrackCutsPos);
   fOutput->Add(fEsdTrackCutsNeg);
+  fOutput->Add(fPIDAfterCutNoVtx);
+  fOutput->Add(fPIDAfterCutAll);
+  fOutput->Add(fVertex);
 }
 
 void AliTestESDtrackCutsSelector::Terminate()
@@ -242,12 +269,16 @@ void AliTestESDtrackCutsSelector::Terminate()
   AliSelectorRL::Terminate();
 
   fEsdTrackCutsAll = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("esdTrackCutsAll"));
+  fEsdTrackCutsNoVtx = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsNoVtx"));
   fEsdTrackCutsPri = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPri"));
   fEsdTrackCutsSec = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsSec"));
   fEsdTrackCutsPlusZ = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPlusZ"));
   fEsdTrackCutsMinusZ = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsMinusZ"));
   fEsdTrackCutsPos = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsPos"));
   fEsdTrackCutsNeg = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("fEsdTrackCutsNeg"));
+  fPIDAfterCutNoVtx = dynamic_cast<TH1F*> (fOutput->FindObject("fPIDAfterCutNoVtx"));
+  fPIDAfterCutAll = dynamic_cast<TH1F*> (fOutput->FindObject("fPIDAfterCutAll"));
+  fVertex = dynamic_cast<TH3F*> (fOutput->FindObject("fVertex"));
 
   // check if the esd track cut objects are there
   if (!fEsdTrackCutsAll || !fEsdTrackCutsPri || !fEsdTrackCutsSec || !fEsdTrackCutsPlusZ || !fEsdTrackCutsMinusZ || !fEsdTrackCutsPos || !fEsdTrackCutsNeg) {
@@ -258,12 +289,16 @@ void AliTestESDtrackCutsSelector::Terminate()
   TFile* file = TFile::Open("trackCuts.root", "RECREATE");
 
   fEsdTrackCutsAll->SaveHistograms();
+  fEsdTrackCutsNoVtx->SaveHistograms();
   fEsdTrackCutsPri->SaveHistograms();
   fEsdTrackCutsSec->SaveHistograms();
   fEsdTrackCutsPlusZ->SaveHistograms();
   fEsdTrackCutsMinusZ->SaveHistograms();
   fEsdTrackCutsPos->SaveHistograms();
   fEsdTrackCutsNeg->SaveHistograms();
+  fPIDAfterCutNoVtx->Write();
+  fPIDAfterCutAll->Write();
+  fVertex->Write();
 
   file->Close();
 

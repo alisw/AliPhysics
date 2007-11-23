@@ -7,7 +7,7 @@
 #include "../CreateESDChain.C"
 #include "../PWG0Helper.C"
 
-TChain* testESDtrackCuts(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, Char_t* proofServer = "jgrosseo@lxb6046")
+TChain* testESDtrackCuts(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, Char_t* proofServer = "lxb6046")
 {
   if (aProof)
     connectProof(proofServer);
@@ -38,7 +38,7 @@ TChain* testESDtrackCuts(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aD
   TString selectorName = "AliTestESDtrackCutsSelector";
   AliLog::SetClassDebugLevel(selectorName, AliLog::kInfo);
 
-  selectorName += ".cxx+";
+  selectorName += ".cxx++";
 
   if (aDebug != kFALSE)
     selectorName += "g";
