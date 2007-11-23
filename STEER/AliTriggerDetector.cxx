@@ -117,10 +117,11 @@ void AliTriggerDetector::CreateInputs(const TObjArray &inputs)
    for( Int_t j=0; j<fInputs.GetEntriesFast(); j++ ) {
      AliTriggerInput *inp = (AliTriggerInput *)fInputs.At(j);
      if (inp->GetSignature() == -1 &&
-	 inp->GetMask() == 0)
+	 inp->GetMask() == 0) {
        inp->Enable();
        AliInfo(Form("Trigger input (%s) was not found in the CTP configuration. Therefore it will be run in a stand-alone mode",
 		    inp->GetInputName().Data()));
+     }
    }
 
    fInputs.SetOwner(kFALSE);
