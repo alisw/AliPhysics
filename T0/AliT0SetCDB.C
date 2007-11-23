@@ -29,7 +29,7 @@ void AliT0SetCDB()
 {
   TControlBar *menu = new TControlBar("vertical","T0 CDB");
   menu->AddButton("Set time delay","SetTimeDelay()",
-		  "Set time dalay");
+		  "Set time delay");
   menu->AddButton("Set walk","SetWalk()",
 		  "Set slewing coorection");
   menu->AddButton("Set Align","SetAC()",
@@ -110,28 +110,14 @@ void SetTimeDelay()
   lastRun   =  10;
   objFormat = "T0 initial time delay";
 
-  AliT0CalibData *calibda=new AliT0CalibData("T0");
+  AliT0CalibTimeEq *calibda=new AliT0CalibTimeEq("T0");
   
    Float_t fTimeDelay  = 1000;
-
-   //for timeDelayDA now we are using Int mean time (+-3RMS fit) 
-   //in number of channel for time in each chanel for 
-   //1000 Hijingpara nparticles=500 & zvertex=0 produced by readDigits.C
-   // this is way to simulate time positon for vertex=0 
-   //with unknown time delay in channel
-   /*
-   Int_t timedelayDA[24] = {501, 509, 511,510 ,510, 510, 509, 509, 510,
-			    510, 509, 508, 511, 510, 509, 508,510,
-			    510, 511, 510, 510, 510, 509, 510};
- 
-   */
-  for(Int_t ipmt=0; ipmt<24; ipmt++) {
-    calibda->SetTimeDelayCFD(fTimeDelay+ipmt*100,ipmt);
-       //   calibda->SetTimeDelayLED(fTimeDelay,ipmt);
-//    calibda->SetTimeDelayDA(timedelayDA[ipmt],ipmt);
-    calibda->SetTimeDelayDA(500,ipmt);
+ for(Int_t ipmt=0; ipmt<24; ipmt++) {
+   calibda->SetTimeEq(ipmt,fTimeDelay+ipmt*100);
+  // calibda->SetTimeV0(500,ipmt);
   }
-  calibda->SetMeanT0(499);
+  calibda->SetMeanT0(512);
   calibda->Print();
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -170,7 +156,7 @@ void SetWalk()
   lastRun   =  10;
   objFormat = "T0 initial slewnig correction";
 
-  AliT0CalibData *calibda=new AliT0CalibData("T0");
+  AliT0CalibWalk *calibda=new AliT0CalibWalk("T0");
   
    
   TRandom rn;
@@ -213,12 +199,12 @@ void GetTimeDelay()
   AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
   AliCDBEntry* entry = stor->Get("T0/Calib/TimeDelay",0);
   
-  AliT0CalibData *clb = (AliT0CalibData*)entry->GetObject();
+  AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entry->GetObject();
   clb->Print();
   for (Int_t i=0; i<24; i++) {
-   cout<<clb->GetTimeDelayCFD(i)<<" "<<clb->GetTimeDelayDA(i)<<endl;
-   cout<<" equalizing CFD "<<(clb->GetTimeDelayCFD(i)-clb->GetTimeDelayCFD(0))<<endl;
-  cout<<" equalizing DA "<<(clb->GetTimeDelayDA(i)-clb->GetTimeDelayDA(0))<<endl;
+   cout<<clb->GetTimeEq(i)<<endl;
+   //  cout<<" equalizing CFD "<<(clb->GetTimeDelayCFD(i)-clb->GetTimeDelayCFD(0))<<endl;
+ 
   }
   
 }
@@ -236,7 +222,7 @@ void GetWalk()
    AliCDBStorage *stor =AliCDBManager::Instance()->GetStorage("local://$ALICE_ROOT");
    AliCDBEntry* entry = stor->Get("T0/Calib/Slewing_Walk",0);
    
-   AliT0CalibData *clb = (AliT0CalibData*)entry->GetObject();
+   AliT0CalibWalk *clb = (AliT0CalibWalk*)entry->GetObject();
    Int_t ipmt=0;
    //  cin>>" enter channel number">>ipmt;
    TGraph *gr = clb->GetAmpLEDRec(ipmt); 
