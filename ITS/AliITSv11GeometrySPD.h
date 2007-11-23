@@ -27,15 +27,16 @@
 
 
 class TGeoVolume;
+class TGeoCompositeShape;
 
 class AliITSv11GeometrySPD : public AliITSv11Geometry
 {
 public:
 
 	// Default constructor
-	AliITSv11GeometrySPD(Double_t gap = 0.0075);
+	AliITSv11GeometrySPD();
 	// Standard Constructor
-	AliITSv11GeometrySPD(Int_t debug, Double_t gap = 0.0075);
+	AliITSv11GeometrySPD(Int_t debug);
 	// Copy constructor (temporarily disabled)
 	// AliITSv11GeometrySPD(const AliITSv11GeometrySPD &s);
 	// Assignment operator (temporarily disabled)
@@ -87,12 +88,12 @@ public:
 		(Int_t layer, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
 	// a clip on the central ladders
 	virtual TGeoVolume* CreateClip
-		(TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+		(TArrayD &sizes, Bool_t isDummy, TGeoManager *mgr = gGeoManager) const;
 	// the grounding foil (splitted in many components)
-	virtual TGeoVolumeAssembly* CreateGroundingFoilSingle
-		(Int_t type, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+	virtual TGeoCompositeShape* CreateGroundingFoilShape
+		(Int_t itype, Double_t &length, Double_t &width, Double_t thickness, TArrayD &sizes);
 	virtual TGeoVolume* CreateGroundingFoil
-		(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
+		(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr = gGeoManager);
 	// the MCM (thin part + thick part with chips inside)
 	virtual TGeoVolumeAssembly* CreateMCM
 		(Bool_t isRight, TArrayD &sizes, TGeoManager *mgr = gGeoManager) const;
@@ -108,10 +109,10 @@ public:
 	// a half-stave (put together ladders + MCM + bus, and add clips if requested)
 	virtual TGeoVolumeAssembly* CreateHalfStave
 		(Bool_t isRight, Int_t layer, Int_t idxCentral, Int_t idxSide,
-		 TArrayD &sizes, Bool_t addClips = kFALSE, TGeoManager *mgr = gGeoManager);
+		 TArrayD &sizes, TGeoManager *mgr = gGeoManager);
 	// the whole stave (2 half-staves of different orientation)
 	virtual TGeoVolumeAssembly* CreateStave
-		(Int_t layer, TArrayD &sizes, Bool_t addClips = kFALSE, TGeoManager *mgr = gGeoManager);
+		(Int_t layer, TArrayD &sizes, TGeoManager *mgr = gGeoManager);
 	// the complete Carbon Fiber sector (support + staves)
 	virtual void CarbonFiberSector
 		(TGeoVolume *moth, Double_t &xAAtubeCenter0, Double_t &yAAtubeCenter0, TGeoManager *mgr = gGeoManager);
@@ -141,8 +142,8 @@ private:
 	
 	/* Data members */
 	
-	Double_t fAlignmentGap;    // thicknes of the empty (air) gap left between the
-	                           // ladder and the grounding foil for alignment
+	static const Double_t fgkGapLadder;     // thickness of the empty (air) gap left around the ladder
+	static const Double_t fgkGapHalfStave;  // thickness of the empty (air) gap left between HS and carbon support
 	
 	Bool_t  fAddStave[6];      // [DEBUG] must be TRUE for all staves
 	                           // which will be mounted in the sector (used to check overlaps)
