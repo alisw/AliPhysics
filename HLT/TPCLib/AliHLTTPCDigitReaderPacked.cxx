@@ -166,7 +166,7 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t 
   return 0;
 }
 
-Bool_t AliHLTTPCDigitReaderPacked::Next(){
+Bool_t AliHLTTPCDigitReaderPacked::NextSignal(){
   Bool_t readvalue = kTRUE;
 
 #if ENABLE_PAD_SORTING

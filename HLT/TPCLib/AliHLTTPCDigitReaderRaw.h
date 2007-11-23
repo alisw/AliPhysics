@@ -97,7 +97,7 @@ public:
   int InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice);
 
   // Deliver values sorted for format 0, otherwise pass through to corresponding *Real* method
-  virtual bool Next();
+  virtual bool NextSignal();
   virtual int GetRow();
   virtual int GetPad();
   virtual int GetSignal();

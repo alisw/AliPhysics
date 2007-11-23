@@ -221,7 +221,7 @@ int AliHLTTPCDigitReaderRaw::InitBlock(void* ptr,unsigned long size, Int_t patch
     return 0;
 }
 
-bool AliHLTTPCDigitReaderRaw::Next()
+bool AliHLTTPCDigitReaderRaw::NextSignal()
 {
   // see header file for class documentation
 

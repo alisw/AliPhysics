@@ -34,13 +34,20 @@ using namespace std;
 
 ClassImp(AliHLTTPCDigitReader)
 
-AliHLTTPCDigitReader::AliHLTTPCDigitReader(){
+AliHLTTPCDigitReader::AliHLTTPCDigitReader()
+  :
+  fFlags(0),
+  fLckRow(-1),
+  fLckPad(-1)
+{
 }
 
-AliHLTTPCDigitReader::~AliHLTTPCDigitReader(){
+AliHLTTPCDigitReader::~AliHLTTPCDigitReader()
+{
 }
 
-int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice){
+int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice)
+{
   if (patch<0 || patch>=AliHLTTPCTransform::GetNumberOfPatches()) {
     HLTError("invalid readout partition number %d", patch);
     return -EINVAL;
@@ -60,4 +67,62 @@ void AliHLTTPCDigitReader::SetOldRCUFormat(Bool_t /*oldrcuformat*/)
 {
 }
 void AliHLTTPCDigitReader::SetUnsorted(Bool_t /*unsorted*/){
+}
+
+bool AliHLTTPCDigitReader::Next()
+{
+  if (!CheckFlag(kLocked)) return NextSignal();
+
+  bool haveData=false;
+  if (!CheckFlag(kChannelOverwrap))
+    haveData=NextSignal();
+
+  if (haveData && (fLckRow!=GetRow() || fLckPad!=GetPad())) {
+    SetFlag(kChannelOverwrap);
+    haveData=false;
+  }
+
+  return haveData;
+}
+
+void AliHLTTPCDigitReader::EnableCaching(bool bCache)
+{
+  if (bCache) SetFlag(kChannelCaching);
+  else ClearFlag(kChannelCaching);
+}
+
+int AliHLTTPCDigitReader::RewindChannel()
+{
+  int iResult=0;
+  
+  return iResult;
+}
+
+unsigned int AliHLTTPCDigitReader::SetFlag(unsigned int flag)
+{
+  return fFlags|=flag;
+}
+	
+unsigned int AliHLTTPCDigitReader::ClearFlag(unsigned int flag)
+{
+  return fFlags&=~flag;
+}
+
+// int operator[](int timebin)
+// {
+//   return -1;
+// }
+
+int AliHLTTPCDigitReader::RewindCurrentChannel()
+{
+  SetFlag(kNoRewind);
+  if (!CheckFlag(kChannelCaching)) return -ENODATA;
+  return -ENOSYS;
+}
+
+int AliHLTTPCDigitReader::RewindToPrevChannel()
+{
+  SetFlag(kNoRewind);
+  if (!CheckFlag(kChannelCaching)) return -ENODATA;
+  return -ENOSYS;
 }

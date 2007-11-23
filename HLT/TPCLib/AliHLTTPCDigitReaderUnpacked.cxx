@@ -82,7 +82,7 @@ int AliHLTTPCDigitReaderUnpacked::InitBlock(void* ptr,unsigned long size, Int_t 
   return 0;
 }
 
-bool AliHLTTPCDigitReaderUnpacked::Next(){
+bool AliHLTTPCDigitReaderUnpacked::NextSignal(){
   // see header file for class documentation
   bool rreadvalue = true;
 
@@ -131,6 +131,7 @@ int AliHLTTPCDigitReaderUnpacked::GetRow(){
 
 int AliHLTTPCDigitReaderUnpacked::GetPad(){
   // see header file for class documentation
+  if (!fData) return -1;
   int rpad;
   rpad = (int)fData[fBin].fPad;
   return rpad   ;
@@ -138,6 +139,7 @@ int AliHLTTPCDigitReaderUnpacked::GetPad(){
 
 int AliHLTTPCDigitReaderUnpacked::GetSignal(){ 
   // see header file for class documentation
+  if (!fData) return -1;
   int rsignal;
   rsignal = (int)fData[fBin].fCharge;
   return rsignal;
@@ -145,6 +147,7 @@ int AliHLTTPCDigitReaderUnpacked::GetSignal(){
 
 int AliHLTTPCDigitReaderUnpacked::GetTime(){
   // see header file for class documentation
+  if (!fData) return -1;
   int rtime;
   rtime = (int)fData[fBin].fTime;
   return rtime;

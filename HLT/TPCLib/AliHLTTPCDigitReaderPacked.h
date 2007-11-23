@@ -47,7 +47,7 @@ public:
    */
   Int_t InitBlock(void* ptr,ULong_t size, Int_t patch, Int_t slice);
   void SetOldRCUFormat(bool oldrcuformat){fOldRCUFormat=oldrcuformat;}
-  Bool_t Next();
+  Bool_t NextSignal();
   Int_t GetRow();
   Int_t GetPad();
   Int_t GetSignal();

@@ -23,11 +23,19 @@
  * of data points, each containing row number, pad number, time bin and ADC
  * value. The class hides the actual encoding of the data stream for the sub-
  * sequent components like the cluster finder.
+ *
+ * Some of the data decoders allow random access of the data within one channel.
+ * This functionality is available for all readers if caching is enabled (see
+ * @ref EnableCaching).
+ *
+ * The digit reader can be locked for the current channel. If locked, function
+ * @ref Next will return false if data of the current channel is finnished.
  * @ingroup alihlt_tpc
  */
 class AliHLTTPCDigitReader : public AliHLTLogging {
 public:
-  /** standard constructor */
+  /** standard constructor 
+   */
   AliHLTTPCDigitReader();
   /** destructor */
   virtual ~AliHLTTPCDigitReader();
@@ -64,8 +72,15 @@ public:
    * If the reader was not yet initialized, initialization is carried out and
    * the position set to the beginning of the stream (which is in essence the
    * end of the data block due to the back-linked list).
+   *
+   * If the reader is locked for a pad/channel, Next operates only on the data
+   * belonging to the current channel and returns false at the end of the
+   * channel.
+   * 
+   * The function does some basic stuff and forwards to @ref NextSignal.
+   * @return true if data is available, false if not
    */
-  virtual bool Next()=0;
+  bool Next();
 
   /**
    * Get the row number of the current value.
@@ -97,9 +112,98 @@ public:
    */
   virtual void SetUnsorted(Bool_t unsorted);
 
+  /**
+   * Enable chaching of the current channel.
+   * Some of the readers allow random data access within one channel.
+   * The others have the possibility to cache the data in order to support
+   * this functionality. Caching is off by default.
+   * @param bCache     the current channel is cached
+   */ 
+  void EnableCaching(bool bCache=false);
+
+  /**
+   * Rewind the current channel to the beginning.
+   * The function uses the reader methods @ref RewindCurrentChannel or
+   * @ref RewindToPrevChannel to set the stream position to the beginning of the
+   * current channel. If the reader is locked for a channel, the function
+   * rewinds to the begnning of that channel.
+   */
+  int RewindChannel();
+
+  /**
+   * Access operator to the data of a specific time bin.
+   * Not clear if we can manage this.
+   */
+  //int operator[](int timebin);
+
+  class LockGuard {
+  public:
+    /** constructor, locks reader for the current pad */
+    LockGuard(AliHLTTPCDigitReader& reader) 
+      : fReader(reader) 
+    {reader.fLckRow=reader.GetRow(); reader.fLckPad=reader.GetPad(); reader.SetFlag(kLocked);}
+    /** destructor, unlocks reader */
+    ~LockGuard()
+    {fReader.ClearFlag(kLocked|kChannelOverwrap); fReader.fLckRow=-1; fReader.fLckPad=-1;}
+
+  private:
+    /** instance of the controlled reader */
+    AliHLTTPCDigitReader& fReader;                                //!transient
+  };
+
+  enum {
+    /** reader locked for the current channel */
+    kLocked = 0x1,
+    /** stream position already at the next channel */
+    kChannelOverwrap = 0x2,
+    /** reader doe not allow channel rewind */
+    kNoRewind = 0x4,
+    /** channel caching enabled */
+    kChannelCaching = 0x100
+  };
 protected:
+  /**
+   * Set the reader position to the next value.
+   * This is the reader specific method called by @ref Next.
+   */
+  virtual bool NextSignal()=0;
+
+  /**
+   * Set a status flag of the reader.
+   * @return current value of the status flags
+   */
+  unsigned int SetFlag(unsigned int flag);
 	
+  /**
+   * Clear a status flag of the reader.
+   * @return current value of the status flags
+   */
+  unsigned int ClearFlag(unsigned int flag);
+	
+  /**
+   * Check a status flag of the reader.
+   */
+  inline int CheckFlag(unsigned int flag) {return (fFlags&flag)!=0;}
+
+  /**
+   * Rewind to the beginning.of the current channel.
+   */
+  virtual int RewindCurrentChannel();
+
+  /**
+   * Rewind to the beginning of the previous channel.
+   */
+  virtual int RewindToPrevChannel();
+
 private:
+  /** pad/channel is locked */
+  unsigned int fFlags;                                    //!transient
+
+  /** row the reader is locked to */
+  int fLckRow;                                                //!transient
+
+  /** pad the reader is locked to */
+  int fLckPad;                                                //!transient
 
   ClassDef(AliHLTTPCDigitReader, 0)
     

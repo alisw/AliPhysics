@@ -44,7 +44,7 @@ public:
    * place the reader at the next signal
    * @return 1 if there was a nest signal, 0 if not
    */
-  bool Next();
+  bool NextSignal();
 
   /**
    * Get row number of the current signal
