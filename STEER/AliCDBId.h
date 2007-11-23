@@ -32,6 +32,8 @@ public:
 		Int_t firstRun , Int_t lastRun , Int_t verison = -1, 
 		Int_t subVersion = -1); 
 
+	static AliCDBId* MakeFromString(const TString& idString); 		
+		
 	virtual ~AliCDBId();
 
 	const AliCDBPath& 	GetAliCDBPath() const {return fPath;}

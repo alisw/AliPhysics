@@ -966,7 +966,7 @@ Bool_t AliReconstruction::Run(const char* input)
  	 
    AliCDBId* id=0;	 
    while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
-         cdbListCopy->Add(id->Clone());	 
+         cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
    }	 
  	 
    tree->GetUserInfo()->Add(cdbMapCopy);	 

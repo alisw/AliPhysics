@@ -23,6 +23,8 @@
 
 #include "AliCDBId.h"
 #include <Riostream.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 ClassImp(AliCDBId)
 
@@ -74,6 +76,50 @@ fSubVersion(subVersion),
 fLastStorage("new")
 {
 // constructor
+
+}
+
+//_____________________________________________________________________________
+AliCDBId* AliCDBId::MakeFromString(const TString& idString)
+{
+// constructor from string 
+// string has the format as the output of AliCDBId::ToString:
+// path: "TRD/Calib/PIDLQ"; run range: [0,999999999]; version: v0_s0
+
+	AliCDBId* id = new AliCDBId("a/b/c",-1,-1,-1,-1);
+	
+	TObjArray* arr1 = idString.Tokenize(';');
+	TIter iter1(arr1);
+	TObjString *objStr1 = 0;
+	while((objStr1 = dynamic_cast<TObjString*>(iter1.Next()))) {
+		TString buff(objStr1->GetName());
+		
+		if(buff.Contains("path:")) {
+			TString path(buff(buff.First('\"')+1, buff.Length()-buff.First('\"')-2));
+			id->SetPath(path.Data());
+		
+		} else if (buff.Contains("run range:")) {
+			TString firstRunStr(buff(buff.Index('[')+1, buff.Index(',')-buff.Index('[')-1));
+			TString lastRunStr(buff(buff.Index(',')+1, buff.Index(']')-buff.Index(',')-1));
+			id->SetRunRange(firstRunStr.Atoi(), lastRunStr.Atoi());
+		
+		} else if (buff.Contains("version:")) {	
+			if (buff.Contains("_s")) {
+				TString versStr(buff(buff.Last('v')+1, buff.Index('_')-buff.Last('v')-1));
+				TString subVersStr(buff(buff.Last('s')+1, buff.Length()-buff.Last('s')-1));
+				id->SetVersion(versStr.Atoi());
+				id->SetSubVersion(subVersStr.Atoi());
+			} else {
+				TString versStr(buff(buff.Last('v')+1, buff.Length()-buff.Last('v')-1));
+				id->SetVersion(versStr.Atoi());
+			}
+		}
+	
+	}
+	
+	delete arr1;
+	
+	return id;
 
 }
 
