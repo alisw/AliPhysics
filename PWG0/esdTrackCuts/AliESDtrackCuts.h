@@ -28,22 +28,23 @@
 #include "AliAnalysisCuts.h"
 
 class AliESD;
+class AliESDEvent;
 class AliESDtrack;
 class AliLog;
 class TTree;
 
-class AliESDtrackCuts : public AliAnalysisCuts 
+class AliESDtrackCuts : public AliAnalysisCuts
 {
-
 public:
-  AliESDtrackCuts();
-  AliESDtrackCuts(Char_t* name, Char_t* title="");
+  AliESDtrackCuts(const Char_t* name = "AliESDtrackCuts", const Char_t* title = "");
   virtual ~AliESDtrackCuts();
   Bool_t IsSelected(TObject* obj)
        {return AcceptTrack((AliESDtrack*)obj);}
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESD* esd);
   Int_t CountAcceptedTracks(AliESD* esd);
+  TObjArray* GetAcceptedTracks(AliESDEvent* esd);
+  Int_t CountAcceptedTracks(AliESDEvent* esd);
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
@@ -66,7 +67,11 @@ public:
   void SetMinNsigmaToVertex(Float_t sigma=1e99)       {fCutNsigmaToVertex = sigma;}
   void SetRequireSigmaToVertex(Bool_t b=kTRUE )       {fCutSigmaToVertexRequired = b;}
 
-  // track kinmatic cut setters  
+  // getters
+  Float_t GetMinNsigmaToVertex()       { return fCutNsigmaToVertex;}
+  Bool_t GetRequireSigmaToVertex( )    { return fCutSigmaToVertexRequired;}
+
+  // track kinmatic cut setters
   void SetPRange(Float_t r1=0, Float_t r2=1e99)       {fPMin=r1;   fPMax=r2;}
   void SetPtRange(Float_t r1=0, Float_t r2=1e99)      {fPtMin=r1;  fPtMax=r2;}
   void SetPxRange(Float_t r1=-1e99, Float_t r2=1e99)  {fPxMin=r1;  fPxMax=r2;}
@@ -74,8 +79,6 @@ public:
   void SetPzRange(Float_t r1=-1e99, Float_t r2=1e99)  {fPzMin=r1;  fPzMax=r2;}
   void SetEtaRange(Float_t r1=-1e99, Float_t r2=1e99) {fEtaMin=r1; fEtaMax=r2;}
   void SetRapRange(Float_t r1=-1e99, Float_t r2=1e99) {fRapMin=r1; fRapMax=r2;}
-
-  Float_t GetMinNsigmaToVertex() { return fCutNsigmaToVertex; } 
 
   //######################################################
   void SetHistogramsOn(Bool_t b=kFALSE) {fHistogramsOn = b;}

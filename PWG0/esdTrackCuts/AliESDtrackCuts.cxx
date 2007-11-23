@@ -17,9 +17,9 @@
 
 #include "AliESDtrackCuts.h"
 
-
 #include <AliESDtrack.h>
 #include <AliESD.h>
+#include <AliESDEvent.h>
 #include <AliLog.h>
 
 #include <TTree.h>
@@ -55,49 +55,7 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
 };
 
 //____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts() : AliAnalysisCuts(),
-  fCutMinNClusterTPC(0),
-  fCutMinNClusterITS(0),
-  fCutMaxChi2PerClusterTPC(0),
-  fCutMaxChi2PerClusterITS(0),
-  fCutMaxC11(0),
-  fCutMaxC22(0),
-  fCutMaxC33(0),
-  fCutMaxC44(0),
-  fCutMaxC55(0),
-  fCutAcceptKinkDaughters(0),
-  fCutRequireTPCRefit(0),
-  fCutRequireITSRefit(0),
-  fCutNsigmaToVertex(0),
-  fCutSigmaToVertexRequired(0),
-  fPMin(0),
-  fPMax(0),
-  fPtMin(0),
-  fPtMax(0),
-  fPxMin(0),
-  fPxMax(0),
-  fPyMin(0),
-  fPyMax(0),
-  fPzMin(0),
-  fPzMax(0),
-  fEtaMin(0),
-  fEtaMax(0),
-  fRapMin(0),
-  fRapMax(0),
-  fHistogramsOn(0),
-  ffDTheoretical(0),				     
-  fhCutStatistics(0),         
-  fhCutCorrelation(0)
-{
-  //
-  // default constructor
-  //
-
-  Init();
-}
-
-//____________________________________________________________________
-AliESDtrackCuts::AliESDtrackCuts(Char_t* name, Char_t* title) : AliAnalysisCuts(name,title),
+AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliAnalysisCuts(name,title),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
   fCutMaxChi2PerClusterTPC(0),
@@ -637,7 +595,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
     cuts[9]=kTRUE;  
   if (extCov[14]  > fCutMaxC55) 
     cuts[10]=kTRUE;  
-  if (nSigmaToVertex > fCutNsigmaToVertex)
+  if (nSigmaToVertex > fCutNsigmaToVertex && fCutSigmaToVertexRequired)
     cuts[11] = kTRUE;
   // if n sigma could not be calculated
   if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
@@ -766,8 +724,7 @@ AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) {
 }
 
 //____________________________________________________________________
-TObjArray*
-AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
+TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
 {
   //
   // returns an array of all tracks that pass the cuts
@@ -787,8 +744,47 @@ AliESDtrackCuts::GetAcceptedTracks(AliESD* esd)
 }
 
 //____________________________________________________________________
-Int_t
-AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
+Int_t AliESDtrackCuts::CountAcceptedTracks(AliESD* esd)
+{
+  //
+  // returns an the number of tracks that pass the cuts
+  //
+
+  Int_t count = 0;
+
+  // loop over esd tracks
+  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+
+    if (AcceptTrack(track))
+      count++;
+  }
+
+  return count;
+}
+
+//____________________________________________________________________
+TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd)
+{
+  //
+  // returns an array of all tracks that pass the cuts
+  //
+
+  TObjArray* acceptedTracks = new TObjArray();
+
+  // loop over esd tracks
+  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+
+    if (AcceptTrack(track))
+      acceptedTracks->Add(track);
+  }
+
+  return acceptedTracks;
+}
+
+//____________________________________________________________________
+Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
 {
   //
   // returns an the number of tracks that pass the cuts
