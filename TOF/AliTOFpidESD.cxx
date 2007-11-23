@@ -57,9 +57,9 @@ AliTOFpidESD::GetMismatchProbability(Double_t p, Double_t mass) const {
   // Returns the probability of mismatching 
   // assuming 1/(p*beta)^2 scaling
   //
-  const Double_t m=0.5;                   // "reference" momentum (GeV/c)
+  const Double_t km=0.5;                   // "reference" momentum (GeV/c)
 
-  Double_t ref2=m*m*m*m/(m*m + mass*mass);// "reference" (p*beta)^2
+  Double_t ref2=km*km*km*km/(km*km + mass*mass);// "reference" (p*beta)^2
   Double_t p2beta2=p*p*p*p/(p*p + mass*mass);
 
   return fPmax*ref2/p2beta2;
