@@ -26,7 +26,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliESDMuonTrack.h"
+#include "AliESDMuonCluster.h"
 
+#include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 
@@ -41,6 +43,11 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fZ(0),
   fBendingCoor(0),
   fNonBendingCoor(0),
+  fInverseBendingMomentumAtDCA(0),
+  fThetaXAtDCA(0),
+  fThetaYAtDCA(0),
+  fBendingCoorAtDCA(0),
+  fNonBendingCoorAtDCA(0),
   fInverseBendingMomentumUncorrected(0),
   fThetaXUncorrected(0),
   fThetaYUncorrected(0),
@@ -52,7 +59,8 @@ AliESDMuonTrack::AliESDMuonTrack ():
   fLocalTrigger(0),
   fMuonClusterMap(0),
   fHitsPatternInTrigCh(0),
-  fNHit(0)
+  fNHit(0),
+  fClusters(0x0)
 {
   //
   // Default constructor
@@ -70,6 +78,11 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
   fZ(MUONTrack.fZ),
   fBendingCoor(MUONTrack.fBendingCoor),
   fNonBendingCoor(MUONTrack.fNonBendingCoor),
+  fInverseBendingMomentumAtDCA(MUONTrack.fInverseBendingMomentumAtDCA),
+  fThetaXAtDCA(MUONTrack.fThetaXAtDCA),
+  fThetaYAtDCA(MUONTrack.fThetaYAtDCA),
+  fBendingCoorAtDCA(MUONTrack.fBendingCoorAtDCA),
+  fNonBendingCoorAtDCA(MUONTrack.fNonBendingCoorAtDCA),
   fInverseBendingMomentumUncorrected(MUONTrack.fInverseBendingMomentumUncorrected),
   fThetaXUncorrected(MUONTrack.fThetaXUncorrected),
   fThetaYUncorrected(MUONTrack.fThetaYUncorrected),
@@ -81,13 +94,24 @@ AliESDMuonTrack::AliESDMuonTrack (const AliESDMuonTrack& MUONTrack):
   fLocalTrigger(MUONTrack.fLocalTrigger),
   fMuonClusterMap(MUONTrack.fMuonClusterMap),
   fHitsPatternInTrigCh(MUONTrack.fHitsPatternInTrigCh),
-  fNHit(MUONTrack.fNHit)
+  fNHit(MUONTrack.fNHit),
+  fClusters(0x0)
 {
   //
   // Copy constructor
   // Deep copy implemented
   //
   for (Int_t i = 0; i < 15; i++) fCovariances[i] = MUONTrack.fCovariances[i];
+  
+  // necessary to make a copy of the objects and not only the pointers in TClonesArray
+  if (MUONTrack.fClusters) {
+    fClusters = new TClonesArray("AliESDMuonCluster",MUONTrack.fClusters->GetEntriesFast());
+    AliESDMuonCluster *cluster = (AliESDMuonCluster*) MUONTrack.fClusters->First();
+    while (cluster) {
+      new ((*fClusters)[fClusters->GetEntriesFast()]) AliESDMuonCluster(*cluster);
+      cluster = (AliESDMuonCluster*) MUONTrack.fClusters->After(cluster);
+    }
+  }
 }
 
 //_____________________________________________________________________________
@@ -108,6 +132,12 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
   fBendingCoor            = MUONTrack.fBendingCoor;      
   fNonBendingCoor         = MUONTrack.fNonBendingCoor;   
   
+  fInverseBendingMomentumAtDCA = MUONTrack.fInverseBendingMomentumAtDCA; 
+  fThetaXAtDCA                 = MUONTrack.fThetaXAtDCA;           
+  fThetaYAtDCA                 = MUONTrack.fThetaYAtDCA;           
+  fBendingCoorAtDCA            = MUONTrack.fBendingCoorAtDCA;      
+  fNonBendingCoorAtDCA         = MUONTrack.fNonBendingCoorAtDCA;   
+  
   fInverseBendingMomentumUncorrected = MUONTrack.fInverseBendingMomentumUncorrected; 
   fThetaXUncorrected                 = MUONTrack.fThetaXUncorrected;           
   fThetaYUncorrected                 = MUONTrack.fThetaYUncorrected;           
@@ -127,7 +157,32 @@ AliESDMuonTrack& AliESDMuonTrack::operator=(const AliESDMuonTrack& MUONTrack)
  
   fMuonClusterMap	  = MUONTrack.fMuonClusterMap;
   
+  // necessary to make a copy of the objects and not only the pointers in TClonesArray
+  delete fClusters;
+  if (MUONTrack.fClusters) {
+    fClusters = new TClonesArray("AliESDMuonCluster",MUONTrack.fClusters->GetEntriesFast());
+    AliESDMuonCluster *cluster = (AliESDMuonCluster*) MUONTrack.fClusters->First();
+    while (cluster) {
+      new ((*fClusters)[fClusters->GetEntriesFast()]) AliESDMuonCluster(*cluster);
+      cluster = (AliESDMuonCluster*) MUONTrack.fClusters->After(cluster);
+    }
+  } else fClusters = 0x0;
+  
   return *this;
+}
+
+//__________________________________________________________________________
+AliESDMuonTrack::~AliESDMuonTrack()
+{
+  /// Destructor
+  delete fClusters;
+}
+
+//__________________________________________________________________________
+void AliESDMuonTrack::Clear(Option_t* opt)
+{
+  /// Clear arrays
+  if (fClusters) fClusters->Clear(opt);
 }
 
 //_____________________________________________________________________________
@@ -256,6 +311,62 @@ void AliESDMuonTrack::LorentzP(TLorentzVector& vP) const
 }
 
 //_____________________________________________________________________________
+Double_t AliESDMuonTrack::PxAtDCA() const
+{
+  // return p_x from track parameters
+  Double_t nonBendingSlope = TMath::Tan(fThetaXAtDCA);
+  Double_t bendingSlope    = TMath::Tan(fThetaYAtDCA);
+  Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return pZ * nonBendingSlope;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PyAtDCA() const
+{
+  // return p_y from track parameters
+  Double_t bendingSlope = TMath::Tan(fThetaYAtDCA);
+  Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return pZ * bendingSlope;
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PzAtDCA() const
+{
+  // return p_z from track parameters
+  Double_t bendingSlope = TMath::Tan(fThetaYAtDCA);
+  Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : 0.;
+  return -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+}
+
+//_____________________________________________________________________________
+Double_t AliESDMuonTrack::PAtDCA() const
+{
+  // return p from track parameters
+  Double_t nonBendingSlope = TMath::Tan(fThetaXAtDCA);
+  Double_t bendingSlope    = TMath::Tan(fThetaYAtDCA);
+  Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  return -pZ * TMath::Sqrt(1.0 + bendingSlope*bendingSlope + nonBendingSlope*nonBendingSlope);
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::LorentzPAtDCA(TLorentzVector& vP) const
+{
+  // return Lorentz momentum vector from track parameters
+  Double_t muonMass = M();
+  Double_t nonBendingSlope = TMath::Tan(fThetaXAtDCA);
+  Double_t bendingSlope    = TMath::Tan(fThetaYAtDCA);
+  Double_t pYZ = (fInverseBendingMomentumAtDCA != 0.) ? TMath::Abs(1. / fInverseBendingMomentumAtDCA) : 0.;
+  Double_t pZ  = -pYZ / TMath::Sqrt(1.0 + bendingSlope*bendingSlope);  // spectro. (z<0)
+  Double_t pX  = pZ * nonBendingSlope;
+  Double_t pY  = pZ * bendingSlope;
+  Double_t e   = TMath::Sqrt(muonMass*muonMass + pX*pX + pY*pY + pZ*pZ);
+  vP.SetPxPyPzE(pX, pY, pZ, e);
+}
+
+//_____________________________________________________________________________
 Double_t AliESDMuonTrack::PxUncorrected() const
 {
   // return p_x from track parameters
@@ -352,5 +463,34 @@ Bool_t AliESDMuonTrack::IsInMuonClusterMap(Int_t chamber) const
   
   return ((fMuonClusterMap | kMask[chamber]) == fMuonClusterMap) ? kTRUE : kFALSE;
   
+}
+
+//_____________________________________________________________________________
+TClonesArray& AliESDMuonTrack::GetClusters() const
+{
+  // return the array of clusters associated to the track
+  if (!fClusters) fClusters = new TClonesArray("AliESDMuonCluster",10);
+  
+  return *fClusters;
+}
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::AddCluster(const AliESDMuonCluster &cluster)
+{
+  // add a cluster to the TClonesArray of clusters associated to the track
+  if (!fClusters) fClusters = new TClonesArray("AliESDMuonCluster",10);
+  
+  new ((*fClusters)[fClusters->GetEntriesFast()]) AliESDMuonCluster(cluster);
+}
+
+//_____________________________________________________________________________
+Bool_t AliESDMuonTrack::ClustersStored() const
+{
+  // return kTRUE if the clusters associated to the track are registered
+  if (!fClusters) return kFALSE;
+  
+  if (fClusters->GetEntriesFast() == 0) return kFALSE;
+  
+  return kTRUE;
 }
 

@@ -3,7 +3,7 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDfriend.cxx AliESD.cxx \
        AliESDMuonTrack.cxx AliESDPmdTrack.cxx AliESDTrdTrack.cxx AliESDHLTtrack.cxx \
        AliESDv0.cxx AliESDcascade.cxx AliVertex.cxx AliESDVertex.cxx \
        AliESDpid.cxx AliESDkink.cxx \
-       AliESDCaloCluster.cxx \
+       AliESDCaloCluster.cxx AliESDMuonCluster.cxx \
        AliKFParticleBase.cxx AliKFParticle.cxx AliKFVertex.cxx\
        AliKalmanTrack.cxx AliExternalTrackParam.cxx \
        AliVertexerTracks.cxx AliStrLine.cxx \

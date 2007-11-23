@@ -33,6 +33,7 @@
 #pragma link C++ class  AliESDkink+;
 #pragma link C++ class  AliESDV0Params+;
 #pragma link C++ class  AliESDCaloCluster+;
+#pragma link C++ class  AliESDMuonCluster+;
 
 #pragma link C++ class  AliKFParticleBase+;
 #pragma link C++ class  AliKFParticle+;
