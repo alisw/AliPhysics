@@ -29,6 +29,8 @@ extern "C" {
 //
 #include <TFile.h>
 #include <TArrayF.h>
+#include "TROOT.h"
+#include "TPluginManager.h"
 
 //
 //AliRoot includes
@@ -57,6 +59,12 @@ int main(int argc, char **argv) {
   //
   // Main for TPC pedestal detector algorithm
   //
+
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()"); 
   Bool_t timeAnalysis = kTRUE;
 
   int i,status;
