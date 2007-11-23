@@ -55,7 +55,7 @@ ClassImp(AliT0Reconstructor)
   for (Int_t i=0; i<24; i++){
     TGraph* gr = fParam ->GetAmpLEDRec(i);
     fAmpLEDrec.AddAtAndExpand(gr,i) ;  
-    fTime0vertex[i]= fParam->GetTimeDelayDA(i);
+//    fTime0vertex[i]= fParam->GetTimeV0(i);
   }
   fdZonC = TMath::Abs(fParam->GetZPositionShift("T0/C/PMT1"));
   fdZonA = TMath::Abs(fParam->GetZPositionShift("T0/A/PMT15"));
@@ -130,6 +130,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetTimeLED(*timeLED);
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
+
+  cout<<"!!!! AliT0Reconstructor::Reconstruct RefPoint "<<fDigits->RefPoint()<<endl;
   
   Float_t besttimeA=999999;
   Float_t besttimeC=999999;
@@ -195,7 +197,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   //time in each channel as time[ipmt]-MeanTimeinThisChannel(with vertex=0)
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(time[ipmt]>1) {
-      time[ipmt] = (time[ipmt] - fTime0vertex[ipmt])*channelWidth;
+//      time[ipmt] = (time[ipmt] - fTime0vertex[ipmt])*channelWidth;
+      time[ipmt] = time[ipmt] * channelWidth;
       frecpoints->SetTime(ipmt,time[ipmt]);
     }
   }

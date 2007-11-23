@@ -25,15 +25,6 @@
 #include "AliT0LookUpValue.h"
 #include "AliLog.h"
 
-#include <TCanvas.h>
-#include <TObjString.h>
-#include <TObjArray.h>
-#include <TGraph.h>
-#include <TFile.h>
-#include <TAxis.h>
-#include <TH2F.h>
-#include <TMath.h>
-#include <TSystem.h>
 #include <Riostream.h>
 
 #include <string>
@@ -42,10 +33,6 @@ ClassImp(AliT0CalibData)
 
 //________________________________________________________________
   AliT0CalibData::AliT0CalibData():   TNamed(),
-				      fTimeDelayTVD(0),
-				      fMeanT0(0),
-				      fWalk(0),
-				      fAmpLEDRec(0),
 				      fLookup(0),
 				      fNumberOfTRMs(0)
 
@@ -55,10 +42,6 @@ ClassImp(AliT0CalibData)
 
 //________________________________________________________________
 AliT0CalibData::AliT0CalibData(const char* name):TNamed(),
-				      fTimeDelayTVD(0),
-				      fMeanT0(0),
-				      fWalk(0),
-				      fAmpLEDRec(0),
 				      fLookup(0),
 				      fNumberOfTRMs(0)
 {
@@ -72,11 +55,6 @@ AliT0CalibData::AliT0CalibData(const char* name):TNamed(),
 //________________________________________________________________
 AliT0CalibData::AliT0CalibData(const AliT0CalibData& calibda) :
   TNamed(calibda),		
-  fTimeDelayTVD(0),
-  fMeanT0(0),
-  fWalk(0),
-  //  fAmpLED(0),
-  fAmpLEDRec(0),
   fLookup(0),
   fNumberOfTRMs(0)
 
@@ -103,23 +81,6 @@ AliT0CalibData::~AliT0CalibData()
 {
   //
 }
-//________________________________________________________________
-void AliT0CalibData::Reset()
-{
-    memset(fTimeDelayCFD,1,24*sizeof(Float_t));
-    memset(fTimeDelayDA,1,24*sizeof(Float_t));
-}
-
-
-//________________________________________________________________
-void  AliT0CalibData::Print(Option_t*) const
-{
-
-  printf("\n	----	PM Arrays	----\n\n");
-  printf(" Time delay CFD & DA\n");
-  for (Int_t i=0; i<24; i++) printf(" CFD  %f DA %f ",fTimeDelayCFD[i], fTimeDelayDA[i]);
-} 
-
 //________________________________________________________________
 void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChannel) const
 {
@@ -156,130 +117,6 @@ void  AliT0CalibData::PrintLookup(Option_t*, Int_t iTRM, Int_t iTDC, Int_t iChan
   }
   
 }
-
-//________________________________________________________________
-void AliT0CalibData::SetTimeDelayCFD(Float_t* TimeDelay)
-{
-  if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayCFD[t] = TimeDelay[t];
-}  
-  //________________________________________________________________
-  void AliT0CalibData::SetTimeDelayDA(Float_t* TimeDelay)
-{
-  if(TimeDelay) for(int t=0; t<24; t++) fTimeDelayDA[t] = TimeDelay[t];
-}
-
-
-//________________________________________________________________
-void AliT0CalibData::SetWalk(Int_t ipmt)
-{
-
-  Int_t mv, ps; 
-  Int_t x[70000], y[70000], index[70000];
-  Float_t time[10000],amplitude[10000];
-  string buffer;
-  Bool_t down=false;
-  
-  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-Amp.txt");
-  ifstream inFile(filename);
-  if(!inFile) AliError(Form("Cannot open file %s !",filename));
-  
-  Int_t i=0;
-  while(getline(inFile,buffer)){
-    inFile >> ps >> mv;
-
-    x[i]=ps; y[i]=mv;
-    i++;
-  }
-  inFile.close();
-  cout<<" number of data "<<i<<endl;
- 
-  TMath::Sort(i, y, index,down);
-  Int_t amp=0, iin=0, isum=0, sum=0;
-  Int_t ind=0;
-  for (Int_t ii=0; ii<i; ii++)
-    {
-      ind=index[ii];
-      if(y[ind] == amp)
-	{
-	  sum +=x[ind];
-	  iin++;
-	}
-      else
-	{
-	  if(iin>0)
-	    time[isum] = Float_t (sum/(iin));
-	  else
-	    time[isum] =Float_t (x[ind]);
-	  amplitude[isum] = Float_t (amp);
-	  amp=y[ind];
-	  iin=0;
-	  isum++;
-	  sum=0;
-	}
-    }
-
-  inFile.close();
-
-  TGraph* gr = new TGraph(isum, amplitude, time);
-  fWalk.AddAtAndExpand(gr,ipmt);
-}
-
-
-//________________________________________________________________
-/*
-void AliT0CalibData::SetAmpLED(Int_t ipmt)
-{
-  Float_t mv, ps; 
-  Float_t x[100], y[100];
-  string buffer;
-  
-  const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.txt");
-  ifstream inFile(filename);
-  if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
-  
-  inFile >> mv>>ps;
-  Int_t i=0;
-  
-  while(getline(inFile,buffer)){
-    x[i]=mv; y[i]=ps;	
-    inFile >> mv >> ps;
-    i++;
-  }
-  inFile.close();
-  TGraph* gr = new TGraph(i,x,y);
-  fAmpLED.AddAtAndExpand(gr,ipmt);
-   
-}
-*/
-//________________________________________________________________
-
-void AliT0CalibData::SetAmpLEDRec(Int_t ipmt)
-{
-  Float_t mv, ps; 
-  Float_t x[100], y[100];
-  string buffer;
-  
- const char * filename = gSystem->ExpandPathName("$ALICE_ROOT/T0/data/CFD-LED.txt");
-   ifstream inFile(filename);
-  if(!inFile) {AliError(Form("Cannot open file %s !",filename));}
-  
-  inFile >> mv>>ps;
-  Int_t i=0;
-  
-  while(getline(inFile,buffer)){
-    x[i]=mv; y[i]=ps;	
-    inFile >> mv >> ps;
-    i++;
-  }
-  inFile.close();
-  Float_t y1[100], x1[100];
-  for (Int_t ir=0; ir<i; ir++){
-    y1[ir]=y[i-ir]; x1[ir]=x[i-ir];}
-  TGraph* gr = new TGraph(i,y1,x1);
-  fAmpLEDRec.AddAtAndExpand(gr,ipmt);
-  
-}
-
 //________________________________________________________________
 
 void AliT0CalibData::ReadAsciiLookup(const Char_t *filename)
