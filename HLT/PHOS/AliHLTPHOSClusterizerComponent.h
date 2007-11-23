@@ -1,88 +1,124 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTPHOSClusterizerComponent.h
-    @author Ãystein Djuvsland
-    @date   
-    @brief  A clusterizer component for PHOS HLT
-*/
-
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                     *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #ifndef ALIHLTPHOSCLUSTERIZERCOMPONENT_H
 #define ALIHLTPHOSCLUSTERIZERCOMPONENT_H
 
 
 
-#include "AliHLTPHOSProcessor.h"
+/**
+ * Clusterizer component for PHOS HLT
+ *
+ * @file   AliHLTPHOSClusterizerComponent.h
+ * @author Oystein Djuvsland
+ * @date   
+ * @brief  A clusterizer component for PHOS HLT
+*/
 
-//#include "AliHLTPHOSBase.h"
-//#include "AliHLTPHOSDefinitions.h"
-//#include "AliHLTProcessor.h"
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+#include "AliHLTPHOSProcessor.h"
 
 class AliHLTPHOSClusterizer;
 
-//class Rtypes;
-
 class AliHLTPHOSRcuCellEnergyDataStruct;
-class AliHLTPHOSClusterDataStruct;
+//class AliHLTPHOSClusterDataStruct;
 class AliHLTPHOSRecPointDataStruct;
 class AliHLTPHOSRecPointContainerStruct;
 class AliHLTPHOSRecPointListDataStruct;
 class AliHLTPHOSDigitContainerDataStruct;
 
-
-
-// PTH class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProcessor
+/**
+ * @class AliHLTPHOSClusterizerComponent
+ *
+ * Class for running clusterization for PHOS in HLT. It takes digits as input and
+ * gives reconstruction points as output. 
+ * 
+ * The component has the following component arguments:
+ * -clusterthreshold       The energy threshold for starting a new rec point
+ * -energythreshold        The energy threshold for including a digit in a
+ *                         rec point
+ * @ingroup alihlt_phos
+ */
 class AliHLTPHOSClusterizerComponent: public AliHLTPHOSProcessor
-//class AliHLTPHOSClusterizerComponent:  public AliHLTPHOSBase, public AliHLTProcessor
 {
  public:
 
+  /** Constructor */
   AliHLTPHOSClusterizerComponent();
+
+  /** Destructor */
   virtual ~AliHLTPHOSClusterizerComponent();
 
-  //  AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &);
-  //  AliHLTPHOSClusterizerComponent & operator = (const AliHLTPHOSClusterizerComponent &)
-  //   {
-
-  //     return *this;
-  //   }
-
-
-
+  /** interface function, see @ref AliHLTComponent for description */
   const char* GetComponentID();
+
+  /** interface function, see @ref AliHLTComponent for description */
   void GetInputDataTypes(std::vector<AliHLTComponentDataType>& list);
 
+  /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponentDataType GetOutputDataType();
 
+  /** interface function, see @ref AliHLTComponent for description */
   void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
 
+  /** interface function, see @ref AliHLTComponent for description */
   int DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
 		AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 		std::vector<AliHLTComponentBlockData>& outputBlocks);
 
+  /** interface function, see @ref AliHLTComponent for description */
   AliHLTComponent* Spawn();
   
- // void SetNoCrazyness(Bool_t val);
+protected:
 
- protected:
+  /** interface function, see @ref AliHLTComponent for description */
+  int DoInit(int argc, const char** argv);
+
+  /** interface function, see @ref AliHLTComponent for description */
+  int Deinit();
+
+ private:
+
+  /** All digits in the event */
+  AliHLTPHOSDigitContainerDataStruct *fAllDigitsPtr;            //! transient
+
+  /** Pointer to the clusterizer it self */
+  AliHLTPHOSClusterizer* fClusterizerPtr;                       //! transient
 
   using AliHLTPHOSProcessor::DoEvent;
 
-  int DoInit(int argc, const char** argv);
-  virtual int Deinit(); ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
-  int DoDeinit();
+  /** Pointer to the output of the component */
+  AliHLTPHOSRecPointContainerStruct* fOutPtr;                   //! transient
 
- private:
-  AliHLTPHOSDigitContainerDataStruct *fAllDigitsPtr;            //comment
-  AliHLTPHOSClusterizer* fClusterizerPtr;                       //Pointer to the clusterizer
-  AliHLTPHOSRecPointContainerStruct* fOutPtr;                         //Pointer to the struct of output clusters
-  AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //Pointer to the struct of output recpoints
-  AliHLTPHOSRecPointListDataStruct* fRecPointListPtr;           //Pointer to the struct of list of output recpoints
-  Int_t fDigitCount;                                            //comment
-  Bool_t fNoCrazyness;                                          //comment
-  
-  static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
+  /** Pointer to rec points used in clusterization */
+  AliHLTPHOSRecPointDataStruct* fRecPointStructArrayPtr;        //! transient
+
+  /** Number of digits in event */
+  Int_t fDigitCount;              
+
+  /** If one should consider crazyness or not */                              
+  Bool_t fNoCrazyness;                                          
+
+  /** interface function, see @ref AliHLTComponent for description */
+  static const AliHLTComponentDataType fgkInputDataTypes[];
 };
 
 #endif

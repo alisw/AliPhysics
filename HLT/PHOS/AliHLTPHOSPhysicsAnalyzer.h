@@ -1,50 +1,122 @@
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                     *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #ifndef ALIHLTPHOSPHYSICSANALYZER_H
 #define ALIHLTPHOSPHYSICSANALYZER_H
 
-/* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                          */
+/**
+ * Class is intended to be a base class for physics analysis for 
+ * PHOS in HLT
+ *
+ * @file   AliHLTPHOSPhysicsAnalyzer.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Physics analysis base class
+ */
 
-//Intended to be a base class for analysis
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "Rtypes.h"
 #include "AliHLTPHOSConstants.h"
-using namespace PhosHLTConst;
 
+using namespace PhosHLTConst;
 
 class TObjArray;
 class TH1F;
-class AliHLTPHOSClusterDataStruct;
+class AliHLTPHOSRecPointDataStruct;
 
 const Float_t kCRYSTAL_SIZE = 2.25;
+
+/**
+ * @class AliHLTPHOSPhysicsAnalyzer
+ * Base class for physics analysis for PHOS in HLT
+ * @ingroup alihlt_phos
+ */
 
 class AliHLTPHOSPhysicsAnalyzer
 { 
  public:
+
+  /** Constructor */
   AliHLTPHOSPhysicsAnalyzer();
+
+  /** Destructor */
   virtual ~AliHLTPHOSPhysicsAnalyzer();
 
+  /*
   AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer & );
   AliHLTPHOSPhysicsAnalyzer & operator = (const AliHLTPHOSPhysicsAnalyzer &) {return *this;}
+  */
+
 
   void SetHistogram(TH1F* histPtr) {fRootHistPtr = histPtr;}
 
-  void LocalPosition(AliHLTPHOSClusterDataStruct* clusterPtr, Float_t* locPositionPtr);
-  void GlobalPosition(AliHLTPHOSClusterDataStruct* clusterPtr, Float_t* positionPtr);
+  /** 
+   * Get the local position of a reconstruction point in the PHOS module 
+   * @param recPointPtr is a pointer to the reconstruction point
+   * @param locPositionPtr is a pointer to the array of local coordinates
+   */
+  void LocalPosition(AliHLTPHOSRecPointDataStruct* recPointPtr, Float_t* locPositionPtr);
+
+
+  /** 
+   * Get the global position of a reconstruction point in ALICE
+   * @param recPointPtr is a pointer to the reconstruction point
+   * @param locPositionPtr is a pointer to the array where to fill the coord
+   */
+  void GlobalPosition(AliHLTPHOSRecPointDataStruct* recPointPtr, Float_t* positionPtr);
+  
+  /** 
+   * Get the global position of local coordinates in ALICE
+   * @param locPositionPtr is a pointer to the array of local coordinates
+   * @param positionPtr is a pointer to the array of global coordinates
+   * @param module is the module number (0 - 4)
+   */
   void GlobalPosition(Float_t* locPositionPtr , Float_t* positionPtr, Int_t module);
 
   virtual void WriteHistogram(Char_t* fileName = "histogram.root");
-  virtual void Analyze(AliHLTPHOSClusterDataStruct* clustersPtr[10000], Int_t nClusters) = 0;
+
+  /** 
+   * Abstract function, for doing analysis
+   * @param recPointsPtr is an array of pointers to recPoints
+   * @param nRecPoints is the numbers of recPoints
+   */
+  virtual void Analyze(AliHLTPHOSRecPointDataStruct* recPointsPtr[10000], Int_t nRecPoints) = 0;
 
  protected:
-  
-  TObjArray* fClustersPtr;                         //! /**<Pointer to the clusters to be analyzed*/
-  TH1F* fRootHistPtr;                              //! /**<Pointer to the histograms which is to be filled*/
+
+  /** Pointer to the clusters to be analyzed */
+  TObjArray* fRecPointsPtr;                         //! transient
+
+  /** Pointer to the histograms which is to be filled */
+  TH1F* fRootHistPtr;                              //! transient 
 
  private:
-  Float_t fRotParametersCos[5];                        /**<Parameters for calculating global position*/
-  Float_t fRotParametersSin[5];                        /**<Parameters for calculating global position*/
-  Float_t fPHOSRadius;                                 /**<Distance from the IP to the crystals*/
+
+  /** Parameters for calculating global position */
+  Float_t fRotParametersCos[5];                        
+
+  /** Parameters for calculating global position */
+  Float_t fRotParametersSin[5];                   
+    
+  /** Distance from the IP to the crystals */
+  Float_t fPHOSRadius;                                
 
   ClassDef(AliHLTPHOSPhysicsAnalyzer,1);
 };

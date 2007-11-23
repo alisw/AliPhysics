@@ -17,25 +17,71 @@
 #ifndef ALIHLTPHOSRECPOINTDATASTRUCT_H
 #define ALIHLTPHOSRECPOINTDATASTRUCT_H
 
+/**
+ * Rec point data struct for PHOS HLT
+ *
+ * @file   AliHLTPHOSRecPointDataStruct.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Rec point data struct for PHOS HLT
+ */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 //struct AliHLTPHOSDigitDataStruct;
 #include "AliHLTPHOSDigitDataStruct.h"
 //#include "AliHLTTypes.h"
 
+
+/**
+ * @struct AliHLTPHOSRecPointDataStruct
+ * Rec point data struct for PHOS HLT
+ *
+ * @ingroup alihlt_phos
+ */
 struct AliHLTPHOSRecPointDataStruct
 {
 
   //AliHLTUInt8_t fMultiplicity; 
-  UInt_t fMultiplicity;
-  Float_t fX;
-  Float_t fZ;
-  Float_t fAmp;
-  Float_t fM2x;
-  Float_t fM2z;
-  Float_t fM3x;
-  Float_t fM4z;
-  Float_t fPhixe;
-  Float_t fDistanceToBadChannel;
-  AliHLTPHOSDigitDataStruct fDigitsList[64];
+  /** Multiplicity of digits in the rec point */
+  UInt_t fMultiplicity;                       //COMMENT
+
+  /** x coordinate */
+  Float_t fX;                                 //COMMENT
+
+  /** z coordinate */ 
+  Float_t fZ;                                 //COMMENT
+
+  /** Module number */
+  Float_t fModule;                            //COMMENT
+
+  /** The total energy of the rec point */
+  Float_t fAmp;                               //COMMENT
+
+  /** Second moment along x axis */
+  Float_t fM2x;                               //COMMENT
+
+  /** Second moment along z axis */ 
+  Float_t fM2z;                               //COMMENT
+
+  /** Third moment along x axis */
+  Float_t fM3x;                               //COMMENT
+
+  /** Fourth moment along z axis */ 
+  Float_t fM4z;                               //COMMENT
+
+  /** Angle between cog vector and eigen vector */
+  Float_t fPhixe;                             //COMMENT
+
+  /** Distance to nearest bad channel */
+  Float_t fDistanceToBadChannel;              //COMMENT
+
+  /** Array of digits in the rec point */
+  AliHLTPHOSDigitDataStruct fDigitsList[64];  //COMMENT
 
 };
 

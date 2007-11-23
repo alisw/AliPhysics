@@ -14,6 +14,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/**
+ * @file   AliHLTPHOSTreeMaker.cxx
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Tree maker  for PHOS HLT
+ */
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSTreeMaker.h"
 #include "AliHLTPHOSBase.h"
@@ -32,7 +44,7 @@ AliHLTPHOSTreeMaker::AliHLTPHOSTreeMaker() :
   fDigitArrayPtr(0),
   fDigitTreePtr(0)
 {
-
+  //See header file for documentation
   fDigitArrayPtr = new TClonesArray("AliHLTPHOSDigit", 300); //!!!!!!!!!!!!!!!!
   fDigitTreePtr = new TTree("digitTree", "Digits Tree");
 
@@ -43,12 +55,13 @@ AliHLTPHOSTreeMaker::AliHLTPHOSTreeMaker() :
 
 AliHLTPHOSTreeMaker::~AliHLTPHOSTreeMaker()
 {
-
+  //See header file for documentation
 }
 
 Int_t
 AliHLTPHOSTreeMaker::MakeDigitArray(AliHLTPHOSDigitContainerDataStruct *digitContainer, Int_t nDigits)
 {
+  //See header file for documentation
   AliHLTPHOSDigit *digit = 0;
   AliHLTPHOSDigitDataStruct *digitStruct = 0;
 
@@ -71,6 +84,7 @@ AliHLTPHOSTreeMaker::MakeDigitArray(AliHLTPHOSDigitContainerDataStruct *digitCon
 void
 AliHLTPHOSTreeMaker::FillDigitTree()
 {
+  //See header file for documentation
   fDigitTreePtr->Fill();
   fDigitArrayPtr->Clear();
 }
@@ -78,6 +92,7 @@ AliHLTPHOSTreeMaker::FillDigitTree()
 void 
 AliHLTPHOSTreeMaker::SetDigitTree(TTree *tree) 
 { 
+  //See header file for documentation
   fDigitTreePtr = tree; 
   fDigitTreePtr->Branch("Digit", &fDigitArrayPtr);
 }

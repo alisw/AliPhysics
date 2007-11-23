@@ -1,18 +1,29 @@
-
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
  *                                                                        *
- * Author: Ãystein Djuvsland <oysteind@ift.uib.no>                        *
+ * Primary Authors: Oystein Djuvsland                                     *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          * 
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/** 
+ * @file   AliHLTPHOSPhysicsAnalyzer.cxx
+ * @author Oystein Djuvsland
+ * @date 
+ * @brief  Physics analysis base class  */
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSPhysicsAnalyzer.h"
 #include "TVector3.h"
@@ -22,21 +33,22 @@
 #include "AliPHOSGeometry.h"
 #include "Rtypes.h"
 #include "AliHLTPHOSCommonDefs.h"
-#include "AliHLTPHOSClusterDataStruct.h"
+#include "AliHLTPHOSRecPointDataStruct.h"
  
 
 ClassImp(AliHLTPHOSPhysicsAnalyzer);
 
-AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(0), fRootHistPtr(0), fPHOSRadius(0)
+AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fRecPointsPtr(0), fRootHistPtr(0), fPHOSRadius(0)
 						    
 						       
 {
   //Constructor
-
+  //See header file for documentation
   AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
 
-  fPHOSRadius = geom->GetIPtoCrystalSurface();
-  
+  //  fPHOSRadius = geom->GetIPtoCrystalSurface();
+  fPHOSRadius = 1500;
+
   for(UInt_t i = 0; i < N_MODULES; i++)
     {
       fRotParametersCos[i] = cos((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
@@ -44,12 +56,12 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer():fClustersPtr(0), fRootHis
       fRotParametersSin[i] = sin((geom->GetPHOSAngle(i+1))*2*TMath::Pi()/360);
     }
 }
-
+/*
 AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnalyzer &):fClustersPtr(0), fRootHistPtr(0), fPHOSRadius(0)
 
 {
   //Cooy constructor
-
+  //See header file for documentation
   AliPHOSGeometry *geom=AliPHOSGeometry::GetInstance("noCPV");
 
   fPHOSRadius = geom->GetIPtoCrystalSurface();
@@ -62,42 +74,44 @@ AliHLTPHOSPhysicsAnalyzer::AliHLTPHOSPhysicsAnalyzer(const AliHLTPHOSPhysicsAnal
     }
 
 }
-
+*/
 
 AliHLTPHOSPhysicsAnalyzer::~AliHLTPHOSPhysicsAnalyzer()
 {
   //Destructor
-
-  fClustersPtr = 0;
+  //See header file for documentation
+  fRecPointsPtr = 0;
   fRootHistPtr = 0;
 }
 
 void
-AliHLTPHOSPhysicsAnalyzer::LocalPosition(AliHLTPHOSClusterDataStruct* clusterPtr, Float_t* locPositionPtr)
+AliHLTPHOSPhysicsAnalyzer::LocalPosition(AliHLTPHOSRecPointDataStruct* recPointPtr, Float_t* locPositionPtr)
 {
-  //Get local position for a cluster
+  //Get local position for a recPoint
 
-  locPositionPtr[0] = clusterPtr->fLocalPositionPtr[0];
-  locPositionPtr[1] = clusterPtr->fLocalPositionPtr[1];
+  //  locPositionPtr[0] = recPointPtr->fLocalPositionPtr[0];
+  //locPositionPtr[1] = recPointPtr->fLocalPositionPtr[1];
 
 }
 
 void
-AliHLTPHOSPhysicsAnalyzer::GlobalPosition(AliHLTPHOSClusterDataStruct* clusterPtr, Float_t* positionPtr)
+AliHLTPHOSPhysicsAnalyzer::GlobalPosition(AliHLTPHOSRecPointDataStruct* recPointPtr, Float_t* positionPtr)
 {
-  //Get global position for a cluster
-  
+  //Get global position for a recPoint
+  //See header file for documentation
   Float_t tempPosX = 0;
 
-  Int_t module = clusterPtr->fPHOSModule;
+  //  Int_t module = recPointPtr->fPHOSModule;
 
-  tempPosX = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[0]-N_XCOLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
+  Int_t module = 2;
+
+  tempPosX = kCRYSTAL_SIZE*(recPointPtr->fX-N_XCOLUMNS_MOD/2) + kCRYSTAL_SIZE/2;
 
   positionPtr[0] = tempPosX*fRotParametersSin[module] + fPHOSRadius*fRotParametersCos[module];
 
   positionPtr[1] = tempPosX*fRotParametersCos[module] - fPHOSRadius*fRotParametersSin[module];
 
-  positionPtr[2] = kCRYSTAL_SIZE*(clusterPtr->fLocalPositionPtr[1]-N_ZROWS_MOD/2) + kCRYSTAL_SIZE/2;
+  positionPtr[2] = kCRYSTAL_SIZE*(recPointPtr->fZ-N_ZROWS_MOD/2) + kCRYSTAL_SIZE/2;
 
 }
 
@@ -105,7 +119,7 @@ void
 AliHLTPHOSPhysicsAnalyzer::GlobalPosition(Float_t* locPositionPtr, Float_t* positionPtr, Int_t module)
 { 
   //Get global position from local postion and module number
-
+  //See header file for documentation
   positionPtr[0] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersCos[module-1] + fPHOSRadius*fRotParametersSin[module-1];
 
   positionPtr[1] = kCRYSTAL_SIZE*(locPositionPtr[0]-N_XCOLUMNS_MOD/2)*fRotParametersSin[module-1] - fPHOSRadius*fRotParametersCos[module-1];
@@ -118,7 +132,7 @@ void
 AliHLTPHOSPhysicsAnalyzer::WriteHistogram(Char_t* fileName)
 {
   //Write the histogram
-
+  //See header file for documentation
   TFile *outfile = new TFile(fileName,"recreate");  
   
   fRootHistPtr->Write();

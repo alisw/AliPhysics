@@ -15,14 +15,35 @@
 
 #ifndef ALIHLTPHOSRECPOINTCOINTAINERSTRUCT_H
 #define ALIHLTPHOSRECPOINTCOINTAINERSTRUCT_H
+/**
+ * Rec point container struct for PHOS HLT
+ *
+ * @file   AliHLTPHOSRecPointContainerStruct.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Rec point container struct for PHOS HLT
+ */
 
 #include "AliHLTPHOSRecPointDataStruct.h"
 
+/**
+ * @struct AliHLTPHOSRecPointContainerStruct
+ * Rec point container struct for PHOS HLT
+ *
+ * @ingroup alihlt_phos
+ */
 struct AliHLTPHOSRecPointContainerStruct
 {
+
+  /** The PHOS module number */
   UInt_t fPHOSModule;
+
+  /** The number of rec points */
   UInt_t fNRecPoints; 
+
+  /** Array of rec points in the container */
   AliHLTPHOSRecPointDataStruct fRecPointArray[1000];
+
 };
 
 #endif

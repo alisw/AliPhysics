@@ -24,6 +24,21 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+
+/** 
+ * @file   AliHLTPHOSDigitMakerComponent.cxx
+ * @author Oystein Djuvsland
+ * @date   
+ * @brief  A digit maker component for PHOS HLT
+*/
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+
 const AliHLTComponentDataType AliHLTPHOSDigitMakerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
 
 AliHLTPHOSDigitMakerComponent gAliHLTPHOSDigitMakerComponent;
@@ -33,18 +48,18 @@ AliHLTPHOSDigitMakerComponent::AliHLTPHOSDigitMakerComponent() :
   fDigitMakerPtr(0)
   //  fEvtCnt(0)
 {
-  //comment
+  //see header file for documentation
 }
 
 AliHLTPHOSDigitMakerComponent::~AliHLTPHOSDigitMakerComponent()
 {
-  //comment
+  //see header file for documentation
 }
 
 int 
 AliHLTPHOSDigitMakerComponent::Deinit()
 { 
-  //comment
+  //see header file for documentation
   if(fDigitMakerPtr)
     {
       delete fDigitMakerPtr;
@@ -56,7 +71,7 @@ AliHLTPHOSDigitMakerComponent::Deinit()
 const char*
 AliHLTPHOSDigitMakerComponent::GetComponentID()
 {
-  //comment
+  //see header file for documentation
   return "PhosDigitMaker";
 }
 
@@ -64,7 +79,8 @@ void
 
 AliHLTPHOSDigitMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
- //Get datatypes for input
+  //see header file for documentation
+
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType); 
@@ -75,7 +91,7 @@ AliHLTPHOSDigitMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>
 AliHLTComponentDataType 
 AliHLTPHOSDigitMakerComponent::GetOutputDataType()
 {
-  //comment
+  //see header file for documentation
   return AliHLTPHOSDefinitions::fgkAliHLTDigitDataType;
 }
 
@@ -83,7 +99,7 @@ AliHLTPHOSDigitMakerComponent::GetOutputDataType()
 void 
 AliHLTPHOSDigitMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
-  //comment
+  //see header file for documentation
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -93,7 +109,8 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 					AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
 					std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
-   //Do event
+  //see header file for documentation
+
   UInt_t tSize            = 0;
   UInt_t offset           = 0; 
   UInt_t mysize           = 0;
@@ -162,7 +179,7 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 int
 AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 {
-  //Do initialization
+  //see header file for documentation
 
   fDigitMakerPtr = new AliHLTPHOSDigitMaker();
   
@@ -182,6 +199,6 @@ AliHLTPHOSDigitMakerComponent::DoInit(int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSDigitMakerComponent::Spawn()
 {
-  //comment
+  //see header file for documentation
   return new AliHLTPHOSDigitMakerComponent();
 }

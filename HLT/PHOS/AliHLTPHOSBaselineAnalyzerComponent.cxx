@@ -26,6 +26,21 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/** 
+ * Class does baseline analysis
+ * 
+ * @file   AliHLTPHOSBaselineAnalyzerComponent.cxx
+ * @author Oystein Djuvsland
+ * @date   
+ * @brief  A baseline analyzer for PHOS HLT
+*/
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 const AliHLTComponentDataType AliHLTPHOSBaselineAnalyzerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
 
 AliHLTPHOSBaselineAnalyzerComponent gAliHLTPHOSBaselineAnalyzerComponent;
@@ -42,12 +57,12 @@ AliHLTPHOSBaselineAnalyzerComponent::AliHLTPHOSBaselineAnalyzerComponent() :
   fHistPath(0),
   fRunNb(0)
 {
-   //comment
+   //See header file for documentation
 }
 
 AliHLTPHOSBaselineAnalyzerComponent::~AliHLTPHOSBaselineAnalyzerComponent()
 {
- //comment
+ //See header file for documentation
 }
 
 
@@ -55,7 +70,7 @@ AliHLTPHOSBaselineAnalyzerComponent::~AliHLTPHOSBaselineAnalyzerComponent()
 int 
 AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 {
-  //comment
+  //See header file for documentation
   fBaselineAnalyzerPtr->CalculateChannelsBaselineRMS();
   char filename [50];
   cout << "Writing files...";
@@ -92,7 +107,7 @@ AliHLTPHOSBaselineAnalyzerComponent::Deinit()
 const char*
 AliHLTPHOSBaselineAnalyzerComponent::GetComponentID()
 {
- //comment
+ //See header file for documentation
   return "PhosBaselineAnalyzer";
 }
 
@@ -111,7 +126,7 @@ AliHLTPHOSBaselineAnalyzerComponent::GetInputDataTypes(vector<AliHLTComponentDat
 AliHLTComponentDataType 
 AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataType()
 {
- //comment
+ //See header file for documentation
   return AliHLTPHOSDefinitions::fgkAliHLTBaselineDataType;
 }
 
@@ -119,7 +134,7 @@ AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataType()
 void 
 AliHLTPHOSBaselineAnalyzerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
- //comment
+ //See header file for documentation
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -191,7 +206,7 @@ AliHLTPHOSBaselineAnalyzerComponent::DoEvent(const AliHLTComponentEventData& evt
 int
 AliHLTPHOSBaselineAnalyzerComponent::DoInit(int argc, const char** argv )
 {
-  //Do initialization     sprintf(fFilename, "/tmp/phoshlt/analysis/data/run%d/run%d_digitTree_%d.root", fRunNb,fRunNb,(fEvCnt/fWriteInterval - 1));
+  //See header file for documentation
   
   Bool_t pathSet = false;
   Bool_t histPathSet = false;
@@ -270,14 +285,14 @@ AliHLTPHOSBaselineAnalyzerComponent::DoInit(int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSBaselineAnalyzerComponent::Spawn()
 {
- //comment
+ //See header file for documentation
   return new AliHLTPHOSBaselineAnalyzerComponent();
 }
 
 void 
 AliHLTPHOSBaselineAnalyzerComponent::CalculateAll()
 {
- //comment
+ //See header file for documentation
   cout << "Calculating total baselines... \n";
   AliHLTPHOSBaseline *baselineObject = 0;
   TChain* chain = new TChain("baselineTree");

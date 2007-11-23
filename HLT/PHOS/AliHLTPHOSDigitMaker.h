@@ -16,9 +16,31 @@
 #ifndef ALIHLTPHOSDIGITMAKER_H
 #define ALIHLTPHOSDIGITMAKER_H
 
+/**
+ * Class makes digits from information from raw data
+ *
+ * @file   AliHLTPHOSDigitMaker.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Digit maker for PHOS HLT
+ */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSConstants.h"
 
+/**
+ * @class AliHLTPHOSDigitMaker
+ * Digit maker for PHOS HLT. Takes input from AliHLTPHOSRawAnalyzer, and 
+ * outputs an AliHLTPHOSDigitDataStruct container, or a TClonesArray of
+ * AliHLTPHOSDigit. Can do software zero suppression
+ * @ingroup alihlt_phos
+ */
 
 class AliHLTPHOSDigit;
 class TClonesArray;
@@ -33,37 +55,79 @@ using namespace PhosHLTConst;
 class AliHLTPHOSDigitMaker : public AliHLTPHOSBase
 {
 public:
+
+  /** Constructor */
   AliHLTPHOSDigitMaker();
+
+  /** Destructor */
   virtual ~AliHLTPHOSDigitMaker();
  
   // void SetValidCellData(AliHLTPHOSValidCellDataStruct *data) { fCellDataPtr = data; }
   //  void SetDigitContainerStruct(AliHLTPHOSDigitContainerStruct *container) 
   //{ fDigitContainerStructPtr = container; }
-                                
+   
+  /**
+   * Sets the AliHLTPHOSDigitDataStruct container 
+   * @param container the digit container
+   */
   void SetDigitContainerStruct(AliHLTPHOSDigitContainerDataStruct *container) 
   { fDigitContainerStructPtr = container; }
-  
+
+  /** 
+   * Sets the TClonesArray of AliHLTPHOSDigit 
+   * @param array the array
+   */
   void SetDigitArray(TClonesArray *array) { fDigitArrayPtr = array; }
-  void ResetDigitCount() { fDigitCount = 0; }
+
+  /** 
+   * Sets the digit threshold 
+   * @param threshold the threshold
+   */
   void SetDigitThreshold(Int_t threshold) { fDigitThreshold = threshold; }
+
+  /**
+   * Sets the number of pre samples
+   * @param n the number of pre samples
+   */
   void SetNrPresamples(Int_t n) { fNrPresamples = n; }
-  Int_t MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct*);
+
+  /**
+   * Make the digits for one event.
+   * @param rcuCellEnergies is the data from the AliHLTPHOSRawAnalyzer
+   * @return the number of digits found
+   */
+  Int_t MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuCellEnergies);
+
+  /** Reset the digit maker */
   void Reset();
 
 private:
 
-  AliHLTPHOSValidCellDataStruct *fCellDataPtr; //comment
-  AliHLTPHOSDigitContainerDataStruct *fDigitContainerStructPtr; //comment
-  TClonesArray *fDigitArrayPtr; //comment
-  AliHLTPHOSDigit *fDigitPtr; //comment
-  //AliHLTPHOSDigitDataStruct *fDigitStructPtr; //comment
-  AliHLTPHOSDigitDataStruct *fDigitStructPtr; //comment
-  Int_t fDigitCount;  //comment
-  Int_t fNrPresamples; //comment
+  /** Pointer to valid cell list */
+  AliHLTPHOSValidCellDataStruct *fCellDataPtr;                   //! transient
 
-  Float_t fDigitThreshold; //comment
+  /** Pointer to the digit container */
+  AliHLTPHOSDigitContainerDataStruct *fDigitContainerStructPtr;  //! transient
 
-  //  ClassDef(AliHLTPHOSDigitMaker, 1); 
+  /** Pointer to the digit TClonesArray */
+  TClonesArray *fDigitArrayPtr;                                  //! transient
+
+  /** Pointer to a AliHLTPHOSDigit */
+  AliHLTPHOSDigit *fDigitPtr;                                    //! transient
+
+  /** Pointer to a AliHLTPHOSDigitDataStruct */
+  AliHLTPHOSDigitDataStruct *fDigitStructPtr;                    //! transient
+
+  /** Digit count */
+  Int_t fDigitCount; 
+
+  /** Number of presamples */
+  Int_t fNrPresamples; 
+
+  /** Threshold for making digit ( zero suppression threshold) */
+  Float_t fDigitThreshold; 
+
+  ClassDef(AliHLTPHOSDigitMaker, 1); 
 };
 
 

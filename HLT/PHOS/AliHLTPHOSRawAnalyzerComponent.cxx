@@ -160,6 +160,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	      continue;
 	    }
 
+	  else
+	    {
+	      //	       cout << "Info, fDataSize = " << fAltroDataPtr->GetDataSize() << endl;
+	    }
+
 	  crazyness = fSanityInspectorPtr->CheckInsanity(fAltroDataPtr->GetData(), fAltroDataPtr->GetDataSize() - 2);
 
 	  fAnalyzerPtr->SetData(fAltroDataPtr->GetData());  

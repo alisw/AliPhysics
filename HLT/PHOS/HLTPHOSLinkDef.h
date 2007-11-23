@@ -23,6 +23,6 @@
 #pragma link C++ class AliHLTPHOSSanityInspector+;
 #pragma link C++ class AliHLTPHOSBaselineAnalyzer+;
 #pragma link C++ class AliHLTPHOSRcuTreeMaker+;
-#pragma link C++ class AliHLTPHOSChannelCounter+;
+
 
 #endif

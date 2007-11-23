@@ -13,6 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/** 
+ * @file   AliHLTPHOSClusterizer.cxx
+ * @author Oystein Djuvsland
+ * @date 
+ * @brief  Clusterizer for PHOS HLT 
+ */
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSClusterizer.h"
 #include "AliHLTPHOSBase.h"
@@ -55,20 +67,16 @@ AliHLTPHOSClusterizer::AliHLTPHOSClusterizer():
 }//end
 
 
-AliHLTPHOSClusterizer::AliHLTPHOSClusterizer(const AliHLTPHOSClusterizer &) : AliHLTPHOSBase()
-{
-  //Copy constructor, not implemented
-}//end
-
 AliHLTPHOSClusterizer::~AliHLTPHOSClusterizer()  
 {
-  //Destructor
+  //See header file for documentation
 }
+
 
 void
 AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
 {
-  //comment
+  //see header file for documentation
   fEmcClusteringThreshold = params->GetClusteringThreshold();
   fEmcMinEnergyThreshold = params->GetMinE();
   fLogWeight = params->GetLogWeight();
@@ -77,7 +85,7 @@ AliHLTPHOSClusterizer::SetRecoParameters(AliPHOSRecoParamEmc* params)
 void
 AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSGetter* getter)
 {
-  //comment
+  //see header file for documentation
   fRecPointContainerPtr = new AliHLTPHOSRecPointContainerStruct();
   fDigitContainerPtr = new AliHLTPHOSDigitContainerDataStruct();
   fGetterPtr = getter;
@@ -89,7 +97,7 @@ AliHLTPHOSClusterizer::SetOfflineMode(AliPHOSGetter* getter)
 Int_t
 AliHLTPHOSClusterizer::GetEvent(Int_t i)
 {
-  //comment
+  //see header file for documentation
   Int_t coord[4];
 
   fGetterPtr->Event(i, "D");
@@ -110,7 +118,7 @@ AliHLTPHOSClusterizer::GetEvent(Int_t i)
 Int_t 
 AliHLTPHOSClusterizer::GetNEvents()
 {
-  //comment
+  //see header file for documentation
   if(fOnlineMode)
     {
       printf("Number of events not available in online mode!\n");
@@ -123,7 +131,7 @@ AliHLTPHOSClusterizer::GetNEvents()
 Int_t 
 AliHLTPHOSClusterizer::ClusterizeEvent()
 {
-  //comment
+  //see header file for documentation
   Int_t nRecPoints = 0;
   UInt_t i = 0;
 
@@ -162,7 +170,7 @@ void
 AliHLTPHOSClusterizer::ScanForNeighbourDigits(Int_t index, AliHLTPHOSRecPointDataStruct* recPoint)
 
 {
-  //comment
+  //see header file for documentation
 
   for(UInt_t j = 0; j < fDigitContainerPtr->fNDigits; j++)
     {
@@ -193,13 +201,7 @@ Int_t
 AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1, 
 					    AliHLTPHOSDigitDataStruct* digit2)
 {
-    //comment
-  //Int_t coord1[4];
-  //Int_t coord2[4];
-  
-  // fPHOSGeometry->AbsToRelNumbering(digit1->fID, coord1);
-  //fPHOSGeometry->AbsToRelNumbering(digit2->fID, coord2);
-  
+  //see header file for documentation
 
   if ( (digit1->fModule == digit2->fModule) /*&& (coord1[1]==coord2[1])*/ ) // inside the same PHOS module
     { 
@@ -219,8 +221,8 @@ AliHLTPHOSClusterizer::AreNeighbours(AliHLTPHOSDigitDataStruct* digit1,
 void
 AliHLTPHOSClusterizer::CalculateCenterOfGravity()
 {
-  //comment
-  // Calculates the center of gravity in the local PHOS-module coordinates 
+  //see header file for documentation
+ 
   Float_t wtot = 0.;
  
   //Int_t relid[4];

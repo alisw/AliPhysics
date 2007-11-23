@@ -13,6 +13,19 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/** 
+ * @file   AliHLTPHOSSanityInspector.cxx
+ * @author Oystein Djuvsland
+ * @date 
+ * @brief  Sanity inspector for PHOS HLT 
+ */
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTPHOSSanityInspector.h"
 #include "Rtypes.h"
 
@@ -23,13 +36,13 @@ AliHLTPHOSSanityInspector::AliHLTPHOSSanityInspector() :
   AliHLTPHOSBase(),
   fMaxDifference(120)
 {
-  //comment
+  //See header file for documentation
 }
 
 
 AliHLTPHOSSanityInspector::~AliHLTPHOSSanityInspector()
 {
-  //comment
+  //See header file for documentation
 }
 
 
@@ -37,7 +50,8 @@ AliHLTPHOSSanityInspector::~AliHLTPHOSSanityInspector()
 const Int_t  
 AliHLTPHOSSanityInspector::CheckInsanity(const UInt_t* data, const Int_t N) const
 {
-  //comment
+   //See header file for documentation
+
   for(Int_t i = 1; i < N; i++)
     {
       if((((Int_t)data[i] - (Int_t)data[i-1]) > fMaxDifference) || (((Int_t)data[i-1] - (Int_t)data[i]) > fMaxDifference))
@@ -46,13 +60,27 @@ AliHLTPHOSSanityInspector::CheckInsanity(const UInt_t* data, const Int_t N) cons
   return 0;
 }
 
+/*
+Int_t
+AliHLTPHOSSanityInspector::CheckInsanity(Int_t* data, Int_t N)
+{
+   //See header file for documentation
+  for(Int_t i = 1; i < N; i++)
+  {
+    if((((Int_t)data[i] - (Int_t)data[i-1]) > fMaxDifference) || (((Int_t)data[i-1] - (Int_t)data[i]) > fMaxDifference))
+      return 1;
+  }
+  return 0;
+}
+*/
 
 
 Int_t 
 AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
   //
 {
-  //comment
+   //See header file for documentation
+
   Int_t crazyness = 0;
 
   if(N > 3)
@@ -118,7 +146,8 @@ AliHLTPHOSSanityInspector::CheckAndHealInsanity(UInt_t* data, Int_t N)
 Int_t 
 AliHLTPHOSSanityInspector::CheckAndHealInsanity(Int_t* data, Int_t N)
 {
-  //comment
+   //See header file for documentation
+
   Int_t crazyness = 0;
 
   if(N > 3)

@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
- * Authors: Ãystein Djuvsland <oysteind@ift.uib.no>                   *
+ * Authors: Oystein Djuvsland <oysteind@ift.uib.no>                       *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -15,11 +15,25 @@
 #include "AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h"
 #include "AliHLTPHOSPhysicsAnalyzerPeakFitter.h"
 //#include "AliHLTPHOSPhysicsDefinitions.h"
+#include "AliHLTPHOSDefinitions.h" 
 #include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
 #include "AliHLTPHOSPhysicsAnalyzerSpectrumComponent.h"
+#include "AliHLTPHOSRecPointDataStruct.h"
 //#include "Rtypes.h"
 
-class AliHLTPHOSDefinitions;
+/** @file   AliHLTPHOSPhysicsAnalyzerSpectrumComponent.cxx
+    @author Oystein Djuvsland
+    @date   
+    @brief  An invariant mass spectrum component for PHOS HLT
+*/
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
+//class AliHLTPHOSDefinitions;
 
 const AliHLTComponentDataType AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
 UInt_t AliHLTPHOSPhysicsAnalyzerSpectrumComponent::fgCount = 0; 
@@ -74,13 +88,14 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Deinit()
   if(fPeakFitter)
     {
       fPeakFitter->SetHistogram(fRootHistPtr);
-      fPeakFitter->FitLorentzian();
+      fPeakFitter->FitGaussian();
       delete fPeakFitter;
       fPeakFitter = 0;
     }
 
   if(fAnalyzerPtr)
     {
+      fAnalyzerPtr->WriteHistogram("~/hist_fin.root");
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
@@ -93,16 +108,6 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::Deinit()
       
   return 0;
 }
-
-Int_t
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoDeinit()
-{
-  //Deinitialize the component
-  Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSPhysicsAnalyzerSpectrumComponent DoDeinit");
-
-  return 0;
-}
-
 
 const Char_t* 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetComponentID()
@@ -138,13 +143,13 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& con
 }
 
 
-//Int_t 
-//AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-//					    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* /*outputPtr*/, AliHLTUInt32_t& /*size*/,
-//					    std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
-//{
+Int_t 
+AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
+						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
+						    std::vector<AliHLTComponentBlockData>& outputBlocks)
+{
   //Do event
-  /*
+
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx; 
   
@@ -152,38 +157,39 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& con
     {
       iter = blocks+ndx;
       
-      if(iter->fDataType != AliHLTPHOSPhysicsDefinitions::fgkAliHLTClusterDataType)
+      if(iter->fDataType != AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType)
 	{
 	  cout << "Warning: data type is not fgkAliHLTClusterDataType " << endl;
 	  continue;
 	}
       
-      fClusterArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSClusterDataStruct*>(iter->fPtr);
+      fRecPointArrayPtr[ndx] = reinterpret_cast<AliHLTPHOSRecPointDataStruct*>(iter->fPtr);
       
     } 
   
-  fAnalyzerPtr->Analyze(fClusterArrayPtr, ndx);
+  fAnalyzerPtr->Analyze(fRecPointArrayPtr, ndx);
 
   if(fgCount%fWriteInterval == 0 && fgCount != 0)
     {
       //    PushBack(fRootHistPtr, kAliHLTAnyDataType, (AliHLTUInt32_t)0);
+      fAnalyzerPtr->WriteHistogram("~/hist.root");
     }
 
   fgCount++; 
 
-  // if(fgCount%100==0) 
-  // {
-  //  printf("fgCount: %d\n\n", fgCount);
-  cout << "fgCount: " << fgCount << endl;
-      // }
+  if(fgCount%100==0) 
+  {
+    cout << "fgCount: " << fgCount << endl;
+  }
   
   return 0;
   
 }
-*/
 
-int 
-AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData &/*evtData*/, AliHLTComponentTriggerData &/*trigData*/) 	
+
+//int 
+//AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData &/*evtData*/, AliHLTComponentTriggerData &/*trigData*/) 	
+/*
 {
   const AliHLTComponentBlockData* iter = NULL; 
   int ndx = 0;
@@ -218,6 +224,8 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
   
   return 0;
 }
+*/
+
 
 Int_t
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoInit(int argc, const char** argv )

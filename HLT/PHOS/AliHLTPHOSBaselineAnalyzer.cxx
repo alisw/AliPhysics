@@ -13,6 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
+/**
+ * Measures the baselines and calculates relevant values
+ *
+ * @file   AliHLTPHOSBaselineAnalyzer.cxx
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Baseline analyzer for PHOS HLT
+ */
+
 #include "AliHLTPHOSBaselineAnalyzer.h"
 #include "AliHLTPHOSBase.h"
 #include "AliHLTPHOSBaseline.h"
@@ -39,7 +49,7 @@ AliHLTPHOSBaselineAnalyzer::AliHLTPHOSBaselineAnalyzer() :
   fTreePtr(0),
   fSanityInspector(0)	   
 {  
-  //comment
+  //see headerfile for documentation
   fSanityInspector = new AliHLTPHOSSanityInspector();
   
   char histName[128];
@@ -74,14 +84,14 @@ AliHLTPHOSBaselineAnalyzer::AliHLTPHOSBaselineAnalyzer() :
 
 AliHLTPHOSBaselineAnalyzer::~AliHLTPHOSBaselineAnalyzer() 
 { 
-  //comment
+  //see headerfile for documentation
 } 
 
 
 void
 AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
-  //comment
+  //see headerfile for documentation
   Int_t xOff = rcuData->fRcuX * N_XCOLUMNS_RCU;
   Int_t zOff = rcuData->fRcuZ * N_ZROWS_RCU;
   Float_t baseline = 0;
@@ -103,7 +113,7 @@ AliHLTPHOSBaselineAnalyzer::CalculateRcuBaselines(AliHLTPHOSRcuCellEnergyDataStr
 Float_t
 AliHLTPHOSBaselineAnalyzer::CalculateChannelBaseline(AliHLTPHOSValidCellDataStruct *cellData, Int_t xOff, Int_t zOff) 
 { 
-  //comment
+  //see headerfile for documentation
   Int_t crazyness = 0;
   Int_t total = 0;
   Int_t *data = cellData->fData;
@@ -145,7 +155,7 @@ AliHLTPHOSBaselineAnalyzer::CalculateChannelBaseline(AliHLTPHOSValidCellDataStru
 void 
 AliHLTPHOSBaselineAnalyzer::CalculateAccumulatedChannelBaseline(Int_t x, Int_t z, Int_t gain, Float_t baseline)
 {
-  //comment
+  //see headerfile for documentation
   Float_t oldBaseline = fAccumulatedBaselines[x][z][gain][0];
   Float_t nEntries = fAccumulatedBaselines[x][z][gain][1];
   
@@ -158,7 +168,8 @@ AliHLTPHOSBaselineAnalyzer::CalculateAccumulatedChannelBaseline(Int_t x, Int_t z
 void
 AliHLTPHOSBaselineAnalyzer::CalculateChannelsBaselineRMS()
 {
-  //comment
+
+  //see headerfile for documentation
   for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
   {
     for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
@@ -185,7 +196,7 @@ AliHLTPHOSBaselineAnalyzer::CalculateChannelsBaselineRMS()
 void 
 AliHLTPHOSBaselineAnalyzer::SetRootObjects(TTree *tree, TClonesArray *baselineArray)
 {
-  //comment
+  //see headerfile for documentation
   fTreePtr = tree;
   fBaselineArrayPtr = baselineArray;
   tree->Branch("Baselines", &fBaselineArrayPtr);
@@ -195,7 +206,7 @@ AliHLTPHOSBaselineAnalyzer::SetRootObjects(TTree *tree, TClonesArray *baselineAr
 void
 AliHLTPHOSBaselineAnalyzer::FillTree()
 {
-  //comment
+  //see headerfile for documentation
   AliHLTPHOSBaseline *baseline;
   Int_t n = 0;
 
@@ -222,7 +233,7 @@ AliHLTPHOSBaselineAnalyzer::FillTree()
 void
 AliHLTPHOSBaselineAnalyzer::WriteAccumulatedBaselines(const Char_t* filename)
 {
-  //comment
+  //see headerfile for documentation
   TFile *baselineFile = TFile::Open(filename, "recreate");
   fTreePtr->Write();
   baselineFile->Close();
@@ -231,7 +242,7 @@ AliHLTPHOSBaselineAnalyzer::WriteAccumulatedBaselines(const Char_t* filename)
 void 
 AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
 {
-  //comment
+  //see headerfile for documentation
   TFile *file = TFile::Open(filename, "recreate");
   
   for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
@@ -251,7 +262,7 @@ AliHLTPHOSBaselineAnalyzer::WriteChannelHistograms(const Char_t* filename)
 void
 AliHLTPHOSBaselineAnalyzer::WriteRMSHistogram(const Char_t* filename)
 {
-  //comment
+  //see headerfile for documentation
   TFile *file = TFile::Open(filename, "recreate");
   fRMSHistogramPtr->Write();
   fRMSMapHighGainHistogramPtr->Write();
@@ -267,7 +278,7 @@ AliHLTPHOSBaselineAnalyzer::WriteRMSHistogram(const Char_t* filename)
 void 
 AliHLTPHOSBaselineAnalyzer::ResetBaselines()
 {
-  //comment
+  //see headerfile for documentation
    for(UInt_t x = 0; x < N_XCOLUMNS_MOD; x++)
     {
       for(UInt_t z = 0; z < N_ZROWS_MOD; z++)
@@ -283,7 +294,7 @@ AliHLTPHOSBaselineAnalyzer::ResetBaselines()
 void 
 AliHLTPHOSBaselineAnalyzer::ResetChannelCount()
 {
-  //comment
+  //see headerfile for documentation
   fChannelCount = 0;
 }
     
@@ -306,7 +317,7 @@ AliHLTPHOSBaselineAnalyzer::ResetAccumulatedBaselines()
 void 
 AliHLTPHOSBaselineAnalyzer::SetMaxCrazyDifference(Int_t diff)
 {
-  //comment
+  //see headerfile for documentation
   fMaxCrazyDifference = diff;  
   fSanityInspector->SetMaxDifference(diff);
 }

@@ -1,7 +1,35 @@
-//insert copyright
+/**************************************************************************
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
+ *                                                                        *
+ * Primary Authors: Oystein Djuvsland                                     *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          * 
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 
 #include "AliHLTPHOSDigit.h"
 #include "AliHLTPHOSAltroConfig.h"
+
+/**
+ * Digit class for PHOS HLT
+ *
+ * @file   AliHLTPHOSDigit.cxx 
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Digit class for PHOS HLT
+ */
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 ClassImp(AliHLTPHOSDigit);
 
@@ -19,6 +47,7 @@ AliHLTPHOSDigit::AliHLTPHOSDigit() :
   fTotalSamples(70),
   fDebugVar(-1)
 {
+  //See header file for documentation
   //added by PT
   fSamples = fNSamples;
   fPreSamples = fNPresamples;
@@ -30,12 +59,13 @@ AliHLTPHOSDigit::AliHLTPHOSDigit() :
 
 AliHLTPHOSDigit::~AliHLTPHOSDigit()
 {
-  //comment
+  //See header file for documentation
 }
 
 void 
 AliHLTPHOSDigit::SetRawData(Int_t *dataPtr)
 {
+  // See header file for documentation
   //modified by PT
   //  for(Int_t i = 0; i < 70; i++)
   //    {
@@ -51,6 +81,7 @@ AliHLTPHOSDigit::SetRawData(Int_t *dataPtr)
 void 
 AliHLTPHOSDigit::ResetDigit()
   {
+    // See header file for documentation
     fZ = -1;
     fX = -1;
     fAmplitude = -1;

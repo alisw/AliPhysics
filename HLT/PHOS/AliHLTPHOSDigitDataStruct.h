@@ -17,23 +17,65 @@
 #ifndef ALIHLTPHOSDIGITDATASTRUCT_H
 #define ALIHLTPHOSDIGITDATASTRUCT_H
 
+/**
+ * Digit struct for PHOS HLT
+ *
+ * @file   AliHLTPHOSDigitDataStruct.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Digit struct for PHOS HLT
+ */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTPHOSBase.h"
 
+/**
+ * @struct AliHLTPHOSDigitDataStruct
+ * Digit struct for PHOS HLT
+ *
+ * @ingroup alihlt_phos
+ */
 struct AliHLTPHOSDigitDataStruct
 {
+  /** The x coordinate */
   Int_t fX;
+
+  /** The x coordinate */
   Int_t fZ;
+
+  /** The module number */
   Int_t fModule;
+
+  /** The amplitude in ADC counts */
   Float_t fAmplitude;
+
+  /** The time in sample count */ 
   Float_t fTime;
+
+  /* The energy in GeV */
   Float_t fEnergy;
+
+  /** The gain */
   Int_t fGain;
   
+  /** The raw data */
   Int_t fData[512];
 
+  /** The crazyness */
   Int_t fCrazyness; 
+
+  /** The baseline */
   Float_t fBaseline;
 
+  /** 
+   * Set the raw data 
+   * @param data is a pointer to the raw data 
+   */ 
   void SetRawData(Int_t *data)
   {
     for(Int_t i = 0; i < 512; i++)

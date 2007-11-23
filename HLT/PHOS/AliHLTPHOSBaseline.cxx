@@ -17,6 +17,21 @@
 #include "AliHLTPHOSBaseline.h"
 #include "AliHLTPHOSConstants.h"
 
+/**
+ * Baseline class for PHOS HLT
+ *
+ * @file   AliHLTPHOSBaseline.cxx
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Baseline class for PHOS HLT
+ */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 ClassImp(AliHLTPHOSBaseline);
          
 AliHLTPHOSBaseline::AliHLTPHOSBaseline() :
@@ -27,10 +42,10 @@ AliHLTPHOSBaseline::AliHLTPHOSBaseline() :
   fGain(-1),
   fEntries(0)
 {
+  //See header file for documentation
 }
 
 AliHLTPHOSBaseline::~AliHLTPHOSBaseline()
 {
+  //See header file for documentation
 }
-
-

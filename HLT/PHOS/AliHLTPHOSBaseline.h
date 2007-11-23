@@ -17,13 +17,31 @@
 #ifndef ALIHLTPHOSBASELINE_H
 #define ALIHLTPHOSBASELINE_H
 
+/**
+ * Baseline class for PHOS HLT
+ *
+ * @file   AliHLTPHOSBaseline.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Baseline class for PHOS HLT
+ */
+
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "TObject.h"
 #include "AliHLTPHOSConstants.h"
 
 using namespace PhosHLTConst;
 
 /**
- @author Øystein Djuvsland <oystein.djuvsland@gmail.com>
+ * @class AliHLTPHOSBaseline
+ * Baseline class for PHOS HLT, used for writing to ROOT files
+ *
+ * @ingroup alihlt_phos
  */
 class AliHLTPHOSBaseline : public TObject
 {
@@ -39,28 +57,82 @@ public:
   virtual ~AliHLTPHOSBaseline();
 
   /**
-   * 
-   * @param baseline 
+   * Set the baseline
+   * @param baseline is the baseline
    */
   void SetBaseline(Float_t baseline) { fBaseline = baseline; }
-  void SetX(Int_t x) { fX = x; }
-  void SetZ(Int_t z) { fZ = z; }
-  void SetGain(Int_t gain) { fGain = gain; }
-  void SetEntries(Int_t /*entries*/) { fEntries = 0; }  //TODO: should we not set fEntries to entries? is this a bug?
 
+  /** 
+   * Set the x coordinate
+   * @param x is the x coordinate
+   */
+  void SetX(Int_t x) { fX = x; }
+
+  /** 
+   * Set the z coordinate
+   * @param z is the z coordinate
+   */
+  void SetZ(Int_t z) { fZ = z; }
+
+  /** 
+   * Set the gain 
+   * @param gain is the gain 
+   */
+  void SetGain(Int_t gain) { fGain = gain; }
+
+
+  /** 
+   * Set the number of entries 
+   * @param entries is the entries
+   */
+  void SetEntries(Int_t entries) { fEntries = entries; }
+
+  /**
+   * Get the baseline
+   * @return the baseline
+   */
   Float_t GetBaseline() { return fBaseline; }  
+
+  /**
+   * Get the x
+   * @return the x
+   */
   Int_t GetX() { return fX; }
+
+  /**
+   * Get the z
+   * @return the z
+   */
   Int_t GetZ() { return fZ; }
+
+  /**
+   * Get the gain
+   * @return the gain
+   */
   Int_t GetGain() { return fGain; }
+
+  /**
+   * Get the number of entries
+   * @return the number of entries
+   */
   Int_t GetEntries() { return fEntries; }
 
 private:
 
-  Float_t fBaseline;
-  Int_t fX;
-  Int_t fZ;
-  Int_t fGain;
-  Int_t fEntries;
+  /** The baseline */
+  Float_t fBaseline;      //COMMENT
+
+  /** The x coordinate */
+  Int_t fX;               //COMMENT
+
+  /** The z coordinate */
+  Int_t fZ;               //COMMENT
+
+  /** The gain */
+  Int_t fGain;            //COMMENT
+
+  /** The number of entries */ 
+  Int_t fEntries;         //COMMENT
   
   ClassDef(AliHLTPHOSBaseline, 1);
   

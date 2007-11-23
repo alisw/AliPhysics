@@ -18,6 +18,16 @@
 #ifndef ALIHLTPHOSTREEMAKER_H
 #define ALIHLTPHOSTREEMAKER_H
 
+/**
+ * Class makes tree of digits of the class AliHLTPHOSDigit 
+ * stored in an TClonesArray
+ *
+ * @file   AliHLTPHOSTreeMaker.h
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Tree maker  for PHOS HLT
+ */
+
 #include "AliHLTPHOSBase.h"
 #include "TTree.h"
 class AliHLTPHOSDigitContainerDataStruct;
@@ -25,27 +35,55 @@ class AliHLTPHOSDigitContainerDataStruct;
 class TClonesArray;
 //class TTree;
 
+
+/** 
+ * @class AliHLTPHOSTreeMaker
+ * Tree maker for PHOS HLT. Takes AliHLTPHOSDigitContainerDataStruct as input,
+ * makes a TClonesArray of objecst of the class AliHLTPHOSDigit, and then makes
+ * a tree out of it.
+ *
+ * @ingroup alihlt_phos
+ */
 class AliHLTPHOSTreeMaker : public AliHLTPHOSBase
 {
 public:
 
+  /** Constructor */
   AliHLTPHOSTreeMaker();
+
+  /** Destructor */ 
   ~AliHLTPHOSTreeMaker();
 
+  /** 
+   * Make a TClonesArray AliHLTPHOSDigits from a container of digit structs
+   * @param digitContainer is the container of digit structs
+   * @param nDigits is the number of digits in the container
+   * @return the number of digits
+   */
   Int_t MakeDigitArray(AliHLTPHOSDigitContainerDataStruct* digitContainer, Int_t nDigits);
 
-
+  /** Fill the digit tree */
   void FillDigitTree();
   
+  /** Reset the digit tree */
   void ResetDigitTree() { fDigitTreePtr->Reset(); }
   
+  /** Set the digit tree */
   void SetDigitTree(TTree* tree);
   
+  /** 
+   * Get the digit tree 
+   * @return a pointer to the tree
+   */
   TTree* GetDigitTree() { return fDigitTreePtr; }
   
 private:
-  TClonesArray *fDigitArrayPtr;
-  TTree* fDigitTreePtr;
+
+  /** The array of digit object */
+  TClonesArray *fDigitArrayPtr;     //COMMENT
+
+  /** The digit tree */
+  TTree* fDigitTreePtr;             //COMMENT
  
   ClassDef(AliHLTPHOSTreeMaker, 1);
 

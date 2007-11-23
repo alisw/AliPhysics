@@ -27,6 +27,22 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/**
+ * Tree maker component for PHOS HLT
+ *
+ * @file   AliHLTPHOSTreeMakerComponent.cxx
+ * @author Oystein Djuvsland
+ * @date   
+ * @brief  A tree maker component for PHOS HLT
+*/
+
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 const AliHLTComponentDataType AliHLTPHOSTreeMakerComponent::fgkInputDataTypes[]={kAliHLTVoidDataType,{0,"",""}};
 
 AliHLTPHOSTreeMakerComponent gAliHLTPHOSTreeMakerComponent;
@@ -34,30 +50,27 @@ AliHLTPHOSTreeMakerComponent gAliHLTPHOSTreeMakerComponent;
 AliHLTPHOSTreeMakerComponent::AliHLTPHOSTreeMakerComponent() :
   AliHLTPHOSProcessor(),
   fDigitTreePtr(0),
-  //  fEventCount(0),
+  fTreeMakerPtr(0),
+  fDirectory(0),
   fWriteInterval(1000)
 {
-  //comment
+  //See header file for documentation
 }
 
 AliHLTPHOSTreeMakerComponent::~AliHLTPHOSTreeMakerComponent()
 {
-  //comment
+  //See header file for documentation
 }
 
 int 
 AliHLTPHOSTreeMakerComponent::Deinit()
 {
-  //comment
-  cout << "Printing file...";
+  //See header file for documentation
+  cout << "Writing file...";
   char filename [50];
 
-  //  sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNb,(fEventCount/fWriteInterval));
-
-  //  sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNumber,(fEventCount/fWriteInterval));
- sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNumber,(fPhosEventCount/fWriteInterval));
-
-
+  sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNumber,(fPhosEventCount/fWriteInterval));
+ 
   TFile *outfile = new TFile(filename,"recreate");
   fDigitTreePtr->Write();
   delete outfile;
@@ -76,14 +89,14 @@ AliHLTPHOSTreeMakerComponent::Deinit()
 const char*
 AliHLTPHOSTreeMakerComponent::GetComponentID()
 {
-  //comment
+  //See header file for documentation
   return "PhosTreeMaker";
 }
 
 void
 AliHLTPHOSTreeMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
-  //comment
+  //See header file for documentation
  //Get datatypes for input
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
@@ -95,14 +108,14 @@ AliHLTPHOSTreeMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>&
 AliHLTComponentDataType 
 AliHLTPHOSTreeMakerComponent::GetOutputDataType()
 {
-  //comment
+  //See header file for documentation
   return AliHLTPHOSDefinitions::fgkAliHLTRootTreeDataType;
 }
 
 void 
 AliHLTPHOSTreeMakerComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
-  //comment
+  //See header file for documentation
   constBase = 30;
   inputMultiplier = 1;
 }
@@ -114,7 +127,7 @@ AliHLTPHOSTreeMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, c
 
 {
   //Do event
-
+  //See header file for documentation
   Bool_t digitEvent;
   Int_t nDigits = 0;
   Int_t totalDigits = 0;
@@ -158,7 +171,7 @@ return 0;
 int
 AliHLTPHOSTreeMakerComponent::DoInit ( int argc, const char** argv )
 {
-  //comment
+  //See header file for documentation
   fTreeMakerPtr = new AliHLTPHOSTreeMaker();
   fDigitTreePtr = new TTree ( "digitTree", "Digits tree" );
   fDirectory = new char[50];
@@ -188,17 +201,17 @@ AliHLTPHOSTreeMakerComponent::DoInit ( int argc, const char** argv )
 AliHLTComponent*
 AliHLTPHOSTreeMakerComponent::Spawn()
 {
-  //comment
+  //See header file for documentation
   return new AliHLTPHOSTreeMakerComponent();
 }
 
 void
 AliHLTPHOSTreeMakerComponent::Write()
 {
-  //comment
+  //See header file for documentation
   cout << "Writing file...";
   char filename [256];
-  //  sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNb,(fEventCount/fWriteInterval - 1));
+
   sprintf(filename, "%s/run%d_digitTree_%d.root", fDirectory, fRunNumber,(fPhosEventCount/fWriteInterval - 1));
 
   TFile *outfile = new TFile(filename,"recreate");
@@ -211,13 +224,12 @@ AliHLTPHOSTreeMakerComponent::Write()
 void
 AliHLTPHOSTreeMakerComponent::ResetTrees()
 {
-  //comment
+  //See header file for documentation
   delete fDigitTreePtr;
   fDigitTreePtr = new TTree("digitTree", "Digits tree");
   fTreeMakerPtr->SetDigitTree(fDigitTreePtr);
 }
-  
-  
+    
   
   
   

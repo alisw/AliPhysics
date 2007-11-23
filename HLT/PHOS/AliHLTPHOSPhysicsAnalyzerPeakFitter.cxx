@@ -1,18 +1,32 @@
-
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * This file is property of and copyright by the ALICE HLT Project        * 
+ * All rights reserved.                                                   *
  *                                                                        *
- * Authors: Øystein Djuvsland <oysteind@ift.uib.no>                       *
+ * Primary Authors: Oystein Djuvsland                                     *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
+ * about the suitability of this software for any purpose. It is          * 
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/**
+ * Class does fitting on an histogram
+ *
+ * @file   AliHLTPHOSPhysicsAnalyzerPeakFitter.cxx
+ * @author Oystein Djuvsland
+ * @date
+ * @brief  Fitter for PHOS HLT
+ */
+
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include <Riostream.h>
 #include "AliHLTPHOSPhysicsAnalyzerPeakFitter.h"
@@ -49,8 +63,8 @@ AliHLTPHOSPhysicsAnalyzerPeakFitter::FitGaussian()
   Int_t maxBin = fRootHistPtr->GetMaximumBin();
   Float_t binWidth = fRootHistPtr->GetBinWidth(maxBin);
   Float_t maxBinValue = (Float_t)(maxBin * binWidth);
-  Float_t lowRange = maxBinValue - 0.03;
-  Float_t highRange = maxBinValue + 0.03;
+  Float_t lowRange = maxBinValue - 0.05;
+  Float_t highRange = maxBinValue + 0.05;
 
   TF1* gaussian = new TF1("gaussian", "gaus", 0.1, 0.2);
     
