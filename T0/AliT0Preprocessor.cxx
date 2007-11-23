@@ -1,9 +1,39 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+/*
+$Log$
+Version 2.1  2007/11/21 
+Preprocessor storing data to OCDB (T.Malkiewicz)
+
+Version 1.1  2006/10   
+Preliminary test version (T.Malkiewicz)
+*/   
+
+// T0 preprocessor:
+// 1) takes data from DCS and passes it to the class AliTOFDataDCS for processing and writes the result to the Reference DB.
+// 2) takes data form DAQ (both from Laser Calibration and Physics runs), processes it, and stores either to OCDB or to Reference DB.
+
 #include "AliT0Preprocessor.h"
+#include "AliT0DataDCS.h"
+#include "AliT0CalibWalk.h"
+#include "AliT0CalibTimeEq.h"
 
 #include "AliCDBMetaData.h"
 #include "AliDCSValue.h"
 #include "AliLog.h"
-#include "AliT0Calc.h"
 
 #include <TTimeStamp.h>
 #include <TFile.h>
@@ -11,99 +41,188 @@
 #include <TNamed.h>
 #include "AliT0Dqclass.h"
 
+
 ClassImp(AliT0Preprocessor)
 
 //____________________________________________________
-AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) :
-  AliPreprocessor("T00", shuttle)
+AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreprocessor("T00", shuttle),
+fData(0)
 {
-
+  //constructor
 }
+//____________________________________________________
 
 AliT0Preprocessor::~AliT0Preprocessor()
 {
-
+  delete fData;
+  fData = 0;
 }
+//____________________________________________________
+
+void AliT0Preprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTime)
+{
+  AliPreprocessor::Initialize(run, startTime, endTime);
+  AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run, TTimeStamp(startTime).AsString(), TTimeStamp(endTime).AsString()));
+  fData = new AliT0DataDCS(fRun, fStartTime, fEndTime);
+}
+//____________________________________________________
 
 UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 {
+  // T0 preprocessor return codes:
+  // return=0 : all ok
+  // return=1 : no DCS input data 
+  // return=2 : failed to store DCS data
+  // return=3 : no Laser data (Walk correction)
+  // return=4 : failed to store OCDB time equalized data
+  // return=5 : no DAQ input for OCDB
+  // return=6 : failed to retrieve DAQ data from OCDB
+  // return=7 : failed to store T0 OCDB data
 
-	if(!dcsAliasMap) return 1;
+	Bool_t resultDCSMap=kFALSE;
+	Bool_t resultDCSStore=kFALSE;
+	Bool_t resultLaser=kFALSE;
+	Bool_t resultOnline=kFALSE;  
 
-        TObjArray *aliasArr;
-       // AliDCSValue *aValue;
-        Float_t hv[24]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-        for(int j=0; j<24; j++){
-		TString aliasName =Form("T0HV%d",j);
-                // printf("aliasname: %s\n",aliasName.Data());
-                aliasArr = dynamic_cast<TObjArray*> (dcsAliasMap->GetValue(aliasName.Data()));
-                if(!aliasArr){
-                        AliError(Form("Alias %s not found!", aliasName.Data()));
-                        continue;
-                }
-                AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(0));
-                // printf("I'm here! %f %x\n", aValue->GetFloat(), aValue->GetTimeStamp());
-               hv[j]= aValue->GetFloat()*100;
-	       //Float_t timestamp= (Float_t) (aValue->GetTimeStamp());
-		// printf("hello! hv = %f timestamp = %f\n" ,hv[j], timestamp);
-
+	// processing DCS
+	
+	if(!dcsAliasMap) 
+	{
+	  Log("No DCS input data");	
+	  return 1;
 	}
-	Float_t numbers[24];
+     	else
+	{ 
+	  resultDCSMap=fData->ProcessData(*dcsAliasMap);
+	  if(!resultDCSMap)
+	  {
+	    Log("Error when processing DCS data");
+            return 2;// return error Code for processed DCS data not stored
+          }
+          else
+          {
+            AliCDBMetaData metaDataDCS;
+            metaDataDCS.SetBeamPeriod(0);
+            metaDataDCS.SetResponsible("Tomasz Malkiewicz");
+            metaDataDCS.SetComment("This preprocessor fills an AliTODataDCS object.");
+            AliInfo("Storing DCS Data");
+            resultDCSStore = Store("Calib","DCSData",fData, &metaDataDCS);
+            if (!resultDCSStore)
+	    {
+              Log("Some problems occurred while storing DCS data results in ReferenceDB");
+              return 2;// return error Code for processed DCS data not stored
+            }
+ 
+	  }	
+	}
 
-	AliT0Calc *calibdata = new AliT0Calc();	
+	// processing DAQ
+
+	TString runType = GetRunType();
+
+	if(runType == "T0_STANDALONE_LASER") 
+	{
+	  TList* list = GetFileSources(kDAQ, "LASER");
+          if (list)
+          {
+            TIter iter(list);
+            TObjString *source;
+	    while ((source = dynamic_cast<TObjString *> (iter.Next())))
+            {
+              const char *laserFile = GetFile(kDAQ, "LASER", source->GetName());
+              if (laserFile)
+              {
+                Log(Form("File with Id TIME found in source %s!", source->GetName()));
+	        AliT0CalibWalk *laser = new AliT0CalibWalk();
+	        // laser->Reset();
+	        laser->MakeWalkCorrGraph(laserFile);
+ 	        AliCDBMetaData metaData;
+                metaData.SetBeamPeriod(0);
+                metaData.SetResponsible("Tomek&Michal");
+                metaData.SetComment("Walk correction from laser runs.");
+                resultLaser = Store("Calib","Data", laser, &metaData);
+                delete laser;
+              } 
+              else
+              {
+                Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
+                return 1;
+              }
+            }
+            if (!resultLaser)
+	    {
+              Log("No Laser Data stored");
+              return 3;//return error code for failure in storing Laser Data
+            }
+ 	  }	
+   	} 
+	else if(runType == "PHYSICS") 
+	{
+	    AliT0CalibTimeEq *online = new AliT0CalibTimeEq();
+            online->Reset();
+	    online->ComputeOnlineParams("CFD13-CFD","", "c1", 20, 1.);
+	    AliCDBMetaData metaData;
+            metaData.SetBeamPeriod(0);
+            metaData.SetResponsible("Tomek&Michal");
+            metaData.SetComment("Time equalizing result.");
+
+            resultOnline = Store("Calib","Data", online, &metaData);
+            delete online;
+	    if (!resultOnline)
+            {
+              Log("No Laser Data stored");
+              return 4;//return error code for failure in storing OCDB Data
+            }
 	
-        TList* list = GetFileSources(kDAQ, "TIME");
-        if (list)
-        {
-		TIter iter(list);
-      		TObjString *source;
-      		while ((source = dynamic_cast<TObjString *> (iter.Next()))) 
-		{
-			const char* TimefileName = GetFile(kDAQ, "TIME", source->GetName());
-	
-			if (TimefileName)
-			{
-				Log(Form("File with Id TIME found in source %s!", source->GetName()));
-				TFile *file = TFile::Open(TimefileName);
-				if(!file || !file->IsOpen()) 
-				{
-		  			Log(Form("Error opening file with Id TIME from source %s!", source->GetName()));
-		 			return 1;
-				} 
-				AliT0Dqclass *tempdata = dynamic_cast<AliT0Dqclass*> (file->Get("Time"));
-				if (!tempdata) 
-				{
-					Log("Could not find key \"Time\" in DAQ file!");
-					return 1;
-				}
-				for(Int_t i=0;i<24;i++){
-					numbers[i] = tempdata->GetTime(i);
+	}
+       
+
+/* commented for testing, TM 22.11.2007
+    	  
+	while ((source = dynamic_cast<TObjString *> (iter.Next()))) 
+	  {
+	    const char* TimefileName = GetFile(kDAQ, "TIME", source->GetName());
+	    if (TimefileName)
+	    {
+	      Log(Form("File with Id TIME found in source %s!", source->GetName()));
+	      TFile *file = TFile::Open(TimefileName);
+	      if(!file || !file->IsOpen()) 
+	      {
+		Log(Form("Error opening file with Id TIME from source %s!", source->GetName()));
+		return 1;
+	      } 
+	      AliT0Dqclass *tempdata = dynamic_cast<AliT0Dqclass*> (file->Get("Time"));
+	      if (!tempdata) 
+	      {
+	        Log("Could not find key \"Time\" in DAQ file!");
+	        return 1;
+	      }
+	      for(Int_t i=0;i<24;i++)
+	      {
+	        numbers[i] = tempdata->GetTime(i);
 					//	printf("\nnumbers: %f\n",numbers[i]);
-				}
-        			file->Close();
-				delete tempdata;
-			} else {
-		  		Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
-				return 1;
-			}
-			calibdata->SetTime(numbers, hv);
-			calibdata->Print();
-		} 
-	} else {
-		Log("No sources for Id TIME found!");
+	      }
+	      file->Close();
+	      delete tempdata;
+	    } 
+            else 
+	    {
+	      Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
+	      return 1;
+	    }
+	//		calibdata->SetTime(numbers, hv);
+	//		calibdata->Print();
+	//		calibdata->FitGauss();
+	  } 
+	} 
+        else 
+	{
+	  Log("No sources for Id TIME found!");
 	}        
 
-	AliCDBMetaData metaData;
-	metaData.SetBeamPeriod(0);
-	metaData.SetResponsible("Tomek&Michal");
-	metaData.SetComment("This preprocessor returns time to be used for reconstruction.");
+*/
 
-	Bool_t result = Store("Calib","Data", calibdata, &metaData);
-	delete calibdata;
-	if(result == kTRUE) 
-	  {return 0;}
-	else {return 1;}
+  return 0;
 }
 
 	
