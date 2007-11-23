@@ -5,7 +5,19 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+///////////////////////////////////////////////////////////////////////////////
+///
+/// This is the class for fats deocding of TPC/PHOS/EMCAL raw data
+//  see .cxx file for more detailed comments.
+///
+///////////////////////////////////////////////////////////////////////////////
+
+
+
 #include <TObject.h>
+
+#include <iostream>
+using namespace std;
  
 #define DDL_32BLOCK_SIZE         5
 #define MAX_BRANCHES             2
@@ -20,25 +32,9 @@ class AliAltroData;
 
 class AliAltroDecoder: public TObject {
  public:
- 
-  /*
-   *Default constructor
-   **/
   AliAltroDecoder();
-
-  /*
-   *Default destructor
-   **/
   virtual ~AliAltroDecoder();
-
-  /*
-   *Decode the RCU/DDL payload 
-   **/
   Bool_t Decode();
-
-  /*
-   *Reads the next altro channels 
-   **/
   Bool_t NextChannel(AliAltroData *altroDataPtr);
 
   /* 
@@ -49,6 +45,7 @@ class AliAltroDecoder: public TObject {
   void  DumpData(T *array, Int_t N, Int_t nPerLine)
   {
     cout <<   "DumpData N=  " << N <<endl;
+
     for(Int_t i= 0; i< N; i++)
       {
 	if((i%nPerLine == 0)  &&  (i != 0))
@@ -62,50 +59,20 @@ class AliAltroDecoder: public TObject {
   }
 
   int SetMemory(UChar_t  *dtaPtr, UInt_t size);
-
   void PrintInfo(AliAltroData &altrodata, Int_t n = 0, Int_t nPerLine = 4);
-
-  /*
-   *Prints to stdout the percent of altroblocks that
-   *is missing the 2aaa trailer.
-   **/
   Float_t GetFailureRate();
 
  private:
 
   AliAltroDecoder& operator = (const AliAltroDecoder& decoder);
   AliAltroDecoder(const AliAltroDecoder& decoder);
-
-  /*
-   *Check wether or not there is consistency between the number of 40 bit altro words given by
-   *the RCU payload and the number of 40 bit words calculated from the size of the RCU payload.
-   **/
-  Bool_t CheckPayloadTrailer();
-
-  /*
-   *Decode one 160 bit DDL block into 16 x 16 bit integers (only least significant 10 bits are filled)
-   **/
+  Bool_t CheckPayloadTrailer() const;
   void DecodeDDLBlock();
- 
-  /*
-   *Decode one 160 bit DDL block into 16 integers. 
-   *In order to use the same decoding function (DecodeDDLBlock()) 
-   *a copy of the the last DDL block is made and  
-   *if the las block does not align with 160 bits then it is padded with zeroes 
-   **/
   void DecodeLastDDLBlock();
-
-  /*
-   *Use for simulated data only.
-   *Patch for incorrectly simulated data. Counts the number of 
-   *2aaa word in the trailer of the payload and tries to figure out
-   *the correct number of 40 bit altro words in the RCU pauload
-   **/
-  Int_t countAAApaddings();
-
+  Int_t CountAAApaddings() const;
   UInt_t  *f32DtaPtr;                        // Pointer to dat of the input buffer in entities of 32 bit words (the RCU/DDL block)
   UChar_t *f8DtaPtr;                         // Pointer to dat of the input buffer in entities of 8 bit words (the RCU/DDL block)
-  const Long_t fN32HeaderWords;              // Number of 32 bit words in the common data header
+  const Long_t fkN32HeaderWords;              // Number of 32 bit words in the common data header
   Int_t    fN40AltroWords;                   // Number of 40 bit altro words contained in the RCU payload as calculated form the payload size
   Int_t    fN40RcuAltroWords;                // Number of 40 bit altro words contained in the RCU payload as given by the RCU trailer        
   Int_t    fNDDLBlocks;                      // Number of DDL blocks in the payload (the last blocj might/ight not be 160 bits )
@@ -120,8 +87,7 @@ class AliAltroDecoder: public TObject {
   Int_t    fInComplete;                      // Number of altro channels that is read out properly
   Bool_t   fDecodeIfCorruptedTrailer;        // Wether or not to try to decode the data if the RCU trailer is incorrect (will succseed in most cases)
   Bool_t   fIsDecoded;                       // Wether or not the buffer set last by the "SetMemory()" function has been decoded
-
-  Bool_t  fIsFatalCorruptedTrailer;         //If trailer is fataly corrupted, not possible in any way to recover, then it is not allowed to decode the DDL payload.  
+  Bool_t  fIsFatalCorruptedTrailer;          // If trailer is fataly corrupted, not possible in any way to recover, then it is not allowed to decode the DDL payload.  
 
   ClassDef(AliAltroDecoder, 0)  // class for decoding Altro payload
 };

@@ -18,11 +18,26 @@
 #include  "AliAltroDecoder.h"
 #include  "AliAltroData.h"
 
+// Class for fast decoding of RCU/Altro raw data format (DDL format)
+// to PC readable form. The decoding is done in 3 steps.
+// 1) The RCU payload consistist of a variable number of 160 bit words
+//    denoted a DDL block. All the DDL blocks of an RCU payload is transformed
+//    to 16 integers wich is then put into a buffer of integers big enought to contain the
+//    biggest number of samples possible
+// 2) The decoded buffer is then accesible for the NextChannel functions wich reads 
+//    the altro channel data (samples) contained in the payload. The first call to NextChannel gives the
+//    last altro channel of the back linked list, the next call the second last channel ..etc untill
+//    all channles are read.
+// 3) (optional) For each Altro channel one chan invoke the member function NextBunch which gives on first call
+//    The last bunch (the bunch with the highest timestamp), on next call the second last bunch..etc
+//    untill all bunches are read
+  
+
 ClassImp(AliAltroDecoder)
 
 AliAltroDecoder::AliAltroDecoder() : f32DtaPtr(0),
 				     f8DtaPtr(0),
-				     fN32HeaderWords(8), 
+				     fkN32HeaderWords(8), 
 				     fN40AltroWords(0), 
 				     fN40RcuAltroWords(0),
 				     fNDDLBlocks(0), 
@@ -37,19 +52,21 @@ AliAltroDecoder::AliAltroDecoder() : f32DtaPtr(0),
 				     fIsDecoded(kFALSE),
 				     fIsFatalCorruptedTrailer(kTRUE) 
 {
- // see header file for class documentation
+ // Default constructor
 }
 
 
 AliAltroDecoder::~AliAltroDecoder()
 {
-  // see header file for class documentation
+  // Default destructor
 }
 
 
-Bool_t AliAltroDecoder::CheckPayloadTrailer()
+Bool_t AliAltroDecoder::CheckPayloadTrailer() const
 {
-   // see header file for  documentation 
+  //Check wether or not there is consistency between the number of 40 bit altro words given by
+  //the RCU payload and the number of 40 bit words calculated from the size of the RCU payload.
+
   if(fN40AltroWords != fN40RcuAltroWords)
     {
       return  kFALSE;
@@ -63,6 +80,9 @@ Bool_t AliAltroDecoder::CheckPayloadTrailer()
 
 Bool_t AliAltroDecoder::Decode()
 { 
+  // Decodes the RCU payload (all altro channels in one go) from the DDL format to
+  // PC readable form
+
   if( fIsFatalCorruptedTrailer == kTRUE)
     {
       printf("\n AliAltroDecoder::Decode(), WARNING, attempt to decode badly corrupted data\n");
@@ -76,7 +96,7 @@ Bool_t AliAltroDecoder::Decode()
       fComplete = 0;
       fInComplete = 0;
 
-      Int_t tmpcnt = countAAApaddings();
+      Int_t tmpcnt = CountAAApaddings();
   
       if(tmpcnt == 3)
 	{
@@ -125,6 +145,11 @@ Bool_t AliAltroDecoder::Decode()
 
 Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
 {
+  // Reads the next altro channel in the RCU payload after the RCU payload
+  // has been decoded. The channles are read strarting from the end (backlinked list) 
+  // Returns kTRUE as long as ther are unread channles in the payload
+  // Returns kFALSE when all the channels has been read. 
+
   if(fIsFatalCorruptedTrailer == kTRUE)
     {
       printf("\n AliAltroDecoder::NextChannel(), WARNING, attempt to decode badly corrupted data\n");
@@ -141,7 +166,7 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
  	  Decode();
  	}
 
-      if(fOutBufferIndex >  fN32HeaderWords)
+      if(fOutBufferIndex >  fkN32HeaderWords)
 	{
 	  if((fOutBuffer[fOutBufferIndex] << 4 ) | ((fOutBuffer[fOutBufferIndex-1] & 0x3c0) >> 6) == 0x2aaa)
 	    {
@@ -185,10 +210,14 @@ Bool_t AliAltroDecoder::NextChannel(AliAltroData *altroDataPtr)
     }
 }
 
-  
 
-Int_t AliAltroDecoder::countAAApaddings()
+Int_t AliAltroDecoder::CountAAApaddings() const
 {
+  // Use for simulated data only.
+  // Patch for incorrectly simulated data. Counts the number of 
+  // 2aaa word in the trailer of the payload and tries to figure out
+  // the correct number of 40 bit altro words in the RCU pauload
+ 
   UShort_t *tailPtr= (UShort_t *)(f32DtaPtr +f32PayloadSize);
   Int_t cnt = 0;
 
@@ -208,7 +237,9 @@ Int_t AliAltroDecoder::countAAApaddings()
 
 Float_t AliAltroDecoder::GetFailureRate()
 {
-   // see header file for documentation  
+  // Prints to stdout the percent of altroblocks that
+  // is missing the 2aaa trailer.
+ 
   Float_t tmp = 0;
   cout << "Number of Complete channles = " << fComplete <<endl;
   cout << "Number of InComplete channles = " << fInComplete <<endl;
@@ -220,7 +251,9 @@ Float_t AliAltroDecoder::GetFailureRate()
 
 void AliAltroDecoder::PrintInfo(AliAltroData &altrodata, Int_t n, Int_t nPerLine)
 {
-  // see header file for documentation 
+  // prints data and address information contained in altrodata 
+  // to the standard output
+
   cout << "altrodata.fDataSize = " << altrodata.GetDataSize() <<  endl;
   cout << "altrodata.fHadd = "     << altrodata.GetHadd()  <<endl;
   const UInt_t* data = altrodata.GetData();
@@ -238,6 +271,9 @@ void AliAltroDecoder::PrintInfo(AliAltroData &altrodata, Int_t n, Int_t nPerLine
 
 int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 {
+  // Sets the pointer to the memory block that should be decoded
+  // Returns a negative value if an inconsistency in the data is detected
+
   int iRet = 0;
   Int_t tmpTrailerSize;
   fIsDecoded = kFALSE; 
@@ -256,7 +292,7 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
       tmpTrailerSize = 1; //assume that last word is ONE, and that the this word gives the number of 40 bit altro words
     }
 
-  f32PayloadSize = fSize/4 -  (fN32HeaderWords +  tmpTrailerSize);
+  f32PayloadSize = fSize/4 -  (fkN32HeaderWords +  tmpTrailerSize);
   fN40AltroWords = (32*f32PayloadSize)/40; 
   fNDDLBlocks =  f32PayloadSize/5;
   f32LastDDLBlockSize =  f32PayloadSize%DDL_32BLOCK_SIZE;
@@ -265,7 +301,7 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
     {
       f32DtaPtr =  f32DtaPtr -  tmpTrailerSize;
       fN40RcuAltroWords =  *f32DtaPtr;
-      f32DtaPtr = (UInt_t *)dtaPtr + fN32HeaderWords;
+      f32DtaPtr = (UInt_t *)dtaPtr + fkN32HeaderWords;
       fIsFatalCorruptedTrailer = kFALSE; 
     }
   else
@@ -274,7 +310,6 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
       fIsFatalCorruptedTrailer = kTRUE;
       iRet = -1;
     }
-
   
   return iRet;
 
@@ -283,7 +318,8 @@ int AliAltroDecoder::SetMemory(UChar_t *dtaPtr, UInt_t size)
 
 void AliAltroDecoder::DecodeDDLBlock()
 {
-  // see header file for documentation 
+  //Decode one 160 bit DDL block into 16 x 16 bit integers (only least significant 10 bits are filled)
+
   fOutBuffer[fOutBufferIndex] =  *f32DtaPtr & 0x3ff;  //s0 
   fOutBufferIndex ++;
   fOutBuffer[fOutBufferIndex] = (*f32DtaPtr & 0xffc00) >> 10; //s1
@@ -330,7 +366,11 @@ void AliAltroDecoder::DecodeDDLBlock()
 
 void AliAltroDecoder::DecodeLastDDLBlock()
 {
-  // see header file for documentation 
+  // Decode one 160 bit DDL block into 16 integers. 
+  // In order to use the same decoding function (DecodeDDLBlock()) 
+  // a copy of the the last DDL block is made and  
+  // if the las block does not align with 160 bits then it is padded with zeroes 
+
   for(Int_t i=0; i < f32LastDDLBlockSize; i++)
     {
       fDDLBlockDummy[i] = *f32DtaPtr;

@@ -23,12 +23,12 @@ AliAltroBunch::AliAltroBunch() :
   fEndTimeBin(0),
   fStartTimeBin(999)
 {
-
+  // Default constructor
 }
 
 
 AliAltroBunch::~AliAltroBunch()
 {
-
+  // Default destructor
 }
 
