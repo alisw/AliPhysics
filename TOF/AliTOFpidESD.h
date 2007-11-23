@@ -22,7 +22,7 @@ public:
  ~AliTOFpidESD(){}
  
   void     SetMaxMismatchProbability(Double_t p) {fPmax=p;}
-  Double_t GetMaxMismatchProbability() {return fPmax;}
+  Double_t GetMaxMismatchProbability() const {return fPmax;}
 
   Int_t MakePID(AliESDEvent *event);
   Int_t MakePID(AliESDEvent *event, Double_t timeZero);
