@@ -15,6 +15,7 @@
 #include "AliVParticle.h"
 #include "AliAODVertex.h"
 #include "AliAODRedCov.h"
+#include "AliAODPid.h"
 
 class AliAODTrack : public AliVParticle {
 
@@ -157,6 +158,7 @@ class AliAODTrack : public AliVParticle {
   UInt_t  GetITSMUONClusterMap() const { return fITSMuonClusterMap; }
   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
 
+  AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
   // print
@@ -231,9 +233,10 @@ class AliAODTrack : public AliVParticle {
   Char_t        fType;              // Track Type
 
   AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
+  AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack,5);
+  ClassDef(AliAODTrack,6);
 };
 
 #endif

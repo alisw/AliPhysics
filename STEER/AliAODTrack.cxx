@@ -40,7 +40,8 @@ AliAODTrack::AliAODTrack() :
   fCharge(-99),
   fType(kUndef),
   fCovMatrix(NULL),
-  fProdVertex(0x0)
+  fDetPid(NULL),
+  fProdVertex(NULL)
 {
   // default constructor
 
@@ -75,6 +76,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fCharge(charge),
   fType(ttype),
   fCovMatrix(NULL),
+  fDetPid(NULL),
   fProdVertex(prodVertex)
 {
   // constructor
@@ -114,6 +116,7 @@ AliAODTrack::AliAODTrack(Short_t id,
   fCharge(charge),
   fType(ttype),
   fCovMatrix(NULL),
+  fDetPid(NULL),
   fProdVertex(prodVertex)
 {
   // constructor
@@ -146,6 +149,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fCharge(trk.fCharge),
   fType(trk.fType),
   fCovMatrix(NULL),
+  fDetPid(NULL),
   fProdVertex(trk.fProdVertex)
 {
   // Copy constructor
@@ -155,8 +159,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   SetUsedForVtxFit(trk.GetUsedForVtxFit());
   SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
   if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
+  if(trk.fDetPid) fDetPid=new AliAODPid(*trk.fDetPid);
   SetPID(trk.fPID);
-
 }
 
 //______________________________________________________________________________
@@ -190,6 +194,10 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 
     SetUsedForVtxFit(trk.GetUsedForVtxFit());
     SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
+
+    delete fDetPid;
+    if(trk.fDetPid) fDetPid=new AliAODPid(*trk.fDetPid);
+    else fDetPid=NULL;
   }
 
   return *this;
