@@ -59,7 +59,7 @@ class AliHLTProcessor : public AliHLTComponent {
 		    AliHLTComponentTriggerData& trigData,
 		    AliHLTUInt8_t* outputPtr, 
 		    AliHLTUInt32_t& size,
-		    vector<AliHLTComponentBlockData>& outputBlocks,
+		    AliHLTComponentBlockDataList& outputBlocks,
 		    AliHLTComponentEventDoneData*& edd );
 
   // Information member functions for registration.
@@ -90,7 +90,7 @@ class AliHLTProcessor : public AliHLTComponent {
 		       AliHLTComponentTriggerData& trigData,
 		       AliHLTUInt8_t* outputPtr, 
 		       AliHLTUInt32_t& size,
-		       vector<AliHLTComponentBlockData>& outputBlocks );
+		       AliHLTComponentBlockDataList& outputBlocks );
 
   /**
    * The high-level data processing method.

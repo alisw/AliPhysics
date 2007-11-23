@@ -39,6 +39,11 @@ AliHLTDataSource::AliHLTDataSource()
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
+void* AliHLTDataSource::fgpSpecialEvent=NULL;
+int AliHLTDataSource::fgSpecialEventSize=0;
+AliHLTComponentDataType AliHLTDataSource::fgSpecialEventDataType=kAliHLTVoidDataType;
+AliHLTUInt32_t AliHLTDataSource::fgSpecialEventSpecification=kAliHLTVoidDataSpec;
+
 AliHLTDataSource::~AliHLTDataSource()
 { 
   // see header file for class documentation
@@ -52,7 +57,7 @@ void AliHLTDataSource::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 
 
 int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
-				    const AliHLTComponentBlockData* blocks, 
+				    const AliHLTComponentBlockData* /*blocks*/, 
 				    AliHLTComponentTriggerData& trigData,
 				    AliHLTUInt8_t* outputPtr, 
 				    AliHLTUInt32_t& size,
@@ -61,14 +66,29 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
 {
   // see header file for class documentation
   int iResult=0;
-  if (blocks) {
-    // this is currently just to get rid of the warning "unused parameter"
-  }
   if (evtData.fBlockCnt > 0) {
     HLTWarning("Data source component skips input data blocks");
   }
-  iResult=GetEvent(evtData, trigData, outputPtr, size, outputBlocks);
-  HLTDebug("component %s (%p) GetEvent finished (%d)", GetComponentID(), this, iResult);
+  if (fgpSpecialEvent==NULL || fgSpecialEventSize==0) {
+    // normal event publishing
+    iResult=GetEvent(evtData, trigData, outputPtr, size, outputBlocks);
+    HLTDebug("component %s (%p) GetEvent finished (%d)", GetComponentID(), this, iResult);
+  } else {
+    // publish special event
+    if (size>=fgSpecialEventSize) {
+      memcpy(outputPtr, fgpSpecialEvent, fgSpecialEventSize);
+      AliHLTComponentBlockData bd;
+      FillBlockData(bd);
+      bd.fOffset=0;
+      bd.fSize=fgSpecialEventSize;
+      bd.fDataType=fgSpecialEventDataType;
+      bd.fSpecification=fgSpecialEventSpecification;
+      outputBlocks.push_back(bd);
+      size=bd.fSize;
+    } else {
+      iResult=-ENOSPC;
+    }
+  }
   edd = NULL;
   return iResult;
 }
@@ -88,4 +108,20 @@ int AliHLTDataSource::GetEvent( const AliHLTComponentEventData& /*evtData*/, Ali
 {
   HLTFatal("no processing method implemented");
   return -ENOSYS;
+}
+
+AliHLTDataSource::AliSpecialEventGuard::AliSpecialEventGuard(AliHLTRunDesc* pDesc, AliHLTComponentDataType dt, AliHLTUInt32_t spec)
+{
+  AliHLTDataSource::fgpSpecialEvent=pDesc; 
+  AliHLTDataSource::fgSpecialEventSize=sizeof(AliHLTRunDesc); 
+  AliHLTDataSource::fgSpecialEventDataType=dt; 
+  AliHLTDataSource::fgSpecialEventSpecification=spec;
+}
+
+AliHLTDataSource::AliSpecialEventGuard::~AliSpecialEventGuard()
+{
+  AliHLTDataSource::fgpSpecialEvent=NULL; 
+  AliHLTDataSource::fgSpecialEventSize=0; 
+  AliHLTDataSource::fgSpecialEventDataType=kAliHLTVoidDataType;
+  AliHLTDataSource::fgSpecialEventSpecification=kAliHLTVoidDataSpec;
 }

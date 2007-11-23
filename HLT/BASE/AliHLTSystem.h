@@ -196,6 +196,14 @@ class AliHLTSystem : public AliHLTLogging {
   int StopTasks();
 
   /**
+   * Send a control event trough the chain.
+   * All data sources in the chain are switched to publish a control event like
+   * SOR or EOR. The event is propagated in the same way as a normal event.
+   * @param dt       type of the event
+   */
+  int SendControlEvent(AliHLTComponentDataType dt);
+
+  /**
    * De-init all tasks from the list.
    * The @ref AliHLTTask::Deinit method is called for each task, the components
    * will be deleted.

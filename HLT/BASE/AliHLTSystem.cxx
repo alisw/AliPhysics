@@ -42,6 +42,7 @@ using namespace std;
 #include "AliHLTTask.h"
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOfflineInterface.h"
+#include "AliHLTDataSource.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -530,6 +531,9 @@ int AliHLTSystem::StartTasks()
   } else {
     fEventCount=0;
     fGoodEvents=0;
+    if ((iResult=SendControlEvent(kAliHLTDataTypeSOR))<0) {
+      HLTError("can not send SOR event");
+    }
   }
   return iResult;
 }
@@ -567,12 +571,16 @@ int AliHLTSystem::StopTasks()
 {
   // see header file for class documentation
   int iResult=0;
+  if ((iResult=SendControlEvent(kAliHLTDataTypeEOR))<0) {
+    HLTError("can not send EOR event");
+  }
   TObjLink *lnk=fTaskList.FirstLink();
-  while (lnk && iResult>=0) {
+  while (lnk) {
     TObject* obj=lnk->GetObject();
     if (obj) {
       AliHLTTask* pTask=(AliHLTTask*)obj;
-      iResult=pTask->EndRun();
+      int locResult=pTask->EndRun();
+      if (iResult>=0 && locResult<0) iResult=locResult;
 //       ProcInfo_t ProcInfo;
 //       gSystem->GetProcInfo(&ProcInfo);
 //       HLTInfo("task %s stopped (%d), current memory usage %d %d", pTask->GetName(), iResult, ProcInfo.fMemResident, ProcInfo.fMemVirtual);
@@ -581,6 +589,33 @@ int AliHLTSystem::StopTasks()
     lnk = lnk->Next();
   }
   PrintBenchmarking(fStopwatches, 1 /*clean*/);
+  return iResult;
+}
+
+int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
+{
+  // see header file for class documentation
+
+  // disabled for the moment
+  return 0;
+
+  int iResult=0;
+  AliHLTRunDesc runDesc;
+  memset(&runDesc, 0, sizeof(AliHLTRunDesc));
+  runDesc.fStructSize=sizeof(AliHLTRunDesc);
+  AliHLTDataSource::AliSpecialEventGuard g(&runDesc, dt, kAliHLTVoidDataSpec);
+  HLTDebug("sending event %s, run descriptor %p", AliHLTComponent::DataType2Text(dt).c_str(), &runDesc);
+  TObjLink *lnk=fTaskList.FirstLink();
+  while (lnk && iResult>=0) {
+    TObject* obj=lnk->GetObject();
+    if (obj) {
+      AliHLTTask* pTask=(AliHLTTask*)obj;
+      iResult=pTask->ProcessTask(-1);
+    } else {
+    }
+    lnk = lnk->Next();
+  }
+  HLTDebug("event %s done (%d)", AliHLTComponent::DataType2Text(dt).c_str(), iResult);
   return iResult;
 }
 

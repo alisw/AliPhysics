@@ -170,11 +170,11 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
   return iResult;
 }
 
-int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponentBlockData* arrayBlockDesc, int iArraySize)
+int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponentBlockDataList& blockDescList)
 {
   // see header file for function documentation
   int iResult=0;
-  if (pConsumer && arrayBlockDesc) {
+  if (pConsumer) {
     if (1/*fpBuffer*/) {
       AliHLTConsumerDescriptor* pDesc=FindConsumer(pConsumer, fConsumers);
       if (pDesc) {
@@ -183,50 +183,44 @@ int AliHLTDataBuffer::Subscribe(const AliHLTComponent* pConsumer, AliHLTComponen
 	// so it does not matter if there are matching data types or not, unless
 	// we implement such a check in PubSub
 	if ((iResult=FindMatchingDataSegments(pConsumer, tgtList))>=0) {
-	  int i =0;
 	  AliHLTDataSegmentList::iterator segment=tgtList.begin();
-	  while (segment!=tgtList.end() && i<iArraySize) {
+	  while (segment!=tgtList.end()) {
 	    // fill the block data descriptor
-	    arrayBlockDesc[i].fStructSize=sizeof(AliHLTComponentBlockData);
-	    // the shared memory key is not used in AliRoot
-	    arrayBlockDesc[i].fShmKey.fStructSize=sizeof(AliHLTComponentShmData);
-	    arrayBlockDesc[i].fShmKey.fShmType=gkAliHLTComponentInvalidShmType;
-	    arrayBlockDesc[i].fShmKey.fShmID=gkAliHLTComponentInvalidShmID;
+	    AliHLTComponentBlockData bd;
+	    AliHLTComponent::FillBlockData(bd);
 	    // This models the behavior of PubSub.
 	    // For incoming data blocks, fOffset must be ignored by the
 	    // processing component. It is set for bookkeeping in the framework.
 	    // fPtr always points to the beginning of the data.
-	    arrayBlockDesc[i].fOffset=0;
+	    bd.fOffset=0;
 	    AliHLTUInt8_t* pTgt=*segment;
-	    arrayBlockDesc[i].fPtr=reinterpret_cast<void*>(pTgt);
-	    arrayBlockDesc[i].fSize=(*segment).fSegmentSize;
-	    arrayBlockDesc[i].fDataType=(*segment).fDataType;
-	    arrayBlockDesc[i].fSpecification=(*segment).fSpecification;
+	    bd.fPtr=reinterpret_cast<void*>(pTgt);
+	    bd.fSize=(*segment).fSegmentSize;
+	    bd.fDataType=(*segment).fDataType;
+	    bd.fSpecification=(*segment).fSpecification;
+	    blockDescList.push_back(bd);
 	    pDesc->SetActiveDataSegment(*segment);
-	    HLTDebug("component %p (%s) subscribed to segment #%d offset %d size %d data type %s %#x", 
-		     pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), i, arrayBlockDesc[i].fOffset,
-		     arrayBlockDesc[i].fSize, (AliHLTComponent::DataType2Text(arrayBlockDesc[i].fDataType)).c_str(), 
-		     arrayBlockDesc[i].fSpecification);
-	    i++;
+	    HLTDebug("component %p (%s) subscribed to segment offset %d size %d data type %s %#x", 
+		     pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), bd.fOffset,
+		     bd.fSize, (AliHLTComponent::DataType2Text(bd.fDataType)).c_str(), 
+		     bd.fSpecification);
 	    segment++;
 	  }
-	  // check whether there was enough space for the segments
-	  if (i!=(int)tgtList.size()) {
-	    HLTError("too little space in block descriptor array: required %d, available %d", tgtList.size(), iArraySize);
-	    iResult=-ENOSPC;
-	  } else {
 	  // move this consumer to the active list
-	  if (i==0) {
+	  if (tgtList.size()==0) {
 	    ChangeConsumerState(pDesc, fConsumers, fReleasedConsumers);
 	    HLTDebug("no input data for component %p (%s) available", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID());
 	  } else if (ChangeConsumerState(pDesc, fConsumers, fActiveConsumers)>=0) {
 	    HLTDebug("component %p (%s) subscribed to data buffer %p", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID(), this);
 	  } else {
 	    // TODO: cleanup the consumer descriptor correctly
-	    memset(arrayBlockDesc, 0, iArraySize*sizeof(AliHLTComponentBlockData));
+	    segment=tgtList.begin();
+	    while (segment!=tgtList.end()) {
+	      blockDescList.pop_back();
+	      segment++;
+	    }
 	    HLTError("can not activate consumer %p for data buffer %p", pConsumer, this);
 	    iResult=-EACCES;
-	  }
 	  }
 	} else {
 	  HLTError("unresolved data segment(s) for component %p (%s)", pConsumer, ((AliHLTComponent*)pConsumer)->GetComponentID());
@@ -327,7 +321,7 @@ int AliHLTDataBuffer::Forward(AliHLTTask* pSrcTask, AliHLTComponentBlockData* pB
   assert(fForwardedSegments.size()==fForwardedSegmentSources.size());
   if (fForwardedSegments.size()!=fForwardedSegmentSources.size()) return -EFAULT;
   fForwardedSegmentSources.push_back(pSrcTask);
-  fForwardedSegments.push_back(AliHLTDataSegment(pBlockDesc->fPtr, pBlockDesc->fOffset, pBlockDesc->fSize));
+  fForwardedSegments.push_back(AliHLTDataSegment(pBlockDesc->fPtr, pBlockDesc->fOffset, pBlockDesc->fSize, pBlockDesc->fDataType, pBlockDesc->fSpecification));
   return 0;
 }
 

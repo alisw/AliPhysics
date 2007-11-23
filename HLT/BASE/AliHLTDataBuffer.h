@@ -110,6 +110,9 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
 		AliHLTComponentBlockData* arrayBlockDesc,
 		int iArraySize);
 
+  int Subscribe(const AliHLTComponent* pConsumer,
+		AliHLTComponentBlockDataList& blockDescList);
+
   /**
    * Release an instance of the data buffer.
    * Resets the variables of the block descriptor.

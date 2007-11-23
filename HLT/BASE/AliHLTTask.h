@@ -226,12 +226,10 @@ class AliHLTTask : public TObject, public AliHLTLogging {
    * returns the number of blocks which would be prepared in case the target
    * array is big enough.
    * @param pConsumerTask   the task which subscribes to the data
-   * @param arrayBlockDesc  pointer to block descriptor to be filled
-   * @param iArraySize      size of the block descriptor array
+   * @param blockDescList   block descriptor list to be filled
    * @return number of matching data blocks, negative error code if failed
    */
-  int Subscribe(const AliHLTTask* pConsumerTask,
-		AliHLTComponentBlockData* arrayBlockDesc, int iArraySize);
+  int Subscribe(const AliHLTTask* pConsumerTask, AliHLTComponentBlockDataList& blockDescList);
 
   /**
    * Release a block descriptor.
