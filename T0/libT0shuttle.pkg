@@ -1,7 +1,8 @@
 #-*- Mode: Makefile -*-
 # $Id$
 
-SRCS = AliT0Calc.cxx AliT0Preprocessor.cxx AliT0Dqclass.cxx
+SRCS = AliT0Preprocessor.cxx AliT0DataDCS.cxx 
+# AliT0CalibWalk.cxx AliT0CalibTimeEq.cxx 
 HDRS:= $(SRCS:.cxx=.h)
 
 DHDR= T0shuttleLinkDef.h
