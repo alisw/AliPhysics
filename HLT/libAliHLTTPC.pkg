@@ -3,60 +3,6 @@
 
 include $(MODDIR)/hlt.conf
 
-MODULE_SRCS= 	AliHLTTPCLog.cxx \
-		AliHLTTPCAgent.cxx \
-		AliHLTTPCTransform.cxx \
-		AliHLTTPCMemHandler.cxx \
-		AliHLTTPCDataCompressorHelper.cxx \
-		AliHLTTPCFitter.cxx \
-		AliHLTTPCFileHandler.cxx \
-		AliHLTTPCBenchmark.cxx \
-		AliHLTTPCClusterFinder.cxx \
-		AliHLTTPCDigitReader.cxx \
-		AliHLTTPCDigitReaderPacked.cxx \
-		AliHLTTPCDigitReaderUnpacked.cxx \
-		AliHLTTPCDigitReaderRaw.cxx \
-		AliHLTTPCVertex.cxx \
-		AliHLTTPCVertexArray.cxx \
-		AliHLTTPCVertexFinder.cxx \
-		AliHLTTPCTrackArray.cxx \
-		AliHLTTPCTrack.cxx \
-		offline/AliHLTTPCDigitPublisherComponent.cxx \
-		AliHLTTPCClusters.cxx \
-		AliHLTTPCConfMapFit.cxx \
-		AliHLTTPCConfMapTrack.cxx \
-		AliHLTTPCConfMapPoint.cxx \
-		AliHLTTPCConfMapper.cxx \
-		AliHLTTPCModelTrack.cxx \
-		AliHLTTPCMerger.cxx \
-		AliHLTTPCTrackMerger.cxx \
-		AliHLTTPCGlobalMerger.cxx \
-		AliHLTTPCInterMerger.cxx \
-		AliHLTTPCPad.cxx \
-		AliHLTTPCPadArray.cxx \
-		AliHLTTPCDefinitions.cxx \
-		AliHLTTPCRawDataUnpackerComponent.cxx \
-		AliHLTTPCClusterFinderComponent.cxx \
-		AliHLTTPCVertexFinderComponent.cxx \
-		AliHLTTPCSliceTrackerComponent.cxx \
-		AliHLTTPCGlobalMergerComponent.cxx \
-		AliHLTTPCEsdWriterComponent.cxx \
-		AliHLTTPCCalibPedestalComponent.cxx \
-		AliHLTTPCCalibPulserComponent.cxx
-
-# 		AliHLTTPCDDLDataFileHandler.cxx
-# 		tracking/AliHLTTPCHough.cxx \
-# 		tracking/AliHLTTPCHoughTrack.cxx \
-# 		tracking/AliHLTTPCHoughEval.cxx \
-# 		tracking/AliHLTTPCHoughTracker.cxx \
-# 		tracking/AliHLTTPCHoughTransformer.cxx \
-# 		tracking/AliHLTTPCHoughTransformerRow.cxx \
-# 		tracking/AliHLTTPCHoughKalmanTrack.cxx \
-# 		tracking/AliHLTTPCHoughMaxFinder.cxx \
-# 		tracking/AliHLTTPCHistogram.cxx \
-# 		tracking/AliHLTTPCHistogram1D.cxx \
-# 		tracking/AliHLTTPCHistogramAdaptive.cxx
-
 CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCAgent.h \
 		AliHLTTPCMemHandler.h \
@@ -69,6 +15,8 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCDigitReaderPacked.h \
 		AliHLTTPCDigitReaderUnpacked.h \
 		AliHLTTPCDigitReaderRaw.h \
+		AliHLTTPCDigitDumpComponent.h \
+		AliHLTAltroChannelSelectorComponent.h \
 		AliHLTTPCVertex.h \
 		AliHLTTPCVertexArray.h \
 		AliHLTTPCVertexFinder.h \
@@ -87,7 +35,6 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 		AliHLTTPCInterMerger.h \
 		AliHLTTPCPad.h \
 		AliHLTTPCPadArray.h \
-		AliHLTTPCSpacePointData.h \
 		AliHLTTPCDefinitions.h \
 		AliHLTTPCRawDataUnpackerComponent.h \
 		AliHLTTPCClusterFinderComponent.h \
@@ -113,9 +60,13 @@ CLASS_HDRS:=  	AliHLTTPCTransform.h \
 # 		tracking/AliHLTTPCHistogram1D.h \
 # 		tracking/AliHLTTPCHistogramAdaptive.h
 
+MODULE_SRCS= 	$(CLASS_HDRS:.h=.cxx) \
+		AliHLTTPCLog.cxx
+
 MODULE_HDRS:= 	$(CLASS_HDRS) \
 		AliHLTTPCLog.h \
 		AliHLTTPCLogging.h \
+		AliHLTTPCSpacePointData.h \
 		AliHLTTPCRootTypes.h \
 		AliHLTTPCDigitData.h \
 		AliHLTTPCTrackSegmentData.h \
