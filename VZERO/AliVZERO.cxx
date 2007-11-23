@@ -53,6 +53,8 @@
 #include "AliRunDigitizer.h"
 #include "AliVZEROdigit.h"
 #include "AliDAQ.h"
+#include "AliRawReader.h"
+#include "AliVZERORawStream.h"
 
 ClassImp(AliVZERO)
  //__________________________________________________________________
@@ -340,6 +342,54 @@ void AliVZERO::Digits2Raw()
 
   delete buffer;
   fLoader->UnloadDigits();
+}
+
+//_____________________________________________________________________________
+Bool_t AliVZERO::Raw2SDigits(AliRawReader* rawReader){
+  // Converts the VZERO raw data into digits
+  // The method is used for merging simulated and
+  // real data events
+  TStopwatch timer;
+  timer.Start();
+
+  if(!fLoader) {
+    AliError("no VZERO loader found");
+    return kFALSE; }
+
+  TTree* treeD  = fLoader->TreeD();
+  if(!treeD) {
+      fLoader->MakeTree("D");
+      treeD = fLoader->TreeD(); }
+        
+  AliVZEROdigit  digit;
+  AliVZEROdigit* pdigit = &digit;
+  const Int_t kBufferSize = 4000;
+   
+  treeD->Branch("VZERO", "AliVZEROdigit",  &pdigit, kBufferSize);
+
+  rawReader->Reset();
+  AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader);    
+     
+  if (!rawStream->Next()) return kFALSE; // No VZERO data found
+  
+  for(Int_t i=0; i<64; i++) {
+      new(pdigit) AliVZEROdigit(i, (Int_t)rawStream->GetADC(i), (Int_t)rawStream->GetTime(i)); 
+      treeD->Fill();
+  }
+ 
+// Checks if everything is OK by printing results 
+
+//   for(int i=0;i<64;i++) {
+// 	printf("Channel %d : %d %d \n",i,rawStream->GetADC(i),rawStream->GetTime(i)); }
+//   treeD->Print(); printf(" \n"); 
+   	
+  fLoader->WriteDigits("OVERWRITE");
+  fLoader->UnloadDigits();	
+	
+  delete rawStream;
+
+  timer.Stop();
+  timer.Print();
 }
 
 
