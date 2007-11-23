@@ -643,7 +643,7 @@ Bool_t AliAlignObj::GetLocalMatrix(TGeoHMatrix& m) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAlignObj::ApplyToGeometry()
+Bool_t AliAlignObj::ApplyToGeometry(Bool_t ovlpcheck)
 {
   // Apply the current alignment object to the TGeo geometry
   // This method returns FALSE if the symname of the object was not
@@ -692,7 +692,16 @@ Bool_t AliAlignObj::ApplyToGeometry()
   Int_t modId; // unique identity for volume inside layer in the alobj
   GetVolUID(layerId, modId);
   AliDebug(2,Form("Aligning volume %s of detector layer %d with local ID %d",symname,layerId,modId));
-  node->Align(ginv);
+  node->Align(ginv,0,ovlpcheck);
+  if(ovlpcheck){
+    Int_t novex=((TObjArray*)gGeoManager->GetListOfOverlaps())->GetEntriesFast();
+    if(novex){
+      TString error(Form("The alignment of volume %s introduced %d new overlap",GetSymName(),novex));
+      if(novex>1) error+="s";
+      AliError(error.Data());
+      return kFALSE;
+    }
+  }
 
   return kTRUE;
 }

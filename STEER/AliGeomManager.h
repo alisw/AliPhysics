@@ -77,8 +77,9 @@ public:
 
   static void        LoadGeometry(const char *geomFileName = NULL);
   static void        SetGeometry(TGeoManager *geom);
+  static void        CheckOverlapsOverPNs(Double_t threshold);  
 
-  static Bool_t         ApplyAlignObjsToGeom(TObjArray& alObjArray);
+  static Bool_t         ApplyAlignObjsToGeom(TObjArray& alObjArray, Bool_t ovlpcheck=kFALSE);
 
   static Bool_t         ApplyAlignObjsToGeom(const char* fileName,
 				      const char* clArrayName);
@@ -89,7 +90,6 @@ public:
 				      Int_t sversion);
   static Bool_t         ApplyAlignObjsToGeom(const char* detName, Int_t runnum, Int_t version,
 				      Int_t sversion);
-
   static Bool_t         ApplyAlignObjsFromCDB(const char* AlDetsList);
   static Bool_t         LoadAlignObjsFromCDBSingleDet(const char* detName, TObjArray& alignObjArray);
 

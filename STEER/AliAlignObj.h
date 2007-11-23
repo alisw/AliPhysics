@@ -97,7 +97,7 @@ class AliAlignObj : public TObject {
   static const char* SymName(UShort_t voluid) {return AliGeomManager::SymName(voluid);}
   static const char* SymName(AliGeomManager::ELayerID layerId, Int_t modId) {return AliGeomManager::SymName(layerId, modId);}
 
-  Bool_t ApplyToGeometry();
+  Bool_t ApplyToGeometry(Bool_t ovlpcheck=kFALSE);
   static Bool_t   GetFromGeometry(const char *symname, AliAlignObj &alobj) {return AliGeomManager::GetFromGeometry(symname, alobj);}
 
   static AliAlignObj* GetAlignObj(UShort_t voluid) {return AliGeomManager::GetAlignObj(voluid);}

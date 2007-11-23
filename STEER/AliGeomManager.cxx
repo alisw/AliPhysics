@@ -28,6 +28,10 @@
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 #include <TSystem.h>
+#include <TStopwatch.h>
+#include <TGeoOverlap.h>
+#include <TPluginManager.h>
+#include <TROOT.h>
 
 #include "AliGeomManager.h"
 #include "AliLog.h"
@@ -1240,6 +1244,56 @@ TGeoPNEntry* AliGeomManager::GetPNEntry(ELayerID layerId, Int_t modId)
 }
 
 //_____________________________________________________________________________
+void AliGeomManager::CheckOverlapsOverPNs(Double_t threshold)
+{
+  // Check for overlaps/extrusions on physical nodes only;
+  // this overlap-checker is meant to be used to check overlaps/extrusions
+  // originated by the application of alignment objects.
+  //
+
+  TObjArray* ovexlist = new TObjArray(64);
+
+  AliInfoClass("********* Checking overlaps/extrusions over physical nodes only *********");
+  TObjArray* pnList = gGeoManager->GetListOfPhysicalNodes();
+  TGeoVolume* mvol;
+  TGeoPhysicalNode* pn;
+  TObjArray* overlaps = new TObjArray(64);
+  overlaps->SetOwner();
+
+  TStopwatch timer2;
+  timer2.Start();
+  for(Int_t pni=0; pni<pnList->GetEntriesFast(); pni++){
+    pn = (TGeoPhysicalNode*) pnList->UncheckedAt(pni);
+    // checking the volume of the mother (go upper in the tree in case it is an assembly)
+    Int_t levup=1;
+    while(((TGeoVolume*)pn->GetVolume(pn->GetLevel()-levup))->IsAssembly()) levup++;
+      //Printf("Going to upper level");
+    mvol = pn->GetVolume(pn->GetLevel()-levup);
+    if(!mvol->IsSelected()){
+      AliInfoClass(Form("Checking overlaps for volume %s",mvol->GetName()));
+      mvol->CheckOverlaps(threshold);
+      ovexlist = gGeoManager->GetListOfOverlaps();
+      TIter next(ovexlist);
+      TGeoOverlap *ov;
+      while ((ov=(TGeoOverlap*)next())) overlaps->Add(ov->Clone());
+      mvol->SelectVolume();
+    }
+  }
+  mvol->SelectVolume(kTRUE); // clears the list of selected volumes
+
+  AliInfoClass(Form("Number of overlapping/extruding PNs: %d",overlaps->GetEntriesFast()));
+  timer2.Stop();
+  timer2.Print();
+
+  TIter nextN(overlaps);
+  TGeoOverlap *ovlp;
+  while ((ovlp=(TGeoOverlap*)nextN())) ovlp->PrintInfo();
+
+  overlaps->Delete();
+  delete overlaps;
+}
+
+//_____________________________________________________________________________
 Bool_t AliGeomManager::ApplyAlignObjsFromCDB(const char* AlignDetsList)
 {
   // Calls AddAlignObjsFromCDBSingleDet for the detectors appearing in
@@ -1327,7 +1381,7 @@ Bool_t AliGeomManager::LoadAlignObjsFromCDBSingleDet(const char* detName, TObjAr
 }
 
 //_____________________________________________________________________________
-Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray)
+Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray, Bool_t ovlpcheck)
 {
   // Read collection of alignment objects (AliAlignObj derived) saved
   // in the TClonesArray alObjArray and apply them to gGeoManager
@@ -1340,7 +1394,7 @@ Bool_t AliGeomManager::ApplyAlignObjsToGeom(TObjArray& alignObjArray)
   for(Int_t j=0; j<nvols; j++)
     {
       AliAlignObj* alobj = (AliAlignObj*) alignObjArray.UncheckedAt(j);
-      if (alobj->ApplyToGeometry() == kFALSE) flag = kFALSE;
+      if (alobj->ApplyToGeometry(ovlpcheck) == kFALSE) flag = kFALSE;
     }
 
   if (AliDebugLevelClass() >= 1) {
