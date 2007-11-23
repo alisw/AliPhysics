@@ -1341,6 +1341,12 @@ void parseArgs( int argc, char **argv ) {
       handleCDH = TRUE;
     } else if ( strcmp( "-D", argv[ arg ] ) == 0 ) {
       bufferData = FALSE;
+    } else if ( strcmp( "-run", argv[ arg ] ) == 0 ) {
+      int runnumber;
+      if ( ++arg == argc ) exit( usage() );
+      if ( sscanf( argv[ arg ], "%d", &runnumber ) != 1 ) exit( usage() );
+      if ( runnumber < 0 ) exit( usage() );
+      currRunNb = runnumber;
     } else {
       fprintf( stderr, "%s: Unknown switch \"%s\"\n", myName, argv[argc] );
       exit( usage() );
@@ -1698,7 +1704,7 @@ void initVars() {
   currLdc = NULL;
   currEvent = NULL;
   payloadsHead = payloadsTail = NULL;
-  currRunNb = 1;
+  currRunNb = -1;
   numOfLdcs = 0;
   numOfEvents = 1;
   createSorEor = TRUE;
