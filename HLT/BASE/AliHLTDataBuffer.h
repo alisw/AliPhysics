@@ -107,10 +107,6 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
    *          -EINVAL       invalid parameter <br>
    */
   int Subscribe(const AliHLTComponent* pConsumer,
-		AliHLTComponentBlockData* arrayBlockDesc,
-		int iArraySize);
-
-  int Subscribe(const AliHLTComponent* pConsumer,
 		AliHLTComponentBlockDataList& blockDescList);
 
   /**
