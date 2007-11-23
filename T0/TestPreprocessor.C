@@ -4,19 +4,27 @@ void TestPreprocessor()
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
 
 
-  AliCDBManager::Instance()->SetDefaultStorage("local://./TestCDB");
+  AliTestShuttle::SetMainCDB("local://./TestCDB");
+  AliTestShuttle::SetLocalCDB("local://./TestCDB");
+
+  AliTestShuttle::SetMainRefStorage("local://./TestRef");
+  AliTestShuttle::SetLocalRefStorage("local://./TestRef");
 
   AliTestShuttle* shuttle = new AliTestShuttle(0, 0, 1);
 
   TMap* dcsAliasMap = CreateDCSAliasMap();
 
   shuttle->SetDCSInput(dcsAliasMap);
+  
+  shuttle->SetInputRunType("PHYSICS");
 
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "TIME", "LDC0", "DAQfile.root");
 
-  AliPreprocessor* start = new AliT0Preprocessor("T00", shuttle);
+  AliPreprocessor* start = new AliT0Preprocessor(shuttle);
 
   shuttle->Process();
+  
+  AliCDBManager::Instance()->SetDefaultStorage("local://TestCDB");
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("T00/Calib/Data", 0);
   if (!entry)
