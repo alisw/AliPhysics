@@ -53,10 +53,13 @@ Bool_t AliESDInputHandler::InitIO(Option_t* /*opt*/)
 {
     if (!fTree) return kFALSE;
     // Get pointer to ESD event
-    if(!fEvent){
-      fEvent = new AliESDEvent();
-      fEvent->ReadFromTree(fTree);
+    if (fEvent) {
+      delete fEvent;
+      fEvent = 0;
     }
+    fEvent = new AliESDEvent();
+
+    fEvent->ReadFromTree(fTree);
     return kTRUE;
 }
 
