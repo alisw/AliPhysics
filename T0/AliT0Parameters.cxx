@@ -27,6 +27,8 @@
 #include "AliLog.h"		  
 #include "AliT0Parameters.h"	  
 #include "AliT0CalibData.h"   
+#include "AliT0CalibWalk.h"   
+#include "AliT0CalibTimeEq.h"   
 #include "AliT0LookUpValue.h"
 #include <AliCDBManager.h>        
 #include <AliCDBEntry.h>          
@@ -38,9 +40,9 @@
 #include <TGeoPhysicalNode.h>
 #include <AliGeomManager.h>
 
-AliT0CalibData* AliT0Parameters::fgCalibData = 0;
+AliT0CalibTimeEq* AliT0Parameters::fgCalibData = 0;
 AliT0CalibData* AliT0Parameters::fgLookUp = 0;
-AliT0CalibData* AliT0Parameters::fgSlewCorr =0;
+AliT0CalibWalk* AliT0Parameters::fgSlewCorr =0;
 //====================================================================
 ClassImp(AliT0Parameters)
 #if 0
@@ -68,8 +70,8 @@ AliT0Parameters::AliT0Parameters()
    fAmpLEDRec(0), 
    fPMTeff(),
    fWalk(0),
-   fTimeDelayDA(0), 
    fTimeDelayCFD(0), 
+ //  fTimeV0(0), 
    fTimeDelayTVD(0),
    fMeanT0(500),
    fLookUp(0),
@@ -106,7 +108,7 @@ AliT0Parameters::Init()
    //time equalizing
    fCalibentry  = stor->Get("T0/Calib/TimeDelay");
    if (fCalibentry)
-     fgCalibData  = (AliT0CalibData*)fCalibentry->GetObject();
+     fgCalibData  = (AliT0CalibTimeEq*)fCalibentry->GetObject();
    else {
          AliFatal(" ALARM !!!! No time delays in CDB "); 
      fIsInit = kFALSE;
@@ -115,7 +117,7 @@ AliT0Parameters::Init()
  //slewing correction
   fSlewCorr  = stor->Get("T0/Calib/Slewing_Walk");
   if (fSlewCorr){
-    fgSlewCorr  = (AliT0CalibData*)fSlewCorr->GetObject();
+    fgSlewCorr  = (AliT0CalibWalk*)fSlewCorr->GetObject();
   }
   else {
       AliFatal(" ALARM !!!! No slewing correction in CDB "); 
@@ -175,22 +177,9 @@ void AliT0Parameters::InitIfOnline()
   fIsInit=kTRUE;
 }
 //__________________________________________________________________
-
-Float_t
-AliT0Parameters::GetTimeDelayDA(Int_t ipmt) 
-{
-  // return time delay for LED channel
-  // 
-  if (!fCalibentry) {
-    fTimeDelayDA = 500;
-    return  fTimeDelayDA;
-  } 
-  return fgCalibData ->GetTimeDelayDA(ipmt);
-}
-//__________________________________________________________________
 Float_t
 AliT0Parameters::GetTimeDelayCFD(Int_t ipmt) 
-{
+  {
   // return time delay for CFD channel
    // 
   if (!fCalibentry) 
@@ -199,10 +188,10 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
       return fTimeDelayCFD;
     }
    
-  return fgCalibData->GetTimeDelayCFD(ipmt);
+  return fgCalibData->GetTimeEq(ipmt);
 }
 
-//__________________________________________________________________
+
 Int_t
 AliT0Parameters::GetMeanT0() 
 {

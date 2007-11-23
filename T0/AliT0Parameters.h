@@ -21,6 +21,8 @@
 #include <TObjArray.h>
 class AliT0CalibData;
 class AliCDBEntry;
+class AliT0CalibWalk;
+class AliT0CalibTimeEq;
 
 class AliT0Parameters : public TNamed
 {
@@ -72,16 +74,16 @@ public:
   Float_t  GetWalkVal(Int_t ipmt, Float_t mv ) const ;
    
   Float_t GetTimeDelayCFD(Int_t ipmt);
-  Float_t GetTimeDelayDA(Int_t ipmt);
+//  Float_t GetTimeV0(Int_t ipmt = 512) {return  fTimeV0;}
 
   //  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
   Int_t GetMeanT0 (); //{return fMeanT0;};
 
-    TMap * GetMapLookup();
+  TMap * GetMapLookup();
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);
   Int_t GetNumberOfTRMs();
   void SetNumberOfTRMs(Int_t ntrms=2) {fNumberOfTRMs = ntrms;}
-
+  
  protected:
   static AliT0Parameters* fgInstance; // Static singleton instance
   
@@ -97,8 +99,8 @@ public:
   TObjArray fPMTeff; //array PMT registration efficiency
   TObjArray fWalk; //array time-amplitude walk
   
-  Float_t   fTimeDelayDA;  //  sum time delay for LED channel
   Float_t   fTimeDelayCFD;  // sum time delay for CFD channel
+ // Float_t   fTimeV0;  // sum time delay for CFD channel
   Float_t   fTimeDelayTVD;  //time delay for TVD (vertex trigger channel)
   Int_t     fMeanT0; //mean of T0distribution with vertex=0;
   
@@ -106,9 +108,9 @@ public:
   Int_t     fNumberOfTRMs;    // number of TRMs in setup
   
 
-  static AliT0CalibData * fgCalibData; // singleton for Calibration data
+  static AliT0CalibTimeEq * fgCalibData; // singleton for Calibration data
   static AliT0CalibData * fgLookUp; // singleton for Calibration data
-  static AliT0CalibData * fgSlewCorr; // singleton for Calibration data
+  static AliT0CalibWalk * fgSlewCorr; // singleton for Calibration data
   
   AliCDBEntry*   fCalibentry ;  // pointer to T0 calibration object
   AliCDBEntry*   fLookUpentry ;  // pointer to T0 lokkup table
