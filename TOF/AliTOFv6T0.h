@@ -46,9 +46,9 @@ private:
   void MakeStripsInModules(Float_t ytof, Float_t zlenA) const;
   void CreateModuleCovers(Float_t xtof, Float_t zlenA) const;
   void CreateBackZone(Float_t xtof, Float_t ytof, Float_t zlenA) const;
-  void MakeFrontEndElectronics() const;
-  void MakeFEACooling(Float_t xtof, Float_t ytof, Float_t zlenA) const;
-  void MakeNinoMask(Float_t xtof, Float_t ytof, Float_t zlenA) const;
+  void MakeFrontEndElectronics(Float_t xtof) const;
+  void MakeFEACooling(Float_t xtof) const;
+  void MakeNinoMask(Float_t xtof) const;
   void MakeSuperModuleCooling(Float_t xtof, Float_t ytof, Float_t zlenA) const;
   void MakeSuperModuleServices(Float_t xtof, Float_t ytof, Float_t zlenA) const;
   void MakeModulesInBTOFvolumes(Float_t ytof, Float_t zlenA) const;
@@ -63,8 +63,10 @@ private:
   Int_t fIdFLTB; // FLTB volume identifier (inner plate B)
   Int_t fIdFLTC; // FLTC volume identifier (inner plate C)
   Bool_t fTOFHoles; // Selecting Geometry with and w/o holes
- 
+
   //private:
+
+  static const Bool_t fgkFEAwithMasks[18]; // Selecting TOF sectors containing FEA cooling masks
 
   static const Float_t fgkModuleWallThickness;  // wall thickness (cm)
   static const Float_t fgkInterCentrModBorder1; // 1st distance of
@@ -119,6 +121,22 @@ private:
 				 // (cm)
   static const Float_t fgkCBLh2; // max. height of cables&tubes block
 				 // (cm)
+  static const Float_t fgkBetweenLandMask; // distance between the L
+					   // element and the Nino
+					   // mask (cm)
+  static const Float_t fgkAl1parameters[3]; // (cm)
+  static const Float_t fgkAl2parameters[3]; // (cm)
+  static const Float_t fgkAl3parameters[3]; // (cm)
+  static const Float_t fgkRoof1parameters[3]; // (cm)
+  static const Float_t fgkRoof2parameters[3]; // (cm)
+  static const Float_t fgkFEAparameters[3]; // (cm)
+  //static const Float_t fgkFCAparameters[3]; // (cm)
+  static const Float_t fgkBar[3]; // (cm)
+  static const Float_t fgkBar1[3]; // (cm)
+  static const Float_t fgkBar2[3]; // (cm)
+  static const Float_t fgkBarS[3]; // (cm)
+  static const Float_t fgkBarS1[3]; // (cm)
+  static const Float_t fgkBarS2[3]; // (cm)
 
   ClassDef(AliTOFv6T0,0)  //Time Of Flight version 6
 };
