@@ -6,6 +6,7 @@
 #include <TTree.h>
 #include <TButton.h>
 #include <TCanvas.h>
+#include <TCanvasImp.h>
 #include <TStyle.h>
 #include <TString.h>
 #include <TClonesArray.h>
@@ -29,7 +30,10 @@
 
 #endif
 
+AliHMPIDParam *fParam;
+
 TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=-1; Int_t fNevt=0;                      
+TCanvasImp *fCanvasImp;
 TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];
                                   TClonesArray *fSdiLst; 
 TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TBox *fRenDig[7][160*144]; TBox *fBox[7][160*144];   
@@ -49,6 +53,10 @@ TString fStEsd    = "ON";
 Int_t fTimeArrow = 1;
 
 Int_t fMaxCharge = 200;  //maximum charge to saturate color to red
+
+Int_t fChamN[9]={6,5,-1,4,3,2,-1,1,0};
+
+Int_t fTotPads[7],fTotClus[7];
 
 AliRunLoader *gAL=0; 
 
@@ -188,7 +196,7 @@ void Draw()
     if(fStDig   =="ON") {
       for(Int_t iDig=0;iDig<nDigs[iCh];iDig++) {
         Int_t charge = fRenDig[iCh][iDig]->GetUniqueID();
-        Int_t color = charge/sampleCol;if(color>=fMaxCharge) color = gStyle->GetNumberOfColors()-1;
+        Int_t color = charge/sampleCol;if(color>=gStyle->GetNumberOfColors()) color = gStyle->GetNumberOfColors()-1;
         fRenDig[iCh][iDig]->SetFillColor(gStyle->GetColorPalette(color));
         fRenDig[iCh][iDig]->Draw();
         fBox[iCh][iDig]->Draw();
@@ -232,6 +240,7 @@ void RenderDig(TObjArray *pDigLst)
   for(Int_t iCh=0;iCh<=6;iCh++){                                    //chambers loop   
     TClonesArray *pDigCham=(TClonesArray*)pDigLst->At(iCh);         //get digs list for this chamber
     nDigs[iCh] = 0;
+    fTotPads[iCh] = pDigCham->GetEntries();
     for(Int_t iDig=0;iDig<pDigCham->GetEntries();iDig++){            //digs loop
       AliHMPIDDigit *pDig = (AliHMPIDDigit*)pDigCham->At(iDig); Float_t x=pDig->LorsX(); Float_t y=pDig->LorsY();    //get current hit        
       fRenDig[iCh][iDig]->SetX1(x-0.5*AliHMPIDParam::SizePadX());
@@ -252,6 +261,7 @@ void RenderClu(TObjArray *pClus)
 {//used by ReadEvent() and SimulateEvent() to render clusters to polymarker structures, one per chamber
   for(Int_t iCh=0;iCh<=6;iCh++){                                     //chambers loop   
     TClonesArray *pClusCham=(TClonesArray*)pClus->At(iCh);           //get clusters list for this chamber
+    fTotClus[iCh] = pClusCham->GetEntries();
     for(Int_t iClu=0;iClu<pClusCham->GetEntries();iClu++){           //clusters loop
       AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(iClu); //get current cluster        
       fRenClu[iCh]->SetNextPoint(pClu->X(),pClu->Y()); 
@@ -329,10 +339,43 @@ void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
   }//tracks loop    
 }//SimulateHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DisplayInfo(Int_t px, Int_t py)
+{
+  TObject *obj = fCanvas->GetSelected();
+  TString name = obj->GetName();
+  if(name.Contains("TBox")) {
+    TBox *b = (TBox*)obj;
+    if(b->GetUniqueID()==0) return; // just black frame hit!
+    Float_t locX = 0.5*(b->GetX1()+b->GetX2());
+    Float_t locY = 0.5*(b->GetY1()+b->GetY2());
+    Int_t ch,pc,padX,padY;
+    TVirtualPad *pPad=gPad->GetSelectedPad();
+    Int_t padN = pPad->GetNumber()-1;
+    if(padN<0 || padN>8) return;
+    ch = fChamN[pPad->GetNumber()-1];
+    fParam->Lors2Pad(locX,locY,pc,padX,padY);
+    TVector3 xyz=fParam->Lors2Mars(ch,locX,locY);
+    TString text0;text0.Append(Form("Pad(%i,%i) - LORS(%6.2f,%6.2f) - MARS(%7.2f,%7.2f,%7.2f)",padX,padY,locX,locY,xyz.X(),xyz.Y(),xyz.Z()));
+    TString text1;text1.Append(Form("Module %i Sector = %i ",ch,pc));
+    TString text2;text2.Append(Form("charge = %i ADC",b->GetUniqueID()));
+    TString text3;text3.Append(Form("Pads = %i - Clusters = %i - Multiplicity %5.2f%%",fTotPads[ch],fTotClus[ch],100.*fTotPads[ch]/(144.*160.)));
+    fCanvasImp->SetStatusText(text0,0);
+    fCanvasImp->SetStatusText(text1,1);
+    fCanvasImp->SetStatusText(text2,2);
+    fCanvasImp->SetStatusText(text3,3);
+  }
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void CloseInfo()
+{
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 {
-  Int_t iChamN[9]={6,5,-1,4,3,2,-1,1,0};
-  if(evt!=5 && evt!=6) return; //5- zoom in 6-zoom out
+//  Printf(" px %i py%i event %i",px,py,evt);
+  if(evt==1) DisplayInfo(px,py);
+  if(evt==11)  CloseInfo();
+  if(evt!=5 && evt!=6 && evt!=-999) return; //5- zoom in 6-zoom out
   const Int_t minZoom=64;
   const Int_t maxZoom=2;
   static Int_t zoom[7]={64,64,64,64,64,64,64}; //zoom level
@@ -342,7 +385,7 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
   Int_t padN = pPad->GetNumber()-1;
   if(padN<0 || padN>8) return;
   
-  Int_t iCh = iChamN[padN];
+  Int_t iCh = fChamN[padN];
   if(iCh < 0) return;
   
   if(evt==5&&zoom[iCh]==maxZoom) return; 
@@ -351,7 +394,7 @@ void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
   Float_t x=pPad->AbsPixeltoX(px); Float_t y=pPad->AbsPixeltoY(py); 
  
   if(evt==5){ zoom[iCh]=zoom[iCh]/2;     pPad->Range(x-zoom[iCh]*2,y-zoom[iCh]*2,x+zoom[iCh]*2,y+zoom[iCh]*2);} //zoom in
-  else      { zoom[iCh]=zoom[iCh]*2;     pPad->Range(x-zoom[iCh]*2,y-zoom[iCh]*2,x+zoom[iCh]*2,y+zoom[iCh]*2);} //zoom out 
+  if(evt==6){ zoom[iCh]=zoom[iCh]*2;     pPad->Range(x-zoom[iCh]*2,y-zoom[iCh]*2,x+zoom[iCh]*2,y+zoom[iCh]*2);} //zoom out 
   if(zoom[iCh]==minZoom) pPad->Range(-10,-10,AliHMPIDParam::SizeAllX()+5,AliHMPIDParam::SizeAllY()+5);
   ((TCanvas *)gTQSender)->SetTitle(Form("zoom x%i",minZoom/zoom[iCh]));
   pPad->Modified();
@@ -410,6 +453,16 @@ void SimulateEvent()
   RenderEsd(fEsd);            
 }//SimulateEvent()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void CheckStatus()
+{
+  if(fStHitMip=="OFF") {fHitMipBok->SetFillColor(kRed);} else {fHitMipBok->SetFillColor(18);}
+  if(fStHitCko=="OFF") {fHitCkoBok->SetFillColor(kRed);} else {fHitCkoBok->SetFillColor(18);}
+  if(fStHitFee=="OFF") {fHitFeeBok->SetFillColor(kRed);} else {fHitFeeBok->SetFillColor(18);}
+  if(fStDig   =="OFF") {fDigBok->SetFillColor(kRed);} else {fDigBok->SetFillColor(18);}
+  if(fStClu   =="OFF") {fCluBok->SetFillColor(kRed);} else {fCluBok->SetFillColor(18);}
+  if(fStEsd   =="OFF") {fEsdBok->SetFillColor(kRed);} else {fEsdBok->SetFillColor(18);}
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void GetEvent()
 {
   ClearRenders();
@@ -444,7 +497,7 @@ void End()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()                                  
 {//display events from files if any in current directory or simulated events
-  AliHMPIDParam::Instance();                          // first invocation of AliHMPIDParam to initialize geometry...
+  fParam=AliHMPIDParam::Instance();                          // first invocation of AliHMPIDParam to initialize geometry...
   CreateContainers();
   CreateRenders();
   
@@ -484,8 +537,9 @@ void Hdisp()
     fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
   }            
 
-  fCanvas=new TCanvas("all","",1024,768);fCanvas->SetWindowSize(1024,768);
-  fCanvas->ToggleEventStatus();
+  fCanvas=new TCanvas("all","",-1024,768);fCanvas->SetWindowSize(-1024,768);
+  fCanvasImp = fCanvas->GetCanvasImp();
+  fCanvasImp->ShowStatusBar();
   fCanvas->Divide(3,3,0,0);//  pAll->ToggleEditor();
   fCanvas->Connect("ProcessedEvent(Int_t,Int_t,Int_t,TObject*)",0,0,"DoZoom(Int_t,Int_t,Int_t,TObject*)");
   fCanvas->cd(7); 
@@ -511,7 +565,7 @@ void Hdisp()
             if(fDigFile){TButton *fDigOnly    = new TButton(" Only ","OnlyDigs()"  ,0.6,0.40,0.9,0.50); fDigOnly->Draw();}  
             if(fCluFile){TButton *fCluOnly    = new TButton(" Only ","OnlyClus()"  ,0.6,0.60,0.9,0.70); fCluOnly->Draw();} 
             if(fEsdFile){TButton *fEsdOnly    = new TButton(" Only ","OnlyEsd()"   ,0.6,0.80,0.9,0.90); fEsdOnly->Draw();}
-                         TButton *fAll        = new TButton(" ALL  ","All()"       ,0.5,0.90,0.7,1.00); fAll->Draw();
+                         TButton *pAll        = new TButton(" ALL  ","All()"       ,0.5,0.90,0.7,1.00); pAll->Draw();
             
                                      TButton *pEnd    = new TButton("Quit"      ,"End()"         ,0.6,0.0,0.9,0.1); pEnd->Draw();
     break;
@@ -538,6 +592,7 @@ void Hdisp()
             if(fDigFile){TButton *fDigOnly    = new TButton(" Only ","OnlyDigs()"  ,0.6,0.40,0.9,0.50); fDigOnly->Draw();}  
             if(fCluFile){TButton *fCluOnly    = new TButton(" Only ","OnlyClus()"  ,0.6,0.60,0.9,0.70); fCluOnly->Draw();} 
             if(fEsdFile){TButton *fEsdOnly    = new TButton(" Only ","OnlyEsd()"   ,0.6,0.80,0.9,0.90); fEsdOnly->Draw();}
+                         TButton *pSimAll     = new TButton(" ALL  ","All()"       ,0.5,0.90,0.7,1.00); pSimAll->Draw();
     break;
   }
     
@@ -647,17 +702,5 @@ void OnlyEsd()
   AllNo();
   fStEsd    = "ON";
   GetEvent();
-}
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void CheckStatus()
-{
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  if(fStHitMip=="OFF") {fHitMipBok->SetFillColor(kRed);} else {fHitMipBok->SetFillColor(18);}
-  if(fStHitCko=="OFF") {fHitCkoBok->SetFillColor(kRed);} else {fHitCkoBok->SetFillColor(18);}
-  if(fStHitFee=="OFF") {fHitFeeBok->SetFillColor(kRed);} else {fHitFeeBok->SetFillColor(18);}
-  if(fStDig   =="OFF") {fDigBok->SetFillColor(kRed);} else {fDigBok->SetFillColor(18);}
-  if(fStClu   =="OFF") {fCluBok->SetFillColor(kRed);} else {fCluBok->SetFillColor(18);}
-  if(fStEsd   =="OFF") {fEsdBok->SetFillColor(kRed);} else {fEsdBok->SetFillColor(18);}
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
