@@ -36,6 +36,8 @@
 ClassImp(AliHLTBlockFilterComponent)
 
 AliHLTBlockFilterComponent::AliHLTBlockFilterComponent()
+  :
+  fFilterRules()
 {
   // see header file for class documentation
   // or
