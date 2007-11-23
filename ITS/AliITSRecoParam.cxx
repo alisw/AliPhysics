@@ -61,7 +61,7 @@ const Double_t AliITSRecoParam::fgkSPDdetzlength=6.960; // 7.072-2*0.056
 const Double_t AliITSRecoParam::fgkSPDdetxlength=1.298; // 1.410-2*0.056
 
 //_____________________________________________________________________________
-AliITSRecoParam::AliITSRecoParam() : TObject(),
+AliITSRecoParam::AliITSRecoParam() : AliDetectorRecoParam(),
 fMaxSnp(1.),
 fNSigmaYLayerForRoadY(0),
 fNSigmaRoadY(0),
@@ -89,27 +89,34 @@ fMaxDforV0dghtrForProlongation(0),
 fMaxDForProlongation(0),
 fMaxDZForProlongation(0),
 fMinPtForProlongation(0),
-fAddVirtualClustersInDeadZone(kTRUE),
+fAddVirtualClustersInDeadZone(kFALSE),
 fZWindowDeadZone(0),
 fSigmaXDeadZoneHit2(0),
 fSigmaZDeadZoneHit2(0),
 fXPassDeadZoneHits(0),
-fUseTGeoInTracker(0),
+fUseTGeoInTracker(3),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
 fExtendedEtaAcceptance(kFALSE),
+fUseDeadZonesFromOCDB(kFALSE),
 fFactorSAWindowSizes(1.),
-fFindV0s(kTRUE)
+fFindV0s(kTRUE),
+fUseUnfoldingInClusterFinderSPD(kFALSE),
+fUseUnfoldingInClusterFinderSDD(kTRUE),
+fUseUnfoldingInClusterFinderSSD(kTRUE)
 {
   //
   // constructor
   //
+  SetName("ITS");
+  SetTitle("ITS");
+
   SetLayersParameters();
   for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) fLayersToSkip[i]=0;
-  SetUseTGeoInTracker(0);
+  SetUseTGeoInTracker(3);
   SetAllowSharedClusters(kTRUE);
   SetFindV0s(kTRUE);
-  SetAddVirtualClustersInDeadZone(kTRUE);
+  SetAddVirtualClustersInDeadZone(kFALSE);
   SetUseAmplitudeInfo(kTRUE);
   SetClusterErrorsParam(1);
 }
@@ -199,8 +206,8 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fMaxDZToUseConstraint = 3.;
 
   param->fMaxDforV0dghtrForProlongation = 30.;
-  param->fMaxDForProlongation = 10.;
-  param->fMaxDZForProlongation = 20.;
+  param->fMaxDForProlongation = 40.;//10.;
+  param->fMaxDZForProlongation = 60.;//20.;
   param->fMinPtForProlongation = 0.120;
 
   param->fZWindowDeadZone = 2.0;

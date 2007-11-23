@@ -87,7 +87,7 @@ public:
     void  SortClusters();
     void ResetClusters();
     void ResetWeights();
-    void SelectClusters(Double_t zmi,Double_t zma,Double_t ymi,Double_t yma);
+    void SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin,Double_t ymax);
     const AliITSRecPoint *GetNextCluster(Int_t &ci);
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
@@ -194,7 +194,7 @@ protected:
   Double_t NormalizedChi2(AliITStrackMI * track, Int_t layer);
   Double_t GetInterpolatedChi2(AliITStrackMI * forwardtrack, AliITStrackMI * backtrack);  
   Double_t GetMatchingChi2(AliITStrackMI * track1, AliITStrackMI * track2);
-  Double_t GetDeadZoneProbability(Double_t zpos, Double_t zerr);
+  Double_t GetSPDDeadZoneProbability(Double_t zpos, Double_t zerr);
 
   Float_t    *GetWeight(Int_t index);
   void AddTrackHypothesys(AliITStrackMI * track, Int_t esdindex);
@@ -219,7 +219,8 @@ protected:
   Int_t CorrectForShieldMaterial(AliITStrackMI *t, TString shield, TString direction="inward");
   Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
-  Int_t SkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
+  Int_t CheckSkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
+  Int_t CheckDeadZone(/*AliITStrackMI *track,*/Int_t ilayer,/*Int_t idet,*/Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const;
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
   AliITStrackMI fTracks[AliITSgeomTGeo::kNLayers];      // track estimations at the ITS layers

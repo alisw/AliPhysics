@@ -13,10 +13,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#include "TObject.h"
+#include "AliDetectorRecoParam.h"
 #include "AliITSgeomTGeo.h"
 
-class AliITSRecoParam : public TObject
+class AliITSRecoParam : public AliDetectorRecoParam
 {
  public: 
   AliITSRecoParam();
@@ -125,6 +125,8 @@ class AliITSRecoParam : public TObject
   Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
   void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
   Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
+  void   SetUseDeadZonesFromOCDB(Bool_t use=kTRUE) { fUseDeadZonesFromOCDB=use; return; }
+  Bool_t GetUseDeadZonesFromOCDB() const { return fUseDeadZonesFromOCDB; }
 
   void   SetFactorSAWindowSizes(Double_t fact=1.) { fFactorSAWindowSizes=fact; return; }
   Double_t GetFactorSAWindowSizes() const { return fFactorSAWindowSizes; }
@@ -136,6 +138,13 @@ class AliITSRecoParam : public TObject
 
   void   SetLayerToSkip(Int_t i) { fLayersToSkip[i]=1; return; }
   Int_t  GetLayersToSkip(Int_t i) const { return fLayersToSkip[i]; }
+
+  void   SetUseUnfoldingInClusterFinderSPD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSPD=use; return; }
+  Bool_t GetUseUnfoldingInClusterFinderSPD() const { return fUseUnfoldingInClusterFinderSPD; }
+  void   SetUseUnfoldingInClusterFinderSDD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSDD=use; return; }
+  Bool_t GetUseUnfoldingInClusterFinderSDD() const { return fUseUnfoldingInClusterFinderSDD; }
+  void   SetUseUnfoldingInClusterFinderSSD(Bool_t use=kTRUE) { fUseUnfoldingInClusterFinderSSD=use; return; }
+  Bool_t GetUseUnfoldingInClusterFinderSSD() const { return fUseUnfoldingInClusterFinderSSD; }
 
   //
 
@@ -242,9 +251,15 @@ class AliITSRecoParam : public TObject
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
+  Bool_t fUseDeadZonesFromOCDB; // enable using OCDB info on dead modules.. (MI)
   Double_t fFactorSAWindowSizes; // larger window sizes in SA
 
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
+
+  // cluster unfolding in ITS cluster finders
+  Bool_t fUseUnfoldingInClusterFinderSPD; // SPD
+  Bool_t fUseUnfoldingInClusterFinderSDD; // SDD
+  Bool_t fUseUnfoldingInClusterFinderSSD; // SSD
 
   ClassDef(AliITSRecoParam,1) // ITS reco parameters
 };
