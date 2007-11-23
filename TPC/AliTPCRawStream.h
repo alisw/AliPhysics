@@ -16,7 +16,7 @@ class AliAltroMapping;
 
 class AliTPCRawStream: public AliAltroRawStream {
   public :
-    AliTPCRawStream(AliRawReader* rawReader);
+    AliTPCRawStream(AliRawReader* rawReader, AliAltroMapping **mapping = NULL);
     virtual ~AliTPCRawStream();
 
     virtual void             Reset();

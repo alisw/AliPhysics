@@ -36,7 +36,7 @@
 ClassImp(AliTPCRawStream)
 
 //_____________________________________________________________________________
-AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
+AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader, AliAltroMapping **mapping) :
   AliAltroRawStream(rawReader),
   fSector(-1),
   fPrevSector(-1),
@@ -44,22 +44,29 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader) :
   fPrevRow(-1),
   fPad(-1),
   fPrevPad(-1),
-  fIsMapOwner(kTRUE)
+  fIsMapOwner(kFALSE)
 {
   // create an object to read TPC raw digits
 
   SelectRawData("TPC");
 
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/TPC/mapping/Patch";
-  TString path2;
-  for(Int_t i = 0; i < 6; i++) {
-    path2 = path;
-    path2 += i;
-    path2 += ".data";
-    fMapping[i] = new AliTPCAltroMapping(path2.Data());
+  if (mapping = NULL) {
+    TString path = gSystem->Getenv("ALICE_ROOT");
+    path += "/TPC/mapping/Patch";
+    TString path2;
+    for(Int_t i = 0; i < 6; i++) {
+      path2 = path;
+      path2 += i;
+      path2 += ".data";
+      fMapping[i] = new AliTPCAltroMapping(path2.Data());
+    }
+    fIsMapOwner = kTRUE;
   }
-
+  else {
+    for(Int_t i = 0; i < 6; i++)
+      fMapping[i] = mapping[i];
+  }
+    
   fNoAltroMapping = kFALSE;
 }
 
