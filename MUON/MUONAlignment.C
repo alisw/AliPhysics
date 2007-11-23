@@ -41,8 +41,8 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONGeometryTransformer.h"
-#include "AliMUONDataInterface.h"
-#include "AliMUONVTrackStore.h"
+#include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
 
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
@@ -56,6 +56,7 @@
 #include <TH1.h>
 #include <TGraphErrors.h>
 #include <TFile.h>
+#include <TTree.h>
 #include <TClonesArray.h>
 #include <Riostream.h>
 
@@ -63,7 +64,7 @@
 
 #endif
 
-void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", TString fileName = "galice.root", TString fileList = "")
+void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", TString esdFileName = "AliESDs.root", TString fileList = "")
 {
  
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
@@ -143,9 +144,6 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
 
 
   char cFileName[100];  
-  AliMUONDataInterface *amdi =0x0;
-  AliMUONVTrackStore *trackStore =0x0;
-  AliMUONTrack* track =0x0;  
     
   Int_t lMaxFile = 1000;
   Int_t iFile = 0;
@@ -161,16 +159,28 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
       if (sFileList.eof()) bKeepLoop = kFALSE;
     }
     else {
-      sprintf(cFileName,fileName.Data());
+      sprintf(cFileName,esdFileName.Data());
       bKeepLoop = kFALSE;
     }
-    if (!strstr(cFileName,"galice.root")) continue;      
+    if (!strstr(cFileName,"AliESDs.root")) continue;      
     cout << "Using file: " << cFileName << endl;
+    
+    // load ESD event
+    TFile* esdFile = TFile::Open(cFileName); // open the file
+    if (!esdFile || !esdFile->IsOpen()) {
+      cout << "opening ESD file " << cFileName << "failed" << endl;
+      continue;
+    }
+    TTree* esdTree = (TTree*) esdFile->Get("esdTree"); // get the tree
+    if (!esdTree) {
+      cout << "no ESD tree found" << endl;
+      esdFile->Close();
+      continue;
+    }
+    AliESDEvent* esdEvent = new AliESDEvent(); // link ESD event to the tree
+    esdEvent->ReadFromTree(esdTree);
 
-    if (!amdi) amdi = new AliMUONDataInterface(cFileName);
-    else amdi->Open(cFileName);
-
-    Int_t nevents = amdi->NumberOfEvents();
+    Int_t nevents = esdTree->GetEntries();
     cout << "... with " << nevents << endl;
     for(Int_t event = 0; event < nevents; event++) {
       if (iEvent >= nEvents){
@@ -179,25 +189,29 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
       }
       iEvent++;
 
-      trackStore = amdi->TrackStore(event);
+      if (esdTree->GetEvent(event) <= 0) {
+	cout << "fails to read ESD object for event " << event << endl;
+	continue;
+      }
 
-      Int_t ntracks = trackStore->GetSize();
-      if (!event%100)
-	cout << " there are " << ntracks << " tracks in event " << event << endl;
-      TIter next(trackStore->CreateIterator());
-      while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
-	AliMUONTrackParam trackParam(*((AliMUONTrackParam*)(track->GetTrackParamAtCluster()->First())));
-	AliMUONTrackExtrap::ExtrapToVertex(&trackParam,0.,0.,0.,0.,0.);
-	Double_t invBenMom = trackParam.GetInverseBendingMomentum();
+      Int_t nTracks = Int_t(esdEvent->GetNumberOfMuonTracks());
+      if (!event%100) cout << " there are " << nTracks << " tracks in event " << event << endl;
+      for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+	AliESDMuonTrack* esdTrack = esdEvent->GetMuonTrack(iTrack);
+	if (!esdTrack->ClustersStored()) continue;
+	Double_t invBenMom = esdTrack->GetInverseBendingMomentum();
 	fInvBenMom->Fill(invBenMom);
 	fBenMom->Fill(1./invBenMom);
 	if (TMath::Abs(invBenMom)<=1.04) {
-	  alig->ProcessTrack(track);
+	  AliMUONTrack track(*esdTrack);
+	  alig->ProcessTrack(&track);
 	  alig->LocalFit(iTrackOk++,trackParams,0);
 	}
 	iTrackTot++;
       }
     }
+    delete esdEvent;
+    esdFile->Close();
     cout << "Processed " << iTrackTot << " Tracks so far." << endl;
   }
   alig->GlobalFit(parameters,errors,pulls);
@@ -281,4 +295,5 @@ void MUONAlignment(Int_t nEvents = 100000, char* geoFilename = "geometry.root", 
   AliCDBId id("MUON/Align/Data", 0, 0); 
   cdbManager->Put(const_cast<TClonesArray*>(array), id, cdbData);
 
-} 
+}
+

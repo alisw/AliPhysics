@@ -33,7 +33,6 @@
 #include "AliMUONRawClusterV2.h"
 #include "AliMUONTrack.h"
 #include "AliMUONConstants.h"
-#include "AliMUONDataInterface.h"
 #include "AliMUONTrackStoreV1.h"
 
 #include "AliMCEventHandler.h"
@@ -44,29 +43,49 @@
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
 
+#include <TFile.h>
+#include <TTree.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <Riostream.h>
-
-#include <cassert>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONRecoCheck)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONRecoCheck::AliMUONRecoCheck(Char_t *chLoader, Char_t *pathSim)
+AliMUONRecoCheck::AliMUONRecoCheck(Char_t *esdFileName, Char_t *pathSim)
 : TObject(),
 fMCEventHandler(new AliMCEventHandler()),
-fDataInterface(new AliMUONDataInterface(chLoader)),
+fESDEvent(new AliESDEvent()),
+fESDTree (0x0),
+fESDFile (0x0),
 fCurrentEvent(0),
 fTrackRefStore(0x0),
 fRecoTrackRefStore(0x0),
 fRecoTrackStore(0x0)
 {
   /// Normal ctor
+  
+  // TrackRefs and Particules
   fMCEventHandler->SetInputPath(pathSim);
   fMCEventHandler->InitIO("");
+  
+  // ESD MUON Tracks
+  fESDFile = TFile::Open(esdFileName); // open the file
+  if (!fESDFile || !fESDFile->IsOpen()) {
+    AliError(Form("opening ESD file %s failed", esdFileName));
+    fESDFile = 0x0;
+    return;
+  }
+  fESDTree = (TTree*) fESDFile->Get("esdTree"); // get the tree
+  if (!fESDTree) {
+    AliError("no ESD tree found");
+    fESDFile->Close();
+    fESDFile = 0x0;
+    return;
+  }
+  fESDEvent->ReadFromTree(fESDTree); // link fESDEvent to the tree
 }
 
 //_____________________________________________________________________________
@@ -74,7 +93,8 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
 {
   /// Destructor
   delete fMCEventHandler;
-  delete fDataInterface;
+  delete fESDEvent;
+  if (fESDFile) fESDFile->Close();
   ResetStores();
 }
 
@@ -91,105 +111,30 @@ void AliMUONRecoCheck::ResetStores()
 Int_t AliMUONRecoCheck::NumberOfEvents() const
 {
   /// Return the number of events
-  if (fDataInterface->IsValid()) return fDataInterface->NumberOfEvents();
+  if (fESDTree) return fESDTree->GetEntries();
   return 0;
 }
 
 //_____________________________________________________________________________
 AliMUONVTrackStore* AliMUONRecoCheck::ReconstructedTracks(Int_t event)
 {
-  /// Return the reconstructed track store for a given event
-  if (!fDataInterface->IsValid()) return new AliMUONTrackStoreV1();
-  
+  /// Return a track store containing the reconstructed tracks (converted into 
+  /// MUONTrack objects) for a given event
   if (event != fCurrentEvent) {
     ResetStores();
     fCurrentEvent = event;
   }
   
   if (fRecoTrackStore != 0x0) return fRecoTrackStore;
-  
-  fRecoTrackStore = new AliMUONTrackStoreV1();
-  
-  return fRecoTrackStore;
-}
-
-//_____________________________________________________________________________
-AliMUONVTrackStore*
-AliMUONRecoCheck::ReconstructedTracks(AliESDEvent* esd, Bool_t padMissing)
-{
-  /// Create and return a list of reconstructed tracks from ESD data.
-  /// Note: the returned object must be deleted by the caller with the delete operator!
-  /// For example:
-  ///
-  ///   AliMUONVTrackStore* tracks = AliMUONRecoCheck::ReconstructedTracks(esd);
-  ///   delete tracks;
-  ///
-  /// If the padMissing flag is set to kTRUE then the missing hits on chambers [2..14]
-  /// are added with the coordinate (0, 0, 0). This should be fixed in the MUON ESD
-  /// structure, hopefully soon.
-  
-  assert( esd != NULL );
-  
-  AliMUONVTrackStore* store = new AliMUONTrackStoreV1;
-  
-  Int_t nTracks = Int_t(esd->GetNumberOfMuonTracks());
-  for (Int_t i = 0; i < nTracks; i++)
-  {
-    AliESDMuonTrack* esdTrack = esd->GetMuonTrack(i);
-    AliMUONTrack track;
-    
-    // Fill the track parameters at the vertex.
-    AliMUONTrackParam vertexParams, ch1Params;
-    vertexParams.GetParamFrom(*esdTrack);
-    ch1Params.GetParamFromUncorrected(*esdTrack);
-    ch1Params.GetCovFrom(*esdTrack);
-    
-    // Create the hit on chamber 1 (assume the same values as uncorrected track params)
-    AliMUONRawClusterV2 hit(0, 0, 0); // ChamberID = 0, but unknown DE or cluster index so set those to zero.
-    hit.SetXYZ(ch1Params.GetNonBendingCoor(), ch1Params.GetBendingCoor(), ch1Params.GetZ());
-    hit.SetErrXY(AliMUONConstants::DefaultNonBendingReso(), AliMUONConstants::DefaultBendingReso());
-
-    track.SetTrackParamAtVertex(&vertexParams);
-    track.AddTrackParamAtCluster(ch1Params, hit, kTRUE);
-    
-    if (padMissing)
-    {
-      // We need to add fake hits so that AliMUONTrack::CompatibleTrack will be able to
-      // match these tracks to the reference tracks returned by the TrackRefs method.
-      for (Int_t chamber = 1; chamber < AliMUONConstants::NTrackingCh(); chamber++)
-      {
-        if (esdTrack->IsInMuonClusterMap(chamber))
-        {
-          AliMUONTrackParam fakeParams;
-          fakeParams.SetZ(AliMUONConstants::DefaultChamberZ(chamber));
-          fakeParams.SetBendingCoor(0);
-          fakeParams.SetNonBendingCoor(0);
-          AliMUONRawClusterV2 fakeHit(chamber, 0, 0); // Unknown DE or cluster index so set to zero.
-          fakeHit.SetXYZ(0, 0, AliMUONConstants::DefaultChamberZ(chamber));
-          fakeHit.SetErrXY(AliMUONConstants::DefaultNonBendingReso(), AliMUONConstants::DefaultBendingReso());
-          track.AddTrackParamAtCluster(fakeParams, fakeHit, kTRUE);
-        }
-      }
-      for (Int_t chamber = AliMUONConstants::NTrackingCh(); chamber < AliMUONConstants::NCh(); chamber++)
-      {
-        Int_t bit = 3 - (chamber - AliMUONConstants::NTrackingCh());
-        if ( ((esdTrack->GetHitsPatternInTrigCh() >> bit) & 0x11) != 0 )
-        {
-          AliMUONTrackParam fakeParams;
-          fakeParams.SetZ(AliMUONConstants::DefaultChamberZ(chamber));
-          fakeParams.SetBendingCoor(0);
-          fakeParams.SetNonBendingCoor(0);
-          AliMUONRawClusterV2 fakeHit(chamber, 0, 0); // Unknown DE or cluster index so set to zero.
-          fakeHit.SetXYZ(0, 0, AliMUONConstants::DefaultChamberZ(chamber));
-          fakeHit.SetErrXY(1, 1);
-          track.AddTrackParamAtCluster(fakeParams, fakeHit, kTRUE);
-        }
-      }
+  else {
+    if (!fESDTree) return 0x0;
+    if (fESDTree->GetEvent(event) <= 0) {
+      AliError(Form("fails to read ESD object for event %d", event));
+      return 0x0;
     }
-    store->Add(track);
+    MakeReconstructedTracks();
+    return fRecoTrackStore;
   }
-  
-  return store;
 }
 
 //_____________________________________________________________________________
@@ -204,7 +149,10 @@ AliMUONVTrackStore* AliMUONRecoCheck::TrackRefs(Int_t event)
   
   if (fTrackRefStore != 0x0) return fTrackRefStore;
   else {
-    if (!fMCEventHandler->GetEvent(event)) return 0x0;
+    if (!fMCEventHandler->GetEvent(event)) {
+      AliError(Form("fails to read MC objects for event %d", event));
+      return 0x0;
+    }
     MakeTrackRefs();
     return fTrackRefStore;
   }
@@ -228,6 +176,27 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event)
 }
 
 //_____________________________________________________________________________
+void AliMUONRecoCheck::MakeReconstructedTracks()
+{
+  /// Make reconstructed tracks
+  fRecoTrackStore = new AliMUONTrackStoreV1();
+  
+  Int_t nTracks = Int_t(fESDEvent->GetNumberOfMuonTracks());
+  
+  // loop over all reconstructed tracks
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+    AliESDMuonTrack* esdTrack = fESDEvent->GetMuonTrack(iTrack);
+    
+    // copy ESD MUON track into standard MUON track
+    AliMUONTrack track(*esdTrack);
+    
+    // add track to the store
+    fRecoTrackStore->Add(track);
+  }
+  
+}
+
+//_____________________________________________________________________________
 void AliMUONRecoCheck::MakeTrackRefs()
 {
   /// Make reconstructible tracks
@@ -245,50 +214,19 @@ void AliMUONRecoCheck::MakeTrackRefs()
     // skip empty trackRefs
     if (nHits < 1) continue;
     
-    // skip trackRefs not in MUON
-    AliTrackReference* trackReference0 = static_cast<AliTrackReference*>(trackRefs->UncheckedAt(0));
-    if (trackReference0->DetectorId() != AliTrackReference::kMUON) continue;
+    // get the particle charge for further calculation
+    TParticlePDG* ppdg = particle->GetPDG();
+    Int_t charge = (Int_t)(ppdg->Charge()/3.0);
     
     AliMUONTrack track;
-    
-    // get track parameters at particle's vertex
-    x = particle->Vx();
-    y = particle->Vy();
-    z = particle->Vz();
-    pX = particle->Px();
-    pY = particle->Py();
-    pZ = particle->Pz();
-    
-    // compute rest of track parameters at particle's vertex
-    bendingSlope = 0;
-    nonBendingSlope = 0;
-    inverseBendingMomentum = 0;
-    if (TMath::Abs(pZ) > 0) {
-      bendingSlope = pY/pZ;
-      nonBendingSlope = pX/pZ;
-    }
-    Double_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
-    if (pYZ >0) inverseBendingMomentum = 1/pYZ;
-    TParticlePDG* ppdg = particle->GetPDG(1);
-    Int_t charge = (Int_t)(ppdg->Charge()/3.0);
-    inverseBendingMomentum *= charge;
-    
-    // set track parameters at particle's vertex
-    AliMUONTrackParam trackParamAtVertex;
-    trackParamAtVertex.SetNonBendingCoor(x);
-    trackParamAtVertex.SetBendingCoor(y);
-    trackParamAtVertex.SetZ(z);
-    trackParamAtVertex.SetBendingSlope(bendingSlope);
-    trackParamAtVertex.SetNonBendingSlope(nonBendingSlope);
-    trackParamAtVertex.SetInverseBendingMomentum(inverseBendingMomentum);
-        
-    // add track parameters at vertex
-    track.SetTrackParamAtVertex(&trackParamAtVertex);
     
     // loop over simulated track hits
     for (Int_t iHit = 0; iHit < nHits; ++iHit) {        
       AliTrackReference* trackReference = static_cast<AliTrackReference*>(trackRefs->UncheckedAt(iHit));
       
+      // skip trackRefs not in MUON
+      if (trackReference->DetectorId() != AliTrackReference::kMUON) continue;
+    
       // Get track parameters of current hit
       x = trackReference->X();
       y = trackReference->Y();
@@ -331,6 +269,42 @@ void AliMUONRecoCheck::MakeTrackRefs()
       track.AddTrackParamAtCluster(trackParam,hit,kTRUE);
     }
     
+    // if none of the track hits was in MUON, goto the next track
+    if (track.GetNClusters() < 1) continue;
+    
+    // get track parameters at particle's vertex
+    x = particle->Vx();
+    y = particle->Vy();
+    z = particle->Vz();
+    pX = particle->Px();
+    pY = particle->Py();
+    pZ = particle->Pz();
+    
+    // compute rest of track parameters at particle's vertex
+    bendingSlope = 0;
+    nonBendingSlope = 0;
+    inverseBendingMomentum = 0;
+    if (TMath::Abs(pZ) > 0) {
+      bendingSlope = pY/pZ;
+      nonBendingSlope = pX/pZ;
+    }
+    Double_t pYZ = TMath::Sqrt(pY*pY+pZ*pZ);
+    if (pYZ >0) inverseBendingMomentum = 1/pYZ;
+    inverseBendingMomentum *= charge;
+    
+    // set track parameters at particle's vertex
+    AliMUONTrackParam trackParamAtVertex;
+    trackParamAtVertex.SetNonBendingCoor(x);
+    trackParamAtVertex.SetBendingCoor(y);
+    trackParamAtVertex.SetZ(z);
+    trackParamAtVertex.SetBendingSlope(bendingSlope);
+    trackParamAtVertex.SetNonBendingSlope(nonBendingSlope);
+    trackParamAtVertex.SetInverseBendingMomentum(inverseBendingMomentum);
+    
+    // add track parameters at vertex
+    track.SetTrackParamAtVertex(&trackParamAtVertex);
+    
+    // sort trackParamAtCluster and store the track
     track.GetTrackParamAtCluster()->Sort();
     track.SetTrackID(iTrackRef);
     tmpTrackRefStore->Add(track);
@@ -456,7 +430,7 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
 //_____________________________________________________________________________
 void AliMUONRecoCheck::MakeReconstructibleTracks()
 {
-  /// Calculate the number of reconstructible tracks
+  /// Isolate the reconstructible tracks
   fRecoTrackRefStore = new AliMUONTrackStoreV1();
   
   // create iterator on trackRef

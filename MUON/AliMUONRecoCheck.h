@@ -13,10 +13,11 @@
 #include <TObject.h>
 
 class TClonesArray;
-class AliMCEventHandler;
-class AliMUONDataInterface;
-class AliMUONVTrackStore;
+class TFile;
+class TTree;
 class AliESDEvent;
+class AliMCEventHandler;
+class AliMUONVTrackStore;
 
 class AliMUONRecoCheck : public TObject 
 {
@@ -27,9 +28,6 @@ public:
   /// Return the list of reconstructed tracks
   AliMUONVTrackStore* ReconstructedTracks(Int_t event);
   
-  /// Create and return a list of reconstructed tracks from ESD data.
-  static AliMUONVTrackStore* ReconstructedTracks(AliESDEvent* esd, Bool_t padMissing = kFALSE);
-  
   /// Return reference muon tracks
   AliMUONVTrackStore* TrackRefs(Int_t event);
 
@@ -39,11 +37,11 @@ public:
   /// Return the total number of events.
   Int_t NumberOfEvents() const;
   
-  /// Return the interface to the reconstructed data.
-  AliMUONDataInterface* GetDataInterface() { return fDataInterface; };
+  /// Return the reconstructed data of current event
+  const AliESDEvent* GetESDEvent() { return fESDEvent; }
   
-  /// Return the interface to the Monte Carlo data.
-  AliMCEventHandler* GetMCEventHandler() { return fMCEventHandler; };
+  /// Return the interface to the Monte Carlo data of current event
+  const AliMCEventHandler* GetMCEventHandler() { return fMCEventHandler; }
   
 private:
   /// Not implemented
@@ -53,6 +51,8 @@ private:
 
   void ResetStores();
   
+  void MakeReconstructedTracks();
+  
   void MakeTrackRefs();
   
   void CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore);
@@ -61,7 +61,9 @@ private:
 
 private:
   AliMCEventHandler* fMCEventHandler; ///< to access MC truth information
-  AliMUONDataInterface* fDataInterface; ///< to access MUON data
+  AliESDEvent* fESDEvent; ///< ESD event to access MUON data
+  TTree* fESDTree;        ///< ESD tree to access MUON data
+  TFile* fESDFile;        ///< ESD file to access MUON data
   
   Int_t fCurrentEvent; ///< current event number
   

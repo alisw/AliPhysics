@@ -65,7 +65,7 @@ void DecodeRecoCocktail(
     char* recodir=".",          // The directory containing galice.root for reconstructed data.
     char* simdir="generated/",  // The directory containing galice.root for simulated data.
     char* outFileName = "MuonLight.root", // The output filename containing AliMUONTrackLight and AliMUONPairLight objects.
-    char* geoFilename = "generated/geometry.root"  // The filename containing the geometry.
+    char* geoFilename = "geometry.root"  // The filename containing the geometry.
   )
 {
   char startingDir[200]; 
@@ -81,20 +81,6 @@ void DecodeRecoCocktail(
 
   treeOut->Branch("muons",&muonArray); 
   treeOut->Branch("dimuons",&dimuonArray); 
-  
-  TFile* esdFile = TFile::Open("AliESDs.root");
-  if (!esdFile || !esdFile->IsOpen()) {
-    Error("DecodeRecoCocktailNew", "opening ESD file AliESDs.root failed");
-    return;
-  }
-    
-  AliESDEvent* esd = new AliESDEvent();
-  TTree* treeESD = (TTree*) esdFile->Get("esdTree");
-  if (!treeESD) {
-    Error("CheckESD", "no ESD tree found");
-    return;
-  }
-  esd->ReadFromTree(treeESD);
   
   // Import TGeo geometry (needed by AliMUONTrackExtrap::ExtrapToVertex)
   if (!gGeoManager) {
@@ -113,7 +99,7 @@ void DecodeRecoCocktail(
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
 
-  AliMUONRecoCheck *rc = new AliMUONRecoCheck("galice.root", simdir);
+  AliMUONRecoCheck *rc = new AliMUONRecoCheck("AliESDs.root", simdir);
   Int_t nev = rc->NumberOfEvents();
   
   /*TODO: need to update this with changes made to ITS
@@ -131,9 +117,6 @@ void DecodeRecoCocktail(
   TLorentzVector v; 
  
   for(Int_t ievent = 0; ievent < nev; ievent++){ // loop over events 
-    treeESD->GetEvent(ievent);
-    rc->GetMCEventHandler()->GetEvent(ievent);
-    AliStack* pstack = rc->GetMCEventHandler()->MCEvent()->Stack();
     
     /*TODO: need to update this with changes made to ITS
     runLoaderSim->GetHeader();
@@ -146,16 +129,16 @@ void DecodeRecoCocktail(
     muonArray->Clear();     // clean muon and dimuon arrays 
     dimuonArray->Clear(); 
     
-    //AliMUONVTrackStore* recoTracks = rc->ReconstructedTracks(ievent);  // Use tracks from actual reconstruction, but this does not work anymore.
-    AliMUONVTrackStore* recoTracks = rc->ReconstructedTracks(esd);
+    AliMUONVTrackStore* recoTracks = rc->ReconstructedTracks(ievent);  // Use tracks from actual reconstruction, but this does not work anymore.
     //AliMUONVTrackStore* trackRefs = rc->ReconstructibleTracks(ievent);  // Only use reconstructible reference tracks.
     AliMUONVTrackStore* trackRefs = rc->TrackRefs(ievent);
+    AliStack* pstack = (const_cast<AliMCEventHandler*>(rc->GetMCEventHandler()))->MCEvent()->Stack();
     
     TIter next(recoTracks->CreateIterator());
     AliMUONTrack* trackReco = NULL;
     
     Int_t nTrackReco = recoTracks->GetSize();
-    Int_t nTracksESD = (Int_t)esd->GetNumberOfMuonTracks();
+    Int_t nTracksESD = rc->GetESDEvent()->GetNumberOfMuonTracks();
     if (nTrackReco != nTracksESD) printf ("Tracks in recoTracks (%d) and in ESD (%d) do not match!\n", nTrackReco, nTracksESD);
     Int_t nreftracks = 0;
     Int_t itrRec = 0;
@@ -164,11 +147,11 @@ void DecodeRecoCocktail(
       // assign parameters concerning the reconstructed tracks
       AliMUONTrackLight muLight;
       
-      muLight.FillFromESD(esd->GetMuonTrack(itrRec));
+      muLight.FillFromESD(rc->GetESDEvent()->GetMuonTrack(itrRec));
       // muLight.FillFromAliMUONTrack(trackReco);
       
       // find the reference track and store further information	
-      TParticle *part = muLight.FindRefTrack(trackReco, trackRefs, pstack, kTRUE);
+      TParticle *part = muLight.FindRefTrack(trackReco, trackRefs, pstack);
       if (part) { 
 	v.SetPxPyPzE(part->Px(), part->Py(), part->Pz(), part->Energy());
 	muLight.SetPGen(v); 
@@ -197,8 +180,6 @@ void DecodeRecoCocktail(
     }
     
     treeOut->Fill(); 
-    
-    delete recoTracks;
   } 
   
   fout->cd(); 
@@ -210,6 +191,5 @@ void DecodeRecoCocktail(
   delete treeOut; 
   delete fout;
   delete rc;
-  delete esd; 
 }
 

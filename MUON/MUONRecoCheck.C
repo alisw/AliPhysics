@@ -33,13 +33,12 @@
 #include "AliMUONRecoCheck.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONTrackExtrap.h"
-
 #include "AliMUONVTrackStore.h"
 
 Int_t TrackCheck( Bool_t *compTrack);
 
 void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root", 
-                    char * pathSim="./generated/", char * filename="galice.root"){
+                    char * pathSim="./generated/", char * esdFileName="AliESDs.root"){
   
   // Utility macro to check the muon reconstruction. Reconstructed tracks are compared
   // to reference tracks. The reference tracks are built from AliTrackReference for the
@@ -52,7 +51,8 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
   Int_t iTrack = 0;
   AliMUONTrack* trackOK(0x0);
   Int_t trackID = 0;
-  Double_t sigma2Cut = 16;  // 4 sigmas cut, sigma2Cut = 4*4
+  Double_t sigmaCut = 4.;  // 4 sigmas cut
+  Double_t maxChi2 = 999.;
   AliMUONTrackParam *trackParam;
   Double_t x1,y1,z1,pX1,pY1,pZ1,p1;
   Double_t x2,y2,z2,pX2,pY2,pZ2,p2;
@@ -86,7 +86,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
   // set the magnetic field for track extrapolations
   AliMUONTrackExtrap::SetField(AliTracker::GetFieldMap());
     
-  AliMUONRecoCheck rc(filename,pathSim);
+  AliMUONRecoCheck rc(esdFileName, pathSim);
   
   Int_t nevents = rc.NumberOfEvents();
   
@@ -115,6 +115,7 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
     
     while ( ( trackRef = static_cast<AliMUONTrack*>(next()) ) )
     {
+      maxChi2 = 999.;
       testTrack = 0;
       trackOK = 0x0;
       for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) 
@@ -127,29 +128,51 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
       
       while ( ( trackReco = static_cast<AliMUONTrack*>(next2()) ) )
       {
-        // check if trackRef is compatible with trackReco
-        compTrack = trackRef->CompatibleTrack(trackReco,sigma2Cut);
+	// check if trackRef is compatible with trackReco
+	if (trackReco->GetNClusters() > 1) {
+	  
+	  // check cluster by cluster if trackReco contain info at each cluster
+	  compTrack = trackRef->CompatibleTrack(trackReco,sigmaCut);
+	  
+	  iTrack = TrackCheck(compTrack);
+	  
+	  if (iTrack > testTrack) 
+	  {
+	    nClusterOk = 0;
+	    for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) 
+	    {
+	      if (compTrack[ch]) nClusterOk++;
+	      compTrackOK[ch] = compTrack[ch];
+	    }
+	    testTrack = iTrack;
+	    trackOK = trackReco;
+	  }
+	  
+	} else {
+	  
+	  // check only parameters at the z position of the first trackRef
+	  AliMUONTrackParam *refParam = (AliMUONTrackParam*) trackRef->GetTrackParamAtCluster()->First();
+	  AliMUONTrackParam recoParam(*((AliMUONTrackParam*) trackReco->GetTrackParamAtCluster()->First()));
+	  AliMUONTrackExtrap::ExtrapToZCov(&recoParam, refParam->GetZ());
+	  Double_t chi2;
+	  if (refParam->CompatibleTrackParam(recoParam, sigmaCut, chi2)) {
+	    
+	    if (chi2 < maxChi2) {
+	      maxChi2 = chi2;
+	      trackOK = trackReco;
+	    }
+	    
+	  }
+	  
+	}
         
-        iTrack = TrackCheck(compTrack);
-        
-        if (iTrack > testTrack) 
-        {
-          nClusterOk = 0;
-          for (Int_t ch = 0; ch < AliMUONConstants::NTrackingCh(); ch++) 
-          {
-            if (compTrack[ch]) nClusterOk++;
-            compTrackOK[ch] = compTrack[ch];
-          }
-          testTrack = iTrack;
-          trackOK = trackReco;
-        }
       }
       
       hTestTrack->Fill(testTrack);
       trackID = trackRef->GetTrackID();
       hTrackRefID->Fill(trackID);
       
-      if (testTrack == 4) {     // tracking requirements verified, track is found
+      if (testTrack == 4 || maxChi2 < 5.*sigmaCut*sigmaCut) {     // tracking requirements verified, track is found
         nReconstructibleTracksCheck++;
         hNClusterComp->Fill(nClusterOk);
         trackParam = trackRef->GetTrackParamAtVertex();
@@ -202,8 +225,6 @@ void MUONRecoCheck (Int_t nEvent = 1, char* geoFilename = "geometry.root",
     } // end loop track ref.
 
   } // end loop on event  
-  
-  delete field;
   
   printf(" nb of reconstructible tracks: %d \n", nReconstructibleTracks);
   printf(" nb of reconstructed tracks: %d \n", nReconstructedTracks);

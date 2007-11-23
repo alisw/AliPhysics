@@ -19,17 +19,13 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVCluster.h"
-#include "AliMUONTrack.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRegionalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONTriggerTrack.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVDigitStore.h"
-#include "AliMUONVTrackStore.h"
 #include "AliMUONVTriggerStore.h"
-#include "AliMUONVTriggerTrackStore.h"
 #include "AliMpCDB.h"
 
 #include "AliMpIntPair.h"
@@ -56,7 +52,7 @@
 /// \class AliMUONDataInterface
 ///
 /// An easy to use interface to the MUON data data stored in
-/// TreeS, TreeD, TreeR and TreeT.
+/// TreeS, TreeD and TreeR.
 ///
 /// For MC related information (i.e. TreeH, TreeK, TreeTR), see
 /// AliMUONMCDataInterface.
@@ -82,8 +78,6 @@ fLoader(0x0),
 fDigitStore(0x0),
 fTriggerStore(0x0),
 fClusterStore(0x0),
-fTrackStore(0x0),
-fTriggerTrackStore(0x0),
 fCurrentEvent(-1),
 fIsValid(kFALSE),
 fCurrentIteratorType(kNoIterator),
@@ -187,78 +181,6 @@ AliMUONDataInterface::ClusterStore(Int_t event)
   fLoader->UnloadRecPoints();
   
   return fClusterStore;
-}
-
-//______________________________________________________________________________
-AliMUONVTrackStore* 
-AliMUONDataInterface::TrackStore(Int_t event)
-{
-  /// Return the trackStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted
-  
-  if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fTrackStore != 0x0) return fTrackStore;
-  
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
-  
-  fLoader->LoadTracks();
-  
-  TTree* treeT = fLoader->TreeT();
-  if (treeT == 0x0)
-  {
-    AliError("Could not get treeT");
-    return 0x0;
-  }
-  
-  fTrackStore = AliMUONVTrackStore::Create(*treeT);
-  if ( fTrackStore != 0x0 )
-  {
-    fTrackStore->Clear();
-    fTrackStore->Connect(*treeT);
-    treeT->GetEvent(0);
-  }
-  
-  fLoader->UnloadTracks();
-  
-  return fTrackStore;
-}
-
-//______________________________________________________________________________
-AliMUONVTriggerTrackStore* 
-AliMUONDataInterface::TriggerTrackStore(Int_t event)
-{
-  /// Return the triggerTrackStore for a given event.
-  /// Return 0x0 if event not found.
-  /// Returned pointer should not be deleted
-  
-  if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fTriggerTrackStore != 0x0) return fTriggerTrackStore;
-  
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
-  
-  fLoader->LoadTracks();
-  
-  TTree* treeT = fLoader->TreeT();
-  if (treeT == 0x0)
-  {
-    AliError("Could not get treeT");
-    return 0x0;
-  }
-  
-  fTriggerTrackStore = AliMUONVTriggerTrackStore::Create(*treeT);
-  if ( fTriggerTrackStore != 0x0 ) 
-  {
-    fTriggerTrackStore->Clear();
-    fTriggerTrackStore->Connect(*treeT);
-    treeT->GetEvent(0);
-  }
-  
-  fLoader->UnloadTracks();
-  
-  return fTriggerTrackStore;  
 }
 
 //_____________________________________________________________________________
@@ -375,48 +297,6 @@ AliMUONDataInterface::DumpSorted(const AliMUONVStore& store) const
   list.Sort();
   
   list.Print();
-}
-
-//______________________________________________________________________________
-void
-AliMUONDataInterface::DumpTracks(Int_t event, Bool_t sorted)
-{
-  /// Dump tracks for a given event, sorted if requested
-  
-  TrackStore(event);
-  
-  if ( fTrackStore != 0x0 ) 
-  {
-    if ( sorted ) 
-    {
-      DumpSorted(*fTrackStore);
-    }
-    else
-    {
-      fTrackStore->Print();
-    }
-  }
-}
-
-//______________________________________________________________________________
-void
-AliMUONDataInterface::DumpTriggerTracks(Int_t event, Bool_t sorted)
-{
-  /// Dump trigger tracks for a given event, sorted if requested
-
-  TriggerTrackStore(event);
-  
-  if ( fTriggerTrackStore != 0x0 ) 
-  {
-    if ( sorted ) 
-    {
-      DumpSorted(*fTriggerTrackStore);
-    }
-    else
-    {
-      fTriggerTrackStore->Print();
-    }
-  }
 }
 
 //_____________________________________________________________________________
@@ -653,9 +533,7 @@ Bool_t AliMUONDataInterface::GetEvent(Int_t event)
 
   if (DigitStore(event) == 0x0) return kFALSE;
   if (ClusterStore(event) == 0x0) return kFALSE;
-  if (TrackStore(event) == 0x0) return kFALSE;
   if (TriggerStore(event) == 0x0) return kFALSE;
-  if (TriggerTrackStore(event) == 0x0) return kFALSE;
   return kTRUE;
 }
 
@@ -730,26 +608,6 @@ AliMUONVCluster* AliMUONDataInterface::RawCluster(Int_t chamber, Int_t index)
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONDataInterface::NumberOfTracks()
-{
-/// Returns the number of reconstructed tracks.
-
-  TIterator* iter = GetIterator(kTrackIterator);
-  return CountObjects(iter);
-}
-
-//_____________________________________________________________________________
-AliMUONTrack* AliMUONDataInterface::Track(Int_t index)
-{
-/// Returns a pointer to the index'th reconstructed track.
-/// @param index  The index number of the track to fetch in the range [0 .. N-1],
-///   where N = NumberOfTracks()
-
-  TIterator* iter = GetIterator(kTrackIterator);
-  return static_cast<AliMUONTrack*>( FetchObject(iter, index) );
-}
-
-//_____________________________________________________________________________
 Int_t AliMUONDataInterface::NumberOfLocalTriggers()
 {
 /// Returns the number of reconstructed local trigger objects.
@@ -800,26 +658,6 @@ AliMUONGlobalTrigger* AliMUONDataInterface::GlobalTrigger()
 }
 
 //_____________________________________________________________________________
-Int_t AliMUONDataInterface::NumberOfTriggerTracks()
-{
-/// Returns the number of reconstructed tracks in the trigger chambers.
-
-  TIterator* iter = GetIterator(kTriggerTrackIterator);
-  return CountObjects(iter);
-}
-
-//_____________________________________________________________________________
-AliMUONTriggerTrack* AliMUONDataInterface::TriggerTrack(Int_t index)
-{
-/// Returns a pointer to the index'th reconstructed trigger track object.
-/// @param index  The index number of the trigger track to fetch in the range [0 .. N-1],
-///   where N = NumberOfTriggerTracks()
-
-  TIterator* iter = GetIterator(kTriggerTrackIterator);
-  return static_cast<AliMUONTriggerTrack*>( FetchObject(iter, index) );
-}
-
-//_____________________________________________________________________________
 void AliMUONDataInterface::ResetStores()
 {
 /// Deletes all the store objects that have been created and resets the pointers to 0x0.
@@ -840,16 +678,6 @@ void AliMUONDataInterface::ResetStores()
   {
     delete fClusterStore;
     fClusterStore = 0x0;
-  }
-  if (fTrackStore != 0x0)
-  {
-    delete fTrackStore;
-    fTrackStore = 0x0;
-  }
-  if (fTriggerTrackStore != 0x0)
-  {
-    delete fTriggerTrackStore;
-    fTriggerTrackStore = 0x0;
   }
 }
 
@@ -936,16 +764,6 @@ TIterator* AliMUONDataInterface::GetIterator(IteratorType type, Int_t x, Int_t y
       return fIterator;
     }
     
-  case kTrackIterator:
-    {
-      AliMUONVTrackStore* store = TrackStore(fCurrentEvent);
-      if (store == 0x0) return 0x0;
-      fIterator = store->CreateIterator();
-      if (fIterator == 0x0) return 0x0;
-      fCurrentIteratorType = kTrackIterator;
-      return fIterator;
-    }
-    
   case kLocalTriggerIterator:
     {
       AliMUONVTriggerStore* store = TriggerStore(fCurrentEvent);
@@ -963,16 +781,6 @@ TIterator* AliMUONDataInterface::GetIterator(IteratorType type, Int_t x, Int_t y
       fIterator = store->CreateRegionalIterator();
       if (fIterator == 0x0) return 0x0;
       fCurrentIteratorType = kRegionalTriggerIterator;
-      return fIterator;
-    }
-    
-  case kTriggerTrackIterator:
-    {
-      AliMUONVTriggerTrackStore* store = TriggerTrackStore(fCurrentEvent);
-      if (store == 0x0) return 0x0;
-      fIterator = store->CreateIterator();
-      if (fIterator == 0x0) return 0x0;
-      fCurrentIteratorType = kTriggerTrackIterator;
       return fIterator;
     }
     

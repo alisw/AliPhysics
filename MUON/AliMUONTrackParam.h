@@ -31,6 +31,8 @@ class AliMUONTrackParam : public TObject
 
   void GetParamFrom(const AliESDMuonTrack& esdMuonTrack);
   void SetParamFor(AliESDMuonTrack& esdMuonTrack) const;
+  void GetParamFromDCA(const AliESDMuonTrack& esdMuonTrack);
+  void SetParamForDCA(AliESDMuonTrack& esdMuonTrack) const;
   void GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack);
   void SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) const;
   
@@ -131,6 +133,8 @@ class AliMUONTrackParam : public TObject
 	/// necessary for sorting TClonesArray of AliMUONTrackParam
   Bool_t IsSortable () const {return kTRUE;}
   Int_t Compare(const TObject* trackParam) const;
+
+  Bool_t CompatibleTrackParam(const AliMUONTrackParam &trackParam, Double_t sigma2Cut, Double_t &normChi2) const;
 
   virtual void Print(Option_t* opt="") const;
  

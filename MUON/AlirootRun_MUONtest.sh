@@ -185,8 +185,6 @@ EOF
     AliMUONDataInterface dRec("$OUTDIR/galice.root");
     dRec.DumpDigits($DUMPEVENT,true); > $OUTDIR/dump.$DUMPEVENT.recdigits
     dRec.DumpRecPoints($DUMPEVENT);  > $OUTDIR/dump.$DUMPEVENT.recpoints
-    dRec.DumpTracks($DUMPEVENT);     > $OUTDIR/dump.$DUMPEVENT.tracks
-    dRec.DumpTriggerTracks($DUMPEVENT); > $OUTDIR/dump.$DUMPEVENT.triggertracks
     dRec.DumpTrigger($DUMPEVENT); > $OUTDIR/dump.$DUMPEVENT.trigger
     .q
 EOF

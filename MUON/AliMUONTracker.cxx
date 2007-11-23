@@ -50,6 +50,7 @@
 
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
+#include "AliESDMuonCluster.h"
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliCodeTimer.h"
@@ -202,34 +203,49 @@ void AliMUONTracker::FillESD(AliMUONVTrackStore& trackStore, AliESDEvent* esd) c
   
   // setting ESD MUON class
   AliESDMuonTrack esdTrack;
+  AliESDMuonCluster esdCluster;
   
   AliMUONTrack* track;
+  AliMUONVCluster* cluster;
   TIter next(trackStore.CreateIterator());
   
   while ( ( track = static_cast<AliMUONTrack*>(next()) ) )
   {
     AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>((track->GetTrackParamAtCluster())->First());
-    AliMUONTrackParam trackParamAtVtx(*trackParam);
     
     /// Extrapolate to vertex (which is set to (0,0,0) if not available, see above)
-    AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0],vertex[1],vertex[2],errXVtx,errYVtx);
+    AliMUONTrackParam trackParamAtVtx(*trackParam);
+    AliMUONTrackExtrap::ExtrapToVertex(&trackParamAtVtx, vertex[0], vertex[1], vertex[2], errXVtx, errYVtx);
+    
+    /// Extrapolate to vertex plan (which is set to z=0 if not available, see above)
+    AliMUONTrackParam trackParamAtDCA(*trackParam);
+    AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&trackParamAtDCA, vertex[2]);
     
     // setting data member of ESD MUON
+    esdTrack.Clear("C");           // remove already attached clusters
+    esdTrack.SetMuonClusterMap(0); // important to use the Add..() methods
     
     // at first station
     trackParam->SetParamForUncorrected(esdTrack);
     trackParam->SetCovFor(esdTrack);
     // at vertex
     trackParamAtVtx.SetParamFor(esdTrack);
+    // at Distance of Closest Approach
+    trackParamAtDCA.SetParamForDCA(esdTrack);
     // global info
     esdTrack.SetChi2(track->GetGlobalChi2());
     esdTrack.SetNHit(track->GetNClusters());
     esdTrack.SetLocalTrigger(track->GetLocalTrigger());
     esdTrack.SetChi2MatchTrigger(track->GetChi2MatchTrigger());
     esdTrack.SetHitsPatternInTrigCh(track->GetHitsPatternInTrigCh());
-    // muon cluster map
+    // muon cluster info
     while (trackParam) {
-      esdTrack.AddInMuonClusterMap(trackParam->GetClusterPtr()->GetChamberId());
+      cluster = trackParam->GetClusterPtr();
+      esdCluster.SetUniqueID(cluster->GetUniqueID());
+      esdCluster.SetXYZ(cluster->GetX(), cluster->GetY(), cluster->GetZ());
+      esdCluster.SetErrXY(cluster->GetErrX(), cluster->GetErrY());
+      esdTrack.AddCluster(esdCluster);
+      esdTrack.AddInMuonClusterMap(cluster->GetChamberId());
       trackParam = static_cast<AliMUONTrackParam*>(track->GetTrackParamAtCluster()->After(trackParam));
     }
     

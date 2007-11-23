@@ -216,6 +216,29 @@ void AliMUONTrackParam::SetParamFor(AliESDMuonTrack& esdMuonTrack) const
 }
 
   //_________________________________________________________________________
+void AliMUONTrackParam::GetParamFromDCA(const AliESDMuonTrack& esdMuonTrack)
+{
+  /// Get parameters from ESD track
+  fZ = esdMuonTrack.GetZ(); 
+  fParameters(0,0) = esdMuonTrack.GetNonBendingCoorAtDCA();
+  fParameters(1,0) = TMath::Tan(esdMuonTrack.GetThetaXAtDCA());
+  fParameters(2,0) = esdMuonTrack.GetBendingCoorAtDCA(); 
+  fParameters(3,0) = TMath::Tan(esdMuonTrack.GetThetaYAtDCA());
+  fParameters(4,0) = esdMuonTrack.GetInverseBendingMomentumAtDCA();
+}
+
+  //_________________________________________________________________________
+void AliMUONTrackParam::SetParamForDCA(AliESDMuonTrack& esdMuonTrack) const
+{
+  /// Set parameters in ESD track
+  esdMuonTrack.SetNonBendingCoorAtDCA(fParameters(0,0));
+  esdMuonTrack.SetThetaXAtDCA(TMath::ATan(fParameters(1,0)));
+  esdMuonTrack.SetBendingCoorAtDCA(fParameters(2,0)); 
+  esdMuonTrack.SetThetaYAtDCA(TMath::ATan(fParameters(3,0)));
+  esdMuonTrack.SetInverseBendingMomentumAtDCA(fParameters(4,0));
+}
+
+//_________________________________________________________________________
 void AliMUONTrackParam::GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTrack)
 {
   /// Get parameters from ESD track
@@ -227,7 +250,7 @@ void AliMUONTrackParam::GetParamFromUncorrected(const AliESDMuonTrack& esdMuonTr
   fParameters(4,0) = esdMuonTrack.GetInverseBendingMomentumUncorrected();
 }
 
-  //_________________________________________________________________________
+//_________________________________________________________________________
 void AliMUONTrackParam::SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) const
 {
   /// Set parameters in ESD track
@@ -239,7 +262,7 @@ void AliMUONTrackParam::SetParamForUncorrected(AliESDMuonTrack& esdMuonTrack) co
   esdMuonTrack.SetInverseBendingMomentumUncorrected(fParameters(4,0));
 }
 
-  //_________________________________________________________________________
+//_________________________________________________________________________
 void AliMUONTrackParam::GetCovFrom(const AliESDMuonTrack& esdMuonTrack)
 {
   /// Get parameters covariances from ESD track
@@ -508,7 +531,58 @@ Int_t AliMUONTrackParam::Compare(const TObject* trackParam) const
   else return(-1);
 }
 
-//_____________________________________________-
+  //__________________________________________________________________________
+Bool_t AliMUONTrackParam::CompatibleTrackParam(const AliMUONTrackParam &trackParam, Double_t sigma2Cut, Double_t &chi2) const
+{
+  /// Return kTRUE if the two set of track parameters are compatible within sigma2Cut
+  /// Set chi2 to the compatible chi2 value
+  /// Note that parameter covariances must exist for at least one set of parameters
+  /// Note also that if parameters are not given at the same Z, results will be meaningless
+  
+  // reset chi2 value
+  chi2 = 0.;
+  
+  // ckeck covariance matrices
+  if (!fCovariances && !trackParam.fCovariances) {
+    AliError("Covariance matrix must exist for at least one set of parameters");
+    return kFALSE;
+  }
+  
+  Double_t maxChi2 = 5. * sigma2Cut * sigma2Cut; // 5 degrees of freedom
+  
+  // check Z parameters
+  if (fZ != trackParam.fZ)
+    AliWarning(Form("Parameters are given at different Z position (%le : %le): results are meaningless", fZ, trackParam.fZ));
+  
+  // compute the parameter residuals
+  TMatrixD deltaParam(fParameters, TMatrixD::kMinus, trackParam.fParameters);
+  
+  // build the error matrix
+  TMatrixD weight(5,5);
+  if (fCovariances) weight += *fCovariances;
+  if (trackParam.fCovariances) weight += *(trackParam.fCovariances);
+  
+  // invert the error matrix to get the parameter weights if possible
+  if (weight.Determinant() == 0) {
+    AliError("Cannot compute the compatibility chi2");
+    return kFALSE;
+  }
+  weight.Invert();
+  
+  // compute the compatibility chi2
+  TMatrixD tmp(deltaParam, TMatrixD::kTransposeMult, weight);
+  TMatrixD mChi2(tmp, TMatrixD::kMult, deltaParam);
+  
+  // set chi2 value
+  chi2 = mChi2(0,0);
+  
+  // check compatibility
+  if (chi2 > maxChi2) return kFALSE;
+  
+  return kTRUE;
+}
+
+  //__________________________________________________________________________
 void AliMUONTrackParam::Print(Option_t* opt) const
 {
   /// Printing TrackParam information 

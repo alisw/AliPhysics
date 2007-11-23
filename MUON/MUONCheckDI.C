@@ -28,21 +28,18 @@
 #include <Riostream.h>
 #include <TObjArray.h>
 #include <TIterator.h>
+#include <TMatrixD.h>
 #include "AliMUONHit.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVCluster.h"
-#include "AliMUONTrack.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRegionalTrigger.h"
 #include "AliMUONGlobalTrigger.h"
-#include "AliMUONTriggerTrack.h"
 #include "AliMUONMCDataInterface.h"
 #include "AliMUONDataInterface.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVClusterStore.h"
-#include "AliMUONVTrackStore.h"
 #include "AliMUONVTriggerStore.h"
-#include "AliMUONVTriggerTrackStore.h"
 #include "AliMpConstants.h"
 #include "AliMpDEManager.h"
 #include <cstdlib>
@@ -57,35 +54,7 @@
 Int_t Compare(const TObject* a, const TObject* b)
 {
 	int result = -999;
-	if (a->IsA() == AliMUONTrack::Class() && b->IsA() == AliMUONTrack::Class())
-	{
-		const AliMUONTrack* ta = static_cast<const AliMUONTrack*>(a);
-		const AliMUONTrack* tb = static_cast<const AliMUONTrack*>(b);
-		if (ta->GetNClusters() < tb->GetNClusters()) return -1;
-		if (ta->GetNClusters() > tb->GetNClusters()) return 1;
-		if (ta->GetMatchTrigger() < tb->GetMatchTrigger()) return -1;
-		if (ta->GetMatchTrigger() > tb->GetMatchTrigger()) return 1;
-		if (ta->GetLoTrgNum() < tb->GetLoTrgNum()) return -1;
-		if (ta->GetLoTrgNum() > tb->GetLoTrgNum()) return 1;
-		if (ta->GetChi2MatchTrigger() < tb->GetChi2MatchTrigger()) return -1;
-		if (ta->GetChi2MatchTrigger() > tb->GetChi2MatchTrigger()) return 1;
-		const AliMUONTrackParam* tpa = static_cast<const AliMUONTrackParam*>(ta->GetTrackParamAtCluster()->First());
-		const AliMUONTrackParam* tpb = static_cast<const AliMUONTrackParam*>(tb->GetTrackParamAtCluster()->First());
-		if (tpa->GetNonBendingCoor() < tpb->GetNonBendingCoor()) return -1;
-		if (tpa->GetNonBendingCoor() > tpb->GetNonBendingCoor()) return 1;
-		if (tpa->GetNonBendingSlope() < tpb->GetNonBendingSlope()) return -1;
-		if (tpa->GetNonBendingSlope() > tpb->GetNonBendingSlope()) return 1;
-		if (tpa->GetBendingCoor() < tpb->GetBendingCoor()) return -1;
-		if (tpa->GetBendingCoor() > tpb->GetBendingCoor()) return 1;
-		if (tpa->GetBendingSlope() < tpb->GetBendingSlope()) return -1;
-		if (tpa->GetBendingSlope() > tpb->GetBendingSlope()) return 1;
-		if (tpa->GetInverseBendingMomentum() < tpb->GetInverseBendingMomentum()) return -1;
-		if (tpa->GetInverseBendingMomentum() > tpb->GetInverseBendingMomentum()) return 1;
-		if (tpa->GetCharge() < tpb->GetCharge()) return -1;
-		if (tpa->GetCharge() > tpb->GetCharge()) return 1;
-		return 0;
-	}
-	else if (a->IsA() == AliMUONLocalTrigger::Class() && b->IsA() == AliMUONLocalTrigger::Class())
+	if (a->IsA() == AliMUONLocalTrigger::Class() && b->IsA() == AliMUONLocalTrigger::Class())
 	{
 		result = memcmp(a, b, sizeof(AliMUONLocalTrigger));
 	}
@@ -96,24 +65,6 @@ Int_t Compare(const TObject* a, const TObject* b)
 	else if (a->IsA() == AliMUONGlobalTrigger::Class() && b->IsA() == AliMUONGlobalTrigger::Class())
 	{
 		result = memcmp(a, b, sizeof(AliMUONGlobalTrigger));
-	}
-	else if (a->IsA() == AliMUONTriggerTrack::Class() && b->IsA() == AliMUONTriggerTrack::Class())
-	{
-		const AliMUONTriggerTrack* ta = static_cast<const AliMUONTriggerTrack*>(a);
-		const AliMUONTriggerTrack* tb = static_cast<const AliMUONTriggerTrack*>(b);
-		if (ta->GetX11() < tb->GetX11()) return -1;
-		if (ta->GetX11() > tb->GetX11()) return 1;
-		if (ta->GetY11() < tb->GetY11()) return -1;
-		if (ta->GetY11() > tb->GetY11()) return 1;
-		if (ta->GetThetax() < tb->GetThetax()) return -1;
-		if (ta->GetThetax() > tb->GetThetax()) return 1;
-		if (ta->GetThetay() < tb->GetThetay()) return -1;
-		if (ta->GetThetay() > tb->GetThetay()) return 1;
-		if (ta->GetLoTrgNum() < tb->GetLoTrgNum()) return -1;
-		if (ta->GetLoTrgNum() > tb->GetLoTrgNum()) return 1;
-		if (ta->GetGTPattern() < tb->GetGTPattern()) return -1;
-		if (ta->GetGTPattern() > tb->GetGTPattern()) return 1;
-		return 0;
 	}
 	else
 	{
@@ -367,7 +318,7 @@ bool RawClustersOk()
 		TObjArray clustersByChamber;
 		clustersByChamber.SetOwner(kTRUE);
 		data.GetEvent(event);
-		for (Int_t chamber = 0; chamber < AliMpConstants::NofChambers(); chamber++)
+		for (Int_t chamber = 0; chamber < AliMpConstants::NofTrackingChambers(); chamber++)
 		{
 			Int_t nclusters = data.NumberOfRawClusters(chamber);
 			for (Int_t i = 0; i < nclusters; i++)
@@ -404,72 +355,6 @@ bool RawClustersOk()
 				);
 				clustersFromStore[i]->Print();
 				clustersByChamber[i]->Print();
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-/**
- * This method fills internal arrays with tracks returned by AliMUONDataInterface.
- * For each set of interface methods available in AliMUONDataInterface a TObjArray is
- * filled with copies of the raw clusters. These arrays are then compared to each
- * other. The arrays should contain the same information if everything is working
- * correctly with AliMUONDataInterface. If not then the difference is printed
- * together with an error message and kFALSE is returned.
- */
-bool TracksOk()
-{
-	AliMUONDataInterface data;
-	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
-	{
-		TObjArray tracksFromStore;
-		tracksFromStore.SetOwner(kTRUE);
-		AliMUONVTrackStore* store = data.TrackStore(event);
-		TIter next(store->CreateIterator());
-		AliMUONTrack* track;
-		while ( (track = static_cast<AliMUONTrack*>( next() )) != NULL )
-		{
-			tracksFromStore.Add(track->Clone());
-		}
-		
-		TObjArray tracksByIndex;
-		tracksByIndex.SetOwner(kTRUE);
-		data.GetEvent(event);
-		Int_t ntracks = data.NumberOfTracks();
-		for (Int_t i = 0; i < ntracks; i++)
-		{
-			AliMUONTrack* track = data.Track(i);
-			tracksByIndex.Add(track->Clone());
-		}
-		
-		// Now check that all the lists of tracks contain the same results.
-		// They must. If they do not then something is wrong with the implementation
-		// of AliMUONDataInterface.
-		if (tracksFromStore.GetEntriesFast() != tracksByIndex.GetEntriesFast())
-		{
-			Error(	"TracksOk",
-				"The AliMUONDataInterface does not return all the tracks correctly"
-				  " through all its user interface methods. We got the following"
-				  " numbers of tracks: %d and %d",
-				tracksFromStore.GetEntriesFast(),
-				tracksByIndex.GetEntriesFast()
-			);
-			return false;
-		}
-		for (Int_t i = 0; i < tracksFromStore.GetEntriesFast(); i++)
-		{
-			if (Compare(tracksFromStore[i], tracksByIndex[i]) != 0)
-			{
-				Error(	"TracksOk",
-					"The AliMUONDataInterface does not return identical tracks"
-					  " through all its user interface methods. The incorrect"
-					  " track has index %d.",
-					i
-				);
-				tracksFromStore[i]->Print();
-				tracksByIndex[i]->Print();
 				return false;
 			}
 		}
@@ -602,72 +487,6 @@ bool TriggersOk()
 }
 
 /**
- * This method fills internal arrays with trigger tracks returned by AliMUONDataInterface.
- * For each set of interface methods available in AliMUONDataInterface a TObjArray is
- * filled with copies of the trigger tracks. These arrays are then compared to each
- * other. The arrays should contain the same information if everything is working
- * correctly with AliMUONDataInterface. If not then the difference is printed
- * together with an error message and kFALSE is returned.
- */
-bool TriggerTracksOk()
-{
-	AliMUONDataInterface data;
-	for (Int_t event = 0; event < data.NumberOfEvents(); event++)
-	{
-		TObjArray tracksFromStore;
-		tracksFromStore.SetOwner(kTRUE);
-		AliMUONVTriggerTrackStore* store = data.TriggerTrackStore(event);
-		TIter next(store->CreateIterator());
-		AliMUONTriggerTrack* track;
-		while ( (track = static_cast<AliMUONTriggerTrack*>( next() )) != NULL )
-		{
-			tracksFromStore.Add(track->Clone());
-		}
-		
-		TObjArray tracksByIndex;
-		tracksByIndex.SetOwner(kTRUE);
-		data.GetEvent(event);
-		Int_t ntracks = data.NumberOfTriggerTracks();
-		for (Int_t i = 0; i < ntracks; i++)
-		{
-			AliMUONTriggerTrack* track = data.TriggerTrack(i);
-			tracksByIndex.Add(track->Clone());
-		}
-		
-		// Now check that all the lists of trigger tracks contain the same results.
-		// They must. If they do not then something is wrong with the implementation
-		// of AliMUONDataInterface.
-		if (tracksFromStore.GetEntriesFast() != tracksByIndex.GetEntriesFast())
-		{
-			Error(	"TriggerTracksOk",
-				"The AliMUONDataInterface does not return all the trigger tracks"
-				  " correctly through all its user interface methods. We got the"
-				  " following numbers of tracks: %d and %d",
-				tracksFromStore.GetEntriesFast(),
-				tracksByIndex.GetEntriesFast()
-			);
-			return false;
-		}
-		for (Int_t i = 0; i < tracksFromStore.GetEntriesFast(); i++)
-		{
-			if (Compare(tracksFromStore[i], tracksByIndex[i]) != 0)
-			{
-				Error(	"TriggerTracksOk",
-					"The AliMUONDataInterface does not return identical trigger"
-					  " tracks through all its user interface methods. The"
-					  " incorrect track has index %d.",
-					i
-				);
-				tracksFromStore[i]->Print();
-				tracksByIndex[i]->Print();
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-/**
  * This method performs a check of the AliMUONDataInterface and AliMUONMCDataInterface
  * classes. Basically there are at least 2 ways to fetch data using these interfaces:
  * The expert way using the store objects returned by these interface classes or
@@ -693,17 +512,9 @@ bool MUONCheckDI()
 	if (! RawClustersOk()) return false;
 	cout << "Raw clusters look OK." << endl;
 
-	cout << "Checking reconstructed tracks..." << endl;
-	if (! TracksOk()) return false;
-	cout << "Reconstructed tracks look OK." << endl;
-
 	cout << "Checking reconstructed triggers..." << endl;
 	if (! TriggersOk()) return false;
 	cout << "Reconstructed triggers look OK." << endl;
 
-	cout << "Checking reconstructed trigger tracks..." << endl;
-	if (! TriggerTracksOk()) return false;
-	cout << "Reconstructed trigger tracks look OK." << endl;
-	
 	return true;
 }

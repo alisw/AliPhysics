@@ -23,16 +23,12 @@ class AliLoader;
 class AliMUONVStore;
 class AliMUONVDigitStore;
 class AliMUONVClusterStore;
-class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
-class AliMUONVTriggerTrackStore;
 class AliMUONVDigit;
 class AliMUONVCluster;
-class AliMUONTrack;
 class AliMUONLocalTrigger;
 class AliMUONRegionalTrigger;
 class AliMUONGlobalTrigger;
-class AliMUONTriggerTrack;
 
 
 class AliMUONDataInterface : public TObject
@@ -54,17 +50,13 @@ public:
 
   AliMUONVDigitStore* DigitStore(Int_t event);  
   AliMUONVClusterStore* ClusterStore(Int_t event);
-  AliMUONVTrackStore* TrackStore(Int_t event);
   AliMUONVTriggerStore* TriggerStore(Int_t event, const char* treeLetter="R");
-  AliMUONVTriggerTrackStore* TriggerTrackStore(Int_t event);
 
   /// Dump the clusters for a given event, sorted if so required
   void DumpClusters(Int_t event, Bool_t sorted=kTRUE)  { return DumpRecPoints(event,sorted); }
   void DumpRecPoints(Int_t event, Bool_t sorted=kTRUE);
   void DumpDigits(Int_t event, Bool_t sorted=kTRUE);
-  void DumpTracks(Int_t event, Bool_t sorted=kFALSE);  
   void DumpTrigger(Int_t event, const char* treeLetter="R");  
-  void DumpTriggerTracks(Int_t event, Bool_t sorted=kFALSE);
   
   Bool_t GetEvent(Int_t event = 0);
   
@@ -79,15 +71,11 @@ public:
   AliMUONVDigit* Digit(Int_t chamber, Int_t cathode, Int_t index);
   Int_t NumberOfRawClusters(Int_t chamber);
   AliMUONVCluster* RawCluster(Int_t chamber, Int_t index);
-  Int_t NumberOfTracks();
-  AliMUONTrack* Track(Int_t index);
   Int_t NumberOfLocalTriggers();
   AliMUONLocalTrigger* LocalTrigger(Int_t index);
   Int_t NumberOfRegionalTriggers();
   AliMUONRegionalTrigger* RegionalTrigger(Int_t index);
   AliMUONGlobalTrigger* GlobalTrigger();
-  Int_t NumberOfTriggerTracks();
-  AliMUONTriggerTrack* TriggerTrack(Int_t index);
   
 private:
 
@@ -98,10 +86,8 @@ private:
     kDigitIteratorByDetectorElement,  ///< A digit iterator for iterating over detector elements.
     kDigitIteratorByChamberAndCathode,  ///< A digit iterator for iterating over chambers and cathodes.
     kRawClusterIterator,  ///< A raw cluster iterator.
-    kTrackIterator,  ///< An iterator for iterating over reconstructed tracks.
     kLocalTriggerIterator,  ///< An iterator for iterating over reconstructed local triggers.
-    kRegionalTriggerIterator,  ///< An iterator for iterating over reconstructed regional triggers.
-    kTriggerTrackIterator  ///< An iterator for iterating over reconstructed trigger tracks.
+    kRegionalTriggerIterator  ///< An iterator for iterating over reconstructed regional triggers.
   };
     
   void DumpSorted(const AliMUONVStore& store) const;
@@ -128,8 +114,6 @@ private:
   AliMUONVDigitStore* fDigitStore; //!< current digit store (owner)
   AliMUONVTriggerStore* fTriggerStore; //!< current trigger store (owner)
   AliMUONVClusterStore* fClusterStore; //!< current cluster store (owner)
-  AliMUONVTrackStore* fTrackStore; //!< current track store (owner)
-  AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< current trigger track store (owner)
   Int_t fCurrentEvent; //!< Current event we've read in
   Bool_t fIsValid; //!< whether we were initialized properly or not
   

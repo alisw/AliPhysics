@@ -19,12 +19,14 @@
 
 class AliMUONVCluster;
 class AliMUONObjectPair;
+class AliESDMuonTrack;
 
 class AliMUONTrack : public TObject 
 {
  public:
   AliMUONTrack(); // Default constructor
   AliMUONTrack(AliMUONObjectPair *segment); // Constructor from a segment
+  AliMUONTrack(AliESDMuonTrack& esdTrack); // Constructor from an ESD muon track
   virtual ~AliMUONTrack(); // Destructor
   AliMUONTrack (const AliMUONTrack& track); // copy constructor
   AliMUONTrack& operator=(const AliMUONTrack& track); // assignment operator
@@ -94,7 +96,8 @@ class AliMUONTrack : public TObject
   /// set track number in TrackRefs
   void  SetTrackID(Int_t trackID) {fTrackID = trackID;}
 
-  AliMUONTrackParam* GetTrackParamAtVertex();
+  /// return pointer to track parameters at vertex (can be 0x0)
+  AliMUONTrackParam* GetTrackParamAtVertex() {return fTrackParamAtVertex;}
   void               SetTrackParamAtVertex(const AliMUONTrackParam* trackParam);
 
   /// set word telling which trigger chambers where hit by track
@@ -105,7 +108,7 @@ class AliMUONTrack : public TObject
   /// set local trigger information for the matched trigger track
   void  SetLocalTrigger(Int_t loCirc, Int_t loStripX, Int_t loStripY, Int_t loDev, Int_t loLpt, Int_t loHpt);
   /// return local trigger information for the matched trigger track
-  Int_t GetLocalTrigger(void) const { return fLocalTrigger;              }
+  Int_t GetLocalTrigger(void) const { return fLocalTrigger;        }
   /// number of triggering circuit
   Int_t LoCircuit(void) const { return fLocalTrigger & 0xFF;       }
   /// x-strip local trigger 
