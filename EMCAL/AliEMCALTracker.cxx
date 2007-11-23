@@ -49,10 +49,17 @@
 #include "AliEMCALTrack.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALReconstructor.h"
+#include "AliEMCALRecParam.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 
 #include "AliEMCALTracker.h"
 
 ClassImp(AliEMCALTracker)
+
+AliEMCALRecParam* AliEMCALTracker::fgkRecParam = 0;  // EMCAL rec. parameters
+
 //
 //------------------------------------------------------------------------------
 //
@@ -80,6 +87,8 @@ AliEMCALTracker::AliEMCALTracker()
 	// and all collections to NULL.
 	// Output file name is set to a default value.
 	//
+	
+	InitParameters();
 }
 //
 //------------------------------------------------------------------------------
@@ -132,6 +141,38 @@ AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& copy)
 	fGeom = copy.fGeom;
 	
 	return (*this);
+}
+//
+//------------------------------------------------------------------------------
+//
+void AliEMCALTracker::InitParameters()
+{
+	//
+	// Retrieve initialization parameters
+	//
+	
+  // Check if the instance of AliEMCALRecParam exists, 
+  // if not, get it from OCDB if available, otherwise create a default one
+  
+  if (!fgkRecParam  && (AliCDBManager::Instance()->IsDefaultStorageSet())) {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+      AliCDBManager::Instance()->Get("EMCAL/Config/RecParam");
+    if (entry) fgkRecParam =  (AliEMCALRecParam*) entry->GetObject();
+  }
+  
+  if(!fgkRecParam){
+    AliWarning("The Track Matching parameters for EMCAL nonitialized - Used default one");
+    fgkRecParam = new AliEMCALRecParam;
+  }
+  
+  fCutX =  fgkRecParam->GetTrkCutX();
+  fCutY =  fgkRecParam->GetTrkCutY();
+  fCutZ =  fgkRecParam->GetTrkCutZ();
+  fMaxDist =  fgkRecParam->GetTrkCutR();
+  fCutAngle =  fgkRecParam->GetTrkCutAngle();
+  fCutAlphaMin =  fgkRecParam->GetTrkCutAlphaMin();
+  fCutAlphaMax =  fgkRecParam->GetTrkCutAlphaMax();
+  
 }
 //
 //------------------------------------------------------------------------------

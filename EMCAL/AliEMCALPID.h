@@ -5,6 +5,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.13  2007/07/11 13:43:29  hristov
+ * New class AliESDEvent, backward compatibility with the old AliESD (Christian)
+ *
  * Revision 1.12  2007/02/20 20:17:43  hristov
  * Corrected array size, removed warnings (icc)
  *
@@ -67,3 +70,4 @@ public:
 };
 
 #endif // ALIEMCALPID_H
+

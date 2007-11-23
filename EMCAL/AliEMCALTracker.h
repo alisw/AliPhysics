@@ -32,6 +32,7 @@ class AliESDCaloCluster;
 class AliEMCALTrack;
 class AliEMCALRecPoint;
 class AliEMCALGeometry;
+class AliEMCALRecParam;
 
 class AliEMCALTracker : public AliTracker 
 {
@@ -45,6 +46,7 @@ public:
 	
 	virtual void        Clear(Option_t *option="ALL");
 	virtual Int_t       Clusters2Tracks(AliESDEvent*) {return -1;}
+	        void        InitParameters();
 	virtual Int_t       LoadClusters(TTree*);
 	        Int_t       LoadClusters(AliESDEvent* esd);
 	        Int_t       LoadTracks(AliESDEvent* esd);
@@ -150,8 +152,9 @@ private:
 	TList      *fMatches;         //! collection of matches between tracks and clusters
 	
 	AliEMCALGeometry *fGeom;      //! EMCAL geometry
+	static AliEMCALRecParam*   fgkRecParam; // track-matching parameters for EMCAL
 	
-	ClassDef(AliEMCALTracker, 1)  // EMCAL "tracker"
+	ClassDef(AliEMCALTracker, 2)  // EMCAL "tracker"
 };
 
 #endif
