@@ -29,50 +29,80 @@
 // can not cope with the type id and origin defines.
 
 /** multiple output data types */
-const AliHLTComponentDataType kAliHLTMultipleDataType = {
+const AliHLTComponentDataType kAliHLTMultipleDataType =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   {'M','U','L','T','I','P','L','E'},
-  kAliHLTDataOriginPrivate
-};
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
 
 /** data to file exchange subscriber */
-const AliHLTComponentDataType kAliHLTDataTypeFXSCalib = {
+const AliHLTComponentDataType kAliHLTDataTypeFXSCalib =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTFXSCalibDataTypeID,
-  kAliHLTDataOriginOut
-};
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginOut;
 
 /** DDL list data type */
-const AliHLTComponentDataType kAliHLTDataTypeDDL  = {
+const AliHLTComponentDataType kAliHLTDataTypeDDL  =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTDDLDataTypeID,
-  kAliHLTDataOriginOut
-};
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginOut;
 
 /** SOR data type */
-const AliHLTComponentDataType kAliHLTDataTypeSOR  = {
+const AliHLTComponentDataType kAliHLTDataTypeSOR  =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTSORDataTypeID,
-  kAliHLTDataOriginPrivate
-};
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
 
 /** EOR data type */
-const AliHLTComponentDataType kAliHLTDataTypeEOR  = {
+const AliHLTComponentDataType kAliHLTDataTypeEOR  =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTEORDataTypeID,
-  kAliHLTDataOriginPrivate
-};
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
 
 /** Event type specification */
-const AliHLTComponentDataType kAliHLTDataTypeEvent  = {
+const AliHLTComponentDataType kAliHLTDataTypeEvent  =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTEventDataTypeID,
-  kAliHLTDataOriginPrivate
-};
+  kAliHLTDataOriginAny
+}|kAliHLTDataOriginPrivate;
 
 /** RAW DDL data specification, data publisher will set type id and origin correctly */
-const AliHLTComponentDataType kAliHLTDataTypeDDLRaw = {
+const AliHLTComponentDataType kAliHLTDataTypeDDLRaw =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTDDLRawDataTypeID,
   kAliHLTDataOriginAny
 };
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Data urigin variables, to be used with the operator|
+//
+// AliHLTComponentDataType dt;
+// dt = kAliHLTDataTypeDDLRaw | gkAliHLTDataOriginTPC;
+//
+//////////////////////////////////////////////////////////////////////////
+
+/** HLT out */
+const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize]    = {'H','L','T',' '};
+
+/** HLT/PubSub private internal */
+const char kAliHLTDataOriginPrivate[kAliHLTComponentDataTypefOriginSize]= {'P','R','I','V'};
+
+/** TPC */
+const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize]    = {'T','P','C',' '};
+
+/** PHOS */
+const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize]   = {'P','H','O','S'};
+
+/** MUON */
+const char kAliHLTDataOriginMUON[kAliHLTComponentDataTypefOriginSize]   = {'M','U','O','N'};
+
+/** TRD */
+const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize]    = {'T','R','D',' '};
+
+/** ITS */
+const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize]    = {'I','T','S',' '};

@@ -23,12 +23,20 @@
  *   2       introduced June 07, enhanced/cleaned/arranged structure
  *   3       2007-11-15 RAW DDL data type added; some inconsistencies fixed
  *           ('void' and 'any' origins); added signed HLT basic data types
+ *           2007-11-23 origin defines have become variables in conjunction
+ *           to be used with the operator| (AliHLTComponentDatatType
  */
 #define ALIHLT_DATA_TYPES_VERSION 3
 
 //////////////////////////////////////////////////////////////////////////
 //
-// HLT data origin defines
+// HLT data origin variables.
+//
+// By converting from defines to variables, the origins can be used with
+// the operator|
+//
+// AliHLTComponentDataType dt;
+// dt = kAliHLTDataTypeDDLRaw | gkAliHLTDataOriginTPC;
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -47,25 +55,25 @@ const int kAliHLTComponentDataTypefOriginSize=4;
 # define kAliHLTAnyDataOrigin "***"
 
 /** HLT out */
-# define kAliHLTDataOriginOut     {'H','L','T',' '}
+extern const char kAliHLTDataOriginOut[kAliHLTComponentDataTypefOriginSize];
 
 /** HLT/PubSub private internal */
-# define kAliHLTDataOriginPrivate {'P','R','I','V'}
+extern const char kAliHLTDataOriginPrivate[kAliHLTComponentDataTypefOriginSize];
 
 /** TPC */
-# define kAliHLTDataOriginTPC     {'T','P','C',' '}
+extern const char kAliHLTDataOriginTPC[kAliHLTComponentDataTypefOriginSize];
 
 /** PHOS */
-# define kAliHLTDataOriginPHOS    {'P','H','O','S'}
+extern const char kAliHLTDataOriginPHOS[kAliHLTComponentDataTypefOriginSize];
 
 /** MUON */
-# define kAliHLTDataOriginMUON    {'M','U','O','N'}
+extern const char kAliHLTDataOriginMUON[kAliHLTComponentDataTypefOriginSize];
 
 /** TRD */
-# define kAliHLTDataOriginTRD     {'T','R','D',' '}
+extern const char kAliHLTDataOriginTRD[kAliHLTComponentDataTypefOriginSize];
 
 /** ITS */
-# define kAliHLTDataOriginITS     {'I','T','S',' '}
+extern const char kAliHLTDataOriginITS[kAliHLTComponentDataTypefOriginSize];
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -358,7 +366,7 @@ extern "C" {
   /** Event type specification */
   extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
 
-/** RAW DDL data specification, data publisher will set type id and origin correctly */
+  /** RAW DDL data specification, data publisher will set type id and origin correctly */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
 
   //////////////////////////////////////////////////////////////////////////
@@ -443,5 +451,12 @@ inline bool operator!=( const AliHLTComponentDataType& dt1, const AliHLTComponen
     return false;
     }
 
+inline AliHLTComponentDataType operator|(const AliHLTComponentDataType srcdt, const char origin[kAliHLTComponentDataTypefOriginSize])
+    {
+    AliHLTComponentDataType dt=srcdt;
+    for ( int i = 0; i < kAliHLTComponentDataTypefOriginSize; i++ )
+      dt.fOrigin[i]=origin[i];
+    return dt;
+    }
 
 #endif 
