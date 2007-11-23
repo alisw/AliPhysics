@@ -16,6 +16,8 @@
 
 #pragma link C++ class Alieve::VSDCreator+;
 
+#pragma link C++ class AliEVEHOMERManager+;
+#pragma link C++ class AliEVEHOMERManagerEditor+;
 
 //================================
 // compound classes
