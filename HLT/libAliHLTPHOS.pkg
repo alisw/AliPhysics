@@ -38,7 +38,6 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSDigitMakerComponent.h \
 		  AliHLTPHOSRcuDigitMakerComponent.h \
 		  AliHLTPHOSDigit.h \
-		  AliHLTPHOSChannelCounter.h \
 		  AliHLTPHOSTreeMakerComponent.h \
 		  AliHLTPHOSRcuTreeMakerComponent.h \
 		  AliHLTPHOSTreeMaker.h \
@@ -47,10 +46,8 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSBaselineAnalyzerComponent.h \
 		  AliHLTPHOSBaseline.h \
 		  AliHLTPHOSConfig.h \
-		  AliHLTPHOSAltroConfig.h \
-		  AliHLTPHOSSandboxComponent.h \
-		  AliHLTPHOSMIPCounter.h \
-		  AliHLTPHOSMIPCounterComponent.h 
+		  AliHLTPHOSAltroConfig.h
+
 #				  AliHLTPHOSNoiseMapper.h \
 #				  AliHLTPHOSNoiseMapperComponent.h
 
@@ -59,9 +56,7 @@ MODULE_SRCS:=	  $(CLASS_HDRS:.h=.cxx)
 MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSCommonDefs.h \
 		  AliHLTPHOSConstants.h \
-		  AliHLTPHOSRecPointListDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
-		  AliHLTPHOSClusterDataStruct.h \
 	 	  AliHLTPHOSRawAnalyzer.h \
 		  AliHLTPHOSDefinitions.h \
 		  AliHLTPHOSModuleCellEnergyDataStruct.h\
@@ -74,9 +69,7 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRcuChannelDataStruct.h \
 		  AliHLTPHOSValidChannelDataStruct.h \
-		  AliHLTPHOSClusterDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
-		  AliHLTPHOSRecPointListDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
