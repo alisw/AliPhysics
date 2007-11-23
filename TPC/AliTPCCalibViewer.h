@@ -20,6 +20,7 @@
 
 #include "AliMathBase.h"
 class TLegend;
+class TGraph;
 
 
 class AliTPCCalibViewer : public TObject {
@@ -44,9 +45,11 @@ public:
    Int_t  DrawHisto1D(const char* drawCommand,       Int_t sector, const char* cuts = 0, const char *sigmas = "2;4;6", Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE) const; // draws 1d histograms and superimposes mean, median, ltm and several sigma cuts
    Int_t  DrawHisto1D(const char* drawCommand, const char* sector, const char* cuts = 0, const char *sigmas = "2;4;6", Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE) const; // draws 1d histograms and superimposes mean, median, ltm and several sigma cuts
    Int_t     SigmaCut(const char* drawCommand,       Int_t sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, Bool_t pm = kFALSE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws fraction of used pads over different sigma cuts
+   Int_t  SigmaCutNew(const char* drawCommand, const char* sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, Bool_t pm = kFALSE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws fraction of used pads over different sigma cuts
    Int_t     SigmaCut(const char* drawCommand, const char* sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, Bool_t pm = kFALSE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws fraction of used pads over different sigma cuts
    Int_t    Integrate(const char* drawCommand, const char* sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
    Int_t    Integrate(const char* drawCommand,       Int_t sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
+   Int_t IntegrateOld(const char* drawCommand, const char* sector, const char* cuts = 0, Float_t sigmaMax = 5, Bool_t plotMean = kTRUE, Bool_t plotMedian = kTRUE, Bool_t plotLTM = kTRUE, const char *sigmas = "", Float_t sigmaStep = -1) const;    // draws an integrated histogram
    
    AliTPCCalPad* GetCalPad(const char* desiredData, char* cuts = "", char* calPadName = "NoName") const;     // returns an AliTPCCalPad object containing the specified data with cuts applied
    AliTPCCalROC* GetCalROC(const char* desiredData, UInt_t sector, char* cuts = "") const;  // returns an AliTPCCalROC object containing the specified data for sector with cuts applied
@@ -57,6 +60,8 @@ public:
    
    static void MakeTreeWithObjects(const char * fileName, TObjArray * array, const char * mapFileName = 0);
    static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
+   static void MakeTree(const char *outPutFileName, const Char_t *inputFileName, AliTPCCalPad *outlierPad = 0, Float_t ltmFraction = 0.9, const char *mapFileName = "$ALICE_ROOT/TPC/Calib/MapCalibrationObjects.root");
+   static void CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
    
    TFriendElement* AddReferenceTree(const char* filename, const char* treename = "calPads", const char* refname = "R");
    TFriendElement* AddFriend(const char* treename, const char* filename) {return fTree->AddFriend(treename, filename);};
@@ -87,9 +92,13 @@ protected:
    Bool_t fTreeMustBeDeleted;  // decides weather the tree must be deleted in destructor or not 
    
    void DrawLines(TH1F *cutHistoMean, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const;
+   void DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const;
   
    
    ClassDef(AliTPCCalibViewer,1)    //  TPC calibration viewer class
 };
 
 #endif
+
+
+

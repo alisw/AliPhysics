@@ -37,6 +37,7 @@
 // ROOT includes 
 //
 #include <iostream>
+#include <fstream>
 #include <TString.h>
 #include <TRandom.h>
 #include <TLegend.h>
@@ -51,6 +52,14 @@
 #include "TTreeStream.h"
 #include "TFile.h"
 #include "TKey.h"
+#include "TGraph.h"
+#include "AliTPCCalibPulser.h"
+#include "AliTPCCalibPedestal.h"
+#include "AliTPCCalibCE.h"
+// #include "TObjArray.h"
+// #include "TObjString.h"
+// #include "TString.h"
+// #include "AliTPCCalPad.h"
 
 
 //
@@ -596,6 +605,99 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
    return 1;
 }
 
+Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
+   //
+   // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
+   // around the mean/median/LTM
+   // with drawCommand, sector and cuts you specify your input data, see EasyDraw
+   // sigmaMax: up to which sigma around the mean/median/LTM the histogram is generated (in units of sigma)
+   // sigmaStep: the binsize of the generated histogram
+   // plotMean/plotMedian/plotLTM: specifies where to put the center
+   //
+  
+   // Double_t ltmFraction = 0.8;  //unused
+   // avoid compiler warnings:
+   sigmaMax = sigmaMax;
+   pm = pm;
+   sigmaStep = sigmaStep;
+   
+   TString drawStr(drawCommand);
+   drawStr += " >> tempHist";
+   
+   Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
+   TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
+   TGraph *cutGraphMean   = 0;
+   // TGraph *cutGraphMedian = 0;
+   // TGraph *cutGraphLTM    = 0;
+   Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
+   Int_t    *index  = new Int_t[entries];
+   Float_t  *xarray = new Float_t[entries];
+   Float_t  *yarray = new Float_t[entries];
+   TMath::Sort(entries, values, index, kFALSE);
+   
+   Double_t mean = TMath::Mean(entries, values);
+   // Double_t median = TMath::Median(entries, values);
+   Double_t sigma = TMath::RMS(entries, values);
+   
+   TLegend * legend = new TLegend(.7,.7, .99, .99, "Cumulative");
+   fListOfObjectsToBeDeleted->Add(legend);
+   
+   // parse sigmas string
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TVectorF nsigma(sigmasTokens->GetEntriesFast());
+   for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
+      TString str(((TObjString*)sigmasTokens->At(i))->GetString());
+      Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
+      nsigma[i] = sig;
+   }
+   
+   if (plotMean) {
+      for (Int_t i = 0; i < entries; i++) {
+         xarray[i] = TMath::Abs(values[index[i]] - mean) / sigma; 
+         yarray[i] = float(i) / float(entries);
+      }
+      cutGraphMean = new TGraph(entries, xarray, yarray);
+      if (cutGraphMean) {
+         fListOfObjectsToBeDeleted->Add(cutGraphMean);
+         cutGraphMean->SetLineColor(kRed);
+         legend->AddEntry(cutGraphMean, "Mean", "l");
+         cutGraphMean->SetTitle(Form("%s, Cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         cutGraphMean->Draw("alu");
+         DrawLines(cutGraphMean, nsigma, legend, kRed, kTRUE);
+      }
+   }
+   /*
+   if (plotMedian) {
+      cutHistoMedian = AliTPCCalibViewer::SigmaCut(htemp, median, sigma, sigmaMax, sigmaStep, pm);
+      if (cutHistoMedian) {
+         fListOfObjectsToBeDeleted->Add(cutHistoMedian);
+         cutHistoMedian->SetLineColor(kBlue);
+         legend->AddEntry(cutHistoMedian, "Median", "l");
+         cutHistoMedian->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && cutHistoMean) cutHistoMedian->Draw("same");
+            else cutHistoMedian->Draw();
+         DrawLines(cutHistoMedian, nsigma, legend, kBlue, pm);
+      }  // if (cutHistoMedian)
+   }
+   if (plotLTM) {
+      Double_t ltmRms = 0;
+      Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
+      cutHistoLTM = AliTPCCalibViewer::SigmaCut(htemp, ltm, ltmRms, sigmaMax, sigmaStep, pm);
+      if (cutHistoLTM) {
+         fListOfObjectsToBeDeleted->Add(cutHistoLTM);
+         cutHistoLTM->SetLineColor(kGreen+2);
+         legend->AddEntry(cutHistoLTM, "LTM", "l");
+         cutHistoLTM->SetTitle(Form("%s, cumulative; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && cutHistoMean || plotMedian && cutHistoMedian) cutHistoLTM->Draw("same");
+            else cutHistoLTM->Draw();
+         DrawLines(cutHistoLTM, nsigma, legend, kGreen+2, pm);
+      }
+   }*/
+   if (!plotMean && !plotMedian && !plotLTM) return -1;
+   legend->Draw();
+   return 1;
+}
+
 
 
 
@@ -622,7 +724,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, 
 }
 
 
-Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
+Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
    //
    // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
    // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
@@ -706,6 +808,109 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
 }
 
 
+Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
+   //
+   // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
+   // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
+   // sigmaMax: up to which sigma around the mean/median/LTM you want to integrate 
+   // if "igma == 0" and "sigmaMax == 0" the whole histogram is integrated
+   // "sigmaStep": the binsize of the generated histogram, -1 means, that the maximal reasonable stepsize is used
+   // The actual work is done on the array.
+   /* Begin_Latex 
+         f(x, #mu, #sigma)     #Rightarrow       S(t, #mu, #sigma) = #frac{#int_{-#infty}^{#mu + t #sigma} f(x, #mu, #sigma) dx}{ #int_{-#infty}^{+#infty} f(x, #mu, #sigma) dx }
+      End_Latex  
+   */
+   
+   Double_t ltmFraction = 0.8;
+   // avoid compiler warnings:
+   sigmaMax = sigmaMax;
+   sigmaStep = sigmaStep;
+   
+   TString drawStr(drawCommand);
+   drawStr += " >> tempHist";
+   
+   Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts, "goff");
+   TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
+   TGraph *integralGraphMean   = 0;
+   TGraph *integralGraphMedian = 0;
+   TGraph *integralGraphLTM    = 0;
+   Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
+   Int_t    *index  = new Int_t[entries];
+   Float_t  *xarray = new Float_t[entries];
+   Float_t  *yarray = new Float_t[entries];
+   TMath::Sort(entries, values, index, kFALSE);
+   
+   Double_t mean = TMath::Mean(entries, values);
+   Double_t median = TMath::Median(entries, values);
+   Double_t sigma = TMath::RMS(entries, values);
+   
+   // parse sigmas string
+   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
+   TVectorF nsigma(sigmasTokens->GetEntriesFast());
+   for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
+      TString str(((TObjString*)sigmasTokens->At(i))->GetString());
+      Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
+      nsigma[i] = sig;
+   }
+  
+   TLegend * legend = new TLegend(.7,.7, .99, .99, "Integrated histogram");
+   fListOfObjectsToBeDeleted->Add(legend);
+  
+   if (plotMean) {
+      for (Int_t i = 0; i < entries; i++) {
+         xarray[i] = (values[index[i]] - mean) / sigma; 
+         yarray[i] = float(i) / float(entries);
+      }
+      integralGraphMean = new TGraph(entries, xarray, yarray);
+      if (integralGraphMean) {
+         fListOfObjectsToBeDeleted->Add(integralGraphMean);
+         integralGraphMean->SetLineColor(kRed);
+         legend->AddEntry(integralGraphMean, "Mean", "l");
+         integralGraphMean->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         integralGraphMean->Draw("alu");
+         DrawLines(integralGraphMean, nsigma, legend, kRed, kTRUE);
+      }
+   }
+   if (plotMedian) {
+      for (Int_t i = 0; i < entries; i++) {
+         xarray[i] = (values[index[i]] - median) / sigma; 
+         yarray[i] = float(i) / float(entries);
+      }
+      integralGraphMedian = new TGraph(entries, xarray, yarray);
+      if (integralGraphMedian) {
+         fListOfObjectsToBeDeleted->Add(integralGraphMedian);
+         integralGraphMedian->SetLineColor(kBlue);
+         legend->AddEntry(integralGraphMedian, "Median", "l");
+         integralGraphMedian->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && integralGraphMean) integralGraphMedian->Draw("samelu");
+            else integralGraphMedian->Draw("alu");
+         DrawLines(integralGraphMedian, nsigma, legend, kBlue, kTRUE);
+      }
+   }
+   if (plotLTM) {
+      Double_t ltmRms = 0;
+      Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
+      for (Int_t i = 0; i < entries; i++) {
+         xarray[i] = (values[index[i]] - ltm) / ltmRms; 
+         yarray[i] = float(i) / float(entries);
+      }
+      integralGraphLTM = new TGraph(entries, xarray, yarray);
+      if (integralGraphLTM) {
+         fListOfObjectsToBeDeleted->Add(integralGraphLTM);
+         integralGraphLTM->SetLineColor(kGreen+2);
+         legend->AddEntry(integralGraphLTM, "LTM", "l");
+         integralGraphLTM->SetTitle(Form("%s, integrated; Multiples of #sigma; Fraction of included data", htemp->GetTitle()));
+         if (plotMean && integralGraphMean || plotMedian && integralGraphMedian) integralGraphLTM->Draw("samelu");
+            else integralGraphLTM->Draw("alu");
+         DrawLines(integralGraphLTM, nsigma, legend, kGreen+2, kTRUE);
+      }
+   }
+   if (!plotMean && !plotMedian && !plotLTM) return -1;
+   legend->Draw();
+   return entries;
+}
+
+
 void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
    // 
    // Private function for SigmaCut(...) and Integrate(...)
@@ -761,6 +966,58 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
    }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
 }
 
+
+void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
+   // 
+   // Private function for SigmaCut(...) and Integrate(...)
+   // Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
+   // 
+   
+   // start to draw the lines, loop over requested sigmas
+   char c[500];
+   for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+      if (!pm) { 
+         TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
+         fListOfObjectsToBeDeleted->Add(lineUp);
+         lineUp->SetLineColor(color);
+         lineUp->SetLineStyle(2 + i);
+         lineUp->Draw();
+         TLine* lineLeft = new TLine(nsigma[i], graph->Eval(nsigma[i]), 0, graph->Eval(nsigma[i]));
+         fListOfObjectsToBeDeleted->Add(lineLeft);
+         lineLeft->SetLineColor(color);
+         lineLeft->SetLineStyle(2 + i);
+         lineLeft->Draw();
+         sprintf(c, "Fraction(%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
+         legend->AddEntry(lineLeft, c, "l");
+      }
+      else { // if (pm)
+         TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
+         fListOfObjectsToBeDeleted->Add(lineUp1);
+         lineUp1->SetLineColor(color);
+         lineUp1->SetLineStyle(2 + i);
+         lineUp1->Draw();
+         TLine* lineLeft1 = new TLine(nsigma[i], graph->Eval(nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(nsigma[i]));
+         fListOfObjectsToBeDeleted->Add(lineLeft1);
+         lineLeft1->SetLineColor(color);
+         lineLeft1->SetLineStyle(2 + i);
+         lineLeft1->Draw();
+         sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
+         legend->AddEntry(lineLeft1, c, "l");
+         TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], graph->Eval(-nsigma[i]));
+         fListOfObjectsToBeDeleted->Add(lineUp2);
+         lineUp2->SetLineColor(color);
+         lineUp2->SetLineStyle(2 + i);
+         lineUp2->Draw();
+         TLine* lineLeft2 = new TLine(-nsigma[i], graph->Eval(-nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(-nsigma[i]));
+         fListOfObjectsToBeDeleted->Add(lineLeft2);
+         lineLeft2->SetLineColor(color);
+         lineLeft2->SetLineStyle(2 + i);
+         lineLeft2->Draw();
+         sprintf(c, "Fraction(-%f #sigma) = %f",nsigma[i], graph->Eval(-nsigma[i]));
+         legend->AddEntry(lineLeft2, c, "l");
+      }
+   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
+}
 
 
 
@@ -1649,4 +1906,183 @@ void AliTPCCalibViewer::MakeTree(const char * fileName, TObjArray * array, const
       delete[] mapNames;
    }
 }
+
+
+void AliTPCCalibViewer::MakeTree(const char *outPutFileName, const Char_t *inputFileName, AliTPCCalPad *outlierPad, Float_t ltmFraction, const char *mapFileName ){
+   // 
+   // Function to create a calibration Tree with all available information.
+   // See also documentation to MakeTree   
+   // the file "inputFileName" must be in the following format (see also CreateObjectList):
+   // (each colum separated by tabs, "dependingOnType" can have 2 or 3 colums)
+   // 
+   // type	path	dependingOnType
+   // 
+   // type == "CE":
+   // dependingOnType = CETmean	CEQmean	CETrms
+   // 
+   // type == "Pulser":
+   // dependingOnType = PulserTmean	PulsterQmean	PulserTrms
+   // 
+   // type == "Pedestals":
+   // dependingOnType = Pedestals	Noise
+   // 
+   // type == "CalPad":
+   // dependingOnType = NameInFile	NameToWriteToFile
+   // 
+   // 
+   TObjArray objArray;
+   CreateObjectList(inputFileName, &objArray);
+   MakeTree(outPutFileName, &objArray, mapFileName, outlierPad, ltmFraction);   
+}
+
+void AliTPCCalibViewer::CreateObjectList(const Char_t *filename, TObjArray *calibObjects){
+   // 
+   // Function to create a TObjArray out of a given file
+   // the file must be in the following format:
+   // (each colum separated by tabs, "dependingOnType" can have 2 or 3 colums)
+   // 
+   // 
+   // type	path	dependingOnType
+   // 
+   // type == "CE":
+   // dependingOnType = CETmean	CEQmean	CETrms
+   // 
+   // type == "Pulser":
+   // dependingOnType = PulserTmean	PulsterQmean	PulserTrms
+   // 
+   // type == "Pedestals":
+   // dependingOnType = Pedestals	Noise
+   // 
+   // type == "CalPad":
+   // dependingOnType = NameInFile	NameToWriteToFile
+   // 
+   // 
+   // 
+   if ( calibObjects == 0x0 ) return;
+   ifstream in;
+   in.open(filename);
+   if ( !in.is_open() ){
+      fprintf(stderr,"Error: cannot open list file '%s'", filename);
+      return;
+   }
+   
+   AliTPCCalPad *calPad=0x0;
+   
+   TString sFile;
+   sFile.ReadFile(in);
+   in.close();
+   
+   TObjArray *arrFileLine = sFile.Tokenize("\n");
+   TIter nextLine(arrFileLine);
+   
+   TObjString *sObjLine = 0x0;
+   while ( (sObjLine = (TObjString*)nextLine()) ){
+      TString sLine(sObjLine->GetString());
+      
+      TObjArray *arrCol = sLine.Tokenize("\t");
+      Int_t nCols = arrCol->GetEntriesFast();
+      
+      TObjString *sObjType     = (TObjString*)(arrCol->At(0));
+      TObjString *sObjFileName = (TObjString*)(arrCol->At(1));
+      TObjString *sObjName = 0x0;
+      
+      if ( !sObjType || !sObjFileName ) continue;
+      TString sType(sObjType->GetString());
+      TString sFileName(sObjFileName->GetString());
+      printf("Type %s, opening %s \n", sType.Data(), sFileName.Data());
+      TFile *fIn = TFile::Open(sFileName);
+      if ( !fIn ){
+         fprintf(stderr,"File not found: '%s'", sFileName.Data());
+         continue;
+      }
+      
+      if ( sType == "CE" ){  // next three colums are the names for CETmean, CEQmean and CETrms
+         AliTPCCalibCE *ce = (AliTPCCalibCE*)fIn->Get("AliTPCCalibCE");
+         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadT0());         
+         if (nCols > 2) {  // check, if the name is provided
+            sObjName = (TObjString*)(arrCol->At(2));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("CETmean","CETmean");
+         calibObjects->Add(calPad);
+         
+         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadQ());         
+         if (nCols > 3) {  // check, if the name is provided
+            sObjName = (TObjString*)(arrCol->At(3));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("CEQmean","CEQmean");
+         calibObjects->Add(calPad);        
+         
+         calPad = new AliTPCCalPad((TObjArray*)ce->GetCalPadRMS());
+         if (nCols > 4) {  // check, if the name is provided
+            sObjName = (TObjString*)(arrCol->At(4));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("CETrms","CETrms");
+         calibObjects->Add(calPad);         
+                  
+      } else if ( sType == "Pulser") {
+         AliTPCCalibPulser *sig = (AliTPCCalibPulser*)fIn->Get("AliTPCCalibPulser");
+         
+         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadT0());         
+         if (nCols > 2) {
+            sObjName = (TObjString*)(arrCol->At(2));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("PulserTmean","PulserTmean");
+         calibObjects->Add(calPad);
+         
+         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadQ());         
+         if (nCols > 3) {
+            sObjName = (TObjString*)(arrCol->At(3));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("PulserQmean","PulserQmean");
+         calibObjects->Add(calPad);        
+         
+         calPad = new AliTPCCalPad((TObjArray*)sig->GetCalPadRMS());
+         if (nCols > 4) {
+            sObjName = (TObjString*)(arrCol->At(4));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("PulserTrms","PulserTrms");
+         calibObjects->Add(calPad);         
+      
+      } else if ( sType == "Pedestals") {
+         AliTPCCalibPedestal *ped = (AliTPCCalibPedestal*)fIn->Get("AliTPCCalibPedestal");
+         
+         calPad = new AliTPCCalPad((TObjArray*)ped->GetCalPadPedestal());         
+         if (nCols > 2) {
+            sObjName = (TObjString*)(arrCol->At(2));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("Pedestals","Pedestals");
+         calibObjects->Add(calPad);
+         
+         calPad = new AliTPCCalPad((TObjArray*)ped->GetCalPadRMS());         
+         if (nCols > 3) {
+            sObjName = (TObjString*)(arrCol->At(3));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         else calPad->SetNameTitle("Noise","Noise");
+         calibObjects->Add(calPad);        
+     
+      } else if ( sType == "CalPad") {
+         if (nCols > 2) sObjName = (TObjString*)(arrCol->At(2));
+         else continue;
+         calPad = new AliTPCCalPad(*(AliTPCCalPad*)fIn->Get(sObjName->GetString().Data()));
+         if (nCols > 3) {
+            sObjName = (TObjString*)(arrCol->At(3));
+            calPad->SetNameTitle(sObjName->GetString().Data(), sObjName->GetString().Data());
+         }
+         calibObjects->Add(calPad);
+      } else {
+         fprintf(stderr,"Undefined Type: '%s'",sType.Data());
+      }
+      delete fIn;
+   }
+}
+
+
 

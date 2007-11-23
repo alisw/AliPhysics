@@ -65,6 +65,7 @@ public:
    void DoNewSelection();                    // decides whether to redraw if user makes another selection
    void DoDraw();                            // main method for drawing according to user selection
    void DoFit();                             // main method for fitting
+   void SavePicture();                       // method for saving
    void GetMinMax();                         // Read current Min & Max from the plot and set it to fTxtSetMin & fTxtSetMax
    void ChangeSector();                      // function that is called, when the number of the sector is changed
    void AddFitFunction() const;              // adds the last fit function to the normalization list
@@ -80,6 +81,9 @@ protected:
    TGTab               *ftabLeft;            // Tabs on the left side for plot options
    TGCompositeFrame    *ftabLeft0;           // Tab 0 on the left side for general plot options
    TGCompositeFrame    *ftabLeft1;           // Tab 1 on the left side for 1D plot options
+   TGTab               *ftabRight;           // Tabs on the right side
+   TGCompositeFrame    *fTabRight0;          // Tab 0 on the right side for basic
+   TGCompositeFrame    *fTabRight1;          // Tab 1 on the right side for advanced
    TGCompositeFrame    *fContRight;          // container for GUI elements on right side
    TGCompositeFrame    *fContCenter;         // container for GUI elements at the center
    TGCompositeFrame    *fContPlotOpt;        // container for plot options GUI elements
@@ -117,11 +121,13 @@ protected:
    TGComboBox          *fComboMethod;        // normalization methods dropdown box
    TGListBox           *fListNormalization;  // listbox with possible normalization variables
    TGComboBox          *fComboCustom;        // combo box for custom draw commands
+   TGLabel             *fLblCustomDraw;      // custom draw labal
    TGCheckButton       *fChkAddDrawOpt;      // additional draw options check box
    TGNumberEntry       *fNmbSector;          // number entry box for specifying the sector
    TGLabel             *fLblSector;          // label that shows the active sector
    TGCheckButton       *fChkCutZero;         // cut zeros check box
    TGCheckButton       *fChkAddCuts;         // additional cuts check box
+   TGLabel             *fLblAddCuts;         // additional cuts label
    TGComboBox          *fComboAddCuts;       // additional cuts combo box
    TGComboBox          *fComboCustomFit;     // custom fit combo box
    TGCheckButton       *fChkSetMax;          // Set maximum check box
@@ -165,6 +171,19 @@ protected:
    TGCompositeFrame    *fContStatKurt;       // container for kurtosis and its error in stat opt
    TGCheckButton       *fChkStatKurtosis;    // checkbox to display kurtosis in statistic legend
    TGCheckButton       *fChkStatKurtosisPM;  // checkbox to display kurtosis error in statistic legend
+   TGGroupFrame        *fContLabeling;       // groupframe container for labeling
+   TGCheckButton       *fChkLabelTitle;      // checkbox to display specified title
+   TGTextEntry         *fTxtLabelTitle;      // text box to specify title
+   TGCheckButton       *fChkLabelXaxis;      // checkbox to display specified xaxis label
+   TGTextEntry         *fTxtLabelXaxis;      // text box to specify xaxis label
+   TGCheckButton       *fChkLabelYaxis;      // checkbox to display specified yaxis label
+   TGTextEntry         *fTxtLabelYaxis;      // text box to specify yaxis label
+   TGCheckButton       *fChkLabelGetAuto;    // checkbox to get labels atuomatically from plot
+   TGGroupFrame        *fContSave;           // container for save-button
+   TGButton            *fBtnSave;            // Save button
+   TGCompositeFrame    *fContAddSaveOpt;     // container for additional save options
+   TGCheckButton       *fChkAddSaveOpt;      // checkbox for additional save options
+   TGComboBox          *fComboAddSaveOpt;    // combobox for additional save options
    
    void Initialize(char* fileName);          // initializes the GUI with default settings and opens tree for drawing
    
