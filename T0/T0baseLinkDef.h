@@ -13,6 +13,8 @@
 #pragma link C++ class  AliT0digit+;
 #pragma link C++ class  AliT0Trigger+;
 #pragma link C++ class  AliT0CalibData+;
+#pragma link C++ class  AliT0CalibWalk+;
+#pragma link C++ class  AliT0CalibTimeEq+;
 #pragma link C++ class  AliT0Parameters+;
 #pragma link C++ class  AliT0LookUpValue+;
 #pragma link C++ class  AliT0LookUpKey+;
