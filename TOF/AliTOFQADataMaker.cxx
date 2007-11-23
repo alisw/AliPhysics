@@ -12,11 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
-  Produces the data needed to calculate the TOF quality assurance. 
-  QA objects are 1 & 2 Dimensional histograms.
-  author: S.Arcelli
-*/
+
+///////////////////////////////////////////////////////////////////////
+//                                                                   //
+//  Produces the data needed to calculate the TOF quality assurance. //
+//  QA objects are 1 & 2 Dimensional histograms.                     //
+//  author: S.Arcelli                                                //
+//                                                                   //
+///////////////////////////////////////////////////////////////////////
 
 #include <TClonesArray.h>
 #include <TFile.h> 

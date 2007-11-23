@@ -16,11 +16,14 @@
 
 /* $Id$ */
 
-/*
-  Checks the quality assurance. 
-  By analysis of the histograms & comparing with reference data
-  S.Arcelli
-*/
+/////////////////////////////////////////////////////////////////////
+//                                                                 //
+//  Checks the quality assurance.                                  //
+//  By analysis of the histograms & comparing with reference data  //
+//  S.Arcelli                                                      //
+//                                                                 //
+/////////////////////////////////////////////////////////////////////
+
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliQAChecker.h"

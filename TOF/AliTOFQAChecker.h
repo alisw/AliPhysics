@@ -3,11 +3,13 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-  Checks the quality assurance. 
-  By analysis of the histograms & comparing with reference data
-  Author S.Arcelli
-*/
+/////////////////////////////////////////////////////////////////////
+//                                                                 // 
+//  Checks the quality assurance.                                  //
+//  By analysis of the histograms & comparing with reference data  //
+//  Author S.Arcelli                                               //
+//                                                                 // 
+/////////////////////////////////////////////////////////////////////
 
 class TFile ; 
 class TH1F ; 
