@@ -105,7 +105,7 @@ public:
   Int_t GetPort() { return fPort; }
 
   /** Get name of this source 
-   * @return     #include "TString.h"      name
+   * @return           name
    */
   TString GetSourceName() { return fSourceName; }
 

@@ -34,8 +34,8 @@ class AliESDEvent;
  * configurations to be run.
  *
  * The default component libraries which are loaded through the initialization
- * are determined by the @ref kHLTDefaultLibs array. The library loading can
- * be overridden by an option to the AliHLTReconstructor through the
+ * are determined by the @ref AliHLTSystem::fgkHLTDefaultLibs array. The library
+ * loading can be overridden by an option to the AliHLTReconstructor through the
  * <tt>SetOption</tt> method of <tt>AliReconstruction</tt>, e.g.
  * <pre>
  * AliReconstruction rec;
