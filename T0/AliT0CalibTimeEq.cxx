@@ -107,19 +107,22 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 
 
 //________________________________________________________________
-void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, char* name2, char* canv, Int_t npeaks, Double_t sigma)
+void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, char* name2, char* canv, Int_t npeaks, Double_t sigma, const char* filePhys)
 {
-  TFile *gFile = TFile::Open("daq1Phys.root");
+  TFile *gFile = TFile::Open(filePhys);
   gSystem->Load("libSpectrum");
   npeaks = 20;
   sigma=3.;
   Bool_t down=false;
   Int_t index[20];
+  TCanvas *c1 = new TCanvas(canv, canv,0,48,1280,951);
+  c1->Divide(4,3);
   Char_t buf1[15];
   Char_t temp[10];
   Float_t p[12][3]={0.,0.,0.};
   for (Int_t i=12; i<24; i++)
     {
+      c1->cd(i+1);
       sprintf(buf1,name1);
       sprintf(temp,"%i",i+1);
       strcat (buf1,temp);
@@ -136,18 +139,27 @@ void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, char* name2, char* canv,
         cfd->GetXaxis()->SetRange((Int_t)hmin-20,(Int_t)hmax+20);
         TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
               cfd->Fit("g1","IR");
-	      
-	      for(Int_t j =0; j<3; j++){
+
+        for(Int_t j =0; j<3; j++){
                 p[i][j] = g1->GetParameter(j);
                 SetCFDvalue(i, j, p[i][j]);
-	      }
-	      SetCFDvalue(i, 3, hmin);
-	      SetCFDvalue(i, 4, hmax);
-	      SetTimeEq(i,p[i][2]);
-      }
+        }
+        SetCFDvalue(i, 3, hmin);
+        SetCFDvalue(i, 4, hmax);
+        SetTimeEq(i,p[i][2]);
+        // if(p[i][0]==0)
+        // cfd->Draw();
+
+        // cfd->Draw();
+      } // else
+        // cfd->Draw();
     }
- gFile->Close();
+  // TFile *onl = new TFile("onl.root","RECREATE");
+  // this->Write("Values");
+  // onl->Close();
+  // delete onl;
+  gFile->Close();
   delete gFile;
 }
 
- 
+

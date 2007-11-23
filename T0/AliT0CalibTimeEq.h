@@ -26,14 +26,14 @@ class AliT0CalibTimeEq: public TNamed {
   void     SetTimeDelayTVD(Int_t r=150)   { fTimeDelayTVD = r; };
   Float_t  GetTimeDelayTVD()   { return fTimeDelayTVD; }
   
-  void ComputeOnlineParams(char* name1, char* name2, char* canv, Int_t npeaks, Double_t sigma);
+  void ComputeOnlineParams(char* name1, char* name2, char* canv, Int_t npeaks, Double_t sigma, const char* filePhys);
   Float_t  GetCFDvalue(Int_t channel,Int_t number)        const {return fCFDvalue[channel][number];}
   Float_t* GetCFDvalue()          const {return (float*)fCFDvalue;}
   Float_t  GetTimeEq(Int_t channel)        const {return fTimeEq[channel];}
   Float_t* GetTimeEq()          const {return (float*)fTimeEq;}
   void SetCFDvalue(Int_t channel, Int_t number, Float_t val) {fCFDvalue[channel][number]=val;}
   void SetTimeEq(Int_t channel, Float_t val) {fTimeEq[channel]=val;}
-   
+  
 
  protected:
 

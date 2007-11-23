@@ -45,8 +45,7 @@ Preliminary test version (T.Malkiewicz)
 ClassImp(AliT0Preprocessor)
 
 //____________________________________________________
-AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreprocessor("T00", shuttle),
-fData(0)
+AliT0Preprocessor::AliT0Preprocessor(AliShuttleInterface* shuttle) : AliPreprocessor("T00", shuttle), fData(0)
 {
   //constructor
 }
@@ -83,20 +82,18 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
 	Bool_t resultDCSStore=kFALSE;
 	Bool_t resultLaser=kFALSE;
 	Bool_t resultOnline=kFALSE;  
-
-	// processing DCS
-	
-	if(!dcsAliasMap) 
-	{
-	  Log("No DCS input data");	
-	  return 1;
-	}
-     	else
-	{ 
-	  resultDCSMap=fData->ProcessData(*dcsAliasMap);
-	  if(!resultDCSMap)
-	  {
-	    Log("Error when processing DCS data");
+     
+        if(!dcsAliasMap)
+        {
+          Log("No DCS input data");
+          return 1;
+        }
+        else
+        {
+          resultDCSMap=fData->ProcessData(*dcsAliasMap);
+          if(!resultDCSMap)
+          {
+            Log("Error when processing DCS data");
             return 2;// return error Code for processed DCS data not stored
           }
           else
@@ -108,121 +105,90 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
             AliInfo("Storing DCS Data");
             resultDCSStore = Store("Calib","DCSData",fData, &metaDataDCS);
             if (!resultDCSStore)
-	    {
+            {
               Log("Some problems occurred while storing DCS data results in ReferenceDB");
               return 2;// return error Code for processed DCS data not stored
             }
- 
-	  }	
-	}
 
-	// processing DAQ
+          }
+        }
 
-	TString runType = GetRunType();
+        // processing DAQ
 
-	if(runType == "T0_STANDALONE_LASER") 
-	{
-	  TList* list = GetFileSources(kDAQ, "LASER");
+        TString runType = GetRunType();
+
+        if(runType == "T0_STANDALONE_LASER")
+        {
+          TList* list = GetFileSources(kDAQ, "LASER");
           if (list)
           {
             TIter iter(list);
             TObjString *source;
-	    while ((source = dynamic_cast<TObjString *> (iter.Next())))
+            while ((source = dynamic_cast<TObjString *> (iter.Next())))
             {
               const char *laserFile = GetFile(kDAQ, "LASER", source->GetName());
               if (laserFile)
               {
                 Log(Form("File with Id TIME found in source %s!", source->GetName()));
-	        AliT0CalibWalk *laser = new AliT0CalibWalk();
-	        // laser->Reset();
-	        laser->MakeWalkCorrGraph(laserFile);
- 	        AliCDBMetaData metaData;
+                AliT0CalibWalk *laser = new AliT0CalibWalk();
+                // laser->Reset();
+                laser->MakeWalkCorrGraph(laserFile);
+                AliCDBMetaData metaData;
                 metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Walk correction from laser runs.");
                 resultLaser = Store("Calib","Data", laser, &metaData);
                 delete laser;
-              } 
+              }
               else
               {
-                Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
+                Log(Form("Could not find file with Id LASER in source %s!", source->GetName()));
                 return 1;
               }
             }
             if (!resultLaser)
-	    {
+            {
               Log("No Laser Data stored");
               return 3;//return error code for failure in storing Laser Data
             }
- 	  }	
-   	} 
-	else if(runType == "PHYSICS") 
-	{
-	    AliT0CalibTimeEq *online = new AliT0CalibTimeEq();
-            online->Reset();
-	    online->ComputeOnlineParams("CFD13-CFD","", "c1", 20, 1.);
-	    AliCDBMetaData metaData;
-            metaData.SetBeamPeriod(0);
-            metaData.SetResponsible("Tomek&Michal");
-            metaData.SetComment("Time equalizing result.");
-
-            resultOnline = Store("Calib","Data", online, &metaData);
-            delete online;
-	    if (!resultOnline)
+          }
+        }
+        else if(runType == "PHYSICS")
+        {
+          TList* listPhys = GetFileSources(kDAQ, "LASER");
+          if (listPhys)
+          {
+            TIter iter(listPhys);
+            TObjString *sourcePhys;
+            while ((sourcePhys = dynamic_cast<TObjString *> (iter.Next())))
+            {
+              const char *filePhys = GetFile(kDAQ, "PHYSICS", sourcePhys->GetName());
+              if (filePhys)
+              {
+                AliT0CalibTimeEq *online = new AliT0CalibTimeEq();
+                online->Reset();
+                online->ComputeOnlineParams("CFD13-CFD","", "c1", 20, 1., filePhys);
+                AliCDBMetaData metaData;
+                metaData.SetBeamPeriod(0);
+                metaData.SetResponsible("Tomek&Michal");
+                metaData.SetComment("Time equalizing result.");
+                resultOnline = Store("Calib","Data", online, &metaData);
+                delete online;
+              }
+              else
+              {
+                Log(Form("Could not find file with Id PHYSICS in source %s!", sourcePhys->GetName()));
+                return 1;
+              }
+            }
+            if (!resultOnline)
             {
               Log("No Laser Data stored");
               return 4;//return error code for failure in storing OCDB Data
             }
-	
-	}
-       
-
-/* commented for testing, TM 22.11.2007
-    	  
-	while ((source = dynamic_cast<TObjString *> (iter.Next()))) 
-	  {
-	    const char* TimefileName = GetFile(kDAQ, "TIME", source->GetName());
-	    if (TimefileName)
-	    {
-	      Log(Form("File with Id TIME found in source %s!", source->GetName()));
-	      TFile *file = TFile::Open(TimefileName);
-	      if(!file || !file->IsOpen()) 
-	      {
-		Log(Form("Error opening file with Id TIME from source %s!", source->GetName()));
-		return 1;
-	      } 
-	      AliT0Dqclass *tempdata = dynamic_cast<AliT0Dqclass*> (file->Get("Time"));
-	      if (!tempdata) 
-	      {
-	        Log("Could not find key \"Time\" in DAQ file!");
-	        return 1;
-	      }
-	      for(Int_t i=0;i<24;i++)
-	      {
-	        numbers[i] = tempdata->GetTime(i);
-					//	printf("\nnumbers: %f\n",numbers[i]);
-	      }
-	      file->Close();
-	      delete tempdata;
-	    } 
-            else 
-	    {
-	      Log(Form("Could not find file with Id TIME in source %s!", source->GetName()));
-	      return 1;
-	    }
-	//		calibdata->SetTime(numbers, hv);
-	//		calibdata->Print();
-	//		calibdata->FitGauss();
-	  } 
-	} 
-        else 
-	{
-	  Log("No sources for Id TIME found!");
-	}        
-
-*/
+          }
+        }
 
   return 0;
 }
 
-	

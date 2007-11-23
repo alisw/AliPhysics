@@ -22,6 +22,7 @@ class AliT0Preprocessor: public AliPreprocessor
 	virtual UInt_t Process(TMap* dcsAliasMap);
 
   private:
+	//AliT0Calc *fData;
 	AliT0DataDCS *fData;	
 	ClassDef(AliT0Preprocessor, 1)
 };
