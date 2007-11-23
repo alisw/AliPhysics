@@ -3,7 +3,14 @@
 
 include $(MODDIR)/hlt.conf
 
-CLASS_HDRS:=  	AliHLTCompAgent.h
+CLASS_HDRS:=  	AliHLTCompAgent.h \
+		AliHLTCompDefinitions.h \
+		AliHLTCOMPHuffmanAltro.h \
+		AliHLTCOMPHuffmanAltroComponent.h \
+		AliHLTCOMPHuffmanCodeData.h \
+		AliHLTCOMPHuffmanData.h \
+		AliHLTCOMPHuffmanOccurrenceData.h \
+		AliHLTCOMPHuffmanAltroCalibComponent.h
 
 MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
 
@@ -11,7 +18,7 @@ MODULE_HDRS:= 	$(CLASS_HDRS)
 
 MODULE_DHDR:= 		
 
-EINCLUDE := HLT/BASE
+EINCLUDE := HLT/BASE HLT/TPCLib
 
 ###############################################################################
 #

@@ -34,7 +34,8 @@
 #include "AliHLTConfiguration.h"
 
 // header files of library components
-// ....
+#include "AliHLTCOMPHuffmanAltroComponent.h"
+#include "AliHLTCOMPHuffmanAltroCalibComponent.h"
 
 /** global instance for agent registration */
 AliHLTCompAgent gAliHLTCompAgent;
@@ -74,6 +75,9 @@ const char* AliHLTCompAgent::GetReconstructionChains(AliRawReader* /*rawReader*/
 const char* AliHLTCompAgent::GetRequiredComponentLibraries() const
 {
   // see header file for class documentation
+
+  // libAliHLTUtil.so for AliRawReaderPublisher
+  //return "libAliHLTUtil.so";
   return NULL;
 }
 
@@ -82,6 +86,11 @@ int AliHLTCompAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
-  //pHandler->AddComponent(new ...);
+  // use fCompressionSwitch = true for decompressed inputtype (i.e. compressed output)
+  pHandler->AddComponent(new AliHLTCOMPHuffmanAltroComponent(true));
+  // use fCompressionSwitch = false for compressed inputtype (i.e. decompressed output)
+  pHandler->AddComponent(new AliHLTCOMPHuffmanAltroComponent(false));
+  pHandler->AddComponent(new AliHLTCOMPHuffmanAltroCalibComponent);
+
   return 0;
 }
