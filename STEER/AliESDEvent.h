@@ -9,7 +9,7 @@
 
 //-------------------------------------------------------------------------
 //                          Class AliESDEvent
-//   This is the class to deal with during the physical analysis of data.
+//   This is the class to deal with during the physics analysis of data.
 //   It also ensures the backward compatibility with the old ESD format.
 //      
 // Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
@@ -56,7 +56,7 @@ class AliESDEvent : public AliVEvent {
 public:
 
 
-  enum ESDListIndex_t   {kESDRun,
+  enum ESDListIndex   {kESDRun,
 		       kHeader,
 		       kESDZDC,
 		       kESDFMD,
@@ -345,7 +345,7 @@ protected:
   AliESD    *fESDOld;              //! Old esd Structure
   Bool_t    fConnected;            //! flag if leaves are alreday connected
 
-  static const char* fESDListName[kESDListN]; //!
+  static const char* fgkESDListName[kESDListN]; //!
 
   // Remove this stuff CKB
   Int_t        fEMCALClusters;   // Number of EMCAL clusters (subset of caloclusters)
@@ -354,7 +354,7 @@ protected:
   Int_t        fPHOSClusters;     // Number of PHOS clusters (subset of caloclusters)
   Int_t        fFirstPHOSCluster; // First PHOS cluster in the fCaloClusters list 
 
-  ClassDef(AliESDEvent,3)  //ESDEvent class 
+  ClassDef(AliESDEvent,5)  //ESDEvent class 
 };
 #endif 
 

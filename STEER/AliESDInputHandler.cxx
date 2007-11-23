@@ -29,9 +29,9 @@
 ClassImp(AliESDInputHandler)
 
 //______________________________________________________________________________
-AliESDInputHandler::AliESDInputHandler():
-    AliInputEventHandler(),
-    fEvent(0)
+AliESDInputHandler::AliESDInputHandler() :
+  AliInputEventHandler(),
+  fEvent(0x0)
 {
   // default constructor
 }
@@ -39,12 +39,13 @@ AliESDInputHandler::AliESDInputHandler():
 //______________________________________________________________________________
 AliESDInputHandler::~AliESDInputHandler() 
 {
-// destructor
+  // destructor
+  //  delete fEvent;
 }
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-    AliInputEventHandler(name, title)
+  AliInputEventHandler(name, title), fEvent(0x0)
 {
 }
 
@@ -52,8 +53,10 @@ Bool_t AliESDInputHandler::InitIO(Option_t* /*opt*/)
 {
     if (!fTree) return kFALSE;
     // Get pointer to ESD event
-    fEvent = new AliESDEvent();
-    fEvent->ReadFromTree(fTree);
+    if(!fEvent){
+      fEvent = new AliESDEvent();
+      fEvent->ReadFromTree(fTree);
+    }
     return kTRUE;
 }
 
@@ -67,4 +70,9 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
     }
     return kTRUE;
 }
+
+Bool_t  AliESDInputHandler::FinishEvent(){
+  //  if(fEvent)fEvent->Reset();
+  return kTRUE;
+} 
 

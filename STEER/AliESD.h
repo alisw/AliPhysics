@@ -81,10 +81,7 @@ public:
   Bool_t RemoveTrack(Int_t i);
 
   Int_t  AddTrack(const AliESDtrack *t) {
-    AliESDtrack * track = new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);
-    track->SetID(fTracks.GetEntriesFast()-1);
-    return  track->GetID();
-    
+    AliESDtrack * track = new(fTracks[fTracks.GetEntriesFast()]) AliESDtrack(*t);track->SetID(fTracks.GetEntriesFast()-1);return  track->GetID();
   }
   void AddHLTConfMapTrack(const AliESDHLTtrack *t) {
     new(fHLTConfMapTracks[fHLTConfMapTracks.GetEntriesFast()]) AliESDHLTtrack(*t);
@@ -152,15 +149,7 @@ public:
   }
   const AliESDVertex *GetPrimaryVertex() const {return &fPrimaryVertex;}
 
-  void SetDiamond(const AliESDVertex *vertex) {
-    fDiamondXY[0]=vertex->GetXv();
-    fDiamondXY[1]=vertex->GetYv();
-    Double_t cov[6];
-    vertex->GetCovMatrix(cov);
-    fDiamondCovXY[0]=cov[0];
-    fDiamondCovXY[1]=cov[1];
-    fDiamondCovXY[2]=cov[2];
-  }
+  void SetDiamond(const AliESDVertex *vertex);
   Float_t GetDiamondX() const {return fDiamondXY[0];}
   Float_t GetDiamondY() const {return fDiamondXY[1];}
   Float_t GetSigma2DiamondX() const {return fDiamondCovXY[0];}

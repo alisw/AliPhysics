@@ -21,10 +21,11 @@ class AliESDInputHandler : public AliInputEventHandler {
     virtual ~AliESDInputHandler();
     virtual Bool_t       InitIO(Option_t* opt);
     virtual Bool_t       BeginEvent(Long64_t entry);
+    virtual Bool_t       FinishEvent();
     AliESDEvent         *GetEvent() const {return fEvent;}
     private:
     AliESDEvent    *fEvent;   //! Pointer to the event 
-    ClassDef(AliESDInputHandler, 1);
+    ClassDef(AliESDInputHandler, 2);
 };
 
 #endif

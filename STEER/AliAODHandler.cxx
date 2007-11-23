@@ -53,37 +53,46 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
 //______________________________________________________________________________
 AliAODHandler::~AliAODHandler() 
 {
-// destructor
+  delete fAODEvent;
+  if(fFileA){
+    // is already handled in TerminateIO
+    fFileA->Close();
+    delete fFileA;
+  }
+  delete fTreeA;
+  delete fName;
+ // destructor
 }
 
 
 Bool_t AliAODHandler::InitIO(Option_t* opt)
 {
-    // Initialize IO
-    //
-    // Create the AODevent object
+  // Initialize IO
+  //
+  // Create the AODevent object
+  if(!fAODEvent){
     fAODEvent = new AliAODEvent();
     fAODEvent->CreateStdContent();
-    //
-    // File opening according to execution mode
-
-    if (!(strcmp(opt, "proof"))) {
-	// proof
-	CreateTree(0);
-    } else {
-	// local and grid
-	fFileA = new TFile(fName, "RECREATE");
-	CreateTree(1);
-    }
-    return kTRUE;
+  }
+  //
+  // File opening according to execution mode
+  
+  if (!(strcmp(opt, "proof"))) {
+    // proof
+    CreateTree(0);
+  } else {
+    // local and grid
+    fFileA = new TFile(fName, "RECREATE");
+    CreateTree(1);
+  }
+  return kTRUE;
 }
 
 Bool_t AliAODHandler::FinishEvent()
 {
     // Fill data structures
     FillTree();
-    fAODEvent->ClearStd();
-    
+    fAODEvent->ResetStd();
     return kTRUE;
 }
 

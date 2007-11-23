@@ -72,8 +72,11 @@ AliESD::AliESD():
   fESDFMD(0x0),
   fESDVZERO(0x0),
   fErrorLogs("AliRawDataErrorLog",5)
-
 {
+  // 
+  // Standar constructor
+  //
+
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = 0;
     fT0amplitude[i] = 0;
@@ -129,6 +132,9 @@ AliESD::AliESD(const AliESD& esd):
   fESDVZERO(esd.fESDVZERO),
   fErrorLogs(*((TClonesArray*)esd.fErrorLogs.Clone()))
 {
+  // 
+  // copy constructor
+  //
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = esd.fT0time[i];
     fT0amplitude[i] = esd.fT0amplitude[i];
@@ -155,14 +161,11 @@ AliESD::~AliESD()
   fCaloClusters.Delete();
   delete fESDFMD;
   delete fESDVZERO;
-//   fEMCALTriggerPosition->Delete();
-//   fEMCALTriggerAmplitudes->Delete();
-//   fPHOSTriggerPosition->Delete();
-//   fPHOSTriggerAmplitudes->Delete();
-//   delete fEMCALTriggerPosition;
-//   delete fEMCALTriggerAmplitudes;
-//   delete fPHOSTriggerPosition;
-//   delete fPHOSTriggerAmplitudes;
+  delete fEMCALTriggerPosition;
+  delete fEMCALTriggerAmplitudes;
+  delete fPHOSTriggerPosition;
+  delete fPHOSTriggerAmplitudes;
+
   fErrorLogs.Delete();
 
 }
@@ -170,6 +173,10 @@ AliESD::~AliESD()
 //______________________________________________________________________________
 void AliESD::Reset()
 {
+  // 
+  // Reset the contents and delete the entries in TClonesArrays
+  //
+
   fEventNumberInFile=0;
   fBunchCrossNumber=0;
   fOrbitNumber=0;
@@ -188,29 +195,42 @@ void AliESD::Reset()
   fZDCEMEnergy=0;
   fZDCParticipants=0;
   fT0zVertex=0;
-  fT0timeStart = 0;
+  fSPDVertex.~AliESDVertex();
   new (&fSPDVertex) AliESDVertex();
+  fPrimaryVertex.~AliESDVertex();
   new (&fPrimaryVertex) AliESDVertex();
+  for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
+  fSPDMult.~AliMultiplicity();
   new (&fSPDMult) AliMultiplicity();
-  fTracks.Clear();
-  fHLTConfMapTracks.Clear();
-  fHLTHoughTracks.Clear();
-  fMuonTracks.Clear();
-  fPmdTracks.Clear();
-  fTrdTracks.Clear();
-  fV0s.Clear();
-  fCascades.Clear();
-  fCaloClusters.Clear();
+  for (Int_t i=0; i<24; i++) {
+    fT0time[i] = 0;
+    fT0amplitude[i] = 0;
+  }
+  fT0timeStart = 0;
+  fTracks.Delete();
+  fHLTConfMapTracks.Delete();
+  fHLTHoughTracks.Delete();
+  fMuonTracks.Delete();
+  fPmdTracks.Delete();
+  fTrdTracks.Delete();
+  fV0s.Delete();
+  fCascades.Delete();
+  fCaloClusters.Delete();
   fEMCALClusters=0; 
   fFirstEMCALCluster=-1; 
   fPHOSClusters=0; 
   fFirstPHOSCluster=-1; 
   if (fESDFMD) fESDFMD->Clear();
+  if (fESDVZERO){
+    fESDVZERO->~AliESDVZERO();
+    new (fESDVZERO) AliESDVZERO();
+  } 
 //   fEMCALTriggerPosition->Clear();
 //   fEMCALTriggerAmplitudes->Clear();
 //   fPHOSTriggerPosition->Clear();
 //   fPHOSTriggerAmplitudes->Clear();
-  fErrorLogs.Clear();
+  fErrorLogs.Delete();
 }
 
 
@@ -538,3 +558,17 @@ void AliESD::GetESDfriend(AliESDfriend *ev) const {
 
   }
 }
+
+void AliESD::SetDiamond(const AliESDVertex *vertex)
+{
+  //
+  // Set the interaction diamond
+  //  
+    fDiamondXY[0]=vertex->GetXv();
+    fDiamondXY[1]=vertex->GetYv();
+    Double_t cov[6];
+    vertex->GetCovMatrix(cov);
+    fDiamondCovXY[0]=cov[0];
+    fDiamondCovXY[1]=cov[1];
+    fDiamondCovXY[2]=cov[2];
+  }

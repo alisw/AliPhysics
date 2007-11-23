@@ -17,8 +17,17 @@
 
 //-----------------------------------------------------------------
 //           Implementation of the AliESDEvent class
-//   This is the class to deal with during the phisical analysis of data.
+//   This is the class to deal with during the physics analysis of data.
 //   It also ensures the backward compatibility with the old ESD format.
+/*
+   AliESDEvent *ev= new AliESDEvent();
+   ev->ReadFromTree(esdTree);
+   ...
+    for (Int_t i=0; i<nev; i++) {
+      esdTree->GetEntry(i);
+      if(ev->GetAliESDOld())ev->CopyFromOldESD();
+*/
+//   The AliESDInputHAndler does this automatically for you
 //
 // Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch
 //-----------------------------------------------------------------
@@ -27,11 +36,9 @@
 #include "TRefArray.h"
 #include <TNamed.h>
 
-#include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESDVZERO.h"
-#include "AliESDHLTtrack.h"
 #include "AliESDFMD.h"
 #include "AliESD.h"
 #include "AliESDMuonTrack.h"
@@ -60,7 +67,7 @@ ClassImp(AliESDEvent)
 
 // here we define the names, some classes are no TNamed, therefore the classnames 
 // are the Names
-  const char* AliESDEvent::fESDListName[kESDListN] = {"AliESDRun",
+  const char* AliESDEvent::fgkESDListName[kESDListN] = {"AliESDRun",
 						       "AliESDHeader",
 						       "AliESDZDC",
 						       "AliESDFMD",
@@ -263,7 +270,6 @@ void AliESDEvent::Reset()
   
   // Reset the standard contents
   ResetStdContent(); 
-
   if(fESDOld)fESDOld->Reset();
   // call reset for user supplied data?
 }
@@ -275,19 +281,22 @@ void AliESDEvent::ResetStdContent()
   if(fHeader) fHeader->Reset();
   if(fESDZDC) fESDZDC->Reset();
   if(fESDFMD) fESDFMD->Clear(); // why clear.... need consistend names
-  // if(fESDVZERO) fESDVZERO->; // NOT IMPLEMENTED 
-  //  if(fESDVZERO) new (fESDVZERO) AliESDVZERO();
+  if(fESDVZERO){
+    // reset by callin d'to /c'tor keep the pointer
+    fESDVZERO->~AliESDVZERO();
+    new (fESDVZERO) AliESDVZERO();
+  }  
   if(fESDTZERO) fESDTZERO->Reset(); 
   // CKB no clear/reset implemented
   if(fSPDVertex){
     fSPDVertex->~AliESDVertex();
     new (fSPDVertex) AliESDVertex();
-    fSPDVertex->SetName(fESDListName[kSPDVertex]);
+    fSPDVertex->SetName(fgkESDListName[kSPDVertex]);
   }
   if(fPrimaryVertex){
     fPrimaryVertex->~AliESDVertex();
     new (fPrimaryVertex) AliESDVertex();
-    fPrimaryVertex->SetName(fESDListName[kPrimaryVertex]);
+    fPrimaryVertex->SetName(fgkESDListName[kPrimaryVertex]);
   }
   if(fSPDMult){
     fSPDMult->~AliMultiplicity();
@@ -296,12 +305,12 @@ void AliESDEvent::ResetStdContent()
   if(fPHOSTrigger)fPHOSTrigger->Reset(); 
   if(fEMCALTrigger)fEMCALTrigger->Reset(); 
   if(fTracks)fTracks->Delete();
-  if(fMuonTracks)fMuonTracks->Clear();
-  if(fPmdTracks)fPmdTracks->Clear();
-  if(fTrdTracks)fTrdTracks->Clear();
-  if(fV0s)fV0s->Clear();
-  if(fCascades)fCascades->Clear();
-  if(fKinks)fKinks->Clear();
+  if(fMuonTracks)fMuonTracks->Delete();
+  if(fPmdTracks)fPmdTracks->Delete();
+  if(fTrdTracks)fTrdTracks->Delete();
+  if(fV0s)fV0s->Delete();
+  if(fCascades)fCascades->Delete();
+  if(fKinks)fKinks->Delete();
   if(fCaloClusters)fCaloClusters->Delete();
   if(fErrorLogs) fErrorLogs->Delete();
 
@@ -625,7 +634,8 @@ Bool_t AliESDEvent::Clean(Float_t *cleanPars) {
   return rc;
 }
 
-Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) {
+Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) 
+{
     // Add track
     TClonesArray &ftr = *fTracks;
     AliESDtrack * track = new(ftr[fTracks->GetEntriesFast()])AliESDtrack(*t);
@@ -633,17 +643,20 @@ Int_t  AliESDEvent::AddTrack(const AliESDtrack *t) {
     return  track->GetID();    
 }
 
- void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) {
+ void AliESDEvent::AddMuonTrack(const AliESDMuonTrack *t) 
+{
     TClonesArray &fmu = *fMuonTracks;
     new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack(*t);
 }
 
-void AliESDEvent::AddPmdTrack(const AliESDPmdTrack *t) {
+void AliESDEvent::AddPmdTrack(const AliESDPmdTrack *t) 
+{
   TClonesArray &fpmd = *fPmdTracks;
   new(fpmd[fPmdTracks->GetEntriesFast()]) AliESDPmdTrack(*t);
 }
 
-void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t) {
+void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t) 
+{
   TClonesArray &ftrd = *fTrdTracks;
   new(ftrd[fTrdTracks->GetEntriesFast()]) AliESDTrdTrack(*t);
 }
@@ -651,7 +664,8 @@ void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t) {
 
 
 
-Int_t AliESDEvent::AddKink(const AliESDkink *c) {
+Int_t AliESDEvent::AddKink(const AliESDkink *c) 
+{
     // Add kink
     TClonesArray &fk = *fKinks;
     AliESDkink * kink = new(fk[fKinks->GetEntriesFast()]) AliESDkink(*c);
@@ -660,13 +674,15 @@ Int_t AliESDEvent::AddKink(const AliESDkink *c) {
 }
 
 
-void AliESDEvent::AddCascade(const AliESDcascade *c) {
+void AliESDEvent::AddCascade(const AliESDcascade *c) 
+{
   TClonesArray &fc = *fCascades;
   new(fc[fCascades->GetEntriesFast()]) AliESDcascade(*c);
 }
 
 
-Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) {
+Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) 
+{
     // Add calocluster
     TClonesArray &fc = *fCaloClusters;
     AliESDCaloCluster *clus = new(fc[fCaloClusters->GetEntriesFast()]) AliESDCaloCluster(*c);
@@ -675,47 +691,57 @@ Int_t AliESDEvent::AddCaloCluster(const AliESDCaloCluster *c) {
   }
 
 
-  void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) {
-    TClonesArray &errlogs = *fErrorLogs;
-    new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
-  }
+void  AliESDEvent::AddRawDataErrorLog(const AliRawDataErrorLog *log) {
+  TClonesArray &errlogs = *fErrorLogs;
+  new(errlogs[errlogs.GetEntriesFast()])  AliRawDataErrorLog(*log);
+}
 
-void  AliESDEvent::SetVertex(const AliESDVertex *vertex) {
+void  AliESDEvent::SetVertex(const AliESDVertex *vertex) 
+{
+  // Set the SPD vertex
   // use already allocated space
   if(fSPDVertex){
     *fSPDVertex = *vertex;
-    fSPDVertex->SetName(fESDListName[kSPDVertex]);
+    fSPDVertex->SetName(fgkESDListName[kSPDVertex]);
   }
 }
 
-void  AliESDEvent::SetPrimaryVertex(const AliESDVertex *vertex) {
+void  AliESDEvent::SetPrimaryVertex(const AliESDVertex *vertex) 
+{
+  // Set the primary vertex
+  // use already allocated space
   if(fPrimaryVertex){
     *fPrimaryVertex = *vertex;
-    fPrimaryVertex->SetName(fESDListName[kPrimaryVertex]);
+    fPrimaryVertex->SetName(fgkESDListName[kPrimaryVertex]);
   }
 }
 
-void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) {
+void AliESDEvent::SetMultiplicity(const AliMultiplicity *mul) 
+{
+  // Set the SPD Multiplicity
   if(fSPDMult){
     *fSPDMult = *mul;
   }
 }
 
 
-void AliESDEvent::SetFMDData(AliESDFMD * obj) { 
+void AliESDEvent::SetFMDData(AliESDFMD * obj) 
+{ 
   // use already allocated space
   if(fESDFMD){
     *fESDFMD = *obj;
   }
 }
 
-void AliESDEvent::SetVZEROData(AliESDVZERO * obj){ 
+void AliESDEvent::SetVZEROData(AliESDVZERO * obj)
+{ 
   // use already allocated space
   if(fESDVZERO)
-    new(fESDVZERO) AliESDVZERO(*obj);
+    *fESDVZERO = *obj;
 }
 
-void AliESDEvent::GetESDfriend(AliESDfriend *ev) const {
+void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
+{
   //
   // Extracts the complementary info from the ESD
   //
@@ -749,26 +775,26 @@ void AliESDEvent::GetStdContent()
   // set pointers for standard content
   // get by name much safer and not a big overhead since not called very often
  
-  fESDRun = (AliESDRun*)fESDObjects->FindObject(fESDListName[kESDRun]);
-  fHeader = (AliESDHeader*)fESDObjects->FindObject(fESDListName[kHeader]);
-  fESDZDC = (AliESDZDC*)fESDObjects->FindObject(fESDListName[kESDZDC]);
-  fESDFMD = (AliESDFMD*)fESDObjects->FindObject(fESDListName[kESDFMD]);
-  fESDVZERO = (AliESDVZERO*)fESDObjects->FindObject(fESDListName[kESDVZERO]);
-  fESDTZERO = (AliESDTZERO*)fESDObjects->FindObject(fESDListName[kESDTZERO]);
-  fSPDVertex = (AliESDVertex*)fESDObjects->FindObject(fESDListName[kSPDVertex]);
-  fPrimaryVertex = (AliESDVertex*)fESDObjects->FindObject(fESDListName[kPrimaryVertex]);
-  fSPDMult =       (AliMultiplicity*)fESDObjects->FindObject(fESDListName[kSPDMult]);
-  fPHOSTrigger = (AliESDCaloTrigger*)fESDObjects->FindObject(fESDListName[kPHOSTrigger]);
-  fEMCALTrigger = (AliESDCaloTrigger*)fESDObjects->FindObject(fESDListName[kEMCALTrigger]);
-  fTracks = (TClonesArray*)fESDObjects->FindObject(fESDListName[kTracks]);
-  fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fESDListName[kMuonTracks]);
-  fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fESDListName[kPmdTracks]);
-  fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fESDListName[kTrdTracks]);
-  fV0s = (TClonesArray*)fESDObjects->FindObject(fESDListName[kV0s]);
-  fCascades = (TClonesArray*)fESDObjects->FindObject(fESDListName[kCascades]);
-  fKinks = (TClonesArray*)fESDObjects->FindObject(fESDListName[kKinks]);
-  fCaloClusters = (TClonesArray*)fESDObjects->FindObject(fESDListName[kCaloClusters]);
-  fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fESDListName[kErrorLogs]);
+  fESDRun = (AliESDRun*)fESDObjects->FindObject(fgkESDListName[kESDRun]);
+  fHeader = (AliESDHeader*)fESDObjects->FindObject(fgkESDListName[kHeader]);
+  fESDZDC = (AliESDZDC*)fESDObjects->FindObject(fgkESDListName[kESDZDC]);
+  fESDFMD = (AliESDFMD*)fESDObjects->FindObject(fgkESDListName[kESDFMD]);
+  fESDVZERO = (AliESDVZERO*)fESDObjects->FindObject(fgkESDListName[kESDVZERO]);
+  fESDTZERO = (AliESDTZERO*)fESDObjects->FindObject(fgkESDListName[kESDTZERO]);
+  fSPDVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kSPDVertex]);
+  fPrimaryVertex = (AliESDVertex*)fESDObjects->FindObject(fgkESDListName[kPrimaryVertex]);
+  fSPDMult =       (AliMultiplicity*)fESDObjects->FindObject(fgkESDListName[kSPDMult]);
+  fPHOSTrigger = (AliESDCaloTrigger*)fESDObjects->FindObject(fgkESDListName[kPHOSTrigger]);
+  fEMCALTrigger = (AliESDCaloTrigger*)fESDObjects->FindObject(fgkESDListName[kEMCALTrigger]);
+  fTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTracks]);
+  fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
+  fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
+  fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracks]);
+  fV0s = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kV0s]);
+  fCascades = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCascades]);
+  fKinks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kKinks]);
+  fCaloClusters = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCaloClusters]);
+  fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
 
 }
 
@@ -779,10 +805,10 @@ void AliESDEvent::SetStdNames(){
     for(int i = 0;i < fESDObjects->GetEntries();i++){
       TObject *fObj = fESDObjects->At(i);
       if(fObj->InheritsFrom("TNamed")){
-	((TNamed*)fObj)->SetName(fESDListName[i]);
+	((TNamed*)fObj)->SetName(fgkESDListName[i]);
       }
       else if(fObj->InheritsFrom("TClonesArray")){
-	((TClonesArray*)fObj)->SetName(fESDListName[i]);
+	((TClonesArray*)fObj)->SetName(fgkESDListName[i]);
       }
     }
   }
@@ -839,7 +865,7 @@ Int_t AliESDEvent::GetPHOSClusters(TRefArray *clusters) const
   AliESDCaloCluster *cl = 0;
   for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
 
-    if ( cl = GetCaloCluster(i)) {
+    if ( (cl = GetCaloCluster(i))) {
       if (cl->IsPHOS()){
 	clusters->Add(cl);
 	printf("IsPHOS %d Size: %d \n",i,clusters->GetEntriesFast());
@@ -858,7 +884,7 @@ Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
   AliESDCaloCluster *cl = 0;
   for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
 
-    if ( cl = GetCaloCluster(i)) {
+    if ( (cl = GetCaloCluster(i))) {
       if (cl->IsEMCAL()){
 	clusters->Add(cl);
 	printf("IsEMCAL %d Size: %d \n",i,clusters->GetEntriesFast());
@@ -871,37 +897,56 @@ Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
 
 void AliESDEvent::ReadFromTree(TTree *tree){
 
+  if(!tree){
+    Printf("%s %d AliESDEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
+    return;
+  }
+
   // load the TTree
-  tree->LoadTree(0);
+  if(!tree->GetTree())tree->LoadTree(0);
 
   // if we find the "ESD" branch on the tree we do have the old structure
   if(tree->GetBranch("ESD")){
-      char ** address = (char **)(tree->GetBranch("ESD")->GetAddress());
-      if (!address) {
-	  printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
-	  tree->SetBranchAddress("ESD",&fESDOld);
-      } else {
-	  printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
-	  printf("%s %d Branch already connected. Using existing branch address. \n",(char*)__FILE__,__LINE__);
-	  fESDOld = (AliESD*) (*address);
-      }
-      
-      
-      CreateStdContent(); // create for copy
-      // when reading back we are not owner of the list 
-      // must not delete it
-      fESDObjects->SetOwner(kFALSE);
+    char ** address = (char **)(tree->GetBranch("ESD")->GetAddress());
+    if (!address) {
+      printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
+      tree->SetBranchAddress("ESD",&fESDOld);
+    } else {
+      printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
+      printf("%s %d Branch already connected. Using existing branch address. \n",(char*)__FILE__,__LINE__);
+      fESDOld = (AliESD*) (*address);
+    }
+       
+    //  have already connected the old ESD structure... ?
+    // reuse also the pointer of the AlliESDEvent
+    // otherwise create new ones
+
+    TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
+  
+    if(connectedList){
+      // If connected use the connected list of objects
+      fESDObjects->Delete();
+      fESDObjects = connectedList;
+      GetStdContent(); 
+      fConnected = true;
       return;
+    }
+    // else...    
+    CreateStdContent(); // create for copy
+    // we are not owner of the list objects 
+    // must not delete it
+    fESDObjects->SetOwner(kFALSE);
+    fESDObjects->SetName("ESDObjectsConnectedToTree");
+    tree->GetUserInfo()->Add(fESDObjects);
+    fConnected = true;
+    return;
   }
 
+  delete fESDOld;
   fESDOld = 0;
-
-
   // Try to find AliESDEvent
   AliESDEvent *esdEvent = 0;
   esdEvent = (AliESDEvent*)tree->GetTree()->GetUserInfo()->FindObject("AliESDEvent");
-  //esdEvent = (AliESDEvent*)tree->GetUserInfo()->FindObject("AliESDEvent");
-
   if(esdEvent){   
       // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
@@ -914,9 +959,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
       return;
     }
     // Connect to tree
-    if(fESDObjects->GetEntries()!=0){
-      // this should not happen here put a warning?
-    }
     // prevent a memory leak when reading back the TList
     delete fESDObjects;
     fESDObjects = 0;
@@ -933,7 +975,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     TNamed *el;
     while((el=(TNamed*)next())){
       TString bname(el->GetName());
-      
       if(bname.CompareTo("AliESDfriend")==0)
 	{
 	  // AliESDfriend does not have a name ...
@@ -968,9 +1009,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     // must not delete it
     fESDObjects->SetOwner(kFALSE);
   }
-
-
-
 }
 
 

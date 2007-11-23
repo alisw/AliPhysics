@@ -174,7 +174,7 @@ void AliMCEvent::FinishEvent()
 {
     // Clean-up after event
      fStack->Reset(0);
-     fMCParticles->Clear();
+     fMCParticles->Delete();
      fTrackReferences->Clear();
 }
 
@@ -482,7 +482,7 @@ AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
     } else {
 	mcParticle = dynamic_cast<AliMCParticle*>(fMCParticleMap->At(i));
     }
-
+    delete rarray;
     return mcParticle;
 }
 

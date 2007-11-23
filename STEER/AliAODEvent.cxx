@@ -102,7 +102,6 @@ void AliAODEvent::CreateStdContent()
   AddObject(new TClonesArray("AliAODCaloCluster", 0));
   AddObject(new TClonesArray("AliAODFmdCluster", 0));
   AddObject(new TClonesArray("AliAODPmdCluster", 0));
-  
   // set names
   SetStdNames();
 
@@ -189,6 +188,12 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
   fPmdClusters->Delete();
   if (pmdClusSize > fPmdClusters->GetSize()) 
     fPmdClusters->Expand(pmdClusSize);
+
+  // Reset the tracklets
+  fTracklets->DeleteContainer();
+  fPhosCells->DeleteContainer();  
+  fEmcalCells->DeleteContainer();
+
 }
 
 void AliAODEvent::ClearStd()

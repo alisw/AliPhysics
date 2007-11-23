@@ -88,10 +88,15 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
 
   fNPoints = array.fNPoints;
   fSize = array.fSize;
+  delete [] fX;
   fX = new Float_t[fNPoints];
+  delete [] fY;
   fY = new Float_t[fNPoints];
+  delete [] fZ;
   fZ = new Float_t[fNPoints];
+  delete [] fVolumeID;
   fVolumeID = new UShort_t[fNPoints];
+  delete [] fCov;
   fCov = new Float_t[fSize];
   memcpy(fX,array.fX,fNPoints*sizeof(Float_t));
   memcpy(fY,array.fY,fNPoints*sizeof(Float_t));
