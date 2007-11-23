@@ -13,15 +13,9 @@
  **************************************************************************/
 
 
-
-
 #include "AliHLTPHOSClusterizerComponent.h"
 #include "AliHLTPHOSClusterizer.h"
-//#include "AliHLTPHOSPhysicsDefinitions.h"
-//#include "AliHLTPHOSDefinitions.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
-//#include "AliHLTPHOSClusterDataStruct.h"
-//#include "AliHLTPHOSRecPointListDataStruct.h"
 #include "AliHLTPHOSDigitContainerDataStruct.h"
 
 
@@ -49,8 +43,7 @@ const AliHLTComponentDataType AliHLTPHOSClusterizerComponent::fgkInputDataTypes[
 
 AliHLTPHOSClusterizerComponent gAliHLTPHOSClusterizerComponent;
 
-//AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): AliHLTPHOSBase(), AliHLTProcessor(), fClusterizerPtr(0), fOutPtr(0),
-//								 fRecPointStructArrayPtr(0), fRecPointListPtr(0)
+
 AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(): AliHLTPHOSProcessor(), fClusterizerPtr(0), fOutPtr(0),
 								  fRecPointStructArrayPtr(0) //, fRecPointListPtr(0)
 {
@@ -66,13 +59,7 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
     }
-  /*
-  if (fRecPointListPtr)
-    {
-      delete fRecPointListPtr;
-      fRecPointListPtr = 0;
-    }
-  */
+
   if (fRecPointStructArrayPtr)
     {
       for (int i = 0; i < 1000; i++)
@@ -85,22 +72,6 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
 
 }
 
-/*
-int
-AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent::Deinit()
-{
-  ////////// PTH WARNING you should Define a class AliHLTPHOSModuleProcessor
-}
-*/
-
-// PTH AliHLTPHOSClusterizerComponent::AliHLTPHOSClusterizerComponent(const AliHLTPHOSClusterizerComponent &):AliHLTProcessor(),
-//												       fClusterizerPtr(0),
-//												       fOutPtr(0),
-//												       fRecPointStructArrayPtr(0),
-//												       fRecPointListPtr(0)
-//{
-//Copy constructor, not implemented
-//}
 
 int
 AliHLTPHOSClusterizerComponent::Deinit()
@@ -112,13 +83,7 @@ AliHLTPHOSClusterizerComponent::Deinit()
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
     }
-  /*
-  if (fRecPointListPtr)
-    {
-      delete fRecPointListPtr;
-      fRecPointListPtr = 0;
-    }
-  */
+
   for (int i = 0; i < 1000; i++)
     {
       //    fRecPointStructArrayPtr[i].Del();
@@ -141,7 +106,6 @@ const Char_t*
 AliHLTPHOSClusterizerComponent::GetComponentID()
 {
   //See headerfile for documentation
-
   return "AliHltPhosClusterizer";
 }
 
@@ -171,7 +135,6 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 {
   //See headerfile for documentation
-
   constBase = 30;
   inputMultiplier = 0.2;
 }
@@ -182,13 +145,11 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
                                         std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //See headerfile for documentation
-
   UInt_t tSize            = 0;
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
   Int_t nRecPoints        = 0;
   Int_t nDigits           = 0;
-  //Int_t index             = 0;
   Int_t j =0;
 
   AliHLTUInt8_t* outBPtr;
@@ -197,16 +158,14 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
   unsigned long ndx;
 
   AliHLTPHOSDigitContainerDataStruct *digitContainerPtr = 0;
-  
-  //AliHLTPHOSRecPointContainerStruct *recPointContainerPtr = (AliHLTPHOSRecPointContainerStruct*)outBPtr;
   fClusterizerPtr->SetRecPointContainer((AliHLTPHOSRecPointContainerStruct*)outBPtr);
+
   for ( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
       iter = blocks+ndx;
       digitContainerPtr = reinterpret_cast<AliHLTPHOSDigitContainerDataStruct*>(iter->fPtr);
       if (iter->fDataType != AliHLTPHOSDefinitions::fgkAliHLTDigitDataType)
         {
-          //	  cout << "Warning: data type is not fgkAliHLTDigitDataType " << endl;
           continue;
         }
       for (UInt_t i = 0; i < digitContainerPtr->fNDigits; i++)
@@ -218,7 +177,6 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
           fAllDigitsPtr->fDigitDataStruct[j+nDigits].fZ = digitContainerPtr->fDigitDataStruct[i].fZ;
           fAllDigitsPtr->fDigitDataStruct[j+nDigits].fAmplitude = digitContainerPtr->fDigitDataStruct[i].fAmplitude;
           fAllDigitsPtr->fDigitDataStruct[j+nDigits].fTime = digitContainerPtr->fDigitDataStruct[i].fTime;
-         // fAllDigitsPtr->fDigitDataStruct[i+nDigits].fCrazyness = digitContainerPtr->fDigitDataStruct[i].fCrazyness;
 	  j++;
         }
       nDigits++;
@@ -226,18 +184,12 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
 
   fOutPtr =  (AliHLTPHOSRecPointContainerStruct*)outBPtr;
   nRecPoints = fClusterizerPtr->ClusterizeEvent();
-  //nRecPoints = fClusterizerPtr->CalculateCenterOfGravity(&fRecPointStructArrayPtr[i]);
   cout << "Number of clusters found: " << nRecPoints << " extracted from " << nDigits << " digits" << endl;
 
   mysize = 0;
   offset = tSize;
 
-  //      fClusterizerPtr->CalculateMoments(&fRecPointStructArrayPtr[i], 0);
-  //     fClusterizerPtr->ClusterizeStruct(&fRecPointStructArrayPtr[i], fOutPtr);
-
-  //  mysize += sizeof(AliHLTPHOSClusterDataStruct);
   mysize += sizeof(AliHLTPHOSRecPointDataStruct);
-
 
   AliHLTComponentBlockData bd;
   FillBlockData( bd );

@@ -37,9 +37,7 @@
 #include "AliHLTPHOSProcessor.h"
 
 class AliHLTPHOSClusterizer;
-
 class AliHLTPHOSRcuCellEnergyDataStruct;
-//class AliHLTPHOSClusterDataStruct;
 class AliHLTPHOSRecPointDataStruct;
 class AliHLTPHOSRecPointContainerStruct;
 class AliHLTPHOSRecPointListDataStruct;
