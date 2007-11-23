@@ -1,5 +1,5 @@
 SRCS = AliAODEvent.cxx AliAODHeader.cxx \
-	AliAODTrack.cxx AliAODVertex.cxx \
+	AliAODTrack.cxx AliAODPid.cxx AliAODVertex.cxx \
 	AliAODCluster.cxx AliAODCaloCluster.cxx AliAODPmdCluster.cxx AliAODFmdCluster.cxx \
 	AliAODJet.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx \
 	AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx \

@@ -17,6 +17,7 @@
 #pragma link C++ class AliAODEvent+;
 #pragma link C++ class AliAODHeader+;
 #pragma link C++ class AliAODTrack+;
+#pragma link C++ class AliAODPid+;
 #pragma link C++ class AliAODVertex+;
 #pragma link C++ class AliAODCluster+;
 #pragma link C++ class AliAODCaloCluster+;
