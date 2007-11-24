@@ -17,6 +17,7 @@ void CreateOnlineCalibPars(){
     AliTOFChannelOnline *calChannelOnline = (AliTOFChannelOnline*)tofCalOnline->At(ipad);
     delay = rnd->Gaus(meanDelay,sigmaDelay);
     calChannelOnline->SetDelay(delay);
+    calChannelOnline->SetStatus(AliTOFChannelOnline::kTOFOnlineOk);
   }
   tofcalib->WriteParOnlineOnCDB("TOF/Calib");
   return;
