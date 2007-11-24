@@ -65,6 +65,9 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   /** assignment operator prohibited */
   AliHLTTPCDigitDumpComponent& operator=(const AliHLTTPCDigitDumpComponent&);
 
+  /** the mode for the DigitReaderRaw */
+  unsigned fRawreaderMode; //!transient
+
   ClassDef(AliHLTTPCDigitDumpComponent, 0);
 };
 

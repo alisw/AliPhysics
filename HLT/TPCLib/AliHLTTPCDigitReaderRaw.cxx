@@ -307,6 +307,18 @@ int AliHLTTPCDigitReaderRaw::GetTime()
     return GetRealTime();
 }
 
+int AliHLTTPCDigitReaderRaw::GetAltroChannelRawData(void* &pTgt, AliHLTUInt16_t &hwAddress)
+{
+  int iResult;
+  if (fBuffer==NULL) return -ENODATA;
+  if (fAltroBlockPositionBytes-fAltroBlockLengthBytes>GetCommonDataHeaderSize()) {
+    pTgt=fBuffer+(fAltroBlockPositionBytes-fAltroBlockLengthBytes+1);
+    iResult=fAltroBlockLengthBytes;
+    hwAddress=fAltroBlockHWAddress;
+  }
+  return iResult;
+}
+
 bool AliHLTTPCDigitReaderRaw::RealNext()
 {
   // see header file for class documentation

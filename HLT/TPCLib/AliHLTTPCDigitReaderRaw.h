@@ -103,6 +103,15 @@ public:
   virtual int GetSignal();
   virtual int GetTime();
 
+  /**
+   * Get pointer and size of the data of the current ALTRO channel.
+   * @param pTgt        target to receive the pointer to the buffer
+   * @param hwAddress   target to receive the hardware address
+   * @return size of the buffer set to pTgt in bytes on success, 
+   *         neg error code if failed
+   */
+  int GetAltroChannelRawData(void* &pTgt, AliHLTUInt16_t &hwAddress);
+
   bool Verify( bool verify )
   {
     bool old = fVerify;

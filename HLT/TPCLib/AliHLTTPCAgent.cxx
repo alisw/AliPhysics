@@ -28,6 +28,10 @@
 /** global instance for agent registration */
 AliHLTTPCAgent gAliHLTTPCAgent;
 
+// component headers
+#include "AliHLTAltroChannelSelectorComponent.h"
+#include "AliHLTTPCDigitDumpComponent.h"
+
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
 
@@ -110,7 +114,11 @@ const char* AliHLTTPCAgent::GetRequiredComponentLibraries() const
   return NULL;
 }
 
-int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* /*pHandler*/) const
+int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
+  // see header file for class documentation
+  if (!pHandler) return -EINVAL;
+  pHandler->AddComponent(new AliHLTAltroChannelSelectorComponent);
+  pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   return 0;
 }

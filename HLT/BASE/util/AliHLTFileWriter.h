@@ -217,8 +217,10 @@ class AliHLTFileWriter : public AliHLTDataSink  {
   TString    fSpecFormat;                                          // see above
   /** format string for block no (when added to file name) */
   TString    fBlcknoFormat;                                        // see above
+ protected:
   /** enumeration format string */
   TString    fCurrentFileName;                                     // see above
+ private:
 
   /** mode specifier, see @ref TWriterMode */
   Short_t    fMode;                                                // see above
