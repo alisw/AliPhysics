@@ -77,6 +77,10 @@
 #include "AliTPCBuffer.h"
 #include "AliTPCDDLRawData.h"
 #include "AliLog.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+#include "AliTPCExB.h"
 #include "AliRawReader.h"
 #include "AliTPCRawStream.h"
 
@@ -1761,9 +1765,35 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
   // contains the track label and the position of electrons.
   //-----------------------------------------------------------------
 
+  // 
+  // The trasport of the electrons through TPC drift volume
+  //    Drift (drift velocity + velocity map(not yet implemented)))
+  //    Application of the random processes (diffusion, gas gain)
+  //    Systematic effects (ExB effect in drift volume + ROCs)  
+  //
+  // Algorithm:
+  // Loop over primary electrons:
+  //    Creation of the secondary electrons
+  //    Loop over electrons (primary+ secondaries)
+  //        Global coordinate frame:
+  //          1. Skip electrons if attached  
+  //          2. ExB effect in drift volume
+  //             a.) Simulation   calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+  //             b.) Reconstruction -  calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+  //          3. Generation of gas gain (Random - Exponential distribution) 
+  //          4. TransportElectron function (diffusion)
+  //
+  //        5. Conversion to the local coordinate frame  pad-row, pad, timebin
+  //        6. Apply Time0 shift - AliTPCCalPad class 
+  //            a.) Plus sign in simulation
+  //            b.) Minus sign in reconstruction 
+  // end of loop          
+  //
   //-----------------------------------------------------------------
   // Origin: Marek Kowalski  IFJ, Krakow, Marek.Kowalski@ifj.edu.pl
+  // Origin: Marian Ivanov,  marian.ivanov@cern.ch
   //-----------------------------------------------------------------
+  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
 
   Float_t gasgain = fTPCParam->GetGasGain();
   Int_t i;
@@ -1881,19 +1911,49 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       for(Int_t nel=0;nel<qI;nel++){
 	// skip if electron lost due to the attachment
 	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	xyz[0]=tpcHit->X();
-	xyz[1]=tpcHit->Y();
-	xyz[2]=tpcHit->Z();	
+	
+	//
+	// ExB effect
+	//
+	Double_t dxyz0[3],dxyz1[3];
+	dxyz0[0]=tpcHit->X();
+	dxyz0[1]=tpcHit->Y();
+	dxyz0[2]=tpcHit->Z(); 	
+	if (calib->GetExB()){
+	  calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+	}else{
+	  AliError("Not valid ExB calibration");
+	  dxyz1[0]=tpcHit->X();
+	  dxyz1[1]=tpcHit->Y();
+	  dxyz1[2]=tpcHit->Z(); 	
+	}
+	xyz[0]=dxyz1[0];
+	xyz[1]=dxyz1[1];
+	xyz[2]=dxyz1[2]; 	
+	//
+	//
 	//
 	// protection for the nonphysical avalanche size (10**6 maximum)
 	//  
 	Double_t rn=TMath::Max(gRandom->Rndm(0),1.93e-22);
 	xyz[3]= (Float_t) (-gasgain*TMath::Log(rn)); 
 	index[0]=1;
-	
+	  
 	TransportElectron(xyz,index);    
 	Int_t rowNumber;
 	fTPCParam->GetPadRow(xyz,index); 
+	//
+	// Add Time0 correction due unisochronity
+	// xyz[0] - pad row coordinate 
+	// xyz[1] - pad coordinate
+	// xyz[2] - is in now time bin coordinate system
+	Float_t correction =0;
+	if (calib->GetPadTime0()){
+	  if (!calib->GetPadTime0()->GetCalROC(isec)) continue;
+	  correction = calib->GetPadTime0()->GetCalROC(isec)->GetValue(TMath::Nint(xyz[0]),TMath::Nint(xyz[1]));
+	}
+	xyz[2]+=correction;
+	//
 	// Electron track time (for pileup simulation)
 	xyz[4] = tpcHit->Time()/fTPCParam->GetTSample();
 	// row 0 - cross talk from the innermost row
@@ -2065,7 +2125,9 @@ void AliTPC::TransportElectron(Float_t *xyz, Int_t *index)
     Float_t dx = fTPCParam->Transform2to2NearestWire(xyz,index);
     xyz[1]+=dx*(fTPCParam->GetOmegaTau());
   }
-  //add nonisochronity (not implemented yet)  
+  //add nonisochronity (not implemented yet) 
+ 
+  
 }
   
 ClassImp(AliTPChit)
