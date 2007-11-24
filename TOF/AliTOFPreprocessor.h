@@ -31,6 +31,10 @@ class AliTOFPreprocessor : public AliPreprocessor
   private:
     AliTOFPreprocessor(const AliTOFPreprocessor & proc); // copy constructor
     AliTOFPreprocessor& operator=(const AliTOFPreprocessor & proc);
+    UInt_t ProcessDCSDataPoints(TMap* dcsAliasMap);
+    UInt_t ProcessOnlineDelays();
+    UInt_t ProcessPulserData();
+    UInt_t ProcessNoiseData();
 
     static const Int_t fgkBinRangeAve;   // number of bins where to 
                                          // calculate the mean
@@ -42,6 +46,6 @@ class AliTOFPreprocessor : public AliPreprocessor
     TObjArray *fCal;                     // TOF Calibration object
     Int_t fNChannels;                    // number of TOF channels
     Bool_t fStoreRefData;                // Flag to decide storage of Ref Data
-    ClassDef(AliTOFPreprocessor, 2);
+    ClassDef(AliTOFPreprocessor, 3);
 };
 #endif
