@@ -22,9 +22,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TFile.h"
+#include "TObjArray.h"
+#include "TString.h"
 
 #include "AliLog.h"
 #include "AliRawReader.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 
 #include "AliTOFClusterFinder.h"
 #include "AliTOFcalib.h"
@@ -32,6 +36,7 @@
 #include "AliTOFtracker.h"
 #include "AliTOFtrackerV1.h"
 #include "AliTOFReconstructor.h"
+#include "AliTOFFormatDCS.h"
 
 class TTree;
 
@@ -50,6 +55,40 @@ AliTOFReconstructor::AliTOFReconstructor()
 //
 // ctor
 //
+
+//reading DCS DP processing result
+
+  AliCDBManager *man = AliCDBManager::Instance();
+  Char_t *sel = "TOF/Calib/DCSData" ;
+  Char_t  out[100];
+  sprintf(out,"%s",sel); 
+  if (!man->Get(out,-1)) { 
+    AliInfo("No DCS data found in CDB");
+  }
+  else{
+    AliCDBEntry *entry = man->Get(out,-1);
+    if(!entry->GetObject()){
+      AliInfo("No DCS array found in CDB entry");
+    }
+     
+   else {
+      TObjArray *array = (TObjArray*)entry->GetObject();
+      TString alias[4]={"tof_lv_i48","tof_lv_v48","tof_lv_i33","tof_lv_v33"};
+      for (Int_t jj=0;jj<4;jj++){
+	AliInfo(Form("Alias = %s",alias[jj].Data()));
+	
+	AliTOFFormatDCS *dcs = (AliTOFFormatDCS*)array->At(jj);
+	for (Int_t i=0;i<3;i++){
+	  AliInfo(Form("set value %i to %f at %f",i,dcs->GetFloat(i),dcs->GetTimeStampFloat(i)));
+	}
+	for (Int_t i=0;i<2;i++){
+	  AliInfo(Form("set variation %i to %f at %f",i,dcs->GetDelta(i),dcs->GetTimeStampDelta(i)));
+	}
+	
+      }
+    }
+  }
+  
   //Retrieving the TOF calibration info  
   fTOFcalib    = new AliTOFcalib();
   fTOFcalib->CreateCalArrays();
