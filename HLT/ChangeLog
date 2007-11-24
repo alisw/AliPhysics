@@ -1,3 +1,31 @@
+2007-11-24 tagged AliRoot v4-08-Release
+	- libAliHLTTrigger added: selective ALTRO readout trigger
+	- libAliHLTComp added: Huffman compression of ALTRO data
+	- HOMER library manager added: dynamic creation of readers and
+	  writers
+	- Framework:
+	  - generalized data types for raw data
+	  - block forwarding
+	  - integration into AliSimulation
+	  - HLTOUT framework
+	  - component registration via agents
+	- TPC:
+	  - zero suppression enhanced in Pad/PadArray classes
+	  - AltroChannelSelector component
+	  - 
+	- MUON
+	  - calibration components
+	  - improved track matching and trigger record
+	- TRD
+	  - calibration, clusterizer and tracker components
+	- PHOS
+	  - full set of analysis components for PHOS Oct 2007 beamtime
+	  - analysis macros for recorded HLT data
+	  - MIP trigger
+	- Util
+	  - BlockFilter component
+	  - improvements in FileWriter
+	
 2007-10-16
 	- implemented component registration via agents
 	- added HLTOUT component as default data sink for simulation
