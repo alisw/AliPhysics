@@ -20,7 +20,7 @@
 //           Magnus Mager
 //
 //   Class for tranformation of the coordinate frame
-//   Tranformation  
+//   Transformation  
 //    local coordinate frame (sector, padrow, pad, timebine) ==>
 //    rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
 //
@@ -55,8 +55,10 @@
 #include "TMath.h"
 #include "AliLog.h"
 #include "AliTPCExB.h"
+#include "TGeoMatrix.h"
 #include "AliTPCTransform.h"
 
+ClassImp(AliTPCTransform)
 
 
 AliTPCTransform::AliTPCTransform() {
@@ -88,7 +90,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   Int_t row=TMath::Nint(x[0]);
   Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
-  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   //
   AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
   AliTPCParam  * param    = calib->GetParameters(); 
@@ -137,7 +139,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   //  
   //
-  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();
   AliTPCParam  * param    = calib->GetParameters(); 
   if (!param){
     AliFatal("Parameters missing");
@@ -207,5 +209,4 @@ inline void AliTPCTransform::GetCosAndSin(Int_t sector,Double_t &cos,
   sin=fSins[sector%18];
 }
 
-ClassImp(AliTPCTransform)
 
