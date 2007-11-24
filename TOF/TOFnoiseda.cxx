@@ -16,10 +16,7 @@ Trigger types used: PHYSICS_EVENT (for the time being)
 // DATE
 #include "event.h"
 #include "monitor.h"
-extern "C" {
-#include <daqDA.h>
-}
-//#include "daqDA.h"
+#include "daqDA.h"
 
 #include <stdio.h>
 #include <stdlib.h>
