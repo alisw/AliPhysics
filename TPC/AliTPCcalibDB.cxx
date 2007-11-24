@@ -21,16 +21,31 @@
 // Request an instance with AliTPCcalibDB::Instance()                        //
 // If a new event is processed set the event number with SetRun              //
 // Then request the calibration data                                         ////
+
+//
+//
 // Calibration data:
 // 1.)  pad by pad calibration -  AliTPCCalPad
+//      
 //      a.) fPadGainFactor
 //          Simulation: AliTPCDigitizer::ExecFast - Multiply by gain
 //          Reconstruction : AliTPCclustererMI::Digits2Clusters - Divide by gain  
+//
 //      b.) fPadNoise -
 //          Simulation:        AliTPCDigitizer::ExecFast
 //          Reconstruction:    AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
 //                             Noise depending cut on clusters (n sigma)
-//          
+//      c.) fPedestal:
+//          Simulation:     Not used yet - To be impleneted - Rounding to the nearest integer
+//          Reconstruction: Used in AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader) 
+//                          if data taken without zero suppression  
+//                          Currently switch in  fRecoParam->GetCalcPedestal();
+//      
+//      d.) fPadTime0
+//          Simulation:      applied in the AliTPC::MakeSector - adding offset
+//          Reconstruction:  AliTPCTransform::Transform() - remove offset
+//                           AliTPCTransform::Transform() - to be called
+//                           in AliTPCtracker::Transform()      
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
@@ -111,7 +126,7 @@ void AliTPCcalibDB::Terminate()
 //_____________________________________________________________________________
 AliTPCcalibDB::AliTPCcalibDB():
   fRun(-1),
-  fTrafo(0),
+  fTransform(0),
   fExB(0),
   fPadGainFactor(0),
   fPadTime0(0),
@@ -231,8 +246,9 @@ void AliTPCcalibDB::Update(){
     fExB=dynamic_cast<AliTPCExB*>(entry->GetObject()->Clone());
   }
 
-  delete fTrafo;
-  fTrafo=new AliTPCTransform(); 
+  if (!fTransform) {
+    fTransform=new AliTPCTransform(); 
+  }
 
   //
   AliCDBManager::Instance()->SetCacheFlag(cdbCache); // reset original CDB cache

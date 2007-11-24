@@ -29,7 +29,7 @@ class AliTPCcalibDB : public TObject
   static void Terminate();
   void   SetRun(Long64_t run);   
   //
-  AliTPCTransform* GetTransform() {return fTrafo;}
+  AliTPCTransform* GetTransform() {return fTransform;}
   AliTPCExB* GetExB() {return fExB;}
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
@@ -45,7 +45,7 @@ protected:
   void         Update();  //update entries
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
   Long64_t        fRun;         // current run number
-  AliTPCTransform *fTrafo;      // object responsible for spacial corrections
+  AliTPCTransform *fTransform;      // object responsible for spacial corrections
   AliTPCExB *fExB;              // ExB correction factor
 //  AliCDBStorage* fLocator;      // Storage locator retrieved from AliCDBManager
   //
