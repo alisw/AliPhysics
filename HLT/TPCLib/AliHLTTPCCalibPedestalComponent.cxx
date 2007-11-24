@@ -210,9 +210,9 @@ Int_t AliHLTTPCCalibPedestalComponent::ProcessCalibration( const AliHLTComponent
   while ( iter != NULL ) {
     
     // ** Print Debug output which data format was received
-    char tmp1[14], tmp2[14];
-    DataType2Text( iter->fDataType, tmp1 );
-    DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
+    //    char tmp1[14], tmp2[14];
+    //DataType2Text( iter->fDataType, tmp1 );
+    //DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
 
 //     HLTDebug ( "Event received - Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
 // 	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
