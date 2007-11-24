@@ -25,6 +25,7 @@
  *           ('void' and 'any' origins); added signed HLT basic data types
  *           2007-11-23 origin defines have become variables in conjunction
  *           to be used with the operator| (AliHLTComponentDatatType
+ *           2007-11-24 added trigger structs
  */
 #define ALIHLT_DATA_TYPES_VERSION 3
 
@@ -240,17 +241,6 @@ extern "C" {
   };
 
   /**
-   * @struct AliHLTComponentTriggerData
-   * Trigger data, not yet defined
-   */
-  struct AliHLTComponentTriggerData
-  {
-    AliHLTUInt32_t fStructSize;
-    AliHLTUInt32_t fDataSize;
-    void* fData;
-  };
-
-  /**
    * @struct AliHLTComponentEventDoneData
    * 
    */
@@ -273,6 +263,18 @@ extern "C" {
     AliHLTUInt32_t fRunType;
   };
 
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // Trigger meta information
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+  /** field size of fAttribute */
+  static const int gkAliHLTBlockDAttributeCount = 8;
+
+  /** field size of fCommonHeader */
+  static const int gkAliHLTCommonHeaderCount = 8;
+
   /** size of the DDL list */
   static const int gkAliHLTDDLListSize = 29;
 
@@ -280,11 +282,73 @@ extern "C" {
    * @struct AliHLTEventDDL
    * DDL list event.
    * The struct is send with the DDLLIST event.
+   * Used in the trigger structure for internal apperance of 
+   * the DLLs as well as for the HLT readout list send to DAQ 
+   * ( as DataType :kAliHLTDataTypeDDL  )
    */
   struct AliHLTEventDDL
   {
     AliHLTUInt32_t fCount;
     AliHLTUInt32_t fList[gkAliHLTDDLListSize];
+  };
+
+  /**
+   * @struct AliHLTBlockHeader
+   * 1 to 1 copy from HLT framework, remember before changeing
+   */
+  struct AliHLTBlockHeader
+  {
+    AliHLTUInt32_t fLength;
+    union 
+    {
+      AliHLTUInt32_t      fID;
+      AliHLTUInt8_t       fDescr[4];
+    } fType;
+    union 
+    {
+      AliHLTUInt32_t      fID:24;
+      AliHLTUInt8_t       fDescr[3];
+    } fSubType;
+    AliHLTUInt8_t fVersion;
+  };
+  
+  /**
+   * @struct AliHLTEventTriggerStruct
+   * 1 to 1 copy from HLT framework, remember before changeing
+   */
+  struct AliHLTEventTriggerStruct
+  {
+    AliHLTBlockHeader fHeader;
+    AliHLTUInt32_t fDataWordCount;
+    AliHLTUInt32_t fDataWords[0];
+  };
+
+  /**
+   * @struct AliHLTEventTriggerData
+   * 1 to 1 copy from HLT framework, remember before changeing
+   */
+  struct AliHLTEventTriggerData
+  {
+    AliHLTEventTriggerStruct fETS;
+    AliHLTUInt8_t  fAttributes[gkAliHLTBlockDAttributeCount]; 
+    /** Bit field */
+    AliHLTUInt64_t fHLTStatus; 
+    AliHLTUInt32_t fCommonHeaderWordCnt;
+    AliHLTUInt32_t fCommonHeader[gkAliHLTCommonHeaderCount]; 
+    /** First word holds number of words (excluding first word) */
+    //AliHLTUInt32_t fReadoutList[gkAliHLTDDLListSize+1];  
+    AliHLTEventDDL fReadoutList;
+  };
+
+  /**
+   * @struct AliHLTComponentTriggerData
+   * Trigger data
+   */
+  struct AliHLTComponentTriggerData
+  {
+    AliHLTUInt32_t fStructSize;
+    AliHLTUInt32_t fDataSize;
+    void* fData;
   };
 
   //////////////////////////////////////////////////////////////////////////
