@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.4  2007/05/18 13:08:57  decaro
+Coding convention: RS1 violation -> suppression
+
 Revision 1.3  2007/05/08 11:56:05  arcelli
 improved verbosity in verbose mode (R.Preghenella)
 
@@ -41,6 +44,7 @@ TOF Raw Data decoder
 #include "AliLog.h"
 #include "AliTOFHitData.h"
 #include "AliTOFDecoder.h"
+#include "AliTOFGeometry.h"
 
 ClassImp(AliTOFDecoder)
 
@@ -778,3 +782,115 @@ AliTOFDecoder::Spider(AliTOFHitData hitData){
 
   return kFALSE;
 }
+//_____________________________________________________________________________
+void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
+
+  // method that fills array with the
+  // TOF channels indexes corresponding
+  // to DDL iDDL
+
+  AliTOFGeometry *geom = new AliTOFGeometry();
+  Int_t indexDDL = ddl%4;
+  Int_t iSector = Int_t(ddl/4);
+  //AliInfo(Form(" Sector = %i, DDL within sector = %i",iSector, indexDDL));
+  if (fVerbose){
+    AliInfo(Form(" Sector = %i, DDL within sector = %i",iSector, indexDDL));
+  }
+  Int_t Volume[5];
+  Volume[0]=iSector;
+  Int_t minPlate=0, maxPlate=0, minStrip2=0, maxStrip2=0, minPadz=0, maxPadz=0, minPadx=0, maxPadx=0;
+
+  if (indexDDL==0){
+    minPlate=kMinPlate0;
+    maxPlate=kMaxPlate0;
+    minStrip2=kMinStrip0;
+    maxStrip2=kMaxStrip0;
+    minPadz=kMinPadz0;
+    maxPadz=kMaxPadz0;
+    minPadx=kMinPadx0;
+    maxPadx=kMaxPadx0;
+  }
+
+  else if (indexDDL==1){
+    minPlate=kMinPlate1;
+    maxPlate=kMaxPlate1;
+    minStrip2=kMinStrip1;
+    maxStrip2=kMaxStrip1;
+    minPadz=kMinPadz1;
+    maxPadz=kMaxPadz1;
+    minPadx=kMinPadx1;
+    maxPadx=kMaxPadx1;
+  }
+
+  else if (indexDDL==2){
+    minPlate=kMinPlate2;
+    maxPlate=kMaxPlate2;
+    minStrip2=kMinStrip2;
+    maxStrip2=kMaxStrip2;
+    minPadz=kMinPadz2;
+    maxPadz=kMaxPadz2;
+    minPadx=kMinPadx2;
+    maxPadx=kMaxPadx2;
+  }
+
+  else if (indexDDL==3){
+    minPlate=kMinPlate3;
+    maxPlate=kMaxPlate3;
+    minStrip2=kMinStrip3;
+    maxStrip2=kMaxStrip3;
+    minPadz=kMinPadz3;
+    maxPadz=kMaxPadz3;
+    minPadx=kMinPadx3;
+    maxPadx=kMaxPadx3;
+  }
+
+  Int_t ichTOF=0;
+
+  Int_t minStrip=0;
+  Int_t maxStrip=18;  
+  for (Int_t iPlate=minPlate;iPlate<=maxPlate;iPlate++){
+    if (iPlate==2) {
+      maxStrip = maxStrip2;
+      minStrip = minStrip2;
+    }
+    else {
+      maxStrip = 18;
+      minStrip = 0;
+    }
+    for (Int_t iStrip=minStrip;iStrip<=maxStrip;iStrip++){
+      for (Int_t iPadz=minPadz;iPadz<=maxPadz;iPadz++){
+	for (Int_t iPadx=minPadx;iPadx<=maxPadx;iPadx++){
+	  Volume[1]=iPlate;
+	  Volume[2]=iStrip;
+	  Volume[3]=iPadz;
+	  Volume[4]=iPadx;
+	  if (fVerbose){
+	    AliInfo(Form(" Volume[0] = %i, Volume[1] = %i, Volume[2] = %i, Volume[3] = %i, Volume[4] = %i",Volume[0],Volume[1],Volume[2],Volume[3],Volume[4]));
+	  }
+	  if (indexDDL==0 || indexDDL==2){
+	    array[ichTOF]=geom->GetIndex(Volume);
+	    if (fVerbose){
+	      AliInfo(Form(" ichTOF = %i, TOFChannel = %i",ichTOF,array[ichTOF]));
+	    }
+	  }
+	  else {
+	    array[ichTOF]=geom->GetIndex(Volume);
+	    if (fVerbose){
+	      AliInfo(Form(" ichTOF = %i, TOFChannel = %i",ichTOF,array[ichTOF]));
+	    }
+	  }
+	  ichTOF++;
+	}
+      }
+    }
+  }
+  //AliInfo(Form("ichTOF = %i",ichTOF));
+  if (((indexDDL==0 || indexDDL==2)&ichTOF!=2160) || ((indexDDL==1 || indexDDL==3)&ichTOF!=2208)){
+    AliWarning(Form("Something strange occurred, number of entries in array different from expected! Please, check! ichTOF = %i",ichTOF));
+  }
+  return;
+}
+
+
+
+  

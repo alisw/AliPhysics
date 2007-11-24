@@ -104,6 +104,33 @@ class AliTOFDecoder : public TObject
   void   SetV2718Patch(Bool_t V2718Patch = kTRUE) {fV2718Patch = V2718Patch;}; //set V2718 patch (no DRM)
   void   SetDataBuffer(AliTOFHitDataBuffer *DB) {fDataBuffer = DB;}; //set up data buffer
   void   SetPackedDataBuffer(AliTOFHitDataBuffer *PDB) {fPackedDataBuffer = PDB;}; //set up packed data buffer
+
+  void GetArrayDDL(Int_t* array, Int_t iDDL); // method to return array of TOFchannels corresponding to a given DDL id 
+
+enum {
+  kMinPlate0=0,kMaxPlate0=2,
+  kMinStrip0=0,kMaxStrip0=6,
+  kMinPadz0=0,kMaxPadz0=1,
+  kMinPadx0=0,kMaxPadx0=23,
+
+  kMinPlate1=0,kMaxPlate1=2,
+  kMinStrip1=0,kMaxStrip1=7,
+  kMinPadz1=0,kMaxPadz1=1,
+  kMinPadx1=24,kMaxPadx1=47,
+
+  kMinPlate2=2,kMaxPlate2=4,
+  kMinStrip2=8,kMaxStrip2=14,
+  kMinPadz2=0,kMaxPadz2=1,
+  kMinPadx2=24,kMaxPadx2=47,
+
+  kMinPlate3=2,kMaxPlate3=4,
+  kMinStrip3=7,kMaxStrip3=14,
+  kMinPadz3=0,kMaxPadz3=1,
+  kMinPadx3=0,kMaxPadx3=23
+
+};
+
+
  private:
   /* SPIDER
    * - Software Packing Inside Decoding Routines -
@@ -137,7 +164,7 @@ class AliTOFDecoder : public TObject
   Bool_t        fSpiderLeadingFlag[N_CHANNEL]; //SPIDER channel leading flag
   AliTOFHitData fSpiderLeadingHit[N_CHANNEL]; //SPIDER channel leading hit
 
-  ClassDef(AliTOFDecoder, 1)
+  ClassDef(AliTOFDecoder, 2)
 };
 
 #endif /* ALITOFDECODER_H */
