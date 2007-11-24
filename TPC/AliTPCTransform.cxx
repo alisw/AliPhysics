@@ -1,12 +1,38 @@
-#include "AliTPCROC.h"
-#include "AliTPCCalPad.h"
-#include "AliTPCCalROC.h"
-#include "AliTPCcalibDB.h"
-#include "AliTPCParam.h"
-#include "TMath.h"
-#include "AliLog.h"
-#include "AliTPCExB.h"
-#include "AliTPCTransform.h"
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//-------------------------------------------------------
+//          Implementation of the TPC transformation class
+//
+//   Origin: Marian Ivanov   Marian.Ivanov@cern.ch
+//           Magnus Mager
+//
+//   Class for tranformation of the coordinate frame
+//   Tranformation  
+//    local coordinate frame (sector, padrow, pad, timebine) ==>
+//    rotated global (tracking) cooridnate frame (sector, lx,ly,lz)
+//
+//    Unisochronity  - (substract time0 - pad by pad)
+//    Drift velocity - Currently common drift velocity - functionality of AliTPCParam
+//    ExB effect     - 
+//
+//    Usage:
+//          AliTPCclustererMI::AddCluster
+//          AliTPCtrackerMI::Transform
+//    
+//-------------------------------------------------------
 
 /* To test it:
    cdb=AliCDBManager::Instance()
@@ -18,6 +44,20 @@
    AliTPCTransform trafo
    trafo.Transform(x,i,0,1)
  */
+
+/* $Id$ */
+
+#include "AliTPCROC.h"
+#include "AliTPCCalPad.h"
+#include "AliTPCCalROC.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCParam.h"
+#include "TMath.h"
+#include "AliLog.h"
+#include "AliTPCExB.h"
+#include "AliTPCTransform.h"
+
+
 
 AliTPCTransform::AliTPCTransform() {
   //
@@ -88,11 +128,11 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
 void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   //
   //  
-  // 
+  // Tranform coordinate from  
+  // row, pad, time to x,y,z
   //
-  // Drift Velocity - time bin to the 
-  // Current implementation - common drift velocity 
-  // for full chamber
+  // Drift Velocity 
+  // Current implementation - common drift velocity - for full chamber
   // TODO: use a map or parametrisation!
   //
   //  
@@ -125,17 +165,11 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   }
   //
   // X coordinate
-  x[0] = param->GetPadRowRadii(sector,row);
-  // padrow X position - ideal
+  x[0] = param->GetPadRowRadii(sector,row);  // padrow X position - ideal
   //
   // Y coordinate
   //
   x[1]=(x[1]-0.5*maxPad)*padWidth;
-  //  if (!fRecoParam->GetBYMirror()){
-  //     if (sector%36>17){
-  //       x[1] *=-1.;
-  //     }
-  //   }
   //
   // Z coordinate
   //

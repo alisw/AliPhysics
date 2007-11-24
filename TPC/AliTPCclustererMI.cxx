@@ -51,6 +51,7 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCclusterInfo.h"
 #include "AliTPCclusterMI.h"
+#include "AliTPCTransform.h"
 #include "AliTPCclustererMI.h"
 
 ClassImp(AliTPCclustererMI)
@@ -319,14 +320,12 @@ AliTPCclusterMI &c)
     meanj +=j0;
     //set cluster parameters
     c.SetQ(sumw);
-    c.SetY(meani*fPadWidth); 
-    c.SetZ(meanj*fZWidth); 
-    c.SetPad(meani);
-    c.SetTimeBin(meanj);
+    c.SetPad(meani-2.5);
+    c.SetTimeBin(meanj-2.5);
     c.SetSigmaY2(mi2);
     c.SetSigmaZ2(mj2);
+    c.SetType(0);
     AddCluster(c,(Float_t*)vmatrix,k);
-
     return;     
   }
   //
@@ -350,10 +349,8 @@ AliTPCclusterMI &c)
   meanj +=j0;
   //set cluster parameters
   c.SetQ(sumu);
-  c.SetY(meani*fPadWidth); 
-  c.SetZ(meanj*fZWidth); 
-  c.SetPad(meani);
-  c.SetTimeBin(meanj);
+  c.SetPad(meani-2.5);
+  c.SetTimeBin(meanj-3);
   c.SetSigmaY2(mi2);
   c.SetSigmaZ2(mj2);
   c.SetType(Char_t(overlap)+1);
@@ -517,51 +514,56 @@ Float_t AliTPCclustererMI::FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, F
 
 void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t pos){
   //
-  // transform cluster to the global coordinata
-  // add the cluster to the array
   //
-  Float_t meani = c.GetY()/fPadWidth;
-  Float_t meanj = c.GetZ()/fZWidth;
+  // Transform cluster to the rotated global coordinata
+  // Assign labels to the cluster
+  // add the cluster to the array
+  // for more details - See  AliTPCTranform::Transform(x,i,0,1) 
+  Float_t meani = c.GetPad();
+  Float_t meanj = c.GetTimeBin();
 
-  Int_t ki = TMath::Nint(meani-3);
+  Int_t ki = TMath::Nint(meani);
   if (ki<0) ki=0;
   if (ki>=fMaxPad) ki = fMaxPad-1;
-  Int_t kj = TMath::Nint(meanj-3);
+  Int_t kj = TMath::Nint(meanj);
   if (kj<0) kj=0;
   if (kj>=fMaxTime-3) kj=fMaxTime-4;
-  // ki and kj shifted to "real" coordinata
+  // ki and kj shifted as integers coordinata
   if (fRowDig) {
     c.SetLabel(fRowDig->GetTrackIDFast(kj,ki,0)-2,0);
     c.SetLabel(fRowDig->GetTrackIDFast(kj,ki,1)-2,1);
     c.SetLabel(fRowDig->GetTrackIDFast(kj,ki,2)-2,2);
   }
   
-  
+  c.SetRow(fRow);
+  c.SetDetector(fSector);
   Float_t s2 = c.GetSigmaY2();
   Float_t w=fParam->GetPadPitchWidth(fSector);
-  
   c.SetSigmaY2(s2*w*w);
   s2 = c.GetSigmaZ2(); 
-  w=fZWidth;
-  c.SetSigmaZ2(s2*w*w);
-  c.SetY((meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
-  c.SetPad(meani-2.5);
+  c.SetSigmaZ2(s2*fZWidth*fZWidth);
+  //
+  //
+  //
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  if (!transform) {
+    AliFatal("Tranformations not in calibDB");
+  }
+  Double_t x[3]={c.GetRow(),c.GetPad(),c.GetTimeBin()};
+  Int_t i[1]={fSector};
+  transform->Transform(x,i,0,1);
+  c.SetX(x[0]);
+  c.SetY(x[1]);
+  c.SetZ(x[2]);
+  //
+  //
   if (!fRecoParam->GetBYMirror()){
     if (fSector%36>17){
-      c.SetY(-(meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
+      c.SetY(-c.GetY());
     }
   }
-  c.SetTimeBin(meanj-3);
-  c.SetZ(fZWidth*(meanj-3)); 
-  c.SetZ(c.GetZ() - 3.*fParam->GetZSigma() + fParam->GetNTBinsL1()*fParam->GetZWidth()); // PASA delay + L1 delay
-  c.SetZ(fSign*(fParam->GetZLength(fSector) - c.GetZ()));
-  c.SetX(fRx);
-  c.SetDetector(fSector);
-  c.SetRow(fRow);
 
   if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
-    //c.SetSigmaY2(c.GetSigmaY2()*25.);
-    //c.SetSigmaZ2(c.GetSigmaZ2()*4.);
     c.SetType(-(c.GetType()+3));  //edge clusters
   }
   if (fLoop==2) c.SetType(100);
