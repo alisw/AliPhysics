@@ -32,5 +32,4 @@ struct AliHLTPHOSRcuCellEnergyDataStruct
   
 };
 
-
 #endif

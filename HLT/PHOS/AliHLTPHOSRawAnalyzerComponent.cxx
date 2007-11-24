@@ -19,7 +19,7 @@
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include "AliHLTPHOSRcuChannelDataStruct.h"
+//#include "AliHLTPHOSRcuChannelDataStruct.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
 #include "AliHLTPHOSBaseline.h"

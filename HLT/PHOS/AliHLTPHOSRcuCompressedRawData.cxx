@@ -17,6 +17,10 @@
  **************************************************************************/
 #include "AliHLTPHOSRcuCompressedRawData.h"
 
+//
+// Strucure for internal use containing compressed raw data for a single
+// readout partition/DDL/RCU
+//
 
 AliHLTPHOSRcuCompressedRawData::AliHLTPHOSRcuCompressedRawData()
 {

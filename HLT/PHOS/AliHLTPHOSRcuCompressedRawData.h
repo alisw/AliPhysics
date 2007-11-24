@@ -20,13 +20,12 @@
  **************************************************************************/
 
 
-
 struct  AliHLTPHOSRcuCompressedRawData
 {
   AliHLTPHOSRcuCompressedRawData();
   virtual ~AliHLTPHOSRcuCompressedRawData();
-  int *fTotalSize;
-  int *fDataBuffer;
+  int fTotalSize;
+  int *fBuffer;
 
 
 };

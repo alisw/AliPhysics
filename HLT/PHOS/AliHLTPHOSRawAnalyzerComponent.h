@@ -7,7 +7,7 @@
 
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
-class AliHLTPHOSRcuChannelDataStruct;
+//class AliHLTPHOSRcuChannelDataStruct;
 class AliHLTPHOSMapper;
 class AliHLTPHOSSanityInspector;
 class  AliAltroDecoder;      // decoder for altro payload
