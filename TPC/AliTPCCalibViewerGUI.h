@@ -59,7 +59,7 @@ public:
 
    void HandleButtonsGeneral(Int_t id = -1); // handles mutual radio button exclusions for general Tab
    void HandleButtons1D(Int_t id = -1);      // handles mutual radio button exclusions for 1D Tab
-   void HandleButtons2D(Int_t id = -1);      // handles mutual radio button exclusions for 2D Tab
+   void HandleButtons2D(Int_t id = -1){;}      // handles mutual radio button exclusions for 2D Tab
    void HandleButtonsStat(Int_t id = -1);    // handles statistic check boxes 
    void HandleButtonsRight(Int_t id = -1);   // handles mutual radio button exclusions for right side
    void DoNewSelection();                    // decides whether to redraw if user makes another selection
