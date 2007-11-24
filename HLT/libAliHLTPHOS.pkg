@@ -34,14 +34,10 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSRawAnalyzerPeakFinder.h \
 		  AliHLTPHOSSanityInspector.h \
 		  AliHLTPHOSDigitMaker.h \
-		  AliHLTPHOSRcuDigitMaker.h \
 		  AliHLTPHOSDigitMakerComponent.h \
-		  AliHLTPHOSRcuDigitMakerComponent.h \
 		  AliHLTPHOSDigit.h \
 		  AliHLTPHOSTreeMakerComponent.h \
-		  AliHLTPHOSRcuTreeMakerComponent.h \
 		  AliHLTPHOSTreeMaker.h \
-		  AliHLTPHOSRcuTreeMaker.h \
 		  AliHLTPHOSBaselineAnalyzer.h \
 		  AliHLTPHOSBaselineAnalyzerComponent.h \
 		  AliHLTPHOSBaseline.h \
@@ -67,14 +63,14 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
-		  AliHLTPHOSRcuChannelDataStruct.h \
 		  AliHLTPHOSValidChannelDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
-		  AliHLTPHOSDigitDataStruct.h
-
+		  AliHLTPHOSDigitDataStruct.h \
+		  AliHLTPHOSRcuCompressedRawData.h  \
+		  AliHLTPHOSCellCompressedRawData.h
 
 MODULE_DHDR:=	  HLTPHOSLinkDef.h
 
