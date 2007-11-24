@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.1  2006/10/26 09:13:24  arcelli
+ TOF Online Calibration channel (C.Zampolli)
+
 */  
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,14 +32,14 @@ ClassImp(AliTOFChannelOnline)
 
 //________________________________________________________________
 AliTOFChannelOnline::AliTOFChannelOnline():
-fStatus(kFALSE),
+fStatus(kTOFOnlineUnknown),
 fDelay(0)
 {
   //default constructor
 }
 
 //________________________________________________________________
-AliTOFChannelOnline::AliTOFChannelOnline(Bool_t status, Float_t delay):
+AliTOFChannelOnline::AliTOFChannelOnline(UChar_t status, Float_t delay):
 fStatus(status),
 fDelay(delay)
 {
@@ -46,7 +49,7 @@ fDelay(delay)
 //________________________________________________________________
 AliTOFChannelOnline::AliTOFChannelOnline(const AliTOFChannelOnline& channel) :
   TObject(channel),
-  fStatus(kFALSE),
+  fStatus(kTOFOnlineUnknown),
   fDelay(0)
 {
 // copy constructor

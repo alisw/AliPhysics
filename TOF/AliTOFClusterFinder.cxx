@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.30  2007/10/04 13:08:52  arcelli
+updates to comply with AliTOFGeometryV5 becoming AliTOFGeometry
+
 Revision 1.29  2007/10/03 10:42:33  arcelli
 updates to handle new AliTOFcluster, inheriting form AliCluster3D
 
@@ -946,8 +949,8 @@ void AliTOFClusterFinder::CalibrateRecPoint()
     AliTOFChannelOnline * calChannelOnline = (AliTOFChannelOnline* )calTOFArrayOnline->At(index);
 
     // Get channel status 
-    Bool_t status=calChannelOnline->GetStatus();
-    if(status)fTofClusters[ii]->SetStatus(!status); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
+    UChar_t status=calChannelOnline->GetStatus();
+    if((status & AliTOFChannelOnline::kTOFOnlineOk)!=(AliTOFChannelOnline::kTOFOnlineOk))fTofClusters[ii]->SetStatus(kFALSE); //odd convention, to avoid conflict with calibration objects currently in the db (temporary solution).
     // Get Rough channel online equalization 
     Double_t roughDelay=(Double_t)calChannelOnline->GetDelay();  // in ns
     AliDebug(2,Form(" channel delay (ns) = %f", roughDelay));

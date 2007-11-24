@@ -14,20 +14,31 @@ class AliTOFChannelOnline: public TObject {
 
 public:
   AliTOFChannelOnline();
-  AliTOFChannelOnline(Bool_t status, Float_t delay);
+  AliTOFChannelOnline(UChar_t status, Float_t delay);
   AliTOFChannelOnline(const AliTOFChannelOnline &chan);
   AliTOFChannelOnline& operator= (const AliTOFChannelOnline &chan);
   virtual ~AliTOFChannelOnline(){};
-  Bool_t   GetStatus()   	const {return fStatus;}
+  UChar_t  GetStatus()   	const {return fStatus;}
   Float_t  GetDelay()   	const {return fDelay;}
-  void	   SetStatus(Bool_t status) {fStatus=status;}
+  void	   SetStatus(UChar_t status) {fStatus=status;}
   void     SetDelay(Float_t val) {fDelay=val;}
 
+  enum{
+    kTOFOnlineUnknown=0x0, kTOFOnlineOk=0x2a, kTOFOnlineBad=0x15, 
+      kTOFHWOk=0x1, kTOFHWBad=0x2, kTOFHVUnknown=0x0,
+      kTOFPulserOk=0x4, kTOFPulserBad=0x8, kTOFPulserUnknown=0x0,
+      kTOFNoiseOk=0x10, kTOFNoiseBad=0x20, kTOFNoiseUnknown=0x0
+      };
+  
+  enum{
+    kRightShiftHW=0,kRightShiftPulser=2,kRightShiftNoise=4
+      };
+
 private:
-  Bool_t   fStatus;     // Status of the channel (0:on 1:off)
+  UChar_t  fStatus;     // Status of the channel (0:on 1:off)
   Float_t  fDelay;	// Delay
   //
-  ClassDef(AliTOFChannelOnline,1)    // TOF Sensor Online Calibration object
+  ClassDef(AliTOFChannelOnline,2)    // TOF Sensor Online Calibration object
 };
 
 #endif
