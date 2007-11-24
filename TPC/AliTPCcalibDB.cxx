@@ -20,8 +20,17 @@
 //                                                                           //
 // Request an instance with AliTPCcalibDB::Instance()                        //
 // If a new event is processed set the event number with SetRun              //
-// Then request the calibration data                                         // 
-//                                                                           //
+// Then request the calibration data                                         ////
+// Calibration data:
+// 1.)  pad by pad calibration -  AliTPCCalPad
+//      a.) fPadGainFactor
+//          Simulation: AliTPCDigitizer::ExecFast - Multiply by gain
+//          Reconstruction : AliTPCclustererMI::Digits2Clusters - Divide by gain  
+//      b.) fPadNoise -
+//          Simulation:        AliTPCDigitizer::ExecFast
+//          Reconstruction:    AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
+//                             Noise depending cut on clusters (n sigma)
+//          
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>

@@ -185,6 +185,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
 
   Int_t zerosup = param->GetZeroSup(); 
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor(); 
+  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise(); 
   //
   //Loop over segments of the TPC
     
@@ -197,6 +198,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
       continue;
      }
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(sec);  // pad gains per given sector
+    AliTPCCalROC * noiseROC = noiseTPC->GetCalROC(sec);  // noise per given sector
     digrow->SetID(segmentID);
 
     Int_t nrows = 0;
@@ -273,9 +275,10 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
 	  printf("problem\n");
 	}
 	q*= gain;
+	Float_t noisePad = noiseROC->GetValue(row,elem/nrows);
         //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
         Float_t noise  = pTPC->GetNoise();
-        q+=noise;
+        q+=noise*noisePad;
         q=TMath::Nint(q);
         if (q > zerosup)
          { 
@@ -385,6 +388,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   //Loop over segments of the TPC
     
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
+  AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   for (Int_t n=0; n<nentries; n++) {
     rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
     gime = rl->GetLoader("TPCLoader");
@@ -413,6 +417,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     }
 
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(sec);  // pad gains per given sector
+    AliTPCCalROC * noiseROC = noiseTPC->GetCalROC(sec);  // noise per given sector
     digrow->SetID(digarr[0]->GetID());
 
     Int_t nrows = digarr[0]->GetNRows();
@@ -452,8 +457,10 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
        //       Float_t noise  = gRandom->Gaus(0,param->GetNoise()*param->GetNoiseNormFac());  
        Float_t gain = gainROC->GetValue(row,col);
        q*= gain;
+       Float_t noisePad = noiseROC->GetValue(row, col);
+
        Float_t noise  = pTPC->GetNoise();
-       q+=noise;
+       q+=noise*noisePad;
         q=TMath::Nint(q);
         if (q > zerosup){ 
          
