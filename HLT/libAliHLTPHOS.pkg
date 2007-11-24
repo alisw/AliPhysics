@@ -69,8 +69,8 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
 		  AliHLTPHOSDigitDataStruct.h \
-		  AliHLTPHOSRcuCompressedRawData.h  \
-		  AliHLTPHOSCellCompressedRawData.h
+		  AliHLTPHOSRcuCompressedRawDataStruct.h  \
+		  AliHLTPHOSCellCompressedRawDataStruct.h
 
 MODULE_DHDR:=	  HLTPHOSLinkDef.h
 
