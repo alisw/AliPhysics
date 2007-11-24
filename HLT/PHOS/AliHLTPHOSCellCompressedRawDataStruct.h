@@ -1,3 +1,6 @@
+#ifndef ALIHLTPHOSCELLCOMPRESSEDRAWDATA_H
+#define ALIHLTPHOSCELLCOMPRESSEDRAWDATA_H
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -15,15 +18,18 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include "AliHLTPHOSCellCompressedRawData.h"
 
-AliHLTPHOSCellCompressedRawData::AliHLTPHOSCellCompressedRawData()
+struct  AliHLTPHOSCellCompressedRawData
 {
+  AliHLTPHOSCellCompressedRawData();
+  virtual ~AliHLTPHOSCellCompressedRawData();
+  
+  AliHLTUInt16_t fSize;                    // Total size of data from this channel
+  AliHLTUInt16_t fDataQuality;             // Quality
+  AliHLTUInt8_t  fAlgorithm;               // The algorithm used to calculate energy and TOF
+  AliHLTUInt8_t  fIsAttachedRawData;       // wether or not to attach the raw data
+  AliHLTUInt8_t *fRawData;                 // the raw data if attached
 
-}
+};
 
-AliHLTPHOSCellCompressedRawData::~AliHLTPHOSCellCompressedRawData()
-{
-
-}
-
+#endif
