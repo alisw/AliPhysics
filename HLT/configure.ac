@@ -630,14 +630,15 @@ AH_TEMPLATE([HLT_MUON],[hlt dimuon library])
 
 ALIMUON_LIBS=
 CHECK_HLTMODULE([dimuon],
-		[AliMUONVCluster.h], [$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON],
+		[AliMUONVCluster.h AliMUONTriggerIO.h], 
+		[$ALIROOT_CPPFLAGS -I$ALICE_ROOT/MUON],
 		[], [-L$ROOTLIBDIR], [$ROOTLIBS $ADD_ROOTLIBS],
 		[], [-L$ROOTLIBDIR $ALIROOT_LDFLAGS], 
 		[$ROOTLIBS $ADD_ROOTLIBS $ALIROOT_LIBS])
 
 if test "x$enable_module" = "xmissheader"; then
-  enable_module="no...requires.AliRoot>v4-07-Release"
-  enable_muon="no...requires.AliRoot>v4-07-Release"
+  enable_module="no...requires.AliRoot>=v4-08-Release"
+  enable_muon="no...requires.AliRoot>=v4-08-Release"
 elif test "x$enable_module" = "xforce"; then
   enable_muon="yes"
 else
