@@ -33,7 +33,6 @@ class AliTPCcalibDB : public TObject
   AliTPCExB* GetExB() {return fExB;}
   AliTPCCalPad* GetPadGainFactor() {return fPadGainFactor;}
   AliTPCCalPad* GetPadTime0() {return fPadTime0;}
-  AliTPCCalPad* GetPadPRFWidth() {return fPadPRFWidth;}
   AliTPCCalPad* GetPadNoise() {return fPadNoise;}
   AliTPCCalPad* GetPedestals() {return fPedestals;}
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
@@ -54,7 +53,6 @@ protected:
   //
   AliTPCCalPad* fPadGainFactor;   // Gain calibration entry
   AliTPCCalPad* fPadTime0;        // Time0 calibration entry
-  AliTPCCalPad* fPadPRFWidth;     // Pad Response Function width 
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCSensorTempArray* fTemperature; // Temperature calibration entry

@@ -106,7 +106,6 @@ AliTPCcalibDB::AliTPCcalibDB():
   fExB(0),
   fPadGainFactor(0),
   fPadTime0(0),
-  fPadPRFWidth(0),
   fPadNoise(0),
   fPedestals(0),
   fTemperature(0),
@@ -129,7 +128,6 @@ AliTPCcalibDB::~AliTPCcalibDB()
   // don't delete anything, CDB cache is active!
   //if (fPadGainFactor) delete fPadGainFactor;
   //if (fPadTime0) delete fPadTime0;
-  //if (fPadPRFWidth) delete fPadPRFWidth;
   //if (fPadNoise) delete fPadNoise;
 }
 
@@ -189,12 +187,6 @@ void AliTPCcalibDB::Update(){
     fPadTime0 = (AliTPCCalPad*)entry->GetObject();
   }
   //
-  entry          = GetCDBEntry("TPC/Calib/PadPRF");
-  if (entry){
-    //if (fPadPRFWidth) delete fPadPRFWidth;
-    entry->SetOwner(kTRUE);
-    fPadPRFWidth = (AliTPCCalPad*)entry->GetObject();
-  }
   //
   entry          = GetCDBEntry("TPC/Calib/PadNoise");
   if (entry){
