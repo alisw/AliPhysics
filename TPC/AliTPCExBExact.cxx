@@ -203,7 +203,12 @@ void AliTPCExBExact::TestThisBeautifulObjectGeneric(const char* fileName) {
 	Double_t dnlx=x[0]-dnl[0];
 	Double_t dnly=x[1]-dnl[1];
 	Double_t dnlz=x[2]-dnl[2];
+	Double_t b[3];
+	GetB(b,x);
 	ts<<"positions"
+	  <<"bx="<<b[0]
+	  <<"by="<<b[1]
+	  <<"bz="<<b[2]
 	  <<"x0="<<x[0]
 	  <<"x1="<<x[1]
 	  <<"x2="<<x[2]
