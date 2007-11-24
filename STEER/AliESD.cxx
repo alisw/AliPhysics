@@ -195,19 +195,23 @@ void AliESD::Reset()
   fZDCEMEnergy=0;
   fZDCParticipants=0;
   fT0zVertex=0;
-  fSPDVertex.~AliESDVertex();
-  new (&fSPDVertex) AliESDVertex();
-  fPrimaryVertex.~AliESDVertex();
-  new (&fPrimaryVertex) AliESDVertex();
+  
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=0.;
-  fSPDMult.~AliMultiplicity();
-  new (&fSPDMult) AliMultiplicity();
+
   for (Int_t i=0; i<24; i++) {
     fT0time[i] = 0;
     fT0amplitude[i] = 0;
   }
   fT0timeStart = 0;
+//
+  fSPDMult.~AliMultiplicity();
+  new (&fSPDMult) AliMultiplicity();
+  fSPDVertex.~AliESDVertex();
+  new (&fSPDVertex) AliESDVertex();
+  fPrimaryVertex.~AliESDVertex();
+  new (&fPrimaryVertex) AliESDVertex();
+//
   fTracks.Delete();
   fHLTConfMapTracks.Delete();
   fHLTHoughTracks.Delete();
@@ -216,20 +220,26 @@ void AliESD::Reset()
   fTrdTracks.Delete();
   fV0s.Delete();
   fCascades.Delete();
+  fKinks.Delete();
   fCaloClusters.Delete();
+//
   fEMCALClusters=0; 
   fFirstEMCALCluster=-1; 
   fPHOSClusters=0; 
   fFirstPHOSCluster=-1; 
+//
+  if (fEMCALTriggerPosition)   fEMCALTriggerPosition  ->Reset();
+  if (fEMCALTriggerAmplitudes) fEMCALTriggerAmplitudes->Reset();
+  if (fPHOSTriggerPosition)    fPHOSTriggerPosition   ->Reset();
+  if (fPHOSTriggerAmplitudes)  fPHOSTriggerAmplitudes ->Reset();
+//
   if (fESDFMD) fESDFMD->Clear();
+//
   if (fESDVZERO){
-    fESDVZERO->~AliESDVZERO();
-    new (fESDVZERO) AliESDVZERO();
+      fESDVZERO->~AliESDVZERO();
+      new (fESDVZERO) AliESDVZERO();
   } 
-//   fEMCALTriggerPosition->Clear();
-//   fEMCALTriggerAmplitudes->Clear();
-//   fPHOSTriggerPosition->Clear();
-//   fPHOSTriggerAmplitudes->Clear();
+//
   fErrorLogs.Delete();
 }
 
