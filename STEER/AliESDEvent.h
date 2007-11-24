@@ -342,7 +342,8 @@ protected:
  
 
 
-  AliESD    *fESDOld;              //! Old esd Structure
+  AliESD       *fESDOld;           //! Old esd Structure
+  AliESDfriend *fESDFriendOld;     //! Old friend esd Structure
   Bool_t    fConnected;            //! flag if leaves are alreday connected
 
   static const char* fgkESDListName[kESDListN]; //!

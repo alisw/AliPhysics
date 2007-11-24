@@ -41,6 +41,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDFMD.h"
 #include "AliESD.h"
+#include "AliESDfriend.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
@@ -112,6 +113,7 @@ AliESDEvent::AliESDEvent():
   fCaloClusters(0),
   fErrorLogs(0),
   fESDOld(0),
+  fESDFriendOld(0),
   fConnected(kFALSE),
   fEMCALClusters(0), 
   fFirstEMCALCluster(-1),
@@ -144,6 +146,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fCaloClusters(new TClonesArray(*esd.fCaloClusters)),
   fErrorLogs(new TClonesArray(*esd.fErrorLogs)),
   fESDOld(new AliESD(*esd.fESDOld)),
+  fESDFriendOld(new AliESDfriend(*esd.fESDFriendOld)),
   fConnected(esd.fConnected),
   fEMCALClusters(esd.fEMCALClusters), 
   fFirstEMCALCluster(esd.fFirstEMCALCluster),
@@ -205,7 +208,8 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fKinks = new TClonesArray(*source.fKinks);
   fCaloClusters = new TClonesArray(*source.fCaloClusters);
   fErrorLogs = new TClonesArray(*source.fErrorLogs);
-  fESDOld = new AliESD(*source.fESDOld);
+  fESDOld       = new AliESD(*source.fESDOld);
+  fESDFriendOld = new AliESDfriend(*source.fESDFriendOld);
   // CKB this way?? or 
   // or AddObject(  fESDZDC = new AliESDZDC(*source.fESDZDC));
 
@@ -906,15 +910,18 @@ void AliESDEvent::ReadFromTree(TTree *tree){
   if(!tree->GetTree())tree->LoadTree(0);
 
   // if we find the "ESD" branch on the tree we do have the old structure
-  if(tree->GetBranch("ESD")){
-    char ** address = (char **)(tree->GetBranch("ESD")->GetAddress());
+  if(tree->GetBranch("ESD")) {
+    char ** address  = (char **)(tree->GetBranch("ESD")->GetAddress());
+    char ** addressF = (char **)(tree->GetBranch("ESDfriend.")->GetAddress());
     if (!address) {
       printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
-      tree->SetBranchAddress("ESD",&fESDOld);
+      tree->SetBranchAddress("ESD",       &fESDOld);
+      tree->SetBranchAddress("ESDfriend.",&fESDFriendOld);
     } else {
       printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
       printf("%s %d Branch already connected. Using existing branch address. \n",(char*)__FILE__,__LINE__);
-      fESDOld = (AliESD*) (*address);
+      fESDOld       = (AliESD*)       (*address);
+      fESDFriendOld = (AliESDfriend*) (*addressF);
     }
        
     //  have already connected the old ESD structure... ?
@@ -1016,7 +1023,8 @@ void AliESDEvent::CopyFromOldESD()
 {
   // Method which copies over everthing from the old esd structure to the 
   // new  
-
+    printf("CopyFromOldESD \n");
+    
   if(fESDOld){
     ResetStdContent();
      // Run
@@ -1063,7 +1071,8 @@ void AliESDEvent::CopyFromOldESD()
     if(fESDOld->GetPrimaryVertex())SetPrimaryVertex(fESDOld->GetPrimaryVertex());
 
     if(fESDOld->GetMultiplicity())SetMultiplicity(fESDOld->GetMultiplicity());
-    
+
+    printf("CopyFromOldESD %d \n", fESDOld->GetNumberOfTracks());
     for(int i = 0;i<fESDOld->GetNumberOfTracks();i++){
       AddTrack(fESDOld->GetTrack(i));
     }
@@ -1096,6 +1105,7 @@ void AliESDEvent::CopyFromOldESD()
     for(int i = 0;i<fESDOld->GetNumberOfCaloClusters();i++){
       AddCaloCluster(fESDOld->GetCaloCluster(i));
     }
+
   }// if fesdold
 }
 
