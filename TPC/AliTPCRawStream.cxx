@@ -50,7 +50,7 @@ AliTPCRawStream::AliTPCRawStream(AliRawReader* rawReader, AliAltroMapping **mapp
 
   SelectRawData("TPC");
 
-  if (mapping = NULL) {
+  if (mapping == NULL) {
     TString path = gSystem->Getenv("ALICE_ROOT");
     path += "/TPC/mapping/Patch";
     TString path2;
