@@ -166,6 +166,9 @@ Bool_t AliJetAODReader::FillMomentumArray(Int_t /*event*/)
   // set the signal flags
   fSignalFlag.Set(aodTrack,sflag);
   fCutFlag.Set(aodTrack,cflag);
+  
+  delete [] sflag;
+  delete [] cflag;
 
   return kTRUE;
 }
