@@ -7,7 +7,7 @@ SAMPLE_DIR=SampleLib
 endif
 
 if EN_HLT_TPC
-TPC_DIR=TPCLib	
+TPC_DIR=TPCLib
 endif
 
 if EN_HLT_PHOS
@@ -26,6 +26,10 @@ if EN_HLT_COMP
 COMP_DIR=comp
 endif
 
+#if EN_HLT_TRIGGER
+TRIGGER_DIR=trigger
+#endif
+
 SUBDIRS 		= BASE \
 			  sim \
 			  rec \
@@ -35,6 +39,7 @@ SUBDIRS 		= BASE \
 			  $(TRD_DIR) \
 			  $(MUON_DIR) \
 			  $(COMP_DIR) \
+                          $(TRIGGER_DIR) \
 			  doc
 
 EXTRA_DIST		= libHLTbase.pkg \
@@ -49,6 +54,7 @@ EXTRA_DIST		= libHLTbase.pkg \
 			  libAliHLTTRD.pkg \
 			  libAliHLTMUON.pkg \
 			  libAliHLTComp.pkg \
+			  libAliHLTTrigger.pkg \
 			  hlt.conf
 
 DIST_SUBDIRS		= $(SUBDIRS)

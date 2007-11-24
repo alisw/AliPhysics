@@ -1,0 +1,51 @@
+#-*- Mode: Makefile -*-
+# $Id$
+
+# This files defines the source and header files for the
+# libAliHLTTrigger library and additional flags for the compilation
+# and linking process. For further information refer to the 
+# README.
+
+include $(MODDIR)/hlt.conf
+
+# class header files, the link definition for the root dictionary
+# will be created from the names of the header files
+CLASS_HDRS:= \
+		AliHLTTriggerSelectiveReadoutComponent.h
+
+# library sources
+MODULE_SRCS:= 	$(CLASS_HDRS:.h=.cxx)
+
+# library headers
+# in most cases you might have already added all the header files to
+# the CLASS_HDRS variable. So we just use the content of this. You
+# can simply add more header files which don't contain classes with
+# ROOT dictionary support
+MODULE_HDRS:= 	$(CLASS_HDRS)
+
+# The LinkDef file required by the ROOT dictionary generation can be
+# generated automatically. For the all header files specified in
+# CLASS_HDRS an entry will be generated
+# pragma link C++ class <class-name>+;
+#
+# If the default behavior is not enough, you can provide a custom
+# *LinkDef.h to the MODULE_DHDR variable. Leave MODULE_DHDR empty to
+# enable automatic generation. 
+MODULE_DHDR:= 		
+
+EINCLUDE := HLT/BASE HLT/trigger HLT/TPCLib
+
+###############################################################################
+#
+# do not change anything below this line
+#
+SRCS:=$(patsubst %,trigger/%,$(MODULE_SRCS))
+CINTHDRS:=$(patsubst %,trigger/%,$(CLASS_HDRS))
+HDRS:=$(patsubst %,trigger/%,$(MODULE_HDRS))
+DHDR:=$(patsubst %,trigger/%,$(MODULE_DHDR))
+CINTAUTOLINK:= $(shell test "x$(MODULE_DHDR)" = "x" &&! echo 1)
+
+EDEFINE      := ${HLTDEFS}
+PACKCXXFLAGS := ${HLTCXXFLAGS}
+PACKCFLAGS   := ${HLTCLFAGS}
+PACKDCXXFLAGS:= ${HLTDCXXFLAGS}

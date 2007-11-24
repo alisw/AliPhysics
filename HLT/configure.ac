@@ -788,6 +788,7 @@ AC_CONFIG_FILES([Makefile
 		 PHOS/Makefile
 		 TRD/Makefile
 		 MUON/Makefile
+		 trigger/Makefile
 		 comp/Makefile
 		 doc/Makefile
 		 doc/doxygen.conf])
