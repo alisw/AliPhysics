@@ -1,10 +1,12 @@
-#include "AliTPCTransform.h"
 #include "AliTPCROC.h"
+#include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
 #include "TMath.h"
+#include "AliLog.h"
 #include "AliTPCExB.h"
+#include "AliTPCTransform.h"
 
 /* To test it:
    cdb=AliCDBManager::Instance()
@@ -18,7 +20,9 @@
  */
 
 AliTPCTransform::AliTPCTransform() {
+  //
   // Speed it up a bit!
+  //
   for (Int_t i=0;i<18;++i) {
     Double_t alpha=TMath::DegToRad()*(10.+20.*(i%18));
     fSins[i]=TMath::Sin(alpha);
@@ -27,41 +31,53 @@ AliTPCTransform::AliTPCTransform() {
 }
 
 AliTPCTransform::~AliTPCTransform() {
+  //
+  // Destructor
+  //
 }
 
-void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t time,
-				Int_t coordinateType) {
-  // input: x[0] - pad
-  //        x[1] - pad row
+void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
+				Int_t /*coordinateType*/) {
+  // input: x[0] - pad row
+  //        x[1] - pad 
   //        x[2] - time in us
   //        i[0] - sector
   // output: x[0] - x (all in the rotated global coordinate frame)
   //         x[1] - y
   //         x[2] - z
-  Int_t row=TMath::Nint(x[1]);
-  Int_t pad=TMath::Nint(x[0]);
+  Int_t row=TMath::Nint(x[0]);
+  Int_t pad=TMath::Nint(x[1]);
   Int_t sector=i[0];
   AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  //
+  AliTPCCalPad * time0TPC = calib->GetPadTime0(); 
+  AliTPCParam  * param    = calib->GetParameters(); 
+  if (!time0TPC){
+    AliFatal("Time unisochronity missing");
+  }
+
+  if (!param){
+    AliFatal("Parameters missing");
+  }
+
   Double_t xx[3];
-
-  //ugly:  calib->SetRun(time);
-
-  // Time0
-  //TODO:  x[2]-=calib->GetPadTime0()->GetCalROC(sector)->GetValue(row,pad);
-
-  // Drift Velocity
-  // (cm/us)
-  // TODO: use a map or parametrisation!
-  x[2]*=2.66;
-
-  Pad2RotatedGlobal(pad,row,x);
-
+  //  Apply Time0 correction - Pad by pad fluctuation
+  //
+  x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
+  //
+  // Tranform from pad - time coordinate system to the rotated global (tracking) system
+  //
+  Local2RotatedGlobal(sector,x);
+  //
+  //
+  //
   // Alignment
   //TODO:  calib->GetParameters()->GetClusterMatrix(sector)->LocalToMaster(x,xx);
-
   RotatedGlobal2Global(sector,x);
-
-  // ExB
+  //
+  //
+  // ExB correction
+  //
   calib->GetExB()->Correct(x,xx);
 
   Global2RotatedGlobal(sector,xx);
@@ -69,17 +85,70 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t time,
   x[0]=xx[0];x[1]=xx[1];x[2]=xx[2];
 }
 
-inline void AliTPCTransform::Pad2RotatedGlobal(Int_t pad,Int_t row,Double_t *x)
-  const {
-  Float_t tmp[3];
-  AliTPCROC::Instance()->GetPositionLocal(0,row,pad,tmp);
-  x[0]=tmp[0];
-  x[1]=tmp[1];
+void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
+  //
+  //  
+  // 
+  //
+  // Drift Velocity - time bin to the 
+  // Current implementation - common drift velocity 
+  // for full chamber
+  // TODO: use a map or parametrisation!
+  //
+  //  
+  //
+  AliTPCcalibDB* const calib=AliTPCcalibDB::Instance();
+  AliTPCParam  * param    = calib->GetParameters(); 
+  if (!param){
+    AliFatal("Parameters missing");
+  }
+  Int_t row=TMath::Nint(x[0]);
+  Int_t pad=TMath::Nint(x[1]);
+  //
+  const Int_t kNIS=param->GetNInnerSector(), kNOS=param->GetNOuterSector();
+  Double_t sign = 1.;
+  Double_t zwidth    = param->GetZWidth();
+  Double_t padWidth  = 0;
+  Double_t padLength = 0;
+  Double_t    maxPad    = 0;
+  //
+  if (sector < kNIS) {
+    maxPad = param->GetNPadsLow(row);
+    sign = (sector < kNIS/2) ? 1 : -1;
+    padLength = param->GetPadPitchLength(sector,row);
+    padWidth = param->GetPadPitchWidth(sector);
+  } else {
+    maxPad = param->GetNPadsUp(row);
+    sign = ((sector-kNIS) < kNOS/2) ? 1 : -1;
+    padLength = param->GetPadPitchLength(sector,row);
+    padWidth  = param->GetPadPitchWidth(sector);
+  }
+  //
+  // X coordinate
+  x[0] = param->GetPadRowRadii(sector,row);
+  // padrow X position - ideal
+  //
+  // Y coordinate
+  //
+  x[1]=(x[1]-0.5*maxPad)*padWidth;
+  //  if (!fRecoParam->GetBYMirror()){
+  //     if (sector%36>17){
+  //       x[1] *=-1.;
+  //     }
+  //   }
+  //
+  // Z coordinate
+  //
+  x[2]*= zwidth;  // tranform time bin to the distance to the ROC
+  x[2]-= 3.*param->GetZSigma() + param->GetNTBinsL1()*zwidth;
+  // subtract the time offsets
+  x[2] = sign*( param->GetZLength(sector) - x[2]);
 }
 
-//TODO rotation in the right direction?
-inline void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x)
-  const {
+inline void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) const {
+  //
+  // transform possition rotated global to the global
+  //
   Double_t cos,sin;
   GetCosAndSin(sector,cos,sin);
   Double_t tmp=x[0];
@@ -87,8 +156,10 @@ inline void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x)
   x[1]=-sin*tmp+cos*x[1];
 }
 
-inline void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x)
-  const {
+inline void AliTPCTransform::Global2RotatedGlobal(Int_t sector,Double_t *x) const {
+  //
+  // tranform possition Global2RotatedGlobal
+  //
   Double_t cos,sin;
   GetCosAndSin(sector,cos,sin);
   Double_t tmp=x[0];

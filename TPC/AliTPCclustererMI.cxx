@@ -545,11 +545,13 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * matrix, Int_t p
   w=fZWidth;
   c.SetSigmaZ2(s2*w*w);
   c.SetY((meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
+  c.SetPad(meani-2.5);
   if (!fRecoParam->GetBYMirror()){
     if (fSector%36>17){
       c.SetY(-(meani - 2.5 - 0.5*fMaxPad)*fParam->GetPadPitchWidth(fSector));
     }
   }
+  c.SetTimeBin(meanj-3);
   c.SetZ(fZWidth*(meanj-3)); 
   c.SetZ(c.GetZ() - 3.*fParam->GetZSigma() + fParam->GetNTBinsL1()*fParam->GetZWidth()); // PASA delay + L1 delay
   c.SetZ(fSign*(fParam->GetZLength(fSector) - c.GetZ()));

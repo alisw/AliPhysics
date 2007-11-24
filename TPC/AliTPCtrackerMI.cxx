@@ -106,7 +106,8 @@
 #include "AliAlignObj.h"
 #include "AliTrackPointArray.h"
 #include "TRandom.h"
-//#include "AliTPCTransform.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCTransform.h"
 
 //
 
@@ -1301,19 +1302,28 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
   //
   //
-//   AliTPCTransform trafo;
-
-//   Double_t x[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
-//   Int_t i[1]={cluster->GetDetector()};
-
-//   trafo.Transform(x,i,0,1);
-
-//   cluster->SetX(x[0]);
-//   cluster->SetY(x[1]);
-//   cluster->SetZ(x[2]);
-
-//   return;
-
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  if (!transform) {
+    AliFatal("Tranformations not in calibDB");
+  }
+  Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+  Int_t i[1]={cluster->GetDetector()};
+  transform->Transform(x,i,0,1);
+  //
+  // in debug mode  check the transformation
+  //
+  if (AliTPCReconstructor::StreamLevel()>-1) {
+    TTreeSRedirector &cstream = *fDebugStreamer;
+    cstream<<"Transform"<<
+      "x0="<<x[0]<<
+      "x1="<<x[1]<<
+      "x2="<<x[2]<<
+      "Cl.="<<cluster<<
+      "\n"; 
+  }
+  cluster->SetX(x[0]);
+  cluster->SetY(x[1]);
+  cluster->SetZ(x[2]);
   // The old stuff:
 
   //
@@ -1328,9 +1338,9 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   else{
     // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
   }
-  //cluster->SetX(posC[0]);
-  //cluster->SetY(posC[1]);
-  //cluster->SetZ(posC[2]);
+  cluster->SetX(posC[0]);
+  cluster->SetY(posC[1]);
+  cluster->SetZ(posC[2]);
 }
 
 //_____________________________________________________________________________
