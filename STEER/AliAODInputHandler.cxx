@@ -29,7 +29,8 @@ ClassImp(AliAODInputHandler)
 
 //______________________________________________________________________________
 AliAODInputHandler::AliAODInputHandler() :
-  AliInputEventHandler()
+    AliInputEventHandler(),
+    fEvent(0)
 {
   // default constructor
 }
