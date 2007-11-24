@@ -13,7 +13,7 @@
     @brief  A digit reader implementation for simulated, packed TPC 'raw' data.
 */
 
-#define ENABLE_PAD_SORTING 1
+#define ENABLE_PAD_SORTING 0
 
 #include "AliHLTTPCDigitReader.h"
 

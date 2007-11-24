@@ -119,12 +119,18 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
       Int_t fPatch;                                                                  //!transient
 
       /*
+       * Switch to specify if one ship out a list of active pads.
+       * Used for the 2007 December run. 
+       */
+      Int_t fGetActivePads;                                                          //!transient
+
+      /*
        * Pointer to a PadArray object containing a double array of all the pads in
        * the current patch.
        */
       AliHLTTPCPadArray * fPadArray;                                                 //!transient
 
-      ClassDef(AliHLTTPCClusterFinderComponent, 1)
+      ClassDef(AliHLTTPCClusterFinderComponent, 2)
 
     };
 #endif

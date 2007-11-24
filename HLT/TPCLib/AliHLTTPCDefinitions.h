@@ -80,8 +80,10 @@ public:
   static const AliHLTComponentDataType fgkCalibPedestalDataType;   // see above
   /** signal calibration data */
   static const AliHLTComponentDataType fgkCalibPulserDataType;     // see above
+  /** active pads data type, Used for cosmics test december 2007 */
+  static const AliHLTComponentDataType fgkActivePadsDataType;     // see above
 
-  ClassDef(AliHLTTPCDefinitions, 0);
+  ClassDef(AliHLTTPCDefinitions, 1);
 
 };
 

@@ -72,7 +72,9 @@ AliHLTTPCPad::AliHLTTPCPad()
   fpRawData(NULL),
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
-  fSizeOfSignalPositionArray(0)
+  fSizeOfSignalPositionArray(0),
+  fNSigmaThreshold(0),
+  fSignalThreshold(0)
 {
   // see header file for class documentation
   // or
@@ -110,7 +112,9 @@ AliHLTTPCPad::AliHLTTPCPad(Int_t offset, Int_t nofBins)
   fpRawData(NULL),
   fDataSignals(NULL),
   fSignalPositionArray(NULL),
-  fSizeOfSignalPositionArray(0)
+  fSizeOfSignalPositionArray(0),
+  fNSigmaThreshold(0),
+  fSignalThreshold(0)
 {
   // see header file for class documentation
 }
@@ -125,7 +129,7 @@ AliHLTTPCPad::~AliHLTTPCPad()
   if (fDataSignals) {
     AliHLTTPCSignal_t* pData=fDataSignals;
     fDataSignals=NULL;
-   delete [] pData;
+    delete [] pData;
   }
   if (fSignalPositionArray) {
     //AliHLTTPCSignal_t* pData=fSignalPositionArray;
@@ -193,10 +197,10 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
 	    fAverage=fSum/fCount;
 	    //HLTDebug("new average %d", fAverage);
 	  } else {
-// 	    HLTDebug("baseline re-eveluation skipped because of to few "
-// 		       "contributing bins: total=%d, contributing=%d, req=%d"
-// 		       "\ndata might be already zero suppressed"
-// 		       , fTotal, fCount, reqMinCount);
+	    // 	    HLTDebug("baseline re-eveluation skipped because of to few "
+	    // 		       "contributing bins: total=%d, contributing=%d, req=%d"
+	    // 		       "\ndata might be already zero suppressed"
+	    // 		       , fTotal, fCount, reqMinCount);
 	    iResult=-ENODATA;
 	  }
 	  fCount=0;fSum=-1;
@@ -216,9 +220,9 @@ Int_t AliHLTTPCPad::CalculateBaseLine(Int_t reqMinCount)
       fAverage=avBackup;
     }
   } else {
-//     HLTDebug("baseline calculation skipped because of to few contributing "
-// 	       "bins: total=%d, contributing=%d, required=%d \ndata might be "
-// 	       "already zero suppressed", fTotal, fCount, reqMinCount);
+    //     HLTDebug("baseline calculation skipped because of to few contributing "
+    // 	       "bins: total=%d, contributing=%d, required=%d \ndata might be "
+    // 	       "already zero suppressed", fTotal, fCount, reqMinCount);
   }
 
   return iResult;
@@ -281,9 +285,9 @@ Int_t AliHLTTPCPad::AddBaseLineValue(Int_t bin, AliHLTTPCSignal_t value)
 	fBLMinBin=bin;
       }
     } else {
-//       HLTDebug("ignoring value %d (bin %d) for base line calculation "
-// 	       "(current average is %d)",
-// 	       value, bin, fAverage);
+      //       HLTDebug("ignoring value %d (bin %d) for base line calculation "
+      // 	       "(current average is %d)",
+      // 	       value, bin, fAverage);
     }
   }
   return iResult;
@@ -469,9 +473,167 @@ Int_t AliHLTTPCPad::GetDataSignal(Int_t bin) const
   return fDataSignals[bin];
 }
 
+void AliHLTTPCPad::ZeroSuppress(Double_t nSigma = 3,Int_t threshold = 20 ,Int_t reqMinPoint = AliHLTTPCTransform::GetNTimeBins()/2, Int_t beginTime = 50,Int_t endTime = AliHLTTPCTransform::GetNTimeBins()-1){
+  //see headerfile for documentation
+ 
+  Bool_t useSigma= kFALSE;
+  if(nSigma>0){
+    useSigma=kTRUE;
+  }
+  if(threshold<1 && nSigma<=0){
+    //setting the data to -1 for this pad
+    memset( fDataSignals, 0xFF, sizeof(Int_t)*(AliHLTTPCTransform::GetNTimeBins()));
+    fSizeOfSignalPositionArray=0;
+    return;
+  }
+  if(endTime>=AliHLTTPCTransform::GetNTimeBins()){
+    endTime=AliHLTTPCTransform::GetNTimeBins()-1;
+  }
+ 
+  Int_t fThresholdUsed=threshold;
+ 
+  Int_t nAdded=0;
+  Int_t sumNAdded=0;
+  fSizeOfSignalPositionArray=0;
+  for(Int_t i=beginTime;i<endTime+1;i++){
+    if(fDataSignals[i]>0){
+      nAdded++;
+      sumNAdded+=fDataSignals[i];
+    }
+  }
+ 
+  if(nAdded<reqMinPoint){
+    return;      //This will ensure that no data is read in FindClusterCandidates() (since fSizeOfSignalPositionArray=0)
+  }
+ 
+  Double_t averageValue=sumNAdded/nAdded;
+ 
+  Double_t sigma=0;
+  if(useSigma){
+    //Calculate the sigma
+    Double_t sumOfDifferenceSquared=0;
+    for(Int_t i=endTime;i>=beginTime;i--){
+      if(fDataSignals[i]>0){
+	if(fDataSignals[i]-averageValue<50){
+	  sumOfDifferenceSquared+=(fDataSignals[i]-averageValue)*(fDataSignals[i]-averageValue);
+	}
+	else{
+	  nAdded--;
+	}
+      }
+    }
+    sigma=sumOfDifferenceSquared/nAdded;
+    fThresholdUsed=(Int_t)(nSigma*sigma);
+  }
+     
+  //For now just set the adc value outside [beginTime,endTime] to -1
+  for(Int_t i=0;i<beginTime;i++){
+    fDataSignals[i]=-1;
+  }
+  for(Int_t i=endTime+1;i<AliHLTTPCTransform::GetNTimeBins();i++){
+    fDataSignals[i]=-1;
+  }
+ 
+  // Do zero suppression on the adc values within [beginTime,endTime]
+  for(Int_t i=endTime;i>=beginTime;i--){
+    //the +1 in the if below is there to avoid getting a signal which is 0, adding to the numbers you have to loop over in the end 
+    //(better to set it to -1 which is default for no signal)
+    if(fDataSignals[i]>(Int_t)(averageValue+fThresholdUsed+1) && fDataSignals[i-1]>(Int_t)(averageValue+fThresholdUsed+1)){
+      //here the signals below threshold to the right of the candidate is added
+      Bool_t contRight=kTRUE;
+      Int_t endRight=i;
+      Int_t nToAddRight=0;
+      while(contRight){
+	if(endRight+1<endTime){
+	  //      cout<<fDataSignals[endRight+1]<<"    "<<fDataSignals[endRight+2]<<endl;;
+	  if(fDataSignals[endRight+1]>=fDataSignals[endRight+2] && fDataSignals[endRight+1]>averageValue){
+	    nToAddRight++;
+	  }
+	  else{
+	    if(fDataSignals[endRight+1]> averageValue){
+	      nToAddRight++;
+	    }
+	    contRight=kFALSE;
+	  }
+	}
+	else if(endRight>endTime+1){
+	  contRight=kFALSE;
+	}
+	endRight++;
+      }
+      for(int j=i+nToAddRight;j>i;j--){
+	fDataSignals[j]=(Int_t)(fDataSignals[j]-averageValue);
+	fSignalPositionArray[fSizeOfSignalPositionArray]=j;
+	fSizeOfSignalPositionArray++;
+      }
+ 
+ 
+      //before while the two consecutive timebin values are added
+      fDataSignals[i]=(Int_t)(fDataSignals[i]-averageValue);
+      fSignalPositionArray[fSizeOfSignalPositionArray]=i;
+      fSizeOfSignalPositionArray++;
+      fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
+      fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
+      fSizeOfSignalPositionArray++;
+      i--;
+      //      cout<<""<<endl;
+      //Here the consecutive pads after the two first are added
+      if(i-1>0){
+	while(fDataSignals[i-1]>(Int_t)(averageValue+fThresholdUsed+1)){
+	  fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
+	  fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
+	  fSizeOfSignalPositionArray++;
+	  i--;
+	}
+      }
+      //adding the signal below threshold belonging to the total signal
+      Bool_t contLeft=kTRUE;
+      while(contLeft){
+	if(i-2>0){
+	  if(fDataSignals[i-1]>=fDataSignals[i-2] && fDataSignals[i-1]>averageValue){
+	    fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
+	    fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
+	    fSizeOfSignalPositionArray++;
+	    i--;
+	  }
+	  else{
+	    if(fDataSignals[i-1]> averageValue){
+	      fDataSignals[i-1]=(Int_t)(fDataSignals[i-1]-averageValue);
+	      fSignalPositionArray[fSizeOfSignalPositionArray]=i-1;
+	      fSizeOfSignalPositionArray++;
+	      i--;
+	    }
+	    contLeft=kFALSE;
+	  }
+	}
+	else{
+	  contLeft=kFALSE;
+	}
+ 
+      }
+    }
+  }
+  Int_t nReadFromPositionArray=0;
+  for(Int_t i=endTime;i>=beginTime;i--){
+    if(i==fSignalPositionArray[nReadFromPositionArray]){
+      nReadFromPositionArray++;
+    }
+    else{
+      fDataSignals[i]=-1;
+    } 
+  }
+}
+
 void AliHLTTPCPad::FindClusterCandidates()
 {
   // see header file for class documentation
+
+  if(fNSigmaThreshold>0){
+    ZeroSuppress(fNSigmaThreshold);
+  }
+  else if(fSignalThreshold>0){
+    ZeroSuppress((Double_t)0,(Int_t)fSignalThreshold);
+  }
   UInt_t seqcharge=0;
   UInt_t seqaverage=0;
   UInt_t seqerror=0;
@@ -480,7 +642,6 @@ void AliHLTTPCPad::FindClusterCandidates()
   UInt_t isFalling=0;
 
   for(Int_t pos=fSizeOfSignalPositionArray-2;pos>=0;pos--){
-
     if(fSignalPositionArray[pos]==fSignalPositionArray[pos+1]+1){
       seqcharge+=fDataSignals[fSignalPositionArray[pos+1]];	
       seqaverage += fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
@@ -556,34 +717,35 @@ void AliHLTTPCPad::FindClusterCandidates()
     else if(seqcharge>0){
       seqcharge+=fDataSignals[fSignalPositionArray[pos+1]];	
       seqaverage += fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
-	seqerror += fSignalPositionArray[pos+1]*fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
-	tmpPos.push_back(fSignalPositionArray[pos+1]);
-	tmpSig.push_back(fDataSignals[fSignalPositionArray[pos+1]]);
+      seqerror += fSignalPositionArray[pos+1]*fSignalPositionArray[pos+1]*fDataSignals[fSignalPositionArray[pos+1]];
+      tmpPos.push_back(fSignalPositionArray[pos+1]);
+      tmpSig.push_back(fDataSignals[fSignalPositionArray[pos+1]]);
 
-	//Calculate mean of sequence:
-	Int_t seqmean=0;
-	seqmean = seqaverage/seqcharge;
+      //Calculate mean of sequence:
+      Int_t seqmean=0;
+      seqmean = seqaverage/seqcharge;
 	
-	//Calculate mean in pad direction:
-	Int_t padmean = seqcharge*fPadNo;
-	Int_t paderror = fPadNo*padmean;
-	AliHLTTPCClusters candidate;
-	candidate.fTotalCharge   = seqcharge;
-	candidate.fPad       = padmean;
-	candidate.fPad2      = paderror;
-	candidate.fTime      = seqaverage;
-	candidate.fTime2     = seqerror;
-	candidate.fMean          = seqmean;
-	candidate.fLastMergedPad = fPadNo;
-	fClusterCandidates.push_back(candidate);
-	fUsedClusterCandidates.push_back(0);
-	isFalling=0;
-	seqcharge=0;
-	seqaverage=0;
-	seqerror=0;
+      //Calculate mean in pad direction:
+      Int_t padmean = seqcharge*fPadNo;
+      Int_t paderror = fPadNo*padmean;
+      AliHLTTPCClusters candidate;
+      candidate.fTotalCharge   = seqcharge;
+      candidate.fPad       = padmean;
+      candidate.fPad2      = paderror;
+      candidate.fTime      = seqaverage;
+      candidate.fTime2     = seqerror;
+      candidate.fMean          = seqmean;
+      candidate.fLastMergedPad = fPadNo;
+      fClusterCandidates.push_back(candidate);
+      fUsedClusterCandidates.push_back(0);
+      isFalling=0;
+      seqcharge=0;
+      seqaverage=0;
+      seqerror=0;
 
-	tmpPos.clear();
-	tmpSig.clear();
+      tmpPos.clear();
+      tmpSig.clear();
     }
   }
 }
+

@@ -20,7 +20,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#define UNSORTED 0
+#define UNSORTED 1
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCPadArray.h"
@@ -66,6 +66,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetThreshold(UInt_t i) {fThreshold=i;}
   void SetOccupancyLimit(Float_t f) {fOccupancyLimit=f;}
   void SetSignalThreshold(Int_t i) {fSignalThreshold=i;}
+  void SetNSigmaThreshold(Double_t d) {fNSigmaThreshold=d;}
   void SetMatchWidth(UInt_t i) {fMatch=i;}
   void SetSTDOutput(Bool_t f=kFALSE) {fStdout=f;}  
   void SetCalcErr(Bool_t f=kTRUE) {fCalcerr=f;}
@@ -77,6 +78,7 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void SetPadArray(AliHLTTPCPadArray *padArray);
   void ReadDataUnsorted(void* ptr,unsigned long size);
   void FindClusters();
+  Int_t GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads);
   void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
   
  private: 
@@ -105,7 +107,9 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   Int_t fMatch;          //size of match
   UInt_t fThreshold;     //threshold for clusters
   /** threshold for zero suppression (applied per bin) */
-  Int_t fSignalThreshold;
+  Int_t fSignalThreshold;// see above
+  /** threshold for zero suppression 2007 December run */
+  Double_t fNSigmaThreshold; // see above
   Int_t fNClusters;      //number of found clusters
   Int_t fMaxNClusters;   //max. number of clusters
   Float_t fXYErr;        //fixed error in XY

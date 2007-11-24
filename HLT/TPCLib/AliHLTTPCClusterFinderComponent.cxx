@@ -66,7 +66,8 @@ AliHLTTPCClusterFinderComponent::AliHLTTPCClusterFinderComponent(bool packed)
   fPackedSwitch(packed),
   fUnsorted(0),
   fPatch(0),
-  fPadArray(NULL)
+  fPadArray(NULL),
+  fGetActivePads(0)
 {
   // see header file for class documentation
   // or
@@ -130,6 +131,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   Int_t rawreadermode =  -1;
   Int_t sigthresh = -1;
+  Double_t sigmathresh= -1;
   Float_t occulimit = 1.0;
   Int_t oldRCUFormat=0;
   // Data Format version numbers:
@@ -241,6 +243,28 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       continue;
     }
 
+    // -- checking for active pads, used in 2007 December run
+    if ( !strcmp( argv[i], "activepads" ) ) {
+      fGetActivePads = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert activepads specifier '%s'. Should  be 0(off) or 1(on), must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+
+    // -- checking for nsigma-threshold, used in 2007 December run in ZeroSuppression
+    if ( !strcmp( argv[i], "nsigma-threshold" ) ) {
+       sigmathresh = strtoul( argv[i+1], &cpErr ,0);
+      if ( *cpErr ){
+	HLTError("Cannot convert nsigma-threshold specifier '%s'. Must be integer", argv[i+1]);
+	return EINVAL;
+      }
+      i+=2;
+      continue;
+    }
+
     Logging(kHLTLogError, "HLT::TPCClusterFinder::DoInit", "Unknown Option", "Unknown option '%s'", argv[i] );
     return EINVAL;
 
@@ -304,7 +328,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
   if ( (fXYClusterError>0) && (fZClusterError>0) )
     fClusterFinder->SetCalcErr( false );
   fClusterFinder->SetSignalThreshold(sigthresh);
-    
+  fClusterFinder->SetNSigmaThreshold(sigmathresh);
   if(fUnsorted&&fPatch>-1&&fPatch<6){
     fPadArray = new AliHLTTPCPadArray(fPatch);
     fPadArray->InitializeVector();
@@ -454,6 +478,28 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       outBPtr += mysize;
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 	
+      if(fGetActivePads){
+	AliHLTTPCPadArray::AliHLTTPCActivePads* outPtrActive;
+	UInt_t activePadsSize, activePadsN = 0;
+ 	outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
+ 	offset=tSize;
+ 	Int_t maxActivePads = (size-tSize)/sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
+ 	activePadsSize= fClusterFinder->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)outPtrActive,maxActivePads)*sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads);
+ 	
+ 	AliHLTComponentBlockData bdActive;
+ 	FillBlockData( bdActive );
+ 	bdActive.fOffset = offset;
+ 	bdActive.fSize = activePadsSize;
+ 	bdActive.fSpecification = iter->fSpecification;
+ 	bdActive.fDataType = AliHLTTPCDefinitions::fgkActivePadsDataType;
+ 	outputBlocks.push_back( bdActive );
+ 	
+ 	tSize+=activePadsSize;
+ 	outBPtr += activePadsSize;
+ 	outPtrActive = (AliHLTTPCPadArray::AliHLTTPCActivePads*)outBPtr;
+      }
+ 
+
       if ( tSize > size )
 	{
 	  Logging( kHLTLogFatal, "HLT::TPCClusterFinder::DoEvent", "Too much data", 

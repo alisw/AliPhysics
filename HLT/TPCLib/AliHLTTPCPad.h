@@ -264,6 +264,25 @@ public:
   Int_t GetDataSignal(Int_t bin) const;
 
   /**
+   * Zerosuppression where one can choose wether one want to cut on sigma(default 3) or a given adc threshold above baseline
+   * It works like this: Finds the signals above baseline+threshold, it then looks to the right of the signals adding the 
+   * the signal below threshold but over the average. It stops when the adc value rises (since you should expect a fall) 
+   * or if the signal in that bin is below average. It now does the same thing to the left. 
+   * This is a very timeconsuming approach(but good), and will likely only be used only for cosmics and laser.
+   * If you use sigma approach you can give as input n sigma or stick with default=3. For channels with very large signals 
+   * the (value-average)² is not calculated when value-average>50. This is due to sigma shooting sky high for only a few values.
+   * The method is checked with 2006 cosmics data, and it looks good.
+   * If you want to use the threshold approach you HAVE to set nSigma=-1 and threshold>0. For example: If you want all signals 
+   * 30 adc counts above threshold you should call the function like this: ZeroSuppress(-1,30)
+   * @param nSigma          Specify nSigma above threshold default=3
+   * @param threshold       Specify what adc threshold above average default=20 (remember to give nSigma=-1 if you want to use this approach)
+   * @param reqMinPoint     Required minimum number of points to do zerosuppression default AliHLTTPCTransform::GetNTimeBins/2 (1024/2).
+   * @param beginTime       Lowest timebin value. Gating grid causes some problems in the first timebins. default= 50
+   * @param endTime         Highest timebin value. Default AliHLTTPCTransform::GetNTimeBins-1
+   */
+  void ZeroSuppress(Double_t nSigma,Int_t threshold,Int_t reqMinPoint,Int_t beginTime,Int_t endTime);
+
+  /**
    * Finds the cluster candidate. If atleast two signals in the data array are neighbours
    * they are stored in a cluster candidate vector.
    */
@@ -272,7 +291,18 @@ public:
    * Prints the raw data og this pad.
    */
   void PrintRawData();
- 
+
+   /**
+   * Set the Signal Threshold
+   */
+  void SetSignalThreshold(Int_t i){fSignalThreshold=i;}
+
+  /**
+   * Set the nSigma threshold
+   */
+  void SetNSigmaThreshold(Double_t i){fNSigmaThreshold=i;}
+
+
   /**
    * Vector of cluster candidates
    */
@@ -343,7 +373,10 @@ public:
    */
   Int_t *fSignalPositionArray;                                     //! transient
   Int_t fSizeOfSignalPositionArray;                                //! transient
+  
+  Double_t fNSigmaThreshold;                                       //! transient
+  Double_t fSignalThreshold;                                       //! transient
 
-  ClassDef(AliHLTTPCPad, 1)
+  ClassDef(AliHLTTPCPad, 3)
 };
 #endif // ALIHLTTPCPAD_H

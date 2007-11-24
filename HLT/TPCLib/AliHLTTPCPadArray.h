@@ -37,6 +37,14 @@ class AliHLTTPCPadArray : public AliHLTLogging {
 
 public:
 
+  struct AliHLTTPCActivePads
+  {
+    UInt_t fPad;           //pad value
+    UInt_t fRow;           //row value
+  };
+  typedef struct AliHLTTPCActivePads AliHLTTPCActivePads; //!
+
+
   /** standard constructor */
   AliHLTTPCPadArray();
 
@@ -104,6 +112,24 @@ public:
    */
   void PrintClusters();
 
+  /**
+   * Set the Signal Threshold
+   */
+  void SetSignalThreshold(Int_t i){fSignalThreshold=i;}
+
+  /**
+   * Set the nSigma threshold
+   */
+  void SetNSigmaThreshold(Double_t i){fNSigmaThreshold=i;}
+
+
+  /**
+   * Loop over all pads adding pads with signal to active pads
+   * Returns number of active pads
+   *
+   */
+  Int_t GetActivePads(AliHLTTPCActivePads* activePads, Int_t maxActivePads);
+
   typedef vector<AliHLTTPCPad*> AliHLTTPCPadVector;
 
   vector<AliHLTTPCPadVector> fRowPadVector;                        //! transient
@@ -123,8 +149,15 @@ private:
 
   Int_t fLastRow;                                                  //! transient
 
-  //TODO: I suggest making the following UInt_t if it is never supposed to be negative.
+  //TODO: I suggest making the following UInt_t if it is never supposed to be negative. Will do!
+  /* total charge of Cluster threshold*/
   Int_t fThreshold;                                                //! transient
+
+  //TODO: I suggest making the following UInt_t if it is never supposed to be negative.
+  Int_t fSignalThreshold;                                                //! transient
+
+  //TODO: I suggest making the following UInt_t if it is never supposed to be negative.
+  Double_t fNSigmaThreshold;                                                //! transient
 
   Int_t* fNumberOfPadsInRow;                                       //! transient
 

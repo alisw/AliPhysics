@@ -55,7 +55,9 @@ AliHLTTPCPadArray::AliHLTTPCPadArray()
   fThreshold(10),
   fNumberOfPadsInRow(NULL),
   fNumberOfRows(0),
-  fDigitReader(NULL)
+  fDigitReader(NULL),
+  fSignalThreshold(0),
+  fNSigmaThreshold(0)
 {
   // see header file for class documentation
   // or
@@ -74,7 +76,9 @@ AliHLTTPCPadArray::AliHLTTPCPadArray(Int_t patch)
   fThreshold(10),
   fNumberOfPadsInRow(NULL),
   fNumberOfRows(0),
-  fDigitReader(NULL)
+  fDigitReader(NULL),
+  fSignalThreshold(0),
+  fNSigmaThreshold(0)
 {
   // see header file for class documentation
 }
@@ -451,6 +455,7 @@ void AliHLTTPCPadArray::PrintClusters()
 
 void AliHLTTPCPadArray::DataToDefault()
 {
+  //see header file for documentation
   for(Int_t i=0;i<fNumberOfRows;i++){
     for(Int_t j=0;j<fNumberOfPadsInRow[i];j++){
 	fRowPadVector[i][j]->SetDataToDefault();
@@ -460,9 +465,50 @@ void AliHLTTPCPadArray::DataToDefault()
 
 void AliHLTTPCPadArray::FindClusterCandidates()
 {
-  for(Int_t row=0;row<fNumberOfRows;row++){
-    for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
+  //see header file for documentation
+  if(fNSigmaThreshold>0){
+    for(Int_t row=0;row<fNumberOfRows;row++){
+      for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
+	fRowPadVector[row][pad]->SetNSigmaThreshold(fNSigmaThreshold);
 	fRowPadVector[row][pad]->FindClusterCandidates();
+      }
+    }
+  }
+  else if(fSignalThreshold>0){
+    for(Int_t row=0;row<fNumberOfRows;row++){
+      for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
+	fRowPadVector[row][pad]->SetSignalThreshold(fSignalThreshold);
+	fRowPadVector[row][pad]->FindClusterCandidates();
+      }
+    }
+  }
+  else{
+    for(Int_t row=0;row<fNumberOfRows;row++){
+      for(Int_t pad=0;pad<fNumberOfPadsInRow[row];pad++){
+	fRowPadVector[row][pad]->FindClusterCandidates();
+      }
     }
   }
 }
+Int_t AliHLTTPCPadArray::GetActivePads(AliHLTTPCActivePads * activePads,Int_t maxActivePads){
+  //see header file for documentation
+
+  Int_t counter=0;
+  for(Int_t row=0;row<fNumberOfRows;row++){
+    for(Int_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
+      if(fRowPadVector[row][pad]->fClusterCandidates.size()>0){
+ 	AliHLTTPCActivePads tmpAP;
+ 	tmpAP.fRow=row;
+  	tmpAP.fPad=pad;
+ 	activePads[counter]= tmpAP;
+ 	counter++;
+ 	if(counter>=maxActivePads){
+ 	  return counter;
+ 	}
+      }
+       
+    }
+  }  
+  return counter;
+}
+ 
