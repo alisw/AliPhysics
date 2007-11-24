@@ -274,7 +274,7 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * digit (0 - F)
    */
   //Char_t fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize];  // see above
-   Char_t fDDLNumber[64];  // see above
+  Char_t fDDLNumber[64];  // see above
 
   /** Dummy in order to cope with RC 11 */
   Int_t fDummy;                                        // see above

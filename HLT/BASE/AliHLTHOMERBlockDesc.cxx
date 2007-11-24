@@ -247,8 +247,11 @@ Bool_t AliHLTHOMERBlockDesc::CheckIfRawData() {
 TObject* AliHLTHOMERBlockDesc::GetTObject() {
   // see header file for class documentation
   
- if ( fMessage )
-   return (TObject*) fMessage->ReadObject( fMessage->GetClass() );
+  if ( fMessage ) {
+    TObject* obj = fMessage->ReadObject( fMessage->GetClass() );
+    fMessage->Reset();
+    return obj;
+  }
  else
    return NULL;
 }

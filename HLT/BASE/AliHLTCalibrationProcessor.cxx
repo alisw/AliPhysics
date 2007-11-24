@@ -201,24 +201,22 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
   Int_t iResult = 0;
 
   const AliHLTComponentBlockData* blkSOR = NULL;
+  blkSOR = GetFirstInputBlock( kAliHLTDataTypeSOR );
   const AliHLTComponentBlockData* blkEOR = NULL;
-  const AliHLTComponentBlockData* blkDDL = NULL;
+  blkEOR = GetFirstInputBlock( kAliHLTDataTypeEOR );
+
+  //  const AliHLTComponentBlockData* blkDDL = NULL;
 
   HLTInfo( "Event ID: %lu", evtData.fEventID );
 
-  // ---------------  START OF RUN -----------------
-  blkSOR = GetFirstInputBlock( kAliHLTDataTypeSOR );
-  
-  // ----------------  END OF RUN ------------------
-  blkEOR = GetFirstInputBlock( kAliHLTDataTypeEOR );
-  
+
   // --------------  GET DDLNumber -----------------
-  blkDDL = GetFirstInputBlock( kAliHLTDataTypeDDL );
+  //  blkDDL = GetFirstInputBlock( kAliHLTDataTypeDDL );
   
-  if ( blkDDL ) {
-    HLTInfo("DDLLIST block received, size: %u", blkDDL->fSize );
-    //AliHLTEventDDL ddlList = ( AliHLTEventDDL* ) iter->fPtr;
-  }
+  //  if ( blkDDL ) {
+  //HLTInfo("DDLLIST block received, size: %u", blkDDL->fSize );
+    //AliHLTEventDDL ddlList = ( AliHLTEventDDL* ) blkDDL->fPtr;
+  //}
   
   // ------------ decide which event type ----------
 

@@ -19,7 +19,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "TString.h"
-#include "TObject.h"
+#include "TNamed.h"
 
 /**
  * @class AliHLTHOMERSourceDesc
@@ -31,7 +31,7 @@
  * 
  * @ingroup alihlt_homer
  */
-class AliHLTHOMERSourceDesc : public TObject {
+class AliHLTHOMERSourceDesc : public TNamed {
 
 public:
 
