@@ -19,10 +19,8 @@
 #pragma link C++ class AliHLTPHOSDigitMaker+;
 #pragma link C++ class AliHLTPHOSBaseline+;
 #pragma link C++ class AliHLTPHOSTreeMaker+;
-#pragma link C++ class AliHLTPHOSRcuDigitMaker+;
 #pragma link C++ class AliHLTPHOSSanityInspector+;
 #pragma link C++ class AliHLTPHOSBaselineAnalyzer+;
-#pragma link C++ class AliHLTPHOSRcuTreeMaker+;
 
 
 #endif
