@@ -15,6 +15,7 @@ void TOFPreprocessor()
 {
   gSystem->Load("$ALICE/SHUTTLE/TestShuttle/libTestShuttle.so");
 
+  AliLog::SetClassDebugLevel("AliTOFPreprocessor",1);
   // initialize location of CDB
   AliTestShuttle::SetMainCDB("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestCDB");
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
@@ -31,6 +32,16 @@ void TOFPreprocessor()
   // processing files. for the time being, the files are local.
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "DELAYS", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Total.root");
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "RUNLevel", "MON", "$ALICE_ROOT/TOF/ShuttleInput/Partial.root");
+  char filename[100];
+  char LDCname[5];
+  for (Int_t iLDC=0;iLDC<2;iLDC++){
+    sprintf(filename,"$ALICE_ROOT/TOF/ShuttleInput/TOFoutPulserLDC_%02i.root",iLDC*2);
+    sprintf(LDCname,"LDC%i",iLDC*2);
+    shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "PULSER", LDCname, filename);
+    sprintf(filename,"$ALICE_ROOT/TOF/ShuttleInput/TOFoutNoiseLDC_%02i.root",iLDC*2);
+    sprintf(LDCname,"LDC%i",iLDC*2);
+    shuttle->AddInputFile(AliTestShuttle::kDAQ, "TOF", "NOISE", LDCname, filename);
+  }
 
   // instantiation of the preprocessor
   AliPreprocessor* pp = new AliTOFPreprocessor(shuttle);
@@ -42,8 +53,7 @@ void TOFPreprocessor()
   gBenchmark->Print("process");
 
   // checking the file which should have been created  
-  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
-  			->Get("TOF/Calib/ParOnline", 0);
+  AliCDBEntry* chkEntry = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())->Get("TOF/Calib/ParOnline", 0);
   if (!chkEntry)
   {
     printf("The file is not there. Something went wrong.\n");
