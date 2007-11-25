@@ -41,7 +41,6 @@
 #include "AliESDVZERO.h"
 #include "AliESDFMD.h"
 #include "AliESD.h"
-#include "AliESDfriend.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDPmdTrack.h"
 #include "AliESDTrdTrack.h"
@@ -912,18 +911,24 @@ void AliESDEvent::ReadFromTree(TTree *tree){
   // if we find the "ESD" branch on the tree we do have the old structure
   if(tree->GetBranch("ESD")) {
     char ** address  = (char **)(tree->GetBranch("ESD")->GetAddress());
-    char ** addressF = (char **)(tree->GetBranch("ESDfriend.")->GetAddress());
+    // do we have the friend branch
+    TBranch * esdFB = tree->GetBranch("ESDfriend.");
+    char ** addressF = 0;
+    if(esdFB)addressF = (char **)(esdFB->GetAddress());
     if (!address) {
       printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
       tree->SetBranchAddress("ESD",       &fESDOld);
-      tree->SetBranchAddress("ESDfriend.",&fESDFriendOld);
+      if(esdFB){
+	tree->SetBranchAddress("ESDfriend.",&fESDFriendOld);
+      }
     } else {
       printf("%s %d AliESDEvent::ReadFromTree() Reading old Tree \n",(char*)__FILE__,__LINE__);
       printf("%s %d Branch already connected. Using existing branch address. \n",(char*)__FILE__,__LINE__);
       fESDOld       = (AliESD*)       (*address);
-      fESDFriendOld = (AliESDfriend*) (*addressF);
+      // addressF can still be 0, since branch needs to switched on
+      if(addressF)fESDFriendOld = (AliESDfriend*) (*addressF);
     }
-       
+				       
     //  have already connected the old ESD structure... ?
     // reuse also the pointer of the AlliESDEvent
     // otherwise create new ones
@@ -932,14 +937,37 @@ void AliESDEvent::ReadFromTree(TTree *tree){
   
     if(connectedList){
       // If connected use the connected list of objects
-      fESDObjects->Delete();
-      fESDObjects = connectedList;
+      if(fESDObjects!= connectedList){
+	// protect when called twice 
+	fESDObjects->Delete();
+	fESDObjects = connectedList;
+      }
       GetStdContent(); 
+
+      // The pointer to the friend changes when called twice via InitIO. Is this connected to 
+      // the change TChain -> TTree
+      
+      TObject* oldf = FindListObject("AliESDfriend");
+      TObject* newf = 0;
+      if(addressF){
+	newf = (TObject*)*addressF;
+      }
+      if(newf!=0&&oldf!=newf){
+	// remove the old reference
+	// Should we also delete it? Or is this handled in TTree I/O
+	// since it is created by the first SetBranchAddress
+	fESDObjects->Remove(oldf);
+	// add the new one 
+	fESDObjects->Add(newf);
+      }
+      
       fConnected = true;
       return;
     }
     // else...    
     CreateStdContent(); // create for copy
+    // if we have the esdfriend add it, so we always can access it via the userinfo
+    if(fESDFriendOld)AddObject(fESDFriendOld);
     // we are not owner of the list objects 
     // must not delete it
     fESDObjects->SetOwner(kFALSE);
@@ -948,7 +976,7 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     fConnected = true;
     return;
   }
-
+  
   delete fESDOld;
   fESDOld = 0;
   // Try to find AliESDEvent
@@ -1023,8 +1051,6 @@ void AliESDEvent::CopyFromOldESD()
 {
   // Method which copies over everthing from the old esd structure to the 
   // new  
-    printf("CopyFromOldESD \n");
-    
   if(fESDOld){
     ResetStdContent();
      // Run
@@ -1072,7 +1098,6 @@ void AliESDEvent::CopyFromOldESD()
 
     if(fESDOld->GetMultiplicity())SetMultiplicity(fESDOld->GetMultiplicity());
 
-    printf("CopyFromOldESD %d \n", fESDOld->GetNumberOfTracks());
     for(int i = 0;i<fESDOld->GetNumberOfTracks();i++){
       AddTrack(fESDOld->GetTrack(i));
     }
