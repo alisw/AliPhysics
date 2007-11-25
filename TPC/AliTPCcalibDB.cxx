@@ -25,6 +25,10 @@
 //
 //
 // Calibration data:
+// 0.)  Altro mapping
+//          Simulation      - not yet 
+//          Reconstruction  - AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
+//
 // 1.)  pad by pad calibration -  AliTPCCalPad
 //      
 //      a.) fPadGainFactor
@@ -34,7 +38,7 @@
 //      b.) fPadNoise -
 //          Simulation:        AliTPCDigitizer::ExecFast
 //          Reconstruction:    AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
-//                             Noise depending cut on clusters (n sigma)
+//                             Noise depending cut on clusters charge (n sigma)
 //      c.) fPedestal:
 //          Simulation:     Not used yet - To be impleneted - Rounding to the nearest integer
 //          Reconstruction: Used in AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader) 
@@ -46,6 +50,28 @@
 //          Reconstruction:  AliTPCTransform::Transform() - remove offset
 //                           AliTPCTransform::Transform() - to be called
 //                           in AliTPCtracker::Transform()      
+//
+// 
+// 2.)  Space points transformation:
+//
+//      a.) General coordinate tranformation - AliTPCtransform (see $ALICE_ROOT/TPC/AliTPCtransform.cxx)
+//          Created on fly - use the other calibration components
+//                 Unisochronity  - (substract time0 - pad by pad)
+//                 Drift velocity - Currently common drift velocity - functionality of AliTPCParam
+//                 ExB effect    
+//          Simulation     - Not used directly (the effects are applied one by one (see AliTPC::MakeSector)
+//          Reconstruction - 
+//                           AliTPCclustererMI::AddCluster
+//                           AliTPCtrackerMI::Transform
+//      b.) ExB effect calibration - 
+//             classes (base class AliTPCExB, implementation- AliTPCExBExact.h  AliTPCExBFirst.h)
+//             a.a) Simulation:   applied in the AliTPC::MakeSector - 
+//                                calib->GetExB()->CorrectInverse(dxyz0,dxyz1);
+//             a.b) Reconstruction -  
+//                  
+//                  in AliTPCtransform::Correct() - called calib->GetExB()->Correct(dxyz0,dxyz1)
+//
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
