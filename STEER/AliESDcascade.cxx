@@ -135,10 +135,10 @@ AliESDcascade::AliESDcascade(const AliESDv0 &v,
 
 AliESDcascade::AliESDcascade(const AliESDcascade& cas) :
   AliESDv0(cas),
-  fPdgCodeXi(cas.fPdgCodeXi),
   fEffMassXi(cas.fEffMassXi),
   fChi2Xi(cas.fChi2Xi),
   fDcaXiDaughters(cas.fDcaXiDaughters),
+  fPdgCodeXi(cas.fPdgCodeXi),
   fBachIdx(cas.fBachIdx)
 {
   //copy constructor
