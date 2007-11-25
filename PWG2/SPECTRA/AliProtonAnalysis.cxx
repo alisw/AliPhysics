@@ -282,11 +282,8 @@ Bool_t AliProtonAnalysis::IsAccepted(AliESDtrack* track) {
   track->GetExternalCovariance(extCov);
 
   Double_t Pt = track->Pt();
-  Double_t P = TMath::Sqrt(TMath::Power(track->Px(),2) + 
-                           TMath::Power(track->Py(),2) + 
-			   TMath::Power(track->Pz(),2));
 
-  if(fMinTPCClustersFlag)
+  if(fMinITSClustersFlag)
     if(nClustersITS < fMinITSClusters) return kFALSE;
   if(fMinTPCClustersFlag)
     if(nClustersTPC < fMinTPCClusters) return kFALSE;
