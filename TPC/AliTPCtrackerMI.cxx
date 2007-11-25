@@ -1318,7 +1318,7 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
   // in debug mode  check the transformation
   //
-  if (AliTPCReconstructor::StreamLevel()>-1) {
+  if (AliTPCReconstructor::StreamLevel()>1) {
     TTreeSRedirector &cstream = *fDebugStreamer;
     cstream<<"Transform"<<
       "x0="<<x[0]<<
