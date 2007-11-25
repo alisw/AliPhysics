@@ -57,12 +57,14 @@
 #include <AliLog.h>
 
 #include "AliTPCcalibDB.h"
+#include "AliTPCAltroMapping.h"
 #include "AliTPCExB.h"
 
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCSensorTempArray.h"
 #include "AliTPCTransform.h"
+
 class AliCDBStorage;
 class AliTPCCalDet;
 //
@@ -133,6 +135,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPadNoise(0),
   fPedestals(0),
   fTemperature(0),
+  fMapping(0),
   fParam(0)
 {
   //
@@ -239,6 +242,21 @@ void AliTPCcalibDB::Update(){
     entry->SetOwner(kTRUE);
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
   }
+
+  entry          = GetCDBEntry("TPC/Calib/Mapping");
+  if (entry){
+    //if (fPadNoise) delete fPadNoise;
+    entry->SetOwner(kTRUE);
+    TObjArray * array = dynamic_cast<TObjArray*>(entry->GetObject());
+    if (array && array->GetEntriesFast()==6){
+      fMapping = new AliTPCAltroMapping*[6];
+      for (Int_t i=0; i<6; i++){
+	fMapping[i] =  dynamic_cast<AliTPCAltroMapping*>(array->At(i));
+      }
+    }
+  }
+
+
 
   entry          = GetCDBEntry("TPC/Calib/ExB");
   if (entry) {

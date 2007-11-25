@@ -18,6 +18,7 @@ class AliTPCSensorTempArray;
 class AliDCSSensorArray;
 class AliCDBEntry;
 class AliTPCParam;
+class AliTPCAltroMapping;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -37,6 +38,8 @@ class AliTPCcalibDB : public TObject
   AliTPCCalPad* GetPedestals() {return fPedestals;}
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
   AliTPCParam*  GetParameters(){return fParam;}
+  AliTPCAltroMapping ** GetMapping(){ return fMapping;}
+  //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
   
@@ -56,7 +59,7 @@ protected:
   AliTPCCalPad* fPadNoise;        // Noise calibration entry
   AliTPCCalPad* fPedestals;       // Pedestal calibration entry
   AliTPCSensorTempArray* fTemperature; // Temperature calibration entry
-
+  AliTPCAltroMapping **fMapping;   // Altro mapping   
   //
   //
   AliTPCParam * fParam;           // TPC parameters

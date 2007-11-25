@@ -607,7 +607,6 @@ void AliTPCclustererMI::Digits2Clusters()
 
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
-
   AliSimDigits digarr, *dummy=&digarr;
   fRowDig = dummy;
   fInput->GetBranch("Segment")->SetAddress(&dummy);
@@ -701,7 +700,9 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCCalPad * pedestalTPC = AliTPCcalibDB::Instance()->GetPedestals();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
-  AliTPCRawStream input(rawReader);
+  AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
+  //
+  AliTPCRawStream input(rawReader,(AliAltroMapping**)mapping);
   fEventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
   if (fEventHeader){
     fTimeStamp = fEventHeader->Get("Timestamp");  
