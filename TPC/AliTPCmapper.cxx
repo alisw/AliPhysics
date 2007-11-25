@@ -48,7 +48,7 @@
 ClassImp(AliTPCmapper)
 
 //______________________________________________________________
-AliTPCmapper::AliTPCmapper() :
+AliTPCmapper::AliTPCmapper(const char * dirname) :
   fNside(0),
   fNsector(0),
   fNrcu(0),
@@ -61,8 +61,12 @@ AliTPCmapper::AliTPCmapper() :
   fTpcDdlOffset(0),
   fROC(NULL)
 {
+  //
   // Constructor
-  Init();
+  //
+  // dirname - specify the directory with the ascii Altro mapping files
+  //
+  Init(dirname);
 }
 
 //______________________________________________________________
@@ -124,7 +128,7 @@ AliTPCmapper& AliTPCmapper::operator = (const AliTPCmapper& mapper)
 }
 
 //______________________________________________________________
-void AliTPCmapper::Init()
+void AliTPCmapper::Init(const char *dirname)
 {
   // Initialize all
   fNside    = 2;
@@ -136,8 +140,15 @@ void AliTPCmapper::Init()
 
   // Load and read mapping files. AliTPCAltroMapping contains the mapping for
   // each patch (rcu).
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/TPC/mapping/Patch";
+  TString path;
+  if (dirname==0){
+    path  =gSystem->Getenv("ALICE_ROOT");
+    path += "/TPC/mapping/Patch";
+  }else{
+    path  = dirname;
+    path +="Patch";
+  }
+
   TString path2;
   for(Int_t i = 0; i < fNrcu; i++) {
     path2 = path;

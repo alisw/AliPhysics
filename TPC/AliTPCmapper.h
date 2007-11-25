@@ -20,13 +20,15 @@ class AliTPCmapper : public TObject{
 
 public:
 
-  AliTPCmapper();
+  AliTPCmapper(const char * dirname=0);
   virtual ~AliTPCmapper();
 
   AliTPCmapper& operator = (const AliTPCmapper& mapper);
   AliTPCmapper(const AliTPCmapper& mapper);
 
-  void Init();
+  void Init(const char * dirname);
+  //
+  AliTPCAltroMapping **GetAltroMapping(){ return fMapping;};
 
   // ALTRO mapping functions
   Int_t GetPad(Int_t patch, Int_t hwAddress) const;
