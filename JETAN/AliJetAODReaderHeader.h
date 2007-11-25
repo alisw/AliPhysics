@@ -19,14 +19,17 @@ class AliJetAODReaderHeader : public AliJetReaderHeader
   
   // Getters
   Int_t   GetNaod()       const {return fNaod;}
-	    
+  UInt_t  GetTestFilterMask(){return fTestFilterMask;}	    
+
   // Setters
-  virtual void SetNumberOfAOD(Int_t i=1) {fNaod = i;}
-    
+  virtual void SetNumberOfAOD(Int_t i=1) {fNaod = i;}    
+  virtual void SetTestFilterMask(UInt_t i){fTestFilterMask = i;}
+
  protected:
   Int_t   fNaod;           // number of aods
+  UInt_t  fTestFilterMask; // Filter Mask for jets, not tested if 0
   
-  ClassDef(AliJetAODReaderHeader,1);
+  ClassDef(AliJetAODReaderHeader,2);
 };
  
 #endif
