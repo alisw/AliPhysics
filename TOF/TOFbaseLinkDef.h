@@ -21,6 +21,7 @@
 #pragma link C++ class  AliTOFcalib+;
 #pragma link C++ class  AliTOFAlignment+;
 #pragma link C++ class  AliTOFPreprocessor+;
+#pragma link C++ class  AliTOFPreprocessorFDR+;
 #pragma link C++ class  AliTOFDataDCS+;
 #pragma link C++ class  AliTOFFormatDCS+;
 #pragma link C++ class  AliTOFQADataMaker+;
