@@ -31,8 +31,8 @@ ClassImp(AliKalmanTrack)
   fFakeRatio(0),
   fChi2(0),
   fMass(AliPID::ParticleMass(AliPID::kPion)),
-  fN(0),
   fLab(-3141593),
+  fN(0),
   fStartTimeIntegral(kFALSE),
   fIntegratedLength(0)
 {
@@ -48,8 +48,8 @@ AliKalmanTrack::AliKalmanTrack(const AliKalmanTrack &t):
   fFakeRatio(t.fFakeRatio),
   fChi2(t.fChi2),
   fMass(t.fMass),
-  fN(t.fN),
   fLab(t.fLab),
+  fN(t.fN),
   fStartTimeIntegral(t.fStartTimeIntegral),
   fIntegratedLength(t.fIntegratedLength)
 {
