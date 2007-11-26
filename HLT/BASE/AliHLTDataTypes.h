@@ -24,8 +24,8 @@
  *   3       2007-11-15 RAW DDL data type added; some inconsistencies fixed
  *           ('void' and 'any' origins); added signed HLT basic data types
  *           2007-11-23 origin defines have become variables in conjunction
- *           to be used with the operator| (AliHLTComponentDatatType
- *           2007-11-24 added trigger structs
+ *           to be used with the operator| (AliHLTComponentDataType)
+ *           2007-11-24 added trigger structs and ESD tree data type
  */
 #define ALIHLT_DATA_TYPES_VERSION 3
 
@@ -117,6 +117,11 @@ const int kAliHLTComponentDataTypefIDsize=8;
  * - empty payload, specification gives eventType
  */
 # define kAliHLTEventDataTypeID    {'E','V','E','N','T','T','Y','P'}
+
+/** ESD data block
+ * an AliESD object of varying origin
+ */
+# define kAliHLTESDTreeDataTypeID      {'E','S','D','_','T','R','E','E'}
 
 using namespace std;
 
@@ -430,8 +435,11 @@ extern "C" {
   /** Event type specification */
   extern const AliHLTComponentDataType kAliHLTDataTypeEvent;
 
-  /** RAW DDL data specification, data publisher will set type id and origin correctly */
+  /** RAW DDL data specification, origin is 'any', data publisher origin correctly */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
+
+  /** ESD Tree data specification, origin is 'any' */
+  extern const AliHLTComponentDataType kAliHLTDataTypeESDTree;
 
   //////////////////////////////////////////////////////////////////////////
   //
