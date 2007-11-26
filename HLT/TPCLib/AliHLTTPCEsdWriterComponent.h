@@ -13,6 +13,7 @@
 
                                                                           */
 #include "AliHLTRootFileWriterComponent.h"
+#include "AliHLTProcessor.h"
 
 // forward declarations
 class TTree;
@@ -24,18 +25,28 @@ class AliHLTTPCTrackArray;
  * This class translates incoming track segments structures from the TPC
  * conformal mapping tracker (datatype TRAKSEGS/TPC) or tracks in global 
  * coordinates from the AliHLTTPCGlobalMergerComponent (TRACKS/TPC) into
- * the ESD fromat and writes it to a ROOT file. In case of TRAKSEGS, the
- * component can only process data block containing data of one slice, but
- * it can read an unlimeted number of data blocks.
+ * the ESD format.
  *
- * componentid: TPCEsdWriter <br>
- * componentlibrary libAliHLTTPC.so <br>
- * Arguments: <br>
+ * The \em TPCEsdWriter writes it to a ROOT file, the \em TPCEsdConverter
+ * to a TTree and sends the whole object to the output stream with data
+ * type @ref kAliHLTDataTypeESDTree and origin TPC.
+ *
+ * In case of TRAKSEGS, the component can only process data block containing
+ * data of one slice, but it can read an unlimeted number of data blocks.
+ *
+ * componentid: \b TPCEsdWriter <br>
+ * componentid: \b TPCEsdConverter <br>
+ * componentlibrary: \b libAliHLTTPC.so <br>
+ * Arguments TPCEsdWriter: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
  * \li -datafile     <i> filename   </i> <br>
  *      file name base
  * \li -directory    <i> directory  </i> <br>
  *      target directory
+ *
+ * Arguments TPCEsdConverter: <br>
+ * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
+ * none
  *
  * <pre>
  * Example usage (HLT configuration file):
@@ -54,7 +65,7 @@ class AliHLTTPCTrackArray;
  *
  * @see AliHLTFileWriter and AliHLTRootFileWriterComponent for more parameters
  */
-class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
+class AliHLTTPCEsdWriterComponent : public AliHLTLogging
 {
  public:
   /** standard constructor */
@@ -63,16 +74,30 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
   ~AliHLTTPCEsdWriterComponent();
 
   /**
+   * class AliHLTTPCEsdWriterComponent::AliWriter
+   * The writer component of the AliHLTTPCEsdWriterComponent.
+   */
+  class AliWriter : public AliHLTRootFileWriterComponent
+  {
+  public:
+  /** standard constructor */
+  AliWriter();
+  /** destructor */
+  ~AliWriter();
+
+  /**
    * The id of the component.
    * @return component id (string)
    */
   const char* GetComponentID() {return "TPCEsdWriter";};
 
+  void GetInputDataTypes(AliHLTComponentDataTypeList& list);
+
   /**
    * Spawn function.
    * @return new class instance
    */
-  AliHLTComponent* Spawn() {return new AliHLTTPCEsdWriterComponent;}
+  AliHLTComponent* Spawn() {return new AliHLTTPCEsdWriterComponent::AliWriter;}
 
  protected:
   /**
@@ -98,12 +123,11 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
    *         -EPROTO parameter for argument missing <br>
    */
   int ScanArgument(int argc, const char** argv);
-
  private:
   /** copy constructor prohibited */
-  AliHLTTPCEsdWriterComponent(const AliHLTTPCEsdWriterComponent&);
+  AliWriter(const AliWriter&);
   /** assignment operator prohibited */
-  AliHLTTPCEsdWriterComponent& operator=(const AliHLTTPCEsdWriterComponent&);
+  AliWriter& operator=(const AliWriter&);
 
   /**
    * Init the writer.
@@ -119,6 +143,74 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
    */
   int CloseWriter();
 
+  /** the ESD tree */
+  TTree* fTree; //! transient value
+
+  /** the ESD */
+  AliESDEvent* fESD; //! transient value
+
+  /** pointer to the basic ESD conversion methods */
+  AliHLTTPCEsdWriterComponent* fBase; //! transient value
+  };
+
+  /**
+   * class AliHLTTPCEsdWriterComponent::AliConverter
+   * The converter component of the AliHLTTPCEsdWriterComponent.
+   * 
+   */
+  class AliConverter : public AliHLTProcessor
+  {
+  public:
+    /** standard constructor */
+    AliConverter();
+    /** destructor */
+    ~AliConverter();
+
+    // interface methods of base class
+    const char* GetComponentID() {return "TPCEsdConverter";};
+    void GetInputDataTypes(AliHLTComponentDataTypeList& list);
+    AliHLTComponentDataType GetOutputDataType();
+    void GetOutputDataSize(unsigned long& constBase, double& inputMultiplier);
+    AliHLTComponent* Spawn() {return new AliHLTTPCEsdWriterComponent::AliConverter;}
+
+  protected:
+    // interface methods of base class
+    int DoInit(int argc, const char** argv);
+    int DoDeinit();
+    int DoEvent(const AliHLTComponentEventData& evtData,
+		const AliHLTComponentBlockData* blocks, 
+		AliHLTComponentTriggerData& trigData,
+		AliHLTUInt8_t* outputPtr, 
+		AliHLTUInt32_t& size,
+		AliHLTComponentBlockDataList& outputBlocks );
+
+    using AliHLTProcessor::DoEvent;
+
+  private:
+    /** copy constructor prohibited */
+    AliConverter(const AliConverter&);
+    /** assignment operator prohibited */
+    AliConverter& operator=(const AliConverter&);
+
+    /** pointer to the basic ESD conversion methods */
+    AliHLTTPCEsdWriterComponent* fBase; //! transient value
+
+  };
+
+ protected:
+  /**
+   * Process the input data blocks.
+   * @param pTree    tree to be filled
+   * @param pESD     ESD to be filled
+   * @param blocks   data block descriptor array
+   * @param nBlocks  size of the array
+   * @param pMinSize [OUT] receives the minimum slice no
+   * @param pMaxSize [OUT] receives the maximum slice no
+   * @return neg. error code if failed
+   */
+  int ProcessBlocks(TTree* pTree, AliESDEvent* pESD, const AliHLTComponentBlockData* blocks,
+		    int nBlocks, int* pMinSlice=NULL, int* pMaxSlice=NULL);
+
   /**
    * Covert tracks to AliTPCtracks (AliKalmanTracks) and add them to ESD.
    * @param pTracks  array of tracks
@@ -127,11 +219,11 @@ class AliHLTTPCEsdWriterComponent : public AliHLTRootFileWriterComponent
    */
   int Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESDEvent* pESD);
 
-  /** the ESD tree */
-  TTree* fTree; //! transient value
-
-  /** the ESD */
-  AliESDEvent* fESD; //! transient value
+ private:
+  /** copy constructor prohibited */
+  AliHLTTPCEsdWriterComponent(const AliHLTTPCEsdWriterComponent&);
+  /** assignment operator prohibited */
+  AliHLTTPCEsdWriterComponent& operator=(const AliHLTTPCEsdWriterComponent&);
 
   ClassDef(AliHLTTPCEsdWriterComponent, 1)
 };

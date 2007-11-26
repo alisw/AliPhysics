@@ -23,6 +23,7 @@
             mapping tracker in the AliESD format
 
                                                                           */
+#include <cassert>
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -31,17 +32,16 @@
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
+#include "AliHLTTPCTransform.h"
 
 /** global instance for component registration */
-AliHLTTPCEsdWriterComponent gTPCEsdWriter;
+AliHLTTPCEsdWriterComponent::AliWriter gTPCEsdWriter;
+AliHLTTPCEsdWriterComponent::AliConverter gTPCEsdConverter;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCEsdWriterComponent)
 
 AliHLTTPCEsdWriterComponent::AliHLTTPCEsdWriterComponent()
-  :
-  fTree(NULL),
-  fESD(NULL)
 {
   // see header file for class documentation
   // or
@@ -55,7 +55,33 @@ AliHLTTPCEsdWriterComponent::~AliHLTTPCEsdWriterComponent()
   // see header file for class documentation
 }
 
-int AliHLTTPCEsdWriterComponent::InitWriter()
+AliHLTTPCEsdWriterComponent::AliWriter::AliWriter()
+  :
+  fTree(NULL),
+  fESD(NULL),
+  fBase(new AliHLTTPCEsdWriterComponent)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
+AliHLTTPCEsdWriterComponent::AliWriter::~AliWriter()
+{
+  // see header file for class documentation
+  if (fBase) delete fBase;
+  fBase=NULL;
+}
+
+void AliHLTTPCEsdWriterComponent::AliWriter::GetInputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // see header file for class documentation
+  list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
+}
+
+int AliHLTTPCEsdWriterComponent::AliWriter::InitWriter()
 {
   // see header file for class documentation
   int iResult=0;
@@ -73,7 +99,7 @@ int AliHLTTPCEsdWriterComponent::InitWriter()
   return iResult;
 }
 
-int AliHLTTPCEsdWriterComponent::CloseWriter()
+int AliHLTTPCEsdWriterComponent::AliWriter::CloseWriter()
 {
   // see header file for class documentation
   int iResult=0;
@@ -89,22 +115,47 @@ int AliHLTTPCEsdWriterComponent::CloseWriter()
   return iResult;
 }
 
-int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtData,
+int AliHLTTPCEsdWriterComponent::AliWriter::DumpEvent( const AliHLTComponentEventData& evtData,
 					    const AliHLTComponentBlockData* blocks, 
 					    AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
   int iResult=0;
   TTree* pTree=fTree;
-  if (pTree) {
+  assert(fBase);
+  if (pTree && fBase) {
     if (fESD) {
       AliESDEvent* pESD=fESD;
 
+      iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt);
+
+    } else {
+      iResult=-ENOMEM;
+    }
+  }
+  return iResult;
+}
+
+int AliHLTTPCEsdWriterComponent::AliWriter::ScanArgument(int argc, const char** argv)
+{
+  // see header file for class documentation
+  int iResult=AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
+  return iResult;
+}
+
+int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
+					       const AliHLTComponentBlockData* blocks,
+					       int nBlocks, int* pMinSlice,
+					       int* pMaxSlice)
+{
+  // see header file for class documentation
+  int iResult=0;
+  if (pTree && pESD && blocks) {
       const AliHLTComponentBlockData* iter = NULL;
       AliHLTTPCTrackletData* inPtr=NULL;
       int bIsTrackSegs=0;
  
-      for (int ndx=0; ndx<(int)evtData.fBlockCnt && iResult>=0; ndx++) {
+      for (int ndx=0; ndx<nBlocks && iResult>=0; ndx++) {
 	iter = blocks+ndx;
 	if ( (bIsTrackSegs=(iter->fDataType == AliHLTTPCDefinitions::fgkTrackSegmentsDataType))==1 ||
 	     iter->fDataType == AliHLTTPCDefinitions::fgkTracksDataType ) {
@@ -114,9 +165,14 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	    // slice parameter and data specification ignored, tracks already in global coordinates
 	    minslice=-1;
 	    maxslice=-1;
+	    if (pMinSlice) *pMinSlice=0;
+	    if (pMaxSlice) *pMaxSlice=AliHLTTPCTransform::GetNSlice()-1;
+	  } else {
+	    if (pMinSlice && (*pMinSlice==-1 || *pMinSlice>minslice)) *pMinSlice=minslice;
+	    if (pMaxSlice && (*pMaxSlice==-1 || *pMaxSlice<maxslice)) *pMaxSlice=maxslice;
 	  }
 	  //HLTDebug("dataspec %#x minslice %d", iter->fSpecification, minslice);
-	  if (minslice >=-1 && minslice<36) {
+	  if (minslice >=-1 && minslice<AliHLTTPCTransform::GetNSlice()) {
 	    if (minslice!=maxslice) {
 	      HLTWarning("data from multiple sectors in one block: "
 			 "possible missmatch in treatment of local coordinate system");
@@ -137,18 +193,11 @@ int AliHLTTPCEsdWriterComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	pTree->Fill();
       }
 
-      fESD->Reset();
-    } else {
-      iResult=-ENOMEM;
-    }
+      pESD->Reset();
+    
+  } else {
+    iResult=-EINVAL;
   }
-  return iResult;
-}
-
-int AliHLTTPCEsdWriterComponent::ScanArgument(int argc, const char** argv)
-{
-  // see header file for class documentation
-  int iResult=AliHLTRootFileWriterComponent::ScanArgument(argc, argv);
   return iResult;
 }
 
@@ -183,3 +232,81 @@ int AliHLTTPCEsdWriterComponent::Tracks2ESD(AliHLTTPCTrackArray* pTracks, AliESD
   }
   return iResult;
 }
+
+AliHLTTPCEsdWriterComponent::AliConverter::AliConverter()
+  :
+  fBase(new AliHLTTPCEsdWriterComponent)
+{
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+}
+
+AliHLTTPCEsdWriterComponent::AliConverter::~AliConverter()
+{
+  // see header file for class documentation
+  if (fBase) delete fBase;
+  fBase=NULL;
+}
+
+void AliHLTTPCEsdWriterComponent::AliConverter::GetInputDataTypes(AliHLTComponentDataTypeList& list)
+{
+  // see header file for class documentation
+  list.push_back(AliHLTTPCDefinitions::fgkTrackSegmentsDataType);
+}
+
+AliHLTComponentDataType AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataType()
+{
+  // see header file for class documentation
+  return kAliHLTDataTypeESDTree;
+}
+
+void AliHLTTPCEsdWriterComponent::AliConverter::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
+{
+  // see header file for class documentation
+  constBase=1000000;
+  inputMultiplier=1.0;
+}
+
+int AliHLTTPCEsdWriterComponent::AliConverter::DoInit(int argc, const char** argv)
+{
+  // see header file for class documentation
+  return 0;
+}
+
+int AliHLTTPCEsdWriterComponent::AliConverter::DoDeinit()
+{
+  // see header file for class documentation
+  return 0;
+}
+
+int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEventData& evtData, 
+						       const AliHLTComponentBlockData* blocks, 
+						       AliHLTComponentTriggerData& /*trigData*/,
+						       AliHLTUInt8_t* /*outputPtr*/, 
+						       AliHLTUInt32_t& /*size*/,
+						       AliHLTComponentBlockDataList& /*outputBlocks*/ )
+{
+  // see header file for class documentation
+  int iResult=0;
+  assert(fBase);
+  AliESDEvent* pESD = new AliESDEvent;
+  if (pESD && fBase) {
+    pESD->CreateStdContent();
+    TTree* pTree = new TTree("esdTree", "Tree with HLT ESD objects");
+    if (pTree) {
+      pESD->WriteToTree(pTree);
+
+      if ((iResult=fBase->ProcessBlocks(pTree, pESD, blocks, (int)evtData.fBlockCnt))>=0) {
+	// TODO: set the specification correctly
+	iResult=PushBack(pTree, kAliHLTDataTypeESDTree|kAliHLTDataOriginTPC, 0);
+      }
+      delete pTree;
+    }
+    delete pESD;
+  }
+  return iResult;
+}
+
