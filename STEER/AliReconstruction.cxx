@@ -2029,7 +2029,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     header->SetZDCP1Energy     (esd->GetZDCP1Energy()     );
     header->SetZDCN2Energy     (esd->GetZDCN2Energy()     );
     header->SetZDCP2Energy     (esd->GetZDCP2Energy()     );
-    header->SetZDCEMEnergy     (esd->GetZDCEMEnergy()     );
+    header->SetZDCEMEnergy     (esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
     header->SetRefMultiplicity   (nTracks);
     header->SetRefMultiplicityPos(nPosTracks);
     header->SetRefMultiplicityNeg(nTracks - nPosTracks);

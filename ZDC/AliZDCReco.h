@@ -18,7 +18,7 @@ public:
 	     Float_t* ezn2tow, Float_t* ezp2tow, 
 	     Float_t* ezn1siglr, Float_t* ezp1siglr,
 	     Float_t* ezn2siglr, Float_t* ezp2siglr,
-	     Float_t ezem, 
+	     Float_t ezem1, Float_t ezem2, 
 	     //	   
 	     Int_t detspnLeft,  Int_t detsppLeft, Int_t detspnRight, Int_t detsppRight,  
 	     Int_t trspnLeft, Int_t trsppLeft, Int_t trspLeft, 
@@ -45,7 +45,8 @@ public:
   virtual Float_t GetZN2SigLowRes(Int_t tow)  const {return fZN2SigLowRes[tow];}
   virtual Float_t GetZP2SigLowRes(Int_t tow)  const {return fZP2SigLowRes[tow];}
   //
-  virtual Float_t GetZEMsignal()   const  {return fZEMsignal;}
+  virtual Float_t GetZEM1signal()   const  {return fZEM1signal;}
+  virtual Float_t GetZEM2signal()   const  {return fZEM2signal;}
   //
   virtual Int_t   GetNDetSpecNLeft()   const {return fNDetSpecNLeft;}
   virtual Int_t   GetNDetSpecPLeft()   const {return fNDetSpecPLeft;}
@@ -81,7 +82,8 @@ private:
   Float_t fZN2SigLowRes[5]; // Energy in ZN2 towers - low res ch.
   Float_t fZP2SigLowRes[5]; // Energy in ZP2 towers - low res ch.
   //
-  Float_t fZEMsignal;	// Signal in EM ZDC
+  Float_t fZEM1signal;	// Signal in EM1 ZDC
+  Float_t fZEM2signal;	// Signal in EM2 ZDC
   //
   Int_t	  fNDetSpecNLeft;  // Number of spectator neutrons detected
   Int_t	  fNDetSpecPLeft;  // Number of spectator protons detected
@@ -98,7 +100,7 @@ private:
   Float_t fImpPar;	// Estimate of the impact parameter
 
 
-  ClassDef(AliZDCReco,3)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,4)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif

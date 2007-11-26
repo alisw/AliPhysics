@@ -77,13 +77,13 @@ public:
     
     virtual UInt_t    GetEventType()         const         {return 0;}
 
-    virtual ULong64_t GetTriggerMask()       const {return 0;}
-    virtual UChar_t   GetTriggerCluster()    const {return 0;}
-    virtual Double_t  GetZDCN1Energy()       const {return 0.;}
-    virtual Double_t  GetZDCP1Energy()       const {return 0.;}
-    virtual Double_t  GetZDCN2Energy()       const {return 0.;}
-    virtual Double_t  GetZDCP2Energy()       const {return 0.;}
-    virtual Double_t  GetZDCEMEnergy()       const {return 0.;}
+    virtual ULong64_t GetTriggerMask()        const {return 0;}
+    virtual UChar_t   GetTriggerCluster()     const {return 0;}
+    virtual Double_t  GetZDCN1Energy()        const {return 0.;}
+    virtual Double_t  GetZDCP1Energy()        const {return 0.;}
+    virtual Double_t  GetZDCN2Energy()        const {return 0.;}
+    virtual Double_t  GetZDCP2Energy()        const {return 0.;}
+    virtual Double_t  GetZDCEMEnergy(Int_t i) const {return 0.;}
     // Tracks
     virtual AliMCParticle *GetTrack(Int_t i) const;
     virtual Int_t     GetNumberOfTracks()    const {return fNparticles;}

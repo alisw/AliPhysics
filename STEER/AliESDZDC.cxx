@@ -34,10 +34,15 @@ AliESDZDC::AliESDZDC() :
   fZDCP1Energy(0),
   fZDCN2Energy(0),
   fZDCP2Energy(0),
-  fZDCEMEnergy(0),
   fZDCParticipants(0)
 {
-  for(int i = 0;i<4;i++) fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
+  for(int i=0; i<2; i++) fZDCEMEnergy[i] = 0.;
+  for(int i=0; i<5; i++){
+    fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
+    fZP1TowerEnergy[i] = fZP2TowerEnergy[i] = 0.;
+    fZN1TowerEnergyLR[i] = fZN2TowerEnergyLR[i] = 0.;
+    fZP1TowerEnergyLR[i] = fZP2TowerEnergyLR[i] = 0.;
+  }
 }
 
 AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
@@ -46,10 +51,20 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fZDCP1Energy(zdc.fZDCP1Energy),
   fZDCN2Energy(zdc.fZDCN2Energy),
   fZDCP2Energy(zdc.fZDCP2Energy),
-  fZDCEMEnergy(zdc.fZDCEMEnergy),
   fZDCParticipants(zdc.fZDCParticipants)
 {
   // copy constructor
+  for(int i=0; i<2; i++) fZDCEMEnergy[i] = zdc.fZDCEMEnergy[i];
+  for(int i=0; i<5; i++){
+     fZN1TowerEnergy[i] = zdc.fZN1TowerEnergy[i];
+     fZN2TowerEnergy[i] = zdc.fZN2TowerEnergy[i];
+     fZP1TowerEnergy[i] = zdc.fZP1TowerEnergy[i];
+     fZP2TowerEnergy[i] = zdc.fZP2TowerEnergy[i];
+     fZN1TowerEnergyLR[i] = zdc.fZN1TowerEnergyLR[i];
+     fZN2TowerEnergyLR[i] = zdc.fZN2TowerEnergyLR[i];
+     fZP1TowerEnergyLR[i] = zdc.fZP1TowerEnergyLR[i];
+     fZP2TowerEnergyLR[i] = zdc.fZP2TowerEnergyLR[i];
+  }
 }
 
 AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
@@ -61,11 +76,17 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     fZDCP1Energy = zdc.fZDCP1Energy;
     fZDCN2Energy = zdc.fZDCN2Energy;
     fZDCP2Energy = zdc.fZDCP2Energy;
-    fZDCEMEnergy = zdc.fZDCEMEnergy;
     fZDCParticipants = zdc.fZDCParticipants;
-    for(Int_t i=0; i<4; i++){
+    for(Int_t i=0; i<2; i++) fZDCEMEnergy[i] = zdc.fZDCEMEnergy[i];
+    for(Int_t i=0; i<5; i++){
        fZN1TowerEnergy[i] = zdc.fZN1TowerEnergy[i];
        fZN2TowerEnergy[i] = zdc.fZN2TowerEnergy[i];
+       fZP1TowerEnergy[i] = zdc.fZP1TowerEnergy[i];
+       fZP2TowerEnergy[i] = zdc.fZP2TowerEnergy[i];
+       fZN1TowerEnergyLR[i] = zdc.fZN1TowerEnergyLR[i];
+       fZN2TowerEnergyLR[i] = zdc.fZN2TowerEnergyLR[i];
+       fZP1TowerEnergyLR[i] = zdc.fZP1TowerEnergyLR[i];
+       fZP2TowerEnergyLR[i] = zdc.fZP2TowerEnergyLR[i];
     }
   } 
   return *this;
@@ -80,15 +101,23 @@ void AliESDZDC::Reset()
   fZDCP1Energy=0;
   fZDCN2Energy=0;
   fZDCP2Energy=0;
-  fZDCEMEnergy=0;
   fZDCParticipants=0;  
-  for(int i=0; i<4; i++) fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
-
+  for(int i=0; i<2; i++) fZDCEMEnergy[i]=0;
+  for(int i=0; i<5; i++){
+    fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
+    fZP1TowerEnergy[i] = fZP2TowerEnergy[i] = 0.;
+    fZN1TowerEnergyLR[i] = fZN2TowerEnergyLR[i] = 0.;
+    fZP1TowerEnergyLR[i] = fZP2TowerEnergyLR[i] = 0.;
+  }
 }
 
 //______________________________________________________________________________
 void AliESDZDC::Print(const Option_t *) const
 {
+  //  Print ESD for the ZDC
+  printf("\n \t ZN1Energy = %f TeV, ZP1Energy = %f TeV, ZN2Energy = %f TeV,"
+  " ZP2Energy = %f, Nparticipants = %d\n",
+  fZDCN1Energy,fZDCP1Energy,fZDCN2Energy,fZDCP2Energy,fZDCParticipants);
 }
 
 

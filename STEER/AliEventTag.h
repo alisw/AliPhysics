@@ -45,7 +45,8 @@ class AliEventTag : public TObject {
   void SetZDCProton1Energy(Float_t Pen) {fZDCProton1Energy = Pen;}
   void SetZDCNeutron2Energy(Float_t Pen) {fZDCNeutron2Energy = Pen;}
   void SetZDCProton2Energy(Float_t Pen) {fZDCProton2Energy = Pen;}
-  void SetZDCEMEnergy(Float_t Pen) {fZDCEMEnergy = Pen;}
+  void SetZDCEMEnergy(Float_t Pen1, Float_t Pen2) 
+       {fZDCEMEnergy[0]=Pen1; fZDCEMEnergy[1]=Pen2;}
   void SetT0VertexZ(Float_t Pvz) {fT0VertexZ = Pvz;}
   void SetNumOfTracks(Int_t Ptr) {fNumberOfTracks = Ptr;}
   void SetNumOfPosTracks(Int_t Ptr) {fNumberOfPositiveTracks = Ptr;}
@@ -110,7 +111,7 @@ class AliEventTag : public TObject {
   Float_t     GetZDCProton1Energy() const {return fZDCProton1Energy;}
   Float_t     GetZDCNeutron2Energy() const {return fZDCNeutron2Energy;}
   Float_t     GetZDCProton2Energy() const {return fZDCProton2Energy;}
-  Float_t     GetZDCEMEnergy() const {return fZDCEMEnergy;}
+  Float_t     GetZDCEMEnergy(Int_t i) const {return fZDCEMEnergy[i];}
   Float_t     GetT0VertexZ() const {return fT0VertexZ;}
   Int_t       GetNumOfTracks() const {return fNumberOfTracks;}
   Int_t       GetNumOfPosTracks() const {return fNumberOfPositiveTracks;}
@@ -176,7 +177,7 @@ class AliEventTag : public TObject {
   Float_t   fZDCProton1Energy;		    //ZDC info - proton
   Float_t   fZDCNeutron2Energy;		    //ZDC info - neutron
   Float_t   fZDCProton2Energy;		    //ZDC info - proton
-  Float_t   fZDCEMEnergy;		    //ZDC info - em
+  Float_t   fZDCEMEnergy[2];		    //ZDC info - em
   Float_t   fT0VertexZ;			    //T0 info
   Int_t     fNumberOfTracks;		    //Multiplicity
   Int_t     fNumberOfPositiveTracks;	    //Multiplicity of positive tracks
@@ -221,7 +222,7 @@ class AliEventTag : public TObject {
   Float_t   fEventPlaneAngle;		    //event plane info
   Float_t   fHBTRadii;                      //HBT info
   
-  ClassDef(AliEventTag,8)  //(ClassName, ClassVersion)
+  ClassDef(AliEventTag,9)  //(ClassName, ClassVersion)
     };
 //___________________________________________________________________________
 

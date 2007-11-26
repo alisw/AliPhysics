@@ -1073,11 +1073,12 @@ void AliESDEvent::CopyFromOldESD()
     // ZDC
 
     SetZDC(fESDOld->GetZDCN1Energy(),
-	   fESDOld->GetZDCP1Energy(),
-	   fESDOld->GetZDCEMEnergy(),
-	   fESDOld->GetZDCN2Energy(),
-	   fESDOld->GetZDCP2Energy(),
-	   fESDOld->GetZDCParticipants());
+           fESDOld->GetZDCP1Energy(),
+           fESDOld->GetZDCEMEnergy(),
+           0,
+           fESDOld->GetZDCN2Energy(),
+           fESDOld->GetZDCP2Energy(),
+           fESDOld->GetZDCParticipants());
 
     // FMD
     

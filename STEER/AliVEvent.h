@@ -74,7 +74,7 @@ public:
   virtual Double_t  GetZDCP1Energy() const = 0;
   virtual Double_t  GetZDCN2Energy() const = 0;
   virtual Double_t  GetZDCP2Energy() const = 0;
-  virtual Double_t  GetZDCEMEnergy() const = 0;
+  virtual Double_t  GetZDCEMEnergy(Int_t i) const = 0;
  
   // Tracks
   virtual AliVParticle *GetTrack(Int_t i) const = 0;

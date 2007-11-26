@@ -47,7 +47,6 @@ ClassImp(AliEventTag)
     fZDCProton1Energy(-10.0),
     fZDCNeutron2Energy(-10.0),
     fZDCProton2Energy(-10.0),
-    fZDCEMEnergy(-10.0),
     fT0VertexZ(-10.0),
     fNumberOfTracks(-10),
     fNumberOfPositiveTracks(-10),
@@ -93,6 +92,8 @@ ClassImp(AliEventTag)
     fHBTRadii(-10.0)
 {
   // AliEventTag default constructor
+  for(Int_t i=0; i<2; i++)     fZDCEMEnergy[i] = -10.0;
+
 }
 
 
@@ -118,7 +119,6 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fZDCProton1Energy(evTag.fZDCProton1Energy),
   fZDCNeutron2Energy(evTag.fZDCNeutron2Energy),
   fZDCProton2Energy(evTag.fZDCProton2Energy),
-  fZDCEMEnergy(evTag.fZDCEMEnergy),
   fT0VertexZ(evTag.fT0VertexZ),
   fNumberOfTracks(evTag.fNumberOfTracks),
   fNumberOfPositiveTracks(evTag.fNumberOfPositiveTracks),
@@ -164,6 +164,7 @@ AliEventTag::AliEventTag(const AliEventTag & evTag) :
   fHBTRadii(evTag.fHBTRadii)
  {
   // EventTag copy constructor
+  for(Int_t i=0; i<2; i++)     fZDCEMEnergy[i] = evTag.fZDCEMEnergy[i];
 }
 
 //___________________________________________________________________________
@@ -191,7 +192,7 @@ AliEventTag & AliEventTag::operator=(const AliEventTag &evTag) {
     SetZDCProton1Energy(evTag.GetZDCProton1Energy());
     SetZDCNeutron2Energy(evTag.GetZDCNeutron2Energy());
     SetZDCProton2Energy(evTag.GetZDCProton2Energy());
-    SetZDCEMEnergy(evTag.GetZDCEMEnergy());
+    SetZDCEMEnergy(evTag.GetZDCEMEnergy(0),evTag.GetZDCEMEnergy(1));
     SetT0VertexZ(evTag.GetT0VertexZ());
     SetNumOfTracks(evTag.GetNumOfTracks());
     SetNumOfPosTracks(evTag.GetNumOfPosTracks());

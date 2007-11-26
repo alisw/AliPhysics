@@ -25,19 +25,43 @@ public:
   Double_t GetZDCP1Energy() const {return fZDCP1Energy;}
   Double_t GetZDCN2Energy() const {return fZDCN2Energy;}
   Double_t GetZDCP2Energy() const {return fZDCP2Energy;}
-  Double_t GetZDCEMEnergy() const {return fZDCEMEnergy;}
-  Short_t    GetZDCParticipants() const {return fZDCParticipants;}
+  Double_t GetZDCEMEnergy(Int_t i) const {return fZDCEMEnergy[i];}
+  Short_t  GetZDCParticipants() const {return fZDCParticipants;}
   const Double_t * GetZN1TowerEnergy() const {return fZN1TowerEnergy;}
   const Double_t * GetZN2TowerEnergy() const {return fZN2TowerEnergy;}
-  void  SetZDC(Double_t n1Energy, Double_t p1Energy, Double_t emEnergy,
+  const Double_t * GetZP1TowerEnergy() const {return fZP1TowerEnergy;}
+  const Double_t * GetZP2TowerEnergy() const {return fZP2TowerEnergy;}
+  const Double_t * GetZN1TowerEnergyLR() const {return fZN1TowerEnergyLR;}
+  const Double_t * GetZN2TowerEnergyLR() const {return fZN2TowerEnergyLR;}
+  const Double_t * GetZP1TowerEnergyLR() const {return fZP1TowerEnergyLR;}
+  const Double_t * GetZP2TowerEnergyLR() const {return fZP2TowerEnergyLR;}
+  void  SetZDC(Double_t n1Energy, Double_t p1Energy, Double_t emEnergy1, Double_t emEnergy2,
 	       Double_t n2Energy, Double_t p2Energy, Short_t participants) 
-   {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy=emEnergy;
+   {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy[0]=emEnergy1; fZDCEMEnergy[1]=emEnergy2;
     fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
-  void  SetZN1TowerEnergy(Double_t tow1[4]){
-      for(Int_t i=0; i<4; i++) fZN1TowerEnergy[i] = tow1[i];
+  void  SetZN1TowerEnergy(Float_t tow1[5]){
+      for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];
   }
-  void  SetZN2TowerEnergy(Double_t tow2[4]){
-      for(Int_t i=0; i<4; i++) fZN2TowerEnergy[i] = tow2[i];
+  void  SetZN2TowerEnergy(Float_t tow2[5]){
+      for(Int_t i=0; i<5; i++) fZN2TowerEnergy[i] = tow2[i];
+  }
+  void  SetZP1TowerEnergy(Float_t tow1[5]){
+      for(Int_t i=0; i<5; i++) fZP1TowerEnergy[i] = tow1[i];
+  }
+  void  SetZP2TowerEnergy(Float_t tow2[5]){
+      for(Int_t i=0; i<5; i++) fZP2TowerEnergy[i] = tow2[i];
+  }
+  void  SetZN1TowerEnergyLR(Float_t tow1[5]){
+      for(Int_t i=0; i<5; i++) fZN1TowerEnergyLR[i] = tow1[i];
+  }
+  void  SetZN2TowerEnergyLR(Float_t tow2[5]){
+      for(Int_t i=0; i<5; i++) fZN2TowerEnergyLR[i] = tow2[i];
+  }
+  void  SetZP1TowerEnergyLR(Float_t tow1[5]){
+      for(Int_t i=0; i<5; i++) fZP1TowerEnergyLR[i] = tow1[i];
+  }
+  void  SetZP2TowerEnergyLR(Float_t tow2[4]){
+      for(Int_t i=0; i<5; i++) fZP2TowerEnergyLR[i] = tow2[i];
   }
 
   void    Reset();
@@ -49,11 +73,17 @@ private:
   Double32_t   fZDCP1Energy;      // reconstructed energy in the proton ZDC
   Double32_t   fZDCN2Energy;      // reconstructed energy in the neutron ZDC
   Double32_t   fZDCP2Energy;      // reconstructed energy in the proton ZDC
-  Double32_t   fZDCEMEnergy;      // signal in the electromagnetic ZDC
-  Double32_t   fZN1TowerEnergy[4];// reconstructed energy in 4 neutron ZDC towers
-  Double32_t   fZN2TowerEnergy[4];// reconstructed energy in 4 neutron ZDC towers
+  Double32_t   fZDCEMEnergy[2];   // signal in the electromagnetic ZDCs
+  Double32_t   fZN1TowerEnergy[5];// reco E in 5 ZN1 sectors - high gain chain
+  Double32_t   fZN2TowerEnergy[5];// reco E in 5 ZN2 sectors - high gain chain
+  Double32_t   fZP1TowerEnergy[5];// reco E in 5 ZP1 sectors - high gain chain
+  Double32_t   fZP2TowerEnergy[5];// reco E in 5 ZP2 sectors - high gain chain
+  Double32_t   fZN1TowerEnergyLR[5];// reco E in 5 ZN1 sectors - low gain chain
+  Double32_t   fZN2TowerEnergyLR[5];// reco E in 5 ZN2 sectors - low gain chain
+  Double32_t   fZP1TowerEnergyLR[5];// reco E in 5 ZP1 sectors - low gain chain
+  Double32_t   fZP2TowerEnergyLR[5];// reco E in 5 ZP2 sectors - low gain chain
   Short_t      fZDCParticipants;  // number of participants estimated by the ZDC
-  ClassDef(AliESDZDC,4)
+  ClassDef(AliESDZDC,6)
 };
 
 #endif

@@ -445,7 +445,7 @@ void AliESDTagCreator::CreateTag(TChain* fChain, const char *type) {
     
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
@@ -758,7 +758,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *guid, const char *md5,
     
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
@@ -1073,7 +1073,7 @@ void AliESDTagCreator::CreateTag(TFile* file, const char *filepath, Int_t Counte
     
     evTag->SetZDCNeutron1Energy(esd->GetZDCN1Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
-    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
     evTag->SetZDCNeutron1Energy(esd->GetZDCN2Energy());
     evTag->SetZDCProton1Energy(esd->GetZDCP2Energy());
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
@@ -1396,7 +1396,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
     evTag->SetZDCProton1Energy(esd->GetZDCP1Energy());
     evTag->SetZDCNeutron2Energy(esd->GetZDCN2Energy());
     evTag->SetZDCProton2Energy(esd->GetZDCP2Energy());
-    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy());
+    evTag->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
     evTag->SetNumOfParticipants(esd->GetZDCParticipants());
     
     

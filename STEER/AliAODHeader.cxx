@@ -34,7 +34,6 @@ AliAODHeader::AliAODHeader() :
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
   fZDCP2Energy(-999.),
-  fZDCEMEnergy(-999.),
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(0),
@@ -51,6 +50,7 @@ AliAODHeader::AliAODHeader() :
   // default constructor
 
   SetName("header");
+  for(int j=0; j<2; j++) fZDCEMEnergy[j] = -999.;
 }
 
 //______________________________________________________________________________
@@ -67,7 +67,6 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCP1Energy(-999.),
   fZDCN2Energy(-999.),
   fZDCP2Energy(-999.),
-  fZDCEMEnergy(-999.),
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(0),
@@ -85,6 +84,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 
   SetName("header");
   SetTitle(title);
+  for(int j=0; j<2; j++) fZDCEMEnergy[j] = -999.;
 }
 
 //______________________________________________________________________________
@@ -102,7 +102,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   Double_t p1Energy,
 			   Double_t n2Energy,
 			   Double_t p2Energy,
-			   Double_t emEnergy,
+			   Double_t *emEnergy,
  			   ULong64_t trigMask,
 			   UChar_t trigClus,
 			   UInt_t evttype,
@@ -115,7 +115,6 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fZDCP1Energy(p1Energy),
   fZDCN2Energy(n2Energy),
   fZDCP2Energy(p2Energy),
-  fZDCEMEnergy(emEnergy),
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(trigMask),
@@ -133,6 +132,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 
   SetName("header");
   SetTitle(title);
+  for(int j=0; j<2; j++) fZDCEMEnergy[j] = emEnergy[j];
 }
 
 //______________________________________________________________________________
@@ -153,7 +153,6 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fZDCP1Energy(hdr.fZDCP1Energy),
   fZDCN2Energy(hdr.fZDCN2Energy),
   fZDCP2Energy(hdr.fZDCP2Energy),
-  fZDCEMEnergy(hdr.fZDCEMEnergy),
   fNQTheta(0),
   fQTheta(0x0),
   fTriggerMask(hdr.fTriggerMask),
@@ -172,6 +171,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   SetName(hdr.fName);
   SetTitle(hdr.fTitle);
   SetQTheta(hdr.fQTheta, hdr.fNQTheta);
+  SetZDCEMEnergy(hdr.fZDCEMEnergy[0], hdr.fZDCEMEnergy[1]);
 }
 
 //______________________________________________________________________________
@@ -189,7 +189,6 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fZDCP1Energy      = hdr.fZDCP1Energy;
     fZDCN2Energy      = hdr.fZDCN2Energy;
     fZDCP2Energy      = hdr.fZDCP2Energy;
-    fZDCEMEnergy      = hdr.fZDCEMEnergy;
     fTriggerMask      = hdr.fTriggerMask;
     fRunNumber        = hdr.fRunNumber;
     fRefMult          = hdr.fRefMult;
@@ -204,6 +203,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);
     SetQTheta(hdr.fQTheta, hdr.fNQTheta);
+    SetZDCEMEnergy(hdr.fZDCEMEnergy[0], hdr.fZDCEMEnergy[1]);
   }
 
 
@@ -270,7 +270,8 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("ZDC P1 Energy           : %f\n", fZDCP1Energy);
   printf("ZDC N2 Energy           : %f\n", fZDCN2Energy);
   printf("ZDC P2 Energy           : %f\n", fZDCP2Energy);
-  printf("ZDC EM Energy           : %f\n", fZDCEMEnergy);
+  printf("ZDC EM1 Energy          : %f\n", fZDCEMEnergy[0]);
+  printf("ZDC EM2 Energy          : %f\n", fZDCEMEnergy[1]);
   printf("ref. Multiplicity       : %d\n", fRefMult);
   printf("ref. Multiplicity (pos) : %d\n", fRefMultPos);
   printf("ref. Multiplicity (neg) : %d\n", fRefMultNeg);

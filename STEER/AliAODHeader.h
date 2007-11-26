@@ -33,7 +33,7 @@ class AliAODHeader : public AliVHeader {
 	       Double_t p1Energy,
 	       Double_t n2Energy,
 	       Double_t p2Energy,
-	       Double_t emEnergy,
+	       Double_t *emEnergy,
 	       ULong64_t fTriggerMask,
 	       UChar_t   fTriggerCluster,
 	       UInt_t    fEventType,
@@ -58,7 +58,7 @@ class AliAODHeader : public AliVHeader {
   Double_t  GetZDCP1Energy()        const { return fZDCP1Energy; }
   Double_t  GetZDCN2Energy()        const { return fZDCN2Energy; }
   Double_t  GetZDCP2Energy()        const { return fZDCP2Energy; }
-  Double_t  GetZDCEMEnergy()        const { return fZDCEMEnergy; }
+  Double_t  GetZDCEMEnergy(Int_t i) const { return fZDCEMEnergy[i]; }
   Int_t     GetRefMultiplicity()    const { return fRefMult; }
   Int_t     GetRefMultiplicityPos() const { return fRefMultPos; }
   Int_t     GetRefMultiplicityNeg() const { return fRefMultNeg; }
@@ -81,7 +81,8 @@ class AliAODHeader : public AliVHeader {
   void SetZDCP1Energy(Double_t p1Energy)       { fZDCP1Energy = p1Energy; }
   void SetZDCN2Energy(Double_t n2Energy)       { fZDCN2Energy = n2Energy; }
   void SetZDCP2Energy(Double_t p2Energy)       { fZDCP2Energy = p2Energy; }
-  void SetZDCEMEnergy(Double_t emEnergy)       { fZDCEMEnergy = emEnergy; }
+  void SetZDCEMEnergy(Double_t emEnergy1, Double_t emEnergy2)      
+  	{ fZDCEMEnergy[0] = emEnergy1; fZDCEMEnergy[1] = emEnergy2;}
   void SetRefMultiplicity(Int_t refMult)       { fRefMult = refMult; }
   void SetRefMultiplicityPos(Int_t refMultPos) { fRefMultPos = refMultPos; }
   void SetRefMultiplicityNeg(Int_t refMultNeg) { fRefMultNeg = refMultNeg; }
@@ -101,7 +102,7 @@ class AliAODHeader : public AliVHeader {
   Double32_t  fZDCP1Energy;         // reconstructed energy in the proton1 ZDC
   Double32_t  fZDCN2Energy;         // reconstructed energy in the neutron2 ZDC
   Double32_t  fZDCP2Energy;         // reconstructed energy in the proton2 ZDC
-  Double32_t  fZDCEMEnergy;         // reconstructed energy in the electromagnetic ZDC
+  Double32_t  fZDCEMEnergy[2];      // reconstructed energy in the electromagnetic ZDCs
   Int_t       fNQTheta;             // number of QTheta elements
   Double32_t *fQTheta;              // [fNQTheta] values to store Lee-Yang-Zeros
   ULong64_t   fTriggerMask;         // Trigger Type (mask)
@@ -115,7 +116,7 @@ class AliAODHeader : public AliVHeader {
   UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
   UChar_t     fTriggerCluster;      // Trigger cluster (mask)
   
-  ClassDef(AliAODHeader,5);
+  ClassDef(AliAODHeader,6);
 };
 
 #endif

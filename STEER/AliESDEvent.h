@@ -124,18 +124,18 @@ public:
   UChar_t   GetTriggerCluster() const {return fHeader->GetTriggerCluster();}
 
   // ZDC CKB: put this in the header?
-  const AliESDZDC*    GetESDZDC() const {return fESDZDC;}
+  AliESDZDC*    GetESDZDC() const {return fESDZDC;}
 
   // Delegated methods for fESDZDC
   Double_t GetZDCN1Energy() const {return fESDZDC->GetZDCN1Energy();}
   Double_t GetZDCP1Energy() const {return fESDZDC->GetZDCP1Energy();}
   Double_t GetZDCN2Energy() const {return fESDZDC->GetZDCN2Energy();}
   Double_t GetZDCP2Energy() const {return fESDZDC->GetZDCP2Energy();}
-  Double_t GetZDCEMEnergy() const {return fESDZDC->GetZDCEMEnergy();}
+  Double_t GetZDCEMEnergy(Int_t i=0) const {return fESDZDC->GetZDCEMEnergy(i);}
   Int_t   GetZDCParticipants() const {return fESDZDC->GetZDCParticipants();}
-  void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t emEnergy,
+  void    SetZDC(Float_t n1Energy, Float_t p1Energy, Float_t em1Energy, Float_t em2Energy,
                  Float_t n2Energy, Float_t p2Energy, Int_t participants)
-  {fESDZDC->SetZDC(n1Energy, p1Energy, emEnergy, n2Energy, p2Energy, participants);}
+  {fESDZDC->SetZDC(n1Energy, p1Energy, em1Energy, em2Energy, n2Energy, p2Energy, participants);}
 
 
   // FMD

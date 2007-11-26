@@ -413,7 +413,7 @@ void AliEventTagCuts::SetZDCProton2Range(Float_t low, Float_t high) {
 }
 //___________________________________________________________________________
 void AliEventTagCuts::SetZDCEMRange(Float_t low, Float_t high) {
-  //Sets the ZDC's e/m energy range 
+  //Sets the ZDC's em energy range 
   //and the corresponding flag to kTRUE if the cut is used.
   fZDCEMEnergyMin = low;
   fZDCEMEnergyMax = high;
@@ -846,7 +846,7 @@ Bool_t AliEventTagCuts::IsAccepted(AliEventTag *EvTag) const {
       return kFALSE; 
   
   if(fZDCEMEnergyFlag)
-    if((EvTag->GetZDCEMEnergy() < fZDCEMEnergyMin) || (EvTag->GetZDCEMEnergy() > fZDCEMEnergyMax))
+    if((EvTag->GetZDCEMEnergy(1) < fZDCEMEnergyMin) || (EvTag->GetZDCEMEnergy(1) > fZDCEMEnergyMax))
       return kFALSE; 
   
   if(fT0VertexZFlag)

@@ -27,6 +27,7 @@
 #include "AliRunLoader.h"
 #include "AliRawReader.h"
 #include "AliESDEvent.h"
+#include "AliESDZDC.h"
 #include "AliZDCDigit.h"
 #include "AliZDCRawStream.h"
 #include "AliZDCReco.h"
@@ -100,8 +101,8 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
   // Works on the current event
     
   // Retrieving calibration data  
-  Float_t meanPed[47];
-  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
+  Float_t meanPed[48];
+  for(Int_t jj=0; jj<48; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
 
   // get digits
   AliZDCDigit digit;
@@ -110,91 +111,91 @@ void AliZDCReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) co
 
   // loop over digits
   Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.}; 
-  Float_t dZEMCorrHG=0.; 
+  Float_t dZEM1CorrHG=0., dZEM2CorrHG=0.; 
   Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
   Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
-  Float_t dZEMCorrLG=0.; 
+  Float_t dZEM1CorrLG=0., dZEM2CorrLG=0.; 
   Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
   
   //printf("\n\t # of digits in tree: %d\n",(Int_t) digitsTree->GetEntries());
   for (Int_t iDigit = 0; iDigit < (digitsTree->GetEntries()/2); iDigit++) {
-    digitsTree->GetEntry(iDigit);
-    if (!pdigit) continue;
-    //pdigit->Print("");
-    //  
-    Int_t det = digit.GetSector(0);
-    Int_t quad = digit.GetSector(1);
-    Int_t pedindex = -1;
-    //printf("\n\t #%d det %d quad %d", iDigit, det, quad);
-    //
+   digitsTree->GetEntry(iDigit);
+   if (!pdigit) continue;
+   //pdigit->Print("");
+   //  
+   Int_t det = digit.GetSector(0);
+   Int_t quad = digit.GetSector(1);
+   Int_t pedindex = -1;
+   //printf("\n\t Digit #%d det %d quad %d", iDigit, det, quad);
+   //
+   if(quad != 5){ // ZDC (not reference PTMs!)
     if(det == 1){ // *** ZN1
        pedindex = quad;
        tZN1CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
        if(tZN1CorrHG[quad]<0.) tZN1CorrHG[quad] = 0.;
-       tZN1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZN1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+24]);
        if(tZN1CorrLG[quad]<0.) tZN1CorrLG[quad] = 0.;
        //printf("\t pedindex %d tZN1CorrHG[%d] = %1.0f tZN1CorrLG[%d] = %1.0f", 
        //	pedindex, quad, tZN1CorrHG[quad], quad, tZN1CorrLG[quad]);
     }
     else if(det == 2){ // *** ZP1
-       pedindex = quad+10;
+       pedindex = quad+5;
        tZP1CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
        if(tZP1CorrLG[quad]<0.) tZP1CorrLG[quad] = 0.;
-       tZP1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZP1CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+24]);
        if(tZP1CorrHG[quad]<0.) tZP1CorrHG[quad] = 0.;
        //printf("\t pedindex %d tZP1CorrHG[%d] = %1.0f tZP1CorrLG[%d] = %1.0f", 
        //	pedindex, quad, tZP1CorrHG[quad], quad, tZP1CorrLG[quad]);
     }
     else if(det == 3){
        if(quad == 1){	    // *** ZEM1  
-    	 pedindex = quad+19;
-         dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
-         if(dZEMCorrHG<0.) dZEMCorrHG = 0.;
-         dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
-         if(dZEMCorrLG<0.) dZEMCorrLG = 0.;
+    	 pedindex = quad+9;
+         dZEM1CorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         if(dZEM1CorrHG<0.) dZEM1CorrHG = 0.;
+         dZEM1CorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+24]); 
+         if(dZEM1CorrLG<0.) dZEM1CorrLG = 0.;
          //printf("\t pedindex %d ADC(0) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEMCorrHG);
+	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEM1CorrHG);
          //printf("\t pedindex %d ADC(1) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex+2, digit.GetADCValue(1), meanPed[pedindex+2], dZEMCorrLG);
-         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEMCorrHG, dZEMCorrLG);
+	 //	pedindex+24, digit.GetADCValue(1), meanPed[pedindex+24], dZEM1CorrLG);
        }
-       else if(quad == 2){  // *** ZEM1
-    	 pedindex = quad+19;
-         dZEMCorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
-         if(dZEMCorrHG<0.) dZEMCorrHG = 0.;
-         dZEMCorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+2]); 
-         if(dZEMCorrLG<0.) dZEMCorrLG = 0.;
+       else if(quad == 2){  // *** ZEM2
+    	 pedindex = quad+9;
+         dZEM2CorrHG += (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]); 
+         if(dZEM2CorrHG<0.) dZEM2CorrHG = 0.;
+         dZEM2CorrLG += (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+24]); 
+         if(dZEM2CorrLG<0.) dZEM2CorrLG = 0.;
          //printf("\t pedindex %d ADC(0) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEMCorrHG);
+	 //	pedindex, digit.GetADCValue(0), meanPed[pedindex], dZEM2CorrHG);
          //printf("\t pedindex %d ADC(1) = %d ped = %1.0f ADCCorr = %1.0f\n", 
-	 //	pedindex+2, digit.GetADCValue(1),meanPed[pedindex+2], dZEMCorrLG);
-         ////printf("\t pedindex %d dZEMCorrHG = %1.0f dZEMCorrLG = %1.0f\n", pedindex, dZEMCorrHG, dZEMCorrLG);
+	 //	pedindex+2, digit.GetADCValue(1),meanPed[pedindex+2], dZEM2CorrLG);
        }
     }
     else if(det == 4){  // *** ZN2
-       pedindex = quad+24;
+       pedindex = quad+12;
        tZN2CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
        if(tZN2CorrHG[quad]<0.) tZN2CorrHG[quad] = 0.;
-       tZN2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZN2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+24]);
        if(tZN2CorrLG[quad]<0.) tZN2CorrLG[quad] = 0.;
        //printf("\t pedindex %d tZN2CorrHG[%d] = %1.0f tZN2CorrLG[%d] = %1.0f\n", 
        //	pedindex, quad, tZN2CorrHG[quad], quad, tZN2CorrLG[quad]);
     }
     else if(det == 5){  // *** ZP2 
-       pedindex = quad+34;
+       pedindex = quad+17;
        tZP2CorrHG[quad] = (Float_t) (digit.GetADCValue(0)-meanPed[pedindex]);
        if(tZP2CorrHG[quad]<0.) tZP2CorrHG[quad] = 0.;
-       tZP2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+5]);
+       tZP2CorrLG[quad] = (Float_t) (digit.GetADCValue(1)-meanPed[pedindex+24]);
        if(tZP2CorrLG[quad]<0.) tZP2CorrLG[quad] = 0.;
        //printf("\t pedindex %d tZP2CorrHG[%d] = %1.0f tZP2CorrLG[%d] = %1.0f\n", 
        //	pedindex, quad, tZP2CorrHG[quad], quad, tZP2CorrLG[quad]);
     }
+   }
   }
 
   // reconstruct the event
     ReconstructEvent(clustersTree, tZN1CorrHG, tZP1CorrHG, tZN2CorrHG, 
     	tZP2CorrHG, tZN1CorrLG, tZP1CorrLG, tZN2CorrLG, 
-    	tZP2CorrLG, dZEMCorrHG);
+    	tZP2CorrLG, dZEM1CorrHG, dZEM2CorrHG);
 
 }
 
@@ -205,66 +206,70 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   // Works on the current event
   
   // Retrieving calibration data  
-  Float_t meanPed[47];
-  for(Int_t jj=0; jj<47; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
+  Float_t meanPed[48];
+  for(Int_t jj=0; jj<48; jj++) meanPed[jj] = fPedData->GetMeanPed(jj);
 
   rawReader->Reset();
 
   // loop over raw data rawDatas
   Float_t tZN1CorrHG[]={0.,0.,0.,0.,0.}, tZP1CorrHG[]={0.,0.,0.,0.,0.};
-  Float_t dZEMCorrHG=0.;
+  Float_t dZEM1CorrHG=0., dZEM2CorrHG=0.;
   Float_t tZN2CorrHG[]={0.,0.,0.,0.,0.}, tZP2CorrHG[]={0.,0.,0.,0.,0.};
   Float_t tZN1CorrLG[]={0.,0.,0.,0.,0.}, tZP1CorrLG[]={0.,0.,0.,0.,0.};
-  Float_t dZEMCorrLG=0.; 
+  Float_t dZEM1CorrLG=0., dZEM2CorrLG=0.; 
   Float_t tZN2CorrLG[]={0.,0.,0.,0.,0.}, tZP2CorrLG[]={0.,0.,0.,0.,0.};
   //
   AliZDCRawStream rawData(rawReader);
   while (rawData.Next()) {
     if(rawData.IsADCDataWord()){
-      Int_t det = rawData.GetSector(0);
-      Int_t quad = rawData.GetSector(1);
-      Int_t gain = rawData.GetADCGain();
-      Int_t pedindex;
-      //
+     Int_t det = rawData.GetSector(0);
+     Int_t quad = rawData.GetSector(1);
+     Int_t gain = rawData.GetADCGain();
+     Int_t pedindex=0;
+     //
+     if(quad !=5){ // ZDCs (not reference PTMs)
       if(det == 1){    
         pedindex = quad;
         if(gain == 0) tZN1CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else tZN1CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
+        else tZN1CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+24]); 
       }
       else if(det == 2){ 
-        pedindex = quad+10;
+        pedindex = quad+5;
         if(gain == 0) tZP1CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else tZP1CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
+        else tZP1CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+24]); 
       }
       else if(det == 3){ 
         if(quad==1){	 
-          pedindex = quad+20;
-          if(gain == 0) dZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-          else dZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+          pedindex = quad+9;
+          if(gain == 0) dZEM1CorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+          else dZEM1CorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+24]); 
         }
         else if(quad==2){ 
-          pedindex = rawData.GetSector(1)+21;
-          if(gain == 0) dZEMCorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-          else dZEMCorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+          pedindex = quad+9;
+          if(gain == 0) dZEM2CorrHG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
+          else dZEM2CorrLG += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+24]); 
         }
       }
       else if(det == 4){       
-        pedindex = rawData.GetSector(1)+24;
+        pedindex = quad+12;
         if(gain == 0) tZN2CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else tZN2CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+2]); 
+        else tZN2CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+24]); 
       }
       else if(det == 5){
-        pedindex = rawData.GetSector(1)+34;
+        pedindex = quad+17;
         if(gain == 0) tZP2CorrHG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
-        else tZP2CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+5]); 
+        else tZP2CorrLG[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+24]); 
       }
-    }
+      printf("\t AliZDCReconstructor - det %d quad %d res %d -> Ped[%d] = %1.0f\n", 
+        det,quad,gain, pedindex, meanPed[pedindex]);
+     }
+    }//IsADCDataWord
   }
     
   // reconstruct the event
     ReconstructEvent(clustersTree, tZN1CorrHG, tZP1CorrHG, tZN2CorrHG, 
     	tZP2CorrHG, tZN1CorrLG, tZP1CorrLG, tZN2CorrLG, 
-    	tZP2CorrLG, dZEMCorrHG);
+    	tZP2CorrLG, dZEM1CorrHG, dZEM2CorrHG);
 
 }
 
@@ -274,7 +279,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
 		Float_t* ZN2ADCCorrHG, Float_t* ZP2ADCCorrHG, 
 		Float_t* ZN1ADCCorrLG, Float_t* ZP1ADCCorrLG, 
 		Float_t* ZN2ADCCorrLG, Float_t* ZP2ADCCorrLG, 
-		Float_t corrADCZEMHG) const
+		Float_t corrADCZEM1HG, Float_t corrADCZEM2HG) const
 {
   // ***** Reconstruct one event
   
@@ -445,6 +450,8 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   //
   // *** RECONSTRUCTION FROM REAL DATA
   //
+  Float_t corrADCZEMHG = corrADCZEM1HG + corrADCZEM2HG;
+  //
   if(corrADCZEMHG > supValueZEM){
     nGenSpecNLeft  = (Int_t) (fZNCen->Eval(calibSumZN1HG));
     nGenSpecPLeft  = (Int_t) (fZPCen->Eval(calibSumZP1HG));
@@ -507,7 +514,7 @@ void AliZDCReconstructor::ReconstructEvent(TTree *clustersTree,
   AliZDCReco reco(calibSumZN1HG, calibSumZP1HG, calibSumZN2HG, calibSumZP2HG, 
   		  calibTowZN1LG, calibTowZN2LG, calibTowZP1LG, calibTowZP2LG, 
 		  calibTowZN1LG, calibTowZP1LG, calibTowZN2LG, calibTowZP2LG,
-		  corrADCZEMHG, 
+		  corrADCZEM1HG, corrADCZEM2HG,
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpecNLeft, nGenSpecPLeft, nGenSpecLeft, nGenSpecNRight, 
 		  nGenSpecPRight, nGenSpecRight,
@@ -532,22 +539,32 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
 
   clustersTree->GetEntry(0);
   //
-  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
-	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
-	      reco.GetNPartLeft());
-  //
-  //
-  /*Double_t tZN1Ene[4], tZN2Ene[4];
-  for(Int_t i=0; i<4; i++){
+  AliESDZDC * esdzdc = esd->GetESDZDC();
+  Float_t tZN1Ene[5], tZN2Ene[5], tZP1Ene[5], tZP2Ene[5];
+  Float_t tZN1EneLR[5], tZN2EneLR[5], tZP1EneLR[5], tZP2EneLR[5];
+  for(Int_t i=0; i<5; i++){
      tZN1Ene[i] = reco.GetZN1EnTow(i);
      tZN2Ene[i] = reco.GetZN2EnTow(i);
+     tZP1Ene[i] = reco.GetZP1EnTow(i);
+     tZP2Ene[i] = reco.GetZP2EnTow(i);
+     tZN1EneLR[i] = reco.GetZN1SigLowRes(i);
+     tZN2EneLR[i] = reco.GetZP1SigLowRes(i);
+     tZP1EneLR[i] = reco.GetZN2SigLowRes(i);
+     tZP2EneLR[i] = reco.GetZP2SigLowRes(i);
   }
-  esd->SetZN1TowerEnergy(tZN1Ene);
-  esd->SetZN2TowerEnergy(tZN2Ene);
-  esd->SetZDC(tZN1Ene, tZN2Ene, reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEMsignal(),
-	      reco.GetZN2Energy(), reco.GetZP2Energy(), 
+  esdzdc->SetZN1TowerEnergy(tZN1Ene);
+  esdzdc->SetZN2TowerEnergy(tZN2Ene);
+  esdzdc->SetZP1TowerEnergy(tZP1Ene);
+  esdzdc->SetZP2TowerEnergy(tZP2Ene);
+  esdzdc->SetZN1TowerEnergyLR(tZN1EneLR);
+  esdzdc->SetZN2TowerEnergyLR(tZN2EneLR);
+  esdzdc->SetZP1TowerEnergyLR(tZP1EneLR);
+  esdzdc->SetZP2TowerEnergyLR(tZP2EneLR);
+  // 
+  esd->SetZDC(reco.GetZN1Energy(), reco.GetZP1Energy(), reco.GetZEM1signal(), 
+  	      reco.GetZEM2signal(), reco.GetZN2Energy(), reco.GetZP2Energy(), 
 	      reco.GetNPartLeft());
-  */
+  //
   
 }
 

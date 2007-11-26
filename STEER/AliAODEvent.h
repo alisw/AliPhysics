@@ -91,7 +91,7 @@ class AliAODEvent : public AliVEvent {
   Double_t  GetZDCP1Energy()        const { return fHeader ? fHeader->GetZDCP1Energy() : -999.; }
   Double_t  GetZDCN2Energy()        const { return fHeader ? fHeader->GetZDCN2Energy() : -999.; }
   Double_t  GetZDCP2Energy()        const { return fHeader ? fHeader->GetZDCP2Energy() : -999.; }
-  Double_t  GetZDCEMEnergy()        const { return fHeader ? fHeader->GetZDCEMEnergy() : -999.; }
+  Double_t  GetZDCEMEnergy(Int_t i) const { return fHeader ? fHeader->GetZDCEMEnergy(i) : -999.; }
 
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
