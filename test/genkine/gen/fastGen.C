@@ -71,15 +71,15 @@ void fastGen(Int_t nev = 1, char* filename = "galice.root")
   // the initialization of the generator includes reading of the decay table.
 
   AliPythia * py= AliPythia::Instance();
-  py->SetMDME(731,1,0); //forbid D*+->D+ + pi0
-  py->SetMDME(732,1,0);//forbid D*+->D+ + gamma
+  py->SetMDME(737,1,0); //forbid D*+->D+ + pi0
+  py->SetMDME(738,1,0);//forbid D*+->D+ + gamma
 
   // Forbid all D0 decays except D0->K- pi+
-  for(Int_t d=741; d<=756; d++){ 
+  for(Int_t d=747; d<=762; d++){ 
     py->SetMDME(d,1,0);
   }
-  // decay 757 is D0->K- pi+
-  for(Int_t d=758; d<=801; d++){ 
+  // decay 763 is D0->K- pi+
+  for(Int_t d=764; d<=807; d++){ 
     py->SetMDME(d,1,0);
   }
 

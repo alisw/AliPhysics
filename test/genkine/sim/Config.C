@@ -138,14 +138,14 @@ void Config()
 
     //forbid some decays
     AliPythia * py= AliPythia::Instance();
-    py->SetMDME(731,1,0); //forbid D*+->D+ + pi0
-    py->SetMDME(732,1,0);//forbid D*+->D+ + gamma
+    py->SetMDME(737,1,0); //forbid D*+->D+ + pi0
+    py->SetMDME(738,1,0);//forbid D*+->D+ + gamma
 
-    for(Int_t d=741; d<=756; d++){ 
+    for(Int_t d=747; d<=762; d++){ 
       py->SetMDME(d,1,0);
     }
 
-    for(Int_t d=758; d<=801; d++){ 
+    for(Int_t d=764; d<=807; d++){ 
       py->SetMDME(d,1,0);
     }
 
