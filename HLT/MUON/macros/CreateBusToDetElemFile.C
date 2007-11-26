@@ -27,32 +27,44 @@ Author:   Indranil Das, HEP, SINP, Kolkata
 Email:    indra.das@saha.ac.in
 ***********************************************/
 
+#include <iostream>
 
-#include <TArrayI.h>
+#include <TString.h>
+
+#include <AliCDBManager.h>
+
+#include <AliMpCDB.h>
 #include <AliMpDDLStore.h>
 #include <AliMpDetElement.h>
-#include <AliMpSegmentation.h>
 
-int CreateBusToDetElemFile()
+int CreateBusToDetElemFile(TString CDBPath = "local://$ALICE_ROOT", Int_t run = 0)
 {
   FILE *fp = fopen("BusToDetElem.dat","w");
 
   AliMpDetElement* fDetElement;
-  AliMpSegmentation::ReadData(); 
-  AliMpDDLStore::ReadData();
+  
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage(CDBPath.Data());
+  cdbManager->SetRun(run);
+
+  if (! AliMpCDB::LoadDDLStore(true)){
+    cerr<<__FILE__<<": Failed to Load DDLStore specified for CDBPath "<<CDBPath<<", and Run : "<<run<<endl;
+    return kFALSE;
+  }
 
   fprintf(fp,"#DE\tBusPatch\tDDL\n");
   for(int ch=7;ch<=10;ch++){
     fprintf(fp,"# Chamber %d\n",ch);
     for(int i=0; i<26 ; i++){
       fDetElement = AliMpDDLStore::Instance()->GetDetElement(ch*100 + i);
-       fprintf(fp,"%d\t%d - %d\t%d\n",ch*100 + i,fDetElement->GetBusPatchId(0),
-	       fDetElement->GetBusPatchId(fDetElement->GetNofBusPatches()-1),fDetElement->GetDdlId());
+      fprintf(fp,"%d\t%d - %d\t%d\n",ch*100 + i,fDetElement->GetBusPatchId(0),
+	      fDetElement->GetBusPatchId(fDetElement->GetNofBusPatches()-1),fDetElement->GetDdlId());
     }
   }
-  //delete fDDLStore;
-  delete fDetElement;
 
+
+  delete fDetElement;
   fclose(fp);
+
   return 0;
 }

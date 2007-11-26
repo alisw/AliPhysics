@@ -40,11 +40,12 @@ Email:    indra.das@saha.ac.in
 
 //STEER 
 #include "AliCDBManager.h"
-
+#include "AliGeomManager.h"
 //MUON
 #include "AliMUONGeometryTransformer.h"
 
 //MUON/mapping 
+#include "AliMpCDB.h"
 #include "AliMpPad.h"
 #include "AliMpSegmentation.h"
 #include "AliMpDDLStore.h"
@@ -56,18 +57,34 @@ class AliMpDDLStore ;
 
 using namespace std;
 
-
-Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
+Bool_t CreateHitRecoLookupTables(TString CDBPath = "local://$ALICE_ROOT", Int_t run = 0, Bool_t warn = kTRUE)
 {
   Char_t filename1[20], filename2[20];
   Int_t chamberId;
   
-  AliMpSegmentation *mpSegFactory = AliMpSegmentation::ReadData(); 
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage(CDBPath.Data());
+  cdbManager->SetRun(run);
 
-  AliMpDDLStore* fDDLStore = AliMpDDLStore::ReadData();
-  
+  if (! AliMpCDB::LoadDDLStore(warn)){
+    cerr<<__FILE__<<": Failed to Load DDLStore specified for CDBPath "<<CDBPath<<", and Run : "<<run<<endl;
+    return kFALSE;
+  }
+
+  AliMpSegmentation *mpSegFactory = AliMpSegmentation::Instance(); 
+  AliGeomManager::LoadGeometry();
   AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
-  chamberGeometryTransformer->LoadGeometryData(transformFileName);
+  if(! chamberGeometryTransformer->LoadGeometryData()){
+    cerr<<__FILE__<<": Failed to Load Geomerty Data "<<endl;
+    return kFALSE;
+  }
+  
+//   AliMpSegmentation *mpSegFactory = AliMpSegmentation::ReadData(); 
+
+//   AliMpDDLStore* fDDLStore = AliMpDDLStore::ReadData();
+  
+//   AliMUONGeometryTransformer* chamberGeometryTransformer = new AliMUONGeometryTransformer();
+//   chamberGeometryTransformer->LoadGeometryData(transformFileName);
   
   for(Int_t iCh = 0; iCh < 4; iCh++){ // max 4
     
@@ -86,21 +103,20 @@ Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
       
       cout<<"Running for detElemId :"<<detElemId<<endl;
       
-      for(Int_t iPlane = 0 ; iPlane <= 1 ; iPlane++){
+      for(Int_t iCath = 0 ; iCath <= 1 ; iCath++){
 	
 	AliMp::CathodType cath;
 
-	if(iPlane == 0)
+	if(iCath == 0)
 	  cath = AliMp::kCath0 ;
 	else
 	  cath = AliMp::kCath1 ;
 	
-	AliMpVSegmentation* seg = mpSegFactory->CreateMpSegmentation(detElemId, cath);
-	
+	const AliMpVSegmentation* seg = mpSegFactory->CreateMpSegmentation(detElemId, cath);
+	AliMp::PlaneType plane = seg->PlaneType(); 
 	Int_t maxIX = seg->MaxPadIndexX();  
 	Int_t maxIY = seg->MaxPadIndexY(); 
 	Int_t idManuChannel, manuId, channelId,idetElemId;
-	Int_t busPatchId;
 	Double_t realX, realY, realZ;
 	Double_t localX, localY, localZ;
 	Double_t padSizeX, padSizeY;
@@ -115,8 +131,6 @@ Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
 	      // Getting Manu id
 	      manuId = pad.GetLocation().GetFirst();
 	      manuId &= 0x7FF; // 11 bits 
-	      
-	      busPatchId = fDDLStore->GetBusPatchId(detElemId,manuId);
 	      
 	      // Getting channel id
 	      channelId =  pad.GetLocation().GetSecond();
@@ -139,7 +153,7 @@ Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
 	      padSizeX = 2.0*pad.Dimensions().X();
 	      padSizeY = 2.0*pad.Dimensions().Y();
 
-	      if(iPlane == 0 ){
+	      if(plane == 0 ){
 		if(padSizeX==2.5)
 		  pcbType = 0;
 		else if(padSizeX==5.0)
@@ -157,10 +171,10 @@ Bool_t CreateHitRecoLookupTables(TString transformFileName = "geometry.root")
 	      }
 		
 	      if(idetElemId<7 || idetElemId > 19){
-  		fprintf(fout2,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,iPlane);
+  		fprintf(fout2,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,plane);
 	      }
 	      else{
- 		fprintf(fout1,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,iPlane);
+ 		fprintf(fout1,"%d\t%d\t%d\t%f\t%f\t%f\t%d\t%d\n",idManuChannel,iX,iY,realX,realY,realZ,pcbType,plane);
 	      }// HasPad Condn
 	      
 	    }
