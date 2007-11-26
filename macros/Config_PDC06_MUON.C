@@ -161,7 +161,7 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   }
  //=================== ZDC parameters =============================
   if(iZDC) {
-      AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+      AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
   }      
  //=================== FMD parameters =============================
   if(iFMD) {

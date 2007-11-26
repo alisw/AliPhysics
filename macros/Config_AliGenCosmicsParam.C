@@ -30,7 +30,7 @@
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv5T0.h"
 #include "HMPID/AliHMPIDv1.h"
-#include "ZDC/AliZDCv2.h"
+#include "ZDC/AliZDCv3.h"
 #include "TRD/AliTRDv1.h"
 #include "FMD/AliFMDv1.h"
 #include "MUON/AliMUONv1.h"
@@ -294,7 +294,7 @@ void Config()
     {
         //=================== ZDC parameters ============================
 
-        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+        AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
     }
 
     if (iTRD)

@@ -235,7 +235,7 @@ void ConfigCommon()
     {
         //=================== ZDC parameters ============================
 
-        AliZDC *ZDC = new AliZDCv2("ZDC", "normal ZDC");
+        AliZDC *ZDC = new AliZDCv3("ZDC", "normal ZDC");
     }
 
     if (iTRD)
