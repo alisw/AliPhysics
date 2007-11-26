@@ -1,6 +1,6 @@
 # $Id$
 
-include Makefile.arch
+include $(ROOTSYS)/test/Makefile.arch
 
 default-target: libPWG3base.so 
 
