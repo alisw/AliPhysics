@@ -555,7 +555,11 @@ int AliHLTComponent::FindInputBlock(const AliHLTComponentDataType& dt, int start
 	AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)fpInputBlocks[idx].fPtr);
 	if (firstWord!=fpInputBlocks[idx].fSize-sizeof(AliHLTUInt32_t)) continue;
       }
-      if (dt == kAliHLTAnyDataType || fpInputBlocks[idx].fDataType == dt) {
+      if (dt == kAliHLTAnyDataType || fpInputBlocks[idx].fDataType == dt ||
+	  (memcmp(dt.fID, kAliHLTAnyDataTypeID, kAliHLTComponentDataTypefIDsize)==0 &&
+	   memcmp(dt.fOrigin, fpInputBlocks[idx].fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize)==0) ||
+	  (memcmp(dt.fID, fpInputBlocks[idx].fDataType.fID, kAliHLTComponentDataTypefIDsize)==0) &&
+	   memcmp(dt.fOrigin, kAliHLTDataOriginAny, kAliHLTComponentDataTypefOriginSize)==0) {
 	iResult=idx;
       }
     }
