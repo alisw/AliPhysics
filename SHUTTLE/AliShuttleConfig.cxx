@@ -15,6 +15,10 @@
 
 /*
 $Log$
+Revision 1.24  2007/10/24 10:44:08  acolla
+
+debug AliInfo removed
+
 Revision 1.23  2007/09/28 15:27:40  acolla
 
 AliDCSClient "multiSplit" option added in the DCS configuration
@@ -513,6 +517,8 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fMaxRetries(0), 
 	fPPTimeOut(0), 
 	fPPMaxMem(0), 
+	fMonitorHost(""), 
+	fMonitorTable(""), 
 	fDetectorMap(), 
 	fDetectorList(),
 	fShuttleInstanceHost(""), 
@@ -943,6 +949,20 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 	tmpStr = anAttribute->GetValue();
 	fPPMaxMem = tmpStr.Atoi();
 	
+	anAttribute = anEntry->GetAttribute("monitorHost");
+	if (!anAttribute) {
+		AliError("Can't find monitorHost attribute!");
+		return 4;
+	}
+	fMonitorHost = anAttribute->GetValue();
+	
+	anAttribute = anEntry->GetAttribute("monitorTable");
+	if (!anAttribute) {
+		AliError("Can't find monitorTable attribute!");
+		return 4;
+	}
+	fMonitorTable = anAttribute->GetValue();
+	
 	return 0;
 	
 	
@@ -1187,7 +1207,7 @@ void AliShuttleConfig::Print(Option_t* option) const
 
 //	result += "Password: ";
 //	result.Append('*', fDAQlbPass.Length());
-	result += Form("\tDB: %s; \tTables: %s, %s, %s",
+	result += Form("\tDB: %s; \tTables: %s, %s, %s\n",
 		fDAQlbDB.Data(), fDAQlbTable.Data(), fShuttlelbTable.Data(), fRunTypelbTable.Data());
 
 	result += "\n\n";
@@ -1206,6 +1226,14 @@ void AliShuttleConfig::Print(Option_t* option) const
 		// result += Form("FXS Password:",fFXSPass[iSys].Data());
 	}
 
+	result += "------------------------------------------------------\n";
+	result += "MonaLisa configuration\n\n";
+	
+	result += Form("\tHost: %s; \tTable name: %s",
+		fMonitorHost.Data(), fMonitorTable.Data());
+		
+	result += "\n\n";
+	
 	TString optStr(option);
 
 	result += "------------------------------------------------------\n";

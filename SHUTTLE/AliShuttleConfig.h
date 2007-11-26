@@ -54,6 +54,9 @@ public:
 
 	Int_t GetPPTimeOut() const { return fPPTimeOut; }
 	Int_t GetPPMaxMem() const { return fPPMaxMem; }
+	
+	const char* GetMonitorHost() const {return fMonitorHost.Data();}
+	const char* GetMonitorTable() const {return fMonitorTable.Data();}
 
 	const TObjArray* GetDetectors() const;
 
@@ -161,41 +164,44 @@ private:
 	UInt_t SetDetConfig(TList* detList, TList* dcsList);
 	UInt_t SetHostConfig(TList* hostList);
 	
-	TString fConfigHost;  		//! Host of the Shuttle configuration LDAP server
+	TString fConfigHost;  		// Host of the Shuttle configuration LDAP server
 
-	TString fDAQlbHost;		//! Host of the DAQ logbook MySQL Server
-	UInt_t  fDAQlbPort;		//! port of the DAQ logbook MySQL Server
-	TString fDAQlbUser;  		//! username of the DAQ logbook MySQL Server
-	TString fDAQlbPass; 		//! password of the DAQ logbook MySQL Server
-	TString fDAQlbDB; 		//! DB name of the DAQ logbook MySQL Server
-	TString fDAQlbTable; 		//! Table name of the DAQ logbook 
-	TString fShuttlelbTable; 	//! Table name of the Shuttle logbook
-	TString fRunTypelbTable; 	//! Table name of the Run typr logbook
+	TString fDAQlbHost;		// Host of the DAQ logbook MySQL Server
+	UInt_t  fDAQlbPort;		// port of the DAQ logbook MySQL Server
+	TString fDAQlbUser;  		// username of the DAQ logbook MySQL Server
+	TString fDAQlbPass; 		// password of the DAQ logbook MySQL Server
+	TString fDAQlbDB; 		// DB name of the DAQ logbook MySQL Server
+	TString fDAQlbTable; 		// Table name of the DAQ logbook 
+	TString fShuttlelbTable; 	// Table name of the Shuttle logbook
+	TString fRunTypelbTable; 	// Table name of the Run typr logbook
 
-	TString fFXSHost[3]; 		//! Host of the [DAQ, DCS, HLT] File eXchange Server
-	UInt_t  fFXSPort[3]; 		//! Port of the [DAQ, DCS, HLT] File eXchange Server
-	TString fFXSUser[3]; 		//! username of the [DAQ, DCS, HLT] File eXchange Server
-	TString fFXSPass[3]; 		//! password of the [DAQ, DCS, HLT] File eXchange Server
+	TString fFXSHost[3]; 		// Host of the [DAQ, DCS, HLT] File eXchange Server
+	UInt_t  fFXSPort[3]; 		// Port of the [DAQ, DCS, HLT] File eXchange Server
+	TString fFXSUser[3]; 		// username of the [DAQ, DCS, HLT] File eXchange Server
+	TString fFXSPass[3]; 		// password of the [DAQ, DCS, HLT] File eXchange Server
 
-	TString fFXSdbHost[3];		//! Host of the [DAQ, DCS, HLT] FXS database
-	UInt_t  fFXSdbPort[3];		//! Port of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbUser[3];  	//! username of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbPass[3]; 		//! password of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbName[3]; 		//! name of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbTable[3]; 	//! Table name of the [DAQ, DCS, HLT] FXS database
+	TString fFXSdbHost[3];		// Host of the [DAQ, DCS, HLT] FXS database
+	UInt_t  fFXSdbPort[3];		// Port of the [DAQ, DCS, HLT] FXS database
+	TString fFXSdbUser[3];  	// username of the [DAQ, DCS, HLT] FXS database
+	TString fFXSdbPass[3]; 		// password of the [DAQ, DCS, HLT] FXS database
+	TString fFXSdbName[3]; 		// name of the [DAQ, DCS, HLT] FXS database
+	TString fFXSdbTable[3]; 	// Table name of the [DAQ, DCS, HLT] FXS database
 
-	Int_t fMaxRetries;        // number of retries of a failed preprocessor
+	Int_t fMaxRetries;        	// number of retries of a failed preprocessor
+	
+	Int_t fPPTimeOut;         	// timeout until a preprocessor is killed
+	Int_t fPPMaxMem;          	// maximum allowed memory until a preprocessor is killed
+	
+	TString fMonitorHost;           // host of the MonaLisa monitoring server
+	TString fMonitorTable;          // Monalisa's SHUTTLE table name
 
-	Int_t fPPTimeOut;         // timeout until a preprocessor is killed
-	Int_t fPPMaxMem;          // maximum allowed memory until a preprocessor is killed
+	TMap fDetectorMap; 		// Map of the detector-by-detector configuration
+	TObjArray fDetectorList; 	// List of detectors with valid configuration
 
-	TMap fDetectorMap; 		//! Map of the detector-by-detector configuration
-	TObjArray fDetectorList; 	//! List of detectors with valid configuration
-
-	TString fShuttleInstanceHost; 	//! Instance of the SHUTTLE
-	TObjArray fProcessedDetectors; 	//! list of the detector to be processed by this machine
-	Bool_t fProcessAll; 		//! flag indicating that all detectors will be processed
-	Bool_t fIsValid;  		//! flag for the validity of the configuration
+	TString fShuttleInstanceHost; 	// Instance of the SHUTTLE
+	TObjArray fProcessedDetectors; 	// list of the detector to be processed by this machine
+	Bool_t fProcessAll; 		// flag indicating that all detectors will be processed
+	Bool_t fIsValid;  		// flag for the validity of the configuration
 
 	ClassDef(AliShuttleConfig, 0);
 };
