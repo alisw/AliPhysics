@@ -142,6 +142,7 @@ int AliHLTFilePublisher::DoInit( int argc, const char** argv )
 
       // -datatype
     } else if (argument.CompareTo("-datatype")==0) {
+      currDataType=kAliHLTVoidDataType;
       if ((bMissingParam=(++i>=argc))) break;
       memcpy(&currDataType.fID, argv[i], TMath::Min(kAliHLTComponentDataTypefIDsize, (Int_t)strlen(argv[i])));
       if ((bMissingParam=(++i>=argc))) break;
