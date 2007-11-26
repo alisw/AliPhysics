@@ -542,9 +542,9 @@ int AliHLTTask::ProcessTask(Int_t eventNo)
 		}
 	      }
 	      if (iblock==evtData.fBlockCnt) segments.push_back(outputBlocks[oblock]);
-	      if (pTgtBuffer && segments.size()>0) {
-		iResult=fpDataBuffer->SetSegments(pTgtBuffer, &segments[0], segments.size());
-	      }
+	    }
+	    if (pTgtBuffer && segments.size()>0) {
+	      iResult=fpDataBuffer->SetSegments(pTgtBuffer, &segments[0], segments.size());
 	    }
 	  } else {
 	    // no forwarding, actually we dont even need to keep the data, this is a
