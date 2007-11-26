@@ -152,7 +152,7 @@ void AliAnalysisTaskESDfilter::Exec(Option_t */*option*/)
     header->SetZDCP1Energy(fESD->GetZDCP1Energy());
     header->SetZDCN2Energy(fESD->GetZDCN2Energy());
     header->SetZDCP2Energy(fESD->GetZDCP2Energy());
-    header->SetZDCEMEnergy(fESD->GetZDCEMEnergy());
+    header->SetZDCEMEnergy(fESD->GetZDCEMEnergy(0),fESD->GetZDCEMEnergy(1));
     header->SetRefMultiplicity(nTracks);
     header->SetRefMultiplicityPos(nPosTracks);
     header->SetRefMultiplicityNeg(nTracks - nPosTracks);
