@@ -54,7 +54,6 @@ enum EAliAnalysisFlags {
    void                StartAnalysis(const char *type="local", TTree *tree=0);
 
    virtual void        Init(TTree *tree);   
-   virtual void        Begin(TTree *tree);
    virtual Bool_t      Notify();
    virtual void        SlaveBegin(TTree *tree);
    virtual Bool_t      ProcessCut(Long64_t entry) {return Process(entry);}

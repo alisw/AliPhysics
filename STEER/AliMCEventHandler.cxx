@@ -98,6 +98,7 @@ Bool_t AliMCEventHandler::InitIO(Option_t* opt)
     //
     if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
     //
+    ResetIO();
 
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
     if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
@@ -241,23 +242,21 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     *fPathName = fileName;
     printf("AliMCEventHandler::Notify() Path: %s\n", fPathName->Data());
     
-    ResetIO();
-    InitIO("");
     return kTRUE;
 }
-    
+
 void AliMCEventHandler::ResetIO()
 {
 //  Clear header and stack
     fMCEvent->Clean();
     
-// Delete Tree E    
+// Delete Tree E
     delete fTreeE; fTreeE = 0;
-    
+
 // Reset files
-    if (fFileE)  delete fFileE;
-    if (fFileK)  delete fFileK;
-    if (fFileTR) delete fFileTR;
+    if (fFileE)  delete fFileE; fFileE = 0;
+    if (fFileK)  delete fFileK; fFileK = 0;
+    if (fFileTR) delete fFileTR; fFileTR = 0;
 }
 
 			    

@@ -32,11 +32,11 @@ public:
    AliAnalysisSelector(AliAnalysisManager *mgr);
    virtual ~AliAnalysisSelector();
    
-   virtual int         Version() const {return 1;}
+   virtual int         Version() const {return 2;}
    virtual void        Init(TTree *tree);
    virtual void        Begin(TTree *);
    virtual void        SlaveBegin(TTree *tree);
-   virtual Bool_t      Notify();   
+   virtual Bool_t      Notify();
    virtual Bool_t      Process(Long64_t entry);
    virtual void        SlaveTerminate();
    virtual void        Terminate();

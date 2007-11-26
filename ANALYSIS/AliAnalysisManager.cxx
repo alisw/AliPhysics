@@ -163,9 +163,30 @@ void AliAnalysisManager::Init(TTree *tree)
       printf("->AliAnalysisManager::Init(%s)\n", tree->GetName());
    }
 
+   // Call InitIO of EventHandler
+   if (fOutputEventHandler) {
+      if (fMode == kProofAnalysis) {
+         fOutputEventHandler->InitIO("proof");
+      } else {
+         fOutputEventHandler->InitIO("local");
+      }
+   }
+
    if (fInputEventHandler) {
-       fInputEventHandler->SetInputTree(tree);
-       fInputEventHandler->InitIO("proof");
+      fInputEventHandler->SetInputTree(tree);
+      if (fMode == kProofAnalysis) {
+         fInputEventHandler->InitIO("proof");
+      } else {
+         fInputEventHandler->InitIO("local");
+      }
+   }
+
+   if (fMCtruthEventHandler) {
+      if (fMode == kProofAnalysis) {
+         fMCtruthEventHandler->InitIO("proof");
+      } else {
+         fMCtruthEventHandler->InitIO("local");
+      }
    }
 
    if (!fInitOK) InitAnalysis();
@@ -183,18 +204,6 @@ void AliAnalysisManager::Init(TTree *tree)
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::Begin(TTree *tree)
-{
-  // The Begin() function is called at the start of the query.
-  // When running with PROOF Begin() is only called on the client.
-  // The tree argument is deprecated (on PROOF 0 is passed).
-   if (fDebug > 1) {
-      cout << "AliAnalysisManager::Begin()" << endl;
-   }   
-   Init(tree);
-}
-
-//______________________________________________________________________________
 void AliAnalysisManager::SlaveBegin(TTree *tree)
 {
   // The SlaveBegin() function is called after the Begin() function.
@@ -203,33 +212,7 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
    if (fDebug > 1) {
       cout << "->AliAnalysisManager::SlaveBegin()" << endl;
    }
-   // Call InitIO of EventHandler
-   if (fOutputEventHandler) {
-       if (fMode == kProofAnalysis) {
-	   fOutputEventHandler->InitIO("proof");
-       } else {
-	   fOutputEventHandler->InitIO("local");
-       }
-   }
-   if (fInputEventHandler) {
-       if (fMode == kProofAnalysis) {
-	   fInputEventHandler->SetInputTree(tree);
-	   fInputEventHandler->InitIO("proof");
-       } else {
-	   fInputEventHandler->SetInputTree(tree);
-	   fInputEventHandler->InitIO("local");
-       }
-   }
 
-   if (fMCtruthEventHandler) {
-       if (fMode == kProofAnalysis) {
-	   fMCtruthEventHandler->InitIO("proof");
-       } else {
-	   fMCtruthEventHandler->InitIO("local");
-       }
-   }
-   
-   //
    TIter next(fTasks);
    AliAnalysisTask *task;
    // Call CreateOutputObjects for all tasks
@@ -237,9 +220,8 @@ void AliAnalysisManager::SlaveBegin(TTree *tree)
       TDirectory *curdir = gDirectory;
       task->CreateOutputObjects();
       if (curdir) curdir->cd();
-   }   
-   if (fMode == kLocalAnalysis) 
-       Init(tree);   
+   }
+
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::SlaveBegin()" << endl;
    }
@@ -300,7 +282,7 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
    if (fDebug > 1) {
-      cout << "->AliAnalysisManager::Process()" << endl;
+      cout << "->AliAnalysisManager::Process(" << entry << ")" << endl;
    }
    if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
    if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);

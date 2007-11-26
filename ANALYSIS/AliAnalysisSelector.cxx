@@ -77,8 +77,8 @@ void AliAnalysisSelector::Begin(TTree *)
 // Assembly the input list.
    RestoreAnalysisManager();
    if (fAnalysis && fAnalysis->GetDebugLevel()>1) {
-      cout << "->AliAnalysisSelector->Init: Analysis manager restored" << endl;
-   }   
+      cout << "->AliAnalysisSelector->Begin: Analysis manager restored" << endl;
+   }
 }
 
 //______________________________________________________________________________
@@ -95,7 +95,7 @@ void AliAnalysisSelector::SlaveBegin(TTree *tree)
          cout << "<-AliAnalysisSelector->SlaveBegin()" << endl;
       }   
    }   
-}      
+}
 
 //______________________________________________________________________________
 Bool_t AliAnalysisSelector::Notify()
@@ -107,7 +107,7 @@ Bool_t AliAnalysisSelector::Notify()
    // user if needed. The return value is currently not used.
    if (fAnalysis) return fAnalysis->Notify();
    return kFALSE;
-}   
+}
 
 //______________________________________________________________________________
 Bool_t AliAnalysisSelector::Process(Long64_t entry)
@@ -115,8 +115,8 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
 // Event loop.
    if (fAnalysis->GetDebugLevel() >1 ) {
       cout << "->AliAnalysisSelector::Process()" << endl;
-   }   
-   fAnalysis->GetEntry(entry); // Not needed anymore in version 2
+   }
+   fAnalysis->GetEntry(entry);
    fAnalysis->ExecAnalysis();
    if (fAnalysis->GetDebugLevel() >1 ) {
       cout << "<-AliAnalysisSelector::Process()" << endl;
@@ -169,7 +169,7 @@ void AliAnalysisSelector::Terminate()
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
    if (!fAnalysis) {
-      Error("Terminate","AliAnalysisSelector::Terminate: No analysisManager!!!");
+      Error("Terminate","AliAnalysisSelector::Terminate: No analysis manager!!!");
       return;
    }   
    if (fAnalysis->GetDebugLevel() >1 ) {
