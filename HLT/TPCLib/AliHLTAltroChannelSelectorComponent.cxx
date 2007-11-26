@@ -106,6 +106,9 @@ int AliHLTAltroChannelSelectorComponent::DoInit(int argc, const char** argv)
 	iResult=-EINVAL;
       } else {
 	fRawreaderMode=static_cast<unsigned>(mode);
+	// always use the reader in unsorted mode regardless of the
+	// argument 
+	if (fRawreaderMode%2==0) fRawreaderMode++;
       }
     } else {
       iResult=-EINVAL;
