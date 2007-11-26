@@ -118,8 +118,8 @@ int AliHLTTPCDigitDumpComponent::CloseWriter()
 }
 
 int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtData,
-			 const AliHLTComponentBlockData* blocks, 
-			 AliHLTComponentTriggerData& /*trigData*/ )
+					    const AliHLTComponentBlockData* blocks, 
+					    AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
   int iResult=0;
@@ -127,12 +127,16 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
   int iPrintedPart=-1;
   int blockno=0;
   HLTDebug("%d blocks", evtData.fBlockCnt);
-  for (; blockno<(int)evtData.fBlockCnt; blockno++ ) {
-    //HLTDebug("event %d block %d: %s 0x%08x size %d", evtData.fEventID, blockno, DataType2Text(blocks[blockno].fDataType).c_str(), blocks[blockno].fSpecification, blocks[blockno].fSize);
-    if (blocks[blockno].fDataType != (kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC)) continue;
+  const AliHLTComponentBlockData* pDesc=NULL;
 
+  for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+    // TODO: Matthias 26.11.2007
+    // I have a very strange behavior with the processing of that log message leading to a crash in vsnprintf
+    // Maybe it's just trivial, but then it should not crash. Needs more investigation
+    //HLTDebug("event %d block %d: %s 0x%08x size %d", evtData.fEventID, blockno, DataType2Text(pDesc->fDataType).c_str(), pDesc->fSpecification, pDesc->fSize);
+    HLTDebug("dump digits for block %d specification 0x%08x", blockno, pDesc->fSpecification);
     TString filename;
-    iResult=BuildFileName(evtData.fEventID, blockno, blocks[blockno].fDataType, blocks[blockno].fSpecification, filename);
+    iResult=BuildFileName(evtData.fEventID, blockno, pDesc->fDataType, pDesc->fSpecification, filename);
     ios::openmode filemode=(ios::openmode)0;
     if (fCurrentFileName.CompareTo(filename)==0) {
       // append to the file
@@ -144,14 +148,14 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
     if (iResult>=0) {
       ofstream dump(filename.Data(), filemode);
       if (dump.good()) {
-	int part=AliHLTTPCDefinitions::GetMinPatchNr(blocks[blockno]);
-	assert(part==AliHLTTPCDefinitions::GetMaxPatchNr(blocks[blockno]));
-	int slice=AliHLTTPCDefinitions::GetMinSliceNr(blocks[blockno]);
-	assert(slice==AliHLTTPCDefinitions::GetMaxSliceNr(blocks[blockno]));
+	int part=AliHLTTPCDefinitions::GetMinPatchNr(*pDesc);
+	assert(part==AliHLTTPCDefinitions::GetMaxPatchNr(*pDesc));
+	int slice=AliHLTTPCDefinitions::GetMinSliceNr(*pDesc);
+	assert(slice==AliHLTTPCDefinitions::GetMaxSliceNr(*pDesc));
 	int firstRow=AliHLTTPCTransform::GetFirstRow(part);
 	int lastRow=AliHLTTPCTransform::GetLastRow(part);
 	AliHLTTPCDigitReaderRaw reader(fRawreaderMode);
-	reader.InitBlock(blocks[blockno].fPtr,blocks[blockno].fSize,firstRow,lastRow,part,slice);
+	reader.InitBlock(pDesc->fPtr,pDesc->fSize,firstRow,lastRow,part,slice);
 
 	int iPrintedRow=-1;
 	int iPrintedPad=-1;
@@ -160,28 +164,27 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	  if (iPrintedSlice!=slice || iPrintedPart!=part) {
 	    iPrintedSlice=slice;
 	    iPrintedPart=part;
+	    dump << endl;
 	    dump << "====================================================================" << endl;
-	    dump << "    Slice: " << iPrintedSlice << "   Pad: " << iPrintedPad << endl;
+	    dump << "    Slice: " << iPrintedSlice << "   Pad: " << iPrintedPad;
 	  }
 	  if (iPrintedRow!=reader.GetRow()) {
 	    iPrintedRow=reader.GetRow();
+	    dump << endl;
 	    dump << "--------------------------------------------------------------------" << endl;
 	    dump << "Row: " << iPrintedRow << endl;
 	  }
 	  if (iPrintedPad!=reader.GetPad()) {
+	    dump << endl;
 	    iPrintedPad=reader.GetPad();
-	    dump << "    Pad: " << iPrintedPad << endl;
-	  }
-	  if (iPrintedPad!=reader.GetPad()) {
-	    iPrintedPad=reader.GetPad();
-	    dump << "    Pad: " << iPrintedPad << endl;
+	    dump << "    Pad: " << iPrintedPad;
 	  }
 	  if (iLastTime!=reader.GetTime()+1 && iLastTime!=reader.GetTime()-1 ) {
 	    dump << endl;
 	    dump << "        Time: " << reader.GetTime();
 	  }
 	  iLastTime=reader.GetTime();
-	  dump << "  " << reader.GetSignal() << endl;
+	  dump << "  " << reader.GetSignal();
 	}
 	dump << endl << endl;
       } else {

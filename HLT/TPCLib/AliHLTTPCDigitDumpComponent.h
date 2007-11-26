@@ -51,14 +51,15 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
 
  protected:
   // interface functions: processing
-  virtual int InitWriter();
-  virtual int CloseWriter();
-  virtual int DumpEvent( const AliHLTComponentEventData& evtData,
-			 const AliHLTComponentBlockData* blocks, 
-			 AliHLTComponentTriggerData& trigData );
-  virtual int ScanArgument(int argc, const char** argv);
+  int InitWriter();
+  int CloseWriter();
+  int DumpEvent( const AliHLTComponentEventData& evtData,
+  		 const AliHLTComponentBlockData* blocks, 
+  		 AliHLTComponentTriggerData& trigData );
+  using AliHLTDataSink::DumpEvent;
 
- 
+  int ScanArgument(int argc, const char** argv);
+
  private:
   /** copy constructor prohibited */
   AliHLTTPCDigitDumpComponent(const AliHLTTPCDigitDumpComponent&);
