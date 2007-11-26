@@ -13,7 +13,6 @@
 
 // info classes 
 #pragma link C++ class AliMUONConstants+; 
-#pragma link C++ class AliMUONLogger+;
 
 // containers
 #pragma link C++ class AliMUONVCluster+;

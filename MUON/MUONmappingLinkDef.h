@@ -9,10 +9,6 @@
 
 #pragma link C++ class  AliMpArea+;
 #pragma link C++ class  AliMpConstants+;
-#pragma link C++ class  AliMpIntPair+;
-#pragma link C++ class  AliMpExMap-;
-#pragma link C++ class  AliMpArrayI+;
-#pragma link C++ class  AliMpStringObjMap+;
 #pragma link C++ class  AliMpPad+;
 #pragma link C++ class  AliMpPadPair+;
 #pragma link C++ class  AliMpVIndexed+;

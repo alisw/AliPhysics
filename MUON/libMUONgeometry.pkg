@@ -8,11 +8,10 @@ SRCS  =  AliMUONGeometryConstituent.cxx \
 	 AliMUONGeometryEnvelope.cxx \
 	 AliMUONGeometryEnvelopeStore.cxx \
 	 AliMUONGeometryDetElement.cxx \
-	 AliMUONStringIntMap.cxx \
 	 AliMUONGeometryModuleTransformer.cxx \
 	 AliMUONGeometryModule.cxx \
 	 AliMUONGeometryTransformer.cxx \
-   AliMUONGeometryMisAligner.cxx \
+         AliMUONGeometryMisAligner.cxx \
 	 AliMUONGeometry.cxx \
 	 AliMUONVGeometryBuilder.cxx \
 	 AliMUONGeometryBuilder.cxx

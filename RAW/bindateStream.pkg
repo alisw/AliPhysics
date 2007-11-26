@@ -6,7 +6,7 @@ EINCLUDE+= TPC ITS RAW
 
 PACKBLIBS := $(ROOTCLIBS) $(SYSLIBS)
 
-ELIBS:=STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim MDC MDCFilter CDB STEER TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONevaluation MUONsim MUONrec MUONbase MUONtrigger MUONgeometry MUONraw MUONcalib MUONmapping
+ELIBS:=STEERBase ESD AOD RAWDatabase RAWDatarec RAWDatasim MDC MDCFilter CDB STEER TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONevaluation MUONsim MUONrec MUONbase MUONtrigger MUONgeometry MUONraw MUONcalib MUONmapping MUONcore
 
 ifneq (,$(findstring macosx,$(ALICE_TARGET)))
 PACKLDFLAGS:=$(LDFLAGS) $(@PACKAGE@LIBSINIT:%=-Wl,-u,_G__cpp_setupG__%)

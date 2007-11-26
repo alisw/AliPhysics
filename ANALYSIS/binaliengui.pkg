@@ -4,7 +4,7 @@ CSRCS :=
 EINCLUDE :=
 ELIBSDIR :=
 ELIBS    := Aliengui \
-  MUONevaluation MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping \
+  MUONevaluation MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONcalib MUONmapping MUONcore \
   TPCbase TPCsim TPCrec TPCfast \
   ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase \
   TRDsim TRDrec TRDfast \

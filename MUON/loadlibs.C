@@ -35,6 +35,7 @@ void loadlibs ()
   gSystem->Load("libSTEER"); 
   
   gSystem->Load("libPhysics");
+  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONgeometry");

@@ -10,7 +10,6 @@ SRCS:=  AliMUONConstants.cxx \
         AliMUONCalibrationData.cxx \
         AliMUONDigitMaker.cxx \
         AliMUONRawWriter.cxx \
-        AliMUONLogger.cxx \
         AliMUONCDB.cxx \
         AliMUONVDigitStore.cxx \
         AliMUONDigitStoreV1.cxx \

@@ -1,23 +1,12 @@
 # $Id$
 
-SRCS:=  AliMUONObjectPair.cxx \
-        AliMUONTriggerLut.cxx \
-        AliMUON2DMap.cxx \
-        AliMUON2DMapIterator.cxx \
-        AliMUON2DMapIteratorByI.cxx \
-        AliMUON1DArray.cxx \
-        AliMUON1DMap.cxx \
-        AliMUON1DMapIterator.cxx \
+SRCS:=  AliMUONTriggerLut.cxx \
         AliMUONVCalibParam.cxx \
         AliMUONCalibParamND.cxx \
         AliMUONCalibParamNF.cxx \
         AliMUONCalibParamNI.cxx \
         AliMUONTriggerEfficiencyCells.cxx\
         AliMUON2DStoreValidator.cxx \
-        AliMUONCheckItem.cxx \
-        AliMUONCheckItemIterator.cxx \
-        AliMUONVStore.cxx \
-        AliMUONTreeManager.cxx \
         AliMUONTriggerIO.cxx
 
 HDRS:= $(SRCS:.cxx=.h)

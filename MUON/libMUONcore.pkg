@@ -1,0 +1,25 @@
+# $Id$
+
+SRCS:=  mapping/AliMpIntPair.cxx  \
+        mapping/AliMpExMap.cxx  \
+	mapping/AliMpArrayI.cxx  \
+	mapping/AliMpStringObjMap.cxx  \
+        AliMUONObjectPair.cxx \
+	AliMUONStringIntMap.cxx \
+        AliMUON2DMap.cxx \
+        AliMUON2DMapIterator.cxx \
+        AliMUON2DMapIteratorByI.cxx \
+        AliMUON1DArray.cxx \
+        AliMUON1DMap.cxx \
+        AliMUON1DMapIterator.cxx \
+        AliMUONCheckItem.cxx \
+        AliMUONCheckItemIterator.cxx \
+        AliMUONVStore.cxx \
+        AliMUONTreeManager.cxx \
+        AliMUONLogger.cxx \
+
+HDRS:= $(SRCS:.cxx=.h)
+
+DHDR:= MUONcoreLinkDef.h
+
+EINCLUDE:= MUON/mapping

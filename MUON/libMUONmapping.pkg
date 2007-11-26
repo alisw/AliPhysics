@@ -12,14 +12,10 @@ SRCS +=  \
          mapping/AliMpCathodType.cxx \
 	 mapping/AliMpArea.cxx  \
 	 mapping/AliMpConstants.cxx  \
-	 mapping/AliMpExMap.cxx  \
-	 mapping/AliMpArrayI.cxx  \
 	 mapping/AliMpFiles.cxx  \
-	 mapping/AliMpIntPair.cxx  \
 	 mapping/AliMpPad.cxx  \
 	 mapping/AliMpPadIteratorPtr.cxx  \
 	 mapping/AliMpPadPair.cxx  \
-	 mapping/AliMpStringObjMap.cxx  \
 	 mapping/AliMpVIndexed.cxx  \
 	 mapping/AliMpVPadIterator.cxx  \
 	 mapping/AliMpVSegmentation.cxx  \

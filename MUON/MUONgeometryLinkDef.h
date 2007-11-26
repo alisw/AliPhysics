@@ -9,7 +9,6 @@
 
 /* $Id$ */
 
-#pragma link C++ class  AliMUONStringIntMap+;
 #pragma link C++ class  AliMUONGeometryConstituent+;
 #pragma link C++ class  AliMUONGeometryEnvelope+;
 #pragma link C++ class  AliMUONGeometryEnvelopeStore+;
