@@ -75,7 +75,7 @@ int AliHLTDataSource::DoProcessing( const AliHLTComponentEventData& evtData,
     HLTDebug("component %s (%p) GetEvent finished (%d)", GetComponentID(), this, iResult);
   } else {
     // publish special event
-    if (size>=fgSpecialEventSize) {
+    if (size>=(unsigned)fgSpecialEventSize) {
       memcpy(outputPtr, fgpSpecialEvent, fgSpecialEventSize);
       AliHLTComponentBlockData bd;
       FillBlockData(bd);

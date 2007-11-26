@@ -173,8 +173,8 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     while (reader.NextAltroBlock()) {
       int active=0;
       for (; active<iNofActivePads; active++) {
-	if (pActivePadsArray[active].fRow==reader.GetRow() &&
-	    pActivePadsArray[active].fPad==reader.GetPad()) {
+	if ((int)pActivePadsArray[active].fRow==reader.GetRow() &&
+	    (int)pActivePadsArray[active].fPad==reader.GetPad()) {
 	  break;
 	}
       }

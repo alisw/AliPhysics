@@ -309,7 +309,7 @@ int AliHLTTPCDigitReaderRaw::GetTime()
 
 int AliHLTTPCDigitReaderRaw::GetAltroChannelRawData(void* &pTgt, AliHLTUInt16_t &hwAddress)
 {
-  int iResult;
+  int iResult=0;
   if (fBuffer==NULL) return -ENODATA;
   if (fAltroBlockPositionBytes-fAltroBlockLengthBytes>GetCommonDataHeaderSize()) {
     pTgt=fBuffer+(fAltroBlockPositionBytes-fAltroBlockLengthBytes+1);

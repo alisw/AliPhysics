@@ -87,6 +87,7 @@ Int_t AliHLTTriggerSelectiveReadoutComponent::GetOutputDataTypes( AliHLTComponen
   tgtList.clear(); 
   tgtList.push_back( kAliHLTDataTypeDDLRaw );
   tgtList.push_back( kAliHLTDataTypeDDL );
+  return tgtList.size();
 }
 
 void AliHLTTriggerSelectiveReadoutComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
