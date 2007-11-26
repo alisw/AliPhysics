@@ -23,8 +23,8 @@ public:
 
   AliTRDtestBeam();       // ctor
   AliTRDtestBeam(const char *filename); // constructor
-  //AliTRDtestBeam(const AliTRDtestBeam &tb);  
-  //AliTRDtestBeam& operator = (const AliTRDtestBeam& tb) {return *this}
+  AliTRDtestBeam(const AliTRDtestBeam &tb);  
+  AliTRDtestBeam &operator=(const AliTRDtestBeam& /*tb*/) {return *this; }
   virtual ~AliTRDtestBeam(); // dtor
 
   Int_t NextEvent();

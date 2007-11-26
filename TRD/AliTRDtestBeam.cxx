@@ -73,6 +73,33 @@ AliTRDtestBeam::AliTRDtestBeam() :
   //
 
 }
+
+//____________________________________________________________________________ 
+AliTRDtestBeam::AliTRDtestBeam(const AliTRDtestBeam &tb) 
+ :TObject(tb),
+  fDataStream(0),
+  fHeaderIsRead(0),
+  fEventCount(0),
+  fLimit(4), 
+  fCurrent(0),
+  fDdlOff(0),
+  fSiOff(0),
+  fQdcOff(0),
+  fDdlSize(0),
+  fFileHeader(0),
+  fEventHeader(0),
+  fEventData(0),
+  fNSi1(0),
+  fNSi2(0),
+  fCher(0),
+  fPb(0)
+{
+  //
+  // Copy constructor
+  //
+
+}
+
 //____________________________________________________________________________ 
 AliTRDtestBeam::AliTRDtestBeam(const char *filename) :
   fDataStream(0),

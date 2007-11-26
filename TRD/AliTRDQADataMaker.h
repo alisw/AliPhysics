@@ -1,32 +1,39 @@
-#ifndef AliTRDQADatamaker_H
-#define AliTRDQADatamaker_H
+#ifndef AliTRDQADATAMAKER_H
+#define AliTRDQADATAMAKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-Produces the data needed to calculate the quality assurance. 
-All data must be mergeable objects.
-S.Radomski Uni-Heidelberg October 2007
-*/
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Produces the data needed to calculate the quality assurance.           //
+// All data must be mergeable objects.                                    //
+// S.Radomski Uni-Heidelberg October 2007                                 //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
+#include "AliQADataMaker.h"
 
 // --- ROOT system ---
 class TH1F ; 
 class TH1I ; 
 
-// --- Standard library ---
-
 // --- AliRoot header files ---
-#include "AliQADataMaker.h"
+class AliExternalTrackParam;
 
 class AliTRDQADataMaker: public AliQADataMaker {
 
 public:
+
   AliTRDQADataMaker() ;          // ctor
   AliTRDQADataMaker(const AliTRDQADataMaker& qadm) ;   
   AliTRDQADataMaker& operator = (const AliTRDQADataMaker& qadm) ;
   virtual ~AliTRDQADataMaker() {;} // dtor
   
 private:
+
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX, TList*) {};
   virtual void EndOfDetectorCycle() ;
   virtual void InitHits() ; 
   virtual void InitESDs() ; 
@@ -38,10 +45,10 @@ private:
   virtual void MakeHits(TTree * hitTree);
   virtual void MakeHits(TClonesArray * hits);
 
-  //virtual void MakeSDigits(TTree *sdigitTree);
+  virtual void MakeSDigits(TTree *sdigitTree);
   virtual void MakeSDigits(TClonesArray * sigits); 
 
-  //virtual void MakeDigits(TTree *digitTree);
+  virtual void MakeDigits(TTree *digitTree);
   virtual void MakeDigits(TClonesArray * digits); 
 
   virtual void MakeRaws(AliRawReader* rawReader); 
@@ -49,10 +56,14 @@ private:
   virtual void MakeESDs(AliESDEvent * esd);
   
   virtual void StartOfDetectorCycle() ; 
-  Int_t CheckPointer(TObject *obj, const char *name);
+  Int_t        CheckPointer(TObject *obj, const char *name);
+
+  // internal methods
+  Int_t    GetSector(const Double_t alpha) const;
+  Double_t GetExtZ(const AliExternalTrackParam *paramIn) const;
 
   ClassDef(AliTRDQADataMaker,1)  // description 
 
 };
 
-#endif // AliTRDQADatamaker_H
+#endif // AliTRDQADATAMAKER_H
