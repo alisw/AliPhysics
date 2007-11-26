@@ -10,6 +10,7 @@ void
 ReadRaw()
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
+  cdb->SetRun(0);
   cdb->SetDefaultStorage("local://$ALICE_ROOT");
   AliLog::SetModuleDebugLevel("FMD", 10);
   AliFMDParameters::Instance()->Init();

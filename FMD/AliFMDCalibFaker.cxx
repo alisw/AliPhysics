@@ -63,7 +63,7 @@ AliFMDCalibFaker::AliFMDCalibFaker(Int_t mask, const char* loc)
     fPedestalMin(20),
     fPedestalMax(30), 
     fDeadChance(0),
-    fRate(1),
+    fRate(4),
     fZeroThreshold(0),
     fRunMin(0),
     fRunMax(10),

@@ -65,6 +65,7 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
       AliFMDDebug(30, ("Last is 0x%x, so reading a new word", last));
       next   = Next();
       if(!next){
+	AliFMDDebug(15, ("Read word # %d (!next)", l));
 	addr = GetPrevHWAddress();
 	ddl  = GetPrevDDLNumber();
 	len  = l+1; // Need to add one - l points to last valid index

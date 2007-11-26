@@ -354,8 +354,6 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
   // load this to subtract a pedestal that was given in a database or
   // something like that. 
 
-  Int_t             counts = 0;
-  Int_t             adc    = 0;
   AliFMDParameters* param  = AliFMDParameters::Instance();
   Float_t           ped    = param->GetPedestal(digit->Detector(), 
 						digit->Ring(), 
@@ -367,10 +365,11 @@ AliFMDReconstructor::SubtractPedestal(AliFMDDigit* digit) const
 						     digit->Strip());
   AliFMDDebug(15, ("Subtracting pedestal %f from signal %d", 
 		   ped, digit->Counts()));
-  if (digit->Count3() > 0)      adc = digit->Count3();
-  else if (digit->Count2() > 0) adc = digit->Count2();
-  else                          adc = digit->Count1();
-  counts = TMath::Max(Int_t(adc - ped), 0);
+  // if (digit->Count3() > 0)      adc = digit->Count3();
+  // else if (digit->Count2() > 0) adc = digit->Count2();
+  // else                          adc = digit->Count1();
+  Int_t adc    = digit->Counts();
+  Int_t counts = TMath::Max(Int_t(adc - ped), 0);
   if (counts < noise * fNoiseFactor) counts = 0;
   if (counts > 0) AliFMDDebug(15, ("Got a hit strip"));
   if (fDiagStep1) fDiagStep1->Fill(adc, counts);

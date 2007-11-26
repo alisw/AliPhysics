@@ -445,7 +445,8 @@ public:
 					 UShort_t strip=0, 
 					 UShort_t count1=0, 
 					 Short_t  count2=-1, 
-					 Short_t  count3=-1);
+					 Short_t  count3=-1, 
+					 Short_t  count4=-1);
   /** Add a digit to the Digit tree 
       @param digits
       - digits[0]  [UShort_t] Detector #
@@ -472,7 +473,8 @@ public:
 					  Float_t  edep=0,
 					  UShort_t count1=0, 
 					  Short_t  count2=-1, 
-					  Short_t  count3=-1);
+					  Short_t  count3=-1,
+					  Short_t  count4=-1);
   /** @}*/
 
   /** @{ */

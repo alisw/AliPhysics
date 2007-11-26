@@ -879,7 +879,8 @@ AliFMD::AddDigit(Int_t* digits, Int_t*)
 		   UShort_t(digits[3]),  // Strip #
 		   UShort_t(digits[4]),  // ADC Count1 
 		   Short_t(digits[5]), 	 // ADC Count2 
-		   Short_t(digits[6]));  // ADC Count3 
+		   Short_t(digits[6]),   // ADC Count3 
+		   Short_t(digits[7])); 
 }
 
 //____________________________________________________________________
@@ -890,7 +891,8 @@ AliFMD::AddDigitByFields(UShort_t detector,
 			 UShort_t strip, 
 			 UShort_t count1, 
 			 Short_t  count2,
-			 Short_t  count3)
+			 Short_t  count3, 
+			 Short_t  count4)
 {
   // add a real digit - as coming from data
   // 
@@ -906,10 +908,11 @@ AliFMD::AddDigitByFields(UShort_t detector,
   TClonesArray& a = *(DigitsArray());
   
   new (a[fNdigits++]) 
-    AliFMDDigit(detector, ring, sector, strip, count1, count2, count3);
-  AliFMDDebug(15, ("Adding digit # %5d/%5d for FMD%d%c[%2d,%3d]=(%d,%d,%d)",
+    AliFMDDigit(detector, ring, sector, strip, count1, count2, count3, count4);
+  AliFMDDebug(15, ("Adding digit # %5d/%5d for FMD%d%c[%2d,%3d]=(%d,%d,%d,%d)",
 		   fNdigits-1, a.GetEntriesFast(),
-		   detector, ring, sector, strip, count1, count2, count3));
+		   detector, ring, sector, strip, 
+		   count1, count2, count3, count4));
   
 }
 
@@ -937,7 +940,8 @@ AliFMD::AddSDigit(Int_t* digits)
 		    Float_t(digits[4]),   // Edep
 		    UShort_t(digits[5]),  // ADC Count1 
 		    Short_t(digits[6]),   // ADC Count2 
-		    Short_t(digits[7]));  // ADC Count3 
+		    Short_t(digits[7]),   // ADC Count3 
+		    Short_t(digits[8]));
 }
 
 //____________________________________________________________________
@@ -949,7 +953,8 @@ AliFMD::AddSDigitByFields(UShort_t detector,
 			  Float_t  edep,
 			  UShort_t count1, 
 			  Short_t  count2,
-			  Short_t  count3)
+			  Short_t  count3, 
+			  Short_t  count4)
 {
   // add a summable digit
   // 
@@ -967,7 +972,8 @@ AliFMD::AddSDigitByFields(UShort_t detector,
   TClonesArray& a = *(SDigitsArray());
   
   new (a[fNsdigits++]) 
-    AliFMDSDigit(detector, ring, sector, strip, edep, count1, count2, count3);
+    AliFMDSDigit(detector, ring, sector, strip, edep, 
+		 count1, count2, count3, count4);
 }
 
 //____________________________________________________________________

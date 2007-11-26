@@ -327,10 +327,12 @@ AliFMDDigitizer::AddDigit(AliFMD*  fmd,
 			  Float_t  /* edep */, 
 			  UShort_t count1, 
 			  Short_t  count2, 
-			  Short_t  count3) const
+			  Short_t  count3,
+			  Short_t  count4) const
 {
   // Add a digit
-  fmd->AddDigitByFields(detector, ring, sector, strip, count1, count2, count3);
+  fmd->AddDigitByFields(detector, ring, sector, strip, 
+			count1, count2, count3, count4);
 }
 
 //____________________________________________________________________
@@ -352,6 +354,7 @@ AliFMDDigitizer::CheckDigit(AliFMDDigit*    digit,
   Int_t             integral = counts[0];
   if (counts[1] >= 0) integral += counts[1];
   if (counts[2] >= 0) integral += counts[2];
+  if (counts[3] >= 0) integral += counts[3];
   integral -= Int_t(mean + 2 * width);
   if (integral < 0) integral = 0;
   

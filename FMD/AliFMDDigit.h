@@ -40,7 +40,8 @@ public:
 	      UShort_t strip=0, 
 	      UShort_t count=0, 
 	      Short_t  count2=-1, 
-	      Short_t  count3=-1);
+	      Short_t  count3=-1, 
+	      Short_t  count4=-1);
   /** DTOR */
   virtual ~AliFMDDigit() {}
   /** @param i # of sample to get 
@@ -52,6 +53,8 @@ public:
   Short_t  Count2()                const { return fCount2;   }
   /** @return ADC count (third sample, or -1 if not used) */
   Short_t  Count3()                const { return fCount3;   }
+  /** @return ADC count (third sample, or -1 if not used) */
+  Short_t  Count4()                const { return fCount4;   }
   /** @return Canonical ADC counts */
   UShort_t Counts()                const;
   /** Print info 
@@ -63,15 +66,17 @@ protected:
   UShort_t fCount1;     // Digital signal 
   Short_t  fCount2;     // Digital signal (-1 if not used)
   Short_t  fCount3;     // Digital signal (-1 if not used)
-  ClassDef(AliFMDDigit,1)     // Normal FMD digit
+  Short_t  fCount4;     // Digital signal (-1 if not used)
+  ClassDef(AliFMDDigit,2)     // Normal FMD digit
 };
 
 inline UShort_t 
 AliFMDDigit::Counts() const 
 {
-  return fCount1 
-    + (fCount2 >= 0 ? fCount2 : 0)
-    + (fCount3 >= 0 ? fCount3 : 0);
+  if (fCount4 >= 0) return fCount3;
+  if (fCount3 >= 0) return fCount2;
+  if (fCount2 >= 0) return fCount2;
+  return fCount1;
 }
 
 inline Int_t
@@ -81,6 +86,7 @@ AliFMDDigit::Count(UShort_t i) const
   case 0: return fCount1;
   case 1: return fCount2;
   case 2: return fCount3;
+  case 3: return fCount4;
   }
   return -1;
 }

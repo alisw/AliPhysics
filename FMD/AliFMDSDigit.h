@@ -41,7 +41,8 @@ public:
 	       Float_t  edep=0,
 	       UShort_t count=0, 
 	       Short_t  count2=-1, 
-	       Short_t  count3=-1);
+	       Short_t  count3=-1,
+	       Short_t  count4=-1);
   /** DTOR */
   virtual ~AliFMDSDigit() {}
   /** @return ADC count (first sample) */
@@ -50,6 +51,8 @@ public:
   Short_t  Count2()                const { return fCount2;   }
   /** @return ADC count (third sample, or -1 if not used) */
   Short_t  Count3()                const { return fCount3;   }
+  /** @return ADC count (third sample, or -1 if not used) */
+  Short_t  Count4()                const { return fCount4;   }
   /** @return Canonical ADC counts */
   UShort_t Counts()                const;
   /** @return Energy deposited */
@@ -62,15 +65,17 @@ protected:
   UShort_t fCount1;     // Digital signal 
   Short_t  fCount2;     // Digital signal (-1 if not used)
   Short_t  fCount3;     // Digital signal (-1 if not used)
-  ClassDef(AliFMDSDigit,1)     // Summable FMD digit
+  Short_t  fCount4;     // Digital signal (-1 if not used)
+  ClassDef(AliFMDSDigit,2)     // Summable FMD digit
 };
   
 inline UShort_t 
 AliFMDSDigit::Counts() const 
 {
-  return fCount1 
-    + (fCount2 >= 0 ? fCount2 : 0)
-    + (fCount3 >= 0 ? fCount3 : 0);
+  if (fCount4 >= 0) return fCount3;
+  if (fCount3 >= 0) return fCount2;
+  if (fCount2 >= 0) return fCount2;
+  return fCount1;
 }
 
 

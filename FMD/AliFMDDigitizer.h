@@ -70,7 +70,8 @@ protected:
       @param edep     Energy deposited (not used)
       @param count1   ADC count 1
       @param count2   ADC count 2 (-1 if not used)
-      @param count3   ADC count 3 (-1 if not used) */
+      @param count3   ADC count 3 (-1 if not used) 
+      @param count4   ADC count 4 (-1 if not used) */
   virtual void     AddDigit(AliFMD*  fmd,
 			    UShort_t detector, 
 			    Char_t   ring,
@@ -79,7 +80,8 @@ protected:
 			    Float_t  edep, 
 			    UShort_t count1, 
 			    Short_t  count2, 
-			    Short_t  count3) const;
+			    Short_t  count3,
+			    Short_t  count4) const;
   /** MAke a pedestal
       @param detector Detector #
       @param ring     Ring ID

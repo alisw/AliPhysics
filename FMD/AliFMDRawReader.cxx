@@ -154,9 +154,11 @@ AliFMDRawReader::ReadAdcs(TClonesArray* array)
 		       det, ring, sec, curStr, i));
       new ((*array)[n]) AliFMDDigit(det, ring, sec, curStr, data[i], 
 				    (rate >= 2 ? data[i+1] : 0),
-				    (rate >= 3 ? data[i+2] : 0));
+				    (rate >= 3 ? data[i+2] : 0),
+				    (rate >= 4 ? data[i+3] : 0));
       if (rate >= 2) i++;
       if (rate >= 3) i++;
+      if (rate >= 4) i++;
     }
   }
   return kTRUE;

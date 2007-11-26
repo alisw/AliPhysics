@@ -230,7 +230,8 @@ protected:
 			    Float_t  /* edep     */, 
 			    UShort_t /* count1   */, 
 			    Short_t  /* count2   */, 
-			    Short_t  /* count3   */) const {}
+			    Short_t  /* count3   */,
+			    Short_t  /* count4   */) const {}
 
   AliRunLoader* fRunLoader;	   //! Run loader
   AliFMDEdepMap fEdep;             // Cache of Energy from hits 

@@ -68,12 +68,16 @@
 
 //====================================================================
 ClassImp(AliFMDDigit)
+#if 0
+; // Here to make Emacs happy
+#endif
 
 //____________________________________________________________________
 AliFMDDigit::AliFMDDigit()
   : fCount1(0),
     fCount2(-1),
-    fCount3(-1)
+    fCount3(-1),
+    fCount4(-1)
 {
   // CTOR
 }
@@ -85,11 +89,13 @@ AliFMDDigit::AliFMDDigit(UShort_t detector,
 			 UShort_t strip, 
 			 UShort_t count1,
 			 Short_t  count2, 
-			 Short_t  count3)
+			 Short_t  count3,
+			 Short_t  count4)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
     fCount1(count1),
     fCount2(count2),
-    fCount3(count3)
+    fCount3(count3), 
+    fCount4(count4)
 {
   //
   // Creates a real data digit object
@@ -122,8 +128,8 @@ AliFMDDigit::Print(Option_t* /* option*/) const
   // Print digit to standard out 
   AliFMDBaseDigit::Print();
   cout << "\t" 
-       << fCount1 << " (+ " << fCount2 << " + " << fCount2 << ") = " 
-       << Counts() << endl;
+       << fCount1 << " (" << fCount2 << "," << fCount3 << "," << fCount4 
+       << ") = " << Counts() << endl;
 }
 
 //____________________________________________________________________

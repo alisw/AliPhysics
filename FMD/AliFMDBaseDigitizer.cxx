@@ -227,7 +227,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer()
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips),
-    fShapingTime(0)
+    fShapingTime(6)
 {
   // Default ctor - don't use it
 }
@@ -240,7 +240,7 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager)
 	  AliFMDMap::kMaxRings, 
 	  AliFMDMap::kMaxSectors, 
 	  AliFMDMap::kMaxStrips), 
-    fShapingTime(0)
+    fShapingTime(6)
 {
   // Normal CTOR
   AliFMDDebug(1, (" processed"));
@@ -387,7 +387,7 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
   //
   AliFMDGeometry* geometry = AliFMDGeometry::Instance();
   
-  TArrayI counts(3);
+  TArrayI counts(4);
   for (UShort_t detector=1; detector <= 3; detector++) {
     AliFMDDebug(5, ("Processing hits in FMD%d", detector));
     // Get pointer to subdetector 
@@ -422,7 +422,7 @@ AliFMDBaseDigitizer::DigitizeHits(AliFMD* fmd) const
 	  last = edep;
 	  AddDigit(fmd, detector, ring, sector, strip, edep, 
 		   UShort_t(counts[0]), Short_t(counts[1]), 
-		   Short_t(counts[2]));
+		   Short_t(counts[2]), Short_t(counts[3]));
 	  AliFMDDebug(10, ("   Adding digit in FMD%d%c[%2d,%3d]=%d", 
 			  detector,ring,sector,strip,counts[0]));
 #if 0
@@ -495,7 +495,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
     maxAdc = 1023;
   }
   UShort_t rate           = param->GetSampleRate(detector,ring,sector,strip);
-  if (rate < 1 || rate > 3) rate = 1;
+  if (rate < 1 || rate > 4) rate = 1;
   
   // In case we don't oversample, just return the end value. 
   if (rate == 1) {
@@ -511,7 +511,7 @@ AliFMDBaseDigitizer::ConvertToCount(Float_t   edep,
   // Create a pedestal 
   Float_t b = fShapingTime;
   for (Ssiz_t i = 0; i < rate;  i++) {
-    Float_t t  = Float_t(i) / rate;
+    Float_t t  = Float_t(i) / rate + 1./rate;
     Float_t s  = edep + (last - edep) * TMath::Exp(-b * t);
     Float_t a  = Int_t(s * convF + ped);
     if (a < 0) a = 0;

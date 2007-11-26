@@ -70,13 +70,13 @@ public:
 			   eloss.fN-1, eloss.fArray);
     fElossVsPMQ->SetXTitle("p/(mq^{2})=#beta#gamma/q^{2}");
     fElossVsPMQ->SetYTitle("#Delta E/#Delta x / q^{2} [MeV/cm]");
-    fElossVsPMQ->SumW2();
+    fElossVsPMQ->Sumw2();
     fEloss = new TH1D("eloss", "#Delta E/#Delta x / q^{2}", 
 		      eloss.fN-1, eloss.fArray);
     fEloss->SetFillColor(2);
     fEloss->SetFillStyle(3001);
     fEloss->SetXTitle("#Delta E/#Delta x / q^{2} [MeV/cm]");
-    fEloss->SumW2();
+    fEloss->Sumw2();
   }
   //__________________________________________________________________
   Bool_t ProcessHit(AliFMDHit* hit, TParticle* p) 

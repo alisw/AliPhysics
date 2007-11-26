@@ -71,7 +71,8 @@ protected:
 			    Float_t  edep, 
 			    UShort_t count1, 
 			    Short_t  count2, 
-			    Short_t  count3) const;
+			    Short_t  count3,
+			    Short_t  count4) const;
   ClassDef(AliFMDSDigitizer,0) // Make Summable Digits from Hits
 };
 
