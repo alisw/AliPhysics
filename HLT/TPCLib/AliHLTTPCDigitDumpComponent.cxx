@@ -126,7 +126,6 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
   int iPrintedSlice=-1;
   int iPrintedPart=-1;
   int blockno=0;
-  HLTDebug("%d blocks", evtData.fBlockCnt);
   const AliHLTComponentBlockData* pDesc=NULL;
 
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginTPC); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
@@ -167,13 +166,13 @@ int AliHLTTPCDigitDumpComponent::DumpEvent( const AliHLTComponentEventData& evtD
 	    iPrintedPart=part;
 	    dump << "====================================================================" << endl;
 	    dump << "    Slice: " << iPrintedSlice << "   Partition: " << iPrintedPart << endl;
-	    iLastTime=-1;
+	    iPrintedRow=-1;
 	  }
 	  if (iPrintedRow!=reader.GetRow()) {
 	    iPrintedRow=reader.GetRow();
 	    dump << "--------------------------------------------------------------------" << endl;
 	    dump << "Row: " << iPrintedRow << endl;
-	    iLastTime=-1;
+	    iPrintedPad=-1;
 	  }
 	  if (iPrintedPad!=reader.GetPad()) {
 	    iPrintedPad=reader.GetPad();
