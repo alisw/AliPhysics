@@ -1,0 +1,13 @@
+# SPD Config
+dn: det=SPD,o=shuttle_prod,dc=cern,dc=ch
+objectClass: top
+objectClass: detectorConfig
+det: SPD
+strictRunOrder: 0
+responsible: Henrik.Tydesjo@cern.ch
+
+dn: dcsHost=aldcs052.cern.ch,det=SPD,o=shuttle_prod,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 1337
+multiSplit: 4000

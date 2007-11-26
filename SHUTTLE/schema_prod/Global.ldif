@@ -1,0 +1,19 @@
+# Global config
+dn: name=globalConfig,o=shuttle_prod,dc=cern,dc=ch
+objectClass: top
+objectClass: globalConfig
+name: globalConfig
+daqLbHost: aldaqgw01-gpn.cern.ch
+daqLbUser: shuttle
+daqLbPasswd: alice
+daqLbDB: LOGBOOK
+daqLbPort: 1444
+daqLbTable: logbook
+shuttleLbTable: logbook_shuttle
+runTypeLbTable: logbook_detectors
+ppTimeOut: 3600
+ppMaxMem: 2097152
+ppMaxRetries: 2
+monitorHost: aliendb1.cern.ch
+monitorTable: SHUTTLE_PROD
+

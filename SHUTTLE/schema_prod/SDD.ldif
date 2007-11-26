@@ -1,0 +1,14 @@
+# SDD config
+dn: det=SDD,o=shuttle_prod,dc=cern,dc=ch
+objectClass: top
+objectClass: detectorConfig
+det: SDD
+strictRunOrder: 0
+responsible: francesco.prino@cern.ch
+responsible: elisabetta.crescio@to.infn.it
+
+dn: dcsHost=aldcs052.cern.ch,det=SDD,o=shuttle_prod,dc=cern,dc=ch
+objectClass: dcsConfig
+dcsHost: aldcs052.cern.ch
+dcsPort: 1337
+multiSplit: 4000

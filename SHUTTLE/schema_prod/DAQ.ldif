@@ -1,0 +1,15 @@
+# DAQ config
+dn: system=DAQ,o=shuttle_prod,dc=cern,dc=ch
+objectClass: top
+objectClass: fxsConfig
+system: DAQ
+dbHost: aldaqgw01-gpn.cern.ch
+dbPort: 1443
+dbPasswd: alice
+dbUser: shuttle
+dbName: FES
+dbTable: daqFES_files
+fxsHost: aldaqgw01-gpn.cern.ch
+fxsPort: 1443
+fxsUser: shuttle
+
