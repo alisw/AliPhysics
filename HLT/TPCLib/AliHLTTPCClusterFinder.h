@@ -20,7 +20,7 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#define UNSORTED 1
+#define UNSORTED 0
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCPadArray.h"
