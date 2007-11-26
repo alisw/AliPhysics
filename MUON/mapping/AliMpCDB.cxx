@@ -35,6 +35,7 @@
 
 #include <TSystem.h>
 #include <TClass.h>
+#include <Riostream.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpCDB)
@@ -59,8 +60,10 @@ Bool_t AliMpCDB::LoadMpSegmentation(Bool_t warn)
   }  
   
   AliCDBManager* cdbManager = AliCDBManager::Instance();
-  if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  if ( ! cdbManager->GetDefaultStorage() ) {
+    AliErrorClassStream() << "CDB default storage has not been set." << endl; 
+    return kFALSE;
+  }  
 
   Int_t run = cdbManager->GetRun();
   if ( run < 0 ) {
