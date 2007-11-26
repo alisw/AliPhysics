@@ -55,8 +55,8 @@ class AliITSRawStreamSDD: public AliITSRawStream {
 
     UInt_t           fData;         // data read for file
     Int_t            fSkip[kDDLsNumber];// number of skipped words
-    Int_t            fCarlosId;     // carlos ID
     Int_t            fEventId;      // event ID from header
+    Int_t            fCarlosId;     // carlos ID
     Int_t            fChannel;      // current channel
     Int_t            fJitter;          // jitter between L0 and pascal stop (x25ns)
     ULong64_t        fChannelData[kModulesPerDDL][2];// packed data for the 2 channels
@@ -66,15 +66,15 @@ class AliITSRawStreamSDD: public AliITSRawStream {
     UInt_t           fReadBits[kModulesPerDDL][2];   // number of bits to read
     Int_t            fLowThreshold[2]; // low Carlos threshold
     Int_t            fNCarlos;         // number of Carlos 
-    Int_t            fNfifo[kFifoWords];
+    Int_t            fNfifo[kFifoWords];  // FIFO number
     Int_t            fTimeBin[kModulesPerDDL][2];  // current timebin [ncarlos][nchannels]
     Int_t            fAnode[kModulesPerDDL][2]; // current anode [ncarlos][nchannels]
     Int_t            fDDL;        //current ddl number
-    UInt_t           fICarlosWord[kCarlosWords];
-    UInt_t           fIFifoWord[kFifoWords];
-    Int_t            fICountFoot[kModulesPerDDL];
-    Int_t            fEndWords;//number of 3f1f1f1f
-    Int_t            fResetSkip; //if it is 0, the ResetSkip Funcion is called
+    UInt_t           fICarlosWord[kCarlosWords]; // Carlos words
+    UInt_t           fIFifoWord[kFifoWords];     // FIFO words
+    Int_t            fICountFoot[kModulesPerDDL]; // counter for carlos footer words
+    Int_t            fEndWords;      //number of 3f1f1f1f
+    Int_t            fResetSkip;     //if it is 0, the ResetSkip Funcion is called
     ClassDef(AliITSRawStreamSDD, 7) // class for reading ITS SDD raw digits
 };
 

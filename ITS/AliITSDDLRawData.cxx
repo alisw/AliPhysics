@@ -140,7 +140,7 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
     }
   }
   //word to select the 12 carlos for the 12 modules
-  UInt_t carlosid=805306368+mod;
+  UInt_t carlosid=0x30000000+mod;
   
   fIndex++;
   buf[fIndex]=carlosid;
@@ -178,28 +178,25 @@ void AliITSDDLRawData::GetDigitsSDD(TClonesArray *ITSdigits,Int_t mod,Int_t modR
       ix=digs->GetCoord2();  // Time
       is=digs->GetCompressedSignal();  // ADC Signal
       digarr[iz][ix]=is;
-        if (fVerbose==2)
+      if (fVerbose==2)
 	ftxt<<"DDL:"<<ddl<<" MID:"<<modR<<" An:"<<iz<<" T:"<<ix<<" A:"<<is<<endl;
       if (is>255){Error("GetDigitsSDD", "bits words is needed)!!!");}
     }
       
     for(Int_t anode=0;anode<512;anode++){
-      if(flag){            
+      if(flag){
 	last = first+diff-1;
 	AliBitPacking::PackWord(word2,baseWord,first,last);
 	flag = kFALSE;
 	first = last+1;
 	diff=0;
       }
-      
-      
       if(anode == 256){
 	last = 0;
 	first = 0;
 	flag = kFALSE;
 	diff = 0;
 	word2=0;
-	
       }
       
       for(Int_t tb=0;tb<256;tb++){
@@ -589,7 +586,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
   Bool_t retcode;
   retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);
   retcode = AliBitPacking::PackWord(0x3F1F1F1F,fifoFooterWord,0,31);
-  retcode = AliBitPacking::PackWord(0xFF00000E,jitterWord,0,31);
+  retcode = AliBitPacking::PackWord(0x7F00000E,jitterWord,0,31);
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSDD");i++){

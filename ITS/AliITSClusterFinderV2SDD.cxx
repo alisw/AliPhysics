@@ -87,7 +87,6 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      if(gain>0) charge/=gain;
      if(charge<cal->GetThresholdAnode(d->GetCoord1())) continue;
      Int_t q=(Int_t)(charge+0.5);
-
      if (z <= nAnodes){
        bins[0][y*nzBins+z].SetQ(q);
        bins[0][y*nzBins+z].SetMask(1);
@@ -271,54 +270,54 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   Int_t nxBins = nTimeBins+2;
   const Int_t kMaxBin=nzBins*(nxBins+2);
   AliBin *bins[2];
-  bins[0]=new AliBin[kMaxBin];
-  bins[1]=new AliBin[kMaxBin];
-
+  AliBin *ddlbins[24]; // 12 modules (=24 hybrids) of 1 DDL read "in parallel"
+  for(Int_t iHyb=0;iHyb<24;iHyb++) ddlbins[iHyb]=new AliBin[kMaxBin];
   // read raw data input stream
-  while (kTRUE) {
-    Bool_t next = input->Next();
-    if (!next || input->IsCompletedModule()) {
+  while (input->Next()) {
+    Int_t iCarlos =((AliITSRawStreamSDD*)input)->GetCarlosId();
+    Int_t iSide = ((AliITSRawStreamSDD*)input)->GetChannel();
+    Int_t iHybrid=iCarlos*2+iSide;
+    if (input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
       Int_t iModule = input->GetModuleID();
       if (iModule >= 0) { 
 	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
+	bins[0]=ddlbins[iCarlos*2];   // first hybrid of the completed module
+	bins[1]=ddlbins[iCarlos*2+1]; // second hybrid of the completed module
 	FindClustersSDD(bins, kMaxBin, nzBins, NULL, clusters[iModule]);
 	Int_t nClusters = clusters[iModule]->GetEntriesFast();
 	nClustersSDD += nClusters;
 	for(Int_t iBin=0;iBin<kMaxBin; iBin++){
-	  bins[0][iBin].Reset();
-	  bins[1][iBin].Reset();
+	  ddlbins[iCarlos*2][iBin].Reset();
+	  ddlbins[iCarlos*2+1][iBin].Reset();
 	}
       }
-      if (!next) break;
     }else{
     // fill the current digit into the bins array
       AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());    
       AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
       const char *option=res->ZeroSuppOption();
       Float_t charge=input->GetSignal();
-      Float_t gain=cal->GetChannelGain(input->GetCoord1());
+      Int_t chan=input->GetCoord1()+nAnodes*iSide;
+      Float_t gain=cal->GetChannelGain(chan);
       if(!((strstr(option,"1D")) || (strstr(option,"2D")))){
-	Float_t baseline = cal->GetBaseline(input->GetCoord1());
+	Float_t baseline = cal->GetBaseline(chan);
 	if(charge>baseline) charge-=baseline;
 	else charge=0;
       }
       if(gain>0) charge/=gain;
-      Int_t q=(Int_t)(charge+0.5);
-      if(q>=cal->GetThresholdAnode(input->GetCoord1())) {
+      if(charge>=cal->GetThresholdAnode(chan)) {
+	Int_t q=(Int_t)(charge+0.5);
 	Int_t iz = input->GetCoord1()+1;
-	Int_t side = ((AliITSRawStreamSDD*)input)->GetChannel();
 	Int_t index = (input->GetCoord2()+1) * nzBins + iz;
-	bins[side][index].SetQ(q);
-	bins[side][index].SetMask(1);
-	bins[side][index].SetIndex(index);
+	ddlbins[iHybrid][index].SetQ(q);
+	ddlbins[iHybrid][index].SetMask(1);
+	ddlbins[iHybrid][index].SetIndex(index);
       }
     }
   }
-  delete [] bins[0];
-  delete [] bins[1];
-
+  for(Int_t iHyb=0;iHyb<24;iHyb++) delete [] ddlbins[iHyb];
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 }
 
