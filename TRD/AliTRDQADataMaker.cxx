@@ -94,8 +94,8 @@ void AliTRDQADataMaker::InitESDs()
   
   // 3
   for(Int_t i=0; i<knbits; i++) {
-    hist[i*knbits+3] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 50, 0, 10);
-    hist[i+knbits+4] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
+    hist[2*i+3] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 50, 0, 10);
+    hist[2*i+4] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
   }
   
   // 3 + 12 = 15
@@ -274,8 +274,8 @@ void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
 
     for(Int_t b=0; b<knbits; b++) {
       if (bit[b]) {
-	GetESDsData(b*knbits+3)->Fill(pt); 
-	GetESDsData(b*knbits+4)->Fill(extZ);
+	GetESDsData(2*b+3)->Fill(pt); 
+	GetESDsData(2*b+4)->Fill(extZ);
       }
     }
 
