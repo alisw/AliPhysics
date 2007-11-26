@@ -31,13 +31,14 @@
 #endif
 
 AliHMPIDParam *fParam;
+TDatabasePDG *fPdg;
 
 TCanvas *fCanvas=0; Int_t fType=3; Int_t fEvt=-1; Int_t fNevt=0;                      
 TCanvasImp *fCanvasImp;
 TFile *fHitFile; TTree *fHitTree; TClonesArray *fHitLst; TPolyMarker *fRenMip[7]; TPolyMarker *fRenCko[7]; TPolyMarker *fRenFee[7];
                                   TClonesArray *fSdiLst; 
 TFile *fDigFile; TTree *fDigTree; TObjArray    *fDigLst; TBox *fRenDig[7][160*144]; TBox *fBox[7][160*144];   
-TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];    
+TFile *fCluFile; TTree *fCluTree; TObjArray    *fCluLst; TPolyMarker *fRenClu[7];
 TFile *fEsdFile; TTree *fEsdTree; AliESDEvent  *fEsd;    TPolyMarker *fRenTxC[7]; TPolyMarker *fRenRin[7];  
 TFile *fCosFile; TTree *fCosTree;
 
@@ -61,6 +62,8 @@ Int_t fTotPads[7],fTotClus[7];
 AliRunLoader *gAL=0; 
 
 Int_t nDigs[7];
+
+enum EObjectType {kHitMip=1,kHitCko,kHitFee,kDigit,kCluster,kTrack,kRing};
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CreateContainers()
 {//to create all containers
@@ -74,12 +77,14 @@ void CreateContainers()
 void CreateRenders()
 {
   for(Int_t ch=0;ch<7;ch++){
-    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);  fRenMip[ch]->SetMarkerColor(kBlack);
-    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);      fRenCko[ch]->SetMarkerColor(kBlack);
-    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);     fRenFee[ch]->SetMarkerColor(kBlack);
-    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);            fRenClu[ch]->SetMarkerColor(kMagenta);
-    fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);            fRenTxC[ch]->SetMarkerColor(kRed);      fRenTxC[ch]->SetMarkerSize(3);
-    fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);    fRenRin[ch]->SetMarkerColor(kMagenta);
+    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);fRenMip[ch]->SetMarkerColor(kBlack)  ;fRenMip[ch]->SetUniqueID(kHitMip);
+    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);    fRenCko[ch]->SetMarkerColor(kBlack)  ;fRenCko[ch]->SetUniqueID(kHitCko);
+    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);   fRenFee[ch]->SetMarkerColor(kBlack)  ;fRenFee[ch]->SetUniqueID(kHitFee);
+    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);          fRenClu[ch]->SetMarkerColor(kMagenta);fRenClu[ch]->SetUniqueID(kCluster);
+    fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);          fRenTxC[ch]->SetMarkerColor(kRed)    ;fRenTxC[ch]->SetUniqueID(kTrack);
+                                 fRenTxC[ch]->SetMarkerSize(3);
+    fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);  fRenRin[ch]->SetMarkerColor(kMagenta);fRenRin[ch]->SetUniqueID(kRing);
+
     for(Int_t iDig=0;iDig<160*144;iDig++) {
       fRenDig[ch][iDig] = new TBox;
       fRenDig[ch][iDig]->SetFillStyle(1);
@@ -167,11 +172,11 @@ void DrawLegend()
 {//used by Draw() to draw legend
   Int_t nTxC=0,nMip=0,nCko=0,nFee=0,nDig=0,nClu=0;
   for(Int_t ch=0;ch<7;ch++){
-    nTxC+=fRenTxC[ch]->GetLastPoint()+1;
-    nMip+=fRenMip[ch]->GetLastPoint()+1;
-    nCko+=fRenCko[ch]->GetLastPoint()+1;
-    nFee+=fRenFee[ch]->GetLastPoint()+1;
-    nClu+=fRenClu[ch]->GetLastPoint()+1;
+    nTxC+=fRenTxC[ch]->Size();
+    nMip+=fRenMip[ch]->Size();
+    nCko+=fRenCko[ch]->Size();
+    nFee+=fRenFee[ch]->Size();
+    nClu+=fRenClu[ch]->Size();
     nDig+=nDigs[ch];
   }
   TLegend *pLeg=new TLegend(0.2,0.2,0.8,0.8);
@@ -193,30 +198,40 @@ void Draw()
     fCanvas->cd(iPadN[iCh]);
     gPad->SetEditable(kTRUE); gPad->Clear(); DrawChamber(iCh);
     
-    if(fStDig   =="ON") {
-      for(Int_t iDig=0;iDig<nDigs[iCh];iDig++) {
-        Int_t charge = fRenDig[iCh][iDig]->GetUniqueID();
-        Int_t color = charge/sampleCol;if(color>=gStyle->GetNumberOfColors()) color = gStyle->GetNumberOfColors()-1;
-        fRenDig[iCh][iDig]->SetFillColor(gStyle->GetColorPalette(color));
-        fRenDig[iCh][iDig]->Draw();
-        fBox[iCh][iDig]->Draw();
+    if(fDigFile){
+      if(fStDig   =="ON") {
+        for(Int_t iDig=0;iDig<nDigs[iCh];iDig++) {
+          Int_t charge = fRenDig[iCh][iDig]->GetUniqueID();
+          Int_t color = charge/sampleCol;if(color>=gStyle->GetNumberOfColors()) color = gStyle->GetNumberOfColors()-1;
+          fRenDig[iCh][iDig]->SetFillColor(gStyle->GetColorPalette(color));
+          fRenDig[iCh][iDig]->Draw();
+          fBox[iCh][iDig]->Draw();
+        }
       }
     }
-    if(fStEsd   =="ON") fRenTxC[iCh]->Draw();
-    if(fStHitMip=="ON") fRenMip[iCh]->Draw();
-    if(fStHitFee=="ON") fRenFee[iCh]->Draw();
-    if(fStHitCko=="ON") fRenCko[iCh]->Draw();
-    if(fStEsd   =="ON") fRenRin[iCh]->Draw();
-    if(fStClu   =="ON") fRenClu[iCh]->Draw();
+    
+    if(fEsdFile){if(fStEsd   =="ON") fRenTxC[iCh]->Draw();}
+    
+    if(fHitFile){
+      if(fStHitMip=="ON") fRenMip[iCh]->Draw();
+      if(fStHitFee=="ON") fRenFee[iCh]->Draw();
+      if(fStHitCko=="ON") fRenCko[iCh]->Draw();
+    }
+    
+    if(fEsdFile){if(fStEsd   =="ON") fRenRin[iCh]->Draw();}
+    if(fCluFile){if(fStClu   =="ON") fRenClu[iCh]->Draw();}
     gPad->SetEditable(kFALSE);
   }//chambers loop
+  
   fCanvas->cd(3);  gPad->Clear(); DrawLegend();
   
   fCanvas->cd(7);
   
-  if(fHitFile){fHitMipBok->SetTitle(Form("Mips  %s",fStHitMip.Data())); fHitMipBok->Modified();}
-  if(fHitFile){fHitCkoBok->SetTitle(Form("Ckov  %s",fStHitCko.Data())); fHitCkoBok->Modified();}
-  if(fHitFile){fHitFeeBok->SetTitle(Form("Fdbk  %s",fStHitFee.Data())); fHitFeeBok->Modified();}
+  if(fHitFile){
+    fHitMipBok->SetTitle(Form("Mips  %s",fStHitMip.Data())); fHitMipBok->Modified();
+    fHitCkoBok->SetTitle(Form("Ckov  %s",fStHitCko.Data())); fHitCkoBok->Modified();
+    fHitFeeBok->SetTitle(Form("Fdbk  %s",fStHitFee.Data())); fHitFeeBok->Modified();
+  }
   if(fDigFile){fDigBok->SetTitle(fStDig); fDigBok->Modified();}  
   if(fCluFile){fCluBok->SetTitle(fStClu); fCluBok->Modified();} 
   if(fEsdFile){fEsdBok->SetTitle(fStEsd); fEsdBok->Modified();}
@@ -232,6 +247,7 @@ void RenderHit(TClonesArray *pHitLst)
       case 50000051: fRenFee[ch]->SetNextPoint(x,y);break;
       default:       fRenMip[ch]->SetNextPoint(x,y);break;
     }//switch hit PID      
+//    Printf("----------ihit %i ch %i chhit %i MIP %i CKO %i FEE %i",iHit,ch,pHit->Pid());
   }//hits loop for this entry
 }//RenderHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -264,7 +280,7 @@ void RenderClu(TObjArray *pClus)
     fTotClus[iCh] = pClusCham->GetEntries();
     for(Int_t iClu=0;iClu<pClusCham->GetEntries();iClu++){           //clusters loop
       AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(iClu); //get current cluster        
-      fRenClu[iCh]->SetNextPoint(pClu->X(),pClu->Y()); 
+      fRenClu[iCh]->SetNextPoint(pClu->X(),pClu->Y());
 //      Printf("RenderClu: ch %i x %f y %f",iCh,pClu->X(),pClu->Y());
     }//cluster loop
   }//chamber loop for this entry
@@ -279,7 +295,7 @@ void RenderEsd(AliESDEvent *pEsd)
     Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);            //get info on current track
     ch/=1000000;                            
     Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);              //find again intersection of track with PC--> it is not stored in ESD!
-    fRenTxC[ch]->SetNextPoint(xPc,yPc);                                            //add this intersection point
+    fRenTxC[ch]->SetNextPoint(xPc,yPc);                                         //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
     if(ckov>0){
       rec.SetTrack(xRa,yRa,thRa,phRa);
@@ -341,29 +357,130 @@ void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DisplayInfo(Int_t px, Int_t py)
 {
+  TVirtualPad *pPad=gPad->GetSelectedPad();
+  Int_t padN = pPad->GetNumber()-1;
+  if(padN<0 || padN>8) return;
+  Int_t ch,pc,padX,padY;
+  ch = fChamN[padN];
+  if(ch<0) return;
+  TString text0,text1,text2,text3;
+  
+  Float_t x=pPad->AbsPixeltoX(px); Float_t y=pPad->AbsPixeltoY(py); 
+  fParam->Lors2Pad(x,y,pc,padX,padY);
+  TVector3 xyz=fParam->Lors2Mars(ch,x,y);
+  
+  if(padX>=0&&padY>=0) {
+    text0.Append(Form("Pad(%i,%i)-LORS(%6.2f,%6.2f)-MARS(%7.2f,%7.2f,%7.2f)",padX,padY,x,y,xyz.X(),xyz.Y(),xyz.Z()));
+    text1.Append(Form("Module %i Sector %i",ch,pc));
+    text3.Append(Form("Pads = %i - Clusters = %i - Multiplicity %5.2f%%",fTotPads[ch],fTotClus[ch],100.*fTotPads[ch]/(144.*160.)));
+  }
+  
+// Find object DIGIT
   TObject *obj = fCanvas->GetSelected();
   TString name = obj->GetName();
+  
   if(name.Contains("TBox")) {
-    TBox *b = (TBox*)obj;
-    if(b->GetUniqueID()==0) return; // just black frame hit!
-    Float_t locX = 0.5*(b->GetX1()+b->GetX2());
-    Float_t locY = 0.5*(b->GetY1()+b->GetY2());
-    Int_t ch,pc,padX,padY;
-    TVirtualPad *pPad=gPad->GetSelectedPad();
-    Int_t padN = pPad->GetNumber()-1;
-    if(padN<0 || padN>8) return;
-    ch = fChamN[pPad->GetNumber()-1];
-    fParam->Lors2Pad(locX,locY,pc,padX,padY);
-    TVector3 xyz=fParam->Lors2Mars(ch,locX,locY);
-    TString text0;text0.Append(Form("Pad(%i,%i) - LORS(%6.2f,%6.2f) - MARS(%7.2f,%7.2f,%7.2f)",padX,padY,locX,locY,xyz.X(),xyz.Y(),xyz.Z()));
-    TString text1;text1.Append(Form("Module %i Sector = %i ",ch,pc));
-    TString text2;text2.Append(Form("charge = %i ADC",b->GetUniqueID()));
-    TString text3;text3.Append(Form("Pads = %i - Clusters = %i - Multiplicity %5.2f%%",fTotPads[ch],fTotClus[ch],100.*fTotPads[ch]/(144.*160.)));
-    fCanvasImp->SetStatusText(text0,0);
-    fCanvasImp->SetStatusText(text1,1);
-    fCanvasImp->SetStatusText(text2,2);
-    fCanvasImp->SetStatusText(text3,3);
+
+    TBox *box = (TBox*)obj;
+    if(box->GetUniqueID()==0) return; // just black frame hit!
+    text2.Append(Form("charge = %i ADC",box->GetUniqueID()));
+    
+  } else {
+//
+// Find object HITs CLUSTER TRACK and RING (based on TPolyMarker)
+//
+    TPolyMarker *b = (TPolyMarker*)obj;
+
+    const Int_t big = 9999;
+
+    // check if point is near one of the points
+    Int_t distance = big;
+    Int_t index;
+
+    Double_t *xPol = b->GetX();
+    Double_t *yPol = b->GetY();
+
+    for(Int_t i=0;i<b->Size();i++) {
+      Int_t pxp = pPad->XtoAbsPixel(pPad->XtoPad(xPol[i]));
+      Int_t pyp = pPad->YtoAbsPixel(pPad->YtoPad(yPol[i]));
+      Int_t d   = TMath::Abs(pxp-px) + TMath::Abs(pyp-py);
+      if (d < distance) {distance = d; index=i;}
+    }
+
+    Int_t type = b->GetUniqueID();
+    
+    // Case Hit Mip
+    switch(type) {
+      
+      case kHitMip:
+      case kHitCko:
+      case kHitFee:
+        TString nameHit;
+        Int_t iCko[7]={0,0,0,0,0,0,0};
+        Int_t iFee[7]={0,0,0,0,0,0,0};
+        Int_t iMip[7]={0,0,0,0,0,0,0};
+        Int_t iHit;
+        Int_t chHit;
+        Int_t indHit=0;
+        
+        for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
+          fHitTree->GetEntry(iEnt);                              
+          for(iHit=0;iHit<fHitLst->GetEntries();iHit++) {       //hits loop
+            AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(iHit);
+            chHit = pHit->Ch();
+            Int_t pid = pHit->Pid();
+            if(pid==50000050) iCko[chHit]++;
+            if(pid==50000051) iFee[chHit]++;
+            if(pid!=50000050 && pid!=50000051) iMip[chHit]++;
+            
+            if(type==kHitMip && ch==chHit && index==iMip[chHit]-1) {indHit = iHit;break;}
+            if(type==kHitCko && ch==chHit && index==iCko[chHit]-1) {indHit = iHit;break;}
+            if(type==kHitFee && ch==chHit && index==iFee[chHit]-1) {indHit = iHit;break;}
+          }
+        }
+        
+        fHitTree->GetEntry(6-ch);                              
+        AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(indHit);
+        
+        Float_t x=pHit->LorsX(); 
+        Float_t y=pHit->LorsY();
+        Float_t charge = pHit->Q();
+        if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
+        if(pHit->Pid()==50000050) {nameHit = " Cherenkov Photon ";}
+        if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
+        text0="";text0.Append(Form("Hit x %6.2f y %6.2f",x,y));
+        text2="";text2.Append(Form("Q = %7.2f ADC",charge));
+        text3="";text3="Particle: "+ nameHit;
+        break;
+        
+      case kCluster:
+        TClonesArray *pClusCham=(TClonesArray*)fCluLst->At(ch);         //get clusters list for this chamber
+        AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(index); //get current cluster
+        text0="";text0.Append(Form("CLUSTER: x %6.2f y %6.2f",pClu->X(),pClu->Y()));
+        text2="";text2.Append(Form("charge = %i ADC",(Int_t)pClu->Q()));
+        break;
+        
+      case kTrack:
+        AliHMPIDRecon rec;
+        AliESDtrack *pTrk=fEsd->GetTrack(index);
+        Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
+        Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
+        text0="";text0.Append(Form("TRACK: x %6.2f y %6.2f at PC plane",xPc,yPc));
+        text2="";text2.Append(Form("p = %7.2f GeV/c",pTrk->GetP()));
+        Float_t ckov=pTrk->GetHMPIDsignal();                             
+        if(ckov>0){
+          Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
+          text3="";text3.Append(Form("Theta Cherenkov %5.3f with %i photons",pTrk->GetHMPIDsignal(),nacc));
+        }      
+        break;
+      default:
+    }
   }
+//Update toolbar status  
+  fCanvasImp->SetStatusText(text0,0);
+  fCanvasImp->SetStatusText(text1,1);
+  fCanvasImp->SetStatusText(text2,2);
+  fCanvasImp->SetStatusText(text3,3);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CloseInfo()
@@ -373,9 +490,9 @@ void CloseInfo()
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 {
 //  Printf(" px %i py%i event %i",px,py,evt);
-  if(evt==1) DisplayInfo(px,py);
+  if(evt==51) DisplayInfo(px,py);
   if(evt==11)  CloseInfo();
-  if(evt!=5 && evt!=6 && evt!=-999) return; //5- zoom in 6-zoom out
+  if(evt!=5 && evt!=6) return; //5- zoom in 6-zoom out
   const Int_t minZoom=64;
   const Int_t maxZoom=2;
   static Int_t zoom[7]={64,64,64,64,64,64,64}; //zoom level
@@ -455,12 +572,14 @@ void SimulateEvent()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CheckStatus()
 {
-  if(fStHitMip=="OFF") {fHitMipBok->SetFillColor(kRed);} else {fHitMipBok->SetFillColor(18);}
-  if(fStHitCko=="OFF") {fHitCkoBok->SetFillColor(kRed);} else {fHitCkoBok->SetFillColor(18);}
-  if(fStHitFee=="OFF") {fHitFeeBok->SetFillColor(kRed);} else {fHitFeeBok->SetFillColor(18);}
-  if(fStDig   =="OFF") {fDigBok->SetFillColor(kRed);} else {fDigBok->SetFillColor(18);}
-  if(fStClu   =="OFF") {fCluBok->SetFillColor(kRed);} else {fCluBok->SetFillColor(18);}
-  if(fStEsd   =="OFF") {fEsdBok->SetFillColor(kRed);} else {fEsdBok->SetFillColor(18);}
+  if(fHitFile){
+    if(fStHitMip=="OFF") {fHitMipBok->SetFillColor(kRed);} else {fHitMipBok->SetFillColor(18);}
+    if(fStHitCko=="OFF") {fHitCkoBok->SetFillColor(kRed);} else {fHitCkoBok->SetFillColor(18);}
+    if(fStHitFee=="OFF") {fHitFeeBok->SetFillColor(kRed);} else {fHitFeeBok->SetFillColor(18);}
+  }
+  if(fDigFile){if(fStDig   =="OFF") {fDigBok->SetFillColor(kRed);} else {fDigBok->SetFillColor(18);}}
+  if(fCluFile){if(fStClu   =="OFF") {fCluBok->SetFillColor(kRed);} else {fCluBok->SetFillColor(18);}}
+  if(fEsdFile){if(fStEsd   =="OFF") {fEsdBok->SetFillColor(kRed);} else {fEsdBok->SetFillColor(18);}}
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void GetEvent()
@@ -497,7 +616,10 @@ void End()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Hdisp()                                  
 {//display events from files if any in current directory or simulated events
+  
   fParam=AliHMPIDParam::Instance();                          // first invocation of AliHMPIDParam to initialize geometry...
+  fPdg = TDatabasePDG::Instance();                           // first invocation of TDatabasePDG to retrieve particle infos...
+  
   CreateContainers();
   CreateRenders();
   
@@ -638,19 +760,23 @@ void SwitchEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AllNo()
 {
-  fStHitMip = "OFF";
-  fStHitCko = "OFF";
-  fStHitFee = "OFF";
-  fStDig    = "OFF";
-  fStClu    = "OFF";
-  fStEsd    = "OFF";
+  if(fHitFile) {
+    fStHitMip = "OFF";
+    fStHitCko = "OFF";
+    fStHitFee = "OFF";
+  }
+  if(fDigFile) fStDig    = "OFF";
+  if(fCluFile) fStClu    = "OFF";
+  if(fEsdFile) fStEsd    = "OFF";
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AllYes()
 {
-  if(fHitFile) fStHitMip = "ON";
-  if(fHitFile) fStHitCko = "ON";
-  if(fHitFile) fStHitFee = "ON";
+  if(fHitFile) {
+    fStHitMip = "ON";
+    fStHitCko = "ON";
+    fStHitFee = "ON";
+  }
   if(fDigFile) fStDig    = "ON";
   if(fCluFile) fStClu    = "ON";
   if(fEsdFile) fStEsd    = "ON";
