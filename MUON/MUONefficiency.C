@@ -63,6 +63,7 @@
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliTracker.h"
+#include "AliCDBManager.h"
 
 // MUON includes
 #include "AliMUONTrackParam.h"
@@ -81,6 +82,10 @@
 Bool_t MUONefficiency( char* filename = "galice.root", char* geoFilename = "geometry.root", char* esdFileName = "AliESDs.root",
                        Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000 )
 { // MUONefficiency starts
+
+  // Set default CDB storage
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://$ALICE_ROOT");
 
   Double_t MUON_MASS = 0.105658369;
   Double_t UPSILON_MASS = 9.4603 ;
