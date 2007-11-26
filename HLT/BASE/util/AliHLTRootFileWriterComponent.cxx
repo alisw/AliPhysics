@@ -123,7 +123,7 @@ int AliHLTRootFileWriterComponent::WriteObject(const AliHLTEventID_t eventID, co
   int iResult=0;
   if (pOb) {
     HLTDebug("write object %p (%s)", pOb, pOb->GetName());
-    if (CheckMode(kConcatenateEvents) && eventID != fEventID &&
+    if (!CheckMode(kConcatenateEvents) && eventID != fEventID &&
 	fCurrentFile!=NULL && eventID!=kAliHLTVoidEventID) {
       TFile* pFile=fCurrentFile; fCurrentFile=NULL;
       pFile->Close(); delete pFile;
