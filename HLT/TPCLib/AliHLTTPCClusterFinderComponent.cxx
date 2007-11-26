@@ -413,11 +413,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 
-#ifndef KENNETH
       maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
-#else
-      maxPoints = (size-tSize-sizeof(AliHLTTPCClusters))/sizeof(AliHLTTPCSpacePointData);
-#endif 
 
       fClusterFinder->InitSlice( slice, patch, row[0], row[1], maxPoints );
       fClusterFinder->SetOutputArray( (AliHLTTPCSpacePointData*)outPtr->fSpacePoints );
@@ -457,11 +453,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 	
       outPtr->fSpacePointCnt = realPoints;
       nSize = sizeof(AliHLTTPCSpacePointData)*realPoints;
-#ifndef KENNETH
       mysize += nSize+sizeof(AliHLTTPCClusterData);
-#else
-      mysize += nSize+sizeof(AliHLTTPCClusters);
-#endif 
 
       Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Spacepoints", 
 	       "Number of spacepoints: %lu Slice/Patch/RowMin/RowMax: %d/%d/%d/%d.",
