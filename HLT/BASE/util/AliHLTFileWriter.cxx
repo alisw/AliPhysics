@@ -239,8 +239,7 @@ int AliHLTFileWriter::CloseWriter()
 }
 
 int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
-			 const AliHLTComponentBlockData* blocks, 
-			 AliHLTComponentTriggerData& trigData )
+			 AliHLTComponentTriggerData& /*trigData*/ )
 {
   // see header file for class documentation
   int iResult=0;
@@ -250,11 +249,14 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
     // file name stays in order to be opended in append mode.
     fCurrentFileName="";
   }
-  for (int n=0; n<(int)evtData.fBlockCnt; n++ ) {
-    //HLTDebug("block %d out of %d", n, evtData.fBlockCnt);
+  const AliHLTComponentBlockData* pDesc=NULL;
+
+  int blockno=0;
+  for (pDesc=GetFirstInputBlock(kAliHLTAnyDataType); pDesc!=NULL; pDesc=GetNextInputBlock(), blockno++) {
+    HLTDebug("block %d out of %d", blockno, evtData.fBlockCnt);
     TString filename;
-    //HLTDebug("dataspec 0x%x", blocks[n].fSpecification);
-    iResult=BuildFileName(evtData.fEventID, n, blocks[n].fDataType, blocks[n].fSpecification, filename);
+    HLTDebug("dataspec 0x%x", pDesc->fSpecification);
+    iResult=BuildFileName(evtData.fEventID, blockno, pDesc->fDataType, pDesc->fSpecification, filename);
     ios::openmode filemode=(ios::openmode)0;
     if (fCurrentFileName.CompareTo(filename)==0) {
       // append to the file
@@ -266,17 +268,14 @@ int AliHLTFileWriter::DumpEvent( const AliHLTComponentEventData& evtData,
     if (iResult>=0) {
       ofstream dump(filename.Data(), filemode);
       if (dump.good()) {
-	dump.write((static_cast<const char*>(blocks[n].fPtr)), blocks[n].fSize);
-	HLTDebug("wrote %d byte(s) to file %s", blocks[n].fSize, filename.Data());
+	dump.write((static_cast<const char*>(pDesc->fPtr)), pDesc->fSize);
+	HLTDebug("wrote %d byte(s) to file %s", pDesc->fSize, filename.Data());
       } else {
 	HLTError("can not open file %s for writing", filename.Data());
 	iResult=-EBADF;
       }
       dump.close();
     }
-  }
-  if (trigData.fStructSize==0) {
-    // this is just to get rid of the warning "unused parameter"
   }
   return iResult;
 }

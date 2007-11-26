@@ -118,11 +118,9 @@ class AliHLTFileWriter : public AliHLTDataSink  {
    * Data processing method for the component.
    * The function can be overloaded by other file writer components.
    * @param evtData       event data structure
-   * @param blocks        input data block descriptors
    * @param trigData	  trigger data structure
    */
   virtual int DumpEvent( const AliHLTComponentEventData& evtData,
-			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& trigData );
 
   using AliHLTDataSink::DumpEvent;
