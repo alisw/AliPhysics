@@ -7,7 +7,7 @@ responsible: r.bailhache@gsi.de
 
 dn: dcsHost=aldcs053.cern.ch,det=TRD,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs053.cern.ch
+dcsHost: aldcs052.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: trd_chamberStatus[000..539]
