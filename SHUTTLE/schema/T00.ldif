@@ -1,5 +1,5 @@
 # T00 config;
-dn: det=T00,o=alice,dc=cern,dc=ch
+dn: det=T00,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: T00
@@ -7,11 +7,11 @@ strictRunOrder: 0
 responsible: tomatkie@cc.jyu.fi
 responsible: moledzki@gmail.com
 
-dn: dcsHost=aldcs052.cern.ch,det=T00,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=T00,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000
 dcsAlias: t00_a_hv_imon_[00..11]
 dcsAlias: t00_a_hv_vmon_[00..11]
 dcsAlias: t00_a_lv_imon_[0..1]

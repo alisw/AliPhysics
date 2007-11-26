@@ -1,13 +1,13 @@
 # PMD Config
-dn: det=PMD,o=alice,dc=cern,dc=ch
+dn: det=PMD,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: PMD
 strictRunOrder: 0
 responsible: Zubayer.Ahammed@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=PMD,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=PMD,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000

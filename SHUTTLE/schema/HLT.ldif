@@ -1,5 +1,5 @@
 # HLT Config
-dn: system=HLT,o=alice,dc=cern,dc=ch
+dn: system=HLT,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: fxsConfig
 system: HLT

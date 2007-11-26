@@ -1,5 +1,5 @@
 # V00 config;
-dn: det=V00,o=alice,dc=cern,dc=ch
+dn: det=V00,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: V00
@@ -8,10 +8,10 @@ responsible: b.cheynis@ipnl.in2p3.fr
 responsible: tieulent@in2p3.fr
  
 
-dn: dcsHost=aldcs053.cern.ch,det=V00,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs053.cern.ch,det=V00,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs053.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000
 dcsAlias: V00/HV/V0A/SECTOR[0..7]/RING[0..3]
 dcsAlias: V00/HV/V0C/SECTOR[0..7]/RING[0..3]

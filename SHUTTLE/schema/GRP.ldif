@@ -1,15 +1,15 @@
 # GRP config
-dn: det=GRP,o=alice,dc=cern,dc=ch
+dn: det=GRP,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: GRP
 strictRunOrder: 0
 responsible: Panos.Christakoglou@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=GRP,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=GRP,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000
 dcsAlias: LHCState
 dcsAlias: LHCPeriod
 dcsAlias: LHCLuminosity

@@ -1,14 +1,14 @@
 # ZDC config
-dn: det=ZDC,o=alice,dc=cern,dc=ch
+dn: det=ZDC,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: ZDC
 strictRunOrder: 0
 responsible: chiara.oppedisano@to.infn.it
 
-dn: dcsHost=aldcs052.cern.ch,det=ZDC,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=ZDC,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
+dcsPort: 1337
 multiSplit: 4000
 dcsAlias: ZDC_ZPA_HV[0..4].actual.vMon
 dcsAlias: ZDC_ZNA_HV[0..4].actual.vMon

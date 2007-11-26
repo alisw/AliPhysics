@@ -1,16 +1,16 @@
 # HMP config
-dn: det=HMP,o=alice,dc=cern,dc=ch
+dn: det=HMP,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: HMP
 strictRunOrder: 0
 responsible: Giacomo.Volpe@ba.infn.it 
 responsible: Domenico.Dibari@ba.infn.it
 
-dn: dcsHost=aldcs052.cern.ch,det=HMP,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=HMP,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC0/HMP_MP0_SEC0_HV.actual.vMon
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC1/HMP_MP0_SEC1_HV.actual.vMon
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_SEC2/HMP_MP0_SEC2_HV.actual.vMon
@@ -95,11 +95,6 @@ dcsAlias: HMP_DET/HMP_MP6/HMP_MP6_PW/HMP_MP6_SEC2/HMP_MP6_SEC2_HV.actual.iMon
 dcsAlias: HMP_DET/HMP_MP6/HMP_MP6_PW/HMP_MP6_SEC3/HMP_MP6_SEC3_HV.actual.iMon
 dcsAlias: HMP_DET/HMP_MP6/HMP_MP6_PW/HMP_MP6_SEC4/HMP_MP6_SEC4_HV.actual.iMon
 dcsAlias: HMP_DET/HMP_MP6/HMP_MP6_PW/HMP_MP6_SEC5/HMP_MP6_SEC5_HV.actual.iMon
-
-dn: dcsHost=aldcs053.cern.ch,det=HMP,o=alice,dc=cern,dc=ch
-objectClass: dcsConfig
-dcsHost: aldcs053.cern.ch
-dcsPort: 4242
 dcsAlias: HMP_DET/HMP_MP0/HMP_MP0_PW/HMP_MP0_GRID.actual.vMon
 dcsAlias: HMP_DET/HMP_MP1/HMP_MP1_PW/HMP_MP1_GRID.actual.vMon
 dcsAlias: HMP_DET/HMP_MP2/HMP_MP2_PW/HMP_MP2_GRID.actual.vMon

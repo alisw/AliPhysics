@@ -1,15 +1,15 @@
 # PHS config
-dn: det=PHS,o=alice,dc=cern,dc=ch
+dn: det=PHS,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: PHS
 strictRunOrder: 0
 responsible: Boris.Polichtchouk@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=PHS,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=PHS,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000
 dcsAlias: phs_hvIsegMeasVoltage[0..4]
 dcsAlias: phs_hvIsegMeasCurrent[0..4]
 dcsAlias: phs_hvIsegMeasAlarm[0..4]

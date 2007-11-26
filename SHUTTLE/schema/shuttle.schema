@@ -63,12 +63,14 @@ attributetype ( GLOBAL_CONFIG:8  NAME 'runTypeLbTable' DESC 'RunType Logbook tab
 attributetype ( GLOBAL_CONFIG:9  NAME 'ppmaxRetries'   DESC 'retries before pp fail'	   EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:10 NAME 'ppTimeOut'      DESC 'seconds before pp abort'	   EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:11 NAME 'ppMaxMem'       DESC 'max pp mem consumption (KB)'  EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:12 NAME 'monitorHost'    DESC 'monitoring server host'       EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:13 NAME 'monitorTable'   DESC 'monitoring table name'        EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'globalConfig'
         DESC 'ALICE: settings for DAQ logbook access'
         SUP top
-        MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem)
+        MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem $ monitorHost $ monitorTable)
         MAY ( daqLbPort ) )
 
 

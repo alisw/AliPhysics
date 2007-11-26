@@ -1,5 +1,5 @@
 # SDD config
-dn: det=SDD,o=alice,dc=cern,dc=ch
+dn: det=SDD,o=shuttle,dc=cern,dc=ch
 objectClass: top
 objectClass: detectorConfig
 det: SDD
@@ -7,8 +7,8 @@ strictRunOrder: 0
 responsible: francesco.prino@cern.ch
 responsible: elisabetta.crescio@to.infn.it
 
-dn: dcsHost=aldcs052.cern.ch,det=SDD,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=SDD,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000

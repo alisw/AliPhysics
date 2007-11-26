@@ -1,5 +1,5 @@
 #MTR config
-dn: det=MTR,o=alice,dc=cern,dc=ch
+dn: det=MTR,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: MTR
 strictRunOrder: 0

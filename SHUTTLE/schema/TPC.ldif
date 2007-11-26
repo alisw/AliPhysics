@@ -1,15 +1,15 @@
 # TPC Config
-dn: det=TPC,o=alice,dc=cern,dc=ch
+dn: det=TPC,o=shuttle,dc=cern,dc=ch
 objectClass: detectorConfig
 det: TPC
 strictRunOrder: 0
 responsible: Haavard.Helstrup@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=TPC,o=alice,dc=cern,dc=ch
+dn: dcsHost=aldcs052.cern.ch,det=TPC,o=shuttle,dc=cern,dc=ch
 objectClass: dcsConfig
 dcsHost: aldcs052.cern.ch
-dcsPort: 4242
-multiSplit: 1
+dcsPort: 1337
+multiSplit: 4000
 dcsAlias: tpc_PT_[321..344].Temperature
 dcsAlias: tpc_PT_[353..379].Temperature
 dcsAlias: tpc_PT_[385..396].Temperature
