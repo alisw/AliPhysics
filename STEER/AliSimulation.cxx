@@ -1167,7 +1167,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName)
   char command[256];
   // Note the option -s. It is used in order to avoid
   // the generation of SOR/EOR events.
-  sprintf(command, "dateStream -s -D -o %s -# %d -C -run %d", 
+  sprintf(command, "dateStream -c -s -D -o %s -# %d -C -run %d", 
 	  dateFileName, runLoader->GetNumberOfEvents(),runLoader->GetHeader()->GetRun());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
