@@ -42,8 +42,8 @@ CLASS_HDRS:=	\
 		  AliHLTPHOSBaselineAnalyzerComponent.h \
 		  AliHLTPHOSBaseline.h \
 		  AliHLTPHOSConfig.h \
-		  AliHLTPHOSAltroConfig.h
-
+		  AliHLTPHOSAltroConfig.h \
+		  AliHLTPHOSSharedMemoryInterface.h
 #				  AliHLTPHOSNoiseMapper.h \
 #				  AliHLTPHOSNoiseMapperComponent.h
 
@@ -63,14 +63,12 @@ MODULE_HDRS:=	  $(CLASS_HDRS) \
 		  AliHLTPHOSModuleCellAverageEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h \
 		  AliHLTPHOSRcuCellAverageEnergyDataStruct.h \
-		  AliHLTPHOSValidChannelDataStruct.h \
 		  AliHLTPHOSRecPointDataStruct.h \
 		  AliHLTPHOSRecPointContainerStruct.h \
 		  AliHLTPHOSDigitContainerDataStruct.h \
 		  AliHLTPHOSRcuDigitContainerDataStruct.h \
-		  AliHLTPHOSDigitDataStruct.h \
-		  AliHLTPHOSRcuCompressedRawDataStruct.h  \
-		  AliHLTPHOSCellCompressedRawDataStruct.h
+		  AliHLTPHOSDigitDataStruct.h 
+
 
 MODULE_DHDR:=	  HLTPHOSLinkDef.h
 
