@@ -602,7 +602,7 @@ UInt_t AliTOFPreprocessor::Process(TMap* dcsAliasMap)
   metaData.SetResponsible("Chiara Zampolli");
   metaData.SetComment("This preprocessor fills an AliTOFCal object.");
   AliInfo("Storing Calibration Data");
-  resultTOFPP = Store("Calib","ParOnline",fCal, &metaData);
+  resultTOFPP = Store("Calib","ParOnline",fCal, &metaData,0,kTRUE);
   if(!resultTOFPP){
     Log("Some problems occurred while storing online object resulting from DAQ data, Pulser data, Noise data processing");
     return 12;//return error code for problems in storing DAQ data 

@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.2  2007/11/27 07:24:41  zampolli
+Log used, fData member removed
+
 Revision 1.1  2007/11/24 18:36:27  zampolli
 TOF Preprocessor for FDR
 
@@ -249,7 +252,7 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
     }
     
     Log("Storing DCS Data in OCDB");
-    resultDCSMap = Store("Calib","DCSData",array, &metaDataDCS);
+    resultDCSMap = Store("Calib","DCSData",array, &metaDataDCS,0,kTRUE);
     if (!resultDCSStore){
       Log("Some problems occurred while storing DCS data results in OCDB, TOF exiting from Shuttle");
       return 3;// return error Code for processed DCS data not stored 
