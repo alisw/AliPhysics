@@ -40,6 +40,11 @@
  *    V03.05  RD        05-Sep-05 Added SYSTEM and DETECTOR software tri evts
  *    V03.06  RD        14-Sep-05 VANGUARD/REARGUARD changed into START_OF_DATA
  *                                and END_OF_DATA
+ *    V03.07  RD        26-Jul-06 Modifications for CDH version 2
+ *            KS        20-Dec-06 Corrected CDH layout for MBZ[22-23] and 
+ *                                L1 trigger message [14-21]
+ *    V03.08  RD        17-Jan-07 Added "BY DETECTOR" event system attribute
+ *    V03.09  RD        08-Feb-07 Moved trigger and detector masks down 1 bit
  *
  * Preprocessor definitions:
  *  NDEBUG  Define BEFORE including this file to disable run-time checks on
@@ -53,7 +58,7 @@
 #define __event_h__
 
 #define EVENT_MAJOR_VERSION_NUMBER 0x0003
-#define EVENT_MINOR_VERSION_NUMBER 0x0006
+#define EVENT_MINOR_VERSION_NUMBER 0x0009
 
 /* ========== System includes ========= */
 #include <string.h> /* Needed by: memset, memcpy */
@@ -188,13 +193,13 @@ typedef unsigned long32 eventIdType[EVENT_ID_WORDS];
 #define EVENT_TRIGGER_PATTERN_BYTES    8
 #define EVENT_TRIGGER_PATTERN_WORDS    ((EVENT_TRIGGER_PATTERN_BYTES)>>2)
 typedef unsigned long32 eventTriggerPatternType[EVENT_TRIGGER_PATTERN_WORDS];
-#define EVENT_TRIGGER_ID_MIN           1
-#define EVENT_TRIGGER_ID_MAX           50
+#define EVENT_TRIGGER_ID_MIN           0
+#define EVENT_TRIGGER_ID_MAX           49
 #define CHECK_TRIGGER(t)               (assert(((t)>=EVENT_TRIGGER_ID_MIN) && \
                                                ((t)<=EVENT_TRIGGER_ID_MAX)))
 #define TRIGGER_TO_BIT(t)              (1<<((t)&0x1f))
 #define TRIGGER_TO_WORD(t)             (CHECK_TRIGGER(t), (t)>>5)
-#define ZERO_TRIGGER_PATTERN(p)        memset(p,0,EVENT_TRIGGER_PATTERN_BYTES)
+#define ZERO_TRIGGER_PATTERN(p)        ((p)[0]=0, (p)[1]=0)
 #define SET_TRIGGER_IN_PATTERN(p,id)   (p)[TRIGGER_TO_WORD(id)] |= \
                                                             TRIGGER_TO_BIT(id)
 #define CLEAR_TRIGGER_IN_PATTERN(p,id) (p)[TRIGGER_TO_WORD(id)] &= \
@@ -203,19 +208,20 @@ typedef unsigned long32 eventTriggerPatternType[EVENT_TRIGGER_PATTERN_WORDS];
                                                             TRIGGER_TO_BIT(id)
 #define TEST_TRIGGER_IN_PATTERN(p,id)  (((p)[TRIGGER_TO_WORD(id)] & \
                                                      TRIGGER_TO_BIT(id)) != 0)
-#define TRIGGER_PATTERN_INVALID(p)     (((p)[0] & 1) == 0)
-#define TRIGGER_PATTERN_VALID(p)       (((p)[0] & 1) != 0)
-#define VALIDATE_TRIGGER_PATTERN(p)    ((p)[0] |= 1)
-#define INVALIDATE_TRIGGER_PATTERN(p)  ((p)[0] &= 0xfffffffe)
-#define COPY_TRIGGER_PATTERN(f,t)      memcpy(t,f,EVENT_TRIGGER_PATTERN_BYTES)
-#define TRIGGER_PATTERN_OK(p)          (((p)[1] & 0xfff80000) == 0)
+#define TRIGGER_PATTERN_INVALID(p)     (((p)[1] & 0x80000000) == 0)
+#define TRIGGER_PATTERN_VALID(p)       (((p)[1] & 0x80000000) != 0)
+#define VALIDATE_TRIGGER_PATTERN(p)    ((p)[1] |= 0x80000000)
+#define INVALIDATE_TRIGGER_PATTERN(p)  ((p)[1] &= 0x7fffffff)
+#define COPY_TRIGGER_PATTERN(f,t)      ((t)[0] = (f)[0], (t)[1]=(f)[1])
+#define TRIGGER_PATTERN_OK(p)          (((p)[1] & 0x7fe00000) == 0)
 
 /* ---------- Detectors cluster (and relative masks) ---------- */
 #define EVENT_DETECTOR_PATTERN_BYTES 4
 #define EVENT_DETECTOR_PATTERN_WORDS (EVENT_DETECTOR_PATTERN_BYTES>>2)
 typedef unsigned long32 eventDetectorPatternType[EVENT_DETECTOR_PATTERN_WORDS];
-#define EVENT_DETECTOR_ID_MIN  1
-#define EVENT_DETECTOR_ID_MAX 24
+#define EVENT_DETECTOR_ID_MIN     0
+#define EVENT_DETECTOR_HW_ID_MAX 23
+#define EVENT_DETECTOR_ID_MAX    30
 #define CHECK_DETECTOR(d) (assert(((d) >= EVENT_DETECTOR_ID_MIN) &&\
                                   ((d) <= EVENT_DETECTOR_ID_MAX)))
 #define DETECTOR_TO_BIT(d)              (CHECK_DETECTOR(d), 1<<(d))
@@ -224,12 +230,33 @@ typedef unsigned long32 eventDetectorPatternType[EVENT_DETECTOR_PATTERN_WORDS];
 #define CLEAR_DETECTOR_IN_PATTERN(p,d)  ((p)[0] &= ~(DETECTOR_TO_BIT(d)))
 #define FLIP_DETECTOR_IN_PATTERN(p,d)   ((p)[0] ^= DETECTOR_TO_BIT(d))
 #define TEST_DETECTOR_IN_PATTERN(p,d)   (((p)[0] & DETECTOR_TO_BIT(d))!=0)
-#define DETECTOR_PATTERN_INVALID(p)     (((p)[0] & 1) == 0)
-#define DETECTOR_PATTERN_VALID(p)       (((p)[0] & 1) != 0)
-#define VALIDATE_DETECTOR_PATTERN(p)    ((p)[0] |= 1)
-#define INVALIDATE_DETECTOR_PATTERN(p)  ((p)[0] &= 0xfffffffe)
+#define DETECTOR_PATTERN_INVALID(p)     (((p)[0] & 0x80000000) == 0)
+#define DETECTOR_PATTERN_VALID(p)       (((p)[0] & 0x80000000) != 0)
+#define VALIDATE_DETECTOR_PATTERN(p)    ((p)[0] |= 0x80000000)
+#define INVALIDATE_DETECTOR_PATTERN(p)  ((p)[0] &= 0x7fffffff)
 #define COPY_DETECTOR_PATTERN(f,t)      ((t)[0] = (f)[0])
-#define DETECTOR_PATTERN_OK(p)          (((p)[0] & 0xfe000000) == 0)
+#define DETECTOR_PATTERN_OK(p)          (((p)[0] & 0x3f000000) == 0)
+#define EVENT_DETECTOR_ITS_SPD   0
+#define EVENT_DETECTOR_ITS_SDD   1
+#define EVENT_DETECTOR_ITS_SSD   2
+#define EVENT_DETECTOR_TPC       3
+#define EVENT_DETECTOR_TRD       4
+#define EVENT_DETECTOR_TOF       5
+#define EVENT_DETECTOR_HMPID     6
+#define EVENT_DETECTOR_PHOS      7
+#define EVENT_DETECTOR_CPV       8
+#define EVENT_DETECTOR_PMD       9
+#define EVENT_DETECTOR_MUON_TRK 10
+#define EVENT_DETECTOR_MOUN_TRG 11
+#define EVENT_DETECTOR_FMD      12
+#define EVENT_DETECTOR_T0       13
+#define EVENT_DETECTOR_V0       14
+#define EVENT_DETECTOR_ZDC      15
+#define EVENT_DETECTOR_ACORDE   16
+#define EVENT_DETECTOR_TRG      17
+#define EVENT_DETECTOR_EMCAL    18
+#define EVENT_DETECTOR_HLT      19
+#define EVENT_DETECTOR_DAQ_TEST 30
 
 /* ---------- The sizes and positions of the typeAttribute field ---------- */
 #define ALL_ATTRIBUTE_WORDS    3
@@ -299,6 +326,7 @@ typedef unsigned long32 eventTypeAttributeType[ALL_ATTRIBUTE_WORDS];
 #define ATTR_ORBIT_BC             69          /* Orbit/bunch crossing in ID*/
 #define ATTR_KEEP_PAGES           70          /* Do not deallocate pages   */
 #define ATTR_HLT_DECISION	  71	      /* Event contains HLT decis. */
+#define ATTR_BY_DETECTOR_EVENT    72          /* Event created by "by det."*/
 
 #define ATTR_EVENT_DATA_TRUNCATED 94          /* Truncated payload         */
 #define ATTR_EVENT_ERROR          95          /* Invalid event content     */
@@ -312,6 +340,7 @@ typedef unsigned long32 eventTypeAttributeType[ALL_ATTRIBUTE_WORDS];
                  ATTR_2_B(ATTR_ORBIT_BC)             | \
                  ATTR_2_B(ATTR_KEEP_PAGES)           | \
                  ATTR_2_B(ATTR_HLT_DECISION)         | \
+                 ATTR_2_B(ATTR_BY_DETECTOR_EVENT)    | \
                  ATTR_2_B(ATTR_EVENT_DATA_TRUNCATED) | \
                  ATTR_2_B(ATTR_EVENT_ERROR))) == 0)
 
@@ -429,7 +458,7 @@ struct eventLocationDescriptorStruct {
 
 /* ========== Common data header ========== */
 #define CDH_SIZE (8 * 4)
-#define CDH_VERSION 1
+#define CDH_VERSION 2
 
 #define CDH_TRIGGER_OVERLAP_ERROR_BIT            0
 #define CDH_TRIGGER_MISSING_ERROR_BIT            1
@@ -439,7 +468,11 @@ struct eventLocationDescriptorStruct {
 #define CDH_FEE_ERROR_BIT                        5
 #define CDH_HLT_DECISION_BIT                     6
 #define CDH_HLT_PAYLOAD_BIT                      7
-#define CDH_HLT_DDG_PAYLOAD_BIT                  8
+#define CDH_DDG_PAYLOAD_BIT                      8
+#define CDH_TRIGGER_L1_TIME_VIOLATION_ERROR_BIT  9
+#define CDH_TRIGGER_L2_TIME_VIOLATION_ERROR_BIT 10
+#define CDH_TRIGGER_PREPULSE_ERROR_BIT          11
+#define CDH_TRIGGER_ERROR_BIT                   12
 
 /* Please note how the above data structure has been
    defined for LE systems. Code running on BE systems
@@ -448,24 +481,25 @@ struct commonDataHeaderStruct {
   unsigned cdhBlockLength               : 32;
   /* ------------------------------------- */
   unsigned cdhEventId1                  : 12;
+  unsigned cdhMBZ1                      :  2;
+  unsigned cdhL1TriggerMessage          :  8;
   unsigned cdhMBZ0                      :  2;
-  unsigned cdhL1TriggerMessage          : 10;
   unsigned cdhVersion                   :  8;
   /* ------------------------------------- */
   unsigned cdhEventId2                  : 24;
-  unsigned cdhMBZ1                      :  8;
+  unsigned cdhMBZ2                      :  8;
   /* ------------------------------------- */
   unsigned cdhParticipatingSubDetectors : 24;
   unsigned cdhBlockAttributes           :  8;
   /* ------------------------------------- */
   unsigned cdhMiniEventId               : 12;
   unsigned cdhStatusErrorBits           : 16;
-  unsigned cdhMBZ2                      :  4;
+  unsigned cdhMBZ3                      :  4;
   /* ------------------------------------- */
   unsigned cdhTriggerClassesLow         : 32;
   /* ------------------------------------- */
   unsigned cdhTriggerClassesHigh        : 18;
-  unsigned cdhMBZ3                      : 10;
+  unsigned cdhMBZ4                      : 10;
   unsigned cdhRoiLow                    :  4;
   /* ------------------------------------- */
   unsigned cdhRoiHigh                   : 32;
