@@ -31,6 +31,7 @@ ClassImp(AliAODRecoDecay)
 AliAODRecoDecay::AliAODRecoDecay() :
   AliVParticle(),
   fSecondaryVtx(0x0),
+  fOwnSecondaryVtx(0x0),
   fCharge(0),
   fNProngs(0), fNDCA(0), fNPID(0),
   fPx(0x0), fPy(0x0), fPz(0x0),
@@ -50,6 +51,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 				 Double_t *d0) :
   AliVParticle(),
   fSecondaryVtx(vtx2),
+  fOwnSecondaryVtx(0x0),
   fCharge(charge),
   fNProngs(nprongs), fNDCA(0), fNPID(0),
   fPx(0x0), fPy(0x0), fPz(0x0),
@@ -79,6 +81,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 				 Double_t *d0) :
   AliVParticle(),
   fSecondaryVtx(vtx2),
+  fOwnSecondaryVtx(0x0),
   fCharge(charge),
   fNProngs(nprongs), fNDCA(0), fNPID(0),
   fPx(0x0), fPy(0x0), fPz(0x0),
@@ -98,6 +101,7 @@ AliAODRecoDecay::AliAODRecoDecay(AliAODVertex *vtx2,Int_t nprongs,
 AliAODRecoDecay::AliAODRecoDecay(const AliAODRecoDecay &source) :
   AliVParticle(source),
   fSecondaryVtx(source.fSecondaryVtx),
+  fOwnSecondaryVtx(source.fOwnSecondaryVtx),
   fCharge(source.fCharge),
   fNProngs(source.fNProngs), fNDCA(source.fNDCA), fNPID(source.fNPID),
   fPx(0x0), fPy(0x0), fPz(0x0),
@@ -138,6 +142,7 @@ AliAODRecoDecay &AliAODRecoDecay::operator=(const AliAODRecoDecay &source)
   //
   if(&source == this) return *this;
   fSecondaryVtx = source.fSecondaryVtx;
+  fOwnSecondaryVtx = source.fOwnSecondaryVtx;
   fCharge = source.fCharge;
   fNProngs = source.fNProngs;
   fNDCA = source.fNDCA;
@@ -171,12 +176,13 @@ AliAODRecoDecay::~AliAODRecoDecay() {
   //  
   // Default Destructor
   //
-  if(fPx) delete [] fPx;
-  if(fPy) delete [] fPy;
-  if(fPz) delete [] fPz;
-  if(fd0) delete [] fd0;
-  if(fPID) delete [] fPID;
-  if(fDCA) delete [] fDCA;
+  if(fPx) { delete [] fPx; fPx=NULL; } 
+  if(fPy) { delete [] fPy; fPy=NULL; }
+  if(fPz) { delete [] fPz; fPz=NULL; }
+  if(fd0) { delete [] fd0; fd0=NULL; }
+  if(fPID) { delete [] fPID; fPID=NULL; }
+  if(fDCA) { delete [] fDCA; fDCA=NULL; }
+  if(fOwnSecondaryVtx) { delete fOwnSecondaryVtx; fOwnSecondaryVtx=NULL; }
 }
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::Alpha() const 

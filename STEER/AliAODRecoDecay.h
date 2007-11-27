@@ -36,7 +36,9 @@ class AliAODRecoDecay : public AliVParticle {
   Double_t GetSecVtxZ() const {return GetSecondaryVtx()->GetZ();}
   Double_t RadiusSecVtx() const;
   void     SetSecondaryVtx(AliAODVertex *vtx2) {fSecondaryVtx=vtx2;}
-  AliAODVertex* GetSecondaryVtx() const {return (AliAODVertex*)fSecondaryVtx.GetObject();}
+  AliAODVertex* GetSecondaryVtx() const { return (((AliAODVertex*)fSecondaryVtx.GetObject()) ? (AliAODVertex*)fSecondaryVtx.GetObject() : GetOwnSecondaryVtx()); }
+  void     SetOwnSecondaryVtx(AliAODVertex *vtx2) {fOwnSecondaryVtx=vtx2;}
+  AliAODVertex* GetOwnSecondaryVtx() const {return fOwnSecondaryVtx;}
   void     GetSecondaryVtx(Double_t vtx[3]) const;
   Double_t GetReducedChi2() const {return GetSecondaryVtx()->GetChi2perNDF();}
   Short_t  Charge() const {return fCharge;}
@@ -153,6 +155,7 @@ class AliAODRecoDecay : public AliVParticle {
  protected:
 
   TRef     fSecondaryVtx;  // decay vertex
+  AliAODVertex *fOwnSecondaryVtx;  // temporary solution (to work outside AliAODEvent)
   Short_t  fCharge;  // charge, use this convention for prongs charges:
                      // if(charge== 0) even-index prongs are +
                      //                odd-index prongs are -
@@ -179,7 +182,6 @@ class AliAODRecoDecay : public AliVParticle {
   Int_t fRunNumber;
   // TO BE PUT IN SPECIAL MC CLASS
   //Bool_t   fSignal; // TRUE if signal, FALSE if background (for simulation)
-  //Int_t    fEvent;  // number of the event this candidate comes from
   //Int_t  fTrkNum[2]; // numbers of the two decay tracks  
   //Int_t fPdg[2];  // PDG codes of the two tracks (for sim.)
   //Int_t fMum[2];  // PDG codes of the mothers    (for sim.)
