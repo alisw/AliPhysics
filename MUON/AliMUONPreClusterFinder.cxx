@@ -17,16 +17,20 @@
 
 #include "AliMUONPreClusterFinder.h"
 
-#include "AliLog.h"
 #include "AliMUONCluster.h"
-#include "AliMpVSegmentation.h"
-#include "TClonesArray.h"
-#include "AliMpArea.h"
-#include "TVector2.h"
 #include "AliMUONPad.h"
 #include "AliMUONVDigit.h"
 #include "AliMUONVDigitStore.h"
-//#include "AliCodeTimer.h"
+
+#include "AliMpArea.h"
+#include "AliMpConstants.h"
+#include "AliMpVSegmentation.h"
+
+#include "AliLog.h"
+
+#include <Riostream.h>
+#include <TClonesArray.h>
+#include <TVector2.h>
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONPreClusterFinder
@@ -44,26 +48,18 @@ ClassImp(AliMUONPreClusterFinder)
 AliMUONPreClusterFinder::AliMUONPreClusterFinder()
 : AliMUONVClusterFinder(),
   fClusters(0x0),
-  fSegmentations(0x0),
-  fDetElemId(0)
+  fPads(0x0),
+  fDetElemId(0),
+  fArea()
 {
-    /// ctor
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    fPads[i] = 0x0;
-  } 
+  /// ctor
 }
 
 //_____________________________________________________________________________
 AliMUONPreClusterFinder::~AliMUONPreClusterFinder()
 {
-  /// dtor : note we're owner of the pads and the clusters, but not of
-  /// the remaining objects (digits, segmentations)
+  /// dtor : note we're owner of the clusters, but not of the pads
   delete fClusters;
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    delete fPads[i];
-  }  
 }
 
 //_____________________________________________________________________________
@@ -85,60 +81,18 @@ AliMUONPreClusterFinder::UsePad(const AliMUONPad& pad)
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONPreClusterFinder::Prepare(const AliMpVSegmentation* segmentations[2],
-                                 const AliMUONVDigitStore& digitStore)
-// FIXME : add area on which to look for clusters here.
+AliMUONPreClusterFinder::Prepare(Int_t detElemId,
+                                 TClonesArray* pads[2],
+                                 const AliMpArea& area)
 {
   /// Prepare for clustering, by giving access to segmentations and digit lists
   
-  fSegmentations = segmentations;
-  
   delete fClusters;
   fClusters = new TClonesArray("AliMUONCluster");
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    delete fPads[i];
-    fPads[i] = new TClonesArray("AliMUONPad");
-  }
-  
-  fDetElemId = -1;
-  
-  TIter next(digitStore.CreateIterator());
-  AliMUONVDigit* d;
-  
-  while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
-  {
-    Int_t ix = d->PadX();
-    Int_t iy = d->PadY();
-    Int_t cathode = d->Cathode();
-    AliMpPad pad = fSegmentations[cathode]->PadByIndices(AliMpIntPair(ix,iy));
-    TClonesArray& padArray = *(fPads[cathode]);
-    if ( fDetElemId == -1 ) 
-    {
-      fDetElemId = d->DetElemId();
-    }
-    else
-    {
-      if ( d->DetElemId() != fDetElemId ) 
-      {
-        AliError("Something is seriously wrong with DE. Aborting clustering");
-        return kFALSE;
-      }
-    }
-    
-    AliMUONPad mpad(fDetElemId,cathode,
-                    ix,iy,pad.Position().X(),pad.Position().Y(),
-                    pad.Dimensions().X(),pad.Dimensions().Y(),
-                    d->Charge());
-    if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE);
-    mpad.SetUniqueID(d->GetUniqueID());
-    new (padArray[padArray.GetLast()+1]) AliMUONPad(mpad);      
-  }
-  if ( fPads[0]->GetLast() < 0 && fPads[1]->GetLast() < 0 )
-  {
-    // no pad at all, nothing to do...
-    return kFALSE;
-  }
+
+  fPads = pads;
+  fDetElemId = detElemId;
+  fArea = area;
   
   return kTRUE;
 }
@@ -200,6 +154,30 @@ AreOverlapping(const AliMUONPad& pad, const AliMUONCluster& cluster)
 }
 
 //_____________________________________________________________________________
+AliMUONPad*
+AliMUONPreClusterFinder::GetNextPad(Int_t cathode) const
+{
+  TIter next(fPads[cathode]);
+  
+  if ( !fArea.IsValid() )
+  {
+    return static_cast<AliMUONPad*>(next());
+  }
+  else
+  {
+    AliMUONPad* pad;
+    while ( ( pad = static_cast<AliMUONPad*>(next())) )
+    {
+      AliMpArea padArea(pad->Position(),pad->Dimensions());
+      
+      if (fArea.Overlap(padArea)) return pad;
+
+    }
+    return 0x0;
+  }
+}
+
+//_____________________________________________________________________________
 AliMUONCluster* 
 AliMUONPreClusterFinder::NextCluster()
 {
@@ -211,14 +189,12 @@ AliMUONPreClusterFinder::NextCluster()
   AliMUONCluster* cluster = new ((*fClusters)[id]) AliMUONCluster;
   cluster->SetUniqueID(id);
   
-  TIter next(fPads[0]);
-  AliMUONPad* pad = static_cast<AliMUONPad*>(next());
+  AliMUONPad* pad = GetNextPad(0);
   
   if (!pad) // protection against no pad in first cathode, which might happen
   {
     // try other cathode
-    TIter next(fPads[1]);
-    pad = static_cast<AliMUONPad*>(next());
+    pad = GetNextPad(1);
     if (!pad) 
     {
       // we are done.
@@ -239,7 +215,7 @@ AliMUONPreClusterFinder::NextCluster()
   
     while ( ( testPad = static_cast<AliMUONPad*>(next())))
     {
-      if ( AreOverlapping(*testPad,*cluster) )
+      if (AreOverlapping(*testPad,*cluster) )
       {
         AddPad(*cluster,testPad);
       }

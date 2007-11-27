@@ -15,6 +15,9 @@
 #ifndef AliMUONVCLUSTERFINDER_H
 #  include "AliMUONVClusterFinder.h"
 #endif
+#ifndef ALI_MP_AREA_H
+#  include "AliMpArea.h"
+#endif
 
 class TStopwatch;
 class AliMUONPad;
@@ -25,8 +28,11 @@ public:
   AliMUONPreClusterFinder();
   virtual ~AliMUONPreClusterFinder();
   
-  virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         const AliMUONVDigitStore& digitStore);
+  using AliMUONVClusterFinder::Prepare;
+
+  virtual Bool_t Prepare(Int_t detElemId,
+                         TClonesArray* pads[2],
+                         const AliMpArea& area);
   
   virtual AliMUONCluster* NextCluster();
 
@@ -40,13 +46,15 @@ private:
 
   void AddPad(AliMUONCluster& cluster, AliMUONPad* pad);
   
+  AliMUONPad* GetNextPad(Int_t cathode) const;
+
 private:
   TClonesArray* fClusters; //!< the clusters we've found (owner)
-  const AliMpVSegmentation** fSegmentations; //!< segmentations (not owner)
-  TClonesArray* fPads[2]; //!< the pads corresponding to the digits (owner)
+  TClonesArray** fPads; //!< the pads corresponding to the digits (not owner)
   Int_t fDetElemId; //!< which DE we're considering
+  AliMpArea fArea; //!< area into which to consider pads to *start* a cluster
   
-  ClassDef(AliMUONPreClusterFinder,1) // A basic pre-cluster finder
+  ClassDef(AliMUONPreClusterFinder,2) // A basic pre-cluster finder
 };
 
 #endif
