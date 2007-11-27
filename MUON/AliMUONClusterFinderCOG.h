@@ -21,9 +21,12 @@ class AliMUONClusterFinderCOG : public AliMUONVClusterFinder
 public:
   AliMUONClusterFinderCOG(AliMUONVClusterFinder* clusterFinder);
   virtual ~AliMUONClusterFinderCOG();
+
+  using AliMUONVClusterFinder::Prepare;
   
-  virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         const AliMUONVDigitStore& digitStore);
+  virtual Bool_t Prepare(Int_t detElemId,
+                         TClonesArray* pads[2],
+                         const AliMpArea& area);
   
   virtual AliMUONCluster* NextCluster();
   

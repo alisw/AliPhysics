@@ -19,7 +19,7 @@
 class AliMUONCluster;
 class AliMpVSegmentation;
 class AliMUONPad;
-class AliMUONVDigitStore;
+class AliMpArea;
 
 class AliMUONVClusterFinder : public TObject
 {
@@ -28,8 +28,17 @@ public:
   virtual ~AliMUONVClusterFinder();
   
   /// \todo add comment
-  virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         const AliMUONVDigitStore& digitStore) = 0;
+
+  virtual Bool_t NeedSegmentation() const { return kFALSE; }
+  
+  virtual Bool_t Prepare(Int_t detElemId,
+                         TClonesArray* pads[2],
+                         const AliMpArea& area);
+
+  virtual Bool_t Prepare(Int_t detElemId,
+                         TClonesArray* pads[2],
+                         const AliMpArea& area,
+                         const AliMpVSegmentation* segmentations[2]);  
   
   /// \todo add comment
   virtual AliMUONCluster* NextCluster() = 0;

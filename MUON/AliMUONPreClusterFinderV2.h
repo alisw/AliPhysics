@@ -25,8 +25,14 @@ public:
   AliMUONPreClusterFinderV2();
   virtual ~AliMUONPreClusterFinderV2();
   
-  virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         const AliMUONVDigitStore& digitStore);
+  Bool_t NeedSegmentation() const { return kTRUE; }
+  
+  using AliMUONVClusterFinder::Prepare;
+
+  virtual Bool_t Prepare(Int_t detElemId,                         
+                         TClonesArray* pads[2],
+                         const AliMpArea& area,
+                         const AliMpVSegmentation* seg[2]);
   
   virtual AliMUONCluster* NextCluster();
 
@@ -43,10 +49,10 @@ private:
 private:
   TClonesArray* fClusters; //!< the clusters we've found (owner)
   const AliMpVSegmentation** fSegmentations; //!< segmentations (not owner)
-  TClonesArray* fPads[2]; //!< the pads corresponding to the digits (owner)
+  TClonesArray** fPads; //!< the pads corresponding to the digits (not owner)
   Int_t fDetElemId; //!< which DE we're considering
   
-  ClassDef(AliMUONPreClusterFinderV2,1) // A basic pre-cluster finder
+  ClassDef(AliMUONPreClusterFinderV2,2) // A basic pre-cluster finder
 };
 
 #endif

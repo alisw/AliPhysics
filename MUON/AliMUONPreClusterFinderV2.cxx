@@ -43,25 +43,17 @@ AliMUONPreClusterFinderV2::AliMUONPreClusterFinderV2()
 : AliMUONVClusterFinder(),
   fClusters(0x0),
   fSegmentations(0x0),
+  fPads(0x0),
   fDetElemId(0)
 {
     /// ctor
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    fPads[i] = 0x0;
-  } 
 }
 
 //_____________________________________________________________________________
 AliMUONPreClusterFinderV2::~AliMUONPreClusterFinderV2()
 {
-  /// dtor : note we're owner of the pads and the clusters, but not of
-  /// the remaining objects (digits, segmentations)
+  /// dtor : note we're owner of the clusters, but not of the pads
   delete fClusters;
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    delete fPads[i];
-  }  
 }
 
 //_____________________________________________________________________________
@@ -83,55 +75,26 @@ AliMUONPreClusterFinderV2::UsePad(const AliMUONPad& pad)
 
 //_____________________________________________________________________________
 Bool_t
-AliMUONPreClusterFinderV2::Prepare(const AliMpVSegmentation* segmentations[2],
-                                 const AliMUONVDigitStore& digitStore)
-// FIXME : add area on which to look for clusters here.
+AliMUONPreClusterFinderV2::Prepare(Int_t detElemId,
+                                   TClonesArray* pads[2],
+                                   const AliMpArea& area,
+                                   const AliMpVSegmentation* seg[2])
 {
   /// Prepare for clustering, by giving access to segmentations and digit lists
   
-  fSegmentations = segmentations;
+  if ( area.IsValid() ) 
+  {
+    AliError("Handling of area not yet implemented for this class. Please check");
+  }
   
   delete fClusters;
   fClusters = new TClonesArray("AliMUONCluster");
-  for ( Int_t i = 0; i < 2; ++i )
-  {
-    delete fPads[i];
-    fPads[i] = new TClonesArray("AliMUONPad");
-  }
+
+  fPads = pads;
+  fSegmentations = seg;
   
-  fDetElemId = -1;
+  fDetElemId = detElemId;
   
-  TIter next(digitStore.CreateIterator());
-  AliMUONVDigit* d;
-  
-  while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
-  {
-    Int_t ix = d->PadX();
-    Int_t iy = d->PadY();
-    Int_t cathode = d->Cathode();
-    AliMpPad pad = fSegmentations[cathode]->PadByIndices(AliMpIntPair(ix,iy));
-    TClonesArray& padArray = *(fPads[cathode]);
-    if ( fDetElemId == -1 ) 
-    {
-      fDetElemId = d->DetElemId();
-    }
-    else
-    {
-      if ( d->DetElemId() != fDetElemId ) 
-      {
-        AliError("Something is seriously wrong with DE. Aborting clustering");
-        return kFALSE;
-      }
-    }
-    
-    AliMUONPad mpad(fDetElemId,cathode,
-                    ix,iy,pad.Position().X(),pad.Position().Y(),
-                    pad.Dimensions().X(),pad.Dimensions().Y(),
-                    d->Charge());
-    if ( d->IsSaturated() ) mpad.SetSaturated(kTRUE); 
-    mpad.SetUniqueID(d->GetUniqueID());
-    new (padArray[padArray.GetLast()+1]) AliMUONPad(mpad);      
-  }
   if ( fPads[0]->GetLast() < 0 && fPads[1]->GetLast() < 0 )
   {
     // no pad at all, nothing to do...

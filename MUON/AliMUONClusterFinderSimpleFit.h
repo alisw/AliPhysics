@@ -24,8 +24,11 @@ public:
   AliMUONClusterFinderSimpleFit(AliMUONVClusterFinder* clusterFinder);
   virtual ~AliMUONClusterFinderSimpleFit();
   
-  virtual Bool_t Prepare(const AliMpVSegmentation* segmentations[2],
-                         const AliMUONVDigitStore& digitStore);
+  using AliMUONVClusterFinder::Prepare;
+
+  virtual Bool_t Prepare(Int_t detElemId,
+                         TClonesArray* pads[2],
+                         const AliMpArea& area);
   
   virtual AliMUONCluster* NextCluster();
   

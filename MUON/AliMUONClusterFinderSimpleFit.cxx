@@ -110,30 +110,15 @@ AliMUONClusterFinderSimpleFit::~AliMUONClusterFinderSimpleFit()
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2],
-                                       const AliMUONVDigitStore& digitStore)
+AliMUONClusterFinderSimpleFit::Prepare(Int_t detElemId,
+                                       TClonesArray* pads[2],
+                                       const AliMpArea& area)
 {
   /// Prepare for clustering
 
   // FIXME: should we get the Mathieson from elsewhere ?
   
   // Find out the DetElemId
-  Int_t detElemId(-1);
-  
-  TIter next(digitStore.CreateIterator());
-  AliMUONVDigit* d = static_cast<AliMUONVDigit*>(next());
-  
-  if (d)
-  {
-    detElemId = d->DetElemId();
-  }
-  else
-  {
-    AliWarning("Could not find DE. Probably no digits at all : here's the digitStore :");
-    StdoutToAliWarning(digitStore.Print(););
-    return kFALSE;
-  }
-  
   AliMp::StationType stationType = AliMpDEManager::GetStationType(detElemId);
   
   Float_t kx3 = AliMUONConstants::SqrtKx3();
@@ -154,7 +139,7 @@ AliMUONClusterFinderSimpleFit::Prepare(const AliMpVSegmentation* segmentations[2
   fMathieson->SetSqrtKx3AndDeriveKx2Kx4(kx3);
   fMathieson->SetSqrtKy3AndDeriveKy2Ky4(ky3);
 
-  return fClusterFinder->Prepare(segmentations,digitStore);
+  return fClusterFinder->Prepare(detElemId,pads,area);
 }
 
 //_____________________________________________________________________________

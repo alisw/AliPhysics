@@ -61,31 +61,13 @@ AliMUONClusterFinderCOG::~AliMUONClusterFinderCOG()
 
 //_____________________________________________________________________________
 Bool_t 
-AliMUONClusterFinderCOG::Prepare(const AliMpVSegmentation* segmentations[2],
-                                 const AliMUONVDigitStore& digitStore)
+AliMUONClusterFinderCOG::Prepare(Int_t detElemId,
+                                 TClonesArray* pads[2],
+                                 const AliMpArea& area)
 {
   /// Prepare for clustering
   
-  // Find out the DetElemId
-  Int_t detElemId(-1);
-  
-  TIter next(digitStore.CreateIterator());
-  AliMUONVDigit* d;
-
-  d = static_cast<AliMUONVDigit*>(next());
-
-  if (d)
-  {
-    detElemId = d->DetElemId();
-  }
-  
-  if ( detElemId < 0 )
-  {
-    AliWarning("Could not find DE. Probably no digits at all ?");
-    return kFALSE;
-  }
-  
-  return fPreClusterFinder->Prepare(segmentations,digitStore);
+  return fPreClusterFinder->Prepare(detElemId,pads,area);
 }
 
 //_____________________________________________________________________________
