@@ -424,9 +424,10 @@ Bool_t AliRawReaderDate::ReadHeader()
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
       if ((fPosition + fHeader->fSize) != fEnd) {
-	Warning("ReadHeader",
-		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
-		fHeader->fSize, fEnd - fPosition);
+	if (fHeader->fSize != 0xFFFFFFFF)
+	  Warning("ReadHeader",
+		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  fHeader->fSize, fEnd - fPosition);
 	fHeader->fSize = fEnd - fPosition;
       }
       fPosition += sizeof(AliRawDataHeader);
@@ -612,9 +613,10 @@ Int_t AliRawReaderDate::CheckData() const
       // check consistency of data size in the data header and in the sub event
       AliRawDataHeader* header = (AliRawDataHeader*) position;
       if ((position + header->fSize) != end) {
-	Warning("ReadHeader",
-		"raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
-		header->fSize, end - position);
+	if (header->fSize != 0xFFFFFFFF)
+	  Warning("ReadHeader",
+		  "raw data size found in the header is wrong (%d != %d)! Using the equipment size instead !",
+		  header->fSize, end - position);
 	header->fSize = end - position;
 	result |= kErrSize;
       }
