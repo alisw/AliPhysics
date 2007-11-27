@@ -14,7 +14,6 @@ $Id$
 // DCS Data Points
 // and DAQ histograms to compute online calibration constants
 
-class AliTOFDataDCS;
 class TObjArray;
 class TH2S;
 
@@ -35,8 +34,7 @@ class AliTOFPreprocessorFDR : public AliPreprocessor
     AliTOFPreprocessorFDR& operator=(const AliTOFPreprocessorFDR & proc);
     UInt_t ProcessDCSDataPoints(TMap* dcsAliasMap);
 
-    AliTOFDataDCS *fData;                // CDB class that stores the data
     Bool_t fStoreRefData;                // Flag to decide storage of Ref Data
-    ClassDef(AliTOFPreprocessorFDR, 1);
+    ClassDef(AliTOFPreprocessorFDR, 2);
 };
 #endif
