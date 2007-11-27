@@ -21,15 +21,15 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor
  
  public:
   
-  AliMUONTrackReconstructor(); // default Constructor
+  AliMUONTrackReconstructor(AliMUONVClusterServer& clusterServer); // default Constructor
   virtual ~AliMUONTrackReconstructor(); // Destructor
 
 
  protected:
 
   // Functions
-  virtual void MakeTrackCandidates(const AliMUONVClusterStore& clusterStore);
-  virtual void FollowTracks(const AliMUONVClusterStore& clusterStore);
+  virtual void MakeTrackCandidates(AliMUONVClusterStore& clusterStore);
+  virtual void FollowTracks(AliMUONVClusterStore& clusterStore);
   virtual void ComplementTracks(const AliMUONVClusterStore& clusterStore);
   virtual void ImproveTracks();
   virtual void Finalize();
@@ -42,14 +42,14 @@ class AliMUONTrackReconstructor : public AliMUONVTrackReconstructor
   /// Not implemented copy assignment operator
   AliMUONTrackReconstructor& operator=(const AliMUONTrackReconstructor& rhs);
   
-  Bool_t FollowTrackInStation(AliMUONTrack &trackCandidate, const AliMUONVClusterStore& clusterStore, Int_t nextStation);
+  Bool_t FollowTrackInStation(AliMUONTrack &trackCandidate, AliMUONVClusterStore& clusterStore, Int_t nextStation);
   
   Double_t TryTwoClusters(const AliMUONTrackParam &trackParamAtCluster, AliMUONVCluster* cluster2, AliMUONTrackParam &trackParamAtCluster2);
 
   void UpdateTrack(AliMUONTrack &track, AliMUONTrackParam &trackParamAtCluster);
   void UpdateTrack(AliMUONTrack &track, AliMUONTrackParam &trackParamAtCluster1, AliMUONTrackParam &trackParamAtCluster2);
   
-  Bool_t RecoverTrack(AliMUONTrack &track, const AliMUONVClusterStore& clusterStore, Int_t nextStation);
+  Bool_t RecoverTrack(AliMUONTrack &track, AliMUONVClusterStore& clusterStore, Int_t nextStation);
   
   void SetVertexErrXY2ForFit(AliMUONTrack &trackCandidate);
   

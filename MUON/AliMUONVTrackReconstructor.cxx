@@ -71,9 +71,11 @@
 #include "AliMUONVTrackStore.h"
 #include "AliMUONVClusterStore.h"
 #include "AliMUONVCluster.h"
+#include "AliMUONVClusterServer.h"
 #include "AliMUONVTriggerStore.h"
 #include "AliMUONVTriggerTrackStore.h"
 #include "AliMpDEManager.h"
+#include "AliMpArea.h"
 
 #include "AliLog.h"
 #include "AliCodeTimer.h"
@@ -82,6 +84,7 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TMatrixD.h>
+#include <TVector2.h>
 
 #include <Riostream.h>
 
@@ -90,10 +93,11 @@ ClassImp(AliMUONVTrackReconstructor) // Class implementation in ROOT context
 /// \endcond
 
   //__________________________________________________________________________
-AliMUONVTrackReconstructor::AliMUONVTrackReconstructor()
+AliMUONVTrackReconstructor::AliMUONVTrackReconstructor(AliMUONVClusterServer& clusterServer)
   : TObject(),
     fRecTracksPtr(0x0),
-    fNRecTracks(0)
+    fNRecTracks(0),
+  fClusterServer(clusterServer)
 {
   /// Constructor for class AliMUONVTrackReconstructor
   
@@ -123,7 +127,7 @@ void AliMUONVTrackReconstructor::ResetTracks()
 }
 
   //__________________________________________________________________________
-void AliMUONVTrackReconstructor::EventReconstruct(const AliMUONVClusterStore& clusterStore, AliMUONVTrackStore& trackStore)
+void AliMUONVTrackReconstructor::EventReconstruct(AliMUONVClusterStore& clusterStore, AliMUONVTrackStore& trackStore)
 {
   /// To reconstruct one event
   AliDebug(1,"");
@@ -329,8 +333,44 @@ void AliMUONVTrackReconstructor::RemoveDoubleTracks()
 }
 
   //__________________________________________________________________________
+void AliMUONVTrackReconstructor::AskForNewClustersInStation(const AliMUONTrackParam &trackParam,
+							    AliMUONVClusterStore& clusterStore, Int_t station)
+{
+  /// Ask the clustering to reconstruct new clusters around the track candidate position
+  /// in the 2 chambers of the given station
+  
+  // maximum shift of the searching area due to distance between detection elements and the track slope
+  static const Double_t kgMaxShift = 2.; // 2 cm
+  
+  // extrapolate track parameters to the second chamber of the station
+  AliMUONTrackParam extrapTrackParam(trackParam);
+  AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(2*station+1));
+  
+  // build the searching area
+  TVector2 position(extrapTrackParam.GetNonBendingCoor(), extrapTrackParam.GetBendingCoor());
+  TVector2 dimensions(AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() + kgMaxShift,
+		      AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack() + kgMaxShift);
+  AliMpArea area2(position, dimensions);
+  
+  // ask to cluterize in the given area of the given chamber
+  fClusterServer.Clusterize(2*station+1, clusterStore, area2);
+  
+  // extrapolate track parameters to the first chamber of the station
+  AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, AliMUONConstants::DefaultChamberZ(2*station));
+  
+  // build the searching area
+  position.Set(extrapTrackParam.GetNonBendingCoor(), extrapTrackParam.GetBendingCoor());
+//  dimensions.Set(AliMUONReconstructor::GetRecoParam()->GetMaxNonBendingDistanceToTrack() + kgMaxShift,
+//		 AliMUONReconstructor::GetRecoParam()->GetMaxBendingDistanceToTrack() + kgMaxShift);
+  AliMpArea area1(position, dimensions);
+  
+  // ask to cluterize in the given area of the given chamber
+  fClusterServer.Clusterize(2*station, clusterStore, area1);
+}
+
+  //__________________________________________________________________________
 Double_t AliMUONVTrackReconstructor::TryOneCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster,
-						     AliMUONTrackParam &trackParamAtCluster, Bool_t updatePropagator)
+						   AliMUONTrackParam &trackParamAtCluster, Bool_t updatePropagator)
 {
 /// Test the compatibility between the track and the cluster (using trackParam's covariance matrix):
 /// return the corresponding Chi2

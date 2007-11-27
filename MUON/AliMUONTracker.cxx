@@ -40,12 +40,13 @@
 #include "AliMUONTrackHitPattern.h"
 #include "AliMUONTrackParam.h"
 #include "AliMUONVCluster.h"
+#include "AliMUONVClusterServer.h"
 #include "AliMUONTrackReconstructor.h"
 #include "AliMUONTrackReconstructorK.h"
 #include "AliMUONTrackStoreV1.h"
 #include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerTrackStoreV1.h"
-#include "AliMUONVClusterStore.h"
+#include "AliMUONClusterStoreV2.h"
 #include "AliMUONVTriggerStore.h"
 
 #include "AliESDEvent.h"
@@ -64,7 +65,8 @@ ClassImp(AliMUONTracker)
 
 
 //_____________________________________________________________________________
-AliMUONTracker::AliMUONTracker(const AliMUONDigitMaker* digitMaker,
+AliMUONTracker::AliMUONTracker(AliMUONVClusterServer& clusterServer,
+                               const AliMUONDigitMaker* digitMaker,
                                const AliMUONGeometryTransformer* transformer,
                                const AliMUONTriggerCircuit* triggerCircuit,
                                AliMUONTriggerChamberEff* chamberEff)
@@ -76,7 +78,8 @@ AliMUONTracker::AliMUONTracker(const AliMUONDigitMaker* digitMaker,
   fTrackHitPatternMaker(0x0),
   fTrackReco(0x0),
   fClusterStore(0x0),
-  fTriggerStore(0x0)
+  fTriggerStore(0x0),
+  fClusterServer(clusterServer)
 {
   /// constructor
   if (fTransformer && fDigitMaker)
@@ -94,10 +97,24 @@ AliMUONTracker::~AliMUONTracker()
 }
 
 //_____________________________________________________________________________
+AliMUONVClusterStore*
+AliMUONTracker::ClusterStore() const
+{
+  /// Return (and create if necessary) the cluster container
+  if (!fClusterStore) 
+  {
+    fClusterStore = new AliMUONClusterStoreV2;
+  }
+  return fClusterStore;
+}
+
+//_____________________________________________________________________________
 Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
 {
-  /// Load clusterStore and triggerStore from clustersTree
-  delete fClusterStore;
+  /// Load triggerStore from clustersTree
+
+  ClusterStore()->Clear();
+  
   delete fTriggerStore;
 
   if ( ! clustersTree ) {
@@ -105,21 +122,15 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
     return 1;
   }
 
-  fClusterStore = AliMUONVClusterStore::Create(*clustersTree);
   fTriggerStore = AliMUONVTriggerStore::Create(*clustersTree);
   
-  if (!fClusterStore)
-  {
-    AliError("Could not get clusterStore");
-    return 1;
-  }
   if (!fTriggerStore)
   {
     AliError("Could not get triggerStore");
     return 2;
   }
   
-  fClusterStore->Connect(*clustersTree,kFALSE);
+  ClusterStore()->Connect(*clustersTree,kFALSE);
   fTriggerStore->Connect(*clustersTree,kFALSE);
   
   clustersTree->GetEvent(0);
@@ -139,7 +150,8 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
   // if the required tracking mode does not exist
   if  (!fTrackReco) return 1;
   
-  if (!fClusterStore) {
+  if ( ! ClusterStore() ) 
+  {
     AliError("ClusterStore is NULL");
     return 2;
   }
@@ -148,10 +160,10 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
     AliError("TriggerStore is NULL");
     return 3;
   }
-  
+
   // Make tracker tracks
   AliMUONVTrackStore* trackStore = new AliMUONTrackStoreV1;
-  fTrackReco->EventReconstruct(*fClusterStore,*trackStore);
+  fTrackReco->EventReconstruct(*(ClusterStore()),*trackStore);
   
   // Make trigger tracks
   AliMUONVTriggerTrackStore* triggerTrackStore(0x0);
@@ -264,11 +276,11 @@ void AliMUONTracker::CreateTrackReconstructor()
   
   if (strstr(opt,"ORIGINAL"))
   {
-    fTrackReco = new AliMUONTrackReconstructor();
+    fTrackReco = new AliMUONTrackReconstructor(fClusterServer);
   }
   else if (strstr(opt,"KALMAN"))
   {
-    fTrackReco = new AliMUONTrackReconstructorK();
+    fTrackReco = new AliMUONTrackReconstructorK(fClusterServer);
   }
   else
   {
@@ -282,8 +294,7 @@ void AliMUONTracker::CreateTrackReconstructor()
 //_____________________________________________________________________________
 void AliMUONTracker::UnloadClusters()
 {
-  /// Delete internal clusterStore
-  delete fClusterStore;
-  fClusterStore = 0x0;
+  /// Clear internal clusterStore
+  
+  ClusterStore()->Clear();
 }
-

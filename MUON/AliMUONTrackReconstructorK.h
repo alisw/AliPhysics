@@ -20,15 +20,15 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
 
  public:
   
-  AliMUONTrackReconstructorK(); // default Constructor
+  AliMUONTrackReconstructorK(AliMUONVClusterServer& clusterServer); // default Constructor
   virtual ~AliMUONTrackReconstructorK(); // Destructor
 
 
  protected:
 
   // Functions
-  virtual void MakeTrackCandidates(const AliMUONVClusterStore& clusterStore);
-  virtual void FollowTracks(const AliMUONVClusterStore& clusterStore);
+  virtual void MakeTrackCandidates(AliMUONVClusterStore& clusterStore);
+  virtual void FollowTracks(AliMUONVClusterStore& clusterStore);
   virtual void ComplementTracks(const AliMUONVClusterStore& clusterStore);
   virtual void ImproveTracks();
   virtual void Finalize();
@@ -44,7 +44,7 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
   void RetraceTrack(AliMUONTrack &trackCandidate, Bool_t resetSeed);
   void RetracePartialTrack(AliMUONTrack &trackCandidate, const AliMUONTrackParam* startingTrackParam);
   
-  Bool_t FollowTrackInStation(AliMUONTrack &trackCandidate, const AliMUONVClusterStore& clusterStore, Int_t nextStation);
+  Bool_t FollowTrackInStation(AliMUONTrack &trackCandidate, AliMUONVClusterStore& clusterStore, Int_t nextStation);
   
   Double_t RunKalmanFilter(AliMUONTrackParam &trackParamAtCluster);
 
@@ -52,7 +52,7 @@ class AliMUONTrackReconstructorK : public AliMUONVTrackReconstructor
   void UpdateTrack(AliMUONTrack &track, AliMUONTrackParam &trackParamAtCluster1, AliMUONTrackParam &trackParamAtCluster2,
   		   Double_t addChi2AtCluster1, Double_t addChi2AtCluster2);
   
-  Bool_t RecoverTrack(AliMUONTrack &track, const AliMUONVClusterStore& clusterStore, Int_t nextStation);
+  Bool_t RecoverTrack(AliMUONTrack &track, AliMUONVClusterStore& clusterStore, Int_t nextStation);
   
   Bool_t RunSmoother(AliMUONTrack &track);
 

@@ -21,6 +21,7 @@ class AliMUONTrackParam;
 class AliMUONVCluster;
 class AliMUONTriggerTrack;
 class AliMUONTrackHitPattern;
+class AliMUONVClusterServer;
 class AliMUONVClusterStore;
 class AliMUONVTrackStore;
 class AliMUONVTriggerTrackStore;
@@ -33,7 +34,7 @@ class TClonesArray;
 class AliMUONVTrackReconstructor : public TObject {
 
  public:
-  AliMUONVTrackReconstructor(); // default Constructor
+  AliMUONVTrackReconstructor(AliMUONVClusterServer& clusterServer); // default Constructor
   virtual ~AliMUONVTrackReconstructor(); // Destructor
 
   // Reconstructed tracks
@@ -45,7 +46,7 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray* GetRecTracksPtr() const {return fRecTracksPtr;} // Array
  
   // Functions
-  void EventReconstruct(const AliMUONVClusterStore& clusterStore,
+  void EventReconstruct(AliMUONVClusterStore& clusterStore,
                         AliMUONVTrackStore& trackStore);
   
   void EventReconstructTrigger(const AliMUONTriggerCircuit& triggerCircuit,
@@ -63,15 +64,16 @@ class AliMUONVTrackReconstructor : public TObject {
   TClonesArray *fRecTracksPtr; ///< pointer to array of reconstructed tracks
   Int_t fNRecTracks; ///< number of reconstructed tracks
 
+  AliMUONVClusterServer& fClusterServer; ///< reference to our cluster server
 
   // Functions
   AliMUONVTrackReconstructor (const AliMUONVTrackReconstructor& rhs); ///< copy constructor
   AliMUONVTrackReconstructor& operator=(const AliMUONVTrackReconstructor& rhs); ///< assignment operator
   
   /// Make track candidats from clusters in stations(1..) 4 and 5
-  virtual void MakeTrackCandidates(const AliMUONVClusterStore& clusterStore) = 0;
+  virtual void MakeTrackCandidates(AliMUONVClusterStore& clusterStore) = 0;
   /// Follow tracks in stations(1..) 3, 2 and 1
-  virtual void FollowTracks(const AliMUONVClusterStore& clusterStore) = 0;
+  virtual void FollowTracks(AliMUONVClusterStore& clusterStore) = 0;
   /// Complement the reconstructed tracks
   virtual void ComplementTracks(const AliMUONVClusterStore& clusterStore) = 0;
   /// Improve the reconstructed tracks
@@ -84,6 +86,9 @@ class AliMUONVTrackReconstructor : public TObject {
   void RemoveIdenticalTracks();
   void RemoveDoubleTracks();
 
+  void AskForNewClustersInStation(const AliMUONTrackParam &trackParam,
+				  AliMUONVClusterStore& clusterStore, Int_t station);
+  
   Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster,
 			 AliMUONTrackParam &trackParamAtCluster, Bool_t updatePropagator = kFALSE);
   Bool_t   TryOneClusterFast(const AliMUONTrackParam &trackParam, AliMUONVCluster* cluster);
