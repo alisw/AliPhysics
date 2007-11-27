@@ -15,6 +15,7 @@
 
 #include <TObject.h>
 
+class TF1;
 class TH2F;
 class TH1D;
 class AliESDEvent;
@@ -74,7 +75,16 @@ class AliProtonAnalysis : public TObject {
   
   //Prior probabilities
   void    SetPriorProbabilities(Double_t *partFrac) {for(Int_t i = 0; i < 5; i++) fPartFrac[i] = partFrac[i];} 
-  
+  void    SetPriorProbabilityFunctions(TF1 *felectron, TF1 *fmuon, TF1 *fpion, TF1 *fkaon, TF1 *fproton) {
+    fFunctionProbabilityFlag = kTRUE;
+    fElectronFunction = felectron; 
+    fMuonFunction = fmuon; 
+    fPionFunction = fpion;
+    fKaonFunction = fkaon;
+    fProtonFunction = fproton;
+  } 
+  Double_t GetParticleFraction(Int_t i, Double_t p);
+
  private:
   Bool_t IsAccepted(AliESDtrack *track);
   Float_t GetSigmaToVertex(AliESDtrack* esdTrack); 
@@ -97,10 +107,16 @@ class AliProtonAnalysis : public TObject {
   Bool_t fITSRefitFlag, fTPCRefitFlag; //shows if this cut is used or not
   
   //pid
+  Bool_t fFunctionProbabilityFlag; //flag: kTRUE if functions used
   Double_t fPartFrac[5]; //prior probabilities
-  
-  TH2F* fHistYPtProtons; //Y-Pt of Protons
-  TH2F* fHistYPtAntiProtons; // Y-Pt of Antiprotons
+  TF1  *fElectronFunction; //momentum dependence of the prior probs
+  TF1  *fMuonFunction; //momentum dependence of the prior probs
+  TF1  *fPionFunction; //momentum dependence of the prior probs
+  TF1  *fKaonFunction; //momentum dependence of the prior probs
+  TF1  *fProtonFunction; //momentum dependence of the prior probs
+
+  TH2F *fHistYPtProtons; //Y-Pt of Protons
+  TH2F *fHistYPtAntiProtons; // Y-Pt of Antiprotons
   
   ClassDef(AliProtonAnalysis,0);
 };
