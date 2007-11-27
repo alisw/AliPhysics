@@ -25,54 +25,69 @@
 
 #include <Riostream.h>
 #include "AliITSChannelDaSSD.h"
+#include "TString.h"
+#include "AliLog.h"
 
 ClassImp(AliITSChannelDaSSD)
 
 using namespace std;
 
+const Short_t AliITSChannelDaSSD::fgkMinStripId = 0;               // minimum strip id
+const Short_t AliITSChannelDaSSD::fgkMaxStripId = 1535;            // maximum strip id
+
+const Short_t  AliITSChannelDaSSD::fgkSignalOverflow  = 2047;      // ADC overflow value
+const Short_t  AliITSChannelDaSSD::fgkSignalUnderflow = 2048;      // ADC underflow value
+const UShort_t AliITSChannelDaSSD::fgkDefaultSignal   = 0x7F;      // initialization value for fNoise, fPedestal, fSignal[i]
 const Float_t  AliITSChannelDaSSD::fgkUndefinedValue  = 32639.0f;  // = 0x7F7F
 
+
+//______________________________________________________________________________
 AliITSChannelDaSSD::AliITSChannelDaSSD() :
   fStripId(0),
   fEventsNumber(0),
   fSignal(NULL),
   fPedestal(fgkUndefinedValue),
   fNoise(fgkUndefinedValue),
-  fZsThresholdFactor(0.0f)
+  fNoiseCM(fgkUndefinedValue),
+  fNOverflowEv(0)
 {
 // Default costructor
 }
 
 
+//______________________________________________________________________________
 AliITSChannelDaSSD::AliITSChannelDaSSD(const UShort_t stripID) :
   fStripId(stripID),
   fEventsNumber(0),
   fSignal(NULL),
   fPedestal(fgkUndefinedValue),
   fNoise(fgkUndefinedValue),
-  fZsThresholdFactor(0.0f)
+  fNoiseCM(fgkUndefinedValue),
+  fNOverflowEv(0)
 {
 // Costructor, initialize channal id
 }
 
 
+//______________________________________________________________________________
 AliITSChannelDaSSD::AliITSChannelDaSSD(const UShort_t stripID, const Long_t eventsnumber) :
   fStripId(stripID),
   fEventsNumber(0),
   fSignal(NULL),
   fPedestal(fgkUndefinedValue),
   fNoise(fgkUndefinedValue),
-  fZsThresholdFactor(0.0f)
+  fNoiseCM(fgkUndefinedValue),
+  fNOverflowEv(0)
 {
 // Costructor, initialize channal id and allocate array for events data
   if (stripID > fgkMaxStripId)
-    Warning("AliITSChannelDaSSD", "Wrong StripID: %i", stripID);
+    AliWarning(Form("AliITSChannelDaSSD: Wrong StripID: %i", stripID));
   fSignal = new (nothrow) Short_t[eventsnumber];
   if (fSignal) {
     fEventsNumber = eventsnumber;
     memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
   } else {
-    Error("AliITSChannelDaSSD", "Error allocating memory for %i Short_t objects!", eventsnumber);
+    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", eventsnumber));
     fSignal = NULL;
     fEventsNumber = 0;
   }
@@ -80,6 +95,7 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const UShort_t stripID, const Long_t even
 
 
 
+//______________________________________________________________________________
 AliITSChannelDaSSD::AliITSChannelDaSSD(const AliITSChannelDaSSD& strip) :
   TObject(strip),
   fStripId(strip.fStripId),
@@ -87,22 +103,27 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const AliITSChannelDaSSD& strip) :
   fSignal(strip.fSignal),
   fPedestal(strip.fPedestal),
   fNoise(strip.fNoise),
-  fZsThresholdFactor(strip.fZsThresholdFactor)
+  fNoiseCM(strip.fNoiseCM),
+  fNOverflowEv(strip.fNOverflowEv)
 {
   // copy constructor
 
-  Fatal("AliITSChannelDaSSD", "copy constructor not implemented");
+  AliFatal("AliITSChannelDaSSD, copy constructor not implemented");
 }
 
+
+
+//______________________________________________________________________________
 AliITSChannelDaSSD& AliITSChannelDaSSD::operator = (const AliITSChannelDaSSD& strip)
 {
 // assignment operator
 
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("operator =, assignment operator not implemented");
   return *this;
 }
 
 
+//______________________________________________________________________________
 AliITSChannelDaSSD::~AliITSChannelDaSSD()
 {
 // Destructor
@@ -113,6 +134,7 @@ AliITSChannelDaSSD::~AliITSChannelDaSSD()
 }
 
 
+//______________________________________________________________________________
 Bool_t AliITSChannelDaSSD::SetEvenetsNumber(const Long_t eventsnumber)
 {
 // Allocate array for events data
@@ -123,7 +145,7 @@ Bool_t AliITSChannelDaSSD::SetEvenetsNumber(const Long_t eventsnumber)
     memset(fSignal, fgkDefaultSignal, (eventsnumber * sizeof(Short_t)));
     return kTRUE;
   } else {
-    Error("AliITSChannelDaSSD", "Error allocating memory for %i Short_t objects!", eventsnumber);
+    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", eventsnumber));
     fSignal = NULL;
     fEventsNumber = 0;
     return kFALSE;
@@ -131,7 +153,7 @@ Bool_t AliITSChannelDaSSD::SetEvenetsNumber(const Long_t eventsnumber)
 }
 
 
-
+//______________________________________________________________________________
 Bool_t AliITSChannelDaSSD::SetSignal(const Long_t eventnumber, const Short_t signal)
 {
 // put signal value to array 

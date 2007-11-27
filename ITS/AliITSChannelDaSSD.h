@@ -33,19 +33,22 @@ class AliITSChannelDaSSD : public TObject {
                                 { return (eventnumber < fEventsNumber && fSignal) ? (fSignal+eventnumber) : NULL; }
     
     Float_t  GetPedestal() const { return fPedestal; }
-    Float_t  GetNoise()    const { return fNoise; }
-    Bool_t   CheckNoise()  const { return (fNoise < fgkUndefinedValue) ? kTRUE : kFALSE; }
+    Float_t  GetNoise()    const { return fNoise;    }
+    Float_t  GetNoiseCM()  const { return fNoiseCM;  }
+    Long_t   GetOverflowNumber() const { return fNOverflowEv; }
+    Bool_t   CheckNoise()   const { return (fNoise < fgkUndefinedValue) ? kTRUE : kFALSE; }
+    Bool_t   CheckNoiseCM() const { return (fNoiseCM < fgkUndefinedValue) ? kTRUE : kFALSE; }
 
-    UChar_t  GetFeeOffset() const { return (fPedestal < fgkUndefinedValue) ? (static_cast<UChar_t>(TMath::Nint(fPedestal))) : 0; }
-    UChar_t  GetFeeZs()     const { return (fNoise < fgkUndefinedValue) ? 
-                                                    (static_cast<UChar_t>(fZsThresholdFactor * TMath::Nint(fNoise))) : 0;      }
     Bool_t    SetEvenetsNumber(const Long_t eventsnumber);
     Bool_t    SetSignal(const Long_t eventnumber, const Short_t signal);
     void      SetStripId(const UShort_t stripId) { fStripId = stripId; }
 
     void      SetPedestal(Float_t pedestal) { fPedestal = pedestal; }
-    void      SetNoise(Float_t noise) { fNoise = noise; }
+    void      SetNoise(Float_t noise)   { fNoise = noise; }
+    void      SetNoiseCM(Float_t noise) { fNoiseCM = noise; }
+    void      SetOverflowNumber(Long_t ovn) {fNOverflowEv = ovn; }
     void      ClearNoise() { if (fNoise < fgkUndefinedValue) fNoise = fgkUndefinedValue; }
+    void      ClearNoiseCM() { if (fNoiseCM < fgkUndefinedValue) fNoiseCM = fgkUndefinedValue; }
     void      ClearPedestal() { if (fPedestal < fgkUndefinedValue) fPedestal = fgkUndefinedValue; }
     void      ClearSignal() { if (fSignal) for (Int_t i = 0; i < fEventsNumber; i++) 
                                              fSignal[i] = 0x100 * fgkDefaultSignal + fgkDefaultSignal; }
@@ -54,26 +57,27 @@ class AliITSChannelDaSSD : public TObject {
     static  Short_t  GetOverflowConst()  { return fgkSignalOverflow;  }
     static  Short_t  GetUnderflowConst() { return fgkSignalUnderflow; }
     static  Float_t  GetUndefinedValue() { return fgkUndefinedValue;  }
+    static  Short_t  GetMaxStripIdConst(){ return fgkMaxStripId;      }
 
   protected :
-    static const UShort_t fgkMinStripId = 0;              // minimum strip id
-    static const UShort_t fgkMaxStripId = 1535;           // maximum strip id
+    static const Short_t fgkMinStripId;         // minimum strip id
+    static const Short_t fgkMaxStripId;         // maximum strip id
 
-    static const Short_t  fgkSignalOverflow  = 2047;      // ADC overflow value
-    static const Short_t  fgkSignalUnderflow = 2048;      // ADC underflow value
-    static const UShort_t fgkDefaultSignal   = 0x7F;      // initialization value for fNoise, fPedestal, fSignal[i]
-    static const Float_t  fgkUndefinedValue;              // constant value which indicates that fNoise, fPedestal is undefined
+    static const Short_t  fgkSignalOverflow;     // ADC overflow value
+    static const Short_t  fgkSignalUnderflow;    // ADC underflow value
+    static const UShort_t fgkDefaultSignal;      // initialization value for fNoise, fPedestal, fSignal[i]
+    static const Float_t  fgkUndefinedValue;     // constant value which indicates that fNoise, fPedestal is undefined
   
     UShort_t          fStripId;             //  channel = strip number within SSD module 0-1535
     Long_t            fEventsNumber;        //  number of events for fSignal memory allocation
-    Short_t          *fSignal;              //! 
+    Short_t          *fSignal;              //! array of signal data
     
     Float_t           fPedestal;            //  pedestal
     Float_t           fNoise;               //  noise
- 
-    Float_t           fZsThresholdFactor;   //  factor for zero suppression threshold
-
-    ClassDef(AliITSChannelDaSSD, 1)
+    Float_t           fNoiseCM;             //  noise with CM correction
+    Long_t            fNOverflowEv;         //  Number of events which exceed the pedestal calculation threshold
+		      
+    ClassDef(AliITSChannelDaSSD, 2)
 };
 
 #endif

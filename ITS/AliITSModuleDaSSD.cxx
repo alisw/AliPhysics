@@ -24,11 +24,24 @@
 
 #include "AliITSNoiseSSD.h"
 #include "AliITSModuleDaSSD.h"
+#include "TString.h"
+#include "AliLog.h"
 
 ClassImp(AliITSModuleDaSSD)
 
+
+const Int_t   AliITSModuleDaSSD::fgkStripsPerModule   = 1536;   // Number of strips per SSD module
+const Int_t   AliITSModuleDaSSD::fgkPNStripsPerModule = 768;    // Number of N/P strips per SSD module
+const Int_t   AliITSModuleDaSSD::fgkStripsPerChip     = 128;    // Number of strips per chip HAL25
+const UChar_t AliITSModuleDaSSD::fgkMaxAdNumber       = 9;      // MAx SSD FEROM AD number
+const UChar_t AliITSModuleDaSSD::fgkMaxAdcNumber      = 13;     // MAx SSD FEROM ADC number
+const Int_t   AliITSModuleDaSSD::fgkChipsPerModule    = 12;     // Number of HAL25 chips per SSD module
+
+
+
 using namespace std;
 
+//______________________________________________________________________________
 AliITSModuleDaSSD::AliITSModuleDaSSD() :
   fEquipId(0),
   fEquipType(0),
@@ -38,12 +51,15 @@ AliITSModuleDaSSD::AliITSModuleDaSSD() :
   fModuleId(0),
   fNumberOfStrips(0),
   fStrips(NULL),
+  fNumberOfChips(0),
+  fCm(NULL),
   fEventsNumber(0)
 {
 // Default constructor
 }
 
 
+//______________________________________________________________________________
 AliITSModuleDaSSD::AliITSModuleDaSSD(const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const UShort_t moduleID) :
   fEquipId(0),
   fEquipType(0),
@@ -53,6 +69,8 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const UChar_t ddlID, const UChar_t ad, cons
   fModuleId(moduleID),
   fNumberOfStrips(0),
   fStrips(NULL),
+  fNumberOfChips(0),
+  fCm(NULL),
   fEventsNumber(0)
 {
 // Constructor, set module id data
@@ -60,6 +78,7 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const UChar_t ddlID, const UChar_t ad, cons
 
 
 
+//______________________________________________________________________________
 AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips) :
   fEquipId(0),
   fEquipType(0),
@@ -69,23 +88,26 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips) :
   fModuleId(0),
   fNumberOfStrips(0),
   fStrips(NULL),
+  fNumberOfChips(0),
+  fCm(NULL),
   fEventsNumber(0)
 {
 // Constructor, allocates memory for AliITSChannelDaSSD*
   if (numberofstrips != fgkStripsPerModule) 
-    Warning("AliITSModuleDaSSD", "ALICE ITS SSD Module contains %i strips", fgkStripsPerModule);
+    AliWarning(Form("AliITSModuleDaSSD: ALICE ITS SSD Module contains %i strips", fgkStripsPerModule));
   fStrips = new (nothrow) AliITSChannelDaSSD* [numberofstrips];
   if (fStrips) {
      fNumberOfStrips = numberofstrips;
      for (Int_t i = 0; i < numberofstrips; i++) fStrips[i]= NULL;
   } else {
-     Error("AliITSModuleDaSSD", "Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips);
+     AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips));
      fNumberOfStrips = 0;
      fStrips = NULL;
   }  
 }
 
 
+//______________________________________________________________________________
 AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips, const Long_t eventsnumber) :
   fEquipId(0),
   fEquipType(0),
@@ -95,21 +117,23 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips, const Long_t ev
   fModuleId(0),
   fNumberOfStrips(0),
   fStrips(NULL),
+  fNumberOfChips(0),
+  fCm(NULL),
   fEventsNumber(0)
 {
 // Constructor, allocates memory for AliITSChannelDaSSD* and events data
   if (numberofstrips != fgkStripsPerModule) 
-    Warning("AliITSModuleDaSSD", "ALICE ITS SSD Module contains %i strips", fgkStripsPerModule);
+    AliWarning(Form("AliITSModuleDaSSD: ALICE ITS SSD Module contains %i strips", fgkStripsPerModule));
   fStrips = new (nothrow) AliITSChannelDaSSD* [numberofstrips];
   if (fStrips) {
      fNumberOfStrips = numberofstrips;
      memset(fStrips, 0, numberofstrips * sizeof(AliITSChannelDaSSD*));
      for (Int_t i = 0; i < fNumberOfStrips; i++) {
        fStrips[i] = new AliITSChannelDaSSD(i, eventsnumber);
-       if (!fStrips[i]) Error("AliITSModuleDaSSD", "Error allocating memory for AliITSChannelDaSSD %i-th object", i);
+       if (!fStrips[i]) AliError(Form("AliITSModuleDaSSD: Error allocating memory for AliITSChannelDaSSD %i-th object", i));
      }
   } else {
-     Error("AliITSModuleDaSSD", "Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips);
+     AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips));
      fNumberOfStrips = 0;
      fStrips = NULL;
   }  
@@ -117,6 +141,7 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const Int_t numberofstrips, const Long_t ev
 
 
 
+//______________________________________________________________________________
 AliITSModuleDaSSD::AliITSModuleDaSSD(const AliITSModuleDaSSD& module) :
   TObject(module),
   fEquipId(module.fEquipId),
@@ -127,25 +152,29 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const AliITSModuleDaSSD& module) :
   fModuleId(module.fModuleId),
   fNumberOfStrips(module.fNumberOfStrips),
   fStrips(module.fStrips),
+  fNumberOfChips(module.fNumberOfChips),
+  fCm(module.fCm),
   fEventsNumber(module.fEventsNumber)
 {
 // copy constructor
 
-  Fatal("AliITSModuleDaSSD", "copy constructor not implemented");
+  AliFatal("AliITSModuleDaSSD, copy constructor not implemented");
 }
 
 
 
+//______________________________________________________________________________
 AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& module)
 {
 // assignment operator
 
-  Fatal("AliITSModuleDaSSD: operator =", "assignment operator not implemented");
+  AliFatal("AliITSModuleDaSSD: operator =, assignment operator not implemented");
   return *this;
 }
     
 
     
+//______________________________________________________________________________
 AliITSModuleDaSSD::~AliITSModuleDaSSD()
 {
 // Destructor
@@ -157,19 +186,68 @@ AliITSModuleDaSSD::~AliITSModuleDaSSD()
     }
     delete [] fStrips;
   } 
+  if (fCm) delete [] fCm;
 }
 
 
+
+//______________________________________________________________________________
+Bool_t AliITSModuleDaSSD::SetNumberOfStrips(const Int_t numberofstrips)
+{
+// Allocates memory for AliITSChannelDaSSD*
+  if (fStrips) {
+    for (Int_t i = 0; i < fNumberOfStrips; i++) if (fStrips[i]) delete fStrips[i];
+    delete [] fStrips;
+    fStrips = NULL;
+  }  
+  if (numberofstrips <= 0) {fNumberOfStrips = 0; return kTRUE; } 
+  if (numberofstrips != fgkStripsPerModule) 
+    AliWarning(Form("AliITSModuleDaSSD: ALICE ITS SSD Module contains %i strips", fgkStripsPerModule));
+  fStrips = new (nothrow) AliITSChannelDaSSD* [numberofstrips];
+  if (fStrips) {
+     fNumberOfStrips = numberofstrips;
+     memset(fStrips, 0, sizeof(AliITSChannelDaSSD*) * numberofstrips);
+     return kTRUE;
+  } else {
+     AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", numberofstrips));
+     fNumberOfStrips = 0;
+     fStrips = NULL;
+     return kFALSE;
+  }  
+}
+
+
+//______________________________________________________________________________
+Bool_t AliITSModuleDaSSD::SetNumberOfChips(const Int_t nchips)
+{
+// Allocate nchips TArrayF objects to save Common Mode
+  DeleteCM();
+  if (nchips <= 0) {fNumberOfChips = 0; return kTRUE; } 
+  if (nchips != fgkChipsPerModule) 
+    AliWarning(Form("AliITSModuleDaSSD: ALICE ITS SSD Module contains %i HAL25 chips", fgkChipsPerModule));
+  fCm = new (nothrow) TArrayF [nchips];
+  if (fCm) {
+     fNumberOfChips = nchips;
+     return kTRUE;
+  } else {
+     AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayF objects!", nchips));
+     fNumberOfChips = 0;
+     fCm = NULL;
+     return kFALSE;
+  }  
+}
+
   
-Bool_t AliITSModuleDaSSD::SetModuleIdData (const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const UShort_t moduleID)
+//______________________________________________________________________________
+Bool_t AliITSModuleDaSSD::SetModuleIdData (const UChar_t ddlID, const UChar_t ad, const UChar_t adc, const Short_t moduleID)
 {
 // SetModuleIdData
   if (ad > fgkMaxAdNumber) {
-    Warning("AliITSModuleDaSSD", "Wrong AD number: %i", ad);
+    AliWarning(Form("AliITSModuleDaSSD: Wrong AD number: %i", ad));
     return kFALSE;
   }  
   if (adc > fgkMaxAdcNumber || ForbiddenAdcNumber(adc)) {
-    Warning("AliITSModuleDaSSD", "Wrong ADC number: %i", adc);
+    AliWarning(Form("AliITSModuleDaSSD: Wrong ADC number: %i", adc));
     return kFALSE;
   }  
   fDdlId = ddlID;
@@ -180,7 +258,7 @@ Bool_t AliITSModuleDaSSD::SetModuleIdData (const UChar_t ddlID, const UChar_t ad
 }
 
 
-
+//______________________________________________________________________________
 void AliITSModuleDaSSD::SetModuleFEEId (const UChar_t ddlID, const UChar_t ad, const UChar_t adc)
 {
 // Set id data of FEE connected to the Module
@@ -190,6 +268,7 @@ void AliITSModuleDaSSD::SetModuleFEEId (const UChar_t ddlID, const UChar_t ad, c
 }
 
 
+//______________________________________________________________________________
 void AliITSModuleDaSSD::SetModuleRorcId (const Int_t equipid, const Int_t equiptype)
 {
 // Set data to access FEROM registres via DDL
@@ -198,6 +277,7 @@ void AliITSModuleDaSSD::SetModuleRorcId (const Int_t equipid, const Int_t equipt
 }
 
 
+//______________________________________________________________________________
 Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
 {
 // Allocate the memory for the events data
@@ -207,8 +287,8 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
     if (fStrips[i])  
       if (!fStrips[i]->SetEvenetsNumber(eventsnumber)) {
         for (Int_t j = 0; j < i; j++) fStrips[j]->DeleteSignal();
-        Error("AliITSModuleDaSSD", "Error allocating memory for i% events for module %i, strip %i", 
-	                            eventsnumber, (Int_t)fModuleId, i);
+        AliError(Form("AliITSModuleDaSSD: Error allocating memory for i% events for module %i, strip %i", 
+	                            eventsnumber, (Int_t)fModuleId, i));
         return kFALSE;
       }
     else 
@@ -217,7 +297,7 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
         delete [] fStrips;
         fNumberOfStrips = 0;
         fStrips = NULL;
-        Error("AliITSModuleDaSSD", "Error allocating memory for strip %i of module %i!", (Int_t)fModuleId, i);
+        AliError(Form("AliITSModuleDaSSD: Error allocating memory for strip %i of module %i!", (Int_t)fModuleId, i));
         return kFALSE;
       }
   } 
@@ -226,23 +306,46 @@ Bool_t AliITSModuleDaSSD::SetEventsNumber(const Long_t eventsnumber)
 
 
 
+//______________________________________________________________________________
+Bool_t AliITSModuleDaSSD::SetCM (const Float_t cm, const Int_t chipn, const Int_t evn)
+{ 
+// Set value of CM for a given chip and event 
+  if ((!fCm) || (chipn >= fNumberOfChips)) return kFALSE;
+  if (evn >= fCm[chipn].GetSize()) return kFALSE;
+  else fCm[chipn][evn] = cm;
+  return kTRUE;
+}
+
+
+
+//______________________________________________________________________________
+Float_t  AliITSModuleDaSSD::GetCM(const Int_t chipn, const Long_t evn)   const 
+{ 
+// Get value of CM for a given chip and event 
+  if ((!fCm) || (chipn >= fNumberOfChips)) return 0.0f;
+  if (evn >= fCm[chipn].GetSize()) return 0.0f;
+  else return fCm[chipn][evn];
+}
+
+
+
+//______________________________________________________________________________
 AliITSNoiseSSD* AliITSModuleDaSSD::GetCalibrationSSDModule() const
 {
 // Creates the AliITSNoiseSSD objects with callibration data
   AliITSNoiseSSD  *mc;
+  Float_t          noise;
   if (!fStrips) return NULL;
   mc = new AliITSNoiseSSD();
   mc->SetMod(fModuleId);
   mc->SetNNoiseP(fgkPNStripsPerModule);
   mc->SetNNoiseN(fgkPNStripsPerModule);
   for (Int_t i = 0; i < fNumberOfStrips; i++) {
-    if (!fStrips[i]) {
-      delete mc;
-      return NULL;
-    }
+    if (!fStrips[i]) noise = AliITSChannelDaSSD::GetUndefinedValue();
+    else  noise = fStrips[i]->GetNoiseCM();
     if (i < fgkPNStripsPerModule)
-          mc->AddNoiseP(i, fStrips[i]->GetNoise());
-    else  mc->AddNoiseN((i - fgkPNStripsPerModule), fStrips[i]->GetNoise());                     
+          mc->AddNoiseP(i, noise);
+    else  mc->AddNoiseN((AliITSChannelDaSSD::GetMaxStripIdConst() - i), noise);                     
   }
   return mc;
 }
