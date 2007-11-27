@@ -25,7 +25,7 @@
 #include "AliCTPRawData.h"
 #include "AliRunLoader.h"
 #include "AliCentralTrigger.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliLog.h"
 #include "AliDAQ.h"
 #include "AliFstream.h"
@@ -90,7 +90,7 @@ void AliCTPRawData::RawData()
   AliFstream* outfile;         // logical name of the output file 
   outfile = new AliFstream(fileName);
 
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
   // Write a dummy header
   UInt_t dataHeaderPosition=outfile->Tellp();
   outfile->WriteBuffer((char*)(&header),sizeof(header));

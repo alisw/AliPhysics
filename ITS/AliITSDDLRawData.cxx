@@ -28,7 +28,7 @@
 #include <TTree.h>
 #include "AliITSdigit.h"
 #include "AliITSDDLRawData.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliITSRawStreamSDD.h"
 #include "AliITSRawStreamSSD.h"
@@ -487,7 +487,7 @@ Int_t AliITSDDLRawData::RawDataSPD(TBranch* branch){
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
   char fileName[15];
   AliFstream* outfile;         // logical name of the output file 
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
 
   //loop over DDLs
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSPD");i++){
@@ -534,7 +534,7 @@ Int_t AliITSDDLRawData::RawDataSSD(TBranch* branch){
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
   char fileName[15];
   AliFstream* outfile;         // logical name of the output file 
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
 
   //loop over DDLs  
   for(Int_t i=0;i<AliDAQ::NumberOfDdls("ITSSSD");i++){
@@ -581,7 +581,7 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
   TClonesArray*& digits = * (TClonesArray**) branch->GetAddress();
   char fileName[15];
   AliFstream* outfile;             // logical name of the output file 
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
   UInt_t skippedword, carlosFooterWord,fifoFooterWord,jitterWord;
   Bool_t retcode;
   retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);

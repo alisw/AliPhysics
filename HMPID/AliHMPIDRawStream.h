@@ -19,6 +19,7 @@
 #include <AliFstream.h>
 #include "AliHMPIDDigit.h"
 #include "AliDAQ.h"
+#include "AliRawDataHeaderSim.h"
 class AliRawReader;
 
 class AliHMPIDRawStream: public TObject {
@@ -310,7 +311,7 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
     AliFstream* ddlL;                                 //output streams, 2 per chamber
     AliFstream* ddlR;                          
     
-    AliRawDataHeader header; header.SetAttribute(0);  //empty DDL header
+    AliRawDataHeaderSim header; header.SetAttribute(0);  //empty DDL header
     
     ddlL = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh+1)); //left and right looking at the IP
     ddlR = new AliFstream(AliDAQ::DdlFileName("HMPID",2*iCh));   //open both DDL of this chamber in parallel

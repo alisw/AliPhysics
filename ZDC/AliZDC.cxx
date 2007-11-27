@@ -36,7 +36,7 @@
 
 // --- AliRoot header files
 #include "AliDetector.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliRawReader.h"
 #include "AliLoader.h"
 #include "AliRun.h"
@@ -597,7 +597,7 @@ void AliZDC::Digits2Raw()
   AliFstream* file = new AliFstream(fileName);
 
   // write the DDL data header
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
   header.fSize = sizeof(header) + 
                  sizeof(lADCHeader1) + sizeof(lADCData1) + sizeof(lADCEndBlock) +
   		 sizeof(lADCHeader2) + sizeof(lADCData2) + sizeof(lADCEndBlock) +

@@ -23,7 +23,7 @@
 // Mapping of ALTRO hardware channel to detector coordinates 
 //
 #include "AliFMDAltroIO.h"
-#include <AliRawDataHeader.h>
+#include <AliRawDataHeaderSim.h>
 #include <AliRawReader.h>
 #include "AliLog.h"
 #include <iostream>
@@ -310,7 +310,7 @@ AliFMDAltroWriter::AliFMDAltroWriter(std::ostream& stream)
   // Write a dummy header
   fHeader = fOutput.tellp();
   if (fOutput.bad()) throw -kBadTell;
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
   fOutput.write((char*)(&header), sizeof(header));
   if (fOutput.bad()) throw -kBadWrite;
   fBegin = fOutput.tellp();
@@ -342,7 +342,7 @@ AliFMDAltroWriter::Close()
   if (fOutput.bad()) return -kBadTell;
   fOutput.seekp(fHeader, std::ios_base::beg);
   if (fOutput.bad()) return -kBadSeek;
-  AliRawDataHeader header;
+  AliRawDataHeaderSim header;
   header.fSize = (UShort_t(end) - fHeader);
   AliFMDDebug(15, ("Size set to %d (%d)", header.fSize, fTotal));
   header.SetAttribute(0);

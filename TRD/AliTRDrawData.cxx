@@ -27,7 +27,7 @@
 #include "TClass.h"
 
 #include "AliDAQ.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliFstream.h"
@@ -163,7 +163,7 @@ Bool_t AliTRDrawData::Digits2Raw(AliTRDdigitsManager *digitsManager)
     AliFstream* of = new AliFstream(name);
 
     // Write a dummy data header
-    AliRawDataHeader  header;  // the event header
+    AliRawDataHeaderSim  header;  // the event header
     UInt_t hpos = of->Tellp();
     of->WriteBuffer((char *) (& header), sizeof(header));
 

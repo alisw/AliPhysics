@@ -12,7 +12,7 @@
 //  Author Christian Finck and Laurent Aphecetche, Subatech
 
 #include <TObject.h>
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderSim.h"
 #include "AliFstream.h"
 
 class AliMUONBlockHeader;
@@ -70,7 +70,7 @@ private:
 
   Bool_t fScalerEvent;               ///< flag to generates scaler event
 
-  AliRawDataHeader    fHeader;           ///< header of DDL
+  AliRawDataHeaderSim    fHeader;           ///< header of DDL
   
   Int_t fBufferSize; //!< size of internal data buffer
   Int_t* fBuffer; //!< internal data buffer
