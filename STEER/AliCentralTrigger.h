@@ -37,7 +37,7 @@ public:
                virtual   ~AliCentralTrigger();
 
                 Bool_t    LoadConfiguration( TString & config );
-                Bool_t    RunTrigger( AliRunLoader * runloader );
+                Bool_t    RunTrigger( AliRunLoader * runloader , const char* detectors);
              ULong64_t    TriggerClasses();
                   void    Reset();
 		  void    DeleteConfiguration();
