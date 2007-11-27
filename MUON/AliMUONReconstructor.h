@@ -30,15 +30,16 @@ class AliMUONVTriggerStore;
 class AliMUONDigitCalibrator;
 class AliMUONCalibrationData;
 
-class AliMUONClusterReconstructor;
-class AliMUONVClusterStore;
-
 class AliMUONTracker;
 class AliMUONVTrackStore;
 
 class AliMUONTriggerChamberEff;
 
 class AliMUONRecoParam;
+
+class AliMUONVClusterFinder;
+
+class AliMUONVClusterServer;
 
 class AliMUONReconstructor : public AliReconstructor
 {
@@ -70,19 +71,17 @@ private:
                      AliMUONVDigitStore* digitStore,
                      AliMUONVTriggerStore* triggerStore) const;
   void Calibrate(AliMUONVDigitStore& digitStore) const;
-  void Clusterize(const AliMUONVDigitStore& digitStore, AliMUONVClusterStore& clusterStore) const;
   AliMUONTriggerCrateStore* CrateManager() const;
   void CreateCalibrator() const;
+  AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType) const;
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
-  void CreateClusterReconstructor() const;
+  void CreateClusterServer() const;
   void CreateTriggerChamberEff() const;
   void FillTreeR(AliMUONVTriggerStore* triggerStore,
-                 AliMUONVClusterStore* clusterStore,
                  TTree& clustersTree) const;
   
   AliMUONVDigitStore* DigitStore() const;
-  AliMUONVClusterStore* ClusterStore() const;
   AliMUONVTriggerStore* TriggerStore() const;
 
 private:
@@ -93,15 +92,14 @@ private:
   mutable AliMUONTriggerCircuit* fTriggerCircuit; //!< Trigger Circuit
   mutable AliMUONCalibrationData* fCalibrationData; //!< Calibration data
   mutable AliMUONDigitCalibrator* fDigitCalibrator; //!<  Digit to calibrate digit converter
-  mutable AliMUONClusterReconstructor* fClusterReconstructor; //!<  Clusterizer
-  mutable AliMUONVClusterStore* fClusterStore; //!< Cluster container
+  mutable AliMUONVClusterServer* fClusterServer; //!<  Clusterizer
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONTriggerChamberEff* fTrigChamberEff; //!< pointer to trigger chamber efficiency class
   
   static AliMUONRecoParam* fgRecoParam; //!< parameters used to tune the MUON reconstruction
   
-  ClassDef(AliMUONReconstructor,3) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,4) // Implementation of AliReconstructor
 };
 
 #endif

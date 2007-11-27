@@ -71,14 +71,10 @@
 
 #include "AliMUONReconstructor.h"
 
-#include "AliCDBManager.h"
-#include "AliLog.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONClusterFinderCOG.h"
 #include "AliMUONClusterFinderMLEM.h"
 #include "AliMUONClusterFinderSimpleFit.h"
-#include "AliMUONClusterReconstructor.h"
-#include "AliMUONClusterStoreV2.h"
 #include "AliMUONConstants.h"
 #include "AliMUONDigitCalibrator.h"
 #include "AliMUONDigitMaker.h"
@@ -88,17 +84,26 @@
 #include "AliMUONPreClusterFinder.h"
 #include "AliMUONPreClusterFinderV2.h"
 #include "AliMUONPreClusterFinderV3.h"
+#include "AliMUONRecoParam.h"
+#include "AliMUONSimpleClusterServer.h"
 #include "AliMUONTracker.h"
-#include "AliMUONVTrackStore.h"
 #include "AliMUONTriggerChamberEff.h"
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONTriggerCrateStore.h"
 #include "AliMUONTriggerStoreV1.h"
 #include "AliMUONVClusterFinder.h"
-#include "AliMUONRecoParam.h"
+#include "AliMUONVClusterServer.h"
+#include "AliMUONVTrackStore.h"
+
+#include "AliMpArea.h"
 #include "AliMpCDB.h"
+#include "AliMpConstants.h"
+
 #include "AliRawReader.h"
+#include "AliCDBManager.h"
 #include "AliCodeTimer.h"
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TString.h>
@@ -120,8 +125,7 @@ fDigitStore(0x0),
 fTriggerCircuit(0x0),
 fCalibrationData(0x0),
 fDigitCalibrator(0x0),
-fClusterReconstructor(0x0),
-fClusterStore(0x0),
+fClusterServer(0x0),
 fTriggerStore(0x0),
 fTrackStore(0x0),
 fTrigChamberEff(0x0)
@@ -155,8 +159,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerCircuit;
   delete fCalibrationData;
   delete fDigitCalibrator;
-  delete fClusterReconstructor;
-  delete fClusterStore;
+  delete fClusterServer;
   delete fTriggerStore;
   delete fTrackStore;
   delete fTrigChamberEff;
@@ -187,39 +190,6 @@ AliMUONReconstructor::Calibrate(AliMUONVDigitStore& digitStore) const
   }
   AliCodeTimerAuto(Form("%s::Calibrate(AliMUONVDigitStore*)",fDigitCalibrator->ClassName()))
   fDigitCalibrator->Calibrate(digitStore);  
-}
-
-//_____________________________________________________________________________
-void
-AliMUONReconstructor::Clusterize(const AliMUONVDigitStore& digitStore,
-                                 AliMUONVClusterStore& clusterStore) const
-{
-  /// Creates clusters from digits.
-
-  TString sopt(fgRecoParam->GetClusteringMode());
-  sopt.ToUpper();
-  if ( sopt.Contains("NOCLUSTERING") ) return;
-  
-  if  (!fClusterReconstructor) CreateClusterReconstructor();
-  
-  // if the required clustering mode does not exist
-  if  (!fClusterReconstructor) return;
-  
-  AliCodeTimerAuto(Form("%s::Digits2Clusters(const AliMUONVDigitStore&,AliMUONVClusterStore&)",
-                        fClusterReconstructor->ClassName()))
-  fClusterReconstructor->Digits2Clusters(digitStore,clusterStore);  
-}
-
-//_____________________________________________________________________________
-AliMUONVClusterStore*
-AliMUONReconstructor::ClusterStore() const
-{
-  /// Return (and create if necessary) the cluster container
-  if (!fClusterStore) 
-  {
-    fClusterStore = new AliMUONClusterStoreV2;
-  }
-  return fClusterStore;
 }
 
 //_____________________________________________________________________________
@@ -326,25 +296,36 @@ AliMUONReconstructor::CreateTracker() const
   CreateTriggerCircuit();
   CreateDigitMaker();
   CreateTriggerChamberEff();
+  CreateClusterServer();
   
-  AliMUONTracker* tracker = new AliMUONTracker(fDigitMaker,fTransformer,fTriggerCircuit,fTrigChamberEff);
+  if (!fClusterServer) 
+  {
+    AliError("ClusterServer is NULL ! Cannot create tracker");
+    return 0x0;
+  }
+  
+  fClusterServer->UseDigitStore(*(DigitStore()));
+  
+  AliMUONTracker* tracker = new AliMUONTracker(*fClusterServer,
+                                               fDigitMaker,
+                                               fTransformer,
+                                               fTriggerCircuit,
+                                               fTrigChamberEff);
   
   return tracker;
 }
 
 //_____________________________________________________________________________
-void
-AliMUONReconstructor::CreateClusterReconstructor() const
+AliMUONVClusterFinder*
+AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType) const
 {
-  /// Create cluster reconstructor, depending on clustering mode set in RecoParam
+  /// Create a given cluster finder instance
   
   AliCodeTimerAuto("")
 
-  AliDebug(1,"");
-  
   AliMUONVClusterFinder* clusterFinder(0x0);
   
-  TString opt(fgRecoParam->GetClusteringMode());
+  TString opt(clusterFinderType);
   opt.ToUpper();
   
   if ( strstr(opt,"PRECLUSTERV2") )
@@ -390,12 +371,31 @@ AliMUONReconstructor::CreateClusterReconstructor() const
   else
   {
     AliError(Form("clustering mode \"%s\" does not exist",opt.Data()));
-    return;
+    return 0x0;
   }
+  
+  return clusterFinder;
+}
+
+//_____________________________________________________________________________
+void
+AliMUONReconstructor::CreateClusterServer() const
+{
+  /// Create cluster server
+  
+  if ( fClusterServer ) return;
+  
+  AliCodeTimerAuto("")
+
+  AliDebug(1,"");
+  
+  AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(fgRecoParam->GetClusteringMode());
+  
+  if ( !clusterFinder ) return;
   
   AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
   
-  fClusterReconstructor = new AliMUONClusterReconstructor(clusterFinder,fTransformer);
+  fClusterServer = new AliMUONSimpleClusterServer(*clusterFinder,*fTransformer);
 }
 
 //_____________________________________________________________________________
@@ -473,7 +473,6 @@ AliMUONReconstructor::DigitStore() const
 //_____________________________________________________________________________
 void
 AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
-                                AliMUONVClusterStore* clusterStore,
                                 TTree& clustersTree) const
 {
   /// Write the trigger and cluster information into TreeR
@@ -485,22 +484,11 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
   Bool_t ok(kFALSE);
   if ( triggerStore ) 
   {
-    Bool_t alone = ( clusterStore ? kFALSE : kTRUE );
-    ok = triggerStore->Connect(clustersTree,alone);
+    ok = triggerStore->Connect(clustersTree,kTRUE);
     if (!ok)
     {
       AliError("Could not create triggerStore branches in TreeR");
     }
-  }
-  
-  if ( clusterStore ) 
-  {
-    Bool_t alone = ( triggerStore ? kFALSE : kTRUE );
-    ok = clusterStore->Connect(clustersTree,alone);
-    if (!ok)
-    {
-      AliError("Could not create triggerStore branches in TreeR");
-    }    
   }
   
   if (ok) // at least one type of branches created successfully
@@ -542,9 +530,8 @@ AliMUONReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTree) 
   }
   
   ConvertDigits(rawReader,DigitStore(),TriggerStore());
-  Clusterize(*(DigitStore()),*(ClusterStore()));
-    
-  FillTreeR(TriggerStore(),ClusterStore(),*clustersTree);
+
+  FillTreeR(TriggerStore(),*clustersTree);
 }
 
 //_____________________________________________________________________________
@@ -632,10 +619,9 @@ AliMUONReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersTree) const
     {
       Calibrate(*fDigitStore);
     }
-    Clusterize(*fDigitStore,*(ClusterStore()));
   }
     
-  FillTreeR(fTriggerStore,ClusterStore(),*clustersTree);
+  FillTreeR(fTriggerStore,*clustersTree);
 }
 
 //_____________________________________________________________________________
