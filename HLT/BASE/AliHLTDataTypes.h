@@ -289,7 +289,7 @@ extern "C" {
    * The struct is send with the DDLLIST event.
    * Used in the trigger structure for internal apperance of 
    * the DLLs as well as for the HLT readout list send to DAQ 
-   * ( as DataType :kAliHLTDataTypeDDL  )
+   * ( as DataType : kAliHLTDataTypeDDL )
    */
   struct AliHLTEventDDL
   {
@@ -298,50 +298,14 @@ extern "C" {
   };
 
   /**
-   * @struct AliHLTBlockHeader
-   * 1 to 1 copy from HLT framework, remember before changeing
-   */
-  struct AliHLTBlockHeader
-  {
-    AliHLTUInt32_t fLength;
-    union 
-    {
-      AliHLTUInt32_t      fID;
-      AliHLTUInt8_t       fDescr[4];
-    } fType;
-    union 
-    {
-      AliHLTUInt32_t      fID:24;
-      AliHLTUInt8_t       fDescr[3];
-    } fSubType;
-    AliHLTUInt8_t fVersion;
-  };
-  
-  /**
-   * @struct AliHLTEventTriggerStruct
-   * 1 to 1 copy from HLT framework, remember before changeing
-   */
-  struct AliHLTEventTriggerStruct
-  {
-    AliHLTBlockHeader fHeader;
-    AliHLTUInt32_t fDataWordCount;
-    AliHLTUInt32_t fDataWords[0];
-  };
-
-  /**
    * @struct AliHLTEventTriggerData
-   * 1 to 1 copy from HLT framework, remember before changeing
    */
   struct AliHLTEventTriggerData
   {
-    AliHLTEventTriggerStruct fETS;
     AliHLTUInt8_t  fAttributes[gkAliHLTBlockDAttributeCount]; 
-    /** Bit field */
-    AliHLTUInt64_t fHLTStatus; 
+    AliHLTUInt64_t fHLTStatus; // Bit field 
     AliHLTUInt32_t fCommonHeaderWordCnt;
     AliHLTUInt32_t fCommonHeader[gkAliHLTCommonHeaderCount]; 
-    /** First word holds number of words (excluding first word) */
-    //AliHLTUInt32_t fReadoutList[gkAliHLTDDLListSize+1];  
     AliHLTEventDDL fReadoutList;
   };
 
