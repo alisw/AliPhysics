@@ -98,8 +98,6 @@ Bool_t AliMCEventHandler::InitIO(Option_t* opt)
     //
     if (!(strcmp(opt, "proof")) || !(strcmp(opt, "local"))) return kTRUE;
     //
-    ResetIO();
-
     fFileE = TFile::Open(Form("%sgalice.root", fPathName->Data()));
     if (!fFileE) AliFatal(Form("AliMCEventHandler:galice.root not found in directory %s ! \n", fPathName->Data()));
 
@@ -124,7 +122,7 @@ Bool_t AliMCEventHandler::InitIO(Option_t* opt)
     // Reset the event number
     fEvent      = -1;
     fFileNumber =  0;
-    
+    printf("AliMCEvenHandler::Init() %d\n",__LINE__);
     AliInfo(Form("AliMCEventHandler:Number of events in this directory %5d \n", fNEvent));
     return kTRUE;
 }
@@ -207,7 +205,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
     }
 
     if (entry >= fNEvent) {
-	AliWarning(Form("AliMCEventHandler: Event number out of range %5d\n", entry));
+	AliWarning(Form("AliMCEventHandler: Event number out of range %5d %5d\n", entry,fNEvent));
 	return kFALSE;
     }
     return GetEvent(entry);
@@ -242,6 +240,9 @@ Bool_t AliMCEventHandler::Notify(const char *path)
     *fPathName = fileName;
     printf("AliMCEventHandler::Notify() Path: %s\n", fPathName->Data());
     
+    ResetIO();
+    InitIO("");
+
     return kTRUE;
 }
 
