@@ -38,12 +38,17 @@ class AliMpArea : public TObject
   TVector2 RightDownCorner() const;
   TVector2 RightUpCorner() const;
 
+  AliMpArea Intersect(const AliMpArea& area) const;
+  Bool_t    Overlap(const AliMpArea& area) const;
+  Bool_t    Contains(const AliMpArea& area) const;
+  
+  void Print(Option_t* opt="") const;
+
   // get methods
   TVector2  Position() const;
   TVector2  Dimensions() const;    
   Bool_t    IsValid() const;
   
-  void Print(Option_t* opt="") const;
   
  private:
   // data members
