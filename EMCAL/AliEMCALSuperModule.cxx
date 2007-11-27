@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.3  2007/11/14 15:34:05  gustavo
+Coding violations corrected
+
 Revision 1.2  2007/09/11 19:38:15  pavlinov
 added pi0 calibration, linearity, shower profile
  
@@ -75,7 +78,7 @@ AliEMCALSuperModule & AliEMCALSuperModule::operator =(const AliEMCALSuperModule 
   fParent = sm.fParent; 
   fLh = sm.fLh;
   fSMNumber = sm.fSMNumber;
-
+  return *this;
 } 
 
 AliEMCALSuperModule::~AliEMCALSuperModule()
