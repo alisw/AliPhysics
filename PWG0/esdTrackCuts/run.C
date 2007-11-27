@@ -13,8 +13,6 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gProof->EnablePackage("ANALYSIS");
     gProof->UploadPackage("PWG0base");
     gProof->EnablePackage("PWG0base");
-
-    //gProof->AddInput(new TNamed("PROOF_Packetizer", "TPacketizer"));
   }
   else
   {
