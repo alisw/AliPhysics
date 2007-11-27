@@ -85,9 +85,8 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
   TString argument="";
   bool bMissingParam=0;
   int i=0;
-  for (; i<argc && iResult>=0; i++) {
-    argument=argv[i];
-    if (argument.IsNull()) continue;
+  do {
+    if (i>=argc || (argument=argv[i]).IsNull()) continue;
 
     // -rawreadermode
     if (argument.CompareTo("-rawreadermode")==0) {
@@ -99,14 +98,11 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
       } else {
 	fRawreaderMode=static_cast<unsigned>(mode);
       }
-      break;
     }
-  }
+  } while (0); // just use the do/while here to have the option of breaking
 
-  if (bMissingParam) {
-    iResult=-EPROTO;
-  }
-  if (iResult>=0) iResult=i+1;
+  if (bMissingParam) iResult=-EPROTO;
+  else if (iResult>=0) iResult=i;
 
   return iResult;
 }
