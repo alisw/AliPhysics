@@ -39,6 +39,7 @@ endif
 
 ifneq ($(findstring $(DAMODULE),$(MODULES)),)
 
+CXXFLAGS:=$(filter-out -pedantic-errors,$(CXXFLAGS))
 CXXFLAGS+=-I${ALICE_ROOT}/RAW
 CXXFLAGS+=-I${ALICE_ROOT}/$(DAMODULE)
 CXXFLAGS+=$(addprefix -I,$(filter-out %tgt_${ALICE_TARGET},$(filter-out %CVS,$(patsubst %/,%,$(shell ls -d ${ALICE_ROOT}/$(DAMODULE)/*/)))))
