@@ -36,6 +36,8 @@
 #include "AliLoader.h"
 #include "AliLog.h"
 #include "AliRunLoader.h"
+#include "AliHeader.h"
+#include "AliCDBManager.h"
 
 #include <TError.h>
 #include <TParticle.h>
@@ -513,6 +515,18 @@ AliMUONDataInterface::Open(const char* filename)
     AliError(Form("Cannot open file %s",filename));    
     fIsValid = kFALSE;
   }
+
+  runLoader->LoadHeader();
+  if ( ! runLoader->GetHeader() ) {
+    AliError("Cannot load header.");    
+    fIsValid = kFALSE;
+  }
+  else {
+    Int_t runNumber = runLoader->GetHeader()->GetRun();
+    AliCDBManager::Instance()->SetRun(runNumber);
+  }  
+  runLoader->UnloadHeader(); 
+
   fLoader = runLoader->GetDetectorLoader("MUON");
   if (fLoader == 0x0) 
   {

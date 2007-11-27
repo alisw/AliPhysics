@@ -43,7 +43,9 @@
 
 #include "AliLog.h"
 #include "AliRunLoader.h"
+#include "AliHeader.h"
 #include "AliStack.h"
+#include "AliCDBManager.h"
 
 #include <Riostream.h>
 #include <TClonesArray.h>
@@ -574,6 +576,19 @@ AliMUONMCDataInterface::Open(const char* filename)
     AliError(Form("Cannot open file %s",filename));    
     fIsValid = kFALSE;
   }
+  
+  // Get run number and set it to CDB manager
+  runLoader->LoadHeader();
+  if ( ! runLoader->GetHeader() ) {
+    AliError("Cannot load header.");    
+    fIsValid = kFALSE;
+  }
+  else {
+    Int_t runNumber = runLoader->GetHeader()->GetRun();
+    AliCDBManager::Instance()->SetRun(runNumber);
+  }  
+  runLoader->UnloadHeader(); 
+
   fLoader = runLoader->GetDetectorLoader("MUON");
   if (fLoader == 0x0)
   {
