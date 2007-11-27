@@ -22,7 +22,7 @@ class AliMCParticle: public AliVParticle {
 public:
     AliMCParticle();
     AliMCParticle(TParticle* part, TRefArray* rarray = 0);
-    virtual ~AliMCParticle() {}
+    virtual ~AliMCParticle();
     AliMCParticle(const AliMCParticle& mcPart); 
     AliMCParticle& operator=(const AliMCParticle& mcPart);
     
@@ -57,7 +57,7 @@ public:
     // Track References
     Int_t              GetNumberOfTrackReferences() {return fNTrackRef;}
     AliTrackReference* GetTrackReference(Int_t i)
-	{return dynamic_cast<AliTrackReference*>((*fTrackReferences)[i]);}
+      {return dynamic_cast<AliTrackReference*>((*fTrackReferences)[i]);}
  private:
     TParticle *fParticle;             // The wrapped TParticle
     TRefArray *fTrackReferences;      // Reference array to track references

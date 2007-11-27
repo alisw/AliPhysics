@@ -45,22 +45,40 @@ AliMCParticle::AliMCParticle(TParticle* part, TRefArray* rarray):
 {
     // Constructor
     if (rarray != 0) {
-	fNTrackRef = fTrackReferences->GetEntriesFast();
+      fNTrackRef = fTrackReferences->GetEntriesFast();
     }
 }
     
     
 AliMCParticle::AliMCParticle(const AliMCParticle& mcPart) :
     AliVParticle(mcPart),
-    fParticle(0)
+    fParticle(0),    
+    fTrackReferences(0),
+    fNTrackRef(0)
 {
 // Copy constructor
 }
 
 AliMCParticle& AliMCParticle::operator=(const AliMCParticle& mcPart)
-{ if (this!=&mcPart) { 
-    AliVParticle::operator=(mcPart); 
+{ 
+
+  if (this!=&mcPart) { 
+    AliVParticle::operator=(mcPart);
   }
   
   return *this; 
 }
+
+AliMCParticle::~AliMCParticle()
+{ 
+  // delete the track references passed externally
+  // fParticle should be handled by the user
+  // AliStack in case of AliMCEventHandler
+  if(fTrackReferences){
+    delete fTrackReferences;
+    fTrackReferences = 0;
+  }
+}
+
+
+
