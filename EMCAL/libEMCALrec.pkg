@@ -7,8 +7,13 @@ AliEMCALTracker.cxx \
 AliEMCALPID.cxx \
 AliEMCALRecParam.cxx \
 AliEMCALRecPointsQaESDSelector.cxx \
+AliEMCALFolder.cxx \
+AliEMCALSuperModule.cxx \
+AliEMCALCell.cxx \
 
 HDRS= $(SRCS:.cxx=.h) 
+
+CINTHDRS:= $(HDRS) AliEMCALGeometry.h AliEMCALPi0SelectionParam.h
 
 DHDR:=EMCALLinkDefrec.h
 # have to tune

@@ -31,9 +31,9 @@ void loadlibs ()
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
+  gSystem->Load("libSTEER");
   gSystem->Load("libRAWDatasim");
   gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
@@ -51,6 +51,7 @@ void loadlibs ()
   gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONtrigger");
+  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONsim");
   gSystem->Load("libMUONrec");
@@ -95,14 +96,11 @@ void loadlibs ()
   gSystem->Load("libTRDrec");
   gSystem->Load("libTRDfast");
   gSystem->Load("libTOFbase");
-  gSystem->Load("libTOFsim");
   gSystem->Load("libTOFrec");
+  gSystem->Load("libTOFsim");
 
   gSystem->Load("libHLTbase");
-  gSystem->Load("libAliHLTITS");
-  gSystem->Load("libAliHLTSrc");
-  gSystem->Load("libAliHLTMisc");
-  gSystem->Load("libAliHLTComp");
-  gSystem->Load("libThread");
-  gSystem->Load("libAliHLTHough");
+  gSystem->Load("libHLTinterface");
+  gSystem->Load("libHLTsim");
+  gSystem->Load("libHLTrec");
 }

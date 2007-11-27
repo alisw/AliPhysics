@@ -29,10 +29,9 @@ void loadlibssim ()
   gSystem->Load("libSTEERBase");
   gSystem->Load("libESD");
   gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
-
+  gSystem->Load("libSTEER");
   gSystem->Load("libRAWDatasim");
   gSystem->Load("libEVGEN");
   gSystem->Load("libFASTSIM");
@@ -49,6 +48,7 @@ void loadlibssim ()
   gSystem->Load("libMUONcalib");
   gSystem->Load("libMUONraw");
   gSystem->Load("libMUONtrigger");
+  gSystem->Load("libMUONcore");
   gSystem->Load("libMUONbase");
   gSystem->Load("libMUONsim");
   gSystem->Load("libFMDbase");
@@ -78,5 +78,11 @@ void loadlibssim ()
   gSystem->Load("libTRDbase");
   gSystem->Load("libTRDsim");
   gSystem->Load("libTOFbase");
+  gSystem->Load("libTOFrec");
   gSystem->Load("libTOFsim");
+
+  gSystem->Load("libHLTbase");
+  gSystem->Load("libHLTinterface");
+  gSystem->Load("libHLTsim");
+  gSystem->Load("libHLTrec");
 }

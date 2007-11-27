@@ -16,8 +16,6 @@ SRCS  = AliTOFGeometry.cxx  \
 	AliTOFPreprocessor.cxx \
         AliTOFDataDCS.cxx \
         AliTOFFormatDCS.cxx \
-        AliTOFQADataMaker.cxx \
-        AliTOFQAChecker.cxx \
 	AliTOFPreprocessorFDR.cxx
 
 

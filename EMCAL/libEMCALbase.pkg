@@ -20,9 +20,6 @@ AliEMCALCalibData.cxx \
 AliEMCALCalibHistoProducer.cxx \
 AliEMCALPreprocessor.cxx \
 AliEMCALRawUtils.cxx \
-AliEMCALFolder.cxx \
-AliEMCALSuperModule.cxx \
-AliEMCALCell.cxx \
 AliEMCALPi0SelectionParam.cxx \
 AliEMCALCalibCoefs.cxx \
 AliEMCALCellInfo.cxx\

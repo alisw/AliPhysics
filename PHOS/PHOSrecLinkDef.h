@@ -5,7 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliPHOSLink+;
-#pragma link C++ class AliPHOSReconstructor+;
 #pragma link C++ class AliPHOSClusterizerv1+;
 #pragma link C++ class AliPHOSTrackSegmentMakerv1+;
 #pragma link C++ class AliPHOSTrackSegmentMakerv2+;

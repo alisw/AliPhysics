@@ -1,7 +1,6 @@
 SRCS          =  \
                  AliPHOSClusterizerv1.cxx  \
                  AliPHOSLink.cxx \
-                 AliPHOSReconstructor.cxx \
                  AliPHOSTrackSegmentMakerv1.cxx \
                  AliPHOSTrackSegmentMakerv2.cxx \
                  AliPHOSPIDv0.cxx \
