@@ -1303,18 +1303,12 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
     return kFALSE;
   }
      
-  // create Tracks
-  fLoader[iDet]->LoadTracks("update");
-  fLoader[iDet]->CleanTracks();
-  fLoader[iDet]->MakeTracksContainer();
-
   // read RecPoints
   fLoader[iDet]->LoadRecPoints("read");  
+
   tracker->LoadClusters(fLoader[iDet]->TreeR());
   
   Int_t rv = tracker->Clusters2Tracks(esd);
-  
-  fLoader[iDet]->UnloadRecPoints();
   
   if ( rv )
   {
@@ -1322,13 +1316,10 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
     return kFALSE;
   }
   
-  tracker->UnloadClusters();
-  
   fLoader[iDet]->UnloadRecPoints();
 
-  fLoader[iDet]->WriteTracks("OVERWRITE");
-  fLoader[iDet]->UnloadTracks();
-
+  tracker->UnloadClusters();
+  
   delete tracker;
   
   return kTRUE;
