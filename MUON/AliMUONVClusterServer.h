@@ -1,0 +1,40 @@
+#ifndef ALIMUONVCLUSTERSERVER_H
+#define ALIMUONVCLUSTERSERVER_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* See cxx source for full Copyright notice                               */
+
+// $Id$
+
+/// \ingroup reco
+/// \class AliMUONVClusterServer
+/// \brief Interface of a cluster finder for combined tracking
+/// 
+// Author Laurent Aphecetche, Subatech
+
+#ifndef ROOT_TObject
+#  include "TObject.h"
+#endif
+
+class AliMUONVClusterStore;
+class AliMUONVDigitStore;
+class AliMpArea;
+
+class AliMUONVClusterServer : public TObject
+{
+public:
+  AliMUONVClusterServer();
+  virtual ~AliMUONVClusterServer();
+  
+  /// Find and add clusters from a given region of a given chamber to the store.
+  virtual Int_t Clusterize(Int_t chamberId, 
+                           AliMUONVClusterStore& clusterStore,
+                           const AliMpArea& area) = 0;
+  
+  /// Use digits from the given digitstore to perform our job.
+  virtual void UseDigitStore(const AliMUONVDigitStore& digitStore) = 0;
+  
+  ClassDef(AliMUONVClusterServer,1) // Cluster server interface
+};
+
+#endif

@@ -9,7 +9,6 @@
 #pragma link off all functions;
 
 // reconstruction
-#pragma link C++ class AliMUONClusterReconstructor+; 
 #pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONReconstructor+;
 #pragma link C++ class AliMUONVTrackReconstructor+; 
@@ -45,6 +44,9 @@
 #pragma link C++ class AliMUONTriggerTrackStoreV1+;
 
 #pragma link C++ class AliMUONRecoParam+;
+
+#pragma link C++ class AliMUONVClusterServer+;
+#pragma link C++ class AliMUONSimpleClusterServer+;
 
 // calibration
 #pragma link C++ class AliMUONDigitCalibrator+;
