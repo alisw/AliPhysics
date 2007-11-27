@@ -39,7 +39,7 @@
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 #include "AliHLTPHOSDigitDataStruct.h"
 #include "AliHLTPHOSDigitContainerDataStruct.h"
-
+#include "AliHLTPHOSSharedMemoryInterface.h" // added by PTH
 
 ClassImp(AliHLTPHOSDigitMaker);
 
@@ -54,8 +54,10 @@ AliHLTPHOSDigitMaker::AliHLTPHOSDigitMaker() :
   // fDigitStructPtr(0),
   fDigitCount(0), 
   fNrPresamples(10),
-  fDigitThreshold(0)
+  fDigitThreshold(0),
+  fShmPtr(0)
 {
+  fShmPtr = new AliHLTPHOSSharedMemoryInterface();
   // See header file for documentation
 }
   
@@ -64,9 +66,60 @@ AliHLTPHOSDigitMaker::~AliHLTPHOSDigitMaker()
   //See header file for documentation
 }
 
+
+/*
+ *modified by PTH to use new interface too shared memory
+ */
 Int_t
 AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
 {
+  //See header file for documentation
+  Int_t i = 0;
+  Int_t j = 0;
+  Int_t x = -1;
+  Int_t z = -1;
+  Float_t amplitude = 0;
+
+  fShmPtr->SetMemory(rcuData);
+  // for ( i = 0; i < rcuData->fCnt; i++ )
+    //  {
+  fCellDataPtr = fShmPtr->NextChannel();
+
+  while(fCellDataPtr != 0)
+    {
+  
+      fCellDataPtr = & ( rcuData->fValidData[i] );
+      x = fCellDataPtr->fX + rcuData->fRcuX * N_XCOLUMNS_RCU;
+      z = fCellDataPtr->fZ + rcuData->fRcuZ * N_ZROWS_RCU;
+      amplitude = fCellDataPtr->fEnergy;
+  
+      if ( amplitude > fDigitThreshold )
+	{
+	  fDigitStructPtr = & ( fDigitContainerStructPtr->fDigitDataStruct[j + fDigitCount] );
+	  fDigitStructPtr->fX = ( fCellDataPtr->fX + rcuData->fRcuX * N_XCOLUMNS_RCU );
+	  fDigitStructPtr->fZ = ( fCellDataPtr->fZ + rcuData->fRcuZ * N_ZROWS_RCU );
+	  fDigitStructPtr->fAmplitude = ( amplitude );
+	  fDigitStructPtr->fTime = ( fCellDataPtr->fTime );
+	  fDigitStructPtr->fGain = ( fCellDataPtr->fGain );
+	  fDigitStructPtr->SetRawData ( fCellDataPtr->fData );
+	  fDigitStructPtr->fCrazyness = ( fCellDataPtr->fCrazyness );
+	  fDigitStructPtr->fBaseline = -1;
+	  j++;
+	}
+      
+      fCellDataPtr = fShmPtr->NextChannel();
+    }
+  //  }
+  fDigitCount += j;
+  return fDigitCount; 
+}
+
+
+/*
+Int_t
+AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
+{
+
   //See header file for documentation
   Int_t i = 0;
   Int_t j = 0;
@@ -96,6 +149,8 @@ AliHLTPHOSDigitMaker::MakeDigits(AliHLTPHOSRcuCellEnergyDataStruct* rcuData)
   fDigitCount += j;
   return fDigitCount; 
 }
+*/
+
 /*
 Int_t
 AliHLTPHOSDigitMaker::SetDigitsTree(TTree *tree)

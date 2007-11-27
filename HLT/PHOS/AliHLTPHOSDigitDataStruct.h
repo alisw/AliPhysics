@@ -78,7 +78,7 @@ struct AliHLTPHOSDigitDataStruct
    */ 
   void SetRawData(Int_t *data)
   {
-    for(Int_t i = 0; i < 512; i++)
+    for(Int_t i = 0; i < 512; i++) //Fy på deg Øystein
       {
 	fData[i] = data[i];
       }

@@ -9,6 +9,9 @@
 #include <TH1D.h>
 #include "AliHLTPHOSOnlineDisplayTH2D.h"
 #include "AliHLTPHOSConstants.h"
+
+//#include 
+
 //#include "AliHLTPHOSOnlineDisplay.h"
 
 //#define N_SAMPLES 70 //BAD, someone is going to pay for this
@@ -24,6 +27,7 @@ class HOMERReader;
 //class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSOnlineDisplay;
+class AliHLTPHOSSharedMemoryInterface;
 
 //      AliHLTPHOSRcuCellEnergyDataStruct.h 
 class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
@@ -67,7 +71,7 @@ class AliHLTPHOSOnlineDisplayEventTab : public AliHLTPHOSOnlineDisplayTab
 
   //  AliHLTPHOSOnlineDisplay. 
   AliHLTPHOSOnlineDisplay *fOnlineDisplayPtr;
-    
+  AliHLTPHOSSharedMemoryInterface *fShmPtr;   
 };
 
 

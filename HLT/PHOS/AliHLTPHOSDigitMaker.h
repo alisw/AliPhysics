@@ -49,6 +49,7 @@ class AliHLTPHOSValidCellDataStruct;
 class AliHLTPHOSRcuCellEnergyDataStruct;
 class AliHLTPHOSDigitContainerDataStruct;
 class AliHLTPHOSDigitDataStruct;
+class AliHLTPHOSSharedMemoryInterface; // added by PTH
        
 using namespace PhosHLTConst;
 
@@ -126,7 +127,7 @@ private:
 
   /** Threshold for making digit ( zero suppression threshold) */
   Float_t fDigitThreshold; 
-
+  AliHLTPHOSSharedMemoryInterface *fShmPtr; //added by PTH
   ClassDef(AliHLTPHOSDigitMaker, 1); 
 };
 

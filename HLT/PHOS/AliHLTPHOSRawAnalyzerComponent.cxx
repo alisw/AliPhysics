@@ -113,16 +113,15 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 					 AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks )
 {
   //comment
-  UInt_t offset           = 0; 
-  UInt_t mysize           = 0;
-  UInt_t tSize            = 0;
-  Float_t baseline = 0;
+  UInt_t offset            = 0; 
+  UInt_t mysize            = 0;
+  UInt_t tSize             = 0;
+  Float_t baseline         = 0;
   AliHLTUInt8_t* outBPtr;
   outBPtr = outputPtr;
   const AliHLTComponentBlockData* iter = NULL; 
   unsigned long ndx;
-
-  //  fDebugCnt++;
+  Int_t *rawDataBufferPos = (Int_t *)outputPtr; 
 
   for( ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -131,19 +130,16 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       mysize = 0;
       offset = tSize;
       Int_t crazyness = 0;
-
+      mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
+ 
       if ( iter->fDataType != AliHLTPHOSDefinitions::fgkDDLPackedRawDataType )
 	{
 	  continue; 
 	}
- 
-      
       if( fPhosEventCount%100 == 0)
 	{
 	  cout << "event count = "<< fPhosEventCount <<endl;
-	  
 	} 
-
     
       fDecoderPtr->SetMemory(reinterpret_cast<UChar_t*>( iter->fPtr ), iter->fSize);
       fDecoderPtr->Decode();
@@ -151,7 +147,8 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
       fOutPtr->fRcuX = fRcuX;
       fOutPtr->fRcuZ = fRcuZ;
       fOutPtr->fModuleID =fModuleID;
-      
+      rawDataBufferPos += (mysize)/sizeof(Int_t); 
+
       while( fDecoderPtr->NextChannel(fAltroDataPtr) == true )
 	{
 	  if(fAltroDataPtr->GetDataSize() != (fNTotalSamples +2))
@@ -159,47 +156,45 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	      cout << "Error, fDataSize = " << fAltroDataPtr->GetDataSize() << endl;
 	      continue;
 	    }
-
 	  else
 	    {
 	      //	       cout << "Info, fDataSize = " << fAltroDataPtr->GetDataSize() << endl;
 	    }
 
 	  crazyness = fSanityInspectorPtr->CheckInsanity(fAltroDataPtr->GetData(), fAltroDataPtr->GetDataSize() - 2);
-
 	  fAnalyzerPtr->SetData(fAltroDataPtr->GetData());  
 	  fAnalyzerPtr->Evaluate(0, fAltroDataPtr->GetDataSize() -2);  
+
 	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->GetHadd()].zRow;
 	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->GetHadd()].xCol; 
 	  fOutPtr->fValidData[tmpChannelCnt].fGain  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->GetHadd()].gain; 
-
 
 	  if(fUseBaselineSubtraction)
 	    {
 	      baseline = fBaselines[fOutPtr->fValidData[tmpChannelCnt].fX][fOutPtr->fValidData[tmpChannelCnt].fZ][ fOutPtr->fValidData[tmpChannelCnt].fGain];
 	    }
 
-	  
 	  fOutPtr->fValidData[tmpChannelCnt].fEnergy  = (float)fAnalyzerPtr->GetEnergy() - baseline;
-
-
 	  fOutPtr->fValidData[tmpChannelCnt].fTime    = (float)fAnalyzerPtr->GetTiming();
-
-
 	  fOutPtr->fValidData[tmpChannelCnt].fCrazyness = (int)crazyness;
-
+	  fOutPtr->fValidData[tmpChannelCnt].fNSamples = fNTotalSamples;
+	  fOutPtr->fValidData[tmpChannelCnt].fData = rawDataBufferPos;
 	  const UInt_t *tmpData =  fAltroDataPtr->GetData();
 
 	  for(Int_t sample = 0; sample < fNTotalSamples; sample++)
 	    {
 	      (fOutPtr->fValidData[tmpChannelCnt].fData)[sample] = tmpData[sample] - (int)baseline;
 	    }
-	  
+
+	  UInt_t tmpSize =  sizeof(Int_t)*(fOutPtr->fValidData[tmpChannelCnt].fNSamples);
+	  mysize += sizeof(Int_t)*(fOutPtr->fValidData[tmpChannelCnt].fNSamples);
+	  mysize += tmpSize;
+	  rawDataBufferPos += tmpSize/sizeof(Int_t);
 	  tmpChannelCnt ++;
 	}
-
-      fOutPtr->fCnt =  tmpChannelCnt;
-      mysize += sizeof(AliHLTPHOSRcuCellEnergyDataStruct);
+      
+      fOutPtr->fCnt  =  tmpChannelCnt;
+      fOutPtr->fSize = mysize;
 
       AliHLTComponentBlockData bd;
       FillBlockData( bd );
@@ -225,12 +220,11 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	
     }
 
-  
   fPhosEventCount++; 
 
   if(fPrintInfo == kTRUE)
     {
-     if(fPhosEventCount%fPrintInfoFrequncy == 0)
+      if(fPhosEventCount%fPrintInfoFrequncy == 0)
       	{
 	  cout <<"Analyzing event " <<  fPhosEventCount  << "for Equippment " << fkEquippmentID << endl; 
 	}  
@@ -238,6 +232,7 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 
   return 0;
 }//end DoEvent
+
 
 
 int
@@ -261,7 +256,6 @@ AliHLTPHOSRawAnalyzerComponent::DoInit( int argc, const char** argv )
 	  SetBaselines(argv[i+1]);
 	}
     }
- 
 
   if(fIsSetEquippmentID == kFALSE)
     {
@@ -312,6 +306,7 @@ AliHLTPHOSRawAnalyzerComponent::ResetDataPtr(int startindex, int sampleCnt)
       fTmpChannelData[i] = 0;
     }
 }
+
 
 void 
 AliHLTPHOSRawAnalyzerComponent::SetBaselines(const char* file)

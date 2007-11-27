@@ -71,6 +71,10 @@ public:
   AliHLTPHOSClusterizer & operator = (const AliHLTPHOSClusterizer &) {return *this;}
   */
 
+  /** Set digit container */
+  void SetDigitContainer(AliHLTPHOSDigitContainerDataStruct* digitContainerPtr)
+  { fDigitContainerPtr = digitContainerPtr; }
+
   /** Set rec point container */
   void SetRecPointContainer(AliHLTPHOSRecPointContainerStruct *RecPointContainerPtr)
   { fRecPointContainerPtr = RecPointContainerPtr; }

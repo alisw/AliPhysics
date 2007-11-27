@@ -7,12 +7,11 @@
 
 class AliHLTPHOSRawAnalyzer;
 class AliHLTPHOSRcuCellEnergyDataStruct;
-//class AliHLTPHOSRcuChannelDataStruct;
 class AliHLTPHOSMapper;
 class AliHLTPHOSSanityInspector;
-class  AliAltroDecoder;      // decoder for altro payload
-class  AliAltroData;         // container for altro payload
-class  AliAltroBunch;        // container for altro bunches
+class AliAltroDecoder;      // decoder for altro payload
+class AliAltroData;         // container for altro payload
+class AliAltroBunch;        // container for altro bunches
 
 
 class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
@@ -30,12 +29,12 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
  protected:
   AliHLTPHOSRawAnalyzer *fAnalyzerPtr;  /**<Pointer to an analyzer object used for raw data anlysis*/ 
 
- private:
+  using AliHLTPHOSRcuProcessor::DoEvent;
   virtual int DoEvent( const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks, 
 		     AliHLTComponentTriggerData& trigData, AliHLTUInt8_t* outputPtr, 
 		     AliHLTUInt32_t& size, vector<AliHLTComponentBlockData>& outputBlocks ); 
-  using AliHLTPHOSRcuProcessor::DoEvent;
 
+ private:
   void Reset();
   void ResetDataPtr(int startindex = 0, int sampleCnt = 0);
   void SetBaselines(const char* baselineFile);
@@ -48,7 +47,7 @@ class AliHLTPHOSRawAnalyzerComponent: public AliHLTPHOSRcuProcessor
   AliHLTPHOSSanityInspector *fSanityInspectorPtr; //comment
   Bool_t fUseBaselineSubtraction; //comment
   Float_t fBaselines[N_XCOLUMNS_RCU][N_ZROWS_RCU][N_GAINS]; //comment
-  //  int fDebugCnt; //comment
+
   AliAltroDecoder *fDecoderPtr;           // decoder for altro payload
   AliAltroData    *fAltroDataPtr;         // container for altro payload
   AliAltroBunch   *fAltroBunchPtr;        // container for altro bunches

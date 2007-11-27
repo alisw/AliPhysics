@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSVALIDCELLDEBUGDATASTRUCT_H
-#define ALIHLTPHOSVALIDCELLDEBUGDATASTRUCT_H 
+#ifndef ALIHLTPHOSVALIDCELLDATASTRUCT_H
+#define ALIHLTPHOSVALIDCELLDATASTRUCT_H 
 
 /***************************************************************************
  * Copyright(c) 2007, ALICE Experiment at CERN, All rights reserved.       *
@@ -20,7 +20,7 @@
 #include "Rtypes.h"
 
 //#define N_DATA_SAMPLES 70
-#define N_DATA_SAMPLES 510
+//#define N_DATA_SAMPLES 510
 
 struct AliHLTPHOSValidCellDataStruct
 {
@@ -30,7 +30,9 @@ struct AliHLTPHOSValidCellDataStruct
   Float_t fEnergy;
   Float_t fTime;
   Int_t fCrazyness;
-  Int_t fData[N_DATA_SAMPLES];
+  Int_t fNSamples;
+  Int_t *fData;
+  //  Int_t fData[N_DATA_SAMPLES];
 };
 
 

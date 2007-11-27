@@ -24,12 +24,15 @@ using namespace PhosHLTConst;
 
 struct AliHLTPHOSRcuCellEnergyDataStruct
 {
+  //  Int_t fShmAddress;
+  Int_t fSize;         //size in charcters
   Int_t fModuleID;
   Int_t fRcuX;
   Int_t fRcuZ;
   Int_t fCnt;
+  Int_t fAlgorithm;
+  Int_t fInfo;
   AliHLTPHOSValidCellDataStruct fValidData[N_ZROWS_RCU*N_XCOLUMNS_RCU*N_GAINS];
-  
 };
 
 #endif

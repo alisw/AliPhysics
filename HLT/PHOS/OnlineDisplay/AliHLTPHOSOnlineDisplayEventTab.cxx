@@ -9,8 +9,9 @@
 #include "HOMERWriter.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
 //#include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-#include   "AliHLTPHOSRcuCellEnergyDataStruct.h" 
+#include "AliHLTPHOSRcuCellEnergyDataStruct.h" 
 #include "AliHLTPHOSOnlineDisplay.h"
+#include "AliHLTPHOSSharedMemoryInterface.h"
 
 using namespace std;
 
@@ -24,6 +25,8 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab()
 AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlineDisplay *onlineDisplayPtr, TGTab  *tabPtr, 
 								 HOMERReader *homerSyncPtr, HOMERReader *homerPtrs[MAX_HOSTS], int nHosts) :  AliHLTPHOSOnlineDisplayTab()
 {
+  fShmPtr = new AliHLTPHOSSharedMemoryInterface();
+
   fOnlineDisplayPtr =  onlineDisplayPtr;
 
   for(int mod =0; mod <N_MODULES; mod ++)
@@ -59,6 +62,7 @@ AliHLTPHOSOnlineDisplayEventTab::AliHLTPHOSOnlineDisplayEventTab(AliHLTPHOSOnlin
   for(int i=0; i<nHosts; i++)
     {
       fgHomerReadersPtr[i] = homerPtrs[i] ;
+
     }
 
   fgCanvasHGPtr = 0;
@@ -116,42 +120,95 @@ AliHLTPHOSOnlineDisplayEventTab::GetNextEvent()
 
 void 
 AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
-{
-  cout << "Reading block data" << endl;
+{  
+  AliHLTPHOSValidCellDataStruct *currentChannel =0;
+  
+
+  cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockDat, Reading block data" << endl;
 
   unsigned long blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF );
 
   while ( blk != ~(unsigned long)0 ) 
     {
       Int_t moduleID;
-      //      const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk );  
-      const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+      //     const AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (const AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+      AliHLTPHOSRcuCellEnergyDataStruct* cellEnergiesPtr = (AliHLTPHOSRcuCellEnergyDataStruct*)homeReaderPtr->GetBlockData( blk ); 
+      
 
       moduleID = cellEnergiesPtr->fModuleID ;
-
-      cout <<"AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
-
-      Int_t tmpCount = cellEnergiesPtr->fCnt;
+      cout << "AliHLTPHOSOnlineDisplayEventTab::ReadBlockData,  fModuleID =" <<moduleID << endl; 
+      //     Int_t offset = ((Int_t)cellEnergiesPtr->fShmAddress  - (Int_t)cellEnergiesPtr)/sizeof(Int_t);
+      //    Int_t tmpCount = cellEnergiesPtr->fCnt;
       Int_t tmpZ;
       Int_t tmpX;
       Int_t tmpGain;
+      int cnt = 0;
+
+      cout << "the sizeof AliHLTPHOSRcuCellEnergyDataStruc=" << sizeof(AliHLTPHOSRcuCellEnergyDataStruct)  << endl;
+
+      fShmPtr->SetMemory(cellEnergiesPtr);
+      currentChannel = fShmPtr->NextChannel();
+
+      while(currentChannel != 0)
+	{
+	  cnt ++;
+	  tmpZ = currentChannel->fZ;
+	  tmpX = currentChannel->fX;
+	  tmpGain =  currentChannel->fGain;
 	  
+	  if(cnt < 20)
+	    {
+	      cout << "the addresss of fData is " << (void *)currentChannel->fData  << endl;
+	    }
+	  
+	  if(
+	     tmpGain == HIGH_GAIN)
+	    {
+	      fgLegoPlotHGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,  
+				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ, currentChannel->fEnergy);
+	    
+
+	      for(int j= 0; j< fNTotalSamples; j++)
+		{
+		  //		  printf("%d\t", currentChannel->fData[j]);
+		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][HIGH_GAIN][j] = currentChannel->fData[j];  
+		}
+	    }
+	  
+	  else if(tmpGain == LOW_GAIN)
+	    {
+	      fgLegoPlotLGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,
+				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ,    currentChannel->fEnergy);
+	      for(int j= 0; j< fNTotalSamples; j++)
+		{
+		  
+		  //		  printf("%d\t", currentChannel->fData[j]);
+		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][LOW_GAIN][j] = currentChannel->fData[j];   
+		}
+	    }
+      
+	  //	  printf("\n");
+	  
+	  currentChannel = fShmPtr->NextChannel();
+	}
+
+
+      /*  
       for(int i= 0; i <= tmpCount; i++)
 	{
 	  tmpZ = cellEnergiesPtr->fValidData[i].fZ;
 	  tmpX = cellEnergiesPtr->fValidData[i].fX;
 	  tmpGain =  cellEnergiesPtr->fValidData[i].fGain;
-	  
+
 	  if(tmpGain == HIGH_GAIN)
 	    {
 	      fgLegoPlotHGPtr->Fill(moduleID*N_XCOLUMNS_MOD + tmpX +  N_XCOLUMNS_RCU*cellEnergiesPtr->fRcuX,  
 				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ, cellEnergiesPtr->fValidData[i].fEnergy);
+
 	      for(int j= 0; j< fNTotalSamples; j++)
 		{
-		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][HIGH_GAIN][j] = cellEnergiesPtr->fValidData[i].fData[j];  
-		  //	  fChannelData[moduleId][]
+		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][HIGH_GAIN][j] = cellEnergiesPtr->fValidData[i].fData[j-offset];  
 		}
-
 	    }
 	  
 	  else if(tmpGain == LOW_GAIN)
@@ -160,11 +217,13 @@ AliHLTPHOSOnlineDisplayEventTab::ReadBlockData(HOMERReader *homeReaderPtr)
 				    tmpZ + N_ZROWS_RCU*cellEnergiesPtr->fRcuZ,    cellEnergiesPtr->fValidData[i].fEnergy);
 	      for(int j= 0; j< fNTotalSamples; j++)
 		{
-		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][LOW_GAIN][j] = cellEnergiesPtr->fValidData[i].fData[j];    
+		  fChannelData[moduleID][cellEnergiesPtr->fRcuX][cellEnergiesPtr->fRcuZ][tmpX][tmpZ][LOW_GAIN][j] = cellEnergiesPtr->fValidData[i].fData[j -offset];   
 		}
 	    }
 	}
-      
+      */
+
+
       blk = homeReaderPtr->FindBlockNdx("RENELLEC","SOHP", 0xFFFFFFFF, blk+1);
     }
 }

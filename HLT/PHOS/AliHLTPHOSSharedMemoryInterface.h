@@ -1,5 +1,5 @@
-#ifndef ALIHLTPHOSRCUCOMPRESSEDRAWDATA_H
-#define ALIHLTPHOSRCUCOMPRESSEDRAWDATA_H
+#ifndef ALIHLTPHOSSHAREDMEMORYINTERFACE_H
+#define ALIHLTPHOSSHAREDMEMORYINTERFACE_H
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -19,15 +19,31 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "Rtypes.h"
 
-struct  AliHLTPHOSRcuCompressedRawData
+class AliHLTPHOSRcuCellEnergyDataStruct;
+class AliHLTPHOSValidCellDataStruct;
+
+class  AliHLTPHOSSharedMemoryInterface
 {
-  AliHLTPHOSRcuCompressedRawData();
-  virtual ~AliHLTPHOSRcuCompressedRawData();
-  int fTotalSize;
-  int *fBuffer;
+ public:
+  AliHLTPHOSSharedMemoryInterface();
+  virtual ~AliHLTPHOSSharedMemoryInterface();
+  AliHLTPHOSValidCellDataStruct*   NextChannel();
+  void SetMemory(AliHLTPHOSRcuCellEnergyDataStruct *rcuCeelEnergyPtr);
+  void Reset();
 
-
+ private:
+  void PingPongPointer();
+  AliHLTPHOSValidCellDataStruct *fCurrentChannel;
+  AliHLTPHOSRcuCellEnergyDataStruct *fCellEnergiesPtr ;
+  bool fIsSetMemory;
+  int fMaxCnt;
+  int fCurrentCnt;
+  Int_t fCharDataOffset;
+  char  *fCharPtr;
+  Int_t *fIntPtr;
+  //  Int_t *rawDataBufferPos = (Int_t *)outputPtr; 
 };
 
 #endif

@@ -4,17 +4,12 @@
 /* Copyright(c) 2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice  */ 
 
-
 #include "AliHLTPHOSRcuProcessor.h"
-//#include "AliHLTPHOSDefinitions.h"
-//#include "AliHLTPHOSCommonDefs.h"
-//#include "AliHLTPHOSRcuCellAccumulatedEnergyDataStruct.h"
-//#include "Rtypes.h"
-
 
 
 class AliHLTPHOSRcuHistogramProducer;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
+class AliHLTPHOSSharedMemoryInterface;
 
 class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
 {
@@ -37,19 +32,11 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
 
  private:
   int fHistoWriteFrequency;
-
-  /*
-  AliHLTPHOSRcuHistogramProducerComponent(const AliHLTPHOSRcuHistogramProducerComponent & );
-  AliHLTPHOSRcuHistogramProducerComponent & operator = (const AliHLTPHOSRcuHistogramProducerComponent &)
-   {
-      return *this;
-   };
-  */
-
   AliHLTPHOSRcuHistogramProducer* fRcuHistoProducerPtr;   /**<Pointer to a phos histoproducer object*/
   AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr; /**<Pointer to outputbuffer to write results from the component into shared memory*/
   //  static const AliHLTComponentDataType fgkIinputDataTypes[];
   //  static const AliHLTComponentDataType fgkOutputDataType;   /**<List of  datatypes that can be given to this component*/
+  AliHLTPHOSSharedMemoryInterface *fShmPtr;
 };
 
 #endif
