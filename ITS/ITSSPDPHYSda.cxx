@@ -1,12 +1,12 @@
 /*
-- "Contact:" - henrik.tydesjo@cern.ch
-- "Link:" - 
-- "Run Type:" - PHYSICS
-- "DA Type:" - MON
-- "Number of events needed:"
-- "Input Files:" - daq db config files: spd_physics_params ,  previous dead ref: ./calibResults/DeadReferenceTmp/* , previous dead lists: ./calibResults/DeadToFXS/*
-- "Output Files:" - Ref Data: ./calibResults/NoisyReference/* ,  Ref Data: ./calibResults/DeadReference/* ,  noisy lists: ./calibResults/NoisyToFXS/* ,  persistent files: ./calibResults/DeadReferenceTmp/*,./calibResults/DeadToFXS/*
-- "Trigger types used:" PHYSICS
+- Contact: - henrik.tydesjo@cern.ch
+- Link: - http://tydes.home.cern.ch/tydes/doc/CalibrationOverview/CalibrationAlgorithms/
+- Run Type: - PHYSICS
+- DA Type: - MON
+- Number of events needed:
+- Input Files: - daq db config files: spd_physics_params ,  previous dead ref: ./calibResults/DeadReferenceTmp/* , previous dead lists: ./calibResults/DeadToFXS/*
+- Output Files: - Ref Data: ./calibResults/NoisyReference/* ,  Ref Data: ./calibResults/DeadReference/* ,  noisy lists: ./calibResults/NoisyToFXS/* ,  persistent files: ./calibResults/DeadReferenceTmp/*,./calibResults/DeadToFXS/*
+- Trigger types used: PHYSICS
 */
 
 ////////////////////////////////////////////////////////////////////////////////
