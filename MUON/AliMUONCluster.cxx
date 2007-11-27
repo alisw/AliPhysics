@@ -368,7 +368,21 @@ Float_t
 AliMUONCluster::Charge() const
 {
   /// Return the average charge over both cathodes
-  return (Charge(0)+Charge(1))/2.0;
+  
+  if ( Multiplicity(0) && Multiplicity(1) )
+  {
+    return (Charge(0)+Charge(1))/2.0;
+  }
+  else if ( Multiplicity(0) ) 
+  {
+    return Charge(0);
+  }
+  else if ( Multiplicity(1) ) 
+  {
+    return Charge(1);
+  }
+  AliError("Should not be here ?!");
+  return -1.0;
 }
 
 //_____________________________________________________________________________
