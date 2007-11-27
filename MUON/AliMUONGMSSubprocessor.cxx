@@ -45,16 +45,17 @@ const TString  AliMUONGMSSubprocessor::fgkMatrixArrayName = "GMSarray";
 //______________________________________________________________________________
 AliMUONGMSSubprocessor::AliMUONGMSSubprocessor(AliMUONPreprocessor* master) 
   : AliMUONVSubprocessor(master, "GMS", "Upload GMS matrices to OCDB"),
-    fTransformer()
+    fTransformer(0)
 {
 /// Constructor
-  fTransformer.CreateModules();
 }
 
 //______________________________________________________________________________
 AliMUONGMSSubprocessor::~AliMUONGMSSubprocessor()
 {
 /// Destructor
+
+  delete fTransformer;
 }
 
 
@@ -62,6 +63,18 @@ AliMUONGMSSubprocessor::~AliMUONGMSSubprocessor()
 // private methods
 //
 
+
+//______________________________________________________________________________
+void  AliMUONGMSSubprocessor::Initialize(Int_t /*run*/, 
+                                         UInt_t /*startTime*/, UInt_t /*endTime*/)
+{
+/// Instantiate geometry transformer
+
+  if ( ! fTransformer ) {
+    fTransformer = new AliMUONGeometryTransformer();
+    fTransformer->CreateModules();
+  }  
+}                                           
 
 //______________________________________________________________________________
 UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
@@ -87,9 +100,9 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   // Convert matrices into Alice alignment objects
   for (Int_t i=0; i<array->GetEntriesFast(); i++ ) {
     TGeoHMatrix* matrix = (TGeoHMatrix*)array->At(i);
-    fTransformer.AddMisAlignModule(matrix->GetUniqueID(), *matrix);
+    fTransformer->AddMisAlignModule(matrix->GetUniqueID(), *matrix);
   }  
-  TObject* data = const_cast< TClonesArray*>(fTransformer.GetMisAlignmentData());
+  TObject* data = const_cast< TClonesArray*>(fTransformer->GetMisAlignmentData());
   
   //Now we have to store the final CDB file
   Master()->Log("Storing GMS");
@@ -101,7 +114,7 @@ UInt_t AliMUONGMSSubprocessor::ProcessFile(const TString& fileName)
   Bool_t result = Master()->Store("SHUTTLE", "GMS", data, &metaData, 0, 0);
 
   // Clear MisAlignArray in transformer
-  fTransformer.ClearMisAlignmentData();
+  fTransformer->ClearMisAlignmentData();
 
   return (result!=kTRUE);
 }  
