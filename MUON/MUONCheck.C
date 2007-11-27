@@ -23,6 +23,8 @@
 
 #include "AliMUONCheck.h"
 
+#include "AliCDBManager.h"
+
 #include <TSystem.h>
 
 #endif
@@ -33,6 +35,10 @@ void MUONCheck(Int_t firstEvent, Int_t lastEvent,
                TString esdsFileName="$ALICE_ROOT/MUON/test_out/AliESDs.root",
                TString outDir="$ALICE_ROOT/MUON/test_out/DataQualityControl")
 {
+   // Set default CDB storage
+   AliCDBManager* man = AliCDBManager::Instance();
+   man->SetDefaultStorage("local://$ALICE_ROOT");
+
    gSystem->Load("libMUONevaluation");
 
    AliMUONCheck* check
