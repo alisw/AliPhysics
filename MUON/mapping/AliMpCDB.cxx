@@ -67,8 +67,8 @@ Bool_t AliMpCDB::LoadMpSegmentation(Bool_t warn)
 
   Int_t run = cdbManager->GetRun();
   if ( run < 0 ) {
-    run = 0;
-    cdbManager->SetRun(run);
+    AliErrorClassStream() << "Cannot get run number from CDB manager." << endl; 
+    return kFALSE;
   }  
 
   AliCDBEntry* cdbEntry = cdbManager->Get("MUON/Calib/Mapping", run);
@@ -104,13 +104,15 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
   // Load DDL store
   //
   AliCDBManager* cdbManager = AliCDBManager::Instance();
-  if ( ! cdbManager->GetDefaultStorage() )
-    cdbManager->SetDefaultStorage("local://$ALICE_ROOT");
+  if ( ! cdbManager->GetDefaultStorage() ) {
+    AliErrorClassStream() << "CDB default storage has not been set." << endl; 
+    return kFALSE;
+  }  
 
   Int_t run = cdbManager->GetRun();
   if ( run < 0 ) {
-    run = 0;
-    cdbManager->SetRun(run);
+    AliErrorClassStream() << "Cannot get run number from CDB manager." << endl; 
+    return kFALSE;
   }  
 
   AliCDBEntry* cdbEntry =  cdbManager->Get("MUON/Calib/DDLStore", run);
