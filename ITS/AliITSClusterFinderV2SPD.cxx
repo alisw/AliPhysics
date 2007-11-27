@@ -16,14 +16,16 @@
 //            Implementation of the ITS clusterer V2 class                //
 //                                                                        //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch            //
+//          Unfolding switch from AliITSRecoParam: D. Elia, INFN Bari     //
 //                                                                        //
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 
 #include "AliITSClusterFinderV2SPD.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
 #include "AliITSDetTypeRec.h"
+#include "AliITSReconstructor.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSPD.h"
 #include <TClonesArray.h>
@@ -152,6 +154,13 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
     if((iModule <= fLastSPD1) &&idy<3) idy=3;
     if((iModule > fLastSPD1) &&idy<4) idy=4;
     Int_t idz=3;
+
+    // Switch the unfolding OFF/ON
+    if(!AliITSReconstructor::GetRecoParam()->GetUseUnfoldingInClusterFinderSPD()) {
+      idy=ymax-ymin+1;
+      idz=zmax-zmin+1;
+    }
+ 
     for(Int_t iiz=zmin; iiz<=zmax;iiz+=idz){
       for(Int_t iiy=ymin;iiy<=ymax;iiy+=idy){
 
@@ -294,8 +303,10 @@ void AliITSClusterFinderV2SPD::FindClustersSPD(TClonesArray *digits) {
      bins[index].SetMask(1);
   }
    
-  ClustersSPD(bins,digits,0,kMAXBIN,kNzBins,fModule,kFALSE); 
+  Int_t nClustersSPD = ClustersSPD(bins,digits,0,kMAXBIN,kNzBins,fModule,kFALSE); 
   delete [] bins;
+
+  Info("FindClustersSPD", "found clusters in ITS SPD: %d", nClustersSPD);
 }
 
 
