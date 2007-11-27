@@ -31,6 +31,11 @@ class AliMUONRecoParam : public TObject
   /// get the tracking mode
   Option_t* GetTrackingMode() const {return fTrackingMode.Data();}
   
+  /// switch on/off the combined cluster/track reconstruction
+  void      CombineClusterTrackReco(Bool_t flag) {fCombinedClusterTrackReco = flag;}
+  /// return kTRUE/kFALSE if the combined cluster/track reconstruction is on/off
+  Bool_t    CombineClusterTrackReco() const {return fCombinedClusterTrackReco;}
+  
   /// set the minimum value (GeV/c) of momentum in bending plane
   void     SetMinBendingMomentum(Double_t val) {fMinBendingMomentum = val;}
   /// return the minimum value (GeV/c) of momentum in bending plane
@@ -84,27 +89,27 @@ class AliMUONRecoParam : public TObject
   
   /// switch on/off the tracking of all the possible candidates (track only the best one if switched off)
   void     TrackAllTracks(Bool_t flag) {fTrackAllTracks = flag;} 
-  /// return kTRUE/kFALSE if the tracking of all the possible candidates is switch on/off
+  /// return kTRUE/kFALSE if the tracking of all the possible candidates is switched on/off
   Bool_t   TrackAllTracks() const {return fTrackAllTracks;}
   
   /// switch on/off the recovering of tracks being lost during reconstruction
   void     RecoverTracks(Bool_t flag) {fRecoverTracks = flag;} 
-  /// return kTRUE/kFALSE if the recovering of tracks being lost during reconstruction is switch on/off
+  /// return kTRUE/kFALSE if the recovering of tracks being lost during reconstruction is switched on/off
   Bool_t   RecoverTracks() const {return fRecoverTracks;}
   
   /// switch on/off the fast building of track candidates (assuming linear propagation between stations 4 and 5)
   void     MakeTrackCandidatesFast(Bool_t flag) {fMakeTrackCandidatesFast = flag;} 
-  /// return kTRUE/kFALSE if the fast building of track candidates is switch on/off
+  /// return kTRUE/kFALSE if the fast building of track candidates is switched on/off
   Bool_t   MakeTrackCandidatesFast() const {return fMakeTrackCandidatesFast;}
   
   /// switch on/off the completion of reconstructed track
   void     ComplementTracks(Bool_t flag) {fComplementTracks = flag;} 
-  /// return kTRUE/kFALSE if completion of the reconstructed track is switch on/off
+  /// return kTRUE/kFALSE if completion of the reconstructed track is switched on/off
   Bool_t   ComplementTracks() const {return fComplementTracks;}
   
   /// switch on/off the use of the smoother
   void     UseSmoother(Bool_t flag) {fUseSmoother = flag;} 
-  /// return kTRUE/kFALSE if the use of the smoother is switch on/off
+  /// return kTRUE/kFALSE if the use of the smoother is switched on/off
   Bool_t   UseSmoother() const {return fUseSmoother;}
   
   virtual void Print(Option_t *option = "") const;
@@ -135,6 +140,8 @@ class AliMUONRecoParam : public TObject
   Double32_t fSigmaCutForTrigger; ///< cut in sigma to apply on track during trigger hit pattern search
   
   Double32_t fMaxNormChi2MatchTrigger; ///< maximum normalized chi2 of tracking/trigger track matching
+  
+  Bool_t     fCombinedClusterTrackReco; ///< switch on/off the combined cluster/track reconstruction
   
   Bool_t     fTrackAllTracks; ///< kTRUE to track all the possible candidates; kFALSE to track only the best ones
   
