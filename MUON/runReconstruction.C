@@ -31,9 +31,9 @@
 
 void runReconstruction(int run, int seed, const char* input, const char* recoptions)
 { 
-  AliCDBManager::Instance()->SetRun(run);
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
+  AliCDBManager::Instance()->SetRun(run);
   
   gRandom->SetSeed(seed);
   
