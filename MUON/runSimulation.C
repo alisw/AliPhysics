@@ -24,15 +24,15 @@
 #include <TRandom.h>
 #endif
 
-void runSimulation(int run, int seed, int nevents, const char* config)
+void runSimulation(int seed, int nevents, const char* config)
 { 
 // Uncoment following lines to run simulation with local residual mis-alignment
 // (generated via MUONGenerateGeometryData.C macro)
 // AliCDBManager* man = AliCDBManager::Instance();
 // man->SetDefaultStorage("local://$ALICE_ROOT");
 // man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
+
   AliSimulation MuonSim(config);
-  MuonSim.SetRunNumber(run);
   MuonSim.SetSeed(seed);
   MuonSim.SetMakeTrigger("MUON");
   MuonSim.SetWriteRawData("MUON","raw.root",kTRUE);

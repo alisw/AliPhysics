@@ -29,11 +29,10 @@
 //#include <TObjectTable.h>
 #endif
 
-void runReconstruction(int run, int seed, const char* input, const char* recoptions)
+void runReconstruction(int seed, const char* input, const char* recoptions)
 { 
   AliCDBManager* man = AliCDBManager::Instance();
   man->SetDefaultStorage("local://$ALICE_ROOT");
-  AliCDBManager::Instance()->SetRun(run);
   
   gRandom->SetSeed(seed);
   
