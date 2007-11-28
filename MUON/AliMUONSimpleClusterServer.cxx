@@ -30,8 +30,10 @@
 #include "AliMpDEManager.h"
 #include "AliMpExMap.h"
 #include "AliMpSegmentation.h"
+#include "AliMpVPadIterator.h"
 #include "AliMpVSegmentation.h"
 #include "AliLog.h"
+#include <float.h>
 #include <Riostream.h>
 #include <TClonesArray.h>
 #include <TString.h>
@@ -92,11 +94,38 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder& cl
       
       if ( stationType == AliMp::kStation1 || stationType == AliMp::kStation2 ) 
       {
-        /// mind your steps : dimensions are full sizes for St12, but half-sizes
-        /// for St345...
+        Double_t xmin(FLT_MAX);
+        Double_t xmax(-FLT_MAX);
+        Double_t ymin(FLT_MAX);
+        Double_t ymax(-FLT_MAX);
         
-        xl = dx;
-        yl = dy;
+        for ( Int_t icathode = 0; icathode < 2; ++icathode ) 
+        {
+          const AliMpVSegmentation* cathode 
+            = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId,AliMp::GetCathodType(icathode));
+          
+          AliMpVPadIterator* it = cathode->CreateIterator();
+          
+          it->First();
+          
+          while ( !it->IsDone() ) 
+          {
+            AliMpPad pad = it->CurrentItem();
+            AliMpArea a(pad.Position(),pad.Dimensions());
+            xmin = TMath::Min(xmin,a.LeftBorder());
+            xmax = TMath::Max(xmax,a.RightBorder());
+            ymin = TMath::Min(ymin,a.DownBorder());
+            ymax = TMath::Max(ymax,a.UpBorder());
+            it->Next();
+          }
+          
+          delete it;
+        }
+        
+        xl = (xmin+xmax)/2.0;
+        yl = (ymin+ymax)/2.0;
+        dx = (xmax-xmin)/2.0;
+        dy = (ymax-ymin)/2.0;
         
         fTransformer.Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
       }
@@ -104,9 +133,9 @@ AliMUONSimpleClusterServer::AliMUONSimpleClusterServer(AliMUONVClusterFinder& cl
       {
         fTransformer.Local2Global(detElemId,xl,yl,zl,xg,yg,zg);
       }
-
+      
       fDEAreas->Add(detElemId,new AliMpArea(TVector2(xg,yg),TVector2(dx,dy)));
-
+     
       it.Next();
     }
 }
