@@ -39,6 +39,7 @@ class AliMpConstants : public TObject
   static Int_t    NofGeomModules();
   static Int_t    ManuMask(AliMp::PlaneType planeType);
   static Int_t    NofLocalBoards();
+  static Int_t    TotalNofLocalBoards();
   static Int_t    ManuNofChannels();
   static Int_t    LocalBoardNofChannels();
 
@@ -57,6 +58,7 @@ class AliMpConstants : public TObject
   static const Int_t     fgkNofGeomModules; ///< number of geometry modules
   static const Int_t     fgkNonBendingManuMask; ///< bit to set to indicate a manu located in non-bending plane
   static const Int_t     fgkNofLocalBoards;  ///< number of notified trigger local boards 
+  static const Int_t     fgkTotalNofLocalBoards; ///< total number of trigger local boards
   static const Int_t     fgkManuNofChannels; ///< max number of channels per manu
   static const Int_t     fgkLocalBoardNofChannels; ///< max number of channels per local trigger board
   
@@ -81,6 +83,8 @@ inline Int_t    AliMpConstants::NofTrackingChambers() { return fgkNofTrackingCha
 inline Int_t    AliMpConstants::NofGeomModules()  { return fgkNofGeomModules;}
                 /// Return number of trigger local boards
 inline Int_t    AliMpConstants::NofLocalBoards()  { return fgkNofLocalBoards;}
+               /// Return total number of trigger local boards
+inline Int_t    AliMpConstants::TotalNofLocalBoards()  { return fgkTotalNofLocalBoards;}
                 /// Max number of channels per manu
 inline Int_t    AliMpConstants::ManuNofChannels() { return fgkManuNofChannels; }
                 /// Max number of channels per local board
