@@ -20,7 +20,7 @@ AliMemoryWatcher.cxx \
 AliVertexer.cxx \
 AliV0vertexer.cxx AliCascadeVertexer.cxx\
 AliMC.cxx AliSimulation.cxx AliReconstruction.cxx AliVertexGenFile.cxx \
-AliReconstructor.cxx TTreeStream.cxx\
+AliReconstructor.cxx \
 AliGeomManager.cxx \
 AliAlignObj.cxx AliAlignObjParams.cxx AliAlignObjMatrix.cxx \
 AliTriggerInput.cxx \
