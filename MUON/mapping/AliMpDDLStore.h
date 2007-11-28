@@ -57,7 +57,7 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const;
     Int_t  GetNextDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const;
     Int_t  GetPreviousDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const;
-
+    
     Int_t  GetDDLfromBus(Int_t busPatchId) const;
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
     
@@ -72,7 +72,11 @@ class AliMpDDLStore : public  TObject {
     
     /// read Global trigger crate file
     static Bool_t ReadGlobalTrigger(AliMpGlobalCrate& crate, const Char_t* globalName = 0);
-       
+    
+    /// read local trigger crate file   
+    static Bool_t ReadRegionalTrigger(AliMpExMap& triggerCrates, AliMpExMap& localBoards, 
+                                      TObjArray& dlls, const Char_t* fileName = 0, Bool_t warn = true);
+    
     /// Get detection elt and Manu number from serial number
     AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
 
@@ -92,7 +96,6 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetBusPatchIndex(Int_t detElemId, Int_t manuId) const;
     Bool_t ReadDDLs();
     Bool_t ReadTriggerDDLs();
-    Bool_t ReadLocalTrigger();
     Bool_t SetManus();
     Bool_t SetPatchModules();
     Bool_t SetBusPatchLength();

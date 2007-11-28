@@ -41,7 +41,9 @@
 #include "AliMpSegmentation.h"
 #include "AliMpVSegmentation.h"
 #include "AliMpStringObjMap.h"
+
 #include "AliLog.h"
+
 
 #include <Riostream.h>
 #include <TList.h>
@@ -121,7 +123,7 @@ AliMpDDLStore::AliMpDDLStore()
     fLocalBoards.SetOwner(true);
     fLocalBoards.SetSize(242); // included non-identied board
 
-
+    
     // Load segmentation & DE store data
     if ( ! AliMpSegmentation::Instance(false) )
         AliMpSegmentation::ReadData(true);
@@ -494,26 +496,29 @@ Bool_t  AliMpDDLStore::ReadTriggerDDLs()
     /// create trigger DDL object and Global crate object
   
   if (!ReadGlobalTrigger(*fGlobalCrate)) return false;
-  if (!ReadLocalTrigger()) return false;
+  if (!ReadRegionalTrigger(fTriggerCrates, fLocalBoards, fDDLs)) return false;
   
   return true;
 }
 
 //______________________________________________________________________________
-Bool_t  AliMpDDLStore::ReadLocalTrigger() 
+Bool_t  AliMpDDLStore::ReadRegionalTrigger(AliMpExMap& triggerCrates, AliMpExMap& localBoards, 
+                                          TObjArray& ddls, const Char_t* fileName, Bool_t warn) 
 {
     /// create trigger DDL object ddl<->Crate<->local board
-  
-    ReadGlobalTrigger(*fGlobalCrate);
     
     Int_t iDDL = -1;
-
-    TString infile = AliMpFiles::LocalTriggerBoardMapping();
-
+    TString infile;
+    
+    if (fileName == 0)
+      infile = AliMpFiles::LocalTriggerBoardMapping();
+    else
+      infile = fileName;
+    
     ifstream in(infile, ios::in);
 
     if (!in) {
-        AliError(Form("Local Trigger Board Mapping File %s not found", infile.Data()));
+        printf("Local Trigger Board Mapping File %s not found", infile.Data());
         return kFALSE;
     }
 
@@ -530,102 +535,114 @@ Bool_t  AliMpDDLStore::ReadLocalTrigger()
    
     while (!in.eof())
     {
-    in.getline(line,80);
-    if (!strlen(line)) break;
-    TString crateName(AliMpHelper::Normalize(line));
+      in.getline(line,80);
+      if (!strlen(line)) break;
+      TString crateName(AliMpHelper::Normalize(line));
       
-    in.getline(line,80);    
-    sscanf(line,"%hx",&crateId);
-
-    in.getline(line,80);
-    sscanf(line,"%d",&mode);
-    
-    in.getline(line,80);
-    sscanf(line,"%d",&coincidence);
-    
-    in.getline(line,80);
-    sscanf(line,"%hx",&mask);
-    
-    // determine ddl number vs crate side
-    if (crateName.Contains("R"))
-      iDDL = fgkNofDDLs; // starts where tracker ends
-    else
-      iDDL = fgkNofDDLs + 1;
-
-    AliMpDDL* ddl = GetDDL(iDDL, false);
-    if ( !ddl) {
-      ddl = new AliMpDDL(iDDL);
-      fDDLs.AddAt(ddl, iDDL);
-    }
-    if (!GetTriggerCrate(crateName.Data(), false)) {
-      crate = new AliMpTriggerCrate(crateName.Data(), crateId, mask, mode, coincidence);
-      crate->SetDdlId(iDDL);
-      fTriggerCrates.Add(crateName.Data(), crate);
-    }
-    
-    // add trigger crate number for given ddl if not present
-    if ( !ddl->HasTriggerCrateId(crateId) )
-      ddl->AddTriggerCrate(crateId);
-    
-    
-    Char_t localBoardName[20];
-    Int_t slot;
-    UInt_t switches;
-    
-    for ( Int_t i = 0; i < AliMpConstants::LocalBoardNofChannels(); ++i ) 
-    {
-      if ( (mask >> i ) & 0x1 )
-      {
-        in.getline(line,80);
-        sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
-        board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
-        board->SetSwitch(switches);
-        board->SetCrate(crateName);
-        
-        if (localBoardId > AliMpConstants::NofLocalBoards())
-          board->SetNotified(false); // copy cards
-        
-        crate->AddLocalBoard(localBoardId);
-        
-        list.Reset();
-        AliMpDDL* ddl = GetDDL(iDDL, true);
+      in.getline(line,80);    
+      sscanf(line,"%hx",&crateId);
   
-        // add  DE for local board and DDL
-        in.getline(line,80);
-        TString tmp(AliMpHelper::Normalize(line));
-        AliMpHelper::DecodeName(tmp,' ',list);
+      in.getline(line,80);
+      sscanf(line,"%d",&mode);
+      
+      in.getline(line,80);
+      sscanf(line,"%d",&coincidence);
+      
+      in.getline(line,80);
+      sscanf(line,"%hx",&mask);
+      
+      
+      // determine ddl number vs crate side
+      if (crateName.Contains("R"))
+        iDDL = fgkNofDDLs; // starts where tracker ends
+      else
+        iDDL = fgkNofDDLs + 1;
   
-        for (Int_t i = 0; i < list.GetSize(); ++i) {
-  
-          if (list[i]) { // skip copy card
-            AliMpDetElement* de = AliMpDEManager::GetDetElement(list[i]);
-            if (de->GetDdlId() == -1)
-              de->SetDdlId(iDDL);
-          }
-          board->AddDE(list[i]);
-          if(!ddl->HasDEId(list[i]))
-            ddl->AddDE(list[i]);
-        }
-        
-        // set copy number and transverse connector
-        in.getline(line,80);
-        tmp = AliMpHelper::Normalize(line);
-        AliMpHelper::DecodeName(tmp,' ',list);
-  
-        board->SetInputXfrom(list[0]);
-        board->SetInputXto(list[1]);
-        
-        board->SetInputYfrom(list[2]);
-        board->SetInputYto(list[3]);
-        
-        board->SetTC(list[4]);
-        
-        // add local board into map
-        fLocalBoards.Add(board->GetId(), board);
+      AliMpDDL* ddl = (AliMpDDL*)ddls.At(iDDL);
+      if ( !ddl) {
+        ddl = new AliMpDDL(iDDL);
+        ddls.AddAt(ddl, iDDL);
       }
+      
+      crate = (AliMpTriggerCrate*)triggerCrates.GetValue(crateName.Data());
+      if (!crate) 
+      {
+        crate = new AliMpTriggerCrate(crateName.Data(), crateId, mask, mode, coincidence);
+        crate->SetDdlId(iDDL);
+        triggerCrates.Add(crateName.Data(), crate);
+      }
+      
+      
+      // add trigger crate number for given ddl if not present
+      if ( !ddl->HasTriggerCrateId(crateId) )
+        ddl->AddTriggerCrate(crateId);
+      
+      
+      Char_t localBoardName[20];
+      Int_t slot;
+      UInt_t switches;
+      
+      for ( Int_t i = 0; i < AliMpConstants::LocalBoardNofChannels(); ++i ) 
+      {
+        if ( (mask >> i ) & 0x1 )
+        {
+          in.getline(line,80);
+          sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
+          board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
+          board->SetSwitch(switches);
+          board->SetCrate(crateName);
+          
+          if (localBoardId > AliMpConstants::NofLocalBoards())
+            board->SetNotified(false); // copy cards
+          
+          crate->AddLocalBoard(localBoardId);
+          
+          list.Reset();
+          AliMpDDL* ddl = (AliMpDDL*)ddls.At(iDDL);
+          if (!ddl)
+            cout << "DDL with Id = " << iDDL << " not defined." << endl;
+          
+          // add  DE for local board and DDL
+          in.getline(line,80);
+          TString tmp(AliMpHelper::Normalize(line));
+          AliMpHelper::DecodeName(tmp,' ',list);
+    
+          for (Int_t i = 0; i < list.GetSize(); ++i) {
+    
+            if (list[i]) 
+            { // skip copy card
+              if (AliMpDEStore::Instance(warn)) 
+              {
+                AliMpDetElement* de = AliMpDEManager::GetDetElement(list[i]);
+                if (de->GetDdlId() == -1)
+                  de->SetDdlId(iDDL);
+                
+                if(!ddl->HasDEId(list[i]))
+                  ddl->AddDE(list[i]);
+              }
+            }
+            board->AddDE(list[i]);
+          }
+          
+          // set copy number and transverse connector
+          in.getline(line,80);
+          tmp = AliMpHelper::Normalize(line);
+          AliMpHelper::DecodeName(tmp,' ',list);
+    
+          board->SetInputXfrom(list[0]);
+          board->SetInputXto(list[1]);
+          
+          board->SetInputYfrom(list[2]);
+          board->SetInputYto(list[3]);
+          
+          board->SetTC(list[4]);
+          
+          // add local board into map
+          localBoards.Add(board->GetId(), board);
+        }
+      }
+    
     }
-  
-  }
     return kTRUE;
 }
 
@@ -1077,4 +1094,3 @@ Int_t  AliMpDDLStore::GetPreviousDEfromLocalBoard(Int_t localBoardId, Int_t cham
         return 0;
 
 }
-
