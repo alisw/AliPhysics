@@ -239,6 +239,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename,
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
+  fMeanVertexConstraint(kTRUE),
 
   fGRPList(NULL),
 
@@ -306,6 +307,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   fVertexer(NULL),
   fDiamondProfile(NULL),
+  fMeanVertexConstraint(rec.fMeanVertexConstraint),
 
   fGRPList(NULL),
 
@@ -731,7 +733,7 @@ Bool_t AliReconstruction::Run(const char* input)
   }
 
   AliVertexerTracks tVertexer(AliTracker::GetBz());
-  if(fDiamondProfile) tVertexer.SetVtxStart(fDiamondProfile);
+  if(fDiamondProfile && fMeanVertexConstraint) tVertexer.SetVtxStart(fDiamondProfile);
 
   // loop over events
  

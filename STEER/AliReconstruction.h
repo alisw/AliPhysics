@@ -82,6 +82,7 @@ public:
   void SetWriteAOD(Bool_t flag=kTRUE){fWriteAOD=flag;}
   void SetFillTriggerESD(Bool_t flag=kTRUE){fFillTriggerESD=flag;}
   void SetDiamondProfile(AliESDVertex *dp) {fDiamondProfile=dp;}
+  void SetMeanVertexConstraint(Bool_t flag=kTRUE){fMeanVertexConstraint=flag;}
 		   
   void SetCleanESD(Bool_t flag=kTRUE){fCleanESD=flag;}
   void SetV0DCAmax(Float_t d) {fV0DCAmax=d;}
@@ -200,6 +201,7 @@ private:
   AliVertexer*   fVertexer;                //! vertexer for ITS
   AliTracker*    fTracker[fgkNDetectors];  //! trackers
   AliESDVertex*  fDiamondProfile;          // (x,y) diamond profile for AliVertexerTracks
+  Bool_t         fMeanVertexConstraint; // use fDiamondProfile in AliVertexerTracks
 
   TList*         fGRPList;            // TList from the GRP/GRP/Data CDB folder
 
@@ -216,7 +218,7 @@ private:
   Bool_t              fRunQA ;                        // Runs the QA at the end of simulation
   Bool_t              fQAInLoop ; 	                  // option to run QA in the event loop
 
-  ClassDef(AliReconstruction, 17)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 18)      // class for running the reconstruction
 };
 
 #endif
