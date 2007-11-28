@@ -80,12 +80,19 @@ void AliMUONTrackReconstructor::MakeTrackCandidates(AliMUONVClusterStore& cluste
 
   AliDebug(1,"Enter MakeTrackCandidates");
 
-  // Ask the clustering to reconstruct all clusters in station 4 and 5
+  // Unless we're doing combined tracking, we'll clusterize all stations at once
+  Int_t firstChamber(0);
+  Int_t lastChamber(9);
+  
   if (AliMUONReconstructor::GetRecoParam()->CombineClusterTrackReco()) {
-    fClusterServer.Clusterize(6, clusterStore, AliMpArea());
-    fClusterServer.Clusterize(7, clusterStore, AliMpArea());
-    fClusterServer.Clusterize(8, clusterStore, AliMpArea());
-    fClusterServer.Clusterize(9, clusterStore, AliMpArea());
+    // ... Here's the exception : ask the clustering to reconstruct
+    // clusters *only* in station 4 and 5 for combined tracking
+    firstChamber = 6;
+  }
+
+  for (Int_t i = firstChamber; i <= lastChamber; ++i ) 
+  {
+    fClusterServer.Clusterize(i, clusterStore, AliMpArea());
   }
   
   // Loop over stations(1..) 5 and 4 and make track candidates
