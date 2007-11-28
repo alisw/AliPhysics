@@ -74,16 +74,16 @@ Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* /*opt*/)
 Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
 {
     // Copy from old to new format if necessary
-    AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
-    if (old) {
+  AliESD* old = ((AliESDEvent*) fEvent)->GetAliESDOld();
+  if (old) {
 	((AliESDEvent*)fEvent)->CopyFromOldESD();
 	old->Reset();
-    }
-    return kTRUE;
+  }
+  return kTRUE;
 }
 
 Bool_t  AliESDInputHandler::FinishEvent(){
-    //
+  if(fEvent)fEvent->Reset();
   return kTRUE;
 } 
 

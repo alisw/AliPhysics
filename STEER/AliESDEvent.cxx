@@ -286,6 +286,20 @@ void AliESDEvent::Reset()
   // Reset the standard contents
   ResetStdContent(); 
   if(fESDOld)fESDOld->Reset();
+  //  reset for the friends...
+  if(fESDFriendOld){
+    fESDFriendOld->~AliESDfriend();
+    new (fESDFriendOld) AliESDfriend();
+  }
+  // for new data we have to fetch the Pointer from the list 
+  AliESDfriend *fr = (AliESDfriend*)FindListObject("AliESDfriend");
+  if(fr){
+    // delete the content
+    fr->~AliESDfriend();
+    // make a new valid ESDfriend at the same place
+    new (fr) AliESDfriend();
+  }
+
   // call reset for user supplied data?
 }
 
@@ -331,7 +345,7 @@ void AliESDEvent::ResetStdContent()
   if(fEMCALCells)fEMCALCells->DeleteContainer();
   if(fErrorLogs) fErrorLogs->Delete();
 
-  // don't reset fconnected fConnected ;
+  // don't reset fconnected fConnected and the list
 
   fEMCALClusters=0; 
   fFirstEMCALCluster=-1; 
@@ -875,7 +889,9 @@ void AliESDEvent::CreateStdContent()
 }
 
 TObject* AliESDEvent::FindListObject(const char *name){
-  if(fESDObjects)return fESDObjects->FindObject(name);
+  if(fESDObjects){
+    return fESDObjects->FindObject(name);
+  }
   return 0;
 } 
 
@@ -924,7 +940,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     Printf("%s %d AliESDEvent::ReadFromTree() Zero Pointer to Tree \n",(char*)__FILE__,__LINE__);
     return;
   }
-
   // load the TTree
   if(!tree->GetTree())tree->LoadTree(0);
 
@@ -952,7 +967,6 @@ void AliESDEvent::ReadFromTree(TTree *tree){
     //  have already connected the old ESD structure... ?
     // reuse also the pointer of the AlliESDEvent
     // otherwise create new ones
-
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("ESDObjectsConnectedToTree"));
   
     if(connectedList){
@@ -964,9 +978,9 @@ void AliESDEvent::ReadFromTree(TTree *tree){
       }
       GetStdContent(); 
 
-      // The pointer to the friend changes when called twice via InitIO. Is this connected to 
-      // the change TChain -> TTree
       
+      // The pointer to the friend changes when called twice via InitIO
+      // since AliESDEvent is deleted
       TObject* oldf = FindListObject("AliESDfriend");
       TObject* newf = 0;
       if(addressF){
