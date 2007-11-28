@@ -21,10 +21,18 @@
 //   Float_t cluth = defPar->GetClusteringThreshold();
 //   ...
 
+// --- ROOT header files ---
+#include "TObjArray.h"
+#include "TString.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
 // --- AliRoot header files ---
 #include "AliPHOSRecoParamEmc.h"
 
 ClassImp(AliPHOSRecoParamEmc)
+
+TObjArray* AliPHOSRecoParamEmc::fgkMaps =0; //ALTRO mappings
 
 //-----------------------------------------------------------------------------
 AliPHOSRecoParamEmc::AliPHOSRecoParamEmc() : AliPHOSRecoParam()
@@ -44,4 +52,26 @@ AliPHOSRecoParam* AliPHOSRecoParamEmc::GetEmcDefaultParameters()
 
   AliPHOSRecoParam* params = new AliPHOSRecoParamEmc();
   return params;
+}
+
+//-----------------------------------------------------------------------------
+const TObjArray* AliPHOSRecoParamEmc::GetMappings()
+{
+  //Returns array of AliAltroMappings for RCU0..RCU3.
+  //If not found, read it from OCDB.
+
+  //Quick check as follows:
+  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
+  //  root [1] AliCDBManager::Instance()->SetRun(1);
+  //  root [2] TObjArray* maps = AliPHOSRecoParamEmc::GetMappings();
+  //  root [3] maps->Print();
+  
+  if(fgkMaps) return fgkMaps;
+  
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("PHOS/Calib/Mapping");
+  if(entry)
+    fgkMaps = (TObjArray*)entry->GetObject();
+  
+  return fgkMaps;
+  
 }
