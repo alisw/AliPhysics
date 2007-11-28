@@ -18,8 +18,8 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
                                                                           */
-
-#include "AliHLTLogging.h"
+#include "AliHLTDataTypes.h"
+#include "TObject.h" // for ClassDef/Imp
 
 class AliHLTHOMERReader;
 class AliHLTHOMERWriter;
@@ -57,7 +57,7 @@ class AliHLTHOMERWriter;
  * basis of shared memory. This is most likely a depricated functionality,
  * although kept for the sake of completeness.
  */
-class AliHLTHOMERLibManager : public AliHLTLogging {
+class AliHLTHOMERLibManager {
  public:
   /** standard constructor */
   AliHLTHOMERLibManager();

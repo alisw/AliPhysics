@@ -71,7 +71,7 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const char* hostname, unsig
   
   AliHLTHOMERReader* pReader=NULL;
   if (fFctCreateReaderFromTCPPort!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromTCPPort_t)fFctCreateReaderFromTCPPort)(hostname, port)))==NULL) {
-    HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPort);
+    //HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPort);
   }
   
   return pReader;
@@ -88,7 +88,7 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(unsigned int tcpCnt, const 
   
   AliHLTHOMERReader* pReader=NULL;
   if (fFctCreateReaderFromTCPPorts!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromTCPPorts_t)fFctCreateReaderFromTCPPorts)(tcpCnt, hostnames, ports)))==NULL) {
-    HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPorts);
+    //HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromTCPPorts);
   }
   
   return pReader;
@@ -105,7 +105,7 @@ AliHLTHOMERReader* AliHLTHOMERLibManager::OpenReader(const AliHLTUInt8_t* pBuffe
   
   AliHLTHOMERReader* pReader=NULL;
   if (fFctCreateReaderFromBuffer!=NULL && (pReader=(((AliHLTHOMERReaderCreateFromBuffer_t)fFctCreateReaderFromBuffer)(pBuffer, size)))==NULL) {
-    HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromBuffer);
+    //HLTError("can not create instance of HOMER reader (function %p)", fFctCreateReaderFromBuffer);
   }
   
   return pReader;
@@ -185,9 +185,9 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
       (*fctInfo)(date, time);
       if (!date) date="unknown";
       if (!time) time="unknown";
-      HLTInfo("%s build on %s (%s)", *library, date, time);
+      //HLTInfo("%s build on %s (%s)", *library, date, time);
     } else {
-      HLTInfo("no build info available for %s", *library);
+      //HLTInfo("no build info available for %s", *library);
     }
 
     fFctCreateReaderFromTCPPort=gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORT);
@@ -204,7 +204,6 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
 	fFctDeleteWriter==NULL) {
       iResult=-ENOSYS;
     } else {
-      //HLTDebug("%s: entries found", *library);
     }
   }
   if (iResult<0 || *library==NULL) {
