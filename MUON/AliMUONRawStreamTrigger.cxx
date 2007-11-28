@@ -202,6 +202,7 @@ Bool_t AliMUONRawStreamTrigger::GetNextDDL()
     // We have not actually been able to complete the loading of the new DDL so
     // we are still on the old one. In this case we do not need to reset fCurrentDDL.
     //fCurrentDDL = 0;
+    if (IsErrorLogger()) AddErrorMessage();
     return kFALSE;
   }
   
@@ -228,8 +229,6 @@ Bool_t AliMUONRawStreamTrigger::GetNextDDL()
   fPayload->ResetDDL();
   
   Bool_t ok = fPayload->Decode(buffer);
-  
-  if (IsErrorLogger()) AddErrorMessage();
 
   delete[] buffer;
   
@@ -342,6 +341,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
   if (fDDL >= fgkMaxDDL) {
     fDDL = 0;
+    if (IsErrorLogger()) AddErrorMessage();
     return kFALSE;
   }
 
@@ -359,7 +359,7 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 #endif
 
   fPayload->Decode(buffer);
-  if (IsErrorLogger()) AddErrorMessage();
+
 
   fDDL++;
 
@@ -407,4 +407,6 @@ void AliMUONRawStreamTrigger::AddErrorMessage()
     if (msg.Contains("Local"))
       GetReader()->AddMajorErrorLog(kLocalEoWErr, msg.Data());
   }
+  
+  log->Clear(); // clear after each event
 }
