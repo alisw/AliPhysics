@@ -173,3 +173,51 @@ Bool_t AliAODRecoDecayHF3Prong::SelectDplus(const Double_t *cuts)
   if(sum2<cuts[10])return kFALSE;
   return kTRUE;
 }
+//--------------------------------------------------------------------------
+Bool_t AliAODRecoDecayHF3Prong::SelectDs(const Double_t *cuts,Int_t &okDsKKpi,Int_t &okDspiKK)
+  const {
+//
+// This function compares the Ds with a set of cuts (only mass at the moment)
+//
+// cuts[0] = inv. mass half width [GeV]   
+//
+// If candidate Ds does not pass the cuts return kFALSE
+//
+  Double_t mDsKKpi,mDspiKK;
+  okDsKKpi=1; okDspiKK=1;
+
+  Double_t mDsPDG = TDatabasePDG::Instance()->GetParticle(431)->Mass();
+
+  mDsKKpi=InvMassDsKKpi();
+  mDspiKK=InvMassDspiKK();
+
+  if(TMath::Abs(mDsKKpi-mDsPDG)>cuts[0]) okDsKKpi = 0;
+  if(TMath::Abs(mDspiKK-mDsPDG)>cuts[0]) okDspiKK = 0;
+  if(!okDsKKpi && !okDspiKK) return kFALSE;
+
+  return kTRUE;
+}
+//--------------------------------------------------------------------------
+Bool_t AliAODRecoDecayHF3Prong::SelectLc(const Double_t *cuts,Int_t &okLcpKpi,Int_t &okLcpiKp)
+  const {
+//
+// This function compares the Lc with a set of cuts (only mass at the moment)
+//
+// cuts[0] = inv. mass half width [GeV]   
+//
+// If candidate Lc does not pass the cuts return kFALSE
+//
+  Double_t mLcpKpi,mLcpiKp;
+  okLcpKpi=1; okLcpiKp=1;
+
+  Double_t mLcPDG = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+
+  mLcpKpi=InvMassLcpKpi();
+  mLcpiKp=InvMassLcpiKp();
+
+  if(TMath::Abs(mLcpKpi-mLcPDG)>cuts[0]) okLcpKpi = 0;
+  if(TMath::Abs(mLcpiKp-mLcPDG)>cuts[0]) okLcpiKp = 0;
+  if(!okLcpKpi && !okLcpiKp) return kFALSE;
+
+  return kTRUE;
+}

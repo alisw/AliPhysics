@@ -46,7 +46,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t InvMassDplus() const {UInt_t pdg[3]={211,321,211};return InvMass(3,pdg);}
   Bool_t   SelectDplus(const Double_t* cuts) const;
 
- // Ds+->KKpi
+  // Ds+->KKpi
   Double_t EDs() const {return E(431);} 
   Double_t YDs() const {return Y(431);} 
   Double_t CtDs() const {return Ct(431);} 
@@ -55,7 +55,18 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   Double_t InvMassDsKKpi() const {UInt_t pdg[3]={321,321,211};return InvMass(3,pdg);}
   Double_t InvMassDspiKK() const {UInt_t pdg[3]={211,321,321};return InvMass(3,pdg);}
   Bool_t   SelectDs(const Double_t* cuts,Int_t &okDsKKpi,Int_t &okDspiKK) 
-    const;//to be implemented
+    const; // only mass cut
+
+  // Lambdac+->pKpi
+  Double_t ELc() const {return E(4122);} 
+  Double_t YLc() const {return Y(4122);} 
+  Double_t CtLc() const {return Ct(4122);} 
+  Double_t CtLc(Double_t point[3]) const {return AliAODRecoDecay::Ct(4122,point);}
+  Double_t CtLc(AliAODVertex *vtx1) const {return AliAODRecoDecay::Ct(4122,vtx1);}
+  Double_t InvMassLcpKpi() const {UInt_t pdg[3]={2212,321,211};return InvMass(3,pdg);}
+  Double_t InvMassLcpiKp() const {UInt_t pdg[3]={211,321,2212};return InvMass(3,pdg);}
+  Bool_t   SelectLc(const Double_t* cuts,Int_t &okLcpKpi,Int_t &okLcpiKp) 
+    const;// only mass cut
 
  private:
 
