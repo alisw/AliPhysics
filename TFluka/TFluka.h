@@ -400,6 +400,9 @@ class TFluka : public TVirtualMC {
   void     GetPrimaryElectronPosition(Int_t i, Double_t& x, Double_t& y, Double_t& z, Double_t& t) const;
   void     SetCurrentPrimaryElectronIndex(Int_t i)  {fPrimaryElectronIndex = i;}
   void     PrimaryIonisationStepping(Int_t nprim);
+
+  void  AddIon(Int_t a, Int_t z) const;
+  Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
  private:
    
   // Copy constructor and operator= declared but not implemented (-Weff++ flag)
@@ -408,7 +411,7 @@ class TFluka : public TVirtualMC {
  
   void  PrintHeader();
   void  AddParticlesToPdgDataBase() const;
-  Int_t GetIonPdg(Int_t z, Int_t a, Int_t i = 0) const;
+
   Int_t GetSpecialPdg(Int_t number) const;
   
   Float_t* CreateFloatArray(Double_t* array, Int_t size) const;

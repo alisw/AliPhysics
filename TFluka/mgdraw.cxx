@@ -45,7 +45,6 @@ void mgdraw(Int_t& icode, Int_t& mreg)
     }
     
     Int_t verbosityLevel = fluka->GetVerbosityLevel();
-
     if (TRACKR.jtrack < -6) {
        // from -7 to -12 = "heavy" fragment
        // assing parent id
@@ -54,7 +53,7 @@ void mgdraw(Int_t& icode, Int_t& mreg)
           cout << "mgdraw: (heavy fragment) jtrack < -6 =" << TRACKR.jtrack
                << " assign parent pdg=" << fluka->PDGFromId(TRACKR.ispusr[mkbmx2 - 3]) << endl;
        }
-       TRACKR.jtrack = TRACKR.ispusr[mkbmx2 - 3];
+//       TRACKR.jtrack = TRACKR.ispusr[mkbmx2 - 3];
     }
     
     cppstack->SetCurrentTrack(trackId);

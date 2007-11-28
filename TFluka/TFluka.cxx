@@ -1849,7 +1849,10 @@ Double_t TFluka::Etot() const
 	       icode == kKASKADbrems || 
 	       icode == kKASKADpair) {
 	  return (GENSTK.tki[0] + PAPROP.am[GENSTK.kpart[0]+6]);      
+      } else {
+	  return TRACKR.etrack;
       }
+      
   }
   else if (caller == kSODRAW) {
       Int_t ist  = FLKSTK.npflka;
@@ -1859,6 +1862,7 @@ Double_t TFluka::Etot() const
       Double_t e = TMath::Sqrt(p * p + m * m);
       return e;
   }
+  printf("Etot %5d %5d \n", caller, icode);
   
   return -1000.0;
 }
@@ -2119,7 +2123,6 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
   //
     FlukaProcessCode_t icode   = GetIcode();
     FlukaCallerCode_t  caller  = GetCaller();
-    
     proc.Set(1);
     TMCProcess iproc;
     if (caller == kBXEntering || caller == kBXExiting || caller == kEEDRAW || caller == kSODRAW) {
@@ -2165,6 +2168,16 @@ Int_t TFluka::StepProcesses(TArrayI &proc) const
 	case kEMFSCOstopping2:
 	case kKASNEUstopping:
 	    iproc = kPStop;
+	    break; 
+	case kKASKADinelint:
+	case kKASNEUhadronic:
+	    iproc = kPHadronic;
+	    break;
+	case kKASKADinelarecoil:
+	    iproc = kPHadronic;
+	    break;
+	case kKASKADnelint:
+	    iproc = kPHElastic;
 	    break;
 	case kKASOPHabsorption:
 	    iproc = kPLightAbsorption;
@@ -2568,6 +2581,19 @@ void TFluka::AddParticlesToPdgDataBase() const
                      0,0,"Special",GetSpecialPdg(50));
   pdgDB->AddParticle("FeedbackPhoton","FeedbackPhoton",0,kFALSE,
                      0,0,"Special",GetSpecialPdg(51));
+}
+
+void TFluka::AddIon(Int_t a, Int_t z) const
+{
+
+    // Add a new ion
+    TDatabasePDG *pdgDB = TDatabasePDG::Instance();
+    const Double_t kAu2Gev   = 0.9314943228;
+    Int_t pdg =  GetIonPdg(z, a);
+    if (pdgDB->GetParticle(pdg)) return;
+    
+    pdgDB->AddParticle(Form("Iion A  = %5d Z = %5d", a, z),"Ion", Float_t(a) * kAu2Gev + 8.071e-3, kTRUE,
+		       0, 3 * z, "Ion", pdg);
 }
 
 //

@@ -14,6 +14,7 @@
 #include "Fflkstk.h"  //(FLKSTK)  fluka common
 #include "Ftrackr.h"  //(TRACKR) fluka common
 #include "Fgenstk.h"  //(GENSTK)  fluka common
+#include "Ffheavy.h"  //(FHEAVY)  fluka common
 
 
 //Virtual MC
@@ -34,6 +35,8 @@ extern "C" {
 //*  SeT User PRoperties for Fluka particles                             *
 //*                                                                      *
 //*----------------------------------------------------------------------*
+// Get the pointer to the VMC
+  TFluka* fluka =  (TFluka*) gMC;
 
 // FLKSTK.npflka  = stack pointer
 // FLKSTK.louse   = user flag
@@ -62,8 +65,7 @@ extern "C" {
   FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 4] = TRACKR.ispusr[mkbmx2 - 1];  // current track number
   FLKSTK.ispark[FLKSTK.npflka][mkbmx2 - 5] = npprmr;                     // flag npprmr>0
 
-// Get the pointer to the VMC
-  TFluka* fluka =  (TFluka*) gMC;
+
   Int_t verbosityLevel = fluka->GetVerbosityLevel();
   Bool_t debug = (verbosityLevel>=3)? kTRUE:kFALSE;
   
@@ -86,14 +88,32 @@ extern "C" {
 
     Int_t parent  = TRACKR.ispusr[mkbmx2-1];
     Int_t kpart   = GENSTK.kpart[numsec-1];
-    if (kpart < -6) return; // -7 to -12 = "heavy" fragment
-    Int_t  pdg  = fluka->PDGFromId(kpart);
-     
+    Int_t pdg;
+    Int_t a, z;
+    
+    if (kpart < -6) {
+	kpart = -kpart;
+	z = kpart / 100000;
+	a = kpart - z * 100000;
+	a /= 100;
+	pdg = fluka->GetIonPdg(z, a);
+	fluka->AddIon(a, z);
+    } else {
+	pdg  = fluka->PDGFromId(kpart);
+    }
+    
     Double_t px = GENSTK.plr[numsec-1] * GENSTK.cxr[numsec-1];
     Double_t py = GENSTK.plr[numsec-1] * GENSTK.cyr[numsec-1];
     Double_t pz = GENSTK.plr[numsec-1] * GENSTK.czr[numsec-1];
-    Double_t e  = GENSTK.tki[numsec-1] + PAPROP.am[GENSTK.kpart[numsec-1]+6];
-
+    Double_t e;
+    
+    if (kpart < 100000) {
+	e  = GENSTK.tki[numsec-1] + PAPROP.am[GENSTK.kpart[numsec-1]+6];
+    } else {
+	e  = GENSTK.tki[numsec-1] + Double_t(a) * 0.93149 + 8.071e-3;
+    }
+    
+    
     Double_t vx = xx;
     Double_t vy = yy;
     Double_t vz = zz;
@@ -102,8 +122,6 @@ extern "C" {
     Double_t polx = GENSTK.cxrpol[numsec-1];
     Double_t poly = GENSTK.cyrpol[numsec-1];
     Double_t polz = GENSTK.czrpol[numsec-1];
-    
-
     
     TMCProcess mech = kPHadronic;
     if (EVTFLG.ldecay == 1) {
@@ -146,12 +164,15 @@ extern "C" {
 			vx, vy, vz, tof,
 			polx, poly, polz,
 			mech, ntr, weight, is);
-    if (debug)
+    if (debug) {
+	
 	cout << endl << " !!! stuprf: ntr=" << ntr << " pdg " << pdg << " parent=" << parent
 	     << " parent_pdg="<< fluka->PDGFromId(TRACKR.jtrack) << " numsec "
 	     << numsec << " npprmr " << npprmr << " icode=" << fluka->GetIcode() 
 	     << "kin. energy [keV] = " <<  GENSTK.tki[numsec-1] * 1.e6 << endl << endl;
 	
+    }
+    
 
 //
 //  Save current track number
