@@ -110,14 +110,17 @@ AliMUONMCDataInterface::HitStore(Int_t event, Int_t track)
   /// Returned pointer should not be deleted
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent
-      and fDataX == track  // using fDataX as track number.
-      and fHitStore != 0x0
-     )
+
+  if (event == fCurrentEvent)
+  {
+    if (track == fDataX and fHitStore != 0x0)  // using fDataX as track number.
       return fHitStore;
-  
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  }
+  else
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   fLoader->LoadHits();
   
@@ -156,10 +159,17 @@ AliMUONMCDataInterface::SDigitStore(Int_t event)
   /// Returned pointer should not be deleted
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fSDigitStore != 0x0) return fSDigitStore;
   
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  if (event == fCurrentEvent)
+  {
+    if (fSDigitStore != 0x0)
+      return fSDigitStore;
+  }
+  else
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   fLoader->LoadSDigits();
   
@@ -191,10 +201,17 @@ AliMUONMCDataInterface::DigitStore(Int_t event)
   /// Returned pointer should not be deleted
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fDigitStore != 0x0) return fDigitStore;
   
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  if (event == fCurrentEvent)
+  {
+    if (fDigitStore != 0x0)
+      return fDigitStore;
+  }
+  else
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   fLoader->LoadDigits();
   
@@ -246,15 +263,17 @@ AliMUONMCDataInterface::TrackRefs(Int_t event, Int_t track)
   /// Returned pointer should not be deleted
   
   if ( not IsValid() ) return 0x0;
-
-  if (event != fCurrentEvent)
+  
+  if (event == fCurrentEvent)
+  {
+    if (track == fDataX and fTrackRefs != 0x0)  // using fDataX as track number.
+      return fTrackRefs;
+  }
+  else
   {
     ResetStores();
     if ( not LoadEvent(event) ) return 0x0;
   }
-  
-  if (track == fDataX)  // using fDataX as track number.
-    return fTrackRefs;
   
   fLoader->GetRunLoader()->LoadTrackRefs();
   
@@ -291,10 +310,17 @@ AliMUONMCDataInterface::TriggerStore(Int_t event)
   /// Returned pointer should not be deleted.
   
   if (not IsValid()) return 0x0;
-  if (event == fCurrentEvent and fTriggerStore != 0x0) return fTriggerStore;
   
-  ResetStores();
-  if (not LoadEvent(event)) return 0x0;
+  if (event == fCurrentEvent)
+  {
+    if (fTriggerStore != 0x0)
+      return fTriggerStore;
+  }
+  else
+  {
+    ResetStores();
+    if ( not LoadEvent(event) ) return 0x0;
+  }
   
   fLoader->LoadDigits();
   
