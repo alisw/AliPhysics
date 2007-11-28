@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup calib
+/// \ingroup core
 /// \class AliMUON1DArray
 /// \brief Implementation of AliMUONVStore
 /// 

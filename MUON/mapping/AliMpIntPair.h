@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpIntPair.h,v 1.6 2006/05/24 13:58:07 ivana Exp $
 
-/// \ingroup basic
+/// \ingroup core
 /// \class AliMpIntPair
 /// \brief A pair of integers.
 ///

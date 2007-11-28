@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpExMap.h,v 1.4 2006/05/24 13:58:07 ivana Exp $
 
-/// \ingroup basic
+/// \ingroup core
 /// \class AliMpExMap
 /// \brief Helper class making Root persistent TExMap
 ///

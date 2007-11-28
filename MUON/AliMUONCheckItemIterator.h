@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup calib
+/// \ingroup core
 /// \class AliMUONCheckItemIterator
 /// \brief Iterator on CheckItem
 /// 

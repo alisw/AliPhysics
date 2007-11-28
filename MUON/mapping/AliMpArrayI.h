@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpArrayI.h,v 1.4 2006/05/24 13:58:07 ivana Exp $
 
-/// \ingroup basic
+/// \ingroup core
 /// \class AliMpArrayI
 /// \brief Helper class for sorted integer array
 ///

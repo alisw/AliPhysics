@@ -3,7 +3,7 @@
 
 // $Id$
 
-/// \ingroup geometry
+/// \ingroup core
 /// \class AliMUONStringIntMap
 /// \brief Substitutes map <string, int> which ALICE does not allow to use 
 ///

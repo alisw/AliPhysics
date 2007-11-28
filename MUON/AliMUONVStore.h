@@ -6,7 +6,7 @@
 
 // $Id$
 
-/// \ingroup calib
+/// \ingroup core
 /// \class AliMUONVStore
 /// \brief Base class for MUON data stores.
 /// 
