@@ -73,33 +73,6 @@ AliTRDtestBeam::AliTRDtestBeam() :
   //
 
 }
-
-//____________________________________________________________________________ 
-AliTRDtestBeam::AliTRDtestBeam(const AliTRDtestBeam &tb) 
- :TObject(tb),
-  fDataStream(0),
-  fHeaderIsRead(0),
-  fEventCount(0),
-  fLimit(4), 
-  fCurrent(0),
-  fDdlOff(0),
-  fSiOff(0),
-  fQdcOff(0),
-  fDdlSize(0),
-  fFileHeader(0),
-  fEventHeader(0),
-  fEventData(0),
-  fNSi1(0),
-  fNSi2(0),
-  fCher(0),
-  fPb(0)
-{
-  //
-  // Copy constructor
-  //
-
-}
-
 //____________________________________________________________________________ 
 AliTRDtestBeam::AliTRDtestBeam(const char *filename) :
   fDataStream(0),
@@ -131,6 +104,32 @@ AliTRDtestBeam::AliTRDtestBeam(const char *filename) :
   fFileHeader = new Char_t[fgkFileHeadSize];
   fEventHeader = new Char_t[fgkEventHeadSize];
   fEventData = new Char_t[fLimit];
+
+}
+
+//____________________________________________________________________________
+AliTRDtestBeam::AliTRDtestBeam(const AliTRDtestBeam &tb)
+ :TObject(tb),
+  fDataStream(0),
+  fHeaderIsRead(0),
+  fEventCount(0),
+  fLimit(4),
+  fCurrent(0),
+  fDdlOff(0),
+  fSiOff(0),
+  fQdcOff(0),
+  fDdlSize(0),
+  fFileHeader(0),
+  fEventHeader(0),
+  fEventData(0),
+  fNSi1(0),
+  fNSi2(0),
+  fCher(0),
+  fPb(0)
+{
+  //
+  // Copy constructor
+  //
 
 }
 
@@ -284,65 +283,189 @@ Int_t AliTRDtestBeam::DecodeSi()
 
   int aLenSiX = 640;
 
-  int qmaxX; int amaxX;
-  int qmaxY; int amaxY;
+  int amaxX=0;
+  int amaxY=0;
+
+  Int_t q, a;  
+  Int_t Nst1=0,Nst2=0;
+  Int_t QclX=0,QclY=0, NclX=0,NclY=0, NstX=0,NstY=0;
+  const Int_t Thr = 20;
+
+  Nst1=0;
+  NstX=0;
+  NstY=0;
+  NclX=0;
+  NclY=0;
+  QclX=0;
+  QclY=0;
   
-  qmaxX = 5;
-  qmaxY = 5;
-  amaxX = -1;
-  amaxY = -1+aLenSiX;
- 
   for( int i = 0; i < GetNSi1(); i++ ) {
  
     if (fSi1Address[i] == 0) continue; // noise
-   
-    if (fSi1Address[i] < aLenSiX ) {
-      if( fSi1Charge[i] > qmaxX ) {
-	qmaxX = fSi1Charge[i];
-	amaxX = fSi1Address[i];
-      }
-    } else  {
-      if( fSi1Charge[i] > qmaxY ) {
-	qmaxY = fSi1Charge[i];
-	amaxY = fSi1Address[i];
-      }
+
+    q = fSi1Charge[i];
+    a = fSi1Address[i];
+
+    if ( q > Thr ) 
+    {
+	if ( i > 0 && i < (GetNSi1()-1) ) {
+
+	    if ( (a-fSi1Address[i+1]) == -1 &&
+		 (a-fSi1Address[i-1]) == 1) 
+	    {  
+		Nst1++;	  
+		if (a < aLenSiX) {
+		    QclX = q+fSi1Charge[i+1]+fSi1Charge[i-1];
+		    NclX++;
+		    NstX+=3;
+		    amaxX = a;
+		}
+		else {
+		    QclY = q+fSi1Charge[i+1]+fSi1Charge[i-1];
+		    NclY++;
+		    NstY+=3;
+		    amaxY = a;
+		}
+		i+=1;
+	    }
+	    else if ( (a-fSi1Address[i-1]) == 1)
+	    {  
+		Nst1++;	  
+		if (a < aLenSiX) {
+		    QclX = q+fSi1Charge[i-1];
+		    NclX++;
+		    NstX+=2;
+		    amaxX = a;
+		}
+		else {
+		    QclY = q+fSi1Charge[i-1];
+		    NclY++;
+		    NstY+=2;
+		    amaxY = a;
+		}
+	    }
+	    else if ( (a-fSi1Address[i+1]) == -1)
+	    {  
+		Nst1++;	  
+		if (a < aLenSiX) {
+		    QclX = q+fSi1Charge[i+1];
+		    NclX++;
+		    NstX+=2;
+		    amaxX = a;
+		}
+		else {
+		    QclY = q+fSi1Charge[i+1];
+		    NclY++;
+		    NstY+=2;
+		    amaxY = a;
+		}
+		i+=1;
+	    }
+	}
     }
   }
+  if (Nst1==2 && NstX<4 && NstY<4 ) {
+      fX[0] = (float)(amaxX*0.05);  // [mm]
+      fY[0] = (float)((amaxY-aLenSiX)*0.05);
+      fQx[0] = (float)QclX;
+      fQy[0] = (float)QclY;
+  }
+  else {
+      fX[0] = -1.;
+      fY[0] = -1.;
+      fQx[0] = 0.;
+      fQy[0] = 0.;
+  }
   
-  fX[0] = (float)(amaxX*0.05);  // [mm]
-  fY[0] = (float)((amaxY-aLenSiX)*0.05);
-  fQx[0] = (float)qmaxX;
-  fQy[0] = (float)qmaxY;
-  
-  // 
-  qmaxX = 5;
-  qmaxY = 5;
-  amaxX = -1;
-  amaxY = -1+aLenSiX;
+  // ...and Si2
+
+  Nst2=0;
+  NstX=0;
+  NstY=0;
+  NclX=0;
+  NclY=0;
+  QclX=0;
+  QclY=0;
 
   for( int i = 0; i < GetNSi2(); i++ ) {
     
     if (fSi2Address[i] == 1279) continue; // noise
     if (fSi2Address[i] == 0) continue;    // noise
     
-    if(fSi2Address[i] < aLenSiX) {
-      if( fSi2Charge[i] > qmaxX ) {
-	qmaxX = fSi2Charge[i];
-	amaxX = fSi2Address[i];
-      }
-    } else {
-      if( fSi2Charge[i] > qmaxY ) {
-	//if (fSi2Charge[i] > 50) cout << fSi2Charge[i] << " " << i << " " <<  fSi2Address[i] << endl;
-	qmaxY = fSi2Charge[i];
-	amaxY = fSi2Address[i];
-      }
+    q = fSi2Charge[i];
+    a = fSi2Address[i];
+
+    if ( q > Thr/2 ) //...as Si2 has 1/2 gain! 
+    {
+	if ( i > 0 && i < (GetNSi2()-1) ) {
+
+	    if ( (a-fSi2Address[i+1]) == -1 &&
+		 (a-fSi2Address[i-1]) == 1) 
+	    {  
+		Nst2++;	  
+		if (a < aLenSiX) {
+		    QclX = q+fSi2Charge[i+1]+fSi2Charge[i-1];
+		    NclX++;
+		    NstX+=3;
+		    amaxX = a;
+		}
+		else {
+		    QclY = q+fSi2Charge[i+1]+fSi2Charge[i-1];
+		    NclY++;
+		    NstY+=3;
+		    amaxY = a;
+		}
+		i+=1;
+	    }
+	    else if ( (a-fSi2Address[i-1]) == 1)
+	    {  
+		Nst2++;	  
+		if (a < aLenSiX) {
+		    QclX = q+fSi2Charge[i-1];
+		    NclX++;
+		    NstX+=2;
+		    amaxX = a;
+		}
+		else {
+		    QclY = q+fSi2Charge[i-1];
+		    NclY++;
+		    NstY+=2;
+		    amaxY = a;
+		}
+	    }
+	    else if ( (a-fSi2Address[i+1]) == -1)
+	    {  
+		Nst2++;	  
+		if (a < aLenSiX) {
+		    QclX = q+fSi2Charge[i+1];
+		    NclX++;
+		    NstX+=2;
+		    amaxX = a;
+		}
+		else {
+		    QclY = q+fSi2Charge[i+1];
+		    NclY++;
+		    NstY+=2;
+		    amaxY = a;
+		}
+		i+=1;
+	    }
+	}
     }
   }
   
-  fX[1] = (float)(amaxX*0.05);  // [mm]
-  fY[1] = (float)((amaxY-aLenSiX)*0.05);
-  fQx[1] = (float)qmaxX;
-  fQy[1] = (float)qmaxY;
+  if (Nst2==2 && NstX<4 && NstY<4 ) {
+      fX[1] = (float)(amaxX*0.05);  // [mm]
+      fY[1] = (float)((amaxY-aLenSiX)*0.05);
+      fQx[1] = (float)QclX;
+      fQy[1] = (float)QclY;
+  }
+  else {
+      fX[1] = -1.;
+      fY[1] = -1.;
+      fQx[1] = 0.;
+      fQy[1] = 0.;
+  }
   
   if (fQdcOff < 0) return 0;
  

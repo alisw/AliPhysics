@@ -1,5 +1,5 @@
-#ifndef AliTRDtestBeam_h
-#define AliTRDtestBeam_h
+#ifndef AliTRDTESTBEAM_H
+#define AliTRDTESTBEAM_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -24,7 +24,7 @@ public:
   AliTRDtestBeam();       // ctor
   AliTRDtestBeam(const char *filename); // constructor
   AliTRDtestBeam(const AliTRDtestBeam &tb);  
-  AliTRDtestBeam &operator=(const AliTRDtestBeam& /*tb*/) {return *this; }
+  AliTRDtestBeam& operator = (const AliTRDtestBeam& /*tb*/) { return *this; };
   virtual ~AliTRDtestBeam(); // dtor
 
   Int_t NextEvent();
@@ -39,7 +39,7 @@ public:
   Int_t GetSi2Address(Int_t i) const {return (i<fNSi2)? fSi2Address[i] : -1;};
   
   Int_t GetSi1Charge(Int_t i) const {return (i<fNSi1)? fSi1Charge[i] : -1;};
-  Int_t GetSi2Charge(Int_t i) const {return (i<fNSi2)? fSi1Charge[i] : -1;};
+  Int_t GetSi2Charge(Int_t i) const {return (i<fNSi2)? fSi2Charge[i] : -1;};
   
   Double_t GetX(Int_t n)   const {return (n<2)? fX[n] : -1;}
   Double_t GetY(Int_t n)   const {return (n<2)? fY[n] : -1;}
