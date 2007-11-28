@@ -23,7 +23,7 @@ endif
 lib_LTLIBRARIES			=  libAliHLTTPC.la
 
 # version info for the library
-LIBRARY_VERSION			= '4:0:1'
+LIBRARY_VERSION			= '5:0:2'
 
 # MODDIR is set by the AliRoot build system and denotes the topdir
 # of the module, we must set it since the package definition libAliHLTTPC.pkg
