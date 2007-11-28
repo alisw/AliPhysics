@@ -233,9 +233,22 @@ Bool_t AliMpArea::Overlap(const AliMpArea& area) const
 
 //_____________________________________________________________________________
 void
-AliMpArea::Print(Option_t*) const
+AliMpArea::Print(Option_t* opt) const
 {
 /// Printing
+/// When option is set to B (borders), the area boreders will be printed 
+/// instead of default parameters
+
+  
+  if ( opt[0] == 'B' ) {
+    cout << "Area x-borders: (" 
+         << LeftBorder() << ", " << RightBorder() << ") " 
+	 << " y-borders: (" 
+         << DownBorder() << ", " << UpBorder() << ") " 
+	 << endl;
+    return;
+
+  }       
 
   cout << (*this) << endl;
 }
