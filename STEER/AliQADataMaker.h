@@ -66,7 +66,7 @@ public:
 
 protected: 
 
-  Int_t          Add2List(TH1 * hist, const Int_t index, TList * list) { list->AddAt(hist, index) ; return list->LastIndex() ; }
+  Int_t          Add2List(TH1 * hist, const Int_t index, TList * list) ;
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * ) {AliInfo("To be implemented by detectors");} 
   TObject *      GetData(TList * list, const Int_t index)  { return list->At(index) ; } 
   virtual void   InitDigits()        {AliInfo("To be implemented by detectors");}

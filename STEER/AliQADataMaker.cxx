@@ -93,6 +93,16 @@ AliQADataMaker& AliQADataMaker::operator = (const AliQADataMaker& qadm )
 }
 
 //____________________________________________________________________________
+Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TList * list) 
+{ 
+	// Set histograms memory resident and add to the list 
+	hist->SetDirectory(0) ; 
+	TH1::AddDirectory(kFALSE);
+	list->AddAt(hist, index) ; 
+	return list->LastIndex() ; 
+}
+
+//____________________________________________________________________________
 void AliQADataMaker::EndOfCycle(AliQA::TASKINDEX task) 
 { 
   // Finishes a cycle of QA data acquistion
@@ -300,7 +310,7 @@ TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
    {
 	fESDsQAList = new TList() ; 
 	InitESDs() ;
-	return fRecPointsQAList ;
+	return fESDsQAList ;
     break ; 
    }
   }  
