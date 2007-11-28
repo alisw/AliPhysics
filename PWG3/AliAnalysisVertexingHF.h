@@ -14,6 +14,7 @@
 #include <TTree.h>
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
+#include "AliAODVertex.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
@@ -47,6 +48,7 @@ class AliAnalysisVertexingHF : public TNamed {
 
   void SetDebug(Int_t debug=0) {fDebug=debug;}
   void PrintStatus() const;
+  void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
   void SetD0toKpiOff() { fD0toKpi=kFALSE; }
   void SetJPSItoEleOn() { fJPSItoEle=kTRUE; }
@@ -83,9 +85,17 @@ class AliAnalysisVertexingHF : public TNamed {
 		    Double_t cut9=-1.1,Double_t cut10=0.,
 		    Double_t cut11=0.); 
   void SetDplusCuts(const Double_t cuts[12]); 
+  void SetDsCuts(Double_t cut0=0.); 
+  void SetDsCuts(const Double_t cuts[1]); 
+  void SetLcCuts(Double_t cut0=0.); 
+  void SetLcCuts(const Double_t cuts[1]); 
   //
  private:
   //
+  Double_t fBzkG; // z componenent of field in kG
+
+  Bool_t fSecVtxWithKF; // if kTRUE use KF vertexer, else AliVertexerTracks
+
   Bool_t fRecoPrimVtxSkippingTrks; // flag for primary vertex reco on the fly
                                    // for each candidate, w/o its daughters
   Bool_t fRmTrksFromPrimVtx; // flag for fast removal of daughters from 
@@ -144,6 +154,12 @@ class AliAnalysisVertexingHF : public TNamed {
                           // 9 = cosThetaPoint
                           // 10 = Sum d0^2 (cm^2)
                           // 11 = dca cut (cm)
+  Double_t fDsCuts[1]; // cuts on Ds candidates
+                       // (to be passed to AliAODRecoDecayHF2Prong::SelectDs())
+                       // 0 = inv. mass half width [GeV]   
+  Double_t fLcCuts[1]; // cuts on Lambdac candidates
+                       // (to be passed to AliAODRecoDecayHF2Prong::SelectLc())
+                       // 0 = inv. mass half width [GeV]   
 
   //
   AliESDVertex* OwnPrimaryVertex(Int_t ntrks,TObjArray *trkArray,AliESDEvent *esd) const;
@@ -153,9 +169,10 @@ class AliAnalysisVertexingHF : public TNamed {
 		    TObjArray &trksP,Int_t &nTrksP,
 		    TObjArray &trksN,Int_t &nTrksN) const;
   void SetPrimaryVertex(AliESDVertex* v1) { fV1 = v1; }
-  Bool_t SingleTrkCuts(AliESDtrack& trk, Double_t b) const;
+  Bool_t SingleTrkCuts(AliESDtrack& trk) const;
+  AliESDVertex* ReconstructSecondaryVertex(TObjArray *trkArray) const;
   //
-  ClassDef(AliAnalysisVertexingHF,1)  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,2)  // Reconstruction of HF decay candidates
 };
 
 

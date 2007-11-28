@@ -23,10 +23,12 @@
 //  Origin: E.Bruna, G.E.Bruno, A.Dainese, F.Prino, R.Romita
 //----------------------------------------------------------------------------
 #include <TTree.h>
+#include <TFile.h>
 #include <TDatabasePDG.h>
 #include <TString.h>
 #include "AliESDEvent.h"
 #include "AliVertexerTracks.h"
+#include "AliKFParticle.h"
 #include "AliESDVertex.h"
 #include "AliESDv0.h"
 #include "AliAODRecoDecay.h"
@@ -40,23 +42,35 @@ ClassImp(AliAnalysisVertexingHF)
 
 //----------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF():
+fBzkG(0.),
+fSecVtxWithKF(kFALSE),
 fRecoPrimVtxSkippingTrks(kFALSE),
 fRmTrksFromPrimVtx(kFALSE),
 fV1(0x0),
 fDebug(0),
-fD0toKpi(kTRUE),fJPSItoEle(kTRUE),f3Prong(kTRUE),f4Prong(kTRUE),
-fITSrefit(kFALSE),fBothSPD(kTRUE),fMinITSCls(5),
-fMinPtCut(0.),fMind0rphiCut(0.)
+fD0toKpi(kTRUE),
+fJPSItoEle(kTRUE),
+f3Prong(kTRUE),
+f4Prong(kTRUE),
+fITSrefit(kFALSE),
+fBothSPD(kTRUE),
+fMinITSCls(5),
+fMinPtCut(0.),
+fMind0rphiCut(0.)
 {
   // Default constructor
 
   SetD0toKpiCuts();
   SetBtoJPSICuts();
   SetDplusCuts();
+  SetDsCuts();
+  SetLcCuts();
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF::AliAnalysisVertexingHF(const AliAnalysisVertexingHF &source) : 
 TNamed(source),
+fBzkG(source.fBzkG),
+fSecVtxWithKF(source.fSecVtxWithKF),
 fRecoPrimVtxSkippingTrks(source.fRecoPrimVtxSkippingTrks),
 fRmTrksFromPrimVtx(source.fRmTrksFromPrimVtx),
 fV1(source.fV1),
@@ -77,6 +91,8 @@ fMind0rphiCut(source.fMind0rphiCut)
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
+  for(Int_t i=0; i<1; i++)  fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<1; i++)  fLcCuts[i]=source.fLcCuts[i];
 }
 //--------------------------------------------------------------------------
 AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVertexingHF &source)
@@ -85,6 +101,8 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   // assignment operator
   //
   if(&source == this) return *this;
+  fBzkG = source.fBzkG;
+  fSecVtxWithKF = source.fSecVtxWithKF;
   fRecoPrimVtxSkippingTrks = source.fRecoPrimVtxSkippingTrks;
   fRmTrksFromPrimVtx = source.fRmTrksFromPrimVtx;
   fV1 = source.fV1;
@@ -102,6 +120,8 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   for(Int_t i=0; i<9; i++)  fD0toKpiCuts[i]=source.fD0toKpiCuts[i];
   for(Int_t i=0; i<9; i++)  fBtoJPSICuts[i]=source.fBtoJPSICuts[i];
   for(Int_t i=0; i<12; i++) fDplusCuts[i]=source.fDplusCuts[i];
+  for(Int_t i=0; i<1; i++)  fDsCuts[i]=source.fDsCuts[i];
+  for(Int_t i=0; i<1; i++)  fLcCuts[i]=source.fLcCuts[i];
 
   return *this;
 }
@@ -116,22 +136,20 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
   // Find heavy-flavour vertex candidates
 
   
-  AliAODRecoDecayHF2Prong *io2Prong = new AliAODRecoDecayHF2Prong;
-  AliAODRecoDecayHF3Prong *io3Prong = new AliAODRecoDecayHF3Prong;
-  AliAODRecoDecayHF4Prong *io4Prong = new AliAODRecoDecayHF4Prong;
+  AliAODRecoDecayHF2Prong *io2Prong = new AliAODRecoDecayHF2Prong();
+  AliAODRecoDecayHF3Prong *io3Prong = new AliAODRecoDecayHF3Prong();
+  AliAODRecoDecayHF4Prong *io4Prong = new AliAODRecoDecayHF4Prong();
   Int_t itree=0;
   Int_t itreeD0toKpi=-1,itreeJPSItoEle=-1,itree3Prong=-1,itree4Prong=-1;
   Int_t initEntriesD0toKpi=0,initEntriesJPSItoEle=0,initEntries3Prong=0,initEntries4Prong=0;
   if(fD0toKpi) {
     itreeD0toKpi=itree;
-    //treeout[itree].Print();
     treeout[itree].SetBranchAddress("D0toKpi",&io2Prong);
     itree++;
     initEntriesD0toKpi = treeout[itreeD0toKpi].GetEntries();
   }
   if(fJPSItoEle) {
     itreeJPSItoEle=itree;
-    //treeout[itree].Print();
     treeout[itree].SetBranchAddress("JPSItoEle",&io2Prong);
     itree++;
     initEntriesJPSItoEle = treeout[itreeJPSItoEle].GetEntries();
@@ -165,27 +183,22 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
   if(dcaMax<fDplusCuts[11]) dcaMax=fDplusCuts[11];
   if(fDebug) printf(" dca cut set to %f cm\n",dcaMax);
 
-  // create the AliVertexerTracks object for the secondary vertex
-  AliVertexerTracks *vertexer2 = new AliVertexerTracks(esd->GetMagneticField());
-  vertexer2->SetDebug(0);
-
   Int_t ev = (Int_t)esd->GetEventNumberInFile();
   printf("--- Finding candidates in event %d\n",ev);
 
-  Double_t bfieldkG=(Double_t)esd->GetMagneticField(); 
+  fBzkG = (Double_t)esd->GetMagneticField(); 
 
   trkEntries = (Int_t)esd->GetNumberOfTracks();
   printf(" Number of tracks: %d\n",trkEntries);
   if(trkEntries<2) return;
 
-  // retrieve primary vertex from the AliESD
+  // retrieve primary vertex from the AliESDEvent
   if(!esd->GetPrimaryVertex()) { 
     printf(" No vertex in AliESD\n");
     return;
   }
   AliESDVertex copy(*(esd->GetPrimaryVertex()));
   SetPrimaryVertex(&copy);
-  vertexer2->SetVtxStart(&copy);
 
   // call function which applies sigle-track selection and
   // separetes positives and negatives
@@ -213,19 +226,19 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
       // get track from tracks array
       negtrack1 = (AliESDtrack*)trksN.UncheckedAt(iTrkN1);
       // DCA between the two tracks
-      dcap1n1 = postrack1->GetDCA(negtrack1,bfieldkG,xdummy,ydummy);
+      dcap1n1 = postrack1->GetDCA(negtrack1,fBzkG,xdummy,ydummy);
       if(dcap1n1>dcaMax) { negtrack1=0; continue; }
-      // Vertexing with AliVertexerTracks
+      // Vertexing
       twoTrackArray1->AddAt(postrack1,0);
       twoTrackArray1->AddAt(negtrack1,1);
-      AliESDVertex *vertexp1n1 = vertexer2->VertexForSelectedTracks(twoTrackArray1);
+      AliESDVertex *vertexp1n1 = ReconstructSecondaryVertex(twoTrackArray1);
       if(vertexp1n1->GetNContributors()!=2) { 
 	if(fDebug) printf("two-track vertexing failed\n"); 
 	negtrack1=0; continue; 
       }
       if(fD0toKpi || fJPSItoEle) { 
 	io2Prong = Make2Prong(twoTrackArray1,esd,vertexp1n1,dcap1n1,okD0,okJPSI);
-	if(okD0) treeout[itreeD0toKpi].Fill();
+	if(okD0)   treeout[itreeD0toKpi].Fill();
 	if(okJPSI) treeout[itreeJPSItoEle].Fill();
         delete io2Prong; io2Prong=NULL; 
       }
@@ -241,15 +254,15 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
       for(iTrkP2=iTrkP1+1; iTrkP2<nTrksP; iTrkP2++) {
 	// get track from tracks array
 	postrack2 = (AliESDtrack*)trksP.UncheckedAt(iTrkP2);
-	dcap2n1 = postrack2->GetDCA(negtrack1,bfieldkG,xdummy,ydummy);
+	dcap2n1 = postrack2->GetDCA(negtrack1,fBzkG,xdummy,ydummy);
 	if(dcap2n1>dcaMax) { postrack2=0; continue; }
-	dcap1p2 = postrack2->GetDCA(postrack1,bfieldkG,xdummy,ydummy);
+	dcap1p2 = postrack2->GetDCA(postrack1,fBzkG,xdummy,ydummy);
 	if(dcap1p2>dcaMax) { postrack2=0; continue; }
 
-	// Vertexing with AliVertexerTracks
+	// Vertexing
 	twoTrackArray2->AddAt(postrack2,0);
 	twoTrackArray2->AddAt(negtrack1,1);
-	AliESDVertex *vertexp2n1 = vertexer2->VertexForSelectedTracks(twoTrackArray2);
+	AliESDVertex *vertexp2n1 = ReconstructSecondaryVertex(twoTrackArray2);
 	if(f3Prong) { 
 	  threeTrackArray->AddAt(postrack1,0);
 	  threeTrackArray->AddAt(negtrack1,1);
@@ -263,9 +276,9 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
 	  for(iTrkN2=iTrkN1+1; iTrkN2<nTrksN; iTrkN2++) {
 	    // get track from tracks array
 	    negtrack2 = (AliESDtrack*)trksN.UncheckedAt(iTrkN2);
-	    dcap1n2 = postrack1->GetDCA(negtrack2,bfieldkG,xdummy,ydummy);
+	    dcap1n2 = postrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
 	    if(dcap1n2>dcaMax) { negtrack2=0; continue; }
-	    // Vertexing with AliVertexerTracks
+	    // Vertexing
 	    fourTrackArray->AddAt(postrack1,0);
 	    fourTrackArray->AddAt(negtrack1,1);
 	    fourTrackArray->AddAt(postrack2,2);
@@ -286,15 +299,15 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
       for(iTrkN2=iTrkN1+1; iTrkN2<nTrksN; iTrkN2++) {
 	// get track from tracks array
 	negtrack2 = (AliESDtrack*)trksN.UncheckedAt(iTrkN2);
-	dcap1n2 = postrack1->GetDCA(negtrack2,bfieldkG,xdummy,ydummy);
+	dcap1n2 = postrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
 	if(dcap1n2>dcaMax) { negtrack2=0; continue; }
-	dcan1n2 = negtrack1->GetDCA(negtrack2,bfieldkG,xdummy,ydummy);
+	dcan1n2 = negtrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
 	if(dcan1n2>dcaMax) { negtrack2=0; continue; }
 
-	// Vertexing with AliVertexerTracks
+	// Vertexing
 	twoTrackArray2->AddAt(postrack1,0);
 	twoTrackArray2->AddAt(negtrack2,1);
-	AliESDVertex *vertexp1n2 = vertexer2->VertexForSelectedTracks(twoTrackArray2);
+	AliESDVertex *vertexp1n2 = ReconstructSecondaryVertex(twoTrackArray2);
 	if(f3Prong) { 
 	  threeTrackArray->AddAt(negtrack1,0);
 	  threeTrackArray->AddAt(postrack1,1);
@@ -317,7 +330,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliESDEvent *esd,TTree treeout[])
     
 
 
-  delete vertexer2;
   //printf("delete twoTr 1\n");
   twoTrackArray1->Delete(); delete twoTrackArray1;
   //printf("delete twoTr 2\n");
@@ -374,14 +386,13 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   okD0=kFALSE; okJPSI=kFALSE;
 
   Double_t px[2],py[2],pz[2],d0[2],d0err[2];
-  Double_t bfieldkG=(Double_t)esd->GetMagneticField(); 
 
   AliESDtrack *postrack = (AliESDtrack*)twoTrackArray1->UncheckedAt(0);
   AliESDtrack *negtrack = (AliESDtrack*)twoTrackArray1->UncheckedAt(1);
 
   // propagate tracks to secondary vertex, to compute inv. mass
-  postrack->RelateToVertex(secVertexESD,bfieldkG,10.);
-  negtrack->RelateToVertex(secVertexESD,bfieldkG,10.);
+  postrack->RelateToVertex(secVertexESD,fBzkG,10.);
+  negtrack->RelateToVertex(secVertexESD,fBzkG,10.);
 
   Double_t momentum[3];
   postrack->GetPxPyPz(momentum);
@@ -419,11 +430,11 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   }
 
   Float_t d0z0[2],covd0z0[3];
-  postrack->RelateToVertex(primVertex,bfieldkG,10.);
+  postrack->RelateToVertex(primVertex,fBzkG,10.);
   postrack->GetImpactParameters(d0z0,covd0z0);
   d0[0] = d0z0[0];
   d0err[0] = TMath::Sqrt(covd0z0[0]);
-  negtrack->RelateToVertex(primVertex,bfieldkG,10.);
+  negtrack->RelateToVertex(primVertex,fBzkG,10.);
   negtrack->GetImpactParameters(d0z0,covd0z0);
   d0[1] = d0z0[0];
   d0err[1] = TMath::Sqrt(covd0z0[0]);
@@ -437,6 +448,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   primVertex->GetCovMatrix(cov); //covariance matrix
   AliAODVertex *primVertexAOD = new AliAODVertex(pos,cov,primVertex->GetChi2toNDF());
   AliAODRecoDecayHF2Prong *the2Prong = new AliAODRecoDecayHF2Prong(secVertexAOD,px,py,pz,d0,d0err,dca);
+  the2Prong->SetOwnSecondaryVtx(secVertexAOD);//temporary
   the2Prong->SetOwnPrimaryVtx(primVertexAOD);
 
   // select D0->Kpi
@@ -464,7 +476,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   }
 
   if(ownPrimVertex) delete ownPrimVertex;	
-
+ 
   return the2Prong;  
 }
 //----------------------------------------------------------------------------
@@ -482,7 +494,6 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   Double_t px[3],py[3],pz[3],d0[3],d0err[3];//d0z[3];  
   Float_t d0z0[2],covd0z0[3];
 
-  Double_t bfieldkG=(Double_t)esd->GetMagneticField(); 
 
   AliESDtrack *postrack1 = (AliESDtrack*)threeTrackArray->UncheckedAt(0);
   AliESDtrack *negtrack = (AliESDtrack*)threeTrackArray->UncheckedAt(1);
@@ -490,9 +501,9 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 
   AliESDVertex *primVertex = fV1;  
 
-  postrack1->RelateToVertex(primVertex,bfieldkG,10.);
-  negtrack->RelateToVertex(primVertex,bfieldkG,10.);
-  postrack2->RelateToVertex(primVertex,bfieldkG,10.);
+  postrack1->RelateToVertex(primVertex,fBzkG,10.);
+  negtrack->RelateToVertex(primVertex,fBzkG,10.);
+  postrack2->RelateToVertex(primVertex,fBzkG,10.);
 
   Double_t momentum[3];
   postrack1->GetPxPyPz(momentum);
@@ -513,7 +524,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   d0err[2] = TMath::Sqrt(covd0z0[0]);
 
 
-  // invariant mass cut for D+ (try to improve coding here..)
+  // invariant mass cut for D+, Ds, Lc
   Bool_t okMassCut=kFALSE;
   if(!okMassCut && f3Prong) if(SelectInvMass(2,3,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut) {
@@ -541,9 +552,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   }
 
   // create the object AliAODRecoDecayHF3Prong
-  AliVertexerTracks *vertexer = new AliVertexerTracks(esd->GetMagneticField());
-  AliESDVertex* secVert3Prong=(AliESDVertex*)vertexer->VertexForSelectedTracks(threeTrackArray,kTRUE,kTRUE);
-  delete vertexer; vertexer=NULL;
+  AliESDVertex* secVert3Prong = ReconstructSecondaryVertex(threeTrackArray);
   Double_t pos[3],cov[6],sigmavert;
   secVert3Prong->GetXYZ(pos); // position
   secVert3Prong->GetCovMatrix(cov); //covariance matrix
@@ -560,10 +569,17 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 
   AliAODRecoDecayHF3Prong *the3Prong = new AliAODRecoDecayHF3Prong(secVert3PrAOD,px,py,pz,d0,d0err,dca,sigmavert,dist12,dist23,charge);
   the3Prong->SetOwnPrimaryVtx(primVertexAOD);
+  the3Prong->SetOwnSecondaryVtx(secVert3PrAOD);//temporary
 
 
-  // select D+->Kpipi
-  if(f3Prong) ok3Prong = the3Prong->SelectDplus(fDplusCuts);
+  // select D+->Kpipi, Ds->KKpi, Lc->pKpi
+  if(f3Prong) {
+    ok3Prong = kFALSE;
+    Int_t ok1,ok2;
+    if(the3Prong->SelectDplus(fDplusCuts))   ok3Prong = kTRUE;
+    if(the3Prong->SelectDs(fDsCuts,ok1,ok2)) ok3Prong = kTRUE;
+    if(the3Prong->SelectLc(fLcCuts,ok1,ok2)) ok3Prong = kTRUE;
+  }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
   if(ok3Prong) {
     // get PID info from ESD
@@ -604,8 +620,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   Double_t px[4],py[4],pz[4],d0[4],d0err[4];//d0z[3];
   //Float_t d0z0[2],covd0z0[3];
 
-  Double_t bfieldkG=dcap1n1*dcap1n2*dcap2n1; // TO BE CHANGED (done just to removed compilation warning about dca... not used)
-  bfieldkG=(Double_t)esd->GetMagneticField();
+  px[0]=dcap1n1*dcap1n2*dcap2n1; // TO BE CHANGED (done just to removed compilation warning about dca... not used)
 
   //charge
   Short_t charge=0;
@@ -617,10 +632,10 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
 
   AliESDVertex *primVertex = fV1;
 
-  postrack1->RelateToVertex(primVertex,bfieldkG,10.);
-  negtrack1->RelateToVertex(primVertex,bfieldkG,10.);
-  postrack2->RelateToVertex(primVertex,bfieldkG,10.);
-  negtrack2->RelateToVertex(primVertex,bfieldkG,10.);
+  postrack1->RelateToVertex(primVertex,fBzkG,10.);
+  negtrack1->RelateToVertex(primVertex,fBzkG,10.);
+  postrack2->RelateToVertex(primVertex,fBzkG,10.);
+  negtrack2->RelateToVertex(primVertex,fBzkG,10.);
 
   Double_t momentum[3];
   postrack1->GetPxPyPz(momentum);
@@ -657,9 +672,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   }
 
   // create the object AliAODRecoDecayHF4Prong
-  AliVertexerTracks *vertexer = new AliVertexerTracks(esd->GetMagneticField());
-  AliESDVertex* secVert4Prong=(AliESDVertex*)vertexer->VertexForSelectedTracks(fourTrackArray,kTRUE,kTRUE);
-  delete vertexer; vertexer=NULL;
+  AliESDVertex* secVert4Prong = ReconstructSecondaryVertex(fourTrackArray);
   Double_t pos[3],cov[6],sigmavert;
   secVert4Prong->GetXYZ(pos); // position
   secVert4Prong->GetCovMatrix(cov); //covariance matrix
@@ -680,6 +693,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   //AliAODRecoDecayHF4Prong *the4Prong = new AliAODRecoDecayHF4Prong(secVert4PrAOD,px,py,pz,d0,d0err,dca,sigmavert,dist12,dist23,charge);
   AliAODRecoDecayHF4Prong *the4Prong = new AliAODRecoDecayHF4Prong(secVert4PrAOD,px,py,pz,d0,d0err,dca,dist12,dist23,dist14,dist34,charge);
   the4Prong->SetOwnPrimaryVtx(primVertexAOD);
+  the4Prong->SetOwnSecondaryVtx(secVert4PrAOD);//temporary
 
 
   // use the following two lines once AliAODRecoDecayHF4Prong::SelectD0 is available
@@ -860,6 +874,22 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       mPDG=TDatabasePDG::Instance()->GetParticle(411)->Mass();
       minv = rd->InvMass(nprongs,pdg3);
       if(TMath::Abs(minv-mPDG)<fDplusCuts[0]) retval=kTRUE;
+                            // Ds+->KKpi
+      pdg3[0]=321; pdg3[1]=321; pdg3[2]=211;
+      mPDG=TDatabasePDG::Instance()->GetParticle(431)->Mass();
+      minv = rd->InvMass(nprongs,pdg3);
+      if(TMath::Abs(minv-mPDG)<fDsCuts[0]) retval=kTRUE;
+      pdg3[0]=211; pdg3[1]=321; pdg3[2]=321;
+      minv = rd->InvMass(nprongs,pdg3);
+      if(TMath::Abs(minv-mPDG)<fDsCuts[0]) retval=kTRUE;
+                            // Lc->pKpi
+      pdg3[0]=2212; pdg3[1]=321; pdg3[2]=211;
+      mPDG=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+      minv = rd->InvMass(nprongs,pdg3);
+      if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE;
+      pdg3[0]=211; pdg3[1]=321; pdg3[2]=2212;
+      minv = rd->InvMass(nprongs,pdg3);
+      if(TMath::Abs(minv-mPDG)<fLcCuts[0]) retval=kTRUE; 
       break;
     default:
       break;
@@ -904,7 +934,7 @@ void AliAnalysisVertexingHF::SelectTracks(AliESDEvent *esd,
 	 !TESTBIT(esdtrack->GetITSClusterMap(),1)) continue;
 
     // single track selection
-    if(!SingleTrkCuts(*esdtrack,esd->GetMagneticField())) continue;
+    if(!SingleTrkCuts(*esdtrack)) continue;
 
     if(esdtrack->GetSign()<0) { // negative track
       trksN.AddLast(esdtrack);
@@ -1000,24 +1030,56 @@ void AliAnalysisVertexingHF::SetDplusCuts(Double_t cut0,Double_t cut1,
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SetDplusCuts(const Double_t cuts[12]) 
 {
-  // Set the cuts for Dplus selection
+  // Set the cuts for Dplus->Kpipi selection
 
   for(Int_t i=0; i<12; i++) fDplusCuts[i] = cuts[i];
 
   return;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack& trk, 
-					     Double_t bfieldkG) const 
+void AliAnalysisVertexingHF::SetDsCuts(Double_t cut0)
+{
+  // Set the cuts for Ds->KKpi selection
+  fDsCuts[0] = cut0;
+
+  return;
+}
+//-----------------------------------------------------------------------------
+void AliAnalysisVertexingHF::SetDsCuts(const Double_t cuts[1]) 
+{
+  // Set the cuts for Ds->KKpi selection
+
+  for(Int_t i=0; i<1; i++) fDsCuts[i] = cuts[i];
+
+  return;
+}
+//-----------------------------------------------------------------------------
+void AliAnalysisVertexingHF::SetLcCuts(Double_t cut0)
+{
+  // Set the cuts for Lc->pKpi selection
+  fLcCuts[0] = cut0;
+
+  return;
+}
+//-----------------------------------------------------------------------------
+void AliAnalysisVertexingHF::SetLcCuts(const Double_t cuts[1]) 
+{
+  // Set the cuts for Lc->pKpi selection
+
+  for(Int_t i=0; i<1; i++) fLcCuts[i] = cuts[i];
+
+  return;
+}
+//-----------------------------------------------------------------------------
+Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack& trk) const 
 {
   // Check if track passes some kinematical cuts  
-  // Magnetic field "bfieldkG" (kG)
 
   if(TMath::Abs(1./trk.GetParameter()[4]) < fMinPtCut) {
     printf("pt %f\n",1./trk.GetParameter()[4]);
     return kFALSE;
   }
-  trk.RelateToVertex(fV1,bfieldkG,10.);
+  trk.RelateToVertex(fV1,fBzkG,10.);
   Float_t d0z0[2],covd0z0[3];
   trk.GetImpactParameters(d0z0,covd0z0);
   if(TMath::Abs(d0z0[0]) < fMind0rphiCut) {
@@ -1026,6 +1088,40 @@ Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack& trk,
   }
 
   return kTRUE;
+}
+//-----------------------------------------------------------------------------
+AliESDVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkArray) const
+{
+  // Secondary vertex reconstruction with AliVertexerTracks or AliKFParticle
+
+  AliESDVertex *vertex = 0;
+
+  if(!fSecVtxWithKF) { // AliVertexerTracks
+
+    AliVertexerTracks *vertexer2 = new AliVertexerTracks(fBzkG);
+    vertexer2->SetDebug(0);
+    vertexer2->SetVtxStart(fV1);
+    vertex = (AliESDVertex*)vertexer2->VertexForSelectedTracks(trkArray);
+    delete vertexer2;
+
+  } else { // Kalman Filter vertexer (AliKFParticle)
+
+    AliKFParticle::SetField(fBzkG);
+
+    AliKFParticle vertexKF;
+
+    Int_t nTrks = trkArray->GetEntriesFast();
+    for(Int_t i=0; i<nTrks; i++) {
+      AliESDtrack *esdTrack = (AliESDtrack*)trkArray->At(i);
+      AliKFParticle daughterKF(*esdTrack,211);
+      vertexKF.AddDaughter(daughterKF);
+    }
+    vertex = new AliESDVertex();
+    vertexKF.CopyToESDVertex(*vertex);
+
+  }
+
+  return vertex;
 }
 //-----------------------------------------------------------------------------
 
