@@ -24,6 +24,12 @@
     @brief  An abstract reader class for TPC data.
 */
 
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #if __GNUC__>= 3
 using namespace std;
 #endif
@@ -40,14 +46,21 @@ AliHLTTPCDigitReader::AliHLTTPCDigitReader()
   fLckRow(-1),
   fLckPad(-1)
 {
+  // see header file for class documentation
+  // or
+  // refer to README to build package
+  // or
+  // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 }
 
 AliHLTTPCDigitReader::~AliHLTTPCDigitReader()
 {
+  // see header file for class documentation
 }
 
 int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,Int_t lastrow, Int_t patch, Int_t slice)
 {
+  // see header file for class documentation
   if (patch<0 || patch>=AliHLTTPCTransform::GetNumberOfPatches()) {
     HLTError("invalid readout partition number %d", patch);
     return -EINVAL;
@@ -65,12 +78,17 @@ int AliHLTTPCDigitReader::InitBlock(void* ptr,unsigned long size,Int_t firstrow,
 
 void AliHLTTPCDigitReader::SetOldRCUFormat(Bool_t /*oldrcuformat*/)
 {
+  // default method of the base class
 }
-void AliHLTTPCDigitReader::SetUnsorted(Bool_t /*unsorted*/){
+
+void AliHLTTPCDigitReader::SetUnsorted(Bool_t /*unsorted*/)
+{
+  // default method of the base class
 }
 
 bool AliHLTTPCDigitReader::Next()
 {
+  // see header file for class documentation
   if (!CheckFlag(kLocked)) return NextSignal();
 
   bool haveData=false;
@@ -87,12 +105,14 @@ bool AliHLTTPCDigitReader::Next()
 
 void AliHLTTPCDigitReader::EnableCaching(bool bCache)
 {
+  // see header file for class documentation
   if (bCache) SetFlag(kChannelCaching);
   else ClearFlag(kChannelCaching);
 }
 
 int AliHLTTPCDigitReader::RewindChannel()
 {
+  // see header file for class documentation
   int iResult=0;
   
   return iResult;
@@ -100,11 +120,13 @@ int AliHLTTPCDigitReader::RewindChannel()
 
 unsigned int AliHLTTPCDigitReader::SetFlag(unsigned int flag)
 {
+  // see header file for class documentation
   return fFlags|=flag;
 }
 	
 unsigned int AliHLTTPCDigitReader::ClearFlag(unsigned int flag)
 {
+  // see header file for class documentation
   return fFlags&=~flag;
 }
 
@@ -115,6 +137,7 @@ unsigned int AliHLTTPCDigitReader::ClearFlag(unsigned int flag)
 
 int AliHLTTPCDigitReader::RewindCurrentChannel()
 {
+  // see header file for class documentation
   SetFlag(kNoRewind);
   if (!CheckFlag(kChannelCaching)) return -ENODATA;
   return -ENOSYS;
@@ -122,6 +145,7 @@ int AliHLTTPCDigitReader::RewindCurrentChannel()
 
 int AliHLTTPCDigitReader::RewindToPrevChannel()
 {
+  // see header file for class documentation
   SetFlag(kNoRewind);
   if (!CheckFlag(kChannelCaching)) return -ENODATA;
   return -ENOSYS;

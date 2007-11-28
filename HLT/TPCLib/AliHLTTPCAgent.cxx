@@ -31,6 +31,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 // component headers
 #include "AliHLTAltroChannelSelectorComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
+#include "AliHLTTPCEsdWriterComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -120,5 +121,8 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   if (!pHandler) return -EINVAL;
   pHandler->AddComponent(new AliHLTAltroChannelSelectorComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
+  pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliWriter);
+  pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);
+
   return 0;
 }

@@ -14,6 +14,12 @@
     @brief  An abstract reader class for TPC data.
 */
 
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTLogging.h"
 #include "TObject.h"
 
@@ -183,7 +189,7 @@ protected:
   /**
    * Check a status flag of the reader.
    */
-  inline int CheckFlag(unsigned int flag) {return (fFlags&flag)!=0;}
+  int CheckFlag(unsigned int flag) const {return (fFlags&flag)!=0;}
 
   /**
    * Rewind to the beginning.of the current channel.

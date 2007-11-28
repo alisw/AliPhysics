@@ -23,6 +23,12 @@
             mapping tracker in the AliESD format
 
                                                                           */
+// see header file for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include <cassert>
 #include "AliHLTTPCEsdWriterComponent.h"
 #include "AliESDEvent.h"
@@ -33,10 +39,6 @@
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCTransform.h"
-
-/** global instance for component registration */
-AliHLTTPCEsdWriterComponent::AliWriter gTPCEsdWriter;
-AliHLTTPCEsdWriterComponent::AliConverter gTPCEsdConverter;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCEsdWriterComponent)

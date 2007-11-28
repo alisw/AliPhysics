@@ -12,6 +12,12 @@
             mapping tracker in the AliESD format
 
                                                                           */
+// see below for class documentation
+// or
+// refer to README to build package
+// or
+// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+
 #include "AliHLTRootFileWriterComponent.h"
 #include "AliHLTProcessor.h"
 
@@ -83,7 +89,7 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
   /** standard constructor */
   AliWriter();
   /** destructor */
-  ~AliWriter();
+  virtual ~AliWriter();
 
   /**
    * The id of the component.
@@ -108,9 +114,9 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
    * @param blocks        input data block descriptors
    * @param trigData	  trigger data structure
    */
-  virtual int DumpEvent( const AliHLTComponentEventData& evtData,
-			 const AliHLTComponentBlockData* blocks, 
-			 AliHLTComponentTriggerData& trigData );
+  int DumpEvent( const AliHLTComponentEventData& evtData,
+		 const AliHLTComponentBlockData* blocks, 
+		 AliHLTComponentTriggerData& trigData );
 
   using AliHLTRootFileWriterComponent::DumpEvent;
 
@@ -164,7 +170,7 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
     /** standard constructor */
     AliConverter();
     /** destructor */
-    ~AliConverter();
+    virtual ~AliConverter();
 
     // interface methods of base class
     const char* GetComponentID() {return "TPCEsdConverter";};
