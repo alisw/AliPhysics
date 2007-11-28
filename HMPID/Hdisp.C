@@ -355,8 +355,17 @@ void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
   }//tracks loop    
 }//SimulateHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void DispTB(TString t0,TString t1,TString t2,TString t3)
+{
+  fCanvasImp->SetStatusText(t0,0);
+  fCanvasImp->SetStatusText(t1,1);
+  fCanvasImp->SetStatusText(t2,2);
+  fCanvasImp->SetStatusText(t3,3);
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DisplayInfo(Int_t px, Int_t py)
 {
+  if(!gPad) return;
   TVirtualPad *pPad=gPad->GetSelectedPad();
   Int_t padN = pPad->GetNumber()-1;
   if(padN<0 || padN>8) return;
@@ -372,13 +381,16 @@ void DisplayInfo(Int_t px, Int_t py)
   if(padX>=0&&padY>=0) {
     text0.Append(Form("Pad(%i,%i)-LORS(%6.2f,%6.2f)-MARS(%7.2f,%7.2f,%7.2f)",padX,padY,x,y,xyz.X(),xyz.Y(),xyz.Z()));
     text1.Append(Form("Module %i Sector %i",ch,pc));
+    text2="";
     text3.Append(Form("Pads = %i - Clusters = %i - Multiplicity %5.2f%%",fTotPads[ch],fTotClus[ch],100.*fTotPads[ch]/(144.*160.)));
   }
   
 // Find object DIGIT
   TObject *obj = fCanvas->GetSelected();
   TString name = obj->GetName();
-  
+
+  if(name=="") {DispTB(text0,text1,text2,text3);return;}
+    
   if(name.Contains("TBox")) {
 
     TBox *box = (TBox*)obj;
@@ -395,7 +407,7 @@ void DisplayInfo(Int_t px, Int_t py)
 
     // check if point is near one of the points
     Int_t distance = big;
-    Int_t index;
+    Int_t index=0;
 
     Double_t *xPol = b->GetX();
     Double_t *yPol = b->GetY();
@@ -410,18 +422,20 @@ void DisplayInfo(Int_t px, Int_t py)
     Int_t type = b->GetUniqueID();
     
     // Case Hit Mip
+    
+    TString nameHit;
+    Int_t iCko[7]={0,0,0,0,0,0,0};
+    Int_t iFee[7]={0,0,0,0,0,0,0};
+    Int_t iMip[7]={0,0,0,0,0,0,0};
+    Int_t iHit;
+    Int_t chHit;
+    Int_t indHit=0;
+    
     switch(type) {
       
       case kHitMip:
       case kHitCko:
       case kHitFee:
-        TString nameHit;
-        Int_t iCko[7]={0,0,0,0,0,0,0};
-        Int_t iFee[7]={0,0,0,0,0,0,0};
-        Int_t iMip[7]={0,0,0,0,0,0,0};
-        Int_t iHit;
-        Int_t chHit;
-        Int_t indHit=0;
         
         for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
           fHitTree->GetEntry(iEnt);                              
@@ -445,9 +459,9 @@ void DisplayInfo(Int_t px, Int_t py)
         Float_t x=pHit->LorsX(); 
         Float_t y=pHit->LorsY();
         Float_t charge = pHit->Q();
-        if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
         if(pHit->Pid()==50000050) {nameHit = " Cherenkov Photon ";}
-        if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
+        else if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
+        else if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
         text0="";text0.Append(Form("Hit x %6.2f y %6.2f",x,y));
         text2="";text2.Append(Form("Q = %7.2f ADC",charge));
         text3="";text3="Particle: "+ nameHit;
@@ -461,10 +475,9 @@ void DisplayInfo(Int_t px, Int_t py)
         break;
         
       case kTrack:
-        AliHMPIDRecon rec;
         AliESDtrack *pTrk=fEsd->GetTrack(index);
         Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
-        Float_t xPc=0,yPc=0; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
+        Float_t xPc,yPc; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
         text0="";text0.Append(Form("TRACK: x %6.2f y %6.2f at PC plane",xPc,yPc));
         text2="";text2.Append(Form("p = %7.2f GeV/c",pTrk->GetP()));
         Float_t ckov=pTrk->GetHMPIDsignal();                             
@@ -474,13 +487,12 @@ void DisplayInfo(Int_t px, Int_t py)
         }      
         break;
       default:
+        break;
     }
   }
 //Update toolbar status  
-  fCanvasImp->SetStatusText(text0,0);
-  fCanvasImp->SetStatusText(text1,1);
-  fCanvasImp->SetStatusText(text2,2);
-  fCanvasImp->SetStatusText(text3,3);
+
+  DispTB(text0,text1,text2,text3);  
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CloseInfo()
@@ -659,7 +671,7 @@ void Hdisp()
     fCosTree->SetBranchAddress("Digs",&fDigLst);   fCosTree->SetBranchAddress("Clus",&fCluLst); 
   }            
 
-  fCanvas=new TCanvas("all","",-1024,768);fCanvas->SetWindowSize(-1024,768);
+  fCanvas=new TCanvas("all","",-1024,768);fCanvas->SetWindowSize(1024,768);
   fCanvasImp = fCanvas->GetCanvasImp();
   fCanvasImp->ShowStatusBar();
   fCanvas->Divide(3,3,0,0);//  pAll->ToggleEditor();
