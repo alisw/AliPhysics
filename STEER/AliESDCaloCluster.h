@@ -22,7 +22,8 @@
 
 class TLorentzVector;
 
-class AliESDCaloCluster : public TObject {
+class AliESDCaloCluster : public TObject 
+{
 
 public:
 
@@ -38,14 +39,14 @@ public:
   // backward comp. -1 was undefined, which only applied
   // for PHOS clusters before
   enum ESDClu_t {kUndef = -2, 
-		 kPHOSCluster,
-		 kEMCALPseudoCluster, 
+		 kPHOSCluster, 
+		 kEMCALPseudoCluster, //Not any more in use, keep for backward comp.
 		 kEMCALClusterv1};
+
   void SetClusterType(Int_t type) { fClusterType = type; }
   Char_t GetClusterType() const {return fClusterType; }
 
-  Bool_t IsEMCAL() const {return (fClusterType == kEMCALClusterv1||fClusterType == kEMCALPseudoCluster);}
-  Bool_t IsEMCALPseudo() {return (fClusterType == kEMCALPseudoCluster);}
+  Bool_t IsEMCAL() const {return (fClusterType == kEMCALClusterv1);}
   Bool_t IsPHOS() const {return (fClusterType == kPHOSCluster);}
 
   void SetPosition(const Float_t *pos) {
@@ -87,15 +88,9 @@ public:
 
   void AddTracksMatched(TArrayI & array)  { fTracksMatched   = new TArrayI(array) ; }
   void AddLabels(TArrayI & array)         { fLabels = new TArrayI(array) ; }
-  void AddDigitAmplitude(TArrayS & array) { fDigitAmplitude   = new TArrayS(array) ; }
-  void AddDigitTime(TArrayS & array)      { fDigitTime = new TArrayS(array) ; }
-  void AddDigitIndex(TArrayS & array)     { fDigitIndex   = new TArrayS(array) ; }
 
   TArrayI * GetTracksMatched() const  {return  fTracksMatched;}
   TArrayI * GetLabels() const         {return  fLabels;}
-  TArrayS * GetDigitAmplitude() const {return  fDigitAmplitude;}
-  TArrayS * GetDigitTime() const      {return  fDigitTime;}
-  TArrayS * GetDigitIndex() const     {return  fDigitIndex;}
  
   Int_t GetTrackMatched() const   
   {if( fTracksMatched &&  fTracksMatched->GetSize() >0)  return  fTracksMatched->At(0); 
@@ -104,28 +99,58 @@ public:
   {if( fLabels &&  fLabels->GetSize() >0)  return  fLabels->At(0); 
     else return -1;} //Most likely the track associated to the cluster
 
-
   Int_t GetNTracksMatched() const {if (fTracksMatched) return  fTracksMatched->GetSize(); 
     else return -1;}
   Int_t GetNLabels() const        { if (fLabels) return  fLabels->GetSize(); 
     else return -1;}
-  Int_t GetNumberOfDigits() const        { if (fDigitAmplitude) return  fDigitAmplitude->GetSize(); 
-    else return -1;}
- 
+
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition );
-  // Sep 7, 2007
-  Int_t    GetTrueDigitAmplitude(Int_t i, Double_t cc);
-  Double_t GetTrueDigitEnergy(Int_t i, Double_t cc);
-  Double_t GetRecalibratedDigitEnergy(Int_t i, Double_t ccOld, Double_t ccNew);
+
+  // --- NEW ---
+  void SetNCells(Int_t n) { fNCells = n;}
+  Double_t GetNCells() const   { return fNCells;}
+  
+  void SetCellsAbsId(UShort_t *array) { fCellsAbsId = array; }
+  UShort_t *GetCellsAbsId() {return  fCellsAbsId;}
+  
+  void SetCellsAmplitudeFraction(Double32_t *array) { fCellsAmpFraction = array; }
+  Double32_t *GetCellsAmplitudeFraction() {return  fCellsAmpFraction;}
+  
+  Int_t GetCellAbsId(Int_t i) const {  
+    if (fCellsAbsId && i >=0 && i < fNCells ) return fCellsAbsId[i];    
+    else return -1;}
+  
+  Double_t GetCellAmplitudeFraction(Int_t i) const {  
+    if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
+    else return -1;}
+    
+  //_____________________________________________________
+  //Not used anymore, kept to avoid backward incompatibility
+  void AddDigitIndex(TArrayS & array)     { fDigitIndex   = new TArrayS(array) ; Warning("AddDigitAmplitude","This method is no more in use") ;}
+  void AddDigitAmplitude(TArrayS & array) {  fDigitAmplitude   = new TArrayS(array) ; Warning("AddDigitAmplitude","This method is no more in use") ;}
+  void AddDigitTime(TArrayS & array)      {  fDigitTime   = new TArrayS(array) ;Warning("AddDigitTime","This method is no more in use") ;}
+  TArrayS * GetDigitAmplitude() const {return  fDigitAmplitude;}
+  TArrayS * GetDigitTime() const      {return  fDigitTime;}
+  TArrayS * GetDigitIndex() const     {return  fDigitIndex;}
+  Int_t GetNumberOfDigits() const        { return -1;}
+ //_____________________________________________________
 
 protected:
 
   TArrayI * fTracksMatched; //Index of tracks close to cluster. First entry is the most likely match.
   TArrayI * fLabels;   //list of primaries that generated the cluster, ordered in deposited energy.
+
+  //NEW
+  Int_t  fNCells ;
+  UShort_t *fCellsAbsId;   //[fNCells] array of cell absId numbers
+  Double32_t *fCellsAmpFraction;    //[fNCells][0.,1.,16] array with cell amplitudes fraction.
+
+  //__________________________________________________________
+  //Not in use
   TArrayS * fDigitAmplitude;   //digit energy (integer units) 
   TArrayS * fDigitTime;        //time of this digit (integer units) 
   TArrayS * fDigitIndex;       //calorimeter digit index 
-
+  //_________________________________________________________
 
   Double32_t   fGlobalPos[3];     // position in global coordinate systemD
   Double32_t   fEnergy;           // energy measured by calorimeter
@@ -141,7 +166,7 @@ protected:
   UChar_t  fNExMax ;          // number of (Ex-)maxima before unfolding  
   Char_t  fClusterType;      // Flag for different cluster type/versions
 
-  ClassDef(AliESDCaloCluster,6)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,7)  //ESDCaloCluster 
 };
 
 #endif 

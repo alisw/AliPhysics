@@ -17,12 +17,12 @@
 class AliAODCaloCells : public TNamed 
 {
  public:
-  enum AODTwrs_t {kUndef = -1, 
+  enum AODCells_t {kUndef = -1, 
 		  kEMCAL, 
 		  kPHOS};
 
   AliAODCaloCells();
-  AliAODCaloCells(const char* name, const char* title, AODTwrs_t ttype=kUndef);
+  AliAODCaloCells(const char* name, const char* title, AODCells_t ttype=kUndef);
   
   virtual ~AliAODCaloCells();
   
@@ -39,12 +39,12 @@ class AliAODCaloCells : public TNamed
   inline Short_t  GetCellNumber(Short_t pos) const;
 
   Char_t  GetType() const { return fType;}
-  void    SetType(AODTwrs_t ttype) { fType=ttype; }
+  void    SetType(AODCells_t ttype) { fType=ttype; }
 
  protected:
   Int_t       fNCells;       // Number of cells
   Short_t    *fCellNumber;   //[fNCells] array of cell numbers
-  Double32_t *fAmplitude;    //[fNCells][0.,600.,16] array with cell amplitudes (= energy!)
+  Double32_t *fAmplitude;    //[fNCells][0.,0.,16] array with cell amplitudes (= energy!)
   Bool_t      fIsSorted;     //! true if cell arrays are sorted by index
   Char_t      fType;         // Cell type
   

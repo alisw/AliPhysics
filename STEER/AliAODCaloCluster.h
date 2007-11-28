@@ -56,8 +56,23 @@ class AliAODCaloCluster : public AliAODCluster {
 
   Int_t    GetNTracksMatched() const { return fTracksMatched.GetEntriesFast(); }
   TObject *GetTrackMatched(Int_t i) const { return fTracksMatched.At(i); }
-  Int_t    GetNCellNumbers() const { return fCellNumber.GetSize(); }
-  UShort_t GetCellNumber(Int_t i) const { return fCellNumber.At(i); }
+ 
+  void SetNCells(Int_t n) { fNCells = n;}
+  Double_t GetNCells() const   { return fNCells;}
+  
+  void SetCellsAbsId(UShort_t *array) { fCellsAbsId = array; }
+  UShort_t *GetCellsAbsId() {return  fCellsAbsId;}
+  
+  void SetCellsAmplitudeFraction(Double32_t *array) { fCellsAmpFraction = array; }
+  Double32_t *GetCellsAmplitudeFraction() {return  fCellsAmpFraction;}
+  
+  Int_t GetCellAbsId(Int_t i) const {  
+    if (fCellsAbsId && i >=0 && i < fNCells ) return fCellsAbsId[i];    
+    else return -1;}
+  
+  Double_t GetCellAmplitudeFraction(Int_t i) const {  
+    if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
+    else return -1;}
 
   // setters
   void SetDistToBadChannel(Double_t dist) { fDistToBadChannel = dist; }
@@ -104,7 +119,10 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t     fNExMax;           // number of (Ex-)maxima before unfolding
 
   TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
-  TArrayS      fCellNumber;       // fired calorimeter cell numbers
+
+  UShort_t  fNCells ;
+  UShort_t *fCellsAbsId;   //[fNCells] array of cell absId numbers
+  Double32_t *fCellsAmpFraction;    //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
   ClassDef(AliAODCaloCluster,1);
 };

@@ -34,9 +34,12 @@ AliESDCaloCluster::AliESDCaloCluster() :
   TObject(),
   fTracksMatched(0x0),
   fLabels(0x0),
-  fDigitAmplitude(0x0),
-  fDigitTime(0x0),
-  fDigitIndex(0x0),
+  fNCells(0),
+  fCellsAbsId(0x0),
+  fCellsAmpFraction(0x0),
+  fDigitAmplitude(0x0),//not in use
+  fDigitTime(0x0),//not in use
+  fDigitIndex(0x0),//not in use
   fEnergy(0),
   fDispersion(0),
   fChi2(0),
@@ -61,9 +64,12 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   TObject(clus),
   fTracksMatched(clus.fTracksMatched?new TArrayI(*clus.fTracksMatched):0x0),
   fLabels(clus.fLabels?new TArrayI(*clus.fLabels):0x0),
-  fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),
-  fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),
-  fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0),
+  fNCells(clus.fNCells),
+  fCellsAbsId(),
+  fCellsAmpFraction(),
+  fDigitAmplitude(clus.fDigitAmplitude?new TArrayS(*clus.fDigitAmplitude):0x0),//not in use
+  fDigitTime(clus.fDigitTime?new TArrayS(*clus.fDigitTime):0x0),//not in use
+  fDigitIndex(clus.fDigitIndex?new TArrayS(*clus.fDigitIndex):0x0),//not in use
   fEnergy(clus.fEnergy),
   fDispersion(clus.fDispersion),
   fChi2(clus.fChi2),
@@ -84,6 +90,22 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fGlobalPos[2] = clus.fGlobalPos[2];
 
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = clus.fPID[i];
+
+  if (clus.fNCells > 0) {
+
+    if(clus.fCellsAbsId){
+      fCellsAbsId = new UShort_t[clus.fNCells];
+      for (Int_t i=0; i<clus.fNCells; i++)
+	fCellsAbsId[i]=clus.fCellsAbsId[i];
+    }
+    
+    if(clus.fCellsAmpFraction){
+      fCellsAmpFraction = new Double32_t[clus.fNCells];
+      for (Int_t i=0; i<clus.fNCells; i++)
+	fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
+    }
+    
+  }
 
 }
 
@@ -111,23 +133,41 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   for(Int_t i=0; i<AliPID::kSPECIESN; i++) fPID[i] = source.fPID[i];
   fID = source.fID;
 
-  delete fTracksMatched;
-  fTracksMatched = source.fTracksMatched?new TArrayI(*source.fTracksMatched):0x0;
-  delete fLabels;
-  fLabels = source.fLabels?new TArrayI(*source.fLabels):0x0;
-
-  delete fDigitAmplitude;
-  fDigitAmplitude = source.fDigitAmplitude?new TArrayS(*source.fDigitAmplitude):0x0;
-
-  delete fDigitTime;
-  fDigitTime = source.fDigitTime?new TArrayS(*source.fDigitTime):0x0;
-
-  delete fDigitIndex;
-  fDigitIndex = source.fDigitIndex?new TArrayS(*source.fDigitIndex):0x0;
+  fNCells= source. fNCells;
+  if (source.fNCells > 0) {
+    
+    if(source.fCellsAbsId){
+      fCellsAbsId = new UShort_t[source.fNCells];
+      for (Int_t i=0; i<source.fNCells; i++)
+	fCellsAbsId[i]=source.fCellsAbsId[i];
+    }
+    
+    if(source.fCellsAmpFraction){
+      fCellsAmpFraction = new Double32_t[source.fNCells];
+      for (Int_t i=0; i<source.fNCells; i++)
+	fCellsAmpFraction[i]=source.fCellsAmpFraction[i];
+    }
+    
+  }
 
   fNExMax = source.fNExMax;
   fClusterType = source.fClusterType;
 
+  //not in use
+  delete fTracksMatched;
+  fTracksMatched = source.fTracksMatched?new TArrayI(*source.fTracksMatched):0x0;
+  delete fLabels;
+  fLabels = source.fLabels?new TArrayI(*source.fLabels):0x0;
+  
+  delete fDigitAmplitude;
+  fDigitAmplitude = source.fDigitAmplitude?new TArrayS(*source.fDigitAmplitude):0x0;
+  
+  delete fDigitTime;
+  fDigitTime = source.fDigitTime?new TArrayS(*source.fDigitTime):0x0;
+  
+  delete fDigitIndex;
+  fDigitIndex = source.fDigitIndex?new TArrayS(*source.fDigitIndex):0x0;
+  
   return *this;
 
 }
@@ -140,9 +180,11 @@ AliESDCaloCluster::~AliESDCaloCluster(){
   //
   delete fTracksMatched;
   delete fLabels;
-  delete fDigitAmplitude;
-  delete fDigitTime;
-  delete fDigitIndex;
+  delete fDigitAmplitude;  //not in use
+  delete fDigitTime;  //not in use
+  delete fDigitIndex;  //not in use
+  if(fCellsAmpFraction) delete[] fCellsAmpFraction; fCellsAmpFraction=0;
+  if(fCellsAbsId) delete[] fCellsAbsId;  fCellsAbsId = 0;
 }
 
 //_______________________________________________________________________
@@ -196,25 +238,4 @@ void AliESDCaloCluster::GetMomentum(TLorentzVector& p, Double_t *vertex ) {
 
   p.SetPxPyPzE( fEnergy*fGlobalPos[0]/r,  fEnergy*fGlobalPos[1]/r,  fEnergy*fGlobalPos[2]/r,  fEnergy) ; 
   
-}
-// Sep 7, 2007
-Int_t AliESDCaloCluster::GetTrueDigitAmplitude(Int_t i, Double_t cc)
-{
-  static Int_t amp=0; // amp is integer now
-  amp = 0;
-  if(i>=0 && i<fDigitAmplitude->GetSize() && cc>0.0) {
-    // true formula
-    amp = Int_t(Double_t(fDigitAmplitude->At(i))/500./cc+0.5);
-  }
-  return amp;
-}
-
-Double_t AliESDCaloCluster::GetTrueDigitEnergy(Int_t i, Double_t cc)
-{
-  return Double_t(GetTrueDigitAmplitude(i,cc)) * cc;
-}
-
-Double_t AliESDCaloCluster::GetRecalibratedDigitEnergy(Int_t i, Double_t ccOld, Double_t ccNew)
-{
-  return Double_t(GetTrueDigitAmplitude(i,ccOld)) * ccNew;
 }

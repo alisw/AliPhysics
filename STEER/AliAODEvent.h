@@ -151,8 +151,8 @@ class AliAODEvent : public AliVEvent {
   AliAODTracklets *GetTracklets() const { return fTracklets; }
 
   // -- Calorimeter Cells
-  AliAODCaloCells *GetEmcalCells() const { return fEmcalCells; }
-  AliAODCaloCells *GetPhosCells() const { return fPhosCells; }
+  AliAODCaloCells *GetEMCALCells() const { return fEmcalCells; }
+  AliAODCaloCells *GetPHOSCells() const { return fPhosCells; }
 
   // -- Services
   void    CreateStdContent();

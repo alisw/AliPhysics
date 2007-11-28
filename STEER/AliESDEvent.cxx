@@ -54,12 +54,13 @@
 #include "AliESDtrack.h"
 #include "AliESDHLTtrack.h"
 #include "AliESDCaloCluster.h"
+#include "AliESDCaloCells.h"
 #include "AliESDv0.h"
 #include "AliESDFMD.h"
 #include "AliESDVZERO.h"
 #include "AliMultiplicity.h"
 #include "AliRawDataErrorLog.h"
-
+#include "AliLog.h"
 
 ClassImp(AliESDEvent)
 
@@ -86,6 +87,8 @@ ClassImp(AliESDEvent)
 						       "Cascades",
 						       "Kinks",
 						       "CaloClusters",
+						      "EMCALCells",
+						      "PHOSCells",
 						       "AliRawDataErrorLogs"};
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
@@ -110,6 +113,7 @@ AliESDEvent::AliESDEvent():
   fCascades(0),
   fKinks(0),
   fCaloClusters(0),
+  fEMCALCells(0), fPHOSCells(0),
   fErrorLogs(0),
   fESDOld(0),
   fESDFriendOld(0),
@@ -143,6 +147,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fCascades(new TClonesArray(*esd.fCascades)),
   fKinks(new TClonesArray(*esd.fKinks)),
   fCaloClusters(new TClonesArray(*esd.fCaloClusters)),
+  fEMCALCells(new AliESDCaloCells(*esd.fEMCALCells)),
+  fPHOSCells(new AliESDCaloCells(*esd.fPHOSCells)),
   fErrorLogs(new TClonesArray(*esd.fErrorLogs)),
   fESDOld(new AliESD(*esd.fESDOld)),
   fESDFriendOld(new AliESDfriend(*esd.fESDFriendOld)),
@@ -173,6 +179,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fCascades);
   AddObject(fKinks);
   AddObject(fCaloClusters);
+  AddObject(fEMCALCells);
+  AddObject(fPHOSCells);
   AddObject(fErrorLogs);
 
   GetStdContent();
@@ -206,6 +214,8 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   fCascades = new TClonesArray(*source.fCascades);
   fKinks = new TClonesArray(*source.fKinks);
   fCaloClusters = new TClonesArray(*source.fCaloClusters);
+  fEMCALCells = new AliESDCaloCells(*source.fEMCALCells);
+  fPHOSCells = new AliESDCaloCells(*source.fPHOSCells);
   fErrorLogs = new TClonesArray(*source.fErrorLogs);
   fESDOld       = new AliESD(*source.fESDOld);
   fESDFriendOld = new AliESDfriend(*source.fESDFriendOld);
@@ -232,6 +242,8 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
   AddObject(fCascades);
   AddObject(fKinks);
   AddObject(fCaloClusters);
+  AddObject(fEMCALCells);
+  AddObject(fPHOSCells);
   AddObject(fErrorLogs);
 
   fConnected = source.fConnected;
@@ -315,6 +327,8 @@ void AliESDEvent::ResetStdContent()
   if(fCascades)fCascades->Delete();
   if(fKinks)fKinks->Delete();
   if(fCaloClusters)fCaloClusters->Delete();
+  if(fPHOSCells)fPHOSCells->DeleteContainer();
+  if(fEMCALCells)fEMCALCells->DeleteContainer();
   if(fErrorLogs) fErrorLogs->Delete();
 
   // don't reset fconnected fConnected ;
@@ -367,6 +381,8 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 v0        %d\n", GetNumberOfV0s());
   printf("                 cascades  %d\n", GetNumberOfCascades());
   printf("                 kinks     %d\n", GetNumberOfKinks());
+  printf("                 PHOSCells %d\n", fPHOSCells->GetNumberOfCells());
+  printf("                 EMCALCells %d\n", fEMCALCells->GetNumberOfCells());
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
   printf("                 phos      %d\n", GetNumberOfPHOSClusters());
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
@@ -797,6 +813,8 @@ void AliESDEvent::GetStdContent()
   fCascades = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCascades]);
   fKinks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kKinks]);
   fCaloClusters = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kCaloClusters]);
+  fEMCALCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kEMCALCells]);
+  fPHOSCells = (AliESDCaloCells*)fESDObjects->FindObject(fgkESDListName[kPHOSCells]);
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
 
 }
@@ -844,6 +862,8 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDcascade",0));
   AddObject(new TClonesArray("AliESDkink",0));
   AddObject(new TClonesArray("AliESDCaloCluster",0));
+  AddObject(new AliESDCaloCells());
+  AddObject(new AliESDCaloCells());
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
 
   // check the order of the indices against enum...
@@ -862,16 +882,16 @@ TObject* AliESDEvent::FindListObject(const char *name){
 Int_t AliESDEvent::GetPHOSClusters(TRefArray *clusters) const
 {
   // fills the provided TRefArray with all found phos clusters
-
+  
   clusters->Clear();
-
+  
   AliESDCaloCluster *cl = 0;
   for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
-
-    if ( (cl = GetCaloCluster(i))) {
+    
+    if ( (cl = GetCaloCluster(i)) ) {
       if (cl->IsPHOS()){
 	clusters->Add(cl);
-	printf("IsPHOS %d Size: %d \n",i,clusters->GetEntriesFast());
+	AliDebug(1,Form("IsPHOS cluster %d Size: %d \n",i,clusters->GetEntriesFast()));
       }
     }
   }
@@ -880,17 +900,17 @@ Int_t AliESDEvent::GetPHOSClusters(TRefArray *clusters) const
 
 Int_t AliESDEvent::GetEMCALClusters(TRefArray *clusters) const
 {
-  // fills the provided TRefArray with all found phos clusters
+  // fills the provided TRefArray with all found emcal clusters
 
   clusters->Clear();
 
   AliESDCaloCluster *cl = 0;
   for (Int_t i = 0; i < GetNumberOfCaloClusters(); i++) {
 
-    if ( (cl = GetCaloCluster(i))) {
+    if ( (cl = GetCaloCluster(i)) ) {
       if (cl->IsEMCAL()){
 	clusters->Add(cl);
-	printf("IsEMCAL %d Size: %d \n",i,clusters->GetEntriesFast());
+	AliDebug(1,Form("IsEMCAL cluster %d Size: %d \n",i,clusters->GetEntriesFast()));
       }
     }
   }

@@ -29,7 +29,7 @@ AliAODCaloCells::AliAODCaloCells() : TNamed(), fNCells(0), fCellNumber(0), fAmpl
   // default constructor
 }
 
-AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, AODTwrs_t ttype) : TNamed(name, title), fNCells(0), fCellNumber(0), fAmplitude(0), fIsSorted(kTRUE), fType(ttype)
+AliAODCaloCells::AliAODCaloCells(const char* name, const char* title, AODCells_t ttype) : TNamed(name, title), fNCells(0), fCellNumber(0), fAmplitude(0), fIsSorted(kTRUE), fType(ttype)
 {
   // TNamed constructor
 }

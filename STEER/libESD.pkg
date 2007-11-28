@@ -21,7 +21,8 @@ SRCS = AliESDEvent.cxx AliESDInputHandler.cxx AliESDfriend.cxx AliESD.cxx \
        AliESDTZERO.cxx \
        AliESDCaloTrigger.cxx \
        AliRawDataErrorLog.cxx \
-       AliMeanVertex.cxx
+       AliMeanVertex.cxx \
+       AliESDCaloCells.cxx
 
 HDRS:= $(SRCS:.cxx=.h) 
 

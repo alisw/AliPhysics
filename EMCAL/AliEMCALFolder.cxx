@@ -205,14 +205,14 @@ void AliEMCALFolder::FillPi0Candidate(const Double_t mgg, AliESDCaloCluster* cl1
   int    indMax = 0, id=0;
   id = Int_t(absId[0]);
   rFirst = tFirst->GetTable(id);
-  double emax   = cl->GetTrueDigitEnergy(indMax, rFirst->fCc);
+  double emax   = 0;//cl->GetTrueDigitEnergy(indMax, rFirst->fCc);
   if(kNdigits > 1) {
     for(int i=1; i<kNdigits; i++) {
       id = Int_t(absId[i]);
       rFirst = tFirst->GetTable(id);
-      if(emax < cl->GetTrueDigitEnergy(i, rFirst->fCc)) {
+      if(emax < 0){//cl->GetTrueDigitEnergy(i, rFirst->fCc)) {
         indMax = i;
-        emax   = cl->GetTrueDigitEnergy(i, rFirst->fCc);
+        emax   = 0;//cl->GetTrueDigitEnergy(i, rFirst->fCc);
       }
     }
   }
@@ -357,7 +357,7 @@ TList *l, Double_t deff, Double_t w0, Double_t phiSlope)
       // cluster energy and position
       absId   = Int_t(dgAbsId[i]);
       rOld    = tOld->GetTable(absId);
-      ampDigi = cl->GetTrueDigitAmplitude(i, rOld->fCc); // True amplitude
+      //ampDigi = cl->GetTrueDigitAmplitude(i, rOld->fCc); // True amplitude
 
       new(digits[i]) AliEMCALDigit(Int_t(kPrim),0, absId, ampDigi, 0.0, i, 0.0); 
       dg     =  (AliEMCALDigit*)digits[i];

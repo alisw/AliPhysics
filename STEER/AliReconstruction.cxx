@@ -143,6 +143,7 @@
 #include "AliESDkink.h"
 #include "AliESDtrack.h"
 #include "AliESDCaloCluster.h"
+#include "AliESDCaloCells.h"
 #include "AliMultiplicity.h"
 #include "AliTracker.h"
 #include "AliVertexer.h"
@@ -2616,12 +2617,6 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     // Access to the AOD container of clusters
     TClonesArray &caloClusters = *(aod->GetCaloClusters());
     Int_t jClusters=0;
-
-    // Calo Clusters
-    TArrayS EMCCellNumber(15000);
-    TArrayD EMCCellAmplitude(15000);
-    Int_t nEMCCells = 0;
-    const Float_t fEMCAmpScale = 1./500;
  
     for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
 
@@ -2640,16 +2635,7 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
       else if (cluster->GetClusterType() == AliESDCaloCluster::kEMCALClusterv1) {
 	ttype = AliAODCluster::kEMCALClusterv1;
       }
-      else if (cluster->GetClusterType() == AliESDCaloCluster::kEMCALPseudoCluster) {
-	// Collect raw tower info
-	for (Int_t iDig = 0; iDig < cluster->GetNumberOfDigits(); iDig++) {
-	  EMCCellNumber[nEMCCells] = cluster->GetDigitIndex()->At(iDig);
-	  EMCCellAmplitude[nEMCCells] = fEMCAmpScale*cluster->GetDigitAmplitude()->At(iDig);
-	  nEMCCells++;
-	}
-	// don't write cluster data (it's just a pseudo cluster, holding the tower information)
-	continue; 
-      }
+
       
       AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) AliAODCaloCluster(id,
 											nLabel,
@@ -2665,14 +2651,31 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
     // end of loop on calo clusters
 
-    // fill EMC cell info
-    AliAODCaloCells &EMCCells = *(aod->GetEmcalCells());
-    EMCCells.CreateContainer(nEMCCells);
-    EMCCells.SetType(AliAODCaloCells::kEMCAL);
-    for (Int_t iCell = 0; iCell < nEMCCells; iCell++) {      
-      EMCCells.SetCell(iCell,EMCCellNumber[iCell],EMCCellAmplitude[iCell]);
+    // fill PHOS cell info
+
+    AliESDCaloCells &esdEMcells = *(esd->GetEMCALCells());
+    Int_t nEMcell = esdEMcells.GetNumberOfCells() ;
+
+    AliAODCaloCells &aodEMcells = *(aod->GetEMCALCells());
+    aodEMcells.CreateContainer(nEMcell);
+    aodEMcells.SetType(AliAODCaloCells::kEMCAL);
+    for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
+      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
     }
-    EMCCells.Sort();
+    aodEMcells.Sort();
+
+    // fill PHOS cell info
+
+    AliESDCaloCells &esdPHcells = *(esd->GetPHOSCells());
+    Int_t nPHcell = esdPHcells.GetNumberOfCells() ;
+
+    AliAODCaloCells &aodPHcells = *(aod->GetPHOSCells());
+    aodPHcells.CreateContainer(nPHcell);
+    aodPHcells.SetType(AliAODCaloCells::kPHOS);
+    for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
+      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+    }
+    aodPHcells.Sort();
 
     // tracklets    
     AliAODTracklets &SPDTracklets = *(aod->GetTracklets());
