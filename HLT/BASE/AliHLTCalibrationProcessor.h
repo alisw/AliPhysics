@@ -59,12 +59,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param pObject     pointer to root object
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
-   * @param pDDLNumber  number of DDLs participating in the processing/
-   *			creation of this calibration data, will be filled 
-   *                    automatically if not supplied by the componenet.
+   * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
+   *                    participating DDLs. Have to be set with @ref EnableDLLBit(), 
+   *                    or unset with @ref DisableDLLBit. 
+   *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
+  Int_t PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList = NULL);
 
   /**
    * Insert an object into the output. FXS header will be inserted before the root object.
@@ -72,12 +73,13 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param iSize       size of the buffer
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
-   * @param pDDLNumber  number of DDLs participating in the processing/
-   *			creation of this calibration data, will be filled 
-   *                    automatically if not supplied by the componenet.
+   * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
+   *                    participating DDLs. Have to be set with @ref EnableDLLBit(), 
+   *                    or unset with @ref DisableDLLBit. 
+   *			Will be filled automatically if not supplied by the component.
    * @return neg. error code if failed 
    */
-   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const char* pDDLNumber = "");
+   Int_t PushToFXS(void* pBuffer, int iSize, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList = NULL);
 
   /** Constants  */ 
   static const AliHLTUInt32_t fgkFXSProtocolHeaderSize;
@@ -186,7 +188,6 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    */
   virtual Int_t ScanArgument(int argc, const char** argv);
 
-
   /*
    * ######################## DeinitCalibration #####################
    */
@@ -241,13 +242,12 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
    * @param pHeader     pointer to AliHLTFXSHeader
    * @param pDetector   4 byte Detector identifier
    * @param pFileID     name of the file to which the data shall be stored
-   * @param pDDLNumber  number of DDLs participating in the processing/
-   *			creation of this calibration data, will be filled 
-   *                    automatically if not supplied by the componenet.
+   * @param pDDLList    pointer to ReadoutList ( struct @ref AliHLTEventDDL) of
+   *                    participating DDLs. Will be filled automatically if not 
+   *                    supplied by the component.
    * @return neg. error code if failed 
    */
-  Int_t CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, const char* pDDLNumber );
-
+  Int_t CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList );
 
   /*
    * ######################## Members #####################
@@ -270,11 +270,11 @@ class AliHLTCalibrationProcessor : public AliHLTProcessor {
 
   /** 
    * Bit Array of participating DDL Numbers.
-   * Scheme: lower 4 Bits of each Byte convert to 
-   * digit (0 - F)
+   * Scheme: every 4 Bits of each Byte convert digit 
+   * (0 - F), before writing to FXS Header
    */
-  //Char_t fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize];  // see above
-  Char_t fDDLNumber[64];  // see above
+  //Char_t fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize];// see above
+  Char_t fDDLNumber[64];                               // see above
 
   /** Dummy in order to cope with RC 11 */
   Int_t fDummy;                                        // see above

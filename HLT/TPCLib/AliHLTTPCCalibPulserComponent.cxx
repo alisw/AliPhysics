@@ -207,7 +207,8 @@ Int_t AliHLTTPCCalibPulserComponent::DeinitCalibration() {
 /*
  * --- setter for rcuformat need in AliTPCCalibPulser class
  */
-Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
+Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& /*evtData*/, 
+							 AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
   
   const AliHLTComponentBlockData* iter = NULL;
@@ -216,17 +217,16 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
   Int_t ddlId = 0;
     
   // ** Loop over all input blocks and specify which data format should be read - only select Raw Data
-  iter = GetFirstInputBlock( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
+  iter = GetFirstInputBlock( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC);
   
   while ( iter != NULL ) {
     
     // ** Print Debug output which data format was received
-    char tmp1[14], tmp2[14];
-    DataType2Text( iter->fDataType, tmp1 );
-    DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
-
-//     HLTDebug ( "Event received - Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
-// 	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+    //    char tmp1[14], tmp2[14];
+    //    DataType2Text( iter->fDataType, tmp1 );
+    //    DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
+    //     HLTDebug ( "Event received - Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
+    // 	       evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
 
     // ** Get DDL ID in order to tell the memory reader which slice/patch to use
     slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
@@ -276,7 +276,8 @@ Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEv
 } // Int_t AliHLTTPCCalibPulserComponent::ProcessCalibration( const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData ) {
 
 
-Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& /*trigData*/ ) {
+Int_t AliHLTTPCCalibPulserComponent::ShipDataToFXS( const AliHLTComponentEventData& /*evtData*/, 
+						    AliHLTComponentTriggerData& /*trigData*/ ) {
   // see header file for class documentation
     
 #ifndef HAVE_NOT_ALITPCCALIBPULSER

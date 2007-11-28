@@ -131,6 +131,9 @@ Int_t AliHLTCalibrationProcessor::DoInit( int argc, const char** argv ) {
     iResult = InitCalibration();
   }
 
+  // Reset the DDLNumberList
+  memset( fDDLNumber, 0, gkAliHLTFXSHeaderfDDLNumberSize);
+
   return iResult;
 }
 
@@ -205,23 +208,40 @@ Int_t AliHLTCalibrationProcessor::DoEvent( const AliHLTComponentEventData& evtDa
   const AliHLTComponentBlockData* blkEOR = NULL;
   blkEOR = GetFirstInputBlock( kAliHLTDataTypeEOR );
 
-  //  const AliHLTComponentBlockData* blkDDL = NULL;
-
-  HLTInfo( "Event ID: %lu", evtData.fEventID );
-
-
-  // --------------  GET DDLNumber -----------------
-  //  blkDDL = GetFirstInputBlock( kAliHLTDataTypeDDL );
-  
-  //  if ( blkDDL ) {
-  //HLTInfo("DDLLIST block received, size: %u", blkDDL->fSize );
-    //AliHLTEventDDL ddlList = ( AliHLTEventDDL* ) blkDDL->fPtr;
-  //}
-  
-  // ------------ decide which event type ----------
-
-  // - if event Type is not SOR or EOR -> process data
+  // ** if event Type is not SOR or EOR -> fill DDLNumber list and process data
   if ( ! blkEOR  && !blkSOR ) {
+    
+    // ** Set DDLNumber List
+    if ( trigData.fData != NULL) {
+      AliHLTEventTriggerData* trg = ( AliHLTEventTriggerData* ) trigData.fData;
+      if ( trg != NULL) {
+	AliHLTEventDDL list = (AliHLTEventDDL) trg->fReadoutList;        
+	  
+	Int_t wordNdx = GetFirstUsedDDLWord(list);
+	if ( wordNdx >=0 ) {
+	  
+	  Int_t wordCount = 1;
+	  // Handle special TPC and TOF case
+	  if ( wordNdx == 3 )
+	    wordCount = 8;
+	  else if ( wordNdx == 12 )
+	    wordCount = 3;
+	  
+	  // check word for word and binary OR it with existing DDLNumberList
+	  for ( Int_t ndx = 0; ndx < wordCount; ndx++ ) {
+	    AliHLTUInt32_t word = list.fList[wordNdx+ndx];
+	
+	    // set only 4 bit into one Char_t
+	    for ( Int_t charNdx = 0; charNdx < 8; charNdx++) {
+	      fDDLNumber[(8*ndx)+charNdx] |= (Char_t) word & 0x0000000F;
+	      word = word >> 4;
+	    }
+	  }
+	} // if ( wordNdx > 0 ) {
+      } // if ( trg != NULL) {
+    } // if ( trigData.fData != NULL) {
+    
+    // ** ProcessData
     iResult = ProcessCalibration( evtData, blocks, trigData, outputPtr, size, outputBlocks );
     fEventCounter++; 
   }  
@@ -292,71 +312,87 @@ Int_t AliHLTCalibrationProcessor::ShipDataToFXS( const AliHLTComponentEventData&
  * ######################## CreateFXSHeader #####################
  */
 
-Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, const char* pDDLNumber ) {
+Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTFXSHeader &pHeader, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
 
-  AliHLTUInt32_t runNumber = GetRunNo();         //  debug : 2176;  
-
-  HLTDebug( "RunNumber = %d", runNumber );
-
-  /* STILL TO BE DONE .. but interface fixed   */
-
-  //  if ( pDDLNumber  != "" ) {
-  char ddltmp[5] = "4444";
-  strncpy ( fDDLNumber, ddltmp, gkAliHLTFXSHeaderfDDLNumberSize );
-  //}
-  //else {
-  //strncpy ( fDDLNumber, pDDLNumber, gkAliHLTFXSHeaderfDDLNumberSize );
-  //}
-  
-  fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize] = 0;
-  
-  // -- Fill Header
-
-  // Fill header version
+  // ** Fill header version
   pHeader.fHeaderVersion = AliHLTCalibrationProcessor::fgkFXSProtocolHeaderVersion;
 
-  // Fill run number
-  pHeader.fRunNumber = runNumber;
+  // ** Fill run number
+  pHeader.fRunNumber = GetRunNo(); 
   
-  // Fill origin
+  // ** Fill origin
   HLTDebug( "FXS Header Detector  size max %i - actual %i .",gkAliHLTFXSHeaderfOriginSize, strlen( pDetector ) );
   strncpy ( pHeader.fOrigin, pDetector, gkAliHLTFXSHeaderfOriginSize ) ; 
 
   // To take care if fileIDs which are longer than gkAliHLTFXSHeaderfOriginSize, write one 0 is cheaper than an if.
   pHeader.fOrigin[gkAliHLTFXSHeaderfOriginSize] = 0;
 
-  // Fill file ID
+  // ** Fill file ID
   HLTInfo( "FXS Header FileID size max %i - actual %i .",gkAliHLTFXSHeaderfFileIDSize, strlen( pFileID ) );
   strncpy ( pHeader.fFileID, pFileID, gkAliHLTFXSHeaderfFileIDSize ) ; 
 
   // To take care if fileIDs which are longer than gkAliHLTFXSHeaderfFileIDSize, write one 0 is cheaper than an if.
   pHeader.fFileID[gkAliHLTFXSHeaderfFileIDSize] = 0;
 
-  // Fill DDL number
-  HLTInfo( "FXS Header DDLNumber size max %i - actual %i .", gkAliHLTFXSHeaderfDDLNumberSize, strlen( pDDLNumber ) );
-  strncpy ( pHeader.fDDLNumber, fDDLNumber, gkAliHLTFXSHeaderfDDLNumberSize) ; 
+  // ** Fill DDL number
 
-  // To take care if DDLNumber which are longer than gkAliHLTFXSHeaderfDDLNumberSize, write one 0 is cheaper than an if.
-  pHeader.fDDLNumber[gkAliHLTFXSHeaderfDDLNumberSize] = 0;
+  // -- if component provides list, convert to fDDLNumber
+  if ( pDDLList ) {
+    // use user list
+    
+    Int_t wordNdx = GetFirstUsedDDLWord( *(pDDLList) );
+    if ( wordNdx >=0 ) {
+	  
+      Int_t wordCount = 1;
+      // Handle special TPC and TOF case
+      if ( wordNdx == 3 )
+	wordCount = 8;
+      else if ( wordNdx == 12 )
+	wordCount = 3;
+	  
+      // check word for word 
+      for ( Int_t ndx = 0; ndx < wordCount; ndx++ ) {
+	AliHLTUInt32_t word = pDDLList->fList[wordNdx+ndx];
+	
+	// set only 4 bit into one Char_t
+	for ( Int_t charNdx = 0; charNdx < 8; charNdx++) {
+	  fDDLNumber[(8*ndx)+charNdx] = (Char_t) word & 0x0000000F;
+	  word = word >> 4;
+	}
+      }
+    } // if ( wordNdx > 0 ) {
+    else
+      iResult = wordNdx;
+  } //   if ( pDDLList ) {
 
+  // -- fill header with ascii chars
+  for (Int_t ndx = 0; ndx < gkAliHLTFXSHeaderfDDLNumberSize; ndx++ ){
+    Int_t numberToChar = (Int_t) fDDLNumber[ndx];
+    // Get ASCII
+    if ( numberToChar > 9 ) numberToChar += 55;
+    else numberToChar += 48;
+    
+    pHeader.fDDLNumber[ndx] = (Char_t) numberToChar;
+  }
+  
   return iResult;
-}  // Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTXSHeader &pHeader, const char* pDetector, const char* pFileID, const char* pDDLNumber ) {
+}  // Int_t AliHLTCalibrationProcessor::CreateFXSHeader( AliHLTXSHeader &pHeader, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
 
 /*
  * ######################## PushToFXS #####################
  */
 
-Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, const char* pDDLNumber ) {
+Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
   
   AliHLTFXSHeader pHeader;
 
-  CreateFXSHeader( pHeader, pDetector, pFileID, pDDLNumber );
+  CreateFXSHeader( pHeader, pDetector, pFileID, pDDLList );
   
   if ( pObject ) {
     
@@ -388,20 +424,20 @@ Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* pDetec
 
   return iResult;
 
-} // Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* detector, const char* pFileID, const char* pDDLNumber ) {
+} // Int_t AliHLTCalibrationProcessor::PushToFXS(TObject* pObject, const char* detector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
 
-Int_t AliHLTCalibrationProcessor::PushToFXS( void* pBuffer, int iSize, const char* pDetector, const char* pFileID, const char* pDDLNumber ) {
+Int_t AliHLTCalibrationProcessor::PushToFXS( void* pBuffer, int iSize, const char* pDetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
   // see header file for class documentation
 
   Int_t iResult = 0;
   
   AliHLTFXSHeader pHeader;
 
-  CreateFXSHeader( pHeader, pDetector, pFileID, pDDLNumber );
+  CreateFXSHeader( pHeader, pDetector, pFileID, pDDLList );
   
   iResult = PushBack( pBuffer, iSize, kAliHLTDataTypeFXSCalib, kAliHLTVoidDataSpec, (void*) (&pHeader), AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize );
 
   return iResult;
 
-} // Int_t AliHLTCalibrationProcessor::PushToFXS(void* pBuffer, int iSize, const char* pDdetector, const char* pFileID, const char* pDDLNumber = "") {
+} // Int_t AliHLTCalibrationProcessor::PushToFXS(void* pBuffer, int iSize, const char* pDdetector, const char* pFileID, AliHLTEventDDL* pDDLList ) {
 

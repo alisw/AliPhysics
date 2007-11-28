@@ -922,6 +922,46 @@ class AliHLTComponent : public AliHLTLogging {
   AliHLTUInt32_t GetRunType() const;
 
   /**
+   * Set a bit to 1 in a readout list ( = AliHLTEventDDL )
+   * -> enable DDL for readout
+   * @param list        readout list
+   * @param ddlId       DDL Id to be turned on ( Decimal )
+   */
+  void EnableDDLBit(AliHLTEventDDL &list, Int_t ddlId ) const {
+    SetDDLBit( list, ddlId, kTRUE ); 
+  }
+
+  /**
+   * Set a bit to 0 in a readout list ( = AliHLTEventDDL )
+   * -> disable DDL for readout
+   * @param list        readout list
+   * @param ddlId       DDL Id to be turned on ( Decimal )
+   */
+  void DisableDDLBit(AliHLTEventDDL &list, Int_t ddlId ) const { 
+    SetDDLBit( list, ddlId, kFALSE );  
+  }
+  
+  /**
+   * Set or unset  bit a readout list ( = AliHLTEventDDL )
+   * -> enable or disable DDL for readout
+   * @param list        readout list
+   * @param ddlId       DDL Id to be turned on ( Decimal )
+   * @param state       kTRUE sets it, kFALSE unsets it
+   */
+  void SetDDLBit(AliHLTEventDDL &list, Int_t ddlId, Bool_t state ) const;
+  
+  /**
+   * Get the first word of a detector, which has a set DDL bit. 
+   * Beware, this only works if DDLs of 1 detector are set. In the 
+   * case of the TPC and TOF, which use 8 and 3 words, the first 
+   * word is returned.
+   * @param list        readout list
+   * @return            returns the detector index, -1 if no bit is set
+   *                    at all or several detectors (=error)
+   */
+  Int_t GetFirstUsedDDLWord(AliHLTEventDDL &list) const;
+
+  /**
    * Copy a struct from block data.
    * The function checks for block size and struct size. The least common
    * size will be copied to the target struct, remaining fields are initialized

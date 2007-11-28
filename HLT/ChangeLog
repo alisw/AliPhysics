@@ -9,6 +9,8 @@
 	  - integration into AliSimulation
 	  - HLTOUT framework
 	  - component registration via agents
+	  - DDL List interface of AliHLTCalibrationProcessor base class
+	    slightly changed and helper methods added to simplify usage
 	- TPC:
 	  - zero suppression enhanced in Pad/PadArray classes
 	  - AltroChannelSelector component

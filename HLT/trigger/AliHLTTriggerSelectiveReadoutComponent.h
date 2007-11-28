@@ -34,7 +34,7 @@
  * forwarded and Bit for this readout partition in ReadoutList will be set for DAQ readout.
  *
  * The component has the following component arguments:
- * -detector <TPC|PHOS|TRD|MUON>    : Select Detector for discarding raw data.
+ * -detector <TPC |PHOS|TRD |MUON>  : Select Detector for discarding raw data, use 4 Char_t origin format.
  * -enableThreshold <size>          : Enables threshold on size ( default is kFALSE )
  * -threshold < Int_t threshold[6]> : Size threshold in Byte for different patches for TPC -> This will be disappear later on, will be taken from xCDB entry.
  *
@@ -80,7 +80,7 @@ class AliHLTTriggerSelectiveReadoutComponent : public AliHLTProcessor
 
  private:
   /** size of the threshold array  */
-  static const int fkNThreshold = 6;
+  static const int fkNThreshold = 6;           // see above
 
   /** copy constructor prohibited */
   AliHLTTriggerSelectiveReadoutComponent(const AliHLTTriggerSelectiveReadoutComponent&);
@@ -88,14 +88,14 @@ class AliHLTTriggerSelectiveReadoutComponent : public AliHLTProcessor
   /** assignment operator prohibited */
   AliHLTTriggerSelectiveReadoutComponent& operator=(const AliHLTTriggerSelectiveReadoutComponent&);
 
-  /** Detector name */
-  TString fDetector; //! transient
+  /** Detector name in HLT origin format */
+  TString fDetector;                           //! transient
   
   /** Enable of the size Threshold */
-  Bool_t fEnableThresholdSize; //! transient
+  Bool_t fEnableThresholdSize;                 //! transient
   
   /** Threshold in Bytes for each a readout partition */
-  AliHLTUInt32_t fThreshold[fkNThreshold]; //! transient
+  AliHLTUInt32_t fThreshold[fkNThreshold];     //! transient
 
   ClassDef(AliHLTTriggerSelectiveReadoutComponent, 0);
   

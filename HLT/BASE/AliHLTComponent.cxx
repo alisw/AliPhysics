@@ -37,6 +37,7 @@ using namespace std;
 #include "AliHLTComponentHandler.h"
 #include "AliHLTMessage.h"
 #include "TString.h"
+#include "TMath.h"
 #include "TObjArray.h"
 #include "TObjectTable.h"
 #include "TClass.h"
@@ -1289,5 +1290,72 @@ int AliHLTComponent::CopyStruct(void* pStruct, unsigned int iStructSize, unsigne
     HLTError("invalid struct");
     iResult=-EINVAL;
   }
+  return iResult;
+}
+
+void AliHLTComponent::SetDDLBit(AliHLTEventDDL &list, Int_t ddlId, Bool_t state ) const
+{
+  // see header file for function documentation
+  
+  // -- Detector offset
+  Int_t ddlIdBase =  TMath::FloorNint( (Double_t) ddlId / 256.0 );
+  
+  // -- Word Base = 1. word of detector ( TPC has 8 words, TOF 3 ) 
+  Int_t wordBase = 0;
+
+  if ( ddlIdBase <= 3 )
+    wordBase = ddlIdBase;
+  else if ( ddlIdBase > 3 && ddlIdBase < 5 )
+    wordBase = ddlIdBase + 7;
+  else 
+    wordBase = ddlIdBase + 9;
+
+  // -- Bit index in Word
+  Int_t bitIdx = ddlId % 32;
+
+  // -- Index of word
+  Int_t wordIdx = wordBase;
+
+  // -- if TPC (3) or TOD (5) add word idx
+  if ( ( ddlIdBase == 3 ) || ( ddlIdBase == 5 ) ) {
+    wordIdx += TMath::FloorNint( (Double_t) ( ddlId - ( ddlIdBase * 256 ) ) / 32.0 );
+  }
+
+  // -- Set -- 'OR' word with bit mask;
+  if ( state )
+    list.fList[wordIdx] |= ( 0x00000001 << bitIdx );
+  // -- Unset -- 'AND' word with bit mask;
+  else
+    list.fList[wordIdx] &= ( 0xFFFFFFFF ^ ( 0x00000001 << bitIdx ) );
+}
+
+Int_t AliHLTComponent::GetFirstUsedDDLWord(AliHLTEventDDL &list) const
+{
+  // see header file for function documentation
+
+  Int_t iResult = -1;
+
+  for ( Int_t wordNdx = 0 ; wordNdx < gkAliHLTDDLListSize ; wordNdx++ ) {
+
+    if ( list.fList[wordNdx] != 0 && iResult == -1 ) {
+      // check for special cases TPC and TOF
+      if ( wordNdx > 3 && wordNdx <= 10 ) {
+	wordNdx = 10;
+	iResult = 3;
+      }
+      else if ( wordNdx > 12 && wordNdx <= 14 ) {
+	wordNdx = 14;
+	iResult = 12;
+      }
+      else
+	iResult = wordNdx;
+    }
+    else if ( list.fList[wordNdx] != 0 && iResult >= 0 ) {
+      HLTError( "DDLIDs for minimum of TWO detectors ( %d, %d ) set, this function works only for ONE detector.", iResult, wordNdx );
+      iResult = -1;
+      break;
+    }
+  }
+
   return iResult;
 }
