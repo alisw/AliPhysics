@@ -157,6 +157,8 @@ AreOverlapping(const AliMUONPad& pad, const AliMUONCluster& cluster)
 AliMUONPad*
 AliMUONPreClusterFinder::GetNextPad(Int_t cathode) const
 {
+/// Return the next unused pad of given cathode, which is within fArea
+
   TIter next(fPads[cathode]);
   
   if ( !fArea.IsValid() )
