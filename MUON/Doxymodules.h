@@ -66,6 +66,14 @@
 
 /** @} */
 
+/** @defgroup core core
+ *  Category of classes for core, 
+ *  see more in \ref README_core
+ *  @ingroup MUON
+ *  @{
+ */
+/** @} */
+
 /** @defgroup raw raw
  *  Category of classes for raw data, 
  *  see more in \ref README_raw
