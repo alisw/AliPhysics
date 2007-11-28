@@ -89,6 +89,11 @@ public:
   void SetPatch(Int_t patch);
 
   /**
+   * Get the patch number.
+   */
+  Int_t GetPatch(){return fPatch;}
+
+  /**
    * Set the digit reader.
    */
   void SetDigitReader(AliHLTTPCDigitReader* digitReader);

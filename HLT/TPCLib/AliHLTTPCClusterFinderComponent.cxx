@@ -232,17 +232,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       continue;
     }
       
-    // -- checking for unsorted clusterfinding
-    if ( !strcmp( argv[i], "patch" ) ) {
-      fPatch = strtoul( argv[i+1], &cpErr ,0);
-      if ( *cpErr ){
-	HLTError("Cannot convert patch specifier '%s'. Should  be between 0 and 5, must be integer", argv[i+1]);
-	return EINVAL;
-      }
-      i+=2;
-      continue;
-    }
-
     // -- checking for active pads, used in 2007 December run
     if ( !strcmp( argv[i], "activepads" ) ) {
       fGetActivePads = strtoul( argv[i+1], &cpErr ,0);
@@ -283,7 +272,7 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
       else if(oldRCUFormat!=0){
 	HLTWarning("Wrong oldrcuformat specifier %d; oldrcuformat set to default(kFALSE)",oldRCUFormat);
       }
-      if(fUnsorted){
+      if(fUnsorted==1){
 	fReader->SetUnsorted(kTRUE);
       }
       fClusterFinder->SetReader(fReader);
@@ -329,10 +318,6 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
     fClusterFinder->SetCalcErr( false );
   fClusterFinder->SetSignalThreshold(sigthresh);
   fClusterFinder->SetNSigmaThreshold(sigmathresh);
-  if(fUnsorted&&fPatch>-1&&fPatch<6){
-    fPadArray = new AliHLTTPCPadArray(fPatch);
-    fPadArray->InitializeVector();
-  }
 
   return 0;
 }
@@ -411,6 +396,22 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       row[0] = AliHLTTPCTransform::GetFirstRow( patch );
       row[1] = AliHLTTPCTransform::GetLastRow( patch );
 	
+      if(fUnsorted){
+	if(fPadArray==NULL){
+	  fClusterFinder->SetUnsorted(fUnsorted);
+	  fPadArray = new AliHLTTPCPadArray(patch);
+	  fPadArray->InitializeVector();
+	}
+	else if(fPadArray->GetPatch()!=patch||fPadArray->GetPatch()==-1){
+	  if (GetEventCount()<3) {
+	    HLTWarning("pad array not initialized for data of specification 0x%08x, block skipped", iter->fSpecification);
+	  } else if ((GetEventCount()%5000)==0) { // assuming 0.5 to 1kHz this gives a message rate of 0.1 to 0.5 Hz
+	    HLTWarning("reminder: pad array not initialized for data of specification 0x%08x", iter->fSpecification);
+	  }
+	  continue;
+	}
+      }
+
       outPtr = (AliHLTTPCClusterData*)outBPtr;
 
       maxPoints = (size-tSize-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
@@ -422,13 +423,13 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 
 
 	fClusterFinder->SetPadArray(fPadArray);
-	  
+	/*	  
 	double totalT=0;
 	struct timeval startT, endT;
 	gettimeofday( &startT, NULL );
-
+	*/
 	fClusterFinder->ReadDataUnsorted(iter->fPtr, iter->fSize );
-
+	/*
 	gettimeofday( &endT, NULL );
 	unsigned long long dt;
 	dt = endT.tv_sec-startT.tv_sec;
@@ -443,6 +444,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
 		dtd, dtd/1000.0, dtd/1000000.0 );
 	  
 	cout<<endl;
+	*/
 	fClusterFinder->FindClusters();
       }
       else{

@@ -553,9 +553,11 @@ void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliClusterData *list)
       Float_t ftime2=fZErr*fZErr;  //fixed given error
 
 
-#if UNSORTED
-      fCurrentRow=list[j].fRow;
-#endif
+
+      if(fUnsorted){
+	fCurrentRow=list[j].fRow;
+      }
+
    
       if(fCalcerr) { //calc the errors, otherwice take the fixed error 
 	Int_t patch = AliHLTTPCTransform::GetPatch(fCurrentRow);

@@ -20,7 +20,6 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-#define UNSORTED 0
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCPadArray.h"
@@ -80,7 +79,8 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
   void FindClusters();
   Int_t GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads);
   void WriteClusters(Int_t nclusters,AliHLTTPCClusters *list);
-  
+  void SetUnsorted(Int_t unsorted){fUnsorted=unsorted;}
+
  private: 
   /** copy constructor prohibited */
   AliHLTTPCClusterFinder(const AliHLTTPCClusterFinder&);
@@ -119,11 +119,12 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   AliHLTTPCPadArray * fPadArray; //! transient
 
+  Int_t fUnsorted;       // enable for processing of unsorted digit data
 
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,1) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,2) //Fast cluster finder
 };
 #endif

@@ -34,9 +34,9 @@ using namespace std;
 #include "AliRawReaderMemory.h"
 #include "AliRawDataHeader.h"
 
-#if ENABLE_PAD_SORTING
+//#if ENABLE_PAD_SORTING
 #include "AliHLTTPCTransform.h"
-#endif // ENABLE_PAD_SORTING
+//#endif // ENABLE_PAD_SORTING
 #include "AliHLTStdIncludes.h"
 
 ClassImp(AliHLTTPCDigitReaderPacked)
@@ -44,7 +44,7 @@ ClassImp(AliHLTTPCDigitReaderPacked)
 #if defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
 AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   :
-#if ENABLE_PAD_SORTING
+  //#if ENABLE_PAD_SORTING
   fCurrentRow(0),
   fCurrentPad(0),
   fCurrentBin(-1),
@@ -54,16 +54,17 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
   fNMaxPads(0),
   fNTimeBins(0),
   fData(NULL),
-#endif // ENABLE_PAD_SORTING  
+  //#endif // ENABLE_PAD_SORTING  
   fRawMemoryReader(NULL),
   fTPCRawStream(NULL),
-  fOldRCUFormat(kFALSE)
+  fOldRCUFormat(kFALSE),
+  fUnsorted(kFALSE)
 {
   fRawMemoryReader = new AliRawReaderMemory;
   
   fTPCRawStream = new AliTPCRawStream( fRawMemoryReader );
 
-#if ENABLE_PAD_SORTING
+  //#if ENABLE_PAD_SORTING
   // get max number of rows
   for (Int_t ii=0; ii < 6; ii++)
       if (AliHLTTPCTransform::GetNRows(ii) > fNMaxRows) 
@@ -82,7 +83,7 @@ AliHLTTPCDigitReaderPacked::AliHLTTPCDigitReaderPacked()
 
   // init Data array
   fData = new Int_t[ fNMaxRows*fNMaxPads*fNTimeBins ];
-#endif // ENABLE_PAD_SORTING
+  //#endif // ENABLE_PAD_SORTING
 }
 
 AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
@@ -92,11 +93,11 @@ AliHLTTPCDigitReaderPacked::~AliHLTTPCDigitReaderPacked(){
   if ( fTPCRawStream )
       delete fTPCRawStream;
   fTPCRawStream = NULL;
-#if ENABLE_PAD_SORTING 
+  //#if ENABLE_PAD_SORTING 
   if ( fData )
       delete [] fData;
   fData = NULL;
-#endif // ENABLE_PAD_SORTING
+  //#endif // ENABLE_PAD_SORTING
 }
 
 Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t patch, Int_t slice){
@@ -115,7 +116,8 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t 
   if(fOldRCUFormat)
     fTPCRawStream->SetOldRCUFormat(kTRUE);
 
-#if ENABLE_PAD_SORTING
+  if(!fUnsorted){
+  //#if ENABLE_PAD_SORTING
 
   fCurrentRow = 0;
   fCurrentPad = 0;
@@ -161,16 +163,17 @@ Int_t AliHLTTPCDigitReaderPacked::InitBlock(void* ptr,unsigned long size, Int_t 
 	  }
       }
   }
-#endif // ENABLE_PAD_SORTING
-
+  //#endif // ENABLE_PAD_SORTING
+  }
   return 0;
 }
 
 Bool_t AliHLTTPCDigitReaderPacked::NextSignal(){
   Bool_t readvalue = kTRUE;
 
-#if ENABLE_PAD_SORTING
-  while (1) {
+  if(!fUnsorted){//added for test
+    //#if ENABLE_PAD_SORTING
+    while (1) {
       fCurrentBin++;
       if (fCurrentBin >= fNTimeBins){
 	  fCurrentBin = 0;
@@ -194,43 +197,76 @@ Bool_t AliHLTTPCDigitReaderPacked::NextSignal(){
       }
 
       if (fData[ fCurrentRow*fNMaxPads*fNTimeBins + fCurrentPad*fNTimeBins + fCurrentBin  ] != -1) break;
-  }
-#else // !ENABLE_PAD_SORTING
-  readvalue = fTPCRawStream->Next();
-#endif // ENABLE_PAD_SORTING
+    }
+  }// added for test
+  else{//added for test
+    //#else // !ENABLE_PAD_SORTING
+    readvalue = fTPCRawStream->Next();
+  }//added for test
+  //#endif // ENABLE_PAD_SORTING
 
   return readvalue;
 }
 
 Int_t AliHLTTPCDigitReaderPacked::GetRow(){
-#if ENABLE_PAD_SORTING
+  /*#if ENABLE_PAD_SORTING
   return (fCurrentRow + fRowOffset);
 #else // !ENABLE_PAD_SORTING
   return (Int_t) fTPCRawStream->GetRow();
 #endif // ENABLE_PAD_SORTING
+  */
+  if(!fUnsorted){
+  return (fCurrentRow + fRowOffset);
+  }
+  else{
+  return (Int_t) fTPCRawStream->GetRow();
+  }
 }
 
 int AliHLTTPCDigitReaderPacked::GetPad(){
-#if ENABLE_PAD_SORTING
-  return fCurrentPad;
-#else // !ENABLE_PAD_SORTING
-  return fTPCRawStream->GetPad();
-#endif // ENABLE_PAD_SORTING
+  /*#if ENABLE_PAD_SORTING
+    return fCurrentPad;
+    #else // !ENABLE_PAD_SORTING
+    return fTPCRawStream->GetPad();
+    #endif // ENABLE_PAD_SORTING
+  */
+  if(!fUnsorted){
+    return fCurrentPad;
+  }
+  else{
+    return fTPCRawStream->GetPad();
+  }
 }
 
 Int_t AliHLTTPCDigitReaderPacked::GetSignal(){ 
-#if ENABLE_PAD_SORTING
-  return fData[ fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin ];
-#else // !ENABLE_PAD_SORTING
-  return fTPCRawStream->GetSignal();
-#endif // ENABLE_PAD_SORTING
+  /*
+    #if ENABLE_PAD_SORTING
+    return fData[ fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin ];
+    #else // !ENABLE_PAD_SORTING
+    return fTPCRawStream->GetSignal();
+    #endif // ENABLE_PAD_SORTING
+  */
+  if(!fUnsorted){
+    return fData[ fCurrentRow*fNMaxPads*fNTimeBins+ fCurrentPad*fNTimeBins + fCurrentBin ];
+  }
+  else{
+    return fTPCRawStream->GetSignal();
+  }
 }
 
 Int_t AliHLTTPCDigitReaderPacked::GetTime(){
-#if ENABLE_PAD_SORTING
-  return fCurrentBin;
-#else // !ENABLE_PAD_SORTING
-  return fTPCRawStream->GetTime();
-#endif // ENABLE_PAD_SORTING
+  /*
+    #if ENABLE_PAD_SORTING
+    return fCurrentBin;
+    #else // !ENABLE_PAD_SORTING
+    return fTPCRawStream->GetTime();
+    #endif // ENABLE_PAD_SORTING
+  */
+  if(!fUnsorted){
+    return fCurrentBin;
+  }
+  else{
+    return fTPCRawStream->GetTime();
+  }
 }
 #endif //defined(HAVE_ALIRAWDATA) && defined(HAVE_ALITPCRAWSTREAM_H)
