@@ -28,6 +28,7 @@ class AliMUONTriggerLut;
 class AliMUONVCalibParam;
 class AliMUONVStore;
 class AliMpExMap;
+class AliMpDDL;
 class AliMpTriggerCrate;
 class AliMpLocalBoard;
 
@@ -65,7 +66,8 @@ public:
 
   AliMpTriggerCrate* GetTriggerCrate(TString crateName, Bool_t warn = true) const;
   AliMpLocalBoard*   GetLocalBoard(Int_t localBoardId, Bool_t warn = true) const;
-
+  AliMpDDL*          GetDDL(Int_t ddlId, Bool_t warn = true) const;
+  
   void UpdateMapping(Bool_t writeFile = true) const;
 
 private:
@@ -79,7 +81,7 @@ private:
   
   
   /// Return number of local boards
-  Int_t NofLocalBoards() const { return fNofLocalBoards; }
+  Int_t NofLocalBoards() const { return fLocalBoards.GetSize(); }
   
   Int_t  ReadGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks);
 
@@ -100,13 +102,12 @@ private:
     
   
 private:
-  TArrayI             fLocalBoardIds;  //!< order of the localboards
-  Int_t               fNofLocalBoards; //!< number of local boards
   AliMpExMap          fTriggerCrates;  //!< The map of trigger crate per their ID
   AliMpExMap          fLocalBoards;    //!< The map of local board per their ID
-  AliMpGlobalCrate    fGlobalCrate;  //!< Global crate object
-  
-  ClassDef(AliMUONTriggerIO,1) // Read/Write trigger masks and LUT to/from online files
+  AliMpGlobalCrate    fGlobalCrate;    //!< Global crate object
+  TObjArray           fDDLs;           //!< DDLs array object
+ 
+  ClassDef(AliMUONTriggerIO,0) // Read/Write trigger masks and LUT to/from online files
 };
 
 #endif
