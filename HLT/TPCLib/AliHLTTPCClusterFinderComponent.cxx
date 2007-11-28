@@ -95,7 +95,7 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
 {
   // see header file for class documentation
   list.clear(); 
-  if (fPackedSwitch) list.push_back( AliHLTTPCDefinitions::fgkDDLPackedRawDataType );
+  if (fPackedSwitch) list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
   else list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType );
    
 }
@@ -368,24 +368,28 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       offset = tSize;
 
 
-      if (fPackedSwitch) {	
-	char tmp1[14], tmp2[14];
-	DataType2Text( iter->fDataType, tmp1 );
-	DataType2Text( AliHLTTPCDefinitions::fgkDDLPackedRawDataType, tmp2 );
-	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
-		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+      if (fPackedSwitch) {
+	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		 evtData.fEventID, evtData.fEventID, 
+		 DataType2Text( iter->fDataType).c_str(), 
+		 DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
 
-	if ( iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
+	if (iter->fDataType == AliHLTTPCDefinitions::fgkDDLPackedRawDataType &&
+	    GetEventCount()<2) {
+	  HLTWarning("data type %s is depricated, use %s (kAliHLTDataTypeDDLRaw)!",
+		     DataType2Text(AliHLTTPCDefinitions::fgkDDLPackedRawDataType).c_str(),
+		     DataType2Text(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC).c_str());
+	  }
+
+	if ( iter->fDataType != (kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC) &&
+	     iter->fDataType != AliHLTTPCDefinitions::fgkDDLPackedRawDataType ) continue;
 
       }
       else {
-	char tmp1[14], tmp2[14];
-	DataType2Text( iter->fDataType, tmp1 );
-	DataType2Text( AliHLTTPCDefinitions::fgkUnpackedRawDataType, tmp2 );
-	Logging( kHLTLogDebug, "HLT::TPCClusterFinder::DoEvent", "Event received", 
-		 "Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
-		 evtData.fEventID, evtData.fEventID, tmp1, tmp2 );
+	HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",
+		 evtData.fEventID, evtData.fEventID, 
+		 DataType2Text( iter->fDataType).c_str(), 
+		 DataType2Text(AliHLTTPCDefinitions::fgkUnpackedRawDataType).c_str());
 
 	if ( iter->fDataType != AliHLTTPCDefinitions::fgkUnpackedRawDataType ) continue;
 
