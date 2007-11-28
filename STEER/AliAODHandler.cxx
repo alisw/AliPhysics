@@ -65,7 +65,7 @@ AliAODHandler::~AliAODHandler()
 }
 
 
-Bool_t AliAODHandler::InitIO(Option_t* opt)
+Bool_t AliAODHandler::Init(Option_t* opt)
 {
   // Initialize IO
   //

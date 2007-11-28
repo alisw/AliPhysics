@@ -21,10 +21,13 @@
 //-------------------------------------------------------------------------
 
 #include <TTree.h>
+#include <TString.h>
+#include <TObjString.h>
 
 #include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
 #include "AliESD.h"
+#include "AliLog.h"
 
 ClassImp(AliESDInputHandler)
 
@@ -45,14 +48,19 @@ AliESDInputHandler::~AliESDInputHandler()
 
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler(const char* name, const char* title):
-  AliInputEventHandler(name, title), fEvent(0x0)
+    AliInputEventHandler(name, title), fEvent(0x0), fBranches("")
 {
 }
 
-Bool_t AliESDInputHandler::InitIO(Option_t* /*opt*/)
+Bool_t AliESDInputHandler::Init(TTree* tree,  Option_t* /*opt*/)
 {
+    // Initialisation necessary for each new tree 
+    fTree = tree;
+    
     if (!fTree) return kFALSE;
     // Get pointer to ESD event
+    SwitchOffBranches();
+    
     if (fEvent) {
       delete fEvent;
       fEvent = 0;
@@ -75,7 +83,18 @@ Bool_t AliESDInputHandler::BeginEvent(Long64_t /*entry*/)
 }
 
 Bool_t  AliESDInputHandler::FinishEvent(){
-  //  if(fEvent)fEvent->Reset();
+    //
   return kTRUE;
 } 
 
+void AliESDInputHandler::SwitchOffBranches() const {
+  //
+  // Switch of branches on user request
+  TObjArray * tokens = fBranches.Tokenize(" ");
+  Int_t ntok = tokens->GetEntries();
+  for (Int_t i = 0; i < ntok; i++)  {
+    TString str = ((TObjString*) tokens->At(i))->GetString();
+    fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
+    AliInfo(Form("Branch %s switched off \n", str.Data()));
+  }
+}

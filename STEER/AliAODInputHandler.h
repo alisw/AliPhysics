@@ -19,7 +19,8 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODInputHandler();
     AliAODInputHandler(const char* name, const char* title);
     virtual ~AliAODInputHandler();
-    virtual Bool_t       InitIO(Option_t* opt);
+    virtual Bool_t       Init(Option_t* /*opt*/) {return kTRUE;}
+    virtual Bool_t       Init(TTree* tree, Option_t* opt);
     AliAODEvent         *GetEvent() const {return fEvent;}    
  private:
     AliAODEvent    *fEvent;   //! Pointer to the event 

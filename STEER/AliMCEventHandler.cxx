@@ -92,7 +92,7 @@ AliMCEventHandler::~AliMCEventHandler()
     delete fFileTR;
 }
 
-Bool_t AliMCEventHandler::InitIO(Option_t* opt)
+Bool_t AliMCEventHandler::Init(Option_t* opt)
 { 
     // Initialize input
     //

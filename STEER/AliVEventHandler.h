@@ -21,21 +21,22 @@ class AliVEventHandler : public TNamed {
     AliVEventHandler(const char* name, const char* title);
     virtual ~AliVEventHandler();
     // Output
-    virtual void         SetOutputFileName(char* fname)  = 0;
-    virtual char*        GetOutputFileName()             = 0;
+    virtual void         SetOutputFileName(char* fname)   = 0;
+    virtual char*        GetOutputFileName()              = 0;
     // Input
-    virtual void         SetInputTree(TTree* tree)       = 0;
+    virtual void         SetInputTree(TTree* tree)        = 0;
     // Steering 
-    virtual Bool_t       InitIO(Option_t* opt)           = 0;
-    virtual Bool_t       BeginEvent(Long64_t entry)      = 0;
-    // needed to prevent warning of hidden virtual Bool_t TObject::Notify()
+    virtual Bool_t       Init(Option_t* opt)              = 0;
+    virtual Bool_t       Init(TTree* tree, Option_t* opt) = 0;
+    virtual Bool_t       BeginEvent(Long64_t entry)       = 0;
+    virtual Bool_t       Notify(const char *path)         = 0;
+    virtual Bool_t       FinishEvent()                    = 0;
+    virtual Bool_t       Terminate()                      = 0;
+    virtual Bool_t       TerminateIO()                    = 0;
+    //
     virtual Bool_t       Notify() { return TNamed::Notify(); };
-    virtual Bool_t       Notify(const char *path)        = 0;
-    virtual Bool_t       FinishEvent()                   = 0;
-    virtual Bool_t       Terminate()                     = 0;
-    virtual Bool_t       TerminateIO()                   = 0;
  private :
-  ClassDef(AliVEventHandler, 0);
+  ClassDef(AliVEventHandler, 1);
 };
 
 #endif

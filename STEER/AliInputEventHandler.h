@@ -22,20 +22,20 @@ class AliInputEventHandler : public AliVEventHandler {
     AliInputEventHandler(const char* name, const char* title);
     virtual ~AliInputEventHandler();
     virtual void         SetOutputFileName(char* /*fname*/) {;}
-    virtual char        *GetOutputFileName()                {return 0;}
-    virtual Bool_t       InitIO(Option_t* /*opt*/)          {return kTRUE;}
-    virtual Bool_t       BeginEvent(Long64_t /*entry*/)     {return kTRUE;}
-    // needed to prevent warning of hidden virtual Bool_t TObject::Notify()
+    virtual char        *GetOutputFileName()                          {return 0;}
+    virtual Bool_t       Init(Option_t* /*opt*/)                      {return kTRUE;}
+    virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/) {return kTRUE;}
+    virtual Bool_t       BeginEvent(Long64_t /*entry*/)               {return kTRUE;}
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
-    virtual Bool_t       Notify(const char */*path*/)       {return kTRUE;}
-    virtual Bool_t       FinishEvent()                      {return kTRUE;}        
-    virtual Bool_t       Terminate()                        {return kTRUE;}
-    virtual Bool_t       TerminateIO()                      {return kTRUE;}
+    virtual Bool_t       Notify(const char */*path*/)                 {return kTRUE;}
+    virtual Bool_t       FinishEvent()                                {return kTRUE;}        
+    virtual Bool_t       Terminate()                                  {return kTRUE;}
+    virtual Bool_t       TerminateIO()                                {return kTRUE;}
     // Setters
-    virtual void         SetInputTree(TTree* tree)          {fTree = tree;}
+    virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
      // Getters
-    virtual AliVEvent   *GetEvent() const                   {return 0;}
-    virtual TTree       *GetTree( ) const                   {return fTree;}
+    virtual AliVEvent   *GetEvent() const                             {return 0;}
+    virtual TTree       *GetTree( ) const                             {return fTree;}
  protected:
     TTree        *fTree;    //! Pointer to the tree
     ClassDef(AliInputEventHandler, 1);

@@ -47,10 +47,18 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
 {
 }
 
-Bool_t AliAODInputHandler::InitIO(Option_t* /*opt*/)
+Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* /*opt*/)
 {
+    // Initialisation necessary for each new tree
+    fTree = tree;
+    if (!fTree) return kFALSE;
     // Get pointer to AOD event
+    if (fEvent) {
+      delete fEvent;
+      fEvent = 0;
+    }
     fEvent = new AliAODEvent();
+
     fEvent->ReadFromTree(fTree);
     return kTRUE;
 }

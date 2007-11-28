@@ -19,12 +19,18 @@ class AliESDInputHandler : public AliInputEventHandler {
     AliESDInputHandler();
     AliESDInputHandler(const char* name, const char* title);
     virtual ~AliESDInputHandler();
-    virtual Bool_t       InitIO(Option_t* opt);
+    virtual Bool_t       Init(Option_t* /*opt*/) {return kTRUE;}
+    virtual Bool_t       Init(TTree* tree, Option_t* opt);
     virtual Bool_t       BeginEvent(Long64_t entry);
     virtual Bool_t       FinishEvent();
     AliESDEvent         *GetEvent() const {return fEvent;}
-    private:
-    AliESDEvent    *fEvent;   //! Pointer to the event 
+    //
+    void SetInactiveBranches(const char* branches) {fBranches = branches;}
+ private:
+    void SwitchOffBranches() const;
+ private:
+    AliESDEvent    *fEvent;      //! Pointer to the event
+    TString         fBranches;   //List of branches to be switched off (separated by space
     ClassDef(AliESDInputHandler, 2);
 };
 

@@ -39,9 +39,10 @@ public:
     virtual void         SetInputPath(char* fname); 
     virtual void         SetInputTree(TTree* /*tree*/) {;}
     virtual TString*     GetInputPath() {return fPathName;}
-    virtual Bool_t       InitIO(Option_t* opt);
+    virtual Bool_t       Init(Option_t* opt);
+    virtual Bool_t       InitIO(Option_t* opt) {return Init(opt);};
+    virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*opt*/) {return kTRUE;}
     virtual Bool_t       BeginEvent(Long64_t entry);
-    // needed to prevent warning of hidden virtual Bool_t TObject::Notify()
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char* path);
     virtual Bool_t       FinishEvent();
