@@ -45,7 +45,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Float_t  GetMaxC()    const      { return fMaxC;}
   Bool_t   GetSpecialSeeding() const { return fBSpecialSeeding;}
   Bool_t   GetBYMirror() const { return fBYMirror;}
-  void     SetBYMirror(Bool_t mirror) const { fBYMirror = mirror;} //
+  void     SetBYMirror(Bool_t mirror)  { fBYMirror = mirror;} //
   static   AliTPCRecoParam *GetLowFluxParam();        // make reco parameters for low  flux env.
   static   AliTPCRecoParam *GetHighFluxParam();       // make reco parameters for high flux env. 
   static   AliTPCRecoParam *GetLaserTestParam(Bool_t bPedestal);  // special setting for laser 
