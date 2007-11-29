@@ -727,7 +727,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   // ADC thresholds
   // There is no ADC threshold anymore, and simParam should not be used in clusterizer. KO
-  Float_t ADCthreshold   = 0; 
+  Float_t adcThreshold   = 0; 
 
   // Threshold value for the maximum
   Float_t maxThresh      = recParam->GetClusMaxThresh();
@@ -790,7 +790,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 	         ,indexesIn
 	         ,fIndexesOut
 	         ,nTimeTotal
-                 ,ADCthreshold
+                 ,adcThreshold
                  ,calGainFactorROC
                  ,calGainFactorDetValue);	
 	
@@ -1118,7 +1118,7 @@ Bool_t AliTRDclusterizer::AddLabels(Int_t idet, Int_t firstClusterROC, Int_t nCl
 }
 
 //_____________________________________________________________________________
-Double_t AliTRDclusterizer::GetCOG(Double_t signal[5])
+Double_t AliTRDclusterizer::GetCOG(Double_t signal[5]) const
 {
   //
   // Get COG position
@@ -1202,7 +1202,7 @@ void AliTRDclusterizer::TailCancelation(AliTRDdataArrayI *digitsIn
 				      , AliTRDSignalIndex *indexesIn
 				      , AliTRDSignalIndex *indexesOut
                                       , Int_t nTimeTotal
-			              , Float_t ADCthreshold
+			              , Float_t adcThreshold
 			              , AliTRDCalROC *calGainFactorROC
 			              , Float_t calGainFactorDetValue)
 {
@@ -1249,7 +1249,7 @@ void AliTRDclusterizer::TailCancelation(AliTRDdataArrayI *digitsIn
       while (indexesIn->NextTbinIndex(iTime))
 	{
 	  // Store the amplitude of the digit if above threshold
-	  if (outADC[iTime] > ADCthreshold) 
+	  if (outADC[iTime] > adcThreshold) 
 	    {
 	      digitsOut->SetDataUnchecked(iRow,iCol,iTime,outADC[iTime]);
 	      indexesOut->AddIndexTBin(iRow,iCol,iTime);

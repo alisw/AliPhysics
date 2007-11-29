@@ -5,11 +5,11 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////
-//                                                   //
-//  Multi Chip Module object                         //
-//                                                   //
-///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Multi Chip Module object                                              //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
@@ -17,7 +17,11 @@ class AliTRDmcm : public TObject {
 
  public:
 
-  enum { kMaxTrackletsPerMCM = 4, kMcmCol = 21, kMcmTBmax = 60, kSelClus = 6, kMaxClus = 4 };
+  enum { kMaxTrackletsPerMCM = 4
+       , kMcmCol             = 21
+       , kMcmTBmax           = 60
+       , kSelClus            = 6
+       , kMaxClus            = 4 };
 
   AliTRDmcm();
   AliTRDmcm(const AliTRDmcm &m);
@@ -54,7 +58,7 @@ class AliTRDmcm : public TObject {
           Bool_t   IsCluster(Float_t amp[3]) const;
           void     AddTimeBin(Int_t itime);
           Int_t    CreateSeeds();
-          void     Sort(Int_t nel, Int_t *x1, Int_t *x2, Int_t dir);
+          void     Sort(Int_t nel, Int_t *x1, Int_t *x2, Int_t dir) const;
 
           void     Filter(Int_t nexp, Int_t ftype = 0);
           void     DeConvExpA(Double_t *source, Double_t *target, Int_t n, Int_t nexp);

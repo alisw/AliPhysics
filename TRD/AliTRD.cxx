@@ -676,18 +676,6 @@ void AliTRD::DrawModule() const
   gMC->Gdman(18, 4, "MAN");
 
 }
-
-//_____________________________________________________________________________
-Int_t AliTRD::DistancetoPrimitive(Int_t , Int_t )
-{
-  //
-  // Distance between the mouse and the TRD detector on the screen
-  // Dummy routine
-  //
-  
-  return 9999;
-
-}
  
 //_____________________________________________________________________________
 void AliTRD::Init()

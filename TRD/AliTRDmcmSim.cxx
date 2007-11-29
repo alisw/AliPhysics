@@ -436,9 +436,9 @@ void AliTRDmcmSim::Filter()
   }
 
   // Then apply fileters one by one to filtered data array
-  if( fFeeParam->isPFon() ) FilterPedestal();
-  if( fFeeParam->isGFon() ) FilterGain();
-  if( fFeeParam->isTFon() ) FilterTail();
+  if( fFeeParam->IsPFon() ) FilterPedestal();
+  if( fFeeParam->IsGFon() ) FilterGain();
+  if( fFeeParam->IsTFon() ) FilterTail();
 }
 
 //_____________________________________________________________________________

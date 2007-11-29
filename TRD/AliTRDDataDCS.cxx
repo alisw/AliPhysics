@@ -206,74 +206,6 @@ void AliTRDDataDCS::ClearGraphs()
   fGraphsAreIni = kFALSE;
 }
 
-// //_____________________________________________________________________________
-// void AliTRDDataDCS::Streamer(TBuffer &R__b) 
-// {
-//   //
-//   // Custom streamer
-//   //
-  
-//   if (R__b.IsReading()) {
-    
-//     R__b.ReadBool (fGraphsAreIni);
-//     R__b.ReadBool (fFitsAreIni);
-    
-    
-//     for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++) {
-//       TString::ReadString (R__b, TString::Class());
-//       R__b.ReadChar (fConfs[iAlias].fDataType);
-//       R__b.ReadUInt (fConfs[iAlias].fNChannel);
-//       R__b.ReadBool (fConfs[iAlias].fEnableGraph);
-//       R__b.ReadBool (fConfs[iAlias].fEnableFit);
-//       R__b.ReadInt  (fConfs[iAlias].fMinPoints);
-//       R__b.ReadInt  (fConfs[iAlias].fIter);
-//       R__b.ReadDouble  (fConfs[iAlias].fMaxDelta);
-//       R__b.ReadInt  (fConfs[iAlias].fFitReq);
-//     }
-    
-    
-//     if (fGraphsAreIni) {
-//       for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++)
-// 	fDatas[iAlias].GetGraph() = *(TObjArray*)R__b.ReadObject (TObjArray::Class());
-//     }
-    
-//     if (fFitsAreIni) {
-//       for (UInt_t iAlias=0; iAlias<fNAlias; iAlias++)
-// 	fDatas[iAlias].GetFit() = *(TObjArray*)R__b.ReadObject (TObjArray::Class());
-//     }
-    
-//     AliInfo (Form("Read %d octets to the stream (%d Ko)", R__b.Length(), R__b.Length()/1024));
-    
-//   } else {
-//     R__b.WriteBool (fGraphsAreIni);
-//     R__b.WriteBool (fFitsAreIni);
-    
-//     for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) {
-//       TString::WriteString (R__b, &fConfs[iAlias].fAmanda);
-//       R__b.WriteChar (fConfs[iAlias].fDataType);
-//       R__b.WriteUInt (fConfs[iAlias].fNChannel);
-//       R__b.WriteBool (fConfs[iAlias].fEnableGraph);
-//       R__b.WriteBool (fConfs[iAlias].fEnableFit);
-//       R__b.WriteInt  (fConfs[iAlias].fMinPoints);
-//       R__b.WriteInt  (fConfs[iAlias].fIter);
-//       R__b.WriteDouble  (fConfs[iAlias].fMaxDelta);
-//       R__b.WriteInt  (fConfs[iAlias].fFitReq);
-//     }
-    
-//     if (fGraphsAreIni) {
-//       for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) 
-// 	R__b.WriteObject ((TObject*)&fDatas[iAlias].GetGraph());
-//     }
-    
-//     if (fFitsAreIni) {
-//       for (UInt_t iAlias = 0; iAlias < fNAlias; iAlias++) 
-// 	R__b.WriteObject ((TObject*)&fDatas[iAlias].GetFit());
-//     }
-    
-//     AliInfo (Form("Write %d octets to the stream (%d Ko)", R__b.Length(), R__b.Length()/1024));
-//   }
-// }
-
 //_____________________________________________________________________________
 Bool_t AliTRDDataDCS::ExtractDCS (TMap *dcsAlias)
 {
@@ -431,6 +363,10 @@ AliSplineFit *AliTRDDataDCS::Fit(TGraph *graph,
 			         Int_t  minPoints, Int_t  iter, 
 			         Double_t  maxDelta, Int_t  fitReq)
 {
+  //
+  // Do the spline fit
+  //
+
   if (graph == 0x0) {
     AliError("No graph for fit");
     return 0x0;

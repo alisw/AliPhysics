@@ -43,7 +43,7 @@ AliTRDmcTrack::AliTRDmcTrack()
   // Default constructor 
   //
 
-  for (Int_t ltb = 0; ltb < kMAX_TB; ltb++) {
+  for (Int_t ltb = 0; ltb < kMAXTB; ltb++) {
     for (Int_t plane = 0; plane < 6; plane++) {
       fIndex[ltb][plane][0] = -1;
       fIndex[ltb][plane][1] = -1;
@@ -52,10 +52,10 @@ AliTRDmcTrack::AliTRDmcTrack()
 
   for (Int_t i = 0; i < 6; i++) {
     for (Int_t j = 0; j < 3; j++) { 
-      Pin[i][j]    = 0.0; 
-      Pout[i][j]   = 0.0;
-      XYZin[i][j]  = 0.0; 
-      XYZout[i][j] = 0.0;
+      fPin[i][j]    = 0.0; 
+      fPout[i][j]   = 0.0;
+      fXYZin[i][j]  = 0.0; 
+      fXYZout[i][j] = 0.0;
     }
   }
 
@@ -77,7 +77,7 @@ AliTRDmcTrack::AliTRDmcTrack(Int_t label, Int_t seedLabel, Bool_t primary
   // Main constructor 
   //
   
-  for (Int_t ltb = 0; ltb < kMAX_TB; ltb++) {
+  for (Int_t ltb = 0; ltb < kMAXTB; ltb++) {
     for (Int_t plane = 0; plane < 6; plane++) {
       fIndex[ltb][plane][0] = -1;
       fIndex[ltb][plane][1] = -1;
@@ -86,10 +86,10 @@ AliTRDmcTrack::AliTRDmcTrack(Int_t label, Int_t seedLabel, Bool_t primary
   
   for (Int_t i = 0; i < 6; i++) {
     for (Int_t j = 0; j < 3; j++) { 
-      Pin[i][j]    = 0.0; 
-      Pout[i][j]   = 0.0;
-      XYZin[i][j]  = 0.0; 
-      XYZout[i][j] = 0.0;
+      fPin[i][j]    = 0.0; 
+      fPout[i][j]   = 0.0;
+      fXYZin[i][j]  = 0.0; 
+      fXYZout[i][j] = 0.0;
     }
   }
 
@@ -110,37 +110,37 @@ void AliTRDmcTrack::GetPxPyPzXYZ(Double_t& px, Double_t& py, Double_t& pz
   if (opt >= 0) {
 
     for (i = 0; i < AliTRDgeometry::Nplan(); i++) {
-      if ((Pin[i][0]*Pin[i][0]
-         + Pin[i][1]*Pin[i][1]
-         + Pin[i][2]*Pin[i][2]) > 0.0005) {
+      if ((fPin[i][0]*fPin[i][0]
+         + fPin[i][1]*fPin[i][1]
+         + fPin[i][2]*fPin[i][2]) > 0.0005) {
         break;
       }
     }
 
-    px = Pin[i][0];   
-    py = Pin[i][1];
-    pz = Pin[i][2];
-    x  = XYZin[i][0];   
-    y  = XYZin[i][1];
-    z  = XYZin[i][2];
+    px = fPin[i][0];   
+    py = fPin[i][1];
+    pz = fPin[i][2];
+    x  = fXYZin[i][0];   
+    y  = fXYZin[i][1];
+    z  = fXYZin[i][2];
 
   }
   else {
 
     for (i = AliTRDgeometry::Nplan() - 1; i >= 0; i--) {
-      if ((Pout[i][0]*Pout[i][0]
-         + Pout[i][1]*Pout[i][1]
-         + Pout[i][2]*Pout[i][2]) > 0.0005) {
+      if ((fPout[i][0]*fPout[i][0]
+         + fPout[i][1]*fPout[i][1]
+         + fPout[i][2]*fPout[i][2]) > 0.0005) {
         break;
       }
     }
 
-    px = Pout[i][0];
-    py = Pout[i][1];
-    pz = Pout[i][2];
-    x  = XYZout[i][0];
-    y  = XYZout[i][1];
-    z  = XYZout[i][2];
+    px = fPout[i][0];
+    py = fPout[i][1];
+    pz = fPout[i][2];
+    x  = fXYZout[i][0];
+    y  = fXYZout[i][1];
+    z  = fXYZout[i][2];
 
   }
 
@@ -157,14 +157,14 @@ void AliTRDmcTrack::GetPlanePxPyPz(Double_t& px, Double_t& py, Double_t& pz
   //
 
   if (opt >= 0) {
-    px = Pin[plane][0];
-    py = Pin[plane][1];
-    pz = Pin[plane][2];
+    px = fPin[plane][0];
+    py = fPin[plane][1];
+    pz = fPin[plane][2];
   }
   else {
-    px = Pout[plane][0];
-    py = Pout[plane][1];
-    pz = Pout[plane][2];
+    px = fPout[plane][0];
+    py = fPout[plane][1];
+    pz = fPout[plane][2];
   }
 
   return;

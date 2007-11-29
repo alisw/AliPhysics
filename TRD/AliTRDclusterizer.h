@@ -78,7 +78,7 @@ class AliTRDclusterizer : public TNamed {
 		                 , AliTRDCalROC *calGainFactorROC
 		                 , Float_t calGainFactorDetValue);
   virtual Double_t Unfold(Double_t eps, Int_t plane, Double_t *padSignal);
-          Double_t GetCOG(Double_t signal[5]); 
+          Double_t GetCOG(Double_t signal[5]) const; 
 
   virtual void     ResetHelperIndexes(AliTRDSignalIndex *indexesIn);
 

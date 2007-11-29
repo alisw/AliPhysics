@@ -13,43 +13,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-$Log$
-Revision 1.4  2006/08/28 17:12:18  cblume
-Remove the last print statements
+/* $Id$ */
 
-Revision 1.3  2006/08/11 17:58:05  cblume
-Next round of effc++ changes
-
-Revision 1.2  2006/04/05 12:45:40  hristov
-Updated TRD trigger code. Now the trigger code can run:
-
-- in the simulation step, through the central trigger interface, to
-produce and store "tracklets" and to produce and analyze tracks, with
-inputs to the central trigger
-
-- in the reconstruction step: if the tracklets have already been produced
-in the simulation step (by the trigger option), then only the tracks are
-produced and stored in the ESD event; if not, the trigger start by
-producing the tracklets, etc.
-
-Bogdan
-
-Revision 1.1.1.1  2004/08/19 14:58:11  vulpescu
-CVS head
-
-Revision 1.1.1.1  2004/08/18 07:47:17  vulpescu
-test
-
-*/
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//                                                                           //
-//  Multi Chip Module exponential filter and tracklet finder                 //
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//                                                                        //
+//  Multi Chip Module exponential filter and tracklet finder              //
+//                                                                        //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
 
@@ -459,7 +431,7 @@ Int_t AliTRDmcm::CreateSeeds()
 }
 
 //_____________________________________________________________________________
-void AliTRDmcm::Sort(Int_t nel, Int_t *x1, Int_t *x2, Int_t dir)
+void AliTRDmcm::Sort(Int_t nel, Int_t *x1, Int_t *x2, Int_t dir) const
 {
   //
   // Sort two parallel vectors (x1[nel], x2[nel]) after the second one (x2)

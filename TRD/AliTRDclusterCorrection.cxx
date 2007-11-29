@@ -26,8 +26,6 @@
 
 ClassImp(AliTRDclusterCorrection)
 
-AliTRDclusterCorrection *gAliTRDclusterCorrection = 0;
-
 //_____________________________________________________________________________
 AliTRDclusterCorrection::AliTRDclusterCorrection()
   :TObject()
@@ -111,22 +109,20 @@ AliTRDclusterCorrection *AliTRDclusterCorrection::GetCorrection()
   // pointer gAliTRDclusterCorrection (Is this needed somewhere ????)
   //
 
-  if (gAliTRDclusterCorrection != 0) {
-    return gAliTRDclusterCorrection;
-  }
+  AliTRDclusterCorrection *clusterCorrection = 0x0;
 
   TFile *fileIn = new TFile("$ALICE_ROOT/TRD/TRDcorrection.root");
   if (!fileIn){
-    gAliTRDclusterCorrection = new AliTRDclusterCorrection();
-    return gAliTRDclusterCorrection;
+    clusterCorrection = new AliTRDclusterCorrection();
+    return clusterCorrection;
   }
 
-  gAliTRDclusterCorrection = (AliTRDclusterCorrection *) 
-                             fileIn->Get("TRDcorrection");
-  if (gAliTRDclusterCorrection == 0) {  
-    gAliTRDclusterCorrection = new AliTRDclusterCorrection();
+  clusterCorrection = (AliTRDclusterCorrection *) 
+                      fileIn->Get("TRDcorrection");
+  if (clusterCorrection == 0) {  
+    clusterCorrection = new AliTRDclusterCorrection();
   }
 
-  return gAliTRDclusterCorrection;
+  return clusterCorrection;
   
 }

@@ -18,11 +18,11 @@
 
 class AliTRDgeometry;
 
-const Int_t kMAX_TB = 30;  
-
 class AliTRDmcTrack : public TObject {
 
  public:
+
+  enum { kMAXTB = 30 };
 
   AliTRDmcTrack();
   AliTRDmcTrack(Int_t label, Int_t seedLabel, Bool_t primary
@@ -31,21 +31,21 @@ class AliTRDmcTrack : public TObject {
           void     SetSeedLabel(Int_t l)                    { fSeedLab           = l;    }
           void     SetNumberOfClusters(Int_t n)             { fN                 = n;    }
           void     SetPin(Int_t plane, Double_t px, Double_t py, Double_t pz)
-                                                            { Pin[plane][0]      = px; 
-                                                              Pin[plane][1]      = py; 
-                                                              Pin[plane][2]      = pz;   }
+                                                            { fPin[plane][0]      = px; 
+                                                              fPin[plane][1]      = py; 
+                                                              fPin[plane][2]      = pz;  }
           void     SetPout(Int_t plane, Double_t px, Double_t py, Double_t pz)
-                                                            { Pout[plane][0]     = px; 
-                                                              Pout[plane][1]     = py; 
-                                                              Pout[plane][2]     = pz;   }
+                                                            { fPout[plane][0]     = px; 
+                                                              fPout[plane][1]     = py; 
+                                                              fPout[plane][2]     = pz;  }
           void     SetXYZin(Int_t plane, Double_t x, Double_t y, Double_t z)
-                                                            { XYZin[plane][0]    = x; 
-                                                              XYZin[plane][1]    = y; 
-                                                              XYZin[plane][2]    = z;    }
+                                                            { fXYZin[plane][0]    = x; 
+                                                              fXYZin[plane][1]    = y; 
+                                                              fXYZin[plane][2]    = z;   }
           void     SetXYZout(Int_t plane, Double_t x, Double_t y, Double_t z)
-                                                            { XYZout[plane][0]   = x; 
-                                                              XYZout[plane][1]   = y; 
-                                                              XYZout[plane][2]   = z;    }
+                                                            { fXYZout[plane][0]   = x; 
+                                                              fXYZout[plane][1]   = y; 
+                                                              fXYZout[plane][2]   = z;   }
 
           Int_t    GetTrackIndex() const                    { return fLab;               }
           Int_t    GetSeedLabel() const                     { return fSeedLab;           }
@@ -61,14 +61,14 @@ class AliTRDmcTrack : public TObject {
           void     GetPlanePxPyPz(Double_t &px, Double_t &py, Double_t &pz
 		                , Int_t plane, Int_t opt = 0) const;
           void     GetXYZin(Int_t plane, Double_t &x, Double_t &y, Double_t &z) const 
-                                                            { x = XYZin[plane][0]; 
-                                                              y = XYZin[plane][1]; 
-                                                              z = XYZin[plane][2]; 
+                                                            { x = fXYZin[plane][0]; 
+                                                              y = fXYZin[plane][1]; 
+                                                              z = fXYZin[plane][2]; 
                                                               return;                    }
           void     GetXYZout(Int_t plane, Double_t &x, Double_t &y, Double_t &z) const
-                                                            { x = XYZout[plane][0]; 
-                                                              y = XYZout[plane][1]; 
-                                                              z = XYZout[plane][2]; 
+                                                            { x = fXYZout[plane][0]; 
+                                                              y = fXYZout[plane][1]; 
+                                                              z = fXYZout[plane][2]; 
                                                               return;                    }
 
           Bool_t   IsPrimary() const                        { return fPrimary;           }
@@ -85,16 +85,15 @@ class AliTRDmcTrack : public TObject {
           Int_t    fPDG;                  //  PDG code of the MC track
 
           Int_t    fN;                    //  Number of TRD clusters associated with the track
-          Int_t    fIndex[kMAX_TB][6][2]; //  Indices of these clusters  
+          Int_t    fIndex[kMAXTB][6][2];  //  Indices of these clusters  
 			   
-          Double_t Pin[6][3];             //  Px,Py,Pz at the entrance of each TRD plane   
-          Double_t Pout[6][3];            //  Px,Py,Pz at the exit of each TRD plane
+          Double_t fPin[6][3];            //  Px,Py,Pz at the entrance of each TRD plane   
+          Double_t fPout[6][3];           //  Px,Py,Pz at the exit of each TRD plane
 
-          Double_t XYZin[6][3];           //  X,Y,Z at the entrance of the TRD  
-          Double_t XYZout[6][3];          //  X,Y,Z at the exit of the TRD    
+          Double_t fXYZin[6][3];          //  X,Y,Z at the entrance of the TRD  
+          Double_t fXYZout[6][3];         //  X,Y,Z at the exit of the TRD    
 
-  ClassDef(AliTRDmcTrack,1)               //  TRD MC track
+  ClassDef(AliTRDmcTrack,2)               //  TRD MC track
 
 };                   
-
 #endif   

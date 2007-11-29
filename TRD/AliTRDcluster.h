@@ -23,6 +23,7 @@ class AliTRDcluster : public AliCluster {
               , UChar_t col, UChar_t row, UChar_t time
               , Char_t timebin, Float_t center, UShort_t volid);
   AliTRDcluster(const AliTRDcluster &c);
+  virtual ~AliTRDcluster() {};
 
   virtual void     AddTrackIndex(Int_t *i); 
 

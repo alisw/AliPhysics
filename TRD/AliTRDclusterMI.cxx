@@ -29,7 +29,7 @@ ClassImp(AliTRDclusterMI)
 AliTRDclusterMI::AliTRDclusterMI() 
   :AliTRDcluster() 
   ,fRmsY(0)
-  ,fNPads(0)
+  ,fNPadsMI(0)
   ,fRelPos(0)
 { 
   //
@@ -42,7 +42,7 @@ AliTRDclusterMI::AliTRDclusterMI()
 AliTRDclusterMI::AliTRDclusterMI(const AliTRDcluster &c)
   :AliTRDcluster(c)
   ,fRmsY(0)
-  ,fNPads(0)
+  ,fNPadsMI(0)
   ,fRelPos(0)
 {
   //

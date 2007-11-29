@@ -24,9 +24,9 @@ class TMap;
 class AliTRDDataDCS : public TNamed
 {
   
-  public :
+ public :
     
-    AliTRDDataDCS ();
+  AliTRDDataDCS ();
   ~AliTRDDataDCS ();
   
   Bool_t ExtractDCS (TMap * aliDCS);
@@ -90,7 +90,7 @@ class AliTRDDataDCS : public TNamed
   
   void Print (Option_t* option = "") const;
     
-  protected :
+ protected :
           
       TGraph * FindAndMakeGraph (TMap * dcsMap, const char * amandaStr,
 				 char dataType);
@@ -106,7 +106,7 @@ class AliTRDDataDCS : public TNamed
 		  Bool_t enableGraph, Bool_t enableFit, Int_t kMinPoints, 
 		  Int_t kIter, Double_t kMaxDelta, Int_t kFitReq);
     
-  private :
+ private :
     
     enum { kChamberByteStatus = 0
          , kPreTrigger        = 1
@@ -132,9 +132,9 @@ class AliTRDDataDCS : public TNamed
          , kMagneticField     = 21
     };
               
-    Bool_t fGraphsAreIni;
-    Bool_t fFitsAreIni;
-    UInt_t fNAlias;
+  Bool_t fGraphsAreIni;              // Check whether graphs are initialized
+  Bool_t fFitsAreIni;                // Check whether firs are initialized
+  UInt_t fNAlias;                    // Number of aliases
       
     class AliTRDDataDCSdata {
      public:

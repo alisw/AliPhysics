@@ -41,7 +41,7 @@ class AliTRDdataArray : public AliTRDsegmentID {
  protected:
 
           Int_t  GetIdx1(Int_t row, Int_t col) const;
-  inline  Int_t  GetIdx1Unchecked(Int_t row, Int_t col) const
+          Int_t  GetIdx1Unchecked(Int_t row, Int_t col) const
                                                { return row + col * fNrow; };
   inline  Bool_t CheckBounds(Int_t idx1, Int_t idx2);
   inline  Bool_t OutOfBoundsError(Int_t idx1, Int_t idx2);

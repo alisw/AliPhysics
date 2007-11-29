@@ -21,18 +21,18 @@ class AliTRDclusterMI : public AliTRDcluster {
   AliTRDclusterMI();
   AliTRDclusterMI(const AliTRDcluster &c);
 
-          void     SetRmsY(Float_t rmsy)          { fRmsY   = rmsy;                   }
-          void     SetNPads(Int_t npads)          { fNPads  = npads;                  }
-          void     SetRelPos(Float_t pos)         { fRelPos = TMath::Nint(pos*128.0); }
+          void     SetRmsY(Float_t rmsy)          { fRmsY    = rmsy;                   }
+          void     SetNPads(Int_t npads)          { fNPadsMI = npads;                  }
+          void     SetRelPos(Float_t pos)         { fRelPos  = TMath::Nint(pos*128.0); }
 
-          Float_t  GetRmsY() const                { return fRmsY;                     }
-          Char_t   GetNPads() const               { return fNPads;                    }
-          Float_t  GetRelPos() const              { return float(fRelPos)/128.0;      }
+          Float_t  GetRmsY() const                { return fRmsY;                      }
+          Char_t   GetNPads() const               { return fNPadsMI;                   }
+          Float_t  GetRelPos() const              { return float(fRelPos)/128.0;       }
 
  protected:
 
           Float_t  fRmsY;                         // RMS in y direction ????
-          Char_t   fNPads;                        // Number of pads ????
+          Char_t   fNPadsMI;                      // Number of pads ????
           Char_t   fRelPos;		       	  // Relative position ????
 
   ClassDef(AliTRDclusterMI,2)                     // ClusterMI for the TRD
