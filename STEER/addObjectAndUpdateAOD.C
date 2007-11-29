@@ -1,9 +1,12 @@
 void addObjectAndUpdateAOD(const char *fileName = "AliAOD.root") {
   // This little macro takes an already created AOD file and adds
   // a new branch to it.
-  // Be aware that if something breaks, the content of the file will 
-  // be essentially lost, meaning WITH THIS UPDATE PROCEDURE YOU 
-  // HAVE THE POWER TO DESTROY DATA!
+  // You need write access to the AOD file, which is generally not 
+  // the case for AOD files available on the GRID/on CAF.
+  // Be aware that if something breaks (lost connection, node goes 
+  // down, ...) the content of the file will be essentially lost, 
+  // meaning: 
+  // WITH THIS UPDATE PROCEDURE YOU HAVE THE POWER TO DESTROY DATA!
   //
   // To read back this data (including the newly updated branch), have
   // a look at $ALICE_ROOT/STEER/ReadAOD.C and add one line
