@@ -15,6 +15,17 @@
 
 /* $Id$ */
 
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// AliTRDCalibraVdriftLinearFit                                           //
+//                                                                        //
+// Does the Vdrift an ExB calibration by applying a linear fit            //
+//                                                                        //
+// Author:                                                                //
+//   R. Bailhache (R.Bailhache@gsi.de)                                    //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
 //Root includes
 #include <TObjArray.h>
 #include <TH2F.h>

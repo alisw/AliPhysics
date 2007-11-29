@@ -15,42 +15,47 @@
 
 /* $Id$ */
 
-/*
- example: fill pedestal with Gaussian noise
- AliTRDCalibPadStatus ped;
- ped.TestEvent(numberofevent);
- // Method without histo
- //////////////////////////
- ped.Analyse();
- //Create the histo of the AliTRDCalROC
- TH2F * histo2dm = ped.GetCalRocMean(0,kFALSE)->MakeHisto2D();
- histo2dm->Scale(10.0);
- TH1F * histo1dm = ped.GetCalRocMean(0,kFALSE)->MakeHisto1D();
- histo1dm->Scale(10.0);
- TH2F * histo2ds = ped.GetCalRocSquares(0,kFALSE)->MakeHisto2D();
- histo2ds->Scale(10.0);
- TH1F * histo1ds = ped.GetCalRocSquares(0,kFALSE)->MakeHisto1D();
- histo1ds->Scale(10.0)
- //Draw output;
- TCanvas* c1 = new TCanvas;
- c1->Divide(2,2);
- c1->cd(1);
- histo2dm->Draw("colz");
- c1->cd(2);
- histo1dm->Draw();
- c1->cd(3);
- histo2ds->Draw("colz");
- c1->cd(4);
- histo1ds->Draw();
-// Method with histo
-/////////////////////////
-ped.AnalyseHisto();
-//Take the histo
-TH1F * histo = ped.GetHisto(31);
-histo->SetEntries(1);
-histo->Draw();
-
-*/
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Example: fill pedestal with Gaussian noise                             //
+//                                                                        //
+//  AliTRDCalibPadStatus ped;                                             //
+//  ped.TestEvent(numberofevent);                                         //
+//                                                                        //
+//  // Method without histo                                               //
+//  ped.Analyse();                                                        //
+//                                                                        //
+//  // Create the histo of the AliTRDCalROC                               //
+//  TH2F * histo2dm = ped.GetCalRocMean(0,kFALSE)->MakeHisto2D();         //
+//  histo2dm->Scale(10.0);                                                //
+//  TH1F * histo1dm = ped.GetCalRocMean(0,kFALSE)->MakeHisto1D();         //
+//  histo1dm->Scale(10.0);                                                //
+//  TH2F * histo2ds = ped.GetCalRocSquares(0,kFALSE)->MakeHisto2D();      //
+//  histo2ds->Scale(10.0);                                                //
+//  TH1F * histo1ds = ped.GetCalRocSquares(0,kFALSE)->MakeHisto1D();      //
+//  histo1ds->Scale(10.0)                                                 //
+//                                                                        //
+//  // Draw output                                                        //
+//  TCanvas* c1 = new TCanvas;                                            //
+//  c1->Divide(2,2);                                                      //
+//  c1->cd(1);                                                            //
+//  histo2dm->Draw("colz");                                               //
+//  c1->cd(2);                                                            //
+//  histo1dm->Draw();                                                     //
+//  c1->cd(3);                                                            //
+//  histo2ds->Draw("colz");                                               //
+//  c1->cd(4);                                                            //
+//  histo1ds->Draw();                                                     //
+//                                                                        //
+//  // Method with histo                                                  //
+//  ped.AnalyseHisto();                                                   //
+//                                                                        //
+//  // Take the histo                                                     //
+//  TH1F *histo = ped.GetHisto(31);                                       //
+//  histo->SetEntries(1);                                                 //
+//  histo->Draw();                                                        //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 //Root includes
 #include <TObjArray.h>
@@ -330,7 +335,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(
 					  Bool_t /*nocheck*/
 	    
 #endif 
-					  )
+					  ) const
 {
   //
   //  process date event
@@ -492,7 +497,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
     TVectorD param(3);
     TMatrixD dummy(3,3);
 
-    Float_t *array_hP=0;
+    Float_t *arrayHP=0;
 
 
     for (Int_t idet=0; idet<540; idet++){
@@ -504,12 +509,12 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 	AliTRDCalROC *rocMean     = GetCalRocMean(idet,kTRUE);
 	AliTRDCalROC *rocRMS      = GetCalRocRMS(idet,kTRUE);
 
-	array_hP = hP->GetArray();
+	arrayHP = hP->GetArray();
         Int_t nChannels = rocMean->GetNchannels();
 
 	for (Int_t iChannel=0; iChannel<nChannels; iChannel++){
             Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
-	    Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+	    Double_t ret = AliMathBase::FitGaus(arrayHP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
             // if the fitting failed set noise and pedestal to 0
 	    if ((ret==-4) || (ret==-1) || (ret==-2)) {
 		param[1]=0.0;
@@ -532,7 +537,7 @@ void AliTRDCalibPadStatus::AnalyseHisto() /*FOLD00*/
 
       	for (Int_t iChannel=shift; iChannel<total; iChannel++){
             Int_t offset = (nbinsAdc+2)*(iChannel+1)+1;
-	    Double_t ret = AliMathBase::FitGaus(array_hP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
+	    Double_t ret = AliMathBase::FitGaus(arrayHP+offset,nbinsAdc,fAdcMin,fAdcMax,&param,&dummy);
             // if the fitting failed set noise and pedestal to 0
 	    if ((ret==-4) || (ret==-1) || (ret==-2)) {
 		param[1]=0.0;
@@ -650,7 +655,7 @@ AliTRDCalPad* AliTRDCalibPadStatus::CreateCalPad()
 }
 
 //_______________________________________________________________________________________
-AliTRDCalDet* AliTRDCalibPadStatus::CreateCalDet()
+AliTRDCalDet* AliTRDCalibPadStatus::CreateCalDet() const
 {
   //
   // Create Det Noise correction factor

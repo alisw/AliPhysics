@@ -37,7 +37,7 @@ public:
 
   Int_t ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
-  Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
+  Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE) const;
 
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
 		    const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm);
@@ -45,7 +45,7 @@ public:
   void AnalyseHisto();
   AliTRDCalPadStatus *CreateCalPadStatus();
   AliTRDCalPad *CreateCalPad();
-  AliTRDCalDet *CreateCalDet();
+  AliTRDCalDet *CreateCalDet() const;
 
   void SetCalRocMean(AliTRDCalROC *mean, Int_t det);
   void SetCalRocRMS(AliTRDCalROC *rms, Int_t det);  

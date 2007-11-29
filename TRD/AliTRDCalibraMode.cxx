@@ -20,7 +20,11 @@
 // AliTRDCalibraMode                                                             
 //                                                                             
 // This class is for the modes of the TRD calibration.        
-// The user has to choose with the functions SetNz and SetNrphi the precision of the calibration. 
+// The user has to choose with the functions SetNz and SetNrphi
+// the precision of the calibration. 
+// Author:
+//   R. Bailhache (R.Bailhache@gsi.de)
+//                            
 //Begin_Html
 /*
 <br>
@@ -47,9 +51,6 @@
 */
 //End_Html 
 //
-//                            
-// Author:
-//   R. Bailhache (R.Bailhache@gsi.de)
 //                            
 //////////////////////////////////////////////////////////////////////////////////////
 

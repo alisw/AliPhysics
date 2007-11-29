@@ -15,16 +15,16 @@
 
 /* $Id$ */
 
-/////////////////////////////////////////////////////////////////////////////////
-//                                                                             
-// AliTRDCalibraVector                                                             
-//                                                                             
-// This class is for the vector methode of the TRD calibration.        
-//                            
-// Author:
-//   R. Bailhache (R.Bailhache@gsi.de)
-//                            
-//////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //   
+// AliTRDCalibraVector                                                    //       
+//                                                                        //   
+// This class is for the vector method of the TRD calibration.            //
+//                                                                        //
+// Author:                                                                //
+//   R. Bailhache (R.Bailhache@gsi.de)                                    //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TGraphErrors.h>
 #include <TH1F.h>
@@ -576,7 +576,8 @@ TH1F *AliTRDCalibraVector::ConvertVectorCHHisto(Int_t det, Int_t group
 
 } 
 //_____________________________________________________________________
-AliTRDarrayI* AliTRDCalibraVector::GetPHEntries(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayI* AliTRDCalibraVector::GetPHEntries(Int_t det
+                                              , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -586,7 +587,8 @@ AliTRDarrayI* AliTRDCalibraVector::GetPHEntries(Int_t det, Bool_t force) /*FOLD0
     return GetEntriesPH(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayI* AliTRDCalibraVector::GetPRFEntries(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayI* AliTRDCalibraVector::GetPRFEntries(Int_t det
+                                               , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -596,7 +598,8 @@ AliTRDarrayI* AliTRDCalibraVector::GetPRFEntries(Int_t det, Bool_t force) /*FOLD
     return GetEntriesPRF(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayI* AliTRDCalibraVector::GetCHEntries(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayI* AliTRDCalibraVector::GetCHEntries(Int_t det
+                                              , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -606,7 +609,8 @@ AliTRDarrayI* AliTRDCalibraVector::GetCHEntries(Int_t det, Bool_t force) /*FOLD0
     return GetEntriesCH(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibraVector::GetPHMean(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayF* AliTRDCalibraVector::GetPHMean(Int_t det
+                                           , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -616,7 +620,8 @@ AliTRDarrayF* AliTRDCalibraVector::GetPHMean(Int_t det, Bool_t force) /*FOLD00*/
     return GetMeanSquaresPH(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibraVector::GetPHSquares(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayF* AliTRDCalibraVector::GetPHSquares(Int_t det
+                                              , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -626,7 +631,8 @@ AliTRDarrayF* AliTRDCalibraVector::GetPHSquares(Int_t det, Bool_t force) /*FOLD0
     return GetMeanSquaresPH(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibraVector::GetPRFMean(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayF* AliTRDCalibraVector::GetPRFMean(Int_t det
+                                            , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -636,7 +642,8 @@ AliTRDarrayF* AliTRDCalibraVector::GetPRFMean(Int_t det, Bool_t force) /*FOLD00*
     return GetMeanSquaresPRF(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibraVector::GetPRFSquares(Int_t det, Bool_t force) /*FOLD00*/
+AliTRDarrayF* AliTRDCalibraVector::GetPRFSquares(Int_t det
+                                               , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to Carge ROC Calibration
@@ -646,7 +653,9 @@ AliTRDarrayF* AliTRDCalibraVector::GetPRFSquares(Int_t det, Bool_t force) /*FOLD
     return GetMeanSquaresPRF(det, arr, force);
 }
 //_____________________________________________________________________
-AliTRDarrayI* AliTRDCalibraVector::GetEntriesCH(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTRDarrayI* AliTRDCalibraVector::GetEntriesCH(Int_t det
+                                              , TObjArray* arr
+                                              , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to AliTRDarrayI Entries
@@ -670,7 +679,9 @@ AliTRDarrayI* AliTRDCalibraVector::GetEntriesCH(Int_t det, TObjArray* arr, Bool_
     return croc;
 }
 //_____________________________________________________________________
-AliTRDarrayI* AliTRDCalibraVector::GetEntriesPRF(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTRDarrayI* AliTRDCalibraVector::GetEntriesPRF(Int_t det
+                                               , TObjArray* arr
+                                               , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to AliTRDarrayI Entries
@@ -695,7 +706,9 @@ AliTRDarrayI* AliTRDCalibraVector::GetEntriesPRF(Int_t det, TObjArray* arr, Bool
 
 }
 //_____________________________________________________________________
-AliTRDarrayI* AliTRDCalibraVector::GetEntriesPH(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTRDarrayI* AliTRDCalibraVector::GetEntriesPH(Int_t det
+                                              , TObjArray* arr
+                                              , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to AliTRDarrayI Entries
@@ -720,7 +733,9 @@ AliTRDarrayI* AliTRDCalibraVector::GetEntriesPH(Int_t det, TObjArray* arr, Bool_
 
 }
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPH(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPH(Int_t det
+                                                  , TObjArray* arr
+                                                  , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to AliTRDarrayF Mean or Squares
@@ -744,7 +759,9 @@ AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPH(Int_t det, TObjArray* arr, B
     return croc;
 }
 //_____________________________________________________________________
-AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPRF(Int_t det, TObjArray* arr, Bool_t force) /*FOLD00*/
+AliTRDarrayF* AliTRDCalibraVector::GetMeanSquaresPRF(Int_t det
+                                                   , TObjArray* arr
+                                                   , Bool_t force) /*FOLD00*/
 {
     //
     // return pointer to AliTRDarrayF Mean or Squares

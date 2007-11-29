@@ -64,8 +64,8 @@ class AliTRDCalibraVector : public TObject {
   Short_t        GetNumberBinPRF()const                        { return fNumberBinPRF;                          }
   Int_t          GetTimeMax()const                             { return fTimeMax;                               } 
   Float_t        GetPRFRange()const                            { return fPRFRange;                              } 
-  Short_t        GetDetCha0(Int_t i)                           { return fDetCha0[i];                            }
-  Short_t        GetDetCha2(Int_t i)                           { return fDetCha2[i];                            }
+  Short_t        GetDetCha0(Int_t i) const                     { return fDetCha0[i];                            }
+  Short_t        GetDetCha2(Int_t i) const                     { return fDetCha2[i];                            }
   const char*    GetNamePH()                                   { return fVectorPHEntries.GetName();             }
   const char*    GetNamePRF()                                  { return fVectorPRFEntries.GetName();            }
   const char*    GetNameCH()                                   { return fVectorCHEntries.GetName();             }

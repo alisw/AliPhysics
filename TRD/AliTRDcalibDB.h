@@ -33,7 +33,7 @@ class AliTRDcalibDB : public TObject {
   static void                Terminate();
 
   void                       SetRun(Long64_t run);
-  Long64_t                   GetRun() { return fRun; }
+  Long64_t                   GetRun() const { return fRun; }
 
   Float_t                    GetVdrift(Int_t det, Int_t col, Int_t row);
   Float_t                    GetVdriftAverage(Int_t det);
