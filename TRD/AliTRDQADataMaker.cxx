@@ -81,32 +81,36 @@ void AliTRDQADataMaker::EndOfDetectorCycle()
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::InitESDs()
 {
-  //create ESDs histograms in ESDs subdir
-  const Int_t nhist = 19;
+  //
+  // create ESDs histograms in ESDs subdir
+  //
+
+  const Int_t nhist = 21;
   TH1 *hist[nhist];
- 
-  hist[0] = new TH1D("qaTRD_esd_ntracks", ":Number of tracks", 300, -0.5, 299.5);
-  hist[1] = new TH1D("qaTRD_esd_sector", ":Sector", 18, -0.5, 17.7);
-  hist[2] = new TH1D("qaTRD_esd_bits", ";Bits", 64, -0.5, 63.5);
+  Int_t histoCounter = -1 ;   
+
+  hist[++histoCounter] = new TH1D("qaTRD_esd_ntracks", ":Number of tracks", 300, -0.5, 299.5);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_sector", ":Sector", 18, -0.5, 17.7);
+  hist[++histoCounter] = new TH1D("qaTRD_esd_bits", ";Bits", 64, -0.5, 63.5);
 
   const Int_t knbits = 6;
   const char *suf[knbits] = {"TPCi", "TPCo", "TPCz", "TRDo", "TRDr", "TRDz"};
+
   
-  // 3
   for(Int_t i=0; i<knbits; i++) {
-    hist[2*i+3] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 50, 0, 10);
-    hist[2*i+4] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
+    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_pt%s",suf[i]), ";p_{T} (GeV/c);", 50, 0, 10);
+    hist[++histoCounter] = new TH1D(Form("qaTRD_esd_trdz%s", suf[i]), ";z (cm)", 200, -400, 400); 
   }
-  
-  // 3 + 12 = 15
-  hist[15] = new TH1D("qaTRD_esd_clsTRDo", "TRDo;number of clusters", 130, -0.5, 129.5);;
-  hist[16] = new TH1D("qaTRD_esd_clsTRDr", "TRDr;number of clusters", 130, -0.5, 129.5);;
-  hist[17] = new TH1D("qaTRD_esd_clsTRDz", "TRDz;number of clusters", 130, -0.5, 129.5);;
-  //  hist[18] = new TH1D("qaTRD_esd_clsRatio", ";cluster ratio", 100, 0., 1.3);;
 
-  hist[18] = new TH2D("qaTRD_esd_sigMom", ";momentum (GeV/c);signal", 100, 0, 5, 200, 0, 1e3);
+  // 3 + 14 = 17
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDo", "TRDo;number of clusters", 130, -0.5, 129.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDr", "TRDr;number of clusters", 130, -0.5, 129.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsTRDz", "TRDz;number of clusters", 130, -0.5, 129.5);;
+  hist[++histoCounter] = new TH1D("qaTRD_esd_clsRatio", ";cluster ratio", 100, 0., 1.3);;
 
-  for(Int_t i=0; i<nhist; i++) {
+  hist[++histoCounter] = new TH2D("qaTRD_esd_sigMom", ";momentum (GeV/c);signal", 100, 0, 5, 200, 0, 1e3);
+
+  for(Int_t i=0; i<=histoCounter; i++) {
     //hist[i]->Sumw2();
     Add2ESDsList(hist[i], i);
   }
