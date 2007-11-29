@@ -16,8 +16,10 @@ void ReadAOD(const char *fileName = "AliAOD.root") {
 
   // open input file and get the TTree
   TFile inFile(fileName, "READ");
+  if (!inFile.IsOpen()) return;
 
   TTree *aodTree = (TTree*)inFile.Get("aodTree");
+
   AliAODEvent *ev = new AliAODEvent();
   ev->ReadFromTree(aodTree);
 
@@ -28,7 +30,7 @@ void ReadAOD(const char *fileName = "AliAOD.root") {
 
     // read events
     aodTree->GetEvent(nEv);
-    
+
     //print event info
     ev->GetHeader()->Print();
 
