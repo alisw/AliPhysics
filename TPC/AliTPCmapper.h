@@ -14,7 +14,6 @@
 #include <TObject.h>
 
 class AliTPCAltroMapping;
-class AliTPCROC;
 
 class AliTPCmapper : public TObject{
 
@@ -28,7 +27,7 @@ public:
 
   void Init(const char * dirname);
   //
-  AliTPCAltroMapping **GetAltroMapping(){ return fMapping;};
+  AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
 
   // ALTRO mapping functions
   Int_t GetPad(Int_t patch, Int_t hwAddress) const;
@@ -105,8 +104,8 @@ public:
  private:
 
   Int_t fNside;        // TPC has 2 sides
-  Int_t fNsector;      // TPC has 18 sectors
-  Int_t fNrcu;         // Sector has 6 RCUs
+  Int_t fNsector;      // TPC side has 18 sectors
+  Int_t fNrcu;         // Sector has 6 RCUs (patches)
   Int_t fNbranch;      // RCU has 2 branches
   Int_t fNaltro;       // FEC has 8 ALTROs
   Int_t fNchannel;     // ALTRO has 16 channels
@@ -117,9 +116,8 @@ public:
   Int_t fTpcDdlOffset; // DDL offset for TPC
 
   AliTPCAltroMapping *fMapping[6];    // The ALTRO mapping for each patch (rcu)
-  AliTPCROC *fROC;                    // ROC object containing some relevant functions
 
-  ClassDef(AliTPCmapper,1)
+  ClassDef(AliTPCmapper,2)
 
 };
 

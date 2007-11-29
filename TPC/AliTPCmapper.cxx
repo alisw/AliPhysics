@@ -58,8 +58,7 @@ AliTPCmapper::AliTPCmapper(const char * dirname) :
   fNpadrow(0),
   fNpadrowIROC(0),
   fNpadrowOROC(0),
-  fTpcDdlOffset(0),
-  fROC(NULL)
+  fTpcDdlOffset(0)
 {
   //
   // Constructor
@@ -73,8 +72,6 @@ AliTPCmapper::AliTPCmapper(const char * dirname) :
 AliTPCmapper::~AliTPCmapper()
 {
   // Destructor
-
-  delete fROC;
 
   for ( Int_t i = 0; i < fNrcu; i++ ) {
     delete fMapping[i];
@@ -95,8 +92,7 @@ AliTPCmapper::AliTPCmapper(const AliTPCmapper& mapper) :
   fNpadrow(mapper.fNpadrow),
   fNpadrowIROC(mapper.fNpadrowIROC),
   fNpadrowOROC(mapper.fNpadrowOROC),
-  fTpcDdlOffset(mapper.fTpcDdlOffset),
-  fROC(mapper.fROC)
+  fTpcDdlOffset(mapper.fTpcDdlOffset)
 {
   // Copy Constructor
   for ( Int_t i = 0; i < fNrcu; i++ ) fMapping[i] = mapper.fMapping[i];
@@ -111,7 +107,6 @@ AliTPCmapper& AliTPCmapper::operator = (const AliTPCmapper& mapper)
   ((TObject *)this)->operator=(mapper);
 
   for ( Int_t i = 0; i < fNrcu; i++ ) fMapping[i] = mapper.fMapping[i];
-  fROC = mapper.fROC;
 
   fNside = mapper.fNside;
   fNsector = mapper.fNsector;
@@ -158,11 +153,10 @@ void AliTPCmapper::Init(const char *dirname)
   }
 
   // Create instance of AliTPCROC object
-  fROC = AliTPCROC::Instance();
-
+  AliTPCROC *fROC = AliTPCROC::Instance();
   fNpadrowIROC = fROC->GetNRows(0);
   fNpadrowOROC = fROC->GetNRows(36);
-  fNpadrow = fNpadrowIROC+fNpadrowOROC;
+  fNpadrow     = fNpadrowIROC+fNpadrowOROC;
 
   AliDAQ daq;
   fTpcDdlOffset = daq.DdlIDOffset("TPC");
@@ -506,7 +500,9 @@ Int_t AliTPCmapper::DecodedHWAddressChanneladdr(Int_t hwAddress) const
 //______________________________________________________________
 Int_t AliTPCmapper::GetNpads(Int_t roc, Int_t padrow) const{
   // Get number of pads in padrow for this ROC.
-  return fROC->GetNPads((UInt_t)roc, (UInt_t)padrow);
+  AliTPCROC *fROC = AliTPCROC::Instance();
+  Int_t retval = fROC->GetNPads((UInt_t)roc, (UInt_t)padrow);
+  return retval;
 }
 
 
@@ -529,7 +525,9 @@ Int_t AliTPCmapper::GetNpads(Int_t globalpadrow) const{
 Int_t AliTPCmapper::GetNpadrows(Int_t roc) const
 {
   // Get number of padrows
-  return fROC->GetNRows(roc);
+  if      (roc < 36) return fNpadrowIROC;
+  else if (roc < 72) return fNpadrowOROC;
+  return -1;
 }
 
 
@@ -722,6 +720,7 @@ Int_t AliTPCmapper::GetNfec(Int_t patch, Int_t branch) const
   if( (branch == 1) && (patch == 1) ){
     retval = 12;
   }
+
   return retval;
 }
 

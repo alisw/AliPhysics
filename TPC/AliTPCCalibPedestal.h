@@ -15,6 +15,7 @@ class AliTPCROC;
 class AliTPCCalROC;
 class AliTPCRawStream;
 class AliRawReader;
+class AliTPCAltroMapping;
 
 struct eventHeaderStruct;
 
@@ -34,6 +35,9 @@ public:
   Int_t  Update(const Int_t isector, const Int_t iRow, const Int_t iPad,
 	        const Int_t iTimeBin, const Float_t signal);
   void   Analyse();
+  //
+  AliTPCAltroMapping **GetAltroMapping() { return fMapping; };
+  void  SetAltroMapping(AliTPCAltroMapping **mapp) { fMapping = mapp; };
   //
   AliTPCCalROC* GetCalRocPedestal (Int_t sector, Bool_t force=kFALSE);  // get calibration object - sector
   AliTPCCalROC* GetCalRocRMS(Int_t sector, Bool_t force=kFALSE);        // get calibration object - sector
@@ -73,6 +77,7 @@ private:
   Bool_t  fTimeAnalysis;            //! Should we use the time dependent analysis? ONLY ON LDC!
 
   AliTPCROC *fROC;                  //! ROC information
+  AliTPCAltroMapping **fMapping;    //! Altro Mapping
 
   TObjArray fCalRocArrayPedestal;   //  Array of AliTPCCalROC class for Time0 calibration
   TObjArray fCalRocArrayRMS;        //  Array of AliTPCCalROC class for signal width calibration
@@ -88,7 +93,7 @@ private:
   AliTPCCalROC* GetCalRoc(Int_t sector, TObjArray* arr, Bool_t force);
 
 public:
-  ClassDef(AliTPCCalibPedestal, 2)  // Implementation of the TPC pedestal and noise calibration
+  ClassDef(AliTPCCalibPedestal, 3)  // Implementation of the TPC pedestal and noise calibration
 };
 
 
