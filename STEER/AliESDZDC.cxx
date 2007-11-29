@@ -34,9 +34,10 @@ AliESDZDC::AliESDZDC() :
   fZDCP1Energy(0),
   fZDCN2Energy(0),
   fZDCP2Energy(0),
+  fZDCEMEnergy(0),
+  fZDCEMEnergy1(0),
   fZDCParticipants(0)
 {
-  for(int i=0; i<2; i++) fZDCEMEnergy[i] = 0.;
   for(int i=0; i<5; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
     fZP1TowerEnergy[i] = fZP2TowerEnergy[i] = 0.;
@@ -51,10 +52,11 @@ AliESDZDC::AliESDZDC(const AliESDZDC& zdc) :
   fZDCP1Energy(zdc.fZDCP1Energy),
   fZDCN2Energy(zdc.fZDCN2Energy),
   fZDCP2Energy(zdc.fZDCP2Energy),
+  fZDCEMEnergy(zdc.fZDCEMEnergy),
+  fZDCEMEnergy1(zdc.fZDCEMEnergy1),
   fZDCParticipants(zdc.fZDCParticipants)
 {
   // copy constructor
-  for(int i=0; i<2; i++) fZDCEMEnergy[i] = zdc.fZDCEMEnergy[i];
   for(int i=0; i<5; i++){
      fZN1TowerEnergy[i] = zdc.fZN1TowerEnergy[i];
      fZN2TowerEnergy[i] = zdc.fZN2TowerEnergy[i];
@@ -77,7 +79,8 @@ AliESDZDC& AliESDZDC::operator=(const AliESDZDC&zdc)
     fZDCN2Energy = zdc.fZDCN2Energy;
     fZDCP2Energy = zdc.fZDCP2Energy;
     fZDCParticipants = zdc.fZDCParticipants;
-    for(Int_t i=0; i<2; i++) fZDCEMEnergy[i] = zdc.fZDCEMEnergy[i];
+    fZDCEMEnergy = zdc.fZDCEMEnergy;
+    fZDCEMEnergy1 = zdc.fZDCEMEnergy1;
     for(Int_t i=0; i<5; i++){
        fZN1TowerEnergy[i] = zdc.fZN1TowerEnergy[i];
        fZN2TowerEnergy[i] = zdc.fZN2TowerEnergy[i];
@@ -102,8 +105,9 @@ void AliESDZDC::Reset()
   fZDCN2Energy=0;
   fZDCP2Energy=0;
   fZDCParticipants=0;  
-  for(int i=0; i<2; i++) fZDCEMEnergy[i]=0;
-  for(int i=0; i<5; i++){
+  fZDCEMEnergy=0;
+  fZDCEMEnergy1=0;
+  for(int i=0; i<4; i++){
     fZN1TowerEnergy[i] = fZN2TowerEnergy[i] = 0.;
     fZP1TowerEnergy[i] = fZP2TowerEnergy[i] = 0.;
     fZN1TowerEnergyLR[i] = fZN2TowerEnergyLR[i] = 0.;
