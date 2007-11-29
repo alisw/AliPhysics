@@ -176,7 +176,7 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
      TBits   fClusterMap;       // bit is 1 if track has a hit on padrow
      TBits   fSharedMap;        // bit is 1 if track shares a hit on padrow
-     ClassDef(AliTPCseed,2)  
+     ClassDef(AliTPCseed,3)  
 };
 
 
