@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+//#include <Buttons.h>
 #include <TSystem.h>
 #include <TFile.h>
 #include <TVirtualX.h>
@@ -63,7 +64,14 @@ AliRunLoader *gAL=0;
 
 Int_t nDigs[7];
 
-enum EObjectType {kHitMip=1,kHitCko,kHitFee,kDigit,kCluster,kTrack,kRing};
+enum EObjectType {kHitMip=kOpenTriangleUp,kHitCko=kOpenCircle,kHitFee=kOpenDiamond,kCluster=kStar,kTrack=kPlus,kRing=kFullDotSmall};
+  //  kOpenTriangleUp  Hit Mip
+  //  kOpenCircle      Hit Ckov
+  //  kOpenDiamond     Hit Feedback
+  //  kStar            Cluster 
+  //  kPlus            Track
+  //  kFullDotSmall    Ring
+  
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void CreateContainers()
 {//to create all containers
@@ -77,13 +85,13 @@ void CreateContainers()
 void CreateRenders()
 {
   for(Int_t ch=0;ch<7;ch++){
-    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);fRenMip[ch]->SetMarkerColor(kBlack)  ;fRenMip[ch]->SetUniqueID(kHitMip);
-    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);    fRenCko[ch]->SetMarkerColor(kBlack)  ;fRenCko[ch]->SetUniqueID(kHitCko);
-    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);   fRenFee[ch]->SetMarkerColor(kBlack)  ;fRenFee[ch]->SetUniqueID(kHitFee);
-    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);          fRenClu[ch]->SetMarkerColor(kMagenta);fRenClu[ch]->SetUniqueID(kCluster);
-    fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);          fRenTxC[ch]->SetMarkerColor(kRed)    ;fRenTxC[ch]->SetUniqueID(kTrack);
+    fRenMip[ch]=new TPolyMarker; fRenMip[ch]->SetMarkerStyle(kOpenTriangleUp);fRenMip[ch]->SetMarkerColor(kBlack)  ;
+    fRenCko[ch]=new TPolyMarker; fRenCko[ch]->SetMarkerStyle(kOpenCircle);    fRenCko[ch]->SetMarkerColor(kBlack)  ;
+    fRenFee[ch]=new TPolyMarker; fRenFee[ch]->SetMarkerStyle(kOpenDiamond);   fRenFee[ch]->SetMarkerColor(kBlack)  ;
+    fRenClu[ch]=new TPolyMarker; fRenClu[ch]->SetMarkerStyle(kStar);          fRenClu[ch]->SetMarkerColor(kMagenta);
+    fRenTxC[ch]=new TPolyMarker; fRenTxC[ch]->SetMarkerStyle(kPlus);          fRenTxC[ch]->SetMarkerColor(kRed)    ;
                                  fRenTxC[ch]->SetMarkerSize(3);
-    fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);  fRenRin[ch]->SetMarkerColor(kMagenta);fRenRin[ch]->SetUniqueID(kRing);
+    fRenRin[ch]=new TPolyMarker; fRenRin[ch]->SetMarkerStyle(kFullDotSmall);  fRenRin[ch]->SetMarkerColor(kMagenta);
 
     for(Int_t iDig=0;iDig<160*144;iDig++) {
       fRenDig[ch][iDig] = new TBox;
@@ -240,6 +248,7 @@ void Draw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderHit(TClonesArray *pHitLst)
 {//used by ReadEvent() and SimulateEvent() to render hits to polymarker structures, one per chamber
+  if(pHitLst->GetEntries()!=116) return;
   for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){       //hits loop
     AliHMPIDHit *pHit = (AliHMPIDHit*)pHitLst->At(iHit); Int_t ch=pHit->Ch(); Float_t x=pHit->LorsX(); Float_t y=pHit->LorsY();    //get current hit        
     switch(pHit->Pid()){
@@ -363,7 +372,7 @@ void DispTB(TString t0,TString t1,TString t2,TString t3)
   fCanvasImp->SetStatusText(t3,3);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void DisplayInfo(Int_t px, Int_t py)
+void DisplayInfo(Int_t evt,Int_t px, Int_t py)
 {
   if(!gPad) return;
   TVirtualPad *pPad=gPad->GetSelectedPad();
@@ -385,44 +394,53 @@ void DisplayInfo(Int_t px, Int_t py)
     text3.Append(Form("Pads = %i - Clusters = %i - Multiplicity %5.2f%%",fTotPads[ch],fTotClus[ch],100.*fTotPads[ch]/(144.*160.)));
   }
   
-// Find object DIGIT
   TObject *obj = fCanvas->GetSelected();
   TString name = obj->GetName();
+  
+// Find object DIGIT
 
-  if(name=="") {DispTB(text0,text1,text2,text3);return;}
+  if(name=="") {DispTB(text0,text1,text2,text3);return;} // TLatex not interesting
     
   if(name.Contains("TBox")) {
-
     TBox *box = (TBox*)obj;
     if(box->GetUniqueID()==0) return; // just black frame hit!
     text2.Append(Form("charge = %i ADC",box->GetUniqueID()));
-    
-  } else {
+    DispTB(text0,text1,text2,text3);
+    return;
+  }
 //
-// Find object HITs CLUSTER TRACK and RING (based on TPolyMarker)
+// Find object HITs CLUSTER TRACK and RING (based on TPolyMarker and symbol)
 //
-    TPolyMarker *b = (TPolyMarker*)obj;
+  TPolyMarker *b = (TPolyMarker*)obj;
 
-    const Int_t big = 9999;
+  const Int_t big = 9999;
 
-    // check if point is near one of the points
-    Int_t distance = big;
-    Int_t index=0;
+  // check if point is near one of the points
+  Int_t distance = big;
+  Int_t index=0;
 
-    Double_t *xPol = b->GetX();
-    Double_t *yPol = b->GetY();
+  Double_t *xPol = b->GetX();
+  Double_t *yPol = b->GetY();
 
-    for(Int_t i=0;i<b->Size();i++) {
-      Int_t pxp = pPad->XtoAbsPixel(pPad->XtoPad(xPol[i]));
-      Int_t pyp = pPad->YtoAbsPixel(pPad->YtoPad(yPol[i]));
-      Int_t d   = TMath::Abs(pxp-px) + TMath::Abs(pyp-py);
-      if (d < distance) {distance = d; index=i;}
-    }
+  for(Int_t i=0;i<b->Size();i++) {
+    Int_t pxp = pPad->XtoAbsPixel(pPad->XtoPad(xPol[i]));
+    Int_t pyp = pPad->YtoAbsPixel(pPad->YtoPad(yPol[i]));
+    Int_t d   = TMath::Abs(pxp-px) + TMath::Abs(pyp-py);
+    if (d < distance) {distance = d; index=i;}
+  }
 
-    Int_t type = b->GetUniqueID();
-    
-    // Case Hit Mip
-    
+  Int_t symbol = b->GetMarkerStyle();
+
+  //  kOpenTriangleUp  Hit Mip
+  //  kOpenCircle      Hit Ckov
+  //  kOpenDiamond     Hit Feedback
+  //  kStar            Cluster 
+  //  kPlus            Track
+  //  kFullDotSmall    Ring
+  
+  // Case Hit Mip of Hit Ckov or Hit Feedback
+  if(symbol==kHitMip || symbol==kHitCko || symbol==kHitFee) {
+    if(evt!=kButton1Down) return;
     TString nameHit;
     Int_t iCko[7]={0,0,0,0,0,0,0};
     Int_t iFee[7]={0,0,0,0,0,0,0};
@@ -431,64 +449,52 @@ void DisplayInfo(Int_t px, Int_t py)
     Int_t chHit;
     Int_t indHit=0;
     
-    switch(type) {
-      
-      case kHitMip:
-      case kHitCko:
-      case kHitFee:
-        
-        for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
-          fHitTree->GetEntry(iEnt);                              
-          for(iHit=0;iHit<fHitLst->GetEntries();iHit++) {       //hits loop
-            AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(iHit);
-            chHit = pHit->Ch();
-            Int_t pid = pHit->Pid();
-            if(pid==50000050) iCko[chHit]++;
-            if(pid==50000051) iFee[chHit]++;
-            if(pid!=50000050 && pid!=50000051) iMip[chHit]++;
-            
-            if(type==kHitMip && ch==chHit && index==iMip[chHit]-1) {indHit = iHit;break;}
-            if(type==kHitCko && ch==chHit && index==iCko[chHit]-1) {indHit = iHit;break;}
-            if(type==kHitFee && ch==chHit && index==iFee[chHit]-1) {indHit = iHit;break;}
-          }
-        }
-        
-        fHitTree->GetEntry(6-ch);                              
-        AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(indHit);
-        
-        Float_t x=pHit->LorsX(); 
-        Float_t y=pHit->LorsY();
-        Float_t charge = pHit->Q();
-        if(pHit->Pid()==50000050) {nameHit = " Cherenkov Photon ";}
-        else if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
-        else if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
-        text0="";text0.Append(Form("Hit x %6.2f y %6.2f",x,y));
-        text2="";text2.Append(Form("Q = %7.2f ADC",charge));
-        text3="";text3="Particle: "+ nameHit;
-        break;
-        
-      case kCluster:
-        TClonesArray *pClusCham=(TClonesArray*)fCluLst->At(ch);         //get clusters list for this chamber
-        AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(index); //get current cluster
-        text0="";text0.Append(Form("CLUSTER: x %6.2f y %6.2f",pClu->X(),pClu->Y()));
-        text2="";text2.Append(Form("charge = %i ADC",(Int_t)pClu->Q()));
-        break;
-        
-      case kTrack:
-        AliESDtrack *pTrk=fEsd->GetTrack(index);
-        Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
-        Float_t xPc,yPc; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
-        text0="";text0.Append(Form("TRACK: x %6.2f y %6.2f at PC plane",xPc,yPc));
-        text2="";text2.Append(Form("p = %7.2f GeV/c",pTrk->GetP()));
-        Float_t ckov=pTrk->GetHMPIDsignal();                             
-        if(ckov>0){
-          Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
-          text3="";text3.Append(Form("Theta Cherenkov %5.3f with %i photons",pTrk->GetHMPIDsignal(),nacc));
-        }      
-        break;
-      default:
-        break;
+    Int_t indTrk = b->GetUniqueID(); // track index
+    for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){//entries loop
+      fHitTree->GetEntry(iEnt);                              
+      for(iHit=0;iHit<fHitLst->GetEntries();iHit++) {       //hits loop
+        AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(iHit);
+        chHit = pHit->Ch();
+        Int_t pid = pHit->Pid();
+        if(pid==50000050) iCko[chHit]++;
+        else if(pid==50000051) iFee[chHit]++;
+        else iMip[chHit]++;
+
+        if(symbol==kHitMip && ch==chHit && index==iMip[chHit]-1) {indTrk=iEnt;indHit = iHit;break;}
+        if(symbol==kHitCko && ch==chHit && index==iCko[chHit]-1) {indTrk=iEnt;indHit = iHit;break;}
+        if(symbol==kHitFee && ch==chHit && index==iFee[chHit]-1) {indTrk=iEnt;indHit = iHit;break;}
+      }
     }
+    fHitTree->GetEntry(indTrk);                              
+    AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(indHit);
+
+    Float_t x=pHit->LorsX(); 
+    Float_t y=pHit->LorsY();
+    Float_t charge = pHit->Q();
+    if(pHit->Pid()==50000050) {nameHit = " Cherenkov Photon ";}
+    else if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
+    else if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
+    text0="";text0.Append(Form("Hit x %6.2f y %6.2f",x,y));
+    text2="";text2.Append(Form("Q = %7.2f ADC",charge));
+    text3="";text3="Particle: "+ nameHit;
+  } // Hit  
+  else if (symbol==kCluster) {
+    TClonesArray *pClusCham=(TClonesArray*)fCluLst->At(ch);         //get clusters list for this chamber
+    AliHMPIDCluster *pClu = (AliHMPIDCluster*)pClusCham->At(index); //get current cluster
+    text0="";text0.Append(Form("CLUSTER: x %6.2f y %6.2f",pClu->X(),pClu->Y()));
+    text2="";text2.Append(Form("charge = %i ADC",(Int_t)pClu->Q()));
+    }
+  else if (symbol==kTrack) {
+    AliESDtrack *pTrk=fEsd->GetTrack(index);
+    Float_t thRa,phRa,xRa,yRa; pTrk->GetHMPIDtrk(xRa,yRa,thRa,phRa);
+    Float_t xPc,yPc; AliHMPIDTracker::IntTrkCha(pTrk,xPc,yPc);
+    text0="";text0.Append(Form("TRACK: x %6.2f y %6.2f at PC plane",xPc,yPc));
+    text2="";text2.Append(Form("p = %7.2f GeV/c",pTrk->GetP()));
+    Float_t ckov=pTrk->GetHMPIDsignal();                             
+    if(ckov>0){
+      Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
+      text3="";text3.Append(Form("Theta Cherenkov %5.3f with %i photons",pTrk->GetHMPIDsignal(),nacc));
+    }      
   }
 //Update toolbar status  
 
@@ -502,7 +508,7 @@ void CloseInfo()
 void DoZoom(Int_t evt, Int_t px, Int_t py, TObject *)
 {
 //  Printf(" px %i py%i event %i",px,py,evt);
-  if(evt==51) DisplayInfo(px,py);
+  if(evt==kMouseMotion||evt==kButton1Down) DisplayInfo(evt,px,py);
   if(evt==11)  CloseInfo();
   if(evt!=5 && evt!=6) return; //5- zoom in 6-zoom out
   const Int_t minZoom=64;
@@ -540,7 +546,7 @@ void ReadEvent()
     
                           fHitTree->SetBranchAddress("HMPID",&fHitLst);
     for(Int_t iEnt=0;iEnt<fHitTree->GetEntries();iEnt++){    
-                          fHitTree->GetEntry(iEnt);                              
+                          fHitTree->GetEntry(iEnt);
       RenderHit(fHitLst);   
     }//prim loop
   }//if hits file
