@@ -135,9 +135,46 @@ order of 100 000 tracks is needed, it is then advisable to generate and
 reconstruct enough events separately and run MUONAlignment.C providing a file list
 afterwards.
 
-\section geometry_s7 Geometry data files description
+\section geometry_s7 Macro MUONCheckMisAligner.C
+
+The macro MUONCheckMisAligner.C performs the misalignment on an existing muon 
+arm geometry based on the standard definition of the detector elements.
+
+It uses AliMUONGeometryAligner : 
+- creates a new AliMUONGeometryTransformer and AliMUONGeometryAligner
+- reads the transformations in from the transform.dat file (make sure that
+this file is the _standard_ one by comparing it to the one in CVS)
+- creates a second AliMUONGeometryTransformer by misaligning the existing 
+one using AliMUONAligner::MisAlign
+
+User has to specify the magnitude of the alignments, in the Cartesian 
+co-ordiantes (which are used to apply translation misalignments) and in the
+spherical co-ordinates (which are used to apply angular displacements)
+
+User can also set misalignment ranges by hand using the methods : 
+SetMaxCartMisAlig, SetMaxAngMisAlig, SetXYAngMisAligFactor
+(last method takes account of the fact that the misalingment is greatest in 
+the XY plane, since the detection elements are fixed to a support structure
+in this plane. Misalignments in the XZ and YZ plane will be very small 
+compared to those in the XY plane, which are small already - of the order 
+of microns)
+
+Default behavior generates a "residual" misalignment using gaussian
+distributions. Uniform distributions can still be used, see 
+AliMUONGeometryAligner.
+
+User can also generate module misalignments using SetModuleCartMisAlig
+and SetModuleAngMisAlig
+Note : If the detection elements are allowed to be misaligned in all
+directions, this has consequences for the alignment algorithm, which 
+needs to know the number of free parameters. Eric only allowed 3 : 
+x,y,theta_xy, but in principle z and the other two angles are alignable
+as well.  
+
+
+\section geometry_s8 Geometry data files description
  
-\subsection geometry_s2_sub1 transform.dat
+\subsection geometry_s8_sub1 transform.dat
  
  List of transformations for chambers geometry modules and detection
  elements; in format:
@@ -150,7 +187,7 @@ afterwards.
 	rot: theX phiX theY phiY theZ phiZ = rotation angles as in Geant3 in deg
 </pre>
 
-\subsection geometry_s2_sub2  svmap.dat
+\subsection geometry_s8_sub2  svmap.dat
 
  Map of sensitive volumes to detction element Ids;
  in format:
