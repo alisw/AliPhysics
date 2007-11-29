@@ -5,9 +5,15 @@
 
 /* $Id$ */
 
-/*
-The class to read the test beam 2007 data
-*/
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Class to handle the test beam data of 2007                             //
+//                                                                        //
+// Authors:                                                               //
+//   Sylwester Radomski (radomski@physi.uni-heidelberg.de)                //
+//   Anton Andronic (A.Andronic@gsi.de)                                   //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 //#define MAX_SI 2000
 
@@ -15,6 +21,7 @@ The class to read the test beam 2007 data
 
 class AliTRDrawStreamV2;
 class AliTRDRawStreamTB;
+
 using namespace std;
 
 class AliTRDtestBeam: public TObject {
@@ -93,7 +100,7 @@ protected:
 
   // data reading
   
-  Int_t Int(Int_t i, Char_t *start);
+  Int_t Int(Int_t i, Char_t *start) const;
   Int_t DecodeSi();
 
   //

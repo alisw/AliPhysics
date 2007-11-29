@@ -15,20 +15,26 @@
 
 /* $Id$ */
 
-#include "AliTRDtestBeam.h"
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// Class to handle the test beam data of 2007                             //
+//                                                                        //
+// Authors:                                                               //
+//   Sylwester Radomski (radomski@physi.uni-heidelberg.de)                //
+//   Anton Andronic (A.Andronic@gsi.de)                                   //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
+//#include <iostream>
+//#include <fstream>
+//#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <fcntl.h>
+//include <unistd.h>
 
 #include "AliTRDRawStreamTB.h"
 #include "AliRawReaderMemory.h"
-
-#include <iostream>
-#include <fstream>
-
-/*
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-*/
+#include "AliTRDtestBeam.h"
 
 ClassImp(AliTRDtestBeam)
 
@@ -287,17 +293,17 @@ Int_t AliTRDtestBeam::DecodeSi()
   int amaxY=0;
 
   Int_t q, a;  
-  Int_t Nst1=0,Nst2=0;
-  Int_t QclX=0,QclY=0, NclX=0,NclY=0, NstX=0,NstY=0;
-  const Int_t Thr = 20;
+  Int_t nst1=0,nst2=0;
+  Int_t qclX=0,qclY=0, nclX=0,nclY=0, nstX=0,nstY=0;
+  const Int_t kThr = 20;
 
-  Nst1=0;
-  NstX=0;
-  NstY=0;
-  NclX=0;
-  NclY=0;
-  QclX=0;
-  QclY=0;
+  nst1=0;
+  nstX=0;
+  nstY=0;
+  nclX=0;
+  nclY=0;
+  qclX=0;
+  qclY=0;
   
   for( int i = 0; i < GetNSi1(); i++ ) {
  
@@ -306,57 +312,57 @@ Int_t AliTRDtestBeam::DecodeSi()
     q = fSi1Charge[i];
     a = fSi1Address[i];
 
-    if ( q > Thr ) 
+    if ( q > kThr ) 
     {
 	if ( i > 0 && i < (GetNSi1()-1) ) {
 
 	    if ( (a-fSi1Address[i+1]) == -1 &&
 		 (a-fSi1Address[i-1]) == 1) 
 	    {  
-		Nst1++;	  
+		nst1++;	  
 		if (a < aLenSiX) {
-		    QclX = q+fSi1Charge[i+1]+fSi1Charge[i-1];
-		    NclX++;
-		    NstX+=3;
+		    qclX = q+fSi1Charge[i+1]+fSi1Charge[i-1];
+		    nclX++;
+		    nstX+=3;
 		    amaxX = a;
 		}
 		else {
-		    QclY = q+fSi1Charge[i+1]+fSi1Charge[i-1];
-		    NclY++;
-		    NstY+=3;
+		    qclY = q+fSi1Charge[i+1]+fSi1Charge[i-1];
+		    nclY++;
+		    nstY+=3;
 		    amaxY = a;
 		}
 		i+=1;
 	    }
 	    else if ( (a-fSi1Address[i-1]) == 1)
 	    {  
-		Nst1++;	  
+		nst1++;	  
 		if (a < aLenSiX) {
-		    QclX = q+fSi1Charge[i-1];
-		    NclX++;
-		    NstX+=2;
+		    qclX = q+fSi1Charge[i-1];
+		    nclX++;
+		    nstX+=2;
 		    amaxX = a;
 		}
 		else {
-		    QclY = q+fSi1Charge[i-1];
-		    NclY++;
-		    NstY+=2;
+		    qclY = q+fSi1Charge[i-1];
+		    nclY++;
+		    nstY+=2;
 		    amaxY = a;
 		}
 	    }
 	    else if ( (a-fSi1Address[i+1]) == -1)
 	    {  
-		Nst1++;	  
+		nst1++;	  
 		if (a < aLenSiX) {
-		    QclX = q+fSi1Charge[i+1];
-		    NclX++;
-		    NstX+=2;
+		    qclX = q+fSi1Charge[i+1];
+		    nclX++;
+		    nstX+=2;
 		    amaxX = a;
 		}
 		else {
-		    QclY = q+fSi1Charge[i+1];
-		    NclY++;
-		    NstY+=2;
+		    qclY = q+fSi1Charge[i+1];
+		    nclY++;
+		    nstY+=2;
 		    amaxY = a;
 		}
 		i+=1;
@@ -364,11 +370,11 @@ Int_t AliTRDtestBeam::DecodeSi()
 	}
     }
   }
-  if (Nst1==2 && NstX<4 && NstY<4 ) {
+  if (nst1==2 && nstX<4 && nstY<4 ) {
       fX[0] = (float)(amaxX*0.05);  // [mm]
       fY[0] = (float)((amaxY-aLenSiX)*0.05);
-      fQx[0] = (float)QclX;
-      fQy[0] = (float)QclY;
+      fQx[0] = (float)qclX;
+      fQy[0] = (float)qclY;
   }
   else {
       fX[0] = -1.;
@@ -379,13 +385,13 @@ Int_t AliTRDtestBeam::DecodeSi()
   
   // ...and Si2
 
-  Nst2=0;
-  NstX=0;
-  NstY=0;
-  NclX=0;
-  NclY=0;
-  QclX=0;
-  QclY=0;
+  nst2=0;
+  nstX=0;
+  nstY=0;
+  nclX=0;
+  nclY=0;
+  qclX=0;
+  qclY=0;
 
   for( int i = 0; i < GetNSi2(); i++ ) {
     
@@ -395,57 +401,57 @@ Int_t AliTRDtestBeam::DecodeSi()
     q = fSi2Charge[i];
     a = fSi2Address[i];
 
-    if ( q > Thr/2 ) //...as Si2 has 1/2 gain! 
+    if ( q > kThr/2 ) //...as Si2 has 1/2 gain! 
     {
 	if ( i > 0 && i < (GetNSi2()-1) ) {
 
 	    if ( (a-fSi2Address[i+1]) == -1 &&
 		 (a-fSi2Address[i-1]) == 1) 
 	    {  
-		Nst2++;	  
+		nst2++;	  
 		if (a < aLenSiX) {
-		    QclX = q+fSi2Charge[i+1]+fSi2Charge[i-1];
-		    NclX++;
-		    NstX+=3;
+		    qclX = q+fSi2Charge[i+1]+fSi2Charge[i-1];
+		    nclX++;
+		    nstX+=3;
 		    amaxX = a;
 		}
 		else {
-		    QclY = q+fSi2Charge[i+1]+fSi2Charge[i-1];
-		    NclY++;
-		    NstY+=3;
+		    qclY = q+fSi2Charge[i+1]+fSi2Charge[i-1];
+		    nclY++;
+		    nstY+=3;
 		    amaxY = a;
 		}
 		i+=1;
 	    }
 	    else if ( (a-fSi2Address[i-1]) == 1)
 	    {  
-		Nst2++;	  
+		nst2++;	  
 		if (a < aLenSiX) {
-		    QclX = q+fSi2Charge[i-1];
-		    NclX++;
-		    NstX+=2;
+		    qclX = q+fSi2Charge[i-1];
+		    nclX++;
+		    nstX+=2;
 		    amaxX = a;
 		}
 		else {
-		    QclY = q+fSi2Charge[i-1];
-		    NclY++;
-		    NstY+=2;
+		    qclY = q+fSi2Charge[i-1];
+		    nclY++;
+		    nstY+=2;
 		    amaxY = a;
 		}
 	    }
 	    else if ( (a-fSi2Address[i+1]) == -1)
 	    {  
-		Nst2++;	  
+		nst2++;	  
 		if (a < aLenSiX) {
-		    QclX = q+fSi2Charge[i+1];
-		    NclX++;
-		    NstX+=2;
+		    qclX = q+fSi2Charge[i+1];
+		    nclX++;
+		    nstX+=2;
 		    amaxX = a;
 		}
 		else {
-		    QclY = q+fSi2Charge[i+1];
-		    NclY++;
-		    NstY+=2;
+		    qclY = q+fSi2Charge[i+1];
+		    nclY++;
+		    nstY+=2;
 		    amaxY = a;
 		}
 		i+=1;
@@ -454,11 +460,11 @@ Int_t AliTRDtestBeam::DecodeSi()
     }
   }
   
-  if (Nst2==2 && NstX<4 && NstY<4 ) {
+  if (nst2==2 && nstX<4 && nstY<4 ) {
       fX[1] = (float)(amaxX*0.05);  // [mm]
       fY[1] = (float)((amaxY-aLenSiX)*0.05);
-      fQx[1] = (float)QclX;
-      fQy[1] = (float)QclY;
+      fQx[1] = (float)qclX;
+      fQy[1] = (float)qclY;
   }
   else {
       fX[1] = -1.;
@@ -513,7 +519,7 @@ AliTRDRawStreamTB *AliTRDtestBeam::GetTRDrawStream()
 }
 
 //____________________________________________________________________________ 
-Int_t AliTRDtestBeam::Int(Int_t i, Char_t *start) 
+Int_t AliTRDtestBeam::Int(Int_t i, Char_t *start) const
 {
   //
   // ?????
