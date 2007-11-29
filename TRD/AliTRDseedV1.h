@@ -35,7 +35,7 @@ class AliTRDseedV1 : public AliTRDseed
 	AliTRDseedV1(Int_t layer = -1, AliTRDrecoParam *p=0x0);
 	~AliTRDseedV1();
 	AliTRDseedV1(const AliTRDseedV1 &ref, Bool_t owner=kFALSE);
-	AliTRDseedV1& operator=(const AliTRDseedV1 &);
+	AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
 	Bool_t	AttachClustersIter(AliTRDstackLayer *layer, Float_t quality, Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);
 	Bool_t	AttachClustersProj(AliTRDstackLayer *layer, Float_t quality, Bool_t kZcorr = kFALSE, AliTRDcluster *c=0x0);

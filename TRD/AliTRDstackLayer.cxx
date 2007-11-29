@@ -233,18 +233,18 @@ void AliTRDstackLayer::BuildIndices(Int_t iter)
 		// boundarie check
 		AliTRDcluster *cl = helpCL[i];
 		Double_t zval = cl->GetZ();
-		UChar_t TreeIndex = (UChar_t)(TMath::Abs(fZ0 - zval)/fZLength * fNRows);
-		if(TreeIndex > fNRows - 1) TreeIndex = fNRows - 1;
+		UChar_t treeIndex = (UChar_t)(TMath::Abs(fZ0 - zval)/fZLength * fNRows);
+		if(treeIndex > fNRows - 1) treeIndex = fNRows - 1;
 		// Insert Leaf
-		Int_t pos = FindYPosition(cl->GetY(), TreeIndex, i);
+		Int_t pos = FindYPosition(cl->GetY(), treeIndex, i);
 		if(pos == -1){		// zbin is empty;
-			Int_t upper = (TreeIndex == fNRows - 1) ? nClStack : fPositions[TreeIndex + 1];
+			Int_t upper = (treeIndex == fNRows - 1) ? nClStack : fPositions[treeIndex + 1];
 			memmove(fClusters + upper + 1, fClusters + upper, (sizeof(AliTRDcluster *))*(nClStack-upper));
 			memmove(fIndex + upper + 1, fIndex + upper, (sizeof(UInt_t))*(nClStack-upper));
 			fClusters[upper] = cl;
 			fIndex[upper] = helpInd[i]; 
 			// Move All pointer one position back
-			for(UChar_t j = TreeIndex + 1; j < fNRows; j++) fPositions[j]++;
+			for(UChar_t j = treeIndex + 1; j < fNRows; j++) fPositions[j]++;
 			nClStack++;
 		} else {		// zbin not empty
 			memmove(fClusters + pos + 2, fClusters + pos+1, (sizeof(AliTRDcluster *))*(nClStack-(pos+1)));
@@ -252,7 +252,7 @@ void AliTRDstackLayer::BuildIndices(Int_t iter)
 			fClusters[pos + 1] = cl;	//fIndex[i];
 			fIndex[pos + 1] = helpInd[i];
 			// Move All pointer one position back
-			for(UChar_t j = TreeIndex + 1; j < fNRows; j++) fPositions[j]++;	
+			for(UChar_t j = treeIndex + 1; j < fNRows; j++) fPositions[j]++;	
 			nClStack++;
 		}
 
@@ -266,7 +266,7 @@ void AliTRDstackLayer::BuildIndices(Int_t iter)
 			<< "SectorNr=" << fSec
 			<< "Iter="     << iter
 			<< "C.="       << cl
-			<< "TreeIdx="  << TreeIndex
+			<< "TreeIdx="  << treeIndex
 			<< "\n";
 		}
 #endif	

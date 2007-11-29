@@ -126,9 +126,14 @@ AliTRDseed::AliTRDseed(const AliTRDseed &s)
 }
 
 //_____________________________________________________________________________
-void AliTRDseed::Copy(TObject &o) const {
-	AliTRDseed &seed = (AliTRDseed &)o;
-	seed.fTilt = fTilt;
+void AliTRDseed::Copy(TObject &o) const 
+{
+  //
+  // Copy function
+  //
+
+  AliTRDseed &seed = (AliTRDseed &)o;
+  seed.fTilt = fTilt;
   seed.fPadLength = fPadLength;
   seed.fX0 = fX0;
   seed.fSigmaY = fSigmaY;
@@ -145,7 +150,8 @@ void AliTRDseed::Copy(TObject &o) const {
   seed.fCC = fCC;
   seed.fChi2 = fChi2;
   seed.fChi2Z = fChi2Z;
-	for (Int_t i = 0; i < knTimebins; i++) {
+
+  for (Int_t i = 0; i < knTimebins; i++) {
     seed.fX[i]        = fX[i];
     seed.fY[i]        = fY[i]; 
     seed.fZ[i]        = fZ[i]; 

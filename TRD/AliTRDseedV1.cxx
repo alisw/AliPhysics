@@ -200,8 +200,8 @@ Bool_t	AliTRDseedV1::AttachClustersIter(AliTRDstackLayer *layer
 			
  			//printf("Cluster %i(0x%x): x = %3.3f, y = %3.3f, z = %3.3f\n", index, cl, cl->GetX(), cl->GetY(), cl->GetZ());
 
-			Int_t GlobalIndex = layer[iTime].GetGlobalIndex(index);
-			fIndexes[iTime]  = GlobalIndex;
+			Int_t globalIndex = layer[iTime].GetGlobalIndex(index);
+			fIndexes[iTime]  = globalIndex;
 			fClusters[iTime] = cl;
 			fX[iTime]        = dxlayer;
 			fY[iTime]        = cl->GetY();
@@ -356,8 +356,8 @@ Bool_t	AliTRDseedV1::AttachClustersProj(AliTRDstackLayer *layer
 			}
 			c = clusters[iptr];
 		}
-		//Int_t GlobalIndex = layer[iTime].GetGlobalIndex(index);
-		//fIndexes[iTime]  = GlobalIndex;
+		//Int_t globalIndex = layer[iTime].GetGlobalIndex(index);
+		//fIndexes[iTime]  = globalIndex;
 		fClusters[iTime] = c;
 		fY[iTime]        = c->GetY();
 		fZ[iTime]        = c->GetZ();

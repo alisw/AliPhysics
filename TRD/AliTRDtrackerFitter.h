@@ -36,8 +36,8 @@ class AliTRDtrackerFitter : public TObject {
  public:
 
 	AliTRDtrackerFitter();
-	AliTRDtrackerFitter(const AliTRDtrackerFitter &);
-	AliTRDtrackerFitter& operator=(const AliTRDtrackerFitter &);
+	AliTRDtrackerFitter(const AliTRDtrackerFitter &f);
+	AliTRDtrackerFitter& operator=(const AliTRDtrackerFitter &f);
 	virtual ~AliTRDtrackerFitter();
 
 	void            Copy(TObject &f) const;

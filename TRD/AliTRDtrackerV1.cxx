@@ -68,7 +68,7 @@
 #define DEBUG
 
 ClassImp(AliTRDtrackerV1)
-Double_t AliTRDtrackerV1::fTopologicQA[kNConfigs] = {
+Double_t AliTRDtrackerV1::fgTopologicQA[kNConfigs] = {
 		0.1112, 0.1112, 0.1112, 0.0786, 0.0786,
 		0.0786, 0.0786, 0.0579, 0.0579, 0.0474,
 		0.0474, 0.0408, 0.0335, 0.0335, 0.0335
@@ -80,7 +80,7 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDrecoParam *p)
   ,fSieveSeeding(0)
   ,fRecoParam(p)
   ,fFitter(0x0)
-  ,fDebugStreamer(0x0)
+  ,fDebugStreamerV1(0x0)
 {
   //
   // Default constructor. Nothing is initialized.
@@ -94,7 +94,7 @@ AliTRDtrackerV1::AliTRDtrackerV1(const TFile *in, AliTRDrecoParam *p)
   ,fSieveSeeding(0)
   ,fRecoParam(p)
   ,fFitter(0x0)
-  ,fDebugStreamer(0x0)
+  ,fDebugStreamerV1(0x0)
 {
   //
   // Standard constructor.
@@ -105,8 +105,8 @@ AliTRDtrackerV1::AliTRDtrackerV1(const TFile *in, AliTRDrecoParam *p)
 	fFitter = new AliTRDtrackerFitter();
 
 #ifdef DEBUG
-	fDebugStreamer    = new TTreeSRedirector("TRDdebug.root");
-	fFitter->SetDebugStream(fDebugStreamer);
+	fDebugStreamerV1 = new TTreeSRedirector("TRDdebug.root");
+	fFitter->SetDebugStream(fDebugStreamerV1);
 #endif
 
 }
@@ -118,7 +118,7 @@ AliTRDtrackerV1::~AliTRDtrackerV1()
   // Destructor
   //
 
-	if(fDebugStreamer) delete fDebugStreamer;
+	if(fDebugStreamerV1) delete fDebugStreamerV1;
 	if(fFitter) delete fFitter;
 	if(fRecoParam) delete fRecoParam;
 
@@ -203,10 +203,10 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(AliTRDtracker::AliTRDtrackingSector *se
                                              + 2 * pp->GetLengthOPad() + 2 * pp->GetLengthRim();
 			//Debug
 			Double_t z0  = fGeom->GetRow0((Int_t)(ilayer/nTimeBins),istack,0);
-			const AliTRDpropagationLayer smLayer(*(sector->GetLayer(ilayer)));
-			stackLayer[ilayer] = smLayer;
+			const AliTRDpropagationLayer kSMlayer(*(sector->GetLayer(ilayer)));
+			stackLayer[ilayer] = kSMlayer;
 #ifdef DEBUG
-			stackLayer[ilayer].SetDebugStream(fDebugStreamer);
+			stackLayer[ilayer].SetDebugStream(fDebugStreamerV1);
 #endif			
 			stackLayer[ilayer].SetRange(z0 - stacklength, stacklength);
 			stackLayer[ilayer].SetSector(sector->GetSector());
@@ -469,7 +469,7 @@ Int_t AliTRDtrackerV1::Clusters2TracksStack(AliTRDstackLayer *layer
 					}
 					//Int_t eventNrInFile = esd->GetEventNumberInFile();
 					//AliInfo(Form("Number of clusters %d.", nclusters));
-					TTreeSRedirector &cstreamer = *fDebugStreamer;
+					TTreeSRedirector &cstreamer = *fDebugStreamerV1;
 					cstreamer << "Clusters2TracksStack"
 						<< "Iter="      << fSieveSeeding
 						<< "Like="      << fTrackQuality[trackIndex]
@@ -581,7 +581,7 @@ Double_t AliTRDtrackerV1::BuildSeedingConfigs(AliTRDstackLayer *layers
 	Int_t planes[4];
 	for(int iconf=0; iconf<kNConfigs; iconf++){
 		GetSeedingConfig(iconf, planes);
-		tconfig[iconf] = fTopologicQA[iconf];
+		tconfig[iconf] = fgTopologicQA[iconf];
 		for(int iplane=0; iplane<4; iplane++) tconfig[iconf] *= chamberQA[planes[iplane]]; 
 	}
 	
@@ -744,7 +744,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 					}
 					Float_t threshold = .5;//1./(3. - sLayer);
 					Int_t ll = c[3]->GetLabel(0);
-					TTreeSRedirector &cs0 = *fDebugStreamer;
+					TTreeSRedirector &cs0 = *fDebugStreamerV1;
 							cs0 << "MakeSeeds0"
 							<<"isFake=" << isFake
 							<<"label=" << ll
@@ -783,7 +783,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 					}
 					Double_t xpos[4];
 					for(Int_t l = 0; l < kNSeedPlanes; l++) xpos[l] = layer[l]->GetX();
-					TTreeSRedirector &cstreamer = *fDebugStreamer;
+					TTreeSRedirector &cstreamer = *fDebugStreamerV1;
 							cstreamer << "MakeSeeds1"
 						<< "isFake=" << isFake
 						<< "config="   << config
@@ -913,7 +913,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 				// do the final track fitting
 				fFitter->SetLayers(nlayers);
 #ifdef DEBUG
-				fFitter->SetDebugStream(fDebugStreamer);
+				fFitter->SetDebugStream(fDebugStreamerV1);
 #endif
 				fTrackQuality[ntracks] = fFitter->FitHyperplane(&cseed[0], chi2ZF, GetZ());
 				Double_t param[3];
@@ -953,7 +953,7 @@ Int_t AliTRDtrackerV1::MakeSeeds(AliTRDstackLayer *layers
 #ifdef DEBUG
 				if(AliTRDReconstructor::StreamLevel() >= 2){
 					Double_t curv = (fFitter->GetRiemanFitter())->GetC();
-					TTreeSRedirector &cstreamer = *fDebugStreamer;
+					TTreeSRedirector &cstreamer = *fDebugStreamerV1;
 					cstreamer << "MakeSeeds2"
 						<< "C="       << curv
 						<< "Chi2R="   << chi2r
@@ -1170,18 +1170,18 @@ Double_t  AliTRDtrackerV1::CookPlaneQA(AliTRDstackLayer *layers)
 	
 	// calculate the deviation of the mean number of clusters from the
 	// closest integer values
-	Float_t ncl_med = float(ncl-nused)/nTimeBins;
-	Int_t ncli = Int_t(ncl_med);
-	Float_t ncl_dev = TMath::Abs(ncl_med - TMath::Max(ncli, 1));
-	ncl_dev -= (ncl_dev>.5) && ncli ? .5 : 0.; 
-	/*Double_t quality = */ return TMath::Exp(-2.*ncl_dev);
+	Float_t nclMed = float(ncl-nused)/nTimeBins;
+	Int_t ncli = Int_t(nclMed);
+	Float_t nclDev = TMath::Abs(nclMed - TMath::Max(ncli, 1));
+	nclDev -= (nclDev>.5) && ncli ? .5 : 0.; 
+	/*Double_t quality = */ return TMath::Exp(-2.*nclDev);
 	
 // 	// get slope of the derivative
 // 	if(!fitter.Eval()) return quality;
 // 	fitter.PrintResults(3);
 // 	Double_t a = fitter.GetParameter(1);
 // 
-// 	printf("ncl_dev(%f)  a(%f)\n", ncl_dev, a);
+// 	printf("nclDev(%f)  a(%f)\n", nclDev, a);
 // 	return quality*TMath::Exp(-a);
 }
 
@@ -1239,7 +1239,7 @@ Double_t AliTRDtrackerV1::CookLikelihood(AliTRDseedV1 *cseed
 #ifdef DEBUG
 	//AliInfo(Form("sumda(%f) chi2[0](%f) chi2[1](%f) likea(%f) likechi2y(%f) likechi2z(%f) nclusters(%d) likeN(%f)", sumda, chi2[0], chi2[1], likea, likechi2y, likechi2z, nclusters, likeN));
 	if(AliTRDReconstructor::StreamLevel() >= 2){
-		TTreeSRedirector &cstreamer = *fDebugStreamer;
+		TTreeSRedirector &cstreamer = *fDebugStreamerV1;
 		cstreamer << "CookLikelihood"
 			<< "sumda="     << sumda
 			<< "chi0="      << chi2[0]
@@ -1435,7 +1435,7 @@ AliTRDcluster *AliTRDtrackerV1::FindSeedingCluster(AliTRDstackLayer *layers
 	
 	// distances as squared distances
 	Int_t index = 0;
-	Float_t ypos = 0.0, zpos = 0.0, distance = 0.0, nearest_distance =100000.0; 
+	Float_t ypos = 0.0, zpos = 0.0, distance = 0.0, nearestDistance =100000.0; 
 	ypos = reference->GetYref(0);
 	zpos = reference->GetZref(0);
 	AliTRDcluster *currentBest = 0x0, *temp = 0x0;
@@ -1448,8 +1448,8 @@ AliTRDcluster *AliTRDtrackerV1::FindSeedingCluster(AliTRDstackLayer *layers
 		temp = layers[ils].GetCluster(index);
 		if(!temp) continue;
 		distance = (temp->GetY() - ypos) * (temp->GetY() - ypos) + (temp->GetZ() - zpos) * (temp->GetZ() - zpos);
-		if(distance < nearest_distance){
-			nearest_distance = distance;
+		if(distance < nearestDistance){
+			nearestDistance = distance;
 			currentBest = temp;
 		}
 	}
@@ -1627,7 +1627,7 @@ AliTRDstackLayer *AliTRDtrackerV1::MakeSeedingLayer(AliTRDstackLayer *layers
 		for(Int_t i = 0; i < nRows; i++)
 			for(Int_t j = 0; j < nCols; j++)
 				hist(i,j) = histogram[i][j];
-		TTreeSRedirector &cstreamer = *fDebugStreamer;
+		TTreeSRedirector &cstreamer = *fDebugStreamerV1;
 		cstreamer << "MakeSeedingLayer"
 			<< "Iteration="  << fSieveSeeding
 			<< "plane="      << plane
@@ -1644,7 +1644,8 @@ AliTRDstackLayer *AliTRDtrackerV1::MakeSeedingLayer(AliTRDstackLayer *layers
 }
 
 //____________________________________________________________________
-void AliTRDtrackerV1::GetSeedingConfig(Int_t iconfig, Int_t planes[4])
+void AliTRDtrackerV1::GetSeedingConfig(Int_t iconfig
+                                     , Int_t planes[4]) const
 {
   //
   // Map seeding configurations to detector planes.
@@ -1785,7 +1786,8 @@ void AliTRDtrackerV1::GetSeedingConfig(Int_t iconfig, Int_t planes[4])
 }
 
 //____________________________________________________________________
-void AliTRDtrackerV1::GetExtrapolationConfig(Int_t iconfig, Int_t planes[2])
+void AliTRDtrackerV1::GetExtrapolationConfig(Int_t iconfig
+                                           , Int_t planes[2]) const
 {
   //
   // Returns the extrapolation planes for a seeding configuration.

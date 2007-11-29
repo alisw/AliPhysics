@@ -39,7 +39,7 @@ class AliTRDstackLayer : public AliTRDpropagationLayer
 	~AliTRDstackLayer();
 	AliTRDstackLayer   &operator=(const AliTRDpropagationLayer &myLayer);
 	AliTRDstackLayer   &operator=(const AliTRDstackLayer &myLayer);
-	AliTRDcluster      *operator[](const Int_t i) {
+	AliTRDcluster      *operator[](const Int_t i) const {
 		return ((i < fN) && (i >= 0)) ? fClusters[i] : 0x0;
 	}
 

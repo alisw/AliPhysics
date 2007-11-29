@@ -53,8 +53,8 @@ class AliTRDtrackerV1 : public AliTRDtracker
 	~AliTRDtrackerV1();
   
 	Int_t          Clusters2Tracks(AliESDEvent *esd);
-	void           GetSeedingConfig(Int_t iconfig, Int_t planes[4]);
-	void           GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]);
+	void           GetSeedingConfig(Int_t iconfig, Int_t planes[4]) const;
+	void           GetExtrapolationConfig(Int_t iconfig, Int_t planes[2]) const;
 	void           SetRecoParam(AliTRDrecoParam *p){fRecoParam = p;}
 	
  protected:
@@ -79,13 +79,13 @@ class AliTRDtrackerV1 : public AliTRDtracker
 
  private:
 
-	static Double_t      fTopologicQA[kNConfigs];         //  Topologic quality
+	static Double_t      fgTopologicQA[kNConfigs];        //  Topologic quality
 	Double_t             fTrackQuality[kMaxTracksStack];  //  Track quality 
 	Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
 	Int_t                fSieveSeeding;                   //! Seeding iterator
 	AliTRDrecoParam     *fRecoParam;                      //  Reconstruction parameters
 	AliTRDtrackerFitter *fFitter;                         //! Fitter class of the tracker
-	TTreeSRedirector    *fDebugStreamer;                  //! Debug stream of the tracker
+	TTreeSRedirector    *fDebugStreamerV1;                //! Debug stream of the tracker
 
 	ClassDef(AliTRDtrackerV1, 1)                          //  Stand alone tracker development class
 

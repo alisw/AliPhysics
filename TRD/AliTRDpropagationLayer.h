@@ -29,8 +29,8 @@ class AliTRDpropagationLayer : public TObject
   AliTRDpropagationLayer();
   AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t rho
 		       , Double_t x0, Int_t tbIndex, Int_t plane);
-  AliTRDpropagationLayer(const AliTRDpropagationLayer &/*p*/);
-  ~AliTRDpropagationLayer();
+  AliTRDpropagationLayer(const AliTRDpropagationLayer &p);
+  virtual ~AliTRDpropagationLayer();
   AliTRDpropagationLayer &operator=(const AliTRDpropagationLayer &/*p*/) { return *this; }
 
   operator Int_t() const                                        { return fN;                    }
