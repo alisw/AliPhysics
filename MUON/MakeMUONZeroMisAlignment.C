@@ -26,9 +26,11 @@
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
+#include "AliCDBEntry.h"
 #include "AliCDBId.h"
 
 #include <TSystem.h>
+#include <TError.h>
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TFile.h>
@@ -44,7 +46,7 @@ void MakeMUONZeroMisAlignment()
   if(!cdb->IsDefaultStorageSet()) cdb->SetDefaultStorage("local://$ALICE_ROOT");
   cdb->SetRun(0);
   
-  AliCDBStorage* storage;
+  AliCDBStorage* storage = 0;
   
   if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
     TString Storage = gSystem->Getenv("STORAGE");
@@ -75,7 +77,7 @@ void MakeMUONZeroMisAlignment()
     // Create a file to store the alignment data
     const char* filename = "MUONZeroMisalignment.root";
     TFile f(filename,"RECREATE");
-    if(!f){
+    if(!f.IsOpen()){
       Error(macroname,"cannot open file for output\n");
       return;
     }
