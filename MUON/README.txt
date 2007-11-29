@@ -76,7 +76,7 @@ The results of this test are saved in testlong_out/ directory
 and will be kept in CVS
 
 (NOTE: the macros performing the calculations/plots MUONefficiency.C 
-and MUONplotEfficiency.C are also able to handle J/Psi if 
+and MUONplotefficiency.C are also able to handle J/Psi if 
 Config.C is modified accordingly )
 
 \section s3  How to run a MUON generation
