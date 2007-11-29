@@ -55,6 +55,7 @@ class AliAODEvent : public AliVEvent {
   //AliAODEvent& operator=(const AliAODEvent& aodevent);  // not implemented
 
   void          AddObject(TObject *obj);
+  void          RemoveObject(TObject *obj);
   TObject      *FindListObject(const char *objName) ;
   TList        *GetList()                const { return fAODObjects; }
 

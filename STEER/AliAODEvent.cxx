@@ -70,11 +70,19 @@ AliAODEvent::~AliAODEvent()
 //______________________________________________________________________________
 void AliAODEvent::AddObject(TObject* obj) 
 {
-  // Add an object to the list of object.
+  // Add an object to the list of objects.
   // Please be aware that in order to increase performance you should
   // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
   
   fAODObjects->AddLast(obj);
+}
+
+//______________________________________________________________________________
+void AliAODEvent::RemoveObject(TObject* obj) 
+{
+  // Removes an object from the list of objects.
+  
+  fAODObjects->Remove(obj);
 }
 
 //______________________________________________________________________________
