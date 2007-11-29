@@ -305,7 +305,10 @@ class TFluka : public TVirtualMC {
   // Particle Properties
   // -------------------
   //
-  virtual Bool_t DefineParticle(int, const char*, TMCParticleType, double, double, double) {return kFALSE;}
+  virtual Bool_t DefineParticle(Int_t, const char*, TMCParticleType, Double_t, Double_t, Double_t) {return kFALSE;}
+  virtual Bool_t DefineParticle(Int_t, const char*, TMCParticleType, Double_t, Double_t, Double_t,
+				const TString&, Double_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t, Int_t,
+				Bool_t, Bool_t = kFALSE, const TString& = "", Int_t = 0, Double_t = 0.0, Double_t = 0.0) {return kFALSE;}
   virtual Bool_t DefineIon(const char*, int, int, int, double, double) {return kFALSE;}
   virtual TString  ParticleName(int pdg)      const;
   virtual Double_t ParticleMass(int pdg)      const;
