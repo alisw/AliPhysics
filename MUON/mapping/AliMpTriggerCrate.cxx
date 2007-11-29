@@ -24,7 +24,6 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpTriggerCrate.h"
-#include "AliMpDEManager.h"
 
 #include "AliLog.h"
 

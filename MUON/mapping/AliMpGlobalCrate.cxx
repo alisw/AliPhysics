@@ -24,7 +24,6 @@
 //-----------------------------------------------------------------------------
 
 #include "AliMpGlobalCrate.h"
-#include "AliMpDEManager.h"
 #include "AliMpConstants.h"
 
 #include "AliLog.h"
