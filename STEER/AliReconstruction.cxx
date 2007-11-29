@@ -2653,31 +2653,33 @@ void AliReconstruction::ESDFile2AODFile(TFile* esdFile, TFile* aodFile)
     caloClusters.Expand(jClusters); // resize TObjArray to 'remove' slots for pseudo clusters	 
     // end of loop on calo clusters
 
-    // fill PHOS cell info
-
-    AliESDCaloCells &esdEMcells = *(esd->GetEMCALCells());
-    Int_t nEMcell = esdEMcells.GetNumberOfCells() ;
-
-    AliAODCaloCells &aodEMcells = *(aod->GetEMCALCells());
-    aodEMcells.CreateContainer(nEMcell);
-    aodEMcells.SetType(AliAODCaloCells::kEMCAL);
-    for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
-      aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
+    // fill EMCAL cell info
+    if (esd->GetEMCALCells()) { // protection against missing ESD information
+      AliESDCaloCells &esdEMcells = *(esd->GetEMCALCells());
+      Int_t nEMcell = esdEMcells.GetNumberOfCells() ;
+      
+      AliAODCaloCells &aodEMcells = *(aod->GetEMCALCells());
+      aodEMcells.CreateContainer(nEMcell);
+      aodEMcells.SetType(AliAODCaloCells::kEMCAL);
+      for (Int_t iCell = 0; iCell < nEMcell; iCell++) {      
+	aodEMcells.SetCell(iCell,esdEMcells.GetCellNumber(iCell),esdEMcells.GetAmplitude(iCell));
+      }
+      aodEMcells.Sort();
     }
-    aodEMcells.Sort();
 
     // fill PHOS cell info
-
-    AliESDCaloCells &esdPHcells = *(esd->GetPHOSCells());
-    Int_t nPHcell = esdPHcells.GetNumberOfCells() ;
-
-    AliAODCaloCells &aodPHcells = *(aod->GetPHOSCells());
-    aodPHcells.CreateContainer(nPHcell);
-    aodPHcells.SetType(AliAODCaloCells::kPHOS);
-    for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
-      aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+    if (esd->GetPHOSCells()) { // protection against missing ESD information
+      AliESDCaloCells &esdPHcells = *(esd->GetPHOSCells());
+      Int_t nPHcell = esdPHcells.GetNumberOfCells() ;
+      
+      AliAODCaloCells &aodPHcells = *(aod->GetPHOSCells());
+      aodPHcells.CreateContainer(nPHcell);
+      aodPHcells.SetType(AliAODCaloCells::kPHOS);
+      for (Int_t iCell = 0; iCell < nPHcell; iCell++) {      
+	aodPHcells.SetCell(iCell,esdPHcells.GetCellNumber(iCell),esdPHcells.GetAmplitude(iCell));
+      }
+      aodPHcells.Sort();
     }
-    aodPHcells.Sort();
 
     // tracklets    
     AliAODTracklets &SPDTracklets = *(aod->GetTracklets());
