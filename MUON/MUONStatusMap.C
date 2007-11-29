@@ -24,61 +24,94 @@
 #include "AliMUONCalibrationData.h"
 #include "AliMUONPadStatusMaker.h"
 #include "AliMUONPadStatusMapMaker.h"
-#include "AliMUONVStore.h"
 #include "AliMUONVCalibParam.h"
+#include "AliMUONVStore.h"
+#include "AliMpCDB.h"
+#include "AliMpConstants.h"
+#include "AliMpDDLStore.h"
+#include "AliMpDetElement.h"
 #include "AliMpIntPair.h"
+#include "AliMpManuIterator.h"
 #include "Riostream.h"
 #endif
 
-
-void findBad(const AliMUONVStore& status)
+void FindBad(AliMUONPadStatusMaker& statusMaker, Int_t mask, Int_t& nBadPads, Int_t& nPads)
 {
-  TIter next(status.CreateIterator());
-  AliMUONVCalibParam* param;
+  AliMpManuIterator it;
   
-  while ( ( param = dynamic_cast<AliMUONVCalibParam*>(next()) ) )
+  nBadPads = nPads = 0;
+  
+  Int_t detElemId;
+  Int_t manuId;
+  
+  while ( it.Next(detElemId,manuId) )
   {
-    Int_t detElemId = param->ID0();
-    Int_t manuId = param->ID1();
     Bool_t bad(kFALSE);
-    for ( Int_t i = 0; i < param->Size(); ++i ) 
+    
+    AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    Int_t nb(0);
+    Int_t n(0);
+
+    for ( Int_t i = 0; i < AliMpConstants::ManuNofChannels(); ++i )
     {
-      if ( param->ValueAsInt(0) ) bad = kTRUE;
+      if ( de->IsConnectedChannel(manuId,i) )
+      {
+        ++n;
+        ++nPads;
+        Int_t status = statusMaker.PadStatus(detElemId,manuId,i);
+        if ( ( status & mask) || (!mask && status) )
+        {
+          bad = kTRUE;
+          ++nBadPads;
+          ++nb;
+        }
+      }
     }
+    
     if (bad)
     {
-      cout << Form("DE %4d ManuId %4d",detElemId,manuId) << endl;
+      cout << Form("DE %4d ManuId %4d %2d bad pads over %2d pads",
+                   detElemId,manuId,nb,n) << endl;
     }
   }
 }
 
 AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT",
-                               Int_t runNumber=0, Bool_t statusOnly=kFALSE, Int_t mask=0)
+                             Int_t runNumber=0, Bool_t statusOnly=kFALSE, 
+                             Int_t mask=0x8080)
 {  
   AliCDBManager::Instance()->SetDefaultStorage(cdbStorage.Data());
+  AliCDBManager::Instance()->SetRun(runNumber);
 
+  AliMpCDB::LoadDDLStore();
+  
   AliMUONCalibrationData cd(runNumber);
   
   AliMUONPadStatusMaker statusMaker(cd);
   
 //  statusMaker.SetPedMeanLimits(50,200);
-  statusMaker.SetPedSigmaLimits(0.5,2);
+//  statusMaker.SetPedSigmaLimits(0.5,2);
   
-  AliMUONVStore* status = statusMaker.MakeStatus();
- 
-  if ( status )
+  Int_t nbad;
+  Int_t ntotal;
+  
+  FindBad(statusMaker,mask,nbad,ntotal);
+
+  if (ntotal<=0) 
   {
-    findBad(*status);
-  }
-  else
-  {
-    cout << "ERROR. Could not get status from CDB" << endl;
-    return 0;
-  }
+    cout << "Error : got no pad at all ?!" << endl;
+    return 0x0;
+  }  
   
-  if ( statusOnly ) return status;
+  cout << Form("Nbad = %6d over %6d pads (%7.2f %%)",
+               nbad,ntotal,100.0*nbad/ntotal) << endl;
   
-  AliMUONPadStatusMapMaker statusMapMaker(cd);
+  if ( statusOnly ) return statusMaker.StatusStore();
   
-  return statusMapMaker.MakePadStatusMap(*status,mask);
+  const Bool_t deferredInitialization = kFALSE;
+  
+  AliMUONPadStatusMapMaker statusMapMaker(cd,mask,deferredInitialization);
+    
+  return statusMapMaker.StatusMap();
 }
