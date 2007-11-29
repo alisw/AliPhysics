@@ -1,6 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
-//#include <Buttons.h>
 #include <TSystem.h>
 #include <TFile.h>
 #include <TVirtualX.h>
@@ -28,6 +27,7 @@
 #include "AliHMPIDParam.h"
 #include "AliHMPIDCluster.h"
 #include "AliTracker.h"
+#include "AliStack.h"
 
 #endif
 
@@ -248,7 +248,6 @@ void Draw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void RenderHit(TClonesArray *pHitLst)
 {//used by ReadEvent() and SimulateEvent() to render hits to polymarker structures, one per chamber
-  if(pHitLst->GetEntries()!=116) return;
   for(Int_t iHit=0;iHit<pHitLst->GetEntries();iHit++){       //hits loop
     AliHMPIDHit *pHit = (AliHMPIDHit*)pHitLst->At(iHit); Int_t ch=pHit->Ch(); Float_t x=pHit->LorsX(); Float_t y=pHit->LorsY();    //get current hit        
     switch(pHit->Pid()){
@@ -364,6 +363,25 @@ void SimulateHits(AliESDEvent *pEsd, TClonesArray *pHits)
   }//tracks loop    
 }//SimulateHits()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+TString Stack(Int_t evt,Int_t tid)
+{
+// Prints some useful info from stack
+// Arguments: evt - event number. if not -1 print info only for that event
+//            tid - track id. if not -1 then print it and all it's mothers if any   
+//   Returns: mother tid of the given tid if any
+  if(gAL->LoadHeader()) return -1;
+  if(gAL->LoadKinematics()) return -1;
+  
+  gAL->GetEvent(evt);    
+  AliStack *pStack=gAL->Stack();  
+  TParticle *pTrack=pStack->Particle(tid);
+//  Int_t mtid=pTrack->GetFirstMother();
+  TString str;
+  str.Append(Form("with P = %7.4f (%7.4f,%7.4f,%7.4f) GeV/c ",pTrack->P(),pTrack->Px(),pTrack->Py(),pTrack->Pz()));
+  gAL->UnloadHeader();  gAL->UnloadKinematics();
+  return str;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DispTB(TString t0,TString t1,TString t2,TString t3)
 {
   fCanvasImp->SetStatusText(t0,0);
@@ -468,15 +486,19 @@ void DisplayInfo(Int_t evt,Int_t px, Int_t py)
     fHitTree->GetEntry(indTrk);                              
     AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(indHit);
 
+    Int_t tid = pHit->Tid();
+    
+    TString str = Stack(fEvt,tid);
+    
     Float_t x=pHit->LorsX(); 
     Float_t y=pHit->LorsY();
     Float_t charge = pHit->Q();
     if(pHit->Pid()==50000050) {nameHit = " Cherenkov Photon ";}
     else if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
     else if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
-    text0="";text0.Append(Form("Hit x %6.2f y %6.2f",x,y));
+    text0="";text0.Append(Form("Hit x %6.2f y %6.2f total hit produced %i",x,y,fHitLst->GetEntries()));
     text2="";text2.Append(Form("Q = %7.2f ADC",charge));
-    text3="";text3="Particle: "+ nameHit;
+    text3="";text3="Particle: "+ nameHit +" "+ str;
   } // Hit  
   else if (symbol==kCluster) {
     TClonesArray *pClusCham=(TClonesArray*)fCluLst->At(ch);         //get clusters list for this chamber
@@ -847,4 +869,3 @@ void OnlyEsd()
   fStEsd    = "ON";
   GetEvent();
 }
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
