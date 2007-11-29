@@ -36,6 +36,8 @@
 #include "AliTRDgtuTrack.h"
 #include "AliTRDrawData.h"
 #include "AliTRDdigitsManager.h"
+#include "AliTRDtrackerV1.h"
+#include "AliTRDrecoParam.h"
 
 ClassImp(AliTRDReconstructor)
 
@@ -90,6 +92,7 @@ void AliTRDReconstructor::Reconstruct(TTree *digitsTree
   //
   // Reconstruct clusters
   //
+
   AliInfo("Reconstruct TRD clusters from Digits [Digit TTree -> Cluster TTree]");
 
   AliTRDclusterizer clusterer("clusterer","TRD clusterizer");
@@ -106,7 +109,9 @@ AliTracker *AliTRDReconstructor::CreateTracker() const
   // Create a TRD tracker
   //
 
-  return new AliTRDtracker(NULL);
+  //return new AliTRDtracker(NULL);
+
+  return new AliTRDtrackerV1(NULL, AliTRDrecoParam::GetLowFluxParam());
 
 }
 

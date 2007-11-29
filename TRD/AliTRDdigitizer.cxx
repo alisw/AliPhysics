@@ -1291,7 +1291,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
             for (iTime = 0; iTime < nTimeTotal; iTime++) {   
               // Store the amplitude of the digit if above threshold
-              // if (outADC[iTime] > (simParam->GetADCbaseline() + simParam->GetADCthreshold())) {
+              //if (outADC[iTime] > (simParam->GetADCbaseline() + simParam->GetADCthreshold())) {
               if (outADC[iTime] != 0 ) {   // Now this is enough because there is ZS in raw simulator
                 nDigits++;
                 digits->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
@@ -1501,7 +1501,7 @@ Bool_t AliTRDdigitizer::ConvertSDigits()
 
           for (iTime = 0; iTime < nTimeTotal; iTime++) {
             // Store the amplitude of the digit if above threshold
-            // if (outADC[iTime] > (adcBaseline + adcThreshold)) {
+            //if (outADC[iTime] > (adcBaseline + adcThreshold)) {
 	    if (outADC[iTime] != 0) {  // now this is ok because there is ZS in raw simulation
               digitsOut->SetDataUnchecked(iRow,iCol,iTime,((Int_t) outADC[iTime]));
   	      // Copy the dictionary

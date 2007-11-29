@@ -15,9 +15,6 @@
 
 /* $Id$ */
 
-//#include <Riostream.h>
-
-//#include <TMath.h>
 #include <TVector2.h>
 
 #include "AliTracker.h"
@@ -26,7 +23,6 @@
 #include "AliTRDgeometry.h" 
 #include "AliTRDcluster.h" 
 #include "AliTRDtrack.h"
-//#include "AliTRDtracklet.h"
 #include "AliTRDcalibDB.h"
 #include "Cal/AliTRDCalPID.h"
 
@@ -506,8 +502,8 @@ void AliTRDtrack::CookdEdxTimBin(const Int_t/* tid*/)
     }
 
     tb     = cluster->GetLocalTimeBin();
-    if ((tb == 0) || (tb >= ntb)) {
-      AliWarning(Form("time bin 0 or > %d in cluster %d", ntb, iClus));
+    if ((tb < 0) || (tb >= ntb)) {
+      AliWarning(Form("time bin < 0 or > %d in cluster %d", ntb, iClus));
       AliInfo(Form("dQ/dl %f", fdQdl[iClus]));
       continue;
     }

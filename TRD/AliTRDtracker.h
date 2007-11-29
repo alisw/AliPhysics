@@ -12,9 +12,17 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
+#ifndef ROOT_TObjArray
 #include "TObjArray.h" 
+#endif
 
+#ifndef ALITRACKER_H
 #include "AliTracker.h" 
+#endif
+
+#ifndef ALITRDPROPAGATIONLAYER_H
+#include "AliTRDpropagationLayer.h"
+#endif
 
 class TFile;
 class TTree;
@@ -30,6 +38,7 @@ class AliTRDtracklet;
 class AliTRDcluster;
 class AliTRDseed;
 class AliESDEvent;
+class AliTRDpropagationLayer;
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -47,8 +56,6 @@ class AliTRDtracker : public AliTracker {
 
   enum { kMaxLayersPerSector   = 1000
        , kMaxTimeBinIndex      = 216
-       , kMaxClusterPerTimeBin = 2300
-       , kZones                = 5
        , kTrackingSectors      = 18   };
   
   AliTRDtracker();
@@ -93,91 +100,17 @@ class AliTRDtracker : public AliTracker {
   Int_t            ReadClusters(TObjArray *array, TTree *in) const;
   AliTRDcluster   *GetCluster(AliTRDtrack *track, Int_t plane, Int_t timebin, UInt_t &index);
   Int_t            FindClusters(Int_t sector, Int_t t0, Int_t t1, AliTRDtrack *track
-                              , Int_t *clusters, AliTRDtracklet &tracklet);
+                              , Int_t *clusters, AliTRDtracklet &tracklet);  
   
  protected:
-  
-  //__________________________________________________________________________________________________
-  class AliTRDpropagationLayer {
-    
-   public: 
-    
-    AliTRDpropagationLayer(Double_t x, Double_t dx, Double_t rho
-			 , Double_t x0, Int_t tbIndex, Int_t plane); 
-    AliTRDpropagationLayer(const AliTRDpropagationLayer &/*p*/);
-    ~AliTRDpropagationLayer() {  if (fTimeBinIndex >= 0) { 
-                                   delete[] fClusters; 
-    	                           delete[] fIndex; 
-                                 } 
-                               }
-    AliTRDpropagationLayer &operator=(const AliTRDpropagationLayer &/*p*/) 
-                                                              { return *this; }
 
-    operator Int_t() const                                    { return fN;    }
-    AliTRDcluster  *operator[](Int_t i)                       { return fClusters[i];          }
-    
-    void     SetZmax(Int_t cham, Double_t center, Double_t w) { fZc[cham]      = center; 
-                                                                fZmax[cham]    = w;           }
-    void     SetYmax(Double_t w, Double_t wsensitive)         { fYmax          = w;
-                                                                fYmaxSensitive = wsensitive;  }
-
-    void     SetZ(Double_t* center, Double_t *w, Double_t *wsensitive);
-    void     SetHoles(Bool_t* holes);
-    void     SetHole(Double_t Zmax, Double_t Ymax
-	           , Double_t rho = 1.29e-3, Double_t x0 = 36.66
-	           , Double_t Yc = 0.0, Double_t Zc = 0.0);
-    
-    Double_t GetYmax() const           { return fYmax;                  }
-    Double_t GetZmax(Int_t c) const    { return fZmax[c];               }
-    Double_t GetZc(Int_t c) const      { return fZc[c];                 }
-    UInt_t   GetIndex(Int_t i) const   { return fIndex[i];              }  
-    Double_t GetX() const              { return fX;                     }
-    Double_t GetdX() const             { return fdX;                    }
-    Int_t    GetTimeBinIndex() const   { return fTimeBinIndex;          }     
-    Int_t    GetPlane() const          { return fPlane;                 }
-    Bool_t   IsHole(Int_t zone) const  { return fIsHole[zone];          }              
-    Bool_t   IsSensitive() const       { return (fTimeBinIndex >= 0) ? kTRUE : kFALSE;} 
-    
-    void     Clear() { 
-      for (Int_t i = 0; i < fN; i++) fClusters[i] = NULL;
-      fN = 0;
-    }
-    
-    void     InsertCluster(AliTRDcluster *c, UInt_t index);
-    Int_t    Find(Float_t y) const; 
-    Int_t    FindNearestCluster(Float_t y, Float_t z, Float_t maxroad, Float_t maxroadz) const;
- 
-    void     SetX(Double_t x)          { fX = x; }
-    
-   private:     
-    
-    Int_t                     fN;                            // This is fN
-    Int_t                     fSec;                          // Sector mumber
-    AliTRDcluster           **fClusters;                     // Array of pointers to clusters
-    UInt_t                   *fIndex;                        // Array of cluster indexes
-    Double_t                  fX;                            // X coordinate of the middle plane
-    Double_t                  fdX;                           // Radial thickness of the time bin
-    Double_t                  fRho;                          // Default density of the material 
-    Double_t                  fX0;                           // Default radiation length 
-    Int_t                     fTimeBinIndex;                 // Plane * F(local_tb)  
-    Int_t                     fPlane;                        // Plane number
-    Double_t                  fZc[kZones];                   // Z position of the center for 5 active areas
-    Double_t                  fZmax[kZones];                 // Half of active area length in Z
-    Double_t                  fZmaxSensitive[kZones];        // Sensitive area for detection Z     
-    Bool_t                    fIsHole[kZones];               // Is hole in given sector       
-    Double_t                  fYmax;                         // Half of active area length in Y
-    Double_t                  fYmaxSensitive;                // Half of active area length in Y
-    
-    Bool_t                    fHole;                         // kTRUE if there is a hole in the layer
-    Double_t                  fHoleZc;                       // Z of the center of the hole 
-    Double_t                  fHoleZmax;                     // Half of the hole length in Z
-    Double_t                  fHoleYc;                       // Y of the center of the hole 
-    Double_t                  fHoleYmax;                     // Half of the hole length in Y 
-    Double_t                  fHoleRho;                      // Density of the gas in the hole 
-    Double_t                  fHoleX0;                       // Radiation length of the gas in the hole 
-    
-  };
+  Bool_t           AdjustSector(AliTRDtrack *track); 
+  AliTRDtrack     *RegisterSeed(AliTRDseed *seeds, Double_t *params);
+  Int_t            FollowBackProlongation(AliTRDtrack &t);
+  //void             MakeSeedsMI(Int_t inner, Int_t outer, AliESDEvent *esd = 0);
   
+ protected:
+
   //__________________________________________________________________________________________________
   class AliTRDtrackingSector {
     
@@ -197,6 +130,7 @@ class AliTRDtracker : public AliTracker {
     Int_t    GetLayerNumber(Int_t tb) const        { return fTimeBinIndex[tb];   }
     Double_t GetX(Int_t pl) const                  { return fLayers[pl]->GetX(); }
     AliTRDpropagationLayer* GetLayer(Int_t i)      { return fLayers[i];          }
+    Int_t    GetSector() const {return fGeomSector;}	
     
     void     MapTimeBinLayers();
     Int_t    Find(Double_t x) const; 
@@ -213,6 +147,8 @@ class AliTRDtracker : public AliTracker {
     
   };
   
+ protected:
+
   AliTRDgeometry          *fGeom;                          // Pointer to TRD geometry
   AliTRDtrackingSector    *fTrSec[kTrackingSectors];       // Array of tracking sectors;    
   Int_t                    fNclusters;                     // Number of clusters in TRD 
@@ -246,23 +182,21 @@ class AliTRDtracker : public AliTracker {
   TH2D                    *fHMinD;                         // QA histogram
   TH1D                    *fHDeltaX;                       // QA histogram
   TH1D                    *fHXCl;                          // QA histogram
-  
-  Bool_t   AdjustSector(AliTRDtrack *track); 
-  
+
  private:
-  
-  AliTRDtrack *RegisterSeed(AliTRDseed *seeds, Double_t *params);
-  void     MakeSeedsMI(Int_t inner, Int_t outer, AliESDEvent *esd = 0);
-  
-  Int_t    FollowBackProlongation(AliTRDtrack &t);
-  Int_t    FollowProlongation(AliTRDtrack &t);
-  Int_t    PropagateToX(AliTRDtrack &t, Double_t xToGo, Double_t maxStep);
-  Double_t ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
-  Double_t ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
-  
+
+  Int_t            FollowProlongation(AliTRDtrack &t);
+  Int_t            PropagateToX(AliTRDtrack &t, Double_t xToGo, Double_t maxStep);
+  Double_t         ExpectedSigmaY2(Double_t r, Double_t tgl, Double_t pt) const;
+  Double_t         ExpectedSigmaZ2(Double_t r, Double_t tgl) const;
+
+ private:  
+ 
   TTreeSRedirector        *fDebugStreamer;                 //!Debug streamer
   
-  ClassDef(AliTRDtracker,3)                                // TRD tracker
+  ClassDef(AliTRDtracker, 4)                               // TRD tracker
     
 };
+
+
 #endif 

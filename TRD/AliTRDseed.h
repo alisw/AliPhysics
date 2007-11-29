@@ -19,6 +19,7 @@ class AliTRDcluster;
 class AliTRDseed : public TObject {
 
  public:
+	enum { knTimebins = 35 };
 
   AliTRDseed(); 
   AliTRDseed(const AliTRDseed &s);
@@ -27,7 +28,6 @@ class AliTRDseed : public TObject {
   AliTRDseed      &operator=(const AliTRDseed &s)           { *(new(this) AliTRDseed(s)); 
                                                               return *this;          }
 
-
   static  Float_t  FitRiemanTilt(AliTRDseed *seed, Bool_t error);
           void     UseClusters();
           void     Update();
@@ -35,7 +35,7 @@ class AliTRDseed : public TObject {
           void     UpdateUsed();
           void     Reset();
 
-          Bool_t   IsOK() const                             { return fN2 > 8;        }
+          Bool_t   IsOK() const                             { return fN2 > 4;        }
           Bool_t   IsUsable(Int_t i) const                  { return fUsable[i];     }
  
           Float_t  GetTilt() const                          { return fTilt;          }
@@ -93,17 +93,19 @@ class AliTRDseed : public TObject {
           void     SetChi2(Float_t chi2)                    { fChi2        = chi2;   }
           void     SetChi2Z(Float_t chi2z)                  { fChi2Z       = chi2z;  }
 
- private:
+ protected:
 
+          void     Copy(TObject &o) const;
+          
           Float_t  fTilt;               //  Tilting angle
           Float_t  fPadLength;          //  Pad length
           Float_t  fX0;                 //  X0 position
-          Float_t  fX[25];              //! X position
-          Float_t  fY[25];              //! Y position
-          Float_t  fZ[25];              //! Z position
-          Int_t    fIndexes[25];        //! Indexes
-          AliTRDcluster *fClusters[25]; //! Clusters
-          Bool_t   fUsable[25];         //! Indication  - usable cluster
+          Float_t  fX[knTimebins];      //! X position
+          Float_t  fY[knTimebins];      //! Y position
+          Float_t  fZ[knTimebins];      //! Z position
+          Int_t    fIndexes[knTimebins];//! Indexes
+          AliTRDcluster *fClusters[knTimebins]; // Clusters
+          Bool_t   fUsable[knTimebins]; //! Indication  - usable cluster
           Float_t  fYref[2];            //  Reference y
           Float_t  fZref[2];            //  Reference z
           Float_t  fYfit[2];            //  Y fit position +derivation

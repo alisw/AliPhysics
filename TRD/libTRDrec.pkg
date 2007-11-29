@@ -10,9 +10,15 @@ SRCS= AliTRDcluster.cxx \
       AliTRDpidESD.cxx \
       AliTRDRecParam.cxx \
       AliTRDReconstructor.cxx \
-      AliTRDtrackingAnalysis.cxx
+      AliTRDtrackingAnalysis.cxx \
+      AliTRDrecoParam.cxx \
+      AliTRDseedV1.cxx \
+      AliTRDtrackerV1.cxx \
+      AliTRDpropagationLayer.cxx \
+      AliTRDstackLayer.cxx \
+      AliTRDtrackerFitter.cxx
 
-HDRS= $(SRCS:.cxx=.h)                
+HDRS= $(SRCS:.cxx=.h)
 
 DHDR= TRDrecLinkDef.h
 

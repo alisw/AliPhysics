@@ -20,6 +20,7 @@
 #pragma link C++ class  AliTRDtrack+;
 #pragma link C++ class  AliTRDtracklet+;
 #pragma link C++ class  AliTRDtracker+;
+#pragma link C++ class  AliTRDpropagationLayer+;
 #pragma link C++ class  AliTRDseed+;
 
 #pragma link C++ class  AliTRDpidESD+;
@@ -28,5 +29,12 @@
 #pragma link C++ class  AliTRDRecParam+;
 
 #pragma link C++ class  AliTRDtrackingAnalysis+;
+
+#pragma link C++ class AliTRDrecoParam+;
+#pragma link C++ class AliTRDseedV1+;
+#pragma link C++ class AliTRDtrackerV1+;
+#pragma link C++ class AliTRDstackLayer+;
+#pragma link C++ class AliTRDtrackerFitter+;
+
 
 #endif
