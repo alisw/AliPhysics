@@ -19,19 +19,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//#include "PhosFeeClient.h"
-
-//#include "stdio.h"
-//#include <iostream>
-#include <cstdlib>
-#include <assert.h>
-//#include "AliHLTPHOSCommonDefs.h"
-//#include "AliHLTPHOSConstants.h"
 #include "AliHLTPHOSBase.h"
-    
-//            PhosHLTConst
-using namespace std;
-using namespace PhosHLTConst;
+
+//using namespace PhosHLTConst;
 
 class AliHLTPHOSMapper : public AliHLTPHOSBase
 {
@@ -40,23 +30,13 @@ class AliHLTPHOSMapper : public AliHLTPHOSBase
   virtual ~AliHLTPHOSMapper();
   void InitAltroMapping(); 
 
-  struct altromap{ 
-    //    int mod;
-    int zRow;
-    int xCol;
-    int gain;
-    //    int rcu;
-    //    int branch;
-    //    int card;
-    //    int chip;
-    //    int chan;
-    //    int csp;
-    //    int num;
-    //    int hid;
+  struct fAltromap{ 
+    int fZRow; // Coordinate in Z direction (beam direction) relatve too one RCU
+    int fXCol; // Coordinate in X direction (perpendicular too beam direction an parallell to ground) relatve too one RCU
+    int fGain; // Gain (high gain = 1, low gain = 0)
   };
 
-
-altromap *hw2geomapPtr;
+  fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
 
 };
 

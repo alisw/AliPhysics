@@ -30,6 +30,13 @@
 using namespace PhosHLTConst;
 using namespace std;
 
+//
+// Base class for all PHOS HLT classes.
+// The class contains some utility functions
+// and also loads data about the HLT configuration
+// and the altro/FEE configuration
+//
+
 
 class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
 {
@@ -55,7 +62,7 @@ class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
   }
 
   template<typename T> 
-  void  ResetArray(T *array, int N)
+  void  ResetArray(T *array, int N) const
   {
     for(int i= 0; i< N; i++)
       {
@@ -64,7 +71,7 @@ class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
   }
  
   template<typename T> 
-  T  MaxValue(T *array, int N)
+  T  MaxValue(T *array, int N) const
   {
     T tmpMax = 0;
 
@@ -81,8 +88,8 @@ class  AliHLTPHOSBase : public AliHLTPHOSConfig, public AliHLTPHOSAltroConfig
 
   
 protected:
-  AliHLTPHOSConfig *fConfigPtr;
-  AliHLTPHOSConfig *fAltroConfigPtr;
+  AliHLTPHOSConfig *fConfigPtr;        // object holding HLT configuration data
+  AliHLTPHOSConfig *fAltroConfigPtr;   // object holding Altro configuration data
 
 private:
   AliHLTPHOSBase(const AliHLTPHOSBase & );

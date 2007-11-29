@@ -7,6 +7,13 @@
 #include "AliHLTPHOSRcuProcessor.h"
 
 
+//
+// Class tp produce calibration data
+// too be sendt to the HLT file exhange server
+// and to the PHOS HLT monitoring GUI
+//
+
+
 class AliHLTPHOSRcuHistogramProducer;
 class AliHLTPHOSRcuCellAccumulatedEnergyDataStruct;
 class AliHLTPHOSSharedMemoryInterface;
@@ -31,12 +38,11 @@ class AliHLTPHOSRcuHistogramProducerComponent:public AliHLTPHOSRcuProcessor
   using AliHLTPHOSRcuProcessor::DoEvent;
 
  private:
+
   int fHistoWriteFrequency;
   AliHLTPHOSRcuHistogramProducer* fRcuHistoProducerPtr;   /**<Pointer to a phos histoproducer object*/
   AliHLTPHOSRcuCellAccumulatedEnergyDataStruct*  fOutPtr; /**<Pointer to outputbuffer to write results from the component into shared memory*/
-  //  static const AliHLTComponentDataType fgkIinputDataTypes[];
-  //  static const AliHLTComponentDataType fgkOutputDataType;   /**<List of  datatypes that can be given to this component*/
-  AliHLTPHOSSharedMemoryInterface *fShmPtr;
+  AliHLTPHOSSharedMemoryInterface *fShmPtr; // Interface to read altro channel data from shared memory
 };
 
 #endif

@@ -96,7 +96,7 @@ private:
   AliHLTPHOSDigitContainerDataStruct *fDigitContainerPtr;  //! transient
 
   /** Event count */
-  UInt_t fEvtCnt; 
+  //  UInt_t fEvtCnt; 
   
   static const AliHLTComponentDataType fgkInputDataTypes[];     //HLT input data type
 

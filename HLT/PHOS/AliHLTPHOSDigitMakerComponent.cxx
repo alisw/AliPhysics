@@ -75,12 +75,11 @@ AliHLTPHOSDigitMakerComponent::GetComponentID()
   return "PhosDigitMaker";
 }
 
-void
 
+void
 AliHLTPHOSDigitMakerComponent::GetInputDataTypes(vector<AliHLTComponentDataType>& list)
 { 
   //see header file for documentation
-
   const AliHLTComponentDataType* pType=fgkInputDataTypes;
   while (pType->fID!=0) {
     list.push_back(*pType); 

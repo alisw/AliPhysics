@@ -37,6 +37,9 @@ AliHLTPHOSBase::~AliHLTPHOSBase()
 bool
 AliHLTPHOSBase::CheckFile(const char *fileName, const char *opt) const
 {
+  //returns true if the file specified by "fileName exists  and has acceees rights specified  by "opt", 
+  //returns false if it doesnt exist, or it exists, but doesnt have the access right specified by "opt"
+
   FILE *fp = fopen(fileName, opt);
 
   if(fp == 0)

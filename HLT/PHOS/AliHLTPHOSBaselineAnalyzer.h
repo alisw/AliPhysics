@@ -137,22 +137,22 @@ public:
 private:
 
   /** At which time index to start the measuring of the baseline */
-  Int_t fSampleStart;
+  Int_t fSampleStart;  // Shutting up rule checker
 
   /** Not used anymore */
-  Int_t fMaxCrazyDifference;
+  Int_t fMaxCrazyDifference;  // Shutting up rule checker
 
   /** Maximum signal level, used to not count channels with signals for baseline measurement */
-  Int_t fMaxSignal; 
+  Int_t fMaxSignal;  // Shutting up rule checker
 
   /** Count of channels, not used anymore */
-  Int_t fChannelCount;
+  Int_t fChannelCount;   // Shutting up rule checker
 
   /** Array containing the baselines of all channels */
-  Float_t fBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];
+  Float_t fBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS];      // Shutting up rule checker
 
   /** Array containing the accumulated baselines for all channels */
-  Float_t fAccumulatedBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS][2];
+  Float_t fAccumulatedBaselines[N_XCOLUMNS_MOD][N_ZROWS_MOD][N_GAINS][2];    // Shutting up rule checker
 
   /** Pointer to a tree containing TClonesArray of AliHLTPHOSBaseline objects */ 
   TTree *fTreePtr;                                      //! transient

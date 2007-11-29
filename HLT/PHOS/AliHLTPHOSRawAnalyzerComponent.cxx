@@ -19,14 +19,12 @@
 #include "AliHLTPHOSRawAnalyzer.h"
 #include "AliHLTPHOSRawAnalyzerComponent.h"
 #include "AliHLTPHOSRcuCellEnergyDataStruct.h"
-//#include "AliHLTPHOSRcuChannelDataStruct.h"
 #include "AliHLTPHOSMapper.h"
 #include "AliHLTPHOSSanityInspector.h"
 #include "AliHLTPHOSBaseline.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClonesArray.h"
-
 #include  "AliAltroDecoder.h"    // decoder for altro payload
 #include  "AliAltroData.h"       // container for altro payload
 #include  "AliAltroBunch.h"      // container for altro bunches
@@ -165,9 +163,9 @@ AliHLTPHOSRawAnalyzerComponent::DoEvent( const AliHLTComponentEventData& evtData
 	  fAnalyzerPtr->SetData(fAltroDataPtr->GetData());  
 	  fAnalyzerPtr->Evaluate(0, fAltroDataPtr->GetDataSize() -2);  
 
-	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->GetHadd()].zRow;
-	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->GetHadd()].xCol; 
-	  fOutPtr->fValidData[tmpChannelCnt].fGain  = fMapperPtr->hw2geomapPtr[fAltroDataPtr->GetHadd()].gain; 
+	  fOutPtr->fValidData[tmpChannelCnt].fZ  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fZRow;
+	  fOutPtr->fValidData[tmpChannelCnt].fX  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fXCol; 
+	  fOutPtr->fValidData[tmpChannelCnt].fGain  = fMapperPtr->fHw2geomapPtr[fAltroDataPtr->GetHadd()].fGain; 
 
 	  if(fUseBaselineSubtraction)
 	    {

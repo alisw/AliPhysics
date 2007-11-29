@@ -16,10 +16,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+//
+// Mapping class fro mapping
+// from hardware address to geometrical address
+//
+//
+
 #include "AliHLTPHOSMapper.h"
 
 
-AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), hw2geomapPtr(0)
+AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), fHw2geomapPtr(0)
 {
   //  printf("\nCreating new mapper\n");
   InitAltroMapping(); 
@@ -34,6 +40,8 @@ AliHLTPHOSMapper::~AliHLTPHOSMapper()
 void
 AliHLTPHOSMapper::InitAltroMapping()
 {
+  // Loads mapping between Altro addresses and geometrical addresses from file
+
   char filename[256];
   char *base =  getenv("ALICE_ROOT");
   int nChannels = 0;
@@ -46,7 +54,7 @@ AliHLTPHOSMapper::InitAltroMapping()
   if(base !=0)
     {
       sprintf(filename,"%s/PHOS/mapping/RCU0.data", base);
-      //      printf("AliHLTPHOSMapper::InitAltroMapping()")
+
       FILE *fp = fopen(filename, "r");
       if(fp != 0)
 	{
@@ -55,44 +63,23 @@ AliHLTPHOSMapper::InitAltroMapping()
 	  fscanf(fp, "%d", &maxaddr);
 	  printf("nChannels = %d", nChannels);
 	  printf("maxaddr = %d", maxaddr);
-	  hw2geomapPtr = new altromap[maxaddr +1]; 
+	  fHw2geomapPtr = new fAltromap[maxaddr +1]; 
 
 	  for(int i=0; i< maxaddr + 1 ; i ++)
 	    {
-	      hw2geomapPtr[i].xCol = 0;
-	      hw2geomapPtr[i].zRow = 0;
-	      hw2geomapPtr[i].gain = 0;
+	      fHw2geomapPtr[i].fXCol = 0;
+	      fHw2geomapPtr[i].fZRow = 0;
+	      fHw2geomapPtr[i].fGain = 0;
 	    }
-
-
-	  //	  printf("\n");
 
 	  for(int i=0; i<nChannels; i ++)
 	    {
 	      fscanf(fp, "%d %d %d %d\n", &tmpHwaddr, &tmpXCol, &tmpZRow,  &tmpGain);
-	      //	      printf("tmpHwaddr =  %d\t  tmpXCol = %d\t tmpZRow = %d\t tmpGain = %d\n", tmpHwaddr, tmpXCol, tmpZRow, tmpGain);
-	      
-	      hw2geomapPtr[tmpHwaddr].xCol   = tmpXCol;
-	      hw2geomapPtr[tmpHwaddr].zRow   = tmpZRow;
-	      hw2geomapPtr[tmpHwaddr].gain  = tmpGain;
-	     
+	      fHw2geomapPtr[tmpHwaddr].fXCol   = tmpXCol;
+	      fHw2geomapPtr[tmpHwaddr].fZRow   = tmpZRow;
+	      fHw2geomapPtr[tmpHwaddr].fGain  = tmpGain;
 	    }
 	  
-	  //	  printf("\n");
-	  //	  for(int i=0; i<  nChannels; i ++)
-
-
-	  /*Æ
-	  for(int i=120; i<  500; i ++)
-	    {
-	      printf( "%d\t%d\t%d\t%d\n", i,   hw2geomapPtr[i].col, hw2geomapPtr[i].row, hw2geomapPtr[i].gain);
-	    }
-	  
-	  printf("\n");
-	  */
-
-
-
 	}
       else
 	{
