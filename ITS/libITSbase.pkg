@@ -31,6 +31,8 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSCalibrationSDD.cxx \
 		AliITSCalibrationSSD.cxx \
 		AliITSMapSDD.cxx \
+		AliITSDriftSpeedSDD.cxx \
+		AliITSDriftSpeedArraySDD.cxx \
 		AliITSBadChannelsSSD.cxx \
 		AliITSGainSSD.cxx \
 		AliITSNoiseSSD.cxx \

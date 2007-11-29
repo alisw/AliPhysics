@@ -392,7 +392,10 @@ void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_
   Char_t outfilnam[100];
   sprintf(outfilnam,"SDDinj_mod%03d_sid%d.data",fModuleId,fSide);
   FILE* outf;
-  if(optAppend==0) outf=fopen(outfilnam,"w");
+  if(optAppend==0){ 
+    outf=fopen(outfilnam,"w");
+    fprintf(outf,"%d\n",fPolOrder);
+  }
   else outf=fopen(outfilnam,"a");
   fprintf(outf,"%d   %d   ",evNumb,timeStamp);
   for(Int_t ic=0;ic<fPolOrder+1;ic++){

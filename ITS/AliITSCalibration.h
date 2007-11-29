@@ -12,6 +12,7 @@
 #include "AliLog.h"
 #include "AliITSresponse.h"
 #include "AliITSMapSDD.h"
+#include "AliITSDriftSpeedArraySDD.h"
 
 class AliITSsegmentation;
 class TF1;
@@ -78,6 +79,7 @@ class AliITSCalibration : public TObject {
     virtual void   Thresholds(Double_t &, Double_t &) const = 0;
     virtual void   SetMapA(Int_t, AliITSMapSDD*) {AliError("This method must be implemented in a derived class");}
     virtual void   SetMapT(Int_t, AliITSMapSDD*) {AliError("This method must be implemented in a derived class");}
+    virtual void   SetDriftSpeed(Int_t, AliITSDriftSpeedArraySDD*) {AliError("This method must be implemented in a derived class");}
     virtual Double_t DriftSpeed() const {return SpeedElectron();};
     // Set sigmas of the charge spread function
     virtual void    SetSigmaSpread(Double_t, Double_t) = 0;

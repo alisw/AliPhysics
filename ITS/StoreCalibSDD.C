@@ -77,11 +77,6 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=9999999 ){
   for(Int_t mod=0;mod<260;mod++){
     AliITSCalibrationSDD* resd = new AliITSCalibrationSDD("simulated");
 
-    // drift velocity wing 0 and 1
-    for(Int_t ic=0;ic<4;ic++) drVel[ic]=gran->Gaus(drVelParam[ic],edrVelParam[ic]);
-    resd->SetDriftSpeedParam(0,drVel);
-    for(Int_t ic=0;ic<4;ic++) drVel[ic]=gran->Gaus(drVelParam[ic],edrVelParam[ic]);
-    resd->SetDriftSpeedParam(1,drVel);
     Int_t nBadUp = 0;
     Int_t nBadDown = 0;
       

@@ -11,6 +11,7 @@
 #include "TArrayI.h"
 
 class AliITSMapSDD;
+class AliITSDriftSpeedArraySDD;
 class AliITSresponseSDD;
 ///////////////////////////////////////////////////////
 //  Response for SDD                                 //
@@ -117,6 +118,11 @@ class AliITSCalibrationSDD : public AliITSCalibration {
       else fMapTW1=mapT;
     } 
     static Int_t GetMapTimeNBin() {return fgkMapTimeNBin;} 
+    
+    virtual void SetDriftSpeed(Int_t wing, AliITSDriftSpeedArraySDD* arr){
+      if(wing==0) fDrSpeed0=arr;
+      else fDrSpeed1=arr;
+    }
 
     virtual void SetElectronics(Int_t p1=1) {((AliITSresponseSDD*)fResponse)->SetElectronics(p1);}
     virtual Int_t GetElectronics() const {return ((AliITSresponseSDD*)fResponse)->Electronics();}
@@ -127,11 +133,13 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     virtual void SetDynamicRange(Double_t p1) {((AliITSresponseSDD*)fResponse)->SetDynamicRange(p1);}
     virtual Float_t GetDynamicRange() const {return ((AliITSresponseSDD*)fResponse)->DynamicRange();} 
 
-    virtual void SetDriftSpeedParam(Int_t iWing, Float_t* p);
     virtual Float_t GetTimeOffset() const {return ((AliITSresponseSDD*)fResponse)->TimeOffset();}
     virtual Float_t GetADC2keV() const {return ((AliITSresponseSDD*)fResponse)->ADC2keV();}
-    virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const;
-
+    virtual Float_t GetDriftSpeedAtAnode(Float_t nAnode) const{
+      if(fDrSpeed0==0 || fDrSpeed1==0) AliFatal("Drift speed not set\n");
+      if(nAnode<256) return fDrSpeed0->GetDriftSpeed(0,nAnode);
+      else return fDrSpeed1->GetDriftSpeed(0,nAnode-256);
+    }
     virtual void SetParamOptions(const char *opt1,const char *opt2) {((AliITSresponseSDD*)fResponse)->SetParamOptions(opt1,opt2);}
     virtual void GetParamOptions(char *opt1,char *opt2) const {((AliITSresponseSDD*)fResponse)->ParamOptions(opt1,opt2);}
     virtual Bool_t Do10to8() const {return ((AliITSresponseSDD*)fResponse)->Do10to8();}
@@ -174,21 +182,20 @@ class AliITSCalibrationSDD : public AliITSCalibration {
     Bool_t   fIsDead;  // module is dead or alive ?
     TArrayI  fBadChannels; //Array with bad anodes number (0-512) 
 
-    Float_t fDriftVelParW0[4];  // Coeff. of pol3 fit to drift speed vs. anode (wing0)
-    Float_t fDriftVelParW1[4];  // Coeff. of pol3 fit to drift speed vs. anode (wing1)
     
     AliITSMapSDD* fMapAW0;     //! map of residuals on anode coord. wing 0
     AliITSMapSDD* fMapAW1;     //! map of residuals on anode coord. wing 1
     AliITSMapSDD* fMapTW0;     //! map of residuals on time coord. wing 0
     AliITSMapSDD* fMapTW1;     //! map of residuals on time coord. wing 1
-
+    AliITSDriftSpeedArraySDD* fDrSpeed0; //! drift speed for wing 0
+    AliITSDriftSpeedArraySDD* fDrSpeed1; //! drift speed for wing 1
 
  private:
     AliITSCalibrationSDD(const AliITSCalibrationSDD &ob); // copy constructor
     AliITSCalibrationSDD& operator=(const AliITSCalibrationSDD & /* source */); // ass. op.
 
 
-    ClassDef(AliITSCalibrationSDD,7) // SDD response 
+    ClassDef(AliITSCalibrationSDD,8) // SDD response 
     
     };
 #endif
