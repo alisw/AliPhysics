@@ -41,28 +41,28 @@ public:
    {fZDCN1Energy=n1Energy; fZDCP1Energy=p1Energy; fZDCEMEnergy=emEnergy0; fZDCEMEnergy1=emEnergy1;
     fZDCN2Energy=n2Energy; fZDCP2Energy=p2Energy; fZDCParticipants=participants;}
   void  SetZN1TowerEnergy(Float_t tow1[5]){
-      for(Int_t i=0; i<4; i++) fZN1TowerEnergy[i] = tow1[i];
+      for(Int_t i=0; i<5; i++) fZN1TowerEnergy[i] = tow1[i];
   }
   void  SetZN2TowerEnergy(Float_t tow2[5]){
-      for(Int_t i=0; i<4; i++) fZN2TowerEnergy[i] = tow2[i];
+      for(Int_t i=0; i<5; i++) fZN2TowerEnergy[i] = tow2[i];
   }
   void  SetZP1TowerEnergy(Float_t tow1[5]){
-      for(Int_t i=0; i<4; i++) fZP1TowerEnergy[i] = tow1[i];
+      for(Int_t i=0; i<5; i++) fZP1TowerEnergy[i] = tow1[i];
   }
   void  SetZP2TowerEnergy(Float_t tow2[5]){
-      for(Int_t i=0; i<4; i++) fZP2TowerEnergy[i] = tow2[i];
+      for(Int_t i=0; i<5; i++) fZP2TowerEnergy[i] = tow2[i];
   }
   void  SetZN1TowerEnergyLR(Float_t tow1[5]){
-      for(Int_t i=0; i<4; i++) fZN1TowerEnergyLR[i] = tow1[i];
+      for(Int_t i=0; i<5; i++) fZN1TowerEnergyLR[i] = tow1[i];
   }
   void  SetZN2TowerEnergyLR(Float_t tow2[5]){
-      for(Int_t i=0; i<4; i++) fZN2TowerEnergyLR[i] = tow2[i];
+      for(Int_t i=0; i<5; i++) fZN2TowerEnergyLR[i] = tow2[i];
   }
   void  SetZP1TowerEnergyLR(Float_t tow1[5]){
-      for(Int_t i=0; i<4; i++) fZP1TowerEnergyLR[i] = tow1[i];
+      for(Int_t i=0; i<5; i++) fZP1TowerEnergyLR[i] = tow1[i];
   }
-  void  SetZP2TowerEnergyLR(Float_t tow2[4]){
-      for(Int_t i=0; i<4; i++) fZP2TowerEnergyLR[i] = tow2[i];
+  void  SetZP2TowerEnergyLR(Float_t tow2[5]){
+      for(Int_t i=0; i<5; i++) fZP2TowerEnergyLR[i] = tow2[i];
   }
 
   void    Reset();
