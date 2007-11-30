@@ -22,7 +22,7 @@
 /// The clustering mode and the associated parameters can be changed by using
 /// AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLow(High)FluxParam();
 /// muonRecoParam->Set...(); // see methods in AliMUONRecoParam.h for details
-/// AliMUONReconstructor::SetRecoParam(muonRecoParam);
+/// AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
 ///
 /// Valid modes are :
 ///
@@ -99,12 +99,14 @@
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
 
+#include "AliRecoParam.h"
 #include "AliRawReader.h"
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
 #include "AliLog.h"
 
 #include <Riostream.h>
+#include <TObjArray.h>
 #include <TClonesArray.h>
 #include <TString.h>
 #include <TTree.h>
@@ -140,12 +142,6 @@ fTrigChamberEff(0x0)
   // Load geometry data
   fTransformer->LoadGeometryData();
   
-  // initialize reconstruction parameters in not already done
-  if (!fgRecoParam) {
-    AliWarning("Reconstruction parameters not initialized - Use default one");
-    fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
-  }
-  
 }
 
 //_____________________________________________________________________________
@@ -166,17 +162,31 @@ AliMUONReconstructor::~AliMUONReconstructor()
 }
 
 //_____________________________________________________________________________
-void AliMUONReconstructor::SetRecoParam(AliMUONRecoParam *param)
+const AliMUONRecoParam* AliMUONReconstructor::GetRecoParam()
 {
-  /// set reconstruction parameters
+  /// get reconstruction parameters
   
-  // remove existing parameters
-  if (fgRecoParam) {
-    cout<<"AliMUONReconstructor::SetRecoParam: Reconstruction parameters already initialized - overwrite them"<<endl;
-    delete fgRecoParam;
+  if (!fgRecoParam) {
+    
+    // get reconstruction parameters from AliRecoParam if any
+    TObjArray *recoParams = AliRecoParam::Instance()->GetRecoParam("MUON");
+    
+    if (recoParams) {
+      
+      fgRecoParam = (AliMUONRecoParam*) recoParams->Last();
+      
+    } else {
+      
+      // initialize reconstruction parameters if not already done
+      cout<<"W-AliMUONReconstructor::GetRecoParam: Reconstruction parameters not initialized - Use default one"<<endl;
+      fgRecoParam = AliMUONRecoParam::GetLowFluxParam();
+      AliRecoParam::Instance()->RegisterRecoParam(fgRecoParam);
+      
+    }
+    
   }
   
-  fgRecoParam = param;
+  return fgRecoParam;
 }
 
 //_____________________________________________________________________________
@@ -389,7 +399,7 @@ AliMUONReconstructor::CreateClusterServer() const
 
   AliDebug(1,"");
   
-  AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(fgRecoParam->GetClusteringMode());
+  AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(GetRecoParam()->GetClusteringMode());
   
   if ( !clusterFinder ) return;
   

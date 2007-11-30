@@ -9,10 +9,10 @@
 ///
 //  Author: Philippe Pillot
 
-#include "TObject.h"
+#include "AliDetectorRecoParam.h"
 #include "TString.h"
 
-class AliMUONRecoParam : public TObject
+class AliMUONRecoParam : public AliDetectorRecoParam
 {
  public: 
   AliMUONRecoParam();

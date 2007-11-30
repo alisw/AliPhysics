@@ -21,6 +21,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "AliMUONReconstructor.h"
 #include "AliMUONRecoParam.h"
+#include "AliRecoParam.h"
 #include "AliCDBManager.h"
 #include "AliMagFMaps.h"
 #include "AliTracker.h"
@@ -53,9 +54,8 @@ void runReconstruction(int seed, const char* input, const char* recoptions)
   
   AliMUONRecoParam *muonRecoParam = AliMUONRecoParam::GetLowFluxParam();
   muonRecoParam->CombineClusterTrackReco(kTRUE);
-
-  AliMUONReconstructor::SetRecoParam(muonRecoParam);
   muonRecoParam->Print("FULL");
+  AliRecoParam::Instance()->RegisterRecoParam(muonRecoParam);
   
   MuonRec->Run();
   

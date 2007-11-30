@@ -57,9 +57,7 @@ public:
   
   virtual AliTracker* CreateTracker() const;
   
-  static void SetRecoParam(AliMUONRecoParam *param);
-  /// return reconstruction parametres
-  static const AliMUONRecoParam* GetRecoParam() {return fgRecoParam;}
+  static const AliMUONRecoParam* GetRecoParam();
   
 private:
   /// Not implemented

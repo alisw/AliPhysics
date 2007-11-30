@@ -35,7 +35,7 @@ ClassImp(AliMUONRecoParam)
 
 //_____________________________________________________________________________
 AliMUONRecoParam::AliMUONRecoParam()
-: TObject(),
+: AliDetectorRecoParam(),
   fClusteringMode("MLEM"),
   fTrackingMode("KALMAN"),
   fMinBendingMomentum(0.),
@@ -57,6 +57,7 @@ AliMUONRecoParam::AliMUONRecoParam()
   fUseSmoother(kFALSE)
 {
   /// Constructor
+  SetNameTitle("MUON","MUON");
   
   // use the default parameters for low flux environment
   SetLowFluxParam();
@@ -150,8 +151,8 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   cout<<Form("Tracking mode = %s",fTrackingMode.Data())<<endl;
   
-  if (fCombinedClusterTrackReco) cout<<"Combined cluster/track reconstruction is on"<<endl;
-  else cout<<"Combined cluster/track reconstruction is off"<<endl;
+  if (fCombinedClusterTrackReco) cout<<"Combined cluster/track reconstruction: ON"<<endl;
+  else cout<<"Combined cluster/track reconstruction: OFF"<<endl;
   
   cout<<Form("Bending momentum range = [%5.2f,%5.2f]",fMinBendingMomentum,fMaxBendingMomentum)<<endl;
   
