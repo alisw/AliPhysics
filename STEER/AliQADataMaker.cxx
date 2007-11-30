@@ -97,7 +97,6 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TList * list)
 { 
 	// Set histograms memory resident and add to the list 
 	hist->SetDirectory(0) ; 
-	TH1::AddDirectory(kFALSE);
 	list->AddAt(hist, index) ; 
 	return list->LastIndex() ; 
 }
