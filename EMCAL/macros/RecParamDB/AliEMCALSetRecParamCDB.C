@@ -69,6 +69,19 @@ void SetRecParam()
   recParamDB->SetTrkCutAngle(10000.0);      // i.e. exclude this for the moment
 
   //PID
+
+  // as a first step, all array elements are initialized to 0.0
+  Int_t i, j;
+  for (i = 0; i < 6; i++) {
+    for (j = 0; j < 6; j++) {
+      
+      recParamDB->SetGamma(i,j,0.);
+      recParamDB->SetHadron(i,j,0.);
+      recParamDB->SetPiZero5to10(i,j, 0.);
+      recParamDB->SetPiZero10to60(i,j,0.);
+    }
+  } 
+
   recParamDB->SetGamma(0,0,  0.038022);
   recParamDB->SetGamma(0,1, -0.0001883);
   recParamDB->SetGamma(0,2,  5.449e-06);
