@@ -140,10 +140,13 @@ fhphiClustersLay1(0){
   fhDPhiVsDThetaAll->SetDirectory(0);
 
   fhetaTracklets  = new TH1F("etaTracklets",  "eta",  100,-2.,2.);
+  fhetaTracklets->SetDirectory(0);
   fhphiTracklets  = new TH1F("phiTracklets",  "phi",  100,-3.14159,3.14159);
+  fhphiTracklets->SetDirectory(0);
   fhetaClustersLay1  = new TH1F("etaClustersLay1",  "etaCl1",  100,-2.,2.);
+  fhetaClustersLay1->SetDirectory(0);
   fhphiClustersLay1  = new TH1F("phiClustersLay1", "phiCl1", 100,-3.141,3.141);
-
+  fhphiClustersLay1->SetDirectory(0);
 }
 
 //______________________________________________________________________
@@ -268,7 +271,7 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       fhetaClustersLay1->Fill(eta);    
       fhphiClustersLay1->Fill(fClustersLay1[iC1][1]);
     }      
-}
+  }
   
   // Loop on layer 2 : finding theta, phi and r   
   for (Int_t iC2=0; iC2<fNClustersLay2; iC2++) {    
@@ -367,7 +370,6 @@ AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Float_t* 
       {
         if ((Int_t) fClustersLay1[iC1][3+label1] != -2 && (Int_t) fClustersLay1[iC1][3+label1] == (Int_t) fClustersLay2[iC2WithBestDist][3+label2])
           break;
-
         label1++;
         if (label1 == 3)
         {
