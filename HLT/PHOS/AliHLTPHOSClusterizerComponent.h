@@ -101,7 +101,7 @@ protected:
   /** Pointer to the clusterizer it self */
   AliHLTPHOSClusterizer* fClusterizerPtr;                       //! transient
 
-  using AliHLTPHOSProcessor::DoEvent;
+  // using AliHLTPHOSProcessor::DoEvent;
 
   /** Pointer to the output of the component */
   AliHLTPHOSRecPointContainerStruct* fOutPtr;                   //! transient

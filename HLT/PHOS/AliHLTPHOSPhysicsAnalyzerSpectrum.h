@@ -31,6 +31,9 @@
 #include "AliHLTPHOSPhysicsAnalyzer.h"
 #include "Rtypes.h"
 
+class AliHLTPHOSRecPointContainerStruct;
+
+
 /**
  * @class AliHLTPHOSPhysicsAnalyzerSpectrum
  * Invariant mass spectrum from 2 gammas
@@ -65,12 +68,13 @@ class AliHLTPHOSPhysicsAnalyzerSpectrum : public AliHLTPHOSPhysicsAnalyzer
    */
   Float_t EvalDistance();
  
+
   /** 
    * Analyze the event 
-   * @param recPointsPtr is an array of pointers to rec points in the event
+   * @param recPointsArrayPtr is an array of rec points in the event
    * @param nRecPoints is the number of rec points in the event
    */
-  virtual void Analyze(AliHLTPHOSRecPointDataStruct* recPointsPtr[10000], Int_t nRecPoints);
+    virtual void Analyze(AliHLTPHOSRecPointContainerStruct* recPointsArrayPtr, Int_t nRecPoints);
 
  private:
   /** Position of the first cluster */

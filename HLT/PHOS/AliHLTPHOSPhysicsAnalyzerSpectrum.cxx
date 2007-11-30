@@ -26,6 +26,7 @@
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
 #include "AliHLTPHOSPhysicsAnalyzerSpectrum.h"
+#include "AliHLTPHOSRecPointContainerStruct.h"
 #include "AliHLTPHOSRecPointDataStruct.h"
 #include <cmath>
 #include "math.h"
@@ -85,35 +86,34 @@ AliHLTPHOSPhysicsAnalyzerSpectrum::~AliHLTPHOSPhysicsAnalyzerSpectrum()
     }
 
 }
-
 void
-AliHLTPHOSPhysicsAnalyzerSpectrum::Analyze(AliHLTPHOSRecPointDataStruct* recPointsPtr[10000], Int_t nRecPoints)
+AliHLTPHOSPhysicsAnalyzerSpectrum::Analyze(AliHLTPHOSRecPointContainerStruct* recPointsArrayPtr, Int_t nRecPoints)
 {
   //Analyzing a set of recPoints
   //See header file for documentation
   Float_t cosOpeningAngle = 0;
 
+  AliHLTPHOSRecPointDataStruct* firstRecPointPtr;
+  AliHLTPHOSRecPointDataStruct* secondRecPointPtr;
+
   if(nRecPoints > 1)
     {
       for(Int_t i = 0; i < nRecPoints-1; i++)
 	{
-	  
-	  fEnergyPtr[0] = recPointsPtr[i]->fAmp;
-
+	  firstRecPointPtr = &(recPointsArrayPtr->fRecPointArray[i]);
+	  fEnergyPtr[0] = firstRecPointPtr->fAmp;
 	  if(fEnergyPtr[0] > fThresholdPtr[0])
 	    {
 	      
 	      for(Int_t j = i+1; j < nRecPoints; j++)
 		{
-		  
-		  fEnergyPtr[1] = recPointsPtr[j]->fAmp;
-
+		  secondRecPointPtr = &(recPointsArrayPtr->fRecPointArray[j]);
+		  fEnergyPtr[1] = secondRecPointPtr->fAmp;
 		  if(fEnergyPtr[1] > fThresholdPtr[1])
 		    {
-		      GlobalPosition(recPointsPtr[i], fPos0Ptr);
+		      GlobalPosition(firstRecPointPtr, fPos0Ptr);
+		      GlobalPosition(secondRecPointPtr, fPos1Ptr);
 
-		      GlobalPosition(recPointsPtr[j], fPos1Ptr);
-		      
 		      cosOpeningAngle = (fPos0Ptr[0]*fPos1Ptr[0] + fPos0Ptr[1]*fPos1Ptr[1] + fPos0Ptr[2]*fPos1Ptr[2])/
 			(sqrt(fPos0Ptr[0]*fPos0Ptr[0] + fPos0Ptr[1]*fPos0Ptr[1] + fPos0Ptr[2]*fPos0Ptr[2])*
 			 sqrt(fPos1Ptr[0]*fPos1Ptr[0] + fPos1Ptr[1]*fPos1Ptr[1] + fPos1Ptr[2]*fPos1Ptr[2]));
@@ -128,9 +128,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrum::Analyze(AliHLTPHOSRecPointDataStruct* recPoin
 	}
       
     }
-  
 }
-
 
 Float_t 
 AliHLTPHOSPhysicsAnalyzerSpectrum::EvalDistance()

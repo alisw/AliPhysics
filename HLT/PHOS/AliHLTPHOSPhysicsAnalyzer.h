@@ -40,6 +40,7 @@ using namespace PhosHLTConst;
 class TObjArray;
 class TH1F;
 class AliHLTPHOSRecPointDataStruct;
+class AliHLTPHOSRecPointContainerStruct;
 
 const Float_t kCRYSTAL_SIZE = 2.25;
 
@@ -97,7 +98,7 @@ class AliHLTPHOSPhysicsAnalyzer
    * @param recPointsPtr is an array of pointers to recPoints
    * @param nRecPoints is the numbers of recPoints
    */
-  virtual void Analyze(AliHLTPHOSRecPointDataStruct* recPointsPtr[10000], Int_t nRecPoints) = 0;
+  virtual void Analyze(AliHLTPHOSRecPointContainerStruct* recPointsArrayPtr, Int_t nRecPoints) = 0;
 
  protected:
 

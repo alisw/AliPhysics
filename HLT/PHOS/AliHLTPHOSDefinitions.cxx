@@ -40,6 +40,7 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellTimingHistogramDataT
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellTimingAverageDataType     = { sizeof(AliHLTComponentDataType),       {'T','I','M','E','A','V','E','R'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkCellChannelDataDataType       = { sizeof(AliHLTComponentDataType),       {'C','H','A','N','D','A','T','A'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTClusterDataType         = { sizeof(AliHLTComponentDataType),       {'C','L','U','S','T','R','T','Y'},{'P','H','O','S'}};;
+const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType        = { sizeof(AliHLTComponentDataType),       {'R','E','C','P','T','T','Y','P'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTHistDataType            = { sizeof(AliHLTComponentDataType),       {'H','I','S','T','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSpectrumDataType        = { sizeof(AliHLTComponentDataType),       {'S','P','E','C','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTRootTreeDataType        = { sizeof(AliHLTComponentDataType),       {'R','T','R','E','T','Y','P','E'},{'P','H','O','S'}};;
@@ -49,4 +50,4 @@ const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTNoiseMapDataType  
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTMIPDataType             = { sizeof(AliHLTComponentDataType),       {'M','I','P','D','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTSandboxDataType         = { sizeof(AliHLTComponentDataType),       {'S','A','B','X','T','Y','P','E'},{'P','H','O','S'}};;
 const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkEmcCalibDataType              = { sizeof(AliHLTComponentDataType),       {'C','A','L','I','T','Y','P','E'},{'P','H','O','S'}};;
-const AliHLTComponentDataType AliHLTPHOSDefinitions::fgkAliHLTRecPointDataType        = { sizeof(AliHLTComponentDataType),       {'R','E','C','P','T','Y','P','E'},{'P','H','O','S'}};;
+

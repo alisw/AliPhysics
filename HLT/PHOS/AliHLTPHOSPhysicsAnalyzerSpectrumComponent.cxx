@@ -145,8 +145,8 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::GetOutputDataSize(unsigned long& con
 
 Int_t 
 AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventData& evtData, const AliHLTComponentBlockData* blocks,
-						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& size,
-						    std::vector<AliHLTComponentBlockData>& outputBlocks)
+						    AliHLTComponentTriggerData& /*trigData*/, AliHLTUInt8_t* outputPtr, AliHLTUInt32_t& /*size*/,
+						    std::vector<AliHLTComponentBlockData>& /*outputBlocks*/)
 {
   //Do event
 
@@ -167,7 +167,7 @@ AliHLTPHOSPhysicsAnalyzerSpectrumComponent::DoEvent(const AliHLTComponentEventDa
       
     } 
   
-  fAnalyzerPtr->Analyze(fRecPointArrayPtr, ndx);
+  //fAnalyzerPtr->Analyze(fRecPointArrayPtr, ndx);
 
   if(fgCount%fWriteInterval == 0 && fgCount != 0)
     {

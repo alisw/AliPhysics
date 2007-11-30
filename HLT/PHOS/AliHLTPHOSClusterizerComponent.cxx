@@ -59,7 +59,6 @@ AliHLTPHOSClusterizerComponent::~AliHLTPHOSClusterizerComponent()
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
     }
-
   if (fRecPointStructArrayPtr)
     {
       for (int i = 0; i < 1000; i++)
@@ -83,7 +82,6 @@ AliHLTPHOSClusterizerComponent::Deinit()
       delete fClusterizerPtr;
       fClusterizerPtr = 0;
     }
-
   for (int i = 0; i < 1000; i++)
     {
       //    fRecPointStructArrayPtr[i].Del();
@@ -106,6 +104,7 @@ const Char_t*
 AliHLTPHOSClusterizerComponent::GetComponentID()
 {
   //See headerfile for documentation
+
   return "AliHltPhosClusterizer";
 }
 
@@ -135,6 +134,7 @@ AliHLTPHOSClusterizerComponent::GetOutputDataSize(unsigned long& constBase, doub
 
 {
   //See headerfile for documentation
+
   constBase = 30;
   inputMultiplier = 0.2;
 }
@@ -145,6 +145,7 @@ AliHLTPHOSClusterizerComponent::DoEvent(const AliHLTComponentEventData& evtData,
                                         std::vector<AliHLTComponentBlockData>& outputBlocks)
 {
   //See headerfile for documentation
+
   UInt_t tSize            = 0;
   UInt_t offset           = 0;
   UInt_t mysize           = 0;
