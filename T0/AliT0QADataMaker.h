@@ -16,12 +16,8 @@
 // --- ROOT system ---
 
 
-class TH1F ; 
-class TH2F ;
-class TClonesArray;
 
 // --- Standard library ---
-#include <TString.h>
 // --- AliRoot header files ---
 
 #include "AliQADataMaker.h"
@@ -37,34 +33,16 @@ public:
 private:
   virtual void   InitHits() ;      //book hit QA histo 
   virtual void   InitDigits() ;    //book Digit QA histo
+  virtual void   InitRaws() ;    //book Digit QA histo
   virtual void   InitRecPoints();  //book cluster QA histo
   virtual void   InitESDs() ;      //book ESD QA histo 
-  //  virtual void   MakeHits(TClonesArray * hits) ;       //Fill hit QA histo
   virtual void   MakeHits(TTree * hits) ;       //Fill hit QA histo
+  virtual void   MakeRaws(AliRawReader* rawReader) ;
   virtual void   MakeDigits(TTree* digitsTree) ;   //Fill Digit QA histo
   virtual void   MakeRecPoints(TTree * clusters)    ;  //Fill cluster QA histo
   virtual void   MakeESDs(AliESDEvent * esd) ;         //Fill hit QA histo
   virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * list) ;
   virtual void   StartOfDetectorCycle() ;
-  /*
-  TH1F *fhHitsTime[24];
-  TH1F *fhHitsEff;
-
-  TH1F *fhDigCFD[24];
-  TH1F *fhDigLEDamp[24];
-  TH1F *fhDigQTC[24];
-  TH1F *fhDigMean;
-  TH1F *fhDigEff;
-
-  TH1F *fhRecCFD[24];
-  TH1F *fhRecLEDamp[24];
-  TH1F *fhRecQTC[24];
-  TH1F *fhRecMean;
-  TH1F *fhRecEff;
-
-  TH1F *fhESDMean;
-  TH1F *fhESDVertex;
-  */
   ClassDef(AliT0QADataMaker,1)  // description 
 
 };

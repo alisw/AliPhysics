@@ -26,14 +26,10 @@
 #include <TClonesArray.h>
 #include <TFile.h> 
 #include <TH1F.h> 
-#include <TH2F.h>
-#include <TH1I.h> 
 #include <TDirectory.h>
-#include <Riostream.h>
 // --- Standard library ---
 
 // --- AliRoot header files ---
-#include "AliESDCaloCluster.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliT0digit.h"
@@ -41,27 +37,14 @@
 #include "AliT0RecPoint.h"
 #include "AliT0QADataMaker.h"
 #include "AliQAChecker.h"
+#include "AliRawReaderFile.h"
+#include "AliT0RawReader.h"
 
 ClassImp(AliT0QADataMaker)
            
 //____________________________________________________________________________ 
   AliT0QADataMaker::AliT0QADataMaker() : 
   AliQADataMaker(AliQA::GetDetName(AliQA::kT0), "T0 Quality Assurance Data Maker")
-  //  fhHitsTime(0x0),
-  // fhHitsAmp(0x0),
-  // fhHitsEff(0x0),
-  //  fhDigCFD(0x0),
-  //  fhDigLEDamp(0x0),
-  //  fhDigQTC(0x0),
-  // fhDigMean(0x0),
-  //  fhDigEff(0x0),
-  //  fhRecCFD(0x0),
-  //  fhRecLEDamp(0x0),
-  //  fhRecQTC(0x0),
-  //  fhRecMean(0x0),
-  //  fhRecEff(0x0),
-  //  fhESDMean(0x0),
-  //  fhESDVertex(0x0)
 
 {
   // ctor
@@ -83,20 +66,6 @@ ClassImp(AliT0QADataMaker)
 //____________________________________________________________________________ 
 AliT0QADataMaker::AliT0QADataMaker(const AliT0QADataMaker& qadm) :
   AliQADataMaker() 
- //  fhHitsTime(0x0),
- // fhHitsEff(0x0),
-  //  fhDigCFD(0x0),
-  //  fhDigLEDamp(0x0),
-  //  fhDigQTC(0x0),
-  // fhDigMean(0x0),
-  // fhDigEff(0x0),
-  //  fhRecCFD(0x0),
-  //  fhRecLEDamp(0x0),
-  //  fhRecQTC(0x0),
-  // fhRecMean(0x0),
-  // fhRecEff(0x0),
-  // //  fhESDMean(0x0),
-  // fhESDVertex(0x0)
 {
   //copy ctor 
   /*
@@ -199,6 +168,36 @@ void AliT0QADataMaker::InitDigits()
   Add2DigitsList( fhDigEff,72);
   TH1F* fhDigMean = new TH1F("hDigMean","online mean signal", 100,500,600);
   Add2DigitsList( fhDigMean,73);
+  
+}
+
+//____________________________________________________________________________ 
+void AliT0QADataMaker::InitRaws()
+{
+  // create Raw histograms in Raw subdir
+  printf("   AliT0QADataMaker::InitRaws() started\n");
+  TString timename, ampname, qtcname;
+
+  TH1F *fhRawCFD[24]; TH1F * fhRawLEDamp[24]; TH1F *fhRawQTC[24];
+
+  for (Int_t i=0; i<24; i++)
+    {
+      timename ="hRawCFD";
+      ampname = "hRawLED";
+      qtcname = "hRawQTC";
+      timename += i;
+      ampname += i;
+      qtcname += i;
+      fhRawCFD[i] = new TH1F(timename.Data(), timename.Data(),100,100,5000);
+      Add2RawsList( fhRawCFD[i],i);
+      fhRawLEDamp[i] = new TH1F(ampname.Data(), ampname.Data(),100,120000,150000);
+      Add2RawsList( fhRawLEDamp[i],i+24);
+      fhRawQTC[i] = new TH1F(qtcname.Data(), qtcname.Data(),100,100,500);
+      Add2RawsList( fhRawQTC[i],i+48);
+     }
+  
+  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal", 100,500,600);
+  Add2DigitsList( fhRawMean,72);
   
 }
 
@@ -339,6 +338,61 @@ void AliT0QADataMaker::MakeDigits( TTree *digitsTree)
 
 
 //____________________________________________________________________________
+void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
+{
+  Int_t allData[110][5];
+  for (Int_t i0=0; i0<105; i0++)
+    {
+      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
+    }
+  //fills QA histos for RAW
+  // sprintf(filename,"/home/t0/alice/testSep07/raw/t0%i.001.raw",fRunNumber);
+  // AliRawReader *reader = new AliRawReaderDate(filename);
+  //if(!reader) AliFatal(Form("Can not opne file ",filename));
+ rawReader = new AliRawReaderFile();
+ rawReader->LoadEquipmentIdsMap("T0map.txt");
+ //    reader->RequireHeader(kFALSE);
+ rawReader->RequireHeader(kTRUE);
+ AliT0RawReader *start = new AliT0RawReader(rawReader);
+ 
+ while (rawReader->NextEvent()) {
+   start->Next();
+   for (Int_t i=0; i<105; i++) 
+     for (Int_t iHit=0; iHit<5; iHit++)
+       allData[i][iHit]= start->GetData(i,iHit);
+   
+   
+   for (Int_t ik = 0; ik<24; ik+=2){
+     for (Int_t iHt=0; iHt<5; iHt++){
+       Int_t cc = ik/2;
+       if(allData[cc+1][iHt]!=0){
+	 GetRawsData(cc) -> Fill(allData[cc+1][iHt]-allData[0][0]);
+	if(allData[ik+25][iHt]!=0 && allData[ik+26][iHt]!=0)
+	  GetRawsData(cc+48)->Fill(allData[ik+26][iHt]-allData[ik+25][iHt]);
+	if(allData[cc+13][iHt]!=0 )
+	  GetRawsData(cc+24)->Fill(allData[cc+13][iHt]-allData[cc+1][iHt]);
+	}
+     }
+   }
+    
+   for (Int_t ik = 24; ik<48; ik+=2) {
+     for (Int_t iHt=0; iHt<5; iHt++) {
+       Int_t cc = ik/2;
+       if(allData[cc+45][iHt]!=0) {
+	 GetRawsData(cc)->Fill(allData[cc+1][iHt]-allData[0][0]);
+	if(allData[ik+57][iHt]!=0 && allData[ik+58][iHt]!=0)
+	  GetRawsData(cc+48)->Fill(allData[ik+57][iHt]-allData[ik+58][iHt]);
+	if(allData[cc+57][iHt]!=0 )
+	  GetRawsData(cc+48)->Fill(allData[cc+57][iHt]-allData[cc+45][iHt]);
+	}
+     }
+   }
+   
+ }
+
+}
+
+//____________________________________________________________________________
 void AliT0QADataMaker::MakeRecPoints(TTree * clustersTree)
 {
   //fills QA histos for clusters
@@ -352,9 +406,8 @@ void AliT0QADataMaker::MakeRecPoints(TTree * clustersTree)
   if (brRec) {
     brRec->SetAddress(&frecpoints);
   }else{
-    cerr<<"EXEC Branch T0 rec not found"<<endl;
-    // exit(111);
-    return;
+      AliError(Form("EXEC Branch T0 rec not found "));
+      return;
   } 
     
   brRec->GetEntry(0);
