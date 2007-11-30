@@ -34,6 +34,7 @@
 // --- ROOT system ---
 #include <TFile.h>
 #include <TSystem.h>
+#include <TROOT.h>
 
 // --- Standard library ---
 
@@ -259,7 +260,7 @@ const char * AliQA::GetDetName(Int_t det)
 TFile * AliQA::GetQADataFile(const char * name, const Int_t run, const Int_t cycle) 
 {
   // opens the file to store the detectors Quality Assurance Data Maker results
-  char temp[100] ; 
+  char temp[20] ; 
   sprintf(temp, "%s.%s.%d.%d.root", name, fgQADataFileName.Data(), run, cycle) ; 
   TString opt ; 
   if (! fgQADataFile ) {     
@@ -269,13 +270,16 @@ TFile * AliQA::GetQADataFile(const char * name, const Int_t run, const Int_t cyc
       opt = "UPDATE" ; 
     fgQADataFile = TFile::Open(temp, opt.Data()) ;
   } else {
-   if ( (strcmp(temp, fgQADataFile->GetName()) != 0) ) {
-     if  (gSystem->AccessPathName(temp))
-      opt = "NEW" ;
-    else 
-      opt = "UPDATE" ; 
-    fgQADataFile = TFile::Open(temp, opt.Data()) ;
-   }
+  	  if ( strcmp(temp, fgQADataFile->GetName()) != 0 ) {
+		  fgQADataFile = dynamic_cast<TFile *>(gROOT->FindObject(temp)) ; 
+		  if ( !fgQADataFile ) {
+			  if  (gSystem->AccessPathName(temp))
+				  opt = "NEW" ;
+			  else 
+				  opt = "UPDATE" ; 
+			  fgQADataFile = TFile::Open(temp, opt.Data()) ;
+		  }
+	  }
   }
   return fgQADataFile ; 
 } 
