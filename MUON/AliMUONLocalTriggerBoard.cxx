@@ -218,7 +218,7 @@ void AliMUONLocalTriggerBoard::Pattern(Option_t *option) const
 //___________________________________________
 void AliMUONLocalTriggerBoard::BP(Option_t *option) const
 {
-/// RESPECT THE OLD PRINTOUT FORMAT
+/// Respect the old printout format
   
   const Int_t kModuleId[126] = 
   {11,12,13,14,15,16,17,         // right side of the chamber
