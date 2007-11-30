@@ -20,14 +20,14 @@
 // Implementation of the TRD PID class                                    //
 //                                                                        //
 // Assigns the electron and pion likelihoods to each ESD track.           //
-// The function MakePID(AliESDEvent *event) calculates the probability         //
+// The function MakePID(AliESDEvent *event) calculates the probability    //
 // of having dedx and a maximum timbin at a given                         //
 // momentum (mom) and particle type k                                     //
 // from the precalculated distributions.                                  //
 //                                                                        //
 // Authors :                                                              //
-// Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de> (Original version)//
-// Alex Bercuci (a.bercuci@gsi.de)                                        //
+//   Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de> (orig. version) //
+//   Alex Bercuci (a.bercuci@gsi.de)                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -35,24 +35,24 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliTracker.h"
+#include "AliRun.h"
 
 #include "AliTRDpidESD.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
-#include "AliRun.h"
 #include "AliTRDtrack.h"
 #include "Cal/AliTRDCalPID.h"
 
-
 ClassImp(AliTRDpidESD)
 
-  Bool_t AliTRDpidESD::fCheckTrackStatus = kTRUE;
-  Bool_t AliTRDpidESD::fCheckKinkStatus  = kFALSE;
-  Int_t AliTRDpidESD::fMinPlane          = 0;
+Bool_t  AliTRDpidESD::fgCheckTrackStatus = kTRUE;
+Bool_t  AliTRDpidESD::fgCheckKinkStatus  = kFALSE;
+Int_t   AliTRDpidESD::fgMinPlane         = 0;
 
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD()
-  :TObject(), fTrack(0x0)
+  :TObject()
+  ,fTrack(0x0)
 {
   //
   // Default constructor
@@ -62,7 +62,8 @@ AliTRDpidESD::AliTRDpidESD()
 
 //_____________________________________________________________________________
 AliTRDpidESD::AliTRDpidESD(const AliTRDpidESD &p)
-  :TObject(p), fTrack(0x0)
+  :TObject(p)
+  ,fTrack(0x0)
 {
   //
   // AliTRDpidESD copy constructor
@@ -78,7 +79,9 @@ AliTRDpidESD::~AliTRDpidESD()
   //
   // Destructor
   //
-	if(fTrack) delete fTrack;
+
+  if(fTrack) delete fTrack;
+
 }
 
 //_____________________________________________________________________________
@@ -100,9 +103,9 @@ void AliTRDpidESD::Copy(TObject &p) const
   // Copy function
   //
 
-  ((AliTRDpidESD &) p).fCheckTrackStatus          = fCheckTrackStatus;
-  ((AliTRDpidESD &) p).fCheckKinkStatus           = fCheckKinkStatus;
-  ((AliTRDpidESD &) p).fMinPlane                  = fMinPlane;
+  ((AliTRDpidESD &) p).fgCheckTrackStatus         = fgCheckTrackStatus;
+  ((AliTRDpidESD &) p).fgCheckKinkStatus          = fgCheckKinkStatus;
+  ((AliTRDpidESD &) p).fgMinPlane                 = fgMinPlane;
   ((AliTRDpidESD &) p).fTrack                     = 0x0;
 	
 }
@@ -121,6 +124,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
   //
   // Author
   // Alex Bercuci (A.Bercuci@gsi.de) 2nd May 2007
+  //
 
 	AliTRDcalibDB *calibration = AliTRDcalibDB::Instance();
 	if (!calibration) {
@@ -158,7 +162,9 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 		mom          = 0.;
 		length       = 0.;
 		nPlanePID    = 0;
-		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] = 1./AliPID::kSPECIES;
+		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) 
+                  p[iSpecies] = 1./AliPID::kSPECIES;
+
 		for (Int_t iPlan = 0; iPlan < AliTRDgeometry::kNplan; iPlan++) {
 			// read data for track segment
 			for(int iSlice=0; iSlice<AliTRDtrack::kNslice; iSlice++)
@@ -190,7 +196,10 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 		Double_t probTotal = 0.;
 		for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) probTotal   += p[iSpecies];
 		if(probTotal <= 0.){
-			AliWarningGeneral("AliTRDpidESD::MakePID()", Form("The total probability (%e) over all species <= 0 in ESD track %d. This may be caused by some error in reference data. Calculation continue but results might be corrupted.", probTotal, i));
+			AliWarning(Form("The total probability (%e) over all species <= 0 in ESD track %d."
+                                       , probTotal, i));
+			AliWarning("This may be caused by some error in reference data.");
+			AliWarning("Calculation continues but results might be corrupted.");
 			continue;
 		}
 		for(Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) p[iSpecies] /= probTotal;
@@ -201,6 +210,7 @@ Int_t AliTRDpidESD::MakePID(AliESDEvent *event)
 	}
 	
 	return 0;
+
 }
 
 //_____________________________________________________________________________
@@ -211,19 +221,23 @@ Bool_t AliTRDpidESD::CheckTrack(AliESDtrack *t)
   //
 	
 	// Check the ESD track status
-	if (fCheckTrackStatus) {
+	if (fgCheckTrackStatus) {
 		if (((t->GetStatus() & AliESDtrack::kTRDout  ) == 0) &&
 			((t->GetStatus() & AliESDtrack::kTRDrefit) == 0)) return kFALSE;
 	}
 
 	// Check for ESD kink tracks
-	if (fCheckKinkStatus && (t->GetKinkIndex(0) != 0)) return kFALSE;
+	if (fgCheckKinkStatus && (t->GetKinkIndex(0) != 0)) return kFALSE;
 
 	return kTRUE;
+
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd, Int_t plan, Float_t &mom, Float_t &length)
+Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd
+                                               , Int_t plan
+                                               , Float_t &mom
+                                               , Float_t &length)
 {
   //
   // Retrive momentum "mom" and track "length" in TRD chamber from plane
@@ -231,6 +245,7 @@ Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd, Int_t plan, F
   //
   // Origin
   // Alex Bercuci (A.Bercuci@gsi.de)	
+  //
 
 	const Float_t kAmHalfWidth = AliTRDgeometry::AmThick() / 2.;
         const Float_t kDrWidth     = AliTRDgeometry::DrThick();
@@ -279,5 +294,5 @@ Bool_t AliTRDpidESD::RecalculateTrackSegmentKine(AliESDtrack *esd, Int_t plan, F
 	if(TMath::Abs(alpha-param->GetAlpha())>.01) return kFALSE;
 	
 	return kTRUE;
-}
 
+}

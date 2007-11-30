@@ -17,9 +17,11 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-// Produces the data needed to calculate the quality assurance.           //
-// All data must be mergeable objects.                                    //
-// S.Radomski Uni-Heidelberg October 2007                                 //
+//  Produces the data needed to calculate the quality assurance.          //
+//  All data must be mergeable objects.                                   //
+//                                                                        //
+//  Author:                                                               //
+//    Sylwester Radomski (radomski@physi.uni-heidelberg.de)               //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -45,36 +47,47 @@
 ClassImp(AliTRDQADataMaker)
            
 //____________________________________________________________________________ 
-  AliTRDQADataMaker::AliTRDQADataMaker() : 
-  AliQADataMaker(AliQA::GetDetName(AliQA::kTRD), "TRD Quality Assurance Data Maker")
+AliTRDQADataMaker::AliTRDQADataMaker() 
+  :AliQADataMaker(AliQA::GetDetName(AliQA::kTRD), "TRD Quality Assurance Data Maker")
 {
-  // ctor
+  //
+  // Default constructor
+  //
+
 }
 
 //____________________________________________________________________________ 
-AliTRDQADataMaker::AliTRDQADataMaker(const AliTRDQADataMaker& qadm) :
-  AliQADataMaker()
+AliTRDQADataMaker::AliTRDQADataMaker(const AliTRDQADataMaker& qadm)
+  :AliQADataMaker()
 {
-  //copy ctor 
+  //
+  // Copy constructor
+  //
+ 
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
+
 }
 
 //__________________________________________________________________
 AliTRDQADataMaker& AliTRDQADataMaker::operator = (const AliTRDQADataMaker& qadm )
 {
+  //
   // Equal operator.
+  //
+
   this->~AliTRDQADataMaker();
   new(this) AliTRDQADataMaker(qadm);
   return *this;
+
 }
  
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::EndOfDetectorCycle()
 {
-  //Detector specific actions at end of cycle
-
-  // Rec points
+  //
+  // Detector specific actions at end of cycle
+  //
   
 }
 
@@ -82,11 +95,11 @@ void AliTRDQADataMaker::EndOfDetectorCycle()
 void AliTRDQADataMaker::InitESDs()
 {
   //
-  // create ESDs histograms in ESDs subdir
+  // Create ESDs histograms in ESDs subdir
   //
 
-  const Int_t nhist = 21;
-  TH1 *hist[nhist];
+  const Int_t kNhist = 21;
+  TH1 *hist[kNhist];
   Int_t histoCounter = -1 ;   
 
   hist[++histoCounter] = new TH1D("qaTRD_esd_ntracks", ":Number of tracks", 300, -0.5, 299.5);
@@ -114,14 +127,18 @@ void AliTRDQADataMaker::InitESDs()
     //hist[i]->Sumw2();
     Add2ESDsList(hist[i], i);
   }
+
 }
 
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::InitHits()
 {
-  // create Hits histograms in Hits subdir
-  const Int_t nhist = 4;
-  TH1D *hist[nhist];
+  //
+  // Create Hits histograms in Hits subdir
+  //
+
+  const Int_t kNhist = 4;
+  TH1D *hist[kNhist];
   
   hist[0] = new TH1D("qaTRD_hits_det", ";Detector Id of the hit", 540, -0.5, 539.5) ; 
   
@@ -129,25 +146,28 @@ void AliTRDQADataMaker::InitHits()
   hist[2] = new TH1D("qaTRD_hist_Qamp", ";Charge from TRD photon", 100, 0, 100);
   hist[3] = new TH1D("qaTRD_hist_Qphoton", ";Charge from TRD photon", 100, 0, 100);
 
-  for(Int_t i=0; i<nhist; i++) {
+  for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
     Add2HitsList(hist[i], i);
   }
+
 }
 
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::InitDigits()
 {
-  // create Digits histograms in Digits subdir
-  
-  const Int_t nhist = 3;
-  TH1D *hist[nhist];
+  //
+  // Create Digits histograms in Digits subdir
+  //
+
+  const Int_t kNhist = 3;
+  TH1D *hist[kNhist];
   
   hist[0] = new TH1D("qaTRD_digits_det", ";Detector Id of the digit", 540, -0.5, 539.5);
   hist[1] = new TH1D("qaTRD_digits_time", ";Time bin", 40, -0.5, 39.5);
   hist[2] = new TH1D("qaTRD_digits_amp", ";Amplitude", 100, 0, 100.);
 
-  for(Int_t i=0; i<nhist; i++) {
+  for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
     Add2DigitsList(hist[i], i);
   }
@@ -157,9 +177,12 @@ void AliTRDQADataMaker::InitDigits()
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::InitRecPoints()
 {
-  // create Reconstructed Points histograms in RecPoints subdir
-  const Int_t nhist = 12;
-  TH1 *hist[nhist];
+  //
+  // Create Reconstructed Points histograms in RecPoints subdir
+  //
+
+  const Int_t kNhist = 12;
+  TH1 *hist[kNhist];
 
   hist[0] = new TH1D("qaTRD_recPoints_det", ";Detector ID of the cluster", 540, -0.5, 539.5);
   hist[1] = new TH2D("qaTRD_recPoints_amp", ";Amplitude", 540, -0.5, 539, 200, -0.5, 199.5);
@@ -180,19 +203,23 @@ void AliTRDQADataMaker::InitRecPoints()
   hist[12] = new TH1D("qaTRD_recPoints_ampDist", ";amplitude MPV", 100, 0, 100);
 
 
-  for(Int_t i=0; i<nhist; i++) {
+  for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
     Add2RecPointsList(hist[i], i);
   }
+
 }
 
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::InitRaws()
 {
-  // create Raws histograms in Raws subdir
+  //
+  // Create Raws histograms in Raws subdir
+  //
+
   const Int_t kSM = 18;
-  const Int_t nhist = 6+kSM;
-  TH1D *hist[nhist];
+  const Int_t kNhist = 6+kSM;
+  TH1D *hist[kNhist];
  
   hist[0] = new TH1D("qaTRD_raws_det", ";detector", 540, -0.5, 539.5);
   hist[1] = new TH1D("qaTRD_raws_sig", ";signal", 100, -0.5, 99.5);
@@ -202,38 +229,45 @@ void AliTRDQADataMaker::InitRaws()
   hist[5] = new TH1D("qaTRD_rows_smId", ";supermodule", 18, -0.5, 17.5);
 
   // one char per ADC chanell
-  const Int_t nADC = 30 * 8 * 16 * 22;
+  const Int_t kNADC = 30 * 8 * 16 * 22;
   for(Int_t i=0; i<kSM; i++)
-    hist[6+i] = new TH1D(Form("qaTRD_raws_sm%d",i),"",nADC, -0.5, nADC-0.5); 
+    hist[6+i] = new TH1D(Form("qaTRD_raws_sm%d",i),"",kNADC, -0.5, kNADC-0.5); 
 
-  for(Int_t i=0; i<nhist; i++) {
+  for(Int_t i=0; i<kNhist; i++) {
     //hist[i]->Sumw2();
     Add2RawsList(hist[i], i);
   }
+
 }
 
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::InitSDigits()
 {
-  // create SDigits histograms in SDigits subdir
-  
-  const Int_t nhist = 3;
-  TH1D *hist[nhist];
+  //
+  // Create SDigits histograms in SDigits subdir
+  //
+
+  const Int_t kNhist = 3;
+  TH1D *hist[kNhist];
   
   hist[0] = new TH1D("qaTRD_sdigits_det", ";Detector Id of the digit", 540, -0.5, 539.5);
   hist[1] = new TH1D("qaTRD_sdigits_time", ";Time bin", 40, -0.5, 39.5);
   hist[2] = new TH1D("qaTRD_sdigits_amp", ";Amplitude", 100, 0, 1e7);
 
-  for(Int_t i=0; i<nhist; i++) {
+  for(Int_t i=0; i<kNhist; i++) {
     hist[i]->Sumw2();
     Add2SDigitsList(hist[i], i);
   }
+
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
 {
-  // make QA data from ESDs
+  //
+  // Make QA data from ESDs
+  //
+
   Int_t nTracks = esd->GetNumberOfTracks();
   GetESDsData(0)->Fill(nTracks);
   
@@ -332,42 +366,46 @@ void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
     
   }
 
-
-
 }
 
 //______________________________________________________________________________
-Int_t AliTRDQADataMaker::GetSector(const Double_t alpha) const {
+Int_t AliTRDQADataMaker::GetSector(const Double_t alpha) const 
+{
+  //
   // Gets the sector number 
+  //
 
   Double_t size = TMath::DegToRad() * 20.; // shall use TRDgeo
   Int_t sector = (Int_t)((alpha + TMath::Pi())/size);
   return sector;
+
 }
 
 //______________________________________________________________________________
-Double_t AliTRDQADataMaker::GetExtZ(const AliExternalTrackParam *in) const {
+Double_t AliTRDQADataMaker::GetExtZ(const AliExternalTrackParam *in) const 
+{
   //
-  // returns the Z position at the entry to TRD
+  // Returns the Z position at the entry to TRD
   // using parameters from the TPC in
   //
 
-  const Double_t x0 = 300;
+  const Double_t kX0 = 300;
 
   Double_t x = in->GetX();
   const Double_t *par = in->GetParameter();
   Double_t theta = par[3];
   Double_t z = in->GetZ();
   
-  Double_t zz = z + (x0-x) * TMath::Tan(theta);
+  Double_t zz = z + (kX0-x) * TMath::Tan(theta);
   return zz;
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeHits(TClonesArray * hits)
 {
-  //make QA data from Hits
-  //printf("making QA for TRD hits from an array %d\n", hits->GetEntriesFast());
+  //
+  // Make QA data from Hits
+  //
 
   TIter next(hits); 
   AliTRDhit * hit; 
@@ -386,8 +424,9 @@ void AliTRDQADataMaker::MakeHits(TClonesArray * hits)
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeHits(TTree * hitTree)
 {
-  //make QA data from Hits
-  //printf("making QA for TRD hits from a tree\n");
+  //
+  // Make QA data from Hits
+  //
   
   if (!CheckPointer(hitTree, "TRD hits tree")) return;
  
@@ -413,25 +452,32 @@ void AliTRDQADataMaker::MakeHits(TTree * hitTree)
   tmp->Delete();
   delete tmp;
   MakeHits(hits);
+
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeDigits(TClonesArray * digits)
 {
-  // makes data from Digits
-  
+  //
+  // Makes data from digits
+  //
+
   TIter next(digits) ; 
   AliTRDdigit * digit ; 
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
     GetDigitsData(0)->Fill(digit->GetDetector());
     GetDigitsData(1)->Fill(digit->GetTime());
     GetDigitsData(2)->Fill(digit->GetAmp());
-  }  
+  }
+
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeDigits(TTree * digits)
 {
+  //
+  // Makes data from digits tree
+  //
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
@@ -465,26 +511,34 @@ void AliTRDQADataMaker::MakeDigits(TTree * digits)
     
     //delete digitsIn;
   }
+
   delete digitsManager;
+
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeSDigits(TClonesArray * sdigits)
 {
-  // makes data from Digits
-  
+  //
+  // Makes data from digits
+  //
+
   TIter next(sdigits) ; 
   AliTRDdigit * digit ; 
   while ( (digit = dynamic_cast<AliTRDdigit *>(next())) ) {
     GetDigitsData(0)->Fill(digit->GetDetector());
     GetDigitsData(1)->Fill(digit->GetTime());
     GetDigitsData(2)->Fill(digit->GetAmp());
-  }  
+  } 
+ 
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeSDigits(TTree * digits)
 {
+  //
+  // Makes data from digits tree
+  //
 
   AliTRDdigitsManager *digitsManager = new AliTRDdigitsManager();
   digitsManager->CreateArrays();
@@ -521,13 +575,16 @@ void AliTRDQADataMaker::MakeSDigits(TTree * digits)
   }
 
   delete digitsManager;
+
 }
 
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
 {
+  //
   // 157
   // T9 -- T10
+  //
 
   //const Int_t kSM  = 18;
   //const Int_t kROC = 30;
@@ -572,8 +629,8 @@ void AliTRDQADataMaker::MakeRaws(AliRawReader* rawReader)
 //____________________________________________________________________________
 void AliTRDQADataMaker::MakeRecPoints(TTree * clustersTree)
 {
-  
-  // makes data from RecPoints
+  //  
+  // Makes data from RecPoints
   // 
   
   Int_t nsize = Int_t(clustersTree->GetTotBytes() / (sizeof(AliTRDcluster))); 
@@ -640,21 +697,27 @@ void AliTRDQADataMaker::MakeRecPoints(TTree * clustersTree)
   for(Int_t i=0; i<540; i++) 
     if (nDet[i] > 0) GetRecPointsData(9)->Fill(nDet[i]);
 
-
   delete clusterArray;
+
 }
 
 //____________________________________________________________________________ 
 void AliTRDQADataMaker::StartOfDetectorCycle()
 {
-  //Detector specific actions at start of cycle
+  //
+  // Detector specific actions at start of cycle
+  //
 
 }
 
 //__________________________________________________________________________
-Int_t AliTRDQADataMaker::CheckPointer(TObject *obj, const char *name) {
+Int_t AliTRDQADataMaker::CheckPointer(TObject *obj, const char *name) 
+{
+  //
+  // Checks initialization of pointers
+  //
 
   if (!obj) AliWarning(Form("null pointer: %s", name));
   return !!obj;
+
 }
-//__________________________________________________________________________

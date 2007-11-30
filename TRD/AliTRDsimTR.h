@@ -40,7 +40,7 @@ class AliTRDsimTR : public TObject {
   virtual Int_t    Locate(Double_t *xv, Int_t n, Double_t xval
                         , Int_t &kl, Double_t &dx);
   virtual Double_t Omega(Float_t rho, Float_t z, Float_t a)  { return (28.8 * TMath::Sqrt(rho * z / a)); };
-  virtual Int_t    SelectNFoils(Float_t p);
+  virtual Int_t    SelectNFoils(Float_t p) const;
 
           void     SetFoilThick(Float_t t)                   { fFoilThick = t;
                                                                SetSigma();                                  };

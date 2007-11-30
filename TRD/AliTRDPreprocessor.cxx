@@ -31,8 +31,6 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliTRDPreprocessor.h"
-
 #include <TFile.h>
 #include <TProfile2D.h>
 #include <TStopwatch.h>
@@ -44,6 +42,7 @@
 #include "AliCDBMetaData.h"
 #include "AliLog.h"
 
+#include "AliTRDPreprocessor.h"
 #include "AliTRDSensorArray.h"
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraMode.h"
@@ -55,8 +54,8 @@ ClassImp(AliTRDPreprocessor)
 
 //______________________________________________________________________________________________
 AliTRDPreprocessor::AliTRDPreprocessor(AliShuttleInterface *shuttle)
-  :AliPreprocessor("TRD", shuttle),
-   fVdriftHLT(0)
+  :AliPreprocessor("TRD", shuttle)
+  ,fVdriftHLT(0)
 {
   //
   // Constructor
@@ -99,8 +98,6 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
     return 0;
   } 
 
- 
-  
   if (runType=="PHYSICS"){
     // DCS
     if(ProcessDCS(dcsAliasMap)) return 1;
@@ -119,29 +116,37 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   return 0;  
   
 }
+
 //______________________________________________________________________________
 Bool_t AliTRDPreprocessor::ProcessDCS()
 {
+  //
+  // Default process DCS method
+  //
 
   TString runType = GetRunType();
-  if(runType == "PHYSICS") return kTRUE;
-
+  if (runType == "PHYSICS") {
+    return kTRUE;
+  }
   return kFALSE;
 
 }
 
 //______________________________________________________________________________
-Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
+Bool_t AliTRDPreprocessor::ProcessDCS(TMap *dcsAliasMap)
 {
-  Bool_t error=kFALSE;
+  //
+  // Process DCS method
+  //
+
+  Bool_t error = kFALSE;
 
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(0);
   metaData.SetResponsible("Wilfried Monange/Raphaelle Bailhache");
   metaData.SetComment("TRD calib test");
-	
-	
-  Log ("****** DCS ******\n");
+
+  Log("****** DCS ******\n");
 	
   TObjArray * list=AliTRDSensorArray::GetList ();
 	
@@ -164,7 +169,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
     oneTRDDCS->SetStartTime (TTimeStamp (fStartTime));
     oneTRDDCS->SetEndTime (TTimeStamp (fEndTime));
 			
-    Log (Form("Processing DCS : \"%s\"", oneTRDDCS->GetStoreName ().Data ()));
+    Log(Form("Processing DCS : \"%s\"", oneTRDDCS->GetStoreName ().Data ()));
 			
     TMap * map;
 
@@ -185,12 +190,10 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
 
     //results [iAlias] = StoreReferenceData("Calib", oneTRDDCS->GetStoreName ().Data (), oneTRDDCS, &metaData); 
 
-
     if (!results[iAlias]) {
       AliError("Problem during StoreRef DCS");
       error=kTRUE;
     }
-
 
     //BEGIN TEST (should not be removed ...)
     /*
@@ -224,8 +227,6 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
     */    
     //END TEST
 
-      
-      
   }
 		
   Log ("         Summury of DCS :\n");
@@ -243,6 +244,7 @@ Bool_t AliTRDPreprocessor::ProcessDCS(TMap * dcsAliasMap)
   delete nGraph;
 
   return error;
+
 }
 
 //______________________________________________________________________________________________
@@ -269,8 +271,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
     return kTRUE;
   }
   
-  // loop through all files from LDCs
-  
+  // loop through all files from LDCs  
   UInt_t index = 0;
   while (listpad->At(index)!=NULL) {
     TObjString* fileNameEntry = (TObjString*) listpad->At(index);
@@ -328,16 +329,17 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
       } // fileNameEntry
     ++index;
   }// while (list)
+
   Log(Form("%d elements found in the list for the pedestal",(Int_t)index));
   if(index==0){
     delete listpad;
     return kTRUE;
   }
+
   //
   // Store pedestal entry to OCDB
   //
-  
-  
+    
   // Create Pad Status
   AliTRDCalPadStatus *calPadStatus = calPedSum.CreateCalPadStatus();
   AliCDBMetaData md3; 
@@ -381,6 +383,7 @@ Bool_t AliTRDPreprocessor::ExtractPedestals()
   return error; 
 
 }
+
 //______________________________________________________________________________________________
 Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
 {
@@ -408,9 +411,6 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
   md2.SetResponsible("Raphaelle Bailhache");
   md2.SetBeamPeriod(0);
   md2.SetComment("TRD calib test");
-
-
-
 
   // Take the file from the DAQ file exchange server
   TList *listdaq = GetFileSources(kDAQ,"VDRIFT");
@@ -494,6 +494,7 @@ Bool_t AliTRDPreprocessor::ExtractDriftVelocityDAQ()
   return error; 
   
 }
+
 //______________________________________________________________________________________________
 Bool_t AliTRDPreprocessor::ExtractHLT()
 {
@@ -522,7 +523,6 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
   md2.SetResponsible("Raphaelle Bailhache");
   md2.SetBeamPeriod(0);
   md2.SetComment("TRD calib test");
-
   
   // Take the file from the HLT file exchange server
   TList *listhlt = GetFileSources(kHLT,"GAINDRIFTPRF");
@@ -548,7 +548,6 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
     }
     // Take the file
     TFile *filehlt = TFile::Open(fileName);
-    
     
     // gain
     TH2I *histogain = (TH2I *) filehlt->Get("CH2d");
@@ -586,8 +585,6 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       }
       calibra->ResetVectorFit();
     }// if histogain
-    
-    
     
     // vdrift
     fVdriftHLT = kFALSE;
@@ -638,7 +635,6 @@ Bool_t AliTRDPreprocessor::ExtractHLT()
       }
       calibra->ResetVectorFit();
     }// if TProfile2D
-    
     
     // prf
     TProfile2D *histoprf = (TProfile2D *) filehlt->Get("PRF2d");

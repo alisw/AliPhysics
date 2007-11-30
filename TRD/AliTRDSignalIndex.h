@@ -8,161 +8,105 @@
  
 #include "TObject.h"
 
-/////////////////////////////////////////////////////////////
-//  General container for data from TRD detector segments  //
-//  Adapted from AliDigits, origin M.Ivanov                //
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  General container for data from TRD detector segments                 //
+//  Adapted from AliDigits, origin M.Ivanov                               //
+//                                                                        //
+//  Author:                                                               //
+//    Mateusz Ploskon (ploskon@ikf.uni-frankfurt.de)                      //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
-//class TArrayI;
 #include "TArrayI.h"
 
 class AliTRDSignalIndex : public TObject
 {
+
  public:
 
   AliTRDSignalIndex(); 
   AliTRDSignalIndex(Int_t nrow, Int_t ncol,Int_t ntime);
   AliTRDSignalIndex(const AliTRDSignalIndex &d);
-  virtual ~AliTRDSignalIndex(); // destructor
+  virtual ~AliTRDSignalIndex();
   AliTRDSignalIndex &operator=(const AliTRDSignalIndex &d); 
-  virtual void   Copy(TObject &d) const; 
-  virtual void   Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
-  virtual void   Reset();
 
-  virtual void   ResetContentConditional(Int_t nrow, Int_t ncol,Int_t ntime);
-  virtual void   ResetContent();
+  virtual void     Copy(TObject &d) const; 
+  virtual void     Allocate(Int_t nrow, Int_t ncol,Int_t ntime);
 
-  virtual void   ResetCounters()
-  {
-    // reset the counters/iterators
-    fPositionRow = 0;
-    fPositionCol = fPositionRow + 1;
-    fPositionTbin = 1;
-    
-    fLastRow = -1;
-    fLastCol = -1;
-    fLastTbin = -1;
+  virtual void     Reset();
+  virtual void     ResetContentConditional(Int_t nrow, Int_t ncol,Int_t ntime);
+  virtual void     ResetContent();
+  virtual void     ResetCounters();
+  virtual void     ResetTbinCounter() { fPositionTbin  = 1; }
 
-    fResetCounters = kTRUE;
-  }
+  virtual void     AddIndexTBin(Int_t row, Int_t col, Int_t tbin);
 
-  virtual void   ResetTbinCounter()
-  {
-    // reset the time bin counter
-    
-    fPositionTbin = 1;
-  }
+          // Get the next pad (row and column) and return kTRUE on success
+          Bool_t   NextRCIndex(Int_t &row, Int_t &col); 
+          // Get the next timebin of a pad (row and column) and return kTRUE on success
+          Bool_t   NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin); 
+          // Get the next active timebin and return kTRUE on success
+          Bool_t   NextTbinIndex(Int_t &tbin); 
 
-  virtual void   AddIndexTBin(Int_t row, Int_t col, Int_t tbin);
-
-  Bool_t  NextRCIndex(Int_t &row, Int_t &col); // get the next pad (row and column) and return kTRUE on success
-  Bool_t  NextRCTbinIndex(Int_t &row, Int_t &col, Int_t &tbin); // get the next timebin of a pad (row and column) and return kTRUE on success
-  Bool_t  NextTbinIndex(Int_t &tbin); // get the next active timebin and return kTRUE on success
-
-  Int_t   GetCurrentRow() {return (*fIndex)[fPositionRow];} // current row
-  Int_t   GetCurrentCol() {return (*fIndex)[fPositionCol];} // current col
-  Int_t   GetCurtentTbin() {return (*fIndex)[fPositionCol + fPositionTbin];} //current tbin
+          Int_t    GetCurrentRow() const  { return (*fIndex)[fPositionRow];                 }
+          Int_t    GetCurrentCol() const  { return (*fIndex)[fPositionCol];                 }
+          Int_t    GetCurrentTbin() const { return (*fIndex)[fPositionCol + fPositionTbin]; }
   
-  void    ClearAll(); // clear the array, actually destroy and recreate w/o allocating
+          // Clear the array, actually destroy and recreate w/o allocating
+          void     ClearAll(); 
+          // Return kTRUE if array allocated and there is no need to call allocate
+          Bool_t   IsAllocated() const    { if (!fIndex)                return kFALSE; 
+                                            if (fIndex->GetSize() <= 0) return kFALSE; 
+                                            else                        return kTRUE;       }
+
+          void     SetSM(Int_t ix)        { fSM      =    ix; }
+          void     SetStack(Int_t ix)     { fStack   =    ix; }
+          void     SetChamber(Int_t ix)   { SetStack(ix);     }
+          void     SetLayer(Int_t ix)     { fLayer   =    ix; }
+          void     SetPlane(Int_t ix)     { SetLayer(ix);     }
+          void     SetDetNumber(Int_t ix) { fDet     =    ix; }
   
-  //void    Dump(); // printf content - one way of iterating demo
-  //void    Dump2(); // printf content - another way of iterating demo
+  virtual Int_t    GetDetNumber() const   { return fDet;      } // Get Det number
+  virtual Int_t    GetLayer() const       { return fLayer;    } // Layer = Plane = position of the chamber in TRD
+  virtual Int_t    GetPlane() const       { return fLayer;    } // Layer = Plane = position of the chamber in TRD
+  virtual Int_t    GetStack() const       { return fStack;    } // Stack = Chameber = position of the chamber in TRD
+  virtual Int_t    GetChamber() const     { return fStack;    } // Stack = Chameber = position of the chamber in TRD
+  virtual Int_t    GetSM() const          { return fSM;       } // Super module of the TRD
+          TArrayI *GetArray() const       { return fIndex;    } // Get the tarrayi pointer for god knows what reason
 
-  //Bool_t  IsAllocated() const {if (fIndex) return kTRUE; else return kFALSE;}
-  Bool_t  IsAllocated() const 
-  {
-    // return kTRUE if array allocated and there is no need to call allocate
-    if (!fIndex) 
-      return kFALSE; 
-    if (fIndex->GetSize() <= 0) 
-      return kFALSE; 
-    else return kTRUE;
-  }
+  virtual Bool_t   HasEntry() const       { return fHasEntry; } // Return status if has an entry
 
-  void SetSM(Int_t ix) 
-  { 
-    // Set which SM
-    fSM = ix;
-  };
-
-  void SetStack(Int_t ix) 
-  { 
-    // Set which stack
-    fStack = ix;
-  };
-
-  void SetChamber(Int_t ix) 
-  {
-    // aka set stack
-    SetStack(ix);
-  }
-
-  void SetLayer(Int_t ix) 
-  { 
-    // Set which layer
-    fLayer = ix;
-  };
-
-  void SetPlane(Int_t ix) 
-  {
-    // aka set plane
-    SetLayer(ix);
-  }
-
-  void SetDetNumber(Int_t ix)
-  {
-    // Set Det Number
-    fDet = ix;
-  }
-  
-  virtual Int_t GetDetNumber() const {return fDet;} // Get Det number
-  virtual Int_t GetLayer() const     {return fLayer;} // Layer = Plane = position of the chamber in TRD
-  virtual Int_t GetPlane() const     {return fLayer;} // Layer = Plane = position of the chamber in TRD
-  virtual Int_t GetStack() const     {return fStack;} // Stack = Chameber = position of the chamber in TRD
-  virtual Int_t GetChamber() const   {return fStack;} // Stack = Chameber = position of the chamber in TRD
-  virtual Int_t GetSM() const        {return fSM;} // Super module of the TRD
-
-  virtual Bool_t HasEntry() const    {return fHasEntry;} // Return status if has an entry
-
-          TArrayI *GetArray() const  {return fIndex;} // Get the tarrayi pointer for god knows what reason
-
-  virtual Int_t GetNrow() const      {return fNrows;} // Get Nrows
-  virtual Int_t GetNcol() const      {return fNcols;} // Get Ncols
-  virtual Int_t GetNtime() const     {return fNtbins;} // Get Ntbins
-
-  //enum { kMaxRows = 16, kMaxTbins = 24, kMaxCols = 144};
+  virtual Int_t    GetNrow() const        { return fNrows;    } // Get Nrows
+  virtual Int_t    GetNcol() const        { return fNcols;    } // Get Ncols
+  virtual Int_t    GetNtime() const       { return fNtbins;   } // Get Ntbins
 
  private:
 
-  Int_t   fDet;  // det number
-  Int_t   fLayer; // aka plane - position in the full TRD
-  Int_t   fStack; // aka chamber - position in the full TRD
-  Int_t   fSM; // super module - position in the full TRD
+  Int_t     fDet;                //  Detector number
+  Int_t     fLayer;              //  Aka plane - position in the full TRD
+  Int_t     fStack;              //  Aka chamber - position in the full TRD
+  Int_t     fSM;                 //  Super module - position in the full TRD
 
- protected:
+  TArrayI  *fIndex;              //! Monitor active pads and tbins
 
-  TArrayI  *fIndex; //! monitor active pads and tbins
+  Int_t     fPositionRow;        //  Position in the index - jumps by 1 + 1 + fNtbins
+  Int_t     fPositionCol;        //  Position in the index - jumps by 1 + 1 + fNtbins
+  Int_t     fPositionTbin;       //  Position in the tbin - goes from 0 to fNtbins
 
-  Int_t    fPositionRow; // position in the index - jumps by 1 + 1 + fNtbins
-  Int_t    fPositionCol; // position in the index - jumps by 1 + 1 + fNtbins
-  Int_t    fPositionTbin; // position in the tbin - goes from 0 to fNtbins
+  Int_t     fLastRow;            //  To keep track what is the RC combination
+  Int_t     fLastCol;            //  To keep track what is the RC combination
+  Int_t     fLastTbin;           //  To keep track what is the Tbin - will catch if raw data bogus
 
-  Int_t    fLastRow; // to keep track what is the RC combination
-  Int_t    fLastCol; // to keep track what is the RC combination
-  Int_t    fLastTbin; // to keep track what is the Tbin - will catch if raw data bogus
+  Int_t     fNrows;              //  Number of rows in the chamber
+  Int_t     fNcols;              //  Number of cols in the chamber
+  Int_t     fNtbins;             //  Number of tbins in the chamber
 
-  Int_t    fNrows; // number of rows in the chamber
-  Int_t    fNcols; // number of cols in the chamber
-  Int_t    fNtbins; // number of tbins in the chamber
+  Int_t     fMaxLimit;           //  Max number of things in the array  = nrow*ncol*ntime + nrow*ncol*2
+  Bool_t    fResetCounters;      //  Reset counter status
+  Bool_t    fHasEntry;           //  kTRUE flag if we have an entry 
 
-  Int_t    fMaxLimit; // max number of things in the array  = nrow * ncol * ntime + nrow * ncol * 2
-
-  Bool_t   fResetCounters; // reset counter status
-
-  Bool_t   fHasEntry; // kTRUE flag if we have an entry 
-
-  ClassDef(AliTRDSignalIndex,1)      // Data container for one TRD detector segment
+  ClassDef(AliTRDSignalIndex,2)  //  Data container for one TRD detector segment
 
 };
- 
 #endif

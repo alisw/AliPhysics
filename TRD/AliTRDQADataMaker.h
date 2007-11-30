@@ -7,9 +7,11 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-// Produces the data needed to calculate the quality assurance.           //
-// All data must be mergeable objects.                                    //
-// S.Radomski Uni-Heidelberg October 2007                                 //
+//  Produces the data needed to calculate the quality assurance.          //
+//  All data must be mergeable objects.                                   //
+//                                                                        //
+//  Author:                                                               //
+//    Sylwester Radomski (radomski@physi.uni-heidelberg.de)               //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -24,14 +26,14 @@ class AliExternalTrackParam;
 
 class AliTRDQADataMaker: public AliQADataMaker {
 
-public:
+ public:
 
   AliTRDQADataMaker() ;          // ctor
   AliTRDQADataMaker(const AliTRDQADataMaker& qadm) ;   
   AliTRDQADataMaker& operator = (const AliTRDQADataMaker& qadm) ;
   virtual ~AliTRDQADataMaker() {;} // dtor
   
-private:
+ private:
 
   virtual void EndOfDetectorCycle(AliQA::TASKINDEX, TList*) {};
   virtual void EndOfDetectorCycle() ;
@@ -62,8 +64,7 @@ private:
   Int_t    GetSector(const Double_t alpha) const;
   Double_t GetExtZ(const AliExternalTrackParam *paramIn) const;
 
-  ClassDef(AliTRDQADataMaker,1)  // description 
+  ClassDef(AliTRDQADataMaker,1)  // Creates the TRD QA data
 
 };
-
-#endif // AliTRDQADATAMAKER_H
+#endif

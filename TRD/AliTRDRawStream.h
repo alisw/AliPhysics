@@ -5,22 +5,23 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// This class provides access to TRD digits in raw data.                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// This class provides access to TRD digits in raw data.                  //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <TObject.h>
 
-class AliTRDgeometry;
 class AliRawReader;
+
+class AliTRDgeometry;
 class AliTRDdigitsManager;
 
 // Some constants:
 const UInt_t kEndoftrackletmarker = 0xAAAAAAAA; /*This marks the end of tracklet data words*/
 const UInt_t kEndofrawdatamarker  = 0x00000000; /*This marks the end of half-chamber-data*/
-const UInt_t kSizeWord = sizeof(UInt_t);
+const UInt_t kSizeWord            = sizeof(UInt_t);
 
 class AliTRDRawStream: public TObject {
 
@@ -30,11 +31,11 @@ class AliTRDRawStream: public TObject {
     AliTRDRawStream(AliRawReader *rawReader);
     virtual ~AliTRDRawStream();
 
-    virtual Bool_t       Next();              // Read the next data
-    virtual Int_t NextChamber(AliTRDdigitsManager *man); // read next chamber data
-    virtual Int_t        Init();              // Init for the fRawVersion > 1
+    virtual Bool_t       Next();                                // Read the next data
+    virtual Int_t        NextChamber(AliTRDdigitsManager *man); // Read next chamber data
+    virtual Int_t        Init();                                // Init for the fRawVersion > 1
 
-    enum { kDDLOffset = 0x400 };              // Offset for DDL numbers
+    enum { kDDLOffset = 0x400 };                                // Offset for DDL numbers
 
     Bool_t               SetRawVersion(Int_t rv);
     Int_t                GetRawVersion() const                      { return fRawVersion;     };
@@ -56,25 +57,51 @@ class AliTRDRawStream: public TObject {
     Bool_t               IsGTULinkActive(Int_t sm, Int_t la, Int_t sta, Int_t side)
       { return ( ((fGTUlinkMask[sm][sta]) >> (2*la+side)) & 0x1 ); };
 
-    Int_t *GetSignals() { return fSig;}                         //  Signals in the three time bins from Data Word
-    Int_t GetADC() const { return fADC;}                            //  MCM ADC channel and Time Bin of word 1
-    Int_t GetTimeBin() const { return fTB - 3;}                             //  MCM ADC channel and Time Bin of word 1
-    Int_t GetEventNumber() const { return fEv;}                             //  MCM Event number and position of current MCM on TRD chamber
-    Int_t GetROB() const { return fROB;}                            //  MCM Event number and position of current MCM on TRD chamber
-    Int_t GetMCM() const { return fMCM;}                           //  MCM Event number and position of current MCM on TRD chamber
-    Int_t GetSM() const { return fSM;}                             //  Position of CURRENT half chamber in full TRD
-    Int_t GetLayer() const { return fLAYER;}                          //  PLANE = Position of CURRENT half chamber in full TRD
-    Int_t GetStack() const { return fSTACK;}                          //  CHAMBER = Position of CURRENT half chamber in full TRD
-    Int_t GetROC() const { return fROC;}                            //  Position of CURRENT half chamber in full TRD
-    Int_t GetSide() const { return fSIDE;}                           //  Position of CURRENT half chamber in full TRD
-    Int_t GetDCS() const { return fDCS;}                            //  DCS board number read from data (HC header)
-    Int_t GetRow() const { return fROW;}
-    Int_t GetCol() const { return fCOL;}                            //  Detector Pad coordinates
-    Int_t GetDet() const { return fDET;} // helper
-    Int_t GetLastDet() const { return fLastDET;} // helper
-    Int_t GetMaxRow() const { return fRowMax;}
-    Int_t GetMaxCol() const { return fColMax;}
-    Int_t GetNumberOfTimeBins() const {return fTBins;}
+    Int_t *GetSignals()                { return fSig;     } // Signals in the three time bins from Data Word
+    Int_t  GetADC() const              { return fADC;     } // MCM ADC channel and Time Bin of word 1
+    Int_t  GetTimeBin() const          { return fTB - 3;  } // MCM ADC channel and Time Bin of word 1
+    Int_t  GetEventNumber() const      { return fEv;      } // MCM Event number and position of current MCM
+    Int_t  GetROB() const              { return fROB;     } // MCM Event number and position of current MCM
+    Int_t  GetMCM() const              { return fMCM;     } // MCM Event number and position of current MCM
+    Int_t  GetSM() const               { return fSM;      } // Position of CURRENT half chamber in full TRD
+    Int_t  GetLayer() const            { return fLAYER;   } // PLANE = Position of CURRENT half chamber in full TRD
+    Int_t  GetStack() const            { return fSTACK;   } // CHAMBER = Position of CURRENT half chamber in full TRD
+    Int_t  GetROC() const              { return fROC;     } // Position of CURRENT half chamber in full TRD
+    Int_t  GetSide() const             { return fSIDE;    } // Position of CURRENT half chamber in full TRD
+    Int_t  GetDCS() const              { return fDCS;     } // DCS board number read from data (HC header)
+    Int_t  GetRow() const              { return fROW;     }
+    Int_t  GetCol() const              { return fCOL;     } // Detector Pad coordinates
+    Int_t  GetDet() const              { return fDET;     } // Helper
+    Int_t  GetLastDet() const          { return fLastDET; } // Helper
+    Int_t  GetMaxRow() const           { return fRowMax;  }
+    Int_t  GetMaxCol() const           { return fColMax;  }
+    Int_t  GetNumberOfTimeBins() const { return fTBins;   }
+
+ protected:
+
+    AliTRDgeometry *fGeo;                                   // TRD geometry
+
+    void   DecodeHCheader(Int_t timeBins);
+    void   DecodeMCMheader();
+    void   DecodeTracklet();
+    void   DecodeGTUlinkMask();
+    Int_t  DecodeDataWord();
+    Int_t  DecodeDataWordV1V2();                            // Valid for fRawversion = 1, 2, ... 
+    Int_t  DecodeDataWordV3();                              // Valid for fRawversion = 3, ... 
+
+    Int_t  NextData();                                      // Get the next piece of memory
+
+    enum { kStart
+         , kStop
+         , kWordOK
+         , kNoMoreData
+         , kNextSM
+         , kNextHC
+         , kSeekNonEoTracklet
+         , kDecodeHC
+         , kNextMCM
+         , kNextData
+         , kReading };
 
   private :
 
@@ -152,7 +179,7 @@ class AliTRDRawStream: public TObject {
     Bool_t   fSizeOK;                      //  Did we read anything
     UInt_t   fCountBytes;                  //  Bytes traversed in the buffer
     UInt_t   fBufSize;                     //  Size of the current RawReader buffer
-    Bool_t   fkBufferSet;                  //  Is the RawReader buffer available
+    Bool_t   fBufferSet;                   //  Is the RawReader buffer available
     UChar_t *fPos;                         //  Position in the buffer of the RawReader
     UInt_t  *fDataWord;                    //  The pointer to the current 32 bit data word
     UInt_t   fTimeBinsCalib;               //  N of time bins retrieved from calibration
@@ -172,24 +199,8 @@ class AliTRDRawStream: public TObject {
       ,kADCNumberOverflow = 12             //
       ,kADCChannelOverflow = 13            //
     };
-
- protected:
-
-    AliTRDgeometry *fGeo;                  //  TRD geometry
-
-    void  DecodeHCheader(Int_t timeBins);
-    void  DecodeMCMheader();
-    void  DecodeTracklet();
-    void  DecodeGTUlinkMask();
-    Int_t DecodeDataWord();
-    Int_t DecodeDataWordV1V2();                // Valid for fRawversion = 1, 2, ... 
-    Int_t DecodeDataWordV3();                  // Valid for fRawversion = 3, ... 
-
-    Int_t NextData(); // get the next piece of memory
-
-    enum { fkStart, fkStop, fkWordOK, fkNoMoreData, fkNextSM, fkNextHC, fkSeekNonEoTracklet, fkDecodeHC, fkNextMCM, fkNextData, fkReading};
     
-    ClassDef(AliTRDRawStream, 5)               // Class for reading TRD raw digits
+    ClassDef(AliTRDRawStream, 6)           // Class for reading TRD raw digits
 
 };
 #endif

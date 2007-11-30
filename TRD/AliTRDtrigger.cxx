@@ -196,6 +196,9 @@ void AliTRDtrigger::Copy(TObject &) const
 //_____________________________________________________________________________
 void AliTRDtrigger::Init()
 {
+  //
+  // Initialization
+  //
 
   fModule = new AliTRDmodule(); 
   fTracks->Clear();

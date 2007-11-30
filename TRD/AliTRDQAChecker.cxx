@@ -13,11 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*
-  Checks the quality assurance. 
-  By comparing with reference data
-  S.Radomski Uni-Heidelberg October 2007
-*/
+/* $Id$ */
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Checks the quality assurance by comparing with reference data         //
+//                                                                        //
+//  Author:                                                               //
+//    Sylwester Radomski (radomski@physi.uni-heidelberg.de)               //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 #include <TClass.h>
@@ -33,6 +38,7 @@
 #include "AliLog.h"
 #include "AliQA.h"
 #include "AliQAChecker.h"
+
 #include "AliTRDQAChecker.h"
 
 ClassImp(AliTRDQAChecker)
@@ -40,9 +46,13 @@ ClassImp(AliTRDQAChecker)
 //__________________________________________________________________
 AliTRDQAChecker& AliTRDQAChecker::operator = (const AliTRDQAChecker& qac )
 {
+  //
   // Equal operator.
+  //
+
   this->~AliTRDQAChecker();
   new(this) AliTRDQAChecker(qac);
   return *this;
+
 }
 

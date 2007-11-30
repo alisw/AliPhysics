@@ -1,14 +1,18 @@
-#ifndef ALITRDQUALASSCHECKER_H
-#define ALITRDQUALASSCHECKER_H
+#ifndef ALITRDQACHECKER_H
+#define ALITRDQACHECKER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/*
-  Checks the quality assurance. 
-  By comparing with reference data
-  S. Radomski Uni-Heidelberg October 2007
-*/
+/* $Id$ */
 
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  Checks the quality assurance by comparing with reference data         //
+//                                                                        //
+//  Author:                                                               //
+//    Sylwester Radomski (radomski@physi.uni-heidelberg.de)               //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
 class TFile ; 
@@ -19,20 +23,21 @@ class TH1I ;
 
 // --- AliRoot header files ---
 #include "AliQACheckerBase.h"
+
 class AliTRDLoader ; 
 
 class AliTRDQAChecker: public AliQACheckerBase {
 
-public:
-  AliTRDQAChecker() : AliQACheckerBase("TRD","TRD Quality Assurance Data Maker") {;}          // ctor
-  AliTRDQAChecker(const AliTRDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
+ public:
+
+  AliTRDQAChecker() : AliQACheckerBase("TRD","TRD Quality Assurance Data Maker") {;} 
+  AliTRDQAChecker(const AliTRDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} 
   AliTRDQAChecker& operator = (const AliTRDQAChecker& qac) ;
-  virtual ~AliTRDQAChecker() {;} // dtor
+  virtual ~AliTRDQAChecker() {;} 
 
 private:
   
-  ClassDef(AliTRDQAChecker,1)  // description 
+  ClassDef(AliTRDQAChecker,1)  // TRD QA checker
 
 };
-
-#endif // AliTRDQAChecker_H
+#endif

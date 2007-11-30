@@ -15,35 +15,37 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// This class provides access to TRD digits in raw data.                     //
-//                                                                           //
-// It loops over all TRD digits in the raw data given by the AliRawReader.   //
-// The Next method goes to the next digit. If there are no digits left       //
-// it returns kFALSE.                                                        //
-// Several getters provide information about the current digit.              //
-//                                                                           //
-// Author: C. Lippmann (C.Lippmann@gsi.de)                                   //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// This class provides access to TRD digits in raw data.                  //
+//                                                                        //
+// It loops over all TRD digits in the raw data given by the AliRawReader //
+// The Next method goes to the next digit. If there are no digits left    //
+// it returns kFALSE.                                                     //
+// Several getters provide information about the current digit.           //
+//                                                                        //
+// Author:                                                                //
+//   Christian Lippmann (C.Lippmann@gsi.de)                               //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include "AliLog.h"
 #include "AliRawReader.h"
+
 #include "AliTRDRawStream.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDcalibDB.h"
-
 #include "AliTRDdigitsManager.h"
 #include "AliTRDdataArrayI.h"
 #include "AliTRDSignalIndex.h"
-
 #include "AliTRDfeeParam.h"
+
 ClassImp(AliTRDRawStream)
 
 //_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream() 
   :TObject()
+  ,fGeo(NULL) 
   ,fSig()
   ,fADC(0)
   ,fTB(0)
@@ -104,11 +106,10 @@ AliTRDRawStream::AliTRDRawStream()
   ,fSizeOK(kFALSE)
   ,fCountBytes(0)
   ,fBufSize(0)
-  ,fkBufferSet(kFALSE)
+  ,fBufferSet(kFALSE)
   ,fPos(NULL)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
-  ,fGeo(NULL) 
 {
   //
   // Default constructor
@@ -123,6 +124,7 @@ AliTRDRawStream::AliTRDRawStream()
 //_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader) 
   :TObject()
+  ,fGeo(NULL) 
   ,fSig()
   ,fADC(0)
   ,fTB(0)
@@ -183,11 +185,10 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader)
   ,fSizeOK(kFALSE)
   ,fCountBytes(0)
   ,fBufSize(0)
-  ,fkBufferSet(kFALSE)
+  ,fBufferSet(kFALSE)
   ,fPos(NULL)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
-  ,fGeo(NULL) 
 {
   //
   // Create an object to read TRD raw digits
@@ -204,6 +205,7 @@ AliTRDRawStream::AliTRDRawStream(AliRawReader *rawReader)
 //_____________________________________________________________________________
 AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
   :TObject(stream)
+  ,fGeo(NULL)
   ,fSig()
   ,fADC(-1)
   ,fTB(-1)
@@ -264,11 +266,10 @@ AliTRDRawStream::AliTRDRawStream(const AliTRDRawStream& stream)
   ,fSizeOK(kFALSE)
   ,fCountBytes(0)
   ,fBufSize(0)
-  ,fkBufferSet(kFALSE)
+  ,fBufferSet(kFALSE)
   ,fPos(NULL)
   ,fDataWord(NULL)
   ,fTimeBinsCalib(0)
-  ,fGeo(NULL)
 {
   //
   // Copy constructor
@@ -286,7 +287,7 @@ AliTRDRawStream& AliTRDRawStream::operator = (const AliTRDRawStream&
   // Assigment operator
   //
 
-  Fatal("operator =", "assignment operator not implemented");
+  AliFatal("Assignment operator not implemented");
   return *this;
 
 }
@@ -307,10 +308,15 @@ AliTRDRawStream::~AliTRDRawStream()
 //_____________________________________________________________________________
 void AliTRDRawStream::SetRawReader(AliRawReader *rawReader) 
 {
+  //
+  // Sets the raw reader
+  //
+
   if (rawReader)
     {
       fRawReader = rawReader;
     }
+
 }
 
 //_____________________________________________________________________________
@@ -328,7 +334,6 @@ Bool_t AliTRDRawStream::SetRawVersion(Int_t rv)
   return kFALSE;
 
 }
-
 
 //____________________________________________________________________________
 Int_t AliTRDRawStream::Init()
@@ -369,15 +374,17 @@ Int_t AliTRDRawStream::Init()
   fDataSize = 0;
   fSizeOK = kFALSE;
   
-  fNextStatus = fkStart;
+  fNextStatus = kStart;
 
   fCountBytes = 0;
   fBufSize = 0;
   fDataWord = NULL;
   fPos = NULL;
   fWordCtr = 0;
-  fkBufferSet = kFALSE;
+  fBufferSet = kFALSE;
+
   return kTRUE;
+
 }
 
 //____________________________________________________________________________
@@ -389,20 +396,20 @@ Int_t AliTRDRawStream::NextData()
 
   if (fCountBytes + kSizeWord >= fBufSize)
     {
-      fkBufferSet = fRawReader->ReadNextData(fPos);
-      if (fkBufferSet == kTRUE)
+      fBufferSet = fRawReader->ReadNextData(fPos);
+      if (fBufferSet == kTRUE)
 	{
 	  fBufSize = fRawReader->GetDataSize();
 	  fCountBytes = 0;	  
 	  fDataWord = (UInt_t*)fPos;
-	  fNextStatus = fkNextSM;
+	  fNextStatus = kNextSM;
 	  fWordCtr = 0;
-	  return fkNextSM;
+	  return kNextSM;
 	}
       else
 	{
-	  fNextStatus = fkStop;
-	  return fkNoMoreData;
+	  fNextStatus = kStop;
+	  return kNoMoreData;
 	}
     }
   else
@@ -412,7 +419,7 @@ Int_t AliTRDRawStream::NextData()
       fCountBytes += kSizeWord;	  
       fDataWord = (UInt_t*)fPos;
       fWordCtr++;
-      return fkWordOK;
+      return kWordOK;
     }
 }
 
@@ -423,15 +430,15 @@ Bool_t AliTRDRawStream::Next()
   // Updates the next data word pointer
   //
 
-  if (fNextStatus == fkStart)
+  if (fNextStatus == kStart)
     {
       Init();
     }
 
-  while (fNextStatus != fkStop)
-    { // !fkStop
+  while (fNextStatus != kStop)
+    { // !kStop
       NextData();
-      if (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
+      if (fNextStatus == kNextMCM || fNextStatus == kNextData)
 	{
 	  fHCdataCtr += 4;
 	  
@@ -442,24 +449,24 @@ Bool_t AliTRDRawStream::Next()
 		{
 		  AliWarning("Wrong fMCM or fROB. Skip this data");
 		  fRawReader->AddMajorErrorLog(kWrongMCMorROB,Form("MCM=%d, ROB=%d",fMCM,fROB));
-		  fNextStatus = fkNextHC;
+		  fNextStatus = kNextHC;
 		  continue;
 		}
 	      fTbSwitch    = 3;  // For first adc channel we expect: (*fDataWord & 3) = 3
 	      fTbSwitchCtr = 0;  // 
 	      fADC = fTB   = 0;  // Reset Counter
-	      fNextStatus = fkNextData;
+	      fNextStatus = kNextData;
 	      continue;
 	    }
 	  
 	  if ( *fDataWord == kEndofrawdatamarker ) 
 	    {  // End of half-chamber data, finished
 	      fGTUctr1 = -1;
-	      fNextStatus = fkNextHC;
+	      fNextStatus = kNextHC;
 	      continue;
 	    }
 	  
-	  if (fNextStatus == fkNextData )
+	  if (fNextStatus == kNextData )
 	    {       // MCM header is set, ADC data is valid.
 	      
 	      // Found some data. Decode it now:
@@ -467,7 +474,7 @@ Bool_t AliTRDRawStream::Next()
 	      if ( fRetVal ==  0 ) continue;
 	      if ( fRetVal == -1 ) 
 		{
-		  fNextStatus = fkNextHC;
+		  fNextStatus = kNextHC;
 		  continue;
 		}
 	      if ( fRetVal == 1)
@@ -491,12 +498,12 @@ Bool_t AliTRDRawStream::Next()
 	      // 	      {
 	      // 		fCOL = -1;	       
 	      // 	      }
-	    }// fkNextData  
+	    }// kNextData  
 	  
 	  continue;
 	} //next mcm
 
-      if ( fNextStatus == fkNextHC )
+      if ( fNextStatus == kNextHC )
 	{
 	  //
 	  // 1) Find end_of_tracklet_marker
@@ -512,7 +519,7 @@ Bool_t AliTRDRawStream::Next()
 	  if ( *fDataWord == kEndoftrackletmarker ) 
 	    {
 	      AliDebug(3, "end-of-tracklet-marker found");
-	      fNextStatus = fkSeekNonEoTracklet;
+	      fNextStatus = kSeekNonEoTracklet;
 	      continue;
 	    } 
 	  else 
@@ -524,7 +531,7 @@ Bool_t AliTRDRawStream::Next()
 	    }
 	} //if next HC
 
-      if (fNextStatus == fkSeekNonEoTracklet)
+      if (fNextStatus == kSeekNonEoTracklet)
 	{
 	  //
 	  // 2) Look for non-end_of_tracklet_marker
@@ -533,7 +540,7 @@ Bool_t AliTRDRawStream::Next()
 
 	  if ( *fDataWord != kEndoftrackletmarker ) 
 	    {
-	      fNextStatus = fkDecodeHC;
+	      fNextStatus = kDecodeHC;
 	      AliDebug(3, "NON end-of-tracklet-marker found");
 	      //// no do not continue - this should be the hcheader
 	    }
@@ -544,7 +551,7 @@ Bool_t AliTRDRawStream::Next()
 	    }
 	}
 
-      if ( fNextStatus == fkDecodeHC )
+      if ( fNextStatus == kDecodeHC )
 	{
 	  AliDebug(3, "Decode HC");
 
@@ -563,19 +570,19 @@ Bool_t AliTRDRawStream::Next()
 	      fHCdataCtr = 0;
 	      
 	      fChamberDone[fDET]++;
-	      fNextStatus = fkNextMCM;
+	      fNextStatus = kNextMCM;
 	      AliDebug(3, "Decode HC OK");	      
 	      continue;
 	    } //HC header
 	  else
 	    {
 	      AliDebug(3, "Decode HC NOT OK");	      
-	      fNextStatus = fkNextSM;
+	      fNextStatus = kNextSM;
 	      continue;
 	    }
 	} // if decode HC
 
-      if (fNextStatus == fkNextSM)
+      if (fNextStatus == kNextSM)
 	{
 	  
 	  fDET     = 0;
@@ -596,18 +603,18 @@ Bool_t AliTRDRawStream::Next()
 	  if ( (*fDataWord & 0xfffff000) ==  0xe0000000 ) 
 	    {
 	      DecodeGTUlinkMask();
-	      fNextStatus = fkNextHC;
+	      fNextStatus = kNextHC;
 	      continue;
 	    } 
 	  else 
 	    {
 	      AliWarning(Form("Equipment %d: First data word is not GTU Link Mask!", fEqID));
               fRawReader->AddMajorErrorLog(kGTULinkMaskMissing,Form("Equipment %d",fEqID));
-	      fNextStatus = fkStop;
+	      fNextStatus = kStop;
 	    }	    
 	}// if nextSM
 
-    } // not fkStop
+    } // not kStop
 
   AliDebug(1, Form("That's all folks! %d", fSM));
   return kFALSE;
@@ -626,16 +633,16 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
   AliTRDdataArrayI *track2 = 0; 
   AliTRDSignalIndex *indexes = 0;
 	  
-  if (fNextStatus == fkStart)
+  if (fNextStatus == kStart)
     {
       Init();
     }
 
-  while (fNextStatus != fkStop)
-    { // !fkStop
+  while (fNextStatus != kStop)
+    { // !kStop
       NextData();
-      if (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
-      //while (fNextStatus == fkNextMCM || fNextStatus == fkNextData)
+      if (fNextStatus == kNextMCM || fNextStatus == kNextData)
+      //while (fNextStatus == kNextMCM || fNextStatus == kNextData)
 	{
 	  fHCdataCtr += 4;
 	  
@@ -646,13 +653,13 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 		{
 		  AliWarning("Wrong fMCM or fROB. Skip this data");
 		  fRawReader->AddMajorErrorLog(kWrongMCMorROB,Form("MCM=%d, ROB=%d",fMCM,fROB));
-		  fNextStatus = fkNextHC;
+		  fNextStatus = kNextHC;
 		  continue;
 		}
 	      fTbSwitch    = 3;  // For first adc channel we expect: (*fDataWord & 3) = 3
 	      fTbSwitchCtr = 0;  // 
 	      fADC = fTB   = 0;  // Reset Counter
-	      fNextStatus = fkNextData;
+	      fNextStatus  = kNextData;
 
 // 	      NextData(); // if while loop!
 	      continue; // if if
@@ -661,7 +668,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	  if ( *fDataWord == kEndofrawdatamarker ) 
 	    {  // End of half-chamber data, finished
 	      fGTUctr1 = -1;
-	      fNextStatus = fkNextHC;
+	      fNextStatus = kNextHC;
 	      // full chamber processed ?
 	      if (fChamberDone[fDET] == 2)
 		{
@@ -674,7 +681,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 		}
 	    }
 	  
-	  if (fNextStatus == fkNextData )
+	  if (fNextStatus == kNextData )
 	    {       // MCM header is set, ADC data is valid.
 	      
 	      // Found some data. Decode it now:
@@ -682,7 +689,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	      if ( fRetVal ==  0 ) continue;
 	      if ( fRetVal == -1 ) 
 		{
-		  fNextStatus = fkNextHC;
+		  fNextStatus = kNextHC;
 
 // 		  NextData(); // if while loop!
 // 		  break; //if while loop!
@@ -729,13 +736,13 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 // 	      {
 // 		fCOL = -1;	       
 // 	      }
-	    }// fkNextData  
+	    }// kNextData  
 	  
 // 	  NextData(); // if while loop!
 	  continue; //if if
 	} //next mcm
 
-      if ( fNextStatus == fkNextHC )
+      if ( fNextStatus == kNextHC )
 	{
 	  //
 	  // 1) Find end_of_tracklet_marker
@@ -751,7 +758,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	  if ( *fDataWord == kEndoftrackletmarker ) 
 	    {
 	      AliDebug(3, "end-of-tracklet-marker found");
-	      fNextStatus = fkSeekNonEoTracklet;
+	      fNextStatus = kSeekNonEoTracklet;
 	      continue;
 	    } 
 	  else 
@@ -763,7 +770,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	    }
 	} //if next HC
 
-      if (fNextStatus == fkSeekNonEoTracklet)
+      if (fNextStatus == kSeekNonEoTracklet)
 	{
 	  //
 	  // 2) Look for non-end_of_tracklet_marker
@@ -772,7 +779,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 
 	  if ( *fDataWord != kEndoftrackletmarker ) 
 	    {
-	      fNextStatus = fkDecodeHC;
+	      fNextStatus = kDecodeHC;
 	      AliDebug(3, "NON end-of-tracklet-marker found");
 	      //// no do not continue - this should be the hcheader
 	    }
@@ -783,7 +790,7 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	    }
 	}
 
-      if ( fNextStatus == fkDecodeHC )
+      if ( fNextStatus == kDecodeHC )
 	{
 	  AliDebug(3, "Decode HC");
 
@@ -839,19 +846,19 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	      fHCdataCtr = 0;
 	      
 	      fChamberDone[fDET]++;
-	      fNextStatus = fkNextMCM;
+	      fNextStatus = kNextMCM;
 	      AliDebug(3, "Decode HC OK");	      
 	      continue;
 	    } //HC header
 	  else
 	    {
 	      AliDebug(3, "Decode HC NOT OK");	      
-	      fNextStatus = fkNextSM;
+	      fNextStatus = kNextSM;
 	      continue;
 	    }
 	} // if decode HC
 
-      if (fNextStatus == fkNextSM)
+      if (fNextStatus == kNextSM)
 	{
 	  
 	  fDET     = 0;
@@ -872,18 +879,18 @@ Int_t AliTRDRawStream::NextChamber(AliTRDdigitsManager *man)
 	  if ( (*fDataWord & 0xfffff000) ==  0xe0000000 ) 
 	    {
 	      DecodeGTUlinkMask();
-	      fNextStatus = fkNextHC;
+	      fNextStatus = kNextHC;
 	      continue;
 	    } 
 	  else 
 	    {
 	      AliWarning(Form("Equipment %d: First data word is not GTU Link Mask!", fEqID));
               fRawReader->AddMajorErrorLog(kGTULinkMaskMissing,Form("Equipment %d",fEqID));
-	      fNextStatus = fkStop;
+	      fNextStatus = kStop;
 	    }	    
 	}// if nextSM
 
-    } // not fkStop
+    } // not kStop
 
   AliDebug(1, Form("That's all folks! %d", fSM));
   //return kFALSE;
@@ -963,11 +970,11 @@ void AliTRDRawStream::DecodeHCheader(Int_t timeBins)
   // 2nd word (h[1])
   if ( fHCHWords >= 1 ) {
     // read one more word
-    if (NextData() != fkWordOK)
+    if (NextData() != kWordOK)
       {
 	AliWarning("Next HC word missing");
         fRawReader->AddMajorErrorLog(kHCWordMissing,"Next HC word missing"); 
-	fNextStatus = fkNextHC;
+	fNextStatus = kNextHC;
 	return;
       }
     if ( (*fDataWord & 0x3) == 1 ) {
@@ -998,11 +1005,11 @@ void AliTRDRawStream::DecodeHCheader(Int_t timeBins)
   // 3nd word (h[2])
   if ( fHCHWords >= 2 ) {
     // read one more word
-    if (NextData() != fkWordOK)
+    if (NextData() != kWordOK)
       {
 	AliWarning("Next HC word missing");
         fRawReader->AddMajorErrorLog(kHCWordMissing,"Next HC word missing"); 
-	fNextStatus = fkNextHC;
+	fNextStatus = kNextHC;
 	return;
       }
     if ( (*fDataWord & 0x3) == 1 ) {
@@ -1073,11 +1080,11 @@ void AliTRDRawStream::DecodeMCMheader()
   // AdcMask for Zero supressed data
   if ( fRawVersion == 3 ) {
     // read one more word
-    if (NextData() != fkWordOK)
+    if (NextData() != kWordOK)
       {
 	AliWarning("MCM ADC mask missing");
         fRawReader->AddMajorErrorLog(kMCMADCMaskMissing,"Missing"); 
-	fNextStatus = fkNextHC;
+	fNextStatus = kNextHC;
 	return;
       }
     if ( (*fDataWord & 0x000007ff) == 0xC ) {     // at the moment bits 4-10 are empty

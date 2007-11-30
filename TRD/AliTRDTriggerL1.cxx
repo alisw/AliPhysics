@@ -117,14 +117,14 @@ void AliTRDTriggerL1::Trigger()
   Int_t   sec;
   Bool_t  isElectron;
 
-  const Int_t maxEle = 1000;
+  const Int_t kMaxEle = 1000;
 
   Int_t   electronPlus;
   Int_t   electronMinus;
-  Int_t   sectorElePlus[maxEle];
-  Int_t   sectorEleMinus[maxEle];
-  Float_t ptElePlus[maxEle];   
-  Float_t ptEleMinus[maxEle];
+  Int_t   sectorElePlus[kMaxEle];
+  Int_t   sectorEleMinus[kMaxEle];
+  Float_t ptElePlus[kMaxEle];   
+  Float_t ptEleMinus[kMaxEle];
   Int_t   hadronLowPt;
   Int_t   hadronHighPt;
   Int_t   hadronJetLowPt;

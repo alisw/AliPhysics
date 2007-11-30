@@ -7,7 +7,11 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//  Assigns the PID probabilities based on TRD information to the ESDs    //
+// Assigns the PID probabilities based on TRD information to the ESDs     //
+//                                                                        //
+// Authors :                                                              //
+//   Prashant Shukla <shukla@pi0.physi.uni-heidelberg.de> (orig. version) //
+//   Alex Bercuci (a.bercuci@gsi.de)                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -18,6 +22,7 @@
 class AliESDEvent;
 class AliESDtrack;
 class AliExternalTrackParam;
+
 class AliTRDpidESD : public TObject {
 
  public:
@@ -31,26 +36,28 @@ class AliTRDpidESD : public TObject {
   static  Bool_t  CheckTrack(AliESDtrack *t);
           Int_t   MakePID(AliESDEvent *event);
 
-          void    SetCheckTrackStatus(Bool_t status = kTRUE) { fCheckTrackStatus = status; };
-          void    SetCheckKinkStatus(Bool_t status = kTRUE)  { fCheckKinkStatus  = status; };
-          void    SetMinPlane(Int_t plane)                   { fMinPlane         = plane;  };
+          void    SetCheckTrackStatus(Bool_t status = kTRUE) { fgCheckTrackStatus = status; };
+          void    SetCheckKinkStatus(Bool_t status = kTRUE)  { fgCheckKinkStatus  = status; };
+          void    SetMinPlane(Int_t plane)                   { fgMinPlane         = plane;  };
 
-	  Bool_t  GetCheckTrackStatus()                      { return fCheckTrackStatus;   };      
-	  Bool_t  GetCheckKinkStatus()                       { return fCheckKinkStatus;    };      
-          Int_t   GetMinPlane()                              { return fMinPlane;           };
-
-private:
-  Bool_t  RecalculateTrackSegmentKine(AliESDtrack *t, Int_t plan, Float_t &mom, Float_t &length);
+	  Bool_t  GetCheckTrackStatus() const                { return fgCheckTrackStatus;   };      
+	  Bool_t  GetCheckKinkStatus() const                 { return fgCheckKinkStatus;    };      
+          Int_t   GetMinPlane() const                        { return fgMinPlane;           };
 
 private:
 
-  static  Bool_t  fCheckTrackStatus;    // Enable check on ESD track status
-  static  Bool_t  fCheckKinkStatus;     // Enable check on ESD kink track
-  static  Int_t   fMinPlane;            // Minimum number of planes
+          Bool_t  RecalculateTrackSegmentKine(AliESDtrack *t
+                                            , Int_t plan
+                                            , Float_t &mom
+                                            , Float_t &length);
 
-	AliExternalTrackParam *fTrack;				//! Memory holder for Track segment calculations
+  static  Bool_t  fgCheckTrackStatus;           //  Enable check on ESD track status
+  static  Bool_t  fgCheckKinkStatus;            //  Enable check on ESD kink track
+  static  Int_t   fgMinPlane;                   //  Minimum number of planes
+
+  AliExternalTrackParam *fTrack;                //! Memory holder for Track segment calculations
 	
-  ClassDef(AliTRDpidESD,2)              // TRD PID class
+  ClassDef(AliTRDpidESD,2)                      //  TRD PID class
 
 };
 

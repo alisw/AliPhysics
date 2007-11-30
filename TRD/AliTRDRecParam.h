@@ -68,7 +68,7 @@ class AliTRDRecParam : public TObject {
 
   // This is a singleton, constructor is private!  
   AliTRDRecParam();
-  ~AliTRDRecParam();
+  virtual ~AliTRDRecParam();
   
   ClassDef(AliTRDRecParam,1)          //  The reconstruction parameter
 

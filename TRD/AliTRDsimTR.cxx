@@ -16,18 +16,18 @@
 
 /* $Id$ */
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//  TRD simulation - multimodule (regular rad.)                              //
-//  after: M. CASTELLANO et al., COMP. PHYS. COMM. 51 (1988) 431             //
-//                             + COMP. PHYS. COMM. 61 (1990) 395             //
-//                                                                           //
-//   17.07.1998 - A.Andronic                                                 //
-//   08.12.1998 - simplified version                                         //
-//   11.07.2000 - Adapted code to aliroot environment (C.Blume)              //
-//   04.06.2004 - Momentum dependent parameters implemented (CBL)            //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//  TRD simulation - multimodule (regular rad.)                           //
+//  after: M. CASTELLANO et al., COMP. PHYS. COMM. 51 (1988) 431          //
+//                             + COMP. PHYS. COMM. 61 (1990) 395          //
+//                                                                        //
+//   17.07.1998 - A.Andronic                                              //
+//   08.12.1998 - simplified version                                      //
+//   11.07.2000 - Adapted code to aliroot environment (C.Blume)           //
+//   04.06.2004 - Momentum dependent parameters implemented (CBL)         //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
 
@@ -999,7 +999,7 @@ Int_t AliTRDsimTR::Locate(Double_t *xv, Int_t n, Double_t xval
 }
 
 //_____________________________________________________________________________
-Int_t AliTRDsimTR::SelectNFoils(Float_t p)
+Int_t AliTRDsimTR::SelectNFoils(Float_t p) const
 {
   //
   // Selects the number of foils corresponding to the momentum

@@ -33,7 +33,7 @@ class AliTRDtransform : public TObject {
   AliTRDtransform();
   AliTRDtransform(Int_t det);
   AliTRDtransform(const AliTRDtransform &t);
-  ~AliTRDtransform();
+  virtual ~AliTRDtransform();
   AliTRDtransform &operator=(const AliTRDtransform &t) { *(new(this) AliTRDtransform(t));
                                                           return *this; }
 
