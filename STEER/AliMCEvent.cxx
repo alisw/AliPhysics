@@ -474,7 +474,7 @@ AliMCParticle* AliMCEvent::GetTrack(Int_t i) const
 	    } // loop over track references for entry i
 	} // if TreeTR available
 	Int_t nentries = fMCParticles->GetEntriesFast();
-	new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray);
+	new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
 	mcParticle = dynamic_cast<AliMCParticle*>((*fMCParticles)[nentries]);
 	fMCParticleMap->AddAt(mcParticle, i);
     } else {

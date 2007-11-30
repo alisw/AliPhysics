@@ -21,7 +21,7 @@
 class AliMCParticle: public AliVParticle {
 public:
     AliMCParticle();
-    AliMCParticle(TParticle* part, TRefArray* rarray = 0);
+    AliMCParticle(TParticle* part, TRefArray* rarray = 0, Int_t label=-1);
     virtual ~AliMCParticle();
     AliMCParticle(const AliMCParticle& mcPart); 
     AliMCParticle& operator=(const AliMCParticle& mcPart);
@@ -43,14 +43,17 @@ public:
     virtual Double_t Zv() const;
     virtual Bool_t   XvYvZv(Double_t x[3]) const;  
 
-    virtual Double_t E()         const;
-    virtual Double_t M()         const;
+    virtual Double_t E()          const;
+    virtual Double_t M()          const;
     
-    virtual Double_t Eta()       const;
-    virtual Double_t Y()         const;
+    virtual Double_t Eta()        const;
+    virtual Double_t Y()          const;
     
-    virtual Short_t Charge()     const;
-    
+    virtual Short_t Charge()      const;
+
+    virtual Int_t      Label()    const;
+    virtual TParticle* Particle() const  {return fParticle;}
+	    
     // PID
     virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
 
@@ -62,6 +65,7 @@ public:
     TParticle *fParticle;             // The wrapped TParticle
     TRefArray *fTrackReferences;      // Reference array to track references
     Int_t      fNTrackRef;            // Number of track references
+    Int_t      fLabel;                // fParticle Label in the Stack
     
   ClassDef(AliMCParticle,0)  // AliVParticle realisation for MCParticles
 };
@@ -113,5 +117,7 @@ inline Short_t AliMCParticle::Charge()     const
 	return -99;
     }
 }
+
+inline Int_t AliMCParticle::Label()       const {return fLabel;}
 
 #endif

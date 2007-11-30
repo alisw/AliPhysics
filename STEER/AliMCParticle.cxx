@@ -32,16 +32,19 @@ AliMCParticle::AliMCParticle():
     AliVParticle(),
     fParticle(0),
     fTrackReferences(0),
-    fNTrackRef(0)
+    fNTrackRef(0),
+    fLabel(-1)
 {
     // Constructor
 }
 
-AliMCParticle::AliMCParticle(TParticle* part, TRefArray* rarray):
+    
+AliMCParticle::AliMCParticle(TParticle* part, TRefArray* rarray, Int_t index):
     AliVParticle(),
     fParticle(part),
     fTrackReferences(rarray),
-    fNTrackRef(0)
+    fNTrackRef(0),
+    fLabel(index)
 {
     // Constructor
     if (rarray != 0) {
@@ -54,7 +57,8 @@ AliMCParticle::AliMCParticle(const AliMCParticle& mcPart) :
     AliVParticle(mcPart),
     fParticle(0),    
     fTrackReferences(0),
-    fNTrackRef(0)
+    fNTrackRef(0),
+    fLabel(-1)
 {
 // Copy constructor
 }
