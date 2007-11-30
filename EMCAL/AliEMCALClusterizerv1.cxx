@@ -91,7 +91,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1()
     fMaxL1(0),fMaxL2(0),fMaxDis(0),fGeom(0),
     fDefaultInit(kFALSE),
     fToUnfold(kFALSE),
-    fNumberOfECAClusters(0),fNTowerInGroup(0),fCalibData(0),
+    fNumberOfECAClusters(0),fCalibData(0),
     fADCchannelECA(0.),fADCpedestalECA(0.),fECAClusteringThreshold(0.),fECALocMaxCut(0.),
     fECAW0(0.),fTimeCut(0.),fMinECut(0.)
 {
@@ -165,10 +165,7 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 
   fNumberOfECAClusters = 0;
 
-  if(strstr(option,"pseudo"))
-    MakeClusters("pseudo") ;  //both types
-  else
-    MakeClusters("") ;  //only the real clusters
+  MakeClusters() ;  //only the real clusters
 
   if(fToUnfold)
     MakeUnfolding() ;
@@ -177,7 +174,6 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 
   //Evaluate position, dispersion and other RecPoint properties for EC section                      
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
-    if (dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->GetClusterType() != AliESDCaloCluster::kEMCALPseudoCluster)
       dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index))->EvalAll(fECAW0,fDigitsArr) ;
   }
 
@@ -352,8 +348,6 @@ void AliEMCALClusterizerv1::InitParameters()
   // Initializes the parameters for the Clusterizer
   fNumberOfECAClusters = 0;
 
-  fNTowerInGroup = 36;  //Produces maximum of 80 pseudoclusters per event
-
   fECALocMaxCut = 0.03; // ??
 
   fTimeCut = 300e-9 ; // 300 ns time cut (to be tuned) 
@@ -412,55 +406,7 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
 }
 
 //____________________________________________________________________________
-Int_t AliEMCALClusterizerv1::AreInGroup(AliEMCALDigit * d1, AliEMCALDigit * d2) const
-{
-  // Tells whether two digits fall within the same supermodule and
-  // tower grouping.  The number of towers in a group is controlled by
-  // the parameter nTowersInGroup
-  //    = 0 are not in same group but continue searching 
-  //    = 1 same group
-  //    = 2 is in different SM, quit from searching
-  //    = 3 different tower group, quit from searching
-  //
-  // The order of d1 and d2 is important: first (d1) should be a digit 
-  // already in a cluster which is compared to a digit (d2)  not yet in a cluster  
-
-  //JLK Question: does the quit from searching assume that the digits
-  //are ordered, so that once you are in a different SM, you'll not
-  //find another in the list that will match?  How about my TowerGroup search?
-
-  static Int_t rv;
-  static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
-  static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
-  static Int_t towerGroup1 = -1, towerGroup2 = -1;
-  rv = 0 ;
-
-  fGeom->GetCellIndex(d1->GetId(), nSupMod1,nModule1,nIphi1,nIeta1);
-  fGeom->GetCellIndex(d2->GetId(), nSupMod2,nModule2,nIphi2,nIeta2);
-  if(nSupMod1 != nSupMod2) return 2; // different SM
-
-  static Int_t nTowerInSM = fGeom->GetNCellsInSupMod()/fGeom->GetNCellsInModule();
-
-  //figure out which tower grouping each digit belongs to
-  for(int it = 0; it < nTowerInSM/fNTowerInGroup; it++) {
-    if(nModule1 <= nTowerInSM - it*fNTowerInGroup) towerGroup1 = it;
-    if(nModule2 <= nTowerInSM - it*fNTowerInGroup) towerGroup2 = it;
-  }
-  if(towerGroup1 != towerGroup2) return 3; //different Towergroup
-
-  //same SM, same towergroup, we're happy
-  if(towerGroup1 == towerGroup2 && towerGroup2 >= 0)
-    rv = 1;
-
-  if (gDebug == 2 && rv==1)
-  printf("AreInGroup: neighbours=%d, id1=%d, relid1=%d,%d \n id2=%d, relid2=%d,%d \n",
-         rv, d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2);
-
-  return rv ;
-}
- 
-//____________________________________________________________________________
-void AliEMCALClusterizerv1::MakeClusters(char* option)
+void AliEMCALClusterizerv1::MakeClusters()
 {
   // Steering method to construct the clusters stored in a list of Reconstructed Points
   // A cluster is defined as a list of neighbour digits
@@ -477,40 +423,6 @@ void AliEMCALClusterizerv1::MakeClusters(char* option)
   while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
     digitsC->AddLast(digit);
   }
-
-  //Start with pseudoclusters, if option
-  if(strstr(option,"pseudo")) { 
-    //
-    // New algorithm : will be created one pseudo cluster per module  
-    //
-    AliDebug(1,Form("Pseudo clustering #digits : %i ",fDigitsArr->GetEntries()));
-
-    AliEMCALRecPoint *recPoints[12]; // max size is 12 : see fGeom->GetNumberOfSuperModules();
-    for(int i=0; i<12; i++) recPoints[i] = 0;
-    TIter nextdigitC(digitsC) ;
-
-    // PseudoClusterization starts  
-    int nSM = 0; // # of SM
-    while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) { // scan over the list of digitsC
-      if(fGeom->CheckAbsCellId(digit->GetId()) ) { //Is this an EMCAL digit? Just maing sure...
-        nSM = fGeom->GetSuperModuleNumber(digit->GetId());
-        if(recPoints[nSM] == 0) {
-          recPoints[nSM] = new AliEMCALRecPoint(Form("PC%2.2i", nSM));
-          recPoints[nSM]->SetClusterType(AliESDCaloCluster::kEMCALPseudoCluster);
-	}
-        recPoints[nSM]->AddDigit(*digit, Calibrate(digit->GetAmp(), digit->GetId()));
-      }
-    }
-    fNumberOfECAClusters = 0;
-    for(int i=0; i<fGeom->GetNumberOfSuperModules(); i++) { // put non empty rec.points to container
-      if(recPoints[i]) fRecPoints->AddAt(recPoints[i], fNumberOfECAClusters++);
-    }
-    AliDebug(1,Form(" Number of PC %d ", fNumberOfECAClusters));
-  }
-
-  //
-  // Now do real clusters
-  //
 
   double e = 0.0, ehs = 0.0;
   TIter nextdigitC(digitsC);

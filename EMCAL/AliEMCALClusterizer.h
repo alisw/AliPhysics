@@ -44,7 +44,7 @@ public:
 
 protected:
 
-  virtual void MakeClusters(char* opt) = 0;
+  virtual void MakeClusters() = 0;
 
   TClonesArray *fDigitsArr; // Array with EMCAL digits
   TTree *fTreeR;            // Tree with output clusters

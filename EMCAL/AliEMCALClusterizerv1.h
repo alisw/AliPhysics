@@ -42,9 +42,6 @@ public:
   virtual Int_t   AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
                                // Checks if digits are in neighbour cells 
 
-  // Checks if digits are in a tower group; for pseudoclusters 
-  virtual Int_t   AreInGroup(AliEMCALDigit * d1, AliEMCALDigit * d2)const ; 
-
   virtual Float_t Calibrate(Int_t amp, Int_t cellId) ;  // Tranforms Amp to energy 
 
   virtual void    GetNumberOfClustersFound(int numb )const{ numb = fNumberOfECAClusters ;} 
@@ -77,7 +74,7 @@ public:
   void   DrawLambdasHists();                     //*MENU*
 protected:
 
-  virtual void   MakeClusters(char* opt );            
+  virtual void   MakeClusters();            
             
 ///////////////////// 
    TList  *fHists;   //!
@@ -117,8 +114,6 @@ private:
   Bool_t  fDefaultInit;              //! Says if the task was created by defaut ctor (only parameters are initialized)
   Bool_t  fToUnfold ;                // To perform unfolding 
   Int_t   fNumberOfECAClusters ;     // number of clusters found in EC section
-
-  Int_t   fNTowerInGroup;            // number of towers to group for pseudoclusters
 
   //Calibration parameters... to be replaced by database 
 
