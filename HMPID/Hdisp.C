@@ -390,6 +390,37 @@ void DispTB(TString t0,TString t1,TString t2,TString t3)
   fCanvasImp->SetStatusText(t3,3);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Bool_t FindPos(TVector3 xyz,Int_t &cham,Int_t &sect,Int_t &gap,Int_t &padX,Int_t &padY)
+{
+// It finds the chamber parameters for a given point 
+// Arguments:  xyz  coordinates of a given point in MARS
+//   Returns:  cham   chamber ID ( 0-6 )
+//             sect   sector  ID ( 0-5 )
+//             padX   X (integer) of the pad in X in the given sector (1-80)
+//             padY   Y (integer) of the pad in Y in the given sector (1-48)
+  cham = -1;
+  TGeoNode *node = gGeoManager->FindNode(xyz.X(),xyz.Y(),xyz.Z());
+  if(!node) return kFALSE;
+  TGeoVolume *vol = node->GetVolume();
+  if(!vol) return kFALSE;
+  TGeoManager *geo = vol->GetGeoManager();
+  if(!geo) return kFALSE;
+  Int_t i=0;
+  while(geo->GetMother(i)) {
+    TString s = geo->GetMother(i)->GetName();
+//    if(s.Contains("Hcel_")) padX=(Int_t)(s.Remove(0,5)).Atof();
+//    if(s.Contains("Hrow_")) padY=(Int_t)(s.Remove(0,5)).Atof();
+//    if(s.Contains("Hsec_")) sect=(Int_t)(s.Remove(0,5)).Atof();
+//    if(s.Contains("Hmp_"))  cham=(Int_t)(s.Remove(0,4)).Atof();
+    if(s.Contains("Hcel_")) padX=geo->GetMother(i)->GetNumber();
+    if(s.Contains("Hrow_")) padY=geo->GetMother(i)->GetNumber();
+    if(s.Contains("Hsec_")) sect=geo->GetMother(i)->GetNumber();
+    if(s.Contains("Hmp_"))  cham=geo->GetMother(i)->GetNumber();
+    i++; 
+  }
+  return (cham==-1) ? kFALSE : kTRUE;
+}
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void DisplayInfo(Int_t evt,Int_t px, Int_t py)
 {
   if(!gPad) return;
@@ -483,20 +514,26 @@ void DisplayInfo(Int_t evt,Int_t px, Int_t py)
         if(symbol==kHitFee && ch==chHit && index==iFee[chHit]-1) {indTrk=iEnt;indHit = iHit;break;}
       }
     }
-    fHitTree->GetEntry(indTrk);                              
+    fHitTree->GetEntry(indTrk);
     AliHMPIDHit *pHit = (AliHMPIDHit*)fHitLst->At(indHit);
 
     Int_t tid = pHit->Tid();
     
     TString str = Stack(fEvt,tid);
-    
+     
     Float_t x=pHit->LorsX(); 
     Float_t y=pHit->LorsY();
     Float_t charge = pHit->Q();
+    
+    TVector3 v = fParam->Lors2Mars(pHit->Ch(),pHit->LorsX(),pHit->LorsY());
+    Int_t cham,sect,gap,padX,padY;
+    FindPos(v,cham,sect,gap,padX,padY);
+    
     if(pHit->Pid()==50000050) {nameHit = " Cherenkov Photon ";}
     else if(pHit->Pid()==50000051) {nameHit = " Feedback Photon ";}
     else if(fPdg->GetParticle(pHit->Pid())) nameHit = fPdg->GetParticle(pHit->Pid())->GetName();
-    text0="";text0.Append(Form("Hit x %6.2f y %6.2f total hit produced %i",x,y,fHitLst->GetEntries()));
+    nameHit.Append(Form(" (tid %i)",tid));
+    text0="";text0.Append(Form("Hit(%5.2f,%6.2f) LORS - Pad Volume(%i,%i) - hit %i/%i",x,y,padX,padY,indHit+1,fHitLst->GetEntries()));
     text2="";text2.Append(Form("Q = %7.2f ADC",charge));
     text3="";text3="Particle: "+ nameHit +" "+ str;
   } // Hit  
@@ -869,3 +906,4 @@ void OnlyEsd()
   fStEsd    = "ON";
   GetEvent();
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
