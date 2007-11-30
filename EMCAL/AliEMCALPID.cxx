@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.16  2007/11/23 13:39:05  gustavo
+ * Track matching and PID parameters added to AliEMCALRecParam
+ *
  * Revision 1.15  2007/10/09 08:46:10  hristov
  * The data members fEMCALClusterCluster and fPHOSCluster are removed from AliESDCaloCluster, the fClusterType is used to select PHOS or EMCAL clusters. Changes, needed to use correctly the new AliESDCaloCluster. (Christian)
  *
@@ -88,8 +91,6 @@
 
 // standard C++ includes
 #include <Riostream.h>
-// #include <cstdlib>
-// #include <cmath>
 
 // ROOT includes
 #include "TTree.h"
@@ -105,14 +106,7 @@
 #include "TH2.h"
 #include "TParticle.h"
 
-// // STEER includes
-// #include "AliRun.h"
-// #include "AliRunLoader.h"
-// #include "AliHeader.h"
-// #include "AliLoader.h"
-// #include "AliStack.h"
-// #include "AliESDtrack.h"
-// #include "AliESDEvent.h"
+// STEER includes
 #include "AliLog.h"
 #include "AliEMCALPID.h"
 #include "AliESDCaloCluster.h"
@@ -131,34 +125,32 @@ ClassImp(AliEMCALPID)
   // Initialize all constant values which have to be used
   // during PID algorithm execution
   //
-  
-  // set flag for printing to FALSE by default
-  fPrintInfo = kFALSE;
-
+ 
   fPIDWeight[0] = -1;
   fPIDWeight[1] = -1;
   fPIDWeight[2] = -1;
-  fReconstructor = kFALSE;
 
- const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
-if(!recParam) {
+  for(Int_t i=0; i<AliPID::kSPECIESN+1; i++)
+    fPIDFinal[i]= 0;
+
+  const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
+  if(!recParam) {
     AliFatal("Reconstruction parameters for EMCAL not set!");
   }
   else {
-	for(Int_t i=0; i<6; i++){
-		for(Int_t j=0; i<6; i++){
-		fGamma[i][j] = recParam->GetGamma(i,j);
-		fHadron[i][j] = recParam->GetHadron(i,j);
-		fPiZero5to10[i][j] = recParam->GetPiZero5to10(i,j);
-		fPiZero10to60[i][j] = recParam->GetPiZero10to60(i,j);
-		AliDebug(1,Form("PID parameters: fGamma=%.3f, fPi=%.3f, fHAdron=%.3f",
-				fGamma[1][1],fPiZero5to10[1][1],fHadron[1][1] ));
-		}
-	}
-
+    for(Int_t i=0; i<6; i++){
+      for(Int_t j=0; j<6; j++){
+	fGamma[i][j] = recParam->GetGamma(i,j);
+	fHadron[i][j] = recParam->GetHadron(i,j);
+	fPiZero5to10[i][j] = recParam->GetPiZero5to10(i,j);
+	fPiZero10to60[i][j] = recParam->GetPiZero10to60(i,j);
+	AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
+			i,j, fGamma[i][j],fPiZero5to10[i][j],fHadron[i][j] ));
+      }
+    }
+    
   }
-
-
+  
 }
 
 //______________________________________________
@@ -300,6 +292,8 @@ TArrayD AliEMCALPID::DistLambda0(Double_t energy, Int_t type)
     constLandau = Polynomial(energy, fGamma[3]);
     mpvLandau   = Polynomial(energy, fGamma[4]);
     sigmaLandau = Polynomial(energy, fGamma[5]);
+    
+
     break;
   case 2:
     if (energy < 10) {
@@ -309,6 +303,7 @@ TArrayD AliEMCALPID::DistLambda0(Double_t energy, Int_t type)
       constLandau = Polynomial(energy, fPiZero5to10[3]);
       mpvLandau   = Polynomial(energy, fPiZero5to10[4]);
       sigmaLandau = Polynomial(energy, fPiZero5to10[5]);
+
     }
     else {
       constGauss  = Polynomial(energy, fPiZero10to60[0]);
@@ -317,6 +312,7 @@ TArrayD AliEMCALPID::DistLambda0(Double_t energy, Int_t type)
       constLandau = Polynomial(energy, fPiZero10to60[3]);
       mpvLandau   = Polynomial(energy, fPiZero10to60[4]);
       sigmaLandau = Polynomial(energy, fPiZero10to60[5]);
+ 
     }
     break;
   case 3:
@@ -326,6 +322,7 @@ TArrayD AliEMCALPID::DistLambda0(Double_t energy, Int_t type)
     constLandau = Polynomial(energy, fHadron[3]);
     mpvLandau   = Polynomial(energy, fHadron[4]);
     sigmaLandau = Polynomial(energy, fHadron[5]);
+
     break;
   }
   
@@ -346,6 +343,7 @@ Double_t AliEMCALPID::Polynomial(Double_t x, Double_t *params)
   // Compute a polynomial for a given value of 'x'
   // with the array of parameters passed as the second arg
   //
+  
   Double_t y;
   y  = params[0];
   y += params[1] * x;
