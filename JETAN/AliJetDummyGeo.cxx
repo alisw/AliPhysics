@@ -18,6 +18,7 @@
 // necessary for the jet finder
 //
 // M. Estienne
+// Magali.Estienne@cern.ch
 //
 
 #include <Riostream.h>
@@ -274,7 +275,7 @@ AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
 AliJetDummyGeo::~AliJetDummyGeo()
 {
   // Destructor
-  delete [] fMatrixOfSM;
+  // delete [] fMatrixOfSM;
 }
 
 //------------------------------------------------------------------------------------
@@ -603,7 +604,8 @@ void AliJetDummyGeo::CreateListOfTrd1Modules()
   // Generate the list of Trd1 modules
   // which will make up the EMCAL
   // geometry
-
+    printf("CreateListOfTrd1Modules() \n");
+    
   AliJetDummyShishKebabTrd1Module *mod=0, *mTmp=0; // current module
   if(fShishKebabTrd1Modules == 0) {
     fShishKebabTrd1Modules = new TList;

@@ -7,8 +7,8 @@
 //
 // Temporarily added to define part of the EMCal geometry
 // necessary for the jet finder
+// Magali.Estienne@cern.ch
 //
-
 #include <TObject.h>
 #include <TArrayD.h>
 #include <TMath.h>
@@ -37,23 +37,23 @@ class AliJetDummyGeo : public TObject
     // pseudorapidity and r=sqrt(x*x+y*y).
     return r/TMath::Tan(AngleFromEta(eta));
   }
-  Int_t   GetNCells()               {return fNCells;}
-  Float_t GetPhiModuleSize() const  {return fPhiModuleSize;}
-  Float_t GetEtaModuleSize() const  {return fEtaModuleSize;}
-  Float_t GetShellThickness() const {return fShellThickness;}
-  Float_t GetSteelFrontThickness() const { return fSteelFrontThick;}
-  Float_t GetLongModuleSize() const {return fLongModuleSize;}
-  Float_t GetTrd1Angle() const      {return fTrd1Angle;}
-  Float_t Get2Trd1Dx2()  const      {return f2Trd1Dx2;}
-  Int_t   GetNPhi() const {return fNPhi;}
-  Int_t   GetNZ() const   {return fNZ ;}
-  Int_t   GetNumberOfSuperModules() const {return fNumberOfSuperModules;}
-  Float_t GetArm1EtaMin() {return fArm1EtaMin;}
-  Float_t GetArm1EtaMax() {return fArm1EtaMax;}
-  Float_t GetArm1PhiMin() {return fArm1PhiMin;}
-  Float_t GetArm1PhiMax() {return fArm1PhiMax;}
-  Float_t GetIPDistance() const { return fIPDistance;} 
-  void    EtaPhiFromIndex(Int_t /*id*/, Float_t& /*eta*/, Float_t& /*phi*/);
+  Int_t   GetNCells()               const  {return fNCells;}
+  Float_t GetPhiModuleSize()        const  {return fPhiModuleSize;}
+  Float_t GetEtaModuleSize()        const  {return fEtaModuleSize;}
+  Float_t GetShellThickness()       const  {return fShellThickness;}
+  Float_t GetSteelFrontThickness()  const  {return fSteelFrontThick;}
+  Float_t GetLongModuleSize()       const  {return fLongModuleSize;}
+  Float_t GetTrd1Angle()            const  {return fTrd1Angle;}
+  Float_t Get2Trd1Dx2()             const  {return f2Trd1Dx2;}
+  Int_t   GetNPhi()                 const  {return fNPhi;}
+  Int_t   GetNZ()                   const  {return fNZ ;}
+  Int_t   GetNumberOfSuperModules() const  {return fNumberOfSuperModules;}
+  Float_t GetArm1EtaMin()           const  {return fArm1EtaMin;}
+  Float_t GetArm1EtaMax()           const  {return fArm1EtaMax;}
+  Float_t GetArm1PhiMin()           const  {return fArm1PhiMin;}
+  Float_t GetArm1PhiMax()           const  {return fArm1PhiMax;}
+  Float_t GetIPDistance()           const  {return fIPDistance;} 
+  void    EtaPhiFromIndex(Int_t id, Float_t& eta, Float_t& phi);
   void    GetGlobal(const Double_t *loc, Double_t *glob, Int_t ind) const;
   void    GetGlobal(Int_t absId, Double_t glob[3]) const;
   void    GetGlobal(Int_t absId, TVector3 &vglob) const;
@@ -82,14 +82,14 @@ class AliJetDummyGeo : public TObject
 
   Bool_t  GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
   void    GetTransformationForSM();
-  Float_t GetSampling() {return fSampling;}
+  Float_t GetSampling() const {return fSampling;}
 
  protected:
   Float_t fArm1EtaMin;			// Minimum pseudorapidity position of EMCAL in Eta
   Float_t fArm1EtaMax; 			// Maximum pseudorapidity position of EMCAL in Eta
   Float_t fArm1PhiMin; 			// Minimum angular position of EMCAL in Phi (degrees)
   Float_t fArm1PhiMax;			// Maximum angular position of EMCAL in Phi (degrees)
-  Int_t   fNumberOfSuperModules;
+  Int_t   fNumberOfSuperModules;        // Number of supermodules
   Float_t fSteelFrontThick;             // Thickness of the front stell face of the support box - 9-sep-04
   Float_t fLateralSteelStrip;           // 13-may-05
   Float_t fEnvelop[3];			// the GEANT TUB for the detector 
@@ -126,7 +126,7 @@ class AliJetDummyGeo : public TObject
   TArrayD fEtaCentersOfCells;           // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); 
                                         // eta depend from phi position; 
   TArrayD fPhiCentersOfCells;           // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
-  TList  *fShishKebabTrd1Modules;       //! list of modules
+  TList  *fShishKebabTrd1Modules;       //  List of modules
   Int_t   fDebug;                       //  Debug flag 
   ClassDef(AliJetDummyGeo,1)
 };
