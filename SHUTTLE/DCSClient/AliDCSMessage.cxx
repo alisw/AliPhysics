@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.2  2007/10/16 14:37:17  jgrosseo
+changing to AMANDA protocol version 2
+
 Revision 1.1  2006/11/06 14:22:47  jgrosseo
 major update (Alberto)
 o) reading of run parameters from the logbook
@@ -232,6 +235,7 @@ void AliDCSMessage::CreateErrorMessage(ErrorCode errorCode,
 }
 
 
+//______________________________________________________________________
 void AliDCSMessage::CreateNextMessage() {
 	DestroyMessage();
 
@@ -581,6 +585,8 @@ Bool_t AliDCSMessage::ValidateHeader(const char* buf)
 		return kFALSE;
 	}
 
+	
+	
 	Type type = (Type) GetUByte(buf + TYPE_OFFSET);	
 	switch (type) {
 		case kRequest:
@@ -588,6 +594,8 @@ Bool_t AliDCSMessage::ValidateHeader(const char* buf)
 		case kResultSet:
 		case kError:
 		case kMultiRequest:
+		case kUnknownDP:
+		case kHeartBeat:
 			break;
 		default:
 			AliError("Unknown message type!");
@@ -760,17 +768,34 @@ void AliDCSMessage::LoadErrorMessage()
 		fMessageSize - ERROR_STRING_OFFSET);
 
 	switch (fErrorCode) {
-		case kUnknownAliasDPName:
-                case kInvalidTimeRange:
-                case kInvalidBufferSize:
-                case kInvalidRequest:
-                case kUnsupportedType:
-                case kUnknownError:
+		case kConnectionFailed:
+		case kUnexpectedPacketFormat:
+		case kDataRetrievingFailed:
+		case kUnsupportedProtocolVersion:
+		case kUnknownError:
 			fType = kError;
 			break;
 		default:
 			AliError("Invalid error code!");
 	}
+	
+}
+
+//______________________________________________________________________
+void AliDCSMessage::LoadUnknownDPMessage()
+{
+// load unknown message
+	
+	if (fMessageSize < ERROR_STRING_OFFSET) {
+		AliError("Body size is too small for error message!");
+		return;
+	}
+	
+	fType = kUnknownDP;
+	
+	fErrorString = GetString(fMessage + UNKNOWN_DP_OFFSET,
+		fMessageSize - UNKNOWN_DP_OFFSET);
+
 }
 
 //______________________________________________________________________
@@ -825,6 +850,14 @@ void AliDCSMessage::LoadNextMessage()
 	//
 
 	fType = kNext;
+}
+
+//______________________________________________________________________
+void AliDCSMessage::LoadHeartBeatMessage()
+{
+	//
+
+	fType = kHeartBeat;
 }
 
 //______________________________________________________________________
@@ -906,11 +939,16 @@ void AliDCSMessage::LoadFromBuffer()
 		case kError:
 			LoadErrorMessage();
 			break;
+		case kUnknownDP:
+			LoadUnknownDPMessage();
+			break;
 		case kMultiRequest:
 			LoadMultiRequestMessage();
 			break;
 		case kNext:
 			LoadNextMessage();
+		case kHeartBeat:
+			LoadHeartBeatMessage();
 			break;
 		default:
 			AliError("Invalid message type!");
@@ -1156,12 +1194,12 @@ TString AliDCSMessage::GetErrorString() const
 	// error message.
 	//
 
-        if (GetType() != kError) {
-                AliError("Invalid AliDCSMessage type!");
-                return TString("");
+        if (GetType() == kError || GetType() == kUnknownDP) {
+		return fErrorString;
         }
 
-	return fErrorString;
+        AliError("Invalid AliDCSMessage type!");
+        return TString("");
 }
 
 
@@ -1175,13 +1213,12 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 	}
 
 	TString printString;
-	printString += "\n <<AliDCSMessage>>\n";
+	printString += "\n <<AliDCSMessage>> - ";
 
 	printString += " Size: ";
 	printString += fMessageSize;
-	printString += '\n';
-
-	printString += " Type: ";
+	
+	printString += "  - Type: ";
 	switch (GetType()) {
 		case kRequest: {
 			printString += "Request\n";
@@ -1235,20 +1272,17 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 				case AliDCSMessage::kNoneError:
 					printString += "NoneError";
 					break;
-				case AliDCSMessage::kUnknownAliasDPName:
-					printString += "UnknownAliasDPName";
+				case AliDCSMessage::kConnectionFailed:
+					printString += "ConnectionFailed";
 					break;
-				case AliDCSMessage::kInvalidTimeRange:
-					printString += "InvalidTimeRange";
+				case AliDCSMessage::kUnexpectedPacketFormat:
+					printString += "UnexpectedPacketFormat";
 					break;
-				case AliDCSMessage::kInvalidBufferSize:
-					printString += "InvalidBufferSize";
+				case AliDCSMessage::kDataRetrievingFailed:
+					printString += "DataRetrievingFailed";
 					break;
-				case AliDCSMessage::kInvalidRequest:
-					printString += "InvalidRequest";
-					break;
-				case AliDCSMessage::kUnsupportedType:
-					printString += "UnsupportedType";
+				case AliDCSMessage::kUnsupportedProtocolVersion:
+					printString += "UnsupportedProtocolVersion";
 					break;
 				case AliDCSMessage::kUnknownError:
 					printString += "UnknownError";
@@ -1264,6 +1298,15 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 			break;
 		}
 
+		case kUnknownDP: {
+			printString += "UnknownAlias/DP\n";
+			printString += '\n';
+			printString += " Message: ";
+			printString += GetErrorString();
+			printString += '\n';
+			break;
+		}
+		
 		case kMultiRequest: {
 			printString += "MultiRequest\n";
 
@@ -1295,6 +1338,11 @@ void AliDCSMessage::Print(Option_t* /*option*/) const
 
 		case kNext: {
 			printString += "Next\n";
+			break;
+		}
+		
+		case kHeartBeat: {
+			printString += "HeartBeat\n";
 			break;
 		}
 

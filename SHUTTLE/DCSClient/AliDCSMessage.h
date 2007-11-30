@@ -39,6 +39,7 @@
 #define VALUES_OFFSET (VALUE_COUNT_OFFSET + 4)
 
 #define ERROR_CODE_OFFSET HEADER_SIZE
+#define UNKNOWN_DP_OFFSET HEADER_SIZE
 #define ERROR_STRING_OFFSET (HEADER_SIZE + 1)
 
 class AliDCSMessage: public TObject {
@@ -46,11 +47,13 @@ public:
 	enum Type {
 		kInvalid = 0,
 		kRequest = 1,
-		kCount = 2,
+		kCount = 2,	// obsolete in protocol 2
 		kResultSet = 3,
 		kError = 4,
 		kMultiRequest = 5,
-		kNext = 6
+		kNext = 6,
+		kUnknownDP = 7,
+		kHeartBeat = 8
 	};
 
 	enum RequestType {
@@ -58,14 +61,13 @@ public:
 		kAlias = 1,
 		kDPName = 2	
 	};
-
+	
 	enum ErrorCode {
 		kNoneError = 0,
-		kUnknownAliasDPName = 1,
-		kInvalidTimeRange = 2,
-		kInvalidBufferSize = 3,
-		kInvalidRequest = 4,
-		kUnsupportedType = 5,
+		kConnectionFailed = 1,
+		kUnexpectedPacketFormat = 2,
+		kDataRetrievingFailed = 3,
+		kUnsupportedProtocolVersion = 4,
 		kUnknownError = 255
 	};
 
@@ -179,7 +181,7 @@ private:
 	UInt_t fCount; 			// count counter
 
 	//ResultSet message fields
-  Int_t fOwnerIndex;  // owner index of this result
+	Int_t fOwnerIndex;  // owner index of this result
 	AliDCSValue::Type fValueType; // Simple value type
 
 	TObjArray* fValues; 		// array of received values
@@ -219,9 +221,13 @@ private:
 
 	void LoadErrorMessage();
 
+	void LoadUnknownDPMessage();
+
 	void LoadMultiRequestMessage();
 
 	void LoadNextMessage();
+	
+	void LoadHeartBeatMessage();
 
 	// Buffer helpers
 	static void SetBool(char* buf, Bool_t val);

@@ -28,7 +28,8 @@ public:
 		fgkTimeout = -3,	     // Timeout
 		fgkBadMessage = -4,	     // Bad message
 		fgkCommError = -5,	     // Communication error
-		fgkServerError = -6	     // Server error
+		fgkServerError = -6,	     // Server error
+		fgkUnknownDP = -7	     // unknown alias/DP error
 	};
 	
 ////	friend class AliShuttle;
@@ -68,6 +69,7 @@ private:
 	static const char* fgkBadMessageString; 	// Bad message string
 	static const char* fgkCommErrorString;  	// Communication error string
 	static const char* fgkServerErrorString;	// Server error string
+	static const char* fgkUnknownDPString;		// Unknown alias/DP string
 
 	TSocket* fSocket;	// Pointer to the TCP socket client
 	TString fHost;  	// server host

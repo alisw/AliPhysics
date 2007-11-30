@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.8  2007/10/17 17:43:02  acolla
+nextMessage removed from client
+
 Revision 1.7  2007/10/16 15:02:20  jgrosseo
 fixed bug if zero values collected
 
@@ -113,6 +116,7 @@ const char* AliDCSClient::fgkTimeoutString = "Timeout";
 const char* AliDCSClient::fgkBadMessageString = "BadMessage";
 const char* AliDCSClient::fgkCommErrorString = "CommunicationError";
 const char* AliDCSClient::fgkServerErrorString = "ServerError";
+const char* AliDCSClient::fgkUnknownDPString = "UnknownAlias/DP";
 
 //______________________________________________________________________
 AliDCSClient::AliDCSClient(const char* host, Int_t port, UInt_t timeout,
@@ -423,6 +427,11 @@ TMap* AliDCSClient::GetValues(AliDCSMessage::RequestType reqType,
 
 			if (fResultErrorCode < 0)
 	        	{
+				if (fResultErrorCode == fgkUnknownDP)
+				{
+					AliError(Form("%s",fServerError.Data()));
+				}
+				
 				AliError("Can't get values");
 
 				delete resultSet;
@@ -509,6 +518,14 @@ Int_t AliDCSClient::ReceiveValueSet(TObjArray* result, Int_t& ownerIndex)
 
 		return AliDCSClient::fgkServerError;
 	}
+	
+	else if (message.GetType() == AliDCSMessage::kUnknownDP)
+	{
+		fServerError = message.GetErrorString();
+
+		return AliDCSClient::fgkUnknownDP;
+	}
+	
 
 	AliError("Bad message type received!");
 	return AliDCSClient::fgkBadMessage;
@@ -643,6 +660,9 @@ const char* AliDCSClient::GetErrorString(Int_t code)
 
 		case AliDCSClient::fgkServerError:
 			return AliDCSClient::fgkServerErrorString;
+		
+		case AliDCSClient::fgkUnknownDP:
+			return AliDCSClient::fgkUnknownDPString;
 
 		default:
 			AliErrorGeneral("AliDCSClient::GetErrorString",
