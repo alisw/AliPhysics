@@ -9,7 +9,6 @@
 #pragma link off all functions;
 
 // reconstruction
-#pragma link C++ class AliMUONPixel+; 
 #pragma link C++ class AliMUONReconstructor+;
 #pragma link C++ class AliMUONVTrackReconstructor+; 
 #pragma link C++ class AliMUONTrackReconstructor+; 

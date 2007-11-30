@@ -1,7 +1,6 @@
 # $Id$
 
-SRCS:= AliMUONPixel.cxx \
-       AliMUONReconstructor.cxx \
+SRCS:= AliMUONReconstructor.cxx \
        AliMUONVTrackReconstructor.cxx \
        AliMUONTrackReconstructor.cxx \
        AliMUONTrackReconstructorK.cxx \
