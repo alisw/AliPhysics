@@ -83,7 +83,8 @@ private:
   /// build array of pixels
   void BuildPixArray(AliMUONCluster& cluster); 
   void BuildPixArrayOneCathode(AliMUONCluster& cluster); 
-  void PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, AliMUONPad *pad);
+  void PadOverHist(Int_t idir, Int_t ix0, Int_t iy0, AliMUONPad *pad,
+		   TH2D *hist1, TH2D *hist2);
 
   void RemovePixel(Int_t i);
   
@@ -93,7 +94,7 @@ private:
   
   void   Mlem(AliMUONCluster& cluster, Double_t *coef, Double_t *probi, Int_t nIter); // use MLEM for cluster finding
   
-  void   FindCOG(TH2D *mlem, Double_t *xyc); // find COG position around maximum bin
+  void   FindCOG(Double_t *xyc); // find COG position around maximum bin
   Int_t  FindNearest(AliMUONPad *pixPtr0); // find nearest neighbouring pixel to the given one
 
   Int_t FindLocalMaxima(TObjArray *pixArray, Int_t *localMax, Double_t *maxVal); // find local maxima 
@@ -140,10 +141,12 @@ private:
   
   const AliMpVSegmentation *fSegmentation[2]; //!< new segmentation
   
-  Int_t fCathBeg;               //!< starting cathode (for combined cluster / track reco)
-  Int_t fPadBeg[2];             //!< starting pads (for combined cluster / track reco)
+  //Int_t fCathBeg;               //!< starting cathode (for combined cluster / track reco)
+  //Int_t fPadBeg[2];             //!< starting pads (for combined cluster / track reco)
   
-  static     TMinuit* fgMinuit; //!< Fitter
+  //static     TMinuit* fgMinuit; //!< Fitter
+  TH2D *fHistMlem; //!< histogram for MLEM procedure
+  TH2D *fHistAnode; //!< histogram for local maxima search
   
   TObjArray* fPixArray; //!< collection of pixels
   Int_t fDebug; //!< debug level
