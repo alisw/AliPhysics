@@ -44,6 +44,7 @@ AliESDFMD::AliESDFMD()
 	 AliFMDFloatMap::kMaxRings, 
 	 1,
 	 AliFMDFloatMap::kMaxStrips), 
+    fNoiseFactor(0),
     fAngleCorrected(kFALSE)
 {
   // Default CTOR
@@ -53,7 +54,9 @@ AliESDFMD::AliESDFMD()
 AliESDFMD::AliESDFMD(const AliESDFMD& other)
   : TObject(other), 
     fMultiplicity(other.fMultiplicity),
-    fEta(other.fEta)
+    fEta(other.fEta),
+    fNoiseFactor(other.fNoiseFactor),
+    fAngleCorrected(other.fAngleCorrected)
 {
   // Default CTOR
 }

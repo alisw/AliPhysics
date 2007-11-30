@@ -1255,7 +1255,7 @@ void AliGeomManager::CheckOverlapsOverPNs(Double_t threshold)
 
   AliInfoClass("********* Checking overlaps/extrusions over physical nodes only *********");
   TObjArray* pnList = gGeoManager->GetListOfPhysicalNodes();
-  TGeoVolume* mvol;
+  TGeoVolume* mvol = 0;
   TGeoPhysicalNode* pn;
   TObjArray* overlaps = new TObjArray(64);
   overlaps->SetOwner();

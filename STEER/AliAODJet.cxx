@@ -77,7 +77,8 @@ AliAODJet::~AliAODJet()
 //______________________________________________________________________________
 AliAODJet::AliAODJet(const AliAODJet& jet) :
     AliVParticle(jet),
-    fMomentum(0)
+    fMomentum(0),
+    fRefTracks(0)
 {
   // Copy constructor
     fBackgEnergy[0]   = jet.fBackgEnergy[0];

@@ -34,7 +34,8 @@ ClassImp(AliESDInputHandler)
 //______________________________________________________________________________
 AliESDInputHandler::AliESDInputHandler() :
   AliInputEventHandler(),
-  fEvent(0x0)
+  fEvent(0x0),
+  fBranches("")
 {
   // default constructor
 }

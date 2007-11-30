@@ -37,7 +37,8 @@ ClassImp(AliMagFMapsV1)
 
 //_______________________________________________________________________
 AliMagFMapsV1::AliMagFMapsV1():
-    AliMagFMaps()
+  AliMagFMaps(),
+  fMeasuredMap(0) 
 {
   //
   // Default constructor

@@ -79,7 +79,8 @@ AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
     fPathName(new TString("./")),
     fExtension(""),
     fFileNumber(0),
-    fEventsPerFile(0)
+    fEventsPerFile(0),
+    fReadTR(kTRUE)
 {
     // Constructor
 }

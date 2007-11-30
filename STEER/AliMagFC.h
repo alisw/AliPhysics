@@ -18,10 +18,10 @@ class AliMagFC  : public AliMagF
   //Alice Constant Magnetic Field
 
 public:
-  AliMagFC(){}
+  AliMagFC():AliMagF(),fCompensator(kFALSE){}
   AliMagFC(const char *name, const char *title, Int_t integ, 
 	   Float_t factor, Float_t fmax);
-  virtual ~AliMagFC() {}
+  virtual ~AliMagFC(){}
   virtual void Field(Float_t *x, Float_t *b) const;
   virtual void ReadField() {}
   virtual void ZDCField(Float_t *x, Float_t *b) const;

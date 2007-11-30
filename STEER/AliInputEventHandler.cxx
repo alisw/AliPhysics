@@ -42,7 +42,8 @@ AliInputEventHandler::~AliInputEventHandler()
 
 //______________________________________________________________________________
 AliInputEventHandler::AliInputEventHandler(const char* name, const char* title):
-    AliVEventHandler(name, title)
+  AliVEventHandler(name, title),
+  fTree(0)
 {
 }
 

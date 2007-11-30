@@ -31,13 +31,13 @@ AliVertex::AliVertex() :
   TNamed(),
   fSigma(0),
   fNContributors(0),
-  fNIndices(0)
+  fNIndices(0),
+  fIndices(0)
 {
 //
 // Default Constructor, set everything to 0
 //
   for(Int_t k=0;k<3;k++) fPosition[k]   = 0;
-  fIndices = 0;
 }
 
 //--------------------------------------------------------------------------
@@ -46,14 +46,14 @@ AliVertex::AliVertex(Double_t position[3],Double_t dispersion,
   TNamed(),
   fSigma(dispersion),
   fNContributors(nContributors),
-  fNIndices(0)
+  fNIndices(0),
+  fIndices(0)
 {
   //
   // Standard Constructor
   //
 
   for(Int_t k=0;k<3;k++) fPosition[k]   = position[k];
-  fIndices = 0;
   SetName("BaseVertex");
 
 }

@@ -43,7 +43,8 @@ AliAODInputHandler::~AliAODInputHandler()
 
 //______________________________________________________________________________
 AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
-    AliInputEventHandler(name, title)
+  AliInputEventHandler(name, title),
+  fEvent(0)
 {
 }
 
