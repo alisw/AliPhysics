@@ -44,7 +44,6 @@
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TObjArray.h>
-#include <TROOT.h>
 #include <TRandom.h>
 #include <Riostream.h>
 
@@ -248,13 +247,12 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
                                 Int_t iSimple, Int_t nfit, 
                                 Int_t *clustFit, TObjArray **clusters, 
                                 Double_t *parOk,
-                                TObjArray& clusterList)
+                                TObjArray& clusterList, TH2 *mlem)
 {
   /// Steering function and fitting procedure for the fit of pad charge distribution
   
   //  AliDebug(2,Form("iSimple=%d nfit=%d",iSimple,nfit));
   
-  TH2D *mlem = (TH2D*) gROOT->FindObject("mlem");
   Double_t xmin = mlem->GetXaxis()->GetXmin() - mlem->GetXaxis()->GetBinWidth(1);
   Double_t xmax = mlem->GetXaxis()->GetXmax() + mlem->GetXaxis()->GetBinWidth(1);
   Double_t ymin = mlem->GetYaxis()->GetXmin() - mlem->GetYaxis()->GetBinWidth(1);
@@ -956,7 +954,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
       else 
       {
         // Do the fit
-        nfit = Fit(cluster,0, nForFit, clustFit, clusters, parOk, clusterList);
+        nfit = Fit(cluster,0, nForFit, clustFit, clusters, parOk, clusterList, mlem);
 	if (nfit == 0) { 
 	  //cout << " (nfit == 0) " << fNpar << " " << cluster.Multiplicity() << endl; 
 	  fNpar = 0; // should be 0 by itself but just in case ...

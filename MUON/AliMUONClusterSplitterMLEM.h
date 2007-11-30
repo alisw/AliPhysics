@@ -51,7 +51,7 @@ public:
   Int_t Fit(const AliMUONCluster& cluster,
             Int_t iSimple, Int_t nfit,
             Int_t *clustFit, TObjArray **clusters, 
-            Double_t *parOk, TObjArray& clusterList);
+            Double_t *parOk, TObjArray& clusterList, TH2 *mlem);
     
   void Merge(const AliMUONCluster& cluster,
              Int_t nForFit, Int_t nCoupled, 
