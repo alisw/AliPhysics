@@ -115,9 +115,10 @@ AliMUONTriggerChamberEff::AliMUONTriggerChamberEff(const AliMUONGeometryTransfor
 AliMUONTriggerChamberEff::~AliMUONTriggerChamberEff()
 {
 /// Destructor
-    Bool_t writeOnESD=fWriteOnESD;
+
+    // Bool_t writeOnESD=fWriteOnESD;
     fWriteOnESD=kFALSE;
-    if(writeOnESD) SaveInESDFile();
+    // if(writeOnESD) SaveInESDFile();
 }
 
 
