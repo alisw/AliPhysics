@@ -42,7 +42,6 @@ For trigger, the same virtual container idea applies,
 except we're using 1D container (AliMUONV1DStore, for masks) or specific ones (for LUT
 and efficiency)
 
-
 \section calib_s2 CDB location
 
 One very important notion is that of the DefaultStorage (which you might set with 
@@ -98,6 +97,13 @@ which will create 2 histograms : pedestal_0 (mean) and pedestal_1 (sigma).
 You might also be interested in the AliMUONStoreHelper::Diff() method 
 which generates an AliMUONV2DStore containing the difference 
 (either absolute or relative) of two AliMUONV2DStore.
+
+\section calib_s5 A note on status and status map
+
+A special kind of object is the status map. It would deserve a full documentation
+ (and that will need to be done some day), but for the moment, please have a look
+ at the MUONStatusMap.C macro which can let you play with it. For more information,
+ have a look at the AliMUONPadStatusMaker and AliMUONPadStatusMapMaker.
 
 */
 
