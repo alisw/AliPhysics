@@ -144,7 +144,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fFirstEvent(0),
     fLastEvent(0),
     fControlHists(0),
-    fHists(0)
+    fHists(0),fCalibData(0x0)
 {
   // ctor
   InitParameters() ; 
@@ -205,7 +205,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliRunDigitizer * rd)
     fFirstEvent(0),
     fLastEvent(0),
     fControlHists(0),
-    fHists(0)
+    fHists(0),fCalibData(0x0)
 {
   // ctor Init() is called by RunDigitizer
   fManager = rd ; 
