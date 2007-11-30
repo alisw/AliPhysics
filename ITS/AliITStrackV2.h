@@ -22,6 +22,7 @@ public:
   AliITStrackV2();
   AliITStrackV2(AliESDtrack& t,Bool_t c=kFALSE) throw (const Char_t *);
   AliITStrackV2(const AliITStrackV2& t);
+  ~AliITStrackV2(){fESDtrack=0;}
 
   Bool_t CorrectForMeanMaterial(Double_t xOverX0, Double_t xTimesRho,
 				Bool_t anglecorr=kFALSE) {
