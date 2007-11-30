@@ -35,7 +35,7 @@ class AliMUONGlobalTriggerBoard : public AliMUONTriggerBoard
                        /// scan response of regional boards
       virtual void     Scan(Option_t *option) const;
 
-                       /// \todo add comment
+                       /// Dummy implementation
       virtual void     Resp(Option_t*) const {}
 
                       /// Set mask (disable) for regional boards

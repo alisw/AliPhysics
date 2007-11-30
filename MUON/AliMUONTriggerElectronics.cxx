@@ -486,7 +486,7 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
 //___________________________________________
 void AliMUONTriggerElectronics::LocalResponse()
 {
-/// \todo add comment
+/// Compute the response for local cards
 	
   AliMUONTriggerCrate* cr;
   

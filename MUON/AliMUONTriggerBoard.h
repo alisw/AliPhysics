@@ -20,16 +20,16 @@ class AliMUONTriggerBoard : public TNamed
       AliMUONTriggerBoard(const char *name, Int_t islot);
       virtual ~AliMUONTriggerBoard();
 
-      /// \todo add comment 
+      /// virtual method for derivated classes
       virtual void Response() = 0;
 
-      /// \todo add comment 
+      /// virtual method for derivated classes
       virtual void Reset() = 0;
 
-      /// \todo add comment 
+      /// virtual method for derivated classes
       virtual void Scan(Option_t *option) const = 0;
 
-      /// \todo add comment 
+      /// virtual method for derivated classes
       virtual void Resp(Option_t *option) const = 0;
 
       /// Return response
