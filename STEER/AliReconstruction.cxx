@@ -631,7 +631,7 @@ Bool_t AliReconstruction::Run(const char* input)
   //QA 
   AliQADataMakerSteer qas ; 
   if ( fRunQA && fRawReader) 
-		qas.Run("ALL", fRawReader) ; 
+		qas.Run(fRunLocalReconstruction, fRawReader) ; 
  
  // checking the QA of previous steps
   CheckQA() ; 
