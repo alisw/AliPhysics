@@ -39,13 +39,13 @@ public:
   virtual void SetMuons(AliMUONTrackLight mu0, AliMUONTrackLight mu1);
   AliMUONTrackLight* GetMuon(Int_t index) ;   
   Int_t GetMuonMotherPDG(Int_t imuon, Int_t mother=0) ; 
-  
-  /// \todo add comment
+
+  /// returns kTRUE if the creation process of the pair was "open charm" (kFALSE... otherwise)
   Bool_t IsOpenCharm() {return (TMath::Abs(fMu0.GetParentFlavour(0))==4 && TMath::Abs(fMu1.GetParentFlavour(0))==4 && fIsCorrelated && !IsAResonance());}
-  /// \todo add comment
+  /// returns kTRUE if the creation process of the pair was "open beauty" (kFALSE... otherwise)
   Bool_t IsOpenBeauty() {return (TMath::Abs(fMu0.GetParentFlavour(0))==5 && TMath::Abs(fMu1.GetParentFlavour(0))==5 && fIsCorrelated  && !IsAResonance());}
   Bool_t IsAResonance(); 
-  /// \todo add comment
+  /// returns kTRUE if at least one of the first hadronised parent is a pi or a K (kFALSE... otherwise)
   Bool_t IsOneMuonFromPionOrKaon(){return (fMu0.IsParentPionOrKaon(0) || fMu1.IsParentPionOrKaon(0));}
   /// Return the info if the two muons are of correlated origin
   Bool_t IsCorrelated() const {return fIsCorrelated;}   
@@ -53,9 +53,9 @@ public:
   Int_t GetCauseOfCorrelation() const {return fCauseOfCorrelation;}
   /// Return the info if the process is from feeddown 
   Bool_t IsFeedDown() const {return fIsFeedDown;}   
-  /// \todo add comment
+  /// returns kTRUE if at least one of the reconstructed tracks is not a muon (kFALSE... otherwise)
   Bool_t IsOneTrackNotAMuon() {return (!( fMu0.IsAMuon() && fMu1.IsAMuon() )) ;}
-  /// \todo add comment
+  /// returns the charge of the created pair
   Int_t GetCharge() {return fMu0.GetCharge() + fMu1.GetCharge();}
   /// \brief Return the info ablout creation process
   ///0: pair creation, 1: gluon splitting, 2: flavour excitation, 3: same fragmented mother, -1: resonance
@@ -66,9 +66,9 @@ public:
   void SetCauseOfCorrelation(Int_t pdg) {fCauseOfCorrelation = pdg; }
   /// Set the info if the process is from feeddown
   void SetFeedDown(Int_t answer) {fIsFeedDown = answer;}
-  /// \todo add comment
+  /// returns a TLorentzVector containing the reconstructed kinematics of the pair
   TLorentzVector GetPRec(){return fMu0.GetPRec()+fMu1.GetPRec();}
-  /// \todo add comment
+  /// returns a TLorentzVector containing the generated kinematics of the pair
   TLorentzVector GetPGen(){return fMu0.GetPGen()+fMu1.GetPGen();}
   Double_t GetOpeningAngle(); 
   Bool_t IsDimuonFromCorrPiK();
