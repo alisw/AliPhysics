@@ -33,6 +33,7 @@
 
 // --- AliRoot header files ---
 #include "AliITSQADataMaker.h"
+#include "AliLog.h"
 #include "AliQA.h"
 #include "AliQAChecker.h"
 #include "AliRawReader.h"
@@ -81,17 +82,15 @@ AliITSQADataMaker& AliITSQADataMaker::operator = (const AliITSQADataMaker& qac )
 void AliITSQADataMaker::StartOfDetectorCycle() const
 {
   //Detector specific actions at start of cycle
-  cout<<"AliITSQADM::Start of ITS Cycle"<<endl;
+  AliDebug(1,"AliITSQADM::Start of ITS Cycle\n");
 }
 
 //____________________________________________________________________________ 
 void AliITSQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList *list)
 {
   // launch the QA checking
-  cout <<"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)" << endl;
-  printf( "AliQA::GetQADataFileName() is :  %s \n",AliQA::GetQADataFileName());
-  printf( "AliQA::GetQARefFileName() is :  %s \n",AliQA::GetQARefFileName());
-  printf( "AliQA::GetQAResultFileName() is :  %s \n",AliQA::GetQAResultFileName());
+  AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 
+  
   AliQAChecker::Instance()->Run( AliQA::kITS , task, list);
 }
 
@@ -108,8 +107,12 @@ void AliITSQADataMaker::InitRaws()
   
   Int_t lay, lad, det;
   
-  if(fkOnline) cout << "Book Online Histograms" <<endl;
-  else cout << "Book Offline Histograms" <<endl;
+  if(fkOnline) {
+    AliInfo("Book Online Histograms\n");
+  }
+  else {
+    AliInfo("Book Offline Histograms\n ");
+  }
   Char_t *hname[3][2 * fgknSDDmodules] ;
   for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
     for(Int_t iside=0;iside<fgknSide;iside++){
@@ -133,19 +136,19 @@ void AliITSQADataMaker::InitRaws()
   Char_t *hname0[fgkLADDonLAY3] ; 
   TH1D *h3[fgkLADDonLAY3] ; 
   for(Int_t i=1; i<=fgkLADDonLAY3; i++) {
-    hname0[i] = new Char_t[20];
-    sprintf(hname0[i],"ModPattern_L3_%d",i);
-    h3[i] = new TH1D(hname0[i],hname0[i],6,0.5,6.5);
-    Add2RawsList(h3[i],i-1+3);
+    hname0[i-1] = new Char_t[20];
+    sprintf(hname0[i-1],"ModPattern_L3_%d",i);
+    h3[i-1] = new TH1D(hname0[i-1],hname0[i-1],6,0.5,6.5);
+    Add2RawsList(h3[i-1],i-1+3);
   }
 
   Char_t *hname1[fgkLADDonLAY4] ;
   TH1D *h4[fgkLADDonLAY4] ; 
   for(Int_t i=1; i<=fgkLADDonLAY4; i++) {
-    hname1[i] = new Char_t[20];
-    sprintf(hname1[i],"ModPattern_L4_%d",i);
-    h4[i] = new TH1D(hname1[i],hname1[i],8,0.5,8.5);
-    Add2RawsList(h4[i],i-1+17);  
+    hname1[i-1] = new Char_t[20];
+    sprintf(hname1[i-1],"ModPattern_L4_%d",i);
+    h4[i-1] = new TH1D(hname1[i-1],hname1[i-1],8,0.5,8.5);
+    Add2RawsList(h4[i-1],i-1+17);  
   }
 
   Char_t *hname2[fgknSDDmodules*2] ;
@@ -154,49 +157,45 @@ void AliITSQADataMaker::InitRaws()
     for(Int_t iside=0; iside<fgknSide; iside++){
       Int_t index1 = moduleSDD * 2 + iside;
       hname2[index1] = new Char_t[50];
-      sprintf(hname2[index1],"ProjYMap%dSide%d",moduleSDD,iside);
+      sprintf(hname2[index1],"ProjYMap%dSide%d",moduleSDD+1,iside);
       h5[index1] = new TH1D(hname2[index1],hname2[index1],256,-0.5,255.5);
       Add2RawsList(h5[index1],index1+39);
     }
   }
   Char_t *hname3[fgknSDDmodules*8] ;
   TH1D *h6[fgknSDDmodules*8] ; 
-  for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-    for(Int_t iside=0; iside<fgknSide; iside++){
-      Int_t index1 = moduleSDD * 2 + iside;
-      for(Int_t htype=0; htype<4; htype++){
-	hname3[index1 + htype *2 * fgknSDDmodules] = new Char_t[50]; 
-      } 
-      AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-      sprintf(hname3[index1 ],"CountsVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
-      sprintf(hname3[index1 + 1 *2* fgknSDDmodules],"ChargeVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
-      sprintf(hname3[index1 + 2 *2* fgknSDDmodules],"CountsVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
-      sprintf(hname3[index1 + 3 *2* fgknSDDmodules],"ChargeVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
-
-      for(Int_t htype=0; htype<4; htype++){   
-	Int_t index1 = moduleSDD * 2 + iside;
-	Int_t indextot = index1 + htype* 2 * fgknSDDmodules;
-	h6[indextot] = new TH1D(hname3[indextot],hname3[indextot],256,-0.5,255.5);
-	Add2RawsList(h6[indextot],39 + fgknSDDmodules*2 + indextot);
-      } 
-    }
+  for(Int_t htype=0; htype<4; htype++){
+	for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
+		for(Int_t iside=0; iside<fgknSide; iside++){
+			Int_t index1 = moduleSDD*2 + iside;
+			hname3[index1 + htype*2*fgknSDDmodules] = new Char_t[50]; 
+			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+			Int_t indextot = index1 + htype*2*fgknSDDmodules;
+			if(htype == 0) sprintf(hname3[indextot],"CountsVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
+			if(htype == 1) sprintf(hname3[indextot],"ChargeVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
+			if(htype == 2) sprintf(hname3[indextot],"CountsVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
+			if(htype == 3) sprintf(hname3[indextot],"ChargeVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
+			h6[indextot] = new TH1D(hname3[indextot],hname3[indextot],256,-0.5,255.5);
+			//cout << "add at index " << indextot+39+fgknSDDmodules*2 << " with name " << hname3[indextot] << endl;
+			Add2RawsList(h6[indextot],39 + fgknSDDmodules*2 + indextot);
+		}			
+	}
   }
-
   
-  Char_t *hname4[fgknSDDmodules*2];
-  TH2D *h7[fgknSDDmodules*2] ;
-  for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-    for(Int_t iside=0; iside<fgknSide; iside++){
-      Int_t index1 = moduleSDD * 2 + iside;
-      AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-      hname4[index1] = new Char_t[50]; 
-      sprintf(hname4[index1],"Anode_vs_Charge_L%d_%d_%d_%d",lay,lad,det,iside);
-      h7[index1] = new TH2D(hname4[index1],hname4[index1],fgknSDDmodules*2,-0.5,-0.5+fgknSDDmodules*2,256,0.5,256.5);
-      Add2RawsList(h7[index1],2639 + index1);
-    }
-  }
+	Char_t *hname4[fgknSDDmodules*2];
+	TH2D *h7[fgknSDDmodules*2] ;
+	for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
+		for(Int_t iside=0; iside<fgknSide; iside++){
+			Int_t index1 = moduleSDD * 2 + iside;
+			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+			hname4[index1] = new Char_t[50]; 
+			sprintf(hname4[index1],"Anode_vs_Charge_L%d_%d_%d_%d",lay,lad,det,iside);
+			h7[index1] = new TH2D(hname4[index1],hname4[index1],fgknSDDmodules*2,-0.5,-0.5+fgknSDDmodules*2,256,0.5,256.5);
+			Add2RawsList(h7[index1],2639 + index1);
+		}
+	}
 
-
+ 
 }
 
 //____________________________________________________________________________
@@ -204,7 +203,7 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
 { 
   //Fills Raw QA list of histos
 
-  cout<<"entering MakeRaws" <<endl;
+  AliDebug(1,"entering MakeRaws\n");
   rawReader->RequireHeader(kFALSE);               
   rawReader->SelectEvents(7);                    
   rawReader->SelectEquipment(17,fgkeqOffset+1,fgkeqOffset + fgkDDLidRange); 
@@ -214,43 +213,50 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
 
   Int_t cnt = 0;
   while(s.Next()){
-    Int_t iddl = rawReader->GetDDLID() - fgkDDLIDshift;
+    Int_t iddl = rawReader->GetDDLID() - fgkDDLIDshift;    
     Int_t isddmod = s.GetModuleNumber(iddl,s.GetCarlosId());
-    //if(isddmod >= fgkmodoffset && isddmod<fgkmodoffset+fgknSDDmodules ) {
-      Int_t coord1 = s.GetCoord1();
-      Int_t coord2 = s.GetCoord2();
-      Int_t signal = s.GetSignal();
-      Int_t moduleSDD = isddmod - fgkmodoffset;
-      GetRawsData(0)->Fill(moduleSDD); 
+	Int_t coord1 = s.GetCoord1();
+	Int_t coord2 = s.GetCoord2();
+	Int_t signal = s.GetSignal();
+	Int_t moduleSDD = isddmod - fgkmodoffset;
+	if(moduleSDD < 0 || moduleSDD>fgknSDDmodules+fgkmodoffset) {
+	  AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",moduleSDD));
+	  moduleSDD = 1;
+	}
 
-      AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
-      //printf("modnumb %d, lay %d, lad %d, det %d \n",isddmod, lay, lad, det);
-      Int_t ioffset = 3;
-      Int_t iorder = 1;
-      if(lay==4) { 
-	ioffset += 14;
-	iorder = 2;   
-      } 
-      GetRawsData(iorder)->Fill(lad);
-      GetRawsData(ioffset+lad-1)->Fill(det); //-1 because ladder# starts from 1    
+	GetRawsData(0)->Fill(moduleSDD); 
 
-      Short_t iside = s.GetChannel();
-      Int_t index1 = moduleSDD * 2 + iside;
-      //      if(s.IsCompletedModule()) continue; 
-      fModuleChargeMap[index1]->Fill(coord2, coord1, signal);
+	AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
+	//printf("modnumb %d, lay %d, lad %d, det %d \n",isddmod, lay, lad, det);
+	Int_t ioffset = 3;
+	Int_t iorder = 1;
+	if(lay==4) { 
+		ioffset += 14;
+		iorder = 2;   
+	} 
+	GetRawsData(iorder)->Fill(lad);
+	GetRawsData(ioffset+lad-1)->Fill(det); //-1 because ladder# starts from 1    
+
+	Short_t iside = s.GetChannel();
+	Int_t index1 = moduleSDD * 2 + iside;
+	if(index1<0){
+	  index1 = 0;
+	  AliWarning("Wrong index number - patched \n");
+	}
+	//      if(s.IsCompletedModule()) continue; 
 	
-      // ITS.QA.1209.0.root
-      GetRawsData(39+ 2 * fgknSDDmodules + index1)->Fill(coord1); //coord1=anode COvsAN ok
-      GetRawsData(39+ 4 * fgknSDDmodules + index1)->Fill(coord1,signal);  //CHvsAN no
-      GetRawsData(39+ 6 * fgknSDDmodules + index1)->Fill(coord2);	//COvsTB no
-      GetRawsData(39+ 8 * fgknSDDmodules + index1)->Fill(coord2,signal); //CHvsTB ok
-      
-      GetRawsData(2639+index1)->Fill(signal,coord1);
-    //}
+	fModuleChargeMap[index1]->Fill(coord2, coord1, signal);
+	
+	GetRawsData(39+ 2 * fgknSDDmodules + index1)->Fill(coord1); 
+	GetRawsData(39+ 4 * fgknSDDmodules + index1)->Fill(coord1,signal); 
+	GetRawsData(39+ 6 * fgknSDDmodules + index1)->Fill(coord2);	
+	GetRawsData(39+ 8 * fgknSDDmodules + index1)->Fill(coord2,signal); 
+	GetRawsData(2639+index1)->Fill(signal,coord1);
+	
     cnt++;
-    if(!(cnt%10000)) cout << cnt << " raw digits read" << endl;
+    if(!(cnt%10000)) AliDebug(1,Form(" %d raw digits read",cnt));
   }
-  cout << "Event completed, " << cnt << " raw digits read" << endl;
+  AliDebug(1,Form("Event completed, %d raw digits read",cnt));
 
   for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
     for(Int_t iside=0; iside<fgknSide; iside++){
@@ -259,11 +265,18 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
       fmonoD[index1] = fModuleChargeMap[index1]->ProjectionY();
       Int_t nBins = 256;
       for(Int_t bin=0; bin<nBins; bin++){
-	GetRawsData(index1+39)->Fill(bin,fmonoD[index1]->GetBinContent(bin+1) );
+		GetRawsData(index1+39)->Fill(bin,fmonoD[index1]->GetBinContent(bin+1) );
       }
     }
   }  
-
+  for(Int_t i=0; i<3159; i++){
+    Int_t entries = static_cast<Int_t>(GetRawsData(i)->GetEntries());
+    if(entries != 0){
+      AliDebug(1,Form("histo %d, name %s , entries %d ",i,GetRawsData(i)->GetName(),entries));
+    
+    }
+  }
+  rawReader->RequireHeader(kTRUE); 
 }
 
 
@@ -305,7 +318,7 @@ void AliITSQADataMaker::InitRecPoints()
 void AliITSQADataMaker::MakeRecPoints(TTree * clustersTree)
 {
   // makes data from RecPoints
-  
+  /*  
   TBranch *branchRecP = clustersTree->GetBranch("ITSRecPoints");
   if (!branchRecP) { 
     AliError("can't get the branch with the ITS clusters !");
@@ -323,5 +336,5 @@ void AliITSQADataMaker::MakeRecPoints(TTree * clustersTree)
   }
   recpoints->Delete();
   delete recpoints;
-  
+  */
 }
