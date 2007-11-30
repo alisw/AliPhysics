@@ -2752,8 +2752,12 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 	  Int_t isp2 = 0;
 	  while (isp < nspdet) {
 	    Bool_t isvalid;
-	    if(IsSelected(fgkDetectorName[iDet],fUseTrackingErrorsForAlignment)) {
-	      isvalid = tracker->GetTrackPointTrackingError(idx[isp2],p,track);
+            TString dets = fgkDetectorName[iDet];
+            if ((fUseTrackingErrorsForAlignment.CompareTo(dets) == 0) ||
+            fUseTrackingErrorsForAlignment.BeginsWith(dets+" ") ||
+            fUseTrackingErrorsForAlignment.EndsWith(" "+dets) ||
+            fUseTrackingErrorsForAlignment.Contains(" "+dets+" ")) {
+              isvalid = tracker->GetTrackPointTrackingError(idx[isp2],p,track);
 	    } else {
 	      isvalid = tracker->GetTrackPoint(idx[isp2],p); 
 	    } 
