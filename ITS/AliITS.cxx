@@ -251,8 +251,6 @@ void AliITS::Init(){
     // Return:
     //      none.
     Int_t i;
-
-    SetDefaults();
     // Array of TStrings
     if(gMC) for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
  
@@ -269,7 +267,6 @@ void AliITS::SetDefaults(){
     // Return:
     //      none.
     AliInfoClass("AliITS::Setting Defaults");
-
     if(!fDetTypeSim) { 
      Error("SetDefaults()","fDetTypeSim is 0!"); 
      return;
