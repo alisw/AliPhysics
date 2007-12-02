@@ -5,14 +5,3 @@ HDRS     := $(SRCS:.cxx=.h)
 DHDR     := Alieve/LinkDef.h
 
 EINCLUDE := RAW ITS TPC TRD TOF T0 MUON MUON/mapping PMD HLT/BASE HLT/BASE/HOMER
-
-
-# Temporary, copied from HLT/hlt.conf
-
-HLTCXXFLAGS := $(filter-out -ansi,$(filter-out -pedantic-errors, $(CXXFLAGS)))
-HLTCFLAGS   := $(filter-out -ansi, $(filter-out -pedantic-errors, $(CFLAGS)))
-HLTDCXXFLAGS:= $(filter-out -pedantic-errors, $(CXXFLAGS))
-
-PACKCXXFLAGS := ${HLTCXXFLAGS}
-PACKCFLAGS   := ${HLTCLFAGS}
-PACKDCXXFLAGS:= ${HLTDCXXFLAGS}
