@@ -79,20 +79,20 @@ class AliAnalysisTaskESDDedx : public AliAnalysisTask {
   TH2F        *fHistPercPrimMeanMomentumVsEtaCuts;  //!
   TH2F        *fHistPercPrimMeanMomentumVsPrimCuts; //!
 
-  Bool_t       fAllConstrainedFlag;                 //! Primary vertex constrain requirement
-  Bool_t       fMidPseudoRapidityFlag;              //! Mid-eta requirement
+  Bool_t       fAllConstrainedFlag;                 // Primary vertex constrain requirement
+  Bool_t       fMidPseudoRapidityFlag;              // Mid-eta requirement
 
-                                                    //  Track selections
-  Int_t        fSelTrackRemoveKink;                 //! Remove kink candidates
-  Int_t        fSelTrackMinClustersTPC;             //! Minimum number of cluster in the TPC
-  Int_t        fSelTrackMinClustersITS;             //! Minimum number of cluster in the ITS
-  Float_t      fSelTrackMaxChi2PerClusterTPC;       //! Maximum chisq per cluster in the TPC
-  Float_t      fSelTrackMaxChi2PerClusterITS;       //! Maximum chisq per cluster in the ITS
-  Double_t     fSelTrackMaxCov11;                   //! Maximum value for cov.mat. diag. element
-  Double_t     fSelTrackMaxCov22;                   //! Maximum value for cov.mat. diag. element
-  Double_t     fSelTrackMaxCov33;                   //! Maximum value for cov.mat. diag. element
-  Double_t     fSelTrackMaxCov44;                   //! Maximum value for cov.mat. diag. element
-  Double_t     fSelTrackMaxCov55;                   //! Maximum value for cov.mat. diag. element
+                                                    // Track selections: streaming allowed and needed !
+  Int_t        fSelTrackRemoveKink;                 // Remove kink candidates
+  Int_t        fSelTrackMinClustersTPC;             // Minimum number of cluster in the TPC
+  Int_t        fSelTrackMinClustersITS;             // Minimum number of cluster in the ITS
+  Float_t      fSelTrackMaxChi2PerClusterTPC;       // Maximum chisq per cluster in the TPC
+  Float_t      fSelTrackMaxChi2PerClusterITS;       // Maximum chisq per cluster in the ITS
+  Double_t     fSelTrackMaxCov11;                   // Maximum value for cov.mat. diag. element
+  Double_t     fSelTrackMaxCov22;                   // Maximum value for cov.mat. diag. element
+  Double_t     fSelTrackMaxCov33;                   // Maximum value for cov.mat. diag. element
+  Double_t     fSelTrackMaxCov44;                   // Maximum value for cov.mat. diag. element
+  Double_t     fSelTrackMaxCov55;                   // Maximum value for cov.mat. diag. element
    
 
   AliAnalysisTaskESDDedx(const AliAnalysisTaskESDDedx&);            // not implemented
