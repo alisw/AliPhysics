@@ -152,8 +152,7 @@ AliMpExMap&
 AliMpExMap::operator=(const AliMpExMap& rhs)
 {
   /// Assignment operator
-  AliMpExMap tmp(rhs);
-  tmp.Copy(*this);
+  rhs.Copy(*this);
   return *this;
 }
 
