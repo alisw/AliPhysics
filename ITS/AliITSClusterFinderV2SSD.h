@@ -25,7 +25,8 @@ public:
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
  protected:
-
+  AliITSClusterFinderV2SSD(const AliITSClusterFinderV2SSD& cf);
+  AliITSClusterFinderV2SSD& operator=(const AliITSClusterFinderV2SSD&  cf );
   void FindClustersSSD(TClonesArray *digits);
   void FindClustersSSD(Ali1Dcluster* neg, Int_t nn, 
 		       Ali1Dcluster* pos, Int_t np,
@@ -42,8 +43,8 @@ public:
   Float_t fTanP;          //tangent of the stereo angle on the P side
   Float_t fTanN;          //tangent of the stereo angle on the N side
 
-  static Short_t*fPairs;         //array used to build positive-negative pairs
-  static Int_t   fPairsSize;     //actual size of pairs array
+  static Short_t* fgPairs;       //array used to build positive-negative pairs
+  static Int_t    fgPairsSize;    //actual size of pairs array
 
   ClassDef(AliITSClusterFinderV2SSD,1)  // ITS cluster finder V2 for SDD
 };

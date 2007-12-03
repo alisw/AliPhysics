@@ -1,6 +1,6 @@
 #ifndef ALIITSRAWSTREAMSSD_H
 #define ALIITSRAWSTREAMSSD_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /* $Id$ */
@@ -25,8 +25,11 @@ class AliITSRawStreamSSD: public AliITSRawStream {
 
     virtual Bool_t   Next();
 
-    Int_t            GetSideFlag() const {return fCoord1;};
-    Int_t            GetStrip() const {return fCoord2;};
+    Int_t            GetSideFlag() const {return fCoord1;}
+    Int_t            GetStrip() const {return fCoord2;}
+    Int_t GetDDL() const {return fddl;}
+    Int_t GetAD() const {return fad;}
+    Int_t GetADC() const {return fadc;}
 
     enum {kDDLsNumber = 16};      // number of DDLs in SSD
     enum {kModulesPerDDL = 108};  // number of modules in each DDL
