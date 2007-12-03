@@ -25,6 +25,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   static AliITSRecoParam *GetLowFluxParam();// make reco parameters for low flux env.
   static AliITSRecoParam *GetHighFluxParam();// make reco parameters for high flux env. 
   static AliITSRecoParam *GetCosmicTestParam();// special setting for cosmic  
+  static AliITSRecoParam *GetPlaneEffParam(Int_t i);// special setting for Plane Efficiency studies
 
   static Int_t GetLayersNotToSkip(Int_t i) { return fgkLayersNotToSkip[i]; }
   static Int_t GetLastLayerToTrackTo() { return fgkLastLayerToTrackTo; }
@@ -123,6 +124,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void   SetUseAmplitudeInfo(Bool_t use=kTRUE) { for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++) fUseAmplitudeInfo[i]=use; return; }
   void   SetUseAmplitudeInfo(Int_t ilay,Bool_t use) { fUseAmplitudeInfo[ilay]=use; return; }
   Bool_t GetUseAmplitudeInfo(Int_t ilay) const { return fUseAmplitudeInfo[ilay]; }
+//
+  void   SetComputePlaneEff(Bool_t ext=kTRUE) { fComputePlaneEff=ext; return; }
+  Bool_t GetComputePlaneEff() const { return fComputePlaneEff; }
+//
   void   SetExtendedEtaAcceptance(Bool_t ext=kTRUE) { fExtendedEtaAcceptance=ext; return; }
   Bool_t GetExtendedEtaAcceptance() const { return fExtendedEtaAcceptance; }
   void   SetUseDeadZonesFromOCDB(Bool_t use=kTRUE) { fUseDeadZonesFromOCDB=use; return; }
@@ -250,6 +255,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fAllowSharedClusters; // if kFALSE don't set to kITSin tracks with shared clusters (MI)
   Int_t fClusterErrorsParam; // parametrization for cluster errors (MI), see AliITSRecoParam::GetError()
   Bool_t fUseAmplitudeInfo[AliITSgeomTGeo::kNLayers]; // use cluster charge in cluster-track matching (SDD,SSD) (MI)
+  Bool_t fComputePlaneEff;  // flag to enable Computation of PlaneEfficiency
   Bool_t fExtendedEtaAcceptance;  // enable jumping from TPC to SPD at large eta (MI)
   Bool_t fUseDeadZonesFromOCDB; // enable using OCDB info on dead modules.. (MI)
   Double_t fFactorSAWindowSizes; // larger window sizes in SA

@@ -64,6 +64,8 @@
 #pragma link C++ class  AliITSChannelDaSSD+;
 #pragma link C++ class  AliITSpList+;
 #pragma link C++ class  AliITSpListItem+;
+#pragma link C++ class  AliITSPlaneEff+;
+#pragma link C++ class  AliITSPlaneEffSPD+;
 
 #pragma link C++ class  AliITSRawData+;
 // These streamers must be formatted according to the raw data fromat

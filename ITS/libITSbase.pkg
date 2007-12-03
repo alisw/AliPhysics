@@ -49,7 +49,9 @@ SRCS = 	AliITSgeom.cxx \
 		AliITSEventHeader.cxx \
 		AliITSRawStreamSSDv1.cxx \
 		AliITSRawData.cxx \
-		AliITSgeomTGeo.cxx
+		AliITSgeomTGeo.cxx \
+		AliITSPlaneEff.cxx \
+		AliITSPlaneEffSPD.cxx \
 
 HDRS:=  $(SRCS:.cxx=.h)
 

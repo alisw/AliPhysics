@@ -97,6 +97,7 @@ fXPassDeadZoneHits(0),
 fUseTGeoInTracker(3),
 fAllowSharedClusters(kTRUE),
 fClusterErrorsParam(1),
+fComputePlaneEff(kFALSE),
 fExtendedEtaAcceptance(kFALSE),
 fUseDeadZonesFromOCDB(kFALSE),
 fFactorSAWindowSizes(1.),
@@ -216,6 +217,18 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fXPassDeadZoneHits = 0.018;
 
   
+  return param;
+}
+//_____________________________________________________________________________
+AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
+{
+  //
+  // make special reconstruction parameters for Plane Efficiency study on layer i
+  //
+  AliITSRecoParam *param;
+  param = GetHighFluxParam();
+  param->SetComputePlaneEff();
+  param->SetLayerToSkip(i);
   return param;
 }
 //_____________________________________________________________________________
@@ -345,4 +358,3 @@ void AliITSRecoParam::SetLayersParameters()
 
   return;
 }
-

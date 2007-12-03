@@ -44,6 +44,7 @@
 #include "AliTrackPointArray.h"
 #include "AliAlignObj.h"
 #include "AliITSClusterParam.h"
+#include "AliITSPlaneEff.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -73,7 +74,8 @@ fxOverX0ShieldTrks(0),
 fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
-fDebugStreamer(0){
+fDebugStreamer(0),
+fPlaneEff(0){
   //Default constructor
   Int_t i;
   for(i=0;i<4;i++) fSPDdetzcentre[i]=0.;
@@ -105,7 +107,8 @@ fxOverX0ShieldTrks(0),
 fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
-fDebugStreamer(0){
+fDebugStreamer(0),
+fPlaneEff(0){
   //--------------------------------------------------------------------
   //This is the AliITStrackerMI constructor
   //--------------------------------------------------------------------
@@ -223,7 +226,8 @@ fxOverX0ShieldTrks(0),
 fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
-fDebugStreamer(tracker.fDebugStreamer){
+fDebugStreamer(tracker.fDebugStreamer),
+fPlaneEff(tracker.fPlaneEff){
   //Copy constructor
   Int_t i;
   for(i=0;i<4;i++) {
@@ -4854,3 +4858,4 @@ Int_t AliITStrackerMI::CheckDeadZone(/*AliITStrackMI *track,*/
   return 0;
 }
 //------------------------------------------------------------------------
+

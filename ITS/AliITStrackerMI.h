@@ -19,6 +19,7 @@ class AliESDEvent;
 #include "AliITSRecPoint.h"
 #include "AliITStrackMI.h"
 #include "AliTracker.h"
+#include "AliITSPlaneEff.h"
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
@@ -255,11 +256,15 @@ protected:
   Float_t *fxOverX0LayerTrks;            //! material budget
   Float_t *fxTimesRhoLayerTrks;          //! material budget
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
+//
+  AliITSPlaneEff *fPlaneEff;             //| Pointer to the ITS plane efficicency
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
   ClassDef(AliITStrackerMI,4)   //ITS tracker MI
 };
+
+
 
 
 
