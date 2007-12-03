@@ -51,6 +51,7 @@
 #include "AliComparisonSelector.h" 
 
 
+ClassImp(AliComparisonSelector)
 
 
 AliComparisonSelector::AliComparisonSelector(TTree *) : 
