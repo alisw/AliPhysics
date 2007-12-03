@@ -217,9 +217,15 @@ void AliGenV0Info::Update(Float_t vertex[3])
   Float_t pnorm3 = TMath::Sqrt(p[2]*p[2]+pnorm2);
   pnorm2 = TMath::Sqrt(pnorm2);
   //
-  fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
-  fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
-  fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
+  if (vnorm2>0){
+    fPointAngleFi = (v[0]*p[0]+v[1]*p[1])/(vnorm2*pnorm2);
+    fPointAngleTh = (v[2]*p[2]+vnorm2*pnorm2)/(vnorm3*pnorm3);  
+    fPointAngle   = (v[0]*p[0]+v[1]*p[1]+v[2]*p[2])/(vnorm3*pnorm3);
+  }else{
+    fPointAngleFi = 1;
+    fPointAngleTh = 1;  
+    fPointAngle   = 1; 
+  }
   Double_t mass1 = fMCd.GetMass();
   Double_t mass2 = fMCm.GetMass();
 
