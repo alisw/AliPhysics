@@ -11,7 +11,9 @@ using namespace std;
 #include <TChain.h>
 #include <TFile.h>
 #include "AliMCInfo.h"
-#include "AliRecInfo.h"
+#include "AliESDRecInfo.h"
+#include "AliESDRecKinkInfo.h"
+#include "AliESDRecV0Info.h"
 
 class AliESDEvent; 
 class AliESD;
