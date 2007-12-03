@@ -9,7 +9,6 @@ mkdir $OUTDIR
 cp $ALICE_ROOT/MUON/.rootrc $ALICE_ROOT/MUON/rootlogon.C $OUTDIR
 cd $OUTDIR
 
-RUN=0
 # Minimum number of events to have enough stat. for invariant mass fit
 # 10000 is ok, 20000 is really fine
 NEVENTS=10000
@@ -24,9 +23,8 @@ aliroot -b >& testSim.out << EOF
 // AliCDBManager* man = AliCDBManager::Instance();
 // man->SetDefaultStorage("local://$ALICE_ROOT");
 // man->SetSpecificStorage("MUON/Align/Data","local://$ALICE_ROOT/MUON/ResMisAlignCDB");
-gRandom->SetSeed($SEED);
-AliCDBManager::Instance()->SetRun($RUN);
 AliSimulation MuonSim("$ALICE_ROOT/MUON/Config.C");
+MuonSim.SetSeed($SEED);
 MuonSim.SetMakeTrigger("MUON");
 MuonSim.Run($NEVENTS); 
 .q
@@ -35,7 +33,7 @@ EOF
 echo "Running reconstruction  ..."
 
 aliroot -b >& testReco.out << EOF 
-AliCDBManager::Instance()->SetRun($RUN);
+man->SetDefaultStorage("local://$ALICE_ROOT");
 gRandom->SetSeed($SEED);
 AliMagFMaps* field = new AliMagFMaps("Maps","Maps", 1, 1., 10., AliMagFMaps::k5kG);
 AliTracker::SetFieldMap(field, kFALSE);
