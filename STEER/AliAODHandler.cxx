@@ -82,8 +82,10 @@ Bool_t AliAODHandler::Init(Option_t* opt)
     CreateTree(0);
   } else {
     // local and grid
+    TDirectory *owd = gDirectory;
     fFileA = new TFile(fName, "RECREATE");
     CreateTree(1);
+    owd->cd();
   }
   return kTRUE;
 }
