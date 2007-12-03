@@ -347,7 +347,7 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
   TVector3 normvec(rot[1],-rot[0],0.);
   Double_t angle = pvec.Angle(normvec);
   if(angle>0.5*TMath::Pi()) angle = TMath::Pi()-angle;
-  Double_t angleDeg = angle*TMath::Pi()/180.;
+  Double_t angleDeg = angle*180./TMath::Pi();
   
   if(layer==0 || layer==1) { // SPD
 
