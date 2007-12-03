@@ -312,7 +312,7 @@ void AliPHOSQADataMaker::MakeRaws(AliRawReader* rawReader)
   const Int_t modMax = 5 ; 
   rawReader->Reset() ; 
   AliPHOSRawDecoder decoder(rawReader);
-  decoder.SetOldRCUFormat(kTRUE);
+  decoder.SetOldRCUFormat(kFALSE);
   decoder.SubtractPedestals(kTRUE);
 
   Int_t count = 0 ; 
