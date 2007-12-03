@@ -44,6 +44,8 @@
 #include "AliPHOSRecParticle.h" 
 #include "AliPHOSTrackSegment.h" 
 #include "AliPHOSRawDecoder.h"
+#include "AliPHOSReconstructor.h"
+#include "AliPHOSRecoParam.h"
 
 ClassImp(AliPHOSQADataMaker)
            
@@ -84,6 +86,7 @@ void AliPHOSQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
 void AliPHOSQADataMaker::InitESDs()
 {
   //create ESDs histograms in ESDs subdir
+	
   TH1F * h0 = new TH1F("hPhosESDs",    "ESDs energy distribution in PHOS",       100, 0., 100.) ;  
   h0->Sumw2() ; 
   Add2ESDsList(h0, 0) ;
@@ -313,8 +316,7 @@ void AliPHOSQADataMaker::MakeRaws(AliRawReader* rawReader)
   rawReader->Reset() ; 
   AliPHOSRawDecoder decoder(rawReader);
   decoder.SetOldRCUFormat(kFALSE);
-  decoder.SubtractPedestals(kTRUE);
-
+  decoder.SubtractPedestals(AliPHOSReconstructor::GetRecoParamEmc()->SubtractPedestals());
   Int_t count = 0 ; 
   while (decoder.NextDigit()) {
    Int_t module  = decoder.GetModule() ;
