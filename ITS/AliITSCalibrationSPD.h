@@ -81,6 +81,7 @@ class AliITSCalibrationSPD :  public AliITSCalibration {
 
     void   SetBadList(TArrayI badlist) {fBadChannels=badlist;}
     void   SetNrBad(UInt_t nr) {fNrBad=nr;}
+    Bool_t IsBad() const {return (GetNrBad()==256*160);};
 
  protected:
     // static const Double_t fgkDiffCoeffDefault; //default for fDiffCoeff
