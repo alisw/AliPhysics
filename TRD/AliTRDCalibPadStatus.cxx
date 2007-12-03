@@ -335,7 +335,7 @@ Int_t AliTRDCalibPadStatus::ProcessEvent(
 					  Bool_t /*nocheck*/
 	    
 #endif 
-					  ) const
+					  )
 {
   //
   //  process date event

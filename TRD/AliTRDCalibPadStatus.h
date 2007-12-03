@@ -37,7 +37,7 @@ public:
 
   Int_t ProcessEvent(AliTRDRawStreamV2 *rawStream, Bool_t nocheck = kFALSE);
   Int_t ProcessEvent(AliRawReader    *rawReader, Bool_t nocheck = kFALSE);
-  Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE) const;
+  Int_t ProcessEvent(eventHeaderStruct   *event, Bool_t nocheck = kFALSE);
 
   Int_t UpdateHisto(const Int_t idet, const Int_t iRow, const Int_t iCol,
 		    const Int_t signal, const Int_t crowMax, const Int_t ccold, const Int_t icMcm);
