@@ -540,8 +540,8 @@ void AliTRDstackLayer::PrintClusters() const
 {
 // Prints the position of each cluster in the stacklayer on the stdout
 //
-	printf("fDebugStream = %#o\n", ((Int_t) fDebugStream));
-	printf("fRecoParam   = %#o\n", ((Int_t) fRecoParam));
+  //printf("fDebugStream = %#o\n", ((Int_t) fDebugStream));
+  //printf("fRecoParam   = %#o\n", ((Int_t) fRecoParam));
 	
 	for(Int_t i = 0; i < fN; i++){
 		printf("AliTRDstackLayer: index=%i, Cluster: X = %3.3f, Y = %3.3f, Z = %3.3f\n", i,  fClusters[i]->GetX(),fClusters[i]->GetY(),fClusters[i]->GetZ());

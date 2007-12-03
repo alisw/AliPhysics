@@ -653,7 +653,7 @@ void AliTRDseedV1::Print()
                 , fY[ic]
                 , fZ[ic]
                 , fIndexes[ic]
-                , ((Int_t) fClusters[ic])
+                , ((void *) fClusters[ic])
                 , isUsable);
         }
 
