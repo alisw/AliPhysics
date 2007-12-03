@@ -178,7 +178,12 @@ void AliAnalysisManager::Init(TTree *tree)
       } else {
          fInputEventHandler->Init(tree, "local");
       }
+   } else {
+      // If no input event handler we need to get the tree once
+      // for the chain
+      if(!tree->GetTree()) tree->LoadTree(0);
    }
+   
 
    if (fMCtruthEventHandler) {
       if (fMode == kProofAnalysis) {
@@ -432,6 +437,7 @@ void AliAnalysisManager::UnpackOutput(TList *source)
       
       if (!filename || !strlen(filename)) continue;
       TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+      TDirectory *opwd = gDirectory;
       if (file) file->cd();
       else      file = new TFile(filename, "RECREATE");
       if (file->IsZombie()) continue;
@@ -444,6 +450,8 @@ void AliAnalysisManager::UnpackOutput(TList *source)
          callEnv.Execute(output->GetData());
       }
       output->GetData()->Write();
+      file->Close();
+      if (opwd) opwd->cd();
    }
    if (fDebug > 1) {
       cout << "<-AliAnalysisManager::UnpackOutput()" << endl;
