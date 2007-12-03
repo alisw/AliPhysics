@@ -790,6 +790,11 @@ void AliAnalysisVertexingHF::PrintStatus() const {
   printf("    fMinITSCls   = %d\n",fMinITSCls);
   printf("    fMinPtCut   = %f GeV/c\n",fMinPtCut);
   printf("    fMind0rphiCut   = %f cm\n",fMind0rphiCut);
+  if(fSecVtxWithKF) {
+    printf("Secondary vertex with Kalman filter package (AliKFParticle)\n");
+  } else {
+    printf("Secondary vertex with AliVertexerTracks\n");
+  }
   if(fRecoPrimVtxSkippingTrks) printf("RecoPrimVtxSkippingTrks\n");
   if(fRmTrksFromPrimVtx) printf("RmTrksFromPrimVtx\n");
   if(fD0toKpi) {
@@ -818,7 +823,7 @@ void AliAnalysisVertexingHF::PrintStatus() const {
   }
   if(f3Prong) {
     printf("Reconstruct 3 prong candidates.\n");
-    printf("  D+ cuts:\n");
+    printf("  D+->Kpipi cuts:\n");
     printf("    |M-MD+| [GeV]    < %f\n",fDplusCuts[0]);
     printf("    pTK     [GeV/c]    > %f\n",fDplusCuts[1]);
     printf("    pTPi    [GeV/c]    > %f\n",fDplusCuts[2]);
@@ -831,6 +836,10 @@ void AliAnalysisVertexingHF::PrintStatus() const {
     printf("    cosThetaPoint    > %f\n",fDplusCuts[9]);
     printf("    Sum d0^2 [cm^2]  > %f\n",fDplusCuts[10]);
     printf("    dca cut [cm]  < %f\n",fDplusCuts[11]);
+    printf("  Ds->KKpi cuts:\n");
+    printf("    |M-MDs| [GeV]    < %f\n",fDsCuts[0]);
+    printf("  Lc->pKpi cuts:\n");
+    printf("    |M-MD+| [GeV]    < %f\n",fLcCuts[0]);
   }
 
   return;
