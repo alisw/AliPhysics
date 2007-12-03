@@ -18,7 +18,7 @@ class AliDetectorRecoParam : public TNamed
  public: 
   AliDetectorRecoParam();
   virtual ~AliDetectorRecoParam();
-  void  Print(Option_t *option) const {Dump();}
+  void  Print(Option_t */*option*/) const {Dump();}
   const Int_t * GetEventType() { return fEventType;}
 protected:
   Int_t fEventType[5]; // Reconstruction - event type        
