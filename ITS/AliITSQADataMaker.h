@@ -28,7 +28,7 @@ class AliITSQADataMaker: public AliQADataMaker {
 
 public:
   AliITSQADataMaker();          // ctor
-  AliITSQADataMaker(Bool_t kMode, Int_t ldc);
+  AliITSQADataMaker(Int_t ldc, Bool_t kMode = kFALSE);
   AliITSQADataMaker(const AliITSQADataMaker& qadm);
   AliITSQADataMaker& operator = (const AliITSQADataMaker& qac);
   virtual void StartOfDetectorCycle() const;
@@ -62,3 +62,4 @@ private:
 };
 
 #endif
+

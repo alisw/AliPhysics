@@ -42,17 +42,19 @@
 #include "AliITSgeomTGeo.h"
 #include "AliRawReader.h"
 
+
 ClassImp(AliITSQADataMaker)
 
 //____________________________________________________________________________ 
 AliITSQADataMaker::AliITSQADataMaker() : 
   AliQADataMaker(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker")
 { 
+  fkOnline = kFALSE;
   // ctor 
 }
 
 //____________________________________________________________________________ 
-AliITSQADataMaker::AliITSQADataMaker(Bool_t kMode, Int_t ldc) :
+AliITSQADataMaker::AliITSQADataMaker(Int_t ldc, Bool_t kMode) :
   AliQADataMaker(AliQA::GetDetName(AliQA::kITS), "SDD Quality Assurance Data Maker")
 {
   //ctor used to discriminate OnLine-Offline analysis
@@ -113,19 +115,21 @@ void AliITSQADataMaker::InitRaws()
   else {
     AliInfo("Book Offline Histograms\n ");
   }
-  Char_t *hname[3][2 * fgknSDDmodules] ;
-  for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
-    for(Int_t iside=0;iside<fgknSide;iside++){
-      Int_t index1 = moduleSDD * 2 + iside ;
-      for(Int_t i=0; i<3; i++) hname[i][index1]= new Char_t[50];
-      sprintf(hname[0][index1],"chargeMap%dSide%d",moduleSDD,iside);
-      sprintf(hname[1][index1],"Total Charge, module number %d , Side%d",moduleSDD,iside);
-      sprintf(hname[2][index1],"hmonoDMap%dSide%d",moduleSDD,iside);
-      fModuleChargeMap[index1] = new TH2D(hname[0][index1],hname[1][index1],256,-0.5,255.5,256,-0.5,255.5);
-      fmonoD[index1] = new TH1D(hname[2][index1],hname[2][index1],256,-0.5,255.5);
+  if(fkOnline) {
+    Char_t *hname[3][2 * fgknSDDmodules] ;
+    for(Int_t moduleSDD =0; moduleSDD<fgknSDDmodules; moduleSDD++){
+      for(Int_t iside=0;iside<fgknSide;iside++){
+	Int_t index1 = moduleSDD * 2 + iside ;
+	for(Int_t i=0; i<3; i++) hname[i][index1]= new Char_t[50];
+	sprintf(hname[0][index1],"chargeMap%dSide%d",moduleSDD,iside);
+	sprintf(hname[1][index1],"Total Charge, module number %d , Side%d",moduleSDD,iside);
+	sprintf(hname[2][index1],"hmonoDMap%dSide%d",moduleSDD,iside);
+	fModuleChargeMap[index1] = new TH2D(hname[0][index1],hname[1][index1],256,-0.5,255.5,256,-0.5,255.5);
+	fmonoD[index1] = new TH1D(hname[2][index1],hname[2][index1],256,-0.5,255.5);
+      }
     }
   }
-
+  
   TH1F *h0 = new TH1F("ModPattern","Modules pattern",fgknSDDmodules,-0.5,259.5); 
   Add2RawsList(h0,0);
   TH1F *h1 = new TH1F("ModPatternL3","Modules pattern L3",14,0.5,14.5);  
@@ -151,50 +155,52 @@ void AliITSQADataMaker::InitRaws()
     Add2RawsList(h4[i-1],i-1+17);  
   }
 
-  Char_t *hname2[fgknSDDmodules*2] ;
-  TH1D *h5[fgknSDDmodules*2] ; 
-  for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-    for(Int_t iside=0; iside<fgknSide; iside++){
-      Int_t index1 = moduleSDD * 2 + iside;
-      hname2[index1] = new Char_t[50];
-      sprintf(hname2[index1],"ProjYMap%dSide%d",moduleSDD+1,iside);
-      h5[index1] = new TH1D(hname2[index1],hname2[index1],256,-0.5,255.5);
-      Add2RawsList(h5[index1],index1+39);
+  if(fkOnline) {
+    Char_t *hname2[fgknSDDmodules*2] ;
+    TH1D *h5[fgknSDDmodules*2] ; 
+    for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
+      for(Int_t iside=0; iside<fgknSide; iside++){
+	Int_t index1 = moduleSDD * 2 + iside;
+	hname2[index1] = new Char_t[50];
+	sprintf(hname2[index1],"ProjYMap%dSide%d",moduleSDD+1,iside);
+	h5[index1] = new TH1D(hname2[index1],hname2[index1],256,-0.5,255.5);
+	Add2RawsList(h5[index1],index1+39);
+      }
+    }
+    
+    Char_t *hname3[fgknSDDmodules*8] ;
+    TH1D *h6[fgknSDDmodules*8] ; 
+    for(Int_t htype=0; htype<4; htype++){
+      for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
+	for(Int_t iside=0; iside<fgknSide; iside++){
+	  Int_t index1 = moduleSDD*2 + iside;
+	  hname3[index1 + htype*2*fgknSDDmodules] = new Char_t[50]; 
+	  AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+	  Int_t indextot = index1 + htype*2*fgknSDDmodules;
+	  if(htype == 0) sprintf(hname3[indextot],"CountsVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
+	  if(htype == 1) sprintf(hname3[indextot],"ChargeVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
+	  if(htype == 2) sprintf(hname3[indextot],"CountsVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
+	  if(htype == 3) sprintf(hname3[indextot],"ChargeVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
+	  h6[indextot] = new TH1D(hname3[indextot],hname3[indextot],256,-0.5,255.5);
+	  //cout << "add at index " << indextot+39+fgknSDDmodules*2 << " with name " << hname3[indextot] << endl;
+	  Add2RawsList(h6[indextot],39 + fgknSDDmodules*2 + indextot);
+	}			
+      }
+    }
+    
+    Char_t *hname4[fgknSDDmodules*2];
+    TH2D *h7[fgknSDDmodules*2] ;
+    for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
+      for(Int_t iside=0; iside<fgknSide; iside++){
+	Int_t index1 = moduleSDD * 2 + iside;
+	AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+	hname4[index1] = new Char_t[50]; 
+	sprintf(hname4[index1],"Anode_vs_Charge_L%d_%d_%d_%d",lay,lad,det,iside);
+	h7[index1] = new TH2D(hname4[index1],hname4[index1],fgknSDDmodules*2,-0.5,-0.5+fgknSDDmodules*2,256,0.5,256.5);
+	Add2RawsList(h7[index1],2639 + index1);
+      }
     }
   }
-  Char_t *hname3[fgknSDDmodules*8] ;
-  TH1D *h6[fgknSDDmodules*8] ; 
-  for(Int_t htype=0; htype<4; htype++){
-	for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-		for(Int_t iside=0; iside<fgknSide; iside++){
-			Int_t index1 = moduleSDD*2 + iside;
-			hname3[index1 + htype*2*fgknSDDmodules] = new Char_t[50]; 
-			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			Int_t indextot = index1 + htype*2*fgknSDDmodules;
-			if(htype == 0) sprintf(hname3[indextot],"CountsVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
-			if(htype == 1) sprintf(hname3[indextot],"ChargeVSAnode_L%d_%d_%d_%d",lay,lad,det,iside);
-			if(htype == 2) sprintf(hname3[indextot],"CountsVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
-			if(htype == 3) sprintf(hname3[indextot],"ChargeVSTbin_L%d_%d_%d_%d",lay,lad,det,iside);
-			h6[indextot] = new TH1D(hname3[indextot],hname3[indextot],256,-0.5,255.5);
-			//cout << "add at index " << indextot+39+fgknSDDmodules*2 << " with name " << hname3[indextot] << endl;
-			Add2RawsList(h6[indextot],39 + fgknSDDmodules*2 + indextot);
-		}			
-	}
-  }
-  
-	Char_t *hname4[fgknSDDmodules*2];
-	TH2D *h7[fgknSDDmodules*2] ;
-	for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-		for(Int_t iside=0; iside<fgknSide; iside++){
-			Int_t index1 = moduleSDD * 2 + iside;
-			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
-			hname4[index1] = new Char_t[50]; 
-			sprintf(hname4[index1],"Anode_vs_Charge_L%d_%d_%d_%d",lay,lad,det,iside);
-			h7[index1] = new TH2D(hname4[index1],hname4[index1],fgknSDDmodules*2,-0.5,-0.5+fgknSDDmodules*2,256,0.5,256.5);
-			Add2RawsList(h7[index1],2639 + index1);
-		}
-	}
-
  
 }
 
@@ -213,70 +219,73 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
 
   Int_t cnt = 0;
   while(s.Next()){
-    Int_t iddl = rawReader->GetDDLID() - fgkDDLIDshift;    
+    Int_t iddl = rawReader->GetDDLID() - fgkDDLIDshift;
     Int_t isddmod = s.GetModuleNumber(iddl,s.GetCarlosId());
-	Int_t coord1 = s.GetCoord1();
-	Int_t coord2 = s.GetCoord2();
-	Int_t signal = s.GetSignal();
-	Int_t moduleSDD = isddmod - fgkmodoffset;
-	if(moduleSDD < 0 || moduleSDD>fgknSDDmodules+fgkmodoffset) {
-	  AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",moduleSDD));
-	  moduleSDD = 1;
-	}
-
-	GetRawsData(0)->Fill(moduleSDD); 
-
-	AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
-	//printf("modnumb %d, lay %d, lad %d, det %d \n",isddmod, lay, lad, det);
-	Int_t ioffset = 3;
-	Int_t iorder = 1;
-	if(lay==4) { 
-		ioffset += 14;
-		iorder = 2;   
-	} 
-	GetRawsData(iorder)->Fill(lad);
-	GetRawsData(ioffset+lad-1)->Fill(det); //-1 because ladder# starts from 1    
-
-	Short_t iside = s.GetChannel();
-	Int_t index1 = moduleSDD * 2 + iside;
-	if(index1<0){
-	  index1 = 0;
-	  AliWarning("Wrong index number - patched \n");
-	}
-	//      if(s.IsCompletedModule()) continue; 
-	
-	fModuleChargeMap[index1]->Fill(coord2, coord1, signal);
-	
-	GetRawsData(39+ 2 * fgknSDDmodules + index1)->Fill(coord1); 
-	GetRawsData(39+ 4 * fgknSDDmodules + index1)->Fill(coord1,signal); 
-	GetRawsData(39+ 6 * fgknSDDmodules + index1)->Fill(coord2);	
-	GetRawsData(39+ 8 * fgknSDDmodules + index1)->Fill(coord2,signal); 
-	GetRawsData(2639+index1)->Fill(signal,coord1);
-	
+    if(s.IsCompletedModule()) {
+      AliDebug(1,Form("IsCompletedModule == KTRUE\n"));
+      continue;
+    } 
+    Int_t coord1 = s.GetCoord1();
+    Int_t coord2 = s.GetCoord2();
+    Int_t signal = s.GetSignal();
+    Int_t moduleSDD = isddmod - fgkmodoffset;
+    if(moduleSDD < 0 || moduleSDD>fgknSDDmodules+fgkmodoffset) {
+      AliDebug(1,Form( "Module SDD = %d, resetting it to 1 \n",moduleSDD));
+      moduleSDD = 1;
+    }
+    
+    GetRawsData(0)->Fill(moduleSDD); 
+    
+    AliITSgeomTGeo::GetModuleId(isddmod, lay, lad, det);
+    //AliLog("modnumb %d, lay %d, lad %d, det %d \n",isddmod, lay, lad, det);
+    Int_t ioffset = 3;
+    Int_t iorder = 1;
+    if(lay==4) { 
+      ioffset += 14;
+      iorder = 2;   
+    } 
+    GetRawsData(iorder)->Fill(lad);
+    GetRawsData(ioffset+lad-1)->Fill(det); //-1 because ladder# starts from 1    
+    
+    Short_t iside = s.GetChannel();  
+    Int_t index1 = moduleSDD * 2 + iside;
+    
+    if(index1<0){
+      AliDebug(1,Form("Wrong index number %d - patched to 0\n",index1));
+      index1 = 0;
+    }
+    
+    if(fkOnline) {
+      fModuleChargeMap[index1]->Fill(coord2, coord1, signal);
+    
+      GetRawsData(39+ 2 * fgknSDDmodules + index1)->Fill(coord1); 
+      GetRawsData(39+ 4 * fgknSDDmodules + index1)->Fill(coord1,signal); 
+      GetRawsData(39+ 6 * fgknSDDmodules + index1)->Fill(coord2);	
+      GetRawsData(39+ 8 * fgknSDDmodules + index1)->Fill(coord2,signal); 
+      GetRawsData(2639+index1)->Fill(signal,coord1);
+    }
     cnt++;
     if(!(cnt%10000)) AliDebug(1,Form(" %d raw digits read",cnt));
   }
   AliDebug(1,Form("Event completed, %d raw digits read",cnt));
-
-  for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
-    for(Int_t iside=0; iside<fgknSide; iside++){
-      Int_t index1 = moduleSDD * 2 + iside;
-      //if(s.IsCompletedModule()) continue;
-      fmonoD[index1] = fModuleChargeMap[index1]->ProjectionY();
-      Int_t nBins = 256;
-      for(Int_t bin=0; bin<nBins; bin++){
-		GetRawsData(index1+39)->Fill(bin,fmonoD[index1]->GetBinContent(bin+1) );
+  
+  if(fkOnline) {
+    Int_t nBins = 256;
+    for(Int_t moduleSDD=0; moduleSDD<fgknSDDmodules; moduleSDD++){
+      for(Int_t iside=0; iside<fgknSide; iside++){
+	Int_t index1 = moduleSDD * 2 + iside;
+	fmonoD[index1] = fModuleChargeMap[index1]->ProjectionY();
+	for(Int_t bin=0; bin<nBins; bin++)
+	  GetRawsData(index1+39)->Fill(bin,fmonoD[index1]->GetBinContent(bin+1) );
       }
+    }  
+    for(Int_t i=0; i<3159; i++){
+      Int_t entries = static_cast<Int_t>(GetRawsData(i)->GetEntries());
+      if(entries != 0)
+	AliDebug(1,Form("histo %d, name %s , entries %d ",i,GetRawsData(i)->GetName(),entries));
     }
-  }  
-  for(Int_t i=0; i<3159; i++){
-    Int_t entries = static_cast<Int_t>(GetRawsData(i)->GetEntries());
-    if(entries != 0){
-      AliDebug(1,Form("histo %d, name %s , entries %d ",i,GetRawsData(i)->GetName(),entries));
-    
-    }
+    rawReader->RequireHeader(kTRUE); 
   }
-  rawReader->RequireHeader(kTRUE); 
 }
 
 
