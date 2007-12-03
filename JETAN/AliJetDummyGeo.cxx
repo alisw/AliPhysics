@@ -170,6 +170,7 @@ AliJetDummyGeo::AliJetDummyGeo():
 }
 
 AliJetDummyGeo::AliJetDummyGeo(const AliJetDummyGeo& geom):
+  TObject(geom),  
   fArm1EtaMin(geom.fArm1EtaMin), 
   fArm1EtaMax(geom.fArm1EtaMax), 
   fArm1PhiMin(geom.fArm1PhiMin), 
