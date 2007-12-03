@@ -5,7 +5,7 @@ SRCS:= AliQuarkoniaAcceptance.cxx \
        AliAODRecoDecayHF.cxx \
        AliAODRecoDecayHF2Prong.cxx  AliAODRecoDecayHF3Prong.cxx \
        AliAODRecoDecayHF4Prong.cxx \
-       AliAnalysisVertexingHF.cxx
+       AliAnalysisVertexingHF.cxx AliAnalysisTaskVertexingHF.cxx
      
 HDRS:= $(SRCS:.cxx=.h)
 

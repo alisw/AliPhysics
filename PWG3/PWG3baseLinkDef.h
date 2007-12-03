@@ -17,6 +17,7 @@
 #pragma link C++ class AliAODRecoDecayHF3Prong+;
 #pragma link C++ class AliAODRecoDecayHF4Prong+;
 #pragma link C++ class AliAnalysisVertexingHF+;
+#pragma link C++ class AliAnalysisTaskVertexingHF+;
 
 #endif
 
