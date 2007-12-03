@@ -1,8 +1,11 @@
 #include <Riostream.h>
+#include "TCallf77.h"      //For the fortran calls
 #ifndef WIN32
 # define stuprf stuprf_
+# define usrdci usrdci_
 #else
 # define stuprf STUPRF
+# define usrdci USRDCI
 #endif
 //
 // Fluka include
@@ -19,13 +22,15 @@
 
 //Virtual MC
 #include "TFluka.h"
-
 #include "TVirtualMCStack.h"
 #include "TVirtualMCApplication.h"
 #include "TParticle.h"
 #include "TVector3.h"
 
 extern "C" {
+
+    void type_of_call usrdci(int&, int&, int&, int&);
+
     void stuprf(Int_t& /*ij*/, Int_t& /*mreg*/,
                 Double_t& xx, Double_t& yy, Double_t& zz,
                 Int_t& numsec, Int_t& npprmr)
@@ -89,13 +94,15 @@ extern "C" {
     Int_t parent  = TRACKR.ispusr[mkbmx2-1];
     Int_t kpart   = GENSTK.kpart[numsec-1];
     Int_t pdg;
-    Int_t a, z;
-    
+    Int_t a = 1;
+    Int_t z = 1;
+    Int_t ism = 0;
     if (kpart < -6) {
-	kpart = -kpart;
-	z = kpart / 100000;
-	a = kpart - z * 100000;
-	a /= 100;
+//	kpart = -kpart;
+//	z = kpart / 100000;
+//	a = kpart - z * 100000;
+//	a /= 100;
+	usrdci(kpart, a, z, ism);
 	pdg = fluka->GetIonPdg(z, a);
 	fluka->AddIon(a, z);
     } else {
@@ -107,7 +114,7 @@ extern "C" {
     Double_t pz = GENSTK.plr[numsec-1] * GENSTK.czr[numsec-1];
     Double_t e;
     
-    if (kpart < 100000) {
+    if (a == 1) {
 	e  = GENSTK.tki[numsec-1] + PAPROP.am[GENSTK.kpart[numsec-1]+6];
     } else {
 	e  = GENSTK.tki[numsec-1] + Double_t(a) * 0.93149 + 8.071e-3;
@@ -187,5 +194,6 @@ extern "C" {
 //     }
 //  }
 } // end of stuprf
+
 } // end of extern "C"
 
