@@ -50,7 +50,7 @@ ClassImp(AliComparisonDraw)
 Bool_t    AliComparisonDraw::fgBDraw=kFALSE;         //option draw temporary results
 
 AliComparisonDraw::AliComparisonDraw():
-  TObject(),
+  TNamed("ComparisonDraw","ComparisonDraw"),
   fEffTPCPt(0),      // TPC efficiency as function of Pt (tan+-1)
   fEffTPCPtMC(0),    // MC -TPC efficiency as function of Pt (tan+-1)
   fEffTPCPtF(0),     // efficiency for findable tracks
