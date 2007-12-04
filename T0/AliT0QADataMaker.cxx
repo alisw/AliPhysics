@@ -32,12 +32,11 @@
 // --- AliRoot header files ---
 #include "AliESDEvent.h"
 #include "AliLog.h"
-#include "AliT0digit.h"
+#include "AliT0digit.h" 
 #include "AliT0hit.h"
 #include "AliT0RecPoint.h"
 #include "AliT0QADataMaker.h"
 #include "AliQAChecker.h"
-//#include "AliRawReaderFile.h"
 #include "AliT0RawReader.h"
 
 ClassImp(AliT0QADataMaker)
@@ -285,7 +284,7 @@ void AliT0QADataMaker::MakeHits(TTree *hitTree)
 	    break;
 	  }
 	  Int_t pmt=startHit->Pmt();
-	  GetHitsData(pmt)->Fill(startHit->Time()) ;
+	  GetHitsData(pmt-1)->Fill(startHit->Time()) ;
 	}
     }
   }
@@ -346,7 +345,7 @@ void AliT0QADataMaker::MakeRaws( AliRawReader* rawReader)
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0;
     }
   //fills QA histos for RAW
- AliT0RawReader *start = new AliT0RawReader(rawReader);
+AliT0RawReader *start = new AliT0RawReader(rawReader);
  
  while (rawReader->NextEvent()) {
    start->Next();
