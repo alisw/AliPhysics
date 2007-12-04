@@ -20,9 +20,6 @@ o) Proof
 o) Kine
    You can find the runKine.C along with the AliAnalysisTaskPtMC class. Use the example to access the MC information. You have to run it with root. If you follow the instructions indicated in the Local - Interactive - Batch - Proof directories you will be able to access the MC information on all kinds of sessions.
 
-o) packages
-   You can find the par files coming from the v4-07-Release to be used with PDC06 and PDC07 data.
-
 ===========================================================
 For any questions send mails to: Panos.Christakoglou@cern.ch
 ===========================================================
