@@ -2,12 +2,11 @@
 
 # this library contains classed that depend on STEER
 
-HDRS = AliPWG0depHelper.h \
-       TPC/AliTPCClusterHistograms.h \
+HDRS = TPC/AliTPCClusterHistograms.h \
        TPC/AliTPCRawHistograms.h
 
 SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0depLinkDef.h
 
-EINCLUDE= EVGEN PYTHIA6 TPC
+EINCLUDE= TPC

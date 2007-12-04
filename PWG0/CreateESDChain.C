@@ -95,16 +95,16 @@ TChain* CreateESDChain(const char* aDataDir = "ESDfiles.txt", Int_t aRuns = 20, 
 
     // Read the input list of files and add them to the chain
     TString line;
-    while(in.good()) 
+    while (in.good())
     {
       in >> line;
-      
+
       if (line.Length() == 0)
-        continue;      
-      
+        continue;
+
       if (offset > 0)
       {
-        --offset;
+        offset--;
         continue;
       }
 
@@ -181,6 +181,18 @@ void ChainToTextFile(TChain* chain, const char* target)
 
   delete iter;
 } 
+
+TObjArray* Chain2List(TChain* chain)
+{
+  // returns a TObjArray of TObjStrings of the file names in the chain
+
+  TObjArray* result = new TObjArray;
+
+  for (Int_t i=0; i<chain->GetListOfFiles()->GetEntries(); i++)
+    result->Add(new TObjString(chain->GetListOfFiles()->At(i)->GetTitle()));
+
+  return result;
+}
 
 void LookupWrite(TChain* chain, const char* target)
 {
