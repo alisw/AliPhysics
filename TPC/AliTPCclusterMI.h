@@ -44,15 +44,15 @@ public:
   void SetInfo(AliTPCclusterInfo * info);
 
 private:
+  AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info
+  Float_t   fTimeBin;  //time bin coordinate
+  Float_t   fPad;  //pad coordinate
   Short_t   fQ ;       //Q of cluster (in ADC counts)  
-  Char_t    fType;     //type of the cluster 0 means golden 
   Short_t   fMax;      //maximal amplitude in cluster
+  Char_t    fType;     //type of the cluster 0 means golden 
   Char_t    fUsed;     //counter of usage  
   UChar_t   fDetector; //detector  number
   UChar_t   fRow;      //row number number
-  Float_t   fTimeBin;  //time bin coordinate
-  Float_t   fPad;  //pad coordinate
-  AliTPCclusterInfo * fInfo;  // pointer to the cluster debug info
   ClassDef(AliTPCclusterMI,4)  // Time Projection Chamber clusters
 };
 
