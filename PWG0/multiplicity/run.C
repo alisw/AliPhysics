@@ -1,4 +1,4 @@
-void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = "")
+void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, Bool_t mc = kTRUE, const char* option = "")
 {
   if (aProof)
   {
@@ -9,14 +9,10 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gProof->EnablePackage("STEERBase");
     gProof->UploadPackage("ESD");
     gProof->EnablePackage("ESD");
-    gProof->UploadPackage("AOD");
-    gProof->EnablePackage("AOD");
     gProof->UploadPackage("ANALYSIS");
     gProof->EnablePackage("ANALYSIS");
     gProof->UploadPackage("PWG0base");
     gProof->EnablePackage("PWG0base");
-
-    //gProof->AddInput(new TNamed("PROOF_Packetizer", "TPacketizer"));
   }
   else
   {
@@ -24,7 +20,6 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
     gSystem->Load("libTree");
     gSystem->Load("libSTEERBase");
     gSystem->Load("libESD");
-    gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libPWG0base");
   }
@@ -55,14 +50,21 @@ void run(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, B
   } else
     gROOT->Macro(taskName);
 
-  task = new AliMultiplicityTask;
+  task = new AliMultiplicityTask(option);
   task->SetTrackCuts(esdTrackCuts);
+  task->SetAnalysisMode(AliMultiplicityTask::kTPC);
+
+  if (mc)
+    task->SetReadMC();
+
   mgr->AddTask(task);
 
-  // Enable MC event handler
-  AliMCEventHandler* handler = new AliMCEventHandler;
-  handler->SetReadTR(kFALSE);
-  mgr->SetMCtruthEventHandler(handler);
+  if (mc) {
+    // Enable MC event handler
+    AliMCEventHandler* handler = new AliMCEventHandler;
+    handler->SetReadTR(kFALSE);
+    mgr->SetMCtruthEventHandler(handler);
+  }
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
