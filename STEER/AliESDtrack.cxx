@@ -139,6 +139,7 @@ AliESDtrack::AliESDtrack() :
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
   for (i=0;i<3;i++) {fTOFLabel[i]=0;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
+  for (i=0;i<12;i++) {fITSModule[i]=-1;}
 }
 
 //_______________________________________________________________________
@@ -220,6 +221,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
   for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
+  for (Int_t i=0;i<12;i++) fITSModule[i]=track.fITSModule[i];
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i]=track.fHMPIDr[i];
 
   if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
@@ -313,6 +315,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   for (i=0;i<4;i++) {fTPCPoints[i]=0;}
   for (i=0;i<3;i++) {fTOFLabel[i]=0;}
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
+  for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
   // Calculate the AliExternalTrackParam content
 
@@ -890,6 +893,64 @@ Char_t AliESDtrack::GetITSclusters(Int_t *idx) const {
      for (Int_t i=0; i<AliESDfriendTrack::kMaxITScluster; i++) idx[i]=index[i];
   }
   return fITSncls;
+}
+
+//_______________________________________________________________________
+Bool_t AliESDtrack::GetITSModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,
+					 Float_t &xloc,Float_t &zloc) const {
+  //----------------------------------------------------------------------
+  // This function encodes in the module number also the status of cluster association
+  // "status" can have the following values: 
+  // 1 "found" (cluster is associated), 
+  // 2 "dead" (module is dead from OCDB), 
+  // 3 "skipped" (module or layer forced to be skipped),
+  // 4 "outinz" (track out of z acceptance), 
+  // 5 "nocls" (no clusters in the road), 
+  // 6 "norefit" (cluster rejected during refit), 
+  // 7 "deadzspd" (holes in z in SPD)
+  // Also given are the coordinates of the crossing point of track and module
+  // (in the local module ref. system)
+  // WARNING: THIS METHOD HAS TO BE SYNCHRONIZED WITH AliITStrackV2::GetModuleIndexInfo()!
+  //----------------------------------------------------------------------
+
+  if(fITSModule[ilayer]==-1) {
+    AliError("fModule was not set !");
+    idet = -1;
+    status=0;
+    xloc=-99.; zloc=-99.;
+    return kFALSE;
+  }
+
+  Int_t module = fITSModule[ilayer];
+
+  idet = Int_t(module/1000000);
+
+  module -= idet*1000000;
+
+  status = Int_t(module/100000);
+
+  module -= status*100000;
+
+  Int_t signs = Int_t(module/10000);
+
+  module-=signs*10000;
+
+  Int_t xInt = Int_t(module/100);
+  module -= xInt*100;
+
+  Int_t zInt = module;
+
+  if(signs==1) { xInt*=1; zInt*=1; }
+  if(signs==2) { xInt*=1; zInt*=-1; }
+  if(signs==3) { xInt*=-1; zInt*=1; }
+  if(signs==4) { xInt*=-1; zInt*=-1; }
+
+  xloc = 0.1*(Float_t)xInt;
+  zloc = 0.1*(Float_t)zInt;
+
+  if(status==4) idet = -1;
+
+  return kTRUE;
 }
 
 //_______________________________________________________________________

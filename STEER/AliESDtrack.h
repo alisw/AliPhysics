@@ -127,6 +127,10 @@ public:
   Double_t GetITSchi2() const {return fITSchi2;}
   Char_t   GetITSclusters(Int_t *idx) const;
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
+  void    SetITSModuleIndex(Int_t ilayer,Int_t idx) {fITSModule[ilayer]=idx;}
+  Int_t   GetITSModuleIndex(Int_t ilayer) const {return fITSModule[ilayer];}
+  Bool_t  GetITSModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,
+				Float_t &xloc,Float_t &zloc) const;
   Int_t   GetITSLabel() const {return fITSLabel;}
   void    SetITStrack(AliKalmanTrack * track){
      fFriendTrack->SetITStrack(track);
@@ -294,7 +298,8 @@ protected:
   ULong_t   fFlags;          // Reconstruction status flags 
   Int_t     fID;             // Unique ID of the track
   Int_t     fLabel;          // Track label
-  Int_t     fITSLabel;       // label according TPC
+  Int_t     fITSLabel;       // label according ITS
+  Int_t     fITSModule[12];  // modules crossed by the track in the ITS 
   Int_t     fTPCLabel;       // label according TPC
   Int_t     fTRDLabel;       // label according TRD
   Int_t     fTOFLabel[3];    // TOF label 
@@ -363,7 +368,7 @@ protected:
   UShort_t fTPCsignalN;    // number of points used for dEdx
 
   Char_t  fITSncls;        // number of clusters assigned in the ITS
-  UChar_t fITSClusterMap;  // map of clusters, one bit per a layer 
+  UChar_t fITSClusterMap;  // map of clusters, one bit per a layer
   UChar_t fTRDncls;        // number of clusters assigned in the TRD
   UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   UChar_t fTRDpidQuality;   // TRD PID quality according to number of planes. 6 is the best
@@ -373,7 +378,7 @@ protected:
 
   AliESDtrack & operator=(const AliESDtrack & ) {return *this;}
 
-  ClassDef(AliESDtrack,40)  //ESDtrack 
+  ClassDef(AliESDtrack,41)  //ESDtrack 
 };
 
 #endif 
