@@ -27,6 +27,7 @@ class AliCutTask : public AliAnalysisTask {
   AliESDtrackCuts* fTrackCuts; // track cuts
 
   TH1F* fVertex;   //! event z vertex distribution
+  TH1F* fTriggerStats;  //! triggers
 
   TList* fOutput;                  //! list send on output slot 0
 

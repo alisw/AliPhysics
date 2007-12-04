@@ -22,7 +22,7 @@ ClassImp(AliCutTask)
 
 //________________________________________________________________________
 AliCutTask::AliCutTask(const char *name) 
-  : AliAnalysisTask(name, ""), fESD(0), fTrackCuts(0), fVertex(0), fOutput(0)
+  : AliAnalysisTask(name, ""), fESD(0), fTrackCuts(0), fVertex(0), fTriggerStats(0), fOutput(0)
 {
   // Constructor
 
@@ -42,7 +42,7 @@ void AliCutTask::ConnectInputData(Option_t *)
     Printf("ERROR: Could not read chain from input slot 0");
   } else {
     // Disable all branches and enable only the needed ones
-    tree->SetBranchStatus("*", kFALSE);
+    //tree->SetBranchStatus("*", kFALSE);
     //tree->SetBranchStatus("*Calo*", kFALSE);
 
     tree->SetBranchStatus("fTracks.*", kTRUE);
@@ -80,6 +80,14 @@ void AliCutTask::CreateOutputObjects()
 
   fVertex = new TH1F("fVertex", "fVertex;z vtx (cm);Count", 201, -20, 20);
   fOutput->Add(fVertex);
+
+  fTriggerStats = new TH1F("fTriggerStats", "fTriggerStats;trigger;Count", 5, -0.5, 4.5);
+  fTriggerStats->GetXaxis()->SetBinLabel(1, "!MB1 & !MB2");
+  fTriggerStats->GetXaxis()->SetBinLabel(2, "MB1");
+  fTriggerStats->GetXaxis()->SetBinLabel(3, "MB2");
+  fTriggerStats->GetXaxis()->SetBinLabel(4, "ITS_SPD_GFO_L0");
+  fTriggerStats->GetXaxis()->SetBinLabel(5, "VZERO_OR_LEFT | VZERO_OR_RIGHT");
+  fOutput->Add(fTriggerStats);
 }
 
 //________________________________________________________________________
@@ -96,12 +104,31 @@ void AliCutTask::Exec(Option_t *)
   // Post output data.
   PostData(0, fOutput);
 
-  fESD->GetVertex()->Print();
+  //fESD->GetVertex()->Print();
+
+  if (!AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1) && !AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2))
+    fTriggerStats->Fill(0);
+
+  if (AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB1))
+    fTriggerStats->Fill(1);
+
+  if (AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask(), AliPWG0Helper::kMB2))
+    fTriggerStats->Fill(2);
+
+  if (fESD->GetTriggerMask() & 32)
+    fTriggerStats->Fill(3);
+
+  if (fESD->GetTriggerMask() & 1 || fESD->GetTriggerMask() & 2)
+    fTriggerStats->Fill(4);
+
+  //if (!AliPWG0Helper::IsEventTriggered(fESD->GetTriggerMask()), AliPWG0Helper::kMB1)
+  if (fESD->GetTriggerMask() & 32 == 0)
+    return;
 
   if (!AliPWG0Helper::IsVertexReconstructed(fESD->GetVertex()))
     return;
 
-  Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+  //Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
   fTrackCuts->CountAcceptedTracks(fESD);
 
   // get the ESD vertex
@@ -132,10 +159,17 @@ void AliCutTask::Terminate(Option_t *)
     return;
   }
 
+  fTriggerStats = dynamic_cast<TH1F*> (fOutput->FindObject("fTriggerStats"));
+  if (!fTriggerStats) {
+    Printf("ERROR: fTriggerStats not available");
+    return;
+  }
+
   TFile* file = TFile::Open("trackCuts.root", "RECREATE");
 
   fTrackCuts->SaveHistograms();
   fVertex->Write();
+  fTriggerStats->Write();
 
   file->Close();
 
@@ -143,4 +177,7 @@ void AliCutTask::Terminate(Option_t *)
 
   new TCanvas;
   fVertex->Draw();
+
+  new TCanvas;
+  fTriggerStats->Draw();
 }
