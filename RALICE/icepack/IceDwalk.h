@@ -33,6 +33,7 @@ class IceDwalk : public TTask
   void SetMinMod(Int_t nmin,TString s="A");               // Set min. number of good fired (D)OMs for events to be processed
   void SetMaxHits(Int_t nmax,TString s="A");              // Set max. number of good hits per (D)OM to be processed
   void SetVgroupUsage(Int_t flag,TString s="A");          // (De)activate usage of distinct phase and group velocities
+  void SetAsType(Int_t flag,TString s);                   // Select # assoc. hits or strings for quality indicator
   void SetTrackName(TString s);                           // Set (alternative) name for the produced first guess tracks
   void SetCharge(Float_t charge);                         // Set user defined charge for the produced first guess tracks
 
@@ -66,17 +67,19 @@ class IceDwalk : public TTask
   Int_t fMaxhitsI;    // The maximum number of good hits per InIce DOM to be processed
   Int_t fVgroupA;     // Amanda flag to indicate usage of distinct phase and group velocities
   Int_t fVgroupI;     // InIce flag to indicate usage of distinct phase and group velocities
+  Int_t fAsTypeA;     // Amanda flag to indicate usage of # assoc. hits or strings for quality
+  Int_t fAsTypeI;     // InIce flag to indicate usage of # assoc. hits or strings for quality
   TString fTrackname; // The name identifier for the produced first guess tracks
   Float_t fCharge;    // User defined charge of the produced first guess tracks
 
   virtual void Amanda(); // Direct walk reconstruction for Amanda OM signals
   virtual void InIce();  // Direct walk reconstruction for InIce DOM signals
-  virtual void AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t maxdhit,Float_t& qmax,Int_t& nahmax);// Hit association
-  virtual void SelectQvalue(TObjArray& tes,Float_t qmax);                  // TC selection via Q-value
-  virtual void ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_t tinvol,Float_t tdistmax,Float_t qmax);// Track clustering  
-  virtual void MergeJets(TObjArray& jets,Float_t jangmax,Float_t jdistmax,Int_t jinvol,Int_t jiterate);// Jet Merging
+  virtual void AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t maxdhit,Int_t astype,Float_t& qmax);// Hit association
+  virtual void SelectQvalue(TObjArray& tes,Int_t astype,Float_t qmax); // TC selection via Q-value
+  virtual void ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_t tinvol,Float_t tdistmax,Int_t astype,Float_t qmax);// Track clustering  
+  virtual void MergeJets(TObjArray& jets,Float_t jangmax,Float_t jdistmax,Int_t jinvol,Int_t jiterate,Int_t astype);// Jet Merging
   virtual void StoreTracks(TObjArray& jets,Float_t jangmax,TString name,TString title); // Final track storage
 
- ClassDef(IceDwalk,9) // TTask derived class to perform (improved) direct walk reconstruction
+ ClassDef(IceDwalk,10) // TTask derived class to perform (improved) direct walk reconstruction
 };
 #endif

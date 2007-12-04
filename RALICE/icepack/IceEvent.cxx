@@ -284,16 +284,177 @@ ClassImp(IceEvent) // Class implementation to enable ROOT I/O
 IceEvent::IceEvent() : AliEvent()
 {
 // Default constructor.
+
+ fStrings=0;
 }
 ///////////////////////////////////////////////////////////////////////////
 IceEvent::~IceEvent()
 {
 // Default destructor.
+
+ if (fStrings)
+ {
+  delete fStrings;
+  fStrings=0;
+ }
 }
 ///////////////////////////////////////////////////////////////////////////
 IceEvent::IceEvent(const IceEvent& evt) : AliEvent(evt)
 {
 // Copy constructor.
+
+ fStrings=0;
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t IceEvent::GetNstrings(TString classname)
+{
+// Provide the number of fired strings of modules of the specified classname for this event.
+
+ // Fetch all fired modules of the specified class for this event
+ TObjArray* mods=GetDevices(classname);
+ if (!mods) return 0;
+ Int_t nmods=mods->GetEntries();
+ if (!nmods) return 0;
+
+ // Check for the string ids of the good fired modules
+ if (!fStrings) fStrings=new TArrayI(200);
+ fStrings->Reset();
+ Int_t idxmax=fStrings->GetSize();
+ Int_t nstrings=0;
+ Int_t jstring=0;
+ Int_t match=0;
+ for (Int_t imod=0; imod<nmods; imod++)
+ {
+  IceGOM* omx=(IceGOM*)mods->At(imod);
+  if (!omx) continue;
+  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
+
+  // Update the number of fired strings
+  jstring=omx->GetString();
+  match=0;
+  if (nstrings) idxmax=nstrings;
+  for (Int_t idx=0; idx<idxmax; idx++)
+  {
+   if (jstring==fStrings->At(idx))
+   {
+    match=1;
+    break;
+   }
+  } 
+  if (!match) // String number was not present in array
+  {
+   nstrings++;
+   fStrings->AddAt(jstring,nstrings-1);
+  }
+ }
+
+ return nstrings; 
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t IceEvent::GetNstrings(AliTrack& t,TString classname)
+{
+// Provide the number of fired strings of modules of the specified classname,
+// associated with the specified track.
+
+ // Fetch all associated signals for this track
+ Int_t nh=t.GetNsignals();
+ if (!nh) return 0;
+
+ // Check for the string ids of the associated good fired modules of the specified class
+ if (!fStrings) fStrings=new TArrayI(200);
+ fStrings->Reset();
+ Int_t idxmax=fStrings->GetSize();
+ Int_t nstrings=0;
+ Int_t jstring=0;
+ Int_t match=0;
+ for (Int_t ih=1; ih<=nh; ih++)
+ {
+  AliSignal* sx=t.GetSignal(ih);
+  if (!sx) continue;
+  AliDevice* dev=sx->GetDevice();
+  if (!dev) continue;
+  if (!(dev->InheritsFrom(classname.Data()))) continue;
+  IceGOM* omx=(IceGOM*)dev;
+  if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
+
+  // Update the number of fired strings
+  jstring=omx->GetString();
+  match=0;
+  if (nstrings) idxmax=nstrings;
+  for (Int_t idx=0; idx<idxmax; idx++)
+  {
+   if (jstring==fStrings->At(idx))
+   {
+    match=1;
+    break;
+   }
+  } 
+  if (!match) // String number was not present in array
+  {
+   nstrings++;
+   fStrings->AddAt(jstring,nstrings-1);
+  }
+ }
+
+ return nstrings; 
+}
+///////////////////////////////////////////////////////////////////////////
+Int_t IceEvent::GetNstrings(AliJet& j,TString classname)
+{
+// Provide the number of fired strings of modules of the specified classname,
+// associated with the specified jet.
+
+ Int_t ntk=j.GetNtracks();
+ if (!ntk) return 0;
+
+ if (!fStrings) fStrings=new TArrayI(200);
+ fStrings->Reset();
+ Int_t idxmax=fStrings->GetSize();
+ Int_t nstrings=0;
+ Int_t jstring=0;
+ Int_t match=0;
+ Int_t nh=0;
+ for (Int_t itk=1; itk<=ntk; itk++)
+ {
+  AliTrack* tx=j.GetTrack(itk);
+  if (!tx) continue;
+
+  // Fetch all associated signals for this track
+  nh=tx->GetNsignals();
+  if (!nh) return 0;
+
+  // Check for the string ids of the associated good fired modules of the specified class
+  for (Int_t ih=1; ih<=nh; ih++)
+  {
+   AliSignal* sx=tx->GetSignal(ih);
+   if (!sx) continue;
+   AliDevice* dev=sx->GetDevice();
+   if (!dev) continue;
+   if (!(dev->InheritsFrom(classname.Data()))) continue;
+   IceGOM* omx=(IceGOM*)dev;
+   if (omx->GetDeadValue("ADC") || omx->GetDeadValue("LE") || omx->GetDeadValue("TOT")) continue;
+
+   // Update the number of fired strings
+   jstring=omx->GetString();
+   match=0;
+   if (nstrings) idxmax=nstrings;
+   for (Int_t idx=0; idx<idxmax; idx++)
+   {
+    if (jstring==fStrings->At(idx))
+    {
+     match=1;
+     break;
+    }
+   } 
+   if (!match) // String number was not present in array
+   {
+    nstrings++;
+    fStrings->AddAt(jstring,nstrings-1);
+   }
+  } // End of loop over the track hits
+ } // End of loop over the tracks
+
+ return nstrings; 
 }
 ///////////////////////////////////////////////////////////////////////////
 TObject* IceEvent::Clone(const char* name) const

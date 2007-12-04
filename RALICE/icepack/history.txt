@@ -137,4 +137,9 @@
 21-nov-2007 NvE (De)calibration functions reset to 0 in IceMakeHits to indicate uncalibrated
                 data. This will allow correct re-processing of IceMakeHits on already calibrated
                 signals.
+02-dec-2007 NvE New memberfunctions GetNstrings() introduced in IceEvent.
+04-dec-2007 NvE New quality value based on both associated hits and strings introduced
+                in IceDwalk. The user can select between various modes via the new
+                memberfunction SetAsType().
                  
+

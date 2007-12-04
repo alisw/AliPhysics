@@ -97,18 +97,22 @@
 // 3) Construction of track candidates (TC's).
 //    These are TE's that fulfill both the conditions
 //
-//     nah >= 1
+//     nax >= 1
 //     qtc >= 0.8*qtcmax
 //
 //    where we have defined :
 //
-//    nah    : Number of associated hits for the specific TE.
+//    nax    : Associated hits and/or strings value for the specific TE.
 //    qtc    : The track quality number (see hereafter).
 //    qtcmax : Maximum quality number encountered for the TE's.
 //
+//    Note : The selection to use the number of associated hits and/or strings
+//           for the track quality number can be performed via the
+//           memberfunction SetAsType(). 
+//
 //    The track quality number qtc is defined as follows :
 //
-//     qtc=nah*(term1+term2)-term3-term4-term5
+//     qtc=nax*(term1+term2)-term3-term4-term5
 //
 //    here we have defined :
 //
@@ -170,12 +174,12 @@
 //    This jet quality number is refined on basis of the number of hits
 //    associated to the jet as :
 //
-//      qtcjet=qtcjet+0.2*(nah-nahmax)
+//      qtcjet=qtcjet+0.2*(nax-naxmax)
 //
 //    where we have defined :
 //
-//    nah    : Number of associated hits for the specific jet.
-//    nahmax : Maximum number of associated hits encountered for the jets.
+//    nax    : Associated hits and/or strings value for the specific jet.
+//    naxmax : Maximum number of associated hits (or strings) encountered for the jets.
 //
 //    This qtcjet value is then used to order the various jets w.r.t.
 //    decreasing qtcjet quality number.
@@ -298,6 +302,8 @@ IceDwalk::IceDwalk(const char* name,const char* title) : TTask(name,title)
  fMaxhitsI=1;
  fVgroupA=1;
  fVgroupI=1;
+ fAsTypeA=3;
+ fAsTypeI=3;
  fTrackname="";
  fCharge=0;
 }
@@ -585,6 +591,25 @@ void IceDwalk::SetVgroupUsage(Int_t flag,TString s)
  if (s=="I") fVgroupI=flag;
 }
 ///////////////////////////////////////////////////////////////////////////
+void IceDwalk::SetAsType(Int_t flag,TString s)
+{
+// Select number of associated hits and/or strings as quality indicator.
+//
+// flag = 1 : Number of associated hits (nah) is used as quality indicator
+//      = 2 : Number of associated strings (nas) is used as quality indicator
+//      = 3 : nah*nas is used as quality indicator
+//
+// The input argument "s" allows for detector specification.
+//
+// s = "A" --> Amanda
+//     "I" --> InIce
+//
+// By default the flag value is set to 3 in the constructor of this class.
+
+ if (s=="A") fAsTypeA=flag;
+ if (s=="I") fAsTypeI=flag;
+}
+///////////////////////////////////////////////////////////////////////////
 void IceDwalk::SetTrackName(TString s)
 {
 // Set (alternative) name identifier for the produced first guess tracks.
@@ -640,6 +665,7 @@ void IceDwalk::Exec(Option_t* opt)
  params.AddNamedSlot("MinmodA");
  params.AddNamedSlot("MaxhitsA");
  params.AddNamedSlot("VgroupA");
+ params.AddNamedSlot("AsTypeA");
 
  params.SetSignal(fDminA,"DminA");
  params.SetSignal(fDtmargA,"DtmargA");
@@ -655,6 +681,7 @@ void IceDwalk::Exec(Option_t* opt)
  params.SetSignal(fMinmodA,"MinmodA");
  params.SetSignal(fMaxhitsA,"MaxhitsA");
  params.SetSignal(fVgroupA,"VgroupA");
+ params.SetSignal(fAsTypeA,"AsTypeA");
 
  params.AddNamedSlot("DminI");
  params.AddNamedSlot("DtmargI");
@@ -670,6 +697,7 @@ void IceDwalk::Exec(Option_t* opt)
  params.AddNamedSlot("MinmodI");
  params.AddNamedSlot("MaxhitsI");
  params.AddNamedSlot("VgroupI");
+ params.AddNamedSlot("AsTypeI");
 
  params.SetSignal(fDminI,"DminI");
  params.SetSignal(fDtmargI,"DtmargI");
@@ -685,6 +713,7 @@ void IceDwalk::Exec(Option_t* opt)
  params.SetSignal(fMinmodI,"MinmodI");
  params.SetSignal(fMaxhitsI,"MaxhitsI");
  params.SetSignal(fVgroupI,"VgroupI");
+ params.SetSignal(fAsTypeI,"AsTypeI");
 
  fEvt->AddDevice(params);
 
@@ -853,11 +882,10 @@ void IceDwalk::Amanda()
 
  // Association of hits to the various track elements.
  Float_t qmax=0;
- Int_t nahmax=0;
- AssociateHits(tes,hits,fVgroupA,fMaxdhitA,qmax,nahmax);
+ AssociateHits(tes,hits,fVgroupA,fMaxdhitA,fAsTypeA,qmax);
 
  // Selection on quality (Q value) in case of multiple track candidates
- SelectQvalue(tes,qmax);
+ SelectQvalue(tes,fAsTypeA,qmax);
 
  Int_t nte=tes.GetEntries();
  if (!nte) return;
@@ -865,7 +893,7 @@ void IceDwalk::Amanda()
  // Clustering of track candidates into jets
  TObjArray jets;
  jets.SetOwner();
- ClusterTracks(tes,jets,fTangmaxA,fTinvolA,fTdistmaxA,qmax);
+ ClusterTracks(tes,jets,fTangmaxA,fTinvolA,fTdistmaxA,fAsTypeI,qmax);
 
  Int_t njets=jets.GetEntries();
  if (!njets) return;
@@ -875,7 +903,7 @@ void IceDwalk::Amanda()
  TObjArray jets2(*ordered);
 
  // Merging of jets
- MergeJets(jets2,fJangmaxA,fJdistmaxA,fJinvolA,fJiterateA);
+ MergeJets(jets2,fJangmaxA,fJdistmaxA,fJinvolA,fJiterateA,fAsTypeA);
 
  // Production and storage of the final tracks
  TString name=fTrackname;
@@ -1046,11 +1074,10 @@ void IceDwalk::InIce()
 
  // Association of hits to the various track elements.
  Float_t qmax=0;
- Int_t nahmax=0;
- AssociateHits(tes,hits,fVgroupI,fMaxdhitI,qmax,nahmax);
+ AssociateHits(tes,hits,fVgroupI,fMaxdhitI,fAsTypeI,qmax);
 
  // Selection on quality (Q value) in case of multiple track candidates
- SelectQvalue(tes,qmax);
+ SelectQvalue(tes,fAsTypeI,qmax);
 
  Int_t nte=tes.GetEntries();
  if (!nte) return;
@@ -1058,7 +1085,7 @@ void IceDwalk::InIce()
  // Clustering of track candidates into jets
  TObjArray jets;
  jets.SetOwner();
- ClusterTracks(tes,jets,fTangmaxI,fTinvolI,fTdistmaxI,qmax);
+ ClusterTracks(tes,jets,fTangmaxI,fTinvolI,fTdistmaxI,fAsTypeI,qmax);
 
  Int_t njets=jets.GetEntries();
  if (!njets) return;
@@ -1068,7 +1095,7 @@ void IceDwalk::InIce()
  TObjArray jets2(*ordered);
 
  // Merging of jets
- MergeJets(jets2,fJangmaxI,fJdistmaxI,fJinvolI,fJiterateI);
+ MergeJets(jets2,fJangmaxI,fJdistmaxI,fJinvolI,fJiterateI,fAsTypeI);
 
  // Production and storage of the final tracks
  TString name=fTrackname;
@@ -1079,7 +1106,7 @@ void IceDwalk::InIce()
  StoreTracks(jets2,fJangmaxI,name,title);
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t maxdhit,Float_t& qmax,Int_t& nahmax)
+void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t maxdhit,Int_t astype,Float_t& qmax)
 {
  // Association of hits to the various track elements.
 
@@ -1111,6 +1138,7 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t
  times.SetStoreMode(1); // Enable median calculation
  AliSignal fit;         // Storage of Q value etc... for each track candidate
  fit.AddNamedSlot("QTC");
+ fit.AddNamedSlot("Nstrings");
  fit.AddNamedSlot("SpanL");
  fit.AddNamedSlot("MedianL");
  fit.AddNamedSlot("MeanL");
@@ -1132,14 +1160,15 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t
  fit.AddNamedSlot("term3");
  fit.AddNamedSlot("term4");
  fit.AddNamedSlot("term5");
- Float_t qtc=0;
- Int_t nah; // Number of associated hits for a certain TE
+ Int_t nah=0;   // Number of associated hits
+ Int_t nas=0;   // Number of associated strings
+ Float_t qtc=0; // Quality parameter for the track (candidate)
+ Float_t nax=0; // Associated hits and/or strings value to build the QTC for a certain TE
  Float_t lmin,lmax,spanl,medianl,meanl,sigmal,spreadl,expspreadl;
  Float_t hproj,hprojmin,hprojmax,span,median,mean,sigma,spread,expspread;
  Float_t mediant,meant,sigmat,spreadt;
  Float_t term1,term2,term3,term4,term5;
  qmax=0;
- nahmax=0;
  for (Int_t jte=0; jte<nte; jte++)
  {
   AliTrack* te=(AliTrack*)tes.At(jte);
@@ -1180,7 +1209,11 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t
   // Determine the Q quality of the various TE's.
   // Good quality TE's will be called track candidates (TC's)
   nah=te->GetNsignals();
-  if (nah>nahmax) nahmax=nah;
+  nas=fEvt->GetNstrings(*te,"IceGOM");
+  nax=0;
+  if (astype==1) nax=nah;
+  if (astype==2) nax=nas;
+  if (astype==3) nax=nah*nas;
   lmin=levers.GetMinimum(1);
   lmax=levers.GetMaximum(1);
   spanl=lmax-lmin;
@@ -1221,10 +1254,11 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t
   term5=0;
   if (spreadt>0) term5=fabs(mediant)/spreadt;
 
-  qtc=float(nah)*(term1+term2)-term3-term4-term5;
+  qtc=nax*(term1+term2)-term3-term4-term5;
   if (fabs(median)>span/2.) qtc=0; // Require projected hits on both sides of r0
 
   fit.SetSignal(qtc,"QTC");
+  fit.SetSignal(nas,"Nstrings");
   fit.SetSignal(spanl,"SpanL");
   fit.SetSignal(medianl,"MedianL");
   fit.SetSignal(meanl,"MeanL");
@@ -1251,23 +1285,35 @@ void IceDwalk::AssociateHits(TObjArray& tes,TObjArray& hits,Int_t vgroup,Float_t
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::SelectQvalue(TObjArray& tes,Float_t qmax)
+void IceDwalk::SelectQvalue(TObjArray& tes,Int_t astype,Float_t qmax)
 {
  // Perform selection on Q value in case of multiple track candidates
 
  Int_t nte=tes.GetEntries();
- Int_t nah;
- Float_t qtc;
+ Int_t nah=0;
+ Int_t nas=0;
+ Float_t nax=0;
+ Float_t qtc=0;
  Ali3Vector p;
  for (Int_t jtc=0; jtc<nte; jtc++)
  {
   AliTrack* te=(AliTrack*)tes.At(jtc);
   if (!te) continue;
-  nah=te->GetNsignals();
   AliSignal* sx1=(AliSignal*)te->GetFitDetails();
   qtc=-1;
-  if (sx1) qtc=sx1->GetSignal("QTC");
-  if (!nah || qtc<0.8*qmax)
+  nah=te->GetNsignals();
+  nas=0;
+  if (sx1)
+  {
+   qtc=sx1->GetSignal("QTC");
+   nas=int(sx1->GetSignal("Nstrings"));
+  }
+  nax=0;
+  if (astype==1) nax=nah;
+  if (astype==2) nax=nas;
+  if (astype==3) nax=nah*nas;
+
+  if (nax<=0 || qtc<0.8*qmax)
   {
    tes.RemoveAt(jtc);
    delete te;
@@ -1285,7 +1331,7 @@ void IceDwalk::SelectQvalue(TObjArray& tes,Float_t qmax)
  tes.Compress();
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_t tinvol,Float_t tdistmax,Float_t qmax)
+void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_t tinvol,Float_t tdistmax,Int_t astype,Float_t qmax)
 {
  // Cluster track candidates within a certain opening angle into jets.
  // Also the track should be within a certain maximum distance of the
@@ -1302,7 +1348,9 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_
  Float_t vec[3],err[3];
  AliPosition r0;
  Float_t t0,dist,dist2;
- Int_t nah=0,nahmax=0; // Determine the max. number of associated hits for the jets
+ Int_t nah=0; // Number of associated hits
+ Int_t nas=0; // Number of associated strings
+ Float_t nax=0,naxmax=0; // Associated hits and/or strings value for the jets
  Float_t qtc;
  for (Int_t jtc1=0; jtc1<nte; jtc1++)
  {
@@ -1372,7 +1420,12 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_
   {
    jets.Add(jx);
    nah=jx->GetNsignals();
-   if (nah>nahmax) nahmax=nah;
+   nas=fEvt->GetNstrings(*jx,"IceGOM");
+   nax=0;
+   if (astype==1) nax=nah;
+   if (astype==2) nax=nas;
+   if (astype==3) nax=nah*nas;
+   if (nax>naxmax) naxmax=nax;
   }
   else // Only keep single-track jets which have qtc=qmax 
   {
@@ -1383,7 +1436,12 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_
    {
     jets.Add(jx);
     nah=jx->GetNsignals();
-    if (nah>nahmax) nahmax=nah;
+    nas=fEvt->GetNstrings(*jx,"IceGOM");
+    nax=0;
+    if (astype==1) nax=nah;
+    if (astype==2) nax=nas;
+    if (astype==3) nax=nah*nas;
+    if (nax>naxmax) naxmax=nax;
    }
    else
    {
@@ -1395,7 +1453,7 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_
  Int_t njets=jets.GetEntries();
  if (!njets) return;
 
- // The sum of 0.15*(nah-nahmax) and average qtc value per track for each jet
+ // The sum of 0.15*(nax-naxmax) and average qtc value per track for each jet
  // will be stored as the jet energy to enable sorting on this value lateron
  Float_t sortval=0;
  Int_t ntk=0;
@@ -1404,14 +1462,19 @@ void IceDwalk::ClusterTracks(TObjArray& tes,TObjArray& jets,Float_t tangmax,Int_
   AliJet* jx=(AliJet*)jets.At(ijet);
   if (!jx) continue;
   nah=jx->GetNsignals();
+  nas=fEvt->GetNstrings(*jx,"IceGOM");
+  nax=0;
+  if (astype==1) nax=nah;
+  if (astype==2) nax=nas;
+  if (astype==3) nax=nah*nas;
   ntk=jx->GetNtracks();
-  sortval=0.15*float(nah-nahmax);
+  sortval=0.15*(nax-naxmax);
   if (ntk) sortval+=jx->GetMomentum()/float(ntk);
   jx->SetScalar(sortval);
  }
 }
 ///////////////////////////////////////////////////////////////////////////
-void IceDwalk::MergeJets(TObjArray& jets2,Float_t jangmax,Float_t jdistmax,Int_t jinvol,Int_t jiterate)
+void IceDwalk::MergeJets(TObjArray& jets2,Float_t jangmax,Float_t jdistmax,Int_t jinvol,Int_t jiterate,Int_t astype)
 {
  // Merge jets within a certain opening to provide the final track(s).
  // Also the jet should be within a certain maximum distance of the
@@ -1425,7 +1488,10 @@ void IceDwalk::MergeJets(TObjArray& jets2,Float_t jangmax,Float_t jdistmax,Int_t
  AliJet* jx1=0;
  AliJet* jx2=0;
  Int_t merged=1;
- Int_t ntk,nah,nahmax;
+ Int_t ntk;
+ Int_t nah=0;
+ Int_t nas=0;
+ Float_t nax=0,naxmax=0;
  Float_t ang,dist,dist2,t0;
  AliSample pos;
  AliSample time;
@@ -1437,7 +1503,7 @@ void IceDwalk::MergeJets(TObjArray& jets2,Float_t jangmax,Float_t jdistmax,Int_t
   while (merged)
   {
    merged=0;
-   nahmax=0;
+   naxmax=0;
    for (Int_t jet1=0; jet1<njets; jet1++)
    {
     jx1=(AliJet*)jets2.At(jet1);
@@ -1506,20 +1572,30 @@ void IceDwalk::MergeJets(TObjArray& jets2,Float_t jangmax,Float_t jdistmax,Int_t
     jx1->SetReferencePoint(r0);
 
     nah=jx1->GetNsignals();
-    if (nah>nahmax) nahmax=nah;
+    nas=fEvt->GetNstrings(*jx1,"IceGOM");
+    nax=0;
+    if (astype==1) nax=nah;
+    if (astype==2) nax=nas;
+    if (astype==3) nax=nah*nas;
+    if (nax>naxmax) naxmax=nax;
    } // End of jet1 loop
 
    jets2.Compress();
 
-   // The sum of 0.15*(nah-nahmax) and average qtc value per track for each jet
+   // The sum of 0.15*(nax-naxmax) and average qtc value per track for each jet
    // will be stored as the jet energy to enable sorting on this value
    for (Int_t jjet=0; jjet<njets; jjet++)
    {
     AliJet* jx=(AliJet*)jets2.At(jjet);
     if (!jx) continue;
     nah=jx->GetNsignals();
+    nas=fEvt->GetNstrings(*jx,"IceGOM");
+    nax=0;
+    if (astype==1) nax=nah;
+    if (astype==2) nax=nas;
+    if (astype==3) nax=nah*nas;
     ntk=jx->GetNtracks();
-    sortval=0.15*float(nah-nahmax);
+    sortval=0.15*float(nax-naxmax);
     if (ntk) sortval+=jx->GetMomentum()/float(ntk);
     jx->SetScalar(sortval);
    }
