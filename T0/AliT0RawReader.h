@@ -18,8 +18,8 @@
 class AliT0RawReader : public TTask {
   public :
 
-    //  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kFALSE) ;
-  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kTRUE) ;
+  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kFALSE) ;
+//  AliT0RawReader(AliRawReader *rawReader,Bool_t isOnline = kTRUE) ;
 
   virtual  ~AliT0RawReader();
   AliT0RawReader(const AliT0RawReader& o): TTask(o),
