@@ -25,6 +25,7 @@ class AliGenTriggerMapSelector : public AliSelectorRL {
 
     void WriteHistograms(const char* filename = "triggerMap.root");
     void ReadHistograms(const char* filename = "triggerMap.root");
+    void GenerateTriggerMap(Bool_t clean = kFALSE);
 
  protected:
     TH2F* fChipsFired;

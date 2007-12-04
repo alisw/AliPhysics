@@ -230,6 +230,7 @@ Bool_t AliGenTriggerMapSelector::Process(Long64_t entry)
         if (chip[currentLayer] == -1)
         {
           chip[currentLayer] = moduleIndex * 5 + isChip;
+          //Printf("%d --> %d %d", label, moduleIndex, isChip);
           nClusters[currentLayer]++;
         }
         else
@@ -334,4 +335,36 @@ void AliGenTriggerMapSelector::ReadHistograms(const char* filename)
 
   fTracklets  = dynamic_cast<TNtuple*> (file->Get("fTracklets"));
   fChipsFired  = dynamic_cast<TH2F*> (file->Get("fChipsFired"));
+}
+
+void AliGenTriggerMapSelector::GenerateTriggerMap(Bool_t clean)
+{
+  Int_t nEntries = fTracklets->GetEntries();
+  //nEntries = 10;
+
+  TH2F* hist = new TH2F("hist", ";layer1;layer2", 400, -0.5, 399.5, 800, 399.5, 1199.5);
+
+  Long64_t nSkipped = 0;
+  for (Int_t i = 0; i < nEntries; ++i)
+  {
+    fTracklets->GetEntry(i);
+    Float_t* vars = fTracklets->GetArgs();
+
+    if (clean && (Bool_t) vars[3] != kFALSE)
+    {
+      nSkipped++;
+      continue;
+    }
+
+    hist->Fill(vars[1], vars[2]);
+  }
+  if (clean)
+    Printf("Skipped %lld dirty entries", nSkipped);
+
+  hist->Draw("COLZ");
+
+  for (Int_t i = 1; i <= hist->GetNbinsX(); ++i)
+    for (Int_t j = 1; j <= hist->GetNbinsY(); ++j)
+      if (hist->GetBinContent(i, j) > 0)
+        Printf("(%d,%d) ", TMath::Nint(hist->GetXaxis()->GetBinCenter(i)), TMath::Nint(hist->GetYaxis()->GetBinCenter(j)));
 }
