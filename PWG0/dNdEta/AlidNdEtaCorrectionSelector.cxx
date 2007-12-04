@@ -29,7 +29,6 @@
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
 #include "AliPWG0Helper.h"
-#include "AliPWG0depHelper.h"
 
 #include "dNdEta/dNdEtaAnalysis.h"
 
@@ -242,7 +241,7 @@ Bool_t AlidNdEtaCorrectionSelector::Process(Long64_t entry)
   genHeader->PrimaryVertex(vtxMC);
 
   // get process type
-  Int_t processType = AliPWG0depHelper::GetPythiaEventProcessType(header);
+  Int_t processType = AliPWG0Helper::GetPythiaEventProcessType(header);
   AliDebug(AliLog::kDebug+1, Form("Found pythia procces type %d", processType));
 
   if (processType<0)

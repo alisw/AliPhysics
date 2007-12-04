@@ -25,7 +25,6 @@
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
-#include "AliPWG0depHelper.h"
 #include "dNdEta/AliMultiplicityCorrection.h"
 #include "AliCorrection.h"
 #include "AliCorrectionMatrix3D.h"
@@ -246,7 +245,7 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
   if (fSelectProcessType > 0)
   {
     // getting process information; NB: this only works for Pythia
-    Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
+    Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
 
     Bool_t processEvent = kFALSE;
 
@@ -483,7 +482,7 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
       // preserve label for later
       Int_t labelCopy = label;
       if (labelCopy >= 0)
-        labelCopy = AliPWG0depHelper::FindPrimaryMotherLabel(stack, labelCopy);
+        labelCopy = AliPWG0Helper::FindPrimaryMotherLabel(stack, labelCopy);
       if (labelCopy >= 0)
         mother = stack->Particle(labelCopy);
 
@@ -533,7 +532,7 @@ Bool_t AliMultiplicityMCSelector::Process(Long64_t entry)
 
       // find mother
       if (label >= 0)
-        motherLabel = AliPWG0depHelper::FindPrimaryMotherLabel(stack, label);
+        motherLabel = AliPWG0Helper::FindPrimaryMotherLabel(stack, label);
       if (motherLabel >= 0)
         mother = stack->Particle(motherLabel);
 
