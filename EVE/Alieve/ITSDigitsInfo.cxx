@@ -137,12 +137,12 @@ void ITSDigitsInfo::SetTree(TTree* tree)
   fTree = tree;
 }
 
-void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
+void ITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
 {
   // Read raw-data into internal structures. AliITSdigit is used to
   // store raw-adata for all sub-detectors.
 
-  {
+  if ((mode & 1) || (mode & 2)){
     AliITSRawStreamSPD inputSPD(raw);
     TClonesArray* digits = 0;
     while (inputSPD.Next())
@@ -168,7 +168,7 @@ void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
     raw->Reset();
   }
 
-  {
+  if ((mode & 4) || (mode & 8)){
     AliITSRawStreamSDD input(raw);
     TClonesArray* digits = 0;
     while (input.Next())
@@ -195,7 +195,7 @@ void ITSDigitsInfo::ReadRaw(AliRawReader* raw)
     raw->Reset();
   }
 
-  {
+  if ((mode & 16) || (mode & 32)){
     AliITSRawStreamSSD input(raw);
     TClonesArray* digits = 0;
     while (input.Next())
@@ -273,11 +273,15 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSPD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSPDmap.find(mod);
       if(i == fSPDmap.end()) {
-        TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
-        br->SetAddress(&digitsSPD);
-	br->GetEntry(mod);
-	fSPDmap[mod] = digitsSPD;
-	return digitsSPD;
+	if (fTree) {
+	  TBranch* br =  fTree->GetBranch("ITSDigitsSPD");
+	  br->SetAddress(&digitsSPD);
+	  br->GetEntry(mod);
+	  fSPDmap[mod] = digitsSPD;
+	  return digitsSPD;
+	}
+	else
+	  return NULL;
       } else {
 	return i->second;
       }
@@ -287,12 +291,16 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSDD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSDDmap.find(mod);
       if(i == fSDDmap.end()) {
-	TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
-        br->SetAddress(&digitsSDD);
-	br->GetEntry(mod);
-	fSDDmap[mod] = digitsSDD;
-	return digitsSDD;
-      } else {
+	if (fTree) {
+	  TBranch* br =  fTree->GetBranch("ITSDigitsSDD");
+	  br->SetAddress(&digitsSDD);
+	  br->GetEntry(mod);
+	  fSDDmap[mod] = digitsSDD;
+	  return digitsSDD;
+	}
+	else
+	  return NULL;
+       } else {
 	return i->second;
       }
       break;
@@ -301,13 +309,17 @@ TClonesArray* ITSDigitsInfo::GetDigits(Int_t mod, Int_t subdet)
       TClonesArray* digitsSSD = 0;
       map<Int_t, TClonesArray*>::iterator i = fSSDmap.find(mod);
       if(i == fSSDmap.end()) {
-	TBranch* br =  fTree->GetBranch("ITSDigitsSSD");
-        br->SetAddress(&digitsSSD);
-	br->GetEntry(mod);
+	if (fTree) {
+	  TBranch* br =  fTree->GetBranch("ITSDigitsSSD");
+	  br->SetAddress(&digitsSSD);
+	  br->GetEntry(mod);
 
-	fSSDmap[mod] = digitsSSD;
-	return digitsSSD;
-      } else {
+	  fSSDmap[mod] = digitsSSD;
+	  return digitsSSD;
+	}
+	else
+	  return NULL;
+       } else {
 	return i->second;
       }
       break;

@@ -89,7 +89,7 @@ public:
   virtual ~ITSDigitsInfo();
 
   void SetTree(TTree* tree);
-  void ReadRaw(AliRawReader* raw);
+  void ReadRaw(AliRawReader* raw, Int_t mode);
 
   TClonesArray* GetDigits(Int_t moduleID, Int_t detector);
 
