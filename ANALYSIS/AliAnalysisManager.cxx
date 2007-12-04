@@ -33,11 +33,13 @@
 #include <TChain.h>
 #include <TSystem.h>
 #include <TROOT.h>
+#include <TCanvas.h>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliVEventHandler.h"
+#include "AliSysInfo.h"
 #include "AliAnalysisManager.h"
 
 ClassImp(AliAnalysisManager)
@@ -48,10 +50,11 @@ AliAnalysisManager *AliAnalysisManager::fgAnalysisManager = NULL;
 AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                    :TNamed(name,title),
                     fTree(NULL),
-		    fInputEventHandler(NULL),
-		    fOutputEventHandler(NULL),
-		    fMCtruthEventHandler(NULL),
+                    fInputEventHandler(NULL),
+                    fOutputEventHandler(NULL),
+                    fMCtruthEventHandler(NULL),
                     fCurrentEntry(-1),
+                    fNSysInfo(0),
                     fMode(kLocalAnalysis),
                     fInitOK(kFALSE),
                     fDebug(0),
@@ -77,10 +80,11 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
 AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                    :TNamed(other),
                     fTree(NULL),
-		    fInputEventHandler(NULL),
-		    fOutputEventHandler(NULL),
-		    fMCtruthEventHandler(NULL),
+                    fInputEventHandler(NULL),
+                    fOutputEventHandler(NULL),
+                    fMCtruthEventHandler(NULL),
                     fCurrentEntry(-1),
+                    fNSysInfo(0),
                     fMode(other.fMode),
                     fInitOK(other.fInitOK),
                     fDebug(other.fDebug),
@@ -112,6 +116,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fMCtruthEventHandler = other.fMCtruthEventHandler;
       fTree       = NULL;
       fCurrentEntry = -1;
+      fNSysInfo   = other.fNSysInfo;
       fMode       = other.fMode;
       fInitOK     = other.fInitOK;
       fDebug      = other.fDebug;
@@ -450,7 +455,6 @@ void AliAnalysisManager::UnpackOutput(TList *source)
          callEnv.Execute(output->GetData());
       }
       output->GetData()->Write();
-      file->Close();
       if (opwd) opwd->cd();
    }
    if (fDebug > 1) {
@@ -478,6 +482,47 @@ void AliAnalysisManager::Terminate()
    if (fInputEventHandler)   fInputEventHandler  ->TerminateIO();
    if (fOutputEventHandler)  fOutputEventHandler ->TerminateIO();
    if (fMCtruthEventHandler) fMCtruthEventHandler->TerminateIO();
+   TIter next1(fOutputs);
+   AliAnalysisDataContainer *output;
+   while ((output=(AliAnalysisDataContainer*)next1())) {
+      // Close all files at output
+      const char *filename = output->GetFileName();
+      if (!(strcmp(filename, "default"))) {
+         if (fOutputEventHandler) filename = fOutputEventHandler->GetOutputFileName();
+      }
+      
+      if (!filename || !strlen(filename)) continue;
+      TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(filename);
+      if (!file || file->IsZombie()) continue;
+      file->Close();
+   }   
+
+   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   if (getsysInfo) {
+      TDirectory *cdir = gDirectory;
+      TFile f("syswatch.root", "RECREATE");
+      if (!f.IsZombie()) {
+         TTree *tree = AliSysInfo::MakeTree("syswatch.log");
+         tree->SetMarkerStyle(kCircle);
+         tree->SetMarkerColor(kBlue);
+         tree->SetMarkerSize(0.5);
+         if (!gROOT->IsBatch()) {
+            tree->SetAlias("event", "id0");
+            tree->SetAlias("memUSED", "mi.fMemUsed");
+            tree->SetAlias("userCPU", "pI.fCpuUser");
+            TCanvas *c = new TCanvas("SysInfo","SysInfo",10,10,800,600);
+            c->Divide(2,1,0.01,0.01);
+            c->cd(1);
+            tree->Draw("memUSED:event","","", 1234567890, 0);
+            c->cd(2);
+            tree->Draw("userCPU:event","","", 1234567890, 0);
+         }   
+         tree->Write();
+         f.Close();
+         delete tree;
+      }
+      if (cdir) cdir->cd();
+   }      
 }
 
 //______________________________________________________________________________
@@ -516,7 +561,10 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
          break;
       case kOutputContainer:
          fOutputs->Add(cont);
-         if (filename && strlen(filename)) cont->SetFileName(filename);
+         if (filename && strlen(filename)) {
+            cont->SetFileName(filename);
+            cont->SetDataOwned(kFALSE);  // data owned by the file
+         }   
          break;
       case kExchangeContainer:
          break;   
@@ -660,6 +708,13 @@ Bool_t AliAnalysisManager::InitAnalysis()
 void AliAnalysisManager::PrintStatus(Option_t *option) const
 {
 // Print task hierarchy.
+   if (!fInitOK) {
+      Info("PrintStatus", "Analysis manager %s not initialized : call InitAnalysis() first", GetName());
+      return;
+   }   
+   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   if (getsysInfo)
+      Info("PrintStatus", "System information will be collected each %lld events", fNSysInfo);
    TIter next(fTopTasks);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next()))
@@ -674,9 +729,10 @@ void AliAnalysisManager::ResetAnalysis()
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
+void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis for this manager. Analysis task can be: LOCAL, PROOF or GRID.
+// Process nentries starting from firstentry
    if (!fInitOK) {
       Error("StartAnalysis","Analysis manager was not initialized !");
       return;
@@ -706,7 +762,12 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
       SetEventLoop(kTRUE);
    }   
 
-   TChain *chain = dynamic_cast<TChain*>(tree);
+   TChain *chain = 0;
+   TString ttype = "TTree";
+   if (tree->IsA() == TChain::Class()) {
+      chain = (TChain*)tree;
+      ttype = "TChain";
+   }   
 
    // Initialize locally all tasks
    TIter next(fTasks);
@@ -731,11 +792,10 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
             return;
          } 
          // Run tree-based analysis via AliAnalysisSelector  
-//         gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/AliAnalysisSelector.cxx+");
          cout << "===== RUNNING LOCAL ANALYSIS " << GetName() << " ON TREE " << tree->GetName() << endl;
          sprintf(line, "AliAnalysisSelector *selector = new AliAnalysisSelector((AliAnalysisManager*)0x%lx);",(ULong_t)this);
          gROOT->ProcessLine(line);
-         sprintf(line, "((TTree*)0x%lx)->Process(selector);",(ULong_t)tree);
+         sprintf(line, "((%s*)0x%lx)->Process(selector, \"\",%lld, %lld);",ttype.Data(),(ULong_t)tree, nentries, firstentry);
          gROOT->ProcessLine(line);
          break;
       case kProofAnalysis:
@@ -748,7 +808,7 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
          if (chain) {
             chain->SetProof();
             cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON CHAIN " << chain->GetName() << endl;
-            chain->Process("AliAnalysisSelector");
+            chain->Process("AliAnalysisSelector", "", nentries, firstentry);
          } else {
             printf("StartAnalysis: no chain\n");
             return;
@@ -763,6 +823,10 @@ void AliAnalysisManager::StartAnalysis(const char *type, TTree *tree)
 void AliAnalysisManager::ExecAnalysis(Option_t *option)
 {
 // Execute analysis.
+   static Long64_t ncalls = 0;
+   Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
+   if (getsysInfo && ncalls==0) AliSysInfo::AddStamp("Start", (Int_t)ncalls);
+   ncalls++;
    if (!fInitOK) {
      Error("ExecAnalysis", "Analysis manager was not initialized !");
       return;
@@ -801,7 +865,9 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fInputEventHandler)   fInputEventHandler  ->FinishEvent();
       if (fOutputEventHandler)  fOutputEventHandler ->FinishEvent();
       if (fMCtruthEventHandler) fMCtruthEventHandler->FinishEvent();
-//
+      // Gather system information if requested
+      if (getsysInfo && ((ncalls%fNSysInfo)==0)) 
+         AliSysInfo::AddStamp(Form("Event#%lld",ncalls),(Int_t)ncalls);
       return;
    }   
    // The event loop is not controlled by TSelector   

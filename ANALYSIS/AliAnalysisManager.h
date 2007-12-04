@@ -51,7 +51,8 @@ enum EAliAnalysisFlags {
    AliAnalysisManager(const AliAnalysisManager& other);
    AliAnalysisManager& operator=(const AliAnalysisManager& other);
    
-   void                StartAnalysis(const char *type="local", TTree *tree=0);
+   // Management
+   void                StartAnalysis(const char *type="local", TTree *tree=0, Long64_t nentries=1234567890, Long64_t firstentry=0);
 
    virtual void        Init(TTree *tree);   
    virtual Bool_t      Notify();
@@ -81,9 +82,11 @@ enum EAliAnalysisFlags {
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
    void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
+   void                SetCollectSysInfoEach(Int_t nevents=0) {fNSysInfo = nevents;}
    void                SetInputEventHandler(AliVEventHandler*  handler)  {fInputEventHandler   = handler;}
    void                SetOutputEventHandler(AliVEventHandler*  handler) {fOutputEventHandler  = handler;}
    void                SetMCtruthEventHandler(AliVEventHandler* handler) {fMCtruthEventHandler = handler;}
+   void                SetNSysInfo(Long64_t nevents) {fNSysInfo = nevents;}
    AliVEventHandler*   GetInputEventHandler()   {return fInputEventHandler;}
    AliVEventHandler*   GetOutputEventHandler()  {return fOutputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() {return fMCtruthEventHandler;}
@@ -124,6 +127,7 @@ private:
    AliVEventHandler       *fOutputEventHandler;  //  Optional common output event handler
    AliVEventHandler       *fMCtruthEventHandler; //  Optional common MC Truth event handler
    Long64_t                fCurrentEntry;        //! Current processed entry in the tree
+   Long64_t                fNSysInfo;            // Event frequency for collecting system information
    EAliAnalysisExecMode    fMode;                // Execution mode
    Bool_t                  fInitOK;              // Initialisation done
    UInt_t                  fDebug;               // Debug level
@@ -135,6 +139,6 @@ private:
    TObjArray              *fOutputs;             // List of containers with results
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,1)  // Analysis manager class
+   ClassDef(AliAnalysisManager,2)  // Analysis manager class
 };   
 #endif
