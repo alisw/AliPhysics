@@ -37,14 +37,16 @@ fNModules(AliITSgeomTGeo::GetNModules()),
 fEvent(0){
   //Default constructor
 }
-/*
+
 //______________________________________________________________________
-AliITSClusterFinderV2::AliITSClusterFinderV2(const AliITSClusterFinderV2 &source) : AliITSClusterFinder(source) {
+AliITSClusterFinderV2::AliITSClusterFinderV2(const AliITSClusterFinderV2 &source) : AliITSClusterFinder(source),
+fNModules(source.fNModules),
+fEvent(source.fEvent) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
-  Fatal("AliITSClusterFinderV2","Copy constructor not allowed\n");
+  AliError("Copy constructor not allowed\n");
 }
-*/
+
 //______________________________________________________________________
 //AliITSClusterFinderV2& AliITSClusterFinderV2::operator=(const AliITSClusterFinderV2& /* source */){
   // Assignment operator

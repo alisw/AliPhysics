@@ -132,7 +132,6 @@ class AliITSClusterFinder :public TObject{
     Int_t fNdet[2200];           // detector index  
     Int_t fNlayer[2200];         // detector layer
 
- private:
     AliITSClusterFinder(const AliITSClusterFinder &source); // copy constructor
     // assignment operator
     AliITSClusterFinder& operator=(const AliITSClusterFinder &source);

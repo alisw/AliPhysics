@@ -111,14 +111,26 @@ fNPeaks(-1){
     SetClusterSize();
     SetDeclusterFlag();
 }
-/*
+
 //______________________________________________________________________
-AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : TObject(source) {
+AliITSClusterFinder::AliITSClusterFinder(const AliITSClusterFinder &source) : TObject(source),
+fDebug(source.fDebug),
+fModule(source.fModule),
+fDigits(),
+fNdigits(source.fNdigits),
+fDetTypeRec(),
+fClusters(),
+fNRawClusters(source.fNRawClusters),
+fMap(),
+fNperMax(source.fNperMax),
+fDeclusterFlag(source.fDeclusterFlag),
+fClusterSize(source.fClusterSize),
+fNPeaks(source.fNPeaks) {
   // Copy constructor
   // Copies are not allowed. The method is protected to avoid misuse.
-  Fatal("AliITSClusterFinder","Copy constructor not allowed\n");
+  AliError("Copy constructor not allowed\n");
 }
-*/
+
 
 //______________________________________________________________________
 //AliITSClusterFinder& AliITSClusterFinder::operator=(const AliITSClusterFinder& /* source */){
