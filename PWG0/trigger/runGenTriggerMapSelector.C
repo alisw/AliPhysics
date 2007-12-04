@@ -36,3 +36,11 @@ void runGenTriggerMapSelector(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool
   executeQuery(chain, &inputList, selectorName, option);
 }
 
+void generateTriggerMap(Bool_t clean = kFALSE)
+{
+  gSystem->Load("libPWG0base");
+  gROOT->ProcessLine(".L AliGenTriggerMapSelector.cxx+");
+  AliGenTriggerMapSelector selector;
+  selector.ReadHistograms();
+  selector.GenerateTriggerMap(clean);
+}
