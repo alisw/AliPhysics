@@ -18,10 +18,11 @@ ELIBS:= MUONcore MUONgeometry MUONrec MUONsim MUONbase MUONtrigger MUONraw MUONc
         EMCALbase EMCALsim EMCALrec EMCALjet BCM \
         STRUCT T0base T0sim T0rec EVGEN STEERBase ESD AOD CDB STEER \
         pythia6 AliPythia6 lhapdf THijing \
-        hijing TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
+        hijing \
         FASTSIM microcern \
 	RAWDatabase RAWDatarec RAWDatasim \
 	HLTbase MUONevaluation \
+# TMEVSIM mevsim THbtp HBTP TEPEMGEN EPEMGEN \
 #	THerwig herwig TPHIC
 
 ifeq (macosx,$(ALICE_TARGET))
@@ -107,5 +108,6 @@ ARLIBS:= \
    RAW/tgt_$(ALICE_TARGET)/G__RAWDatarec.o $(LIBPATH)/libRAWDatarec.a \
    RAW/tgt_$(ALICE_TARGET)/G__MDC.o $(LIBPATH)/libMDC.a
 
-SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
+#SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTMEVSIM -lmevsim -lTHbtp -lHBTP -lTHerwig -lherwig -lTEPEMGEN -lEPEMGEN -lTPHIC -lFASTSIM -lmicrocern
+SHLIBS:= $(BINLIBDIRS) -lEVGEN -lEGPythia6 -lPythia6 -lpythia6 -lAliPythia6 -llhapdf -lTHijing -lhijing -lTHerwig -lherwig -lTPHIC -lFASTSIM -lmicrocern
 
