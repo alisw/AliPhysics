@@ -22,7 +22,7 @@ class AliCorrection : public TNamed
 {
 public:
   AliCorrection();
-  AliCorrection(const Char_t* name, const Char_t* title);
+  AliCorrection(const Char_t* name, const Char_t* title, const char* analysis = "tpc");
   AliCorrection(const AliCorrection& c);
 
   virtual ~AliCorrection();

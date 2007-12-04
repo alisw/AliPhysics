@@ -8,16 +8,14 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AlidNdEtaCorrectionSelector+;
-#pragma link C++ class AlidNdEtaAnalysisMCSelector+;
-#pragma link C++ class AlidNdEtaAnalysisESDSelector+;
-#pragma link C++ class AliMultiplicityESDSelector+;
-#pragma link C++ class AliMultiplicityMCSelector+;
 #pragma link C++ class AlidNdEtaSystematicsSelector+;
-#pragma link C++ class AliTestESDtrackCutsSelector+;
 #pragma link C++ class AliROCESDAnalysisSelector+;
 #pragma link C++ class AliROCRawAnalysisSelector+;
 #pragma link C++ class AliROCClusterAnalysisSelector+;
 #pragma link C++ class AliHighMultiplicitySelector+;
+#pragma link C++ class AliMultiplicityTask+;
+#pragma link C++ class AliCutTask+;
+#pragma link C++ class AlidNdEtaTask+;
+#pragma link C++ class AlidNdEtaCorrectionTask+;
 
 #endif

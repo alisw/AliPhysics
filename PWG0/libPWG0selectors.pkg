@@ -3,20 +3,18 @@
 # this library contains the selectors, which are loaded on the fly when one uses a given selector
 # thus this library is never used, it just exists for the build system to check if everything compiles
 
-HDRS = dNdEta/AlidNdEtaCorrectionSelector.h \
-       dNdEta/AlidNdEtaAnalysisMCSelector.h \
-       dNdEta/AlidNdEtaAnalysisESDSelector.h \
-       dNdEta/AliMultiplicityESDSelector.h \
-       dNdEta/AliMultiplicityMCSelector.h \
-       dNdEta/AlidNdEtaSystematicsSelector.h \
-       esdTrackCuts/AliTestESDtrackCutsSelector.h \
+HDRS = dNdEta/AlidNdEtaSystematicsSelector.h \
+       dNdEta/AlidNdEtaTask.h \
+       dNdEta/AlidNdEtaCorrectionTask.h \
        TPC/AliROCESDAnalysisSelector.h \
        TPC/AliROCRawAnalysisSelector.h \
        TPC/AliROCClusterAnalysisSelector.h \
-       highMultiplicity/AliHighMultiplicitySelector.h
+       highMultiplicity/AliHighMultiplicitySelector.h \
+       multiplicity/AliMultiplicityTask.h \
+       esdTrackCuts/AliCutTask.h
 
 SRCS = $(HDRS:.h=.cxx)
 
 DHDR= PWG0selectorsLinkDef.h
 
-EINCLUDE=PYTHIA6 EVGEN TPC RAW ITS
+EINCLUDE=TPC RAW ITS
