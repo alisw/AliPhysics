@@ -316,6 +316,8 @@ Double_t ApproximateBetheBloch(Double_t beta2) {
   // the density effect taken into account at beta*gamma > 3.5
   // (the approximation is reasonable only for solid materials) 
   //------------------------------------------------------------------
+  if (beta2 >= 1) return kVeryBig;
+
   if (beta2/(1-beta2)>3.5*3.5)
      return 0.153e-3/beta2*(log(3.5*5940)+0.5*log(beta2/(1-beta2)) - beta2);
 
