@@ -854,7 +854,7 @@ void AliHighMultiplicitySelector::JPRPlots()
   }
 }
 
-void AliHighMultiplicitySelector::Ntrigger()
+void AliHighMultiplicitySelector::Ntrigger(Bool_t relative)
 {
   //
   // produces a spectrum created with N triggers
@@ -868,6 +868,12 @@ void AliHighMultiplicitySelector::Ntrigger()
   x = new AliHighMultiplicitySelector();
   x->ReadHistograms("highmult_hijing100k.root");
   x->Ntrigger();
+
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+g
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->Ntrigger(kFALSE);
 
   */
 
@@ -904,12 +910,17 @@ void AliHighMultiplicitySelector::Ntrigger()
     //Int_t cuts[] = { 0, 164, 178, 190, 204, 216 };
     //Int_t nCuts = 4;
     //Int_t cuts[] = { 0, 164, 190, 216 };
-    Int_t nCuts = 4;
-    Int_t cuts[] = { 0, 114, 145, 165 };
+
+    //Int_t nCuts = 4;
+    //Int_t cuts[] = { 0, 114, 145, 165 };
+    //Float_t ratePerTrigger[] = { 60, 13.3, 13.3, 13.3 };
+
+    Int_t nCuts = 3;
+    Int_t cuts[] = { 0, 126, 162 };
+    Float_t ratePerTrigger[] = { 60, 20.0, 20.0 };
 
     // desired trigger rate in Hz
     //Float_t ratePerTrigger[] = { 100, 1, 1, 1, 1, 1 };
-    Float_t ratePerTrigger[] = { 60, 13.3, 13.3, 13.3 };
 
     xSection->SetStats(kFALSE);
     xSection->SetTitle(""); //(i == 0) ? "SPD Layer 1" : "SPD Layer 2");
@@ -925,7 +936,9 @@ void AliHighMultiplicitySelector::Ntrigger()
     canvas2->SetTopMargin(0.05);
     canvas2->SetRightMargin(0.05);
     canvas2->SetLogy();
-    xSection->DrawCopy("HIST");
+
+    if (relative)
+      xSection->DrawCopy("HIST");
 
     TLegend* legend2 = new TLegend(0.15, 0.15, 0.6, 0.4);
     legend2->SetFillColor(0);
@@ -935,7 +948,16 @@ void AliHighMultiplicitySelector::Ntrigger()
     {
       Int_t cut = cuts[currentCut];
 
+      TH1* triggerEff = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
+
       TH1* proj = GetXSectionCut(xSection, fMvsL, cut);
+
+      Float_t triggerLimit = 0;
+      for (Int_t bin = 1; bin <= triggerEff->GetNbinsX(); bin++)
+        if (triggerEff->GetBinContent(bin) < 0.5)
+          triggerLimit = triggerEff->GetXaxis()->GetBinCenter(bin);
+
+      Printf("Efficiency limit (50%%) is at multiplicity %f", triggerLimit);
 
       Double_t total = 0;
       if (proj->Integral(1, 1000) > 0)
@@ -966,19 +988,197 @@ void AliHighMultiplicitySelector::Ntrigger()
 
       Printf("Removed %d events", removed);
 
-      proj2->Scale(1.0 / nTrigger * proj->Integral(1, 1000));
+      if (relative)
+        proj2->Scale(1.0 / nTrigger * proj->Integral(1, 1000));
 
       proj2->SetLineColor(colors[currentCut]);
       proj2->SetMarkerStyle(markers[currentCut]);
       proj2->SetMarkerColor(colors[currentCut]);
-      proj2->DrawCopy("SAME P");
+
+      if (relative || currentCut > 0) {
+        proj2->DrawCopy("SAME P");
+      } else
+        proj2->DrawCopy(" P");
+
       legend2->AddEntry(proj2, Form("%lld evts, FO > %d chips", nTrigger, cut));
+
+      TLine* line = new TLine(triggerLimit, proj2->GetMinimum(), triggerLimit, proj2->GetMaximum());
+      line->SetLineColor(colors[currentCut]);
+      line->Draw();
     }
 
     legend2->Draw();
 
     canvas2->SaveAs(Form("%s.gif", canvas2->GetName()));
     canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));
+  }
+}
+
+void AliHighMultiplicitySelector::Contamination()
+{
+  //
+  // produces a spectrum created with N triggers
+  // number of triggers and thresholds for the moment fixed
+  //
+
+  /*
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+g
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->Contamination();
+
+  */
+
+  // get x-sections
+  TFile* file = TFile::Open("crosssectionEx.root");
+  if (!file)
+    return;
+
+  TH1* xSections[2];
+  xSections[0] = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+  xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
+
+  // rate = L * sigma
+  // sigma ~ 80 mb (Pythia 14 TeV)
+  // 10^28 lum --> 8e2 Hz
+  // 10^31 lum --> 8e5 Hz
+  Double_t rates[] = { 8e2, 8e3, 8e4, 8e5 };
+
+  Int_t nCuts = 4;
+  Int_t cuts[] = { 104, 134, 154, 170 };
+
+  // put to 2 for second layer
+  for (Int_t i=0; i<1; ++i)
+  {
+    if (!xSections[i])
+      continue;
+
+    // relative x-section, once we have a collision
+    xSections[i]->Scale(1.0 / xSections[i]->Integral());
+
+    Int_t max = xSections[i]->GetNbinsX();
+    max = 500;
+
+    Float_t* xSection = new Float_t[max];
+    for (Int_t mult = 0; mult < max; mult++)
+      xSection[mult] = xSections[i]->GetBinContent(mult+1);
+
+    TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
+
+    TGraph* graph = new TGraph;
+
+    for (Int_t currentCut = 0; currentCut<nCuts; ++currentCut)
+    {
+      Int_t cut = cuts[currentCut];
+      Double_t rate = rates[currentCut];
+      //Double_t rate = rates[3];
+
+      // coll. in 100 ns window
+      //Double_t windowSize = 100e-9;
+      Double_t windowSize = 25e-9;
+      Double_t collPerWindow = windowSize * rate;
+      Printf("coll/window = %f", collPerWindow);
+      Double_t windowsPerSecond = 1.0 / windowSize;
+
+      TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
+      Float_t* triggerEff = new Float_t[max];
+      for (Int_t mult = 0; mult < max; mult++)
+        triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
+
+      Double_t triggerRate = 0;
+      for (Int_t mult = 0; mult < max; mult++)
+        triggerRate += xSection[mult] * triggerEff[mult];
+
+      triggerRate *= TMath::Poisson(1, collPerWindow) * windowsPerSecond;
+
+      Printf("Rate for 1 collision is %f Hz", triggerRate);
+
+      Double_t triggerRate2 = 0;
+      for (Int_t mult = 0; mult < max; mult++)
+        for (Int_t mult2 = mult; mult2 < max; mult2++)
+          if (mult+mult2 < max)
+            triggerRate2 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * triggerEff[mult+mult2];
+
+      triggerRate2 *= TMath::Poisson(2, collPerWindow) * windowsPerSecond;
+      //triggerRate2 *= collPerWindow * rate;
+
+      Printf("Rate for 2 collisions is %f Hz --> %.1f%%", triggerRate2, triggerRate2 / triggerRate * 100);
+
+      Double_t triggerRate3 = 0;
+      for (Int_t mult = 0; mult < max; mult++)
+        for (Int_t mult2 = mult; mult2 < max-mult; mult2++)
+          for (Int_t mult3 = 0; mult3 < max-mult-mult2; mult3++)
+            //if (mult+mult2+mult3 < max)
+              triggerRate3 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * xSection[mult3] * triggerEff[mult+mult2+mult3];
+
+      triggerRate3 *= TMath::Poisson(3, collPerWindow) * windowsPerSecond;
+      //triggerRate3 *= collPerWindow * collPerWindow * rate;
+
+      Printf("Rate for 3 collisions is %f Hz --> %.1f%%", triggerRate3, triggerRate3 / triggerRate * 100);
+
+      Float_t totalContamination = (triggerRate2 + triggerRate3) / (triggerRate + triggerRate2 + triggerRate3);
+
+      Printf("Total contamination is %.1f%%", totalContamination * 100);
+
+      graph->SetPoint(graph->GetN(), cut, totalContamination);
+
+      continue;
+
+      Double_t triggerRate4 = 0;
+      for (Int_t mult = 0; mult < max; mult++)
+        for (Int_t mult2 = mult; mult2 < max-mult; mult2++)
+          for (Int_t mult3 = 0; mult3 < max-mult-mult2; mult3++)
+            for (Int_t mult4 = 0; mult4 < max-mult-mult2-mult3; mult4++)
+              //if (mult+mult2+mult3+mult4 < max)
+                triggerRate4 += ((mult2 > mult) ? 2. : 1.) * xSection[mult] * xSection[mult2] * xSection[mult3] * xSection[mult4] * triggerEff[mult+mult2+mult3+mult4];
+
+      //triggerRate4 *= collPerWindow * collPerWindow * collPerWindow * rate;
+      triggerRate4 *= TMath::Poisson(4, collPerWindow) * windowsPerSecond;
+
+      Printf("Rate for 4 collisions is %f Hz --> %.1f%%", triggerRate4, triggerRate4 / triggerRate * 100);
+
+      // general code for n collisions follows, however much slower...
+      /*
+      const Int_t maxdepth = 4;
+      for (Int_t depth = 1; depth <= maxdepth; depth++) {
+        Double_t triggerRate = 0;
+
+        Int_t m[maxdepth];
+        for (Int_t d=0; d<maxdepth; d++)
+          m[d] = 0;
+
+        while (m[0] < max) {
+          Double_t value = 1;
+          Int_t sum = 0;
+          for (Int_t d=0; d<depth; d++) {
+            value *= xSection[m[d]];
+            sum += m[d];
+          }
+
+          if (sum < max) {
+            value *= triggerEff[sum];
+            triggerRate += value;
+          }
+
+          Int_t increase = depth-1;
+          ++m[increase];
+          while (m[increase] == max && increase > 0) {
+            m[increase] = 0;
+            --increase;
+            ++m[increase];
+          }
+        }
+
+        triggerRate *= rate * TMath::Power(collPerWindow, depth - 1);
+
+        Printf("Rate for %d collisions is %f Hz", depth, triggerRate);
+      }*/
+    }
+
+    new TCanvas; graph->Draw("AP*");
   }
 }
 
@@ -1198,6 +1398,7 @@ TGraph* AliHighMultiplicitySelector::IntFractRate()
   // N, normalised to 1 for N=0)
 
   /*
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libPWG0base");
   .L AliHighMultiplicitySelector.cxx+
   x = new AliHighMultiplicitySelector();
@@ -1223,7 +1424,7 @@ TGraph* AliHighMultiplicitySelector::IntFractRate()
 
     Double_t integral = proj->Integral();
 
-    Printf("Cut at %d, intregral is %e", threshold, integral);
+    Printf("Cut at %d, integral is %e", threshold, integral);
 
     result->SetPoint(result->GetN(), threshold, integral);
   }
@@ -1238,4 +1439,152 @@ TGraph* AliHighMultiplicitySelector::IntFractRate()
   canvas->SaveAs(Form("%s.gif", canvas->GetName()));
 
   return result;
+}
+
+void AliHighMultiplicitySelector::MBComparison()
+{
+  //
+  // finds the threshold from which onwards the number of found events above N times the mean
+  // is higher using a high mult. trigger than just triggering with MB
+  //
+
+  /*
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+  .L AliHighMultiplicitySelector.cxx+g
+  x = new AliHighMultiplicitySelector();
+  x->ReadHistograms("highmult_hijing100k.root");
+  x->MBComparison();
+
+  */
+
+  // get x-sections
+  TFile* file = TFile::Open("crosssectionEx.root");
+  if (!file)
+    return;
+
+  TH1* xSections[2];
+  xSections[0] = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+  xSections[1] = dynamic_cast<TH1*> (gFile->Get("xSection15Ex"));
+
+  // rate = L * sigma
+  // sigma ~ 80 mb (Pythia 14 TeV)
+  // 10^28 lum --> 8e2 Hz
+  // 10^31 lum --> 8e5 Hz
+  Int_t nRates = 4;
+  Double_t rates[] = { 8e2, 8e3, 8e4, 8e5 };
+
+  // threshold in number of fired chips for corresponding rate
+  //Int_t cuts[] = { 104, 134, 154, 170 }; // values for 20 Hz
+  Int_t cuts[] = { 82, 124, 147, 164 };    // values for 50 Hz
+
+  // bandwidth, fractions (for MB, high mult.)
+  Float_t bandwidth = 1e3;
+  Float_t fractionMB = 0.5;
+  Float_t fractionHM = 0.05;
+
+  // different limits to define "interesting events"
+  Int_t nLimits = 9;
+  Int_t limits[] = { 0, 1, 2, 4, 6, 7, 8, 9, 10 };
+
+  // put to 2 for second layer
+  for (Int_t i=0; i<1; ++i)
+  {
+    if (!xSections[i])
+      continue;
+
+    TH1* xSection = xSections[i];
+    TH2* fMvsL = (i == 0) ? fMvsL1: fMvsL2;
+
+    // relative x-section, once we have a collision
+    xSection->Scale(1.0 / xSection->Integral());
+
+    xSection->SetStats(kFALSE);
+    xSection->SetTitle(""); //(i == 0) ? "SPD Layer 1" : "SPD Layer 2");
+    xSection->GetXaxis()->SetTitle(Form("true multiplicity in |#eta| < %.1f", (i == 0) ? 2.0 : 1.5));
+    xSection->GetXaxis()->SetRangeUser(0, (i == 0) ? 450 : 350);
+    xSection->GetYaxis()->SetTitleOffset(1.2);
+
+    TCanvas* canvas = new TCanvas("MBComparison", "MBComparison", 1000, 800);
+    canvas->Divide(3, 3);
+
+    for (Int_t currentLimit = 0; currentLimit<nLimits; currentLimit++)
+    {
+      // limit is N times the mean
+      Int_t limit = (Int_t) (xSection->GetMean() * limits[currentLimit]);
+      if (limit < 1)
+        limit = 1;
+
+      TGraph* graphMB = new TGraph;
+      graphMB->SetTitle(Form("Events with %d times above <n> (i.e. n >= %d)", limits[currentLimit], limit));
+      graphMB->SetMarkerStyle(20);
+
+      TGraph* graphBoth = new TGraph;
+      graphBoth->SetMarkerStyle(21);
+
+      Float_t min = bandwidth;
+      Float_t max = 0;
+
+      for (Int_t current = 0; current<nRates; ++current)
+      {
+        Float_t rate = rates[current];
+        Int_t cut = cuts[current];
+
+        TH1* triggerEff = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
+        TH1* proj = GetXSectionCut(xSection, fMvsL, cut);
+
+        Float_t downScaleMB1 = rate / bandwidth;
+        if (downScaleMB1 < 1)
+          downScaleMB1 = 1;
+
+        Float_t downScaleMB2 = rate / (bandwidth * fractionMB);
+        if (downScaleMB2 < 1)
+          downScaleMB2 = 1;
+
+        Float_t downScaleHM = rate * proj->Integral(1, xSection->GetNbinsX()) / (bandwidth * fractionHM);
+        if (downScaleHM < 1)
+          downScaleHM = 1;
+
+        Float_t rateMB1 = rate / downScaleMB1 * xSection->Integral(limit, xSection->GetNbinsX());
+        Float_t rateMB2 = rate / downScaleMB2 * xSection->Integral(limit, xSection->GetNbinsX());
+        Float_t rateHM = rate / downScaleHM * proj->Integral(limit, xSection->GetNbinsX());
+        Float_t combinedRate = rateMB2 + rateHM;
+
+        graphMB->SetPoint(graphMB->GetN(), rate, rateMB1);
+        graphBoth->SetPoint(graphBoth->GetN(), rate, combinedRate);
+
+        min = TMath::Min(min, TMath::Min(rateMB1, combinedRate));
+        max = TMath::Max(min, TMath::Max(rateMB1, combinedRate));
+
+        Printf("The rates for events with %d times above <n> (i.e. n >= %d) at a rate of %.2e Hz is:", limits[currentLimit], limit, rate);
+        Printf("   %.2e Hz in MB-only mode", rateMB1);
+        Printf("   %.2e Hz = %.2e Hz + %.2e Hz in MB + high mult. mode", combinedRate, rateMB2, rateHM);
+
+        Printf("   The downscale factors are: %.2f %.2f %.2f", downScaleMB1, downScaleMB2, downScaleHM);
+
+        Int_t triggerLimit = 0;
+        for (Int_t bin = 1; bin <= triggerEff->GetNbinsX(); bin++)
+          if (triggerEff->GetBinContent(bin) < 0.5)
+            triggerLimit = (Int_t) triggerEff->GetXaxis()->GetBinCenter(bin);
+
+        Printf("   Efficiency limit (50%%) is at multiplicity %d", triggerLimit);
+
+        if (triggerLimit > limit)
+          Printf("   WARNING: interesting events also counted inside the trigger limit");
+
+        Printf("");
+      }
+
+      canvas->cd(currentLimit+1)->SetLogx();
+      canvas->cd(currentLimit+1)->SetLogy();
+
+      graphMB->Draw("AP");
+      graphBoth->Draw("P SAME");
+
+      graphMB->GetYaxis()->SetRangeUser(0.5 * min, 2 * max);
+      graphMB->GetXaxis()->SetTitle("Raw rate in Hz");
+      graphMB->GetYaxis()->SetTitle("Event rate in Hz");
+    }
+  }
 }
