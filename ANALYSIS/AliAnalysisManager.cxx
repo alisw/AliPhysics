@@ -359,6 +359,19 @@ void AliAnalysisManager::PackOutput(TList *target)
             if (fDebug > 1) printf("   Packing container %s...\n", output->GetName());
             target->Add(wrap);
          }   
+         // Special outputs files are closed and copied on the remote location
+         if (output->IsSpecialOutput() && strlen(output->GetFileName())) {
+            TFile *file = (TFile*)gROOT->GetListOfFiles()->FindObject(output->GetFileName());
+            if (!file) continue;
+            file->Close();
+            if (strlen(fSpecialOutputLocation.Data())) {
+               TString remote = fSpecialOutputLocation;
+               remote += "/";
+               remote += gSystem->HostName();
+               remote += output->GetFileName();
+               TFile::Cp(output->GetFileName(), remote.Data());
+            }
+         }      
       }
    } 
    if (fDebug > 1) {

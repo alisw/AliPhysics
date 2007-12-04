@@ -426,7 +426,7 @@ void AliAnalysisTask::CreateOutputObjects()
 }
 
 //______________________________________________________________________________
-void AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
+TFile *AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
 {
 // This method has to be called INSIDE the user redefined CreateOutputObjects
 // method, before creating each object corresponding to the output containers
@@ -448,11 +448,18 @@ void AliAnalysisTask::OpenFile(Int_t iout, Option_t *option) const
 //    fHist2 = new TH2F("my quality check hist2",...);
 // }
    
-   if (iout<0 || iout>=fNoutputs) return;
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr || mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
+   if (iout<0 || iout>=fNoutputs) {
+      Error("OpenFile", "No output slot for task %s with index %d", GetName(), iout);
+      return NULL;
+   }   
+   // We allow file opening also on the slaves (AG)
+//   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+//   if (!mgr || mgr->GetAnalysisType()==AliAnalysisManager::kProofAnalysis) return;
    AliAnalysisDataContainer *cont = GetOutputSlot(iout)->GetContainer();
-   if (strlen(cont->GetFileName())) new TFile(cont->GetFileName(), option);
+   TFile *f = NULL;
+   if (strlen(cont->GetFileName())) f = new TFile(cont->GetFileName(), option);
+   if (f && !f->IsZombie()) return f;
+   return NULL;
 }
 
 //______________________________________________________________________________

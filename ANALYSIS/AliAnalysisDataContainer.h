@@ -39,7 +39,8 @@ enum ENotifyMessage {
    kFileChange
 };   
 enum EAnalysisContainerFlags {
-   kPostEventLoop = BIT(14)
+   kPostEventLoop = BIT(14),
+   kSpecialOutput = BIT(15)
 };     
    AliAnalysisDataContainer();
    AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
@@ -60,6 +61,7 @@ enum EAnalysisContainerFlags {
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
+   void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
    void                      SetFileName(const char *filename) {fFileName = filename;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
@@ -70,6 +72,7 @@ enum EAnalysisContainerFlags {
    // Container status checking
    Bool_t                    IsDataReady() const  {return fDataReady;}
    Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kPostEventLoop);}
+   Bool_t                    IsSpecialOutput() const {return TObject::TestBit(kSpecialOutput);}
    Bool_t                    IsOwnedData() const  {return fOwnedData;}
    Bool_t                    ClientsExecuted() const;
    Bool_t                    HasConsumers() const {return (fConsumers != 0);}

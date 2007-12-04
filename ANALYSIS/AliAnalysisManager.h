@@ -81,6 +81,7 @@ enum EAliAnalysisFlags {
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetCurrentEntry(Long64_t entry) {fCurrentEntry = entry;}
    void                SetDebugLevel(UInt_t level) {fDebug = level;}
+   void                SetSpecialOutputLocation(const char *location) {fSpecialOutputLocation = location;}
    void                SetDisableBranches(Bool_t disable=kTRUE) {TObject::SetBit(kDisableBranches,disable);}
    void                SetCollectSysInfoEach(Int_t nevents=0) {fNSysInfo = nevents;}
    void                SetInputEventHandler(AliVEventHandler*  handler)  {fInputEventHandler   = handler;}
@@ -131,6 +132,7 @@ private:
    EAliAnalysisExecMode    fMode;                // Execution mode
    Bool_t                  fInitOK;              // Initialisation done
    UInt_t                  fDebug;               // Debug level
+   TString                 fSpecialOutputLocation; // URL/path where the special outputs will be copied
    TObjArray              *fTasks;               // List of analysis tasks
    TObjArray              *fTopTasks;            // List of top tasks
    TObjArray              *fZombies;             // List of zombie tasks
@@ -139,6 +141,6 @@ private:
    TObjArray              *fOutputs;             // List of containers with results
 
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,2)  // Analysis manager class
+   ClassDef(AliAnalysisManager,3)  // Analysis manager class
 };   
 #endif
