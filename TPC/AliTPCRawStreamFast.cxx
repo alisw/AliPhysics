@@ -20,9 +20,8 @@
 /// This class provides access to TPC digits in raw data.
 ///
 /// It loops over all TPC digits in the raw data given by the AliRawReader.
-/// The Next method goes to the next digit. If there are no digits left
+/// The NextChannel method loads the data for the next pad. If there is no pad left
 /// it returns kFALSE.
-/// Several getters provide information about the current digit.
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +35,7 @@
 ClassImp(AliTPCRawStreamFast)
 
 //_____________________________________________________________________________
-AliTPCRawStreamFast::AliTPCRawStreamFast(AliRawReader* rawReader) :
+AliTPCRawStreamFast::AliTPCRawStreamFast(AliRawReader* rawReader, AliAltroMapping **mapping) :
   AliAltroRawStreamFast(rawReader),
   fSector(-1),
   fPrevSector(-1),
@@ -50,53 +49,25 @@ AliTPCRawStreamFast::AliTPCRawStreamFast(AliRawReader* rawReader) :
 
   SelectRawData("TPC");
 
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/TPC/mapping/Patch";
-  TString path2;
-  for(Int_t i = 0; i < 6; i++) {
-    path2 = path;
-    path2 += i;
-    path2 += ".data";
-    fMapping[i] = new AliTPCAltroMapping(path2.Data());
+  if (mapping == NULL) {
+    TString path = gSystem->Getenv("ALICE_ROOT");
+    path += "/TPC/mapping/Patch";
+    TString path2;
+    for(Int_t i = 0; i < 6; i++) {
+      path2 = path;
+      path2 += i;
+      path2 += ".data";
+      fMapping[i] = new AliTPCAltroMapping(path2.Data());
+    }
   }
+  else {
+    for(Int_t i = 0; i < 6; i++)
+      fMapping[i] = mapping[i];
+  }
+
 
   //fNoAltroMapping = kFALSE;
 }
-/*
-//_____________________________________________________________________________
-AliTPCRawStreamFast::AliTPCRawStreamFast(const AliTPCRawStreamFast& stream) :
-  AliAltroRawStreamFast(stream),
-  fSector(stream.fSector),
-  fPrevSector(stream.fPrevSector),
-  fRow(stream.fRow),
-  fPrevRow(stream.fPrevRow),
-  fPad(stream.fPad),
-  fPrevPad(stream.fPrevPad),
-  fIsMapOwner(kFALSE)
-{
-  for(Int_t i = 0; i < 6; i++) fMapping[i] = stream.fMapping[i];
-}
-
-//_____________________________________________________________________________
-AliTPCRawStreamFast& AliTPCRawStreamFast::operator = (const AliTPCRawStreamFast& stream)
-{
-  if(&stream == this) return *this;
-
-  ((AliAltroRawStreamFast *)this)->operator=(stream);
-
-  fSector = stream.fSector;
-  fPrevSector = stream.fPrevSector;
-  fRow = stream.fRow;
-  fPrevRow = stream.fPrevRow;
-  fPad = stream.fPad;
-  fPrevPad = stream.fPrevPad;
-  fIsMapOwner = kFALSE;
-
-  for(Int_t i = 0; i < 6; i++) fMapping[i] = stream.fMapping[i];
-
-  return *this;
-}
-*/
 //_____________________________________________________________________________
 AliTPCRawStreamFast::~AliTPCRawStreamFast()
 {

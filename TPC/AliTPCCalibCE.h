@@ -21,6 +21,7 @@ class AliTPCCalROC;
 class AliTPCParam;
 class AliRawReader;
 class AliTPCRawStream;
+class AliTPCRawStreamFast;
 class TGraph;
 struct eventHeaderStruct;
 
@@ -32,6 +33,9 @@ public:
     virtual ~AliTPCCalibCE();
 
     AliTPCCalibCE& operator = (const  AliTPCCalibCE &source);
+
+    Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
+    Bool_t ProcessEventFast(AliRawReader            *rawReader);
 
 
     Bool_t ProcessEvent(AliTPCRawStream *rawStream);

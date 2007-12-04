@@ -280,6 +280,7 @@ END_HTML */
 #include "AliRawReaderDate.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliTPCRawStream.h"
+#include "AliTPCRawStreamFast.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
@@ -831,8 +832,8 @@ void AliTPCCalibCE::EndEvent()
     AliTPCCalROC *calOroc=new AliTPCCalROC(36);
 
     //find mean time0 offset for side A and C
-    Double_t time0Side[2];       //time0 for side A:0 and C:0
-    Double_t time0SideCount[2];  //time0 counter for side A:0 and C:0
+    Double_t time0Side[2];       //time0 for side A:0 and C:1
+    Double_t time0SideCount[2];  //time0 counter for side A:0 and C:1
     time0Side[0]=0;time0Side[1]=0;time0SideCount[0]=0;time0SideCount[1]=0;
     for ( Int_t iSec = 0; iSec<72; ++iSec ){
 	time0Side[(iSec/18)%2] += fVTime0Offset.GetMatrixArray()[iSec];
@@ -1030,6 +1031,58 @@ void AliTPCCalibCE::EndEvent()
 
     delete calIroc;
     delete calOroc;
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibCE::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
+{
+  //
+  // Event Processing loop - AliTPCRawStreamFast
+  //
+  ResetEvent();
+  Bool_t withInput = kFALSE;
+  while ( rawStreamFast->NextDDL() ){
+      while ( rawStreamFast->NextChannel() ){
+	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
+	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
+	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
+	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+          Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+
+	  while ( rawStreamFast->NextBunch() ){
+	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
+		  Update(isector,iRow,iPad,iTimeBin+1,signal);
+		  withInput = kTRUE;
+	      }
+	  }
+      }
+  }
+  if (withInput){
+      EndEvent();
+  }
+  return withInput;
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibCE::ProcessEventFast(AliRawReader *rawReader)
+{
+  //
+  //  Event processing loop using the fast raw stream algorithm- AliRawReader
+  //
+
+  //printf("ProcessEventFast - raw reader\n");
+
+  AliRawEventHeaderBase* eventHeader = (AliRawEventHeaderBase*)rawReader->GetEventHeader();
+  if (eventHeader){
+      fTimeStamp   = eventHeader->Get("Timestamp");
+      fRunNumber = eventHeader->Get("RunNb");
+  }
+  fEventId = *rawReader->GetEventId();
+
+  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader);
+  Bool_t res=ProcessEventFast(rawStreamFast);
+  delete rawStreamFast;
+  return res;
+
 }
 //_____________________________________________________________________
 Bool_t AliTPCCalibCE::ProcessEvent(AliTPCRawStream *rawStream)

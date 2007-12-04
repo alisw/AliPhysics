@@ -10,7 +10,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #include <TVectorT.h>
-#include <TObjArray.h>
+class TObjArray;
 class TH2S;
 class TTreeSRedirector;
 class AliTPCCalPad;
@@ -19,6 +19,7 @@ class AliTPCCalROC;
 class AliTPCParam;
 class AliRawReader;
 class AliTPCRawStream;
+class AliTPCRawStreamFast;
 struct eventHeaderStruct;
 
 class AliTPCCalibPulser : public TObject {
@@ -29,6 +30,9 @@ public:
     virtual ~AliTPCCalibPulser();
 
     AliTPCCalibPulser& operator = (const  AliTPCCalibPulser &source);
+
+    Bool_t ProcessEventFast(AliTPCRawStreamFast *rawStreamFast);
+    Bool_t ProcessEventFast(AliRawReader            *rawReader);
 
 
     Bool_t ProcessEvent(AliTPCRawStream *rawStream);

@@ -181,6 +181,7 @@
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 #include "AliTPCRawStream.h"
+#include "AliTPCRawStreamFast.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCROC.h"
@@ -641,10 +642,51 @@ void AliTPCCalibPulser::EndEvent()
 		delete h1;
 	    }
 	    //Debug end
-
 	}
     }
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibPulser::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
+{
+  //
+  // Event Processing loop - AliTPCRawStream
+  //
+  ResetEvent();
 
+  Bool_t withInput = kFALSE;
+
+  while ( rawStreamFast->NextDDL() ){
+      while ( rawStreamFast->NextChannel() ){
+	  Int_t isector  = rawStreamFast->GetSector();                       //  current sector
+	  Int_t iRow     = rawStreamFast->GetRow();                          //  current row
+	  Int_t iPad     = rawStreamFast->GetPad();                          //  current pad
+	  Int_t startTbin = (Int_t)rawStreamFast->GetStartTimeBin();
+          Int_t endTbin = (Int_t)rawStreamFast->GetEndTimeBin();
+
+	  while ( rawStreamFast->NextBunch() ){
+	      for (Int_t iTimeBin = startTbin; iTimeBin < endTbin; iTimeBin++){
+		  Float_t signal=(Float_t)rawStreamFast->GetSignals()[iTimeBin-startTbin];
+		  Update(isector,iRow,iPad,iTimeBin+1,signal);
+		  withInput = kTRUE;
+	      }
+	  }
+      }
+  }
+  if (withInput){
+      EndEvent();
+  }
+  return withInput;
+}
+//_____________________________________________________________________
+Bool_t AliTPCCalibPulser::ProcessEventFast(AliRawReader *rawReader)
+{
+  //
+  //  Event processing loop - AliRawReader
+  //
+  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader);
+  Bool_t res=ProcessEventFast(rawStreamFast);
+  delete rawStreamFast;
+  return res;
 }
 //_____________________________________________________________________
 Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream)
@@ -660,7 +702,6 @@ Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream)
   Bool_t withInput = kFALSE;
 
   while (rawStream->Next()) {
-
       Int_t isector  = rawStream->GetSector();                       //  current sector
       Int_t iRow     = rawStream->GetRow();                          //  current row
       Int_t iPad     = rawStream->GetPad();                          //  current pad
@@ -670,11 +711,9 @@ Bool_t AliTPCCalibPulser::ProcessEvent(AliTPCRawStream *rawStream)
       Update(isector,iRow,iPad,iTimeBin,signal);
       withInput = kTRUE;
   }
-
   if (withInput){
       EndEvent();
   }
-
   return withInput;
 }
 //_____________________________________________________________________
@@ -998,17 +1037,14 @@ void AliTPCCalibPulser::Analyse()
 
 	for (UInt_t iChannel=0; iChannel<nChannels; ++iChannel){
 
-
 	    Float_t cogTime0 = -1000;
 	    Float_t cogQ     = -1000;
 	    Float_t cogRMS   = -1000;
             Float_t cogOut   = 0;
 
-
 	    Int_t offsetQ = (fNbinsQ+2)*(iChannel+1)+1;
 	    Int_t offsetT0 = (fNbinsT0+2)*(iChannel+1)+1;
 	    Int_t offsetRMS = (fNbinsRMS+2)*(iChannel+1)+1;
-
 /*
 	    AliMathBase::FitGaus(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ,&paramQ,&dummy);
 	    AliMathBase::FitGaus(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0,&paramT0,&dummy);
@@ -1020,8 +1056,6 @@ void AliTPCCalibPulser::Analyse()
 	    cogQ     = AliMathBase::GetCOG(arrayhQ+offsetQ,fNbinsQ,fXminQ,fXmaxQ);
 	    cogTime0 = AliMathBase::GetCOG(arrayhT0+offsetT0,fNbinsT0,fXminT0,fXmaxT0);
             cogRMS   = AliMathBase::GetCOG(arrayhRMS+offsetRMS,fNbinsRMS,fXminRMS,fXmaxRMS);
-
-
 
 	    /*
 	    if ( (cogQ < ??) && (cogTime0 > ??) && (cogTime0<??) && ( cogRMS>??) ){
@@ -1062,9 +1096,7 @@ void AliTPCCalibPulser::Analyse()
 		    "\n";
 	    }
 	    //! debug
-
 	}
-
     }
     delete fDebugStreamer;
     fDebugStreamer = 0x0;
