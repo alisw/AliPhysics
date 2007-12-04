@@ -248,7 +248,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMBVtxNoPt->SetMarkerStyle(22);
   histESDMBTracksNoPt->SetMarkerStyle(23);
 
-  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 3.1, histESDMBVtx->GetMaximum() * 1.1);
+  TH2F* dummy = new TH2F("dummy", "", 100, -1.5, 1.5, 1000, 0, histESDMBVtx->GetMaximum() * 1.1);
   Prepare1DPlot(dummy);
   dummy->SetStats(kFALSE);
   dummy->SetXTitle("#eta");
@@ -266,7 +266,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESDMBVtxNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
   histESDMBTracksNoPt->GetXaxis()->SetRangeUser(-etaLimit, etaLimit);
 
-  /*TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
+  TCanvas* canvas = new TCanvas("dNdEta1", "dNdEta1", 500, 500);
 
   dummy->DrawCopy();
   histESDMBVtx->Draw("SAME");
@@ -274,7 +274,7 @@ void dNdEta(Bool_t onlyESD = kFALSE)
   histESD->Draw("SAME");
 
   canvas->SaveAs("dNdEta1.gif");
-  canvas->SaveAs("dNdEta1.eps");*/
+  canvas->SaveAs("dNdEta1.eps");
 
   if (onlyESD)
     return;

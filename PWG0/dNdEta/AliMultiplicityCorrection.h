@@ -60,6 +60,7 @@ class AliMultiplicityCorrection : public TNamed {
 
     void ApplyBayesianMethod(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Float_t regPar = 1, Int_t nIterations = 100, TH1* initialConditions = 0, Bool_t determineError = kTRUE);
 
+    static TH1* CalculateStdDev(TH1** results, Int_t max);
     TH1* StatisticalUncertainty(MethodType methodType, Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t randomizeMeasured, Bool_t randomizeResponse, TH1* compareTo = 0);
 
     void ApplyGaussianMethod(Int_t inputRange, Bool_t fullPhaseSpace);
@@ -109,6 +110,8 @@ class AliMultiplicityCorrection : public TNamed {
     static void MinuitFitFunction(Int_t&, Double_t*, Double_t& chi2, Double_t *params, Int_t);
     static void MinuitNBD(Int_t& unused1, Double_t* unused2, Double_t& chi2, Double_t *params, Int_t unused3);
 
+    static void DrawGuess(Double_t *params);
+
     void SetupCurrentHists(Int_t inputRange, Bool_t fullPhaseSpace, EventType eventType, Bool_t createBigBin);
 
     Float_t BayesCovarianceDerivate(Float_t matrixM[251][251], TH2* hResponse, Int_t k, Int_t i, Int_t r, Int_t u);
@@ -147,6 +150,7 @@ class AliMultiplicityCorrection : public TNamed {
 
     TH1F* fMultiplicityESDCorrected[kCorrHists]; // corrected histograms
 
+    Int_t fLastBinLimit;        //! last bin limit, determined in SetupCurrentHists()
     Float_t fLastChi2MC;        //! last Chi2 between MC and unfolded ESD (calculated in DrawComparison)
     Int_t   fLastChi2MCLimit;   //! bin where the last chi2 breached a certain threshold, used to evaluate the multiplicity reach (calc. in DrawComparison)
     Float_t fLastChi2Residuals; //! last Chi2 of the ESD and the folded unfolded ESD (calculated in DrawComparison)

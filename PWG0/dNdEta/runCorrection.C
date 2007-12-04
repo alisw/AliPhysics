@@ -1,0 +1,86 @@
+void runCorrection(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aDebug = kFALSE, Bool_t aProof = kFALSE, const char* option = ""){
+  if (aProof)
+  {
+    TProof::Open("lxb6046");
+
+    // Enable the needed package
+    gProof->UploadPackage("STEERBase");
+    gProof->EnablePackage("STEERBase");
+    gProof->UploadPackage("ESD");
+    gProof->EnablePackage("ESD");
+    gProof->UploadPackage("ANALYSIS");
+    gProof->EnablePackage("ANALYSIS");
+    gProof->UploadPackage("PWG0base");
+    gProof->EnablePackage("PWG0base");
+  }
+  else
+  {
+    gSystem->Load("libVMC");
+    gSystem->Load("libTree");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libPWG0base");
+  }
+
+  // Create chain of input files
+  gROOT->LoadMacro("../CreateESDChain.C");
+  chain = CreateESDChain(data, nRuns, offset);
+
+  // Create the analysis manager
+  mgr = new AliAnalysisManager;
+
+  // selection of esd tracks
+  gROOT->ProcessLine(".L CreateCuts.C");
+  AliESDtrackCuts* esdTrackCuts = CreateTrackCuts();
+  if (!esdTrackCuts)
+  {
+    printf("ERROR: esdTrackCuts could not be created\n");
+    return;
+  }
+
+  TString taskName("AlidNdEtaCorrectionTask.cxx+");
+  if (aDebug)
+    taskName += "+g";
+
+  // Create, add task
+  if (aProof) {
+    gProof->Load(taskName);
+  } else
+    gROOT->Macro(taskName);
+
+  task = new AlidNdEtaCorrectionTask(option);
+  task->SetTrackCuts(esdTrackCuts);
+  task->SetAnalysisMode(AlidNdEtaCorrectionTask::kSPD);
+
+  mgr->AddTask(task);
+
+  // Enable MC event handler
+  AliMCEventHandler* handler = new AliMCEventHandler;
+  handler->SetReadTR(kFALSE);
+  mgr->SetMCtruthEventHandler(handler);
+
+  // Add ESD handler
+  AliESDInputHandler* esdH = new AliESDInputHandler;
+  mgr->SetInputEventHandler(esdH);
+
+  // Attach input
+  cInput  = mgr->CreateContainer("cInput", TChain::Class(), AliAnalysisManager::kInputContainer);
+  mgr->ConnectInput(task, 0, cInput);
+
+  // Attach output
+  cOutput = mgr->CreateContainer("cOutput", TList::Class(), AliAnalysisManager::kOutputContainer);
+  mgr->ConnectOutput(task, 0, cOutput);
+
+  // Enable debug printouts
+  if (aDebug)
+    mgr->SetDebugLevel(2);
+
+  // Run analysis
+  mgr->InitAnalysis();
+  mgr->PrintStatus();
+
+  //aProof = kFALSE;
+
+  mgr->StartAnalysis((aProof) ? "proof" : "local", chain);
+}

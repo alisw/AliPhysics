@@ -23,7 +23,6 @@
 
 #include "esdTrackCuts/AliESDtrackCuts.h"
 #include "AliPWG0Helper.h"
-#include "AliPWG0depHelper.h"
 #include "dNdEta/AlidNdEtaCorrection.h"
 
 ClassImp(AlidNdEtaSystematicsSelector)
@@ -223,7 +222,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
   }
   
   // getting process information NB: this only works for Pythia !!!
-  Int_t processtype = AliPWG0depHelper::GetPythiaEventProcessType(header);
+  Int_t processtype = AliPWG0Helper::GetPythiaEventProcessType(header);
 
   // can only read pythia headers, either directly or from cocktalil header
   AliGenEventHeader* genHeader = (AliGenEventHeader*)(header->GenEventHeader());
@@ -392,7 +391,7 @@ Bool_t AlidNdEtaSystematicsSelector::Process(Long64_t entry)
     }
 
     // find primary particle that created this particle
-    TParticle* mother = AliPWG0depHelper::FindPrimaryMother(stack, label);
+    TParticle* mother = AliPWG0Helper::FindPrimaryMother(stack, label);
     if (!mother)
       continue;
 

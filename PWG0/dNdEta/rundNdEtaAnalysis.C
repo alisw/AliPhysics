@@ -70,9 +70,19 @@ void rundNdEtaAnalysis(Char_t* data, Int_t nRuns=20, Int_t offset=0, Bool_t aMC 
   }
 }
 
+void loadlibs()
+{
+  gSystem->Load("libTree");
+  gSystem->Load("libVMC");
+
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libPWG0base");
+}
+
 void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const char* dataOutput = "analysis_esd.root", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction")
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   AlidNdEtaCorrection* dNdEtaCorrection = new AlidNdEtaCorrection(correctionMapFolder, correctionMapFolder);
   TFile::Open(correctionMapFile);
@@ -87,7 +97,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
   }
 
   dNdEtaAnalysis* fdNdEtaAnalysis = new dNdEtaAnalysis("dndeta", "dndeta");
-  fdNdEtaAnalysis->LoadHistograms("dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kINEL);
   fdNdEtaAnalysis->DrawHistograms(kTRUE);
   TFile* file2 = TFile::Open(dataOutput, "RECREATE");
@@ -95,7 +105,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
 
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTr", "dndetaTr");
-  fdNdEtaAnalysis->LoadHistograms("dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kVertexReco);
   fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
@@ -103,7 +113,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
 
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTrVtx", "dndetaTrVtx");
-  fdNdEtaAnalysis->LoadHistograms("dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3, AlidNdEtaCorrection::kTrack2Particle);
   fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
@@ -111,7 +121,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
 
   file->cd();
   fdNdEtaAnalysis = new dNdEtaAnalysis("dndetaTracks", "dndetaTracks");
-  fdNdEtaAnalysis->LoadHistograms("dndeta");
+  fdNdEtaAnalysis->LoadHistograms("fdNdEtaAnalysisESD");
   fdNdEtaAnalysis->Finish(0, 0.3, AlidNdEtaCorrection::kNone);
   fdNdEtaAnalysis->DrawHistograms(kTRUE);
   file2->cd();
@@ -120,7 +130,7 @@ void FinishAnalysisAll(const char* dataInput = "analysis_esd_raw.root", const ch
 
 void FinishAnalysis(const char* analysisFile = "analysis_esd.root", const char* analysisDir = "dndeta", const char* correctionMapFile = "correction_map.root", const char* correctionMapFolder = "dndeta_correction", Bool_t useUncorrected = kFALSE, Bool_t simple = kFALSE)
 {
-  gSystem->Load("libPWG0base");
+  loadlibs();
 
   TFile* file = TFile::Open(analysisFile);
 
@@ -133,7 +143,9 @@ void FinishAnalysis(const char* analysisFile = "analysis_esd.root", const char* 
     TFile::Open(correctionMapFile);
     dNdEtaCorrection->LoadHistograms();
 
-    fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.3);
+    //fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0.2, AlidNdEtaCorrection::kINEL);
+    fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kINEL);
+    //fdNdEtaAnalysis->Finish(dNdEtaCorrection, 0, AlidNdEtaCorrection::kTrack2Particle);
   }
 
   fdNdEtaAnalysis->DrawHistograms(simple);

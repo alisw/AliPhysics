@@ -31,7 +31,7 @@
 const char* correctionFile = "multiplicityMC_2M.root";
 const char* measuredFile   = "multiplicityMC_1M_3.root";
 Int_t etaRange = 3;
-Int_t displayRange = 150; // axis range
+Int_t displayRange = 200; // axis range
 Int_t ratioRange = 151;   // range to calculate difference
 Int_t longDisplayRange = 200;
 
@@ -728,6 +728,9 @@ void bayesianExample()
 
   //mult->DrawComparison("bayesianExample", etaRange, kFALSE, kTRUE, mcHist, kTRUE);
   DrawResultRatio(mcHist, result, "bayesianExample.eps");
+
+  //Printf("KolmogorovTest says PROB = %f", mcHist->KolmogorovTest(result, "D"));
+  //Printf("Chi2Test says PROB = %f", mcHist->Chi2Test(result));
 
   // draw residual plot
 
@@ -1597,7 +1600,8 @@ void StatisticalUncertaintyCompare(const char* det = "SPD")
   errorResponse->GetXaxis()->SetRangeUser(1, (strcmp(det, "TPC") ? 200 : 100));
   errorResponse->GetYaxis()->SetRangeUser(0, 0.3);
   errorResponse->SetStats(kFALSE);
-  errorResponse->SetTitle(";true multiplicity;Uncertainty");
+  errorResponse->GetYaxis()->SetTitleOffset(1.2);
+  errorResponse->SetTitle(";true multiplicity;#sigma(U-T)/T");
 
   errorResponse->Draw();
 
@@ -1625,7 +1629,7 @@ void StatisticalUncertaintyCompare(const char* det = "SPD")
   canvas->SaveAs(Form("%s.eps", canvas->GetName()));
 }
 
-void EfficiencyComparison(Int_t eventType = 2)
+void EfficiencyComparison(Int_t eventType = 2, Bool_t uncertainty = kTRUE)
 {
  const char* files[] = { "multiplicityMC_400k_syst_nd.root", "multiplicityMC_400k_syst_sd.root", "multiplicityMC_400k_syst_dd.root", "multiplicityMC_400k_syst_xsection.root" };
 
@@ -1699,17 +1703,19 @@ void EfficiencyComparison(Int_t eventType = 2)
       for (Int_t bin=1; bin<=20; bin++)
         if (eff->GetBinContent(bin) > 0)
           Printf("Bin %d: Error: %.2f", bin, 100.0 * eff->GetBinError(bin) / eff->GetBinContent(bin));
+      
+      if (uncertainty) {
+	effError = (TH1*) eff->Clone("effError");
+	effError->Reset();
 
-      effError = (TH1*) eff->Clone("effError");
-      effError->Reset();
+	for (Int_t bin=2; bin<=eff->GetNbinsX(); bin++)
+	  if (eff->GetBinContent(bin) > 0)
+	    effError->SetBinContent(bin, 10.0 * eff->GetBinError(bin) / eff->GetBinContent(bin));
 
-      for (Int_t bin=2; bin<=eff->GetNbinsX(); bin++)
-        if (eff->GetBinContent(bin) > 0)
-          effError->SetBinContent(bin, 10.0 * eff->GetBinError(bin) / eff->GetBinContent(bin));
-
-      effError->SetLineColor(1);
-      effError->SetMarkerStyle(1);
-      effError->DrawCopy("SAME HIST");
+	effError->SetLineColor(1);
+	effError->SetMarkerStyle(1);
+	effError->DrawCopy("SAME HIST");
+      }
     }
 
     eff->SetBinContent(1, 0);
@@ -1726,7 +1732,8 @@ void EfficiencyComparison(Int_t eventType = 2)
     legend->AddEntry(eff, (((i == 0) ? "non diffractive" : ((i == 1) ? "single diffractive" : ((i == 2) ? "double diffractive" : "Pythia combined")))));
   }
 
-  legend->AddEntry(effError, "relative syst. uncertainty #times 10");
+  if (uncertainty)
+    legend->AddEntry(effError, "relative syst. uncertainty #times 10");
 
   legend->Draw();
 
@@ -2532,7 +2539,7 @@ TH1* SystematicsSummary(Bool_t tpc = 1)
   return total;
 }
 
-void finalPlot(Bool_t tpc = kTRUE, Bool_t chi2 = kTRUE)
+void finalPlot(Bool_t tpc = kTRUE, Bool_t chi2 = kTRUE, Bool_t small = kFALSE)
 {
   gSystem->Load("libPWG0base");
 
@@ -2584,7 +2591,7 @@ void finalPlot(Bool_t tpc = kTRUE, Bool_t chi2 = kTRUE)
   // change error drawing style
   systError->SetFillColor(15);
 
-  TCanvas* canvas = new TCanvas("finalPlot.eps", "finalPlot.eps", 800, 400);
+  TCanvas* canvas = new TCanvas("finalPlot.eps", "finalPlot.eps", (small) ? 600 : 800, 400);
   canvas->SetRightMargin(0.05);
   canvas->SetTopMargin(0.05);
 
@@ -2646,4 +2653,162 @@ void finalPlot(Bool_t tpc = kTRUE, Bool_t chi2 = kTRUE)
 
 
   canvas->SaveAs(canvas->GetName());
+}
+
+void BlobelUnfoldingExample()
+{
+  const Int_t kSize = 20;
+
+  TMatrixD matrix(kSize, kSize);
+  for (Int_t x=0; x<kSize; x++)
+  {
+    for (Int_t y=0; y<kSize; y++)
+    {
+      if (x == y)
+      {
+        if (x == 0 || x == kSize -1)
+        {
+          matrix(x, y) = 0.75;
+        }
+        else
+          matrix(x, y) = 0.5;
+      }
+      else if (TMath::Abs(x - y) == 1)
+      {
+        matrix(x, y) = 0.25;
+      }
+    }
+  }
+
+  //matrix.Print();
+
+  TMatrixD inverted(matrix);
+  inverted.Invert();
+
+  //inverted.Print();
+
+  TH1F* inputDist = new TH1F("inputDist", ";t;#tilde{T}(t)", kSize, -0.5, (Float_t) kSize - 0.5);
+  TVectorD inputDistVector(kSize);
+  TH1F* unfolded = inputDist->Clone("unfolded");
+  TH1F* measuredIdealDist = inputDist->Clone("measuredIdealDist");
+  measuredIdealDist->SetTitle(";m;#tilde{M}(m)");
+  TH1F* measuredDist = measuredIdealDist->Clone("measuredDist");
+
+  TF1* gaus = new TF1("func", "gaus(0)", -0.5, kSize);
+  // norm: 1/(sqrt(2pi)sigma)
+  gaus->SetParameters(10000 / sqrt(2 * TMath::Pi()) / ((Float_t) kSize / 8), (Float_t) kSize / 2, (Float_t) kSize / 8);
+  //gaus->Print();
+
+  for (Int_t x=1; x<=inputDist->GetNbinsX(); x++)
+  {
+    Float_t value = gaus->Eval(inputDist->GetBinCenter(x));
+    inputDist->SetBinContent(x, value);
+    inputDistVector(x-1) = value;
+  }
+
+  TVectorD measuredDistIdealVector = matrix * inputDistVector;
+  
+  for (Int_t x=1; x<=measuredIdealDist->GetNbinsX(); x++)
+    measuredIdealDist->SetBinContent(x, measuredDistIdealVector(x-1));
+
+  measuredDist->FillRandom(measuredIdealDist, 10000);
+
+  // fill error matrix before scaling
+  TMatrixD covarianceMatrixMeasured(kSize, kSize);
+  for (Int_t x=1; x<=unfolded->GetNbinsX(); x++)
+    covarianceMatrixMeasured(x-1, x-1) = TMath::Sqrt(measuredDist->GetBinContent(x));
+
+  TMatrixD covarianceMatrix = inverted * covarianceMatrixMeasured * inverted;
+  //covarianceMatrix.Print();
+
+  TVectorD measuredDistVector(kSize);
+  for (Int_t x=1; x<=measuredDist->GetNbinsX(); x++)
+    measuredDistVector(x-1) = measuredDist->GetBinContent(x);
+
+  TVectorD unfoldedVector = inverted * measuredDistVector;
+  for (Int_t x=1; x<=unfolded->GetNbinsX(); x++)
+    unfolded->SetBinContent(x, unfoldedVector(x-1));
+
+  TCanvas* canvas = new TCanvas("BlobelUnfoldingExample", "BlobelUnfoldingExample", 1000, 500);
+  canvas->SetTopMargin(0.05);
+  canvas->Divide(2, 1);
+
+  canvas->cd(1);
+  canvas->cd(1)->SetLeftMargin(0.15);
+  canvas->cd(1)->SetRightMargin(0.05);
+  measuredDist->GetYaxis()->SetTitleOffset(1.7);
+  measuredDist->SetStats(0);
+  measuredDist->DrawCopy();
+  gaus->Draw("SAME");
+
+  canvas->cd(2);
+  canvas->cd(2)->SetLeftMargin(0.15);
+  canvas->cd(2)->SetRightMargin(0.05);
+  unfolded->GetYaxis()->SetTitleOffset(1.7);
+  unfolded->SetStats(0);
+  unfolded->DrawCopy();
+  gaus->Draw("SAME");
+
+  canvas->SaveAs("BlobelUnfoldingExample.eps");
+}
+
+void E735Fit()
+{
+  TH1* fCurrentESD = new TH1F("mult", "mult", 501, -0.5, 500.5);
+  fCurrentESD->Sumw2();
+
+  // Open the input stream
+  ifstream in;
+  in.open("e735data.txt");
+
+  while(in.good())
+  {
+    Float_t x, y, ye;
+    in >> x >> y >> ye;
+
+    //Printf("%f %f %f", x, y, ye);
+    fCurrentESD->SetBinContent(fCurrentESD->FindBin(x), y);
+    fCurrentESD->SetBinError(fCurrentESD->FindBin(x), ye);
+  }
+
+  in.close();
+
+  //new TCanvas; fCurrentESD->DrawCopy(); gPad->SetLogy();
+
+  fCurrentESD->Scale(1.0 / fCurrentESD->Integral());
+
+  TF1* func = new TF1("nbd", "[0] * TMath::Binomial([2]+TMath::Nint(x)-1, [2]-1) * pow([1] / ([1]+[2]), TMath::Nint(x)) * pow(1 + [1]/[2], -[2])");
+  func->SetParNames("scaling", "averagen", "k");
+  func->SetParLimits(0, 0.001, fCurrentESD->GetMaximum() * 1000);
+  func->SetParLimits(1, 0.001, 1000);
+  func->SetParLimits(2, 0.001, 1000);
+  func->SetParameters(fCurrentESD->GetMaximum() * 100, 10, 2);
+
+  TF1* lognormal = new TF1("lognormal", "[0]*exp(-(log(x)-[1])^2/(2*[2]^2))/(x*[2]*TMath::Sqrt(2*TMath::Pi()))", 0.01, 500);
+  lognormal->SetParNames("scaling", "mean", "sigma");
+  lognormal->SetParameters(1, 1, 1);
+  lognormal->SetParLimits(0, 0, 10);
+  lognormal->SetParLimits(1, 0, 100);
+  lognormal->SetParLimits(2, 1e-3, 10);
+
+  TCanvas* canvas = new TCanvas("c1", "c1", 700, 400);
+  fCurrentESD->SetStats(kFALSE);
+  fCurrentESD->GetYaxis()->SetTitleOffset(1.3);
+  fCurrentESD->SetTitle(";true multiplicity (N);P_{N}");
+  fCurrentESD->Draw("");
+  fCurrentESD->GetXaxis()->SetRangeUser(0, 250);
+  fCurrentESD->Fit(func, "0", "", 0, 150);
+  func->SetRange(0, 250);
+  func->Draw("SAME");
+  printf("chi2 = %f\n", func->GetChisquare());
+
+  fCurrentESD->Fit(lognormal, "0", "", 0.01, 150);
+  lognormal->SetLineColor(2);
+  lognormal->SetLineStyle(2);
+  lognormal->SetRange(0, 250);
+  lognormal->Draw("SAME");
+
+  gPad->SetLogy();
+
+  canvas->SaveAs("E735Fit.eps");
 }

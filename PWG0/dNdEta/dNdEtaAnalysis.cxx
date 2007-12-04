@@ -39,16 +39,17 @@ dNdEtaAnalysis::dNdEtaAnalysis() :
 }
 
 //____________________________________________________________________
-dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title) :
+dNdEtaAnalysis::dNdEtaAnalysis(Char_t* name, Char_t* title, const char* analysis) :
   TNamed(name, title),
   fData(0),
   fPtDist(0)
 {
   // constructor
 
+  // TODO this binning has to be the same than in AliCorrection, somehow passed?!
   Float_t binLimitsPt[] = {0.0, 0.05, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.275, 0.3, 0.325, 0.35, 0.375, 0.4, 0.425, 0.45, 0.475, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 100.0};
 
-  fData = new AliCorrection("Analysis", Form("%s Analysis", title));
+  fData = new AliCorrection("Analysis", Form("%s Analysis", title), analysis);
 
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -184,11 +185,11 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
     if (correctionType >= AlidNdEtaCorrection::kTrack2Particle)
       trackCorr->Multiply(correction->GetTrack2ParticleCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
 
-    if (correctionType >= AlidNdEtaCorrection::kVertexReco)
+    /*if (correctionType >= AlidNdEtaCorrection::kVertexReco)
     {
       trackCorr->Multiply(correction->GetVertexRecoCorrection()->GetTrackCorrection()->GetCorrectionHistogram());
       eventCorr->Multiply(correction->GetVertexRecoCorrection()->GetEventCorrection()->GetCorrectionHistogram());
-    }
+    }*/
 
     switch (correctionType)
     {

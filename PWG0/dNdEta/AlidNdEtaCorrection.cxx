@@ -42,7 +42,7 @@ AlidNdEtaCorrection::AlidNdEtaCorrection()
 }
 
 //____________________________________________________________________
-AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title)
+AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title, const char* analysis)
   : TNamed(name, title),
   fTrack2ParticleCorrection(0),
   fVertexRecoCorrection(0),
@@ -54,12 +54,12 @@ AlidNdEtaCorrection::AlidNdEtaCorrection(const Char_t* name, const Char_t* title
   // constructor
   //
 
-  fTrack2ParticleCorrection = new AliCorrection("Track2Particle", "Track2Particle");
-  fVertexRecoCorrection     = new AliCorrection("VertexReconstruction", "VertexReconstruction");
+  fTrack2ParticleCorrection = new AliCorrection("Track2Particle", "Track2Particle", analysis);
+  fVertexRecoCorrection     = new AliCorrection("VertexReconstruction", "VertexReconstruction", analysis);
 
-  fTriggerBiasCorrectionMBToINEL = new AliCorrection("TriggerBias_MBToINEL", "TriggerBias_MBToINEL");
-  fTriggerBiasCorrectionMBToNSD  = new AliCorrection("TriggerBias_MBToNSD", "TriggerBias_MBToNSD");
-  fTriggerBiasCorrectionMBToND   = new AliCorrection("TriggerBias_MBToND", "TriggerBias_MBToND");
+  fTriggerBiasCorrectionMBToINEL = new AliCorrection("TriggerBias_MBToINEL", "TriggerBias_MBToINEL", analysis);
+  fTriggerBiasCorrectionMBToNSD  = new AliCorrection("TriggerBias_MBToNSD", "TriggerBias_MBToNSD", analysis);
+  fTriggerBiasCorrectionMBToND   = new AliCorrection("TriggerBias_MBToND", "TriggerBias_MBToND", analysis);
 }
 
 //____________________________________________________________________

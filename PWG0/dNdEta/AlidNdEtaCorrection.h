@@ -36,7 +36,7 @@ public:
   };
 
   AlidNdEtaCorrection();
-  AlidNdEtaCorrection(const Char_t* name, const Char_t* title);
+  AlidNdEtaCorrection(const Char_t* name, const Char_t* title, const char* analysis = "TPC");
 
   virtual Long64_t Merge(TCollection* list);
 

@@ -32,7 +32,7 @@ public:
   enum { kVertexBinning = 1+2 }; // the first is for the whole vertex range, the others divide the vertex range
 
   dNdEtaAnalysis();
-  dNdEtaAnalysis(Char_t* name, Char_t* title);
+  dNdEtaAnalysis(Char_t* name, Char_t* title, const char* analysis = "tpc");
   virtual ~dNdEtaAnalysis();
 
   dNdEtaAnalysis(const dNdEtaAnalysis &c);
