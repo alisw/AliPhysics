@@ -33,8 +33,10 @@ class AliHighMultiplicitySelector : public AliSelectorRL {
     void ReadHistograms(const char* filename = "highmult.root");
     void DrawHistograms();
     void JPRPlots();
-    void Ntrigger();
+    void Ntrigger(Bool_t relative = kTRUE);
     TGraph* IntFractRate();
+    void Contamination();
+    void MBComparison();
 
  protected:
     void MakeGraphs(const char* title, TH1* xSection, TH2* fMvsL, Int_t limit);
