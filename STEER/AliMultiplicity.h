@@ -2,6 +2,7 @@
 #define ALIMULTIPLICITY_H
 
 #include<TObject.h>
+#include<TMath.h>
 
 ////////////////////////////////////////////////////////
 ////   Class containing multiplicity information      //
@@ -22,6 +23,8 @@ class AliMultiplicity : public TObject {
 // methods to access tracklet information
   Int_t GetNumberOfTracklets() const {return fNtracks;}
   Double_t GetTheta(Int_t i) const { if(i>=0 && i<fNtracks) {return fTh[i];}
+  else {Error("GetTheta","Invalid track number %d",i); return -9999.;}}
+  Double_t GetEta(Int_t i) const { if(i>=0 && i<fNtracks) {return -TMath::Log(TMath::Tan(fTh[i]/2.));}
   else {Error("GetTheta","Invalid track number %d",i); return -9999.;}}
   Double_t GetPhi(Int_t i) const { if(i>=0 && i<fNtracks) {return fPhi[i];}
   else {Error("GetPhi","Invalid track number %d",i); return -9999.;}}
