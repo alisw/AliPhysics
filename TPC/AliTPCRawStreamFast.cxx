@@ -43,7 +43,7 @@ AliTPCRawStreamFast::AliTPCRawStreamFast(AliRawReader* rawReader, AliAltroMappin
   fPrevRow(-1),
   fPad(-1),
   fPrevPad(-1),
-  fIsMapOwner(kTRUE)
+  fIsMapOwner(kFALSE)
 {
   // create an object to read TPC raw digits
 
@@ -59,6 +59,7 @@ AliTPCRawStreamFast::AliTPCRawStreamFast(AliRawReader* rawReader, AliAltroMappin
       path2 += ".data";
       fMapping[i] = new AliTPCAltroMapping(path2.Data());
     }
+    fIsMapOwner = kTRUE;
   }
   else {
     for(Int_t i = 0; i < 6; i++)

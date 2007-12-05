@@ -45,7 +45,6 @@ extern "C" {
 #include "AliRawReaderDate.h"
 #include "AliTPCmapper.h"
 #include "AliTPCRawStream.h"
-#include "AliTPCAltroMapping.h"
 #include "AliTPCROC.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
@@ -96,13 +95,13 @@ int main(int argc, char **argv) {
   status = daqDA_DB_getFile(MAPPING_FILE,"./tpcMapping.root");
   if (status) {
     printf("Failed to get mapping file (%s) from DAQdetDB, status=%d\n", MAPPING_FILE, status);
-    printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    printf("Continue anyway ... maybe it works?\n");              // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //return -1;   // temporarily uncommented for testing on pcald47 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   }
 
   /* open the mapping file and retrieve mapping object */
-  TFile *fileMapping = new TFile(MAPPING_FILE, "read");
   AliTPCmapper *mapping = 0;   // The TPC mapping
+  TFile *fileMapping = new TFile(MAPPING_FILE, "read");
   mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
   if (mapping == 0) {
     printf("Failed to get mapping object from %s. Exiting ...\n", MAPPING_FILE);
@@ -111,11 +110,10 @@ int main(int argc, char **argv) {
   } else {
     printf("Got mapping object from %s\n", MAPPING_FILE);
   }
-  AliTPCAltroMapping **altromapp = mapping->GetAltroMapping();
 
-  AliTPCCalibPedestal calibPedestal;           // pedestal and noise calibration
-  calibPedestal.SetTimeAnalysis(timeAnalysis); // pedestal(t) calibration
-  calibPedestal.SetAltroMapping(altromapp);    // Use altro mapping we got from daqDetDb
+  AliTPCCalibPedestal calibPedestal;                         // pedestal and noise calibration
+  calibPedestal.SetTimeAnalysis(timeAnalysis);               // pedestal(t) calibration
+  calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
 
   /* loop over RAW data files */
   int nevents=0;
@@ -153,15 +151,15 @@ int main(int argc, char **argv) {
 	continue;
 
       /* retry if got no event */
-      if (event==NULL) {
+      if (event==NULL)
 	continue;
-      }
 
       nevents++;
 
       //  Pedestal calibration
       AliRawReader *rawReader = new AliRawReaderDate((void*)event);
-      calibPedestal.ProcessEvent(rawReader);
+      //calibPedestal.ProcessEvent(rawReader);
+      calibPedestal.ProcessEventFast(rawReader);   // fast data reader
       delete rawReader;
 
       /* free resources */
@@ -221,10 +219,11 @@ int main(int argc, char **argv) {
 	    Float_t rms = 0.;
 	    Float_t ctr = 0.;
 	    for ( int channel = 0; channel < 16; channel++ ) {
-	      Int_t hwadd = mapping->CodeHWAddress(branch, fec, altro, channel);
-	      Int_t row   = mapping->GetPadRow(patch, hwadd);
-	      Int_t pad   = mapping->GetPad(patch, hwadd);
-	      Float_t ped = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
+	      Int_t hwadd     = mapping->CodeHWAddress(branch, fec, altro, channel);
+	      Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC
+	      Int_t globalrow = mapping->GetGlobalPadRow(patch, hwadd);  // row in full sector
+	      Int_t pad       = mapping->GetPad(patch, hwadd);
+	      Float_t ped     = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
 	      // fixed pedestal
 	      if ( ped > 1.e-10 ) {
 		pedfile << ctr_channel << "\t" << side << "\t" << sector << "\t" << patch << "\t"
@@ -232,11 +231,11 @@ int main(int argc, char **argv) {
 		ctr_channel++;
 	      }
 	      // pedestal(t)
-	      if ( timePed && fabs(timePed[row][pad].GetSum()) > 1e-10 ) {
+	      if ( timePed && fabs(timePed[globalrow][pad].GetSum()) > 1e-10 ) {
 		pedmemfile << ctr_pattern << "\t" << side << "\t" << sector << "\t" << patch
 			   << "\t" << hwadd;
 		for ( Int_t timebin = 0; timebin < 1024; timebin++ )
-		  pedmemfile << "\t" << timePed[row][pad].At(timebin);
+		  pedmemfile << "\t" << timePed[globalrow][pad].At(timebin);
 		pedmemfile << std::endl;
 		ctr_pattern++;
 	      }

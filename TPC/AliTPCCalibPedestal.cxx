@@ -31,11 +31,11 @@
 #include "AliRawReaderRoot.h"
 #include "AliRawReaderDate.h"
 #include "AliTPCRawStream.h"
-#include "AliTPCRawStreamFast.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCROC.h"
 #include "AliMathBase.h"
 #include "TTreeStream.h"
+#include "AliTPCRawStreamFast.h"
 
 //date
 #include "event.h"
@@ -208,6 +208,7 @@ AliTPCCalibPedestal::AliTPCCalibPedestal() : /*FOLD00*/
   fOldRCUformat(kTRUE),
   fTimeAnalysis(kFALSE),
   fROC(AliTPCROC::Instance()),
+  fMapping(NULL),
   fCalRocArrayPedestal(72),
   fCalRocArrayRMS(72),
   fHistoPedestalArray(72),
@@ -229,6 +230,7 @@ AliTPCCalibPedestal::AliTPCCalibPedestal(const AliTPCCalibPedestal &ped) : /*FOL
   fOldRCUformat(ped.fOldRCUformat),
   fTimeAnalysis(ped.fTimeAnalysis),
   fROC(AliTPCROC::Instance()),
+  fMapping(NULL),
   fCalRocArrayPedestal(72),
   fCalRocArrayRMS(72),
   fHistoPedestalArray(72),
@@ -286,6 +288,9 @@ AliTPCCalibPedestal::~AliTPCCalibPedestal() /*FOLD00*/
     delete [] fTimeSignal;
     fTimeSignal = 0;
   }
+
+  // do not delete fMapping, because we do not own it.
+
 }
 
 
@@ -345,7 +350,7 @@ Int_t AliTPCCalibPedestal::Update(const Int_t icsector, /*FOLD00*/
 
   Int_t iChannel  = fROC->GetRowIndexes(icsector)[icRow]+icPad; //  global pad position in sector
 
-  // fast filling methode.
+  // fast filling method
   // Attention: the entry counter of the histogram is not increased
   //            this means that e.g. the colz draw option gives an empty plot
   Int_t bin = (iChannel+1)*(fAdcMax-fAdcMin+2)+((Int_t)csignal-fAdcMin+1);
@@ -354,6 +359,8 @@ Int_t AliTPCCalibPedestal::Update(const Int_t icsector, /*FOLD00*/
 
   return 0;
 }
+
+
 //_____________________________________________________________________
 Bool_t AliTPCCalibPedestal::ProcessEventFast(AliTPCRawStreamFast *rawStreamFast)
 {
@@ -388,13 +395,12 @@ Bool_t AliTPCCalibPedestal::ProcessEventFast(AliRawReader *rawReader)
   //
   //  Event processing loop - AliRawReader
   //
- printf("ProcessEventFast - raw reader\n");
-
-  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader);
+  AliTPCRawStreamFast *rawStreamFast = new AliTPCRawStreamFast(rawReader, (AliAltroMapping**)fMapping);
   Bool_t res=ProcessEventFast(rawStreamFast);
   delete rawStreamFast;
   return res;
 }
+
 //_____________________________________________________________________
 Bool_t AliTPCCalibPedestal::ProcessEvent(AliTPCRawStream *rawStream)
 {
@@ -407,6 +413,7 @@ Bool_t AliTPCCalibPedestal::ProcessEvent(AliTPCRawStream *rawStream)
   Bool_t withInput = kFALSE;
 
   while (rawStream->Next()) {
+
     Int_t iSector  = rawStream->GetSector();      //  current ROC
     Int_t iRow     = rawStream->GetRow();         //  current row
     Int_t iPad     = rawStream->GetPad();         //  current pad
@@ -416,8 +423,11 @@ Bool_t AliTPCCalibPedestal::ProcessEvent(AliTPCRawStream *rawStream)
     Update(iSector,iRow,iPad,iTimeBin,signal);
     withInput = kTRUE;
   }
+
   return withInput;
 }
+
+
 //_____________________________________________________________________
 Bool_t AliTPCCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 {
@@ -425,7 +435,8 @@ Bool_t AliTPCCalibPedestal::ProcessEvent(AliRawReader *rawReader)
   //  Event processing loop - AliRawReader
   //
 
-  AliTPCRawStream rawStream(rawReader);
+  // if fMapping is NULL the rawstream will crate its own mapping
+  AliTPCRawStream rawStream(rawReader, (AliAltroMapping**)fMapping);
   rawReader->Select("TPC");
   return ProcessEvent(&rawStream);
 }
@@ -472,8 +483,8 @@ Bool_t AliTPCCalibPedestal::TestEvent() /*FOLD00*/
 
 //_____________________________________________________________________
 TH2F* AliTPCCalibPedestal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
-				  Int_t nbinsY, Float_t ymin, Float_t ymax,
-				  Char_t *type, Bool_t force)
+				    Int_t nbinsY, Float_t ymin, Float_t ymax,
+				    Char_t *type, Bool_t force)
 {
     //
     // return pointer to Q histogram
