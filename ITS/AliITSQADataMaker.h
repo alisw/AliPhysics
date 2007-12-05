@@ -54,6 +54,7 @@ private:
 	
   Bool_t  fkOnline;                         //online (1) or offline (0) use
   Int_t   fLDC;                            //LDC number (0 for offline, 1 to 4 for online) 
+  Int_t   fnSDDHistos;                     // number of histogrma booked for SDDs
   TH2D *fModuleChargeMap[2*fgknSDDmodules];//module map
   TH1D *fmonoD[2*fgknSDDmodules] ;         //histo used as support
  
@@ -62,4 +63,5 @@ private:
 };
 
 #endif
+
 
