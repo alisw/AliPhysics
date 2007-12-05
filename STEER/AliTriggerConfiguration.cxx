@@ -58,7 +58,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
-#include <cstdlib>
+//#include <cstdlib>
 
 #include <TObject.h>
 #include <TString.h>
@@ -66,8 +66,6 @@
 #include <TObjArray.h>
 #include <TSystem.h>
 #include <TKey.h>
-#include <TList.h>
-#include <TMap.h>
 #include <TFile.h>
 
 #include "AliLog.h"
@@ -122,6 +120,7 @@ AliTriggerConfiguration::AliTriggerConfiguration( TString & name, TString & desc
 //_____________________________________________________________________________
 AliTriggerConfiguration::~AliTriggerConfiguration() 
 { 
+  // Destructor
   fInputs.SetOwner();
   fInputs.Delete();
   fInteractions.SetOwner();
@@ -143,6 +142,8 @@ AliTriggerConfiguration::~AliTriggerConfiguration()
 //_____________________________________________________________________________
 Bool_t AliTriggerConfiguration::AddInput( AliTriggerInput* input )
 {
+  // Add a trigger input to
+  // the list of the trigger inputs
   if (fInputs.GetEntries() < kNMaxInputs) {
     fInputs.AddLast( input );
     return kTRUE;
@@ -158,6 +159,8 @@ AliTriggerInput* AliTriggerConfiguration::AddInput( TString &name, TString &det,
 						    UChar_t level, UInt_t signature,
 						    UChar_t number )
 {
+  // Add a trigger input to
+  // the list of the trigger inputs
   AliTriggerInput *input = new AliTriggerInput(name,det,level,signature,number);
   if (!AddInput(input)) {
     delete input;
@@ -170,6 +173,8 @@ AliTriggerInput* AliTriggerConfiguration::AddInput( TString &name, TString &det,
 //_____________________________________________________________________________
 AliTriggerInteraction* AliTriggerConfiguration::AddInteraction(TString &name, TString &logic)
 {
+  // Add a trigger interaction object to
+  // the list of the trigger interactions
   AliTriggerInteraction *interact = new AliTriggerInteraction(name,logic);
   if (!AddInteraction(interact)) {
     delete interact;
@@ -182,6 +187,8 @@ AliTriggerInteraction* AliTriggerConfiguration::AddInteraction(TString &name, TS
 //_____________________________________________________________________________
 Bool_t  AliTriggerConfiguration::AddInteraction(AliTriggerInteraction *interact)
 {
+  // Add a trigger interaction object to
+  // the list of the trigger interactions
   if (fInteractions.GetEntries() < kNMaxInteractions) {
     if (interact->CheckInputs(fInputs)) {
       fInteractions.AddLast( interact );
@@ -199,6 +206,8 @@ Bool_t  AliTriggerConfiguration::AddInteraction(AliTriggerInteraction *interact)
 //_____________________________________________________________________________
 AliTriggerInteraction* AliTriggerConfiguration::AddFunction(TString &name, TString &logic)
 {
+  // Add a trigger function object to
+  // the list of the trigger functions
   AliTriggerInteraction *func = new AliTriggerInteraction(name,logic);
   if (!AddFunction(func)) {
     delete func;
@@ -211,6 +220,8 @@ AliTriggerInteraction* AliTriggerConfiguration::AddFunction(TString &name, TStri
 //_____________________________________________________________________________
 Bool_t  AliTriggerConfiguration::AddFunction(AliTriggerInteraction *func)
 {
+  // Add a trigger function object to
+  // the list of the trigger functions
   if (fFunctions.GetEntries() < kNMaxFunctions) {
     if (func->CheckInputs(fInputs)) {
       fFunctions.AddLast( func );
@@ -228,6 +239,8 @@ Bool_t  AliTriggerConfiguration::AddFunction(AliTriggerInteraction *func)
 //_____________________________________________________________________________
 Bool_t AliTriggerConfiguration::AddPFProtection( AliTriggerPFProtection* pfp )
 {
+  // Add a trigger past-future protection object to
+  // the list of the trigger past-future protections
   if (fPFProtections.GetEntries() < kNMaxPFProtections) {
     if (pfp->CheckInteractions(fInteractions)) {
       fPFProtections.AddLast( pfp );
@@ -245,6 +258,8 @@ Bool_t AliTriggerConfiguration::AddPFProtection( AliTriggerPFProtection* pfp )
 //_____________________________________________________________________________
 AliTriggerBCMask* AliTriggerConfiguration::AddMask( TString &name, TString &mask )
 {
+  // Add a trigger bunch-crossing mask object to
+  // the list of the trigger bunch-crossing masks
   AliTriggerBCMask *bcmask = new AliTriggerBCMask(name,mask);
   if (!AddMask(bcmask)) {
     delete bcmask;
@@ -257,6 +272,8 @@ AliTriggerBCMask* AliTriggerConfiguration::AddMask( TString &name, TString &mask
 //_____________________________________________________________________________
 Bool_t AliTriggerConfiguration::AddMask( AliTriggerBCMask* mask )
 {
+  // Add a trigger bunch-crossing mask object to
+  // the list of the trigger bunch-crossing masks
   if (fMasks.GetEntries() < kNMaxMasks) {
       fMasks.AddLast( mask );
       return kTRUE;
@@ -270,6 +287,8 @@ Bool_t AliTriggerConfiguration::AddMask( AliTriggerBCMask* mask )
 //_____________________________________________________________________________
 AliTriggerCluster* AliTriggerConfiguration::AddCluster( TString &name, UChar_t index, TString &detectors)
 {
+  // Add a trigger detector readout cluster to
+  // the list of the trigger clusters
   AliTriggerCluster *clust = new AliTriggerCluster(name,index,detectors);
   if (!AddCluster(clust)) {
     delete clust;
@@ -283,6 +302,8 @@ AliTriggerCluster* AliTriggerConfiguration::AddCluster( TString &name, UChar_t i
 //_____________________________________________________________________________
 Bool_t AliTriggerConfiguration::AddCluster( AliTriggerCluster* cluster )
 {
+  // Add a trigger detector readout cluster to
+  // the list of the trigger clusters
   if (fClusters.GetEntries() < kNMaxClusters) {
     TString dets(cluster->GetDetectorsInCluster());
     if (!(dets.IsNull())) {
@@ -301,7 +322,8 @@ Bool_t AliTriggerConfiguration::AddCluster( AliTriggerCluster* cluster )
 //_____________________________________________________________________________
 TString AliTriggerConfiguration::GetActiveDetectors() const
 {
-   // Return an string with all active detector from each cluster
+  // Return an string with all active detector
+  // from each cluster
 
    TString activeDet = "";
 
@@ -324,7 +346,8 @@ TString AliTriggerConfiguration::GetActiveDetectors() const
 //_____________________________________________________________________________
 TString AliTriggerConfiguration::GetTriggeringDetectors() const
 {
-   // Return an string with all detectors used for triggering
+  // Return an string with all detectors
+  // used for triggering
 
    TString trDet = "";
 
@@ -363,6 +386,8 @@ TString AliTriggerConfiguration::GetTriggeringModules() const
 //_____________________________________________________________________________
 AliTriggerDescriptor* AliTriggerConfiguration::AddDescriptor( TString &name, TString &cond )
 {
+  // Add a trigger descriptor to
+  // the list of the trigger descriptors
   AliTriggerDescriptor *desc = new AliTriggerDescriptor(name,cond);
   if (!AddDescriptor(desc)) {
     delete desc;
@@ -375,6 +400,8 @@ AliTriggerDescriptor* AliTriggerConfiguration::AddDescriptor( TString &name, TSt
 //_____________________________________________________________________________
 Bool_t AliTriggerConfiguration::AddDescriptor( AliTriggerDescriptor *desc )
 {
+  // Add a trigger descriptor to
+  // the list of the trigger descriptors
   if (fDescriptors.GetEntries() < kNMaxClasses) {
     if (desc->CheckInputsAndFunctions(fInputs,fFunctions)) {
       fDescriptors.AddLast( desc );
@@ -392,6 +419,8 @@ Bool_t AliTriggerConfiguration::AddDescriptor( AliTriggerDescriptor *desc )
 //_____________________________________________________________________________
 Bool_t AliTriggerConfiguration::AddClass( AliTriggerClass *trclass )
 {
+  // Add a trigger class to
+  // the list of the trigger classes
   if (fClasses.GetEntries() < kNMaxClasses) {
     if (trclass->CheckClass(this)) {
       fClasses.AddLast( trclass );
@@ -412,7 +441,8 @@ AliTriggerClass *AliTriggerConfiguration::AddClass( TString &name, UChar_t index
 						    AliTriggerPFProtection *pfp, AliTriggerBCMask *mask,
 						    UInt_t prescaler, Bool_t allrare)
 {
-  // Add a new trigger class
+  // Add a trigger class to
+  // the list of the trigger classes
   if (!fDescriptors.FindObject(desc)) {
     AliError("Invalid descriptor ! Impossible to add the class !");
     return NULL;
