@@ -9,6 +9,7 @@ void AliAnalysisVertexingHFTest(Int_t evFirst=0,
 				TString infile="AliESDs.root",
 				TString outfile="VertexingHF.root") {
   
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
 

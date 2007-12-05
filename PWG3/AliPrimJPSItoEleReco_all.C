@@ -7,6 +7,7 @@
 
 void AliPrimJPSItoEleReco_all() {
   
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
 
