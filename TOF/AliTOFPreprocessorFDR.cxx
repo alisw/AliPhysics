@@ -15,6 +15,9 @@
 
 /* 
 $Log$
+Revision 1.3  2007/11/27 13:12:30  zampolli
+CDB object run range upper limit extended to AliCDBRunRange::Infinity()
+
 Revision 1.2  2007/11/27 07:24:41  zampolli
 Log used, fData member removed
 
@@ -134,6 +137,10 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
     // processing DCS
     
     for (Int_t i=0;i<4;i++){
+      for (Int_t idelta =0;idelta<2;idelta++){
+	delta[idelta]=0;
+	timedelta[idelta]=0;
+      }
       TObjArray *aliasArr = (TObjArray*) aliasMap->GetValue(aliasDP[i].Data());
       
       if(!aliasArr){
@@ -170,22 +177,22 @@ UInt_t AliTOFPreprocessorFDR::ProcessDCSDataPoints(TMap* aliasMap)
 	val = aValue->GetFloat();
 	time = (Float_t) (aValue->GetTimeStamp());
 	if (i==0){
-	  AliDebug(1,Form("tof_lv_i48: setting value %i to %f at %f",k,val,time));
+	  AliDebug(1,Form("tof_lv_i48_02: setting value %i to %f at %f",k,val,time));
 	  lv_i48_02->SetFloat(k,val);
 	  lv_i48_02->SetTimeStampFloat(k,time);
 	}
 	else if (i==1){
-	  AliDebug(1,Form("tof_lv_v48: setting value %i to %f at %f",k,val,time));
+	  AliDebug(1,Form("tof_lv_v48_02: setting value %i to %f at %f",k,val,time));
 	  lv_v48_02->SetFloat(k,val);
 	  lv_v48_02->SetTimeStampFloat(k,time);
 	}
 	else if (i==2){
-	  AliDebug(1,Form("tof_lv_i33: setting value %i to %f at %f",k,val,time));
+	  AliDebug(1,Form("tof_lv_i33_02: setting value %i to %f at %f",k,val,time));
 	  lv_i33_02->SetFloat(k,val);
 	  lv_i33_02->SetTimeStampFloat(k,time);
 	}
 	else if (i==3){
-	  AliDebug(1,Form("tof_lv_v33: setting value %i to %f at %f",k,val,time));
+	  AliDebug(1,Form("tof_lv_v33_02: setting value %i to %f at %f",k,val,time));
 	  lv_v33_02->SetFloat(k,val);
 	  lv_v33_02->SetTimeStampFloat(k,time);
 	}
