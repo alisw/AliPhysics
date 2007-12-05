@@ -617,6 +617,12 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
 
 #ifdef WITH_ROOT
   Int_t nb = AliMpConstants::ManuMask(AliMp::kNonBendingPlane);
+  TExMapIter it(&specialMap);
+  Long_t key;
+  Long_t value;
+  while ( it.Next(key,value) == kTRUE ) { 
+    delete reinterpret_cast<AliMUONSt1SpecialMotif*>(value);
+  }
   specialMap.Delete();
   specialMap.Add(76 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.01,0.59),90.));
   specialMap.Add(75 | nb,(Long_t) new AliMUONSt1SpecialMotif(TVector2(1.96, 0.17)));
@@ -652,6 +658,10 @@ void AliMUONSt1GeometryBuilderV2::CreateQuadrant(Int_t chamber)
   PlaceSector(kSector2, specialMap, where, reflectZ, chamber);
 
 #ifdef WITH_ROOT
+  it.Reset();
+  while ( it.Next(key,value) == kTRUE ) {
+    delete reinterpret_cast<AliMUONSt1SpecialMotif*>(value);
+  }
   specialMap.Delete();
 #endif
 }
