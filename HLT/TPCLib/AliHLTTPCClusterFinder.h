@@ -121,10 +121,13 @@ class AliHLTTPCClusterFinder : public AliHLTLogging {
 
   Int_t fUnsorted;       // enable for processing of unsorted digit data
 
+  /** list of active pads if PadArray is not used */
+  vector<AliHLTTPCPadArray::AliHLTTPCActivePads> fActivePads; //!transient
+
 #ifdef do_mc
   void GetTrackID(Int_t pad,Int_t time,Int_t *trackID);
 #endif
   
-  ClassDef(AliHLTTPCClusterFinder,2) //Fast cluster finder
+  ClassDef(AliHLTTPCClusterFinder,3) //Fast cluster finder
 };
 #endif

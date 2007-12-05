@@ -11,13 +11,13 @@
     @author Matthias Richter
     @date   
     @brief  HLTOUT data wrapper for AliRawReader.
-
+                                                                          */
 // see below for class documentation
 // or
 // refer to README to build package
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
+
 #include "AliHLTOUTHomerBuffer.h"
 
 class AliRawReader;

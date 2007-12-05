@@ -35,6 +35,7 @@ using namespace std;
 #include <iostream>
 #include "AliHLTOUTComponent.h"
 #include "AliHLTOUT.h"
+#include "AliHLTHOMERLibManager.h"
 #include "AliHLTHOMERWriter.h"
 #include "AliDAQ.h" // equipment Ids
 #include "AliRawDataHeader.h" // Common Data Header 

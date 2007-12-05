@@ -103,7 +103,17 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
 AliHLTComponentDataType AliHLTTPCClusterFinderComponent::GetOutputDataType()
 {
   // see header file for class documentation
-  return AliHLTTPCDefinitions::fgkClustersDataType;
+  return kAliHLTMultipleDataType;
+}
+
+int AliHLTTPCClusterFinderComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList)
+
+{
+  // see header file for class documentation
+  tgtList.clear();
+  tgtList.push_back(AliHLTTPCDefinitions::fgkClustersDataType);
+  tgtList.push_back(AliHLTTPCDefinitions::fgkActivePadsDataType);
+  return tgtList.size();
 }
 
 void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
@@ -469,6 +479,7 @@ int AliHLTTPCClusterFinderComponent::DoEvent( const AliHLTComponentEventData& ev
       bd.fOffset = offset;
       bd.fSize = mysize;
       bd.fSpecification = iter->fSpecification;
+      bd.fDataType = AliHLTTPCDefinitions::fgkClustersDataType;
       //AliHLTSubEventDescriptor::FillBlockAttributes( bd.fAttributes );
       outputBlocks.push_back( bd );
 	

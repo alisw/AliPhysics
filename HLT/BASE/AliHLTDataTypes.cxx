@@ -84,6 +84,15 @@ const AliHLTComponentDataType kAliHLTDataTypeESDTree =  (AliHLTComponentDataType
   kAliHLTDataOriginAny
 };
 
+/** 16 bit Hardware address selection data specification, origin is 'any' */
+const AliHLTComponentDataType kAliHLTDataTypeHwAddr16 = (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTHwAddr16DataTypeID,
+  kAliHLTDataOriginAny
+};
+
+
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Data urigin variables, to be used with the operator|

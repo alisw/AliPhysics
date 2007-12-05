@@ -136,13 +136,15 @@ AliHLTTPCClusterFinder::AliHLTTPCClusterFinder()
   fMatch(1),
   fThreshold(10),
   fSignalThreshold(-1),
+  fNSigmaThreshold(0),
   fNClusters(0),
   fMaxNClusters(0),
   fXYErr(0.2),
   fZErr(0.3),
   fOccupancyLimit(1.0),
   fPadArray(NULL),
-  fNSigmaThreshold(0)
+  fUnsorted(0),
+  fActivePads()
 {
   //constructor
 }
@@ -197,6 +199,7 @@ void AliHLTTPCClusterFinder::ProcessDigits()
   AliHLTTPCSignal_t charge=0;
 
   fNClusters = 0;
+  fActivePads.clear();
 
   // initialize block for reading packed data
   fDigitReader->InitBlock(fPtr,fSize,fFirstRow,fLastRow,fCurrentPatch,fCurrentSlice);
@@ -315,6 +318,15 @@ void AliHLTTPCClusterFinder::ProcessDigits()
 	    break;
 	  }
 	}
+      }
+
+      if (fActivePads.size()==0 ||
+	  fActivePads.back().fRow!=fCurrentRow-rowOffset ||
+	  fActivePads.back().fPad!=pad) {
+	AliHLTTPCPadArray::AliHLTTPCActivePads entry;
+	entry.fRow=fCurrentRow-rowOffset;
+	entry.fPad=pad;
+	fActivePads.push_back(entry);      
       }
 
       if (pCurrentPad) {
@@ -686,12 +698,14 @@ void AliHLTTPCClusterFinder::GetTrackID(Int_t pad,Int_t time,Int_t *trackID)
 
 //----------------------------------Methods for the new unsorted way of reading the data --------------------------------
 
-void AliHLTTPCClusterFinder::SetPadArray(AliHLTTPCPadArray * padArray){
+void AliHLTTPCClusterFinder::SetPadArray(AliHLTTPCPadArray * padArray)
+{
   // see header file for function documentation
   fPadArray=padArray;
 }
 
-void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size){
+void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size)
+{
   //set input pointer
   fPtr = (UChar_t*)ptr;
   fSize = size;
@@ -708,7 +722,9 @@ void AliHLTTPCClusterFinder::ReadDataUnsorted(void* ptr,unsigned long size){
   }
   fPadArray->ReadData();
 }
-void AliHLTTPCClusterFinder::FindClusters(){
+
+void AliHLTTPCClusterFinder::FindClusters()
+{
   // see header file for function documentation
   fPadArray->FindClusterCandidates();
   fPadArray->FindClusters(fMatch);
@@ -731,10 +747,24 @@ void AliHLTTPCClusterFinder::FindClusters(){
   delete [] clusterlist;
   fPadArray->DataToDefault();
 }
-Int_t AliHLTTPCClusterFinder::GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads){
+
+Int_t AliHLTTPCClusterFinder::GetActivePads(AliHLTTPCPadArray::AliHLTTPCActivePads* activePads,Int_t maxActivePads)
+{
   // see header file for function documentation
-  return fPadArray->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)activePads , maxActivePads);
+  Int_t iResult=0;
+  if (fPadArray) {
+    iResult=fPadArray->GetActivePads((AliHLTTPCPadArray::AliHLTTPCActivePads*)activePads , maxActivePads);
+  } else if ((iResult=fActivePads.size())>0) {
+    if (iResult>maxActivePads) {
+      HLTWarning("target array (%d) not big enough to receive %d active pad descriptors", maxActivePads, iResult);
+      iResult=maxActivePads;
+    }
+    memcpy(activePads, &fActivePads[0], iResult*sizeof(AliHLTTPCPadArray::AliHLTTPCActivePads));
+  }
+
+  return iResult;
 }
+
 void AliHLTTPCClusterFinder::WriteClusters(Int_t nclusters,AliHLTTPCClusters *list)//This is used when using the AliHLTTPCClusters class for cluster data
 {
   //write cluster to output pointer

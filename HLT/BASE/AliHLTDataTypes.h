@@ -123,6 +123,13 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTESDTreeDataTypeID      {'E','S','D','_','T','R','E','E'}
 
+
+/** HW Address selection data block
+ * - a selection list for 16 bit HW addresses
+ * - varying origin
+ */
+# define kAliHLTHwAddr16DataTypeID     {'H','W','A','D','D','R','1','6'}
+
 using namespace std;
 
 extern "C" {
@@ -404,6 +411,9 @@ extern "C" {
 
   /** ESD Tree data specification, origin is 'any' */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDTree;
+
+  /** 16 bit Hardware address selection data specification, origin is 'any' */
+  extern const AliHLTComponentDataType kAliHLTDataTypeHwAddr16;
 
   //////////////////////////////////////////////////////////////////////////
   //

@@ -23,8 +23,19 @@
 
 /**
  * @class AliHLTAltroChannelSelectorComponent
- * A converter for digit data of the TPC input to ASCII output.
- * Data is written to file.
+ * A selector component for ALTRO Raw data. The component subscribes
+ * to the RAW data {***:DDL_RAW } and gets in addition a list of channels
+ * to select. The list must be of identical specification as the RAW data
+ * and can be of data type:
+ * - {TPC :ACTIVPAD}: description in coordinates of the TPC readout: row and
+ *   pad
+ * - {***:HWADDR16}: 16 bit hardware addresses
+ *
+ * Currently, the DigitReaderRaw is used to read the data, the rawreader
+ * mode has to be set correctly ([0,5], see AliHLTTPCClusterFinderComponent).
+ * Later on if the fast Altro decoder is used as default input decoder for
+ * TPC offline reconstruction, we will move to a new DigitReader using
+ * this decoder.
  * 
  * Component ID: \b AltroChannelSelector <br>
  * Library: \b libAliHLTTPC

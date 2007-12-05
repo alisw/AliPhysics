@@ -497,8 +497,10 @@ Int_t AliHLTTPCPadArray::GetActivePads(AliHLTTPCActivePads * activePads,Int_t ma
   for(Int_t row=0;row<fNumberOfRows;row++){
     for(Int_t pad=0;pad<fNumberOfPadsInRow[row]-1;pad++){
       if(fRowPadVector[row][pad]->fClusterCandidates.size()>0){
+	Int_t rowOffset=AliHLTTPCTransform::GetFirstRow(fPatch);
+	if (fPatch>=2) rowOffset-=AliHLTTPCTransform::GetFirstRow(2);
  	AliHLTTPCActivePads tmpAP;
- 	tmpAP.fRow=row;
+ 	tmpAP.fRow=row+rowOffset;
   	tmpAP.fPad=pad;
  	activePads[counter]= tmpAP;
  	counter++;

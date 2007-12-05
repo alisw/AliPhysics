@@ -20,8 +20,8 @@
 
 #include <vector>
 #include "AliHLTOfflineDataSink.h"
-#include "AliHLTHOMERLibManager.h"
 
+class AliHLTHOMERLibManager;
 class AliHLTMonitoringWriter;
 typedef vector<AliHLTMonitoringWriter*> AliHLTMonitoringWriterPVector;
 
