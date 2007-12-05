@@ -11,7 +11,8 @@ dcsHost: aldcs052.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: tpc_PT_[321..344].Temperature
-dcsAlias: tpc_PT_[353..379].Temperature
+dcsAlias: tpc_PT_[353..358].Temperature
+dcsAlias: tpc_PT_[360..379].Temperature
 dcsAlias: tpc_PT_[385..396].Temperature
 dcsAlias: tpc_PT_[398..407].Temperature
 dcsAlias: tpc_PT_411.Temperature
