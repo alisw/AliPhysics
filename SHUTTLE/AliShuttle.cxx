@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.65  2007/11/26 16:58:37  acolla
+Monalisa configuration added: host and table name
+
 Revision 1.64  2007/11/13 16:15:47  acolla
 DCS map is stored in a file in the temp folder where the detector is processed.
 If the preprocessor fails, the temp folder is not removed. This will help the debugging of the problem.
@@ -1393,10 +1396,7 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 					GetCurrentRun()));
 
 	// create ML instance that monitors this run
-	fMonaLisa = new TMonaLisaWriter(Form("%d", GetCurrentRun()), fConfig->GetMonitorTable(),
-	 					fConfig->GetMonitorHost());
-	// disable monitoring of other parameters that come e.g. from TFile
-	gMonitoringWriter = 0;
+	fMonaLisa = new TMonaLisaWriter(fConfig->GetMonitorHost(), fConfig->GetMonitorTable(), Form("%d", GetCurrentRun()));
 
 	// Send the information to ML
 	TMonaLisaText  mlStatus("SHUTTLE_status", "Processing");
