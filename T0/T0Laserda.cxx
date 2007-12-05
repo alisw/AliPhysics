@@ -1,7 +1,21 @@
+/*
+TOF DA for online calibration
+
+Contact: Michal.Oledzki@cern.ch
+Link: www.if.pw.edu.pl:/~oledzki
+Run Type: PHYSICS
+DA Type: MON
+Number of events needed: depending on the run, being run-level
+Input Files: 
+Output Files: daLaser.root, to be exported to the DAQ FXS
+Trigger types used: PHYSICS_EVENT
+
+*/
 //extern "C" 
 
-#include <daqDA.h>
+#define FILE_OUT "daLaser.root"
 
+#include <daqDA.h>
 #include <event.h>
 #include <monitor.h>
  
@@ -13,7 +27,6 @@
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
 #include <AliT0RawReader.h>
-#include <AliCDBManager.h>
 
 //ROOT
 #include "TFile.h"
@@ -213,9 +226,7 @@ int main(int argc, char **argv) {
   }
 printf("After loop, before writing histos\n");
   // write a file with the histograms
-  Char_t filehist[21];
-  sprintf(filehist,"daLaser.root");
-  TFile *hist = new TFile(filehist,"RECREATE");
+  TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
      hCFD_QTC[j]->Write();
