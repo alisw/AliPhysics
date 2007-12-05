@@ -592,9 +592,9 @@ Int_t AliGenCorrHF::IpBeauty(TRandom* ran)
 Double_t AliGenCorrHF::ComputeIntegral(TFile* fG)       // needed by GetQuarkPair
 {
    // Read QQbar kinematical 5D grid's cell occupancy weights
-   Int_t* cell = new Int_t[6];           // cell[6]={wght,iy1,iy2,ipt1,ipt2,idph}
+   Int_t cell[6];           // cell[6]={wght,iy1,iy2,ipt1,ipt2,idph}
    TTree* tG = (TTree*) fG->Get("tGqq");
-   tG->GetBranch("cell")->SetAddress(cell);
+   tG->GetBranch("cell")->SetAddress(&cell);
    Int_t nbins = tG->GetEntries();
 
    //   delete previously computed integral (if any)
@@ -621,9 +621,9 @@ void AliGenCorrHF::GetQuarkPair(TFile* fG, Double_t* fInt, Double_t &y1, Double_
                                  // modification of ROOT's TH3::GetRandom3 for 5D
 {
    // Read QQbar kinematical 5D grid's cell coordinates
-   Int_t* cell = new Int_t[6];           // cell[6]={wght,iy1,iy2,ipt1,ipt2,idph}
+   Int_t cell[6];           // cell[6]={wght,iy1,iy2,ipt1,ipt2,idph}
    TTree* tG = (TTree*) fG->Get("tGqq");
-   tG->GetBranch("cell")->SetAddress(cell);
+   tG->GetBranch("cell")->SetAddress(&cell);
    Int_t nbins = tG->GetEntries();
    Double_t rand[6];
    gRandom->RndmArray(6,rand);

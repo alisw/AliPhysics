@@ -34,7 +34,8 @@ AliHLTPHOSMapper::AliHLTPHOSMapper() : AliHLTPHOSBase(), fHw2geomapPtr(0)
 
 AliHLTPHOSMapper::~AliHLTPHOSMapper()
 {
-  
+  delete []  hw2geomapPtr;
+  hw2geomapPtr = 0;
 }
 
 void
