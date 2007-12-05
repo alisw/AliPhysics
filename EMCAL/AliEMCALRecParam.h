@@ -62,6 +62,7 @@ public:
 
   virtual void Print(Option_t * option="") const ;
 
+  static const  TObjArray* GetMappings();
 
 private:
   //Clustering
@@ -84,7 +85,9 @@ private:
   Double_t  fTrkCutAlphaMax;       // cut on 'alpha' parameter for track matching (min)
   Double_t  fTrkCutAngle;          // cut on relative angle between different track points for track matching
 
-  ClassDef(AliEMCALRecParam,2)   // Reconstruction parameters
+  static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
+
+  ClassDef(AliEMCALRecParam,3)   // Reconstruction parameters
 
 } ;
 

@@ -7,6 +7,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.3  2007/10/31 17:15:24  mvl
+ * Fixed bug in raw data unpacking; Added pedestal to signal fit; Added logic to deal with high/low gain
+ *
  * Revision 1.2  2007/09/03 20:55:35  jklay
  * EMCAL e-by-e reconstruction methods from Cvetan
  *
@@ -28,6 +31,8 @@
 //*-- Author: Marco van Leeuwen (LBL)
 //
 #include "TObject.h" // for ROOT types
+#include <TString.h>
+#include "AliCaloRawStream.h"
 
 class TGraph;
 class TF1;
@@ -38,8 +43,8 @@ class AliEMCALRawUtils : public TObject {
   AliEMCALRawUtils();
   virtual ~AliEMCALRawUtils();
 
-  void Digits2Raw();
-  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr);
+  void Digits2Raw(AliAltroMapping **mapping = NULL);
+  void Raw2Digits(AliRawReader *reader,TClonesArray *digitsArr, AliAltroMapping **mapping = NULL);
   void AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Int_t amp, Float_t time);
 
   // Signal shape parameters
@@ -53,12 +58,15 @@ class AliEMCALRawUtils : public TObject {
   Int_t GetRawFormatThreshold() const { return fgThreshold ; }       
   Int_t GetRawFormatDDLPerSuperModule() const { return fgDDLPerSuperModule ; } 
 
+  virtual Option_t* GetOption() const { return fOption.Data(); }
+  void SetOption(Option_t* opt) { fOption = opt; }
+
   // Signal shape functions
   void FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_t & time);
   static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
   Bool_t   RawSampledResponse(Double_t dtime, Double_t damp, Int_t * adcH, Int_t * adcL) const;  
 
-  ClassDef(AliEMCALRawUtils,0)
+  ClassDef(AliEMCALRawUtils,1)
 
  private:
   Double_t fHighLowGainFactor ;         // high to low gain factor for the raw RO signal
@@ -70,6 +78,8 @@ class AliEMCALRawUtils : public TObject {
   static Double_t fgTimeBinWidth;       // maximum sampled time of the raw RO signal                             
   static Int_t fgThreshold;             // threshold
   static Int_t fgDDLPerSuperModule;     // number of DDL per SuperModule
+
+  TString fOption;                      //! option passed from Reconstructor
 };
 
 #endif

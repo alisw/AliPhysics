@@ -125,8 +125,18 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   Int_t bufsize = 32000;
   digitsTree->Branch("EMCAL", &digitsArr, bufsize);
 
+  //Get Mapping RCU files from the AliEMCALRecParam                                                          
+  const TObjArray* maps = AliEMCALRecParam::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  AliAltroMapping * mapping[2] ; // For the moment only 2                                                    
+  for(Int_t i = 0; i < 2; i++) {
+    mapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+
   static AliEMCALRawUtils rawUtils;
-  rawUtils.Raw2Digits(rawReader,digitsArr);
+  rawUtils.SetOption(GetOption());
+  rawUtils.Raw2Digits(rawReader,digitsArr,mapping);
 
   digitsTree->Fill();
   digitsArr->Delete();

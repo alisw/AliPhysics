@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.7  2007/11/14 15:51:46  gustavo
+ * Take out few unnecessary prints
+ *
  * Revision 1.6  2007/11/01 01:23:51  mvl
  * Removed call to SetOldRCUFormat, which is only needed for testbeam data
  *
@@ -51,6 +54,7 @@
 #include "AliCaloRawStream.h"
 #include "AliDAQ.h"
 
+#include "AliEMCALRecParam.h"
 #include "AliEMCALLoader.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALDigitizer.h"
@@ -76,7 +80,7 @@ AliEMCALRawUtils::AliEMCALRawUtils(): fHighLowGainFactor(0.) {
 AliEMCALRawUtils::~AliEMCALRawUtils() {
 }
 //____________________________________________________________________________
-void AliEMCALRawUtils::Digits2Raw()
+void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
 {
   // convert digits of the current event to raw data
   
@@ -107,15 +111,6 @@ void AliEMCALRawUtils::Digits2Raw()
 
   Int_t adcValuesLow[fgkTimeBins];
   Int_t adcValuesHigh[fgkTimeBins];
-
-  //Load Mapping RCU files once
-  TString path = gSystem->Getenv("ALICE_ROOT");
-  path += "/EMCAL/mapping/RCU";
-  TString path0 = path+"0.data";//This file will change in future
-  TString path1 = path+"1.data";//This file will change in future
-  AliAltroMapping * mapping[2] ; // For the moment only 2
-  mapping[0] = new AliCaloAltroMapping(path0.Data());
-  mapping[1] = new AliCaloAltroMapping(path1.Data());
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
@@ -187,7 +182,8 @@ void AliEMCALRawUtils::Digits2Raw()
 }
 
 //____________________________________________________________________________
-void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
+void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
+				  AliAltroMapping **mapping)
 {
   // convert raw data of the current event to digits
   AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
@@ -207,13 +203,17 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr)
     return;
   }
 
-  // Use AliAltroRawStream to read the ALTRO format.  No need to
-  // reinvent the wheel :-) 
-  AliCaloRawStream in(reader,"EMCAL");
+  AliCaloRawStream in(reader,"EMCAL",mapping);
   // Select EMCAL DDL's;
   reader->Select("EMCAL");
-  //in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
-  
+
+  TString option = GetOption();
+  if (option.Contains("OldRCUFormat"))
+    in.SetOldRCUFormat(kTRUE); // Needed for testbeam data
+  else
+    in.SetOldRCUFormat(kFALSE);
+
+
   // reading is from previously existing AliEMCALGetter.cxx
   // ReadRaw method
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);

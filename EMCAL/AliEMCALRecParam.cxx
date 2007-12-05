@@ -15,10 +15,15 @@
 
 /* $Id$ */
 // --- AliRoot header files ---
+#include "TObjArray.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
 #include "AliEMCALRecParam.h"
 #include "AliLog.h"
 
 ClassImp(AliEMCALRecParam)
+
+TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings 
 
 //-----------------------------------------------------------------------------
 // Container of EMCAL reconstruction parameters
@@ -197,6 +202,29 @@ void AliEMCALRecParam::Print(Option_t *) const
   }
 
   printf("\n");
+
+}
+
+//-----------------------------------------------------------------------------                           
+const TObjArray* AliEMCALRecParam::GetMappings()
+{
+  //Returns array of AliAltroMappings for RCU0..RCUX.                                                     
+  //If not found, read it from OCDB.                                                                      
+
+  //Quick check as follows:                                                                               
+  //  root [0]
+  //AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");                       
+  //  root [1] AliCDBManager::Instance()->SetRun(1);                                                      
+  //  root [2] TObjArray* maps = AliEMCALRecParam::GetMappings();                                      
+  //  root [3] maps->Print();                                                                             
+
+  if(fgkMaps) return fgkMaps;
+
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/Mapping");
+  if(entry)
+    fgkMaps = (TObjArray*)entry->GetObject();
+
+  return fgkMaps;
 
 }
 
