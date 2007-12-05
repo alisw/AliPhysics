@@ -6,6 +6,7 @@ void AliD0toKpiPlots(const Char_t *inName="AliD0toKpi.root",
   //     Andrea Dainese, andrea.dainese@lnl.infn.it
   //--------------------------------------------------------------------------
 
+  gSystem->Load("libANALYSIS");
   gSystem->Load("libAOD.so");
   gSystem->Load("libPWG3base.so");
 
