@@ -1478,7 +1478,7 @@ Bool_t AliReconstruction::CleanESD(AliESDEvent *esd){
   nTracks=esd->GetNumberOfTracks();
   nV0s=esd->GetNumberOfV0s();
   AliInfo
-  (Form("Number of ESD tracks and V0s after cleaning %d",nTracks,nV0s));
+  (Form("Number of ESD tracks and V0s after cleaning %d %d",nTracks,nV0s));
 
   return rc;
 }
