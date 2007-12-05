@@ -220,7 +220,7 @@ void AliITSClusterFinderV2SSD::RawdataToClusters(AliRawReader* rawReader,TClones
   //------------------------------------------------------------
   rawReader->Reset();
   AliITSRawStreamSSD inputSSD(rawReader);
-  rawReader->SelectEquipment(-1,0,15);
+  //  rawReader->SelectEquipment(-1,0,15);
   FindClustersSSD(&inputSSD,clusters);
   
 }
@@ -276,6 +276,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       next = input->Next();
       ddl=input->GetDDL(); 
       ad=input->GetAD();
+           if((!next)&&(input->flag)) continue;
       adc = input->GetADC(); adc = (adc<6)? adc : adc - 2;
       strip = input->GetStrip();
       if(input->GetSideFlag()) strip=1535-strip;

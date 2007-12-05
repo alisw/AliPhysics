@@ -45,6 +45,7 @@ class AliITSRawStreamSSD: public AliITSRawStream {
     Int_t fad;
     Int_t fadc;
 
+    Bool_t flag;
 
   protected :
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number

@@ -23,6 +23,7 @@
 ///
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "Riostream.h"
 #include "AliITSRawStreamSSD.h"
 #include "AliRawReader.h"
 #include "AliLog.h"
@@ -216,10 +217,11 @@ AliITSRawStreamSSD::AliITSRawStreamSSD(AliRawReader* rawReader) :
   fddl(0),
   fad(0),
   fadc(0),
-  fData(0)
-{
+  flag(0),
+  fData(0) {
   // create an object to read ITS SSD raw digits
   
+  //  fRawReader->Reset();
   fRawReader->Select("ITSSSD");
 }
 
@@ -228,7 +230,8 @@ Bool_t AliITSRawStreamSSD::Next()
 {
   // read the next raw digit
   // returns kFALSE if there is no digit left
-  
+
+  flag=0;
   fPrevModuleID = fModuleID;
   if (!fRawReader->ReadNextInt(fData)) return kFALSE;
   
@@ -240,17 +243,36 @@ Bool_t AliITSRawStreamSSD::Next()
   UInt_t adc =  (fData >> 24) & 0x0000000F;  // adc range 0 - 5 AND 8 - 13;
   UInt_t relModuleID = (slot-1) * 12;        // 0 - 96
   relModuleID += (adc<6) ? adc : (adc-2);   // adds 0 - 5 AND 6 - 11
+
+
+
+  flag=1;
   // relModuleID range 0 - 108
   if(relModuleID > kModulesPerDDL){
     fRawReader->AddMajorErrorLog(kWrongModuleIdErr,Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
     AliWarning(Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
     return kFALSE;
   }
+  if(relModuleID < 0){
+    AliWarning(Form("Module ID = %d < 0",relModuleID));
+    return kFALSE;
+  }
+  flag=0;
+
+
+
   fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][relModuleID];
       
   fCoord2 =  (fData >> 12) & 0x000007FF; 
   fCoord1 = (fCoord2 < 768) ? 0 : 1; // strip 0 - 767 are Pside, strip 768 - 1535 are Nside
   fCoord2 = (fCoord1 == 0) ? fCoord2 : (1535 - fCoord2);
+
+  /*
+  cout<<"AliITSRawStreamSSD baseword="<<fData<<" slot="<<slot<<" adc="<<adc
+      <<" relModuleID="<<relModuleID<<" ddl="<<fRawReader->GetDDLID()
+      <<" coord1="<<fCoord1<<" coord2="<<fCoord2<<" signal"<<fSignal
+      <<" fModuleID="<<fModuleID<<endl;
+  */
 
   fadc=adc;
   fad=slot;
