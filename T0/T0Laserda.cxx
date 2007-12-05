@@ -11,7 +11,6 @@ Output Files: daLaser.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
 
 */
-//extern "C" 
 
 #define FILE_OUT "daLaser.root"
 
@@ -29,6 +28,9 @@ Trigger types used: PHYSICS_EVENT
 #include <AliT0RawReader.h>
 
 //ROOT
+#include "TROOT.h"
+#include "TPluginManager.h"
+#include "TFile.h"
 #include "TFile.h"
 #include "TKey.h"
 #include "TH2S.h"
@@ -51,6 +53,12 @@ Trigger types used: PHYSICS_EVENT
 int main(int argc, char **argv) {
   int status;
   
+  /* magic line */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()"); 
   
   if (argc!=2) {
     printf("Wrong number of arguments\n");
@@ -84,22 +92,17 @@ int main(int argc, char **argv) {
 
   // Allocation of histograms - start
   TH1F *hCFD[24];
-  TH2F *hCFD_QTC[24]; TH2F *hCFD_LED[24]; 
-  Char_t  buf1[10], buf2[10],buf3[10],buf4[10];
+  TH2F *hCFD_QTC[24];
+  TH2F *hCFD_LED[24]; 
 
    for(Int_t ic=0; ic<24; ic++) {
-      sprintf(buf1,"CFD_QTC%i",ic+1);
-      sprintf(buf2,"CFD_LED%i",ic+1);
-
-      hCFD_QTC[ic] = new TH2F(buf1,"CFD_QTC",8000,0.5,8000.5,2000,10000.5,20000.5);
-      hCFD_LED[ic] = new TH2F(buf2,"CFD_LED",1000,-500.0,500.0,100,14600.0,14700.0);
+      hCFD_QTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",800,0.5,8000.5,200,10000.5,20000.5);
+      hCFD_LED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",100,-500.0,500.0,100,14600.0,14700.0);
       if(ic<12){
-	sprintf(buf3,"T0_C_%i_CFD",ic+1);
-	hCFD[ic] = new TH1F(buf3,"CFD", 30000,0., 30000.);	
+	hCFD[ic] = new TH1F(Form("T0_C_%d_CFD",ic+1),"CFD", 3000,0., 30000.);	
       }
       else{
-        sprintf(buf4,"T0_A_%i_CFD",ic-11);
-        hCFD[ic] = new TH1F(buf4,"CFD", 30000,0., 30000.); 
+        hCFD[ic] = new TH1F(Form("T0_A_%d_CFD",ic-11),"CFD", 3000,0., 30000.); 
       }
     }
 
