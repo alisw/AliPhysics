@@ -1,6 +1,7 @@
 #ifndef ALIHLTPHOSMAPPER_H
 #define ALIHLTPHOSMAPPER_H
 
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
