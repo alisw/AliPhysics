@@ -74,4 +74,18 @@ ReadRecoCocktail();
 .q
 </pre>
 
+\section evaluation_s3 Macro MUONCheckDI.C
+
+MUONCheckDI.C performs a consistency check on the methods of the 
+AliMUONMCDataInterface and AliMUONDataInterface classes. There are several 
+helper methods in these classes which make it easier to fetch data, which 
+means there are at least two ways of fetching the data within the same class 
+interface. The macro checks to see that the results given by these different 
+methods are identical, as they should be.
+
+The macro also inherently exercises the AliMUONMCDataInterface and 
+AliMUONDataInterface classes and should be run after any modifications to 
+these classes to see if things still work. Putting it another way: 
+MUONCheckDI.C is a testing facility for developers of these two classes.
+
 */
