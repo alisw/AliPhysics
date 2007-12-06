@@ -13,7 +13,7 @@
 
 #include <TObject.h>
 #include "AliMUONPayloadTracker.h"
-#include "AliMUONRawStream.h"
+#include "AliMUONVRawStreamTracker.h"
 
 class AliRawReader;
 class AliMUONDDLTracker;
@@ -21,7 +21,7 @@ class AliMUONDspHeader;
 class AliMUONBusStruct;
 class AliMUONBlockHeader;
 
-class AliMUONRawStreamTracker: public AliMUONRawStream {
+class AliMUONRawStreamTracker: public AliMUONVRawStreamTracker {
   public :
     AliMUONRawStreamTracker();
     AliMUONRawStreamTracker(AliRawReader* rawReader);
@@ -46,6 +46,9 @@ class AliMUONRawStreamTracker: public AliMUONRawStream {
     virtual Bool_t Next(Int_t& busPatchId, 
                         UShort_t& manuId, UChar_t& manuChannel, 
                         UShort_t& adc);
+
+    /// Returns the next batch of decoded channel data.
+    virtual UInt_t Next(const AliChannelInfo*& channels);
     
     virtual Bool_t NextDDL();
 
@@ -121,6 +124,7 @@ class AliMUONRawStreamTracker: public AliMUONRawStream {
     Int_t fCurrentBusStructIndex;            //!< for iterator: current bus index    
     Int_t fCurrentDataIndex;                 //!< for iterator: current data index
     Int_t  fDDL;                             //!< number of DDL    
+    AliChannelInfo fChannelBuffer;           //!< Single channel buffer for Next() method.
     static const Int_t  fgkMaxDDL;           //!< maximum number of DDLs
 
     ClassDef(AliMUONRawStreamTracker, 4)    // base class for reading MUON raw digits

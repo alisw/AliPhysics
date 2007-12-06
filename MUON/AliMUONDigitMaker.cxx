@@ -53,6 +53,7 @@
 #include "AliMUONLocalStruct.h"
 #include "AliMUONLocalTrigger.h"
 #include "AliMUONRawStreamTracker.h"
+#include "AliMUONRawStreamTrackerHP.h"
 #include "AliMUONRawStreamTrigger.h"
 #include "AliMUONRegHeader.h"
 #include "AliMUONTriggerCircuit.h"
@@ -73,11 +74,11 @@ ClassImp(AliMUONDigitMaker) // Class implementation in ROOT context
 /// \endcond
 
 //__________________________________________________________________________
-AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger)
+AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t useFastDecoder)
   : TObject(),
     fScalerEvent(kFALSE),
     fMakeTriggerDigits(kFALSE),
-    fRawStreamTracker(new AliMUONRawStreamTracker()),    
+    fRawStreamTracker(NULL),
     fRawStreamTrigger(new AliMUONRawStreamTrigger()),    
     fTrackerTimer(),
     fTriggerTimer(),
@@ -88,6 +89,11 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger)
   /// ctor 
 
   AliDebug(1,"");
+  
+  if (useFastDecoder)
+    fRawStreamTracker = new AliMUONRawStreamTrackerHP();
+  else
+    fRawStreamTracker = new AliMUONRawStreamTracker();
 
   // Standard Constructor
   if (enableErrorLogger) {

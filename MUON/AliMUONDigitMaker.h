@@ -19,7 +19,7 @@ class TArrayS;
 class AliRawReader;
 class AliMUONLocalStruct;
 
-class AliMUONRawStreamTracker;
+class AliMUONVRawStreamTracker;
 class AliMUONRawStreamTrigger;
 
 class AliMUONVDigitStore;
@@ -28,7 +28,7 @@ class AliMUONVTriggerStore;
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE); // Constructor
+  AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE, Bool_t useFastDecoder = kTRUE); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   // write raw data
@@ -60,7 +60,7 @@ private:
   Bool_t fScalerEvent;       //!< flag to generates scaler event
   Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger
   
-  AliMUONRawStreamTracker* fRawStreamTracker;  //!< pointer of raw stream for tracker
+  AliMUONVRawStreamTracker* fRawStreamTracker; //!< pointer of raw stream for tracker
   AliMUONRawStreamTrigger* fRawStreamTrigger;  //!< pointer of raw stream for trigger
 
   TStopwatch fTrackerTimer;                    //!< time watcher for tracker part

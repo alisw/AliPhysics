@@ -66,6 +66,9 @@
 ///
 /// TRIGGERDISABLE : disable the treatment of MUON trigger
 ///
+/// USEFASTDECODER : makes the digit maker class use the high performance decoder
+///                  AliMUONTrackerDDLDecoder instead of AliMUONPayloadTracker.
+///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
 
@@ -268,7 +271,14 @@ AliMUONReconstructor::CreateDigitMaker() const
 
   AliCodeTimerAuto("")
 
-  fDigitMaker = new AliMUONDigitMaker;
+  TString option = GetOption();
+  Bool_t enableErrorLogging = kTRUE;
+  Bool_t useFastDecoder = kFALSE;
+  if (option.Contains("useFastDecoder"))
+  {
+    useFastDecoder = kTRUE;
+  }
+  fDigitMaker = new AliMUONDigitMaker(enableErrorLogging, useFastDecoder);
 }
 
 //_____________________________________________________________________________
