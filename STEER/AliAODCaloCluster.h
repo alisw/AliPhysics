@@ -124,7 +124,7 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
-  ClassDef(AliAODCaloCluster,1);
+  ClassDef(AliAODCaloCluster,2);
 };
 
 #endif
