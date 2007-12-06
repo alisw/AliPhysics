@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.8  2007/12/05 02:30:51  jklay
+ * modification to read Altro mappings into AliEMCALRecParam and pass to AliEMCALRawUtils from AliEMCALReconstructor; add option to AliEMCALRawUtils to set old RCU format (for testbeam) or not
+ *
  * Revision 1.7  2007/11/14 15:51:46  gustavo
  * Take out few unnecessary prints
  *
@@ -73,7 +76,9 @@ Double_t AliEMCALRawUtils::fgTimeTrigger = 1.5E-6 ;   // 15 time bins ~ 1.5 muse
 Int_t    AliEMCALRawUtils::fgThreshold = 1;
 Int_t    AliEMCALRawUtils::fgDDLPerSuperModule = 2;  // 2 ddls per SuperModule
 
-AliEMCALRawUtils::AliEMCALRawUtils(): fHighLowGainFactor(0.) {
+AliEMCALRawUtils::AliEMCALRawUtils()
+  : fHighLowGainFactor(0.), fOption("") 
+{
   fHighLowGainFactor = 16. ;          // adjusted for a low gain range of 82 GeV (10 bits) 
 }
 //____________________________________________________________________________
@@ -214,21 +219,34 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
     in.SetOldRCUFormat(kFALSE);
 
 
-  // reading is from previously existing AliEMCALGetter.cxx
-  // ReadRaw method
-  TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-  
+  //Updated fitting routine from 2007 beam test takes into account
+  //possibility of two peaks in data and selects first one for fitting
+  //Also sets some of the starting parameters based on the shape of the
+  //given raw signal being fit
+
+  TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
+  signalF->SetParNames("amp","t0","tau","N","ped");
+  signalF->SetParameter(2,2.35); // tau in units of time bin
+  signalF->SetParLimits(2,2,-1);
+  signalF->SetParameter(3,2); // order
+  signalF->SetParLimits(3,2,-1);
+
   Int_t id =  -1;
   Float_t time = 0. ; 
   Float_t amp = 0. ; 
 
-  TGraph * gSig = new TGraph(GetRawFormatTimeBins()) ; 
+  //Graph to hold data we will fit (should be converted to an array
+  //later to speed up processing
+  TGraph * gSig = new TGraph(GetRawFormatTimeBins()); 
 
   Int_t readOk = 1;
   Int_t lowGain = 0;
 
   while (readOk && in.GetModule() < 0) 
     readOk = in.Next();  // Go to first digit
+
+  Int_t col = 0;
+  Int_t row = 0;
 
   while (readOk) { 
     id =  geom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
@@ -242,7 +260,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
     // There is some kind of zero-suppression in the raw data, 
     // so set up the TGraph in advance
     for (Int_t i=0; i < maxTime; i++) {
-      gSig->SetPoint(i, i * GetRawFormatTimeBinWidth(), 0);
+      gSig->SetPoint(i, i , 0);
     }
 
     Int_t iTime = 0;
@@ -251,25 +269,26 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
 	  AliWarning("Too many time bins");
 	  gSig->Set(in.GetTime());
       }
-      gSig->SetPoint(in.GetTime(), 
-		   in.GetTime() * GetRawFormatTimeBinWidth(), 
-		   in.GetSignal()) ;
+      col = in.GetColumn();
+      row = in.GetRow();
+      
+      gSig->SetPoint(in.GetTime(), in.GetTime(), in.GetSignal()) ;
       if (in.GetTime() > maxTime)
         maxTime = in.GetTime();
       iTime++;
     } while ((readOk = in.Next()) && !in.IsNewHWAddress());
-    signalF->SetRange(0,(Float_t)maxTime*GetRawFormatTimeBinWidth());
 
     FitRaw(gSig, signalF, amp, time) ; 
     
     if (amp > 0) {
       AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
+      //cout << "col " << col-40 << " row " << row-8 << " lowGain " << lowGain << " amp " << amp << endl;
       AddDigit(digitsArr, id, lowGain, (Int_t)amp, time);
     }
 	
     // Reset graph
     for (Int_t index = 0; index < gSig->GetN(); index++) {
-      gSig->SetPoint(index, index * GetRawFormatTimeBinWidth(), 0) ;  
+      gSig->SetPoint(index, index, 0) ;  
     } 
   }; // EMCAL entries loop
   
@@ -323,7 +342,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
   // Fits the raw signal time distribution; from AliEMCALGetter 
 
   const Int_t kNoiseThreshold = 5;
-  const Int_t kNPedSamples = 10;
+  const Int_t kNPedSamples = 5;
   amp = time = 0. ; 
   Double_t ped = 0;
   Int_t nPed = 0;
@@ -340,18 +359,16 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
   if (nPed > 0)
     ped /= nPed;
   else {
-    AliWarning("Could determine pedestal");	  
+    AliWarning("Could not determine pedestal");	  
     ped = 10; // put some small value as first guess
   }
 
   Int_t max_found = 0;
   Int_t i_max = 0;
   Float_t max = -1;
-  Float_t tmax = 0;
-  Float_t max_fit = gSig->GetN()*GetRawFormatTimeBinWidth();
+  Float_t max_fit = gSig->GetN();
   Float_t min_after_sig = 9999;
-  Int_t imin_after_sig = gSig->GetN();
-  Float_t tmin_after_sig = gSig->GetN()*GetRawFormatTimeBinWidth();
+  Int_t tmin_after_sig = gSig->GetN();
   Int_t n_ped_after_sig = 0;
 
   for (Int_t i=kNPedSamples; i < gSig->GetN(); i++) {
@@ -359,20 +376,17 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
     gSig->GetPoint(i, ttime, signal) ; 
     if (!max_found && signal > max) {
       i_max = i;
-      tmax = ttime;
       max = signal;
     }
     else if ( max > ped + kNoiseThreshold ) {
       max_found = 1;
       min_after_sig = signal;
-      imin_after_sig = i;
-      tmin_after_sig = ttime;
+      tmin_after_sig = i;
     }
     if (max_found) {
       if ( signal < min_after_sig) {
         min_after_sig = signal;
-	imin_after_sig = i;
-        tmin_after_sig = ttime;
+	tmin_after_sig = i;
       }
       if (i > tmin_after_sig + 5) {  // Two close peaks; end fit at minimum
         max_fit = tmin_after_sig;
@@ -381,7 +395,7 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
       if ( signal < ped + kNoiseThreshold)
         n_ped_after_sig++;
       if (n_ped_after_sig >= 5) {  // include 5 pedestal bins after peak
-        max_fit = ttime;
+        max_fit = i;
         break;
       }
     }
@@ -389,19 +403,26 @@ void AliEMCALRawUtils::FitRaw(TGraph * gSig, TF1* signalF, Float_t & amp, Float_
 
   if ( max - ped > kNoiseThreshold ) { // else its noise 
     AliDebug(2,Form("Fitting max %d ped %d", max, ped));
-    signalF->SetParameter(0, ped) ; 
-    signalF->SetParameter(1, max - ped) ; 
-    signalF->SetParameter(2, tmax) ; 
-    signalF->SetParLimits(2, 0, max_fit) ; 
-    gSig->Fit(signalF, "QRON", "", 0., max_fit); //, "QRON") ; 
-    amp = signalF->GetParameter(1); 
-    time = signalF->GetParameter(2) - fgTimeTrigger;
+    signalF->SetRange(0,max_fit);
+
+    if(max-ped > 50) 
+      signalF->SetParLimits(2,1,3);
+
+    signalF->SetParameter(4, ped) ; 
+    signalF->SetParameter(1, i_max);
+    signalF->SetParameter(0, max);
+    
+    gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
+    amp = signalF->GetParameter(0); 
+    time = signalF->GetParameter(1)*GetRawFormatTimeBinWidth() - fgTimeTrigger;
   }
   return;
 }
 //__________________________________________________________________
 Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
 {
+  // Matches version used in 2007 beam test
+  //
   // Shape of the electronics raw reponse:
   // It is a semi-gaussian, 2nd order Gamma function of the general form
   //
@@ -410,20 +431,22 @@ Double_t AliEMCALRawUtils::RawResponseFunction(Double_t *x, Double_t *par)
   // F = 0                                for t < 0 
   //
   // parameters:
-  // ped: par[0]
-  // A:   par[1]   // Amplitude = peak value
-  // t0:  par[2]
-  // tau: fgTau
-  // N:   fgOrder
+  // A:   par[0]   // Amplitude = peak value
+  // t0:  par[1]
+  // tau: par[2]
+  // N:   par[3]
+  // ped: par[4]
   //
   Double_t signal ;
-  Double_t xx = ( x[0] - par[2] + fgTau ) / fgTau ; 
+  Double_t tau =par[2];
+  Double_t N =par[3];
+  Double_t ped = par[4];
+  Double_t xx = ( x[0] - par[1] + tau ) / tau ;
 
   if (xx <= 0) 
-    signal = par[0] ;  
+    signal = ped ;  
   else {  
-    signal = par[0] + par[1] * TMath::Power(xx , fgOrder) * TMath::Exp(fgOrder * (1 - xx )) ; 
-
+    signal = ped + par[0] * TMath::Power(xx , N) * TMath::Exp(N * (1 - xx )) ; 
   }
   return signal ;  
 }
