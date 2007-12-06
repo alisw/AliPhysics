@@ -56,13 +56,13 @@ void SetAC()
   
   TString DBFolder;
   Int_t firstRun   =  0;
-  Int_t lastRun    = 10;
+  Int_t lastRun    = 99999;
   Int_t beamPeriod =  1;
   char* objFormat  = "";
 
   DBFolder  ="local://Align";
   firstRun  =  0;
-  lastRun   =  10;
+  lastRun   =  99999;
   objFormat = "T0 array  positions";
 
   AliT0Align *al = new AliT0Align(1,835615);
@@ -101,13 +101,13 @@ void SetTimeDelay()
 
   TString DBFolder;
   Int_t firstRun   =  0;
-  Int_t lastRun    = 10;
+  Int_t lastRun    = 99999;
   Int_t beamPeriod =  1;
   char* objFormat  = "";
 
   DBFolder  ="local://Calib";
   firstRun  =  0;
-  lastRun   =  10;
+  lastRun   =  999999;
   objFormat = "T0 initial time delay";
 
   AliT0CalibTimeEq *calibda=new AliT0CalibTimeEq("T0");
@@ -115,9 +115,9 @@ void SetTimeDelay()
    Float_t fTimeDelay  = 1000;
  for(Int_t ipmt=0; ipmt<24; ipmt++) {
    calibda->SetTimeEq(ipmt,fTimeDelay+ipmt*100);
-  // calibda->SetTimeV0(500,ipmt);
+ 
   }
-  calibda->SetMeanT0(512);
+ 
   calibda->Print();
   //Store calibration data into database
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT");
@@ -147,13 +147,13 @@ void SetWalk()
 
   TString DBFolder;
   Int_t firstRun   =  0;
-  Int_t lastRun    = 10;
+  Int_t lastRun    = 999999;
   Int_t beamPeriod =  1;
   char* objFormat  = "";
 
   DBFolder  ="local://Calib";
   firstRun  =  0;
-  lastRun   =  10;
+  lastRun   =  999999;
   objFormat = "T0 initial slewnig correction";
 
   AliT0CalibWalk *calibda=new AliT0CalibWalk("T0");
