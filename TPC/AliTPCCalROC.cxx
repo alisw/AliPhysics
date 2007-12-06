@@ -43,7 +43,7 @@ ClassImp(AliTPCCalROC)
 
 //_____________________________________________________________________________
 AliTPCCalROC::AliTPCCalROC()
-             :TObject(),
+             :TNamed(),
 	      fSector(0),
 	      fNChannels(0),
 	      fNRows(0),
@@ -58,7 +58,7 @@ AliTPCCalROC::AliTPCCalROC()
 
 //_____________________________________________________________________________
 AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
-             :TObject(),
+             :TNamed(),
 	      fSector(0),
 	      fNChannels(0),
 	      fNRows(0),
@@ -78,7 +78,7 @@ AliTPCCalROC::AliTPCCalROC(UInt_t  sector)
 
 //_____________________________________________________________________________
 AliTPCCalROC::AliTPCCalROC(const AliTPCCalROC &c)
-             :TObject(c),
+             :TNamed(c),
 	      fSector(0),
 	      fNChannels(0),
 	      fNRows(0),

@@ -19,7 +19,7 @@ class TH1F;
 class TH2F;
 class TArrayI;
 //_____________________________________________________________________________
-class AliTPCCalROC : public TObject {
+class AliTPCCalROC : public TNamed {
 
  public:
   
@@ -70,7 +70,7 @@ class AliTPCCalROC : public TObject {
   UInt_t     fNRows;           // number of rows
   const UInt_t* fIndexes;      //!indexes
   Float_t  *fData;            //[fNChannels] Data
-  ClassDef(AliTPCCalROC,1)    //  TPC ROC calibration class
+  ClassDef(AliTPCCalROC,2)    //  TPC ROC calibration class
 
 };
 
