@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.9  2007/12/06 02:19:51  jklay
+ * incorporated fitting procedure from testbeam analysis into AliRoot
+ *
  * Revision 1.8  2007/12/05 02:30:51  jklay
  * modification to read Altro mappings into AliEMCALRecParam and pass to AliEMCALRawUtils from AliEMCALReconstructor; add option to AliEMCALRawUtils to set old RCU format (for testbeam) or not
  *
@@ -143,6 +146,8 @@ void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
     else if(8<=iphi&&iphi<16 && 24<=ieta&&ieta<48) iRCU=1; // second half; 
     //second cable row
     else if(16<=iphi&&iphi<24) iRCU=1; // third cable row
+    if (iRCU<0) 
+      Fatal("Digits2Raw()","Non-existent RCU number: %d", iRCU);
     
     //Which DDL?
     Int_t iDDL = fgDDLPerSuperModule* nSM + iRCU;
@@ -181,8 +186,8 @@ void AliEMCALRawUtils::Digits2Raw(AliAltroMapping **mapping)
       delete buffers[i];
     }
   }
-  mapping[0]->Delete();
-  mapping[1]->Delete();
+//PH   mapping[0]->Delete();
+//PH   mapping[1]->Delete();
   loader->UnloadDigits();
 }
 
