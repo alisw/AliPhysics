@@ -121,8 +121,12 @@ const int kAliHLTComponentDataTypefIDsize=8;
 /** ESD data block
  * an AliESD object of varying origin
  */
-# define kAliHLTESDTreeDataTypeID      {'E','S','D','_','T','R','E','E'}
+# define kAliHLTESDObjectDataTypeID    {'A','L','I','E','S','D','V','0'}
 
+/** ESD tree data block
+ * TTree with an AliESD object of varying origin
+ */
+# define kAliHLTESDTreeDataTypeID      {'E','S','D','_','T','R','E','E'}
 
 /** HW Address selection data block
  * - a selection list for 16 bit HW addresses
@@ -408,6 +412,9 @@ extern "C" {
 
   /** RAW DDL data specification, origin is 'any', data publisher origin correctly */
   extern const AliHLTComponentDataType kAliHLTDataTypeDDLRaw;
+
+  /** ESD object data specification, origin is 'any' */
+  extern const AliHLTComponentDataType kAliHLTDataTypeESDObject;
 
   /** ESD Tree data specification, origin is 'any' */
   extern const AliHLTComponentDataType kAliHLTDataTypeESDTree;

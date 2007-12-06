@@ -78,6 +78,12 @@ const AliHLTComponentDataType kAliHLTDataTypeDDLRaw =  (AliHLTComponentDataType)
 };
 
 /** ESD data specification */
+const AliHLTComponentDataType kAliHLTDataTypeESDObject =  (AliHLTComponentDataType) {
+  sizeof(AliHLTComponentDataType),
+  kAliHLTESDObjectDataTypeID,
+  kAliHLTDataOriginAny
+};
+/** ESD tree data specification */
 const AliHLTComponentDataType kAliHLTDataTypeESDTree =  (AliHLTComponentDataType) {
   sizeof(AliHLTComponentDataType),
   kAliHLTESDTreeDataTypeID,

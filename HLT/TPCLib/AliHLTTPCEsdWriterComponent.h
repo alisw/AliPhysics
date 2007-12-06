@@ -52,7 +52,11 @@ class AliHLTTPCTrackArray;
  *
  * Arguments TPCEsdConverter: <br>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formating -->
- * none
+ * \li -notree
+ *      write ESD directly to output (@ref kAliHLTDataTypeESDObject)
+ * \li -tree
+ *      write ESD directly to TTree and to output (@ref kAliHLTDataTypeESDTree),
+ *      this is the default behavior.
  *
  * <pre>
  * Example usage (HLT configuration file):
@@ -201,6 +205,8 @@ class AliHLTTPCEsdWriterComponent : public AliHLTLogging
     /** pointer to the basic ESD conversion methods */
     AliHLTTPCEsdWriterComponent* fBase; //! transient value
 
+    /** write object to TTree or directly */
+    int fWriteTree; //!transient
   };
 
  protected:
