@@ -143,6 +143,8 @@ Some important options (all options are on by default):
   --disable-trd              # disable compilation the TRD library
   --disable-dimuon           # disable compilation the MUON library
   --disable-aliroot-logging  # disable logging
+  --disable-strict           # disable strict coding conventions and
+                               compilation flags
 
 All detector libraries (including sample and util lib) require AliRoot,
 compilation is disabled if no working AliRoot version was found. This can

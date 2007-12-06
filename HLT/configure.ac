@@ -456,9 +456,9 @@ AC_SUBST([HOMER_LIBS])
 dnl ------------------------------------------------------------------
 AC_MSG_CHECKING([whether to impose strict coding conventions])
 AC_ARG_ENABLE(strict,
-  [AC_HELP_STRING([--enable-strict],
-      [enable coding convention checks ])],
-  [],[enable_strict=no])
+  [AC_HELP_STRING([--disable-strict],
+      [disable coding convention checks ])],
+  [],[enable_strict=yes])
 if test "x$enable_strict" = "xyes" ; then
    CPPFLAGS="$CPPFLAGS -Weffc++"
 fi
