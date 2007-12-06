@@ -120,9 +120,9 @@ class AliAODCaloCluster : public AliAODCluster {
 
   TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
 
-  UShort_t  fNCells ;
-  UShort_t *fCellsAbsId;   //[fNCells] array of cell absId numbers
-  Double32_t *fCellsAmpFraction;    //[fNCells][0.,1.,16] array with cell amplitudes fraction.
+  Int_t       fNCells ;
+  UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
+  Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
   ClassDef(AliAODCaloCluster,1);
 };
