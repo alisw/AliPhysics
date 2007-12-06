@@ -27,6 +27,6 @@
 
   // set the options for the HLT simulation
   //sim.SetRunHLT("libAliHLTTPC.so loglevel=0x3c config=conf-tpc-writer.C chains=sink1");
-  sim.SetRunHLT("libAliHLTTPC.so loglevel=0x3c config=conf-tpc-esd.C chains=esd-writer");
+  sim.SetRunHLT("libAliHLTTPC.so loglevel=0x3c config=conf-tpc-esd.C chains=sink1");
   sim.Run();
 }

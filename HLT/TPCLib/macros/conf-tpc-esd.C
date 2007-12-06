@@ -39,6 +39,16 @@
     writerInput+=tracker;
   }
 
-  // the esd writer configuration
-  AliHLTConfiguration esdwconf("esd-writer", "TPCEsdWriter"   , writerInput.Data(), "-datafile AliHLTESDs.root");
+  bool esdFile=true;
+
+  if (esdFile) {
+    // the esd writer configuration
+    AliHLTConfiguration sink("sink1", "TPCEsdWriter"   , writerInput.Data(), "-datafile AliHLTESDs.root");
+  } else {
+    // the esd writer configuration
+    AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , writerInput.Data(), "-tree");
+    
+    // the esd writer configuration
+    AliHLTConfiguration sink("sink1", "ROOTFileWriter"   , "esd-converter", "-datafile AliHLTESDs.root");
+  }
 }

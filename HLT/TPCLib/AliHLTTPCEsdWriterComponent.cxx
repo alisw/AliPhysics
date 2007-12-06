@@ -91,13 +91,9 @@ int AliHLTTPCEsdWriterComponent::AliWriter::InitWriter()
   fESD = new AliESDEvent;
   if (fESD) {
     fESD->CreateStdContent();
-    // we have to open a TFile in order to avoid warnings related to
-    // memory resident TTree's. Bad Root feature, yes ;-(
-    // Unfortunatly, opening a dummy file leads to the file to be
-    // created.
-    //TFile dummy("/tmp/dummy-to-avoid-ttree-warnigs", "CRAETE");
     fTree = new TTree("esdTree", "Tree with HLT ESD objects");
     if (fTree) {
+      fTree->SetDirectory(0);
       fESD->WriteToTree(fTree);
     }
   }
@@ -327,11 +323,6 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
   // see header file for class documentation
   int iResult=0;
   assert(fBase);
-  // we have to open a TFile in order to avoid warnings related to
-  // memory resident TTree's. Bad Root feature, yes ;-(
-  // Unfortunatly, opening a dummy file leads to the file to be
-  // created.
-  //TFile dummy("/tmp/dummy-to-avoid-ttree-warnigs", "RECREATE");
   AliESDEvent* pESD = new AliESDEvent;
   if (pESD && fBase) {
     pESD->CreateStdContent();
@@ -342,6 +333,7 @@ int AliHLTTPCEsdWriterComponent::AliConverter::DoEvent(const AliHLTComponentEven
     if (fWriteTree)
       pTree = new TTree("esdTree", "Tree with HLT ESD objects");
     if (pTree) {
+      pTree->SetDirectory(0);
       pESD->WriteToTree(pTree);
     }
 
