@@ -14,6 +14,27 @@
  **************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////
+//
+//
+//  Gain calibration using tracks
+//
+//  The main goal:
+//    1.) Inner TPC gain alignement - (parabolic) parameterization (inside of one sector) 
+//    2.) Angular and z-position correction (parabolic) parameterization 
+//    3.) Sector gain alignment  
+//   
+//  Following histograms are accumulated
+//    a.) Simple 1D histograms  per chamber  
+//    b.) Profile histograms per chamber - local x dependence    
+//    c.) 2D Profile histograms  - local x - fi dependence
+//
+//  To get the gain map - the simple solution - use the histograms - is not enough
+//  The resulting mean amplitude map depends strongly on the track topology
+//  These dependence can be reduced, taking into account angular effect, and diffusion effect 
+//  Using proper fit modeles
+//
+//     
+//
 //                                                                        
 //       === Calibration class for gain calibration using tracks ===
 //
@@ -143,17 +164,40 @@ const char*    AliTPCcalibTracksGain::fgkDebugStreamFileName = "TPCCalibTracksGa
 AliTPCParamSR* AliTPCcalibTracksGain::fgTPCparam = new AliTPCParamSR();
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
-   TNamed(),
-   fDebugCalPadRaw(0),
-   fDebugCalPadCorr(0),
-   fDebugStream(0),
-   fSimpleFitter(0),
-   fSqrtFitter(0),
-   fLogFitter(0),
-   fSingleSectorFitter(0),
-   fPrevIter(0),
-   fDebugStreamPrefix(0),
-   fCuts(0)
+  TNamed(),
+  fDebugStream(0),          //! debug stream for debugging
+  fCuts(0),            // cuts that are used for sieving the tracks used for calibration
+  //
+  // Simple Array of histograms
+  // 
+  fArrayQM(0),                // Qmax normalized
+  fArrayQT(0),                // Qtot normalized 
+  fProfileArrayQM(0),         // Qmax normalized  versus local X
+  fProfileArrayQT(0),         // Qtot normalized  versus local X 
+  fProfileArrayQM2D(0),       // Qmax normalized  versus local X and phi
+  fProfileArrayQT2D(0),       // Qtot normalized  versus local X and phi
+  //
+  // Fitters
+  //
+  fSimpleFitter(0),         // simple fitter for short pads
+  fSqrtFitter(0),           // sqrt fitter for medium pads
+  fLogFitter(0),            // log fitter for long pads
+  fFitter0M(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter1M(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter2M(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter0T(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter1T(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter2T(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fSingleSectorFitter(0),   // just for debugging
+  //
+  // Counters
+  //
+  fTotalTracks(0),         // just for debugging
+  fAcceptedTracks(0),      // just for debugging
+  fDebugCalPadRaw(0),      // just for debugging
+  fDebugCalPadCorr(0),     // just for debugging
+  fPrevIter(0)        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)    
+
 {
    //
    // Default constructor.
@@ -161,21 +205,42 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain() :
 }
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const AliTPCcalibTracksGain& obj) :
-   TNamed(obj)
+  TNamed(obj),
+  fDebugStream(0),          //! debug stream for debugging
+  fCuts(obj.fCuts),            // cuts that are used for sieving the tracks used for calibration
+  //
+  // Simple Histograms
+  //
+  fProfileArrayQM(obj.fProfileArrayQM),         // Qmax normalized  versus local X
+  fProfileArrayQT(obj.fProfileArrayQT),         // Qtot normalized  versus local X 
+  fProfileArrayQM2D(obj.fProfileArrayQM2D),       // Qmax normalized  versus local X and phi
+  fProfileArrayQT2D(obj.fProfileArrayQT2D),       // Qtot normalized  versus local X and phi
+  //
+  // Fitters
+  //
+  fSimpleFitter(obj.fSimpleFitter),         // simple fitter for short pads
+  fSqrtFitter(obj.fSqrtFitter),           // sqrt fitter for medium pads
+  fLogFitter(obj.fLogFitter),            // log fitter for long pads
+  fFitter0M(obj.fFitter0M),
+  fFitter1M(obj.fFitter1M),
+  fFitter2M(obj.fFitter2M),
+  fFitter0T(obj.fFitter0T),
+  fFitter1T(obj.fFitter1T),
+  fFitter2T(obj.fFitter2T),
+  fSingleSectorFitter(obj.fSingleSectorFitter),   // just for debugging
+  //
+  // Counters
+  //
+  fTotalTracks(obj.fTotalTracks),         // just for debugging
+  fAcceptedTracks(obj.fAcceptedTracks),      // just for debugging
+  fDebugCalPadRaw(obj.fDebugCalPadRaw),      // just for debugging
+  fDebugCalPadCorr(obj.fDebugCalPadCorr),     // just for debugging
+  fPrevIter(obj.fPrevIter)        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)    
+
 {
    //
    // Copy constructor.
    //
-
-   fDebugCalPadRaw = new AliTPCCalPad(*(obj.fDebugCalPadRaw));
-   fDebugCalPadCorr = new AliTPCCalPad(*(obj.fDebugCalPadCorr));
-   fSimpleFitter = new AliTPCFitPad(*(obj.fSimpleFitter));
-   fSqrtFitter = new AliTPCFitPad(*(obj.fSqrtFitter));
-   fLogFitter = new AliTPCFitPad(*(obj.fLogFitter));
-   fSingleSectorFitter = new AliTPCFitPad(*(obj.fSingleSectorFitter));
-   fPrevIter = new AliTPCcalibTracksGain(*(obj.fPrevIter));
-   fDebugStreamPrefix = new TObjString(*(obj.fDebugStreamPrefix));
-   fCuts = new AliTPCcalibTracksCuts(*(obj.fCuts));
 }
 
 AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksGain& rhs) {
@@ -192,46 +257,100 @@ AliTPCcalibTracksGain& AliTPCcalibTracksGain::operator=(const AliTPCcalibTracksG
       fLogFitter = new AliTPCFitPad(*(rhs.fLogFitter));
       fSingleSectorFitter = new AliTPCFitPad(*(rhs.fSingleSectorFitter));
       fPrevIter = new AliTPCcalibTracksGain(*(rhs.fPrevIter));
-      fDebugStreamPrefix = new TObjString(*(rhs.fDebugStreamPrefix));
       fCuts = new AliTPCcalibTracksCuts(*(rhs.fCuts));
    }
    return *this;
 }
 
 AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title, AliTPCcalibTracksCuts* cuts, TNamed* debugStreamPrefix, AliTPCcalibTracksGain* prevIter) :
-   TNamed(name, title),
-   fDebugCalPadRaw(0),
-   fDebugCalPadCorr(0),
-   fDebugStream(0),
-   fSimpleFitter(0),
-   fSqrtFitter(0),
-   fLogFitter(0),
-   fSingleSectorFitter(0),
-   fPrevIter(0),
-   fDebugStreamPrefix(0),
-   fCuts(0)
+  TNamed(name, title),
+  fDebugStream(0),          //! debug stream for debugging
+  fCuts(0),            // cuts that are used for sieving the tracks used for calibration
+  //
+  // Simple Histograms
+  //
+  fProfileArrayQM(0),         // Qmax normalized  versus local X
+  fProfileArrayQT(0),         // Qtot normalized  versus local X 
+  fProfileArrayQM2D(0),       // Qmax normalized  versus local X and phi
+  fProfileArrayQT2D(0),       // Qtot normalized  versus local X and phi
+  //
+  // Fitters
+  //
+  fSimpleFitter(0),         // simple fitter for short pads
+  fSqrtFitter(0),           // sqrt fitter for medium pads
+  fLogFitter(0),            // log fitter for long pads
+  fFitter0M(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter1M(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter2M(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter0T(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter1T(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fFitter2T(0),              // fitting of the atenuation, angular correction, and mean chamber gain
+  fSingleSectorFitter(0),   // just for debugging
+  //
+  // Counters
+  //
+  fTotalTracks(0),         // just for debugging
+  fAcceptedTracks(0),      // just for debugging
+  fDebugCalPadRaw(0),      // just for debugging
+  fDebugCalPadCorr(0),     // just for debugging
+  fPrevIter(0)        // the calibration object in its previous iteration (will not be owned by the new object, don't forget to delete it!)      
+  
 {
    //
    // Constructor.
-   //
-   
+   //   
    G__SetCatchException(0);
-
    fCuts = cuts;
-   if (debugStreamPrefix) fDebugStreamPrefix = new TObjString(debugStreamPrefix->GetTitle());
    fPrevIter = prevIter;
-
+   //
+   // Fitter initialization
+   //
    fSimpleFitter = new AliTPCFitPad(8, "hyp7", "");
    fSqrtFitter   = new AliTPCFitPad(8, "hyp7", "");
    fLogFitter    = new AliTPCFitPad(8, "hyp7", "");
    fSingleSectorFitter = new AliTPCFitPad(8, "hyp7", "");
+   fFitter0M      = new TLinearFitter(44,"hyp43");
+   fFitter1M      = new TLinearFitter(44,"hyp43");
+   fFitter2M      = new TLinearFitter(44,"hyp43");
+   fFitter0T      = new TLinearFitter(44,"hyp43");
+   fFitter1T      = new TLinearFitter(44,"hyp43");
+   fFitter2T      = new TLinearFitter(44,"hyp43");
+   //
+   //
+   // Add profile histograms -JUST for visualization - Not used for real calibration
+   // 
+   //
+   fArrayQM=new TObjArray(73);                // Qmax normalized
+   fArrayQT=new TObjArray(73);                // Qtot normalized 
+   fProfileArrayQM   = new TObjArray(37);         // Qmax normalized  versus local X
+   fProfileArrayQT   = new TObjArray(37);         // Qtot normalized  versus local X 
+   fProfileArrayQM2D = new TObjArray(37);         // Qmax normalized  versus local X and phi
+   fProfileArrayQT2D = new TObjArray(37);         // Qtot normalized  versus local X and phi
+   char hname[1000];
+   for (Int_t i=0; i<73; i++){
+     sprintf(hname,"QM_%d",i);
+     fArrayQM->AddAt(new TH1F(hname,hname,200,0,1000),i);
+     sprintf(hname,"QT_%d",i);
+     fArrayQT->AddAt(new TH1F(hname,hname,200,0,1000),i);
+   }
 
-   // just for debugging
+   for (Int_t i=0; i<37;i++){
+     sprintf(hname,"QMvsx_%d",i);
+     fProfileArrayQM->AddAt(new TProfile(hname,hname,50,89,250),i);
+     sprintf(hname,"QTvsx_%d",i);
+     fProfileArrayQT->AddAt(new TProfile(hname,hname,50,89,250),i);
+     sprintf(hname,"QM2D_%d",i);
+     fProfileArrayQM2D->AddAt(new TProfile2D(hname,hname,50,89,250,10,-0.15,0.15),i);
+     sprintf(hname,"QT2D_%d",i);
+     fProfileArrayQT2D->AddAt(new TProfile2D(hname,hname,50,89,250,10,-0.15,0.15),i);
+   }
+   //
+   // just for debugging -counters
+   //
    fTotalTracks     = 0;
    fAcceptedTracks  = 0;
    fDebugCalPadRaw  = new AliTPCCalPad("DebugCalPadRaw", "All clusters simply added up before correction");
-   fDebugCalPadCorr = new AliTPCCalPad("DebugCalPadCorr", "All clusters simply added up after correction");
-   
+   fDebugCalPadCorr = new AliTPCCalPad("DebugCalPadCorr", "All clusters simply added up after correction");   
    // this will be gone for the a new ROOT version > v5-17-05
    for (UInt_t i = 0; i < 36; i++) {
       fNShortClusters[i]  = 0;
@@ -258,7 +377,6 @@ AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
       delete fDebugStream;
    }
 
-   if (fDebugStreamPrefix) delete fDebugStreamPrefix;
 
    if (fDebugCalPadRaw) delete fDebugCalPadRaw;
    if (fDebugCalPadCorr) delete fDebugCalPadCorr;
@@ -274,22 +392,6 @@ void AliTPCcalibTracksGain::Terminate(){
    if (fDebugStream) {
      delete fDebugStream;
      fDebugStream = 0;
-   }
-
-   if (fDebugStreamPrefix) {
-      TString debugStreamPrefix = fDebugStreamPrefix->GetString();
-      TString destFile("");
-      destFile += debugStreamPrefix;
-      destFile += "/";
-      destFile += gSystem->HostName();
-      destFile += "_TPCCalibTracksGain.root";
-      if (debugStreamPrefix.BeginsWith("root://")) {
-         TFile::Cp("TPCCalibTracksGain.root", destFile.Data());
-      } else {
-         TString command("mv TPCCalibTracksGain.root ");
-         command += destFile;
-         gSystem->Exec(command.Data());
-      }
    }
 }
 
@@ -373,20 +475,10 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
    if (!fLogFitter)    fLogFitter    = new AliTPCFitPad(8, "hyp7", "");
    if (!fSingleSectorFitter) fSingleSectorFitter = new AliTPCFitPad(8, "hyp7", "");
 
-   // this will be gone for the a new ROOT version > v5-17-05
-   for (UInt_t i = 0; i < 36; i++) {
-      fNShortClusters[i]  = 0;
-      fNMediumClusters[i] = 0;
-      fNLongClusters[i]   = 0;
-   }
 
    // just for debugging
-   if (fDebugCalPadRaw)  delete fDebugCalPadRaw;
-   if (fDebugCalPadCorr) delete fDebugCalPadCorr;
-   fDebugCalPadRaw  = new AliTPCCalPad("DebugCalPadRaw", "All clusters simply added up before correction");
-   fDebugCalPadCorr = new AliTPCCalPad("DebugCalPadCorr", "All clusters simply added up after correction");
-   fTotalTracks     = 0;
-   fAcceptedTracks  = 0;
+   if (!fDebugCalPadRaw) fDebugCalPadRaw  = new AliTPCCalPad("DebugCalPadRaw", "All clusters simply added up before correction");
+    if (!fDebugCalPadCorr) fDebugCalPadCorr = new AliTPCCalPad("DebugCalPadCorr", "All clusters simply added up after correction");
    
    TIterator* iter = list->MakeIterator();
    AliTPCcalibTracksGain* cal = 0;
@@ -396,6 +488,7 @@ Long64_t AliTPCcalibTracksGain::Merge(TCollection *list) {
          Error("Merge","Attempt to add object of class %s to a %s", cal->ClassName(), this->ClassName());
          return -1;
       }
+      
       Add(cal);
    }
    return 0;
@@ -410,7 +503,51 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    fSqrtFitter->Add(cal->fSqrtFitter);
    fLogFitter->Add(cal->fLogFitter);
    fSingleSectorFitter->Add(cal->fSingleSectorFitter);
-
+   //
+   //
+   //
+   fFitter0M->Add(cal->fFitter0M);
+   fFitter1M->Add(cal->fFitter1M);
+   fFitter2M->Add(cal->fFitter2M);
+   fFitter0T->Add(cal->fFitter0T);
+   fFitter1T->Add(cal->fFitter1T);
+   fFitter2T->Add(cal->fFitter2T);
+   //
+   //
+   // histograms
+   //
+   for (Int_t i=0; i<73; i++){
+     TH1F *his,*hism; 
+     his = (TH1F*)fArrayQM->At(i);
+     hism =  (TH1F*)cal->fArrayQM->At(i);
+     if (his && hism) his->Add(hism);
+     his =  (TH1F*)fArrayQT->At(i);
+     hism =  (TH1F*)cal->fArrayQT->At(i);
+     if (his && hism) his->Add(hism);
+   }
+   //
+   //
+   for (Int_t i=0; i<37; i++){
+     TProfile *his,*hism; 
+     his = (TProfile*)fProfileArrayQM->At(i);
+     hism = (TProfile*)cal->fProfileArrayQM->At(i);
+     if (his && hism) his->Add(hism);
+     his = (TProfile*)fProfileArrayQT->At(i);
+     hism = (TProfile*)cal->fProfileArrayQT->At(i);
+     if (his && hism) his->Add(hism);
+   }
+   //
+   //
+   for (Int_t i=0; i<37; i++){
+     TProfile2D *his,*hism; 
+     his = (TProfile2D*)fProfileArrayQM2D->At(i);
+     hism = (TProfile2D*)cal->fProfileArrayQM2D->At(i);
+     if (his && hism) his->Add(hism);
+     his = (TProfile2D*)fProfileArrayQT2D->At(i);
+     hism = (TProfile2D*)cal->fProfileArrayQT2D->At(i);
+     if (his && hism) his->Add(hism);
+   }
+   //
    // this will be gone for the a new ROOT version > v5-17-05
    for (UInt_t iSegment = 0; iSegment < 36; iSegment++) {
       fNShortClusters[iSegment] += cal->fNShortClusters[iSegment];
@@ -424,8 +561,6 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
    fDebugCalPadRaw->Add(cal->fDebugCalPadRaw);
    fDebugCalPadCorr->Add(cal->fDebugCalPadCorr);
 
-   // Let's see later what to do with fCuts, fDebugStream and fDebugStreamPrefix,
-   // we'll probably won't merge them.
 }
 
 void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
@@ -435,12 +570,67 @@ void AliTPCcalibTracksGain::AddTrack(AliTPCseed* seed) {
    //
    
    if (!fDebugStream) fDebugStream = new TTreeSRedirector(fgkDebugStreamFileName);
-   DumpTrack(seed);
+   DumpTrack(seed);   
+   //
+   // simple histograming part
+   for (Int_t i=0; i<159; i++){
+     AliTPCclusterMI* cluster = seed->GetClusterPointer(i);
+     if (cluster) AddCluster(cluster);
+   }
 }
    
+void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster){
+  //
+  // Adding cluster information to the simple histograms
+  // No correction, fittings are applied 
+  // 
+  Float_t kThreshold=5;
+  if (cluster->GetX()<=0) return;
+  if (cluster->GetQ()<=kThreshold) return;
+  //
+  
+
+  Int_t sector = cluster->GetDetector();
+  TH1F  * his;
+  his = GetQT(sector);
+  if (his) his->Fill(cluster->GetQ());
+  his = GetQT(-1);
+  if (his) his->Fill(cluster->GetQ());
+  his = GetQM(sector);
+  if (his) his->Fill(cluster->GetMax());
+  his = GetQM(-1);
+  if (his) his->Fill(cluster->GetMax());
+  //
+  sector = sector%36;
+  TProfile *prof;
+  prof = GetProfileQT(sector);
+  if (prof) prof->Fill(cluster->GetX(),cluster->GetQ());
+  prof = GetProfileQT(-1);
+  if (prof) prof->Fill(cluster->GetX(),cluster->GetQ());
+  prof = GetProfileQM(sector);
+  if (prof) prof->Fill(cluster->GetX(),cluster->GetMax());
+  prof = GetProfileQM(-1);
+  if (prof) prof->Fill(cluster->GetX(),cluster->GetMax());
+  //  
+  Float_t phi = cluster->GetY()/cluster->GetX();
+  TProfile2D *prof2;
+  prof2 = GetProfileQT2D(sector);
+  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetQ());
+  prof2 = GetProfileQT2D(-1);
+  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetQ());
+  prof2 = GetProfileQM2D(sector);
+  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetMax());
+  prof2 = GetProfileQM2D(-1);
+  if (prof2) prof2->Fill(cluster->GetX(),phi,cluster->GetMax());
+
+  //
+}
+
+
+
 void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t momenta, Float_t mdedx, Int_t padType,
-            Float_t xcenter, TVectorD dedxQ, TVectorD dedxM, Float_t fraction, Float_t fraction2, Float_t dedge,
-            TVectorD parY, TVectorD parZ, TVectorD meanPos) {
+            Float_t xcenter, TVectorD& dedxQ, TVectorD& dedxM, Float_t fraction, Float_t fraction2, Float_t dedge,
+            TVectorD& parY, TVectorD& parZ, TVectorD& meanPos) {
    //
    // Adds cluster to the appropriate fitter for later analysis.
    // The charge used for the fit is the maximum charge for this specific cluster or the
@@ -474,7 +664,13 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t momenta
    xx[4] = xx[0] * xx[1];
    xx[5] = TMath::Abs(cluster->GetZ()) - TMath::Abs(meanPos[4]);
    xx[6] = xx[5] * xx[5];
+   //
+   // Update profile histograms
+   //
 
+   //
+   // Update fitters
+   //
    Int_t segment = cluster->GetDetector() % 36;
    Double_t q = fgkUseTotalCharge ? ((Double_t)(cluster->GetQ())) : ((Double_t)(cluster->GetMax()));  // note: no normalization to pad size!
 
@@ -500,9 +696,9 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t momenta
    // this will be gone for the a new ROOT version > v5-17-05
    if (padType == kShortPads)
       fNShortClusters[segment]++;
-   else if (padType == kMediumPads)
+   if (padType == kMediumPads)
       fNMediumClusters[segment]++;
-   else if (padType == kLongPads)
+   if (padType == kLongPads)
       fNLongClusters[segment]++;
 }
 
@@ -518,6 +714,12 @@ void AliTPCcalibTracksGain::Evaluate(Bool_t robust, Double_t frac) {
    fSqrtFitter->Evaluate(robust, frac);
    fLogFitter->Evaluate(robust, frac);
    fSingleSectorFitter->Evaluate(robust, frac);
+   fFitter0M->Eval();
+   fFitter1M->Eval();
+   fFitter2M->Eval();
+   fFitter0T->Eval();
+   fFitter1T->Eval();
+   fFitter2T->Eval();
 }
 
 AliTPCCalPad* AliTPCcalibTracksGain::CreateFitCalPad(UInt_t fitType, Bool_t undoTransformation, Bool_t normalizeToPadSize) {
@@ -806,21 +1008,84 @@ void AliTPCcalibTracksGain::DumpTrack(AliTPCseed* track) {
    //  Dump track information to the debug stream
    //
    
-   (*fDebugStream) << "Track" <<
-      "Track.=" << track <<        // track information
-      "\n";
    Int_t rows[200];
+   Int_t sector[3];
+   Int_t npoints[3];
+   TVectorD dedxM[3];
+   TVectorD dedxQ[3];
+   TVectorD parY[3];
+   TVectorD parZ[3];
+   TVectorD meanPos[3];
+   //
+   Int_t count=0;
    for (Int_t ipad = 0; ipad < 3; ipad++) {
-      GetDedx(track, ipad, rows);
+     dedxM[ipad].ResizeTo(5);
+     dedxQ[ipad].ResizeTo(5);
+     parY[ipad].ResizeTo(3);
+     parZ[ipad].ResizeTo(3);
+     meanPos[ipad].ResizeTo(6);
+     Bool_t isOK = GetDedx(track, ipad, rows, sector[ipad], npoints[ipad], dedxM[ipad], dedxQ[ipad], parY[ipad], parZ[ipad], meanPos[ipad]);
+     if (isOK) 
+       AddTracklet(sector[ipad],ipad, dedxQ[ipad], dedxM[ipad], parY[ipad], parZ[ipad], meanPos[ipad] );
+     if (isOK) count++;
    }
+   
+   (*fDebugStream) << "Track" <<
+     "Track.=" << track <<        // track information
+     "\n";
+   //
+   //
+   //
+   if (count>1){
+     (*fDebugStream) << "TrackG" <<
+       "Track.=" << track <<        // track information
+       "ncount="<<count<<
+       // info for pad type 0
+       "sector0="<<sector[0]<<     
+       "npoints0="<<npoints[0]<<
+       "dedxM0.="<<&dedxM[0]<<
+       "dedxQ0.="<<&dedxQ[0]<<
+       "parY0.="<<&parY[0]<<
+       "parZ0.="<<&parZ[0]<<
+       "meanPos0.="<<&meanPos[0]<<
+       //
+       // info for pad type 1
+       "sector1="<<sector[1]<<     
+       "npoints1="<<npoints[1]<<
+       "dedxM1.="<<&dedxM[1]<<
+       "dedxQ1.="<<&dedxQ[1]<<
+       "parY1.="<<&parY[1]<<
+       "parZ1.="<<&parZ[1]<<
+       "meanPos1.="<<&meanPos[1]<<
+       //
+       // info for pad type 2
+       "sector2="<<sector[2]<<     
+       "npoints2="<<npoints[2]<<
+       "dedxM2.="<<&dedxM[2]<<
+       "dedxQ2.="<<&dedxQ[2]<<
+       "parY2.="<<&parY[2]<<
+       "parZ2.="<<&parZ[2]<<
+       "meanPos2.="<<&meanPos[2]<<
+       //       
+       "\n";
+   }
+
 }
 
-Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* rows) {
-   //
-   // GetDedx for given sector for given track
-   // padType - type of pads
-   //
-   
+Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* rows,
+				      Int_t &sector, Int_t& npoints, 
+				      TVectorD &dedxM, TVectorD &dedxQ, 
+				      TVectorD &parY, TVectorD &parZ, TVectorD&meanPos)
+{
+  //
+  // GetDedx for given sector for given track
+  // padType - type of pads
+  //
+
+  static TLinearFitter fitY(2, "pol1");
+  static TLinearFitter fitZ(2, "pol1");
+  //
+  //   
    Int_t firstRow = 0, lastRow = 0;
    Int_t minRow = 100;
    Float_t xcenter = 0;
@@ -852,13 +1117,9 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* r
    Int_t rowIn[100];
    Int_t index[100];
    //
-   static TLinearFitter fitY(2, "pol1");
-   static TLinearFitter fitZ(2, "pol1");
-   static TVectorD parY(2);
-   static TVectorD parZ(2);
+   //
    fitY.ClearPoints();
    fitZ.ClearPoints();
-   TVectorD meanPos(6);
    
    for (Int_t iCluster = firstRow; iCluster < lastRow; iCluster++) {
       AliTPCclusterMI* cluster = track->GetClusterPointer(iCluster);
@@ -896,9 +1157,9 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* r
    // calculate truncated mean
    //
    TMath::Sort(nclusters, amplitudeQ, index, kFALSE);
-   
-   TVectorD dedxQ(5);
-   TVectorD dedxM(5);
+   //
+   //
+   //
    Float_t ndedx[5];
    for (Int_t i = 0; i < 5; i++) {
       dedxQ[i] = 0;
@@ -947,6 +1208,8 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* r
    }
    
    inonEdge = 0;
+   Float_t momenta = track->GetP();
+   Float_t mdedx = track->GetdEdx();
    for (Int_t i = 0; i < nclusters; i++) {
       Int_t rowSorted = rowIn[index[i]];
       AliTPCclusterMI* cluster = track->GetClusterPointer(rowSorted);
@@ -958,8 +1221,6 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* r
       Float_t dedge = cluster->GetX()*ktany - TMath::Abs(cluster->GetY());
       Float_t fraction = Float_t(i) / Float_t(nclusters);
       Float_t fraction2 = Float_t(inonEdge) / Float_t(nclustersNE);
-      Float_t momenta = track->GetP();
-      Float_t mdedx = track->GetdEdx();
 
       AddCluster(cluster, momenta, mdedx, padType, xcenter, dedxQ, dedxM, fraction, fraction2, dedge, parY, parZ, meanPos);
 
@@ -979,5 +1240,62 @@ Bool_t AliTPCcalibTracksGain::GetDedx(AliTPCseed* track, Int_t padType, Int_t* r
          "meanPos.=" << &meanPos <<     // mean position (dx, dx^2, y,y^2, z, z^2)
          "\n";
    }
+   
+   (*fDebugStream) << "dEdxT" <<
+     "P=" << momenta <<             // track momenta
+     "npoints="<<inonEdge<<         // number of points
+     "sector="<<lastSector<<        // sector number
+     "dedx=" << mdedx <<            // mean dedx - corrected for angle
+     "IPad=" << padType <<          // pad type 0..2
+     "xc=" << xcenter <<            // x center of chamber
+     "dedxQ.=" << &dedxQ <<         // dedxQ  - total charge
+     "dedxM.=" << &dedxM <<         // dedxM  - maximal charge
+     "parY.=" << &parY <<           // line fit
+     "parZ.=" << &parZ <<           // line fit
+     "meanPos.=" << &meanPos <<     // mean position (dx, dx^2, y,y^2, z, z^2)
+     "\n";
+   
+   sector = lastSector;
+   npoints = inonEdge;
    return kTRUE;
+}
+
+void AliTPCcalibTracksGain::AddTracklet(UInt_t sector, UInt_t padType,TVectorD &dedxQ, TVectorD &dedxM,TVectorD& parY, TVectorD& parZ, TVectorD& meanPos){
+  //
+  // Add measured point - dedx to the fitter
+  //
+  //
+  //chain->SetAlias("dr","(250-abs(meanPos.fElements[4]))");
+  //chain->SetAlias("tz","(0+abs(parZ.fElements[1]))");
+  //chain->SetAlias("ty","(0+abs(parY.fElements[1]))");
+  //chain->SetAlias("corrg","sqrt((1+ty^2)*(1+tz^2))");
+  // TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++tz++ty++dr*tz++dr*ty++ty*tz++(sector==0)++(sector==1)++(sector==2)++(sector==3)++(sector==4)++(sector==5)++(sector==6)++(sector==7)++(sector==8)++(sector==9)++(sector==10)++(sector==11)","IPad==0",chi2,npoints,param,covar,0,100000);
+
+  Double_t xxx[100];
+  //
+  // z and angular part
+  //
+  xxx[0] = 250.-TMath::Abs(meanPos[4]);
+  xxx[1] = TMath::Abs(parY[1]);
+  xxx[2] = TMath::Abs(parZ[1]);
+  xxx[3] = xxx[0]*xxx[1];
+  xxx[4] = xxx[0]*xxx[2];
+  xxx[5] = xxx[1]*xxx[2];
+  xxx[6] = xxx[0]*xxx[0];
+  //
+  // chamber part
+  //
+  Int_t tsector = sector%36;
+  for (Int_t i=0;i<35;i++){
+    xxx[7+i]=(i==tsector)?1:0;
+  }
+  TLinearFitter *fitterM = fFitter0M;
+  if (padType==1) fitterM=fFitter1M;
+  if (padType==2) fitterM=fFitter2M;
+  fitterM->AddPoint(xxx,dedxM[1]);
+  //
+  TLinearFitter *fitterT = fFitter0T;
+  if (padType==1) fitterT = fFitter1T;
+  if (padType==2) fitterT = fFitter2T;
+  fitterT->AddPoint(xxx,dedxQ[1]);
 }
