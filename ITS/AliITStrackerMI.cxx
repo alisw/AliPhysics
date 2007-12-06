@@ -460,7 +460,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   fTrackHypothesys.Expand(nentr);
   fBestHypothesys.Expand(nentr);
   MakeCoefficients(nentr);
-  if(fUseTGeo==3 || fUseTGeo==4) MakeTrksMaterialLUT(nentr);
+  if(fUseTGeo==3 || fUseTGeo==4) MakeTrksMaterialLUT(event->GetNumberOfTracks());
   Int_t ntrk=0;
   // THE TWO TRACKING PASSES
   for (fPass=0; fPass<2; fPass++) {
@@ -4011,11 +4011,15 @@ void AliITStrackerMI::FindV02(AliESDEvent *event)
       //
       //
       TObjArray * array0b     = (TObjArray*)fBestHypothesys.At(itrack0);
-      if (!array0b&&pvertex->GetRr()<40 && TMath::Abs(track0->GetTgl())<1.1) 
+      if (!array0b&&pvertex->GetRr()<40 && TMath::Abs(track0->GetTgl())<1.1) {
+	fCurrentEsdTrack = itrack0;
 	FollowProlongationTree((AliITStrackMI*)fOriginal.At(itrack0),itrack0, kFALSE);
+      }
       TObjArray * array1b    = (TObjArray*)fBestHypothesys.At(itrack1);
-      if (!array1b&&pvertex->GetRr()<40 && TMath::Abs(track1->GetTgl())<1.1) 
+      if (!array1b&&pvertex->GetRr()<40 && TMath::Abs(track1->GetTgl())<1.1) { 
+	fCurrentEsdTrack = itrack1;
 	FollowProlongationTree((AliITStrackMI*)fOriginal.At(itrack1),itrack1, kFALSE);
+      }
       //
       AliITStrackMI * track0b = (AliITStrackMI*)fOriginal.At(itrack0);       
       AliITStrackMI * track1b = (AliITStrackMI*)fOriginal.At(itrack1);
