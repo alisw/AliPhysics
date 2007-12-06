@@ -180,7 +180,7 @@ void AliT0CalibWalk::SetAmpLEDRec(Int_t ipmt)
 void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   TFile *gFile = TFile::Open(laserFile);
-  gSystem->Load("libSpectrum");
+  //gSystem->Load("libSpectrum");
   TGraph *gr[24];
   Int_t npeaks = 20;
   Int_t sigma=3;
@@ -250,22 +250,8 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       fWalk.AddAtAndExpand(gr[i+12],i+12);
       delete [] xx;
       delete [] yy;
-//t      delete gr[i];
     }
   }
 
-//t
-  TFile *fitGraph = new TFile("qtc_cfd.root","RECREATE");
-  for (Int_t i=0; i<24; i++)
-  {
-    gr[i]->Write();
-    delete gr[i];
-  }
-  fitGraph->Close();
-  delete fitGraph;
-//t
-
-  gFile->Close();
-  delete gFile;
 }
 

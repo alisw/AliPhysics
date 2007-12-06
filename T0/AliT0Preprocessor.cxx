@@ -138,14 +138,13 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               {
                 Log(Form("File with Id LASER found in source %s!", source->GetName()));
                 AliT0CalibWalk *laser = new AliT0CalibWalk();
-                // laser->Reset();
                 laser->MakeWalkCorrGraph(laserFile);
                 AliCDBMetaData metaData;
                 metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Walk correction from laser runs.");
-		TObjArray* arrLaser = laser->GetfWalk();
-		resultLaser=Store("Calib","Walk", arrLaser, &metaData, 0, 1);
+		//TObjArray* arrLaser = laser->GetfWalk();
+		resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
                 delete laser;
               }
               else

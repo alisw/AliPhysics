@@ -2,6 +2,7 @@ void TestPreprocessor()
 {
   gSystem->Load("libT0shuttle.so");
   gSystem->Load("$ALICE_ROOT/SHUTTLE/TestShuttle/libTestShuttle.so");
+  gSystem->Load("libSpectrum");
 
 
   AliTestShuttle::SetMainCDB("local://./TestCDB");
@@ -15,16 +16,20 @@ void TestPreprocessor()
   TMap* dcsAliasMap = CreateDCSAliasMap();
 
   shuttle->SetDCSInput(dcsAliasMap);
-  
-  shuttle->SetInputRunType("PHYSICS");
 
-  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "TIME", "LDC0", "DAQfile.root");
+  shuttle->SetInputRunType("T0_STANDALONE_LASER");
+
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "LASER", "LDC0","daLaser.root");
+ 
+  //shuttle->SetInputRunType("PHYSICS");
+
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "T00", "PHYSICS", "LDC0", "daPhys.root");
 
   AliPreprocessor* start = new AliT0Preprocessor(shuttle);
 
   shuttle->Process();
   
-  AliCDBManager::Instance()->SetDefaultStorage("local://TestCDB");
+  /* AliCDBManager::Instance()->SetDefaultStorage("local://TestCDB");
 
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("T00/Calib/Data", 0);
   if (!entry)
@@ -36,6 +41,7 @@ void TestPreprocessor()
   AliT0Calc* output = dynamic_cast<AliT0Calc*> (entry->GetObject());
 
    // output->Print();
+  */
 }
 
 TMap* CreateDCSAliasMap()
@@ -43,19 +49,23 @@ TMap* CreateDCSAliasMap()
   TMap* aliasMap = new TMap;
   aliasMap->SetOwner(1);
 
-  for(int nAlias=0;nAlias<24;nAlias++)
+  Int_t n_ac_scalers=32;
+  
+  for(int nAlias=0;nAlias<n_ac_scalers;nAlias++)
   {
     TObjArray* valueSet = new TObjArray;
     valueSet->SetOwner(1);
 
-    TString aliasName="T0HV";
-    aliasName += nAlias;
+    TString aliasName=Form("t00_ac_scaler_%02d",nAlias);
+    
+    Int_t nValues=10;
 
-    for (int timeStamp=0;timeStamp<1;timeStamp++)
+    for (int timeStamp=0;timeStamp<nValues;timeStamp++)
     {
-      AliDCSValue* dcsVal = new AliDCSValue((Float_t) nAlias, timeStamp);
+      AliDCSValue* dcsVal = new AliDCSValue((Float_t) gRandom->Gaus(3.0e8,50), timeStamp);
       valueSet->Add(dcsVal);
-//    printf("hello! dcsVal= %d %d\n" ,dcsVal->GetFloat(), dcsVal->GetTimeStamp());
+      printf("Alias: %s - value n. %d: (val=%d timestamp=%d)\n" ,
+    	    aliasName.Data(), timeStamp, dcsVal->GetFloat(), dcsVal->GetTimeStamp());
     }
     aliasMap->Add(new TObjString(aliasName), valueSet);
   }
