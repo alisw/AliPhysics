@@ -187,9 +187,9 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   Bool_t down=false;
 
   Int_t index[20];
-  Char_t buf1[10], buf2[10],title[10];
+  Char_t buf1[10], buf2[10],title[10], title2[10] ;
 
-  for (Int_t i=0; i<24; i++)
+  for (Int_t i=0; i<12; i++)
   {
     sprintf(buf1,"T0_C_%i_CFD",i+1);
     sprintf(buf2,"CFD_QTC%i",i+1);
@@ -197,7 +197,7 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
     TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
     TH1F *cfd = (TH1F*) gFile->Get(buf1);
     TSpectrum *s = new TSpectrum(2*npeaks,1.);
-    Int_t nfound = s->Search(cfd,sigma," ",0.05);
+    Int_t nfound = s->Search(cfd,sigma,"goff",0.05);
     // cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;
     if(nfound!=0)
     {
@@ -239,12 +239,31 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       gr[i]->SetMinimum(hmin);
       gr[i]->SetMaximum(hmax);
       gr[i]->SetMarkerStyle(7);
+      sprintf(title2,"Walk %i",i+13);
+      gr[i+12] = new TGraph(np,xx,yy);
+      gr[i+12]->SetTitle(title2);
+      gr[i+12]->SetMinimum(hmin);
+      gr[i+12]->SetMaximum(hmax);
+      gr[i+12]->SetMarkerStyle(7);
+
       fWalk.AddAtAndExpand(gr[i],i);	  
-       delete [] xx;
+      fWalk.AddAtAndExpand(gr[i+12],i+12);
+      delete [] xx;
       delete [] yy;
-      delete gr[i];
+//t      delete gr[i];
     }
   }
+
+//t
+  TFile *fitGraph = new TFile("qtc_cfd.root","RECREATE");
+  for (Int_t i=0; i<24; i++)
+  {
+    gr[i]->Write();
+    delete gr[i];
+  }
+  fitGraph->Close();
+  delete fitGraph;
+//t
 
   gFile->Close();
   delete gFile;

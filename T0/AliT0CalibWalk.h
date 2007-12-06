@@ -32,7 +32,7 @@ class AliT0CalibWalk: public TNamed {
   Float_t  GetAmpLEDRecVal(Int_t ipmt, Float_t mv)  const
     {return((TGraph*)fAmpLEDRec.At(ipmt))->Eval(mv);}
   void     SetAmpLEDRec(Int_t ipmt) ;
-    
+  TObjArray* GetfWalk() {return &fWalk;}    
    
  protected:
    

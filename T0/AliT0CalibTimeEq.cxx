@@ -26,7 +26,6 @@
 #include "AliLog.h"
 #include "AliRun.h"
 
-#include <TCanvas.h>
 #include <TFile.h>
 #include <TMath.h>
 #include <TF1.h>
@@ -35,24 +34,18 @@
 #include <TSpectrum.h>
 #include <TVirtualFitter.h>
 #include <TProfile.h>
-
-#include <Riostream.h>
 #include <string>
 
 ClassImp(AliT0CalibTimeEq)
 
 //________________________________________________________________
-  AliT0CalibTimeEq::AliT0CalibTimeEq():   TNamed(),
-                                      fTimeDelayTVD(0),
-                                      fMeanT0(0) 
+  AliT0CalibTimeEq::AliT0CalibTimeEq():TNamed()
 {
   //
 }
 
 //________________________________________________________________
-AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
-                                      fTimeDelayTVD(0),
-                                      fMeanT0(0)
+AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed()
 {
   TString namst = "Calib_";
   namst += name;
@@ -61,10 +54,7 @@ AliT0CalibTimeEq::AliT0CalibTimeEq(const char* name):TNamed(),
 }
 
 //________________________________________________________________
-AliT0CalibTimeEq::AliT0CalibTimeEq(const AliT0CalibTimeEq& calibda) :
-  TNamed(calibda),		
-  fTimeDelayTVD(0),
-  fMeanT0(0)
+AliT0CalibTimeEq::AliT0CalibTimeEq(const AliT0CalibTimeEq& calibda):TNamed(calibda)		
 {
 // copy constructor
   SetName(calibda.GetName());
@@ -107,59 +97,71 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 
 
 //________________________________________________________________
-void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, char* name2, char* canv, Int_t npeaks, Double_t sigma, const char* filePhys)
+void AliT0CalibTimeEq::ComputeOnlineParams(char* name1, Int_t npeaks, Double_t sigma, const char* filePhys)
 {
   TFile *gFile = TFile::Open(filePhys);
-  gSystem->Load("libSpectrum");
-  npeaks = 20;
-  sigma=3.;
   Bool_t down=false;
   Int_t index[20];
-  TCanvas *c1 = new TCanvas(canv, canv,0,48,1280,951);
-  c1->Divide(4,3);
   Char_t buf1[15];
   Char_t temp[10];
-  Float_t p[12][3]={0.,0.,0.};
-  for (Int_t i=12; i<24; i++)
+  Float_t p[24][3]={0.,0.,0.};
+  for (Int_t i=0; i<24; i++)
+  {
+    sprintf(buf1,name1);
+    sprintf(temp,"%i",i+1);
+    strcat (buf1,temp);
+    //strcat (buf1,name2);
+    TH1F *cfd = (TH1F*) gFile->Get(buf1);
+    printf(" i = %d buf1 = %s\n", i, buf1);
+    TSpectrum *s = new TSpectrum(2*npeaks,1.);
+    printf(" buf1 = %s cfd = %x\n", buf1, cfd);
+    Int_t nfound = s->Search(cfd,sigma,"goff",0.2);
+    printf(" nfound = %d\n", nfound);
+    if(nfound!=0)
     {
-      c1->cd(i+1);
-      sprintf(buf1,name1);
-      sprintf(temp,"%i",i+1);
-      strcat (buf1,temp);
-      strcat (buf1,name2);
-      TH1F *cfd = (TH1F*) gFile->Get(buf1);
-      TSpectrum *s = new TSpectrum(2*npeaks,1.);
-      Int_t nfound = s->Search(cfd,sigma," ",0.2);
-      if(nfound!=0){
-        Float_t *xpeak = s->GetPositionX();
-        TMath::Sort(nfound, xpeak, index,down);
-        Float_t xp = xpeak[index[0]];
-        Float_t hmax = xp+3*sigma;
-        Float_t hmin = xp-3*sigma;
-        cfd->GetXaxis()->SetRange((Int_t)hmin-20,(Int_t)hmax+20);
-        TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
-              cfd->Fit("g1","IR");
+      Float_t *xpeak = s->GetPositionX();
+      TMath::Sort(nfound, xpeak, index,down);
+      Float_t xp = xpeak[index[0]];
+      Float_t hmax = xp+3*sigma;
+      Float_t hmin = xp-3*sigma;
+      cfd->GetXaxis()->SetRange((Int_t)hmin-20,(Int_t)hmax+20);
+      TF1 *g1 = new TF1("g1", "gaus", hmin, hmax);
+      cfd->Fit("g1","IRQN");
+      for(Int_t j =0; j<3; j++)
+      {
+        p[i][j] = g1->GetParameter(j);
+        SetCFDvalue(i, j, p[i][j]);
+      }
 
-        for(Int_t j =0; j<3; j++){
-                p[i][j] = g1->GetParameter(j);
-                SetCFDvalue(i, j, p[i][j]);
+      SetCFDvalue(i, 3, hmin);
+      SetCFDvalue(i, 4, hmax);
+
+      if (i<12)
+      {
+        SetTimeEq(i,(p[i][2]-p[0][2]));
+      }
+      else
+      {
+	SetTimeEq(i,(p[i][2]-p[12][2]));
+      }	
+    } 
+  }
+  
+   gFile->Close();
+   delete gFile;
+
+   for(int i=0;i<5;i++)
+     {
+      for(int j=0;j<24;j++)
+	{
+                printf("fCFDvalue[%d][%d]=%f\n",j,i,fCFDvalue[j][i]);
         }
-        SetCFDvalue(i, 3, hmin);
-        SetCFDvalue(i, 4, hmax);
-        SetTimeEq(i,p[i][2]);
-        // if(p[i][0]==0)
-        // cfd->Draw();
-
-        // cfd->Draw();
-      } // else
-        // cfd->Draw();
-    }
-  // TFile *onl = new TFile("onl.root","RECREATE");
-  // this->Write("Values");
-  // onl->Close();
-  // delete onl;
-  gFile->Close();
-  delete gFile;
+     }
+   printf("\n\n");
+   for(int j=0;j<24;j++)
+   {
+                printf("fTimeEq[%d]=%f\n",j,fTimeEq[j]);
+   }
 }
 
 

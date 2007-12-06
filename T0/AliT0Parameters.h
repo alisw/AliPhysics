@@ -76,8 +76,8 @@ public:
   Float_t GetTimeDelayCFD(Int_t ipmt);
 //  Float_t GetTimeV0(Int_t ipmt = 512) {return  fTimeV0;}
 
-  //  void SetMeanT0(Int_t mean=500) { fMeanT0 = mean; };
-  Int_t GetMeanT0 (); //{return fMeanT0;};
+  void SetMeanT0(Int_t mean=512) { fMeanT0 = mean; };
+  Int_t GetMeanT0 () {return fMeanT0;};
 
   TMap * GetMapLookup();
   Int_t GetChannel(Int_t trm,  Int_t tdc, Int_t chain, Int_t channel);

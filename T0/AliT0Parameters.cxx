@@ -24,6 +24,7 @@
 // Eventually, this class will use the Conditions DB to get the
 // various parameters, which code can then request from here.
 //                                                       
+#include "AliT0.h"
 #include "AliLog.h"		  
 #include "AliT0Parameters.h"	  
 #include "AliT0CalibData.h"   
@@ -73,7 +74,7 @@ AliT0Parameters::AliT0Parameters()
    fTimeDelayCFD(0), 
  //  fTimeV0(0), 
    fTimeDelayTVD(0),
-   fMeanT0(500),
+   fMeanT0(510),
    fLookUp(0),
    fNumberOfTRMs(2),
    fCalibentry(), fLookUpentry(),fSlewCorr()
@@ -146,7 +147,7 @@ void AliT0Parameters::InitIfOnline()
 // for switching to this one should write
   // AliT0RawReader myrawreader(rawReader);
 //	myrawreader.SetOnlineMode(kTRUE);
-
+cout<<" AliT0Parameters::InitIfOnline() "<<endl;
   if (fIsInit) return;
    //standart configuration (used for simulation)
    //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
@@ -189,20 +190,6 @@ AliT0Parameters::GetTimeDelayCFD(Int_t ipmt)
     }
    
   return fgCalibData->GetTimeEq(ipmt);
-}
-
-
-Int_t
-AliT0Parameters::GetMeanT0() 
-{
-  // return mean of T0 distrubution with vertex=0
-   // 
-  if (!fCalibentry) 
-    {
-      return fMeanT0;
-    }
-   
-  return fgCalibData->GetMeanT0();
 }
 //__________________________________________________________________
 
