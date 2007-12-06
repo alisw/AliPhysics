@@ -158,7 +158,9 @@ void AliITSQADataMaker::InitRaws()
 		for(Int_t iside=0; iside<fgknSide; iside++){
 			//Int_t index1 = moduleSDD * 2 + iside;
 			hname2[index1] = new Char_t[50];
-			sprintf(hname2[index1],"ProjYMap%dSide%d",moduleSDD+1,iside);
+			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+                        sprintf(hname2[index1],"ProjYMap_L%d_%d_%d_%d",lay,lad,det,iside);
+
 			h5[index1] = new TH1D(hname2[index1],hname2[index1],256,-0.5,255.5);
 			Add2RawsList(h5[index1],index1+39);
 			fnSDDHistos++;
@@ -220,9 +222,10 @@ void AliITSQADataMaker::InitRaws()
 		for(Int_t iside=0;iside<fgknSide;iside++){
 			//Int_t index1 = moduleSDD * 2 + iside ;
 			for(Int_t i=0; i<3; i++) hname[i][index1]= new Char_t[50];
-			sprintf(hname[0][index1],"chargeMap%dSide%d",moduleSDD,iside);
-			sprintf(hname[1][index1],"Total Charge, module number %d , Side%d",moduleSDD,iside);
-			sprintf(hname[2][index1],"hmonoDMap%dSide%d",moduleSDD,iside);
+			AliITSgeomTGeo::GetModuleId(moduleSDD+fgkmodoffset, lay, lad, det);
+			sprintf(hname[0][index1],"chargeMap_L%d_%d_%d_%d",lay,lad,det,iside);
+			sprintf(hname[1][index1],"TotalCharge_L%d_%d_%d_%d",lay,lad,det,iside);
+			sprintf(hname[2][index1],"hmonoDMap_L%d_%d_%d_%d",lay,lad,det,iside);
 			fModuleChargeMap[index1] = new TH2D(hname[0][index1],hname[1][index1],256,-0.5,255.5,256,-0.5,255.5);
 			Add2RawsList(fModuleChargeMap[index1],indexlast2 + index1);
 			fnSDDHistos++;
