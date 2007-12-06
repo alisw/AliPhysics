@@ -16,8 +16,8 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-//*--
-//*-- Yves Schutz (SUBATECH) 
+//--
+//-- Yves Schutz (SUBATECH) 
 // Reconstruction class. Redesigned from the old AliReconstructionner class and 
 // derived from STEER/AliReconstructor. 
 // 
@@ -30,6 +30,7 @@
 #include "AliAltroMapping.h"
 #include "AliESDEvent.h"
 #include "AliESDCaloCluster.h"
+#include "AliESDCaloCells.h"
 #include "AliPHOSReconstructor.h"
 #include "AliPHOSClusterizerv1.h"
 #include "AliPHOSTrackSegmentMakerv1.h"
@@ -135,11 +136,34 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   esd->SetNumberOfPHOSClusters(nOfRecParticles) ; 
   esd->SetFirstPHOSCluster(esd->GetNumberOfCaloClusters()) ;
-
+  
   AliDebug(2,Form("%d rec. particles, option %s",nOfRecParticles,GetOption()));
+  
+  // Read digits array
+
+  TBranch *branch = digitsTree->GetBranch("PHOS");
+  if (!branch) { 
+    AliError("can't get the branch with the PHOS digits !");
+    return;
+  }
+  TClonesArray *digitsArray    = new TClonesArray("AliPHOSDigit",100);
+  branch->SetAddress(&digitsArray);
+  branch->GetEntry(0);
+
+  // Get the clusters array
+
+  TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
+  if (!emcbranch) { 
+    AliError("can't get the branch with the PHOS EMC clusters !");
+    return;
+  }
+
+  TObjArray *emcRecPoints = new TObjArray(100) ;
+  emcbranch->SetAddress(&emcRecPoints);
+  emcbranch->GetEntry(0);
 
   //#########Calculate trigger and set trigger info###########
- 
+
   AliPHOSTrigger tr ;
   //   tr.SetPatchSize(1);//create 4x4 patches
   tr.Trigger();
@@ -156,8 +180,10 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   Int_t iCrystalEta2x2 = tr.Get2x2CrystalEta();
   Int_t iCrystalEtanxn = tr.GetnxnCrystalEta();
 
-  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCrystalPhi2x2, iCrystalEta2x2));
-  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",  maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCrystalPhinxn, iCrystalEtanxn));
+  AliDebug(2, Form("Trigger 2x2 max amp %f, out amp %f, SM %d, iphi %d ieta %d",  
+		   maxAmp2x2, ampOutOfPatch2x2, iSM2x2,iCrystalPhi2x2, iCrystalEta2x2));
+  AliDebug(2, Form("Trigger 4x4 max amp %f , out amp %f, SM %d, iphi %d, ieta %d",
+		   maxAmpnxn, ampOutOfPatchnxn, iSMnxn,iCrystalPhinxn, iCrystalEtanxn));
 
   Int_t iRelId2x2 []= {iSM2x2+1,0,iCrystalPhi2x2,iCrystalEta2x2};// PHOS modules in order to calculate AbsId need to be 1-5 not 0-4 as returns trigger.
   Int_t iAbsId2x2 =-1;
@@ -188,42 +214,46 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   esd->AddPHOSTriggerPosition(triggerPosition);
   esd->AddPHOSTriggerAmplitudes(triggerAmplitudes);
   
-  //######################################
-  
-  // Read digits array
-  TBranch *branch = digitsTree->GetBranch("PHOS");
-  if (!branch) { 
-    AliError("can't get the branch with the PHOS digits !");
-    return;
+
+  //########################################
+  //############# Fill CaloCells ###########
+  //########################################
+
+  Int_t nDigits = digitsArray->GetEntries();
+  Int_t idignew = 0 ;
+  AliDebug(1,Form("%d digits",nDigits));
+
+  const Int_t knEMC = fGeom->GetNModules()*fGeom->GetNPhi()*fGeom->GetNZ();
+  AliESDCaloCells &phsCells = *(esd->GetPHOSCells());
+  phsCells.CreateContainer(nDigits);
+  phsCells.SetType(AliESDCaloCells::kPHOSCell);
+
+  // Add to CaloCells only EMC digits with non-zero energy 
+  for (Int_t idig = 0 ; idig < nDigits ; idig++) {
+    const AliPHOSDigit * dig = (const AliPHOSDigit*)digitsArray->At(idig);
+    if(dig->GetId() <= knEMC && dig->GetEnergy() > 0 ){
+      // printf("i %d; id %d; amp %f; time %f\n",
+      // idignew,dig->GetId(),dig->GetEnergy(), dig->GetTime());
+      phsCells.SetCell(idignew,dig->GetId(), dig->GetEnergy(), dig->GetTime());   
+      idignew++;
+    }
   }
-  TClonesArray *fDigitsArr    = new TClonesArray("AliPHOSDigit",100);
-  branch->SetAddress(&fDigitsArr);
-  branch->GetEntry(0);
+  phsCells.SetNumberOfCells(idignew);
+  phsCells.Sort();
 
-  // Get the clusters array
-  TBranch *emcbranch = clustersTree->GetBranch("PHOSEmcRP");
-  if (!emcbranch) { 
-    AliError("can't get the branch with the PHOS EMC clusters !");
-    return;
-  }
-
-  TObjArray *fEmcRecPoints = new TObjArray(100) ;
-  emcbranch->SetAddress(&fEmcRecPoints);
-  emcbranch->GetEntry(0);
-
-  //Fill CaloClusters 
-  const Float_t kBigShort = std::numeric_limits<short int>::max() - 1;
-  const Float_t nsec100   = 1e9*100.; // units of 0.01 ns
-  const Float_t gev500    = 500.;     // units of GeV/500
+  //########################################
+  //############## Fill CaloClusters #######
+  //########################################
 
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
-    AliPHOSRecParticle * rp = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
+    AliPHOSRecParticle  *rp    = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
     if (Debug()) 
       rp->Print();
     // Get track segment and EMC rec.point associated with this rec.particle
-    AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(tsm->GetTrackSegments()->At(rp->GetPHOSTSIndex()));
+    AliPHOSTrackSegment *ts    = static_cast<AliPHOSTrackSegment *>(tsm->GetTrackSegments()
+								    ->At(rp->GetPHOSTSIndex()));
 
-    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(fEmcRecPoints->At(ts->GetEmcIndex()));
+    AliPHOSEmcRecPoint  *emcRP = static_cast<AliPHOSEmcRecPoint *>(emcRecPoints->At(ts->GetEmcIndex()));
     AliESDCaloCluster   *ec    = new AliESDCaloCluster() ; 
     
     Float_t xyz[3];
@@ -232,56 +262,44 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     
     AliDebug(2,Form("Global position xyz=(%f,%f,%f)",xyz[0],xyz[1],xyz[2]));
    
-    //Create digits lists
-    Int_t  digitMult  = emcRP->GetDigitsMultiplicity();
-    Int_t *digitsList = emcRP->GetDigitsList();
-    Float_t *rpElist   = emcRP->GetEnergiesList() ;
-    Short_t *amplList  = new Short_t[digitMult];
-    Short_t *timeList  = new Short_t[digitMult];
-    Short_t *digiList  = new Short_t[digitMult];
+    // Create cell lists
 
+    Int_t     cellMult   = emcRP->GetDigitsMultiplicity();
+    Int_t    *digitsList = emcRP->GetDigitsList();
+    Float_t  *rpElist    = emcRP->GetEnergiesList() ;
+    UShort_t *absIdList  = new UShort_t[cellMult];
+    Double_t *fracList   = new Double_t[cellMult];
 
-    // Convert Float_t* and Int_t* to Short_t* to save memory
-    for (Int_t iDigit=0; iDigit<digitMult; iDigit++) {
-
-      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(fDigitsArr->At(digitsList[iDigit]));
-      amplList[iDigit] =
-	(Short_t)(TMath::Min(rpElist[iDigit]*gev500,kBigShort)); // Energy in units of GeV/500
-// We should add here not full energy of digit, but unfolded one, stored in RecPoint
-//       amplList[iDigit] =
-//	(Short_t)(TMath::Min(digit->GetEnergy()*gev500,kBigShort)); // Energy in units of GeV/500
-     timeList[iDigit] =
-	(Short_t)(TMath::Max(-kBigShort,TMath::Min(digit->GetTime()*nsec100,kBigShort))); // time in units of 0.01 ns
-      digiList[iDigit] = (Short_t)(digit->GetId());
+    for (Int_t iCell=0; iCell<cellMult; iCell++) {
+      AliPHOSDigit *digit = static_cast<AliPHOSDigit *>(digitsArray->At(digitsList[iCell]));
+      absIdList[iCell] = (UShort_t)(digit->GetId());
+      if (digit->GetEnergy() > 0)
+ 	fracList[iCell] = rpElist[iCell]/digit->GetEnergy();
+      else
+ 	fracList[iCell] = 0;
     }
-    
-
 
     //Primaries
     Int_t  primMult  = 0;
     Int_t *primList =  emcRP->GetPrimaries(primMult);
-        
+
     // fills the ESDCaloCluster
- 
     ec->SetClusterType(AliESDCaloCluster::kPHOSCluster);
-    ec->SetPosition(xyz);                 //rec.point position in MARS
-    ec->SetE(rp->Energy());         //total particle energy
+    ec->SetPosition(xyz);                       //rec.point position in MARS
+    ec->SetE(rp->Energy());                     //total particle energy
     ec->SetClusterDisp(emcRP->GetDispersion()); //cluster dispersion
     ec->SetPid(rp->GetPID()) ;                  //array of particle identification
     ec->SetM02(emcRP->GetM2x()) ;               //second moment M2x
     ec->SetM20(emcRP->GetM2z()) ;               //second moment M2z
     ec->SetNExMax(emcRP->GetNExMax());          //number of local maxima
-    ec->SetEmcCpvDistance(ts->GetCpvDistance("r"));                  //Only radius, what about separate x,z????
+    ec->SetEmcCpvDistance(ts->GetCpvDistance("r")); //Only radius, what about separate x,z????
     ec->SetClusterChi2(-1);                     //not yet implemented
     ec->SetM11(-1) ;                            //not yet implemented
  
-    //Digits Lists
-    TArrayS arrayAmpList(digitMult,amplList);
-    TArrayS arrayTimeList(digitMult,timeList);
-    TArrayS arrayIndexList(digitMult,digiList);
-    ec->AddDigitAmplitude(arrayAmpList);
-    ec->AddDigitTime(arrayTimeList);
-    ec->AddDigitIndex(arrayIndexList);
+    //Cells contributing to clusters
+    ec->SetNCells(cellMult);
+    ec->SetCellsAbsId(absIdList);
+    ec->SetCellsAmplitudeFraction(fracList);
 
     //Distance to the nearest bad crystal
     ec->SetDistanceToBadChannel(emcRP->GetDistanceToBadCrystal()); 
@@ -296,16 +314,14 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     //ec->AddTracksMatched(arrayTrackMatched);
     
     // add the track to the esd object
+
     esd->AddCaloCluster(ec);
     delete ec;   
-    delete [] amplList;
-    delete [] timeList;
-    delete [] digiList;    
   }
-  fDigitsArr   ->Delete();
-  delete fDigitsArr;
-  fEmcRecPoints->Delete();
-  delete fEmcRecPoints;
+  digitsArray ->Delete();
+  delete digitsArray;
+  emcRecPoints->Delete();
+  delete emcRecPoints;
   delete tsm;
   delete pid;
 }
