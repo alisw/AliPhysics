@@ -915,9 +915,9 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 	const UInt_t* keyAtDataEnd = reinterpret_cast<const UInt_t*>(dataEnd);
 	const UInt_t* keyAtStructEnd = reinterpret_cast<const UInt_t*>(structEnd);
 	
-	switch (expectedKey)
-	{
-	case fgkBlockDataKey:
+
+        if ( expectedKey == fgkBlockDataKey )
+        {
 		if (dataEnd == bufferEnd)
 		{
 			// Are we at the end of the buffer?
@@ -949,10 +949,10 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 					totalLengthIsCorrect = true;
 			}
 		}
+        }        
 			
-		break;
-	
-	case fgkDSPDataKey:
+        else if ( expectedKey == fgkDSPDataKey )
+        {
 		if (dataEnd == bufferEnd)
 		{
 			// Are we at the end of the buffer?
@@ -986,10 +986,9 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 					totalLengthIsCorrect = true;
 			}
 		}
-			
-		break;
-	
-	case fgkBusPatchDataKey:
+        }        
+        else if ( expectedKey == fgkBusPatchDataKey )
+        {
 		if (dataEnd == bufferEnd)
 		{
 			// Are we at the end of the buffer?
@@ -1023,13 +1022,7 @@ AliMUONTrackerDDLDecoder<EventHandler>::TryRecoverStruct(
 					totalLengthIsCorrect = true;
 			}
 		}
-			
-		break;
-		
-	default:
-		// lengthIsCorrect and totalLengthIsCorrect already set to false.
-		break;
-	}
+        }
 	
 	if (headerKeyOk and lengthIsCorrect)
 	{
