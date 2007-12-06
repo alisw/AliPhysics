@@ -34,7 +34,6 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "TTree.h"
-#include "TFile.h"
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
@@ -200,7 +199,6 @@ int AliHLTTPCEsdWriterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* pESD,
       pESD->Reset();
     
   } else {
-    HLTError("invalid paremeter");
     iResult=-EINVAL;
   }
   return iResult;
