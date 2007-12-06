@@ -144,9 +144,8 @@ void AliTPCSelectorTracks::SlaveTerminate()
    // The SlaveTerminate() function is called after all entries or objects
    // have been processed. When running with PROOF SlaveTerminate() is called
    // on each slave server.
-  printf ("SlaveTerminate.. \n");
-  printf ("Terminate CalibTracksGain.. \n");
   if (fCalibTracksGain) fCalibTracksGain->Terminate();
+  RegisterData();
 }
 
 

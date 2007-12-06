@@ -57,6 +57,10 @@ AliTPCSelectorESD::AliTPCSelectorESD(TTree *tree) :
    fESDevent(0),
    fESD(0),
    fESDfriend(0),
+   fNtracks(0),       //! number of Tracks
+   fNtracksFriend(0), //! number of firend Tracks  
+   fNClusters(0),      //! number of clusters on track
+   fRegPath(0),       // path to store persistent data 
    fFileNo(0),
    fSysWatch(0),      // system info        
    fFileWatch(0),      // file watch - write the status of the analyzed files
@@ -82,6 +86,18 @@ void AliTPCSelectorESD::Begin(TTree * /*tree*/)
   TString option = GetOption();
 
 }
+
+
+void    AliTPCSelectorESD::SetInputList(TList *input) { 
+  //
+  //
+  //
+  fInput = input; 
+  TNamed *regData = (TNamed*)input->FindObject("debugStreamPrefix");
+  if (regData) fRegPath = new TString(regData->GetTitle());
+
+}
+
 
 void AliTPCSelectorESD::SlaveBegin(TTree * tree)
 {
@@ -255,8 +271,8 @@ void AliTPCSelectorESD::SlaveTerminate()
    // The SlaveTerminate() function is called after all entries or objects
    // have been processed. When running with PROOF SlaveTerminate() is called
    // on each slave server.
-    printf ("SlaveTerminate.. \n");
-    
+    printf ("SlaveTerminate.. \n");    
+    RegisterData();
 }
 
 void AliTPCSelectorESD::Terminate()
@@ -389,6 +405,21 @@ Bool_t AliTPCSelectorESD::Notify()
   DumpSysInfo(-1);
   
   return kTRUE;
+}
+
+void    AliTPCSelectorESD::RegisterData(){
+  //
+  // Register persistent data
+  //
+  if (fRegPath){
+    gSystem->Exec(Form("mkdir %s/%s",fRegPath->Data(), gSystem->HostName()));
+    printf("Register data to\t%s\n",fRegPath->Data());
+    char command[1000];
+    sprintf(command,"cp *.log %s/%s/",fRegPath->Data(), gSystem->HostName());
+    gSystem->Exec(command);
+    sprintf(command,"cp *.root %s/%s/",fRegPath->Data(), gSystem->HostName());
+    gSystem->Exec(command);
+  }
 }
 
 
