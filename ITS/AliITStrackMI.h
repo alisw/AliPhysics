@@ -10,6 +10,7 @@
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 
+/* $Id$ */
 
 /*****************************************************************************
  *                          December 18, 2000                                *
@@ -41,8 +42,6 @@ public:
   Int_t GetProlongationFast(Double_t alpha, Double_t xr,Double_t &y, Double_t &z);
   Bool_t UpdateMI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t chi2, Int_t i);  
   Int_t CorrectForMaterial(Double_t d, Double_t x0=21.82);
-
-  void UpdateESDtrack(ULong_t flags);
 
   void SetReconstructed(Bool_t sr=kTRUE){fReconstructed = sr;}  
   Bool_t GetReconstructed() const {return fReconstructed;}

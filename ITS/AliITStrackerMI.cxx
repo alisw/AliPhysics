@@ -39,12 +39,17 @@
 #include "AliHelix.h"
 #include "AliITSRecPoint.h"
 #include "AliITSgeomTGeo.h"
-#include "AliITStrackerMI.h"
 #include "AliITSReconstructor.h"
 #include "AliTrackPointArray.h"
 #include "AliAlignObj.h"
 #include "AliITSClusterParam.h"
 #include "AliITSPlaneEff.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliITSCalibrationSPD.h"
+#include "AliITSCalibrationSDD.h"
+#include "AliITSCalibrationSSD.h"
+#include "AliITStrackerMI.h"
 
 ClassImp(AliITStrackerMI)
 
@@ -75,7 +80,7 @@ fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
 fDebugStreamer(0),
-fPlaneEff(0){
+fPlaneEff(0) {
   //Default constructor
   Int_t i;
   for(i=0;i<4;i++) fSPDdetzcentre[i]=0.;
@@ -108,7 +113,7 @@ fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
 fDebugStreamer(0),
-fPlaneEff(0){
+fPlaneEff(0) {
   //--------------------------------------------------------------------
   //This is the AliITStrackerMI constructor
   //--------------------------------------------------------------------
@@ -227,7 +232,7 @@ fxTimesRhoShieldTrks(0),
 fxOverX0LayerTrks(0),
 fxTimesRhoLayerTrks(0),
 fDebugStreamer(tracker.fDebugStreamer),
-fPlaneEff(tracker.fPlaneEff){
+fPlaneEff(tracker.fPlaneEff) {
   //Copy constructor
   Int_t i;
   for(i=0;i<4;i++) {
@@ -480,7 +485,7 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 
        SortTrackHypothesys(fCurrentEsdTrack,20,0);  //MI change
        //
-       AliITStrackMI * besttrack = GetBestHypothesys(fCurrentEsdTrack,t,15);
+       AliITStrackMI *besttrack = GetBestHypothesys(fCurrentEsdTrack,t,15);
        if (!besttrack) continue;
        besttrack->SetLabel(tpcLabel);
        //       besttrack->CookdEdx();
@@ -627,7 +632,7 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
       fTrackToFollow.ResetCovariance(10.);
 
     //Refitting...
-    if (RefitAt(AliITSRecoParam::GetrInsideSPD1(), &fTrackToFollow, t,kTRUE)) {
+    if (RefitAt(AliITSRecoParam::GetrInsideSPD1(),&fTrackToFollow,t,kTRUE)) {
        fTrackToFollow.SetLabel(t->GetLabel());
        //       fTrackToFollow.CookdEdx();
        CookdEdx(&fTrackToFollow);
@@ -636,8 +641,10 @@ Int_t AliITStrackerMI::RefitInward(AliESDEvent *event) {
 
        //The beam pipe
        if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
+	 fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
 	 AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
-	 esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit);
+	 //printf("                                       %d\n",esdTrack->GetITSModuleIndex(0));
+	 //esdTrack->UpdateTrackParams(&fTrackToFollow,AliESDtrack::kITSrefit); //original line
 	 Float_t r[3]={0.,0.,0.};
 	 Double_t maxD=3.;
 	 esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
@@ -827,6 +834,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   new (&(tracks[6][0])) AliITStrackMI(*otrack);
   ntracks[6]=1;
   for (Int_t i=0;i<7;i++) nindexes[i][0]=0;
+  Int_t modstatus = 1; // found 
+  Float_t xloc,zloc;
   // 
   //
   // follow prolongations
@@ -880,6 +889,9 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
 	vtrack->SetClIndex(ilayer,0);
+	modstatus = (skip==1 ? 3 : 4); // skipped : out in z
+	LocalModuleCoord(ilayer,idet,vtrack,xloc,zloc); // local module coords
+	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	if(constrain) vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	ntracks[ilayer]++;
 	continue;
@@ -892,6 +904,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       const AliITSdetector &det=layer.GetDetector(idet);
       new(&currenttrack2)  AliITStrackMI(currenttrack1);
       if (!currenttrack1.Propagate(det.GetPhi(),det.GetR())) continue;
+      LocalModuleCoord(ilayer,idet,&currenttrack1,xloc,zloc); // local module coords
       currenttrack2.Propagate(det.GetPhi(),det.GetR());
       currenttrack1.SetDetectorIndex(idet);
       currenttrack2.SetDetectorIndex(idet);
@@ -963,11 +976,22 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
       Bool_t deadzoneSPD=kFALSE;
       currenttrack = &currenttrack1;
 
-      // check if the road contains a dead zone and create a prolongation
-      Int_t dead = CheckDeadZone(/*currenttrack,*/ilayer,/*idet,*/zmin,zmax/*,ymin,ymax*/);
-      if (dead) {
+      // check if the road contains a dead zone 
+      Int_t dead = CheckDeadZone(ilayer,idet,zmin,zmax); 
+      // create a prolongation without clusters (check also if there are no clusters in the road)
+      if (dead || 
+	  ((layer.GetNextCluster(clidx,kTRUE))==0 && 
+	   AliITSReconstructor::GetRecoParam()->GetAllowProlongationWithEmptyRoad())) {
 	AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
 	updatetrack->SetClIndex(ilayer,0);
+	if (dead==0) {
+	  modstatus = 5; // no cls in road
+	} else if (dead==1) {
+	  modstatus = 7; // holes in z in SPD
+	} else if (dead==2) {
+	  modstatus = 2; // dead from OCDB
+	}
+	updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(updatetrack,ilayer,trackGlobXYZ1,"inward");
 	if (constrain) { // apply vertex constrain
@@ -982,14 +1006,17 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  }
 	  if (isPrim) updatetrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	}
-	updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
-	if (dead==1) { // dead zone at z=0,+-7cm in SPD
-	  updatetrack->SetDeadZoneProbability(GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
-	  deadzoneSPD=kTRUE;
+	if (dead) {
+	  updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
+	  if (dead==1) { // dead zone at z=0,+-7cm in SPD
+	    updatetrack->SetDeadZoneProbability(GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
+	    deadzoneSPD=kTRUE;
+	  }
 	}
 	ntracks[ilayer]++;
       }
 
+      clidx=-1;
       // loop over clusters in the road
       while ((cl=layer.GetNextCluster(clidx))!=0) { 
 	if (ntracks[ilayer]>95) break; //space for skipped clusters  
@@ -1034,13 +1061,23 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	  AliITStrackMI * updatetrack = new (&tracks[ilayer][ntracks[ilayer]]) AliITStrackMI(*currenttrack);
 	  updatetrack->SetClIndex(ilayer,0);
 	  if (changedet) new (&currenttrack2) AliITStrackMI(backuptrack);
-	  
+
 	  if (cl->GetQ()!=0) { // real cluster
 	    if (!UpdateMI(updatetrack,cl,chi2trkcl,(ilayer<<28)+clidx)) continue; 
 	    updatetrack->SetSampledEdx(cl->GetQ(),updatetrack->GetNumberOfClusters()-1); //b.b.
+	    modstatus = 1; // found
 	  } else {             // virtual cluster in dead zone
 	    updatetrack->SetNDeadZone(updatetrack->GetNDeadZone()+1);
 	    updatetrack->SetDeadZoneProbability(GetSPDDeadZoneProbability(updatetrack->GetZ(),TMath::Sqrt(updatetrack->GetSigmaZ2())));
+	    modstatus = 7; // holes in z in SPD
+	  }
+
+	  if (changedet) {
+	    Float_t xlocnewdet,zlocnewdet;
+	    LocalModuleCoord(ilayer,idet,updatetrack,xlocnewdet,zlocnewdet); // local module coords
+	    updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xlocnewdet,zlocnewdet);
+	  } else {
+	    updatetrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	  }
 	  if (cl->IsUsed()) updatetrack->IncrementNUsed();
 
@@ -1069,6 +1106,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetClIndex(ilayer,0);
+	modstatus = 3; // skipped 
+	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	vtrack->IncrementNSkipped();
 	ntracks[ilayer]++;
@@ -1080,6 +1119,8 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
 	// apply correction for material of the current layer
 	CorrectForLayerMaterial(vtrack,ilayer,trackGlobXYZ1,"inward");
 	vtrack->SetClIndex(ilayer,0);
+	modstatus = 3; // skipped
+	vtrack->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 	vtrack->Improve(budgetToPrimVertex,xyzVtx,ersVtx);
 	vtrack->SetNDeadZone(vtrack->GetNDeadZone()+1);
 	ntracks[ilayer]++;
@@ -1512,14 +1553,14 @@ void  AliITStrackerMI::AliITSlayer::SortClusters()
   //
   for (Int_t i=0;i<fN-1;i++){
     if (fZ[i]>fZ[i+1]){
-      printf("Bugg\n");
+      printf("Bug\n");
     }
   }
   //
   for (Int_t slice=0;slice<21;slice++)
   for (Int_t i=0;i<fN20[slice]-1;i++){
     if (fZ20[slice][i]>fZ20[slice][i+1]){
-      printf("Bugg\n");
+      printf("Bug\n");
     }
   }
 
@@ -1560,10 +1601,12 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
   Double_t circle=2*TMath::Pi()*fR;
   fYmin = ymin; fYmax =ymax;
   Float_t ymiddle = (fYmin+fYmax)*0.5;
-  if (ymiddle<fYB[0]) {fYmin+=circle; fYmax+=circle;ymiddle+=circle;}
-  else{
-    if (ymiddle>fYB[1]) {fYmin-=circle; fYmax-=circle;ymiddle-=circle;}
+  if (ymiddle<fYB[0]) {
+    fYmin+=circle; fYmax+=circle; ymiddle+=circle;
+  } else if (ymiddle>fYB[1]) {
+    fYmin-=circle; fYmax-=circle; ymiddle-=circle;
   }
+  
   //
   fCurrentSlice =-1;
   // defualt take all
@@ -1611,7 +1654,7 @@ SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin, Double_t ymax) {
     if (slice<0) slice=0;
     if (slice>5) slice=5;
     Bool_t isOK = (fYmin>fBy5[slice][0]&&fYmax<fBy5[slice][1]);
-    if ( isOK){
+    if (isOK) {
       fCurrentSlice=slice;
       fClustersCs = fClusters5[fCurrentSlice];
       fClusterIndexCs = fClusterIndex5[fCurrentSlice];
@@ -1657,12 +1700,13 @@ FindDetectorIndex(Double_t phi, Double_t z) const {
   return np*fNdetectors + nz;
 }
 //------------------------------------------------------------------------
-const AliITSRecPoint *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci){
+const AliITSRecPoint *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci,Bool_t test)
+{
   //--------------------------------------------------------------------
   // This function returns clusters within the "window" 
   //--------------------------------------------------------------------
 
-  if (fCurrentSlice<0){
+  if (fCurrentSlice<0) {
     Double_t rpi2 = 2.*fR*TMath::Pi();
     for (Int_t i=fI; i<fImax; i++) {
       Double_t y = fY[i];
@@ -1672,17 +1716,16 @@ const AliITSRecPoint *AliITStrackerMI::AliITSlayer::GetNextCluster(Int_t &ci){
       if (y>fYmax) continue;
       if (fClusters[i]->GetQ()==0&&fSkip==2) continue;
       ci=i;
-      fI=i+1;
+      if (!test) fI=i+1;
       return fClusters[i];
     }
-  }
-  else{
+  } else {
     for (Int_t i=fI; i<fImax; i++) {
       if (fYcs[i]<fYmin) continue;
       if (fYcs[i]>fYmax) continue;
       if (fClustersCs[i]->GetQ()==0&&fSkip==2) continue;
       ci=fClusterIndexCs[i];
-      fI=i+1;
+      if (!test) fI=i+1;
       return fClustersCs[i];
     }
   }
@@ -1825,7 +1868,7 @@ Double_t AliITStrackerMI::GetEffectiveThickness()
 }
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::AliITSlayer::InRoad() const {
-  //--------------------------------------------------------------------
+  //-------------------------------------------------------------------
   // This function returns number of clusters within the "window" 
   //--------------------------------------------------------------------
   Int_t ncl=0;
@@ -1846,209 +1889,68 @@ Int_t AliITStrackerMI::AliITSlayer::InRoad() const {
   return ncl;
 }
 //------------------------------------------------------------------------
-Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,
-				const AliITStrackMI *c, Bool_t extra) {
+Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
+				const AliITStrackMI *clusters,Bool_t extra) 
+{
   //--------------------------------------------------------------------
-  // This function refits the track "t" at the position "x" using
-  // the clusters from "c"
+  // This function refits the track "track" at the position "x" using
+  // the clusters from "clusters"
   // If "extra"==kTRUE, 
-  //    the clusters from overlapped modules get attached to "t" 
+  //    the clusters from overlapped modules get attached to "track" 
   //--------------------------------------------------------------------
 
   Int_t index[AliITSgeomTGeo::kNLayers];
   Int_t k;
   for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
-  Int_t nc=c->GetNumberOfClusters();
+  Int_t nc=clusters->GetNumberOfClusters();
   for (k=0; k<nc; k++) { 
-    Int_t idx=c->GetClusterIndex(k),nl=(idx&0xf0000000)>>28;
-    index[nl]=idx; 
+    Int_t idx=clusters->GetClusterIndex(k);
+    Int_t ilayer=(idx&0xf0000000)>>28;
+    index[ilayer]=idx; 
   }
 
-  // special for cosmics: check which is the innermost layer crossed
-  // by the track
-  Int_t innermostlayer=5;
-  Double_t d = TMath::Abs(t->GetD(0.,0.));
-  for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++)
-    if(d<fgLayers[innermostlayer].GetR()) break;
-  //printf(" d  %f  innermost %d\n",d,innermostlayer);
-
-  Int_t from, to, step;
-  if (xx > t->GetX()) {
-      from=innermostlayer; to=AliITSgeomTGeo::GetNLayers();
-      step=+1;
-  } else {
-      from=AliITSgeomTGeo::GetNLayers()-1; to=innermostlayer-1;
-      step=-1;
-  }
-  TString dir=(step>0 ? "outward" : "inward");
-
-  // loop on the layers
-  for (Int_t ilayer=from; ilayer != to; ilayer += step) {
-     AliITSlayer &layer=fgLayers[ilayer];
-     Double_t r=layer.GetR();
- 
-     // material between SSD and SDD, SDD and SPD
-     Double_t hI=ilayer-0.5*step; 
-     if (TMath::Abs(hI-3.5)<0.01) // SDDouter
-       if(!CorrectForShieldMaterial(t,"SDD",dir)) return kFALSE;
-     if (TMath::Abs(hI-1.5)<0.01) // SPDouter
-       if(!CorrectForShieldMaterial(t,"SPD",dir)) return kFALSE;
-     
-     // remember old position [SR, GSI 18.02.2003]
-     Double_t oldX=0., oldY=0., oldZ=0.;
-     if (t->IsStartedTimeIntegral() && step==1) {
-        t->GetGlobalXYZat(t->GetX(),oldX,oldY,oldZ);
-     }
-     //
-
-     Double_t oldGlobXYZ[3];
-     t->GetXYZ(oldGlobXYZ);
-
-     Double_t phi,z;
-     if (!t->GetPhiZat(r,phi,z)) return kFALSE;
-
-     Int_t idet=layer.FindDetectorIndex(phi,z);
-
-     // check if we allow a prolongation without point for large-eta tracks
-     Int_t skip = CheckSkipLayer(t,ilayer,idet);
-     if (skip==2) {
-       // propagate to the layer radius
-       Double_t xToGo; t->GetLocalXat(r,xToGo);
-       t->AliExternalTrackParam::PropagateTo(xToGo,GetBz());
-       // apply correction for material of the current layer
-       CorrectForLayerMaterial(t,ilayer,oldGlobXYZ,dir);
-       // track time update [SR, GSI 17.02.2003]
-       if (t->IsStartedTimeIntegral() && step==1) {
-	 Double_t newX, newY, newZ;
-	 t->GetGlobalXYZat(t->GetX(),newX,newY,newZ);
-	 Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
-	                (oldZ-newZ)*(oldZ-newZ);
-	 t->AddTimeStep(TMath::Sqrt(dL2));
-       }
-       continue;
-     }
-     
-     if (idet<0) return kFALSE;
-
-     const AliITSdetector &det=layer.GetDetector(idet);
-     phi=det.GetPhi();
-     if (!t->Propagate(phi,det.GetR())) return kFALSE;
-     t->SetDetectorIndex(idet);
-
-     const AliITSRecPoint *cl=0;
-     Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
-
-     Int_t idx=index[ilayer];
-     if (idx>=0) {
-        const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
-	if (c) {
-	  if (idet != c->GetDetectorIndex()) {
-	    idet=c->GetDetectorIndex();
-	    const AliITSdetector &det=layer.GetDetector(idet);
-	    if (!t->Propagate(det.GetPhi(),det.GetR())) {
-	      return kFALSE;
-	    }
-	    t->SetDetectorIndex(idet);
-	  }
-	  //Double_t chi2=t->GetPredictedChi2(c);
-	  Int_t layer = (idx & 0xf0000000) >> 28;;
-	  Double_t chi2=GetPredictedChi2MI(t,c,layer);
-	  if (chi2<maxchi2) { 
-	    cl=c; 
-	    maxchi2=chi2; 
-	  } else {
-	    return kFALSE;
-	  }
-	}
-     }
-
-     if (cl) {
-       if (!UpdateMI(t,cl,maxchi2,idx)) return kFALSE;
-       t->SetSampledEdx(cl->GetQ(),t->GetNumberOfClusters()-1);
-     }
-
-     if (extra) { //search for extra clusters
-        AliITStrackV2 tmp(*t);
-        Double_t dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
-        if (dz < 0.5*TMath::Abs(tmp.GetTgl())) dz=0.5*TMath::Abs(tmp.GetTgl());
-        Double_t dy=4*TMath::Sqrt(t->GetSigmaY2()+AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
-        if (dy < 0.5*TMath::Abs(tmp.GetSnp())) dy=0.5*TMath::Abs(tmp.GetSnp());
-        Double_t zmin=t->GetZ() - dz;
-        Double_t zmax=t->GetZ() + dz;
-        Double_t ymin=t->GetY() + phi*r - dy;
-        Double_t ymax=t->GetY() + phi*r + dy;
-        layer.SelectClusters(zmin,zmax,ymin,ymax);
-
-        const AliITSRecPoint *c=0; Int_t ci=-1,cci=-1;
-        Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2(), tolerance=0.1;
-        while ((c=layer.GetNextCluster(ci))!=0) {
-           if (idet == c->GetDetectorIndex()) continue;
-
-	   const AliITSdetector &det=layer.GetDetector(c->GetDetectorIndex());
-
-	   if (!tmp.Propagate(det.GetPhi(),det.GetR())) continue;
-           
-	   if (TMath::Abs(tmp.GetZ() - c->GetZ()) > tolerance) continue;
-           if (TMath::Abs(tmp.GetY() - c->GetY()) > tolerance) continue;
-
-           Double_t chi2=tmp.GetPredictedChi2(c);
-           if (chi2<maxchi2) { maxchi2=chi2; cci=ci; }
-        }
-        if (cci>=0) t->SetExtraCluster(ilayer,(ilayer<<28)+cci);
-     }
-
-     // track time update [SR, GSI 17.02.2003]
-     if (t->IsStartedTimeIntegral() && step==1) {
-        Double_t newX, newY, newZ;
-        t->GetGlobalXYZat(t->GetX(),newX,newY,newZ);
-        Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
-                       (oldZ-newZ)*(oldZ-newZ);
-        t->AddTimeStep(TMath::Sqrt(dL2));
-     }
-     //
-
-     // Correct for material of the current layer
-     if(!CorrectForLayerMaterial(t,ilayer,oldGlobXYZ,dir)) return kFALSE;
-
-  } // end loop on the layers
-
-  if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
-  return kTRUE;
+  return RefitAt(xx,track,index,extra); // call the method below
 }
 //------------------------------------------------------------------------
-Bool_t 
-AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
+Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
+				const Int_t *clusters,Bool_t extra) 
+{
   //--------------------------------------------------------------------
-  // This function refits the track "t" at the position "x" using
+  // This function refits the track "track" at the position "x" using
   // the clusters from array
+  // If "extra"==kTRUE, 
+  //    the clusters from overlapped modules get attached to "track" 
   //--------------------------------------------------------------------
   Int_t index[AliITSgeomTGeo::kNLayers];
   Int_t k;
   for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) index[k]=-1;
   //
   for (k=0; k<AliITSgeomTGeo::GetNLayers(); k++) { 
-    index[k]=clindex[k]; 
+    index[k]=clusters[k]; 
   }
 
   // special for cosmics: check which the innermost layer crossed
   // by the track
   Int_t innermostlayer=5;
-  Double_t d = TMath::Abs(t->GetD(0.,0.));
-  for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++)
-    if(d<fgLayers[innermostlayer].GetR()) break;
-  //printf(" d  %f  innermost %d\n",d,innermostlayer);
+  Double_t drphi = TMath::Abs(track->GetD(0.,0.));
+  for(innermostlayer=0; innermostlayer<AliITSgeomTGeo::GetNLayers(); innermostlayer++) {
+    if(drphi < fgLayers[innermostlayer].GetR()) break;
+  }
+  //printf(" drphi  %f  innermost %d\n",drphi,innermostlayer);
 
+  Int_t modstatus=1; // found
+  Float_t xloc,zloc;
   Int_t from, to, step;
-  if (xx > t->GetX()) {
+  if (xx > track->GetX()) {
       from=innermostlayer; to=AliITSgeomTGeo::GetNLayers();
       step=+1;
   } else {
       from=AliITSgeomTGeo::GetNLayers()-1; to=innermostlayer-1;
       step=-1;
   }
-  TString dir=(step>0 ? "outward" : "inward");
+  TString dir = (step>0 ? "outward" : "inward");
 
-  for (Int_t ilayer=from; ilayer != to; ilayer += step) {
+  for (Int_t ilayer = from; ilayer != to; ilayer += step) {
      AliITSlayer &layer=fgLayers[ilayer];
      Double_t r=layer.GetR();
      if (step<0 && xx>r) break;
@@ -2056,97 +1958,163 @@ AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *t,const Int_t *clindex) {
      // material between SSD and SDD, SDD and SPD
      Double_t hI=ilayer-0.5*step; 
      if (TMath::Abs(hI-3.5)<0.01) // SDDouter
-       if(!CorrectForShieldMaterial(t,"SDD",dir)) return kFALSE;
+       if(!CorrectForShieldMaterial(track,"SDD",dir)) return kFALSE;
      if (TMath::Abs(hI-1.5)<0.01) // SPDouter
-       if(!CorrectForShieldMaterial(t,"SPD",dir)) return kFALSE;
+       if(!CorrectForShieldMaterial(track,"SPD",dir)) return kFALSE;
 
      // remember old position [SR, GSI 18.02.2003]
      Double_t oldX=0., oldY=0., oldZ=0.;
-     if (t->IsStartedTimeIntegral() && step==1) {
-        t->GetGlobalXYZat(t->GetX(),oldX,oldY,oldZ);
+     if (track->IsStartedTimeIntegral() && step==1) {
+        track->GetGlobalXYZat(track->GetX(),oldX,oldY,oldZ);
      }
      //
+
      Double_t oldGlobXYZ[3];
-     t->GetXYZ(oldGlobXYZ);
+     track->GetXYZ(oldGlobXYZ);
 
      Double_t phi,z;
-     if (!t->GetPhiZat(r,phi,z)) return kFALSE;
+     if (!track->GetPhiZat(r,phi,z)) return kFALSE;
 
      Int_t idet=layer.FindDetectorIndex(phi,z);
 
      // check if we allow a prolongation without point for large-eta tracks
-     Int_t skip = CheckSkipLayer(t,ilayer,idet);
+     Int_t skip = CheckSkipLayer(track,ilayer,idet);
      if (skip==2) {
        // propagate to the layer radius
-       Double_t xToGo; t->GetLocalXat(r,xToGo);
-       t->AliExternalTrackParam::PropagateTo(xToGo,GetBz());
+       Double_t xToGo; track->GetLocalXat(r,xToGo);
+       track->AliExternalTrackParam::PropagateTo(xToGo,GetBz());
        // apply correction for material of the current layer
-       CorrectForLayerMaterial(t,ilayer,oldGlobXYZ,dir);
+       CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir);
+       modstatus = 4; // out in z
+       LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
+       track->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
        // track time update [SR, GSI 17.02.2003]
-       if (t->IsStartedTimeIntegral() && step==1) {
+       if (track->IsStartedTimeIntegral() && step==1) {
 	 Double_t newX, newY, newZ;
-	 t->GetGlobalXYZat(t->GetX(),newX,newY,newZ);
+	 track->GetGlobalXYZat(track->GetX(),newX,newY,newZ);
 	 Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
 	                (oldZ-newZ)*(oldZ-newZ);
-	 t->AddTimeStep(TMath::Sqrt(dL2));
+	 track->AddTimeStep(TMath::Sqrt(dL2));
        }
        continue;
      }
 
      if (idet<0) return kFALSE;
+
      const AliITSdetector &det=layer.GetDetector(idet);
      phi=det.GetPhi();
-     if (!t->Propagate(phi,det.GetR())) return kFALSE;
-     t->SetDetectorIndex(idet);
+     if (!track->Propagate(phi,det.GetR())) return kFALSE;
+     track->SetDetectorIndex(idet);
+     LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
 
-     const AliITSRecPoint *cl=0;
+     Double_t dz,zmin,zmax;
+
+     const AliITSRecPoint *clAcc=0;
      Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
 
      Int_t idx=index[ilayer];
-     if (idx>=0) {
-        const AliITSRecPoint *c=(AliITSRecPoint *)GetCluster(idx); 
-	if (c){
-	  if (idet != c->GetDetectorIndex()) {
-	    idet=c->GetDetectorIndex();
-	    const AliITSdetector &det=layer.GetDetector(idet);
-	    if (!t->Propagate(det.GetPhi(),det.GetR())) {
-	      return kFALSE;
-	    }
-	    t->SetDetectorIndex(idet);
-	  }
-	  //Double_t chi2=t->GetPredictedChi2(c);
-	  Int_t layer = (idx & 0xf0000000) >> 28;;
-	  Double_t chi2=GetPredictedChi2MI(t,c,layer);
-	  if (chi2<maxchi2) { 
-	    cl=c; 
-	    maxchi2=chi2; 
-	  } else {
-	    return kFALSE;
-	  }
-	}
+     if (idx>=0) { // cluster in this layer
+       modstatus = 6; // no refit
+       const AliITSRecPoint *cl=(AliITSRecPoint *)GetCluster(idx); 
+       if (cl) {
+	 if (idet != cl->GetDetectorIndex()) {
+	   idet=cl->GetDetectorIndex();
+	   const AliITSdetector &det=layer.GetDetector(idet);
+	   if (!track->Propagate(det.GetPhi(),det.GetR())) return kFALSE;
+	   track->SetDetectorIndex(idet);
+	   LocalModuleCoord(ilayer,idet,track,xloc,zloc); // local module coords
+	 }
+	 //Double_t chi2=track->GetPredictedChi2(cl);
+	 Int_t cllayer = (idx & 0xf0000000) >> 28;;
+	 Double_t chi2=GetPredictedChi2MI(track,cl,cllayer);
+	 if (chi2<maxchi2) { 
+	   clAcc=cl; 
+	   maxchi2=chi2; 
+	   modstatus = 1; // found
+	 } else {
+	   return kFALSE;
+	 }
+       }
+     } else { // no cluster in this layer
+       if (skip==1) {
+	 modstatus = 3; // skipped
+       } else {
+	 modstatus = 5; // no cls in road
+	 // check dead
+	 dz=AliITSReconstructor::GetRecoParam()->GetNSigmaRoadZ()*
+                    TMath::Sqrt(track->GetSigmaZ2() + 
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+		    AliITSReconstructor::GetRecoParam()->GetNSigmaZLayerForRoadZ()*
+		    AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
+	 zmin=track->GetZ() - dz;
+	 zmax=track->GetZ() + dz;
+	 Int_t dead = CheckDeadZone(ilayer,idet,zmin,zmax);
+	 if (dead==1) modstatus = 7; // holes in z in SPD
+	 if (dead==2) modstatus = 2; // dead from OCDB
+       }
      }
-
-     if (cl) {
-       if (!UpdateMI(t,cl,maxchi2,idx)) return kFALSE;
-       t->SetSampledEdx(cl->GetQ(),t->GetNumberOfClusters()-1);
+     
+     if (clAcc) {
+       if (!UpdateMI(track,clAcc,maxchi2,idx)) return kFALSE;
+       track->SetSampledEdx(clAcc->GetQ(),track->GetNumberOfClusters()-1);
      }
+     track->SetModuleIndexInfo(ilayer,idet,modstatus,xloc,zloc);
 
+
+     if (extra) { // search for extra clusters in overlapped modules
+       AliITStrackV2 tmp(*track);
+       Double_t dy,ymin,ymax;
+       dz=4*TMath::Sqrt(tmp.GetSigmaZ2()+AliITSReconstructor::GetRecoParam()->GetSigmaZ2(ilayer));
+       if (dz < 0.5*TMath::Abs(tmp.GetTgl())) dz=0.5*TMath::Abs(tmp.GetTgl());
+       dy=4*TMath::Sqrt(track->GetSigmaY2()+AliITSReconstructor::GetRecoParam()->GetSigmaY2(ilayer));
+       if (dy < 0.5*TMath::Abs(tmp.GetSnp())) dy=0.5*TMath::Abs(tmp.GetSnp());
+       zmin=track->GetZ() - dz;
+       zmax=track->GetZ() + dz;
+       ymin=track->GetY() + phi*r - dy;
+       ymax=track->GetY() + phi*r + dy;
+       layer.SelectClusters(zmin,zmax,ymin,ymax);
+       
+       const AliITSRecPoint *clExtra=0; Int_t ci=-1,cci=-1;
+       Int_t idetExtra=-1;  
+       Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2(), tolerance=0.1;
+       while ((clExtra=layer.GetNextCluster(ci))!=0) {
+	 // only clusters in another module! (overlaps)
+	 idetExtra = clExtra->GetDetectorIndex();
+	 if (idet == idetExtra) continue;
+	 
+	 const AliITSdetector &det=layer.GetDetector(idetExtra);
+	 
+	 if (!tmp.Propagate(det.GetPhi(),det.GetR())) continue;
+	 
+	 if (TMath::Abs(tmp.GetZ() - clExtra->GetZ()) > tolerance) continue;
+	 if (TMath::Abs(tmp.GetY() - clExtra->GetY()) > tolerance) continue;
+	 
+	 Double_t chi2=tmp.GetPredictedChi2(clExtra);
+	 if (chi2<maxchi2) { maxchi2=chi2; cci=ci; }
+       }
+       if (cci>=0) {
+	 track->SetExtraCluster(ilayer,(ilayer<<28)+cci);
+	 track->SetExtraModule(ilayer,idetExtra);
+       }
+     } // end search for extra clusters in overlapped modules
+     
      // Correct for material of the current layer
-     if(!CorrectForLayerMaterial(t,ilayer,oldGlobXYZ,dir)) return kFALSE;
+     if(!CorrectForLayerMaterial(track,ilayer,oldGlobXYZ,dir)) return kFALSE;
                  
      // track time update [SR, GSI 17.02.2003]
-     if (t->IsStartedTimeIntegral() && step==1) {
+     if (track->IsStartedTimeIntegral() && step==1) {
         Double_t newX, newY, newZ;
-        t->GetGlobalXYZat(t->GetX(),newX,newY,newZ);
+        track->GetGlobalXYZat(track->GetX(),newX,newY,newZ);
         Double_t dL2 = (oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY) + 
                        (oldZ-newZ)*(oldZ-newZ);
-        t->AddTimeStep(TMath::Sqrt(dL2));
+        track->AddTimeStep(TMath::Sqrt(dL2));
      }
      //
 
-  }
+  } // end loop on layers
 
-  if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
+  if (!track->PropagateTo(xx,0.,0.)) return kFALSE;
+
   return kTRUE;
 }
 //------------------------------------------------------------------------
@@ -3565,7 +3533,7 @@ void AliITStrackerMI::UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::GetNearestLayer(const Double_t *xr) const{
   //
-  //Get nearest upper layer close to the point xr.
+  // Get nearest upper layer close to the point xr.
   // rough approximation 
   //
   const Float_t kRadiuses[6]={4,6.5,15.03,24.,38.5,43.7};
@@ -4826,14 +4794,14 @@ Int_t AliITStrackerMI::CheckSkipLayer(AliITStrackMI *track,
 }
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::CheckDeadZone(/*AliITStrackMI *track,*/
-				     Int_t ilayer,/*Int_t idet,*/
+				     Int_t ilayer,Int_t idet,
 				     Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const {
   //-----------------------------------------------------------------
   // This method is used to decide whether to allow a prolongation 
-  // without clusters, because there is dead zone in the road.
+  // without clusters, because there is a dead zone in the road.
   // In this case the return value is > 0:
   // return 1: dead zone at z=0,+-7cm in SPD
-  // return 2: dead area from the OCDB
+  // return 2: dead area from the OCDB // NOT YET IMPLEMENTED
   //-----------------------------------------------------------------
 
   // check dead zones at z=0,+-7cm in the SPD
@@ -4845,17 +4813,82 @@ Int_t AliITStrackerMI::CheckDeadZone(/*AliITStrackMI *track,*/
 			  fSPDdetzcentre[2] - 0.5*AliITSRecoParam::GetSPDdetzlength(),
 			  fSPDdetzcentre[3] - 0.5*AliITSRecoParam::GetSPDdetzlength()};
     for (Int_t i=0; i<3; i++)
-      if (zmin<zmaxdead[i] && zmax>zmindead[i]) return 1;
-     
+      if (zmin<zmaxdead[i] && zmax>zmindead[i]) return 1;  
   }
 
-  if (AliITSReconstructor::GetRecoParam()->GetUseDeadZonesFromOCDB()) {
-    // NOT YET IMPLEMENTED
-    // look in OCDB
-    //if (deadfromOCDB) return 2;
+  // check dead zones from OCDB
+  if (!AliITSReconstructor::GetRecoParam()->GetUseDeadZonesFromOCDB()) return 0;
+
+  if(idet<0) return 0;
+
+  // look in OCDB (only entire dead modules for the moment)
+  if (ilayer==0 || ilayer==1) { // SPD
+    AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
+    if (!cdbEntry) {
+      Error("CheckDeadZone","Cannot get CDB entry for SPD\n");
+      return 0;
+    }
+    TObjArray* spdEntry = (TObjArray*)cdbEntry->GetObject();
+    if (!spdEntry) {
+      Error("CheckDeadZone","Cannot get CDB entry for SPD\n");
+      return 0;
+    }
+    if(ilayer==1) idet += AliITSgeomTGeo::GetNLadders(1)*AliITSgeomTGeo::GetNDetectors(1);
+    //printf("SPD det: %d\n",idet);
+    AliITSCalibrationSPD *calibSPD = (AliITSCalibrationSPD*)spdEntry->At(idet);
+    if (calibSPD->IsBad()) return 2;
+  } else if (ilayer==2 || ilayer==3) { // SDD
+    AliCDBEntry* cdbEntry = AliCDBManager::Instance()->Get("ITS/Calib/CalibSDD");
+    if (!cdbEntry) {
+      Error("CheckDeadZone","Cannot get CDB entry for SDD\n");
+      return 0;
+    }
+    TObjArray* sddEntry = (TObjArray*)cdbEntry->GetObject();
+    if (!sddEntry) {
+      Error("CheckDeadZone","Cannot get CDB entry for SDD\n");
+      return 0;
+    }
+    if(ilayer==3) idet += AliITSgeomTGeo::GetNLadders(3)*AliITSgeomTGeo::GetNDetectors(3);
+    //printf("SDD det: %d\n",idet);
+    AliITSCalibrationSDD *calibSDD = (AliITSCalibrationSDD*)sddEntry->At(idet);
+    if (calibSDD->IsDead()) return 2;
+  } else if (ilayer==4 || ilayer==5) { // SSD
+  } else {
+    Error("CheckDeadZone","Wrong layer number\n");
+    if(ilayer==5) idet += AliITSgeomTGeo::GetNLadders(5)*AliITSgeomTGeo::GetNDetectors(5);
+    return 0;
   }
 
   return 0;
 }
 //------------------------------------------------------------------------
+Bool_t AliITStrackerMI::LocalModuleCoord(Int_t ilayer,Int_t idet,
+				       AliITStrackMI *track,
+				       Float_t &xloc,Float_t &zloc) const {
+  //-----------------------------------------------------------------
+  // Gives position of track in local module ref. frame
+  //-----------------------------------------------------------------
 
+  xloc=0.; 
+  zloc=0.;
+
+  if(idet<0) return kFALSE;
+
+  Int_t ndet=AliITSgeomTGeo::GetNDetectors(ilayer+1); // layers from 1 to 6 
+
+  Int_t lad = Int_t(idet/ndet) + 1;
+
+  Int_t det = idet - (lad-1)*ndet + 1;
+
+  Double_t xyzGlob[3],xyzLoc[3];
+
+  track->GetXYZ(xyzGlob);
+
+  AliITSgeomTGeo::GlobalToLocal(ilayer+1,lad,det,xyzGlob,xyzLoc);
+
+  xloc = (Float_t)xyzLoc[0];
+  zloc = (Float_t)xyzLoc[2];
+
+  return kTRUE;
+}
+//------------------------------------------------------------------------

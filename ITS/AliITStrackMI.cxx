@@ -20,6 +20,8 @@
 //     dEdx analysis by: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
 //-------------------------------------------------------------------------
 
+/* $Id$ */
+
 #include <TMatrixD.h>
 
 #include <TMath.h>
@@ -77,11 +79,6 @@ fGoldV0(kFALSE) {
   fDnorm[0]=0; fDnorm[1]=0;
   //if (!Invariant()) throw "AliITStrackV2: conversion failed !\n";
 
-}
-
-void AliITStrackMI::UpdateESDtrack(ULong_t flags) {
-  fESDtrack->UpdateTrackParams(this,flags);
-  //if (flags == AliESDtrack::kITSin) fESDtrack->SetITSChi2MIP(fChi2MIP);
 }
 
 //____________________________________________________________________________

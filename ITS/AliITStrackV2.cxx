@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 //                Implementation of the ITS track class
 //
@@ -36,8 +38,8 @@ AliITStrackV2::AliITStrackV2() : AliKalmanTrack(),
   fdEdx(0),
   fESDtrack(0)
 {
-    for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) fIndex[i]=-1;
-    for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
+  for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) {fIndex[i]=-1; fModule[i]=-1;}
+  for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
 
@@ -75,6 +77,11 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c) throw (const Char_t *) :
 
 void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   fESDtrack->UpdateTrackParams(this,flags);
+  // copy the module indices
+  for(Int_t i=0;i<12;i++) {
+    //   printf("     %d\n",GetModuleIndex(i));
+    fESDtrack->SetITSModuleIndex(i,GetModuleIndex(i));
+  }
 }
 
 //____________________________________________________________________________
@@ -88,7 +95,10 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) :
   //------------------------------------------------------------------
   Int_t i;
   for (i=0; i<4; i++) fdEdxSample[i]=t.fdEdxSample[i];
-  for (i=0; i<2*AliITSgeomTGeo::GetNLayers(); i++) fIndex[i]=t.fIndex[i];
+  for (i=0; i<2*AliITSgeomTGeo::GetNLayers(); i++) {
+    fIndex[i]=t.fIndex[i];
+    fModule[i]=t.fModule[i];
+  }
 }
 
 //_____________________________________________________________________________

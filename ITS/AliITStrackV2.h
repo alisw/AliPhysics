@@ -14,6 +14,8 @@
 #include "AliITSRecoParam.h"
 #include "AliITSgeomTGeo.h"
 
+/* $Id$ */
+
 class AliESDtrack;
 
 //_____________________________________________________________________________
@@ -72,10 +74,17 @@ public:
 
   Int_t Compare(const TObject *o) const;
   Int_t GetClusterIndex(Int_t i) const {return fIndex[i];}
+  void  SetModuleIndex(Int_t ilayer,Int_t idx) {fModule[ilayer]=idx;}
+  Int_t GetModuleIndex(Int_t ilayer) const {return fModule[ilayer];}
+  void  SetModuleIndexInfo(Int_t ilayer,Int_t idet,Int_t status=1,Float_t xloc=0,Float_t zloc=0);
+  Bool_t GetModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,Float_t &xloc,Float_t &zloc) const;
   Bool_t Invariant() const;
 
-  void  SetExtraCluster(Int_t i, Int_t idx) {fIndex[AliITSgeomTGeo::kNLayers+i]=idx;}
-  Int_t GetExtraCluster(Int_t i) const {return fIndex[AliITSgeomTGeo::kNLayers+i];}
+  void  SetExtraCluster(Int_t ilayer, Int_t idx) {fIndex[AliITSgeomTGeo::kNLayers+ilayer]=idx;}
+  Int_t GetExtraCluster(Int_t ilayer) const {return fIndex[AliITSgeomTGeo::kNLayers+ilayer];}
+
+  void  SetExtraModule(Int_t ilayer, Int_t idx) {fModule[AliITSgeomTGeo::kNLayers+ilayer]=idx;}
+  Int_t GetExtraModule(Int_t ilayer) const {return fModule[AliITSgeomTGeo::kNLayers+ilayer];}
 
 protected:
   Double_t GetBz() const ;
@@ -86,6 +95,8 @@ protected:
 
   Int_t fIndex[2*AliITSgeomTGeo::kNLayers]; // indices of associated clusters 
 
+  Int_t fModule[2*AliITSgeomTGeo::kNLayers]; // indices of crossed modules: 
+                                             // see SetModuleIndexInfo()
   AliESDtrack *fESDtrack;    //! pointer to the connected ESD track
 
 private:
@@ -93,8 +104,7 @@ private:
   ClassDef(AliITStrackV2,7)  //ITS reconstructed track
 };
 
-inline
-void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {
+inline void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {
   //----------------------------------------------------------------------
   // This function stores dEdx sample corrected for the track segment length 
   // Origin: Boris Batyunya, JINR, Boris.Batiounia@cern.ch
@@ -104,7 +114,118 @@ void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {
   Double_t s=GetSnp(), t=GetTgl();
   q *= TMath::Sqrt((1-s*s)/(1+t*t));
   fdEdxSample[i]=q;
+  return;
 }
+
+inline void  AliITStrackV2::SetModuleIndexInfo(Int_t ilayer,Int_t idet,Int_t status,
+					       Float_t xloc,Float_t zloc) {
+  //----------------------------------------------------------------------
+  // This function encodes in the module number also the status of cluster association
+  // "status" can have the following values: 
+  // 1 "found" (cluster is associated), 
+  // 2 "dead" (module is dead from OCDB), 
+  // 3 "skipped" (module or layer forced to be skipped),
+  // 4 "outinz" (track out of z acceptance), 
+  // 5 "nocls" (no clusters in the road), 
+  // 6 "norefit" (cluster rejected during refit) 
+  // 7 "deadzspd" (holes in z in SPD)
+  // WARNING: THIS METHOD HAS TO BE SYNCHRONIZED WITH AliESDtrack::GetITSModuleIndexInfo()!
+  //----------------------------------------------------------------------
+
+  if(idet<0) {
+    idet=0;
+  } else {
+    // same detector numbering as in AliITSCalib classes
+    if(ilayer==1) idet+=AliITSgeomTGeo::GetNLadders(1)*AliITSgeomTGeo::GetNDetectors(1);
+    if(ilayer==3) idet+=AliITSgeomTGeo::GetNLadders(3)*AliITSgeomTGeo::GetNDetectors(3);
+    if(ilayer==5) idet+=AliITSgeomTGeo::GetNLadders(5)*AliITSgeomTGeo::GetNDetectors(5);
+  }
+
+  Int_t xInt = Int_t(xloc*10.);
+  Int_t zInt = Int_t(zloc*10.);
+
+  if(TMath::Abs(xloc*10.-(Float_t)xInt)>0.5)
+    if(zloc>0) { xInt++; } else { xInt--; }
+  if(TMath::Abs(zloc*10.-(Float_t)zInt)>0.5)
+    if(zloc>0) { zInt++; } else { zInt--; }
+
+  Int_t signs=0;
+  if(xInt>=0 && zInt>=0) signs=10000;
+  if(xInt>=0 && zInt<0)  signs=20000;
+  if(xInt<0 && zInt>=0)  signs=30000;
+  if(xInt<0 && zInt<0)   signs=40000;
+
+  Int_t modindex = signs;
+  
+  modindex += TMath::Abs(zInt);
+  modindex += TMath::Abs(xInt)*100;
+
+  modindex += status*100000;
+
+  modindex += idet*1000000;
+
+  SetModuleIndex(ilayer,modindex);
+  return;
+}
+
+inline Bool_t AliITStrackV2::GetModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,
+					       Float_t &xloc,Float_t &zloc) const {
+  //----------------------------------------------------------------------
+  // This function encodes in the module number also the status of cluster association
+  // "status" can have the following values: 
+  // 1 "found" (cluster is associated), 
+  // 2 "dead" (module is dead from OCDB), 
+  // 3 "skipped" (module or layer forced to be skipped),
+  // 4 "outinz" (track out of z acceptance), 
+  // 5 "nocls" (no clusters in the road), 
+  // 6 "norefit" (cluster rejected during refit), 
+  // 7 "deadzspd" (holes in z in SPD)
+  // Also given are the coordinates of the crossing point of track and module
+  // (in the local module ref. system)
+  // WARNING: THIS METHOD HAS TO BE SYNCHRONIZED WITH AliESDtrack::GetITSModuleIndexInfo()!
+  //----------------------------------------------------------------------
+
+
+  if(fModule[ilayer]==-1) {
+    AliError("fModule was not set !");
+    idet = -1;
+    status=0;
+    xloc=-99.; zloc=-99.;
+    return kFALSE;
+  }
+
+  Int_t module = fModule[ilayer];
+
+  idet = Int_t(module/1000000);
+
+  module -= idet*1000000;
+
+  status = Int_t(module/100000);
+
+  module -= status*100000;
+
+  Int_t signs = Int_t(module/10000);
+
+  module-=signs*10000;
+
+  Int_t xInt = Int_t(module/100);
+  module -= xInt*100;
+
+  Int_t zInt = module;
+
+  if(signs==1) { xInt*=1; zInt*=1; }
+  if(signs==2) { xInt*=1; zInt*=-1; }
+  if(signs==3) { xInt*=-1; zInt*=1; }
+  if(signs==4) { xInt*=-1; zInt*=-1; }
+
+  xloc = 0.1*(Float_t)xInt;
+  zloc = 0.1*(Float_t)zInt;
+
+  if(status==4) idet = -1;
+
+  return kTRUE;
+}
+
 
 #endif
 

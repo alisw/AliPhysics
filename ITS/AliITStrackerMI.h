@@ -18,8 +18,8 @@ class AliESDEvent;
 #include <TObjArray.h>
 #include "AliITSRecPoint.h"
 #include "AliITStrackMI.h"
-#include "AliTracker.h"
 #include "AliITSPlaneEff.h"
+#include "AliTracker.h"
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
@@ -40,9 +40,10 @@ public:
   Int_t Clusters2Tracks(AliESDEvent *event);
   Int_t PropagateBack(AliESDEvent *event);
   Int_t RefitInward(AliESDEvent *event);
-  Bool_t RefitAt(Double_t x, AliITStrackMI *seed, 
-		 const AliITStrackMI *t, Bool_t extra=kFALSE);
-  Bool_t RefitAt(Double_t x, AliITStrackMI *seed, const Int_t *clindex);
+  Bool_t RefitAt(Double_t x, AliITStrackMI *track, 
+		 const AliITStrackMI *clusters, Bool_t extra=kFALSE);
+  Bool_t RefitAt(Double_t x, AliITStrackMI *track, 
+		 const Int_t *clusters, Bool_t extra=kFALSE);
   void SetupFirstPass(Int_t *flags, Double_t *cuts=0);
   void SetupSecondPass(Int_t *flags, Double_t *cuts=0);
 
@@ -89,7 +90,7 @@ public:
     void ResetClusters();
     void ResetWeights();
     void SelectClusters(Double_t zmin,Double_t zmax,Double_t ymin,Double_t ymax);
-    const AliITSRecPoint *GetNextCluster(Int_t &ci);
+    const AliITSRecPoint *GetNextCluster(Int_t &ci,Bool_t test=kFALSE);
     void ResetRoad();
     Double_t GetRoad() const {return fRoad;}
     Double_t GetR() const {return fR;}
@@ -221,7 +222,9 @@ protected:
   Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
   void UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const;
   Int_t CheckSkipLayer(AliITStrackMI *track,Int_t ilayer,Int_t idet) const;
-  Int_t CheckDeadZone(/*AliITStrackMI *track,*/Int_t ilayer,/*Int_t idet,*/Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const;
+  Int_t CheckDeadZone(/*AliITStrackMI *track,*/Int_t ilayer,Int_t idet,Double_t zmin,Double_t zmax/*,Double_t ymin,Double_t ymax*/) const;
+  Bool_t LocalModuleCoord(Int_t ilayer,Int_t idet,AliITStrackMI *track,
+			  Float_t &xloc,Float_t &zloc) const;
   Int_t fI;                              // index of the current layer
   static AliITSlayer fgLayers[AliITSgeomTGeo::kNLayers];// ITS layers
   AliITStrackMI fTracks[AliITSgeomTGeo::kNLayers];      // track estimations at the ITS layers
@@ -256,15 +259,12 @@ protected:
   Float_t *fxOverX0LayerTrks;            //! material budget
   Float_t *fxTimesRhoLayerTrks;          //! material budget
   TTreeSRedirector *fDebugStreamer;      //!debug streamer
-//
-  AliITSPlaneEff *fPlaneEff;             //| Pointer to the ITS plane efficicency
+  AliITSPlaneEff *fPlaneEff;             //! Pointer to the ITS plane efficicency
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
   ClassDef(AliITStrackerMI,4)   //ITS tracker MI
 };
-
-
 
 
 

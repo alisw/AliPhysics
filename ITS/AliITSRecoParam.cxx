@@ -100,6 +100,7 @@ fClusterErrorsParam(1),
 fComputePlaneEff(kFALSE),
 fExtendedEtaAcceptance(kFALSE),
 fUseDeadZonesFromOCDB(kFALSE),
+fAllowProlongationWithEmptyRoad(kFALSE),
 fFactorSAWindowSizes(1.),
 fFindV0s(kTRUE),
 fUseUnfoldingInClusterFinderSPD(kFALSE),
@@ -220,18 +221,6 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   return param;
 }
 //_____________________________________________________________________________
-AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
-{
-  //
-  // make special reconstruction parameters for Plane Efficiency study on layer i
-  //
-  AliITSRecoParam *param;
-  param = GetHighFluxParam();
-  param->SetComputePlaneEff();
-  param->SetLayerToSkip(i);
-  return param;
-}
-//_____________________________________________________________________________
 AliITSRecoParam *AliITSRecoParam::GetLowFluxParam() 
 {
   //
@@ -334,6 +323,18 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   return param;
 }
 //_____________________________________________________________________________
+AliITSRecoParam *AliITSRecoParam::GetPlaneEffParam(Int_t i)
+{
+  //
+  // make special reconstruction parameters for Plane Efficiency study on layer i
+  //
+  AliITSRecoParam *param;
+  param = GetHighFluxParam();
+  param->SetComputePlaneEff();
+  param->SetLayerToSkip(i);
+  return param;
+}
+//_____________________________________________________________________________
 void AliITSRecoParam::SetLayersParameters() 
 {
   //
@@ -358,3 +359,4 @@ void AliITSRecoParam::SetLayersParameters()
 
   return;
 }
+
