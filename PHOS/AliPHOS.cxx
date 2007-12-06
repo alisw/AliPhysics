@@ -16,6 +16,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.116  2007/10/10 09:05:10  schutz
+ * Changing name QualAss to QA
+ *
  * Revision 1.115  2007/08/22 09:20:50  hristov
  * Updated QA classes (Yves)
  *
@@ -93,6 +96,7 @@ class TFile;
 #include "AliPHOSRawDecoder.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSQAChecker.h"
+#include "AliPHOSRecoParamEmc.h"
 
 ClassImp(AliPHOS)
 
@@ -431,6 +435,10 @@ void AliPHOS::Digits2Raw()
     return;
   }
 
+  // get mapping from OCDB
+  const TObjArray* maps = AliPHOSRecoParamEmc::GetMappings();
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
   // some digitization constants
   const Float_t    kThreshold = 0.001; // skip digits below 1 MeV
   const Int_t      kAdcThreshold = 1;  // Lower ADC threshold to write to raw data
@@ -506,7 +514,7 @@ void AliPHOS::Digits2Raw()
 	path += iRCU;
 	path += ".data";
 
-	mapping[iDDL] = new AliCaloAltroMapping(path.Data());
+	mapping[iDDL] = (AliAltroMapping*)maps->At(iRCU);
 	buffer[iDDL]  = new AliAltroBuffer(fileName.Data(),mapping[iDDL]);
 	buffer[iDDL]->WriteDataHeader(kTRUE, kFALSE);  //Dummy;
       }
@@ -552,7 +560,7 @@ void AliPHOS::Digits2Raw()
       buffer[iDDL]->Flush();
       buffer[iDDL]->WriteDataHeader(kFALSE, kFALSE);
       delete buffer[iDDL];
-      if (mapping[iDDL]) delete mapping[iDDL];
+      //if (mapping[iDDL]) delete mapping[iDDL];
     }
   }
   
