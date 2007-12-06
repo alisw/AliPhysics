@@ -48,7 +48,7 @@ chmod 755 BUILD.sh
 
 cd ../..
 
-tar zcvf TPCcalib.par $EDIR
+tar zcvf TPCcalibPar.par $EDIR
 
 
 exit 0
