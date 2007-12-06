@@ -814,6 +814,15 @@ Bool_t AliTriggerConfiguration::CheckConfiguration( TString& configfile )
    return check;
 }
 
+//_____________________________________________________________________________
+void AliTriggerConfiguration::Reset()
+{
+   for( Int_t j=0; j<fInputs.GetEntriesFast(); j++ )
+     ((AliTriggerInput*)fInputs.At(j))->Reset();
+
+   for( Int_t j=0; j<fClasses.GetEntriesFast(); j++ )
+     ((AliTriggerClass*)fClasses.At(j))->Reset();
+}
 
 //_____________________________________________________________________________
 void AliTriggerConfiguration::Print( const Option_t*  ) const

@@ -69,6 +69,8 @@ public:
 				    UInt_t prescaler, Bool_t allrare);
                  Bool_t   AddClass( AliTriggerClass *trclass);
 
+		   void   Reset();
+
   //  Getters
                TString    GetActiveDetectors() const;
                TString    GetTriggeringDetectors() const;

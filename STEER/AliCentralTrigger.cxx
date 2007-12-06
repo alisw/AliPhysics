@@ -216,6 +216,9 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
       TObjArray* detArray = runLoader->GetAliRun()->Detectors();
       // Reset Mask
       fClassMask = 0;
+      fClusterMask = 0;
+      // Reset configuration object (inputs and classes)
+      fConfiguration->Reset();
       TObjArray trgdetArray; // use as garbage collector
       for( Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++ ) {
          AliModule* det = (AliModule*) detArray->At( iDet );
