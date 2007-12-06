@@ -39,7 +39,7 @@ void SetCalibDB() {
   Int_t nRow2  = 12; //Modules 11 and 12 are half modules                          
 
   Int_t colOffset = 40;
-  Int_t rowOffset = 16;
+  Int_t rowOffset = 8;
 
   Double_t gain_ratios[8][8] =
     {
@@ -87,7 +87,7 @@ void SetCalibDB() {
       if(supermodule >= 10)
         nRow = nRow2;
       for(Int_t row=0; row< nRow; row++) {
-	if(supermodule < 2 && column > 39 && row > 15) {
+	if(supermodule < 2 && column > 39 && row > 7 && row < 16) {
 	  cc = 1./gain_ratios[column-colOffset][row-rowOffset]/gains[column-colOffset][row-rowOffset];
 	  cout << "column = " << column << " column - colOffset = " << column-colOffset << " row = " << " row Offset = " << row-rowOffset << endl;
 	}
