@@ -26,17 +26,13 @@
 
 #include "AliMUONPadStatusMaker.h"
 
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "AliCodeTimer.h"
-#include "AliDCSValue.h"
-#include "AliLog.h"
 #include "AliMUON2DMap.h"
 #include "AliMUON2DStoreValidator.h"
 #include "AliMUONCalibParamNI.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONStringIntMap.h"
 #include "AliMUONVCalibParam.h"
+
 #include "AliMpArea.h"
 #include "AliMpArrayI.h"
 #include "AliMpConstants.h"
@@ -44,20 +40,15 @@
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
 #include "AliMpDetElement.h"
-#include "AliMpExMap.h"
 #include "AliMpHVNamer.h"
-#include "AliMpIntPair.h"
 #include "AliMpManuUID.h"
-#include "AliMpMotifMap.h"
-#include "AliMpMotifPosition.h"
-#include "AliMpPCB.h"
-#include "AliMpPad.h"
-#include "AliMpSegmentation.h"
-#include "AliMpSlat.h"
-#include "AliMpSlatSegmentation.h"
-#include "AliMpStationType.h"
-#include "AliMpVPadIterator.h"
-#include "AliMpVSegmentation.h"
+
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "AliCodeTimer.h"
+#include "AliDCSValue.h"
+#include "AliLog.h"
+
 #include <Riostream.h>
 #include <TArrayI.h>
 #include <TExMap.h>
