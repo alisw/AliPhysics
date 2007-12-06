@@ -10,8 +10,10 @@ SRCS:= AliMUONDDLTrigger.cxx \
        AliMUONDspHeader.cxx \
        AliMUONBusStruct.cxx \
        AliMUONPayloadTracker.cxx \
+       AliMUONVRawStreamTracker.cxx \
+       AliMUONRawStreamTracker.cxx \
+       AliMUONRawStreamTrackerHP.cxx \
        AliMUONRawStreamTrigger.cxx \
-       AliMUONRawStreamTracker.cxx  \
        AliMUONRawStream.cxx
  
 
