@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.5  2007/11/23 19:28:52  alla
+bug fixed
+
 Version 2.1  2007/11/21 
 Preprocessor storing data to OCDB (T.Malkiewicz)
 
@@ -90,6 +93,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
         }
         else
         {
+	  /*
           resultDCSMap=fData->ProcessData(*dcsAliasMap);
           if(!resultDCSMap)
           {
@@ -98,12 +102,14 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
           }
           else
           {
+	    Float_t *meanScaler[24] = fData->GetScalerMean();
+	     	
             AliCDBMetaData metaDataDCS;
             metaDataDCS.SetBeamPeriod(0);
             metaDataDCS.SetResponsible("Tomasz Malkiewicz");
             metaDataDCS.SetComment("This preprocessor fills an AliTODataDCS object.");
             AliInfo("Storing DCS Data");
-            resultDCSStore = Store("Calib","DCSData",fData, &metaDataDCS);
+            resultDCSStore = Store("Calib","DCSData",meanScaler, &metaDataDCS);
             if (!resultDCSStore)
             {
               Log("Some problems occurred while storing DCS data results in ReferenceDB");
@@ -111,6 +117,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
             }
 
           }
+	  */
         }
 
         // processing DAQ
@@ -129,7 +136,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               const char *laserFile = GetFile(kDAQ, "LASER", source->GetName());
               if (laserFile)
               {
-                Log(Form("File with Id TIME found in source %s!", source->GetName()));
+                Log(Form("File with Id LASER found in source %s!", source->GetName()));
                 AliT0CalibWalk *laser = new AliT0CalibWalk();
                 // laser->Reset();
                 laser->MakeWalkCorrGraph(laserFile);
@@ -137,7 +144,8 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
                 metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Walk correction from laser runs.");
-                resultLaser = Store("Calib","Data", laser, &metaData);
+		TObjArray* arrLaser = laser->GetfWalk();
+		resultLaser=Store("Calib","Walk", arrLaser, &metaData, 0, 1);
                 delete laser;
               }
               else
@@ -155,7 +163,7 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
         }
         else if(runType == "PHYSICS")
         {
-          TList* listPhys = GetFileSources(kDAQ, "LASER");
+          TList* listPhys = GetFileSources(kDAQ, "PHYSICS");
           if (listPhys)
           {
             TIter iter(listPhys);
@@ -167,12 +175,12 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               {
                 AliT0CalibTimeEq *online = new AliT0CalibTimeEq();
                 online->Reset();
-                online->ComputeOnlineParams("CFD13-CFD","", "c1", 20, 1., filePhys);
+                online->ComputeOnlineParams("CFD", 20, 4., filePhys);
                 AliCDBMetaData metaData;
                 metaData.SetBeamPeriod(0);
                 metaData.SetResponsible("Tomek&Michal");
                 metaData.SetComment("Time equalizing result.");
-                resultOnline = Store("Calib","Data", online, &metaData);
+                resultOnline = Store("Calib","TimeDelay", online, &metaData, 0, 1);
                 delete online;
               }
               else
