@@ -25,8 +25,11 @@ public:
   virtual ~AliTOFQAChecker() {;} // dtor
 
 private:
+
+  const Double_t Check(TList * list) ;
+  const Double_t Check(){return 0.;} ;
   
-  ClassDef(AliTOFQAChecker,1)  // description 
+  ClassDef(AliTOFQAChecker,2)  // description 
 
 };
 

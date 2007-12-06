@@ -33,6 +33,7 @@
 #include "AliTOFSDigit.h"
 #include "AliTOFhitT0.h"
 #include "AliTOFQADataMaker.h"
+#include "AliQAChecker.h"
 #include "AliRawReader.h"
 #include "AliTOFRawStream.h"
 #include "AliTOFrawData.h"
@@ -543,6 +544,14 @@ void AliTOFQADataMaker::StartOfDetectorCycle()
   //to be implemented  
 }
 
+//____________________________________________________________________________ 
+void AliTOFQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
+{
+  //Detector specific actions at end of cycle
+  // do the QA checking
+
+  AliQAChecker::Instance()->Run(AliQA::kTOF, task, list) ;  
+}
 //____________________________________________________________________________
 void AliTOFQADataMaker::GetMapIndeces(Int_t* in , Int_t* out)
 {
