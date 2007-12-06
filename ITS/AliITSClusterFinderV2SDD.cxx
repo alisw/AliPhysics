@@ -274,13 +274,13 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   for(Int_t iHyb=0;iHyb<24;iHyb++) ddlbins[iHyb]=new AliBin[kMaxBin];
   // read raw data input stream
   while (input->Next()) {
+    Int_t iModule = input->GetModuleID();
+    if(iModule<0) continue;
     Int_t iCarlos =((AliITSRawStreamSDD*)input)->GetCarlosId();
     Int_t iSide = ((AliITSRawStreamSDD*)input)->GetChannel();
     Int_t iHybrid=iCarlos*2+iSide;
     if (input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
-      Int_t iModule = input->GetModuleID();
-      if (iModule >= 0) { 
 	clusters[iModule] = new TClonesArray("AliITSRecPoint");
 	fModule = iModule;
 	bins[0]=ddlbins[iCarlos*2];   // first hybrid of the completed module
@@ -292,10 +292,9 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
 	  ddlbins[iCarlos*2][iBin].Reset();
 	  ddlbins[iCarlos*2+1][iBin].Reset();
 	}
-      }
     }else{
     // fill the current digit into the bins array
-      AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(input->GetModuleID());    
+      AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)GetResp(iModule);    
       AliITSresponseSDD* res  = (AliITSresponseSDD*)cal->GetResponse();
       const char *option=res->ZeroSuppOption();
       Float_t charge=input->GetSignal();
