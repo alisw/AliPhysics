@@ -17,6 +17,12 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.53.10.1  2007/12/06 10:29:59  hristov
+ * Bug fix: using the mapping from CDB
+ *
+ * Revision 1.53  2007/03/17 19:56:38  mvl
+ * Moved signal shape routines from AliEMCAL to separate class AliEMCALRawUtils to streamline raw data reconstruction code.
+ *
  * Revision 1.52  2007/03/10 22:19:01  pavlinov
  * move one varibels from AliEMCALv2 to AliEMCAL
  *
@@ -67,6 +73,9 @@ class TFile;
 #include "AliEMCALDigitizer.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALRawUtils.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
 
 ClassImp(AliEMCAL)
 
@@ -268,7 +277,19 @@ void AliEMCAL::CreateMaterials()
 //____________________________________________________________________________
 void AliEMCAL::Digits2Raw() {
   static AliEMCALRawUtils rawUtil;
-  rawUtil.Digits2Raw();
+  //Get Mapping RCU files from the AliEMCALRecParam                                                          
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/Mapping");
+  const TObjArray* maps = 0x0;
+  if(entry)
+    maps = (TObjArray*)entry->GetObject();
+
+  if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
+
+  AliAltroMapping * mapping[2] ; // For the moment only 2                                                    
+  for(Int_t i = 0; i < 2; i++) {
+    mapping[i] = (AliAltroMapping*)maps->At(i);
+  }
+  rawUtil.Digits2Raw(mapping);
 }
 //____________________________________________________________________________
 void AliEMCAL::Hits2SDigits()  
