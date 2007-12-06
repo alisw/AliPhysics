@@ -151,14 +151,43 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const AliITSModuleDaSSD& module) :
   fAdc(module.fAdc),
   fModuleId(module.fModuleId),
   fNumberOfStrips(module.fNumberOfStrips),
-  fStrips(module.fStrips),
+  fStrips(NULL),
   fNumberOfChips(module.fNumberOfChips),
-  fCm(module.fCm),
+  fCm(NULL),
   fEventsNumber(module.fEventsNumber)
 {
 // copy constructor
-
-  AliFatal("AliITSModuleDaSSD, copy constructor not implemented");
+  if ((module.fNumberOfStrips > 0) && (module.fStrips)) {
+    fStrips = new (nothrow) AliITSChannelDaSSD* [module.fNumberOfStrips];
+    if (fStrips) {
+      for (Int_t strind = 0; strind < module.fNumberOfStrips; strind++) {
+        if (module.fStrips[strind]) {
+	  fStrips[strind] = new AliITSChannelDaSSD(*(module.fStrips[strind]));
+	  if (!fStrips[strind]) { 
+	    AliError("AliITSModuleDaSSD: Error copy constructor");
+            for (Int_t i = (strind - 1); i >= 0; i--) delete fStrips[strind];
+	    delete [] fStrips;
+	    fStrips = NULL;
+	    break;
+	  }
+	} else fStrips[strind] = NULL; 
+      }	  
+    } else {
+       AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", module.fNumberOfStrips));
+       fNumberOfStrips = 0;
+       fStrips = NULL;
+    }  
+  }
+  if (module.fCm) {
+    fCm = new (nothrow) TArrayF [module.fNumberOfChips];
+    if (fCm) {
+      for (Int_t chind = 0; chind < module.fNumberOfChips; chind++) fCm[chind] = module.fCm[chind]; 
+    } else {
+       AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayF objects!", module.fNumberOfChips));
+       fNumberOfChips = 0;
+       fCm = NULL;
+    }  
+  }  
 }
 
 
@@ -167,8 +196,54 @@ AliITSModuleDaSSD::AliITSModuleDaSSD(const AliITSModuleDaSSD& module) :
 AliITSModuleDaSSD& AliITSModuleDaSSD::operator = (const AliITSModuleDaSSD& module)
 {
 // assignment operator
-
-  AliFatal("AliITSModuleDaSSD: operator =, assignment operator not implemented");
+  if (this == &module)  return *this;  
+  if (fStrips) {
+    for (Long_t i = 0; i < fNumberOfStrips; i++) if (fStrips[i]) delete fStrips[i];
+    delete [] fStrips;
+  } 
+  fEquipId = module.fEquipId;
+  fEquipType = module.fEquipType;
+  fDdlId = module.fDdlId;
+  fAd = module.fAd;
+  fAdc = module.fAdc;
+  fModuleId = module.fModuleId;
+  fNumberOfStrips = module.fNumberOfStrips;
+  fStrips = NULL;
+  fNumberOfChips = module.fNumberOfChips;
+  fCm = NULL;
+  fEventsNumber = module.fEventsNumber;
+  if ((module.fNumberOfStrips > 0) && (module.fStrips)) {
+    fStrips = new (nothrow) AliITSChannelDaSSD* [module.fNumberOfStrips];
+    if (fStrips) {
+      for (Int_t strind = 0; strind < module.fNumberOfStrips; strind++) {
+        if (module.fStrips[strind]) {
+	  fStrips[strind] = new AliITSChannelDaSSD(*(module.fStrips[strind]));
+	  if (!fStrips[strind]) { 
+	    AliError("AliITSModuleDaSSD: Error copy constructor");
+            for (Int_t i = (strind - 1); i >= 0; i--) delete fStrips[strind];
+	    delete [] fStrips;
+	    fStrips = NULL;
+	    break;
+	  }
+	} else fStrips[strind] = NULL; 
+      }	  
+    } else {
+       AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i AliITSChannelDaSSD* objects!", module.fNumberOfStrips));
+       fNumberOfStrips = 0;
+       fStrips = NULL;
+    }  
+  }
+  if (fCm) delete [] fCm;
+  if (module.fCm) {
+    fCm = new (nothrow) TArrayF [module.fNumberOfChips];
+    if (fCm) {
+      for (Int_t chind = 0; chind < module.fNumberOfChips; chind++) fCm[chind] = module.fCm[chind]; 
+    } else {
+       AliError(Form("AliITSModuleDaSSD: Error allocating memory for %i TArrayF objects!", module.fNumberOfChips));
+       fNumberOfChips = 0;
+       fCm = NULL;
+    }  
+  }  
   return *this;
 }
     

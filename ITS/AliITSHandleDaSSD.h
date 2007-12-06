@@ -49,7 +49,7 @@ class AliITSHandleDaSSD : public TObject {
     Int_t   ReadModuleRawData (const Int_t modulesnumber);  
 
     virtual Bool_t  CalculatePedestal(AliITSModuleDaSSD *const module);
-    virtual Bool_t  CalculateNoise(AliITSModuleDaSSD *const module, const Bool_t CorrectCM = kFALSE);
+    virtual Bool_t  CalculateNoise(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateNoiseCM(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateCM(AliITSModuleDaSSD *const module);
     virtual Bool_t  ProcessRawData(const Int_t nmread = fgkNumberOfSSDModulesPerDdl);
@@ -63,6 +63,8 @@ class AliITSHandleDaSSD : public TObject {
     void    DumpInitData(const Char_t *str = "") const;
     void    DeleteSignalAll() { if (fModules) for (Int_t i = 0; i < fNumberOfModules; i++) if (fModules[i]) fModules[i]->DeleteSignal();}
     void    DeleteSignal() { if (fModules) for (Int_t i = fModIndProcessed; i < fModIndRead; i++) if (fModules[i]) fModules[i]->DeleteSignal();}
+    void    DeleteCMAll() { if (fModules) for (Int_t i = 0; i < fNumberOfModules; i++) if (fModules[i]) fModules[i]->DeleteCM();}
+    void    DeleteCM() { if (fModules) for (Int_t i = fModIndProcessed; i < fModIndRead; i++) if (fModules[i]) fModules[i]->DeleteCM();}
 
     static Int_t GetNumberOfSSDModulesConst() { return fgkNumberOfSSDModules; }
 

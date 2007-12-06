@@ -54,7 +54,7 @@ class AliITSModuleDaSSD : public TObject {
     void    SetStrip(AliITSChannelDaSSD* strip, const Int_t strID) { if ((fStrips) && (strID <= fNumberOfStrips)) fStrips[strID] = strip; }
     void    SetCM (Float_t* cm, const Int_t chipn)  { if (chipn < fNumberOfChips) fCm[chipn].Set(fCm[chipn].GetSize(), cm); }
     Bool_t  SetCM (const Float_t cm, const Int_t chipn, const Int_t evn);
-    void    DeleteCM () {if (fCm) delete [] fCm; fCm = NULL; }
+    void    DeleteCM () {if (fCm) { delete [] fCm; fNumberOfChips = 0; fCm = NULL; } }
     void    DeleteSignal() {if (fStrips) for (Int_t i = 0; i < fNumberOfStrips; i++) 
                                             if (fStrips[i]) fStrips[i]->DeleteSignal(); fEventsNumber = 0; }
     static Int_t GetStripsPerModuleConst() { return  fgkStripsPerModule;  }

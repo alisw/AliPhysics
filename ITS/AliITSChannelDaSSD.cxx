@@ -100,15 +100,23 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const AliITSChannelDaSSD& strip) :
   TObject(strip),
   fStripId(strip.fStripId),
   fEventsNumber(strip.fEventsNumber),
-  fSignal(strip.fSignal),
+  fSignal(NULL),
   fPedestal(strip.fPedestal),
   fNoise(strip.fNoise),
   fNoiseCM(strip.fNoiseCM),
   fNOverflowEv(strip.fNOverflowEv)
 {
   // copy constructor
-
-  AliFatal("AliITSChannelDaSSD, copy constructor not implemented");
+  if ((strip.fEventsNumber > 0) && (strip.fSignal)) {
+    fSignal = new (nothrow) Short_t[strip.fEventsNumber];
+    if (fSignal) {
+      memcpy(fSignal, strip.fSignal, (strip.fEventsNumber * sizeof(Short_t)));
+    } else {
+      AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", strip.fEventsNumber));
+      fSignal = NULL;
+      fEventsNumber = 0;
+    }
+  }  
 }
 
 
@@ -117,8 +125,23 @@ AliITSChannelDaSSD::AliITSChannelDaSSD(const AliITSChannelDaSSD& strip) :
 AliITSChannelDaSSD& AliITSChannelDaSSD::operator = (const AliITSChannelDaSSD& strip)
 {
 // assignment operator
-
-  AliFatal("operator =, assignment operator not implemented");
+  if (this == &strip)  return *this;  
+  if (fSignal) { delete [] fSignal; fSignal = NULL; }
+  fStripId = strip.fStripId;
+  fEventsNumber = strip.fEventsNumber;
+  fPedestal = strip.fPedestal;
+  fNoise = strip.fNoise;
+  fNoiseCM = strip.fNoiseCM;
+  fNOverflowEv = strip.fNOverflowEv;
+  if ((strip.fEventsNumber > 0) && (strip.fSignal)) fSignal = new (nothrow) Short_t[strip.fEventsNumber];
+  else return *this;
+  if (fSignal) {
+    memcpy(fSignal, strip.fSignal, (strip.fEventsNumber * sizeof(Short_t)));
+  } else {
+    AliError(Form("AliITSChannelDaSSD: Error allocating memory for %i Short_t objects!", strip.fEventsNumber));
+    fSignal = NULL;
+    fEventsNumber = 0;
+  }
   return *this;
 }
 
@@ -127,10 +150,7 @@ AliITSChannelDaSSD& AliITSChannelDaSSD::operator = (const AliITSChannelDaSSD& st
 AliITSChannelDaSSD::~AliITSChannelDaSSD()
 {
 // Destructor
-  if (fSignal) 
-  {
-     delete [] fSignal;
-  }
+  if (fSignal) delete [] fSignal;
 }
 
 

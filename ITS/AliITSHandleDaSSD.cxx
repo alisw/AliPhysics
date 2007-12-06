@@ -87,7 +87,7 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   TObject(ssdadldc),
   fRawDataFileName(ssdadldc.fRawDataFileName),
   fNumberOfModules(ssdadldc.fNumberOfModules),
-  fModules(ssdadldc.fModules),
+  fModules(NULL),
   fModIndProcessed(ssdadldc.fModIndProcessed),
   fModIndRead(ssdadldc.fModIndRead),
   fNumberOfEvents(ssdadldc.fNumberOfEvents),
@@ -97,8 +97,27 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
   fCmThresholdFactor(ssdadldc.fCmThresholdFactor) 
 {
   // copy constructor
-
-  AliFatal("AliITSHandleDaSSD, copy constructor not implemented");
+  if ((ssdadldc.fNumberOfModules > 0) && (ssdadldc.fModules)) {
+    fModules = new (nothrow) AliITSModuleDaSSD* [ssdadldc.fNumberOfModules];
+    if (fModules) {
+      for (Int_t modind = 0; modind < ssdadldc.fNumberOfModules; modind++) {
+        if (ssdadldc.fModules[modind]) {
+	  fModules[modind] = new AliITSModuleDaSSD(*(ssdadldc.fModules[modind]));
+	  if (!fModules[modind]) { 
+	    AliError("AliITSHandleDaSSD: Error copy constructor");
+            for (Int_t i = (modind - 1); i >= 0; i--) delete fModules[modind];
+	    delete [] fModules;
+	    fModules = NULL;
+	    break;
+	  }
+	} else fModules[modind] = NULL; 
+      }	  
+    } else {
+      AliError(Form("AliITSHandleDaSSD: Error allocating memory for %i AliITSModulesDaSSD* objects!", ssdadldc.fNumberOfModules));
+      fNumberOfModules = 0;
+      fModules = NULL;
+    }
+  }
 }
 
 
@@ -106,8 +125,33 @@ AliITSHandleDaSSD::AliITSHandleDaSSD(const AliITSHandleDaSSD& ssdadldc) :
 AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdadldc)
 {
 // assignment operator
-
-  AliFatal("operator =, assignment operator not implemented");
+  if (this == &ssdadldc)  return *this;
+  if (fModules) {
+    for (Int_t i = 0; i < fNumberOfModules; i++) if (fModules[i]) delete fModules[i];
+    delete [] fModules; 
+    fModules = NULL;
+  }
+  if ((ssdadldc.fNumberOfModules > 0) && (ssdadldc.fModules)) {
+    fModules = new (nothrow) AliITSModuleDaSSD* [ssdadldc.fNumberOfModules];
+    if (fModules) {
+      for (Int_t modind = 0; modind < ssdadldc.fNumberOfModules; modind++) {
+        if (ssdadldc.fModules[modind]) {
+	  fModules[modind] = new AliITSModuleDaSSD(*(ssdadldc.fModules[modind]));
+	  if (!fModules[modind]) { 
+	    AliError("AliITSHandleDaSSD: Error assignment operator");
+            for (Int_t i = (modind - 1); i >= 0; i--) delete fModules[modind];
+	    delete [] fModules;
+	    fModules = NULL;
+	    break;
+	  }
+	} else fModules[modind] = NULL; 
+      }	  
+    } else {
+      AliError(Form("AliITSHandleDaSSD: Error allocating memory for %i AliITSModulesDaSSD* objects!", ssdadldc.fNumberOfModules));
+      fNumberOfModules = 0;
+      fModules = NULL;
+    }
+  }
   return *this;
 }
 
@@ -203,7 +247,7 @@ Bool_t AliITSHandleDaSSD::Init(Char_t *rdfname, const Char_t *configfname)
     fNumberOfEvents = physeventind;
     fRawDataFileName = rdfname;
     if (SetNumberOfModules(fgkNumberOfSSDModules)) {
-      TString str = Form("Max number of equipment: %i, max number of channels: %i\n", eqn, strn);
+      TString str = TString::Format("Max number of equipment: %i, max number of channels: %i\n", eqn, strn);
       DumpInitData(str.Data());
       return kTRUE;
     }  
@@ -526,7 +570,7 @@ Bool_t AliITSHandleDaSSD::CalculatePedestal(AliITSModuleDaSSD *const module)
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::CalculateNoise(AliITSModuleDaSSD *const module, const Bool_t CorrectCM)
+Bool_t AliITSHandleDaSSD::CalculateNoise(AliITSModuleDaSSD *const module)
 {
 // Calculates Noise
   AliITSChannelDaSSD *strip;
@@ -679,6 +723,7 @@ Bool_t AliITSHandleDaSSD::ProcessRawData(const Int_t nmread)
       CalculateNoiseCM(fModules[modind]);
     }
     DeleteSignal();
+//    DeleteCM();
     fModIndProcessed = fModIndRead;
     cout << fModIndProcessed << " - done" << endl;
   }
@@ -744,9 +789,9 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname) const
     ldcc->AddAt(modcalibobj, i);
   }
   ldcc->Compress();
-  if (dafname) dadatafilename = Form("%s/", dafname); 
-  dadatafilename.Append(Form("ITSSSDda_%i_%i.root", fLdcId, fRunId));
-  tmpfname = new Char_t[dadatafilename.Length()];
+  if (dafname) dadatafilename.Form("%s/", dafname);
+  dadatafilename += TString::Format("ITSSSDda_%i_%i.root", fLdcId, fRunId);
+  tmpfname = new Char_t[dadatafilename.Length()+1];
   dafname = strcpy(tmpfname, dadatafilename.Data());
   TFile *fileRun = new TFile (dadatafilename.Data(),"RECREATE");
   if (fileRun->IsZombie()) {
