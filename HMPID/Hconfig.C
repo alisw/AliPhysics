@@ -339,7 +339,10 @@ void HmpConfig::WriteGen(FILE *pF)
   Float_t pmin=0.1*fGenPminCO->GetSelected(); //particle momentum, GeV
   Float_t pmax=0.1*fGenPmaxCO->GetSelected(); //particle momentum, GeV
   
-  fprintf(pF,"  AliGenCocktail *pG=new AliGenCocktail();\n\n");
+  if(fGenBG->GetButton(kHijing)->GetState()==kButtonDown     ||
+     fGenBG->GetButton(kHijingPara)->GetState()==kButtonDown ||
+     fGenBG->GetButton(kPythia)->GetState()==kButtonDown) {;}
+  else {fprintf(pF,"  AliGenCocktail *pG=new AliGenCocktail();\n\n");}
   
   if(fGenBG->GetButton(kGunZ)->GetState()==kButtonDown)//1 particle along Z axis 
     fprintf(pF,"  AliGenFixed *pGz=new AliGenFixed(1); pGz->SetPart(%i); pGz->SetMomentum(%.1f); pGz->SetOrigin(0,0,-200); pG->AddGenerator(pGz,\"Gz\",1);\n",pid,pmin);
@@ -386,17 +389,29 @@ void HmpConfig::WriteGen(FILE *pF)
   }     
   
   if(fGenBG->GetButton(kHijing)->GetState()==kButtonDown){//normal HIJING
-    fprintf(pF,"  AliGenHijing *pH=new AliGenHijing(-1);           pH->SetEnergyCMS(14000);        pH->SetReferenceFrame(\"CMS\");\n");
-    fprintf(pF,"                pH->SetProjectile(\"P\", 1, 1); pH->SetTarget(\"P\", 1, 1  ); pH->SetJetQuenching(0);\n");      
+    fprintf(pF,"  AliGenHijing *pH=new AliGenHijing(-1);           pH->SetEnergyCMS(5500);        pH->SetReferenceFrame(\"CMS\");\n");
+    fprintf(pF,"                pH->SetProjectile(\"A\", 208, 82);   pH->SetTarget(\"A\", 208, 82);   pH->SetJetQuenching(0);\n");      
     fprintf(pF,"                pH->SetShadowing(0);               pH->KeepFullEvent();           pH->SetSelectAll(0);\n");
     fprintf(pF,"                pH->SetImpactParameterRange(0, 5); //fermi\n");
-    fprintf(pF,"  pG->AddGenerator(pH,\"h\",1);\n\n");
+    fprintf(pF,"                AliGenerator *gener = (AliGenerator*)pH; \n");
+    fprintf(pF,"                gener->SetOrigin(0, 0, 0);    // vertex position \n");
+    fprintf(pF,"                gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position \n");
+    fprintf(pF,"                gener->SetCutVertexZ(1.);     // Truncate at 1 sigma \n");
+    fprintf(pF,"                gener->SetVertexSmear(kPerEvent);  \n");
+    fprintf(pF,"                gener->SetTrackingFlag(1); \n");
+    fprintf(pF,"                gener->Init(); \n\n");
   }
   
   if(fGenBG->GetButton(kHijingPara)->GetState()==kButtonDown){//parametrized HIJING 
     fprintf(pF,"  AliGenHIJINGpara *pHP=new AliGenHIJINGpara(%i);\n",(int)fGenNprimCO->GetSelected());
     fprintf(pF,"  pHP->SetMomentumRange(0,999); pHP->SetThetaRange(%f,%f); pHP->SetPhiRange(0,360);\n",Eta2Theta(8),Eta2Theta(-8));
-    fprintf(pF,"  pG->AddGenerator(pHP,\"hp\",1);\n\n");
+    fprintf(pF,"                AliGenerator *gener = (AliGenerator*)pHP; \n");
+    fprintf(pF,"                gener->SetOrigin(0, 0, 0);    // vertex position \n");
+    fprintf(pF,"                gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position \n");
+    fprintf(pF,"                gener->SetCutVertexZ(1.);     // Truncate at 1 sigma \n");
+    fprintf(pF,"                gener->SetVertexSmear(kPerEvent);  \n");
+    fprintf(pF,"                gener->SetTrackingFlag(1); \n");
+    fprintf(pF,"                gener->Init(); \n\n");
   }
       
   if(fGenBG->GetButton(kPythia)->GetState()==kButtonDown){//Pythia
@@ -404,9 +419,18 @@ void HmpConfig::WriteGen(FILE *pF)
     fprintf(pF,"  pP->SetMomentumRange(0,999);\n");
     fprintf(pF,"  pP->SetYRange(-12,12);  pP->SetPtRange(0,1000);      pP->SetStrucFunc(kCTEQ4L);\n");
     fprintf(pF,"  pP->SetProcess(kPyMb);  pP->SetEnergyCMS(14000);\n");      
-    fprintf(pF,"  pG->AddGenerator(pP,\"p\",1);\n\n");  
+    fprintf(pF,"                AliGenerator *gener = (AliGenerator*)pP; \n");
+    fprintf(pF,"                gener->SetOrigin(0, 0, 0);    // vertex position \n");
+    fprintf(pF,"                gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position \n");
+    fprintf(pF,"                gener->SetCutVertexZ(1.);     // Truncate at 1 sigma \n");
+    fprintf(pF,"                gener->SetVertexSmear(kPerEvent);  \n");
+    fprintf(pF,"                gener->SetTrackingFlag(1); \n");
+    fprintf(pF,"                gener->Init(); \n\n");
   }
-  fprintf(pF,"  pG->Init();\n\n");
+  if(fGenBG->GetButton(kHijing)->GetState()==kButtonDown     ||
+     fGenBG->GetButton(kHijingPara)->GetState()==kButtonDown ||
+     fGenBG->GetButton(kPythia)->GetState()==kButtonDown) continue;
+  else fprintf(pF,"  pG->Init();\n\n");
 }//WriteGenerator()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void HmpConfig::GuiDet(TGHorizontalFrame *pMainHF)
@@ -722,7 +746,7 @@ void HmpConfig::WriteConfig()
   fprintf(pF,"  gAlice->SetRunLoader(pAL);\n\n");
 //Decayer  
   if(fDecayerB->GetState()==kButtonDown){   
-    fprintf(pF,"  TVirtualMCDecayer *pDecayer=new AliDecayerPythia();\n");
+    fprintf(pF,"  AliDecayer *pDecayer=new AliDecayerPythia();\n");
     fprintf(pF,"  pDecayer->SetForceDecay(kAll);\n"); 
     fprintf(pF,"  pDecayer->Init();\n"); 
     fprintf(pF,"  gMC->SetExternalDecayer(pDecayer);\n\n");
