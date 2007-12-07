@@ -1229,7 +1229,6 @@ void AliTPC::Hits2Digits()
 
   for (Int_t iEvent = 0; iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
     //PH    runLoader->GetEvent(iEvent);
-    SetActiveSectors();   
     Hits2Digits(iEvent);
   }
 
@@ -1244,6 +1243,7 @@ void AliTPC::Hits2Digits(Int_t eventnumber)
  //----------------------------------------------------
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->GetEvent(eventnumber);
+  SetActiveSectors();   
   if (fLoader->TreeH() == 0x0) {
     if(fLoader->LoadHits()) {
       AliError("Can not load hits.");
