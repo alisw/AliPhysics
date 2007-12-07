@@ -20,6 +20,8 @@
 
 class AliShuttleConfig: public TObject {
 public:
+	enum RunMode {kTest=0, kProd};
+	
 	AliShuttleConfig(const char* host, Int_t port = LDAP_PORT,
 			const char* binddn = 0, const char* password = 0,
 			const char* basedn = "o=alice,dc=cern,dc=ch");
@@ -58,6 +60,10 @@ public:
 	const char* GetMonitorHost() const {return fMonitorHost.Data();}
 	const char* GetMonitorTable() const {return fMonitorTable.Data();}
 
+	Int_t GetTriggerWait() const {return fTriggerWait;}
+	
+	RunMode GetRunMode() const {return fRunMode;}
+	
 	const TObjArray* GetDetectors() const;
 
 	Bool_t HasDetector(const char* detector) const;
@@ -194,6 +200,9 @@ private:
 	
 	TString fMonitorHost;           // host of the MonaLisa monitoring server
 	TString fMonitorTable;          // Monalisa's SHUTTLE table name
+	
+	Int_t fTriggerWait;           	// time to wait for DIM trigger before starting new collection 
+	RunMode  fRunMode;          	// Working mode (0=test; 1=prod)
 
 	TMap fDetectorMap; 		// Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	// List of detectors with valid configuration

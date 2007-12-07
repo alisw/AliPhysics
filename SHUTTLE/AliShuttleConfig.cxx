@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.25  2007/11/26 16:58:37  acolla
+Monalisa configuration added: host and table name
+
 Revision 1.24  2007/10/24 10:44:08  acolla
 
 debug AliInfo removed
@@ -519,6 +522,8 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fPPMaxMem(0), 
 	fMonitorHost(""), 
 	fMonitorTable(""), 
+	fTriggerWait(3600),
+	fRunMode(kTest),
 	fDetectorMap(), 
 	fDetectorList(),
 	fShuttleInstanceHost(""), 
@@ -962,7 +967,29 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 		return 4;
 	}
 	fMonitorTable = anAttribute->GetValue();
+
+	anAttribute = anEntry->GetAttribute("triggerWait"); // MAY
+	if (!anAttribute) {
+		AliWarning(Form("triggerWait not set! default = ", fTriggerWait));
+	}
+	tmpStr = anAttribute->GetValue();
+	fTriggerWait = tmpStr.Atoi();
 	
+	anAttribute = anEntry->GetAttribute("mode");
+	if (!anAttribute) {
+		AliWarning("Run mode not set! Running in test mode.");
+	}
+	tmpStr = anAttribute->GetValue();
+	if (tmpStr == "test")
+	{
+		fRunMode = kTest;
+	} else if (tmpStr == "prod") {
+		fRunMode = kProd;
+	} else {
+		AliWarning(Form("Not a valid run mode: %s", tmpStr.Data()));		
+		AliWarning("Valid run modes are \"test\" and \"prod\". Running in test mode.");
+	}
+		
 	return 0;
 	
 	
@@ -1180,10 +1207,14 @@ void AliShuttleConfig::Print(Option_t* option) const
 
 	TString result;
 	result += '\n';
+	
+	TString mode = "test";
+	if (fRunMode == kProd) mode = "production";
 
-	result += "####################################################\n";
-	result += Form(" Shuttle configuration from %s \n", fConfigHost.Data());
-	result += "####################################################\n";
+	result += "########################################################################\n";
+	result += Form(" Shuttle configuration from %s - Run Mode: <%s> \n", 
+					fConfigHost.Data(), mode.Data());
+	result += "########################################################################\n";
 	result += Form("\nShuttle running on %s \n", fShuttleInstanceHost.Data());
 
 	if(fProcessAll) {
@@ -1198,8 +1229,9 @@ void AliShuttleConfig::Print(Option_t* option) const
 		result += "\n";
 	}
 
-	result += Form("PP time out = %d - max PP mem size = %d KB - max retries = %d\n\n", 
-				fPPTimeOut, fPPMaxMem, fMaxRetries);
+	result += Form("PP time out = %d - max PP mem size = %d KB - max retries = %d "
+		       "- DIM trigger waiting timeout = %d\n\n", 
+				fPPTimeOut, fPPMaxMem, fMaxRetries, fTriggerWait);
 	result += "------------------------------------------------------\n";
 
 	result += Form("Logbook Configuration \n\n \tHost: %s:%d; \tUser: %s; ",

@@ -15,6 +15,10 @@
 
 /*
  $Log$
+ Revision 1.13  2006/11/16 16:16:48  jgrosseo
+ introducing strict run ordering flag
+ removed giving preprocessor name to preprocessor, they have to know their name themselves ;-)
+
  Revision 1.12  2006/10/20 15:22:59  jgrosseo
  o) Adding time out to the execution of the preprocessors: The Shuttle forks and the parent process monitors the child
  o) Merging Collect, CollectAll, CollectNew function
@@ -123,6 +127,7 @@ AliShuttleTrigger::AliShuttleTrigger(const AliShuttleConfig* config,
 	// localStorage (local) CDB storage to be used if mainStorage is unavailable
 	//
 
+	if (!fConfig->IsValid()) AliFatal("********** !!!!! Invalid configuration !!!!! **********");
 	fShuttle = new AliShuttle(config, timeout, retries);
 
 	TerminateSignalHandler* fQuitSignalHandler = new TerminateSignalHandler(this, kSigQuit);
@@ -191,12 +196,15 @@ void AliShuttleTrigger::Run() {
 
 	DATENotifier* notifier = new DATENotifier(this, "/DATE/LOGBOOK/UPDATE");
 
+	Int_t nTry=0;
+	
 	while (1) {
 	
 		fMutex.Lock();
 
 		while (!(fNotified || fTerminate)) {
-			fCondition.Wait();
+			if (fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait()) == 1)
+				break; // 1 = timeout
 		}
 
 		fNotified = kFALSE;
@@ -207,6 +215,15 @@ void AliShuttleTrigger::Run() {
 			AliInfo("Terminated.");
 			break;		
 		}
+		
+		// TODO Check this!
+		//nTry++;
+		//AliInfo(Form("Received %d triggers so far", nTry));
+		//if(nTry>5)
+		//{
+		//	AliInfo("Collect() ran more than 5 times -> Exiting!");
+		//	break;
+		//}
 	
 		Collect();
 	}

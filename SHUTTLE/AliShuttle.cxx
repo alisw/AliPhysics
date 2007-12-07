@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.66  2007/12/05 10:45:19  jgrosseo
+changed order of arguments to TMonaLisaWriter
+
 Revision 1.65  2007/11/26 16:58:37  acolla
 Monalisa configuration added: host and table name
 
@@ -1458,8 +1461,8 @@ Bool_t AliShuttle::Process(AliShuttleLogbookEntry* entry)
 	TString lhcPeriod(GetLHCPeriod());
 	if (lhcPeriod.Length() == 0) 
 	{
-		Log("SHUTTLE","StoreRunMetaDataFile - LHCPeriod not found in logbook!");
-		return 0;
+		Log("SHUTTLE","Process - LHCPeriod not found in logbook!");
+		return 0; 
 	}	
 	
 	if (fgkMainCDB.Length() == 0)
@@ -2764,9 +2767,13 @@ void AliShuttle::Log(const char* detector, const char* message)
 	// Fill log string with a message
 	//
 
-	void* dir = gSystem->OpenDirectory(GetShuttleLogDir());
+	TString logRunDir = GetShuttleLogDir();
+	if (GetCurrentRun() >=0)
+		logRunDir += Form("/%d", GetCurrentRun());
+	
+	void* dir = gSystem->OpenDirectory(logRunDir.Data());
 	if (dir == NULL) {
-		if (gSystem->mkdir(GetShuttleLogDir(), kTRUE)) {
+		if (gSystem->mkdir(logRunDir.Data(), kTRUE)) {
 			AliError(Form("Can't open directory <%s>", GetShuttleLogDir()));
 			return;
 		}
@@ -2813,9 +2820,12 @@ TString AliShuttle::GetLogFileName(const char* detector) const
 	TString fileName;
 	
 	if (GetCurrentRun() >= 0) 
-		fileName.Form("%s/%s_%d.log", GetShuttleLogDir(), detector, GetCurrentRun());
-	else
+	{
+		fileName.Form("%s/%d/%s_%d.log", GetShuttleLogDir(), GetCurrentRun(), 
+			detector, GetCurrentRun());
+	} else {
 		fileName.Form("%s/%s.log", GetShuttleLogDir(), detector);
+	}
 
 	return fileName;
 }
@@ -3075,12 +3085,20 @@ Bool_t AliShuttle::SendMail()
 	TString body = Form("Dear %s expert(s), \n\n", fCurrentDetector.Data());
 	body += Form("SHUTTLE just detected that your preprocessor "
 			"failed processing run %d!!\n\n", GetCurrentRun());
-	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", fCurrentDetector.Data());
+	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
+				fCurrentDetector.Data());
 	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+	
+	TString logFolder = "logs";
+	if (fConfig->GetRunMode() == AliShuttleConfig::kProd) 
+		logFolder += "_PROD";
+	
+	
 	body += Form("Find the %s log for the current run on \n\n"
-		"\thttp://pcalishuttle01.cern.ch:8880/logs/%s_%d.log \n\n", 
-		fCurrentDetector.Data(), fCurrentDetector.Data(), GetCurrentRun());
-	body += Form("The last 10 lines of %s log file are following:\n\n");
+		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%s_%d.log \n\n", 
+		fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun(), 
+				fCurrentDetector.Data(), GetCurrentRun());
+	body += Form("The last 10 lines of %s log file are following:\n\n", fCurrentDetector.Data());
 
 	AliDebug(2, Form("Body begin: %s", body.Data()));
 
@@ -3088,7 +3106,8 @@ Bool_t AliShuttle::SendMail()
   	mailBody.close();
   	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
 
-	TString logFileName = Form("%s/%s_%d.log", GetShuttleLogDir(), fCurrentDetector.Data(), GetCurrentRun());
+	TString logFileName = Form("%s/%d/%s_%d.log", GetShuttleLogDir(), 
+		GetCurrentRun(), fCurrentDetector.Data(), GetCurrentRun());
 	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{
@@ -3173,12 +3192,20 @@ Bool_t AliShuttle::SendMailToDCS()
 	TString body = Form("Dear DCS experts, \n\n");
 	body += Form("SHUTTLE couldn\'t retrieve the data points for detector %s "
 			"in run %d!!\n\n", fCurrentDetector.Data(), GetCurrentRun());
-	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", fCurrentDetector.Data());
+	body += Form("Please check %s status on the SHUTTLE monitoring page: \n\n", 
+				fCurrentDetector.Data());
 	body += Form("\thttp://pcalimonitor.cern.ch:8889/shuttle.jsp?time=168 \n\n");
+
+	TString logFolder = "logs";
+	if (fConfig->GetRunMode() == AliShuttleConfig::kProd) 
+		logFolder += "_PROD";
+	
+	
 	body += Form("Find the %s log for the current run on \n\n"
-		"\thttp://pcalishuttle01.cern.ch:8880/logs/%s_%d.log \n\n", 
-		fCurrentDetector.Data(), fCurrentDetector.Data(), GetCurrentRun());
-	body += Form("The last 10 lines of %s log file are following:\n\n");
+		"\thttp://pcalishuttle01.cern.ch:8880/%s/%d/%s_%d.log \n\n", 
+		fCurrentDetector.Data(), logFolder.Data(), GetCurrentRun(), 
+				fCurrentDetector.Data(), GetCurrentRun());
+	body += Form("The last 10 lines of %s log file are following:\n\n", fCurrentDetector.Data());
 
 	AliDebug(2, Form("Body begin: %s", body.Data()));
 
@@ -3186,7 +3213,8 @@ Bool_t AliShuttle::SendMailToDCS()
   	mailBody.close();
   	mailBody.open(bodyFileName, ofstream::out | ofstream::app);
 
-	TString logFileName = Form("%s/%s_%d.log", GetShuttleLogDir(), fCurrentDetector.Data(), GetCurrentRun());
+	TString logFileName = Form("%s/%d/%s_%d.log", GetShuttleLogDir(), GetCurrentRun(),
+		fCurrentDetector.Data(), GetCurrentRun());
 	TString tailCommand = Form("tail -n 10 %s >> %s", logFileName.Data(), bodyFileName.Data());
 	if (gSystem->Exec(tailCommand.Data()))
 	{
