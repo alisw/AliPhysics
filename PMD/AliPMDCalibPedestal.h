@@ -22,10 +22,20 @@ public:
 
 private:
 
-  TH1F *fPedHisto[2][24][48][96];
+  enum
+      {
+	  kDet    = 2,   // Number of Planes
+	  kMaxSMN = 24,  // Number of Modules
+	  kMaxRow = 48,  // Number of Rows
+	  kMaxCol = 96   // Number of Columns
+      };
 
+  Float_t fPedVal[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  Float_t fPedValSq[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  Float_t fPedCount[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  
 
-  ClassDef(AliPMDCalibPedestal,2)
+  ClassDef(AliPMDCalibPedestal,3)
 };
 
 

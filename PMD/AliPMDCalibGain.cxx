@@ -44,16 +44,19 @@ AliPMDCalibGain::AliPMDCalibGain(): TObject()
     {
 	for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
-	    fHsmIso[idet][ismn] = new TH1F(Form("HmsIso_%d_%d",idet,ismn),"",100,0.,1000.);
+	    fSMIso[idet][ismn]   = 0.;
+	    fSMCount[idet][ismn] = 0.;
 	    for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
 	    {
 		for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		{
-		    fHadcIso[idet][ismn][jrow][kcol]  = new TH1F(Form("HadcIso_%d_%d_%d_%d",idet,ismn,jrow,kcol),"",100,0.,1000.);
+		    fCellIso[idet][ismn][jrow][kcol]   = 0.;
+		    fCellCount[idet][ismn][jrow][kcol] = 0.;
 		}
 	    }
 	}
     }
+
 }
 // ------------------------------------------------------------------------ //
 AliPMDCalibGain::AliPMDCalibGain(const AliPMDCalibGain &pmdcalibgain):
@@ -63,12 +66,14 @@ AliPMDCalibGain::AliPMDCalibGain(const AliPMDCalibGain &pmdcalibgain):
     {
 	for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	{
-	    fHsmIso[idet][ismn] = pmdcalibgain.fHsmIso[idet][ismn] ;
+	    fSMIso[idet][ismn] = pmdcalibgain.fSMIso[idet][ismn] ;
+	    fSMCount[idet][ismn] = pmdcalibgain.fSMCount[idet][ismn] ;
 	    for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
 	    {
 		for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		{
-		    fHadcIso[idet][ismn][jrow][kcol]  = pmdcalibgain.fHadcIso[idet][ismn][jrow][kcol];
+		    fCellIso[idet][ismn][jrow][kcol]  = pmdcalibgain.fCellIso[idet][ismn][jrow][kcol];
+		    fCellCount[idet][ismn][jrow][kcol]  = pmdcalibgain.fCellCount[idet][ismn][jrow][kcol];
 		}
 	    }
 	}
@@ -84,13 +89,16 @@ AliPMDCalibGain &AliPMDCalibGain::operator=(const AliPMDCalibGain &pmdcalibgain)
 	{
 	    for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
 	    {
-		fHsmIso[idet][ismn] = pmdcalibgain.fHsmIso[idet][ismn] ;
+		fSMIso[idet][ismn] = pmdcalibgain.fSMIso[idet][ismn];
+		fSMCount[idet][ismn] = pmdcalibgain.fSMCount[idet][ismn];
 		for(Int_t jrow = 0; jrow < kMaxRow;jrow++)
 		{
 		    for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
 		    {
-			fHadcIso[idet][ismn][jrow][kcol]  =
-			    pmdcalibgain.fHadcIso[idet][ismn][jrow][kcol];
+			fCellIso[idet][ismn][jrow][kcol]  =
+			    pmdcalibgain.fCellIso[idet][ismn][jrow][kcol];
+			fCellCount[idet][ismn][jrow][kcol]  =
+			    pmdcalibgain.fCellCount[idet][ismn][jrow][kcol];
 		    }
 		}
 	    }
@@ -102,20 +110,7 @@ AliPMDCalibGain &AliPMDCalibGain::operator=(const AliPMDCalibGain &pmdcalibgain)
 AliPMDCalibGain::~AliPMDCalibGain()
 {
     // dtor
-    for(Int_t idet = 0; idet < kDet; idet++)
-    {
-	for(Int_t ismn = 0; ismn < kMaxSMN; ismn++)
-	{
-	  delete fHsmIso[idet][ismn];
-	    for(Int_t jrow = 0; jrow < kMaxRow; jrow++)
-	    {
-		for(Int_t kcol = 0; kcol < kMaxCol; kcol++)
-		{
-		  delete fHadcIso[idet][ismn][jrow][kcol];
-		}
-	    }
-	}
-    }
+
 }
 // ------------------------------------------------------------------------ //
 Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
@@ -133,8 +128,8 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
   Int_t id1,jd1;  //neighbour row/col
   Int_t isocount; //number of neighbours with 0 signal
 
-  Int_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
-  Bool_t streamout = kFALSE;
+  Float_t d1[kDet][kMaxSMN][kMaxRow][kMaxCol];
+  Bool_t  streamout = kFALSE;
 
   for(Int_t idet = 0; idet < kDet; idet++)
     {
@@ -144,7 +139,7 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
             {
               for(Int_t icol = 0; icol < kMaxCol; icol++)
                 {
-                  d1[idet][ismn][irow][icol] = 0;
+                  d1[idet][ismn][irow][icol] = 0.;
                 }
 	    }
 	}
@@ -172,7 +167,7 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
 	  
 	  if (isig>0)
 	  {
-	      d1[idet][ismn][irow][icol] = isig;
+	      d1[idet][ismn][irow][icol] = (Float_t) isig;
 	  }
       }
       pmdddlcont.Clear();
@@ -198,8 +193,13 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
 			      isocount++;
 			      if(isocount == kCellNeighbour)
 			      {
-				  fHsmIso[idet][ismn]->Fill(d1[idet][ismn][irow][icol]);
-				  fHadcIso[idet][ismn][irow][icol]->Fill(d1[idet][ismn][irow][icol]);
+
+				  fSMIso[idet][ismn] += d1[idet][ismn][irow][icol];
+				  fCellIso[idet][ismn][irow][icol] += d1[idet][ismn][irow][icol];
+				  
+				  fSMCount[idet][ismn]++;
+				  fCellCount[idet][ismn][irow][icol]++;
+				  
 			      }
 			  }
 		      }  // neigh cell cond.
@@ -215,35 +215,42 @@ Bool_t AliPMDCalibGain::ProcessEvent(AliRawReader *rawReader)
 void AliPMDCalibGain::Analyse(TTree *gaintree)
 {
     // Calculates the mean
-    Int_t   DET, SM, ROW, COL;
-    Float_t GAIN;
-    Float_t modmean, cellmean;
+    Int_t   det, sm, row, col;
+    Float_t gain;
+    Float_t modmean  = 0.;
+    Float_t cellmean = 0.;
 
-    gaintree->Branch("DET",&DET,"DET/I");
-    gaintree->Branch("SM",&SM,"SM/I");
-    gaintree->Branch("ROW",&ROW,"ROW/I");
-    gaintree->Branch("COL",&COL,"COL/I");
-    gaintree->Branch("GAIN",&GAIN,"GAIN/F");
+    gaintree->Branch("det",&det,"det/I");
+    gaintree->Branch("sm",&sm,"sm/I");
+    gaintree->Branch("row",&row,"row/I");
+    gaintree->Branch("col",&col,"col/I");
+    gaintree->Branch("gain",&gain,"gain/F");
 
     for(Int_t idet = 0; idet < kDet; idet++)
     {
 	for(Int_t ism = 0; ism < kMaxSMN; ism++)
 	{
-	    modmean = fHsmIso[idet][ism]->GetMean();
+
+	    if (fSMCount[idet][ism] > 0)
+		modmean = fSMIso[idet][ism]/fSMCount[idet][ism];
+
 	    for(Int_t irow = 0; irow < kMaxRow; irow++)
 	    {
 		for(Int_t icol = 0; icol < kMaxCol; icol++)
 		{
-		    cellmean = fHadcIso[idet][ism][irow][icol]->GetMean();
-		    DET      = idet;
-		    SM       = ism;
-		    ROW      = irow;
-		    COL      = icol;
-		    GAIN     = 0.;
+		    if (fCellCount[idet][ism][irow][icol] > 0)
+			cellmean = fCellIso[idet][ism][irow][icol]/fCellCount[idet][ism][irow][icol];
+		    
+		    
+		    det      = idet;
+		    sm       = ism;
+		    row      = irow;
+		    col      = icol;
+		    gain     = 1.;
 
 		    if(modmean > 0.0)
 		    {
-			GAIN = cellmean/modmean;
+			gain = cellmean/modmean;
 		    }
 		    gaintree->Fill();
 		}

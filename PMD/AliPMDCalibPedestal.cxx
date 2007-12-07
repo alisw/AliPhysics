@@ -46,16 +46,17 @@ AliPMDCalibPedestal::AliPMDCalibPedestal() :
     // default constructor
     //
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < kDet; i++)
     {
-	for (int j = 0; j < 24; j++)
+	for (int j = 0; j < kMaxSMN; j++)
 	{
-	    for (int k = 0; k < 96; k++)
+	    for (int k = 0; k < kMaxRow; k++)
 	    {
-		for (int l = 0; l < 96; l++)
+		for (int l = 0; l < kMaxCol; l++)
 		{
-
-		    fPedHisto[i][j][k][l] = new TH1F(Form("PedHisto_%d_%d_%d_%d",i,j,k,l),"",300,0.,300.);
+		    fPedVal[i][j][k][l]   = 0.;
+		    fPedValSq[i][j][k][l] = 0.;
+		    fPedCount[i][j][k][l] = 0.;
 		}
 	    }
 	}
@@ -70,16 +71,17 @@ AliPMDCalibPedestal::AliPMDCalibPedestal(const AliPMDCalibPedestal &ped) :
     //
     // copy constructor
     //
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < kDet; i++)
     {
-	for (int j = 0; j < 24; j++)
+	for (int j = 0; j < kMaxSMN; j++)
 	{
-	    for (int k = 0; k < 48; k++)
+	    for (int k = 0; k < kMaxRow; k++)
 	    {
-		for (int l = 0; l < 96; l++)
+		for (int l = 0; l < kMaxCol; l++)
 		{
-		    
-		    fPedHisto[i][j][k][l] = ped.fPedHisto[i][j][k][l];
+		    fPedVal[i][j][k][l]   = ped.fPedVal[i][j][k][l];
+		    fPedValSq[i][j][k][l] = ped.fPedValSq[i][j][k][l];
+		    fPedCount[i][j][k][l] = ped.fPedCount[i][j][k][l];
 		}
 	    }
 	}
@@ -103,20 +105,6 @@ AliPMDCalibPedestal::~AliPMDCalibPedestal()
     //
     // destructor
     //
-    for (int i = 0; i < 2; i++)
-    {
-	for (int j = 0; j < 24; j++)
-	{
-	    for (int k = 0; k < 96; k++)
-	    {
-		for (int l = 0; l < 96; l++)
-		{
-
-		  delete fPedHisto[i][j][k][l];
-		}
-	    }
-	}
-    }
 }
 //_____________________________________________________________________
 Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
@@ -134,7 +122,6 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 
     for (Int_t iddl = 0; iddl < kDDL; iddl++)
     {
-	
 	rawReader->Select("PMD", iddl, iddl);
 	//cout << reader.GetDataSize() << endl;
 	streamout = rawStream.DdlData(iddl, &pmdddlcont);
@@ -149,10 +136,11 @@ Bool_t AliPMDCalibPedestal::ProcessEvent(AliRawReader *rawReader)
 	    //Int_t chno = pmdddl->GetChannel();
 	    Int_t row = pmdddl->GetRow();
 	    Int_t col = pmdddl->GetColumn();
-	    Int_t sig = pmdddl->GetSignal();
+	    Float_t sig = (Float_t) pmdddl->GetSignal();
 
-	    fPedHisto[det][smn][row][col]->Fill((Float_t) sig);
-	    
+	    fPedVal[det][smn][row][col]   += sig;
+	    fPedValSq[det][smn][row][col] += sig*sig;
+	    fPedCount[det][smn][row][col]++;
 	}
 	pmdddlcont.Clear();
     }
@@ -165,29 +153,47 @@ void AliPMDCalibPedestal::Analyse(TTree *pedtree)
     //
     //  Calculate pedestal Mean and RMS
     //
-    Int_t   DET, SM, ROW, COL;
-    Float_t MEAN, RMS;
-    pedtree->Branch("DET",&DET,"DET/I");
-    pedtree->Branch("SM",&SM,"SM/I");
-    pedtree->Branch("ROW",&ROW,"ROW/I");
-    pedtree->Branch("COL",&COL,"COL/I");
-    pedtree->Branch("MEAN",&MEAN,"MEAN/F");
-    pedtree->Branch("RMS",&RMS,"RMS/F");
+    Int_t   det, sm, row, col;
+    Float_t mean, rms;
+    Float_t meansq, diff;
 
-    for (int idet = 0; idet < 2; idet++)
+
+    pedtree->Branch("det",&det,"det/I");
+    pedtree->Branch("sm",&sm,"sm/I");
+    pedtree->Branch("row",&row,"row/I");
+    pedtree->Branch("col",&col,"col/I");
+    pedtree->Branch("mean",&mean,"mean/F");
+    pedtree->Branch("rms",&rms,"rms/F");
+
+    for (int idet = 0; idet < kDet; idet++)
     {
-	for (int ism = 0; ism < 24; ism++)
+	for (int ism = 0; ism < kMaxSMN; ism++)
 	{
-	    for (int irow = 0; irow < 48; irow++)
+	    for (int irow = 0; irow < kMaxRow; irow++)
 	    {
-		for (int icol = 0; icol < 96; icol++)
+		for (int icol = 0; icol < kMaxCol; icol++)
 		{
-		    DET  = idet;
-		    SM   = ism;
-		    ROW  = irow;
-		    COL  = icol;
-		    MEAN = fPedHisto[idet][ism][irow][icol]->GetMean();
-		    RMS  = fPedHisto[idet][ism][irow][icol]->GetRMS();
+		    det  = idet;
+		    sm   = ism;
+		    row  = irow;
+		    col  = icol;
+		    if (fPedCount[idet][ism][irow][icol] > 0)
+		    {
+			mean = fPedVal[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+
+			meansq = fPedValSq[idet][ism][irow][icol]/fPedCount[idet][ism][irow][icol];
+
+			diff = meansq - mean*mean;
+			if (diff > 0.)
+			{
+			    rms  = sqrt(diff);
+			}
+			else
+			{
+			    rms = 0.;
+			}
+		    }
+
 		    pedtree->Fill();
 		}
 	    }
