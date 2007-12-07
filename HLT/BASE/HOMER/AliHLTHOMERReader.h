@@ -38,6 +38,14 @@ class AliHLTMonitoringReader
 
 	AliHLTMonitoringReader() {};
 	virtual ~AliHLTMonitoringReader() {};
+
+	/* Return the status of the connection as established by one of the constructors.
+	   0 means connection is ok, non-zero specifies the type of error that occured. */
+        virtual int GetConnectionStatus() const = 0;
+
+	/* Return the index of the connection for which an error given by the above
+	   function occured. */
+        virtual unsigned int GetErrorConnectionNdx() const = 0;
 	
 	/* Read in the next available event */
 	virtual int ReadNextEvent() = 0;
