@@ -597,12 +597,10 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch){
     outfile->WriteBuffer((char*)(&header),sizeof(header));
 
 
-    //first 9 "dummy" words to be skipped
-    for(Int_t iw=0;iw<9;iw++){
-      if(iw==0 || iw==8) retcode = AliBitPacking::PackWord(0xFFFFFFFF,skippedword,0,31);
-      else retcode = AliBitPacking::PackWord(2,skippedword,0,31);
-	outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
-    }
+    //first 1 "dummy" word to be skipped
+    retcode = AliBitPacking::PackWord(0xFFFFFFFF,skippedword,0,31);
+    outfile->WriteBuffer((char*)(&skippedword),sizeof(skippedword));
+
     //Loops over Modules of a particular DDL
     for (Int_t mod=0; mod<AliITSRawStreamSDD::kModulesPerDDL; mod++){
       Int_t moduleNumber = AliITSRawStreamSDD::GetModuleNumber(i, mod);

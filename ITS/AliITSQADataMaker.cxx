@@ -255,7 +255,6 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
 	}
     }
   AliDebug(1,"entering MakeRaws\n");
-  rawReader->RequireHeader(kFALSE);               
   rawReader->SelectEvents(7);                    
   rawReader->SelectEquipment(17,fgkeqOffset+1,fgkeqOffset + fgkDDLidRange); 
   rawReader->Reset();                         
@@ -336,7 +335,6 @@ void AliITSQADataMaker::MakeRaws(AliRawReader* rawReader)
       if(entries != 0)
 	AliDebug(1,Form("histo %d, name %s , entries %d ",i,GetRawsData(i)->GetName(),entries));
     }
-    rawReader->RequireHeader(kTRUE); 
   }
 }
 

@@ -125,10 +125,8 @@ Bool_t AliITSRawStreamSDD::Next()
       if(!kSkip) return kSkip;
     }
   
-    if ((fChannel < 0) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel])) {
-
+    if ((fChannel < 0) || (fCarlosId < 0) || (fChannel >= 2) || (fCarlosId >= kModulesPerDDL) || (fLastBit[fCarlosId][fChannel] < fReadBits[fCarlosId][fChannel]) ) {
       if (!fRawReader->ReadNextInt(fData)) return kFALSE;  // read next word
-
       ddln = fRawReader->GetDDLID();
       if(ddln!=fDDL) { 
 	Reset();
@@ -137,7 +135,7 @@ Bool_t AliITSRawStreamSDD::Next()
       if(ddln < 0 || ddln > (kDDLsNumber-1)) ddln  = 0;
 
       fChannel = -1;
-      if((fData >> 16) == 0x7F00){   // jitter word for data since october 2007
+      if((fData >> 16) == 0x7F00 ||(fData >> 4) == 0xFF00000){ // modif!!!!!
 	for(Int_t i=0;i<kDDLsNumber;i++){fSkip[i]=0;}
 	fResetSkip=0;
 	fEndWords=0;
@@ -161,10 +159,13 @@ Bool_t AliITSRawStreamSDD::Next()
 	  if(fEndWords==12) continue; // out of event
 	  fCarlosId = fNfifo[fData-fIFifoWord[0]];	    
 	} else if(fData==0x3FFFFFFF){ // Carlos footer
-	  fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
-	  if(fICountFoot[fCarlosId]==3){
-	    fCompletedModule=kTRUE;
-	    return kTRUE;
+	  if(fCarlosId>=0 && fCarlosId<kModulesPerDDL){
+	    fICountFoot[fCarlosId]++; // stop before the last word (last word=jitter)
+	    if(fICountFoot[fCarlosId]==3){
+	      fCompletedModule=kTRUE;
+	      //	      printf("Completed module %d DDL %d\n",fCarlosId,ddln);
+	      return kTRUE;
+	    }
 	  }
 	} else if(fData==0x3F1F1F1F){ // CarlosRX footer
 	  fEndWords++;
@@ -176,9 +177,11 @@ Bool_t AliITSRawStreamSDD::Next()
 	}
       } else if (nData30 == 0x02 || nData30 == 0x03) {
 	fChannel = nData30-2;
-	fChannelData[fCarlosId][fChannel] += 
-	  (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fCarlosId][fChannel]);
-	fLastBit[fCarlosId][fChannel] += 30;
+	if(fCarlosId>=0 && fChannel>=0 && fCarlosId <kModulesPerDDL && fChannel<2){
+	  fChannelData[fCarlosId][fChannel] += 
+	    (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fCarlosId][fChannel]);
+	  fLastBit[fCarlosId][fChannel] += 30;
+	}
       } else {                               // unknown data format
 	fRawReader->AddMajorErrorLog(kDataFormatErr,Form("Invalid data %8.8x",fData));
 	AliWarning(Form("invalid data: %8.8x\n", fData));
@@ -186,9 +189,9 @@ Bool_t AliITSRawStreamSDD::Next()
       }
       
       if (fNCarlos == 8 && fCarlosId >= 8) continue;  // old data, fNCarlos = 8;
-            
-      fModuleID = fgkDDLModuleMap[fRawReader->GetDDLID()][fCarlosId];	  
-
+      if(fCarlosId>=0 && fCarlosId <kModulesPerDDL){
+	 fModuleID = fgkDDLModuleMap[ddln][fCarlosId];
+      }
     } else {  // decode data
       if (fReadCode[fCarlosId][fChannel]) {// read the next code word
 	fChannelCode[fCarlosId][fChannel] = ReadBits();
@@ -236,9 +239,9 @@ void AliITSRawStreamSDD::Reset(){
 }
 
 Bool_t AliITSRawStreamSDD::ResetSkip(Int_t ddln){
-  // skip the 9 DDL header words
+  // skip the 1 DDL header word = 0xffffffff
   Bool_t startCount=kFALSE;
-  while (fSkip[ddln] < 9) {
+  while (fSkip[ddln] < 1) {
     if (!fRawReader->ReadNextInt(fData)) { 
       return kFALSE;
     }
