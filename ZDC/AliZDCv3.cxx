@@ -998,8 +998,7 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gsvolu("QA23", "TUBE", idtmed[6], tubpar, 3);
   gMC->Gspos("QA23", 1, "ZDCA", 0., 0., tubpar[2]+zd2, 0, "ONLY");
   // Ch.debug
-  printf("\n	beam pipe (ID=797 mm) SS\n");  
-  printf("	QA23 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
+  //printf("	QA23 TUBE from z = %f to z= %f\n",zd2,2*tubpar[2]+zd2);
 
   zd2 += 2.*tubpar[2];
   
