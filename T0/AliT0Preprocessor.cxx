@@ -15,6 +15,9 @@
 
 /*
 $Log$
+Revision 1.7  2007/12/06 16:35:24  alla
+new bugs fixed by Tomek
+
 Revision 1.5  2007/11/23 19:28:52  alla
 bug fixed
 
@@ -158,7 +161,10 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               Log("No Laser Data stored");
               return 3;//return error code for failure in storing Laser Data
             }
-          }
+          } else {
+	  	Log("No sources found for id LASER!");
+		return 1;
+	  }
         }
         else if(runType == "PHYSICS")
         {
@@ -193,7 +199,10 @@ UInt_t AliT0Preprocessor::Process(TMap* dcsAliasMap )
               Log("No Laser Data stored");
               return 4;//return error code for failure in storing OCDB Data
             }
-          }
+          } else {
+	  	Log("No sources found for id PHYSICS!");
+		return 1;
+	  }
         }
 
   return 0;
