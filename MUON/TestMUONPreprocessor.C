@@ -91,7 +91,7 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   if ( rt.Contains("PHYSICS") )
   {
     // Create DCS HV aliases
-    TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB);
+    TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB, runNumber);
   
     if ( dcsAliasMap ) 
     {
@@ -151,7 +151,7 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   shuttle->Process();
 }
 
-TMap* CreateDCSAliasMap(const char* inputCDB)
+TMap* CreateDCSAliasMap(const char* inputCDB, Int_t runNumber)
 {
   /// Creates a DCS structure for MUON Tracker HV
   ///
@@ -169,6 +169,7 @@ TMap* CreateDCSAliasMap(const char* inputCDB)
   {
     undefStorage = kTRUE;
     man->SetDefaultStorage(inputCDB);
+    man->SetRun(runNumber);
   }
   
   // Load mapping
