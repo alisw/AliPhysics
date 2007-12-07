@@ -28,7 +28,7 @@ class AliMUONVTriggerStore;
 class AliMUONDigitMaker : public TObject 
 {
  public:
-  AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE, Bool_t useFastDecoder = kTRUE); // Constructor
+  AliMUONDigitMaker(Bool_t enableErrorLogger = kTRUE, Bool_t useFastDecoder = kFALSE); // Constructor
   virtual ~AliMUONDigitMaker(void); // Destructor
     
   // write raw data
@@ -48,6 +48,8 @@ class AliMUONDigitMaker : public TObject
         /// Set flag whether or not we should generate digits for the trigger
   void  SetMakeTriggerDigits(Bool_t flag = kFALSE) { fMakeTriggerDigits = flag; }
 
+  void  SetFastDecoder(Bool_t useFastDecoder); 
+
 private:
     
   /// Not implemented
@@ -56,6 +58,7 @@ private:
   AliMUONDigitMaker& operator=(const AliMUONDigitMaker& rhs); // assignment operator
 
 private:
+  void CreateRawStreamTracker(Bool_t useFastDecoder);
 
   Bool_t fScalerEvent;       //!< flag to generates scaler event
   Bool_t fMakeTriggerDigits; //!< whether or not we should generate digits for the trigger

@@ -90,10 +90,7 @@ AliMUONDigitMaker::AliMUONDigitMaker(Bool_t enableErrorLogger, Bool_t useFastDec
 
   AliDebug(1,"");
   
-  if (useFastDecoder)
-    fRawStreamTracker = new AliMUONRawStreamTrackerHP();
-  else
-    fRawStreamTracker = new AliMUONRawStreamTracker();
+  CreateRawStreamTracker(useFastDecoder);
 
   // Standard Constructor
   if (enableErrorLogger) {
@@ -127,6 +124,20 @@ AliMUONDigitMaker::~AliMUONDigitMaker()
                fTriggerTimer.RealTime(),fTriggerTimer.CpuTime()));
 
 }
+
+//__________________________________________________________________________
+void AliMUONDigitMaker::CreateRawStreamTracker(Bool_t useFastDecoder)
+{
+/// Create raw stream tracker according to the passed option
+
+  if (useFastDecoder)
+  {
+    AliInfo("Using fast decoder.");
+    fRawStreamTracker = new AliMUONRawStreamTrackerHP();
+  }
+  else
+    fRawStreamTracker = new AliMUONRawStreamTracker();
+}    
 
 //____________________________________________________________________
 Int_t AliMUONDigitMaker::Raw2Digits(AliRawReader* rawReader, 
@@ -405,3 +416,15 @@ Int_t AliMUONDigitMaker::TriggerDigits(Int_t nBoard,
   
   return kTRUE;
 } 
+
+//____________________________________________________________________
+void  AliMUONDigitMaker::SetFastDecoder(Bool_t useFastDecoder)
+{
+/// Set fast raw data decoder
+
+  delete fRawStreamTracker;
+  CreateRawStreamTracker(useFastDecoder);
+}  
+  
+    
+
