@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.5  2007/11/17 16:41:07  gustavo
+ * mc handler should not be set in the analysis task, but in the startup analysis macro (MG)
+ *
  * Revision 1.4  2007/10/29 13:48:42  gustavo
  * Corrected coding violations
  *
@@ -265,6 +268,12 @@ void AliGammaMCReader::CreateParticleList(TObject * data, TObject *,
 	}//pi0  
       }//neutral particle
     }//stable particle
+    else if(particle->GetStatusCode() == 11 && (particle->GetPdgCode() == 111 || particle->GetPdgCode() == 221) && particle->Pt() > 5 ){//hardcoded pt threshold to avoid too many particles
+      if(IsInPHOS(particle->Phi(),particle->Eta()))
+	new((*plPHOS)[indexPHOS++])  TParticle(*particle) ;
+      else if(IsInEMCAL(particle->Phi(),particle->Eta()))
+	new((*plEMCAL)[indexEMCAL++])  TParticle(*particle) ;
+    }
   }//particle loop
 }
 
@@ -279,21 +288,27 @@ void AliGammaMCReader::FillListWithDecayGammaOrPi0(TParticle * pPi0, TParticle *
   TLorentzVector lv1 , lv2 ;
   pdaug0->Momentum(lv1);
   pdaug1->Momentum(lv2);
-  Double_t angle = lv1.Angle(lv2.Vect());
  
-  if(IsInEMCAL(pPi0->Phi(), pPi0->Eta()))
-    {
-      if (angle < fEMCALMinAngle){
-	new((*plEMCAL)[indexEMCAL++])       TParticle(*pPi0) ;
+  if(fCheckOverlapping){
+    Double_t angle = lv1.Angle(lv2.Vect());
+    
+    if(IsInEMCAL(pPi0->Phi(), pPi0->Eta()))
+      {
+	if (angle < fEMCALMinAngle){
+	  pPi0->SetStatusCode(1);
+	  new((*plEMCAL)[indexEMCAL++])       TParticle(*pPi0) ;
+	  overlap = kTRUE;
+	}
+      }//in EMCAL?
+    
+    else if(IsInPHOS(pPi0->Phi(), pPi0->Eta())){
+      if (angle < fPHOSMinAngle){
+	pPi0->SetStatusCode(1);
+	new((*plPHOS)[indexPHOS++])       TParticle(*pPi0) ;
 	overlap = kTRUE;
       }
-    }
+    }//in PHOS?
 
-  else if(IsInPHOS(pPi0->Phi(), pPi0->Eta())){
-    if (angle < fPHOSMinAngle){
-      new((*plPHOS)[indexPHOS++])       TParticle(*pPi0) ;
-      overlap = kTRUE;
-    }
   }//fCheckOverlapping
 
   //Fill with gammas if not overlapp
