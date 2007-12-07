@@ -94,44 +94,50 @@ void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * li
 
   //AliInfo(Form("EndOfCycle", "Fitting RecPoints %d", task));
 
+ 
   if (task == AliQA::kRECPOINTS) {
 
     //list->Print();
-
-    // Rec points full chambers
-    for (Int_t i=0; i<540; i++) {
-      
-      TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
-      if (h->GetSum() < 100) continue; // chamber not present
-      
-      h->Fit("landau", "q0", "goff", 10, 180);
-      TF1 *fit = h->GetFunction("landau");
-      ((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
-      ((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
-      delete h;      
-    }
     
-    for (Int_t i=0; i<540; i++) {
-      
-      TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
-      if (test->GetSum() < 100) continue;
-      
-      //AliInfo(Form("fitting det = %d", i));
-      
-      for(Int_t j=0; j<35; j++) {
+    // Rec points full chambers
+    if (((TH2D*)list->At(1))->GetEntries() > 1e4) {
+      for (Int_t i=0; i<540; i++) {
 	
-	TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
-	if (h->GetSum() < 50) continue;
+	TH1D *h = ((TH2D*)list->At(1))->ProjectionY(Form("qaTRD_recPoints_amp_%d",i), i+1, i+1);
+	if (h->GetSum() < 100) continue; // chamber not present
 	
 	h->Fit("landau", "q0", "goff", 10, 180);
 	TF1 *fit = h->GetFunction("landau");
+	((TH1D*)list->At(12))->Fill(fit->GetParameter(1));
+	((TH1D*)list->At(13))->Fill(fit->GetParameter(2));
+	delete h;      
+      }
+    }
+    
+    
+    if (((TH2D*)list->At(10))->GetEntries() > 1e5) {
+      for (Int_t i=0; i<540; i++) {
 	
-	Int_t sm = i/18;
-	Int_t det = i%18;
-	TH2D *h2 = (TH2D*)list->At(14+sm);
-	Int_t bin = h2->FindBin(det,j);
-	// printf("%d %d %d\n", det, j, bin);
-	h2->SetBinContent(bin, fit->GetParameter(1));
+	TH1D *test = ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, 0, 35);     
+	if (test->GetSum() < 100) continue;
+	
+	//AliInfo(Form("fitting det = %d", i));
+	
+	for(Int_t j=0; j<35; j++) {
+	  
+	  TH1D *h =  ((TH3D*)list->At(10))->ProjectionZ(Form("ampTime_%d",i), i+1, i+1, j+1, j+1);     
+	  if (h->GetSum() < 50) continue;
+	  
+	  h->Fit("landau", "q0", "goff", 10, 180);
+	  TF1 *fit = h->GetFunction("landau");
+	  
+	  Int_t sm = i/18;
+	  Int_t det = i%18;
+	  TH2D *h2 = (TH2D*)list->At(14+sm);
+	  Int_t bin = h2->FindBin(det,j);
+	  // printf("%d %d %d\n", det, j, bin);
+	  h2->SetBinContent(bin, fit->GetParameter(1));
+	}
       }
     }
   }
