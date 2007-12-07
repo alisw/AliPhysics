@@ -16,7 +16,7 @@
 // --- ROOT system ---
 class TH1F ; 
 class TH1I ; 
-class TList ; 
+class TObjArray ; 
 
 // --- Standard library ---
 
@@ -32,7 +32,7 @@ public:
   virtual ~AliPHOSQADataMaker() {;} // dtor
   
 private:
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * list) ;
   virtual void   InitHits() ; 
   virtual void   InitESDs() ; 
   virtual void   InitDigits() ; 

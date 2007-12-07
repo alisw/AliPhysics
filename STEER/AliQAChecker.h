@@ -18,6 +18,7 @@
 #include <TFile.h>  
 
 #include "AliQA.h"
+class AliCDBEntry ; 
 class AliQACheckerBase ; 
 
 class AliQAChecker: public TNamed {
@@ -30,19 +31,20 @@ public:
 
   static  AliQAChecker * Instance() ;
   AliQACheckerBase *     GetDetQAChecker(Int_t det) ; 
-  TDirectory *           GetRefSubDir(const char * det, const char * task) ;
+  void                   GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TList *& dirOCDB) ;
 //  static TFile *         GetQAResultFile() ;
 //  static const char *    GetQAResultFileName() { return fgQAResultFileName.Data() ; }
 //  void                   SetQAResultDirName(const char * name) ; 
 //  void                   SetRefDirName(const char * name) ; 
 
   virtual Bool_t Run(const char * fileName = NULL) ;
-  virtual Bool_t Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list);
+  virtual Bool_t Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TObjArray * list);
 
 private:
 
   static AliQAChecker *fgQAChecker ; // pointer to the instance of the singleton
   TFile * fDataFile ;                     //! Data file to check
+  TFile * fRefFile ;                      //! Reference Data file 
   TString fFoundDetectors ;               //! detectors for which the Quality assurance could be done
   AliQACheckerBase * fCheckers[AliQA::kNDET] ; //! list of detectors checkers
   ClassDef(AliQAChecker, 1)  // class for running generation, simulation and digitization

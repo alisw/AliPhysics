@@ -90,7 +90,7 @@ AliT0QADataMaker& AliT0QADataMaker::operator = (const AliT0QADataMaker& qadm )
   return *this;
 }
 //____________________________________________________________________________
-void AliT0QADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
+void AliT0QADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking
@@ -117,7 +117,7 @@ void AliT0QADataMaker::InitHits()
       if(i<12)  fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,2000,3000);
       else  
 	fhHitsTime[i] = new TH1F(timename.Data(),timename.Data(),100,12000,13000);
-      Add2HitsList( fhHitsTime[i],i);
+	Add2HitsList( fhHitsTime[i],i);
     }
   /*
   TH2F *fhHitsEffA = new TH2F("hHitsEffA", "Hits Efficiency A side", 25,-0.5,24.5, 100,12,13 );

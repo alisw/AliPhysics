@@ -545,7 +545,7 @@ void AliTOFQADataMaker::StartOfDetectorCycle()
 }
 
 //____________________________________________________________________________ 
-void AliTOFQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
+void AliTOFQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
 {
   //Detector specific actions at end of cycle
   // do the QA checking

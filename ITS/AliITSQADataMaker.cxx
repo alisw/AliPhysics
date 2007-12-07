@@ -90,7 +90,7 @@ void AliITSQADataMaker::StartOfDetectorCycle() const
 }
 
 //____________________________________________________________________________ 
-void AliITSQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList *list)
+void AliITSQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray *list)
 {
   // launch the QA checking
   AliDebug(1,"AliITSDM instantiates checker with Run(AliQA::kITS, task, list)\n"); 

@@ -21,6 +21,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliLog.h"
 #include "AliModule.h" 
 #include "AliQA.h"
@@ -43,6 +45,7 @@ ClassImp(AliQAChecker)
 AliQAChecker::AliQAChecker(const char* name, const char* title) :
   TNamed(name, title),
   fDataFile(0x0), 
+  fRefFile(0x0), 
   fFoundDetectors(".")
 {
   // ctor: initialise checkers and open the data file   
@@ -54,6 +57,7 @@ AliQAChecker::AliQAChecker(const char* name, const char* title) :
 AliQAChecker::AliQAChecker(const AliQAChecker& qac) :
   TNamed(qac),
   fDataFile(qac.fDataFile), 
+  fRefFile(qac.fRefFile), 
   fFoundDetectors(qac.fFoundDetectors)
 {
   // copy constructor
@@ -121,24 +125,41 @@ AliQAChecker::~AliQAChecker()
 
 
 //_____________________________________________________________________________
-TDirectory * AliQAChecker::GetRefSubDir(const char * det, const char * task)     
+void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TList *& dirOCDB)     
 { 
   // Opens and returns the file with the reference data 
-  TFile * f = AliQA::GetQARefFile() ; //TFile::Open(fRefDirName, "READ") ;
-  TDirectory * rv = NULL ; 
-  if (!f) { 
-    AliError(Form("Cannot find reference file %s", (AliQA::GetQARefFileName()))) ; 
-    return rv ; 
-  }
-  rv = f->GetDirectory(det) ; 
-  if (!rv) {
-    AliWarning(Form("Directory %s not found in %d", det, (AliQA::GetQARefFileName()))) ; 
-  } else {
-    rv = rv->GetDirectory(task) ; 
-    if (!rv) 
-      AliWarning(Form("Directory %s/%s not found in %s", det, task, (AliQA::GetQARefFileName()))) ; 
-  }  
-  return rv ; 
+	
+	dirFile = NULL ; 
+	dirOCDB = NULL ; 
+	TString refStorage(AliQA::GetQARefStorage()) ; 
+	refStorage += AliQA::GetQARefFileName() ;
+	if (refStorage.Contains(AliQA::GetLabLocalFile())) {	
+		refStorage.ReplaceAll(AliQA::GetLabLocalFile(), "") ; 
+		if ( fRefFile ) 
+			if ( fRefFile->IsOpen() ) 
+				fRefFile->Close() ; 
+		fRefFile = TFile::Open(refStorage.Data()) ; 
+		if (!fRefFile) { 
+			AliError(Form("Cannot find reference file %s", refStorage.Data())) ; 
+			dirFile = NULL ; 
+		}
+		dirFile = fRefFile->GetDirectory(det) ; 
+		if (!dirFile) {
+			AliWarning(Form("Directory %s not found in %d", det, refStorage.Data())) ; 
+		} else {
+			dirFile = dirFile->GetDirectory(task) ; 
+			if (!dirFile) 
+				AliWarning(Form("Directory %s/%s not found in %s", det, task, refStorage.Data())) ; 
+		}  
+	} else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
+		AliCDBManager* man = AliCDBManager::Instance() ; 
+		char detOCDBDir[20] ; 
+		sprintf(detOCDBDir, "%s/%s", AliQA::GetQARefFileName(), det) ; 
+		AliCDBEntry * entry = man->Get(detOCDBDir) ;
+		TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
+		if ( listDetQAD ) 
+			dirOCDB = dynamic_cast<TList *>(listDetQAD->FindObject(task)) ; 
+	}
 }
 
 //_____________________________________________________________________________
@@ -211,13 +232,15 @@ Bool_t AliQAChecker::Run(const char * fileName)
 		index = AliQA::kESD ; 
       qac->Init(AliQA::DETECTORINDEX(det)) ; 
 
-	  TDirectory * refDir = GetRefSubDir(detNameQA.Data(), taskName.Data()) ;
-	  if ( refDir ) { 
-		qac->SetRefandData(refDir, taskDir) ; 
-		qac->Run(index) ; 
+	  TDirectory * refDir     = NULL ; 
+	  TList * refOCDBDir      = NULL ;	
+	  GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
+	  if ( refDir || refOCDBDir) {
+		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
+		  qac->Run(index) ; 
 	  }
-    }
- }
+	}
+  }
   AliInfo("QA performed for following detectors:") ; 
   for ( Int_t det = 0; det < AliQA::kNDET; det++) {
     if (fFoundDetectors.Contains(AliQA::GetDetName(det))) {
@@ -233,7 +256,7 @@ Bool_t AliQAChecker::Run(const char * fileName)
 }
 
 //_____________________________________________________________________________
-Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList * list)
+Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TObjArray * list)
 {
   // run the Quality Assurance Checker for detector det, for task task starting from data in list
 
@@ -260,11 +283,14 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TList 
 		index = AliQA::kREC ; 
   else if ( task == AliQA::kESDS ) 
 		index = AliQA::kESD ; 
-  TDirectory * refDir = GetRefSubDir(AliQA::GetDetName(det).Data(), AliQA::GetTaskName(task).Data()) ;
-  if ( refDir ) { 
-	qac->Init(det) ; 
-	qac->SetRefandData(refDir) ; 
-	qac->Run(index, list) ; 
+
+  TDirectory * refDir = NULL ; 
+  TList *refOCDBDir   = NULL ;	
+	GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
+  if ( refDir || refOCDBDir) {
+	  qac->Init(det) ; 
+	  qac->SetRefandData(refDir, refOCDBDir) ; 
+	  qac->Run(index, list) ; 
   }
   return kTRUE ; 
   

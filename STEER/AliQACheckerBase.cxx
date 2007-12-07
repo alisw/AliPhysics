@@ -47,16 +47,18 @@ ClassImp(AliQACheckerBase)
 AliQACheckerBase::AliQACheckerBase(const char * name, const char * title) : 
   TNamed(name, title), 
   fDataSubDir(0x0),
-  fRefSubDir(0x0) 
+  fRefSubDir(0x0), 
+  fRefOCDBSubDir(0x0)
 {
   // ctor
 }
 
 //____________________________________________________________________________ 
-AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qadm) :
-  TNamed(qadm.GetName(), qadm.GetTitle()),
-  fDataSubDir(qadm.fDataSubDir), 
-  fRefSubDir(qadm.fRefSubDir)
+AliQACheckerBase::AliQACheckerBase(const AliQACheckerBase& qac) :
+  TNamed(qac.GetName(), qac.GetTitle()),
+  fDataSubDir(qac.fDataSubDir), 
+  fRefSubDir(qac.fRefSubDir), 
+  fRefOCDBSubDir(qac.fRefOCDBSubDir)
 {
   //copy ctor
     
@@ -76,6 +78,7 @@ const Double_t AliQACheckerBase::Check()
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
+  // With reference histograms either in a file of in OCDB  
 
    Double_t test = 0.0  ;
    Int_t count = 0 ; 
@@ -83,32 +86,36 @@ const Double_t AliQACheckerBase::Check()
    if (!fDataSubDir)  
      test = 1. ; // nothing to check
    else 
-     if (!fRefSubDir)
+     if (!fRefSubDir && !fRefOCDBSubDir)
        test = -1 ; // no reference data
      else {
-       TList * keyList = fDataSubDir->GetListOfKeys() ; 
-       TIter next(keyList) ; 
-       TKey * key ;
-       count = 0 ; 
-       while ( (key = static_cast<TKey *>(next())) ) {
-	    TObject * odata = fRefSubDir->Get(key->GetName()) ; 
-	    if ( odata->IsA()->InheritsFrom("TH1") ) {
-	     TH1 * hdata = static_cast<TH1*>(odata) ; 
-	     TH1 * href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
-	    if (!href) 
-	     test = -1 ; // no reference data ; 
-	    else {
-	     Double_t rv =  DiffK(hdata, href) ;
-	     AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-	     test += rv ; 
-	     count++ ; 
-	   }
-	 }
-	 else
-	   AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
-       }
-
-     }
+		 TList * keyList = fDataSubDir->GetListOfKeys() ; 
+		 TIter next(keyList) ; 
+		 TKey * key ;
+		 count = 0 ; 
+		 while ( (key = static_cast<TKey *>(next())) ) {
+			 TObject * odata = fRefSubDir->Get(key->GetName()) ; 
+			 if ( odata->IsA()->InheritsFrom("TH1") ) {
+				 TH1 * hdata = static_cast<TH1*>(odata) ;
+				 TH1 * href = NULL ; 
+				 if (fRefSubDir) 
+					 href  = static_cast<TH1*>(fRefSubDir->Get(key->GetName())) ;
+				 else if (fRefOCDBSubDir) {
+					 href  = static_cast<TH1*>(fRefOCDBSubDir->FindObject(key->GetName())) ;
+				 }
+				 if (!href) 
+					 test = -1 ; // no reference data ; 
+				 else {
+					 Double_t rv =  DiffK(hdata, href) ;
+					 AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+					 test += rv ; 
+					 count++ ; 
+				 }
+			 } else
+				 AliError(Form("%s Is a Classname that cannot be processed", key->GetClassName())) ;
+		 }
+	 } 
+	
    if (count != 0) 
      test /= count ;
    
@@ -116,7 +123,7 @@ const Double_t AliQACheckerBase::Check()
 }  
 
 //____________________________________________________________________________
-const Double_t AliQACheckerBase::Check(TList * list) 
+const Double_t AliQACheckerBase::Check(TObjArray * list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -126,7 +133,7 @@ const Double_t AliQACheckerBase::Check(TList * list)
 
    if (list->GetEntries() == 0)  
      test = 1. ; // nothing to check
-   else 
+   else {
      if (!fRefSubDir)
        test = -1 ; // no reference data
      else {
@@ -135,24 +142,28 @@ const Double_t AliQACheckerBase::Check(TList * list)
        count = 0 ; 
        while ( (hdata = dynamic_cast<TH1 *>(next())) ) {
 		if ( hdata) { 
-	     TH1 * href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
-	     if (!href) 
-	      test = -1 ; // no reference data ; 
-	     else {
-	      Double_t rv =  DiffK(hdata, href) ;
-	      AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
-	      test += rv ; 
-	      count++ ; 
-	    }
-	   } 
-	   else
-	    AliError("Data type cannot be processed") ;
-       }
-     }
-   if (count != 0) 
-     test /= count ;
-   
-   return test ; 
+			TH1 * href = NULL ; 
+			if (fRefSubDir) 
+				href  = static_cast<TH1*>(fRefSubDir->Get(hdata->GetName())) ;
+			else if (fRefOCDBSubDir)
+				href  = static_cast<TH1*>(fRefOCDBSubDir->FindObject(hdata->GetName())) ;
+		   if (!href) 
+			   test = -1 ; // no reference data ; 
+		   else {
+			   Double_t rv =  DiffK(hdata, href) ;
+			   AliInfo(Form("%s ->Test = %f", hdata->GetName(), rv)) ; 
+			   test += rv ; 
+			   count++ ; 
+		   }
+		} 
+		else
+			AliError("Data type cannot be processed") ;
+	   }
+	 }
+   }
+	if (count != 0) 
+		test /= count ;
+	return test ;
 }  
 
 //____________________________________________________________________________ 
@@ -186,7 +197,7 @@ void AliQACheckerBase::Init(const AliQA::DETECTORINDEX det)
 }
  
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQA::ALITASK index, TList * list) 
+void AliQACheckerBase::Run(AliQA::ALITASK index, TObjArray * list) 
 { 
   AliInfo(Form("Processing %s", AliQA::GetAliTaskName(index))) ; 
 

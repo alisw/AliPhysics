@@ -111,7 +111,8 @@ void AliHMPIDQADataMaker::InitHits()
 {
   // create Hits histograms in Hits subdir
      fhHitQdc=new TH1F("HitQdc","HMPID Hit Qdc all chamber;QDC",500,0,4000);
-     for(Int_t iCh=0;iCh<7;iCh++) fhHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
+     for(Int_t iCh=0;iCh<7;iCh++) 
+		 fhHitMap[iCh]=new TH2F(Form("HMPID HitMap%i",iCh),Form("Ch%i;x_{Hit};y_{Hit}",iCh),162,-1,161,146,-1,145);   
 }
 
 //____________________________________________________________________________ 

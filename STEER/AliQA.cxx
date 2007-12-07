@@ -48,19 +48,23 @@
 
 
 ClassImp(AliQA)
-  AliQA    * AliQA::fgQA                = 0x0 ;
-  TFile    * AliQA::fgQADataFile        = 0x0 ;   
-  TString    AliQA::fgQADataFileName    = "QA" ;  // will transform into Det.QA.run.cycle.root  
-  TFile    * AliQA::fgQARefFile         = 0x0 ;   
-  TString    AliQA::fgQARefDirName		= "local://Ref/" ; 
-  TString    AliQA::fgQARefFileName     = "QA.root" ;
-  TFile    * AliQA::fgQAResultFile      = 0x0 ;  
-  TString    AliQA::fgQAResultDirName   = "local://RUN/" ;  
-  TString    AliQA::fgQAResultFileName  = "QA.root" ; 
-  TString    AliQA::fgDetNames[]  = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-					"ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
-  TString   AliQA::fgTaskNames[]  = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
-
+AliQA    * AliQA::fgQA                 = 0x0 ;
+TFile    * AliQA::fgQADataFile         = 0x0 ;   
+TString    AliQA::fgQADataFileName     = "QA" ;  // will transform into Det.QA.run.cycle.root  
+TFile    * AliQA::fgQARefFile          = 0x0 ;   
+TString    AliQA::fgQARefDirName	   = "" ; 
+TString    AliQA::fgQARefFileName      = "QA.root" ;
+TFile    * AliQA::fgQAResultFile       = 0x0 ;  
+TString    AliQA::fgQAResultDirName    = "" ;  
+TString    AliQA::fgQAResultFileName   = "QA.root" ; 
+TString    AliQA::fgDetNames[]         = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+										 "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
+TString       AliQA::fgTaskNames[]     = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+const TString AliQA::fkgLabLocalFile          = "file://"  ; 
+const TString AliQA::fkgLabLocalOCDB          = "local://" ;  
+const TString AliQA::fkgLabAliEnOCDB          = "alien://" ;  
+const TString AliQA::fkgRefFileName    = "QA.root" ; 
+const TString AliQA::fkgRefOCDBDirName = "QA/Ref"  ; 
 //____________________________________________________________________________
 AliQA::AliQA() : 
   TNamed("", ""), 
@@ -68,6 +72,7 @@ AliQA::AliQA() :
   fQA(new ULong_t[fNdet]), 
   fDet(kNULLDET),
   fTask(kNULLTASK)
+  	
 {
   // default constructor
   // beware singleton: not to be used
@@ -103,7 +108,7 @@ AliQA::AliQA(const DETECTORINDEX det) :
   fNdet(kNDET),  
   fQA(new ULong_t[fNdet]), 
   fDet(det),
-  fTask(kNULLTASK)
+  fTask(kNULLTASK) 
 {
   // constructor to be used
   if (! CheckRange(det) ) {
@@ -302,30 +307,14 @@ TFile * AliQA::GetQADataFile(const char * fileName)
 }
 
 //_______________________________________________________________
-TFile * AliQA::GetQARefFile() 
-{
-  // opens the file whwre Quality Assurance Reference Data are stored
-
-	if (!fgQARefFile) {
-		TString fileName(fgQARefDirName + fgQARefFileName) ; 
-
-		if ( fileName.Contains("local://")) 
-			fileName.ReplaceAll("local://", "") ;
-
-		fgQARefFile = TFile::Open(fileName.Data(), "READ") ;
-	}
-	return fgQARefFile ; 
-}
-
-//_______________________________________________________________
 TFile * AliQA::GetQAResultFile() 
 {
   // opens the file to store the  Quality Assurance Data Checker results
    
 	if (!fgQAResultFile) { 
 		TString dirName(fgQAResultDirName) ; 
-		if ( dirName.Contains("local://")) 
-			dirName.ReplaceAll("local://", "") ;
+		if ( dirName.Contains(fkgLabLocalFile)) 
+			dirName.ReplaceAll(fkgLabLocalFile, "") ;
 		TString fileName(dirName + fgQAResultFileName) ; 
 		TString opt("") ; 
 		if ( !gSystem->AccessPathName(fileName) )
@@ -455,15 +444,22 @@ void AliQA::Set(QABIT bit)
 }
 
 //_____________________________________________________________________________
-void AliQA::SetQARefDir(const char * name)
+void AliQA::SetQARefStorage(const char * name)
 {
   // Set the root directory where the QA reference data are stored
 
-  fgQARefDirName.Prepend(name) ; 
-  printf("AliQA::SetQARefDir: QA references are in  %s\n", fgQARefDirName.Data()) ;
-  if ( fgQARefDirName.Contains("local://")) 
-    fgQARefDirName.ReplaceAll("local:/", "") ;
-  fgQARefFileName.Prepend(fgQARefDirName) ;
+  fgQARefDirName = name ; 
+  if (	fgQARefDirName.Contains(fkgLabLocalFile) )
+	 fgQARefFileName =  fkgRefFileName ; 
+  else if (	fgQARefDirName.Contains(fkgLabLocalOCDB) )
+	  fgQARefFileName =  fkgRefOCDBDirName ; 
+  else {
+	  printf("ERROR: %s is an invalid storage definition\n", name) ; 
+	  fgQARefDirName  = "" ; 
+	  fgQARefFileName = "" ; 
+  }	
+	TString tmp(fgQARefDirName + fgQARefFileName) ;
+	printf("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data() ) ;
 }
 
 //_____________________________________________________________________________
@@ -473,8 +469,8 @@ void AliQA::SetQAResultDirName(const char * name)
 
   fgQAResultDirName.Prepend(name) ; 
   printf("AliQA::SetQAResultDirName: QA results are in  %s\n", fgQAResultDirName.Data()) ;
-  if ( fgQAResultDirName.Contains("local://")) 
-    fgQAResultDirName.ReplaceAll("local:/", "") ;
+  if ( fgQAResultDirName.Contains(fkgLabLocalFile)) 
+    fgQAResultDirName.ReplaceAll(fkgLabLocalFile, "") ;
   fgQAResultFileName.Prepend(fgQAResultDirName) ;
 }
 

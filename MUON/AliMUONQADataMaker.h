@@ -13,7 +13,7 @@
 // to avoid circular dependencie
 
 // --- ROOT system ---
-class TList; 
+class TObjArray; 
 
 // --- AliRoot header files ---
 class AliMUONVClusterStore;
@@ -58,7 +58,7 @@ private:
   virtual void   MakeRaws(AliRawReader* rawReader); 
   virtual void   MakeRecPoints(TTree* recpo); 
   virtual void   MakeESDs(AliESDEvent* esd) ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList* list);
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray* list);
 
   AliMUONVClusterStore* fClusterStore; //!< pointer to cluster store
 

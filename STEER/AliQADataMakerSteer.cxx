@@ -15,6 +15,7 @@
 
 /* $Id$ */
 
+#include <TKey.h>
 #include <TFile.h>
 #include <TFileMerger.h>
 #include <TPluginManager.h>
@@ -22,6 +23,10 @@
 #include <TString.h>
 #include <TSystem.h>
 
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
 #include "AliESDEvent.h"
 #include "AliHeader.h"
 #include "AliLog.h"
@@ -205,6 +210,8 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex)
 						case AliQA::kESDS :
 						qadm->Exec(taskIndex, fESD) ;
 						break; 
+						case AliQA::kNTASKINDEX :
+						break; 
 				} //task switch
 				qadm->Increment() ; 
 			} //data maker exist
@@ -212,6 +219,39 @@ Bool_t AliQADataMakerSteer::DoIt(const AliQA::TASKINDEX taskIndex)
 	} // event loop	
 	// Save QA data for all detectors
 	rv = Finish(taskIndex) ;
+	return rv ; 
+}
+
+//_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex) 
+{
+	// write output to file for all detectors
+	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
+		if (IsSelected(AliQA::GetDetName(iDet))) {
+			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
+			if (qadm) {
+				qadm->EndOfCycle(taskIndex) ; 
+			}
+		}
+	}
+	return kTRUE ; 
+}
+
+//_____________________________________________________________________________
+TList * AliQADataMakerSteer::GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const 
+{
+	// Retrieve the list of QA data for a given detector and a given task 
+	TList * rv = NULL ;
+	AliCDBManager* man = AliCDBManager::Instance() ; 
+	man->SetDefaultStorage("local://TestCDB")  ; 
+	char detOCDBDir[20] ; 
+	sprintf(detOCDBDir, "QA/Ref/%s", AliQA::GetDetName((Int_t)det)) ; 
+	AliInfo(Form("Retrieving reference data from local://TestCDB/%s %s", detOCDBDir, AliQA::GetTaskName(task).Data())) ; 
+	AliCDBEntry* entry = man->Get(detOCDBDir,0) ;
+	TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
+	if ( listDetQAD ) 
+		rv = dynamic_cast<TList *>(listDetQAD->FindObject(AliQA::GetTaskName(task))) ; 
+
 	return rv ; 
 }
 
@@ -432,26 +472,15 @@ Bool_t AliQADataMakerSteer::InitRunLoader()
 }
 
 //_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Finish(const AliQA::TASKINDEX taskIndex) 
-{
-	// write output to file for all detectors
-	for (UInt_t iDet = 0; iDet < fgkNDetectors ; iDet++) {
-		if (IsSelected(AliQA::GetDetName(iDet))) {
-			AliQADataMaker * qadm = GetQADataMaker(iDet) ;
-			if (qadm) {
-				qadm->EndOfCycle(taskIndex) ; 
-			}
-		}
-	}
-	return kTRUE ; 
-}
-
-//_____________________________________________________________________________
-Bool_t AliQADataMakerSteer::Merge() 
+Bool_t AliQADataMakerSteer::Merge(const Int_t runNumber) const
 {
 	// Merge all the cycles from all detectors in one single file per run
-	
-	gROOT->ProcessLine(".! ls *QA*.*.*.root > tempo.txt") ; 
+	char cmd[80] ;
+	if ( runNumber == -1 )
+		sprintf(cmd, ".! ls *%s*.*.*.root > tempo.txt", AliQA::GetQADataFileName()) ; 
+	else 
+		sprintf(cmd, ".! ls *%s*.%d.*.root > tempo.txt", AliQA::GetQADataFileName(), runNumber) ; 
+	gROOT->ProcessLine(cmd) ;
 	ifstream in("tempo.txt") ; 
 	const Int_t runMax = 10 ;  
 	TString file[AliQA::kNDET*runMax] ;
@@ -459,17 +488,26 @@ Bool_t AliQADataMakerSteer::Merge()
 	
 	Int_t index = 0 ; 
 	while ( 1 ) {
-		in >> file[index++] ; 
+		in >> file[index] ; 
 		if ( !in.good() ) 
 			break ; 
+		index++ ;
 	}
+	
+	if ( index == 0 ) { 
+		AliError(Form("run number %d not found", runNumber)) ; 
+		return kFALSE ; 
+	}
+	
 	Int_t previousRun = -1 ;
 	Int_t runIndex = 0 ;  
+	char stmp[10] ; 
+	sprintf(stmp, ".%s.", AliQA::GetQADataFileName()) ; 
 	for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
 		TString tmp(file[ifile]) ; 
 		tmp.ReplaceAll(".root", "") ; 
 		TString det = tmp(0, tmp.Index(".")) ; 
-		tmp.Remove(0, tmp.Index(".QA.")+4) ; 
+		tmp.Remove(0, tmp.Index(stmp)+4) ; 
 		TString ttmp = tmp(0, tmp.Index(".")) ; 
 		Int_t newRun = ttmp.Atoi() ;
 		if (newRun != previousRun) {
@@ -483,12 +521,12 @@ Bool_t AliQADataMakerSteer::Merge()
 	}
 	for (Int_t irun = 0 ; irun < runIndex ; irun++) {
 		TFileMerger merger ; 
-		char outFileName[runMax] ; 
-		sprintf(outFileName, "Merged.QA.%d.root", runIndex-1) ; 
+		char outFileName[20] ; 
+		sprintf(outFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), runIndex-1) ; 
 		merger.OutputFile(outFileName) ; 
 		for (Int_t ifile = 0 ; ifile < index-1 ; ifile++) {
 			char pattern[100] ; 
-			sprintf(pattern, "QA.%d.", runIndex-1) ; 
+			sprintf(pattern, "%s.%d.", AliQA::GetQADataFileName(), runIndex-1) ; 
 			TString tmp(file[ifile]) ; 
 			if (tmp.Contains(pattern))
 				merger.AddFile(tmp) ; 
@@ -569,3 +607,89 @@ Bool_t AliQADataMakerSteer::Run(const char * detectors, const AliQA::TASKINDEX t
 	return rv ;   
 
 }
+
+//_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::Save2OCDB(const Int_t runNumber, const Int_t cycleNumber, const char * detectors) const
+{
+	// take the locasl QA data merge into a single file and save in OCDB 
+	Bool_t rv = kTRUE ; 
+	TString tmp(AliQA::GetQARefStorage()) ; 
+	if ( tmp.IsNull() ) { 
+		AliError("No storage defined, use AliQA::SetQARefStorage") ; 
+		return kFALSE ; 
+	}
+	if ( !(tmp.Contains(AliQA::GetLabLocalOCDB()) || tmp.Contains(AliQA::GetLabAliEnOCDB())) ) {
+		AliError(Form("%s is a wrong storage, use %s or %s", AliQA::GetQARefStorage(), AliQA::GetLabLocalOCDB().Data(), AliQA::GetLabAliEnOCDB().Data())) ; 
+		return kFALSE ; 
+	}
+	TString sdet(detectors) ; 
+	sdet.ToUpper() ;
+	TFile * inputFile ; 
+	if ( sdet.Contains("ALL") ) {
+		rv = Merge(runNumber) ; 
+		if ( ! rv )
+			return kFALSE ; 
+		char inputFileName[20] ; 
+		sprintf(inputFileName, "Merged.%s.%d.root", AliQA::GetQADataFileName(), runNumber) ; 
+		inputFile = TFile::Open(inputFileName) ; 
+		rv = SaveIt2OCDB(inputFile) ; 
+	} else {
+		for (Int_t index = 0; index < AliQA::kNDET; index++) {
+			if (sdet.Contains(AliQA::GetDetName(index))) {
+				char inputFileName[20] ; 
+				sprintf(inputFileName, "%s.%s.%d.%d.root", AliQA::GetDetName(index), AliQA::GetQADataFileName(), runNumber, cycleNumber) ; 
+				inputFile = TFile::Open(inputFileName) ; 			
+				rv *= SaveIt2OCDB(inputFile) ; 
+			}
+		}
+	}
+	return rv ; 
+}
+
+//_____________________________________________________________________________
+Bool_t AliQADataMakerSteer::SaveIt2OCDB(TFile * inputFile) const
+{
+	// reads the TH1 from file and adds it to appropriate list before saving to OCDB
+	Bool_t rv = kTRUE ;
+	AliInfo(Form("Saving TH1s in %s to %s", inputFile->GetName(), AliQA::GetQARefStorage())) ; 
+	AliCDBManager* man = AliCDBManager::Instance() ; 
+	man->SetDefaultStorage(AliQA::GetQARefStorage()) ; 
+
+	for ( Int_t detIndex = 0 ; detIndex < AliQA::kNDET ; detIndex++) {
+		TDirectory * detDir = inputFile->GetDirectory(AliQA::GetDetName(detIndex)) ; 
+		if ( detDir ) {
+			AliInfo(Form("Entering %s", detDir->GetName())) ;
+			char detOCDBDir[20] ; 
+			sprintf(detOCDBDir, "QA/Ref/%s", AliQA::GetDetName(detIndex)) ; 
+			AliCDBId idr(detOCDBDir,0,999999999)  ;
+			TList * listDetQAD = new TList() ;
+			char listName[20] ; 
+			sprintf(listName, "%s QA data Reference", AliQA::GetDetName(detIndex)) ; 
+			listDetQAD->SetName(listName) ; 
+			TList * taskList = detDir->GetListOfKeys() ; 
+			TIter nextTask(taskList) ; 
+			TKey * taskKey ; 
+			while ( (taskKey = dynamic_cast<TKey*>(nextTask())) ) {
+				TDirectory * taskDir = detDir->GetDirectory(taskKey->GetName()) ; 
+				AliInfo(Form("Saving %s", taskDir->GetName())) ; 
+				TList * listTaskQAD = new TList() ; 
+				listTaskQAD->SetName(taskKey->GetName()) ;
+				listDetQAD->Add(listTaskQAD) ; 
+				TList * histList = taskDir->GetListOfKeys() ; 
+				TIter nextHist(histList) ; 
+				TKey * histKey ; 
+				while ( (histKey = dynamic_cast<TKey*>(nextHist())) ) {
+					TObject * odata = taskDir->Get(histKey->GetName()) ; 
+					if ( odata->IsA()->InheritsFrom("TH1") ) {
+						AliInfo(Form("Adding %s", histKey->GetName())) ;
+						TH1 * hdata = static_cast<TH1*>(odata) ; 
+						listTaskQAD->Add(hdata) ; 
+					}
+				}
+			}
+			AliCDBMetaData mdr ;
+			man->Put(listDetQAD, idr, &mdr) ;
+		}
+	}
+	return rv ; 
+}	

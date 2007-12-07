@@ -86,7 +86,7 @@ AliTRDQADataMaker& AliTRDQADataMaker::operator=(const AliTRDQADataMaker& qadm)
 }
 
 //____________________________________________________________________________ 
-void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list)
+void AliTRDQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list)
 {
   //
   // Detector specific actions at end of cycle

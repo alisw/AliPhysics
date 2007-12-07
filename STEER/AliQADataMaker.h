@@ -16,15 +16,15 @@
 
 // --- ROOT system ---
 #include <TH1.h>
-#include <TList.h>
+#include <TObjArray.h>
 #include <TNamed.h>  
-class TFile;  
+class TClonesArray;
 class TDirectory;
+class TFile;  
 class TObject; 
 class TTree; 
 class AliESDEvent;
 class AliRawReader;
-class TClonesArray;
 
 // --- Standard library ---
 
@@ -57,8 +57,8 @@ public:
   TH1 *               GetSDigitsData(const Int_t index)   { return dynamic_cast<TH1 *>(GetData(fSDigitsQAList, index)) ; }
   const char *        GetDetectorDirName() { return fDetectorDirName.Data() ; }
   const Int_t         Increment() { return ++fCycleCounter ; } 
-  TList *             Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1) ;
-  void                Init(AliQA::TASKINDEX, TList * list, Int_t run, Int_t cycles = -1) ;
+  TObjArray *         Init(AliQA::TASKINDEX, Int_t run, Int_t cycles = -1) ;
+  void                Init(AliQA::TASKINDEX, TObjArray * list, Int_t run, Int_t cycles = -1) ;
   const Bool_t        IsCycleDone() const { return fCycleCounter > fCycle ? kTRUE : kFALSE ; }
   void                Reset() ; 	
   void                SetCycle(Int_t nevts) { fCycle = nevts ; } 
@@ -66,9 +66,9 @@ public:
 
 protected: 
 
-  Int_t          Add2List(TH1 * hist, const Int_t index, TList * list) ;
-  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TList * ) {AliInfo("To be implemented by detectors");} 
-  TObject *      GetData(TList * list, const Int_t index)  { return list->At(index) ; } 
+  Int_t          Add2List(TH1 * hist, const Int_t index, TObjArray * list) ;
+  virtual void   EndOfDetectorCycle(AliQA::TASKINDEX, TObjArray * ) {AliInfo("To be implemented by detectors");} 
+  TObject *      GetData(TObjArray * list, const Int_t index)  { return list->At(index) ; } 
   virtual void   InitDigits()        {AliInfo("To be implemented by detectors");}
   virtual void   InitESDs()          {AliInfo("To be implemented by detectors");}
   virtual void   InitHits()          {AliInfo("To be implemented by detectors");}
@@ -94,12 +94,12 @@ protected:
   TFile *        fOutput ;          //! output root file
   TDirectory *   fDetectorDir ;     //! directory for the given detector in the file
   TString        fDetectorDirName ; //! detector directory name in the quality assurance data file
-  TList *        fDigitsQAList ;    //! list of the digits QA data objects
-  TList *        fESDsQAList ;      //! list of the ESDs QA data objects
-  TList *        fHitsQAList ;      //! list of the hits QA data objects
-  TList *        fRawsQAList ;      //! list of the raws QA data objects
-  TList *        fRecPointsQAList ; //! list of the recpoints QA data objects
-  TList *        fSDigitsQAList ;   //! list of the sdigits QA data objects
+  TObjArray *    fDigitsQAList ;    //! list of the digits QA data objects
+  TObjArray *    fESDsQAList ;      //! list of the ESDs QA data objects
+  TObjArray *    fHitsQAList ;      //! list of the hits QA data objects
+  TObjArray *    fRawsQAList ;      //! list of the raws QA data objects
+  TObjArray *    fRecPointsQAList ; //! list of the recpoints QA data objects
+  TObjArray *    fSDigitsQAList ;   //! list of the sdigits QA data objects
   Int_t          fCurrentCycle ;    //! current cycle number
   Int_t          fCycle ;           //! length (# events) of the QA data acquisition cycle  
   Int_t          fCycleCounter ;    //! cycle counter

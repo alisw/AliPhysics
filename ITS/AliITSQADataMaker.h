@@ -18,7 +18,7 @@
 
 
 #include "AliQADataMaker.h"
-class TList;
+class TObjArray;
 class TH1F;
 class TH2D;
 class AliRawReader;
@@ -32,7 +32,7 @@ public:
   AliITSQADataMaker(const AliITSQADataMaker& qadm);
   AliITSQADataMaker& operator = (const AliITSQADataMaker& qac);
   virtual void StartOfDetectorCycle() const;
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list);
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray * list);
   virtual void EndOfDetectorCycle(const char * fgDataName);
   virtual void InitRaws();
   virtual void InitRecPoints();

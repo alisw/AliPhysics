@@ -93,12 +93,12 @@ AliQADataMaker& AliQADataMaker::operator = (const AliQADataMaker& qadm )
 }
 
 //____________________________________________________________________________
-Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TList * list) 
+Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list) 
 { 
 	// Set histograms memory resident and add to the list 
 	hist->SetDirectory(0) ; 
 	list->AddAt(hist, index) ; 
-	return list->LastIndex() ; 
+	return list->GetLast() ; 
 }
 
 //____________________________________________________________________________
@@ -106,7 +106,7 @@ void AliQADataMaker::EndOfCycle(AliQA::TASKINDEX task)
 { 
   // Finishes a cycle of QA data acquistion
   
- TList * list = 0x0 ; 
+ TObjArray * list = 0x0 ; 
   
  switch (task) { 
   
@@ -138,6 +138,9 @@ void AliQADataMaker::EndOfCycle(AliQA::TASKINDEX task)
     
    case AliQA::kESDS:
 	list = fESDsQAList ; 
+   break ;  
+
+   case AliQA::kNTASKINDEX:
    break ;  
   }	
   
@@ -231,7 +234,7 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 		case AliQA::kRECPARTICLES:
 			AliInfo("Processing RecParticles QA: not existing anymore") ; 
 			//       MakeRecParticles(recpar) ;
-		break ;  
+			break ;  
 		case AliQA::kESDS:
 		{
 			AliDebug(1, "Processing ESDs QA") ; 
@@ -241,6 +244,8 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 			else 
 				AliError("Wrong type of esd container") ; 
 			break ;
+			case AliQA::kNTASKINDEX:
+			break ;  
 		}  
 	}	  
 }
@@ -253,7 +258,7 @@ void AliQADataMaker::Finish() const
 } 
 
 //____________________________________________________________________________ 
-TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
+TObjArray *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
 {
   // general intialisation
   
@@ -264,35 +269,35 @@ TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
   switch (task) {
   case AliQA::kRAWS: 
    {
-	fRawsQAList = new TList() ;	 
+	fRawsQAList = new TObjArray(100) ;	 
     InitRaws() ;
 	return fRawsQAList ;
     break ; 
    }
   case AliQA::kHITS: 
    {
-	fHitsQAList = new TList() ;	 
+	fHitsQAList = new TObjArray(100) ;	 
     InitHits() ;
 	return fHitsQAList ;
     break ; 
    }
   case AliQA::kSDIGITS: 
    {
-	fSDigitsQAList = new TList() ; 
+	fSDigitsQAList = new TObjArray(100) ; 
     InitSDigits() ;
 	return fSDigitsQAList ;
     break ; 
    }
   case AliQA::kDIGITS: 
    {
-	fDigitsQAList = new TList(); 
+	fDigitsQAList = new TObjArray(100); 
 	InitDigits() ;
 	return fDigitsQAList ;
 	break ; 
    }	  
   case AliQA::kRECPOINTS: 
    {
-	fRecPointsQAList = new TList() ; 
+	fRecPointsQAList = new TObjArray(100) ; 
     InitRecPoints() ;
 	return fRecPointsQAList ;
     break ; 
@@ -307,17 +312,19 @@ TList *  AliQADataMaker::Init(AliQA::TASKINDEX task, Int_t run, Int_t cycles)
     
   case AliQA::kESDS: 
    {
-	fESDsQAList = new TList() ; 
+	fESDsQAList = new TObjArray(100) ; 
 	InitESDs() ;
 	return fESDsQAList ;
     break ; 
    }
+  case AliQA::kNTASKINDEX: 
+  break ; 
   }  
   return 0x0 ; 
 }
 
 //____________________________________________________________________________ 
-void AliQADataMaker::Init(AliQA::TASKINDEX task, TList * list, Int_t run, Int_t cycles)
+void AliQADataMaker::Init(AliQA::TASKINDEX task, TObjArray * list, Int_t run, Int_t cycles)
 {
   // Intialisation by passing the list of QA data booked elsewhere
   
@@ -362,6 +369,8 @@ void AliQADataMaker::Init(AliQA::TASKINDEX task, TList * list, Int_t run, Int_t 
 	fESDsQAList = list ; 
     break ; 
    }
+  case AliQA::kNTASKINDEX: 
+  break ; 
   }  
 }
 
@@ -396,7 +405,7 @@ void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle)
    subDir = fDetectorDir->mkdir(AliQA::GetTaskName(task)) ;  
  subDir->cd() ; 
 
-  TList * list = 0x0 ; 
+  TObjArray * list = 0x0 ; 
   
   switch (task) { 
   case AliQA::kRAWS: 
@@ -428,7 +437,10 @@ void AliQADataMaker::StartOfCycle(AliQA::TASKINDEX task, const Bool_t sameCycle)
   case AliQA::kESDS: 
   	list = fESDsQAList ;
     break ; 
-  }  
+
+  case AliQA::kNTASKINDEX: 
+	break ; 
+}  
 
  TIter next(list) ;
  TH1 * h ; 

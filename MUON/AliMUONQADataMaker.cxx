@@ -82,7 +82,7 @@ AliMUONQADataMaker::~AliMUONQADataMaker()
 }
 
 //____________________________________________________________________________ 
-void AliMUONQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TList* list)
+void AliMUONQADataMaker::EndOfDetectorCycle(AliQA::TASKINDEX task, TObjArray* list)
 {
     ///Detector specific actions at end of cycle
     // do the QA checking
