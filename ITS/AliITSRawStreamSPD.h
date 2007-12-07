@@ -12,11 +12,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliITSRawStream.h"
-
+#include "AliITSRawStreamSPDErrorLog.h"
 
 class AliITSRawStreamSPD: public AliITSRawStream {
   public :
     AliITSRawStreamSPD(AliRawReader* rawReader);
+    AliITSRawStreamSPD(const AliITSRawStreamSPD& rstream);
+    AliITSRawStreamSPD& operator=(const AliITSRawStreamSPD& rstream);
     virtual ~AliITSRawStreamSPD() {};
 
     virtual Bool_t   Next();
@@ -74,42 +76,65 @@ class AliITSRawStreamSPD: public AliITSRawStream {
     UInt_t GetHdacLow(UInt_t hs) const;
     UInt_t GetHTPAmp(UInt_t hs) const;
     Bool_t GetHminTHchipPresent(UInt_t chip) const;
+    void   ActivateAdvancedErrorLog(Bool_t activate, AliITSRawStreamSPDErrorLog* advLogger = NULL);
+    static const Char_t* GetErrorName(UInt_t errorCode);
+
 
     enum {kDDLsNumber = 20};      // number of DDLs in SPD
     enum {kModulesPerDDL = 12};   // number of modules in each DDL
     enum {kCalHeadLenMax = 16};   // maximum number of calib header words
     enum ESPDRawStreamError {
-      kCalHeaderLengthErr = 1,
-      kDDLNumberErr = 2,
-      kEventNumberErr = 3,
-      kChipAddrErr = 4,
-      kStaveNumberErr = 5,
-      kNumbHitsErr = 6,
-      kWrongWordErr = 7,
-      kHalfStaveStatusErr = 8
+      kTotal,
+      kHeaderMissingErr,
+      kTrailerMissingErr,
+      kTrailerWithoutHeaderErr,
+      kHeaderCountErr,
+      kTrailerCountErr,
+      kFillUnexpectErr,
+      kFillMissingErr,
+      kWrongFillWordErr,
+      kNumberHitsErr,
+      kEventCounterErr,
+      kDDLNumberErr,
+      kHSNumberErr,
+      kChipAddrErr,
+      kCalHeaderLengthErr
     };
 
   private :
     static const Int_t fgkDDLModuleMap[kDDLsNumber][kModulesPerDDL];  // mapping DDL/module -> module number
 
-    Bool_t           ReadNextShort();
-    Bool_t           ReadNextInt();
-    void             NewEvent();
+    Bool_t      ReadNextShort();
+    Bool_t      ReadNextInt();
+    void        NewEvent();
+    void	CheckHeaderAndTrailerCount(Int_t ddlID);
 
-    Int_t            fEventNumber;                 // chip event counter
-    UShort_t         fChipAddr;                    // chip nr
-    UShort_t         fHalfStaveNr;                 // half stave nr
-    UInt_t           fCol;                         // chip column nr
-    UInt_t           fRow;                         // chip row nr
-    UInt_t           fCalHeadWord[kCalHeadLenMax]; // calibration header words
+    Int_t       fEventCounter;                // chip event counter
+    UShort_t    fChipAddr;                    // chip nr
+    UShort_t    fHalfStaveNr;                 // half stave nr
+    UInt_t      fCol;                         // chip column nr
+    UInt_t      fRow;                         // chip row nr
+    UInt_t      fCalHeadWord[kCalHeadLenMax]; // calibration header words
+		
+    UShort_t    fData;            // 16 bit data word read
+    UInt_t      fOffset;          // offset for cell column
+    UInt_t      fHitCount;        // counter of hits
+    UChar_t     fDataChar1, fDataChar2, fDataChar3, fDataChar4; // temps part of a 32bit word
+    Bool_t      fFirstWord;       // keeps track of which of the two 16bit words out of the 32bit word to read when ReadNextShort is called
+    Bool_t      fCalHeadRead[20];            // calibration header read flags (reset at new event)
+    UInt_t      fPrevEventId;                // previous event id (needed to know if there is a new event)
 
-    UShort_t         fData;            // 16 bit data word read
-    UInt_t           fOffset;          // offset for cell column
-    UInt_t           fHitCount;        // counter of hits
-    UChar_t          fDataChar1, fDataChar2, fDataChar3, fDataChar4; // temps part of a 32bit word
-    Bool_t           fFirstWord;       // keeps track of which of the two 16bit words out of the 32bit word to read when ReadNextShort is called
-    Bool_t           fCalHeadRead[20];             // calibration header read flags (reset at new event)
-    UInt_t           fPrevEventId;                 // previous event id (needed to know if there is a new event)
+    UInt_t      fEqPLBytesRead;              // bytes read for current equipment payload
+    UInt_t      fEqPLChipHeadersRead;        // number of chip headers found in current equipment payload
+    UInt_t      fEqPLChipTrailersRead;       // number of chip trailers found in current equipment payload
+    Bool_t      fHeaderOrTrailerReadLast;    // in previous words, was a header (true) or a trailer (false) read last
+    UInt_t      fExpectedHeaderTrailerCount; // expected number of headers and trailers for the current equipment payload
+    Bool_t      fFillOutOfSynch;             // has a fill word been put in the wrong place?
+    Int_t       fDDLID;                      // ddl id 
+    Int_t       fLastDDLID;                  // ddl id for equipment read in previous words
+
+    Bool_t      fAdvancedErrorLog;           // is the advanced error logging activated?
+    AliITSRawStreamSPDErrorLog *fAdvLogger;  // pointer to special error logger object
 
     ClassDef(AliITSRawStreamSPD, 0) // class for reading ITS SPD raw digits
 };
