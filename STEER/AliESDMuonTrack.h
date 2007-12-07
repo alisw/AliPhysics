@@ -28,8 +28,8 @@ public:
   AliESDMuonTrack(const AliESDMuonTrack& esdm);
   AliESDMuonTrack& operator=(const AliESDMuonTrack& esdm);
 
-  void Clear(Option_t* opt);
-
+  virtual void Clear(Option_t* opt = "");
+  
   // Get and Set methods for data at vertex
   Double_t GetInverseBendingMomentum(void) const {return fInverseBendingMomentum;}
   void     SetInverseBendingMomentum(Double_t InverseBendingMomentum) 
@@ -107,6 +107,7 @@ public:
   Bool_t   IsInMuonClusterMap(Int_t chamber) const;
   
   // Methods to get, fill and check the array of associated clusters
+  Int_t         GetNClusters() const;
   TClonesArray& GetClusters() const;
   void          AddCluster(const AliESDMuonCluster &cluster);
   Bool_t        ClustersStored() const;
@@ -137,13 +138,13 @@ public:
   Double_t Zv() const {return -999.;} //
   Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }  
   Double_t Pt() const { return TMath::Sqrt(Px()*Px() + Py()*Py()); }
-  Double_t OneOverPt() const { return 1./Pt(); }
+  Double_t OneOverPt() const { return (Pt() != 0.) ? 1./Pt() : FLT_MAX; }
   Double_t Phi() const { return TMath::ATan2(Py(), Px()); }
   Double_t Theta() const { return TMath::ATan2(Pt(), Pz()); }
   Double_t E() const { return TMath::Sqrt(M()*M() + P()*P()); }
   Double_t M() const { return TDatabasePDG::Instance()->GetParticle("mu-")->Mass(); }
   Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta()));}
-  Double_t Y() const { return TMath::ATanH(Pz()/E()); }
+  Double_t Y() const { return (Pz()/E() != 1.) ? TMath::ATanH(Pz()/E()) : FLT_MAX; }
   Short_t  Charge() const { return (Short_t)TMath::Sign(1., GetInverseBendingMomentum()); }
   const Double_t *PID() const { return (Double_t*)0x0; }
   
