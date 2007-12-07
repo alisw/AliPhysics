@@ -72,6 +72,12 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   // The processing of the DCS input data is forwarded to AliZDCDataDCS
   Float_t dcsValues[28]; // DCSAliases=28
   fData->ProcessData(*dcsAliasMap, dcsValues);
+  // Store DCS data for reference
+  AliCDBMetaData metadata;
+  metadata.SetResponsible("Chiara Oppedisano");
+  metadata.SetComment("DCS data for ZDC");
+  Bool_t resDCSRef = kFALSE;
+  resDCSRef = StoreReferenceData("DCS","Data",fData,&metadata);
   //dcsAliasMap->Print("");
   //
   // --- Writing ZDC table positions into alignment object
@@ -100,7 +106,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
   md.SetComment("Alignment object for ZDC");
-  Bool_t resultAl = kTRUE;
+  Bool_t resultAl = kFALSE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
 // *************** From DAQ ******************
@@ -319,11 +325,13 @@ else {
   else Log(Form("Number of events not put in logbook!"));
  
   UInt_t result = 0;
-  if(resultAl==kFALSE || resPedCal==kFALSE || resECal==kFALSE || resRecPar==kFALSE){
-    if(resultAl == kFALSE) result = 1;
-    else if(resPedCal == kFALSE) result = 2;
-    else if(resECal == kFALSE)   result = 3;
-    else if(resRecPar == kFALSE) result = 4;
+  if(resDCSRef==kFALSE || resultAl==kFALSE || 
+     resPedCal==kFALSE || resECal==kFALSE || resRecPar==kFALSE){
+    if(resDCSRef == kFALSE) result = 1;
+    else if(resultAl == kFALSE)  result = 2;
+    else if(resPedCal == kFALSE) result = 3;
+    else if(resECal == kFALSE)   result = 4;
+    else if(resRecPar == kFALSE) result = 5;
   }
   
   return result;
