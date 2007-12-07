@@ -88,9 +88,10 @@ AliMUONObjectPair&
 AliMUONObjectPair::operator=(const AliMUONObjectPair& other)
 {
   /// assignement operator
-  AliDebug(1,"");
-  AliMUONObjectPair pair(other);
-  pair.Copy(*this);
+  if ( this != &other)
+  {
+    other.Copy(*this);
+  }
   return *this;
 }
 

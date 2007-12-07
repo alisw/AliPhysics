@@ -129,8 +129,10 @@ AliMUONCluster&
 AliMUONCluster::operator=(const AliMUONCluster& src)
 {
   /// assignement operator
-  AliMUONCluster c(src);
-  c.Copy(*this);
+  if ( this != &src ) 
+  {
+    src.Copy(*this);
+  }
   return *this;
 }
 

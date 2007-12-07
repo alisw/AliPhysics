@@ -347,8 +347,10 @@ AliMUONDigit::operator=(const AliMUONDigit& digit)
 {
   /// Assignement operator.
 
-  AliMUONDigit a(digit);
-  a.Copy(*this);
+  if ( this != &digit ) 
+  {
+    digit.Copy(*this);
+  }
   return *this;
 }
 
