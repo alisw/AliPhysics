@@ -372,8 +372,8 @@ void AliTRDQADataMaker::MakeESDs(AliESDEvent * esd)
 
     for(Int_t b=0; b<knbits; b++) {
       if (bit[b]) {
-	GetESDsData(b*knbits+3)->Fill(pt); 
-	GetESDsData(b*knbits+4)->Fill(extZ);
+	GetESDsData(2*b+3)->Fill(pt); 
+	GetESDsData(2*b+4)->Fill(extZ);
       }
     }
 
