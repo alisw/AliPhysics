@@ -128,8 +128,8 @@ Bool_t AliHMPIDRawStream::Next()
     for(Int_t iRow = 1; iRow <= kNRows; iRow++) {
       UInt_t rowMarker = GetNextWord();                                 // Read row marker
       
-      Int_t numRows= rowMarker >> 16 & 0xffffff;                        // Number of words after the row marker
-         
+      Int_t numRows= rowMarker >> 16 & 0xfff;                        // Number of words after the row marker         
+      
       if ( numRows > 490 ) {      //The row marker is fixed and we cannot have more than 490 words!!!
 	fRawReader->AddMajorErrorLog(kRowMarkerSizeErr);
         AliWarning(Form("Wrong row marker size %x for row %d, value: %d expected < 490!",rowMarker,iRow,numRows));
