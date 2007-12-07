@@ -24,7 +24,6 @@
     @brief  The Huffman compressor
 */
 
-#include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 #include "AliHLTCOMPHuffmanData.h"
 
@@ -47,7 +46,7 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
    * @param translationtable    pointer to lookup Huffman table for compression and decompression
    * @param nrcutrailerwords    number of NRCU trailer words (ranging from 1 to 3)
    */
-  AliHLTCOMPHuffmanAltro(Bool_t compressionswitch, Bool_t trainingmode, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* translationtable, Int_t nrcutrailerwords);
+  AliHLTCOMPHuffmanAltro(Bool_t compressionswitch, Bool_t trainingmode, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* translationtable, Int_t nrcutrailerwords);
   /** destructor */
   virtual ~AliHLTCOMPHuffmanAltro();
 
@@ -123,14 +122,14 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
    * @param n               number of entries in the unsorted array
    * @return pointer to first element of sorted list
    */
-  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* Mergesort(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* unsortedarray, Int_t n);
+  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* Mergesort(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* unsortedarray, Int_t n);
 
   /** function to create the HuffmanCode and write it in a sorted array 
    * @param treeroot           pointer to root of Huffman tree
    * @param HuffmanCodearray   pointer to final Huffman code table (array)
    * @return zero upon success
    */ 
- Int_t HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* treeroot, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* HuffmanCodearray);
+ Int_t HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* treeroot, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* HuffmanCodearray);
   
   /** function to create the Huffmantree
    * @param listroot   pointer to first element of sorted list to build Huffman tree from
@@ -138,7 +137,7 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
    * @param n          number of entries in the list
    * @return pointer to root of Huffman tree
    */
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* CreateHuffmanTree(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* listroot,  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* listend, Int_t n);
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* CreateHuffmanTree(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* listroot,  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* listend, Int_t n);
   
   /** entropy encoding function: read in data, table lookup to encode, write encoded data to output array and set fOutputDataSize
    * @return zero upon success
@@ -150,7 +149,7 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
    * @param n               number of entries in the unsorted array
    * @return pointer to first element of sorted list
    */
- AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* TTMergesort(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* unsortedarray, Int_t n);
+ AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* TTMergesort(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* unsortedarray, Int_t n);
     
   /** entropy decoding function
    * @return zero upon success
@@ -173,9 +172,9 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   /** input data size */
   unsigned long fInputDataSize;                 // input data size
   /** output data size */
-  Int_t fOutputDataSize;                        // output data size
+  UInt_t fOutputDataSize;                        // output data size
   /** number of NRCU trailer words */
-  Int_t fNrcuTrailerwords;                      // number of RCU trailerwords
+  UInt_t fNrcuTrailerwords;                      // number of RCU trailerwords
   /** calculated entropy of input data */
   Double_t fEntropy;                            // entropy of the file
 
@@ -183,9 +182,9 @@ class AliHLTCOMPHuffmanAltro : public AliHLTLogging
   //AliHLTUInt8_t fPatch;                         // where output root file comes from
  
   /** pointer to occurrence table */
-  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* fTrainingTable;       // training table with amplitudes and resp. abundances
+  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* fTrainingTable;       // training table with amplitudes and resp. abundances
   /** pointer to Huffman code table */
-  AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* fTranslationTable;    // Huffman Entropy Code Table
+  AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* fTranslationTable;    // Huffman Entropy Code Table
 
 
   ClassDef(AliHLTCOMPHuffmanAltro, 0)

@@ -62,22 +62,20 @@ const char* AliHLTCOMPHuffmanAltroCalibComponent::GetComponentID() {
 
 void AliHLTCOMPHuffmanAltroCalibComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list) {
   // see header file for class documentation
-
   list.clear(); 
   list.push_back( kAliHLTDataTypeDDLRaw );
 }
 
 AliHLTComponentDataType AliHLTCOMPHuffmanAltroCalibComponent::GetOutputDataType() {
   // see header file for class documentation
-
   AliHLTComponentDataType dt=AliHLTCompDefinitions::fgkHuffmanAltroCalDataType;
   if (!fOrigin.IsNull()) dt=dt|fOrigin.Data();
   return dt;
+ 
 }
 
 void AliHLTCOMPHuffmanAltroCalibComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
-
   constBase = sizeof(AliHLTCOMPHuffmanData);
   inputMultiplier = (0.0);
 }
@@ -116,6 +114,11 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ScanArgument( Int_t argc, const char
 	{
 	  fOrigin = argv[1];
 
+	  while(fOrigin.Length() <  kAliHLTComponentDataTypefOriginSize)
+	    {
+	      fOrigin.Append(" ");
+	    }
+	
 	  HLTInfo("Origin is set to %s.", fOrigin.Data());	  
 
 	}
@@ -173,9 +176,9 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ScanArgument( Int_t argc, const char
 		    {
 		      // get table path
 		      fTablePath = argv[1];
-		      HLTInfo( "Path for Huffman table output is set to %s.", fTablePath.Data() ); 		      
+		      HLTInfo( "Path for Huffman table output is set to %s.", fTablePath.Data() ); 
 		      if (!fTablePath.IsNull() && !fTablePath.EndsWith("/"))
-			  fTablePath+="/";
+			fTablePath+="/";		      
 		    }
 		}
 
@@ -270,9 +273,9 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComp
  
   // ** Loop over all input blocks and specify which data format should be read - only select Raw Data
   iter = GetFirstInputBlock( kAliHLTDataTypeDDLRaw );
-  
-  if ( iter != NULL ) do {
 
+  if ( iter != NULL ) do {
+    
     // ** Print Debug output which data format was received
     HLTDebug ( "Event received - Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s", 
 	       evtData.fEventID, evtData.fEventID, DataType2Text(iter->fDataType).c_str(), DataType2Text(kAliHLTDataTypeDDLRaw).c_str());
@@ -289,7 +292,7 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ProcessCalibration( const AliHLTComp
       }
     else
       {
-	// if set origin is not equal to current block origin, printout warning!
+	// if set origin is not equal to current block origin, printout warning! 
 	if(fOrigin.CompareTo(blockorigin)!=0) {
 	  HLTWarning("Origin %s of current data block does not match origin set by command line argument %s.", blockorigin.Data(), fOrigin.Data());
 	  continue;
@@ -340,11 +343,11 @@ Int_t AliHLTCOMPHuffmanAltroCalibComponent::ShipDataToFXS( const AliHLTComponent
   if(fTablePath.IsNull() )
     {
       // if there is no explicit table path, take current path
-      rootfilename.Form("calib_huffmanData_%s_%08X_%08X.root", fOrigin.Data(), fRunNumber, fSpecification);      
+      rootfilename.Form("huffmanData_%s_%08X_%08X.root", fOrigin.Data(), fRunNumber, fSpecification);      
     }
   else
     {
-      rootfilename.Form("%scalib_huffmanData_%s_%08X_%08X.root", fTablePath.Data(), fOrigin.Data(), fRunNumber, fSpecification);
+      rootfilename.Form("%shuffmanData_%s_%08X_%08X.root", fTablePath.Data(), fOrigin.Data(), fRunNumber, fSpecification);
     }
  
   TFile* huffmanrootfile = new TFile(rootfilename, "RECREATE");

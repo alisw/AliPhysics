@@ -32,6 +32,10 @@ ClassImp(AliHLTCOMPHuffmanOccurrenceData)
 
 /** construction without any arguments (used for isolated tests) */
 AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanOccurrenceData()
+  :
+  famplitude(0),
+  fabundance(0),
+  fcode(2) // has to be initialised to two since reasonable values are 0 and 1 !!!
 {
   // see header file for class documentation
   // or
@@ -46,20 +50,20 @@ AliHLTCOMPHuffmanOccurrenceData::~AliHLTCOMPHuffmanOccurrenceData()
   /* destructor, see header file for class documentation */
 }
 
-void AliHLTCOMPHuffmanOccurrenceData::SetHuffmanOccurrenceData(AliHLTCOMPHuffmanData_t const& occurrencetableentry)
+void AliHLTCOMPHuffmanOccurrenceData::SetHuffmanOccurrenceData(AliHLTCOMPHuffmanDataStruct const& occurrencetableentry)
 {
   // see header file for class documentation
-  amplitude = occurrencetableentry.amplitude;
-  abundance = occurrencetableentry.abundance;
-  code = occurrencetableentry.code;
+  famplitude = occurrencetableentry.famplitude;
+  fabundance = occurrencetableentry.fabundance;
+  fcode = occurrencetableentry.fcode;
 }
 
-AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanOccurrenceData::GetHuffmanOccurrenceData(AliHLTCOMPHuffmanData_t* occurrencetableentry)
+AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* AliHLTCOMPHuffmanOccurrenceData::GetHuffmanOccurrenceData(AliHLTCOMPHuffmanDataStruct* occurrencetableentry)
 {
   // see header file for class documentation
-  occurrencetableentry->amplitude = amplitude;
-  occurrencetableentry->abundance = abundance;
-  occurrencetableentry->code = code;
+  occurrencetableentry->famplitude = famplitude;
+  occurrencetableentry->fabundance = fabundance;
+  occurrencetableentry->fcode = fcode;
 
   return occurrencetableentry;
 }

@@ -176,13 +176,16 @@ int AliHLTCOMPHuffmanAltroComponent::DoInit( int argc, const char** argv )
 	      return ENOTSUP;
 	    }
 
-	  // get data origin (TPC, PHOS, ITS...)
+	  // get data origin (TPC, PHOS, ...)
 	  fOrigin=argv[i+1];
 
+	  while(fOrigin.Length() <  kAliHLTComponentDataTypefOriginSize)
+	    {
+	      fOrigin.Append(" ");
+	    }
+     
 	  HLTDebug("Origin is set to %s.", fOrigin.Data());
-	  
-	  // validation checker
-	  
+         
 	  i += 2;
 	  continue;
 	}
@@ -357,7 +360,7 @@ int AliHLTCOMPHuffmanAltroComponent::DoEvent( const AliHLTComponentEventData& ev
       if(fCompressionSwitch) // show selected mode
 	{
 	  HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",evtData.fEventID, evtData.fEventID, 
-		   DataType2Text(iter->fDataType).c_str(), DataType2Text(kAliHLTDataTypeDDLRaw).c_str());
+		   DataType2Text(iter->fDataType).c_str(), DataType2Text(kAliHLTDataTypeDDLRaw|fOrigin.Data()).c_str());
 
 	  // check if current block has correct data format
 	  // if not, take next block
@@ -366,7 +369,7 @@ int AliHLTCOMPHuffmanAltroComponent::DoEvent( const AliHLTComponentEventData& ev
       else
 	{
 	  HLTDebug("Event 0x%08LX (%Lu) received datatype: %s - required datatype: %s",evtData.fEventID, evtData.fEventID,
-		   DataType2Text(iter->fDataType).c_str(), DataType2Text(AliHLTCompDefinitions::fgkDDLEncodedHuffmanAltroDataType).c_str());
+		   DataType2Text(iter->fDataType).c_str(), DataType2Text(AliHLTCompDefinitions::fgkDDLEncodedHuffmanAltroDataType|fOrigin.Data()).c_str());
 
 	  // check if current block has correct data format
 	  // if not, take next block

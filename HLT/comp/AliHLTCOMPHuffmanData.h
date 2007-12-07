@@ -25,35 +25,39 @@
 */
 
 #include "AliHLTLogging.h"
-#include "AliHLTDataTypes.h"
+#include "AliHLTCompDefinitions.h"
 #include "AliHLTCOMPHuffmanOccurrenceData.h"
 #include "AliHLTCOMPHuffmanCodeData.h"
+
+#define TIMEBINS 1024
 
 // type definitions needed for the Huffman compression
 /** @class   AliHLTCOMPHuffmanData
     @author Jenny Wagner
     @date   29-08-2007
     @brief  The Huffman Data containing the Huffman code table and the occurrence table of ADC-values
+            it uses the classes @ref AliHLTCOMPHuffmanOccurrenceData and @ref AliHLTCOMPHuffmanCodeData
+            to convert all structs into classes (and instances) such that this information can be written
+            to a ROOT file
 */
 
-#define TIMEBINS 1024
 
 class AliHLTCOMPHuffmanData : public TObject, public AliHLTLogging
 {
 public:
 
   /** typedef for the nodes in the Huffman tree */
-  typedef struct AliHLTCOMPHuffmanTreeData_t
+  typedef struct AliHLTCOMPHuffmanTreeDataStruct  // struct containing all information for Huffman tree
   {
-    AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t leafcontents;
-    AliHLTCOMPHuffmanTreeData_t* left;
-    AliHLTCOMPHuffmanTreeData_t* right;
-    AliHLTCOMPHuffmanTreeData_t* parent;
+    AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct fleafcontents;  // contains all info about one leaf (node)
+    AliHLTCOMPHuffmanTreeDataStruct* fleft;      // pointer to left children
+    AliHLTCOMPHuffmanTreeDataStruct* fright;     // pointer to right children
+    AliHLTCOMPHuffmanTreeDataStruct* fparent;    // pointer to parent node
     
-    AliHLTCOMPHuffmanTreeData_t* next;
-    AliHLTCOMPHuffmanTreeData_t* previous;
+    AliHLTCOMPHuffmanTreeDataStruct* fnext;      // pointer to next element in remaining list to build tree from
+    AliHLTCOMPHuffmanTreeDataStruct* fprevious;  // pointer to previous element in remaining list to build tree from
    
-  } AliHLTCOMPHuffmanTreeData_t;
+  } AliHLTCOMPHuffmanTreeDataStruct;
   
   
   /** standard constructor */
@@ -66,17 +70,17 @@ public:
    * @param occurrencetable   pointer to occurrence table
    * @param codetable         pointer to Huffman code table
    */
-  void InitHuffmanData(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* occurrencetable, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* codetable);
+  void InitHuffmanData(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* codetable);
 
   /** return occurrence table to be used/written somewhere else (intialisation of Huffman Compressor tables)
    * @param occurrence table  pointer to occurrence table
    */
-  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* GetOccurrenceTable(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* occurrencetable);
+  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* GetOccurrenceTable(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable);
   
   /** return code table to be used/ written somewhere else (initialisation of the Huffman Compressor tables)
    * @param codetable   pointer to Huffman code table
   */
-  AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* GetCodeTable(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* codetable);
+  AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* GetCodeTable(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* codetable);
 
 private:
 

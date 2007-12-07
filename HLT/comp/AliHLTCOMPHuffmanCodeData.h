@@ -38,12 +38,12 @@ class AliHLTCOMPHuffmanCodeData : public TObject, public AliHLTLogging
 public:
 
   /** typedef for the structs in Huffman code table */
-  typedef struct AliHLTCOMPHuffmanCode_t
+  typedef struct AliHLTCOMPHuffmanCodeStruct
   {
-    Int_t amplitude;
-    AliHLTUInt64_t code; // maximal possible codelength: 64 bits
-    Int_t validcodelength; // validcodelength needed as code is of variable length!!
-  } AliHLTCOMPHuffmanCode_t;
+    Int_t famplitude; // ADC-value
+    AliHLTUInt64_t fhuffmancode; // maximal possible codelength: 64 bits
+    Int_t fvalidcodelength; // validcodelength needed as code is of variable length!!
+  } AliHLTCOMPHuffmanCodeStruct;
   
   /** standard constructor */
   AliHLTCOMPHuffmanCodeData();
@@ -52,10 +52,10 @@ public:
   virtual ~AliHLTCOMPHuffmanCodeData();
 
   /** convert Huffman code struct into class instance of HuffmanCodeData */
-  void SetHuffmanCodeData(AliHLTCOMPHuffmanCode_t const& codetableentry);
+  void SetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct const& codetableentry);
 
   /** return Huffman code struct */
-  AliHLTCOMPHuffmanCode_t* GetHuffmanCodeData(AliHLTCOMPHuffmanCode_t* codetableentry);
+  AliHLTCOMPHuffmanCodeStruct* GetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct* codetableentry);
 
 private:
 
@@ -65,9 +65,9 @@ private:
   /** assignment operator prohibited */
   AliHLTCOMPHuffmanCodeData& operator=(const AliHLTCOMPHuffmanCodeData&);
 
-  Int_t amplitude;       // 10-bit ADC-value
-  AliHLTUInt64_t code;   // respective Huffman code with maximal possible codelength: 64 bits
-  Int_t validcodelength; // variable to store the respective valid codelength
+  Int_t famplitude;       // 10-bit ADC-value
+  AliHLTUInt64_t fhuffmancode;   // respective Huffman code with maximal possible codelength: 64 bits
+  Int_t fvalidcodelength; // variable to store the respective valid codelength
   
   ClassDef(AliHLTCOMPHuffmanCodeData, 1)
     

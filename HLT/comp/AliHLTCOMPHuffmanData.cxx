@@ -14,19 +14,20 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   ALIHLTCOMPHuffmanData.cxx
-    @author Jenny Wagner
-    @date   29-08-2007
-*/
-
 #include "AliHLTCOMPHuffmanData.h"
-#include "AliHLTStdIncludes.h"
 
 #if __GNUC__ >= 3
 using namespace std;
 #endif
 
 ClassImp(AliHLTCOMPHuffmanData)
+
+/** @file   ALIHLTCOMPHuffmanData.cxx
+    @author Jenny Wagner
+    @date   29-08-2007
+            changed on 03-12-2007
+    @brief see header file for documentation
+*/
 
 /** construction without any arguments (used for isolated tests) */
 AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanData()
@@ -45,7 +46,7 @@ AliHLTCOMPHuffmanData::~AliHLTCOMPHuffmanData()
 }
 
 /** get data from OCDB and write them into instance of HuffmanData */
-void AliHLTCOMPHuffmanData::InitHuffmanData(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* occurrencetable, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* codetable)
+void AliHLTCOMPHuffmanData::InitHuffmanData(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* codetable)
 {
   // see header file for class documentation
   for(Int_t ii = 0; ii < TIMEBINS; ii++)
@@ -56,7 +57,7 @@ void AliHLTCOMPHuffmanData::InitHuffmanData(AliHLTCOMPHuffmanOccurrenceData::Ali
     }
 }
 
-AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanData::GetOccurrenceTable(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* occurrencetable) 
+AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* AliHLTCOMPHuffmanData::GetOccurrenceTable(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* occurrencetable) 
 {
   // see header file for class documentation
   for (Int_t ii = 0; ii < TIMEBINS; ii++)
@@ -68,7 +69,7 @@ AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanData:
   
 }
 
-AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* AliHLTCOMPHuffmanData::GetCodeTable(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* codetable)
+AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* AliHLTCOMPHuffmanData::GetCodeTable(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* codetable)
 {
   // see header file for class documentation
   for (Int_t ii = 0; ii < TIMEBINS; ii++)

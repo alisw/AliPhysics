@@ -22,8 +22,6 @@
 */
 
 #include "AliHLTCOMPHuffmanAltro.h"
-#include "AliHLTDataTypes.h"
-#include "AliHLTStdIncludes.h"
 
 #if __GNUC__ >= 3
 using namespace std;
@@ -49,18 +47,18 @@ AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro()
 }
 
 /** construction with arguments: compressionswitch (compress/ decompress), trainingmode (create new CodeTable or not) and translationtable (read in given CodeTable) */
-AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro(Bool_t compressionswitch, Bool_t trainingmode, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* translationtable, Int_t nrcutrailerwords)
+AliHLTCOMPHuffmanAltro::AliHLTCOMPHuffmanAltro(Bool_t compressionswitch, Bool_t trainingmode, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* translationtable, Int_t nrcutrailerwords)
   :
-  fTrainingMode(trainingmode),
-  fCompressionSwitch(compressionswitch),
+  fTrainingMode(0),
+  fCompressionSwitch(0),
   fPointer2InData(NULL),
   fPointer2OutData(NULL),
   fInputDataSize(0),
   fOutputDataSize(0),
-  fNrcuTrailerwords(nrcutrailerwords),
+  fNrcuTrailerwords(0),
   fEntropy(0.0),
   fTrainingTable(NULL),
-  fTranslationTable(translationtable)
+  fTranslationTable(NULL)
 {
   // see header file for class documentation
   // initialise member variables
@@ -148,17 +146,17 @@ void AliHLTCOMPHuffmanAltro::InitNewTrainingTable()
 {
   // see header file for class documentation
   // define array for training table with amplitudes and abundances
-  fTrainingTable =  new AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t[TIMEBINS];
+  fTrainingTable =  new AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct[TIMEBINS];
   
   //initialise this array:
   for(Int_t ii = 0; ii < TIMEBINS; ii++)
     {
       
-      fTrainingTable[ii].amplitude = ii;   
+      fTrainingTable[ii].famplitude = ii;   
       
-      fTrainingTable[ii].abundance = 0;
+      fTrainingTable[ii].fabundance = 0;
       
-      fTrainingTable[ii].code = 2; //to assure that each leaf is assigned either 0 or 1!!!
+      fTrainingTable[ii].fcode = 2; //to assure that each leaf is assigned either 0 or 1!!!
     }
   
 }
@@ -180,8 +178,8 @@ void AliHLTCOMPHuffmanAltro::GetTrainingTable(AliHLTCOMPHuffmanData* huffmandata
   // print fTrainingTable to screen (non-zero entries only):
   // for(Int_t jj = 0; jj < TIMEBINS; jj++)
   //  {
-  //   if(fTrainingTable[jj].abundance != 0)
-  //   cout << jj << "  |  " << fTrainingTable[jj].amplitude << "  |  " << fTrainingTable[jj].abundance << endl;
+  //   if(fTrainingTable[jj].fabundance != 0)
+  //   cout << jj << "  |  " << fTrainingTable[jj].famplitude << "  |  " << fTrainingTable[jj].fabundance << endl;
   //  }
 
   // error when no training table available
@@ -196,14 +194,14 @@ void AliHLTCOMPHuffmanAltro::GetTranslationTable(AliHLTCOMPHuffmanData* huffmand
 {
   // see header file for class documentation
   // initialise fTranslationTable to be read from a file:
-  fTranslationTable = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t[TIMEBINS];
+  fTranslationTable = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[TIMEBINS];
 
   for(Int_t kk = 0; kk < TIMEBINS; kk++)
     {
-      fTranslationTable[kk].amplitude = 0;
-      fTranslationTable[kk].code = 0;
+      fTranslationTable[kk].famplitude = 0;
+      fTranslationTable[kk].fhuffmancode = 0;
       // fTranslationTable[kk].morecode = NULL;
-      fTranslationTable[kk].validcodelength = 0;
+      fTranslationTable[kk].fvalidcodelength = 0;
     }
 
   // take translation table from HuffmanData
@@ -212,8 +210,8 @@ void AliHLTCOMPHuffmanAltro::GetTranslationTable(AliHLTCOMPHuffmanData* huffmand
   // print fTranlsationTable to screen (non-zero entries only):
   // for(Int_t jj = 0; jj < TIMEBINS; jj++)
   //  {
-  //   if(fTranslationTable[jj].validcodelength != 0)
-  //   cout << jj << "  |  " << fTranslationTable[jj].code << "  |  " << fTranslationTable[jj].validcodelength << endl;
+  //   if(fTranslationTable[jj].fvalidcodelength != 0)
+  //   cout << jj << "  |  " << fTranslationTable[jj].fhuffmancode << "  |  " << fTranslationTable[jj].fvalidcodelength << endl;
   //  }
 
   // error when fTranslationTable = NULL
@@ -233,10 +231,9 @@ void AliHLTCOMPHuffmanAltro::ProcessData()
       EntropyCompression();
 
       // information about compression ratio
-       Double_t compressionratio = ((Double_t) fOutputDataSize)/fInputDataSize;
        HLTDebug("original filesize (bytes) = %d", fInputDataSize);
        HLTDebug("compressed filesize (bytes) = %d", fOutputDataSize);
-       HLTDebug("compression ratio after Huffman encoding is %f", compressionratio);
+       HLTDebug("compression ratio after Huffman encoding is %f", ((Double_t) fOutputDataSize)/fInputDataSize);
     }
   else
     {
@@ -253,10 +250,9 @@ void AliHLTCOMPHuffmanAltro::ProcessData()
 	 EntropyDecompression();
 
 	 // information about compression ratio
-	 Double_t compressionratio = ((Double_t) fInputDataSize)/fOutputDataSize;
 	 HLTDebug("compressed filesize (bytes) = %d", fInputDataSize);
 	 HLTDebug("filesize after decoding (bytes) = %d", fOutputDataSize);
-	 HLTDebug("compression ratio calculated from Huffman decompressing has been %f", compressionratio);
+	 HLTDebug("compression ratio calculated from Huffman decompressing has been %f",((Double_t) fInputDataSize)/fOutputDataSize);
 	}
     }
 }
@@ -367,14 +363,14 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 	// print first 100 10-bits words with resp.code and validcodelength to screen...
 	// if (idx10 < 101)
 	//  {
-	//    cout << "read 10-bits word (HEX) =  " << hex << data10 << dec <<" with code (DEC) =  " << fTranslationTable[data10].code << "  and validcodelength (DEC) =  " << fTranslationTable[data10].validcodelength << endl;
+	//    cout << "read 10-bits word (HEX) =  " << hex << data10 << dec <<" with code (DEC) =  " << fTranslationTable[data10].fhuffmancode << "  and validcodelength (DEC) =  " << fTranslationTable[data10].fvalidcodelength << endl;
 	// };
 
 	  // start encoding of codes with less than 65 bits codelength
-	  if(fTranslationTable[data10].validcodelength < 65)
+	  if(fTranslationTable[data10].fvalidcodelength < 65)
 	    {
 	      // error and abortion when validcodelength = 0
-	      if (fTranslationTable[data10].validcodelength == 0)
+	      if (fTranslationTable[data10].fvalidcodelength == 0)
 		{
 		  HLTError("Error! Valid codelength of read 10 bit word (DEC) %i is zero", data10);
 
@@ -383,18 +379,18 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 
 	      // validation test
 	      // bitcounter += 1;
-	      // sumlength += fTranslationTable[data10].validcodelength;
+	      // sumlength += fTranslationTable[data10].fvalidcodelength;
 	            
-	      if(fTranslationTable[data10].validcodelength + bitpsoutwd < 64) //if new code fits in current output line
+	      if(fTranslationTable[data10].fvalidcodelength + bitpsoutwd < 64) //if new code fits in current output line
 		{
 		  // validation test
-		  // cout << "writing code (HEX) =  " << hex << fTranslationTable[data10].code << dec << " to line (HEX) =  " << hex << pointeroutputprop[idxoutwd] << dec << endl;
+		  // cout << "writing code (HEX) =  " << hex << fTranslationTable[data10].fhuffmancode << dec << " to line (HEX) =  " << hex << pointeroutputprop[idxoutwd] << dec << endl;
 
 		  // shift line to right
-		  pointeroutputprop[idxoutwd] <<= fTranslationTable[data10].validcodelength;
+		  pointeroutputprop[idxoutwd] <<= fTranslationTable[data10].fvalidcodelength;
 	      
 		  // append code at left side of line
-		  pointeroutputprop[idxoutwd] |= fTranslationTable[data10].code;
+		  pointeroutputprop[idxoutwd] |= fTranslationTable[data10].fhuffmancode;
 
 		  // validation test
 		  // cout << "code written and current line updated to (HEX) =  " << hex << pointeroutputprop[idxoutwd] << dec << endl;
@@ -402,16 +398,16 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 	      else //if not, write lowest bits to next line
 		{
 		  // validation test
-		   // cout << "writing bits of code (HEX) =  " << hex << fTranslationTable[data10].code << dec << " to line (HEX) =  " << hex << pointeroutputprop[idxoutwd] << dec << endl;
+		   // cout << "writing bits of code (HEX) =  " << hex << fTranslationTable[data10].fhuffmancode << dec << " to line (HEX) =  " << hex << pointeroutputprop[idxoutwd] << dec << endl;
 
 		  // create temporary variable for performance gain:
-		  Int_t restcode = fTranslationTable[data10].validcodelength - 64 + bitpsoutwd;
+		  Int_t restcode = fTranslationTable[data10].fvalidcodelength - 64 + bitpsoutwd;
 		  
 		  // shift line completely to the right
 		  pointeroutputprop[idxoutwd] <<= (64 - bitpsoutwd);
 		  
 		  // append upper bits of code to this line
-		  pointeroutputprop[idxoutwd] |= (fTranslationTable[data10].code >> (restcode));
+		  pointeroutputprop[idxoutwd] |= (fTranslationTable[data10].fhuffmancode >> (restcode));
 		  
 		  // validation test
 		  // cout << "code bits written and current line updated to (HEX) =  " << hex << pointeroutputprop[idxoutwd] << dec << endl;
@@ -421,7 +417,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 		  ++idxoutwd;
 	      
 		  // trick to cut out already written bits from code		  
-		  AliHLTUInt64_t tempbuffer = fTranslationTable[data10].code;
+		  AliHLTUInt64_t tempbuffer = fTranslationTable[data10].fhuffmancode;
 		  tempbuffer <<= 64-bitpsoutwd; // shift away written code
 		  tempbuffer >>= 64-bitpsoutwd; // shift back to get lowest bits
 		  
@@ -445,7 +441,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 	  // cout << "output :  idxoutwd (DEC) =  " << idxoutwd << "   bitpsoutwd (DEC) =  " << bitpsoutwd << endl;
 	 
 	  // calculate new positions
-	  bitpsoutwd = (fTranslationTable[data10].validcodelength + bitpsoutwd) & 0x3F;
+	  bitpsoutwd = (fTranslationTable[data10].fvalidcodelength + bitpsoutwd) & 0x3F;
 	  
 	  ++idx10; // go on reading 10 bit word
 	  
@@ -459,8 +455,8 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 	  //if(idxoutwd > 2635)
 	  // {
 	  //   cout << " encoding value (HEX) = " << hex << data10 << dec << endl;
-	  //   cout << " code (HEX) = " << hex << fTranslationTable[data10].code << dec << endl;
-	  //   cout << " valid code length (DEC) = " << fTranslationTable[data10].validcodelength << endl;
+	  //   cout << " code (HEX) = " << hex << fTranslationTable[data10].fhuffmancode << dec << endl;
+	  //   cout << " valid code length (DEC) = " << fTranslationTable[data10].fvalidcodelength << endl;
 	  //   cout << " new positions:" << endl;
 	  //   cout << "input :  idxwd (DEC) =  " << idxwd << "   bitpswd (DEC) =  " << bitpswd << "   idx10 (DEC) =  " << idx10 << endl;
 	  //   cout << "output :  idxoutwd (DEC) =  " << idxoutwd << "   bitpsoutwd (DEC) =  " << bitpsoutwd << endl; 
@@ -561,10 +557,10 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyCompression()
 }
 
 /** Mergesort used by TrainingData to sort an array with n entries from high abundance to low abundance */
-AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanAltro::Mergesort(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t *unsortedarray, Int_t n)
+AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* AliHLTCOMPHuffmanAltro::Mergesort(AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct *unsortedarray, Int_t n)
 {
   // see header file for class documentation
-  //divide array into two halfs: left and right (left.size = divlength)
+  //divide array into two halfs: left and right (fleft.size = divlength)
   Int_t divlength = n >> 1;
       
   if (n==1)
@@ -585,7 +581,7 @@ AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanAltro
 
       // merge together:
       // create temporary result array:   
-      AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* temp = new AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t[n];
+      AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* temp = new AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct[n];
 
       // counters:
       Int_t ii, jj, kk;
@@ -593,7 +589,7 @@ AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanAltro
       // if left and right halves both have elements: chose the smaller one:
       for (ii = 0, jj = divlength, kk = 0; ii < divlength && jj < n;)
         {
-	  if (unsortedarray[ii].abundance > unsortedarray[jj].abundance)
+	  if (unsortedarray[ii].fabundance > unsortedarray[jj].fabundance)
 	    { 
 	      temp[kk] = unsortedarray[ii];
 	      ++ii;
@@ -638,109 +634,109 @@ AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* AliHLTCOMPHuffmanAltro
 }
 
 /** CreateHuffmanTree used by TrainingData to create the binary Huffman tree */
-AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* AliHLTCOMPHuffmanAltro::CreateHuffmanTree(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* listroot,AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* lastelement, Int_t n)
+AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* AliHLTCOMPHuffmanAltro::CreateHuffmanTree(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* listroot,AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* lastelement, Int_t n)
 {
   // see header file for class documentation
   // initialise pointer to go through list
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* nextpointer = listroot;
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* lastpointer = lastelement;
+  //AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* nextpointer = listroot; // pointer for validation test below
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* lastpointer = lastelement;
 
   // build Huffman tree while there are still elements in the list
   while(n > 2)
     {
       // validation test
       // cout << "current number of remaining list elements n (DEC) =  " << n << endl;
-      // cout << "current abundance of last list element (DEC) =  " << lastpointer->leafcontents.abundance << endl;
+      // cout << "current abundance of last list element (DEC) =  " << lastpointer->fleafcontents.fabundance << endl;
       // cout << "print all list elements from high to low to screen:" << endl;
       // while(nextpointer != NULL)
       //    { 
-      //      cout << nextpointer->leafcontents.abundance << endl; 
-      //      nextpointer = nextpointer->next; 
+      //      cout << nextpointer->fleafcontents.fabundance << endl; 
+      //      nextpointer = nextpointer->fnext; 
       //    }
       // cout << " end of list " << endl;
 
       // create new tree element from last two entries in orderedarray
-     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* temptree = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t;
+     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* temptree = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct;
 
       // initialise the new element:
-      temptree->leafcontents.amplitude = TIMEBINS; //internal nodes mustn't be confused with real amplitudes (from 0 to bitsize)!
+      temptree->fleafcontents.famplitude = TIMEBINS; //internal nodes mustn't be confused with real amplitudes (from 0 to bitsize)!
 
       // validation test
-      // cout <<"current abundance of last list element (DEC) =  " << lastpointer->leafcontents.abundance << endl;
+      // cout <<"current abundance of last list element (DEC) =  " << lastpointer->fleafcontents.fabundance << endl;
 
       // initialise abundance starting with last element
-      temptree->leafcontents.abundance = lastpointer->leafcontents.abundance;
+      temptree->fleafcontents.fabundance = lastpointer->fleafcontents.fabundance;
 
       // code assignment small ones get 0, large ones get 1:
-      lastpointer->leafcontents.code = 0;
+      lastpointer->fleafcontents.fcode = 0;
 
       // append smallest element on the left and set pointer temptree = parent
-      temptree->left = lastpointer;
-      lastpointer->parent = temptree;
+      temptree->fleft = lastpointer;
+      lastpointer->fparent = temptree;
 
       // go on to second last element and set abundance, code and append on right side of the new element
-      lastpointer = lastpointer->previous;
+      lastpointer = lastpointer->fprevious;
 
       // validation test
-      //  cout << "current abundance of second last list element (DEC) =  " << lastpointer->leafcontents.abundance << endl;
+      //  cout << "current abundance of second last list element (DEC) =  " << lastpointer->fleafcontents.fabundance << endl;
 
       cout.flush();
 
-      temptree->leafcontents.abundance += lastpointer->leafcontents.abundance;
-      lastpointer->leafcontents.code = 1;
-      temptree->right = lastpointer;
-      lastpointer->parent = temptree;
+      temptree->fleafcontents.fabundance += lastpointer->fleafcontents.fabundance;
+      lastpointer->fleafcontents.fcode = 1;
+      temptree->fright = lastpointer;
+      lastpointer->fparent = temptree;
 
-      temptree->next = NULL;
-      temptree->previous = NULL; 
-      temptree->parent = NULL;
+      temptree->fnext = NULL;
+      temptree->fprevious = NULL; 
+      temptree->fparent = NULL;
 
       // validation test
-      // cout <<   "current abundance of temptree element = sum of leaf abundances (DEC) =  " << temptree->leafcontents.abundance << endl;
+      // cout <<   "current abundance of temptree element = sum of leaf abundances (DEC) =  " << temptree->fleafcontents.fabundance << endl;
 
       // write temptree at the suitable place according to its abundance in the list
       // initialise searchpointer to go through list
-     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* search = listroot;
-     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* sorting = listroot; // pointer from previous element
+     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* search = listroot;
+     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* sorting = listroot; // pointer from previous element
     
-      // check if listroot[0].leafcontents.abundance < temptree.leafcontents.abundance,
+      // check if listroot[0].fleafcontents.fabundance < temptree.fleafcontents.fabundance,
       // if so, make temptree new root of list
-      if (temptree->leafcontents.abundance > listroot[0].leafcontents.abundance)
+      if (temptree->fleafcontents.fabundance > listroot[0].fleafcontents.fabundance)
 	{
 	  // validation test
-	  // cout << "abundance of new element (DEC) =  " << temptree->leafcontents.abundance << "   is larger than root abundance (DEC) =  " << listroot[0].leafcontents.abundance << endl;
+	  // cout << "abundance of new element (DEC) =  " << temptree->fleafcontents.fabundance << "   is larger than root abundance (DEC) =  " << listroot[0].fleafcontents.fabundance << endl;
 
 	  // temptree = root
-	  temptree->next = search; 
-	  search->previous = temptree;
-	  //temptree->previous = NULL // for first list element is already done!
+	  temptree->fnext = search; 
+	  search->fprevious = temptree;
+	  //temptree->fprevious = NULL // for first list element is already done!
 	  listroot = temptree;
 	}
       else //sort in at the suitable point in the list
 	{
-	  search = listroot->next; // go one further than listroot!
+	  search = listroot->fnext; // go one further than listroot!
 
 	  while(search != NULL)
 	    {
 	      // validation test
-	      // cout << "current abundance of searchpointer (DEC) =  " << searchpointer->leafcontents.abundance << endl;
+	      // cout << "current abundance of searchpointer (DEC) =  " << searchpointer->fleafcontents.fabundance << endl;
 
 	      // if abundance of list entry > abundance of new element, go to next element,
 	      // else sort in at that point
-	      if(search->leafcontents.abundance > temptree->leafcontents.abundance)
+	      if(search->fleafcontents.fabundance > temptree->fleafcontents.fabundance)
 		{
 		  // validation test		  
-		  // cout << "abundance of searchpointer (DEC) =  " << search->leafcontents.abundance << "   is larger than temptree abundance (DEC) =  " << temptree->leafcontents.abundance << endl;
+		  // cout << "abundance of searchpointer (DEC) =  " << search->fleafcontents.fabundance << "   is larger than temptree abundance (DEC) =  " << temptree->fleafcontents.fabundance << endl;
 
 		  sorting = search;        // remember previous element
-		  search = sorting->next;  // goto next element
+		  search = sorting->fnext;  // goto next element
 		}
 	      else 
 		{
-		  sorting->next = temptree;     //insert temptree to previous
-		  search->previous = temptree;  //insert temptree to next
-		  temptree->previous = sorting; // insert temptree to previous
-		  temptree->next = search;      //insert temptree to next 
+		  sorting->fnext = temptree;     //insert temptree to previous
+		  search->fprevious = temptree;  //insert temptree to next
+		  temptree->fprevious = sorting; // insert temptree to previous
+		  temptree->fnext = search;      //insert temptree to next 
 		 
 		  search = NULL;                //stop sorting in
 		}
@@ -749,11 +745,11 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* AliHLTCOMPHuffmanAltro::Crea
 
       // cut the two elements out of the list:
   
-      lastpointer = lastpointer->previous;
-      lastpointer->next = NULL;
+      lastpointer = lastpointer->fprevious;
+      lastpointer->fnext = NULL;
       
       // validation test
-      // cout << "cutting out last two list elements, abundance of current last list element is (DEC) =  " << lastpointer->leafcontents.abundance << endl;
+      // cout << "cutting out last two list elements, abundance of current last list element is (DEC) =  " << lastpointer->fleafcontents.fabundance << endl;
       
       cout.flush();
       
@@ -762,15 +758,15 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* AliHLTCOMPHuffmanAltro::Crea
       // {
       //   cout << "current list with new (temptree) element sorted in:" << endl;
 	  
-      //  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t * showpointer = listroot;
-      //   while((showpointer->next != NULL) && (showpointer->leafcontents.abundance != 0))	  
+      //  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct * showpointer = listroot;
+      //   while((showpointer->fnext != NULL) && (showpointer->fleafcontents.fabundance != 0))	  
       //    {
-      //      cout << "amplitude (DEC) =  " << showpointer->leafcontents.amplitude << "   abundance (DEC) =  " <<  showpointer->leafcontents.abundance << endl; 
+      //      cout << "amplitude (DEC) =  " << showpointer->fleafcontents.famplitude << "   abundance (DEC) =  " <<  showpointer->fleafcontents.fabundance << endl; 
 	      
-      //      showpointer = showpointer->next;
+      //      showpointer = showpointer->fnext;
       //    }
 	  
-      //   cout << "amplitude (DEC) =  " << showpointer->leafcontents.amplitude << "   abundance (DEC) =  " <<  showpointer->leafcontents.abundance << endl; 
+      //   cout << "amplitude (DEC) =  " << showpointer->fleafcontents.famplitude << "   abundance (DEC) =  " <<  showpointer->fleafcontents.fabundance << endl; 
       // };
       
       // perform createHuffmanTree with n-1 elements:
@@ -780,42 +776,42 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* AliHLTCOMPHuffmanAltro::Crea
   // termination for n = 2:
  
   // create new tree element from last two entries
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* temptree = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t;
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* temptree = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct;
   
   // initialise the new element:
-  temptree->leafcontents.amplitude = TIMEBINS; //internal nodes mustn't be confused with real event names (from 0 to TIMEBINS)!
+  temptree->fleafcontents.famplitude = TIMEBINS; //internal nodes mustn't be confused with real event names (from 0 to TIMEBINS)!
  
   // validation test 
   // cout << "assemble last two elements to final tree:" << endl;
-  // cout << "abundance of last list element (DEC) =  " << lastpointer->leafcontents.abundance << endl;
+  // cout << "abundance of last list element (DEC) =  " << lastpointer->fleafcontents.fabundance << endl;
   
   // initialise abundance starting with last element
-  temptree->leafcontents.abundance = lastpointer->leafcontents.abundance;
+  temptree->fleafcontents.fabundance = lastpointer->fleafcontents.fabundance;
   
   // code assignment small ones get 0, large ones get 1:
-  lastpointer->leafcontents.code = 0;
+  lastpointer->fleafcontents.fcode = 0;
   
   // append smallest element on the left:
-  temptree->left = lastpointer;
-  lastpointer->parent = temptree;
+  temptree->fleft = lastpointer;
+  lastpointer->fparent = temptree;
  
   // validation test
-  // cout << "abundance of first list element (DEC) =  " << listroot->leafcontents.abundance << endl;
+  // cout << "abundance of first list element (DEC) =  " << listroot->fleafcontents.fabundance << endl;
 
   cout.flush();
  
   // go on to second last element and set abundance, code and append on right side of the new element 
-  temptree->leafcontents.abundance +=listroot->leafcontents.abundance;
-  listroot->leafcontents.code = 1;
-  temptree->right = listroot;
-  listroot->parent = temptree;
+  temptree->fleafcontents.fabundance +=listroot->fleafcontents.fabundance;
+  listroot->fleafcontents.fcode = 1;
+  temptree->fright = listroot;
+  listroot->fparent = temptree;
   
-  temptree->next = NULL;
-  temptree->previous = NULL; 
-  temptree->parent = NULL;
+  temptree->fnext = NULL;
+  temptree->fprevious = NULL; 
+  temptree->fparent = NULL;
   
   // validation test
-  // cout << "  final abundance of tree root (DEC) =  " << temptree->leafcontents.abundance << endl;
+  // cout << "  final abundance of tree root (DEC) =  " << temptree->fleafcontents.fabundance << endl;
   
   // error if temptree = NULL
   if (temptree == NULL)
@@ -827,24 +823,23 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* AliHLTCOMPHuffmanAltro::Crea
 }
 
 /** HuffmanCode used by TrainingData to create the Huffman code for all leaves of the HuffmanTree */
-Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* treeroot, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* HuffmanCodearray)
+Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* treeroot, AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* HuffmanCodearray)
 {
   // see header file for class documentation
-  while ((treeroot->left != NULL) || (treeroot->right != NULL))
+  while ((treeroot->fleft != NULL) || (treeroot->fright != NULL))
     {
       // define pointer to go through tree
-     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* finder = treeroot;
+     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* finder = treeroot;
       
       // define temporary HuffmanCode struct to sort into the Huffmanarray later
       // array necessary for codelengths > 64 bits
       Int_t tempstructsize = (Int_t) ceil((double) TIMEBINS/64); // maximal codelength: TIMEBINS
-      Int_t tempstructcntr = 0; // used to write in tempstruct
-
-      AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* tempstruct = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t[tempstructsize];
+      
+      AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* tempstruct = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[tempstructsize];
 
       for(Int_t jj = 0; jj < tempstructsize; jj++)
 	{
-	  tempstruct[jj].code = 0;
+	  tempstruct[jj].fhuffmancode = 0;
 	}
 
       Int_t passednodes = 0;
@@ -853,24 +848,24 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
       while (1)
 	{
 	  // if finder points at a leaf:
-	  if (finder->right == NULL && finder->left == NULL)
+	  if (finder->fright == NULL && finder->fleft == NULL)
 	    { 
 	      //if it is an internal node
-	      if(finder->leafcontents.amplitude == TIMEBINS) 
+	      if(finder->fleafcontents.famplitude == TIMEBINS) 
 		{
 		  // validation test  
-		  // cout << "found internal node with following abundance to delete (DEC) =  " << finder->leafcontents.abundance <<  endl; 
+		  // cout << "found internal node with following abundance to delete (DEC) =  " << finder->fleafcontents.fabundance <<  endl; 
 
 		  //go back to parent and delete node with 256
-		  if (finder->leafcontents.code == 0) // node was left one
+		  if (finder->fleafcontents.fcode == 0) // node was left one
 		    {
-		     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* parent = finder->parent;
-		      parent->left = NULL;
+		     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* parent = finder->fparent;
+		      parent->fleft = NULL;
 		    }
 		  else // node was right one
 		    {
-		     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* parent = finder->parent;
-		      parent->right = NULL;
+		     AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* parent = finder->fparent;
+		      parent->fright = NULL;
 		    }	 
 		  
 		  break;
@@ -880,7 +875,7 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 		  Int_t checkright = 0; // so leaf is left children
 		  
 		  // leaf can also be a right leaf:
-		  if (finder->leafcontents.code == 1)
+		  if (finder->fleafcontents.fcode == 1)
 		    {
 		      checkright = 1; // if code == 1, leaf is right children
 		    };
@@ -888,26 +883,26 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 		  // write collected data in the respective array:
 
 		  // validation test if amplitudes are correctly found (after being initialised to TIMEBINS+1 in TrainingData()
-		  // HuffmanCodearray[finder->leafcontents.amplitude].amplitude = finder->leafcontents.amplitude;
+		  // HuffmanCodearray[finder->fleafcontents.famplitude].famplitude = finder->fleafcontents.famplitude;
 		  
 		  // validation test
-		  // cout << "found leaf with amplitude (DEC) =  " << finder->leafcontents.amplitude << endl;
+		  // cout << "found leaf with amplitude (DEC) =  " << finder->fleafcontents.famplitude << endl;
 		  
-		  HuffmanCodearray[finder->leafcontents.amplitude].validcodelength = passednodes;
+		  HuffmanCodearray[finder->fleafcontents.famplitude].fvalidcodelength = passednodes;
 
 		  // validation test
-		  // cout << "found leaf with validlength (DEC) =  " << HuffmanCodearray[foundleaves].validcodelength << endl;
+		  // cout << "found leaf with validlength (DEC) =  " << HuffmanCodearray[foundleaves].fvalidcodelength << endl;
 		 
 		  //write code:
-		  HuffmanCodearray[finder->leafcontents.amplitude].code = tempstruct[0].code;
+		  HuffmanCodearray[finder->fleafcontents.famplitude].fhuffmancode = tempstruct[0].fhuffmancode;
 
 		  // validation test
-		  //cout << "found leaf with code (HEX) =  " << hex << HuffmanCodearray[finder->leafcontents.amplitude].code << dec << endl;
+		  //cout << "found leaf with code (HEX) =  " << hex << HuffmanCodearray[finder->fleafcontents.famplitude].fhuffmancode << dec << endl;
 
 		  if(passednodes > 64) // if there is more code to write (not usual in normal zero-suppressed data streams!) 
 		    {
 
-		      HLTError("Error! Valid codelength for datum (DEC) %d is larger than 64 bits, which is not usual for normal input data", finder->leafcontents.amplitude);
+		      HLTError("Error! Valid codelength for datum (DEC) %d is larger than 64 bits, which is not usual for normal input data", finder->fleafcontents.famplitude);
 
 		      return 1;
 		    }
@@ -916,18 +911,18 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 		  // cout << "found leaf written after passed nodes (DEC) =  " << passednodes << endl;
 		  
 		  // deleting found leaf from tree
-		 AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* parent = finder->parent; // go one up and set pointer to leaf to zero:
+		 AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* parent = finder->fparent; // go one up and set pointer to leaf to zero:
 		  
 		   // validation test 		  
-		   // cout << "parent abundance from found leaf (DEC) =  " << finder->leafcontents.abundance << endl;
+		   // cout << "parent abundance from found leaf (DEC) =  " << finder->fleafcontents.fabundance << endl;
 
 		  if (checkright == 1) // if leaf is right children -> delete right
 		    {
-		      parent->right = NULL;   
+		      parent->fright = NULL;   
 		    }
-		  else 	//else: delete left
+		  else 	//else: delete fleft
 		    {
-		      parent->left = NULL;
+		      parent->fleft = NULL;
 		    }
 		  
 		  break;		  
@@ -938,26 +933,26 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 	  else // if node is not a leaf     
 	    {
 	      // validation test
-	      //cout << "finder pointer to left child (DEC) =  " << finder->left << endl;
-	      //cout << "finder pointer to right child (DEC) =  " << finder->right << endl;
+	      //cout << "finder pointer to left child (DEC) =  " << finder->fleft << endl;
+	      //cout << "finder pointer to right child (DEC) =  " << finder->fright << endl;
 	      
-	      if(finder->left != NULL)
+	      if(finder->fleft != NULL)
 		{
-		  finder = finder->left;  // pointer to children
+		  finder = finder->fleft;  // pointer to children
 
 		  // validation test
-		  //cout << "left child has abundance (DEC) =  " << finder->leafcontents.abundance << endl;
+		  //cout << "left child has abundance (DEC) =  " << finder->fleafcontents.fabundance << endl;
 		 
 		  // shift left to arrange space for new code element which is zero (->left!)
 		  // i.e. nothing further needed to create code
 
 		  // validation test
-		  //cout << "code for left child is created as (DEC) =  " << tempstruct->code << endl;
+		  //cout << "code for left child is created as (DEC) =  " << tempstruct->fhuffmancode << endl;
 		  
 		  //problem if passednodes > 63 --> inserting another bit becomes tricky:
 		  if(passednodes < 64)
 		    {
-		      tempstruct[0].code = tempstruct[0].code << 1; 
+		      tempstruct[0].fhuffmancode = tempstruct[0].fhuffmancode << 1; 
 		    }
 		  else // error as valid codelength should not exceed 64 bits
 		    {
@@ -968,28 +963,28 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 		    }
 
 		  // validation test
-		  //cout << "code for left child has been written as (DEC) =  " << tempstruct->code << endl;
+		  //cout << "code for left child has been written as (DEC) =  " << tempstruct->fhuffmancode << endl;
 		  
 		 ++passednodes;
 		}
 	      else
 		{
-		  finder = finder->right; // goto right children
+		  finder = finder->fright; // goto right children
 
 		  // validation test
-		  //cout << "right child has abundance (DEC) =  " << finder->leafcontents.abundance << endl;
+		  //cout << "right child has abundance (DEC) =  " << finder->fleafcontents.fabundance << endl;
 
 		  // shift left to arrange space for new code element which is one (->right!)
 		  // i.e. append 1 at the right end of the code via OR-function
 
 		  // validation test
-		  //cout << "code for right child is created as (DEC) =  " << tempstruct->code << endl;
+		  //cout << "code for right child is created as (DEC) =  " << tempstruct->fhuffmancode << endl;
 
 		  //problem if passednodes > 63 --> inserting another bit becomes tricky:
 		  if(passednodes < 64)
 		    {
-		      tempstruct[0].code = tempstruct[0].code << 1; 
-		      tempstruct[0].code = (tempstruct[0].code) | 1;
+		      tempstruct[0].fhuffmancode = tempstruct[0].fhuffmancode << 1; 
+		      tempstruct[0].fhuffmancode = (tempstruct[0].fhuffmancode) | 1;
 		    }
 		  else
 		    {
@@ -999,7 +994,7 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 		    }
 				  
 		  // validation test
-		  //cout << "code for right children has been written as (DEC) =  " << tempstruct->code << endl;
+		  //cout << "code for right children has been written as (DEC) =  " << tempstruct->fhuffmancode << endl;
 		  
 		  ++passednodes;
 		} // end of right children search
@@ -1013,7 +1008,7 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
     // error when there is an amplitude = TIMEBINS in the HuffmanArray
     for(int jj = 0; jj < TIMEBINS; jj++)
       {
-    	if(HuffmanCodearray[jj].amplitude == TIMEBINS)
+    	if(HuffmanCodearray[jj].famplitude == TIMEBINS)
 	  {
 	    HLTError("Error! Internal node from Huffman tree in Huffmanarray for 10 bit word (DEC) %i", jj);
 	  };
@@ -1034,12 +1029,12 @@ Int_t AliHLTCOMPHuffmanAltro::TrainingData()
  
   // initialise required variables for input reading:
   AliHLTUInt32_t data10 = 0; // temporary number to read out 10bit word with
-  Int_t idxwd = 8;           // because of common data header words (see below)!
-  Int_t bitpswd = 0;
+  UInt_t idxwd = 8;           // because of common data header words (see below)!
+  UInt_t bitpswd = 0;
 
   // number 32-bit trailer and common data header words:
   // Int_t fNrcuTrailerwords = 1; // determined by user input as argument
-  Int_t headerwords = 8;
+  UInt_t headerwords = 8;
   
   // validation test
   // check if the input data size is appropriate:
@@ -1063,7 +1058,7 @@ Int_t AliHLTCOMPHuffmanAltro::TrainingData()
     };
   
   // index word reads position of 32bit word in input array
-  Int_t idx10 = 0;
+  UInt_t idx10 = 0;
     
   // last valid bit 
   UInt_t endNdx = (fInputDataSize>>2)-fNrcuTrailerwords;
@@ -1082,7 +1077,7 @@ Int_t AliHLTCOMPHuffmanAltro::TrainingData()
 	};
 
       // fill abundances in training table
-      fTrainingTable[(Int_t)(data10)].abundance += 1;
+      fTrainingTable[(Int_t)(data10)].fabundance += 1;
       
       // increase total number of events
       totalnumber += 1;
@@ -1109,7 +1104,7 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
 {
   // see header file for class documentation
   // using merge sort to sort the list: (stable algorithm, quick even in worst case O(nlogn))
-  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanData_t* HuffmanArraySorted = Mergesort(fTrainingTable, TIMEBINS);
+  AliHLTCOMPHuffmanOccurrenceData::AliHLTCOMPHuffmanDataStruct* HuffmanArraySorted = Mergesort(fTrainingTable, TIMEBINS);
 
   // abort when there is no pointer to sorted array (error produced in Mergesort function)
   if(HuffmanArraySorted == NULL)
@@ -1121,9 +1116,9 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   // go through list and watch if current abundance of HuffmanData is always larger than next element
   for(int kk = 0; kk < TIMEBINS - 1; kk++)
     {
-      if(HuffmanArraySorted[kk].abundance < HuffmanArraySorted[kk+1].abundance)
+      if(HuffmanArraySorted[kk].fabundance < HuffmanArraySorted[kk+1].fabundance)
 	{
-	  HLTError("Error! List of 10 bit word abundances not properly sorted by merge sort", "Element with 10 bit word (DEC) %i has abundance %i which is smaller than element with 10 bit word (DEC) %i with abundance %i",HuffmanArraySorted[kk].amplitude, HuffmanArraySorted[kk].abundance, HuffmanArraySorted[kk+1].amplitude, HuffmanArraySorted[kk+1].abundance);
+	  HLTError("Error! List of 10 bit word abundances not properly sorted by merge sort", "Element with 10 bit word (DEC) %i has abundance %i which is smaller than element with 10 bit word (DEC) %i with abundance %i",HuffmanArraySorted[kk].famplitude, HuffmanArraySorted[kk].fabundance, HuffmanArraySorted[kk+1].famplitude, HuffmanArraySorted[kk+1].fabundance);
 
 	  return 1;
 	};
@@ -1138,9 +1133,9 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   UInt_t zeroentries = 0;  // number of non used 10 bit words (with abundance = 0)
 
   // check how many 10 bit words are used ("missing channel problem)
-  for(int kk = 0; kk < TIMEBINS; kk++)
+  for(UInt_t kk = 0; kk < TIMEBINS; kk++)
     {
-      if((HuffmanArraySorted[kk].abundance == 0))
+      if((HuffmanArraySorted[kk].fabundance == 0))
   	{
 	  ++zeroentries;
   	};
@@ -1153,56 +1148,56 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   // warning when there are a lot of non used 10 bit words -> this training table cannot be used in general case and taken to encode other files
   if(zeroentries > 50)
     {
-      HLTWarning("Only %i different 10 bit words out of %i are used, i.e. created Huffman Code table might not be optimal to encode other data", TIMEBINS-zeroentries, TIMEBINS);
+      HLTWarning("Warning! Only %i different 10 bit words out of %i are used, i.e. created Huffman Code table might not be optimal to encode other data", TIMEBINS-zeroentries, TIMEBINS);
     }
   
-  // initialise leaves of the tree as list (= queue) ofAliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t,
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t HuffmanTreeList[filled];
+  // initialise leaves of the tree as list (= queue) ofAliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct,
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct HuffmanTreeList[filled];
   
   // initialise first element
-  HuffmanTreeList[0].leafcontents = HuffmanArraySorted[0];
-  HuffmanTreeList[0].left = NULL;
-  HuffmanTreeList[0].right = NULL;
-  HuffmanTreeList[0].next =  &HuffmanTreeList[1];
-  HuffmanTreeList[0].previous = NULL;
+  HuffmanTreeList[0].fleafcontents = HuffmanArraySorted[0];
+  HuffmanTreeList[0].fleft = NULL;
+  HuffmanTreeList[0].fright = NULL;
+  HuffmanTreeList[0].fnext =  &HuffmanTreeList[1];
+  HuffmanTreeList[0].fprevious = NULL;
   
   // validation test
   // write list to screen
-  // cout <<"Amplitude  " << HuffmanTreeList[0].leafcontents.amplitude << " | " << "Abundance   "<<  HuffmanTreeList[0].leafcontents.abundance << " | " << "Left " << HuffmanTreeList[0].left << " | " << "Right " << HuffmanTreeList[0].right << " | " << "Next " << HuffmanTreeList[0].next << endl; 
+  // cout <<"Amplitude  " << HuffmanTreeList[0].fleafcontents.famplitude << " | " << "Abundance   "<<  HuffmanTreeList[0].fleafcontents.fabundance << " | " << "Left " << HuffmanTreeList[0].fleft << " | " << "Right " << HuffmanTreeList[0].fright << " | " << "Next " << HuffmanTreeList[0].fnext << endl; 
   
   // initialise 1 to filled-2 elements
-  Int_t kk = 1;
+  UInt_t kk = 1;
   while(kk < filled-1)
     {
-      HuffmanTreeList[kk].leafcontents = HuffmanArraySorted[kk];
-      HuffmanTreeList[kk].left = NULL;
-      HuffmanTreeList[kk].right = NULL;
-      HuffmanTreeList[kk].next =  &HuffmanTreeList[kk+1];
-      HuffmanTreeList[kk].previous = &HuffmanTreeList[kk-1];
+      HuffmanTreeList[kk].fleafcontents = HuffmanArraySorted[kk];
+      HuffmanTreeList[kk].fleft = NULL;
+      HuffmanTreeList[kk].fright = NULL;
+      HuffmanTreeList[kk].fnext =  &HuffmanTreeList[kk+1];
+      HuffmanTreeList[kk].fprevious = &HuffmanTreeList[kk-1];
       
       // validation test
       // write list to screen
-      // cout <<"Amplitude  " << HuffmanTreeList[kk].leafcontents.amplitude << " | " << "Abundance   "<<  HuffmanTreeList[kk].leafcontents.abundance << " | " << "Left " << HuffmanTreeList[kk].left << " | " << "Right " << HuffmanTreeList[kk].right << " | " << "Next " << HuffmanTreeList[kk].next << endl; 
+      // cout <<"Amplitude  " << HuffmanTreeList[kk].fleafcontents.famplitude << " | " << "Abundance   "<<  HuffmanTreeList[kk].fleafcontents.fabundance << " | " << "Left " << HuffmanTreeList[kk].fleft << " | " << "Right " << HuffmanTreeList[kk].fright << " | " << "Next " << HuffmanTreeList[kk].fnext << endl; 
       
       kk += 1;
     }
   
   // initialise last list entry with next pointer to NULL
-  HuffmanTreeList[filled-1].leafcontents = HuffmanArraySorted[filled-1];
-  HuffmanTreeList[filled-1].left = NULL;
-  HuffmanTreeList[filled-1].right = NULL;
-  HuffmanTreeList[filled-1].next = NULL;
-  HuffmanTreeList[filled-1].previous = &HuffmanTreeList[filled-2];
+  HuffmanTreeList[filled-1].fleafcontents = HuffmanArraySorted[filled-1];
+  HuffmanTreeList[filled-1].fleft = NULL;
+  HuffmanTreeList[filled-1].fright = NULL;
+  HuffmanTreeList[filled-1].fnext = NULL;
+  HuffmanTreeList[filled-1].fprevious = &HuffmanTreeList[filled-2];
   
   // initialise pointer to last list element:
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* lastelement = &HuffmanTreeList[filled-1];
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* lastelement = &HuffmanTreeList[filled-1];
   
   // validation test
   // write last element to screen
-  //  cout <<"Amplitude  " << HuffmanTreeList[filled-1].leafcontents.amplitude << " | " << "Abundance   "<<  HuffmanTreeList[filled-1].leafcontents.abundance << " | " << "Left " << HuffmanTreeList[filled-1].left << " | " << "Right " << HuffmanTreeList[filled-1].right << " | " << "Next " << HuffmanTreeList[filled-1].next << endl; 
+  //  cout <<"Amplitude  " << HuffmanTreeList[filled-1].fleafcontents.famplitude << " | " << "Abundance   "<<  HuffmanTreeList[filled-1].fleafcontents.fabundance << " | " << "Left " << HuffmanTreeList[filled-1].fleft << " | " << "Right " << HuffmanTreeList[filled-1].fright << " | " << "Next " << HuffmanTreeList[filled-1].fnext << endl; 
   
   //use this sorted list to build up the binary tree with root pointer to the beginning:
- AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeData_t* root = CreateHuffmanTree(HuffmanTreeList, lastelement, filled);
+ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* root = CreateHuffmanTree(HuffmanTreeList, lastelement, filled);
 
   // abort if root = NULL (error already produced in CreateHuffmanTree function)
   if(root == NULL)
@@ -1214,17 +1209,17 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   // cout << "binary tree is now created " << endl;
 
   // create an array for the HuffmanCode data:
-  fTranslationTable = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t[TIMEBINS];
+  fTranslationTable = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[TIMEBINS];
 
   // initialise the array with validcodelengths 0 and codes = 0
   for(Int_t kk = 0; kk < TIMEBINS; kk++)
     {
       // validation test for correct HuffmanCode()
-      // fTranslationTable[kk].amplitude = TIMEBINS+1; // check if eventnames are written
+      // fTranslationTable[kk].famplitude = TIMEBINS+1; // check if eventnames are written
 
-      fTranslationTable[kk].amplitude = kk;
-      fTranslationTable[kk].code = 0;
-      fTranslationTable[kk].validcodelength = 0;
+      fTranslationTable[kk].famplitude = kk;
+      fTranslationTable[kk].fhuffmancode = 0;
+      fTranslationTable[kk].fvalidcodelength = 0;
       // fTranslationTable[kk].morecode = NULL;
     }
 
@@ -1241,22 +1236,22 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
   // print the Huffman code table to screen
   // for(Int_t kk = 0; kk < TIMEBINS; kk++)
   //  {
-  //    if (fTranslationTable[kk].validcodelength != 0)
-  //     cout << fTranslationTable[kk].amplitude << "   |   " << fTranslationTable[kk].code << "   |   " << fTranslationTable[kk].validcodelength << endl;
+  //    if (fTranslationTable[kk].fvalidcodelength != 0)
+  //     cout << fTranslationTable[kk].famplitude << "   |   " << fTranslationTable[kk].fhuffmancode << "   |   " << fTranslationTable[kk].fvalidcodelength << endl;
   //  }
   
   // findout maximal and minimal codelength and print them out
-    Int_t maxcodelength = fTranslationTable[0].validcodelength;
+    Int_t maxcodelength = fTranslationTable[0].fvalidcodelength;
     Int_t mincodelength = TIMEBINS;
 
     for (Int_t kk = 0; kk < TIMEBINS; kk++)
       {
-	//	if(fTranslationTable[kk].validcodelength != 0) {cout << kk << " |  " << fTranslationTable[kk].code << " |  " << fTranslation "Table[kk].validcodelength << endl;}
+	//	if(fTranslationTable[kk].fvalidcodelength != 0) {cout << kk << " |  " << fTranslationTable[kk].fhuffmancode << " |  " << fTranslation "Table[kk].fvalidcodelength << endl;}
 
-	if(fTranslationTable[kk].validcodelength > maxcodelength)
-	  { maxcodelength = fTranslationTable[kk].validcodelength;};
-	if( (fTranslationTable[kk].validcodelength != 0) && (fTranslationTable[kk].validcodelength < mincodelength) )
-	  { mincodelength = fTranslationTable[kk].validcodelength;};
+	if(fTranslationTable[kk].fvalidcodelength > maxcodelength)
+	  { maxcodelength = fTranslationTable[kk].fvalidcodelength;};
+	if( (fTranslationTable[kk].fvalidcodelength != 0) && (fTranslationTable[kk].fvalidcodelength < mincodelength) )
+	  { mincodelength = fTranslationTable[kk].fvalidcodelength;};
       }
 
     // print results to screen
@@ -1267,10 +1262,10 @@ Int_t AliHLTCOMPHuffmanAltro::CreateCodeTable()
 }
 
 /** TTMergesort used by EntropyDecoding to sort translation table according to validcodelength from low to high */
-AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* AliHLTCOMPHuffmanAltro::TTMergesort(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t *unsortedarray, Int_t n)
+AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* AliHLTCOMPHuffmanAltro::TTMergesort(AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct *unsortedarray, Int_t n)
 {
   // see heaeder file for class documentation
-  //divide array into two halfs: left and right (left.size = divlength)
+  //divide array into two halfs: left and right (fleft.size = divlength)
   Int_t divlength = n >> 1;
       
   if (n==1)
@@ -1291,7 +1286,7 @@ AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* AliHLTCOMPHuffmanAltro::TTMe
 
       // merge together:
       // create temporary result array:   
-      AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* temp = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t[n];
+      AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* temp = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[n];
 
       // counters:
       Int_t ii, jj, kk;
@@ -1299,7 +1294,7 @@ AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* AliHLTCOMPHuffmanAltro::TTMe
       // if left and right halves both have elements: chose the smaller one:
       for (ii = 0, jj = divlength, kk = 0; ii < divlength && jj < n;)
         {
-	  if (unsortedarray[ii].validcodelength < unsortedarray[jj].validcodelength)
+	  if (unsortedarray[ii].fvalidcodelength < unsortedarray[jj].fvalidcodelength)
 	    { 
 	      temp[kk] = unsortedarray[ii];
 	      ++ii;
@@ -1351,7 +1346,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   // print translation table to screen
   // for(int kk= 0; kk < TIMEBINS; kk++)
   // {
-  //   cout << fTranslationTable[kk].amplitude << "  |  " << fTranslationTable[kk].code << "  |  " << fTranslationTable[kk].validcodelength << endl;
+  //   cout << fTranslationTable[kk].famplitude << "  |  " << fTranslationTable[kk].fhuffmancode << "  |  " << fTranslationTable[kk].fvalidcodelength << endl;
   // }
   
   // sort translation table according to validcodelengths from low to high (codes that occur often are found quickly)
@@ -1361,7 +1356,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   // print merge sorted translation table to screen
   // for(int kk= 0; kk < TIMEBINS; kk++)
   // {
-  //     cout << fTranslationTable[kk].amplitude << "  |  " << fTranslationTable[kk].code << "  |  " << fTranslationTable[kk].validcodelength << endl;
+  //     cout << fTranslationTable[kk].famplitude << "  |  " << fTranslationTable[kk].fhuffmancode << "  |  " << fTranslationTable[kk].fvalidcodelength << endl;
   // }
 
   // do set output data first in order to know the size of the decompressed array!
@@ -1382,19 +1377,19 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 
   // create temporary word to read out 1 bit from, maximal length: 64 bits */
   AliHLTUInt64_t codedata = 0;
-  Int_t codedatalength = 0;
+  UInt_t codedatalength = 0;
 
   // number of 32-bit trailer and common data header words:
-  Int_t headerwords = 8;
-  Int_t header64 = headerwords >> 1;
+  UInt_t headerwords = 8;
+  UInt_t header64 = headerwords >> 1;
 
   // initialise counter variables for input array:
-  Int_t idxwd = header64; // due to 8*32 = 4*64 bit header words
-  Int_t bitpswd = 0;
+  UInt_t idxwd = header64; // due to 8*32 = 4*64 bit header words
+  UInt_t bitpswd = 0;
 
   // initialise counter variables for output array:
   UInt_t idxoutwd = header64; // due to 8*32 = 4*64 bit header words
-  UInt_t idx10out = 0;
+  // UInt_t idx10out = 0; // only used for validation test
   UInt_t bitpsoutwd = 0;
 
   // write header to output (two words input header in one word output header):
@@ -1469,11 +1464,11 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   // cout << "last valid bit position (DEC) =  " << lastvalidbitpos << endl;
 
   // warning if one of the trailer words is zero:
-  for (int kk = 0; kk < fNrcuTrailerwords; kk++)
+  for (UInt_t kk = 0; kk < fNrcuTrailerwords; kk++)
     {
       if(trailer[kk] == 0)
 	{
-	  HLTWarning("Trailer word %i is zero",kk+1);
+	  HLTWarning("Warning! Trailer word %i is zero",kk+1);
 	};
     }
 
@@ -1486,7 +1481,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 
   // find minmal validcodelength from first entry of translation table and
   // read in minimal validcodelength bits if codedata is zero...
-  UInt_t minimalcodelength = fTranslationTable[0].validcodelength;
+  UInt_t minimalcodelength = fTranslationTable[0].fvalidcodelength;
 
   // validation test
   // cout << "minimal codelength (DEC) =  " << minimalcodelength << endl;
@@ -1548,22 +1543,22 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 	    };
 	  
 	  // compare if new codedata is in translation table:
-	  for(Int_t kk = 0; kk < TIMEBINS; kk++)
+	  for(UInt_t kk = 0; kk < TIMEBINS; kk++)
 	    {
 	      // stopping when current codedatalength smaller than lookup validcodelength (i.e. current code not in table, read next bit)
-	      if(fTranslationTable[kk].validcodelength > codedatalength)
+	      if(fTranslationTable[kk].fvalidcodelength > codedatalength)
 		{
 		  break;
 		};
 
-	      if(fTranslationTable[kk].code == codedata) //lookup bit pattern
+	      if(fTranslationTable[kk].fhuffmancode == codedata) //lookup bit pattern
 		{
-		  if(fTranslationTable[kk].validcodelength == codedatalength) //lookup correct codelength
+		  if(fTranslationTable[kk].fvalidcodelength == codedatalength) //lookup correct codelength
 		    {
 		      // validation test
 		      // if( idxoutwd >= 2636)
 		      //{
-		      //  cout << "write 10 bit word to decoded output (DEC) =  " << fTranslationTable[kk].amplitude << endl;
+		      //  cout << "write 10 bit word to decoded output (DEC) =  " << fTranslationTable[kk].famplitude << endl;
 		      //  cout << "current idxwd (DEC) =  " << idxwd << endl;
 		      //  cout << "current idxoutwd (DEC) =  " << idxoutwd << endl;
 		      //}
@@ -1580,10 +1575,10 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 			  //  cout << "current bitpsoutwd (DEC) =  " << bitpsoutwd << endl;
 			  //  cout << "decoding value (DEC) =  " << codedata << endl;
 			  //  cout << "value length (DEC) =  " << codedatalength << endl;
-			  //  cout << "10 bit value (HEX) =  " << hex << fTranslationTable[kk].amplitude << dec << endl;
+			  //  cout << "10 bit value (HEX) =  " << hex << fTranslationTable[kk].famplitude << dec << endl;
 			  // }
 			  
-			  pointeroutputprop[idxoutwd] |= ((AliHLTUInt64_t)(fTranslationTable[kk].amplitude)) << bitpsoutwd;
+			  pointeroutputprop[idxoutwd] |= ((AliHLTUInt64_t)(fTranslationTable[kk].famplitude)) << bitpsoutwd;
 			  
 			  // validation test
 			  // if (idxoutwd > 362880)
@@ -1600,7 +1595,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 		      else //needs start of new line
 			{
 			  
-			  pointeroutputprop[idxoutwd] |= ((AliHLTUInt64_t)(fTranslationTable[kk].amplitude)) << (bitpsoutwd); 
+			  pointeroutputprop[idxoutwd] |= ((AliHLTUInt64_t)(fTranslationTable[kk].famplitude)) << (bitpsoutwd); 
 			  
 			  ++idxoutwd; //start new line
 			  
@@ -1614,11 +1609,11 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 			  //  cout << "current bitpsoutwd (DEC) =  " << bitpsoutwd << endl;
 			  //  cout << "decoding value (DEC) =  " << codedata << endl;
 			  //  cout << "value length (DEC) =  " << codedatalength << endl;
-			  //  cout << "10 bit value (HEX) =  " << hex << fTranslationTable[kk].amplitude << dec << endl;
+			  //  cout << "10 bit value (HEX) =  " << hex << fTranslationTable[kk].famplitude << dec << endl;
 			  //}
 			  
 			  // write next line
-			  AliHLTUInt64_t buffer = fTranslationTable[kk].amplitude;	  
+			  AliHLTUInt64_t buffer = fTranslationTable[kk].famplitude;	  
 			  buffer >>= (64 - bitpsoutwd);
 			  
 			  pointeroutputprop[idxoutwd] = buffer;
@@ -1639,6 +1634,9 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 		      
 		      // prepare codedata to read new code word
 		      readnewcode = 1;
+
+		      // validation test
+		      // ++idx10out;
 
 		      // go on with next code bits from input
 		      break;
@@ -1667,7 +1665,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   // warning if byte position is not 8-bits aligned
   if ((bitpsoutwd & 0x07) != 0 )
     {
-      HLTWarning("Bit position after decoding %i is not aligned to 8 bits", bitpsoutwd);
+      HLTWarning("Warning! Bit position after decoding %i is not aligned to 8 bits", bitpsoutwd);
     };
 
   if(bitpsoutwd + 32 < 65) // trailer fits in current line, append on the right
@@ -1772,16 +1770,16 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
 {
   // see heaeder file for class documentation
   // create result array with TIMEBINS entries according to their abundance in the input data:
-  Int_t* histogrammarray = new Int_t[TIMEBINS];
+  UInt_t* histogrammarray = new UInt_t[TIMEBINS];
 
   // initialise histrogramm:
-  for(Int_t jj = 0; jj < TIMEBINS; jj++)
+  for(UInt_t jj = 0; jj < TIMEBINS; jj++)
     {
       histogrammarray[jj] = 0;
     }
 
   // total number of counted data
-  Int_t totalnumber = 0;
+  UInt_t totalnumber = 0;
 
   fEntropy = 0.0;
 
@@ -1790,12 +1788,12 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
   
   // initialise required variables for input reading:
   AliHLTUInt32_t data10 = 0; // temporary number to read out 10bit word with
-  Int_t idxwd = 8; // because of common data header words (see below)!
-  Int_t bitpswd = 0;
+  UInt_t idxwd = 8; // because of common data header words (see below)!
+  UInt_t bitpswd = 0;
 
   // number 32-bit trailer and common data header words:
   // Int_t fNrcuTrailerwords = 1;   // determined by user input as argument
-  Int_t headerwords = 8;
+  UInt_t headerwords = 8;
   
   // validation test
   // check if the input data size is appropriate:
@@ -1819,7 +1817,7 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
     };
 
   // index to watch current bit position of 10 bits words
-  Int_t idx10 = 0;
+  UInt_t idx10 = 0;
  
   // last valid bit for read in
   UInt_t endNdx = (fInputDataSize>>2)-fNrcuTrailerwords;
@@ -1845,7 +1843,7 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
       //  };
       
       // store abundance of data10 in histogrammarray
-      histogrammarray[(Int_t) data10] += 1;
+      histogrammarray[(UInt_t) data10] += 1;
       
       ++totalnumber;
       
@@ -1866,7 +1864,7 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
   double l2 = log(2.0);
 
   // calculate the entropy of the array 
-  for(Int_t jj = 0; jj < TIMEBINS; jj++)
+  for(UInt_t jj = 0; jj < TIMEBINS; jj++)
     {
       if (histogrammarray[jj] != 0)
 	{
@@ -1896,17 +1894,16 @@ Int_t AliHLTCOMPHuffmanAltro::CopyData()
 
   // initialise required variables for input reading:
   AliHLTUInt32_t data10 = 0; // temporary number to read out 10bit word with
-  Int_t idxwd = 8;
-  Int_t idx10 = 0;
-  Int_t bitpswd = 0;
+  UInt_t idxwd = 8;
+  UInt_t idx10 = 0;
+  UInt_t bitpswd = 0;
 
   // number of 32-bit trailer and common data header words:
   // (taken out of compression!)
-  // Int_t fNrcuTrailerwords = 1;   // determined by user input as argument
-  Int_t headerwords = 8;
+  // UInt_t headerwords = 8;
 
   // initialise required variables for ouput creation:
-  Int_t idxoutwd = 0;
+  UInt_t idxoutwd = 0;
   //  Int_t bitcounter = 0; // additional test for number of read in 10 bit words
   // Int_t sumlength = 0;   // additional test for length of encoded file
   

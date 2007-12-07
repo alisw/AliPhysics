@@ -41,10 +41,10 @@ public:
   /** typedef for the array data of occurrence data */
   typedef struct
   {
-    Int_t amplitude; 
-    double abundance;
-    Int_t code;
-  } AliHLTCOMPHuffmanData_t;
+    Int_t famplitude; // ADC-value
+    double fabundance; // occurrence = abundance of ADV-value
+    Int_t fcode;       // internal boolean used to decide whether 0 or 1 is appended to Huffman code
+  } AliHLTCOMPHuffmanDataStruct;
   
   /** standard constructor */
   AliHLTCOMPHuffmanOccurrenceData();
@@ -53,10 +53,10 @@ public:
   virtual ~AliHLTCOMPHuffmanOccurrenceData();
 
   /** convert one entry of occurrence table into a class instance of HuffmanOccurrenceData */
-  void SetHuffmanOccurrenceData(AliHLTCOMPHuffmanData_t const& occurrencetableentry);
+  void SetHuffmanOccurrenceData(AliHLTCOMPHuffmanDataStruct const& occurrencetableentry);
 
   /** return one entry of occurrence table */
-  AliHLTCOMPHuffmanData_t* GetHuffmanOccurrenceData(AliHLTCOMPHuffmanData_t* occurrencetableentry);
+  AliHLTCOMPHuffmanDataStruct* GetHuffmanOccurrenceData(AliHLTCOMPHuffmanDataStruct* occurrencetableentry);
 
 private:
 
@@ -67,10 +67,10 @@ private:
   AliHLTCOMPHuffmanOccurrenceData& operator=(const AliHLTCOMPHuffmanOccurrenceData&);
 
   /** 10-bit ADC value used for conversion from struct to class */
-  Int_t amplitude;  // 10-bit ADC-value
+  Int_t famplitude;  // 10-bit ADC-value
   /** occurrence = abundance used for conversion from struct to class */
-  double abundance; // occurrence of one 10-bit ADC-value
-  Int_t code;       // internal variable used for sorting the binary tree (nothing to do with Huffman code!)
+  double fabundance; // occurrence of one 10-bit ADC-value
+  Int_t fcode;       // internal variable used for sorting the binary tree (nothing to do with Huffman code!)
   
   ClassDef(AliHLTCOMPHuffmanOccurrenceData, 1)
     

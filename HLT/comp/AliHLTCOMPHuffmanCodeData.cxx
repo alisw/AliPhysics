@@ -32,6 +32,10 @@ ClassImp(AliHLTCOMPHuffmanCodeData)
 
 /** construction without any arguments (used for isolated tests) */
 AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeData()
+  :
+  famplitude(0),
+  fhuffmancode(0),
+  fvalidcodelength(0)
 {
   // see header file for class documentation
   // or
@@ -46,20 +50,20 @@ AliHLTCOMPHuffmanCodeData::~AliHLTCOMPHuffmanCodeData()
   /* destructor, see header file for class documentation */
 }
 
-void AliHLTCOMPHuffmanCodeData::SetHuffmanCodeData(AliHLTCOMPHuffmanCode_t const& codetableentry)
+void AliHLTCOMPHuffmanCodeData::SetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct const& codetableentry)
 {
   // see header file for class documentation
-  amplitude = codetableentry.amplitude;
-  code = codetableentry.code;
-  validcodelength = codetableentry.validcodelength;
+  famplitude = codetableentry.famplitude;
+  fhuffmancode = codetableentry.fhuffmancode;
+  fvalidcodelength = codetableentry.fvalidcodelength;
 }
 
-AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCode_t* AliHLTCOMPHuffmanCodeData::GetHuffmanCodeData(AliHLTCOMPHuffmanCode_t* codetableentry)
+AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* AliHLTCOMPHuffmanCodeData::GetHuffmanCodeData(AliHLTCOMPHuffmanCodeStruct* codetableentry)
 {
   // see header file for class documentation
-  codetableentry->amplitude = amplitude;
-  codetableentry->code = code;
-  codetableentry->validcodelength = validcodelength;
+  codetableentry->famplitude = famplitude;
+  codetableentry->fhuffmancode = fhuffmancode;
+  codetableentry->fvalidcodelength = fvalidcodelength;
 
   return codetableentry;
 }

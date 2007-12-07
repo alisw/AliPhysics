@@ -87,13 +87,8 @@ class AliHLTCOMPHuffmanAltroComponent : public AliHLTProcessor {
   AliHLTCOMPHuffmanAltro* fHuffmanCompressor;        // instance of Huffman compressor component   
   /** bool to decide whether to compress (TRUE) or to decompress (FALSE)  */                            
   Bool_t fCompressionSwitch;                         // mode choice for compressor instance from input line arguments
-  /** pointer to Huffman code table for read in */
-  AliHLTCOMPHuffmanData* fHuffmanData;               // instance of Huffman Data containing the code table
   /** bool to decide wheter to calibrate (create a new code table) (TRUE) or to (de)compress data (FALSE) */
   Bool_t fTrainingMode;                              // mode choice for training instance from input line arguments
-  /** number of NRCU trailer words of incoming data */
-  Int_t fNrcuTrailerwords;                           // number of rcu trailer words
-
   /** specification of origin of input data to load correct Huffman code table */
   TString fOrigin;   // gets input line argument to specify the origin of the Huffman table
   /** specification of run number to load correct Huffman code table */
@@ -102,6 +97,10 @@ class AliHLTCOMPHuffmanAltroComponent : public AliHLTProcessor {
   AliHLTUInt64_t fDataSpec;                            // gets input line argument to specify the data of the Huffman table
   /** path to load Huffman code table from (if not explicitly given, table is taken from current path) */
   TString fTablePath;                                  // gets explicit path for Huffman table from command line
+  /** number of NRCU trailer words of incoming data */
+  Int_t fNrcuTrailerwords;                           // number of rcu trailer words
+  /** pointer to Huffman code table for read in */
+  AliHLTCOMPHuffmanData* fHuffmanData;               // instance of Huffman Data containing the code table
   
   //AliHLTUInt8_t fSlice;  // determine slice number from input event block
   //AliHLTUInt8_t fPatch;  // determine patch number from input event bloc
