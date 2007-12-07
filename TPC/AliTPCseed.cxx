@@ -1044,7 +1044,8 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   //
   // calculates dedx using the cluster
   // low    -  up specify trunc mean range  - default form 0-0.7
-  // type   -  0 - max charge  or 1- total charge in cluster 2- max no corr 3- total+ correction
+  // type   -  1 - max charge  or 0- total charge in cluster 
+  //           //2- max no corr 3- total+ correction
   // i1-i2  -  the pad-row range used for calculation
   //
   // normalization parametrization taken from AliTPCClusterParam
@@ -1063,13 +1064,13 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
     AliTPCclusterMI* cluster = GetClusterPointer(irow);
     if (!cluster) continue;
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
-    Float_t charge= (type%2)? cluster->GetQ():cluster->GetMax();
+    Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
     //do normalization
     Float_t corr=1;
+    Int_t  ipad= 0;
+    if (irow>62) ipad=1;
+    if (irow>127) ipad=2;    
     if (type<=1){
-      Int_t  ipad= 0;
-      if (irow>63) ipad=1;
-      if (irow>128) ipad=2;
       //	
       AliTPCTrackerPoint * point = GetTrackPoint(irow);
       Float_t              ty = TMath::Abs(point->GetAngleY());
@@ -1079,12 +1080,22 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       corr  = parcl->Qnorm(ipad,type,dr,ty,tz);
     }
     amp[ncl]=charge/corr;
+    
+    amp[ncl] *= 2.0;     // put mean value to channel 50
+    if (ipad==0) {
+      amp[ncl] /= 0.65; // this we will take form OCDB
+    } else
+      if (ipad==2){
+	amp[ncl] /=1.57;
+      }else{
+      }      
     ncl++;
   }
+
   if (type>3) return ncl; 
   TMath::Sort(ncl,amp, indexes, kFALSE);
 
-  if (ncl<40) return 0;
+  if (ncl<10) return 0;
   
   Float_t suma=0;
   Float_t sumn=0;

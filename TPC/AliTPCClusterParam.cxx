@@ -781,7 +781,7 @@ Float_t  AliTPCClusterParam::GetShapeFactor(Int_t dim, Int_t type, Float_t z, Fl
       value+= rmsL*rmsL-rmsMeanQ*rmsMeanQ;
     }
   }
-  return TMath::Sqrt(value);
+  return TMath::Sqrt(TMath::Abs(value));
 }
 
 
@@ -1027,17 +1027,17 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   //
   printf("\nResolution Scaled factors\n");
   printf("Dir\tPad\tP0\t\tP1\t\tP2\t\tchi2\n");
-  printf("Y\tall\t%f\t%f\t%f\t%f\n", TMath::Sqrt(TMath::Abs(fParamS1[0][0])),TMath::Sqrt(fParamS1[0][1]),
-	 TMath::Sqrt(fParamS1[0][2]),TMath::Sqrt(fParamS1[0][3]));
+  printf("Y\tall\t%f\t%f\t%f\t%f\n", TMath::Sqrt(TMath::Abs(fParamS1[0][0])),TMath::Sqrt(TMath::Abs(fParamS1[0][1])),
+	 TMath::Sqrt(TMath::Abs(fParamS1[0][2])),TMath::Sqrt(TMath::Abs(fParamS1[0][3])));
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
     if (ipad==2) length=1.5;    
     printf("\t%d\t%f\t%f\t%f\t%f\n", ipad, 
 	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][0])),
-	   TMath::Sqrt(fParamS0[0][ipad][1]*length),
-	   TMath::Sqrt(fParamS0[0][ipad][2]/length),
-	   TMath::Sqrt(fParamS0[0][ipad][3]));
+	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][1]*length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][2]/length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0[0][ipad][3])));
   }
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
@@ -1045,9 +1045,9 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
     if (ipad==2) length=1.5;
     printf("\t%dPar\t%f\t%f\t%f\t%f\n", ipad, 
 	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][0])),
-	   TMath::Sqrt(fParamS0Par[0][ipad][1]*length),
-	   TMath::Sqrt(fParamS0Par[0][ipad][2]/length),
-	   TMath::Sqrt(fParamS0Par[0][ipad][6]));
+	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][1]*length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][2]/length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0Par[0][ipad][6])));
   }
   printf("Z\tall\t%f\t%f\t%f\t%f\n", TMath::Sqrt(TMath::Abs(fParamS1[1][0])),TMath::Sqrt(fParamS1[1][1]),
 	 TMath::Sqrt(fParamS1[1][2]), TMath::Sqrt(fParamS1[1][3]));
@@ -1058,19 +1058,19 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
     if (ipad==2) length=1.5;    
     printf("\t%d\t%f\t%f\t%f\t%f\n", ipad, 
 	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][0])),
-	   TMath::Sqrt(fParamS0[1][ipad][1]*length),
-	   TMath::Sqrt(fParamS0[1][ipad][2]/length),
-	   TMath::Sqrt(fParamS0[1][ipad][3]));
+	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][1]*length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][2]/length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0[1][ipad][3])));
   }
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
     if (ipad==2) length=1.5;        
     printf("\t%dPar\t%f\t%f\t%f\t%f\n", ipad, 
-	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][0])),
-	   TMath::Sqrt(fParamS0Par[1][ipad][1]*length),
-	   TMath::Sqrt(fParamS0Par[1][ipad][2]/length),
-	   TMath::Sqrt(fParamS0Par[1][ipad][6]));
+	   TMath::Sqrt(TMath::Abs(TMath::Abs(fParamS0Par[1][ipad][0]))),
+	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][1]*length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][2]/length)),
+	   TMath::Sqrt(TMath::Abs(fParamS0Par[1][ipad][6])));
   }
   
   //
@@ -1079,8 +1079,12 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
   printf("\n");
   printf("\nRMS Scaled factors\n");
   printf("Dir\tPad\tP00\t\tP01\t\tP1\t\tP2\t\tchi2\n");
-  printf("Y\tall\t%f\t%f\t%f\t%f\t%f\n", TMath::Sqrt(TMath::Abs(fParamRMS1[0][0])),TMath::Sqrt(fParamRMS1[0][1]),
-	 TMath::Sqrt(fParamRMS1[0][2]),TMath::Sqrt(fParamRMS1[0][3]),TMath::Sqrt(fParamRMS1[0][4]));
+  printf("Y\tall\t%f\t%f\t%f\t%f\t%f\n", 
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][0])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][1])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][2])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][3])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[0][4])));
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
@@ -1089,21 +1093,25 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
       printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][0])),
 	     0.,
-	     TMath::Sqrt(fParamRMS0[0][ipad][1]),
-	     TMath::Sqrt(fParamRMS0[0][ipad][2]/(length*length)),
-	     TMath::Sqrt(fParamRMS0[0][ipad][3]));
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][1])),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][2]/(length*length))),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][3])));
     }else{
       printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
 	     0.,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][0])),
-	     TMath::Sqrt(fParamRMS0[0][ipad][1]),
-	     TMath::Sqrt(fParamRMS0[0][ipad][2]/(length*length)),
-	     TMath::Sqrt(fParamRMS0[0][ipad][3]));	
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][1])),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][2]/(length*length))),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[0][ipad][3])));	
     }
   }
   printf("\n");
-  printf("Z\tall\t%f\t%f\t%f\t%f\t%f\n", TMath::Sqrt(TMath::Abs(fParamRMS1[1][0])),TMath::Sqrt(fParamRMS1[1][1]),
-	 TMath::Sqrt(fParamRMS1[1][2]),TMath::Sqrt(fParamRMS1[1][3]),TMath::Sqrt(fParamRMS1[1][4]));
+  printf("Z\tall\t%f\t%f\t%f\t%f\t%f\n", 
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][0])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][1])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][2])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][3])),
+	 TMath::Sqrt(TMath::Abs(fParamRMS1[1][4])));
   for (Int_t ipad=0; ipad<3; ipad++){
     Float_t length=0.75;
     if (ipad==1) length=1;
@@ -1112,16 +1120,16 @@ void AliTPCClusterParam::Print(Option_t* /*option*/) const{
       printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][0])),
 	     0.,
-	     TMath::Sqrt(fParamRMS0[1][ipad][1]),
-	     TMath::Sqrt(fParamRMS0[1][ipad][2]/(length*length)),
-	     TMath::Sqrt(fParamRMS0[1][ipad][3]));
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][1])),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][2]/(length*length))),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][3])));
     }else{
       printf("\t%d\t%f\t%f\t%f\t%f\t%f\n", ipad, 
 	     0.,
 	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][0])),
-	     TMath::Sqrt(fParamRMS0[1][ipad][1]),
-	     TMath::Sqrt(fParamRMS0[1][ipad][2]/(length*length)),
-	     TMath::Sqrt(fParamRMS0[1][ipad][3]));	
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][1])),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][2]/(length*length))),
+	     TMath::Sqrt(TMath::Abs(fParamRMS0[1][ipad][3])));	
     }
   }
 }

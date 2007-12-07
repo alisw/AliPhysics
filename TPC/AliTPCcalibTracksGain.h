@@ -35,6 +35,8 @@ class AliTrackPointArray;
 class TTreeStream;
 class AliTPCcalibTracksCuts;
 class AliTPCFitPad;
+class TGraph;
+class AliTPCCClusterParam;
 
 class AliTPCcalibTracksGain : public TNamed {
 public:
@@ -99,6 +101,12 @@ public:
   void            GetErrors(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD &fitError);
   Double_t        GetRedChi2(UInt_t segment, UInt_t padType, UInt_t fitType);
   void            GetCovarianceMatrix(UInt_t segment, UInt_t padType, UInt_t fitType, TMatrixD& covMatrix);
+  //
+  //
+  void            UpdateClusterParam(AliTPCClusterParam *param);
+  TGraph *        CreateAmpGraph(Int_t ipad, Bool_t qmax);
+
+
   TLinearFitter*  GetFitter(UInt_t segment, UInt_t padType, UInt_t fitType);
 public:
   //

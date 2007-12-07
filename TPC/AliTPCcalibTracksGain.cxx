@@ -127,6 +127,7 @@
 #include "AliTPCParamSR.h"
 #include "AliTPCCalROC.h"
 #include "AliTPCCalPad.h"
+#include "AliTPCClusterParam.h"
 //
 #include "AliTracker.h"
 #include "AliESD.h"
@@ -309,12 +310,13 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    fSqrtFitter   = new AliTPCFitPad(8, "hyp7", "");
    fLogFitter    = new AliTPCFitPad(8, "hyp7", "");
    fSingleSectorFitter = new AliTPCFitPad(8, "hyp7", "");
-   fFitter0M      = new TLinearFitter(44,"hyp43");
-   fFitter1M      = new TLinearFitter(44,"hyp43");
-   fFitter2M      = new TLinearFitter(44,"hyp43");
-   fFitter0T      = new TLinearFitter(44,"hyp43");
-   fFitter1T      = new TLinearFitter(44,"hyp43");
-   fFitter2T      = new TLinearFitter(44,"hyp43");
+   // 
+   fFitter0M      = new TLinearFitter(45,"hyp44");
+   fFitter1M      = new TLinearFitter(45,"hyp44");
+   fFitter2M      = new TLinearFitter(45,"hyp44");
+   fFitter0T      = new TLinearFitter(45,"hyp44");
+   fFitter1T      = new TLinearFitter(45,"hyp44");
+   fFitter2T      = new TLinearFitter(45,"hyp44");
    //
    //
    // Add profile histograms -JUST for visualization - Not used for real calibration
@@ -1265,29 +1267,32 @@ void AliTPCcalibTracksGain::AddTracklet(UInt_t sector, UInt_t padType,TVectorD &
   // Add measured point - dedx to the fitter
   //
   //
-  //chain->SetAlias("dr","(250-abs(meanPos.fElements[4]))");
+  //chain->SetAlias("dr","(250-abs(meanPos.fElements[4]))/250");
   //chain->SetAlias("tz","(0+abs(parZ.fElements[1]))");
   //chain->SetAlias("ty","(0+abs(parY.fElements[1]))");
   //chain->SetAlias("corrg","sqrt((1+ty^2)*(1+tz^2))");
-  // TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++tz++ty++dr*tz++dr*ty++ty*tz++(sector==0)++(sector==1)++(sector==2)++(sector==3)++(sector==4)++(sector==5)++(sector==6)++(sector==7)++(sector==8)++(sector==9)++(sector==10)++(sector==11)","IPad==0",chi2,npoints,param,covar,0,100000);
+  //expession fast - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
 
   Double_t xxx[100];
   //
   // z and angular part
   //
-  xxx[0] = 250.-TMath::Abs(meanPos[4]);
+ 
+  xxx[0] = (250.-TMath::Abs(meanPos[4]))/250.;
   xxx[1] = TMath::Abs(parY[1]);
   xxx[2] = TMath::Abs(parZ[1]);
   xxx[3] = xxx[0]*xxx[1];
   xxx[4] = xxx[0]*xxx[2];
   xxx[5] = xxx[1]*xxx[2];
   xxx[6] = xxx[0]*xxx[0];
+  xxx[7] = xxx[1]*xxx[1];
+  xxx[8] = xxx[2]*xxx[2];
   //
   // chamber part
   //
   Int_t tsector = sector%36;
   for (Int_t i=0;i<35;i++){
-    xxx[7+i]=(i==tsector)?1:0;
+    xxx[9+i]=(i==tsector)?1:0;
   }
   TLinearFitter *fitterM = fFitter0M;
   if (padType==1) fitterM=fFitter1M;
@@ -1298,4 +1303,64 @@ void AliTPCcalibTracksGain::AddTracklet(UInt_t sector, UInt_t padType,TVectorD &
   if (padType==1) fitterT = fFitter1T;
   if (padType==2) fitterT = fFitter2T;
   fitterT->AddPoint(xxx,dedxQ[1]);
+}
+
+
+TGraph *AliTPCcalibTracksGain::CreateAmpGraph(Int_t ipad, Bool_t qmax){
+  //
+  // create the amplitude graph
+  // The normalized amplitudes are extrapolated to the 0 angle (y,z)  and 0 drift length
+  //
+  
+  TVectorD vec;
+  if (qmax){
+    if (ipad==0) fFitter0M->GetParameters(vec);
+    if (ipad==1) fFitter1M->GetParameters(vec);
+    if (ipad==2) fFitter2M->GetParameters(vec);
+  }else{
+    if (ipad==0) fFitter0T->GetParameters(vec);
+    if (ipad==1) fFitter1T->GetParameters(vec);
+    if (ipad==2) fFitter2T->GetParameters(vec);
+  }
+  
+  Float_t amp[36];
+  Float_t sec[36];
+  for (Int_t i=0;i<35;i++){
+    sec[i]=i;
+    amp[i]=vec[10+i]+vec[0];
+  }
+  amp[35]=vec[0];
+  Float_t mean = TMath::Mean(36,amp);
+  for (Int_t i=0;i<36;i++){
+    sec[i]=i;
+    amp[i]=(amp[i]-mean)/mean;
+  }
+  TGraph *gr = new TGraph(36,sec,amp);
+  return gr;
+}
+
+
+void   AliTPCcalibTracksGain::UpdateClusterParam(AliTPCClusterParam* clparam){
+  //
+  //   SetQ normalization parameters
+  //
+  //  void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
+
+  TVectorD vec;
+  //
+  fFitter0T->GetParameters(vec);
+  clparam->SetQnorm(0,0,&vec);
+  fFitter1T->GetParameters(vec);
+  clparam->SetQnorm(1,0,&vec);
+  fFitter2T->GetParameters(vec);
+  clparam->SetQnorm(2,0,&vec);
+  //
+  fFitter0M->GetParameters(vec);
+  clparam->SetQnorm(0,1,&vec);
+  fFitter1M->GetParameters(vec);
+  clparam->SetQnorm(1,1,&vec);
+  fFitter2M->GetParameters(vec);
+  clparam->SetQnorm(2,1,&vec);
+  //
+
 }
