@@ -3,11 +3,11 @@ dn: system=DCS,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
 objectClass: fxsConfig
 system: DCS
-dbHost: aldcs030.cern.ch
-dbUser: shuttle
-dbPasswd: DCS4Offline
+dbHost: alidcsfxs.cern.ch
+dbUser: fesclient
+dbPasswd: alicedcs
 dbName: dcsfileserver
 dbTable: dcsfes
-fxsHost: aldcs030.cern.ch
-fxsUser: sshd
+fxsHost: alidcsfxs.cern.ch
+fxsUser: shuttle
 

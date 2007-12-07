@@ -5,9 +5,9 @@ det: ZDC
 strictRunOrder: 0
 responsible: chiara.oppedisano@to.infn.it
 
-dn: dcsHost=aldcs052.cern.ch,det=ZDC,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=ZDC,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: ZDC_ZPA_HV[0..4].actual.vMon

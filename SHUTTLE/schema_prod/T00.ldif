@@ -7,9 +7,9 @@ strictRunOrder: 0
 responsible: tomatkie@cc.jyu.fi
 responsible: moledzki@gmail.com
 
-dn: dcsHost=aldcs052.cern.ch,det=T00,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=T00,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: t00_a_hv_imon_[00..11]

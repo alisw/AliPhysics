@@ -5,9 +5,9 @@ det: PHS
 strictRunOrder: 0
 responsible: Boris.Polichtchouk@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=PHS,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=PHS,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: phs_hvIsegMeasVoltage[0..4]

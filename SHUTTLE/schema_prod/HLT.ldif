@@ -1,13 +1,7 @@
-# HLT Config
-dn: system=HLT,o=shuttle_prod,dc=cern,dc=ch
+# HLT preprocessor Config
+dn: det=HLT,o=shuttle_prod,dc=cern,dc=ch
 objectClass: top
-objectClass: fxsConfig
-system: HLT
-dbUser: shuttle
-dbPasswd: 0ffl1n3-5huttl3
-dbName: hlt_logbook
-dbTable: calib_data
-dbHost: alihlt-shuttle1.cern.ch
-fxsHost: alihlt-shuttle1.cern.ch
-fxsUser: hlt-fxs
-
+objectClass: detectorConfig
+det: HLT
+strictRunOrder: 0
+responsible: Sebastian.Bablok@uib.no

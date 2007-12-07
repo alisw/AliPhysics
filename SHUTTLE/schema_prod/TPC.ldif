@@ -5,13 +5,14 @@ det: TPC
 strictRunOrder: 0
 responsible: Haavard.Helstrup@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=TPC,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=TPC,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: tpc_PT_[321..344].Temperature
-dcsAlias: tpc_PT_[353..379].Temperature
+dcsAlias: tpc_PT_[353..358].Temperature
+dcsAlias: tpc_PT_[360..379].Temperature
 dcsAlias: tpc_PT_[385..396].Temperature
 dcsAlias: tpc_PT_[398..407].Temperature
 dcsAlias: tpc_PT_411.Temperature

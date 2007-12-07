@@ -5,9 +5,9 @@ det: GRP
 strictRunOrder: 0
 responsible: Panos.Christakoglou@cern.ch
 
-dn: dcsHost=aldcs052.cern.ch,det=GRP,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=GRP,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: LHCState

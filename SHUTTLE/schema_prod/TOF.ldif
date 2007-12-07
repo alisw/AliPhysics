@@ -6,9 +6,9 @@ strictRunOrder: 0
 responsible: Chiara.Zampolli@bo.infn.it
 responsible: arcelli@bo.infn.it
 
-dn: dcsHost=aldcs052.cern.ch,det=TOF,o=shuttle_prod,dc=cern,dc=ch
+dn: dcsHost=alidcsamanda.cern.ch,det=TOF,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig
-dcsHost: aldcs052.cern.ch
+dcsHost: alidcsamanda.cern.ch
 dcsPort: 1337
 multiSplit: 4000
 dcsAlias: tof_hv_vp_[00..89]
