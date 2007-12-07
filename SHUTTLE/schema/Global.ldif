@@ -16,4 +16,5 @@ ppMaxMem: 2097152
 ppMaxRetries: 2
 monitorHost: aliendb1.cern.ch
 monitorTable: SHUTTLE
-
+triggerWait: 10
+mode: test

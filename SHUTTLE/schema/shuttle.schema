@@ -65,13 +65,16 @@ attributetype ( GLOBAL_CONFIG:10 NAME 'ppTimeOut'      DESC 'seconds before pp a
 attributetype ( GLOBAL_CONFIG:11 NAME 'ppMaxMem'       DESC 'max pp mem consumption (KB)'  EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:12 NAME 'monitorHost'    DESC 'monitoring server host'       EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 attributetype ( GLOBAL_CONFIG:13 NAME 'monitorTable'   DESC 'monitoring table name'        EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:14 NAME 'triggerWait'    DESC 'max time waiting for next trigger before starting a new collection'   
+											   EQUALITY integerMatch       SUP uidNumber SINGLE-VALUE )
+attributetype ( GLOBAL_CONFIG:15 NAME 'mode'           DESC 'production mode (test, prod)' EQUALITY caseIgnoreMatch    SUP name SINGLE-VALUE )
 
 objectclass ( GLOBAL_CONFIG
         NAME 'globalConfig'
         DESC 'ALICE: settings for DAQ logbook access'
         SUP top
         MUST (name $ daqLbHost $ daqLbUser $ daqLbPasswd $ daqLbDB $ daqLbTable $ shuttleLbTable $ runTypeLbTable $ ppMaxRetries $ ppTimeOut $ ppMaxMem $ monitorHost $ monitorTable)
-        MAY ( daqLbPort ) )
+        MAY ( daqLbPort $ triggerWait $ mode) )
 
 
 objectidentifier INSTANCE_CONFIG SHUTTLE_BASE:5
