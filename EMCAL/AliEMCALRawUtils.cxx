@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.10  2007/12/06 13:58:11  hristov
+ * Additional pritection. Do not delete the mapping, it is owned by another class
+ *
  * Revision 1.9  2007/12/06 02:19:51  jklay
  * incorporated fitting procedure from testbeam analysis into AliRoot
  *
@@ -230,12 +233,13 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
   //given raw signal being fit
 
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, GetRawFormatTimeBins(), 5);
+  signalF->SetParameters(10.,0.,2.35,2.,5.); //set all defaults once, just to be safe
   signalF->SetParNames("amp","t0","tau","N","ped");
   signalF->SetParameter(2,2.35); // tau in units of time bin
   signalF->SetParLimits(2,2,-1);
   signalF->SetParameter(3,2); // order
   signalF->SetParLimits(3,2,-1);
-
+  
   Int_t id =  -1;
   Float_t time = 0. ; 
   Float_t amp = 0. ; 
@@ -295,6 +299,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr,
     for (Int_t index = 0; index < gSig->GetN(); index++) {
       gSig->SetPoint(index, index, 0) ;  
     } 
+    // Reset starting parameters for fit function
+    signalF->SetParameters(10.,0.,2.35,2.,5.); //reset all defaults just to be safe
+
   }; // EMCAL entries loop
   
   delete signalF ; 
@@ -467,10 +474,18 @@ const Double_t dtime, const Double_t damp, Int_t * adcH, Int_t * adcL) const
   const Int_t pedVal = 32;
   Bool_t lowGain = kFALSE ; 
 
-  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 4);
-  signalF.SetParameter(0, pedVal) ; 
-  signalF.SetParameter(1, damp) ; 
-  signalF.SetParameter(2, dtime + fgTimeTrigger) ; 
+  // A:   par[0]   // Amplitude = peak value
+  // t0:  par[1]                            
+  // tau: par[2]                            
+  // N:   par[3]                            
+  // ped: par[4]
+
+  TF1 signalF("signal", RawResponseFunction, 0, GetRawFormatTimeMax(), 5);
+  signalF.SetParameter(0, damp) ; 
+  signalF.SetParameter(1, dtime + fgTimeTrigger) ; 
+  signalF.SetParameter(2, fgTau) ; 
+  signalF.SetParameter(3, fgOrder);
+  signalF.SetParameter(4, pedVal);
 
   for (Int_t iTime = 0; iTime < GetRawFormatTimeBins(); iTime++) {
     Double_t time = iTime * GetRawFormatTimeBinWidth() ;
