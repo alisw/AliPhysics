@@ -565,6 +565,24 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
+const char* AliCDBManager::GetURI(const char* path) {
+// return the URI of the storage where to look for path
+
+	if(!IsDefaultStorageSet()) return 0;
+	
+	AliCDBParam *aPar=SelectSpecificStorage(path);
+
+	if(aPar) {
+		return aPar->GetURI().Data();
+
+	} else {
+		return GetDefaultStorage()->GetURI().Data();
+	}
+	
+	return 0;
+}
+
+//_____________________________________________________________________________
 AliCDBId* AliCDBManager::GetId(const AliCDBPath& path, Int_t runNumber,
 	Int_t version, Int_t subVersion) {
 // get the AliCDBId of the valid object from the database (does not retrieve the object)

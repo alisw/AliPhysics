@@ -74,6 +74,8 @@ class AliCDBManager: public TObject {
 	AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1);
 
+	const char* GetURI(const char* path);				 
+				 
 	AliCDBId* GetId(const AliCDBId& query);
 	AliCDBId* GetId(const AliCDBPath& path, Int_t runNumber=-1,
 				Int_t version = -1, Int_t subVersion = -1);
