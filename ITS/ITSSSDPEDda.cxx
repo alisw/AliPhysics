@@ -16,6 +16,8 @@
 #include "TFile.h"
 #include "daqDA.h"
 #include "AliITSHandleDaSSD.h" 
+#include "TROOT.h"
+#include "TPluginManager.h"
 
 using namespace std;
 
@@ -26,6 +28,15 @@ int main( int argc, char** argv )
   TString             feefname, cmddbsave;
   Int_t               status;
   Char_t             *dafname = NULL, *dadaqdir = NULL;
+
+
+   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()");
+
+
 
   /* check that we got some arguments = list of files */
   if (argc<2) {
@@ -62,7 +73,6 @@ int main( int argc, char** argv )
     status = daqDA_FES_storeFile(dafname, "DASSD_DB_results");
     if (status) fprintf(stderr, "Failed to export file : %d\n", status);
   } else cerr << "Error saving DA data to the file! Probably $DA_TEST_DIR defined incorrectly!" << endl;
-
   feefname.Form("%s/ssddaldc_%i_%i.root", dadaqdir, ssddaldc->GetLdcId(), ssddaldc->GetRunId());
   cout << "Saving feessdda data in " << feefname << endl;
   TFile *fileRun = new TFile (feefname.Data(),"RECREATE");
