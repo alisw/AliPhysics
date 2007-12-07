@@ -122,6 +122,10 @@ class AliMUON : public  AliDetector
         { fDigitizerWithNoise = digitizerWithNoise; }
     virtual Int_t GetDigitizerWithNoise() const; 
     
+    // Set fast raw data decoder
+    virtual void SetFastDecoder(Bool_t useFastDecoder); 
+                
+    
     // Getters
                   /// Return reference to Chamber \a id
     virtual AliMUONChamber& Chamber(Int_t id)

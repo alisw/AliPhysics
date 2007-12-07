@@ -613,3 +613,15 @@ Int_t  AliMUON::GetDigitizerWithNoise() const
     
 }  
 
+//____________________________________________________________________
+void AliMUON::SetFastDecoder(Bool_t useFastDecoder)
+{
+/// Set fast raw data decoder 
+
+  if ( ! fDigitMaker ) {
+    AliError("Digit maker is not instantiated.");
+    return;
+  }   
+
+  fDigitMaker->SetFastDecoder(useFastDecoder);
+}  
