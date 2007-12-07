@@ -51,6 +51,7 @@
 #include <TString.h>
 #include <TObjString.h>
 #include <TClass.h>
+#include <TSystem.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpDDLStore)
@@ -216,11 +217,13 @@ Bool_t  AliMpDDLStore::ReadGlobalTrigger(AliMpGlobalCrate& crate, const Char_t* 
     else
       infile = globalName;
     
+    infile = gSystem->ExpandPathName(infile.Data());
+    
     ifstream in(infile, ios::in);
 
     if (!in) {
-        printf("Local Trigger Board Mapping File %s not found", infile.Data());
-        return kFALSE;
+      AliErrorClass(Form("Local Trigger Board Mapping File %s not found", infile.Data()));
+      return kFALSE;
     }
 
     TArrayI list;
@@ -230,8 +233,10 @@ Bool_t  AliMpDDLStore::ReadGlobalTrigger(AliMpGlobalCrate& crate, const Char_t* 
     TString tmp(AliMpHelper::Normalize(line));
 
     if (!tmp.Contains(crate.GetName()))
-        printf("Wrong Global Crate File");
-
+    {
+      AliErrorClass("Wrong Global Crate File");
+    }
+    
     in.getline(line, 255);
     tmp = AliMpHelper::Normalize(line);
 
@@ -515,10 +520,12 @@ Bool_t  AliMpDDLStore::ReadRegionalTrigger(AliMpExMap& triggerCrates, AliMpExMap
     else
       infile = fileName;
     
+    infile = gSystem->ExpandPathName(infile.Data());
+    
     ifstream in(infile, ios::in);
 
     if (!in) {
-        printf("Local Trigger Board Mapping File %s not found", infile.Data());
+      AliErrorClass(Form("Local Trigger Board Mapping File %s not found", infile.Data()));
         return kFALSE;
     }
 
