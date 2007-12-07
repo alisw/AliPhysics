@@ -85,7 +85,7 @@ CLEANFILES			+= $(DICTFILES)
 
 # the rootcint buffer for macros is limited to 1024 characters
 # we have to filter out some of the defines
-DEFFILTER			= -DPACKAGE*
+DEFFILTER			= -DPACKAGE* -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1
 
 # as the first step of the migration of the HOMER library to
 # AliRoot we leave the class names as they are but change the
