@@ -97,7 +97,8 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
     delete pGrHV;
 
 // evaluate Pressure
-    TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWC.actual.value"           ,iCh,iCh,iCh));    TIter nextP(pP);
+    TObjArray *pP =(TObjArray*)pMap->GetValue(Form("HMP_DET/HMP_MP%i/HMP_MP%i_GAS/HMP_MP%i_GAS_PMWPC.actual.value"           ,iCh,iCh,iCh));
+    TIter nextP(pP);    
     TGraph *pGrP=new TGraph; cnt=0; 
     while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
     if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"1005+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
