@@ -244,9 +244,9 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 			else 
 				AliError("Wrong type of esd container") ; 
 			break ;
-			case AliQA::kNTASKINDEX:
-			break ;  
 		}  
+	        case AliQA::kNTASKINDEX:
+	                break ;  
 	}	  
 }
 
