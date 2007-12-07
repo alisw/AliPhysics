@@ -76,7 +76,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData metadata;
   metadata.SetResponsible("Chiara Oppedisano");
   metadata.SetComment("DCS data for ZDC");
-  Bool_t resDCSRef = kFALSE;
+  Bool_t resDCSRef = kTRUE;
   resDCSRef = StoreReferenceData("DCS","Data",fData,&metadata);
   //dcsAliasMap->Print("");
   //
@@ -106,7 +106,7 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
   AliCDBMetaData md;
   md.SetResponsible("Chiara Oppedisano");
   md.SetComment("Alignment object for ZDC");
-  Bool_t resultAl = kFALSE;
+  Bool_t resultAl = kTRUE;
   resultAl = Store("Align","Data", array, &md, 0, 0);
   
 // *************** From DAQ ******************
