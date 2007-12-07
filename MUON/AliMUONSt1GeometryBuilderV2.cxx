@@ -481,6 +481,7 @@ void AliMUONSt1GeometryBuilderV2::CreateSpacer0()
 ///  6     BOX   EPOXY    408.2  437.9 519.76    5.75  15.0   1.0
 ///  6P    BOX   EPOXY    408.2  437.9 525.06    5.75  15.0   1.0
 ///  7     CYL   INOX     408.2  437.9 522.41    r=3.0  hz=20.63
+///                                                                      </pre>
 
   // tracking medias
   Int_t* idtmed = fMUON->GetIdtmed()->GetArray()-1099;
