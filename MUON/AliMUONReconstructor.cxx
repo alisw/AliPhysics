@@ -274,7 +274,7 @@ AliMUONReconstructor::CreateDigitMaker() const
   TString option = GetOption();
   Bool_t enableErrorLogging = kTRUE;
   Bool_t useFastDecoder = kFALSE;
-  if (option.Contains("useFastDecoder"))
+  if (option.Contains("USEFASTDECODER"))
   {
     useFastDecoder = kTRUE;
   }
