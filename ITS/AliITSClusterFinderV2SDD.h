@@ -25,6 +25,8 @@ public:
   virtual void FindRawClusters(Int_t mod);
   virtual void RawdataToClusters(AliRawReader* rawReader,TClonesArray** clusters);
 
+  enum {kHybridsPerDDL = 24};   // number of hybrids in each DDL 
+
  protected:
 
   void FindClustersSDD(TClonesArray *digits);

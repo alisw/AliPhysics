@@ -270,15 +270,22 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
   Int_t nxBins = nTimeBins+2;
   const Int_t kMaxBin=nzBins*(nxBins+2);
   AliBin *bins[2];
-  AliBin *ddlbins[24]; // 12 modules (=24 hybrids) of 1 DDL read "in parallel"
-  for(Int_t iHyb=0;iHyb<24;iHyb++) ddlbins[iHyb]=new AliBin[kMaxBin];
+  AliBin *ddlbins[kHybridsPerDDL]; // 12 modules (=24 hybrids) of 1 DDL read "in parallel"
+  for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++) ddlbins[iHyb]=new AliBin[kMaxBin];
   // read raw data input stream
   while (input->Next()) {
     Int_t iModule = input->GetModuleID();
-    if(iModule<0) continue;
+    if(iModule<0){
+      AliWarning(Form("Invalid SDD module number %d\n", iModule));
+      continue;
+    }
     Int_t iCarlos =((AliITSRawStreamSDD*)input)->GetCarlosId();
     Int_t iSide = ((AliITSRawStreamSDD*)input)->GetChannel();
     Int_t iHybrid=iCarlos*2+iSide;
+    if(iHybrid<0 || iHybrid>=kHybridsPerDDL){ 
+      AliWarning(Form("Invalid SDD hybrid number %d\n", iHybrid));
+      continue;
+    }
     if (input->IsCompletedModule()) {
       // when all data from a module was read, search for clusters
 	clusters[iModule] = new TClonesArray("AliITSRecPoint");
@@ -308,15 +315,21 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input,
       if(gain>0) charge/=gain;
       if(charge>=cal->GetThresholdAnode(chan)) {
 	Int_t q=(Int_t)(charge+0.5);
-	Int_t iz = input->GetCoord1()+1;
-	Int_t index = (input->GetCoord2()+1) * nzBins + iz;
-	ddlbins[iHybrid][index].SetQ(q);
-	ddlbins[iHybrid][index].SetMask(1);
-	ddlbins[iHybrid][index].SetIndex(index);
+	Int_t iz = input->GetCoord1();
+	Int_t itb = input->GetCoord2();
+	Int_t index = (itb+1) * nzBins + (iz+1);
+	if(index<kMaxBin){
+	  ddlbins[iHybrid][index].SetQ(q);
+	  ddlbins[iHybrid][index].SetMask(1);
+	  ddlbins[iHybrid][index].SetIndex(index);
+
+	}else{
+	  AliWarning(Form("Invalid SDD cell: Anode=%d   TimeBin=%d",iz,itb));	  
+	}
       }
     }
   }
-  for(Int_t iHyb=0;iHyb<24;iHyb++) delete [] ddlbins[iHyb];
+  for(Int_t iHyb=0;iHyb<kHybridsPerDDL;iHyb++) delete [] ddlbins[iHyb];
   Info("FindClustersSDD", "found clusters in ITS SDD: %d", nClustersSDD);
 }
 
