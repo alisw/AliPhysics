@@ -15,14 +15,14 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "AliQADataMaker.h"
-
 // --- ROOT system ---
 class TH1F ; 
 class TH1I ; 
 
 // --- AliRoot header files ---
 class AliExternalTrackParam;
+
+#include "AliQADataMaker.h"
 
 class AliTRDQADataMaker: public AliQADataMaker {
 
@@ -32,18 +32,17 @@ class AliTRDQADataMaker: public AliQADataMaker {
   AliTRDQADataMaker(const AliTRDQADataMaker& qadm) ;   
   AliTRDQADataMaker& operator = (const AliTRDQADataMaker& qadm) ;
   virtual ~AliTRDQADataMaker() {;} // dtor
-  
+
  private:
 
-  virtual void EndOfDetectorCycle(AliQA::TASKINDEX, TList*) {};
-  virtual void EndOfDetectorCycle() ;
+  virtual void EndOfDetectorCycle(AliQA::TASKINDEX task, TList * list) ;
   virtual void InitHits() ; 
   virtual void InitESDs() ; 
   virtual void InitDigits() ; 
   virtual void InitRecPoints() ; 
   virtual void InitRaws() ; 
   virtual void InitSDigits() ;
- 
+
   virtual void MakeHits(TTree * hitTree);
   virtual void MakeHits(TClonesArray * hits);
 
@@ -56,15 +55,15 @@ class AliTRDQADataMaker: public AliQADataMaker {
   virtual void MakeRaws(AliRawReader* rawReader); 
   virtual void MakeRecPoints(TTree * recpo); 
   virtual void MakeESDs(AliESDEvent * esd);
-  
+
   virtual void StartOfDetectorCycle() ; 
-  Int_t        CheckPointer(TObject *obj, const char *name);
+  Int_t    CheckPointer(TObject *obj, const char *name);
 
   // internal methods
   Int_t    GetSector(const Double_t alpha) const;
   Double_t GetExtZ(const AliExternalTrackParam *paramIn) const;
 
-  ClassDef(AliTRDQADataMaker,1)  // Creates the TRD QA data
+  ClassDef(AliTRDQADataMaker,1)   // Creates the TRD QA data
 
 };
-#endif
+#endif // AliTRDQADATAMAKER_H
