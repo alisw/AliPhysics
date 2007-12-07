@@ -38,6 +38,8 @@ Trigger types used: PHYSICS_EVENT
 #include <TObject.h>
 #include <TMath.h>
 #include <TSystem.h>
+#include "TROOT.h"
+#include "TPluginManager.h"
 
 
 /* Main routine
@@ -47,6 +49,13 @@ Trigger types used: PHYSICS_EVENT
 
 int main(int argc, char **argv) {
   
+  /* magic line from Rene */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                    "*",
+                    "TStreamerInfo",
+                    "RIO",
+                    "TStreamerInfo()");
+
   AliTOFGeometry * geom = new AliTOFGeometry();
 
   static const Int_t size = AliTOFGeometry::NPadXSector()*AliTOFGeometry::NSectors();

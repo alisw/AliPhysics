@@ -38,11 +38,20 @@ Trigger types used: PHYSICS_EVENT, for the time being
 #include <TObject.h>
 #include <TMath.h>
 #include <TSystem.h>
+#include "TROOT.h"
+#include "TPluginManager.h"
 
 /* Main routine
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
+
+/* magic line from Rene */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                    "*",
+                    "TStreamerInfo",
+                    "RIO",
+                    "TStreamerInfo()");
 
   AliTOFGeometry * geom = new AliTOFGeometry();
 
