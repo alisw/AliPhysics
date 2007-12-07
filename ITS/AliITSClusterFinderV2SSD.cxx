@@ -244,18 +244,14 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
   Float_t oldnoise=0.;
   AliITSCalibrationSSD* cal=NULL;
 
-  Int_t signal=0;
-  Int_t iModule;
   Int_t matrix[12][1536];
-  Int_t iddl=511;
-  Int_t iad=1;
-  Int_t ddl, ad, adc;
-  Int_t oddl = 0;
-  Int_t oad = 0;
-  Int_t oadc = 0;
-  Int_t ostrip = 0;
+  Int_t iddl=-1;
+  Int_t iad=-1;
+  Int_t oddl = -1;
+  Int_t oad = -1;
+  Int_t oadc = -1;
+  Int_t ostrip = -1;
   Int_t osignal = 65535;
-  Int_t strip;
   Int_t n=0;
   Bool_t next=0;
 
@@ -274,13 +270,13 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     while(kTRUE) {
 
       next = input->Next();
-      ddl=input->GetDDL(); 
-      ad=input->GetAD();
-           if((!next)&&(input->flag)) continue;
-      adc = input->GetADC(); adc = (adc<6)? adc : adc - 2;
-      strip = input->GetStrip();
+      if((!next)&&(input->flag)) continue;
+      Int_t ddl=input->GetDDL(); 
+      Int_t ad=input->GetAD();
+      Int_t adc = input->GetADC(); adc = (adc<6)? adc : adc - 2;
+      Int_t strip = input->GetStrip();
       if(input->GetSideFlag()) strip=1535-strip;
-      signal = input->GetSignal();
+      Int_t signal = input->GetSignal();
       //cout<<ddl<<" "<<ad<<" "<<adc<<" "<<strip<<" "<<signal<<endl;
 
       if((ddl==iddl)&&(ad==iad)) {n++; matrix[adc][strip] = signal;}
@@ -288,7 +284,10 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       
       if(!next) break;
     }
-    
+
+    // No SDD data
+    if(!next && oddl<0) break;
+
     if(n==0) continue; // first occurence
     n=0; osignal=0;
 
@@ -296,7 +295,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
     for(Int_t iadc=0; iadc<12; iadc++) {  // loop over ADC index for ddl=oddl and ad=oad
 
       Int_t iimod = (oad - 1)  * 12 + iadc;
-      iModule = AliITSRawStreamSSD::GetModuleNumber(oddl,iimod);
+      Int_t iModule = AliITSRawStreamSSD::GetModuleNumber(oddl,iimod);
       if(iModule==-1) continue;
       //cout<<"ddl="<<oddl<<" ad"<<oad<<" module="<<iModule<<endl;
       cal = (AliITSCalibrationSSD*)GetResp(iModule);
@@ -305,7 +304,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
       for(Int_t istrip=0; istrip<768; istrip++) { // P-side
 
-	signal = matrix[iadc][istrip];
+	Int_t signal = matrix[iadc][istrip];
 	oldnoise = noise;
 	noise = cal->GetNoiseP(istrip);
 	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
@@ -393,8 +392,8 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
       noise = 0.;
       for(Int_t istrip=768; istrip<1536; istrip++) { // N-side
 	
-	signal = matrix[iadc][istrip];
-	strip = 1535-istrip;
+	Int_t signal = matrix[iadc][istrip];
+	Int_t strip = 1535-istrip;
 	oldnoise = noise;
 	noise = cal->GetNoiseN(strip);
 	if(signal<3*noise) signal = 65535; // in case ZS was not done in hw do it now
@@ -494,7 +493,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input,
 
     } // loop over adc
 
-    if((!next)||(iddl==528)) break;
+    if(!next) break;
   }
   
   Info("FindClustersSSD", "found clusters in ITS SSD: %d", nClustersSSD);
