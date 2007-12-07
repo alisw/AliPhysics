@@ -182,74 +182,136 @@ void AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   TFile *gFile = TFile::Open(laserFile);
   //gSystem->Load("libSpectrum");
   TGraph *gr[24];
+  TGraph *grLED[24];
   Int_t npeaks = 20;
   Int_t sigma=3;
   Bool_t down=false;
 
   Int_t index[20];
-  Char_t buf1[10], buf2[10],title[10], title2[10] ;
+  Char_t buf1[10], buf2[10], buf3[10], title[10], title2[10], titleLED[10], title2LED[10];
 
-  for (Int_t i=0; i<12; i++)
+  for (Int_t d=0; d<2; d++)
   {
-    sprintf(buf1,"T0_C_%i_CFD",i+1);
-    sprintf(buf2,"CFD_QTC%i",i+1);
-    // cout<<buf1<<" "<<buf2<<endl;
-    TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
-    TH1F *cfd = (TH1F*) gFile->Get(buf1);
-    TSpectrum *s = new TSpectrum(2*npeaks,1.);
-    Int_t nfound = s->Search(cfd,sigma,"goff",0.05);
-    // cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;
-    if(nfound!=0)
+    for (Int_t i=0; i<12; i++)
     {
-      Float_t *xpeak = s->GetPositionX();
-      TMath::Sort(nfound, xpeak, index,down);
-      Float_t xp = xpeak[index[0]];
-      Float_t hmax = xp+10*sigma;
-      Float_t hmin = xp-10*sigma;
-      Int_t nbins= qtc_cfd->GetXaxis()->GetNbins();
-      TProfile *pr_y = qtc_cfd->ProfileX();
-      pr_y->SetMaximum(hmax);
-      pr_y->SetMinimum(hmin);
-      Int_t np=nbins/20;
-      Double_t *xx = new Double_t[np];
-      Double_t *yy = new Double_t[np];
-      Int_t ng=0;
-      Double_t yg=0;
-      for (Int_t ip=1; ip<nbins; ip++)
-      {
-        if(ip%20 != 0 )
-        {
-          if (pr_y->GetBinContent(ip) !=0)
-          {
-            yg +=pr_y->GetBinContent(ip);
-          }
-          ng++;
-        }
-        else
-        {
-          xx[ip/20] = Float_t (pr_y->GetBinCenter(ip));
-          yy[ip/20] = yg/ng;
-          yg=0;
-          ng=0;
-        }
+      sprintf(buf1,"T0_C_%i_CFD",i+1);
+      if (d==0)
+      {		
+        sprintf(buf2,"CFD_QTC%i",i+1);
       }
-      sprintf(title,"Walk %i",i+1);
-      gr[i] = new TGraph(np,xx,yy);
-      gr[i]->SetTitle(title);
-      gr[i]->SetMinimum(hmin);
-      gr[i]->SetMaximum(hmax);
-      gr[i]->SetMarkerStyle(7);
-      sprintf(title2,"Walk %i",i+13);
-      gr[i+12] = new TGraph(np,xx,yy);
-      gr[i+12]->SetTitle(title2);
-      gr[i+12]->SetMinimum(hmin);
-      gr[i+12]->SetMaximum(hmax);
-      gr[i+12]->SetMarkerStyle(7);
+      else
+      {
+	sprintf(buf3,"CFD_LED%i",i+1);
+      }
+      TH2F *qtc_cfd = (TH2F*) gFile->Get(buf2);
+      TH2F *led_cfd = (TH2F*) gFile->Get(buf3);
+      // cout<<buf1<<" "<<buf2<<endl;
+      TH1F *cfd = (TH1F*) gFile->Get(buf1);
+      TSpectrum *s = new TSpectrum(2*npeaks,1.);
+      Int_t nfound = s->Search(cfd,sigma,"goff",0.05);
+      // cout<<"Found "<<nfound<<" peaks sigma "<<sigma<<endl;
+      if(nfound!=0)
+      {
+        Float_t *xpeak = s->GetPositionX();
+        TMath::Sort(nfound, xpeak, index,down);
+        Float_t xp = xpeak[index[0]];
+        Float_t hmax = xp+10*sigma;
+        Float_t hmin = xp-10*sigma;
+	if (d==0)
+	{
+          Int_t nbins= qtc_cfd->GetXaxis()->GetNbins();
+          TProfile *pr_y = qtc_cfd->ProfileX();
+          pr_y->SetMaximum(hmax);
+          pr_y->SetMinimum(hmin);
+          Int_t np=nbins/20;
+          Double_t *xx = new Double_t[np];
+          Double_t *yy = new Double_t[np];
+          Int_t ng=0;
+          Double_t yg=0;
+          for (Int_t ip=1; ip<nbins; ip++)
+          {
+            if(ip%20 != 0 )
+            {
+              if (pr_y->GetBinContent(ip) !=0)
+              {
+                yg +=pr_y->GetBinContent(ip);
+              }
+              ng++;
+            }
+            else
+            {
+              xx[ip/20] = Float_t (pr_y->GetBinCenter(ip));
+              yy[ip/20] = yg/ng;
+              yg=0;
+              ng=0;
+            }
+          }
+          sprintf(title,"Walk %i",i+1);
+          gr[i] = new TGraph(np,xx,yy);
+          gr[i]->SetTitle(title);
+          gr[i]->SetMinimum(hmin);
+          gr[i]->SetMaximum(hmax);
+          gr[i]->SetMarkerStyle(7);
+          sprintf(title2,"Walk %i",i+13);
+          gr[i+12] = new TGraph(np,xx,yy);
+          gr[i+12]->SetTitle(title2);
+          gr[i+12]->SetMinimum(hmin);
+          gr[i+12]->SetMaximum(hmax);
+          gr[i+12]->SetMarkerStyle(7);
 
-      fWalk.AddAtAndExpand(gr[i],i);	  
-      fWalk.AddAtAndExpand(gr[i+12],i+12);
-      delete [] xx;
-      delete [] yy;
+          fWalk.AddAtAndExpand(gr[i],i);	  
+          fWalk.AddAtAndExpand(gr[i+12],i+12);
+          delete [] xx;
+          delete [] yy;
+	}
+	else
+	{
+	  Int_t nbinsLED= led_cfd->GetXaxis()->GetNbins();
+          TProfile *pr_yLED = led_cfd->ProfileX();
+          pr_yLED->SetMaximum(hmax);
+          pr_yLED->SetMinimum(hmin);
+          Int_t npLED=nbinsLED/20;
+          Double_t *xxLED = new Double_t[npLED];
+          Double_t *yyLED = new Double_t[npLED];
+          Int_t ngLED=0;
+          Double_t ygLED=0;
+          for (Int_t ip=1; ip<nbinsLED; ip++)
+          {
+            if(ip%20 != 0 )
+            {
+              if (pr_yLED->GetBinContent(ip) !=0)
+              {
+                ygLED +=pr_yLED->GetBinContent(ip);
+              }
+              ngLED++;
+            }
+            else
+            {
+              xxLED[ip/20] = Float_t (pr_yLED->GetBinCenter(ip));
+              yyLED[ip/20] = ygLED/ngLED;
+              ygLED=0;
+              ngLED=0;
+            }
+          }
+          sprintf(titleLED,"Walk LED %i",i+1);
+          grLED[i] = new TGraph(npLED,xxLED,yyLED);
+          grLED[i]->SetTitle(titleLED);
+          grLED[i]->SetMinimum(hmin);
+          grLED[i]->SetMaximum(hmax);
+          grLED[i]->SetMarkerStyle(7);
+          sprintf(title2LED,"Walk LED%i",i+13);
+          grLED[i+12] = new TGraph(npLED,xxLED,yyLED);
+          grLED[i+12]->SetTitle(title2LED);
+          grLED[i+12]->SetMinimum(hmin);
+          grLED[i+12]->SetMaximum(hmax);
+          grLED[i+12]->SetMarkerStyle(7);
+
+          fAmpLEDRec.AddAtAndExpand(grLED[i],i);
+          fAmpLEDRec.AddAtAndExpand(grLED[i+12],i+12);
+          delete [] xxLED;
+          delete [] yyLED;
+	}
+      }
     }
   }
 
