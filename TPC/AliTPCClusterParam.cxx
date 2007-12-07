@@ -1135,15 +1135,23 @@ Float_t AliTPCClusterParam::Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t t
   // type - 0 Qtot 1 Qmax
   // ipad - 0 (0.75 cm) ,1 (1 cm), 2 (1.5 cm)
   //
-  //
-  //formula= dr++tz++ty++dr*tz++dr*ty++ty*tz++dr**2++ty**2++tz**2
+  //expession formula - TString *strq0 = toolkit.FitPlane(chain,"dedxQ.fElements[2]","dr++ty++tz++dr*ty++dr*tz++ty*tz++ty^2++tz^2","IPad==0",chi2,npoints,param,covar,0,100000);
+
   if (!fQNorm) return 0;
   TVectorD * norm = (TVectorD*)fQNorm->At(3*itype+ipad);
   if (!norm) return 0;
-  TVectorD &no = *norm;
-  Float_t res= no[0]+no[1]*dr+no[2]*tz+no[3]*ty+no[4]*dr*tz+no[5]*dr*ty+no[6]*ty*tz
-    +no[7]*dr*dr+no[8]*ty*ty+no[9]*tz*tz;
-
+  TVectorD &no  = *norm;
+  Float_t   res = no[0]+
+    no[1]*dr+
+    no[2]*ty+
+    no[3]*tz+
+    no[4]*dr*ty+
+    no[5]*dr*tz+
+    no[6]*ty*tz+
+    no[7]*dr*dr+
+    no[8]*ty*ty+
+    no[9]*tz*tz;
+  res/=no[0];
   return res;
 }
 
