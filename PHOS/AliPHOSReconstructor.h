@@ -8,6 +8,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.15  2007/10/01 20:24:08  kharlov
+ * Memory leaks fixed
+ *
  * Revision 1.14  2007/09/26 14:22:18  cvetan
  * Important changes to the reconstructor classes. Complete elimination of the run-loaders, which are now steered only from AliReconstruction. Removal of the corresponding Reconstruct() and FillESD() methods.
  *
@@ -42,7 +45,10 @@
 
 // --- ROOT system ---
 
+#include <Riostream.h>
 #include "AliReconstructor.h" 
+#include "AliPHOSRecoParamEmc.h"
+#include "AliPHOSRecoParamCpv.h"
 class AliPHOSDigitizer ;
 class AliPHOSClusterizer ;
 class AliPHOSTrackSegmentMaker ;
@@ -94,8 +100,20 @@ public:
   void SetRecoParamEmc(AliPHOSRecoParam * param){ fgkRecoParamEmc = param;}
   void SetRecoParamCpv(AliPHOSRecoParam * param){ fgkRecoParamCpv = param;}
 
-  static const AliPHOSRecoParam* GetRecoParamEmc(){ return fgkRecoParamEmc;}
-  static const AliPHOSRecoParam* GetRecoParamCpv(){ return fgkRecoParamCpv;}
+  static const AliPHOSRecoParam* GetRecoParamEmc(){ 
+    if (!fgkRecoParamEmc) {
+      cerr<<"The Reconstruction parameters for EMC nonitialized - Used default one"<<endl;
+      fgkRecoParamEmc = AliPHOSRecoParamEmc::GetEmcDefaultParameters();
+    }
+    return fgkRecoParamEmc;
+  }
+  static const AliPHOSRecoParam* GetRecoParamCpv(){
+    if (!fgkRecoParamCpv) {
+      cerr<<"The Reconstruction parameters for CPV nonitialized - Used default one"<<endl;
+      fgkRecoParamCpv = AliPHOSRecoParamCpv::GetCpvDefaultParameters();
+    }
+    return fgkRecoParamCpv;
+  }
 
 private:
   
