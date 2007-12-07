@@ -73,6 +73,8 @@ void AliHMPIDRawStream::Init()
     }
   }
   fZeroSup=kTRUE;
+  
+  for(Int_t l=1; l < kSumErr; l++) fNumOfErr[l]=0;               //reset errors
 }//Init()
 //_____________________________________________________________________________
 void AliHMPIDRawStream::Reset()
@@ -95,98 +97,28 @@ Bool_t AliHMPIDRawStream::Next()
     if (!fRawReader->ReadNextData(fData)) return kFALSE;
   } while (fRawReader->GetDataSize() == 0);
   
-  if ( fRawReader->GetDataSize() > 47148) {
-    AliWarning(Form("Raw data event size is larger (%d) than possible for HMPID!!!! ",fRawReader->GetDataSize()));
-  }
+ 
+  /*
+  Event type is selected as in $ALICE_ROOT/RAW/event.h  
+  #define START_OF_RUN                    ((eventTypeType) 1)
+  #define END_OF_RUN                      ((eventTypeType) 2)
+  #define START_OF_RUN_FILES              ((eventTypeType) 3)
+  #define END_OF_RUN_FILES                ((eventTypeType) 4)
+  #define START_OF_BURST                  ((eventTypeType) 5)
+  #define END_OF_BURST                    ((eventTypeType) 6)
+  #define PHYSICS_EVENT                   ((eventTypeType) 7) <<---------------  
+  #define CALIBRATION_EVENT               ((eventTypeType) 8)
+  #define EVENT_FORMAT_ERROR              ((eventTypeType) 9)
+  #define START_OF_DATA                   ((eventTypeType)10)
+  #define END_OF_DATA                     ((eventTypeType)11)
+  #define SYSTEM_SOFTWARE_TRIGGER_EVENT   ((eventTypeType)12)
+  #define DETECTOR_SOFTWARE_TRIGGER_EVENT ((eventTypeType)13)
+  #define EVENT_TYPE_MIN                  1
+  #define EVENT_TYPE_MAX                  13 
+  */
+      
+  if(fRawReader->GetType() == 7)  {                             //New: Select Physics events, Old: Raw data size is not 0 and not 47148 (pedestal)
   
-  else if (fRawReader->GetDataSize() == 47148) {
-    fDDLNumber = fRawReader->GetDDLID();
-    fPosition = 0;
-    
-    Init();
-    
-    // Look over rows
-    for(Int_t iRow = 1; iRow <= kNRows; iRow++) {
-      // Read row marker
-      UInt_t rowMarker = GetNextWord() & 0x1ffffff;
-      if (rowMarker != 0x1ea32a8) {
-	fRawReader->AddMajorErrorLog(kRowMarkerErr);
-	AliWarning(Form("Wrong row marker %x for row %d, expected 0x1ea32a8!",rowMarker,iRow));
-	return kTRUE;
-      }//check for row marker
-      UInt_t dilogic = 0, row = 0;
-      for(Int_t iDILOGIC = 1; iDILOGIC <= kNDILOGICAdd; iDILOGIC++) {
-	// Read pad charges
-	for(Int_t iPad = 0; iPad < kNPadAdd; iPad++) {
-	  UInt_t data = GetNextWord();
-	  row = (data >> 22) & 0x1f;                                                      //row information in raw word is between bits: 22...26
-	  if (row < 1 || row > kNRows) {
-	    fRawReader->AddMajorErrorLog(kWrongRowErr,Form("row %d",row));
-	    AliWarning(Form("Wrong row index: %d, expected (1 -> %d)!",row,kNRows));
-	    row = iRow;
-	  }
-	  dilogic = (data >> 18) & 0xf;                                                   //dilogic info in raw word is between bits: 18...21
-	  if (dilogic < 1 || dilogic > kNDILOGICAdd) {
-	    fRawReader->AddMajorErrorLog(kWrongDilogicErr,Form("dil %d",dilogic));
-	    AliWarning(Form("Wrong DILOGIC index: %d, expected (1 -> %d)!",dilogic,kNDILOGICAdd));
-	    dilogic = iDILOGIC;
-	  }
-	  UInt_t pad = (data >> 12) & 0x3f;                                               //pad info in raw word is between bits: 12...17
-	  if (pad >= kNPadAdd) {
-	    fRawReader->AddMajorErrorLog(kWrongPadErr,Form("pad %d",pad));
-	    AliWarning(Form("Wrong pad index: %d, expected (0 -> %d)!",pad,kNPadAdd));
-	    pad = iPad;
-	  }
-	  fCharge[fDDLNumber][row][dilogic][pad] = data & 0xfff;
-	}
-	// Now read the end-of-event word
-	UInt_t eOfEvent = GetNextWord() & 0xfffffff;
-	if (!((eOfEvent >> 27) & 0x1)) {                                                  //check 27th bit in EoE. It must be 1!
-	  fRawReader->AddMajorErrorLog(kEoEFlagErr);
-	  AliWarning(Form("Missing end-of-event flag! (%x)",eOfEvent));
-	  return kTRUE;
-	}
-	UInt_t wc = eOfEvent & 0x7f;
-	if (wc != 48) {
-	  fRawReader->AddMajorErrorLog(kEoESizeErr,Form("eoe size=%d",wc));
-	  AliWarning(Form("Wrong end-of-event word-count:%d, expected 48!",wc));
-	  return kTRUE;
-	}
-	UInt_t da = (eOfEvent >> 18) & 0xf;
-	if (da != dilogic) {
-	  fRawReader->AddMajorErrorLog(kEoEDILOGICErr,Form("eoe dil %d != %d",da,dilogic));
-	  AliWarning(Form("Wrong DILOGIC address found in end-of-event: %d, expected %d!",da,dilogic));
-	  return kTRUE;
-	}
-	UInt_t ca = (eOfEvent >> 22) & 0x1f;
-	if (ca != row) {
-	  fRawReader->AddMajorErrorLog(kEoERowErr,Form("eoe row %d != %d",ca,row));
-	  AliWarning(Form("Wrong row index found in end-of-event: %d, expected %d!",ca,row));
-	  return kTRUE;
-	}
-      }//DILOGIC loop
-      
-      // Read the segment marker
-      // One maker per 8 rows
-      
-      if (iRow%8 == 0) {
-	UInt_t segWord = GetNextWord();
-	if ((segWord >> 8) != 0xab0f59) {
-	  fRawReader->AddMajorErrorLog(kBadSegWordErr);
-	  AliWarning(Form("Wrong segment word signature: %x, expected 0xab0f59!",(segWord >> 8)));
-	  return kTRUE;
-	}
-	
-	if ((segWord & 0xff) != (((UInt_t)iRow + 7) / 8)) {
-	  fRawReader->AddMajorErrorLog(kWrongSegErr,Form("seg %d != %d",segWord & 0xff,(iRow + 7) / 8));
-	  AliWarning(Form("Segment index (%d) does not correspond to the one expected from row index (%d)!",segWord & 0xff,(iRow + 7) / 8));
-	  return kTRUE;
-	}
-      }
-    }//loop of Row   
-  }//Pedestal files selected by data lenght
-
-  else {                                                                  //Raw data size is not 0 and not 47148 (pedestal)
     fDDLNumber = fRawReader->GetDDLID();
     fPosition = 0;
   
@@ -194,14 +126,21 @@ Bool_t AliHMPIDRawStream::Next()
     
     // Look over rows
     for(Int_t iRow = 1; iRow <= kNRows; iRow++) {
-      
       UInt_t rowMarker = GetNextWord();                                 // Read row marker
       
-      Int_t numRows= rowMarker >> 16 & 0xffffff;
+      Int_t numRows= rowMarker >> 16 & 0xffffff;                        // Number of words after the row marker
+         
+      if ( numRows > 490 ) {      //The row marker is fixed and we cannot have more than 490 words!!!
+	fRawReader->AddMajorErrorLog(kRowMarkerSizeErr);
+        AliWarning(Form("Wrong row marker size %x for row %d, value: %d expected < 490!",rowMarker,iRow,numRows));
+        fNumOfErr[kRowMarkerSizeErr]++;
+	return kTRUE;
+      }//check for row marker
       
-      if ((rowMarker >> 0 & 0xffff) != 0x32a8) {
+      if ((rowMarker >> 0 & 0xffff) != 0x32a8  ) {      //The row marker is fixed and we cannot have more than 490 words!!!
 	fRawReader->AddMajorErrorLog(kRowMarkerErr);
         AliWarning(Form("Wrong row marker %x for row %d, expected 0x32a8!",rowMarker,iRow));
+         fNumOfErr[kRowMarkerErr]++;
 	return kTRUE;
       }//check for row marker
       UInt_t dilogic = 0, row = 0;
@@ -218,18 +157,21 @@ Bool_t AliHMPIDRawStream::Next()
 	    if (row < 1 || row > kNRows) {                                              //select bits from 22 and with 0x1f ask for the next 5 bits 
 	      fRawReader->AddMajorErrorLog(kWrongRowErr,Form("row %d",row));
 	      AliWarning(Form("Wrong row index: %d, expected (1 -> %d)!",row,kNRows));
+              fNumOfErr[kWrongRowErr]++;
 	      // row = iRow;
 	    }
 	    dilogic = (data >> 18) & 0xf;                                              //dilogic info in raw word is between bits: 18...21
 	    if (dilogic < 1 || dilogic > kNDILOGICAdd) {
 	      fRawReader->AddMajorErrorLog(kWrongDilogicErr,Form("dil %d",dilogic));
 	      AliWarning(Form("Wrong DILOGIC index: %d, expected (1 -> %d)!",dilogic,kNDILOGICAdd));
+              fNumOfErr[kWrongDilogicErr]++;
 	      //dilogic = iDILOGIC;
 	    }
 	    UInt_t pad = (data >> 12) & 0x3f;                                                    //pad info in raw word is between bits: 12...17
 	    if (pad >= kNPadAdd) {
 	      fRawReader->AddMajorErrorLog(kWrongPadErr,Form("pad %d",pad));
 	      AliWarning(Form("Wrong pad index: %d, expected (0 -> %d)!",pad,kNPadAdd));
+              fNumOfErr[kWrongPadErr]++;
 	      //pad = iPad;
 	    }
 	    fCharge[fDDLNumber][row][dilogic][pad] = data & 0xfff;  cntData++;
@@ -237,28 +179,31 @@ Bool_t AliHMPIDRawStream::Next()
 	  }//not EoE but data!
 	  //if it is EoE
 	  else{
-	    //Printf("EoE word");
 	    if (!((eOfEvent >> 27) & 0x1)) {                                                  //check 27th bit in EoE. It must be 1!
 	      fRawReader->AddMajorErrorLog(kEoEFlagErr);
 	      AliWarning(Form("Missing end-of-event flag! (%x)",eOfEvent));
+              fNumOfErr[kEoEFlagErr]++;
 	      return kTRUE;
 	    }
 	    UInt_t wc = eOfEvent & 0x7f;
 	    if (wc != cntData) {
 	      fRawReader->AddMajorErrorLog(kEoESizeErr,Form("eoe size=%d",wc));
-	      AliWarning(Form("Wrong end-of-event word-count:%d, expected 48!",wc));
+	      AliWarning(Form("Wrong end-of-event word-count: %d, expected: %d!",wc,cntData));
+              fNumOfErr[kEoESizeErr]++;
 	      return kTRUE;
 	    }
 	    UInt_t da = (eOfEvent >> 18) & 0xf;
 	    if (cntData!=0 && da != dilogic) {
 	      fRawReader->AddMajorErrorLog(kEoEDILOGICErr,Form("eoe dil %d != %d",da,dilogic));
 	      AliWarning(Form("Wrong DILOGIC address found in end-of-event: %d, expected %d!",da,dilogic));
+              fNumOfErr[kEoEDILOGICErr]++;
 	      return kTRUE;
 	    }
 	    UInt_t ca = (eOfEvent >> 22) & 0x1f;
 	    if (cntData!=0 &&  ca != row) {
 	      fRawReader->AddMajorErrorLog(kEoERowErr,Form("eoe row %d != %d",ca,row));
 	      AliWarning(Form("Wrong row index found in end-of-event: %d, expected %d!",ca,row));
+              fNumOfErr[kEoERowErr]++;
 	      return kTRUE;
 	    }
 	    cntData=0;  cntEoE++;//zero it and wait for new data words
@@ -272,16 +217,18 @@ Bool_t AliHMPIDRawStream::Next()
       // One maker per 8 rows
       
       if (iRow%8 == 0) {
-	UInt_t segWord = GetNextWord();
+	UInt_t segWord = GetNextWord();          
 	if ((segWord >> 8) != 0xab0f59) {
 	  fRawReader->AddMajorErrorLog(kBadSegWordErr);
 	  AliWarning(Form("Wrong segment word signature: %x, expected 0xab0f59!",(segWord >> 8)));
+          fNumOfErr[kBadSegWordErr]++;
 	  return kTRUE;
 	}
 	
 	if ((segWord & 0xff) != (((UInt_t)iRow + 7) / 8)) {
 	  fRawReader->AddMajorErrorLog(kWrongSegErr,Form("seg %d != %d",segWord & 0xff,(iRow + 7) / 8));
 	  AliWarning(Form("Segment index (%d) does not correspond to the one expected from row index (%d)!",segWord & 0xff,(iRow + 7) / 8));
+          fNumOfErr[kWrongSegErr]++;
 	  return kTRUE;
 	}
       }

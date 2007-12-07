@@ -45,10 +45,11 @@ class AliHMPIDRawStream: public TObject {
    
 	    inline  Bool_t SetZeroSup (Bool_t isSup);
     inline  Bool_t GetZeroSup(); 
-                 
-    inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                               //digit->(w32,ddl,r,d,a)
-    inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                               //raw->abs pad number
-    inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                      //(w32,ddl)->digit
+    inline  Int_t GetErrors(Int_t eType);                                                                                          //Get errors and occurance
+                     
+    inline void    Raw            (UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a);                                              //digit->(w32,ddl,r,d,a)
+    inline void    Raw            (Int_t ddl,Int_t r,Int_t d,Int_t a);                                                              //raw->abs pad number
+    inline Bool_t  Raw            (UInt_t  w32,Int_t  ddl,AliRawReader *pRR);                                                       //(w32,ddl)->digit
     inline void   SetCharge      (Int_t ddl,Int_t row,Int_t dil,Int_t pad,Int_t q);
     inline void    WriteRaw       (TObjArray *pDigLst                             );                                                      //write as raw stream     
     inline void   WriteRowMarker  (AliFstream *ddl,UInt_t size);
@@ -68,7 +69,9 @@ class AliHMPIDRawStream: public TObject {
       kEoEDILOGICErr = 8,
       kEoERowErr = 9,
       kBadSegWordErr = 10,
-      kWrongSegErr = 11
+      kWrongSegErr = 11,
+      kRowMarkerSizeErr = 12,
+      kSumErr=13                                            //This is always the last one, to retreive the number of errors
     };
     
     enum {
@@ -95,6 +98,8 @@ class AliHMPIDRawStream: public TObject {
     Int_t            fPad[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd]; // Array for abs pad values for all channels in one DDL
 
     UInt_t           fRawWord[kNDDL][kNRows+1][kNDILOGICAdd+1][kNPadAdd];
+    
+    Int_t            fNumOfErr[kSumErr];    // Store the numner of errors for a given error type
         
     Int_t            fDDLNumber;    // index of current DDL number
 
@@ -106,7 +111,7 @@ class AliHMPIDRawStream: public TObject {
     
     Bool_t           fZeroSup;
 
-    ClassDef(AliHMPIDRawStream, 0)  // base class for reading HMPID raw digits
+    ClassDef(AliHMPIDRawStream, 1)  // base class for reading HMPID raw digits
 };
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDRawStream::Raw(UInt_t &w32,Int_t &ddl,Int_t &r,Int_t &d,Int_t &a)
@@ -370,5 +375,17 @@ void AliHMPIDRawStream::WriteRaw(TObjArray *pDigAll)
   }//chambers loop
 }//WriteRaw()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Int_t AliHMPIDRawStream::GetErrors(Int_t eType)
+{
+// Return the number of errors for a given error tye during raw data reading
+// Arguments: errorType
+//   Returns: error or -999 if error Type does not exist
+  
+  if(eType < 1 || eType> kSumErr-1 ) return -999;
+  else 
+    return fNumOfErr[eType];
+        
 
+} //GetErrors()     
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #endif
