@@ -39,6 +39,14 @@ private:
   /// Not implemented
   AliMUONTriggerSubprocessor& operator=(const AliMUONTriggerSubprocessor&);
   
+  Int_t TestFile(const char* baseName, Bool_t shouldBeThere) const;
+
+  void WhichFilesToRead(const char* exportedFiles,
+                        Bool_t& globalFile,
+                        Bool_t& regionalFile,
+                        Bool_t& localFile,
+                        Bool_t& lutFile) const;
+  
 private:
   AliMUONVStore* fRegionalMasks; //!< regional masks
   AliMUONVStore* fLocalMasks; //!< local masks

@@ -85,15 +85,20 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   AliTestShuttle::SetMainCDB(inputCDB);
   AliTestShuttle::SetMainRefStorage("local://$ALICE_ROOT/SHUTTLE/TestShuttle/TestReference");
 
-  // Create DCS HV aliases
-  TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB);
+  TString rt(runType);
+  rt.ToUpper();
   
-  if ( dcsAliasMap ) 
+  if ( rt.Contains("PHYSICS") )
   {
-    // now give the alias map to the shuttle
-    shuttle->SetDCSInput(dcsAliasMap);
-  }
+    // Create DCS HV aliases
+    TMap* dcsAliasMap = CreateDCSAliasMap(inputCDB);
   
+    if ( dcsAliasMap ) 
+    {
+      // now give the alias map to the shuttle
+      shuttle->SetDCSInput(dcsAliasMap);
+    }
+  }
   
   printf("Test Shuttle temp dir: %s\n", AliShuttleInterface::GetShuttleTempDir());
   printf("Test Shuttle log dir: %s\n", AliShuttleInterface::GetShuttleLogDir());
@@ -128,7 +133,7 @@ void TestMUONPreprocessor(Int_t runNumber=80, const char* runType="PEDESTAL_RUN"
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","REGIONAL","LDC0","$ALICE_ROOT/MUON/data/MtgRegionalCrate-1.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","GLOBAL","LDC0","$ALICE_ROOT/MUON/data/MtgGlobalCrate-1.dat");
   shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","LUT","LDC0","$ALICE_ROOT/MUON/data/MtgLocalLut-1.dat");
-  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","CURRENT","LDC0","$ALICE_ROOT/MUON/data/MtgCurrent.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ,"MTR","EXPORTED","LDC0","$ALICE_ROOT/MUON/data/ExportedFiles.dat");
   
   // The shuttle can read run parameters stored in the DAQ run logbook.
   // To test it, we must provide the run parameters manually. They will be retrieved in the preprocessor

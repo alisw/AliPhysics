@@ -94,17 +94,17 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   
   Bool_t da(kTRUE);
   
-  TString current(gSystem->ExpandPathName(GetFileName("CURRENT").Data()));
+  TString exportedFiles(gSystem->ExpandPathName(GetFileName("EXPORTED").Data()));
   
-  if ( current == "" ) 
+  if ( exportedFiles == "" ) 
   {
-    Master()->Log("CURRENT file not specified");
+    Master()->Log("exported files not specified !");
     da = kFALSE;
   }
   
-  if ( gSystem->AccessPathName(current.Data(),kFileExists) ) // mind the strange return value convention of that method !
+  if ( gSystem->AccessPathName(exportedFiles.Data(),kFileExists) ) // mind the strange return value convention of that method !
   {
-    Master()->Log(Form("%s is not there !",current.Data()));
+    Master()->Log(Form("%s is not there !",exportedFiles.Data()));
     da = kFALSE;
   }
   
@@ -115,6 +115,17 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     return;
   }
   
+  // OK. We have an exportedFiles.dat file at hand.
+  // Read it to know what other files should be there.
+  
+  Bool_t regionalFile(kFALSE);
+  Bool_t globalFile(kFALSE);
+  Bool_t localFile(kFALSE);
+  Bool_t lutFile(kFALSE);
+  
+  WhichFilesToRead(GetFileName("EXPORTED").Data(),
+                   globalFile,regionalFile,localFile,lutFile);
+  
   delete fRegionalMasks; fRegionalMasks = 0x0;
   delete fLocalMasks; fLocalMasks = 0x0;
   delete fGlobalMasks; fGlobalMasks = 0x0;
@@ -123,9 +134,22 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
   Master()->Log(Form("Reading trigger masks for Run %d startTime %ld endTime %ld",
                      run,startTime,endTime));
     
-  fRegionalMasks = new AliMUON1DArray(16);
-  fLocalMasks = new AliMUON1DArray(AliMpConstants::NofLocalBoards()+1);
-  fGlobalMasks = 0x0; // new AliMUONCalibParamNI(1,16,1,0,0);
+  Int_t check = 
+    TestFile("REGIONAL",regionalFile) + 
+    TestFile("LOCAL",localFile) + 
+    TestFile("GLOBAL",globalFile) +
+    TestFile("LUT",lutFile);
+
+  if ( check ) 
+  {
+    Master()->Log("Could not read some input file(s). Aborting");
+    Master()->Invalidate();
+    return;
+  }
+  
+  if ( regionalFile ) fRegionalMasks = new AliMUON1DArray(16);  
+  if ( localFile ) fLocalMasks = new AliMUON1DArray(AliMpConstants::TotalNofLocalBoards()+1);
+  if ( globalFile ) fGlobalMasks = new AliMUONCalibParamNI(1,16,1,0,0);
 
   AliMUONTriggerIO tio;
   
@@ -145,18 +169,21 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     fGlobalMasks = 0x0;
   }
 
-  fLUT = new AliMUONTriggerLut;
-    
-  Master()->Log(Form("Reading trigger LUT for Run %d startTime %ld endTime %ld",
-                     run,startTime,endTime));
-  
-  ok = tio.ReadLUT(GetFileName("LUT").Data(),*fLUT);
-
-  if (!ok)
+  if ( lutFile ) 
   {
-    Master()->Log("ERROR : ReadLUT failed");
-    delete fLUT;
-    fLUT = 0x0;
+    fLUT = new AliMUONTriggerLut;
+    
+    Master()->Log(Form("Reading trigger LUT for Run %d startTime %ld endTime %ld",
+                       run,startTime,endTime));
+  
+    ok = tio.ReadLUT(GetFileName("LUT").Data(),*fLUT);
+
+    if (!ok)
+    {
+      Master()->Log("ERROR : ReadLUT failed");
+      delete fLUT;
+      fLUT = 0x0;
+    }
   }
 }
 
@@ -216,3 +243,62 @@ AliMUONTriggerSubprocessor::Process(TMap* /*dcsAliasMap*/)
   
   return ( result1 != kTRUE || result2 != kTRUE || result3 != kTRUE || result4 != kTRUE ); // return 0 if everything is ok.  
 }
+
+//_____________________________________________________________________________
+Int_t
+AliMUONTriggerSubprocessor::TestFile(const char* baseName, Bool_t shouldBeThere) const
+{
+  /// Check if required file can be accessed 
+  if (!shouldBeThere) return 0; // all is ok
+  
+  TString fileName(gSystem->ExpandPathName(GetFileName(baseName).Data()));
+  
+  if ( gSystem->AccessPathName(fileName.Data(),kFileExists) ) 
+  {
+    // mind the strange return value convention of that method !
+    Master()->Log(Form("File %s does not exist",fileName.Data()));    
+    return 1; // this is an error
+  }
+  return 0; // all is ok.
+}
+
+//_____________________________________________________________________________
+void
+AliMUONTriggerSubprocessor::WhichFilesToRead(const char* exportedFiles,
+                                             Bool_t& globalFile,
+                                             Bool_t& regionalFile,
+                                             Bool_t& localFile,
+                                             Bool_t& lutFile) const
+{
+  /// From the exportedFiles file, determine which other files will need
+  /// to be read in
+  ifstream in(gSystem->ExpandPathName(exportedFiles));
+  
+  globalFile = kFALSE;
+  regionalFile = kFALSE;
+  localFile = kFALSE;
+  lutFile = kFALSE;
+  
+  char line[1024];
+  
+  while ( in.getline(line,1024,'\n') )
+  {
+    TString sline(line);
+    sline.ToUpper();
+    
+    if ( sline.Contains("REGIONAL") ) regionalFile = kTRUE;
+    if ( sline.Contains("LUT") ) lutFile = kTRUE;
+    if ( sline.Contains("LOCAL") && sline.Contains("MASK") ) localFile = kTRUE;
+    if ( sline.Contains("GLOBAL") ) globalFile = kTRUE;
+  }
+    
+  if ( regionalFile || localFile || globalFile || lutFile ) 
+  {
+    Master()->Log(Form("Will have to read the following file types:"));
+    if ( globalFile) Master()->Log("GLOBAL");
+    if ( regionalFile ) Master()->Log("REGIONAL");
+    if ( localFile) Master()->Log("LOCAL");
+    if ( lutFile ) Master()->Log("LUT");
+  }
+}
+
