@@ -1085,12 +1085,12 @@ TH1F* AliTPCCalibViewer::SigmaCut(TH1F *histogram, Float_t mean, Float_t sigma, 
          Float_t sigma = 1.5;
          Float_t sigmaMax = 4;
          gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distribution", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
+         TH1F *distribution = new TH1F("Distribution1", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
          TRandom rand(23);
          for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
          Float_t *ar = distribution->GetArray();
          
-         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas", "", 350, 350);
+         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas_SigmaCut", "", 350, 350);
          macro_example_canvas->Divide(0,3);
          TVirtualPad *pad1 = macro_example_canvas->cd(1);
          pad1->SetGridy();
@@ -1231,12 +1231,12 @@ TH1F* AliTPCCalibViewer::Integrate(TH1F *histogram, Float_t mean, Float_t sigma,
          Float_t sigma = 1.5;
          Float_t sigmaMax = 4;
          gROOT->SetStyle("Plain");
-         TH1F *distribution = new TH1F("Distribution", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
+         TH1F *distribution = new TH1F("Distribution2", "Distribution f(x, #mu, #sigma)", 1000,-5,5);
          TRandom rand(23);
          for (Int_t i = 0; i <50000;i++) distribution->Fill(rand.Gaus(mean, sigma));
          Float_t *ar = distribution->GetArray();
          
-         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas", "", 350, 350);
+         TCanvas* macro_example_canvas = new TCanvas("macro_example_canvas_Integrate", "", 350, 350);
          macro_example_canvas->Divide(0,2);
          TVirtualPad *pad1 = macro_example_canvas->cd(1);
          pad1->SetGridy();
