@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.9  2007/11/17 16:39:49  gustavo
+ * removed deleting of not owned data and deleting of histograms which are exported to the output file (MG)
+ *
  * Revision 1.8  2007/10/29 13:48:42  gustavo
  * Corrected coding violations
  *
@@ -203,7 +206,7 @@ TList *  AliAnaGammaDirect::GetCreateOutputObjects()
       
       sprintf(name,"nt_Cone_%d",icone);
       sprintf(title,"ntuple for cone size %d",icone);
-      fntSeveralIC[icone] = new TNtuple(name, title, "ptcand:phicand:etacand:ptsum:type:ncone0:ncone1:ncone2:ncone3:ncone4:ncone5");
+      fntSeveralIC[icone] = new TNtuple(name, title, "ptcand:phicand:etacand:pdg:status:ptsum:ncone0:ncone1:ncone2:ncone3:ncone4:ncone5");
       outputContainer->Add(fntSeveralIC[icone]) ; 
 
       for(Int_t ipt = 0; ipt<fNPtThres;ipt++){ 
@@ -392,7 +395,6 @@ void  AliAnaGammaDirect::MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArr
   //Isolation Cut Analysis for both methods and different pt cuts and cones
   if (fICMethod != kSeveralIC)
     AliFatal("Remember to set in config file: directGamma->SetICMethod(kSeveralIC)");
-  Int_t type = 0;
 
   //Search maximum energy photon in the event
   Double_t ptC = 0;
@@ -443,7 +445,7 @@ void  AliAnaGammaDirect::MakeSeveralICAnalysis(TClonesArray * plCalo, TClonesArr
       }//pt thresh loop
       fhPtSumIsolated[icone]->Fill(ptC,coneptsum) ;
 //      gROOT->cd();
-      fntSeveralIC[icone]->Fill(ptC,pCandidate->Phi(),pCandidate->Eta(), coneptsum,type,ncone[icone][0],ncone[icone][1],ncone[icone][2],ncone[icone][3],ncone[icone][4],ncone[icone][5]);
+      fntSeveralIC[icone]->Fill(ptC,pCandidate->Phi(),pCandidate->Eta(),  pCandidate->GetPdgCode(), pCandidate->GetStatusCode(), coneptsum,ncone[icone][0],ncone[icone][1],ncone[icone][2],ncone[icone][3],ncone[icone][4],ncone[icone][5]);
     }//cone size loop
   }//found high energy gamma in the event
 }
