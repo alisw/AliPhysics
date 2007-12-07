@@ -87,6 +87,16 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
   TObjArray arUserCut(7);    arUserCut.SetOwner(kTRUE);     //7  user cut in number of sigmas
   
   AliDCSValue *pVal; Int_t cnt=0;
+
+// evaluate environment pressure
+  TObjArray *pPenv=(TObjArray*)pMap->GetValue("HMP_DET/HMP_ENV/HMP_ENV_PENV.actual.value"); 
+
+  TIter nextPenv(pPenv);
+
+  TGraph *pGrPenv=new TGraph; cnt=0;
+  while((pVal=(AliDCSValue*)nextPenv())) pGrPenv->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());        //P env
+  if( cnt!=0) pGrPenv->Fit(new TF1("Penv","1000+x*[0]",fStartTime,fEndTime),"Q");                               //clm: if no DCS map entry don't fit
+  delete pGrPenv;
     
   for(Int_t iCh=0;iCh<7;iCh++){                   
 // evaluate High Voltage
@@ -101,11 +111,11 @@ Bool_t AliHMPIDPreprocessor::ProcDcs(TMap* pMap)
     TIter nextP(pP);    
     TGraph *pGrP=new TGraph; cnt=0; 
     while((pVal=(AliDCSValue*)nextP())) pGrP->SetPoint(cnt++,pVal->GetTimeStamp(),pVal->GetFloat());            //P
-    if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"1005+x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
+    if( cnt!=0) pGrP->Fit(new TF1(Form("P%i",iCh),"4 + x*[0]",fStartTime,fEndTime),"Q");                       //clm: if no DCS map entry don't fit
     delete pGrP;
     
 // evaluate Qthre
-    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),Form("3*10^(3.01e-3*HV%i - 4.72)+170745848*exp(-P%i*0.0162012)",iCh),fStartTime,fEndTime),iCh);
+    arQthre.AddAt(new TF1(Form("HMP_Qthre%i",iCh),Form("3*10^(3.01e-3*HV%i - 4.72)+170745848*exp(-(P%i+Penv)*0.0162012)",iCh),fStartTime,fEndTime),iCh);
 
     
 // evaluate UserCut
