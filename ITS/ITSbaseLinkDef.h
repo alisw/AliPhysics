@@ -85,6 +85,7 @@
 #pragma link C++ class AliITSRawStreamSSD+;
 #pragma link C++ class AliITSRawStreamSSDv1+;
 #pragma link C++ class AliITSEventHeader+;
+#pragma link C++ class AliITSRawStreamSPDErrorLog+;
 
 
 
