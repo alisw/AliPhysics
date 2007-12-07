@@ -46,7 +46,15 @@ AC_SUBST([ROOTSYS])
 ROOTBINDIR=`dirname $ROOTEXEC`
 AC_SUBST([ROOTBINDIR])
 
-dnl test for additional required root libraries
+dnl test for additional required root libraries and headers
+LIBS='-ldl'
+if test "x$have_root" = "x1"; then
+  AC_LANG_PUSH(C++)
+  save_CPPFLAGS=$CPPFLAGS
+  save_LDFLAGS=$LDFLAGS
+  save_LIBS=$LIBS
+  #CPPFLAGS=`echo $save_CPPFLAGS; for i in ${ROOTINCDIR}; do echo -n "-I$i " ; done`
+  
   # we check for the libSTEER library which is linked to
   # - the ROOT libs libGeom libMinuit libVMC libEG
   # - the AliRoot libESD libRAWData (libRAWDatarec from v4-04-Rev-07)
@@ -54,13 +62,8 @@ dnl test for additional required root libraries
   # - from Nov 1 2006 TTreeFormula is needed by AliTagAnalysis and requires
   #   libTreePlayer.so
   # - from Jan 07 libESD also depends on libXMLIO
-LIBS='-ldl'
-if test "x$have_root" = "x1"; then
-  save_CPPFLAGS=$CPPFLAGS
-  save_LDFLAGS=$LDFLAGS
-  save_LIBS=$LIBS
-  
-  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO'
+  # - libSTEER depends on libProofPlayer since Oct 2007 (after v4-07-Release)
+  ROOT_CHECKLIBS='Geom Minuit EG VMC TreePlayer XMLIO Thread Proof ProofPlayer'
   for CHECKLIB in $ROOT_CHECKLIBS ; do
     CPPFLAGS="$save_CPPFLAGS ${ROOTCFLAGS}"
     LDFLAGS="$save_LDFLAGS -L${ROOTLIBDIR}"
@@ -153,11 +156,6 @@ if test ! "x$have_aliroot" = "xno" ; then
   CHECKLIB=AOD
   AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
-  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
-  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
-  CHECKLIB=CDB
-  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
-
   # splitted RAW libraries since AliRoot version v4-04-Rev-07 (09.08.2006)
   have_alirawdata=no
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
@@ -187,8 +185,13 @@ if test ! "x$have_aliroot" = "xno" ; then
  				      [have_alirawdata=no
 				       have_aliroot=no])
 	]) dnl AC_CHECK_LIB RAWDatabase
-  AC_MSG_CHECKING(for AliRawReader classes in RAWData libraries)
-  AC_MSG_RESULT($have_alirawdata)
+  AC_MSG_CHECKING([for AliRawReader classes in RAWData libraries])
+  AC_MSG_RESULT([$have_alirawdata])
+
+  # CBD library is present since AliRoot version v4-05-00 (02.06.2006)
+  LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS -lSTEER"
+  CHECKLIB=CDB
+  AC_CHECK_LIB([$CHECKLIB],[_init],[ALIROOT_LIBS="$ALIROOT_LIBS -l$CHECKLIB"])
 
   LIBS="$save_LIBS $ROOTLIBS $ALIROOT_LIBS"
   CHECKLIB=STEER
@@ -196,7 +199,17 @@ if test ! "x$have_aliroot" = "xno" ; then
 				   [have_aliroot=no])
 
   if test "x$have_aliroot" = "xno" ; then
+    # 2007-08-18 dont reset ALIROOT_CPPFLAGS in order to allow compilation
+    # but library dependencies might not be resolved completely
     ALIROOT_CPPFLAGS=
+    AC_MSG_WARN([some of the AliRoot library dependencies are not resolved.
+    This can happen from time to time due to development in AliRoot. You can
+    force compilation of detector libs by --enable-<detector>, but be aware
+    of unresolved references at runtime.])
+    AC_MSG_WARN([       ------------------------------------------ ])
+    AC_MSG_WARN([       Report this to $PACKAGE_BUGREPORT ])
+    AC_MSG_WARN([       please include config.log                  ])
+    AC_MSG_WARN([       ------------------------------------------ ])
     ALIROOT_LDFLAGS=
     ALIROOT_LIBS=
   fi
