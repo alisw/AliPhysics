@@ -1,19 +1,19 @@
 /*
-TOF DA for online calibration
+T0 DA for online calibration
 
 Contact: Michal.Oledzki@cern.ch
-Link: www.if.pw.edu.pl:/~oledzki
-Run Type: PHYSICS
+Link: http://users.jyu.fi/~mioledzk/
+Run Type: T0_STANDALONE_LASER
 DA Type: MON
-Number of events needed: depending on the run, being run-level
-Input Files: 
+Number of events needed: 400000 
+Input Files: inLaser.dat, external parameters
 Output Files: daLaser.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
 
 */
 
 #define FILE_OUT "daLaser.root"
-
+#define FILE_IN "inLaser.dat"
 #include <daqDA.h>
 #include <event.h>
 #include <monitor.h>
@@ -31,7 +31,6 @@ Trigger types used: PHYSICS_EVENT
 #include "TROOT.h"
 #include "TPluginManager.h"
 #include "TFile.h"
-#include "TFile.h"
 #include "TKey.h"
 #include "TH2S.h"
 #include "TObject.h"
@@ -45,7 +44,8 @@ Trigger types used: PHYSICS_EVENT
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
 #include "TProfile.h"
-
+int cqbx,cqby,clbx,clby,cbx;
+float cqlx,cqmx,cqly,cqmy,cllx,clmx,clly,clmy,clx,cmx;
 /* Main routine
       Arguments: 
       1- monitoring data source
@@ -59,7 +59,30 @@ int main(int argc, char **argv) {
 					"TStreamerInfo",
 					"RIO",
 					"TStreamerInfo()"); 
-  
+  FILE *inp;
+  char c;
+  inp = fopen(FILE_IN, "r");  
+  while((c=getc(inp))!=EOF) {
+    switch(c) {
+      case 'a': {fscanf(inp, "%d", &cqbx ); break;} //N of X bins hCFD_QTC
+      case 'b': {fscanf(inp, "%f", &cqlx ); break;} //Low x hCFD_QTC
+      case 'c': {fscanf(inp, "%f", &cqmx ); break;} //High x hCFD_QTC
+      case 'd': {fscanf(inp, "%d", &cqby ); break;} //N of Y bins hCFD_QTC
+      case 'e': {fscanf(inp, "%f", &cqly ); break;} //Low y hCFD_QTC
+      case 'f': {fscanf(inp, "%f", &cqmy ); break;} //High y hCFD_QTC
+      case 'g': {fscanf(inp, "%d", &clbx ); break;} //N of X bins hCFD_LED
+      case 'h': {fscanf(inp, "%f", &cllx ); break;} //Low x hCFD_LED
+      case 'i': {fscanf(inp, "%f", &clmx ); break;} //High x hCFD_LED
+      case 'j': {fscanf(inp, "%d", &clby ); break;} //N of Y bins hCFD_LED
+      case 'k': {fscanf(inp, "%f", &clly ); break;} //Low y hCFD_LED
+      case 'l': {fscanf(inp, "%f", &clmy ); break;} //High y hCFD_LED
+      case 'm': {fscanf(inp, "%d", &cbx ); break;}  //N of Y bins hCFD 
+      case 'n': {fscanf(inp, "%f", &clx ); break;}  //Low x hCFD
+      case 'o': {fscanf(inp, "%f", &cmx ); break;}  //High x hCFD
+    }
+  }
+  fclose(inp);
+
   if (argc!=2) {
     printf("Wrong number of arguments\n");
     return -1;
@@ -96,13 +119,13 @@ int main(int argc, char **argv) {
   TH2F *hCFD_LED[24]; 
 
    for(Int_t ic=0; ic<24; ic++) {
-      hCFD_QTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",800,0.5,8000.5,200,10000.5,20000.5);
-      hCFD_LED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",100,-500.0,500.0,100,14600.0,14700.0);
+      hCFD_QTC[ic] = new TH2F(Form("CFD_QTC%d",ic+1),"CFD_QTC",cqbx,cqlx,cqmx,cqby,cqly,cqmy);
+      hCFD_LED[ic] = new TH2F(Form("CFD_LED%d",ic+1),"CFD_LED",clbx,cllx,clmx,clby,clly,clmy);
       if(ic<12){
-	hCFD[ic] = new TH1F(Form("T0_C_%d_CFD",ic+1),"CFD", 3000,0., 30000.);	
+	hCFD[ic] = new TH1F(Form("T0_C_%d_CFD",ic+1),"CFD", cbx,clx,cmx);	
       }
       else{
-        hCFD[ic] = new TH1F(Form("T0_A_%d_CFD",ic-11),"CFD", 3000,0., 30000.); 
+        hCFD[ic] = new TH1F(Form("T0_A_%d_CFD",ic-11),"CFD", cbx,clx,cmx); 
       }
     }
 
@@ -227,7 +250,7 @@ int main(int argc, char **argv) {
       break;
     }
   }
-printf("After loop, before writing histos\n");
+  printf("After loop, before writing histos\n");
   // write a file with the histograms
   TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
@@ -238,6 +261,13 @@ printf("After loop, before writing histos\n");
     }
   hist->Close();
   delete hist;
+
+  status=0;
+
+  /* export file to FXS */
+  if (daqDA_FES_storeFile(FILE_OUT, FILE_OUT)) {
+    status=-2;
+  }
 
   return status;
 }

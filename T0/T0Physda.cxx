@@ -1,7 +1,20 @@
-//extern "C" 
+/*
+T0 DA for online calibration
 
+Contact: Michal.Oledzki@cern.ch
+Link: http://users.jyu.fi/~mioledzk/
+Run Type: PHYSICS
+DA Type: MON
+Number of events needed: 500000 
+Input Files: inPhys.dat, external parameters
+Output Files: daPhys.root, to be exported to the DAQ FXS
+Trigger types used: PHYSICS_EVENT
+
+*/
+
+#define FILE_OUT "daPhys.root"
+#define FILE_IN "inPhys.dat"
 #include <daqDA.h>
-
 #include <event.h>
 #include <monitor.h>
  
@@ -13,24 +26,24 @@
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
 #include <AliT0RawReader.h>
-#include <AliCDBManager.h>
 
 //ROOT
+#include "TROOT.h"
+#include "TPluginManager.h"
 #include "TFile.h"
 #include "TKey.h"
 #include "TH2S.h"
 #include "TObject.h"
 #include "TBenchmark.h"
 #include "TRandom.h"
-
 #include "TCanvas.h"
 #include "TString.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
-
-
+int cbx, ccbx;
+float clx,cmx,cclx,ccmx;
 
 /* Main routine
       Arguments: 
@@ -39,8 +52,29 @@
 int main(int argc, char **argv) {
 //int main(){
   int status;
+
+  /* magic line */
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+                                        "*",
+                                        "TStreamerInfo",
+                                        "RIO",
+                                        "TStreamerInfo()");
   
-  
+  FILE *inp;
+  char c;
+  inp = fopen(FILE_IN, "r");
+  while((c=getc(inp))!=EOF) {
+    switch(c) {
+      case 'a': {fscanf(inp, "%d", &ccbx ); break;} //N of X bins hCFD1_CFD
+      case 'b': {fscanf(inp, "%f", &cclx ); break;} //Low x hCFD1_CFD
+      case 'c': {fscanf(inp, "%f", &ccmx ); break;} //High x hCFD1_CFD
+      case 'd': {fscanf(inp, "%d", &cbx ); break;} //N of X bins hCFD
+      case 'e': {fscanf(inp, "%f", &clx ); break;} //Low x hCFD
+      case 'f': {fscanf(inp, "%f", &cmx ); break;} //High x hCFD
+    }
+  }
+  fclose(inp);
+
   if (argc!=2) {
     printf("Wrong number of arguments\n");
     return -1;
@@ -75,20 +109,15 @@ int main(int argc, char **argv) {
 
   TH1F *hCFD1_CFD[24];  
   TH1F *hCFD[24];
-  Char_t  buf1[15], buf2[15],buf3[15],buf4[15];
-
+   
    for(Int_t ic=0; ic<24; ic++) {
       if(ic<12) {
-	sprintf(buf1,"CFD1-CFD%i",ic+1);
-        hCFD1_CFD[ic] = new TH1F(buf1,"CFD-CFD",200000,-100000,100000);
-        sprintf(buf3,"CFD%i",ic+1);
-        hCFD[ic] = new TH1F(buf3,"CFD",100000,0,100000);
+        hCFD1_CFD[ic] = new TH1F(Form("CFD1-CFD%d",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+        hCFD[ic] = new TH1F(Form("CFD%i",ic+1),"CFD",cbx,clx,cmx);
 	}
       if(ic>11){
-	sprintf(buf2,"CFD13-CFD%i",ic+1);
-        hCFD1_CFD[ic] = new TH1F(buf2,"CFD-CFD",200000,-100000,100000);
-        sprintf(buf4,"CFD%i",ic+1);
-        hCFD[ic] = new TH1F(buf4,"CFD",100000,0,100000);
+        hCFD1_CFD[ic] = new TH1F(Form("CFD13-CFD%i",ic+1),"CFD-CFD",ccbx,cclx,ccmx);
+        hCFD[ic] = new TH1F(Form("CFD%i",ic+1),"CFD",cbx,clx,cmx);
 	}
     }
 
@@ -200,11 +229,9 @@ int main(int argc, char **argv) {
       break;
     }
   }
-printf("After loop, before writing histos\n");
+  printf("After loop, before writing histos\n");
   // write a file with the histograms
-  Char_t filehist[21];
-  sprintf(filehist,"daPhys.root");
-  TFile *hist = new TFile(filehist,"RECREATE");
+  TFile *hist = new TFile(FILE_OUT,"RECREATE");
 
   for(Int_t j=0;j<24;j++){
      hCFD1_CFD[j]->Write();
@@ -212,6 +239,13 @@ printf("After loop, before writing histos\n");
     }
   hist->Close();
   delete hist;
+
+  status=0;
+
+  /* export file to FXS */
+  if (daqDA_FES_storeFile(FILE_OUT, FILE_OUT)) {
+    status=-2;
+  }
 
   return status;
 }
