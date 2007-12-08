@@ -53,7 +53,7 @@ private:
   Char_t    fUsed;     //counter of usage  
   UChar_t   fDetector; //detector  number
   UChar_t   fRow;      //row number number
-  ClassDef(AliTPCclusterMI,4)  // Time Projection Chamber clusters
+  ClassDef(AliTPCclusterMI,5)  // Time Projection Chamber clusters
 };
 
 void AliTPCclusterMI::Use(Int_t inc) 
