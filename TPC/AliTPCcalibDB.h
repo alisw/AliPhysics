@@ -19,6 +19,7 @@ class AliDCSSensorArray;
 class AliCDBEntry;
 class AliTPCParam;
 class AliTPCAltroMapping;
+class AliTPCClusterParam;
 //class AliCDBStorage;
 
 class AliTPCcalibDB : public TObject
@@ -39,6 +40,7 @@ class AliTPCcalibDB : public TObject
   AliTPCSensorTempArray* GetTemperature() {return fTemperature;}
   AliTPCParam*  GetParameters(){return fParam;}
   AliTPCAltroMapping ** GetMapping(){ return fMapping;}
+  AliTPCClusterParam *GetClusterParam(){ return fClusterParam;}
   //
   static void     CreateObjectList(const Char_t *filename, TObjArray *calibObjects);
   static void MakeTree(const char * fileName, TObjArray * array, const char * mapFileName = 0, AliTPCCalPad* outlierPad = 0, Float_t ltmFraction = 0.9);
@@ -63,6 +65,7 @@ protected:
   //
   //
   AliTPCParam * fParam;           // TPC parameters
+  AliTPCClusterParam * fClusterParam;  // TPC cluster error, shape and Q parameterization
   //
   static AliTPCcalibDB* fgInstance;  // singleton control
   static Bool_t       fgTerminated;  // termination control 

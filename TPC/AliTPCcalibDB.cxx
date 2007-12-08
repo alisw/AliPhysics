@@ -21,7 +21,6 @@
 // Request an instance with AliTPCcalibDB::Instance()                        //
 // If a new event is processed set the event number with SetRun              //
 // Then request the calibration data                                         ////
-
 //
 //
 // Calibration data:
@@ -70,6 +69,9 @@
 //             a.b) Reconstruction -  
 //                  
 //                  in AliTPCtransform::Correct() - called calib->GetExB()->Correct(dxyz0,dxyz1)
+//
+//  3.)   cluster error, shape and Q parameterization
+//
 //
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,7 +164,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fPedestals(0),
   fTemperature(0),
   fMapping(0),
-  fParam(0)
+  fParam(0),
+  fClusterParam(0)
 {
   //
   // constructor
@@ -267,6 +270,13 @@ void AliTPCcalibDB::Update(){
     //if (fPadNoise) delete fPadNoise;
     entry->SetOwner(kTRUE);
     fParam = (AliTPCParam*)(entry->GetObject()->Clone());
+  }
+
+  entry          = GetCDBEntry("TPC/Calib/ClusterParam");
+  if (entry){
+    //if (fPadNoise) delete fPadNoise;
+    entry->SetOwner(kTRUE);
+    fClusterParam = (AliTPCClusterParam*)(entry->GetObject()->Clone());
   }
 
   entry          = GetCDBEntry("TPC/Calib/Mapping");

@@ -47,11 +47,20 @@
 //          The angular and diffusion effect is scaling with pad length
 //          common parameterization for different pad length
 //
+//  2. Error parameterization using charge 
+//     2.a) GetErrorQ
+//          GetError0+
+//          adding 1/Q component to diffusion and angluar part
+//     2.b) GetErrorQPar
+//          GetError0Par+
+//          adding 1/Q component to diffusion and angluar part
+//     2.c) GetErrorQParScaled - Just for study
+//          One parameterization for all pad shapes
+//          Smaller precission as previous one
 //
-//     1.d) GetErrorQ
-//     1.e) GetErrorQPar
-//     1.f) GetErrorQParScaled
-//                                                                           //
+//
+//
+                                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #include "AliTPCClusterParam.h"
