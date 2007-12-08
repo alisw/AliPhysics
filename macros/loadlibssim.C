@@ -43,6 +43,7 @@ void loadlibssim ()
   gSystem->Load("libSTRUCT");
   gSystem->Load("libPHOSbase");
   gSystem->Load("libPHOSsim");
+  gSystem->Load("libPHOSrec");
   gSystem->Load("libMUONmapping");
   gSystem->Load("libMUONgeometry");
   gSystem->Load("libMUONcalib");
