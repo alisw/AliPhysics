@@ -16,7 +16,41 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-//  TPC cluster error and shape parameterization                             //
+//  TPC cluster error, shape and charge parameterization as function
+//  of drift length, and inclination angle                                   //
+//
+//  Following notation is used in following
+//  Int_t dim 0 - y direction
+//            1 - z direction
+//
+//  Int_t type 0 - short pads 
+//             1 - medium pads
+//             2 - long pads
+//  Float_t z    - drift length
+// 
+//  Float_t angle -inclination angle at given dimension 
+//
+//  Implemented parameterization
+//
+//
+//  1. Resolution as function of drift length and inclination angle
+//     1.a) GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle)
+//          Simple error parameterization as derived from analytical formula
+//          only linear term in drift length and angle^2
+//          The formula is valid only with precission +-5%
+//          Separate parameterization for differnt pad geometry
+//     1.b) GetError0Par
+//          Parabolic term correction - better precision
+//
+//     1.c) GetError1 - JUST FOR Study
+//          Similar to GetError1
+//          The angular and diffusion effect is scaling with pad length
+//          common parameterization for different pad length
+//
+//
+//     1.d) GetErrorQ
+//     1.e) GetErrorQPar
+//     1.f) GetErrorQParScaled
 //                                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////

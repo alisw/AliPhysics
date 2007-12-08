@@ -25,19 +25,34 @@ class AliTPCClusterParam : public TObject {
   virtual           ~AliTPCClusterParam(){;}
   virtual void	Print(Option_t* option = "") const;
   void SetInstance(AliTPCClusterParam*param){fgInstance = param;}
+  //
+  // Seting functions
+  //
   void FitData(TTree * tree);
+  void FitResol(TTree * tree);
+  void FitRMS(TTree * tree);
+  void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
+  Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz);   
+  //
+  // Error parameterization
+  //
   Float_t GetError0(Int_t dim, Int_t type, Float_t z, Float_t angle);
   Float_t GetError0Par(Int_t dim, Int_t type, Float_t z, Float_t angle);
   Float_t GetError1(Int_t dim, Int_t type, Float_t z, Float_t angle);
   Float_t GetErrorQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
   Float_t GetErrorQPar(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
   Float_t GetErrorQParScaled(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
+  //
+  // Shape parameterization
+  //
   Float_t GetRMS0(Int_t dim, Int_t type, Float_t z, Float_t angle);
   Float_t GetRMS1(Int_t dim, Int_t type, Float_t z, Float_t angle);
   Float_t GetRMSQ(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
   Float_t GetRMSSigma(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean);
   Float_t GetShapeFactor(Int_t dim, Int_t type, Float_t z, Float_t angle, Float_t Qmean, Float_t rmsL, Float_t rmsM);
-
+  //
+  //
+  //
   void Test(TTree * tree, const char *output="TestClusterParam.root");
   //
   // static methods equivalents  - use instance of param object - useful for tree draw and TF2 visualization 
@@ -77,15 +92,13 @@ class AliTPCClusterParam : public TObject {
   }
   //
   //
-  void FitResol(TTree * tree);
-  void FitRMS(TTree * tree);
-  Float_t Qnorm(Int_t ipad, Int_t itype, Float_t dr, Float_t ty, Float_t tz); 
   static Float_t SQnorm(Int_t ipad, Int_t itype,Float_t dr, Float_t ty, Float_t tz) {return fgInstance->Qnorm(ipad, itype, dr,ty,tz);}
-
-  void SetQnorm(Int_t ipad, Int_t itype,  TVectorD * norm); 
 
 
  protected: 
+  //
+  //
+  //
   void FitResol0(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
   void FitResol0Par(TTree * tree, Int_t dim, Int_t type, Float_t *param0, Float_t *error);
   void FitResol1(TTree * tree, Int_t dim, Float_t *param0, Float_t *error);
