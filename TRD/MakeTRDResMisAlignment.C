@@ -72,10 +72,11 @@ void MakeTRDResMisAlignment(){
       rx*=chrx;
       ry*=chry;
       rz*=chrz;
-	chId++;
-	volid = AliGeomManager::LayerToVolUID(iLayer,chId);
+      chId++;
+      if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
+      volid = AliGeomManager::LayerToVolUID(iLayer,chId);
       symname = AliGeomManager::SymName(volid);
-	if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
       new(alobj[j++]) AliAlignObjParams(symname,volid,dx,dy,dz,rx,ry,rz,kFALSE);
     }
   }

@@ -12,9 +12,10 @@ void MakeTOFResMisAlignment(){
   cdb->SetRun(0);
   
   AliCDBStorage* storage;
+  TString Storage;
   
   if( TString(gSystem->Getenv("TOCDB")) == TString("kTRUE") ){
-    TString Storage = gSystem->Getenv("STORAGE");
+    Storage = gSystem->Getenv("STORAGE");
     if(!Storage.BeginsWith("local://") && !Storage.BeginsWith("alien://")) {
       Error(macroname,"STORAGE variable set to %s is not valid. Exiting\n",Storage.Data());
       return;
@@ -55,7 +56,7 @@ void MakeTOFResMisAlignment(){
     dz = rnd->Gaus(0.,sigmatr);
       strId++;
       if ((isect==13 || isect==14 || isect==15) && (istr >= 39 && istr <= 53)) continue;
-      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
+      if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[isect] ) continue;
       new(alobj[j++]) AliAlignObjParams(AliGeomManager::SymName(idTOF,strId),AliGeomManager::LayerToVolUID(idTOF,strId), dx, dy, dz, dpsi, dtheta, dphi, kFALSE);
     }
   }

@@ -127,6 +127,7 @@ void MakeTRDFullMisAlignment(){
       ry*=chry;
       rz*=chrz;
       chId++;
+      if ((iSect==13 || iSect==14 || iSect==15) && iCh==2) continue;
       volid = AliGeomManager::LayerToVolUID(iLayer,chId);
       symname = AliGeomManager::SymName(volid);
       if( (TString(gSystem->Getenv("PARTGEOM")) == TString("kTRUE")) && !sActive[iSect] ) continue;
