@@ -35,7 +35,7 @@ public:
 
   void   Init(const AliQA::DETECTORINDEX det) ; 
   void   Run(AliQA::ALITASK tsk, TObjArray * list=0x0); 
-  void   SetRefandData(TDirectory * ref, TList * refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
+  void   SetRefandData(TDirectory * ref, TObjArray * refOCDB, TDirectory * data=NULL) { fRefSubDir = ref ;  fRefOCDBSubDir = refOCDB, fDataSubDir = data ; }
 
 protected:
   virtual const Double_t Check() ;
@@ -46,7 +46,7 @@ protected:
 
   TDirectory  * fDataSubDir    ; //! directory for the current task directory in the current detector directory in the data file
   TDirectory  * fRefSubDir     ; //! directory for the current task directory in the current detector directory in the reference file
-  TList       * fRefOCDBSubDir ; //! Entry in OCDB for the current detector 
+  TObjArray   * fRefOCDBSubDir ; //! Entry in OCDB for the current detector 
 
   ClassDef(AliQACheckerBase,1)  // description 
 

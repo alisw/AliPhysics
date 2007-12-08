@@ -97,7 +97,7 @@ Int_t AliQADataMaker::Add2List(TH1 * hist, const Int_t index, TObjArray * list)
 { 
 	// Set histograms memory resident and add to the list 
 	hist->SetDirectory(0) ; 
-	list->AddAt(hist, index) ; 
+	list->AddAtAndExpand(hist, index) ; 
 	return list->GetLast() ; 
 }
 
@@ -245,8 +245,8 @@ void AliQADataMaker::Exec(AliQA::TASKINDEX task, TObject * data)
 				AliError("Wrong type of esd container") ; 
 			break ;
 		}  
-	        case AliQA::kNTASKINDEX:
-	                break ;  
+		case AliQA::kNTASKINDEX:
+		break ;  
 	}	  
 }
 

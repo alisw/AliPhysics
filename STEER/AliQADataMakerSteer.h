@@ -36,7 +36,7 @@ public:
 	AliQADataMakerSteer(const AliQADataMakerSteer & qas) ; 
 	AliQADataMakerSteer & operator = (const AliQADataMakerSteer & qas) ; 
 	virtual ~AliQADataMakerSteer() ; 
-    TList * GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const ; 
+    TObjArray * GetFromOCDB(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task) const ; 
 	Bool_t  Merge(const Int_t runNumber = -1) const ;  
     void    Reset() ;  
 	Bool_t  Run(const char * detectors, const AliQA::TASKINDEX taskIndex, const char * fileName = NULL) ; 
@@ -54,7 +54,7 @@ private:
 	Bool_t           InitRunLoader() ; 
 	Bool_t           IsSelected(const char * detName)  ;
 	Bool_t           Finish(const AliQA::TASKINDEX taskIndex) ;
-	Bool_t           SaveIt2OCDB(TFile * inputFile) const ;  
+	Bool_t           SaveIt2OCDB(const Int_t runNumber, TFile * inputFile) const ;  
 
  
 	Bool_t			   fCycleSame ;                    //! true if 2 consecutive data making for a same detector   

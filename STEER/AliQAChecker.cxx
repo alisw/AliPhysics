@@ -125,7 +125,7 @@ AliQAChecker::~AliQAChecker()
 
 
 //_____________________________________________________________________________
-void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TList *& dirOCDB)     
+void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory *& dirFile, TObjArray *& dirOCDB)     
 { 
   // Opens and returns the file with the reference data 
 	
@@ -153,12 +153,18 @@ void AliQAChecker::GetRefSubDir(const char * det, const char * task, TDirectory 
 		}  
 	} else if (refStorage.Contains(AliQA::GetLabLocalOCDB()) || refStorage.Contains(AliQA::GetLabAliEnOCDB())) {	
 		AliCDBManager* man = AliCDBManager::Instance() ; 
+		if ( ! man->IsDefaultStorageSet() ) {
+			man->SetDefaultStorage(AliQA::GetQARefDefaultStorage()) ; 
+			man->SetSpecificStorage(Form("%s/*", AliQA::GetQAOCDBDirName()), AliQA::GetQARefStorage()) ; 
+		}
 		char detOCDBDir[20] ; 
-		sprintf(detOCDBDir, "%s/%s", AliQA::GetQARefFileName(), det) ; 
-		AliCDBEntry * entry = man->Get(detOCDBDir) ;
-		TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
-		if ( listDetQAD ) 
-			dirOCDB = dynamic_cast<TList *>(listDetQAD->FindObject(task)) ; 
+		sprintf(detOCDBDir, "%s/%s/%s", AliQA::GetQAOCDBDirName(), det, AliQA::GetRefOCDBDirName()) ; 
+		AliCDBEntry * entry = man->Get(detOCDBDir, 0) ; //FIXME 0 --> RUN NUMBER
+		if (entry) {
+			TList * listDetQAD = dynamic_cast<TList *>(entry->GetObject()) ;
+			if ( listDetQAD ) 
+				dirOCDB = dynamic_cast<TObjArray *>(listDetQAD->FindObject(task)) ; 
+		}
 	}
 }
 
@@ -232,8 +238,8 @@ Bool_t AliQAChecker::Run(const char * fileName)
 		index = AliQA::kESD ; 
       qac->Init(AliQA::DETECTORINDEX(det)) ; 
 
-	  TDirectory * refDir     = NULL ; 
-	  TList * refOCDBDir      = NULL ;	
+	  TDirectory * refDir    = NULL ; 
+	  TObjArray * refOCDBDir = NULL ;	
 	  GetRefSubDir(detNameQA.Data(), taskName.Data(), refDir, refOCDBDir) ;
 	  if ( refDir || refOCDBDir) {
 		  qac->SetRefandData(refDir, refOCDBDir, taskDir) ;
@@ -284,8 +290,8 @@ Bool_t AliQAChecker::Run(AliQA::DETECTORINDEX det, AliQA::TASKINDEX task, TObjAr
   else if ( task == AliQA::kESDS ) 
 		index = AliQA::kESD ; 
 
-  TDirectory * refDir = NULL ; 
-  TList *refOCDBDir   = NULL ;	
+  TDirectory * refDir    = NULL ; 
+  TObjArray * refOCDBDir = NULL ;	
 	GetRefSubDir(AliQA::GetDetName(det), AliQA::GetTaskName(task), refDir, refOCDBDir) ;
   if ( refDir || refOCDBDir) {
 	  qac->Init(det) ; 

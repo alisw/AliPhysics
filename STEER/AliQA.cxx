@@ -48,23 +48,25 @@
 
 
 ClassImp(AliQA)
-AliQA    * AliQA::fgQA                 = 0x0 ;
-TFile    * AliQA::fgQADataFile         = 0x0 ;   
-TString    AliQA::fgQADataFileName     = "QA" ;  // will transform into Det.QA.run.cycle.root  
-TFile    * AliQA::fgQARefFile          = 0x0 ;   
-TString    AliQA::fgQARefDirName	   = "" ; 
-TString    AliQA::fgQARefFileName      = "QA.root" ;
-TFile    * AliQA::fgQAResultFile       = 0x0 ;  
-TString    AliQA::fgQAResultDirName    = "" ;  
-TString    AliQA::fgQAResultFileName   = "QA.root" ; 
-TString    AliQA::fgDetNames[]         = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-										 "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
-TString       AliQA::fgTaskNames[]     = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
-const TString AliQA::fkgLabLocalFile          = "file://"  ; 
-const TString AliQA::fkgLabLocalOCDB          = "local://" ;  
-const TString AliQA::fkgLabAliEnOCDB          = "alien://" ;  
-const TString AliQA::fkgRefFileName    = "QA.root" ; 
-const TString AliQA::fkgRefOCDBDirName = "QA/Ref"  ; 
+AliQA    * AliQA::fgQA                   = 0x0 ;
+TFile    * AliQA::fgQADataFile           = 0x0 ;   
+TString    AliQA::fgQADataFileName       = "QA" ;  // will transform into Det.QA.run.cycle.root  
+TFile    * AliQA::fgQARefFile            = 0x0 ;   
+TString    AliQA::fgQARefDirName	     = "" ; 
+TString    AliQA::fgQARefFileName        = "QA.root" ;
+TFile    * AliQA::fgQAResultFile         = 0x0 ;  
+TString    AliQA::fgQAResultDirName      = "" ;  
+TString    AliQA::fgQAResultFileName     = "QA.root" ; 
+TString    AliQA::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
+										    "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"} ;   
+TString       AliQA::fgTaskNames[]       = {"Raws", "Hits", "SDigits", "Digits", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
+const TString AliQA::fkgLabLocalFile     = "file://"  ; 
+const TString AliQA::fkgLabLocalOCDB     = "local://" ;  
+const TString AliQA::fkgLabAliEnOCDB     = "alien://" ;  
+const TString AliQA::fkgRefFileName      = "QA.root" ; 
+const TString AliQA::fkgQAOCDBDirName    = "QA"  ; 
+const TString AliQA::fkgRefOCDBDirName   = "Ref"  ; 
+const TString AliQA::fkgQARefOCDBDefault = "local://$ALICE_ROOT"  ; 
 //____________________________________________________________________________
 AliQA::AliQA() : 
   TNamed("", ""), 
@@ -452,7 +454,7 @@ void AliQA::SetQARefStorage(const char * name)
   if (	fgQARefDirName.Contains(fkgLabLocalFile) )
 	 fgQARefFileName =  fkgRefFileName ; 
   else if (	fgQARefDirName.Contains(fkgLabLocalOCDB) )
-	  fgQARefFileName =  fkgRefOCDBDirName ; 
+	  fgQARefFileName =  fkgQAOCDBDirName ; 
   else {
 	  printf("ERROR: %s is an invalid storage definition\n", name) ; 
 	  fgQARefDirName  = "" ; 

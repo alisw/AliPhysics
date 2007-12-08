@@ -54,9 +54,11 @@ public:
 	static TFile *		   GetQADataFile(const char * fileName) ;
 	static TFile *         GetQAResultFile() ; 
 	static const char  *   GetQAResultFileName() { return (fgQAResultDirName + fgQAResultFileName).Data() ; }
+	static const char  *   GetQARefDefaultStorage() { return fkgQARefOCDBDefault.Data() ; }
 	static const char  *   GetQARefFileName() { return fgQARefFileName ; }
 	static const char  *   GetQARefStorage() { return fgQARefDirName.Data() ; }
-	static const char  *   GetQARefOCDBDirName() { return fkgRefOCDBDirName .Data() ; }
+	static const char  *   GetQAOCDBDirName() { return fkgQAOCDBDirName.Data() ; }
+	static const char  *   GetRefOCDBDirName() { return fkgRefOCDBDirName.Data() ; }
 	const Bool_t           IsSet(DETECTORINDEX det, ALITASK tsk, QABIT bit) const ;
 	void                   Set(QABIT bit) ;
 	static void			   SetQAResultDirName(const char * name) ; 
@@ -99,7 +101,9 @@ private:
 	static const TString fkgLabLocalOCDB    ; //! label to identify a file as local OCDB 
 	static const TString fkgLabAliEnOCDB    ; //! label to identify a file as AliEn OCDB 
 	static const TString fkgRefFileName     ; //! name of Reference File Name 
+	static const TString fkgQAOCDBDirName   ; //! name of Reference directory name in OCDB  	
 	static const TString fkgRefOCDBDirName  ; //! name of Reference directory name in OCDB  	
+	static const TString fkgQARefOCDBDefault; //! default storage for QA in OCDB 
 
  ClassDef(AliQA,1)  //ALICE Quality Assurance Object
 };
