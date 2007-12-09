@@ -46,7 +46,8 @@ ClassImp(AliRunTag)
     fNumDetectors(0),
     fEventTag("AliEventTag", 1000),
     fDetectorTag(),
-    fLHCTag()
+    fLHCTag(), 
+    fQA()
 {
   //Default constructor
 }
@@ -74,6 +75,7 @@ void AliRunTag::CopyStandardContent(AliRunTag *oldtag) {
   SetDataType(oldtag->GetDataType());
   SetLHCTag(oldtag->GetLHCTag()->GetLuminosity(),oldtag->GetLHCTag()->GetLHCState());
   SetDetectorTag(oldtag->GetDetectorTags()->GetIntDetectorMask());
+  SetQA(*(oldtag->GetQA())) ;  	
 }
 
 //___________________________________________________________________________

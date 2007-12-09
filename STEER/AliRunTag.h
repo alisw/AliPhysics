@@ -18,6 +18,7 @@
 #include <TClonesArray.h>
 #include "AliLHCTag.h"
 #include "AliDetectorTag.h"
+#include "AliQA.h" 
 
 class AliEventTag;
 //class AliDetectorTag;
@@ -45,6 +46,7 @@ class AliRunTag : public TObject {
   void SetNEvents(Int_t Pn) { fNumEvents = Pn; }
   void SetLHCTag(Float_t Plumin, TString type);
   void SetDetectorTag(UInt_t mask);
+  void SetQA(const AliQA &qa) { fQA=qa; }  	
   void AddEventTag(const AliEventTag &t);
   void Clear(const char * opt = "");
 
@@ -67,7 +69,8 @@ class AliRunTag : public TObject {
   AliLHCTag  *GetLHCTag() {return &fLHCTag; } 
   AliDetectorTag *GetDetectorTags() {return &fDetectorTag;}
   const TClonesArray *GetEventTags() const {return &fEventTag;}
-
+  const AliQA *GetQA() const {return &fQA;}	
+  
   //____________________________________________________//
  private:
   Int_t        fAliceRunId;              //the run id
@@ -85,8 +88,9 @@ class AliRunTag : public TObject {
   Int_t        fNumEvents;               //number of events per file
   Int_t        fNumDetectors;            //number of detector configs per file
   TClonesArray fEventTag;                //array with all event tags
-  AliDetectorTag fDetectorTag;             //array with all the detector tags
+  AliDetectorTag fDetectorTag;           //array with all the detector tags
   AliLHCTag    fLHCTag;                  //LHC tag object
+  AliQA        fQA ;                     //QA	
   
   ClassDef(AliRunTag,4)  //(ClassName, ClassVersion)
 };
