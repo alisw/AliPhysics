@@ -13,7 +13,7 @@
   int iMaxSlice=35;
   int iMinPart=0;
   int iMaxPart=5;
-  TString writerInput;
+  TString mergerInput;
   for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
     TString trackerInput;
     for (int part=iMinPart; part<=iMaxPart; part++) {
@@ -35,18 +35,22 @@
     tracker.Form("TR_%02d", slice);
     AliHLTConfiguration trackerconf(tracker.Data(), "TPCSliceTracker", trackerInput.Data(), "pp-run bfield 0.5");
 
-    if (writerInput.Length()>0) writerInput+=" ";
-    writerInput+=tracker;
+    if (mergerInput.Length()>0) mergerInput+=" ";
+    mergerInput+=tracker;
+
   }
+
+  // GlobalMerger component
+  AliHLTConfiguration mergerconf("globalmerger","TPCGlobalMerger",mergerInput.Data(),"");
 
   bool esdFile=true;
 
   if (esdFile) {
     // the esd writer configuration
-    AliHLTConfiguration sink("sink1", "TPCEsdWriter"   , writerInput.Data(), "-datafile AliHLTESDs.root");
+    AliHLTConfiguration sink("sink1", "TPCEsdWriter"   , "globalmerger", "-datafile AliHLTESDs.root");
   } else {
     // the esd writer configuration
-    AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , writerInput.Data(), "-tree");
+    AliHLTConfiguration esdcconf("esd-converter", "TPCEsdConverter"   , "globalmerger", "-tree");
     
     // the esd writer configuration
     AliHLTConfiguration sink("sink1", "ROOTFileWriter"   , "esd-converter", "-datafile AliHLTESDs.root");
