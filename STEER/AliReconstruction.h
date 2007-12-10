@@ -115,7 +115,9 @@ public:
   // Quality Assurance 
   virtual Bool_t RunQA(const char* detectors, AliESDEvent *& esd);
   void    SetQACycles(const char * detector, const Int_t cycles) { fQACycles[GetDetIndex(detector)] = cycles ; }
-  void    SetQAInLoop() { fQAInLoop = kTRUE ; } 
+  void    SetRunQA(Bool_t flag=kTRUE)      {fRunQA = flag ;} 
+  void    SetRunGlobalQA(Bool_t flag=kTRUE){fRunGlobalQA = flag;}
+  void    SetInLoopQA(Bool_t flag=kTRUE)   {fInLoopQA    = flag;} 
 
 private:
   void 		 InitCDB();
@@ -152,7 +154,6 @@ private:
   AliQADataMaker*      GetQADataMaker(Int_t iDet);
   const Int_t          GetQACycles(const char * detector) { return fQACycles[GetDetIndex(detector)] ; }
   void                 CheckQA() ;
-  void                 SetQA(const Bool_t val) { fRunQA = val ; } 
 
   //*** Global reconstruction flags *******************
   Bool_t         fUniformField;       // uniform field tracking flag
@@ -213,12 +214,13 @@ private:
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
 
   //Quality Assurance
-  AliQADataMaker * fQADataMaker[fgkNDetectors];  //! array of QA data maker objects
-  Int_t                 fQACycles[fgkNDetectors] ;         // cycle length (# events) over which QA data are accumulated
-  Bool_t              fRunQA ;                        // Runs the QA at the end of simulation
-  Bool_t              fQAInLoop ; 	                  // option to run QA in the event loop
+  AliQADataMaker *fQADataMaker[fgkNDetectors+1];  //! array of QA data makers
+  Int_t fQACycles[fgkNDetectors];// # events over which QA data are accumulated
+  Bool_t         fRunQA ;        // Run QA flag
+  Bool_t         fRunGlobalQA;   // Run global QA flag
+  Bool_t         fInLoopQA;      // In-loop QA flag
 
-  ClassDef(AliReconstruction, 18)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 19)      // class for running the reconstruction
 };
 
 #endif
