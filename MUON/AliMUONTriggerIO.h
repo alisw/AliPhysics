@@ -12,17 +12,17 @@
 /// 
 //  Author Laurent Aphecetche, Subatech
 
-#ifndef ROOT_TArrayI
-#  include <TArrayI.h>
-#endif
-
 #ifndef ROOT_TObject
 #  include <TObject.h>
 #endif
 
-#include <Riostream.h>
 #include "AliMpExMap.h"
 #include "AliMpGlobalCrate.h"
+#include "AliMpRegionalTrigger.h"
+
+#ifndef ROOT_TArrayI
+#  include <TArrayI.h>
+#endif
 
 class AliMUONTriggerLut;
 class AliMUONVCalibParam;
@@ -52,10 +52,6 @@ public:
   Bool_t WriteLUT(const AliMUONTriggerLut& lut,
                   const char* lutFileToWrite);
   
-//  void SetLocalBoardIds(const TArrayI& localBoardIds);
-  
-  Int_t LocalBoardId(Int_t index) const;
-
   Bool_t WriteMasks(const char* localFile,
 		    const char* regionalFile,
 		    const char* globalFile,
@@ -63,11 +59,8 @@ public:
                     AliMUONVStore* regionalMasks,
                     AliMUONVCalibParam* globalMasks) const;
   
+  Int_t LocalBoardId(Int_t index) const;
 
-  AliMpTriggerCrate* GetTriggerCrate(TString crateName, Bool_t warn = true) const;
-  AliMpLocalBoard*   GetLocalBoard(Int_t localBoardId, Bool_t warn = true) const;
-  AliMpDDL*          GetDDL(Int_t ddlId, Bool_t warn = true) const;
-  
   void UpdateMapping(Bool_t writeFile = true) const;
 
 private:
@@ -81,7 +74,7 @@ private:
   
   
   /// Return number of local boards
-  Int_t NofLocalBoards() const { return fLocalBoards.GetSize(); }
+  Int_t NofLocalBoards() const { return fRegionalTrigger.GetNofLocalBoards(); }
   
   Int_t  ReadGlobal(const char* globalFile, AliMUONVCalibParam* globalMasks);
 
@@ -102,10 +95,8 @@ private:
     
   
 private:
-  AliMpExMap          fTriggerCrates;  //!< The map of trigger crate per their ID
-  AliMpExMap          fLocalBoards;    //!< The map of local board per their ID
-  AliMpGlobalCrate    fGlobalCrate;    //!< Global crate object
-  TObjArray           fDDLs;           //!< DDLs array object
+  AliMpRegionalTrigger  fRegionalTrigger; //!< Regional trigger
+  AliMpGlobalCrate      fGlobalCrate;     //!< Global crate object
  
   ClassDef(AliMUONTriggerIO,0) // Read/Write trigger masks and LUT to/from online files
 };

@@ -16,8 +16,10 @@
 // $Id$
 
 #include "AliMUONTriggerIO.h"
+#include "AliMUONTriggerLut.h"
+#include "AliMUONCalibParamNI.h"
+#include "AliMUONVStore.h"
 
-#include "AliLog.h"
 #include "AliMpCDB.h"
 #include "AliMpHelper.h"
 #include "AliMpConstants.h"
@@ -26,10 +28,8 @@
 #include "AliMpDDLStore.h"
 #include "AliMpLocalBoard.h"
 #include "AliMpTriggerCrate.h"
-#include "AliMUONTriggerLut.h"
-#include "AliMUONCalibParamNI.h"
-#include "AliMUONVStore.h"
 
+#include "AliLog.h"
 
 #include <Riostream.h>
 #include <TSystem.h>
@@ -49,27 +49,17 @@ ClassImp(AliMUONTriggerIO)
 //_____________________________________________________________________________
 AliMUONTriggerIO::AliMUONTriggerIO() 
     : TObject(), 
-      fTriggerCrates(true),
-      fLocalBoards(true),
-      fGlobalCrate(),
-      fDDLs(22) // FIXME should be in cst
+      fRegionalTrigger(),
+      fGlobalCrate()
 {
   /// ctor
-
-    fTriggerCrates.SetOwner(true);
-    fTriggerCrates.SetSize(AliMpConstants::LocalBoardNofChannels());
-
-    fLocalBoards.SetOwner(true);
-    fLocalBoards.SetSize(AliMpConstants::TotalNofLocalBoards()); // included non-notified boards
 }
 
 //_____________________________________________________________________________
 AliMUONTriggerIO::AliMUONTriggerIO(const char* regionalFileToRead) 
     :TObject(), 
-     fTriggerCrates(true),
-     fLocalBoards(true),
-     fGlobalCrate(),
-     fDDLs(22)
+     fRegionalTrigger(),
+     fGlobalCrate()
 {
   /// ctor
   ReadRegional(regionalFileToRead,0);
@@ -149,19 +139,6 @@ AliMUONTriggerIO::FillLut(AliMUONTriggerLut& lut,
   lut.SetContent("HptMinu",icirc,istripX,idev,iLptMinu);
   lut.SetContent("HptUnde",icirc,istripX,idev,iLptUnde);
   lut.SetContent("HptPlus",icirc,istripX,idev,iLptPlus);
-}
-
-//_____________________________________________________________________________
-Int_t 
-AliMUONTriggerIO::LocalBoardId(Int_t index) const
-{  
-  /// Return the i-th localBoardId, or -1 if index is out of bounds
-  if ( index >= 0 && index < fLocalBoards.GetSize() ) 
-  {
-    AliMpLocalBoard* board = static_cast<AliMpLocalBoard*>(fLocalBoards.GetObject(index));
-    return board->GetId();
-  }
-  return -1;
 }
 
 //_____________________________________________________________________________
@@ -396,7 +373,7 @@ AliMUONTriggerIO::ReadMasks(const char* localFile,
   /// bit value 0 means enable, 1 means disable                                                 * 
   
   Int_t nDarc = 0;
-  if (!AliMpDDLStore::ReadGlobalTrigger(fGlobalCrate, globalFile)) return 0;
+  if ( ! fGlobalCrate.ReadData(globalFile) ) return 0;
   
   UChar_t mask    = fGlobalCrate.GetFirstDarcDisable();
   ULong_t vmeAddr = fGlobalCrate.GetFirstDarcVmeAddr();   
@@ -419,15 +396,14 @@ AliMUONTriggerIO::ReadRegional(const char* regionalFile, AliMUONVStore* regional
   /// determine the order in which local boards will appear in local 
   /// and lut files.
   
-  if (!AliMpDDLStore::ReadRegionalTrigger(fTriggerCrates, fLocalBoards, 
-                                          fDDLs, regionalFile, false)) return 0;
-  
+  if ( ! fRegionalTrigger.ReadData(regionalFile) ) return 0;
+
   Int_t nCrates(0);
   
-  for (Int_t iCrate = 0; iCrate < fTriggerCrates.GetSize(); ++iCrate) 
+  for (Int_t iCrate = 0; iCrate < fRegionalTrigger.GetNofTriggerCrates(); ++iCrate) 
   {
 
-    AliMpTriggerCrate* crate = static_cast<AliMpTriggerCrate*>(fTriggerCrates.GetObject(iCrate));
+    AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
     
     if (warn)
     {
@@ -597,9 +573,9 @@ AliMUONTriggerIO::WriteRegional(const char* regionalFile, AliMUONVStore* regiona
       return kFALSE;
     }
 
-    for (Int_t iCrate = 0; iCrate < fTriggerCrates.GetSize(); ++iCrate) 
+    for (Int_t iCrate = 0; iCrate < fRegionalTrigger.GetNofTriggerCrates(); ++iCrate) 
     {
-      AliMpTriggerCrate* crate = static_cast<AliMpTriggerCrate*>(fTriggerCrates.GetObject(iCrate));
+      AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
 
       out << crate->GetName()  << endl;
       out << Form("%02x", crate->GetId())   << endl;
@@ -624,7 +600,7 @@ AliMUONTriggerIO::WriteRegional(const char* regionalFile, AliMUONVStore* regiona
       {
 	Int_t localBoardId = crate->GetLocalBoardId(iLocal);
 
-	AliMpLocalBoard* board = static_cast<AliMpLocalBoard*>(fLocalBoards.GetValue(localBoardId));
+	AliMpLocalBoard* board = fRegionalTrigger.FindLocalBoard(localBoardId);
 
 	out << Form("%02d ", board->GetSlot())  
 	    << board->GetName() 
@@ -666,9 +642,9 @@ AliMUONTriggerIO::WriteLocalMasks(const char* localFile, AliMUONVStore& localMas
 
     UShort_t maskBuffer[8];
 
-    for (Int_t iCrate = 0; iCrate < fTriggerCrates.GetSize(); ++iCrate) 
+    for (Int_t iCrate = 0; iCrate < fRegionalTrigger.GetNofTriggerCrates(); ++iCrate) 
     {
-      AliMpTriggerCrate* crate = static_cast<AliMpTriggerCrate*>(fTriggerCrates.GetObject(iCrate));
+      AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(iCrate);
       
       UShort_t mask = crate->GetMask(); // getting mask from current config
 
@@ -749,55 +725,17 @@ AliMUONTriggerIO::WriteLocalLUT(const AliMUONTriggerLut& lut,
     }
   }
 }  
+
+//_____________________________________________________________________________
+Int_t 
+AliMUONTriggerIO::LocalBoardId(Int_t index) const
+{  
+  /// Return the i-th localBoardId, or -1 if index is out of bounds
+
+  AliMpLocalBoard* board = fRegionalTrigger.GetLocalBoard(index);
+  if ( ! board ) return -1;
   
-//_____________________________________________________________________________
-AliMpTriggerCrate*
-AliMUONTriggerIO::GetTriggerCrate(TString name, Bool_t warn) const
-{
-/// Return trigger crate with given name
-
-  AliMpTriggerCrate* crate
-     = (AliMpTriggerCrate*) fTriggerCrates.GetValue(name.Data());
-    
-  if ( ! crate && warn ) {  
-    AliErrorStream() 
-        << "Trigger crate with name = " << name.Data() << " not defined." << endl;
-  }	
-
-  return crate;
-}  
-
-//_____________________________________________________________________________
-AliMpLocalBoard* 
-AliMUONTriggerIO::GetLocalBoard(Int_t localBoardId, Bool_t warn) const
-{
-/// Return bus patch with given Id
-
-  AliMpLocalBoard* localBoard
-    = (AliMpLocalBoard*) fLocalBoards.GetValue(localBoardId);
-    
-  if ( ! localBoard && warn ) {  
-    AliErrorStream() 
-        << "Local board with Id = " << localBoardId << " not defined." << endl;
-  }	
-
-  return localBoard;
-}
-//______________________________________________________________________________
-AliMpDDL* 
-AliMUONTriggerIO::GetDDL(Int_t ddlId, Bool_t warn) const 
-{
-/// Return DDL for given ddlId
-
-  AliMpDDL* ddl
-      = (AliMpDDL*)fDDLs.At(ddlId);
-
-  if ( ! ddl && warn ) {
-    AliErrorStream()
-        << "DDL with Id = " << ddlId << " not defined." << endl;
-  }
-
-  return ddl;
+  return board->GetId(); 
 }
 
 //_____________________________________________________________________________
@@ -826,9 +764,13 @@ AliMUONTriggerIO::UpdateMapping(Bool_t writeFile) const
       AliMpLocalBoard* boardMapping =  reinterpret_cast<AliMpLocalBoard*>(value);
 
       Int_t localBoardId = boardMapping->GetId();
-      AliMpLocalBoard* board = static_cast<AliMpLocalBoard*>(fLocalBoards.GetValue(localBoardId));
+      AliMpLocalBoard* board = fRegionalTrigger.FindLocalBoard(localBoardId);
+      if ( ! board ) {
+        AliFatal("Board found in mapping but not in regional trigger");
+        return;
+      }  
 
-      if (board->GetCrate().CompareTo(boardMapping->GetCrate()) != 0) 
+      if ( board->GetCrate().CompareTo(boardMapping->GetCrate()) != 0 ) 
       {
 	AliWarning(Form("Crate Name different for board %d (%s %s)", localBoardId, boardMapping->GetCrate().Data(), 
 			board->GetCrate().Data()));
@@ -853,6 +795,7 @@ AliMUONTriggerIO::UpdateMapping(Bool_t writeFile) const
     
     if (modified) 
     {
+      AliMpDDLStore::Instance()->SetRegionalTrigger(fRegionalTrigger);
       AliMpCDB::WriteDDLStore(false);
       AliWarning("Wrote new version of mapping in databse");
       if (writeFile) 
