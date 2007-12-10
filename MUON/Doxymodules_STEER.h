@@ -6,87 +6,136 @@
  *  @{
  */
 
+/** @defgroup STEERbase STEERbase
+ *  Category of AliRoot steering classes
+ *  @ingroup STEER
+ *  @{
+ */
+// From STEERBaseLinkDef.h revision 1.10
+
+    class AliVParticle {};
+    class AliVEvent {};
+    class AliVHeader {};
+    class AliVEventHandler {};
+
+    class AliPID {};
+    class AliLog {};
+
+    class AliRunTag {};
+    class AliLHCTag {};
+    class AliDetectorTag {};
+    class AliEventTag {};
+
+    class AliRunTagCuts {};
+    class AliLHCTagCuts {};
+    class AliDetectorTagCuts {};
+    class AliEventTagCuts {};
+
+    class AliTagCreator {};
+
+    class AliHeader {};
+    class AliGenEventHeader {};
+    class AliDetectorEventHeader {};
+    class AliGenCocktailEventHeader {};
+    class AliGenPythiaEventHeader {};
+    class AliGenHijingEventHeader {};
+    class AliCollisionGeometry {};
+
+    class AliStack {};
+    class AliMCEventHandler {};
+    class AliInputEventHandler {};
+
+    class AliTrackReference {};
+    class AliSysInfo {};
+
+    class AliMCEvent {};
+    class AliMCParticle {};
+
+    class  AliMagF {};
+
+/** @} */
+
 /** @defgroup STEER0 STEER0
  *  Category of AliRoot steering classes
  *  @ingroup STEER
  *  @{
  */
-// From STEERLinkDef.h revision 1.107
+// From STEERLinkDef.h revision 1.126
 
-    class AliPDG {};
+    enum VertexSmear_t {};
+    enum VertexSource_t {};
 
-    class AliGenerator {};
-    class AliVertexGenerator {};
-    class AliRun {};
-    class AliModule {};
-    class AliDetector {};
-    class AliDigit {};
-    class AliHit {};
-    class AliHeader {};
-    class AliDisplay {};
-    class AliPoints {};
-    class AliMagF {};
-    class AliMagFC {};
-    class AliMagFCM {};
-    class AliMagFMaps {};
-    class AliMagFMapsV1 {};
-    class AliMagFDM {};
-    class AliMagFCheb {};
-    class AliCheb3DCalc {};
-    class AliCheb3D {};
-    class AliLego {};
-    class AliLegoGenerator {};
-    class AliLegoGeneratorXYZ {};
-    class AliLegoGeneratorPhiZ {};
-    class AliLegoGeneratorEta {};
-    class AliLegoGeneratorEtaR {};
-    class AliDigitNew {};
-    class AliGeometry {};
-    class AliRecPoint {};
-    class AliSegmentation {};
-    class AliHitMap {};
-    class AliRndm {};
-    class AliMCQA {};
-    class AliDebugVolume {};
-    class AliStack {};
-    class AliConfig {};
-    class AliGenEventHeader {};
-    class AliDigitizer {};
-    class AliRunDigitizer {};
-    class AliStream {};
-    class AliMergeCombi {};
-    class AliFieldMap {};
-    class AliGausCorr {};
-    class AliLoader {};
-    class AliDataLoader {};
-    class AliBaseLoader {};
-    class AliObjectLoader {};
-    class AliTreeLoader {};
-    class AliTaskLoader {};
-    class AliRunLoader {};
-    class AliTrackReference {};
-    class AliReconstructor {};
-    class AliTrackMap {};
-    class AliTrackMapper {};
-    class AliCollisionGeometry {};
-    class AliMemoryWatcher {};
-    class AliMC {};
-    class AliSimulation {};
-    class AliReconstruction {};
-    class AliVertexGenFile {};
-    class AliVertexer {};
-    class AliV0vertexer {};
-    class AliCascadeVertexer {};
+    class  AliPDG {};
+
+    class  AliGenerator {};
+    class  AliVertexGenerator {};
+    class  AliRun {};
+    class  AliModule {};
+    class  AliDetector {};
+    class  AliDigit {};
+    class  AliHit {};
+    class  AliDisplay {};
+    class  AliPoints {};
+    class  AliMagFC {};
+    class  AliMagFCM {};
+    class  AliMagFMaps {};
+    class  AliMagFMapsV1 {};
+    class  AliMagFDM {};
+    class  AliMagFCheb {};
+    class  AliCheb3DCalc {};
+    class  AliCheb3D {};
+    class  AliLego {};
+    class  AliLegoGenerator {};
+    class  AliLegoGeneratorXYZ {};
+    class  AliLegoGeneratorPhiZ {};
+    class  AliLegoGeneratorEta {};
+    class  AliLegoGeneratorEtaR {};
+    class  AliDigitNew {};
+    class  AliGeometry {};
+    class  AliRecPoint {};
+    class  AliSegmentation {};
+    class  AliHitMap {};
+    class  AliRndm {};
+    class  AliMCQA {};
+    class  AliDebugVolume {};
+    class  AliConfig {};
+    class  AliDigitizer {};
+    class  AliRunDigitizer {};
+    class  AliStream {};
+    class  AliMergeCombi {};
+    class  AliFieldMap {};
+    class  AliGausCorr {};
+    class  AliLoader {};
+    class  AliDataLoader {};
+    class  AliBaseLoader {};
+    class  AliObjectLoader {};
+    class  AliTreeLoader {};
+    class  AliTaskLoader {};
+    class  AliRunLoader {};
+    class  AliReconstructor {};
+    class  AliTrackMap {};
+    class  AliTrackMapper {};
+    class  AliMemoryWatcher {};
+    class  AliMC {};
+    class  AliSimulation {};
+    class  AliReconstruction {};
+    class  AliVertexGenFile {};
+    class  AliVertexer {};
+    class  AliV0vertexer {};
+    class  AliCascadeVertexer {};
 
     class AliExpression {};
     class AliVariableExpression {};
     class AliTriggerInput {};
     class AliTriggerDetector {};
-    class AliTriggerCondition {};
+    class AliTriggerConfiguration {};
+    class AliTriggerBCMask {};
+    class AliTriggerInteraction {};
     class AliTriggerDescriptor {};
+    class AliTriggerClass {};
     class AliCentralTrigger {};
-
-    class AliDetectorEventHeader {};
+    class AliTriggerCluster {};
+    class AliTriggerPFProtection {};
 
     class AliGeomManager {};
     class AliAlignObj {};
@@ -103,18 +152,17 @@
     class AliTrackResidualsLinear {};
     class AliAlignmentTracks {};
 
-    class TTreeDataElement {};
-    class  TTreeStream {};
-    class  TTreeSRedirector {};
-
     class  AliRieman;
 
     class AliExpression {};
     class AliVariableExpression {};
     class AliTriggerInput {};
     class AliTriggerDetector {};
-    class AliTriggerCondition {};
+    class AliTriggerConfiguration {};
+    class AliTriggerBCMask {};
+    class AliTriggerInteraction {};
     class AliTriggerDescriptor {};
+    class AliTriggerClass {};
     class AliCentralTrigger {};
     class AliCTPRawStream {};
     class AliMathBase {};
@@ -128,20 +176,25 @@
 
     class  AliSelectorRL {};
 
-    class  AliSplineFit {};
+    class AliSurveyObj {};
+    class AliSurveyPoint {};
 
-    class  AliDCSValue {};
-    class  AliDCSSensor {};
-    class  AliDCSSensorArray {};
+    class AliCodeTimer {};
+    class AliCodeTimer::AliPair {};
 
-    class  AliSurveyObj {};
-    class  AliSurveyPoint {};
+    class AliFstream {};
+    class AliCTPRawData {};
 
-    class  AliCodeTimer {};
-    class  AliCodeTimer::AliPair {};
+    class AliQA {};
+    class AliQADataMaker {};
+    class AliGlobalQADataMaker {};
+    class AliQADataMakerSteer {};
+    class AliQAChecker {};
+    class AliQACheckerBase {};
+    class AliMillepede {};
 
-    class  AliFstream {};
-    class  AliCTPRawData {};
+    class AliDetectorRecoParam {};
+    class AliRecoParam {};
 
 /** @} */
 
@@ -150,12 +203,14 @@
  *  @ingroup STEER
  *  @{
  */
-// From ESDLinkDef.h revision 1.35
+// From ESDLinkDef.h revision 1.45
 
-    enum   AliLog::EType_t {};
-    enum   AliESD::ESDListIndex_t {};
+    enum   AliESDEvent::ESDListIndex {};
+
 
     class  AliESD {};
+    class  AliESDEvent {};
+    class  AliESDInputHandler {};
     class  AliESDRun {};
     class  AliESDHeader {};
     class  AliESDZDC {};
@@ -175,6 +230,7 @@
     class  AliESDkink {};
     class  AliESDV0Params {};
     class  AliESDCaloCluster {};
+    class  AliESDMuonCluster {};
 
     class  AliKFParticleBase {};
     class  AliKFParticle {};
@@ -184,21 +240,10 @@
     class  AliExternalTrackParam {};
     class  AliVertexerTracks {};
     class  AliStrLine {};
-    class  AliLog {};
-    class  AliPID {};
     class  AliTrackPointArray {};
     class  AliTrackPoint {};
 
-    class AliRunTag {};
-    class AliLHCTag {};
-    class AliDetectorTag {};
-    class AliEventTag {};
-
-    class AliTagCreator {};
-    class AliRunTagCuts {};
-    class AliLHCTagCuts {};
-    class AliDetectorTagCuts {};
-    class AliEventTagCuts {};
+    class AliESDTagCreator {};
 
     class AliTrackPointArray {};
     class AliTrackPoint {};
@@ -217,6 +262,9 @@
 
     class  AliRawDataErrorLog {};
 
+    class  AliMeanVertex {};
+    class  AliESDCaloCells {};
+
 /** @} */
 
 /** @defgroup CDB CDB
@@ -224,7 +272,7 @@
  *  @ingroup STEER
  *  @{
  */
-// From CDBLinkDef.h revision 1.9
+// From CDBLinkDef.h revision 1.13
 
     class AliCDBPath {};
     class AliCDBRunRange {};
@@ -245,12 +293,22 @@
     class AliCDBGridFactory {};
     class AliCDBGridParam {};
 
+    class AliDCSValue {};
+    class AliDCSSensor {};
+    class AliDCSSensorArray {};
+    class AliDCSGenDB {};
+    class  AliSplineFit {};
+
     class AliPreprocessor {};
 
     class AliShuttleInterface {};
 
     class AliGRPPreprocessor {};
     class AliGRPDCS {};
+
+    class  TTreeDataElement {};
+    class  TTreeStream {};
+    class  TTreeSRedirector {};
 
 /** @} */
 
@@ -259,30 +317,36 @@
  *  @ingroup STEER
  *  @{
  */
-// From AODLinkDef.h revision 1.8
+// From AODLinkDef.h revision 1.16
 
     enum   AliAODVertex::AODVtx_t {};
     enum   AliAODTrack::AODTrk_t {};
-    enum   AliAODTrack::AODTrkPID_t {};
+    enum   AliAODTrack::AODTrkPID_ {}t;
     enum   AliAODCluster::AODClu_t {};
     enum   AliAODCluster::AODCluPID_t {};
 
-    class  AliVParticle {};
-    class  AliVEvent {};
-    class  AliVHeader {};
-    class  AliVEventHandler {};
+    class AliAODEvent {};
+    class AliAODHeader {};
+    class AliAODTrack {};
+    class AliAODPid {};
+    class AliAODVertex {};
+    class AliAODCluster {};
+    class AliAODCaloCluster {};
+    class AliAODPmdCluster {};
+    class AliAODFmdCluster {};
+    class AliAODJet {};
+    class AliAODPhoton {};
+    class AliAODRedCov<3> {};
+    class AliAODRedCov<4> {};
+    class AliAODRedCov<6> {};
+    class AliAODRecoDecay {};
+    class AliAODv0 {};
+    class AliAODHandler {};
+    class AliAODInputHandler {};
+    class AliAODTracklets {};
+    class AliAODTagCreator {};
+    class AliAODCaloCells {};
 
-    class  AliAODEvent {};
-    class  AliAODHeader {};
-    class  AliAODTrack {};
-    class  AliAODVertex {};
-    class  AliAODCluster {};
-    class  AliAODJet {};
-    class  AliAODPhoton {};
-    class  AliAODRedCov<Int_t> {};
-    class  AliAODRedCov<Int_t> {};
-    class  AliAODRedCov<Int_t> {};
-    class  AliAODRecoDecay;
-    class  AliAODHandler {};
+/** @} */
 
 /** @} */
