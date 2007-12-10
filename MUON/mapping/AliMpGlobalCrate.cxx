@@ -25,10 +25,14 @@
 
 #include "AliMpGlobalCrate.h"
 #include "AliMpConstants.h"
+#include "AliMpFiles.h"
+#include "AliMpHelper.h"
 
 #include "AliLog.h"
 
+#include <TArrayI.h>
 #include <Riostream.h>
+#include <TSystem.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpGlobalCrate)
@@ -105,6 +109,201 @@ AliMpGlobalCrate::AliMpGlobalCrate(TRootIOCtor* /*ioCtor*/)
 AliMpGlobalCrate::~AliMpGlobalCrate()
 {
 /// Destructor
+}
+
+//______________________________________________________________________________
+Bool_t AliMpGlobalCrate::ReadData(const TString& fileName)
+{
+    /// Fill trigger global crate object from ascii file
+    /// put the method static to be used by other class w/o initializing object
+  
+    TString inFileName(fileName);
+    if ( inFileName == "" )
+      inFileName = AliMpFiles::GlobalTriggerBoardMapping();
+    
+    inFileName = gSystem->ExpandPathName(inFileName.Data());
+
+    ifstream in(inFileName.Data(), ios::in);
+
+    if (!in) {
+      AliErrorStream()
+         << "Global Trigger Board Mapping File " << fileName.Data() << " not found" << endl;
+      return kFALSE;
+    }
+
+    TArrayI list;
+
+    char line[255];
+    in.getline(line, 255);
+    TString tmp(AliMpHelper::Normalize(line));
+
+    if (!tmp.Contains(GetName()))
+        printf("Wrong Global Crate File");
+
+    in.getline(line, 255);
+    tmp = AliMpHelper::Normalize(line);
+
+    if (tmp.Contains(GetJtagName())) {
+        // vme addr
+        in.getline(line, 255);
+        TString tmp(AliMpHelper::Normalize(line));
+        ULong_t addr;
+        sscanf(tmp.Data(), "%lx", &addr);
+        SetJtagVmeAddr(addr);
+        //AliDebug(1, Form("Jtag Vme Address: 0x%x", addr));
+
+        // clk div, rx phase, read delay
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        TArrayI list;
+        AliMpHelper::DecodeName(line, ' ', list);
+        SetJtagClockDiv(list[0]);
+        SetJtagRxPhase(list[1]);
+        SetJtagRdDelay(list[2]);
+        //AliDebug(1, Form("Jtag Clock Div: %d, Rx Phase: %d, Read Delay %d", list[0], list[1], list[2]));
+
+        // enable
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        AliMpHelper::DecodeName(line, ' ', list);
+        UChar_t enable = 0;
+        for (Int_t i = 0; i < GetJtagNofLines(); ++i)
+            enable |= (list[i] << i);
+        SetEnableJtag(enable);
+        //AliDebug(1, Form("Jtag Enable: 0x%x", enable));
+
+        for (Int_t i = 0; i < GetJtagNofLines(); ++i) {
+            in.getline(line, 255);
+            for (Int_t j = 0; j < GetJtagNofLines(); ++j) {
+                in.getline(line, 255);
+                tmp = AliMpHelper::Normalize(line);
+                SetJtagCrateName(i*GetJtagNofLines() + j, tmp);
+                //AliDebug(1, Form("Jtag Crate Name: %s", tmp.Data()));
+            }
+        }
+    }
+
+    in.getline(line, 255);
+    tmp = AliMpHelper::Normalize(line);
+    if (tmp.Contains(GetFirstDarcName())) {
+        // vme addr
+        in.getline(line, 255);
+        TString tmp(AliMpHelper::Normalize(line));
+        ULong_t addr;
+        sscanf(tmp.Data(), "%lx", &addr);
+        SetFirstDarcVmeAddr(addr);
+        //AliDebug(1, Form("First Darc Vme Address: 0x%x", addr));
+
+        // type
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        SetFirstDarcType(tmp.Atoi());
+        //AliDebug(1, Form("First Darc Type: %d", tmp.Atoi()));
+
+        // enable
+        in.getline(line, 255);
+        UInt_t item;
+        tmp = AliMpHelper::Normalize(line);
+        sscanf(tmp.Data(), "%x", &item);
+        SetFirstDarcDisable(item);
+        //AliDebug(1, Form("First Darc Enable: 0x%x", item));
+
+        // L0
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        sscanf(tmp.Data(), "%x", &item);
+        SetFirstDarcL0Delay(item);
+        //AliDebug(1, Form("First Darc L0 Delay: 0x%x", item));
+
+        // L1
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        sscanf(tmp.Data(), "%x", &item);
+        SetFirstDarcL1TimeOut(item);
+        //AliDebug(1, Form("First Darc L1 Time Out: 0x%x", item));
+    }
+
+    in.getline(line, 255);
+    tmp = AliMpHelper::Normalize(line);
+    if (tmp.Contains(GetSecondDarcName())) {
+        // vme addr
+        in.getline(line, 255);
+        TString tmp(AliMpHelper::Normalize(line));
+        ULong_t addr;
+        sscanf(tmp.Data(), "%lx", &addr);
+        SetSecondDarcVmeAddr(addr);
+        //AliDebug(1, Form("Second Darc Vme Address: 0x%x", addr));
+        
+        // type
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        SetSecondDarcType(tmp.Atoi());
+        //AliDebug(1, Form("Second Darc Type: %d", tmp.Atoi()));
+        
+        // enable
+        in.getline(line, 255);
+        UInt_t item;
+        tmp = AliMpHelper::Normalize(line);
+        sscanf(tmp.Data(), "%x", &item);
+        SetSecondDarcDisable(item);
+        //AliDebug(1, Form("Second Darc Enable: 0x%x", item));
+        
+        // L0
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        sscanf(tmp.Data(), "%x", &item);
+        SetSecondDarcL0Delay(item);
+        //AliDebug(1, Form("Second Darc L0 Delay: 0x%x", item));
+        
+        // L1
+        in.getline(line, 255);
+        tmp = AliMpHelper::Normalize(line);
+        sscanf(tmp.Data(), "%x", &item);
+        SetSecondDarcL1TimeOut(item);
+        //AliDebug(1, Form("Second Darc L1 Time Out: 0x%x", item));
+    }
+
+    in.getline(line, 255);
+    tmp = AliMpHelper::Normalize(line);
+    if (tmp.Contains(GetGlobalName())) {
+        in.getline(line, 255);
+        TString tmp(AliMpHelper::Normalize(line));
+        ULong_t addr;
+        sscanf(tmp.Data(), "%lx", &addr);
+        SetGlobalVmeAddr(addr);
+        //AliDebug(1, Form("Global Vme Address: 0x%x", addr));
+
+        for (Int_t i = 0; i < GetGlobalNofRegisters(); ++i) {
+            in.getline(line, 255);
+            TString tmp(AliMpHelper::Normalize(line));
+            UInt_t reg;
+            sscanf(tmp.Data(), "%x", &reg);
+            SetGlobalRegister(i, reg);
+            //AliDebug(1, Form("Global Register %d: 0x%x", i, reg));
+        }
+    }
+
+    in.getline(line, 255);
+    tmp = AliMpHelper::Normalize(line);
+    if (tmp.Contains(GetFetName())) {
+        in.getline(line, 255);
+        TString tmp(AliMpHelper::Normalize(line));
+        ULong_t addr;
+        sscanf(tmp.Data(), "%lx", &addr);
+        SetFetVmeAddr(addr);
+        //AliDebug(1, Form("Fet Vme Address: 0x%x", addr));
+
+        for (Int_t i = 0; i < GetFetNofRegisters(); ++i) {
+            in.getline(line, 255);
+            TString tmp(AliMpHelper::Normalize(line));
+            UInt_t reg;
+            sscanf(tmp.Data(), "%x", &reg);
+            SetFetRegister(i, reg);
+            //AliDebug(1, Form("Fet Register %d: 0x%x", i, reg));
+        }
+    }
+
+    return kTRUE;
 }
 
 //______________________________________________________________________________

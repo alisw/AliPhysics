@@ -3,7 +3,7 @@
 
 // $MpId: $ 
 
-/// \ingroup management
+/// \ingroup mptrigger
 /// \class AliMpGlobalCrate
 /// \brief The class defines the properties of global crate
 ///
@@ -22,6 +22,8 @@ class AliMpGlobalCrate : public  TNamed {
     AliMpGlobalCrate(TRootIOCtor* /*ioCtor*/);
     virtual ~AliMpGlobalCrate();
     
+    // methods
+    Bool_t ReadData(const TString& fileName = "");
 
     // Jtag
             /// Get Jtag board VME address
