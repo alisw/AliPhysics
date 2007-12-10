@@ -44,14 +44,12 @@
 
 #include "AliLog.h"
 
-
 #include <Riostream.h>
 #include <TList.h>
 #include <TObjArray.h>
 #include <TString.h>
 #include <TObjString.h>
 #include <TClass.h>
-#include <TSystem.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMpDDLStore)
@@ -105,11 +103,10 @@ AliMpDDLStore::AliMpDDLStore()
         : TObject(),
         fDDLs(fgkNofDDLs+fgkNofTriggerDDLs), // FIXEME
         fBusPatches(true),
-        fTriggerCrates(true),
-        fLocalBoards(true),
         fManuList12(),
         fManuBridge2(),
-        fGlobalCrate(new AliMpGlobalCrate())
+        fGlobalCrate(),
+        fRegionalTrigger()
 {
     /// Standard constructor
 
@@ -118,35 +115,28 @@ AliMpDDLStore::AliMpDDLStore()
     fBusPatches.SetOwner(true);
     fBusPatches.SetSize(900);
 
-    fTriggerCrates.SetOwner(true);
-    fTriggerCrates.SetSize(16);
-
-    fLocalBoards.SetOwner(true);
-    fLocalBoards.SetSize(242); // included non-identied board
-
-    
     // Load segmentation & DE store data
     if ( ! AliMpSegmentation::Instance(false) )
         AliMpSegmentation::ReadData(true);
 
     // Create all detection elements
     ReadDDLs();
-    ReadTriggerDDLs();
+    ReadTrigger();
+    SetTriggerDDLs();
     SetManus();
     SetPatchModules();
     SetBusPatchLength();
 }
 
 //______________________________________________________________________________
-AliMpDDLStore::AliMpDDLStore(TRootIOCtor* /*ioCtor*/)
+AliMpDDLStore::AliMpDDLStore(TRootIOCtor* ioCtor)
         : TObject(),
         fDDLs(),
         fBusPatches(),
-        fTriggerCrates(true),
-        fLocalBoards(true),
-        fGlobalCrate()
+        fGlobalCrate(ioCtor),
+        fRegionalTrigger(ioCtor)
 {
-    /// Constructor for IO
+    /// Constructor for I0
 
     AliDebug(1,"");
 
@@ -165,7 +155,6 @@ AliMpDDLStore::~AliMpDDLStore()
     // Bus patches objects are deleted with fBusPatches
 
     fgInstance = 0;
-    delete fGlobalCrate;
 }
 
 //
@@ -204,204 +193,6 @@ Int_t AliMpDDLStore::GetBusPatchIndex(Int_t detElemId, Int_t manuId) const
     return pos;
 }
 
-//______________________________________________________________________________
-Bool_t  AliMpDDLStore::ReadGlobalTrigger(AliMpGlobalCrate& crate, const Char_t* globalName) 
-{
-    /// Fill trigger global crate object from ascii file
-    /// put the method static to be used by other class w/o initializing object
-  
-    TString infile;
-        
-    if (globalName == 0)
-      infile = AliMpFiles::GlobalTriggerBoardMapping();
-    else
-      infile = globalName;
-    
-    infile = gSystem->ExpandPathName(infile.Data());
-    
-    ifstream in(infile, ios::in);
-
-    if (!in) {
-      AliErrorClass(Form("Local Trigger Board Mapping File %s not found", infile.Data()));
-      return kFALSE;
-    }
-
-    TArrayI list;
-
-    char line[255];
-    in.getline(line, 255);
-    TString tmp(AliMpHelper::Normalize(line));
-
-    if (!tmp.Contains(crate.GetName()))
-    {
-      AliErrorClass("Wrong Global Crate File");
-    }
-    
-    in.getline(line, 255);
-    tmp = AliMpHelper::Normalize(line);
-
-    if (tmp.Contains(crate.GetJtagName())) {
-        // vme addr
-        in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
-        ULong_t addr;
-        sscanf(tmp.Data(), "%lx", &addr);
-        crate.SetJtagVmeAddr(addr);
-        //AliDebug(1, Form("Jtag Vme Address: 0x%x", addr));
-
-        // clk div, rx phase, read delay
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        TArrayI list;
-        AliMpHelper::DecodeName(line, ' ', list);
-        crate.SetJtagClockDiv(list[0]);
-        crate.SetJtagRxPhase(list[1]);
-        crate.SetJtagRdDelay(list[2]);
-        //AliDebug(1, Form("Jtag Clock Div: %d, Rx Phase: %d, Read Delay %d", list[0], list[1], list[2]));
-
-        // enable
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        AliMpHelper::DecodeName(line, ' ', list);
-        UChar_t enable = 0;
-        for (Int_t i = 0; i < crate.GetJtagNofLines(); ++i)
-            enable |= (list[i] << i);
-        crate.SetEnableJtag(enable);
-        //AliDebug(1, Form("Jtag Enable: 0x%x", enable));
-
-        for (Int_t i = 0; i < crate.GetJtagNofLines(); ++i) {
-            in.getline(line, 255);
-            for (Int_t j = 0; j < crate.GetJtagNofLines(); ++j) {
-                in.getline(line, 255);
-                tmp = AliMpHelper::Normalize(line);
-                crate.SetJtagCrateName(i*crate.GetJtagNofLines() + j, tmp);
-                //AliDebug(1, Form("Jtag Crate Name: %s", tmp.Data()));
-            }
-        }
-    }
-
-    in.getline(line, 255);
-    tmp = AliMpHelper::Normalize(line);
-    if (tmp.Contains(crate.GetFirstDarcName())) {
-        // vme addr
-        in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
-        ULong_t addr;
-        sscanf(tmp.Data(), "%lx", &addr);
-        crate.SetFirstDarcVmeAddr(addr);
-        //AliDebug(1, Form("First Darc Vme Address: 0x%x", addr));
-
-        // type
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        crate.SetFirstDarcType(tmp.Atoi());
-        //AliDebug(1, Form("First Darc Type: %d", tmp.Atoi()));
-
-        // enable
-        in.getline(line, 255);
-        UInt_t item;
-        tmp = AliMpHelper::Normalize(line);
-        sscanf(tmp.Data(), "%x", &item);
-        crate.SetFirstDarcDisable(item);
-        //AliDebug(1, Form("First Darc Enable: 0x%x", item));
-
-        // L0
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        sscanf(tmp.Data(), "%x", &item);
-        crate.SetFirstDarcL0Delay(item);
-        //AliDebug(1, Form("First Darc L0 Delay: 0x%x", item));
-
-        // L1
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        sscanf(tmp.Data(), "%x", &item);
-        crate.SetFirstDarcL1TimeOut(item);
-        //AliDebug(1, Form("First Darc L1 Time Out: 0x%x", item));
-    }
-
-    in.getline(line, 255);
-    tmp = AliMpHelper::Normalize(line);
-    if (tmp.Contains(crate.GetSecondDarcName())) {
-        // vme addr
-        in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
-        ULong_t addr;
-        sscanf(tmp.Data(), "%lx", &addr);
-        crate.SetSecondDarcVmeAddr(addr);
-        //AliDebug(1, Form("Second Darc Vme Address: 0x%x", addr));
-        
-        // type
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        crate.SetSecondDarcType(tmp.Atoi());
-        //AliDebug(1, Form("Second Darc Type: %d", tmp.Atoi()));
-        
-        // enable
-        in.getline(line, 255);
-        UInt_t item;
-        tmp = AliMpHelper::Normalize(line);
-        sscanf(tmp.Data(), "%x", &item);
-        crate.SetSecondDarcDisable(item);
-        //AliDebug(1, Form("Second Darc Enable: 0x%x", item));
-        
-        // L0
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        sscanf(tmp.Data(), "%x", &item);
-        crate.SetSecondDarcL0Delay(item);
-        //AliDebug(1, Form("Second Darc L0 Delay: 0x%x", item));
-        
-        // L1
-        in.getline(line, 255);
-        tmp = AliMpHelper::Normalize(line);
-        sscanf(tmp.Data(), "%x", &item);
-        crate.SetSecondDarcL1TimeOut(item);
-        //AliDebug(1, Form("Second Darc L1 Time Out: 0x%x", item));
-    }
-
-    in.getline(line, 255);
-    tmp = AliMpHelper::Normalize(line);
-    if (tmp.Contains(crate.GetGlobalName())) {
-        in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
-        ULong_t addr;
-        sscanf(tmp.Data(), "%lx", &addr);
-        crate.SetGlobalVmeAddr(addr);
-        //AliDebug(1, Form("Global Vme Address: 0x%x", addr));
-
-        for (Int_t i = 0; i < crate.GetGlobalNofRegisters(); ++i) {
-            in.getline(line, 255);
-            TString tmp(AliMpHelper::Normalize(line));
-            UInt_t reg;
-            sscanf(tmp.Data(), "%x", &reg);
-            crate.SetGlobalRegister(i, reg);
-            //AliDebug(1, Form("Global Register %d: 0x%x", i, reg));
-        }
-    }
-
-    in.getline(line, 255);
-    tmp = AliMpHelper::Normalize(line);
-    if (tmp.Contains(crate.GetFetName())) {
-        in.getline(line, 255);
-        TString tmp(AliMpHelper::Normalize(line));
-        ULong_t addr;
-        sscanf(tmp.Data(), "%lx", &addr);
-        crate.SetFetVmeAddr(addr);
-        //AliDebug(1, Form("Fet Vme Address: 0x%x", addr));
-
-        for (Int_t i = 0; i < crate.GetFetNofRegisters(); ++i) {
-            in.getline(line, 255);
-            TString tmp(AliMpHelper::Normalize(line));
-            UInt_t reg;
-            sscanf(tmp.Data(), "%x", &reg);
-            crate.SetFetRegister(i, reg);
-            //AliDebug(1, Form("Fet Register %d: 0x%x", i, reg));
-        }
-    }
-
-    return kTRUE;
-}
 //______________________________________________________________________________
 Bool_t AliMpDDLStore::ReadDDLs() 
 {
@@ -495,162 +286,81 @@ Bool_t AliMpDDLStore::ReadDDLs()
     in.close();
     return true;
 }
+
 //______________________________________________________________________________
-Bool_t  AliMpDDLStore::ReadTriggerDDLs() 
+Bool_t  AliMpDDLStore::ReadTrigger() 
 {
     /// create trigger DDL object and Global crate object
   
-  if (!ReadGlobalTrigger(*fGlobalCrate)) return false;
-  if (!ReadRegionalTrigger(fTriggerCrates, fLocalBoards, fDDLs)) return false;
+  if ( ! fGlobalCrate.ReadData() ) return false;
   
+  if ( ! fRegionalTrigger.ReadData() ) return false;
+
   return true;
 }
 
 //______________________________________________________________________________
-Bool_t  AliMpDDLStore::ReadRegionalTrigger(AliMpExMap& triggerCrates, AliMpExMap& localBoards, 
-                                          TObjArray& ddls, const Char_t* fileName, Bool_t warn) 
+Bool_t  AliMpDDLStore::SetTriggerDDLs() 
 {
-    /// create trigger DDL object ddl<->Crate<->local board
-    
-    Int_t iDDL = -1;
-    TString infile;
-    
-    if (fileName == 0)
-      infile = AliMpFiles::LocalTriggerBoardMapping();
+/// Create trigger DDLs and set DDL Ids in the regional trigger
+  
+
+  Int_t iDDL = -1;
+
+  for ( Int_t i=0; i<fRegionalTrigger.GetNofTriggerCrates(); ++i ) {
+  
+    AliMpTriggerCrate* crate = fRegionalTrigger.GetTriggerCrateFast(i);
+
+    TString crateName = crate->GetName();
+
+    // determine ddl number vs crate side
+    if (crateName.Contains("R"))
+      iDDL = fgkNofDDLs; // starts where tracker ends
     else
-      infile = fileName;
-    
-    infile = gSystem->ExpandPathName(infile.Data());
-    
-    ifstream in(infile, ios::in);
+      iDDL = fgkNofDDLs + 1;
 
-    if (!in) {
-      AliErrorClass(Form("Local Trigger Board Mapping File %s not found", infile.Data()));
-        return kFALSE;
+    // Create DDL if it does not yet exist and set it to the crate
+    AliMpDDL* ddl = (AliMpDDL*)fDDLs.At(iDDL);
+    if ( !ddl) {
+      cout << "ReadRegionalTrigger: creating DDL: " << iDDL << endl;
+      ddl = new AliMpDDL(iDDL);
+      fDDLs.AddAt(ddl, iDDL);
     }
-
-    AliMpLocalBoard* board = 0x0;
-    AliMpTriggerCrate* crate = 0x0;
-
-
-    Int_t localBoardId = 0;
-    TArrayI list;
-    UShort_t crateId, mask;
-    Int_t mode, coincidence;
+    crate->SetDdlId(iDDL);
     
-    char line[80];
-   
-    while (!in.eof())
+    
+    // Add trigger crate number for given ddl if not present
+    if ( !ddl->HasTriggerCrateId(crate->GetId()) )
+      ddl->AddTriggerCrate(crate->GetId());
+    
+    
+    // Loop over local boards in this crate
+
+    for ( Int_t j=0; j<crate->GetNofLocalBoards(); ++j ) 
     {
-      in.getline(line,80);
-      if (!strlen(line)) break;
-      TString crateName(AliMpHelper::Normalize(line));
+      Int_t localBoardId = crate->GetLocalBoardId(j);
+      AliMpLocalBoard* localBoard 
+        = fRegionalTrigger.FindLocalBoard(localBoardId);
+      if (!localBoard ) {
+        AliFatalClass("Cannot find local board.");
+        return kFALSE;
+      }   
       
-      in.getline(line,80);    
-      sscanf(line,"%hx",&crateId);
-  
-      in.getline(line,80);
-      sscanf(line,"%d",&mode);
-      
-      in.getline(line,80);
-      sscanf(line,"%d",&coincidence);
-      
-      in.getline(line,80);
-      sscanf(line,"%hx",&mask);
-      
-      
-      // determine ddl number vs crate side
-      if (crateName.Contains("R"))
-        iDDL = fgkNofDDLs; // starts where tracker ends
-      else
-        iDDL = fgkNofDDLs + 1;
-  
-      AliMpDDL* ddl = (AliMpDDL*)ddls.At(iDDL);
-      if ( !ddl) {
-        ddl = new AliMpDDL(iDDL);
-        ddls.AddAt(ddl, iDDL);
-      }
-      
-      crate = (AliMpTriggerCrate*)triggerCrates.GetValue(crateName.Data());
-      if (!crate) 
+      // Loop over DEs in this localBoard 
+        
+      for ( Int_t k=0; k<localBoard->GetNofDEs(); ++k ) 
       {
-        crate = new AliMpTriggerCrate(crateName.Data(), crateId, mask, mode, coincidence);
-        crate->SetDdlId(iDDL);
-        triggerCrates.Add(crateName.Data(), crate);
-      }
-      
-      
-      // add trigger crate number for given ddl if not present
-      if ( !ddl->HasTriggerCrateId(crateId) )
-        ddl->AddTriggerCrate(crateId);
-      
-      
-      Char_t localBoardName[20];
-      Int_t slot;
-      UInt_t switches;
-      
-      for ( Int_t i = 0; i < AliMpConstants::LocalBoardNofChannels(); ++i ) 
-      {
-        if ( (mask >> i ) & 0x1 )
-        {
-          in.getline(line,80);
-          sscanf(line,"%02d %s %03d %03x",&slot,localBoardName,&localBoardId,&switches);
-          board = new AliMpLocalBoard(localBoardId, localBoardName, slot); 
-          board->SetSwitch(switches);
-          board->SetCrate(crateName);
-          
-          if (localBoardId > AliMpConstants::NofLocalBoards())
-            board->SetNotified(false); // copy cards
-          
-          crate->AddLocalBoard(localBoardId);
-          
-          list.Reset();
-          AliMpDDL* ddl = (AliMpDDL*)ddls.At(iDDL);
-          if (!ddl)
-            cout << "DDL with Id = " << iDDL << " not defined." << endl;
-          
-          // add  DE for local board and DDL
-          in.getline(line,80);
-          TString tmp(AliMpHelper::Normalize(line));
-          AliMpHelper::DecodeName(tmp,' ',list);
     
-          for (Int_t i = 0; i < list.GetSize(); ++i) {
-    
-            if (list[i]) 
-            { // skip copy card
-              if (AliMpDEStore::Instance(warn)) 
-              {
-                AliMpDetElement* de = AliMpDEManager::GetDetElement(list[i]);
-                if (de->GetDdlId() == -1)
-                  de->SetDdlId(iDDL);
-                
-                if(!ddl->HasDEId(list[i]))
-                  ddl->AddDE(list[i]);
-              }
-            }
-            board->AddDE(list[i]);
-          }
-          
-          // set copy number and transverse connector
-          in.getline(line,80);
-          tmp = AliMpHelper::Normalize(line);
-          AliMpHelper::DecodeName(tmp,' ',list);
-    
-          board->SetInputXfrom(list[0]);
-          board->SetInputXto(list[1]);
-          
-          board->SetInputYfrom(list[2]);
-          board->SetInputYto(list[3]);
-          
-          board->SetTC(list[4]);
-          
-          // add local board into map
-          localBoards.Add(board->GetId(), board);
-        }
-      }
-    
+        Int_t deId = localBoard->GetDEId(k);
+        AliMpDetElement* de = AliMpDEManager::GetDetElement(deId);
+
+        if ( de->GetDdlId() == -1 ) de->SetDdlId(iDDL);
+
+        if ( ! ddl->HasDEId(deId) ) ddl->AddDE(deId);
+      }   
     }
-    return kTRUE;
+  }
+  return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -836,7 +546,8 @@ Bool_t AliMpDDLStore::SetBusPatchLength() {
 Int_t AliMpDDLStore::GetLocalBoardId(TString name) const {
     /// return the first board with a given side and line
 
-    TExMapIter i = fLocalBoards.GetIterator();
+
+    TExMapIter i = fRegionalTrigger.GetLocalBoardItr();
     Long_t key, value;
     while ( i.Next(key, value) ) {
         AliMpLocalBoard* local = (AliMpLocalBoard*)value;
@@ -902,34 +613,18 @@ AliMpBusPatch* AliMpDDLStore::GetBusPatch(Int_t busPatchId, Bool_t warn) const {
 AliMpLocalBoard* AliMpDDLStore::GetLocalBoard(Int_t localBoardId, Bool_t warn) const {
     /// Return bus patch with given Id
 
-    AliMpLocalBoard* localBoard
-    = (AliMpLocalBoard*) fLocalBoards.GetValue(localBoardId);
-
-    if ( ! localBoard && warn ) {
-        AliErrorStream()
-        << "Local board with Id = " << localBoardId << " not defined." << endl;
-    }
-
-    return localBoard;
+    return fRegionalTrigger.FindLocalBoard(localBoardId, warn);
 }
 
 //______________________________________________________________________________
-AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(TString name, Bool_t warn) const {
+AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(TString name, Bool_t warn) const  {
     /// Return trigger crate with given name
 
-    AliMpTriggerCrate* crate
-    = (AliMpTriggerCrate*) fTriggerCrates.GetValue(name.Data());
-
-    if ( ! crate && warn ) {
-        AliErrorStream()
-        << "Trigger crate with name = " << name.Data() << " not defined." << endl;
-    }
-
-    return crate;
+    return fRegionalTrigger.FindTriggerCrate(name, warn);
 }
 
 //______________________________________________________________________________
-AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(Int_t ddlId, Int_t index, Bool_t warn) const {
+AliMpTriggerCrate* AliMpDDLStore::GetTriggerCrate(Int_t ddlId, Int_t index, Bool_t warn) const  {
     /// Return trigger crate with given ddl and index crate
 
     if (ddlId == 0 || ddlId == 1)
@@ -1059,7 +754,7 @@ void AliMpDDLStore::PrintAllManu() const {
     }
 }
 
-//________________________________________________________________
+//______________________________________________________________________________
 Int_t  AliMpDDLStore::GetNextDEfromLocalBoard(Int_t localBoardId, Int_t chamberId ) const {
     /// return the next detection element in line
 
@@ -1081,7 +776,7 @@ Int_t  AliMpDDLStore::GetNextDEfromLocalBoard(Int_t localBoardId, Int_t chamberI
     return 0;
 }
 
-//________________________________________________________________
+//______________________________________________________________________________
 Int_t  AliMpDDLStore::GetPreviousDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const {
     /// return the previous detection element in line
 
@@ -1101,3 +796,18 @@ Int_t  AliMpDDLStore::GetPreviousDEfromLocalBoard(Int_t localBoardId, Int_t cham
         return 0;
 
 }
+
+//______________________________________________________________________________
+void AliMpDDLStore::SetRegionalTrigger(const AliMpRegionalTrigger& regionalTrigger)
+{
+/// Replace the existing regional trigger with the given one
+
+  fRegionalTrigger = regionalTrigger;
+  
+  // Remove the existing trigger DDLs
+  fDDLs.RemoveAt(fgkNofDDLs+1);
+  fDDLs.RemoveAt(fgkNofDDLs);
+  
+  // Set new trigger DDLs from new regional trigger
+  SetTriggerDDLs();
+}  

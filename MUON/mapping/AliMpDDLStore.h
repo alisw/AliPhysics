@@ -20,6 +20,7 @@
 #include "AliMpExMap.h"
 #include "AliMpIntPair.h"
 #include "AliMpGlobalCrate.h"
+#include "AliMpRegionalTrigger.h"
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TArrayI.h>
@@ -50,8 +51,11 @@ class AliMpDDLStore : public  TObject {
     AliMpLocalBoard*   GetLocalBoard(Int_t localBoardId, Bool_t warn = true) const;
     AliMpTriggerCrate* GetTriggerCrate(TString crateName, Bool_t warn = true) const;
     AliMpTriggerCrate* GetTriggerCrate(Int_t ddlId, Int_t index, Bool_t warn = true) const;
-    /// Get Global Crate object
-    AliMpGlobalCrate*  GetGlobalCrate() const {return fGlobalCrate;}
+
+    /// Return regional trigger object
+    const AliMpRegionalTrigger*  GetRegionalTrigger() const { return &fRegionalTrigger; }
+    /// Return global crate object
+    const AliMpGlobalCrate*  GetGlobalCrate() const { return &fGlobalCrate; }
     
     Int_t  GetDEfromBus(Int_t busPatchId) const;
     Int_t  GetDEfromLocalBoard(Int_t localBoardId, Int_t chamberId) const;
@@ -62,26 +66,22 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetBusPatchId(Int_t detElemId, Int_t manuId) const;
     
     /// Return trigger crates iterator
-    TExMapIter GetTriggerCrateItr() const {return fTriggerCrates.GetIterator();}
+    TExMapIter GetTriggerCrateItr() const { return fRegionalTrigger.GetTriggerCrateItr(); }
 
     /// Return trigger local board iterator
-    TExMapIter GetLocalBoardItr() const {return fLocalBoards.GetIterator();}
+    TExMapIter GetLocalBoardItr() const { return fRegionalTrigger.GetLocalBoardItr(); }
 
     /// Get an iterator to loop over bus patches
     TExMapIter GetBusPatchesIterator() const { return fBusPatches.GetIterator(); }
-    
-    /// read Global trigger crate file
-    static Bool_t ReadGlobalTrigger(AliMpGlobalCrate& crate, const Char_t* globalName = 0);
-    
-    /// read local trigger crate file   
-    static Bool_t ReadRegionalTrigger(AliMpExMap& triggerCrates, AliMpExMap& localBoards, 
-                                      TObjArray& dlls, const Char_t* fileName = 0, Bool_t warn = true);
     
     /// Get detection elt and Manu number from serial number
     AliMpIntPair  GetDetElemIdManu(Int_t manuSerial) const;
 
     /// print info of all manus
     void PrintAllManu() const;
+    
+    // Set methods
+    void SetRegionalTrigger(const AliMpRegionalTrigger& regionalTrigger);
 
     
   private:
@@ -95,7 +95,8 @@ class AliMpDDLStore : public  TObject {
     Int_t  GetManuListIndex(Int_t detElemId) const;
     Int_t  GetBusPatchIndex(Int_t detElemId, Int_t manuId) const;
     Bool_t ReadDDLs();
-    Bool_t ReadTriggerDDLs();
+    Bool_t ReadTrigger();
+    Bool_t SetTriggerDDLs();
     Bool_t SetManus();
     Bool_t SetPatchModules();
     Bool_t SetBusPatchLength();
@@ -109,13 +110,12 @@ class AliMpDDLStore : public  TObject {
     // data members	
     TObjArray     fDDLs;           ///< Array of DDL objects
     AliMpExMap    fBusPatches;     ///< The map of bus patches per their IDs
-    AliMpExMap    fTriggerCrates;  ///< The map of trigger crate per their ID
-    AliMpExMap    fLocalBoards;    ///< The map of local board per their ID
     TArrayI       fManuList12[16]; ///< Arrays of 1st manu in bus
     TArrayI       fManuBridge2[16]; ///< Arrays of manu number before the bridge in buspatch
-    AliMpGlobalCrate* fGlobalCrate;  ///< Global Crate Object 
+    AliMpGlobalCrate     fGlobalCrate;     ///< Global Crate Object 
+    AliMpRegionalTrigger fRegionalTrigger; ///< Regional trigger
         
-  ClassDef(AliMpDDLStore,3)  // The manager class for definition of detection element types
+  ClassDef(AliMpDDLStore,4)  // The manager class for definition of detection element types
 };
 
 #endif //ALI_MP_DDL_STORE_H
