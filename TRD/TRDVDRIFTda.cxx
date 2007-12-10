@@ -1,13 +1,13 @@
 /*
 
-- "Contact: r.bailhache@gsi.de"
-- "Link: http://www-linux.gsi.de/~bailhach/VDRIFT/raw.root.date"
-- "Run Type: nothing special in ECS, physics run" 
-- "DA Type: MON"
-- "Number of events needed: as many as possible"
-- "Input Files: no config files, no previous result files, RAW DATA file with all the TRD ([DDL = 1024 to DDL = 1041])" 
-- "Output Files: trdCalibrationv.root, trdCalibrationv.root, no persitent file over runs"
-- "Trigger types used: PHYSICS"
+Contact: r.bailhache@gsi.de
+Link: http://www-linux.gsi.de/~bailhach/VDRIFT/raw.root.date
+Run Type: nothing special in ECS, physics run
+DA Type: MON
+Number of events needed: as many as possible
+Input Files: no config files, no previous result files, RAW DATA file with all the TRD ([DDL = 1024 to DDL = 1041])
+Output Files: trdCalibrationv.root, trdCalibrationv.root, no persitent file over runs
+Trigger types used: PHYSICS
 
 */
 

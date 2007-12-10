@@ -1,13 +1,13 @@
 /*
 
-- "Contact: r.bailhache@gsi.de"
-- "Link: http://www-linux.gsi.de/~bailhach/PEDESTAL/raw.root.date" 
-- "Run Type: dedicated pedestals run"
-- "DA Type: LDC"
-- "Number of events needed: 100"
-- "Input Files: no config files, no previous result files, RAW DATA files from DDL = 1024 to DDL = 1041 included"
-- "Output Files: trdCalibration.root, trdCalibration.root, no persitent file over runs"
-- "Trigger types used: PEDESTAL_RUN"
+Contact: r.bailhache@gsi.de
+Link: http://www-linux.gsi.de/~bailhach/PEDESTAL/raw.root.date
+Run Type: dedicated pedestals run
+DA Type: LDC
+Number of events needed: 100
+Input Files: no config files, no previous result files, RAW DATA files from DDL = 1024 to DDL = 1041 included
+Output Files: trdCalibration.root, trdCalibration.root, no persitent file over runs
+Trigger types used: PEDESTAL_RUN
 
 */
 
