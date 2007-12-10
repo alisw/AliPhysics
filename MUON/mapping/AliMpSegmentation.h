@@ -36,13 +36,10 @@
 #  include "AliMpCathodType.h"
 #endif
 
-#ifndef ALIMPSLATMOTIFMAP_H
-#  include "AliMpSlatMotifMap.h"
-#endif
-
 class AliMpDEStore;
 class AliMpVSegmentation;
 class AliMpSegmentation;
+class AliMpSlatMotifMap;
 class TRootIOCtor;
 
 class AliMpSegmentation : public  TObject {
@@ -84,9 +81,9 @@ class AliMpSegmentation : public  TObject {
     AliMpDEStore*      fDetElements;    ///< Detection element store
     AliMpStringObjMap  fMpSegmentations;///< Map of mapping segmentations to DE seg names
     AliMpExMap         fElCardsMap;     ///< Map of el. cards IDs to segmentations
-    AliMpSlatMotifMap  fSlatMotifMap; ///< Map of motif, motifTypes to avoid duplications and allow proper deletion
+    AliMpSlatMotifMap* fSlatMotifMap; ///< Map of motif, motifTypes to avoid duplications and allow proper deletion
     
-  ClassDef(AliMpSegmentation,1)  // The factory for building mapping segmentations
+  ClassDef(AliMpSegmentation,2)  // The factory for building mapping segmentations
 };
 
 #endif //ALI_MP_SEGMENTATION_H

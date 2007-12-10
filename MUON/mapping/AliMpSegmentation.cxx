@@ -42,6 +42,8 @@
 #include "AliMpTriggerReader.h"
 #include "AliMpTriggerSegmentation.h"
 #include "AliMpCathodType.h"
+#include "AliMpSlatMotifMap.h"
+
 
 #include "AliLog.h"
 
@@ -101,7 +103,7 @@ AliMpSegmentation::AliMpSegmentation()
   fDetElements(0),
   fMpSegmentations(true),
   fElCardsMap(true),
-  fSlatMotifMap()
+  fSlatMotifMap(AliMpSlatMotifMap::Instance())
 {  
 /// Standard constructor - segmentation is loaded from ASCII data files
 
@@ -137,7 +139,7 @@ AliMpSegmentation::AliMpSegmentation(TRootIOCtor* /*ioCtor*/)
   fDetElements(0),
   fMpSegmentations(),
   fElCardsMap(),
-  fSlatMotifMap()
+  fSlatMotifMap(0)
 {  
 /// Constructor for IO
 
@@ -200,12 +202,12 @@ AliMpSegmentation::CreateMpSegmentation(Int_t detElemId, AliMp::CathodType cath)
     mpSegmentation = new AliMpSectorSegmentation(sector, true);
   }
   else if ( stationType == AliMp::kStation345 ) { 
-    AliMpSt345Reader reader(fSlatMotifMap);
+    AliMpSt345Reader reader;
     AliMpSlat* slat = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation =  new AliMpSlatSegmentation(slat, true);
   }
   else if ( stationType == AliMp::kStationTrigger ) {
-    AliMpTriggerReader reader(fSlatMotifMap);
+    AliMpTriggerReader reader;
     AliMpTrigger* trigger = reader.ReadSlat(deTypeName, planeType);
     mpSegmentation = new AliMpTriggerSegmentation(trigger, true);
   }
