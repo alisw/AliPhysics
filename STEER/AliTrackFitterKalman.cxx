@@ -32,7 +32,7 @@
 #include <TMatrixD.h>
 #include <TMatrixDSym.h>
 
-//#include "AliLog.h"
+#include "AliLog.h"
 #include "AliTrackFitterKalman.h"
 
 ClassImp(AliTrackFitterKalman)
@@ -69,17 +69,19 @@ MakeSeed(const AliTrackPoint *p0, const AliTrackPoint *p1) {
   //
   Double_t x0=p0->GetX(), y0=p0->GetY(), z0=p0->GetZ();
   Double_t dx=p1->GetX()-x0, dy=p1->GetY()-y0, dz=p1->GetZ()-z0;
+  if (dy==0.) { 
+     AliError("Seeds perpendicular to Y axis are not allowed !"); 
+     return kFALSE; 
+  }
   Double_t vx=dx/dy;
   Double_t vz=dz/dy;
   Double_t par[5]={x0,y0,z0,vx,vz};
 
   const Float_t *cv0=p0->GetCov();
   const Float_t *cv1=p1->GetCov();
-  Double_t rdx2=(cv0[0]+cv1[0])/dx/dx;
   Double_t rdy2=(cv0[3]+cv1[3])/dy/dy;
-  Double_t rdz2=(cv0[5]+cv1[5])/dz/dz;
-  Double_t svx2=vx*vx*(rdx2+rdy2);     
-  Double_t svz2=vz*vz*(rdz2+rdy2);     
+  Double_t svx2=(cv0[0]+cv1[0])/dy/dy + vx*vx*rdy2;     
+  Double_t svz2=(cv0[5]+cv1[5])/dy/dy + vz*vz*rdy2;     
   Double_t cov[15]={
      cv0[0],
      cv0[1],cv0[3],
