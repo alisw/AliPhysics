@@ -15,6 +15,20 @@
 
 /*
  $Log$
+ Revision 1.14  2007/12/07 19:14:36  acolla
+ in AliShuttleTrigger:
+
+ Added automatic collection of new runs on a regular time basis (settable from the configuration)
+
+ in AliShuttleConfig: new members
+
+ - triggerWait: time to wait for DIM trigger (s) before starting automatic collection of new runs
+ - mode: run mode (test, prod) -> used to build log folder (logs or logs_PROD)
+
+ in AliShuttle:
+
+ - logs now stored in logs/#RUN/DET_#RUN.log
+
  Revision 1.13  2006/11/16 16:16:48  jgrosseo
  introducing strict run ordering flag
  removed giving preprocessor name to preprocessor, they have to know their name themselves ;-)
@@ -196,15 +210,19 @@ void AliShuttleTrigger::Run() {
 
 	DATENotifier* notifier = new DATENotifier(this, "/DATE/LOGBOOK/UPDATE");
 
-	Int_t nTry=0;
+	Int_t nTry=0; 
+	Int_t nMaxTry = fConfig->GetMaxRetries()+1;
+	Int_t received=0;
+	
+	AliInfo("Listening for ECS trigger");
 	
 	while (1) {
 	
 		fMutex.Lock();
 
 		while (!(fNotified || fTerminate)) {
-			if (fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait()) == 1)
-				break; // 1 = timeout
+			received=fCondition.TimedWaitRelative(1000*fConfig->GetTriggerWait());
+			if (received==1) break; // 1 = timeout
 		}
 
 		fNotified = kFALSE;
@@ -216,14 +234,29 @@ void AliShuttleTrigger::Run() {
 			break;		
 		}
 		
-		// TODO Check this!
-		//nTry++;
-		//AliInfo(Form("Received %d triggers so far", nTry));
-		//if(nTry>5)
-		//{
-		//	AliInfo("Collect() ran more than 5 times -> Exiting!");
-		//	break;
-		//}
+		if (received == 0)
+		{
+			AliInfo("Trigger from ECS received!");
+		} else if (received == 1) {
+			AliInfo(Form("Timeout (%d s) waiting for trigger. "
+				"Starting collection of new runs!", 
+					fConfig->GetTriggerWait()));
+		} else {
+			AliInfo("Error receiving trigger from ECS!");
+			break;
+		}
+		
+		if (fConfig->GetRunMode() == AliShuttleConfig::kTest)
+		{
+			nTry++;
+			AliInfo(Form("Received %d triggers so far", nTry));
+			if(nTry>=nMaxTry)
+			{
+				AliInfo(Form("Collect() ran more than %d times -> Exiting!", 
+						nMaxTry));
+				break;
+			}
+		}
 	
 		Collect();
 	}
