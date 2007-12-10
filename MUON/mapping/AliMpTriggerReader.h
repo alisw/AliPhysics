@@ -33,12 +33,13 @@ class AliMpSlatMotifMap;
 class AliMpSlat;
 class AliMpTrigger;
 class AliMpPCB;
+
 class TList;
 
 class AliMpTriggerReader : public TObject
 {
  public:
-  AliMpTriggerReader(AliMpSlatMotifMap& motifMap);
+  AliMpTriggerReader();
   virtual ~AliMpTriggerReader();
 
   AliMpTrigger* ReadSlat(const char* slatType, AliMp::PlaneType planeType);
@@ -81,8 +82,12 @@ private:
   void ReadLocalBoardMapping();
   
 private:
+  /// Not implemented
+  AliMpTriggerReader(const AliMpTriggerReader& rhs);
+  /// Not implemented
+  AliMpTriggerReader& operator=(const AliMpTriggerReader& rhs);
     
-  AliMpSlatMotifMap& fMotifMap; //!< storage for motifTypes and motifs...
+  AliMpSlatMotifMap* fMotifMap; //!< storage for motifTypes and motifs...
   
   TMap fLocalBoardMap; //!< map of TObjString to TObjString
 

@@ -62,9 +62,9 @@ const TString AliMpTriggerReader::fgkKeywordFlipX("FLIP_X");
 const TString AliMpTriggerReader::fgkKeywordFlipY("FLIP_Y");
 
 //_____________________________________________________________________________
-AliMpTriggerReader::AliMpTriggerReader(AliMpSlatMotifMap& motifMap) 
+AliMpTriggerReader::AliMpTriggerReader() 
 : TObject(),
-  fMotifMap(motifMap),
+  fMotifMap(AliMpSlatMotifMap::Instance()),
   fLocalBoardMap()
 {
   ///
@@ -654,7 +654,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       {
         AliError("pcb not null as expected");
       }
-      pcb = new AliMpPCB(&fMotifMap,pcbType,padSizeX*scale,padSizeY*scale,
+      pcb = new AliMpPCB(fMotifMap,pcbType,padSizeX*scale,padSizeY*scale,
                          pcbSizeX*scale,pcbSizeY*scale);
     }
     
@@ -669,18 +669,18 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       TString id = reader.MotifSpecialName(sMotifSpecial,scale);
       
       AliMpMotifSpecial* specialMotif =
-        dynamic_cast<AliMpMotifSpecial*>(fMotifMap.FindMotif(id));
+        dynamic_cast<AliMpMotifSpecial*>(fMotifMap->FindMotif(id));
       if (!specialMotif)
       {
         AliDebug(1,Form("Reading motifSpecial %s (%s) from file",
                         sMotifSpecial.Data(),id.Data()));
-        AliMpMotifType* motifType = fMotifMap.FindMotifType(sMotifType.Data());
+        AliMpMotifType* motifType = fMotifMap->FindMotifType(sMotifType.Data());
         if ( !motifType)
         {
           AliDebug(1,Form("Reading motifType %s (%s) from file",
                           sMotifType.Data(),id.Data()));
           motifType = reader.BuildMotifType(sMotifType.Data());
-          fMotifMap.AddMotifType(motifType);
+          fMotifMap->AddMotifType(motifType);
         }
         else
         {
@@ -688,7 +688,7 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
                           sMotifType.Data(),id.Data()));        
         }
         specialMotif = reader.BuildMotifSpecial(sMotifSpecial,motifType,scale);
-        fMotifMap.AddMotif(specialMotif);
+        fMotifMap->AddMotif(specialMotif);
       }
       else
       {
@@ -710,12 +710,12 @@ AliMpTriggerReader::ReadPCB(const char* pcbType)
       int iy;
       sin >> sMotifType >> ix >> iy;
       
-      AliMpMotifType* motifType = fMotifMap.FindMotifType(sMotifType.Data());
+      AliMpMotifType* motifType = fMotifMap->FindMotifType(sMotifType.Data());
       if ( !motifType)
       {
         AliDebug(1,Form("Reading motifType %s from file",sMotifType.Data()));
         motifType = reader.BuildMotifType(sMotifType.Data());
-        fMotifMap.AddMotifType(motifType);
+        fMotifMap->AddMotifType(motifType);
       }
       else
       {
@@ -831,7 +831,7 @@ AliMpTriggerReader::ReadSlat(const char* slatType, AliMp::PlaneType planeType)
                           pcb->DX()*2/scale,pcb->DY()*2/scale));
           }
         } 
-        StdoutToAliError(fMotifMap.Print(););
+        StdoutToAliError(fMotifMap->Print(););
       }
     }
     else

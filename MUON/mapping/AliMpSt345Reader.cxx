@@ -55,10 +55,10 @@ ClassImp(AliMpSt345Reader)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMpSt345Reader::AliMpSt345Reader(AliMpSlatMotifMap& motifMap) 
+AliMpSt345Reader::AliMpSt345Reader() 
 : 
 TObject(),
-fMotifMap(motifMap)
+fMotifMap(AliMpSlatMotifMap::Instance())
 {
   ///
   /// Default ctor.
@@ -120,7 +120,7 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
       {
         AliError("pcb not null as expected");
       }
-      pcb = new AliMpPCB(&fMotifMap,pcbType,padSizeX,padSizeY,pcbSizeX,pcbSizeY);
+      pcb = new AliMpPCB(fMotifMap,pcbType,padSizeX,padSizeY,pcbSizeX,pcbSizeY);
     }
     
     if ( sline(0,kMotifKeyword.Length()) == kMotifKeyword )
@@ -132,12 +132,12 @@ AliMpSt345Reader::ReadPCB(const char* pcbType)
       int iy;
       sin >> sMotifType >> ix >> iy;
       
-      AliMpMotifType* motifType = fMotifMap.FindMotifType(sMotifType);
+      AliMpMotifType* motifType = fMotifMap->FindMotifType(sMotifType);
       if (!motifType)
       {
         AliDebug(1,Form("Reading motifType %s from file",sMotifType.Data()));
         motifType = reader.BuildMotifType(sMotifType.Data());
-        fMotifMap.AddMotifType(motifType);
+        fMotifMap->AddMotifType(motifType);
       }
       else
       {
