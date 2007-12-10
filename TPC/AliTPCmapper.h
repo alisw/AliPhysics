@@ -19,7 +19,8 @@ class AliTPCmapper : public TObject{
 
 public:
 
-  AliTPCmapper(const char * dirname=0);
+  AliTPCmapper();
+  AliTPCmapper(const char * dirname);
   virtual ~AliTPCmapper();
 
   AliTPCmapper& operator = (const AliTPCmapper& mapper);

@@ -46,6 +46,24 @@
 #include "AliDAQ.h"
 
 ClassImp(AliTPCmapper)
+//______________________________________________________________
+AliTPCmapper::AliTPCmapper() :
+  fNside(0),
+  fNsector(0),
+  fNrcu(0),
+  fNbranch(0),
+  fNaltro(0),
+  fNchannel(0),
+  fNpadrow(0),
+  fNpadrowIROC(0),
+  fNpadrowOROC(0),
+  fTpcDdlOffset(0)
+{
+  //
+  // Constructor
+  //
+  for ( Int_t i = 0; i < fNrcu; i++ )  fMapping[i]=0;
+}
 
 //______________________________________________________________
 AliTPCmapper::AliTPCmapper(const char * dirname) :
