@@ -27,6 +27,9 @@ public:
   AliMpSlatMotifMap();
   virtual ~AliMpSlatMotifMap();
   
+  // static methods
+  static AliMpSlatMotifMap* Instance();
+
   AliMpVMotif* FindMotif(const TString& id) const;
   AliMpMotifType* FindMotifType(const TString& id) const;
   
@@ -38,10 +41,12 @@ public:
   void Reset();
   
 private:
+  static AliMpSlatMotifMap* fgInstance; ///< Singleton instance
+
   TMap fMotifs; ///< collection of motifs
   TMap fMotifTypes; ///< collection of motifTypes
   
-  ClassDef(AliMpSlatMotifMap,1) // Slat motif map 
+  ClassDef(AliMpSlatMotifMap,2) // Slat motif map 
 };
 
 #endif
