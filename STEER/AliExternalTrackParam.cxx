@@ -649,6 +649,36 @@ PropagateTo(Double_t p[3],Double_t covyz[3],Double_t covxyz[3],Double_t bz) {
   return kTRUE;  
 }
 
+Double_t *AliExternalTrackParam::GetResiduals(
+Double_t *p,Double_t *cov,Bool_t updated) const {
+  //------------------------------------------------------------------
+  // Returns the track residuals with the space point "p" having
+  // the covariance matrix "cov".
+  // If "updated" is kTRUE, the track parameters expected to be updated,
+  // otherwise they must be predicted.  
+  //------------------------------------------------------------------
+  static Double_t res[2];
+
+  Double_t r00=cov[0], r01=cov[1], r11=cov[2];
+  if (updated) {
+     r00-=fC[0]; r01-=fC[1]; r11-=fC[2];
+  } else {
+     r00+=fC[0]; r01+=fC[1]; r11+=fC[2];
+  }
+  Double_t det=r00*r11 - r01*r01;
+
+  if (TMath::Abs(det) < kAlmost0) return 0;
+
+  Double_t tmp=r00; r00=r11/det; r11=tmp/det;
+  Double_t dy = fP[0] - p[0];
+  Double_t dz = fP[1] - p[1];
+
+  res[0]=dy*TMath::Sqrt(r00);
+  res[1]=dz*TMath::Sqrt(r11);
+
+  return res;
+}
+
 Bool_t AliExternalTrackParam::Update(Double_t p[2], Double_t cov[3]) {
   //------------------------------------------------------------------
   // Update the track parameters with the space point "p" having

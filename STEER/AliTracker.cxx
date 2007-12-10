@@ -22,10 +22,12 @@
 //-------------------------------------------------------------------------
 #include <TClass.h>
 #include <TMath.h>
+#include <TH1F.h>
 #include <TGeoManager.h>
 
 #include "AliMagF.h"
 #include "AliTracker.h"
+#include "AliGeomManager.h"
 #include "AliCluster.h"
 #include "AliKalmanTrack.h"
 
@@ -34,6 +36,8 @@ extern TGeoManager *gGeoManager;
 Bool_t AliTracker::fgUniformField=kTRUE;
 Double_t AliTracker::fgBz=kAlmost0Field;
 const AliMagF *AliTracker::fgkFieldMap=0;
+Bool_t AliTracker::fFillResiduals=kFALSE;
+TObjArray *AliTracker::fResiduals=0;
 
 ClassImp(AliTracker)
 
@@ -365,5 +369,27 @@ Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp){
     xpos = track->GetX();
   }
   return kTRUE;
+}
+
+void AliTracker::FillResiduals(const AliExternalTrackParam *t,
+			      Double_t *p, Double_t *cov, 
+                              UShort_t id, Bool_t updated) {
+  //
+  // This function fills the histograms of residuals 
+  // The array of these histos is external for this AliTracker class.
+  // Normally, this array belong to AliGlobalQADataMaker class.  
+  // 
+  if (!fFillResiduals) return; 
+  if (!fResiduals) return; 
+
+  const Double_t *residuals=t->GetResiduals(p,cov,updated);
+  if (!residuals) return;
+
+  TH1F *h=0;
+  AliGeomManager::ELayerID layer=AliGeomManager::VolUIDToLayer(id);
+  h=(TH1F*)fResiduals->At(2*layer-2);
+  h->Fill(residuals[0]);
+  h=(TH1F*)fResiduals->At(2*layer-1);
+  h->Fill(residuals[1]);
 }
 

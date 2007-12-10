@@ -12,9 +12,9 @@
 //-------------------------------------------------------------------------
 #include <TObject.h>
 
+class TTree;
 class AliMagF;
 class AliCluster;
-class TTree;
 class AliKalmanTrack;
 class AliESDEvent;
 class AliESDtrack;
@@ -65,14 +65,23 @@ public:
   static Double_t GetBz() {return fgBz;}
   static Bool_t UniformField() {return fgUniformField;}
 
+  static void FillResiduals(const AliExternalTrackParam *t,
+			   Double_t *p, Double_t *cov, 
+                           UShort_t id, Bool_t updated=kTRUE);
+  static void SetFillResiduals(Bool_t flag=kTRUE) { fFillResiduals=flag; }
+  static void SetResidualsArray(TObjArray *arr) { fResiduals=arr; }
+
 protected:
   AliTracker(const AliTracker &atr);
 private:
   AliTracker & operator=(const AliTracker & atr);
 
   static Bool_t fgUniformField;       // uniform field flag
-  static const AliMagF *fgkFieldMap;  // field map
+  static const AliMagF *fgkFieldMap;  //! field map
   static Double_t fgBz;               // Nominal Bz (kG)
+
+  static Bool_t fFillResiduals;       // Fill residuals flag
+  static TObjArray *fResiduals;    //! Array of histograms with residuals
 
   Double_t fX;  //X-coordinate of the primary vertex
   Double_t fY;  //Y-coordinate of the primary vertex
@@ -82,7 +91,7 @@ private:
   Double_t fSigmaY; // error of the primary vertex position in Y
   Double_t fSigmaZ; // error of the primary vertex position in Z
 
-  ClassDef(AliTracker,3) //abstract tracker
+  ClassDef(AliTracker,4) //abstract tracker
 };
 
 #endif
