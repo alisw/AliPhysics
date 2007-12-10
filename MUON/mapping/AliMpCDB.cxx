@@ -128,6 +128,77 @@ Bool_t AliMpCDB::LoadDDLStore(Bool_t warn)
 }    
 
 //______________________________________________________________________________
+Bool_t AliMpCDB::LoadMpSegmentation2(const char* cdbpath, Int_t runNumber, 
+                                     Bool_t warn)
+{
+/// Load the sementation from the CDB if it does not yet exist;
+/// return false only in case loading from CDB failed.
+/// In difference from LoadMpSegmentation(), in this method the CDB path
+/// and run is set directly via arguments.
+
+
+  AliDebugClass(1,"");
+
+  if ( AliMpSegmentation::Instance(false) ) {
+    if ( warn )  
+      AliWarningClass("Segmentation has been already loaded."); 
+    return true;
+  }  
+  
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage(cdbpath);
+
+  AliCDBEntry* cdbEntry = cdbManager->Get("MUON/Calib/Mapping", runNumber);
+  
+  if ( cdbEntry ) 
+  {
+    return (AliMpSegmentation*)cdbEntry->GetObject() != 0x0;
+  }
+  else
+  {
+    return kFALSE;
+  }
+}    
+
+//______________________________________________________________________________
+Bool_t AliMpCDB::LoadDDLStore2(const char* cdbpath, Int_t runNumber, 
+                               Bool_t warn)
+{
+/// Load the DDL store from the CDB if it does not yet exist
+/// return false only in case loading from CDB failed
+/// In difference from LoadDDLStore(), in this method the CDB path
+/// and run is set directly via arguments.
+
+  AliDebugClass(1,"");
+
+  if ( AliMpDDLStore::Instance(false) ) {
+    if ( warn )  
+      AliWarningClass("DDL Store has been already loaded."); 
+    return true;
+  }  
+  
+  // Load segmentation
+  //
+  LoadMpSegmentation2(cdbpath, runNumber, warn); 
+  
+  // Load DDL store
+  //
+  AliCDBManager* cdbManager = AliCDBManager::Instance();
+  cdbManager->SetDefaultStorage(cdbpath);
+
+  AliCDBEntry* cdbEntry =  cdbManager->Get("MUON/Calib/DDLStore", runNumber);
+  
+  if ( cdbEntry ) 
+  {
+    return (AliMpDDLStore*)cdbEntry->GetObject() != 0x0;
+  }
+  else
+  {
+    return kFALSE;
+  }
+}    
+
+//______________________________________________________________________________
 Bool_t AliMpCDB::WriteMpSegmentation(Bool_t readData)
 {
 /// Write mapping segmentation in OCDB
