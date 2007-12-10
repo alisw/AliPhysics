@@ -510,10 +510,16 @@ AliTriggerConfiguration* AliTriggerConfiguration::LoadConfiguration( TString & c
   // The filename is constructed as: GRP/CTP/<configuration>.cfg
 
    // Load the selected configuration
-   TString filename = gSystem->Getenv("ALICE_ROOT");
-   filename += "/GRP/CTP/";
-   filename += configuration;
-   filename += ".cfg";
+  TString filename;
+  if (configuration.EndsWith(".cfg")) {
+    filename = configuration;
+  }
+  else {
+    filename = gSystem->Getenv("ALICE_ROOT");
+    filename += "/GRP/CTP/";
+    filename += configuration;
+    filename += ".cfg";
+  }
 
    if( gSystem->AccessPathName( filename.Data() ) ) {
       AliErrorClass( Form( "file (%s) not found", filename.Data() ) );
