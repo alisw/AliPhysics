@@ -8,6 +8,7 @@
 #include <TMath.h>
 #include <TNamed.h>        //base class
 #include <TGeoManager.h>   //Instance()
+#include <TGeoMatrix.h>   //Instance()
 #include <TVector3.h>      //Lors2Mars() Mars2Lors()
  
 // Class providing all the needed parametrised information

@@ -5,6 +5,7 @@
 #include <Reve/NLTPolygonSet.h>
 
 #include "TGeoShapeExtract.h"
+#include "TGeoMatrix.h"
 
 #include <TPad.h>
 #include <TBuffer3D.h>

@@ -36,6 +36,7 @@
 #include <TGeometry.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TVirtualMC.h>
 #include <TArrayI.h>
 #include <TROOT.h>

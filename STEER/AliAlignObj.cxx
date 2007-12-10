@@ -23,6 +23,7 @@
 //-----------------------------------------------------------------
 
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 #include <TMath.h>
 #include <TMatrixDSym.h>

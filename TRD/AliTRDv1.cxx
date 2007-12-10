@@ -30,6 +30,7 @@
 #include <TVector.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 
 #include "AliConst.h"

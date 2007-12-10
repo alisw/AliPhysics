@@ -17,6 +17,9 @@
 /* History of cvs commits:
  *
  * $Log$
+ * Revision 1.94  2007/10/18 08:40:02  kharlov
+ * Misalignment-related bug fixed
+ *
  * Revision 1.93  2007/10/06 22:24:40  kharlov
  * Bug in strip unit geometry is corrected
  *
@@ -86,6 +89,7 @@
 #include <TVirtualMC.h>
 #include <TGeoPhysicalNode.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TVector3.h>
 
 // --- Standard library ---

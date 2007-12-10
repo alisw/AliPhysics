@@ -39,6 +39,7 @@
 #include <TParticle.h>
 
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoMaterial.h>
 #include <TGeoMedium.h>
 #include <TGeoVolume.h>

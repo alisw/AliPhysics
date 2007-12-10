@@ -38,6 +38,7 @@
 #include <TTUBE.h>
 #include <TVirtualMC.h>
 #include "TGeoManager.h"
+#include "TGeoMatrix.h"
 #include "TGeoPgon.h"
 #include "TGeoTube.h"
 #include "TGeoCompositeShape.h"

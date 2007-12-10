@@ -27,6 +27,7 @@ $Id$
 #include <TArrayF.h>
 #include <TStopwatch.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoVolume.h>
 #include <TGeoShape.h>
 #include <TGeoBBox.h>

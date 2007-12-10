@@ -32,6 +32,7 @@
 #include "TRotation.h" 
 #include "TParticle.h"
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 
 // --- Standard library ---
 

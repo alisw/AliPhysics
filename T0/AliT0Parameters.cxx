@@ -38,6 +38,7 @@
 #include <TSystem.h>
 #include <Riostream.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
 #include <AliGeomManager.h>
 

@@ -34,6 +34,7 @@
 
 #include <TArrayD.h>		// ROOT_TArrayD
 #include <TGeoManager.h>	// ROOT_TGeoManager
+#include <TGeoMatrix.h>	        // ROOT_TGeoMatrix
 #include <TGeoTube.h>		// ROOT_TGeoTube
 #include <TGeoTube.h>		// ROOT_TGeoTube
 #include <TGeoVolume.h>		// ROOT_TGeoVolume

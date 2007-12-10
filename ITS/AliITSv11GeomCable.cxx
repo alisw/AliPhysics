@@ -22,6 +22,7 @@
 
 // Root Geometry includes
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoVolume.h>
 #include <TGeoNode.h>
 

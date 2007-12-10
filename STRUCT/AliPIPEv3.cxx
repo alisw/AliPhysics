@@ -27,6 +27,7 @@
 #include <TSystem.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 #include <TGeoVolume.h>
 #include <TGeoTorus.h>
 #include <TGeoTube.h>
