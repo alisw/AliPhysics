@@ -50,7 +50,6 @@ public:
   AliMemoryWatcher(UInt_t maxsize=10000);
   AliMemoryWatcher(const AliMemoryWatcher& mw);
   ~AliMemoryWatcher() ;
-  void SetUseMallinfo(Bool_t use) { fUseMallinfo = use; }
   void Watch(Int_t x);
   
   UInt_t Size(void) const { return fSize; }
@@ -65,9 +64,6 @@ public:
   Int_t       WriteToFile();
   AliMemoryWatcher & operator = (const AliMemoryWatcher &) { return *this; } 
 private:
-  Bool_t fUseMallinfo; // use mallinfo function instead of ps command
-  Int_t fPID;          // PID of the process to watch
-  char fCmd[1024];     // the command sent to the system to retrieve things ("ps .....")
   UInt_t fMAXSIZE;     // maximum size of arrays where the informationis stored
   UInt_t fSize;        // the requested size of information to be retrieved
   Int_t* fX;           //[fMAXSIZE] array that contains the step numbers
@@ -77,7 +73,7 @@ private:
   TStopwatch* fTimer;  // the chronometer
   Bool_t fDisabled;    // to switch on/off the monitoring
 
-  ClassDef(AliMemoryWatcher,1) // General purpose memory watcher
+  ClassDef(AliMemoryWatcher,2) // General purpose memory watcher
 
 } ;
 #endif

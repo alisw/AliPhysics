@@ -46,10 +46,8 @@
 
 // --- std system ---
 #include <cassert> 
-#ifdef __APPLE__
+#ifdef NEVER
 #include <stdlib.h>
-#else
-#include <malloc.h>
 #endif
 // --- AliRoot header files ---
 #include "AliLog.h"
@@ -66,8 +64,6 @@ ClassImp(AliMemoryWatcher)
 //_____________________________________________________________________________
 AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize) :
   TObject(),
-  fUseMallinfo(kTRUE),
-  fPID(gSystem->GetPid()),
   fMAXSIZE(maxsize),
   fSize(0),
   fX(new Int_t[fMAXSIZE]),
@@ -80,14 +76,11 @@ AliMemoryWatcher::AliMemoryWatcher(UInt_t maxsize) :
   //
   //ctor
   //
-  sprintf(fCmd,"ps -h -p %d -o vsz,rss | grep -v VSZ",fPID);
 }
 
 //_____________________________________________________________________________
 AliMemoryWatcher::AliMemoryWatcher(const AliMemoryWatcher& mw):
   TObject(mw),
-  fUseMallinfo(mw.fUseMallinfo),
-  fPID(mw.fPID),
   fMAXSIZE(mw.fMAXSIZE),
   fSize(0),
   fX(new Int_t[fMAXSIZE]),
@@ -98,7 +91,6 @@ AliMemoryWatcher::AliMemoryWatcher(const AliMemoryWatcher& mw):
   fDisabled(kFALSE)
 {
   //copy ctor
-  strcpy(fCmd, mw.fCmd) ; 
 }
 
 //_____________________________________________________________________________
@@ -114,45 +106,46 @@ AliMemoryWatcher::~AliMemoryWatcher()
 //_____________________________________________________________________________
 void AliMemoryWatcher::Watch(Int_t x)
 {
+  static ProcInfo_t meminfo;
+#ifdef NEVER
+  static Char_t cmd[1024]="";
+#endif
   // Sets the point where CPU parameters have to be monitored
   if ( !fDisabled && fSize < fMAXSIZE ) {
     if ( fSize==0 ) {
-      assert(fTimer==0);
       fTimer = new TStopwatch;
       fTimer->Start(true);
       fTimer->Stop();
+#ifdef NEVER
+      if(!cmd[0])  
+	sprintf(cmd,"ps -h -p %d -o vsz,rss | grep -v VSZ",gSystem->GetPid());
+#endif
     }
-    if ( fUseMallinfo ) {
-#ifdef __linux
-      static struct mallinfo meminfo;
-      meminfo = mallinfo();
+    gSystem->GetProcInfo(&meminfo);
+    fX[fSize]      = x ;
+    fVSIZE[fSize]  = meminfo.fMemVirtual /  1024;
+    fRSSIZE[fSize] = meminfo.fMemResident / 1024;
+    fTIME[fSize]   = fTimer->CpuTime();
+    fSize++;
+#ifdef NEVER
+    Int_t vsize, rssize;
+    FILE* pipe = 0;
+    pipe = popen(cmd,"r");
+    if ( pipe ) {
+      
+      fscanf(pipe,"%d %d",&vsize,&rssize);
+      
       fX[fSize] = x ;
-      fVSIZE[fSize] = (meminfo.hblkhd + meminfo.uordblks) / 1024;
-      fRSSIZE[fSize] =  meminfo.uordblks / 1024;
+      fVSIZE[fSize] = vsize ;
+      fRSSIZE[fSize] = rssize ;
       fTIME[fSize] = fTimer->CpuTime();
       fSize++;
-#else
-      AliFatal("Please SetUseMallinfo to kFALSE on this system");
-#endif
-    } else {
-      static Int_t vsize, rssize;
-      static FILE* pipe = 0;
-      pipe = popen(fCmd,"r");
-      if ( pipe ) {
-    
-	fscanf(pipe,"%d %d",&vsize,&rssize);
-      
-	fX[fSize] = x ;
-	fVSIZE[fSize] = vsize ;
-	fRSSIZE[fSize] = rssize ;
-	fTIME[fSize] = fTimer->CpuTime();
-	fSize++;
-      }
-      assert(pclose(pipe)!=-1);
     }
+    Int_t iclose=pclose(pipe);
+    assert(iclose!=-1);
+#endif
     fTimer->Start(true);
-  }
-  else {
+  } else {
     fDisabled=true;
     AliError("I'm full !" ) ;
   }
