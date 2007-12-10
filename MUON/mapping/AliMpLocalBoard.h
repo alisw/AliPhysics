@@ -4,7 +4,7 @@
 // $Id$
 // $MpId: AliMpManuGeo.h,v 1.5 2006/05/24 13:58:16 ivana Exp $
 
-/// \ingroup management
+/// \ingroup mptrigger
 /// \class AliMpLocalBoard
 /// \brief Class that manages the properties of the local board
 ///

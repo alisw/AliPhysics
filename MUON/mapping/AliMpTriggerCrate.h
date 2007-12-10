@@ -3,7 +3,7 @@
 
 // $MpId: $ 
 
-/// \ingroup management
+/// \ingroup mptrigger
 /// \class AliMpTriggerCrate
 /// \brief The class defines the properties of trigger crate
 ///
