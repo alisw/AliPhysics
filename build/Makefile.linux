@@ -6,10 +6,19 @@ XARGS = xargs -r
 
 # The compilers
 CXX           = g++ 
-F77	      = g77
 CC	      = gcc
 CCMAJORV      = $(shell $(CC) -dumpversion | cut -d. -f1)
 CCMINORV      = $(shell $(CC) -dumpversion | cut -d. -f2)
+
+ifneq (,$(findstring g95,$(ROOTBUILD)))
+F77	  = g95
+else
+ifneq (,$(findstring gfortran,$(ROOTBUILD)))
+F77	  = gfortran
+else
+F77	  = g77
+endif
+endif
 
 # Global optimisation
 OPT           = -O -g
@@ -41,6 +50,17 @@ endif
 endif
 CFLAGS	       = $(OPT) -Wall -Werror -fPIC -pipe -Wno-long-long -pedantic-errors -ansi
 FFLAGS         = $(CLIBFOPT) $(FOPT) -fno-second-underscore
+
+ifneq (,$(findstring g95,$(ROOTBUILD)))
+FFLAGS	      +=-DFORTRAN_G95
+else
+ifneq (,$(findstring gfortran,$(ROOTBUILD)))
+FFLAGS	      +=-DFORTRAN_GFORTRAN
+else
+FFLAGS	      +=
+endif
+endif
+
 # rmkdepend flags for building dependencies of FORTRAN files
 DEPENDFFLAGS   = $(FFLAGS)
 
@@ -52,8 +72,22 @@ LDFLAGS       = $(OPT)
 
 SHLD	      = $(LD)
 SOFLAGS       = $(OPT) -shared -Wl 
-SHLIB         = -lg2c
 SOEXT 	      = so
+
+#System libraries
+SYSLIBS      := -ldl -lcrypt -L/usr/X11R6/lib -lX11
+
+ifneq (,$(findstring g95,$(ROOTBUILD)))
+SHLIB += -L$(shell g95 --print-search-dirs | sed -n -e 's/install: //p') -lf95
+else
+ifneq (,$(findstring gfortran,$(ROOTBUILD)))
+SHLIB := $(shell gfortran -print-file-name=libgfortran.so)
+SHLIB += $(shell gfortran -print-file-name=libgfortranbegin.a)
+else
+SHLIB         = -lg2c
+SYSLIBS +=  -lg2c
+endif
+endif
 
 ALLD	      = ar
 ALFLAGS       = cr
@@ -62,8 +96,6 @@ AEXT 	      = a
 
 # additional ROOT libraries
 
-#System libraries
-SYSLIBS      := -ldl -lg2c -lcrypt -L/usr/X11R6/lib -lX11
 
 
 
